@@ -52,7 +52,11 @@ public partial class CustomRotation
 		}
 
 		IBaseAction.ForceEnable = true;
-		if (act is IBaseAction a && a != null && !a.Info.IsRealGCD && a.CanUse(out _, usedUp: true, skipAoeCheck: true, skipStatusProvideCheck: true))
+		// Queued commands can sit here while the action is unusable (e.g. Radiant Aegis during
+		// Bahamut/Phoenix, which gates on HasPet()) and fire once it becomes usable again, by which
+		// point the buff may already be up from something else. Respect the status-provide check so
+		// a stale queued command doesn't blindly reapply a buff that's already active.
+		if (act is IBaseAction a && a != null && !a.Info.IsRealGCD && a.CanUse(out _, usedUp: true, skipAoeCheck: true))
 		{
 			return true;
 		}
