@@ -2076,6 +2076,30 @@ internal static class DataCenter
 		return false;
 	}
 
+	/// <summary>
+	/// True if a hostile is casting a tankbuster at the player specifically, whatever their role.
+	/// </summary>
+	public static bool IsHostileCastingTankBusterAtMe =>
+		InCombat && Player.Object != null && AllHostileTargets != null && IsAnyHostileCastingTankBusterAtMe();
+
+	private static bool IsAnyHostileCastingTankBusterAtMe()
+	{
+		if (AllHostileTargets == null || Player.Object == null)
+		{
+			return false;
+		}
+
+		for (var i = 0; i < AllHostileTargets.Count; i++)
+		{
+			var h = AllHostileTargets[i];
+			if (h != null && h.CastTargetObjectId == Player.Object.GameObjectId && IsHostileCastingTank(h))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public static bool IsHostileCastingStop =>
 		InCombat && Service.Config.CastingStop && AllHostileTargets != null && IsAnyHostileStop();
 

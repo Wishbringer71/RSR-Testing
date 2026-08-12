@@ -110,14 +110,36 @@ public sealed class SMN_Reborn : SummonerRotation
 		return base.HealSingleAbility(nextGCD, out act);
 	}
 
-	[RotationDesc(ActionID.LuxSolarisPvE)]
+	[RotationDesc(ActionID.LuxSolarisPvE, ActionID.AddlePvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
 		if (!IsLastAction(false, RadiantAegisPvE) && RadiantAegisPvE.CanUse(out act, usedUp: true))
 		{
 			return true;
 		}
+
+		if (AddlePvE.CanUse(out act))
+		{
+			return true;
+		}
+
 		return base.DefenseAreaAbility(nextGCD, out act);
+	}
+
+	[RotationDesc(ActionID.RadiantAegisPvE, ActionID.AddlePvE)]
+	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
+	{
+		if (!IsLastAction(false, RadiantAegisPvE) && RadiantAegisPvE.CanUse(out act, usedUp: true))
+		{
+			return true;
+		}
+
+		if (AddlePvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 	#endregion
 
@@ -150,6 +172,16 @@ public sealed class SMN_Reborn : SummonerRotation
 		}
 
 		if (HasSearingLight && InCombat && UseBurstMedicine(out act))
+		{
+			return true;
+		}
+
+		// BMRRaidwideIn is already the earliest of BMR's timeline/hints/generic raidwide predictions,
+		// so unlike the raw BMRDamageIn/BMRDamageType pair this can't fire on a tankbuster meant for someone else.
+		if (BMRActive && InCombat && !IsLastAction(false, RadiantAegisPvE)
+			&& BMRRaidwideIn is > 0f and <= 30f
+			&& StatusHelper.PlayerWillStatusEnd(BMRRaidwideIn, true, StatusID.RadiantAegis)
+			&& RadiantAegisPvE.CanUse(out act, usedUp: true, skipStatusProvideCheck: true))
 		{
 			return true;
 		}

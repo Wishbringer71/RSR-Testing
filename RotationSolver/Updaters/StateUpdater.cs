@@ -210,6 +210,12 @@ internal static class StateUpdater
 				}
 			}
 
+			// above only covers protecting the tank, not a buster landing on us
+			if (DataCenter.IsHostileCastingTankBusterAtMe)
+			{
+				return true;
+			}
+
 			if (Service.Config.UseBmrTimeline
 				&& DataCenter.BMRNextTankbusterIn > 0.6f
 				&& DataCenter.BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow)
@@ -262,6 +268,15 @@ internal static class StateUpdater
 			if (Service.Config.UseBmrTimeline
 				&& DataCenter.BMRNextTankbusterIn > 0.6f
 				&& DataCenter.BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow)
+			{
+				return true;
+			}
+		}
+
+		if (DataCenter.Role is JobRole.Melee or JobRole.RangedPhysical or JobRole.RangedMagical)
+		{
+			// no tank in the party, tanks are dead, or the buster went to the wrong person
+			if (DataCenter.IsHostileCastingTankBusterAtMe)
 			{
 				return true;
 			}
