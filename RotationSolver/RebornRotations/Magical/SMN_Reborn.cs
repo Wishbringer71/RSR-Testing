@@ -54,6 +54,9 @@ public sealed class SMN_Reborn : SummonerRotation
 	[RotationConfig(CombatType.PvE, Name = "Order")]
 	public SummonOrderType SummonOrder { get; set; } = SummonOrderType.TopazEmeraldRuby;
 
+	[RotationConfig(CombatType.PvE, Name = "Prefer Titan while moving (Topaz GCDs are instant-cast, unlike Garuda/Ifrit which need you stationary)")]
+	public bool PreferTitanWhileMoving { get; set; } = false;
+
 	[RotationConfig(CombatType.PvE, Name = "Use this if there's no other raid buff in your party")]
 	public bool SecondTypeOpenerLogic { get; set; } = false;
 
@@ -502,6 +505,13 @@ public sealed class SMN_Reborn : SummonerRotation
 
 		if (!InBahamut && !InPhoenix && !InSolarBahamut)
 		{
+			// Topaz GCDs are instant-cast; Garuda/Ifrit's follow-ups need a stationary summoner.
+			// Falls through to the configured order below if Titan isn't available right now.
+			if (PreferTitanWhileMoving && IsMoving && TitanTime(out act))
+			{
+				return true;
+			}
+
 			switch (SummonOrder)
 			{
 				case SummonOrderType.TopazEmeraldRuby:
