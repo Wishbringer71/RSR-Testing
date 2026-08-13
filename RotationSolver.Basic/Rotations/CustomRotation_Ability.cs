@@ -396,6 +396,14 @@ public partial class CustomRotation
 	/// <returns>True if the interrupt ability can be used; otherwise, false.</returns>
 	private bool MyInterruptAbility(JobRole role, IAction nextGCD, out IAction? act)
 	{
+		// Check the job's own override first: a job with combo-safety gating on its interrupt
+		// (e.g. RPR/VPR only using it outside their active combo) needs that gate to actually run
+		// before the ungated role default below claims the same action and returns first.
+		if (InterruptAbility(nextGCD, out act))
+		{
+			return true;
+		}
+
 		switch (role)
 		{
 			case JobRole.Tank:
@@ -426,7 +434,7 @@ public partial class CustomRotation
 				// Handle unexpected job roles if necessary
 				break;
 		}
-		return InterruptAbility(nextGCD, out act);
+		return false;
 	}
 
 	/// <summary>
