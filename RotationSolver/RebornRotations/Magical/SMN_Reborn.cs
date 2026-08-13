@@ -54,9 +54,6 @@ public sealed class SMN_Reborn : SummonerRotation
 	[RotationConfig(CombatType.PvE, Name = "Order")]
 	public SummonOrderType SummonOrder { get; set; } = SummonOrderType.TopazEmeraldRuby;
 
-	[RotationConfig(CombatType.PvE, Name = "Use Radiant Aegis on cooldown while in combat")]
-	public bool RadiantOnCooldownSpam { get; set; } = false;
-
 	[RotationConfig(CombatType.PvE, Name = "Use this if there's no other raid buff in your party")]
 	public bool SecondTypeOpenerLogic { get; set; } = false;
 
