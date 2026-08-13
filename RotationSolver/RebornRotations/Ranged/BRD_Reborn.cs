@@ -121,6 +121,15 @@ public sealed class BRD_Reborn : BardRotation
 	[RotationDesc(ActionID.TroubadourPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
+		// Troubadour mitigates any incoming raidwide, so a predicted BMR raidwide that would land
+		// after Troubadour's own duration expires triggers a proactive refresh here.
+		if ((!BurstDefense || (BurstDefense && !InBurstStatus))
+			&& BMRShouldRefreshBefore(BMRRaidwideIn, 15f, true, null, StatusID.Troubadour)
+			&& TroubadourPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		if ((!BurstDefense || (BurstDefense && !InBurstStatus)) && TroubadourPvE.CanUse(out act))
 		{
 			return true;

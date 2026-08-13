@@ -129,6 +129,14 @@ public sealed class MCH_Reborn : MachinistRotation
 
 		if (!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
 		{
+			// Tactician mitigates any incoming raidwide, so a predicted BMR raidwide that would land
+			// after Tactician's own duration expires triggers a proactive refresh here.
+			if (BMRShouldRefreshBefore(BMRRaidwideIn, 15f, true, null, StatusID.Tactician_1951, StatusID.Tactician_2177)
+				&& TacticianPvE.CanUse(out act, skipStatusProvideCheck: true))
+			{
+				return true;
+			}
+
 			if (TacticianPvE.CanUse(out act))
 			{
 				return true;
