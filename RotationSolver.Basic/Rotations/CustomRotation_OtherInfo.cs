@@ -1267,11 +1267,13 @@ public partial class CustomRotation
 	/// <paramref name="target"/> is null for a self status, or the enemy for a target debuff.
 	/// The 0.6s floor mirrors StateUpdater's own DefenseArea/DefenseSingle guards against acting
 	/// on a prediction that's effectively already resolved.
-	/// Always false when BMR is inactive (safe fallback).
+	/// Always false when BMR is inactive, or when the user has <see cref="Service.Config"/>'s
+	/// UseBmrTimeline disabled - the same toggle StateUpdater's own DefenseArea/DefenseSingle/
+	/// anti-knockback flag triggers already respect (default off).
 	/// </summary>
 	public static bool BMRShouldRefreshBefore(float predictedIn, float statusDuration, bool statusFromSelf, IBattleChara? target, params StatusID[] statusIDs)
 	{
-		if (!BMRActive || predictedIn is not (> 0.6f and < float.MaxValue) || predictedIn > statusDuration)
+		if (!Service.Config.UseBmrTimeline || !BMRActive || predictedIn is not (> 0.6f and < float.MaxValue) || predictedIn > statusDuration)
 		{
 			return false;
 		}
