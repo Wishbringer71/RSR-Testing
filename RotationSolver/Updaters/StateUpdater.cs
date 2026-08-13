@@ -656,6 +656,17 @@ internal static class StateUpdater
 		return count;
 	}
 
+	/// <summary>
+	/// How far ahead a shield must still be active to be credited toward a target's effective health
+	/// in heal-priority decisions. Uses BMR's next predicted damage event when available - the shield
+	/// only matters if it survives to absorb that hit - otherwise falls back to a short floor so a
+	/// shield that's about to expire anyway isn't credited.
+	/// </summary>
+	private static float ShieldSurvivalHorizon =>
+		DataCenter.BMRHasActiveModule && DataCenter.BMRNextDamageIn is > 0f and < float.MaxValue
+			? DataCenter.BMRNextDamageIn
+			: 3f;
+
 	private static bool ShouldHealSelf(StatusID[] hotStatus, float healSingle, float healSingleHot)
 	{
 		if (Player.Object == null)
@@ -683,6 +694,13 @@ internal static class StateUpdater
 
 		// Determine the target's health ratio. If they have a "Doom" status, treat their health as critically low (0.2).
 		var h = StatusHelper.PlayerDoomNeedHealing() ? 0.2f : ObjectHelper.GetPlayerHealthRatio();
+
+		// A shield that will still be up when the next damage lands genuinely protects the player, so
+		// credit its magnitude toward effective health instead of judging solely by raw HP.
+		if (!StatusHelper.PlayerDoomNeedHealing() && Player.Object.HasSurvivingShield(ShieldSurvivalHorizon))
+		{
+			h = Math.Max(h, Player.Object.GetEffectiveHpPercent() / 100f);
+		}
 
 		// If the target's health is zero or they are invulnerable to healing, return false.
 		if (h == 0 || !StatusHelper.PlayerNoNeedHealingInvuln())
@@ -730,6 +748,13 @@ internal static class StateUpdater
 
 		// Determine the target's health ratio. GetHealthRatio already treats "Doom" status targets as critically low (1%).
 		var h = target.GetHealthRatio();
+
+		// A shield that will still be up when the next damage lands genuinely protects the target, so
+		// credit its magnitude toward effective health instead of judging solely by raw HP.
+		if (!target.DoomNeedHealing() && target.HasSurvivingShield(ShieldSurvivalHorizon))
+		{
+			h = Math.Max(h, target.GetEffectiveHpPercent() / 100f);
+		}
 
 		// If the target's health is zero or they are invulnerable to healing, return false.
 		if (h == 0 || !target.NoNeedHealingInvuln())
