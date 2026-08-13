@@ -56,6 +56,22 @@ public sealed class DRG_Reborn : DragoonRotation
 		return base.MoveBackAbility(nextGCD, out act);
 	}
 
+	[RotationDesc]
+	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
+	{
+		if (SecondWindPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		if (BloodbathPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		return base.HealSingleAbility(nextGCD, out act);
+	}
+
 	[RotationDesc(ActionID.FeintPvE)]
 	protected sealed override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{

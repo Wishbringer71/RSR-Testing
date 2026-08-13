@@ -215,6 +215,22 @@ public sealed class NIN_Reborn : NinjaRotation
 		return base.EmergencyAbility(nextGCD, out act);
 	}
 
+	[RotationDesc]
+	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
+	{
+		if (!StatusHelper.PlayerHasStatus(true, StatusID.Mudra) && SecondWindPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		if (!StatusHelper.PlayerHasStatus(true, StatusID.Mudra) && BloodbathPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		return base.HealSingleAbility(nextGCD, out act);
+	}
+
 	// Defines attack abilities to use during combat, overriding the base class implementation.
 	protected override bool AttackAbility(IAction nextGCD, out IAction? act)
 	{

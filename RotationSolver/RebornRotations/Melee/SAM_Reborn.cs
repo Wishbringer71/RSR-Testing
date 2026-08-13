@@ -62,6 +62,22 @@ public sealed class SAM_Reborn : SamuraiRotation
 		return base.MoveForwardAbility(nextGCD, out act);
 	}
 
+	[RotationDesc]
+	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
+	{
+		if (SecondWindPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		if (BloodbathPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		return base.HealSingleAbility(nextGCD, out act);
+	}
+
 	[RotationDesc(ActionID.ThirdEyePvE, ActionID.TengentsuPvE, ActionID.FeintPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
