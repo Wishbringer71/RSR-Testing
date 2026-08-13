@@ -721,6 +721,15 @@ public partial class NinjaRotation
 	[RotationDesc(ActionID.FeintPvE)]
 	protected sealed override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
+		// Feint mitigates any damage type, so a predicted BMR event (raidwide or tankbuster) that
+		// would land after Feint's own duration expires triggers a proactive refresh here.
+		if (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
+			&& !StatusHelper.PlayerHasStatus(true, StatusID.Mudra)
+			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		return (FeintPvE.CanUse(out act) && !StatusHelper.PlayerHasStatus(true, StatusID.Mudra)) || base.DefenseAreaAbility(nextGCD, out act);
 	}
 

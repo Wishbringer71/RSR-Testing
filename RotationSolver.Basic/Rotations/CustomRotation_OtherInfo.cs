@@ -1276,7 +1276,7 @@ public partial class CustomRotation
 			return false;
 		}
 
-		var chara = target ?? Player.Object;
+		var chara = target ?? Player;
 		return chara != null && chara.WillStatusEnd(predictedIn, statusFromSelf, statusIDs);
 	}
 	#endregion
