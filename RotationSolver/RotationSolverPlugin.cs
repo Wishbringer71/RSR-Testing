@@ -43,7 +43,7 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 	// Visible only in the settings window title bar (WSH = Wishbringer71's test build), so it's
 	// obvious at a glance this isn't the stock plugin. "x/y" is this session's rough progress count
 	// through the currently planned fixes/features - update the numerator as items land.
-	private const string TestBuildMarker = " [WSH 9/18]";
+	private const string TestBuildMarker = " [WSH 11/18]";
 	internal static readonly List<DrawingHighlightHotbarBase> _drawingElements = [];
 
 	public static DalamudLinkPayload OpenLinkPayload { get; private set; } = null!;
