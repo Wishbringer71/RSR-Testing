@@ -30,4 +30,23 @@ internal class HpPotionItem : BaseItem
 
 		return Player.Available && ObjectHelper.GetPlayerHealthRatio() <= Service.Config.UseHpPotionsPercent && Player.Object.MaxHp - Player.Object.CurrentHp >= MaxHp && base.CanUse(out item);
 	}
+
+	/// <summary>
+	/// Emergency variant for a confirmed incoming tankbuster: the normal <see cref="CanUse"/> only
+	/// reacts to already-low current HP, but a tankbuster can exceed current HP even when it's above
+	/// the configured reactive threshold. Drops the HP% gate but keeps the same missing-HP guard (the
+	/// potion's own known heal amount must fully fit in missing HP) so it still won't waste a potion
+	/// via overheal near full HP.
+	/// </summary>
+	public bool CanUseEmergency(out IAction item)
+	{
+		item = this;
+
+		if (Player.Object == null)
+		{
+			return false;
+		}
+
+		return Player.Available && Player.Object.MaxHp - Player.Object.CurrentHp >= MaxHp && base.CanUse(out item);
+	}
 }

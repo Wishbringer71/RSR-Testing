@@ -243,6 +243,17 @@ public partial class CustomRotation
 				}
 			}
 
+			// A confirmed tankbuster can exceed current HP even above the normal reactive threshold -
+			// any role, not just tanks, can be caught under-margin. CanUseEmergency drops the HP%
+			// gate but keeps the same missing-HP guard against wasting the potion via overheal.
+			if (DataCenter.IsHostileCastingTankBusterAtMe && a.ID != 47102 && a.ID != 22306 && a.ID != 20309 && a.CanUseEmergency(out _))
+			{
+				if (best == null || a.MaxHp >= best.MaxHp)
+				{
+					best = a;
+				}
+			}
+
 			if ((DataCenter.IsInPilgrimsTraverse || DataCenter.IsInTheFinalVerse) && a.ID == 47102 && a.CanUse(out _, true) && !StatusHelper.PlayerHasStatus(false, StatusID.Rehabilitation_4191))
 			{
 				if (best == null || a.MaxHp >= best.MaxHp)

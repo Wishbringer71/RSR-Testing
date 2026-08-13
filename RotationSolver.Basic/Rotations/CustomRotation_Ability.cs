@@ -360,7 +360,11 @@ public partial class CustomRotation
 		{
 			IBaseAction.ShouldEndSpecial = true;
 		}
-		if (DataCenter.MergedStatus.HasFlag(AutoStatus.HealSingleAbility) && UseHpPotion(nextGCD, out act))
+		// A confirmed tankbuster on the player is evaluated regardless of AutoStatus.HealSingleAbility -
+		// that flag depends on Config.UseHealWhenNotAHealer for non-healers, so without it potions would
+		// never even be attempted for a tank/DPS about to eat a tankbuster. UseHpPotion internally only
+		// widens its own threshold in that specific case (CanUseEmergency), not generally.
+		if ((DataCenter.MergedStatus.HasFlag(AutoStatus.HealSingleAbility) || DataCenter.IsHostileCastingTankBusterAtMe) && UseHpPotion(nextGCD, out act))
 		{
 			return true;
 		}
