@@ -101,6 +101,16 @@ public sealed class GNB_Reborn : GunbreakerRotation
 			return true;
 		}
 
+		// Reprisal mitigates any damage type from that enemy, not just raidwides, so the generic
+		// BMRDamageIn is the right signal - same reasoning as Addle/Feint.
+		if (!HasNoMercy
+			&& (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Reprisal)
+				|| NumberOfHostilesInRange >= 4)
+			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		if (!HasNoMercy && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
@@ -198,6 +208,15 @@ public sealed class GNB_Reborn : GunbreakerRotation
 			{
 				return true;
 			}
+		}
+
+		// Reprisal mitigates any damage type from that enemy, not just raidwides, so the generic
+		// BMRDamageIn is the right signal - same reasoning as Addle/Feint.
+		if ((BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Reprisal)
+				|| NumberOfHostilesInRange >= 4)
+			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
+		{
+			return true;
 		}
 
 		if (ReprisalPvE.CanUse(out act, skipAoeCheck: true))
