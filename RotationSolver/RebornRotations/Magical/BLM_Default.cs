@@ -136,6 +136,14 @@ public class BLM_Default : BlackMageRotation
 			return true;
 		}
 
+		// Addle mitigates any damage type, so a predicted BMR event (raidwide or tankbuster) that
+		// would land after Addle's own duration expires triggers a proactive refresh here.
+		if (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Addle)
+			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		if (AddlePvE.CanUse(out act))
 		{
 			return true;

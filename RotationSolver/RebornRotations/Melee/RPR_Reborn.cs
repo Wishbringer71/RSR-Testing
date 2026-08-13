@@ -72,6 +72,15 @@ public sealed class RPR_Reborn : ReaperRotation
 	[RotationDesc(ActionID.FeintPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
+		// Feint mitigates any damage type, so a predicted BMR event (raidwide or tankbuster) that
+		// would land after Feint's own duration expires triggers a proactive refresh here.
+		if (NotInActiveCombo
+			&& BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
+			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		if (NotInActiveCombo && FeintPvE.CanUse(out act))
 		{
 			return true;

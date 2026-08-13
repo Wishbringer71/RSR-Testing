@@ -118,7 +118,7 @@ public sealed class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
-		if (AddlePvE.CanUse(out act))
+		if (TryAddleBeforeDamage(out act) || AddlePvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -134,12 +134,25 @@ public sealed class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
-		if (AddlePvE.CanUse(out act))
+		if (TryAddleBeforeDamage(out act) || AddlePvE.CanUse(out act))
 		{
 			return true;
 		}
 
 		return base.DefenseSingleAbility(nextGCD, out act);
+	}
+
+	// Addle mitigates any damage the enemy deals (physical or magic), not just raidwides, so unlike
+	// Radiant Aegis (a personal-only barrier) the generic BMRDamageIn is the right signal here rather
+	// than the raidwide-specific one. Enhanced Addle (lvl 98) extends the duration from 10s to 15s.
+	private bool TryAddleBeforeDamage(out IAction? act)
+	{
+		if (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Addle))
+		{
+			return AddlePvE.CanUse(out act, skipStatusProvideCheck: true);
+		}
+		act = null;
+		return false;
 	}
 	#endregion
 
@@ -178,9 +191,8 @@ public sealed class SMN_Reborn : SummonerRotation
 
 		// BMRRaidwideIn is already the earliest of BMR's timeline/hints/generic raidwide predictions,
 		// so unlike the raw BMRDamageIn/BMRDamageType pair this can't fire on a tankbuster meant for someone else.
-		if (BMRActive && InCombat && !IsLastAction(false, RadiantAegisPvE)
-			&& BMRRaidwideIn is > 0f and <= 30f
-			&& StatusHelper.PlayerWillStatusEnd(BMRRaidwideIn, true, StatusID.RadiantAegis)
+		if (InCombat && !IsLastAction(false, RadiantAegisPvE)
+			&& BMRShouldRefreshBefore(BMRRaidwideIn, 30f, true, null, StatusID.RadiantAegis)
 			&& RadiantAegisPvE.CanUse(out act, usedUp: true, skipStatusProvideCheck: true))
 		{
 			return true;

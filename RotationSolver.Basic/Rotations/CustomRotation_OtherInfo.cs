@@ -1256,6 +1256,29 @@ public partial class CustomRotation
 	/// </summary>
 	public static bool BMRTankbusterWithin(float seconds)
 		=> BMRActive && BMRTankbusterIn is > 0f and < float.MaxValue && BMRTankbusterIn <= seconds;
+
+	/// <summary>
+	/// True when a self or target status won't survive until a predicted BMR event lands, so it
+	/// should be refreshed proactively now instead of expiring mid-window. Used to time personal
+	/// shields and enemy mitigation debuffs (Addle, Feint, ...) around incoming damage rather than
+	/// on a fixed cooldown. <paramref name="predictedIn"/> is typically <see cref="BMRRaidwideIn"/>,
+	/// <see cref="BMRTankbusterIn"/> or <see cref="BMRDamageIn"/>. <paramref name="statusDuration"/>
+	/// is the status's own duration - refreshing earlier than that wouldn't cover the event anyway.
+	/// <paramref name="target"/> is null for a self status, or the enemy for a target debuff.
+	/// The 0.6s floor mirrors StateUpdater's own DefenseArea/DefenseSingle guards against acting
+	/// on a prediction that's effectively already resolved.
+	/// Always false when BMR is inactive (safe fallback).
+	/// </summary>
+	public static bool BMRShouldRefreshBefore(float predictedIn, float statusDuration, bool statusFromSelf, IBattleChara? target, params StatusID[] statusIDs)
+	{
+		if (!BMRActive || predictedIn is not (> 0.6f and < float.MaxValue) || predictedIn > statusDuration)
+		{
+			return false;
+		}
+
+		var chara = target ?? Player.Object;
+		return chara != null && chara.WillStatusEnd(predictedIn, statusFromSelf, statusIDs);
+	}
 	#endregion
 
 	/// <summary>

@@ -67,6 +67,14 @@ public sealed class SAM_Reborn : SamuraiRotation
 	{
 		if (!HasZanshinReady)
 		{
+			// Feint mitigates any damage type, so a predicted BMR event (raidwide or tankbuster) that
+			// would land after Feint's own duration expires triggers a proactive refresh here.
+			if (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
+				&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
+			{
+				return true;
+			}
+
 			if (FeintPvE.CanUse(out act))
 			{
 				return true;

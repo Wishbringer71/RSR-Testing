@@ -232,6 +232,15 @@ public sealed class VPR_Reborn : ViperRotation
 	[RotationDesc]
 	protected sealed override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
+		// Feint mitigates any damage type, so a predicted BMR event (raidwide or tankbuster) that
+		// would land after Feint's own duration expires triggers a proactive refresh here.
+		if (NoAbilityReady
+			&& BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
+			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		if (NoAbilityReady && FeintPvE.CanUse(out act))
 		{
 			return true;

@@ -64,6 +64,14 @@ public sealed class DRG_Reborn : DragoonRotation
 			return base.DefenseAreaAbility(nextGCD, out act);
 		}
 
+		// Feint mitigates any damage type, so a predicted BMR event (raidwide or tankbuster) that
+		// would land after Feint's own duration expires triggers a proactive refresh here.
+		if (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
+			&& FeintPvE.CanUse(out act, skipComboCheck: true, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		if (FeintPvE.CanUse(out act, skipComboCheck: true))
 		{
 			return true;
