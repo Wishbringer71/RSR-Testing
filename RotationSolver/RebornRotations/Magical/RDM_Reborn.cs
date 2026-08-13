@@ -377,7 +377,7 @@ public sealed class RDM_Reborn : RedMageRotation
 				}
 			}
 
-			if (!ImpactPvE.EnoughLevel && ImpactPvE.EnoughLevel)
+			if (ImpactPvE.EnoughLevel)
 			{
 				if (ImpactPvE.CanUse(out act))
 				{
