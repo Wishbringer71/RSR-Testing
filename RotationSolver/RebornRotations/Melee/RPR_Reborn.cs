@@ -73,8 +73,11 @@ public sealed class RPR_Reborn : ReaperRotation
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
 		// Feint mitigates any damage type, so a predicted BMR event (raidwide or tankbuster) that
-		// would land after Feint's own duration expires triggers a proactive refresh here.
-		if (NotInActiveCombo
+		// would land after Feint's own duration expires triggers a proactive refresh here. A real,
+		// timed threat outweighs RPR's own combo-slot preference, but not at the cost of an unsafe
+		// weave - EnoughWeaveTime is the actual clip-risk check, unlike NotInActiveCombo which just
+		// blocks for the whole combo regardless of whether a safe window exists right now.
+		if (EnoughWeaveTime
 			&& BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{

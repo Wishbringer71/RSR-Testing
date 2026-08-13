@@ -238,8 +238,11 @@ public sealed class VPR_Reborn : ViperRotation
 	protected sealed override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
 		// Feint mitigates any damage type, so a predicted BMR event (raidwide or tankbuster) that
-		// would land after Feint's own duration expires triggers a proactive refresh here.
-		if (NoAbilityReady
+		// would land after Feint's own duration expires triggers a proactive refresh here. A real,
+		// timed threat outweighs VPR's own oGCD-slot preference, but not at the cost of an unsafe
+		// weave - EnoughWeaveTime is the actual clip-risk check, unlike NoAbilityReady which just
+		// blocks whenever VPR has something else queued, regardless of whether a safe window exists.
+		if (EnoughWeaveTime
 			&& BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
