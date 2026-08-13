@@ -691,7 +691,16 @@ internal static class StateUpdater
 		}
 
 		// Compare the target's health ratio to a threshold determined by linear interpolation (Lerp) between `healSingle` and `healSingleHot`.
-		return h < Lerp(healSingle, healSingleHot, ratio);
+		var threshold = Lerp(healSingle, healSingleHot, ratio);
+
+		// Weakness/Brink of Death halve incoming healing, so a heal cast now restores half as much -
+		// raise the threshold so healing starts sooner rather than treating this HP% at face value.
+		if (StatusHelper.PlayerIsWeakened())
+		{
+			threshold = Math.Min(1f, threshold * 1.5f);
+		}
+
+		return h < threshold;
 	}
 
 	private static bool ShouldHealSingle(IBattleChara target, StatusID[] hotStatus, float healSingle, float healSingleHot)
@@ -729,7 +738,16 @@ internal static class StateUpdater
 		}
 
 		// Compare the target's health ratio to a threshold determined by linear interpolation (Lerp) between `healSingle` and `healSingleHot`.
-		return h < Lerp(healSingle, healSingleHot, ratio);
+		var threshold = Lerp(healSingle, healSingleHot, ratio);
+
+		// Weakness/Brink of Death halve incoming healing, so a heal cast now restores half as much -
+		// raise the threshold so healing starts sooner rather than treating this HP% at face value.
+		if (target.IsWeakened())
+		{
+			threshold = Math.Min(1f, threshold * 1.5f);
+		}
+
+		return h < threshold;
 	}
 
 	private static float Lerp(float a, float b, float ratio)
