@@ -223,6 +223,20 @@ public sealed class WAR_Reborn : WarriorRotation
 			return false;
 		}
 
+		// A BMR-predicted tankbuster takes priority over the elapsed-time stagger below - times
+		// whichever mitigation the existing system would reach anyway against the actual predicted
+		// event instead of a blind timer, without touching the stagger itself.
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, DamnationPvE.EnoughLevel ? StatusID.Damnation : StatusID.Vengeance)
+			&& (DamnationPvE.EnoughLevel ? DamnationPvE.CanUse(out act, skipStatusProvideCheck: true) : VengeancePvE.CanUse(out act, skipStatusProvideCheck: true)))
+		{
+			return true;
+		}
+
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		if ((!RampartPvE.Cooldown.IsCoolingDown || RampartPvE.Cooldown.ElapsedAfter(60)) && DamnationPvE.CanUse(out act) && DamnationPvE.EnoughLevel)
 		{
 			return true;

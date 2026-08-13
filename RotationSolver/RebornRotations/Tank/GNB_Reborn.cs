@@ -174,6 +174,20 @@ public sealed class GNB_Reborn : GunbreakerRotation
 			}
 		}
 
+		// A BMR-predicted tankbuster takes priority over the elapsed-time stagger below - times
+		// whichever mitigation the existing system would reach anyway against the actual predicted
+		// event instead of a blind timer, without touching the stagger itself.
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, GreatNebulaPvE.EnoughLevel ? StatusID.GreatNebula : StatusID.Nebula)
+			&& (GreatNebulaPvE.EnoughLevel ? GreatNebulaPvE.CanUse(out act, skipStatusProvideCheck: true) : NebulaPvE.CanUse(out act, skipStatusProvideCheck: true)))
+		{
+			return true;
+		}
+
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		//30
 		if ((!RampartPvE.Cooldown.IsCoolingDown || RampartPvE.Cooldown.ElapsedAfter(60)) && GreatNebulaPvE.CanUse(out act) && GreatNebulaPvE.EnoughLevel)
 		{
