@@ -78,7 +78,8 @@ public sealed class RPR_Reborn : ReaperRotation
 		// weave - EnoughWeaveTime is the actual clip-risk check, unlike NotInActiveCombo which just
 		// blocks for the whole combo regardless of whether a safe window exists right now.
 		if (EnoughWeaveTime
-			&& BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
+			&& (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
+				|| NumberOfHostilesInRange >= 3)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;

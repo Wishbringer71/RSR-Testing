@@ -145,9 +145,12 @@ public sealed class SMN_Reborn : SummonerRotation
 	// Addle mitigates any damage the enemy deals (physical or magic), not just raidwides, so unlike
 	// Radiant Aegis (a personal-only barrier) the generic BMRDamageIn is the right signal here rather
 	// than the raidwide-specific one. Enhanced Addle (lvl 98) extends the duration from 10s to 15s.
+	// On trash pulls BMR usually has no active module at all, so a sustain-refresh fallback based on
+	// hostile count keeps Addle up during heavy pulls even without a BMR prediction to time it against.
 	private bool TryAddleBeforeDamage(out IAction? act)
 	{
-		if (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Addle))
+		if (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Addle)
+			|| NumberOfHostilesInRange >= 3)
 		{
 			return AddlePvE.CanUse(out act, skipStatusProvideCheck: true);
 		}
