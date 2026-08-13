@@ -244,7 +244,7 @@ public sealed class VPR_Reborn : ViperRotation
 		// blocks whenever VPR has something else queued, regardless of whether a safe window exists.
 		if (EnoughWeaveTime
 			&& (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
-				|| NumberOfHostilesInRange >= 3)
+				|| NumberOfHostilesInRange >= 4)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;

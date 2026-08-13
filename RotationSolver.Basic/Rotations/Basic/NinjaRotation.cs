@@ -725,7 +725,7 @@ public partial class NinjaRotation
 		// would land after Feint's own duration expires triggers a proactive refresh here. Trash pulls
 		// usually have no active BMR module, so a hostile-count fallback keeps Feint up regardless.
 		if ((BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
-				|| NumberOfHostilesInRange >= 3)
+				|| NumberOfHostilesInRange >= 4)
 			&& !StatusHelper.PlayerHasStatus(true, StatusID.Mudra)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{

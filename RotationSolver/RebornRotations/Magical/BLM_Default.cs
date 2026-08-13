@@ -140,7 +140,7 @@ public class BLM_Default : BlackMageRotation
 		// would land after Addle's own duration expires triggers a proactive refresh here. Trash pulls
 		// usually have no active BMR module, so a hostile-count fallback keeps Addle up regardless.
 		if ((BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Addle)
-				|| NumberOfHostilesInRange >= 3)
+				|| NumberOfHostilesInRange >= 4)
 			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;

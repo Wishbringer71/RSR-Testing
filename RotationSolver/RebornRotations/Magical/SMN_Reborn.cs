@@ -150,7 +150,7 @@ public sealed class SMN_Reborn : SummonerRotation
 	private bool TryAddleBeforeDamage(out IAction? act)
 	{
 		if (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Addle)
-			|| NumberOfHostilesInRange >= 3)
+			|| NumberOfHostilesInRange >= 4)
 		{
 			return AddlePvE.CanUse(out act, skipStatusProvideCheck: true);
 		}
