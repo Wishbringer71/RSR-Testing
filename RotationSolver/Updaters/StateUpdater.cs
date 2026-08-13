@@ -191,6 +191,13 @@ internal static class StateUpdater
 			return false;
 		}
 
+		// A BMR-predicted tankbuster matters to every role that could eat it - the tank, a healer
+		// protecting the tank, or a DPS/caster if it lands on the wrong person. Computed once and
+		// shared instead of the same three-line check being duplicated per role branch.
+		var bmrTankbusterImminent = Service.Config.UseBmrTimeline
+			&& DataCenter.BMRNextTankbusterIn > 0.6f
+			&& DataCenter.BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow;
+
 		if (DataCenter.Role == JobRole.Healer)
 		{
 			foreach (var tank in DataCenter.PartyMembers)
@@ -216,9 +223,7 @@ internal static class StateUpdater
 				return true;
 			}
 
-			if (Service.Config.UseBmrTimeline
-				&& DataCenter.BMRNextTankbusterIn > 0.6f
-				&& DataCenter.BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow)
+			if (bmrTankbusterImminent)
 			{
 				return true;
 			}
@@ -265,9 +270,7 @@ internal static class StateUpdater
 				return true;
 			}
 
-			if (Service.Config.UseBmrTimeline
-				&& DataCenter.BMRNextTankbusterIn > 0.6f
-				&& DataCenter.BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow)
+			if (bmrTankbusterImminent)
 			{
 				return true;
 			}
@@ -277,6 +280,11 @@ internal static class StateUpdater
 		{
 			// no tank in the party, tanks are dead, or the buster went to the wrong person
 			if (DataCenter.IsHostileCastingTankBusterAtMe)
+			{
+				return true;
+			}
+
+			if (bmrTankbusterImminent)
 			{
 				return true;
 			}
