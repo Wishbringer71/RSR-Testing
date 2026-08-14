@@ -341,7 +341,7 @@ public partial class CustomRotation
 		{
 			IBaseAction.ShouldEndSpecial = true;
 		}
-		if (DataCenter.MergedStatus.HasFlag(AutoStatus.MoveBack) && MoveBackAbility(nextGCD, out act))
+		if (DataCenter.MergedStatus.HasFlag(AutoStatus.MoveBack))
 		{
 			if (DataCenter.CurrentDutyRotation?.MoveBackAbility(nextGCD, out act) == true)
 			{
