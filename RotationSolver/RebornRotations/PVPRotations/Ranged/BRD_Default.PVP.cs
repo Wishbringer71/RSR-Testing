@@ -158,7 +158,7 @@ public sealed class BRD_DefaultPvP : BardRotation
 			}
 		}
 
-		return base.GeneralGCD(out action);
+		return base.EmergencyGCD(nextGCD, out action);
 	}
 
 	protected override bool GeneralGCD(out IAction? action)
