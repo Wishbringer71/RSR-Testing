@@ -122,6 +122,32 @@ public sealed class MCH_Reborn : MachinistRotation
 	[RotationDesc(ActionID.TacticianPvE, ActionID.DismantlePvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
+		if (!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
+		{
+			// Tactician mitigates any incoming raidwide, so a predicted BMR raidwide that would land
+			// after Tactician's own duration expires triggers a proactive refresh here - independent of
+			// the broad burst-state gate below (which blocks this weave slot throughout Overheat and the
+			// entire "ready but not yet cast" stretch of a Wildfire charge), but still yielding to
+			// Wildfire/Barrel Stabilizer specifically in the narrow window where either is actually about
+			// to be cast. IsBurst itself can't be used as that signal - it's a persistent user toggle
+			// (Service.Config.AutoBurst, default on) rather than a real burst-window indicator - so this
+			// mirrors their real trigger surface in AttackAbility instead: Wildfire only fires once Heat/
+			// Hypercharge are ready AND the weapon-remain timer lines up with the next GCD (see the
+			// WeaponRemain < GCDTime(1)/2 checks there), and Barrel Stabilizer fires the instant it's off
+			// cooldown during a burst window with no such proximity gate at all.
+			var wildfireSlotContested = IsBurst && WildfirePvE.EnoughLevel && WildfirePvE.Cooldown.HasOneCharge
+				&& !BMRDowntimeWithin(10f) && (Heat >= 50 || HasHypercharged) && WeaponRemain < (GCDTime(1) / 2);
+			var barrelStabilizerSlotContested = IsBurst && BarrelStabilizerPvE.EnoughLevel
+				&& !BMRDowntimeWithin(GCDTime(2)) && BarrelStabilizerPvE.CanUse(out _);
+
+			if (!IsOverheated && !wildfireSlotContested && !barrelStabilizerSlotContested
+				&& BMRShouldRefreshBefore(BMRRaidwideIn, 15f, true, null, StatusID.Tactician_1951, StatusID.Tactician_2177)
+				&& TacticianPvE.CanUse(out act, skipStatusProvideCheck: true))
+			{
+				return true;
+			}
+		}
+
 		if (IsOverheated || HasWildfire || HasFullMetalMachinist || (WildfirePvE.EnoughLevel && WildfirePvE.Cooldown.HasOneCharge))
 		{
 			return base.DefenseAreaAbility(nextGCD, out act);
@@ -129,14 +155,6 @@ public sealed class MCH_Reborn : MachinistRotation
 
 		if (!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
 		{
-			// Tactician mitigates any incoming raidwide, so a predicted BMR raidwide that would land
-			// after Tactician's own duration expires triggers a proactive refresh here.
-			if (BMRShouldRefreshBefore(BMRRaidwideIn, 15f, true, null, StatusID.Tactician_1951, StatusID.Tactician_2177)
-				&& TacticianPvE.CanUse(out act, skipStatusProvideCheck: true))
-			{
-				return true;
-			}
-
 			if (TacticianPvE.CanUse(out act))
 			{
 				return true;
