@@ -38,12 +38,4 @@ public class RotationConfigAttribute(CombatType type) : Attribute
 	/// Tooltip for this config.
 	/// </summary>
 	public string Tooltip { get; set; } = string.Empty;
-
-	/// <summary>
-	/// A previous storage key this config was saved under (e.g. before a rename to resolve a
-	/// cross-job key collision). When set, and no value has been saved yet under the current
-	/// property name, the value stored under this key is copied over once so existing users keep
-	/// their setting instead of silently reverting to the default.
-	/// </summary>
-	public string? LegacyKey { get; set; }
 }

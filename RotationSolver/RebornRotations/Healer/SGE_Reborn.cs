@@ -20,8 +20,8 @@ public sealed class SGE_Reborn : SageRotation
 	[RotationConfig(CombatType.PvE, Name = "Use Rhizomata when out of combat")]
 	public bool OOCRhizomata { get; set; } = false;
 
-	[RotationConfig(CombatType.PvE, Name = "Limit Panhaima to multihit party stacks", LegacyKey = "MultiHitRestrict")]
-	public bool MultiHitRestrictPanhaima { get; set; } = false;
+	[RotationConfig(CombatType.PvE, Name = "Limit Panhaima to multihit party stacks")]
+	public bool MultiHitRestrict { get; set; } = false;
 
 	[RotationConfig(CombatType.PvE, Name = "Use GCDs to heal. (Ignored if you are the only healer in party)")]
 	public bool GCDHeal { get; set; } = false;
@@ -203,7 +203,7 @@ public sealed class SGE_Reborn : SageRotation
 
 		if (Addersgall <= 1)
 		{
-			if ((MultiHitRestrictPanhaima && IsCastingMultiHit) || !MultiHitRestrictPanhaima)
+			if ((MultiHitRestrict && IsCastingMultiHit) || !MultiHitRestrict)
 			{
 				if (PanhaimaPvE.CanUse(out act))
 				{

@@ -8,8 +8,8 @@ namespace RotationSolver.RebornRotations.Healer;
 public sealed class SCH_Reborn : ScholarRotation
 {
 	#region Config Options
-	[RotationConfig(CombatType.PvE, Name = "Limit Seraphism to multihit party stacks", LegacyKey = "MultiHitRestrict")]
-	public bool MultiHitRestrictSeraphism { get; set; } = false;
+	[RotationConfig(CombatType.PvE, Name = "Limit Seraphism to multihit party stacks")]
+	public bool MultiHitRestrict { get; set; } = false;
 
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Remove Aetherpact if the linked party member's HP is above this percentage")]
@@ -415,7 +415,7 @@ public sealed class SCH_Reborn : ScholarRotation
 		}
 
 		// Seraphism is really good but we want to save it if we can, and should alternate it with Summon Seraph outside of the hardest content
-		if ((MultiHitRestrictSeraphism && IsCastingMultiHit) || !MultiHitRestrictSeraphism)
+		if ((MultiHitRestrict && IsCastingMultiHit) || !MultiHitRestrict)
 		{
 			if ((SummonSeraphPvE.Cooldown.IsCoolingDown || CurrentMp <= EmergencyHealingMPThreshold) && SeraphismPvE.CanUse(out act))
 			{
