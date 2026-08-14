@@ -733,10 +733,15 @@ internal partial class Configs : IPluginConfiguration
 		Filter = AutoActionUsage, Parent = nameof(UseDefenseAbility))]
 	private static readonly bool _useBMRTimeline = false;
 
+	// Gates when AutoStatus.DefenseArea gets set at all - job DefenseAreaAbility() methods aren't even
+	// called before that, so this also caps how early their own BMRShouldRefreshBefore calls (which use
+	// each status's own, often longer, duration as their upper bound) can actually trigger via the
+	// BMR-only path. A real detected cast (IsHostileCastingAOE) is a separate, unaffected trigger.
 	[UI("Seconds before raidwide to use area mitigation", Parent = nameof(UseBmrTimeline))]
 	[Range(1, 15, ConfigUnitType.Seconds, 0.5f)]
 	public float BMRRaidwideMitWindow { get; set; } = 5f;
 
+	// Same caveat as BMRRaidwideMitWindow above, for AutoStatus.DefenseSingle/tankbuster mitigation.
 	[UI("Seconds before tankbuster to use single mitigation", Parent = nameof(UseBmrTimeline))]
 	[Range(1, 10, ConfigUnitType.Seconds, 0.5f)]
 	public float BMRTankbusterMitWindow { get; set; } = 3f;
