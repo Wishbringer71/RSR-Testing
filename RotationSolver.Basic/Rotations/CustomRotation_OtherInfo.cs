@@ -1233,29 +1233,31 @@ public partial class CustomRotation
 
 	/// <summary>
 	/// True when BMR reports downtime within the specified seconds.
-	/// Always false when BMR is inactive (safe fallback).
+	/// Always false when BMR is inactive, or when the user has UseBmrTimeline disabled.
 	/// </summary>
 	public static bool BMRDowntimeWithin(float seconds)
-		=> BMRActive && BMRDowntimeIn is > 0f and < float.MaxValue && BMRDowntimeIn <= seconds;
+		=> Service.Config.UseBmrTimeline && BMRActive && BMRDowntimeIn is > 0f and < float.MaxValue && BMRDowntimeIn <= seconds;
 
 	/// <summary>
 	/// True when BMR reports a vulnerability window within the specified seconds.
-	/// Always false when BMR is inactive (safe fallback).
+	/// Always false when BMR is inactive, or when the user has UseBmrTimeline disabled.
 	/// </summary>
 	public static bool BMRVulnWithin(float seconds)
-		=> BMRActive && BMRVulnerableIn is > 0f and < float.MaxValue && BMRVulnerableIn <= seconds;
+		=> Service.Config.UseBmrTimeline && BMRActive && BMRVulnerableIn is > 0f and < float.MaxValue && BMRVulnerableIn <= seconds;
 
 	/// <summary>
 	/// True when BMR reports a raidwide within the specified seconds.
+	/// Always false when BMR is inactive, or when the user has UseBmrTimeline disabled.
 	/// </summary>
 	public static bool BMRRaidwideWithin(float seconds)
-		=> BMRActive && BMRRaidwideIn is > 0f and < float.MaxValue && BMRRaidwideIn <= seconds;
+		=> Service.Config.UseBmrTimeline && BMRActive && BMRRaidwideIn is > 0f and < float.MaxValue && BMRRaidwideIn <= seconds;
 
 	/// <summary>
 	/// True when BMR reports a tankbuster within the specified seconds.
+	/// Always false when BMR is inactive, or when the user has UseBmrTimeline disabled.
 	/// </summary>
 	public static bool BMRTankbusterWithin(float seconds)
-		=> BMRActive && BMRTankbusterIn is > 0f and < float.MaxValue && BMRTankbusterIn <= seconds;
+		=> Service.Config.UseBmrTimeline && BMRActive && BMRTankbusterIn is > 0f and < float.MaxValue && BMRTankbusterIn <= seconds;
 
 	/// <summary>
 	/// True when a self or target status won't survive until a predicted BMR event lands, so it
