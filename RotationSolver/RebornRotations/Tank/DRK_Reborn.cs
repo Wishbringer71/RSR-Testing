@@ -211,9 +211,12 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		// BMRDamageIn is the right signal - same reasoning as Addle/Feint. Mirrors the DefenseAreaAbility
 		// block above: DefenseAreaAbility only runs on a raidwide-shaped trigger, so a tankbuster-only
 		// prediction never reaches it - this duplicate here is reachable via ShouldAddDefenseSingle's
-		// richer tank trigger set instead, same as GNB's already-duplicated Reprisal blocks.
-		if (!InTwoMIsBurst
-			&& (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Reprisal)
+		// richer tank trigger set instead, same as GNB's already-duplicated Reprisal blocks. No
+		// !InTwoMIsBurst gate here, matching GNB's DefenseSingleAbility Reprisal (ungated there too,
+		// unlike its DefenseAreaAbility counterpart) and the reactive fallback line right below -
+		// across all four tanks, single-target Reprisal is left unguarded by their burst-window gates;
+		// only the AoE variant is.
+		if ((BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Reprisal)
 				|| NumberOfHostilesInRange >= 4)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
