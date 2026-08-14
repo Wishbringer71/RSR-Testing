@@ -122,19 +122,6 @@ public sealed class MCH_Reborn : MachinistRotation
 	[RotationDesc(ActionID.TacticianPvE, ActionID.DismantlePvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		// Tactician mitigates any incoming raidwide, so a predicted BMR raidwide that would land after
-		// Tactician's own duration expires triggers a proactive refresh here - independent of the full
-		// burst-state gate below. Only IsOverheated is a genuine oGCD-slot conflict (Heat Blast spam
-		// fills every weave); HasWildfire/HasFullMetalMachinist/a-ready-Wildfire-charge don't compete
-		// for this exact slot and shouldn't block a time-sensitive raidwide refresh for their whole
-		// (much longer) duration.
-		if (!IsOverheated && (!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
-			&& BMRShouldRefreshBefore(BMRRaidwideIn, 15f, true, null, StatusID.Tactician_1951, StatusID.Tactician_2177)
-			&& TacticianPvE.CanUse(out act, skipStatusProvideCheck: true))
-		{
-			return true;
-		}
-
 		if (IsOverheated || HasWildfire || HasFullMetalMachinist || (WildfirePvE.EnoughLevel && WildfirePvE.Cooldown.HasOneCharge))
 		{
 			return base.DefenseAreaAbility(nextGCD, out act);
@@ -142,6 +129,14 @@ public sealed class MCH_Reborn : MachinistRotation
 
 		if (!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
 		{
+			// Tactician mitigates any incoming raidwide, so a predicted BMR raidwide that would land
+			// after Tactician's own duration expires triggers a proactive refresh here.
+			if (BMRShouldRefreshBefore(BMRRaidwideIn, 15f, true, null, StatusID.Tactician_1951, StatusID.Tactician_2177)
+				&& TacticianPvE.CanUse(out act, skipStatusProvideCheck: true))
+			{
+				return true;
+			}
+
 			if (TacticianPvE.CanUse(out act))
 			{
 				return true;
