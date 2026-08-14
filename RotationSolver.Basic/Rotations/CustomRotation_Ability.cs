@@ -523,7 +523,7 @@ public partial class CustomRotation
 				break;
 		}
 
-		return AntiKnockbackAbility(nextGCD, out act);
+		return false;
 	}
 
 	/// <summary>
