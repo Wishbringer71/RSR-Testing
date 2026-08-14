@@ -5,6 +5,9 @@
 
 public sealed class RDM_Reborn : RedMageRotation
 {
+	// DefenseAreaAbility below has a hostile-count sustain-refresh fallback for Addle.
+	public override bool HasHostileCountAoeMitigation => true;
+
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Use GCDs to heal. (Ignored if there are no healers alive in party)")]
 	public bool GCDHeal { get; set; } = false;

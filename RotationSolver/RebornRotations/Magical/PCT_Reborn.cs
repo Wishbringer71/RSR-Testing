@@ -5,6 +5,9 @@
 
 public sealed class PCT_Reborn : PictomancerRotation
 {
+	// DefenseAreaAbility below has a hostile-count sustain-refresh fallback for Addle.
+	public override bool HasHostileCountAoeMitigation => true;
+
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Use HolyInWhite or CometInBlack while moving")]
 	public bool HolyCometMoving { get; set; } = true;

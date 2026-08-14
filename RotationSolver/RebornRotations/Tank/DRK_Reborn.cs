@@ -5,6 +5,9 @@ namespace RotationSolver.RebornRotations.Tank;
 
 public sealed class DRK_Reborn : DarkKnightRotation
 {
+	// DefenseAreaAbility below has a hostile-count sustain-refresh fallback for Reprisal.
+	public override bool HasHostileCountAoeMitigation => true;
+
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Use provoke in opening if tank stance is on")]
 	public bool UseProvokeInOpening { get; set; } = true;

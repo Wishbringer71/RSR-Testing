@@ -5,6 +5,9 @@
 
 public class BLM_Default : BlackMageRotation
 {
+	// DefenseAreaAbility below has a hostile-count sustain-refresh fallback for Addle.
+	public override bool HasHostileCountAoeMitigation => true;
+
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Use Transpose to Astral Fire before Paradox")]
 	public bool UseTransposeForParadox { get; set; } = true;

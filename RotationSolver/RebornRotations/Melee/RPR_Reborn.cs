@@ -5,6 +5,9 @@
 
 public sealed class RPR_Reborn : ReaperRotation
 {
+	// DefenseAreaAbility below has a hostile-count sustain-refresh fallback for Feint.
+	public override bool HasHostileCountAoeMitigation => true;
+
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Pool Shroud for Arcane Circle.")]
 	public bool EnshroudPooling { get; set; } = false;

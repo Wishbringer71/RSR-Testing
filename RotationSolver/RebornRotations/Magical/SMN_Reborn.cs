@@ -7,6 +7,10 @@ namespace RotationSolver.RebornRotations.Magical;
 
 public sealed class SMN_Reborn : SummonerRotation
 {
+	// DefenseAreaAbility below calls TryAddleBeforeDamage, which has a hostile-count sustain-refresh
+	// fallback for Addle.
+	public override bool HasHostileCountAoeMitigation => true;
+
 	#region Config Options
 
 	public enum SummonOrderType : byte

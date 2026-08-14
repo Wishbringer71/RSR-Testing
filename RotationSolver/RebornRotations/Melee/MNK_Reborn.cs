@@ -7,6 +7,9 @@ namespace RotationSolver.RebornRotations.Melee;
 
 public sealed class MNK_Reborn : MonkRotation
 {
+	// DefenseAreaAbility below has a hostile-count sustain-refresh fallback for Feint.
+	public override bool HasHostileCountAoeMitigation => true;
+
 	#region Config Options
 
 	public enum RiddleOfFireFirst : byte

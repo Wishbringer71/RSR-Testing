@@ -5,6 +5,9 @@ namespace RotationSolver.RebornRotations.Melee;
 
 public sealed class DRG_Reborn : DragoonRotation
 {
+	// DefenseAreaAbility below has a hostile-count sustain-refresh fallback for Feint.
+	public override bool HasHostileCountAoeMitigation => true;
+
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Use Doom Spike for damage uptime if out of melee range even if it breaks combo")]
 	public bool DoomSpikeWhenever { get; set; } = true;

@@ -114,6 +114,17 @@ public interface ICustomRotation : ITexture
 	internal IAction? ActionAntiKnockbackAbility { get; }
 
 	/// <summary>
+	/// Whether this rotation has AoE-mitigation logic in DefenseAreaAbility that is meant to trigger
+	/// purely from an elevated hostile count, without a detected cast or BMR-predicted raidwide (e.g.
+	/// a sustain-refresh fallback for trash pulls with no active BMR module). Used by
+	/// StateUpdater.ShouldAddDefenseArea to scope the hostile-count trigger to only the jobs that
+	/// actually wrote such a branch, instead of a job-agnostic flag that would call every job's
+	/// DefenseAreaAbility (and, for melee/ranged-physical/ranged-magical roles, DefenseSingleAbility
+	/// too) on pure enemy count.
+	/// </summary>
+	internal bool HasHostileCountAoeMitigation { get; }
+
+	/// <summary>
 	/// Tries to use this rotation.
 	/// </summary>
 	/// <param name="newAction">The next action.</param>

@@ -5,6 +5,9 @@
 
 public sealed class VPR_Reborn : ViperRotation
 {
+	// DefenseAreaAbility below has a hostile-count sustain-refresh fallback for Feint.
+	public override bool HasHostileCountAoeMitigation => true;
+
 	#region Config Options
 
 	[RotationConfig(CombatType.PvE, Name = "Hold one charge of Uncoiled Fury after burst for movement")]

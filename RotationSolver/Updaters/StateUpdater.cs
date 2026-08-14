@@ -181,6 +181,18 @@ internal static class StateUpdater
 			return true;
 		}
 
+		// Sustain fallback for trash pulls without an active BMR module: only jobs that explicitly
+		// declare a hostile-count-driven AoE mitigation branch (HasHostileCountAoeMitigation) may
+		// trigger DefenseAreaAbility() this way - keeps the blast radius scoped to the jobs that
+		// actually wrote that branch, instead of running the full DefenseAreaAbility/DefenseSingleAbility
+		// chain for every job on pure enemy count (a prior attempt at this without the job-scoped
+		// property did exactly that and was reverted).
+		if (DataCenter.InCombat && Service.Config.UseAoeDefense && DataCenter.NumberOfHostilesInRange >= 4
+			&& (DataCenter.CurrentRotation?.HasHostileCountAoeMitigation ?? false))
+		{
+			return true;
+		}
+
 		return false;
 	}
 

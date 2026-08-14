@@ -7,6 +7,9 @@ namespace RotationSolver.RebornRotations.Tank;
 
 public sealed class GNB_Reborn : GunbreakerRotation
 {
+	// DefenseAreaAbility below has a hostile-count sustain-refresh fallback for Reprisal.
+	public override bool HasHostileCountAoeMitigation => true;
+
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "How to use Aurora")]
 	public AuroraUsageStrategy AuroraUsage { get; set; } = AuroraUsageStrategy.TankbusterTarget;
