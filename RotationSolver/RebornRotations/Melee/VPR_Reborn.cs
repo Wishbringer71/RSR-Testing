@@ -242,7 +242,12 @@ public sealed class VPR_Reborn : ViperRotation
 		// timed threat outweighs VPR's own oGCD-slot preference, but not at the cost of an unsafe
 		// weave - EnoughWeaveTime is the actual clip-risk check, unlike NoAbilityReady which just
 		// blocks whenever VPR has something else queued, regardless of whether a safe window exists.
+		// Still yields to Serpent's Ire specifically: it's tightly time-boxed to its own burst window,
+		// so a Feint refresh stealing that exact weave slot risks real burst-alignment loss, unlike the
+		// general case where any other weave slot works just as well. (Reawaken is a GCD, not an oGCD -
+		// it doesn't compete for this slot at all, so it isn't part of this guard.)
 		if (EnoughWeaveTime
+			&& !SerpentsIrePvE.CanUse(out _)
 			&& (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
 				|| NumberOfHostilesInRange >= 4)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
