@@ -226,7 +226,8 @@ public sealed class PCT_Reborn : PictomancerRotation
 
 	protected override bool GeneralAbility(IAction nextGCD, out IAction? act)
 	{
-		if ((MergedStatus.HasFlag(AutoStatus.DefenseArea) || StatusHelper.PlayerWillStatusEndGCD(2, 0, true, StatusID.TemperaCoat)) && TemperaGrassaPvE.CanUse(out act))
+		if ((!BurstDefense || (BurstDefense && !InBurstStatus))
+			&& (MergedStatus.HasFlag(AutoStatus.DefenseArea) || StatusHelper.PlayerWillStatusEndGCD(2, 0, true, StatusID.TemperaCoat)) && TemperaGrassaPvE.CanUse(out act))
 		{
 			return true;
 		}
