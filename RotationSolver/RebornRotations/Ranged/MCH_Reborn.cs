@@ -135,11 +135,10 @@ public sealed class MCH_Reborn : MachinistRotation
 			// Hypercharge are ready AND we're in the back half of the current GCD (see the
 			// WeaponRemain < GCDTime(1)/2 checks there - true for roughly half of every GCD, not a single
 			// instant), and Barrel Stabilizer fires the instant it's off cooldown during a burst window
-			// with no such proximity gate at all. WildfirePvE.CanUse is included alongside HasOneCharge
-			// since the cooldown's oGCD leniency lets CanUse succeed up to one GCD before HasOneCharge
-			// itself flips true - relying on HasOneCharge alone would leave that short window unguarded.
-			var wildfireSlotContested = IsBurst && WildfirePvE.EnoughLevel
-				&& (WildfirePvE.Cooldown.HasOneCharge || WildfirePvE.CanUse(out _))
+			// with no such proximity gate at all. Wildfire's own CanUse (an oGCD) requires HasOneCharge
+			// unconditionally (ActionCooldownInfo.CooldownCheck), so checking HasOneCharge here already
+			// matches its real availability exactly - no separate CanUse call is needed.
+			var wildfireSlotContested = IsBurst && WildfirePvE.EnoughLevel && WildfirePvE.Cooldown.HasOneCharge
 				&& !BMRDowntimeWithin(10f) && (Heat >= 50 || HasHypercharged) && WeaponRemain < (GCDTime(1) / 2);
 			var barrelStabilizerSlotContested = IsBurst && BarrelStabilizerPvE.EnoughLevel
 				&& !BMRDowntimeWithin(GCDTime(2)) && BarrelStabilizerPvE.CanUse(out _);
