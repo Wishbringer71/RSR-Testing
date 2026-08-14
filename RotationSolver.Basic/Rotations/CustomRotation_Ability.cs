@@ -479,6 +479,14 @@ public partial class CustomRotation
 	/// <returns>True if an anti-knockback ability can be used; otherwise, false.</returns>
 	private bool AntiKnockback(JobRole role, IAction nextGCD, out IAction? act)
 	{
+		// Check the job's own override first: a job with combo-safety gating on its anti-knockback
+		// ability (RPR's NotInActiveCombo, VPR's NoAbilityReady) needs that gate to actually run
+		// before the ungated role default below claims the same action and returns first.
+		if (AntiKnockbackAbility(nextGCD, out act))
+		{
+			return true;
+		}
+
 		switch (role)
 		{
 			case JobRole.Tank:
