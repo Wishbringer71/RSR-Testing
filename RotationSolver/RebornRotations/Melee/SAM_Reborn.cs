@@ -81,18 +81,22 @@ public sealed class SAM_Reborn : SamuraiRotation
 	[RotationDesc(ActionID.ThirdEyePvE, ActionID.TengentsuPvE, ActionID.FeintPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
+		// Feint mitigates any damage type, so a predicted BMR event (raidwide or tankbuster) that
+		// would land after Feint's own duration expires triggers a proactive refresh here. Trash
+		// pulls usually have no active BMR module, so a hostile-count fallback keeps Feint up regardless.
+		// Gated on EnoughWeaveTime (the actual clip-risk check) instead of !HasZanshinReady, unlike the
+		// reactive fallbacks below - HasZanshinReady can persist multiple GCDs, and a real timed threat
+		// shouldn't be locked out of Feint for that whole window when a safe weave exists right now.
+		if (EnoughWeaveTime
+			&& (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
+				|| NumberOfHostilesInRange >= 4)
+			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		if (!HasZanshinReady)
 		{
-			// Feint mitigates any damage type, so a predicted BMR event (raidwide or tankbuster) that
-			// would land after Feint's own duration expires triggers a proactive refresh here. Trash
-			// pulls usually have no active BMR module, so a hostile-count fallback keeps Feint up regardless.
-			if ((BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
-					|| NumberOfHostilesInRange >= 4)
-				&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
-			{
-				return true;
-			}
-
 			if (FeintPvE.CanUse(out act))
 			{
 				return true;
