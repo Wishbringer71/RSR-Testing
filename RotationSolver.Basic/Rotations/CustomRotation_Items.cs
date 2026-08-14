@@ -230,7 +230,7 @@ public partial class CustomRotation
 	/// <param name="nextGCD">The next GCD action.</param>
 	/// <param name="act">The action to be performed.</param>
 	/// <returns>True if an HP potion was used; otherwise, false.</returns>
-	private static bool UseHpPotion(IAction nextGCD, out IAction? act)
+	private static bool UseHpPotion(IAction nextGCD, out IAction? act, bool bmrTankbusterImminent = false)
 	{
 		HpPotionItem? best = null;
 		foreach (var a in HpPotions)
@@ -243,10 +243,11 @@ public partial class CustomRotation
 				}
 			}
 
-			// A confirmed tankbuster can exceed current HP even above the normal reactive threshold -
-			// any role, not just tanks, can be caught under-margin. CanUseEmergency drops the HP%
-			// gate but keeps the same missing-HP guard against wasting the potion via overheal.
-			if (DataCenter.IsHostileCastingTankBusterAtMe && a.ID != 47102 && a.ID != 22306 && a.ID != 20309 && a.CanUseEmergency(out _))
+			// A confirmed tankbuster, or one BMR predicts within Config.BMRTankbusterMitWindow, can
+			// exceed current HP even above the normal reactive threshold - any role, not just tanks,
+			// can be caught under-margin. CanUseEmergency drops the HP% gate but keeps the same
+			// missing-HP guard against wasting the potion via overheal.
+			if ((DataCenter.IsHostileCastingTankBusterAtMe || bmrTankbusterImminent) && a.ID != 47102 && a.ID != 22306 && a.ID != 20309 && a.CanUseEmergency(out _))
 			{
 				if (best == null || a.MaxHp >= best.MaxHp)
 				{

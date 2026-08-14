@@ -369,7 +369,7 @@ public partial class CustomRotation
 		var bmrTankbusterImminent = Service.Config.UseBmrTimeline
 			&& DataCenter.BMRNextTankbusterIn > 0.6f
 			&& DataCenter.BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow;
-		if ((DataCenter.MergedStatus.HasFlag(AutoStatus.HealSingleAbility) || DataCenter.IsHostileCastingTankBusterAtMe || bmrTankbusterImminent) && UseHpPotion(nextGCD, out act))
+		if ((DataCenter.MergedStatus.HasFlag(AutoStatus.HealSingleAbility) || DataCenter.IsHostileCastingTankBusterAtMe || bmrTankbusterImminent) && UseHpPotion(nextGCD, out act, bmrTankbusterImminent))
 		{
 			return true;
 		}
