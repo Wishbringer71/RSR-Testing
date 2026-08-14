@@ -457,7 +457,7 @@ public sealed class AST_Reborn : AstrologianRotation
 		if ((MacrocosmosPvE.Cooldown.IsCoolingDown && !MacrocosmosPvE.Cooldown.WillHaveOneCharge(150))
 			|| (CollectiveUnconsciousPvE.Cooldown.IsCoolingDown && !CollectiveUnconsciousPvE.Cooldown.WillHaveOneCharge(40)))
 		{
-			return base.DefenseAreaGCD(out act);
+			return base.DefenseSingleGCD(out act);
 		}
 
 		if ((NeutralSectPvE.CanUse(out _) || HasNeutralSect || IsLastAbility(false, NeutralSectPvE)) && AspectedBeneficPvE.CanUse(out act))
@@ -465,7 +465,7 @@ public sealed class AST_Reborn : AstrologianRotation
 			return true;
 		}
 
-		return base.DefenseAreaGCD(out act);
+		return base.DefenseSingleGCD(out act);
 	}
 
 	[RotationDesc(ActionID.MacrocosmosPvE)]
