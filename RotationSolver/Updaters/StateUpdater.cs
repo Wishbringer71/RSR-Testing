@@ -181,16 +181,6 @@ internal static class StateUpdater
 			return true;
 		}
 
-		// Without a real cast or a BMR raidwide prediction, the job-level "enough hostiles to sustain
-		// AoE mitigation" fallback (Addle/Feint etc.) could never actually run - this method gates
-		// whether DefenseAreaAbility() is even called, so that fallback was dead code on trash pulls
-		// without BMR. Same threshold as the job-level fallback, same UseAoeDefense toggle as the cast
-		// check above since this is another way of deciding the same "AoE defense is warranted" thing.
-		if (DataCenter.InCombat && Service.Config.UseAoeDefense && DataCenter.NumberOfHostilesInRange >= 4)
-		{
-			return true;
-		}
-
 		return false;
 	}
 
