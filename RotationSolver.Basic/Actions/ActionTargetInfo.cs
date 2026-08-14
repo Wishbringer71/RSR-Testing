@@ -797,7 +797,7 @@ public struct ActionTargetInfo(IBaseAction action)
 			}
 			else
 			{
-				return FindTargetAreaHostile(canTargets, canAffects, action.Config.AoeCount);
+				return FindTargetAreaHostile(canTargets, canAffects, action.Config.AoeCount, targetOverride);
 			}
 		}
 	}
@@ -808,28 +808,34 @@ public struct ActionTargetInfo(IBaseAction action)
 	/// <param name="canTargets">The potential targets that can be affected.</param>
 	/// <param name="canAffects">The potential characters that can be affected.</param>
 	/// <param name="aoeCount">The number of targets to consider for AoE.</param>
+	/// <param name="targetOverride">Overrides the default target type for the action.</param>
 	/// <returns>
 	/// A <see cref="TargetResult"/> containing the target and affected characters, or <c>null</c> if no target is found.
 	/// </returns>
-	private readonly TargetResult? FindTargetAreaHostile(IEnumerable<IBattleChara> canTargets, IEnumerable<IBattleChara> canAffects, int aoeCount)
+	private readonly TargetResult? FindTargetAreaHostile(IEnumerable<IBattleChara> canTargets, IEnumerable<IBattleChara> canAffects, int aoeCount, TargetType targetOverride)
 	{
 		if (canAffects == null || canTargets == null)
 		{
 			return null;
 		}
 
-		IBattleChara? target = null;
-		var mostCanTargetObjects = GetMostCanTargetObjects(canTargets, canAffects, aoeCount);
-		using var enumerator = mostCanTargetObjects.GetEnumerator();
-
-		while (enumerator.MoveNext())
+		List<IBattleChara> tiedAnchors = [.. GetMostCanTargetObjects(canTargets, canAffects, aoeCount)];
+		if (tiedAnchors.Count == 0)
 		{
-			var t = enumerator.Current;
-			if (target == null || ObjectHelper.GetHealthRatio(t) > ObjectHelper.GetHealthRatio(target))
-			{
-				target = t;
-			}
+			return null;
 		}
+
+		// Multiple anchors can tie on hit count. The target-based AoE path (see the FindTargetByType
+		// call above) resolves that tie through stop-mark filtering, priority hostiles, and the user's
+		// configured TargetingType (Nearest/LowHP/etc.). This used to instead pick whichever tied
+		// anchor had the highest current HP ratio - a hardcoded rule that ignored all of that, so a
+		// ground-targeted AoE (e.g. Meteor) could anchor on a different, unprioritized target than an
+		// equivalent target-based AoE would have chosen in the same tie. Reuse the same resolution here
+		// for parity. FindHostile()'s stop-mark/priority filters only ever narrow a non-empty candidate
+		// list to another non-empty one (see FilterStopCharacters usage), so this cannot turn a
+		// previously successful anchor pick into a failed one.
+		var target = FindTargetByType(tiedAnchors, action.Setting.TargetType, action.Config.AutoHealRatio,
+			action.Setting.SpecialType, targetOverride, false);
 
 		if (target == null)
 		{
