@@ -294,7 +294,7 @@ public sealed class PhantomDefault : PhantomRotation
 			}
 		}
 
-		if (OccultEtherPvE.CanUse(out _) && InCombat)
+		if (OccultEtherPvE.CanUse(out act) && InCombat)
 		{
 			if (!OccultEtherSelf)
 			{
@@ -573,7 +573,7 @@ public sealed class PhantomDefault : PhantomRotation
 			return true;
 		}
 
-		if (OccultPotionPvE.CanUse(out _) && InCombat)
+		if (OccultPotionPvE.CanUse(out act) && InCombat)
 		{
 			if (!OccultPotionSelf)
 			{
