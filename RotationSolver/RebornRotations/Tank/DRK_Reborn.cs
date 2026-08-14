@@ -207,6 +207,19 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			}
 		}
 
+		// Reprisal mitigates any damage type from that enemy, not just raidwides, so the generic
+		// BMRDamageIn is the right signal - same reasoning as Addle/Feint. Mirrors the DefenseAreaAbility
+		// block above: DefenseAreaAbility only runs on a raidwide-shaped trigger, so a tankbuster-only
+		// prediction never reaches it - this duplicate here is reachable via ShouldAddDefenseSingle's
+		// richer tank trigger set instead, same as GNB's already-duplicated Reprisal blocks.
+		if (!InTwoMIsBurst
+			&& (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Reprisal)
+				|| NumberOfHostilesInRange >= 4)
+			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		if (ReprisalPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
