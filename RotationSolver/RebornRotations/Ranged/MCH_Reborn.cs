@@ -122,6 +122,21 @@ public sealed class MCH_Reborn : MachinistRotation
 	[RotationDesc(ActionID.TacticianPvE, ActionID.DismantlePvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
+		// Tactician mitigates any incoming raidwide, so a predicted BMR raidwide that would land after
+		// Tactician's own duration expires triggers a proactive refresh here - independent of the full
+		// burst-state gate below, but still yielding to IsOverheated/IsBurst specifically: Wildfire and
+		// Barrel Stabilizer are only ever attempted in AttackAbility while IsBurst is true (see the
+		// IsBurst-gated blocks there), so claiming this weave slot for Tactician during that window
+		// risks displacing one of them, unlike the broader HasWildfire/HasFullMetalMachinist/a-ready-
+		// Wildfire-charge states below, which can persist far longer than the actual burst window
+		// without any real slot conflict of their own.
+		if (!IsOverheated && !IsBurst && (!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
+			&& BMRShouldRefreshBefore(BMRRaidwideIn, 15f, true, null, StatusID.Tactician_1951, StatusID.Tactician_2177)
+			&& TacticianPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		if (IsOverheated || HasWildfire || HasFullMetalMachinist || (WildfirePvE.EnoughLevel && WildfirePvE.Cooldown.HasOneCharge))
 		{
 			return base.DefenseAreaAbility(nextGCD, out act);
@@ -129,14 +144,6 @@ public sealed class MCH_Reborn : MachinistRotation
 
 		if (!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
 		{
-			// Tactician mitigates any incoming raidwide, so a predicted BMR raidwide that would land
-			// after Tactician's own duration expires triggers a proactive refresh here.
-			if (BMRShouldRefreshBefore(BMRRaidwideIn, 15f, true, null, StatusID.Tactician_1951, StatusID.Tactician_2177)
-				&& TacticianPvE.CanUse(out act, skipStatusProvideCheck: true))
-			{
-				return true;
-			}
-
 			if (TacticianPvE.CanUse(out act))
 			{
 				return true;
