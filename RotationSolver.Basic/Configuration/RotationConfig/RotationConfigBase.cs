@@ -107,6 +107,8 @@ internal abstract class RotationConfigBase : IRotationConfig
 			Parent = string.Empty;
 		}
 
+		MigrateLegacyValue(attr);
+
 		// Set up initial value
 		if (Service.Config.RotationConfigurations.TryGetValue(Name, out var value))
 		{
@@ -156,10 +158,32 @@ internal abstract class RotationConfigBase : IRotationConfig
 			Parent = string.Empty;
 		}
 
+		MigrateLegacyValue(attr);
+
 		// Set up initial value
 		if (Service.Config.RotationConfigurations.TryGetValue(Name, out var value))
 		{
 			SetValue(value);
+		}
+	}
+
+	/// <summary>
+	/// Copies a value saved under <see cref="RotationConfigAttribute.LegacyKey"/> into this config's
+	/// current key, once, if this key has no saved value of its own yet. Keeps existing users' settings
+	/// intact across a rename that split a previously shared, colliding storage key apart.
+	/// </summary>
+	/// <param name="attr">The config attribute, or <c>null</c> if the property isn't attributed.</param>
+	private void MigrateLegacyValue(RotationConfigAttribute? attr)
+	{
+		if (attr == null || string.IsNullOrEmpty(attr.LegacyKey))
+		{
+			return;
+		}
+
+		if (!Service.Config.RotationConfigurations.ContainsKey(Name)
+			&& Service.Config.RotationConfigurations.TryGetValue(attr.LegacyKey, out var legacyValue))
+		{
+			_ = Service.Config.RotationConfigurations.TryAdd(Name, legacyValue);
 		}
 	}
 

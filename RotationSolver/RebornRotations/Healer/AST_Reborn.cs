@@ -8,8 +8,8 @@ namespace RotationSolver.RebornRotations.Healer;
 public sealed class AST_Reborn : AstrologianRotation
 {
 	#region Config Options
-	[RotationConfig(CombatType.PvE, Name = "Limit Macrocosmos to multihit party stacks")]
-	public bool MultiHitRestrict { get; set; } = false;
+	[RotationConfig(CombatType.PvE, Name = "Limit Macrocosmos to multihit party stacks", LegacyKey = "MultiHitRestrict")]
+	public bool MultiHitRestrictMacrocosmos { get; set; } = false;
 
 	[RotationConfig(CombatType.PvE, Name = "Enable Swiftcast Restriction Logic to attempt to prevent actions other than Raise when you have swiftcast")]
 	public bool SwiftLogic { get; set; } = true;
@@ -482,7 +482,7 @@ public sealed class AST_Reborn : AstrologianRotation
 			return true;
 		}
 
-		if ((MultiHitRestrict && IsCastingMultiHit) || !MultiHitRestrict)
+		if ((MultiHitRestrictMacrocosmos && IsCastingMultiHit) || !MultiHitRestrictMacrocosmos)
 		{
 			if (MacrocosmosPvE.CanUse(out act))
 			{

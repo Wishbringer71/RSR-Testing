@@ -11,11 +11,11 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Use the balance Opener in High-End Duties")]
 	public bool UseOpenerHighEnd { get; set; } = true;
 
-	[RotationConfig(CombatType.PvE, Name = "Limit Liturgy Of The Bell to multihit party stacks")]
-	public bool MultiHitRestrict { get; set; } = false;
+	[RotationConfig(CombatType.PvE, Name = "Limit Liturgy Of The Bell to multihit party stacks", LegacyKey = "MultiHitRestrict")]
+	public bool MultiHitRestrictLiturgy { get; set; } = false;
 
-	[RotationConfig(CombatType.PvE, Name = "Use Tincture/Gemdraught when about to use Presence of Mind")]
-	public bool UseMedicine { get; set; } = true;
+	[RotationConfig(CombatType.PvE, Name = "Use Tincture/Gemdraught when about to use Presence of Mind", LegacyKey = "UseMedicine")]
+	public bool UseMedicinePresenceOfMind { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Enable Swiftcast Restriction Logic to attempt to prevent actions other than Raise when you have swiftcast")]
 	public bool SwiftLogic { get; set; } = true;
@@ -119,7 +119,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			return true;
 		}
 
-		if (UseMedicine && !PresenceOfMindPvE.Cooldown.IsCoolingDown && UseBurstMedicine(out act))
+		if (UseMedicinePresenceOfMind && !PresenceOfMindPvE.Cooldown.IsCoolingDown && UseBurstMedicine(out act))
 		{
 			return true;
 		}
@@ -154,7 +154,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			return base.DefenseAreaAbility(nextGCD, out act);
 		}
 
-		if (MultiHitRestrict && IsCastingMultiHit)
+		if (MultiHitRestrictLiturgy && IsCastingMultiHit)
 		{
 			if (LiturgyOfTheBellPvE.CanUse(out act, skipAoeCheck: true))
 			{
@@ -177,7 +177,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			return true;
 		}
 
-		if ((MultiHitRestrict && IsCastingMultiHit) || !MultiHitRestrict)
+		if ((MultiHitRestrictLiturgy && IsCastingMultiHit) || !MultiHitRestrictLiturgy)
 		{
 			if (LiturgyOfTheBellPvE.CanUse(out act, skipAoeCheck: true))
 			{
