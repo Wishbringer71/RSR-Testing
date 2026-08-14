@@ -737,8 +737,7 @@ internal partial class Configs : IPluginConfiguration
 	[Range(1, 15, ConfigUnitType.Seconds, 0.5f)]
 	public float BMRRaidwideMitWindow { get; set; } = 5f;
 
-	[UI("Seconds before tankbuster to use single mitigation", Parent = nameof(UseBmrTimeline),
-		PvEFilter = JobFilterType.Tank)]
+	[UI("Seconds before tankbuster to use single mitigation", Parent = nameof(UseBmrTimeline))]
 	[Range(1, 10, ConfigUnitType.Seconds, 0.5f)]
 	public float BMRTankbusterMitWindow { get; set; } = 3f;
 

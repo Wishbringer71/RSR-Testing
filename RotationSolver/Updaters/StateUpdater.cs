@@ -278,18 +278,36 @@ internal static class StateUpdater
 
 		if (DataCenter.Role is JobRole.Melee or JobRole.RangedPhysical or JobRole.RangedMagical)
 		{
-			// no tank in the party, tanks are dead, or the buster went to the wrong person
+			// A cast actually landing on us covers the "buster went to the wrong person" case with a
+			// real target, regardless of whether a tank is alive - leave this branch unrestricted.
 			if (DataCenter.IsHostileCastingTankBusterAtMe)
 			{
 				return true;
 			}
 
-			if (bmrTankbusterImminent)
+			// bmrTankbusterImminent has no target info (BMR predicts timing, not who gets hit), so it's
+			// only a reasonable proxy for "might land on me" when there's no tank around to eat it -
+			// the "no tank in the party, tanks are dead" half of the original rationale. With a tank
+			// alive, the reactive, cast-target-verified branch above is the only trigger for this role.
+			if (bmrTankbusterImminent && !AnyLivingTankInParty())
 			{
 				return true;
 			}
 		}
 
+		return false;
+	}
+
+	// Helper: Returns true if there are any tanks in the party with HP > 0
+	private static bool AnyLivingTankInParty()
+	{
+		foreach (var member in DataCenter.PartyMembers)
+		{
+			if (member.IsJobCategory(JobRole.Tank) && !member.IsDead)
+			{
+				return true;
+			}
+		}
 		return false;
 	}
 
