@@ -642,13 +642,13 @@ public class BLM_Default : BlackMageRotation
 
 		//So long for thunder.
 		if (ThunderIiiPvE.EnoughLevel && ThunderIiiPvE.CanUse(out _) && (!ThunderIiiPvE.Target.Target?.WillStatusEndGCD(gcdCount, 0, true,
-			StatusID.Thunder, StatusID.ThunderIi, StatusID.ThunderIii, StatusID.ThunderIv, StatusID.HighThunder_3872) ?? false))
+			StatusID.Thunder, StatusID.ThunderIi, StatusID.ThunderIii, StatusID.ThunderIv, StatusID.HighThunder, StatusID.HighThunder_3872) ?? false))
 		{
 			return false;
 		}
 
 		if (!ThunderIiiPvE.Info.EnoughLevelAndQuest() && ThunderPvE.CanUse(out _) && (!ThunderPvE.Target.Target?.WillStatusEndGCD(gcdCount, 0, true,
-			StatusID.Thunder, StatusID.ThunderIi, StatusID.ThunderIii, StatusID.ThunderIv, StatusID.HighThunder_3872) ?? false))
+			StatusID.Thunder, StatusID.ThunderIi, StatusID.ThunderIii, StatusID.ThunderIv, StatusID.HighThunder, StatusID.HighThunder_3872) ?? false))
 		{
 			return false;
 		}
