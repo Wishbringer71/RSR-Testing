@@ -683,13 +683,29 @@ internal static class StateUpdater
 	}
 
 	/// <summary>
+	/// Whether crediting a shield toward effective health is backed by an actual reason to expect
+	/// incoming damage soon - either a real BMR prediction, or an enemy visibly casting something
+	/// dangerous right now. Without either, there's no basis for treating the shield as protection
+	/// against a specific hit rather than just "up right now" (a fresh Galvanize/Eukrasian/Haima/etc.
+	/// survives a blind few-second floor for nearly its whole duration, which isn't a real signal).
+	/// </summary>
+	private static bool ShieldCreditAllowed =>
+		(Service.Config.UseBmrTimeline && DataCenter.BMRHasActiveModule
+			&& DataCenter.BMRNextDamageIn is > 0f and < float.MaxValue)
+		|| DataCenter.IsHostileCastingAOE
+		|| DataCenter.IsHostileCastingToTank
+		|| DataCenter.IsHostileCastingTankBusterAtMe;
+
+	/// <summary>
 	/// How far ahead a shield must still be active to be credited toward a target's effective health
-	/// in heal-priority decisions. Uses BMR's next predicted damage event when available - the shield
-	/// only matters if it survives to absorb that hit - otherwise falls back to a short floor so a
-	/// shield that's about to expire anyway isn't credited.
+	/// in heal-priority decisions. Uses BMR's next predicted damage event when available and enabled -
+	/// the shield only matters if it survives to absorb that hit - otherwise falls back to a short
+	/// floor for the cast-detection-based reasons in ShieldCreditAllowed, where no predicted lead time
+	/// exists to compare against.
 	/// </summary>
 	private static float ShieldSurvivalHorizon =>
-		DataCenter.BMRHasActiveModule && DataCenter.BMRNextDamageIn is > 0f and < float.MaxValue
+		Service.Config.UseBmrTimeline && DataCenter.BMRHasActiveModule
+			&& DataCenter.BMRNextDamageIn is > 0f and < float.MaxValue
 			? DataCenter.BMRNextDamageIn
 			: 3f;
 
@@ -722,8 +738,11 @@ internal static class StateUpdater
 		var h = StatusHelper.PlayerDoomNeedHealing() ? 0.2f : ObjectHelper.GetPlayerHealthRatio();
 
 		// A shield that will still be up when the next damage lands genuinely protects the player, so
-		// credit its magnitude toward effective health instead of judging solely by raw HP.
-		if (!StatusHelper.PlayerDoomNeedHealing() && Player.Object.HasSurvivingShield(ShieldSurvivalHorizon))
+		// credit its magnitude toward effective health instead of judging solely by raw HP - but never
+		// for a weakened target, where the shield's own duration says nothing about whether healing is
+		// urgently needed anyway (Weakness/Brink of Death halves incoming healing, see below).
+		if (!StatusHelper.PlayerDoomNeedHealing() && !StatusHelper.PlayerIsWeakened() && ShieldCreditAllowed
+			&& Player.Object.HasSurvivingShield(ShieldSurvivalHorizon))
 		{
 			h = Math.Max(h, Player.Object.GetEffectiveHpPercent() / 100f);
 		}
@@ -776,8 +795,11 @@ internal static class StateUpdater
 		var h = target.GetHealthRatio();
 
 		// A shield that will still be up when the next damage lands genuinely protects the target, so
-		// credit its magnitude toward effective health instead of judging solely by raw HP.
-		if (!target.DoomNeedHealing() && target.HasSurvivingShield(ShieldSurvivalHorizon))
+		// credit its magnitude toward effective health instead of judging solely by raw HP - but never
+		// for a weakened target, where the shield's own duration says nothing about whether healing is
+		// urgently needed anyway (Weakness/Brink of Death halves incoming healing, see below).
+		if (!target.DoomNeedHealing() && !target.IsWeakened() && ShieldCreditAllowed
+			&& target.HasSurvivingShield(ShieldSurvivalHorizon))
 		{
 			h = Math.Max(h, target.GetEffectiveHpPercent() / 100f);
 		}
