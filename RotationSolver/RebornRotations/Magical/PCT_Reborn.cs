@@ -236,7 +236,7 @@ public sealed class PCT_Reborn : PictomancerRotation
 			return true;
 		}
 
-		return base.AttackAbility(nextGCD, out act);
+		return base.GeneralAbility(nextGCD, out act);
 	}
 	#endregion
 
