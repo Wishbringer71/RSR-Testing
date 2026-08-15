@@ -16,44 +16,52 @@ scheinbar neues Thema begonnen wird, um Doppelarbeit zu vermeiden.
 
 ## Offene Konzepte / Fixes (noch nicht umgesetzt)
 
-### #54 WHM-Heilsuppression nach oGCD-Erschöpfung — Root Cause identifiziert, Rückfrage an Nutzer offen
+### #54 WHM-Heilsuppression nach oGCD-Erschöpfung — Ursache NICHT bestätigt, Recherche läuft
 
-Nutzer-Meldung: oGCD-Heilung funktioniert zu Beginn, aber sobald oGCDs
-verbraucht sind, feuern manaverbrauchende GCD-Heilsprüche (Cure/Cure II)
-trotz vollem Mana und korrekt hochgesetzter Schwellen NICHT — Partymitglieder
-fallen unter 50% ohne Heilung. Der bereits gefixte `AverageTTK`-Nullfallback
-(siehe AUDIT_LOG.md) erklärt dies NICHT vollständig (nur ~2.5s-Fenster am
-Pull-Start, betrifft oGCD und GCD gleichermaßen).
+Nutzer-Meldung, wörtlich verifizierte Fakten (keine Interpretation):
+Schwellen konfiguriert auf >70% (ohne HoT) und >55% (HoT-Schwellenwert,
+zweiter Config-Wert — KEIN in-Game-Ereignis, kein Mitheiler erwähnt).
+oGCD-Heilung funktioniert zu Beginn, dann oGCDs aufgebraucht. Danach
+feuern manaverbrauchende GCD-Heilsprüche trotz vollem Mana NICHT —
+Partymitglieder fallen unter 50%, nicht nur kurzfristig. Tritt meist auf,
+wenn keine oGCDs verfügbar sind.
 
-Konkreter, code-verifizierter Mechanismus gefunden:
-`RotationSolver/Updaters/CancelCastUpdater.cs:70-77` (`shouldStopHealing`) —
-bricht einen laufenden GCD-Single-Heal-Cast (`ActionConfig.GCDSingleHeal`,
-gesetzt bei WHM CurePvE/CureIiPvE, `WhiteMageRotation.cs:120,160`) sofort ab
-(`uiState->Hotbar.CancelCast()`), wenn während des Casts das
-`HealSingleSpell`/`HealAreaSpell`-Flag in `DataCenter.MergedStatus`
-wegfällt — z. B. weil ein Mitheiler oder ein HoT-Tick das Ziel zwischenzeitlich
-knapp über die Schwelle gebracht hat. Passt exakt zum gemeldeten Muster
-(Mana bleibt voll, weil der Cast vor Abschluss/Mana-Abzug gecancelt wird,
-nicht weil der Cast nie beginnt).
+Der bereits gefixte `AverageTTK`-Nullfallback (siehe AUDIT_LOG.md) erklärt
+dies NICHT vollständig (nur ~2.5s-Fenster am Pull-Start, betrifft oGCD und
+GCD gleichermaßen).
 
-Einschränkung: Der Mechanismus hängt an
-`Service.Config.StopHealingAfterThresholdExperimental2`
-(`RotationSolver.Basic/Configuration/Configs.cs:713-714`) — Default `false`,
-UI-Label "Stop single target GCD healing after reaching threshold. (EXTREMELY
-Experimental)". Ob dieser Schalter beim Nutzer aktiv ist, ist aus dem Code
-allein nicht verifizierbar — noch nicht bestätigt, nur als Kandidat mit
-exakter Symptom-Übereinstimmung identifiziert. Rückfrage an Nutzer nötig,
-bevor ein Fix konzipiert wird (keine voreilige Umsetzung gegen unbestätigte
-Ursache).
+Bisher untersuchter, NICHT bestätigter Kandidat (Vorsicht — frühere Fassung
+dieses Eintrags hatte hier fälschlich einen Mitheiler/HoT-Auslöser
+unterstellt, den der Nutzer nie genannt hat — das war Fabrikation und ist
+gestrichen):
+`RotationSolver/Updaters/CancelCastUpdater.cs:70-77` (`shouldStopHealing`,
+hinter `Service.Config.StopHealingAfterThresholdExperimental2`, Default
+`false`, Configs.cs:713-714) bricht einen BEREITS LAUFENDEN GCD-Single-Heal
+ab, wenn das Heilbedarf-Flag während des Casts wegfällt. Das erklärt nur ein
+Szenario mit sichtbar startendem und dann abbrechendem Cast — nicht
+zwangsläufig "Spell wird nie genutzt" (könnte auch bedeuten: Spell wird von
+der Auswahllogik nie ausgewählt, anderer Codepfad in `StateUpdater`/
+`CustomRotation_GCD`-Dispatch). Ob dieses Szenario überhaupt zutrifft, ist
+ungeklärt.
 
-Weitere, noch nicht abschließend geprüfte/verworfene Nebenkandidaten aus
-derselben Recherche (niedrigere Priorität, nur bei Bedarf weiterverfolgen):
-getrennte Schwellenpaare `HealthSingleSpell`/`HealthSingleSpellHot` vs.
+Offene Rückfrage an Nutzer, bevor weitere Analyse sinnvoll ist: Wurde ein
+Cast-Balken von Cure/Cure II/Regen beobachtet, der beginnt und dann
+abbricht — oder hat WHM gar nicht erst versucht zu casten (z. B. nur
+Auto-Attacke/Filler weitergenutzt, während HP fiel)? Diese Unterscheidung
+entscheidet den weiteren Suchraum (Cast-Abbruch-Logik vs.
+Aktionsauswahl-Logik) und darf nicht angenommen werden.
+
+Noch nicht abschließend geprüfte Nebenkandidaten aus dieser Recherche
+(keiner bestätigt, keiner verworfen): getrennte Schwellenpaare
+`HealthSingleSpell`/`HealthSingleSpellHot` vs.
 `HealthSingleAbility`/`HealthSingleAbilityHot` (StateUpdater.cs); per-Action
 `ActionConfig.AutoHealRatio` (Default 0.8, ActionConfig.cs:106) als
 zusätzlicher Ziel-Eligibility-Filter unabhängig von Job-Schwellen; WHM
 `HealSingleGCD`-Swiftcast+Raise-Kurzschluss (WHM_Reborn.cs ~336-364, nur
 relevant wenn ein Rez ansteht).
+
+KEIN Fix umsetzen, bevor eine dieser Ursachen tatsächlich belegt ist —
+Stand jetzt ist alles Kandidat, nichts bestätigt.
 
 ### #55 `_lastHp` in `DataCenter.GetPartyMemberHPRatio` toter Code — Heil-Prädiktions-Cleanup greift nie
 
