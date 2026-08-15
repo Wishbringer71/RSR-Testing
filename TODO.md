@@ -171,7 +171,16 @@ bfd0a4c), Merge-Commits (9160d68, 81dcbc7, e615624, 0bb6311), Netto-Null-
 Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85,
 6717e5d+4e09493 — jeweils vollständig zurückgenommen, nichts Aktives übrig),
 sowie die Meta-Commits dieser Session selbst (cce250b, b0f8ef7, 3f6d262,
-5bd971e — CLAUDE.md/TODO.md).
+5bd971e, feddd8e, e41e54c, a165c34, 1705eb7, 57fbe2b, d70adee, ccc4947,
+d9125f1, 02b49f1, f97c8b1 — CLAUDE.md/TODO.md-Checkpoints; deren Liste
+wächst mit jedem weiteren TODO.md-Commit dieser Art und muss beim
+nächsten `upstream/main..HEAD`-Abgleich entsprechend erweitert werden,
+sonst täuscht die reine Commit-Zahl einen wachsenden Prüf-Rückstand vor,
+der real nur Session-eigene Doku-Commits sind).
+Hinweis: `upstream/main` selbst bewegt sich weiter (Stand dieser Prüfung:
+2 neue Commits seit letztem Fetch, PR #1350 "DRK opener + Phantom Samurai
+target logic" — geprüft, keine Überschneidung mit den hier auditierten
+Stellen, aber noch nicht in den Fork gemerged).
 
 Status-Legende: `[ ]` offen, `[~]` in Arbeit, `[x]` einzeln geprüft (PASST
 oder gefixt+auditiert, siehe Vermerk).
@@ -187,7 +196,8 @@ oder gefixt+auditiert, siehe Vermerk).
 - [x] 1ed9907 Fix two compile errors in the BMR-refresh work — PASST, beide Compile-Fix-Begründungen gegen aktuellen Code verifiziert (Player-Typ, NinjaRotation sealed override)
 - [x] 0f25161 RPR/VPR: let the BMR-timed Feint refresh survive on-going combo — einzeln geprüft, PASST (EnoughWeaveTime ist reine Clip-Sicherheit, bewusste Abwägung Sicherheit vs. Combo-Position, nur im neuen BMR-Zweig, alter reaktiver Zweig unverändert strenger)
 - [x] 6fc9ebb PCT: fix DefenseSingleAbility falling through to the wrong base call — Batch 3 bestätigt
-- [x] 15297b2 BRD/MCH: BMR-aware proactive refresh for Troubadour/Tactician — einzeln geprüft, PASST + NEUER BUG GEFUNDEN+GEFIXT: MCH `MitOverlap`-Dismantle-Guard kannte nur `Tactician_1951`, nicht die Sync-100-Variante `Tactician_2177` (derselbe Fehlertyp wie BLM-Thunder-Fix), gefixt (Commit "MCH: fix MitOverlap Dismantle guard missing the sync-level Tactician status ID")
+- [x] 15297b2 BRD/MCH: BMR-aware proactive refresh for Troubadour/Tactician — einzeln geprüft, PASST + NEUER BUG GEFUNDEN+GEFIXT: MCH `MitOverlap`-Dismantle-Guard kannte nur `Tactician_1951`, nicht die Sync-100-Variante `Tactician_2177` (derselbe Fehlertyp wie BLM-Thunder-Fix), gefixt in `3f72a6d` (s.u.)
+- [x] 3f72a6d MCH: fix MitOverlap Dismantle guard missing the sync-level Tactician status ID — der eigene Fix für den o.g. Fund, auditiert (Zeile 167 enthält jetzt beide Status-IDs, konsistent mit Zeile 147)
 - [x] 951d0ec Add hostile-count sustain-refresh fallback for Addle/Feint — einzeln geprüft, PASST (InCombat extern gewährleistet, >=3-Schwelle-Präzedenz bestätigt: DRK AbyssalDrain, SAM AoE-Trigger)
 - [x] 6813a7c DRG/NIN/SAM/DNC: self-sustain via SecondWind/Bloodbath in HealSingleAbility — einzeln geprüft, PASST
 - [x] 87646bf Raise sustain-refresh hostile-count threshold from 3 to 4 — einzeln geprüft, PASST (alle 9 konsistent auf 4, Kollateral-Sorge widerlegt)
