@@ -125,10 +125,10 @@ oder gefixt+auditiert, siehe Vermerk).
 - [x] 75b7af0 SMN: remove dead RadiantOnCooldownSpam config option — einzeln geprüft, PASST (Grep bestätigt: keine Referenz mehr im Repo)
 - [x] e87ebea SMN: opt-in movement-aware Titan priority — Batch 4 bestätigt, PASST
 - [x] a1418f5 Fix interrupt ordering so per-job combo-safety gates actually apply — TEILWEISE, Folgefehler gefunden+gefixt in be7cf22 (s.u.)
-- [ ] be083a1 Add Weakness/Brink of Death awareness to heal thresholds
-- [ ] 27c7b69 Weigh shield magnitude and duration in heal-priority decisions
+- [x] be083a1 Add Weakness/Brink of Death awareness to heal thresholds — einzeln geprüft, PASST (Schwellenwert-Mathematik korrekt, nur früher nie später)
+- [x] 27c7b69 Weigh shield magnitude and duration in heal-priority decisions — Ursprungsversion der Batch-1-Regression (blinde 3s-Fallback-Schwelle ohne Bedrohungsnachweis), kein aktuell lebender Zustand mehr, vollständig durch 0c076ee ersetzt
 - [ ] 1ed9907 Fix two compile errors in the BMR-refresh work
-- [ ] 0f25161 RPR/VPR: let the BMR-timed Feint refresh survive on-going combo
+- [x] 0f25161 RPR/VPR: let the BMR-timed Feint refresh survive on-going combo — einzeln geprüft, PASST (EnoughWeaveTime ist reine Clip-Sicherheit, bewusste Abwägung Sicherheit vs. Combo-Position, nur im neuen BMR-Zweig, alter reaktiver Zweig unverändert strenger)
 - [x] 6fc9ebb PCT: fix DefenseSingleAbility falling through to the wrong base call — Batch 3 bestätigt
 - [ ] 15297b2 BRD/MCH: BMR-aware proactive refresh for Troubadour/Tactician
 - [ ] 951d0ec Add hostile-count sustain-refresh fallback for Addle/Feint
