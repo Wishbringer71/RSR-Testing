@@ -131,8 +131,8 @@ oder gefixt+auditiert, siehe Vermerk).
 - [x] 0f25161 RPR/VPR: let the BMR-timed Feint refresh survive on-going combo — einzeln geprüft, PASST (EnoughWeaveTime ist reine Clip-Sicherheit, bewusste Abwägung Sicherheit vs. Combo-Position, nur im neuen BMR-Zweig, alter reaktiver Zweig unverändert strenger)
 - [x] 6fc9ebb PCT: fix DefenseSingleAbility falling through to the wrong base call — Batch 3 bestätigt
 - [x] 15297b2 BRD/MCH: BMR-aware proactive refresh for Troubadour/Tactician — einzeln geprüft, PASST + NEUER BUG GEFUNDEN+GEFIXT: MCH `MitOverlap`-Dismantle-Guard kannte nur `Tactician_1951`, nicht die Sync-100-Variante `Tactician_2177` (derselbe Fehlertyp wie BLM-Thunder-Fix), gefixt (Commit "MCH: fix MitOverlap Dismantle guard missing the sync-level Tactician status ID")
-- [ ] 951d0ec Add hostile-count sustain-refresh fallback for Addle/Feint
-- [ ] 6813a7c DRG/NIN/SAM/DNC: self-sustain via SecondWind/Bloodbath in HealSingleAbility
+- [x] 951d0ec Add hostile-count sustain-refresh fallback for Addle/Feint — einzeln geprüft, PASST (InCombat extern gewährleistet, >=3-Schwelle-Präzedenz bestätigt: DRK AbyssalDrain, SAM AoE-Trigger)
+- [x] 6813a7c DRG/NIN/SAM/DNC: self-sustain via SecondWind/Bloodbath in HealSingleAbility — einzeln geprüft, PASST
 - [ ] 87646bf Raise sustain-refresh hostile-count threshold from 3 to 4
 - [ ] c01a5e2 DRK/WAR/PLD/GNB: BMR-aware proactive refresh + sustain-refresh for Reprisal
 - [ ] b1b187c Add emergency HP-potion threshold for a confirmed incoming tankbuster
