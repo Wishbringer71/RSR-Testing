@@ -115,18 +115,27 @@ oder gefixt+auditiert, siehe Vermerk).
 - [x] cde050f PCT: add missing burst-defense gate to TemperaGrassa's GeneralAbility branch — TIEF NACHGEPRÜFT: Live-Code (PCT_Reborn.cs:246) bestätigt `(!BurstDefense || (BurstDefense && !InBurstStatus))`-Gate jetzt vorhanden, konsistent mit den anderen 3 Mitigationszweigen in derselben Datei (Zeile 113/122 u.a.). Kein Fehler.
 - [x] f154d57 Redesign: job-scoped hostile-count trigger for AutoStatus.DefenseArea — TIEF NACHGEPRÜFT (größte Einzelüberprüfung dieser Nachprüfrunde, 11 Dateien betroffen): `HasHostileCountAoeMitigation` (ICustomRotation.cs:125, Default `false` in CustomRotation_BasicInfo.cs:161) live geprüft — genau die 11 im Commit genannten Jobs (SAM/RPR/MNK/VPR/DRG/GNB/DRK/RDM/PCT/BLM/SMN) überschreiben sie auf `true`, per Grep bestätigt, keiner fehlt/keiner zusätzlich. PLD/WAR-Ausschluss-Behauptung verifiziert (kein Override in beiden Dateien). StateUpdater.cs:184-192 bestätigt: Hostile-Count-Pfad nur bei `HasHostileCountAoeMitigation` durchlässig, genau der Blast-Radius-Fix ggü. dem revertierten Vorversuch (5ae845b/37e47d0). Behauptung "restliche 10 Jobs auf denselben Außerhalb-Konsumenten-Fehler geprüft, sauber" eigenständig nachvollzogen: Grep nach `AutoStatus.DefenseArea` in allen 10 Dateien ergab 0 Treffer — nur PCT hatte das Muster (weshalb `cde050f` nötig war). Kein Fehler, aber siehe TODO.md #47 (separate, bereits bekannte Tankbuster-Gate-Lücke in `ShouldAddDefenseArea`, nicht durch diesen Commit verursacht).
 - [x] eab865c HP-Potion: let a BMR-predicted tankbuster widen the emergency threshold too — TIEF NACHGEPRÜFT: Live-Code bestätigt vollständige Kette — `bmrTankbusterImminent` wird jetzt als Parameter durchgereicht (CustomRotation_Ability.cs:372 → CustomRotation_Items.cs:233/250), einzige Quelle der Wahrheit bleibt `Ability()` (kein zweites Neuberechnen derselben Bedingung), Default `false` erhält alte Semantik für andere Aufrufer. Kausalkette Erkennung→proaktiver Trigger→Emergency-Schwelle jetzt für Schild(Addle/Feint via StateUpdater), Schadensdebuff und Potion konsistent gleichzeitig proaktiv, wie in der Commit-Message behauptet und hier bestätigt. Kein Fehler.
-- [x] 9e4a2fc BLM: add an unconditional freshness guard for the AoE Thunder refresh — auditiert, GO
-- [x] 6c0e8dc Ground-targeted hostile AoE: resolve tied anchors via the same priority/TargetingType logic as target-based AoE — auditiert, GO
-- [x] 716789d WHM: don't recast DoT-as-filler on a target that's already aggro'd onto the healer — auditiert GO, aber als zu schwach erkannt, siehe TODO.md Aggro-Management B3 (Ersatz geplant)
+- [x] 9e4a2fc BLM: add an unconditional freshness guard for the AoE Thunder refresh — TIEF NACHGEPRÜFT: AoE-Pendant zu 53c8018. Live-Code (BLM_Default.cs:679-683) bestätigt dritten, unbedingten Pre-Check vor `ThunderIiPvE.CanUse` mit derselben kombinierten Status-ID-Liste wie die beiden ST-Guards darüber — schließt genau die Lücke, dass `ThunderIiiPvE`/`ThunderPvE`-Castbarkeit (Ziel-abhängig, nicht Freshness-abhängig) die einzigen vorherigen Wächter war. Kein Fehler.
+- [x] 6c0e8dc Ground-targeted hostile AoE: resolve tied anchors via the same priority/TargetingType logic as target-based AoE — TIEF NACHGEPRÜFT (substanzielle Architekturänderung, sorgfältig geprüft): `targetOverride` war in der umschließenden `FindTargetArea`-Methode (Zeile 767) bereits als Parameter vorhanden, wie behauptet nur bis `FindTargetAreaHostile` durchgereicht (Live-Code Zeile 800/837 bestätigt Aufruf-Kette). Sicherheitsbehauptung ("kann Erfolg nicht in Fehlschlag verwandeln") bis auf Code-Ebene nachverfolgt: `tiedAnchors` wird vor dem `FindTargetByType`-Aufruf auf Nicht-Leerheit geprüft; `FindTargetByType`s internes Stop-Mark-Filtering (Zeile ~3652-3669) ersetzt die Arbeitsmenge nur, wenn das gefilterte Ergebnis selbst nicht-leer ist (`filteredHasAny`-Check) — Garantie hält, nicht nur behauptet. Kein Fehler.
+- [x] 716789d WHM: don't recast DoT-as-filler on a target that's already aggro'd onto the healer — TIEF NACHGEPRÜFT: Diff bestätigt reine Skip-Lösung (`.TargetObject != Player`-Guard, kein Redirect) mit im Commit selbst ehrlich begründetem Verzicht auf Zielumlenkung (fehlende Per-Call-Hook-Infrastruktur, Blast-Radius-Abwägung explizit dokumentiert). Live-Code (WHM_Reborn.cs:502-537) bestätigt: ursprünglicher Skip-Guard weiterhin an allen 3 Stellen (Dia/AeroII/Aero) vorhanden UND von der später in dieser Session entwickelten `TargetType.SafeDotTarget`-Umlenkung (B3) korrekt ergänzt, nicht ersetzt — genau wie in TODO.md dokumentiert. Ursprünglicher Fix nicht falsch, nur unvollständig (DPS-Verlust durch reines Auslassen statt Umlenken) — Nachfolge-Arbeit bereits geleistet. Kein Fehler.
 - [x] be7cf22 Stop the generic role fallback from defeating RPR/VPR's own combo-safety gate on Interrupt/AntiKnockback — TIEF NACHGEPRÜFT: Diff + Live-Code deckungsgleich (`HasOwnInterruptGate`/`HasOwnAntiKnockbackGate`, beide `virtual false` in der Basisklasse, `override true` nur in RPR/VPR). Commit-Text-Behauptung "kein systemisches Problem über alle Jobs" selbst nachgeprüft, nicht übernommen: alle 4 InterruptAbility- und alle 3 AntiKnockbackAbility-Overrides im Repo einzeln gelesen (PhantomDefault: andere Aktion, kollisionsfrei; BLU_Reborn: reiner Passthrough, keine Ablehnung zum Aushebeln; RPR/VPR: die einzigen mit Gate-dann-Fallback-Struktur auf dieselbe Aktion) — Behauptung bestätigt, nicht nur geglaubt. Kausale Gesamtkette a1418f5→e1886c7→ae7ed1a→be7cf22 schließt sich korrekt: Dispatch-Reihenfolge fixiert, Redundanz entfernt, Gate-Aushebelung geschlossen. Kein Fehler.
 
-**STATUS: Alle 55 Commits einzeln geprüft (0 offen).** Ergebnis der
-vollständigen Einzelprüfung: keine funktional falschen/schädlichen
-Commits gefunden. Reale Funde dabei: TODO.md #47 (echte, noch offene
-Lücke, Fix-Skizze dort), TODO.md #52 (Commit-Message irreführend bei
-sonst korrektem Code, niedrige Priorität), MCH `Tactician_2177`-Sync-Bug
-(bereits gefixt), Interrupt/AntiKnockback-Gate-Aushebelung (bereits
-gefixt via be7cf22). Mehrere Selbstkorrektur-Ketten im Fork selbst
-beobachtet und verifiziert (VPR Serpent's Ire, MCH Wildfire/Barrel
-Stabilizer, DRK Reprisal-Doppelplatzierung) — durchgängig
-nachvollziehbar und korrekt aufgelöst.
+**STATUS: Alle 56 Commits einzeln TIEF nachgeprüft (0 offen).** (Zähldifferenz
+zur früheren "55"-Angabe: die Liste selbst enthielt schon vorher 56 distinkte
+Commits, das war ein Beschriftungsfehler der Zusammenfassung, kein fehlender
+Eintrag — per Auszählung der Liste oben korrigiert.) Diese Runde ersetzt die
+frühere oberflächliche Prüfung (Diff selbst gelesen, Klammern gezählt) durch
+inhaltliche/kausale/gesamtheitliche Verifikation gegen den jeweils aktuellen
+Live-Code (nicht nur den Diff), inkl. mehrerer Websuchen zur Prüfung von
+Spielzeit-Behauptungen (Addle/Feint/Reprisal/Shadow Wall/Rampart-Dauern) und
+mindestens einer dabei aufgedeckten, durch Zusatzsuche aufgelösten
+widersprüchlichen Sucherergebnis (Shadow Wall 10s vs. 15s, s. 4a01682).
+Ergebnis: keine funktional falschen/schädlichen Commits gefunden. Reale Funde
+dabei: TODO.md #47 (echte, noch offene Lücke, Fix-Skizze dort), TODO.md #52
+(Commit-Message irreführend bei sonst korrektem Code, niedrige Priorität),
+TODO.md #53 (neu, diese Runde: DRG/SAM/DNC SecondWind/Bloodbath ohne Weave-
+Slot-Gate, ungeklärt ob echte Lücke), MCH `Tactician_2177`-Sync-Bug (bereits
+gefixt), Interrupt/AntiKnockback-Gate-Aushebelung (bereits gefixt via
+be7cf22). Mehrere Selbstkorrektur-Ketten im Fork selbst beobachtet und
+verifiziert (VPR Serpent's Ire, MCH Wildfire/Barrel Stabilizer, DRK Reprisal-
+Doppelplatzierung) — durchgängig nachvollziehbar und korrekt aufgelöst.
