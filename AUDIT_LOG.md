@@ -64,8 +64,8 @@ Status-Legende: `[ ]` offen, `[~]` in Arbeit, `[x]` einzeln geprüft (PASST
 oder gefixt+auditiert, siehe Vermerk).
 
 - [x] 8edd696 SMN: use Addle in defensives, detect tankbusters landing on non-tanks — TIEF NACHGEPRÜFT (inhaltlich/kausal/gesamtheitlich, nicht nur Diff gelesen): Kausalkette Erkennung→AutoStatus→Dispatch→job-eigene DefenseSingleAbility vollständig nachvollzogen; alle 5 Kampfrollen in ShouldAddDefenseSingle() gegen komplette JobRole-Enum geprüft, keine fehlt; SMN-only-Wiring im Commit-Text ehrlich benannt, durch spätere Commits (c93a8bc, #47) vervollständigt. Kein Fehler gefunden.
-- [x] 1ca682a Respect status-provide check for queued commands — einzeln geprüft, PASST (ForceEnable überschneidet sich nicht mit entferntem skipStatusProvideCheck)
-- [x] c93a8bc Add generic BMR-aware mitigation refresh helper; wire into Addle/Feint — einzeln geprüft, PASST (Level-Gate konsistent über alle 9 Verwender, Combo-Safety-Gates wickeln neuen Zweig korrekt ein, NIN-Lücke korrekt geschlossen)
+- [x] 1ca682a Respect status-provide check for queued commands — TIEF NACHGEPRÜFT: Kausalkette bis in `ActionBasicInfo.BasicCheck`/`IsStatusProvided` verifiziert (echter Blockmechanismus, nicht nur behauptet), gesamtheitlich bestätigt (GCD-seitiger Zwilling 0885f53 existiert, deckt den symmetrischen Fall ab). Kein Fehler.
+- [x] c93a8bc Add generic BMR-aware mitigation refresh helper; wire into Addle/Feint — TIEF NACHGEPRÜFT: `BMRShouldRefreshBefore` bis in `WillStatusEnd`/`StatusTime` kausal nachvollzogen; 0.6s-Schwelle gegen StateUpdater-Konvention verifiziert (identisch); Spieldaten per Websuche verifiziert (Addle UND Feint: 10s Basis, 15s ab Lv.98 Enhanced-Trait, beide bestätigt, mehrere Quellen); `PlayerSyncedLevel()` korrekt statt Raw-Level für Sync-Content. Kein Fehler.
 - [x] 75b7af0 SMN: remove dead RadiantOnCooldownSpam config option — einzeln geprüft, PASST (Grep bestätigt: keine Referenz mehr im Repo)
 - [x] e87ebea SMN: opt-in movement-aware Titan priority — Batch 4 bestätigt, PASST
 - [x] a1418f5 Fix interrupt ordering so per-job combo-safety gates actually apply — TEILWEISE, Folgefehler gefunden+gefixt in be7cf22 (s.u.)
