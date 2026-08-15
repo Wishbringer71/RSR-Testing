@@ -424,7 +424,12 @@ public partial class CustomRotation
 				break;
 
 			case JobRole.Melee:
-				if (LegSweepPvE.CanUse(out act) && !StatusHelper.PlayerHasStatus(true, StatusID.Mudra))
+				// A job with its own gated InterruptAbility override (RPR/VPR) already tried
+				// LegSweepPvE above via that override and declined - possibly because its combo-safety
+				// gate is active, not because LegSweep itself is unavailable. Retrying the identical
+				// action here ungated would silently defeat that gate the moment it becomes available.
+				// Jobs without such an override never got a first attempt, so this remains their only path.
+				if (!HasOwnInterruptGate && LegSweepPvE.CanUse(out act) && !StatusHelper.PlayerHasStatus(true, StatusID.Mudra))
 				{
 					return true;
 				}
@@ -457,6 +462,14 @@ public partial class CustomRotation
 		act = null;
 		return false;
 	}
+
+	/// <summary>
+	/// Whether this job's <see cref="InterruptAbility"/> override already gates the same shared
+	/// role-fallback interrupt action (e.g. LegSweep) with its own combo-safety condition. When true,
+	/// <see cref="MyInterruptAbility"/> skips its generic per-role fallback for that action instead of
+	/// retrying it ungated after the job's own gate declined it.
+	/// </summary>
+	protected virtual bool HasOwnInterruptGate => false;
 
 	/// <summary>
 	/// Determines if an interrupt ability can be used.
@@ -497,7 +510,11 @@ public partial class CustomRotation
 
 				break;
 			case JobRole.Melee:
-				if (ArmsLengthPvE.CanUse(out act) && !StatusHelper.PlayerHasStatus(true, StatusID.Mudra))
+				// Same reasoning as MyInterruptAbility's Melee case: a job with its own gated
+				// AntiKnockbackAbility override (RPR/VPR) already tried ArmsLengthPvE above and
+				// declined, possibly due to its combo-safety gate rather than unavailability -
+				// retrying it ungated here would defeat that gate.
+				if (!HasOwnAntiKnockbackGate && ArmsLengthPvE.CanUse(out act) && !StatusHelper.PlayerHasStatus(true, StatusID.Mudra))
 				{
 					return true;
 				}
@@ -538,6 +555,14 @@ public partial class CustomRotation
 		act = null;
 		return false;
 	}
+
+	/// <summary>
+	/// Whether this job's <see cref="AntiKnockbackAbility"/> override already gates the same shared
+	/// role-fallback anti-knockback action (e.g. Arm's Length) with its own combo-safety condition.
+	/// When true, <see cref="AntiKnockback"/> skips its generic per-role fallback for that action
+	/// instead of retrying it ungated after the job's own gate declined it.
+	/// </summary>
+	protected virtual bool HasOwnAntiKnockbackGate => false;
 
 	/// <summary>
 	/// Determines if a provoke ability can be used.

@@ -269,6 +269,8 @@ public sealed class VPR_Reborn : ViperRotation
 		return base.DefenseAreaAbility(nextGCD, out act);
 	}
 
+	protected override bool HasOwnAntiKnockbackGate => true;
+
 	[RotationDesc]
 	protected sealed override bool AntiKnockbackAbility(IAction nextGCD, out IAction? act)
 	{
@@ -279,6 +281,8 @@ public sealed class VPR_Reborn : ViperRotation
 
 		return base.AntiKnockbackAbility(nextGCD, out act);
 	}
+
+	protected override bool HasOwnInterruptGate => true;
 
 	[RotationDesc]
 	protected sealed override bool InterruptAbility(IAction nextGCD, out IAction? act)

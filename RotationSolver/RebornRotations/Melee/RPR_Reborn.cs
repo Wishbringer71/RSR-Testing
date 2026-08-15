@@ -111,6 +111,8 @@ public sealed class RPR_Reborn : ReaperRotation
 		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 
+	protected override bool HasOwnAntiKnockbackGate => true;
+
 	[RotationDesc(ActionID.ArmsLengthPvE)]
 	protected sealed override bool AntiKnockbackAbility(IAction nextGCD, out IAction? act)
 	{
@@ -121,6 +123,8 @@ public sealed class RPR_Reborn : ReaperRotation
 
 		return base.AntiKnockbackAbility(nextGCD, out act);
 	}
+
+	protected override bool HasOwnInterruptGate => true;
 
 	[RotationDesc(ActionID.LegSweepPvE)]
 	protected sealed override bool InterruptAbility(IAction nextGCD, out IAction? act)
