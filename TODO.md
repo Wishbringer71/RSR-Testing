@@ -36,6 +36,52 @@ auf diese verbleibenden Fälle anwenden (konsistenter mit bestehendem
 Code als ein neues Opt-in-Flag). Noch nicht implementiert, noch nicht
 kritisch geprüft.
 
+### #52 — VPR Serpent's-Ire-Weave-Guard (`7c174ec`): `IsBurst` ist kein
+Echtzeit-Burst-Fenster-Signal
+Status: VERIFIZIERT (Kernaussage), Fix noch offen. `VPR_Reborn.cs:256`
+(`!(IsBurst && SerpentsIrePvE.CanUse(out _))`) nutzt `IsBurst`, um den
+BMR-Feint-Refresh-Guard auf ein "echtes Burstfenster" zu verengen — aber
+`IsBurst => MergedStatus.HasFlag(AutoStatus.Burst)`
+(`DutyRotation.cs:565`) wird in `StateUpdater.cs:869-872` gesetzt via
+`if (!status.HasFlag(AutoStatus.Burst) && Service.Config.AutoBurst)
+status |= AutoStatus.Burst;` — d.h. `IsBurst` ist bei Default-Settings
+(`AutoBurst = true`, Standard) praktisch IMMER wahr, kein zeitlich
+begrenztes Fenster. `73048dd` (MCH) hat genau dieses Muster selbst
+entdeckt und dokumentiert (dritter Versuch, nachdem der zweite Versuch
+mit `!IsBurst` als "dead code" erkannt und reverted wurde), aber nie
+rückwirkend auf VPR angewendet — Grep über alle RebornRotations zeigt
+`VPR_Reborn.cs:256` als einzige Stelle, die `IsBurst` auf diese Art
+(Fenster-Verengung eines Weave-Guards statt reiner Burst-CD-Nutzungs-
+entscheidung) verwendet. Folge: `7c174ec`s Fix ist für Default-Nutzer
+ein No-op — reduziert sich zu `!SerpentsIrePvE.CanUse(out _)`, exakt der
+Zustand vor dem "Fix" (`eab5506`).
+NICHT verifiziert (Laufzeitverhalten, aus Code allein nicht zu klären):
+ob das Ursprungsproblem aus `eab5506` überhaupt real ist — ob
+`SerpentsIrePvE.CanUse` in dieser Codebasis tatsächlich lange "ready"
+bleibt, oder ob `AttackAbility` es im selben Decision-Tick sofort
+verbraucht (dann wäre der ganze Guard unnötig, ähnlich wie MCHs erste
+zwei revertierte Versuche). KORREKTUR nach Abgleich mit `e221ce5` (MCH-Folgecommit): Schwere nach
+unten korrigiert. MCHs `wildfireSlotContested`/`barrelStabilizerSlotContested`
+nutzen `IsBurst` genauso (praktisch immer wahr) — dort verifiziert korrekt,
+weil es exakt die echte Cast-Bedingung in `AttackAbility` spiegelt (die
+selbst genauso `IsBurst`-gegated ist, "Spiegel-Prinzip"). VPRs `AttackAbility`
+castet Serpent's Ire ebenfalls nur unter `if (IsBurst) {...CanUse...}` —
+`7c174ec`s Guard spiegelt also strukturell exakt die echte Nutzungsbedingung,
+genau wie bei MCH als korrekt etabliert. Der CODE ist damit vermutlich NICHT
+defekt. Was bleibt: die Commit-Message von `7c174ec` ("scopes the guard back
+to the narrow window it was meant for") ist IRREFÜHREND formuliert — sie
+suggeriert echte Zeitfenster-Verengung, die es (da IsBurst kein Zeitfenster
+ist) nicht gibt. Reines Dokumentations-/Selbstdiagnose-Problem, keine
+funktionale Lücke. PRIORITÄT ENTSPRECHEND GESENKT (nicht mehr aktiver Bug,
+nur Kommentar-Korrektur nötig).
+Auch zu prüfen (separates, eigenständiges Item, nicht mit #52 vermischen):
+`030129c` (RPR Gluttony/Enshroud-Guard, kein `IsBurst` verwendet) — Prämisse
+"burst-exklusiv gehalten" durch `AttackAbility`-Code nicht eindeutig
+gestützt (Gluttony/Enshroud dort ressourcen-/comboZustand-gegated, nicht
+`IsBurst`-gegated; EnshroudPooling-Mechanik macht die Frage aber nicht
+trivial). Noch offen, braucht ggf. eigenen Zyklus falls sich beim Weiter-
+Audit ein echter Impact zeigt.
+
 ## Aggro-Management (großes, mehrteiliges Thema — vom Nutzer initiiert)
 
 Kontext: WHM spammt DoT bei Wall-to-Wall-Pulls z.T. wiederholt auf dasselbe
@@ -158,13 +204,13 @@ oder gefixt+auditiert, siehe Vermerk).
 - [ ] 76a683b DRK: add the Reprisal BMR/sustain block to DefenseSingleAbility too
 - [ ] 16d4475 Scope the DPS proactive-tankbuster branch to no-live-tank scenarios
 - [x] 0c076ee Fix shield-credit heal-priority regression + Weakness interaction — Batch 1 bestätigt (dokumentierte Selbstkorrektur)
-- [ ] 2d5e7dc SAM: let the BMR-timed Feint refresh survive Zanshin window
-- [ ] 030129c RPR: don't let the BMR Feint refresh steal a Gluttony/Enshroud slot
-- [ ] eab5506 VPR: don't let the BMR Feint refresh steal a Serpent's Ire slot
-- [ ] 7c174ec VPR: scope the Serpent's Ire weave-guard to the actual burst window
-- [ ] 73048dd MCH: gate BMR Tactician refresh on real Wildfire/Barrel Stabilizer slot conflict
-- [ ] e221ce5 MCH: close oGCD-leniency gap in Wildfire slot-contested check
-- [ ] c1523ac MCH: drop dead WildfirePvE.CanUse disjunct, correct comment
+- [x] 2d5e7dc SAM: let the BMR-timed Feint refresh survive Zanshin window — PASST, verifiziert konsistent mit RPR/VPR EnoughWeaveTime-Muster
+- [x] 030129c RPR: don't let the BMR Feint refresh steal a Gluttony/Enshroud slot — PASST mit offener Nachprüfung (siehe #52-Anhang: Prämisse "burst-exklusiv gehalten" nicht eindeutig durch AttackAbility-Code gestützt)
+- [x] eab5506 VPR: don't let the BMR Feint refresh steal a Serpent's Ire slot — durch 7c174ec ersetzt/korrigiert, siehe dort
+- [x] 7c174ec VPR: scope the Serpent's Ire weave-guard to the actual burst window — Code strukturell vermutlich korrekt (spiegelt echte Nutzungsbedingung), Commit-Message irreführend → #52 angelegt, Priorität niedrig
+- [x] 73048dd MCH: gate BMR Tactician refresh on real Wildfire/Barrel Stabilizer slot conflict — PASST, IsBurst-Nutzung dort korrekt (Spiegel-Prinzip verifiziert)
+- [x] e221ce5 MCH: close oGCD-leniency gap in Wildfire slot-contested check — durch c1523ac korrigiert (Prämisse war falsch), siehe dort
+- [x] c1523ac MCH: drop dead WildfirePvE.CanUse disjunct, correct comment — PASST, verifiziert gegen ActionCooldownInfo.cs:240-246, legitime Selbstkorrektur
 - [x] c866879 Fix MoveBackAbility dispatch: gate condition must not itself call the ability — Batch 3 bestätigt
 - [x] e1886c7 Fix AntiKnockback dispatch order so RPR/VPR's combo-safety gates apply — TEILWEISE, Folgefehler gefunden+gefixt in be7cf22 (s.u.)
 - [x] 099e051 Fix AST DefenseSingleGCD calling base.DefenseAreaGCD instead of base.DefenseSingleGCD — Batch 3 bestätigt
