@@ -51,3 +51,11 @@ Jede Regel, die der Nutzer gibt, wird sofort (nicht erst am Ende einer Aufgabe) 
 ## Prüftiefe unabhängig von Codegröße
 
 Diffgröße/Zeilenzahl ist KEIN Signal für nötige Prüftiefe. Ein Einzeiler kann genauso schwerwiegende Auswirkungen haben wie ein 500-Zeilen-Commit — die bisher wichtigsten Funde dieser Session (CountAllianceTanks-Fehldiagnose, Provoke-Distanzbug, RPR/VPR-Gate-Umgehung) waren allesamt winzige Zeilen. Jeder Commit/jede Änderung bekommt dieselbe inhaltliche Prüftiefe, unabhängig vom Umfang des Diffs.
+
+## Fork/Branch VOR Arbeitsbeginn gegen Original synchronisieren
+
+Vor Beginn jeder Arbeit an diesem Fork: `upstream` fetchen und prüfen, ob das Originalrepo seit dem letzten Abgleich neue Commits hat, die für die anstehende Aufgabe relevant sein könnten — insbesondere ob das Original ein Problem, das gerade angegangen werden soll, zwischenzeitlich bereits selbst gefixt hat. Grund: sonst droht Doppelarbeit (ein Problem wird eigenständig neu gelöst, obwohl das Original bereits einen Patch dafür veröffentlicht hat) oder ein Fix wird gegen einen veralteten Stand entwickelt und muss später erneut angepasst werden.
+
+Nicht ausreichend: den Sync-Status erst NACH Abschluss einer Arbeitsrunde zu prüfen, wenn der Nutzer danach fragt (so geschehen in dieser Session — reaktiv statt proaktiv, und dabei zunächst fälschlich als "normal, kein Problem" heruntergespielt, obwohl der Nutzer nach dem eigentlichen Risiko fragte: Doppelarbeit/veralteter Stand, nicht die technische Tatsache der Divergenz an sich). Der Sync-Check gehört an den ANFANG einer Arbeitssitzung bzw. vor Beginn eines neuen Arbeitsblocks, nicht als nachträgliche Rechtfertigung.
+
+Findet der Sync-Check relevante neue Upstream-Commits, die mit der anstehenden Aufgabe überschneiden: dem Nutzer melden und klären, ob gemerged/rebased werden soll, bevor mit der eigentlichen Aufgabe fortgefahren wird — nicht einfach ignorieren oder stillschweigend parallel weiterarbeiten.
