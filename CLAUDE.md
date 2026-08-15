@@ -48,6 +48,17 @@ Commit-Messages und Code-Kommentare: Englisch. Vom Nutzer explizit festgelegt, k
 
 Jede Regel, die der Nutzer gibt, wird sofort (nicht erst am Ende einer Aufgabe) in diese Datei übernommen — nicht nur befolgt, sondern geschrieben, damit sie eine Kontextkomprimierung übersteht.
 
+Neben CLAUDE.md gibt es zwei weitere persistente Dateien in diesem Repo,
+die bei Sitzungsbeginn bzw. nach Kontextkomprimierung ebenfalls gelesen
+werden MÜSSEN, nicht nur diese hier:
+- `TODO.md` — offene Konzepte/Fixes, aktueller Arbeitsstand.
+- `AUDIT_LOG.md` — Beleg-Archiv aller abgeschlossenen Prüfungen (Batches +
+  vollständige Einzelcommit-Prüfung Fork vs. Upstream). Vor erneuter
+  Prüfung eines Commits/Bereichs hier nachsehen, um Doppelarbeit zu
+  vermeiden (Ursprünglich war das alles eine Datei; auf Nutzerwunsch am
+  15.08. getrennt, damit offene Arbeit nicht in Abschluss-Historie
+  untergeht — siehe Commit-Historie dieser Trennung für die Begründung).
+
 ## Prüftiefe unabhängig von Codegröße
 
 Diffgröße/Zeilenzahl ist KEIN Signal für nötige Prüftiefe. Ein Einzeiler kann genauso schwerwiegende Auswirkungen haben wie ein 500-Zeilen-Commit — die bisher wichtigsten Funde dieser Session (CountAllianceTanks-Fehldiagnose, Provoke-Distanzbug, RPR/VPR-Gate-Umgehung) waren allesamt winzige Zeilen. Jeder Commit/jede Änderung bekommt dieselbe inhaltliche Prüftiefe, unabhängig vom Umfang des Diffs.
