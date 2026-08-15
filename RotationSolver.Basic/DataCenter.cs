@@ -457,7 +457,7 @@ internal static class DataCenter
 		}
 	}
 
-	private static float _avgTTK = 0f;
+	private static float _avgTTK = float.PositiveInfinity;
 	public static float AverageTTK
 	{
 		get
@@ -474,7 +474,18 @@ internal static class DataCenter
 					count++;
 				}
 			}
-			_avgTTK = count > 0 ? total / count : 0f;
+			// GetTTK() returns NaN until a target has taken damage AND ~2.5s of hit-history has
+			// accumulated (see ObjectHelper.GetTTK's CheckSpan) - so every target can legitimately have
+			// no estimate yet for the first couple seconds of a pull, or whenever only fresh full-HP
+			// targets (e.g. a new add wave) are currently tracked. That's "unknown", not "the fight is
+			// about to end" - every consumer of this property (CanUseHealAction's heal gate, NIN's
+			// resource-investment gates, BaseAction's per-action TimeToKill gate) treats a low value as
+			// "fight ending soon, don't bother." Defaulting the unknown case to 0 made all of them read
+			// "definitely ending immediately," which silently blocked auto-healing (and other TTK-gated
+			// behavior) for that entire window regardless of actual party HP. PositiveInfinity instead
+			// reads as "assume it'll last," matching every consumer's fail-safe direction (all compare
+			// via > or >=, none via < or <=).
+			_avgTTK = count > 0 ? total / count : float.PositiveInfinity;
 			return _avgTTK;
 		}
 	}
@@ -1377,7 +1388,7 @@ internal static class DataCenter
 		LastAction = 0;
 		LastGCD = 0;
 		LastAbility = 0;
-		_avgTTK = 0;
+		_avgTTK = float.PositiveInfinity;
 		_timeLastActionUsed = DateTime.Now;
 		_actions.Clear();
 

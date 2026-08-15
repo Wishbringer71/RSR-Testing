@@ -398,3 +398,52 @@ Bausteine (Reihenfolge nach Risiko/Nutzen, jeder einzeln audit-fähig):
 - **B1 — generischer "wer greift Nicht-Tank an"-Helfer**: VERWORFEN als
   eigener Baustein (verfrühte Abstraktion, nur 2 gegenläufige Verwender
   bisher). Jeder Verwender bekommt sein eigenes kleines Prädikat.
+
+## Kritischer Bug: `AverageTTK`-Nullfallback blockierte Auto-Heilung am Pull-Start (Nutzer-Meldung)
+
+Status: GEFIXT (statisch selbst-geprüft, kein Compile/Test). Vom Nutzer
+gemeldet: WHM, trotz hochgesetzter Heilschwellen (>70% ohne HoT, >55% mit
+HoT), sinken Partymitglieder unter 50% HP ohne jede Heilung — nicht nur
+kurzzeitig, meist wenn keine oGCDs verfügbar sind.
+
+Root Cause gefunden (`RotationSolver.Basic/DataCenter.cs`, `AverageTTK`):
+`_avgTTK = count > 0 ? total / count : 0f;` — wenn KEIN aktuell verfolgtes
+Hostile-Ziel eine gültige TTK-Schätzung hat (`GetTTK()` liefert `NaN`, bis
+ein Ziel Schaden genommen UND `CheckSpan` = 2,5s Trefferhistorie
+angesammelt hat, `ObjectHelper.cs:3460/3515`), fällt `AverageTTK` auf `0`
+zurück. `StateUpdater.CanUseHealAction` prüft `IsLongerThan(AutoHealTimeToKill)`
+= `AverageTTK > 8f` (Default) — bei `AverageTTK == 0` immer `false`,
+wodurch `CanUseHealAction` für ALLE automatischen Heil-Trigger
+(`ShouldAddHealSingleSpell`, `ShouldAddHealSingleAbility`,
+`ShouldAddHealAreaSpell`, `ShouldAddHealAreaAbility` — GCD UND oGCD
+gleichermaßen) `false` zurückgibt, UNABHÄNGIG von Partymitglieder-HP.
+
+Konkret reproduzierbar: die ersten ~2,5s JEDES Pulls (kein Ziel hat vorher
+Schaden genommen) UND jede Situation, in der nur frische Full-HP-Ziele
+aktuell verfolgt werden (z.B. neue Add-Welle als einzige aktuelle Ziele) —
+genau die Fenster, in denen ein Pull typischerweise am gefährlichsten ist
+(Öffner, bevor Tank-Mitigation greift) und in denen reaktive oGCD-Heilung
+noch nicht gebraucht/prokt wurde. Erklärt die Nutzer-Beobachtung
+"meist wenn keine oGCDs vorhanden sind" — der GCD-Heilpfad UND der
+oGCD-Heilpfad sind in diesem Fenster beide über denselben Gate tot, nur
+job-eigene Notfall-Pfade außerhalb der StateUpdater-Kette (falls
+vorhanden) könnten in dem Fenster überhaupt noch heilen.
+
+Gesamtheitlich geprüft: `AverageTTK`/`IsLongerThan` hat nur 2 weitere
+Verwender im Repo (`NinjaRotation.cs:320/407`, `BaseAction.cs:266`
+`IsTimeToKillValid`) — beide nutzen ebenfalls ausschließlich `>`/`>=`
+gegen `AverageTTK`, nie `<`/`<=`, also ist ein einheitlicher Fix an der
+Quelle für alle Verwender korrekt, keine Spezialbehandlung pro Aufrufer
+nötig. `BaseAction`s Variante betrifft nur Aktionen mit explizit gesetztem
+`Config.TimeToKill > 0` (Default `0`, s. Zeile 149) — für die meisten
+Aktionen ohnehin wirkungslos, aber derselbe Fix schadet dort nicht.
+
+Fix: Fallback von `0f` auf `float.PositiveInfinity` geändert (Property-
+Getter UND `ResetAllRecords()`-Reset-Pfad) — "TTK unbekannt" liest jetzt
+als "wahrscheinlich lang genug", nicht mehr als "Kampf endet sofort",
+passend zur Fail-safe-Richtung aller drei Verwender.
+
+Upstream-Sync-Check: Bug existiert identisch in `upstream/main` (per
+`git show upstream/main:RotationSolver.Basic/DataCenter.cs` verifiziert)
+— kein Fork-eigener Fehler, sondern vorbestehender Upstream-Bug. Fix nur
+im eigenen Fork committet, nicht nach `upstream` gepusht (Regel).
