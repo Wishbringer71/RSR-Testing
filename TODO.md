@@ -171,16 +171,23 @@ Bausteine (Reihenfolge nach Risiko/Nutzen, jeder einzeln audit-fähig):
   direkt vor `base.GeneralGCD`, nur durch die eigene `.CanUse()` gegated —
   kein externes Blockier-Gate, kein Notfall-Szenario betroffen.
 
-- **B3 — WHM Dia Ziel-Umlenkung (`TargetType.SafeDotTarget`)**: Konzept
-  fertig entwickelt, noch nicht implementiert. Ersetzt (nicht ergänzt!)
-  den bereits gelieferten reaktiven Fix in Commit 716789d
-  (`DiaPvE.Target.Target?.TargetObject != Player`) — sonst blockiert die
-  alte Bedingung den neuen `targetOverride`-Pfad, bevor er je greift
-  (bereits als Konzeptfehler erkannt, siehe Sitzungsverlauf). Mechanismus:
-  neuer `TargetType`-Wert + `FindSafeDotTarget()` in `ActionTargetInfo.cs`,
-  gespiegelt an `FindProvokeTarget()`/`DataCenter.ProvokeTarget`-Muster;
-  aktiviert nur per `targetOverride` im WHM-DOTUpkeep-Zweig, kein anderer
-  Job/Aufruf betroffen.
+- **B3 — WHM Dia Ziel-Umlenkung (`TargetType.SafeDotTarget`)**: GEFIXT +
+  AUDITIERT. Umsetzung weicht von der ursprünglichen Skizze in zwei
+  Punkten ab, aus gutem Grund: (1) ERGÄNZT den reaktiven Fix aus 716789d,
+  ersetzt ihn nicht — die alte Bedingung (`DiaPvE.Target.Target?.TargetObject
+  != Player`) bleibt als primärer Versuch stehen, der neue
+  `targetOverride: TargetType.SafeDotTarget`-Zweig greift nur als Fallback,
+  wenn das Standardziel unsicher ist UND `DOTUpkeep` aktiv ist. (2) KEIN
+  `DataCenter.ProvokeTarget`-Muster (kein neues DataCenter-Feld, kein
+  TargetUpdater-Eintrag) — `FindSafeDotTarget()` durchsucht stattdessen
+  direkt die bereits gefilterte lokale `battleChara`-Kandidatenliste
+  (schlankeres, ebenfalls etabliertes Muster, näher an `RandomMeleeTarget`
+  als an `FindProvokeTarget`/`FindDispelTarget`, da hier keine
+  Voll-Hostile-Liste mit Sonderlogik pro Frame nötig ist). Neuer
+  `TargetType.SafeDotTarget`-Enum-Wert, `FindSafeDotTarget()` in beiden
+  Switches in `ActionTargetInfo.cs`, Einhängung nur in WHMs DOTUpkeep-
+  Zweig (Dia/AeroII/Aero je einzeln), kein anderer Job betroffen. Nur
+  statisch verifiziert.
 
 - **B4 — Pre-Pull-Sicherheit**: siehe #46. Noch kein Konzept.
 
