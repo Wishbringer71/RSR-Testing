@@ -20,10 +20,21 @@ Reprisal-Kommentare (SMN/RDM/PCT/BLM/SAM/RPR/MNK/VPR/DRG/DRK/WAR/PLD/GNB)
 begründen sich explizit mit "jede Schadensart inkl. reiner Tankbuster" —
 bei reiner Tankbuster-Vorhersage ohne Raidwide wird `AutoStatus.DefenseArea`
 aber nie gesetzt.
-Fix-Skizze: gleiches job-scoped Opt-in-Muster wie `HasHostileCountAoeMitigation`
-(Commit f154d57) — NICHT das Gate pauschal erweitern (gleicher Blast-Radius-
-Fehler wie beim ersten DefenseArea-Redesign-Versuch, der revertiert wurde).
-Noch nicht implementiert, noch nicht kritisch geprüft.
+Fix-Skizze (AKTUALISIERT nach Einzel-Audit von 76a683b/c01a5e2/16d4475):
+NICHT das Gate pauschal erweitern (gleicher Blast-Radius-Fehler wie beim
+ersten DefenseArea-Redesign-Versuch, der revertiert wurde). Stattdessen:
+Das Repo hat bereits ein etabliertes Workaround-Muster — Reprisal bei
+DRK/GNB und Addle bei SMN sind bewusst in BEIDEN Methoden platziert
+(DefenseAreaAbility UND DefenseSingleAbility), sodass sie über
+ShouldAddDefenseSingle's reicheren Tankbuster-Trigger erreichbar bleiben,
+auch wenn ShouldAddDefenseArea (die eigentliche Lücke) nichts prüft.
+WAR/PLD-Reprisal war nie betroffen (lag von Anfang an nur in
+DefenseSingleAbility). TATSÄCHLICH NOCH BETROFFEN (kein DefenseSingle-
+Gegenstück): RDM/PCT/BLM-Addle, SAM/RPR/MNK/VPR/DRG/NIN-Feint,
+BRD-Troubadour, MCH-Tactician. Fix: dasselbe Doppel-Platzierungs-Muster
+auf diese verbleibenden Fälle anwenden (konsistenter mit bestehendem
+Code als ein neues Opt-in-Flag). Noch nicht implementiert, noch nicht
+kritisch geprüft.
 
 ## Aggro-Management (großes, mehrteiliges Thema — vom Nutzer initiiert)
 
