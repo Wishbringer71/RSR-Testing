@@ -43,3 +43,11 @@ Beispiel aus dieser Session, wo das gefehlt hat: Beim Aggro-Management-Konzept w
 Chat-Antworten: durchgehend Deutsch, ohne Ausnahme. Bereits mehrfach verletzt in dieser Session (u.a. eine komplette Antwort auf Englisch, dann fälschlich als "durchgehend Deutsch" behauptet, ohne den tatsächlichen Text zu prüfen — selbst ein Beispiel für die Fabrikations-Regel oben). Vor jeder Antwort aktiv prüfen, nicht aus dem Gedächtnis/der Gewohnheit heraus annehmen.
 
 Commit-Messages und Code-Kommentare: Englisch. Vom Nutzer explizit festgelegt, keine offene Frage.
+
+## Persistenz-Meta-Regel
+
+Jede Regel, die der Nutzer gibt, wird sofort (nicht erst am Ende einer Aufgabe) in diese Datei übernommen — nicht nur befolgt, sondern geschrieben, damit sie eine Kontextkomprimierung übersteht.
+
+## Prüftiefe unabhängig von Codegröße
+
+Diffgröße/Zeilenzahl ist KEIN Signal für nötige Prüftiefe. Ein Einzeiler kann genauso schwerwiegende Auswirkungen haben wie ein 500-Zeilen-Commit — die bisher wichtigsten Funde dieser Session (CountAllianceTanks-Fehldiagnose, Provoke-Distanzbug, RPR/VPR-Gate-Umgehung) waren allesamt winzige Zeilen. Jeder Commit/jede Änderung bekommt dieselbe inhaltliche Prüftiefe, unabhängig vom Umfang des Diffs.
