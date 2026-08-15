@@ -106,6 +106,29 @@ comboZustand-gegated, nicht `IsBurst`-gegated; EnshroudPooling-Mechanik
 macht die Frage aber nicht trivial). Noch offen, braucht ggf. eigenen
 Zyklus falls sich beim Weiter-Audit ein echter Impact zeigt.
 
+### #53 — DRG/NIN/SAM/DNC SecondWind/Bloodbath in HealSingleAbility ohne
+Weave-Slot-Gate (`6813a7c`), im Gegensatz zu RPR/VPR
+Status: OFFEN, ungeklärt ob echte Lücke, niedrige Priorität.
+`6813a7c`s Commit-Message behauptet, das Muster "verbatim" von RPR/VPR zu
+kopieren — stimmt nur für die Aktionswahl (SecondWind/Bloodbath als
+Selbstheilungs-Fallback), nicht für das Gate: RPR (`NotInActiveCombo`,
+RPR_Reborn.cs:62/67) und VPR (`NoAbilityReady`, VPR_Reborn.cs:227/232)
+schützen damit denselben Weave-Slot, den auch ihre Interrupt/AntiKnockback-
+Gates schützen (Gluttony/Enshroud bzw. Serpent's Ire, s. #52-Kontext) — bei
+DRG/SAM/DNC (DRG_Reborn.cs:65/70, SAM_Reborn.cs:71/76, DNC_Reborn.cs:124)
+fehlt ein äquivalentes Gate komplett, NIN hat nur den Mudra-Guard (andere
+Zielrichtung, kein Weave-Slot-Schutz). `-S`-Suche bestätigt: die RPR/VPR-
+Gates sind vor-fork/upstream, nicht Teil dieser Session — die Frage ist
+also nicht "wurde etwas kaputt gemacht", sondern ob DRG/SAM/DNC eigene
+precious Weave-Fenster (z.B. DRGs Life-of-the-Dragon-Burst, SAMs Ogi-
+Namikiri-Fenster) durch ein ungegatetes SecondWind/Bloodbath gestört
+werden können. Gegenargument: `.CanUse()` feuert nur bei echtem Heilbedarf
+(niedrige HP) — Selbsterhalt dürfte in der Praxis Vorrang vor Burst-Timing
+haben, das relativiert die Dringlichkeit. Nicht tief genug geprüft, um als
+Bug oder als bewusst irrelevant abzuschließen — braucht eigene Prüfung der
+jeweiligen Job-Burst-Mechanik, bevor entschieden wird ob ein Gate ergänzt
+werden soll.
+
 ## Aggro-Management (großes, mehrteiliges Thema — vom Nutzer initiiert)
 
 Kontext: WHM spammt DoT bei Wall-to-Wall-Pulls z.T. wiederholt auf dasselbe
