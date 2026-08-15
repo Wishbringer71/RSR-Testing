@@ -63,7 +63,7 @@ PR #1350 "DRK opener + Phantom Samurai target logic", geprüft, keine
 Status-Legende: `[ ]` offen, `[~]` in Arbeit, `[x]` einzeln geprüft (PASST
 oder gefixt+auditiert, siehe Vermerk).
 
-- [x] 8edd696 SMN: use Addle in defensives, detect tankbusters landing on non-tanks — einzeln geprüft, PASST (IsHostileCastingTank-Fallback-Heuristik ist vorbestehend, keine neue Schwäche; RadiantAegis-Refresh inzwischen auf gemeinsamen Helfer migriert)
+- [x] 8edd696 SMN: use Addle in defensives, detect tankbusters landing on non-tanks — TIEF NACHGEPRÜFT (inhaltlich/kausal/gesamtheitlich, nicht nur Diff gelesen): Kausalkette Erkennung→AutoStatus→Dispatch→job-eigene DefenseSingleAbility vollständig nachvollzogen; alle 5 Kampfrollen in ShouldAddDefenseSingle() gegen komplette JobRole-Enum geprüft, keine fehlt; SMN-only-Wiring im Commit-Text ehrlich benannt, durch spätere Commits (c93a8bc, #47) vervollständigt. Kein Fehler gefunden.
 - [x] 1ca682a Respect status-provide check for queued commands — einzeln geprüft, PASST (ForceEnable überschneidet sich nicht mit entferntem skipStatusProvideCheck)
 - [x] c93a8bc Add generic BMR-aware mitigation refresh helper; wire into Addle/Feint — einzeln geprüft, PASST (Level-Gate konsistent über alle 9 Verwender, Combo-Safety-Gates wickeln neuen Zweig korrekt ein, NIN-Lücke korrekt geschlossen)
 - [x] 75b7af0 SMN: remove dead RadiantOnCooldownSpam config option — einzeln geprüft, PASST (Grep bestätigt: keine Referenz mehr im Repo)
