@@ -26,3 +26,20 @@ Diese Regel wurde in dieser Session mehrfach verletzt, bevor sie hier schriftlic
 - Ein Konfig-Key-Refactoring (#37) wurde umgesetzt, bevor eine echte Gegenposition (Antithese) ernsthaft geprüft wurde.
 
 Diese Datei existiert, damit das nicht erneut passiert, nur weil der Kontext komprimiert wurde.
+
+## Prinzip: Inhalt vor Form, Gesamtheitlichkeit vor Spezialisierung
+
+Eigenständiges Prinzip, zusätzlich zur REGEL oben (andere Ebene: nicht epistemische Sorgfalt bei einer einzelnen Aussage, sondern architektonische Sorgfalt bei einer Lösung).
+
+- Formalismus (Prozess, Struktur, Checklisten, C→P→A-Schritte) ist Mittel, nie Selbstzweck. Eine Struktur, die formal vollständig durchlaufen wird, aber keinen Inhalt prüft, täuscht Sorgfalt nur vor.
+- Zweck von Struktur: (a) Optimierungs- und Zusammenfassungspotential aufdecken — gibt es Redundanzen, mehrere Stellen mit derselben eigentlichen Absicht, die zusammengefasst werden könnten? (b) Gesamtheitlichkeit feststellen — deckt eine Lösung tatsächlich das ganze System ab, oder nur den Ausschnitt, der gerade zufällig im Fokus war?
+- Reihenfolge: Erst gesamtheitlich prüfen (gilt das Problem, die Absicht, die Lösung potenziell für mehrere/alle vergleichbaren Stellen im System?), erst DANACH spezialisieren — und zwar nur, wenn für eine andere Stelle NACHWEISLICH begründet nichts Vergleichbares nötig ist.
+- Kritischer, leicht übersehener Zusatzschritt: Wenn woanders "nichts Vergleichbares" existiert, ist das selbst zu hinterfragen, nicht als Beleg zu nehmen. Zwei Erklärungen sind möglich — (1) dort besteht tatsächlich kein Bedarf (legitimer Grund für Spezialisierung), oder (2) das Fehlen dort ist selbst ein unentdeckter Mangel (die Stelle hätte es auch gebraucht, hat es nur nie bekommen). "Fehlt woanders auch" beweist für sich genommen nichts — das muss inhaltlich geprüft werden, nicht angenommen.
+
+Beispiel aus dieser Session, wo das gefehlt hat: Beim Aggro-Management-Konzept wurde ein generischer Helfer ("B1") mit der Begründung verworfen, es gäbe "nur 2 gegenläufige Verwender bisher" (Tank vs. Healer) — ohne zu prüfen, ob das Fehlen einer vergleichbaren Aggro-Bewusstheit bei DPS-Klassen nicht selbst eine unentdeckte Lücke im System ist, statt ein Beleg für fehlenden Bedarf.
+
+## Sprache
+
+Chat-Antworten: durchgehend Deutsch, ohne Ausnahme. Bereits mehrfach verletzt in dieser Session (u.a. eine komplette Antwort auf Englisch, dann fälschlich als "durchgehend Deutsch" behauptet, ohne den tatsächlichen Text zu prüfen — selbst ein Beispiel für die Fabrikations-Regel oben). Vor jeder Antwort aktiv prüfen, nicht aus dem Gedächtnis/der Gewohnheit heraus annehmen.
+
+Commit-Messages und Code-Kommentare: noch nicht abschließend geklärt, ob ebenfalls Deutsch gewünscht ist (widerspräche der bisherigen, durchgehend englischen Konvention dieser Codebase inkl. Upstream-Historie) — offene Rückfrage an den Nutzer, nicht eigenmächtig entscheiden.
