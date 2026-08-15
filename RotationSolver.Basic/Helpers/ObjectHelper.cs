@@ -114,6 +114,23 @@ public static class ObjectHelper
 				{
 					return true;
 				}
+
+				// Emergency: the target IS a tank (the co-tank), already critically wounded and still
+				// being attacked - grab it back before the next hit (whether that's a remaining hit of
+				// a multi-hit tankbuster or normal follow-up damage) finishes them off. Deliberately no
+				// distance gate here, unlike the branch above - any available healthy tank should react,
+				// not just the nearest one. 25% is a conservative estimate, not verified against actual
+				// play - this only helps once a co-tank has survived a hit at critically low health; it
+				// cannot prevent a hit that kills outright from full/near-full health, since BMR exposes
+				// no predicted damage magnitude, only timing and hit-shape.
+				if (Svc.Objects.SearchById(target.TargetObjectId) is IBattleChara coTank
+					&& coTank.IsJobCategory(JobRole.Tank)
+					&& !coTank.IsDead
+					&& coTank.GameObjectId != Player.Object?.GameObjectId
+					&& coTank.GetEffectiveHpPercent() <= 25)
+				{
+					return true;
+				}
 			}
 		}
 		return false;
