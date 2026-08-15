@@ -175,6 +175,36 @@ public sealed class MCH_Reborn : MachinistRotation
 		return base.DefenseAreaAbility(nextGCD, out act);
 	}
 
+	[RotationDesc(ActionID.TacticianPvE)]
+	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
+	{
+		// Mirrors the proactive block in DefenseAreaAbility above: that method only runs on a
+		// raidwide-shaped BMR trigger, so a pure tankbuster-shaped prediction never reaches it. This
+		// duplicate is reachable via ShouldAddDefenseSingle's richer tankbuster trigger instead, same
+		// dual-placement pattern already used for DRK/GNB Reprisal and SMN/RDM/PCT/BLM Addle. BMR's
+		// Tankbuster/Raidwide classification is purely about who gets hit, not damage type, so this is
+		// not scoped to any particular damage type - matches the existing raidwide trigger above.
+		// MultiTact and the Wildfire/Barrel Stabilizer weave-slot guards are kept unchanged: MultiTact
+		// is this job's own usage precondition for Tactician at all, and the slot guards are genuine
+		// oGCD clip-safety checks, not preferences specific to the raidwide case.
+		if (!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
+		{
+			var wildfireSlotContested = IsBurst && WildfirePvE.EnoughLevel && WildfirePvE.Cooldown.HasOneCharge
+				&& !BMRDowntimeWithin(10f) && (Heat >= 50 || HasHypercharged) && WeaponRemain < (GCDTime(1) / 2);
+			var barrelStabilizerSlotContested = IsBurst && BarrelStabilizerPvE.EnoughLevel
+				&& !BMRDowntimeWithin(GCDTime(2)) && BarrelStabilizerPvE.CanUse(out _);
+
+			if (!IsOverheated && !wildfireSlotContested && !barrelStabilizerSlotContested
+				&& BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, StatusID.Tactician_1951, StatusID.Tactician_2177)
+				&& TacticianPvE.CanUse(out act, skipStatusProvideCheck: true))
+			{
+				return true;
+			}
+		}
+
+		return base.DefenseSingleAbility(nextGCD, out act);
+	}
+
 	// Logic for using attack abilities outside of GCD, focusing on burst windows and cooldown management.
 	protected override bool AttackAbility(IAction nextGCD, out IAction? act)
 	{
