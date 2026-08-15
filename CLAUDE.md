@@ -59,6 +59,11 @@ Check an den ANFANG der Arbeit, nicht als nachträgliche Reaktion auf Nutzerfrag
 Bei relevanter Überschneidung: Nutzer informieren, klären ob merge/rebase vor Fortsetzung.
 Gilt für ALLE Branches im Repo, nicht nur die zwei gerade im Fokus (bereits einmal falsch: nur eigene Arbeitskopie/aktueller Branch aktualisiert, Repo + andere Branches vergessen — Änderung/Sync ist erst abgeschlossen, wenn Repo als Ganzes konsistent ist, nicht nur die lokal gerade bearbeitete Kopie). Bei jedem Sync-Check alle Branches auflisten und einzeln gegen den relevanten Zielstand prüfen (`upstream/main`, `origin/main`), nicht nur den aktuell aktiven. Ausnahme: ein bereits vollständig gemergter Branch wird nicht gesynct, sondern ist ein Datenhygiene-Löschfall (s.u.) — Sync auf totem Branch ist selbst unnötige Arbeit.
 
+## Externer Zustand nie aus Gesprächsverlauf annehmen
+
+Repo-/Branch-Zustand (existiert ein Branch, ist etwas gemerged, ist ein PR offen) ist externer, geteilter Zustand — der Nutzer oder Dritte können ihn jederzeit ändern, unabhängig von meinen eigenen Aktionen. Eine frühere Beobachtung in diesem Gespräch ("Branch X existiert noch, Löschung blockiert") ist NICHT weiterhin gültig, nur weil sie einmal stimmte — vor jeder Aussage über solchen Zustand frisch prüfen (`git fetch`, `branch -r` o.ä.), nicht aus dem Gesprächsverlauf zitieren. Unterscheidung zu eigenen, unveränderten Dateien: dort ist Wiederverwendung ohne erneutes Lesen vertretbar, bei geteiltem/externem Zustand nicht.
+Beleg: Branch als "weiterhin blockiert" bezeichnet, obwohl der Nutzer ihn zwischenzeitlich selbst gelöscht hatte — reine Wiederholung einer alten Aussage statt Neuprüfung.
+
 ## Datenhygiene
 
 Unnötigen Schrott (gemergte/verwaiste Branches, tote Dateien/Config-Optionen, Altlasten ohne Zweck) proaktiv aufräumen, nicht erst auf Nachfrage — wenn im normalen Arbeitsverlauf auffällt. Vor Löschen verifizieren, nicht annehmen: tatsächlich vollständig gemerged/unreferenziert, kein offener PR, kein unentdeckter Zweck. Löschvorgänge mit Blast-Radius (Remote-Branches, Repo-Dateien) bleiben bestätigungspflichtig — Datenhygiene ist Such-/Meldepflicht, keine Erlaubnis für eigenmächtiges destruktives Handeln.
