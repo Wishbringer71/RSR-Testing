@@ -42,4 +42,4 @@ Beispiel aus dieser Session, wo das gefehlt hat: Beim Aggro-Management-Konzept w
 
 Chat-Antworten: durchgehend Deutsch, ohne Ausnahme. Bereits mehrfach verletzt in dieser Session (u.a. eine komplette Antwort auf Englisch, dann fälschlich als "durchgehend Deutsch" behauptet, ohne den tatsächlichen Text zu prüfen — selbst ein Beispiel für die Fabrikations-Regel oben). Vor jeder Antwort aktiv prüfen, nicht aus dem Gedächtnis/der Gewohnheit heraus annehmen.
 
-Commit-Messages und Code-Kommentare: noch nicht abschließend geklärt, ob ebenfalls Deutsch gewünscht ist (widerspräche der bisherigen, durchgehend englischen Konvention dieser Codebase inkl. Upstream-Historie) — offene Rückfrage an den Nutzer, nicht eigenmächtig entscheiden.
+Commit-Messages und Code-Kommentare: Englisch. Vom Nutzer explizit festgelegt, keine offene Frage.
