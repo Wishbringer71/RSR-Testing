@@ -130,7 +130,7 @@ oder gefixt+auditiert, siehe Vermerk).
 - [ ] 1ed9907 Fix two compile errors in the BMR-refresh work
 - [x] 0f25161 RPR/VPR: let the BMR-timed Feint refresh survive on-going combo — einzeln geprüft, PASST (EnoughWeaveTime ist reine Clip-Sicherheit, bewusste Abwägung Sicherheit vs. Combo-Position, nur im neuen BMR-Zweig, alter reaktiver Zweig unverändert strenger)
 - [x] 6fc9ebb PCT: fix DefenseSingleAbility falling through to the wrong base call — Batch 3 bestätigt
-- [ ] 15297b2 BRD/MCH: BMR-aware proactive refresh for Troubadour/Tactician
+- [x] 15297b2 BRD/MCH: BMR-aware proactive refresh for Troubadour/Tactician — einzeln geprüft, PASST + NEUER BUG GEFUNDEN+GEFIXT: MCH `MitOverlap`-Dismantle-Guard kannte nur `Tactician_1951`, nicht die Sync-100-Variante `Tactician_2177` (derselbe Fehlertyp wie BLM-Thunder-Fix), gefixt (Commit "MCH: fix MitOverlap Dismantle guard missing the sync-level Tactician status ID")
 - [ ] 951d0ec Add hostile-count sustain-refresh fallback for Addle/Feint
 - [ ] 6813a7c DRG/NIN/SAM/DNC: self-sustain via SecondWind/Bloodbath in HealSingleAbility
 - [ ] 87646bf Raise sustain-refresh hostile-count threshold from 3 to 4
