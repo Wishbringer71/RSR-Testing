@@ -80,9 +80,11 @@ public sealed class RPR_Reborn : ReaperRotation
 		// timed threat outweighs RPR's own combo-slot preference, but not at the cost of an unsafe
 		// weave - EnoughWeaveTime is the actual clip-risk check, unlike NotInActiveCombo which just
 		// blocks for the whole combo regardless of whether a safe window exists right now. Still
-		// yields to Gluttony/Enshroud specifically: those are tightly time-boxed to their own burst
-		// window, so a Feint refresh stealing that exact weave slot risks real burst-alignment loss,
-		// unlike the general case where any other weave slot works just as well.
+		// yields to Gluttony/Enshroud specifically: AttackAbility gates both on RPR's own Shroud/Soul
+		// resource state (not IsBurst/a time-boxed window - verified against AttackAbility's actual
+		// conditions), so each is only genuinely available once per resource cycle. A Feint refresh
+		// stealing that exact weave slot risks a wasted resource-cycle window, unlike the general case
+		// where any other weave slot works just as well.
 		if (EnoughWeaveTime
 			&& !(GluttonyPvE.CanUse(out _, skipAoeCheck: true) || EnshroudPvE.CanUse(out _))
 			&& (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)

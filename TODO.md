@@ -107,45 +107,30 @@ WAR/PLD-Reprisal war nie betroffen (lag von Anfang an nur in
 DefenseSingleAbility). Nur statisch verifiziert (kein Build/Test möglich,
 kein `dotnet` in dieser Sandbox).
 
-### #52 — VPR Serpent's-Ire-Weave-Guard (`7c174ec`): `IsBurst` ist kein
-Echtzeit-Burst-Fenster-Signal
-Status: VERIFIZIERT (Kernaussage), Fix noch offen, niedrige Priorität.
-`VPR_Reborn.cs:256` (`!(IsBurst && SerpentsIrePvE.CanUse(out _))`) nutzt
-`IsBurst`, um den BMR-Feint-Refresh-Guard auf ein "echtes Burstfenster" zu
-verengen — aber `IsBurst => MergedStatus.HasFlag(AutoStatus.Burst)`
-(`DutyRotation.cs:565`) wird in `StateUpdater.cs:869-872` gesetzt via
-`if (!status.HasFlag(AutoStatus.Burst) && Service.Config.AutoBurst)
-status |= AutoStatus.Burst;` — d.h. `IsBurst` ist bei Default-Settings
-(`AutoBurst = true`, Standard) praktisch IMMER wahr, kein zeitlich
-begrenztes Fenster. `73048dd` (MCH) hat genau dieses Muster selbst
-entdeckt und dokumentiert (dritter Versuch, nachdem der zweite Versuch
-mit `!IsBurst` als "dead code" erkannt und reverted wurde), aber nie
-rückwirkend auf VPR angewendet — Grep über alle RebornRotations zeigt
-`VPR_Reborn.cs:256` als einzige Stelle, die `IsBurst` auf diese Art
-(Fenster-Verengung eines Weave-Guards statt reiner Burst-CD-Nutzungs-
-entscheidung) verwendet.
-KORREKTUR nach Abgleich mit `e221ce5` (MCH-Folgecommit, s. AUDIT_LOG.md):
-Schwere nach unten korrigiert. MCHs `wildfireSlotContested`/
-`barrelStabilizerSlotContested` nutzen `IsBurst` genauso (praktisch immer
-wahr) — dort verifiziert korrekt, weil es exakt die echte Cast-Bedingung
-in `AttackAbility` spiegelt (die selbst genauso `IsBurst`-gegated ist,
-"Spiegel-Prinzip"). VPRs `AttackAbility` castet Serpent's Ire ebenfalls
-nur unter `if (IsBurst) {...CanUse...}` — `7c174ec`s Guard spiegelt also
-strukturell exakt die echte Nutzungsbedingung, genau wie bei MCH als
-korrekt etabliert. Der CODE ist damit vermutlich NICHT defekt. Was
-bleibt: die Commit-Message von `7c174ec` ("scopes the guard back to the
-narrow window it was meant for") ist IRREFÜHREND formuliert — sie
-suggeriert echte Zeitfenster-Verengung, die es (da IsBurst kein
-Zeitfenster ist) nicht gibt. Reines Dokumentations-/Selbstdiagnose-
-Problem, keine funktionale Lücke. Nur Kommentar-Korrektur nötig, kein
-aktiver Bug-Fix.
-Auch zu prüfen (separates, eigenständiges Item, nicht mit #52
-vermischen): `030129c` (RPR Gluttony/Enshroud-Guard, kein `IsBurst`
-verwendet) — Prämisse "burst-exklusiv gehalten" durch `AttackAbility`-
-Code nicht eindeutig gestützt (Gluttony/Enshroud dort ressourcen-/
-comboZustand-gegated, nicht `IsBurst`-gegated; EnshroudPooling-Mechanik
-macht die Frage aber nicht trivial). Noch offen, braucht ggf. eigenen
-Zyklus falls sich beim Weiter-Audit ein echter Impact zeigt.
+### #52 — VPR/RPR Weave-Guard-Kommentare: Burst-Fenster-Framing geprüft — ERLEDIGT
+Status: ABGESCHLOSSEN. Beide Teilfragen einzeln aufgelöst.
+
+VPR (`7c174ec`, `VPR_Reborn.cs:248-254`): Code-Kommentar bereits korrekt
+und ehrlich formuliert (verifiziert, aktueller Live-Code gelesen) —
+erklärt akkurat das Spiegel-Prinzip (Serpent's Ire in `AttackAbility`
+selbst `IsBurst`-gegated, sitzt sonst die meiste Kampfzeit ungenutzt
+bereit, `CanUse` allein würde Feint für die ganze Wartezeit blockieren).
+Nur die GIT-COMMIT-MESSAGE von `7c174ec` selbst ("scopes the guard back
+to the narrow window it was meant for") war irreführend — das ist
+historischer Text, wird nicht rückwirkend umgeschrieben (kein Force-Push/
+History-Rewrite ohne expliziten Nutzerauftrag). Keine Code-Änderung nötig.
+
+RPR (`030129c`, `RPR_Reborn.cs`): Prämisse jetzt geprüft — `AttackAbility`
+gated Gluttony/Enshroud tatsächlich NICHT über `IsBurst`, sondern über
+RPRs eigenen Shroud-/Soul-Ressourcenzustand (`EnshroudPooling`,
+`HasIdealHost`, `Soul == 100` etc., Zeilen 158-207) — die ursprüngliche
+Kommentar-Formulierung "tightly time-boxed to their own burst window" war
+damit ungenau (kein echtes Zeitfenster wie bei MCH Wildfire, sondern ein
+Ressourcen-Zyklus-Slot). Code selbst NICHT defekt (Verhalten bleibt
+sinnvoll: seltene, wertvolle Ressourcen-Slots verdienen denselben Schutz
+vor Feint-Verdrängung wie ein Zeitfenster), nur die Begründung im Kommentar
+war unpräzise — korrigiert (`RPR_Reborn.cs:83-86`, jetzt: Ressourcen-
+Zyklus statt Burst-Fenster, gegen `AttackAbility` verifiziert).
 
 ### #53 — DRG/NIN/SAM/DNC SecondWind/Bloodbath in HealSingleAbility ohne
 Weave-Slot-Gate (`6813a7c`), im Gegensatz zu RPR/VPR
