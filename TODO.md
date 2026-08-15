@@ -138,6 +138,25 @@ Bausteine (Reihenfolge nach Risiko/Nutzen, jeder einzeln audit-fähig):
   Vorhersage, nur Timing/Trefferform, daher lässt sich "wird dieser
   Treffer tödlich sein" nicht vorab erkennen. Bewusst eng begrenzt
   umgesetzt (Nutzerentscheidung), nicht das volle ursprüngliche Konzept.
+  Präzisierung durch Nutzer-Beispiel: Bei dieser Mechanik-Klasse ist nur
+  der ERSTE Einschlag angekündigt (Cast/Marker, von BMR vorhersagbar) —
+  Folge-Einschläge laufen automatisch als Teil derselben Funktion ohne
+  eigene Ankündigung, treffen wer gerade nach Aggro-Reihenfolge dran ist.
+  Für diese Folge-Einschläge hat der reaktive Fix hier vermutlich KEIN
+  nutzbares Zeitfenster (nicht nur knapp, evtl. gar keins) — ob zwischen
+  automatischen Folge-Einschlägen überhaupt eine reale Lücke existiert,
+  in der RSRs Entscheidungsschleife + Provoke-Cast/Animation-Lock noch
+  vor dem nächsten Einschlag landen könnte, ist ohne Spieltest nicht
+  verifizierbar. Der Fix bleibt nur für Fälle mit echtem Zeitabstand
+  nützlich (normaler Folgeschaden mit spürbarer Lücke), nicht für
+  ununterbrochene Multi-Hit-Sequenzen dieser Art. Die vom Nutzer selbst
+  genannten Standard-Lösungen für diese Mechanik-Klasse (alles auf einen
+  Tank mit Invuln/hoher Mitigation/Zwischenheals stapeln, ODER kontrolliert
+  nach Aggro-Reihenfolge verteilen) sind beide PROAKTIV — bestätigt, dass
+  ein Mitigation-Stacking-Konzept (bei der Auswahl als Option 3 nicht
+  gewählt) für genau diese Mechanik-Klasse der eigentlich wirksame Ansatz
+  wäre, nicht Aggro-Shuffling. Als möglicher Folge-Punkt offen, nicht
+  gestartet.
   Kein neues TargetType/DataCenter-Feld — Erweiterung des bestehenden
   `CanProvoke`/`ProvokeTarget`-Mechanismus (disjunkte Bedingung zu B2a,
   kein Distanz-Gate, da jeder verfügbare Tank reagieren soll). Nur
