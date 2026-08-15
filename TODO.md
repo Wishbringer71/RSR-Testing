@@ -121,13 +121,27 @@ Bausteine (Reihenfolge nach Risiko/Nutzen, jeder einzeln audit-fähig):
   kein Fork-eigener Fehler, kein Doppelarbeit-Risiko. Nur statisch
   verifiziert (kein `dotnet` in dieser Sandbox, kein Build/Test möglich).
 
-- **B2b — Notfall-Provoke bei drohend tödlichem Tankbuster**: Konzept
-  skizziert (BMR-Tankbuster-Vorhersage + `GetEffectiveHpPercent` des
-  Co-Tanks kombiniert, statt neuer encounter-spezifischer Vulnerability-
-  Stack-Erkennung), aber noch NICHT kritisch geprüft/geplant/umgesetzt.
-  Höchstes Restrisiko im ganzen Aggro-Thema (BMR-Encounter-Abdeckung +
-  `GetEffectiveHpPercent` erstmals für fremdes Party-Mitglied statt für
-  sich selbst). Sollte nach B2a kommen, nicht davor.
+- **B2b — Notfall-Provoke bei kritisch verwundetem Co-Tank**: GEFIXT +
+  AUDITIERT (`ObjectHelper.cs`, `CanProvoke`).
+  Konzept mehrfach überarbeitet, siehe Sitzungsverlauf für die volle
+  Herleitung: ursprünglich BMR-Tankbuster-Vorhersage-basiert gedacht
+  (Buster VOR dem Einschlag umlenken), aber verifiziert (Websuche +
+  Nutzer-Erfahrung), dass ein bereits angekündigter Tankbuster nicht mehr
+  umlenkbar ist — nur nachfolgender Schaden (regulär oder weitere
+  Einschläge bei Mehrfach-Einschlag-Bustern wie Unreal Shinryu/Arkh Monh)
+  ist noch beeinflussbar. Design daher auf rein REAKTIV umgestellt: Ziel
+  ist ein Tank (Co-Tank), lebt, wird gerade noch vom Boss anvisiert, hat
+  `GetEffectiveHpPercent() <= 25` (Schätzwert, nicht spielgetestet).
+  Explizit dokumentierte Grenze: KEIN Schutz gegen One-Shot-Kaskaden aus
+  voller/hoher HP (Nutzer-Beispiel: 2 Tanks + er selbst als SMN nacheinander
+  von Mehrfach-Einschlägen getötet) — BMR liefert keine Schadenshöhen-
+  Vorhersage, nur Timing/Trefferform, daher lässt sich "wird dieser
+  Treffer tödlich sein" nicht vorab erkennen. Bewusst eng begrenzt
+  umgesetzt (Nutzerentscheidung), nicht das volle ursprüngliche Konzept.
+  Kein neues TargetType/DataCenter-Feld — Erweiterung des bestehenden
+  `CanProvoke`/`ProvokeTarget`-Mechanismus (disjunkte Bedingung zu B2a,
+  kein Distanz-Gate, da jeder verfügbare Tank reagieren soll). Nur
+  statisch verifiziert.
 
 - **B2c — Verifikation Range-Pull-Fallback**: ABGESCHLOSSEN, kein Code-Fix
   nötig. Verifiziert in allen 4 Tank-Rotationen: `TomahawkPvE` (WAR_Reborn.cs:416),
