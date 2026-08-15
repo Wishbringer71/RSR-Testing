@@ -32,15 +32,24 @@ NIN Mudra-Check) wurden mitgenommen; reine Präferenz-Gates (BurstDefense
 bei PCT wurde dagegen bewusst mitgenommen, da es PCTs eigene etablierte
 Konvention in DefenseSingle ist — Unterscheidung im Einzelfall geprüft,
 nicht pauschal übernommen/weggelassen).
-KORREKTUR während der Umsetzung: BRD-Troubadour und MCH-Tactician waren in
-der ursprünglichen Liste fälschlich als betroffen geführt. Beide nutzen
-tatsächlich `BMRRaidwideIn`, nicht das generische `BMRDamageIn` wie Addle/
-Feint/Reprisal — sie sind reine Raidwide-Mitigationswerkzeuge (passend zum
-echten Spielmechanismus: Troubadour/Tactician wirken gegen Magie-Raidwides,
-nicht gegen physische Tankbuster). Ihr bestehender reiner
-`DefenseAreaAbility`-Platz ist korrekt, #47 betrifft sie nicht — eine
-Doppel-Platzierung hätte sie fälschlich gegen Tankbuster vorgeschlagen.
-Nicht umgesetzt, Korrektur dokumentiert statt blind Muster kopiert.
+KORREKTUR DER KORREKTUR: Die erste Zwischen-Korrektur (BRD/MCH aus #47
+ausgeschlossen, mit der Begründung "reine Raidwide-Werkzeuge, wirken nur
+gegen Magieschaden") war SELBST falsch, auf zwei Ebenen. (1) `PredictedDamageType`
+(Grundlage von `BMRRaidwideIn`/`BMRTankbusterIn`) verifiziert in
+`BossModEnums.cs`: reine Trefferform-Klassifikation (None/Tankbuster/
+Raidwide/Shared — wen trifft es), keine Schadensart-Unterscheidung.
+(2) Per Websuche verifiziert (mehrere Quellen konsistent): Troubadour und
+Tactician reduzieren tatsächlich JEGLICHEN Schaden, nicht nur Magieschaden
+— exakt wie Reprisal/Addle/Feint. Beide Prämissen der Ausschluss-Begründung
+waren unverifiziert/falsch. Korrektur zurückgenommen: BRD-Troubadour und
+MCH-Tactician bekommen dieselbe Doppel-Platzierung wie die anderen 9 Jobs
+— proaktiver Block zusätzlich in `DefenseSingleAbility` (neu angelegt),
+mit `BMRTankbusterIn` (statt `BMRDamageIn`, passend zur bereits
+bestehenden job-eigenen Konvention der raidwide-spezifischen statt
+generischen BMR-Signale). MCHs Wildfire/Barrel-Stabilizer-Slot-Guards und
+MultiTact-Bedingung mitgenommen (echte Sicherheits-/Nutzungs-Bedingungen,
+keine Präferenz-Gates). #47 damit für alle ursprünglich identifizierten
+11 Jobs vollständig umgesetzt.
 WAR/PLD-Reprisal war nie betroffen (lag von Anfang an nur in
 DefenseSingleAbility). Nur statisch verifiziert (kein Build/Test möglich,
 kein `dotnet` in dieser Sandbox).
