@@ -57,6 +57,7 @@ Vor Arbeitsbeginn: `upstream` fetchen, prüfen ob Original das anstehende Proble
 Check an den ANFANG der Arbeit, nicht als nachträgliche Reaktion auf Nutzerfrage (bereits einmal falsch: reaktiv statt proaktiv, dabei Divergenz fälschlich als "normal, kein Problem" heruntergespielt statt das eigentliche Risiko — Doppelarbeit — zu adressieren).
 "Fork aktualisieren" = `origin/main` (Standard-Branch des Fork-Repos), NICHT nur der aktive Feature-Branch — ein `upstream/main`-Merge nur in den Feature-Branch lässt den Fork selbst veraltet. Beide Ebenen syncen.
 Bei relevanter Überschneidung: Nutzer informieren, klären ob merge/rebase vor Fortsetzung.
+Gilt für ALLE Branches im Repo, nicht nur die zwei gerade im Fokus (bereits einmal falsch: nur eigene Arbeitskopie/aktueller Branch aktualisiert, Repo + andere Branches vergessen — Änderung/Sync ist erst abgeschlossen, wenn Repo als Ganzes konsistent ist, nicht nur die lokal gerade bearbeitete Kopie). Bei jedem Sync-Check alle Branches auflisten und einzeln gegen den relevanten Zielstand prüfen (`upstream/main`, `origin/main`), nicht nur den aktuell aktiven. Ausnahme: ein bereits vollständig gemergter Branch wird nicht gesynct, sondern ist ein Datenhygiene-Löschfall (s.u.) — Sync auf totem Branch ist selbst unnötige Arbeit.
 
 ## Datenhygiene
 
