@@ -102,6 +102,10 @@ Bausteine (Reihenfolge nach Risiko/Nutzen, jeder einzeln audit-fähig):
   Nächster Schritt: Konzept für den Fix (was sollte die Distanzbedingung
   stattdessen prüfen, falls überhaupt etwas — evtl. ersatzlos streichen),
   kritische Prüfung, dann Umsetzung + Audit.
+  Upstream-Sync-Check (gemäß neuer CLAUDE.md-Regel, vor Arbeitsbeginn
+  durchgeführt): Bug existiert IDENTISCH in `upstream/main` — kein
+  Fork-eigener Fehler, von Anfang an geerbt, im Original ebenfalls nicht
+  gefixt. Kein Doppelarbeit-Risiko für diesen Punkt.
 
 - **B2b — Notfall-Provoke bei drohend tödlichem Tankbuster**: Konzept
   skizziert (BMR-Tankbuster-Vorhersage + `GetEffectiveHpPercent` des
