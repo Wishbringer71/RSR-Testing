@@ -62,6 +62,15 @@ public sealed class DRG_Reborn : DragoonRotation
 	[RotationDesc]
 	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
 	{
+		// Every other ability-dispatch method in this file (Move*Ability, Defense*Ability,
+		// AttackAbility) skips its own logic right after Stardiver to avoid clipping the dive's
+		// landing - this method was missing that same guard, the one inconsistency with DRG's own
+		// established convention.
+		if (IsLastAction(false, StardiverPvE))
+		{
+			return base.HealSingleAbility(nextGCD, out act);
+		}
+
 		if (SecondWindPvE.CanUse(out act))
 		{
 			return true;

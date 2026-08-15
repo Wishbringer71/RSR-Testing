@@ -134,26 +134,31 @@ Zyklus statt Burst-Fenster, gegen `AttackAbility` verifiziert).
 
 ### #53 — DRG/NIN/SAM/DNC SecondWind/Bloodbath in HealSingleAbility ohne
 Weave-Slot-Gate (`6813a7c`), im Gegensatz zu RPR/VPR
-Status: OFFEN, ungeklärt ob echte Lücke, niedrige Priorität.
-`6813a7c`s Commit-Message behauptet, das Muster "verbatim" von RPR/VPR zu
-kopieren — stimmt nur für die Aktionswahl (SecondWind/Bloodbath als
-Selbstheilungs-Fallback), nicht für das Gate: RPR (`NotInActiveCombo`,
-RPR_Reborn.cs:62/67) und VPR (`NoAbilityReady`, VPR_Reborn.cs:227/232)
-schützen damit denselben Weave-Slot, den auch ihre Interrupt/AntiKnockback-
-Gates schützen (Gluttony/Enshroud bzw. Serpent's Ire, s. #52-Kontext) — bei
-DRG/SAM/DNC (DRG_Reborn.cs:65/70, SAM_Reborn.cs:71/76, DNC_Reborn.cs:124)
-fehlt ein äquivalentes Gate komplett, NIN hat nur den Mudra-Guard (andere
-Zielrichtung, kein Weave-Slot-Schutz). `-S`-Suche bestätigt: die RPR/VPR-
-Gates sind vor-fork/upstream, nicht Teil dieser Session — die Frage ist
-also nicht "wurde etwas kaputt gemacht", sondern ob DRG/SAM/DNC eigene
-precious Weave-Fenster (z.B. DRGs Life-of-the-Dragon-Burst, SAMs Ogi-
-Namikiri-Fenster) durch ein ungegatetes SecondWind/Bloodbath gestört
-werden können. Gegenargument: `.CanUse()` feuert nur bei echtem Heilbedarf
-(niedrige HP) — Selbsterhalt dürfte in der Praxis Vorrang vor Burst-Timing
-haben, das relativiert die Dringlichkeit. Nicht tief genug geprüft, um als
-Bug oder als bewusst irrelevant abzuschließen — braucht eigene Prüfung der
-jeweiligen Job-Burst-Mechanik, bevor entschieden wird ob ein Gate ergänzt
-werden soll.
+Status: GEFIXT für DRG (statisch selbst-geprüft, kein Compile/Test), SAM/DNC/NIN geprüft und geschlossen (kein Fund).
+
+Einzeln je Job auf ein KONKRETES, im jeweiligen File bereits etabliertes
+Weave-Schutz-Muster geprüft (nicht nur spekulativ "könnte kollidieren"):
+
+- **DRG — echter Fund, gefixt.** `DRG_Reborn.cs` hat ein datei-weites
+  Muster: `MoveForwardAbility`, `MoveBackAbility`, `DefenseAreaAbility`,
+  `DefenseSingleAbility` und `AttackAbility` beginnen JEWEILS mit
+  `if (IsLastAction(false, StardiverPvE)) { return base.X(...); }` —
+  eigene Logik wird direkt nach Stardiver (Sprungangriff mit Landeanimation)
+  übersprungen, vermutlich um die Landung nicht zu clippen. Genau EINE
+  Ability-Dispatch-Methode hatte diesen Guard NICHT: `HealSingleAbility`
+  (SecondWind/Bloodbath) — eine echte, konkret belegte Inkonsistenz mit der
+  eigenen Konvention der Datei, kein spekulatives "könnte sein". Gefixt:
+  denselben Guard ergänzt (`DRG_Reborn.cs`).
+- **SAM/DNC — geprüft, kein äquivalentes Muster gefunden.** Repo-Grep nach
+  `IsLastAction`/vergleichbaren Cross-Methoden-Weave-Guards in beiden Dateien
+  ergab keine Treffer — es gibt keine etablierte, im Code bereits verankerte
+  Konvention, gegen die SecondWind/Bloodbath dort inkonsistent wären. Die
+  ursprüngliche Sorge (SAMs Ogi-Namikiri-Fenster, DNCs Steps) bleibt
+  theoretisch denkbar, aber ohne konkreten Code-Beleg — anders als bei DRG
+  kein Fund, der einen Fix rechtfertigt. Ohne neuen Beleg geschlossen.
+- **NIN — bereits mit Mudra-Guard versehen** (andere Zielrichtung als
+  Weave-Slot-Schutz, aber verhindert bereits die naheliegendste Kollision:
+  Cast während einer Ninjutsu-Sequenz). Kein weiterer Bedarf erkannt.
 
 ## Aggro-Management (großes, mehrteiliges Thema — vom Nutzer initiiert)
 
