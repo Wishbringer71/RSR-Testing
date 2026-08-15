@@ -46,6 +46,7 @@ Commits/Code-Kommentare: Englisch, fix, keine offene Frage.
 
 Jede Nutzerregel sofort in diese Datei schreiben, nicht erst am Aufgabenende — schreiben, nicht nur befolgen.
 Bei Sitzungsbeginn/nach Kontextkomprimierung zusätzlich lesen: `TODO.md` (offene Punkte), `AUDIT_LOG.md` (Beleg-Archiv abgeschlossener Prüfungen — vor Neu-Audit eines Commits/Bereichs dort nachsehen, Doppelarbeit vermeiden). Fehlt eine dieser Dateien trotz Arbeit an diesem Repo: Nutzer informieren, nicht stillschweigend neu anfangen.
+Neu erkannte Probleme, auch wenn sie mit der gerade laufenden Aufgabe nichts zu tun haben, sofort in TODO.md eintragen statt nur im Chat zu erwähnen — nicht abwarten, ob sie "relevant genug" sind oder erst am Ende gesammelt melden.
 
 ## Prüftiefe unabhängig von Codegröße
 
