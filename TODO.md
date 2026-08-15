@@ -142,14 +142,16 @@ Bausteine (Reihenfolge nach Risiko/Nutzen, jeder einzeln audit-fähig):
   der ERSTE Einschlag angekündigt (Cast/Marker, von BMR vorhersagbar) —
   Folge-Einschläge laufen automatisch als Teil derselben Funktion ohne
   eigene Ankündigung, treffen wer gerade nach Aggro-Reihenfolge dran ist.
-  Für diese Folge-Einschläge hat der reaktive Fix hier vermutlich KEIN
-  nutzbares Zeitfenster (nicht nur knapp, evtl. gar keins) — ob zwischen
-  automatischen Folge-Einschlägen überhaupt eine reale Lücke existiert,
-  in der RSRs Entscheidungsschleife + Provoke-Cast/Animation-Lock noch
-  vor dem nächsten Einschlag landen könnte, ist ohne Spieltest nicht
-  verifizierbar. Der Fix bleibt nur für Fälle mit echtem Zeitabstand
-  nützlich (normaler Folgeschaden mit spürbarer Lücke), nicht für
-  ununterbrochene Multi-Hit-Sequenzen dieser Art. Die vom Nutzer selbst
+  KORREKTUR nach Nutzer-Angabe: Es gibt tatsächlich ein Zeitfenster
+  zwischen den Folge-Einschlägen, ca. 1 Sekunde pro Einschlag — meine
+  vorherige Einschätzung "vermutlich gar kein Fenster" war zu pessimistisch,
+  zurückgenommen. 1s ist knapp (Provoke hat kein Cast, aber Animation-Lock
+  + RSRs Entscheidungsschleife + Netzwerklatenz müssen alle darunter
+  passen), aber technisch ein reales, nutzbares Fenster, kein Nullfenster.
+  Ob es in der Praxis zuverlässig genug reicht, bleibt ohne Spieltest
+  unverifiziert — aber die Grenze ist "knapp/riskant", nicht "nicht
+  vorhanden". Der Fix bleibt also auch für diese Mechanik-Klasse potentiell
+  wirksam, nur mit engerer Erfolgsspanne als beim normalen Folgeschaden-Fall. Die vom Nutzer selbst
   genannten Standard-Lösungen für diese Mechanik-Klasse (alles auf einen
   Tank mit Invuln/hoher Mitigation/Zwischenheals stapeln, ODER kontrolliert
   nach Aggro-Reihenfolge verteilen) sind beide PROAKTIV — bestätigt, dass
