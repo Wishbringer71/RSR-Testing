@@ -64,6 +64,7 @@ Gilt für ALLE Branches im Repo, nicht nur die zwei gerade im Fokus (bereits ein
 
 Repo-/Branch-Zustand (existiert ein Branch, ist etwas gemerged, ist ein PR offen) ist externer, geteilter Zustand — der Nutzer oder Dritte können ihn jederzeit ändern, unabhängig von meinen eigenen Aktionen. Eine frühere Beobachtung in diesem Gespräch ("Branch X existiert noch, Löschung blockiert") ist NICHT weiterhin gültig, nur weil sie einmal stimmte — vor jeder Aussage über solchen Zustand frisch prüfen (`git fetch`, `branch -r` o.ä.), nicht aus dem Gesprächsverlauf zitieren. Unterscheidung zu eigenen, unveränderten Dateien: dort ist Wiederverwendung ohne erneutes Lesen vertretbar, bei geteiltem/externem Zustand nicht.
 Beleg: Branch als "weiterhin blockiert" bezeichnet, obwohl der Nutzer ihn zwischenzeitlich selbst gelöscht hatte — reine Wiederholung einer alten Aussage statt Neuprüfung.
+Technische Präzisierung (zweiter, andersartiger Vorfall mit demselben Branch-Namen): lokale Branch-Referenzen (`git branch`/`git branch -a`) überleben eine Remote-Löschung stillschweigend — `git branch -a` zeigt tote lokale Branches weiter an, als wären sie relevanter Zustand. "Frisch prüfen" heißt für Branch-Existenz konkret: `git fetch --prune` (oder `git ls-remote`) VOR jeder Aussage, und danach NUR `branch -r`/die Remote-Liste als Quelle der Wahrheit behandeln — nie lokale Branch-Namen ungeprüft dafür halten, auch nicht "frisch" wirkende eigene `git branch -a`-Ausgabe ohne vorheriges Prune.
 
 ## Grenzen nicht behaupten, ohne verfügbare Tools geprüft zu haben
 
