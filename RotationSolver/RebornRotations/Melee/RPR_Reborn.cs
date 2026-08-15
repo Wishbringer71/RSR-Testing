@@ -100,10 +100,24 @@ public sealed class RPR_Reborn : ReaperRotation
 		return base.DefenseAreaAbility(nextGCD, out act);
 	}
 
-	[RotationDesc(ActionID.ArcaneCrestPvE)]
+	[RotationDesc(ActionID.ArcaneCrestPvE, ActionID.FeintPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		if (NotInActiveCombo && ArcaneCrestPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		// Mirrors the proactive block in DefenseAreaAbility above: that method only runs on a
+		// raidwide-shaped trigger, so a pure tankbuster prediction never reaches it. This duplicate is
+		// reachable via ShouldAddDefenseSingle's richer tankbuster trigger instead, same dual-placement
+		// pattern already used for DRK/GNB Reprisal and SMN Addle. EnoughWeaveTime and the Gluttony/
+		// Enshroud slot-guard are genuine safety checks, not preference gates, so they're kept here too.
+		if (EnoughWeaveTime
+			&& !(GluttonyPvE.CanUse(out _, skipAoeCheck: true) || EnshroudPvE.CanUse(out _))
+			&& (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
+				|| NumberOfHostilesInRange >= 4)
+			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;
 		}

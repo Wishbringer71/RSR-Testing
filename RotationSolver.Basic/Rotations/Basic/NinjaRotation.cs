@@ -736,9 +736,27 @@ public partial class NinjaRotation
 	}
 
 	/// <inheritdoc/>
-	[RotationDesc(ActionID.ShadeShiftPvE)]
+	[RotationDesc(ActionID.ShadeShiftPvE, ActionID.FeintPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		return ShadeShiftPvE.CanUse(out act) || base.DefenseSingleAbility(nextGCD, out act);
+		if (ShadeShiftPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		// Mirrors the proactive block in DefenseAreaAbility above: that method only runs on a
+		// raidwide-shaped trigger, so a pure tankbuster prediction never reaches it. This duplicate is
+		// reachable via ShouldAddDefenseSingle's richer tankbuster trigger instead, same dual-placement
+		// pattern already used for DRK/GNB Reprisal and SMN Addle. The Mudra check is a genuine job-
+		// mechanic safety check (can't weave abilities mid-sequence), so it's kept here too.
+		if ((BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
+				|| NumberOfHostilesInRange >= 4)
+			&& !StatusHelper.PlayerHasStatus(true, StatusID.Mudra)
+			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
+		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 }

@@ -269,6 +269,26 @@ public sealed class VPR_Reborn : ViperRotation
 		return base.DefenseAreaAbility(nextGCD, out act);
 	}
 
+	[RotationDesc]
+	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
+	{
+		// Mirrors the proactive block in DefenseAreaAbility above: that method only runs on a
+		// raidwide-shaped trigger, so a pure tankbuster prediction never reaches it. This duplicate is
+		// reachable via ShouldAddDefenseSingle's richer tankbuster trigger instead, same dual-placement
+		// pattern already used for DRK/GNB Reprisal and SMN Addle. EnoughWeaveTime and the Serpent's Ire
+		// slot-guard are genuine safety checks, not preference gates, so they're kept here too.
+		if (EnoughWeaveTime
+			&& !(IsBurst && SerpentsIrePvE.CanUse(out _))
+			&& (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
+				|| NumberOfHostilesInRange >= 4)
+			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
+		return base.DefenseSingleAbility(nextGCD, out act);
+	}
+
 	protected override bool HasOwnAntiKnockbackGate => true;
 
 	[RotationDesc]

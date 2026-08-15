@@ -219,13 +219,25 @@ public sealed class MNK_Reborn : MonkRotation
 		return base.HealAreaAbility(nextGCD, out act);
 	}
 
-	[RotationDesc(ActionID.RiddleOfEarthPvE)]
+	[RotationDesc(ActionID.RiddleOfEarthPvE, ActionID.FeintPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		if (RiddleOfEarthPvE.CanUse(out act, usedUp: true))
 		{
 			return true;
 		}
+
+		// Mirrors the proactive block in DefenseAreaAbility above: that method only runs on a
+		// raidwide-shaped trigger, so a pure tankbuster prediction never reaches it. This duplicate is
+		// reachable via ShouldAddDefenseSingle's richer tankbuster trigger instead, same dual-placement
+		// pattern already used for DRK/GNB Reprisal and SMN Addle.
+		if ((BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
+				|| NumberOfHostilesInRange >= 4)
+			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 
