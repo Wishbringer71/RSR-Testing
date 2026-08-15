@@ -137,9 +137,9 @@ oder gefixt+auditiert, siehe Vermerk).
 - [x] c01a5e2 DRK/WAR/PLD/GNB: BMR-aware proactive refresh + sustain-refresh for Reprisal — einzeln geprüft, PASST
 - [x] b1b187c Add emergency HP-potion threshold for a confirmed incoming tankbuster — superseded durch eab865c (bereits GO auditiert), PASST
 - [x] 4a01682 WAR/DRK/PLD/GNB: BMR-aware proactive refresh for Vengeance/Rampart family — einzeln geprüft, PASST (Sync-Level-Ternary korrekt, kein HighThunder/Tactician-Fehlertyp)
-- [ ] 28361f2 Unify BMR-tankbuster-imminent check in ShouldAddDefenseSingle, extend to DPS
+- [x] 28361f2 Unify BMR-tankbuster-imminent check in ShouldAddDefenseSingle, extend to DPS — einzeln geprüft (deckt sich mit direkt gelesenem #47-Code), PASST
 - [x] 14a15df BMRShouldRefreshBefore: respect Service.Config.UseBmrTimeline (default off) — Batch 2 bestätigt
-- [ ] 0b3afc7 Make the emergency HP-potion trigger proactive, not just reactive
+- [x] 0b3afc7 Make the emergency HP-potion trigger proactive, not just reactive — superseded durch eab865c (bereits GO), PASST
 - [x] 0a31836 RDM: fix dead Impact branch (tautological EnoughLevel check) — Batch 4 bestätigt
 - [x] 470de85 DRK: remove unreachable ungated Shadow Wall/Shadowed Vigil checks — Batch 3 bestätigt
 - [ ] 0885f53 Respect status-provide check for the GCD-queued-command path too
