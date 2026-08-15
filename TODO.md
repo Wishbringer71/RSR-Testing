@@ -5,8 +5,9 @@ Kontextkomprimierung überleben. Bei Sitzungsbeginn lesen. Neue Findings
 während der Arbeit hier ergänzen, nicht nur im Chat/Task-Tool belassen.
 
 Nur offene Arbeit steht hier. Der vollständige Beleg-Trail (alle
-abgeschlossenen Batch- und Einzelcommit-Prüfungen, 56/56 Commits Fork vs.
-Upstream) liegt in `AUDIT_LOG.md` — dort nachsehen, bevor ein Commit/
+abgeschlossenen Batch- und Einzelcommit-Prüfungen, Fork vs. Upstream, aktueller
+Stand: 59 Commits gelistet, 56 tief nachgeprüft, 3 neuere GEFIXT/statisch
+selbst-geprüft) liegt in `AUDIT_LOG.md` — dort nachsehen, bevor ein Commit/
 Bereich erneut geprüft wird, um Doppelarbeit zu vermeiden.
 
 ## Offene Konzepte / Fixes (noch nicht umgesetzt)

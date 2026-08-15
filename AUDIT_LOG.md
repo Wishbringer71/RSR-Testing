@@ -119,23 +119,24 @@ oder gefixt+auditiert, siehe Vermerk).
 - [x] 6c0e8dc Ground-targeted hostile AoE: resolve tied anchors via the same priority/TargetingType logic as target-based AoE — TIEF NACHGEPRÜFT (substanzielle Architekturänderung, sorgfältig geprüft): `targetOverride` war in der umschließenden `FindTargetArea`-Methode (Zeile 767) bereits als Parameter vorhanden, wie behauptet nur bis `FindTargetAreaHostile` durchgereicht (Live-Code Zeile 800/837 bestätigt Aufruf-Kette). Sicherheitsbehauptung ("kann Erfolg nicht in Fehlschlag verwandeln") bis auf Code-Ebene nachverfolgt: `tiedAnchors` wird vor dem `FindTargetByType`-Aufruf auf Nicht-Leerheit geprüft; `FindTargetByType`s internes Stop-Mark-Filtering (Zeile ~3652-3669) ersetzt die Arbeitsmenge nur, wenn das gefilterte Ergebnis selbst nicht-leer ist (`filteredHasAny`-Check) — Garantie hält, nicht nur behauptet. Kein Fehler.
 - [x] 716789d WHM: don't recast DoT-as-filler on a target that's already aggro'd onto the healer — TIEF NACHGEPRÜFT: Diff bestätigt reine Skip-Lösung (`.TargetObject != Player`-Guard, kein Redirect) mit im Commit selbst ehrlich begründetem Verzicht auf Zielumlenkung (fehlende Per-Call-Hook-Infrastruktur, Blast-Radius-Abwägung explizit dokumentiert). Live-Code (WHM_Reborn.cs:502-537) bestätigt: ursprünglicher Skip-Guard weiterhin an allen 3 Stellen (Dia/AeroII/Aero) vorhanden UND von der später in dieser Session entwickelten `TargetType.SafeDotTarget`-Umlenkung (B3) korrekt ergänzt, nicht ersetzt — genau wie in TODO.md dokumentiert. Ursprünglicher Fix nicht falsch, nur unvollständig (DPS-Verlust durch reines Auslassen statt Umlenken) — Nachfolge-Arbeit bereits geleistet. Kein Fehler.
 - [x] be7cf22 Stop the generic role fallback from defeating RPR/VPR's own combo-safety gate on Interrupt/AntiKnockback — TIEF NACHGEPRÜFT: Diff + Live-Code deckungsgleich (`HasOwnInterruptGate`/`HasOwnAntiKnockbackGate`, beide `virtual false` in der Basisklasse, `override true` nur in RPR/VPR). Commit-Text-Behauptung "kein systemisches Problem über alle Jobs" selbst nachgeprüft, nicht übernommen: alle 4 InterruptAbility- und alle 3 AntiKnockbackAbility-Overrides im Repo einzeln gelesen (PhantomDefault: andere Aktion, kollisionsfrei; BLU_Reborn: reiner Passthrough, keine Ablehnung zum Aushebeln; RPR/VPR: die einzigen mit Gate-dann-Fallback-Struktur auf dieselbe Aktion) — Behauptung bestätigt, nicht nur geglaubt. Kausale Gesamtkette a1418f5→e1886c7→ae7ed1a→be7cf22 schließt sich korrekt: Dispatch-Reihenfolge fixiert, Redundanz entfernt, Gate-Aushebelung geschlossen. Kein Fehler.
+- [x] 0fd058d Add movement-safe pre-pull/sustain tank protection for WHM/AST/SGE (#46) — GEFIXT (statisch selbst-geprüft, kein Compile/Test), Herleitung vollständig in TODO.md #46 dokumentiert: Instant-Cast-Status je Fähigkeit per Websuche verifiziert (WHM Regen, AST Aspected Benefic, SGE Eukrasian Diagnosis), SCH bewusst ausgenommen (kein geeignetes reines instant HoT/Schild, explizit recherchiert). Neue Config-Optionen `UsePreAspectedBenefic`/`UsePreEukrasianDiagnosis`, `UsePreRegen` erweitert. Kein Fehler bekannt, noch nicht unabhängig/adversarial re-geprüft (frisch in dieser Sitzung geschrieben).
+- [x] 2b6e1d8 Correct RPR Gluttony/Enshroud guard comment (resource-cycle, not burst window) — GEFIXT, Prämisse gegen `AttackAbility`-Code verifiziert (Shroud/Soul-Ressourcenzustand, nicht `IsBurst`), reine Kommentar-Korrektur, kein Verhaltensunterschied. Siehe TODO.md #52.
+- [x] e9b687c DRG: add missing Stardiver weave guard to HealSingleAbility (#53) — GEFIXT, echte Inkonsistenz mit DRGs eigener datei-weiter Konvention (5 andere Ability-Dispatch-Methoden hatten den `IsLastAction(false, StardiverPvE)`-Guard bereits, `HealSingleAbility` nicht) gefunden und behoben. SAM/DNC/NIN geprüft, kein äquivalenter Fund. Siehe TODO.md #53.
 
-**STATUS: Alle 56 Commits einzeln TIEF nachgeprüft (0 offen).** (Zähldifferenz
-zur früheren "55"-Angabe: die Liste selbst enthielt schon vorher 56 distinkte
-Commits, das war ein Beschriftungsfehler der Zusammenfassung, kein fehlender
-Eintrag — per Auszählung der Liste oben korrigiert.) Diese Runde ersetzt die
-frühere oberflächliche Prüfung (Diff selbst gelesen, Klammern gezählt) durch
-inhaltliche/kausale/gesamtheitliche Verifikation gegen den jeweils aktuellen
-Live-Code (nicht nur den Diff), inkl. mehrerer Websuchen zur Prüfung von
-Spielzeit-Behauptungen (Addle/Feint/Reprisal/Shadow Wall/Rampart-Dauern) und
-mindestens einer dabei aufgedeckten, durch Zusatzsuche aufgelösten
-widersprüchlichen Sucherergebnis (Shadow Wall 10s vs. 15s, s. 4a01682).
-Ergebnis: keine funktional falschen/schädlichen Commits gefunden. Reale Funde
-dabei: TODO.md #47 (echte, noch offene Lücke, Fix-Skizze dort), TODO.md #52
-(Commit-Message irreführend bei sonst korrektem Code, niedrige Priorität),
-TODO.md #53 (neu, diese Runde: DRG/SAM/DNC SecondWind/Bloodbath ohne Weave-
-Slot-Gate, ungeklärt ob echte Lücke), MCH `Tactician_2177`-Sync-Bug (bereits
-gefixt), Interrupt/AntiKnockback-Gate-Aushebelung (bereits gefixt via
-be7cf22). Mehrere Selbstkorrektur-Ketten im Fork selbst beobachtet und
-verifiziert (VPR Serpent's Ire, MCH Wildfire/Barrel Stabilizer, DRK Reprisal-
+**STATUS: 59 Commits in der Liste. 56 TIEF nachgeprüft (inhaltlich/kausal/
+gesamtheitlich gegen aktuellen Live-Code, nicht nur den Diff, inkl. mehrerer
+Websuchen zu Spielzeit-Behauptungen). 3 weitere (0fd058d/2b6e1d8/e9b687c,
+alle nach Abschluss der 56er-Runde entstanden) GEFIXT/statisch selbst-
+geprüft, noch nicht in derselben unabhängigen Tiefe re-geprüft — diese Liste
+ist damit wieder vollständig gegenüber dem tatsächlichen Fork-Zustand
+(vorher stand sie fälschlich als abgeschlossen, obwohl 3 neue Patches fehlten
+— Fund und Korrektur auf Nutzerhinweis).**
+
+Ergebnis der 56er-Runde: keine funktional falschen/schädlichen Commits
+gefunden. Reale Funde dabei: MCH `Tactician_2177`-Sync-Bug (bereits gefixt),
+Interrupt/AntiKnockback-Gate-Aushebelung (bereits gefixt via be7cf22).
+Mehrere Selbstkorrektur-Ketten im Fork selbst beobachtet und verifiziert
+(VPR Serpent's Ire, MCH Wildfire/Barrel Stabilizer, DRK Reprisal-
 Doppelplatzierung) — durchgängig nachvollziehbar und korrekt aufgelöst.
+TODO.md #47/#52/#53 (aus dieser Runde entstanden) sind inzwischen alle
+GEFIXT/ABGESCHLOSSEN, siehe TODO.md für den aktuellen Stand statt hier.
