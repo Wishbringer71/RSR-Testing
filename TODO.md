@@ -5,7 +5,7 @@ Kontextkomprimierung überleben. Bei Sitzungsbeginn lesen. Neue Findings
 während der Arbeit hier ergänzen, nicht nur im Chat/Task-Tool belassen.
 
 Nur offene Arbeit steht hier. Der vollständige Beleg-Trail (alle
-abgeschlossenen Batch- und Einzelcommit-Prüfungen, 55/55 Commits Fork vs.
+abgeschlossenen Batch- und Einzelcommit-Prüfungen, 56/56 Commits Fork vs.
 Upstream) liegt in `AUDIT_LOG.md` — dort nachsehen, bevor ein Commit/
 Bereich erneut geprüft wird, um Doppelarbeit zu vermeiden.
 
@@ -255,7 +255,7 @@ Bausteine (Reihenfolge nach Risiko/Nutzen, jeder einzeln audit-fähig):
   Zweig (Dia/AeroII/Aero je einzeln), kein anderer Job betroffen. Nur
   statisch verifiziert.
 
-- **B4 — Pre-Pull-Sicherheit**: siehe #46. Noch kein Konzept.
+- **B4 — Pre-Pull-Sicherheit**: siehe #46 — GEFIXT für WHM/AST/SGE, SCH begründet unverändert.
 
 - **B1 — generischer "wer greift Nicht-Tank an"-Helfer**: VERWORFEN als
   eigener Baustein (verfrühte Abstraktion, nur 2 gegenläufige Verwender
