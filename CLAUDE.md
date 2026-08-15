@@ -47,6 +47,8 @@ Commits/Code-Kommentare: Englisch, fix, keine offene Frage.
 Jede Nutzerregel sofort in diese Datei schreiben, nicht erst am Aufgabenende — schreiben, nicht nur befolgen.
 Bei Sitzungsbeginn/nach Kontextkomprimierung zusätzlich lesen: `TODO.md` (offene Punkte), `AUDIT_LOG.md` (Beleg-Archiv abgeschlossener Prüfungen — vor Neu-Audit eines Commits/Bereichs dort nachsehen, Doppelarbeit vermeiden). Fehlt eine dieser Dateien trotz Arbeit an diesem Repo: Nutzer informieren, nicht stillschweigend neu anfangen.
 Neu erkannte Probleme, auch wenn sie mit der gerade laufenden Aufgabe nichts zu tun haben, sofort in TODO.md eintragen statt nur im Chat zu erwähnen — nicht abwarten, ob sie "relevant genug" sind oder erst am Ende gesammelt melden.
+Umkehrung genauso verbindlich: sobald ein TODO.md-Punkt GEFIXT/ABGESCHLOSSEN/VERWORFEN ist, sofort nach AUDIT_LOG.md verschieben, nicht mit erledigtem Status in TODO.md liegen lassen — TODO.md führt nach eigener Definition nur offene Arbeit. Status-Update allein (Text von "offen" auf "GEFIXT" ändern) ist keine ausreichende Reaktion, wenn der Punkt seiner Natur nach nicht mehr offen ist.
+Beleg: #46/#47/#52/#53 sowie alle Aggro-Management-Bausteine (B1-B4) wurden nach Abschluss mit Status GEFIXT/ABGESCHLOSSEN in TODO.md belassen statt nach AUDIT_LOG.md verschoben — Datei widersprach damit ihrer eigenen Kopfzeile ("Nur offene Arbeit steht hier").
 
 ## Prüftiefe unabhängig von Codegröße
 
@@ -59,6 +61,8 @@ Check an den ANFANG der Arbeit, nicht als nachträgliche Reaktion auf Nutzerfrag
 "Fork aktualisieren" = `origin/main` (Standard-Branch des Fork-Repos), NICHT nur der aktive Feature-Branch — ein `upstream/main`-Merge nur in den Feature-Branch lässt den Fork selbst veraltet. Beide Ebenen syncen.
 Bei relevanter Überschneidung: Nutzer informieren, klären ob merge/rebase vor Fortsetzung.
 Gilt für ALLE Branches im Repo, nicht nur die zwei gerade im Fokus (bereits einmal falsch: nur eigene Arbeitskopie/aktueller Branch aktualisiert, Repo + andere Branches vergessen — Änderung/Sync ist erst abgeschlossen, wenn Repo als Ganzes konsistent ist, nicht nur die lokal gerade bearbeitete Kopie). Bei jedem Sync-Check alle Branches auflisten und einzeln gegen den relevanten Zielstand prüfen (`upstream/main`, `origin/main`), nicht nur den aktuell aktiven. Ausnahme: ein bereits vollständig gemergter Branch wird nicht gesynct, sondern ist ein Datenhygiene-Löschfall (s.u.) — Sync auf totem Branch ist selbst unnötige Arbeit.
+
+**Nie zu `upstream` (Original-Repo, FFXIV-CombatReborn/RotationSolverReborn) pushen/committen** — nur lesend (`fetch`) berühren, niemals `git push upstream ...`, keine PRs dorthin. Alle eigenen Commits gehen ausschließlich an `origin` (den Fork). Bereits einmal falsch gespeichert: diese klar auf "Original-Repo" begrenzte Regel wurde fälschlich als generisches "nie ohne Nutzerfreigabe committen" verallgemeinert — das ist NICHT dasselbe. Commits auf dem eigenen Fork/Arbeitsbranch bleiben normaler, erwarteter Teil des Workflows (häufige kleine Commits, sofort gepusht), nur `upstream` ist tabu.
 
 ## Externer Zustand nie aus Gesprächsverlauf annehmen
 
