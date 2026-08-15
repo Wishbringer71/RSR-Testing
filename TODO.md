@@ -133,10 +133,10 @@ oder gefixt+auditiert, siehe Vermerk).
 - [x] 15297b2 BRD/MCH: BMR-aware proactive refresh for Troubadour/Tactician — einzeln geprüft, PASST + NEUER BUG GEFUNDEN+GEFIXT: MCH `MitOverlap`-Dismantle-Guard kannte nur `Tactician_1951`, nicht die Sync-100-Variante `Tactician_2177` (derselbe Fehlertyp wie BLM-Thunder-Fix), gefixt (Commit "MCH: fix MitOverlap Dismantle guard missing the sync-level Tactician status ID")
 - [x] 951d0ec Add hostile-count sustain-refresh fallback for Addle/Feint — einzeln geprüft, PASST (InCombat extern gewährleistet, >=3-Schwelle-Präzedenz bestätigt: DRK AbyssalDrain, SAM AoE-Trigger)
 - [x] 6813a7c DRG/NIN/SAM/DNC: self-sustain via SecondWind/Bloodbath in HealSingleAbility — einzeln geprüft, PASST
-- [ ] 87646bf Raise sustain-refresh hostile-count threshold from 3 to 4
-- [ ] c01a5e2 DRK/WAR/PLD/GNB: BMR-aware proactive refresh + sustain-refresh for Reprisal
-- [ ] b1b187c Add emergency HP-potion threshold for a confirmed incoming tankbuster
-- [ ] 4a01682 WAR/DRK/PLD/GNB: BMR-aware proactive refresh for Vengeance/Rampart family
+- [x] 87646bf Raise sustain-refresh hostile-count threshold from 3 to 4 — einzeln geprüft, PASST (alle 9 konsistent auf 4, Kollateral-Sorge widerlegt)
+- [x] c01a5e2 DRK/WAR/PLD/GNB: BMR-aware proactive refresh + sustain-refresh for Reprisal — einzeln geprüft, PASST
+- [x] b1b187c Add emergency HP-potion threshold for a confirmed incoming tankbuster — superseded durch eab865c (bereits GO auditiert), PASST
+- [x] 4a01682 WAR/DRK/PLD/GNB: BMR-aware proactive refresh for Vengeance/Rampart family — einzeln geprüft, PASST (Sync-Level-Ternary korrekt, kein HighThunder/Tactician-Fehlertyp)
 - [ ] 28361f2 Unify BMR-tankbuster-imminent check in ShouldAddDefenseSingle, extend to DPS
 - [x] 14a15df BMRShouldRefreshBefore: respect Service.Config.UseBmrTimeline (default off) — Batch 2 bestätigt
 - [ ] 0b3afc7 Make the emergency HP-potion trigger proactive, not just reactive
