@@ -119,11 +119,11 @@ sowie die Meta-Commits dieser Session selbst (cce250b, b0f8ef7, 3f6d262,
 Status-Legende: `[ ]` offen, `[~]` in Arbeit, `[x]` einzeln geprüft (PASST
 oder gefixt+auditiert, siehe Vermerk).
 
-- [ ] 8edd696 SMN: use Addle in defensives, detect tankbusters landing on non-tanks
-- [ ] 1ca682a Respect status-provide check for queued commands
-- [ ] c93a8bc Add generic BMR-aware mitigation refresh helper; wire into Addle/Feint
-- [ ] 75b7af0 SMN: remove dead RadiantOnCooldownSpam config option
-- [ ] e87ebea SMN: opt-in movement-aware Titan priority
+- [x] 8edd696 SMN: use Addle in defensives, detect tankbusters landing on non-tanks — einzeln geprüft, PASST (IsHostileCastingTank-Fallback-Heuristik ist vorbestehend, keine neue Schwäche; RadiantAegis-Refresh inzwischen auf gemeinsamen Helfer migriert)
+- [x] 1ca682a Respect status-provide check for queued commands — einzeln geprüft, PASST (ForceEnable überschneidet sich nicht mit entferntem skipStatusProvideCheck)
+- [x] c93a8bc Add generic BMR-aware mitigation refresh helper; wire into Addle/Feint — einzeln geprüft, PASST (Level-Gate konsistent über alle 9 Verwender, Combo-Safety-Gates wickeln neuen Zweig korrekt ein, NIN-Lücke korrekt geschlossen)
+- [x] 75b7af0 SMN: remove dead RadiantOnCooldownSpam config option — einzeln geprüft, PASST (Grep bestätigt: keine Referenz mehr im Repo)
+- [x] e87ebea SMN: opt-in movement-aware Titan priority — Batch 4 bestätigt, PASST
 - [x] a1418f5 Fix interrupt ordering so per-job combo-safety gates actually apply — TEILWEISE, Folgefehler gefunden+gefixt in be7cf22 (s.u.)
 - [ ] be083a1 Add Weakness/Brink of Death awareness to heal thresholds
 - [ ] 27c7b69 Weigh shield magnitude and duration in heal-priority decisions
