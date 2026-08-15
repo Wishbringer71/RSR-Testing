@@ -16,52 +16,62 @@ scheinbar neues Thema begonnen wird, um Doppelarbeit zu vermeiden.
 
 ## Offene Konzepte / Fixes (noch nicht umgesetzt)
 
-### #54 WHM-Heilsuppression nach oGCD-Erschöpfung — Ursache NICHT bestätigt, Recherche läuft
+### #54 WHM-Heilsuppression nach oGCD-Erschöpfung — Root Cause weiterhin NICHT gefunden, alle bekannten Kandidaten ausgeschlossen
 
 Nutzer-Meldung, wörtlich verifizierte Fakten (keine Interpretation):
-Schwellen konfiguriert auf >70% (ohne HoT) und >55% (HoT-Schwellenwert,
-zweiter Config-Wert — KEIN in-Game-Ereignis, kein Mitheiler erwähnt).
-oGCD-Heilung funktioniert zu Beginn, dann oGCDs aufgebraucht. Danach
-feuern manaverbrauchende GCD-Heilsprüche trotz vollem Mana NICHT —
-Partymitglieder fallen unter 50%, nicht nur kurzfristig. Tritt meist auf,
-wenn keine oGCDs verfügbar sind.
+Normales Dungeon (Klyteum), echte Mitspieler (keine Duty-Support-NPCs).
+Schwellen: alle acht Werte (Ability+Spell, Single+Area, je mit/ohne HoT)
+konsistent auf >70% (ohne HoT) / 55-65% (mit HoT) angehoben. oGCD-Heilung
+funktionierte zu Beginn, dann oGCDs aufgebraucht. Danach feuerten
+manaverbrauchende GCD-Heilsprüche (Cure/Cure II) trotz vollem Mana NICHT —
+kein Castversuch, kein Balken (nicht "abgebrochen", sondern nie versucht).
+Tank fiel bis unter 20% HP, kein Schild/Barriere aktiv. Gegner (>3, kein
+Mitheiler) waren unter 50% HP, aber weit von Tod entfernt, Ausgang unklar.
+Heiler castete in dieser Zeit aktiv eine AoE-Stun-Aktion (Holy, CC bei 3+
+Gegnern) — selbst gewählt von RSRs Automatik, nicht manuell vom Nutzer
+gedrückt. Kein Stun auf den Heiler selbst.
 
 Der bereits gefixte `AverageTTK`-Nullfallback (siehe AUDIT_LOG.md) erklärt
-dies NICHT vollständig (nur ~2.5s-Fenster am Pull-Start, betrifft oGCD und
-GCD gleichermaßen).
+dies NICHT vollständig (nur ~2.5s-Fenster am Pull-Start).
 
-Bisher untersuchter, NICHT bestätigter Kandidat (Vorsicht — frühere Fassung
-dieses Eintrags hatte hier fälschlich einen Mitheiler/HoT-Auslöser
-unterstellt, den der Nutzer nie genannt hat — das war Fabrikation und ist
-gestrichen):
-`RotationSolver/Updaters/CancelCastUpdater.cs:70-77` (`shouldStopHealing`,
-hinter `Service.Config.StopHealingAfterThresholdExperimental2`, Default
-`false`, Configs.cs:713-714) bricht einen BEREITS LAUFENDEN GCD-Single-Heal
-ab, wenn das Heilbedarf-Flag während des Casts wegfällt. Das erklärt nur ein
-Szenario mit sichtbar startendem und dann abbrechendem Cast — nicht
-zwangsläufig "Spell wird nie genutzt" (könnte auch bedeuten: Spell wird von
-der Auswahllogik nie ausgewählt, anderer Codepfad in `StateUpdater`/
-`CustomRotation_GCD`-Dispatch). Ob dieses Szenario überhaupt zutrifft, ist
-ungeklärt.
+**Vollständig ausgeschlossene Kandidaten (mit Beleg):**
+- `CancelCastUpdater.shouldStopHealing` (Configs.cs:713, Default `false`) —
+  setzt bereits laufenden Cast voraus, gab es laut Nutzer nicht.
+- `DataCenter.IsTyrantCastingSpecialIndicator()` (nur `IsInM11S`) — normales
+  Dungeon, nicht M11S.
+- Schild-Credit auf Effective-HP (`ShieldCreditAllowed`/`HasSurvivingShield`
+  in `ShouldHealSingle`) — kein Schild/Barriere vorhanden.
+- Getrennte Schwellenpaare `HealthSingleAbility(Hot)` vs.
+  `HealthSingleSpell(Hot)` — alle acht Werte konsistent angehoben, nicht nur
+  eine Zeile.
+- Per-Action `ActionConfig.AutoHealRatio` (Default 0.8) — laut Nutzer nie
+  verändert.
+- `EmergencyGCD` (`CustomRotation_GCD.cs:72-79`) vor Heal-Branches — WHM
+  PvE hat keine Override, Basisklasse macht in PvE nichts, keine
+  `CurrentDutyRotation` für normales Dungeon.
+- Manuelles Overriding durch den Spieler — Nutzer hat nichts gedrückt,
+  RSR-Automatik hat Holy selbst gewählt.
+- Upstream-Issue #1351 (NPC-Duty-Support-HP-Lesefehler) — laut Melder
+  explizit nicht bei echten Mitspieler-Partys, hier echte Mitspieler.
+- Keine weiteren passenden Upstream-Issues gefunden (durchsucht: heal, cure,
+  "won't heal", "not healing", "GCD heal", holy — nur altes, 2024
+  geschlossenes #70 mit gegenteiligem Symptom, nicht relevant).
 
-Offene Rückfrage an Nutzer, bevor weitere Analyse sinnvoll ist: Wurde ein
-Cast-Balken von Cure/Cure II/Regen beobachtet, der beginnt und dann
-abbricht — oder hat WHM gar nicht erst versucht zu casten (z. B. nur
-Auto-Attacke/Filler weitergenutzt, während HP fiel)? Diese Unterscheidung
-entscheidet den weiteren Suchraum (Cast-Abbruch-Logik vs.
-Aktionsauswahl-Logik) und darf nicht angenommen werden.
-
-Noch nicht abschließend geprüfte Nebenkandidaten aus dieser Recherche
-(keiner bestätigt, keiner verworfen): getrennte Schwellenpaare
-`HealthSingleSpell`/`HealthSingleSpellHot` vs.
-`HealthSingleAbility`/`HealthSingleAbilityHot` (StateUpdater.cs); per-Action
-`ActionConfig.AutoHealRatio` (Default 0.8, ActionConfig.cs:106) als
-zusätzlicher Ziel-Eligibility-Filter unabhängig von Job-Schwellen; WHM
+**Noch nicht geprüft / fehlende Daten:** WHM
 `HealSingleGCD`-Swiftcast+Raise-Kurzschluss (WHM_Reborn.cs ~336-364, nur
-relevant wenn ein Rez ansteht).
+relevant wenn Rez ansteht — bei diesem Vorfall nicht erwähnt, daher
+nachrangig). Kein Zugriff auf Live-Diagnosedaten (RSR-Debug-Statusfenster
+zeigt `AutoStatus`/`MergedStatus`-Flags und tatsächlich verwendete
+HP-Werte live) — ohne das keine weitere Eingrenzung per Code-Lektüre
+möglich, da alle bekannten Codepfad-Kandidaten durchgeprüft sind.
 
-KEIN Fix umsetzen, bevor eine dieser Ursachen tatsächlich belegt ist —
-Stand jetzt ist alles Kandidat, nichts bestätigt.
+**Nächster Schritt:** Beim nächsten Auftreten das RSR-Debug-Statusfenster
+offen halten/Werte notieren (insbesondere ob `HealSingleSpell`-Flag gesetzt
+war) — das ist der einzige noch verbleibende Weg, den Suchraum weiter
+einzugrenzen.
+
+KEIN Fix umsetzen, bevor eine Ursache tatsächlich belegt ist — Stand jetzt
+ist nichts bestätigt.
 
 ### #55 `_lastHp` in `DataCenter.GetPartyMemberHPRatio` toter Code — Heil-Prädiktions-Cleanup greift nie
 
