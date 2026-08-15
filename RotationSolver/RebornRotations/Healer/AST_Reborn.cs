@@ -40,6 +40,9 @@ public sealed class AST_Reborn : AstrologianRotation
 	[RotationConfig(CombatType.PvE, Name = "Minimum HP threshold party member needs to be to use Aspected Benefic")]
 	public float AspectedBeneficHeal { get; set; } = 0.4f;
 
+	[RotationConfig(CombatType.PvE, Name = "Aspected Benefic on Tank before pull, and keep it up on the tank during combat while it's otherwise idle GCD time (Aspected Benefic is instant-cast, safe to keep up while moving).")]
+	public bool UsePreAspectedBenefic { get; set; } = true;
+
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Minimum HP threshold party member needs to be to use Synastry")]
 	public float SynastryHeal { get; set; } = 0.5f;
@@ -117,6 +120,12 @@ public sealed class AST_Reborn : AstrologianRotation
 		}
 
 		if (remainTime < 30 && AstralDrawPvE.CanUse(out act))
+		{
+			return act;
+		}
+
+		if (UsePreAspectedBenefic && remainTime <= 5 && remainTime > 3
+			&& AspectedBeneficPvE.CanUse(out act, targetOverride: TargetType.Tank))
 		{
 			return act;
 		}
@@ -626,6 +635,15 @@ public sealed class AST_Reborn : AstrologianRotation
 			return true;
 		}
 		if (!MaleficIiPvE.Info.EnoughLevelAndQuest() && MaleficPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		// Aspected Benefic is instant-cast (no cast time), so keeping it up on the tank costs no
+		// movement/uptime unlike a hard-cast spell - safe filler for genuinely spare GCD time,
+		// including while running into or moving during a pull. Placed last: every higher-priority
+		// action above already had its chance to claim this GCD first.
+		if (UsePreAspectedBenefic && AspectedBeneficPvE.CanUse(out act, targetOverride: TargetType.Tank))
 		{
 			return true;
 		}

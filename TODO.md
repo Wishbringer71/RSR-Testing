@@ -12,22 +12,61 @@ Bereich erneut geprüft wird, um Doppelarbeit zu vermeiden.
 ## Offene Konzepte / Fixes (noch nicht umgesetzt)
 
 ### #46 — Pre-Pull-Schutz (HoT/Schild) auf Tank vor Wall-to-Wall-Erstcharge, mit Erneuerung während des Pulls
-Status: Sinnhaftigkeit bestätigt, Umfang teilweise geprüft, NICHT umgesetzt.
-WHM hat bereits `UsePreRegen` (Regen auf Tank, Countdown 3-5s vor Pull) —
-deckt "vor dem ersten Charge" ab, aber zeitbasiert statt distanzbasiert,
-UND ohne Erneuerung während des laufenden Pulls (`CountDownAction` läuft
-nur vor Kampfbeginn; die reguläre `HealSingleGCD`-Regen-Nutzung ist rein
-reaktiv HP-schwellenbasiert, nicht proaktiv auf den pullenden Tank
-ausgerichtet — echte, bisher unentdeckte Lücke). SCH hat ein Äquivalent
-mit Adloquium (Schild, 6-7s Countdown, config-gated `AdloquiumDuringCountdown`).
-KORREKTUR (Nutzerhinweis): Schilde sind NICHT nur ein einmaliger Pre-Pull-
-Cast wie ursprünglich unterstellt — sie können genau wie ein HoT sowohl
-vor Pull-Beginn ALS AUCH während des laufenden Pulls erneuert werden.
-#46 ist damit kein reines "HoT vs. WHM"-Thema, sondern gilt gleichermaßen
-für Schild-Heiler (SCH) — dieselbe Lücke (keine Erneuerung während des
-Pulls) betrifft SCH vermutlich genauso. AST/SGE haben aktuell gar keinen
-Pre-Pull-Tank-Schutz. Voller Scope (alle 4 Healer, je eigenes Tool/Design)
-noch nicht konzipiert — Rückfrage zum weiteren Vorgehen läuft.
+Status: GEFIXT für WHM/AST/SGE (statisch selbst-geprüft, kein Compile/Test), SCH bewusst unverändert (Begründung unten).
+
+Nutzer-Zielvorgabe: Vereinheitlichung, einheitlicher Komfort für alle 4
+Heiler. Präzisiert (Nutzer): der Kern ist Anbringen des HoT/Schilds
+WÄHREND DES LAUFENS (Pre-Pull-Anlauf oder Bewegung im Pull), OHNE
+Swiftcast zu verbrauchen — nur wenn eine echte Instant-Cast-Möglichkeit
+für die jeweilige Fähigkeit bereits besteht. Kombi-oGCDs, die gleichzeitig
+schilden UND heilen, sind bewusst ausgeklammert — die laufen bereits über
+die bestehende reaktive Schwellenwert-Heilrota (z.B. SCH Excogitation),
+keine Dopplung nötig.
+
+Instant-Cast-Status je Fähigkeit per Websuche verifiziert:
+- WHM Regen: instant (kein Cast-Zeit-Anteil). — Quelle: ffxiv.consolegameswiki.com/wiki/Regen
+- AST Aspected Benefic: instant. — Quelle: ffxiv.consolegameswiki.com/wiki/Aspected_Benefic
+- SGE Eukrasian Diagnosis (via Eukrasia-Stance): instant (beide GCDs der Sequenz ohne Cast-Zeit). — Quelle: ffxiv.consolegameswiki.com/wiki/Eukrasian_Diagnosis
+- SCH Adloquium: 2s Cast-Zeit, NICHT instant (nur unter Seraphism/Manifestation instant, ein seltenes Burst-CD-Fenster, für diesen Zweck nicht geeignet). Excogitation ist zwar oGCD/instant, aber laut Nutzer bereits über die reaktive Heilrota abgedeckt (Kombi-oGCD-Fall) — kein neuer Code für SCH.
+→ Ergebnis: WHM/AST/SGE bekommen die volle Pre-Pull+Sustain-Funktion, SCH bleibt bei seinem bestehenden, unveränderten `AdloquiumDuringCountdown` (nur stationärer Pre-Pull-Cast, keine Bewegungs-Sustain — es gibt dafür kein geeignetes instant-cast reines HoT/Schild-Tool). Das ist kein inkonsistentes Ergebnis, sondern spiegelt einen echten Spielmechanik-Unterschied zwischen den Jobs.
+
+Umsetzung (alle als Low-Priority-Filler ans Ende der jeweiligen `GeneralGCD`
+gesetzt, nach der DOTUpkeep-Präzedenz — feuert nur, wenn nichts
+Höherprioritäres die GCD beansprucht; `.CanUse()`s eingebauter
+Status-Check verhindert Doppel-Cast auf bereits aktiven Buff):
+- WHM_Reborn.cs: `UsePreRegen` (bestehende Option, Beschreibung erweitert)
+  gated jetzt zusätzlich einen `RegenPvE`-Sustain-Check auf `TargetType.Tank`
+  am Ende von `GeneralGCD` — ergänzt den bereits vorhandenen Countdown-Cast,
+  ersetzt ihn nicht.
+- AST_Reborn.cs: neue Option `UsePreAspectedBenefic` (Default true) — sowohl
+  neuer `CountDownAction`-Pre-Pull-Cast (3-5s-Fenster, wie WHM) als auch
+  `GeneralGCD`-Sustain-Check, beide auf `AspectedBeneficPvE`/`TargetType.Tank`.
+  AST hatte vorher gar keinen Pre-Pull-Tank-Schutz.
+- SGE_Reborn.cs: neue Option `UsePreEukrasianDiagnosis` (Default true) —
+  `CountDownAction`-Ergänzung direkt nach dem bereits bestehenden,
+  ungated'ten `EukrasiaPvE`-Countdown-Press (Zeile ~132: presste Eukrasia
+  schon vorher blind, nutzte es aber nie — echte, bisher unentdeckte Lücke)
+  sowie `GeneralGCD`-Sustain-Check. BEWUSST selbstständig implementiert
+  (Eukrasia+EukrasianDiagnosis direkt geprüft), NICHT über die bestehende
+  `ChoiceEukrasia`/`_EukrasiaActionAim`-State-Machine geroutet — Analyse:
+  eine Erweiterung dort hätte das Ziel-Override (`TargetType.Tank`) nicht
+  sauber durch `DoEukrasianDiagnosis` durchreichen können, ohne diese
+  Methode zu verändern (Blast-Radius). Race-Risiko genau geprüft: da mein
+  Code als letztes in `GeneralGCD` läuft (nach `ChoiceEukrasia`, die JEDEN
+  Tick zuerst läuft), kann eine gepresste Eukrasia auf einem späteren Tick
+  von der bestehenden Logik für einen echten Bedarf (DefenseArea/Single,
+  DoT-Refresh) "gestohlen" werden — das ist akzeptables, sogar korrektes
+  Verhalten (echter Bedarf schlägt reinen Sustain-Filler), kein Bug, da
+  mein Code beim nächsten freien Tick einfach erneut versucht.
+- SCH_Reborn.cs: keine Änderung (s.o.).
+
+Präzedenzfund bei der Umsetzung: AST_Reborn.cs:531 (bestehende
+`HealSingleGCD`) hat bereits `IsMoving || GetHealthRatio() < AspectedBeneficHeal`
+— bestätigt unabhängig, dass "Aspected Benefic bevorzugt während Bewegung"
+schon ein etabliertes Muster in diesem Fork ist, kein neu erfundenes
+Konzept. Neuer Sustain-Check in `GeneralGCD` überschneidet sich nicht damit
+(andere Dispatch-Methode, nur erreicht wenn `AutoStatus.HealSingle` NICHT
+gesetzt ist).
 
 ### #47 — `ShouldAddDefenseArea()` prüft `BMRNextTankbusterIn` nicht — GEFIXT (statisch selbst-geprüft, kein Compile/Test)
 Bug: `StateUpdater.cs:170-197` prüft nur `BMRNextRaidwideIn`, nicht Tankbuster

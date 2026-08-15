@@ -36,7 +36,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Number of GCDs before you cap on blue lillies that overcap protection will consider 'near full'.")]
 	public int LilyOvercapTime { get; set; } = 3;
 
-	[RotationConfig(CombatType.PvE, Name = "Regen on Tank at 5 seconds remaining on Prepull Countdown.")]
+	[RotationConfig(CombatType.PvE, Name = "Regen on Tank before pull, and keep it up on the tank during combat while it's otherwise idle GCD time (Regen is instant-cast, safe to keep up while moving).")]
 	public bool UsePreRegen { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Divine Caress as soon as its available")]
@@ -534,6 +534,15 @@ public sealed class WHM_Reborn : WhiteMageRotation
 					return true;
 				}
 			}
+		}
+
+		// Regen is instant-cast (no cast time), so keeping it up on the tank costs no movement/uptime
+		// unlike a hard-cast spell - safe filler for genuinely spare GCD time, including while running
+		// into or moving during a pull. Placed last: every higher-priority action above already had
+		// its chance to claim this GCD first.
+		if (UsePreRegen && RegenPvE.CanUse(out act, targetOverride: TargetType.Tank))
+		{
+			return true;
 		}
 
 		return base.GeneralGCD(out act);
