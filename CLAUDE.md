@@ -64,6 +64,11 @@ Gilt für ALLE Branches im Repo, nicht nur die zwei gerade im Fokus (bereits ein
 Repo-/Branch-Zustand (existiert ein Branch, ist etwas gemerged, ist ein PR offen) ist externer, geteilter Zustand — der Nutzer oder Dritte können ihn jederzeit ändern, unabhängig von meinen eigenen Aktionen. Eine frühere Beobachtung in diesem Gespräch ("Branch X existiert noch, Löschung blockiert") ist NICHT weiterhin gültig, nur weil sie einmal stimmte — vor jeder Aussage über solchen Zustand frisch prüfen (`git fetch`, `branch -r` o.ä.), nicht aus dem Gesprächsverlauf zitieren. Unterscheidung zu eigenen, unveränderten Dateien: dort ist Wiederverwendung ohne erneutes Lesen vertretbar, bei geteiltem/externem Zustand nicht.
 Beleg: Branch als "weiterhin blockiert" bezeichnet, obwohl der Nutzer ihn zwischenzeitlich selbst gelöscht hatte — reine Wiederholung einer alten Aussage statt Neuprüfung.
 
+## Grenzen nicht behaupten, ohne verfügbare Tools geprüft zu haben
+
+"Kann ich hier nicht verifizieren" ist nur zulässig, nachdem tatsächlich verfügbare Mittel geprüft wurden — WebSearch/WebFetch für externe Fakten (Spielmechanik, Dokumentation, aktuelle Informationen), nicht nur Code-/Repo-Zugriff. Eine Sandbox-Einschränkung (kein `dotnet`, kein Spielclient) bedeutet nicht automatisch, dass gar nichts verifizierbar ist — externe Fakten sind oft trotzdem per Websuche prüfbar.
+Beleg: Behauptung, eine Fähigkeit (Troubadour/Tactician) sei "vermutlich" nur gegen Magieschaden wirksam, unbelegt in eine technische Entscheidung eingebaut (Job fälschlich aus einem Fix ausgeschlossen) — ohne die verfügbare Websuche zu nutzen, die die Behauptung in Sekunden widerlegt hätte (beide reduzieren tatsächlich jeglichen Schaden).
+
 ## Datenhygiene
 
 Unnötigen Schrott (gemergte/verwaiste Branches, tote Dateien/Config-Optionen, Altlasten ohne Zweck) proaktiv aufräumen, nicht erst auf Nachfrage — wenn im normalen Arbeitsverlauf auffällt. Vor Löschen verifizieren, nicht annehmen: tatsächlich vollständig gemerged/unreferenziert, kein offener PR, kein unentdeckter Zweck. Löschvorgänge mit Blast-Radius (Remote-Branches, Repo-Dateien) bleiben bestätigungspflichtig — Datenhygiene ist Such-/Meldepflicht, keine Erlaubnis für eigenmächtiges destruktives Handeln.
