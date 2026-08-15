@@ -17,29 +17,33 @@ HoT, Distanz-/Timing-Bedingung, Interaktion mit bestehender Pre-Pull-Regen-
 Logik z.B. WHM `UsePreRegen`). Braucht vollen Konzept→Kritik→Plan→Kritik→
 Umsetzung→Audit-Zyklus.
 
-### #47 — `ShouldAddDefenseArea()` prüft `BMRNextTankbusterIn` nicht
-Status: Bug verifiziert (`StateUpdater.cs:170-197` prüft nur
-`BMRNextRaidwideIn`, nicht Tankbuster — im Unterschied zu
-`ShouldAddDefenseSingle()`, Zeile 199+, die beides prüft). Addle/Feint/
-Reprisal-Kommentare (SMN/RDM/PCT/BLM/SAM/RPR/MNK/VPR/DRG/DRK/WAR/PLD/GNB)
-begründen sich explizit mit "jede Schadensart inkl. reiner Tankbuster" —
-bei reiner Tankbuster-Vorhersage ohne Raidwide wird `AutoStatus.DefenseArea`
-aber nie gesetzt.
-Fix-Skizze (AKTUALISIERT nach Einzel-Audit von 76a683b/c01a5e2/16d4475, s.
-AUDIT_LOG.md): NICHT das Gate pauschal erweitern (gleicher Blast-Radius-
-Fehler wie beim ersten DefenseArea-Redesign-Versuch, der revertiert wurde).
-Stattdessen: Das Repo hat bereits ein etabliertes Workaround-Muster —
-Reprisal bei DRK/GNB und Addle bei SMN sind bewusst in BEIDEN Methoden
-platziert (DefenseAreaAbility UND DefenseSingleAbility), sodass sie über
-ShouldAddDefenseSingle's reicheren Tankbuster-Trigger erreichbar bleiben,
-auch wenn ShouldAddDefenseArea (die eigentliche Lücke) nichts prüft.
+### #47 — `ShouldAddDefenseArea()` prüft `BMRNextTankbusterIn` nicht — GEFIXT + AUDITIERT
+Bug: `StateUpdater.cs:170-197` prüft nur `BMRNextRaidwideIn`, nicht Tankbuster
+— im Unterschied zu `ShouldAddDefenseSingle()`, die beides prüft. Bei reiner
+Tankbuster-Vorhersage ohne Raidwide wird `AutoStatus.DefenseArea` nie gesetzt.
+Fix: etabliertes Doppel-Platzierungs-Muster (DRK/GNB Reprisal, SMN Addle)
+auf die tatsächlich betroffenen 9 Jobs angewendet — RDM/PCT/BLM-Addle,
+SAM/RPR/MNK/VPR/DRG/NIN-Feint: derselbe proaktive BMR-Refresh-Block wurde
+zusätzlich in `DefenseSingleAbility` eingefügt (neu angelegt wo nötig),
+sodass er über `ShouldAddDefenseSingle`s reicheren Tankbuster-Trigger
+erreichbar bleibt. Genuine Sicherheits-/Combo-Gates (EnoughWeaveTime,
+Gluttony/Enshroud- bzw. Serpent's-Ire-Slot-Guards, DRG StardiverPvE-Guard,
+NIN Mudra-Check) wurden mitgenommen; reine Präferenz-Gates (BurstDefense
+bei PCT wurde dagegen bewusst mitgenommen, da es PCTs eigene etablierte
+Konvention in DefenseSingle ist — Unterscheidung im Einzelfall geprüft,
+nicht pauschal übernommen/weggelassen).
+KORREKTUR während der Umsetzung: BRD-Troubadour und MCH-Tactician waren in
+der ursprünglichen Liste fälschlich als betroffen geführt. Beide nutzen
+tatsächlich `BMRRaidwideIn`, nicht das generische `BMRDamageIn` wie Addle/
+Feint/Reprisal — sie sind reine Raidwide-Mitigationswerkzeuge (passend zum
+echten Spielmechanismus: Troubadour/Tactician wirken gegen Magie-Raidwides,
+nicht gegen physische Tankbuster). Ihr bestehender reiner
+`DefenseAreaAbility`-Platz ist korrekt, #47 betrifft sie nicht — eine
+Doppel-Platzierung hätte sie fälschlich gegen Tankbuster vorgeschlagen.
+Nicht umgesetzt, Korrektur dokumentiert statt blind Muster kopiert.
 WAR/PLD-Reprisal war nie betroffen (lag von Anfang an nur in
-DefenseSingleAbility). TATSÄCHLICH NOCH BETROFFEN (kein DefenseSingle-
-Gegenstück): RDM/PCT/BLM-Addle, SAM/RPR/MNK/VPR/DRG/NIN-Feint,
-BRD-Troubadour, MCH-Tactician. Fix: dasselbe Doppel-Platzierungs-Muster
-auf diese verbleibenden Fälle anwenden (konsistenter mit bestehendem
-Code als ein neues Opt-in-Flag). Noch nicht implementiert, noch nicht
-kritisch geprüft.
+DefenseSingleAbility). Nur statisch verifiziert (kein Build/Test möglich,
+kein `dotnet` in dieser Sandbox).
 
 ### #52 — VPR Serpent's-Ire-Weave-Guard (`7c174ec`): `IsBurst` ist kein
 Echtzeit-Burst-Fenster-Signal
