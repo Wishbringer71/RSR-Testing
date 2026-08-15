@@ -91,20 +91,22 @@ tödlichem Tankbuster).
 
 Bausteine (Reihenfolge nach Risiko/Nutzen, jeder einzeln audit-fähig):
 
-- **B2a — Provoke-Distanzbug**: VERIFIZIERT, NOCH NICHT GEFIXT.
-  `ObjectHelper.cs:112`: `Vector3.Distance(target.Position, Player.Object.Position) > 5`
-  — vergleicht Boss-Position mit der Position des Spielers, der Provoke
-  casten will, verlangt >5y Abstand. Ein Tank in normaler Nahkampf-
-  Positionierung liegt oft darunter → `CanProvoke` liefert `false`, obwohl
-  der Boss sichtbar einen DPS/Healer angreift. Erklärt das gemeldete
-  "unzuverlässige" Verhalten in Raid/Savage bei Co-Tank-Tod/Notfall.
-  Nächster Schritt: Konzept für den Fix (was sollte die Distanzbedingung
-  stattdessen prüfen, falls überhaupt etwas — evtl. ersatzlos streichen),
-  kritische Prüfung, dann Umsetzung + Audit.
-  Upstream-Sync-Check (gemäß CLAUDE.md-Regel, vor Arbeitsbeginn
-  durchgeführt): Bug existiert IDENTISCH in `upstream/main` — kein
-  Fork-eigener Fehler, von Anfang an geerbt, im Original ebenfalls nicht
-  gefixt. Kein Doppelarbeit-Risiko für diesen Punkt.
+- **B2a — Provoke-Distanzbug**: GEFIXT + AUDITIERT.
+  `ObjectHelper.cs:113`: war `Vector3.Distance(target.Position, Player.Object.Position) > 5`
+  — verlangte >5y Abstand zwischen Boss und dem provokierenden Tank, blockierte
+  damit den häufigsten Fall (Tank bereits in Nahkampfreichweite, verliert Aggro
+  an DPS/Healer). Konzept+Adversarial-Check (s. AUDIT_LOG.md für Details):
+  downstream existiert bereits eine echte Reichweitenprüfung über das
+  Action-Targeting-System (`FindProvokeTarget()`), `ShouldAddProvoke()` hat
+  keine weitere Bremse gegen zu häufiges Auslösen außerhalb Allianz-Content
+  — die Distanzbedingung war die einzige Sperre für den wichtigsten Fall.
+  Geprüfte Alternativen: ersatzlos streichen (verworfen, entfernt evtl.
+  beabsichtigten Pull-Start-Rauschfilter) vs. Vorzeichen umdrehen (gewählt
+  — bewahrt mögliche Schutzfunktion, genauso codearm, risikoärmer).
+  Fix: `>` → `<` (ein Zeichen), Klärungskommentar ergänzt. Upstream-Sync-
+  Check vor Arbeitsbeginn: Bug existiert identisch in `upstream/main`,
+  kein Fork-eigener Fehler, kein Doppelarbeit-Risiko. Nur statisch
+  verifiziert (kein `dotnet` in dieser Sandbox, kein Build/Test möglich).
 
 - **B2b — Notfall-Provoke bei drohend tödlichem Tankbuster**: Konzept
   skizziert (BMR-Tankbuster-Vorhersage + `GetEffectiveHpPercent` des
