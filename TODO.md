@@ -11,13 +11,25 @@ Bereich erneut geprüft wird, um Doppelarbeit zu vermeiden.
 
 ## Offene Konzepte / Fixes (noch nicht umgesetzt)
 
-### #46 — Pre-Pull-HoT auf Tank vor Wall-to-Wall-Erstcharge
-Status: Idee erfasst, Konzept noch nicht entwickelt (welcher Healer, welcher
-HoT, Distanz-/Timing-Bedingung, Interaktion mit bestehender Pre-Pull-Regen-
-Logik z.B. WHM `UsePreRegen`). Braucht vollen Konzept→Kritik→Plan→Kritik→
-Umsetzung→Audit-Zyklus.
+### #46 — Pre-Pull-Schutz (HoT/Schild) auf Tank vor Wall-to-Wall-Erstcharge, mit Erneuerung während des Pulls
+Status: Sinnhaftigkeit bestätigt, Umfang teilweise geprüft, NICHT umgesetzt.
+WHM hat bereits `UsePreRegen` (Regen auf Tank, Countdown 3-5s vor Pull) —
+deckt "vor dem ersten Charge" ab, aber zeitbasiert statt distanzbasiert,
+UND ohne Erneuerung während des laufenden Pulls (`CountDownAction` läuft
+nur vor Kampfbeginn; die reguläre `HealSingleGCD`-Regen-Nutzung ist rein
+reaktiv HP-schwellenbasiert, nicht proaktiv auf den pullenden Tank
+ausgerichtet — echte, bisher unentdeckte Lücke). SCH hat ein Äquivalent
+mit Adloquium (Schild, 6-7s Countdown, config-gated `AdloquiumDuringCountdown`).
+KORREKTUR (Nutzerhinweis): Schilde sind NICHT nur ein einmaliger Pre-Pull-
+Cast wie ursprünglich unterstellt — sie können genau wie ein HoT sowohl
+vor Pull-Beginn ALS AUCH während des laufenden Pulls erneuert werden.
+#46 ist damit kein reines "HoT vs. WHM"-Thema, sondern gilt gleichermaßen
+für Schild-Heiler (SCH) — dieselbe Lücke (keine Erneuerung während des
+Pulls) betrifft SCH vermutlich genauso. AST/SGE haben aktuell gar keinen
+Pre-Pull-Tank-Schutz. Voller Scope (alle 4 Healer, je eigenes Tool/Design)
+noch nicht konzipiert — Rückfrage zum weiteren Vorgehen läuft.
 
-### #47 — `ShouldAddDefenseArea()` prüft `BMRNextTankbusterIn` nicht — GEFIXT + AUDITIERT
+### #47 — `ShouldAddDefenseArea()` prüft `BMRNextTankbusterIn` nicht — GEFIXT (statisch selbst-geprüft, kein Compile/Test)
 Bug: `StateUpdater.cs:170-197` prüft nur `BMRNextRaidwideIn`, nicht Tankbuster
 — im Unterschied zu `ShouldAddDefenseSingle()`, die beides prüft. Bei reiner
 Tankbuster-Vorhersage ohne Raidwide wird `AutoStatus.DefenseArea` nie gesetzt.
@@ -104,7 +116,7 @@ tödlichem Tankbuster).
 
 Bausteine (Reihenfolge nach Risiko/Nutzen, jeder einzeln audit-fähig):
 
-- **B2a — Provoke-Distanzbug**: GEFIXT + AUDITIERT.
+- **B2a — Provoke-Distanzbug**: GEFIXT (statisch selbst-geprüft, kein Compile/Test).
   `ObjectHelper.cs:113`: war `Vector3.Distance(target.Position, Player.Object.Position) > 5`
   — verlangte >5y Abstand zwischen Boss und dem provokierenden Tank, blockierte
   damit den häufigsten Fall (Tank bereits in Nahkampfreichweite, verliert Aggro
@@ -121,8 +133,8 @@ Bausteine (Reihenfolge nach Risiko/Nutzen, jeder einzeln audit-fähig):
   kein Fork-eigener Fehler, kein Doppelarbeit-Risiko. Nur statisch
   verifiziert (kein `dotnet` in dieser Sandbox, kein Build/Test möglich).
 
-- **B2b — Notfall-Provoke bei kritisch verwundetem Co-Tank**: GEFIXT +
-  AUDITIERT (`ObjectHelper.cs`, `CanProvoke`).
+- **B2b — Notfall-Provoke bei kritisch verwundetem Co-Tank**: GEFIXT
+  (statisch selbst-geprüft, kein Compile/Test — `ObjectHelper.cs`, `CanProvoke`).
   Konzept mehrfach überarbeitet, siehe Sitzungsverlauf für die volle
   Herleitung: ursprünglich BMR-Tankbuster-Vorhersage-basiert gedacht
   (Buster VOR dem Einschlag umlenken), aber verifiziert (Websuche +
@@ -171,8 +183,8 @@ Bausteine (Reihenfolge nach Risiko/Nutzen, jeder einzeln audit-fähig):
   direkt vor `base.GeneralGCD`, nur durch die eigene `.CanUse()` gegated —
   kein externes Blockier-Gate, kein Notfall-Szenario betroffen.
 
-- **B3 — WHM Dia Ziel-Umlenkung (`TargetType.SafeDotTarget`)**: GEFIXT +
-  AUDITIERT. Umsetzung weicht von der ursprünglichen Skizze in zwei
+- **B3 — WHM Dia Ziel-Umlenkung (`TargetType.SafeDotTarget`)**: GEFIXT
+  (statisch selbst-geprüft, kein Compile/Test). Umsetzung weicht von der ursprünglichen Skizze in zwei
   Punkten ab, aus gutem Grund: (1) ERGÄNZT den reaktiven Fix aus 716789d,
   ersetzt ihn nicht — die alte Bedingung (`DiaPvE.Target.Target?.TargetObject
   != Player`) bleibt als primärer Versuch stehen, der neue
