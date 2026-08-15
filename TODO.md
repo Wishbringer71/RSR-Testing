@@ -184,7 +184,7 @@ oder gefixt+auditiert, siehe Vermerk).
 - [x] a1418f5 Fix interrupt ordering so per-job combo-safety gates actually apply — TEILWEISE, Folgefehler gefunden+gefixt in be7cf22 (s.u.)
 - [x] be083a1 Add Weakness/Brink of Death awareness to heal thresholds — einzeln geprüft, PASST (Schwellenwert-Mathematik korrekt, nur früher nie später)
 - [x] 27c7b69 Weigh shield magnitude and duration in heal-priority decisions — Ursprungsversion der Batch-1-Regression (blinde 3s-Fallback-Schwelle ohne Bedrohungsnachweis), kein aktuell lebender Zustand mehr, vollständig durch 0c076ee ersetzt
-- [ ] 1ed9907 Fix two compile errors in the BMR-refresh work
+- [x] 1ed9907 Fix two compile errors in the BMR-refresh work — PASST, beide Compile-Fix-Begründungen gegen aktuellen Code verifiziert (Player-Typ, NinjaRotation sealed override)
 - [x] 0f25161 RPR/VPR: let the BMR-timed Feint refresh survive on-going combo — einzeln geprüft, PASST (EnoughWeaveTime ist reine Clip-Sicherheit, bewusste Abwägung Sicherheit vs. Combo-Position, nur im neuen BMR-Zweig, alter reaktiver Zweig unverändert strenger)
 - [x] 6fc9ebb PCT: fix DefenseSingleAbility falling through to the wrong base call — Batch 3 bestätigt
 - [x] 15297b2 BRD/MCH: BMR-aware proactive refresh for Troubadour/Tactician — einzeln geprüft, PASST + NEUER BUG GEFUNDEN+GEFIXT: MCH `MitOverlap`-Dismantle-Guard kannte nur `Tactician_1951`, nicht die Sync-100-Variante `Tactician_2177` (derselbe Fehlertyp wie BLM-Thunder-Fix), gefixt (Commit "MCH: fix MitOverlap Dismantle guard missing the sync-level Tactician status ID")
@@ -199,10 +199,10 @@ oder gefixt+auditiert, siehe Vermerk).
 - [x] 0b3afc7 Make the emergency HP-potion trigger proactive, not just reactive — superseded durch eab865c (bereits GO), PASST
 - [x] 0a31836 RDM: fix dead Impact branch (tautological EnoughLevel check) — Batch 4 bestätigt
 - [x] 470de85 DRK: remove unreachable ungated Shadow Wall/Shadowed Vigil checks — Batch 3 bestätigt
-- [ ] 0885f53 Respect status-provide check for the GCD-queued-command path too
+- [x] 0885f53 Respect status-provide check for the GCD-queued-command path too — PASST, symmetrisch zu 1ca682a verifiziert
 - [x] 1f5dbb1 PCT: fix GeneralAbility falling through to the wrong base call — Batch 3 bestätigt
-- [ ] 76a683b DRK: add the Reprisal BMR/sustain block to DefenseSingleAbility too
-- [ ] 16d4475 Scope the DPS proactive-tankbuster branch to no-live-tank scenarios
+- [x] 76a683b DRK: add the Reprisal BMR/sustain block to DefenseSingleAbility too — PASST, Doppel-Platzierung gegen aktuellen Code verifiziert (Basis für #47-Präzisierung)
+- [x] 16d4475 Scope the DPS proactive-tankbuster branch to no-live-tank scenarios — PASST, AnyLivingTankInParty()-Gate gegen aktuellen Code verifiziert
 - [x] 0c076ee Fix shield-credit heal-priority regression + Weakness interaction — Batch 1 bestätigt (dokumentierte Selbstkorrektur)
 - [x] 2d5e7dc SAM: let the BMR-timed Feint refresh survive Zanshin window — PASST, verifiziert konsistent mit RPR/VPR EnoughWeaveTime-Muster
 - [x] 030129c RPR: don't let the BMR Feint refresh steal a Gluttony/Enshroud slot — PASST mit offener Nachprüfung (siehe #52-Anhang: Prämisse "burst-exklusiv gehalten" nicht eindeutig durch AttackAbility-Code gestützt)
@@ -231,6 +231,17 @@ oder gefixt+auditiert, siehe Vermerk).
 - [x] 6c0e8dc Ground-targeted hostile AoE: resolve tied anchors via the same priority/TargetingType logic as target-based AoE — auditiert, GO
 - [x] 716789d WHM: don't recast DoT-as-filler on a target that's already aggro'd onto the healer — auditiert GO, aber als zu schwach erkannt, siehe Aggro-Management B3 (Ersatz geplant)
 - [x] be7cf22 Stop the generic role fallback from defeating RPR/VPR's own combo-safety gate on Interrupt/AntiKnockback — auditiert, GO
+
+**STATUS: Alle 55 Commits einzeln geprüft (0 offen).** Ergebnis der
+vollständigen Einzelprüfung: keine funktional falschen/schädlichen
+Commits gefunden. Reale Funde dabei: #47 (echte, noch offene Lücke,
+Fix-Skizze oben), #52 (Commit-Message irreführend bei sonst korrektem
+Code, niedrige Priorität), MCH `Tactician_2177`-Sync-Bug (bereits
+gefixt), Interrupt/AntiKnockback-Gate-Aushebelung (bereits gefixt via
+be7cf22). Mehrere Selbstkorrektur-Ketten im Fork selbst beobachtet und
+verifiziert (VPR Serpent's Ire, MCH Wildfire/Barrel Stabilizer, DRK
+Reprisal-Doppelplatzierung) — durchgängig nachvollziehbar und korrekt
+aufgelöst.
 
 ## Wichtig für zukünftige Sessions
 
