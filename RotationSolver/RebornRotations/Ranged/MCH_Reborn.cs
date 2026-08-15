@@ -164,7 +164,7 @@ public sealed class MCH_Reborn : MachinistRotation
 			}
 		}
 
-		if (!MitOverlap || (MitOverlap && !StatusHelper.PlayerHasStatus(true, StatusID.Tactician_1951)))
+		if (!MitOverlap || (MitOverlap && !StatusHelper.PlayerHasStatus(true, StatusID.Tactician_1951, StatusID.Tactician_2177)))
 		{
 			if (DismantlePvE.CanUse(out act))
 			{
