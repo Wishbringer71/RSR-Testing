@@ -116,10 +116,12 @@ Bausteine (Reihenfolge nach Risiko/Nutzen, jeder einzeln audit-fähig):
   `GetEffectiveHpPercent` erstmals für fremdes Party-Mitglied statt für
   sich selbst). Sollte nach B2a kommen, nicht davor.
 
-- **B2c — Verifikation Range-Pull-Fallback**: Vermutlich kein Code-Fix
-  nötig — `ShieldLobPvE`/`TomahawkPvE`/`UnmendPvE`/`LightningShotPvE` laufen
-  bereits unbedingt als GeneralGCD-Fallback. Noch nicht formal als
-  "kein Handlungsbedarf" abgeschlossen.
+- **B2c — Verifikation Range-Pull-Fallback**: ABGESCHLOSSEN, kein Code-Fix
+  nötig. Verifiziert in allen 4 Tank-Rotationen: `TomahawkPvE` (WAR_Reborn.cs:416),
+  `LightningShotPvE` (GNB_Reborn.cs:544), `ShieldLobPvE` (PLD_Reborn.cs:479),
+  `UnmendPvE` (DRK_Reborn.cs:430) sitzen jeweils am Ende von `GeneralGCD`,
+  direkt vor `base.GeneralGCD`, nur durch die eigene `.CanUse()` gegated —
+  kein externes Blockier-Gate, kein Notfall-Szenario betroffen.
 
 - **B3 — WHM Dia Ziel-Umlenkung (`TargetType.SafeDotTarget`)**: Konzept
   fertig entwickelt, noch nicht implementiert. Ersetzt (nicht ergänzt!)
