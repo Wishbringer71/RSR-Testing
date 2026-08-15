@@ -496,20 +496,43 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		// optional filler damage, not upkeep. That's a real DPS gain while moving (what DOTUpkeep is
 		// for), but recasting it specifically on a target that's already attacking the healer adds
 		// avoidable enmity for zero upkeep benefit, risking a squishy healer pulling aggro during a
-		// wall-to-wall pull. Skip it in that case rather than spamming the same over-aggro'd target.
+		// wall-to-wall pull. If the default target is unsafe, redirect to another one (TargetType.
+		// SafeDotTarget) instead of just skipping the filler cast outright - only while DOTUpkeep is
+		// actually active, matching why this branch exists in the first place.
 		if (AeroPvE.EnoughLevel)
 		{
-			if (DiaPvE.EnoughLevel && DiaPvE.Target.Target?.TargetObject != Player && DiaPvE.CanUse(out act, skipStatusProvideCheck: DOTUpkeep))
+			if (DiaPvE.EnoughLevel)
 			{
-				return true;
+				if (DiaPvE.Target.Target?.TargetObject != Player && DiaPvE.CanUse(out act, skipStatusProvideCheck: DOTUpkeep))
+				{
+					return true;
+				}
+				if (DOTUpkeep && DiaPvE.CanUse(out act, targetOverride: TargetType.SafeDotTarget, skipStatusProvideCheck: true))
+				{
+					return true;
+				}
 			}
-			if (AeroIiPvE.EnoughLevel && !DiaPvE.EnoughLevel && AeroIiPvE.Target.Target?.TargetObject != Player && AeroIiPvE.CanUse(out act, skipStatusProvideCheck: DOTUpkeep))
+			if (AeroIiPvE.EnoughLevel && !DiaPvE.EnoughLevel)
 			{
-				return true;
+				if (AeroIiPvE.Target.Target?.TargetObject != Player && AeroIiPvE.CanUse(out act, skipStatusProvideCheck: DOTUpkeep))
+				{
+					return true;
+				}
+				if (DOTUpkeep && AeroIiPvE.CanUse(out act, targetOverride: TargetType.SafeDotTarget, skipStatusProvideCheck: true))
+				{
+					return true;
+				}
 			}
-			if (AeroPvE.EnoughLevel && !AeroIiPvE.EnoughLevel && AeroPvE.Target.Target?.TargetObject != Player && AeroPvE.CanUse(out act, skipStatusProvideCheck: DOTUpkeep))
+			if (AeroPvE.EnoughLevel && !AeroIiPvE.EnoughLevel)
 			{
-				return true;
+				if (AeroPvE.Target.Target?.TargetObject != Player && AeroPvE.CanUse(out act, skipStatusProvideCheck: DOTUpkeep))
+				{
+					return true;
+				}
+				if (DOTUpkeep && AeroPvE.CanUse(out act, targetOverride: TargetType.SafeDotTarget, skipStatusProvideCheck: true))
+				{
+					return true;
+				}
 			}
 		}
 
