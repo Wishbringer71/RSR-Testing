@@ -229,6 +229,7 @@ public partial class CustomRotation
 	/// </summary>
 	/// <param name="nextGCD">The next GCD action.</param>
 	/// <param name="act">The action to be performed.</param>
+	/// <param name="bmrTankbusterImminent">Whether BMR predicts a tankbuster landing within the configured mitigation window, widening the emergency threshold beyond a currently-casting one.</param>
 	/// <returns>True if an HP potion was used; otherwise, false.</returns>
 	private static bool UseHpPotion(IAction nextGCD, out IAction? act, bool bmrTankbusterImminent = false)
 	{
