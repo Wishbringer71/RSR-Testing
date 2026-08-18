@@ -587,6 +587,19 @@ public sealed class AST_Reborn : AstrologianRotation
 			return true;
 		}
 
+		// Proactive wall-to-wall sustain: HealAreaGCD is checked before GeneralGCD in the outer
+		// dispatch (same as HealSingleGCD below), so a raised AoE heal-need flag can starve
+		// TankApproachingMobGroup's check in GeneralGCD for the whole pull even on GCDs where
+		// nothing above in this method actually resolves to a cast. Placed last, right before the
+		// base call, so it never displaces any of the reactive AoE heals above it - same pattern
+		// and AspectedBeneficHeal safety threshold as the HealSingleGCD fix.
+		if (UsePreAspectedBenefic && TankApproachingMobGroup && AspectedBeneficPvE.CanUse(out act, targetOverride: TargetType.Tank)
+			&& AspectedBeneficPvE.Target.Target != null && AspectedBeneficPvE.Target.Target.GetHealthRatio() > AspectedBeneficHeal
+			&& (AspectedBeneficPvE.Target.Target.WillStatusEndGCD(AspectedBeneficPvE.Config.StatusRefreshGcdCount, 0, AspectedBeneficPvE.Setting.StatusFromSelf, AspectedBeneficPvE.Setting.TargetStatusProvide ?? [])))
+		{
+			return true;
+		}
+
 		return base.HealAreaGCD(out act);
 	}
 

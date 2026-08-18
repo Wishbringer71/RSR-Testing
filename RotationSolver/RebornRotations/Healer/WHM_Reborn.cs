@@ -321,6 +321,19 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			return true;
 		}
 
+		// Proactive wall-to-wall sustain: HealAreaGCD is checked before GeneralGCD in the outer
+		// dispatch (same as HealSingleGCD below), so a raised AoE heal-need flag can starve
+		// TankApproachingMobGroup's check in GeneralGCD for the whole pull even on GCDs where
+		// nothing above in this method actually resolves to a cast. Placed last, right before the
+		// base call, so it never displaces any of the reactive AoE heals above it - same pattern
+		// and RegenHeal safety threshold as the HealSingleGCD fix.
+		if (UsePreRegen && TankApproachingMobGroup && RegenPvE.CanUse(out act, targetOverride: TargetType.Tank)
+			&& RegenPvE.Target.Target != null && RegenPvE.Target.Target.GetHealthRatio() > RegenHeal
+			&& (RegenPvE.Target.Target.WillStatusEndGCD(RegenPvE.Config.StatusRefreshGcdCount, 0, RegenPvE.Setting.StatusFromSelf, RegenPvE.Setting.TargetStatusProvide ?? [])))
+		{
+			return true;
+		}
+
 		return base.HealAreaGCD(out act);
 	}
 

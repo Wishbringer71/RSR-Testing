@@ -744,6 +744,29 @@ public sealed class SGE_Reborn : SageRotation
 			return true;
 		}
 
+		// Proactive wall-to-wall sustain: HealAreaGCD is checked before GeneralGCD in the outer
+		// dispatch (same as HealSingleGCD below), so a raised AoE heal-need flag can starve
+		// TankApproachingMobGroup's check in GeneralGCD for the whole pull even on GCDs where
+		// nothing above in this method actually resolves to a cast. Placed last, right before the
+		// base call, so it never displaces any of the reactive AoE heals above it - mirrors the
+		// HealSingleGCD fix, same lack of an existing HP-ratio threshold to reuse here.
+		if (UsePreEukrasianDiagnosis && TankApproachingMobGroup)
+		{
+			var diagnosisDue = PartyTank?.WillStatusEndGCD(EukrasianDiagnosisPvE.Config.StatusRefreshGcdCount, 0, EukrasianDiagnosisPvE.Setting.StatusFromSelf, EukrasianDiagnosisPvE.Setting.TargetStatusProvide ?? []) ?? true;
+			if (diagnosisDue)
+			{
+				if (!HasEukrasia && EukrasiaPvE.CanUse(out act))
+				{
+					return true;
+				}
+
+				if (HasEukrasia && EukrasianDiagnosisPvE.CanUse(out act, targetOverride: TargetType.Tank))
+				{
+					return true;
+				}
+			}
+		}
+
 		return base.HealAreaGCD(out act);
 	}
 

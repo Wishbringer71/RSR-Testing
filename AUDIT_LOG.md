@@ -542,3 +542,65 @@ Upstream-Sync-Check: Bug existiert identisch in `upstream/main` (per
 `git show upstream/main:RotationSolver.Basic/DataCenter.cs` verifiziert)
 — kein Fork-eigener Fehler, sondern vorbestehender Upstream-Bug. Fix nur
 im eigenen Fork committet, nicht nach `upstream` gepusht (Regel).
+
+## Nachtrag 4: HealAreaGCD-Starvation — der eigentliche Grund für "kein HoT seit Initialpull"
+
+Status: GEFIXT (statisch selbst-geprüft, kein Compile/Test). Nutzer-Meldung:
+zweiter/folgender Initial-HoT nach Zwischenboss bleibt aus, UND selbst
+innerhalb desselben Wall-to-Wall-Segments (12 Gegner, Heiler steht neben
+Tank, AoE-Stuns gehen raus) kommt kein HoT mehr, seit dem allerersten Cast.
+
+Fehlgeleitete Zwischenschritte vor dem eigentlichen Fund (zur Nachvollziehbarkeit,
+nicht weil sie zum Ergebnis führten): TTK-Gate (`BaseAction.CanUse` →
+`IsTimeToKillValid`) erneut geprüft — bereits in Nachtrag zum
+`AverageTTK`-Fix oben (Zeile ~527-534) korrekt als wirkungslos für
+`RegenPvE` dokumentiert (`Config.TimeToKill` bleibt `0`, da
+`ModifyRegenPvE` nur `TargetStatusProvide`/`UnlockedByQuestID`/
+`TargetType` setzt, kein `TimeToKill`; `BaseAction.Config`-Getter erzwingt
+zusätzlich `TimeToKill = 0`, wenn `Setting.TargetStatusProvide != null`,
+Zeile 147-150) — Redundanz zur bereits bestehenden Doku, kein neuer Fund.
+`FindTankTarget()`, `BasicCheck()` (inkl. `IsStatusProvided`/
+`IsStatusNeeded`, die auf `Setting.StatusProvide`/`StatusNeed` prüfen, NICHT
+auf `TargetStatusProvide` — für Regen/AspectedBenefic/EukrasianDiagnosis
+also wirkungslos, da nur `TargetStatusProvide` gesetzt ist), `StatusRefreshGcdCount`-
+Default (2) und `GCDTime()` einzeln durchgelesen — alle unauffällig.
+
+Eigentlicher Root Cause (gefunden durch systematisches Durchgehen der
+GCD-Dispatch-Kette statt weiterer Einzeltheorien): `HealAreaGCD` wird in
+`CustomRotation_GCD.cs` GENAUSO wie `HealSingleGCD` VOR `GeneralGCD`
+geprüft (Zeilen 240-269 vs. 457). Der bereits gefixte
+`HealSingleGCD`-Starvation-Fix (siehe `eaa96a7`) deckte nur den reaktiven
+Einzelziel-Heilbedarf ab — `HealAreaGCD` (reaktiver AoE-Heilbedarf) wurde
+dabei vollständig übersehen, obwohl architektonisch identisch angreifbar.
+Bei 12 Gegnern und AoE-Stuns ist Party-weiter Streuschaden weit
+wahrscheinlicher als isolierter Einzelschaden — genau das Szenario, das
+laut Nutzer-Report reproduzierbar bricht. Gesamtheitlich geprüft: alle drei
+betroffenen Jobs (WHM/AST/SGE) hatten denselben Lückenschluss nur in
+`HealSingleGCD`, nie in `HealAreaGCD` — CLAUDE.md-Grundsatz
+"Gesamtheitlichkeit vor Spezialisierung" hier selbst verletzt, indem der
+erste Fund (HealSingleGCD) als vollständig behandelt wurde, ohne die
+strukturell identische Schwestermethode zu prüfen.
+
+Fix: In `HealAreaGCD` aller drei Jobs (WHM/AST/SGE) denselben proaktiven
+Sustain-Check ergänzt, den `HealSingleGCD` bereits hat — Platzierung jeweils
+GANZ AM ENDE, unmittelbar vor dem `base.HealAreaGCD(out act)`-Fallback, NICHT
+vor den bestehenden reaktiven AoE-Heilzweigen (Rapture/MedicaIII/II/CureIII/
+Medica bzw. HeliosConjunction/AspectedHelios/Helios bzw. Pneuma/Eukrasian-
+Prognosis/Prognosis) — damit verdrängt der neue Zweig nie eine echte
+Heilentscheidung, sondern greift nur in den GCDs, in denen der
+AoE-Heilbedarf-Flag zwar gesetzt war, aber keiner der vorherigen Zweige
+tatsächlich einen gültigen Cast fand (das exakte Fenster, in dem vorher
+`base.HealAreaGCD` nichts tat und die Methode den GCD trotzdem für sich
+beanspruchte). WHM/AST nutzen dieselbe HP-Ratio-Schwelle
+(`RegenHeal`/`AspectedBeneficHeal`) wie ihr jeweiliger `HealSingleGCD`-Fix;
+SGE mangels bestehender Schwelle wieder als reiner Nur-wenn-nichts-anderes-
+Fallback wie im `HealSingleGCD`-Pendant.
+
+Nicht verifiziert (kein Compiler/Client): ob `MedicaPvE`/`HeliosPvE`/
+`PrognosisPvE` (die jeweils letzten regulären Zweige vor dem neuen Check)
+tatsächlich so eng an echten Heilbedarf gebunden sind, dass sie bei
+gesetztem AoE-Flag nicht selbst schon fast immer greifen und den neuen
+Zweig dadurch erneut verhungern lassen — falls doch, wäre eine Platzierung
+weiter vorne (vor diesen Fillern, wie ursprünglich für WHM erwogen) nötig.
+Nutzer-Rückmeldung nach Live-Test nötig, um das zu bestätigen oder zu
+widerlegen.
