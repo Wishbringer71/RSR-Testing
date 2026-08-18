@@ -36,7 +36,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Number of GCDs before you cap on blue lillies that overcap protection will consider 'near full'.")]
 	public int LilyOvercapTime { get; set; } = 3;
 
-	[RotationConfig(CombatType.PvE, Name = "Regen on Tank as they close in on a group of 4+ enemies (dungeons only, not Trials/Raids), and keep it up while it's otherwise idle GCD time (Regen is instant-cast, safe to keep up while moving).")]
+	[RotationConfig(CombatType.PvE, Name = "Regen on Tank as they close in on enemies (dungeons only, not Trials/Raids), and keep it up while it's otherwise idle GCD time (Regen is instant-cast, safe to keep up while moving).")]
 	public bool UsePreRegen { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Divine Caress as soon as its available")]

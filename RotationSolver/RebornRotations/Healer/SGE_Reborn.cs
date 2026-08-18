@@ -17,7 +17,7 @@ public sealed class SGE_Reborn : SageRotation
 	[RotationConfig(CombatType.PvE, Name = "Use Eukrasia when out of combat")]
 	public bool OOCEukrasia { get; set; } = true;
 
-	[RotationConfig(CombatType.PvE, Name = "Eukrasian Diagnosis on Tank as they close in on a group of 4+ enemies (dungeons only, not Trials/Raids), and keep it up while it's otherwise idle GCD time (Eukrasian Diagnosis is instant-cast, safe to keep up while moving).")]
+	[RotationConfig(CombatType.PvE, Name = "Eukrasian Diagnosis on Tank as they close in on enemies (dungeons only, not Trials/Raids), and keep it up while it's otherwise idle GCD time (Eukrasian Diagnosis is instant-cast, safe to keep up while moving).")]
 	public bool UsePreEukrasianDiagnosis { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Rhizomata when out of combat")]

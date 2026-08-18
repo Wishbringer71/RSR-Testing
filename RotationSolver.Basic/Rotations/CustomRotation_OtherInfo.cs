@@ -868,16 +868,18 @@ public partial class CustomRotation
 	private const float TankGapCloserRangeYalms = 20f;
 
 	/// <summary>
-	/// Whether the party's tank is close enough to a group of 4+ hostiles to be about to gap-close into
-	/// them - used to time pre-pull tank sustain so it lands as the tank commits to the pull, not while
-	/// still standing still at the start of the instance. Excludes Trials/Raids, where this dungeon
-	/// wall-to-wall-pull pattern doesn't apply.
-	/// Margin above gap-closer range widened from the original 1 yalm: a 1-yalm window is only a
-	/// fraction of a second of travel at run/sprint speed, easy to miss entirely if the healer's own
-	/// GCD isn't free at that exact instant - unconfirmed, but plausible explanation for pre-pull casts
-	/// still not landing even after the in-combat sustain refresh (GeneralGCD/HealAreaGCD/HealSingleGCD
-	/// priority) was fixed and confirmed working. A wider margin gives more GCD ticks a chance to land
-	/// inside the window before the tank actually engages.
+	/// Whether the party's tank is close enough to a hostile to be about to gap-close into it - used to
+	/// time pre-pull tank sustain so it lands as the tank commits to the pull, not while still standing
+	/// still at the start of the instance. Excludes Trials/Raids, where this dungeon wall-to-wall-pull
+	/// pattern doesn't apply.
+	/// Any hostile in range is enough, not just a 4+ group: the first pull(s) of a dungeon are often
+	/// smaller than the 4+ that wall-to-wall pulling later merges into (later groups get chain-pulled
+	/// together into bigger packs, the first one(s) don't yet have anything to merge with) - requiring
+	/// 4+ here meant the pre-pull cast could never fire for those smaller opening pulls, no matter how
+	/// close the tank got or how wide the range margin was (this was tried first and made no difference,
+	/// confirming the mob-count threshold, not the range, was the actual gate). Content within an
+	/// instanced dungeon corridor doesn't have stray neutral hostiles to false-positive on, so dropping
+	/// the count requirement is safe here.
 	/// </summary>
 	protected static bool TankApproachingMobGroup
 	{
@@ -895,18 +897,17 @@ public partial class CustomRotation
 				return false;
 			}
 
-			const float triggerRange = TankGapCloserRangeYalms + 6f;
-			var mobsInRange = 0;
+			const float triggerRange = TankGapCloserRangeYalms + 1f;
 			var targets = DataCenter.AllHostileTargets;
 			for (int i = 0, n = targets.Count; i < n; i++)
 			{
 				var hostile = targets[i];
 				if (hostile != null && Vector3.Distance(tank.Position, hostile.Position) <= triggerRange)
 				{
-					mobsInRange++;
+					return true;
 				}
 			}
-			return mobsInRange >= 4;
+			return false;
 		}
 	}
 

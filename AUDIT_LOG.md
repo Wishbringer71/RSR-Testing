@@ -651,3 +651,43 @@ Fix weiterhin unverändert (HoT weiterhin NIE vor dem Pull) bleibt, ist die
 Zeitfenster-Hypothese widerlegt und ein tatsächlicher Code-Gate wurde beim
 Durchgehen übersehen — erneute, gezieltere Prüfung nötig, keine weitere
 Bereichsvergrößerung als nächster Schritt.
+
+Live-Test-Ergebnis (Nutzer): HoT weiterhin nicht vor dem Pull, trotz +6f-
+Marge — Zeitfenster-Hypothese damit widerlegt, wie oben angekündigt.
+
+## Nachtrag 6: Root Cause gefunden — 4+-Mob-Schwelle passt nicht auf Startgruppen
+
+Status: GEFIXT (statisch selbst-geprüft, kein Compile/Test). Nutzer-Hinweis
+war entscheidend: "am anfang sind die gruppen unter 4 mobs, über 4 geht es
+erst durch sammeln der gruppen" — die Startgruppen eines Dungeons haben oft
+WENIGER als 4 Mobs, die 4+ entstehen erst durchs Zusammenziehen mehrerer
+Gruppen beim Wall-to-Wall-Pull selbst.
+
+`TankApproachingMobGroup` prüfte `mobsInRange >= 4` — diese Schwelle war
+KEINE eigene Erfindung, sondern explizite Nutzer-Vorgabe aus Nachtrag 2
+("Mechanik nur aktiv, solange 4+ Mobs um den Tank stehen"), aber sie gilt
+für EINE einzige, gemeinsame Bedingung, die laut ursprünglichem Design
+sowohl den allerersten Pre-Pull-Cast als auch alle Folgegruppen abdecken
+sollte. Für eine Startgruppe mit z.B. 2-3 Mobs kann `mobsInRange >= 4`
+rechnerisch NIE wahr werden, egal wie nah der Tank herangeht oder wie groß
+der Radius ist — erklärt vollständig, warum die Radius-Vergrößerung aus
+Nachtrag 5 wirkungslos blieb: das Problem lag nie an der Distanz/dem
+Zeitfenster, sondern an der Mob-Anzahl-Schwelle selbst.
+
+Fix (`CustomRotation_OtherInfo.cs`): Mindestanzahl komplett entfernt —
+`TankApproachingMobGroup` ist jetzt wahr, sobald IRGENDEIN Hostile
+innerhalb von Gapcloser-Reichweite + 1 Yalm ist (Radius zurück auf den
+ursprünglichen Wert, da die Vergrößerung aus Nachtrag 5 nachträglich
+unbegründet war). Sicher, weil innerhalb einer instanzierten Dungeon-
+Korridor-Situation keine neutralen/streunenden Hostiles existieren, an
+denen das fälschlich anschlagen könnte — jeder sichtbare Hostile in
+Gapcloser-Nähe des Tanks ist ein echter, beabsichtigter Pull. Config-
+Beschreibungstexte in WHM/AST/SGE ("group of 4+ enemies" → "enemies")
+entsprechend angepasst, damit sie nicht mehr eine Schwelle behaupten, die
+es im Code nicht mehr gibt.
+
+Nicht verifiziert (kein Compiler/Client): ob eine einzelne Mob-Instanz
+tatsächlich in jedem Dungeon so nah an "Startgruppe mit 1 Mob" vorkommt,
+dass hier über-eifrig getriggert wird (z.B. ein einzelner Wächter-Mob vor
+der eigentlichen Gruppe) — laut Nutzer-Aussage aber ohnehin unproblematisch,
+da HoT auf dem Tank in keinem Fall schadet.

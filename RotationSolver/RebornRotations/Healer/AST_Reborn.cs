@@ -40,7 +40,7 @@ public sealed class AST_Reborn : AstrologianRotation
 	[RotationConfig(CombatType.PvE, Name = "Minimum HP threshold party member needs to be to use Aspected Benefic")]
 	public float AspectedBeneficHeal { get; set; } = 0.4f;
 
-	[RotationConfig(CombatType.PvE, Name = "Aspected Benefic on Tank as they close in on a group of 4+ enemies (dungeons only, not Trials/Raids), and keep it up while it's otherwise idle GCD time (Aspected Benefic is instant-cast, safe to keep up while moving).")]
+	[RotationConfig(CombatType.PvE, Name = "Aspected Benefic on Tank as they close in on enemies (dungeons only, not Trials/Raids), and keep it up while it's otherwise idle GCD time (Aspected Benefic is instant-cast, safe to keep up while moving).")]
 	public bool UsePreAspectedBenefic { get; set; } = true;
 
 	[Range(0, 1, ConfigUnitType.Percent)]
