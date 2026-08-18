@@ -540,7 +540,11 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		// unlike a hard-cast spell - safe filler for genuinely spare GCD time, including while running
 		// into or moving during a pull. Placed last: every higher-priority action above already had
 		// its chance to claim this GCD first.
-		if (UsePreRegen && RegenPvE.CanUse(out act, targetOverride: TargetType.Tank))
+		// targetOverride bypasses the normal candidate-list status check (FindTankTarget doesn't call
+		// CheckStatus), so without this explicit check it would recast Regen on the tank every free GCD
+		// regardless of remaining duration - check it here instead.
+		if (UsePreRegen && RegenPvE.CanUse(out act, targetOverride: TargetType.Tank)
+			&& (RegenPvE.Target.Target?.WillStatusEndGCD(RegenPvE.Config.StatusRefreshGcdCount, 0, RegenPvE.Setting.StatusFromSelf, RegenPvE.Setting.TargetStatusProvide ?? []) ?? true))
 		{
 			return true;
 		}

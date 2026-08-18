@@ -898,6 +898,9 @@ public sealed class SGE_Reborn : SageRotation
 		// _EukrasiaActionAim/ChoiceEukrasia) and placed last: every higher-priority action above,
 		// including any real DefenseArea/DefenseSingle/DoT-refresh use of Eukrasia, already had its
 		// chance to claim this GCD (and Eukrasia itself) first.
+		// targetOverride bypasses the normal candidate-list status check (FindTankTarget doesn't call
+		// CheckStatus), so without this explicit check the Diagnosis cast below would keep firing on
+		// the tank every free GCD regardless of remaining duration.
 		if (UsePreEukrasianDiagnosis)
 		{
 			if (!HasEukrasia && EukrasiaPvE.CanUse(out act))
@@ -905,7 +908,8 @@ public sealed class SGE_Reborn : SageRotation
 				return true;
 			}
 
-			if (HasEukrasia && EukrasianDiagnosisPvE.CanUse(out act, targetOverride: TargetType.Tank))
+			if (HasEukrasia && EukrasianDiagnosisPvE.CanUse(out act, targetOverride: TargetType.Tank)
+				&& (EukrasianDiagnosisPvE.Target.Target?.WillStatusEndGCD(EukrasianDiagnosisPvE.Config.StatusRefreshGcdCount, 0, EukrasianDiagnosisPvE.Setting.StatusFromSelf, EukrasianDiagnosisPvE.Setting.TargetStatusProvide ?? []) ?? true))
 			{
 				return true;
 			}
