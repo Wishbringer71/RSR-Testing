@@ -869,9 +869,15 @@ public partial class CustomRotation
 
 	/// <summary>
 	/// Whether the party's tank is close enough to a group of 4+ hostiles to be about to gap-close into
-	/// them (1 yalm before actual gap-closer range) - used to time pre-pull tank sustain so it lands as
-	/// the tank commits to the pull, not while still standing still at the start of the instance.
-	/// Excludes Trials/Raids, where this dungeon wall-to-wall-pull pattern doesn't apply.
+	/// them - used to time pre-pull tank sustain so it lands as the tank commits to the pull, not while
+	/// still standing still at the start of the instance. Excludes Trials/Raids, where this dungeon
+	/// wall-to-wall-pull pattern doesn't apply.
+	/// Margin above gap-closer range widened from the original 1 yalm: a 1-yalm window is only a
+	/// fraction of a second of travel at run/sprint speed, easy to miss entirely if the healer's own
+	/// GCD isn't free at that exact instant - unconfirmed, but plausible explanation for pre-pull casts
+	/// still not landing even after the in-combat sustain refresh (GeneralGCD/HealAreaGCD/HealSingleGCD
+	/// priority) was fixed and confirmed working. A wider margin gives more GCD ticks a chance to land
+	/// inside the window before the tank actually engages.
 	/// </summary>
 	protected static bool TankApproachingMobGroup
 	{
@@ -889,7 +895,7 @@ public partial class CustomRotation
 				return false;
 			}
 
-			const float triggerRange = TankGapCloserRangeYalms + 1f;
+			const float triggerRange = TankGapCloserRangeYalms + 6f;
 			var mobsInRange = 0;
 			var targets = DataCenter.AllHostileTargets;
 			for (int i = 0, n = targets.Count; i < n; i++)

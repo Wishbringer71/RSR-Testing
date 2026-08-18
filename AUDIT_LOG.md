@@ -604,3 +604,50 @@ Zweig dadurch erneut verhungern lassen — falls doch, wäre eine Platzierung
 weiter vorne (vor diesen Fillern, wie ursprünglich für WHM erwogen) nötig.
 Nutzer-Rückmeldung nach Live-Test nötig, um das zu bestätigen oder zu
 widerlegen.
+
+Live-Test-Ergebnis (Nutzer): HealAreaGCD-Fix bestätigt wirksam — HoT wird
+jetzt während des Wall-to-Wall korrekt nachgecastet. Neuer, enger gefasster
+Rest-Befund: der HoT VOR dem Pull (Tank nähert sich der ersten/nächsten
+Gruppe, noch nicht im Kampf) bleibt weiterhin aus.
+
+## Nachtrag 5: Pre-Pull-HoT (vor Kampfbeginn) weiterhin aus — Hypothese, nicht bestätigt
+
+Status: TEILWEISE bearbeitet (Mitigation umgesetzt, Ursache NICHT belegt).
+Gesamten Dispatch-Pfad für den Fall `DataCenter.InCombat == false`
+durchgegangen, um einen expliziten Code-Gate zu finden, der `GeneralGCD`
+(wo `TankApproachingMobGroup` liegt) vor Kampfbeginn blockiert:
+`CustomRotation_Invoke.cs` (`Invoke()`) — kein InCombat-Gate, nur
+Countdown-Gate (in Dungeons ohne aktiven Countdown irrelevant);
+`TargetUpdater.UpdateTargets()`/`UpdateLists()` — `AllHostileTargets`/
+`PartyMembers` werden OHNE InCombat-Bedingung befüllt (nur Sichtbarkeit/
+48y/Targetable); `MajorUpdater.cs` — `_isActivatedThisCycle`/`autoOnEnabled`
+hängt an `DataCenter.State`, laut Nutzer durchgehend aktiv ("rsr bleibt im
+auto", bereits früher in dieser Sitzung geklärt — nicht erneut als Theorie
+aufgegriffen); `CustomRotation_GCD.cs` — `MoveForwardGCD` ist für WHM/AST/
+SGE nicht überschrieben (Basis-Implementierung liefert immer `false`,
+kein GCD-Verbrauch), `AutoStatus.NoCasting`-Gate vor `GeneralGCD` hängt an
+`IsHostileCastingStop` (vor einem Trash-Pull nicht plausibel gesetzt);
+`RSCommands_Actions.cs` (`CanDoAnAction`) — kein InCombat-Bedingung.
+
+Kein einzelner Code-Gate gefunden, der Vor-Pull-Ausführung explizit
+verhindert — d.h. der Fund bleibt eine Hypothese, kein belegter Root Cause
+(REGEL: unmarkierte Inferenz vermeiden). Plausibelste verbleibende
+Erklärung: Zeitfenster-Problem, kein Logikfehler. `TankApproachingMobGroup`
+war mit `TankGapCloserRangeYalms + 1f` (21 Yalm) sehr eng an die
+Sprungdistanz des Gapclosers gekoppelt — abhängig davon, wie schnell der
+Tank in diesem letzten Yalm unterwegs ist und ob die Heiler-GCD in genau
+diesem kurzen Fenster frei ist, kann das Fenster ohne Systemfehler verpasst
+werden. Während des Kampfes bleibt die Bedingung dagegen über die gesamte
+Pull-Dauer wahr, wodurch viele GCD-Ticks eine Chance bekommen — erklärt den
+Unterschied zwischen "während" (funktioniert) und "vor" (funktioniert
+nicht), ohne einen Bug in der neuen Logik selbst zu benötigen.
+
+Mitigation (kein bestätigter Fix): Margin von `+1f` auf `+6f` erhöht (21→26
+Yalm Auslöseradius), um das Vor-Pull-Fenster zu verlängern und mehr
+GCD-Ticks eine Chance zu geben, hineinzufallen — deckt sich mit der
+früheren Nutzeraussage "von mir aus kann der hot auch vor approach an
+nächste gruppe vorzeitig erneuert werden". Falls das Verhalten nach diesem
+Fix weiterhin unverändert (HoT weiterhin NIE vor dem Pull) bleibt, ist die
+Zeitfenster-Hypothese widerlegt und ein tatsächlicher Code-Gate wurde beim
+Durchgehen übersehen — erneute, gezieltere Prüfung nötig, keine weitere
+Bereichsvergrößerung als nächster Schritt.
