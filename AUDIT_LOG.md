@@ -208,6 +208,28 @@ Konzept. Neuer Sustain-Check in `GeneralGCD` überschneidet sich nicht damit
 (andere Dispatch-Methode, nur erreicht wenn `AutoStatus.HealSingle` NICHT
 gesetzt ist).
 
+**Nachtrag (Nutzer-Meldung, Folgebug im GeneralGCD-Sustain-Check):**
+Commit `89665b7`. Symptom: Heiler spammte den jeweiligen HoT bereits weit
+vor Kampfbeginn und weit vor den Mobs, ununterbrochen, ohne Rücksicht auf
+verbleibende HoT-Dauer. Root Cause bestätigt durch direktes Lesen von
+`ActionTargetInfo.cs`: `CanUse(out act, targetOverride: TargetType.Tank)`
+löst das Ziel über `FindTankTarget()` auf — diese Methode iteriert die
+Party direkt und ruft `CheckStatus()` NIE auf. `CheckStatus()` ist aber
+genau die Funktion, die normalerweise per `TargetStatusProvide`/
+`WillStatusEndGCD` prüft, ob ein Ziel den Buff noch mit ausreichend
+Restdauer hat, und es dann als ungültiges Ziel verwirft — dieser Schutz
+existiert im Code, wurde aber durch `targetOverride` komplett umgangen,
+weil der gesamte Kandidatenlisten-Pfad, in dem `CheckStatus` lebt, dabei
+übersprungen wird. `CanUse` prüfte dadurch nur Mana/Cooldown/Zielvalidität,
+nicht ob ein Refresh überhaupt fällig war.
+Fix: An allen drei Stellen (WHM `RegenPvE`, AST `AspectedBeneficPvE`, SGE
+`EukrasianDiagnosisPvE`) wird nach `CanUse` zusätzlich
+`Target.Target?.WillStatusEndGCD(Config.StatusRefreshGcdCount, 0,
+Setting.StatusFromSelf, Setting.TargetStatusProvide)` geprüft — exakt
+dieselbe Logik, die `CheckStatus` für den normalen (nicht überschriebenen)
+Zielpfad bereits verwendet, nur explizit nachgezogen. Kein neu erfundener
+Mechanismus, sondern derselbe bestehende Guard, konsistent angewendet.
+
 ### #47 — `ShouldAddDefenseArea()` prüft `BMRNextTankbusterIn` nicht — GEFIXT (statisch selbst-geprüft, kein Compile/Test)
 Bug: `StateUpdater.cs:170-197` prüft nur `BMRNextRaidwideIn`, nicht Tankbuster
 — im Unterschied zu `ShouldAddDefenseSingle()`, die beides prüft. Bei reiner
