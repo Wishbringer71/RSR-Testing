@@ -36,7 +36,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Number of GCDs before you cap on blue lillies that overcap protection will consider 'near full'.")]
 	public int LilyOvercapTime { get; set; } = 3;
 
-	[RotationConfig(CombatType.PvE, Name = "Regen on Tank before pull, and keep it up on the tank during combat while it's otherwise idle GCD time (Regen is instant-cast, safe to keep up while moving).")]
+	[RotationConfig(CombatType.PvE, Name = "Regen on Tank as they close in on a group of 4+ enemies (dungeons only, not Trials/Raids), and keep it up while it's otherwise idle GCD time (Regen is instant-cast, safe to keep up while moving).")]
 	public bool UsePreRegen { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Divine Caress as soon as its available")]
@@ -88,18 +88,10 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			return act;
 		}
 
-		if (UsePreRegen && remainTime <= 5 && remainTime > 3)
-		{
-			if (RegenPvE.CanUse(out act, targetOverride: TargetType.Tank))
-			{
-				return act;
-			}
-
-			if (DivineBenisonPvE.CanUse(out act))
-			{
-				return act;
-			}
-		}
+		// Countdown-timed pre-pull cast removed: dungeons (the actual wall-to-wall-pull use case)
+		// never have an active countdown, so this never fired there - and where it DID fire
+		// (trials/raids with a real countdown), it's explicitly out of scope for this mechanic.
+		// See the TankApproachingMobGroup-gated GeneralGCD filler below instead.
 		return base.CountDownAction(remainTime);
 	}
 	#endregion
@@ -537,13 +529,15 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		}
 
 		// Regen is instant-cast (no cast time), so keeping it up on the tank costs no movement/uptime
-		// unlike a hard-cast spell - safe filler for genuinely spare GCD time, including while running
-		// into or moving during a pull. Placed last: every higher-priority action above already had
+		// unlike a hard-cast spell - safe filler for genuinely spare GCD time. Gated on
+		// TankApproachingMobGroup so this only fires as the tank actually commits to a pull (about to
+		// gap-close into 4+ mobs), not while standing still at the start of the instance or wandering
+		// an empty corridor between pulls. Placed last: every higher-priority action above already had
 		// its chance to claim this GCD first.
 		// targetOverride bypasses the normal candidate-list status check (FindTankTarget doesn't call
 		// CheckStatus), so without this explicit check it would recast Regen on the tank every free GCD
 		// regardless of remaining duration - check it here instead.
-		if (UsePreRegen && RegenPvE.CanUse(out act, targetOverride: TargetType.Tank)
+		if (UsePreRegen && TankApproachingMobGroup && RegenPvE.CanUse(out act, targetOverride: TargetType.Tank)
 			&& (RegenPvE.Target.Target?.WillStatusEndGCD(RegenPvE.Config.StatusRefreshGcdCount, 0, RegenPvE.Setting.StatusFromSelf, RegenPvE.Setting.TargetStatusProvide ?? []) ?? true))
 		{
 			return true;

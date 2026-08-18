@@ -845,6 +845,65 @@ public partial class CustomRotation
 	protected static IEnumerable<IBattleChara> AllHostileTargets => DataCenter.AllHostileTargets;
 
 	/// <summary>
+	/// The party's tank (first alive tank found), or null if none.
+	/// </summary>
+	protected static IBattleChara? PartyTank
+	{
+		get
+		{
+			foreach (var m in DataCenter.PartyMembers)
+			{
+				if (m.IsJobCategory(JobRole.Tank) && !m.IsDead)
+				{
+					return m;
+				}
+			}
+			return null;
+		}
+	}
+
+	/// <summary>
+	/// All four tank gap closers (Intervene, Onslaught, Shadowstride, Trajectory) have a 20-yalm range.
+	/// </summary>
+	private const float TankGapCloserRangeYalms = 20f;
+
+	/// <summary>
+	/// Whether the party's tank is close enough to a group of 4+ hostiles to be about to gap-close into
+	/// them (1 yalm before actual gap-closer range) - used to time pre-pull tank sustain so it lands as
+	/// the tank commits to the pull, not while still standing still at the start of the instance.
+	/// Excludes Trials/Raids, where this dungeon wall-to-wall-pull pattern doesn't apply.
+	/// </summary>
+	protected static bool TankApproachingMobGroup
+	{
+		get
+		{
+			var tank = PartyTank;
+			if (tank == null)
+			{
+				return false;
+			}
+
+			var contentType = DataCenter.Territory?.ContentType;
+			if (contentType == TerritoryContentType.Trials || contentType == TerritoryContentType.Raids)
+			{
+				return false;
+			}
+
+			const float triggerRange = TankGapCloserRangeYalms + 1f;
+			var mobsInRange = 0;
+			var targets = DataCenter.AllHostileTargets;
+			for (int i = 0, n = targets.Count; i < n; i++)
+			{
+				if (Vector3.Distance(tank.Position, targets[i].Position) <= triggerRange)
+				{
+					mobsInRange++;
+				}
+			}
+			return mobsInRange >= 4;
+		}
+	}
+
+	/// <summary>
 	/// All targets. This includes both hostile and friendly targets.
 	/// </summary>
 	protected static IEnumerable<IBattleChara> AllTargets => DataCenter.AllTargets;

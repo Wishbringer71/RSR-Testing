@@ -17,7 +17,7 @@ public sealed class SGE_Reborn : SageRotation
 	[RotationConfig(CombatType.PvE, Name = "Use Eukrasia when out of combat")]
 	public bool OOCEukrasia { get; set; } = true;
 
-	[RotationConfig(CombatType.PvE, Name = "Eukrasian Diagnosis on Tank before pull, and keep it up on the tank during combat while it's otherwise idle GCD time (Eukrasian Diagnosis is instant-cast, safe to keep up while moving).")]
+	[RotationConfig(CombatType.PvE, Name = "Eukrasian Diagnosis on Tank as they close in on a group of 4+ enemies (dungeons only, not Trials/Raids), and keep it up while it's otherwise idle GCD time (Eukrasian Diagnosis is instant-cast, safe to keep up while moving).")]
 	public bool UsePreEukrasianDiagnosis { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Rhizomata when out of combat")]
@@ -134,15 +134,12 @@ public sealed class SGE_Reborn : SageRotation
 			return act;
 		}
 
-		// Eukrasian Diagnosis is instant-cast via Eukrasia (both GCDs above have no cast time), so this
-		// is safe to fire even while already moving toward the pull. Follows the Eukrasia press above
-		// once it's actually active - both GCDs land within the same countdown window.
-		if (UsePreEukrasianDiagnosis && HasEukrasia
-			&& EukrasianDiagnosisPvE.CanUse(out act, targetOverride: TargetType.Tank))
-		{
-			return act;
-		}
-
+		// Countdown-timed Diagnosis cast removed: dungeons (the actual wall-to-wall-pull use case)
+		// never have an active countdown, so this never fired there - and where it DID fire
+		// (trials/raids with a real countdown), it's explicitly out of scope for this mechanic.
+		// See the TankApproachingMobGroup-gated GeneralGCD filler below instead. The unconditional
+		// EukrasiaPvE press above this point is pre-existing SGE opener logic, unrelated to this
+		// mechanic - left as-is.
 		return base.CountDownAction(remainTime);
 	}
 	#endregion
@@ -900,8 +897,11 @@ public sealed class SGE_Reborn : SageRotation
 		// chance to claim this GCD (and Eukrasia itself) first.
 		// targetOverride bypasses the normal candidate-list status check (FindTankTarget doesn't call
 		// CheckStatus), so without this explicit check the Diagnosis cast below would keep firing on
-		// the tank every free GCD regardless of remaining duration.
-		if (UsePreEukrasianDiagnosis)
+		// the tank every free GCD regardless of remaining duration. Gated on TankApproachingMobGroup
+		// so this only fires as the tank actually commits to a pull (about to gap-close into 4+ mobs),
+		// not while standing still at the start of the instance or wandering an empty corridor
+		// between pulls.
+		if (UsePreEukrasianDiagnosis && TankApproachingMobGroup)
 		{
 			if (!HasEukrasia && EukrasiaPvE.CanUse(out act))
 			{

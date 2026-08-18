@@ -40,7 +40,7 @@ public sealed class AST_Reborn : AstrologianRotation
 	[RotationConfig(CombatType.PvE, Name = "Minimum HP threshold party member needs to be to use Aspected Benefic")]
 	public float AspectedBeneficHeal { get; set; } = 0.4f;
 
-	[RotationConfig(CombatType.PvE, Name = "Aspected Benefic on Tank before pull, and keep it up on the tank during combat while it's otherwise idle GCD time (Aspected Benefic is instant-cast, safe to keep up while moving).")]
+	[RotationConfig(CombatType.PvE, Name = "Aspected Benefic on Tank as they close in on a group of 4+ enemies (dungeons only, not Trials/Raids), and keep it up while it's otherwise idle GCD time (Aspected Benefic is instant-cast, safe to keep up while moving).")]
 	public bool UsePreAspectedBenefic { get; set; } = true;
 
 	[Range(0, 1, ConfigUnitType.Percent)]
@@ -124,12 +124,10 @@ public sealed class AST_Reborn : AstrologianRotation
 			return act;
 		}
 
-		if (UsePreAspectedBenefic && remainTime <= 5 && remainTime > 3
-			&& AspectedBeneficPvE.CanUse(out act, targetOverride: TargetType.Tank))
-		{
-			return act;
-		}
-
+		// Countdown-timed pre-pull cast removed: dungeons (the actual wall-to-wall-pull use case)
+		// never have an active countdown, so this never fired there - and where it DID fire
+		// (trials/raids with a real countdown), it's explicitly out of scope for this mechanic.
+		// See the TankApproachingMobGroup-gated GeneralGCD filler below instead.
 		return base.CountDownAction(remainTime);
 	}
 	#endregion
@@ -640,13 +638,15 @@ public sealed class AST_Reborn : AstrologianRotation
 		}
 
 		// Aspected Benefic is instant-cast (no cast time), so keeping it up on the tank costs no
-		// movement/uptime unlike a hard-cast spell - safe filler for genuinely spare GCD time,
-		// including while running into or moving during a pull. Placed last: every higher-priority
-		// action above already had its chance to claim this GCD first.
+		// movement/uptime unlike a hard-cast spell - safe filler for genuinely spare GCD time. Gated
+		// on TankApproachingMobGroup so this only fires as the tank actually commits to a pull (about
+		// to gap-close into 4+ mobs), not while standing still at the start of the instance or
+		// wandering an empty corridor between pulls. Placed last: every higher-priority action above
+		// already had its chance to claim this GCD first.
 		// targetOverride bypasses the normal candidate-list status check (FindTankTarget doesn't call
 		// CheckStatus), so without this explicit check it would recast on the tank every free GCD
 		// regardless of remaining duration - check it here instead.
-		if (UsePreAspectedBenefic && AspectedBeneficPvE.CanUse(out act, targetOverride: TargetType.Tank)
+		if (UsePreAspectedBenefic && TankApproachingMobGroup && AspectedBeneficPvE.CanUse(out act, targetOverride: TargetType.Tank)
 			&& (AspectedBeneficPvE.Target.Target?.WillStatusEndGCD(AspectedBeneficPvE.Config.StatusRefreshGcdCount, 0, AspectedBeneficPvE.Setting.StatusFromSelf, AspectedBeneficPvE.Setting.TargetStatusProvide ?? []) ?? true))
 		{
 			return true;
