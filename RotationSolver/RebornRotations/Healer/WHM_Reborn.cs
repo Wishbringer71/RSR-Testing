@@ -39,6 +39,14 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Regen on Tank as they close in on enemies (dungeons only, not Trials/Raids), and keep it up while it's otherwise idle GCD time (Regen is instant-cast, safe to keep up while moving).")]
 	public bool UsePreRegen { get; set; } = true;
 
+	[Range(1, 8, ConfigUnitType.None, 1)]
+	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies near the tank before combat for the pre-pull Regen above to be worth casting")]
+	public int PreRegenMinHostiles { get; set; } = 2;
+
+	[Range(1, 12, ConfigUnitType.None, 1)]
+	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies still around the tank during a wall-to-wall pull for the Regen above to keep being force-refreshed, instead of falling back to normal reactive healing")]
+	public int PreRegenMinWallToWallHostiles { get; set; } = 3;
+
 	[RotationConfig(CombatType.PvE, Name = "Use Divine Caress as soon as its available")]
 	public bool UseDivine { get; set; } = false;
 
@@ -327,7 +335,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		// nothing above in this method actually resolves to a cast. Placed last, right before the
 		// base call, so it never displaces any of the reactive AoE heals above it - same pattern
 		// and RegenHeal safety threshold as the HealSingleGCD fix.
-		if (UsePreRegen && TankApproachingMobGroup && RegenPvE.CanUse(out act, targetOverride: TargetType.Tank)
+		if (UsePreRegen && TankApproachingMobGroup(PreRegenMinHostiles, PreRegenMinWallToWallHostiles) && RegenPvE.CanUse(out act, targetOverride: TargetType.Tank)
 			&& RegenPvE.Target.Target != null && RegenPvE.Target.Target.GetHealthRatio() > RegenHeal
 			&& (RegenPvE.Target.Target.WillStatusEndGCD(RegenPvE.Config.StatusRefreshGcdCount, 0, RegenPvE.Setting.StatusFromSelf, RegenPvE.Setting.TargetStatusProvide ?? [])))
 		{
@@ -362,7 +370,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		// threshold as the reactive branch above it, so this never fires below the HP level the
 		// player already trusts Regen at instead of a direct heal - a genuine emergency below that
 		// threshold still falls through to CureII/Cure untouched.
-		if (UsePreRegen && TankApproachingMobGroup && RegenPvE.CanUse(out act, targetOverride: TargetType.Tank)
+		if (UsePreRegen && TankApproachingMobGroup(PreRegenMinHostiles, PreRegenMinWallToWallHostiles) && RegenPvE.CanUse(out act, targetOverride: TargetType.Tank)
 			&& RegenPvE.Target.Target != null && RegenPvE.Target.Target.GetHealthRatio() > RegenHeal
 			&& (RegenPvE.Target.Target.WillStatusEndGCD(RegenPvE.Config.StatusRefreshGcdCount, 0, RegenPvE.Setting.StatusFromSelf, RegenPvE.Setting.TargetStatusProvide ?? [])))
 		{
@@ -415,7 +423,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		// targetOverride bypasses the normal candidate-list status check (FindTankTarget doesn't call
 		// CheckStatus), so without this explicit check it would recast Regen on the tank every free GCD
 		// regardless of remaining duration - check it here instead.
-		if (UsePreRegen && TankApproachingMobGroup && RegenPvE.CanUse(out act, targetOverride: TargetType.Tank)
+		if (UsePreRegen && TankApproachingMobGroup(PreRegenMinHostiles, PreRegenMinWallToWallHostiles) && RegenPvE.CanUse(out act, targetOverride: TargetType.Tank)
 			&& (RegenPvE.Target.Target?.WillStatusEndGCD(RegenPvE.Config.StatusRefreshGcdCount, 0, RegenPvE.Setting.StatusFromSelf, RegenPvE.Setting.TargetStatusProvide ?? []) ?? true))
 		{
 			return true;

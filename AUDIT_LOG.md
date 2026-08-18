@@ -734,3 +734,24 @@ nur mit anderer Schwelle. `TankApproachingMobGroup` wählt jetzt einheitlich
 `DataCenter.InCombat ? WallToWallMinimumHostileCount (4) :
 PrePullMinimumHostileCount (2)` und zählt einmal gegen diese Schwelle —
 keine zwei separate Codepfade mehr, ein Zähler, zwei benannte Konstanten.
+
+## Nachtrag 9: Beide Schwellen als Config-Werte statt fest codierter Konstanten
+
+Status: GEFIXT (statisch selbst-geprüft, kein Compile/Test). Nutzer-Vorgabe:
+Wall-to-Wall-Ausstiegsschwelle von 4 auf 3 senken ("spielt sich nach Pull
+entspannter"), UND generell: beide Zahlen als einstellbare UI-Werte statt
+Code-Konstanten, nachdem sie bereits dreimal in Folge angepasst wurden
+(4 → 2/4 getrennt → 2/3 getrennt) — ein klares Signal, dass es
+Geschmackssache ist, keine feste Spielregel.
+
+Fix: `TankApproachingMobGroup` (`CustomRotation_OtherInfo.cs`) von
+parameterloser Property auf Methode mit zwei Parametern umgestellt —
+`TankApproachingMobGroup(int prePullMinimumHostileCount, int
+wallToWallMinimumHostileCount)`, keine Konstanten mehr in der Basisklasse.
+Für WHM/AST/SGE je zwei neue `[RotationConfig]`-Properties ergänzt
+(`Pre{Regen,AspectedBenefic,EukrasianDiagnosis}MinHostiles`, Default 2,
+Range 1-8; `...MinWallToWallHostiles`, Default 3 — neuer Nutzer-Wert statt
+bisher 4, Range 1-12) und alle 9 Aufrufstellen (3 Methoden × 3 Jobs) auf die
+Methode mit den job-eigenen Config-Werten umgestellt. Jeder Job kann die
+beiden Zahlen jetzt unabhängig in der RSR-UI einstellen, kein Zwang mehr
+zu Code-Änderungen für weitere Geschmacksanpassungen.

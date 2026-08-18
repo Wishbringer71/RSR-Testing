@@ -20,6 +20,14 @@ public sealed class SGE_Reborn : SageRotation
 	[RotationConfig(CombatType.PvE, Name = "Eukrasian Diagnosis on Tank as they close in on enemies (dungeons only, not Trials/Raids), and keep it up while it's otherwise idle GCD time (Eukrasian Diagnosis is instant-cast, safe to keep up while moving).")]
 	public bool UsePreEukrasianDiagnosis { get; set; } = true;
 
+	[Range(1, 8, ConfigUnitType.None, 1)]
+	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies near the tank before combat for the pre-pull Eukrasian Diagnosis above to be worth casting")]
+	public int PreEukrasianDiagnosisMinHostiles { get; set; } = 2;
+
+	[Range(1, 12, ConfigUnitType.None, 1)]
+	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies still around the tank during a wall-to-wall pull for the Eukrasian Diagnosis above to keep being force-refreshed, instead of falling back to normal reactive healing")]
+	public int PreEukrasianDiagnosisMinWallToWallHostiles { get; set; } = 3;
+
 	[RotationConfig(CombatType.PvE, Name = "Use Rhizomata when out of combat")]
 	public bool OOCRhizomata { get; set; } = false;
 
@@ -750,7 +758,7 @@ public sealed class SGE_Reborn : SageRotation
 		// nothing above in this method actually resolves to a cast. Placed last, right before the
 		// base call, so it never displaces any of the reactive AoE heals above it - mirrors the
 		// HealSingleGCD fix, same lack of an existing HP-ratio threshold to reuse here.
-		if (UsePreEukrasianDiagnosis && TankApproachingMobGroup)
+		if (UsePreEukrasianDiagnosis && TankApproachingMobGroup(PreEukrasianDiagnosisMinHostiles, PreEukrasianDiagnosisMinWallToWallHostiles))
 		{
 			var diagnosisDue = PartyTank?.WillStatusEndGCD(EukrasianDiagnosisPvE.Config.StatusRefreshGcdCount, 0, EukrasianDiagnosisPvE.Setting.StatusFromSelf, EukrasianDiagnosisPvE.Setting.TargetStatusProvide ?? []) ?? true;
 			if (diagnosisDue)
@@ -800,7 +808,7 @@ public sealed class SGE_Reborn : SageRotation
 		// nothing above already claimed the GCD, so this never displaces an actual reactive heal
 		// decision - lower-risk than WHM/AST's version since SGE has no existing HP-ratio threshold
 		// here to reuse as a safety floor.
-		if (UsePreEukrasianDiagnosis && TankApproachingMobGroup)
+		if (UsePreEukrasianDiagnosis && TankApproachingMobGroup(PreEukrasianDiagnosisMinHostiles, PreEukrasianDiagnosisMinWallToWallHostiles))
 		{
 			var diagnosisDue = PartyTank?.WillStatusEndGCD(EukrasianDiagnosisPvE.Config.StatusRefreshGcdCount, 0, EukrasianDiagnosisPvE.Setting.StatusFromSelf, EukrasianDiagnosisPvE.Setting.TargetStatusProvide ?? []) ?? true;
 			if (diagnosisDue)
@@ -870,7 +878,7 @@ public sealed class SGE_Reborn : SageRotation
 		// free GCD regardless of whether Diagnosis actually needs a refresh, since its own duration
 		// check only runs after Eukrasia is already active and Diagnosis is about to be cast.
 		var diagnosisDue = PartyTank?.WillStatusEndGCD(EukrasianDiagnosisPvE.Config.StatusRefreshGcdCount, 0, EukrasianDiagnosisPvE.Setting.StatusFromSelf, EukrasianDiagnosisPvE.Setting.TargetStatusProvide ?? []) ?? true;
-		if (UsePreEukrasianDiagnosis && TankApproachingMobGroup && diagnosisDue)
+		if (UsePreEukrasianDiagnosis && TankApproachingMobGroup(PreEukrasianDiagnosisMinHostiles, PreEukrasianDiagnosisMinWallToWallHostiles) && diagnosisDue)
 		{
 			if (!HasEukrasia && EukrasiaPvE.CanUse(out act))
 			{

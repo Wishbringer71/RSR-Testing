@@ -868,64 +868,48 @@ public partial class CustomRotation
 	private const float TankGapCloserRangeYalms = 20f;
 
 	/// <summary>
-	/// The minimum number of hostiles still around the tank for wall-to-wall sustain to keep overriding
-	/// the normal reactive heal rota while already in combat. Below this, the pull is considered to be
-	/// winding down (trash dying off) and control is handed back to normal rota instead of continuing
-	/// to force-refresh the HoT on only a couple of stragglers.
-	/// </summary>
-	private const int WallToWallMinimumHostileCount = 4;
-
-	/// <summary>
-	/// The minimum number of hostiles in range before combat for the pre-pull sustain cast to be worth
-	/// it - a single stray hostile isn't a real pull, so don't spend the cast on it.
-	/// </summary>
-	private const int PrePullMinimumHostileCount = 2;
-
-	/// <summary>
 	/// Whether the party's tank is close enough to hostiles to be about to gap-close into them, or is
 	/// already sustaining a wall-to-wall pull against enough of them - used to time tank sustain so it
 	/// covers both the pre-pull approach and staying up for the rest of the pull. Excludes Trials/Raids,
 	/// where this dungeon wall-to-wall-pull pattern doesn't apply.
-	/// Two different counting rules depending on combat state, not one shared threshold: before combat
-	/// (approaching a fresh group), <see cref="PrePullMinimumHostileCount"/>+ is enough - the first
-	/// pull(s) of a dungeon are often smaller than the 4+ that wall-to-wall pulling later merges into, so
-	/// requiring 4+ here meant the pre-pull cast could never fire for those smaller opening pulls at all.
-	/// Once already in combat, <see cref="WallToWallMinimumHostileCount"/>+ is still required - that
-	/// threshold was always meant as an off-ramp ("wall-to-wall is basically over, stop force-refreshing
-	/// and let normal rota take over"), not as a gate on the initial approach; applying it to both cases
-	/// was the actual bug.
+	/// Two different counting rules depending on combat state, not one shared threshold, both exposed as
+	/// per-job config since the "right" numbers are a matter of taste, not a fixed game rule: before
+	/// combat (approaching a fresh group), <paramref name="prePullMinimumHostileCount"/>+ is enough - the
+	/// first pull(s) of a dungeon are often smaller than the group size wall-to-wall pulling later merges
+	/// into, so requiring the higher in-combat threshold here meant the pre-pull cast could never fire
+	/// for those smaller opening pulls at all. Once already in combat,
+	/// <paramref name="wallToWallMinimumHostileCount"/>+ is required - that threshold is an off-ramp
+	/// ("wall-to-wall is basically over, stop force-refreshing and let normal rota take over"), not a
+	/// gate on the initial approach; applying the same number to both cases was the original bug.
 	/// </summary>
-	protected static bool TankApproachingMobGroup
+	protected static bool TankApproachingMobGroup(int prePullMinimumHostileCount, int wallToWallMinimumHostileCount)
 	{
-		get
+		var tank = PartyTank;
+		if (tank == null)
 		{
-			var tank = PartyTank;
-			if (tank == null)
-			{
-				return false;
-			}
-
-			var contentType = DataCenter.Territory?.ContentType;
-			if (contentType == TerritoryContentType.Trials || contentType == TerritoryContentType.Raids)
-			{
-				return false;
-			}
-
-			const float triggerRange = TankGapCloserRangeYalms + 1f;
-			var targets = DataCenter.AllHostileTargets;
-			var minimumHostileCount = DataCenter.InCombat ? WallToWallMinimumHostileCount : PrePullMinimumHostileCount;
-
-			var mobsInRange = 0;
-			for (int i = 0, n = targets.Count; i < n; i++)
-			{
-				var hostile = targets[i];
-				if (hostile != null && Vector3.Distance(tank.Position, hostile.Position) <= triggerRange)
-				{
-					mobsInRange++;
-				}
-			}
-			return mobsInRange >= minimumHostileCount;
+			return false;
 		}
+
+		var contentType = DataCenter.Territory?.ContentType;
+		if (contentType == TerritoryContentType.Trials || contentType == TerritoryContentType.Raids)
+		{
+			return false;
+		}
+
+		const float triggerRange = TankGapCloserRangeYalms + 1f;
+		var targets = DataCenter.AllHostileTargets;
+		var minimumHostileCount = DataCenter.InCombat ? wallToWallMinimumHostileCount : prePullMinimumHostileCount;
+
+		var mobsInRange = 0;
+		for (int i = 0, n = targets.Count; i < n; i++)
+		{
+			var hostile = targets[i];
+			if (hostile != null && Vector3.Distance(tank.Position, hostile.Position) <= triggerRange)
+			{
+				mobsInRange++;
+			}
+		}
+		return mobsInRange >= minimumHostileCount;
 	}
 
 	/// <summary>

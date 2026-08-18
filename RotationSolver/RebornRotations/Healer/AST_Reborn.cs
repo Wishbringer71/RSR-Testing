@@ -43,6 +43,14 @@ public sealed class AST_Reborn : AstrologianRotation
 	[RotationConfig(CombatType.PvE, Name = "Aspected Benefic on Tank as they close in on enemies (dungeons only, not Trials/Raids), and keep it up while it's otherwise idle GCD time (Aspected Benefic is instant-cast, safe to keep up while moving).")]
 	public bool UsePreAspectedBenefic { get; set; } = true;
 
+	[Range(1, 8, ConfigUnitType.None, 1)]
+	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies near the tank before combat for the pre-pull Aspected Benefic above to be worth casting")]
+	public int PreAspectedBeneficMinHostiles { get; set; } = 2;
+
+	[Range(1, 12, ConfigUnitType.None, 1)]
+	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies still around the tank during a wall-to-wall pull for the Aspected Benefic above to keep being force-refreshed, instead of falling back to normal reactive healing")]
+	public int PreAspectedBeneficMinWallToWallHostiles { get; set; } = 3;
+
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Minimum HP threshold party member needs to be to use Synastry")]
 	public float SynastryHeal { get; set; } = 0.5f;
@@ -539,7 +547,7 @@ public sealed class AST_Reborn : AstrologianRotation
 		// AspectedBeneficHeal (the same threshold the branch above uses to decide healing is urgent),
 		// so a genuine emergency below that threshold still falls through to Benefic/BeneficII
 		// untouched.
-		if (UsePreAspectedBenefic && TankApproachingMobGroup && AspectedBeneficPvE.CanUse(out act, targetOverride: TargetType.Tank)
+		if (UsePreAspectedBenefic && TankApproachingMobGroup(PreAspectedBeneficMinHostiles, PreAspectedBeneficMinWallToWallHostiles) && AspectedBeneficPvE.CanUse(out act, targetOverride: TargetType.Tank)
 			&& AspectedBeneficPvE.Target.Target != null && AspectedBeneficPvE.Target.Target.GetHealthRatio() > AspectedBeneficHeal
 			&& (AspectedBeneficPvE.Target.Target.WillStatusEndGCD(AspectedBeneficPvE.Config.StatusRefreshGcdCount, 0, AspectedBeneficPvE.Setting.StatusFromSelf, AspectedBeneficPvE.Setting.TargetStatusProvide ?? [])))
 		{
@@ -593,7 +601,7 @@ public sealed class AST_Reborn : AstrologianRotation
 		// nothing above in this method actually resolves to a cast. Placed last, right before the
 		// base call, so it never displaces any of the reactive AoE heals above it - same pattern
 		// and AspectedBeneficHeal safety threshold as the HealSingleGCD fix.
-		if (UsePreAspectedBenefic && TankApproachingMobGroup && AspectedBeneficPvE.CanUse(out act, targetOverride: TargetType.Tank)
+		if (UsePreAspectedBenefic && TankApproachingMobGroup(PreAspectedBeneficMinHostiles, PreAspectedBeneficMinWallToWallHostiles) && AspectedBeneficPvE.CanUse(out act, targetOverride: TargetType.Tank)
 			&& AspectedBeneficPvE.Target.Target != null && AspectedBeneficPvE.Target.Target.GetHealthRatio() > AspectedBeneficHeal
 			&& (AspectedBeneficPvE.Target.Target.WillStatusEndGCD(AspectedBeneficPvE.Config.StatusRefreshGcdCount, 0, AspectedBeneficPvE.Setting.StatusFromSelf, AspectedBeneficPvE.Setting.TargetStatusProvide ?? [])))
 		{
@@ -631,7 +639,7 @@ public sealed class AST_Reborn : AstrologianRotation
 		// targetOverride bypasses the normal candidate-list status check (FindTankTarget doesn't call
 		// CheckStatus), so without this explicit check it would recast on the tank every free GCD
 		// regardless of remaining duration - check it here instead.
-		if (UsePreAspectedBenefic && TankApproachingMobGroup && AspectedBeneficPvE.CanUse(out act, targetOverride: TargetType.Tank)
+		if (UsePreAspectedBenefic && TankApproachingMobGroup(PreAspectedBeneficMinHostiles, PreAspectedBeneficMinWallToWallHostiles) && AspectedBeneficPvE.CanUse(out act, targetOverride: TargetType.Tank)
 			&& (AspectedBeneficPvE.Target.Target?.WillStatusEndGCD(AspectedBeneficPvE.Config.StatusRefreshGcdCount, 0, AspectedBeneficPvE.Setting.StatusFromSelf, AspectedBeneficPvE.Setting.TargetStatusProvide ?? []) ?? true))
 		{
 			return true;
