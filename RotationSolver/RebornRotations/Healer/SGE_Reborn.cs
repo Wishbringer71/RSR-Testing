@@ -21,11 +21,11 @@ public sealed class SGE_Reborn : SageRotation
 	public bool UsePreEukrasianDiagnosis { get; set; } = true;
 
 	[Range(1, 8, ConfigUnitType.None, 1)]
-	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies near the tank before combat for the pre-pull Eukrasian Diagnosis above to be worth casting")]
+	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies near the tank before combat for the pre-pull Eukrasian Diagnosis above to be worth casting", Parent = nameof(UsePreEukrasianDiagnosis))]
 	public int PreEukrasianDiagnosisMinHostiles { get; set; } = 2;
 
 	[Range(1, 12, ConfigUnitType.None, 1)]
-	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies still around the tank during a wall-to-wall pull for the Eukrasian Diagnosis above to keep being force-refreshed, instead of falling back to normal reactive healing")]
+	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies still around the tank during a wall-to-wall pull for the Eukrasian Diagnosis above to keep being force-refreshed, instead of falling back to normal reactive healing", Parent = nameof(UsePreEukrasianDiagnosis))]
 	public int PreEukrasianDiagnosisMinWallToWallHostiles { get; set; } = 3;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Rhizomata when out of combat")]

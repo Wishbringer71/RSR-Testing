@@ -40,11 +40,11 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	public bool UsePreRegen { get; set; } = true;
 
 	[Range(1, 8, ConfigUnitType.None, 1)]
-	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies near the tank before combat for the pre-pull Regen above to be worth casting")]
+	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies near the tank before combat for the pre-pull Regen above to be worth casting", Parent = nameof(UsePreRegen))]
 	public int PreRegenMinHostiles { get; set; } = 2;
 
 	[Range(1, 12, ConfigUnitType.None, 1)]
-	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies still around the tank during a wall-to-wall pull for the Regen above to keep being force-refreshed, instead of falling back to normal reactive healing")]
+	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies still around the tank during a wall-to-wall pull for the Regen above to keep being force-refreshed, instead of falling back to normal reactive healing", Parent = nameof(UsePreRegen))]
 	public int PreRegenMinWallToWallHostiles { get; set; } = 3;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Divine Caress as soon as its available")]

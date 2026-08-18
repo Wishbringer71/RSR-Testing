@@ -755,3 +755,33 @@ bisher 4, Range 1-12) und alle 9 Aufrufstellen (3 Methoden × 3 Jobs) auf die
 Methode mit den job-eigenen Config-Werten umgestellt. Jeder Job kann die
 beiden Zahlen jetzt unabhängig in der RSR-UI einstellen, kein Zwang mehr
 zu Code-Änderungen für weitere Geschmacksanpassungen.
+
+## Nachtrag 10: UI-Platzierung geprüft und bewertet — Job-Tab statt Auto-Tab, mit Parent-Gruppierung
+
+Status: GEPRÜFT + verbessert (statisch selbst-geprüft, kein Compile/Test).
+Nutzer-Vorschlag: die beiden neuen Werte unter "Auto" → "Healing Usage and
+Control" statt im Job-Tab, in einem aufklappbaren Bereich.
+
+Bewertung (gegen den Vorschlag, mit Gegenargument-Prüfung vor Fixierung):
+Der Auto-Tab-Abschnitt ist ein anderer Mechanismus — generische
+`[JobConfig]`-Felder in `Configs.cs`, EIN geteilter Wert für alle Heiler,
+gerendert über eine handgebaute Widget-Liste (`AutoHealCheckBox.cs`), nicht
+über die `[RotationConfig]`-Reflection der Job-Tabs. Unsere Werte sind
+echt job-spezifisch (WHM/AST/SGE je eigene Property/eigener Default/eigene
+Zielaktion) — dieselbe Konvention wie `RegenHeal`/`AspectedBeneficHeal`/
+`LilyOvercapTime`, alle im Job-Tab. Verschieben würde entweder die drei
+Job-Werte zu einem geteilten Wert zusammenlegen (Verlust der Pro-Job-
+Unabhängigkeit) oder neue bedingte Pro-Job-Rendering-Logik in einem Tab
+erfordern, der das bisher nicht kennt — unnötiger Aufwand gegenüber dem
+Nutzen. Inhaltlich außerdem andere Entscheidungsachse: Auto/Healing Usage
+regelt HP%-Dringlichkeit, unsere Werte regeln Mob-Anzahl-Pull-Erkennung.
+
+Berechtigter Kern übernommen: `RotationConfigAttribute.Parent` (bereits an
+vielen Stellen im Code genutzt, z.B. SGEs `HolosHeal` unter
+`HolosHealOption`) auf alle 6 neuen Properties gesetzt — `Parent =
+nameof(UsePreRegen)` bzw. `UsePreAspectedBenefic`/
+`UsePreEukrasianDiagnosis`. Dadurch erscheinen die beiden Zahlen jeweils
+gruppiert/eingerückt direkt unter ihrem zugehörigen Toggle im Job-Tab,
+statt lose in der flachen Liste zu stehen — deckt den eigentlichen
+Bedienbarkeits-Wunsch ab, ohne die Architektur-Nachteile der Auto-Tab-
+Verschiebung.

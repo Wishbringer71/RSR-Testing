@@ -44,11 +44,11 @@ public sealed class AST_Reborn : AstrologianRotation
 	public bool UsePreAspectedBenefic { get; set; } = true;
 
 	[Range(1, 8, ConfigUnitType.None, 1)]
-	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies near the tank before combat for the pre-pull Aspected Benefic above to be worth casting")]
+	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies near the tank before combat for the pre-pull Aspected Benefic above to be worth casting", Parent = nameof(UsePreAspectedBenefic))]
 	public int PreAspectedBeneficMinHostiles { get; set; } = 2;
 
 	[Range(1, 12, ConfigUnitType.None, 1)]
-	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies still around the tank during a wall-to-wall pull for the Aspected Benefic above to keep being force-refreshed, instead of falling back to normal reactive healing")]
+	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies still around the tank during a wall-to-wall pull for the Aspected Benefic above to keep being force-refreshed, instead of falling back to normal reactive healing", Parent = nameof(UsePreAspectedBenefic))]
 	public int PreAspectedBeneficMinWallToWallHostiles { get; set; } = 3;
 
 	[Range(0, 1, ConfigUnitType.Percent)]
