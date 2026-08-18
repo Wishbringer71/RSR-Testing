@@ -876,17 +876,24 @@ public partial class CustomRotation
 	private const int WallToWallMinimumHostileCount = 4;
 
 	/// <summary>
+	/// The minimum number of hostiles in range before combat for the pre-pull sustain cast to be worth
+	/// it - a single stray hostile isn't a real pull, so don't spend the cast on it.
+	/// </summary>
+	private const int PrePullMinimumHostileCount = 2;
+
+	/// <summary>
 	/// Whether the party's tank is close enough to hostiles to be about to gap-close into them, or is
 	/// already sustaining a wall-to-wall pull against enough of them - used to time tank sustain so it
 	/// covers both the pre-pull approach and staying up for the rest of the pull. Excludes Trials/Raids,
 	/// where this dungeon wall-to-wall-pull pattern doesn't apply.
 	/// Two different counting rules depending on combat state, not one shared threshold: before combat
-	/// (approaching a fresh group), any hostile in range is enough - the first pull(s) of a dungeon are
-	/// often smaller than the 4+ that wall-to-wall pulling later merges into, so requiring 4+ here meant
-	/// the pre-pull cast could never fire for those smaller opening pulls at all. Once already in combat,
-	/// <see cref="WallToWallMinimumHostileCount"/>+ is still required - that threshold was always meant
-	/// as an off-ramp ("wall-to-wall is basically over, stop force-refreshing and let normal rota take
-	/// over"), not as a gate on the initial approach; applying it to both cases was the actual bug.
+	/// (approaching a fresh group), <see cref="PrePullMinimumHostileCount"/>+ is enough - the first
+	/// pull(s) of a dungeon are often smaller than the 4+ that wall-to-wall pulling later merges into, so
+	/// requiring 4+ here meant the pre-pull cast could never fire for those smaller opening pulls at all.
+	/// Once already in combat, <see cref="WallToWallMinimumHostileCount"/>+ is still required - that
+	/// threshold was always meant as an off-ramp ("wall-to-wall is basically over, stop force-refreshing
+	/// and let normal rota take over"), not as a gate on the initial approach; applying it to both cases
+	/// was the actual bug.
 	/// </summary>
 	protected static bool TankApproachingMobGroup
 	{
@@ -906,19 +913,7 @@ public partial class CustomRotation
 
 			const float triggerRange = TankGapCloserRangeYalms + 1f;
 			var targets = DataCenter.AllHostileTargets;
-
-			if (!DataCenter.InCombat)
-			{
-				for (int i = 0, n = targets.Count; i < n; i++)
-				{
-					var hostile = targets[i];
-					if (hostile != null && Vector3.Distance(tank.Position, hostile.Position) <= triggerRange)
-					{
-						return true;
-					}
-				}
-				return false;
-			}
+			var minimumHostileCount = DataCenter.InCombat ? WallToWallMinimumHostileCount : PrePullMinimumHostileCount;
 
 			var mobsInRange = 0;
 			for (int i = 0, n = targets.Count; i < n; i++)
@@ -929,7 +924,7 @@ public partial class CustomRotation
 					mobsInRange++;
 				}
 			}
-			return mobsInRange >= WallToWallMinimumHostileCount;
+			return mobsInRange >= minimumHostileCount;
 		}
 	}
 

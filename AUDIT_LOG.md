@@ -719,3 +719,18 @@ stellt die vom Nutzer gewollte Ausstiegslogik wieder her, sobald ein
 laufender Pull auf unter 4 Mobs abschmilzt. Eine Konstante statt Magic
 Number für die Schwelle benannt, damit der Zweck (Ausstieg, nicht Eintritt)
 auch im Code erkennbar bleibt.
+
+## Nachtrag 8: Pre-Pull-Schwelle von "jeder Hostile" auf 2+ angehoben
+
+Status: GEFIXT (statisch selbst-geprüft, kein Compile/Test). Nutzer-Vorgabe:
+"damit nicht nur einer gepullt wird und was verschwendet wird, nimm >1" —
+ein einzelner Streuner in Reichweite ist kein echter Pull, der Pre-Pull-Cast
+soll dafür nicht verbraucht werden.
+
+Fix (`CustomRotation_OtherInfo.cs`): neue Konstante
+`PrePullMinimumHostileCount = 2`, ersetzt den bisherigen "jeder Hostile
+reicht"-Zweig (Nachtrag 6/7) durch dieselbe Zähl-Schleife wie im Kampf-Fall,
+nur mit anderer Schwelle. `TankApproachingMobGroup` wählt jetzt einheitlich
+`DataCenter.InCombat ? WallToWallMinimumHostileCount (4) :
+PrePullMinimumHostileCount (2)` und zählt einmal gegen diese Schwelle —
+keine zwei separate Codepfade mehr, ein Zähler, zwei benannte Konstanten.
