@@ -532,6 +532,20 @@ public sealed class AST_Reborn : AstrologianRotation
 			}
 		}
 
+		// Proactive wall-to-wall sustain: when the tank takes continuous, concentrated damage, this
+		// method (not GeneralGCD) claims almost every GCD via Benefic/BeneficII below, so
+		// TankApproachingMobGroup's check in GeneralGCD never gets reached and Aspected Benefic is
+		// never refreshed for the rest of the pull despite being due. Only fires above
+		// AspectedBeneficHeal (the same threshold the branch above uses to decide healing is urgent),
+		// so a genuine emergency below that threshold still falls through to Benefic/BeneficII
+		// untouched.
+		if (UsePreAspectedBenefic && TankApproachingMobGroup && AspectedBeneficPvE.CanUse(out act, targetOverride: TargetType.Tank)
+			&& AspectedBeneficPvE.Target.Target != null && AspectedBeneficPvE.Target.Target.GetHealthRatio() > AspectedBeneficHeal
+			&& (AspectedBeneficPvE.Target.Target.WillStatusEndGCD(AspectedBeneficPvE.Config.StatusRefreshGcdCount, 0, AspectedBeneficPvE.Setting.StatusFromSelf, AspectedBeneficPvE.Setting.TargetStatusProvide ?? [])))
+		{
+			return true;
+		}
+
 		if (BeneficIiPvE.CanUse(out act))
 		{
 			return true;

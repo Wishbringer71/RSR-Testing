@@ -342,6 +342,20 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			return true;
 		}
 
+		// Proactive wall-to-wall sustain: when the tank takes continuous, concentrated damage, this
+		// method (not GeneralGCD) claims almost every GCD via CureII/Cure below, so
+		// TankApproachingMobGroup's check in GeneralGCD never gets reached and Regen is never
+		// refreshed for the rest of the pull despite being due. Reuses the same RegenHeal safety
+		// threshold as the reactive branch above it, so this never fires below the HP level the
+		// player already trusts Regen at instead of a direct heal - a genuine emergency below that
+		// threshold still falls through to CureII/Cure untouched.
+		if (UsePreRegen && TankApproachingMobGroup && RegenPvE.CanUse(out act, targetOverride: TargetType.Tank)
+			&& RegenPvE.Target.Target != null && RegenPvE.Target.Target.GetHealthRatio() > RegenHeal
+			&& (RegenPvE.Target.Target.WillStatusEndGCD(RegenPvE.Config.StatusRefreshGcdCount, 0, RegenPvE.Setting.StatusFromSelf, RegenPvE.Setting.TargetStatusProvide ?? [])))
+		{
+			return true;
+		}
+
 		if (CureIiPvE.CanUse(out act))
 		{
 			return true;

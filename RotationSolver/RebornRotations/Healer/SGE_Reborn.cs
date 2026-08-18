@@ -770,6 +770,30 @@ public sealed class SGE_Reborn : SageRotation
 			return true;
 		}
 
+		// Proactive wall-to-wall sustain: when the tank takes continuous, concentrated damage, this
+		// method (not GeneralGCD) can claim almost every GCD via Diagnosis above, so
+		// TankApproachingMobGroup's check in GeneralGCD never gets reached and Eukrasian Diagnosis is
+		// never refreshed for the rest of the pull despite being due. Placed last, only reached when
+		// nothing above already claimed the GCD, so this never displaces an actual reactive heal
+		// decision - lower-risk than WHM/AST's version since SGE has no existing HP-ratio threshold
+		// here to reuse as a safety floor.
+		if (UsePreEukrasianDiagnosis && TankApproachingMobGroup)
+		{
+			var diagnosisDue = PartyTank?.WillStatusEndGCD(EukrasianDiagnosisPvE.Config.StatusRefreshGcdCount, 0, EukrasianDiagnosisPvE.Setting.StatusFromSelf, EukrasianDiagnosisPvE.Setting.TargetStatusProvide ?? []) ?? true;
+			if (diagnosisDue)
+			{
+				if (!HasEukrasia && EukrasiaPvE.CanUse(out act))
+				{
+					return true;
+				}
+
+				if (HasEukrasia && EukrasianDiagnosisPvE.CanUse(out act, targetOverride: TargetType.Tank))
+				{
+					return true;
+				}
+			}
+		}
+
 		return base.HealSingleGCD(out act);
 	}
 
