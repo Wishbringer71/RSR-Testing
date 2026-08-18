@@ -894,7 +894,8 @@ public partial class CustomRotation
 			var targets = DataCenter.AllHostileTargets;
 			for (int i = 0, n = targets.Count; i < n; i++)
 			{
-				if (Vector3.Distance(tank.Position, targets[i].Position) <= triggerRange)
+				var hostile = targets[i];
+				if (hostile != null && Vector3.Distance(tank.Position, hostile.Position) <= triggerRange)
 				{
 					mobsInRange++;
 				}
