@@ -271,6 +271,38 @@ Mob-Anzahl-Pfad, kein separater `IsInDeepDungeons`-Check eingebaut (Nutzer
 wollte sie "evtl." einbezogen wissen, unklar genug für eine bewusste
 Nicht-Sonderbehandlung statt Rätselraten).
 
+**Nachtrag 3 (Nutzer-Meldung, kritischer Re-Audit fand zwei weitere echte
+Bugs):** Commits `60d5773`, `04d364d`, `b1f2c61`.
+
+1. Fehlender Null-Check in `TankApproachingMobGroup`s Hostile-Schleife
+   (`60d5773`) — `AllHostileTargets` kann laut etabliertem Muster an
+   anderer Stelle im Code (`ActionTargetInfo.cs`, `IsAnyHostileCastingArea`)
+   stale Null-Referenzen enthalten, meine neue Schleife prüfte das nicht —
+   potenzieller `NullReferenceException`-Crash. Beim eigenen kritischen
+   Gegenlesen gefunden, sofort behoben.
+
+2. SGE: Eukrasia-Tastendruck ohne Dauer-Check (`04d364d`) — der Dauer-Check
+   hing nur am nachfolgenden Diagnosis-Cast, nicht am vorgeschalteten
+   Eukrasia-Druck selbst, der deshalb bei jeder freien GCD feuerte, auch
+   wenn Diagnosis noch reichlich Restdauer hatte. Dauer-Check jetzt vorab
+   gegen `PartyTank` geprüft, gated beide Schritte.
+
+3. **Größerer Fund (Nutzer-Meldung "initial-HoT wird gecastet, aber danach
+   nicht aufrechterhalten" / "keine Erneuerung bei zweiter Gruppe an
+   Mobs"):** Root Cause (`b1f2c61`) — der `TankApproachingMobGroup`-Check
+   war in `GeneralGCD` ganz ans Ende platziert ("safe filler for genuinely
+   spare GCD time"), passend für den ursprünglichen Zweck (einmaliger
+   Pre-Pull-Cast vor Kampfbeginn). Sobald aber echter Kampf gegen 4+ Mobs
+   läuft, beanspruchen DoT-Pflege/Nuke/Lily-Burst (bei WHM), Combust/Malefic
+   (bei AST) bzw. Phlegma/Pneuma (bei SGE) — alle mit höherer Priorität,
+   weiter oben in derselben Methode — praktisch jede GCD. Der
+   Sustain-Filler kam dadurch nie wieder zum Zug, sobald reale
+   Kampf-Priorität bestand — feuerte nur beim allerersten Pull, nie wieder
+   danach. Fix: Block in allen drei Jobs direkt nach den Raise-Early-Outs
+   an den Anfang von `GeneralGCD` verschoben (vor DoT/Nuke/Burst), bei SGE
+   nach dem bereits bestehenden reaktiven `DoEukrasianDiagnosis`-Aufruf
+   (echter Heilbedarf bleibt vorrangig vor proaktivem Sustain).
+
 ### #47 — `ShouldAddDefenseArea()` prüft `BMRNextTankbusterIn` nicht — GEFIXT (statisch selbst-geprüft, kein Compile/Test)
 Bug: `StateUpdater.cs:170-197` prüft nur `BMRNextRaidwideIn`, nicht Tankbuster
 — im Unterschied zu `ShouldAddDefenseSingle()`, die beides prüft. Bei reiner
