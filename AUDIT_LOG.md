@@ -230,6 +230,47 @@ dieselbe Logik, die `CheckStatus` für den normalen (nicht überschriebenen)
 Zielpfad bereits verwendet, nur explizit nachgezogen. Kein neu erfundener
 Mechanismus, sondern derselbe bestehende Guard, konsistent angewendet.
 
+**Nachtrag 2 (Nutzer-Meldung, Redesign des Auslösers):** Commit `fd19aad`.
+Symptom: Heiler castete bereits, während der Tank noch am Startpunkt stand,
+weit vor den Mobs. Ursache: Der bisherige Pre-Pull-Cast hing an
+`CountDownAction` — einem reinen Zeit-Countdown (5-3s vor Pull), komplett
+entkoppelt von der tatsächlichen Tank-Position. Nutzer-Klarstellung:
+Dungeons (der eigentliche Wall-to-Wall-Anwendungsfall) haben NIE einen
+aktiven Countdown — nur Prüfungen/Raids (meist Savage+) — daher griff der
+Trigger dort ohnehin nie richtig, und wo er griff (Prüfungen/Raids), soll
+die Mechanik explizit NICHT gelten. Zusätzliche Vorgabe: Mechanik nur
+aktiv, solange 4+ Mobs um den Tank stehen; danach normale reaktive
+Heilrota.
+
+Neuer Auslöser: `CustomRotation.TankApproachingMobGroup`
+(`CustomRotation_OtherInfo.cs`) — wahr, wenn der Party-Tank sich innerhalb
+von 21 Yalm (1 Yalm vor der tatsächlichen Gapcloser-Reichweite — alle vier
+Tank-Gapcloser, Intervene/Onslaught/Shadowstride/Trajectory, sind laut
+Nutzer-Bestätigung und Websuche einheitlich 20 Yalm) von 4+ Hostiles
+befindet, UND die Instanz kein Trial/Raid ist. Eine einzige Bedingung
+deckt sowohl den ersten Cast als auch alle Folgegruppen ab (z.B. bis zu
+5 Gruppen in Mt. Gulg) — der Tank betritt bei jeder neuen Gruppe erneut
+den 21y-Radius, kein separater Mechanismus nötig. Der zeitbasierte
+`CountDownAction`-Pre-Cast wurde komplett entfernt (WHM zusätzlich:
+`DivineBenisonPvE`-Cast dort, war an dieselbe Bedingung gekoppelt).
+
+Bekannte, unverifizierte Lücke: `TerritoryContentType` wird zur Build-Zeit
+aus Spieldaten generiert, in dieser Sandbox nicht kompilierbar/einsehbar
+(kein `dotnet`, mehrere externe Wikis/Datenbanken vom Netzwerk-Proxy
+blockiert — `ffxiv.consolegameswiki.com`, `finalfantasyxiv.com`,
+`garlandtools.org`, `thebalanceffxiv.com`, bestätigt per Proxy-Status als
+Richtlinien-Sperre, nicht technischer Fehler). Nur `.Trials`/`.Raids` sind
+bestätigt vorhanden (bereits an anderer Stelle im Code verwendet) und
+werden explizit ausgeschlossen. Alliance Raids und Variant Dungeons haben
+KEINEN expliziten Enum-Ausschluss — sie werden nur indirekt über die
+Mob-Anzahl-Bedingung (≥4 um Tank) gefiltert, was in den meisten Alliance-
+Raid-Encountern zutreffen dürfte, aber nicht garantiert ausgeschlossen ist.
+Palast der Toten/Himmelssäule (Deep Dungeons) sind NICHT explizit
+eingeschlossen, aber auch nicht ausgeschlossen — laufen über denselben
+Mob-Anzahl-Pfad, kein separater `IsInDeepDungeons`-Check eingebaut (Nutzer
+wollte sie "evtl." einbezogen wissen, unklar genug für eine bewusste
+Nicht-Sonderbehandlung statt Rätselraten).
+
 ### #47 — `ShouldAddDefenseArea()` prüft `BMRNextTankbusterIn` nicht — GEFIXT (statisch selbst-geprüft, kein Compile/Test)
 Bug: `StateUpdater.cs:170-197` prüft nur `BMRNextRaidwideIn`, nicht Tankbuster
 — im Unterschied zu `ShouldAddDefenseSingle()`, die beides prüft. Bei reiner
