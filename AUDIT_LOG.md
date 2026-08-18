@@ -691,3 +691,31 @@ tatsächlich in jedem Dungeon so nah an "Startgruppe mit 1 Mob" vorkommt,
 dass hier über-eifrig getriggert wird (z.B. ein einzelner Wächter-Mob vor
 der eigentlichen Gruppe) — laut Nutzer-Aussage aber ohnehin unproblematisch,
 da HoT auf dem Tank in keinem Fall schadet.
+
+## Nachtrag 7: Nachtrag 6 korrigiert — 4+-Schwelle war Ausstiegs-, kein Eintritts-Kriterium
+
+Status: GEFIXT (statisch selbst-geprüft, kein Compile/Test). Nutzer-
+Korrektur zu Nachtrag 6: die 4+-Vorgabe aus Nachtrag 2 war nie als
+Mindestgröße für den ERSTEN Pull gedacht, sondern als Ausstiegskriterium
+während eines laufenden Wall-to-Walls — "damit nicht noch bei 3 unnötig
+gecastet wird [...] da war dann der Hinweis auf die normale Rota". Zusatz-
+Präzisierung: "stehen" (die Mobs aus der Nutzer-Formulierung "4+ Mobs
+stehen um den Tank") bezog sich auf bereits gepullte/engagierte Mobs im
+Kampf, nicht auf noch heranrennende beim Herannahen — bestätigt exakt die
+Zwei-Zustands-Unterscheidung.
+
+Nachtrag 6 hatte die Schwelle komplett entfernt (jeder Hostile in Reichweite
+zählt, unabhängig vom Kampfzustand) — das behebt zwar den Pre-Pull-Fall,
+verliert aber die vom Nutzer gewollte Ausstiegslogik: bei einem fast
+abgeschlossenen Pull mit nur noch 1-3 Mobs würde jetzt weiterhin
+zwanghaft nachgecastet, statt auf normale Reaktiv-Heilung zurückzufallen.
+
+Fix (`CustomRotation_OtherInfo.cs`): `TankApproachingMobGroup` unterscheidet
+jetzt nach `DataCenter.InCombat`. NICHT im Kampf (Herannahen an eine frische
+Gruppe, noch nicht gepullt): jeder Hostile in Reichweite reicht — deckt den
+Pre-Pull-Fall für Startgruppen unter 4 Mobs ab. IM Kampf (Mobs bereits
+engaged, "stehen"): weiterhin `WallToWallMinimumHostileCount` (4) nötig —
+stellt die vom Nutzer gewollte Ausstiegslogik wieder her, sobald ein
+laufender Pull auf unter 4 Mobs abschmilzt. Eine Konstante statt Magic
+Number für die Schwelle benannt, damit der Zweck (Ausstieg, nicht Eintritt)
+auch im Code erkennbar bleibt.
