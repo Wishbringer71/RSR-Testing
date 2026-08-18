@@ -807,6 +807,35 @@ public sealed class SGE_Reborn : SageRotation
 			return true;
 		}
 
+		// Eukrasian Diagnosis is instant-cast via Eukrasia (both GCDs have no cast time), so keeping it
+		// up on the tank costs no movement/uptime unlike a hard-cast spell. Checked here (after the
+		// real reactive DoEukrasianDiagnosis call above, ahead of Phlegma/Pneuma/DPS filler below)
+		// rather than as bottom-of-list filler: placed last, it never got a turn once real combat DPS
+		// priorities existed for a fight against 4+ mobs, so it only ever fired for the very first
+		// pull and was never refreshed for any pull after that. Self-contained (doesn't touch
+		// _EukrasiaActionAim/ChoiceEukrasia). Gated on TankApproachingMobGroup so it still only fires
+		// as the tank actually commits to a pull, not while standing still at the start of the
+		// instance or between pulls.
+		// targetOverride bypasses the normal candidate-list status check (FindTankTarget doesn't call
+		// CheckStatus), so without this explicit check the Diagnosis cast below would keep firing on
+		// the tank every free GCD regardless of remaining duration. The duration check is done here,
+		// up front, against PartyTank directly - otherwise the Eukrasia press below would fire every
+		// free GCD regardless of whether Diagnosis actually needs a refresh, since its own duration
+		// check only runs after Eukrasia is already active and Diagnosis is about to be cast.
+		var diagnosisDue = PartyTank?.WillStatusEndGCD(EukrasianDiagnosisPvE.Config.StatusRefreshGcdCount, 0, EukrasianDiagnosisPvE.Setting.StatusFromSelf, EukrasianDiagnosisPvE.Setting.TargetStatusProvide ?? []) ?? true;
+		if (UsePreEukrasianDiagnosis && TankApproachingMobGroup && diagnosisDue)
+		{
+			if (!HasEukrasia && EukrasiaPvE.CanUse(out act))
+			{
+				return true;
+			}
+
+			if (HasEukrasia && EukrasianDiagnosisPvE.CanUse(out act, targetOverride: TargetType.Tank))
+			{
+				return true;
+			}
+		}
+
 		if (PhlegmaPvE.CanUse(out act, usedUp: IsMoving || PhlegmaPvE.Cooldown.WillHaveXChargesGCD(2, 1)))
 		{
 			return true;
@@ -884,35 +913,6 @@ public sealed class SGE_Reborn : SageRotation
 		if (AntiBrick && InCombat && HasHostilesInRange && HasEukrasia)
 		{
 			if (EukrasianPrognosisPvE.CanUse(out act, skipStatusProvideCheck: true))
-			{
-				return true;
-			}
-		}
-
-		// Eukrasian Diagnosis is instant-cast via Eukrasia (both GCDs have no cast time), so keeping it
-		// up on the tank costs no movement/uptime unlike a hard-cast spell - safe filler for genuinely
-		// spare GCD time, including while moving during a pull. Self-contained (doesn't touch
-		// _EukrasiaActionAim/ChoiceEukrasia) and placed last: every higher-priority action above,
-		// including any real DefenseArea/DefenseSingle/DoT-refresh use of Eukrasia, already had its
-		// chance to claim this GCD (and Eukrasia itself) first.
-		// targetOverride bypasses the normal candidate-list status check (FindTankTarget doesn't call
-		// CheckStatus), so without this explicit check the Diagnosis cast below would keep firing on
-		// the tank every free GCD regardless of remaining duration. Gated on TankApproachingMobGroup
-		// so this only fires as the tank actually commits to a pull (about to gap-close into 4+ mobs),
-		// not while standing still at the start of the instance or wandering an empty corridor
-		// between pulls. The duration check is done here, up front, against PartyTank directly -
-		// otherwise the Eukrasia press below would fire every free GCD regardless of whether Diagnosis
-		// actually needs a refresh, since its own duration check only runs after Eukrasia is already
-		// active and Diagnosis is about to be cast.
-		var diagnosisDue = PartyTank?.WillStatusEndGCD(EukrasianDiagnosisPvE.Config.StatusRefreshGcdCount, 0, EukrasianDiagnosisPvE.Setting.StatusFromSelf, EukrasianDiagnosisPvE.Setting.TargetStatusProvide ?? []) ?? true;
-		if (UsePreEukrasianDiagnosis && TankApproachingMobGroup && diagnosisDue)
-		{
-			if (!HasEukrasia && EukrasiaPvE.CanUse(out act))
-			{
-				return true;
-			}
-
-			if (HasEukrasia && EukrasianDiagnosisPvE.CanUse(out act, targetOverride: TargetType.Tank))
 			{
 				return true;
 			}

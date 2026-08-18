@@ -378,6 +378,22 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			return base.GeneralGCD(out act);
 		}
 
+		// Regen is instant-cast (no cast time), so keeping it up on the tank costs no movement/uptime
+		// unlike a hard-cast spell. Checked early (ahead of DoT upkeep/nukes/Lily burst below) rather
+		// than as bottom-of-list filler: placed last, it never got a turn once real combat DPS/DoT
+		// priorities existed for a fight against 4+ mobs, so it only ever fired for the very first
+		// pull and was never refreshed for any pull after that - exactly the "not maintained" bug
+		// report. Gated on TankApproachingMobGroup so it still only fires as the tank actually commits
+		// to a pull, not while standing still at the start of the instance or between pulls.
+		// targetOverride bypasses the normal candidate-list status check (FindTankTarget doesn't call
+		// CheckStatus), so without this explicit check it would recast Regen on the tank every free GCD
+		// regardless of remaining duration - check it here instead.
+		if (UsePreRegen && TankApproachingMobGroup && RegenPvE.CanUse(out act, targetOverride: TargetType.Tank)
+			&& (RegenPvE.Target.Target?.WillStatusEndGCD(RegenPvE.Config.StatusRefreshGcdCount, 0, RegenPvE.Setting.StatusFromSelf, RegenPvE.Setting.TargetStatusProvide ?? []) ?? true))
+		{
+			return true;
+		}
+
 		//if (NotInCombatDelay && RegenDefense.CanUse(out act)) return true;
 
 		var liliesNearlyFull = Lily == 2 && LilyAfterGCD((uint)LilyOvercapTime);
@@ -526,21 +542,6 @@ public sealed class WHM_Reborn : WhiteMageRotation
 					return true;
 				}
 			}
-		}
-
-		// Regen is instant-cast (no cast time), so keeping it up on the tank costs no movement/uptime
-		// unlike a hard-cast spell - safe filler for genuinely spare GCD time. Gated on
-		// TankApproachingMobGroup so this only fires as the tank actually commits to a pull (about to
-		// gap-close into 4+ mobs), not while standing still at the start of the instance or wandering
-		// an empty corridor between pulls. Placed last: every higher-priority action above already had
-		// its chance to claim this GCD first.
-		// targetOverride bypasses the normal candidate-list status check (FindTankTarget doesn't call
-		// CheckStatus), so without this explicit check it would recast Regen on the tank every free GCD
-		// regardless of remaining duration - check it here instead.
-		if (UsePreRegen && TankApproachingMobGroup && RegenPvE.CanUse(out act, targetOverride: TargetType.Tank)
-			&& (RegenPvE.Target.Target?.WillStatusEndGCD(RegenPvE.Config.StatusRefreshGcdCount, 0, RegenPvE.Setting.StatusFromSelf, RegenPvE.Setting.TargetStatusProvide ?? []) ?? true))
-		{
-			return true;
 		}
 
 		return base.GeneralGCD(out act);
