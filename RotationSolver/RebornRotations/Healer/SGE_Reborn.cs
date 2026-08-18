@@ -900,16 +900,19 @@ public sealed class SGE_Reborn : SageRotation
 		// the tank every free GCD regardless of remaining duration. Gated on TankApproachingMobGroup
 		// so this only fires as the tank actually commits to a pull (about to gap-close into 4+ mobs),
 		// not while standing still at the start of the instance or wandering an empty corridor
-		// between pulls.
-		if (UsePreEukrasianDiagnosis && TankApproachingMobGroup)
+		// between pulls. The duration check is done here, up front, against PartyTank directly -
+		// otherwise the Eukrasia press below would fire every free GCD regardless of whether Diagnosis
+		// actually needs a refresh, since its own duration check only runs after Eukrasia is already
+		// active and Diagnosis is about to be cast.
+		var diagnosisDue = PartyTank?.WillStatusEndGCD(EukrasianDiagnosisPvE.Config.StatusRefreshGcdCount, 0, EukrasianDiagnosisPvE.Setting.StatusFromSelf, EukrasianDiagnosisPvE.Setting.TargetStatusProvide ?? []) ?? true;
+		if (UsePreEukrasianDiagnosis && TankApproachingMobGroup && diagnosisDue)
 		{
 			if (!HasEukrasia && EukrasiaPvE.CanUse(out act))
 			{
 				return true;
 			}
 
-			if (HasEukrasia && EukrasianDiagnosisPvE.CanUse(out act, targetOverride: TargetType.Tank)
-				&& (EukrasianDiagnosisPvE.Target.Target?.WillStatusEndGCD(EukrasianDiagnosisPvE.Config.StatusRefreshGcdCount, 0, EukrasianDiagnosisPvE.Setting.StatusFromSelf, EukrasianDiagnosisPvE.Setting.TargetStatusProvide ?? []) ?? true))
+			if (HasEukrasia && EukrasianDiagnosisPvE.CanUse(out act, targetOverride: TargetType.Tank))
 			{
 				return true;
 			}
