@@ -24,6 +24,12 @@ namespace RotationSolver.Basic.Helpers;
 /// </summary>
 public static class ObjectHelper
 {
+	/// <summary>
+	/// Effective-HP percentage at or below which a co-tank still being attacked is treated as needing
+	/// the boss pulled off them immediately. A conservative estimate, not verified in play.
+	/// </summary>
+	private const float CoTankEmergencyHpPercent = 25;
+
 	private static readonly EventHandlerContent[] _eventType =
 	[
 		EventHandlerContent.TreasureHuntDirector,
@@ -107,28 +113,27 @@ public static class ObjectHelper
 			if ((target.GetObjectNPC()?.Unknown0 == 0 || target.HitboxRadius >= 5) // Unknown12 used to be the flag checked for the mobs ability to move, honestly just guessing on this one
 				&& (target.TargetObject?.IsValid() ?? false))
 			{
-				// The target is not a tank role
-				if (Svc.Objects.SearchById(target.TargetObjectId) is IBattleChara targetObject && !targetObject.IsJobCategory(JobRole.Tank)
-					&& (Vector3.Distance(target.Position, Player.Object?.Position ?? Vector3.Zero) > 5))
+				if (Svc.Objects.SearchById(target.TargetObjectId) is IBattleChara targetObject)
 				{
-					return true;
-				}
+					// The target is not a tank role
+					if (!targetObject.IsJobCategory(JobRole.Tank)
+						&& (Vector3.Distance(target.Position, Player.Object?.Position ?? Vector3.Zero) > 5))
+					{
+						return true;
+					}
 
-				// Emergency: the target IS a tank (the co-tank), already critically wounded and still
-				// being attacked - grab it back before the next hit (whether that's a remaining hit of
-				// a multi-hit tankbuster or normal follow-up damage) finishes them off. Deliberately no
-				// distance gate here, unlike the branch above - any available healthy tank should react,
-				// not just the nearest one. 25% is a conservative estimate, not verified against actual
-				// play - this only helps once a co-tank has survived a hit at critically low health; it
-				// cannot prevent a hit that kills outright from full/near-full health, since BMR exposes
-				// no predicted damage magnitude, only timing and hit-shape.
-				if (Svc.Objects.SearchById(target.TargetObjectId) is IBattleChara coTank
-					&& coTank.IsJobCategory(JobRole.Tank)
-					&& !coTank.IsDead
-					&& coTank.GameObjectId != Player.Object?.GameObjectId
-					&& coTank.GetEffectiveHpPercent() <= 25)
-				{
-					return true;
+					// Emergency: it is the co-tank, critically wounded and still being attacked - grab it
+					// back before the next hit finishes them off. No distance gate, unlike above: any
+					// available healthy tank should react, not just the nearest one. This cannot prevent
+					// a hit that kills outright from high health, since BMR predicts timing and hit-shape
+					// but no damage magnitude.
+					if (targetObject.IsJobCategory(JobRole.Tank)
+						&& !targetObject.IsDead
+						&& targetObject.GameObjectId != Player.Object?.GameObjectId
+						&& targetObject.GetEffectiveHpPercent() <= CoTankEmergencyHpPercent)
+					{
+						return true;
+					}
 				}
 			}
 		}

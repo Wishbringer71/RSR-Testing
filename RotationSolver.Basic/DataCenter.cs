@@ -26,6 +26,24 @@ internal static class DataCenter
 {
 	public static List<IBattleChara> PartyMembers { get; set; } = [];
 
+	/// <summary>
+	/// The party's first living tank, or null if there is none.
+	/// </summary>
+	public static IBattleChara? PartyTank
+	{
+		get
+		{
+			foreach (var member in PartyMembers)
+			{
+				if (member.IsJobCategory(JobRole.Tank) && !member.IsDead)
+				{
+					return member;
+				}
+			}
+			return null;
+		}
+	}
+
 	public static List<IBattleChara> AllianceMembers { get; set; } = [];
 
 	public static List<IBattleChara> AllHostileTargets { get; set; } = [];

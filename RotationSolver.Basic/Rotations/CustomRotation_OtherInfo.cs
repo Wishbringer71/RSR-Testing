@@ -845,22 +845,9 @@ public partial class CustomRotation
 	protected static IEnumerable<IBattleChara> AllHostileTargets => DataCenter.AllHostileTargets;
 
 	/// <summary>
-	/// The party's tank (first alive tank found), or null if none.
+	/// The party's first living tank, or null if there is none.
 	/// </summary>
-	protected static IBattleChara? PartyTank
-	{
-		get
-		{
-			foreach (var m in DataCenter.PartyMembers)
-			{
-				if (m.IsJobCategory(JobRole.Tank) && !m.IsDead)
-				{
-					return m;
-				}
-			}
-			return null;
-		}
-	}
+	protected static IBattleChara? PartyTank => DataCenter.PartyTank;
 
 	/// <summary>
 	/// All four tank gap closers (Intervene, Onslaught, Shadowstride, Trajectory) have a 20-yalm range.

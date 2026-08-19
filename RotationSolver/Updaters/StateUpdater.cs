@@ -5,6 +5,21 @@ namespace RotationSolver.Updaters;
 
 internal static class StateUpdater
 {
+	/// <summary>
+	/// How much earlier healing should kick in for a target under Weakness / Brink of Death. Those
+	/// statuses halve incoming healing, so a heal cast now restores only half as much; the threshold is
+	/// raised rather than the HP% taken at face value. Deliberately below the 2.0 the halving would
+	/// suggest, to avoid over-healing a target that is merely weakened but in no danger.
+	/// </summary>
+	private const float WeakenedHealThresholdFactor = 1.5f;
+
+	/// <summary>
+	/// How far ahead a shield must survive to count toward effective health when no BMR prediction is
+	/// available to compare against - i.e. for the cast-detection-based reasons in
+	/// <see cref="ShieldCreditAllowed"/>, which carry no lead time of their own.
+	/// </summary>
+	private const float ShieldSurvivalFallbackSeconds = 3f;
+
 	private static bool CanUseHealAction =>
 		// PvP
 		DataCenter.IsPvP
@@ -181,13 +196,11 @@ internal static class StateUpdater
 			return true;
 		}
 
-		// Sustain fallback for trash pulls without an active BMR module: only jobs that explicitly
-		// declare a hostile-count-driven AoE mitigation branch (HasHostileCountAoeMitigation) may
-		// trigger DefenseAreaAbility() this way - keeps the blast radius scoped to the jobs that
-		// actually wrote that branch, instead of running the full DefenseAreaAbility/DefenseSingleAbility
-		// chain for every job on pure enemy count (a prior attempt at this without the job-scoped
-		// property did exactly that and was reverted).
-		if (DataCenter.InCombat && Service.Config.UseAoeDefense && DataCenter.NumberOfHostilesInRange >= 4
+		// Sustain fallback for trash pulls without an active BMR module. Scoped to jobs that actually
+		// declare such a branch, so this doesn't run every job's whole defense chain on enemy count
+		// alone. Same threshold the job branches themselves use, so the gate can't disagree with them.
+		if (DataCenter.InCombat && Service.Config.UseAoeDefense
+			&& DataCenter.NumberOfHostilesInRange >= Service.Config.MitigationSustainHostileCount
 			&& (DataCenter.CurrentRotation?.HasHostileCountAoeMitigation ?? false))
 		{
 			return true;
@@ -313,14 +326,7 @@ internal static class StateUpdater
 	// Helper: Returns true if there are any tanks in the party with HP > 0
 	private static bool AnyLivingTankInParty()
 	{
-		foreach (var member in DataCenter.PartyMembers)
-		{
-			if (member.IsJobCategory(JobRole.Tank) && !member.IsDead)
-			{
-				return true;
-			}
-		}
-		return false;
+		return DataCenter.PartyTank != null;
 	}
 
 	// Helper: Returns true if there are any healers in the party with HP > 0
@@ -719,7 +725,7 @@ internal static class StateUpdater
 		Service.Config.UseBmrTimeline && DataCenter.BMRHasActiveModule
 			&& DataCenter.BMRNextDamageIn is > 0f and < float.MaxValue
 			? DataCenter.BMRNextDamageIn
-			: 3f;
+			: ShieldSurvivalFallbackSeconds;
 
 	private static bool ShouldHealSelf(StatusID[] hotStatus, float healSingle, float healSingleHot)
 	{
@@ -768,11 +774,9 @@ internal static class StateUpdater
 		// Compare the target's health ratio to a threshold determined by linear interpolation (Lerp) between `healSingle` and `healSingleHot`.
 		var threshold = Lerp(healSingle, healSingleHot, ratio);
 
-		// Weakness/Brink of Death halve incoming healing, so a heal cast now restores half as much -
-		// raise the threshold so healing starts sooner rather than treating this HP% at face value.
 		if (StatusHelper.PlayerIsWeakened())
 		{
-			threshold = Math.Min(1f, threshold * 1.5f);
+			threshold = Math.Min(1f, threshold * WeakenedHealThresholdFactor);
 		}
 
 		return h < threshold;
@@ -825,11 +829,9 @@ internal static class StateUpdater
 		// Compare the target's health ratio to a threshold determined by linear interpolation (Lerp) between `healSingle` and `healSingleHot`.
 		var threshold = Lerp(healSingle, healSingleHot, ratio);
 
-		// Weakness/Brink of Death halve incoming healing, so a heal cast now restores half as much -
-		// raise the threshold so healing starts sooner rather than treating this HP% at face value.
 		if (target.IsWeakened())
 		{
-			threshold = Math.Min(1f, threshold * 1.5f);
+			threshold = Math.Min(1f, threshold * WeakenedHealThresholdFactor);
 		}
 
 		return h < threshold;
