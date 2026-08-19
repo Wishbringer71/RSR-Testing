@@ -831,3 +831,74 @@ darf nicht bewertet werden, ohne die verwendete Messfunktion zu prüfen —
 dieselbe Zahl bedeutet in diesem Repo je nach Funktion Center-zu-Center
 oder Kante-zu-Kante. Der ursprüngliche B2a-"Adversarial-Check" hat genau
 das nicht getan und deshalb die falsche Richtung als Fix ausgewiesen.
+
+## Abarbeitung der Review-Funde #57–#62 (Nutzer-Auftrag: prüfen, planen, umsetzen, auditieren)
+
+Status: ALLE SECHS UMGESETZT, compiler-verifiziert (CI grün), NICHT
+spielgetestet. Verhalten bei Standardeinstellungen unverändert — es wurden
+keine Schwellenwerte oder Auslösebedingungen verändert, nur ihre
+Repräsentation im Code.
+
+**Vorprüfung, die den Plan bestimmt hat** (verhinderte zwei Fehlgriffe):
+1. Alle 25 Vorkommen des Dauer-Ternary sind byte-identisch und betreffen
+   ausschließlich Addle (7), Feint (12), Reprisal (6) — verifiziert per
+   `grep -o ... | sort | uniq -c`. Damit ist EIN geteilter Helfer semantisch
+   korrekt, statt 14 job-eigener.
+2. Das vorhandene `Service.Config.AutoDefenseNumber` (Default 2) sieht wie
+   der passende Wiederverwendungskandidat für `NumberOfHostilesInRange >= 4`
+   aus, ist es aber NICHT: seine beiden Verwender (`DataCenter.cs:456`,
+   `StateUpdater.cs:272`) zählen Gegner, die MICH angreifen, nicht Gegner in
+   Reichweite. Wiederverwendung wäre ein stiller Semantikfehler gewesen.
+
+**#58/#59 (Duplikate + Helfer-Muster), Commit `00a426b`:**
+`MitigationDebuffDuration` und `ShouldSustainMitigationDebuff(params
+StatusID[])` in `CustomRotation_OtherInfo.cs`, direkt neben dem bereits
+vorhandenen `BMRShouldRefreshBefore`, das sie verwenden. Neue Config
+`MitigationSustainHostileCount` (Default 4) in `Configs.cs` unter
+`UseDefenseAbility` — beseitigt zugleich die Inkonsistenz, dass die
+Healer-Sustain-Schwellen konfigurierbar waren, diese aber nicht. Alle 25
+Aufrufstellen mechanisch ersetzt (Skript, drei Klammerfälle einzeln
+behandelt, danach vollständige Diff-Sichtprüfung). SMNs bereits
+vorhandener `TryAddleBeforeDamage`-Wrapper blieb als job-eigene Ebene.
+
+**#60 (divergente Healer-Kopien), Commit `6b40600`:**
+Je ein `TrySustain…OnTank(out act)` pro Heiler, nach dem Vorbild von SMNs
+Wrapper. Die Vereinheitlichung ist eine bewusste, kleine Verhaltensänderung:
+der GeneralGCD-Pfad hatte als einziger weder die HP-Schwelle
+(`RegenHeal`/`AspectedBeneficHeal`) noch den Null-Check und behandelte ein
+Null-Ziel per `?? true` als "Refresh fällig". Jetzt gilt überall die
+Schwelle — das ist die Lesart, die die Einstellung selbst dokumentiert
+("will not be used on them" unterhalb dieser Ratio). SGE war inhaltlich
+konsistent, dort nur Entdopplung.
+
+**#57 (Magic Numbers) + #61 (Lookups), Commit `0fe7bed`:**
+`WeakenedHealThresholdFactor = 1.5f`, `ShieldSurvivalFallbackSeconds = 3f`,
+`CoTankEmergencyHpPercent = 25` — benannte Konstanten mit Begründung,
+inklusive der ehrlichen Kennzeichnung, dass die 25 % ein nie im Spiel
+geprüfter Schätzwert sind. StateUpdaters Torwächter liest jetzt dieselbe
+`MitigationSustainHostileCount` wie die Job-Zweige, die er freischaltet —
+vorher konnte das Tor mit den Zweigen dahinter uneins sein.
+`DataCenter.PartyTank` als einzige Definition von "erster lebender Tank";
+`CustomRotation` leitet weiter (wie schon bei `AverageTTK`),
+`StateUpdater.AnyLivingTankInParty` delegiert. `FindTankTarget` behält seine
+eigene Fassung — sie priorisiert zusätzlich Tank-Stance und Zielbarkeit, ist
+also NICHT dasselbe Prädikat (geprüft, nicht angenommen). `CanProvoke` sucht
+die Ziel-ID jetzt einmal statt zweimal pro Hostile pro Frame.
+
+**#62 (Kommentare), Commit `f9e0eff`:**
+Inline-Prosa im Fork-Diff von 312 auf 237 Zeilen, Code unverändert 785.
+Entfernt wurden vor allem Änderungshistorie und Querverweise auf andere
+Jobs; behalten wurde die Mechanik-Erklärung. Der Gesamtanteil (inkl. 160
+Zeilen XML-Doku an neuen öffentlichen Membern, Repo-Konvention) liegt bei
+33,5 % gegenüber 38,6 % vorher und 11,0 % Repo-Baseline. Bewusst NICHT auf
+die Baseline gedrückt: der Rest erklärt nicht-offensichtliche Mechanik, und
+Kommentare zu löschen, nur damit eine Kennzahl passt, wäre Zahlenkosmetik.
+
+**Audit-Messung nach Umsetzung** (alle per grep gegengezählt):
+Dauer-Ternary 25→1, `NumberOfHostilesInRange >= 4` 26→0,
+`TankApproachingMobGroup`-Aufrufe in Rotationen 9→3, doppelter
+`SearchById` 2→1, Inline-Kommentare 312→237.
+
+Grenze dieses Audits, ausdrücklich: CI beweist Kompilierbarkeit, nicht
+Verhalten. Die einzige inhaltliche Änderung (GeneralGCD-HP-Schwelle bei
+WHM/AST) ist nur statisch begründet und sollte im Spiel gegengeprüft werden.
