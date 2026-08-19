@@ -93,6 +93,82 @@ zu kurz für das gemeldete Muster), aber echter Bug, der bei Gelegenheit
 bereinigt werden sollte (entweder `_lastHp` korrekt pflegen oder toten
 Zweig entfernen).
 
+### #56 `ObjectHelper.CanProvoke`: Distanz-Inversion `> 5` → `< 5` fachlich nicht belegt
+
+`RotationSolver.Basic/Helpers/ObjectHelper.cs:112`. Upstream prüft
+`Distance(target, Player) > 5`, der Fork invertierte auf `< 5`. Provoke hat
+25y Reichweite; mit `< 5` feuert Provoke nur noch, wenn der Mob bereits in
+Nahkampfreichweite des Tanks steht — genau dann, wenn er meist ohnehin
+schon auf dem Tank ist. Es gibt eine kohärente Lesart, unter der die
+ORIGINAL-Bedingung richtig war ("Provoke nicht an etwas verschwenden, das
+ich per AoE ohnehin aufsammle — sie ist für Entferntes da"). Die Inversion
+wurde nie im Spiel verifiziert, nur aus dem Code hergeleitet. Einziger
+belegter Nebeneffekt: das Null-Fallback (`Player.Object?.Position ??
+Vector3.Zero`) schlägt jetzt fail-closed statt fail-open. → Entscheidung
+des Nutzers nötig: verifizieren oder revertieren. Höchstes Einzelrisiko im
+gesamten Patch-Satz (geteilter Helper, alle vier Tanks).
+
+### #57 Heilschwellen-Multiplikator `* 1.5f` global, hartcodiert, ohne Opt-out
+
+`RotationSolver/Updaters/StateUpdater.cs` (`ShouldHealSelf`,
+`ShouldHealSingle`): bei Weakness/Brink of Death wird die Heilschwelle mit
+fest codiertem `1.5f` multipliziert. Das ändert das Heilverhalten JEDER
+Klasse, ist weder Config noch benannte Konstante, und der Nutzer kann es
+nicht abschalten. Gleiches gilt für `ShieldSurvivalHorizon`s `3f`-Fallback
+und `25` (Co-Tank-HP-Schwelle in `CanProvoke`). Repo-Konvention für
+Stellschrauben ist `Service.Config.X` bzw. `[RotationConfig]`.
+
+### #58 25× dupliziertes `PlayerSyncedLevel() >= 98 ? 15f : 10f` über 14 Dateien
+
+Die Dauer von Feint/Addle/Reprisal (Trait-Verlängerung 10s→15s) ist als
+Ternary in 25 Aufrufen über 14 Dateien kopiert. Eine benannte Property in
+`CustomRotation_OtherInfo.cs` würde alle 25 ersetzen und die Spielannahme
+an EINER prüfbaren Stelle festhalten statt 25-fach verstreut. Analog:
+`NumberOfHostilesInRange >= 4` 26× hartcodiert — inkonsistent dazu, dass
+die entsprechende Healer-Schwelle inzwischen UI-konfigurierbar ist.
+
+### #59 Helper-Muster nur in 1 von 15 Dateien angewandt
+
+`SMN_Reborn.cs:154` kapselt die proaktive Bedingung in
+`private bool TryAddleBeforeDamage(out IAction? act)` und ruft sie aus
+DefenseArea- UND DefenseSingleAbility auf — das ist das richtige Muster.
+Die anderen 14 Dateien duplizieren dieselbe Bedingung inline 2–4× pro
+Datei (38 `BMRShouldRefreshBefore`-Aufrufstellen gesamt). Das Muster
+existiert also im eigenen Patch-Satz und wurde nicht durchgezogen.
+
+### #60 WHM/AST/SGE: drei Kopien mit bereits auseinandergelaufener Semantik
+
+`WHM_Reborn.cs:338` (HealAreaGCD) und `:373` (HealSingleGCD) enthalten die
+`GetHealthRatio() > RegenHeal`-Sicherung und `Target != null &&`;
+`:426` (GeneralGCD) enthält BEIDES NICHT und nutzt stattdessen `?? true`.
+Bei Null-Ziel verhalten sich die Pfade damit gegensätzlich, und der
+GeneralGCD-Pfad castet Regen auch unterhalb der `RegenHeal`-Schwelle. Ob
+das gewollt ist, ist nirgends dokumentiert — es ist der klassische
+Copy-Paste-Drift (eine spätere Absicherung landete in 2 von 3 Kopien).
+AST/SGE haben je ebenfalls 3 Kopien, auf denselben Drift prüfen.
+
+### #61 Drei Implementierungen von "lebender Tank in der Party"
+
+`CustomRotation_OtherInfo.PartyTank` (neu), `StateUpdater.AnyLivingTankInParty()`
+(neu), `ActionTargetInfo.FindTankTarget()` (upstream) prüfen alle
+`IsJobCategory(JobRole.Tank) && !IsDead` über `DataCenter.PartyMembers`.
+Assembly-Grenze erklärt die Trennung nur teilweise — ein gemeinsamer
+Helper in `DataCenter`/`TargetFilter` wäre möglich. Zusätzlich:
+`CanProvoke` ruft `Svc.Objects.SearchById(target.TargetObjectId)` zweimal
+für dieselbe ID in einem Per-Frame-/Per-Hostile-Pfad auf.
+
+### #62 Kommentardichte 3,5× über Repo-Norm, teils Änderungshistorie im Quelltext
+
+Gemessen: Repo-Baseline in den betroffenen Dateien 11,0 % Kommentarzeilen
+(3517/31717 nicht-leere Zeilen); die Fork-Ergänzungen liegen bei 38,6 %
+(487 Kommentar- zu 774 Codezeilen). Inhaltlich enthalten mehrere
+Kommentare Änderungsbegründung/-historie statt Code-Erklärung (z.B.
+StateUpdater: "a prior attempt at this without the job-scoped property did
+exactly that and was reverted"; diverse Rotationen: "same dual-placement
+pattern already used for DRK/GNB Reprisal and SMN/RDM/PCT/BLM Addle").
+Das gehört in Commit-Message/AUDIT_LOG, nicht in den Quelltext — dort
+veraltet es und ist für Upstream-Leser Rauschen.
+
 ## Wichtig für zukünftige Sessions
 
 Diese Dateien (TODO.md, AUDIT_LOG.md) existieren nur auf dem Branch, auf
