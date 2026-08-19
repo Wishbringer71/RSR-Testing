@@ -118,11 +118,9 @@ public sealed class SAM_Reborn : SamuraiRotation
 	[RotationDesc(ActionID.FeintPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		// Mirrors the proactive block in DefenseAreaAbility above: that method only runs on a
-		// raidwide-shaped trigger, so a pure tankbuster prediction never reaches it. This duplicate is
-		// reachable via ShouldAddDefenseSingle's richer tankbuster trigger instead, same dual-placement
-		// pattern already used for DRK/GNB Reprisal and SMN Addle. EnoughWeaveTime is a genuine clip-
-		// safety check, not a preference gate, so unlike DRK/GNB's burst-preference gates it is kept here.
+		// DefenseAreaAbility only runs on a raidwide-shaped trigger, so a tankbuster-shaped one never
+		// reaches it; ShouldAddDefenseSingle's tankbuster trigger reaches this copy instead.
+		// EnoughWeaveTime is a clip-safety check, not a preference gate, so it is kept here.
 		if (EnoughWeaveTime
 			&& ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))

@@ -226,10 +226,8 @@ public sealed class MNK_Reborn : MonkRotation
 			return true;
 		}
 
-		// Mirrors the proactive block in DefenseAreaAbility above: that method only runs on a
-		// raidwide-shaped trigger, so a pure tankbuster prediction never reaches it. This duplicate is
-		// reachable via ShouldAddDefenseSingle's richer tankbuster trigger instead, same dual-placement
-		// pattern already used for DRK/GNB Reprisal and SMN Addle.
+		// DefenseAreaAbility only runs on a raidwide-shaped trigger, so a tankbuster-shaped one never
+		// reaches it; ShouldAddDefenseSingle's tankbuster trigger reaches this copy instead.
 		if (ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{

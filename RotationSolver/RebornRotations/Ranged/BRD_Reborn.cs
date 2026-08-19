@@ -140,13 +140,8 @@ public sealed class BRD_Reborn : BardRotation
 	[RotationDesc(ActionID.TroubadourPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		// Mirrors the proactive block in DefenseAreaAbility above: that method only runs on a
-		// raidwide-shaped BMR trigger, so a pure tankbuster-shaped prediction never reaches it. This
-		// duplicate is reachable via ShouldAddDefenseSingle's richer tankbuster trigger instead, same
-		// dual-placement pattern already used for DRK/GNB Reprisal and SMN/RDM/PCT/BLM Addle. BMR's
-		// Tankbuster/Raidwide classification is purely about who gets hit, not damage type, so this is
-		// not scoped to any particular damage type - matches the existing raidwide trigger above, which
-		// doesn't filter by damage type either. Kept under the same BurstDefense gate as above.
+		// DefenseAreaAbility only runs on a raidwide-shaped trigger, so a tankbuster-shaped one never
+		// reaches it; ShouldAddDefenseSingle's tankbuster trigger reaches this copy instead.
 		if ((!BurstDefense || (BurstDefense && !InBurstStatus))
 			&& BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, StatusID.Troubadour)
 			&& TroubadourPvE.CanUse(out act, skipStatusProvideCheck: true))

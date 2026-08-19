@@ -743,11 +743,8 @@ public partial class NinjaRotation
 			return true;
 		}
 
-		// Mirrors the proactive block in DefenseAreaAbility above: that method only runs on a
-		// raidwide-shaped trigger, so a pure tankbuster prediction never reaches it. This duplicate is
-		// reachable via ShouldAddDefenseSingle's richer tankbuster trigger instead, same dual-placement
-		// pattern already used for DRK/GNB Reprisal and SMN Addle. The Mudra check is a genuine job-
-		// mechanic safety check (can't weave abilities mid-sequence), so it's kept here too.
+		// DefenseAreaAbility only runs on a raidwide-shaped trigger, so a tankbuster-shaped one never
+		// reaches it; ShouldAddDefenseSingle's tankbuster trigger reaches this copy instead.
 		if (ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& !StatusHelper.PlayerHasStatus(true, StatusID.Mudra)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))

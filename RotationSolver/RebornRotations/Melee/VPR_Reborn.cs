@@ -240,18 +240,9 @@ public sealed class VPR_Reborn : ViperRotation
 	[RotationDesc]
 	protected sealed override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		// Feint mitigates any damage type, so a predicted BMR event (raidwide or tankbuster) that
-		// would land after Feint's own duration expires triggers a proactive refresh here. A real,
-		// timed threat outweighs VPR's own oGCD-slot preference, but not at the cost of an unsafe
-		// weave - EnoughWeaveTime is the actual clip-risk check, unlike NoAbilityReady which just
-		// blocks whenever VPR has something else queued, regardless of whether a safe window exists.
-		// Still yields to Serpent's Ire specifically: it's tightly time-boxed to its own burst window,
-		// so a Feint refresh stealing that exact weave slot risks real burst-alignment loss, unlike the
-		// general case where any other weave slot works just as well. Serpent's Ire's real use site
-		// (AttackAbility) is itself gated on IsBurst - Serpent's Ire sits ready off-cooldown for most of
-		// the fight since VPR deliberately holds it for burst, so checking CanUse alone (without IsBurst)
-		// would block Feint for that whole wait, not just the actual burst weave slot. (Reawaken is a
-		// GCD, not an oGCD - it doesn't compete for this slot at all, so it isn't part of this guard.)
+		// Uses EnoughWeaveTime as the clip-risk check rather than NoAbilityReady, which blocks whenever
+		// anything else is queued even when a safe weave window exists. Still yields to Serpent's Ire
+		// during burst only, since that one weave slot carries real burst-alignment cost.
 		if (EnoughWeaveTime
 			&& !(IsBurst && SerpentsIrePvE.CanUse(out _))
 			&& ShouldSustainMitigationDebuff(StatusID.Feint)
@@ -271,11 +262,9 @@ public sealed class VPR_Reborn : ViperRotation
 	[RotationDesc]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		// Mirrors the proactive block in DefenseAreaAbility above: that method only runs on a
-		// raidwide-shaped trigger, so a pure tankbuster prediction never reaches it. This duplicate is
-		// reachable via ShouldAddDefenseSingle's richer tankbuster trigger instead, same dual-placement
-		// pattern already used for DRK/GNB Reprisal and SMN Addle. EnoughWeaveTime and the Serpent's Ire
-		// slot-guard are genuine safety checks, not preference gates, so they're kept here too.
+		// DefenseAreaAbility only runs on a raidwide-shaped trigger, so a tankbuster-shaped one never
+		// reaches it; ShouldAddDefenseSingle's tankbuster trigger reaches this copy instead.
+		// EnoughWeaveTime and the Serpent's Ire slot-guard are safety checks, not preference gates.
 		if (EnoughWeaveTime
 			&& !(IsBurst && SerpentsIrePvE.CanUse(out _))
 			&& ShouldSustainMitigationDebuff(StatusID.Feint)

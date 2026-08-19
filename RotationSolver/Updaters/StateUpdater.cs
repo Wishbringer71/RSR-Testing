@@ -216,9 +216,7 @@ internal static class StateUpdater
 			return false;
 		}
 
-		// A BMR-predicted tankbuster matters to every role that could eat it - the tank, a healer
-		// protecting the tank, or a DPS/caster if it lands on the wrong person. Computed once and
-		// shared instead of the same three-line check being duplicated per role branch.
+		// Shared by every role below: a predicted tankbuster matters to whoever ends up eating it.
 		var bmrTankbusterImminent = Service.Config.UseBmrTimeline
 			&& DataCenter.BMRNextTankbusterIn > 0.6f
 			&& DataCenter.BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow;
@@ -310,10 +308,8 @@ internal static class StateUpdater
 				return true;
 			}
 
-			// bmrTankbusterImminent has no target info (BMR predicts timing, not who gets hit), so it's
-			// only a reasonable proxy for "might land on me" when there's no tank around to eat it -
-			// the "no tank in the party, tanks are dead" half of the original rationale. With a tank
-			// alive, the reactive, cast-target-verified branch above is the only trigger for this role.
+			// BMR predicts timing, not who gets hit, so for this role it is only a reasonable proxy when
+			// no tank is alive to eat it. Otherwise the cast-verified branch above is the only trigger.
 			if (bmrTankbusterImminent && !AnyLivingTankInParty())
 			{
 				return true;
@@ -755,10 +751,8 @@ internal static class StateUpdater
 		// Determine the target's health ratio. If they have a "Doom" status, treat their health as critically low (0.2).
 		var h = StatusHelper.PlayerDoomNeedHealing() ? 0.2f : ObjectHelper.GetPlayerHealthRatio();
 
-		// A shield that will still be up when the next damage lands genuinely protects the player, so
-		// credit its magnitude toward effective health instead of judging solely by raw HP - but never
-		// for a weakened target, where the shield's own duration says nothing about whether healing is
-		// urgently needed anyway (Weakness/Brink of Death halves incoming healing, see below).
+		// A shield still up when the next damage lands counts toward effective health - but not for a
+		// weakened target, whose halved healing is handled by the threshold below instead.
 		if (!StatusHelper.PlayerDoomNeedHealing() && !StatusHelper.PlayerIsWeakened() && ShieldCreditAllowed
 			&& Player.Object.HasSurvivingShield(ShieldSurvivalHorizon))
 		{
@@ -810,10 +804,8 @@ internal static class StateUpdater
 		// Determine the target's health ratio. GetHealthRatio already treats "Doom" status targets as critically low (1%).
 		var h = target.GetHealthRatio();
 
-		// A shield that will still be up when the next damage lands genuinely protects the target, so
-		// credit its magnitude toward effective health instead of judging solely by raw HP - but never
-		// for a weakened target, where the shield's own duration says nothing about whether healing is
-		// urgently needed anyway (Weakness/Brink of Death halves incoming healing, see below).
+		// A shield still up when the next damage lands counts toward effective health - but not for a
+		// weakened target, whose halved healing is handled by the threshold below instead.
 		if (!target.DoomNeedHealing() && !target.IsWeakened() && ShieldCreditAllowed
 			&& target.HasSurvivingShield(ShieldSurvivalHorizon))
 		{

@@ -51,10 +51,8 @@ public partial class CustomRotation
 		}
 
 		IBaseAction.ForceEnable = true;
-		// Queued commands can sit here while the action is unusable (e.g. Radiant Aegis during
-		// Bahamut/Phoenix, which gates on HasPet()) and fire once it becomes usable again, by which
-		// point the buff may already be up from something else. Respect the status-provide check so
-		// a stale queued command doesn't blindly reapply a buff that's already active.
+		// A queued command can sit here until the action becomes usable again, by which point the buff
+		// may already be up from something else - so keep the status-provide check.
 		if (act is IBaseAction a && a != null && !a.Info.IsRealGCD && a.CanUse(out _, usedUp: true, skipAoeCheck: true))
 		{
 			return true;
@@ -359,13 +357,9 @@ public partial class CustomRotation
 		{
 			IBaseAction.ShouldEndSpecial = true;
 		}
-		// A confirmed or BMR-predicted tankbuster on the player is evaluated regardless of
-		// AutoStatus.HealSingleAbility - that flag depends on Config.UseHealWhenNotAHealer for
-		// non-healers, so without it potions would never even be attempted for a tank/DPS about to
-		// eat a tankbuster. Same bmrTankbusterImminent condition as StateUpdater.ShouldAddDefenseSingle,
-		// so Addle/shields and the emergency potion become proactive together, not just the former.
-		// UseHpPotion internally only widens its own threshold in that specific case
-		// (CanUseEmergency), not generally.
+		// Evaluated regardless of AutoStatus.HealSingleAbility: for non-healers that flag depends on
+		// UseHealWhenNotAHealer, so without this a tank or DPS about to eat a tankbuster would never
+		// even attempt a potion. Same condition StateUpdater.ShouldAddDefenseSingle uses.
 		var bmrTankbusterImminent = Service.Config.UseBmrTimeline
 			&& DataCenter.BMRNextTankbusterIn > 0.6f
 			&& DataCenter.BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow;
@@ -405,9 +399,8 @@ public partial class CustomRotation
 	/// <returns>True if the interrupt ability can be used; otherwise, false.</returns>
 	private bool MyInterruptAbility(JobRole role, IAction nextGCD, out IAction? act)
 	{
-		// Check the job's own override first: a job with combo-safety gating on its interrupt
-		// (e.g. RPR/VPR only using it outside their active combo) needs that gate to actually run
-		// before the ungated role default below claims the same action and returns first.
+		// The job's own override first: its combo-safety gate must run before the ungated role default
+		// below claims the same action.
 		if (InterruptAbility(nextGCD, out act))
 		{
 			return true;
@@ -424,11 +417,8 @@ public partial class CustomRotation
 				break;
 
 			case JobRole.Melee:
-				// A job with its own gated InterruptAbility override (RPR/VPR) already tried
-				// LegSweepPvE above via that override and declined - possibly because its combo-safety
-				// gate is active, not because LegSweep itself is unavailable. Retrying the identical
-				// action here ungated would silently defeat that gate the moment it becomes available.
-				// Jobs without such an override never got a first attempt, so this remains their only path.
+				// A job that gates this same action itself already declined it above, possibly because
+				// its gate is active - retrying it ungated here would defeat that gate.
 				if (!HasOwnInterruptGate && LegSweepPvE.CanUse(out act) && !StatusHelper.PlayerHasStatus(true, StatusID.Mudra))
 				{
 					return true;
@@ -492,9 +482,8 @@ public partial class CustomRotation
 	/// <returns>True if an anti-knockback ability can be used; otherwise, false.</returns>
 	private bool AntiKnockback(JobRole role, IAction nextGCD, out IAction? act)
 	{
-		// Check the job's own override first: a job with combo-safety gating on its anti-knockback
-		// ability (RPR's NotInActiveCombo, VPR's NoAbilityReady) needs that gate to actually run
-		// before the ungated role default below claims the same action and returns first.
+		// The job's own override first: its combo-safety gate must run before the ungated role default
+		// below claims the same action.
 		if (AntiKnockbackAbility(nextGCD, out act))
 		{
 			return true;

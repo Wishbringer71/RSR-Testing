@@ -109,11 +109,9 @@ public sealed class RPR_Reborn : ReaperRotation
 			return true;
 		}
 
-		// Mirrors the proactive block in DefenseAreaAbility above: that method only runs on a
-		// raidwide-shaped trigger, so a pure tankbuster prediction never reaches it. This duplicate is
-		// reachable via ShouldAddDefenseSingle's richer tankbuster trigger instead, same dual-placement
-		// pattern already used for DRK/GNB Reprisal and SMN Addle. EnoughWeaveTime and the Gluttony/
-		// Enshroud slot-guard are genuine safety checks, not preference gates, so they're kept here too.
+		// DefenseAreaAbility only runs on a raidwide-shaped trigger, so a tankbuster-shaped one never
+		// reaches it; ShouldAddDefenseSingle's tankbuster trigger reaches this copy instead.
+		// EnoughWeaveTime and the Gluttony/Enshroud slot-guard are safety checks, not preference gates.
 		if (EnoughWeaveTime
 			&& !(GluttonyPvE.CanUse(out _, skipAoeCheck: true) || EnshroudPvE.CanUse(out _))
 			&& ShouldSustainMitigationDebuff(StatusID.Feint)

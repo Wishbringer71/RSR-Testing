@@ -150,11 +150,8 @@ public sealed class PCT_Reborn : PictomancerRotation
 			return true;
 		}
 
-		// Mirrors the proactive Addle block in DefenseAreaAbility above: that method only runs on a
-		// raidwide-shaped trigger, so a pure tankbuster prediction never reaches it. This duplicate is
-		// reachable via ShouldAddDefenseSingle's richer tankbuster trigger instead, same dual-placement
-		// pattern already used for DRK/GNB Reprisal and SMN Addle. Kept under the same BurstDefense
-		// gate as TemperaCoat above, matching this job's own established convention.
+		// DefenseAreaAbility only runs on a raidwide-shaped trigger, so a tankbuster-shaped one never
+		// reaches it; ShouldAddDefenseSingle's tankbuster trigger reaches this copy instead.
 		if ((!BurstDefense || (BurstDefense && !InBurstStatus))
 			&& ShouldSustainMitigationDebuff(StatusID.Addle)
 			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))

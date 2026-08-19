@@ -124,20 +124,10 @@ public sealed class MCH_Reborn : MachinistRotation
 	{
 		if (!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
 		{
-			// Tactician mitigates any incoming raidwide, so a predicted BMR raidwide that would land
-			// after Tactician's own duration expires triggers a proactive refresh here - independent of
-			// the broad burst-state gate below (which blocks this weave slot throughout Overheat and the
-			// entire "ready but not yet cast" stretch of a Wildfire charge), but still yielding to
-			// Wildfire/Barrel Stabilizer specifically whenever either could actually be attempted this
-			// tick. IsBurst itself can't be used as that signal - it's a persistent user toggle
-			// (Service.Config.AutoBurst, default on) rather than a real burst-window indicator - so this
-			// mirrors their real trigger surface in AttackAbility instead: Wildfire only fires once Heat/
-			// Hypercharge are ready AND we're in the back half of the current GCD (see the
-			// WeaponRemain < GCDTime(1)/2 checks there - true for roughly half of every GCD, not a single
-			// instant), and Barrel Stabilizer fires the instant it's off cooldown during a burst window
-			// with no such proximity gate at all. Wildfire's own CanUse (an oGCD) requires HasOneCharge
-			// unconditionally (ActionCooldownInfo.CooldownCheck), so checking HasOneCharge here already
-			// matches its real availability exactly - no separate CanUse call is needed.
+			// Independent of the broad burst-state gate below, but still yields to Wildfire / Barrel
+			// Stabilizer whenever either could actually be attempted this tick. IsBurst is a persistent
+			// user toggle rather than a real burst-window signal, so this mirrors their trigger surface
+			// in AttackAbility instead.
 			var wildfireSlotContested = IsBurst && WildfirePvE.EnoughLevel && WildfirePvE.Cooldown.HasOneCharge
 				&& !BMRDowntimeWithin(10f) && (Heat >= 50 || HasHypercharged) && WeaponRemain < (GCDTime(1) / 2);
 			var barrelStabilizerSlotContested = IsBurst && BarrelStabilizerPvE.EnoughLevel
@@ -178,15 +168,8 @@ public sealed class MCH_Reborn : MachinistRotation
 	[RotationDesc(ActionID.TacticianPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		// Mirrors the proactive block in DefenseAreaAbility above: that method only runs on a
-		// raidwide-shaped BMR trigger, so a pure tankbuster-shaped prediction never reaches it. This
-		// duplicate is reachable via ShouldAddDefenseSingle's richer tankbuster trigger instead, same
-		// dual-placement pattern already used for DRK/GNB Reprisal and SMN/RDM/PCT/BLM Addle. BMR's
-		// Tankbuster/Raidwide classification is purely about who gets hit, not damage type, so this is
-		// not scoped to any particular damage type - matches the existing raidwide trigger above.
-		// MultiTact and the Wildfire/Barrel Stabilizer weave-slot guards are kept unchanged: MultiTact
-		// is this job's own usage precondition for Tactician at all, and the slot guards are genuine
-		// oGCD clip-safety checks, not preferences specific to the raidwide case.
+		// DefenseAreaAbility only runs on a raidwide-shaped trigger, so a tankbuster-shaped one never
+		// reaches it; ShouldAddDefenseSingle's tankbuster trigger reaches this copy instead.
 		if (!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
 		{
 			var wildfireSlotContested = IsBurst && WildfirePvE.EnoughLevel && WildfirePvE.Cooldown.HasOneCharge
