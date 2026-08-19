@@ -93,21 +93,6 @@ zu kurz für das gemeldete Muster), aber echter Bug, der bei Gelegenheit
 bereinigt werden sollte (entweder `_lastHp` korrekt pflegen oder toten
 Zweig entfernen).
 
-### #56 `ObjectHelper.CanProvoke`: Distanz-Inversion `> 5` → `< 5` fachlich nicht belegt
-
-`RotationSolver.Basic/Helpers/ObjectHelper.cs:112`. Upstream prüft
-`Distance(target, Player) > 5`, der Fork invertierte auf `< 5`. Provoke hat
-25y Reichweite; mit `< 5` feuert Provoke nur noch, wenn der Mob bereits in
-Nahkampfreichweite des Tanks steht — genau dann, wenn er meist ohnehin
-schon auf dem Tank ist. Es gibt eine kohärente Lesart, unter der die
-ORIGINAL-Bedingung richtig war ("Provoke nicht an etwas verschwenden, das
-ich per AoE ohnehin aufsammle — sie ist für Entferntes da"). Die Inversion
-wurde nie im Spiel verifiziert, nur aus dem Code hergeleitet. Einziger
-belegter Nebeneffekt: das Null-Fallback (`Player.Object?.Position ??
-Vector3.Zero`) schlägt jetzt fail-closed statt fail-open. → Entscheidung
-des Nutzers nötig: verifizieren oder revertieren. Höchstes Einzelrisiko im
-gesamten Patch-Satz (geteilter Helper, alle vier Tanks).
-
 ### #57 Heilschwellen-Multiplikator `* 1.5f` global, hartcodiert, ohne Opt-out
 
 `RotationSolver/Updaters/StateUpdater.cs` (`ShouldHealSelf`,

@@ -107,10 +107,9 @@ public static class ObjectHelper
 			if ((target.GetObjectNPC()?.Unknown0 == 0 || target.HitboxRadius >= 5) // Unknown12 used to be the flag checked for the mobs ability to move, honestly just guessing on this one
 				&& (target.TargetObject?.IsValid() ?? false))
 			{
-				// The target is not a tank role, and the acting tank is close enough to plausibly be
-				// the one who should grab it back - not a distant off-tank or a still-approaching puller
+				// The target is not a tank role
 				if (Svc.Objects.SearchById(target.TargetObjectId) is IBattleChara targetObject && !targetObject.IsJobCategory(JobRole.Tank)
-					&& (Vector3.Distance(target.Position, Player.Object?.Position ?? Vector3.Zero) < 5))
+					&& (Vector3.Distance(target.Position, Player.Object?.Position ?? Vector3.Zero) > 5))
 				{
 					return true;
 				}

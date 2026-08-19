@@ -785,3 +785,49 @@ gruppiert/eingerückt direkt unter ihrem zugehörigen Toggle im Job-Tab,
 statt lose in der flachen Liste zu stehen — deckt den eigentlichen
 Bedienbarkeits-Wunsch ab, ohne die Architektur-Nachteile der Auto-Tab-
 Verschiebung.
+
+## KORREKTUR zu B2a (Provoke-Distanzcheck): Fix war falsch, revertiert
+
+Status: REVERTIERT auf Upstream-Verhalten (Nutzerentscheidung nach
+Vorlage der Belege). Betrifft den oben unter "B2a — Provoke-Distanzbug"
+protokollierten Eintrag — dessen Begründung ist NACHWEISLICH FALSCH und
+wird hiermit widerrufen, nicht nur ergänzt.
+
+Behauptet wurde dort: `Vector3.Distance(target, Player) > 5` habe "den
+häufigsten Fall blockiert (Tank bereits in Nahkampfreichweite, verliert
+Aggro an DPS/Healer)". Widerlegung aus dem Repo-Code selbst, ohne
+Spielwissen:
+
+`ObjectHelper.DistanceToPlayer()` (Zeile 3922) ist die repo-eigene
+Distanzfunktion — XZ-Ebene, und sie subtrahiert BEIDE Hitbox-Radien,
+liefert also Kante-zu-Kante. Dieselbe Schwelle `5` wird an drei weiteren
+Stellen derselben Datei (1214, 1223, 2256) mit dieser Funktion verwendet.
+Nur `CanProvoke` nutzt rohes `Vector3.Distance` (Center-zu-Center, inkl.
+Y-Achse) — misst dort also in einer anderen Einheit als der Rest.
+
+Daraus rein arithmetisch: Center-Distanz = Kante-zu-Kante + beide
+Hitboxen. `CanProvoke` prüft in seiner eigenen Vorbedingung explizit
+`target.HitboxRadius >= 5` — für ein solches Ziel ist die Center-Distanz
+also IMMER ≥ 5.5, selbst wenn der Tank direkt an der Hitbox steht. Der
+Boss-Nahkampf-Fall erfüllte `> 5` also stets; die Inversion auf `< 5` hat
+ihn blockiert — genau den Fall, den der Eintrag zu reparieren behauptete.
+Zusätzlich blockierte `< 5` den klassischen Provoke-Fall (entfernter Mob
+am Heiler), da Provoke 25y Reichweite hat.
+
+Verhaltensmatrix (Center-Distanz, wie tatsächlich gemessen):
+Boss im Nahkampf → Upstream `>5` provoziert, Fork `<5` blockiert.
+Kleiner Trash direkt am Tank → Upstream blockiert (AoE greift ohnehin),
+Fork provoziert. Mob weit weg am Heiler → Upstream provoziert, Fork
+blockiert.
+
+Fix: Zeichen zurück auf `>`, Erklärungskommentar auf den Upstream-Wortlaut
+zurückgesetzt. `ObjectHelper.cs` weicht damit nur noch durch den additiven
+B2b-Notfallzweig (kritisch verwundeter Co-Tank, kein Distanz-Gate) von
+`upstream/main` ab — per `git diff upstream/main` verifiziert. B2b selbst
+ist von der Korrektur unberührt.
+
+Lehre für die Methodik (nicht nur für diesen Fall): eine Distanzschwelle
+darf nicht bewertet werden, ohne die verwendete Messfunktion zu prüfen —
+dieselbe Zahl bedeutet in diesem Repo je nach Funktion Center-zu-Center
+oder Kante-zu-Kante. Der ursprüngliche B2a-"Adversarial-Check" hat genau
+das nicht getan und deshalb die falsche Richtung als Fix ausgewiesen.
