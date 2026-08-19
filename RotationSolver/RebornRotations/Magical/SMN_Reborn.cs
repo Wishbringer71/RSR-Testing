@@ -153,8 +153,7 @@ public sealed class SMN_Reborn : SummonerRotation
 	// hostile count keeps Addle up during heavy pulls even without a BMR prediction to time it against.
 	private bool TryAddleBeforeDamage(out IAction? act)
 	{
-		if (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Addle)
-			|| NumberOfHostilesInRange >= 4)
+		if (ShouldSustainMitigationDebuff(StatusID.Addle))
 		{
 			return AddlePvE.CanUse(out act, skipStatusProvideCheck: true);
 		}

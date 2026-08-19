@@ -273,8 +273,7 @@ public sealed class WAR_Reborn : WarriorRotation
 
 		// Reprisal mitigates any damage type from that enemy, not just raidwides, so the generic
 		// BMRDamageIn is the right signal - same reasoning as Addle/Feint.
-		if ((BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Reprisal)
-				|| NumberOfHostilesInRange >= 4)
+		if (ShouldSustainMitigationDebuff(StatusID.Reprisal)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;

@@ -87,8 +87,7 @@ public sealed class RPR_Reborn : ReaperRotation
 		// where any other weave slot works just as well.
 		if (EnoughWeaveTime
 			&& !(GluttonyPvE.CanUse(out _, skipAoeCheck: true) || EnshroudPvE.CanUse(out _))
-			&& (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
-				|| NumberOfHostilesInRange >= 4)
+			&& ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;
@@ -117,8 +116,7 @@ public sealed class RPR_Reborn : ReaperRotation
 		// Enshroud slot-guard are genuine safety checks, not preference gates, so they're kept here too.
 		if (EnoughWeaveTime
 			&& !(GluttonyPvE.CanUse(out _, skipAoeCheck: true) || EnshroudPvE.CanUse(out _))
-			&& (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
-				|| NumberOfHostilesInRange >= 4)
+			&& ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;

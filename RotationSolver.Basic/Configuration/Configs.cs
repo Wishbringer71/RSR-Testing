@@ -754,6 +754,10 @@ internal partial class Configs : IPluginConfiguration
 	[Range(1, 8, ConfigUnitType.None, 0.05f)]
 	public int AutoDefenseNumber { get; set; } = 2;
 
+	[UI("Number of hostiles for enemy mitigation sustain-refresh (Addle/Feint/Reprisal)", Parent = nameof(UseDefenseAbility))]
+	[Range(1, 8, ConfigUnitType.None, 1)]
+	public int MitigationSustainHostileCount { get; set; } = 4;
+
 	[JobConfig, Range(0, 1, ConfigUnitType.Percent, 0.02f)]
 	[UI("HP%% needed to use single/self targetted mitigation on Tanks", Parent = nameof(UseDefenseAbility),
 		PvEFilter = JobFilterType.Tank)]

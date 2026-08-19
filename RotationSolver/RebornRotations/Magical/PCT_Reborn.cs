@@ -128,8 +128,7 @@ public sealed class PCT_Reborn : PictomancerRotation
 		// would land after Addle's own duration expires triggers a proactive refresh here. Trash pulls
 		// usually have no active BMR module, so a hostile-count fallback keeps Addle up regardless.
 		if ((!BurstDefense || (BurstDefense && !InBurstStatus))
-			&& (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Addle)
-				|| NumberOfHostilesInRange >= 4)
+			&& ShouldSustainMitigationDebuff(StatusID.Addle)
 			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;
@@ -157,8 +156,7 @@ public sealed class PCT_Reborn : PictomancerRotation
 		// pattern already used for DRK/GNB Reprisal and SMN Addle. Kept under the same BurstDefense
 		// gate as TemperaCoat above, matching this job's own established convention.
 		if ((!BurstDefense || (BurstDefense && !InBurstStatus))
-			&& (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Addle)
-				|| NumberOfHostilesInRange >= 4)
+			&& ShouldSustainMitigationDebuff(StatusID.Addle)
 			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;

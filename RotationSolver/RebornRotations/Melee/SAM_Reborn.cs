@@ -91,8 +91,7 @@ public sealed class SAM_Reborn : SamuraiRotation
 		// reactive fallbacks below - HasZanshinReady can persist multiple GCDs, and a real timed threat
 		// shouldn't be locked out of Feint for that whole window when a safe weave exists right now.
 		if (EnoughWeaveTime
-			&& (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
-				|| NumberOfHostilesInRange >= 4)
+			&& ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;
@@ -125,8 +124,7 @@ public sealed class SAM_Reborn : SamuraiRotation
 		// pattern already used for DRK/GNB Reprisal and SMN Addle. EnoughWeaveTime is a genuine clip-
 		// safety check, not a preference gate, so unlike DRK/GNB's burst-preference gates it is kept here.
 		if (EnoughWeaveTime
-			&& (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
-				|| NumberOfHostilesInRange >= 4)
+			&& ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;

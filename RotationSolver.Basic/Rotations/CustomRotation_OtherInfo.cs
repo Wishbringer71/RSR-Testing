@@ -1351,6 +1351,24 @@ public partial class CustomRotation
 		var chara = target ?? Player;
 		return chara != null && chara.WillStatusEnd(predictedIn, statusFromSelf, statusIDs);
 	}
+
+	/// <summary>
+	/// Shared duration of the enemy mitigation debuffs Addle, Feint and Reprisal, whose Enhanced traits
+	/// at level 98 extend all three from 10s to 15s.
+	/// </summary>
+	protected static float MitigationDebuffDuration => DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f;
+
+	/// <summary>
+	/// Whether an enemy mitigation debuff (Addle/Feint/Reprisal) is due for a proactive refresh: either
+	/// BMR predicts damage landing after the debuff would have expired, or enough hostiles are in range
+	/// to keep it up without a prediction to time it against, since trash pulls usually have no active
+	/// BMR module at all.
+	/// </summary>
+	protected static bool ShouldSustainMitigationDebuff(params StatusID[] statusIDs)
+	{
+		return BMRShouldRefreshBefore(BMRDamageIn, MitigationDebuffDuration, false, HostileTarget, statusIDs)
+			|| NumberOfHostilesInRange >= Service.Config.MitigationSustainHostileCount;
+	}
 	#endregion
 
 	/// <summary>

@@ -254,8 +254,7 @@ public sealed class VPR_Reborn : ViperRotation
 		// GCD, not an oGCD - it doesn't compete for this slot at all, so it isn't part of this guard.)
 		if (EnoughWeaveTime
 			&& !(IsBurst && SerpentsIrePvE.CanUse(out _))
-			&& (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
-				|| NumberOfHostilesInRange >= 4)
+			&& ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;
@@ -279,8 +278,7 @@ public sealed class VPR_Reborn : ViperRotation
 		// slot-guard are genuine safety checks, not preference gates, so they're kept here too.
 		if (EnoughWeaveTime
 			&& !(IsBurst && SerpentsIrePvE.CanUse(out _))
-			&& (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
-				|| NumberOfHostilesInRange >= 4)
+			&& ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;

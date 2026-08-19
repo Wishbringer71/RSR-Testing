@@ -99,8 +99,7 @@ public sealed class RDM_Reborn : RedMageRotation
 		// Addle mitigates any damage type, so a predicted BMR event (raidwide or tankbuster) that
 		// would land after Addle's own duration expires triggers a proactive refresh here. Trash pulls
 		// usually have no active BMR module, so a hostile-count fallback keeps Addle up regardless.
-		if ((BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Addle)
-				|| NumberOfHostilesInRange >= 4)
+		if (ShouldSustainMitigationDebuff(StatusID.Addle)
 			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;
@@ -126,8 +125,7 @@ public sealed class RDM_Reborn : RedMageRotation
 		// raidwide-shaped trigger, so a pure tankbuster prediction never reaches it. This duplicate
 		// is reachable via ShouldAddDefenseSingle's richer tankbuster trigger instead, same
 		// dual-placement pattern already used for DRK/GNB Reprisal and SMN Addle.
-		if ((BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Addle)
-				|| NumberOfHostilesInRange >= 4)
+		if (ShouldSustainMitigationDebuff(StatusID.Addle)
 			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;

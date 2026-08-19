@@ -95,8 +95,7 @@ public sealed class DRG_Reborn : DragoonRotation
 		// Feint mitigates any damage type, so a predicted BMR event (raidwide or tankbuster) that
 		// would land after Feint's own duration expires triggers a proactive refresh here. Trash pulls
 		// usually have no active BMR module, so a hostile-count fallback keeps Feint up regardless.
-		if ((BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
-				|| NumberOfHostilesInRange >= 4)
+		if (ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& FeintPvE.CanUse(out act, skipComboCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
@@ -121,8 +120,7 @@ public sealed class DRG_Reborn : DragoonRotation
 		// raidwide-shaped trigger, so a pure tankbuster prediction never reaches it. This duplicate is
 		// reachable via ShouldAddDefenseSingle's richer tankbuster trigger instead, same dual-placement
 		// pattern already used for DRK/GNB Reprisal and SMN Addle.
-		if ((BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Feint)
-				|| NumberOfHostilesInRange >= 4)
+		if (ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& FeintPvE.CanUse(out act, skipComboCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;

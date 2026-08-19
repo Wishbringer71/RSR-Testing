@@ -146,8 +146,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		// Reprisal mitigates any damage type from that enemy, not just raidwides, so the generic
 		// BMRDamageIn is the right signal - same reasoning as Addle/Feint.
 		if (!InTwoMIsBurst
-			&& (BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Reprisal)
-				|| NumberOfHostilesInRange >= 4)
+			&& ShouldSustainMitigationDebuff(StatusID.Reprisal)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
@@ -244,8 +243,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		// unlike its DefenseAreaAbility counterpart) and the reactive fallback line right below -
 		// across all four tanks, single-target Reprisal is left unguarded by their burst-window gates;
 		// only the AoE variant is.
-		if ((BMRShouldRefreshBefore(BMRDamageIn, DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f, false, HostileTarget, StatusID.Reprisal)
-				|| NumberOfHostilesInRange >= 4)
+		if (ShouldSustainMitigationDebuff(StatusID.Reprisal)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
