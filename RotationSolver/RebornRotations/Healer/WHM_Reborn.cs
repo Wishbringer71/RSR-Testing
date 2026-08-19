@@ -279,6 +279,40 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	#endregion
 
 	#region GCD Logic
+	/// <summary>
+	/// Proactive wall-to-wall sustain: keep Regen up on the tank as they commit to a pull. Called from
+	/// GeneralGCD, HealSingleGCD and HealAreaGCD alike - the outer dispatch reaches the two heal methods
+	/// first, so a raised heal-need flag would otherwise starve the check in GeneralGCD for a whole
+	/// pull. Never fires at or below <see cref="RegenHeal"/>, leaving a genuine emergency to Cure II /
+	/// Cure. targetOverride bypasses the candidate status check (FindTankTarget doesn't call
+	/// CheckStatus), so the remaining duration is verified explicitly here.
+	/// </summary>
+	private bool TrySustainRegenOnTank(out IAction? act)
+	{
+		act = null;
+
+		if (!UsePreRegen || !TankApproachingMobGroup(PreRegenMinHostiles, PreRegenMinWallToWallHostiles))
+		{
+			return false;
+		}
+
+		if (!RegenPvE.CanUse(out act, targetOverride: TargetType.Tank))
+		{
+			act = null;
+			return false;
+		}
+
+		var tank = RegenPvE.Target.Target;
+		if (tank != null && tank.GetHealthRatio() > RegenHeal
+			&& tank.WillStatusEndGCD(RegenPvE.Config.StatusRefreshGcdCount, 0, RegenPvE.Setting.StatusFromSelf, RegenPvE.Setting.TargetStatusProvide ?? []))
+		{
+			return true;
+		}
+
+		act = null;
+		return false;
+	}
+
 	[RotationDesc(ActionID.AfflatusRapturePvE, ActionID.MedicaIiPvE, ActionID.CureIiiPvE, ActionID.MedicaPvE)]
 	protected override bool HealAreaGCD(out IAction? act)
 	{
@@ -329,15 +363,8 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			return true;
 		}
 
-		// Proactive wall-to-wall sustain: HealAreaGCD is checked before GeneralGCD in the outer
-		// dispatch (same as HealSingleGCD below), so a raised AoE heal-need flag can starve
-		// TankApproachingMobGroup's check in GeneralGCD for the whole pull even on GCDs where
-		// nothing above in this method actually resolves to a cast. Placed last, right before the
-		// base call, so it never displaces any of the reactive AoE heals above it - same pattern
-		// and RegenHeal safety threshold as the HealSingleGCD fix.
-		if (UsePreRegen && TankApproachingMobGroup(PreRegenMinHostiles, PreRegenMinWallToWallHostiles) && RegenPvE.CanUse(out act, targetOverride: TargetType.Tank)
-			&& RegenPvE.Target.Target != null && RegenPvE.Target.Target.GetHealthRatio() > RegenHeal
-			&& (RegenPvE.Target.Target.WillStatusEndGCD(RegenPvE.Config.StatusRefreshGcdCount, 0, RegenPvE.Setting.StatusFromSelf, RegenPvE.Setting.TargetStatusProvide ?? [])))
+		// Last, so it never displaces one of the reactive AoE heals above it.
+		if (TrySustainRegenOnTank(out act))
 		{
 			return true;
 		}
@@ -363,16 +390,9 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			return true;
 		}
 
-		// Proactive wall-to-wall sustain: when the tank takes continuous, concentrated damage, this
-		// method (not GeneralGCD) claims almost every GCD via CureII/Cure below, so
-		// TankApproachingMobGroup's check in GeneralGCD never gets reached and Regen is never
-		// refreshed for the rest of the pull despite being due. Reuses the same RegenHeal safety
-		// threshold as the reactive branch above it, so this never fires below the HP level the
-		// player already trusts Regen at instead of a direct heal - a genuine emergency below that
-		// threshold still falls through to CureII/Cure untouched.
-		if (UsePreRegen && TankApproachingMobGroup(PreRegenMinHostiles, PreRegenMinWallToWallHostiles) && RegenPvE.CanUse(out act, targetOverride: TargetType.Tank)
-			&& RegenPvE.Target.Target != null && RegenPvE.Target.Target.GetHealthRatio() > RegenHeal
-			&& (RegenPvE.Target.Target.WillStatusEndGCD(RegenPvE.Config.StatusRefreshGcdCount, 0, RegenPvE.Setting.StatusFromSelf, RegenPvE.Setting.TargetStatusProvide ?? [])))
+		// Ahead of Cure II / Cure, which would otherwise claim every GCD while the tank takes
+		// continuous damage and never let the sustain refresh through.
+		if (TrySustainRegenOnTank(out act))
 		{
 			return true;
 		}
@@ -413,18 +433,10 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			return base.GeneralGCD(out act);
 		}
 
-		// Regen is instant-cast (no cast time), so keeping it up on the tank costs no movement/uptime
-		// unlike a hard-cast spell. Checked early (ahead of DoT upkeep/nukes/Lily burst below) rather
-		// than as bottom-of-list filler: placed last, it never got a turn once real combat DPS/DoT
-		// priorities existed for a fight against 4+ mobs, so it only ever fired for the very first
-		// pull and was never refreshed for any pull after that - exactly the "not maintained" bug
-		// report. Gated on TankApproachingMobGroup so it still only fires as the tank actually commits
-		// to a pull, not while standing still at the start of the instance or between pulls.
-		// targetOverride bypasses the normal candidate-list status check (FindTankTarget doesn't call
-		// CheckStatus), so without this explicit check it would recast Regen on the tank every free GCD
-		// regardless of remaining duration - check it here instead.
-		if (UsePreRegen && TankApproachingMobGroup(PreRegenMinHostiles, PreRegenMinWallToWallHostiles) && RegenPvE.CanUse(out act, targetOverride: TargetType.Tank)
-			&& (RegenPvE.Target.Target?.WillStatusEndGCD(RegenPvE.Config.StatusRefreshGcdCount, 0, RegenPvE.Setting.StatusFromSelf, RegenPvE.Setting.TargetStatusProvide ?? []) ?? true))
+		// Ahead of DoT upkeep / nukes / Lily burst: as bottom-of-list filler it never got a turn once
+		// real combat priorities existed, so it only ever fired on the very first pull. Regen is
+		// instant-cast, so taking a GCD here costs no movement or uptime.
+		if (TrySustainRegenOnTank(out act))
 		{
 			return true;
 		}

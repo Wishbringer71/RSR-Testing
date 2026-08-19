@@ -710,6 +710,43 @@ public sealed class SGE_Reborn : SageRotation
 	#endregion
 
 	#region GCD Logic 
+	/// <summary>
+	/// Proactive wall-to-wall sustain: keep Eukrasian Diagnosis up on the tank as they commit to a pull.
+	/// Called from GeneralGCD, HealSingleGCD and HealAreaGCD alike - the outer dispatch reaches the two
+	/// heal methods first, so a raised heal-need flag would otherwise starve the check in GeneralGCD for
+	/// a whole pull. The remaining duration is checked up front against <see cref="PartyTank"/>, because
+	/// the Eukrasia press is a separate GCD whose own status check only runs once Diagnosis is actually
+	/// about to be cast. Self-contained: does not touch _EukrasiaActionAim / ChoiceEukrasia.
+	/// </summary>
+	private bool TrySustainEukrasianDiagnosisOnTank(out IAction? act)
+	{
+		act = null;
+
+		if (!UsePreEukrasianDiagnosis || !TankApproachingMobGroup(PreEukrasianDiagnosisMinHostiles, PreEukrasianDiagnosisMinWallToWallHostiles))
+		{
+			return false;
+		}
+
+		var diagnosisDue = PartyTank?.WillStatusEndGCD(EukrasianDiagnosisPvE.Config.StatusRefreshGcdCount, 0, EukrasianDiagnosisPvE.Setting.StatusFromSelf, EukrasianDiagnosisPvE.Setting.TargetStatusProvide ?? []) ?? true;
+		if (!diagnosisDue)
+		{
+			return false;
+		}
+
+		if (!HasEukrasia && EukrasiaPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		if (HasEukrasia && EukrasianDiagnosisPvE.CanUse(out act, targetOverride: TargetType.Tank))
+		{
+			return true;
+		}
+
+		act = null;
+		return false;
+	}
+
 	[RotationDesc(ActionID.PneumaPvE, ActionID.PrognosisPvE, ActionID.EukrasianPrognosisPvE, ActionID.EukrasianPrognosisIiPvE)]
 	protected override bool HealAreaGCD(out IAction? act)
 	{
@@ -752,27 +789,10 @@ public sealed class SGE_Reborn : SageRotation
 			return true;
 		}
 
-		// Proactive wall-to-wall sustain: HealAreaGCD is checked before GeneralGCD in the outer
-		// dispatch (same as HealSingleGCD below), so a raised AoE heal-need flag can starve
-		// TankApproachingMobGroup's check in GeneralGCD for the whole pull even on GCDs where
-		// nothing above in this method actually resolves to a cast. Placed last, right before the
-		// base call, so it never displaces any of the reactive AoE heals above it - mirrors the
-		// HealSingleGCD fix, same lack of an existing HP-ratio threshold to reuse here.
-		if (UsePreEukrasianDiagnosis && TankApproachingMobGroup(PreEukrasianDiagnosisMinHostiles, PreEukrasianDiagnosisMinWallToWallHostiles))
+		// Last, so it never displaces one of the reactive AoE heals above it.
+		if (TrySustainEukrasianDiagnosisOnTank(out act))
 		{
-			var diagnosisDue = PartyTank?.WillStatusEndGCD(EukrasianDiagnosisPvE.Config.StatusRefreshGcdCount, 0, EukrasianDiagnosisPvE.Setting.StatusFromSelf, EukrasianDiagnosisPvE.Setting.TargetStatusProvide ?? []) ?? true;
-			if (diagnosisDue)
-			{
-				if (!HasEukrasia && EukrasiaPvE.CanUse(out act))
-				{
-					return true;
-				}
-
-				if (HasEukrasia && EukrasianDiagnosisPvE.CanUse(out act, targetOverride: TargetType.Tank))
-				{
-					return true;
-				}
-			}
+			return true;
 		}
 
 		return base.HealAreaGCD(out act);
@@ -801,28 +821,11 @@ public sealed class SGE_Reborn : SageRotation
 			return true;
 		}
 
-		// Proactive wall-to-wall sustain: when the tank takes continuous, concentrated damage, this
-		// method (not GeneralGCD) can claim almost every GCD via Diagnosis above, so
-		// TankApproachingMobGroup's check in GeneralGCD never gets reached and Eukrasian Diagnosis is
-		// never refreshed for the rest of the pull despite being due. Placed last, only reached when
-		// nothing above already claimed the GCD, so this never displaces an actual reactive heal
-		// decision - lower-risk than WHM/AST's version since SGE has no existing HP-ratio threshold
-		// here to reuse as a safety floor.
-		if (UsePreEukrasianDiagnosis && TankApproachingMobGroup(PreEukrasianDiagnosisMinHostiles, PreEukrasianDiagnosisMinWallToWallHostiles))
+		// Last, so it never displaces an actual reactive heal decision above it. SGE has no
+		// HP-ratio threshold to reuse as a safety floor, unlike WHM/AST.
+		if (TrySustainEukrasianDiagnosisOnTank(out act))
 		{
-			var diagnosisDue = PartyTank?.WillStatusEndGCD(EukrasianDiagnosisPvE.Config.StatusRefreshGcdCount, 0, EukrasianDiagnosisPvE.Setting.StatusFromSelf, EukrasianDiagnosisPvE.Setting.TargetStatusProvide ?? []) ?? true;
-			if (diagnosisDue)
-			{
-				if (!HasEukrasia && EukrasiaPvE.CanUse(out act))
-				{
-					return true;
-				}
-
-				if (HasEukrasia && EukrasianDiagnosisPvE.CanUse(out act, targetOverride: TargetType.Tank))
-				{
-					return true;
-				}
-			}
+			return true;
 		}
 
 		return base.HealSingleGCD(out act);
@@ -862,33 +865,12 @@ public sealed class SGE_Reborn : SageRotation
 			return true;
 		}
 
-		// Eukrasian Diagnosis is instant-cast via Eukrasia (both GCDs have no cast time), so keeping it
-		// up on the tank costs no movement/uptime unlike a hard-cast spell. Checked here (after the
-		// real reactive DoEukrasianDiagnosis call above, ahead of Phlegma/Pneuma/DPS filler below)
-		// rather than as bottom-of-list filler: placed last, it never got a turn once real combat DPS
-		// priorities existed for a fight against 4+ mobs, so it only ever fired for the very first
-		// pull and was never refreshed for any pull after that. Self-contained (doesn't touch
-		// _EukrasiaActionAim/ChoiceEukrasia). Gated on TankApproachingMobGroup so it still only fires
-		// as the tank actually commits to a pull, not while standing still at the start of the
-		// instance or between pulls.
-		// targetOverride bypasses the normal candidate-list status check (FindTankTarget doesn't call
-		// CheckStatus), so without this explicit check the Diagnosis cast below would keep firing on
-		// the tank every free GCD regardless of remaining duration. The duration check is done here,
-		// up front, against PartyTank directly - otherwise the Eukrasia press below would fire every
-		// free GCD regardless of whether Diagnosis actually needs a refresh, since its own duration
-		// check only runs after Eukrasia is already active and Diagnosis is about to be cast.
-		var diagnosisDue = PartyTank?.WillStatusEndGCD(EukrasianDiagnosisPvE.Config.StatusRefreshGcdCount, 0, EukrasianDiagnosisPvE.Setting.StatusFromSelf, EukrasianDiagnosisPvE.Setting.TargetStatusProvide ?? []) ?? true;
-		if (UsePreEukrasianDiagnosis && TankApproachingMobGroup(PreEukrasianDiagnosisMinHostiles, PreEukrasianDiagnosisMinWallToWallHostiles) && diagnosisDue)
+		// After the reactive DoEukrasianDiagnosis above, ahead of Phlegma / Pneuma / DPS filler: as
+		// bottom-of-list filler it never got a turn once real combat priorities existed, so it only
+		// ever fired on the very first pull. Both GCDs are instant, so this costs no uptime.
+		if (TrySustainEukrasianDiagnosisOnTank(out act))
 		{
-			if (!HasEukrasia && EukrasiaPvE.CanUse(out act))
-			{
-				return true;
-			}
-
-			if (HasEukrasia && EukrasianDiagnosisPvE.CanUse(out act, targetOverride: TargetType.Tank))
-			{
-				return true;
-			}
+			return true;
 		}
 
 		if (PhlegmaPvE.CanUse(out act, usedUp: IsMoving || PhlegmaPvE.Cooldown.WillHaveXChargesGCD(2, 1)))

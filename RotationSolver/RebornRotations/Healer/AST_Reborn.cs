@@ -467,6 +467,40 @@ public sealed class AST_Reborn : AstrologianRotation
 	#endregion
 
 	#region GCD Logic
+	/// <summary>
+	/// Proactive wall-to-wall sustain: keep Aspected Benefic up on the tank as they commit to a pull.
+	/// Called from GeneralGCD, HealSingleGCD and HealAreaGCD alike - the outer dispatch reaches the two
+	/// heal methods first, so a raised heal-need flag would otherwise starve the check in GeneralGCD
+	/// for a whole pull. Never fires at or below <see cref="AspectedBeneficHeal"/>, leaving a genuine
+	/// emergency to Benefic II / Benefic. targetOverride bypasses the candidate status check
+	/// (FindTankTarget doesn't call CheckStatus), so the remaining duration is verified explicitly here.
+	/// </summary>
+	private bool TrySustainAspectedBeneficOnTank(out IAction? act)
+	{
+		act = null;
+
+		if (!UsePreAspectedBenefic || !TankApproachingMobGroup(PreAspectedBeneficMinHostiles, PreAspectedBeneficMinWallToWallHostiles))
+		{
+			return false;
+		}
+
+		if (!AspectedBeneficPvE.CanUse(out act, targetOverride: TargetType.Tank))
+		{
+			act = null;
+			return false;
+		}
+
+		var tank = AspectedBeneficPvE.Target.Target;
+		if (tank != null && tank.GetHealthRatio() > AspectedBeneficHeal
+			&& tank.WillStatusEndGCD(AspectedBeneficPvE.Config.StatusRefreshGcdCount, 0, AspectedBeneficPvE.Setting.StatusFromSelf, AspectedBeneficPvE.Setting.TargetStatusProvide ?? []))
+		{
+			return true;
+		}
+
+		act = null;
+		return false;
+	}
+
 	protected override bool DefenseSingleGCD(out IAction? act)
 	{
 		if ((MacrocosmosPvE.Cooldown.IsCoolingDown && !MacrocosmosPvE.Cooldown.WillHaveOneCharge(150))
@@ -540,16 +574,9 @@ public sealed class AST_Reborn : AstrologianRotation
 			}
 		}
 
-		// Proactive wall-to-wall sustain: when the tank takes continuous, concentrated damage, this
-		// method (not GeneralGCD) claims almost every GCD via Benefic/BeneficII below, so
-		// TankApproachingMobGroup's check in GeneralGCD never gets reached and Aspected Benefic is
-		// never refreshed for the rest of the pull despite being due. Only fires above
-		// AspectedBeneficHeal (the same threshold the branch above uses to decide healing is urgent),
-		// so a genuine emergency below that threshold still falls through to Benefic/BeneficII
-		// untouched.
-		if (UsePreAspectedBenefic && TankApproachingMobGroup(PreAspectedBeneficMinHostiles, PreAspectedBeneficMinWallToWallHostiles) && AspectedBeneficPvE.CanUse(out act, targetOverride: TargetType.Tank)
-			&& AspectedBeneficPvE.Target.Target != null && AspectedBeneficPvE.Target.Target.GetHealthRatio() > AspectedBeneficHeal
-			&& (AspectedBeneficPvE.Target.Target.WillStatusEndGCD(AspectedBeneficPvE.Config.StatusRefreshGcdCount, 0, AspectedBeneficPvE.Setting.StatusFromSelf, AspectedBeneficPvE.Setting.TargetStatusProvide ?? [])))
+		// Ahead of Benefic II / Benefic, which would otherwise claim every GCD while the tank takes
+		// continuous damage and never let the sustain refresh through.
+		if (TrySustainAspectedBeneficOnTank(out act))
 		{
 			return true;
 		}
@@ -595,15 +622,8 @@ public sealed class AST_Reborn : AstrologianRotation
 			return true;
 		}
 
-		// Proactive wall-to-wall sustain: HealAreaGCD is checked before GeneralGCD in the outer
-		// dispatch (same as HealSingleGCD below), so a raised AoE heal-need flag can starve
-		// TankApproachingMobGroup's check in GeneralGCD for the whole pull even on GCDs where
-		// nothing above in this method actually resolves to a cast. Placed last, right before the
-		// base call, so it never displaces any of the reactive AoE heals above it - same pattern
-		// and AspectedBeneficHeal safety threshold as the HealSingleGCD fix.
-		if (UsePreAspectedBenefic && TankApproachingMobGroup(PreAspectedBeneficMinHostiles, PreAspectedBeneficMinWallToWallHostiles) && AspectedBeneficPvE.CanUse(out act, targetOverride: TargetType.Tank)
-			&& AspectedBeneficPvE.Target.Target != null && AspectedBeneficPvE.Target.Target.GetHealthRatio() > AspectedBeneficHeal
-			&& (AspectedBeneficPvE.Target.Target.WillStatusEndGCD(AspectedBeneficPvE.Config.StatusRefreshGcdCount, 0, AspectedBeneficPvE.Setting.StatusFromSelf, AspectedBeneficPvE.Setting.TargetStatusProvide ?? [])))
+		// Last, so it never displaces one of the reactive AoE heals above it.
+		if (TrySustainAspectedBeneficOnTank(out act))
 		{
 			return true;
 		}
@@ -629,18 +649,10 @@ public sealed class AST_Reborn : AstrologianRotation
 			return base.GeneralGCD(out act);
 		}
 
-		// Aspected Benefic is instant-cast (no cast time), so keeping it up on the tank costs no
-		// movement/uptime unlike a hard-cast spell. Checked early (ahead of Combust/Malefic below)
-		// rather than as bottom-of-list filler: placed last, it never got a turn once real combat
-		// DPS priorities existed for a fight against 4+ mobs, so it only ever fired for the very
-		// first pull and was never refreshed for any pull after that. Gated on TankApproachingMobGroup
-		// so it still only fires as the tank actually commits to a pull, not while standing still at
-		// the start of the instance or between pulls.
-		// targetOverride bypasses the normal candidate-list status check (FindTankTarget doesn't call
-		// CheckStatus), so without this explicit check it would recast on the tank every free GCD
-		// regardless of remaining duration - check it here instead.
-		if (UsePreAspectedBenefic && TankApproachingMobGroup(PreAspectedBeneficMinHostiles, PreAspectedBeneficMinWallToWallHostiles) && AspectedBeneficPvE.CanUse(out act, targetOverride: TargetType.Tank)
-			&& (AspectedBeneficPvE.Target.Target?.WillStatusEndGCD(AspectedBeneficPvE.Config.StatusRefreshGcdCount, 0, AspectedBeneficPvE.Setting.StatusFromSelf, AspectedBeneficPvE.Setting.TargetStatusProvide ?? []) ?? true))
+		// Ahead of Combust / Malefic: as bottom-of-list filler it never got a turn once real combat
+		// priorities existed, so it only ever fired on the very first pull. Aspected Benefic is
+		// instant-cast, so taking a GCD here costs no movement or uptime.
+		if (TrySustainAspectedBeneficOnTank(out act))
 		{
 			return true;
 		}
