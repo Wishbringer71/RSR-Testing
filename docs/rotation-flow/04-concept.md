@@ -198,11 +198,23 @@ Vererbung. Sie werden erst nach A umgesetzt, weil A2/A4 sie kürzer machen.
 `(HasSwift || IsLastAction(SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise)`
 in vier Dateien → eine Definition, 13 Verwendungen von einem Wort.
 
-## B2 · Tanks — `TryRangedPull(out act)`
+## B2 · ~~Tanks — `TryRangedPull(out act)`~~ → VERWORFEN, kein Nutzen
 
-Vier strukturgleiche Endzweige (Tomahawk · Lightning Shot · Shield Lob ·
-Unmend), jeweils letzte Zeile vor `base.GeneralGCD`. Ein Helfer, der die
-job-eigene Aktion über eine bereits vorhandene abstrakte Eigenschaft zieht.
+Die vier Endzweige stehen bereits in der minimalen Form:
+
+```csharp
+if (TomahawkPvE.CanUse(out act)) { return true; }   // WAR, analog GNB/PLD/DRK
+```
+
+Es gibt **keine geteilte Bedingung** zum Herausziehen — anders als bei B1, wo
+ein langer Ausdruck viermal wortgleich dastand. Der einzige Unterschied ist der
+Aktionsname, und der ist die eigentliche Information.
+
+Ein gemeinsamer Helfer bräuchte je Job ein
+`protected override IBaseAction RangedPull => TomahawkPvE;`: gleiche Zeilenzahl,
+zusätzlich ein neues abstraktes Mitglied auf `CustomRotation`, und beim Lesen
+ein Sprung in die Basisklasse für eine Information, die vorher direkt dastand.
+Strikt schlechter in allen drei Kriterien des Auftrags.
 
 ## B3 · Tanks — Reprisal-Platzierung vereinheitlichen
 
@@ -321,3 +333,51 @@ Alle Zahlen sind aus dem Code gezählt, alle Wirkungen statisch hergeleitet.
 
 Schritt 1 und 2 sind reine Gewinne ohne Verhaltensänderung und sollten zuerst
 kommen — sie sichern alle folgenden Schritte ab.
+
+
+---
+
+# Ergebnis der Umsetzung — was die Messung vom Konzept übrig gelassen hat
+
+Von acht Konzeptpunkten haben drei die Umsetzung erreicht, vier sind an
+Messungen gescheitert, drei bleiben als Spielfragen offen.
+
+| Punkt | Ergebnis | Grund |
+|---|---|---|
+| A3 Base-Call-Wächter | **umgesetzt** | – |
+| A2 `FirstUsable` | verworfen | nur 25 von 65 Ketten gleichförmig |
+| A2′ Level-Prädikat-Wächter | **umgesetzt** | Ersatz für A2 |
+| A1 Sustain-Slot | verworfen | Position ist Information, nicht Duplikat |
+| A4 Vokabular | auf Konvention zurückgestuft | Merge-Kosten |
+| B1 `SwiftRaisePending` | **umgesetzt** | – |
+| B2 `TryRangedPull` | verworfen | nichts zu teilen |
+| B3/B4/B5 | offen | Spielfragen |
+| C job-spezifisch | verworfen | Merge-Kosten, s.u. |
+
+## Die übergreifende Erkenntnis
+
+Der Fork zieht einen aktiv entwickelten Upstream nach. Gemessen über 90 Tage:
+**29 Commits** auf `RebornRotations/`, und nur **4 von 54** Rotationsdateien
+blieben unberührt. Es gibt keine ruhige Ecke, in der man gefahrlos umbauen
+könnte.
+
+Daraus folgt eine Regel, die allgemeiner ist als jeder Einzelpunkt oben:
+
+> **In einem Fork, der einen aktiven Upstream nachzieht, ist strukturelles
+> Umbauen der nachgezogenen Dateien keine tragfähige Verbesserungsstrategie.
+> Tragfähig sind: Wächter, die Fehlerklassen ausschließen; benannte Helfer für
+> echte Bedingungs-Duplikate; und Konventionen für eigenen Code.**
+
+Alle drei umgesetzten Punkte haben genau diese Form, und keiner der vier
+verworfenen hatte sie. Das erklärt rückwirkend auch, warum die früheren
+Arbeiten, die Bestand hatten — `ShouldSustainMitigationDebuff`,
+`TrySustain…OnTank`, die beiden Wächter — von dieser Bauart sind, während die
+großen Umstrukturierungen es nicht waren.
+
+## Was das für B3/B4/B5 heißt
+
+Sie bleiben offen, aber aus einem anderen Grund als die verworfenen Punkte: Sie
+sind keine Struktur-, sondern Verhaltensfragen (Reprisal-Platzierung,
+Slot-Asymmetrien, MNK-Heilslot). Ihre Diffs wären winzig und
+merge-unproblematisch. Was fehlt, ist die Spielentscheidung — nicht die
+Machbarkeit.
