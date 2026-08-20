@@ -29,58 +29,43 @@ Vererbungsebene.** Rollenlogik lebt als rollenbenannter Helfer, so wie
 
 # A · Global (alle Jobs)
 
-## A1 · Sustain-Slot im Dispatch statt dreifacher Kopie
+## A1 · ~~Sustain-Slot im Dispatch~~ → VERWORFEN
 
-**Problem (U2):** Proaktive Logik muss in `GeneralGCD`, `HealSingleGCD` und
-`HealAreaGCD` stehen, sonst hungert sie aus. Neun Kopien bei drei Heilern; das
-Auffinden dieses einen Fehlers hat eine komplette Sitzung gekostet.
+**Der Vorschlag ist an der eigenen Abnahmebedingung gescheitert. Er bleibt
+stehen, weil die Widerlegung die eigentliche Erkenntnis ist.**
 
-**Heute:**
+Geplant war: ein `SustainGCD`-Slot im Dispatch zwischen den Heilmethoden und
+`GeneralGCD`, damit proaktive Logik einmal statt dreimal geschrieben wird.
 
-```mermaid
-flowchart TD
-    G[GCD] --> H1[HealAreaGCD]
-    H1 --> H2[HealSingleGCD]
-    H2 --> GG[GeneralGCD]
-    H1 -.Kopie 1.-> S1[Sustain]
-    H2 -.Kopie 2.-> S2[Sustain]
-    GG -.Kopie 3.-> S3[Sustain]
-    style S1 fill:#a33,color:#fff
-    style S2 fill:#a33,color:#fff
-    style S3 fill:#a33,color:#fff
-```
+**Was dafür sprach, und was sich bestätigt hat:** `base.HealAreaGCD` und
+`base.HealSingleGCD` tun nichts — sie setzen zwei Flags und liefern `false`
+(`CustomRotation_GCD.cs:758-800`). Ein Verschieben aus „vor `base.X`" nach
+„nachdem `X` false lieferte" wäre also tatsächlich verhaltensgleich gewesen.
 
-**Ziel:**
+**Was dagegen sprach und den Punkt gekippt hat:** Bei WHM steht der
+Sustain-Aufruf in `HealSingleGCD` nicht am Ende, sondern **zwischen** dem
+reaktiven Regen und Cure II. Zieht man ihn heraus, gewinnt Cure II diese GCD,
+und der Sustain verhungert wieder, sobald der Tank Schaden nimmt — exakt die
+vom Nutzer gemeldete und inzwischen behobene Regression.
 
-```mermaid
-flowchart TD
-    G[GCD] --> H1[HealAreaGCD]
-    H1 -- "echter Heilbedarf" --> R1((Aktion))
-    H1 --> H2[HealSingleGCD]
-    H2 -- "echter Heilbedarf" --> R2((Aktion))
-    H2 --> S[SustainGCD<br/>neuer Slot]
-    S -- "Effekt läuft ab" --> R3((Aktion))
-    S --> GG[GeneralGCD]
-    style S fill:#36c,color:#fff
-```
+**Die eigentliche Erkenntnis:** Die drei Aufrufstellen je Heiler sind **keine
+Duplikate**. Die *Bedingung* liegt seit `6b40600` in genau einem Helfer je Job.
+Was dreifach dasteht, ist die **Position**, und die ist bewusst verschieden:
 
-Der Slot sitzt **nach** den Heilmethoden und **vor** `GeneralGCD`. Damit ist
-die Regel im Ablauf selbst ausgedrückt, ohne Kommentar:
+| Methode | Position | Aussage |
+|---|---|---|
+| `GeneralGCD` | zuerst | Sustain schlägt Schaden |
+| `HealSingleGCD` | nach reaktivem HoT, vor Cure II | Sustain schlägt Direktheilung, aber nicht den reaktiven HoT |
+| `HealAreaGCD` | zuletzt | Sustain verliert gegen jede AoE-Heilung |
 
-> Echte Heilung schlägt Sustain. Sustain schlägt Schaden.
+Drei Positionen sind drei Prioritätsaussagen. Ein zentraler Slot kann nur eine
+davon ausdrücken und löscht die anderen beiden stillschweigend. Das ist
+Informationsverlust, nicht Entdopplung.
 
-Signatur, Standard leer, also für 20 der 23 Jobs wirkungslos:
-
-```csharp
-protected virtual bool SustainGCD(out IAction? act) { act = null; return false; }
-```
-
-**Aufwand:** ~6 Zeilen Dispatch, 1 virtuelle Methode, minus 6 Aufrufstellen
-und minus 3 Wiederholungen bei WHM/AST/SGE.
-
-**Nebeneffekt:** Löst TODO #63 auf. Die Frage „soll der HP-Boden auch in
-`GeneralGCD` gelten" verschwindet, weil es keinen `GeneralGCD`-Zweig mehr
-gibt — es gibt nur noch einen Ort, und der liegt hinter den echten Heilungen.
+**Damit ist U2 anders zu bewerten als in `03-universal.md` beschrieben:** Die
+Wiederholung ist der Preis dafür, dass ein Job seine Prioritäten pro
+Dispatch-Slot selbst setzen kann. Der teure Teil — dieselbe *Bedingung*
+dreimal zu pflegen — ist bereits beseitigt.
 
 ## A2 · ~~`FirstUsable` statt Level-Ketten~~ → VERWORFEN, ersetzt durch A2′
 
@@ -313,7 +298,7 @@ Alle Zahlen sind aus dem Code gezählt, alle Wirkungen statisch hergeleitet.
 |---|---|---|---|---|
 | 1 | A3 CI-Prüfung | +40 (nur CI) | keins | findet die 9 historischen Fälle |
 | 2 | A2′ Level-Prädikat-Wächter | +30 (nur CI) | keins | Fixture + sauberer Lauf |
-| 3 | A1 Sustain-Slot | −6 | **mittel** | Diff-Nachweis + Spieltest |
+| 3 | ~~A1 Sustain-Slot~~ | entfällt | – | verworfen, siehe A1 |
 | 4 | A4 Vokabular, dateiweise | stark negativ | gering | CI-Build je Datei |
 | 5 | B1 · B2 | −20 | gering | CI-Build |
 | 6 | B3 · B4 · B5 prüfen | 0 | – | Spieltest, dann entscheiden |
