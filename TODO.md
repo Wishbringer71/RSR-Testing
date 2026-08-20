@@ -93,6 +93,33 @@ zu kurz für das gemeldete Muster), aber echter Bug, der bei Gelegenheit
 bereinigt werden sollte (entweder `_lastHp` korrekt pflegen oder toten
 Zweig entfernen).
 
+### #63 Sustain-HP-Boden: Asymmetrie WHM/AST/SGE und umgekehrte Vergleichsrichtung bei AST
+
+Aus dem Critic-Loop zur Vereinheitlichung in `6b40600`. Zwei unwiderlegte
+Punkte, beide nur im Spiel entscheidbar:
+
+1. **Asymmetrie**: der proaktive Sustain hat bei WHM einen HP-Boden von 0.3
+   (`RegenHeal`), bei AST 0.4 (`AspectedBeneficHeal`), bei SGE **keinen**.
+   Entweder gehoert der Boden ueberall hin (dann fehlt er SGE), oder
+   nirgends (dann sind WHM/AST zu restriktiv). Fuer SGE gibt es keine
+   bestehende Einstellung zum Wiederverwenden — eine neue zu erfinden waere
+   Scope Creep ohne Belegt, deshalb bewusst offen gelassen.
+
+2. **Vergleichsrichtung bei AST**: derselbe Wert `AspectedBeneficHeal` wird
+   im reaktiven Zweig als `GetHealthRatio() < AspectedBeneficHeal`
+   (AST_Reborn.cs:537, "heile ihn, er ist verletzt") und im proaktiven
+   Helfer als `>` ("pflege den HoT, er ist gesund") verwendet. Das ist
+   nicht falsch — die Schwelle trennt sinnvoll beide Faelle —, aber fuer
+   den Nutzer nicht erkennbar: wer den Wert hochzieht, bekommt mehr
+   reaktive Heilung UND weniger proaktiven Sustain. WHM ist konsistent
+   (beide Zweige `>`).
+
+**Pruefbar im Spiel**: waehrend eines Wall-to-Wall beobachten, ob der
+HoT-Refresh aussetzt, sobald der Tank unter die Schwelle faellt, und ob
+das stoert. Relevant vor allem in Inhalten mit zwei lebenden Heilern, wo
+`CanHealSingleSpell` wegen `GCDHeal == false` (ASTs Default!) falsch ist
+und `GeneralGCD` deshalb auch mit verletztem Tank erreicht wird.
+
 ## Wichtig für zukünftige Sessions
 
 Diese Dateien (TODO.md, AUDIT_LOG.md) existieren nur auf dem Branch, auf
