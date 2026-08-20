@@ -80,7 +80,7 @@ Konsequenzen, die im ganzen AUDIT_LOG immer wieder auftauchen:
 
 ## C · Muster, die in jedem Job wiederkehren
 
-### C1 · Level-Kette (52 Glieder in 12 Dateien)
+### C1 · Level-Kette (65 Ketten in 16 Dateien)
 
 Immer dieselbe Form:
 
@@ -157,7 +157,7 @@ es schon sind:
 |---|---|---|
 | U1 | `GeneralGCD` ist Sammelbecken ohne Untergliederung | 7–81 Zweige auf einer Ebene, Median ~19 |
 | U2 | Proaktive Logik muss in 3 Methoden dupliziert werden | Heiler-Sustain, vorher 9 Kopien |
-| U3 | Level-Ketten von Hand | 52 Glieder, 2 Schreibweisen, 1 realer Bug daraus |
+| U3 | Level-Ketten von Hand | 65 Ketten, 2 Schreibweisen, 1 realer Bug daraus |
 | U4 | Hook-Belegung ohne Regel | 2 Jobs ohne CountDown, 3 ohne Emergency, MNK/DNC-Heal-Slot-Tausch |
 | U5 | Gleiche Rolle, verschiedene Orte | AoE-Schwelle an 3 Orten; Mitigation mal Area, mal Single, mal beides |
 | U6 | Kein Job kann sagen „ich bin fertig" | jede Ebene muss `base.X` aufrufen; Vergessen/Vertauschen war die häufigste Fehlerklasse im AUDIT_LOG (9 Fälle) |

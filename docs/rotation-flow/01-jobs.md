@@ -396,7 +396,7 @@ Der Minimalfall — nützlich als Referenz dafür, was ein Job *mindestens* brau
 | Jobs mit `AttackAbility`-Override | 23 / 23 | zweiter universeller Hook |
 | Jobs ohne `CountDownAction` | 2 (DRG, VPR) | unbegründete Lücke |
 | Jobs ohne `EmergencyAbility` | 3 (RPR, SAM, WAR) | unbegründete Lücke |
-| Level-Ketten-Glieder gesamt | 52 in 12 Dateien | größte Einzelredundanz |
+| Echte Aufstiegsketten | 65 in 16 Dateien, davon 25 sauber gleichförmig | siehe 04, Punkt A2 |
 | Redundantes `X.EnoughLevel && X.CanUse` | 43 | `CanUse` prüft das bereits selbst |
 | Swiftcast/Raise-Kurzschluss | 13 Kopien in 4 Dateien | identischer Wortlaut |
 | Spannweite Dateigröße | 51 – 1144 LOC | Faktor 22 |

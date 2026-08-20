@@ -82,38 +82,53 @@ und minus 3 Wiederholungen bei WHM/AST/SGE.
 `GeneralGCD` gelten" verschwindet, weil es keinen `GeneralGCD`-Zweig mehr
 gibt — es gibt nur noch einen Ort, und der liegt hinter den echten Heilungen.
 
-## A2 · `FirstUsable` statt handgeschriebener Level-Ketten
+## A2 · ~~`FirstUsable` statt Level-Ketten~~ → VERWORFEN, ersetzt durch A2′
 
-**Problem (U3):** 52 Kettenglieder in 12 Dateien, 43 davon mit redundantem
-`X.EnoughLevel &&` (das prüft `BasicCheck` bereits), zwei konkurrierende
-Schreibweisen für den Ausschluss der höheren Stufe, ein daraus real
-entstandener Bug (RDM `!EnoughLevel && EnoughLevel`, AUDIT_LOG).
+**Der ursprüngliche Vorschlag hielt der Messung nicht stand und ist ersetzt.
+Er bleibt hier stehen, weil die Widerlegung nützlicher ist als der Vorschlag.**
 
-**Heute** (WHM-Filler, sechs Glieder, gekürzt):
+Begründet war A2 mit „52 Kettenglieder in 12 Dateien". Diese Zahl war **falsch
+gemessen**: der Regex zählte jedes `!X.EnoughLevel &&`, und das ist
+überwiegend gar keine Kette, sondern level-gestaffelte Logik — SAMs
+Kenki-Schwelle, DRGs und GNBs Burst-Timings, NINs Mudra-Bedingungen.
 
-```
-if ( GlareIii.EnoughLevel && GlareIii.CanUse(out act)) return true;
-if ( Glare.EnoughLevel && !GlareIii.EnoughLevel && Glare.CanUse(out act)) return true;
-if ( StoneIv.EnoughLevel && !Glare.EnoughLevel && StoneIv.CanUse(out act)) return true;
-…
-```
+Nachgemessen mit einem Parser, der Ketten als Ketten erkennt:
 
-**Ziel:**
+| | |
+|---|---|
+| echte Aufstiegsketten | **65** in 16 Dateien |
+| davon sauber gleichförmig konvertierbar | **25** |
+| nicht konvertierbar | **40** |
 
-```
-if (FirstUsable(out act, GlareIii, Glare, StoneIv, StoneIii, StoneIi, Stone)) return true;
-```
+Die 40 scheitern an zwei Dingen: die Gate-Aktion ist oft eine **andere** als
+die gecastete (`!SummonIfritPvE… && RubyRuinPvE.CanUse` — SMN prüft den
+Beschwörungs-Level und castet den passenden Elementar-Ruin), und der
+Prädikat-Typ wechselt innerhalb derselben Kette zwischen `EnoughLevel` und
+`Info.EnoughLevelAndQuest()`.
 
-Die Reihenfolge *ist* die Aussage: höchste Stufe zuerst. `CanUse` scheitert
-bei zu niedrigem Level ohnehin — der Ausschluss der höheren Stufe ist damit
-überflüssig, nicht nur kürzer.
+**Warum das den Vorschlag kippt, nicht nur verkleinert:** Eine Konvertierung
+des sauberen Viertels ersetzt *ein* Idiom durch *zwei*. Das Ziel war
+„hochstrukturiert und selbsterklärend" — zwei nebeneinander bestehende
+Schreibweisen für dieselbe Sache sind das Gegenteil. Und die Fehlerklasse,
+derentwegen A2 überhaupt vorgeschlagen war, bliebe an 40 Stellen bestehen.
 
-**Vom Critic erzwungene Präzisierung:** kein `params`-Array. Die Methode läuft
-im Per-Frame-Pfad; ein `params IBaseAction[]` allokiert bei jedem Aufruf. Feste
-Überladungen für 2–6 Argumente, allokationsfrei — passend zu der Konvention,
-aus der das Repo überall `foreach` statt LINQ verwendet.
+## A2′ · Wächter gegen widersprüchliche Level-Prädikate
 
-**Aufwand:** 5 kleine Überladungen zentral, danach −52 Zeilen über 12 Dateien.
+Das eigentliche Ziel war nie „weniger Zeilen", sondern „diese Fehlerklasse
+unmöglich machen". Das leistet ein Wächter **vollständig** und ohne
+Produktivcode, während der Umbau es nur teilweise leistet.
+
+`!X.EnoughLevel && X.CanUse(...)` kann nie wahr werden — der Zweig ist tot.
+Das ist exakt die Form des RDM-Impact-Bugs. Jetzt Build-Fehler.
+
+**Vom Critic erzwungene Verengung:** Bedingungen mit `||` werden übersprungen.
+Das im Repo verbreitete und **korrekte** Idiom ist die explizite Level-Klammer
+`(X.EnoughLevel && …) || !X.EnoughLevel`, in der beide Terme vorkommen, aber
+in verschiedenen Ästen. Ohne echten Ausdrucksparser wären das alles
+Fehlalarme — die erste Fassung meldete 16 Treffer, alle 16 falsch.
+
+**Aufwand:** ~30 Zeilen im bereits vorhandenen Prüfskript, kein Produktivcode,
+keine berührte Rotationsdatei.
 
 ## A3 · Base-Call-Prüfung in der CI
 
@@ -297,7 +312,7 @@ Alle Zahlen sind aus dem Code gezählt, alle Wirkungen statisch hergeleitet.
 | Schritt | Inhalt | Zeilen ± | Risiko | Prüfbar durch |
 |---|---|---|---|---|
 | 1 | A3 CI-Prüfung | +40 (nur CI) | keins | findet die 9 historischen Fälle |
-| 2 | A2 `FirstUsable` | −52 | gering | CI-Build, Verhalten identisch |
+| 2 | A2′ Level-Prädikat-Wächter | +30 (nur CI) | keins | Fixture + sauberer Lauf |
 | 3 | A1 Sustain-Slot | −6 | **mittel** | Diff-Nachweis + Spieltest |
 | 4 | A4 Vokabular, dateiweise | stark negativ | gering | CI-Build je Datei |
 | 5 | B1 · B2 | −20 | gering | CI-Build |
