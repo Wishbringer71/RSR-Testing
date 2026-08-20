@@ -120,6 +120,32 @@ das stoert. Relevant vor allem in Inhalten mit zwei lebenden Heilern, wo
 `CanHealSingleSpell` wegen `GCDHeal == false` (ASTs Default!) falsch ist
 und `GeneralGCD` deshalb auch mit verletztem Tank erreicht wird.
 
+### #64 Zielkonzept Ablauforganisation umsetzen (docs/rotation-flow/04-concept.md)
+
+Vollstaendige Analyse + Konzept liegt in `docs/rotation-flow/` (01 Jobs,
+02 Gruppen, 03 Universell, 04 Konzept). Umsetzungsreihenfolge nach
+Wirkbreite, Schritt 1+2 sind verhaltensneutral:
+
+1. **A3** CI-Pruefung auf falsche `base.`-Aufrufe (~40 Zeilen Skript, kein
+   Produktivcode) — faengt die haeufigste Fehlerklasse des Repos ab
+   (9 historische Faelle im AUDIT_LOG).
+2. **A2** `FirstUsable`-Ueberladungen statt handgeschriebener Level-Ketten
+   (−52 Zeilen ueber 12 Dateien, beseitigt 43 redundante EnoughLevel-Checks
+   und die Fehlerquelle des RDM-Bugs). Feste Ueberladungen 2–6 Argumente,
+   KEIN params-Array (Per-Frame-Pfad, Allokation vermeiden).
+3. **A1** `SustainGCD`-Slot im Dispatch zwischen Heilmethoden und
+   `GeneralGCD`. Abnahmebedingung: der Diff muss zeigen, dass fuer Jobs ohne
+   Override kein Verhalten entsteht — sonst faellt der Punkt. Loest #63 mit
+   auf.
+4. **A4** gemeinsames Stufen-Vokabular, dateiweise opt-in.
+5. **B1/B2** Heiler-`SwiftRaisePending` (13 Kopien), Tank-`TryRangedPull`
+   (4 Kopien).
+6. **B3/B4/B5** Reprisal-Platzierung, Slot-Mengen phys. Ranged, MNK-Heilslot
+   — bewusst NICHT als Codeaufgabe gefuehrt: erst im Spiel pruefen, dann
+   entscheiden.
+
+Nichts davon ist spielgetestet; alle Zahlen sind aus dem Code gezaehlt.
+
 ## Wichtig für zukünftige Sessions
 
 Diese Dateien (TODO.md, AUDIT_LOG.md) existieren nur auf dem Branch, auf
