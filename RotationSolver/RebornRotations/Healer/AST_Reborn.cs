@@ -14,6 +14,13 @@ public sealed class AST_Reborn : AstrologianRotation
 	[RotationConfig(CombatType.PvE, Name = "Enable Swiftcast Restriction Logic to attempt to prevent actions other than Raise when you have swiftcast")]
 	public bool SwiftLogic { get; set; } = true;
 
+	/// <summary>
+	/// A raise is pending and Swiftcast is up for it, so every GCD method hands
+	/// straight back to the dispatch instead of spending the cast on rotation.
+	/// </summary>
+	private bool SwiftRaisePending =>
+		(HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise);
+
 	[RotationConfig(CombatType.PvE, Name = "Use both stacks of Lightspeed while moving")]
 	public bool LightspeedMove { get; set; } = true;
 
@@ -545,7 +552,7 @@ public sealed class AST_Reborn : AstrologianRotation
 	[RotationDesc(ActionID.AspectedBeneficPvE, ActionID.BeneficIiPvE, ActionID.BeneficPvE)]
 	protected override bool HealSingleGCD(out IAction? act)
 	{
-		if ((HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise))
+		if (SwiftRaisePending)
 		{
 			return base.HealSingleGCD(out act);
 		}
@@ -597,7 +604,7 @@ public sealed class AST_Reborn : AstrologianRotation
 	[RotationDesc(ActionID.AspectedHeliosPvE, ActionID.HeliosPvE, ActionID.HeliosConjunctionPvE)]
 	protected override bool HealAreaGCD(out IAction? act)
 	{
-		if ((HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise))
+		if (SwiftRaisePending)
 		{
 			return base.HealAreaGCD(out act);
 		}
@@ -644,7 +651,7 @@ public sealed class AST_Reborn : AstrologianRotation
 
 	protected override bool GeneralGCD(out IAction? act)
 	{
-		if ((HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise))
+		if (SwiftRaisePending)
 		{
 			return base.GeneralGCD(out act);
 		}
