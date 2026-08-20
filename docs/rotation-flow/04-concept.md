@@ -130,13 +130,12 @@ extrahiert hat, ist genau dieser Parser.
 
 **Aufwand:** ~40 Zeilen Skript, ein Schritt in `build.yaml`, kein Produktivcode.
 
-## A4 · Gemeinsames Vokabular für Ablaufstufen
+## A4 · Stufen-Vokabular — als KONVENTION, nicht als Refactoring
 
-**Problem (U1):** `GeneralGCD` hat zwischen 7 und 81 Zweige auf einer Ebene.
-Der Median liegt bei ~19. Es gibt keine Untergliederung, die man lesen könnte.
+**Problem (U1):** `GeneralGCD` hat zwischen 7 und 81 Zweige auf einer Ebene,
+Median ~19. Keine lesbare Untergliederung.
 
-**Ziel:** ein festes, jobübergreifendes Vokabular. Jede Stufe ist eine private
-Methode, deren Name aus dieser Liste stammt:
+**Das Vokabular** (jede Stufe eine private Methode, Name aus dieser Liste):
 
 | Stufe | Name | Bedeutung |
 |---|---|---|
@@ -150,14 +149,13 @@ Methode, deren Name aus dieser Liste stammt:
 | 7 | `…Filler` | Standardaktion |
 | 8 | `…Downtime` | kein Ziel / außerhalb Kampf |
 
-Damit wird jedes `GeneralGCD` zu derselben lesbaren Leiter:
+Zielbild:
 
 ```csharp
 protected override bool GeneralGCD(out IAction? act)
 {
     if (RaiseShortCircuit(out act)) return true;
     if (LilyResource(out act))      return true;
-    if (GlareBurst(out act))        return true;
     if (AeroDot(out act))           return true;
     if (HolyAoe(out act))           return true;
     if (GlareFiller(out act))       return true;
@@ -165,10 +163,27 @@ protected override bool GeneralGCD(out IAction? act)
 }
 ```
 
-**Der Beleg, dass das funktioniert, steht im Repo selbst:** BLM erreicht mit
-**7** Zweigen dieselbe fachliche Abdeckung, für die PCT **33** braucht — allein
-durch ausgelagerte, benannte Methoden. Das Konzept verallgemeinert also ein
-vorhandenes, bewährtes Muster; es erfindet keins.
+Dass das trägt, belegt BLM im Repo selbst: **7** Zweige für dieselbe fachliche
+Abdeckung, für die PCT **33** braucht — allein durch benannte Methoden.
+
+**Warum trotzdem kein Refactoring der Bestandsdateien.** Zwei Gründe, beide
+gemessen:
+
+1. **Merge-Kosten.** Dies ist ein Fork, der `upstream/main` nachzieht.
+   Upstream hat in 90 Tagen **29 Commits** auf `RebornRotations/` gelegt —
+   etwa alle drei Tage einer. Die meistgeänderten Dateien sind genau die, die
+   A4 am stärksten umbauen würde: VPR 7, RDM 6, DRK 5, NIN 4, SMN 4, AST 4.
+   Ein Umbau dieser Dateien macht jeden künftigen Upstream-Merge zur
+   Handarbeit — dauerhaft, nicht einmalig.
+2. **Teilanwendung ist selbstzerstörerisch.** Der Nutzen ist ein *gemeinsames*
+   Vokabular. Eines, das die Hälfte der Jobs benutzt, ist keins — dasselbe
+   Argument, das A2 gekippt hat.
+
+**Was bleibt:** Das Vokabular gilt als **Konvention für fork-eigenen und neu
+geschriebenen Code**. Kosten null, und es greift dort, wo die Eigenkomplexität
+dieses Forks tatsächlich liegt. Faktisch ist es dort bereits angewandt:
+`ShouldSustainMitigationDebuff`, `TrySustain…OnTank`, `TryAddleBeforeDamage`,
+`SwiftRaisePending` sind genau solche benannten Stufen.
 
 ---
 
@@ -299,7 +314,7 @@ Alle Zahlen sind aus dem Code gezählt, alle Wirkungen statisch hergeleitet.
 | 1 | A3 CI-Prüfung | +40 (nur CI) | keins | findet die 9 historischen Fälle |
 | 2 | A2′ Level-Prädikat-Wächter | +30 (nur CI) | keins | Fixture + sauberer Lauf |
 | 3 | ~~A1 Sustain-Slot~~ | entfällt | – | verworfen, siehe A1 |
-| 4 | A4 Vokabular, dateiweise | stark negativ | gering | CI-Build je Datei |
+| 4 | A4 als Konvention | 0 | keins | gilt für neuen Code |
 | 5 | B1 · B2 | −20 | gering | CI-Build |
 | 6 | B3 · B4 · B5 prüfen | 0 | – | Spieltest, dann entscheiden |
 | 7 | C, was übrig bleibt | negativ | gering | CI-Build |
