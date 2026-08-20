@@ -120,31 +120,33 @@ das stoert. Relevant vor allem in Inhalten mit zwei lebenden Heilern, wo
 `CanHealSingleSpell` wegen `GCDHeal == false` (ASTs Default!) falsch ist
 und `GeneralGCD` deshalb auch mit verletztem Tank erreicht wird.
 
-### #64 Zielkonzept Ablauforganisation umsetzen (docs/rotation-flow/04-concept.md)
+### #65 Offen aus dem Zielkonzept: B3/B4/B5 (Spielfragen, nicht Codefragen)
 
-Vollstaendige Analyse + Konzept liegt in `docs/rotation-flow/` (01 Jobs,
-02 Gruppen, 03 Universell, 04 Konzept). Umsetzungsreihenfolge nach
-Wirkbreite, Schritt 1+2 sind verhaltensneutral:
+Branch `claude/rotation-flow-refactor`, PR #3. Von acht Konzeptpunkten sind
+drei umgesetzt (A3, A2', B1), vier an Messungen gescheitert und dokumentiert
+(A2, A1, A4-als-Refactoring, B2), drei bleiben offen — und die brauchen eine
+Spielentscheidung, keine Codeentscheidung:
 
-1. **A3** CI-Pruefung auf falsche `base.`-Aufrufe (~40 Zeilen Skript, kein
-   Produktivcode) — faengt die haeufigste Fehlerklasse des Repos ab
-   (9 historische Faelle im AUDIT_LOG).
-2. **A2** `FirstUsable`-Ueberladungen statt handgeschriebener Level-Ketten
-   (−52 Zeilen ueber 12 Dateien, beseitigt 43 redundante EnoughLevel-Checks
-   und die Fehlerquelle des RDM-Bugs). Feste Ueberladungen 2–6 Argumente,
-   KEIN params-Array (Per-Frame-Pfad, Allokation vermeiden).
-3. **A1** `SustainGCD`-Slot im Dispatch zwischen Heilmethoden und
-   `GeneralGCD`. Abnahmebedingung: der Diff muss zeigen, dass fuer Jobs ohne
-   Override kein Verhalten entsteht — sonst faellt der Punkt. Loest #63 mit
-   auf.
-4. **A4** gemeinsames Stufen-Vokabular, dateiweise opt-in.
-5. **B1/B2** Heiler-`SwiftRaisePending` (13 Kopien), Tank-`TryRangedPull`
-   (4 Kopien).
-6. **B3/B4/B5** Reprisal-Platzierung, Slot-Mengen phys. Ranged, MNK-Heilslot
-   — bewusst NICHT als Codeaufgabe gefuehrt: erst im Spiel pruefen, dann
-   entscheiden.
+- **B3** Reprisal-Sustain: DRK/GNB haben ihn in DefenseArea UND DefenseSingle,
+  PLD/WAR nur in Single. Folgt der Upstream-Platzierung je Job, ist also
+  begruendet — macht aber dieselbe Faehigkeit rollenintern uneinheitlich.
+- **B4** Phys. Fernkaempfer: keine zwei der drei Jobs belegen dieselben
+  Dispatch-Slots (DNC ohne DefenseSingleAbility, MCH ohne HealSingleAbility,
+  BRD als einziger mit DispelAbility). Erst pruefen, ob fachlich begruendet.
+- **B5** MNK ueberschreibt HealAreaAbility statt HealSingleAbility, obwohl
+  Second Wind eine Einzelziel-Selbstheilung ist. Einzige Gruppenabweichung
+  ohne erkennbare Begruendung.
 
-Nichts davon ist spielgetestet; alle Zahlen sind aus dem Code gezaehlt.
+Alle drei haben winzige, merge-unproblematische Diffs. Was fehlt, ist die
+Beobachtung im Spiel. NICHT ungeprueft angleichen — das waere derselbe Fehler
+wie bei der Provoke-Distanz (#56).
+
+Uebergreifende Regel aus der Umsetzung, fuer kuenftige Arbeit am Fork:
+Upstream legte in 90 Tagen 29 Commits auf `RebornRotations/`, nur 4 von 54
+Dateien blieben unberuehrt. Strukturelles Umbauen nachgezogener Dateien ist
+deshalb keine tragfaehige Strategie. Tragfaehig sind Waechter gegen
+Fehlerklassen, benannte Helfer fuer echte Bedingungs-Duplikate, und
+Konventionen fuer eigenen Code.
 
 ## Wichtig für zukünftige Sessions
 
