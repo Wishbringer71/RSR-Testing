@@ -18,9 +18,9 @@ Umfang: `RotationSolver.Basic` (48k Zeilen) · RebornRotations (21k) · ExtraRot
 
 `CycleStateAuto`, `CycleStateManualAuto`, `CycleStateWithAllTargetTypes` und `CycleStateWithOneTargetTypes` implementieren ihre Zustandsfolge selbst, einschließlich eines eigenen Ausschaltzweigs, rufen dann aber `DoStateCommandType`, das über `AdjustStateType` die Optionen `ToggleAuto`/`ToggleManual` anwendet. Steht eine davon an, wird aus dem Wechsel „Manual → Auto" ein „Off", und der Zyklus über die Zielarten bricht ab. Die Optionstexte beziehen sich ausdrücklich auf `/rotation Auto` bzw. `/rotation Manual`, nicht auf die Zyklus-Kommandos; beide Defaults sind `false`. Zu klären, ob die Zyklus-Kommandos die Toggle-Semantik umgehen sollen (dann ein Parameter `applyToggle` an `DoStateCommandType`) oder ob das gewollt ist.
 
-## `StartOnFieldOpInCombat2` filtert Gegner statt Übungspuppen aus
+## `StartOnFieldOpInCombat2` lässt Übungspuppen als Auslöser durch
 
-`RSCommands_Actions.cs:465` überspringt jedes Ziel, das in `AllHostileTargets` steht **und** keine Übungspuppe ist. Damit lösen ausgerechnet die echten Gegner den automatischen Start nicht aus, eine im Kampf befindliche Übungspuppe dagegen schon. Gemeint war vermutlich das Muster aus Zeile 509 (`!ObjectHelper.IsDummy(target)`) als eigene Bedingung. Zu klären, ob der Zweig auf Gegner oder auf andere Spieler reagieren soll, dann die Bedingung entsprechend trennen.
+`RSCommands_Actions.cs:465` überspringt jedes Ziel, das in `AllHostileTargets` steht **und** keine Übungspuppe ist. Der Gegner-Ausschluss ist beabsichtigt: `GetTargetsByRange(30f)` liefert ohne `getFriendly` alle Objekte, und der Zweig soll auf Mitspieler im Kampf reagieren, nicht auf Gegner. Durch die `&&`-Verknüpfung kehrt sich der Puppen-Ausschluss aber um — eine Übungspuppe ist ein Gegner und fällt damit aus dem `continue` heraus, ist also als einziger Gegnertyp weiter Auslöser. Richtig wäre `if (t != null && (DataCenter.AllHostileTargets.Contains(t) || ObjectHelper.IsDummy(t))) continue;`. Ob im Bozja- oder Occult-Gebiet überhaupt Übungspuppen stehen, ist nicht belegt; ohne eine solche ist die Fehlwirkung nicht auslösbar. Nebenbefund in derselben Schleife: Zeile 469-472 ist ein `if`-Block, dessen Rumpf nur noch aus einem auskommentierten Log besteht.
 
 ## Duty-Rotationen werden im Flächen- und im Einzelheilpfad unterschiedlich erreicht
 
