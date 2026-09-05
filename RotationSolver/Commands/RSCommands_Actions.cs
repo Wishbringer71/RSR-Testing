@@ -462,13 +462,14 @@ namespace RotationSolver.Commands
 						for (var i = 0; i < targets.Count; i++)
 						{
 							var t = targets[i];
-							if (t != null && DataCenter.AllHostileTargets.Contains(t) && !ObjectHelper.IsDummy(t))
+							// GetTargetsByRange returns every object, and this branch reacts to someone
+							// else being in combat, so hostiles are skipped on purpose. A striking
+							// dummy is a hostile as well, so exempting it from that check left it as
+							// the one hostile that still triggers the automatic start - and every
+							// field op zone has one standing at its camp.
+							if (t != null && (DataCenter.AllHostileTargets.Contains(t) || ObjectHelper.IsDummy(t)))
 							{
 								continue;
-							}
-							if (t != null && t.GameObjectId != Player.Object.GameObjectId)
-							{
-								// PluginLog.Debug($"StartOnFieldOpInCombat: {t.Name} InCombat: {t.InCombat()} Distance: {t.DistanceToPlayer()} ");    
 							}
 
 							if (t != null && t.InCombat())
