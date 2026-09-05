@@ -74,16 +74,9 @@ public sealed class RPR_Reborn : ReaperRotation
 	[RotationDesc(ActionID.FeintPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		// Feint mitigates any damage type, so a predicted BMR event (raidwide or tankbuster) that
-		// would land after Feint's own duration expires triggers a proactive refresh here. A real,
-		// timed threat outweighs RPR's own combo-slot preference, but not at the cost of an unsafe
-		// weave - EnoughWeaveTime is the actual clip-risk check, unlike NotInActiveCombo which just
-		// blocks for the whole combo regardless of whether a safe window exists right now. Still
-		// yields to Gluttony/Enshroud specifically: AttackAbility gates both on RPR's own Shroud/Soul
-		// resource state (not IsBurst/a time-boxed window - verified against AttackAbility's actual
-		// conditions), so each is only genuinely available once per resource cycle. A Feint refresh
-		// stealing that exact weave slot risks a wasted resource-cycle window, unlike the general case
-		// where any other weave slot works just as well.
+		// Gated on EnoughWeaveTime rather than NotInActiveCombo: a timed threat should not be locked
+		// out for a whole combo when a safe weave exists. Still yields to Gluttony/Enshroud, whose
+		// slots come round only once per resource cycle.
 		if (EnoughWeaveTime
 			&& !(GluttonyPvE.CanUse(out _, skipAoeCheck: true) || EnshroudPvE.CanUse(out _))
 			&& ShouldSustainMitigationDebuff(StatusID.Feint)

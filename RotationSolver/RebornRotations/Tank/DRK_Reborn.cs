@@ -238,10 +238,6 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			}
 		}
 
-		// DefenseAreaAbility only runs on a raidwide-shaped trigger, so a tankbuster-shaped one never
-		// reaches it; ShouldAddDefenseSingle's tankbuster trigger reaches this copy instead. Ungated by
-		// !InTwoMIsBurst, matching the reactive line below - single-target Reprisal is unguarded on all
-		// four tanks, only the AoE variant carries the burst gate.
 		if (ShouldSustainMitigationDebuff(StatusID.Reprisal)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{

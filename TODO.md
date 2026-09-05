@@ -27,18 +27,18 @@ abbrechen, weil eine spaetere interessanter wirkt.**
 | Phase | Inhalt | Stand |
 |---|---|---|
 | 0 | Faktenbasis: Zeilenbilanz, Kommentarbilanz, Versionierung | **fertig** |
-| 1 | Substanzpruefung je Bereich — feuert der Zweig, tut er das Richtige, ist er minimal, passt er zum Original | **laufend** |
+| 1 | Substanzpruefung je Bereich — feuert der Zweig, tut er das Richtige, ist er minimal, passt er zum Original | **fertig** |
 | 1.1 | `Updaters/StateUpdater.cs` | fertig |
 | 1.2 | `Rotations/CustomRotation_Ability.cs` | fertig |
 | 1.3 | `Rotations/CustomRotation_OtherInfo.cs` | fertig |
-| 1.4 | `DataCenter` · `ObjectHelper` · `StatusHelper` · `ActionTargetInfo` · `CustomRotation_Items` · `HpPotionItem` | offen |
-| 1.5 | Heiler: WHM · AST · SGE · SCH | SGE fertig, Rest offen |
-| 1.6 | Tanks: PLD · WAR · DRK · GNB | offen |
-| 1.7 | Melee · Phys. Range · Magical | offen |
-| 1.8 | Duty · ExtraRotations · PvP | offen |
+| 1.4 | `DataCenter` · `ObjectHelper` · `StatusHelper` · `ActionTargetInfo` · `CustomRotation_Items` · `HpPotionItem` | fertig |
+| 1.5 | Heiler: WHM · AST · SGE · SCH | fertig |
+| 1.6 | Tanks: PLD · WAR · DRK · GNB | fertig |
+| 1.7 | Melee · Phys. Range · Magical | fertig |
+| 1.8 | Duty · ExtraRotations · PvP | fertig |
 | 2 | Korrekturen umsetzen (rollierend je Fund) | laufend |
-| 3 | Stilangleichung: Kommentardichte auf Hausmass je Bereich | begonnen, zurueckgestellt hinter Phase 1 |
-| 4 | Versionierung des Forks in Ordnung bringen | offen |
+| 3 | Stilangleichung: Kommentardichte auf Hausmass je Bereich | **fertig** — Ueberhang 283 → 102, RebornRotations 26,6 % → 9,9 % |
+| 4 | Versionierung des Forks in Ordnung bringen | **offen — braucht Nutzerentscheidung (Tag-Schema)** |
 | 5 | CI gruen + Dokumentation des Ergebnisses | offen |
 
 ### Phase-0-Ergebnis (Faktenbasis)

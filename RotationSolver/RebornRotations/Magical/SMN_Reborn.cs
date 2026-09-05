@@ -7,8 +7,6 @@ namespace RotationSolver.RebornRotations.Magical;
 
 public sealed class SMN_Reborn : SummonerRotation
 {
-	// DefenseAreaAbility below calls TryAddleBeforeDamage, which has a hostile-count sustain-refresh
-	// fallback for Addle.
 	public override bool HasHostileCountAoeMitigation => true;
 
 	#region Config Options
@@ -146,11 +144,7 @@ public sealed class SMN_Reborn : SummonerRotation
 		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 
-	// Addle mitigates any damage the enemy deals (physical or magic), not just raidwides, so unlike
-	// Radiant Aegis (a personal-only barrier) the generic BMRDamageIn is the right signal here rather
-	// than the raidwide-specific one. Enhanced Addle (lvl 98) extends the duration from 10s to 15s.
-	// On trash pulls BMR usually has no active module at all, so a sustain-refresh fallback based on
-	// hostile count keeps Addle up during heavy pulls even without a BMR prediction to time it against.
+	// Addle mitigates any damage the enemy deals, so the generic BMRDamageIn is the right signal.
 	private bool TryAddleBeforeDamage(out IAction? act)
 	{
 		if (ShouldSustainMitigationDebuff(StatusID.Addle))

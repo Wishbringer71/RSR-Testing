@@ -128,8 +128,6 @@ public class BLM_Default : BlackMageRotation
 			return true;
 		}
 
-		// DefenseAreaAbility below only runs on a raidwide-shaped trigger, so a tankbuster-shaped one
-		// never reaches it; ShouldAddDefenseSingle's tankbuster trigger reaches this copy instead.
 		if (ShouldSustainMitigationDebuff(StatusID.Addle)
 			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
@@ -660,14 +658,8 @@ public class BLM_Default : BlackMageRotation
 			return false;
 		}
 
-		// The two guards above only run when ThunderIiiPvE/ThunderPvE (the single-target casts) are
-		// themselves castable, which fails independently of AoE DoT freshness whenever the current
-		// target isn't valid for a single-target cast - common during AoE pulls. Without an
-		// unconditional check here, those cases fall straight through to ThunderIiPvE.CanUse below,
-		// which relies on the action's own built-in TargetStatusProvide refresh gate. That gate only
-		// lists the base ThunderIi/ThunderIv status IDs, not the sync-92+ HighThunder_3872 DoT applied
-		// by the High Thunder II upgrade, so at that sync level it always reports the DoT as absent and
-		// never blocks a refresh - silently clipping a still-fresh AoE DoT on every such cast.
+		// Checked unconditionally: the guards above need a valid single-target cast, and the action's
+		// own refresh gate omits HighThunder_3872, so at sync 92+ it never blocks a clipping refresh.
 		if (ThunderIiPvE.EnoughLevel && ThunderIiPvE.CanUse(out _) && (!ThunderIiPvE.Target.Target?.WillStatusEndGCD(gcdCount, 0, true,
 			StatusID.Thunder, StatusID.ThunderIi, StatusID.ThunderIii, StatusID.ThunderIv, StatusID.HighThunder, StatusID.HighThunder_3872) ?? false))
 		{

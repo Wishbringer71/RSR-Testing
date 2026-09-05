@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace RotationSolver.RebornRotations.Healer;
 
@@ -14,10 +14,7 @@ public sealed class AST_Reborn : AstrologianRotation
 	[RotationConfig(CombatType.PvE, Name = "Enable Swiftcast Restriction Logic to attempt to prevent actions other than Raise when you have swiftcast")]
 	public bool SwiftLogic { get; set; } = true;
 
-	/// <summary>
-	/// A raise is pending and Swiftcast is up for it, so every GCD method hands
-	/// straight back to the dispatch instead of spending the cast on rotation.
-	/// </summary>
+	/// <summary>A raise is pending with Swiftcast up for it, so no GCD method spends the cast.</summary>
 	private bool SwiftRaisePending =>
 		(HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise);
 
@@ -577,8 +574,7 @@ public sealed class AST_Reborn : AstrologianRotation
 			}
 		}
 
-		// Ahead of Benefic II / Benefic, which would otherwise claim every GCD while the tank takes
-		// continuous damage and never let the sustain refresh through.
+		// Ahead of Benefic II / Benefic, which would otherwise claim every GCD under continuous damage.
 		if (TrySustainAspectedBeneficOnTank(out act))
 		{
 			return true;
@@ -652,9 +648,7 @@ public sealed class AST_Reborn : AstrologianRotation
 			return base.GeneralGCD(out act);
 		}
 
-		// Ahead of Combust / Malefic: as bottom-of-list filler it never got a turn once real combat
-		// priorities existed, so it only ever fired on the very first pull. Aspected Benefic is
-		// instant-cast, so taking a GCD here costs no movement or uptime.
+		// Ahead of the damage filler: as bottom-of-list it only ever fired on the first pull.
 		if (TrySustainAspectedBeneficOnTank(out act))
 		{
 			return true;

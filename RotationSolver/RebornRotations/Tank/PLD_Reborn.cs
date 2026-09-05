@@ -234,9 +234,7 @@ public sealed class PLD_Reborn : PaladinRotation
 				return true;
 			}
 
-			// A BMR-predicted tankbuster takes priority over the elapsed-time stagger below - times
-			// whichever mitigation the existing system would reach anyway against the actual predicted
-			// event instead of a blind timer, without touching the stagger itself.
+			// Predicted tankbuster takes priority over the elapsed-time stagger below.
 			if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, GuardianPvE.EnoughLevel ? StatusID.Guardian : StatusID.Sentinel)
 				&& (GuardianPvE.EnoughLevel ? GuardianPvE.CanUse(out act, skipStatusProvideCheck: true) : SentinelPvE.CanUse(out act, skipStatusProvideCheck: true)))
 			{
@@ -283,8 +281,6 @@ public sealed class PLD_Reborn : PaladinRotation
 				}
 			}
 
-			// Reprisal mitigates any damage type from that enemy, not just raidwides, so the generic
-			// BMRDamageIn is the right signal - same reasoning as Addle/Feint.
 			if (ShouldSustainMitigationDebuff(StatusID.Reprisal)
 				&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 			{

@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace RotationSolver.RebornRotations.Healer;
 
@@ -29,10 +29,7 @@ public sealed class SGE_Reborn : SageRotation
 	[RotationConfig(CombatType.PvE, Name = "Enable Swiftcast Restriction Logic to attempt to prevent actions other than Raise when you have swiftcast")]
 	public bool SwiftLogic { get; set; } = true;
 
-	/// <summary>
-	/// A raise is pending and Swiftcast is up for it, so every GCD method hands
-	/// straight back to the dispatch instead of spending the cast on rotation.
-	/// </summary>
+	/// <summary>A raise is pending with Swiftcast up for it, so no GCD method spends the cast.</summary>
 	private bool SwiftRaisePending =>
 		(HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise);
 
