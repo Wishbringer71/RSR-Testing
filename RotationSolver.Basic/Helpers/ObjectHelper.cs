@@ -117,10 +117,12 @@ public static class ObjectHelper
 					}
 
 					// The co-tank is at the HP the user already set for a tank in danger, and is still
-					// being attacked - take it back. No distance gate: any healthy tank should react.
+					// being attacked - take it back, unless they are riding an invulnerability (Superbolide
+					// leaves them at 1 HP on purpose). No distance gate: any healthy tank should react.
 					if (targetObject.IsJobCategory(JobRole.Tank)
 						&& !targetObject.IsDead
 						&& targetObject.GameObjectId != Player.Object?.GameObjectId
+						&& targetObject.NoNeedHealingInvuln()
 						&& targetObject.GetEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f)
 					{
 						return true;
