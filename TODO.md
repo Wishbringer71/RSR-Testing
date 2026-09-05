@@ -59,21 +59,34 @@ Die Nachprüfung der Wirkungskette bestätigt den Fix (AUDIT_LOG A11), legt aber
 
 **Der eigene Spieler wird nicht ausgeschlossen.** `GetAllTargets` nimmt jedes `IBattleChara` auf, das anvisierbar und kein Begleiter ist — einschließlich des Spielers selbst. `t.InCombat()` ist für ihn wahr, sobald er kämpft, womit der Zweig faktisch beim eigenen Kampfeintritt auslöst und die übrige Schleife entwertet. Das kollidiert mit `StartOnAttackedBySomeone2` weiter unten, das denselben Fall abdeckt, dabei aber `Manual` statt `Auto` wählt; da der Field-Op-Zweig zuerst läuft, gewinnt `Auto`. Der beim Puppen-Fix entfernte leere `if`-Block prüfte genau `t.GameObjectId != Player.Object.GameObjectId` und war die letzte Spur dieser Absicht — seine Entfernung war verhaltensneutral, hat aber das Signal getilgt, weshalb es hier festgehalten ist.
 
-## Duty-Rotationen werden im Flächen- und im Einzelheilpfad unterschiedlich erreicht
+## Bozja-Flächenheilungen sind im automatischen Flächenheilpfad unerreichbar
 
-In `CustomRotation_GCD` fragt der automatische Einzelheilzweig die Duty-Rotation bedingungslos ab, der Flächenheilzweig dagegen nur unter `IsInOccultCrescentOp || HasVariantCure`. Duty-Rotationen sind ohnehin an das Territorium gebunden, die Zusatzbedingung ist also entweder überflüssig oder im Einzelheilpfad versehentlich weggelassen. Zu klären, welche der beiden Varianten gewollt ist, dann angleichen.
+`CustomRotation_GCD` hat vier Heilzweige. In den beiden `CommandStatus`-Zweigen (240, 282) und im automatischen Einzelheilzweig (299) wird die Duty-Rotation bedingungslos gefragt; nur der automatische Flächenheilzweig (257-263) stellt ihr `IsInOccultCrescentOp || HasVariantCure` voran.
+
+**Wirkung belegt:** `CurrentDutyRotation` wird ohnehin territoriumsgebunden gesetzt (`RotationUpdater` über `DutyRotationChoice[TerritoryType]`), die Zusatzbedingung schränkt also innerhalb der Duties nochmals ein — und zwar genau auf Occult Crescent und Variant Dungeons. `BozjaDefault.HealAreaGCD` bietet `LostCureIII`, `LostCureIV` und `LostFullCure` an; in Bozja und Zadnor ist `IsInOccultCrescentOp` falsch und `HasVariantCure` (Status `VariantCureSet`) ebenfalls, weshalb diese drei Aktionen über den automatischen Flächenheilpfad nie erreicht werden. Über den Einzelheilpfad und die Befehlspfade sind sie erreichbar. Angleichen an die anderen drei Zweige, also Bedingung entfernen.
 
 ## Selbstlernende AoE-Liste verunreinigt die Mitigations-Trigger
 
-`Watcher.ActionFromEnemy` speichert jede gecastete Gegner-Aktion dauerhaft in `HostileCastingArea`, sobald sie alle Party-Mitglieder mit Schaden trifft (ab 4 Mitgliedern); die Option „Record AOE actions" ist standardmäßig an, ausgeliefert werden bereits 850 IDs. Eine ausweichbare Boden-AoE, in der einmal alle stehen bleiben, gilt danach für immer als Gruppen-AoE und setzt bei jedem Cast `AutoStatus.DefenseArea`. Zurücknehmen lässt sich das nur durch Editieren der Datei. Offen: ob sich echte Raidwides beim Lernen von ausweichbaren Flächen unterscheiden lassen (Kandidat: `CastType`/`EffectRange` der Aktion) — ohne Spieldaten nicht entscheidbar, blind verschärfen wäre Raten.
+`Watcher.ActionFromEnemy:111-148` speichert eine Gegner-Aktion dauerhaft in `HostileCastingArea`, wenn die Party mindestens vier Mitglieder hat, die Aktion eine Wirkzeit besitzt (`Cast100ms > 0`), zur Kategorie Spell/Weaponskill/Ability gehört und **jedes** Party-Mitglied im selben Effektsatz Schaden genommen hat. Die Option „Record AOE actions" ist standardmäßig an, ausgeliefert werden bereits 850 IDs.
 
-## `SpreadDamagePaths` ist keine eigene Kategorie
+Die Lernbedingung ist damit strenger als zunächst notiert — eine ausweichbare Boden-AoE wird nur gelernt, wenn wirklich alle hineingelaufen sind —, aber sie ist unumkehrbar: Zurücknehmen lässt sich ein Eintrag nur durch Editieren der Datei. Offen bleibt, ob sich echte Raidwides beim Lernen von ausweichbaren Flächen unterscheiden lassen (Kandidat: `CastType`/`EffectRange` der Aktion); ohne Spieldaten nicht entscheidbar, blind verschärfen wäre Raten. Durch die Reichweitenprüfung in `IsHostileCastingArea` ist die Fehlwirkung entschärft, nicht behoben. Geprüfte Nicht-Fehlstelle: das Speichern läuft asynchron (`_ = SaveHostileCastingArea()`), also kein blockierendes Schreiben im Kampfpfad.
 
-Zwei der vier Pfade (`x6r9_loc01_t0a1`, `x6r9_loc02_t0a1`) stehen wortgleich auch in `SharedDamagePaths`, die anderen beiden sind laut ihrem eigenen Kommentar „AOE share markers", also Stack- und keine Spread-Marker. `IsCastingAreaVfx` prüft alle drei Listen, die Trennung trägt damit nichts. Prüfen, ob echte Spread-Marker fehlen (dann Liste füllen) oder ob sie ganz entfallen kann.
+## `SpreadDamagePaths` enthält keinen einzigen Spread-Marker
 
-## Source-Generator liegt im Release-Paket
+`DataCenter.cs:2036-2043`. Zwei der vier Pfade (`x6r9_loc01_t0a1`, `x6r9_loc02_t0a1`) stehen wortgleich auch in `SharedDamagePaths` (2025-2026), die anderen beiden sind laut eigenem Kommentar „Duty-specific AOE share markers", also ebenfalls Stack-Marker. Die Liste trägt damit nichts, weil `IsCastingAreaVfx` ohnehin alle drei Listen prüft. Prüfen, ob echte Spread-Marker fehlen (dann Liste füllen) oder ob sie ganz entfallen kann. Nebenbefund: `SharedDamagePaths` führt `vfx/lockon/eff/com_trg01_0c` zweimal (2022 und 2024) — im `FrozenSet` folgenlos, aber ein Pflegehinweis.
 
-`RotationSolver.SourceGenerators.dll` ist in `latest.zip` des Releases 7.5.5.41+wsh1 enthalten, obwohl `PruneOutputDlls` in `RotationSolver.csproj` nur RotationSolver, RotationSolver.Basic und ECommons behalten soll. Zur Laufzeit nutzlos. Prüfen, warum die Prune-Regel den Analyzer nicht erfasst.
+## Release-Paket enthält 14 MB Ballast, die Prune-Regel greift dafür nicht
+
+**Am Artefakt belegt** (`latest.zip` des Releases 7.5.5.41+wsh1, 5,35 MB komprimiert). Nutzlast sind `RotationSolver.dll` (1,09 MB), `RotationSolver.Basic.dll` (2,45 MB), `ECommons.dll` (0,78 MB) und `RotationSolver.json`. Dazu kommen vier Kategorien überflüssiger Artefakte:
+
+| Datei | Größe | Ursache |
+|---|---|---|
+| `RotationSolver.Basic.xml` | 7,52 MB | `<GenerateDocumentationFile>True` in beiden Projekten |
+| `RotationSolver.SourceGenerators.dll` + `.pdb` + `.deps.json` | 5,59 MB | Analyzer, zur Laufzeit nutzlos |
+| `RotationSolverReborn.Basic.7.5.5.41.nupkg` | 1,54 MB | `<GeneratePackageOnBuild>True` in `RotationSolver.Basic.csproj:12` |
+| `RotationSolver.Basic.pdb` | 1,27 MB | Debug-Symbole des Release-Builds |
+
+Ursache ist nicht die Prune-Regel: `PruneOutputDlls` arbeitet auf `ReferenceCopyLocalPaths` und erfasst damit weder `.pdb` noch `.xml` noch `.nupkg` noch den Analyzer — die Analyzer-Referenz selbst ist mit `OutputItemType="Analyzer" ExcludeAssets="All"` korrekt eingebunden. Ursache ist, dass alle Projekte nach `$(SolutionDir)\bin\$(Configuration)` schreiben (`RotationSolver.csproj:14,18`) und DalamudPackager dieses gemeinsame Verzeichnis packt. Ansatzpunkte: getrennte Ausgabeverzeichnisse, oder die Paket- und Dokumentationserzeugung auf den Release-Build beschränken.
 
 ## Angriffskonfiguration: zweite, veraltete Beschreibungsquelle ohne Aufrufer
 
