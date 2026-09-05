@@ -253,6 +253,27 @@ Schema fuer kuenftige Releases: Basis = hoechster Upstream-Tag, dahinter
 statt `-`, weil SemVer einen Bindestrich als Prerelease liest und den Fork
 damit unter den Upstream-Release sortieren wuerde.
 
+### #72 DefenseSingle bei DPS: Feint/Addle auf „Buster auf mich" nur mit Gegnerzahl oder BMR
+
+Aus dem Code-Review-Loop (AUDIT_LOG, 05.09.). Die zwoelf
+`DefenseSingleAbility`-Sustain-Zeilen der DPS (BLM/PCT/RDM/SMN,
+DRG/MNK/NIN/RPR/SAM/VPR) feuern Feint/Addle nur, wenn
+`ShouldSustainMitigationDebuff` wahr ist — also BMR eine Vorhersage hat oder
+mindestens `MitigationSustainHostileCount` Gegner in Reichweite stehen. Der
+Trigger, der DefenseSingle fuer DPS ueberhaupt setzt
+(`IsHostileCastingTankBusterAtMe`), ist aber ein Einzelziel-Fall: ein Boss
+castet auf mich, meist ein einzelner Gegner. Ohne BMR passiert dann nichts.
+
+Optionen: (a) belassen — Feint/Addle sind Gruppenressourcen mit 90s Cooldown,
+ein Buster auf einen DPS ist selten und meist ein Tankfehler; (b) reaktive
+Fallback-Zeile `FeintPvE.CanUse(out act)` bzw. `AddlePvE.CanUse(out act)` in
+die zwoelf Overrides — Feint mindert genau den Schaden des castenden Gegners.
+
+Empfehlung: (b) fuer Feint (ein physischer Buster ist der Melee-Fall), fuer
+Addle nur, wenn `BMRNextDamageType` magisch meldet; vorher im Spiel
+beobachten, wie oft der Trigger bei DPS ueberhaupt anspringt. Nicht
+ungeprueft umsetzen — derselbe Massstab wie bei #65.
+
 ## Wichtig für zukünftige Sessions
 
 Diese Dateien (TODO.md, AUDIT_LOG.md) existieren nur auf dem Branch, auf

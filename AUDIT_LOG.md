@@ -64,7 +64,7 @@ Status-Legende: `[ ]` offen, `[~]` in Arbeit, `[x]` einzeln geprüft (PASST
 oder gefixt+auditiert, siehe Vermerk).
 
 - [x] 8edd696 SMN: use Addle in defensives, detect tankbusters landing on non-tanks — TIEF NACHGEPRÜFT (inhaltlich/kausal/gesamtheitlich, nicht nur Diff gelesen): Kausalkette Erkennung→AutoStatus→Dispatch→job-eigene DefenseSingleAbility vollständig nachvollzogen; alle 5 Kampfrollen in ShouldAddDefenseSingle() gegen komplette JobRole-Enum geprüft, keine fehlt; SMN-only-Wiring im Commit-Text ehrlich benannt, durch spätere Commits (c93a8bc, #47) vervollständigt. Kein Fehler gefunden.
-- [x] 1ca682a Respect status-provide check for queued commands — TIEF NACHGEPRÜFT: Kausalkette bis in `ActionBasicInfo.BasicCheck`/`IsStatusProvided` verifiziert (echter Blockmechanismus, nicht nur behauptet), gesamtheitlich bestätigt (GCD-seitiger Zwilling 0885f53 existiert, deckt den symmetrischen Fall ab). Kein Fehler.
+- [x] 1ca682a Respect status-provide check for queued commands — TIEF NACHGEPRÜFT: Kausalkette bis in `ActionBasicInfo.BasicCheck`/`IsStatusProvided` verifiziert (echter Blockmechanismus, nicht nur behauptet), gesamtheitlich bestätigt (GCD-seitiger Zwilling 0885f53 existiert, deckt den symmetrischen Fall ab). **Korrektur (05.09.):** der Mechanismus war echt, die Richtung falsch — `skipStatusProvideCheck: true` ist Upstreams bewusste Ausnahme fuer eine explizit befohlene Aktion; ohne das Flag feuerte ein befohlenes oGCD stillschweigend nicht. Revertiert in 5755ad5b.
 - [x] c93a8bc Add generic BMR-aware mitigation refresh helper; wire into Addle/Feint — TIEF NACHGEPRÜFT: `BMRShouldRefreshBefore` bis in `WillStatusEnd`/`StatusTime` kausal nachvollzogen; 0.6s-Schwelle gegen StateUpdater-Konvention verifiziert (identisch); Spieldaten per Websuche verifiziert (Addle UND Feint: 10s Basis, 15s ab Lv.98 Enhanced-Trait, beide bestätigt, mehrere Quellen); `PlayerSyncedLevel()` korrekt statt Raw-Level für Sync-Content. Kein Fehler.
 - [x] 75b7af0 SMN: remove dead RadiantOnCooldownSpam config option — TIEF NACHGEPRÜFT: 0 Referenzen im aktuellen Repo (frisch gegrept), Fallback-Abdeckung in GeneralAbility direkt gegen bereits gelesenen Code verifiziert. Kein Fehler.
 - [x] e87ebea SMN: opt-in movement-aware Titan priority — TIEF NACHGEPRÜFT: Spielmechanik-Behauptung (Topaz instant-cast, Ifrit/Garuda Hardcasts) per Websuche verifiziert, `TitanTime()` existiert und korrekt referenziert, Default-off verhindert Verhaltensänderung ohne Opt-in. Kein Fehler.
@@ -87,7 +87,7 @@ oder gefixt+auditiert, siehe Vermerk).
 - [x] 14a15df BMRShouldRefreshBefore: respect Service.Config.UseBmrTimeline (default off) — TIEF NACHGEPRÜFT: Diff fügt `!Service.Config.UseBmrTimeline` als ersten Kurzschluss-Check in `BMRShouldRefreshBefore` ein — deckt sich exakt mit dem in dieser Session bereits vollständig gelesenen aktuellen Funktionskörper (`if (!Service.Config.UseBmrTimeline || !BMRActive || predictedIn is not (> 0.6f and < float.MaxValue) || predictedIn > statusDuration) return false;`, CustomRotation_OtherInfo.cs:1276 ff., c93a8bc-Audit). Ein einziger Fix in der geteilten Helper-Funktion schließt die Lücke für ALLE Verwender gleichzeitig (Addle/Feint/Reprisal/Vengeance-Familie/Troubadour-Tactician) — genuine zentrale statt verstreute Korrektur, im Commit-Text selbst als eigener früherer Fehler benannt statt verschwiegen. Kein Fehler im jetzigen Zustand.
 - [x] 0a31836 RDM: fix dead Impact branch (tautological EnoughLevel check) — TIEF NACHGEPRÜFT: `!ImpactPvE.EnoughLevel && ImpactPvE.EnoughLevel` ist eine logische Kontradiktion (immer falsch), Diff korrigiert zu `if (ImpactPvE.EnoughLevel)`. Live-Code (RDM_Reborn.cs:400) bestätigt Fix, Zeile 408 zeigt den erwarteten `!ImpactPvE.EnoughLevel`-Fallback-Zweig für den Scatter-Fall konsistent daneben. Kein Fehler.
 - [x] 470de85 DRK: remove unreachable ungated Shadow Wall/Shadowed Vigil checks — TIEF NACHGEPRÜFT: Diff entfernt ein ungegatetes Zeilenpaar, das vor dem korrekt `EnoughLevel`-gegateten Paar stand und es damit für maxlevel-Charaktere permanent verdeckte (Shadow Wall statt Shadowed Vigil gecastet, Heal-Bonus verloren). Live-Code (DRK_Reborn.cs:203/208) bestätigt: nur noch das korrekt gegatete Paar vorhanden, kein ungegateter Vorgänger mehr. Konsistenz mit WAR/PLD/GNB (nur gegatetes Paar) bestätigt. Kein Fehler.
-- [x] 0885f53 Respect status-provide check for the GCD-queued-command path too — TIEF NACHGEPRÜFT: symmetrisch zu 1ca682a (dort bereits bis `ActionBasicInfo.BasicCheck`/`IsStatusProvided` kausal nachvollzogen), hier derselbe Mechanismus für den GCD- statt oGCD-Pfad. Live-Code (CustomRotation_GCD.cs) bestätigt: `skipStatusProvideCheck: true` entfernt, kein Vorkommen mehr in der Datei. Kein Fehler.
+- [x] 0885f53 Respect status-provide check for the GCD-queued-command path too — TIEF NACHGEPRÜFT: symmetrisch zu 1ca682a (dort bereits bis `ActionBasicInfo.BasicCheck`/`IsStatusProvided` kausal nachvollzogen), hier derselbe Mechanismus für den GCD- statt oGCD-Pfad. **Korrektur (05.09.):** dieselbe Fehlrichtung wie 1ca682a; 5755ad5b hatte nur den oGCD-Pfad zurueckgesetzt und den GCD-Zwilling stehen gelassen. Revertiert in 5b778336, `CustomRotation_GCD.cs` ist wieder identisch mit Upstream.
 - [x] 1f5dbb1 PCT: fix GeneralAbility falling through to the wrong base call — TIEF NACHGEPRÜFT: zweite Instanz derselben Copy-Paste-Fehlerklasse wie 6fc9ebb, diesmal `GeneralAbility`→`base.AttackAbility` statt `base.GeneralAbility`. Live-Code (PCT_Reborn.cs:241/257) bestätigt: Zeile 241 gehört zu `AttackAbility` (korrekt `base.AttackAbility`), Zeile 257 zu `GeneralAbility` (korrekt `base.GeneralAbility`) — Methodenzugehörigkeit einzeln nachverfolgt, nicht nur Zeilennummer aus dem Diff übernommen. Kein Fehler.
 - [x] 76a683b DRK: add the Reprisal BMR/sustain block to DefenseSingleAbility too — TIEF NACHGEPRÜFT: Diff-Begründung (DefenseAreaAbility nur bei raidwide-förmigem Trigger erreichbar, reine Tankbuster-Prädiktion braucht den DefenseSingleAbility-Pfad) deckt sich mit der bereits verifizierten Dispatch-Architektur (CustomRotation_Ability.cs:285-317, ShouldAddDefenseSingle). Ursprüngliche Version hatte noch `!InTwoMIsBurst`-Gate (wie im DefenseArea-Zwilling) — dieses Gate existiert im JETZIGEN Live-Code nicht mehr (bewusst entfernt, s. b896c6d unten), kein Widerspruch, sondern dokumentierte spätere Design-Korrektur. Kein Fehler in diesem Commit.
 - [x] 16d4475 Scope the DPS proactive-tankbuster branch to no-live-tank scenarios — TIEF NACHGEPRÜFT: `AnyLivingTankInParty()` (StateUpdater.cs:314-324) live gelesen, spiegelt strukturell exakt `AnyLivingHealerInParty()` (Zeile 327+) wie behauptet. Reaktiver, Cast-Ziel-verifizierter `IsHostileCastingTankBusterAtMe`-Zweig bewusst unangetastet (deckt den "Buster trifft trotz lebendem Tank die falsche Person"-Fall bereits korrekt ab, kein Gate nötig). `BMRTankbusterMitWindow`s `PvEFilter = JobFilterType.Tank`-UI-Filter korrekt entfernt (Live-Code bestätigt, Konfig gilt jetzt sichtbar für alle Rollen, passend zur erweiterten Nutzung). Kein Fehler.
@@ -1083,3 +1083,103 @@ Erledigt: `upstream/main` (`f5c8432`) wurde in den Arbeitsbranch gemergt, jeder
 der acht Commits inhaltlich gegen die eigenen Patches geprueft (Ergebnis im
 Merge-Commit `49d7f8a`). Alle drei Branches standen danach auf 0 ausstehenden
 Upstream-Commits.
+
+## Abgeschlossen: Code-Review-Loop ueber alle Patches (05.09.2026)
+
+Auftrag: „fuehre ein codereview der patches durch … loop solange, bis alle
+fehler beseitigt sind" — umfaenglich, nicht selektiv. Gegenstand: der
+komplette Diff `upstream/main` (`f5c8432`) → Branch, 46 Code-Dateien, 2819
+Diff-Zeilen, Hunk fuer Hunk gelesen. Roadmap (aus TODO.md hierher verschoben):
+
+| Phase | Inhalt | Ergebnis |
+|---|---|---|
+| R1 | Research: Randbedingungen (Null-Ziel, Unverwundbarkeit, Level-Sync), Mehrspieler-Interaktion (zwei Tanks/Melees/Caster), Zielaufloesung, Allokation, Config, Diff-Rauschen | 11 Kandidaten |
+| R2/R3 | Visionary/Council/Reflect/Critic/Antithese je Kandidat | 1 verworfen (`params`-Allokation je Aufruf = Hausmuster, s. `HasStatus`), 10 bestaetigt, 2 weitere aus der Gesamtheitlichkeitspruefung (NIN-Flag, Reprisal-Status) |
+| R4 | Revision, je Fund ein Commit | 12 Commits, CI (DispatchChain + Build) gruen auf `ff0d8d43` |
+| R5 | Evaluation: zweiter Durchgang | strukturelle Scans ueber den bereinigten Diff — jedes neu deklarierte Symbol referenziert (43 Symbole), jede der 38 `skipStatusProvideCheck: true`-Stellen durch `ShouldSustainMitigationDebuff`/`BMRShouldRefreshBefore` gegatet, Spiegel-Behauptungen in Kommentaren (MCH AttackAbility, FindTankTarget) gegen den referenzierten Code geprueft — kein neuer Fund, Plateau |
+| R6 | Dokumentation | dieser Eintrag, `docs/rotation-flow/06-fork-audit.md` §6 |
+
+Funde und Fixes:
+
+1. `5bb4d39f` — **Doppelanwendung Reprisal/Feint/Addle.** Der Gegnerzahl-Zweig
+   von `ShouldSustainMitigationDebuff` prüfte den Zielstatus nicht; alle 25
+   Aufrufer übergeben `skipStatusProvideCheck: true` (nötig für den
+   BMR-Zweig). Folge: zweiter Tank/Melee/Caster in der Gruppe überschrieb den
+   laufenden Debuff, 90s Cooldown ohne Mehrwert — in genau den 4+-Mob-Pulls,
+   für die der Zweig gebaut ist. Fix: Zweig verlangt Abwesenheit oder Ablauf
+   ≤ 2 GCDs auf `HostileTarget`, Quelle beliebig (= dieselbe Prüfung, die die
+   reaktiven Zeilen über `CanUse` machen). Antithese „die reaktive Zeile
+   direkt darunter prüft doch" — trifft nur für DefenseArea-Aufrufer zu und
+   ändert nichts daran, dass die Sustain-Zeile davor bereits gefeuert hat.
+   Nebenfix: `BMRShouldRefreshBefore` prüft bei Debuff mit null-Ziel nicht
+   mehr ersatzweise den Spieler (`statusFromSelf ? Player : target`).
+2. `2df7dc4e` — `TargetType.SafeDotTarget`, zwei Switch-Arme und
+   `FindSafeDotTarget` ohne Aufrufer seit dem WHM-Revert (5755ad5b).
+3. `bd65f0d4` — UTF-8-BOM in elf Dateien, die Upstream ohne BOM führt
+   (Upstream: 206/269 Dateien mit BOM, genau diese elf nicht) → elf reine
+   Erstzeilen-Hunks im Diff. Entfernt.
+4. `5b778336` — GCD-Befehlspfad: 5755ad5b hatte nur den oGCD-Zwilling
+   (1ca682a) zurückgesetzt, 0885f53 stand noch. `CustomRotation_GCD.cs`
+   wieder identisch mit Upstream. Einträge 1ca682a/0885f53 oben korrigiert.
+5. `451d9e90` — `CanProvoke`-Co-Tank-Rettung zog den Boss von einem Tank mit
+   laufender Unverwundbarkeit (Superbolide setzt absichtlich auf 1 HP; Living
+   Dead/Holmgang halten nahe null). Gate über den bestehenden
+   `NoNeedHealingInvuln()` — lässt den Provoke durch, sobald die
+   Unverwundbarkeit ≤ 2 GCDs vor dem Ende steht.
+6. `28c0e1fc` — NIN war der einzige Job mit Sustain-Zweigen ohne
+   `HasHostileCountAoeMitigation`; der Gegnerzahl-Trigger in StateUpdater
+   setzte für NIN nie DefenseArea. Flag in `NinjaRotation` (dort liegt die
+   versiegelte `DefenseAreaAbility`).
+7. `990daaeb` — `ShieldStatus` (7 Einträge: SCH/SGE, PLD-Veil) um 15
+   spielerseitige Barrieren ergänzt (Divine Benison, The Blackest Night,
+   Brutal Shell, Stem the Tide, Shade Shift, Manaward, Radiant Aegis, Tempera
+   Coat/Grassa, Crest of Time Borrowed, Catalyze, Consolation, Differential
+   Diagnosis, Holosakos, Haimatinon). Ein falscher Eintrag kann nicht
+   über-krediten: `GetObjectShield() > 0` bleibt Voraussetzung. Nicht
+   aufgenommen: Guardian („Guardian's Will" — Barriere unbestätigt).
+8. `3b5e50d5` — MCH: identischer Slot-Konflikt-Block in DefenseArea und
+   DefenseSingle → `BurstWeaveSlotContested`. Spiegel-Behauptung gegen
+   `AttackAbility` (Zeile 233-268) geprüft: deckungsgleich.
+9. `bfc52584` — `DataCenter.BMRTankbusterImminent` statt dreifach
+   ausgeschriebener Bedingung (StateUpdater, Ability-Pfad, Potion);
+   `UseHpPotion` ohne Durchreich-Parameter; `AnyLivingTankInParty` inline.
+10. `c1d0ba45` — Upstream-`foreach` in `CalculateDamageFactor` (seit 0246bea5)
+    tat nichts; `partyStatuses` wird lazy in `HasPartyStatus` gefüllt. Vom
+    erweiterten Prüfskript gefunden.
+11. `ff0d8d43` — `check_base_calls.py`: `foreach`, klammerloses `continue`,
+    Expression-Bodied-Overrides (die nächste Klammer hätte zum falschen
+    Member gehört).
+12. `f107eda9` — **Reprisal ohne `TargetStatusProvide`** (Upstream): die
+    reaktive Zeile feuerte trotz Co-Tank-Reprisal; damit war auch der neue
+    Gate aus Fund 1 für Reprisal wirkungslos. `ModifyReprisalPvE` analog
+    Addle/Feint. Dazu: zwei Status-IDs (753 `Reprisal`, 1193
+    `Reprisal_1193`) mit identischem Namen und Text; Upstreams
+    Schadensfaktor liest 753, die Stormblood-Rollenaktionen Feint (1195) und
+    Addle (1203) liegen neben 1193. Welche die Aktion setzt, ist aus dem
+    Repo nicht entscheidbar; xivapi, garlandtools, gamerescape sind hinter
+    dem Egress-Proxy gesperrt (geprüft, nicht angenommen). Beide IDs in
+    `StatusHelper.ReprisalStatus`, alle Reprisal-Prüfungen (sechs
+    Sustain-Aufrufer, `TargetStatusProvide`, Schadensfaktor-Zeile) darüber.
+
+Geprüft, kein Fehler (nicht erneut prüfen):
+
+- Interrupt/AntiKnockback-Umordnung: alle vier Overrides — BLU reicht an
+  `base` durch, PhantomDefault läuft über den Duty-Pfad, RPR/VPR gegatet —
+  kein Kollateral.
+- `AverageTTK = PositiveInfinity`: beide Verbraucher (`BaseAction.cs:266`
+  `>=`, `IsLongerThan` `>`).
+- `FindTankTarget` wählt aus `PartyMembers`, nicht aus den status-gefilterten
+  Kandidaten → der WHM/AST-Sustain-Kommentar („targetOverride umgeht
+  CheckStatus") trifft zu.
+- `HealSingleAbility`-Overrides DRG/NIN/SAM/DNC: Basis ist leer
+  (`CustomRotation_Ability.cs:771`), keine Duplikation; bare `[RotationDesc]`
+  wie VPR upstream.
+- `RadiantOnCooldownSpam`: upstream deklariert, nie gelesen → Entfernung korrekt.
+- PhantomDefault `out act`: in beiden Zweigen korrekt gesetzt.
+- `publish.yaml` `-split '\+'`: PowerShell-Regex, literales Plus.
+- `FindTargetAreaHostile`-Spread: derselbe Aufbau wie Upstreams Zeile 724.
+- HpPotion-Ausschluss-IDs 47102/22306/20309: identisch mit der bestehenden Zeile.
+- `IsHostileCastingTankBusterAtMe`-Doppelnullprüfung: Muster von `IsHostileCastingStop`.
+
+Bewusst nicht geändert: der Gegnerzahl-Zweig in den DefenseSingle-Aufrufern
+der DPS (Design, keine Fehlerbehebung) → TODO #72.

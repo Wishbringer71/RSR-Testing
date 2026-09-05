@@ -16,16 +16,18 @@ Alles unten ist gegen genau diesen Stand gemessen und mit
 
 | | |
 |---|---|
-| Diff gesamt gegen `upstream/main` | 4521 Zeilen |
-| davon **Markdown** (`TODO.md`, `AUDIT_LOG.md`, `docs/`) | **2830** — wird nicht ausgeliefert |
-| davon CI (Prüfskript + Workflow-Job) | 260 — läuft nicht im Spiel |
-| davon **C#** | **1101 hinzugefügt, 104 entfernt**, 42 Dateien |
-| davon leer / Klammern / Kommentar | 157 / 246 / ~230 |
-| **tatsächliche Anweisungen** | **~470** |
+| Diff gesamt gegen `upstream/main` | 4474 Zeilen |
+| davon **Markdown** (`TODO.md`, `AUDIT_LOG.md`, `docs/`) | **3112** — wird nicht ausgeliefert |
+| davon CI (Prüfskript + Workflow-Job) | 268 — läuft nicht im Spiel |
+| davon **C#** | **1094 hinzugefügt, 106 entfernt**, 43 Dateien |
+| davon leer / Klammern / Kommentar | 156 / 234 / 201 |
+| **tatsächliche Anweisungen** | **~500** |
 
 Die Zahl „über 4000" stimmt für den Rohdiff. Für Produktivcode stimmt sie
-nicht: das sind rund 470 Anweisungen über 42 Dateien, im Schnitt elf pro
-Datei.
+nicht: das sind rund 500 Anweisungen über 43 Dateien, im Schnitt zwölf pro
+Datei. (Stand nach dem zweiten Durchgang, §6; davor ~470 — der Zuwachs sind
+im Wesentlichen die vervollständigte Schild-Statusliste und die
+Reprisal-Statusprüfung.)
 
 ---
 
@@ -86,7 +88,9 @@ GeneralGCD-Filler deckt den Dungeon-Fall ab; beides ergänzt sich.
   identisch mit Upstream.
 - Der Befehlspfad (`IBaseAction.ForceEnable = true`) hatte
   `skipStatusProvideCheck: true` verloren. Das ist Upstreams bewusste
-  Entscheidung für eine **ausdrücklich befohlene** Aktion. Zurückgenommen.
+  Entscheidung für eine **ausdrücklich befohlene** Aktion. Zurückgenommen —
+  zunächst nur im oGCD-Pfad; der GCD-Zwilling folgte im zweiten Durchgang
+  (§6).
 - Zwei Kommentare behaupteten Entfernungen (SGE-, AST-Countdown), die es nie
   gab. Entfernt.
 - Zwei erfundene Konstanten ersetzt: der Co-Tank-Notfallwert durch
@@ -140,11 +144,12 @@ einzuziehen: keine neue Vererbungsebene, keine neuen Dispatch-Slots, keine
 
 ## 5 · Was offen bleibt
 
-- **Versionierung.** Der Fork hat **0 Tags**, Upstream 952. `publish.yaml`
-  triggert ausschließlich auf Tags `*.*.*.*`, und `AssemblyVersion` wird nur
-  dort gestempelt — ohne Tag ist jede Version `1.0.0.0`. `manifest.json` und
-  `RotationSolver.json` sind unverändert; der Fehler liegt allein in den
-  fehlenden Tags. Braucht eine Entscheidung über das Schema.
+- **Release-Tag.** Der Fork hatte **0 Tags**, Upstream 952; `publish.yaml`
+  triggert ausschließlich auf Tags `*.*.*.*`, ohne Tag ist jede Version
+  `1.0.0.0`. Das Schema `<upstream>+wsh<n>` ist umgesetzt (`publish.yaml`
+  spaltet am `+`, das Fenster zeigt die Informationsversion); der erste Tag
+  `7.5.5.41+wsh1` ist noch zu setzen — aus der Arbeitsumgebung heraus nicht
+  möglich (403 auf Tag-Push).
 - **Spielfragen**, die aus dem Code nicht entscheidbar sind: Reprisal-Platzierung
   bei den vier Tanks, Slot-Asymmetrien der phys. Fernkämpfer, MNKs Heilslot,
   DRGs Trait-Gates. Alle in `TODO.md` einzeln geführt, keiner ungeprüft
@@ -154,7 +159,38 @@ einzuziehen: keine neue Vererbungsebene, keine neuen Dispatch-Slots, keine
 
 ---
 
-## 6 · Wie man das nachprüft
+## 6 · Zweiter Durchgang: Review-Loop über den gesamten Diff
+
+Nach dem Audit oben wurde der komplette Diff noch einmal Hunk für Hunk
+gelesen, mit anderen Mustern: Mehrspieler-Interaktion (zwei Tanks, zwei
+Melees, zwei Caster in einer Gruppe), Randbedingungen (Null-Ziel,
+Unverwundbarkeit, Level-Sync), Duplikate, tote Symbole, Diff-Rauschen.
+Ergebnis: zwölf Commits — fünf Verhaltensfehler im Fork-Code, zwei im
+Upstream-Code, der Rest Hygiene.
+
+| Commit | Fund | Art |
+|---|---|---|
+| `5bb4d39f` | Der Gegnerzahl-Zweig des Sustain-Helfers ignorierte den Zielstatus; mit `skipStatusProvideCheck` überschrieb der zweite Tank/Melee/Caster den laufenden Reprisal/Feint/Addle | Fehler, Fork |
+| `f107eda9` | Reprisal hatte kein `TargetStatusProvide`, die reaktive Zeile feuerte trotz Co-Tank-Reprisal. Zwei Status-IDs gleichen Namens (753/1193); welche die Aktion setzt, ist offline nicht entscheidbar — beide werden geprüft | Fehler, Upstream |
+| `451d9e90` | Der Co-Tank-Provoke zog den Boss von einem Tank unter Superbolide / Living Dead / Holmgang | Fehler, Fork |
+| `5b778336` | Der GCD-Befehlspfad hatte `skipStatusProvideCheck` weiter verloren; nur der oGCD-Zwilling war zurückgesetzt | Fehler, Fork |
+| `28c0e1fc` | NIN fehlte das `HasHostileCountAoeMitigation`-Flag, das alle anderen Sustain-Jobs setzen | Fehler, Fork |
+| `990daaeb` | `ShieldStatus` kannte weder Divine Benison noch The Blackest Night — die Schild-Anrechnung war für die häufigsten Tank-Schilde blind | Lücke, Fork |
+| `c1d0ba45` | `foreach` in `CalculateDamageFactor` ohne jede Wirkung (seit 0246bea5) | toter Code, Upstream |
+| `2df7dc4e` | `TargetType.SafeDotTarget` ohne Aufrufer | toter Code, Fork |
+| `bd65f0d4` | UTF-8-BOM in elf Dateien, die Upstream ohne BOM führt | Rauschen |
+| `3b5e50d5`, `bfc52584` | doppelter Slot-Konflikt-Block (MCH), dreifach ausgeschriebene BMR-Bedingung, Einzeiler-Wrapper | Duplikate |
+| `ff0d8d43` | Prüfskript: `foreach`, klammerloses `continue`, Expression-Bodied-Overrides | CI |
+
+Ein weiterer Durchgang mit denselben Mustern über den bereinigten Diff fand
+nichts mehr: jedes neu deklarierte Symbol wird referenziert, jede der 38
+`skipStatusProvideCheck: true`-Stellen steht hinter einer statusprüfenden
+Bedingung, jede Spiegel-Behauptung in einem Kommentar wurde gegen den
+referenzierten Code geprüft.
+
+---
+
+## 7 · Wie man das nachprüft
 
 ```
 git remote add upstream https://github.com/FFXIV-CombatReborn/RotationSolverReborn.git
