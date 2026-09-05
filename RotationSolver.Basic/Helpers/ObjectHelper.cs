@@ -929,12 +929,13 @@ public static class ObjectHelper
 	/// </returns>
 	internal static bool IsTopPriorityHostile(this IBattleChara battleChara)
 	{
-		var icon = battleChara.GetNamePlateIcon();
-
 		if (battleChara == null)
 		{
 			return false;
 		}
+
+		// After the null check: GetNamePlateIcon dereferences the object's struct without one of its own.
+		var icon = battleChara.GetNamePlateIcon();
 
 		if (battleChara.IsAllianceMember() || battleChara.IsParty())
 		{
