@@ -193,6 +193,24 @@ Check-in-Trigger `trig_01NLjkn2dFqmrZXhmxJcWGsQ` ließ sich nicht löschen (Tool
 
 **Erreichter Prüfgrad:** statische Selbstprüfung gegen fremden Quellcode (BossModReborn, Dalamud), Kompilierung über die GitHub-Action. Keine Laufzeitbeobachtung; insbesondere ist nicht verifiziert, ob die Übungspuppen aller drei Gebiete dieselbe `NameId` 541 tragen, die `IsDummy` prüft.
 
+### A12 · Entstehungsursachen der offenen Befunde (05.09.2026)
+
+**Anlass:** Frage nach der Kausalität der Entstehung — warum wurde das so gebaut. Erhoben an der Historie (`git log -S` auf die jeweilige Stelle, Einführungs-Commit und dessen Diff), nicht aus Vermutung. Wo nur ein Schluss möglich ist, steht es als solcher.
+
+| Muster | Belege | Mechanismus |
+|---|---|---|
+| **Veraltende Positivliste** — eine Aufzählung ersetzt eine Fähigkeitsprüfung und wächst bei Erweiterungen nicht mit | Duty-Heilzweig: `7c15f3ed` (09.07.2025) führte `IsInOccultCrescentOp \|\| HasVariantCure` ein und zählte damit **alle damals vorhandenen** Duty-Heilquellen auf; die Bozja-Heilaktionen kamen mit `dbf2f4e0`/`fce39580` (25./28.05.2026) zehn Monate später und wurden nicht nachgetragen. Ebenso `GetHostileTypeDescription` mit vier von fünf Enum-Werten | Die Aufzählung ist zum Zeitpunkt ihrer Entstehung vollständig und wird durch eine spätere Erweiterung an anderer Stelle unvollständig, ohne dass etwas fehlschlägt |
+| **Kopie ohne Anpassung** — eine Nachbarstelle wird geklont, ein Teil bleibt unverändert | `CycleStateManualAuto` aus `CycleStateManual` (`e62d9123`); `AutodutyUpdateState` aus `UpdateState` (`0b29eaa6`); VPR Bite/Sting aus der Coil-Struktur; der Puppen-Filter aus dem Muster derselben Datei | Der Klon ist syntaktisch gültig und läuft, die nicht mitgezogene Anpassung bleibt unbemerkt |
+| **Kommentar an Code angeglichen statt umgekehrt** | `CycleStateManualAuto` trug bei Einführung den Kommentar „If currently in Manual mode, turn Off" über einem `DoStateCommandType(Auto)`; `2771dd95` (01.10.2025) änderte den Kommentar auf „switch to Auto" | Der Widerspruch zwischen Absicht und Umsetzung wird aufgelöst, indem die Absichtsbeschreibung fällt — danach ist der fehlende Ausschaltweg nicht mehr als Defekt erkennbar |
+| **Refactoring entfernt Aufrufer, lässt Definition stehen** | `IncrementState` (`e62d9123`), `BeginChild`/`IsFailed` (`701554b0`), `GetHostileTypeDescription`/`SetTargetingType` (`e3b57004`) | Der Compiler meldet ungenutzte private Methoden nicht als Fehler; die Reste akkumulieren |
+| **Bibliothekskonfiguration trifft Auslieferung** | `d07d7b66` („fix: add a nuget package") aktivierte `GeneratePackageOnBuild`, damit `RotationSolver.Basic` als NuGet-Paket für Fremdrotationen bereitsteht; zusammen mit `GenerateDocumentationFile` und einem gemeinsamen Ausgabeverzeichnis landet beides im Plugin-Zip | Zwei legitime Ziele — Bibliothek veröffentlichen, Plugin ausliefern — teilen sich ein Ausgabeverzeichnis, ohne dass die Auslieferung gefiltert wird |
+| **Fremdschnittstelle als Zahl statt als Typ behandelt** | `SpecialMode`-Spiegelenum gegen `AIHints.SpecialMode` verschoben; Timeline-Vorzeichen nur auf der Hints-Seite normalisiert | Über die IPC-Grenze kommt ein `int`; ohne Abgleich mit der Quelle bleibt eine Abweichung folgenlos, bis der betroffene Wert gelesen wird |
+| **Feature aus anderer Epoche als Entscheidungseingang wiederverwendet** | Die selbstlernende `HostileCastingArea` stammt aus der frühen UI-Phase (`51ad02c6` u. a.) und wurde später Eingang der Mitigationsentscheidung | Ein als Komfortfunktion gebautes Merkmal erbt keine Anforderungen an Genauigkeit, die seine spätere Verwendung stellt |
+
+**Nicht belegbar:** die Absicht hinter `SpreadDamagePaths` — die Liste entstand in `33e6acb1` („Refactor for var usage, safety checks, and plugin compat"), also in einem Sammel-Refactoring ohne erkennbare fachliche Begründung. Ob eine Trennung von Spread- und Stack-Markern geplant und nie gefüllt wurde, oder ob die Liste von Beginn an eine Fehlkopie war, geht aus dem Commit nicht hervor.
+
+**Folge für die Behebung:** Vier der sieben Muster sind durch die Behebung des Einzelfalls nicht erledigt. Bei der veraltenden Positivliste ist die Aufzählung durch eine Fähigkeitsprüfung zu ersetzen, sonst veraltet sie erneut; beim Klonmuster ist die gemeinsame Struktur zu extrahieren; bei der Auslieferung ist das Ausgabeverzeichnis zu trennen; bei der Fremdschnittstelle braucht es einen wiederholbaren Abgleich statt einer einmaligen Korrektur.
+
 ---
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
