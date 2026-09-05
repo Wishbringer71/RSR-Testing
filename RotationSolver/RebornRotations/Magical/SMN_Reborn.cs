@@ -449,6 +449,15 @@ public sealed class SMN_Reborn : SummonerRotation
 
 	protected override bool GeneralGCD(out IAction? act)
 	{
+		return UseSummonsAndTrances(out act)
+			|| UsePrimalFollowUps(out act)
+			|| SummonPrimals(out act)
+			|| UseFillers(out act)
+			|| base.GeneralGCD(out act);
+	}
+
+	private bool UseSummonsAndTrances(out IAction? act)
+	{
 		if (SummonCarbunclePvE.CanUse(out act))
 		{
 			return true;
@@ -473,6 +482,12 @@ public sealed class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
+		act = null;
+		return false;
+	}
+
+	private bool UsePrimalFollowUps(out IAction? act)
+	{
 		if (SlipstreamPvE.CanUse(out act, skipCastingCheck: AddSwiftcastOnGaruda && ((!SwiftcastPvE.Cooldown.IsCoolingDown && IsMoving) || HasSwift)))
 		{
 			return true;
@@ -503,6 +518,12 @@ public sealed class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
+		act = null;
+		return false;
+	}
+
+	private bool SummonPrimals(out IAction? act)
+	{
 		if (!InBahamut && !InPhoenix && !InSolarBahamut)
 		{
 			// Topaz GCDs are instant-cast; Garuda/Ifrit's follow-ups need a stationary summoner.
@@ -589,6 +610,12 @@ public sealed class SMN_Reborn : SummonerRotation
 			}
 		}
 
+		act = null;
+		return false;
+	}
+
+	private bool UseFillers(out IAction? act)
+	{
 		if (SummonTimeEndAfterGCD() && AttunmentTimeEndAfterGCD() && !InBahamut && !InPhoenix && !InSolarBahamut &&
 			RuinIvPvE.CanUse(out act, skipAoeCheck: true))
 		{
@@ -636,7 +663,8 @@ public sealed class SMN_Reborn : SummonerRotation
 		{
 			return true;
 		}
-		return base.GeneralGCD(out act);
+		act = null;
+		return false;
 	}
 	#endregion
 
