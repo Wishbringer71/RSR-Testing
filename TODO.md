@@ -10,13 +10,9 @@ Umfang: `RotationSolver.Basic` (48k Zeilen) · RebornRotations (21k) · ExtraRot
 - **Zweiter Durchgang** mit denselben Scans über den bereinigten Baum.
 - **Dokumentation** in `docs/rotation-flow/07-codebase-audit.md`.
 
-## BMR-Timelinewerte werden nicht auf `<= 0` gefiltert, die Hints-Werte schon
+## ChurinDNC wertet die BMR-Downtime ohne Vorzeichenprüfung aus
 
-`BossModUpdater` normalisiert `hintsRaidwide`/`hintsTankbuster` bei `<= 0` auf `float.MaxValue`, mit der Begründung „endpoint missing/SafeWrapper default or damage already resolved". `timelineRaidwide`/`timelineTankbuster` bleiben ungefiltert, gehen aber in dasselbe `Math.Min`.
-
-**Am Quellcode belegt** (BossModReborn, `BossMod/Framework/IPCProvider.cs`): sämtliche Timeline-Endpunkte rechnen `(float)(next - DateTime.Now).TotalSeconds` und liefern nur bei fehlender Vorhersage `float.MaxValue`. Der Wert läuft also bei jedem Ereignis durch 0 ins Negative, bis die State Machine weiterschaltet. Dasselbe gilt für die Hints-Endpunkte, deren Filter genau deshalb existiert. Ein negativer Timelinewert gewinnt im `Math.Min` gegen jede gültige Hints-Vorhersage; alle Verbraucher fordern `> 0.6f` und sehen dann „keine Vorhersage". Betroffen sind `DataCenter.BMRTankbusterImminent` (5 Aufrufstellen), `ShouldAddDefenseArea` und 17 Job-Zeilen über `BMRShouldRefreshBefore`.
-
-**Defektklasse, nicht Einzelfall:** ungefiltert sind alle sieben Timeline-Werte. Die Filterentscheidung ist aber je Wert verschieden: bei Schadensereignissen (Raidwide, Tankbuster, Knockback) bedeutet `<= 0` „vorbei", `float.MaxValue` ist die richtige Normalisierung. Bei Zustandsfenstern (Downtime, Vulnerable) trägt das Vorzeichen Information — negativ heißt „läuft bereits" —, ein pauschaler Filter würde sie zerstören. Offen bleibt die Auswertung in `ChurinDNC.cs:777-843` (Upstream), die `BMRNextDowntimeIn`/`-EndIn` ohne Vorzeichenprüfung liest und damit „Downtime läuft" nicht von „Downtime kommt gleich" unterscheidet; ob das der Absicht der Rotation widerspricht, ist ohne deren Autor nicht belegbar.
+Die Normalisierung der Schadensvorhersagen ist erledigt (AUDIT_LOG A11). Offen bleibt der Zustandsfenster-Teil derselben Defektklasse: `ChurinDNC.cs:777-843` (Upstream) liest `BMRNextDowntimeIn`/`-EndIn` ohne Vorzeichenprüfung. Da BossModReborn diese Werte als `(Aktivierung − jetzt)` liefert, sind sie während einer laufenden Downtime negativ, und die Rotation kann „Downtime läuft" nicht von „Downtime kommt gleich" unterscheiden — `if (BMRNextDowntimeIn >= 15f) return;` kehrt dann nicht zurück, und die folgende `<`-Bedingung ist immer erfüllt. Ob das der Absicht dieser Rotation widerspricht, ist ohne deren Autor nicht belegbar; ein Filter wäre hier falsch, weil das Vorzeichen die Information trägt.
 
 ## Zyklus-Kommandos unterliegen der Toggle-Semantik der Einzelkommandos
 
@@ -40,9 +36,9 @@ Die fünf Varianten als Zustandsfolge ausgewertet, bei vier konfigurierten Ziela
 
 **Kausale Folge für die Toggle-Optionen:** `ToggleAuto` ist in dieser Variante der einzige Ausschaltweg — es verwandelt den Übergang Manual → Auto in Manual → Off. Ein pauschales Abschalten der Toggle-Auswertung in den Zyklus-Kommandos, wie zunächst vorgeschlagen, würde diesen Nutzern also den einzigen Ausschaltweg über die Leiste nehmen. Umgekehrt kollabiert `DTRAllAuto` mit aktivem `ToggleAuto` auf Off ↔ Auto(0), die Zielarten-Rotation ist dann vollständig tot. Die beiden Optionen sind damit keine unabhängige Achse, sondern Krücken für fehlende Übergänge.
 
-### Der Leisteneintrag verwirft alle Eingabeinformation
+### Der Leisteneintrag verwirft alle Eingabeinformation — Erweiterung abgelehnt
 
-`IDtrBarEntry.OnClick` ist `Action<DtrInteractionEvent>`; das Ereignis trägt `ClickType` (links/rechts), `ModifierKeys` (Ctrl/Alt/Shift) und `Position`. `MiscUpdater.cs:55-71` verwirft es fünfmal mit `_ =>`. Die gesamte Bedienlast liegt damit auf einer einzigen Geste — was überhaupt erst fünf Zyklusvarianten nötig macht, weil jede ein anderer Kompromiss aus einer Geste ist. Ein zweiter Kanal (Rechtsklick oder Ctrl+Klick = Off) gäbe jeder Variante einen garantierten Ausschaltweg in einem Klick, machte `DTRManualAuto` vollständig und entzöge den Toggle-Optionen ihre Krückenfunktion. Einschränkung: Dalamud registriert nur `MouseOver`, `MouseOut` und `MouseClick` — das Scrollrad steht am Leisteneintrag nicht zur Verfügung; und ob das Spiel bei Rechtsklick ein `MouseClick` liefert, ist nur im Spiel feststellbar. Modifier kommen aus demselben Ereignis und sind darum die risikoärmere Variante.
+`IDtrBarEntry.OnClick` ist `Action<DtrInteractionEvent>`; das Ereignis trägt `ClickType` (links/rechts), `ModifierKeys` (Ctrl/Alt/Shift) und `Position`. `MiscUpdater.cs:55-71` verwirft es fünfmal mit `_ =>`. Die gesamte Bedienlast liegt damit auf einer einzigen Geste, weshalb überhaupt fünf Zyklusvarianten nötig sind — jede ist ein anderer Kompromiss aus derselben Geste. Ein zweiter Kanal (Rechtsklick oder Ctrl+Klick als „Aus") wurde vorgeschlagen und vom Auftraggeber abgelehnt; er wird nicht weiterverfolgt. Die obigen Bedienpfade bleiben damit wie beschrieben, einschließlich des fehlenden Ausschaltwegs bei `DTRManualAuto`. Randnotiz für künftige Überlegungen: Dalamud registriert nur `MouseOver`, `MouseOut` und `MouseClick`, das Scrollrad steht am Leisteneintrag also ohnehin nicht zur Verfügung.
 
 ### Leisteneintrag wird je Frame neu gesetzt
 
@@ -54,10 +50,6 @@ Zwei weitere Befunde derselben Stelle, unabhängig von dieser Entscheidung zu be
 - **`DoOneCommandType` hat einen Parameter, der nie ausgeführt wird.** Der erste Parameter `Func<T, JobRole, string> sayout` wird im Rumpf nicht aufgerufen; die drei Aufrufstellen bauen dafür je eine Lambda. Auch der Rückgabewert von `doingSomething` wird verworfen (`_ = …`), womit die Generik samt `where T : struct, Enum` nichts trägt. Die Methode reduziert sich auf „Rolle ermitteln, bei `JobRole.None` abbrechen, Aktion ausführen".
 
 Geprüfte Nicht-Fehlstelle: ein zu großer `TargetingIndex` kann nicht zum Indexfehler führen, `DataCenter.TargetingType` rechnet `% Count` und füllt eine leere Liste selbst auf (`DataCenter.cs:284-302`).
-
-## `StartOnFieldOpInCombat2` lässt Übungspuppen als Auslöser durch
-
-`RSCommands_Actions.cs:465` überspringt jedes Ziel, das in `AllHostileTargets` steht **und** keine Übungspuppe ist. Der Gegner-Ausschluss ist beabsichtigt: `GetTargetsByRange(30f)` liefert ohne `getFriendly` alle Objekte, und der Zweig soll auf Mitspieler im Kampf reagieren, nicht auf Gegner. Durch die `&&`-Verknüpfung kehrt sich der Puppen-Ausschluss aber um — eine Übungspuppe ist ein Gegner und fällt damit aus dem `continue` heraus, ist also als einziger Gegnertyp weiter Auslöser. Richtig wäre `if (t != null && (DataCenter.AllHostileTargets.Contains(t) || ObjectHelper.IsDummy(t))) continue;`. Einschränkung: `IsDummy` prüft `NameId == 541`, also genau eine Kennung; ob die Puppen im Occult Crescent (Level 100) dieselbe tragen wie die der älteren Gebiete, ist offline nicht feststellbar. Trifft sie eine andere, greift auch die korrigierte Bedingung dort nicht. **Auslösbarkeit belegt:** in allen drei abgefragten Gebieten stehen Übungspuppen — Bozjanische Südfront (14.1, 30.0), Zadnor (34.4, 35.5), Occult Crescent South Horn (37.6, 6.7) und North Horn (38.1, 39.3) —, und zwar an den Lagern, also dort, wo sich Spieler sammeln. Wer in 30 y einer Puppe steht, an der jemand übt, bekommt den automatischen Rotationsstart. Nebenbefund in derselben Schleife: Zeile 469-472 ist ein `if`-Block, dessen Rumpf nur noch aus einem auskommentierten Log besteht.
 
 ## Duty-Rotationen werden im Flächen- und im Einzelheilpfad unterschiedlich erreicht
 
@@ -75,26 +67,9 @@ Zwei der vier Pfade (`x6r9_loc01_t0a1`, `x6r9_loc02_t0a1`) stehen wortgleich auc
 
 `RotationSolver.SourceGenerators.dll` ist in `latest.zip` des Releases 7.5.5.41+wsh1 enthalten, obwohl `PruneOutputDlls` in `RotationSolver.csproj` nur RotationSolver, RotationSolver.Basic und ECommons behalten soll. Zur Laufzeit nutzlos. Prüfen, warum die Prune-Regel den Analyzer nicht erfasst.
 
-## Ungenutzter Code — je Fall geprüft, ob abgelöst oder unverdrahtet
+## VPR: leerer Zweig einer Struktur, die anderswo eine echte Entscheidung trägt
 
-Ein fehlender Aufrufer im Grep beweist nur, dass kein statischer Aufruf existiert. Drei Möglichkeiten sind zu unterscheiden: bewusst abgelöst, über einen anderen Weg erreichbar (IPC, Reflection), oder sinnvoll gemeint und nie angeschlossen. Je Fall erhoben.
-
-**`RSCommands_Actions.cs:24-34` `IncrementState()` — abgelöst, löschen.** Der Aufrufer wurde in `e62d9123` („Refactor DTR handling and added new /rotation Cycle command") entfernt: der Diff ersetzt `_dtrEntry.OnClick = _ => RSCommands.IncrementState();` durch die `DTRType`-Fallunterscheidung. Keiner der 14 per `[EzIPC]` exponierten Einstiege in `IPCProvider.cs` führt darauf; Fremdplugins erreichen RSR nur über diese. Die Ablösung war zudem eine Verbesserung: `IncrementState` erkennt das Zyklusende an `TargetingType == Big` und setzt damit voraus, dass `Big` die letzte konfigurierte Zielart ist, während `CycleStateWithAllTargetTypes` über den Index geht.
-
-**`RotationConfigWindow.cs:5169-5190` `BeginChild`×2 und `IsFailed()` — abgelöst, löschen.** `701554b0` („fix: ImRaii.") ersetzt die Aufrufe wörtlich: aus `if (BeginChild("Rotation Solver Side bar", …)) { … ImGui.EndChild(); }` wurde `using var child = ImRaii.Child(…)`. Das Fenster nutzt heute 66 ImRaii-Konstrukte. Die Wrapper waren dabei nicht nur unbenutzt, sondern von Anfang an vertragswidrig: Dear ImGui verlangt zu jedem `BeginChild` ein `EndChild`, unabhängig vom Rückgabewert — genau der Fehler, den ImRaii durch das `using` behebt. Ein Wiederanschluss würde den Fehler zurückholen. Die vier direkten `ImGui.BeginChild`-Aufrufe der Prioritätslisten (2664, 2716, 2776, 2827) sind korrekt: Rückgabewert verworfen, `EndChild` unbedingt.
-
-**`VPR_Reborn.cs:591-597` und `975-981` — nicht löschen, Strukturbefund.** Ursprünglich als wirkungsneutrale Redundanz eingestuft; die Prüfung im Verbund kehrt das um. Das Muster `!HasHunterAndSwift` kommt viermal vor, und der Vorspann `!IsHunter && !IsSwift` trägt nur an einer Stelle Inhalt:
-
-| Stelle | Zweig „beide Buffs aktiv" | Zweig „mindestens einer fehlt" |
-|---|---|---|
-| Den, AoE (424-493) | `WillSwiftEnd`/`WillHunterEnd`, dann `HunterOrSwiftEndsFirst` | kein Vorspann |
-| Bite, AoE (557-614) | `HunterOrSwiftEndsFirst` | Vorspann ohne Wirkung |
-| Coil, ST (751-807) | — | Vorspann mit echter positionsbewusster Wahl samt Wechselsperre |
-| Sting, ST (899-997) | `HasHind`/`HasFlank`, sonst `HunterOrSwiftEndsFirst` | `HasHind`/`HasFlank`, sonst Vorspann ohne Wirkung |
-
-Die Coil-Stelle zeigt, wofür der Vorspann gedacht ist: eine echte Entscheidung, wenn beide Buffs fehlen. Bei Bite entfällt das Kriterium (die AoE-Kette hat keine Positionals), bei Sting wird der Positionsfall schon oberhalb über `HasHind`/`HasFlank` abgehandelt — ein fehlender Inhalt lässt sich also nicht belegen. Ebenso wenig lässt sich belegen, dass nichts fehlt: `HunterOrSwiftEndsFirst` vergleicht Restlaufzeiten und ist im Fall „beide fehlen" nicht anwendbar, eine begründete Aufbaureihenfolge steht nirgends. Löschen würde die Symmetrie zur Coil-Stelle und damit das Signal beseitigen, ohne Verhalten zu verbessern. Die eigentliche Inkonsistenz ist ohnehin eine andere: die Den-Stelle hat gar keinen Vorspann. Adressat ist der Upstream, nicht dieser Fork.
-
-**Zwei eingecheckte Sicherungsdateien — löschen.** `RotationSolver/RotationSolver.csproj.Backup.tmp` und `RotationSolver.SourceGenerators/RotationSolver.SourceGenerators.csproj.Backup.tmp` stammen aus dem Upgrade Dalamud-SDK 14.0.2 → 15.0.0 und enthalten den alten Stand samt veralteter Paketversionen. Keine Referenz in `.csproj`, `.props`, `.targets` oder den Workflows; `.gitignore` hat kein `*.tmp`-Muster.
+`VPR_Reborn.cs:591-597` und `975-981`. Nicht zu löschen — die Begründung steht in AUDIT_LOG A11. Das Muster `!HasHunterAndSwift` kommt viermal vor, und der Vorspann `!IsHunter && !IsSwift` trägt nur an der Coil-Stelle (751-807) Inhalt, nämlich eine positionsbewusste Wahl samt Wechselsperre. An der Bite- und der Sting-Stelle ist er eine Kopie des Folgezweigs, an der Den-Stelle (424-493) fehlt er ganz. Ein fehlender Inhalt lässt sich nicht belegen (die AoE-Kette hat keine Positionals, bei Sting wird der Positionsfall oberhalb über `HasHind`/`HasFlank` entschieden), ein vollständiger ebenso wenig: `HunterOrSwiftEndsFirst` vergleicht Restlaufzeiten und ist im Fall „beide fehlen" nicht anwendbar, eine begründete Aufbaureihenfolge steht nirgends. Adressat der Inkonsistenz ist der Upstream.
 
 ## `AutodutyUpdateState` dupliziert `UpdateState`
 
