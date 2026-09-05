@@ -25,9 +25,6 @@ public sealed class MNK_Reborn : MonkRotation
 		[Description("With ROF burst logic")] RiddleOfFireUse,
 	}
 
-	[RotationConfig(CombatType.PvE, Name = "Use Form Shift")]
-	public bool AutoFormShift { get; set; } = true;
-
 	[RotationConfig(CombatType.PvE, Name = "Auto Use Perfect Balance (single target full auto mode, turn me off if you want total control of PB)")]
 	public bool AutoPB_Boss { get; set; } = true;
 
@@ -623,12 +620,6 @@ public sealed class MNK_Reborn : MonkRotation
 				return true;
 			}
 		}
-
-		//// out of range or nothing to do, refresh buff second, but dont keep refreshing or it draws too much attention
-		//if (AutoFormShift && !HasPerfectBalance && !HasFormlessFist && FormShiftPvE.CanUse(out act))
-		//{
-		//    return true; // Form Shift GCD use
-		//}
 
 		return base.GeneralGCD(out act);
 	}

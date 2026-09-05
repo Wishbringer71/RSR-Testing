@@ -11,9 +11,6 @@ public class BLM_Default : BlackMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Use Transpose to Astral Fire before Paradox")]
 	public bool UseTransposeForParadox { get; set; } = true;
 
-	[RotationConfig(CombatType.PvE, Name = "Extend Astral Fire time more conservatively (3 GCDs) (Default is 2 GCDs)")]
-	public bool ExtendTimeSafely { get; set; } = false;
-
 	[RotationConfig(CombatType.PvE, Name = @"Use ""Double Paradox"" rotation [N15]")]
 	public bool UseN15 { get; set; } = false;
 
@@ -549,12 +546,6 @@ public class BLM_Default : BlackMageRotation
 				break;
 		}
 
-		//if (ElementTimeEndAfterGCD(ExtendTimeSafely ? 3u : 2u))
-		//{
-		//    if (CurrentMp >= FirePvE.Info.MPNeed * 2 + 800 && FirePvE.CanUse(out act)) return true;
-		//    if (FlarePvE.CanUse(out act)) return true;
-		//    if (DespairPvE.CanUse(out act)) return true;
-		//}
 
 		return false;
 	}

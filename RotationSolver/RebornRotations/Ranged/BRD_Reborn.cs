@@ -12,9 +12,6 @@ public sealed class BRD_Reborn : BardRotation
 	[RotationConfig(CombatType.PvE, Name = "Buff Alignment Timer (Experimental, do not touch if you don't understand it)")]
 	public float BuffAlignment { get; set; } = 1;
 
-	[RotationConfig(CombatType.PvE, Name = "Attempt to assign Raging Strikes, Battle Voice, and Radiant Finale to specific ogcd slots (Experimental)")]
-	public bool OGCDTimers { get; set; } = false;
-
 	[RotationConfig(CombatType.PvE, Name = "Only use DOTs on targets with Boss Icon")]
 	public bool DOTBoss { get; set; } = false;
 

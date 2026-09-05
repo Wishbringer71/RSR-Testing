@@ -59,9 +59,6 @@ public sealed class SMN_Reborn : SummonerRotation
 	[RotationConfig(CombatType.PvE, Name = "Prefer Titan while moving (Topaz GCDs are instant-cast, unlike Garuda/Ifrit which need you stationary)")]
 	public bool PreferTitanWhileMoving { get; set; } = false;
 
-	[RotationConfig(CombatType.PvE, Name = "Use this if there's no other raid buff in your party")]
-	public bool SecondTypeOpenerLogic { get; set; } = false;
-
 	[RotationConfig(CombatType.PvE, Name = "Use Physick above level 30")]
 	public bool Healbot { get; set; } = false;
 
