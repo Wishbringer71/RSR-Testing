@@ -12,7 +12,7 @@
 		     the SDK default. The publish workflow passes AssemblyVersion, FileVersion and
 		     InformationalVersion from the pushed tag, so it overrides all of this; these values are
 		     what local, PR and any other untagged build reports. Keep them in step with the fork's
-		     latest tag (git ls-remote --tags origin) when merging upstream. -->
+		     latest tag when merging upstream. -->
 		<Version>7.5.5.41</Version>
 		<InformationalVersion>7.5.5.41+wsh1</InformationalVersion>
 
