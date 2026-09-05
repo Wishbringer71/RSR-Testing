@@ -254,6 +254,18 @@ public sealed class SAM_Reborn : SamuraiRotation
 	#region GCD Logic
 	protected override bool GeneralGCD(out IAction? act)
 	{
+		return UseOgiAndHiganbana(out act)
+			|| UseAoeFinishers(out act)
+			|| UseAoeCombo(out act)
+			|| UseSetsugekka(out act)
+			|| UseSingleTargetFinishers(out act)
+			|| UseSingleTargetBuffs(out act)
+			|| UseComboStarters(out act)
+			|| base.GeneralGCD(out act);
+	}
+
+	private bool UseOgiAndHiganbana(out IAction? act)
+	{
 		var isTargetBoss = CurrentTarget?.IsBossFromTTK() ?? false;
 
 		if (OgiNamikiriPvE.CanUse(out act) && OgiNamikiriPvE.Target.Target != null)
@@ -272,6 +284,12 @@ public sealed class SAM_Reborn : SamuraiRotation
 			}
 		}
 
+		act = null;
+		return false;
+	}
+
+	private bool UseAoeFinishers(out IAction? act)
+	{
 		if (KaeshiNamikiriPvE.CanUse(out act))
 		{
 			return true;
@@ -335,6 +353,12 @@ public sealed class SAM_Reborn : SamuraiRotation
 			return true;
 		}
 
+		act = null;
+		return false;
+	}
+
+	private bool UseAoeCombo(out IAction? act)
+	{
 		if (HasFugetsuAndFuka)
 		{
 			if (!OkaPvE.EnoughLevel && MangetsuPvE.CanUse(out act, skipStatusProvideCheck: true, skipComboCheck: HasMeikyoShisui && !HasKa))
@@ -406,6 +430,12 @@ public sealed class SAM_Reborn : SamuraiRotation
 			}
 		}
 
+		act = null;
+		return false;
+	}
+
+	private bool UseSetsugekka(out IAction? act)
+	{
 		if (TendoSetsugekkaPvE.CanUse(out act, skipComboCheck: true))
 		{
 			return true;
@@ -427,6 +457,12 @@ public sealed class SAM_Reborn : SamuraiRotation
 			return true;
 		}
 
+		act = null;
+		return false;
+	}
+
+	private bool UseSingleTargetFinishers(out IAction? act)
+	{
 		// single target 123 combo's 3 or used 3 directly during burst when MeikyoShisui is active, while also trying to start with the one that player is in position for extra DMG
 		if (GekkoPvE.CanUse(out act, skipComboCheck: HasMeikyoShisui && !HasGetsu) && GekkoPvE.Target.Target != null && CanHitPositional(EnemyPositional.Rear, GekkoPvE.Target.Target))
 		{
@@ -454,6 +490,12 @@ public sealed class SAM_Reborn : SamuraiRotation
 			return true;
 		}
 
+		act = null;
+		return false;
+	}
+
+	private bool UseSingleTargetBuffs(out IAction? act)
+	{
 		if (HasFugetsuAndFuka)
 		{
 			switch (FugetsuOrFukaEndsFirst)
@@ -526,6 +568,12 @@ public sealed class SAM_Reborn : SamuraiRotation
 			}
 		}
 
+		act = null;
+		return false;
+	}
+
+	private bool UseComboStarters(out IAction? act)
+	{
 		if (!HasMeikyoShisui && !TsubamegaeshiActionReady)
 		{
 			if (HakazePvE.CanUse(out act))
@@ -547,7 +595,8 @@ public sealed class SAM_Reborn : SamuraiRotation
 			return true;
 		}
 
-		return base.GeneralGCD(out act);
+		act = null;
+		return false;
 	}
 
 	#endregion
