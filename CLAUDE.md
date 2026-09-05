@@ -66,6 +66,12 @@ Beleg: #46/#47/#52/#53 sowie alle Aggro-Management-Bausteine (B1-B4) wurden nach
 
 Diffgröße/Zeilenzahl kein Signal für nötige Prüftiefe — Einzeiler so tief prüfen wie 500-Zeilen-Commit. Beleg: CountAllianceTanks-Fehldiagnose, Provoke-Distanzbug, RPR/VPR-Gate-Umgehung — alle winzige Zeilen, alle schwerwiegend. → gleiche Prüftiefe immer, unabhängig vom Diff-Umfang.
 
+## Fork/Branch synchronisieren — vor JEDER Codeänderung, nicht nur zu Sitzungsbeginn
+
+Der Sync ist keine einmalige Eröffnungshandlung, sondern Vorbedingung jeder einzelnen Codeänderung. Vor jedem Edit gilt: `git fetch --prune --tags upstream`, danach prüfen, ob der Arbeitsbranch noch 0 ausstehende Upstream-Commits hat. Steht etwas aus, wird zuerst nachgezogen und erst dann geändert — sonst entsteht der Patch gegen einen veralteten Stand und muss nachträglich neu bewertet werden. Das gilt auch mitten in einer laufenden Sitzung, auch wenn vor zehn Minuten schon gefetcht wurde: Upstream kann jederzeit weiterlaufen (Beleg: `7.5.5.41` erschien mitten in dieser Sitzung, nachdem `7.5.5.40` als hoechster Tag ermittelt worden war).
+
+Nachweispflicht: die Aussage "ist aktuell" braucht die frische Zahl aus `git rev-list --left-right --count upstream/main...HEAD`, nicht den Gespraechsverlauf.
+
 ## Fork/Branch vor Arbeitsbeginn synchronisieren
 
 Vor Arbeitsbeginn: `upstream` fetchen, prüfen ob Original das anstehende Problem zwischenzeitlich selbst gefixt hat — sonst Doppelarbeit oder Fix gegen veralteten Stand.
