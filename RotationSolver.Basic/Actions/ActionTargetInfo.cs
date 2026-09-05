@@ -116,7 +116,9 @@ public struct ActionTargetInfo(IBaseAction action)
 			// then => Check target is in the view && ActionManager.CanUse on target && CanSee Target && action.setting predicate is true of target
 			if (!DataCenter.IsManual || IsTargetFriendly || target.GameObjectId == Svc.Targets.Target?.GameObjectId || target.GameObjectId == Player.Object.GameObjectId)
 			{
-				var view = TargetOnScreen(target);
+				// "Only attack targets in view" is about attacking; a party member behind the camera is
+				// still on the party list and still needs the heal.
+				var view = IsTargetFriendly || TargetOnScreen(target);
 				var canUse = CanUseTo(target);
 				var asCanTarget = action.Setting.CanTarget(target);
 				var MinHPPass = !action.MinHPFeature || (action.MinHPFeature && target.GetHealthRatio() > action.MinHPPercent);
