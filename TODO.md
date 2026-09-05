@@ -321,16 +321,6 @@ Schema fuer kuenftige Releases: Basis = hoechster Upstream-Tag, dahinter
 statt `-`, weil SemVer einen Bindestrich als Prerelease liest und den Fork
 damit unter den Upstream-Release sortieren wuerde.
 
-### #71 PR #2 und Branch `claude/bmr-mitigation-refresh` sind ueberfluessig
-
-Der alte Kopf `f2db49b1` war vollstaendig in `claude/rotation-flow-refactor`
-enthalten — der gesamte Inhalt von PR #2 steckt bereits in PR #3. Zwei offene
-Draft-PRs beschreiben dieselbe Arbeit. Beim Branch-Sync wurde dem toten Branch
-zusaetzlich ein Merge-Commit verpasst, statt ihn als Loeschfall zu melden.
-
-Vorschlag: PR #2 schliessen, Branch loeschen. Bestaetigungspflichtig (PR
-schliessen ist aussenwirksam, Branch loeschen ist destruktiv).
-
 ## Wichtig für zukünftige Sessions
 
 Diese Dateien (TODO.md, AUDIT_LOG.md) existieren nur auf dem Branch, auf

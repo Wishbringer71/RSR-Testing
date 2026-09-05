@@ -990,3 +990,17 @@ liefern in den Spieldaten „Duration: **s**" ohne Zahl — der Wert ist
 levelskaliert und im Sheet leer. Genau deshalb ist
 `MitigationDebuffDuration => PlayerSyncedLevel() >= 98 ? 15f : 10f` dort
 richtig und eine feste Zahl wäre falsch.
+
+## TODO #71 erledigt: PR #2 geschlossen, Branch geloescht (05.09.2026)
+
+Der Branch `claude/bmr-mitigation-refresh` war inhaltlich vollstaendig in
+`claude/rotation-flow-refactor` enthalten — der alte Kopf `f2db49b1` ist
+Vorfahre des Arbeitsbranches, verifiziert per
+`git merge-base --is-ancestor`. Die einzige Differenz war ein
+Upstream-Merge-Commit, den der Branch-Sync ihm nachtraeglich verpasst hatte,
+obwohl er nach der Datenhygiene-Regel ein Loeschfall und kein Sync-Fall war.
+
+Nutzer hat PR #2 geschlossen und den Branch entfernt. Frisch geprueft:
+`git branch -r` zeigt nur noch `origin/main` und
+`origin/claude/rotation-flow-refactor`. Kein Inhaltsverlust, da alles in
+PR #3 steckt.
