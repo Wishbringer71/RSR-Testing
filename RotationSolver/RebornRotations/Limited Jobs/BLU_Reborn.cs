@@ -314,6 +314,16 @@ public sealed class BLU_Reborn : BlueMageRotation
 
 	protected override bool GeneralGCD(out IAction? act)
 	{
+		return UseUtilityAndDebuffs(out act)
+			|| MaintainDoTs(out act)
+			|| SpendCooldowns(out act)
+			|| UseSituational(out act)
+			|| UseFiller(out act)
+			|| base.GeneralGCD(out act);
+	}
+
+	private bool UseUtilityAndDebuffs(out IAction? act)
+	{
 		if (IsTank && DivineCataractPvE.CanUse(out act))
 		{
 			return true;
@@ -377,6 +387,12 @@ public sealed class BLU_Reborn : BlueMageRotation
 			return true;
 		}
 
+		act = null;
+		return false;
+	}
+
+	private bool MaintainDoTs(out IAction? act)
+	{
 		if (SongOfTormentPvE.Info.IsOnSlot && SongOfTormentPvE.CanUse(out _, skipStatusProvideCheck: true) && SongOfTormentPvE.Target.Target != null && (SongOfTormentPvE.Target.Target?.WillStatusEndGCD(3, 0, true, SongOfTormentPvE.Setting.TargetStatusProvide ?? []) ?? false))
 		{
 			if (BristlePvE.CanUse(out act))
@@ -413,6 +429,12 @@ public sealed class BLU_Reborn : BlueMageRotation
 			}
 		}
 
+		act = null;
+		return false;
+	}
+
+	private bool SpendCooldowns(out IAction? act)
+	{
 		if (TripleTridentPvE.Info.IsOnSlot && (TripleTridentPvE.Cooldown.HasOneCharge || TripleTridentPvE.Cooldown.WillHaveOneChargeGCD(1)) && IsLastGCD(false, TinglePvE))
 		{
 			if (TinglePvE.CanUse(out act))
@@ -461,6 +483,12 @@ public sealed class BLU_Reborn : BlueMageRotation
 			return true;
 		}
 
+		act = null;
+		return false;
+	}
+
+	private bool UseSituational(out IAction? act)
+	{
 		if (NumberOfHostilesInMaxRange > 0 && IceSpikesPvE.CanUse(out act))
 		{
 			return true;
@@ -551,6 +579,12 @@ public sealed class BLU_Reborn : BlueMageRotation
 			}
 		}
 
+		act = null;
+		return false;
+	}
+
+	private bool UseFiller(out IAction? act)
+	{
 		if (DevourPvE.CanUse(out act))
 		{
 			return true;
@@ -774,7 +808,8 @@ public sealed class BLU_Reborn : BlueMageRotation
 			return true;
 		}
 
-		return base.GeneralGCD(out act);
+		act = null;
+		return false;
 	}
 
 	protected override bool RaiseGCD(out IAction? act)
