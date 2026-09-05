@@ -24,7 +24,31 @@ Die Zustandswahl liegt an zwei Orten. Implizit in `AdjustStateType`: `/rotation 
 
 Da die `Cycle*` am Ende ebenfalls `DoStateCommandType` rufen, greift `AdjustStateType` bei bereits aktivem Zustand auch dort: aus „Manual → Auto" wird „Off", und der Zyklus über die Zielarten bricht ab. Betroffen sind die fünf `Cycle*` plus das aufruferlose `IncrementState`; die automatischen Einschaltpfade in `RSCommands_Actions.cs` sind es nicht, weil sie sämtlich unter `!DataCenter.State` stehen und `AdjustStateType` dort nicht erreicht wird. Beide Toggle-Defaults sind `false`. Zu klären ist nicht nur, ob die `Cycle*` die Toggle-Semantik umgehen sollen, sondern ob die doppelte Zustandswahl bestehen bleibt.
 
-Zwei Befunde derselben Stelle, unabhängig von dieser Entscheidung zu beheben:
+### Bedienpfad: Ausschalten kostet je nach Variante 1 bis unendlich viele Klicks
+
+Die fünf Varianten als Zustandsfolge ausgewertet, bei vier konfigurierten Zielarten und ausgeschalteten Toggle-Optionen. Gezählt sind Klicks auf den Server-Leisten-Eintrag, dem Hauptbedienweg:
+
+| Variante | Folge | Umlauf | „Aus" aus dem Auto-Zustand |
+|---|---|---|---|
+| `DTRAuto` | Off → Auto → Off | 2 | 1 Klick |
+| `DTRManual` | Off → Manual → Off | 2 | 2 Klicks (über Manual) |
+| `DTRNormal` | Off → Auto(letzte) → Manual → Off | 3 | 2 Klicks |
+| `DTRAllAuto` | Off → Auto(0) → … → Auto(3) → Manual → Off | 6 | bis zu 5 Klicks |
+| `DTRManualAuto` | Off → Manual → Auto → Manual → Auto → … | — | **gar nicht** |
+
+`DTRManualAuto` kennt keinen Rückweg nach Off: der letzte Zweig führt aus jedem aktiven Zustand nach Manual, der davor von Manual nach Auto. Der Enum-Text („Cycle between Manual and Auto") beschreibt das, aber über die Leiste ist RSR damit nicht mehr abschaltbar.
+
+**Kausale Folge für die Toggle-Optionen:** `ToggleAuto` ist in dieser Variante der einzige Ausschaltweg — es verwandelt den Übergang Manual → Auto in Manual → Off. Ein pauschales Abschalten der Toggle-Auswertung in den Zyklus-Kommandos, wie zunächst vorgeschlagen, würde diesen Nutzern also den einzigen Ausschaltweg über die Leiste nehmen. Umgekehrt kollabiert `DTRAllAuto` mit aktivem `ToggleAuto` auf Off ↔ Auto(0), die Zielarten-Rotation ist dann vollständig tot. Die beiden Optionen sind damit keine unabhängige Achse, sondern Krücken für fehlende Übergänge.
+
+### Der Leisteneintrag verwirft alle Eingabeinformation
+
+`IDtrBarEntry.OnClick` ist `Action<DtrInteractionEvent>`; das Ereignis trägt `ClickType` (links/rechts), `ModifierKeys` (Ctrl/Alt/Shift) und `Position`. `MiscUpdater.cs:55-71` verwirft es fünfmal mit `_ =>`. Die gesamte Bedienlast liegt damit auf einer einzigen Geste — was überhaupt erst fünf Zyklusvarianten nötig macht, weil jede ein anderer Kompromiss aus einer Geste ist. Ein zweiter Kanal (Rechtsklick oder Ctrl+Klick = Off) gäbe jeder Variante einen garantierten Ausschaltweg in einem Klick, machte `DTRManualAuto` vollständig und entzöge den Toggle-Optionen ihre Krückenfunktion. Einschränkung: Dalamud registriert nur `MouseOver`, `MouseOut` und `MouseClick` — das Scrollrad steht am Leisteneintrag nicht zur Verfügung; und ob das Spiel bei Rechtsklick ein `MouseClick` liefert, ist nur im Spiel feststellbar. Modifier kommen aus demselben Ereignis und sind darum die risikoärmere Variante.
+
+### Leisteneintrag wird je Frame neu gesetzt
+
+`MiscUpdater.UpdateEntry` läuft aus `MajorUpdater` in jedem Frame und weist `_dtrEntry.Text` eine neue `SeString` mit zwei Payloads sowie `OnClick` eine neue Lambda zu. Dalamuds `Text`-Setter vergleicht nicht, sondern setzt bedingungslos `Dirty = true`. Der Text ändert sich aber nur bei Zustandswechsel oder laufender Restzeit. `RSCommands.UpdateToast` in derselben Codebasis macht es richtig und vergleicht gegen `_lastToastMessage`; hier fehlt derselbe Vergleich.
+
+Zwei weitere Befunde derselben Stelle, unabhängig von dieser Entscheidung zu beheben:
 
 - **`/rotation Auto <Zahl>` wirkt nur bei bereits eingeschaltetem RSR.** Der Namensweg (`/rotation Auto LowHP`) setzt `Service.Config.TargetingIndex` direkt in `RSCommands_BasicInfo.cs:85`. Der numerische Weg reicht die Zahl nur als `index` weiter, und gesetzt wird sie erst in `UpdateTargetingIndex`, das über `AdjustStateType` hinter `if (DataCenter.State)` liegt. Im ausgeschalteten Zustand — dem normalen Fall beim Einschalten per Kommando — verpufft das Argument also, bei angeschaltetem `ToggleAuto` schaltet dasselbe Kommando stattdessen ab. Zwei Argumentformen desselben Kommandos mit unterschiedlicher Wirkung.
 - **`DoOneCommandType` hat einen Parameter, der nie ausgeführt wird.** Der erste Parameter `Func<T, JobRole, string> sayout` wird im Rumpf nicht aufgerufen; die drei Aufrufstellen bauen dafür je eine Lambda. Auch der Rückgabewert von `doingSomething` wird verworfen (`_ = …`), womit die Generik samt `where T : struct, Enum` nichts trägt. Die Methode reduziert sich auf „Rolle ermitteln, bei `JobRole.None` abbrechen, Aktion ausführen".
