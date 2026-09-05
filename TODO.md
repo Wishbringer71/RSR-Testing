@@ -201,6 +201,24 @@ nicht gegen einen veralteten Stand zu arbeiten.
 
 Auch `origin/main` ist um dieselben 16 Commits zurueck und hat 8 eigene.
 
+### #68 Oblation-Doppelnutzung: Upstream-Fix greift nicht in ChurinDRK
+
+Aus der Inhaltspruefung von `7b8a2f5` ("Fix double Oblation usage"). Upstream
+hat drei Aufrufstellen in `DRK_Reborn.cs` in `if (!IsLastAbility(false,
+OblationPvE))` gekapselt — `CanUse(..., usedUp: true)` gibt beide Ladungen
+frei, also konnten in zwei aufeinanderfolgenden oGCD-Fenstern beide auf
+dasselbe Ziel gehen, ohne dass die zweite etwas bewirkt.
+
+Dieselbe Aufrufform steht ungeschuetzt in
+`RotationSolver/ExtraRotations/Tank/ChurinDRK.cs:185`
+(`OblationPvE.CanUse(out act, usedUp: true, skipStatusProvideCheck: false)`).
+Upstream hat sie nicht mitgefixt. Gesamtheitlichkeitsfall: derselbe Fehler,
+andere Datei.
+
+Vor Uebernahme pruefen, ob ChurinDRK denselben Dispatch-Pfad hat (eigene
+DefenseSingleAbility-Ueberschreibung, kein anderweitiger Ladungs-Guard)
+— dann Guard analog setzen. Nicht blind kopieren.
+
 ## Wichtig für zukünftige Sessions
 
 Diese Dateien (TODO.md, AUDIT_LOG.md) existieren nur auf dem Branch, auf
