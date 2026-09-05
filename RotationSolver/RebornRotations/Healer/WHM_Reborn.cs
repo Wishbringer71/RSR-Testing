@@ -112,6 +112,17 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	#endregion
 
 	#region oGCD Logic
+	[RotationDesc(ActionID.AetherialShiftPvE)]
+	protected override bool MoveForwardAbility(IAction nextGCD, out IAction? act)
+	{
+		if (AetherialShiftPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		return base.MoveForwardAbility(nextGCD, out act);
+	}
+
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
 	{
 		var useLastThinAirCharge = ThinAirLastChargeUsage == ThinAirUsageStrategy.UseAllCharges || (ThinAirLastChargeUsage == ThinAirUsageStrategy.ReserveLastChargeForRaise && nextGCD == RaisePvE);

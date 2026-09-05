@@ -219,6 +219,39 @@ Vor Uebernahme pruefen, ob ChurinDRK denselben Dispatch-Pfad hat (eigene
 DefenseSingleAbility-Ueberschreibung, kein anderweitiger Ladungs-Guard)
 — dann Guard analog setzen. Nicht blind kopieren.
 
+### #69 Aktions-Abdeckung: verbleibende ungenutzte Aktionen (Rotationsfragen)
+
+Aus der Abdeckungsanalyse, siehe `docs/rotation-flow/05-action-coverage.md`.
+Nach Abzug von Limit Breaks, Pet-Aktionen, Stance-Abbruechen,
+Morph-Platzhaltern und Upgrade-Griffen (die alle korrekt ungenutzt sind)
+bleiben diese Aktionen, fuer die keiner dieser Gruende greift. Jede braucht
+eine Rotations-/Spielentscheidung — NICHT ungeprueft nachruesten.
+
+| Job | Aktion | Frage |
+|---|---|---|
+| SAM | `HissatsuYatenPvE` | Schaden + Rueckstoss + Enhanced Enpi. In `MoveBackAbility`? Kostet eine oGCD. |
+| SAM | `MeditatePvE` | Kenki-Aufbau in der Downtime. Braucht ein Downtime-Signal. |
+| SAM | `TsubamegaeshiPvE` | Iaijutsu-Wiederholung. Pruefen ob ueber `IaijutsuPvE`-Morph abgedeckt. |
+| MCH | `FlamethrowerPvE` | Kanalisierte AoE-DoT, bricht bei Bewegung. Nur sinnvoll bei Downtime. |
+| MCH | `RookOverdrivePvE` / `QueenOverdrivePvE` | manuelle Ausloesung des Automaton-Finishers. |
+| NIN | `ShadeShiftPvE` | 20%-Selbstschild — `DefenseSingleAbility`-Kandidat, passt zum DPS-Selbstschutz-Thema (#12). |
+| NIN | `ShukuchiPvE` | Bodengezielter Sprung. Kein passender Dispatch-Slot (nicht ziel-, sondern ortsbezogen). |
+| WHM | `LiturgyOfTheBellPvE_28509` | manuelle Detonation der Glocke. |
+| AST | `HoroscopePvE_16558` | Aktivierung des gelegten Horoscope. |
+| AST | `PlayIPvE`/`PlayIiPvE`/`PlayIiiPvE`/`MinorArcanaPvE` | Pruefen, ob ueber die konkreten Kartenaktionen abgedeckt oder echte Luecke. |
+| SCH | `DissolveUnionPvE` | Fey Union aufloesen. |
+| SCH | `EmergencyTacticsPvE_37037` | zweite Emergency-Tactics-ID. |
+| SMN | `TridisasterPvE` | AoE-Angriff. |
+| MNK | `SixsidedStarPvE` | Schaden + Bewegungsgeschwindigkeit, Downtime-Werkzeug. |
+
+Ausserdem offen aus derselben Analyse: **PLD-Invuln liegt anders als bei
+DRK/GNB/WAR.** Bei den drei anderen Tanks haengt die Invulnerability in
+`EmergencyAbility` der Basisschicht (`{Job}Rotation.cs`), gegated auf
+`Service.Config.HealthForDyingTanks`; bei PLD in `PLD_Reborn.cs:92/97` mit
+eigener Logik (`HallowedWithCover`). Vier Tanks, dieselbe Faehigkeitsklasse,
+zwei Orte, zwei Gates. Erst klaeren, ob PLDs Cover-Sonderfall die Abweichung
+rechtfertigt.
+
 ## Wichtig für zukünftige Sessions
 
 Diese Dateien (TODO.md, AUDIT_LOG.md) existieren nur auf dem Branch, auf

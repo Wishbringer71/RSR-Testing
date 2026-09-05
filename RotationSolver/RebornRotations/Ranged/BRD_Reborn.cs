@@ -76,6 +76,17 @@ public sealed class BRD_Reborn : BardRotation
 	#endregion
 
 	#region oGCD Logic
+	[RotationDesc(ActionID.RepellingShotPvE)]
+	protected override bool MoveBackAbility(IAction nextGCD, out IAction? act)
+	{
+		if (RepellingShotPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		return base.MoveBackAbility(nextGCD, out act);
+	}
+
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
 	{
 		if (StatusHelper.PlayerHasStatus(false, StatusID.Doom))
