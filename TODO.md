@@ -51,6 +51,14 @@ Zwei weitere Befunde derselben Stelle, unabhängig von dieser Entscheidung zu be
 
 Geprüfte Nicht-Fehlstelle: ein zu großer `TargetingIndex` kann nicht zum Indexfehler führen, `DataCenter.TargetingType` rechnet `% Count` und füllt eine leere Liste selbst auf (`DataCenter.cs:284-302`).
 
+## `StartOnFieldOpInCombat2`: zwei Restbefunde nach dem Puppen-Fix
+
+Die Nachprüfung der Wirkungskette bestätigt den Fix (AUDIT_LOG A11), legt aber zwei Punkte offen, die er nicht berührt.
+
+**Der Gegner-Test prüft ein Surrogat.** `AllHostileTargets.Contains(t)` ist ein Identitätstest gegen eine mehrfach gefilterte Liste: `TargetUpdater.UpdateLists` nimmt einen Gegner nur auf, wenn er anvisierbar ist, unter 48 y steht, vom Augpunkt aus sichtbar ist (`CanSeeFrom`) und nicht unverwundbar. Ein Gegner ohne Sichtlinie oder in einer Unverwundbarkeitsphase steht damit zwar in `AllTargets` und wird von `GetTargetsByRange` geliefert, fällt aber nicht unter das `continue` — er kann den automatischen Start also weiterhin auslösen, obwohl der Zweig Gegner überspringen will. Inhaltlich richtig wäre der Typtest `t.IsEnemy()`, den `UpdateLists` selbst als Kriterium verwendet.
+
+**Der eigene Spieler wird nicht ausgeschlossen.** `GetAllTargets` nimmt jedes `IBattleChara` auf, das anvisierbar und kein Begleiter ist — einschließlich des Spielers selbst. `t.InCombat()` ist für ihn wahr, sobald er kämpft, womit der Zweig faktisch beim eigenen Kampfeintritt auslöst und die übrige Schleife entwertet. Das kollidiert mit `StartOnAttackedBySomeone2` weiter unten, das denselben Fall abdeckt, dabei aber `Manual` statt `Auto` wählt; da der Field-Op-Zweig zuerst läuft, gewinnt `Auto`. Der beim Puppen-Fix entfernte leere `if`-Block prüfte genau `t.GameObjectId != Player.Object.GameObjectId` und war die letzte Spur dieser Absicht — seine Entfernung war verhaltensneutral, hat aber das Signal getilgt, weshalb es hier festgehalten ist.
+
 ## Duty-Rotationen werden im Flächen- und im Einzelheilpfad unterschiedlich erreicht
 
 In `CustomRotation_GCD` fragt der automatische Einzelheilzweig die Duty-Rotation bedingungslos ab, der Flächenheilzweig dagegen nur unter `IsInOccultCrescentOp || HasVariantCure`. Duty-Rotationen sind ohnehin an das Territorium gebunden, die Zusatzbedingung ist also entweder überflüssig oder im Einzelheilpfad versehentlich weggelassen. Zu klären, welche der beiden Varianten gewollt ist, dann angleichen.
