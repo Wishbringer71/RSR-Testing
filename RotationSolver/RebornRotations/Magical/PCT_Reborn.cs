@@ -5,8 +5,6 @@
 
 public sealed class PCT_Reborn : PictomancerRotation
 {
-	public override bool HasHostileCountAoeMitigation => true;
-
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Use HolyInWhite or CometInBlack while moving")]
 	public bool HolyCometMoving { get; set; } = true;

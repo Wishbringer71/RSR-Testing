@@ -5,8 +5,6 @@
 
 public sealed class VPR_Reborn : ViperRotation
 {
-	public override bool HasHostileCountAoeMitigation => true;
-
 	#region Config Options
 
 	[RotationConfig(CombatType.PvE, Name = "Hold one charge of Uncoiled Fury after burst for movement")]

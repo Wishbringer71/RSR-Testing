@@ -187,16 +187,6 @@ internal static class StateUpdater
 			return true;
 		}
 
-		// Sustain fallback for trash pulls without an active BMR module. Scoped to jobs that actually
-		// declare such a branch, so this doesn't run every job's whole defense chain on enemy count
-		// alone. Same threshold the job branches themselves use, so the gate can't disagree with them.
-		if (DataCenter.InCombat && Service.Config.UseAoeDefense
-			&& DataCenter.NumberOfHostilesInRange >= Service.Config.MitigationSustainHostileCount
-			&& (DataCenter.CurrentRotation?.HasHostileCountAoeMitigation ?? false))
-		{
-			return true;
-		}
-
 		return false;
 	}
 

@@ -718,9 +718,6 @@ public partial class NinjaRotation
 	}
 
 	/// <inheritdoc/>
-	public override bool HasHostileCountAoeMitigation => true;
-
-	/// <inheritdoc/>
 	[RotationDesc(ActionID.FeintPvE)]
 	protected sealed override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{

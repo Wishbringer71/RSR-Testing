@@ -5,8 +5,6 @@
 
 public sealed class RPR_Reborn : ReaperRotation
 {
-	public override bool HasHostileCountAoeMitigation => true;
-
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Pool Shroud for Arcane Circle.")]
 	public bool EnshroudPooling { get; set; } = false;

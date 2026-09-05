@@ -7,8 +7,6 @@ namespace RotationSolver.RebornRotations.Tank;
 
 public sealed class GNB_Reborn : GunbreakerRotation
 {
-	public override bool HasHostileCountAoeMitigation => true;
-
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "How to use Aurora")]
 	public AuroraUsageStrategy AuroraUsage { get; set; } = AuroraUsageStrategy.TankbusterTarget;

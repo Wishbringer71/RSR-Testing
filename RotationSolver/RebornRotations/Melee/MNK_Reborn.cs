@@ -7,8 +7,6 @@ namespace RotationSolver.RebornRotations.Melee;
 
 public sealed class MNK_Reborn : MonkRotation
 {
-	public override bool HasHostileCountAoeMitigation => true;
-
 	#region Config Options
 
 	public enum RiddleOfFireFirst : byte

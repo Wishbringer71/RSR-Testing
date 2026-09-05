@@ -5,8 +5,6 @@
 
 public sealed class RDM_Reborn : RedMageRotation
 {
-	public override bool HasHostileCountAoeMitigation => true;
-
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Use GCDs to heal. (Ignored if there are no healers alive in party)")]
 	public bool GCDHeal { get; set; } = false;

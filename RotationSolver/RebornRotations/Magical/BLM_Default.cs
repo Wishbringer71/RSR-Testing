@@ -5,8 +5,6 @@
 
 public class BLM_Default : BlackMageRotation
 {
-	public override bool HasHostileCountAoeMitigation => true;
-
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Use Transpose to Astral Fire before Paradox")]
 	public bool UseTransposeForParadox { get; set; } = true;

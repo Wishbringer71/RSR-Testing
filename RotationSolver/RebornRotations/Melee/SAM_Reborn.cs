@@ -7,8 +7,6 @@ namespace RotationSolver.RebornRotations.Melee;
 
 public sealed class SAM_Reborn : SamuraiRotation
 {
-	public override bool HasHostileCountAoeMitigation => true;
-
 	#region Config Options
 
 	public enum STtoAOEStrategy : byte
