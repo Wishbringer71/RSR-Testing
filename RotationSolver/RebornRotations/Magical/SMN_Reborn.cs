@@ -7,8 +7,6 @@ namespace RotationSolver.RebornRotations.Magical;
 
 public sealed class SMN_Reborn : SummonerRotation
 {
-	public override bool HasHostileCountAoeMitigation => true;
-
 	#region Config Options
 
 	public enum SummonOrderType : byte
@@ -193,14 +191,6 @@ public sealed class SMN_Reborn : SummonerRotation
 			&& RadiantAegisPvE.CanUse(out act, usedUp: true, skipStatusProvideCheck: true))
 		{
 			return true;
-		}
-
-		if (!IsLastAction(false, RadiantAegisPvE) && InCombat)
-		{
-			if (RadiantAegisPvE.CanUse(out act, usedUp: true))
-			{
-				return true;
-			}
 		}
 
 		return base.GeneralAbility(nextGCD, out act);
