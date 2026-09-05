@@ -146,7 +146,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		}
 
 		if (!InTwoMIsBurst
-			&& ShouldSustainMitigationDebuff(StatusID.Reprisal)
+			&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
@@ -238,7 +238,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			}
 		}
 
-		if (ShouldSustainMitigationDebuff(StatusID.Reprisal)
+		if (ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;

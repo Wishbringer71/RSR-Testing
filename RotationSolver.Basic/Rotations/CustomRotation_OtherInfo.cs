@@ -574,7 +574,7 @@ public partial class CustomRotation
 				}
 
 				// Reprisal: -10% all damage (missing previously)
-				if (!reprisal && e.HasStatus(false, StatusID.Reprisal))
+				if (!reprisal && e.HasStatus(false, StatusHelper.ReprisalStatus))
 				{
 					reprisal = true;
 				}

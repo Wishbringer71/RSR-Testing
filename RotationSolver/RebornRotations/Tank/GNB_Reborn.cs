@@ -115,7 +115,7 @@ public sealed class GNB_Reborn : GunbreakerRotation
 		}
 
 		if (!HasNoMercy
-			&& ShouldSustainMitigationDebuff(StatusID.Reprisal)
+			&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
@@ -232,7 +232,7 @@ public sealed class GNB_Reborn : GunbreakerRotation
 			}
 		}
 
-		if (ShouldSustainMitigationDebuff(StatusID.Reprisal)
+		if (ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;

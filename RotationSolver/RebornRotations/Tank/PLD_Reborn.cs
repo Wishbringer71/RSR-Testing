@@ -281,7 +281,7 @@ public sealed class PLD_Reborn : PaladinRotation
 				}
 			}
 
-			if (ShouldSustainMitigationDebuff(StatusID.Reprisal)
+			if (ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 				&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 			{
 				return true;
