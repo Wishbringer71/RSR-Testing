@@ -478,7 +478,7 @@ public sealed class BLU_Reborn : BlueMageRotation
 			return true;
 		}
 
-		if (DevourPvE.CanUse(out act, skipStatusProvideCheck: Player?.GetEffectiveHpPercent() <= DevourHealThreshold || IsTank))
+		if (DevourPvE.CanUse(out act, skipStatusProvideCheck: Player?.GetEffectiveHpPercent() <= DevourHealThreshold * 100f || IsTank))
 		{
 			return true;
 		}
@@ -501,7 +501,7 @@ public sealed class BLU_Reborn : BlueMageRotation
 
 		if (MissilePvE.CanUse(out act))
 		{
-			if (MissilePvE.Target.Target != null && MissilePvE.Target.Target.GetEffectiveHpPercent() >= TheMissileKnowsWhereItIs)
+			if (MissilePvE.Target.Target != null && MissilePvE.Target.Target.GetEffectiveHpPercent() >= TheMissileKnowsWhereItIs * 100f)
 			{
 				return true;
 			}

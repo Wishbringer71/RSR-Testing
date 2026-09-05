@@ -351,7 +351,7 @@ public sealed class PhantomDefault : PhantomRotation
 
 		if (DrainTouchEmergencyOnly && DrainTouchPvE.CanUse(out act))
 		{
-			if (Player?.GetEffectiveHpPercent() <= DrainTouchEmergencyOnlyThreshold)
+			if (Player?.GetEffectiveHpPercent() <= DrainTouchEmergencyOnlyThreshold * 100f)
 			{
 				return true;
 			}
@@ -359,7 +359,7 @@ public sealed class PhantomDefault : PhantomRotation
 
 		if (DrainTouchHeal && DrainTouchPvE.CanUse(out act))
 		{
-			if (Player?.GetEffectiveHpPercent() <= DrainTouchHealyOnlyThreshold)
+			if (Player?.GetEffectiveHpPercent() <= DrainTouchHealyOnlyThreshold * 100f)
 			{
 				return true;
 			}
