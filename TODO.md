@@ -120,11 +120,10 @@ das stoert. Relevant vor allem in Inhalten mit zwei lebenden Heilern, wo
 `CanHealSingleSpell` wegen `GCDHeal == false` (ASTs Default!) falsch ist
 und `GeneralGCD` deshalb auch mit verletztem Tank erreicht wird.
 
-### #65 Offen aus dem Zielkonzept: B3/B4/B5 (Spielfragen, nicht Codefragen)
+### #65 Offen aus dem Zielkonzept: B3/B4/B5/C1 (Spielfragen, nicht Codefragen)
 
-Branch `claude/rotation-flow-refactor`, PR #3. Von acht Konzeptpunkten sind
-drei umgesetzt (A3, A2', B1), vier an Messungen gescheitert und dokumentiert
-(A2, A1, A4-als-Refactoring, B2), drei bleiben offen — und die brauchen eine
+Branch `claude/rotation-flow-refactor`, PR #3. Siehe
+`docs/rotation-flow/04-concept.md`. Vier Punkte brauchen eine
 Spielentscheidung, keine Codeentscheidung:
 
 - **B3** Reprisal-Sustain: DRK/GNB haben ihn in DefenseArea UND DefenseSingle,
@@ -136,17 +135,46 @@ Spielentscheidung, keine Codeentscheidung:
 - **B5** MNK ueberschreibt HealAreaAbility statt HealSingleAbility, obwohl
   Second Wind eine Einzelziel-Selbstheilung ist. Einzige Gruppenabweichung
   ohne erkennbare Begruendung.
+- **C1** DRG-Trait-Paare (DRG_Reborn.cs:288-405, 8x
+  `if (Trait.EnoughLevel){…} if (!Trait.EnoughLevel){…}`). Das Gate zu
+  streichen ist NICHT verhaltensgleich: gegatet schliessen die Zweige einander
+  aus, ungegatet werden sie zum Fallback. Unterschied greift, wenn die
+  Upgrade-Aktion aus einem anderen Grund als dem Level nicht kann (Combo,
+  Reichweite, Status). Zu klaeren ist, ob `FullThrustPvE.CanUse` oberhalb der
+  Traitstufe noch `true` liefert.
 
-Alle drei haben winzige, merge-unproblematische Diffs. Was fehlt, ist die
-Beobachtung im Spiel. NICHT ungeprueft angleichen — das waere derselbe Fehler
-wie bei der Provoke-Distanz (#56).
+Alle vier haben winzige Diffs. Was fehlt, ist die Beobachtung im Spiel. NICHT
+ungeprueft angleichen — das waere derselbe Fehler wie bei der Provoke-Distanz
+(#56).
 
-Uebergreifende Regel aus der Umsetzung, fuer kuenftige Arbeit am Fork:
-Upstream legte in 90 Tagen 29 Commits auf `RebornRotations/`, nur 4 von 54
-Dateien blieben unberuehrt. Strukturelles Umbauen nachgezogener Dateien ist
-deshalb keine tragfaehige Strategie. Tragfaehig sind Waechter gegen
-Fehlerklassen, benannte Helfer fuer echte Bedingungs-Duplikate, und
-Konventionen fuer eigenen Code.
+### #66 A4a: Dispatch-Zweige zu benannten Stufen extrahieren (reaktiviert)
+
+Aus der Neubewertung des Konzepts nach der Praemissenkorrektur (der Branch
+setzt keine Code-Kompatibilitaet zum Original mehr voraus, Upstream wird
+inhaltlich geprueft statt gemergt — damit ist das Merge-Kosten-Argument, das
+A4 und C gekippt hatte, hinfaellig).
+
+Gemessen ueber alle 31 PvE-Rotationsdateien: 1239 Zweige auf oberster Ebene in
+den Dispatch-Methoden, `GeneralGCD`-Median 16, Maximum 80 (BLU).
+
+Reihenfolge nach Nutzen, eine Datei pro Commit: BLU (80) → PhantomDefault (33)
+→ PCT (32) → SAM (27) → MCH (23) → SMN (23). Unter ~15 Zweigen lohnt es nicht.
+
+Abnahmebedingungen pro Datei (aus dem Critic-Durchgang, siehe Konzept A4):
+1. Keine Extraktion ueber eine Local hinweg, die vor UND nach der
+   Schnittgrenze gelesen wird (DRG: `doomSpikeRightNow`).
+2. Jedes `return false` in der extrahierten Region einordnen: „Stufe greift
+   nicht" (unkritisch) vs. „ganze Methode abbrechen" (braucht `out`-Flag, wie
+   `BLM_Default.InFireOrIce(out act, out mustGo)`). Im Zweifel Datei
+   ueberspringen und hier vermerken.
+3. Zweigreihenfolge exakt erhalten; der Diff muss zeigen, dass nur verschoben
+   wurde.
+4. CI-Build gruen.
+
+Namensgebung: Namen kommen aus der Fachlogik des Jobs (`GoIce`, `MaintainFire`,
+`AddThunder` — so macht es BLM_Default bereits), NICHT aus einer festen
+Taxonomie. Die Neunerliste im Konzept beschreibt die Reihenfolge der Stufen,
+nicht ihre Namen.
 
 ## Wichtig für zukünftige Sessions
 

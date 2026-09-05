@@ -1,11 +1,31 @@
 # 04 · Zielkonzept
 
 Ergebnis des internen Audits (Council → Critic → Antithese → Evaluation →
-Revision, drei Durchläufe). Dokumentiert ist der Endstand plus die
-Gegenargumente, die ihn geformt haben — nicht der geglättete Verlauf.
+Revision). Dokumentiert ist der Endstand plus die Gegenargumente, die ihn
+geformt haben — nicht der geglättete Verlauf.
 
 **Reihenfolge nach Wirkbreite:** A wirkt auf alle Jobs, B auf eine Gruppe,
 C auf einen Job. Später kommende Stufen setzen frühere voraus, nie umgekehrt.
+
+---
+
+## Prämisse dieses Branches (korrigiert — die erste Fassung war falsch)
+
+Die erste Fassung dieses Dokuments hat mehrere Punkte mit **Merge-Kosten**
+begründet: der Fork ziehe `upstream/main` nach, also mache struktureller Umbau
+jeden künftigen Merge zur Handarbeit.
+
+**Diese Prämisse gilt für diesen Branch nicht.** Er setzt keine
+Code-Kompatibilität zum Original mehr voraus. Künftige Upstream-Commits werden
+auf ihren **Inhalt** geprüft — welche Verbesserung, welche Fehlerbehebung,
+welche Erweiterung bringen sie — und inhaltlich nachgezogen, nicht als Patch
+appliziert. Damit ist der Merge ohnehin Handarbeit, unabhängig davon, wie die
+Datei hier strukturiert ist. Der Zusatzaufwand durch Umbau ist ~0.
+
+Jede Ablehnung, die **nur** auf Merge-Kosten beruhte, ist damit hinfällig und
+unten neu entschieden. Ablehnungen aus anderen Gründen bleiben — sie werden
+unten explizit als solche gekennzeichnet, damit erkennbar ist, welche
+Begründung noch trägt.
 
 ---
 
@@ -14,15 +34,39 @@ C auf einen Job. Später kommende Stufen setzen frühere voraus, nie umgekehrt.
 ```
 CustomRotation                     handgeschrieben, gemeinsam
       ↓
-{Job}Rotation                      GENERIERT (RotationGetter.cs:47)
+{Job}Rotation                      partial: eine Hälfte generiert, eine handgeschrieben
       ↓
 {Job}_Reborn                       handgeschrieben, je Job
 ```
 
-Es gibt **keine Rollenebene**. Eine einzuziehen hieße, den Codegenerator zu
-ändern — Build-Werkzeug, hohes Risiko, und es bringt nichts, was ein benannter
-Helfer auf `CustomRotation` nicht auch leistet. **Entscheidung: keine neue
-Vererbungsebene.** Rollenlogik lebt als rollenbenannter Helfer, so wie
+**Faktenlage (nachgeprüft, die erste Fassung war hier ungenau):**
+
+| Artefakt | Ort | Status |
+|---|---|---|
+| `public partial class WhiteMageRotation` (Gauge, Job-Helfer) | `RotationSolver.Basic/Rotations/Basic/*.cs`, 23 Dateien | handgeschrieben, eingecheckt |
+| `public abstract partial class WhiteMageRotation : CustomRotation` (alle Aktionen, `AllBaseActions`, `AllTraits`) | `RotationSolver.SourceGenerators/Properties/Rotation.resx`, 23× in 1,98 MB | **generierter Text**, eingecheckt |
+| Emission zur Compile-Zeit | `StaticCodeGenerator.GenerateRotations` (Analyzer-Referenz in `RotationSolver.Basic.csproj`) | – |
+| Erzeugung der resx | `RotationSolver.GameData/Program.cs` → `RotationGetter` | offline, **braucht `C:\FF14\game\sqpack`** |
+
+Es gibt **keine Rollenebene**, und sie bleibt abgelehnt — aber die Begründung
+ist eine andere als in der ersten Fassung:
+
+1. Die Basisklasse `: CustomRotation` steht im **generierten** Teil der
+   `partial class`. C# erlaubt die Basisklassenangabe nur in einem Teil (oder
+   identisch in mehreren); ein `: HealerRotation` in der handgeschriebenen
+   Hälfte ist deshalb ein Compilefehler, kein Ausweg.
+2. Sie zu ändern heißt, `Rotation.resx` von Hand zu editieren. Das ist ein
+   **generiertes Artefakt** — jede Neuerzeugung (Spielpatch, neue Aktionen)
+   überschreibt die Änderung wortlos. Dieser Konflikt hat nichts mit
+   Upstream-Kompatibilität zu tun und überlebt die Prämissenkorrektur.
+3. Neu erzeugen kann dieser Branch die resx nicht: der Generator liest die
+   Spieldateien, die hier nicht vorliegen.
+4. Und selbst wenn: eine Rollenebene leistet nichts, was ein rollenbenannter
+   Helfer auf `CustomRotation` nicht auch leistet. Das war schon in der ersten
+   Fassung der zweite Grund und ist von der Prämisse unabhängig.
+
+**Entscheidung unverändert, Begründung ersetzt: keine neue Vererbungsebene.**
+Rollenlogik lebt als rollenbenannter Helfer, so wie
 `ShouldSustainMitigationDebuff` es bereits vormacht.
 
 ---
@@ -130,10 +174,22 @@ extrahiert hat, ist genau dieser Parser.
 
 **Aufwand:** ~40 Zeilen Skript, ein Schritt in `build.yaml`, kein Produktivcode.
 
-## A4 · Stufen-Vokabular — als KONVENTION, nicht als Refactoring
+## A4 · Stufen — NEU BEWERTET nach der Prämissenkorrektur
 
-**Problem (U1):** `GeneralGCD` hat zwischen 7 und 81 Zweige auf einer Ebene,
-Median ~19. Keine lesbare Untergliederung.
+Die erste Fassung hat A4 auf eine reine Konvention für neuen Code
+zurückgestuft. Der erste ihrer beiden Gründe war **Merge-Kosten** und ist
+hinfällig. Der zweite („Teilanwendung ist selbstzerstörerisch") war nie ein
+Argument gegen A4, sondern eines gegen die *halbe* A4 — er verlangt
+Vollanwendung, und die war unter der alten Prämisse nicht bezahlbar. Jetzt ist
+sie es. **A4 wird deshalb vollständig neu entschieden, nicht nur reaktiviert.**
+
+**Problem (U1), nachgemessen über alle 31 PvE-Rotationsdateien:**
+
+| | |
+|---|---|
+| Zweige auf oberster Ebene, alle Dispatch-Methoden zusammen | **1239** |
+| `GeneralGCD`-Zweige: Median / Maximum | **16** / **80** (BLU) |
+| über 30 Zweige in `GeneralGCD` | BLU 80, PhantomDefault 33, PCT 32 |
 
 **Das Vokabular** (jede Stufe eine private Methode, Name aus dieser Liste):
 
@@ -163,27 +219,77 @@ protected override bool GeneralGCD(out IAction? act)
 }
 ```
 
-Dass das trägt, belegt BLM im Repo selbst: **7** Zweige für dieselbe fachliche
-Abdeckung, für die PCT **33** braucht — allein durch benannte Methoden.
+### Der Loop zu A4, zweiter Durchgang (ohne Merge-Kosten-Argument)
 
-**Warum trotzdem kein Refactoring der Bestandsdateien.** Zwei Gründe, beide
-gemessen:
+**Council.** *Wartender:* 1239 Zweige auf einer Ebene sind der größte
+verbleibende Strukturmangel; nichts anderes im Konzept wirkt so breit.
+*Job-Autor:* Ich will beim Lesen sehen, was mein Job tut, nicht eine Taxonomie
+wiedererkennen. *Spieler:* Verhalten muss identisch bleiben, sonst ist es egal,
+wie es aussieht.
 
-1. **Merge-Kosten.** Dies ist ein Fork, der `upstream/main` nachzieht.
-   Upstream hat in 90 Tagen **29 Commits** auf `RebornRotations/` gelegt —
-   etwa alle drei Tage einer. Die meistgeänderten Dateien sind genau die, die
-   A4 am stärksten umbauen würde: VPR 7, RDM 6, DRK 5, NIN 4, SMN 4, AST 4.
-   Ein Umbau dieser Dateien macht jeden künftigen Upstream-Merge zur
-   Handarbeit — dauerhaft, nicht einmalig.
-2. **Teilanwendung ist selbstzerstörerisch.** Der Nutzen ist ein *gemeinsames*
-   Vokabular. Eines, das die Hälfte der Jobs benutzt, ist keins — dasselbe
-   Argument, das A2 gekippt hat.
+**Critic — der Einwand, der neu ist und nichts mit Merge-Kosten zu tun hat.**
+Der Beleg für A4 ist BLM_Default. Aber was BLM_Default tatsächlich tut, ist
+nicht das vorgeschlagene Vokabular. Seine 14 privaten Helfer heißen `GoIce`,
+`MaintainIce`, `DoFire`, `AddThunder`, `UsePolyglot`, `MaintainStatus` — Namen
+**aus der Fachlogik des Jobs**, nicht aus einer festen Neunerliste. Der
+Kronzeuge für A4 widerlegt A4s Namensteil. `GoIce` sagt mehr als
+`IceRecovery`; eine erzwungene Taxonomie würde diese Datei *verschlechtern*.
 
-**Was bleibt:** Das Vokabular gilt als **Konvention für fork-eigenen und neu
-geschriebenen Code**. Kosten null, und es greift dort, wo die Eigenkomplexität
-dieses Forks tatsächlich liegt. Faktisch ist es dort bereits angewandt:
+**Critic, zweiter Einwand.** „Mechanische Extraktion ist verhaltensgleich" gilt
+nicht ausnahmslos. In BLM_Default steht
+
+```csharp
+if (InFireOrIce(out act, out var mustGo)) return true;
+if (mustGo) return false;                 // Abbruch der GANZEN Methode
+```
+
+Ein `return false` innerhalb einer herausgezogenen Region bedeutet dort nicht
+„diese Stufe greift nicht", sondern „keine GCD in diesem Frame". Das überlebt
+die Extraktion nur mit einem zusätzlichen `out`-Parameter — und der ist selbst
+ein Lesbarkeitsverlust. Dasselbe gilt für Locals, die über die Schnittgrenze
+hinweg benutzt werden (DRG: `doomSpikeRightNow`).
+
+**Antithese.** Beide Einwände treffen **verschiedene Hälften** von A4. Der
+erste trifft die Namensvorschrift, der zweite die Extraktion. Sie fallen nicht
+gemeinsam. Die Extraktion ist der Teil mit dem Nutzen (BLM 6 Zweige gegen PCT
+32 für vergleichbare fachliche Abdeckung); die Namensvorschrift ist der Teil
+mit dem Streit. Und der zweite Einwand ist kein Ablehnungsgrund, sondern eine
+**Prüfpflicht pro Datei**: Locals über die Schnittgrenze und `return false`
+mit Abbruchbedeutung sind beide statisch auffindbar.
+
+**Evaluation.** Was den ersten Einwand trägt, ist nicht „Domänennamen sind
+schöner", sondern: die Neunerliste beschreibt in Wahrheit keine *Namen*,
+sondern eine *Reihenfolge*. Recovery vor Resource vor Burst vor Dot vor Aoe vor
+Combo vor Filler ist eine Prioritätsaussage, und die ist tatsächlich über alle
+Jobs vergleichbar. Der Name dagegen ist die Information des Jobs. Beides in
+einen Bezeichner zu zwingen war der Fehler.
+
+**Revision — A4 zerfällt in zwei Punkte mit verschiedenem Status:**
+
+| | Inhalt | Status |
+|---|---|---|
+| **A4a** | Zweige auf oberster Ebene zu benannten privaten Methoden zusammenfassen, Datei für Datei | **umzusetzen**, breitester verbleibender Punkt |
+| **A4b** | Die Neunerliste gilt als **Reihenfolge**, nicht als Namensvorschrift. Namen kommen aus der Fachlogik des Jobs. | Konvention |
+
+**Abnahmebedingungen für A4a, pro Datei, aus dem Critic-Einwand abgeleitet:**
+
+1. Keine Extraktion über eine Local hinweg, die vor und nach der Schnittgrenze
+   gelesen wird — sonst zuerst die Local in die Stufe hineinziehen.
+2. Jedes `return false` in der extrahierten Region prüfen: „Stufe greift nicht"
+   (unkritisch) oder „Methode abbrechen" (braucht `out`-Flag, wie
+   `InFireOrIce`). Im Zweifel Datei überspringen.
+3. Reihenfolge der Zweige bleibt exakt erhalten. Der Diff muss zeigen, dass
+   nur verschoben wurde.
+4. CI-Build grün, und die beiden Wächter (A3, A2′) laufen ohnehin mit.
+
+**Reihenfolge nach Nutzen pro Datei:** BLU (80) → PhantomDefault (33) →
+PCT (32) → SAM (27) → MCH/SMN (23). Unter ~15 Zweigen lohnt es nicht.
+
+**Was von der alten Fassung bleibt:** Die Konvention galt schon bisher für
+fork-eigenen Code, und dort ist sie angewandt —
 `ShouldSustainMitigationDebuff`, `TrySustain…OnTank`, `TryAddleBeforeDamage`,
-`SwiftRaisePending` sind genau solche benannten Stufen.
+`SwiftRaisePending` sind genau solche benannten Stufen mit Domänennamen. A4b
+schreibt nur fest, was ohnehin praktiziert wurde.
 
 ---
 
@@ -239,18 +345,56 @@ erkennbare Begründung. Vor Änderung im Spiel prüfen.
 
 ---
 
-# C · Jobebene
+# C · Jobebene — NEU BEWERTET
 
-Erst nach A und B, und nur dort, wo nach A4 noch etwas übrig ist.
+Die erste Fassung hat C pauschal mit Merge-Kosten verworfen. Das ist hinfällig.
+Nach der Neuprüfung zerfällt C in drei Gruppen mit verschiedenem Status:
 
-| Job | Punkt |
-|---|---|
-| DRG | 8 `if (Trait.EnoughLevel)/(!Trait…)`-Paare hintereinander → nach A2 datengetrieben |
-| PCT | 33 Zweige, 12 Farbaktionen in sechs parallelen Strängen → nach A2/A4 auf ~8 Stufen |
-| BLU | 81 Zweige auf einer Ebene → A4 anwenden, sonst unverändert lassen |
-| MCH | 12 Level-Kettenglieder, die meisten aller Jobs → reiner A2-Fall |
-| DRG · VPR | kein `CountDownAction` — prüfen, ob Lücke oder Absicht |
-| RPR · SAM · WAR | kein `EmergencyAbility` — dito |
+| Job | Punkt | Status nach Neuprüfung |
+|---|---|---|
+| PCT | 32 Zweige, 12 Farbaktionen in sechs parallelen Strängen | **A4a-Fall**, Rang 3 |
+| BLU | 80 Zweige auf einer Ebene | **A4a-Fall**, Rang 1 |
+| SAM · MCH · SMN | 27 / 23 / 23 Zweige | **A4a-Fälle**, Rang 4–6 |
+| DRG | 8 `Trait.EnoughLevel`/`!Trait…`-Paare | **offen, Spielfrage** — s.u. |
+| MCH | 12 Level-Kettenglieder | folgt A2, und A2 steht verworfen — kein eigener Punkt mehr |
+| DRG · VPR | kein `CountDownAction` | offen, prüfen ob Lücke oder Absicht |
+| RPR · SAM · WAR | kein `EmergencyAbility` | offen, dito |
+
+Damit bleibt von C als eigenständiger Punkt nur das DRG-Trait-Muster übrig —
+alles andere ist entweder ein A4a-Fall oder eine offene Spielfrage.
+
+## C1 · DRG-Trait-Paare — der Fund, der die Vereinfachung blockiert
+
+Achtmal steht in `DRG_Reborn.cs` dasselbe Muster (Zeilen 288–405):
+
+```csharp
+if (LanceMasteryIiTrait.EnoughLevel)  { if (HeavensThrustPvE.CanUse(out act)) return true; }
+if (!LanceMasteryIiTrait.EnoughLevel) { if (FullThrustPvE.CanUse(out act))    return true; }
+```
+
+Die naheliegende Vereinfachung ist, die Gates zu streichen — `CanUse` prüft
+`EnoughLevel` bereits selbst (`ActionBasicInfo.cs:452`):
+
+```csharp
+if (HeavensThrustPvE.CanUse(out act)) return true;
+if (FullThrustPvE.CanUse(out act))    return true;
+```
+
+**Das ist nicht verhaltensgleich, und der Unterschied ist kein Randfall.** Die
+gegateten Fassungen schließen einander aus; die ordnende Fassung ist ein
+Fallback. Sie unterscheiden sich genau dann, wenn `HeavensThrustPvE.CanUse` aus
+einem **anderen Grund als dem Level** fehlschlägt — Combo nicht offen,
+Reichweite, Status. Dann versucht die zweite Fassung zusätzlich die
+Vorgängeraktion, die erste nicht.
+
+Ob das schadet, hängt daran, ob `FullThrustPvE.CanUse` oberhalb der Traitstufe
+überhaupt noch `true` liefern kann. `BaseAction.Use()` castet `ID`, nicht
+`AdjustedID` (`BaseAction.cs:278/301`), verlässt sich also auf die
+Aktionsersetzung des Spiels — der Cast wäre folgenlos richtig, aber die
+Combo-Buchführung von RSR läuft über die andere Aktion.
+
+**Ohne Spielbeobachtung nicht entscheidbar. Nicht ungeprüft vereinfachen** —
+das wäre exakt der Fehler von #56 (Provoke-Distanz).
 
 ---
 
@@ -321,63 +465,73 @@ Alle Zahlen sind aus dem Code gezählt, alle Wirkungen statisch hergeleitet.
 
 ## Umsetzungsreihenfolge
 
-| Schritt | Inhalt | Zeilen ± | Risiko | Prüfbar durch |
-|---|---|---|---|---|
-| 1 | A3 CI-Prüfung | +40 (nur CI) | keins | findet die 9 historischen Fälle |
-| 2 | A2′ Level-Prädikat-Wächter | +30 (nur CI) | keins | Fixture + sauberer Lauf |
-| 3 | ~~A1 Sustain-Slot~~ | entfällt | – | verworfen, siehe A1 |
-| 4 | A4 als Konvention | 0 | keins | gilt für neuen Code |
-| 5 | B1 · B2 | −20 | gering | CI-Build |
-| 6 | B3 · B4 · B5 prüfen | 0 | – | Spieltest, dann entscheiden |
-| 7 | C, was übrig bleibt | negativ | gering | CI-Build |
+| Schritt | Inhalt | Zeilen ± | Risiko | Prüfbar durch | Stand |
+|---|---|---|---|---|---|
+| 1 | A3 CI-Prüfung | +40 (nur CI) | keins | findet die 9 historischen Fälle | erledigt |
+| 2 | A2′ Level-Prädikat-Wächter | +30 (nur CI) | keins | Fixture + sauberer Lauf | erledigt |
+| 3 | ~~A1 Sustain-Slot~~ | entfällt | – | verworfen, siehe A1 | – |
+| 4 | B1 `SwiftRaisePending` | −20 | gering | CI-Build | erledigt |
+| 5 | **A4a**, Datei für Datei: BLU → PhantomDefault → PCT → SAM → MCH → SMN | negativ | mittel, pro Datei | Abnahmebedingungen 1–4 unter A4 + CI-Build | **offen** |
+| 6 | B3 · B4 · B5 · C1 im Spiel prüfen | 0 | – | Spielbeobachtung, dann entscheiden | offen |
 
-Schritt 1 und 2 sind reine Gewinne ohne Verhaltensänderung und sollten zuerst
-kommen — sie sichern alle folgenden Schritte ab.
+Schritt 1 und 2 sind reine Gewinne ohne Verhaltensänderung und kamen deshalb
+zuerst — sie sichern Schritt 5 ab, der als einziger noch offener Punkt
+tatsächlich Produktivcode bewegt.
+
+Schritt 5 ist bewusst **eine Datei pro Commit**. Die Abnahmebedingungen sind
+per Datei zu prüfen, nicht per Serie; eine Datei, deren Locals oder
+`return false`-Semantik die Extraktion nicht zulassen, wird übersprungen und
+hier vermerkt.
 
 
 ---
 
-# Ergebnis der Umsetzung — was die Messung vom Konzept übrig gelassen hat
+# Stand nach der Neubewertung
 
-Von acht Konzeptpunkten haben drei die Umsetzung erreicht, vier sind an
-Messungen gescheitert, drei bleiben als Spielfragen offen.
+Jeder Punkt ist daraufhin geprüft worden, **worauf seine Ablehnung beruhte**.
+Nur wer sich auf Merge-Kosten stützte, wurde neu entschieden.
 
-| Punkt | Ergebnis | Grund |
+| Punkt | Ergebnis | Beruhte die Ablehnung auf Merge-Kosten? |
 |---|---|---|
 | A3 Base-Call-Wächter | **umgesetzt** | – |
-| A2 `FirstUsable` | verworfen | nur 25 von 65 Ketten gleichförmig |
-| A2′ Level-Prädikat-Wächter | **umgesetzt** | Ersatz für A2 |
-| A1 Sustain-Slot | verworfen | Position ist Information, nicht Duplikat |
-| A4 Vokabular | auf Konvention zurückgestuft | Merge-Kosten |
+| A2′ Level-Prädikat-Wächter | **umgesetzt** | – |
 | B1 `SwiftRaisePending` | **umgesetzt** | – |
-| B2 `TryRangedPull` | verworfen | nichts zu teilen |
-| B3/B4/B5 | offen | Spielfragen |
-| C job-spezifisch | verworfen | Merge-Kosten, s.u. |
+| A1 Sustain-Slot | verworfen, **bleibt** | nein — Position ist Information |
+| A2 `FirstUsable` | verworfen, **bleibt** | nein — nur 25 von 65 Ketten gleichförmig |
+| B2 `TryRangedPull` | verworfen, **bleibt** | nein — es gibt nichts zu teilen |
+| Rollenebene | verworfen, **Begründung ersetzt** | teilweise — trägt jetzt auf generiertem Artefakt |
+| **A4a Stufen-Extraktion** | **reaktiviert, umzusetzen** | **ja — Ablehnung hinfällig** |
+| A4b Stufen-Vokabular | zu Reihenfolge umgedeutet | eigener Critic-Befund, s. A4 |
+| **C PCT/BLU/SAM/MCH/SMN** | **in A4a aufgegangen** | **ja — Ablehnung hinfällig** |
+| C1 DRG-Trait-Paare | offen, Spielfrage | nein — neu gefundene Semantikfalle |
+| B3/B4/B5 | offen, Spielfragen | nein |
 
-## Die übergreifende Erkenntnis
+## Die übergreifende Erkenntnis — ersetzt
 
-Der Fork zieht einen aktiv entwickelten Upstream nach. Gemessen über 90 Tage:
-**29 Commits** auf `RebornRotations/`, und nur **4 von 54** Rotationsdateien
-blieben unberührt. Es gibt keine ruhige Ecke, in der man gefahrlos umbauen
-könnte.
+Die alte Fassung schloss:
 
-Daraus folgt eine Regel, die allgemeiner ist als jeder Einzelpunkt oben:
+> ~~In einem Fork, der einen aktiven Upstream nachzieht, ist strukturelles
+> Umbauen der nachgezogenen Dateien keine tragfähige Verbesserungsstrategie.~~
 
-> **In einem Fork, der einen aktiven Upstream nachzieht, ist strukturelles
-> Umbauen der nachgezogenen Dateien keine tragfähige Verbesserungsstrategie.
-> Tragfähig sind: Wächter, die Fehlerklassen ausschließen; benannte Helfer für
-> echte Bedingungs-Duplikate; und Konventionen für eigenen Code.**
+Diese Regel folgte aus der Prämisse, die für diesen Branch nicht gilt. Was
+nach der Neuprüfung tatsächlich trägt, ist enger und hat nichts mit Upstream
+zu tun:
 
-Alle drei umgesetzten Punkte haben genau diese Form, und keiner der vier
-verworfenen hatte sie. Das erklärt rückwirkend auch, warum die früheren
-Arbeiten, die Bestand hatten — `ShouldSustainMitigationDebuff`,
-`TrySustain…OnTank`, die beiden Wächter — von dieser Bauart sind, während die
-großen Umstrukturierungen es nicht waren.
+> **Umgebaut wird handgeschriebener Code. Generierte Artefakte
+> (`Rotation.resx` und alles, was der Source-Generator daraus emittiert)
+> werden nicht von Hand geändert — sie werden vom nächsten Generatorlauf
+> überschrieben, und der Generator ist hier nicht ausführbar.**
 
-## Was das für B3/B4/B5 heißt
+Und eine zweite, die aus dem zweiten Durchgang stammt:
 
-Sie bleiben offen, aber aus einem anderen Grund als die verworfenen Punkte: Sie
-sind keine Struktur-, sondern Verhaltensfragen (Reprisal-Platzierung,
-Slot-Asymmetrien, MNK-Heilslot). Ihre Diffs wären winzig und
-merge-unproblematisch. Was fehlt, ist die Spielentscheidung — nicht die
-Machbarkeit.
+> **Ablehnungsgründe sind zu protokollieren, nicht nur Ablehnungen.** Vier
+> Punkte hier standen jahrelang „verworfen" da; ohne den vermerkten Grund wäre
+> nach der Prämissenkorrektur nicht unterscheidbar gewesen, welche vier davon
+> neu zu entscheiden sind und welche nicht.
+
+## Was das für die offenen Punkte heißt
+
+B3, B4, B5 und C1 sind keine Struktur-, sondern Verhaltensfragen
+(Reprisal-Platzierung, Slot-Asymmetrien, MNK-Heilslot, DRG-Trait-Gates). Ihre
+Diffs wären winzig. Was fehlt, ist die Spielbeobachtung — nicht die
+Machbarkeit und nicht die Erlaubnis.
