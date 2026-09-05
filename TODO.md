@@ -176,6 +176,31 @@ Namensgebung: Namen kommen aus der Fachlogik des Jobs (`GoIce`, `MaintainFire`,
 Taxonomie. Die Neunerliste im Konzept beschreibt die Reihenfolge der Stufen,
 nicht ihre Namen.
 
+### #67 Upstream-Inhaltsprüfung: 8 neue Commits seit dem Branch-Punkt
+
+Neue Vorgabe fuer diesen Branch: Upstream wird NICHT gemergt, sondern auf
+Inhalt geprueft — welche Verbesserung/Fehlerbehebung/Erweiterung bringt der
+Commit, und gilt sie hier auch. Stand `git fetch upstream` am 05.09.2026,
+Branch-Punkt `ee055ca` (16.08.2026), Upstream-Kopf `f5c8432`. 16 Commits
+Rueckstand, davon 8 ohne Merge-Commits:
+
+| Commit | Inhalt | Betrifft |
+|---|---|---|
+| `53822a8` | Bard-Songreihenfolge, Anpassung an Dalamud-Aenderung | BRD_Reborn |
+| `e003bce` | DRK-Rotationsfixes | DRK_Reborn (hier geaendert!) |
+| `df1a8c9` | Nicht-FATE-Mobs waehrend FATEs anders behandelt | Targeting, zentral |
+| `7b8a2f5` | Doppelte Oblation-Nutzung, ECommons-Update | DRK_Reborn (hier geaendert!) |
+| `0bde9ed` | Crash im Next-Action-Fenster bei ungueltigem Zielobjekt | UI |
+| `b5a91d7` | SGE-Logik, Targeting-Probleme | SGE_Reborn (hier geaendert!) |
+| `69f4844` | GNB-Fixes, strengere Status-Listen-Guards | GNB_Reborn |
+| `83e4d0e` | BLU Exuviation wurde nicht als AoE-Heilung genutzt | BLU_Reborn |
+
+Drei davon (DRK 2x, SGE) betreffen Dateien, die dieser Branch bereits
+angefasst hat — dort ist die Pruefung nicht optional, sondern noetig, um
+nicht gegen einen veralteten Stand zu arbeiten.
+
+Auch `origin/main` ist um dieselben 16 Commits zurueck und hat 8 eigene.
+
 ## Wichtig für zukünftige Sessions
 
 Diese Dateien (TODO.md, AUDIT_LOG.md) existieren nur auf dem Branch, auf
