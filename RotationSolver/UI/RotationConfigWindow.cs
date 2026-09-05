@@ -5166,27 +5166,5 @@ public partial class RotationConfigWindow : Window
 		ImGui.Text($"{type}: {id}");
 	}
 
-	private static bool BeginChild(string str_id, Vector2 size)
-	{
-		return !IsFailed() && ImGui.BeginChild(str_id, size);
-	}
-
-	private static bool BeginChild(string str_id, Vector2 size, bool border, ImGuiWindowFlags flags)
-	{
-		return !IsFailed() && ImGui.BeginChild(str_id, size, border, flags);
-	}
-
-	private static bool IsFailed()
-	{
-		var style = ImGui.GetStyle();
-		var min = style.WindowPadding.X + style.WindowBorderSize;
-		var columnWidth = ImGui.GetColumnWidth();
-		var windowSize = ImGui.GetWindowSize();
-		var cursor = ImGui.GetCursorPos();
-
-		return columnWidth > 0 && columnWidth <= min
-			|| windowSize.Y - cursor.Y <= min
-			|| windowSize.X - cursor.X <= min;
-	}
 	#endregion
 }

@@ -21,18 +21,6 @@ namespace RotationSolver.Commands
 
 		internal static IBaseAction? CurrentAction { get; set; } = null;
 
-		public static void IncrementState()
-		{
-			if (!DataCenter.State)
-			{ DoStateCommandType(StateCommandType.Auto); return; }
-			if (DataCenter.State && !DataCenter.IsManual && DataCenter.TargetingType == TargetingType.Big)
-			{ DoStateCommandType(StateCommandType.Auto); return; }
-			if (DataCenter.State && !DataCenter.IsManual)
-			{ DoStateCommandType(StateCommandType.Manual); return; }
-			if (DataCenter.State && DataCenter.IsManual)
-			{ DoStateCommandType(StateCommandType.Off); return; }
-		}
-
 		internal static bool CanDoAnAction(bool isGCD)
 		{
 			var currentState = DataCenter.State;
