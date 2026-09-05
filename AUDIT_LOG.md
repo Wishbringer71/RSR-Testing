@@ -1,1346 +1,184 @@
-# Audit-Log (Beleg-Archiv — siehe CLAUDE.md REGEL, Persistenz-Klausel)
+# Audit-Log — Beleg-Archiv
 
-Diese Datei ist das Beleg-Archiv für bereits abgeschlossene Prüfungen. Sie
-existiert, damit "wurde X schon geprüft?" nicht erneut recherchiert werden
-muss und damit Aussagen wie "55/55 Commits geprüft" belegbar bleiben, statt
-unbelegte Behauptung zu sein (REGEL Φ:Fabrikation).
+Archiv abgeschlossener Prüfungen dieses Forks. Zweck: „wurde X schon geprüft?" ist hier nachlesbar, und jede Zahl („59 Commits geprüft") hat einen Beleg. Offene Arbeit steht ausschließlich in `TODO.md`; Regeln in `CLAUDE.md`.
 
-Für offene Aufgaben/Konzepte siehe `TODO.md` — dort steht nur, was noch zu
-tun ist. Diese Datei hier wird nicht bei jeder kleinen Änderung neu
-gelesen, sondern gezielt konsultiert, wenn geprüft werden soll, ob ein
-bestimmter Commit/Bereich bereits auditiert wurde.
+Aufbau: **A** Vorgänge in chronologischer Reihenfolge, je Vorgang Anlass → Ergebnis → Belege; **B** Commit-Register aller Fork-Commits mit Prüfstatus; **C** widerrufene Aussagen dieses Archivs.
 
-## Abgeschlossene Nachprüfungen dieser Session (Batches, vor der Einzelprüfung)
+Statusbegriffe: **GEFIXT** (Code geändert) · **KEIN FEHLER** (geprüft, nichts zu tun) · **VERWORFEN** (Idee/Fix zurückgenommen) · **KORRIGIERT** (frühere Aussage hier widerrufen, s. Teil C). Prüftiefe: *statisch* = Code/Diff gelesen · *CI* = kompiliert und Prüfskript sauber · *Spiel* = vom Nutzer beobachtet. Ohne Zusatz gilt *statisch + CI*.
 
-- **Batch 1** (BMR-Refresh-Rollout + Weakness/Brink-Helfer): Weakness/Brink-
-  Helfer PASST (saubere Zentralisierung, dokumentierte Selbstkorrektur einer
-  früheren Regression). BMR-Refresh-Helfer selbst PASST in Architektur/
-  Verwendung, aber siehe TODO.md #47 für den gefundenen Gate-Fehler.
-- **Batch 2** (BMR-Timeline-Gates: BMR*Within-Helper, ChurinDNC BMREnabled-
-  Fix, BMRRaidwideMitWindow-Doku): alle drei PASSEN, inkl. Widerlegung der
-  ursprünglichen 15s/10s-vs-5s/3s-Konfliktsorge.
-- **Batch 3** (9 Dispatch-/Base-Call-Fixes): alle 9 bestätigt korrekt,
-  inkl. repo-weitem automatisiertem Scan ohne weitere Treffer desselben
-  Musters.
-- **Batch 4** (Interrupt-Ordering, SMN Primal-Reihenfolge, RDM Impact-Bug,
-  PhantomDefault act-Bug, AntiKnockback): 3/5 bestätigt. 2/5 (Interrupt-
-  Ordering, AntiKnockback) hatten einen bisher unentdeckten Folgefehler —
-  der generische Rollen-Fallback in `MyInterruptAbility`/`AntiKnockback`
-  nutzte dieselbe Fähigkeit (LegSweep/Arm's Length) ungegatet erneut,
-  nachdem RPR/VPRs eigenes Combo-Sicherheitsgate sie mid-combo korrekt
-  abgelehnt hatte — Gate damit faktisch wirkungslos. Gefixt (Commit
-  be7cf22, `HasOwnInterruptGate`/`HasOwnAntiKnockbackGate`) und auditiert
-  (GO).
+---
 
-## Vollständige Einzel-Nachprüfung: ALLE Patches Fork vs. Upstream (`upstream/main..HEAD`)
+## A · Vorgänge
 
-Nutzer-Anweisung: nicht batchweise, sondern **einzeln** — jeder Commit für
-sich: löst er ein reales Gameplay-/Kampf-Problem, löst er es gut/codearm,
-gibt es eine bessere Alternative? Ersetzt/erweitert die 4 Batches oben, die
-nur einen Teil abdeckten (viele der unten gelisteten Commits — v.a. der
-MCH-Tactician-Strang, die job-spezifischen BMR-Rollout-Commits und die
-DRG/NIN/SAM/DNC-Selbstheilung — wurden bisher NIE einzeln inhaltlich
-geprüft, nur die zugrunde liegende Helper-Architektur als Ganzes).
+### A1 · Aggro-Management (Nutzerthema)
 
-Ausgeschlossen (kein Gameplay-Code, nicht einzeln zu prüfen): Marker-Bump-
-Commits (6f839e9, 0b0469c, b6f4872, 4902b42, 60bb9af, 27d78f8, fb3af74,
-bfd0a4c), Merge-Commits (9160d68, 81dcbc7, e615624, 0bb6311), Netto-Null-
-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85,
-6717e5d+4e09493 — jeweils vollständig zurückgenommen, nichts Aktives übrig),
-sowie die Meta-Commits dieser Session selbst (cce250b, b0f8ef7, 3f6d262,
-5bd971e, feddd8e, e41e54c, a165c34, 1705eb7, 57fbe2b, d70adee, ccc4947,
-d9125f1, 02b49f1, f97c8b1, sowie die Fork-main-Sync-Merges — CLAUDE.md/
-TODO.md-Checkpoints und reine Doku-Commits; diese Liste wächst mit jedem
-weiteren Doku-Commit dieser Art und muss beim nächsten
-`upstream/main..HEAD`-Abgleich entsprechend erweitert werden, sonst
-täuscht die reine Commit-Zahl einen wachsenden Prüf-Rückstand vor, der
-real nur Session-eigene Doku-Commits sind).
-Hinweis: `upstream/main` wurde am 15.08. erneut abgeglichen und in
-`origin/main` (den Fork selbst, nicht nur den Arbeitsbranch) gemerged —
-PR #1350 "DRK opener + Phantom Samurai target logic", geprüft, keine
-Überschneidung mit den hier auditierten Stellen.
+**Anlass:** WHM castete den DoT im Wall-to-Wall wiederholt auf ein Ziel, das bereits auf ihm hing. Daraus ein rollenbewusstes Konzept: Nicht-Tanks vermeiden Aggro, wo es nichts kostet; Tanks übernehmen sie aktiv, auch bei Co-Tank-Tod.
 
-Status-Legende: `[ ]` offen, `[~]` in Arbeit, `[x]` einzeln geprüft (PASST
-oder gefixt+auditiert, siehe Vermerk).
-
-- [x] 8edd696 SMN: use Addle in defensives, detect tankbusters landing on non-tanks — TIEF NACHGEPRÜFT (inhaltlich/kausal/gesamtheitlich, nicht nur Diff gelesen): Kausalkette Erkennung→AutoStatus→Dispatch→job-eigene DefenseSingleAbility vollständig nachvollzogen; alle 5 Kampfrollen in ShouldAddDefenseSingle() gegen komplette JobRole-Enum geprüft, keine fehlt; SMN-only-Wiring im Commit-Text ehrlich benannt, durch spätere Commits (c93a8bc, #47) vervollständigt. Kein Fehler gefunden.
-- [x] 1ca682a Respect status-provide check for queued commands — TIEF NACHGEPRÜFT: Kausalkette bis in `ActionBasicInfo.BasicCheck`/`IsStatusProvided` verifiziert (echter Blockmechanismus, nicht nur behauptet), gesamtheitlich bestätigt (GCD-seitiger Zwilling 0885f53 existiert, deckt den symmetrischen Fall ab). **Korrektur (05.09.):** der Mechanismus war echt, die Richtung falsch — `skipStatusProvideCheck: true` ist Upstreams bewusste Ausnahme fuer eine explizit befohlene Aktion; ohne das Flag feuerte ein befohlenes oGCD stillschweigend nicht. Revertiert in 5755ad5b.
-- [x] c93a8bc Add generic BMR-aware mitigation refresh helper; wire into Addle/Feint — TIEF NACHGEPRÜFT: `BMRShouldRefreshBefore` bis in `WillStatusEnd`/`StatusTime` kausal nachvollzogen; 0.6s-Schwelle gegen StateUpdater-Konvention verifiziert (identisch); Spieldaten per Websuche verifiziert (Addle UND Feint: 10s Basis, 15s ab Lv.98 Enhanced-Trait, beide bestätigt, mehrere Quellen); `PlayerSyncedLevel()` korrekt statt Raw-Level für Sync-Content. Kein Fehler.
-- [x] 75b7af0 SMN: remove dead RadiantOnCooldownSpam config option — TIEF NACHGEPRÜFT: 0 Referenzen im aktuellen Repo (frisch gegrept), Fallback-Abdeckung in GeneralAbility direkt gegen bereits gelesenen Code verifiziert. Kein Fehler.
-- [x] e87ebea SMN: opt-in movement-aware Titan priority — TIEF NACHGEPRÜFT: Spielmechanik-Behauptung (Topaz instant-cast, Ifrit/Garuda Hardcasts) per Websuche verifiziert, `TitanTime()` existiert und korrekt referenziert, Default-off verhindert Verhaltensänderung ohne Opt-in. Kein Fehler.
-- [x] a1418f5 Fix interrupt ordering so per-job combo-safety gates actually apply — TIEF NACHGEPRÜFT: aktueller Live-Code (CustomRotation_Ability.cs:406-414) bestätigt exakt den behaupteten Endzustand — `InterruptAbility(nextGCD, out act)` (virtuelle Job-Override-Hook) wird VOR dem hartkodierten Rollen-Switch aufgerufen, nicht danach. Kausal nachvollzogen: RPR/VPR überschreiben `InterruptAbility` mit `NotInActiveCombo`/`NoAbilityReady`-Gate auf LegSweepPvE (RPR_Reborn.cs:141-152, VPR_Reborn.cs:305-316) — ohne die Umordnung hätte der Melee-Rollen-Fallback dieselbe Aktion vorher ungegatet an sich gerissen und das Gate wäre nie erreicht worden (Intention des Commits korrekt gelöst). Gesamtheitlich geprüft: alle 4 Overrides von `InterruptAbility` im Repo (PhantomDefault, BLU_Reborn zusätzlich zu RPR/VPR) — PhantomDefault nutzt OccultFalconPvE (kollisionsfrei mit Rollen-Fallback), BLU_Reborn reicht nur an base durch (No-Op) — beide von der Umordnung unberührt, kein Kollateralschaden. Kein Fehler in diesem Commit selbst; der in ae7ed1a/e1886c7 gefundene Folgefehler (ungegateter Zweitversuch derselben Aktion im Rollen-Fallback) betraf eine andere Stelle (AntiKnockback-Pendant) und wurde in be7cf22 sauber geschlossen (`HasOwnInterruptGate`/`HasOwnAntiKnockbackGate`, live verifiziert: beide Properties in RPR/VPR auf `true`, Rollen-Fallback prüft `!HasOwnInterruptGate/!HasOwnAntiKnockbackGate` vor dem ungegateten Zweitversuch). Kein Fehler.
-- [x] be083a1 Add Weakness/Brink of Death awareness to heal thresholds — TIEF NACHGEPRÜFT: `IsWeakened`/`PlayerIsWeakened` (StatusHelper.cs:659-676) und Einhängung in `ShouldHealSelf`/`ShouldHealSingle` (StateUpdater.cs) im Live-Code gelesen — Logik von be083a1 ist nicht nur erhalten, sondern korrekt mit der später hinzugekommenen Schild-Credit-Logik (0c076ee) verzahnt: Schild-Credit wird explizit NICHT gewährt, wenn Ziel geschwächt ist (Zeile 756/813 `&& !...IsWeakened()`), mit klarem Kommentar warum (Schild-Dauer sagt nichts über Heilbedarf bei halbierter Heilung aus) — gesamtheitlich konsistentes Zusammenspiel zweier zeitlich getrennter Commits, kein Konflikt. Schwellen-Mathematik (`threshold * 1.5f`, gecappt `Math.Min(1f, ...)`) macht Heilung ausschließlich früher nie später aktiv, Intention erfüllt. Grenze ehrlich benannt: `StatusID.Weakness`/`BrinkOfDeath` sind externe Dalamud/Lumina-Enum-Werte, nicht im Repo als Quelltext vorhanden — Existenz/Korrektheit der IDs kann hier nicht kompiliert/verifiziert werden, nur die Verwendung im eigenen Code. Kein Fehler in der Fork-eigenen Logik.
-- [x] 27c7b69 Weigh shield magnitude and duration in heal-priority decisions — TIEF NACHGEPRÜFT (präzisiert): ursprüngliche Version führte `ShieldSurvivalHorizon` mit blinder 3s-Fallback-Schwelle OHNE `UseBmrTimeline`-Check und ohne jeden Bedrohungsnachweis ein → Regression (fast jeder reale Schild übersteht 3s, wurde also fast durchgehend als Schutz gewertet, Heilung verzögerte sich ohne echten Grund). Live-Code geprüft: `ShieldSurvivalHorizon` als Bezeichner/Mechanismus lebt weiter (StateUpdater.cs:718-722), ist aber jetzt durch `ShieldCreditAllowed` (Zeile 704-709, aus 0c076ee) vorgeschaltet — der 3f-Fallback greift nur noch, wenn `ShieldCreditAllowed` bereits über echten Cast-Nachweis (IsHostileCastingAOE/ToTank/TankBusterAtMe) wahr ist, nicht mehr blind. Ursprüngliche Regression korrekt geschlossen, Grundidee (Schild-Magnitude in Heil-Entscheidung einbeziehen) sinnvoll erhalten. Kein Fehler im jetzigen Zustand.
-- [x] 1ed9907 Fix two compile errors in the BMR-refresh work — TIEF NACHGEPRÜFT: beide Fixes gegen Live-Code bestätigt — (1) `Player.Object` → `Player` in `BMRShouldRefreshBefore`s Self-Fallback (CustomRotation_OtherInfo.cs:1279, `Player` ist innerhalb `CustomRotation` bereits `IPlayerCharacter`, nicht die externe `ECommons`-Player-Klasse mit `.Object`-Indirektion); (2) NIN_Reborn-Override entfernt, Logik stattdessen in `NinjaRotation.DefenseAreaAbility` (bereits `sealed`) integriert, inkl. Mudra-Gate — Live-Code (NinjaRotation.cs:722-736) bestätigt Integration korrekt, Mudra-Check vorhanden. Commit-Behauptung "kein anderer Melee-Job hat diesen Sealed-Konflikt" selbst nachgeprüft (grep über alle Basic-Rotationsklassen): nur NinjaRotation sealed `DefenseAreaAbility`, bestätigt statt geglaubt. Kein Fehler.
-- [x] 0f25161 RPR/VPR: let the BMR-timed Feint refresh survive on-going combo — TIEF NACHGEPRÜFT: `EnoughWeaveTime` (CustomRotation_OtherInfo.cs:1296: `WeaponRemain < WeaponTotal && WeaponRemain > Math.Max(CalculatedActionAhead, AnimationLock)`) ist ein etablierter, repo-weit vielfach genutzter Clip-Sicherheits-Helfer (ChurinMNK/ChurinDNC/ChurinBRD, >10 Fundstellen) — Commit-Behauptung "bereits derselbe Verwendungszweck wie ChurinMNK" verifiziert, nicht nur geglaubt. Live-Code (RPR_Reborn.cs:75-101) bestätigt: alter reaktiver Zweig (`NotInActiveCombo && FeintPvE.CanUse`, Zeile 95) unverändert erhalten, neuer BMR-Zweig (Zeile 86-93) bekam die lockerere Weave-basierte Prüfung statt der pauschalen Combo-Sperre — Kausalkette (echte, getimte Bedrohung wiegt schwerer als reine Slot-Präferenz, aber Clip-Sicherheit bleibt hart) korrekt umgesetzt. VPR-Pendant strukturell identisch (VPR_Reborn.cs:238-260). Kein Fehler.
-- [x] 6fc9ebb PCT: fix DefenseSingleAbility falling through to the wrong base call — TIEF NACHGEPRÜFT: Diff zeigt `base.DefenseAreaAbility`→`base.DefenseSingleAbility`-Korrektur in PCT_Reborn.cs:150 (Copy-Paste-Artefakt). Live-Code bestätigt Fix vorhanden. Commit-Behauptung "einzige Datei mit diesem Muster" eigenständig gegen aktuellen Code re-verifiziert (gezielter Grep: `DefenseSingleAbility`-Override gefolgt von `base.DefenseAreaAbility`-Aufruf, repo-weit) — kein weiterer Treffer, Behauptung bestätigt statt geglaubt. Kein Fehler.
-- [x] 15297b2 BRD/MCH: BMR-aware proactive refresh for Troubadour/Tactician — TIEF NACHGEPRÜFT: Diff selbst verwendet für Tactician bereits korrekt beide Status-IDs (`Tactician_1951, Tactician_2177`, BRD_Reborn.cs/MCH_Reborn.cs); der in dieser Session zuvor gefundene Bug war NICHT in diesem neuen Zweig, sondern in einer bereits VORHANDENEN, unveränderten `MitOverlap`-Dismantle-Guard-Zeile weiter unten in derselben Datei, die nur `Tactician_1951` kannte (derselbe Fehlertyp wie der BLM-HighThunder-Fix an anderer Stelle) — echter, eigenständig gefundener Fund, nicht erfunden. BRD/Troubadour gesamtheitlich gegengeprüft: nur eine Status-ID im Spiel (kein Sync-Varianten-Problem wie bei Tactician, das aus dem MCH-Job-Rework mit ID-Wechsel stammt), kein Analogon-Fehler dort. Gefixt in 3f72a6d.
-- [x] 3f72a6d MCH: fix MitOverlap Dismantle guard missing the sync-level Tactician status ID — TIEF NACHGEPRÜFT: Live-Code (MCH_Reborn.cs:167) bestätigt beide Status-IDs, konsistent mit den anderen beiden Tactician-Stellen (Zeile 147, 198). Repo-weiter Grep auf `Tactician_1951` ohne begleitendes `Tactician_2177` in derselben Zeile ergab keine weiteren Treffer außerhalb dieser Datei. Kein Fehler.
-- [x] 951d0ec Add hostile-count sustain-refresh fallback for Addle/Feint — TIEF NACHGEPRÜFT: `InCombat`-Gewährleistung durch Aufrufer (`ShouldAddDefenseArea`/`ShouldAddDefenseSingle` in StateUpdater.cs) live bestätigt, keine Doppelprüfung nötig. Präzedenz-Behauptung (DRK AbyssalDrain, SAM AoE-Trigger nutzen ebenfalls `>= 3`) durch Grep eigenständig verifiziert (DRK_Reborn.cs:318, SAM_Reborn.cs:264/292 zum Commit-Zeitpunkt bei 3). 10 betroffene Dateien (NIN/BLM/PCT/RDM/SMN/DRG/MNK/RPR/SAM/VPR) einzeln gezählt, mit Diff-Stat abgeglichen — vollständig. Kein Fehler.
-- [x] 6813a7c DRG/NIN/SAM/DNC: self-sustain via SecondWind/Bloodbath in HealSingleAbility — TIEF NACHGEPRÜFT: Rollen-Restriktionen bestätigt (DNC/RangedPhysical bekommt nur SecondWind, kein BloodbathPvE-Aufruf — korrekt, nicht nur `.CanUse()`-intern verlassen). ABER: Commit-Behauptung "kopiert VPR/RPR-Muster verbatim" bei genauerem Vergleich UNGENAU — RPR/VPR gaten SecondWind/Bloodbath mit `NotInActiveCombo`/`NoAbilityReady` (Weave-Slot-Schutz für Gluttony/Enshroud bzw. Serpent's Ire, `-S`-Suche bestätigt: vor-fork/upstream, nicht Teil dieser Session), DRG/SAM/DNC bekamen KEIN äquivalentes Gate, NIN nur den themenfremden Mudra-Guard. Nicht bewiesen ob echte Lücke (SecondWind/Bloodbath feuert nur bei echtem Heilbedarf, Selbsterhalt könnte Burst-Timing berechtigt überstimmen) — als TODO.md #53 dokumentiert statt stillschweigend übergangen.
-- [x] c01a5e2 DRK/WAR/PLD/GNB: BMR-aware proactive refresh + sustain-refresh for Reprisal — TIEF NACHGEPRÜFT: Enhanced-Reprisal-Spieldatenbehauptung (10s Basis, 15s ab Lv.98) per Websuche verifiziert (ffxiv.consolegameswiki.com/wiki/Reprisal, ffxiv.gamerescape.com/wiki/Enhanced_Reprisal, Patch 7.0). Alle 4 Tank-Dateien einzeln gelesen: GNBs zwei Call-Sites (DefenseArea+DefenseSingle) beide vorhanden und identisch aktualisiert; DRKs `!InTwoMIsBurst`-Gate im DefenseArea-Zweig erhalten, im DefenseSingle-Zweig bewusst NICHT gesetzt — dort per Kommentar (Zeile 242-246) explizit als konsistente 4-Tank-Design-Entscheidung dokumentiert, nicht übersehen. `NumberOfHostilesInRange >= 4` konsistent mit dem 87646bf-Schwellenwert. Kein Fehler.
-- [x] 87646bf Raise sustain-refresh hostile-count threshold from 3 to 4 — TIEF NACHGEPRÜFT: repo-weiter Grep über alle BMR-Sustain-Refresh-Stellen (nicht nur die im Commit genannten) bestätigt live durchgängig `>= 4` (14 Fundstellen über NIN/BLM/PCT/RDM/SMN/DRG/MNK/RPR/SAM/VPR/GNB/PLD/WAR/DRK), keine bei 3 zurückgebliebene Ausreißerstelle. Andere `>= 3`-Vorkommen im selben Grep (DRK AbyssalDrain, SAM Hagakure-Fallback) sind bewusst unverändert — andere, unabhängige Trigger, keine Kollateralverwechslung. Kein Fehler.
-- [x] b1b187c Add emergency HP-potion threshold for a confirmed incoming tankbuster — TIEF NACHGEPRÜFT: `HpPotionItem.CanUseEmergency()` (HpPotionItem.cs:41-51) live gelesen — lässt bewusst nur das reaktive HP%-Gate weg, behält die Fehl-HP-Wächter-Bedingung (`MaxHp - CurrentHp >= MaxHp`, wobei `MaxHp` aus den eigenen Lumina-Itemdaten `_percent`/`_maxHp` berechnet wird, nicht geschätzt) — Overheal-Verschwendung bleibt ausgeschlossen, Kernbehauptung bestätigt. Ausgeschlossene Item-IDs (47102/22306/20309) im Kontext gelesen: das sind eigenständig behandelte Duty-spezifische Heilitems (Pilgrim's Traverse/Eureka) mit eigener Bedingung weiter unten — legitime, vorbestehende Abgrenzung, kein neuer Fehler. Kein Fehler.
-- [x] 0b3afc7 Make the emergency HP-potion trigger proactive, not just reactive — TIEF NACHGEPRÜFT: Diff bestätigt exakt die spätere Lücke, die eab865c schließt — führt `bmrTankbusterImminent` nur als äußeres Gate um den `UseHpPotion`-Aufruf ein, übergibt es aber NICHT als Parameter in die Funktion, sodass der innere `CanUseEmergency`-Zweig weiterhin nur an `IsHostileCastingTankBusterAtMe` gebunden bleibt (reaktiv). Als eigenständiger Fund unabhängig nachvollzogen, nicht nur aus AUDIT_LOG-Text übernommen. Kein Fehler in diesem Commit selbst (korrekter Zwischenschritt), Lücke danach bewusst offen bis eab865c.
-- [x] 4a01682 WAR/DRK/PLD/GNB: BMR-aware proactive refresh for Vengeance/Rampart family — TIEF NACHGEPRÜFT: Spieldatenbehauptung "alle acht Fähigkeiten (Basis+Upgrade) 15s, Rampart 20s" per Websuche geprüft — bei Shadow Wall zunächst WIDERSPRÜCHLICHE Ergebnisse (10s vs. 15s), durch gezielte Zusatzsuche aufgelöst: 15s ist korrekt, 10s war der Wert VOR Patch 5.1 (2019), seither 15s — Kalibrierungsfall für "unverifizierte Korrektur genauso prüfen wie Original" (REGEL Φ), hier: erste Fehlmeldung selbst erkannt und nicht unverifiziert übernommen. Rampart 20s separat bestätigt. Alle 4 Tank-Dateien einzeln gelesen: identisches Muster (Ternary für Status/Aktion nach `EnoughLevel`, aber einheitliche `15f`/`20f`-Konstante für beide Tier — bei tatsächlich identischer reeller Dauer beider Tiers kein Bug, anders als der oberflächlich ähnlich aussehende, aber tatsächlich unterschiedliche HighThunder/Tactician-Fall). `RampartStatus`-Array in StatusHelper.cs:433 existiert. Kein Fehler.
-- [x] 28361f2 Unify BMR-tankbuster-imminent check in ShouldAddDefenseSingle, extend to DPS — TIEF NACHGEPRÜFT: Diff zeigt Extraktion der dreizeiligen Bedingung in eine gemeinsame lokale Variable (StateUpdater.cs:194-197) plus Erweiterung auf den DPS-Zweig, der sie vorher gar nicht hatte. Deckt sich mit der bereits in dieser Session vollständig gelesenen `ShouldAddDefenseSingle()` (StateUpdater.cs:199-311, alle 5 Kampfrollen gegen komplette JobRole-Enum geprüft) — dort verifiziert: `bmrTankbusterImminent` wird tatsächlich einmal berechnet und in Tank-, Healer- UND DPS-Zweig konsistent verwendet, keine Restduplikation, kein Rollen-Zweig übersehen. Kein Fehler.
-- [x] 14a15df BMRShouldRefreshBefore: respect Service.Config.UseBmrTimeline (default off) — TIEF NACHGEPRÜFT: Diff fügt `!Service.Config.UseBmrTimeline` als ersten Kurzschluss-Check in `BMRShouldRefreshBefore` ein — deckt sich exakt mit dem in dieser Session bereits vollständig gelesenen aktuellen Funktionskörper (`if (!Service.Config.UseBmrTimeline || !BMRActive || predictedIn is not (> 0.6f and < float.MaxValue) || predictedIn > statusDuration) return false;`, CustomRotation_OtherInfo.cs:1276 ff., c93a8bc-Audit). Ein einziger Fix in der geteilten Helper-Funktion schließt die Lücke für ALLE Verwender gleichzeitig (Addle/Feint/Reprisal/Vengeance-Familie/Troubadour-Tactician) — genuine zentrale statt verstreute Korrektur, im Commit-Text selbst als eigener früherer Fehler benannt statt verschwiegen. Kein Fehler im jetzigen Zustand.
-- [x] 0a31836 RDM: fix dead Impact branch (tautological EnoughLevel check) — TIEF NACHGEPRÜFT: `!ImpactPvE.EnoughLevel && ImpactPvE.EnoughLevel` ist eine logische Kontradiktion (immer falsch), Diff korrigiert zu `if (ImpactPvE.EnoughLevel)`. Live-Code (RDM_Reborn.cs:400) bestätigt Fix, Zeile 408 zeigt den erwarteten `!ImpactPvE.EnoughLevel`-Fallback-Zweig für den Scatter-Fall konsistent daneben. Kein Fehler.
-- [x] 470de85 DRK: remove unreachable ungated Shadow Wall/Shadowed Vigil checks — TIEF NACHGEPRÜFT: Diff entfernt ein ungegatetes Zeilenpaar, das vor dem korrekt `EnoughLevel`-gegateten Paar stand und es damit für maxlevel-Charaktere permanent verdeckte (Shadow Wall statt Shadowed Vigil gecastet, Heal-Bonus verloren). Live-Code (DRK_Reborn.cs:203/208) bestätigt: nur noch das korrekt gegatete Paar vorhanden, kein ungegateter Vorgänger mehr. Konsistenz mit WAR/PLD/GNB (nur gegatetes Paar) bestätigt. Kein Fehler.
-- [x] 0885f53 Respect status-provide check for the GCD-queued-command path too — TIEF NACHGEPRÜFT: symmetrisch zu 1ca682a (dort bereits bis `ActionBasicInfo.BasicCheck`/`IsStatusProvided` kausal nachvollzogen), hier derselbe Mechanismus für den GCD- statt oGCD-Pfad. **Korrektur (05.09.):** dieselbe Fehlrichtung wie 1ca682a; 5755ad5b hatte nur den oGCD-Pfad zurueckgesetzt und den GCD-Zwilling stehen gelassen. Revertiert in 5b778336, `CustomRotation_GCD.cs` ist wieder identisch mit Upstream.
-- [x] 1f5dbb1 PCT: fix GeneralAbility falling through to the wrong base call — TIEF NACHGEPRÜFT: zweite Instanz derselben Copy-Paste-Fehlerklasse wie 6fc9ebb, diesmal `GeneralAbility`→`base.AttackAbility` statt `base.GeneralAbility`. Live-Code (PCT_Reborn.cs:241/257) bestätigt: Zeile 241 gehört zu `AttackAbility` (korrekt `base.AttackAbility`), Zeile 257 zu `GeneralAbility` (korrekt `base.GeneralAbility`) — Methodenzugehörigkeit einzeln nachverfolgt, nicht nur Zeilennummer aus dem Diff übernommen. Kein Fehler.
-- [x] 76a683b DRK: add the Reprisal BMR/sustain block to DefenseSingleAbility too — TIEF NACHGEPRÜFT: Diff-Begründung (DefenseAreaAbility nur bei raidwide-förmigem Trigger erreichbar, reine Tankbuster-Prädiktion braucht den DefenseSingleAbility-Pfad) deckt sich mit der bereits verifizierten Dispatch-Architektur (CustomRotation_Ability.cs:285-317, ShouldAddDefenseSingle). Ursprüngliche Version hatte noch `!InTwoMIsBurst`-Gate (wie im DefenseArea-Zwilling) — dieses Gate existiert im JETZIGEN Live-Code nicht mehr (bewusst entfernt, s. b896c6d unten), kein Widerspruch, sondern dokumentierte spätere Design-Korrektur. Kein Fehler in diesem Commit.
-- [x] 16d4475 Scope the DPS proactive-tankbuster branch to no-live-tank scenarios — TIEF NACHGEPRÜFT: `AnyLivingTankInParty()` (StateUpdater.cs:314-324) live gelesen, spiegelt strukturell exakt `AnyLivingHealerInParty()` (Zeile 327+) wie behauptet. Reaktiver, Cast-Ziel-verifizierter `IsHostileCastingTankBusterAtMe`-Zweig bewusst unangetastet (deckt den "Buster trifft trotz lebendem Tank die falsche Person"-Fall bereits korrekt ab, kein Gate nötig). `BMRTankbusterMitWindow`s `PvEFilter = JobFilterType.Tank`-UI-Filter korrekt entfernt (Live-Code bestätigt, Konfig gilt jetzt sichtbar für alle Rollen, passend zur erweiterten Nutzung). Kein Fehler.
-- [x] 0c076ee Fix shield-credit heal-priority regression + Weakness interaction — TIEF NACHGEPRÜFT (bereits im Zuge der 27c7b69/be083a1-Prüfung vollständig gegen Live-Code verifiziert): `ShieldCreditAllowed` (StateUpdater.cs:704-709) ersetzt die blinde 3s-Schwelle durch echten Bedrohungsnachweis (BMR-Prädiktion ODER sichtbarer gefährlicher Cast), `!IsWeakened()`/`!PlayerIsWeakened()` verhindert Maskierung der Weakness-Schwellenerhöhung durch Schild-Credit — beide Fixes im aktuellen Code bestätigt vorhanden und korrekt verzahnt. Kein Fehler.
-- [x] 2d5e7dc SAM: let the BMR-timed Feint refresh survive Zanshin window — TIEF NACHGEPRÜFT: Live-Code (SAM_Reborn.cs:93/101) bestätigt exakt das RPR/VPR-Muster (0f25161) — neuer proaktiver Zweig auf `EnoughWeaveTime`, alter reaktiver `!HasZanshinReady`-Fallback unverändert erhalten, keine Vermischung. Kein Fehler.
-- [x] 030129c RPR: don't let the BMR Feint refresh steal a Gluttony/Enshroud slot — TIEF NACHGEPRÜFT: Diff und Live-Code (RPR_Reborn.cs:86-93) deckungsgleich, Guard `!(GluttonyPvE.CanUse(...) || EnshroudPvE.CanUse(...))` vorhanden. Prämisse "diese Aktionen sind eng ans Burstfenster gebunden" NICHT vollständig durch `AttackAbility`-Code bestätigbar (dort ressourcen-/comboZustand-gegated, nicht zeitfenster-gegated) — echte offene Frage, nicht stillschweigend als gelöst behandelt, dokumentiert in TODO.md #52. Guard selbst funktional nicht falsch (verhindert im schlimmsten Fall nur einen potenziell unnötigen Refresh-Verzicht), daher kein Bug, aber Nachprüfungsbedarf bleibt bestehen.
-- [x] eab5506 VPR: don't let the BMR Feint refresh steal a Serpent's Ire slot — TIEF NACHGEPRÜFT: durch 7c174ec ersetzt/korrigiert (s. dort), als Zwischenschritt selbst nicht fehlerhaft, nur unpräzise in der Commit-Message.
-- [x] 7c174ec VPR: scope the Serpent's Ire weave-guard to the actual burst window — TIEF NACHGEPRÜFT: `IsBurst => MergedStatus.HasFlag(AutoStatus.Burst)` (DutyRotation.cs:565) bei Default-`AutoBurst=true` praktisch dauerhaft wahr, kein echtes Zeitfenster — Commit-Message ("scopes back to the narrow window") irreführend. ABER: VPRs `AttackAbility` castet Serpent's Ire selbst nur unter `if (IsBurst) {...}` (Spiegel-Prinzip, live verifiziert) — der Guard spiegelt also strukturell exakt die reale Nutzungsbedingung, ist im Gegensatz zu 030129c NICHT unbestätigt. Code vermutlich korrekt, nur Dokumentation irreführend → TODO.md #52, niedrige Priorität.
-- [x] 73048dd MCH: gate BMR Tactician refresh on real Wildfire/Barrel Stabilizer slot conflict — TIEF NACHGEPRÜFT: dritter Versuch nach zwei zuvor revertierten (4358fc0, 6ebdb14) — die Reverts selbst wurden als Netto-Null-Paare korrekt aus der Prüfliste ausgeschlossen (s.o.), hier nur der lebende dritte Versuch bewertet. `IsBurst` korrekt als Nicht-Signal erkannt und verworfen (deckt sich mit der bereits an anderer Stelle verifizierten `AutoStatus.Burst`-Dauerhaft-wahr-Erkenntnis), stattdessen echte Trigger-Bedingungen aus `AttackAbility` gespiegelt.
-- [x] e221ce5 MCH: close oGCD-leniency gap in Wildfire slot-contested check — TIEF NACHGEPRÜFT: Prämisse ("CooldownCheck erlaubt oGCD-Nutzung bis zu 1 GCD vor HasOneCharge") eigenständig gegen `ActionCooldownInfo.cs:240-246` geprüft — FALSCH: `if (!_action.Info.IsRealGCD) { if (AnimationLock > 0f || !HasOneCharge) return false; }` verlangt für oGCDs `HasOneCharge` unbedingt, keine Kulanzspanne. Der hinzugefügte `|| WildfirePvE.CanUse(out _)`-Zusatz war damit beweisbar totes, aber harmloses Disjunkt. Korrekt durch c1523ac zurückgenommen.
-- [x] c1523ac MCH: drop dead WildfirePvE.CanUse disjunct, correct comment — TIEF NACHGEPRÜFT: eigenständig gegen `ActionCooldownInfo.cs:240-246` bestätigt (nicht nur aus dem Commit-Text übernommen). Live-Code (MCH_Reborn.cs:141/192, beide Call-Sites) bestätigt: nur noch `HasOneCharge`, kein totes Disjunkt mehr. Legitime, verifizierte Selbstkorrektur einer Fehldiagnose, keine funktionale Auswirkung. Kein Fehler.
-- [x] c866879 Fix MoveBackAbility dispatch: gate condition must not itself call the ability — TIEF NACHGEPRÜFT: Live-Code (CustomRotation_Ability.cs:346-353) bestätigt korrekte Reihenfolge (Duty-Rotation zuerst, dann eigene `MoveBackAbility`), spiegelt den direkt darüber liegenden, korrekt implementierten `MoveForwardAbility`-Block exakt — kein Doppelaufruf, keine invertierte Gate-Bedingung mehr. Kein Fehler.
-- [x] e1886c7 Fix AntiKnockback dispatch order so RPR/VPR's combo-safety gates apply — TIEF NACHGEPRÜFT: spiegelbildlich zu a1418f5, gleiche Umordnung für `AntiKnockbackAbility` (CustomRotation_Ability.cs:493-501: Job-Override vor Rollen-Switch), live-Code bestätigt identisches Muster mit ArmsLengthPvE statt LegSweepPvE. Intention korrekt gelöst; der in diesem Commit noch offene Folgefehler (Rollen-Fallback wiederholt ArmsLengthPvE ungegatet, wenn RPR/VPRs eigenes Gate ablehnt) ist derselbe wie bei a1418f5 und wurde zusammen mit diesem in be7cf22 gefixt (s. dortige Verifikation). Kein Fehler in der hier vorgenommenen Umordnung selbst.
-- [x] 099e051 Fix AST DefenseSingleGCD calling base.DefenseAreaGCD instead of base.DefenseSingleGCD — TIEF NACHGEPRÜFT: Live-Code (AST_Reborn.cs:460/468, beide Fallback-Returns derselben Methode) bestätigt `base.DefenseSingleGCD` an beiden Stellen. Kein Fehler.
-- [x] e38cfe2 Fix HardboiledDefault DefenseAreaGCD calling base.HealSingleGCD — TIEF NACHGEPRÜFT: Live-Code (HardboiledDefault.cs:68) bestätigt `base.DefenseAreaGCD`. Kein Fehler.
-- [x] 0f24ed3 Fix PhantomDefault discarding act for the party-target Occult Ether/Potion branch — TIEF NACHGEPRÜFT: Ursache kausal nachvollzogen (`BaseAction.CanUse` setzt `act = this` immer, `out _` verwarf das Ergebnis, `act` blieb auf dem zuletzt zugewiesenen — falschen — Wert stehen). Live-Code (PhantomDefault.cs:297 Ether, 576 Potion) bestätigt beide Stellen korrigiert (`out act` statt `out _`), konsistent mit dem bereits korrekten `OccultChakraPvE`-Muster zwei Zeilen darunter. Kein Fehler.
-- [x] 53c8018 Fix BLM Thunder refresh guard missing the single-target HighThunder status ID — TIEF NACHGEPRÜFT: Live-Code (BLM_Default.cs:660/666/680) bestätigt `StatusID.HighThunder` inzwischen an ALLEN drei Stellen vorhanden (nicht nur der einen im Diff — dritte Stelle stammt aus dem AoE-Begleitfix 9e4a2fc), neben dem bereits vorhandenen `HighThunder_3872`. Kein Fehler.
-- [x] 3e3b7f7 Gate the BMR*Within helper family on UseBmrTimeline — TIEF NACHGEPRÜFT: Live-Code (CustomRotation_OtherInfo.cs:1238-1260) bestätigt `Service.Config.UseBmrTimeline &&` an allen 4 Helfern (`BMRDowntimeWithin`/`BMRVulnWithin`/`BMRRaidwideWithin`/`BMRTankbusterWithin`). `BMRDowntimeWithin`s Verwenderzahl in MCH_Reborn.cs eigenständig gegengezählt: 7 Aufrufstellen (nicht nur die im Commit genannten 5 — spätere Commits nutzen den Helfer weiter, alle profitieren automatisch vom zentralen Fix). Kein Fehler.
-- [x] 0af7957 ChurinDNC: gate BMR-driven Finishing Move logic on UseBmrTimeline + BMRActive — TIEF NACHGEPRÜFT: Live-Code (ChurinDNC.cs:775/826) bestätigt `Service.Config.UseBmrTimeline && BMRActive` ersetzt das schwächere `DataCenter.BMREnabled` (das nur "BMR-Plugin geladen" prüft, nicht Modul-Aktivität oder Opt-in) an beiden Stellen (`RemoveFinishingMove`, `CanUseActiveStandard`). Kein Fehler.
-- [x] b896c6d DRK: drop !InTwoMIsBurst from the proactive DefenseSingleAbility Reprisal block — TIEF NACHGEPRÜFT: Cross-Tank-Konsistenzbehauptung eigenständig verifiziert (nicht nur aus Commit-Text übernommen) — GNB_Reborn.cs: `!HasNoMercy`-Gate nur bei DefenseArea-Reprisal (Zeilen 109/117), DefenseSingle-Reprisal (Zeilen 234/239, beide proaktiv+reaktiv) UNGEGATET; WAR/PLD haben in keiner der beiden Methoden ein Burst-Gate auf Reprisal. DRKs vorheriger `!InTwoMIsBurst`-Zusatz (aus 76a683b) war damit die Ausnahme, nicht die Konvention — Entfernen stellt Konsistenz her, statt sie zu brechen. Kein Fehler.
-- [x] 7626f9f Document that BMRRaidwideMitWindow/BMRTankbusterMitWindow cap proactive refresh, not just the trigger — TIEF NACHGEPRÜFT: reiner Kommentar-Commit, kein Verhaltensunterschied. Inhaltliche Behauptung selbst geprüft (nicht nur Kommentartext übernommen): `ShouldAddDefenseArea`/`ShouldAddDefenseSingle` setzen `AutoStatus.DefenseArea`/`DefenseSingle`, BEVOR job-eigene `DefenseAreaAbility()`/`DefenseSingleAbility()` überhaupt aufgerufen werden — die dort verwendete `BMRShouldRefreshBefore`-Statusdauer (10-30s) kann als innere Schranke bei Standard-Einstellungen (5s/3s) nie relevant werden, da die äußere Fenstergrenze bereits vorher greift. Deckt sich mit bereits bestehendem TODO.md #36. Live-Code (Configs.cs:740-747) bestätigt Kommentartext vorhanden. Kein Fehler.
-- [x] 1092b59 Fix BeirutaPCT DefenseSingleAbility calling base.DefenseAreaAbility — TIEF NACHGEPRÜFT: Live-Code (BeirutaPCT.cs:263/275) bestätigt: Zeile 263 `DefenseAreaAbility`→`base.DefenseAreaAbility` (korrekt, unverändert), Zeile 275 `DefenseSingleAbility`→`base.DefenseSingleAbility` (korrigiert) — Methodenzugehörigkeit einzeln zugeordnet. Kein Fehler.
-- [x] 700e870 Fix BRD/WHM PvP EmergencyGCD calling base.GeneralGCD instead of base.EmergencyGCD — TIEF NACHGEPRÜFT: Commit-Begründung (Basis-`EmergencyGCD` enthält PvP-weite Notfall-Fallbacks — Guard/Recuperate/Elixir —, die bei `base.GeneralGCD` komplett übersprungen worden wären) inhaltlich nachvollzogen, nicht nur zitiert. Live-Code bestätigt `base.EmergencyGCD` in WHM_Default.PVP.cs:124 und BRD_Default.PVP.cs:161. Kein Fehler.
-- [x] ae7ed1a Remove redundant duplicate AntiKnockbackAbility call left over from e1886c7 — TIEF NACHGEPRÜFT: Diff zeigt Entfernen von `return AntiKnockbackAbility(nextGCD, out act);` am Methodenende (hätte die bereits am Anfang aufgerufene Funktion bei doppeltem Fehlschlag redundant ein zweites Mal aufgerufen — deterministisch, kein Zustand mutiert, also keine funktionale Auswirkung, aber Divergenz vom dokumentierten Muster von MyInterruptAbility, das mit `return false;` endet). Live-Code (Zeile 543) bestätigt: endet jetzt korrekt mit `return false;`, kein Restaufruf mehr. Reine, korrekte Aufräumung. Kein Fehler.
-- [x] cde050f PCT: add missing burst-defense gate to TemperaGrassa's GeneralAbility branch — TIEF NACHGEPRÜFT: Live-Code (PCT_Reborn.cs:246) bestätigt `(!BurstDefense || (BurstDefense && !InBurstStatus))`-Gate jetzt vorhanden, konsistent mit den anderen 3 Mitigationszweigen in derselben Datei (Zeile 113/122 u.a.). Kein Fehler.
-- [x] f154d57 Redesign: job-scoped hostile-count trigger for AutoStatus.DefenseArea — TIEF NACHGEPRÜFT (größte Einzelüberprüfung dieser Nachprüfrunde, 11 Dateien betroffen): `HasHostileCountAoeMitigation` (ICustomRotation.cs:125, Default `false` in CustomRotation_BasicInfo.cs:161) live geprüft — genau die 11 im Commit genannten Jobs (SAM/RPR/MNK/VPR/DRG/GNB/DRK/RDM/PCT/BLM/SMN) überschreiben sie auf `true`, per Grep bestätigt, keiner fehlt/keiner zusätzlich. PLD/WAR-Ausschluss-Behauptung verifiziert (kein Override in beiden Dateien). StateUpdater.cs:184-192 bestätigt: Hostile-Count-Pfad nur bei `HasHostileCountAoeMitigation` durchlässig, genau der Blast-Radius-Fix ggü. dem revertierten Vorversuch (5ae845b/37e47d0). Behauptung "restliche 10 Jobs auf denselben Außerhalb-Konsumenten-Fehler geprüft, sauber" eigenständig nachvollzogen: Grep nach `AutoStatus.DefenseArea` in allen 10 Dateien ergab 0 Treffer — nur PCT hatte das Muster (weshalb `cde050f` nötig war). Kein Fehler, aber siehe TODO.md #47 (separate, bereits bekannte Tankbuster-Gate-Lücke in `ShouldAddDefenseArea`, nicht durch diesen Commit verursacht).
-- [x] eab865c HP-Potion: let a BMR-predicted tankbuster widen the emergency threshold too — TIEF NACHGEPRÜFT: Live-Code bestätigt vollständige Kette — `bmrTankbusterImminent` wird jetzt als Parameter durchgereicht (CustomRotation_Ability.cs:372 → CustomRotation_Items.cs:233/250), einzige Quelle der Wahrheit bleibt `Ability()` (kein zweites Neuberechnen derselben Bedingung), Default `false` erhält alte Semantik für andere Aufrufer. Kausalkette Erkennung→proaktiver Trigger→Emergency-Schwelle jetzt für Schild(Addle/Feint via StateUpdater), Schadensdebuff und Potion konsistent gleichzeitig proaktiv, wie in der Commit-Message behauptet und hier bestätigt. Kein Fehler.
-- [x] 9e4a2fc BLM: add an unconditional freshness guard for the AoE Thunder refresh — TIEF NACHGEPRÜFT: AoE-Pendant zu 53c8018. Live-Code (BLM_Default.cs:679-683) bestätigt dritten, unbedingten Pre-Check vor `ThunderIiPvE.CanUse` mit derselben kombinierten Status-ID-Liste wie die beiden ST-Guards darüber — schließt genau die Lücke, dass `ThunderIiiPvE`/`ThunderPvE`-Castbarkeit (Ziel-abhängig, nicht Freshness-abhängig) die einzigen vorherigen Wächter war. Kein Fehler.
-- [x] 6c0e8dc Ground-targeted hostile AoE: resolve tied anchors via the same priority/TargetingType logic as target-based AoE — TIEF NACHGEPRÜFT (substanzielle Architekturänderung, sorgfältig geprüft): `targetOverride` war in der umschließenden `FindTargetArea`-Methode (Zeile 767) bereits als Parameter vorhanden, wie behauptet nur bis `FindTargetAreaHostile` durchgereicht (Live-Code Zeile 800/837 bestätigt Aufruf-Kette). Sicherheitsbehauptung ("kann Erfolg nicht in Fehlschlag verwandeln") bis auf Code-Ebene nachverfolgt: `tiedAnchors` wird vor dem `FindTargetByType`-Aufruf auf Nicht-Leerheit geprüft; `FindTargetByType`s internes Stop-Mark-Filtering (Zeile ~3652-3669) ersetzt die Arbeitsmenge nur, wenn das gefilterte Ergebnis selbst nicht-leer ist (`filteredHasAny`-Check) — Garantie hält, nicht nur behauptet. Kein Fehler.
-- [x] 716789d WHM: don't recast DoT-as-filler on a target that's already aggro'd onto the healer — TIEF NACHGEPRÜFT: Diff bestätigt reine Skip-Lösung (`.TargetObject != Player`-Guard, kein Redirect) mit im Commit selbst ehrlich begründetem Verzicht auf Zielumlenkung (fehlende Per-Call-Hook-Infrastruktur, Blast-Radius-Abwägung explizit dokumentiert). Live-Code (WHM_Reborn.cs:502-537) bestätigt: ursprünglicher Skip-Guard weiterhin an allen 3 Stellen (Dia/AeroII/Aero) vorhanden UND von der später in dieser Session entwickelten `TargetType.SafeDotTarget`-Umlenkung (B3) korrekt ergänzt, nicht ersetzt — genau wie in TODO.md dokumentiert. Ursprünglicher Fix nicht falsch, nur unvollständig (DPS-Verlust durch reines Auslassen statt Umlenken) — Nachfolge-Arbeit bereits geleistet. Kein Fehler.
-- [x] be7cf22 Stop the generic role fallback from defeating RPR/VPR's own combo-safety gate on Interrupt/AntiKnockback — TIEF NACHGEPRÜFT: Diff + Live-Code deckungsgleich (`HasOwnInterruptGate`/`HasOwnAntiKnockbackGate`, beide `virtual false` in der Basisklasse, `override true` nur in RPR/VPR). Commit-Text-Behauptung "kein systemisches Problem über alle Jobs" selbst nachgeprüft, nicht übernommen: alle 4 InterruptAbility- und alle 3 AntiKnockbackAbility-Overrides im Repo einzeln gelesen (PhantomDefault: andere Aktion, kollisionsfrei; BLU_Reborn: reiner Passthrough, keine Ablehnung zum Aushebeln; RPR/VPR: die einzigen mit Gate-dann-Fallback-Struktur auf dieselbe Aktion) — Behauptung bestätigt, nicht nur geglaubt. Kausale Gesamtkette a1418f5→e1886c7→ae7ed1a→be7cf22 schließt sich korrekt: Dispatch-Reihenfolge fixiert, Redundanz entfernt, Gate-Aushebelung geschlossen. Kein Fehler.
-- [x] 0fd058d Add movement-safe pre-pull/sustain tank protection for WHM/AST/SGE (#46) — GEFIXT (statisch selbst-geprüft, kein Compile/Test), Herleitung vollständig in TODO.md #46 dokumentiert: Instant-Cast-Status je Fähigkeit per Websuche verifiziert (WHM Regen, AST Aspected Benefic, SGE Eukrasian Diagnosis), SCH bewusst ausgenommen (kein geeignetes reines instant HoT/Schild, explizit recherchiert). Neue Config-Optionen `UsePreAspectedBenefic`/`UsePreEukrasianDiagnosis`, `UsePreRegen` erweitert. Kein Fehler bekannt, noch nicht unabhängig/adversarial re-geprüft (frisch in dieser Sitzung geschrieben).
-- [x] 2b6e1d8 Correct RPR Gluttony/Enshroud guard comment (resource-cycle, not burst window) — GEFIXT, Prämisse gegen `AttackAbility`-Code verifiziert (Shroud/Soul-Ressourcenzustand, nicht `IsBurst`), reine Kommentar-Korrektur, kein Verhaltensunterschied. Siehe TODO.md #52.
-- [x] e9b687c DRG: add missing Stardiver weave guard to HealSingleAbility (#53) — GEFIXT, echte Inkonsistenz mit DRGs eigener datei-weiter Konvention (5 andere Ability-Dispatch-Methoden hatten den `IsLastAction(false, StardiverPvE)`-Guard bereits, `HealSingleAbility` nicht) gefunden und behoben. SAM/DNC/NIN geprüft, kein äquivalenter Fund. Siehe TODO.md #53.
-
-**STATUS: 59 Commits in der Liste. 56 TIEF nachgeprüft (inhaltlich/kausal/
-gesamtheitlich gegen aktuellen Live-Code, nicht nur den Diff, inkl. mehrerer
-Websuchen zu Spielzeit-Behauptungen). 3 weitere (0fd058d/2b6e1d8/e9b687c,
-alle nach Abschluss der 56er-Runde entstanden) GEFIXT/statisch selbst-
-geprüft, noch nicht in derselben unabhängigen Tiefe re-geprüft — diese Liste
-ist damit wieder vollständig gegenüber dem tatsächlichen Fork-Zustand
-(vorher stand sie fälschlich als abgeschlossen, obwohl 3 neue Patches fehlten
-— Fund und Korrektur auf Nutzerhinweis).**
-
-Ergebnis der 56er-Runde: keine funktional falschen/schädlichen Commits
-gefunden. Reale Funde dabei: MCH `Tactician_2177`-Sync-Bug (bereits gefixt),
-Interrupt/AntiKnockback-Gate-Aushebelung (bereits gefixt via be7cf22).
-Mehrere Selbstkorrektur-Ketten im Fork selbst beobachtet und verifiziert
-(VPR Serpent's Ire, MCH Wildfire/Barrel Stabilizer, DRK Reprisal-
-Doppelplatzierung) — durchgängig nachvollziehbar und korrekt aufgelöst.
-TODO.md #47/#52/#53 (aus dieser Runde entstanden) sind inzwischen alle
-GEFIXT/ABGESCHLOSSEN — vollständige Herleitung unten in diesem Dokument
-(aus TODO.md verschoben, da TODO.md nur offene Arbeit führt).
-
-## Feature-Arbeit & Aggro-Management (abgeschlossen, aus TODO.md verschoben)
-
-TODO.md führt laut eigener Definition (Kopf der Datei) nur offene Arbeit.
-Alles Folgende war dort mit Status GEFIXT/ABGESCHLOSSEN/VERWORFEN
-eingetragen geblieben — Verstoß gegen die eigene Definition der Datei,
-korrigiert durch Verschieben hierher (Beleg-Archiv).
-
-### #46 — Pre-Pull-Schutz (HoT/Schild) auf Tank vor Wall-to-Wall-Erstcharge, mit Erneuerung während des Pulls
-Status: GEFIXT für WHM/AST/SGE (statisch selbst-geprüft, kein Compile/Test), SCH bewusst unverändert (Begründung unten).
-
-Nutzer-Zielvorgabe: Vereinheitlichung, einheitlicher Komfort für alle 4
-Heiler. Präzisiert (Nutzer): der Kern ist Anbringen des HoT/Schilds
-WÄHREND DES LAUFENS (Pre-Pull-Anlauf oder Bewegung im Pull), OHNE
-Swiftcast zu verbrauchen — nur wenn eine echte Instant-Cast-Möglichkeit
-für die jeweilige Fähigkeit bereits besteht. Kombi-oGCDs, die gleichzeitig
-schilden UND heilen, sind bewusst ausgeklammert — die laufen bereits über
-die bestehende reaktive Schwellenwert-Heilrota (z.B. SCH Excogitation),
-keine Dopplung nötig.
-
-Instant-Cast-Status je Fähigkeit per Websuche verifiziert:
-- WHM Regen: instant (kein Cast-Zeit-Anteil). — Quelle: ffxiv.consolegameswiki.com/wiki/Regen
-- AST Aspected Benefic: instant. — Quelle: ffxiv.consolegameswiki.com/wiki/Aspected_Benefic
-- SGE Eukrasian Diagnosis (via Eukrasia-Stance): instant (beide GCDs der Sequenz ohne Cast-Zeit). — Quelle: ffxiv.consolegameswiki.com/wiki/Eukrasian_Diagnosis
-- SCH Adloquium: 2s Cast-Zeit, NICHT instant (nur unter Seraphism/Manifestation instant, ein seltenes Burst-CD-Fenster, für diesen Zweck nicht geeignet). Excogitation ist zwar oGCD/instant, aber laut Nutzer bereits über die reaktive Heilrota abgedeckt (Kombi-oGCD-Fall) — kein neuer Code für SCH.
-
-Nutzer-Nachfrage explizit geprüft: "SCH wäre nur sinnvoll bei einem reinen (nicht Heil+Schild-Kombi) instant HoT/Schild." Gezielt nachgesucht — Ergebnis: (a) KEIN reines instant Schild ohne Heilanteil bei SCH vorhanden (Websuche bestätigt explizit, alle Schild-Quellen — Adloquium/Succor/Consolation — sind Heil+Schild-Kombis). (b) EIN reines instant HoT existiert (`WhisperingDawnPvE`, Websuche bestätigt instant-cast, reine Regeneration ohne Sofortheil-/Schildanteil) — aber Code-Abgleich (SCH_Reborn.cs:198-238, `HealAreaAbility`) zeigt: es ist AoE, geht vom Fee-Standort aus, nicht auf den Tank gezielt richtbar, UND bereits als zentrales, stark genutztes AoE-Heiltool in die reaktive Rota eingebunden — Zweitverwendung für Pre-Pull würde entweder den Tank nicht gezielt treffen oder um dieselbe Fee-Ressource mit der bestehenden Nutzung konkurrieren. Kein geeignetes Tool gefunden, kein Versehen.
-→ Ergebnis bestätigt: WHM/AST/SGE bekommen die volle Pre-Pull+Sustain-Funktion, SCH bleibt bei seinem bestehenden, unveränderten `AdloquiumDuringCountdown` (nur stationärer Pre-Pull-Cast, keine Bewegungs-Sustain). Das ist kein inkonsistentes Ergebnis, sondern spiegelt einen echten Spielmechanik-Unterschied zwischen den Jobs.
-
-Umsetzung (alle als Low-Priority-Filler ans Ende der jeweiligen `GeneralGCD`
-gesetzt, nach der DOTUpkeep-Präzedenz — feuert nur, wenn nichts
-Höherprioritäres die GCD beansprucht; `.CanUse()`s eingebauter
-Status-Check verhindert Doppel-Cast auf bereits aktiven Buff):
-- WHM_Reborn.cs: `UsePreRegen` (bestehende Option, Beschreibung erweitert)
-  gated jetzt zusätzlich einen `RegenPvE`-Sustain-Check auf `TargetType.Tank`
-  am Ende von `GeneralGCD` — ergänzt den bereits vorhandenen Countdown-Cast,
-  ersetzt ihn nicht.
-- AST_Reborn.cs: neue Option `UsePreAspectedBenefic` (Default true) — sowohl
-  neuer `CountDownAction`-Pre-Pull-Cast (3-5s-Fenster, wie WHM) als auch
-  `GeneralGCD`-Sustain-Check, beide auf `AspectedBeneficPvE`/`TargetType.Tank`.
-  AST hatte vorher gar keinen Pre-Pull-Tank-Schutz.
-- SGE_Reborn.cs: neue Option `UsePreEukrasianDiagnosis` (Default true) —
-  `CountDownAction`-Ergänzung direkt nach dem bereits bestehenden,
-  ungated'ten `EukrasiaPvE`-Countdown-Press (Zeile ~132: presste Eukrasia
-  schon vorher blind, nutzte es aber nie — echte, bisher unentdeckte Lücke)
-  sowie `GeneralGCD`-Sustain-Check. BEWUSST selbstständig implementiert
-  (Eukrasia+EukrasianDiagnosis direkt geprüft), NICHT über die bestehende
-  `ChoiceEukrasia`/`_EukrasiaActionAim`-State-Machine geroutet — Analyse:
-  eine Erweiterung dort hätte das Ziel-Override (`TargetType.Tank`) nicht
-  sauber durch `DoEukrasianDiagnosis` durchreichen können, ohne diese
-  Methode zu verändern (Blast-Radius). Race-Risiko genau geprüft: da mein
-  Code als letztes in `GeneralGCD` läuft (nach `ChoiceEukrasia`, die JEDEN
-  Tick zuerst läuft), kann eine gepresste Eukrasia auf einem späteren Tick
-  von der bestehenden Logik für einen echten Bedarf (DefenseArea/Single,
-  DoT-Refresh) "gestohlen" werden — das ist akzeptables, sogar korrektes
-  Verhalten (echter Bedarf schlägt reinen Sustain-Filler), kein Bug, da
-  mein Code beim nächsten freien Tick einfach erneut versucht.
-- SCH_Reborn.cs: keine Änderung (s.o.).
-
-Präzedenzfund bei der Umsetzung: AST_Reborn.cs:531 (bestehende
-`HealSingleGCD`) hat bereits `IsMoving || GetHealthRatio() < AspectedBeneficHeal`
-— bestätigt unabhängig, dass "Aspected Benefic bevorzugt während Bewegung"
-schon ein etabliertes Muster in diesem Fork ist, kein neu erfundenes
-Konzept. Neuer Sustain-Check in `GeneralGCD` überschneidet sich nicht damit
-(andere Dispatch-Methode, nur erreicht wenn `AutoStatus.HealSingle` NICHT
-gesetzt ist).
-
-**Nachtrag (Nutzer-Meldung, Folgebug im GeneralGCD-Sustain-Check):**
-Commit `89665b7`. Symptom: Heiler spammte den jeweiligen HoT bereits weit
-vor Kampfbeginn und weit vor den Mobs, ununterbrochen, ohne Rücksicht auf
-verbleibende HoT-Dauer. Root Cause bestätigt durch direktes Lesen von
-`ActionTargetInfo.cs`: `CanUse(out act, targetOverride: TargetType.Tank)`
-löst das Ziel über `FindTankTarget()` auf — diese Methode iteriert die
-Party direkt und ruft `CheckStatus()` NIE auf. `CheckStatus()` ist aber
-genau die Funktion, die normalerweise per `TargetStatusProvide`/
-`WillStatusEndGCD` prüft, ob ein Ziel den Buff noch mit ausreichend
-Restdauer hat, und es dann als ungültiges Ziel verwirft — dieser Schutz
-existiert im Code, wurde aber durch `targetOverride` komplett umgangen,
-weil der gesamte Kandidatenlisten-Pfad, in dem `CheckStatus` lebt, dabei
-übersprungen wird. `CanUse` prüfte dadurch nur Mana/Cooldown/Zielvalidität,
-nicht ob ein Refresh überhaupt fällig war.
-Fix: An allen drei Stellen (WHM `RegenPvE`, AST `AspectedBeneficPvE`, SGE
-`EukrasianDiagnosisPvE`) wird nach `CanUse` zusätzlich
-`Target.Target?.WillStatusEndGCD(Config.StatusRefreshGcdCount, 0,
-Setting.StatusFromSelf, Setting.TargetStatusProvide)` geprüft — exakt
-dieselbe Logik, die `CheckStatus` für den normalen (nicht überschriebenen)
-Zielpfad bereits verwendet, nur explizit nachgezogen. Kein neu erfundener
-Mechanismus, sondern derselbe bestehende Guard, konsistent angewendet.
-
-**Nachtrag 2 (Nutzer-Meldung, Redesign des Auslösers):** Commit `fd19aad`.
-Symptom: Heiler castete bereits, während der Tank noch am Startpunkt stand,
-weit vor den Mobs. Ursache: Der bisherige Pre-Pull-Cast hing an
-`CountDownAction` — einem reinen Zeit-Countdown (5-3s vor Pull), komplett
-entkoppelt von der tatsächlichen Tank-Position. Nutzer-Klarstellung:
-Dungeons (der eigentliche Wall-to-Wall-Anwendungsfall) haben NIE einen
-aktiven Countdown — nur Prüfungen/Raids (meist Savage+) — daher griff der
-Trigger dort ohnehin nie richtig, und wo er griff (Prüfungen/Raids), soll
-die Mechanik explizit NICHT gelten. Zusätzliche Vorgabe: Mechanik nur
-aktiv, solange 4+ Mobs um den Tank stehen; danach normale reaktive
-Heilrota.
-
-Neuer Auslöser: `CustomRotation.TankApproachingMobGroup`
-(`CustomRotation_OtherInfo.cs`) — wahr, wenn der Party-Tank sich innerhalb
-von 21 Yalm (1 Yalm vor der tatsächlichen Gapcloser-Reichweite — alle vier
-Tank-Gapcloser, Intervene/Onslaught/Shadowstride/Trajectory, sind laut
-Nutzer-Bestätigung und Websuche einheitlich 20 Yalm) von 4+ Hostiles
-befindet, UND die Instanz kein Trial/Raid ist. Eine einzige Bedingung
-deckt sowohl den ersten Cast als auch alle Folgegruppen ab (z.B. bis zu
-5 Gruppen in Mt. Gulg) — der Tank betritt bei jeder neuen Gruppe erneut
-den 21y-Radius, kein separater Mechanismus nötig. Der zeitbasierte
-`CountDownAction`-Pre-Cast wurde komplett entfernt (WHM zusätzlich:
-`DivineBenisonPvE`-Cast dort, war an dieselbe Bedingung gekoppelt).
-
-Bekannte, unverifizierte Lücke: `TerritoryContentType` wird zur Build-Zeit
-aus Spieldaten generiert, in dieser Sandbox nicht kompilierbar/einsehbar
-(kein `dotnet`, mehrere externe Wikis/Datenbanken vom Netzwerk-Proxy
-blockiert — `ffxiv.consolegameswiki.com`, `finalfantasyxiv.com`,
-`garlandtools.org`, `thebalanceffxiv.com`, bestätigt per Proxy-Status als
-Richtlinien-Sperre, nicht technischer Fehler). Nur `.Trials`/`.Raids` sind
-bestätigt vorhanden (bereits an anderer Stelle im Code verwendet) und
-werden explizit ausgeschlossen. Alliance Raids und Variant Dungeons haben
-KEINEN expliziten Enum-Ausschluss — sie werden nur indirekt über die
-Mob-Anzahl-Bedingung (≥4 um Tank) gefiltert, was in den meisten Alliance-
-Raid-Encountern zutreffen dürfte, aber nicht garantiert ausgeschlossen ist.
-Palast der Toten/Himmelssäule (Deep Dungeons) sind NICHT explizit
-eingeschlossen, aber auch nicht ausgeschlossen — laufen über denselben
-Mob-Anzahl-Pfad, kein separater `IsInDeepDungeons`-Check eingebaut (Nutzer
-wollte sie "evtl." einbezogen wissen, unklar genug für eine bewusste
-Nicht-Sonderbehandlung statt Rätselraten).
-
-**Nachtrag 3 (Nutzer-Meldung, kritischer Re-Audit fand zwei weitere echte
-Bugs):** Commits `60d5773`, `04d364d`, `b1f2c61`.
-
-1. Fehlender Null-Check in `TankApproachingMobGroup`s Hostile-Schleife
-   (`60d5773`) — `AllHostileTargets` kann laut etabliertem Muster an
-   anderer Stelle im Code (`ActionTargetInfo.cs`, `IsAnyHostileCastingArea`)
-   stale Null-Referenzen enthalten, meine neue Schleife prüfte das nicht —
-   potenzieller `NullReferenceException`-Crash. Beim eigenen kritischen
-   Gegenlesen gefunden, sofort behoben.
-
-2. SGE: Eukrasia-Tastendruck ohne Dauer-Check (`04d364d`) — der Dauer-Check
-   hing nur am nachfolgenden Diagnosis-Cast, nicht am vorgeschalteten
-   Eukrasia-Druck selbst, der deshalb bei jeder freien GCD feuerte, auch
-   wenn Diagnosis noch reichlich Restdauer hatte. Dauer-Check jetzt vorab
-   gegen `PartyTank` geprüft, gated beide Schritte.
-
-3. **Größerer Fund (Nutzer-Meldung "initial-HoT wird gecastet, aber danach
-   nicht aufrechterhalten" / "keine Erneuerung bei zweiter Gruppe an
-   Mobs"):** Root Cause (`b1f2c61`) — der `TankApproachingMobGroup`-Check
-   war in `GeneralGCD` ganz ans Ende platziert ("safe filler for genuinely
-   spare GCD time"), passend für den ursprünglichen Zweck (einmaliger
-   Pre-Pull-Cast vor Kampfbeginn). Sobald aber echter Kampf gegen 4+ Mobs
-   läuft, beanspruchen DoT-Pflege/Nuke/Lily-Burst (bei WHM), Combust/Malefic
-   (bei AST) bzw. Phlegma/Pneuma (bei SGE) — alle mit höherer Priorität,
-   weiter oben in derselben Methode — praktisch jede GCD. Der
-   Sustain-Filler kam dadurch nie wieder zum Zug, sobald reale
-   Kampf-Priorität bestand — feuerte nur beim allerersten Pull, nie wieder
-   danach. Fix: Block in allen drei Jobs direkt nach den Raise-Early-Outs
-   an den Anfang von `GeneralGCD` verschoben (vor DoT/Nuke/Burst), bei SGE
-   nach dem bereits bestehenden reaktiven `DoEukrasianDiagnosis`-Aufruf
-   (echter Heilbedarf bleibt vorrangig vor proaktivem Sustain).
-
-### #47 — `ShouldAddDefenseArea()` prüft `BMRNextTankbusterIn` nicht — GEFIXT (statisch selbst-geprüft, kein Compile/Test)
-Bug: `StateUpdater.cs:170-197` prüft nur `BMRNextRaidwideIn`, nicht Tankbuster
-— im Unterschied zu `ShouldAddDefenseSingle()`, die beides prüft. Bei reiner
-Tankbuster-Vorhersage ohne Raidwide wird `AutoStatus.DefenseArea` nie gesetzt.
-Fix: etabliertes Doppel-Platzierungs-Muster (DRK/GNB Reprisal, SMN Addle)
-auf die tatsächlich betroffenen 9 Jobs angewendet — RDM/PCT/BLM-Addle,
-SAM/RPR/MNK/VPR/DRG/NIN-Feint: derselbe proaktive BMR-Refresh-Block wurde
-zusätzlich in `DefenseSingleAbility` eingefügt (neu angelegt wo nötig),
-sodass er über `ShouldAddDefenseSingle`s reicheren Tankbuster-Trigger
-erreichbar bleibt. Genuine Sicherheits-/Combo-Gates (EnoughWeaveTime,
-Gluttony/Enshroud- bzw. Serpent's-Ire-Slot-Guards, DRG StardiverPvE-Guard,
-NIN Mudra-Check) wurden mitgenommen; reine Präferenz-Gates (BurstDefense
-bei PCT wurde dagegen bewusst mitgenommen, da es PCTs eigene etablierte
-Konvention in DefenseSingle ist — Unterscheidung im Einzelfall geprüft,
-nicht pauschal übernommen/weggelassen).
-KORREKTUR DER KORREKTUR: Die erste Zwischen-Korrektur (BRD/MCH aus #47
-ausgeschlossen, mit der Begründung "reine Raidwide-Werkzeuge, wirken nur
-gegen Magieschaden") war SELBST falsch, auf zwei Ebenen. (1) `PredictedDamageType`
-(Grundlage von `BMRRaidwideIn`/`BMRTankbusterIn`) verifiziert in
-`BossModEnums.cs`: reine Trefferform-Klassifikation (None/Tankbuster/
-Raidwide/Shared — wen trifft es), keine Schadensart-Unterscheidung.
-(2) Per Websuche verifiziert (mehrere Quellen konsistent): Troubadour und
-Tactician reduzieren tatsächlich JEGLICHEN Schaden, nicht nur Magieschaden
-— exakt wie Reprisal/Addle/Feint. Beide Prämissen der Ausschluss-Begründung
-waren unverifiziert/falsch. Korrektur zurückgenommen: BRD-Troubadour und
-MCH-Tactician bekommen dieselbe Doppel-Platzierung wie die anderen 9 Jobs
-— proaktiver Block zusätzlich in `DefenseSingleAbility` (neu angelegt),
-mit `BMRTankbusterIn` (statt `BMRDamageIn`, passend zur bereits
-bestehenden job-eigenen Konvention der raidwide-spezifischen statt
-generischen BMR-Signale). MCHs Wildfire/Barrel-Stabilizer-Slot-Guards und
-MultiTact-Bedingung mitgenommen (echte Sicherheits-/Nutzungs-Bedingungen,
-keine Präferenz-Gates). #47 damit für alle ursprünglich identifizierten
-11 Jobs vollständig umgesetzt.
-WAR/PLD-Reprisal war nie betroffen (lag von Anfang an nur in
-DefenseSingleAbility). Nur statisch verifiziert (kein Build/Test möglich,
-kein `dotnet` in dieser Sandbox).
-
-### #52 — VPR/RPR Weave-Guard-Kommentare: Burst-Fenster-Framing geprüft — ERLEDIGT
-Status: ABGESCHLOSSEN. Beide Teilfragen einzeln aufgelöst.
-
-VPR (`7c174ec`, `VPR_Reborn.cs:248-254`): Code-Kommentar bereits korrekt
-und ehrlich formuliert (verifiziert, aktueller Live-Code gelesen) —
-erklärt akkurat das Spiegel-Prinzip (Serpent's Ire in `AttackAbility`
-selbst `IsBurst`-gegated, sitzt sonst die meiste Kampfzeit ungenutzt
-bereit, `CanUse` allein würde Feint für die ganze Wartezeit blockieren).
-Nur die GIT-COMMIT-MESSAGE von `7c174ec` selbst ("scopes the guard back
-to the narrow window it was meant for") war irreführend — das ist
-historischer Text, wird nicht rückwirkend umgeschrieben (kein Force-Push/
-History-Rewrite ohne expliziten Nutzerauftrag). Keine Code-Änderung nötig.
-
-RPR (`030129c`, `RPR_Reborn.cs`): Prämisse jetzt geprüft — `AttackAbility`
-gated Gluttony/Enshroud tatsächlich NICHT über `IsBurst`, sondern über
-RPRs eigenen Shroud-/Soul-Ressourcenzustand (`EnshroudPooling`,
-`HasIdealHost`, `Soul == 100` etc., Zeilen 158-207) — die ursprüngliche
-Kommentar-Formulierung "tightly time-boxed to their own burst window" war
-damit ungenau (kein echtes Zeitfenster wie bei MCH Wildfire, sondern ein
-Ressourcen-Zyklus-Slot). Code selbst NICHT defekt (Verhalten bleibt
-sinnvoll: seltene, wertvolle Ressourcen-Slots verdienen denselben Schutz
-vor Feint-Verdrängung wie ein Zeitfenster), nur die Begründung im Kommentar
-war unpräzise — korrigiert (`RPR_Reborn.cs:83-86`, jetzt: Ressourcen-
-Zyklus statt Burst-Fenster, gegen `AttackAbility` verifiziert).
-
-### #53 — DRG/NIN/SAM/DNC SecondWind/Bloodbath in HealSingleAbility ohne
-Weave-Slot-Gate (`6813a7c`), im Gegensatz zu RPR/VPR
-Status: GEFIXT für DRG (statisch selbst-geprüft, kein Compile/Test), SAM/DNC/NIN geprüft und geschlossen (kein Fund).
-
-Einzeln je Job auf ein KONKRETES, im jeweiligen File bereits etabliertes
-Weave-Schutz-Muster geprüft (nicht nur spekulativ "könnte kollidieren"):
-
-- **DRG — echter Fund, gefixt.** `DRG_Reborn.cs` hat ein datei-weites
-  Muster: `MoveForwardAbility`, `MoveBackAbility`, `DefenseAreaAbility`,
-  `DefenseSingleAbility` und `AttackAbility` beginnen JEWEILS mit
-  `if (IsLastAction(false, StardiverPvE)) { return base.X(...); }` —
-  eigene Logik wird direkt nach Stardiver (Sprungangriff mit Landeanimation)
-  übersprungen, vermutlich um die Landung nicht zu clippen. Genau EINE
-  Ability-Dispatch-Methode hatte diesen Guard NICHT: `HealSingleAbility`
-  (SecondWind/Bloodbath) — eine echte, konkret belegte Inkonsistenz mit der
-  eigenen Konvention der Datei, kein spekulatives "könnte sein". Gefixt:
-  denselben Guard ergänzt (`DRG_Reborn.cs`).
-- **SAM/DNC — geprüft, kein äquivalentes Muster gefunden.** Repo-Grep nach
-  `IsLastAction`/vergleichbaren Cross-Methoden-Weave-Guards in beiden Dateien
-  ergab keine Treffer — es gibt keine etablierte, im Code bereits verankerte
-  Konvention, gegen die SecondWind/Bloodbath dort inkonsistent wären. Die
-  ursprüngliche Sorge (SAMs Ogi-Namikiri-Fenster, DNCs Steps) bleibt
-  theoretisch denkbar, aber ohne konkreten Code-Beleg — anders als bei DRG
-  kein Fund, der einen Fix rechtfertigt. Ohne neuen Beleg geschlossen.
-- **NIN — bereits mit Mudra-Guard versehen** (andere Zielrichtung als
-  Weave-Slot-Schutz, aber verhindert bereits die naheliegendste Kollision:
-  Cast während einer Ninjutsu-Sequenz). Kein weiterer Bedarf erkannt.
-
-## Aggro-Management (großes, mehrteiliges Thema — vom Nutzer initiiert)
-
-Kontext: WHM spammt DoT bei Wall-to-Wall-Pulls z.T. wiederholt auf dasselbe
-(bereits aggro'te) Ziel. Daraus entwickelt: rollenbewusstes Aggro-Framework
-für RSR insgesamt (Nicht-Tank: Aggro vermeiden wo ohne Nachteil möglich;
-Tank: Aggro aktiv/schnell übernehmen, auch bei Co-Tank-Tod oder drohend
-tödlichem Tankbuster).
-
-Bausteine (Reihenfolge nach Risiko/Nutzen, jeder einzeln audit-fähig):
-
-- **B2a — Provoke-Distanzbug**: GEFIXT (statisch selbst-geprüft, kein Compile/Test).
-  `ObjectHelper.cs:113`: war `Vector3.Distance(target.Position, Player.Object.Position) > 5`
-  — verlangte >5y Abstand zwischen Boss und dem provokierenden Tank, blockierte
-  damit den häufigsten Fall (Tank bereits in Nahkampfreichweite, verliert Aggro
-  an DPS/Healer). Konzept+Adversarial-Check (s. AUDIT_LOG.md für Details):
-  downstream existiert bereits eine echte Reichweitenprüfung über das
-  Action-Targeting-System (`FindProvokeTarget()`), `ShouldAddProvoke()` hat
-  keine weitere Bremse gegen zu häufiges Auslösen außerhalb Allianz-Content
-  — die Distanzbedingung war die einzige Sperre für den wichtigsten Fall.
-  Geprüfte Alternativen: ersatzlos streichen (verworfen, entfernt evtl.
-  beabsichtigten Pull-Start-Rauschfilter) vs. Vorzeichen umdrehen (gewählt
-  — bewahrt mögliche Schutzfunktion, genauso codearm, risikoärmer).
-  Fix: `>` → `<` (ein Zeichen), Klärungskommentar ergänzt. Upstream-Sync-
-  Check vor Arbeitsbeginn: Bug existiert identisch in `upstream/main`,
-  kein Fork-eigener Fehler, kein Doppelarbeit-Risiko. Nur statisch
-  verifiziert (kein `dotnet` in dieser Sandbox, kein Build/Test möglich).
-
-- **B2b — Notfall-Provoke bei kritisch verwundetem Co-Tank**: GEFIXT
-  (statisch selbst-geprüft, kein Compile/Test — `ObjectHelper.cs`, `CanProvoke`).
-  Konzept mehrfach überarbeitet, siehe Sitzungsverlauf für die volle
-  Herleitung: ursprünglich BMR-Tankbuster-Vorhersage-basiert gedacht
-  (Buster VOR dem Einschlag umlenken), aber verifiziert (Websuche +
-  Nutzer-Erfahrung), dass ein bereits angekündigter Tankbuster nicht mehr
-  umlenkbar ist — nur nachfolgender Schaden (regulär oder weitere
-  Einschläge bei Mehrfach-Einschlag-Bustern wie Unreal Shinryu/Arkh Monh)
-  ist noch beeinflussbar. Design daher auf rein REAKTIV umgestellt: Ziel
-  ist ein Tank (Co-Tank), lebt, wird gerade noch vom Boss anvisiert, hat
-  `GetEffectiveHpPercent() <= 25` (Schätzwert, nicht spielgetestet).
-  Explizit dokumentierte Grenze: KEIN Schutz gegen One-Shot-Kaskaden aus
-  voller/hoher HP (Nutzer-Beispiel: 2 Tanks + er selbst als SMN nacheinander
-  von Mehrfach-Einschlägen getötet) — BMR liefert keine Schadenshöhen-
-  Vorhersage, nur Timing/Trefferform, daher lässt sich "wird dieser
-  Treffer tödlich sein" nicht vorab erkennen. Bewusst eng begrenzt
-  umgesetzt (Nutzerentscheidung), nicht das volle ursprüngliche Konzept.
-  Präzisierung durch Nutzer-Beispiel: Bei dieser Mechanik-Klasse ist nur
-  der ERSTE Einschlag angekündigt (Cast/Marker, von BMR vorhersagbar) —
-  Folge-Einschläge laufen automatisch als Teil derselben Funktion ohne
-  eigene Ankündigung, treffen wer gerade nach Aggro-Reihenfolge dran ist.
-  KORREKTUR nach Nutzer-Angabe: Es gibt tatsächlich ein Zeitfenster
-  zwischen den Folge-Einschlägen, ca. 1 Sekunde pro Einschlag — meine
-  vorherige Einschätzung "vermutlich gar kein Fenster" war zu pessimistisch,
-  zurückgenommen. 1s ist knapp (Provoke hat kein Cast, aber Animation-Lock
-  + RSRs Entscheidungsschleife + Netzwerklatenz müssen alle darunter
-  passen), aber technisch ein reales, nutzbares Fenster, kein Nullfenster.
-  Ob es in der Praxis zuverlässig genug reicht, bleibt ohne Spieltest
-  unverifiziert — aber die Grenze ist "knapp/riskant", nicht "nicht
-  vorhanden". Der Fix bleibt also auch für diese Mechanik-Klasse potentiell
-  wirksam, nur mit engerer Erfolgsspanne als beim normalen Folgeschaden-Fall. Die vom Nutzer selbst
-  genannten Standard-Lösungen für diese Mechanik-Klasse (alles auf einen
-  Tank mit Invuln/hoher Mitigation/Zwischenheals stapeln, ODER kontrolliert
-  nach Aggro-Reihenfolge verteilen) sind beide PROAKTIV — bestätigt, dass
-  ein Mitigation-Stacking-Konzept (bei der Auswahl als Option 3 nicht
-  gewählt) für genau diese Mechanik-Klasse der eigentlich wirksame Ansatz
-  wäre, nicht Aggro-Shuffling. Als möglicher Folge-Punkt offen, nicht
-  gestartet.
-  Kein neues TargetType/DataCenter-Feld — Erweiterung des bestehenden
-  `CanProvoke`/`ProvokeTarget`-Mechanismus (disjunkte Bedingung zu B2a,
-  kein Distanz-Gate, da jeder verfügbare Tank reagieren soll). Nur
-  statisch verifiziert.
-
-- **B2c — Verifikation Range-Pull-Fallback**: ABGESCHLOSSEN, kein Code-Fix
-  nötig. Verifiziert in allen 4 Tank-Rotationen: `TomahawkPvE` (WAR_Reborn.cs:416),
-  `LightningShotPvE` (GNB_Reborn.cs:544), `ShieldLobPvE` (PLD_Reborn.cs:479),
-  `UnmendPvE` (DRK_Reborn.cs:430) sitzen jeweils am Ende von `GeneralGCD`,
-  direkt vor `base.GeneralGCD`, nur durch die eigene `.CanUse()` gegated —
-  kein externes Blockier-Gate, kein Notfall-Szenario betroffen.
-
-- **B3 — WHM Dia Ziel-Umlenkung (`TargetType.SafeDotTarget`)**: GEFIXT
-  (statisch selbst-geprüft, kein Compile/Test). Umsetzung weicht von der ursprünglichen Skizze in zwei
-  Punkten ab, aus gutem Grund: (1) ERGÄNZT den reaktiven Fix aus 716789d,
-  ersetzt ihn nicht — die alte Bedingung (`DiaPvE.Target.Target?.TargetObject
-  != Player`) bleibt als primärer Versuch stehen, der neue
-  `targetOverride: TargetType.SafeDotTarget`-Zweig greift nur als Fallback,
-  wenn das Standardziel unsicher ist UND `DOTUpkeep` aktiv ist. (2) KEIN
-  `DataCenter.ProvokeTarget`-Muster (kein neues DataCenter-Feld, kein
-  TargetUpdater-Eintrag) — `FindSafeDotTarget()` durchsucht stattdessen
-  direkt die bereits gefilterte lokale `battleChara`-Kandidatenliste
-  (schlankeres, ebenfalls etabliertes Muster, näher an `RandomMeleeTarget`
-  als an `FindProvokeTarget`/`FindDispelTarget`, da hier keine
-  Voll-Hostile-Liste mit Sonderlogik pro Frame nötig ist). Neuer
-  `TargetType.SafeDotTarget`-Enum-Wert, `FindSafeDotTarget()` in beiden
-  Switches in `ActionTargetInfo.cs`, Einhängung nur in WHMs DOTUpkeep-
-  Zweig (Dia/AeroII/Aero je einzeln), kein anderer Job betroffen. Nur
-  statisch verifiziert.
-
-- **B4 — Pre-Pull-Sicherheit**: siehe #46 — GEFIXT für WHM/AST/SGE, SCH begründet unverändert.
-
-- **B1 — generischer "wer greift Nicht-Tank an"-Helfer**: VERWORFEN als
-  eigener Baustein (verfrühte Abstraktion, nur 2 gegenläufige Verwender
-  bisher). Jeder Verwender bekommt sein eigenes kleines Prädikat.
-
-## Kritischer Bug: `AverageTTK`-Nullfallback blockierte Auto-Heilung am Pull-Start (Nutzer-Meldung)
-
-Status: GEFIXT (statisch selbst-geprüft, kein Compile/Test). Vom Nutzer
-gemeldet: WHM, trotz hochgesetzter Heilschwellen (>70% ohne HoT, >55% mit
-HoT), sinken Partymitglieder unter 50% HP ohne jede Heilung — nicht nur
-kurzzeitig, meist wenn keine oGCDs verfügbar sind.
-
-Root Cause gefunden (`RotationSolver.Basic/DataCenter.cs`, `AverageTTK`):
-`_avgTTK = count > 0 ? total / count : 0f;` — wenn KEIN aktuell verfolgtes
-Hostile-Ziel eine gültige TTK-Schätzung hat (`GetTTK()` liefert `NaN`, bis
-ein Ziel Schaden genommen UND `CheckSpan` = 2,5s Trefferhistorie
-angesammelt hat, `ObjectHelper.cs:3460/3515`), fällt `AverageTTK` auf `0`
-zurück. `StateUpdater.CanUseHealAction` prüft `IsLongerThan(AutoHealTimeToKill)`
-= `AverageTTK > 8f` (Default) — bei `AverageTTK == 0` immer `false`,
-wodurch `CanUseHealAction` für ALLE automatischen Heil-Trigger
-(`ShouldAddHealSingleSpell`, `ShouldAddHealSingleAbility`,
-`ShouldAddHealAreaSpell`, `ShouldAddHealAreaAbility` — GCD UND oGCD
-gleichermaßen) `false` zurückgibt, UNABHÄNGIG von Partymitglieder-HP.
-
-Konkret reproduzierbar: die ersten ~2,5s JEDES Pulls (kein Ziel hat vorher
-Schaden genommen) UND jede Situation, in der nur frische Full-HP-Ziele
-aktuell verfolgt werden (z.B. neue Add-Welle als einzige aktuelle Ziele) —
-genau die Fenster, in denen ein Pull typischerweise am gefährlichsten ist
-(Öffner, bevor Tank-Mitigation greift) und in denen reaktive oGCD-Heilung
-noch nicht gebraucht/prokt wurde. Erklärt die Nutzer-Beobachtung
-"meist wenn keine oGCDs vorhanden sind" — der GCD-Heilpfad UND der
-oGCD-Heilpfad sind in diesem Fenster beide über denselben Gate tot, nur
-job-eigene Notfall-Pfade außerhalb der StateUpdater-Kette (falls
-vorhanden) könnten in dem Fenster überhaupt noch heilen.
-
-Gesamtheitlich geprüft: `AverageTTK`/`IsLongerThan` hat nur 2 weitere
-Verwender im Repo (`NinjaRotation.cs:320/407`, `BaseAction.cs:266`
-`IsTimeToKillValid`) — beide nutzen ebenfalls ausschließlich `>`/`>=`
-gegen `AverageTTK`, nie `<`/`<=`, also ist ein einheitlicher Fix an der
-Quelle für alle Verwender korrekt, keine Spezialbehandlung pro Aufrufer
-nötig. `BaseAction`s Variante betrifft nur Aktionen mit explizit gesetztem
-`Config.TimeToKill > 0` (Default `0`, s. Zeile 149) — für die meisten
-Aktionen ohnehin wirkungslos, aber derselbe Fix schadet dort nicht.
-
-Fix: Fallback von `0f` auf `float.PositiveInfinity` geändert (Property-
-Getter UND `ResetAllRecords()`-Reset-Pfad) — "TTK unbekannt" liest jetzt
-als "wahrscheinlich lang genug", nicht mehr als "Kampf endet sofort",
-passend zur Fail-safe-Richtung aller drei Verwender.
-
-Upstream-Sync-Check: Bug existiert identisch in `upstream/main` (per
-`git show upstream/main:RotationSolver.Basic/DataCenter.cs` verifiziert)
-— kein Fork-eigener Fehler, sondern vorbestehender Upstream-Bug. Fix nur
-im eigenen Fork committet, nicht nach `upstream` gepusht (Regel).
-
-## Nachtrag 4: HealAreaGCD-Starvation — der eigentliche Grund für "kein HoT seit Initialpull"
-
-Status: GEFIXT (statisch selbst-geprüft, kein Compile/Test). Nutzer-Meldung:
-zweiter/folgender Initial-HoT nach Zwischenboss bleibt aus, UND selbst
-innerhalb desselben Wall-to-Wall-Segments (12 Gegner, Heiler steht neben
-Tank, AoE-Stuns gehen raus) kommt kein HoT mehr, seit dem allerersten Cast.
-
-Fehlgeleitete Zwischenschritte vor dem eigentlichen Fund (zur Nachvollziehbarkeit,
-nicht weil sie zum Ergebnis führten): TTK-Gate (`BaseAction.CanUse` →
-`IsTimeToKillValid`) erneut geprüft — bereits in Nachtrag zum
-`AverageTTK`-Fix oben (Zeile ~527-534) korrekt als wirkungslos für
-`RegenPvE` dokumentiert (`Config.TimeToKill` bleibt `0`, da
-`ModifyRegenPvE` nur `TargetStatusProvide`/`UnlockedByQuestID`/
-`TargetType` setzt, kein `TimeToKill`; `BaseAction.Config`-Getter erzwingt
-zusätzlich `TimeToKill = 0`, wenn `Setting.TargetStatusProvide != null`,
-Zeile 147-150) — Redundanz zur bereits bestehenden Doku, kein neuer Fund.
-`FindTankTarget()`, `BasicCheck()` (inkl. `IsStatusProvided`/
-`IsStatusNeeded`, die auf `Setting.StatusProvide`/`StatusNeed` prüfen, NICHT
-auf `TargetStatusProvide` — für Regen/AspectedBenefic/EukrasianDiagnosis
-also wirkungslos, da nur `TargetStatusProvide` gesetzt ist), `StatusRefreshGcdCount`-
-Default (2) und `GCDTime()` einzeln durchgelesen — alle unauffällig.
-
-Eigentlicher Root Cause (gefunden durch systematisches Durchgehen der
-GCD-Dispatch-Kette statt weiterer Einzeltheorien): `HealAreaGCD` wird in
-`CustomRotation_GCD.cs` GENAUSO wie `HealSingleGCD` VOR `GeneralGCD`
-geprüft (Zeilen 240-269 vs. 457). Der bereits gefixte
-`HealSingleGCD`-Starvation-Fix (siehe `eaa96a7`) deckte nur den reaktiven
-Einzelziel-Heilbedarf ab — `HealAreaGCD` (reaktiver AoE-Heilbedarf) wurde
-dabei vollständig übersehen, obwohl architektonisch identisch angreifbar.
-Bei 12 Gegnern und AoE-Stuns ist Party-weiter Streuschaden weit
-wahrscheinlicher als isolierter Einzelschaden — genau das Szenario, das
-laut Nutzer-Report reproduzierbar bricht. Gesamtheitlich geprüft: alle drei
-betroffenen Jobs (WHM/AST/SGE) hatten denselben Lückenschluss nur in
-`HealSingleGCD`, nie in `HealAreaGCD` — CLAUDE.md-Grundsatz
-"Gesamtheitlichkeit vor Spezialisierung" hier selbst verletzt, indem der
-erste Fund (HealSingleGCD) als vollständig behandelt wurde, ohne die
-strukturell identische Schwestermethode zu prüfen.
-
-Fix: In `HealAreaGCD` aller drei Jobs (WHM/AST/SGE) denselben proaktiven
-Sustain-Check ergänzt, den `HealSingleGCD` bereits hat — Platzierung jeweils
-GANZ AM ENDE, unmittelbar vor dem `base.HealAreaGCD(out act)`-Fallback, NICHT
-vor den bestehenden reaktiven AoE-Heilzweigen (Rapture/MedicaIII/II/CureIII/
-Medica bzw. HeliosConjunction/AspectedHelios/Helios bzw. Pneuma/Eukrasian-
-Prognosis/Prognosis) — damit verdrängt der neue Zweig nie eine echte
-Heilentscheidung, sondern greift nur in den GCDs, in denen der
-AoE-Heilbedarf-Flag zwar gesetzt war, aber keiner der vorherigen Zweige
-tatsächlich einen gültigen Cast fand (das exakte Fenster, in dem vorher
-`base.HealAreaGCD` nichts tat und die Methode den GCD trotzdem für sich
-beanspruchte). WHM/AST nutzen dieselbe HP-Ratio-Schwelle
-(`RegenHeal`/`AspectedBeneficHeal`) wie ihr jeweiliger `HealSingleGCD`-Fix;
-SGE mangels bestehender Schwelle wieder als reiner Nur-wenn-nichts-anderes-
-Fallback wie im `HealSingleGCD`-Pendant.
-
-Nicht verifiziert (kein Compiler/Client): ob `MedicaPvE`/`HeliosPvE`/
-`PrognosisPvE` (die jeweils letzten regulären Zweige vor dem neuen Check)
-tatsächlich so eng an echten Heilbedarf gebunden sind, dass sie bei
-gesetztem AoE-Flag nicht selbst schon fast immer greifen und den neuen
-Zweig dadurch erneut verhungern lassen — falls doch, wäre eine Platzierung
-weiter vorne (vor diesen Fillern, wie ursprünglich für WHM erwogen) nötig.
-Nutzer-Rückmeldung nach Live-Test nötig, um das zu bestätigen oder zu
-widerlegen.
-
-Live-Test-Ergebnis (Nutzer): HealAreaGCD-Fix bestätigt wirksam — HoT wird
-jetzt während des Wall-to-Wall korrekt nachgecastet. Neuer, enger gefasster
-Rest-Befund: der HoT VOR dem Pull (Tank nähert sich der ersten/nächsten
-Gruppe, noch nicht im Kampf) bleibt weiterhin aus.
-
-## Nachtrag 5: Pre-Pull-HoT (vor Kampfbeginn) weiterhin aus — Hypothese, nicht bestätigt
-
-Status: TEILWEISE bearbeitet (Mitigation umgesetzt, Ursache NICHT belegt).
-Gesamten Dispatch-Pfad für den Fall `DataCenter.InCombat == false`
-durchgegangen, um einen expliziten Code-Gate zu finden, der `GeneralGCD`
-(wo `TankApproachingMobGroup` liegt) vor Kampfbeginn blockiert:
-`CustomRotation_Invoke.cs` (`Invoke()`) — kein InCombat-Gate, nur
-Countdown-Gate (in Dungeons ohne aktiven Countdown irrelevant);
-`TargetUpdater.UpdateTargets()`/`UpdateLists()` — `AllHostileTargets`/
-`PartyMembers` werden OHNE InCombat-Bedingung befüllt (nur Sichtbarkeit/
-48y/Targetable); `MajorUpdater.cs` — `_isActivatedThisCycle`/`autoOnEnabled`
-hängt an `DataCenter.State`, laut Nutzer durchgehend aktiv ("rsr bleibt im
-auto", bereits früher in dieser Sitzung geklärt — nicht erneut als Theorie
-aufgegriffen); `CustomRotation_GCD.cs` — `MoveForwardGCD` ist für WHM/AST/
-SGE nicht überschrieben (Basis-Implementierung liefert immer `false`,
-kein GCD-Verbrauch), `AutoStatus.NoCasting`-Gate vor `GeneralGCD` hängt an
-`IsHostileCastingStop` (vor einem Trash-Pull nicht plausibel gesetzt);
-`RSCommands_Actions.cs` (`CanDoAnAction`) — kein InCombat-Bedingung.
-
-Kein einzelner Code-Gate gefunden, der Vor-Pull-Ausführung explizit
-verhindert — d.h. der Fund bleibt eine Hypothese, kein belegter Root Cause
-(REGEL: unmarkierte Inferenz vermeiden). Plausibelste verbleibende
-Erklärung: Zeitfenster-Problem, kein Logikfehler. `TankApproachingMobGroup`
-war mit `TankGapCloserRangeYalms + 1f` (21 Yalm) sehr eng an die
-Sprungdistanz des Gapclosers gekoppelt — abhängig davon, wie schnell der
-Tank in diesem letzten Yalm unterwegs ist und ob die Heiler-GCD in genau
-diesem kurzen Fenster frei ist, kann das Fenster ohne Systemfehler verpasst
-werden. Während des Kampfes bleibt die Bedingung dagegen über die gesamte
-Pull-Dauer wahr, wodurch viele GCD-Ticks eine Chance bekommen — erklärt den
-Unterschied zwischen "während" (funktioniert) und "vor" (funktioniert
-nicht), ohne einen Bug in der neuen Logik selbst zu benötigen.
-
-Mitigation (kein bestätigter Fix): Margin von `+1f` auf `+6f` erhöht (21→26
-Yalm Auslöseradius), um das Vor-Pull-Fenster zu verlängern und mehr
-GCD-Ticks eine Chance zu geben, hineinzufallen — deckt sich mit der
-früheren Nutzeraussage "von mir aus kann der hot auch vor approach an
-nächste gruppe vorzeitig erneuert werden". Falls das Verhalten nach diesem
-Fix weiterhin unverändert (HoT weiterhin NIE vor dem Pull) bleibt, ist die
-Zeitfenster-Hypothese widerlegt und ein tatsächlicher Code-Gate wurde beim
-Durchgehen übersehen — erneute, gezieltere Prüfung nötig, keine weitere
-Bereichsvergrößerung als nächster Schritt.
-
-Live-Test-Ergebnis (Nutzer): HoT weiterhin nicht vor dem Pull, trotz +6f-
-Marge — Zeitfenster-Hypothese damit widerlegt, wie oben angekündigt.
-
-## Nachtrag 6: Root Cause gefunden — 4+-Mob-Schwelle passt nicht auf Startgruppen
-
-Status: GEFIXT (statisch selbst-geprüft, kein Compile/Test). Nutzer-Hinweis
-war entscheidend: "am anfang sind die gruppen unter 4 mobs, über 4 geht es
-erst durch sammeln der gruppen" — die Startgruppen eines Dungeons haben oft
-WENIGER als 4 Mobs, die 4+ entstehen erst durchs Zusammenziehen mehrerer
-Gruppen beim Wall-to-Wall-Pull selbst.
-
-`TankApproachingMobGroup` prüfte `mobsInRange >= 4` — diese Schwelle war
-KEINE eigene Erfindung, sondern explizite Nutzer-Vorgabe aus Nachtrag 2
-("Mechanik nur aktiv, solange 4+ Mobs um den Tank stehen"), aber sie gilt
-für EINE einzige, gemeinsame Bedingung, die laut ursprünglichem Design
-sowohl den allerersten Pre-Pull-Cast als auch alle Folgegruppen abdecken
-sollte. Für eine Startgruppe mit z.B. 2-3 Mobs kann `mobsInRange >= 4`
-rechnerisch NIE wahr werden, egal wie nah der Tank herangeht oder wie groß
-der Radius ist — erklärt vollständig, warum die Radius-Vergrößerung aus
-Nachtrag 5 wirkungslos blieb: das Problem lag nie an der Distanz/dem
-Zeitfenster, sondern an der Mob-Anzahl-Schwelle selbst.
-
-Fix (`CustomRotation_OtherInfo.cs`): Mindestanzahl komplett entfernt —
-`TankApproachingMobGroup` ist jetzt wahr, sobald IRGENDEIN Hostile
-innerhalb von Gapcloser-Reichweite + 1 Yalm ist (Radius zurück auf den
-ursprünglichen Wert, da die Vergrößerung aus Nachtrag 5 nachträglich
-unbegründet war). Sicher, weil innerhalb einer instanzierten Dungeon-
-Korridor-Situation keine neutralen/streunenden Hostiles existieren, an
-denen das fälschlich anschlagen könnte — jeder sichtbare Hostile in
-Gapcloser-Nähe des Tanks ist ein echter, beabsichtigter Pull. Config-
-Beschreibungstexte in WHM/AST/SGE ("group of 4+ enemies" → "enemies")
-entsprechend angepasst, damit sie nicht mehr eine Schwelle behaupten, die
-es im Code nicht mehr gibt.
-
-Nicht verifiziert (kein Compiler/Client): ob eine einzelne Mob-Instanz
-tatsächlich in jedem Dungeon so nah an "Startgruppe mit 1 Mob" vorkommt,
-dass hier über-eifrig getriggert wird (z.B. ein einzelner Wächter-Mob vor
-der eigentlichen Gruppe) — laut Nutzer-Aussage aber ohnehin unproblematisch,
-da HoT auf dem Tank in keinem Fall schadet.
-
-## Nachtrag 7: Nachtrag 6 korrigiert — 4+-Schwelle war Ausstiegs-, kein Eintritts-Kriterium
-
-Status: GEFIXT (statisch selbst-geprüft, kein Compile/Test). Nutzer-
-Korrektur zu Nachtrag 6: die 4+-Vorgabe aus Nachtrag 2 war nie als
-Mindestgröße für den ERSTEN Pull gedacht, sondern als Ausstiegskriterium
-während eines laufenden Wall-to-Walls — "damit nicht noch bei 3 unnötig
-gecastet wird [...] da war dann der Hinweis auf die normale Rota". Zusatz-
-Präzisierung: "stehen" (die Mobs aus der Nutzer-Formulierung "4+ Mobs
-stehen um den Tank") bezog sich auf bereits gepullte/engagierte Mobs im
-Kampf, nicht auf noch heranrennende beim Herannahen — bestätigt exakt die
-Zwei-Zustands-Unterscheidung.
-
-Nachtrag 6 hatte die Schwelle komplett entfernt (jeder Hostile in Reichweite
-zählt, unabhängig vom Kampfzustand) — das behebt zwar den Pre-Pull-Fall,
-verliert aber die vom Nutzer gewollte Ausstiegslogik: bei einem fast
-abgeschlossenen Pull mit nur noch 1-3 Mobs würde jetzt weiterhin
-zwanghaft nachgecastet, statt auf normale Reaktiv-Heilung zurückzufallen.
-
-Fix (`CustomRotation_OtherInfo.cs`): `TankApproachingMobGroup` unterscheidet
-jetzt nach `DataCenter.InCombat`. NICHT im Kampf (Herannahen an eine frische
-Gruppe, noch nicht gepullt): jeder Hostile in Reichweite reicht — deckt den
-Pre-Pull-Fall für Startgruppen unter 4 Mobs ab. IM Kampf (Mobs bereits
-engaged, "stehen"): weiterhin `WallToWallMinimumHostileCount` (4) nötig —
-stellt die vom Nutzer gewollte Ausstiegslogik wieder her, sobald ein
-laufender Pull auf unter 4 Mobs abschmilzt. Eine Konstante statt Magic
-Number für die Schwelle benannt, damit der Zweck (Ausstieg, nicht Eintritt)
-auch im Code erkennbar bleibt.
-
-## Nachtrag 8: Pre-Pull-Schwelle von "jeder Hostile" auf 2+ angehoben
-
-Status: GEFIXT (statisch selbst-geprüft, kein Compile/Test). Nutzer-Vorgabe:
-"damit nicht nur einer gepullt wird und was verschwendet wird, nimm >1" —
-ein einzelner Streuner in Reichweite ist kein echter Pull, der Pre-Pull-Cast
-soll dafür nicht verbraucht werden.
-
-Fix (`CustomRotation_OtherInfo.cs`): neue Konstante
-`PrePullMinimumHostileCount = 2`, ersetzt den bisherigen "jeder Hostile
-reicht"-Zweig (Nachtrag 6/7) durch dieselbe Zähl-Schleife wie im Kampf-Fall,
-nur mit anderer Schwelle. `TankApproachingMobGroup` wählt jetzt einheitlich
-`DataCenter.InCombat ? WallToWallMinimumHostileCount (4) :
-PrePullMinimumHostileCount (2)` und zählt einmal gegen diese Schwelle —
-keine zwei separate Codepfade mehr, ein Zähler, zwei benannte Konstanten.
-
-## Nachtrag 9: Beide Schwellen als Config-Werte statt fest codierter Konstanten
-
-Status: GEFIXT (statisch selbst-geprüft, kein Compile/Test). Nutzer-Vorgabe:
-Wall-to-Wall-Ausstiegsschwelle von 4 auf 3 senken ("spielt sich nach Pull
-entspannter"), UND generell: beide Zahlen als einstellbare UI-Werte statt
-Code-Konstanten, nachdem sie bereits dreimal in Folge angepasst wurden
-(4 → 2/4 getrennt → 2/3 getrennt) — ein klares Signal, dass es
-Geschmackssache ist, keine feste Spielregel.
-
-Fix: `TankApproachingMobGroup` (`CustomRotation_OtherInfo.cs`) von
-parameterloser Property auf Methode mit zwei Parametern umgestellt —
-`TankApproachingMobGroup(int prePullMinimumHostileCount, int
-wallToWallMinimumHostileCount)`, keine Konstanten mehr in der Basisklasse.
-Für WHM/AST/SGE je zwei neue `[RotationConfig]`-Properties ergänzt
-(`Pre{Regen,AspectedBenefic,EukrasianDiagnosis}MinHostiles`, Default 2,
-Range 1-8; `...MinWallToWallHostiles`, Default 3 — neuer Nutzer-Wert statt
-bisher 4, Range 1-12) und alle 9 Aufrufstellen (3 Methoden × 3 Jobs) auf die
-Methode mit den job-eigenen Config-Werten umgestellt. Jeder Job kann die
-beiden Zahlen jetzt unabhängig in der RSR-UI einstellen, kein Zwang mehr
-zu Code-Änderungen für weitere Geschmacksanpassungen.
-
-## Nachtrag 10: UI-Platzierung geprüft und bewertet — Job-Tab statt Auto-Tab, mit Parent-Gruppierung
-
-Status: GEPRÜFT + verbessert (statisch selbst-geprüft, kein Compile/Test).
-Nutzer-Vorschlag: die beiden neuen Werte unter "Auto" → "Healing Usage and
-Control" statt im Job-Tab, in einem aufklappbaren Bereich.
-
-Bewertung (gegen den Vorschlag, mit Gegenargument-Prüfung vor Fixierung):
-Der Auto-Tab-Abschnitt ist ein anderer Mechanismus — generische
-`[JobConfig]`-Felder in `Configs.cs`, EIN geteilter Wert für alle Heiler,
-gerendert über eine handgebaute Widget-Liste (`AutoHealCheckBox.cs`), nicht
-über die `[RotationConfig]`-Reflection der Job-Tabs. Unsere Werte sind
-echt job-spezifisch (WHM/AST/SGE je eigene Property/eigener Default/eigene
-Zielaktion) — dieselbe Konvention wie `RegenHeal`/`AspectedBeneficHeal`/
-`LilyOvercapTime`, alle im Job-Tab. Verschieben würde entweder die drei
-Job-Werte zu einem geteilten Wert zusammenlegen (Verlust der Pro-Job-
-Unabhängigkeit) oder neue bedingte Pro-Job-Rendering-Logik in einem Tab
-erfordern, der das bisher nicht kennt — unnötiger Aufwand gegenüber dem
-Nutzen. Inhaltlich außerdem andere Entscheidungsachse: Auto/Healing Usage
-regelt HP%-Dringlichkeit, unsere Werte regeln Mob-Anzahl-Pull-Erkennung.
-
-Berechtigter Kern übernommen: `RotationConfigAttribute.Parent` (bereits an
-vielen Stellen im Code genutzt, z.B. SGEs `HolosHeal` unter
-`HolosHealOption`) auf alle 6 neuen Properties gesetzt — `Parent =
-nameof(UsePreRegen)` bzw. `UsePreAspectedBenefic`/
-`UsePreEukrasianDiagnosis`. Dadurch erscheinen die beiden Zahlen jeweils
-gruppiert/eingerückt direkt unter ihrem zugehörigen Toggle im Job-Tab,
-statt lose in der flachen Liste zu stehen — deckt den eigentlichen
-Bedienbarkeits-Wunsch ab, ohne die Architektur-Nachteile der Auto-Tab-
-Verschiebung.
-
-## KORREKTUR zu B2a (Provoke-Distanzcheck): Fix war falsch, revertiert
-
-Status: REVERTIERT auf Upstream-Verhalten (Nutzerentscheidung nach
-Vorlage der Belege). Betrifft den oben unter "B2a — Provoke-Distanzbug"
-protokollierten Eintrag — dessen Begründung ist NACHWEISLICH FALSCH und
-wird hiermit widerrufen, nicht nur ergänzt.
-
-Behauptet wurde dort: `Vector3.Distance(target, Player) > 5` habe "den
-häufigsten Fall blockiert (Tank bereits in Nahkampfreichweite, verliert
-Aggro an DPS/Healer)". Widerlegung aus dem Repo-Code selbst, ohne
-Spielwissen:
-
-`ObjectHelper.DistanceToPlayer()` (Zeile 3922) ist die repo-eigene
-Distanzfunktion — XZ-Ebene, und sie subtrahiert BEIDE Hitbox-Radien,
-liefert also Kante-zu-Kante. Dieselbe Schwelle `5` wird an drei weiteren
-Stellen derselben Datei (1214, 1223, 2256) mit dieser Funktion verwendet.
-Nur `CanProvoke` nutzt rohes `Vector3.Distance` (Center-zu-Center, inkl.
-Y-Achse) — misst dort also in einer anderen Einheit als der Rest.
-
-Daraus rein arithmetisch: Center-Distanz = Kante-zu-Kante + beide
-Hitboxen. `CanProvoke` prüft in seiner eigenen Vorbedingung explizit
-`target.HitboxRadius >= 5` — für ein solches Ziel ist die Center-Distanz
-also IMMER ≥ 5.5, selbst wenn der Tank direkt an der Hitbox steht. Der
-Boss-Nahkampf-Fall erfüllte `> 5` also stets; die Inversion auf `< 5` hat
-ihn blockiert — genau den Fall, den der Eintrag zu reparieren behauptete.
-Zusätzlich blockierte `< 5` den klassischen Provoke-Fall (entfernter Mob
-am Heiler), da Provoke 25y Reichweite hat.
-
-Verhaltensmatrix (Center-Distanz, wie tatsächlich gemessen):
-Boss im Nahkampf → Upstream `>5` provoziert, Fork `<5` blockiert.
-Kleiner Trash direkt am Tank → Upstream blockiert (AoE greift ohnehin),
-Fork provoziert. Mob weit weg am Heiler → Upstream provoziert, Fork
-blockiert.
-
-Fix: Zeichen zurück auf `>`, Erklärungskommentar auf den Upstream-Wortlaut
-zurückgesetzt. `ObjectHelper.cs` weicht damit nur noch durch den additiven
-B2b-Notfallzweig (kritisch verwundeter Co-Tank, kein Distanz-Gate) von
-`upstream/main` ab — per `git diff upstream/main` verifiziert. B2b selbst
-ist von der Korrektur unberührt.
-
-Lehre für die Methodik (nicht nur für diesen Fall): eine Distanzschwelle
-darf nicht bewertet werden, ohne die verwendete Messfunktion zu prüfen —
-dieselbe Zahl bedeutet in diesem Repo je nach Funktion Center-zu-Center
-oder Kante-zu-Kante. Der ursprüngliche B2a-"Adversarial-Check" hat genau
-das nicht getan und deshalb die falsche Richtung als Fix ausgewiesen.
-
-## Abarbeitung der Review-Funde #57–#62 (Nutzer-Auftrag: prüfen, planen, umsetzen, auditieren)
-
-Status: ALLE SECHS UMGESETZT, compiler-verifiziert (CI grün), NICHT
-spielgetestet. Verhalten bei Standardeinstellungen unverändert — es wurden
-keine Schwellenwerte oder Auslösebedingungen verändert, nur ihre
-Repräsentation im Code.
-
-**Vorprüfung, die den Plan bestimmt hat** (verhinderte zwei Fehlgriffe):
-1. Alle 25 Vorkommen des Dauer-Ternary sind byte-identisch und betreffen
-   ausschließlich Addle (7), Feint (12), Reprisal (6) — verifiziert per
-   `grep -o ... | sort | uniq -c`. Damit ist EIN geteilter Helfer semantisch
-   korrekt, statt 14 job-eigener.
-2. Das vorhandene `Service.Config.AutoDefenseNumber` (Default 2) sieht wie
-   der passende Wiederverwendungskandidat für `NumberOfHostilesInRange >= 4`
-   aus, ist es aber NICHT: seine beiden Verwender (`DataCenter.cs:456`,
-   `StateUpdater.cs:272`) zählen Gegner, die MICH angreifen, nicht Gegner in
-   Reichweite. Wiederverwendung wäre ein stiller Semantikfehler gewesen.
-
-**#58/#59 (Duplikate + Helfer-Muster), Commit `00a426b`:**
-`MitigationDebuffDuration` und `ShouldSustainMitigationDebuff(params
-StatusID[])` in `CustomRotation_OtherInfo.cs`, direkt neben dem bereits
-vorhandenen `BMRShouldRefreshBefore`, das sie verwenden. Neue Config
-`MitigationSustainHostileCount` (Default 4) in `Configs.cs` unter
-`UseDefenseAbility` — beseitigt zugleich die Inkonsistenz, dass die
-Healer-Sustain-Schwellen konfigurierbar waren, diese aber nicht. Alle 25
-Aufrufstellen mechanisch ersetzt (Skript, drei Klammerfälle einzeln
-behandelt, danach vollständige Diff-Sichtprüfung). SMNs bereits
-vorhandener `TryAddleBeforeDamage`-Wrapper blieb als job-eigene Ebene.
-
-**#60 (divergente Healer-Kopien), Commit `6b40600`:**
-Je ein `TrySustain…OnTank(out act)` pro Heiler, nach dem Vorbild von SMNs
-Wrapper. Die Vereinheitlichung ist eine bewusste, kleine Verhaltensänderung:
-der GeneralGCD-Pfad hatte als einziger weder die HP-Schwelle
-(`RegenHeal`/`AspectedBeneficHeal`) noch den Null-Check und behandelte ein
-Null-Ziel per `?? true` als "Refresh fällig". Jetzt gilt überall die
-Schwelle — das ist die Lesart, die die Einstellung selbst dokumentiert
-("will not be used on them" unterhalb dieser Ratio). SGE war inhaltlich
-konsistent, dort nur Entdopplung.
-
-**#57 (Magic Numbers) + #61 (Lookups), Commit `0fe7bed`:**
-`WeakenedHealThresholdFactor = 1.5f`, `ShieldSurvivalFallbackSeconds = 3f`,
-`CoTankEmergencyHpPercent = 25` — benannte Konstanten mit Begründung,
-inklusive der ehrlichen Kennzeichnung, dass die 25 % ein nie im Spiel
-geprüfter Schätzwert sind. StateUpdaters Torwächter liest jetzt dieselbe
-`MitigationSustainHostileCount` wie die Job-Zweige, die er freischaltet —
-vorher konnte das Tor mit den Zweigen dahinter uneins sein.
-`DataCenter.PartyTank` als einzige Definition von "erster lebender Tank";
-`CustomRotation` leitet weiter (wie schon bei `AverageTTK`),
-`StateUpdater.AnyLivingTankInParty` delegiert. `FindTankTarget` behält seine
-eigene Fassung — sie priorisiert zusätzlich Tank-Stance und Zielbarkeit, ist
-also NICHT dasselbe Prädikat (geprüft, nicht angenommen). `CanProvoke` sucht
-die Ziel-ID jetzt einmal statt zweimal pro Hostile pro Frame.
-
-**#62 (Kommentare), Commit `f9e0eff`:**
-Inline-Prosa im Fork-Diff von 312 auf 237 Zeilen, Code unverändert 785.
-Entfernt wurden vor allem Änderungshistorie und Querverweise auf andere
-Jobs; behalten wurde die Mechanik-Erklärung. Der Gesamtanteil (inkl. 160
-Zeilen XML-Doku an neuen öffentlichen Membern, Repo-Konvention) liegt bei
-33,5 % gegenüber 38,6 % vorher und 11,0 % Repo-Baseline. Bewusst NICHT auf
-die Baseline gedrückt: der Rest erklärt nicht-offensichtliche Mechanik, und
-Kommentare zu löschen, nur damit eine Kennzahl passt, wäre Zahlenkosmetik.
-
-**Audit-Messung nach Umsetzung** (alle per grep gegengezählt):
-Dauer-Ternary 25→1, `NumberOfHostilesInRange >= 4` 26→0,
-`TankApproachingMobGroup`-Aufrufe in Rotationen 9→3, doppelter
-`SearchById` 2→1, Inline-Kommentare 312→237.
-
-Grenze dieses Audits, ausdrücklich: CI beweist Kompilierbarkeit, nicht
-Verhalten. Die einzige inhaltliche Änderung (GeneralGCD-HP-Schwelle bei
-WHM/AST) ist nur statisch begründet und sollte im Spiel gegengeprüft werden.
-
-## Restricted-DoT-Zielfilter: Schleife ohne Wirkung (gefunden 05.09.2026, GEFIXT)
-
-Gefunden beim Abgleich Spielbeschreibung ↔ Umsetzung (siehe
-`docs/rotation-flow/05-action-coverage.md`), nicht gesucht — der Einstieg war
-die Frage, welche DoT-Aktionen `IsRestrictedDOT` tragen und welche nicht.
-
-`ActionTargetInfo.cs:86-95` (vor dem Fix):
-
-```csharp
-if (action.IsRestrictedDOT && DataCenter.RestrictedDotNameIds != null)
-{
-    for (var i = 0; i < DataCenter.RestrictedDotNameIds.Count; i++)
-    {
-        if (target.NameId == DataCenter.RestrictedDotNameIds[i])
-        {
-            continue;      // setzt die INNERE for-Schleife fort, nicht das foreach
-        }
-    }
-}
-```
-
-Das `continue` gehört zur inneren `for`-Schleife und erhöht nur `i`. Das
-Ziel auf der Sperrliste wurde also **nicht** übersprungen, sondern lief
-weiter durch alle folgenden Prüfungen und landete in `validTargets`. Der
-Block war vollständig wirkungslos.
-
-Belegend für „das ist ein Fehler, keine Absicht": die **korrekte** Fassung
-desselben Guards steht 80 Zeilen tiefer in derselben Datei
-(`ActionTargetInfo.cs:172-188`) — mit `isRestricted`-Flag, `break` und
-anschließendem `continue` auf der äußeren Schleife. Der Fix übernimmt genau
-diese Form.
-
-**Wirkung des Fehlers**: `RestrictedDotNameIds` enthält aktuell eine NameId
-(9214). Betroffen waren nur Aktionen mit `IsRestrictedDOT` (AST Combust I–III,
-BRD Windbite/Stormbite, SGE Eukrasian Dosis I–III, SCH Bio/Bio II/Biolysis,
-WHM Aero/Aero II/Dia) und nur der eine Ziel-Auswahlpfad von zweien.
-
-**Fehlerklasse geschlossen**: `check_base_calls.py` hat als dritte Prüfung
-„No-op guard loop" bekommen — eine `for`/`while`-Schleife, deren Rumpf nur aus
-`if (…) { continue; }` besteht, ist beweisbar wirkungslos. Validiert: findet
-vor dem Fix genau diese eine Stelle (exit 1), danach keine, keine Fehlalarme
-im gesamten Baum (525 Overrides, 623 Base-Calls, 8561 Bedingungen).
-
-**Nicht** mitgeändert: die uneinheitliche `IsRestrictedDOT`-Vergabe. Nur ein
-Teil der DoT-Aktionen trägt das Flag (BLM-Thunder-Familie, DRG Chaos
-Thrust/Chaotic Spring, GNB Sonic Break/Bow Shock, SAM Higanbana, PLD Circle of
-Scorn, SGE Eukrasian Dyskrasia, MCH Bioblaster tragen es nicht). Ob das
-begründet ist, hängt am konkreten Gegner hinter NameId 9214 — Spielfrage,
-nicht aus dem Code entscheidbar.
-
-## Refresh-Horizonte gegen die Wirkdauern aus den Spieldaten — sauber (05.09.2026)
-
-Zweiter Teil des Abgleichs Beschreibung ↔ Umsetzung. Geprüft wurde die
-Sorge, die hinter der 15s/10s-Diskussion stand: sind die fest codierten
-Horizonte in `BMRShouldRefreshBefore(BMRxIn, <Horizont>, …, StatusID.Y)`
-gegen die tatsächliche Wirkdauer von Y gedeckt?
-
-Alle 13 Aufrufstellen im Repo, Horizont gegen die `Duration: Ns` aus der
-generierten Spielbeschreibung:
-
-| Datei | Status | Horizont | Wirkdauer |
+| Baustein | Status | Kern | Beleg |
 |---|---|---|---|
-| BRD 144/163 | Troubadour | 15s | 15s |
-| DRK 199 | ShadowedVigil | 15s | 15s |
-| GNB 193 | GreatNebula | 15s | 15s |
-| MCH 137/181 | Tactician | 15s | 15s |
-| PLD 240 | Guardian | 15s | 15s |
-| SMN 201 | RadiantAegis | 30s | 30s |
-| WAR 229 | Damnation | 15s | 15s |
-| DRK/GNB/PLD/WAR 205/199/246/235 | Rampart | 20s | 20s (Rollenaktion, `Action.resx`) |
+| B1 generischer „wer greift Nicht-Tank an"-Helfer | VERWORFEN | verfrühte Abstraktion; jeder Verwender bekommt sein Prädikat | CLAUDE.md nennt genau diese Entscheidung als Beleg für ungeprüften „Nichtbedarf" |
+| B2a Provoke-Distanzcheck `>` → `<` | **KORRIGIERT → auf Upstream zurückgesetzt** | s. C1 | — |
+| B2b Notfall-Provoke auf kritisch verwundeten Co-Tank | GEFIXT | `CanProvoke`: Ziel ist Co-Tank, lebt, wird vom Boss anvisiert, Effective-HP ≤ Schwelle; ohne Distanz-Gate. Rein reaktiv: ein angekündigter Buster ist nicht mehr umlenkbar (Websuche + Nutzer), nur Folgeschaden; bei Mehrfach-Einschlägen bleibt ~1 s Fenster (Nutzer), knapp, aber real. Schwelle später auf `HealthForDyingTanks` umgestellt (A4), Invuln-Gate ergänzt (A7-5) | ObjectHelper.cs |
+| B2c Range-Pull-Fallback der Tanks | KEIN FEHLER | Tomahawk/Lightning Shot/Shield Lob/Unmend sitzen am Ende von `GeneralGCD`, nur durch eigenes `CanUse` gegated | WAR 416 · GNB 544 · PLD 479 · DRK 430 |
+| B3 WHM-Dia-Zielumlenkung `TargetType.SafeDotTarget` | GEFIXT → später **entfernt** | ergänzte den Skip aus 716789d um einen Fallback auf ein Ziel ohne Aggro auf dem Heiler; nach dem Revert des WHM-DoT-Blocks (5755ad5b) ohne Aufrufer, entfernt in 2df7dc4e | — |
+| B4 Pre-Pull-Sicherheit | → A2 | | |
 
-**Keine Abweichung.** Jeder Horizont entspricht exakt der Wirkdauer.
+### A2 · Pre-Pull- und Sustain-HoT auf dem Tank (#46) mit zehn Nachträgen
 
-Zwei Auswertungsfehler auf dem Weg dorthin, beide vor dem Ergebnis bemerkt:
-- Ein `setdefault` über den Anzeigenamen ließ bei Namensgleichheit die
-  **PvP**-Variante gewinnen. `GuardianPvP` (8s, ein Rush zum Party-Mitglied)
-  verdrängte `GuardianPvE` (15s) und erzeugte einen Scheinbefund
-  „Horizont 15s > Wirkdauer 8s" bei PLD.
-- Rampart fehlte zunächst ganz, weil es eine **Rollenaktion** auf
-  `CustomRotation` ist und damit nicht in den Jobklassen der `Rotation.resx`
-  steht, sondern in `Action.resx`.
+**Anlass:** Nutzer-Ziel: HoT/Schild auf dem Tank während des Laufens (Anlauf oder Bewegung im Pull) ohne Swiftcast, einheitlich für alle Heiler.
 
-Nebenbefund, der die bestehende Lösung bestätigt: Reprisal, Addle und Feint
-liefern in den Spieldaten „Duration: **s**" ohne Zahl — der Wert ist
-levelskaliert und im Sheet leer. Genau deshalb ist
-`MitigationDebuffDuration => PlayerSyncedLevel() >= 98 ? 15f : 10f` dort
-richtig und eine feste Zahl wäre falsch.
+**Faktenbasis (Websuche):** Regen, Aspected Benefic, Eukrasian Diagnosis sind instant; Adloquium hat 2 s Cast, SCH hat kein reines instant Schild/HoT auf Einzelziel (Whispering Dawn ist AoE ab Fee, bereits reaktiv genutzt) → SCH bewusst unverändert.
 
-## TODO #71 erledigt: PR #2 geschlossen, Branch geloescht (05.09.2026)
+| Schritt | Commit | Status | Inhalt |
+|---|---|---|---|
+| Umsetzung | 0fd058d | GEFIXT | Sustain-Check je Heiler am Ende von `GeneralGCD`, Optionen `UsePreRegen` (erweitert), `UsePreAspectedBenefic`, `UsePreEukrasianDiagnosis` |
+| Nachtrag 1: HoT-Spam | 89665b7 | GEFIXT | `CanUse(targetOverride: Tank)` löst über `FindTankTarget` auf, das `CheckStatus` nie aufruft → Restdauer wurde nie geprüft. Fix: `WillStatusEndGCD(StatusRefreshGcdCount, …, TargetStatusProvide)` explizit nach `CanUse` |
+| Nachtrag 2: Auslöser | fd19aad | GEFIXT | Countdown-Trigger entfernt (Dungeons haben keinen Countdown); neuer Trigger `TankApproachingMobGroup`: Tank innerhalb Gap-Closer-Reichweite (20 y, alle vier Tank-Gap-Closer) von Hostiles, keine Trials/Raids |
+| Nachtrag 3 | 60d5773 · 04d364d · b1f2c61 | GEFIXT | Null-Check in der Hostile-Schleife; SGE-Eukrasia-Druck ohne Dauer-Check; **Starvation**: der Check stand am Ende von `GeneralGCD` und kam im Kampf nie zum Zug → an den Anfang (nach Raise-Early-Outs) |
+| Nachtrag 4: HealAreaGCD-Starvation | — | GEFIXT (Spiel bestätigt) | dieselbe Lücke in `HealAreaGCD` aller drei Heiler; Check dort am Ende vor `base`, damit er keine reaktive AoE-Heilung verdrängt |
+| Nachtrag 5: Pre-Pull weiterhin aus | — | **KORRIGIERT** (s. C3) | Radius 21 → 26 y als Zeitfenster-Hypothese; Spiel: wirkungslos |
+| Nachtrag 6: Ursache | — | GEFIXT, dann präzisiert | Startgruppen haben < 4 Mobs; `mobsInRange >= 4` konnte vor dem Pull nie wahr werden |
+| Nachtrag 7 | — | GEFIXT | 4+ war Ausstiegs-, kein Eintrittskriterium: außer Kampf jeder Hostile, im Kampf `WallToWall`-Schwelle |
+| Nachtrag 8 | — | GEFIXT | Pre-Pull-Schwelle 2 (ein Streuner ist kein Pull) |
+| Nachtrag 9 | — | GEFIXT | beide Schwellen als `[RotationConfig]` je Heiler (Default 2 / 3), Methode `TankApproachingMobGroup(prePull, wallToWall)` |
+| Nachtrag 10: UI-Ort | — | KEIN FEHLER | Job-Tab statt Auto-Tab (Auto-Tab = geteilte `[JobConfig]`-Felder, unsere Werte sind job-eigen); `Parent` auf den Toggle gesetzt |
+| Später | 5755ad5b | VERWORFEN (SGE) | SGE-Sustain entfernt: Eukrasian Diagnosis ist ein Schild, wird durch Schaden verbraucht, das Refresh-Signal „Status weg" feuerte im Pull alle paar Sekunden. WHM Regen / AST Aspected Benefic sind HoTs, bleiben |
 
-Der Branch `claude/bmr-mitigation-refresh` war inhaltlich vollstaendig in
-`claude/rotation-flow-refactor` enthalten — der alte Kopf `f2db49b1` ist
-Vorfahre des Arbeitsbranches, verifiziert per
-`git merge-base --is-ancestor`. Die einzige Differenz war ein
-Upstream-Merge-Commit, den der Branch-Sync ihm nachtraeglich verpasst hatte,
-obwohl er nach der Datenhygiene-Regel ein Loeschfall und kein Sync-Fall war.
+Offen gebliebene, dokumentierte Grenzen: `TerritoryContentType` nur `Trials`/`Raids` ausgeschlossen (Alliance/Variant/Deep Dungeon laufen über die Mob-Zahl); Präzedenz für „Aspected Benefic bevorzugt bei Bewegung" war bereits in AST `HealSingleGCD` vorhanden.
 
-Nutzer hat PR #2 geschlossen und den Branch entfernt. Frisch geprueft:
-`git branch -r` zeigt nur noch `origin/main` und
-`origin/claude/rotation-flow-refactor`. Kein Inhaltsverlust, da alles in
-PR #3 steckt.
+### A3 · `AverageTTK`-Nullfallback (Nutzer-Meldung: keine Heilung am Pull-Start)
 
-## Abgeschlossen: Fork-Audit-Roadmap (Phasen 0-3 und 5) — 05.09.2026
+**Anlass:** Party sinkt unter 50 % ohne Heilung, „meist wenn keine oGCDs da sind".
+**Befund:** `_avgTTK = count > 0 ? total / count : 0f` — solange kein Ziel Trefferhistorie hat (`GetTTK` = NaN für ~2,5 s), ist der Mittelwert 0; `CanUseHealAction` verlangt `AverageTTK > AutoHealTimeToKill` → alle Heil-Flags aus, GCD und oGCD. Betrifft die ersten 2,5 s jedes Pulls und jede neue Add-Welle.
+**Fix:** GEFIXT — Fallback `float.PositiveInfinity` (Getter und `ResetAllRecords`). Alle Verbraucher vergleichen `>`/`>=` (`IsLongerThan`, `BaseAction.IsTimeToKillValid`, NinjaRotation), also an der Quelle korrekt. Bug existiert identisch in Upstream.
+**Fortsetzung:** der Rest der Meldung (#54) wurde in A8 gelöst — dieselbe Gate-Kette, anderer Auslöser.
 
+### A4 · Review-Funde #57–#62 (Duplikate, Magic Numbers, Kommentare)
 
-Anlass: Der Originalautor haelt saemtliche Aenderungen fuer Trial&Error ohne
-Verstaendnis der Codebasis, >4000 Zeilen die nichts richtig machen. Auftrag:
-belegen oder widerlegen, korrigieren, mit so wenig Code wie moeglich, ohne das
-inhaltliche Gesamtkonzept zu verlieren.
+Status: alle sechs umgesetzt, CI grün, Verhalten bei Standardwerten unverändert.
 
-**Reihenfolge ist verbindlich. Keine Phase ueberspringen, keine Phase
-abbrechen, weil eine spaetere interessanter wirkt.**
-
-| Phase | Inhalt | Stand |
+| Fund | Commit | Ergebnis |
 |---|---|---|
-| 0 | Faktenbasis: Zeilenbilanz, Kommentarbilanz, Versionierung | **fertig** |
-| 1 | Substanzpruefung je Bereich — feuert der Zweig, tut er das Richtige, ist er minimal, passt er zum Original | **fertig** |
-| 1.1 | `Updaters/StateUpdater.cs` | fertig |
-| 1.2 | `Rotations/CustomRotation_Ability.cs` | fertig |
-| 1.3 | `Rotations/CustomRotation_OtherInfo.cs` | fertig |
-| 1.4 | `DataCenter` · `ObjectHelper` · `StatusHelper` · `ActionTargetInfo` · `CustomRotation_Items` · `HpPotionItem` | fertig |
-| 1.5 | Heiler: WHM · AST · SGE · SCH | fertig |
-| 1.6 | Tanks: PLD · WAR · DRK · GNB | fertig |
-| 1.7 | Melee · Phys. Range · Magical | fertig |
-| 1.8 | Duty · ExtraRotations · PvP | fertig |
-| 2 | Korrekturen umsetzen (rollierend je Fund) | **fertig** — alle Funde aus Phase 1 umgesetzt |
-| 3 | Stilangleichung: Kommentardichte auf Hausmass je Bereich | **fertig** — Ueberhang 283 → 102, RebornRotations 26,6 % → 9,9 % |
-| 4 | Versionierung des Forks in Ordnung bringen | **offen — braucht Nutzerentscheidung (Tag-Schema)** |
-| 5 | CI gruen + Dokumentation des Ergebnisses | **fertig** — `docs/rotation-flow/06-fork-audit.md`, Build gruen auf `d67164c` |
+| #58/#59 25 byte-identische Dauer-Ternaries, 26× `>= 4` | 00a426b | `MitigationDebuffDuration`, `ShouldSustainMitigationDebuff`, Config `MitigationSustainHostileCount` (Default 4). `AutoDefenseNumber` war **kein** Wiederverwendungskandidat: zählt Angreifer auf mich, nicht Gegner in Reichweite |
+| #60 drei divergente Heiler-Kopien | 6b40600 | je ein `TrySustain…OnTank`; kleine bewusste Verhaltensänderung: GeneralGCD-Pfad bekam die HP-Schwelle, die die Einstellung ohnehin dokumentiert |
+| #57/#61 Magic Numbers, doppelte Lookups | 0fe7bed | benannte Konstanten; StateUpdater liest dieselbe Config wie die Job-Zweige; `DataCenter.PartyTank` als einzige Definition; `FindTankTarget` bleibt eigen (priorisiert Tank-Stance) |
+| #62 Kommentare | f9e0eff | Inline-Prosa 312 → 237 Zeilen; nicht auf Baseline gedrückt, Rest erklärt Mechanik |
 
-### Phase-0-Ergebnis (Faktenbasis)
+Messung danach: Ternary 25→1, `>= 4` 26→0, Sustain-Aufrufe 9→3, doppelter `SearchById` 2→1.
 
-- „ueber 4000 Zeilen": 4521 Zeilen Diff gegen `upstream/main`, davon **2830
-  Markdown** (Doku/TODO/AUDIT_LOG, wird nie ausgeliefert), 260 CI, und
-  **1431 C#**. Von den 1431: 178 leer, 413 Kommentar, 282 reine Klammern —
-  **558 tatsaechliche Anweisungen** ueber 43 Dateien.
-- Kommentardichte der Ergaenzungen gegen Hausmass je Bereich:
-  RebornRotations 26,6 % (Haus 3,9 %), Updaters 37,3 % (6,2 %), Rotations-Kern
-  49,7 % (19,6 %), Helpers/Actions 37,4 % (19,7 %). Ueberhang ~283 Zeilen.
-  **Der Stilvorwurf trifft zu.**
-- **Versionierung: der Vorwurf trifft zu.** Der Fork hat **0 Tags**, Upstream
-  hat 952. `publish.yaml` triggert ausschliesslich auf Tags `*.*.*.*`, und
-  `AssemblyVersion` wird nur dort aus dem Tag gestempelt. Ohne Tag ist jede
-  Version **1.0.0.0**. `manifest.json` und `RotationSolver.json` sind
-  unveraendert gegenueber Upstream, der Fehler liegt allein in den fehlenden
-  Tags. Siehe Phase 4.
+### A5 · Fork-Audit-Roadmap (05.09.2026)
 
-Phase 4 (Versionierung) ist codeseitig erledigt und auf `main`; offen bleibt
-nur das Release, gefuehrt als TODO #70.
+**Anlass:** Der Originalautor nennt die Änderungen „Trial & Error, >4000 Zeilen die nichts richtig machen". Auftrag: belegen oder widerlegen, korrigieren, codearm.
 
-## Abgeschlossen: Upstream-Inhaltspruefung der 8 Commits (ehemals TODO #67)
-
-
-Neue Vorgabe fuer diesen Branch: Upstream wird NICHT gemergt, sondern auf
-Inhalt geprueft — welche Verbesserung/Fehlerbehebung/Erweiterung bringt der
-Commit, und gilt sie hier auch. Stand `git fetch upstream` am 05.09.2026,
-Branch-Punkt `ee055ca` (16.08.2026), Upstream-Kopf `f5c8432`. 16 Commits
-Rueckstand, davon 8 ohne Merge-Commits:
-
-| Commit | Inhalt | Betrifft |
-|---|---|---|
-| `53822a8` | Bard-Songreihenfolge, Anpassung an Dalamud-Aenderung | BRD_Reborn |
-| `e003bce` | DRK-Rotationsfixes | DRK_Reborn (hier geaendert!) |
-| `df1a8c9` | Nicht-FATE-Mobs waehrend FATEs anders behandelt | Targeting, zentral |
-| `7b8a2f5` | Doppelte Oblation-Nutzung, ECommons-Update | DRK_Reborn (hier geaendert!) |
-| `0bde9ed` | Crash im Next-Action-Fenster bei ungueltigem Zielobjekt | UI |
-| `b5a91d7` | SGE-Logik, Targeting-Probleme | SGE_Reborn (hier geaendert!) |
-| `69f4844` | GNB-Fixes, strengere Status-Listen-Guards | GNB_Reborn |
-| `83e4d0e` | BLU Exuviation wurde nicht als AoE-Heilung genutzt | BLU_Reborn |
-
-Drei davon (DRK 2x, SGE) betreffen Dateien, die dieser Branch bereits
-angefasst hat — dort ist die Pruefung nicht optional, sondern noetig, um
-nicht gegen einen veralteten Stand zu arbeiten.
-
-Auch `origin/main` ist um dieselben 16 Commits zurueck und hat 8 eigene.
-
-Erledigt: `upstream/main` (`f5c8432`) wurde in den Arbeitsbranch gemergt, jeder
-der acht Commits inhaltlich gegen die eigenen Patches geprueft (Ergebnis im
-Merge-Commit `49d7f8a`). Alle drei Branches standen danach auf 0 ausstehenden
-Upstream-Commits.
-
-## Abgeschlossen: Code-Review-Loop ueber alle Patches (05.09.2026)
-
-Auftrag: „fuehre ein codereview der patches durch … loop solange, bis alle
-fehler beseitigt sind" — umfaenglich, nicht selektiv. Gegenstand: der
-komplette Diff `upstream/main` (`f5c8432`) → Branch, 46 Code-Dateien, 2819
-Diff-Zeilen, Hunk fuer Hunk gelesen. Roadmap (aus TODO.md hierher verschoben):
-
-| Phase | Inhalt | Ergebnis |
-|---|---|---|
-| R1 | Research: Randbedingungen (Null-Ziel, Unverwundbarkeit, Level-Sync), Mehrspieler-Interaktion (zwei Tanks/Melees/Caster), Zielaufloesung, Allokation, Config, Diff-Rauschen | 11 Kandidaten |
-| R2/R3 | Visionary/Council/Reflect/Critic/Antithese je Kandidat | 1 verworfen (`params`-Allokation je Aufruf = Hausmuster, s. `HasStatus`), 10 bestaetigt, 2 weitere aus der Gesamtheitlichkeitspruefung (NIN-Flag, Reprisal-Status) |
-| R4 | Revision, je Fund ein Commit | 12 Commits, CI (DispatchChain + Build) gruen auf `ff0d8d43` |
-| R5 | Evaluation: zweiter Durchgang | strukturelle Scans ueber den bereinigten Diff — jedes neu deklarierte Symbol referenziert (43 Symbole), jede der 38 `skipStatusProvideCheck: true`-Stellen durch `ShouldSustainMitigationDebuff`/`BMRShouldRefreshBefore` gegatet, Spiegel-Behauptungen in Kommentaren (MCH AttackAbility, FindTankTarget) gegen den referenzierten Code geprueft — kein neuer Fund, Plateau |
-| R6 | Dokumentation | dieser Eintrag, `docs/rotation-flow/06-fork-audit.md` §6 |
-
-Funde und Fixes:
-
-1. `5bb4d39f` — **Doppelanwendung Reprisal/Feint/Addle.** Der Gegnerzahl-Zweig
-   von `ShouldSustainMitigationDebuff` prüfte den Zielstatus nicht; alle 25
-   Aufrufer übergeben `skipStatusProvideCheck: true` (nötig für den
-   BMR-Zweig). Folge: zweiter Tank/Melee/Caster in der Gruppe überschrieb den
-   laufenden Debuff, 90s Cooldown ohne Mehrwert — in genau den 4+-Mob-Pulls,
-   für die der Zweig gebaut ist. Fix: Zweig verlangt Abwesenheit oder Ablauf
-   ≤ 2 GCDs auf `HostileTarget`, Quelle beliebig (= dieselbe Prüfung, die die
-   reaktiven Zeilen über `CanUse` machen). Antithese „die reaktive Zeile
-   direkt darunter prüft doch" — trifft nur für DefenseArea-Aufrufer zu und
-   ändert nichts daran, dass die Sustain-Zeile davor bereits gefeuert hat.
-   Nebenfix: `BMRShouldRefreshBefore` prüft bei Debuff mit null-Ziel nicht
-   mehr ersatzweise den Spieler (`statusFromSelf ? Player : target`).
-2. `2df7dc4e` — `TargetType.SafeDotTarget`, zwei Switch-Arme und
-   `FindSafeDotTarget` ohne Aufrufer seit dem WHM-Revert (5755ad5b).
-3. `bd65f0d4` — UTF-8-BOM in elf Dateien, die Upstream ohne BOM führt
-   (Upstream: 206/269 Dateien mit BOM, genau diese elf nicht) → elf reine
-   Erstzeilen-Hunks im Diff. Entfernt.
-4. `5b778336` — GCD-Befehlspfad: 5755ad5b hatte nur den oGCD-Zwilling
-   (1ca682a) zurückgesetzt, 0885f53 stand noch. `CustomRotation_GCD.cs`
-   wieder identisch mit Upstream. Einträge 1ca682a/0885f53 oben korrigiert.
-5. `451d9e90` — `CanProvoke`-Co-Tank-Rettung zog den Boss von einem Tank mit
-   laufender Unverwundbarkeit (Superbolide setzt absichtlich auf 1 HP; Living
-   Dead/Holmgang halten nahe null). Gate über den bestehenden
-   `NoNeedHealingInvuln()` — lässt den Provoke durch, sobald die
-   Unverwundbarkeit ≤ 2 GCDs vor dem Ende steht.
-6. `28c0e1fc` — NIN war der einzige Job mit Sustain-Zweigen ohne
-   `HasHostileCountAoeMitigation`; der Gegnerzahl-Trigger in StateUpdater
-   setzte für NIN nie DefenseArea. Flag in `NinjaRotation` (dort liegt die
-   versiegelte `DefenseAreaAbility`).
-7. `990daaeb` — `ShieldStatus` (7 Einträge: SCH/SGE, PLD-Veil) um 15
-   spielerseitige Barrieren ergänzt (Divine Benison, The Blackest Night,
-   Brutal Shell, Stem the Tide, Shade Shift, Manaward, Radiant Aegis, Tempera
-   Coat/Grassa, Crest of Time Borrowed, Catalyze, Consolation, Differential
-   Diagnosis, Holosakos, Haimatinon). Ein falscher Eintrag kann nicht
-   über-krediten: `GetObjectShield() > 0` bleibt Voraussetzung. Nicht
-   aufgenommen: Guardian („Guardian's Will" — Barriere unbestätigt).
-8. `3b5e50d5` — MCH: identischer Slot-Konflikt-Block in DefenseArea und
-   DefenseSingle → `BurstWeaveSlotContested`. Spiegel-Behauptung gegen
-   `AttackAbility` (Zeile 233-268) geprüft: deckungsgleich.
-9. `bfc52584` — `DataCenter.BMRTankbusterImminent` statt dreifach
-   ausgeschriebener Bedingung (StateUpdater, Ability-Pfad, Potion);
-   `UseHpPotion` ohne Durchreich-Parameter; `AnyLivingTankInParty` inline.
-10. `c1d0ba45` — Upstream-`foreach` in `CalculateDamageFactor` (seit 0246bea5)
-    tat nichts; `partyStatuses` wird lazy in `HasPartyStatus` gefüllt. Vom
-    erweiterten Prüfskript gefunden.
-11. `ff0d8d43` — `check_base_calls.py`: `foreach`, klammerloses `continue`,
-    Expression-Bodied-Overrides (die nächste Klammer hätte zum falschen
-    Member gehört).
-12. `f107eda9` — **Reprisal ohne `TargetStatusProvide`** (Upstream): die
-    reaktive Zeile feuerte trotz Co-Tank-Reprisal; damit war auch der neue
-    Gate aus Fund 1 für Reprisal wirkungslos. `ModifyReprisalPvE` analog
-    Addle/Feint. Dazu: zwei Status-IDs (753 `Reprisal`, 1193
-    `Reprisal_1193`) mit identischem Namen und Text; Upstreams
-    Schadensfaktor liest 753, die Stormblood-Rollenaktionen Feint (1195) und
-    Addle (1203) liegen neben 1193. Welche die Aktion setzt, ist aus dem
-    Repo nicht entscheidbar; xivapi, garlandtools, gamerescape sind hinter
-    dem Egress-Proxy gesperrt (geprüft, nicht angenommen). Beide IDs in
-    `StatusHelper.ReprisalStatus`, alle Reprisal-Prüfungen (sechs
-    Sustain-Aufrufer, `TargetStatusProvide`, Schadensfaktor-Zeile) darüber.
-
-Geprüft, kein Fehler (nicht erneut prüfen):
-
-- Interrupt/AntiKnockback-Umordnung: alle vier Overrides — BLU reicht an
-  `base` durch, PhantomDefault läuft über den Duty-Pfad, RPR/VPR gegatet —
-  kein Kollateral.
-- `AverageTTK = PositiveInfinity`: beide Verbraucher (`BaseAction.cs:266`
-  `>=`, `IsLongerThan` `>`).
-- `FindTankTarget` wählt aus `PartyMembers`, nicht aus den status-gefilterten
-  Kandidaten → der WHM/AST-Sustain-Kommentar („targetOverride umgeht
-  CheckStatus") trifft zu.
-- `HealSingleAbility`-Overrides DRG/NIN/SAM/DNC: Basis ist leer
-  (`CustomRotation_Ability.cs:771`), keine Duplikation; bare `[RotationDesc]`
-  wie VPR upstream.
-- `RadiantOnCooldownSpam`: upstream deklariert, nie gelesen → Entfernung korrekt.
-- PhantomDefault `out act`: in beiden Zweigen korrekt gesetzt.
-- `publish.yaml` `-split '\+'`: PowerShell-Regex, literales Plus.
-- `FindTargetAreaHostile`-Spread: derselbe Aufbau wie Upstreams Zeile 724.
-- HpPotion-Ausschluss-IDs 47102/22306/20309: identisch mit der bestehenden Zeile.
-- `IsHostileCastingTankBusterAtMe`-Doppelnullprüfung: Muster von `IsHostileCastingStop`.
-
-Bewusst nicht geändert: der Gegnerzahl-Zweig in den DefenseSingle-Aufrufern
-der DPS (Design, keine Fehlerbehebung) → TODO #72 (unten abgearbeitet).
-
-## Abgeschlossen: TODO-Abarbeitung im Loop (05.09.2026)
-
-Auftrag: „alle todos abarbeiten", Loop wie oben. Vorab korrigiert: **#70
-war seit 08:38 UTC erledigt** — Tag `7.5.5.41+wsh1` auf `ba269301`, Release
-veroeffentlicht; in Bericht, TODO.md und 06-fork-audit.md stand es trotzdem
-als offen, weil der Stand aus dem Gespraechsverlauf statt aus
-`git ls-remote --tags origin` kam (Regel in CLAUDE.md ergaenzt). Lokaler
-Tag zeigte auf `09818f0e` und wurde auf den Origin-Stand gesetzt.
-
-**#54 WHM-Heilsuppression → GEFIXT `c6a0a40c`, Kette vollstaendig belegt
-(s. Nachtrag unten).** Research: alle
-in #54 ausgeschlossenen Kandidaten betrafen den Pfad NACH dem Setzen der
-Heil-Flags. Nicht geprueft war die Flag-Quelle selbst: `CanUseHealAction`
-(StateUpdater.cs:11) verlangt in Kampf `IsLongerThan(AutoHealTimeToKill)`,
-also `AverageTTK > 8 s`, fuer Heiler UND Nicht-Heiler — die Option haengt
-aber unter `UseHealWhenNotAHealer` („Stop healing when time to kill is
-lower than", Configs.cs:1082) und meint Nicht-Heiler. `GetTTK`
-(ObjectHelper.cs:3467) ist ein gleitender Ratenschaetzer ueber die
-HP-Historie je Gegner, `AverageTTK` der Mittelwert ueber alle; bei einem
-Pack, dessen Mobs mehrheitlich unter 50 % sind, liegt er im letzten Drittel
-des Pulls typisch unter 8 s. Folge: alle vier Heil-Flags aus, `GeneralGCD`
-erreicht, Holy gecastet — jedes gemeldete Merkmal (kein Castversuch, volles
-Mana, Schwellen irrelevant, Gegner unter 50 %) folgt daraus. Antithese
-„Upstream will Heiler-GCDs am Kampfende sparen": die Ersparnis sind zwei
-GCDs pro Bosskampf, der Preis ein Tank ohne Heilung bei 20 %; und die
-UI-Einordnung widerspricht der Heiler-Anwendung. Fix: Gate nur noch im
-Nicht-Heiler-Zweig, Heiler heilen, sobald `AutoHeal` es erlaubt.
-Nachtrag (zweiter Durchgang, Nutzer lehnt Spieltest als Aufgabe ab): die
-gesamte Kette vom Tank bei 20 % bis zum Cure-II-Cast im Code geprueft, jedes
-Glied gegen das gemeldete Szenario: `HPNotFull` (Min-HP < 1) →
-`CanUseHealAction` (gefixt) → `NonHealerHealLogic` (Heiler: immer wahr) →
-`ShouldHealSingle` je Mitglied (`h < Lerp(HealthSingleSpell,
-HealthSingleSpellHot, HoT-Anteil)`; 20 % liegt unter jedem genannten Wert,
-Schild-Credit braucht `GetObjectShield() > 0`, `NoNeedHealingInvuln` nur bei
-Invuln-Status) → Flag gesetzt → GCD-Dispatch `CanHealSingleSpell` =
-`GCDHeal || aliveHealerCount == 1` (PartyMembers enthaelt den Spieler,
-`IsParty` ObjectHelper.cs:711 → beim einzigen Heiler unabhaengig von GCDHeal
-wahr) → `WHM.HealSingleGCD`: Solace (Lilie), Regen nur > 0.3, Sustain nur
-> 0.3, dann `CureIiPvE.CanUse` → Zielwahl `TargetType.Heal` mit
-`AutoHealCheck` (< AutoHealRatio 0.8), `TargetOnScreen` nur bei
-`OnlyAttackInView` (Default aus), `NeedsCasting` nur bei Bewegung (Holy
-wurde gecastet, also stand der Heiler). Kein weiteres Glied kann im
-gemeldeten Szenario blockieren. Nebenfund dabei: der Sichtfeld-Filter galt
-auch fuer Heilziele (gefixt, s. Nebenfund unten).
-
-**#55 `_lastHp` → GEFIXT `a2a3ec35`.** Feld nie beschrieben, Zweig
-`currentHp - lastHp == healedHp` unerreichbar; entfernt. Die Praediktion
-endet wie bisher mit dem Effektfenster. Alternative (Baseline in
-`Watcher.cs:211` mitschreiben) verworfen: mehr Code fuer ein Verhalten, das
-niemand vermisst hat.
-
-**#63 WHM 0.3 / AST 0.4 → KEIN FEHLER, geschlossen.** Die beiden Werte haben
-in Upstream gegensaetzliche Semantik, und das ist begruendet: WHM nutzt
-Regen reaktiv nur `> RegenHeal` (reiner HoT, fuer den Notfall ungeeignet →
-darunter Cure II), AST nutzt Aspected Benefic reaktiv nur `< AspectedBeneficHeal`
-(Sofortheilung + HoT, instant → das Notfall- und Bewegungswerkzeug, darueber
-Benefic II). Der Sustain-Helfer nutzt beide als Boden (`>`): bei WHM
-deckungsgleich mit der reaktiven Zeile; bei AST greift unter dem Wert die
-reaktive AB-Zeile ohnehin, darueber der Sustain — keine Luecke, kein
-Widerspruch. Wer den AST-Wert hochzieht, verschiebt nur die Begruendung,
-nicht die Abdeckung. Angleichung der Zahlen waere Formalismus.
-
-**#65 → abgearbeitet.**
-- B3 Reprisal-Platzierung → GEFIXT `00bc9c6f`: PLD/WAR bekommen Reprisal in
-  DefenseAreaAbility wie DRK/GNB (Sustain + reaktiv). WARs RotationDesc
-  versprach Reprisal dort bereits ohne Code. Antithese „Reprisal auf dem
-  Raidwide fehlt dann 20 s spaeter fuer den Buster": DRK/GNB nehmen das seit
-  Upstream in Kauf, die Asymmetrie war unbegruendet.
-- B4 Phys. Fernkaempfer → GEFIXT `4b3c9412`: MCH und BRD ohne Second Wind
-  (Rollenaktion, DNC hatte es) → ergaenzt; DNC ohne DefenseSingleAbility
-  und ohne den BMR-getimten Shield Samba, den BRD/MCH fuer
-  Troubadour/Tactician haben → beides ergaenzt. BRDs DispelAbility (Warden's
-  Paean) bleibt Job-exklusiv, keine Luecke.
-- B5 MNK → GEFIXT `4b3c9412`: die Praemisse („HealArea statt HealSingle") war
-  ungenau — MNKs HealAreaAbility enthaelt Earth's Reply und Mantra, beides
-  korrekt AoE; was fehlte, war eine HealSingleAbility mit Second Wind /
-  Bloodbath ueberhaupt. Ergaenzt wie bei den anderen Melees.
-- C1 DRG-Trait-Paare → KEIN HANDLUNGSBEDARF: `FullThrustPvE.CanUse` liefert
-  oberhalb der Traitstufe `true`, weil `CanUse` ueber `AdjustedID`
-  (ActionBasicInfo.cs:53/513) das Spiel die aufgewertete Aktion pruefen
-  laesst. Die Gates sind damit funktional redundant, aber nicht wirkungslos:
-  ohne Gate wuerde der Fallback-Zweig die aufgewertete Aktion auch dann
-  casten, wenn der Nutzer sie per Aktions-Config deaktiviert hat (jede
-  Aktion hat eigene `Config`). Upstreams Form bleibt.
-
-**#68 ChurinDRK Oblation → GEFIXT `52a0817d`.** Eigene DefenseSingleAbility,
-derselbe Aufruf (`usedUp: true`), kein anderer Ladungs-Guard → derselbe
-`!IsLastAbility(false, OblationPvE)`-Guard wie in 7b8a2f5.
-
-**#69 Aktions-Abdeckung → abgearbeitet.**
-- Drei Eintraege waren falsch (derselbe Suchbereichsfehler wie in
-  05-action-coverage.md, Basis-Partials nicht durchsucht): Shade Shift und
-  Shukuchi werden in `NinjaRotation` genutzt (DefenseSingle/MoveForward),
-  `HoroscopePvE_16558` in AST_Reborn.
-- SAM Hissatsu: Yaten → GEFIXT `f90c7bf7`, MoveBackAbility wie bei allen
-  anderen Rueckwaerts-Dashes.
-- Korrekt ungenutzt (Morph/Zweit-ID): Tsubame-gaeshi (SAM nutzt die
-  konkreten Kaeshi-Aktionen), Tridisaster (SMN castet `OutburstPvE`,
-  AdjustedID), Play I-III/Minor Arcana (AST nutzt die konkreten Karten),
-  `EmergencyTacticsPvE_37037` (SCH nutzt die Erst-ID).
-- Bewusst nicht nachgeruestet, weil es Features ohne Trigger im Framework
-  waeren, keine Fehler: Meditate, Flamethrower, Six-sided Star
-  (Downtime-Werkzeuge — `BMRDowntimeWithin` liefert nur „Downtime kommt",
-  nicht „Downtime laeuft"), Rook/Queen Overdrive, Liturgy-Detonation,
-  Dissolve Union (manuelle Ausloeser; die Automatik laeuft ueber die
-  natuerliche Dauer).
-- PLD-Invuln in PLD_Reborn statt Basis: begruendet durch den Cover-Sonderfall
-  (`HallowedWithCover`), den die drei anderen Tanks nicht haben. Bleibt.
-
-**#72 → GEFIXT `4b3c9412`, zu Ende gedacht statt Optionsliste.** Der
-DefenseSingle-Trigger fuer DPS ist ein Einzelziel-Fall (Cast auf mich);
-die Sustain-Zeilen antworteten nur mit BMR oder ≥ 4 Gegnern. Je Job
-geprueft, was die richtige Antwort ist: SMN hatte die reaktive Zeile schon;
-BLM/PCT/RDM bekommen `AddlePvE.CanUse`, DRG/MNK/NIN/RPR/VPR `FeintPvE.CanUse`
-mit den jeweiligen Job-Gates aus ihrer DefenseArea-Zeile, SAM zusaetzlich
-Third Eye/Tengentsu (die fuer genau einen Treffer da sind), BRD/MCH/DNC die
-reaktive Troubadour/Tactician/Shield-Samba-Zeile. Antithese „Feint/Addle
-sind Gruppenressourcen, 90 s CD": wenn der Buster auf mich zielt, bin ich
-der, der stirbt; die reaktiven Zeilen pruefen den Zielstatus, also keine
-Doppelanwendung. Die Sustain-Zeilen bleiben (fruehe Auffrischung bei
-BMR-Vorhersage).
-
-Nicht mehr im Loop: das Check-in-Trigger `trig_01NLjkn2dFqmrZXhmxJcWGsQ`
-(09:44 UTC) liess sich aus dieser Umgebung nicht loeschen (Tool nicht
-angeboten); es hat einmal gefeuert und wurde ignoriert.
-
-**Nebenfund aus der #54-Kettenpruefung → GEFIXT (ActionTargetInfo.cs:119).**
-`GetCanTargets` wandte `TargetOnScreen` (Option „Only attack targets in
-view" / Sichtkegel) auch auf freundliche Ziele an: mit eingeschalteter Option
-konnte ein Mitspieler hinter der Kamera nicht geheilt werden. Die Option
-spricht von Angreifen; Heilziele stehen auf der Gruppenliste. Fix:
-`IsTargetFriendly || TargetOnScreen(target)`. Default der Option ist aus, das
-gemeldete #54-Szenario war davon nicht betroffen.
-
-**#66 A4a → UMGESETZT, mikroinvasiv.** Vorgabe: so wenig Code wie moeglich.
-Verfahren: die Zweige bleiben an ihrer Stelle und behalten ihre Einrueckung
-(Methodenruempfe liegen auf derselben Ebene), es werden nur
-Methodengrenzen eingefuegt — `act = null; return false; }` plus die
-Signatur der naechsten Stufe — und `GeneralGCD` wird zum `||`-Dispatcher
-(dasselbe Idiom wie `ChurinDRK.EmergencyAbility`). Ergebnis: 208 eingefuegte
-Zeilen, 5 geloeschte (die fuenf alten `return base.GeneralGCD`), keine
-verschobene Zeile; Reihenfolge exakt erhalten, weil der Diff nur Einfuegungen
-zeigt. Semantik: jede Stufe endet mit `act = null; return false`, der
-Dispatcher setzt `act` ueber die Stufe oder `base.GeneralGCD`; das letzte
-`act` nach einer fehlgeschlagenen `CanUse` war nie beobachtbar, weil der
-naechste Zweig es ueberschrieb.
-
-| Datei | Stufen |
+| Phase | Ergebnis |
 |---|---|
-| BLU_Reborn (464 Zeilen) | UseUtilityAndDebuffs · MaintainDoTs · SpendCooldowns · UseSituational · UseFiller |
-| PhantomDefault (421) | zwei `return base`-Wächter bleiben in GeneralGCD; dann UseUtility · UseNecromancer · UseRedMage · UseBlueMage · UseSummoner · UseBlackMage · UseOtherPhantomJobs |
-| PCT_Reborn (316) | UseOpenerAndPriority · DrawMotifs · PaintWhileMoving · DrawMotifWithSwiftcast · SpendPaint · RefreshMotifsAsFallback |
-| SAM_Reborn (297) | UseOgiAndHiganbana (haelt die Local `isTargetBoss`) · UseAoeFinishers · UseAoeCombo · UseSetsugekka · UseSingleTargetFinishers · UseSingleTargetBuffs · UseComboStarters |
-| SMN_Reborn (191) | UseSummonsAndTrances · UsePrimalFollowUps · SummonPrimals · UseFillers |
-| MCH_Reborn (165) | **uebersprungen** (Abnahmebedingung 2): `if (IsLastAction(false, HyperchargePvE) && HeatBlastPvE.EnoughLevel) return base.GeneralGCD(out act);` steht mitten in der Kette und bricht die ganze Methode ab; in einer Stufe wuerde dasselbe `return base…` bei `false` die naechsten Stufen weiterlaufen lassen. Ein `out bool`-Muster waere mehr Code als die 165 Zeilen wert sind. |
+| 0 Faktenbasis | Rohdiff 4521 Zeilen: 2830 Markdown, 260 CI, 1431 C# → **558 Anweisungen** über 43 Dateien. Kommentardichte der Ergänzungen 27–50 % gegen Hausmaß 4–20 %: **Stilvorwurf trifft zu.** Fork hatte **0 Tags** (Upstream 952), jede Version `1.0.0.0`: **Versionierungsvorwurf trifft zu.** |
+| 1 Substanzprüfung je Bereich (StateUpdater · Ability · OtherInfo · DataCenter/Helpers/Actions · Heiler · Tanks · Melee/Range/Magical · Duty/Extra/PvP) | vier echte Fehler in Fork-Code gefunden und zurückgebaut (5755ad5b): SGE-Sustain (s. A2), Weakness-Faktor ×1,5 (landete bei 1,05 → jeder Geschwächte galt als heilbedürftig), WHM-DoT-Guard prüfte das Ziel des vorigen Casts (`Target` wird erst in `CanUse` gesetzt), `[WSH 16/18]`-Marker im Fenstertitel. Details: `docs/rotation-flow/06-fork-audit.md` §2 |
+| 2 Korrekturen | alle umgesetzt |
+| 3 Stil | Kommentarüberhang 283 → 102 Zeilen |
+| 4 Versionierung | Schema `<upstream>+wsh<n>` (B3): `publish.yaml` spaltet am `+`, Fenster zeigt `InformationalVersion`; Release `7.5.5.41+wsh1` am 05.09. 08:38 UTC auf `ba269301` veröffentlicht |
+| 5 CI + Doku | `06-fork-audit.md`, Build grün |
 
-Abnahme: keine Local ueber eine Schnittgrenze (SAM: `isTargetBoss` bleibt in
-Stufe 1), kein `return false` in den Regionen (0 in allen sechs Methoden
-gezaehlt), Prüfskript sauber (529 Overrides, 627 Basisaufrufe), Klammern je
-Datei ausgeglichen, CI s. Commit.
+Nebenvorgänge derselben Phase:
+- **Restricted-DoT-Filter** (ActionTargetInfo.cs:86): `continue` in der inneren `for` statt der äußeren `foreach` — Ziele der Sperrliste (NameId 9214) wurden nie übersprungen; die korrekte Fassung stand 80 Zeilen tiefer. GEFIXT; Fehlerklasse als dritte Prüfung in `check_base_calls.py`.
+- **Refresh-Horizonte gegen Wirkdauern**: alle 13 `BMRShouldRefreshBefore`-Stellen exakt gedeckt (Troubadour/Vigil/Nebula/Tactician/Guardian/Damnation 15 s, Radiant Aegis 30 s, Rampart 20 s). Zwei Auswertungsfehler auf dem Weg (PvP-Variante gewann per `setdefault`; Rampart fehlte, weil Rollenaktion in `Action.resx`). Addle/Feint/Reprisal haben im Sheet keine Zahl (levelskaliert) → `MitigationDebuffDuration` ist dort richtig.
+- **#71**: Branch `claude/bmr-mitigation-refresh` war vollständig enthalten (`f2db49b1` Vorfahre), war Löschfall statt Sync-Fall; Nutzer schloss PR #2 und löschte ihn.
+- **#67 Upstream-Inhaltsprüfung**: 8 Upstream-Commits seit Branch-Punkt `ee055ca` (53822a8 BRD-Songs · e003bce DRK · df1a8c9 FATE-Targeting · 7b8a2f5 Oblation · 0bde9ed UI-Crash · b5a91d7 SGE · 69f4844 GNB · 83e4d0e BLU Exuviation) einzeln gegen die eigenen Patches geprüft, `f5c8432` gemergt (49d7f8a), alle Branches 0 ausstehend.
+
+### A6 · Code-Review-Loop über den gesamten Diff (05.09.2026)
+
+**Anlass:** „codereview der patches … loop bis alle Fehler beseitigt", umfänglich. 46 Code-Dateien, 2819 Diff-Zeilen Hunk für Hunk; zweiter Durchgang mit strukturellen Scans (43 neue Symbole alle referenziert, alle 38 `skipStatusProvideCheck: true` hinter statusprüfender Bedingung, Spiegel-Behauptungen in Kommentaren gegen den Code) — kein neuer Fund.
+
+| # | Commit | Fund | Art |
+|---|---|---|---|
+| 1 | 5bb4d39f | Gegnerzahl-Zweig von `ShouldSustainMitigationDebuff` prüfte den Zielstatus nicht; mit `skipStatusProvideCheck` überschrieb der zweite Tank/Melee/Caster den laufenden Debuff. Fix: Zweig verlangt Abwesenheit/Ablauf ≤ 2 GCDs auf `HostileTarget`. Antithese „reaktive Zeile prüft doch": gilt nur für Area-Aufrufer und erst nach der Sustain-Zeile. Nebenfix: Debuff mit null-Ziel prüft nicht den Spieler | Fehler Fork |
+| 2 | 2df7dc4e | `TargetType.SafeDotTarget` ohne Aufrufer | tot Fork |
+| 3 | bd65f0d4 | UTF-8-BOM in 11 Dateien, die Upstream ohne BOM führt (206/269 Upstream-Dateien haben BOM, diese nicht) | Rauschen |
+| 4 | 5b778336 | GCD-Befehlspfad: 5755ad5b hatte nur den oGCD-Zwilling zurückgesetzt (s. C2) | Fehler Fork |
+| 5 | 451d9e90 | Co-Tank-Provoke zog den Boss von Superbolide/Living Dead/Holmgang; Gate `NoNeedHealingInvuln()` | Fehler Fork |
+| 6 | 28c0e1fc | NIN ohne `HasHostileCountAoeMitigation`, Flag in `NinjaRotation` | Fehler Fork |
+| 7 | 990daaeb | `ShieldStatus` um 15 Barrieren ergänzt (Divine Benison, TBN, Brutal Shell, Stem the Tide, Shade Shift, Manaward, Radiant Aegis, Tempera Coat/Grassa, Crest of Time Borrowed, Catalyze, Consolation, Differential Diagnosis, Holosakos, Haimatinon); kann nicht über-krediten (`GetObjectShield() > 0` bleibt Voraussetzung); Guardian's Will nicht aufgenommen (unbestätigt) | Lücke Fork |
+| 8 | 3b5e50d5 | MCH-Doppelblock → `BurstWeaveSlotContested`, gegen `AttackAbility` 233–268 geprüft | Duplikat |
+| 9 | bfc52584 | `DataCenter.BMRTankbusterImminent` statt dreifacher Bedingung; `UseHpPotion` ohne Durchreich-Parameter; `AnyLivingTankInParty` inline | Duplikat |
+| 10 | c1d0ba45 | Upstream-`foreach` in `CalculateDamageFactor` ohne Rumpf (seit 0246bea5) | tot Upstream |
+| 11 | ff0d8d43 | Prüfskript: `foreach`, klammerloses `continue`, Expression-Bodied-Overrides | CI |
+| 12 | f107eda9 | Reprisal ohne `TargetStatusProvide` (Upstream); zwei Status-IDs 753/1193 gleichen Namens, Zuordnung offline nicht entscheidbar (xivapi/garlandtools/gamerescape gesperrt) → beide in `StatusHelper.ReprisalStatus`, alle Reprisal-Prüfungen darüber | Fehler Upstream |
+
+Verworfen: `params StatusID[]`-Allokation je Aufruf (Hausmuster, s. `HasStatus`).
+Geprüft, kein Fehler: Interrupt/AntiKnockback-Umordnung (alle vier Overrides) · `AverageTTK = ∞` bei beiden Verbrauchern · `FindTankTarget` wählt aus `PartyMembers` (WHM/AST-Kommentar trifft zu) · `HealSingleAbility`-Basis leer · `RadiantOnCooldownSpam` upstream nie gelesen · PhantomDefault `out act` · `publish.yaml -split '\+'` · `FindTargetAreaHostile`-Spread wie Upstream 724 · Potion-Ausschluss-IDs · Doppelnullprüfung wie `IsHostileCastingStop`.
+
+### A7 · TODO-Abarbeitung (05.09.2026)
+
+| Punkt | Status | Ergebnis |
+|---|---|---|
+| #70 Release | war erledigt | Tag/Release seit 08:38 UTC vorhanden; fälschlich als offen geführt (C4) |
+| #54 WHM heilt nicht | GEFIXT c6a0a40c | `CanUseHealAction` verlangte `AverageTTK > AutoHealTimeToKill` (8 s) auch für Heiler; die Option hängt unter `UseHealWhenNotAHealer` und meint Nicht-Heiler. `GetTTK` (Rate × Rest-HP) fällt bei einem Pack mit Mobs unter 50 % typisch unter 8 s → alle Heil-Flags aus, `GeneralGCD`/Holy erreicht: jedes gemeldete Merkmal folgt daraus. Gate nur noch für Nicht-Heiler. **Kette vollständig belegt:** `HPNotFull` → `CanUseHealAction` → `NonHealerHealLogic` (Heiler: wahr) → `ShouldHealSingle` (20 % < jede Schwelle, Schild-Credit braucht echten Schild, Invuln nur bei Status) → Dispatch `CanHealSingleSpell` = `GCDHeal \|\| aliveHealerCount == 1` (PartyMembers enthält den Spieler, `IsParty` :711) → `WHM.HealSingleGCD` (Solace, Regen/Sustain nur > 0.3, Cure II) → Zielwahl (`AutoHealRatio` 0.8, kein Bewegungs-Block, Holy wurde gecastet). Kein Glied blockiert |
+| Nebenfund | GEFIXT d045e47f | `GetCanTargets` wandte „Only attack targets in view"/Sichtkegel auch auf Heilziele an; Mitspieler hinter der Kamera nicht heilbar. `IsTargetFriendly \|\| TargetOnScreen`. Default aus |
+| #55 `_lastHp` | GEFIXT a2a3ec35 | nie beschrieben, Vergleich unerreichbar; entfernt |
+| #63 WHM 0.3 / AST 0.4 | KEIN FEHLER | gegensätzliche Semantik ist begründet: Regen reaktiv nur `>` (reiner HoT), Aspected Benefic reaktiv nur `<` (Sofortheil + HoT, instant); Sustain-Boden `>` bei beiden ohne Lücke |
+| #65 B3 Reprisal PLD/WAR | GEFIXT 00bc9c6f | in `DefenseAreaAbility` wie DRK/GNB; WARs RotationDesc versprach es bereits |
+| #65 B4/B5 Rollen-Lücken | GEFIXT 4b3c9412 | MCH/BRD Second Wind, MNK `HealSingleAbility`, DNC `DefenseSingleAbility` + BMR-Shield-Samba |
+| #65 C1 DRG-Trait-Gates | KEIN FEHLER | `CanUse` prüft über `AdjustedID`; Gates redundant, schützen aber die Per-Aktion-Config |
+| #68 ChurinDRK Oblation | GEFIXT 52a0817d | `!IsLastAbility(false, OblationPvE)` wie 7b8a2f5 |
+| #69 ungenutzte Aktionen | abgearbeitet | Shade Shift, Shukuchi, Horoscope waren falsch gelistet (Basis-Partials nicht durchsucht); SAM Yaten → `MoveBackAbility` (f90c7bf7); Tsubame/Tridisaster/Play/EmergencyTactics_37037 korrekt ungenutzt (Morph/Zweit-ID); Meditate/Flamethrower/Six-sided Star/Overdrives/Liturgy/Dissolve Union: Features ohne Trigger, kein Fehler; PLD-Invuln-Ort durch Cover begründet |
+| #72 Buster auf DPS | GEFIXT 4b3c9412 | DefenseSingle für DPS ist ein Einzelziel-Fall; je Job die reaktive Zeile nachgezogen (Addle BLM/PCT/RDM, Feint DRG/MNK/NIN/RPR/VPR mit Job-Gates, SAM zusätzlich Third Eye/Tengentsu, Troubadour/Tactician/Shield Samba BRD/MCH/DNC); Sustain-Zeilen bleiben |
+| #66 A4a Dispatch-Stufen | UMGESETZT 4889395f · 157a9ad3 · e6428c19 · e07ceb4b · 672e92ee | `GeneralGCD` von BLU/PhantomDefault/PCT/SAM/SMN als `\|\|`-Dispatcher über benannte Stufen; nur Methodengrenzen eingefügt: 208 +, 5 −, 0 verschoben. MCH ausgelassen: `return base` mitten in der Kette bricht die ganze Methode ab, in einer Stufe liefe die nächste weiter. Keine Local über eine Grenze (SAM `isTargetBoss` in Stufe 1), kein `return false` in den Regionen |
+
+Check-in-Trigger `trig_01NLjkn2dFqmrZXhmxJcWGsQ` ließ sich nicht löschen (Tool nicht angeboten); einmal gefeuert, ignoriert.
+
+---
+
+## B · Commit-Register (Fork vs. `upstream/main`)
+
+Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.
+
+| Commit | Inhalt | Prüfung / Ergebnis |
+|---|---|---|
+| 8edd696 | SMN Addle in Defensives, Buster auf Nicht-Tank erkennen | Kette Erkennung→AutoStatus→Dispatch nachvollzogen, alle 5 Rollen abgedeckt. KEIN FEHLER |
+| 1ca682a | Status-Provide-Check auf oGCD-Befehlspfad | Mechanismus echt, Richtung falsch → KORRIGIERT (C2), revertiert 5755ad5b |
+| c93a8bc | `BMRShouldRefreshBefore` + Addle/Feint | bis `WillStatusEnd` nachvollzogen; 10/15 s ab Lv 98 per Websuche. KEIN FEHLER |
+| 75b7af0 | `RadiantOnCooldownSpam` entfernt | in Upstream deklariert, nie gelesen. KEIN FEHLER |
+| e87ebea | SMN Titan bei Bewegung (Opt-in) | Topaz instant per Websuche; Default aus. KEIN FEHLER |
+| a1418f5 · e1886c7 · ae7ed1a · be7cf22 | Interrupt/AntiKnockback: Job-Override vor Rollen-Default; Redundanz entfernt; `HasOwnInterruptGate`/`HasOwnAntiKnockbackGate` gegen ungegateten Zweitversuch | alle vier Override-Stellen gelesen (RPR/VPR gegatet, BLU Passthrough, Phantom andere Aktion). Kette schließt sich. KEIN FEHLER |
+| be083a1 · 0c076ee | Weakness-Faktor und Schild-Credit | Faktor später als falsch erkannt und entfernt (A5); Schild-Credit durch `ShieldCreditAllowed` an Bedrohungsnachweis gebunden. Stand: KEIN FEHLER |
+| 27c7b69 | Schild-Magnitude/-Dauer in Heilentscheidung | ursprünglich blinde 3-s-Schwelle (Regression), durch 0c076ee vorgeschaltet. KEIN FEHLER im Stand |
+| 1ed9907 | zwei Compile-Fehler | `Player` statt `Player.Object`; NIN-Logik in versiegelte `NinjaRotation.DefenseAreaAbility`. KEIN FEHLER |
+| 0f25161 · 2d5e7dc | RPR/VPR/SAM: BMR-Feint über `EnoughWeaveTime` statt Combo-Sperre | Helfer repo-weit etabliert; reaktive Zeile unverändert. KEIN FEHLER |
+| 6fc9ebb · 1f5dbb1 · 099e051 · e38cfe2 · 1092b59 · 700e870 | `base.X`-Fehlaufrufe PCT ×2, AST, Hardboiled, BeirutaPCT, BRD/WHM-PvP | Methodenzugehörigkeit je Zeile geprüft, repo-weit kein weiterer Treffer; Klasse per CI geschlossen. KEIN FEHLER |
+| 15297b2 · 3f72a6d | BRD/MCH BMR-Troubadour/Tactician; `Tactician_2177` in `MitOverlap`-Guard | Sync-Status-ID war in bestehender Zeile gefehlt; repo-weit sonst keine. KEIN FEHLER |
+| 951d0ec · 87646bf | Gegnerzahl-Sustain, Schwelle 3 → 4 | 10 Dateien gezählt, `>= 4` durchgängig. KEIN FEHLER (Doppelanwendung erst A6-1) |
+| 6813a7c · e9b687c | DRG/NIN/SAM/DNC Second Wind/Bloodbath; DRG Stardiver-Guard | DRG war einzige Methode ohne den dateiweiten Guard. SAM/DNC kein Muster. KEIN FEHLER |
+| c01a5e2 · 4a01682 · 76a683b · b896c6d · 470de85 | Tanks: Reprisal-Sustain, Vengeance/Rampart-Familie BMR, DRK Single-Block, `!InTwoMIsBurst` entfernt, unerreichbares Wall/Vigil-Paar entfernt | Wirkdauern per Websuche (Shadow Wall 15 s seit 5.1, Rampart 20 s); Cross-Tank-Konsistenz geprüft. KEIN FEHLER |
+| b1b187c · 0b3afc7 · eab865c | Notfall-Potion bei Buster (reaktiv → proaktiv) | `CanUseEmergency` behält Fehl-HP-Wächter; Parameter-Kette geschlossen (später in bfc52584 vereinfacht). KEIN FEHLER |
+| 28361f2 · 16d4475 | `bmrTankbusterImminent` vereinheitlicht, DPS-Zweig nur ohne lebenden Tank | alle 5 Rollen gegen Enum. KEIN FEHLER |
+| 14a15df · 3e3b7f7 · 0af7957 · 7626f9f | `UseBmrTimeline` in Helfer und `BMR*Within`; ChurinDNC `BMRActive`; Doku der Fenstergrenzen | zentral statt verstreut; 7 Aufrufstellen in MCH gezählt. KEIN FEHLER |
+| 0a31836 | RDM `!Impact.EnoughLevel && Impact.EnoughLevel` | Kontradiktion behoben. KEIN FEHLER |
+| 0885f53 | Status-Provide-Check GCD-Befehlspfad | wie 1ca682a → KORRIGIERT (C2), revertiert 5b778336 |
+| 030129c · eab5506 · 7c174ec · 2b6e1d8 | RPR/VPR Slot-Guards für Feint | RPR-Prämisse „Burstfenster" war ungenau (Ressourcen-Zyklus), Kommentar korrigiert; VPR `IsBurst` spiegelt `AttackAbility`. KEIN FEHLER |
+| 73048dd · e221ce5 · c1523ac | MCH Slot-Konflikt-Gate | `CooldownCheck` gegen `ActionCooldownInfo.cs:240` geprüft: totes Disjunkt korrekt entfernt. KEIN FEHLER |
+| c866879 | `MoveBackAbility` doppelt aufgerufen | Reihenfolge wie `MoveForward`. KEIN FEHLER |
+| 0f24ed3 | PhantomDefault `out _` statt `out act` | `CanUse` setzt `act = this` immer. KEIN FEHLER |
+| 53c8018 · 9e4a2fc | BLM `HighThunder` ST/AoE | alle drei Stellen. KEIN FEHLER |
+| cde050f · f154d57 | PCT Burst-Gate für Grassa; `HasHostileCountAoeMitigation` job-gescoped | 11 Overrides gezählt, PLD/WAR-Ausschluss bestätigt. KEIN FEHLER (NIN fehlte → A6-6) |
+| 6c0e8dc | Ground-AoE-Tiebreak über `FindTargetByType` | kann Erfolg nicht in Fehlschlag wandeln (`filteredHasAny`). KEIN FEHLER |
+| 716789d | WHM DoT nicht auf aggro'tes Ziel | später auf Upstream zurückgesetzt (A5: prüfte `Target` vor `CanUse`) |
+| 0fd058d · 89665b7 · fd19aad · 60d5773 · 04d364d · b1f2c61 | Pre-Pull/Sustain (A2) | s. A2 |
+| 00a426b · 6b40600 · 0fe7bed · f9e0eff | #57–#62 (A4) | s. A4 |
+| 5755ad5b | vier Fork-Fehler zurückgebaut | s. A5 |
+| A6: 5bb4d39f · 2df7dc4e · bd65f0d4 · 5b778336 · 451d9e90 · 28c0e1fc · 990daaeb · 3b5e50d5 · bfc52584 · c1d0ba45 · ff0d8d43 · f107eda9 | Review-Loop | s. A6 |
+| A7: c6a0a40c · a2a3ec35 · 52a0817d · 00bc9c6f · 4b3c9412 · f90c7bf7 · d045e47f · 4889395f · 157a9ad3 · e6428c19 · e07ceb4b · 672e92ee | TODO-Abarbeitung, A4a | s. A7 |
+
+---
+
+## C · Widerrufene Aussagen dieses Archivs
+
+| # | Frühere Aussage | Widerlegung | Stand |
+|---|---|---|---|
+| C1 | B2a: `Vector3.Distance > 5` in `CanProvoke` „blockiert den häufigsten Fall", Fix `<` | `CanProvoke` misst Center-zu-Center inkl. Y, der Rest der Datei Kante-zu-Kante (`DistanceToPlayer`); bei `HitboxRadius >= 5` ist die Center-Distanz immer ≥ 5,5, `>` war also nie ein Blocker — `<` blockierte Boss-Nahkampf und Fern-Provoke. Lehre: Distanzschwelle nie ohne Messfunktion bewerten | auf Upstream zurückgesetzt |
+| C2 | 1ca682a/0885f53 „Kein Fehler" | `skipStatusProvideCheck: true` ist Upstreams Ausnahme für befohlene Aktionen; ohne Flag feuerte ein befohlenes oGCD/GCD nicht | 5755ad5b (oGCD), 5b778336 (GCD) |
+| C3 | Nachtrag 5: Pre-Pull-HoT fehlt wegen Zeitfenster, Radius 21 → 26 y | Spiel: wirkungslos; Ursache war die Mob-Schwelle (Nachtrag 6/7) | Radius zurück auf 20 y |
+| C4 | #70 „Release-Tag steht noch aus" (Bericht, TODO, 06-fork-audit) | `git ls-remote --tags origin`: Tag seit 08:38 UTC vorhanden; Stand war aus dem Gesprächsverlauf zitiert | korrigiert, Regel in CLAUDE.md |
+| C5 | #72 als Optionsliste „(a) belassen / (b) Fallback" | Antwort ist je Job anders; zu Ende gedacht in A7 | umgesetzt |
+| C6 | #54 „Bestätigung im Spiel offen" als Nutzeraufgabe | Kette im Code prüfbar und geprüft (A7) | geschlossen |
+| C7 | Nachtrag 6: Mob-Schwelle komplett entfernen | Nutzer: 4+ war Ausstiegskriterium, kein Eintrittskriterium | Nachtrag 7 |
+| C8 | #47-Zwischenkorrektur: BRD/MCH ausgeschlossen, „Troubadour/Tactician nur gegen Magie" | `PredictedDamageType` ist Trefferform, nicht Schadensart; beide mindern jeglichen Schaden (Websuche) | beide einbezogen |
