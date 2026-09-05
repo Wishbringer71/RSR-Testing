@@ -72,6 +72,8 @@ Der Sync ist keine einmalige Eröffnungshandlung, sondern Vorbedingung jeder ein
 
 Nachweispflicht: die Aussage "ist aktuell" braucht die frische Zahl aus `git rev-list --left-right --count upstream/main...HEAD`, nicht den Gespraechsverlauf.
 
+**Gilt fuer JEDEN Branch, nicht nur den gerade aktiven.** Der Sync ist erst vollstaendig, wenn `origin/main` UND jeder lebende Feature-Branch 0 ausstehende Upstream-Commits haben. Ein Branch, der nur deshalb nicht nachgezogen wird, weil gerade woanders gearbeitet wird, sammelt Rueckstand an und macht jede spaetere Bewertung seiner Patches wertlos — sie stuenden dann gegen einen veralteten Stand. Bei jedem Sync-Durchgang alle Remote-Branches auflisten (`git fetch --prune` zuerst, dann `git branch -r` als einzige Quelle der Wahrheit) und einzeln pruefen. Ausnahme bleibt der vollstaendig gemergte Branch: der wird nicht gesynct, sondern ist ein Loeschfall (bestaetigungspflichtig).
+
 ## Fork/Branch vor Arbeitsbeginn synchronisieren
 
 Vor Arbeitsbeginn: `upstream` fetchen, prüfen ob Original das anstehende Problem zwischenzeitlich selbst gefixt hat — sonst Doppelarbeit oder Fix gegen veralteten Stand.
