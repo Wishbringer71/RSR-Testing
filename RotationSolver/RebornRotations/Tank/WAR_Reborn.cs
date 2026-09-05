@@ -291,6 +291,17 @@ public sealed class WAR_Reborn : WarriorRotation
 			return true;
 		}
 
+		if (ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
+			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
+		if (ReprisalPvE.CanUse(out act, skipAoeCheck: true))
+		{
+			return true;
+		}
+
 		return base.DefenseAreaAbility(nextGCD, out act);
 	}
 	#endregion
