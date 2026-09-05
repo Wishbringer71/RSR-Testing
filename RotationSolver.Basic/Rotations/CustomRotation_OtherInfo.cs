@@ -606,20 +606,8 @@ public partial class CustomRotation
 			damageFactor *= 0.90f;
 		}
 
-		// Collect party statuses once into a hash set for O(1) lookups.
+		// Party statuses found so far, filled lazily by HasPartyStatus below.
 		HashSet<StatusID> partyStatuses = [];
-		if (partyEnum != null)
-		{
-			foreach (var m in partyEnum)
-			{
-				if (m == null)
-				{
-					continue;
-				}
-				// Here we just probe the relevant IDs.
-				// To avoid N*M calls, we gather by probing only needed IDs below if not already present.
-			}
-		}
 
 		// Helper to lazily test & cache a status.
 		bool HasPartyStatus(StatusID id)
