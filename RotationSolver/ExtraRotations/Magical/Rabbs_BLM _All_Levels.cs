@@ -88,10 +88,14 @@ public sealed class Rabbs_BLM : BlackMageRotation
 
 	private readonly Lazy<IBaseAction> _AltFlareOpenerPvE = new(static delegate
 	{
-		Basic.Actions.ActionSetting setting460 = new BaseAction(ActionID.FlarePvE).Setting;
-		ModifyAltFlareOpenerPvE(ref setting460);
-		new BaseAction(ActionID.FlarePvE).Setting = setting460;
-		return new BaseAction(ActionID.FlarePvE);
+		// One instance throughout: the settings were previously read off one throwaway action,
+		// assigned to a second, and a third one returned - so the RotationCheck and the quest
+		// requirement never reached the action this property hands out.
+		var action = new BaseAction(ActionID.FlarePvE);
+		var setting = action.Setting;
+		ModifyAltFlareOpenerPvE(ref setting);
+		action.Setting = setting;
+		return action;
 	});
 
 	private static readonly HashSet<uint> burstStatusIds =
