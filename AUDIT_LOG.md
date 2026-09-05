@@ -952,3 +952,41 @@ Thrust/Chaotic Spring, GNB Sonic Break/Bow Shock, SAM Higanbana, PLD Circle of
 Scorn, SGE Eukrasian Dyskrasia, MCH Bioblaster tragen es nicht). Ob das
 begründet ist, hängt am konkreten Gegner hinter NameId 9214 — Spielfrage,
 nicht aus dem Code entscheidbar.
+
+## Refresh-Horizonte gegen die Wirkdauern aus den Spieldaten — sauber (05.09.2026)
+
+Zweiter Teil des Abgleichs Beschreibung ↔ Umsetzung. Geprüft wurde die
+Sorge, die hinter der 15s/10s-Diskussion stand: sind die fest codierten
+Horizonte in `BMRShouldRefreshBefore(BMRxIn, <Horizont>, …, StatusID.Y)`
+gegen die tatsächliche Wirkdauer von Y gedeckt?
+
+Alle 13 Aufrufstellen im Repo, Horizont gegen die `Duration: Ns` aus der
+generierten Spielbeschreibung:
+
+| Datei | Status | Horizont | Wirkdauer |
+|---|---|---|---|
+| BRD 144/163 | Troubadour | 15s | 15s |
+| DRK 199 | ShadowedVigil | 15s | 15s |
+| GNB 193 | GreatNebula | 15s | 15s |
+| MCH 137/181 | Tactician | 15s | 15s |
+| PLD 240 | Guardian | 15s | 15s |
+| SMN 201 | RadiantAegis | 30s | 30s |
+| WAR 229 | Damnation | 15s | 15s |
+| DRK/GNB/PLD/WAR 205/199/246/235 | Rampart | 20s | 20s (Rollenaktion, `Action.resx`) |
+
+**Keine Abweichung.** Jeder Horizont entspricht exakt der Wirkdauer.
+
+Zwei Auswertungsfehler auf dem Weg dorthin, beide vor dem Ergebnis bemerkt:
+- Ein `setdefault` über den Anzeigenamen ließ bei Namensgleichheit die
+  **PvP**-Variante gewinnen. `GuardianPvP` (8s, ein Rush zum Party-Mitglied)
+  verdrängte `GuardianPvE` (15s) und erzeugte einen Scheinbefund
+  „Horizont 15s > Wirkdauer 8s" bei PLD.
+- Rampart fehlte zunächst ganz, weil es eine **Rollenaktion** auf
+  `CustomRotation` ist und damit nicht in den Jobklassen der `Rotation.resx`
+  steht, sondern in `Action.resx`.
+
+Nebenbefund, der die bestehende Lösung bestätigt: Reprisal, Addle und Feint
+liefern in den Spieldaten „Duration: **s**" ohne Zahl — der Wert ist
+levelskaliert und im Sheet leer. Genau deshalb ist
+`MitigationDebuffDuration => PlayerSyncedLevel() >= 98 ? 15f : 10f` dort
+richtig und eine feste Zahl wäre falsch.
