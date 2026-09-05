@@ -296,6 +296,41 @@ eigener Logik (`HallowedWithCover`). Vier Tanks, dieselbe Faehigkeitsklasse,
 zwei Orte, zwei Gates. Erst klaeren, ob PLDs Cover-Sonderfall die Abweichung
 rechtfertigt.
 
+### #70 Tag `7.5.5.41+wsh1` muss vom Nutzer gepusht werden — aus der Sitzung heraus 403
+
+Phase 4 der Fork-Audit-Roadmap ist codeseitig fertig (`publish.yaml` spaltet den
+Tag am `+`, `RotationSolverPlugin.cs` zeigt die Informationsversion), Build auf
+`09818f0e` gruen. Der Tag-Push selbst wird von der Egress-Policy dieser
+Umgebung mit **HTTP 403** abgelehnt; Branch-Pushes gehen durch, Tag-Pushes
+nicht. Laut `/root/.ccr/README.md` ist das zu melden, nicht zu umgehen.
+
+Auszufuehren vom Nutzer:
+
+```
+git fetch origin
+git tag -a "7.5.5.41+wsh1" -m "Fork release 1 on upstream 7.5.5.41" 09818f0e
+git push origin "refs/tags/7.5.5.41+wsh1:refs/tags/7.5.5.41+wsh1"
+```
+
+Danach laeuft `publish.yaml` und erzeugt das Release mit `latest.zip`.
+Erwartetes Ergebnis: Fenstertitel zeigt `7.5.5.41+wsh1`, AssemblyVersion
+`7.5.5.41`.
+
+Schema fuer kuenftige Releases: Basis = hoechster Upstream-Tag, dahinter
+`+wsh<n>`, wobei `<n>` bei jedem Upstream-Nachzug wieder bei 1 beginnt. `+`
+statt `-`, weil SemVer einen Bindestrich als Prerelease liest und den Fork
+damit unter den Upstream-Release sortieren wuerde.
+
+### #71 PR #2 und Branch `claude/bmr-mitigation-refresh` sind ueberfluessig
+
+Der alte Kopf `f2db49b1` war vollstaendig in `claude/rotation-flow-refactor`
+enthalten — der gesamte Inhalt von PR #2 steckt bereits in PR #3. Zwei offene
+Draft-PRs beschreiben dieselbe Arbeit. Beim Branch-Sync wurde dem toten Branch
+zusaetzlich ein Merge-Commit verpasst, statt ihn als Loeschfall zu melden.
+
+Vorschlag: PR #2 schliessen, Branch loeschen. Bestaetigungspflichtig (PR
+schliessen ist aussenwirksam, Branch loeschen ist destruktiv).
+
 ## Wichtig für zukünftige Sessions
 
 Diese Dateien (TODO.md, AUDIT_LOG.md) existieren nur auf dem Branch, auf
