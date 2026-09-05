@@ -74,6 +74,7 @@ Bei Sitzungsbeginn/nach Kontextkomprimierung zusätzlich lesen: `TODO.md` (offen
 Neu erkannte Probleme, auch wenn sie mit der gerade laufenden Aufgabe nichts zu tun haben, sofort in TODO.md eintragen statt nur im Chat zu erwähnen — nicht abwarten, ob sie "relevant genug" sind oder erst am Ende gesammelt melden.
 Umkehrung genauso verbindlich: sobald ein TODO.md-Punkt GEFIXT/ABGESCHLOSSEN/VERWORFEN ist, sofort nach AUDIT_LOG.md verschieben, nicht mit erledigtem Status in TODO.md liegen lassen — TODO.md führt nach eigener Definition nur offene Arbeit. Status-Update allein (Text von "offen" auf "GEFIXT" ändern) ist keine ausreichende Reaktion, wenn der Punkt seiner Natur nach nicht mehr offen ist.
 Beleg: #46/#47/#52/#53 sowie alle Aggro-Management-Bausteine (B1-B4) wurden nach Abschluss mit Status GEFIXT/ABGESCHLOSSEN in TODO.md belassen statt nach AUDIT_LOG.md verschoben — Datei widersprach damit ihrer eigenen Kopfzeile ("Nur offene Arbeit steht hier").
+Gilt auch fuer Zusammenfassungen: eine Aufzaehlung erledigter Nummern („#54 … #72 sind abgeschlossen und archiviert") ist erledigte Arbeit in TODO.md, egal in welcher Form. Ist nichts offen, steht dort „Derzeit keine." und sonst nichts. Beleg: genau diese Aufzaehlung nach Leerung der Datei hineingeschrieben.
 
 ## Prüftiefe unabhängig von Codegröße
 

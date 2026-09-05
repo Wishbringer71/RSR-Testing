@@ -16,9 +16,7 @@ scheinbar neues Thema begonnen wird, um Doppelarbeit zu vermeiden.
 
 ## Offene Konzepte / Fixes (noch nicht umgesetzt)
 
-Derzeit keine. Stand 05.09.2026: #54, #55, #63, #65, #66, #68, #69, #70 und
-#72 sind abgeschlossen und mit Herleitung in `AUDIT_LOG.md` archiviert
-(Abschnitte „Code-Review-Loop" und „TODO-Abarbeitung").
+Derzeit keine.
 
 ## Wichtig für zukünftige Sessions
 
