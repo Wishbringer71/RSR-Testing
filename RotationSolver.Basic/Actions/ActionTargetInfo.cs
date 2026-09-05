@@ -2004,7 +2004,6 @@ public struct ActionTargetInfo(IBaseAction action)
 				TargetType.Interrupt => FindInterruptTarget(),
 				TargetType.Tank => FindTankTarget(),
 				TargetType.Tankbuster => FindTankbusterTarget(),
-				TargetType.SafeDotTarget => FindSafeDotTarget(),
 				TargetType.Melee => battleChara != null ? RandomMeleeTarget(battleChara) : null,
 				TargetType.Range => battleChara != null ? RandomRangeTarget(battleChara) : null,
 				TargetType.Magical => battleChara != null ? RandomMagicalTarget(battleChara) : null,
@@ -2083,7 +2082,6 @@ public struct ActionTargetInfo(IBaseAction action)
 				TargetType.Interrupt => FindInterruptTarget(),
 				TargetType.Tank => FindTankTarget(),
 				TargetType.Tankbuster => FindTankbusterTarget(),
-				TargetType.SafeDotTarget => FindSafeDotTarget(),
 				TargetType.Melee => battleChara != null ? RandomMeleeTarget(battleChara) : null,
 				TargetType.Range => battleChara != null ? RandomRangeTarget(battleChara) : null,
 				TargetType.Magical => battleChara != null ? RandomMagicalTarget(battleChara) : null,
@@ -3376,26 +3374,6 @@ public struct ActionTargetInfo(IBaseAction action)
 			return null;
 		}
 
-		// First valid candidate that isn't currently attacking me - used to redirect DoT filler
-		// (e.g. WHM's wall-to-wall Dia upkeep) away from a target that's already aggro'd onto a
-		// squishy caster, instead of just skipping the filler cast entirely.
-		IBattleChara? FindSafeDotTarget()
-		{
-			if (battleChara == null)
-			{
-				return null;
-			}
-
-			foreach (var t in battleChara)
-			{
-				if (t.TargetObject != Player.Object)
-				{
-					return t;
-				}
-			}
-			return null;
-		}
-
 		IBattleChara? FindTargetForMoving()
 		{
 			return Service.Config == null || battleChara == null
@@ -4300,8 +4278,7 @@ public enum TargetType : byte
 	PvPDPS,
 	HighHPPercent,
 	LowHPPercent,
-	Tankbuster,
-	SafeDotTarget
+	Tankbuster
 }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
