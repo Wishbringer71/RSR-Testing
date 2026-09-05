@@ -36,10 +36,10 @@ abbrechen, weil eine spaetere interessanter wirkt.**
 | 1.6 | Tanks: PLD · WAR · DRK · GNB | fertig |
 | 1.7 | Melee · Phys. Range · Magical | fertig |
 | 1.8 | Duty · ExtraRotations · PvP | fertig |
-| 2 | Korrekturen umsetzen (rollierend je Fund) | laufend |
+| 2 | Korrekturen umsetzen (rollierend je Fund) | **fertig** — alle Funde aus Phase 1 umgesetzt |
 | 3 | Stilangleichung: Kommentardichte auf Hausmass je Bereich | **fertig** — Ueberhang 283 → 102, RebornRotations 26,6 % → 9,9 % |
 | 4 | Versionierung des Forks in Ordnung bringen | **offen — braucht Nutzerentscheidung (Tag-Schema)** |
-| 5 | CI gruen + Dokumentation des Ergebnisses | offen |
+| 5 | CI gruen + Dokumentation des Ergebnisses | **fertig** — `docs/rotation-flow/06-fork-audit.md`, Build gruen auf `d67164c` |
 
 ### Phase-0-Ergebnis (Faktenbasis)
 
