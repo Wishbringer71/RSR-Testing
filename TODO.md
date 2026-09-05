@@ -6,7 +6,6 @@ Umfang: `RotationSolver.Basic` (48k Zeilen) · RebornRotations (21k) · ExtraRot
 
 - **Kern tief lesen:** StateUpdater · TargetUpdater · DataCenter · ActionTargetInfo (Zielwahl) · BaseAction/ActionBasicInfo (CanUse/Use) · CustomRotation_Ability/GCD (Dispatch) · Watcher · MajorUpdater · ObjectHelper/StatusHelper.
 - **Rotationen je Job:** Dispatch-Reihenfolge, Gates, Status-IDs, Zielwahl; Extra-Rotationen nach denselben Mustern.
-- **60 `.Target.Target.`-Dereferenzen** einzeln prüfen, ob jede durch ein `CanUse` derselben Aktion gedeckt ist (Liste aus `scan.py`, Klasse e).
 - **Zweiter Durchgang** mit denselben Scans über den bereinigten Baum.
 - **Dokumentation** in `docs/rotation-flow/07-codebase-audit.md`.
 

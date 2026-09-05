@@ -139,7 +139,7 @@ Check-in-Trigger `trig_01NLjkn2dFqmrZXhmxJcWGsQ` ließ sich nicht löschen (Tool
 | Toter Code in `TargetUpdater` | GEFIXT e224e3f7 | `OldUpdateTargets` (auskommentiert) plus die nur von ihr gerufenen `GetPartyMembers`/`GetAllianceMembers`/`GetMembers`/`GetAllHostileTargets`/`GetClosestTarget`; die aktive `UpdateTargets` füllt dieselben Listen selbst |
 | GNB:379 · BRD:614/619 `CanUse(out _)` + `return true` | KEIN FEHLER | Es sind Vorbedingungs-Abfragen innerhalb eines `if`, dessen äußeres `CanUse(out act)` bereits gesetzt hat |
 | Sechs `RotationNotes`/`Info_DoNotChange` | KEIN FEHLER | Reine Anzeigetexte, absichtlich ohne Leser |
-| 60 `.Target.Target.`-Dereferenzen | offen | in `TODO.md`, einzeln zu prüfen |
+| 60 `.Target.Target.`-Dereferenzen | KEIN FEHLER | Kein Nullreference-Risiko. Die dort gerufenen Member sind ausnahmslos Erweiterungsmethoden mit eigenem Null-Zweig (`GetHealthRatio` → 0, `DistanceToPlayer` → `float.MaxValue`, `IsBossFromIcon`/`IsBossFromTTK`/`IsDying`/`HasStatus` → false), und jeder echte Instanzzugriff (`CurrentHp`, `CurrentMp`) steht hinter einem erfolgreichen `CanUse` derselben Aktion oder einem eigenen Null-Check (BLU:512). Wo `Target` ohne vorheriges `CanUse` gelesen wird (ChurinSMN 809/1152/1352, ChurinDRK 269), steht der Wert des letzten erfolgreichen Aufrufs, praktisch aus dem Vorframe: höchstens ein Frame Verzug, keine belegbare Fehlwirkung |
 
 ### A9 · Mitigation ohne Gefahr (Nutzer-Meldung) und Versionsbezeichnung (05.09.2026)
 
