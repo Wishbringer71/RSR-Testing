@@ -649,7 +649,7 @@ public sealed class BeirutaAST : AstrologianRotation
 		return base.EmergencyAbility(nextGCD, out act);
 	}
 
-	[RotationDesc(ActionID.ExaltationPvE, ActionID.TheArrowPvE, ActionID.TheSpirePvE, ActionID.TheBolePvE, ActionID.TheEwerPvE, ActionID.CelestialIntersectionPvE)]
+	[RotationDesc(ActionID.ExaltationPvE, ActionID.TheSpirePvE, ActionID.TheBolePvE, ActionID.CelestialIntersectionPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		UpdateMovementCooldownTracking();

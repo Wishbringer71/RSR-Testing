@@ -86,7 +86,7 @@ public sealed class PLD_Reborn : PaladinRotation
 
 	#region Additional oGCD Logic
 
-	[RotationDesc(ActionID.CoverPvE)]
+	[RotationDesc(ActionID.HallowedGroundPvE, ActionID.InterventionPvE, ActionID.CoverPvE, ActionID.FightOrFlightPvE, ActionID.ImperatorPvE, ActionID.RequiescatPvE)]
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
 	{
 		if (StatusHelper.PlayerHasStatus(true, StatusID.Cover) && HallowedWithCover && HallowedGroundPvE.CanUse(out act))
@@ -326,7 +326,7 @@ public sealed class PLD_Reborn : PaladinRotation
 		return base.GeneralAbility(nextGCD, out act);
 	}
 
-	[RotationDesc(ActionID.IntervenePvE, ActionID.SpiritsWithinPvE, ActionID.ExpiacionPvE, ActionID.CircleOfScornPvE, ActionID.RequiescatPvE, ActionID.ImperatorPvE, ActionID.FightOrFlightPvE)]
+	[RotationDesc(ActionID.BladeOfHonorPvE, ActionID.CircleOfScornPvE, ActionID.ExpiacionPvE, ActionID.SpiritsWithinPvE, ActionID.IntervenePvE)]
 	protected override bool AttackAbility(IAction nextGCD, out IAction? act)
 	{
 		if (BladeOfHonorPvE.CanUse(out act, skipAoeCheck: true))

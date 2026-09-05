@@ -202,7 +202,7 @@ public sealed class AST_Reborn : AstrologianRotation
 			   synastry.Target.Target.GetHealthRatio() < synastryHp;
 	}
 
-	[RotationDesc(ActionID.ExaltationPvE, ActionID.TheArrowPvE, ActionID.TheSpirePvE, ActionID.TheBolePvE, ActionID.TheEwerPvE)]
+	[RotationDesc(ActionID.ExaltationPvE, ActionID.TheSpirePvE, ActionID.TheBolePvE, ActionID.CelestialIntersectionPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		if (ExaltationPvE.CanUse(out act))

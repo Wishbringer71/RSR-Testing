@@ -166,7 +166,7 @@ public class BLM_Default : BlackMageRotation
 	#endregion
 
 	#region oGCD Logic
-	[RotationDesc(ActionID.TransposePvE, ActionID.LeyLinesPvE, ActionID.RetracePvE)]
+	[RotationDesc(ActionID.TriplecastPvE, ActionID.LeyLinesPvE, ActionID.RetracePvE)]
 	protected override bool GeneralAbility(IAction nextGCD, out IAction? act)
 	{
 		if (IsMoving && HasHostilesInRange && InCombat && TriplecastPvE.CanUse(out act, usedUp: true))
@@ -187,7 +187,7 @@ public class BLM_Default : BlackMageRotation
 		return base.GeneralAbility(nextGCD, out act);
 	}
 
-	[RotationDesc(ActionID.RetracePvE, ActionID.SwiftcastPvE, ActionID.TriplecastPvE, ActionID.AmplifierPvE)]
+	[RotationDesc(ActionID.SwiftcastPvE, ActionID.TriplecastPvE, ActionID.LucidDreamingPvE, ActionID.AmplifierPvE)]
 	protected override bool AttackAbility(IAction nextGCD, out IAction? act)
 	{
 		if (InUmbralIce)

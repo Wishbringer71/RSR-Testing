@@ -779,7 +779,7 @@ public sealed class Rabbs_BLM : BlackMageRotation
 
 	#region oGCD Logic
 
-	[RotationDesc(ActionID.TransposePvE, ActionID.LeyLinesPvE, ActionID.RetracePvE)]
+	[RotationDesc(ActionID.LeyLinesPvE)]
 	protected override bool GeneralAbility(IAction nextGCD, out IAction? act)
 	{
 		if (ShouldLeyLine && InCombat && HasHostilesInRange && LeyLinesPvE.CanUse(out act, usedUp: ShouldLeyLine)) return true;
@@ -788,7 +788,7 @@ public sealed class Rabbs_BLM : BlackMageRotation
 		return base.GeneralAbility(nextGCD, out act);
 	}
 
-	[RotationDesc(ActionID.RetracePvE, ActionID.SwiftcastPvE, ActionID.TriplecastPvE, ActionID.AmplifierPvE)]
+	[RotationDesc(ActionID.SwiftcastPvE, ActionID.AmplifierPvE, ActionID.ManafontPvE, ActionID.LucidDreamingPvE)]
 	protected override bool AttackAbility(IAction nextGCD, out IAction? act)
 	{
 		if (DataCenter.PlayerSyncedLevel() == 100)

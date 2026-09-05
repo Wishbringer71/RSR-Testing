@@ -112,7 +112,7 @@ public sealed class SMN_Reborn : SummonerRotation
 		return base.HealSingleAbility(nextGCD, out act);
 	}
 
-	[RotationDesc(ActionID.LuxSolarisPvE, ActionID.AddlePvE)]
+	[RotationDesc(ActionID.RadiantAegisPvE, ActionID.AddlePvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
 		if (!IsLastAction(false, RadiantAegisPvE) && RadiantAegisPvE.CanUse(out act, usedUp: true))
