@@ -155,6 +155,26 @@ Check-in-Trigger `trig_01NLjkn2dFqmrZXhmxJcWGsQ` ließ sich nicht löschen (Tool
 | Selbstlernende `HostileCastingArea` | offen | in `TODO.md`; durch die Reichweitenprüfung entschärft, aber nicht behoben |
 | Versionsbezeichnung „1.0.0.0 + lange Zeichenfolge" | GEFIXT 1c259f10 | Zwei Ursachen. Kein Projekt setzte eine Version, also meldete jeder Build außerhalb eines Tag-Publish den SDK-Default 1.0.0. Und seit .NET 8 hängt das SDK `SourceRevisionId` — den vollen Commit-Hash, von Source Link automatisch gesetzt — an `InformationalVersion`, und genau dieses Attribut zeigt der Fenstertitel (RotationSolverPlugin.cs:275). **Am Artefakt verifiziert:** das veröffentlichte `7.5.5.41+wsh1` trägt `7.5.5.41+wsh1.ba269301c98a192395ccb9e9826be9e890e6ea18`. Default-Version gesetzt, Hash-Anhang aus; der Publish-Workflow überschreibt die Version weiterhin aus dem Tag |
 
+### A10 · Audit der gesamten Codebasis, Phasen 2 bis 4 (05.09.2026)
+
+**Anlass:** Fortsetzung von A8. Phase 2 und 3 mit den Skripten `scan2.py`/`scan3.py` über die Rotationsbäume, Phase 4 über Konfiguration, Oberfläche, Kommandos, IPC und die BMR-Updater. Jeder Scanner wurde vor dem Lauf gegen konstruierte Defekte selbstgetestet; `scan3.py` hatte dabei einen Offset-Fehler (Klasse b fand systematisch nichts), `scan4.py` erkannte mehrzeilige Attributblöcke nicht — beide korrigiert und erneut geprüft, bevor die Ergebnisse verwendet wurden.
+
+| Fund | Status | Ergebnis |
+|---|---|---|
+| Vier Prozentwert-Schwellen gegen 0..1 statt 0..100 | GEFIXT ad00090e | `PhantomDefault` (Drain Touch Emergency/Healy, Devour) und `BLU` (Missile) verglichen `GetEffectiveHpPercent()` (0..100) mit Konfigurationswerten, die als `[Range(0,1,Percent)]` deklariert und damit als Verhältnis gespeichert sind. Die Bedingungen waren praktisch immer wahr. Mit `* 100f` skaliert |
+| `BaseAction.Config` erzeugte die Default-Konfiguration je Aufruf | GEFIXT efc4d039 | `GetDefaults()` legte bei jedem Getter-Zugriff ein neues `ActionConfig` an, im Entscheidungspfad also mehrfach je Frame und Aktion. Einmal erzeugt und gecacht |
+| `Rabbs_BLM` Alt-Flare-Opener veränderte eine verworfene Instanz | GEFIXT d0523a8d | `ModifyAltFlareOpenerPvE` bekam die Einstellung einer anderen `BaseAction`-Instanz als der zurückgegebenen; die Änderungen wirkten nicht. Auf eine Instanz zusammengezogen |
+| `ShouldCheckStatus` wurde im Provide-Zweig nicht gelesen | GEFIXT 331c1254 | `CheckStatus` hatte einen unerreichbaren Frühausstieg über das tote `ShouldCheckTargetStatus`, und `IsStatusProvided` prüfte den Schalter gar nicht: Wer „Status prüfen" abschaltete, bekam den Provide-Check trotzdem. Frühausstieg entfernt, beide Zweige lesen jetzt `Config.ShouldCheckStatus`; das nirgends gelesene `ShouldCheckTargetStatus` ist samt Debug-Anzeige weg |
+| Zweiter Duty-Aufruf im Einzelheilpfad unerreichbar | GEFIXT f2384007 | In `CustomRotation_GCD` stand `HealSingleGCD` der Duty-Rotation zweimal hintereinander, der zweite hinter `IsInOccultCrescentOp \|\| HasVariantCure`. Der erste Aufruf ist bedingungslos, der zweite konnte nie zusätzlich greifen. Die Asymmetrie zum Flächenheilpfad bleibt als offener Punkt in `TODO.md` |
+| Null-Prüfung nach der Dereferenzierung | GEFIXT 6189c4cb | `IsTopPriorityHostile` rief `battleChara.GetNamePlateIcon()` vor der eigenen Null-Prüfung; die Erweiterungsmethode greift ohne eigenen Null-Zweig auf die Struktur zu. Prüfung vorgezogen |
+| BMR-Verfügbarkeit auf den ersten Tick eingerastet | GEFIXT 5de07717 | `BossModUpdater` und `BMRPlanUpdater` lösten `IsEnabled` einmalig auf und merkten sich das Ergebnis. `ResetAvailabilityCheck()` hat baumweit keinen Aufrufer (verifiziert per Grep), der zweite Reset steht im `catch`, das bei `_isAvailable == false` nicht erreichbar ist. Dalamud meldet das Laden anderer Plugins nicht; wer BossModReborn nach RSR startet oder in der Sitzung aktiviert, hatte alle BMR-Werte bis zum Neuladen auf ihrem Ausfallwert — die BMR-gestützte Mitigations-Zeitsteuerung war damit still abgeschaltet. Verfügbarkeit wird jetzt alle 5 s neu erhoben, dasselbe Intervall wie der bestehende Fallback-Poll |
+| 46 Treffer „Level-Gate auf fremde Aktion" | KEIN FEHLER | Durchweg das legitime Muster `!HöhereAktion.EnoughLevel && NiedrigereAktion.CanUse(...)` |
+| 41 Treffer „gleicher Rumpf in zwei aufeinanderfolgenden `if`" | überwiegend KEIN FEHLER | Echte Fallunterscheidungen. Zwei geprüft: BRD 398/417 ist eine bewusste Staffelung (3 s vs. 7,5 s plus Lied-Bedingung), VPR 590/973 ist echte Redundanz → `TODO.md` |
+| Vier unausgeglichene ImGui-Paare | KEIN FEHLER | Zählartefakte: `PopStyleVar(2)`/`PopStyleColor(3)` schließen mehrere Pushes in einem Aufruf, und die beiden Treffer in `RotationConfigWindow` sind Methodendefinitionen, keine Aufrufe. Nebenfund: dieselben Definitionen sind tot → `TODO.md` |
+| 60 `[Range]`/Default-Paare in `Configs.cs` | KEIN FEHLER | Kein Default außerhalb seines deklarierten Bereichs, keine doppelten Eigenschaftsnamen. Die Klasse hatte in A8 einen echten Treffer (SAM `MeikyoShisuiCountdown`), ist jetzt sauber |
+
+**Erreichter Prüfgrad:** statische Selbstprüfung plus selbstgetestete Skripte, Kompilierung über die GitHub-Action (`DispatchChain`, `Build`). Keine Laufzeitbeobachtung im Spiel. Nicht als Ganzes gelesen und daher weiterhin offen: `RotationSolver/UI` jenseits der Paar- und Totcode-Scans, der Rest von `DataCenter`, sowie der Job-für-Job-Durchgang durch die Rotationen, der bisher nur über die Scanner abgedeckt ist.
+
 ---
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
@@ -198,6 +218,7 @@ Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt e
 | A7: c6a0a40c · a2a3ec35 · 52a0817d · 00bc9c6f · 4b3c9412 · f90c7bf7 · d045e47f · 4889395f · 157a9ad3 · e6428c19 · e07ceb4b · 672e92ee | TODO-Abarbeitung, A4a | s. A7 |
 | A8: ebaa44c7 · 3c40d9e4 · 93f05e68 · 232d472e · e224e3f7 | Codebasis-Audit Phase 1 | s. A8 |
 | A9: b8018cf0 · 6704335d · 1c259f10 · 9f815bf3 · d9a99de7 · 6588832b | Mitigations-Trigger, Version | s. A9 |
+| A10: ad00090e · efc4d039 · d0523a8d · 331c1254 · f2384007 · 6189c4cb · 5de07717 | Codebasis-Audit Phasen 2–4 | s. A10 |
 
 ---
 
