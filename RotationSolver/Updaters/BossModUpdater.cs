@@ -4,15 +4,21 @@ namespace RotationSolver.Updaters;
 
 internal static class BossModUpdater
 {
-	private static bool _checkedAvailability;
 	private static bool _isAvailable;
+	private static DateTime _lastAvailabilityCheck = DateTime.MinValue;
+
+	// BossModReborn can be enabled or disabled while RSR is already running, and Dalamud does not
+	// notify us about it, so availability is re-polled on an interval instead of latched on the
+	// first tick. The reflection lookup behind IsEnabled is too expensive to run every frame.
+	private static readonly TimeSpan AvailabilityCheckInterval = TimeSpan.FromSeconds(5);
 
 	public static void Update()
 	{
-		if (!_checkedAvailability)
+		var now = DateTime.Now;
+		if (now - _lastAvailabilityCheck >= AvailabilityCheckInterval)
 		{
 			_isAvailable = BMRTimeline_IPCSubscriber.IsEnabled || BMRInfo_IPCSubscriber.IsEnabled || BMRPlan_IPCSubscriber.IsEnabled;
-			_checkedAvailability = true;
+			_lastAvailabilityCheck = now;
 		}
 
 		if (!_isAvailable)
@@ -98,12 +104,12 @@ internal static class BossModUpdater
 		catch
 		{
 			DataCenter.ResetBmrData();
-			_checkedAvailability = false;
+			ResetAvailabilityCheck();
 		}
 	}
 
 	public static void ResetAvailabilityCheck()
 	{
-		_checkedAvailability = false;
+		_lastAvailabilityCheck = DateTime.MinValue;
 	}
 }
