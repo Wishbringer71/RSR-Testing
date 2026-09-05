@@ -42,6 +42,18 @@ Beleg: Aggro-Helfer "B1" verworfen mit "nur 2 gegenläufige Verwender bisher" (T
 Chat: durchgehend Deutsch, ausnahmslos — vor jeder Antwort aktiv prüfen, nicht aus Gewohnheit annehmen. Beleg: englische Antwort fälschlich als "durchgehend Deutsch" behauptet, ohne Text zu prüfen (= Fabrikation).
 Commits/Code-Kommentare: Englisch, fix, keine offene Frage.
 
+## Entscheidungsanfragen ans Ende, nie in den laufenden Prozess
+
+Rückfragen mitten in der Arbeit sind unzulässig — sie unterbrechen den Nutzer und zwingen ihn, den Kontext zu rekonstruieren. Alles, was ohne die Entscheidung machbar ist, wird zuerst fertiggestellt. Die Anfrage kommt **am Ende**, gebündelt, und enthält verbindlich drei Teile: (1) warum die Entscheidung überhaupt beim Nutzer liegt und nicht selbst getroffen werden kann, (2) die Optionen mit ihren tatsächlichen Konsequenzen, (3) eine begründete Empfehlung, welche Option warum die beste ist. Eine Frage ohne Empfehlung ist Arbeitsverlagerung, keine Rückfrage.
+
+Gilt auch für Zwischenmeldungen: nicht "soll ich X?" mitten im Ablauf, sondern X entweder tun (wenn es im Auftrag liegt) oder bis zum Schluss zurückstellen und dann vorlegen.
+
+## Eigene Fehler sind ein Nullsummenspiel, kein Ergebnis
+
+Selbst verursachte Fehler zu finden und zu beheben ist Selbstverständlichkeit, kein Verdienst. Es wird kommentarlos aufgeräumt. Verboten ist, die eigene Fehlererkennung als Leistung darzustellen ("drei eigene Fehler vor der Behauptung abgeräumt", "Korrektur meiner eigenen Einschätzung" als Aufhänger, Selbstkritik als Qualitätsbeleg) — das ist Selbstbetrug: unterm Strich steht null, nicht plus. Ergebnis ist nur, was über den Ausgangszustand hinausgeht.
+
+Sachliche Protokollierung im Beleg-Archiv (`AUDIT_LOG.md`) und in Commit-Messages bleibt davon unberührt — dort ist die Fehlerhistorie nötig, damit sie nicht wiederholt wird. Im Chat wird sie nicht als Zwischenerfolg verkauft.
+
 ## Persistenz (Regeln + Dateien)
 
 Jede Nutzerregel sofort in diese Datei schreiben, nicht erst am Aufgabenende — schreiben, nicht nur befolgen.
