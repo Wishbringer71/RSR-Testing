@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace RotationSolver.RebornRotations.Melee;
 
@@ -7,7 +7,6 @@ namespace RotationSolver.RebornRotations.Melee;
 
 public sealed class MNK_Reborn : MonkRotation
 {
-	// DefenseAreaAbility below has a hostile-count sustain-refresh fallback for Feint.
 	public override bool HasHostileCountAoeMitigation => true;
 
 	#region Config Options
@@ -186,9 +185,6 @@ public sealed class MNK_Reborn : MonkRotation
 	[RotationDesc(ActionID.FeintPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		// Feint mitigates any damage type, so a predicted BMR event (raidwide or tankbuster) that
-		// would land after Feint's own duration expires triggers a proactive refresh here. Trash pulls
-		// usually have no active BMR module, so a hostile-count fallback keeps Feint up regardless.
 		if (ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
@@ -226,8 +222,6 @@ public sealed class MNK_Reborn : MonkRotation
 			return true;
 		}
 
-		// DefenseAreaAbility only runs on a raidwide-shaped trigger, so a tankbuster-shaped one never
-		// reaches it; ShouldAddDefenseSingle's tankbuster trigger reaches this copy instead.
 		if (ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{

@@ -5,7 +5,6 @@
 
 public sealed class PCT_Reborn : PictomancerRotation
 {
-	// DefenseAreaAbility below has a hostile-count sustain-refresh fallback for Addle.
 	public override bool HasHostileCountAoeMitigation => true;
 
 	#region Config Options
@@ -124,9 +123,6 @@ public sealed class PCT_Reborn : PictomancerRotation
 			return true;
 		}
 
-		// Addle mitigates any damage type, so a predicted BMR event (raidwide or tankbuster) that
-		// would land after Addle's own duration expires triggers a proactive refresh here. Trash pulls
-		// usually have no active BMR module, so a hostile-count fallback keeps Addle up regardless.
 		if ((!BurstDefense || (BurstDefense && !InBurstStatus))
 			&& ShouldSustainMitigationDebuff(StatusID.Addle)
 			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))
@@ -150,8 +146,6 @@ public sealed class PCT_Reborn : PictomancerRotation
 			return true;
 		}
 
-		// DefenseAreaAbility only runs on a raidwide-shaped trigger, so a tankbuster-shaped one never
-		// reaches it; ShouldAddDefenseSingle's tankbuster trigger reaches this copy instead.
 		if ((!BurstDefense || (BurstDefense && !InBurstStatus))
 			&& ShouldSustainMitigationDebuff(StatusID.Addle)
 			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))

@@ -1,4 +1,4 @@
-namespace RotationSolver.RebornRotations.Tank;
+﻿namespace RotationSolver.RebornRotations.Tank;
 
 [Rotation("Reborn", CombatType.PvE, GameVersion = "7.55")]
 [SourceCode(Path = "main/RebornRotations/Tank/WAR_Reborn.cs")]
@@ -223,9 +223,7 @@ public sealed class WAR_Reborn : WarriorRotation
 			return false;
 		}
 
-		// A BMR-predicted tankbuster takes priority over the elapsed-time stagger below - times
-		// whichever mitigation the existing system would reach anyway against the actual predicted
-		// event instead of a blind timer, without touching the stagger itself.
+		// Predicted tankbuster takes priority over the elapsed-time stagger below.
 		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, DamnationPvE.EnoughLevel ? StatusID.Damnation : StatusID.Vengeance)
 			&& (DamnationPvE.EnoughLevel ? DamnationPvE.CanUse(out act, skipStatusProvideCheck: true) : VengeancePvE.CanUse(out act, skipStatusProvideCheck: true)))
 		{
@@ -271,8 +269,6 @@ public sealed class WAR_Reborn : WarriorRotation
 			}
 		}
 
-		// Reprisal mitigates any damage type from that enemy, not just raidwides, so the generic
-		// BMRDamageIn is the right signal - same reasoning as Addle/Feint.
 		if (ShouldSustainMitigationDebuff(StatusID.Reprisal)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{

@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace RotationSolver.RebornRotations.Tank;
 
@@ -7,7 +7,6 @@ namespace RotationSolver.RebornRotations.Tank;
 
 public sealed class DRK_Reborn : DarkKnightRotation
 {
-	// DefenseAreaAbility below has a hostile-count sustain-refresh fallback for Reprisal.
 	public override bool HasHostileCountAoeMitigation => true;
 
 	#region Config Options
@@ -146,8 +145,6 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			return true;
 		}
 
-		// Reprisal mitigates any damage type from that enemy, not just raidwides, so the generic
-		// BMRDamageIn is the right signal - same reasoning as Addle/Feint.
 		if (!InTwoMIsBurst
 			&& ShouldSustainMitigationDebuff(StatusID.Reprisal)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
@@ -193,9 +190,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			return true;
 		}
 
-		// A BMR-predicted tankbuster takes priority over the elapsed-time stagger below - times
-		// whichever mitigation the existing system would reach anyway against the actual predicted
-		// event instead of a blind timer, without touching the stagger itself.
+		// Predicted tankbuster takes priority over the elapsed-time stagger below.
 		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, ShadowedVigilPvE.EnoughLevel ? StatusID.ShadowedVigil : StatusID.ShadowWall)
 			&& (ShadowedVigilPvE.EnoughLevel ? ShadowedVigilPvE.CanUse(out act, skipStatusProvideCheck: true) : ShadowWallPvE.CanUse(out act, skipStatusProvideCheck: true)))
 		{

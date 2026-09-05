@@ -1,11 +1,10 @@
-namespace RotationSolver.RebornRotations.Melee;
+﻿namespace RotationSolver.RebornRotations.Melee;
 
 [Rotation("Reborn", CombatType.PvE, GameVersion = "7.55")]
 [SourceCode(Path = "main/RebornRotations/Melee/DRG_Reborn.cs")]
 
 public sealed class DRG_Reborn : DragoonRotation
 {
-	// DefenseAreaAbility below has a hostile-count sustain-refresh fallback for Feint.
 	public override bool HasHostileCountAoeMitigation => true;
 
 	#region Config Options
@@ -92,9 +91,6 @@ public sealed class DRG_Reborn : DragoonRotation
 			return base.DefenseAreaAbility(nextGCD, out act);
 		}
 
-		// Feint mitigates any damage type, so a predicted BMR event (raidwide or tankbuster) that
-		// would land after Feint's own duration expires triggers a proactive refresh here. Trash pulls
-		// usually have no active BMR module, so a hostile-count fallback keeps Feint up regardless.
 		if (ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& FeintPvE.CanUse(out act, skipComboCheck: true, skipStatusProvideCheck: true))
 		{
@@ -116,8 +112,6 @@ public sealed class DRG_Reborn : DragoonRotation
 			return base.DefenseSingleAbility(nextGCD, out act);
 		}
 
-		// DefenseAreaAbility only runs on a raidwide-shaped trigger, so a tankbuster-shaped one never
-		// reaches it; ShouldAddDefenseSingle's tankbuster trigger reaches this copy instead.
 		if (ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& FeintPvE.CanUse(out act, skipComboCheck: true, skipStatusProvideCheck: true))
 		{

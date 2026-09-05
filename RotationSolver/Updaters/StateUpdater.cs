@@ -5,19 +5,7 @@ namespace RotationSolver.Updaters;
 
 internal static class StateUpdater
 {
-	/// <summary>
-	/// How much earlier healing should kick in for a target under Weakness / Brink of Death. Those
-	/// statuses halve incoming healing, so a heal cast now restores only half as much; the threshold is
-	/// raised rather than the HP% taken at face value. Deliberately below the 2.0 the halving would
-	/// suggest, to avoid over-healing a target that is merely weakened but in no danger.
-	/// </summary>
-	private const float WeakenedHealThresholdFactor = 1.5f;
-
-	/// <summary>
-	/// How far ahead a shield must survive to count toward effective health when no BMR prediction is
-	/// available to compare against - i.e. for the cast-detection-based reasons in
-	/// <see cref="ShieldCreditAllowed"/>, which carry no lead time of their own.
-	/// </summary>
+	/// <summary>Shield-survival floor used when no BMR prediction is available.</summary>
 	private const float ShieldSurvivalFallbackSeconds = 3f;
 
 	private static bool CanUseHealAction =>
@@ -697,11 +685,8 @@ internal static class StateUpdater
 	}
 
 	/// <summary>
-	/// Whether crediting a shield toward effective health is backed by an actual reason to expect
-	/// incoming damage soon - either a real BMR prediction, or an enemy visibly casting something
-	/// dangerous right now. Without either, there's no basis for treating the shield as protection
-	/// against a specific hit rather than just "up right now" (a fresh Galvanize/Eukrasian/Haima/etc.
-	/// survives a blind few-second floor for nearly its whole duration, which isn't a real signal).
+	/// Whether there is an actual reason to expect incoming damage, so that a shield can be credited
+	/// against a specific hit rather than merely being up right now.
 	/// </summary>
 	private static bool ShieldCreditAllowed =>
 		(Service.Config.UseBmrTimeline && DataCenter.BMRHasActiveModule
@@ -711,11 +696,8 @@ internal static class StateUpdater
 		|| DataCenter.IsHostileCastingTankBusterAtMe;
 
 	/// <summary>
-	/// How far ahead a shield must still be active to be credited toward a target's effective health
-	/// in heal-priority decisions. Uses BMR's next predicted damage event when available and enabled -
-	/// the shield only matters if it survives to absorb that hit - otherwise falls back to a short
-	/// floor for the cast-detection-based reasons in ShieldCreditAllowed, where no predicted lead time
-	/// exists to compare against.
+	/// How long a shield must still last to count: until BMR's next predicted damage, or a short
+	/// floor when the reason came from cast detection and carries no lead time of its own.
 	/// </summary>
 	private static float ShieldSurvivalHorizon =>
 		Service.Config.UseBmrTimeline && DataCenter.BMRHasActiveModule
@@ -751,9 +733,8 @@ internal static class StateUpdater
 		// Determine the target's health ratio. If they have a "Doom" status, treat their health as critically low (0.2).
 		var h = StatusHelper.PlayerDoomNeedHealing() ? 0.2f : ObjectHelper.GetPlayerHealthRatio();
 
-		// A shield still up when the next damage lands counts toward effective health - but not for a
-		// weakened target, whose halved healing is handled by the threshold below instead.
-		if (!StatusHelper.PlayerDoomNeedHealing() && !StatusHelper.PlayerIsWeakened() && ShieldCreditAllowed
+		// A shield still up when the next damage lands counts toward effective health.
+		if (!StatusHelper.PlayerDoomNeedHealing() && ShieldCreditAllowed
 			&& Player.Object.HasSurvivingShield(ShieldSurvivalHorizon))
 		{
 			h = Math.Max(h, Player.Object.GetEffectiveHpPercent() / 100f);
@@ -766,14 +747,7 @@ internal static class StateUpdater
 		}
 
 		// Compare the target's health ratio to a threshold determined by linear interpolation (Lerp) between `healSingle` and `healSingleHot`.
-		var threshold = Lerp(healSingle, healSingleHot, ratio);
-
-		if (StatusHelper.PlayerIsWeakened())
-		{
-			threshold = Math.Min(1f, threshold * WeakenedHealThresholdFactor);
-		}
-
-		return h < threshold;
+		return h < Lerp(healSingle, healSingleHot, ratio);
 	}
 
 	private static bool ShouldHealSingle(IBattleChara target, StatusID[] hotStatus, float healSingle, float healSingleHot)
@@ -804,9 +778,8 @@ internal static class StateUpdater
 		// Determine the target's health ratio. GetHealthRatio already treats "Doom" status targets as critically low (1%).
 		var h = target.GetHealthRatio();
 
-		// A shield still up when the next damage lands counts toward effective health - but not for a
-		// weakened target, whose halved healing is handled by the threshold below instead.
-		if (!target.DoomNeedHealing() && !target.IsWeakened() && ShieldCreditAllowed
+		// A shield still up when the next damage lands counts toward effective health.
+		if (!target.DoomNeedHealing() && ShieldCreditAllowed
 			&& target.HasSurvivingShield(ShieldSurvivalHorizon))
 		{
 			h = Math.Max(h, target.GetEffectiveHpPercent() / 100f);
@@ -819,14 +792,7 @@ internal static class StateUpdater
 		}
 
 		// Compare the target's health ratio to a threshold determined by linear interpolation (Lerp) between `healSingle` and `healSingleHot`.
-		var threshold = Lerp(healSingle, healSingleHot, ratio);
-
-		if (target.IsWeakened())
-		{
-			threshold = Math.Min(1f, threshold * WeakenedHealThresholdFactor);
-		}
-
-		return h < threshold;
+		return h < Lerp(healSingle, healSingleHot, ratio);
 	}
 
 	private static float Lerp(float a, float b, float ratio)

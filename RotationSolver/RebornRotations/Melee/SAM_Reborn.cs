@@ -7,7 +7,6 @@ namespace RotationSolver.RebornRotations.Melee;
 
 public sealed class SAM_Reborn : SamuraiRotation
 {
-	// DefenseAreaAbility below has a hostile-count sustain-refresh fallback for Feint.
 	public override bool HasHostileCountAoeMitigation => true;
 
 	#region Config Options
@@ -118,8 +117,6 @@ public sealed class SAM_Reborn : SamuraiRotation
 	[RotationDesc(ActionID.FeintPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		// DefenseAreaAbility only runs on a raidwide-shaped trigger, so a tankbuster-shaped one never
-		// reaches it; ShouldAddDefenseSingle's tankbuster trigger reaches this copy instead.
 		// EnoughWeaveTime is a clip-safety check, not a preference gate, so it is kept here.
 		if (EnoughWeaveTime
 			&& ShouldSustainMitigationDebuff(StatusID.Feint)

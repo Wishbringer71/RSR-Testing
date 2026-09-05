@@ -1,4 +1,4 @@
-using ECommons.DalamudServices;
+﻿using ECommons.DalamudServices;
 using ECommons.ExcelServices;
 
 namespace RotationSolver.Basic.Rotations;
@@ -51,9 +51,7 @@ public partial class CustomRotation
 		}
 
 		IBaseAction.ForceEnable = true;
-		// A queued command can sit here until the action becomes usable again, by which point the buff
-		// may already be up from something else - so keep the status-provide check.
-		if (act is IBaseAction a && a != null && !a.Info.IsRealGCD && a.CanUse(out _, usedUp: true, skipAoeCheck: true))
+		if (act is IBaseAction a && a != null && !a.Info.IsRealGCD && a.CanUse(out _, usedUp: true, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
@@ -399,8 +397,7 @@ public partial class CustomRotation
 	/// <returns>True if the interrupt ability can be used; otherwise, false.</returns>
 	private bool MyInterruptAbility(JobRole role, IAction nextGCD, out IAction? act)
 	{
-		// The job's own override first: its combo-safety gate must run before the ungated role default
-		// below claims the same action.
+		// Job override first: its combo-safety gate must precede the ungated role default below.
 		if (InterruptAbility(nextGCD, out act))
 		{
 			return true;
@@ -482,8 +479,7 @@ public partial class CustomRotation
 	/// <returns>True if an anti-knockback ability can be used; otherwise, false.</returns>
 	private bool AntiKnockback(JobRole role, IAction nextGCD, out IAction? act)
 	{
-		// The job's own override first: its combo-safety gate must run before the ungated role default
-		// below claims the same action.
+		// Job override first: its combo-safety gate must precede the ungated role default below.
 		if (AntiKnockbackAbility(nextGCD, out act))
 		{
 			return true;

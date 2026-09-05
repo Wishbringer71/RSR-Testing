@@ -721,9 +721,6 @@ public partial class NinjaRotation
 	[RotationDesc(ActionID.FeintPvE)]
 	protected sealed override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		// Feint mitigates any damage type, so a predicted BMR event (raidwide or tankbuster) that
-		// would land after Feint's own duration expires triggers a proactive refresh here. Trash pulls
-		// usually have no active BMR module, so a hostile-count fallback keeps Feint up regardless.
 		if (ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& !StatusHelper.PlayerHasStatus(true, StatusID.Mudra)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
@@ -743,8 +740,6 @@ public partial class NinjaRotation
 			return true;
 		}
 
-		// DefenseAreaAbility only runs on a raidwide-shaped trigger, so a tankbuster-shaped one never
-		// reaches it; ShouldAddDefenseSingle's tankbuster trigger reaches this copy instead.
 		if (ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& !StatusHelper.PlayerHasStatus(true, StatusID.Mudra)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))

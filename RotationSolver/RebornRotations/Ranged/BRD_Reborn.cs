@@ -1,4 +1,4 @@
-namespace RotationSolver.RebornRotations.Ranged;
+﻿namespace RotationSolver.RebornRotations.Ranged;
 
 [Rotation("Reborn", CombatType.PvE, GameVersion = "7.55",
 	Description = "Please make sure that the three song times add up to 120 seconds, Wanderers default first song for now.")]
@@ -157,8 +157,6 @@ public sealed class BRD_Reborn : BardRotation
 	[RotationDesc(ActionID.TroubadourPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		// DefenseAreaAbility only runs on a raidwide-shaped trigger, so a tankbuster-shaped one never
-		// reaches it; ShouldAddDefenseSingle's tankbuster trigger reaches this copy instead.
 		if ((!BurstDefense || (BurstDefense && !InBurstStatus))
 			&& BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, StatusID.Troubadour)
 			&& TroubadourPvE.CanUse(out act, skipStatusProvideCheck: true))

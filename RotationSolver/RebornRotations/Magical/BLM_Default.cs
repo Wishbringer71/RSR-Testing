@@ -5,7 +5,6 @@
 
 public class BLM_Default : BlackMageRotation
 {
-	// DefenseAreaAbility below has a hostile-count sustain-refresh fallback for Addle.
 	public override bool HasHostileCountAoeMitigation => true;
 
 	#region Config Options
@@ -148,9 +147,6 @@ public class BLM_Default : BlackMageRotation
 			return true;
 		}
 
-		// Addle mitigates any damage type, so a predicted BMR event (raidwide or tankbuster) that
-		// would land after Addle's own duration expires triggers a proactive refresh here. Trash pulls
-		// usually have no active BMR module, so a hostile-count fallback keeps Addle up regardless.
 		if (ShouldSustainMitigationDebuff(StatusID.Addle)
 			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))
 		{

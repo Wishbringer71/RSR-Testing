@@ -17,17 +17,6 @@ public sealed class SGE_Reborn : SageRotation
 	[RotationConfig(CombatType.PvE, Name = "Use Eukrasia when out of combat")]
 	public bool OOCEukrasia { get; set; } = true;
 
-	[RotationConfig(CombatType.PvE, Name = "Eukrasian Diagnosis on Tank as they close in on enemies (dungeons only, not Trials/Raids), and keep it up while it's otherwise idle GCD time (Eukrasian Diagnosis is instant-cast, safe to keep up while moving).")]
-	public bool UsePreEukrasianDiagnosis { get; set; } = true;
-
-	[Range(1, 8, ConfigUnitType.None, 1)]
-	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies near the tank before combat for the pre-pull Eukrasian Diagnosis above to be worth casting", Parent = nameof(UsePreEukrasianDiagnosis))]
-	public int PreEukrasianDiagnosisMinHostiles { get; set; } = 2;
-
-	[Range(1, 12, ConfigUnitType.None, 1)]
-	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies still around the tank during a wall-to-wall pull for the Eukrasian Diagnosis above to keep being force-refreshed, instead of falling back to normal reactive healing", Parent = nameof(UsePreEukrasianDiagnosis))]
-	public int PreEukrasianDiagnosisMinWallToWallHostiles { get; set; } = 3;
-
 	[RotationConfig(CombatType.PvE, Name = "Use Rhizomata when out of combat")]
 	public bool OOCRhizomata { get; set; } = false;
 
@@ -149,12 +138,6 @@ public sealed class SGE_Reborn : SageRotation
 			return act;
 		}
 
-		// Countdown-timed Diagnosis cast removed: dungeons (the actual wall-to-wall-pull use case)
-		// never have an active countdown, so this never fired there - and where it DID fire
-		// (trials/raids with a real countdown), it's explicitly out of scope for this mechanic.
-		// See the TankApproachingMobGroup-gated GeneralGCD filler below instead. The unconditional
-		// EukrasiaPvE press above this point is pre-existing SGE opener logic, unrelated to this
-		// mechanic - left as-is.
 		return base.CountDownAction(remainTime);
 	}
 	#endregion
@@ -717,43 +700,6 @@ public sealed class SGE_Reborn : SageRotation
 	#endregion
 
 	#region GCD Logic 
-	/// <summary>
-	/// Proactive wall-to-wall sustain: keep Eukrasian Diagnosis up on the tank as they commit to a pull.
-	/// Called from GeneralGCD, HealSingleGCD and HealAreaGCD alike - the outer dispatch reaches the two
-	/// heal methods first, so a raised heal-need flag would otherwise starve the check in GeneralGCD for
-	/// a whole pull. The remaining duration is checked up front against <see cref="PartyTank"/>, because
-	/// the Eukrasia press is a separate GCD whose own status check only runs once Diagnosis is actually
-	/// about to be cast. Self-contained: does not touch _EukrasiaActionAim / ChoiceEukrasia.
-	/// </summary>
-	private bool TrySustainEukrasianDiagnosisOnTank(out IAction? act)
-	{
-		act = null;
-
-		if (!UsePreEukrasianDiagnosis || !TankApproachingMobGroup(PreEukrasianDiagnosisMinHostiles, PreEukrasianDiagnosisMinWallToWallHostiles))
-		{
-			return false;
-		}
-
-		var diagnosisDue = PartyTank?.WillStatusEndGCD(EukrasianDiagnosisPvE.Config.StatusRefreshGcdCount, 0, EukrasianDiagnosisPvE.Setting.StatusFromSelf, EukrasianDiagnosisPvE.Setting.TargetStatusProvide ?? []) ?? true;
-		if (!diagnosisDue)
-		{
-			return false;
-		}
-
-		if (!HasEukrasia && EukrasiaPvE.CanUse(out act))
-		{
-			return true;
-		}
-
-		if (HasEukrasia && EukrasianDiagnosisPvE.CanUse(out act, targetOverride: TargetType.Tank))
-		{
-			return true;
-		}
-
-		act = null;
-		return false;
-	}
-
 	[RotationDesc(ActionID.PneumaPvE, ActionID.PrognosisPvE, ActionID.EukrasianPrognosisPvE, ActionID.EukrasianPrognosisIiPvE)]
 	protected override bool HealAreaGCD(out IAction? act)
 	{
@@ -796,12 +742,6 @@ public sealed class SGE_Reborn : SageRotation
 			return true;
 		}
 
-		// Last, so it never displaces one of the reactive AoE heals above it.
-		if (TrySustainEukrasianDiagnosisOnTank(out act))
-		{
-			return true;
-		}
-
 		return base.HealAreaGCD(out act);
 	}
 
@@ -824,13 +764,6 @@ public sealed class SGE_Reborn : SageRotation
 		}
 
 		if (_EukrasiaActionAim == null && DiagnosisPvE.CanUse(out act))
-		{
-			return true;
-		}
-
-		// Last, so it never displaces an actual reactive heal decision above it. SGE has no
-		// HP-ratio threshold to reuse as a safety floor, unlike WHM/AST.
-		if (TrySustainEukrasianDiagnosisOnTank(out act))
 		{
 			return true;
 		}
@@ -868,14 +801,6 @@ public sealed class SGE_Reborn : SageRotation
 		}
 
 		if (DoEukrasianDiagnosis(out act))
-		{
-			return true;
-		}
-
-		// After the reactive DoEukrasianDiagnosis above, ahead of Phlegma / Pneuma / DPS filler: as
-		// bottom-of-list filler it never got a turn once real combat priorities existed, so it only
-		// ever fired on the very first pull. Both GCDs are instant, so this costs no uptime.
-		if (TrySustainEukrasianDiagnosisOnTank(out act))
 		{
 			return true;
 		}

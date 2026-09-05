@@ -5,7 +5,6 @@
 
 public sealed class RDM_Reborn : RedMageRotation
 {
-	// DefenseAreaAbility below has a hostile-count sustain-refresh fallback for Addle.
 	public override bool HasHostileCountAoeMitigation => true;
 
 	#region Config Options
@@ -96,9 +95,6 @@ public sealed class RDM_Reborn : RedMageRotation
 	[RotationDesc(ActionID.AddlePvE, ActionID.MagickBarrierPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		// Addle mitigates any damage type, so a predicted BMR event (raidwide or tankbuster) that
-		// would land after Addle's own duration expires triggers a proactive refresh here. Trash pulls
-		// usually have no active BMR module, so a hostile-count fallback keeps Addle up regardless.
 		if (ShouldSustainMitigationDebuff(StatusID.Addle)
 			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
@@ -121,8 +117,6 @@ public sealed class RDM_Reborn : RedMageRotation
 	[RotationDesc(ActionID.AddlePvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		// DefenseAreaAbility only runs on a raidwide-shaped trigger, so a tankbuster-shaped one never
-		// reaches it; ShouldAddDefenseSingle's tankbuster trigger reaches this copy instead.
 		if (ShouldSustainMitigationDebuff(StatusID.Addle)
 			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))
 		{

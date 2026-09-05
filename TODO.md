@@ -14,6 +14,50 @@ aller bisherigen Feature-/Aggro-Management-Arbeit) liegt in `AUDIT_LOG.md`
 — dort nachsehen, bevor ein Commit/Bereich erneut geprüft oder ein
 scheinbar neues Thema begonnen wird, um Doppelarbeit zu vermeiden.
 
+## ROADMAP: Vollprüfung aller Fork-Patches gegen das Original (laufend)
+
+Anlass: Der Originalautor haelt saemtliche Aenderungen fuer Trial&Error ohne
+Verstaendnis der Codebasis, >4000 Zeilen die nichts richtig machen. Auftrag:
+belegen oder widerlegen, korrigieren, mit so wenig Code wie moeglich, ohne das
+inhaltliche Gesamtkonzept zu verlieren.
+
+**Reihenfolge ist verbindlich. Keine Phase ueberspringen, keine Phase
+abbrechen, weil eine spaetere interessanter wirkt.**
+
+| Phase | Inhalt | Stand |
+|---|---|---|
+| 0 | Faktenbasis: Zeilenbilanz, Kommentarbilanz, Versionierung | **fertig** |
+| 1 | Substanzpruefung je Bereich — feuert der Zweig, tut er das Richtige, ist er minimal, passt er zum Original | **laufend** |
+| 1.1 | `Updaters/StateUpdater.cs` | fertig |
+| 1.2 | `Rotations/CustomRotation_Ability.cs` | fertig |
+| 1.3 | `Rotations/CustomRotation_OtherInfo.cs` | fertig |
+| 1.4 | `DataCenter` · `ObjectHelper` · `StatusHelper` · `ActionTargetInfo` · `CustomRotation_Items` · `HpPotionItem` | offen |
+| 1.5 | Heiler: WHM · AST · SGE · SCH | SGE fertig, Rest offen |
+| 1.6 | Tanks: PLD · WAR · DRK · GNB | offen |
+| 1.7 | Melee · Phys. Range · Magical | offen |
+| 1.8 | Duty · ExtraRotations · PvP | offen |
+| 2 | Korrekturen umsetzen (rollierend je Fund) | laufend |
+| 3 | Stilangleichung: Kommentardichte auf Hausmass je Bereich | begonnen, zurueckgestellt hinter Phase 1 |
+| 4 | Versionierung des Forks in Ordnung bringen | offen |
+| 5 | CI gruen + Dokumentation des Ergebnisses | offen |
+
+### Phase-0-Ergebnis (Faktenbasis)
+
+- „ueber 4000 Zeilen": 4521 Zeilen Diff gegen `upstream/main`, davon **2830
+  Markdown** (Doku/TODO/AUDIT_LOG, wird nie ausgeliefert), 260 CI, und
+  **1431 C#**. Von den 1431: 178 leer, 413 Kommentar, 282 reine Klammern —
+  **558 tatsaechliche Anweisungen** ueber 43 Dateien.
+- Kommentardichte der Ergaenzungen gegen Hausmass je Bereich:
+  RebornRotations 26,6 % (Haus 3,9 %), Updaters 37,3 % (6,2 %), Rotations-Kern
+  49,7 % (19,6 %), Helpers/Actions 37,4 % (19,7 %). Ueberhang ~283 Zeilen.
+  **Der Stilvorwurf trifft zu.**
+- **Versionierung: der Vorwurf trifft zu.** Der Fork hat **0 Tags**, Upstream
+  hat 952. `publish.yaml` triggert ausschliesslich auf Tags `*.*.*.*`, und
+  `AssemblyVersion` wird nur dort aus dem Tag gestempelt. Ohne Tag ist jede
+  Version **1.0.0.0**. `manifest.json` und `RotationSolver.json` sind
+  unveraendert gegenueber Upstream, der Fehler liegt allein in den fehlenden
+  Tags. Siehe Phase 4.
+
 ## Offene Konzepte / Fixes (noch nicht umgesetzt)
 
 ### #54 WHM-Heilsuppression nach oGCD-Erschöpfung — Root Cause weiterhin NICHT gefunden, alle bekannten Kandidaten ausgeschlossen

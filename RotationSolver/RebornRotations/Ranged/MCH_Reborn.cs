@@ -168,8 +168,6 @@ public sealed class MCH_Reborn : MachinistRotation
 	[RotationDesc(ActionID.TacticianPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		// DefenseAreaAbility only runs on a raidwide-shaped trigger, so a tankbuster-shaped one never
-		// reaches it; ShouldAddDefenseSingle's tankbuster trigger reaches this copy instead.
 		if (!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
 		{
 			var wildfireSlotContested = IsBurst && WildfirePvE.EnoughLevel && WildfirePvE.Cooldown.HasOneCharge

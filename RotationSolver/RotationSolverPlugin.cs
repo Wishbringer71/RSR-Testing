@@ -39,11 +39,6 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 
 	private static readonly List<IDisposable> _dis = [];
 	public static string Name => "Rotation Solver Reborn";
-
-	// Visible only in the settings window title bar (WSH = Wishbringer71's test build), so it's
-	// obvious at a glance this isn't the stock plugin. "x/y" is this session's rough progress count
-	// through the currently planned fixes/features - update the numerator as items land.
-	private const string TestBuildMarker = " [WSH 16/18]";
 	internal static readonly List<DrawingHighlightHotbarBase> _drawingElements = [];
 
 	public static DalamudLinkPayload OpenLinkPayload { get; private set; } = null!;
@@ -275,8 +270,7 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 	internal static void ChangeUITranslation()
 	{
 		_rotationConfigWindow!.WindowName = UiString.ConfigWindowHeader.GetDescription()
-			+ (typeof(RotationConfigWindow).Assembly.GetName().Version?.ToString() ?? "?.?.?")
-			+ TestBuildMarker + "###rsrConfigWindow";
+			+ (typeof(RotationConfigWindow).Assembly.GetName().Version?.ToString() ?? "?.?.?") + "###rsrConfigWindow";
 
 		RSCommands.Disable();
 		RSCommands.Enable();

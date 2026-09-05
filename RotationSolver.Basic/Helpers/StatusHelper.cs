@@ -656,26 +656,6 @@ public static class StatusHelper
 		return false;
 	}
 
-	private static readonly StatusID[] WeaknessStatus = [StatusID.Weakness, StatusID.BrinkOfDeath];
-
-	/// <summary>
-	/// True if the target has Weakness or Brink of Death (halved healing received, applied after
-	/// death/raise). Heal-threshold logic should treat this target as needing attention sooner,
-	/// since a given heal now restores only half as much.
-	/// </summary>
-	public static bool IsWeakened(this IBattleChara target)
-	{
-		return target != null && HasStatus(target, false, WeaknessStatus);
-	}
-
-	/// <summary>
-	/// True if the player has Weakness or Brink of Death. See <see cref="IsWeakened(IBattleChara)"/>.
-	/// </summary>
-	public static bool PlayerIsWeakened()
-	{
-		return Player.Object != null && PlayerHasStatus(false, WeaknessStatus);
-	}
-
 	/// <summary>
 	/// Will any of <paramref name="statusIDs"/> end after <paramref name="gcdCount"/> GCDs plus <paramref name="offset"/> seconds?
 	/// </summary>

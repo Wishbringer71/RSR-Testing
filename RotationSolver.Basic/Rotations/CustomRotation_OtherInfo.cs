@@ -855,19 +855,11 @@ public partial class CustomRotation
 	private const float TankGapCloserRangeYalms = 20f;
 
 	/// <summary>
-	/// Whether the party's tank is close enough to hostiles to be about to gap-close into them, or is
-	/// already sustaining a wall-to-wall pull against enough of them - used to time tank sustain so it
-	/// covers both the pre-pull approach and staying up for the rest of the pull. Excludes Trials/Raids,
-	/// where this dungeon wall-to-wall-pull pattern doesn't apply.
-	/// Two different counting rules depending on combat state, not one shared threshold, both exposed as
-	/// per-job config since the "right" numbers are a matter of taste, not a fixed game rule: before
-	/// combat (approaching a fresh group), <paramref name="prePullMinimumHostileCount"/>+ is enough - the
-	/// first pull(s) of a dungeon are often smaller than the group size wall-to-wall pulling later merges
-	/// into, so requiring the higher in-combat threshold here meant the pre-pull cast could never fire
-	/// for those smaller opening pulls at all. Once already in combat,
-	/// <paramref name="wallToWallMinimumHostileCount"/>+ is required - that threshold is an off-ramp
-	/// ("wall-to-wall is basically over, stop force-refreshing and let normal rota take over"), not a
-	/// gate on the initial approach; applying the same number to both cases was the original bug.
+	/// Whether the party's tank is within gap-closer range of enough hostiles to be pulling them, used
+	/// to time tank sustain across a dungeon wall-to-wall. Out of scope in Trials and Raids.
+	/// Before combat the count is <paramref name="prePullMinimumHostileCount"/> (opening groups are
+	/// small); once in combat it is <paramref name="wallToWallMinimumHostileCount"/>, which acts as the
+	/// off-ramp back to the normal rotation. Both are per-job config.
 	/// </summary>
 	protected static bool TankApproachingMobGroup(int prePullMinimumHostileCount, int wallToWallMinimumHostileCount)
 	{
@@ -1315,18 +1307,11 @@ public partial class CustomRotation
 		=> Service.Config.UseBmrTimeline && BMRActive && BMRTankbusterIn is > 0f and < float.MaxValue && BMRTankbusterIn <= seconds;
 
 	/// <summary>
-	/// True when a self or target status won't survive until a predicted BMR event lands, so it
-	/// should be refreshed proactively now instead of expiring mid-window. Used to time personal
-	/// shields and enemy mitigation debuffs (Addle, Feint, ...) around incoming damage rather than
-	/// on a fixed cooldown. <paramref name="predictedIn"/> is typically <see cref="BMRRaidwideIn"/>,
-	/// <see cref="BMRTankbusterIn"/> or <see cref="BMRDamageIn"/>. <paramref name="statusDuration"/>
-	/// is the status's own duration - refreshing earlier than that wouldn't cover the event anyway.
-	/// <paramref name="target"/> is null for a self status, or the enemy for a target debuff.
-	/// The 0.6s floor mirrors StateUpdater's own DefenseArea/DefenseSingle guards against acting
-	/// on a prediction that's effectively already resolved.
-	/// Always false when BMR is inactive, or when the user has <see cref="Service.Config"/>'s
-	/// UseBmrTimeline disabled - the same toggle StateUpdater's own DefenseArea/DefenseSingle/
-	/// anti-knockback flag triggers already respect (default off).
+	/// True when a status will expire before a predicted BMR event lands, so it should be refreshed
+	/// now rather than on cooldown. <paramref name="predictedIn"/> is one of the BMR*In values,
+	/// <paramref name="statusDuration"/> the status's own duration, <paramref name="target"/> null for
+	/// a self status or the enemy for a debuff. The 0.6s floor matches StateUpdater's own guards.
+	/// Always false when BMR is inactive or UseBmrTimeline is off.
 	/// </summary>
 	public static bool BMRShouldRefreshBefore(float predictedIn, float statusDuration, bool statusFromSelf, IBattleChara? target, params StatusID[] statusIDs)
 	{

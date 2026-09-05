@@ -5,7 +5,6 @@
 
 public sealed class VPR_Reborn : ViperRotation
 {
-	// DefenseAreaAbility below has a hostile-count sustain-refresh fallback for Feint.
 	public override bool HasHostileCountAoeMitigation => true;
 
 	#region Config Options
@@ -262,8 +261,6 @@ public sealed class VPR_Reborn : ViperRotation
 	[RotationDesc]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		// DefenseAreaAbility only runs on a raidwide-shaped trigger, so a tankbuster-shaped one never
-		// reaches it; ShouldAddDefenseSingle's tankbuster trigger reaches this copy instead.
 		// EnoughWeaveTime and the Serpent's Ire slot-guard are safety checks, not preference gates.
 		if (EnoughWeaveTime
 			&& !(IsBurst && SerpentsIrePvE.CanUse(out _))

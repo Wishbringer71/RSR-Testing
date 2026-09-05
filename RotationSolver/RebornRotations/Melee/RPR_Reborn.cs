@@ -5,7 +5,6 @@
 
 public sealed class RPR_Reborn : ReaperRotation
 {
-	// DefenseAreaAbility below has a hostile-count sustain-refresh fallback for Feint.
 	public override bool HasHostileCountAoeMitigation => true;
 
 	#region Config Options
@@ -109,8 +108,6 @@ public sealed class RPR_Reborn : ReaperRotation
 			return true;
 		}
 
-		// DefenseAreaAbility only runs on a raidwide-shaped trigger, so a tankbuster-shaped one never
-		// reaches it; ShouldAddDefenseSingle's tankbuster trigger reaches this copy instead.
 		// EnoughWeaveTime and the Gluttony/Enshroud slot-guard are safety checks, not preference gates.
 		if (EnoughWeaveTime
 			&& !(GluttonyPvE.CanUse(out _, skipAoeCheck: true) || EnshroudPvE.CanUse(out _))
