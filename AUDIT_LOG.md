@@ -902,3 +902,53 @@ Dauer-Ternary 25→1, `NumberOfHostilesInRange >= 4` 26→0,
 Grenze dieses Audits, ausdrücklich: CI beweist Kompilierbarkeit, nicht
 Verhalten. Die einzige inhaltliche Änderung (GeneralGCD-HP-Schwelle bei
 WHM/AST) ist nur statisch begründet und sollte im Spiel gegengeprüft werden.
+
+## Restricted-DoT-Zielfilter: Schleife ohne Wirkung (gefunden 05.09.2026, GEFIXT)
+
+Gefunden beim Abgleich Spielbeschreibung ↔ Umsetzung (siehe
+`docs/rotation-flow/05-action-coverage.md`), nicht gesucht — der Einstieg war
+die Frage, welche DoT-Aktionen `IsRestrictedDOT` tragen und welche nicht.
+
+`ActionTargetInfo.cs:86-95` (vor dem Fix):
+
+```csharp
+if (action.IsRestrictedDOT && DataCenter.RestrictedDotNameIds != null)
+{
+    for (var i = 0; i < DataCenter.RestrictedDotNameIds.Count; i++)
+    {
+        if (target.NameId == DataCenter.RestrictedDotNameIds[i])
+        {
+            continue;      // setzt die INNERE for-Schleife fort, nicht das foreach
+        }
+    }
+}
+```
+
+Das `continue` gehört zur inneren `for`-Schleife und erhöht nur `i`. Das
+Ziel auf der Sperrliste wurde also **nicht** übersprungen, sondern lief
+weiter durch alle folgenden Prüfungen und landete in `validTargets`. Der
+Block war vollständig wirkungslos.
+
+Belegend für „das ist ein Fehler, keine Absicht": die **korrekte** Fassung
+desselben Guards steht 80 Zeilen tiefer in derselben Datei
+(`ActionTargetInfo.cs:172-188`) — mit `isRestricted`-Flag, `break` und
+anschließendem `continue` auf der äußeren Schleife. Der Fix übernimmt genau
+diese Form.
+
+**Wirkung des Fehlers**: `RestrictedDotNameIds` enthält aktuell eine NameId
+(9214). Betroffen waren nur Aktionen mit `IsRestrictedDOT` (AST Combust I–III,
+BRD Windbite/Stormbite, SGE Eukrasian Dosis I–III, SCH Bio/Bio II/Biolysis,
+WHM Aero/Aero II/Dia) und nur der eine Ziel-Auswahlpfad von zweien.
+
+**Fehlerklasse geschlossen**: `check_base_calls.py` hat als dritte Prüfung
+„No-op guard loop" bekommen — eine `for`/`while`-Schleife, deren Rumpf nur aus
+`if (…) { continue; }` besteht, ist beweisbar wirkungslos. Validiert: findet
+vor dem Fix genau diese eine Stelle (exit 1), danach keine, keine Fehlalarme
+im gesamten Baum (525 Overrides, 623 Base-Calls, 8561 Bedingungen).
+
+**Nicht** mitgeändert: die uneinheitliche `IsRestrictedDOT`-Vergabe. Nur ein
+Teil der DoT-Aktionen trägt das Flag (BLM-Thunder-Familie, DRG Chaos
+Thrust/Chaotic Spring, GNB Sonic Break/Bow Shock, SAM Higanbana, PLD Circle of
+Scorn, SGE Eukrasian Dyskrasia, MCH Bioblaster tragen es nicht). Ob das
+begründet ist, hängt am konkreten Gegner hinter NameId 9214 — Spielfrage,
+nicht aus dem Code entscheidbar.

@@ -85,12 +85,18 @@ public struct ActionTargetInfo(IBaseAction action)
 			// When this action is flagged as Restricted DoT, skip targets on the restricted list
 			if (action.IsRestrictedDOT && DataCenter.RestrictedDotNameIds != null)
 			{
+				var isRestricted = false;
 				for (var i = 0; i < DataCenter.RestrictedDotNameIds.Count; i++)
 				{
 					if (target.NameId == DataCenter.RestrictedDotNameIds[i])
 					{
-						continue;
+						isRestricted = true;
+						break;
 					}
+				}
+				if (isRestricted)
+				{
+					continue;
 				}
 			}
 
