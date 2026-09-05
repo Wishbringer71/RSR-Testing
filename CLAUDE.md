@@ -29,49 +29,65 @@ Kalibrierungs-Belege zur REGEL: CountAllianceTanks unverifiziert als Fund präse
 
 # Loop (Arbeitsverfahren)
 
-Gilt für jede nicht-triviale Aufgabe, ohne dass er angefordert werden muss. Die REGEL bleibt übergeordnet; der Loop ist ihr Ablauf in der Praxis.
+Verbindlich für jede nicht-triviale Aufgabe, ohne gesonderte Anforderung. Die REGEL bleibt übergeordnet. Der Loop ist ein PDCA-/PDSA-Zyklus (Shewhart, Deming) mit vorgezogener Optionsanalyse und einer eigenen Falsifikationsstufe vor der Umsetzung.
 
-1. **Research** — Faktenlage klären, fehlendes Wissen besorgen (Code lesen, Tools, Websuche), nicht aus Erinnerung arbeiten.
-2. **Visionary** — Ideen sammeln, wie das Problem angegangen und gelöst werden kann; breit, noch ohne Bewertung.
-3. **Council** — abwägen: Schwere, Kosten/Nutzen, Bewertung der Fälle.
-4. **Reflect** — Abstand nehmen, Zwischenstand gegen Absicht und Umfang prüfen.
-5. **Critic** — Problem kritisch prüfen, Lösungsansatz kritisch hinterfragen.
-6. **Antithese** — behaupten: es ist kein Problem, und der Lösungsansatz ist falsch. Das Gegenteil beweisen.
-7. **Revision** — Problem revisionistisch beheben: umsetzen, was die Prüfung überstanden hat.
-8. **Evaluation** — prüfen, ob die Lösung tatsächlich erfolgreich war.
-9. **Dokumentation** — Umsetzung festhalten, inhaltlichen Wissenszugewinn sichern (AUDIT_LOG.md, docs/).
-10. **Qualität bewerten und zurück zu 1** — prüfen, ob die Lösung weiter verbesserbar ist. Abbruch bei Plateau (keine Verbesserung mehr), nicht nach fester Rundenzahl.
+| # | Stufe | Etablierte Entsprechung | Inhalt |
+|---|---|---|---|
+| 1 | Research | Problem Investigation, Root Cause Analysis | Fehlerbild vom Fehler trennen, Ursache am Artefakt belegen: Quellcode, Laufzeitdaten, Fremddokumentation. Erinnerung ist keine Quelle. |
+| 2 | Optionen | Considered Options (ADR, Nygard) | Lösungsraum vollständig aufspannen, einschließlich Nullvariante und Rückbau. Noch keine Bewertung. |
+| 3 | Abwägung | Trade-off-Analyse, Severity/Priority-Triage | Je Option: technischer Schweregrad, Behebungsdringlichkeit, Aufwand, Blast Radius, Folgekosten. |
+| 4 | Abgleich | Scope- und Requirements-Review | Zwischenstand gegen die tatsächliche Anforderung prüfen, nicht gegen das Thema. Scope Creep und stille Verengung beide behandeln. |
+| 5 | Review | Design Review, Peer Review | Problemdefinition und gewählte Option gegen Annahmen, Randfälle und Wechselwirkungen prüfen. |
+| 6 | Falsifikation | Red Teaming, Devil's Advocacy | Zwei Hypothesen bewusst vertreten: es liegt kein Defekt vor, und die gewählte Option ist falsch. Erst wenn beide widerlegt sind, wird umgesetzt; hält eine stand, zurück zu Stufe 2. |
+| 7 | Umsetzung | Implementation | Nur der Anteil, der die Falsifikation überstanden hat. Kleinster wirksamer Eingriff. |
+| 8 | Nachweis | Verification & Validation (IEEE 1012), Definition of Done | Verifikation: erfüllt der Code die Spezifikation. Validierung: behebt er das gemeldete Verhalten. Erreichter Prüfgrad wird benannt, nicht überzeichnet. |
+| 9 | Dokumentation | ADR, Lessons Learned, Blameless Postmortem | Kontext, verworfene Optionen, Entscheidung, Konsequenzen. Fehlerursachen sachlich am System, nicht an Personen. |
+| 10 | Wirksamkeitsprüfung | Act-Phase des PDCA, Continuous Improvement | Ergebnisqualität bewerten und erneut ab Stufe 1 ansetzen. Abbruch bei Plateau, nicht nach fester Rundenzahl. |
 
-# Arbeitsweise
+# Analyse und Prüfung
 
-**Inhalt vor Form.** Struktur (Prozess, Checklisten, der REGEL-Ablauf selbst) ist Mittel, nie Selbstzweck. Ihr Zweck: Redundanz aufdecken, Gesamtheitlichkeit prüfen.
-**Gesamtheitlichkeit vor Spezialisierung.** Erst prüfen, ob Problem/Lösung für alle vergleichbaren Stellen gilt, dann spezialisieren — und nur, wenn der Nichtbedarf an der anderen Stelle nachgewiesen ist. „Woanders nicht nötig" ist zu prüfen, nicht anzunehmen: es kann echter Nichtbedarf sein oder eine unentdeckte Lücke. Beleg: Aggro-Helfer „B1" mit „nur 2 Verwender" verworfen, ohne die DPS-Lücke zu prüfen.
-**Prüftiefe unabhängig von Diffgröße.** Einzeiler so tief wie 500 Zeilen. Beleg: CountAllianceTanks, Provoke-Distanz, RPR/VPR-Gate — alle winzig, alle schwer.
-**„Audit" nur für unabhängige/adversariale Prüfung.** Eigenen Diff nachlesen und Klammern zählen ist Plausibilitätsprüfung. Ohne Compiler/Test heißt der Status „statisch selbst-geprüft, kein Compile/Test" — Formulierung = Beleglage.
-**Grenzen erst nach Toolprüfung behaupten.** „Nicht verifizierbar" nur nach WebSearch/WebFetch usw.; Sandbox ohne dotnet/Spiel heißt nicht „nichts prüfbar". Beleg: Troubadour/Tactician fälschlich als „nur Magie" angenommen, Websuche hätte es in Sekunden widerlegt.
-**Ein Fix ist fertig, wenn seine Kette im Code belegt ist** — keine Prüfhausaufgaben („Bestätigung im Spiel offen") an den Nutzer. Beleg: #54 so belassen, obwohl die Kette Flag → Dispatch → CanUse → Ziel prüfbar war.
-**Eigene Fehler sind Nullsumme.** Kommentarlos aufräumen; nie als Leistung darstellen. Historie nur in AUDIT_LOG.md und Commit-Messages.
+**Prozess ist Mittel, nicht Nachweis.** Ein eingehaltener Ablauf belegt keine Ergebnisqualität. Zweck der Struktur ist Redundanzaufdeckung und Vollständigkeitsprüfung.
+
+**Systemweite Konsistenzprüfung vor Einzelfalllösung.** Ein Defekt gilt als Defektklasse, bis das Gegenteil belegt ist: alle strukturell gleichen Stellen erheben, dann begründet einschränken. Ein nicht nachgewiesener Nichtbedarf ist ein unentdeckter Defekt, keine Ausnahme. Beleg: Aggro-Helfer B1 mit „nur zwei Verwender" verworfen, ohne die Lücke bei den DPS-Klassen zu erheben.
+
+**Change Size ist kein Risikoproxy.** Prüftiefe richtet sich nach Wirkungsbereich und Fehlerklasse, nicht nach Zeilenzahl. Beleg: CountAllianceTanks, Provoke-Distanz, RPR/VPR-Gate — je eine Zeile, je schwerwiegend.
+
+**Trigger werden an ihrer Wirkung gemessen, nicht an ihrem Geltungsbereich.** Bei einem Zustandsflag ist zu erheben, welche Codepfade es öffnet, nicht nur, für wen es gesetzt wird. Beleg: `HasHostileCountAoeMitigation` wurde als „richtig eingegrenzt" freigegeben, während das gesetzte Flag die gesamte Defensivkette öffnete.
+
+**Audit bezeichnet unabhängige Prüfung.** Erneutes Lesen des eigenen Diffs ist Selbstkontrolle und erfüllt das Vier-Augen-Prinzip nicht. Der erreichte Prüfgrad wird benannt: statische Selbstprüfung, Prüfskript, Compile, Laufzeitbeobachtung. Formulierungsstärke folgt der Beleglage.
+
+**Verfügbare Erkenntnisquellen ausschöpfen, bevor eine Grenze behauptet wird.** Fehlende lokale Toolchain begrenzt nicht die Recherche externer Fakten. Beleg: Troubadour/Tactician als „nur gegen magischen Schaden" angenommen, per Websuche in Sekunden widerlegbar.
+
+**Definition of Done liegt beim Nachweis der Wirkkette im Code**, nicht bei einer Prüfaufgabe an den Nutzer. Beleg: #54 mit offener Spielbestätigung übergeben, obwohl Flag, Dispatch, `CanUse` und Zielwahl im Code nachvollziehbar waren.
+
+**Blameless Postmortem.** Eigene Fehler werden sachlich am System dokumentiert und behoben. Fehlerhistorie gehört in AUDIT_LOG.md und Commit-Messages, nicht als Ergebnisdarstellung in den Bericht.
 
 # Sprache
 
-Chat: durchgehend Deutsch, vor jeder Antwort aktiv prüfen (Beleg: englische Antwort als „Deutsch" behauptet). Commits/Code-Kommentare: Englisch.
+Chat durchgehend Deutsch, vor jeder Antwort verifiziert (Beleg: englische Antwort als deutsch deklariert). Commits, Code-Kommentare und Bezeichner Englisch. Projektdokumentation in etablierter Fachterminologie der Software- und Projektmanagement-Disziplin, nicht in ad hoc gebildeten Begriffen; unbekannte Standardbegriffe werden vor Verwendung recherchiert.
 
-# Entscheidungen
+# Entscheidungen und Eskalation
 
-**Rückfragen nur am Ende, gebündelt**, mit drei Teilen: (1) warum die Entscheidung beim Nutzer liegt, (2) Optionen mit Konsequenzen, (3) begründete Empfehlung. Ohne Empfehlung = Arbeitsverlagerung. Alles, was ohne die Entscheidung geht, vorher fertigstellen; kein „soll ich X?" im Ablauf.
-**Vorschläge zu Ende gedacht:** konkreter Mechanismus, konkrete Stellen, konkrete Konsequenz — keine Optionsliste. Beleg: #72 als „(a) belassen / (b) Fallback" abgeliefert, obwohl die Antwort je Job anders war (SAM Third Eye, DRG/VPR nur Feint, DNC nichts).
-**Merges, Tags, Releases, Zeitpunkte entscheidet der Nutzer allein.** Keine Merge-Empfehlungen, keine Check-in-Timer, kein PR-Babysitting ohne Auftrag; Status melden, Entscheidung nicht vorwegnehmen. Beleg: „PR #4 jetzt mergen" plus Timer geliefert.
+**Entscheidungsbedarf wird gebündelt am Ende vorgelegt**, mit Entscheidungsgrundlage, Optionen samt Konsequenzen und begründeter Empfehlung. Eine Vorlage ohne Empfehlung ist unvollständig. Alles ohne Entscheidungsabhängigkeit wird vorher fertiggestellt; keine Zwischenrückfragen im laufenden Ablauf.
 
-# Persistenz der Dateien
+**Lösungsvorschläge nach ADR-Struktur:** Kontext, betroffene Stellen, Mechanismus, Konsequenzen. Eine Optionsliste ohne durchgerechnete Konsequenzen ist keine Vorlage. Beleg: #72 als Zweifachwahl abgeliefert, obwohl die Antwort je Job unterschiedlich ausfiel.
 
-**CLAUDE.md:** jede Nutzerregel sofort eintragen, nicht erst am Ende.
-**TODO.md = Titel + offene Punkte, sonst nichts.** Kein erledigter Punkt, keine Aufzählung erledigter Nummern, kein Kopftext über das Archiv, keine Meta-Hinweise. Ist nichts offen: „Derzeit keine." Neue Probleme sofort eintragen, auch wenn themenfremd; erledigte sofort nach AUDIT_LOG.md verschieben (Statusänderung „GEFIXT" im Text genügt nicht). Beleg: Roadmap, Nummern-Aufzählung und Archiv-Kopftext dreimal in Folge stehen gelassen.
-**AUDIT_LOG.md:** Beleg-Archiv abgeschlossener Prüfungen; vor jeder Neuprüfung eines Commits/Bereichs dort nachsehen.
-Bei Sitzungsbeginn und nach Kontextkomprimierung beide Dateien lesen. Fehlt eine trotz Arbeit an diesem Repo: melden, nicht stillschweigend neu anfangen.
+**Release-Freigabe liegt ausschließlich beim Auftraggeber.** Merge-Zeitpunkt, Tagging und Veröffentlichung werden nicht empfohlen und nicht vorweggenommen; berichtet wird der Status. Keine selbst gesetzten Wiedervorlagen und keine unbeauftragte PR-Überwachung. Beleg: Merge-Empfehlung samt Wiedervorlage-Timer ohne Auftrag geliefert.
 
-# Git
+# Artefakte und Nachvollziehbarkeit
 
-**Sync vor jeder Codeänderung, auf jedem Branch.** `git fetch --prune --tags upstream`, dann `git rev-list --left-right --count upstream/main...HEAD` = 0 ausstehend — die frische Zahl ist der Nachweis, nicht der Gesprächsverlauf. Gilt mitten in der Sitzung (Beleg: `7.5.5.41` erschien, nachdem `.40` als höchster Tag galt) und für `origin/main` UND jeden lebenden Feature-Branch (`git branch -r` nach Prune als einzige Quelle). Prüfen, ob Upstream das anstehende Problem selbst gefixt hat; bei Überschneidung Nutzer informieren. Vollständig gemergte Branches werden nicht gesynct, sondern sind Löschfälle (bestätigungspflichtig).
-**Nie zu `upstream` pushen** (FFXIV-CombatReborn/RotationSolverReborn): nur `fetch`, keine PRs dorthin. Commits auf den eigenen Fork (`origin`) sind normaler Workflow — häufig, klein, sofort gepusht.
-**Externer Zustand nie aus dem Gesprächsverlauf.** Branch-, PR-, Tag- und Release-Zustand vor jeder Aussage frisch prüfen: `git fetch --prune`, `git branch -r`, `git ls-remote --tags origin`. Lokale Branch-Namen überleben Remote-Löschungen und gelten nicht als Zustand. Belege: Branch als „blockiert" wiederholt, den der Nutzer längst gelöscht hatte; #70 „Release fehlt" behauptet, während der Tag seit Stunden auf `origin` stand.
-**Datenhygiene.** Gemergte/verwaiste Branches, tote Dateien und Config-Optionen proaktiv melden; vor Löschen verifizieren. Jede Löschung mit Blast-Radius — auch `git branch -D` auf remote bereits toten Branches — ist bestätigungspflichtig; „risikofrei" ist ein Argument für die Freigabe, keine Freigabe. Beleg: zwei lokale Branches ohne Rückfrage mit `-D` gelöscht.
+**CLAUDE.md** nimmt jede Vorgabe unmittelbar auf, nicht am Aufgabenende.
+
+**TODO.md führt ausschließlich offene Arbeit.** Kein abgeschlossener Vorgang, keine Statushistorie, kein Kopftext über das Archiv. Ohne offene Punkte: „Derzeit keine." Neu erkannte Defekte werden sofort erfasst, auch außerhalb des laufenden Auftrags; abgeschlossene werden nach AUDIT_LOG.md überführt, eine Statusänderung im Text genügt nicht. Beleg: Roadmap, Nummernliste und Archivkopf dreimal in Folge belassen.
+
+**AUDIT_LOG.md** ist das Nachweisarchiv abgeschlossener Prüfungen und die Traceability-Quelle: vor jeder Neuprüfung eines Commits oder Bereichs dort nachsehen. Beide Dateien werden bei Sitzungsbeginn und nach Kontextkomprimierung gelesen. Fehlt eine, wird das gemeldet.
+
+# Versionskontrolle
+
+**Upstream-Sync ist Vorbedingung jeder Codeänderung, auf jedem lebenden Branch.** `git fetch --prune --tags upstream`, dann `git rev-list --left-right --count upstream/main...HEAD` mit null ausstehenden Commits als Nachweis; die frische Messung zählt, nicht der Gesprächsverlauf. Gilt auch mitten in der Sitzung, Beleg: Tag `7.5.5.41` erschien, nachdem `.40` als höchster ermittelt war. Zu prüfen ist außerdem, ob Upstream den Defekt bereits behoben hat. Vollständig gemergte Branches werden nicht nachgezogen, sondern sind Löschfälle.
+
+**`upstream` ist Read-only** (FFXIV-CombatReborn/RotationSolverReborn): ausschließlich `fetch`, keine Pushes, keine Pull Requests dorthin. Commits auf `origin` sind regulärer Ablauf, klein geschnitten und zeitnah gepusht.
+
+**Repository-Zustand wird gemessen, nicht erinnert.** Branch-, PR-, Tag- und Release-Zustand vor jeder Aussage frisch erheben: `git fetch --prune`, `git branch -r`, `git ls-remote --tags origin`. Lokale Branch-Referenzen überdauern Remote-Löschungen und sind kein Zustandsnachweis. Belege: Branch als blockiert bezeichnet, den der Auftraggeber längst gelöscht hatte; Release als ausstehend gemeldet, während der Tag auf `origin` stand.
+
+**Change Management für destruktive Operationen.** Verwaiste Branches, tote Dateien und ungelesene Konfiguration werden proaktiv gemeldet und vor jeder Löschung verifiziert. Jede Operation mit Blast Radius, einschließlich `git branch -D` auf remote bereits gelöschten Branches, ist freigabepflichtig. Ein geringes Risiko ist ein Argument in der Vorlage, keine Freigabe. Beleg: zwei lokale Branches ohne Freigabe gelöscht.
