@@ -27,6 +27,21 @@ Persistenz: Priorität 1, jede Eingabe, ausnahmslos. Kontextkomprimierung→Date
 
 Kalibrierungs-Belege zur REGEL: CountAllianceTanks unverifiziert als Fund präsentiert (kein Stress-Test Party vs. Allianz); #37-Config-Refactoring vor Gegenpositionsprüfung umgesetzt.
 
+# Loop (Arbeitsverfahren)
+
+Gilt für jede nicht-triviale Aufgabe, ohne dass er angefordert werden muss. Die REGEL bleibt übergeordnet; der Loop ist ihr Ablauf in der Praxis.
+
+1. **Research** — Faktenlage klären, fehlendes Wissen besorgen (Code lesen, Tools, Websuche), nicht aus Erinnerung arbeiten.
+2. **Visionary** — Ideen sammeln, wie das Problem angegangen und gelöst werden kann; breit, noch ohne Bewertung.
+3. **Council** — abwägen: Schwere, Kosten/Nutzen, Bewertung der Fälle.
+4. **Reflect** — Abstand nehmen, Zwischenstand gegen Absicht und Umfang prüfen.
+5. **Critic** — Problem kritisch prüfen, Lösungsansatz kritisch hinterfragen.
+6. **Antithese** — behaupten: es ist kein Problem, und der Lösungsansatz ist falsch. Das Gegenteil beweisen.
+7. **Revision** — Problem revisionistisch beheben: umsetzen, was die Prüfung überstanden hat.
+8. **Evaluation** — prüfen, ob die Lösung tatsächlich erfolgreich war.
+9. **Dokumentation** — Umsetzung festhalten, inhaltlichen Wissenszugewinn sichern (AUDIT_LOG.md, docs/).
+10. **Qualität bewerten und zurück zu 1** — prüfen, ob die Lösung weiter verbesserbar ist. Abbruch bei Plateau (keine Verbesserung mehr), nicht nach fester Rundenzahl.
+
 # Arbeitsweise
 
 **Inhalt vor Form.** Struktur (Prozess, Checklisten, der REGEL-Ablauf selbst) ist Mittel, nie Selbstzweck. Ihr Zweck: Redundanz aufdecken, Gesamtheitlichkeit prüfen.

@@ -126,6 +126,34 @@ Geprüft, kein Fehler: Interrupt/AntiKnockback-Umordnung (alle vier Overrides) �
 
 Check-in-Trigger `trig_01NLjkn2dFqmrZXhmxJcWGsQ` ließ sich nicht löschen (Tool nicht angeboten); einmal gefeuert, ignoriert.
 
+### A8 · Audit der gesamten Codebasis, Phase 1: mechanische Scans (05.09.2026)
+
+**Anlass:** Nutzerauftrag „Audit und Code-Review über die gesamte Codebasis", also der ganze Baum inklusive Upstream-Code, nicht nur der Fork-Diff. Werkzeug: `scan.py` über 269 Dateien, acht Fehlerklassen, die dieses Repo tatsächlich schon hatte.
+
+| Fund | Status | Ergebnis |
+|---|---|---|
+| SAM `MeikyoShisuiCountdown` | GEFIXT ebaa44c7 | `[Range(0, 1, Seconds)]` bei Default 14 s: jede Bedienung des Reglers hätte den Wert auf ≤ 1 s gekappt. Auf 0–15 s gesetzt (Wirkdauer von Meikyo Shisui) |
+| BLU `UseBasicInstinct` / `UseMightyGuard` | GEFIXT 3c40d9e4 | Beide Optionen standen in der Oberfläche, wurden aber nirgends gelesen; Aktionen liefen bedingungslos. Defaults sind `true`, Standardverhalten also unverändert |
+| Neun veraltete `RotationDesc` | GEFIXT 93f05e68 | Attribute nannten Aktionen, die die Methode nie benutzt (SMN/ChurinSMN Lux Solaris in DefenseArea, BLM/Rabbs Transpose+Retrace, AST/BeirutaAST Arrow+Ewer, PLD Requiescat/Imperator/FoF). Die Rotations-Info im Fenster log damit |
+| Elf ungelesene `RotationConfig` | GEFIXT 232d472e | MNK `AutoFormShift`, BLM `ExtendTimeSafely`, BRD `OGCDTimers`, SMN `SecondTypeOpenerLogic`, SGE `ZoeHeal`/`OGCDHeal`, BeirutaSGE `TaurocholeHeal`/`DruocholeHeal`, PhantomDefault `PrayHeal` — samt der auskommentierten Blöcke, für die sie einmal gedacht waren |
+| Toter Code in `TargetUpdater` | GEFIXT e224e3f7 | `OldUpdateTargets` (auskommentiert) plus die nur von ihr gerufenen `GetPartyMembers`/`GetAllianceMembers`/`GetMembers`/`GetAllHostileTargets`/`GetClosestTarget`; die aktive `UpdateTargets` füllt dieselben Listen selbst |
+| GNB:379 · BRD:614/619 `CanUse(out _)` + `return true` | KEIN FEHLER | Es sind Vorbedingungs-Abfragen innerhalb eines `if`, dessen äußeres `CanUse(out act)` bereits gesetzt hat |
+| Sechs `RotationNotes`/`Info_DoNotChange` | KEIN FEHLER | Reine Anzeigetexte, absichtlich ohne Leser |
+| 60 `.Target.Target.`-Dereferenzen | offen | in `TODO.md`, einzeln zu prüfen |
+
+### A9 · Mitigation ohne Gefahr (Nutzer-Meldung) und Versionsbezeichnung (05.09.2026)
+
+**Anlass:** „Schimmerschild und Stumpfsinn werden zu oft gecastet, obwohl keine Gefahr vorliegt. Evtl. Reaktionen falsch verdrahtet, z. B. bei Flächenschäden, denen man problemlos ausweichen kann?" — Radiant Aegis und Addle, beide beim SMN.
+
+| Fund | Status | Ergebnis |
+|---|---|---|
+| Gegneranzahl-Fallback in `ShouldAddDefenseArea` | GEFIXT b8018cf0 | Eigener Fehler aus A7. Der Fallback hielt `AutoStatus.DefenseArea` bei ≥ 4 Gegnern in Reichweite über den gesamten Pull gesetzt. Das Flag öffnet nicht die eine Sustain-Zeile, sondern die komplette Defensivkette des Jobs — und für Melee/Ranged ruft der Dispatcher auf demselben Flag zusätzlich `DefenseSingleAbility` (CustomRotation_Ability.cs:291). Zwölf Jobs meldeten `HasHostileCountAoeMitigation`, darunter SMN, RDM, PCT, BLM: Selbstschilde und Gegner-Debuffs gingen auf Trash dauerhaft raus. Fallback entfernt; das Flag hatte danach keine Leser mehr und ist samt Interface-Member, Basisimplementierung und zwölf Overrides weg. `ShouldSustainMitigationDebuff` bleibt unberührt |
+| SMN Radiant Aegis in `GeneralAbility` | GEFIXT 6704335d | `if (!IsLastAction(false, RadiantAegisPvE) && InCombat)` ohne weitere Bedingung. `GeneralAbility` läuft in jedem freien Weave-Slot ohne Gefahren-Gate (Ability-Dispatch :380, nach `AttackAbility` :371, kostet also keinen Burst-Slot). Einziger Schutz war `StatusProvide`, also feuerte der Schild etwa alle 30 s neu, und `usedUp: true` gab dabei auch die zweite Ladung frei — bei echter Gefahr war keine mehr da. Herkunft upstream (2c998686 „Adjusted SMN shield spam logic, again"). Entfernt; bleibt über die BMR-Raidwide-Vorhersage und die Defense-Pfade |
+| Gesamtheitlichkeit: gleiches Muster anderswo | KEIN FEHLER | Scan über alle Mitigations-Aktionen in ungegateten Methoden (`GeneralAbility`/`AttackAbility`/`EmergencyAbility`/`GeneralGCD`): zehn Treffer, neun davon mit echter Bedingung (PCT/BeirutaPCT Grassa an DefenseArea oder ablaufendem Tempera Coat, SAM und WAR an HP-Schwellen, SMN:193 an der BMR-Vorhersage). SMN:198 war die einzige bedingungslose Stelle im Baum |
+| `IsHostileCastingTank`-Fallback | KEIN FEHLER | `return h.CastTargetObjectId == h.TargetObjectId` (DataCenter.cs:2374) macht jeden nicht unterbrechbaren Cast über GCD-Länge auf das aktuelle Ziel zum Tankbuster — sehr breit, aber `HostileCastingTank` hat nur 31 Einträge gegen 850 in `HostileCastingArea`: ohne den Fallback wäre die Tankbuster-Erkennung praktisch tot. Der DPS-Zweig aus A7 verlangt zusätzlich `CastTargetObjectId == Player`, ist also enger als der Tank-/Heiler-Pfad. Nicht angetastet |
+| Selbstlernende `HostileCastingArea` | offen | in `TODO.md` |
+| Versionsbezeichnung „1.0.0.0 + lange Zeichenfolge" | GEFIXT 1c259f10 | Zwei Ursachen. Kein Projekt setzte eine Version, also meldete jeder Build außerhalb eines Tag-Publish den SDK-Default 1.0.0. Und seit .NET 8 hängt das SDK `SourceRevisionId` — den vollen Commit-Hash, von Source Link automatisch gesetzt — an `InformationalVersion`, und genau dieses Attribut zeigt der Fenstertitel (RotationSolverPlugin.cs:275). **Am Artefakt verifiziert:** das veröffentlichte `7.5.5.41+wsh1` trägt `7.5.5.41+wsh1.ba269301c98a192395ccb9e9826be9e890e6ea18`. Default-Version gesetzt, Hash-Anhang aus; der Publish-Workflow überschreibt die Version weiterhin aus dem Tag |
+
 ---
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
@@ -167,6 +195,8 @@ Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt e
 | 5755ad5b | vier Fork-Fehler zurückgebaut | s. A5 |
 | A6: 5bb4d39f · 2df7dc4e · bd65f0d4 · 5b778336 · 451d9e90 · 28c0e1fc · 990daaeb · 3b5e50d5 · bfc52584 · c1d0ba45 · ff0d8d43 · f107eda9 | Review-Loop | s. A6 |
 | A7: c6a0a40c · a2a3ec35 · 52a0817d · 00bc9c6f · 4b3c9412 · f90c7bf7 · d045e47f · 4889395f · 157a9ad3 · e6428c19 · e07ceb4b · 672e92ee | TODO-Abarbeitung, A4a | s. A7 |
+| A8: ebaa44c7 · 3c40d9e4 · 93f05e68 · 232d472e · e224e3f7 | Codebasis-Audit Phase 1 | s. A8 |
+| A9: b8018cf0 · 6704335d · 1c259f10 | Mitigations-Trigger, Version | s. A9 |
 
 ---
 
@@ -182,3 +212,4 @@ Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt e
 | C6 | #54 „Bestätigung im Spiel offen" als Nutzeraufgabe | Kette im Code prüfbar und geprüft (A7) | geschlossen |
 | C7 | Nachtrag 6: Mob-Schwelle komplett entfernen | Nutzer: 4+ war Ausstiegskriterium, kein Eintrittskriterium | Nachtrag 7 |
 | C8 | #47-Zwischenkorrektur: BRD/MCH ausgeschlossen, „Troubadour/Tactician nur gegen Magie" | `PredictedDamageType` ist Trefferform, nicht Schadensart; beide mindern jeglichen Schaden (Websuche) | beide einbezogen |
+| C9 | cde050f/f154d57 „`HasHostileCountAoeMitigation` job-gescoped · KEIN FEHLER" | Geprüft wurde nur, ob das Flag die richtigen Jobs trifft — nicht, was das gesetzte Flag auslöst. `AutoStatus.DefenseArea` öffnet die ganze Defensivkette und bei Melee/Ranged zusätzlich `DefenseSingleAbility`, nicht die eine Sustain-Zeile. Vom Nutzer im Spiel als Dauer-Casten von Radiant Aegis und Addle gemeldet. Lehre: Ein Trigger ist an dem zu messen, was er auslöst, nicht daran, wen er trifft | Fallback und Flag entfernt (A9, b8018cf0) |
