@@ -2450,11 +2450,36 @@ internal static class DataCenter
 			{
 				if (id == act.RowId)
 				{
-					return true;
+					return AreaCastCanReachPlayer(h, act);
 				}
 			}
 			return false;
 		});
+	}
+
+	/// <summary>
+	/// Whether an area cast could reach the player at all. Hostiles are collected out to 48 yalms and
+	/// the area list only records that an action once hit a whole party, never whether the player is
+	/// inside this instance of it - so without this check any listed cast anywhere in that radius
+	/// raised <see cref="AutoStatus.DefenseArea"/>, which opens the job's entire area-defense chain.
+	/// Two cases pass regardless of distance: an effect range of 0, which covers both "not filled in"
+	/// and the party-wide hits that carry no radius of their own, and a cast aimed at the player,
+	/// since a ground-placed effect follows its target rather than its caster.
+	/// </summary>
+	private static bool AreaCastCanReachPlayer(IBattleChara h, Action act)
+	{
+		if (act.EffectRange == 0)
+		{
+			return true;
+		}
+
+		var player = Player.Object;
+		if (player != null && h.CastTargetObjectId == player.GameObjectId)
+		{
+			return true;
+		}
+
+		return h.DistanceToPlayer() <= act.EffectRange;
 	}
 
 	public static bool AreHostilesCastingKnockback
