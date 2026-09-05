@@ -357,11 +357,8 @@ public partial class CustomRotation
 		}
 		// Evaluated regardless of AutoStatus.HealSingleAbility: for non-healers that flag depends on
 		// UseHealWhenNotAHealer, so without this a tank or DPS about to eat a tankbuster would never
-		// even attempt a potion. Same condition StateUpdater.ShouldAddDefenseSingle uses.
-		var bmrTankbusterImminent = Service.Config.UseBmrTimeline
-			&& DataCenter.BMRNextTankbusterIn > 0.6f
-			&& DataCenter.BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow;
-		if ((DataCenter.MergedStatus.HasFlag(AutoStatus.HealSingleAbility) || DataCenter.IsHostileCastingTankBusterAtMe || bmrTankbusterImminent) && UseHpPotion(nextGCD, out act, bmrTankbusterImminent))
+		// even attempt a potion.
+		if ((DataCenter.MergedStatus.HasFlag(AutoStatus.HealSingleAbility) || DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterImminent) && UseHpPotion(nextGCD, out act))
 		{
 			return true;
 		}

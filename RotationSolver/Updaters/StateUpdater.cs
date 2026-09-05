@@ -204,11 +204,6 @@ internal static class StateUpdater
 			return false;
 		}
 
-		// Shared by every role below: a predicted tankbuster matters to whoever ends up eating it.
-		var bmrTankbusterImminent = Service.Config.UseBmrTimeline
-			&& DataCenter.BMRNextTankbusterIn > 0.6f
-			&& DataCenter.BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow;
-
 		if (DataCenter.Role == JobRole.Healer)
 		{
 			foreach (var tank in DataCenter.PartyMembers)
@@ -234,7 +229,7 @@ internal static class StateUpdater
 				return true;
 			}
 
-			if (bmrTankbusterImminent)
+			if (DataCenter.BMRTankbusterImminent)
 			{
 				return true;
 			}
@@ -281,7 +276,7 @@ internal static class StateUpdater
 				return true;
 			}
 
-			if (bmrTankbusterImminent)
+			if (DataCenter.BMRTankbusterImminent)
 			{
 				return true;
 			}
@@ -298,19 +293,13 @@ internal static class StateUpdater
 
 			// BMR predicts timing, not who gets hit, so for this role it is only a reasonable proxy when
 			// no tank is alive to eat it. Otherwise the cast-verified branch above is the only trigger.
-			if (bmrTankbusterImminent && !AnyLivingTankInParty())
+			if (DataCenter.BMRTankbusterImminent && DataCenter.PartyTank == null)
 			{
 				return true;
 			}
 		}
 
 		return false;
-	}
-
-	// Helper: Returns true if there are any tanks in the party with HP > 0
-	private static bool AnyLivingTankInParty()
-	{
-		return DataCenter.PartyTank != null;
 	}
 
 	// Helper: Returns true if there are any healers in the party with HP > 0

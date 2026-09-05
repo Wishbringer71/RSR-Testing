@@ -2549,6 +2549,12 @@ internal static class DataCenter
 	public static float BMRNextVulnerableEndIn { get; set; } = float.MaxValue;
 	public static float BMRNextDamageIn { get; set; } = float.MaxValue;
 	public static PredictedDamageType BMRNextDamageType { get; set; } = PredictedDamageType.None;
+
+	/// <summary>
+	/// BMR predicts a tankbuster inside the user's single-target mitigation window.
+	/// </summary>
+	public static bool BMRTankbusterImminent =>
+		Service.Config.UseBmrTimeline && BMRNextTankbusterIn > 0.6f && BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow;
 	public static float BMRSpecialModeIn { get; set; } = float.MaxValue;
 	public static SpecialMode BMRSpecialModeType { get; set; } = SpecialMode.Normal;
 
