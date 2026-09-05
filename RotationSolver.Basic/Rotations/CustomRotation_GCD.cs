@@ -301,14 +301,6 @@ public partial class CustomRotation
 					return act;
 				}
 
-				if (DataCenter.IsInOccultCrescentOp || HasVariantCure)
-				{
-					if (DataCenter.CurrentDutyRotation?.HealSingleGCD(out act) == true)
-					{
-						return act;
-					}
-				}
-
 				if (CanHealSingleSpell)
 				{
 					if (!StatusHelper.PlayerHasStatus(false, StatusID.Scalebound) && (!StatusHelper.PlayerHasStatus(false, StatusID.ShackledHealing) || StatusHelper.PlayerHasStatus(false, StatusID.ShackledHealing) && DataCenter.NumberOfPartyMembersInRangeOf(21) == 1))
