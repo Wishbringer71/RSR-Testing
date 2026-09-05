@@ -109,7 +109,7 @@ public sealed class SAM_Reborn : SamuraiRotation
 		return base.DefenseAreaAbility(nextGCD, out act);
 	}
 
-	[RotationDesc(ActionID.FeintPvE)]
+	[RotationDesc(ActionID.FeintPvE, ActionID.TengentsuPvE, ActionID.ThirdEyePvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		// EnoughWeaveTime is a clip-safety check, not a preference gate, so it is kept here.
@@ -118,6 +118,23 @@ public sealed class SAM_Reborn : SamuraiRotation
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;
+		}
+
+		// A tankbuster cast at us is the one hit Third Eye / Tengentsu exist for.
+		if (!HasZanshinReady)
+		{
+			if (FeintPvE.CanUse(out act))
+			{
+				return true;
+			}
+			if (TengentsuPvE.CanUse(out act))
+			{
+				return true;
+			}
+			if (ThirdEyePvE.CanUse(out act))
+			{
+				return true;
+			}
 		}
 
 		return base.DefenseSingleAbility(nextGCD, out act);

@@ -110,6 +110,11 @@ public sealed class RPR_Reborn : ReaperRotation
 			return true;
 		}
 
+		if (NotInActiveCombo && FeintPvE.CanUse(out act))
+		{
+			return true;
+		}
+
 		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 

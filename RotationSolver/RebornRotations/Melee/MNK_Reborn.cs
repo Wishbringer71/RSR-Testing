@@ -214,6 +214,22 @@ public sealed class MNK_Reborn : MonkRotation
 		return base.HealAreaAbility(nextGCD, out act);
 	}
 
+	[RotationDesc(ActionID.SecondWindPvE, ActionID.BloodbathPvE)]
+	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
+	{
+		if (SecondWindPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		if (BloodbathPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		return base.HealSingleAbility(nextGCD, out act);
+	}
+
 	[RotationDesc(ActionID.RiddleOfEarthPvE, ActionID.FeintPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
@@ -224,6 +240,11 @@ public sealed class MNK_Reborn : MonkRotation
 
 		if (ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
+		if (FeintPvE.CanUse(out act))
 		{
 			return true;
 		}

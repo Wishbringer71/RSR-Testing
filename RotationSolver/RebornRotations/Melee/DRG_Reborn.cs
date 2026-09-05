@@ -118,6 +118,11 @@ public sealed class DRG_Reborn : DragoonRotation
 			return true;
 		}
 
+		if (FeintPvE.CanUse(out act, skipComboCheck: true))
+		{
+			return true;
+		}
+
 		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 	#endregion

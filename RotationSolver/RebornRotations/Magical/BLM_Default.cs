@@ -134,6 +134,11 @@ public class BLM_Default : BlackMageRotation
 			return true;
 		}
 
+		if (AddlePvE.CanUse(out act))
+		{
+			return true;
+		}
+
 		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 

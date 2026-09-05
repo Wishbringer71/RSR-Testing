@@ -750,6 +750,11 @@ public partial class NinjaRotation
 			return true;
 		}
 
+		if (!StatusHelper.PlayerHasStatus(true, StatusID.Mudra) && FeintPvE.CanUse(out act))
+		{
+			return true;
+		}
+
 		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 }

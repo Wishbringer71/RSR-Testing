@@ -270,6 +270,11 @@ public sealed class VPR_Reborn : ViperRotation
 			return true;
 		}
 
+		if (NoAbilityReady && FeintPvE.CanUse(out act))
+		{
+			return true;
+		}
+
 		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 

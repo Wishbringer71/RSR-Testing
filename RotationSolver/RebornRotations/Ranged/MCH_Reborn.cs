@@ -175,7 +175,25 @@ public sealed class MCH_Reborn : MachinistRotation
 			return true;
 		}
 
+		// A tankbuster actually cast at us, with no BMR to time it: the 10% is the only lever there is.
+		if ((!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
+			&& !IsOverheated && !BurstWeaveSlotContested && TacticianPvE.CanUse(out act))
+		{
+			return true;
+		}
+
 		return base.DefenseSingleAbility(nextGCD, out act);
+	}
+
+	[RotationDesc(ActionID.SecondWindPvE)]
+	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
+	{
+		if (SecondWindPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		return base.HealSingleAbility(nextGCD, out act);
 	}
 
 	// Logic for using attack abilities outside of GCD, focusing on burst windows and cooldown management.

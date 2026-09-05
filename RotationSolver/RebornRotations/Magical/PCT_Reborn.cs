@@ -153,6 +153,11 @@ public sealed class PCT_Reborn : PictomancerRotation
 			return true;
 		}
 
+		if ((!BurstDefense || (BurstDefense && !InBurstStatus)) && AddlePvE.CanUse(out act))
+		{
+			return true;
+		}
+
 		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 

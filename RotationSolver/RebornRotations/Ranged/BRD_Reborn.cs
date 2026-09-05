@@ -125,13 +125,19 @@ public sealed class BRD_Reborn : BardRotation
 		return base.DispelAbility(nextGCD, out action);
 	}
 
-	[RotationDesc(ActionID.NaturesMinnePvE)]
+	[RotationDesc(ActionID.NaturesMinnePvE, ActionID.SecondWindPvE)]
 	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		if (NaturesMinnePvE.CanUse(out act))
 		{
 			return true;
 		}
+
+		if (SecondWindPvE.CanUse(out act))
+		{
+			return true;
+		}
+
 		return base.HealSingleAbility(nextGCD, out act);
 	}
 
@@ -158,6 +164,12 @@ public sealed class BRD_Reborn : BardRotation
 		if ((!BurstDefense || (BurstDefense && !InBurstStatus))
 			&& BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, StatusID.Troubadour)
 			&& TroubadourPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
+		// A tankbuster actually cast at us, with no BMR to time it: the 10% is the only lever there is.
+		if ((!BurstDefense || (BurstDefense && !InBurstStatus)) && TroubadourPvE.CanUse(out act))
 		{
 			return true;
 		}

@@ -123,6 +123,11 @@ public sealed class RDM_Reborn : RedMageRotation
 			return true;
 		}
 
+		if (AddlePvE.CanUse(out act))
+		{
+			return true;
+		}
+
 		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 
