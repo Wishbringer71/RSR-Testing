@@ -1103,7 +1103,6 @@ internal static class DataCenter
 		}
 	}
 
-	private static readonly Dictionary<ulong, uint> _lastHp = [];
 
 	private static float GetPartyMemberHPRatio(IBattleChara member)
 	{
@@ -1122,14 +1121,6 @@ internal static class DataCenter
 		var currentHp = member.CurrentHp;
 		if (currentHp > 0)
 		{
-			_ = _lastHp.TryGetValue(member.GameObjectId, out var lastHp);
-
-			if (currentHp - lastHp == healedHp)
-			{
-				_ = HealHP.Remove(member.GameObjectId);
-				return (float)currentHp / member.MaxHp;
-			}
-
 			return Math.Min(1, (healedHp + currentHp) / (float)member.MaxHp);
 		}
 
