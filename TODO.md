@@ -75,6 +75,14 @@ Zwei der vier Pfade (`x6r9_loc01_t0a1`, `x6r9_loc02_t0a1`) stehen wortgleich auc
 
 `RotationSolver.SourceGenerators.dll` ist in `latest.zip` des Releases 7.5.5.41+wsh1 enthalten, obwohl `PruneOutputDlls` in `RotationSolver.csproj` nur RotationSolver, RotationSolver.Basic und ECommons behalten soll. Zur Laufzeit nutzlos. Prüfen, warum die Prune-Regel den Analyzer nicht erfasst.
 
+## Angriffskonfiguration: zweite, veraltete Beschreibungsquelle ohne Aufrufer
+
+`RotationConfigWindow.cs:2156-2174`. `GetHostileTypeDescription` und `SetTargetingType` haben keinen Aufrufer mehr. Historie: `813c7d73` („Add support for AutoDuty plugin") führte beide **mit** Aufrufern ein — eine Zeile `Current Targeting Mode: …` und einen Schalter auf `AllTargetsCanAttack` —, `e3b57004` („7.45 hotfix 1 update") entfernte die Aufrufer und ließ die Definitionen stehen. Also abgelöst, nicht unverdrahtet.
+
+Der Rest ist inhaltlich veraltet: `GetHostileTypeDescription` kennt vier der fünf `TargetHostileType`-Werte und liefert für `SoloDeepDungeonSmart` „Unknown Target Type"; die übrigen vier Texte weichen von den `[Description]`-Attributen des Enums ab und sind teils irreführend („Targets Have A Target" statt „Previously engaged targets (Non-Tanks)"). Damit liegen zwei Beschreibungsquellen für dieselbe Einstellung im Baum, von denen die aktive die Attribute sind (`ControlWindow.cs:214` über `GetDescription()`, und der attributgesteuerte Konfigurationszeichner).
+
+Zu entscheiden: beide Methoden entfernen (Löschung freigabepflichtig) oder `GetHostileTypeDescription` auf `GetDescription()` zurückführen, falls die Anzeige wiederkommen soll. Offen bleibt, ob der Wegfall der Schnellumschaltung auf den Tank-Modus in `e3b57004` beabsichtigt war oder ein Kollateralschaden des Hotfixes — ohne Upstream-Kontext nicht entscheidbar.
+
 ## VPR: leerer Zweig einer Struktur, die anderswo eine echte Entscheidung trägt
 
 `VPR_Reborn.cs:591-597` und `975-981`. Nicht zu löschen — die Begründung steht in AUDIT_LOG A11. Das Muster `!HasHunterAndSwift` kommt viermal vor, und der Vorspann `!IsHunter && !IsSwift` trägt nur an der Coil-Stelle (751-807) Inhalt, nämlich eine positionsbewusste Wahl samt Wechselsperre. An der Bite- und der Sting-Stelle ist er eine Kopie des Folgezweigs, an der Den-Stelle (424-493) fehlt er ganz. Ein fehlender Inhalt lässt sich nicht belegen (die AoE-Kette hat keine Positionals, bei Sting wird der Positionsfall oberhalb über `HasHind`/`HasFlank` entschieden), ein vollständiger ebenso wenig: `HunterOrSwiftEndsFirst` vergleicht Restlaufzeiten und ist im Fall „beide fehlen" nicht anwendbar, eine begründete Aufbaureihenfolge steht nirgends. Adressat der Inkonsistenz ist der Upstream.
