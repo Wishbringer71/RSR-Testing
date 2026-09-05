@@ -64,6 +64,17 @@ public sealed class SAM_Reborn : SamuraiRotation
 		return base.MoveForwardAbility(nextGCD, out act);
 	}
 
+	[RotationDesc(ActionID.HissatsuYatenPvE)]
+	protected override bool MoveBackAbility(IAction nextGCD, out IAction? act)
+	{
+		if (HissatsuYatenPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		return base.MoveBackAbility(nextGCD, out act);
+	}
+
 	[RotationDesc]
 	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
 	{
