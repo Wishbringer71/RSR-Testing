@@ -115,12 +115,21 @@ warum dieser Fork überhaupt existiert.
 | `MyInterruptAbility` / `AntiKnockback` | Rollen-Default lief **vor** dem Job-Override | RPR/VPR gaben Leg Sweep bzw. Arm's Length wegen ihres Combo-Gates ab, der Default nahm sie ungegatet trotzdem |
 | `PhantomDefault` | Occult Ether/Potion mit `out _` statt `out act` | Aktion wurde erkannt, aber nie zurückgegeben |
 | 4 × `BMR*Within` | prüften `Service.Config.UseBmrTimeline` nicht | Reagierten, obwohl der Nutzer die BMR-Zeitleiste abgeschaltet hatte |
+| `StateUpdater.CanUseHealAction` | Das TTK-Gate `AutoHealTimeToKill` (8 s) griff auch für Heiler, obwohl die Option unter `UseHealWhenNotAHealer` hängt und Nicht-Heiler meint | Sobald der Mittelwert der Gegner-TTK in einem Pack unter 8 s fiel, gingen **alle** Heil-Flags aus — der gemeldete WHM-Ausfall: Tank unter 20 %, kein Heilversuch, Holy statt Cure |
+| Reprisal (`CustomRotation_Actions`) | Kein `TargetStatusProvide`, anders als Addle/Feint | Zwei Tanks legten Reprisal übereinander; der zweite verschenkte 60 s Cooldown |
+| `CalculateDamageFactor` | `foreach` über die Party ohne Rumpf (seit 0246bea5) | Toter Code; `partyStatuses` wird darunter lazy gefüllt |
+| `DataCenter._lastHp` | Nie beschrieben | Der Abgleich „Heilung ist im echten HP-Wert angekommen" konnte nie zutreffen |
+| `ChurinDRK` Oblation | Der Guard aus 7b8a2f5 fehlte in der Extra-Rotation | Beide Ladungen konnten auf dasselbe Ziel gehen |
+| PLD/WAR Reprisal | Nur in `DefenseSingleAbility`; WARs eigene `RotationDesc` versprach es für Area | Raidwides ohne Reprisal, anders als bei DRK/GNB |
+| MCH/BRD Second Wind, MNK `HealSingleAbility`, DNC `DefenseSingleAbility` | Rollenaktionen deklariert, nie genutzt | Kein Selbstheil bzw. keine Antwort auf einen Buster |
 
-Zwei dieser Klassen sind zusätzlich per CI ausgeschlossen, damit sie nicht
+Drei dieser Klassen sind zusätzlich per CI ausgeschlossen, damit sie nicht
 wiederkehren (`.github/scripts/check_base_calls.py`): falsches `base.`-Ziel,
-widersprüchliches Level-Prädikat, und wirkungslose Guard-Schleife. Der
-Wächter läuft in unter zehn Sekunden und ist gegen den jeweils behobenen Fall
-validiert — er meldet ihn vor dem Fix und schweigt danach.
+widersprüchliches Level-Prädikat, und wirkungslose Guard-Schleife (auch
+`foreach` und klammerloses `continue`). Der Wächter läuft in unter zehn
+Sekunden und ist gegen den jeweils behobenen Fall validiert — er meldet ihn
+vor dem Fix und schweigt danach; die `foreach`-Erweiterung fand sofort den
+Fall in `CalculateDamageFactor`.
 
 ---
 
@@ -136,26 +145,25 @@ einzuziehen: keine neue Vererbungsebene, keine neuen Dispatch-Slots, keine
 | `ShouldSustainMitigationDebuff` — Addle/Feint/Reprisal aufrechterhalten | 1 Helfer statt 25 Kopien der Bedingung | `MitigationDebuffDuration` folgt dem Enhanced-Trait auf Stufe 98 |
 | `TankApproachingMobGroup` — Tank-Sustain im Wall-to-Wall | 1 Helfer, 2 Heiler | Im Spiel vom Nutzer verifiziert; Schwellen als Job-Config, nicht fest verdrahtet |
 | Schild auf Effective-HP anrechnen | 2 Properties in `StateUpdater` | Nur wenn ein Grund für erwarteten Schaden vorliegt, sonst zählt ein frischer Schild ewig |
-| DPS-Selbstschutz (Second Wind / Bloodbath) | je 3–4 Zeilen bei 7 Jobs | Füllt `HealSingleAbility`/`DefenseSingleAbility`, die dort leer waren |
-| Bewegungsslots GNB · WHM · BRD | je 8 Zeilen | Laufen nur unter `AutoStatus.MoveForward`/`MoveBack`, können die Schadensrotation nicht erreichen |
+| DPS-Selbstschutz (Second Wind / Bloodbath) | je 3–4 Zeilen bei 10 Jobs | Füllt `HealSingleAbility`, die dort leer war |
+| Reaktive Antwort auf einen Buster, der auf einen DPS zielt | je 4 Zeilen bei 12 Jobs | `DefenseSingle` wird für DPS nur bei einem tatsächlich auf sie gerichteten Cast gesetzt; die Antwort ist die reaktive Zeile, die derselbe Job schon für Raidwides hat (Feint · Addle · Troubadour · Tactician · Shield Samba, SAM zusätzlich Third Eye) |
+| Bewegungsslots GNB · WHM · BRD · SAM | je 8 Zeilen | Laufen nur unter `AutoStatus.MoveForward`/`MoveBack`, können die Schadensrotation nicht erreichen |
 | `SwiftRaisePending` | 1 Property je Heiler | Ersetzt 13 wortgleiche Kopien derselben Bedingung |
 
 ---
 
 ## 5 · Was offen bleibt
 
-- **Release-Tag.** Der Fork hatte **0 Tags**, Upstream 952; `publish.yaml`
-  triggert ausschließlich auf Tags `*.*.*.*`, ohne Tag ist jede Version
-  `1.0.0.0`. Das Schema `<upstream>+wsh<n>` ist umgesetzt (`publish.yaml`
-  spaltet am `+`, das Fenster zeigt die Informationsversion); der erste Tag
-  `7.5.5.41+wsh1` ist noch zu setzen — aus der Arbeitsumgebung heraus nicht
-  möglich (403 auf Tag-Push).
-- **Spielfragen**, die aus dem Code nicht entscheidbar sind: Reprisal-Platzierung
-  bei den vier Tanks, Slot-Asymmetrien der phys. Fernkämpfer, MNKs Heilslot,
-  DRGs Trait-Gates. Alle in `TODO.md` einzeln geführt, keiner ungeprüft
-  angeglichen.
-- **`_lastHp`** in `DataCenter.GetPartyMemberHPRatio` ist toter Code — im
-  Original wie hier. Nicht angefasst, dokumentiert.
+- **Bestätigung im Spiel** für die WHM-Ursache (`CanUseHealAction`, §3): beim
+  nächsten Wall-to-Wall prüfen, ob die GCD-Heilung durchläuft, sobald die
+  Mobs unter 50 % fallen. Die Herleitung ist vollständig, aber ohne
+  Live-Daten.
+- **A4a**, die Extraktion langer Dispatch-Methoden in benannte Stufen
+  (BLU · PhantomDefault · PCT · SAM · MCH · SMN) — Lesbarkeit, kein
+  Verhalten; in Arbeit, eine Datei je Commit.
+
+Versionierung ist erledigt: Release `7.5.5.41+wsh1` auf `ba269301`, Schema
+`<upstream>+wsh<n>`.
 
 ---
 
@@ -187,6 +195,19 @@ nichts mehr: jedes neu deklarierte Symbol wird referenziert, jede der 38
 `skipStatusProvideCheck: true`-Stellen steht hinter einer statusprüfenden
 Bedingung, jede Spiegel-Behauptung in einem Kommentar wurde gegen den
 referenzierten Code geprüft.
+
+Danach wurden die offenen Punkte aus `TODO.md` mit demselben Loop
+abgearbeitet (Herleitungen in `AUDIT_LOG.md`):
+
+| Commit | Punkt | Ergebnis |
+|---|---|---|
+| `c6a0a40c` | WHM heilte nicht (Nutzer-Meldung) | Ursache: TTK-Heil-Gate galt auch für Heiler, §3. Bestätigung im Spiel offen |
+| `a2a3ec35` | `_lastHp` | toter Abgleich entfernt |
+| `52a0817d` | ChurinDRK Oblation | Upstream-Guard nachgezogen |
+| `00bc9c6f` | Reprisal-Platzierung PLD/WAR | in `DefenseAreaAbility` wie DRK/GNB |
+| `4b3c9412` | Buster auf einen DPS; Rollen-Lücken MCH/BRD/MNK/DNC | reaktive Zeile je Job, Second Wind, `HealSingleAbility`, `DefenseSingleAbility` |
+| `f90c7bf7` | SAM Yaten ungenutzt | `MoveBackAbility` |
+| — | WHM 0.3 / AST 0.4, DRG-Trait-Gates, PLD-Invuln-Ort, 11 weitere „ungenutzte" Aktionen | geprüft, kein Fehler — Begründung je Punkt in `AUDIT_LOG.md` |
 
 ---
 

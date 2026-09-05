@@ -1182,4 +1182,115 @@ Geprüft, kein Fehler (nicht erneut prüfen):
 - `IsHostileCastingTankBusterAtMe`-Doppelnullprüfung: Muster von `IsHostileCastingStop`.
 
 Bewusst nicht geändert: der Gegnerzahl-Zweig in den DefenseSingle-Aufrufern
-der DPS (Design, keine Fehlerbehebung) → TODO #72.
+der DPS (Design, keine Fehlerbehebung) → TODO #72 (unten abgearbeitet).
+
+## Abgeschlossen: TODO-Abarbeitung im Loop (05.09.2026)
+
+Auftrag: „alle todos abarbeiten", Loop wie oben. Vorab korrigiert: **#70
+war seit 08:38 UTC erledigt** — Tag `7.5.5.41+wsh1` auf `ba269301`, Release
+veroeffentlicht; in Bericht, TODO.md und 06-fork-audit.md stand es trotzdem
+als offen, weil der Stand aus dem Gespraechsverlauf statt aus
+`git ls-remote --tags origin` kam (Regel in CLAUDE.md ergaenzt). Lokaler
+Tag zeigte auf `09818f0e` und wurde auf den Origin-Stand gesetzt.
+
+**#54 WHM-Heilsuppression → Ursache gefunden, gefixt `c6a0a40c`, Bestaetigung
+im Spiel offen (bleibt als reduzierter Punkt in TODO.md).** Research: alle
+in #54 ausgeschlossenen Kandidaten betrafen den Pfad NACH dem Setzen der
+Heil-Flags. Nicht geprueft war die Flag-Quelle selbst: `CanUseHealAction`
+(StateUpdater.cs:11) verlangt in Kampf `IsLongerThan(AutoHealTimeToKill)`,
+also `AverageTTK > 8 s`, fuer Heiler UND Nicht-Heiler — die Option haengt
+aber unter `UseHealWhenNotAHealer` („Stop healing when time to kill is
+lower than", Configs.cs:1082) und meint Nicht-Heiler. `GetTTK`
+(ObjectHelper.cs:3467) ist ein gleitender Ratenschaetzer ueber die
+HP-Historie je Gegner, `AverageTTK` der Mittelwert ueber alle; bei einem
+Pack, dessen Mobs mehrheitlich unter 50 % sind, liegt er im letzten Drittel
+des Pulls typisch unter 8 s. Folge: alle vier Heil-Flags aus, `GeneralGCD`
+erreicht, Holy gecastet — jedes gemeldete Merkmal (kein Castversuch, volles
+Mana, Schwellen irrelevant, Gegner unter 50 %) folgt daraus. Antithese
+„Upstream will Heiler-GCDs am Kampfende sparen": die Ersparnis sind zwei
+GCDs pro Bosskampf, der Preis ein Tank ohne Heilung bei 20 %; und die
+UI-Einordnung widerspricht der Heiler-Anwendung. Fix: Gate nur noch im
+Nicht-Heiler-Zweig, Heiler heilen, sobald `AutoHeal` es erlaubt.
+Kalibrierung: kausal vollstaendig, aber ohne Live-Daten — deshalb
+„Ursache gefunden", nicht „bestaetigt".
+
+**#55 `_lastHp` → GEFIXT `a2a3ec35`.** Feld nie beschrieben, Zweig
+`currentHp - lastHp == healedHp` unerreichbar; entfernt. Die Praediktion
+endet wie bisher mit dem Effektfenster. Alternative (Baseline in
+`Watcher.cs:211` mitschreiben) verworfen: mehr Code fuer ein Verhalten, das
+niemand vermisst hat.
+
+**#63 WHM 0.3 / AST 0.4 → KEIN FEHLER, geschlossen.** Die beiden Werte haben
+in Upstream gegensaetzliche Semantik, und das ist begruendet: WHM nutzt
+Regen reaktiv nur `> RegenHeal` (reiner HoT, fuer den Notfall ungeeignet →
+darunter Cure II), AST nutzt Aspected Benefic reaktiv nur `< AspectedBeneficHeal`
+(Sofortheilung + HoT, instant → das Notfall- und Bewegungswerkzeug, darueber
+Benefic II). Der Sustain-Helfer nutzt beide als Boden (`>`): bei WHM
+deckungsgleich mit der reaktiven Zeile; bei AST greift unter dem Wert die
+reaktive AB-Zeile ohnehin, darueber der Sustain — keine Luecke, kein
+Widerspruch. Wer den AST-Wert hochzieht, verschiebt nur die Begruendung,
+nicht die Abdeckung. Angleichung der Zahlen waere Formalismus.
+
+**#65 → abgearbeitet.**
+- B3 Reprisal-Platzierung → GEFIXT `00bc9c6f`: PLD/WAR bekommen Reprisal in
+  DefenseAreaAbility wie DRK/GNB (Sustain + reaktiv). WARs RotationDesc
+  versprach Reprisal dort bereits ohne Code. Antithese „Reprisal auf dem
+  Raidwide fehlt dann 20 s spaeter fuer den Buster": DRK/GNB nehmen das seit
+  Upstream in Kauf, die Asymmetrie war unbegruendet.
+- B4 Phys. Fernkaempfer → GEFIXT `4b3c9412`: MCH und BRD ohne Second Wind
+  (Rollenaktion, DNC hatte es) → ergaenzt; DNC ohne DefenseSingleAbility
+  und ohne den BMR-getimten Shield Samba, den BRD/MCH fuer
+  Troubadour/Tactician haben → beides ergaenzt. BRDs DispelAbility (Warden's
+  Paean) bleibt Job-exklusiv, keine Luecke.
+- B5 MNK → GEFIXT `4b3c9412`: die Praemisse („HealArea statt HealSingle") war
+  ungenau — MNKs HealAreaAbility enthaelt Earth's Reply und Mantra, beides
+  korrekt AoE; was fehlte, war eine HealSingleAbility mit Second Wind /
+  Bloodbath ueberhaupt. Ergaenzt wie bei den anderen Melees.
+- C1 DRG-Trait-Paare → KEIN HANDLUNGSBEDARF: `FullThrustPvE.CanUse` liefert
+  oberhalb der Traitstufe `true`, weil `CanUse` ueber `AdjustedID`
+  (ActionBasicInfo.cs:53/513) das Spiel die aufgewertete Aktion pruefen
+  laesst. Die Gates sind damit funktional redundant, aber nicht wirkungslos:
+  ohne Gate wuerde der Fallback-Zweig die aufgewertete Aktion auch dann
+  casten, wenn der Nutzer sie per Aktions-Config deaktiviert hat (jede
+  Aktion hat eigene `Config`). Upstreams Form bleibt.
+
+**#68 ChurinDRK Oblation → GEFIXT `52a0817d`.** Eigene DefenseSingleAbility,
+derselbe Aufruf (`usedUp: true`), kein anderer Ladungs-Guard → derselbe
+`!IsLastAbility(false, OblationPvE)`-Guard wie in 7b8a2f5.
+
+**#69 Aktions-Abdeckung → abgearbeitet.**
+- Drei Eintraege waren falsch (derselbe Suchbereichsfehler wie in
+  05-action-coverage.md, Basis-Partials nicht durchsucht): Shade Shift und
+  Shukuchi werden in `NinjaRotation` genutzt (DefenseSingle/MoveForward),
+  `HoroscopePvE_16558` in AST_Reborn.
+- SAM Hissatsu: Yaten → GEFIXT `f90c7bf7`, MoveBackAbility wie bei allen
+  anderen Rueckwaerts-Dashes.
+- Korrekt ungenutzt (Morph/Zweit-ID): Tsubame-gaeshi (SAM nutzt die
+  konkreten Kaeshi-Aktionen), Tridisaster (SMN castet `OutburstPvE`,
+  AdjustedID), Play I-III/Minor Arcana (AST nutzt die konkreten Karten),
+  `EmergencyTacticsPvE_37037` (SCH nutzt die Erst-ID).
+- Bewusst nicht nachgeruestet, weil es Features ohne Trigger im Framework
+  waeren, keine Fehler: Meditate, Flamethrower, Six-sided Star
+  (Downtime-Werkzeuge — `BMRDowntimeWithin` liefert nur „Downtime kommt",
+  nicht „Downtime laeuft"), Rook/Queen Overdrive, Liturgy-Detonation,
+  Dissolve Union (manuelle Ausloeser; die Automatik laeuft ueber die
+  natuerliche Dauer).
+- PLD-Invuln in PLD_Reborn statt Basis: begruendet durch den Cover-Sonderfall
+  (`HallowedWithCover`), den die drei anderen Tanks nicht haben. Bleibt.
+
+**#72 → GEFIXT `4b3c9412`, zu Ende gedacht statt Optionsliste.** Der
+DefenseSingle-Trigger fuer DPS ist ein Einzelziel-Fall (Cast auf mich);
+die Sustain-Zeilen antworteten nur mit BMR oder ≥ 4 Gegnern. Je Job
+geprueft, was die richtige Antwort ist: SMN hatte die reaktive Zeile schon;
+BLM/PCT/RDM bekommen `AddlePvE.CanUse`, DRG/MNK/NIN/RPR/VPR `FeintPvE.CanUse`
+mit den jeweiligen Job-Gates aus ihrer DefenseArea-Zeile, SAM zusaetzlich
+Third Eye/Tengentsu (die fuer genau einen Treffer da sind), BRD/MCH/DNC die
+reaktive Troubadour/Tactician/Shield-Samba-Zeile. Antithese „Feint/Addle
+sind Gruppenressourcen, 90 s CD": wenn der Buster auf mich zielt, bin ich
+der, der stirbt; die reaktiven Zeilen pruefen den Zielstatus, also keine
+Doppelanwendung. Die Sustain-Zeilen bleiben (fruehe Auffrischung bei
+BMR-Vorhersage).
+
+Nicht mehr im Loop: das Check-in-Trigger `trig_01NLjkn2dFqmrZXhmxJcWGsQ`
+(09:44 UTC) liess sich aus dieser Umgebung nicht loeschen (Tool nicht
+angeboten); es feuert einmal und wird ignoriert.

@@ -48,6 +48,17 @@ Rückfragen mitten in der Arbeit sind unzulässig — sie unterbrechen den Nutze
 
 Gilt auch für Zwischenmeldungen: nicht "soll ich X?" mitten im Ablauf, sondern X entweder tun (wenn es im Auftrag liegt) oder bis zum Schluss zurückstellen und dann vorlegen.
 
+## Merges, Releases und Zeitpunkte entscheidet der Nutzer allein
+
+Wann und was gemergt, getaggt oder veroeffentlicht wird, ist ausschliesslich Sache des Nutzers. Dazu gibt es keine Empfehlungen, keine „jetzt mergen"-Vorschlaege und keine selbst gesetzten Check-in-Timer oder PR-Babysitting, sofern er es nicht ausdruecklich verlangt. Der Status (CI gruen/rot, was der PR enthaelt) wird gemeldet — die Entscheidung nicht vorweggenommen.
+Beleg: Empfehlung „PR #4 jetzt mergen" samt Check-in-Timer geliefert, obwohl der Nutzer Merges selbst steuert und nie danach gefragt hat.
+
+Vorschlaege, wo sie verlangt sind (Design-/Spielfragen), muessen zu Ende gedacht sein: konkreter Mechanismus, konkrete Stellen, konkrete Konsequenz — keine Optionsliste mit Platzhalter-Empfehlung. Beleg: #72 mit „(a) belassen / (b) Fallback-Zeile" abgeliefert, ohne die betroffenen zwoelf Overrides einzeln durchdacht zu haben (SAM hat Third Eye, DRG/VPR nur Feint, DNC nichts — die Antwort ist je Job anders).
+
+## Externer Zustand gilt auch fuer Tags und Releases
+
+Die Regel „Externer Zustand nie aus Gespraechsverlauf annehmen" (unten) gilt fuer Tags und Releases genauso wie fuer Branches: vor jeder Aussage „Tag/Release fehlt noch" `git fetch --prune --tags origin` und `git ls-remote --tags origin` pruefen. Beleg: #70 („Release-Tag steht noch aus") in Bericht, TODO.md und 06-fork-audit.md behauptet, waehrend `7.5.5.41+wsh1` seit Stunden auf `origin` stand — Stand aus dem Gespraechsverlauf zitiert statt gelesen.
+
 ## Eigene Fehler sind ein Nullsummenspiel, kein Ergebnis
 
 Selbst verursachte Fehler zu finden und zu beheben ist Selbstverständlichkeit, kein Verdienst. Es wird kommentarlos aufgeräumt. Verboten ist, die eigene Fehlererkennung als Leistung darzustellen ("drei eigene Fehler vor der Behauptung abgeräumt", "Korrektur meiner eigenen Einschätzung" als Aufhänger, Selbstkritik als Qualitätsbeleg) — das ist Selbstbetrug: unterm Strich steht null, nicht plus. Ergebnis ist nur, was über den Ausgangszustand hinausgeht.
