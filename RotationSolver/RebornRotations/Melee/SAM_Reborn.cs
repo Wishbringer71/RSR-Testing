@@ -25,7 +25,7 @@ public sealed class SAM_Reborn : SamuraiRotation
 	[RotationConfig(CombatType.PvE, Name = "Health threshold needed to use Tengentsu/ThirdEye outside of AOE mit scenarios.")]
 	public float TengentsuHealth { get; set; } = 0.5f;
 
-	[Range(0, 1, ConfigUnitType.Seconds)]
+	[Range(0, 15, ConfigUnitType.Seconds)]
 	[RotationConfig(CombatType.PvE, Name = "Meikyo Shisui countdown timing.")]
 	public float MeikyoShisuiCountdown { get; set; } = 14f;
 
