@@ -233,7 +233,7 @@ public sealed class BLU_Reborn : BlueMageRotation
 			}
 		}
 
-		if (IsTank || HasBasicInstinct)
+		if (UseMightyGuard && (IsTank || HasBasicInstinct))
 		{
 			if (MightyGuardPvE.CanUse(out act))
 			{
@@ -241,7 +241,7 @@ public sealed class BLU_Reborn : BlueMageRotation
 			}
 		}
 
-		if (BasicInstinctPvE.CanUse(out act))
+		if (UseBasicInstinct && BasicInstinctPvE.CanUse(out act))
 		{
 			return true;
 		}
