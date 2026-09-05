@@ -11,11 +11,14 @@ internal static class StateUpdater
 	private static bool CanUseHealAction =>
 		// PvP
 		DataCenter.IsPvP
-		// Job
-		|| ((DataCenter.Role == JobRole.Healer || Service.Config.UseHealWhenNotAHealer)
-		&& Service.Config.AutoHeal
-		&& ((DataCenter.InCombat && CustomRotation.IsLongerThan(Service.Config.AutoHealTimeToKill))
-			|| Service.Config.HealOutOfCombat));
+		// Job. AutoHealTimeToKill is a child option of UseHealWhenNotAHealer and only gates non-healers:
+		// a healer's heal flags must not switch off because the average time-to-kill of a trash pack
+		// dipped under eight seconds while the tank is still taking the hits.
+		|| (Service.Config.AutoHeal
+			&& (DataCenter.Role == JobRole.Healer
+				|| (Service.Config.UseHealWhenNotAHealer
+					&& (!DataCenter.InCombat || CustomRotation.IsLongerThan(Service.Config.AutoHealTimeToKill))))
+			&& (DataCenter.InCombat || Service.Config.HealOutOfCombat));
 
 	public static void UpdateState()
 	{
