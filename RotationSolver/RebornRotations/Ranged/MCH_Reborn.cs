@@ -119,26 +119,25 @@ public sealed class MCH_Reborn : MachinistRotation
 	}
 
 	#region oGCD Logic
+	/// <summary>
+	/// Wildfire or Barrel Stabilizer could be attempted this tick, so a timed Tactician must not take
+	/// the weave slot. Mirrors their trigger conditions in AttackAbility; IsBurst alone is a persistent
+	/// user toggle, not a burst-window signal.
+	/// </summary>
+	private bool BurstWeaveSlotContested =>
+		(IsBurst && WildfirePvE.EnoughLevel && WildfirePvE.Cooldown.HasOneCharge
+			&& !BMRDowntimeWithin(10f) && (Heat >= 50 || HasHypercharged) && WeaponRemain < (GCDTime(1) / 2))
+		|| (IsBurst && BarrelStabilizerPvE.EnoughLevel && !BMRDowntimeWithin(GCDTime(2)) && BarrelStabilizerPvE.CanUse(out _));
+
 	[RotationDesc(ActionID.TacticianPvE, ActionID.DismantlePvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		if (!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
+		if ((!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
+			&& !IsOverheated && !BurstWeaveSlotContested
+			&& BMRShouldRefreshBefore(BMRRaidwideIn, 15f, true, null, StatusID.Tactician_1951, StatusID.Tactician_2177)
+			&& TacticianPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
-			// Independent of the broad burst-state gate below, but still yields to Wildfire / Barrel
-			// Stabilizer whenever either could actually be attempted this tick. IsBurst is a persistent
-			// user toggle rather than a real burst-window signal, so this mirrors their trigger surface
-			// in AttackAbility instead.
-			var wildfireSlotContested = IsBurst && WildfirePvE.EnoughLevel && WildfirePvE.Cooldown.HasOneCharge
-				&& !BMRDowntimeWithin(10f) && (Heat >= 50 || HasHypercharged) && WeaponRemain < (GCDTime(1) / 2);
-			var barrelStabilizerSlotContested = IsBurst && BarrelStabilizerPvE.EnoughLevel
-				&& !BMRDowntimeWithin(GCDTime(2)) && BarrelStabilizerPvE.CanUse(out _);
-
-			if (!IsOverheated && !wildfireSlotContested && !barrelStabilizerSlotContested
-				&& BMRShouldRefreshBefore(BMRRaidwideIn, 15f, true, null, StatusID.Tactician_1951, StatusID.Tactician_2177)
-				&& TacticianPvE.CanUse(out act, skipStatusProvideCheck: true))
-			{
-				return true;
-			}
+			return true;
 		}
 
 		if (IsOverheated || HasWildfire || HasFullMetalMachinist || (WildfirePvE.EnoughLevel && WildfirePvE.Cooldown.HasOneCharge))
@@ -168,19 +167,12 @@ public sealed class MCH_Reborn : MachinistRotation
 	[RotationDesc(ActionID.TacticianPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		if (!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
+		if ((!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
+			&& !IsOverheated && !BurstWeaveSlotContested
+			&& BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, StatusID.Tactician_1951, StatusID.Tactician_2177)
+			&& TacticianPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
-			var wildfireSlotContested = IsBurst && WildfirePvE.EnoughLevel && WildfirePvE.Cooldown.HasOneCharge
-				&& !BMRDowntimeWithin(10f) && (Heat >= 50 || HasHypercharged) && WeaponRemain < (GCDTime(1) / 2);
-			var barrelStabilizerSlotContested = IsBurst && BarrelStabilizerPvE.EnoughLevel
-				&& !BMRDowntimeWithin(GCDTime(2)) && BarrelStabilizerPvE.CanUse(out _);
-
-			if (!IsOverheated && !wildfireSlotContested && !barrelStabilizerSlotContested
-				&& BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, StatusID.Tactician_1951, StatusID.Tactician_2177)
-				&& TacticianPvE.CanUse(out act, skipStatusProvideCheck: true))
-			{
-				return true;
-			}
+			return true;
 		}
 
 		return base.DefenseSingleAbility(nextGCD, out act);
