@@ -51,14 +51,26 @@ Zwei der vier Pfade (`x6r9_loc01_t0a1`, `x6r9_loc02_t0a1`) stehen wortgleich auc
 
 `RotationSolver.SourceGenerators.dll` ist in `latest.zip` des Releases 7.5.5.41+wsh1 enthalten, obwohl `PruneOutputDlls` in `RotationSolver.csproj` nur RotationSolver, RotationSolver.Basic und ECommons behalten soll. Zur Laufzeit nutzlos. Prüfen, warum die Prune-Regel den Analyzer nicht erfasst.
 
-## Toter Code und Altlasten (Freigabe zur Löschung erforderlich)
+## Ungenutzter Code — je Fall geprüft, ob abgelöst oder unverdrahtet
 
-Alle Punkte sind wirkungsneutral. Das Konfliktrisiko ist je Region gemessen (`git log -L <Bereich> upstream/main`), nicht über die Dateiaktivität geschätzt.
+Ein fehlender Aufrufer im Grep beweist nur, dass kein statischer Aufruf existiert. Drei Möglichkeiten sind zu unterscheiden: bewusst abgelöst, über einen anderen Weg erreichbar (IPC, Reflection), oder sinnvoll gemeint und nie angeschlossen. Je Fall erhoben.
 
-- **VPR-Redundanz:** `VPR_Reborn.cs:590-596` (`SwiftskinsBitePvE`) und `975-981` (`SwiftskinsStingPvE`). Der Zweig `!IsHunter && !IsSwift` ist eine echte Verschärfung des unmittelbar folgenden `!IsSwift` bei identischem Rumpf, kann das Verhalten also nachweislich nicht ändern. Beide Regionen wurden seit dem Fork-Punkt von keinem Upstream-Commit berührt.
-- **Toter Code in `RotationConfigWindow.cs:5169-5190`:** die beiden privaten `BeginChild`-Überladungen und das nur von ihnen gerufene `IsFailed()` haben keinen Aufrufer. Die Wrapper hätten zudem einen latenten Fehler: sie geben bei `false` zurück, ohne dass ein `EndChild()` folgt. Region seit dem Fork-Punkt von zwei Upstream-Commits berührt (`f72a0a93`, `36af043e`).
-- **`RSCommands_Actions.cs:24-34` `IncrementState()`** hat keinen Aufrufer. Enthält zudem denselben Toggle-Konflikt wie die Zyklus-Kommandos.
-- **Zwei eingecheckte Sicherungsdateien:** `RotationSolver/RotationSolver.csproj.Backup.tmp` und `RotationSolver.SourceGenerators/RotationSolver.SourceGenerators.csproj.Backup.tmp` stammen aus dem Upgrade Dalamud-SDK 14.0.2 → 15.0.0 und enthalten den alten Stand samt veralteter Paketversionen. Nicht Teil des Builds, `.gitignore` hat kein `*.tmp`-Muster.
+**`RSCommands_Actions.cs:24-34` `IncrementState()` — abgelöst, löschen.** Der Aufrufer wurde in `e62d9123` („Refactor DTR handling and added new /rotation Cycle command") entfernt: der Diff ersetzt `_dtrEntry.OnClick = _ => RSCommands.IncrementState();` durch die `DTRType`-Fallunterscheidung. Keiner der 14 per `[EzIPC]` exponierten Einstiege in `IPCProvider.cs` führt darauf; Fremdplugins erreichen RSR nur über diese. Die Ablösung war zudem eine Verbesserung: `IncrementState` erkennt das Zyklusende an `TargetingType == Big` und setzt damit voraus, dass `Big` die letzte konfigurierte Zielart ist, während `CycleStateWithAllTargetTypes` über den Index geht.
+
+**`RotationConfigWindow.cs:5169-5190` `BeginChild`×2 und `IsFailed()` — abgelöst, löschen.** `701554b0` („fix: ImRaii.") ersetzt die Aufrufe wörtlich: aus `if (BeginChild("Rotation Solver Side bar", …)) { … ImGui.EndChild(); }` wurde `using var child = ImRaii.Child(…)`. Das Fenster nutzt heute 66 ImRaii-Konstrukte. Die Wrapper waren dabei nicht nur unbenutzt, sondern von Anfang an vertragswidrig: Dear ImGui verlangt zu jedem `BeginChild` ein `EndChild`, unabhängig vom Rückgabewert — genau der Fehler, den ImRaii durch das `using` behebt. Ein Wiederanschluss würde den Fehler zurückholen. Die vier direkten `ImGui.BeginChild`-Aufrufe der Prioritätslisten (2664, 2716, 2776, 2827) sind korrekt: Rückgabewert verworfen, `EndChild` unbedingt.
+
+**`VPR_Reborn.cs:591-597` und `975-981` — nicht löschen, Strukturbefund.** Ursprünglich als wirkungsneutrale Redundanz eingestuft; die Prüfung im Verbund kehrt das um. Das Muster `!HasHunterAndSwift` kommt viermal vor, und der Vorspann `!IsHunter && !IsSwift` trägt nur an einer Stelle Inhalt:
+
+| Stelle | Zweig „beide Buffs aktiv" | Zweig „mindestens einer fehlt" |
+|---|---|---|
+| Den, AoE (424-493) | `WillSwiftEnd`/`WillHunterEnd`, dann `HunterOrSwiftEndsFirst` | kein Vorspann |
+| Bite, AoE (557-614) | `HunterOrSwiftEndsFirst` | Vorspann ohne Wirkung |
+| Coil, ST (751-807) | — | Vorspann mit echter positionsbewusster Wahl samt Wechselsperre |
+| Sting, ST (899-997) | `HasHind`/`HasFlank`, sonst `HunterOrSwiftEndsFirst` | `HasHind`/`HasFlank`, sonst Vorspann ohne Wirkung |
+
+Die Coil-Stelle zeigt, wofür der Vorspann gedacht ist: eine echte Entscheidung, wenn beide Buffs fehlen. Bei Bite entfällt das Kriterium (die AoE-Kette hat keine Positionals), bei Sting wird der Positionsfall schon oberhalb über `HasHind`/`HasFlank` abgehandelt — ein fehlender Inhalt lässt sich also nicht belegen. Ebenso wenig lässt sich belegen, dass nichts fehlt: `HunterOrSwiftEndsFirst` vergleicht Restlaufzeiten und ist im Fall „beide fehlen" nicht anwendbar, eine begründete Aufbaureihenfolge steht nirgends. Löschen würde die Symmetrie zur Coil-Stelle und damit das Signal beseitigen, ohne Verhalten zu verbessern. Die eigentliche Inkonsistenz ist ohnehin eine andere: die Den-Stelle hat gar keinen Vorspann. Adressat ist der Upstream, nicht dieser Fork.
+
+**Zwei eingecheckte Sicherungsdateien — löschen.** `RotationSolver/RotationSolver.csproj.Backup.tmp` und `RotationSolver.SourceGenerators/RotationSolver.SourceGenerators.csproj.Backup.tmp` stammen aus dem Upgrade Dalamud-SDK 14.0.2 → 15.0.0 und enthalten den alten Stand samt veralteter Paketversionen. Keine Referenz in `.csproj`, `.props`, `.targets` oder den Workflows; `.gitignore` hat kein `*.tmp`-Muster.
 
 ## `AutodutyUpdateState` dupliziert `UpdateState`
 
