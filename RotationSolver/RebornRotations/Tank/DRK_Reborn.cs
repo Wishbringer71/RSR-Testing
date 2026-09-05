@@ -44,9 +44,9 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	}
 	#endregion
 
-		#region Countdown Logic
-		// Countdown logic to prepare for combat.
-		// Includes logic for using Provoke, tank stances, and burst medicines.
+	#region Countdown Logic
+	// Countdown logic to prepare for combat.
+	// Includes logic for using Provoke, tank stances, and burst medicines.
 	protected override IAction? CountDownAction(float remainTime)
 	{
 		//Provoke when has Shield.
@@ -125,14 +125,17 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	[RotationDesc(ActionID.DarkMissionaryPvE, ActionID.ReprisalPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		if (!InTwoMIsBurst && OblationLantern && TheBlackestNightPvE.CanUse(out act, targetOverride: TargetType.LowHP) && !TheBlackestNightPvE.Target.Target.HasStatus(false, StatusID.Transcendent) && TheBlackestNightPvE.Target.Target.GetHealthRatio() <= BlackLanternRatio)
+		if (!InTwoMIsBurst && TheBlackestNightPvE.CanUse(out act, targetOverride: TargetType.LowHP) && !TheBlackestNightPvE.Target.Target.HasStatus(false, StatusID.Transcendent) && TheBlackestNightPvE.Target.Target.GetHealthRatio() <= BlackLanternRatio)
 		{
 			return true;
 		}
 
-		if (!InTwoMIsBurst && OblationLantern && OblationPvE.CanUse(out act, usedUp: OblationLanternStack, targetOverride: TargetType.LowHP) && !OblationPvE.Target.Target.HasStatus(false, StatusID.Transcendent) && OblationPvE.Target.Target.GetHealthRatio() <= OblationLanternRatio)
+		if (!IsLastAbility(false, OblationPvE))
 		{
-			return true;
+			if (!InTwoMIsBurst && OblationLantern && OblationPvE.CanUse(out act, usedUp: OblationLanternStack, targetOverride: TargetType.LowHP) && !OblationPvE.Target.Target.HasStatus(false, StatusID.Transcendent) && OblationPvE.Target.Target.GetHealthRatio() <= OblationLanternRatio)
+			{
+				return true;
+			}
 		}
 
 		if (!InTwoMIsBurst && DarkMissionaryPvE.CanUse(out act))
@@ -145,9 +148,12 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			return true;
 		}
 
-		if (!InTwoMIsBurst && OblationPvE.CanUse(out act, skipStatusProvideCheck: false, targetOverride: TargetType.Self))
+		if (!IsLastAbility(false, OblationPvE))
 		{
-			return true;
+			if (!InTwoMIsBurst && OblationPvE.CanUse(out act, skipStatusProvideCheck: false, targetOverride: TargetType.Self))
+			{
+				return true;
+			}
 		}
 
 		return base.DefenseAreaAbility(nextGCD, out act);
@@ -157,9 +163,12 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		//10
-		if (OblationPvE.CanUse(out act, usedUp: true, skipStatusProvideCheck: false, targetOverride: TargetType.Self))
+		if (!IsLastAbility(false, OblationPvE))
 		{
-			return true;
+			if (OblationPvE.CanUse(out act, usedUp: true, skipStatusProvideCheck: false, targetOverride: TargetType.Self))
+			{
+				return true;
+			}
 		}
 
 		if (TheBlackestNightPvE.CanUse(out act, targetOverride: TargetType.Self))
@@ -313,7 +322,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	#region GCD Logic
 	protected override bool GeneralGCD(out IAction? act)
 	{
-		if (CombatElapsedLessGCD(4) && !IsLastGCD(false, SouleaterPvE))
+		if (CombatElapsedLessGCD(4) && !IsLastGCD(false, SouleaterPvE) && NumberOfHostilesInRange < 2)
 		{
 			if (!HasDelirium && SouleaterPvE.CanUse(out act))
 			{
@@ -374,6 +383,11 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			return true;
 		}
 
+		if (UnleashPvE.CanUse(out act))
+		{
+			return true;
+		}
+
 		//Single Target
 		if (!HasDelirium && SouleaterPvE.CanUse(out act))
 		{
@@ -381,11 +395,6 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		}
 
 		if (!HasDelirium && SyphonStrikePvE.CanUse(out act))
-		{
-			return true;
-		}
-
-		if (UnleashPvE.CanUse(out act))
 		{
 			return true;
 		}
