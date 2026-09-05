@@ -772,7 +772,7 @@ public sealed class ChurinDNC : DancerRotation
 
 	private void RemoveFinishingMove()
 	{
-		if (!DataCenter.BMREnabled || !HasFinishingMove) return;
+		if (!Service.Config.UseBmrTimeline || !BMRActive || !HasFinishingMove) return;
 
 		if (DataCenter.BMRNextDowntimeIn >= 15f) return;
 
@@ -823,7 +823,7 @@ public sealed class ChurinDNC : DancerRotation
 
 			if (IsBurstPhase && (CanSpendEspritNow || !CanUseStandardStepInBurst)) return false;
 
-			if (!DataCenter.BMREnabled)
+			if (!Service.Config.UseBmrTimeline || !BMRActive)
 			{
 				return IsTimingOk(ActiveStandardRecastRemain, ActiveStandard)
 				       && CanUseStepHoldCheck(StandardHoldStrategy);

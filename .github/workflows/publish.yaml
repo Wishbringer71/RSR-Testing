@@ -17,8 +17,13 @@ jobs:
       - name: Get Environment Variables
         run: |
           $tag = "${{ github.ref }}" -replace 'refs/tags/', ''
+          # AssemblyVersion and FileVersion must be purely numeric (CS7034), so a fork tag such as
+          # 7.5.5.41+wsh1 keeps its suffix only in the informational version, which is what the
+          # settings window shows.
+          $numericVersion = ($tag -split '\+')[0]
 
           "tag=$tag" | Out-File -Append -FilePath $Env:GITHUB_ENV
+          "numericVersion=$numericVersion" | Out-File -Append -FilePath $Env:GITHUB_ENV
           
       - name: Set up .NET
         uses: actions/setup-dotnet@v5
@@ -34,7 +39,7 @@ jobs:
         run: dotnet restore RotationSolver/RotationSolver.csproj
 
       - name: Build Plugin
-        run: dotnet build --no-restore -c Release RotationSolver/RotationSolver.csproj -p:AssemblyVersion=${{ env.tag }} -p:FileVersion=${{ env.tag }} -p:PackageVersion=${{ env.tag }} -p:InformationalVersion=${{ env.tag }} --output .\build
+        run: dotnet build --no-restore -c Release RotationSolver/RotationSolver.csproj -p:AssemblyVersion=${{ env.numericVersion }} -p:FileVersion=${{ env.numericVersion }} -p:PackageVersion=${{ env.numericVersion }} -p:InformationalVersion=${{ env.tag }} --output .\build
 
       - name: Publish Plugin
         uses: softprops/action-gh-release@v3

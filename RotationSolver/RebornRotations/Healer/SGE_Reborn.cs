@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace RotationSolver.RebornRotations.Healer;
 
@@ -28,6 +28,10 @@ public sealed class SGE_Reborn : SageRotation
 
 	[RotationConfig(CombatType.PvE, Name = "Enable Swiftcast Restriction Logic to attempt to prevent actions other than Raise when you have swiftcast")]
 	public bool SwiftLogic { get; set; } = true;
+
+	/// <summary>A raise is pending with Swiftcast up for it, so no GCD method spends the cast.</summary>
+	private bool SwiftRaisePending =>
+		(HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise);
 
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Health threshold party member needs to be to use Taurochole")]
@@ -696,7 +700,7 @@ public sealed class SGE_Reborn : SageRotation
 	[RotationDesc(ActionID.PneumaPvE, ActionID.PrognosisPvE, ActionID.EukrasianPrognosisPvE, ActionID.EukrasianPrognosisIiPvE)]
 	protected override bool HealAreaGCD(out IAction? act)
 	{
-		if ((HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise))
+		if (SwiftRaisePending)
 		{
 			return base.HealAreaGCD(out act);
 		}
@@ -741,7 +745,7 @@ public sealed class SGE_Reborn : SageRotation
 	[RotationDesc(ActionID.DiagnosisPvE, ActionID.EukrasianDiagnosisPvE)]
 	protected override bool HealSingleGCD(out IAction? act)
 	{
-		if ((HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise))
+		if (SwiftRaisePending)
 		{
 			return base.HealSingleGCD(out act);
 		}
@@ -778,7 +782,7 @@ public sealed class SGE_Reborn : SageRotation
 
 	protected override bool GeneralGCD(out IAction? act)
 	{
-		if ((HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise))
+		if (SwiftRaisePending)
 		{
 			return base.GeneralGCD(out act);
 		}

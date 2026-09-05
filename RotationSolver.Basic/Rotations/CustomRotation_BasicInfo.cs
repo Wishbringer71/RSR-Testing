@@ -157,6 +157,9 @@ public partial class CustomRotation : ICustomRotation
 	/// <inheritdoc/>
 	public IAction? ActionAntiKnockbackAbility { get; private set; }
 
+	/// <inheritdoc/>
+	public virtual bool HasHostileCountAoeMitigation => false;
+
 	/// <summary>
 	/// Gets a value indicating whether this rotation is valid.
 	/// </summary>

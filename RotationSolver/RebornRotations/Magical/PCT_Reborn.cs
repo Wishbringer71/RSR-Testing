@@ -5,6 +5,8 @@
 
 public sealed class PCT_Reborn : PictomancerRotation
 {
+	public override bool HasHostileCountAoeMitigation => true;
+
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Use HolyInWhite or CometInBlack while moving")]
 	public bool HolyCometMoving { get; set; } = true;
@@ -121,6 +123,13 @@ public sealed class PCT_Reborn : PictomancerRotation
 			return true;
 		}
 
+		if ((!BurstDefense || (BurstDefense && !InBurstStatus))
+			&& ShouldSustainMitigationDebuff(StatusID.Addle)
+			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		if ((!BurstDefense || (BurstDefense && !InBurstStatus)) && AddlePvE.CanUse(out act))
 		{
 			return true;
@@ -128,7 +137,7 @@ public sealed class PCT_Reborn : PictomancerRotation
 		return base.DefenseAreaAbility(nextGCD, out act);
 	}
 
-	[RotationDesc(ActionID.TemperaCoatPvE)]
+	[RotationDesc(ActionID.TemperaCoatPvE, ActionID.AddlePvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		// Mitigations
@@ -136,7 +145,15 @@ public sealed class PCT_Reborn : PictomancerRotation
 		{
 			return true;
 		}
-		return base.DefenseAreaAbility(nextGCD, out act);
+
+		if ((!BurstDefense || (BurstDefense && !InBurstStatus))
+			&& ShouldSustainMitigationDebuff(StatusID.Addle)
+			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
+		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 
 	#endregion
@@ -215,7 +232,8 @@ public sealed class PCT_Reborn : PictomancerRotation
 
 	protected override bool GeneralAbility(IAction nextGCD, out IAction? act)
 	{
-		if ((MergedStatus.HasFlag(AutoStatus.DefenseArea) || StatusHelper.PlayerWillStatusEndGCD(2, 0, true, StatusID.TemperaCoat)) && TemperaGrassaPvE.CanUse(out act))
+		if ((!BurstDefense || (BurstDefense && !InBurstStatus))
+			&& (MergedStatus.HasFlag(AutoStatus.DefenseArea) || StatusHelper.PlayerWillStatusEndGCD(2, 0, true, StatusID.TemperaCoat)) && TemperaGrassaPvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -225,7 +243,7 @@ public sealed class PCT_Reborn : PictomancerRotation
 			return true;
 		}
 
-		return base.AttackAbility(nextGCD, out act);
+		return base.GeneralAbility(nextGCD, out act);
 	}
 	#endregion
 

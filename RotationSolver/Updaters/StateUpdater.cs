@@ -5,6 +5,9 @@ namespace RotationSolver.Updaters;
 
 internal static class StateUpdater
 {
+	/// <summary>Shield-survival floor used when no BMR prediction is available.</summary>
+	private const float ShieldSurvivalFallbackSeconds = 3f;
+
 	private static bool CanUseHealAction =>
 		// PvP
 		DataCenter.IsPvP
@@ -181,6 +184,16 @@ internal static class StateUpdater
 			return true;
 		}
 
+		// Sustain fallback for trash pulls without an active BMR module. Scoped to jobs that actually
+		// declare such a branch, so this doesn't run every job's whole defense chain on enemy count
+		// alone. Same threshold the job branches themselves use, so the gate can't disagree with them.
+		if (DataCenter.InCombat && Service.Config.UseAoeDefense
+			&& DataCenter.NumberOfHostilesInRange >= Service.Config.MitigationSustainHostileCount
+			&& (DataCenter.CurrentRotation?.HasHostileCountAoeMitigation ?? false))
+		{
+			return true;
+		}
+
 		return false;
 	}
 
@@ -190,6 +203,11 @@ internal static class StateUpdater
 		{
 			return false;
 		}
+
+		// Shared by every role below: a predicted tankbuster matters to whoever ends up eating it.
+		var bmrTankbusterImminent = Service.Config.UseBmrTimeline
+			&& DataCenter.BMRNextTankbusterIn > 0.6f
+			&& DataCenter.BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow;
 
 		if (DataCenter.Role == JobRole.Healer)
 		{
@@ -216,9 +234,7 @@ internal static class StateUpdater
 				return true;
 			}
 
-			if (Service.Config.UseBmrTimeline
-				&& DataCenter.BMRNextTankbusterIn > 0.6f
-				&& DataCenter.BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow)
+			if (bmrTankbusterImminent)
 			{
 				return true;
 			}
@@ -265,9 +281,7 @@ internal static class StateUpdater
 				return true;
 			}
 
-			if (Service.Config.UseBmrTimeline
-				&& DataCenter.BMRNextTankbusterIn > 0.6f
-				&& DataCenter.BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow)
+			if (bmrTankbusterImminent)
 			{
 				return true;
 			}
@@ -275,14 +289,28 @@ internal static class StateUpdater
 
 		if (DataCenter.Role is JobRole.Melee or JobRole.RangedPhysical or JobRole.RangedMagical)
 		{
-			// no tank in the party, tanks are dead, or the buster went to the wrong person
+			// A cast actually landing on us covers the "buster went to the wrong person" case with a
+			// real target, regardless of whether a tank is alive - leave this branch unrestricted.
 			if (DataCenter.IsHostileCastingTankBusterAtMe)
+			{
+				return true;
+			}
+
+			// BMR predicts timing, not who gets hit, so for this role it is only a reasonable proxy when
+			// no tank is alive to eat it. Otherwise the cast-verified branch above is the only trigger.
+			if (bmrTankbusterImminent && !AnyLivingTankInParty())
 			{
 				return true;
 			}
 		}
 
 		return false;
+	}
+
+	// Helper: Returns true if there are any tanks in the party with HP > 0
+	private static bool AnyLivingTankInParty()
+	{
+		return DataCenter.PartyTank != null;
 	}
 
 	// Helper: Returns true if there are any healers in the party with HP > 0
@@ -656,6 +684,27 @@ internal static class StateUpdater
 		return count;
 	}
 
+	/// <summary>
+	/// Whether there is an actual reason to expect incoming damage, so that a shield can be credited
+	/// against a specific hit rather than merely being up right now.
+	/// </summary>
+	private static bool ShieldCreditAllowed =>
+		(Service.Config.UseBmrTimeline && DataCenter.BMRHasActiveModule
+			&& DataCenter.BMRNextDamageIn is > 0f and < float.MaxValue)
+		|| DataCenter.IsHostileCastingAOE
+		|| DataCenter.IsHostileCastingToTank
+		|| DataCenter.IsHostileCastingTankBusterAtMe;
+
+	/// <summary>
+	/// How long a shield must still last to count: until BMR's next predicted damage, or a short
+	/// floor when the reason came from cast detection and carries no lead time of its own.
+	/// </summary>
+	private static float ShieldSurvivalHorizon =>
+		Service.Config.UseBmrTimeline && DataCenter.BMRHasActiveModule
+			&& DataCenter.BMRNextDamageIn is > 0f and < float.MaxValue
+			? DataCenter.BMRNextDamageIn
+			: ShieldSurvivalFallbackSeconds;
+
 	private static bool ShouldHealSelf(StatusID[] hotStatus, float healSingle, float healSingleHot)
 	{
 		if (Player.Object == null)
@@ -683,6 +732,13 @@ internal static class StateUpdater
 
 		// Determine the target's health ratio. If they have a "Doom" status, treat their health as critically low (0.2).
 		var h = StatusHelper.PlayerDoomNeedHealing() ? 0.2f : ObjectHelper.GetPlayerHealthRatio();
+
+		// A shield still up when the next damage lands counts toward effective health.
+		if (!StatusHelper.PlayerDoomNeedHealing() && ShieldCreditAllowed
+			&& Player.Object.HasSurvivingShield(ShieldSurvivalHorizon))
+		{
+			h = Math.Max(h, Player.Object.GetEffectiveHpPercent() / 100f);
+		}
 
 		// If the target's health is zero or they are invulnerable to healing, return false.
 		if (h == 0 || !StatusHelper.PlayerNoNeedHealingInvuln())
@@ -721,6 +777,13 @@ internal static class StateUpdater
 
 		// Determine the target's health ratio. GetHealthRatio already treats "Doom" status targets as critically low (1%).
 		var h = target.GetHealthRatio();
+
+		// A shield still up when the next damage lands counts toward effective health.
+		if (!target.DoomNeedHealing() && ShieldCreditAllowed
+			&& target.HasSurvivingShield(ShieldSurvivalHorizon))
+		{
+			h = Math.Max(h, target.GetEffectiveHpPercent() / 100f);
+		}
 
 		// If the target's health is zero or they are invulnerable to healing, return false.
 		if (h == 0 || !target.NoNeedHealingInvuln())

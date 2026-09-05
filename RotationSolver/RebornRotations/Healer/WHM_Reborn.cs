@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace RotationSolver.RebornRotations.Healer;
 
@@ -20,6 +20,10 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Enable Swiftcast Restriction Logic to attempt to prevent actions other than Raise when you have swiftcast")]
 	public bool SwiftLogic { get; set; } = true;
 
+	/// <summary>A raise is pending with Swiftcast up for it, so no GCD method spends the cast.</summary>
+	private bool SwiftRaisePending =>
+		(HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise);
+
 	[RotationConfig(CombatType.PvE, Name = "Use GCDs to heal. (Ignored if you are the only healer in party)")]
 	public bool GCDHeal { get; set; } = true;
 
@@ -36,8 +40,16 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Number of GCDs before you cap on blue lillies that overcap protection will consider 'near full'.")]
 	public int LilyOvercapTime { get; set; } = 3;
 
-	[RotationConfig(CombatType.PvE, Name = "Regen on Tank at 5 seconds remaining on Prepull Countdown.")]
+	[RotationConfig(CombatType.PvE, Name = "Regen on Tank as they close in on enemies (dungeons only, not Trials/Raids), and keep it up while it's otherwise idle GCD time (Regen is instant-cast, safe to keep up while moving).")]
 	public bool UsePreRegen { get; set; } = true;
+
+	[Range(1, 8, ConfigUnitType.None, 1)]
+	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies near the tank before combat for the pre-pull Regen above to be worth casting", Parent = nameof(UsePreRegen))]
+	public int PreRegenMinHostiles { get; set; } = 2;
+
+	[Range(1, 12, ConfigUnitType.None, 1)]
+	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies still around the tank during a wall-to-wall pull for the Regen above to keep being force-refreshed, instead of falling back to normal reactive healing", Parent = nameof(UsePreRegen))]
+	public int PreRegenMinWallToWallHostiles { get; set; } = 3;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Divine Caress as soon as its available")]
 	public bool UseDivine { get; set; } = false;
@@ -100,11 +112,23 @@ public sealed class WHM_Reborn : WhiteMageRotation
 				return act;
 			}
 		}
+
 		return base.CountDownAction(remainTime);
 	}
 	#endregion
 
 	#region oGCD Logic
+	[RotationDesc(ActionID.AetherialShiftPvE)]
+	protected override bool MoveForwardAbility(IAction nextGCD, out IAction? act)
+	{
+		if (AetherialShiftPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		return base.MoveForwardAbility(nextGCD, out act);
+	}
+
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
 	{
 		var useLastThinAirCharge = ThinAirLastChargeUsage == ThinAirUsageStrategy.UseAllCharges || (ThinAirLastChargeUsage == ThinAirUsageStrategy.ReserveLastChargeForRaise && nextGCD == RaisePvE);
@@ -279,10 +303,44 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	#endregion
 
 	#region GCD Logic
+	/// <summary>
+	/// Proactive wall-to-wall sustain: keep Regen up on the tank as they commit to a pull. Called from
+	/// GeneralGCD, HealSingleGCD and HealAreaGCD alike - the outer dispatch reaches the two heal methods
+	/// first, so a raised heal-need flag would otherwise starve the check in GeneralGCD for a whole
+	/// pull. Never fires at or below <see cref="RegenHeal"/>, leaving a genuine emergency to Cure II /
+	/// Cure. targetOverride bypasses the candidate status check (FindTankTarget doesn't call
+	/// CheckStatus), so the remaining duration is verified explicitly here.
+	/// </summary>
+	private bool TrySustainRegenOnTank(out IAction? act)
+	{
+		act = null;
+
+		if (!UsePreRegen || !TankApproachingMobGroup(PreRegenMinHostiles, PreRegenMinWallToWallHostiles))
+		{
+			return false;
+		}
+
+		if (!RegenPvE.CanUse(out act, targetOverride: TargetType.Tank))
+		{
+			act = null;
+			return false;
+		}
+
+		var tank = RegenPvE.Target.Target;
+		if (tank != null && tank.GetHealthRatio() > RegenHeal
+			&& tank.WillStatusEndGCD(RegenPvE.Config.StatusRefreshGcdCount, 0, RegenPvE.Setting.StatusFromSelf, RegenPvE.Setting.TargetStatusProvide ?? []))
+		{
+			return true;
+		}
+
+		act = null;
+		return false;
+	}
+
 	[RotationDesc(ActionID.AfflatusRapturePvE, ActionID.MedicaIiPvE, ActionID.CureIiiPvE, ActionID.MedicaPvE)]
 	protected override bool HealAreaGCD(out IAction? act)
 	{
-		if ((HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise))
+		if (SwiftRaisePending)
 		{
 			return base.HealAreaGCD(out act);
 		}
@@ -329,13 +387,19 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			return true;
 		}
 
+		// Last, so it never displaces one of the reactive AoE heals above it.
+		if (TrySustainRegenOnTank(out act))
+		{
+			return true;
+		}
+
 		return base.HealAreaGCD(out act);
 	}
 
 	[RotationDesc(ActionID.AfflatusSolacePvE, ActionID.RegenPvE, ActionID.CureIiPvE, ActionID.CurePvE)]
 	protected override bool HealSingleGCD(out IAction? act)
 	{
-		if ((HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise))
+		if (SwiftRaisePending)
 		{
 			return base.HealSingleGCD(out act);
 		}
@@ -346,6 +410,12 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		}
 
 		if (RegenPvE.CanUse(out act) && (RegenPvE.Target.Target.GetHealthRatio() > RegenHeal))
+		{
+			return true;
+		}
+
+		// Ahead of Cure II / Cure, which would otherwise claim every GCD under continuous damage.
+		if (TrySustainRegenOnTank(out act))
 		{
 			return true;
 		}
@@ -381,9 +451,15 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			return RaiseGCD(out act);
 		}
 
-		if ((HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise))
+		if (SwiftRaisePending)
 		{
 			return base.GeneralGCD(out act);
+		}
+
+		// Ahead of the damage filler: as bottom-of-list it only ever fired on the first pull.
+		if (TrySustainRegenOnTank(out act))
+		{
+			return true;
 		}
 
 		//if (NotInCombatDelay && RegenDefense.CanUse(out act)) return true;

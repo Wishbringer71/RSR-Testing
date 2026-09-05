@@ -122,6 +122,25 @@ public sealed class MCH_Reborn : MachinistRotation
 	[RotationDesc(ActionID.TacticianPvE, ActionID.DismantlePvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
+		if (!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
+		{
+			// Independent of the broad burst-state gate below, but still yields to Wildfire / Barrel
+			// Stabilizer whenever either could actually be attempted this tick. IsBurst is a persistent
+			// user toggle rather than a real burst-window signal, so this mirrors their trigger surface
+			// in AttackAbility instead.
+			var wildfireSlotContested = IsBurst && WildfirePvE.EnoughLevel && WildfirePvE.Cooldown.HasOneCharge
+				&& !BMRDowntimeWithin(10f) && (Heat >= 50 || HasHypercharged) && WeaponRemain < (GCDTime(1) / 2);
+			var barrelStabilizerSlotContested = IsBurst && BarrelStabilizerPvE.EnoughLevel
+				&& !BMRDowntimeWithin(GCDTime(2)) && BarrelStabilizerPvE.CanUse(out _);
+
+			if (!IsOverheated && !wildfireSlotContested && !barrelStabilizerSlotContested
+				&& BMRShouldRefreshBefore(BMRRaidwideIn, 15f, true, null, StatusID.Tactician_1951, StatusID.Tactician_2177)
+				&& TacticianPvE.CanUse(out act, skipStatusProvideCheck: true))
+			{
+				return true;
+			}
+		}
+
 		if (IsOverheated || HasWildfire || HasFullMetalMachinist || (WildfirePvE.EnoughLevel && WildfirePvE.Cooldown.HasOneCharge))
 		{
 			return base.DefenseAreaAbility(nextGCD, out act);
@@ -135,7 +154,7 @@ public sealed class MCH_Reborn : MachinistRotation
 			}
 		}
 
-		if (!MitOverlap || (MitOverlap && !StatusHelper.PlayerHasStatus(true, StatusID.Tactician_1951)))
+		if (!MitOverlap || (MitOverlap && !StatusHelper.PlayerHasStatus(true, StatusID.Tactician_1951, StatusID.Tactician_2177)))
 		{
 			if (DismantlePvE.CanUse(out act))
 			{
@@ -144,6 +163,27 @@ public sealed class MCH_Reborn : MachinistRotation
 		}
 
 		return base.DefenseAreaAbility(nextGCD, out act);
+	}
+
+	[RotationDesc(ActionID.TacticianPvE)]
+	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
+	{
+		if (!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
+		{
+			var wildfireSlotContested = IsBurst && WildfirePvE.EnoughLevel && WildfirePvE.Cooldown.HasOneCharge
+				&& !BMRDowntimeWithin(10f) && (Heat >= 50 || HasHypercharged) && WeaponRemain < (GCDTime(1) / 2);
+			var barrelStabilizerSlotContested = IsBurst && BarrelStabilizerPvE.EnoughLevel
+				&& !BMRDowntimeWithin(GCDTime(2)) && BarrelStabilizerPvE.CanUse(out _);
+
+			if (!IsOverheated && !wildfireSlotContested && !barrelStabilizerSlotContested
+				&& BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, StatusID.Tactician_1951, StatusID.Tactician_2177)
+				&& TacticianPvE.CanUse(out act, skipStatusProvideCheck: true))
+			{
+				return true;
+			}
+		}
+
+		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 
 	// Logic for using attack abilities outside of GCD, focusing on burst windows and cooldown management.

@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace RotationSolver.RebornRotations.Tank;
 
@@ -7,6 +7,8 @@ namespace RotationSolver.RebornRotations.Tank;
 
 public sealed class DRK_Reborn : DarkKnightRotation
 {
+	public override bool HasHostileCountAoeMitigation => true;
+
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Use provoke in opening if tank stance is on")]
 	public bool UseProvokeInOpening { get; set; } = true;
@@ -143,6 +145,13 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			return true;
 		}
 
+		if (!InTwoMIsBurst
+			&& ShouldSustainMitigationDebuff(StatusID.Reprisal)
+			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		if (!InTwoMIsBurst && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
@@ -181,13 +190,14 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			return true;
 		}
 
-		//30
-		if ((!RampartPvE.Cooldown.IsCoolingDown || RampartPvE.Cooldown.ElapsedAfter(60)) && ShadowWallPvE.CanUse(out act))
+		// Predicted tankbuster takes priority over the elapsed-time stagger below.
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, ShadowedVigilPvE.EnoughLevel ? StatusID.ShadowedVigil : StatusID.ShadowWall)
+			&& (ShadowedVigilPvE.EnoughLevel ? ShadowedVigilPvE.CanUse(out act, skipStatusProvideCheck: true) : ShadowWallPvE.CanUse(out act, skipStatusProvideCheck: true)))
 		{
 			return true;
 		}
 
-		if ((!RampartPvE.Cooldown.IsCoolingDown || RampartPvE.Cooldown.ElapsedAfter(60)) && ShadowedVigilPvE.CanUse(out act))
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
@@ -226,6 +236,12 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			{
 				return true;
 			}
+		}
+
+		if (ShouldSustainMitigationDebuff(StatusID.Reprisal)
+			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
+		{
+			return true;
 		}
 
 		if (ReprisalPvE.CanUse(out act, skipAoeCheck: true))

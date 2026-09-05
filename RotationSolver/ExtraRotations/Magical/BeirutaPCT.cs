@@ -272,7 +272,7 @@ public sealed class BeirutaPCT : PictomancerRotation
 			return true;
 		}
 
-		return base.DefenseAreaAbility(nextGCD, out act);
+		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 
 	#endregion

@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace RotationSolver.RebornRotations.Healer;
 
@@ -13,6 +13,10 @@ public sealed class AST_Reborn : AstrologianRotation
 
 	[RotationConfig(CombatType.PvE, Name = "Enable Swiftcast Restriction Logic to attempt to prevent actions other than Raise when you have swiftcast")]
 	public bool SwiftLogic { get; set; } = true;
+
+	/// <summary>A raise is pending with Swiftcast up for it, so no GCD method spends the cast.</summary>
+	private bool SwiftRaisePending =>
+		(HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise);
 
 	[RotationConfig(CombatType.PvE, Name = "Use both stacks of Lightspeed while moving")]
 	public bool LightspeedMove { get; set; } = true;
@@ -39,6 +43,17 @@ public sealed class AST_Reborn : AstrologianRotation
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Minimum HP threshold party member needs to be to use Aspected Benefic")]
 	public float AspectedBeneficHeal { get; set; } = 0.4f;
+
+	[RotationConfig(CombatType.PvE, Name = "Aspected Benefic on Tank as they close in on enemies (dungeons only, not Trials/Raids), and keep it up while it's otherwise idle GCD time (Aspected Benefic is instant-cast, safe to keep up while moving).")]
+	public bool UsePreAspectedBenefic { get; set; } = true;
+
+	[Range(1, 8, ConfigUnitType.None, 1)]
+	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies near the tank before combat for the pre-pull Aspected Benefic above to be worth casting", Parent = nameof(UsePreAspectedBenefic))]
+	public int PreAspectedBeneficMinHostiles { get; set; } = 2;
+
+	[Range(1, 12, ConfigUnitType.None, 1)]
+	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies still around the tank during a wall-to-wall pull for the Aspected Benefic above to keep being force-refreshed, instead of falling back to normal reactive healing", Parent = nameof(UsePreAspectedBenefic))]
+	public int PreAspectedBeneficMinWallToWallHostiles { get; set; } = 3;
 
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Minimum HP threshold party member needs to be to use Synastry")]
@@ -452,12 +467,46 @@ public sealed class AST_Reborn : AstrologianRotation
 	#endregion
 
 	#region GCD Logic
+	/// <summary>
+	/// Proactive wall-to-wall sustain: keep Aspected Benefic up on the tank as they commit to a pull.
+	/// Called from GeneralGCD, HealSingleGCD and HealAreaGCD alike - the outer dispatch reaches the two
+	/// heal methods first, so a raised heal-need flag would otherwise starve the check in GeneralGCD
+	/// for a whole pull. Never fires at or below <see cref="AspectedBeneficHeal"/>, leaving a genuine
+	/// emergency to Benefic II / Benefic. targetOverride bypasses the candidate status check
+	/// (FindTankTarget doesn't call CheckStatus), so the remaining duration is verified explicitly here.
+	/// </summary>
+	private bool TrySustainAspectedBeneficOnTank(out IAction? act)
+	{
+		act = null;
+
+		if (!UsePreAspectedBenefic || !TankApproachingMobGroup(PreAspectedBeneficMinHostiles, PreAspectedBeneficMinWallToWallHostiles))
+		{
+			return false;
+		}
+
+		if (!AspectedBeneficPvE.CanUse(out act, targetOverride: TargetType.Tank))
+		{
+			act = null;
+			return false;
+		}
+
+		var tank = AspectedBeneficPvE.Target.Target;
+		if (tank != null && tank.GetHealthRatio() > AspectedBeneficHeal
+			&& tank.WillStatusEndGCD(AspectedBeneficPvE.Config.StatusRefreshGcdCount, 0, AspectedBeneficPvE.Setting.StatusFromSelf, AspectedBeneficPvE.Setting.TargetStatusProvide ?? []))
+		{
+			return true;
+		}
+
+		act = null;
+		return false;
+	}
+
 	protected override bool DefenseSingleGCD(out IAction? act)
 	{
 		if ((MacrocosmosPvE.Cooldown.IsCoolingDown && !MacrocosmosPvE.Cooldown.WillHaveOneCharge(150))
 			|| (CollectiveUnconsciousPvE.Cooldown.IsCoolingDown && !CollectiveUnconsciousPvE.Cooldown.WillHaveOneCharge(40)))
 		{
-			return base.DefenseAreaGCD(out act);
+			return base.DefenseSingleGCD(out act);
 		}
 
 		if ((NeutralSectPvE.CanUse(out _) || HasNeutralSect || IsLastAbility(false, NeutralSectPvE)) && AspectedBeneficPvE.CanUse(out act))
@@ -465,7 +514,7 @@ public sealed class AST_Reborn : AstrologianRotation
 			return true;
 		}
 
-		return base.DefenseAreaGCD(out act);
+		return base.DefenseSingleGCD(out act);
 	}
 
 	[RotationDesc(ActionID.MacrocosmosPvE)]
@@ -496,7 +545,7 @@ public sealed class AST_Reborn : AstrologianRotation
 	[RotationDesc(ActionID.AspectedBeneficPvE, ActionID.BeneficIiPvE, ActionID.BeneficPvE)]
 	protected override bool HealSingleGCD(out IAction? act)
 	{
-		if ((HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise))
+		if (SwiftRaisePending)
 		{
 			return base.HealSingleGCD(out act);
 		}
@@ -525,6 +574,12 @@ public sealed class AST_Reborn : AstrologianRotation
 			}
 		}
 
+		// Ahead of Benefic II / Benefic, which would otherwise claim every GCD under continuous damage.
+		if (TrySustainAspectedBeneficOnTank(out act))
+		{
+			return true;
+		}
+
 		if (BeneficIiPvE.CanUse(out act))
 		{
 			return true;
@@ -541,7 +596,7 @@ public sealed class AST_Reborn : AstrologianRotation
 	[RotationDesc(ActionID.AspectedHeliosPvE, ActionID.HeliosPvE, ActionID.HeliosConjunctionPvE)]
 	protected override bool HealAreaGCD(out IAction? act)
 	{
-		if ((HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise))
+		if (SwiftRaisePending)
 		{
 			return base.HealAreaGCD(out act);
 		}
@@ -566,6 +621,12 @@ public sealed class AST_Reborn : AstrologianRotation
 			return true;
 		}
 
+		// Last, so it never displaces one of the reactive AoE heals above it.
+		if (TrySustainAspectedBeneficOnTank(out act))
+		{
+			return true;
+		}
+
 		return base.HealAreaGCD(out act);
 	}
 
@@ -582,9 +643,15 @@ public sealed class AST_Reborn : AstrologianRotation
 
 	protected override bool GeneralGCD(out IAction? act)
 	{
-		if ((HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise))
+		if (SwiftRaisePending)
 		{
 			return base.GeneralGCD(out act);
+		}
+
+		// Ahead of the damage filler: as bottom-of-list it only ever fired on the first pull.
+		if (TrySustainAspectedBeneficOnTank(out act))
+		{
+			return true;
 		}
 
 		if (GravityIiPvE.EnoughLevel && GravityIiPvE.CanUse(out act))

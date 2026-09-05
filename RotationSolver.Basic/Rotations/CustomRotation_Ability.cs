@@ -1,4 +1,4 @@
-using ECommons.DalamudServices;
+﻿using ECommons.DalamudServices;
 using ECommons.ExcelServices;
 
 namespace RotationSolver.Basic.Rotations;
@@ -51,11 +51,7 @@ public partial class CustomRotation
 		}
 
 		IBaseAction.ForceEnable = true;
-		// Queued commands can sit here while the action is unusable (e.g. Radiant Aegis during
-		// Bahamut/Phoenix, which gates on HasPet()) and fire once it becomes usable again, by which
-		// point the buff may already be up from something else. Respect the status-provide check so
-		// a stale queued command doesn't blindly reapply a buff that's already active.
-		if (act is IBaseAction a && a != null && !a.Info.IsRealGCD && a.CanUse(out _, usedUp: true, skipAoeCheck: true))
+		if (act is IBaseAction a && a != null && !a.Info.IsRealGCD && a.CanUse(out _, usedUp: true, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
@@ -341,7 +337,7 @@ public partial class CustomRotation
 		{
 			IBaseAction.ShouldEndSpecial = true;
 		}
-		if (DataCenter.MergedStatus.HasFlag(AutoStatus.MoveBack) && MoveBackAbility(nextGCD, out act))
+		if (DataCenter.MergedStatus.HasFlag(AutoStatus.MoveBack))
 		{
 			if (DataCenter.CurrentDutyRotation?.MoveBackAbility(nextGCD, out act) == true)
 			{
@@ -359,7 +355,13 @@ public partial class CustomRotation
 		{
 			IBaseAction.ShouldEndSpecial = true;
 		}
-		if (DataCenter.MergedStatus.HasFlag(AutoStatus.HealSingleAbility) && UseHpPotion(nextGCD, out act))
+		// Evaluated regardless of AutoStatus.HealSingleAbility: for non-healers that flag depends on
+		// UseHealWhenNotAHealer, so without this a tank or DPS about to eat a tankbuster would never
+		// even attempt a potion. Same condition StateUpdater.ShouldAddDefenseSingle uses.
+		var bmrTankbusterImminent = Service.Config.UseBmrTimeline
+			&& DataCenter.BMRNextTankbusterIn > 0.6f
+			&& DataCenter.BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow;
+		if ((DataCenter.MergedStatus.HasFlag(AutoStatus.HealSingleAbility) || DataCenter.IsHostileCastingTankBusterAtMe || bmrTankbusterImminent) && UseHpPotion(nextGCD, out act, bmrTankbusterImminent))
 		{
 			return true;
 		}
@@ -395,6 +397,12 @@ public partial class CustomRotation
 	/// <returns>True if the interrupt ability can be used; otherwise, false.</returns>
 	private bool MyInterruptAbility(JobRole role, IAction nextGCD, out IAction? act)
 	{
+		// Job override first: its combo-safety gate must precede the ungated role default below.
+		if (InterruptAbility(nextGCD, out act))
+		{
+			return true;
+		}
+
 		switch (role)
 		{
 			case JobRole.Tank:
@@ -406,7 +414,9 @@ public partial class CustomRotation
 				break;
 
 			case JobRole.Melee:
-				if (LegSweepPvE.CanUse(out act) && !StatusHelper.PlayerHasStatus(true, StatusID.Mudra))
+				// A job that gates this same action itself already declined it above, possibly because
+				// its gate is active - retrying it ungated here would defeat that gate.
+				if (!HasOwnInterruptGate && LegSweepPvE.CanUse(out act) && !StatusHelper.PlayerHasStatus(true, StatusID.Mudra))
 				{
 					return true;
 				}
@@ -425,7 +435,7 @@ public partial class CustomRotation
 				// Handle unexpected job roles if necessary
 				break;
 		}
-		return InterruptAbility(nextGCD, out act);
+		return false;
 	}
 
 	/// <summary>
@@ -439,6 +449,14 @@ public partial class CustomRotation
 		act = null;
 		return false;
 	}
+
+	/// <summary>
+	/// Whether this job's <see cref="InterruptAbility"/> override already gates the same shared
+	/// role-fallback interrupt action (e.g. LegSweep) with its own combo-safety condition. When true,
+	/// <see cref="MyInterruptAbility"/> skips its generic per-role fallback for that action instead of
+	/// retrying it ungated after the job's own gate declined it.
+	/// </summary>
+	protected virtual bool HasOwnInterruptGate => false;
 
 	/// <summary>
 	/// Determines if an interrupt ability can be used.
@@ -461,6 +479,12 @@ public partial class CustomRotation
 	/// <returns>True if an anti-knockback ability can be used; otherwise, false.</returns>
 	private bool AntiKnockback(JobRole role, IAction nextGCD, out IAction? act)
 	{
+		// Job override first: its combo-safety gate must precede the ungated role default below.
+		if (AntiKnockbackAbility(nextGCD, out act))
+		{
+			return true;
+		}
+
 		switch (role)
 		{
 			case JobRole.Tank:
@@ -471,7 +495,11 @@ public partial class CustomRotation
 
 				break;
 			case JobRole.Melee:
-				if (ArmsLengthPvE.CanUse(out act) && !StatusHelper.PlayerHasStatus(true, StatusID.Mudra))
+				// Same reasoning as MyInterruptAbility's Melee case: a job with its own gated
+				// AntiKnockbackAbility override (RPR/VPR) already tried ArmsLengthPvE above and
+				// declined, possibly due to its combo-safety gate rather than unavailability -
+				// retrying it ungated here would defeat that gate.
+				if (!HasOwnAntiKnockbackGate && ArmsLengthPvE.CanUse(out act) && !StatusHelper.PlayerHasStatus(true, StatusID.Mudra))
 				{
 					return true;
 				}
@@ -497,7 +525,7 @@ public partial class CustomRotation
 				break;
 		}
 
-		return AntiKnockbackAbility(nextGCD, out act);
+		return false;
 	}
 
 	/// <summary>
@@ -512,6 +540,14 @@ public partial class CustomRotation
 		act = null;
 		return false;
 	}
+
+	/// <summary>
+	/// Whether this job's <see cref="AntiKnockbackAbility"/> override already gates the same shared
+	/// role-fallback anti-knockback action (e.g. Arm's Length) with its own combo-safety condition.
+	/// When true, <see cref="AntiKnockback"/> skips its generic per-role fallback for that action
+	/// instead of retrying it ungated after the job's own gate declined it.
+	/// </summary>
+	protected virtual bool HasOwnAntiKnockbackGate => false;
 
 	/// <summary>
 	/// Determines if a provoke ability can be used.

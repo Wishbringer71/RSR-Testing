@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace RotationSolver.RebornRotations.Tank;
 
@@ -7,6 +7,8 @@ namespace RotationSolver.RebornRotations.Tank;
 
 public sealed class GNB_Reborn : GunbreakerRotation
 {
+	public override bool HasHostileCountAoeMitigation => true;
+
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "How to use Aurora")]
 	public AuroraUsageStrategy AuroraUsage { get; set; } = AuroraUsageStrategy.TankbusterTarget;
@@ -58,6 +60,17 @@ public sealed class GNB_Reborn : GunbreakerRotation
 	#endregion
 
 	#region oGCD Logic
+	[RotationDesc(ActionID.TrajectoryPvE)]
+	protected override bool MoveForwardAbility(IAction nextGCD, out IAction? act)
+	{
+		if (TrajectoryPvE.CanUse(out act, usedUp: true))
+		{
+			return true;
+		}
+
+		return base.MoveForwardAbility(nextGCD, out act);
+	}
+
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
 	{
 		if (JugularRipPvE.CanUse(out act))
@@ -97,6 +110,13 @@ public sealed class GNB_Reborn : GunbreakerRotation
 		}
 
 		if (!HasNoMercy && HeartOfLightPvE.CanUse(out act, skipAoeCheck: true))
+		{
+			return true;
+		}
+
+		if (!HasNoMercy
+			&& ShouldSustainMitigationDebuff(StatusID.Reprisal)
+			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
@@ -164,6 +184,18 @@ public sealed class GNB_Reborn : GunbreakerRotation
 			}
 		}
 
+		// Predicted tankbuster takes priority over the elapsed-time stagger below.
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, GreatNebulaPvE.EnoughLevel ? StatusID.GreatNebula : StatusID.Nebula)
+			&& (GreatNebulaPvE.EnoughLevel ? GreatNebulaPvE.CanUse(out act, skipStatusProvideCheck: true) : NebulaPvE.CanUse(out act, skipStatusProvideCheck: true)))
+		{
+			return true;
+		}
+
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		//30
 		if ((!RampartPvE.Cooldown.IsCoolingDown || RampartPvE.Cooldown.ElapsedAfter(60)) && GreatNebulaPvE.CanUse(out act) && GreatNebulaPvE.EnoughLevel)
 		{
@@ -198,6 +230,12 @@ public sealed class GNB_Reborn : GunbreakerRotation
 			{
 				return true;
 			}
+		}
+
+		if (ShouldSustainMitigationDebuff(StatusID.Reprisal)
+			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
+		{
+			return true;
 		}
 
 		if (ReprisalPvE.CanUse(out act, skipAoeCheck: true))

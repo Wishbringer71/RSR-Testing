@@ -26,6 +26,24 @@ internal static class DataCenter
 {
 	public static List<IBattleChara> PartyMembers { get; set; } = [];
 
+	/// <summary>
+	/// The party's first living tank, or null if there is none.
+	/// </summary>
+	public static IBattleChara? PartyTank
+	{
+		get
+		{
+			foreach (var member in PartyMembers)
+			{
+				if (member.IsJobCategory(JobRole.Tank) && !member.IsDead)
+				{
+					return member;
+				}
+			}
+			return null;
+		}
+	}
+
 	public static List<IBattleChara> AllianceMembers { get; set; } = [];
 
 	public static List<IBattleChara> AllHostileTargets { get; set; } = [];
@@ -457,7 +475,7 @@ internal static class DataCenter
 		}
 	}
 
-	private static float _avgTTK = 0f;
+	private static float _avgTTK = float.PositiveInfinity;
 	public static float AverageTTK
 	{
 		get
@@ -474,7 +492,10 @@ internal static class DataCenter
 					count++;
 				}
 			}
-			_avgTTK = count > 0 ? total / count : 0f;
+			// No target has an estimate yet for the first ~2.5s of a pull (GetTTK returns NaN until it
+			// has hit-history). Every consumer reads a low value as "fight ending soon, skip it", so
+			// "unknown" must be PositiveInfinity, not 0 - all of them compare via > or >=.
+			_avgTTK = count > 0 ? total / count : float.PositiveInfinity;
 			return _avgTTK;
 		}
 	}
@@ -1374,7 +1395,7 @@ internal static class DataCenter
 		LastAction = 0;
 		LastGCD = 0;
 		LastAbility = 0;
-		_avgTTK = 0;
+		_avgTTK = float.PositiveInfinity;
 		_timeLastActionUsed = DateTime.Now;
 		_actions.Clear();
 

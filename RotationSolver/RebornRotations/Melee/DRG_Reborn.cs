@@ -1,10 +1,12 @@
-namespace RotationSolver.RebornRotations.Melee;
+﻿namespace RotationSolver.RebornRotations.Melee;
 
 [Rotation("Reborn", CombatType.PvE, GameVersion = "7.55")]
 [SourceCode(Path = "main/RebornRotations/Melee/DRG_Reborn.cs")]
 
 public sealed class DRG_Reborn : DragoonRotation
 {
+	public override bool HasHostileCountAoeMitigation => true;
+
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Use Doom Spike for damage uptime if out of melee range even if it breaks combo")]
 	public bool DoomSpikeWhenever { get; set; } = true;
@@ -56,6 +58,31 @@ public sealed class DRG_Reborn : DragoonRotation
 		return base.MoveBackAbility(nextGCD, out act);
 	}
 
+	[RotationDesc]
+	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
+	{
+		// Every other ability-dispatch method in this file (Move*Ability, Defense*Ability,
+		// AttackAbility) skips its own logic right after Stardiver to avoid clipping the dive's
+		// landing - this method was missing that same guard, the one inconsistency with DRG's own
+		// established convention.
+		if (IsLastAction(false, StardiverPvE))
+		{
+			return base.HealSingleAbility(nextGCD, out act);
+		}
+
+		if (SecondWindPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		if (BloodbathPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		return base.HealSingleAbility(nextGCD, out act);
+	}
+
 	[RotationDesc(ActionID.FeintPvE)]
 	protected sealed override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
@@ -64,11 +91,34 @@ public sealed class DRG_Reborn : DragoonRotation
 			return base.DefenseAreaAbility(nextGCD, out act);
 		}
 
+		if (ShouldSustainMitigationDebuff(StatusID.Feint)
+			&& FeintPvE.CanUse(out act, skipComboCheck: true, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		if (FeintPvE.CanUse(out act, skipComboCheck: true))
 		{
 			return true;
 		}
 		return base.DefenseAreaAbility(nextGCD, out act);
+	}
+
+	[RotationDesc(ActionID.FeintPvE)]
+	protected sealed override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
+	{
+		if (IsLastAction(false, StardiverPvE))
+		{
+			return base.DefenseSingleAbility(nextGCD, out act);
+		}
+
+		if (ShouldSustainMitigationDebuff(StatusID.Feint)
+			&& FeintPvE.CanUse(out act, skipComboCheck: true, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
+		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 	#endregion
 

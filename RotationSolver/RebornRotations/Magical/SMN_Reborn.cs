@@ -7,6 +7,8 @@ namespace RotationSolver.RebornRotations.Magical;
 
 public sealed class SMN_Reborn : SummonerRotation
 {
+	public override bool HasHostileCountAoeMitigation => true;
+
 	#region Config Options
 
 	public enum SummonOrderType : byte
@@ -54,8 +56,8 @@ public sealed class SMN_Reborn : SummonerRotation
 	[RotationConfig(CombatType.PvE, Name = "Order")]
 	public SummonOrderType SummonOrder { get; set; } = SummonOrderType.TopazEmeraldRuby;
 
-	[RotationConfig(CombatType.PvE, Name = "Use Radiant Aegis on cooldown while in combat")]
-	public bool RadiantOnCooldownSpam { get; set; } = false;
+	[RotationConfig(CombatType.PvE, Name = "Prefer Titan while moving (Topaz GCDs are instant-cast, unlike Garuda/Ifrit which need you stationary)")]
+	public bool PreferTitanWhileMoving { get; set; } = false;
 
 	[RotationConfig(CombatType.PvE, Name = "Use this if there's no other raid buff in your party")]
 	public bool SecondTypeOpenerLogic { get; set; } = false;
@@ -118,7 +120,7 @@ public sealed class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
-		if (AddlePvE.CanUse(out act))
+		if (TryAddleBeforeDamage(out act) || AddlePvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -134,12 +136,23 @@ public sealed class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
-		if (AddlePvE.CanUse(out act))
+		if (TryAddleBeforeDamage(out act) || AddlePvE.CanUse(out act))
 		{
 			return true;
 		}
 
 		return base.DefenseSingleAbility(nextGCD, out act);
+	}
+
+	// Addle mitigates any damage the enemy deals, so the generic BMRDamageIn is the right signal.
+	private bool TryAddleBeforeDamage(out IAction? act)
+	{
+		if (ShouldSustainMitigationDebuff(StatusID.Addle))
+		{
+			return AddlePvE.CanUse(out act, skipStatusProvideCheck: true);
+		}
+		act = null;
+		return false;
 	}
 	#endregion
 
@@ -178,9 +191,8 @@ public sealed class SMN_Reborn : SummonerRotation
 
 		// BMRRaidwideIn is already the earliest of BMR's timeline/hints/generic raidwide predictions,
 		// so unlike the raw BMRDamageIn/BMRDamageType pair this can't fire on a tankbuster meant for someone else.
-		if (BMRActive && InCombat && !IsLastAction(false, RadiantAegisPvE)
-			&& BMRRaidwideIn is > 0f and <= 30f
-			&& StatusHelper.PlayerWillStatusEnd(BMRRaidwideIn, true, StatusID.RadiantAegis)
+		if (InCombat && !IsLastAction(false, RadiantAegisPvE)
+			&& BMRShouldRefreshBefore(BMRRaidwideIn, 30f, true, null, StatusID.RadiantAegis)
 			&& RadiantAegisPvE.CanUse(out act, usedUp: true, skipStatusProvideCheck: true))
 		{
 			return true;
@@ -493,6 +505,13 @@ public sealed class SMN_Reborn : SummonerRotation
 
 		if (!InBahamut && !InPhoenix && !InSolarBahamut)
 		{
+			// Topaz GCDs are instant-cast; Garuda/Ifrit's follow-ups need a stationary summoner.
+			// Falls through to the configured order below if Titan isn't available right now.
+			if (PreferTitanWhileMoving && IsMoving && TitanTime(out act))
+			{
+				return true;
+			}
+
 			switch (SummonOrder)
 			{
 				case SummonOrderType.TopazEmeraldRuby:

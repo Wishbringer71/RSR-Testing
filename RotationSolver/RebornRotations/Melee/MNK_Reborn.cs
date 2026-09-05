@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace RotationSolver.RebornRotations.Melee;
 
@@ -7,6 +7,8 @@ namespace RotationSolver.RebornRotations.Melee;
 
 public sealed class MNK_Reborn : MonkRotation
 {
+	public override bool HasHostileCountAoeMitigation => true;
+
 	#region Config Options
 
 	public enum RiddleOfFireFirst : byte
@@ -183,6 +185,12 @@ public sealed class MNK_Reborn : MonkRotation
 	[RotationDesc(ActionID.FeintPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
+		if (ShouldSustainMitigationDebuff(StatusID.Feint)
+			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		if (FeintPvE.CanUse(out act))
 		{
 			return true;
@@ -206,13 +214,20 @@ public sealed class MNK_Reborn : MonkRotation
 		return base.HealAreaAbility(nextGCD, out act);
 	}
 
-	[RotationDesc(ActionID.RiddleOfEarthPvE)]
+	[RotationDesc(ActionID.RiddleOfEarthPvE, ActionID.FeintPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		if (RiddleOfEarthPvE.CanUse(out act, usedUp: true))
 		{
 			return true;
 		}
+
+		if (ShouldSustainMitigationDebuff(StatusID.Feint)
+			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 

@@ -234,6 +234,18 @@ public sealed class PLD_Reborn : PaladinRotation
 				return true;
 			}
 
+			// Predicted tankbuster takes priority over the elapsed-time stagger below.
+			if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, GuardianPvE.EnoughLevel ? StatusID.Guardian : StatusID.Sentinel)
+				&& (GuardianPvE.EnoughLevel ? GuardianPvE.CanUse(out act, skipStatusProvideCheck: true) : SentinelPvE.CanUse(out act, skipStatusProvideCheck: true)))
+			{
+				return true;
+			}
+
+			if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
+			{
+				return true;
+			}
+
 			// If Rampart is not cooling down or has been cooling down for more than 60 seconds, and Sentinel can be used, use Sentinel and return true.
 			if ((!RampartPvE.Cooldown.IsCoolingDown || RampartPvE.Cooldown.ElapsedAfter(60)) && GuardianPvE.CanUse(out act) && GuardianPvE.EnoughLevel)
 			{
@@ -267,6 +279,12 @@ public sealed class PLD_Reborn : PaladinRotation
 				{
 					return true;
 				}
+			}
+
+			if (ShouldSustainMitigationDebuff(StatusID.Reprisal)
+				&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
+			{
+				return true;
 			}
 
 			// If Reprisal can be used, use it and return true.

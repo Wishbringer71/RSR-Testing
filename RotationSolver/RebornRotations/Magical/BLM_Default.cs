@@ -5,6 +5,8 @@
 
 public class BLM_Default : BlackMageRotation
 {
+	public override bool HasHostileCountAoeMitigation => true;
+
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Use Transpose to Astral Fire before Paradox")]
 	public bool UseTransposeForParadox { get; set; } = true;
@@ -118,13 +120,20 @@ public class BLM_Default : BlackMageRotation
 		return base.MoveBackAbility(nextGCD, out act);
 	}
 
-	[RotationDesc(ActionID.ManawardPvE)]
+	[RotationDesc(ActionID.ManawardPvE, ActionID.AddlePvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		if (ManawardPvE.CanUse(out act))
 		{
 			return true;
 		}
+
+		if (ShouldSustainMitigationDebuff(StatusID.Addle)
+			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 
@@ -132,6 +141,12 @@ public class BLM_Default : BlackMageRotation
 	protected sealed override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
 		if (ManawardPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		if (ShouldSustainMitigationDebuff(StatusID.Addle)
+			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
@@ -632,13 +647,21 @@ public class BLM_Default : BlackMageRotation
 
 		//So long for thunder.
 		if (ThunderIiiPvE.EnoughLevel && ThunderIiiPvE.CanUse(out _) && (!ThunderIiiPvE.Target.Target?.WillStatusEndGCD(gcdCount, 0, true,
-			StatusID.Thunder, StatusID.ThunderIi, StatusID.ThunderIii, StatusID.ThunderIv, StatusID.HighThunder_3872) ?? false))
+			StatusID.Thunder, StatusID.ThunderIi, StatusID.ThunderIii, StatusID.ThunderIv, StatusID.HighThunder, StatusID.HighThunder_3872) ?? false))
 		{
 			return false;
 		}
 
 		if (!ThunderIiiPvE.Info.EnoughLevelAndQuest() && ThunderPvE.CanUse(out _) && (!ThunderPvE.Target.Target?.WillStatusEndGCD(gcdCount, 0, true,
-			StatusID.Thunder, StatusID.ThunderIi, StatusID.ThunderIii, StatusID.ThunderIv, StatusID.HighThunder_3872) ?? false))
+			StatusID.Thunder, StatusID.ThunderIi, StatusID.ThunderIii, StatusID.ThunderIv, StatusID.HighThunder, StatusID.HighThunder_3872) ?? false))
+		{
+			return false;
+		}
+
+		// Checked unconditionally: the guards above need a valid single-target cast, and the action's
+		// own refresh gate omits HighThunder_3872, so at sync 92+ it never blocks a clipping refresh.
+		if (ThunderIiPvE.EnoughLevel && ThunderIiPvE.CanUse(out _) && (!ThunderIiPvE.Target.Target?.WillStatusEndGCD(gcdCount, 0, true,
+			StatusID.Thunder, StatusID.ThunderIi, StatusID.ThunderIii, StatusID.ThunderIv, StatusID.HighThunder, StatusID.HighThunder_3872) ?? false))
 		{
 			return false;
 		}

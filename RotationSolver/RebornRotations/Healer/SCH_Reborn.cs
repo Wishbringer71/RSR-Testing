@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace RotationSolver.RebornRotations.Healer;
 
@@ -61,6 +61,10 @@ public sealed class SCH_Reborn : ScholarRotation
 
 	[RotationConfig(CombatType.PvE, Name = "Enable Swiftcast restriction: only allow Raise while Swiftcast is active")]
 	public bool SwiftLogic { get; set; } = true;
+
+	/// <summary>A raise is pending with Swiftcast up for it, so no GCD method spends the cast.</summary>
+	private bool SwiftRaisePending =>
+		(HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise);
 
 	[RotationConfig(CombatType.PvE, Name = "Use GCDs to heal. (Ignored if you are the only healer in party)")]
 	public bool GCDHeal { get; set; } = true;
@@ -531,7 +535,7 @@ public sealed class SCH_Reborn : ScholarRotation
 	[RotationDesc(ActionID.SuccorPvE, ActionID.ConcitationPvE, ActionID.AccessionPvE)]
 	protected override bool HealAreaGCD(out IAction? act)
 	{
-		if ((HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise))
+		if (SwiftRaisePending)
 		{
 			return base.HealAreaGCD(out act);
 		}
@@ -564,7 +568,7 @@ public sealed class SCH_Reborn : ScholarRotation
 	[RotationDesc(ActionID.AdloquiumPvE, ActionID.ManifestationPvE, ActionID.PhysickPvE)]
 	protected override bool HealSingleGCD(out IAction? act)
 	{
-		if ((HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise))
+		if (SwiftRaisePending)
 		{
 			return base.HealSingleGCD(out act);
 		}
@@ -590,7 +594,7 @@ public sealed class SCH_Reborn : ScholarRotation
 	[RotationDesc(ActionID.SuccorPvE, ActionID.ConcitationPvE, ActionID.AccessionPvE)]
 	protected override bool DefenseAreaGCD(out IAction? act)
 	{
-		if ((HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise))
+		if (SwiftRaisePending)
 		{
 			return base.DefenseAreaGCD(out act);
 		}
@@ -627,7 +631,7 @@ public sealed class SCH_Reborn : ScholarRotation
 
 	protected override bool GeneralGCD(out IAction? act)
 	{
-		if ((HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise))
+		if (SwiftRaisePending)
 		{
 			return base.GeneralGCD(out act);
 		}

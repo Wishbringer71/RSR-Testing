@@ -1,4 +1,4 @@
-namespace RotationSolver.RebornRotations.Ranged;
+﻿namespace RotationSolver.RebornRotations.Ranged;
 
 [Rotation("Reborn", CombatType.PvE, GameVersion = "7.55",
 	Description = "Please make sure that the three song times add up to 120 seconds, Wanderers default first song for now.")]
@@ -76,6 +76,17 @@ public sealed class BRD_Reborn : BardRotation
 	#endregion
 
 	#region oGCD Logic
+	[RotationDesc(ActionID.RepellingShotPvE)]
+	protected override bool MoveBackAbility(IAction nextGCD, out IAction? act)
+	{
+		if (RepellingShotPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		return base.MoveBackAbility(nextGCD, out act);
+	}
+
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
 	{
 		if (StatusHelper.PlayerHasStatus(false, StatusID.Doom))
@@ -127,11 +138,31 @@ public sealed class BRD_Reborn : BardRotation
 	[RotationDesc(ActionID.TroubadourPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
+		if ((!BurstDefense || (BurstDefense && !InBurstStatus))
+			&& BMRShouldRefreshBefore(BMRRaidwideIn, 15f, true, null, StatusID.Troubadour)
+			&& TroubadourPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		if ((!BurstDefense || (BurstDefense && !InBurstStatus)) && TroubadourPvE.CanUse(out act))
 		{
 			return true;
 		}
 		return base.DefenseAreaAbility(nextGCD, out act);
+	}
+
+	[RotationDesc(ActionID.TroubadourPvE)]
+	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
+	{
+		if ((!BurstDefense || (BurstDefense && !InBurstStatus))
+			&& BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, StatusID.Troubadour)
+			&& TroubadourPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
+		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 
 	private SongTrack GetNextSongTrack(SongTrack currentSong)

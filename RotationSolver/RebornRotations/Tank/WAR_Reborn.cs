@@ -1,4 +1,4 @@
-namespace RotationSolver.RebornRotations.Tank;
+﻿namespace RotationSolver.RebornRotations.Tank;
 
 [Rotation("Reborn", CombatType.PvE, GameVersion = "7.55")]
 [SourceCode(Path = "main/RebornRotations/Tank/WAR_Reborn.cs")]
@@ -223,6 +223,18 @@ public sealed class WAR_Reborn : WarriorRotation
 			return false;
 		}
 
+		// Predicted tankbuster takes priority over the elapsed-time stagger below.
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, DamnationPvE.EnoughLevel ? StatusID.Damnation : StatusID.Vengeance)
+			&& (DamnationPvE.EnoughLevel ? DamnationPvE.CanUse(out act, skipStatusProvideCheck: true) : VengeancePvE.CanUse(out act, skipStatusProvideCheck: true)))
+		{
+			return true;
+		}
+
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		if ((!RampartPvE.Cooldown.IsCoolingDown || RampartPvE.Cooldown.ElapsedAfter(60)) && DamnationPvE.CanUse(out act) && DamnationPvE.EnoughLevel)
 		{
 			return true;
@@ -255,6 +267,12 @@ public sealed class WAR_Reborn : WarriorRotation
 			{
 				return true;
 			}
+		}
+
+		if (ShouldSustainMitigationDebuff(StatusID.Reprisal)
+			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
+		{
+			return true;
 		}
 
 		if (ReprisalPvE.CanUse(out act, skipAoeCheck: true))

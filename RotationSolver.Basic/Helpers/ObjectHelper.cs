@@ -107,11 +107,24 @@ public static class ObjectHelper
 			if ((target.GetObjectNPC()?.Unknown0 == 0 || target.HitboxRadius >= 5) // Unknown12 used to be the flag checked for the mobs ability to move, honestly just guessing on this one
 				&& (target.TargetObject?.IsValid() ?? false))
 			{
-				// The target is not a tank role
-				if (Svc.Objects.SearchById(target.TargetObjectId) is IBattleChara targetObject && !targetObject.IsJobCategory(JobRole.Tank)
-					&& (Vector3.Distance(target.Position, Player.Object?.Position ?? Vector3.Zero) > 5))
+				if (Svc.Objects.SearchById(target.TargetObjectId) is IBattleChara targetObject)
 				{
-					return true;
+					// The target is not a tank role
+					if (!targetObject.IsJobCategory(JobRole.Tank)
+						&& (Vector3.Distance(target.Position, Player.Object?.Position ?? Vector3.Zero) > 5))
+					{
+						return true;
+					}
+
+					// The co-tank is at the HP the user already set for a tank in danger, and is still
+					// being attacked - take it back. No distance gate: any healthy tank should react.
+					if (targetObject.IsJobCategory(JobRole.Tank)
+						&& !targetObject.IsDead
+						&& targetObject.GameObjectId != Player.Object?.GameObjectId
+						&& targetObject.GetEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f)
+					{
+						return true;
+					}
 				}
 			}
 		}

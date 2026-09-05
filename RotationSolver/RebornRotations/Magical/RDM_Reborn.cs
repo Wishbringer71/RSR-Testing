@@ -5,6 +5,8 @@
 
 public sealed class RDM_Reborn : RedMageRotation
 {
+	public override bool HasHostileCountAoeMitigation => true;
+
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Use GCDs to heal. (Ignored if there are no healers alive in party)")]
 	public bool GCDHeal { get; set; } = false;
@@ -93,6 +95,12 @@ public sealed class RDM_Reborn : RedMageRotation
 	[RotationDesc(ActionID.AddlePvE, ActionID.MagickBarrierPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
+		if (ShouldSustainMitigationDebuff(StatusID.Addle)
+			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		if (AddlePvE.CanUse(out act))
 		{
 			return true;
@@ -104,6 +112,18 @@ public sealed class RDM_Reborn : RedMageRotation
 		}
 
 		return base.DefenseAreaAbility(nextGCD, out act);
+	}
+
+	[RotationDesc(ActionID.AddlePvE)]
+	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
+	{
+		if (ShouldSustainMitigationDebuff(StatusID.Addle)
+			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
+		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
@@ -367,7 +387,7 @@ public sealed class RDM_Reborn : RedMageRotation
 				}
 			}
 
-			if (!ImpactPvE.EnoughLevel && ImpactPvE.EnoughLevel)
+			if (ImpactPvE.EnoughLevel)
 			{
 				if (ImpactPvE.CanUse(out act))
 				{

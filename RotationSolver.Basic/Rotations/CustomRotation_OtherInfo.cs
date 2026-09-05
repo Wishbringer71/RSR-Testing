@@ -845,6 +845,52 @@ public partial class CustomRotation
 	protected static IEnumerable<IBattleChara> AllHostileTargets => DataCenter.AllHostileTargets;
 
 	/// <summary>
+	/// The party's first living tank, or null if there is none.
+	/// </summary>
+	protected static IBattleChara? PartyTank => DataCenter.PartyTank;
+
+	/// <summary>
+	/// All four tank gap closers (Intervene, Onslaught, Shadowstride, Trajectory) have a 20-yalm range.
+	/// </summary>
+	private const float TankGapCloserRangeYalms = 20f;
+
+	/// <summary>
+	/// Whether the party's tank is within gap-closer range of enough hostiles to be pulling them, used
+	/// to time tank sustain across a dungeon wall-to-wall. Out of scope in Trials and Raids.
+	/// Before combat the count is <paramref name="prePullMinimumHostileCount"/> (opening groups are
+	/// small); once in combat it is <paramref name="wallToWallMinimumHostileCount"/>, which acts as the
+	/// off-ramp back to the normal rotation. Both are per-job config.
+	/// </summary>
+	protected static bool TankApproachingMobGroup(int prePullMinimumHostileCount, int wallToWallMinimumHostileCount)
+	{
+		var tank = PartyTank;
+		if (tank == null)
+		{
+			return false;
+		}
+
+		var contentType = DataCenter.Territory?.ContentType;
+		if (contentType == TerritoryContentType.Trials || contentType == TerritoryContentType.Raids)
+		{
+			return false;
+		}
+
+		var targets = DataCenter.AllHostileTargets;
+		var minimumHostileCount = DataCenter.InCombat ? wallToWallMinimumHostileCount : prePullMinimumHostileCount;
+
+		var mobsInRange = 0;
+		for (int i = 0, n = targets.Count; i < n; i++)
+		{
+			var hostile = targets[i];
+			if (hostile != null && Vector3.Distance(tank.Position, hostile.Position) <= TankGapCloserRangeYalms)
+			{
+				mobsInRange++;
+			}
+		}
+		return mobsInRange >= minimumHostileCount;
+	}
+
+	/// <summary>
 	/// All targets. This includes both hostile and friendly targets.
 	/// </summary>
 	protected static IEnumerable<IBattleChara> AllTargets => DataCenter.AllTargets;
@@ -1233,29 +1279,67 @@ public partial class CustomRotation
 
 	/// <summary>
 	/// True when BMR reports downtime within the specified seconds.
-	/// Always false when BMR is inactive (safe fallback).
+	/// Always false when BMR is inactive, or when the user has UseBmrTimeline disabled.
 	/// </summary>
 	public static bool BMRDowntimeWithin(float seconds)
-		=> BMRActive && BMRDowntimeIn is > 0f and < float.MaxValue && BMRDowntimeIn <= seconds;
+		=> Service.Config.UseBmrTimeline && BMRActive && BMRDowntimeIn is > 0f and < float.MaxValue && BMRDowntimeIn <= seconds;
 
 	/// <summary>
 	/// True when BMR reports a vulnerability window within the specified seconds.
-	/// Always false when BMR is inactive (safe fallback).
+	/// Always false when BMR is inactive, or when the user has UseBmrTimeline disabled.
 	/// </summary>
 	public static bool BMRVulnWithin(float seconds)
-		=> BMRActive && BMRVulnerableIn is > 0f and < float.MaxValue && BMRVulnerableIn <= seconds;
+		=> Service.Config.UseBmrTimeline && BMRActive && BMRVulnerableIn is > 0f and < float.MaxValue && BMRVulnerableIn <= seconds;
 
 	/// <summary>
 	/// True when BMR reports a raidwide within the specified seconds.
+	/// Always false when BMR is inactive, or when the user has UseBmrTimeline disabled.
 	/// </summary>
 	public static bool BMRRaidwideWithin(float seconds)
-		=> BMRActive && BMRRaidwideIn is > 0f and < float.MaxValue && BMRRaidwideIn <= seconds;
+		=> Service.Config.UseBmrTimeline && BMRActive && BMRRaidwideIn is > 0f and < float.MaxValue && BMRRaidwideIn <= seconds;
 
 	/// <summary>
 	/// True when BMR reports a tankbuster within the specified seconds.
+	/// Always false when BMR is inactive, or when the user has UseBmrTimeline disabled.
 	/// </summary>
 	public static bool BMRTankbusterWithin(float seconds)
-		=> BMRActive && BMRTankbusterIn is > 0f and < float.MaxValue && BMRTankbusterIn <= seconds;
+		=> Service.Config.UseBmrTimeline && BMRActive && BMRTankbusterIn is > 0f and < float.MaxValue && BMRTankbusterIn <= seconds;
+
+	/// <summary>
+	/// True when a status will expire before a predicted BMR event lands, so it should be refreshed
+	/// now rather than on cooldown. <paramref name="predictedIn"/> is one of the BMR*In values,
+	/// <paramref name="statusDuration"/> the status's own duration, <paramref name="target"/> null for
+	/// a self status or the enemy for a debuff. The 0.6s floor matches StateUpdater's own guards.
+	/// Always false when BMR is inactive or UseBmrTimeline is off.
+	/// </summary>
+	public static bool BMRShouldRefreshBefore(float predictedIn, float statusDuration, bool statusFromSelf, IBattleChara? target, params StatusID[] statusIDs)
+	{
+		if (!Service.Config.UseBmrTimeline || !BMRActive || predictedIn is not (> 0.6f and < float.MaxValue) || predictedIn > statusDuration)
+		{
+			return false;
+		}
+
+		var chara = target ?? Player;
+		return chara != null && chara.WillStatusEnd(predictedIn, statusFromSelf, statusIDs);
+	}
+
+	/// <summary>
+	/// Shared duration of the enemy mitigation debuffs Addle, Feint and Reprisal, whose Enhanced traits
+	/// at level 98 extend all three from 10s to 15s.
+	/// </summary>
+	protected static float MitigationDebuffDuration => DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f;
+
+	/// <summary>
+	/// Whether an enemy mitigation debuff (Addle/Feint/Reprisal) is due for a proactive refresh: either
+	/// BMR predicts damage landing after the debuff would have expired, or enough hostiles are in range
+	/// to keep it up without a prediction to time it against, since trash pulls usually have no active
+	/// BMR module at all.
+	/// </summary>
+	protected static bool ShouldSustainMitigationDebuff(params StatusID[] statusIDs)
+	{
+		return BMRShouldRefreshBefore(BMRDamageIn, MitigationDebuffDuration, false, HostileTarget, statusIDs)
+			|| NumberOfHostilesInRange >= Service.Config.MitigationSustainHostileCount;
+	}
 	#endregion
 
 	/// <summary>

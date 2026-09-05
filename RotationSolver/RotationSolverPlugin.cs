@@ -269,8 +269,12 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 
 	internal static void ChangeUITranslation()
 	{
-		_rotationConfigWindow!.WindowName = UiString.ConfigWindowHeader.GetDescription()
-			+ (typeof(RotationConfigWindow).Assembly.GetName().Version?.ToString() ?? "?.?.?") + "###rsrConfigWindow";
+		// Informational version, not AssemblyVersion: the latter must be purely numeric, so a fork
+		// tag like 7.5.5.41+wsh1 would lose its suffix and read as the stock plugin.
+		var assembly = typeof(RotationConfigWindow).Assembly;
+		var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+			?? assembly.GetName().Version?.ToString() ?? "?.?.?";
+		_rotationConfigWindow!.WindowName = UiString.ConfigWindowHeader.GetDescription() + version + "###rsrConfigWindow";
 
 		RSCommands.Disable();
 		RSCommands.Enable();

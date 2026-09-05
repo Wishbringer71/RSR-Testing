@@ -19,7 +19,7 @@ public partial class CustomRotation
 
 		IBaseAction.ForceEnable = true;
 		if (act is IBaseAction a && a.Info.IsRealGCD
-			&& a.CanUse(out _, usedUp: true, skipAoeCheck: true, skipStatusProvideCheck: true))
+			&& a.CanUse(out _, usedUp: true, skipAoeCheck: true))
 		{
 			return act;
 		}

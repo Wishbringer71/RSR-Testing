@@ -733,12 +733,16 @@ internal partial class Configs : IPluginConfiguration
 		Filter = AutoActionUsage, Parent = nameof(UseDefenseAbility))]
 	private static readonly bool _useBMRTimeline = false;
 
+	// Gates when AutoStatus.DefenseArea gets set at all - job DefenseAreaAbility() methods aren't even
+	// called before that, so this also caps how early their own BMRShouldRefreshBefore calls (which use
+	// each status's own, often longer, duration as their upper bound) can actually trigger via the
+	// BMR-only path. A real detected cast (IsHostileCastingAOE) is a separate, unaffected trigger.
 	[UI("Seconds before raidwide to use area mitigation", Parent = nameof(UseBmrTimeline))]
 	[Range(1, 15, ConfigUnitType.Seconds, 0.5f)]
 	public float BMRRaidwideMitWindow { get; set; } = 5f;
 
-	[UI("Seconds before tankbuster to use single mitigation", Parent = nameof(UseBmrTimeline),
-		PvEFilter = JobFilterType.Tank)]
+	// Same caveat as BMRRaidwideMitWindow above, for AutoStatus.DefenseSingle/tankbuster mitigation.
+	[UI("Seconds before tankbuster to use single mitigation", Parent = nameof(UseBmrTimeline))]
 	[Range(1, 10, ConfigUnitType.Seconds, 0.5f)]
 	public float BMRTankbusterMitWindow { get; set; } = 3f;
 
@@ -749,6 +753,10 @@ internal partial class Configs : IPluginConfiguration
 		PvEFilter = JobFilterType.Tank)]
 	[Range(1, 8, ConfigUnitType.None, 0.05f)]
 	public int AutoDefenseNumber { get; set; } = 2;
+
+	[UI("Number of hostiles for enemy mitigation sustain-refresh (Addle/Feint/Reprisal)", Parent = nameof(UseDefenseAbility))]
+	[Range(1, 8, ConfigUnitType.None, 1)]
+	public int MitigationSustainHostileCount { get; set; } = 4;
 
 	[JobConfig, Range(0, 1, ConfigUnitType.Percent, 0.02f)]
 	[UI("HP%% needed to use single/self targetted mitigation on Tanks", Parent = nameof(UseDefenseAbility),

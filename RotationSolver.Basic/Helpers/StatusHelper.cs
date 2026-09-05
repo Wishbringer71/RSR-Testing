@@ -362,7 +362,23 @@ public static class StatusHelper
 	];
 
 	/// <summary>
-	/// 
+	/// Shields (absorb effects) that have their own tracked duration, as opposed to instant HP-based
+	/// mitigation. Used to decide whether a shield will still be up when it matters, e.g. for
+	/// shield-aware heal prioritization.
+	/// </summary>
+	public static StatusID[] ShieldStatus { get; } =
+	[
+		StatusID.Galvanize,
+		StatusID.EukrasianDiagnosis,
+		StatusID.EukrasianPrognosis,
+		StatusID.Haima,
+		StatusID.Panhaima,
+		StatusID.Panhaimatinon,
+		StatusID.DivineVeil_1362,
+	];
+
+	/// <summary>
+	///
 	/// </summary>
 	public static StatusID[] TankStanceStatus { get; } =
 	[
@@ -707,6 +723,16 @@ public static class StatusHelper
 
 		var statusTime = battleChara.StatusTime(isFromSelf, statusIDs);
 		return (statusTime >= 0f || !battleChara.HasStatus(isFromSelf, statusIDs)) && statusTime <= time;
+	}
+
+	/// <summary>
+	/// Whether <paramref name="battleChara"/> has an active shield (see <see cref="ShieldStatus"/>) that will
+	/// still be up in <paramref name="horizon"/> seconds. A shield about to expire shouldn't be credited toward
+	/// the target's effective health, since it won't be there to absorb the damage that matters.
+	/// </summary>
+	public static bool HasSurvivingShield(this IBattleChara battleChara, float horizon)
+	{
+		return battleChara.GetObjectShield() > 0 && !battleChara.WillStatusEnd(horizon, false, ShieldStatus);
 	}
 
 	/// <summary>

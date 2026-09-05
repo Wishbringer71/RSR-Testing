@@ -85,12 +85,18 @@ public struct ActionTargetInfo(IBaseAction action)
 			// When this action is flagged as Restricted DoT, skip targets on the restricted list
 			if (action.IsRestrictedDOT && DataCenter.RestrictedDotNameIds != null)
 			{
+				var isRestricted = false;
 				for (var i = 0; i < DataCenter.RestrictedDotNameIds.Count; i++)
 				{
 					if (target.NameId == DataCenter.RestrictedDotNameIds[i])
 					{
-						continue;
+						isRestricted = true;
+						break;
 					}
+				}
+				if (isRestricted)
+				{
+					continue;
 				}
 			}
 
@@ -797,7 +803,7 @@ public struct ActionTargetInfo(IBaseAction action)
 			}
 			else
 			{
-				return FindTargetAreaHostile(canTargets, canAffects, action.Config.AoeCount);
+				return FindTargetAreaHostile(canTargets, canAffects, action.Config.AoeCount, targetOverride);
 			}
 		}
 	}
@@ -808,33 +814,28 @@ public struct ActionTargetInfo(IBaseAction action)
 	/// <param name="canTargets">The potential targets that can be affected.</param>
 	/// <param name="canAffects">The potential characters that can be affected.</param>
 	/// <param name="aoeCount">The number of targets to consider for AoE.</param>
+	/// <param name="targetOverride">Overrides the default target type for the action.</param>
 	/// <returns>
 	/// A <see cref="TargetResult"/> containing the target and affected characters, or <c>null</c> if no target is found.
 	/// </returns>
-	private readonly TargetResult? FindTargetAreaHostile(IEnumerable<IBattleChara> canTargets, IEnumerable<IBattleChara> canAffects, int aoeCount)
+	private readonly TargetResult? FindTargetAreaHostile(IEnumerable<IBattleChara> canTargets, IEnumerable<IBattleChara> canAffects, int aoeCount, TargetType targetOverride)
 	{
 		if (canAffects == null || canTargets == null)
 		{
 			return null;
 		}
 
-		IBattleChara? target = null;
-		var mostCanTargetObjects = GetMostCanTargetObjects(canTargets, canAffects, aoeCount);
-		using var enumerator = mostCanTargetObjects.GetEnumerator();
-
-		while (enumerator.MoveNext())
-		{
-			var t = enumerator.Current;
-			if (target == null || ObjectHelper.GetHealthRatio(t) > ObjectHelper.GetHealthRatio(target))
-			{
-				target = t;
-			}
-		}
-
-		if (target == null)
+		List<IBattleChara> tiedAnchors = [.. GetMostCanTargetObjects(canTargets, canAffects, aoeCount)];
+		if (tiedAnchors.Count == 0)
 		{
 			return null;
 		}
+
+		// Anchors can tie on hit count. Resolve the tie the same way the target-based AoE path does,
+		// so a ground-targeted AoE anchors on the same enemy a target-based one would pick. Falling
+		// back to the first tied anchor keeps the old guarantee that a non-empty tie always yields one.
+		var target = FindTargetByType(tiedAnchors, action.Setting.TargetType, action.Config.AutoHealRatio,
+			action.Setting.SpecialType, targetOverride, false) ?? tiedAnchors[0];
 
 		List<IBattleChara> affectedTargets = [];
 		foreach (var t in canAffects)
@@ -2003,6 +2004,7 @@ public struct ActionTargetInfo(IBaseAction action)
 				TargetType.Interrupt => FindInterruptTarget(),
 				TargetType.Tank => FindTankTarget(),
 				TargetType.Tankbuster => FindTankbusterTarget(),
+				TargetType.SafeDotTarget => FindSafeDotTarget(),
 				TargetType.Melee => battleChara != null ? RandomMeleeTarget(battleChara) : null,
 				TargetType.Range => battleChara != null ? RandomRangeTarget(battleChara) : null,
 				TargetType.Magical => battleChara != null ? RandomMagicalTarget(battleChara) : null,
@@ -2081,6 +2083,7 @@ public struct ActionTargetInfo(IBaseAction action)
 				TargetType.Interrupt => FindInterruptTarget(),
 				TargetType.Tank => FindTankTarget(),
 				TargetType.Tankbuster => FindTankbusterTarget(),
+				TargetType.SafeDotTarget => FindSafeDotTarget(),
 				TargetType.Melee => battleChara != null ? RandomMeleeTarget(battleChara) : null,
 				TargetType.Range => battleChara != null ? RandomRangeTarget(battleChara) : null,
 				TargetType.Magical => battleChara != null ? RandomMagicalTarget(battleChara) : null,
@@ -3373,6 +3376,26 @@ public struct ActionTargetInfo(IBaseAction action)
 			return null;
 		}
 
+		// First valid candidate that isn't currently attacking me - used to redirect DoT filler
+		// (e.g. WHM's wall-to-wall Dia upkeep) away from a target that's already aggro'd onto a
+		// squishy caster, instead of just skipping the filler cast entirely.
+		IBattleChara? FindSafeDotTarget()
+		{
+			if (battleChara == null)
+			{
+				return null;
+			}
+
+			foreach (var t in battleChara)
+			{
+				if (t.TargetObject != Player.Object)
+				{
+					return t;
+				}
+			}
+			return null;
+		}
+
 		IBattleChara? FindTargetForMoving()
 		{
 			return Service.Config == null || battleChara == null
@@ -4277,7 +4300,8 @@ public enum TargetType : byte
 	PvPDPS,
 	HighHPPercent,
 	LowHPPercent,
-	Tankbuster
+	Tankbuster,
+	SafeDotTarget
 }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 

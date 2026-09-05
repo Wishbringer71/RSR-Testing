@@ -4,6 +4,17 @@ on:
     branches:
       - main
 jobs:
+  DispatchChain:
+    # Separate from Build: needs no .NET and no Dalamud, so it reports in
+    # seconds instead of waiting on the full Windows build.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Check base call targets
+        run: python3 .github/scripts/check_base_calls.py
+
   Build:
     runs-on: windows-latest
     steps:

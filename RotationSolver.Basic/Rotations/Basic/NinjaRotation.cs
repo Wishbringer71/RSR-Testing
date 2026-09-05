@@ -721,13 +721,32 @@ public partial class NinjaRotation
 	[RotationDesc(ActionID.FeintPvE)]
 	protected sealed override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
+		if (ShouldSustainMitigationDebuff(StatusID.Feint)
+			&& !StatusHelper.PlayerHasStatus(true, StatusID.Mudra)
+			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		return (FeintPvE.CanUse(out act) && !StatusHelper.PlayerHasStatus(true, StatusID.Mudra)) || base.DefenseAreaAbility(nextGCD, out act);
 	}
 
 	/// <inheritdoc/>
-	[RotationDesc(ActionID.ShadeShiftPvE)]
+	[RotationDesc(ActionID.ShadeShiftPvE, ActionID.FeintPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		return ShadeShiftPvE.CanUse(out act) || base.DefenseSingleAbility(nextGCD, out act);
+		if (ShadeShiftPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		if (ShouldSustainMitigationDebuff(StatusID.Feint)
+			&& !StatusHelper.PlayerHasStatus(true, StatusID.Mudra)
+			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
+		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 }

@@ -5,6 +5,8 @@
 
 public sealed class RPR_Reborn : ReaperRotation
 {
+	public override bool HasHostileCountAoeMitigation => true;
+
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Pool Shroud for Arcane Circle.")]
 	public bool EnshroudPooling { get; set; } = false;
@@ -72,6 +74,17 @@ public sealed class RPR_Reborn : ReaperRotation
 	[RotationDesc(ActionID.FeintPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
+		// Gated on EnoughWeaveTime rather than NotInActiveCombo: a timed threat should not be locked
+		// out for a whole combo when a safe weave exists. Still yields to Gluttony/Enshroud, whose
+		// slots come round only once per resource cycle.
+		if (EnoughWeaveTime
+			&& !(GluttonyPvE.CanUse(out _, skipAoeCheck: true) || EnshroudPvE.CanUse(out _))
+			&& ShouldSustainMitigationDebuff(StatusID.Feint)
+			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		if (NotInActiveCombo && FeintPvE.CanUse(out act))
 		{
 			return true;
@@ -80,7 +93,7 @@ public sealed class RPR_Reborn : ReaperRotation
 		return base.DefenseAreaAbility(nextGCD, out act);
 	}
 
-	[RotationDesc(ActionID.ArcaneCrestPvE)]
+	[RotationDesc(ActionID.ArcaneCrestPvE, ActionID.FeintPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		if (NotInActiveCombo && ArcaneCrestPvE.CanUse(out act))
@@ -88,8 +101,19 @@ public sealed class RPR_Reborn : ReaperRotation
 			return true;
 		}
 
+		// EnoughWeaveTime and the Gluttony/Enshroud slot-guard are safety checks, not preference gates.
+		if (EnoughWeaveTime
+			&& !(GluttonyPvE.CanUse(out _, skipAoeCheck: true) || EnshroudPvE.CanUse(out _))
+			&& ShouldSustainMitigationDebuff(StatusID.Feint)
+			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		return base.DefenseSingleAbility(nextGCD, out act);
 	}
+
+	protected override bool HasOwnAntiKnockbackGate => true;
 
 	[RotationDesc(ActionID.ArmsLengthPvE)]
 	protected sealed override bool AntiKnockbackAbility(IAction nextGCD, out IAction? act)
@@ -101,6 +125,8 @@ public sealed class RPR_Reborn : ReaperRotation
 
 		return base.AntiKnockbackAbility(nextGCD, out act);
 	}
+
+	protected override bool HasOwnInterruptGate => true;
 
 	[RotationDesc(ActionID.LegSweepPvE)]
 	protected sealed override bool InterruptAbility(IAction nextGCD, out IAction? act)

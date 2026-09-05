@@ -118,6 +118,17 @@ public sealed class DNC_Reborn : DancerRotation
 		return base.HealAreaAbility(nextGCD, out act);
 	}
 
+	[RotationDesc]
+	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
+	{
+		if (SecondWindPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		return base.HealSingleAbility(nextGCD, out act);
+	}
+
 	[RotationDesc(ActionID.ShieldSambaPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{

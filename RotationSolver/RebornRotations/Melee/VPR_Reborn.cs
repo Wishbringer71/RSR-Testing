@@ -5,6 +5,8 @@
 
 public sealed class VPR_Reborn : ViperRotation
 {
+	public override bool HasHostileCountAoeMitigation => true;
+
 	#region Config Options
 
 	[RotationConfig(CombatType.PvE, Name = "Hold one charge of Uncoiled Fury after burst for movement")]
@@ -237,6 +239,17 @@ public sealed class VPR_Reborn : ViperRotation
 	[RotationDesc]
 	protected sealed override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
+		// Uses EnoughWeaveTime as the clip-risk check rather than NoAbilityReady, which blocks whenever
+		// anything else is queued even when a safe weave window exists. Still yields to Serpent's Ire
+		// during burst only, since that one weave slot carries real burst-alignment cost.
+		if (EnoughWeaveTime
+			&& !(IsBurst && SerpentsIrePvE.CanUse(out _))
+			&& ShouldSustainMitigationDebuff(StatusID.Feint)
+			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		if (NoAbilityReady && FeintPvE.CanUse(out act))
 		{
 			return true;
@@ -244,6 +257,23 @@ public sealed class VPR_Reborn : ViperRotation
 
 		return base.DefenseAreaAbility(nextGCD, out act);
 	}
+
+	[RotationDesc]
+	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
+	{
+		// EnoughWeaveTime and the Serpent's Ire slot-guard are safety checks, not preference gates.
+		if (EnoughWeaveTime
+			&& !(IsBurst && SerpentsIrePvE.CanUse(out _))
+			&& ShouldSustainMitigationDebuff(StatusID.Feint)
+			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
+		return base.DefenseSingleAbility(nextGCD, out act);
+	}
+
+	protected override bool HasOwnAntiKnockbackGate => true;
 
 	[RotationDesc]
 	protected sealed override bool AntiKnockbackAbility(IAction nextGCD, out IAction? act)
@@ -255,6 +285,8 @@ public sealed class VPR_Reborn : ViperRotation
 
 		return base.AntiKnockbackAbility(nextGCD, out act);
 	}
+
+	protected override bool HasOwnInterruptGate => true;
 
 	[RotationDesc]
 	protected sealed override bool InterruptAbility(IAction nextGCD, out IAction? act)

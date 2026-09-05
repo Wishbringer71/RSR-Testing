@@ -7,6 +7,8 @@ namespace RotationSolver.RebornRotations.Melee;
 
 public sealed class SAM_Reborn : SamuraiRotation
 {
+	public override bool HasHostileCountAoeMitigation => true;
+
 	#region Config Options
 
 	public enum STtoAOEStrategy : byte
@@ -62,9 +64,33 @@ public sealed class SAM_Reborn : SamuraiRotation
 		return base.MoveForwardAbility(nextGCD, out act);
 	}
 
+	[RotationDesc]
+	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
+	{
+		if (SecondWindPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		if (BloodbathPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		return base.HealSingleAbility(nextGCD, out act);
+	}
+
 	[RotationDesc(ActionID.ThirdEyePvE, ActionID.TengentsuPvE, ActionID.FeintPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
+		// Gated on EnoughWeaveTime rather than !HasZanshinReady, which can persist for several GCDs.
+		if (EnoughWeaveTime
+			&& ShouldSustainMitigationDebuff(StatusID.Feint)
+			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		if (!HasZanshinReady)
 		{
 			if (FeintPvE.CanUse(out act))
@@ -81,6 +107,20 @@ public sealed class SAM_Reborn : SamuraiRotation
 			}
 		}
 		return base.DefenseAreaAbility(nextGCD, out act);
+	}
+
+	[RotationDesc(ActionID.FeintPvE)]
+	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
+	{
+		// EnoughWeaveTime is a clip-safety check, not a preference gate, so it is kept here.
+		if (EnoughWeaveTime
+			&& ShouldSustainMitigationDebuff(StatusID.Feint)
+			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
+		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 	#endregion
 
