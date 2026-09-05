@@ -831,22 +831,11 @@ public struct ActionTargetInfo(IBaseAction action)
 			return null;
 		}
 
-		// Multiple anchors can tie on hit count. The target-based AoE path (see the FindTargetByType
-		// call above) resolves that tie through stop-mark filtering, priority hostiles, and the user's
-		// configured TargetingType (Nearest/LowHP/etc.). This used to instead pick whichever tied
-		// anchor had the highest current HP ratio - a hardcoded rule that ignored all of that, so a
-		// ground-targeted AoE (e.g. Meteor) could anchor on a different, unprioritized target than an
-		// equivalent target-based AoE would have chosen in the same tie. Reuse the same resolution here
-		// for parity. FindHostile()'s stop-mark/priority filters only ever narrow a non-empty candidate
-		// list to another non-empty one (see FilterStopCharacters usage), so this cannot turn a
-		// previously successful anchor pick into a failed one.
+		// Anchors can tie on hit count. Resolve the tie the same way the target-based AoE path does,
+		// so a ground-targeted AoE anchors on the same enemy a target-based one would pick. Falling
+		// back to the first tied anchor keeps the old guarantee that a non-empty tie always yields one.
 		var target = FindTargetByType(tiedAnchors, action.Setting.TargetType, action.Config.AutoHealRatio,
-			action.Setting.SpecialType, targetOverride, false);
-
-		if (target == null)
-		{
-			return null;
-		}
+			action.Setting.SpecialType, targetOverride, false) ?? tiedAnchors[0];
 
 		List<IBattleChara> affectedTargets = [];
 		foreach (var t in canAffects)

@@ -875,7 +875,6 @@ public partial class CustomRotation
 			return false;
 		}
 
-		const float triggerRange = TankGapCloserRangeYalms + 1f;
 		var targets = DataCenter.AllHostileTargets;
 		var minimumHostileCount = DataCenter.InCombat ? wallToWallMinimumHostileCount : prePullMinimumHostileCount;
 
@@ -883,7 +882,7 @@ public partial class CustomRotation
 		for (int i = 0, n = targets.Count; i < n; i++)
 		{
 			var hostile = targets[i];
-			if (hostile != null && Vector3.Distance(tank.Position, hostile.Position) <= triggerRange)
+			if (hostile != null && Vector3.Distance(tank.Position, hostile.Position) <= TankGapCloserRangeYalms)
 			{
 				mobsInRange++;
 			}

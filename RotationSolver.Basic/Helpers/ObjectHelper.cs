@@ -24,12 +24,6 @@ namespace RotationSolver.Basic.Helpers;
 /// </summary>
 public static class ObjectHelper
 {
-	/// <summary>
-	/// Effective-HP percentage at or below which a co-tank still being attacked is treated as needing
-	/// the boss pulled off them immediately. A conservative estimate, not verified in play.
-	/// </summary>
-	private const float CoTankEmergencyHpPercent = 25;
-
 	private static readonly EventHandlerContent[] _eventType =
 	[
 		EventHandlerContent.TreasureHuntDirector,
@@ -122,15 +116,12 @@ public static class ObjectHelper
 						return true;
 					}
 
-					// Emergency: it is the co-tank, critically wounded and still being attacked - grab it
-					// back before the next hit finishes them off. No distance gate, unlike above: any
-					// available healthy tank should react, not just the nearest one. This cannot prevent
-					// a hit that kills outright from high health, since BMR predicts timing and hit-shape
-					// but no damage magnitude.
+					// The co-tank is at the HP the user already set for a tank in danger, and is still
+					// being attacked - take it back. No distance gate: any healthy tank should react.
 					if (targetObject.IsJobCategory(JobRole.Tank)
 						&& !targetObject.IsDead
 						&& targetObject.GameObjectId != Player.Object?.GameObjectId
-						&& targetObject.GetEffectiveHpPercent() <= CoTankEmergencyHpPercent)
+						&& targetObject.GetEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f)
 					{
 						return true;
 					}

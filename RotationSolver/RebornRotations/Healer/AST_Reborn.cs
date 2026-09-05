@@ -139,10 +139,6 @@ public sealed class AST_Reborn : AstrologianRotation
 			return act;
 		}
 
-		// Countdown-timed pre-pull cast removed: dungeons (the actual wall-to-wall-pull use case)
-		// never have an active countdown, so this never fired there - and where it DID fire
-		// (trials/raids with a real countdown), it's explicitly out of scope for this mechanic.
-		// See the TankApproachingMobGroup-gated GeneralGCD filler below instead.
 		return base.CountDownAction(remainTime);
 	}
 	#endregion

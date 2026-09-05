@@ -103,10 +103,19 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			return act;
 		}
 
-		// Countdown-timed pre-pull cast removed: dungeons (the actual wall-to-wall-pull use case)
-		// never have an active countdown, so this never fired there - and where it DID fire
-		// (trials/raids with a real countdown), it's explicitly out of scope for this mechanic.
-		// See the TankApproachingMobGroup-gated GeneralGCD filler below instead.
+		if (UsePreRegen && remainTime <= 5 && remainTime > 3)
+		{
+			if (RegenPvE.CanUse(out act, targetOverride: TargetType.Tank))
+			{
+				return act;
+			}
+
+			if (DivineBenisonPvE.CanUse(out act))
+			{
+				return act;
+			}
+		}
+
 		return base.CountDownAction(remainTime);
 	}
 	#endregion
@@ -564,48 +573,19 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			}
 		}
 
-		// A genuine refresh need was already handled by the unconditional Dia/Aero check earlier in
-		// this method, so everything below only fires when the DoT is still fresh - this is always
-		// optional filler damage, not upkeep. That's a real DPS gain while moving (what DOTUpkeep is
-		// for), but recasting it specifically on a target that's already attacking the healer adds
-		// avoidable enmity for zero upkeep benefit, risking a squishy healer pulling aggro during a
-		// wall-to-wall pull. If the default target is unsafe, redirect to another one (TargetType.
-		// SafeDotTarget) instead of just skipping the filler cast outright - only while DOTUpkeep is
-		// actually active, matching why this branch exists in the first place.
 		if (AeroPvE.EnoughLevel)
 		{
-			if (DiaPvE.EnoughLevel)
+			if (DiaPvE.EnoughLevel && DiaPvE.CanUse(out act, skipStatusProvideCheck: DOTUpkeep))
 			{
-				if (DiaPvE.Target.Target?.TargetObject != Player && DiaPvE.CanUse(out act, skipStatusProvideCheck: DOTUpkeep))
-				{
-					return true;
-				}
-				if (DOTUpkeep && DiaPvE.CanUse(out act, targetOverride: TargetType.SafeDotTarget, skipStatusProvideCheck: true))
-				{
-					return true;
-				}
+				return true;
 			}
-			if (AeroIiPvE.EnoughLevel && !DiaPvE.EnoughLevel)
+			if (AeroIiPvE.EnoughLevel && !DiaPvE.EnoughLevel && AeroIiPvE.CanUse(out act, skipStatusProvideCheck: DOTUpkeep))
 			{
-				if (AeroIiPvE.Target.Target?.TargetObject != Player && AeroIiPvE.CanUse(out act, skipStatusProvideCheck: DOTUpkeep))
-				{
-					return true;
-				}
-				if (DOTUpkeep && AeroIiPvE.CanUse(out act, targetOverride: TargetType.SafeDotTarget, skipStatusProvideCheck: true))
-				{
-					return true;
-				}
+				return true;
 			}
-			if (AeroPvE.EnoughLevel && !AeroIiPvE.EnoughLevel)
+			if (AeroPvE.EnoughLevel && !AeroIiPvE.EnoughLevel && AeroPvE.CanUse(out act, skipStatusProvideCheck: DOTUpkeep))
 			{
-				if (AeroPvE.Target.Target?.TargetObject != Player && AeroPvE.CanUse(out act, skipStatusProvideCheck: DOTUpkeep))
-				{
-					return true;
-				}
-				if (DOTUpkeep && AeroPvE.CanUse(out act, targetOverride: TargetType.SafeDotTarget, skipStatusProvideCheck: true))
-				{
-					return true;
-				}
+				return true;
 			}
 		}
 
