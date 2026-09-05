@@ -369,12 +369,27 @@ public static class StatusHelper
 	public static StatusID[] ShieldStatus { get; } =
 	[
 		StatusID.Galvanize,
+		StatusID.Catalyze,
+		StatusID.Consolation,
 		StatusID.EukrasianDiagnosis,
+		StatusID.DifferentialDiagnosis,
 		StatusID.EukrasianPrognosis,
 		StatusID.Haima,
+		StatusID.Haimatinon,
 		StatusID.Panhaima,
 		StatusID.Panhaimatinon,
+		StatusID.Holosakos,
+		StatusID.DivineBenison,
 		StatusID.DivineVeil_1362,
+		StatusID.BlackestNight,
+		StatusID.BrutalShell,
+		StatusID.StemTheTide,
+		StatusID.ShadeShift,
+		StatusID.CrestOfTimeBorrowed,
+		StatusID.Manaward,
+		StatusID.RadiantAegis,
+		StatusID.TemperaCoat,
+		StatusID.TemperaGrassa,
 	];
 
 	/// <summary>
