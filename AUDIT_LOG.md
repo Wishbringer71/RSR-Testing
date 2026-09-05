@@ -1193,8 +1193,8 @@ als offen, weil der Stand aus dem Gespraechsverlauf statt aus
 `git ls-remote --tags origin` kam (Regel in CLAUDE.md ergaenzt). Lokaler
 Tag zeigte auf `09818f0e` und wurde auf den Origin-Stand gesetzt.
 
-**#54 WHM-Heilsuppression → Ursache gefunden, gefixt `c6a0a40c`, Bestaetigung
-im Spiel offen (bleibt als reduzierter Punkt in TODO.md).** Research: alle
+**#54 WHM-Heilsuppression → GEFIXT `c6a0a40c`, Kette vollstaendig belegt
+(s. Nachtrag unten).** Research: alle
 in #54 ausgeschlossenen Kandidaten betrafen den Pfad NACH dem Setzen der
 Heil-Flags. Nicht geprueft war die Flag-Quelle selbst: `CanUseHealAction`
 (StateUpdater.cs:11) verlangt in Kampf `IsLongerThan(AutoHealTimeToKill)`,
@@ -1211,8 +1211,23 @@ Mana, Schwellen irrelevant, Gegner unter 50 %) folgt daraus. Antithese
 GCDs pro Bosskampf, der Preis ein Tank ohne Heilung bei 20 %; und die
 UI-Einordnung widerspricht der Heiler-Anwendung. Fix: Gate nur noch im
 Nicht-Heiler-Zweig, Heiler heilen, sobald `AutoHeal` es erlaubt.
-Kalibrierung: kausal vollstaendig, aber ohne Live-Daten — deshalb
-„Ursache gefunden", nicht „bestaetigt".
+Nachtrag (zweiter Durchgang, Nutzer lehnt Spieltest als Aufgabe ab): die
+gesamte Kette vom Tank bei 20 % bis zum Cure-II-Cast im Code geprueft, jedes
+Glied gegen das gemeldete Szenario: `HPNotFull` (Min-HP < 1) →
+`CanUseHealAction` (gefixt) → `NonHealerHealLogic` (Heiler: immer wahr) →
+`ShouldHealSingle` je Mitglied (`h < Lerp(HealthSingleSpell,
+HealthSingleSpellHot, HoT-Anteil)`; 20 % liegt unter jedem genannten Wert,
+Schild-Credit braucht `GetObjectShield() > 0`, `NoNeedHealingInvuln` nur bei
+Invuln-Status) → Flag gesetzt → GCD-Dispatch `CanHealSingleSpell` =
+`GCDHeal || aliveHealerCount == 1` (PartyMembers enthaelt den Spieler,
+`IsParty` ObjectHelper.cs:711 → beim einzigen Heiler unabhaengig von GCDHeal
+wahr) → `WHM.HealSingleGCD`: Solace (Lilie), Regen nur > 0.3, Sustain nur
+> 0.3, dann `CureIiPvE.CanUse` → Zielwahl `TargetType.Heal` mit
+`AutoHealCheck` (< AutoHealRatio 0.8), `TargetOnScreen` nur bei
+`OnlyAttackInView` (Default aus), `NeedsCasting` nur bei Bewegung (Holy
+wurde gecastet, also stand der Heiler). Kein weiteres Glied kann im
+gemeldeten Szenario blockieren. Nebenfund dabei: der Sichtfeld-Filter galt
+auch fuer Heilziele (gefixt, s. Nebenfund unten).
 
 **#55 `_lastHp` → GEFIXT `a2a3ec35`.** Feld nie beschrieben, Zweig
 `currentHp - lastHp == healedHp` unerreichbar; entfernt. Die Praediktion
@@ -1293,4 +1308,39 @@ BMR-Vorhersage).
 
 Nicht mehr im Loop: das Check-in-Trigger `trig_01NLjkn2dFqmrZXhmxJcWGsQ`
 (09:44 UTC) liess sich aus dieser Umgebung nicht loeschen (Tool nicht
-angeboten); es feuert einmal und wird ignoriert.
+angeboten); es hat einmal gefeuert und wurde ignoriert.
+
+**Nebenfund aus der #54-Kettenpruefung → GEFIXT (ActionTargetInfo.cs:119).**
+`GetCanTargets` wandte `TargetOnScreen` (Option „Only attack targets in
+view" / Sichtkegel) auch auf freundliche Ziele an: mit eingeschalteter Option
+konnte ein Mitspieler hinter der Kamera nicht geheilt werden. Die Option
+spricht von Angreifen; Heilziele stehen auf der Gruppenliste. Fix:
+`IsTargetFriendly || TargetOnScreen(target)`. Default der Option ist aus, das
+gemeldete #54-Szenario war davon nicht betroffen.
+
+**#66 A4a → UMGESETZT, mikroinvasiv.** Vorgabe: so wenig Code wie moeglich.
+Verfahren: die Zweige bleiben an ihrer Stelle und behalten ihre Einrueckung
+(Methodenruempfe liegen auf derselben Ebene), es werden nur
+Methodengrenzen eingefuegt — `act = null; return false; }` plus die
+Signatur der naechsten Stufe — und `GeneralGCD` wird zum `||`-Dispatcher
+(dasselbe Idiom wie `ChurinDRK.EmergencyAbility`). Ergebnis: 208 eingefuegte
+Zeilen, 5 geloeschte (die fuenf alten `return base.GeneralGCD`), keine
+verschobene Zeile; Reihenfolge exakt erhalten, weil der Diff nur Einfuegungen
+zeigt. Semantik: jede Stufe endet mit `act = null; return false`, der
+Dispatcher setzt `act` ueber die Stufe oder `base.GeneralGCD`; das letzte
+`act` nach einer fehlgeschlagenen `CanUse` war nie beobachtbar, weil der
+naechste Zweig es ueberschrieb.
+
+| Datei | Stufen |
+|---|---|
+| BLU_Reborn (464 Zeilen) | UseUtilityAndDebuffs · MaintainDoTs · SpendCooldowns · UseSituational · UseFiller |
+| PhantomDefault (421) | zwei `return base`-Wächter bleiben in GeneralGCD; dann UseUtility · UseNecromancer · UseRedMage · UseBlueMage · UseSummoner · UseBlackMage · UseOtherPhantomJobs |
+| PCT_Reborn (316) | UseOpenerAndPriority · DrawMotifs · PaintWhileMoving · DrawMotifWithSwiftcast · SpendPaint · RefreshMotifsAsFallback |
+| SAM_Reborn (297) | UseOgiAndHiganbana (haelt die Local `isTargetBoss`) · UseAoeFinishers · UseAoeCombo · UseSetsugekka · UseSingleTargetFinishers · UseSingleTargetBuffs · UseComboStarters |
+| SMN_Reborn (191) | UseSummonsAndTrances · UsePrimalFollowUps · SummonPrimals · UseFillers |
+| MCH_Reborn (165) | **uebersprungen** (Abnahmebedingung 2): `if (IsLastAction(false, HyperchargePvE) && HeatBlastPvE.EnoughLevel) return base.GeneralGCD(out act);` steht mitten in der Kette und bricht die ganze Methode ab; in einer Stufe wuerde dasselbe `return base…` bei `false` die naechsten Stufen weiterlaufen lassen. Ein `out bool`-Muster waere mehr Code als die 165 Zeilen wert sind. |
+
+Abnahme: keine Local ueber eine Schnittgrenze (SAM: `isTargetBoss` bleibt in
+Stufe 1), kein `return false` in den Regionen (0 in allen sechs Methoden
+gezaehlt), Prüfskript sauber (529 Overrides, 627 Basisaufrufe), Klammern je
+Datei ausgeglichen, CI s. Commit.

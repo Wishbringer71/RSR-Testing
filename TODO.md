@@ -16,55 +16,9 @@ scheinbar neues Thema begonnen wird, um Doppelarbeit zu vermeiden.
 
 ## Offene Konzepte / Fixes (noch nicht umgesetzt)
 
-### #54 WHM-Heilsuppression — Ursache gefunden und gefixt, Bestätigung im Spiel offen
-
-Nutzer-Meldung (Klyteum, echte Mitspieler, einziger Heiler): oGCD-Heilung
-zu Beginn ok, danach keine GCD-Heilung mehr trotz vollem Mana und Tank
-unter 20 %, kein Castversuch; RSR castete stattdessen Holy. Gegner (>3)
-unter 50 % HP.
-
-Ursache (Commit `c6a0a40c`, Herleitung in AUDIT_LOG): `CanUseHealAction`
-verlangte in Kampf `AverageTTK > AutoHealTimeToKill` (Default 8 s) auch
-fuer Heiler, obwohl die Option in den Einstellungen unter
-`UseHealWhenNotAHealer` haengt und „Stop healing when time to kill is lower
-than" fuer Nicht-Heiler meint. `AverageTTK` ist ein Ratenschaetzer ueber
-alle Gegner; sobald die meisten Mobs unter 50 % sind, faellt er unter 8 s
-und saemtliche Heil-Flags gehen aus — genau das gemeldete Bild (kein
-Castversuch, GeneralGCD/Holy erreicht, Schwellen und Mana irrelevant).
-
-Offen ist nur die Bestaetigung: beim naechsten Wall-to-Wall pruefen, ob
-die GCD-Heilung durchlaeuft, wenn die Mobs unter 50 % fallen. Wer die
-alte Sperre fuer Heiler will, setzt sie nicht mehr ueber diese Option —
-das ist bewusst so.
-
-### #66 A4a: Dispatch-Zweige zu benannten Stufen extrahieren (reaktiviert)
-
-Aus der Neubewertung des Konzepts nach der Praemissenkorrektur (der Branch
-setzt keine Code-Kompatibilitaet zum Original mehr voraus, Upstream wird
-inhaltlich geprueft statt gemergt — damit ist das Merge-Kosten-Argument, das
-A4 und C gekippt hatte, hinfaellig).
-
-Gemessen ueber alle 31 PvE-Rotationsdateien: 1239 Zweige auf oberster Ebene in
-den Dispatch-Methoden, `GeneralGCD`-Median 16, Maximum 80 (BLU).
-
-Reihenfolge nach Nutzen, eine Datei pro Commit: BLU (80) → PhantomDefault (33)
-→ PCT (32) → SAM (27) → MCH (23) → SMN (23). Unter ~15 Zweigen lohnt es nicht.
-
-Abnahmebedingungen pro Datei (aus dem Critic-Durchgang, siehe Konzept A4):
-1. Keine Extraktion ueber eine Local hinweg, die vor UND nach der
-   Schnittgrenze gelesen wird (DRG: `doomSpikeRightNow`).
-2. Jedes `return false` in der extrahierten Region einordnen: „Stufe greift
-   nicht" (unkritisch) vs. „ganze Methode abbrechen" (braucht `out`-Flag, wie
-   `BLM_Default.InFireOrIce(out act, out mustGo)`). Im Zweifel Datei
-   ueberspringen und hier vermerken.
-3. Zweigreihenfolge exakt erhalten; der Diff muss zeigen, dass nur verschoben
-   wurde.
-4. CI-Build gruen.
-
-Namensgebung: Namen kommen aus der Fachlogik des Jobs (`GoIce`, `MaintainFire`,
-`AddThunder` — so macht es BLM_Default bereits), NICHT aus einer festen
-Taxonomie. Die Neunerliste im Konzept beschreibt die Reihenfolge der Stufen,
-nicht ihre Namen.
+Derzeit keine. Stand 05.09.2026: #54, #55, #63, #65, #66, #68, #69, #70 und
+#72 sind abgeschlossen und mit Herleitung in `AUDIT_LOG.md` archiviert
+(Abschnitte „Code-Review-Loop" und „TODO-Abarbeitung").
 
 ## Wichtig für zukünftige Sessions
 

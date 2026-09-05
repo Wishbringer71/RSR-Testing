@@ -53,6 +53,8 @@ Gilt auch für Zwischenmeldungen: nicht "soll ich X?" mitten im Ablauf, sondern 
 Wann und was gemergt, getaggt oder veroeffentlicht wird, ist ausschliesslich Sache des Nutzers. Dazu gibt es keine Empfehlungen, keine „jetzt mergen"-Vorschlaege und keine selbst gesetzten Check-in-Timer oder PR-Babysitting, sofern er es nicht ausdruecklich verlangt. Der Status (CI gruen/rot, was der PR enthaelt) wird gemeldet — die Entscheidung nicht vorweggenommen.
 Beleg: Empfehlung „PR #4 jetzt mergen" samt Check-in-Timer geliefert, obwohl der Nutzer Merges selbst steuert und nie danach gefragt hat.
 
+Ein Fix ist fertig, wenn seine Kette im Code vollstaendig belegt ist — dem Nutzer keine Pruefhausaufgaben („Bestaetigung im Spiel offen") als offenen Punkt hinterlassen. Fehlt ein Glied der Kette, ist das eigene Arbeit; ist die Kette geschlossen, wird sie als Beleg dokumentiert und der Punkt geschlossen. Beleg: #54 mit „Bestaetigung im Spiel offen" in TODO.md belassen, obwohl die restliche Kette (Flag → Dispatch → CanUse → Zielwahl) im Code pruefbar war und der Nutzer das Pruefen ausdruecklich ablehnte.
+
 Vorschlaege, wo sie verlangt sind (Design-/Spielfragen), muessen zu Ende gedacht sein: konkreter Mechanismus, konkrete Stellen, konkrete Konsequenz — keine Optionsliste mit Platzhalter-Empfehlung. Beleg: #72 mit „(a) belassen / (b) Fallback-Zeile" abgeliefert, ohne die betroffenen zwoelf Overrides einzeln durchdacht zu haben (SAM hat Third Eye, DRG/VPR nur Feint, DNC nichts — die Antwort ist je Job anders).
 
 ## Externer Zustand gilt auch fuer Tags und Releases

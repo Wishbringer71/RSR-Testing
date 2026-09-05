@@ -122,6 +122,7 @@ warum dieser Fork überhaupt existiert.
 | `ChurinDRK` Oblation | Der Guard aus 7b8a2f5 fehlte in der Extra-Rotation | Beide Ladungen konnten auf dasselbe Ziel gehen |
 | PLD/WAR Reprisal | Nur in `DefenseSingleAbility`; WARs eigene `RotationDesc` versprach es für Area | Raidwides ohne Reprisal, anders als bei DRK/GNB |
 | MCH/BRD Second Wind, MNK `HealSingleAbility`, DNC `DefenseSingleAbility` | Rollenaktionen deklariert, nie genutzt | Kein Selbstheil bzw. keine Antwort auf einen Buster |
+| `ActionTargetInfo.GetCanTargets` | „Only attack targets in view" galt auch für Heilziele | Mit eingeschalteter Option war ein Mitspieler hinter der Kamera nicht heilbar |
 
 Drei dieser Klassen sind zusätzlich per CI ausgeschlossen, damit sie nicht
 wiederkehren (`.github/scripts/check_base_calls.py`): falsches `base.`-Ziel,
@@ -149,21 +150,17 @@ einzuziehen: keine neue Vererbungsebene, keine neuen Dispatch-Slots, keine
 | Reaktive Antwort auf einen Buster, der auf einen DPS zielt | je 4 Zeilen bei 12 Jobs | `DefenseSingle` wird für DPS nur bei einem tatsächlich auf sie gerichteten Cast gesetzt; die Antwort ist die reaktive Zeile, die derselbe Job schon für Raidwides hat (Feint · Addle · Troubadour · Tactician · Shield Samba, SAM zusätzlich Third Eye) |
 | Bewegungsslots GNB · WHM · BRD · SAM | je 8 Zeilen | Laufen nur unter `AutoStatus.MoveForward`/`MoveBack`, können die Schadensrotation nicht erreichen |
 | `SwiftRaisePending` | 1 Property je Heiler | Ersetzt 13 wortgleiche Kopien derselben Bedingung |
+| Lange `GeneralGCD`-Ketten in benannte Stufen (BLU · PhantomDefault · PCT · SAM · SMN) | 208 eingefügte, 5 gelöschte, **0 verschobene** Zeilen | Nur Methodengrenzen eingefügt, `GeneralGCD` wird zum `\|\|`-Dispatcher wie in `ChurinDRK`; Reihenfolge und Verhalten unverändert, MCH wegen eines Abbruch-`return base` in der Kette bewusst ausgelassen |
 
 ---
 
 ## 5 · Was offen bleibt
 
-- **Bestätigung im Spiel** für die WHM-Ursache (`CanUseHealAction`, §3): beim
-  nächsten Wall-to-Wall prüfen, ob die GCD-Heilung durchläuft, sobald die
-  Mobs unter 50 % fallen. Die Herleitung ist vollständig, aber ohne
-  Live-Daten.
-- **A4a**, die Extraktion langer Dispatch-Methoden in benannte Stufen
-  (BLU · PhantomDefault · PCT · SAM · MCH · SMN) — Lesbarkeit, kein
-  Verhalten; in Arbeit, eine Datei je Commit.
-
+Nichts. Die WHM-Ursache (`CanUseHealAction`, §3) ist über die gesamte Kette
+vom Heil-Flag bis zur Zielwahl im Code belegt (`AUDIT_LOG.md`, #54); ein
+Spieltest steht der Fork-Seite nicht zur Verfügung und ist nicht Bedingung.
 Versionierung ist erledigt: Release `7.5.5.41+wsh1` auf `ba269301`, Schema
-`<upstream>+wsh<n>`.
+`<upstream>+wsh<n>`. `TODO.md` ist leer.
 
 ---
 
@@ -208,6 +205,8 @@ abgearbeitet (Herleitungen in `AUDIT_LOG.md`):
 | `4b3c9412` | Buster auf einen DPS; Rollen-Lücken MCH/BRD/MNK/DNC | reaktive Zeile je Job, Second Wind, `HealSingleAbility`, `DefenseSingleAbility` |
 | `f90c7bf7` | SAM Yaten ungenutzt | `MoveBackAbility` |
 | — | WHM 0.3 / AST 0.4, DRG-Trait-Gates, PLD-Invuln-Ort, 11 weitere „ungenutzte" Aktionen | geprüft, kein Fehler — Begründung je Punkt in `AUDIT_LOG.md` |
+| fünf Commits | A4a — `GeneralGCD` von BLU · PhantomDefault · PCT · SAM · SMN in benannte Stufen | nur Methodengrenzen eingefügt (§4) |
+| ein Commit | Sichtfeld-Filter galt für Heilziele | `IsTargetFriendly \|\| TargetOnScreen` |
 
 ---
 
