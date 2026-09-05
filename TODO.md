@@ -14,50 +14,6 @@ aller bisherigen Feature-/Aggro-Management-Arbeit) liegt in `AUDIT_LOG.md`
 — dort nachsehen, bevor ein Commit/Bereich erneut geprüft oder ein
 scheinbar neues Thema begonnen wird, um Doppelarbeit zu vermeiden.
 
-## ROADMAP: Vollprüfung aller Fork-Patches gegen das Original (laufend)
-
-Anlass: Der Originalautor haelt saemtliche Aenderungen fuer Trial&Error ohne
-Verstaendnis der Codebasis, >4000 Zeilen die nichts richtig machen. Auftrag:
-belegen oder widerlegen, korrigieren, mit so wenig Code wie moeglich, ohne das
-inhaltliche Gesamtkonzept zu verlieren.
-
-**Reihenfolge ist verbindlich. Keine Phase ueberspringen, keine Phase
-abbrechen, weil eine spaetere interessanter wirkt.**
-
-| Phase | Inhalt | Stand |
-|---|---|---|
-| 0 | Faktenbasis: Zeilenbilanz, Kommentarbilanz, Versionierung | **fertig** |
-| 1 | Substanzpruefung je Bereich — feuert der Zweig, tut er das Richtige, ist er minimal, passt er zum Original | **fertig** |
-| 1.1 | `Updaters/StateUpdater.cs` | fertig |
-| 1.2 | `Rotations/CustomRotation_Ability.cs` | fertig |
-| 1.3 | `Rotations/CustomRotation_OtherInfo.cs` | fertig |
-| 1.4 | `DataCenter` · `ObjectHelper` · `StatusHelper` · `ActionTargetInfo` · `CustomRotation_Items` · `HpPotionItem` | fertig |
-| 1.5 | Heiler: WHM · AST · SGE · SCH | fertig |
-| 1.6 | Tanks: PLD · WAR · DRK · GNB | fertig |
-| 1.7 | Melee · Phys. Range · Magical | fertig |
-| 1.8 | Duty · ExtraRotations · PvP | fertig |
-| 2 | Korrekturen umsetzen (rollierend je Fund) | **fertig** — alle Funde aus Phase 1 umgesetzt |
-| 3 | Stilangleichung: Kommentardichte auf Hausmass je Bereich | **fertig** — Ueberhang 283 → 102, RebornRotations 26,6 % → 9,9 % |
-| 4 | Versionierung des Forks in Ordnung bringen | **offen — braucht Nutzerentscheidung (Tag-Schema)** |
-| 5 | CI gruen + Dokumentation des Ergebnisses | **fertig** — `docs/rotation-flow/06-fork-audit.md`, Build gruen auf `d67164c` |
-
-### Phase-0-Ergebnis (Faktenbasis)
-
-- „ueber 4000 Zeilen": 4521 Zeilen Diff gegen `upstream/main`, davon **2830
-  Markdown** (Doku/TODO/AUDIT_LOG, wird nie ausgeliefert), 260 CI, und
-  **1431 C#**. Von den 1431: 178 leer, 413 Kommentar, 282 reine Klammern —
-  **558 tatsaechliche Anweisungen** ueber 43 Dateien.
-- Kommentardichte der Ergaenzungen gegen Hausmass je Bereich:
-  RebornRotations 26,6 % (Haus 3,9 %), Updaters 37,3 % (6,2 %), Rotations-Kern
-  49,7 % (19,6 %), Helpers/Actions 37,4 % (19,7 %). Ueberhang ~283 Zeilen.
-  **Der Stilvorwurf trifft zu.**
-- **Versionierung: der Vorwurf trifft zu.** Der Fork hat **0 Tags**, Upstream
-  hat 952. `publish.yaml` triggert ausschliesslich auf Tags `*.*.*.*`, und
-  `AssemblyVersion` wird nur dort aus dem Tag gestempelt. Ohne Tag ist jede
-  Version **1.0.0.0**. `manifest.json` und `RotationSolver.json` sind
-  unveraendert gegenueber Upstream, der Fehler liegt allein in den fehlenden
-  Tags. Siehe Phase 4.
-
 ## Offene Konzepte / Fixes (noch nicht umgesetzt)
 
 ### #54 WHM-Heilsuppression nach oGCD-Erschöpfung — Root Cause weiterhin NICHT gefunden, alle bekannten Kandidaten ausgeschlossen
@@ -137,17 +93,16 @@ zu kurz für das gemeldete Muster), aber echter Bug, der bei Gelegenheit
 bereinigt werden sollte (entweder `_lastHp` korrekt pflegen oder toten
 Zweig entfernen).
 
-### #63 Sustain-HP-Boden: Asymmetrie WHM/AST/SGE und umgekehrte Vergleichsrichtung bei AST
+### #63 Sustain-HP-Boden: Asymmetrie WHM/AST und umgekehrte Vergleichsrichtung bei AST
 
 Aus dem Critic-Loop zur Vereinheitlichung in `6b40600`. Zwei unwiderlegte
 Punkte, beide nur im Spiel entscheidbar:
 
 1. **Asymmetrie**: der proaktive Sustain hat bei WHM einen HP-Boden von 0.3
-   (`RegenHeal`), bei AST 0.4 (`AspectedBeneficHeal`), bei SGE **keinen**.
-   Entweder gehoert der Boden ueberall hin (dann fehlt er SGE), oder
-   nirgends (dann sind WHM/AST zu restriktiv). Fuer SGE gibt es keine
-   bestehende Einstellung zum Wiederverwenden — eine neue zu erfinden waere
-   Scope Creep ohne Belegt, deshalb bewusst offen gelassen.
+   (`RegenHeal`), bei AST 0.4 (`AspectedBeneficHeal`). Der SGE-Teil dieses
+   Punktes ist gegenstandslos, seit der SGE-Sustain entfernt wurde (Schild als
+   Refresh-Signal, siehe AUDIT_LOG). Offen bleibt, ob 0.3 gegen 0.4 zwischen
+   WHM und AST begruendet ist oder nur historisch.
 
 2. **Vergleichsrichtung bei AST**: derselbe Wert `AspectedBeneficHeal` wird
    im reaktiven Zweig als `GetHealthRatio() < AspectedBeneficHeal`
@@ -220,31 +175,6 @@ Namensgebung: Namen kommen aus der Fachlogik des Jobs (`GoIce`, `MaintainFire`,
 Taxonomie. Die Neunerliste im Konzept beschreibt die Reihenfolge der Stufen,
 nicht ihre Namen.
 
-### #67 Upstream-Inhaltsprüfung: 8 neue Commits seit dem Branch-Punkt
-
-Neue Vorgabe fuer diesen Branch: Upstream wird NICHT gemergt, sondern auf
-Inhalt geprueft — welche Verbesserung/Fehlerbehebung/Erweiterung bringt der
-Commit, und gilt sie hier auch. Stand `git fetch upstream` am 05.09.2026,
-Branch-Punkt `ee055ca` (16.08.2026), Upstream-Kopf `f5c8432`. 16 Commits
-Rueckstand, davon 8 ohne Merge-Commits:
-
-| Commit | Inhalt | Betrifft |
-|---|---|---|
-| `53822a8` | Bard-Songreihenfolge, Anpassung an Dalamud-Aenderung | BRD_Reborn |
-| `e003bce` | DRK-Rotationsfixes | DRK_Reborn (hier geaendert!) |
-| `df1a8c9` | Nicht-FATE-Mobs waehrend FATEs anders behandelt | Targeting, zentral |
-| `7b8a2f5` | Doppelte Oblation-Nutzung, ECommons-Update | DRK_Reborn (hier geaendert!) |
-| `0bde9ed` | Crash im Next-Action-Fenster bei ungueltigem Zielobjekt | UI |
-| `b5a91d7` | SGE-Logik, Targeting-Probleme | SGE_Reborn (hier geaendert!) |
-| `69f4844` | GNB-Fixes, strengere Status-Listen-Guards | GNB_Reborn |
-| `83e4d0e` | BLU Exuviation wurde nicht als AoE-Heilung genutzt | BLU_Reborn |
-
-Drei davon (DRK 2x, SGE) betreffen Dateien, die dieser Branch bereits
-angefasst hat — dort ist die Pruefung nicht optional, sondern noetig, um
-nicht gegen einen veralteten Stand zu arbeiten.
-
-Auch `origin/main` ist um dieselben 16 Commits zurueck und hat 8 eigene.
-
 ### #68 Oblation-Doppelnutzung: Upstream-Fix greift nicht in ChurinDRK
 
 Aus der Inhaltspruefung von `7b8a2f5` ("Fix double Oblation usage"). Upstream
@@ -296,25 +226,27 @@ eigener Logik (`HallowedWithCover`). Vier Tanks, dieselbe Faehigkeitsklasse,
 zwei Orte, zwei Gates. Erst klaeren, ob PLDs Cover-Sonderfall die Abweichung
 rechtfertigt.
 
-### #70 Tag `7.5.5.41+wsh1` muss vom Nutzer gepusht werden — aus der Sitzung heraus 403
+### #70 Release `7.5.5.41+wsh1` steht noch aus
 
-Phase 4 der Fork-Audit-Roadmap ist codeseitig fertig (`publish.yaml` spaltet den
-Tag am `+`, `RotationSolverPlugin.cs` zeigt die Informationsversion), Build auf
-`09818f0e` gruen. Der Tag-Push selbst wird von der Egress-Policy dieser
-Umgebung mit **HTTP 403** abgelehnt; Branch-Pushes gehen durch, Tag-Pushes
-nicht. Laut `/root/.ccr/README.md` ist das zu melden, nicht zu umgehen.
+Codeseitig fertig und auf `main` (`ba269301`): `publish.yaml` spaltet den Tag am
+`+` ab, `RotationSolverPlugin.cs` zeigt die Informationsversion. PR #3 ist
+gemergt, `main` hat 0 ausstehende Upstream-Commits.
 
-Auszufuehren vom Nutzer:
+Offen ist nur noch der Tag. Aus dieser Umgebung heraus nicht setzbar: der
+Tag-Push wird mit **HTTP 403** abgelehnt (Branch-Pushes gehen durch), und
+`/root/.ccr/README.md` verlangt, das zu melden statt zu umgehen.
+
+Weg ueber die Weboberflaeche: Releases → *Draft a new release* → Tag
+`7.5.5.41+wsh1` ("Create new tag on publish"), Target `main`, Publish.
+Alternativ lokal:
 
 ```
-git fetch origin
-git tag -a "7.5.5.41+wsh1" -m "Fork release 1 on upstream 7.5.5.41" 09818f0e
+git fetch origin && git checkout main
+git tag -a "7.5.5.41+wsh1" -m "Fork release 1 on upstream 7.5.5.41"
 git push origin "refs/tags/7.5.5.41+wsh1:refs/tags/7.5.5.41+wsh1"
 ```
 
-Danach laeuft `publish.yaml` und erzeugt das Release mit `latest.zip`.
-Erwartetes Ergebnis: Fenstertitel zeigt `7.5.5.41+wsh1`, AssemblyVersion
-`7.5.5.41`.
+Erwartetes Ergebnis: Fenstertitel `7.5.5.41+wsh1`, AssemblyVersion `7.5.5.41`.
 
 Schema fuer kuenftige Releases: Basis = hoechster Upstream-Tag, dahinter
 `+wsh<n>`, wobei `<n>` bei jedem Upstream-Nachzug wieder bei 1 beginnt. `+`

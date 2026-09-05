@@ -1004,3 +1004,82 @@ Nutzer hat PR #2 geschlossen und den Branch entfernt. Frisch geprueft:
 `git branch -r` zeigt nur noch `origin/main` und
 `origin/claude/rotation-flow-refactor`. Kein Inhaltsverlust, da alles in
 PR #3 steckt.
+
+## Abgeschlossen: Fork-Audit-Roadmap (Phasen 0-3 und 5) — 05.09.2026
+
+
+Anlass: Der Originalautor haelt saemtliche Aenderungen fuer Trial&Error ohne
+Verstaendnis der Codebasis, >4000 Zeilen die nichts richtig machen. Auftrag:
+belegen oder widerlegen, korrigieren, mit so wenig Code wie moeglich, ohne das
+inhaltliche Gesamtkonzept zu verlieren.
+
+**Reihenfolge ist verbindlich. Keine Phase ueberspringen, keine Phase
+abbrechen, weil eine spaetere interessanter wirkt.**
+
+| Phase | Inhalt | Stand |
+|---|---|---|
+| 0 | Faktenbasis: Zeilenbilanz, Kommentarbilanz, Versionierung | **fertig** |
+| 1 | Substanzpruefung je Bereich — feuert der Zweig, tut er das Richtige, ist er minimal, passt er zum Original | **fertig** |
+| 1.1 | `Updaters/StateUpdater.cs` | fertig |
+| 1.2 | `Rotations/CustomRotation_Ability.cs` | fertig |
+| 1.3 | `Rotations/CustomRotation_OtherInfo.cs` | fertig |
+| 1.4 | `DataCenter` · `ObjectHelper` · `StatusHelper` · `ActionTargetInfo` · `CustomRotation_Items` · `HpPotionItem` | fertig |
+| 1.5 | Heiler: WHM · AST · SGE · SCH | fertig |
+| 1.6 | Tanks: PLD · WAR · DRK · GNB | fertig |
+| 1.7 | Melee · Phys. Range · Magical | fertig |
+| 1.8 | Duty · ExtraRotations · PvP | fertig |
+| 2 | Korrekturen umsetzen (rollierend je Fund) | **fertig** — alle Funde aus Phase 1 umgesetzt |
+| 3 | Stilangleichung: Kommentardichte auf Hausmass je Bereich | **fertig** — Ueberhang 283 → 102, RebornRotations 26,6 % → 9,9 % |
+| 4 | Versionierung des Forks in Ordnung bringen | **offen — braucht Nutzerentscheidung (Tag-Schema)** |
+| 5 | CI gruen + Dokumentation des Ergebnisses | **fertig** — `docs/rotation-flow/06-fork-audit.md`, Build gruen auf `d67164c` |
+
+### Phase-0-Ergebnis (Faktenbasis)
+
+- „ueber 4000 Zeilen": 4521 Zeilen Diff gegen `upstream/main`, davon **2830
+  Markdown** (Doku/TODO/AUDIT_LOG, wird nie ausgeliefert), 260 CI, und
+  **1431 C#**. Von den 1431: 178 leer, 413 Kommentar, 282 reine Klammern —
+  **558 tatsaechliche Anweisungen** ueber 43 Dateien.
+- Kommentardichte der Ergaenzungen gegen Hausmass je Bereich:
+  RebornRotations 26,6 % (Haus 3,9 %), Updaters 37,3 % (6,2 %), Rotations-Kern
+  49,7 % (19,6 %), Helpers/Actions 37,4 % (19,7 %). Ueberhang ~283 Zeilen.
+  **Der Stilvorwurf trifft zu.**
+- **Versionierung: der Vorwurf trifft zu.** Der Fork hat **0 Tags**, Upstream
+  hat 952. `publish.yaml` triggert ausschliesslich auf Tags `*.*.*.*`, und
+  `AssemblyVersion` wird nur dort aus dem Tag gestempelt. Ohne Tag ist jede
+  Version **1.0.0.0**. `manifest.json` und `RotationSolver.json` sind
+  unveraendert gegenueber Upstream, der Fehler liegt allein in den fehlenden
+  Tags. Siehe Phase 4.
+
+Phase 4 (Versionierung) ist codeseitig erledigt und auf `main`; offen bleibt
+nur das Release, gefuehrt als TODO #70.
+
+## Abgeschlossen: Upstream-Inhaltspruefung der 8 Commits (ehemals TODO #67)
+
+
+Neue Vorgabe fuer diesen Branch: Upstream wird NICHT gemergt, sondern auf
+Inhalt geprueft — welche Verbesserung/Fehlerbehebung/Erweiterung bringt der
+Commit, und gilt sie hier auch. Stand `git fetch upstream` am 05.09.2026,
+Branch-Punkt `ee055ca` (16.08.2026), Upstream-Kopf `f5c8432`. 16 Commits
+Rueckstand, davon 8 ohne Merge-Commits:
+
+| Commit | Inhalt | Betrifft |
+|---|---|---|
+| `53822a8` | Bard-Songreihenfolge, Anpassung an Dalamud-Aenderung | BRD_Reborn |
+| `e003bce` | DRK-Rotationsfixes | DRK_Reborn (hier geaendert!) |
+| `df1a8c9` | Nicht-FATE-Mobs waehrend FATEs anders behandelt | Targeting, zentral |
+| `7b8a2f5` | Doppelte Oblation-Nutzung, ECommons-Update | DRK_Reborn (hier geaendert!) |
+| `0bde9ed` | Crash im Next-Action-Fenster bei ungueltigem Zielobjekt | UI |
+| `b5a91d7` | SGE-Logik, Targeting-Probleme | SGE_Reborn (hier geaendert!) |
+| `69f4844` | GNB-Fixes, strengere Status-Listen-Guards | GNB_Reborn |
+| `83e4d0e` | BLU Exuviation wurde nicht als AoE-Heilung genutzt | BLU_Reborn |
+
+Drei davon (DRK 2x, SGE) betreffen Dateien, die dieser Branch bereits
+angefasst hat — dort ist die Pruefung nicht optional, sondern noetig, um
+nicht gegen einen veralteten Stand zu arbeiten.
+
+Auch `origin/main` ist um dieselben 16 Commits zurueck und hat 8 eigene.
+
+Erledigt: `upstream/main` (`f5c8432`) wurde in den Arbeitsbranch gemergt, jeder
+der acht Commits inhaltlich gegen die eigenen Patches geprueft (Ergebnis im
+Merge-Commit `49d7f8a`). Alle drei Branches standen danach auf 0 ausstehenden
+Upstream-Commits.
