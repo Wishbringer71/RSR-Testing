@@ -1,4 +1,4 @@
-﻿namespace RotationSolver.RebornRotations.Ranged;
+namespace RotationSolver.RebornRotations.Ranged;
 
 [Rotation("Reborn", CombatType.PvE, GameVersion = "7.55",
 	Description = "Please make sure that the three song times add up to 120 seconds, Wanderers default first song for now.")]

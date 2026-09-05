@@ -1,4 +1,4 @@
-﻿using ECommons.DalamudServices;
+using ECommons.DalamudServices;
 using ECommons.ExcelServices;
 
 namespace RotationSolver.Basic.Rotations;
