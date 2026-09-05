@@ -75,6 +75,7 @@ Neu erkannte Probleme, auch wenn sie mit der gerade laufenden Aufgabe nichts zu 
 Umkehrung genauso verbindlich: sobald ein TODO.md-Punkt GEFIXT/ABGESCHLOSSEN/VERWORFEN ist, sofort nach AUDIT_LOG.md verschieben, nicht mit erledigtem Status in TODO.md liegen lassen — TODO.md führt nach eigener Definition nur offene Arbeit. Status-Update allein (Text von "offen" auf "GEFIXT" ändern) ist keine ausreichende Reaktion, wenn der Punkt seiner Natur nach nicht mehr offen ist.
 Beleg: #46/#47/#52/#53 sowie alle Aggro-Management-Bausteine (B1-B4) wurden nach Abschluss mit Status GEFIXT/ABGESCHLOSSEN in TODO.md belassen statt nach AUDIT_LOG.md verschoben — Datei widersprach damit ihrer eigenen Kopfzeile ("Nur offene Arbeit steht hier").
 Gilt auch fuer Zusammenfassungen: eine Aufzaehlung erledigter Nummern („#54 … #72 sind abgeschlossen und archiviert") ist erledigte Arbeit in TODO.md, egal in welcher Form. Ist nichts offen, steht dort „Derzeit keine." und sonst nichts. Beleg: genau diese Aufzaehlung nach Leerung der Datei hineingeschrieben.
+TODO.md enthaelt ausserdem keine Prosa ueber Erledigtes oder ueber das Archiv — kein Kopftext, der AUDIT_LOG.md erklaert, kein „Wichtig fuer kuenftige Sessions". Solche Meta-Regeln stehen hier in CLAUDE.md (Abschnitt Persistenz), nirgends sonst. TODO.md = Titel + offene Punkte. Beleg: dreimal in Folge Erledigtes bzw. Doku ueber Erledigtes in TODO.md stehen gelassen (Roadmap, Nummern-Aufzaehlung, Archiv-Kopftext).
 
 ## Prüftiefe unabhängig von Codegröße
 
