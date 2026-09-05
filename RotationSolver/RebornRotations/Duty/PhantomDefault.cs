@@ -835,6 +835,18 @@ public sealed class PhantomDefault : PhantomRotation
 			return base.GeneralGCD(out act);
 		}
 
+		return UseUtility(out act)
+			|| UseNecromancer(out act)
+			|| UseRedMage(out act)
+			|| UseBlueMage(out act)
+			|| UseSummoner(out act)
+			|| UseBlackMage(out act)
+			|| UseOtherPhantomJobs(out act)
+			|| base.GeneralGCD(out act);
+	}
+
+	private bool UseUtility(out IAction? act)
+	{
 		if (InCombat && AetherialGainPvE.CanUse(out act))
 		{
 			return true;
@@ -850,6 +862,12 @@ public sealed class PhantomDefault : PhantomRotation
 			return true;
 		}
 
+		act = null;
+		return false;
+	}
+
+	private bool UseNecromancer(out IAction? act)
+	{
 		if (NecromancerLevel > 0)
 		{
 			if ((DrainTouchStatusStrategyUsage == DrainTouchStatusStrategy.EitherDrainTouch) || (DrainTouchStatusStrategyUsage == DrainTouchStatusStrategy.DrainTouchOnly && HasDrainTouch) || (DrainTouchStatusStrategyUsage == DrainTouchStatusStrategy.NoDrainTouch && !HasDrainTouch))
@@ -903,6 +921,12 @@ public sealed class PhantomDefault : PhantomRotation
 			}
 		}
 
+		act = null;
+		return false;
+	}
+
+	private bool UseRedMage(out IAction? act)
+	{
 		if (RedMageLevel > 0)
 		{
 			if (OccultBlizzardIiPvE.CanUse(out act))
@@ -959,6 +983,12 @@ public sealed class PhantomDefault : PhantomRotation
 			}
 		}
 
+		act = null;
+		return false;
+	}
+
+	private bool UseBlueMage(out IAction? act)
+	{
 		if (BlueMageLevel > 0)
 		{
 			if (OccultMissilePvE.CanUse(out act))
@@ -987,6 +1017,12 @@ public sealed class PhantomDefault : PhantomRotation
 			}
 		}
 
+		act = null;
+		return false;
+	}
+
+	private bool UseSummoner(out IAction? act)
+	{
 		if (SummonerLevel > 0)
 		{
 			if (MegaflarePvE.CanUse(out act))
@@ -1025,6 +1061,12 @@ public sealed class PhantomDefault : PhantomRotation
 			}
 		}
 
+		act = null;
+		return false;
+	}
+
+	private bool UseBlackMage(out IAction? act)
+	{
 		if (BlackMageLevel > 0)
 		{
 			if (OccultFlarePvE.CanUse(out act))
@@ -1063,6 +1105,12 @@ public sealed class PhantomDefault : PhantomRotation
 			}
 		}
 
+		act = null;
+		return false;
+	}
+
+	private bool UseOtherPhantomJobs(out IAction? act)
+	{
 		if (OccultJumpPvE.CanUse(out act))
 		{
 			return true;
@@ -1242,7 +1290,8 @@ public sealed class PhantomDefault : PhantomRotation
 			return true; // Even if you're not directly being attacked this second, it's 1 GCD / minute for 15% less damage taken
 		}
 
-		return base.GeneralGCD(out act);
+		act = null;
+		return false;
 	}
 
 	private bool HandleOraclePrediction(IAction? nextGCD, out IAction? act)
