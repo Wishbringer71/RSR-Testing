@@ -241,6 +241,22 @@ Check-in-Trigger `trig_01NLjkn2dFqmrZXhmxJcWGsQ` ließ sich nicht löschen (Tool
 
 **Erreichter Prüfgrad:** statische Selbstprüfung, Kompilierung über die GitHub-Action. Keine Laufzeitbeobachtung. Der Flächenheil-Fix ist im Code vollständig nachvollziehbar (Zweig, Duty-Rotation, Aktionen), aber nicht im Spiel bestätigt.
 
+### A15 · Vollständiger Loop-Durchgang über die offenen Punkte (06.09.2026)
+
+**Anlass:** Erneute Prüfung aller offenen Punkte, erstmals gegen die vier neu aufgenommenen Regeln — Persistenz- und Schnittstellenvertrag, Betroffenenkreis, Feature Toggle bei fehlender Nachweismöglichkeit, Trennung von Defekt und technischer Schuld.
+
+| Punkt | Ergebnis der Neuprüfung |
+|---|---|
+| Selbstlernende AoE-Liste | **Von Defekt zu technischer Schuld herabgestuft.** Die tragende Behauptung — ein gelernter Eintrag sei nur durch Editieren der Datei zurückzunehmen — ist widerlegt, s. C12. Es bleibt der Zeitraum zwischen Fehllernen und Nutzerkorrektur, entschärft durch die Reichweitenprüfung. Neu: eine Verschärfung der Lernbedingung wäre eine Verhaltensänderung ohne Nachweismöglichkeit und gehört damit hinter eine eigene Option statt in den Standardpfad |
+| Zyklus-Kommandos | Bleibt technische Schuld. Neu erhoben: `DTRType` und `CycleType` liegen als Ordinalzahlen in der Nutzerkonfiguration, ihre Reihenfolge ist bei einem Umbau nicht frei änderbar — der Persistenzvertrag ist Teil der Auflösungsbedingung |
+| Release-Paket | Bleibt technische Schuld. Betroffenenkreis präzisiert: `GeneratePackageOnBuild` bedient die Autoren abgeleiteter Rotationen, die Downloadgröße trifft die Endnutzer; eine Auflösung darf die erste Gruppe nicht ausschließen |
+| VPR, `AutodutyUpdateState` | Bleiben technische Schuld mit Adressat Upstream; unverändert |
+| `SpreadDamagePaths` | Bleibt technische Schuld; ohne Fehlwirkung, weil alle drei Listen geprüft werden |
+| ChurinDNC | Einziger verbleibender Defekt. Unverändert nicht behoben, weil die Absicht der fremden Rotation nicht belegbar und der Eingriff ohne Spieltest nicht abzusichern ist |
+| Prüfskripte ohne Selbsttest | Neu aufgenommene technische Schuld aus der vorigen Runde, mit Auflösung vor dem zweiten Audit-Durchgang |
+
+`TODO.md` ist entsprechend nach Defekt, technischer Schuld und offener Arbeit gegliedert; jeder Eintrag trägt jetzt seinen Betroffenenkreis (Endnutzer, Autoren abgeleiteter Rotationen, Upstream-Pflege), und jede technische Schuld ihre Kosten und Auflösungsbedingung.
+
 ---
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
@@ -302,5 +318,6 @@ Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt e
 | C7 | Nachtrag 6: Mob-Schwelle komplett entfernen | Nutzer: 4+ war Ausstiegskriterium, kein Eintrittskriterium | Nachtrag 7 |
 | C8 | #47-Zwischenkorrektur: BRD/MCH ausgeschlossen, „Troubadour/Tactician nur gegen Magie" | `PredictedDamageType` ist Trefferform, nicht Schadensart; beide mindern jeglichen Schaden (Websuche) | beide einbezogen |
 | C9 | cde050f/f154d57 „`HasHostileCountAoeMitigation` job-gescoped · KEIN FEHLER" | Geprüft wurde nur, ob das Flag die richtigen Jobs trifft — nicht, was das gesetzte Flag auslöst. `AutoStatus.DefenseArea` öffnet die ganze Defensivkette und bei Melee/Ranged zusätzlich `DefenseSingleAbility`, nicht die eine Sustain-Zeile. Vom Nutzer im Spiel als Dauer-Casten von Radiant Aegis und Addle gemeldet. Lehre: Ein Trigger ist an dem zu messen, was er auslöst, nicht daran, wen er trifft | Fallback und Flag entfernt (A9, b8018cf0) |
+| C12 | „Selbstlernende AoE-Liste … unumkehrbar: Zurücknehmen lässt sich ein Eintrag nur durch Editieren der Datei" (TODO, mehrfach fortgeschrieben; stützte die Bewertung in A9) | Zweifach widerlegt: `RotationConfigWindow.cs:3745` bietet den Schalter „Reset and Update AOE List" (`ResetHostileCastingArea`, lädt die gepflegte Liste über `InitOne(..., forceDownload: true)` neu), und `DrawActionsList` erlaubt das Entfernen einzelner Einträge über Kontextmenü und Entf-Taste. Die Codedokumentation in `OtherConfiguration.cs:31` empfiehlt den Reset ausdrücklich nach jedem Patch. Lehre: Die Behauptung, eine Bedienmöglichkeit fehle, ist eine Aussage über die Oberfläche und dort zu prüfen, nicht aus dem Datenmodell zu schließen | Eintrag von Defekt zu technischer Schuld herabgestuft (A15) |
 | C11 | Erste Entscheidungsvorlage: VPR-Blöcke „löschen", UI-Wrapper „behalten", Toggle-Konflikt per `applyToggle` lösen, Timeline-Vorzeichen im Spiel ablesen lassen | Vier Fehler in einer Vorlage: das Konfliktrisiko war über die Dateiaktivität geschätzt statt regionsgenau gemessen (0 statt 7 für VPR, 2 statt 12 für die UI-Region); die VPR-Blöcke wurden nicht gegen die Gegenhypothese „unverdrahtet statt tot" geprüft; `applyToggle` hätte `DTRManualAuto`-Nutzern den einzigen Ausschaltweg genommen, was erst die Auswertung als Zustandsfolge zeigte; und die Vorzeichenfrage stand im Quelltext von BossModReborn, war also keine Prüfaufgabe für den Auftraggeber. Lehre: eine Vorlage ohne durchgerechnete Konsequenzen ist keine Vorlage, und verfügbare Quellen sind vor der Vorlage auszuschöpfen | A11: alle vier revidiert |
 | C10 | A9: „`IsHostileCastingTank`-Fallback · KEIN FEHLER, nicht angetastet" | Die Begründung galt der Tankbuster-Erkennung für Tanks (`IsHostileCastingToTank`) und wurde ungeprüft auf `…TankBusterAtMe` übertragen, obwohl das eine andere Frage beantwortet: nicht „kommt ein Tankbuster", sondern „kommt einer auf mich". Für Nicht-Tanks ist der Fallback dort schlicht falsch. Nutzer: „wenn mich ein Mob aus einer großen Mobgruppe angreift, wird bereits Schimmerschild und Stumpfsinn gecastet" | `…TankBusterAtMe` auf gesicherte Tankbuster eingeschränkt (A9, d9a99de7) |
