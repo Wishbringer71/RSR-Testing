@@ -19,7 +19,7 @@ python3 .github/scripts/audit/scan.py
 | `scan4.py` | `[Range]` attribute versus declared default, duplicate config property names | A10: none open; the class had a real hit in A8 |
 | `scan5.py` | Fork behaviour changes sitting in a dispatch path that has no switch of its own | A16: six lines, all covered by an option or already logged |
 | `scan6.py` | Enum members whose ordinal moved, split by whether the enum reaches stored configuration | A16: none persisted; `SpecialMode` in-memory only |
-| `scan7.py` | Public and protected members of `RotationSolver.Basic` removed or re-signed since a release | A16: `HasHostileCountAoeMitigation`, `ShouldCheckTargetStatus` |
+| `scan7.py` | Public and protected members of `RotationSolver.Basic` removed or re-signed since a release, keyed by declaring type, interface members included | A16: `HasHostileCountAoeMitigation`, `ShouldCheckTargetStatus` |
 
 `scan5.py` takes a base ref (default `upstream/main`) and `--detail` for line-by-line output.
 `scan6.py` and `scan7.py` take a base ref too; for both, the meaningful base is the newest fork tag,
@@ -45,3 +45,10 @@ pathspec that `git ls-files` does, so its base revision held no files at all, an
 persisted enum looked at public members only, which hid the `[JobConfig]` generator behind
 `TargetHostileType`. Both failures produced empty output, not an error — which is the case the
 self-tests now cover explicitly.
+
+`scan7.py` needed three passes for the same reason in the other direction. It first read no
+interface members at all, because those carry no visibility modifier; then, once members were keyed
+by declaring type, it reported 55 phantom removals, because a prose comment containing the word
+"struct" was read as a type declaration and re-owned every member below it in that file; and it
+counted `internal` interface members, which are not package surface. Only the third result — two
+members — is the measured one.

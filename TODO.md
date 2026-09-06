@@ -10,6 +10,16 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 Nicht behoben, weil die Absicht dieser fremden Rotation ohne ihren Autor nicht belegbar ist und eine Änderung ohne Spieltest nicht abzusichern wäre. Auflösung: Rückfrage an den Upstream-Autor oder Laufzeitbeobachtung.
 
+### Das Fork-NuGet-Paket trägt die Identität des Upstream-Pakets · R
+
+`RotationSolver.Basic.csproj` setzt `PackageId` auf `RotationSolverReborn.Basic` — denselben Bezeichner, unter dem Upstream veröffentlicht. `publish.yaml:41` übergibt `PackageVersion=${{ env.numericVersion }}`, also die Version **ohne** das Fork-Suffix. Das im Release-ZIP mitgelieferte `.nupkg` heißt damit `RotationSolverReborn.Basic 7.5.5.41` und ist von der gleichnamigen Upstream-Fassung nicht zu unterscheiden, obwohl es einen anderen Inhalt hat.
+
+Das Suffix nachzureichen behebt es nicht: NuGet entfernt SemVer-2.0-Build-Metadaten bei der Normalisierung — `1.0.7+r3456` wird als `1.0.7` behandelt ([Package versioning](https://learn.microsoft.com/nuget/concepts/package-versioning#normalized-version-numbers)) —, und dieselbe Quelle hält fest, dass ein Repository zwei Pakete gleicher normalisierter Version nicht als verschiedene Pakete führen soll. Ein unterscheidendes Merkmal wäre nur ein eigener `PackageId` oder ein Prerelease-Label (`-wsh1`), das in die Identität eingeht.
+
+**Kosten:** Wer das Paket aus dem Release-ZIP in einen lokalen Feed legt, kann es nicht vom Upstream-Paket unterscheiden; NuGet löst je Identität einmal auf und cacht. Genau in diesem Fall werden die entfernten Member (siehe unten) als unerklärlicher Compilefehler sichtbar. Kein Fehlverhalten zur Laufzeit des Plugins.
+
+**Auflösungsbedingung:** Die Wahl zwischen eigenem `PackageId`, Prerelease-Label und dem Verzicht auf die Paketauslieferung trifft der Auftraggeber; alle drei berühren die Autoren abgeleiteter Rotationen unterschiedlich. Zusammen mit dem Eintrag zum Release-Ballast zu entscheiden, der dasselbe `.nupkg` betrifft.
+
 ## Technische Schuld
 
 ### Doppelte Zustandswahl in den Zustandskommandos · N
@@ -60,7 +70,7 @@ Geprüfte Nicht-Fehlstellen: `DTRManualAuto` bildet den vom Enum-Text beschriebe
 
 **Kosten:** Eine abgeleitete Rotation, die das Flag überschreibt oder die Option liest, kompiliert gegen die nächste Paketversion nicht mehr. Für die gespeicherte Nutzerkonfiguration folgenlos, weil Dalamud fehlende Member beim Deserialisieren überspringt.
 
-**Auflösungsbedingung:** bei der nächsten Versionsvergabe als Major-Änderung im Sinne von Semantic Versioning ausweisen. Der Zeitpunkt der Veröffentlichung selbst liegt beim Auftraggeber.
+**Auflösungsbedingung:** Der Ausweis erfolgt in `CHANGELOG.md`, weil die Versionsnummer ihn nicht tragen kann: sie folgt der Upstream-Version, und das Fork-Suffix ist SemVer-Build-Metadatum ohne Präzedenz. Offen bleibt allein, den Abschnitt „Unreleased" bei der nächsten Versionsvergabe auf die dann vergebene Version zu setzen. Der Zeitpunkt der Veröffentlichung liegt beim Auftraggeber.
 
 ### Drei Prüfskripte ohne Selbsttest · —
 

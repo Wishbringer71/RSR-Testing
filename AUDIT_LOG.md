@@ -284,6 +284,22 @@ Check-in-Trigger `trig_01NLjkn2dFqmrZXhmxJcWGsQ` ließ sich nicht löschen (Tool
 
 ---
 
+### A17 · Umsetzung von Option A zum Paketvertrag (06.09.2026)
+
+**Anlass:** Freigabe der in A16 vorgelegten Option A — Ausweis der entfernten Member als Major-Änderung, Code unverändert.
+
+**Befund bei der Umsetzung: der Ausweis kann nicht numerisch erfolgen.** `Directory.Build.props` bindet `<Version>` an die Upstream-Version und kennzeichnet den Fork über das Build-Metadatum `+wsh1`. NuGet entfernt Build-Metadaten bei der Normalisierung — `1.0.7+r3456` wird als `1.0.7` behandelt ([Package versioning](https://learn.microsoft.com/nuget/concepts/package-versioning#normalized-version-numbers)) —, und `publish.yaml:41` übergibt `PackageVersion` ohnehin ohne Suffix. Eine Major-Änderung hat in diesem Schema keine Stelle, an der sie sichtbar würde. Option A wurde deshalb dokumentarisch umgesetzt: `CHANGELOG.md` mit einem Abschnitt „Unreleased", der beide Member, ihren Wegfallgrund und die Folgen für Paketkonsumenten benennt und die Sonderlage der Versionsnummer begründet.
+
+**Neuer Defekt, dabei erhoben.** Dieselbe Kette ergibt, dass das im Release-ZIP mitgelieferte `.nupkg` unter der Identität `RotationSolverReborn.Basic 7.5.5.41` läuft, also unter derselben wie das Upstream-Paket, bei abweichendem Inhalt. Als Defekt in `TODO.md` erfasst, nicht behoben: die Wahl zwischen eigenem `PackageId`, Prerelease-Label und Verzicht auf die Paketauslieferung berührt die Autoren abgeleiteter Rotationen verschieden und gehört zur Release-Entscheidung.
+
+**Korrektur an `scan7.py`, in drei Schritten.** Die in A16 berichtete Zahl von zwei Funden bleibt, ihr Zustandekommen war jedoch unvollständig belegt. Erstens las das Skript keine Interface-Member, da diese keinen Sichtbarkeitsmodifikator tragen; der Rückbau von `HasHostileCountAoeMitigation` betraf auch `ICustomRotation`. Zweitens erzeugte die anschließende Schlüsselung nach deklarierendem Typ 55 Scheinbefunde, weil ein Prosakommentar mit dem Wort „struct" als Typdeklaration gelesen wurde und alle folgenden Member der Datei umhängte — der Kommentar stammt aus `6189c4cb` und existiert nur auf einer Seite des Vergleichs. Drittens zählte das Skript `internal` deklarierte Interface-Member mit, die außerhalb der Assembly nicht sichtbar sind; `ICustomRotation.HasHostileCountAoeMitigation` ist genau so deklariert und damit **kein** Bruch der Paketoberfläche. Erst das dritte Ergebnis ist das gemessene. Alle drei Fälle sind jetzt Bestandteil des Selbsttests.
+
+**Widerlegte Zwischenannahme.** Beim Lesen des Einführungs-Commits `00a426b1` entstand der Verdacht, dessen Aussage „Behaviour is unchanged at default settings" sei falsch, weil `ShouldSustainMitigationDebuff` heute eine zusätzliche `WillStatusEndGCD`-Bedingung trägt. Der Verdacht ist widerlegt: die Verschärfung kam erst mit `5bb4d39f`, der Commit-Text war zutreffend.
+
+**Erreichter Prüfgrad:** statische Prüfung mit Skript, Belege aus Versionsgeschichte und Fremddokumentation (Microsoft Learn). Keine Laufzeitbeobachtung; das Paketverhalten ist nicht am Artefakt nachgestellt worden.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.
