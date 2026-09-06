@@ -31,6 +31,8 @@ Kalibrierungs-Belege zur REGEL: CountAllianceTanks unverifiziert als Fund präse
 
 Verbindlich für jede nicht-triviale Aufgabe, ohne gesonderte Anforderung. Die REGEL bleibt übergeordnet. Der Loop ist ein PDCA-/PDSA-Zyklus (Shewhart, Deming) mit vorgezogener Optionsanalyse und einer eigenen Falsifikationsstufe vor der Umsetzung.
 
+**Der Loop gilt als Ganzes.** Alle zehn Stufen und die drei Querschnittsanforderungen sind zwingend; keine Stufe ist optional, keine steht zur Wahl. Fällt beim Prüfen des eigenen Ergebnisses auf, dass eine Stufe fehlt, wird sie nachgeholt, bevor etwas vorgelegt wird — nicht angeboten. Eine Rückfrage, ob eine Stufe auszuführen sei, ist die Weigerung, den Auftrag auszuführen, und unzulässig. Ebenso unzulässig ist es, ein Ergebnis auf unvollständiger Grundlage zur Entscheidung zu stellen und die Vervollständigung als Alternative danebenzustellen. Beleg: Falsifikationsstufe und Nullvariante fehlten in der Entscheidungsvorlage; statt sie nachzuholen, wurde die Wahl zwischen Nachholen und Entscheiden auf unvollständiger Grundlage angeboten — die nachgeholte Stufe widerlegte anschließend zwei der vorgelegten Befunde.
+
 | # | Stufe | Etablierte Entsprechung | Inhalt |
 |---|---|---|---|
 | 1 | Research | Problem Investigation, Root Cause Analysis | Fehlerbild vom Fehler trennen, Ursache am Artefakt belegen: Quellcode, Versionsgeschichte, Laufzeitdaten, Fremddokumentation. Erinnerung ist keine Quelle. |

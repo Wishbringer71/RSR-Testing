@@ -227,6 +227,20 @@ Check-in-Trigger `trig_01NLjkn2dFqmrZXhmxJcWGsQ` ließ sich nicht löschen (Tool
 
 **Restunsicherheit:** Ob `LostCureIII`/`IV`/`FullCure` im Spiel tatsächlich flächig heilen, ist nicht verifiziert — die einschlägige Wiki-Domain ist über den Netzwerk-Proxy dieser Umgebung nicht erreichbar. Für die Bewertung ist es unerheblich, weil die Duty-Rotation sie im Flächenpfad anbietet und nur dieser Pfad abgeschnitten ist; für die Frage, ob die Platzierung selbst richtig ist, wäre es zu klären.
 
+### A14 · Umsetzung der Entscheidungsvorlage (06.09.2026)
+
+| Fund | Status | Ergebnis |
+|---|---|---|
+| Duty-Flächenheilung in Bozja unerreichbar | GEFIXT 30ec4690 | Bedingung `IsInOccultCrescentOp \|\| HasVariantCure` aus dem automatischen Flächenheilzweig entfernt, damit fragen alle vier Heilzweige die Duty-Rotation gleich. Duty-Rotationen ohne Flächenheilung liefern `false`, worauf die anderen drei Zweige ohnehin bauen |
+| Beschreibungsmethoden ohne Aufrufer | GEFIXT f7b150c8 | `GetHostileTypeDescription` und `SetTargetingType` entfernt. Ablösung belegt: `e3b57004` nahm den zugehörigen UI-Block heraus, `813c7d73` hatte beide zusammen mit ihm eingeführt |
+| `/rotation Auto <Zahl>` ohne Wirkung im Aus-Zustand | GEFIXT 5058dda7 | Der numerische Weg setzt `TargetingIndex` jetzt dort, wo es der Namensweg tut, statt es `UpdateTargetingIndex` hinter dem `DataCenter.State`-Wächter zu überlassen. Negativer Eingabewert wird korrekt in den Bereich gefaltet |
+| `DoOneCommandType` mit totem Parameter | GEFIXT b85312df | Auf `WithPlayerRole(Action<JobRole>)` reduziert; drei Lambdas, die nie ausgeführt wurden, und eine Generik ohne Träger sind entfallen |
+| Leisteneintrag je Frame neu gesetzt | GEFIXT c10fb06a | Zuweisung nur noch bei geändertem Text oder Symbol, wie es `UpdateToast` in derselben Datei bereits handhabt |
+| `DTRManualAuto` ohne Ausschaltweg | KEIN FEHLER, geschlossen | Der Enum-Text lautet „Cycle between Manual and Auto", der Code bildet genau diesen Zwei-Zustands-Zyklus ab. Ein fehlender Ausgang ist mit der Beschreibung vereinbar; welche Seite der Kopie den Fehler trug, ist historisch nicht entscheidbar (s. A12) |
+| Release-Paket, 14 MB Ballast | **nicht umgesetzt**, Abwägung dokumentiert | Der Umsetzungsweg trägt nicht: `DalamudPackager.targets` reicht `Exclude` im Standard-Target nicht durch, der Task läuft nur, solange keine eigene `DalamudPackager.targets` im Projektverzeichnis liegt. Der vorgesehene Weg verlangt, diese Datei anzulegen und den vollständigen Task-Aufruf samt aller Manifest-Felder nachzubauen. Zudem vergleicht `Exclude` laut Task-Quelle (`DalamudPackager.cs:187`) exakt über `List.Contains`, kennt also keine Muster, und das NuGet-Paket trägt die Version im Dateinamen. Ein nachgebauter Task-Aufruf am Veröffentlichungspfad, den der Build-Workflow nicht prüft — er kompiliert, er packt nicht —, steht in keinem Verhältnis zu 3,5 MB Downloadgröße. Geprüfte Nebenfrage: die XML-Dokumentation wird zur Laufzeit nicht gelesen, ein Ausschluss wäre fachlich unbedenklich |
+
+**Erreichter Prüfgrad:** statische Selbstprüfung, Kompilierung über die GitHub-Action. Keine Laufzeitbeobachtung. Der Flächenheil-Fix ist im Code vollständig nachvollziehbar (Zweig, Duty-Rotation, Aktionen), aber nicht im Spiel bestätigt.
+
 ---
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
