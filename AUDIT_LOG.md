@@ -211,6 +211,22 @@ Check-in-Trigger `trig_01NLjkn2dFqmrZXhmxJcWGsQ` ließ sich nicht löschen (Tool
 
 **Folge für die Behebung:** Vier der sieben Muster sind durch die Behebung des Einzelfalls nicht erledigt. Bei der veraltenden Positivliste ist die Aufzählung durch eine Fähigkeitsprüfung zu ersetzen, sonst veraltet sie erneut; beim Klonmuster ist die gemeinsame Struktur zu extrahieren; bei der Auslieferung ist das Ausgabeverzeichnis zu trennen; bei der Fremdschnittstelle braucht es einen wiederholbaren Abgleich statt einer einmaligen Korrektur.
 
+### A13 · Nachgeholte Falsifikationsstufe zur Entscheidungsvorlage (06.09.2026)
+
+**Anlass:** Die Vorlage war gestellt, ohne dass Stufe 6 des Loops für die einzelnen Punkte ausgeschrieben war. Nachgeholt mit beiden Hypothesen je Punkt. Ergebnis: zwei eigene Befunde fallen, zwei werden gehärtet, eine Empfehlung wird durch eine bessere ersetzt.
+
+| Punkt | H1 „kein Defekt" | H2 „gewählte Option falsch" | Ergebnis |
+|---|---|---|---|
+| Bozja-Flächenheilung | **widerlegt.** Die Gegenhypothese wäre, dass die Aktionen über den Einzelheilpfad ohnehin erreichbar sind. `BozjaDefault.HealSingleGCD` bietet aber nur `LostCurePvE`; `LostCureIII`, `LostCureIV` und `LostFullCure` stehen ausschließlich in `HealAreaGCD` und sind über keinen anderen Weg erreichbar | Alternative „Fähigkeitsprüfung statt Aufzählung" bleibt die sauberere Konstruktion, steht aber in keinem Verhältnis zu zwei Zeilen in fremdem Code | Befund **gehärtet**, Empfehlung unverändert |
+| Release-Paket | **widerlegt.** Die Existenz von `PruneOutputDlls` belegt, dass ein schlankes Paket beabsichtigt ist — die Absicht ist dokumentiert, nur unvollständig umgesetzt | **bestätigt.** Die Empfehlung „Ausgabeverzeichnisse trennen" war wirkungslos, weil `publish.yaml` mit `--output .\\build` baut. DalamudPackager kennt laut eigener Dokumentation `Exclude` und `Include` (semikolongetrennt, relativ zum Ausgabepfad) und packt sonst das gesamte Ausgabeverzeichnis | Empfehlung **ersetzt** durch `Exclude` in der Projektdatei |
+| Field-Op, Surrogat-Test | **hält stand.** `AllHostileTargets` ist die Liste der Gegner, die RSR ohnehin als Ziele führt; diese brauchen keinen Sonderweg zum Autostart, Objekte außerhalb dagegen schon. Der Test ist unter dieser Lesart stimmig | — | Befund **zurückgezogen** |
+| Field-Op, Spielerausschluss | **hält stand.** Der Optionstext lautet „Auto turn on auto mode when in combat in Bozja/Eureka/Occult Fate/CE", während die Nachbaroptionen ihr Subjekt ausdrücklich nennen („when party is in combat", „when attacked"). Der eigene Kampfeintritt ist das gemeinte Ereignis | — | Befund **zurückgezogen**; die Begründung des bereits umgesetzten Puppen-Fixes `33f8cdff` war entsprechend zu eng, der Fix selbst bleibt richtig |
+| Beschreibungsmethoden | **widerlegt.** `e3b57004` entfernte einen zusammenhängenden UI-Block — Anzeigezeile „Current Targeting Mode" und Schalter „Change Targeting to Autoduty Mode" —, nicht versehentlich eine Verdrahtung | — | Befund bestätigt, Löschung bleibt empfohlen; der Wegfall des AutoDuty-Schnellschalters bleibt als Nebenfrage offen |
+
+**Nullvariante nachgetragen:** Sie fehlte in der Vorlage als eigenständige Option, obwohl Stufe 2 sie verlangt. Für jeden Punkt gilt: Belassen ist funktional möglich, die Kosten sind je Punkt in der Vorlage beziffert.
+
+**Restunsicherheit:** Ob `LostCureIII`/`IV`/`FullCure` im Spiel tatsächlich flächig heilen, ist nicht verifiziert — die einschlägige Wiki-Domain ist über den Netzwerk-Proxy dieser Umgebung nicht erreichbar. Für die Bewertung ist es unerheblich, weil die Duty-Rotation sie im Flächenpfad anbietet und nur dieser Pfad abgeschnitten ist; für die Frage, ob die Platzierung selbst richtig ist, wäre es zu klären.
+
 ---
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
