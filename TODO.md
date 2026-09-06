@@ -10,6 +10,10 @@ Umfang: `RotationSolver.Basic` (48k Zeilen) · RebornRotations (21k) · ExtraRot
 - **Zweiter Durchgang** mit denselben Scans über den bereinigten Baum.
 - **Dokumentation** in `docs/rotation-flow/07-codebase-audit.md`.
 
+## Drei Prüfskripte ohne Selbsttest
+
+`.github/scripts/audit/scan.py`, `mitscan.py` und `scan2.py` haben keinen Selbsttest gegen konstruierte Defekte, `scan3.py` und `scan4.py` schon. Bei beiden letzteren hat genau dieser Test einen Erkennungsfehler aufgedeckt — einen Offset-Fehler und nicht erkannte mehrzeilige Attributblöcke —, der sonst als sauberer Baum durchgegangen wäre. Alle drei liefern derzeit Treffer, die Lücke hat also noch nichts verdeckt; ein Nullbefund von ihnen ist aber bis dahin nicht belastbar.
+
 ## ChurinDNC wertet die BMR-Downtime ohne Vorzeichenprüfung aus
 
 Die Normalisierung der Schadensvorhersagen ist erledigt (AUDIT_LOG A11). Offen bleibt der Zustandsfenster-Teil derselben Defektklasse: `ChurinDNC.cs:777-843` (Upstream) liest `BMRNextDowntimeIn`/`-EndIn` ohne Vorzeichenprüfung. Da BossModReborn diese Werte als `(Aktivierung − jetzt)` liefert, sind sie während einer laufenden Downtime negativ, und die Rotation kann „Downtime läuft" nicht von „Downtime kommt gleich" unterscheiden — `if (BMRNextDowntimeIn >= 15f) return;` kehrt dann nicht zurück, und die folgende `<`-Bedingung ist immer erfüllt. Ob das der Absicht dieser Rotation widerspricht, ist ohne deren Autor nicht belegbar; ein Filter wäre hier falsch, weil das Vorzeichen die Information trägt.

@@ -77,11 +77,19 @@ Ein Ergebnis ist erst vollständig, wenn Einzelfall und Muster getrennt benannt 
 
 **Trigger werden an ihrer Wirkung gemessen, nicht an ihrem Geltungsbereich.** Bei einem Zustandsflag ist zu erheben, welche Codepfade es öffnet, nicht nur, für wen es gesetzt wird. Beleg: `HasHostileCountAoeMitigation` wurde als „richtig eingegrenzt" freigegeben, während das gesetzte Flag die gesamte Defensivkette öffnete.
 
+**Persistenz- und Schnittstellenverträge sind bindend.** Alles, was den Prozess überdauert oder von Dritten benutzt wird, ist Vertrag und nicht frei änderbar: serialisierte Typen, die Ordinalwerte ihrer Enums, Feld- und Eigenschaftsnamen in gespeicherter Konfiguration, sowie jede öffentliche Signatur einer Bibliothek, die als Paket veröffentlicht wird. Vor einer Änderung daran ist zu erheben, ob der Typ persistiert oder exportiert wird, und im Zweifel ein Migrationspfad vorzusehen (Semantic Versioning für die Signatur, Schema-Migration für die Ablage). Beleg: `Configs` ist eine `IPluginConfiguration` und wird ohne `StringEnumConverter` geschrieben, `DTRType`, `CycleType` und der `HostileType`-Wörterbuchwert liegen also als Ordinalzahlen in der Nutzerkonfiguration — ein Umsortieren dieser Enums deutet gespeicherte Einstellungen still um. Bei `SpecialMode` wurde genau das getan; es blieb folgenlos, weil dieser Typ nicht persistiert wird, was vor der Änderung nicht geprüft war.
+
+**Betroffenenkreis vor Wirkungsbereich.** Zur Change Impact Analysis gehört, wer betroffen ist, nicht nur was. Für dieses Projekt sind das drei Gruppen mit verschiedenen Interessen: Endnutzer des Plugins, Autoren abgeleiteter Rotationen, die `RotationSolver.Basic` als Paket beziehen, und die Upstream-Pflege, für die jede Abweichung Merge-Aufwand bedeutet. Eine Änderung, die eine dieser Gruppen trifft, ist als solche zu benennen. Beleg: `GeneratePackageOnBuild` wurde zunächst als Verpackungsfehler bewertet, bevor auffiel, dass es die zweite Gruppe bedient.
+
+**Verhaltensänderungen ohne Nachweismöglichkeit gehören hinter eine Option** (Feature Toggle nach Fowler). Lässt sich die Wirkung eines Eingriffs mit den verfügbaren Mitteln nicht belegen — statische Prüfung und Kompilierung reichen dafür nicht —, wird das bisherige Standardverhalten beibehalten und das neue über eine abschaltbare Einstellung angeboten, statt es allen aufzuzwingen. Das gilt nicht für belegte Defektbehebungen, sondern für Verbesserungen, deren Nutzen eine Annahme bleibt.
+
 **Audit bezeichnet unabhängige Prüfung.** Erneutes Lesen des eigenen Diffs ist Selbstkontrolle und erfüllt das Vier-Augen-Prinzip nicht. Der erreichte Prüfgrad wird benannt: statische Selbstprüfung, Prüfskript, Compile, Laufzeitbeobachtung. Formulierungsstärke folgt der Beleglage.
 
 **Verfügbare Erkenntnisquellen ausschöpfen, bevor eine Grenze behauptet wird.** Fehlende lokale Toolchain begrenzt nicht die Recherche externer Fakten. Beleg: Troubadour/Tactician als „nur gegen magischen Schaden" angenommen, per Websuche in Sekunden widerlegbar.
 
 **Definition of Done liegt beim Nachweis der Wirkkette im Code**, nicht bei einer Prüfaufgabe an den Nutzer. Beleg: #54 mit offener Spielbestätigung übergeben, obwohl Flag, Dispatch, `CanUse` und Zielwahl im Code nachvollziehbar waren.
+
+**Definition of Ready als Gegenstück.** Vor Arbeitsbeginn muss feststehen, was der gemeldete Fehler ist, woran seine Behebung erkennbar wäre und welche Quellen dafür auszuschöpfen sind. Fehlt eines davon, ist das zu klären, bevor Code entsteht — nicht danach. Die Definition of Ready ist im Unterschied zur Definition of Done kein Bestandteil des Scrum-Rahmens, sondern eine verbreitete Ergänzung; sie wird hier verwendet, weil der wiederkehrende Fehler dieses Projekts das verfrühte Umsetzen war. Beleg: #37-Config-Refactoring vor der Gegenpositionsprüfung umgesetzt.
 
 **Blameless Postmortem.** Eigene Fehler werden sachlich am System dokumentiert und behoben. Fehlerhistorie gehört in AUDIT_LOG.md und Commit-Messages, nicht als Ergebnisdarstellung in den Bericht.
 
@@ -100,6 +108,10 @@ Chat durchgehend Deutsch, vor jeder Antwort verifiziert (Beleg: englische Antwor
 # Artefakte und Nachvollziehbarkeit
 
 **CLAUDE.md** nimmt jede Vorgabe unmittelbar auf, nicht am Aufgabenende.
+
+**Prüfmittel sind Artefakte, keine Wegwerfware.** Ein Skript, das eine Defektklasse gefunden hat, ist der Regressionsschutz für diese Klasse und gehört versioniert ins Repository, nicht in ein Sitzungsverzeichnis. Beim zweiten Durchgang wird es erneut ausgeführt, statt neu geschrieben; jedes Skript trägt seinen Selbsttest gegen konstruierte Defekte bei sich, weil ein stiller Nullbefund sonst nicht von einem sauberen Baum zu unterscheiden ist. Beleg: `check_base_calls.py` liegt im Repository und läuft in der CI, die Skripte der Audit-Phasen 1 bis 4 lagen nur im Sitzungsverzeichnis und wären mit der Sitzung verloren gewesen.
+
+**Technische Schuld wird von Defekten getrennt geführt.** Ein bewusst eingegangener Kompromiss ist keine Fehlfunktion: er wird mit seiner Begründung, seinen Kosten und der Bedingung erfasst, unter der er aufzulösen ist. Ein Defekt dagegen ist eine Abweichung vom beabsichtigten Verhalten. Beide stehen in `TODO.md`, aber nicht ununterscheidbar nebeneinander — sonst wird ein Kompromiss irgendwann als Fehler behandelt oder ein Fehler als Kompromiss geduldet.
 
 **TODO.md führt ausschließlich offene Arbeit.** Kein abgeschlossener Vorgang, keine Statushistorie, kein Kopftext über das Archiv. Ohne offene Punkte: „Derzeit keine." Neu erkannte Defekte werden sofort erfasst, auch außerhalb des laufenden Auftrags; abgeschlossene werden nach AUDIT_LOG.md überführt, eine Statusänderung im Text genügt nicht. Beleg: Roadmap, Nummernliste und Archivkopf dreimal in Folge belassen.
 
