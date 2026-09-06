@@ -95,7 +95,20 @@ namespace RotationSolver.Commands
 							return;
 						}
 					}
-					else if (!int.TryParse(value, out index))
+					else if (int.TryParse(value, out index))
+					{
+						// Apply it here like the name form above does. Leaving it to
+						// UpdateTargetingIndex would only work while RSR is already running, since
+						// that call sits behind AdjustStateType's DataCenter.State guard - which is
+						// exactly the case where this argument is not given.
+						var types = Service.Config.TargetingTypes;
+						if (types.Count > 0)
+						{
+							index = ((index % types.Count) + types.Count) % types.Count;
+							Service.Config.TargetingIndex = index;
+						}
+					}
+					else
 					{
 						index = -1;
 					}

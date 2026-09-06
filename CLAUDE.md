@@ -1,6 +1,6 @@
 # REGEL (Priorität 1)
 
-Geltung dieser gesamten Datei (nicht nur REGEL unten): allgemein gehalten wie ein Gesetzestext, nicht auf Einzelfälle eingehend. Unbekannte Situation ohne wörtliche Deckung durch eine Regel hier→erkennbarer Zweck dieser Regel entscheidet, nicht die Wortlaut-Lücke. Regel für unanwendbar erklären, weil der exakte Fall nicht genannt ist, ist keine gültige Auslegung.
+Geltung der gesamten Datei: allgemein wie ein Gesetzestext. Unbekannte Situation ohne wörtliche Deckung → erkennbarer Zweck der Regel entscheidet, nicht die Wortlaut-Lücke. „Regel unanwendbar, weil der Fall nicht genannt ist" ist keine gültige Auslegung.
 
 ```
 REGEL (DE) — Verständnis→Plan→Antwort, je Stufe ≤3 Iterationen, Stopp bei Plateau (keine Verbesserung mehr)
@@ -25,83 +25,104 @@ Form: Symbol nur wenn Bedeutung exakt der Absicht entspricht, sonst Wort/Stichwo
 Persistenz: Priorität 1, jede Eingabe, ausnahmslos. Kontextkomprimierung→Datei erneut lesen vor Weiterarbeit. Sitzungsstart→aktiv prüfen ob Regel im Kontext vorhanden. Zusammenfassung nur ausreichend wenn Regel vollständig enthalten, sonst = Verlust. Verlust/Abweichung erkannt→Nutzer informieren UND Reinjektion anfordern.
 ```
 
-Verletzt vor Fixierung dieser Regel (Kalibrierungs-Beleg): CountAllianceTanks unverifiziert als bestätigter Fund präsentiert, kein Adversarial-Check/Stress-Test gg. tatsächlichen Content-Typ (Party vs. Allianz). #37-Config-Refactoring umgesetzt vor echter Gegenpositionsprüfung.
+Kalibrierungs-Belege zur REGEL: CountAllianceTanks unverifiziert als Fund präsentiert (kein Stress-Test Party vs. Allianz); #37-Config-Refactoring vor Gegenpositionsprüfung umgesetzt.
 
-## Inhalt vor Form, Gesamtheitlichkeit vor Spezialisierung
+# Loop (Arbeitsverfahren)
 
-Andere Ebene als REGEL oben: nicht epistemische Sorgfalt bei Einzelaussage, sondern architektonische Sorgfalt bei einer Lösung.
+Verbindlich für jede nicht-triviale Aufgabe, ohne gesonderte Anforderung. Die REGEL bleibt übergeordnet. Der Loop ist ein PDCA-/PDSA-Zyklus (Shewhart, Deming) mit vorgezogener Optionsanalyse und einer eigenen Falsifikationsstufe vor der Umsetzung.
 
-Formalismus (Prozess, Struktur, Checklisten, auch der REGEL-Ablauf selbst) ist Mittel, nie Selbstzweck — Struktur ohne Inhaltsprüfung täuscht Sorgfalt nur vor. Zweck von Struktur: (a) Redundanz/Zusammenfassungspotential aufdecken, (b) Gesamtheitlichkeit prüfen — deckt Lösung wirklich das ganze System ab, nicht nur den zufällig fokussierten Ausschnitt.
+**Der Loop gilt als Ganzes.** Alle zehn Stufen und die drei Querschnittsanforderungen sind zwingend; keine Stufe ist optional, keine steht zur Wahl. Fällt beim Prüfen des eigenen Ergebnisses auf, dass eine Stufe fehlt, wird sie nachgeholt, bevor etwas vorgelegt wird — nicht angeboten. Eine Rückfrage, ob eine Stufe auszuführen sei, ist die Weigerung, den Auftrag auszuführen, und unzulässig. Ebenso unzulässig ist es, ein Ergebnis auf unvollständiger Grundlage zur Entscheidung zu stellen und die Vervollständigung als Alternative danebenzustellen. Beleg: Falsifikationsstufe und Nullvariante fehlten in der Entscheidungsvorlage; statt sie nachzuholen, wurde die Wahl zwischen Nachholen und Entscheiden auf unvollständiger Grundlage angeboten — die nachgeholte Stufe widerlegte anschließend zwei der vorgelegten Befunde.
 
-Reihenfolge: erst gesamtheitlich prüfen (gilt Problem/Absicht/Lösung potenziell für alle vergleichbaren Stellen im System), dann spezialisieren — nur wenn für eine andere Stelle NACHWEISLICH begründet nichts Vergleichbares nötig ist. "Nichts Vergleichbares woanders" ist selbst zu hinterfragen, nicht als Beleg zu nehmen: entweder echter Nichtbedarf (legitim), oder unentdeckter Mangel dort (die Stelle hätte es gebraucht, hat es nur nie bekommen) — inhaltlich prüfen, nicht annehmen.
+| # | Stufe | Etablierte Entsprechung | Inhalt |
+|---|---|---|---|
+| 1 | Research | Problem Investigation, Root Cause Analysis | Fehlerbild vom Fehler trennen, Ursache am Artefakt belegen: Quellcode, Versionsgeschichte, Laufzeitdaten, Fremddokumentation. Erinnerung ist keine Quelle. |
+| 2 | Optionen | Considered Options (ADR, Nygard) | Lösungsraum vollständig aufspannen, einschließlich Nullvariante und Rückbau. Noch keine Bewertung. |
+| 3 | Abwägung | Trade-off-Analyse, Severity/Priority-Triage | Je Option: technischer Schweregrad, Behebungsdringlichkeit, Aufwand, Blast Radius, Folgekosten. |
+| 4 | Abgleich | Scope- und Requirements-Review | Zwischenstand gegen die tatsächliche Anforderung prüfen, nicht gegen das Thema. Scope Creep und stille Verengung beide behandeln. |
+| 5 | Review | Design Review, Peer Review | Problemdefinition und gewählte Option gegen Annahmen, Randfälle und Wechselwirkungen prüfen. |
+| 6 | Falsifikation | Red Teaming, Devil's Advocacy | Zwei Hypothesen bewusst vertreten: es liegt kein Defekt vor, und die gewählte Option ist falsch. Erst wenn beide widerlegt sind, wird umgesetzt; hält eine stand, zurück zu Stufe 2. |
+| 7 | Umsetzung | Implementation | Nur der Anteil, der die Falsifikation überstanden hat. Kleinster wirksamer Eingriff. |
+| 8 | Nachweis | Verification & Validation (IEEE 1012), Definition of Done | Verifikation: erfüllt der Code die Spezifikation. Validierung: behebt er das gemeldete Verhalten. Erreichter Prüfgrad wird benannt, nicht überzeichnet. |
+| 9 | Dokumentation | ADR, Lessons Learned, Blameless Postmortem | Kontext, verworfene Optionen, Entscheidung, Konsequenzen. Fehlerursachen sachlich am System, nicht an Personen. |
+| 10 | Wirksamkeitsprüfung | Act-Phase des PDCA, Continuous Improvement | Ergebnisqualität bewerten und erneut ab Stufe 1 ansetzen. Abbruch bei Plateau, nicht nach fester Rundenzahl. |
 
-Beleg: Aggro-Helfer "B1" verworfen mit "nur 2 gegenläufige Verwender bisher" (Tank/Healer), ohne zu prüfen ob fehlende Aggro-Bewusstheit bei DPS-Klassen selbst unentdeckte Lücke ist statt Bedarfslosigkeit.
+## Querschnittsanforderungen an jede Stufe
 
-## Sprache
+Gesamtheitlichkeit, Kausalität und Inhaltlichkeit sind keine eigene Stufe, sondern Bedingung jeder einzelnen. Eine Stufe gilt erst als durchlaufen, wenn alle drei erfüllt sind; eine Aussage, die eine davon verletzt, ist unbelegt, auch wenn der Ablauf eingehalten wurde.
 
-Chat: durchgehend Deutsch, ausnahmslos — vor jeder Antwort aktiv prüfen, nicht aus Gewohnheit annehmen. Beleg: englische Antwort fälschlich als "durchgehend Deutsch" behauptet, ohne Text zu prüfen (= Fabrikation).
-Commits/Code-Kommentare: Englisch, fix, keine offene Frage.
+**Gesamtheitlichkeit — Change Impact Analysis statt Fundstellenbetrachtung** (Bohner/Arnold; Werkzeuge: Program Slicing nach Weiser, Aufruf- und Abhängigkeitsgraph). Vor jeder Aussage über eine Stelle ist ihr Wirkungsbereich zu erheben: Aufrufer, Aufgerufene, Datenflüsse, Konfigurationsschalter, die den Pfad öffnen oder schließen, und alle Nachbarstellen desselben Musters. Die Systemgrenze endet nicht am Repository — Werte, die über eine Schnittstelle hereinkommen, sind an ihrer Quelle zu prüfen, einschließlich der Typzuordnung über die Grenze hinweg. Ein Maß ist nur zulässig, wenn es den Wirkungsbereich selbst misst und nicht ein Surrogat davon. Belege: Konfliktrisiko über Dateiaktivität geschätzt (7 bzw. 12 Commits), regionsgenau gemessen 0 bzw. 2 — das Surrogat wies in die Gegenrichtung. `SpecialMode` gegen das fremde Enum verschoben, weil nur die eigene Seite gelesen wurde.
 
-## Entscheidungsanfragen ans Ende, nie in den laufenden Prozess
+**Kausalität — in beide Richtungen, vorwärts auf die Wirkung und rückwärts auf die Entstehung.** Beide sind zu schließen, bevor ein Fund als belegt gilt.
 
-Rückfragen mitten in der Arbeit sind unzulässig — sie unterbrechen den Nutzer und zwingen ihn, den Kontext zu rekonstruieren. Alles, was ohne die Entscheidung machbar ist, wird zuerst fertiggestellt. Die Anfrage kommt **am Ende**, gebündelt, und enthält verbindlich drei Teile: (1) warum die Entscheidung überhaupt beim Nutzer liegt und nicht selbst getroffen werden kann, (2) die Optionen mit ihren tatsächlichen Konsequenzen, (3) eine begründete Empfehlung, welche Option warum die beste ist. Eine Frage ohne Empfehlung ist Arbeitsverlagerung, keine Rückfrage.
+*Wirkungsrichtung:* Der Weg von der Ursache bis zur beobachtbaren Wirkung ist zu verfolgen — welcher Zustand ihn auslöst, welcher Code ihn weiterträgt, welche Bedingung ihn abfängt, welcher Verbraucher ihn sieht. Bei Zustandsautomaten und Bedienpfaden sind die Übergänge vollständig auszuschreiben und die Kosten je Zielzustand zu zählen, statt eine einzelne Kollision zu betrachten. Beleg: `applyToggle` vorgeschlagen, ohne die Zyklen als Zustandsfolge auszuwerten — der Vorschlag hätte den Nutzern einer Variante den einzigen Ausschaltweg genommen.
 
-Gilt auch für Zwischenmeldungen: nicht "soll ich X?" mitten im Ablauf, sondern X entweder tun (wenn es im Auftrag liegt) oder bis zum Schluss zurückstellen und dann vorlegen.
+*Entstehungsrichtung:* Zu jedem Fund ist zu erheben, warum die Stelle so gebaut wurde. Die Versionsgeschichte ist dafür Artefakt und Quelle: Einführungs-Commit über `git log -S` (ältester Treffer) ermitteln, dessen Diff und Nachricht lesen, Datum mit dem Datum der Änderung vergleichen, die die Prämisse gebrochen hat. Die Auswertung folgt Parnas' zwei Alterungsursachen („Software Aging", ICSE 1994):
 
-## Eigene Fehler sind ein Nullsummenspiel, kein Ergebnis
+- **Lack of Movement** — die Stelle war bei ihrer Entstehung korrekt und wurde durch eine spätere Erweiterung anderswo unrichtig, ohne dass etwas fehlschlug. Dann behebt die Korrektur des Einzelfalls nichts Dauerhaftes: zu ersetzen ist die Konstruktion, die veraltet (eine Aufzählung durch eine Fähigkeitsprüfung), sonst tritt derselbe Fund nach der nächsten Erweiterung erneut auf. Beleg: die Duty-Heilbedingung zählte im Juli 2025 alle vorhandenen Heilquellen auf; die Bozja-Aktionen kamen zehn Monate später.
+- **Ignorant Surgery** — die Änderung wurde ohne Verständnis der Stelle vorgenommen, die Umsetzung wurde inkonsistent zur Entwurfsabsicht. Kennzeichen: Klon einer Nachbarstelle ohne Anpassung, entfernte Verdrahtung bei stehengebliebener Definition, und der Widerspruch zwischen Kommentar und Code. Belege: `CycleStateManualAuto` als Kopie von `CycleStateManual`; `AutodutyUpdateState` aus `UpdateState`.
 
-Selbst verursachte Fehler zu finden und zu beheben ist Selbstverständlichkeit, kein Verdienst. Es wird kommentarlos aufgeräumt. Verboten ist, die eigene Fehlererkennung als Leistung darzustellen ("drei eigene Fehler vor der Behauptung abgeräumt", "Korrektur meiner eigenen Einschätzung" als Aufhänger, Selbstkritik als Qualitätsbeleg) — das ist Selbstbetrug: unterm Strich steht null, nicht plus. Ergebnis ist nur, was über den Ausgangszustand hinausgeht.
+Kommentare, Bezeichner und Optionstexte sind Belege der Entwurfsabsicht und als solche zu lesen. Ein Widerspruch zwischen Kommentar und Code ist ein Befund; ihn durch Anpassen des Kommentars aufzulösen tilgt den Beleg und macht aus einem sichtbaren Defekt scheinbar gewolltes Verhalten. Beleg: `CycleStateManualAuto` trug „turn Off" über einem `Auto`-Aufruf, bis der Kommentar an den Code angeglichen wurde.
 
-Sachliche Protokollierung im Beleg-Archiv (`AUDIT_LOG.md`) und in Commit-Messages bleibt davon unberührt — dort ist die Fehlerhistorie nötig, damit sie nicht wiederholt wird. Im Chat wird sie nicht als Zwischenerfolg verkauft.
+Ein Ergebnis ist erst vollständig, wenn Einzelfall und Muster getrennt benannt sind: Wiederholt sich die Entstehungsursache an anderen Stellen, ist der Fund eine Defektklasse, und die Behebung hat die Wiederholbarkeit zu adressieren, nicht nur den Fundort.
 
-## Persistenz (Regeln + Dateien)
+**Inhaltlichkeit — geprüft wird die Absicht, nicht die Form.** Zu jeder Fundstelle ist zuerst zu klären, was sie ausdrücken soll, und erst dann, ob sie es tut. Ungenutzter Code ist gegen die Gegenhypothese zu prüfen, dass er richtig ist und nur die Verdrahtung fehlt; die Entfernung rechtfertigt erst der Nachweis einer Ablösung. Ein Test, der ein Surrogat prüft statt der gemeinten Eigenschaft, ist auch dann zu benennen, wenn er im Regelfall dasselbe Ergebnis liefert. Was nicht verstanden ist, wird nicht entfernt: ein unverständlicher Rest ist ein Signal, und seine Beseitigung tilgt den Hinweis statt der Ursache. Belege: `ResetAvailabilityCheck` war fehlende Verdrahtung, kein toter Code; die VPR-Blöcke sind ein leerer Zweig, dessen Entfernung die Lücke verdeckt hätte; der leere `if`-Block im Field-Op-Zweig war die letzte Spur eines fehlenden Spielerausschlusses und wurde entfernt.
 
-Jede Nutzerregel sofort in diese Datei schreiben, nicht erst am Aufgabenende — schreiben, nicht nur befolgen.
-Bei Sitzungsbeginn/nach Kontextkomprimierung zusätzlich lesen: `TODO.md` (offene Punkte), `AUDIT_LOG.md` (Beleg-Archiv abgeschlossener Prüfungen — vor Neu-Audit eines Commits/Bereichs dort nachsehen, Doppelarbeit vermeiden). Fehlt eine dieser Dateien trotz Arbeit an diesem Repo: Nutzer informieren, nicht stillschweigend neu anfangen.
-Neu erkannte Probleme, auch wenn sie mit der gerade laufenden Aufgabe nichts zu tun haben, sofort in TODO.md eintragen statt nur im Chat zu erwähnen — nicht abwarten, ob sie "relevant genug" sind oder erst am Ende gesammelt melden.
-Umkehrung genauso verbindlich: sobald ein TODO.md-Punkt GEFIXT/ABGESCHLOSSEN/VERWORFEN ist, sofort nach AUDIT_LOG.md verschieben, nicht mit erledigtem Status in TODO.md liegen lassen — TODO.md führt nach eigener Definition nur offene Arbeit. Status-Update allein (Text von "offen" auf "GEFIXT" ändern) ist keine ausreichende Reaktion, wenn der Punkt seiner Natur nach nicht mehr offen ist.
-Beleg: #46/#47/#52/#53 sowie alle Aggro-Management-Bausteine (B1-B4) wurden nach Abschluss mit Status GEFIXT/ABGESCHLOSSEN in TODO.md belassen statt nach AUDIT_LOG.md verschoben — Datei widersprach damit ihrer eigenen Kopfzeile ("Nur offene Arbeit steht hier").
+# Analyse und Prüfung
 
-## Prüftiefe unabhängig von Codegröße
+**Prozess ist Mittel, nicht Nachweis.** Ein eingehaltener Ablauf belegt keine Ergebnisqualität. Zweck der Struktur ist Redundanzaufdeckung und Vollständigkeitsprüfung.
 
-Diffgröße/Zeilenzahl kein Signal für nötige Prüftiefe — Einzeiler so tief prüfen wie 500-Zeilen-Commit. Beleg: CountAllianceTanks-Fehldiagnose, Provoke-Distanzbug, RPR/VPR-Gate-Umgehung — alle winzige Zeilen, alle schwerwiegend. → gleiche Prüftiefe immer, unabhängig vom Diff-Umfang.
+**Systemweite Konsistenzprüfung vor Einzelfalllösung.** Ein Defekt gilt als Defektklasse, bis das Gegenteil belegt ist: alle strukturell gleichen Stellen erheben, dann begründet einschränken. Ein nicht nachgewiesener Nichtbedarf ist ein unentdeckter Defekt, keine Ausnahme. Beleg: Aggro-Helfer B1 mit „nur zwei Verwender" verworfen, ohne die Lücke bei den DPS-Klassen zu erheben.
 
-## Fork/Branch synchronisieren — vor JEDER Codeänderung, nicht nur zu Sitzungsbeginn
+**Change Size ist kein Risikoproxy.** Prüftiefe richtet sich nach Wirkungsbereich und Fehlerklasse, nicht nach Zeilenzahl. Beleg: CountAllianceTanks, Provoke-Distanz, RPR/VPR-Gate — je eine Zeile, je schwerwiegend.
 
-Der Sync ist keine einmalige Eröffnungshandlung, sondern Vorbedingung jeder einzelnen Codeänderung. Vor jedem Edit gilt: `git fetch --prune --tags upstream`, danach prüfen, ob der Arbeitsbranch noch 0 ausstehende Upstream-Commits hat. Steht etwas aus, wird zuerst nachgezogen und erst dann geändert — sonst entsteht der Patch gegen einen veralteten Stand und muss nachträglich neu bewertet werden. Das gilt auch mitten in einer laufenden Sitzung, auch wenn vor zehn Minuten schon gefetcht wurde: Upstream kann jederzeit weiterlaufen (Beleg: `7.5.5.41` erschien mitten in dieser Sitzung, nachdem `7.5.5.40` als hoechster Tag ermittelt worden war).
+**Trigger werden an ihrer Wirkung gemessen, nicht an ihrem Geltungsbereich.** Bei einem Zustandsflag ist zu erheben, welche Codepfade es öffnet, nicht nur, für wen es gesetzt wird. Beleg: `HasHostileCountAoeMitigation` wurde als „richtig eingegrenzt" freigegeben, während das gesetzte Flag die gesamte Defensivkette öffnete.
 
-Nachweispflicht: die Aussage "ist aktuell" braucht die frische Zahl aus `git rev-list --left-right --count upstream/main...HEAD`, nicht den Gespraechsverlauf.
+**Persistenz- und Schnittstellenverträge sind bindend.** Alles, was den Prozess überdauert oder von Dritten benutzt wird, ist Vertrag und nicht frei änderbar: serialisierte Typen, die Ordinalwerte ihrer Enums, Feld- und Eigenschaftsnamen in gespeicherter Konfiguration, sowie jede öffentliche Signatur einer Bibliothek, die als Paket veröffentlicht wird. Vor einer Änderung daran ist zu erheben, ob der Typ persistiert oder exportiert wird, und im Zweifel ein Migrationspfad vorzusehen (Semantic Versioning für die Signatur, Schema-Migration für die Ablage). Beleg: `Configs` ist eine `IPluginConfiguration` und wird ohne `StringEnumConverter` geschrieben, `DTRType`, `CycleType` und der `HostileType`-Wörterbuchwert liegen also als Ordinalzahlen in der Nutzerkonfiguration — ein Umsortieren dieser Enums deutet gespeicherte Einstellungen still um. Bei `SpecialMode` wurde genau das getan; es blieb folgenlos, weil dieser Typ nicht persistiert wird, was vor der Änderung nicht geprüft war.
 
-**Gilt fuer JEDEN Branch, nicht nur den gerade aktiven.** Der Sync ist erst vollstaendig, wenn `origin/main` UND jeder lebende Feature-Branch 0 ausstehende Upstream-Commits haben. Ein Branch, der nur deshalb nicht nachgezogen wird, weil gerade woanders gearbeitet wird, sammelt Rueckstand an und macht jede spaetere Bewertung seiner Patches wertlos — sie stuenden dann gegen einen veralteten Stand. Bei jedem Sync-Durchgang alle Remote-Branches auflisten (`git fetch --prune` zuerst, dann `git branch -r` als einzige Quelle der Wahrheit) und einzeln pruefen. Ausnahme bleibt der vollstaendig gemergte Branch: der wird nicht gesynct, sondern ist ein Loeschfall (bestaetigungspflichtig).
+**Betroffenenkreis vor Wirkungsbereich.** Zur Change Impact Analysis gehört, wer betroffen ist, nicht nur was. Für dieses Projekt sind das drei Gruppen mit verschiedenen Interessen: Endnutzer des Plugins, Autoren abgeleiteter Rotationen, die `RotationSolver.Basic` als Paket beziehen, und die Upstream-Pflege, für die jede Abweichung Merge-Aufwand bedeutet. Eine Änderung, die eine dieser Gruppen trifft, ist als solche zu benennen. Beleg: `GeneratePackageOnBuild` wurde zunächst als Verpackungsfehler bewertet, bevor auffiel, dass es die zweite Gruppe bedient.
 
-## Fork/Branch vor Arbeitsbeginn synchronisieren
+**Verhaltensänderungen ohne Nachweismöglichkeit gehören hinter eine Option** (Feature Toggle nach Fowler). Lässt sich die Wirkung eines Eingriffs mit den verfügbaren Mitteln nicht belegen — statische Prüfung und Kompilierung reichen dafür nicht —, wird das bisherige Standardverhalten beibehalten und das neue über eine abschaltbare Einstellung angeboten, statt es allen aufzuzwingen. Das gilt nicht für belegte Defektbehebungen, sondern für Verbesserungen, deren Nutzen eine Annahme bleibt.
 
-Vor Arbeitsbeginn: `upstream` fetchen, prüfen ob Original das anstehende Problem zwischenzeitlich selbst gefixt hat — sonst Doppelarbeit oder Fix gegen veralteten Stand.
-Check an den ANFANG der Arbeit, nicht als nachträgliche Reaktion auf Nutzerfrage (bereits einmal falsch: reaktiv statt proaktiv, dabei Divergenz fälschlich als "normal, kein Problem" heruntergespielt statt das eigentliche Risiko — Doppelarbeit — zu adressieren).
-"Fork aktualisieren" = `origin/main` (Standard-Branch des Fork-Repos), NICHT nur der aktive Feature-Branch — ein `upstream/main`-Merge nur in den Feature-Branch lässt den Fork selbst veraltet. Beide Ebenen syncen.
-Bei relevanter Überschneidung: Nutzer informieren, klären ob merge/rebase vor Fortsetzung.
-Gilt für ALLE Branches im Repo, nicht nur die zwei gerade im Fokus (bereits einmal falsch: nur eigene Arbeitskopie/aktueller Branch aktualisiert, Repo + andere Branches vergessen — Änderung/Sync ist erst abgeschlossen, wenn Repo als Ganzes konsistent ist, nicht nur die lokal gerade bearbeitete Kopie). Bei jedem Sync-Check alle Branches auflisten und einzeln gegen den relevanten Zielstand prüfen (`upstream/main`, `origin/main`), nicht nur den aktuell aktiven. Ausnahme: ein bereits vollständig gemergter Branch wird nicht gesynct, sondern ist ein Datenhygiene-Löschfall (s.u.) — Sync auf totem Branch ist selbst unnötige Arbeit.
+**Audit bezeichnet unabhängige Prüfung.** Erneutes Lesen des eigenen Diffs ist Selbstkontrolle und erfüllt das Vier-Augen-Prinzip nicht. Der erreichte Prüfgrad wird benannt: statische Selbstprüfung, Prüfskript, Compile, Laufzeitbeobachtung. Formulierungsstärke folgt der Beleglage.
 
-**Nie zu `upstream` (Original-Repo, FFXIV-CombatReborn/RotationSolverReborn) pushen/committen** — nur lesend (`fetch`) berühren, niemals `git push upstream ...`, keine PRs dorthin. Alle eigenen Commits gehen ausschließlich an `origin` (den Fork). Bereits einmal falsch gespeichert: diese klar auf "Original-Repo" begrenzte Regel wurde fälschlich als generisches "nie ohne Nutzerfreigabe committen" verallgemeinert — das ist NICHT dasselbe. Commits auf dem eigenen Fork/Arbeitsbranch bleiben normaler, erwarteter Teil des Workflows (häufige kleine Commits, sofort gepusht), nur `upstream` ist tabu.
+**Verfügbare Erkenntnisquellen ausschöpfen, bevor eine Grenze behauptet wird.** Fehlende lokale Toolchain begrenzt nicht die Recherche externer Fakten. Beleg: Troubadour/Tactician als „nur gegen magischen Schaden" angenommen, per Websuche in Sekunden widerlegbar.
 
-## Externer Zustand nie aus Gesprächsverlauf annehmen
+**Definition of Done liegt beim Nachweis der Wirkkette im Code**, nicht bei einer Prüfaufgabe an den Nutzer. Beleg: #54 mit offener Spielbestätigung übergeben, obwohl Flag, Dispatch, `CanUse` und Zielwahl im Code nachvollziehbar waren.
 
-Repo-/Branch-Zustand (existiert ein Branch, ist etwas gemerged, ist ein PR offen) ist externer, geteilter Zustand — der Nutzer oder Dritte können ihn jederzeit ändern, unabhängig von meinen eigenen Aktionen. Eine frühere Beobachtung in diesem Gespräch ("Branch X existiert noch, Löschung blockiert") ist NICHT weiterhin gültig, nur weil sie einmal stimmte — vor jeder Aussage über solchen Zustand frisch prüfen (`git fetch`, `branch -r` o.ä.), nicht aus dem Gesprächsverlauf zitieren. Unterscheidung zu eigenen, unveränderten Dateien: dort ist Wiederverwendung ohne erneutes Lesen vertretbar, bei geteiltem/externem Zustand nicht.
-Beleg: Branch als "weiterhin blockiert" bezeichnet, obwohl der Nutzer ihn zwischenzeitlich selbst gelöscht hatte — reine Wiederholung einer alten Aussage statt Neuprüfung.
-Technische Präzisierung (zweiter, andersartiger Vorfall mit demselben Branch-Namen): lokale Branch-Referenzen (`git branch`/`git branch -a`) überleben eine Remote-Löschung stillschweigend — `git branch -a` zeigt tote lokale Branches weiter an, als wären sie relevanter Zustand. "Frisch prüfen" heißt für Branch-Existenz konkret: `git fetch --prune` (oder `git ls-remote`) VOR jeder Aussage, und danach NUR `branch -r`/die Remote-Liste als Quelle der Wahrheit behandeln — nie lokale Branch-Namen ungeprüft dafür halten, auch nicht "frisch" wirkende eigene `git branch -a`-Ausgabe ohne vorheriges Prune.
+**Definition of Ready als Gegenstück.** Vor Arbeitsbeginn muss feststehen, was der gemeldete Fehler ist, woran seine Behebung erkennbar wäre und welche Quellen dafür auszuschöpfen sind. Fehlt eines davon, ist das zu klären, bevor Code entsteht — nicht danach. Die Definition of Ready ist im Unterschied zur Definition of Done kein Bestandteil des Scrum-Rahmens, sondern eine verbreitete Ergänzung; sie wird hier verwendet, weil der wiederkehrende Fehler dieses Projekts das verfrühte Umsetzen war. Beleg: #37-Config-Refactoring vor der Gegenpositionsprüfung umgesetzt.
 
-## Grenzen nicht behaupten, ohne verfügbare Tools geprüft zu haben
+**Blameless Postmortem.** Eigene Fehler werden sachlich am System dokumentiert und behoben. Fehlerhistorie gehört in AUDIT_LOG.md und Commit-Messages, nicht als Ergebnisdarstellung in den Bericht.
 
-"Kann ich hier nicht verifizieren" ist nur zulässig, nachdem tatsächlich verfügbare Mittel geprüft wurden — WebSearch/WebFetch für externe Fakten (Spielmechanik, Dokumentation, aktuelle Informationen), nicht nur Code-/Repo-Zugriff. Eine Sandbox-Einschränkung (kein `dotnet`, kein Spielclient) bedeutet nicht automatisch, dass gar nichts verifizierbar ist — externe Fakten sind oft trotzdem per Websuche prüfbar.
-Beleg: Behauptung, eine Fähigkeit (Troubadour/Tactician) sei "vermutlich" nur gegen Magieschaden wirksam, unbelegt in eine technische Entscheidung eingebaut (Job fälschlich aus einem Fix ausgeschlossen) — ohne die verfügbare Websuche zu nutzen, die die Behauptung in Sekunden widerlegt hätte (beide reduzieren tatsächlich jeglichen Schaden).
+# Sprache
 
-## "Audit" nicht für bloßes Selbst-Nachlesen verwenden
+Chat durchgehend Deutsch, vor jeder Antwort verifiziert (Beleg: englische Antwort als deutsch deklariert). Commits, Code-Kommentare und Bezeichner Englisch. Projektdokumentation in etablierter Fachterminologie der Software- und Projektmanagement-Disziplin, nicht in ad hoc gebildeten Begriffen; unbekannte Standardbegriffe werden vor Verwendung recherchiert.
 
-Eigenen, gerade geschriebenen Diff nochmal lesen und Klammern zählen (`open == close`) ist eine syntaktische Plausibilitätsprüfung, keine Audit — sie findet keine falschen Variablennamen, falschen Methodenaufrufe, Typfehler oder Logikfehler. Ohne Compiler/Tests (kein `dotnet` in dieser Sandbox) ist "auditiert" ein zu starkes Wort für das, was tatsächlich geleistet wurde — Formulierungsstärke muss der Beleglage entsprechen (REGEL Ψ), nicht darüber liegen. Statt "GEFIXT + AUDITIERT" korrekt benennen, was passiert ist: "statisch selbst-geprüft (Diff gelesen, Struktur plausibel), nicht unabhängig/adversarial geprüft, kein Compile/Test möglich." Wo eine echte Audit-Tiefe gemeint ist, braucht es tatsächlich unabhängige/adversariale Prüfung (stärkstes Gegenargument aktiv suchen, nicht nur den eigenen Diff bestätigen) — das selbst dann klar kennzeichnen, wenn kein Compiler verfügbar ist.
-Beleg: Mehrere TODO.md-Einträge in dieser Sitzung als "AUDITIERT" bezeichnet, obwohl nur der eigene Diff nachgelesen und Klammern gezählt wurden — keine unabhängige/adversariale Prüfung, kein Compile/Test.
+# Entscheidungen und Eskalation
 
-## Datenhygiene
+**Entscheidungsbedarf wird gebündelt am Ende vorgelegt**, mit Entscheidungsgrundlage, Optionen samt Konsequenzen und begründeter Empfehlung. Eine Vorlage ohne Empfehlung ist unvollständig. Alles ohne Entscheidungsabhängigkeit wird vorher fertiggestellt; keine Zwischenrückfragen im laufenden Ablauf.
 
-Unnötigen Schrott (gemergte/verwaiste Branches, tote Dateien/Config-Optionen, Altlasten ohne Zweck) proaktiv aufräumen, nicht erst auf Nachfrage — wenn im normalen Arbeitsverlauf auffällt. Vor Löschen verifizieren, nicht annehmen: tatsächlich vollständig gemerged/unreferenziert, kein offener PR, kein unentdeckter Zweck. Löschvorgänge mit Blast-Radius (Remote-Branches, Repo-Dateien) bleiben bestätigungspflichtig — Datenhygiene ist Such-/Meldepflicht, keine Erlaubnis für eigenmächtiges destruktives Handeln.
-Gilt AUSNAHMSLOS auch für rein lokale, remote bereits tote Branches (`git branch -D`) — Git Safety Protocol nennt `branch -D` explizit als destruktiven Befehl, der ausdrückliche Nutzeranfrage voraussetzt, unabhängig davon, wie eindeutig tot/risikofrei die Löschung erscheint. "Sicher, weil schon remote weg" ist keine Ausnahme von der Bestätigungspflicht, sondern nur ein Argument FÜR die Löschung, das dem Nutzer zur Freigabe vorgelegt wird, nicht eine Erlaubnis, sie selbst auszuführen.
-Beleg: `claude/smn-rotation-fixes`/`backup-smn-rotation-fixes-preauthor` lokal ohne Rückfrage mit `branch -D` gelöscht, nachdem ihre Remote-Löschung verifiziert war — Feststellung "risikofrei" fälschlich als Freigabe zum eigenmächtigen Handeln behandelt.
+**Lösungsvorschläge nach ADR-Struktur:** Kontext, betroffene Stellen, Mechanismus, Konsequenzen. Eine Optionsliste ohne durchgerechnete Konsequenzen ist keine Vorlage. Beleg: #72 als Zweifachwahl abgeliefert, obwohl die Antwort je Job unterschiedlich ausfiel.
+
+**Release-Freigabe liegt ausschließlich beim Auftraggeber.** Merge-Zeitpunkt, Tagging und Veröffentlichung werden nicht empfohlen und nicht vorweggenommen; berichtet wird der Status. Keine selbst gesetzten Wiedervorlagen und keine unbeauftragte PR-Überwachung. Beleg: Merge-Empfehlung samt Wiedervorlage-Timer ohne Auftrag geliefert.
+
+# Artefakte und Nachvollziehbarkeit
+
+**CLAUDE.md** nimmt jede Vorgabe unmittelbar auf, nicht am Aufgabenende.
+
+**Prüfmittel sind Artefakte, keine Wegwerfware.** Ein Skript, das eine Defektklasse gefunden hat, ist der Regressionsschutz für diese Klasse und gehört versioniert ins Repository, nicht in ein Sitzungsverzeichnis. Beim zweiten Durchgang wird es erneut ausgeführt, statt neu geschrieben; jedes Skript trägt seinen Selbsttest gegen konstruierte Defekte bei sich, weil ein stiller Nullbefund sonst nicht von einem sauberen Baum zu unterscheiden ist. Beleg: `check_base_calls.py` liegt im Repository und läuft in der CI, die Skripte der Audit-Phasen 1 bis 4 lagen nur im Sitzungsverzeichnis und wären mit der Sitzung verloren gewesen.
+
+**Technische Schuld wird von Defekten getrennt geführt.** Ein bewusst eingegangener Kompromiss ist keine Fehlfunktion: er wird mit seiner Begründung, seinen Kosten und der Bedingung erfasst, unter der er aufzulösen ist. Ein Defekt dagegen ist eine Abweichung vom beabsichtigten Verhalten. Beide stehen in `TODO.md`, aber nicht ununterscheidbar nebeneinander — sonst wird ein Kompromiss irgendwann als Fehler behandelt oder ein Fehler als Kompromiss geduldet.
+
+**TODO.md führt ausschließlich offene Arbeit.** Kein abgeschlossener Vorgang, keine Statushistorie, kein Kopftext über das Archiv. Ohne offene Punkte: „Derzeit keine." Neu erkannte Defekte werden sofort erfasst, auch außerhalb des laufenden Auftrags; abgeschlossene werden nach AUDIT_LOG.md überführt, eine Statusänderung im Text genügt nicht. Beleg: Roadmap, Nummernliste und Archivkopf dreimal in Folge belassen.
+
+**AUDIT_LOG.md** ist das Nachweisarchiv abgeschlossener Prüfungen und die Traceability-Quelle: vor jeder Neuprüfung eines Commits oder Bereichs dort nachsehen. Beide Dateien werden bei Sitzungsbeginn und nach Kontextkomprimierung gelesen. Fehlt eine, wird das gemeldet.
+
+# Versionskontrolle
+
+**Upstream-Sync ist Vorbedingung jeder Codeänderung, auf jedem lebenden Branch.** `git fetch --prune --tags upstream`, dann `git rev-list --left-right --count upstream/main...HEAD` mit null ausstehenden Commits als Nachweis; die frische Messung zählt, nicht der Gesprächsverlauf. Gilt auch mitten in der Sitzung, Beleg: Tag `7.5.5.41` erschien, nachdem `.40` als höchster ermittelt war. Zu prüfen ist außerdem, ob Upstream den Defekt bereits behoben hat. Vollständig gemergte Branches werden nicht nachgezogen, sondern sind Löschfälle.
+
+**`upstream` ist Read-only** (FFXIV-CombatReborn/RotationSolverReborn): ausschließlich `fetch`, keine Pushes, keine Pull Requests dorthin. Commits auf `origin` sind regulärer Ablauf, klein geschnitten und zeitnah gepusht.
+
+**Repository-Zustand wird gemessen, nicht erinnert.** Branch-, PR-, Tag- und Release-Zustand vor jeder Aussage frisch erheben: `git fetch --prune`, `git branch -r`, `git ls-remote --tags origin`. Lokale Branch-Referenzen überdauern Remote-Löschungen und sind kein Zustandsnachweis. Belege: Branch als blockiert bezeichnet, den der Auftraggeber längst gelöscht hatte; Release als ausstehend gemeldet, während der Tag auf `origin` stand.
+
+**Change Management für destruktive Operationen.** Verwaiste Branches, tote Dateien und ungelesene Konfiguration werden proaktiv gemeldet und vor jeder Löschung verifiziert. Jede Operation mit Blast Radius, einschließlich `git branch -D` auf remote bereits gelöschten Branches, ist freigabepflichtig. Ein geringes Risiko ist ein Argument in der Vorlage, keine Freigabe. Beleg: zwei lokale Branches ohne Freigabe gelöscht.

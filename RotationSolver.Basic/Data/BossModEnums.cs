@@ -3,6 +3,11 @@ namespace RotationSolver.Basic.Data;
 /// <summary>
 /// Defines special combat modes that restrict or alter player actions and movement
 /// in response to specific mechanic effects.
+/// <para>
+/// The numbers are not free to choose: BossModReborn hands its own AIHints.SpecialMode
+/// across the IPC boundary as a plain int, which BossModUpdater casts straight into this
+/// enum, so every member has to sit on the same ordinal as its counterpart there.
+/// </para>
 /// </summary>
 public enum SpecialMode
 {
@@ -25,12 +30,12 @@ public enum SpecialMode
 	/// <summary>
 	/// A freezing effect is active. The player is expected to be moving at activation time.
 	/// </summary>
-	Freezing = 4,
+	Freezing = 3,
 
 	/// <summary>
 	/// A temporary misdirection effect is active, altering the player's movement direction.
 	/// </summary>
-	Misdirection = 5,
+	Misdirection = 4,
 }
 
 /// <summary>

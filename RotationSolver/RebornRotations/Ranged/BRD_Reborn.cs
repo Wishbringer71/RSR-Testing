@@ -1,4 +1,4 @@
-﻿namespace RotationSolver.RebornRotations.Ranged;
+namespace RotationSolver.RebornRotations.Ranged;
 
 [Rotation("Reborn", CombatType.PvE, GameVersion = "7.55",
 	Description = "Please make sure that the three song times add up to 120 seconds, Wanderers default first song for now.")]
@@ -11,9 +11,6 @@ public sealed class BRD_Reborn : BardRotation
 	[Range(1, 5, ConfigUnitType.Seconds, 0.1f)]
 	[RotationConfig(CombatType.PvE, Name = "Buff Alignment Timer (Experimental, do not touch if you don't understand it)")]
 	public float BuffAlignment { get; set; } = 1;
-
-	[RotationConfig(CombatType.PvE, Name = "Attempt to assign Raging Strikes, Battle Voice, and Radiant Finale to specific ogcd slots (Experimental)")]
-	public bool OGCDTimers { get; set; } = false;
 
 	[RotationConfig(CombatType.PvE, Name = "Only use DOTs on targets with Boss Icon")]
 	public bool DOTBoss { get; set; } = false;
@@ -125,13 +122,19 @@ public sealed class BRD_Reborn : BardRotation
 		return base.DispelAbility(nextGCD, out action);
 	}
 
-	[RotationDesc(ActionID.NaturesMinnePvE)]
+	[RotationDesc(ActionID.NaturesMinnePvE, ActionID.SecondWindPvE)]
 	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		if (NaturesMinnePvE.CanUse(out act))
 		{
 			return true;
 		}
+
+		if (SecondWindPvE.CanUse(out act))
+		{
+			return true;
+		}
+
 		return base.HealSingleAbility(nextGCD, out act);
 	}
 
@@ -158,6 +161,12 @@ public sealed class BRD_Reborn : BardRotation
 		if ((!BurstDefense || (BurstDefense && !InBurstStatus))
 			&& BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, StatusID.Troubadour)
 			&& TroubadourPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
+		// A tankbuster actually cast at us, with no BMR to time it: the 10% is the only lever there is.
+		if ((!BurstDefense || (BurstDefense && !InBurstStatus)) && TroubadourPvE.CanUse(out act))
 		{
 			return true;
 		}

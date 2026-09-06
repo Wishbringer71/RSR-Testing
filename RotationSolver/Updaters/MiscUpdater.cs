@@ -20,6 +20,8 @@ internal static class MiscUpdater
 	}
 
 	private static IDtrBarEntry? _dtrEntry;
+	private static string _lastEntryText = string.Empty;
+	private static BitmapFontIcon _lastIcon = BitmapFontIcon.None;
 
 	internal static void UpdateEntry()
 	{
@@ -45,10 +47,18 @@ internal static class MiscUpdater
 
 			if (_dtrEntry != null)
 			{
-				_dtrEntry.Text = new SeString(
-					new IconPayload(icon),
-					new TextPayload(showStr)
-				);
+				// Dalamud's Text setter marks the node dirty unconditionally, and this runs every
+				// frame, so only assign when something actually changed. UpdateToast next door
+				// caches the same way.
+				if (icon != _lastIcon || showStr != _lastEntryText)
+				{
+					_dtrEntry.Text = new SeString(
+						new IconPayload(icon),
+						new TextPayload(showStr)
+					);
+					_lastIcon = icon;
+					_lastEntryText = showStr;
+				}
 
 				if (Service.Config.DTRType == DTRType.DTRNormal)
 				{

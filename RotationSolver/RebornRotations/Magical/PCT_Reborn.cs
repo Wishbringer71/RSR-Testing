@@ -5,8 +5,6 @@
 
 public sealed class PCT_Reborn : PictomancerRotation
 {
-	public override bool HasHostileCountAoeMitigation => true;
-
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Use HolyInWhite or CometInBlack while moving")]
 	public bool HolyCometMoving { get; set; } = true;
@@ -153,6 +151,11 @@ public sealed class PCT_Reborn : PictomancerRotation
 			return true;
 		}
 
+		if ((!BurstDefense || (BurstDefense && !InBurstStatus)) && AddlePvE.CanUse(out act))
+		{
+			return true;
+		}
+
 		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 
@@ -251,6 +254,17 @@ public sealed class PCT_Reborn : PictomancerRotation
 
 	protected override bool GeneralGCD(out IAction? act)
 	{
+		return UseOpenerAndPriority(out act)
+			|| DrawMotifs(out act)
+			|| PaintWhileMoving(out act)
+			|| DrawMotifWithSwiftcast(out act)
+			|| SpendPaint(out act)
+			|| RefreshMotifsAsFallback(out act)
+			|| base.GeneralGCD(out act);
+	}
+
+	private bool UseOpenerAndPriority(out IAction? act)
+	{
 		//Opener requirements
 		if (CombatTime < 5)
 		{
@@ -312,6 +326,12 @@ public sealed class PCT_Reborn : PictomancerRotation
 			return true;
 		}
 
+		act = null;
+		return false;
+	}
+
+	private bool DrawMotifs(out IAction? act)
+	{
 		if (!InCombat)
 		{
 			if (PomMotifPvE.CanUse(out act))
@@ -388,6 +408,12 @@ public sealed class PCT_Reborn : PictomancerRotation
 			}
 		}
 
+		act = null;
+		return false;
+	}
+
+	private bool PaintWhileMoving(out IAction? act)
+	{
 		// white/black paint use while moving
 		if (IsMoving && !HasSwift)
 		{
@@ -420,6 +446,12 @@ public sealed class PCT_Reborn : PictomancerRotation
 			}
 		}
 
+		act = null;
+		return false;
+	}
+
+	private bool DrawMotifWithSwiftcast(out IAction? act)
+	{
 		// When in swift management
 		if (HasSwift && (!LandscapeMotifDrawn || !CreatureMotifDrawn || !WeaponMotifDrawn))
 		{
@@ -454,6 +486,12 @@ public sealed class PCT_Reborn : PictomancerRotation
 			}
 		}
 
+		act = null;
+		return false;
+	}
+
+	private bool SpendPaint(out IAction? act)
+	{
 		//white paint over cap protection
 		if (Paint == HolyCometMax && !HasStarryMuse && (UseCapCometHoly || UseCapCometOnly))
 		{
@@ -532,6 +570,12 @@ public sealed class PCT_Reborn : PictomancerRotation
 			return true;
 		}
 
+		act = null;
+		return false;
+	}
+
+	private bool RefreshMotifsAsFallback(out IAction? act)
+	{
 		// In comabt fallback in case of no target, allow GCD to roll on motif refresh
 		if (PomMotifPvE.CanUse(out act))
 		{
@@ -563,7 +607,8 @@ public sealed class PCT_Reborn : PictomancerRotation
 			return true;
 		}
 
-		return base.GeneralGCD(out act);
+		act = null;
+		return false;
 	}
 
 	#endregion

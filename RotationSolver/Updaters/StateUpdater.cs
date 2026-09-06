@@ -11,11 +11,14 @@ internal static class StateUpdater
 	private static bool CanUseHealAction =>
 		// PvP
 		DataCenter.IsPvP
-		// Job
-		|| ((DataCenter.Role == JobRole.Healer || Service.Config.UseHealWhenNotAHealer)
-		&& Service.Config.AutoHeal
-		&& ((DataCenter.InCombat && CustomRotation.IsLongerThan(Service.Config.AutoHealTimeToKill))
-			|| Service.Config.HealOutOfCombat));
+		// Job. AutoHealTimeToKill is a child option of UseHealWhenNotAHealer and only gates non-healers:
+		// a healer's heal flags must not switch off because the average time-to-kill of a trash pack
+		// dipped under eight seconds while the tank is still taking the hits.
+		|| (Service.Config.AutoHeal
+			&& (DataCenter.Role == JobRole.Healer
+				|| (Service.Config.UseHealWhenNotAHealer
+					&& (!DataCenter.InCombat || CustomRotation.IsLongerThan(Service.Config.AutoHealTimeToKill))))
+			&& (DataCenter.InCombat || Service.Config.HealOutOfCombat));
 
 	public static void UpdateState()
 	{
@@ -184,16 +187,6 @@ internal static class StateUpdater
 			return true;
 		}
 
-		// Sustain fallback for trash pulls without an active BMR module. Scoped to jobs that actually
-		// declare such a branch, so this doesn't run every job's whole defense chain on enemy count
-		// alone. Same threshold the job branches themselves use, so the gate can't disagree with them.
-		if (DataCenter.InCombat && Service.Config.UseAoeDefense
-			&& DataCenter.NumberOfHostilesInRange >= Service.Config.MitigationSustainHostileCount
-			&& (DataCenter.CurrentRotation?.HasHostileCountAoeMitigation ?? false))
-		{
-			return true;
-		}
-
 		return false;
 	}
 
@@ -203,11 +196,6 @@ internal static class StateUpdater
 		{
 			return false;
 		}
-
-		// Shared by every role below: a predicted tankbuster matters to whoever ends up eating it.
-		var bmrTankbusterImminent = Service.Config.UseBmrTimeline
-			&& DataCenter.BMRNextTankbusterIn > 0.6f
-			&& DataCenter.BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow;
 
 		if (DataCenter.Role == JobRole.Healer)
 		{
@@ -234,7 +222,7 @@ internal static class StateUpdater
 				return true;
 			}
 
-			if (bmrTankbusterImminent)
+			if (DataCenter.BMRTankbusterImminent)
 			{
 				return true;
 			}
@@ -281,7 +269,7 @@ internal static class StateUpdater
 				return true;
 			}
 
-			if (bmrTankbusterImminent)
+			if (DataCenter.BMRTankbusterImminent)
 			{
 				return true;
 			}
@@ -298,19 +286,13 @@ internal static class StateUpdater
 
 			// BMR predicts timing, not who gets hit, so for this role it is only a reasonable proxy when
 			// no tank is alive to eat it. Otherwise the cast-verified branch above is the only trigger.
-			if (bmrTankbusterImminent && !AnyLivingTankInParty())
+			if (DataCenter.BMRTankbusterImminent && DataCenter.PartyTank == null)
 			{
 				return true;
 			}
 		}
 
 		return false;
-	}
-
-	// Helper: Returns true if there are any tanks in the party with HP > 0
-	private static bool AnyLivingTankInParty()
-	{
-		return DataCenter.PartyTank != null;
 	}
 
 	// Helper: Returns true if there are any healers in the party with HP > 0

@@ -50,11 +50,6 @@ public class ActionConfig()
 	public bool ShouldCheckStatus { get; set; } = true;
 
 	/// <summary>
-	/// Should check the target status for this action.
-	/// </summary>
-	public bool ShouldCheckTargetStatus { get; set; } = true;
-
-	/// <summary>
 	/// Should check the combo for this action.
 	/// </summary>
 	public bool ShouldCheckCombo { get; set; } = true;

@@ -7,6 +7,20 @@
 		<Platforms>AnyCPU</Platforms>
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
+
+		<!-- Without these the assembly reports 1.0.0, because no project sets a version and that is
+		     the SDK default. The publish workflow passes AssemblyVersion, FileVersion and
+		     InformationalVersion from the pushed tag, so it overrides all of this; these values are
+		     what local, PR and any other untagged build reports. Keep them in step with the fork's
+		     latest tag when merging upstream. -->
+		<Version>7.5.5.41</Version>
+		<InformationalVersion>7.5.5.41+wsh1</InformationalVersion>
+
+		<!-- .NET 8 and later append SourceRevisionId - the full git commit hash, filled in
+		     automatically by Source Link - to InformationalVersion. That is the attribute the
+		     settings window title reads, so the version showed up with a 40-character hash after it
+		     even on tagged release builds. -->
+		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     </PropertyGroup>
 	
     <ItemGroup>

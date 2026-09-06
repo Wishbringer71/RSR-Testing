@@ -51,14 +51,6 @@ public sealed class BeirutaSGE : SageRotation
 	public OpenerStrategy OpenerSelection { get; set; } = OpenerStrategy.PneumaOpener;
 
 	[Range(0, 1, ConfigUnitType.Percent)]
-	[RotationConfig(CombatType.PvE, Name = "Health threshold target needs to be to use Taurochole")]
-	public float TaurocholeHeal { get; set; } = 0.7f;
-
-	[Range(0, 1, ConfigUnitType.Percent)]
-	[RotationConfig(CombatType.PvE, Name = "Health threshold target needs to be to use Druochole")]
-	public float DruocholeHeal { get; set; } = 0.6f;
-
-	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Health threshold Kardion target needs to be to use Soteria")]
 	public float SoteriaHeal { get; set; } = 0.8f;
 

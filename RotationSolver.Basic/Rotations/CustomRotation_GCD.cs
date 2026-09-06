@@ -19,7 +19,7 @@ public partial class CustomRotation
 
 		IBaseAction.ForceEnable = true;
 		if (act is IBaseAction a && a.Info.IsRealGCD
-			&& a.CanUse(out _, usedUp: true, skipAoeCheck: true))
+			&& a.CanUse(out _, usedUp: true, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return act;
 		}
@@ -254,12 +254,12 @@ public partial class CustomRotation
 			if (DataCenter.AutoStatus.HasFlag(AutoStatus.HealAreaSpell))
 			{
 				IBaseAction.AutoHealCheck = true;
-				if (DataCenter.IsInOccultCrescentOp || HasVariantCure)
+				// Unconditional like the other three heal branches. The condition that used to sit here
+				// enumerated the duty heal sources that existed when it was written, and Bozja's area
+				// cures arrived later without being added, which left them unreachable on this path.
+				if (DataCenter.CurrentDutyRotation?.HealAreaGCD(out act) == true)
 				{
-					if (DataCenter.CurrentDutyRotation?.HealAreaGCD(out act) == true)
-					{
-						return act;
-					}
+					return act;
 				}
 
 				if (CanHealAreaSpell)
@@ -299,14 +299,6 @@ public partial class CustomRotation
 				if (DataCenter.CurrentDutyRotation?.HealSingleGCD(out act) == true)
 				{
 					return act;
-				}
-
-				if (DataCenter.IsInOccultCrescentOp || HasVariantCure)
-				{
-					if (DataCenter.CurrentDutyRotation?.HealSingleGCD(out act) == true)
-					{
-						return act;
-					}
 				}
 
 				if (CanHealSingleSpell)

@@ -16,16 +16,18 @@ Alles unten ist gegen genau diesen Stand gemessen und mit
 
 | | |
 |---|---|
-| Diff gesamt gegen `upstream/main` | 4521 Zeilen |
-| davon **Markdown** (`TODO.md`, `AUDIT_LOG.md`, `docs/`) | **2830** — wird nicht ausgeliefert |
-| davon CI (Prüfskript + Workflow-Job) | 260 — läuft nicht im Spiel |
-| davon **C#** | **1101 hinzugefügt, 104 entfernt**, 42 Dateien |
-| davon leer / Klammern / Kommentar | 157 / 246 / ~230 |
-| **tatsächliche Anweisungen** | **~470** |
+| Diff gesamt gegen `upstream/main` | 4474 Zeilen |
+| davon **Markdown** (`TODO.md`, `AUDIT_LOG.md`, `docs/`) | **3112** — wird nicht ausgeliefert |
+| davon CI (Prüfskript + Workflow-Job) | 268 — läuft nicht im Spiel |
+| davon **C#** | **1094 hinzugefügt, 106 entfernt**, 43 Dateien |
+| davon leer / Klammern / Kommentar | 156 / 234 / 201 |
+| **tatsächliche Anweisungen** | **~500** |
 
 Die Zahl „über 4000" stimmt für den Rohdiff. Für Produktivcode stimmt sie
-nicht: das sind rund 470 Anweisungen über 42 Dateien, im Schnitt elf pro
-Datei.
+nicht: das sind rund 500 Anweisungen über 43 Dateien, im Schnitt zwölf pro
+Datei. (Stand nach dem zweiten Durchgang, §6; davor ~470 — der Zuwachs sind
+im Wesentlichen die vervollständigte Schild-Statusliste und die
+Reprisal-Statusprüfung.)
 
 ---
 
@@ -86,7 +88,9 @@ GeneralGCD-Filler deckt den Dungeon-Fall ab; beides ergänzt sich.
   identisch mit Upstream.
 - Der Befehlspfad (`IBaseAction.ForceEnable = true`) hatte
   `skipStatusProvideCheck: true` verloren. Das ist Upstreams bewusste
-  Entscheidung für eine **ausdrücklich befohlene** Aktion. Zurückgenommen.
+  Entscheidung für eine **ausdrücklich befohlene** Aktion. Zurückgenommen —
+  zunächst nur im oGCD-Pfad; der GCD-Zwilling folgte im zweiten Durchgang
+  (§6).
 - Zwei Kommentare behaupteten Entfernungen (SGE-, AST-Countdown), die es nie
   gab. Entfernt.
 - Zwei erfundene Konstanten ersetzt: der Co-Tank-Notfallwert durch
@@ -111,12 +115,22 @@ warum dieser Fork überhaupt existiert.
 | `MyInterruptAbility` / `AntiKnockback` | Rollen-Default lief **vor** dem Job-Override | RPR/VPR gaben Leg Sweep bzw. Arm's Length wegen ihres Combo-Gates ab, der Default nahm sie ungegatet trotzdem |
 | `PhantomDefault` | Occult Ether/Potion mit `out _` statt `out act` | Aktion wurde erkannt, aber nie zurückgegeben |
 | 4 × `BMR*Within` | prüften `Service.Config.UseBmrTimeline` nicht | Reagierten, obwohl der Nutzer die BMR-Zeitleiste abgeschaltet hatte |
+| `StateUpdater.CanUseHealAction` | Das TTK-Gate `AutoHealTimeToKill` (8 s) griff auch für Heiler, obwohl die Option unter `UseHealWhenNotAHealer` hängt und Nicht-Heiler meint | Sobald der Mittelwert der Gegner-TTK in einem Pack unter 8 s fiel, gingen **alle** Heil-Flags aus — der gemeldete WHM-Ausfall: Tank unter 20 %, kein Heilversuch, Holy statt Cure |
+| Reprisal (`CustomRotation_Actions`) | Kein `TargetStatusProvide`, anders als Addle/Feint | Zwei Tanks legten Reprisal übereinander; der zweite verschenkte 60 s Cooldown |
+| `CalculateDamageFactor` | `foreach` über die Party ohne Rumpf (seit 0246bea5) | Toter Code; `partyStatuses` wird darunter lazy gefüllt |
+| `DataCenter._lastHp` | Nie beschrieben | Der Abgleich „Heilung ist im echten HP-Wert angekommen" konnte nie zutreffen |
+| `ChurinDRK` Oblation | Der Guard aus 7b8a2f5 fehlte in der Extra-Rotation | Beide Ladungen konnten auf dasselbe Ziel gehen |
+| PLD/WAR Reprisal | Nur in `DefenseSingleAbility`; WARs eigene `RotationDesc` versprach es für Area | Raidwides ohne Reprisal, anders als bei DRK/GNB |
+| MCH/BRD Second Wind, MNK `HealSingleAbility`, DNC `DefenseSingleAbility` | Rollenaktionen deklariert, nie genutzt | Kein Selbstheil bzw. keine Antwort auf einen Buster |
+| `ActionTargetInfo.GetCanTargets` | „Only attack targets in view" galt auch für Heilziele | Mit eingeschalteter Option war ein Mitspieler hinter der Kamera nicht heilbar |
 
-Zwei dieser Klassen sind zusätzlich per CI ausgeschlossen, damit sie nicht
+Drei dieser Klassen sind zusätzlich per CI ausgeschlossen, damit sie nicht
 wiederkehren (`.github/scripts/check_base_calls.py`): falsches `base.`-Ziel,
-widersprüchliches Level-Prädikat, und wirkungslose Guard-Schleife. Der
-Wächter läuft in unter zehn Sekunden und ist gegen den jeweils behobenen Fall
-validiert — er meldet ihn vor dem Fix und schweigt danach.
+widersprüchliches Level-Prädikat, und wirkungslose Guard-Schleife (auch
+`foreach` und klammerloses `continue`). Der Wächter läuft in unter zehn
+Sekunden und ist gegen den jeweils behobenen Fall validiert — er meldet ihn
+vor dem Fix und schweigt danach; die `foreach`-Erweiterung fand sofort den
+Fall in `CalculateDamageFactor`.
 
 ---
 
@@ -132,29 +146,71 @@ einzuziehen: keine neue Vererbungsebene, keine neuen Dispatch-Slots, keine
 | `ShouldSustainMitigationDebuff` — Addle/Feint/Reprisal aufrechterhalten | 1 Helfer statt 25 Kopien der Bedingung | `MitigationDebuffDuration` folgt dem Enhanced-Trait auf Stufe 98 |
 | `TankApproachingMobGroup` — Tank-Sustain im Wall-to-Wall | 1 Helfer, 2 Heiler | Im Spiel vom Nutzer verifiziert; Schwellen als Job-Config, nicht fest verdrahtet |
 | Schild auf Effective-HP anrechnen | 2 Properties in `StateUpdater` | Nur wenn ein Grund für erwarteten Schaden vorliegt, sonst zählt ein frischer Schild ewig |
-| DPS-Selbstschutz (Second Wind / Bloodbath) | je 3–4 Zeilen bei 7 Jobs | Füllt `HealSingleAbility`/`DefenseSingleAbility`, die dort leer waren |
-| Bewegungsslots GNB · WHM · BRD | je 8 Zeilen | Laufen nur unter `AutoStatus.MoveForward`/`MoveBack`, können die Schadensrotation nicht erreichen |
+| DPS-Selbstschutz (Second Wind / Bloodbath) | je 3–4 Zeilen bei 10 Jobs | Füllt `HealSingleAbility`, die dort leer war |
+| Reaktive Antwort auf einen Buster, der auf einen DPS zielt | je 4 Zeilen bei 12 Jobs | `DefenseSingle` wird für DPS nur bei einem tatsächlich auf sie gerichteten Cast gesetzt; die Antwort ist die reaktive Zeile, die derselbe Job schon für Raidwides hat (Feint · Addle · Troubadour · Tactician · Shield Samba, SAM zusätzlich Third Eye) |
+| Bewegungsslots GNB · WHM · BRD · SAM | je 8 Zeilen | Laufen nur unter `AutoStatus.MoveForward`/`MoveBack`, können die Schadensrotation nicht erreichen |
 | `SwiftRaisePending` | 1 Property je Heiler | Ersetzt 13 wortgleiche Kopien derselben Bedingung |
+| Lange `GeneralGCD`-Ketten in benannte Stufen (BLU · PhantomDefault · PCT · SAM · SMN) | 208 eingefügte, 5 gelöschte, **0 verschobene** Zeilen | Nur Methodengrenzen eingefügt, `GeneralGCD` wird zum `\|\|`-Dispatcher wie in `ChurinDRK`; Reihenfolge und Verhalten unverändert, MCH wegen eines Abbruch-`return base` in der Kette bewusst ausgelassen |
 
 ---
 
 ## 5 · Was offen bleibt
 
-- **Versionierung.** Der Fork hat **0 Tags**, Upstream 952. `publish.yaml`
-  triggert ausschließlich auf Tags `*.*.*.*`, und `AssemblyVersion` wird nur
-  dort gestempelt — ohne Tag ist jede Version `1.0.0.0`. `manifest.json` und
-  `RotationSolver.json` sind unverändert; der Fehler liegt allein in den
-  fehlenden Tags. Braucht eine Entscheidung über das Schema.
-- **Spielfragen**, die aus dem Code nicht entscheidbar sind: Reprisal-Platzierung
-  bei den vier Tanks, Slot-Asymmetrien der phys. Fernkämpfer, MNKs Heilslot,
-  DRGs Trait-Gates. Alle in `TODO.md` einzeln geführt, keiner ungeprüft
-  angeglichen.
-- **`_lastHp`** in `DataCenter.GetPartyMemberHPRatio` ist toter Code — im
-  Original wie hier. Nicht angefasst, dokumentiert.
+Nichts. Die WHM-Ursache (`CanUseHealAction`, §3) ist über die gesamte Kette
+vom Heil-Flag bis zur Zielwahl im Code belegt (`AUDIT_LOG.md`, #54); ein
+Spieltest steht der Fork-Seite nicht zur Verfügung und ist nicht Bedingung.
+Versionierung ist erledigt: Release `7.5.5.41+wsh1` auf `ba269301`, Schema
+`<upstream>+wsh<n>`. `TODO.md` ist leer.
 
 ---
 
-## 6 · Wie man das nachprüft
+## 6 · Zweiter Durchgang: Review-Loop über den gesamten Diff
+
+Nach dem Audit oben wurde der komplette Diff noch einmal Hunk für Hunk
+gelesen, mit anderen Mustern: Mehrspieler-Interaktion (zwei Tanks, zwei
+Melees, zwei Caster in einer Gruppe), Randbedingungen (Null-Ziel,
+Unverwundbarkeit, Level-Sync), Duplikate, tote Symbole, Diff-Rauschen.
+Ergebnis: zwölf Commits — fünf Verhaltensfehler im Fork-Code, zwei im
+Upstream-Code, der Rest Hygiene.
+
+| Commit | Fund | Art |
+|---|---|---|
+| `5bb4d39f` | Der Gegnerzahl-Zweig des Sustain-Helfers ignorierte den Zielstatus; mit `skipStatusProvideCheck` überschrieb der zweite Tank/Melee/Caster den laufenden Reprisal/Feint/Addle | Fehler, Fork |
+| `f107eda9` | Reprisal hatte kein `TargetStatusProvide`, die reaktive Zeile feuerte trotz Co-Tank-Reprisal. Zwei Status-IDs gleichen Namens (753/1193); welche die Aktion setzt, ist offline nicht entscheidbar — beide werden geprüft | Fehler, Upstream |
+| `451d9e90` | Der Co-Tank-Provoke zog den Boss von einem Tank unter Superbolide / Living Dead / Holmgang | Fehler, Fork |
+| `5b778336` | Der GCD-Befehlspfad hatte `skipStatusProvideCheck` weiter verloren; nur der oGCD-Zwilling war zurückgesetzt | Fehler, Fork |
+| `28c0e1fc` | NIN fehlte das `HasHostileCountAoeMitigation`-Flag, das alle anderen Sustain-Jobs setzen | Fehler, Fork |
+| `990daaeb` | `ShieldStatus` kannte weder Divine Benison noch The Blackest Night — die Schild-Anrechnung war für die häufigsten Tank-Schilde blind | Lücke, Fork |
+| `c1d0ba45` | `foreach` in `CalculateDamageFactor` ohne jede Wirkung (seit 0246bea5) | toter Code, Upstream |
+| `2df7dc4e` | `TargetType.SafeDotTarget` ohne Aufrufer | toter Code, Fork |
+| `bd65f0d4` | UTF-8-BOM in elf Dateien, die Upstream ohne BOM führt | Rauschen |
+| `3b5e50d5`, `bfc52584` | doppelter Slot-Konflikt-Block (MCH), dreifach ausgeschriebene BMR-Bedingung, Einzeiler-Wrapper | Duplikate |
+| `ff0d8d43` | Prüfskript: `foreach`, klammerloses `continue`, Expression-Bodied-Overrides | CI |
+
+Ein weiterer Durchgang mit denselben Mustern über den bereinigten Diff fand
+nichts mehr: jedes neu deklarierte Symbol wird referenziert, jede der 38
+`skipStatusProvideCheck: true`-Stellen steht hinter einer statusprüfenden
+Bedingung, jede Spiegel-Behauptung in einem Kommentar wurde gegen den
+referenzierten Code geprüft.
+
+Danach wurden die offenen Punkte aus `TODO.md` mit demselben Loop
+abgearbeitet (Herleitungen in `AUDIT_LOG.md`):
+
+| Commit | Punkt | Ergebnis |
+|---|---|---|
+| `c6a0a40c` | WHM heilte nicht (Nutzer-Meldung) | Ursache: TTK-Heil-Gate galt auch für Heiler, §3. Bestätigung im Spiel offen |
+| `a2a3ec35` | `_lastHp` | toter Abgleich entfernt |
+| `52a0817d` | ChurinDRK Oblation | Upstream-Guard nachgezogen |
+| `00bc9c6f` | Reprisal-Platzierung PLD/WAR | in `DefenseAreaAbility` wie DRK/GNB |
+| `4b3c9412` | Buster auf einen DPS; Rollen-Lücken MCH/BRD/MNK/DNC | reaktive Zeile je Job, Second Wind, `HealSingleAbility`, `DefenseSingleAbility` |
+| `f90c7bf7` | SAM Yaten ungenutzt | `MoveBackAbility` |
+| — | WHM 0.3 / AST 0.4, DRG-Trait-Gates, PLD-Invuln-Ort, 11 weitere „ungenutzte" Aktionen | geprüft, kein Fehler — Begründung je Punkt in `AUDIT_LOG.md` |
+| fünf Commits | A4a — `GeneralGCD` von BLU · PhantomDefault · PCT · SAM · SMN in benannte Stufen | nur Methodengrenzen eingefügt (§4) |
+| ein Commit | Sichtfeld-Filter galt für Heilziele | `IsTargetFriendly \|\| TargetOnScreen` |
+
+---
+
+## 7 · Wie man das nachprüft
 
 ```
 git remote add upstream https://github.com/FFXIV-CombatReborn/RotationSolverReborn.git

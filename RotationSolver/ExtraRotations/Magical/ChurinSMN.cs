@@ -278,7 +278,7 @@ public sealed class ChurinSMN : SummonerRotation
 			   || base.HealSingleAbility(nextGCD, out act);
 	}
 
-	[RotationDesc(ActionID.LuxSolarisPvE)]
+	[RotationDesc(ActionID.RadiantAegisPvE, ActionID.AddlePvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
 		if (!HasRadiantAegis)

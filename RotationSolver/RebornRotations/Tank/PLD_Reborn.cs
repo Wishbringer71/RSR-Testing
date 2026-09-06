@@ -86,7 +86,7 @@ public sealed class PLD_Reborn : PaladinRotation
 
 	#region Additional oGCD Logic
 
-	[RotationDesc(ActionID.CoverPvE)]
+	[RotationDesc(ActionID.HallowedGroundPvE, ActionID.InterventionPvE, ActionID.CoverPvE, ActionID.FightOrFlightPvE, ActionID.ImperatorPvE, ActionID.RequiescatPvE)]
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
 	{
 		if (StatusHelper.PlayerHasStatus(true, StatusID.Cover) && HallowedWithCover && HallowedGroundPvE.CanUse(out act))
@@ -195,7 +195,7 @@ public sealed class PLD_Reborn : PaladinRotation
 		return base.MoveForwardAbility(nextGCD, out act);
 	}
 
-	[RotationDesc(ActionID.DivineVeilPvE, ActionID.PassageOfArmsPvE)]
+	[RotationDesc(ActionID.DivineVeilPvE, ActionID.PassageOfArmsPvE, ActionID.ReprisalPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
 		if (DivineVeilPvE.CanUse(out act))
@@ -204,6 +204,17 @@ public sealed class PLD_Reborn : PaladinRotation
 		}
 
 		if (PassageOfArmsPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		if (ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
+			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
+		if (ReprisalPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}
@@ -281,7 +292,7 @@ public sealed class PLD_Reborn : PaladinRotation
 				}
 			}
 
-			if (ShouldSustainMitigationDebuff(StatusID.Reprisal)
+			if (ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 				&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 			{
 				return true;
@@ -315,7 +326,7 @@ public sealed class PLD_Reborn : PaladinRotation
 		return base.GeneralAbility(nextGCD, out act);
 	}
 
-	[RotationDesc(ActionID.IntervenePvE, ActionID.SpiritsWithinPvE, ActionID.ExpiacionPvE, ActionID.CircleOfScornPvE, ActionID.RequiescatPvE, ActionID.ImperatorPvE, ActionID.FightOrFlightPvE)]
+	[RotationDesc(ActionID.BladeOfHonorPvE, ActionID.CircleOfScornPvE, ActionID.ExpiacionPvE, ActionID.SpiritsWithinPvE, ActionID.IntervenePvE)]
 	protected override bool AttackAbility(IAction nextGCD, out IAction? act)
 	{
 		if (BladeOfHonorPvE.CanUse(out act, skipAoeCheck: true))

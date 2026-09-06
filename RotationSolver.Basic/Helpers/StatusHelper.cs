@@ -362,6 +362,17 @@ public static class StatusHelper
 	];
 
 	/// <summary>
+	/// Both status IDs the game data lists under the name Reprisal with the same description. Which one
+	/// the current role action applies is not verifiable from the data alone, so every Reprisal check
+	/// looks for either.
+	/// </summary>
+	public static StatusID[] ReprisalStatus { get; } =
+	[
+		StatusID.Reprisal,
+		StatusID.Reprisal_1193,
+	];
+
+	/// <summary>
 	/// Shields (absorb effects) that have their own tracked duration, as opposed to instant HP-based
 	/// mitigation. Used to decide whether a shield will still be up when it matters, e.g. for
 	/// shield-aware heal prioritization.
@@ -369,12 +380,27 @@ public static class StatusHelper
 	public static StatusID[] ShieldStatus { get; } =
 	[
 		StatusID.Galvanize,
+		StatusID.Catalyze,
+		StatusID.Consolation,
 		StatusID.EukrasianDiagnosis,
+		StatusID.DifferentialDiagnosis,
 		StatusID.EukrasianPrognosis,
 		StatusID.Haima,
+		StatusID.Haimatinon,
 		StatusID.Panhaima,
 		StatusID.Panhaimatinon,
+		StatusID.Holosakos,
+		StatusID.DivineBenison,
 		StatusID.DivineVeil_1362,
+		StatusID.BlackestNight,
+		StatusID.BrutalShell,
+		StatusID.StemTheTide,
+		StatusID.ShadeShift,
+		StatusID.CrestOfTimeBorrowed,
+		StatusID.Manaward,
+		StatusID.RadiantAegis,
+		StatusID.TemperaCoat,
+		StatusID.TemperaGrassa,
 	];
 
 	/// <summary>

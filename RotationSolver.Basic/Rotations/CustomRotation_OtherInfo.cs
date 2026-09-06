@@ -574,7 +574,7 @@ public partial class CustomRotation
 				}
 
 				// Reprisal: -10% all damage (missing previously)
-				if (!reprisal && e.HasStatus(false, StatusID.Reprisal))
+				if (!reprisal && e.HasStatus(false, StatusHelper.ReprisalStatus))
 				{
 					reprisal = true;
 				}
@@ -606,20 +606,8 @@ public partial class CustomRotation
 			damageFactor *= 0.90f;
 		}
 
-		// Collect party statuses once into a hash set for O(1) lookups.
+		// Party statuses found so far, filled lazily by HasPartyStatus below.
 		HashSet<StatusID> partyStatuses = [];
-		if (partyEnum != null)
-		{
-			foreach (var m in partyEnum)
-			{
-				if (m == null)
-				{
-					continue;
-				}
-				// Here we just probe the relevant IDs.
-				// To avoid N*M calls, we gather by probing only needed IDs below if not already present.
-			}
-		}
 
 		// Helper to lazily test & cache a status.
 		bool HasPartyStatus(StatusID id)
@@ -1319,7 +1307,7 @@ public partial class CustomRotation
 			return false;
 		}
 
-		var chara = target ?? Player;
+		var chara = statusFromSelf ? Player : target;
 		return chara != null && chara.WillStatusEnd(predictedIn, statusFromSelf, statusIDs);
 	}
 
@@ -1333,12 +1321,14 @@ public partial class CustomRotation
 	/// Whether an enemy mitigation debuff (Addle/Feint/Reprisal) is due for a proactive refresh: either
 	/// BMR predicts damage landing after the debuff would have expired, or enough hostiles are in range
 	/// to keep it up without a prediction to time it against, since trash pulls usually have no active
-	/// BMR module at all.
+	/// BMR module at all. Both branches look at the target's status from any source, so a debuff another
+	/// party member already applied is not overwritten.
 	/// </summary>
 	protected static bool ShouldSustainMitigationDebuff(params StatusID[] statusIDs)
 	{
 		return BMRShouldRefreshBefore(BMRDamageIn, MitigationDebuffDuration, false, HostileTarget, statusIDs)
-			|| NumberOfHostilesInRange >= Service.Config.MitigationSustainHostileCount;
+			|| (NumberOfHostilesInRange >= Service.Config.MitigationSustainHostileCount
+				&& (HostileTarget?.WillStatusEndGCD(2, 0, false, statusIDs) ?? false));
 	}
 	#endregion
 

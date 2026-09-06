@@ -117,10 +117,12 @@ public static class ObjectHelper
 					}
 
 					// The co-tank is at the HP the user already set for a tank in danger, and is still
-					// being attacked - take it back. No distance gate: any healthy tank should react.
+					// being attacked - take it back, unless they are riding an invulnerability (Superbolide
+					// leaves them at 1 HP on purpose). No distance gate: any healthy tank should react.
 					if (targetObject.IsJobCategory(JobRole.Tank)
 						&& !targetObject.IsDead
 						&& targetObject.GameObjectId != Player.Object?.GameObjectId
+						&& targetObject.NoNeedHealingInvuln()
 						&& targetObject.GetEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f)
 					{
 						return true;
@@ -927,12 +929,13 @@ public static class ObjectHelper
 	/// </returns>
 	internal static bool IsTopPriorityHostile(this IBattleChara battleChara)
 	{
-		var icon = battleChara.GetNamePlateIcon();
-
 		if (battleChara == null)
 		{
 			return false;
 		}
+
+		// After the null check: GetNamePlateIcon dereferences the object's struct without one of its own.
+		var icon = battleChara.GetNamePlateIcon();
 
 		if (battleChara.IsAllianceMember() || battleChara.IsParty())
 		{

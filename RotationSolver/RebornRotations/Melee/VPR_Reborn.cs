@@ -5,8 +5,6 @@
 
 public sealed class VPR_Reborn : ViperRotation
 {
-	public override bool HasHostileCountAoeMitigation => true;
-
 	#region Config Options
 
 	[RotationConfig(CombatType.PvE, Name = "Hold one charge of Uncoiled Fury after burst for movement")]
@@ -266,6 +264,11 @@ public sealed class VPR_Reborn : ViperRotation
 			&& !(IsBurst && SerpentsIrePvE.CanUse(out _))
 			&& ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
+		if (NoAbilityReady && FeintPvE.CanUse(out act))
 		{
 			return true;
 		}

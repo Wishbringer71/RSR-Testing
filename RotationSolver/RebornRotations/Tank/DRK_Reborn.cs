@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
 namespace RotationSolver.RebornRotations.Tank;
 
@@ -7,8 +7,6 @@ namespace RotationSolver.RebornRotations.Tank;
 
 public sealed class DRK_Reborn : DarkKnightRotation
 {
-	public override bool HasHostileCountAoeMitigation => true;
-
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Use provoke in opening if tank stance is on")]
 	public bool UseProvokeInOpening { get; set; } = true;
@@ -146,7 +144,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		}
 
 		if (!InTwoMIsBurst
-			&& ShouldSustainMitigationDebuff(StatusID.Reprisal)
+			&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
@@ -238,7 +236,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			}
 		}
 
-		if (ShouldSustainMitigationDebuff(StatusID.Reprisal)
+		if (ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;

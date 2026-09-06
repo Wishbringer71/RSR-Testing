@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
 namespace RotationSolver.RebornRotations.Melee;
 
@@ -7,8 +7,6 @@ namespace RotationSolver.RebornRotations.Melee;
 
 public sealed class MNK_Reborn : MonkRotation
 {
-	public override bool HasHostileCountAoeMitigation => true;
-
 	#region Config Options
 
 	public enum RiddleOfFireFirst : byte
@@ -24,9 +22,6 @@ public sealed class MNK_Reborn : MonkRotation
 
 		[Description("With ROF burst logic")] RiddleOfFireUse,
 	}
-
-	[RotationConfig(CombatType.PvE, Name = "Use Form Shift")]
-	public bool AutoFormShift { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Auto Use Perfect Balance (single target full auto mode, turn me off if you want total control of PB)")]
 	public bool AutoPB_Boss { get; set; } = true;
@@ -214,6 +209,22 @@ public sealed class MNK_Reborn : MonkRotation
 		return base.HealAreaAbility(nextGCD, out act);
 	}
 
+	[RotationDesc(ActionID.SecondWindPvE, ActionID.BloodbathPvE)]
+	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
+	{
+		if (SecondWindPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		if (BloodbathPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		return base.HealSingleAbility(nextGCD, out act);
+	}
+
 	[RotationDesc(ActionID.RiddleOfEarthPvE, ActionID.FeintPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
@@ -224,6 +235,11 @@ public sealed class MNK_Reborn : MonkRotation
 
 		if (ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
+		if (FeintPvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -602,12 +618,6 @@ public sealed class MNK_Reborn : MonkRotation
 				return true;
 			}
 		}
-
-		//// out of range or nothing to do, refresh buff second, but dont keep refreshing or it draws too much attention
-		//if (AutoFormShift && !HasPerfectBalance && !HasFormlessFist && FormShiftPvE.CanUse(out act))
-		//{
-		//    return true; // Form Shift GCD use
-		//}
 
 		return base.GeneralGCD(out act);
 	}

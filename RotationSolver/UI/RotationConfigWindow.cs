@@ -2153,26 +2153,6 @@ public partial class RotationConfigWindow : Window
 		}
 	}
 
-	private string GetHostileTypeDescription(TargetHostileType type)
-	{
-		return type switch
-		{
-			TargetHostileType.AllTargetsCanAttack => "All Targets Can Attack aka Tank/Autoduty Mode",
-			TargetHostileType.TargetsHaveTarget => "Targets Have A Target",
-			TargetHostileType.AllTargetsWhenSoloInDuty => "All Targets When Solo In Duty",
-			TargetHostileType.AllTargetsWhenSolo => "All Targets When Solo",
-			_ => "Unknown Target Type"
-		};
-	}
-
-	// Method to set the targeting type
-	private void SetTargetingType(TargetHostileType type)
-	{
-		Service.Config.HostileType = type;
-		// Add any additional logic needed when changing the targeting type
-		PluginLog.Information($"Targeting type changed to: {type}");
-	}
-
 	#endregion
 
 	#region Rotation
@@ -3141,7 +3121,6 @@ public partial class RotationConfigWindow : Window
 						ImGui.Text("AoeCount: " + action.Config.AoeCount);
 					}
 					ImGui.Text("ShouldCheckStatus: " + action.Config.ShouldCheckStatus);
-					ImGui.Text("ShouldCheckTargetStatus: " + action.Config.ShouldCheckTargetStatus);
 					ImGui.Text("StatusFromSelf: " + action.Setting.StatusFromSelf);
 					ImGui.Text("Is Real GCD: " + action.Info.IsRealGCD);
 					ImGui.Text("Is PvP Action: " + action.Info.IsPvP);
@@ -5167,27 +5146,5 @@ public partial class RotationConfigWindow : Window
 		ImGui.Text($"{type}: {id}");
 	}
 
-	private static bool BeginChild(string str_id, Vector2 size)
-	{
-		return !IsFailed() && ImGui.BeginChild(str_id, size);
-	}
-
-	private static bool BeginChild(string str_id, Vector2 size, bool border, ImGuiWindowFlags flags)
-	{
-		return !IsFailed() && ImGui.BeginChild(str_id, size, border, flags);
-	}
-
-	private static bool IsFailed()
-	{
-		var style = ImGui.GetStyle();
-		var min = style.WindowPadding.X + style.WindowBorderSize;
-		var columnWidth = ImGui.GetColumnWidth();
-		var windowSize = ImGui.GetWindowSize();
-		var cursor = ImGui.GetCursorPos();
-
-		return columnWidth > 0 && columnWidth <= min
-			|| windowSize.Y - cursor.Y <= min
-			|| windowSize.X - cursor.X <= min;
-	}
 	#endregion
 }
