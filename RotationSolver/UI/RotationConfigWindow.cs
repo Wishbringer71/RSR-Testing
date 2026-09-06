@@ -2153,26 +2153,6 @@ public partial class RotationConfigWindow : Window
 		}
 	}
 
-	private string GetHostileTypeDescription(TargetHostileType type)
-	{
-		return type switch
-		{
-			TargetHostileType.AllTargetsCanAttack => "All Targets Can Attack aka Tank/Autoduty Mode",
-			TargetHostileType.TargetsHaveTarget => "Targets Have A Target",
-			TargetHostileType.AllTargetsWhenSoloInDuty => "All Targets When Solo In Duty",
-			TargetHostileType.AllTargetsWhenSolo => "All Targets When Solo",
-			_ => "Unknown Target Type"
-		};
-	}
-
-	// Method to set the targeting type
-	private void SetTargetingType(TargetHostileType type)
-	{
-		Service.Config.HostileType = type;
-		// Add any additional logic needed when changing the targeting type
-		PluginLog.Information($"Targeting type changed to: {type}");
-	}
-
 	#endregion
 
 	#region Rotation
