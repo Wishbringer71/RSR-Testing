@@ -54,9 +54,17 @@ Geprüfte Nicht-Fehlstellen: `DTRManualAuto` bildet den vom Enum-Text beschriebe
 
 `RSCommands_StateSpecialCommand.cs`: rund 100 wortgleiche Zeilen, abweichend nur die Fälle `TargetOnly` und `AutoDuty` (`TargetingTypeOverride = targetingType` statt `null`) und der Zustandstext. **Kosten:** jede künftige Änderung am Zustandsautomaten muss an zwei Stellen erfolgen. **Auflösung:** über einen optionalen `TargetingType?`-Parameter zusammenführen, sobald an dieser Stelle ohnehin gearbeitet wird.
 
+### Zwei entfernte öffentliche Member seit dem letzten Release · R
+
+`scan7.py` misst die Paketoberfläche von `RotationSolver.Basic` gegen den Tag `7.5.5.41+wsh1`: `CustomRotation_BasicInfo.HasHostileCountAoeMitigation` (`public virtual`) und `ActionConfig.ShouldCheckTargetStatus` sind seither ersatzlos entfallen. Beide Entfernungen sind sachlich belegt — das Flag öffnete die gesamte Defensivkette, die Option las niemand —, aber sie waren im ausgelieferten Paket enthalten.
+
+**Kosten:** Eine abgeleitete Rotation, die das Flag überschreibt oder die Option liest, kompiliert gegen die nächste Paketversion nicht mehr. Für die gespeicherte Nutzerkonfiguration folgenlos, weil Dalamud fehlende Member beim Deserialisieren überspringt.
+
+**Auflösungsbedingung:** bei der nächsten Versionsvergabe als Major-Änderung im Sinne von Semantic Versioning ausweisen. Der Zeitpunkt der Veröffentlichung selbst liegt beim Auftraggeber.
+
 ### Drei Prüfskripte ohne Selbsttest · —
 
-`.github/scripts/audit/scan.py`, `mitscan.py` und `scan2.py` haben keinen Selbsttest gegen konstruierte Defekte, `scan3.py` und `scan4.py` schon — dort deckte er je einen Erkennungsfehler auf, der sonst als sauberer Baum durchgegangen wäre. **Kosten:** ein Nullbefund dieser drei ist nicht belastbar. Derzeit liefern alle drei Treffer, die Lücke hat also nichts verdeckt. **Auflösung:** vor dem zweiten Audit-Durchgang nachrüsten.
+`.github/scripts/audit/scan.py`, `mitscan.py` und `scan2.py` haben keinen Selbsttest gegen konstruierte Defekte, `scan3.py` bis `scan7.py` schon — dort deckte er bisher vier Erkennungsfehler auf, die sonst als sauberer Baum durchgegangen wären, zuletzt zwei in `scan6.py` (AUDIT_LOG A16). **Kosten:** ein Nullbefund dieser drei ist nicht belastbar. Derzeit liefern alle drei Treffer, die Lücke hat also nichts verdeckt. **Auflösung:** vor dem zweiten Audit-Durchgang nachrüsten.
 
 ## Offene Arbeit
 

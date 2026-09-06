@@ -259,6 +259,31 @@ Check-in-Trigger `trig_01NLjkn2dFqmrZXhmxJcWGsQ` ließ sich nicht löschen (Tool
 
 ---
 
+### A16 · Neubewertung aller Patches gegen die vier neuen Regelachsen (06.09.2026)
+
+**Anlass:** Auftrag, alle bisherigen Patches vollständig nach dem erweiterten Loop neu zu bewerten. A15 hatte die Achsen auf die offenen Punkte angewandt; hier werden sie auf den umgesetzten Code angewandt.
+
+**Methodenwahl.** Der Fork liegt 294 Commits vor `upstream/main`, davon rund 80 nach dem letzten Release. Eine Bewertung Fundstelle für Fundstelle wäre die von der Gesamtheitlichkeits-Anforderung ausgeschlossene Betrachtungsweise. Statt dessen wurde je Achse ein Maß gebildet, das den Wirkungsbereich selbst misst, und als Prüfskript hinterlegt. Erhoben vor Beginn: `git rev-list --left-right --count upstream/main...HEAD` = `0 294`, also keine ausstehenden Upstream-Commits.
+
+**Bezugsgröße korrigiert.** Der Persistenz- und der Paketvertrag bestehen gegenüber der Version, die ausgeliefert wurde, nicht gegenüber Upstream: die gespeicherten Einstellungen und die kompilierten Fremdrotationen stammen vom Fork. Alle vertragsbezogenen Messungen laufen deshalb gegen den Tag `7.5.5.41+wsh1`, nicht nur gegen `upstream/main`.
+
+| Achse | Maß | Ergebnis |
+|---|---|---|
+| Feature Toggle | `scan5.py`: Änderungen nach der Dispatch-Kette klassifiziert — die immer laufenden Methoden gegen die, die `StateUpdater` erst über ein `AutoStatus`-Flag freischaltet | 6 Zeilen in ungegateten Methoden. PCT prüft `AutoStatus.DefenseArea` selbst, AST und WHM hängen an `UsePreAspectedBenefic` bzw. `UsePreRegen`, Phantom an `OccultEtherSelf`/`OccultEtherThreshold`, SMN ist der bereits in A9 erfasste Fall. Kein Verstoß offen |
+| Persistenzvertrag | `scan6.py`: Ordinalwerte aller Enums gegen die Basisrevision, getrennt danach, ob das Enum aus der gespeicherten Konfiguration erreichbar ist | 0 Vertragsbrüche gegen beide Basen. Einziger Ordinalwechsel ist `SpecialMode` (A11), und dieses Enum ist nicht persistiert |
+| Paketvertrag | `scan7.py`: öffentliche und geschützte Member von `RotationSolver.Basic`, entfernt oder mit geänderter Parameterzahl, gegen den Release-Tag | 2 Funde, beide entfernt: `HasHostileCountAoeMitigation` und `ActionConfig.ShouldCheckTargetStatus` |
+| Defekt vs. Schuld | Gliederung in `TODO.md` | Unverändert seit A15: ein Defekt, sechs technische Schulden |
+
+**Fund zum Paketvertrag.** Beide entfernten Member waren im ausgelieferten Stand `7.5.5.41+wsh1` enthalten und sind heute nirgends mehr im Baum. Eine abgeleitete Rotation, die `HasHostileCountAoeMitigation` überschreibt oder `Config.ShouldCheckTargetStatus` liest, kompiliert gegen die nächste Paketversion nicht mehr. Für die gespeicherte Konfiguration ist das folgenlos — Dalamud deserialisiert mit `MissingMemberHandling.Ignore` —, für die Autoren abgeleiteter Rotationen ist es nach Semantic Versioning eine Major-Änderung. Berichtet, nicht bewertet: die Wahl der nächsten Versionsnummer gehört zur Release-Freigabe.
+
+**Zurückgenommen: der Befund zu `MitigationSustainHostileCount`.** Im Verlauf dieser Runde war festgehalten worden, die Gegnerzahl-Heuristik sei nicht abschaltbar und habe zur ursprünglichen Beschwerde über dauerhaft gecastetes Addle beigetragen. Die Entstehungskette widerlegt den zweiten Teil und entkräftet den ersten: `c01a5e23` führte die Schwelle als feste 3 ein, `87646bf1` hob sie auf 4, `00a426b1` machte sie ohne Verhaltensänderung konfigurierbar, und `5bb4d39f` schloss genau die Wirkung, die beklagt worden war — der Zweig verlangt seither, dass der Debuff auf dem Ziel fehlt oder binnen zwei GCDs endet. Eine Option im Sinne der Feature-Toggle-Regel besteht; was fehlt, ist allein ein harter Aus-Zustand, dessen Bedarf nicht belegt ist. Nicht in `TODO.md` aufgenommen.
+
+**Zwei Erkennungsfehler in den eigenen Prüfmitteln, beide mit leerer Ausgabe.** `scan5.py` erkannte Eigenschaften mit Ausdruckskörper nicht als eigenen Gültigkeitsbereich und schrieb deren Zeilen der darüberstehenden Methode zu; dadurch stand MCH `BurstWeaveSlotContested` fälschlich unter `EmergencyAbility`. `scan6.py` meldete zweimal einen sauberen Baum: `git ls-tree` nimmt den Glob-Pfadfilter von `git ls-files` nicht an, weshalb die Basisrevision leer blieb, und die Erkennung persistierter Enums sah nur öffentliche Member, wodurch der `[JobConfig]`-Generator hinter `TargetHostileType` unsichtbar blieb. Beide Fälle sind jetzt Bestandteil der jeweiligen Selbsttests. Das bestätigt die Regel, die den stillen Nullbefund als nicht unterscheidbar vom sauberen Baum behandelt: ohne Selbsttest wären drei Achsen als geprüft gemeldet worden, ohne geprüft worden zu sein.
+
+**Erreichter Prüfgrad:** statische Prüfung mit Skript, dazu Belegführung an der Versionsgeschichte. Keine Laufzeitbeobachtung.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.

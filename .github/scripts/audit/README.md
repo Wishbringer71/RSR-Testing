@@ -17,6 +17,14 @@ python3 .github/scripts/audit/scan.py
 | `scan2.py` | Percent-versus-ratio comparisons, float equality, `usedUp`, `skipStatusProvideCheck`, contradictory level predicates, repeated conditions, unguarded division | A10: four HP thresholds compared against the wrong scale |
 | `scan3.py` | `CanUse` blocks that never return, identical bodies in consecutive branches, level gate naming another action | A10: Viper structural finding |
 | `scan4.py` | `[Range]` attribute versus declared default, duplicate config property names | A10: none open; the class had a real hit in A8 |
+| `scan5.py` | Fork behaviour changes sitting in a dispatch path that has no switch of its own | A16: six lines, all covered by an option or already logged |
+| `scan6.py` | Enum members whose ordinal moved, split by whether the enum reaches stored configuration | A16: none persisted; `SpecialMode` in-memory only |
+| `scan7.py` | Public and protected members of `RotationSolver.Basic` removed or re-signed since a release | A16: `HasHostileCountAoeMitigation`, `ShouldCheckTargetStatus` |
+
+`scan5.py` takes a base ref (default `upstream/main`) and `--detail` for line-by-line output.
+`scan6.py` and `scan7.py` take a base ref too; for both, the meaningful base is the newest fork tag,
+because the contract is with the version that was actually shipped, not with upstream. `scan7.py`
+defaults to that tag, `scan6.py` should be run against both.
 
 ## Self-test
 
@@ -25,7 +33,15 @@ each script should carry a self-test against constructed defects and fail loudly
 `scan3.py` shipped an off-by-one that made one of its classes find nothing at all, and `scan4.py`
 did not recognise multi-line attribute blocks; both were caught that way.
 
-State as of the last audit round: `scan3.py` and `scan4.py` have such a self-test, `scan.py`,
+State as of the last audit round: `scan3.py` through `scan7.py` have such a self-test, `scan.py`,
 `mitscan.py` and `scan2.py` do not. All three currently produce non-empty output, so the gap has not
 masked anything yet, but a zero result from them carries no weight until it is closed. Tracked in
 `TODO.md`.
+
+Two of the newer scans earned their self-test immediately. `scan5.py` attributed every change inside
+an expression-bodied property to the method above it, because its declaration pattern required a
+parameter list. `scan6.py` reported a clean tree twice over: `git ls-tree` does not accept the glob
+pathspec that `git ls-files` does, so its base revision held no files at all, and its notion of a
+persisted enum looked at public members only, which hid the `[JobConfig]` generator behind
+`TargetHostileType`. Both failures produced empty output, not an error — which is the case the
+self-tests now cover explicitly.
