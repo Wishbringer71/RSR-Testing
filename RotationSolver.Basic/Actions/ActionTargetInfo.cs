@@ -3500,15 +3500,35 @@ public struct ActionTargetInfo(IBaseAction action)
 
 			static IBattleChara? GeneralHealTarget(List<IBattleChara> objs)
 			{
+				// Everyone healable is a candidate. Only a status that nullifies healing outright
+				// takes a target out; a protective status merely moves it back in the queue.
+				//
+				// This used to read `if (!o.NoNeedHealingInvuln())`, which collected the exact
+				// opposite set: NoNeedHealingInvuln() returns true when NO protective status is up
+				// (an absent status has trivially "ended"), so the list held only the invulnerable
+				// and was empty in the ordinary case. Everything below it - the healer pass, the
+				// tank pass, the worst-hurt pick - then ran over nothing and the caller fell back
+				// to the tank-stance holder, so the worst-hurt member could never be chosen.
+				//
+				// Demoting rather than excluding is what the protection actually warrants: the
+				// invulnerability window is the safest moment to heal, and when it ends the target
+				// stands wherever it left them - Superbolide leaves them at 1 HP on purpose.
 				List<IBattleChara> healingNeededObjs = [];
 				foreach (var o in objs)
 				{
-					if (!o.NoNeedHealingInvuln())
+					if (!o.HasStatus(false, StatusHelper.HealingIneffectiveStatus))
 					{
 						healingNeededObjs.Add(o);
 					}
 				}
-				healingNeededObjs.Sort((a, b) => ObjectHelper.GetHealthRatio(a).CompareTo(ObjectHelper.GetHealthRatio(b)));
+				// Unprotected before protected, then lowest health first inside each group.
+				healingNeededObjs.Sort((a, b) =>
+				{
+					var byProtection = b.NoNeedHealingInvuln().CompareTo(a.NoNeedHealingInvuln());
+					return byProtection != 0
+						? byProtection
+						: ObjectHelper.GetHealthRatio(a).CompareTo(ObjectHelper.GetHealthRatio(b));
+				});
 
 				List<IBattleChara> healerTars = [];
 				foreach (var o in healingNeededObjs)

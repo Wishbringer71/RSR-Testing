@@ -430,7 +430,25 @@ public static class StatusHelper
 	];
 
 	/// <summary>
-	/// 
+	/// Statuses under which a heal lands for nothing at all, as opposed to merely being less urgent.
+	/// A target carrying one of these is not a healing candidate: the cast would be spent and the
+	/// target left exactly as it was. Mounted's own description says HP recovery is "nullified".
+	/// <para>
+	/// Deliberately narrower than <see cref="NoNeedHealingStatus"/>, which mixes this case in with
+	/// genuine invulnerabilities. Those postpone the need for healing, they do not remove it - a
+	/// Superbolide gunbreaker sits at 1 HP and needs healing more than anyone, just not this second.
+	/// Only a status that nullifies healing outright belongs here; HpRecoveryDown, which merely
+	/// reduces it, does not.
+	/// </para>
+	/// </summary>
+	public static StatusID[] HealingIneffectiveStatus { get; } =
+	[
+		StatusID.Mounted,
+		StatusID.Mounted_1520,
+	];
+
+	/// <summary>
+	///
 	/// </summary>
 	public static StatusID[] SwiftcastStatus { get; } =
 	[
