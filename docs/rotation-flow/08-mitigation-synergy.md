@@ -196,6 +196,46 @@ seine Listen einmal je Frame füllt.
 Kein Aufrufer in einer Rotation — dieser Schritt ändert kein Verhalten und ist
 durch Kompilierung und ein Prüfskript abgesichert.
 
+**Konkrete Form.** Drei Felder in `DataCenter`, einmal je Frame gefüllt, dazu eine
+Statusgruppe in `StatusHelper` nach dem dort etablierten Muster
+(`public static StatusID[] X { get; } = [...]`, z. B. `StatusHelper.cs:295`):
+
+```
+public static float StunCoverage          // 0..1, Anteil der Gegner in Reichweite mit Betäubung
+public static float StunRemainingShortest // Sekunden, kürzeste Restzeit unter den betäubten
+public static bool  StunHeadroom          // mindestens ein Ziel, bei dem ein Stun noch wirkt
+```
+
+Der Updater, aufgerufen aus `MajorUpdater` nach `TargetUpdater.UpdateTargets()` und
+vor `ActionUpdater.UpdateNextAction()`:
+
+```
+var jobRange = DataCenter.JobRange;
+int total = 0, stunned = 0, headroom = 0;
+var shortest = float.MaxValue;
+
+foreach (var h in DataCenter.AllHostileTargets)
+{
+    if (h is null || h.DistanceToPlayer() >= jobRange) continue;
+    total++;
+    var remain = h.StatusTime(false, StatusHelper.StunStatus);
+    if (remain > 0f) { stunned++; shortest = Math.Min(shortest, remain); }
+    if (!h.HasStatus(false, StatusID.StunResistance)) headroom++;
+}
+```
+
+Die Reichweitenprüfung ist wörtlich die von `NumberOfHostilesInRange`
+(`DataCenter.cs:1421-1436`), damit Schwelle und Messung dieselbe Menge meinen.
+
+**Die Immunität braucht keinen Timer.** Sie ist ein Statuseffekt, kein
+Zeitfenster, das mitgeführt werden müsste: Solange `StunResistance` auf einem
+Gegner liegt, ist `StunHeadroom` für ihn falsch; fällt der Status nach seinen 45
+Sekunden ab, wird er von selbst wieder wahr, und die Regel greift ohne
+Sonderbehandlung erneut. Der seltene lange Kampf, in dem die Betäubungen ein
+zweites Mal verfügbar werden, ist damit kein Sonderfall im Code, sondern ergibt
+sich aus derselben Abfrage. Das ist der zweite Grund, die Messung zustandsbasiert
+statt zeitbasiert zu führen — der erste war der Wegfall der Buchführung.
+
 **Grenzen der Messung, die keine Umsetzung beheben kann.**
 
 - Ein betäubungsimmuner Gegner ist von einem, der nur noch nie betäubt wurde,
