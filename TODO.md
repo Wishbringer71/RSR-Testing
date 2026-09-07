@@ -45,28 +45,28 @@ Fünf Fundstellen, alle aus Upstream übernommen und dort unverändert vorhanden
 
 **Auflösung:** `if (o.NoNeedHealingInvuln())` an der einen Stelle. Der Wirkungsbereich ist allerdings die zentrale Heilzielwahl aller Jobs: Nach der Korrektur greift die Priorisierung erstmals wirklich, was das Heilverhalten breit verändert. Freigabepflichtig, nicht nebenbei zu ändern. Der irreführende Name ist getrennt zu behandeln — ihn anzupassen, ohne die Aufrufstellen zu prüfen, würde den Beleg tilgen.
 
-### Die vier Tank-Unverwundbarkeiten werden gleich behandelt, obwohl sie es nicht sind · N
+### Die Heilunterdrückung bei Unverwundbarkeit prüft den Gesundheitsstand nicht · N
 
-`NoNeedHealingStatus` unterdrückt Heilung pauschal, solange einer der gelisteten Schutzstatus läuft. Die vier Fähigkeiten unterscheiden sich aber gerade darin, was Heilung in dieser Zeit bewirkt:
+`NoNeedHealingStatus` unterdrückt Heilung, solange ein Schutzstatus läuft. Die dahinterliegende Annahme — wer nicht sterben kann, braucht keine Heilung — gilt nur, wenn der Tank den **Ablauf** des Schutzes überlebt. Genau das prüft die Regel nicht.
 
-| Job | Fähigkeit | Wirkung auf die HP | Heilung währenddessen | Schild währenddessen |
-|---|---|---|---|---|
-| PLD | Hallowed Ground | HP unverändert, kein Schaden geht durch | wirklich unnötig | unnötig, schadet aber nicht |
-| WAR | Holmgang | HP fallen nicht unter 1 | nicht dringend, danach sofort nötig | nützlich: er überdauert die Phase |
-| GNB | Superbolide | setzt die HP **sofort auf 1** | **erforderlich** — sonst endet die Phase bei 1 HP | **nützlich** — fängt den ersten Treffer danach ab |
-| DRK | Living Dead | Tod wird in Walking Dead umgewandelt | Phase 1 **schädlich**, Phase 2 erforderlich | Phase 1 **schädlich** |
+Zündet ein Paladin Hallowed Ground bei fünf Prozent Gesundheit, um einen Schlag zu überstehen, lässt die Fähigkeit seine HP unverändert. Nach zehn Sekunden steht er mit denselben fünf Prozent da — und die zehn Sekunden waren das einzige Fenster, in dem ohne Gegendruck hätte aufgeheilt werden können. Dasselbe gilt für Holmgang und erst recht für Superbolide, das die HP sofort auf 1 setzt.
 
-**Korrektur einer früheren Aussage in diesem Eintrag:** Hier stand, bei Holmgang und Superbolide sei ein Schild „schlicht wirkungslos". Das ist falsch. Divine Benison hält 15 Sekunden, die Unverwundbarkeiten 8 bis 10 — der Schild überlebt sie und liegt genau dann, wenn der Tank mit 1 HP am verwundbarsten ist. Nur beim Dunkelritter ist er in Phase 1 tatsächlich schädlich, weil die abgefangene Schadensmenge den Tod verhindert, der Walking Dead und dessen Selbstheilung erst freischaltet.
+**Die Unverwundbarkeit ist damit nicht der Grund, Heilung auszusetzen, sondern die beste Gelegenheit, sie anzubringen.** Die Zwei-GCD-Freigabe vor Ablauf mildert das, reicht aber nicht: Einen Tank von wenigen Prozent auf sicher zu bringen, dauert länger als zwei GCDs.
 
-Eine gemeinsame Regel für alle vier wäre damit selbst der Fehler. Zu unterscheiden ist:
+| Job | Fähigkeit | Wirkung auf die HP | Heilung im Schutzfenster |
+|---|---|---|---|
+| PLD | Hallowed Ground | unverändert, kein Schaden geht durch | nötig, wenn beim Zünden wenig HP standen |
+| WAR | Holmgang | fallen nicht unter 1 | nötig, sobald er heruntergedrückt wurde |
+| GNB | Superbolide | **sofort auf 1** | zwingend |
+| DRK | Living Dead | Tod wird in Walking Dead umgewandelt | Phase 1 **schädlich**, Phase 2 erforderlich |
 
-- **Nur DRK, Phase 1:** Heilung und Schild zurückhalten — das ist der einzige Fall, in dem beide aktiv schaden.
-- **GNB:** Heilung ist die eigentliche Aufgabe, nicht der Verzicht. Die Freigabe erst zwei GCDs vor Ablauf lässt wenig Zeit, einen Tank von 1 HP hochzubringen.
-- **WAR, PLD:** Zurückhalten ist richtig und effizient; die Zwei-GCD-Regel deckt den Übergang.
+**Zwei frühere Aussagen dieses Eintrags sind damit falsch** und hier ersetzt: dass ein Schild auf Holmgang oder Superbolide wirkungslos sei (er überdauert die Phase und liegt, wenn der Tank am verwundbarsten ist), und dass bei Hallowed Ground Heilung wirklich unnötig sei (sie ist es nur, wenn der Paladin mit hohen HP gezündet hat — was die Regel nicht wissen kann).
 
-**Zusätzlich: Hallowed Ground fehlt in der Liste.** Sie führt `Holmgang_409`, `LivingDead`, `Superbolide` und `Invulnerability`, aber keine der vier `HallowedGround`-Ids (82, 1302, 2287, 2794). Ausgerechnet der Fall, in dem Heilung vollständig unnötig ist, wird nicht unterdrückt. Ebenfalls offen: von vier Holmgang-Ids (88, 409, 1304, 1305) steht nur `Holmgang_409` in der Liste, während `BeirutaWHM.cs:236` mit `StatusID.Holmgang` (88) prüft — welche das Spiel heute setzt, ist statisch nicht zu klären.
+**Richtige Konstruktion:** nicht ausschließen, sondern **in der Priorität herabstufen**. Ein geschützter Tank soll hinter jedem ungeschützten Gruppenmitglied stehen, aber geheilt werden, wenn sonst niemand Bedarf hat — im Schutzfenster, wo es am sichersten ist. `GeneralHealTarget` besitzt bereits eine Rangfolge (Selbst → Heiler → Tank → niedrigste Gesundheit); nötig wäre eine zusätzliche Stufe, keine Ausschlussliste. Einzige echte Ausnahme bleibt der Dunkelritter in Phase 1.
 
-**Auflösungsbedingung:** Erst die Entscheidung zum vorigen Punkt, weil beide dieselbe Prüfung verwenden. Danach je Job getrennt, nicht als eine Regel.
+**Zusätzlich, unabhängig davon:** Keine der vier `HallowedGround`-Ids (82, 1302, 2287, 2794) steht in der Liste, und von vier Holmgang-Ids nur `Holmgang_409`, während `BeirutaWHM.cs:236` gegen `StatusID.Holmgang` (88) prüft. Welche das Spiel setzt, ist statisch nicht zu klären. Solange die Regel in ihrer heutigen Form falsch ist, wäre das Ergänzen der fehlenden Ids allerdings eine Verschlimmerung — erst die Konstruktion, dann die Abdeckung.
+
+**Auflösungsbedingung:** gemeinsam mit dem vorigen Punkt, weil beide dieselbe Prüfung betreffen.
 
 ## Technische Schuld
 
