@@ -147,24 +147,46 @@ löst die ganze Kette aus.
 Vier Schritte. Jeder ist für sich lieferbar, prüfbar und abschaltbar; jeder Schritt
 lässt den vorherigen unverändert. Standard ist überall das heutige Verhalten.
 
-### Schritt 1 — Zielbezogene Messung (kein Verhalten)
+### Schritt 1 — Messung (kein Verhalten)
 
-Neu in `CustomRotation_OtherInfo`, neben `GetCurrentMitigationPercent`:
+**Drei getrennte Größen, kein gemeinsamer Prozentwert.** Ein früherer Entwurf sah
+vor, Betäubung und Verlangsamung in den vorhandenen Mitigationsanteil
+einzurechnen. Das wäre ein Surrogat: `GetCurrentMitigationPercent` liefert
+`1 − damageFactor`, geklemmt auf 0 bis 0,95 (`CustomRotation_OtherInfo.cs:719-720`)
+— eine Betäubung entspricht 1,0 und würde auf 0,95 gekappt. Vor allem aber ist sie
+kategorisch anders als eine Schadensreduktion: binär statt anteilig, zeitlich
+scharf begrenzt, resistenzbehaftet und zielbezogen statt gruppenweit. Beides in
+einer Zahl zu führen verliert genau die Eigenschaften, wegen derer gemessen wird.
 
-```
-protected static float StunRemainingOn(IBattleChara? target)
-protected static bool  StunStillEffectiveOn(IBattleChara? target)
-protected static float MitigationFactorOn(IBattleChara? target)
-```
+| Größe | Art | Quelle |
+|---|---|---|
+| `MitigationFraction` (vorhanden, unverändert) | gruppenweit, anteilig, Momentwert | `GetCurrentMitigationPercent()` |
+| `StunCoverage` | Anteil der betroffenen Gegner mit Betäubung, dazu die **kürzeste** Restzeit unter ihnen | `StatusHelper.HasStatus` / `.StatusTime` mit `StatusID.Stun` und Varianten |
+| `StunHeadroom` | ob ein neuer Stun noch Wirkung hätte | `StatusID.StunResistance` über `.StatusStack` |
 
-`StunRemainingOn` liest `target.StatusTime(false, StatusID.Stun, …)`.
-`StunStillEffectiveOn` prüft `StunResistance` samt Stapelzahl über
-`target.StatusStack`. `MitigationFactorOn` multipliziert den Gruppenfaktor aus
-`GetCurrentMitigationPercent()` mit den zielbezogenen Anteilen (Betäubung, Slow).
+Die kürzeste Restzeit, nicht der Mittelwert: Sobald der erste Gegner aufwacht,
+läuft wieder Schaden ein. Ein Mittelwert würde die Deckung überzeichnen.
 
-Die bestehende Funktion bleibt unverändert, damit die UI-Anzeige stabil bleibt.
-Kein Aufrufer in einer Rotation — dieser Schritt ändert nichts und ist allein durch
-Kompilierung und ein Prüfskript abgesichert.
+**Berechnungsort.** Nicht als statische Abfrage in den Rotationszweigen, sondern
+als eigener Schritt im `MajorUpdater` vor `ActionUpdater.UpdateNextAction()`
+(`MajorUpdater.cs:228`), Ergebnis in `DataCenter`. Grund: `GetCurrentMitigationPercent`
+iteriert über alle Gegner **und** alle Party-Mitglieder; als Momentabfrage würde
+sie mehrfach je Frame laufen. Vorbild ist `TargetUpdater.UpdateTargets()`, das
+seine Listen einmal je Frame füllt.
+
+Kein Aufrufer in einer Rotation — dieser Schritt ändert kein Verhalten und ist
+durch Kompilierung und ein Prüfskript abgesichert.
+
+**Grenzen der Messung, die keine Umsetzung beheben kann.**
+
+- Ein betäubungsimmuner Gegner ist von einem, der nur noch nie betäubt wurde,
+  nicht zu unterscheiden, solange kein Stun versucht wurde. Erst wenn nach einem
+  Sanctus kein Betäubungsstatus entsteht, ist die Immunität belegt. Die Messung ist
+  also erst ab dem zweiten Cast vollständig — was zur Regel passt, weil der erste
+  Sanctus ohnehin fällt.
+- Statusrestzeiten kommen vom Server; die letzten Zehntelsekunden sind wegen
+  Latenz unzuverlässig. Schwellen sind deshalb in GCD-Einheiten zu formulieren
+  (`GCDTime(1)`), nicht in Sekunden.
 
 ### Schritt 2 — A: DoT-Zweig vor Sanctus
 
@@ -185,10 +207,10 @@ Die Bedingung aus Schritt 2 wird um die Rückhalteprüfung ergänzt, als eigene
 Option, damit Schritt 2 unabhängig bleibt:
 
 ```
-protected bool StunWouldBeWasted(IBattleChara? target) =>
-    !StunStillEffectiveOn(target)                       // resistent oder immun
-    || StunRemainingOn(target) > GCDTime(1)             // läuft noch, Einschub streckt
-    || MitigationFactorOn(target) <= StunYieldThreshold; // fremde Mitigation trägt gerade
+protected static bool StunWouldBeWasted =>
+    !DataCenter.StunHeadroom                       // resistent oder immun
+    || DataCenter.StunRemainingShortest > GCDTime(1)  // laeuft noch, Einschub streckt sie
+    || GetCurrentMitigationPercent() >= StunYieldThreshold; // fremde Mitigation traegt gerade
 ```
 
 Vorbehalte, die den Rückhalt aufheben — sie stehen vor der Regel, nicht in ihr:
