@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Phase 2 scans: defect classes derived from the findings this repo has actually produced."""
-import os, re, collections
+"""Phase 2 scans: defect classes derived from the findings this repo has actually produced.
+
+The nine checks live in scan_source() so the self-test can drive them against constructed defects.
+Before that split they ran inline in the file loop and could not be exercised at all - a pattern that
+stopped matching would have reported a clean tree, which is the failure mode scan3.py through
+scan8.py already guard against.
+"""
+import os, re, sys, collections
 
 ROOTS = ['RotationSolver', 'RotationSolver.Basic']
-files = []
-for r in ROOTS:
-    for dp, _, ns in os.walk(r):
-        for n in ns:
-            if n.endswith('.cs'):
-                files.append(os.path.join(dp, n))
 
 def strip(src):
     src = re.sub(r'/\*.*?\*/', '', src, flags=re.S)
@@ -30,15 +30,13 @@ def methods(src):
             j += 1
         yield m.group(1), src[i:j], src[:m.start()].count('\n') + 1
 
-R = collections.defaultdict(list)
-
 # ratio (0..1) vs percent (0..100) mix-ups
 PCT = re.compile(r'GetEffectiveHpPercent\(\)\s*(<|>|<=|>=)\s*([A-Za-z_]\w*)')
 RATIO = re.compile(r'GetHealthRatio\(\)\s*(<|>|<=|>=)\s*(\d+(?:\.\d+)?)\s*(?![f\d.])')
 
-for path in files:
-    raw = open(path, encoding='utf-8').read()
-    src = strip(raw)
+
+def scan_source(path, src, R):
+    """Run every check against one already-stripped source. Appends to R in place."""
     lines = src.split('\n')
 
     for i, line in enumerate(lines, 1):
@@ -111,10 +109,79 @@ for path in files:
                 if re.search(r'Count|Length|Total|Max\b', v):
                     R['i_unguarded_division'].append(f'{path}:{start + k}: {bl.strip()[:110]}')
 
-for k in sorted(R):
-    print(f'\n== {k} ({len(R[k])})')
-    for x in R[k][:40]:
-        print('  ' + x)
-    if len(R[k]) > 40:
-        print(f'  ... {len(R[k]) - 40} more')
-print(f'\nscanned {len(files)} files')
+def _run(text):
+    """Strip and scan one constructed source, returning the keys that fired."""
+    R = collections.defaultdict(list)
+    scan_source('t.cs', strip(text), R)
+    return R
+
+
+def _in_method(stmt):
+    """Wrap a statement in a method so the method-scoped checks (e-i) see it."""
+    return 'private bool Probe(out IAction? act)\n{\n    ' + stmt + '\n    return false;\n}\n'
+
+
+def self_test():
+    # Each check gets a source that must fire and one that must stay silent.
+    assert _run('if (t.GetEffectiveHpPercent() < HealRatio) { }')['a_percent_vs_ratio'], 'a'
+    assert not _run('if (t.GetEffectiveHpPercent() < 40) { }')['a_percent_vs_ratio'], 'a: literal is not a config'
+
+    assert _run('if (t.GetHealthRatio() < 40) { }')['b_ratio_vs_percent'], 'b'
+    assert not _run('if (t.GetHealthRatio() < 0.4f) { }')['b_ratio_vs_percent'], 'b: proper ratio'
+
+    assert _run('if (WeaponRemain == 2.5f) { }')['c_float_equality'], 'c'
+    assert not _run('if (WeaponRemain == 0) { }')['c_float_equality'], 'c: zero is exact'
+
+    assert _run('if (HostileTarget?.HasStatus(true, StatusID.Addle)) { }')['d_hostile_status_fromself'], 'd'
+    assert not _run('if (HostileTarget?.HasStatus(false, StatusID.Addle)) { }')['d_hostile_status_fromself'], 'd'
+
+    assert _run(_in_method('if (ReprisalPvE.CanUse(out act, usedUp: true))'))['e_usedup_unconditional'], 'e'
+    assert not _run(_in_method('if (InBurst && ReprisalPvE.CanUse(out act, usedUp: true))'))['e_usedup_unconditional'], 'e: gated'
+
+    assert _run(_in_method('if (AddlePvE.CanUse(out act, skipStatusProvideCheck: true))'))['f_skipprovide_ungated'], 'f'
+    assert not _run(_in_method('if (BMRShouldRefreshBefore(x) && AddlePvE.CanUse(out act, skipStatusProvideCheck: true))'))['f_skipprovide_ungated'], 'f: gated'
+
+    assert _run(_in_method('if (!ImpactPvE.EnoughLevel && ImpactPvE.EnoughLevel) { }'))['g_contradictory_level'], 'g'
+    assert not _run(_in_method('if (!ImpactPvE.EnoughLevel && JoltPvE.EnoughLevel) { }'))['g_contradictory_level'], 'g: different actions'
+
+    twice = _in_method('if (SomethingRatherLongAndDistinctive && AnotherPart)\n    if (SomethingRatherLongAndDistinctive && AnotherPart)')
+    assert _run(twice)['h_repeated_condition'], 'h'
+    assert not _run(_in_method('if (SomethingRatherLongAndDistinctive && AnotherPart)'))['h_repeated_condition'], 'h: once only'
+
+    assert _run(_in_method('var avg = total / PartyMembers.Count;'))['i_unguarded_division'], 'i'
+    assert not _run(_in_method('if (PartyMembers.Count > 0)\n    var avg = total / PartyMembers.Count;'))['i_unguarded_division'], 'i: guarded'
+
+    # strip() must run first: a commented-out line is not code.
+    assert not _run('// if (t.GetHealthRatio() < 40) { }')['b_ratio_vs_percent'], 'strip: comment leaked'
+
+    print('self-test ok: all nine checks fire on a constructed defect and stay silent otherwise\n')
+
+
+def main():
+    self_test()
+    files = []
+    for r in ROOTS:
+        for dp, _, ns in os.walk(r):
+            for n in ns:
+                if n.endswith('.cs'):
+                    files.append(os.path.join(dp, n))
+    if not files:
+        print('no C# files found - run from the repository root')
+        return 1
+
+    R = collections.defaultdict(list)
+    for path in files:
+        scan_source(path, strip(open(path, encoding='utf-8').read()), R)
+
+    for k in sorted(R):
+        print(f'\n== {k} ({len(R[k])})')
+        for x in R[k][:40]:
+            print('  ' + x)
+        if len(R[k]) > 40:
+            print(f'  ... {len(R[k]) - 40} more')
+    print(f'\nscanned {len(files)} files')
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

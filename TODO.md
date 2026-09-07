@@ -293,10 +293,6 @@ Jede Entscheidung der Form „reicht das, was gerade passiert, bis zum Ablauf ei
 
 **Auflösungsbedingung:** Der Aufwand fällt bei allen Nutzern an, der Nutzen zunächst nur beim Dunkelritter. Als letzter und getrennt zu entscheidender Schritt zu führen; Konstruktion und Verwendung stehen in `docs/rotation-flow/09-tank-selfprotection.md`. Sinnvoll ist, den Aufnehmer nur zu betreiben, solange ihn jemand liest.
 
-### Drei Prüfskripte ohne Selbsttest · —
-
-`.github/scripts/audit/scan.py`, `mitscan.py` und `scan2.py` haben keinen Selbsttest gegen konstruierte Defekte, `scan3.py` bis `scan8.py` schon — dort deckte er bisher vier Erkennungsfehler auf, die sonst als sauberer Baum durchgegangen wären, zuletzt zwei in `scan6.py` (AUDIT_LOG A16). **Kosten:** ein Nullbefund dieser drei ist nicht belastbar. Derzeit liefern alle drei Treffer, die Lücke hat also nichts verdeckt. **Auflösung:** vor dem zweiten Audit-Durchgang nachrüsten.
-
 ## Offene Arbeit
 
 ### Audit + Code-Review der gesamten Codebasis

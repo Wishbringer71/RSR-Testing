@@ -40,10 +40,16 @@ each script should carry a self-test against constructed defects and fail loudly
 `scan3.py` shipped an off-by-one that made one of its classes find nothing at all, and `scan4.py`
 did not recognise multi-line attribute blocks; both were caught that way.
 
-State as of the last audit round: `scan3.py` through `scan7.py` have such a self-test, `scan.py`,
-`mitscan.py` and `scan2.py` do not. All three currently produce non-empty output, so the gap has not
-masked anything yet, but a zero result from them carries no weight until it is closed. Tracked in
-`TODO.md`.
+State: every script from `scan.py` through `scan8.py` now carries one. The last three - `scan.py`,
+`mitscan.py` and `scan2.py` - got theirs late, and closing that gap required a small refactor first:
+their checks ran inline in the file loop and could not be called with a constructed source at all.
+They now expose `scan_source()` / `scan_file()`, with the walk and the printing moved into `main()`.
+
+That refactor immediately earned itself. `scan.py` check (f), duplicate consecutive `if` conditions,
+had never been able to fire: it compared `'out act' in cond` against a string it had already run
+`re.sub(r'\s+', '', ...)` over, so the spaced form could not be present. Its clean result had been
+meaningless for as long as the check existed. With the comparison moved to the raw condition the
+check works, and the tree is genuinely clean on it.
 
 Two of the newer scans earned their self-test immediately. `scan5.py` attributed every change inside
 an expression-bodied property to the method above it, because its declaration pattern required a
