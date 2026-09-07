@@ -3577,10 +3577,14 @@ public struct ActionTargetInfo(IBaseAction action)
 					}
 				}
 
-				// The self short-cut bypasses the candidate list, so it needs the same check that
-				// keeps it out: a heal on a target that nullifies HP recovery is a wasted cast.
+				// The self short-cut bypasses the candidate list, so it needs the same checks that
+				// keep a target out of it: a heal on a target that nullifies HP recovery is a wasted
+				// cast, and a dark knight inside its Living Dead window is being held on purpose.
+				// Without the second check, any other member raising the heal flag would let the
+				// bearer heal itself out of the trigger through this path.
 				if (Player.Object != null
 					&& !Player.Object.HasStatus(false, StatusHelper.HealingIneffectiveStatus)
+					&& !(Service.Config.WithholdHealingForLivingDead && Player.Object.InDeathTriggerWindow())
 					&& ObjectHelper.GetPlayerHealthRatio() <= Service.Config.HealthSelfRatio)
 				{
 					return Player.Object;

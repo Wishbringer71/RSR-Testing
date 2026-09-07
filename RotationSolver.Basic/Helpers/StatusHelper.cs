@@ -465,6 +465,30 @@ public static class StatusHelper
 	];
 
 	/// <summary>
+	/// Whether <paramref name="battleChara"/> is inside a death-triggered window that still has room
+	/// for the death to arrive - that is, <see cref="DeathTriggeredStatus"/> is up and not about to
+	/// expire.
+	/// <para>
+	/// The clock has to be read on this list alone. <see cref="NoNeedHealingInvuln"/> measures the
+	/// *earliest* expiry across all of <see cref="NoNeedHealingStatus"/>, so an unrelated short
+	/// invulnerability on the same target - a Phantom Oracle's, say - would report the window as
+	/// ending while Living Dead still had most of its duration left.
+	/// </para>
+	/// </summary>
+	public static bool InDeathTriggerWindow(this IBattleChara battleChara)
+	{
+		return battleChara.HasStatus(false, DeathTriggeredStatus)
+			&& !battleChara.WillStatusEndGCD(2, 0, false, DeathTriggeredStatus);
+	}
+
+	/// <inheritdoc cref="InDeathTriggerWindow(IBattleChara)"/>
+	public static bool PlayerInDeathTriggerWindow()
+	{
+		return PlayerHasStatus(false, DeathTriggeredStatus)
+			&& !PlayerWillStatusEndGCD(2, 0, false, DeathTriggeredStatus);
+	}
+
+	/// <summary>
 	/// Statuses under which a heal lands for nothing at all, as opposed to merely being less urgent.
 	/// A target carrying one of these is not a healing candidate: the cast would be spent and the
 	/// target left exactly as it was. Mounted's own description says HP recovery is "nullified".
