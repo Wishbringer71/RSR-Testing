@@ -2698,20 +2698,14 @@ public struct ActionTargetInfo(IBaseAction action)
 					{
 						if (member.IsConditionCannotTarget())
 						{
-							if (Service.Config.InDebug)
-							{
-								PluginLog.Debug($"FindDancePartner: {member.Name} selected target.");
-							}
-							return null;
+							continue;
 						}
-						if (!member.IsConditionCannotTarget())
+
+						if (Service.Config.InDebug)
 						{
-							if (Service.Config.InDebug)
-							{
-								PluginLog.Debug($"FindDancePartner: {member.Name} selected target.");
-							}
-							return member;
+							PluginLog.Debug($"FindDancePartner: {member.Name} selected target.");
 						}
+						return member;
 					}
 				}
 			}
@@ -2729,20 +2723,14 @@ public struct ActionTargetInfo(IBaseAction action)
 					{
 						if (member.IsConditionCannotTarget())
 						{
-							if (Service.Config.InDebug)
-							{
-								PluginLog.Debug($"FindDancePartner: {member.Name} secondary logic target.");
-							}
-							return null;
+							continue;
 						}
-						if (!member.IsConditionCannotTarget())
+
+						if (Service.Config.InDebug)
 						{
-							if (Service.Config.InDebug)
-							{
-								PluginLog.Debug($"FindDancePartner: {member.Name} secondary logic target.");
-							}
-							return member;
+							PluginLog.Debug($"FindDancePartner: {member.Name} secondary logic target.");
 						}
+						return member;
 					}
 				}
 			}
@@ -3153,20 +3141,14 @@ public struct ActionTargetInfo(IBaseAction action)
 						{
 							if (m.IsConditionCannotTarget())
 							{
-								if (Service.Config.InDebug)
-								{
-									PluginLog.Debug($"FindKardia 1: {m.Name} is a tank with TankStanceStatus and without Kardion.");
-								}
-								return null;
+								continue;
 							}
-							if (!m.IsConditionCannotTarget())
+
+							if (Service.Config.InDebug)
 							{
-								if (Service.Config.InDebug)
-								{
-									PluginLog.Debug($"FindKardia 1: {m.Name} is a tank with TankStanceStatus and without Kardion.");
-								}
-								return m;
+								PluginLog.Debug($"FindKardia 1: {m.Name} is a tank with TankStanceStatus and without Kardion.");
 							}
+							return m;
 						}
 					}
 				}
@@ -3183,20 +3165,14 @@ public struct ActionTargetInfo(IBaseAction action)
 						{
 							if (m.IsConditionCannotTarget())
 							{
-								if (Service.Config.InDebug)
-								{
-									PluginLog.Debug($"FindKardia 2: {m.Name} is a tank with TankStanceStatus.");
-								}
-								return null;
+								continue;
 							}
-							if (!m.IsConditionCannotTarget())
+
+							if (Service.Config.InDebug)
 							{
-								if (Service.Config.InDebug)
-								{
-									PluginLog.Debug($"FindKardia 2: {m.Name} is a tank with TankStanceStatus.");
-								}
-								return m;
+								PluginLog.Debug($"FindKardia 2: {m.Name} is a tank with TankStanceStatus.");
 							}
+							return m;
 						}
 					}
 				}
@@ -3211,20 +3187,14 @@ public struct ActionTargetInfo(IBaseAction action)
 						// 3. Any alive tank in priority order
 						if (m.IsConditionCannotTarget())
 						{
-							if (Service.Config.InDebug)
-							{
-								PluginLog.Debug($"FindKardia 3: {m.Name} is a tank fallback.");
-							}
-							return null;
+							continue;
 						}
-						if (!m.IsConditionCannotTarget())
+
+						if (Service.Config.InDebug)
 						{
-							if (Service.Config.InDebug)
-							{
-								PluginLog.Debug($"FindKardia 3: {m.Name} is a tank fallback.");
-							}
-							return m;
+							PluginLog.Debug($"FindKardia 3: {m.Name} is a tank fallback.");
 						}
+						return m;
 					}
 				}
 			}
@@ -4020,20 +3990,14 @@ public struct ActionTargetInfo(IBaseAction action)
 					{
 						if (m.IsConditionCannotTarget())
 						{
-							if (Service.Config.InDebug)
-							{
-								PluginLog.Debug($"FindTankTarget 1: {m.Name} is a tank with TankStanceStatus.");
-							}
-							return null;
+							continue;
 						}
-						if (!m.IsConditionCannotTarget())
+
+						if (Service.Config.InDebug)
 						{
-							if (Service.Config.InDebug)
-							{
-								PluginLog.Debug($"FindTankTarget 1: {m.Name} is a tank with TankStanceStatus.");
-							}
-							return m;
+							PluginLog.Debug($"FindTankTarget 1: {m.Name} is a tank with TankStanceStatus.");
 						}
+						return m;
 					}
 				}
 			}
@@ -4044,20 +4008,14 @@ public struct ActionTargetInfo(IBaseAction action)
 				{
 					if (m.IsConditionCannotTarget())
 					{
-						if (Service.Config.InDebug)
-						{
-							PluginLog.Debug($"FindTankTarget 2: {m.Name} is a tank fallback.");
-						}
-						return null;
+						continue;
 					}
-					if (!m.IsConditionCannotTarget())
+
+					if (Service.Config.InDebug)
 					{
-						if (Service.Config.InDebug)
-						{
-							PluginLog.Debug($"FindTankTarget 2: {m.Name} is a tank fallback.");
-						}
-						return m;
+						PluginLog.Debug($"FindTankTarget 2: {m.Name} is a tank fallback.");
 					}
+					return m;
 				}
 			}
 
