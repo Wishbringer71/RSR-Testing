@@ -97,6 +97,8 @@ Ein Ergebnis ist erst vollständig, wenn Einzelfall und Muster getrennt benannt 
 
 Chat durchgehend Deutsch, vor jeder Antwort verifiziert (Beleg: englische Antwort als deutsch deklariert). Commits, Code-Kommentare und Bezeichner Englisch. Projektdokumentation in etablierter Fachterminologie der Software- und Projektmanagement-Disziplin, nicht in ad hoc gebildeten Begriffen; unbekannte Standardbegriffe werden vor Verwendung recherchiert.
 
+**Der Auftraggeber spielt mit deutschem Client.** Aktions-, Status- und Inhaltsnamen aus seinen Angaben sind deutsche Spielnamen; die Bezeichner im Code und in den generierten Ressourcen (`RotationSolver.SourceGenerators/Properties/*.resx`) sind englisch. Bei jeder Namensnennung ist deshalb beides zu prüfen und die Zuordnung zu belegen, bevor eine Fundstelle gesucht oder ihr Fehlen behauptet wird. Ein Nullbefund über den englischen Namen allein ist kein Beleg. Beleg: „Ex Machina" wurde als im Baum nicht vorhanden gemeldet — es ist der deutsche Name von Thin Air.
+
 # Entscheidungen und Eskalation
 
 **Entscheidungsbedarf wird gebündelt am Ende vorgelegt**, mit Entscheidungsgrundlage, Optionen samt Konsequenzen und begründeter Empfehlung. Eine Vorlage ohne Empfehlung ist unvollständig. Alles ohne Entscheidungsabhängigkeit wird vorher fertiggestellt; keine Zwischenrückfragen im laufenden Ablauf.

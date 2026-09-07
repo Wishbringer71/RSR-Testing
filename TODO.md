@@ -20,6 +20,20 @@ Das Suffix nachzureichen behebt es nicht: NuGet entfernt SemVer-2.0-Build-Metada
 
 **Auflösungsbedingung:** Die Wahl zwischen eigenem `PackageId`, Prerelease-Label und dem Verzicht auf die Paketauslieferung trifft der Auftraggeber; alle drei berühren die Autoren abgeleiteter Rotationen unterschiedlich. Zusammen mit dem Eintrag zum Release-Ballast zu entscheiden, der dasselbe `.nupkg` betrifft.
 
+### Argumentlose `IsLastAction()`-Vergleiche sind konstant wahr · N, U
+
+`IsLastAction()`, `IsLastGCD()` und `IsLastAbility()` sind `params ActionID[]`-Überladungen. Ohne Argument prüft `IsActionID` eine leere Liste und liefert `false` (`IActionHelper.cs:196-211`). Der Ausdruck `IsLastAction() == IsLastGCD()` ist damit `false == false` und immer wahr; für `IsLastAction() == IsLastAbility()` gilt dasselbe. Die gemeinte Prüfung existiert bereits als `IActionHelper.IsLastActionGCD()` (`DataCenter.LastAction == DataCenter.LastGCD`) und wird in `CustomRotation_Ability.cs:688`, `697` und `705` korrekt verwendet.
+
+Fünf Fundstellen, alle aus Upstream übernommen und dort unverändert vorhanden:
+
+- `WHM_Reborn.cs:135` (zweimal) und `BeirutaWHM.cs:401-402` (zweimal) — sollen Thin Air auf das Weave-Fenster unmittelbar nach einem GCD beschränken.
+- `DRG_Reborn.cs:131` — dieselbe Absicht vor Stardiver.
+- `CustomRotation_OtherInfo.cs:1798` in `HasWeaved()`. Der Kommentar darüber schreibt die gemeinte Prüfung wörtlich aus, der Code führt sie nicht aus — nach der Auslegungsregel ist der Widerspruch der Befund, nicht der Kommentar.
+
+**Wirkung:** In den vier Rotationsstellen entfällt eine Einschränkung, die nie gegriffen hat; Thin Air und Stardiver können damit in jedem Weave-Slot statt nur im ersten fallen. Schwerer wiegt `HasWeaved()`: über `CanEarlyWeave` (`CustomRotation_OtherInfo.cs:1353`) kollabiert `(!HasWeaved() || WeaponRemain > LateWeaveWindow)` auf die zweite Hälfte, die „noch nicht geweavt"-Bedingung fällt also weg. Verbraucher sind `ChurinMNK` (drei Stellen) und `ChurinBRD` (vier); die Reborn-Rotationen nutzen `CanEarlyWeave` nicht.
+
+**Auflösung:** Ersetzung durch `IsLastActionGCD()` beziehungsweise durch eine gleichwertige Prüfung für `HasWeaved()`. Für die beiden Churin-Rotationen ist die Absicht des fremden Autors zu berücksichtigen, weil die Behebung deren Weave-Zeitpunkte tatsächlich verschiebt.
+
 ## Technische Schuld
 
 ### Doppelte Zustandswahl in den Zustandskommandos · N
