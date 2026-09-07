@@ -431,6 +431,22 @@ Daraus folgt eine Vorgabe für die Umsetzung: **Vorrang für ein Heilmittel ohne
 
 **Erreichter Prüfgrad:** statische Prüfung und Durchspielen der Zeitverläufe; keine Laufzeitbeobachtung, kein Vier-Augen-Prinzip. Reine Dokumentation.
 
+### A24 · Lernzeitpunkt der AoE-Liste und die Frage nach der Potenz (07.09.2026)
+
+**Anlass:** Zwei Rückfragen des Auftraggebers zum AoE-Listen-Vorschlag — wann die Aufnahme erfolgt, und ob statt eines absoluten Betrags die Potenz zu messen wäre.
+
+**Zeitpunkt: bereits richtig, die Sorge ist gegenstandslos.** Gelernt wird nach dem Effekt, nicht bei Cast-Beginn — `Watcher.Enable` (`Watcher.cs:17`) hängt `ActionFromEnemy` an `ActionEffect.ActionEffectEvent`, und dass dort Schadenswerte aus `set.TargetEffects` gelesen werden, ist der Beleg. `Cast100ms > 0` prüft eine Eigenschaft der Aktion, keinen laufenden Wirkvorgang. Die Größenordnung steht beim Lernen also fest.
+
+Die Gegenseite dazu: **Verwendet** wird die Liste bei Cast-Beginn (`IsHostileCastingArea`, `DataCenter.cs:2445`). Aus beidem ergibt sich die tragende Konstruktion — beim ersten Vorkommen wird nie mitigiert, ab dem zweiten schon.
+
+**Potenz: Ziel bestätigt, Größe abgelehnt, ein echter Vorteil des Vorschlags anerkannt.** Das Anliegen — eine gegenüber Level und Item-Level stabile Größe — trifft zu und wird vom Anteil an der Maximalgesundheit erfüllt. Vier Gründe gegen die Potenz: Verfügbarkeit für Gegneraktionen ist **unbelegt** (im gesamten Baum wird keine Potenz gelesen; die 465 Vorkommen in `ActionId.resx` sind Freitext in Beschreibungen von Spieleraktionen); Potenz altert an der Inhaltsachse, wo der Anteil an beiden Achsen stabil ist; Potenz ist eine Eingangsgröße einer Formel, nicht die Gefahrenaussage selbst; und der Vergleichspartner liegt bereits in derselben Einheit vor, weil das Spiel Schilde als Prozent der Maximalgesundheit führt (`ICharacter.ShieldPercentage`, gelesen in `ObjectHelper.cs:3372`).
+
+**Anerkannt und nicht kleingeredet:** Die Potenz wäre **mitigationsfrei** und würde damit den Zirkelschluss vollständig beseitigen, den der beobachtete Betrag mitschleppt. Das ist ein sachlicher Vorteil. Er wird hier nur ersatzweise über die Höchstwertregel aufgefangen — schwächer, aber belegt verfügbar. Findet sich eine auswertbare Potenz für Gegneraktionen, gehört sie als zusätzliches Feld neben den Anteil, nicht an dessen Stelle.
+
+**Unterschieden wurde dabei zwischen Vorhersage und Messung:** Bei Heilzaubern ist die Potenz die Rechengröße, weil der Ausgabewert vor dem Wirken zu bestimmen ist. Hier ist er bereits eingetreten und beobachtet — wer das Ergebnis hat, braucht die Formel nicht.
+
+**Erreichter Prüfgrad:** statische Prüfung an `Watcher.cs`, `DataCenter.cs`, `ObjectHelper.cs`, `ActionId.resx` und dem gesamten `.cs`-Baum auf Potenzfelder. Die Frage, ob das Datenblatt des Spiels für Gegneraktionen eine numerische Potenz führt, ist aus diesem Repository nicht zu klären und ausdrücklich als unbelegt geführt. Reine Dokumentation.
+
 ---
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
