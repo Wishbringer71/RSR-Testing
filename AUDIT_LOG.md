@@ -322,6 +322,29 @@ Check-in-Trigger `trig_01NLjkn2dFqmrZXhmxJcWGsQ` ließ sich nicht löschen (Tool
 
 ---
 
+### A19 · Kritische Neuprüfung des Synergie-Konzepts (07.09.2026)
+
+**Anlass:** Auftrag, Konzept und Umsetzungsplan erneut vollständig im Loop zu prüfen und mögliche Hindernisse nicht nur zu benennen, sondern zu beseitigen.
+
+**Vier Hindernisse, drei davon im eigenen Entwurf.**
+
+| # | Hindernis | Auflösung |
+|---|---|---|
+| H1 | Der Einschub braucht einen Cast mit Eigenwert; der DoT deckt nur einen GCD, danach bliebe Glare als reiner Verlust | Durchgerechnet: **ein einziger Einschub genügt** für die vollen 7 s. Ein zweiter bringt nichts und kostet einen GCD. Der DoT reicht exakt aus |
+| H2 | Die Bedingung `StunRemainingShortest > GCDTime(1)` war falsch | Sie hätte nie gegriffen — nach dem ersten Sanctus beträgt die Restzeit 1,5 s, weniger als ein GCD. Richtig ist `> 0`, was zugleich selbstbegrenzend genau einen Einschub erzeugt |
+| H3 | Die geplante Blockverschiebung (DoT vor Sanctus) verzögert den **ersten** Stun um einen GCD und kehrt damit den Vorrang der Schadensvermeidung um, den das Konzept trägt | Verzicht auf die Verschiebung. Der Sanctus-Block bleibt und bekommt eine Aussetzbedingung; der vorhandene DoT-Block fängt den GCD auf. Nebenwirkung: der teuerste Merge-Posten des Plans entfällt |
+| H4 | Welche der rund zwölf Betäubungs-Ids Sanctus anlegt, ist offline nicht bestimmbar | Bündelung zu einer Statusgruppe nach dem Muster `StatusHelper.RangePhysicalDefense`. Die Frage wird gegenstandslos, fremde Betäubungen zählen mit — erwünscht |
+
+**Folge für den Plan:** Vier Schritte werden zu drei. Der frühere Schritt A ist kein eigener mehr — er und die Streckung sind zwei Gründe für dieselbe Aussetzung, und die Aussetzbedingung kennt beide. Neu ist eine **Ersatzgarantie**: Sanctus wird nur ausgesetzt, wenn ein Cast mit Eigenwert bereitsteht (`DiaPvE.CanUse(out _)`), sonst bleibt Sanctus die richtige Wahl.
+
+**Verifiziert statt angenommen:** `DataCenter.JobRange` ist `public static float` (`DataCenter.cs:912`), `AllHostileTargets` ist `public static List<IBattleChara>` (`:49`), Statusgruppen mit mehreren Ids sind etabliert (`StatusHelper.cs:295-310`), und die Spieldaten führen `Stun`, `StunResistance`, `Slow`, `SlowResistance` und `ArmsLength`.
+
+**Neues Prüfmittel:** `.github/scripts/audit/stun_coverage.py` simuliert eine Einschubregel GCD für GCD und weist Deckung und Kosten aus. Es hat H2 gefunden und liegt deshalb versioniert im Repository, mit Selbsttest gegen vier konstruierte Fälle — darunter die verworfene Regel, die dort als „greift nie" belegt ist. Ergebnis bei 2,5 s GCD: heute 5,5 s, Konzeptregel 7,0 s für genau einen eingeschobenen GCD; bei 2,0 s GCD lückenlose Deckung.
+
+**Erreichter Prüfgrad:** statische Prüfung, Modellrechnung mit Selbsttest, Verifikation der verwendeten Bausteine am Quellcode. Keine Laufzeitbeobachtung; die Modellannahmen (gleichmäßiger Schaden, feste GCD-Länge) sind nicht am Spiel geprüft.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.

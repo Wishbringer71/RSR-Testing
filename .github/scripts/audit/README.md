@@ -21,6 +21,13 @@ python3 .github/scripts/audit/scan.py
 | `scan6.py` | Enum members whose ordinal moved, split by whether the enum reaches stored configuration | A16: none persisted; `SpecialMode` in-memory only |
 | `scan7.py` | Public and protected members of `RotationSolver.Basic` removed or re-signed since a release, keyed by declaring type, interface members included | A16: `HasHostileCountAoeMitigation`, `ShouldCheckTargetStatus` |
 
+`stun_coverage.py` is the odd one out: not a scanner but a model calculator for the
+concept in `docs/rotation-flow/08-mitigation-synergy.md`. It simulates a stun-insertion
+rule GCD by GCD and reports the coverage each one achieves. It is kept here because it
+found a defect in that concept's first draft - a gate on "remaining > one GCD" that
+never fires - and it is the regression guard for the numbers the concept argues from.
+Run it again whenever the assumed GCD length or the stun durations change.
+
 `scan5.py` takes a base ref (default `upstream/main`) and `--detail` for line-by-line output.
 `scan6.py` and `scan7.py` take a base ref too; for both, the meaningful base is the newest fork tag,
 because the contract is with the version that was actually shipped, not with upstream. `scan7.py`

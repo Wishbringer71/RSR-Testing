@@ -193,153 +193,130 @@ kommt eine Prüfung, die **zurückhält**. Fällt sie aus, verhält sich RSR wie
 greift, führt zum heutigen Verhalten zurück; ein Öffner, der fälschlich feuert,
 löst die ganze Kette aus.
 
+## Kritische Prüfung des Entwurfs
+
+Vier Hindernisse, drei davon im Entwurf selbst. Alle sind aufgelöst, nicht nur
+benannt.
+
+### H1 — Der Einschub braucht einen Cast mit Eigenwert
+
+Der DoT deckt genau einen GCD ab; danach bliebe nur Glare, dessen Einschub bei
+vielen Zielen ein erheblicher Schadensverlust ohne eigenen Gegenwert wäre.
+
+**Aufgelöst durch Rechnung: ein einziger Einschub genügt.** Bei einem GCD von 2,5 s
+und Stundauern von 4 / 2 / 1 s:
+
+| Verlauf | Betäubungsdeckung | Intervalle |
+|---|---|---|
+| ohne Einschub, Casts bei 0 / 2,5 / 5,0 | **5,5 s** | 0–4,5 · 5,0–6,0 |
+| ein Einschub, Casts bei 0 / 5,0 / 7,5 | **7,0 s** | 0–4,0 · 5,0–7,0 · 7,5–8,5 |
+| zwei Einschübe, Casts bei 0 / 5,0 / 10,0 | **7,0 s** | 0–4,0 · 5,0–7,0 · 10,0–11,0 |
+
+Der zweite Einschub bringt nichts mehr und kostet einen weiteren GCD. Der DoT
+reicht also exakt aus, und die Regel darf höchstens einmal je Betäubungsphase
+greifen.
+
+Die Zahlen stammen nicht aus einer Überschlagsrechnung, sondern aus
+`.github/scripts/audit/stun_coverage.py`, das die Regel GCD für GCD simuliert und
+mit im Repository liegt. Es weist zugleich die Kosten aus: Die Konzeptregel erreicht
+die vollen 7 s für **genau einen** eingeschobenen GCD. Bei verkürztem GCD (2,0 s
+unter Presence of Mind) liefert sie sogar lückenlose Deckung von 0 bis 7 s.
+
+### H2 — Die Bedingung im Entwurf war falsch
+
+`StunRemainingShortest > GCDTime(1)` hätte den einen nötigen Einschub gerade
+verhindert: Nach dem ersten Sanctus beträgt die Restzeit beim nächsten GCD noch
+1,5 s, also weniger als ein GCD, und die Regel hätte nicht gegriffen.
+
+Richtig ist **`StunRemainingShortest > 0`** — nachcasten, solange nichts läuft. Das
+ist zugleich selbstbegrenzend: Nach dem Einschub liegt der nächste Cast hinter dem
+Ablauf des Stuns, die zweite und dritte Betäubung dauern 2 s und 1 s und sind beim
+jeweils folgenden GCD bereits vorbei. Es entsteht automatisch genau ein Einschub,
+ohne Zähler. Gegenprobe mit verkürztem GCD (2,0 s durch Presence of Mind): 7,0 s
+statt 5,0 s, ebenfalls genau ein Einschub.
+
+### H3 — Die Blockverschiebung widerspricht der Rangordnung
+
+Der ursprüngliche Schritt 2 zog den DoT-Block vor den Sanctus-Block. Damit fiele
+der **erste** Stun einen GCD später — eine Verzögerung der Schadensvermeidung
+zugunsten von Schaden, also genau die Umkehrung des Vorrangs, der dieses Konzept
+trägt. Zusätzlich wäre die Verschiebung der teuerste Teil des Plans im
+Upstream-Merge.
+
+**Aufgelöst durch Verzicht auf die Verschiebung.** Der Sanctus-Block bleibt, wo er
+ist, und bekommt eine Aussetzbedingung; der bereits vorhandene DoT-Block darunter
+fängt den freigewordenen GCD auf. Kein Block wandert, der Merge-Aufwand entfällt,
+und der erste Stun fällt unverändert sofort.
+
+### H4 — Welche Betäubungs-Status-Id gilt
+
+Die Spieldaten führen `Stun` und rund ein Dutzend Varianten mit Zahlensuffix. Welche
+davon Sanctus anlegt, ist offline nicht bestimmbar.
+
+**Aufgelöst durch Bündelung**: eine Statusgruppe nach dem im Projekt etablierten
+Muster (`StatusHelper.RangePhysicalDefense`, `.PhysicalResistance`) fasst alle
+Betäubungs-Ids zusammen. Damit ist die Frage gegenstandslos, und fremde Betäubungen
+zählen mit — was erwünscht ist, weil auch sie Schaden verhindern.
+
+### Was aus der Prüfung für den Plan folgt
+
+Der frühere Schritt A ist kein eigener Schritt mehr. Er und die Streckung sind zwei
+Gründe für dieselbe Aussetzung, und die Aussetzbedingung kennt beide: Bei einem Boss
+mit zwei Adds laufen nach dem ersten Sanctus die Add-Betäubungen, die Streckung
+greift, und der DoT landet auf dem Boss — der ursprüngliche A-Fall, mit besserem
+Zeitpunkt als bei einer festen Blockverschiebung. Sind alle Ziele immun, greift
+`!StunHeadroom` und führt zum selben Ergebnis.
+
 ## Umsetzungsplan
 
-Vier Schritte. Jeder ist für sich lieferbar, prüfbar und abschaltbar; jeder Schritt
-lässt den vorherigen unverändert. Standard ist überall das heutige Verhalten.
+Drei Schritte statt vier. Jeder hinter einer eigenen Option, Standard aus.
 
-### Schritt 1 — Messung (kein Verhalten)
+### Schritt 1 — Messung (kein Verhalten, keine Option nötig)
 
-**Drei getrennte Größen, kein gemeinsamer Prozentwert.** Ein früherer Entwurf sah
-vor, Betäubung und Verlangsamung in den vorhandenen Mitigationsanteil
-einzurechnen. Das wäre ein Surrogat: `GetCurrentMitigationPercent` liefert
-`1 − damageFactor`, geklemmt auf 0 bis 0,95 (`CustomRotation_OtherInfo.cs:719-720`)
-— eine Betäubung entspricht 1,0 und würde auf 0,95 gekappt. Vor allem aber ist sie
-kategorisch anders als eine Schadensreduktion: binär statt anteilig, zeitlich
-scharf begrenzt, resistenzbehaftet und zielbezogen statt gruppenweit. Beides in
-einer Zahl zu führen verliert genau die Eigenschaften, wegen derer gemessen wird.
+Wie oben beschrieben: drei Felder in `DataCenter`, gefüllt von einem Updater
+zwischen `TargetUpdater.UpdateTargets()` und `ActionUpdater.UpdateNextAction()`,
+dazu `StatusHelper.StunStatus` als Gruppe. Verifiziert: `DataCenter.JobRange` ist
+`public static float` (`DataCenter.cs:912`), `AllHostileTargets` ist
+`public static List<IBattleChara>` (`:49`), Statusgruppen mit mehreren Ids sind das
+etablierte Muster (`StatusHelper.cs:295-310`).
 
-| Größe | Art | Quelle |
-|---|---|---|
-| `MitigationFraction` (vorhanden, unverändert) | gruppenweit, anteilig, Momentwert | `GetCurrentMitigationPercent()` |
-| `StunCoverage` | Anteil der betroffenen Gegner mit Betäubung, dazu die **kürzeste** Restzeit unter ihnen | `StatusHelper.HasStatus` / `.StatusTime` mit `StatusID.Stun` und Varianten |
-| `StunHeadroom` | ob ein neuer Stun noch Wirkung hätte | `StatusID.StunResistance` über `.StatusStack` |
+Kein Aufrufer in einer Rotation. Absicherung: Kompilierung und ein Prüfskript.
 
-Die kürzeste Restzeit, nicht der Mittelwert: Sobald der erste Gegner aufwacht,
-läuft wieder Schaden ein. Ein Mittelwert würde die Deckung überzeichnen.
+### Schritt 2 — Aussetzbedingung am Sanctus-Block
 
-**Berechnungsort.** Nicht als statische Abfrage in den Rotationszweigen, sondern
-als eigener Schritt im `MajorUpdater` vor `ActionUpdater.UpdateNextAction()`
-(`MajorUpdater.cs:228`), Ergebnis in `DataCenter`. Grund: `GetCurrentMitigationPercent`
-iteriert über alle Gegner **und** alle Party-Mitglieder; als Momentabfrage würde
-sie mehrfach je Frame laufen. Vorbild ist `TargetUpdater.UpdateTargets()`, das
-seine Listen einmal je Frame füllt.
-
-Kein Aufrufer in einer Rotation — dieser Schritt ändert kein Verhalten und ist
-durch Kompilierung und ein Prüfskript abgesichert.
-
-**Konkrete Form.** Drei Felder in `DataCenter`, einmal je Frame gefüllt, dazu eine
-Statusgruppe in `StatusHelper` nach dem dort etablierten Muster
-(`public static StatusID[] X { get; } = [...]`, z. B. `StatusHelper.cs:295`):
+In `WHM_Reborn.GeneralGCD`, am vorhandenen Block (518-527), ohne ihn zu verschieben:
 
 ```
-public static float StunCoverage          // 0..1, Anteil der Gegner in Reichweite mit Betäubung
-public static float StunRemainingShortest // Sekunden, kürzeste Restzeit unter den betäubten
-public static bool  StunHeadroom          // mindestens ein Ziel, bei dem ein Stun noch wirkt
-```
+var stretch = HolyStretchEnabled
+    && !EmergencyMitigationNeeded
+    && NumberOfHostilesInRange >= HostileCountThreshold
+    && (DataCenter.StunRemainingShortest > 0f || !DataCenter.StunHeadroom)
+    && DiaPvE.CanUse(out _);          // Ersatz mit Eigenwert vorhanden
 
-Der Updater, aufgerufen aus `MajorUpdater` nach `TargetUpdater.UpdateTargets()` und
-vor `ActionUpdater.UpdateNextAction()`:
-
-```
-var jobRange = DataCenter.JobRange;
-int total = 0, stunned = 0, headroom = 0;
-var shortest = float.MaxValue;
-
-foreach (var h in DataCenter.AllHostileTargets)
+if (!stretch && HolyPvE.EnoughLevel)
 {
-    if (h is null || h.DistanceToPlayer() >= jobRange) continue;
-    total++;
-    var remain = h.StatusTime(false, StatusHelper.StunStatus);
-    if (remain > 0f) { stunned++; shortest = Math.Min(shortest, remain); }
-    if (!h.HasStatus(false, StatusID.StunResistance)) headroom++;
+    ... unveraendert ...
 }
 ```
 
-Die Reichweitenprüfung ist wörtlich die von `NumberOfHostilesInRange`
-(`DataCenter.cs:1421-1436`), damit Schwelle und Messung dieselbe Menge meinen.
+Die letzte Bedingung ist die **Ersatzgarantie**: Sanctus wird nur ausgesetzt, wenn
+ein Cast mit eigenem Wert bereitsteht. Fehlt er, ist Sanctus die richtige Wahl, und
+ein Ausweichen auf Glare findet nicht statt.
 
-**Die Immunität braucht keinen Timer.** Sie ist ein Statuseffekt, kein
-Zeitfenster, das mitgeführt werden müsste: Solange `StunResistance` auf einem
-Gegner liegt, ist `StunHeadroom` für ihn falsch; fällt der Status nach seinen 45
-Sekunden ab, wird er von selbst wieder wahr, und die Regel greift ohne
-Sonderbehandlung erneut. Der seltene lange Kampf, in dem die Betäubungen ein
-zweites Mal verfügbar werden, ist damit kein Sonderfall im Code, sondern ergibt
-sich aus derselben Abfrage. Das ist der zweite Grund, die Messung zustandsbasiert
-statt zeitbasiert zu führen — der erste war der Wegfall der Buchführung.
+`EmergencyMitigationNeeded` fasst die beiden Notfallvorbehalte: Gruppen-HP unter der
+Schwelle, oder vorhergesagter Schaden innerhalb `BMRRaidwideMitWindow` /
+`BMRTankbusterMitWindow`.
 
-**Grenzen der Messung, die keine Umsetzung beheben kann.**
+### Schritt 3 — Übertragung auf andere Doppelnutzen-Aktionen
 
-- Ein betäubungsimmuner Gegner ist von einem, der nur noch nie betäubt wurde,
-  nicht zu unterscheiden, solange kein Stun versucht wurde. Erst wenn nach einem
-  Sanctus kein Betäubungsstatus entsteht, ist die Immunität belegt. Die Messung ist
-  also erst ab dem zweiten Cast vollständig — was zur Regel passt, weil der erste
-  Sanctus ohnehin fällt.
-- Statusrestzeiten kommen vom Server; die letzten Zehntelsekunden sind wegen
-  Latenz unzuverlässig. Schwellen sind deshalb in GCD-Einheiten zu formulieren
-  (`GCDTime(1)`), nicht in Sekunden.
-
-### Schritt 2 — A: DoT-Zweig vor Sanctus
-
-In `WHM_Reborn.GeneralGCD` den DoT-Block (530-544) vor den Sanctus-Block (518-527)
-ziehen, hinter eine Option:
-
-```
-[RotationConfig(CombatType.PvE, Name = "Keep the damage-over-time up in AoE, ahead of Holy")]
-public bool DotAheadOfAoe { get; set; } = false;
-```
-
-Wirksam ohne Schritt 1 und ohne 3. `TargetStatusProvide` auf Dia verhindert, dass
-der Einschub mehr als einen GCD je DoT-Laufzeit kostet.
-
-### Schritt 3 — B/C: Zeitpunkt des Einschubs
-
-Die Bedingung aus Schritt 2 wird um die Betäubungsprüfung ergänzt, als eigene
-Option, damit Schritt 2 unabhängig bleibt.
-
-**Die Regel ist eine Rangordnung, keine Abwägung.** Die gestreckte Betäubung liefert
-mehr Deckung als das Nachcasten im Takt; nach dem Vorrang der Schadensvermeidung
-ist sie damit die Vorgabe, und nur ihr Unterlassen braucht einen Grund. Die
-Bedingung ist deshalb positiv formuliert — sie fragt, ob gestreckt werden **soll**,
-nicht ob der Einschub erlaubt ist:
-
-```
-protected static bool ShouldStretchStun =>
-       DataCenter.StunRemainingShortest > GCDTime(1)   // laeuft noch: nachcasten verfiele
-    || !DataCenter.StunHeadroom;                       // wirkt ohnehin nicht mehr
-```
-
-Zwei Notfallvorbehalte heben die Streckung auf. Sie sind Ausnahmen, keine
-Abwägungsgrößen, und stehen deshalb vor der Regel:
-
-- Gruppen-HP unterhalb der eingestellten Schwelle,
-- vorhergesagter Schaden innerhalb `BMRRaidwideMitWindow` / `BMRTankbusterMitWindow`.
-
-In beiden Fällen ist der unmittelbare Bedarf größer als jede Planung über die
-nächsten Sekunden.
-
-Die Abstimmung gegen fremde Mitigation (C) kommt als dritter, **nachrangiger**
-Grund hinzu — sie ist nach der neuen Rechnung weniger als halb so schwer wie die
-Streckung selbst:
-
-```
-    || GetCurrentMitigationPercent() >= StunYieldThreshold  // fremde Mitigation traegt gerade
-```
-
-Die Gegnerzahl-Schwelle wirkt allein als Filter davor: Unterhalb von
-`HostileCountThreshold` (Muster: `MitigationSustainHostileCount`) greift die Regel
-gar nicht, weil Sanctus dort ohnehin nicht fällt.
-
-### Schritt 4 — Übertragung auf andere Doppelnutzen-Aktionen
-
-Erst wenn 1 bis 3 im Einsatz beobachtet wurden. Kandidatensuche über ein Prüfskript
-statt über Erinnerung: Aktionen, die in einem Schadenszweig stehen und einen
-Statuseffekt mit Mitigationswirkung anlegen.
+Erst nach Beobachtung im Spiel. Kandidatensuche über ein Prüfskript statt über
+Erinnerung: Aktionen, die in einem Schadenszweig stehen und einen Statuseffekt mit
+Mitigationswirkung anlegen.
 
 ### Was der Plan nicht vorsieht
 
-Sanctus in den Verteidigungszweig zu verschieben. Das würde den Schadensfiller an
-ein Mitigationsflag hängen, das dafür nicht gebaut ist.
+Sanctus in den Verteidigungszweig zu verschieben, und den DoT-Block zu verschieben.
+Beides ist durch die Aussetzbedingung überflüssig geworden.
 
 ## Falsifikation
 
@@ -349,7 +326,7 @@ Entwurfsabsicht ist vorhanden, die Verdrahtung fehlt. Für A zusätzlich durch d
 beiden Vorkehrungen an `ModifyDiaPvE`, die bei AoE nie zur Wirkung kommen.
 
 **Hypothese 2: Die gewählte Option ist falsch.** Widerlegt für die Bremse, nicht für
-einen Auslöser — siehe O2 und den belegten Rückbau. Für Schritt 4 hält der Einwand
+einen Auslöser — siehe O2 und den belegten Rückbau. Für Schritt 3 hält der Einwand
 teilweise stand, weshalb er von Beobachtung abhängig gemacht ist.
 
 **Hypothese 3: Der Einschub ist im mittleren Gegnerzahlbereich falsch.** Hält
@@ -406,7 +383,7 @@ Annahme, es sei gar nichts messbar.
 Solange die Wirksamkeitsmessung nicht vorliegt, gilt die Feature-Toggle-Regel
 unverändert: **jeder Schritt hinter eine eigene Option, Standard aus.** Die Messung
 ist der Weg, diese Vorsichtsmaßnahme später begründet aufzuheben — sie gehört
-deshalb vor Schritt 3, nicht danach.
+deshalb vor Schritt 3, der Übertragung auf weitere Aktionen.
 
 ## Konsequenzen
 
@@ -421,6 +398,7 @@ Prüfungen nicht aufruft, merkt nichts.
 
 **Upstream-Pflege.** Der Eingriff liegt in `CustomRotation_OtherInfo` und
 `WHM_Reborn`, beides Dateien mit regelmäßiger Upstream-Aktivität. Neue Teile gehören
-in eigene Regionen, statt bestehende Blöcke umzubauen. Schritt 2 verschiebt einen
-bestehenden Block und erzeugt damit den größten Merge-Aufwand des Plans — die
-Verschiebung sollte als eigener Commit ohne inhaltliche Änderung erfolgen.
+in eigene Regionen, statt bestehende Blöcke umzubauen. Nach der Auflösung von H3
+verschiebt der Plan keinen Block mehr: Schritt 2 fügt dem vorhandenen Sanctus-Block
+eine Bedingung voran und lässt seinen Inhalt unberührt, was den Merge-Aufwand auf
+eine Zeile begrenzt.
