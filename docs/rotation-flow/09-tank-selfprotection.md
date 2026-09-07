@@ -837,6 +837,67 @@ Art des Auslösers fehlte in allen vorigen Fassungen und hat dort zu einer Regel
 geführt, die dem Dunkelritter genau das genommen hätte, wofür er seine Fähigkeit
 zündet.
 
+## Umsetzungsstand und die drei Hindernisse von Schritt 3
+
+Schritt 1 und 2 sind umgesetzt und kompiliert (`26e507cd`, `a443c380`, `f1e8844a`).
+Bei Schritt 3 hat die Umsetzungsplanung drei Hindernisse freigelegt, die das
+Konzept in keiner seiner Fassungen benannt hatte. Sie betreffen alle dieselbe
+Frage: **in welcher Schicht die Rückhaltung lebt.**
+
+### H1 — Der Vorlauf ist rotationsabhängig, die Zielwahl ist es nicht
+
+Die Uhrregel braucht den Vorlauf des Heilmittels, das gleich fallen soll: bei einer
+Fähigkeit ohne Wirkzeit die letzte Sekunde, bei einem Zauber ein bis zwei GCDs.
+`GeneralHealTarget` ist eine statische lokale Funktion in `ActionTargetInfo` und
+kennt die Rotation nicht — dort ließe sich nur ein pauschaler Vorlauf annehmen, und
+der wäre für Benediction dreimal zu groß.
+
+**Folge:** Die Uhrregel gehört in die Rotation, nicht in die zentrale Zielwahl. Die
+zentrale Schicht kann nur „geschützt, also nachrangig" beitragen — das tut sie seit
+Schritt 2 bereits.
+
+### H2 — „Einmalig vor Eintritt" verlangt Zustand, den es dort nicht gibt
+
+`CanSustainPhaseTwo` soll **vor** dem Eintritt in die Phase geprüft werden und danach
+nicht mehr, damit die Entscheidung nicht mitten in der Phase kippt. Das setzt voraus,
+dass der Phasenbeginn festgehalten wird — ein Feld je Dunkelritter mit
+Objekt-Id und Zeitstempel. `ActionTargetInfo` ist an dieser Stelle zustandslos, und
+zustandsbehaftete Felder in einer statischen Zielwahl sind eine Quelle für Fehler
+über Kampfgrenzen und Instanzwechsel hinweg.
+
+**Folge:** Der Zustand gehört zum Messbaustein (Schritt 4) oder in die Rotation, nicht
+in die Zielwahl.
+
+### H3 — Die Option liegt in der falschen Konfigurationsebene
+
+Eine Rückhaltung in `ActionTargetInfo` müsste über `Service.Config` geschaltet werden,
+also über die globale Plugin-Konfiguration. Sachlich ist sie aber eine
+Rotationsentscheidung und gehört zu den `[RotationConfig]`-Optionen der jeweiligen
+Heilerrotation. Eine globale Option, die nur einen Job betrifft, ist an der falschen
+Stelle und trifft alle Nutzer mit einer Einstellung, die für sie bedeutungslos ist.
+
+### Was daraus folgt
+
+Die drei Hindernisse zeigen in dieselbe Richtung: **Schritt 3 ist keine Änderung an
+der zentralen Zielwahl, sondern eine an den Heilerrotationen.** Das Konzept hatte ihn
+stillschweigend zentral verortet, weil Schritt 2 dort liegt. Das war ein Fehler der
+Zuordnung, kein Fehler der Regel.
+
+Der überarbeitete Zuschnitt:
+
+| Schicht | Beitrag | Stand |
+|---|---|---|
+| `ActionTargetInfo` (zentral) | Geschützte Ziele sind nachrangig, nicht ausgeschlossen | **umgesetzt** (Schritt 2) |
+| Heilerrotation je Job | Uhrregel, Vorlauf nach verfügbarem Heilmittel, Phasen-Zustand, Option | offen — hier gehört Schritt 3 hin |
+| Messbaustein | Verkleinert den Restfehler der Uhrregel | offen, nachrangig (Schritt 4) |
+
+**Was Schritt 2 für den Dunkelritter bereits bewirkt hat**, ohne dass Schritt 3
+vorliegt: Vorher stand ein Dunkelritter unter Living Dead als einziger in der
+Kandidatenliste und wurde deshalb **bevorzugt** geheilt — der Übergang nach Walking
+Dead wurde also aktiv verhindert. Jetzt steht er hinten und wird nur geheilt, wenn
+sonst niemand Bedarf hat. Das ist noch nicht die Rückhaltung, aber es ist die
+richtige Richtung, und es ist der Grund, warum Schritt 3 nicht dringlich ist.
+
 ## Nachweisbarkeit
 
 | Ebene | Möglich | Nicht möglich |

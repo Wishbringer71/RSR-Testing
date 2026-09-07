@@ -487,6 +487,37 @@ Die Gegenseite dazu: **Verwendet** wird die Liste bei Cast-Beginn (`IsHostileCas
 
 **Erreichter Prüfgrad:** statische Prüfung an `CustomRotation_OtherInfo.cs` und `Watcher.cs`. Reine Dokumentation.
 
+### A27 · Umsetzung der hindernisfreien Punkte, Planung des Rests (07.09.2026)
+
+**Anlass:** Auftrag, die offenen Punkte im Loop zur Umsetzung zu planen, das Hindernisfreie umzusetzen und dort, wo Hindernisse bestehen, Konzept und Planung anzupassen.
+
+**Umgesetzt, nach Risiko geordnet.**
+
+| Commit | Eingriff | Wirkungsbereich |
+|---|---|---|
+| `36983734` | Selbsttests für `scan.py`, `mitscan.py`, `scan2.py` | kein Produktivcode |
+| `26e507cd` | Excogitation-Invertierung (`SCH_Reborn.cs`) | eine Rotation, eine Fähigkeit |
+| `a443c380` | `IsConditionCannotTarget`: siebenmal `return null` → `continue` | vier Zielsuchen, darunter `FindTankTarget` |
+| `f1e8844a` | Heilzielwahl: Invertierung behoben, Filter → Prioritätsstufe | zentrale Heilzielwahl aller Jobs |
+
+**Der Selbsttest-Nachtrag fand sofort einen eigenen Erkennungsfehler.** `scan.py`-Prüfung (f) — doppelte aufeinanderfolgende `if`-Bedingungen — konnte nie anschlagen: Sie suchte `'out act'` in einer Zeichenkette, aus der zuvor `re.sub(r'\s+', '', …)` sämtliche Leerzeichen entfernt hatte. Der Nullbefund dieser Klasse war so lange wertlos, wie es die Prüfung gab. Nach der Korrektur greift sie, und der Baum ist an dieser Stelle tatsächlich sauber. Das ist der fünfte Erkennungsfehler, den ein Selbsttest in diesem Repository aufgedeckt hat.
+
+**Ein Befund entstand erst bei der Umsetzung.** Der Umbau der Zielwahl verlangte eine Unterscheidung, die `NoNeedHealingStatus` nicht macht: `Mounted` nullifiziert Heilungsempfang laut eigener Beschreibung vollständig, ist also ein **Ausschluss**; eine echte Unverwundbarkeit verschiebt den Bedarf nur und ist eine **Herabstufung**. `HpRecoveryDown` mindert Heilung, hebt sie nicht auf, und gehört nach der Rangordnung ebenfalls nicht in den Ausschluss. Dafür ist `StatusHelper.HealingIneffectiveStatus` entstanden; `NoNeedHealingStatus` blieb unangetastet, weil `StateUpdater` und `ObjectHelper` es mit der älteren Bedeutung lesen und es zur Paketoberfläche gehört.
+
+**Drei Hindernisse bei Schritt 3, alle mit derselben Ursache: die falsche Schicht.**
+
+| # | Hindernis | Folge |
+|---|---|---|
+| H1 | Der Vorlauf der Uhrregel hängt am Heilmittel — letzte Sekunde bei einer Fähigkeit ohne Wirkzeit, ein bis zwei GCDs bei einem Zauber. `GeneralHealTarget` kennt die Rotation nicht | Die Uhrregel gehört in die Rotation, nicht in die zentrale Zielwahl |
+| H2 | „Kapazitätsprüfung einmalig vor Eintritt" verlangt, den Phasenbeginn festzuhalten. `ActionTargetInfo` ist dort zustandslos | Der Zustand gehört zum Messbaustein oder in die Rotation |
+| H3 | Eine Rückhaltung in `ActionTargetInfo` liefe über `Service.Config`, also die globale Konfiguration — sachlich ist sie eine Rotationsentscheidung | Die Option gehört zu den `[RotationConfig]`-Einträgen der Heilerrotation |
+
+**Das Konzept hatte Schritt 3 stillschweigend zentral verortet**, weil Schritt 2 dort liegt. Das war ein Fehler der Zuordnung, nicht der Regel; das Konzept trägt die Korrektur jetzt als eigenen Abschnitt.
+
+**Zweiter Befund derselben Planung:** Die Herabstufung wirkt heute nur, wenn ein *anderes* Gruppenmitglied das Heilflag bereits ausgelöst hat. `StateUpdater.ShouldHealSingle` liest dieselbe Prüfung weiterhin als harten Ausschluss und liefert einen Wahrheitswert, in dem eine Rangfolge begrifflich nicht unterzubringen ist. Ist der geschützte Tank der einzige Verletzte, wird also weiterhin gar nicht geheilt. Daran hängt auch, warum die Ergänzung von `HallowedGround`, `HallowedGround_1302` und `UndeadRebirth` weiterhin ausgesetzt bleibt: Heute ergänzt, entstünde für Paladine unter Hallowed Ground genau der Defekt neu, den der TODO-Eintrag beschreibt.
+
+**Erreichter Prüfgrad:** statische Selbstprüfung, Selbsttests und Erstlauf der Skripte, Klammerbilanz und Schleifenkontext der sieben `continue`-Stellen von Hand geprüft, CI-Kompilierung. Keine Laufzeitbeobachtung und kein Vier-Augen-Prinzip. Dass die neue Rangfolge im Spiel besser spielt, ist damit **nicht** belegt — belegt ist nur, dass die alte den am schwersten Verletzten nicht erreichen konnte.
+
 ---
 
 ## B · Commit-Register (Fork vs. `upstream/main`)

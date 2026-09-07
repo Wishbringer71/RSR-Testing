@@ -34,25 +34,6 @@ Fünf Fundstellen, alle aus Upstream übernommen und dort unverändert vorhanden
 
 **Auflösung:** Ersetzung durch `IsLastActionGCD()` beziehungsweise durch eine gleichwertige Prüfung für `HasWeaved()`. Für die beiden Churin-Rotationen ist die Absicht des fremden Autors zu berücksichtigen, weil die Behebung deren Weave-Zeitpunkte tatsächlich verschiebt.
 
-### Die Heilzielauswahl legt die Invulnerabilitätsprüfung invertiert aus · N
-
-`NoNeedHealingInvuln()` (`StatusHelper.cs:653`) ist `WillStatusEndGCD(2, 0, false, NoNeedHealingStatus)` und liefert **true**, wenn der Schutzstatus fehlt oder binnen zwei GCDs endet — also „heilen ist wieder sinnvoll". Der Name sagt das Gegenteil, und die beiden Aufrufstellen folgen verschiedenen Lesarten:
-
-- `StateUpdater.cs:726` und `:771` folgen der Implementierung: `if (h == 0 || !NoNeedHealingInvuln()) return false;` — kein Heilflag, solange der Schutz läuft. **Richtig.**
-- `ObjectHelper.cs:125` folgt ihr ebenfalls, mit erklärendem Kommentar darüber („unless they are riding an invulnerability (Superbolide leaves them at 1 HP on purpose)"). **Richtig**, und der Beleg dafür, welche Lesart gemeint ist.
-- `ActionTargetInfo.cs:3536` in `GeneralHealTarget` folgt dem Namen: `if (!o.NoNeedHealingInvuln()) healingNeededObjs.Add(o);` — aufgenommen wird, wessen Schutz **noch läuft**. **Invertiert.**
-- `SCH_Reborn.cs:830` ebenso: `member.GetHealthRatio() <= ExcogHeal && !member.NoNeedHealingInvuln()`. Excogitation geht nur auf Ziele, die gerade unverwundbar sind. **Invertiert.** Zweiter Fundort derselben Defektklasse, erst bei der Erhebung zu `docs/rotation-flow/09-tank-selfprotection.md` gefunden.
-
-**Wirkung, gegenüber der ersten Fassung dieses Eintrags nach oben korrigiert:** In die priorisierte Zielliste kommen nur Spieler mit laufendem Schutzstatus; alle übrigen fallen heraus. Normalerweise ist die Liste damit leer — und dann laufen **alle** darauf aufbauenden Stufen ins Leere: die Heiler-Vorrangprüfung, die Tank-Vorrangprüfung und die Auswahl des am schwersten Verletzten. `GeneralHealTarget` liefert `null`, und der Aufrufer greift zuerst auf den Träger der Tank-Haltung zurück, sonst auf `partyMembers[0]` (`ActionTargetInfo.cs:3497-3512`). Praktisch heißt das: **Die generische Heilzielwahl ist blind für den am schwersten Verletzten und wählt faktisch immer den Tank.** Einzig die Selbstprüfung gegen `HealthSelfRatio` funktioniert noch, weil sie die Liste nicht benutzt.
-
-Trägt dagegen ein Tank gerade einen Schutzstatus und braucht ein anderer Spieler Heilung, wird **der geschützte Tank bevorzugt** — das Gegenteil der Absicht, und beim Dunkelritter verhindert es womöglich den Tod, der den Übergang nach Walking Dead erst auslöst.
-
-Damit ist dies kein Effizienz-, sondern ein Überlebensdefekt.
-
-**Auflösung:** `if (o.NoNeedHealingInvuln())` an beiden Stellen. `SCH_Reborn.cs:830` ist für sich unkritisch — eine Rotation, eine Fähigkeit — und kann getrennt vorgezogen werden. `ActionTargetInfo.cs:3536` betrifft dagegen die zentrale Heilzielwahl aller Jobs: Nach der Korrektur greift die Priorisierung erstmals wirklich, was das Heilverhalten breit verändert. Freigabepflichtig, nicht nebenbei zu ändern, und gemeinsam mit dem Umbau vom Filter zur Prioritätsstufe (siehe nächster Punkt).
-
-Der irreführende Name ist die Ursache der Wiederholbarkeit und getrennt zu behandeln: Solange `NoNeedHealingInvuln` „true bei fehlendem Schutz" bedeutet, entsteht der Fehler bei jeder neuen Aufrufstelle erneut. Ihn anzupassen, ohne die Aufrufstellen zu prüfen, würde den Beleg tilgen; er steht zudem in der Paketoberfläche.
-
 ### Die Heilunterdrückung bei Unverwundbarkeit prüft den Gesundheitsstand nicht · N
 
 `NoNeedHealingStatus` unterdrückt Heilung, solange ein Schutzstatus läuft. Die dahinterliegende Annahme — wer nicht sterben kann, braucht keine Heilung — gilt nur, wenn der Tank den **Ablauf** des Schutzes überlebt. Genau das prüft die Regel nicht.
@@ -70,7 +51,15 @@ Der irreführende Name ist die Ursache der Wiederholbarkeit und getrennt zu beha
 
 **Zwei frühere Aussagen dieses Eintrags sind damit falsch** und hier ersetzt: dass ein Schild auf Holmgang oder Superbolide wirkungslos sei (er überdauert die Phase und liegt, wenn der Tank am verwundbarsten ist), und dass bei Hallowed Ground Heilung wirklich unnötig sei (sie ist es nur, wenn der Paladin mit hohen HP gezündet hat — was die Regel nicht wissen kann).
 
-**Richtige Konstruktion:** nicht ausschließen, sondern **in der Priorität herabstufen**. Ein geschützter Tank soll hinter jedem ungeschützten Gruppenmitglied stehen, aber geheilt werden, wenn sonst niemand Bedarf hat — im Schutzfenster, wo es am sichersten ist. `GeneralHealTarget` besitzt bereits eine Rangfolge (Selbst → Heiler → Tank → niedrigste Gesundheit); nötig wäre eine zusätzliche Stufe, keine Ausschlussliste. Einzige echte Ausnahme bleibt der Dunkelritter in Phase 1.
+**Richtige Konstruktion:** nicht ausschließen, sondern **in der Priorität herabstufen**. Ein geschützter Tank soll hinter jedem ungeschützten Gruppenmitglied stehen, aber geheilt werden, wenn sonst niemand Bedarf hat — im Schutzfenster, wo es am sichersten ist. Einzige echte Ausnahme bleibt der Dunkelritter in Phase 1.
+
+**Zur Hälfte erledigt.** In `GeneralHealTarget` (`ActionTargetInfo.cs`) ist die Herabstufung umgesetzt (Commit `f1e8844a`): Schutz ist dort ein Sortierkriterium, kein Filter. Offen bleibt die **zweite Fundstelle derselben Konstruktion**, und sie ist der eigentliche Kern:
+
+`StateUpdater.ShouldHealSingle` (`:771`) und `ShouldHealSelf` (`:726`) benutzen dieselbe Prüfung als **harten Ausschluss** — `if (h == 0 || !target.NoNeedHealingInvuln()) return false;`. Wird dort kein Heilbedarf gemeldet, setzt der Updater `AutoStatus.HealSingle` nicht, der Dispatcher ruft `HealSingleGCD` gar nicht auf, und die Zielwahl kommt nie zum Zug. **Die Herabstufung wirkt daher heute nur, wenn ein *anderes* Gruppenmitglied das Heilflag bereits ausgelöst hat.**
+
+Damit ist der praktische Stand: Bei mehreren Verletzten wird jetzt richtig priorisiert. Ist der geschützte Tank der einzige Verletzte, wird weiterhin gar nicht geheilt.
+
+**Hindernis für den Rest:** `ShouldHealSingle` liefert einen Wahrheitswert, keine Rangfolge — eine Herabstufung ist dort begrifflich nicht unterzubringen. Nötig wäre stattdessen die im Konzept beschriebene Gesundheitsprüfung: den Schutz nur dann als Grund zum Aussetzen nehmen, wenn der Tank den Ablauf voraussichtlich übersteht. Das ist ein eigener Eingriff mit eigener Abwägung und nicht Teil des erledigten Umbaus.
 
 **Abdeckung der Liste, am Artefakt geprüft.** Die erste Fassung meldete pauschal vier fehlende `HallowedGround`- und drei fehlende `Holmgang`-Ids. Das war ein Nullbefund über den bloßen Bezeichner, ohne Prüfung der Wirkbeschreibung in `Status.resx`. Tatsächlich gilt:
 
@@ -85,6 +74,8 @@ Der irreführende Name ist die Ursache der Wiederholbarkeit und getrennt zu beha
 
 Solange die Regel in ihrer heutigen Form falsch ist, wäre das Ergänzen der fehlenden Ids eine Verschlimmerung — erst die Konstruktion, dann die Abdeckung.
 
+**Die Ergänzung ist deshalb weiterhin ausgesetzt, auch nach dem Umbau der Zielwahl.** Der Grund liegt an der zweiten Fundstelle: `NoNeedHealingStatus` wird von `StateUpdater` weiterhin als harter Ausschluss gelesen. Würden `HallowedGround`, `HallowedGround_1302` und `UndeadRebirth` heute ergänzt, entstünde für Paladine unter Hallowed Ground genau der Defekt neu, den dieser Eintrag beschreibt — ein Paladin, der bei fünf Prozent zündet, bekäme dann zehn Sekunden lang kein Heilflag mehr. Die Ergänzung ist also an die Umstellung von `StateUpdater` gebunden, nicht an die bereits erfolgte der Zielwahl.
+
 **Auflösungsbedingung:** gemeinsam mit dem vorigen Punkt, weil beide dieselbe Prüfung betreffen. Beide sind in `docs/rotation-flow/09-tank-selfprotection.md` als Teil eines umfassenderen Bildes eingeordnet: Dort sind sämtliche Tank-Selbstschutzmechaniken danach getrennt, ob sie einen Auslöser haben, den fremde Heilung oder ein fremder Schild abfangen kann. Die Einzelheiten und der Umsetzungsplan stehen dort, nicht hier.
 
 ### Die dritte Living-Dead-Phase ist der Heilentscheidung unbekannt · N
@@ -97,38 +88,7 @@ Die Aktionsbeschreibung zu Living Dead (`ActionId.resx`, Aktion 3638) benennt dr
 
 **Entstehung** nach Parnas' *Lack of Movement*: Die Aufzählung war bei ihrer Entstehung vollständig und wurde durch eine spätere Spielerweiterung unrichtig, ohne dass etwas fehlschlug. Das macht den Fund zu einer Defektklasse: Solange dort eine Aufzählung steht, wo eine Fähigkeitsprüfung stehen müsste, ist ein Nachfolgebefund bei der nächsten Erweiterung zu erwarten.
 
-**Auflösung:** Aufnahme in `NoNeedHealingStatus`, aber erst **nach** dem Umbau vom Filter zur Prioritätsstufe — davor würde sie das Ob beeinflussen statt der Reihenfolge. Damit an denselben Freigabezeitpunkt gebunden wie die beiden vorigen Punkte.
-
-### Ein Gruppenmitglied in einer Zwischensequenz bricht vier Zielsuchen ganz ab · N, U
-
-`ObjectHelper.IsConditionCannotTarget()` (`ObjectHelper.cs:593`) liest `obj.OnlineStatus.RowId` und liefert `true` für die Werte 15 und 5 — eine Eigenschaft **des geprüften Ziels**, nicht des Spielers oder der Gruppe. Ein einzelnes Gruppenmitglied kann sie erfüllen, etwa während einer Zwischensequenz.
-
-An sieben Stellen in `ActionTargetInfo.cs` steht darauf `return null` statt `continue`, jeweils nach demselben Bauplan:
-
-```csharp
-if (m.IsConditionCannotTarget())
-{
-    PluginLog.Debug($"FindTankTarget 1: {m.Name} is a tank with TankStanceStatus.");
-    return null;              // bricht die gesamte Suche ab
-}
-if (!m.IsConditionCannotTarget())
-{
-    PluginLog.Debug($"FindTankTarget 1: {m.Name} is a tank with TankStanceStatus.");
-    return m;
-}
-```
-
-Betroffen sind `FindDancePartner` (2699, 2730), `FindKardia` (3154, 3184, 3212) und `FindTankTarget` (4021, 4045). Ein nicht anvisierbarer Kandidat beendet damit die Funktion, statt übersprungen zu werden — samt aller nachgelagerten Ausweichschleifen und Endfallbacks. `FindTankTarget()` (deklariert `ActionTargetInfo.cs:4007`) hat zwei solcher Schleifen und einen abschließenden `RandomPickByJobs(…, JobRole.Tank)`; keiner davon wird erreicht.
-
-**Wirkung:** Solange ein Gruppenmitglied in der Zwischensequenz steht — beim Ersteintritt in Story-Dungeons und Raids der Regelfall —, findet der Tänzer keinen Tanzpartner, der Weiser kein Kardion-Ziel und `TargetType.Tank` **kein Tankziel**. Der letzte Punkt trifft die Zielwahl tank-gerichteter Heilung und Mitigation und ist damit ein Überlebensdefekt, kein Komfortmangel.
-
-**Beleg für die Entwurfsabsicht:** In derselben Datei stehen drei strukturgleiche Stellen mit dem richtigen `continue` (4182, 4198, 4221). Die Debug-Meldung ist in beiden Zweigen jeweils **wortgleich** und beschreibt durchweg einen gefundenen Kandidaten, obwohl der eine Zweig abbricht — Widerspruch zwischen Meldung und Code. Beides zusammen ist das Kennzeichen von *Ignorant Surgery* nach Parnas: Klon einer Nachbarstelle, bei dem Bedingung und Rückgabe geändert, die Meldung aber stehen gelassen wurde.
-
-**Geprüfte Gegenhypothese:** `return null` könnte gewollt sein („lieber warten als einen schlechteren Partner dauerhaft binden"). Widerlegt durch die drei `continue`-Nachbarstellen, durch die wortgleichen Meldungen und dadurch, dass die vorhandenen Ausweichschleifen unter dieser Lesart nie erreicht werden — eine Ausweichlogik, die nie greift, war nicht so gemeint.
-
-**Fundweise:** `.github/scripts/audit/scan8.py`, beim ersten Lauf. Nicht Teil des laufenden Auftrags, deshalb nur erfasst.
-
-**Auflösung:** `return null` → `continue` an den sieben Stellen; die Debug-Meldungen sind dabei an das anzupassen, was der Zweig tut. Der Blast Radius von `FindTankTarget` ist erheblich (jede Aktion mit `TargetType.Tank`), deshalb freigabepflichtig. Der Code stammt aus Upstream und betrifft ihn ebenso.
+**Auflösung:** Aufnahme in `NoNeedHealingStatus`, aber erst nachdem **`StateUpdater`** die Prüfung nicht mehr als harten Ausschluss liest. Der Umbau der Zielwahl (`f1e8844a`) genügt dafür nicht: Dort ist der Schutz jetzt ein Sortierkriterium, in `StateUpdater.ShouldHealSingle` bleibt er ein Wahrheitswert, der das Heilflag ganz unterdrückt. Ein heute ergänzter `UndeadRebirth` würde dort also weiterhin das Ob beeinflussen statt die Reihenfolge — im konkreten Fall harmlos, weil der Dunkelritter in dieser Phase tatsächlich keine Heilung braucht, aber es wäre die richtige Wirkung aus dem falschen Grund und würde bei der nächsten Ergänzung zum Fehler.
 
 ### Die Beiruta-Rotationen prüfen den falschen Holmgang-Status · N
 
