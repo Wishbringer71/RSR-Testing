@@ -722,14 +722,20 @@ internal static class StateUpdater
 			h = Math.Max(h, Player.Object.GetEffectiveHpPercent() / 100f);
 		}
 
-		// If the target's health is zero or they are invulnerable to healing, return false.
-		if (h == 0 || !StatusHelper.PlayerNoNeedHealingInvuln())
+		if (h == 0 || StatusHelper.PlayerHasStatus(false, StatusHelper.HealingIneffectiveStatus))
 		{
 			return false;
 		}
 
-		// Compare the target's health ratio to a threshold determined by linear interpolation (Lerp) between `healSingle` and `healSingleHot`.
-		return h < Lerp(healSingle, healSingleHot, ratio);
+		// Same construction as ShouldHealSingle: a protective status lowers the threshold rather
+		// than suppressing the flag entirely. This path matters for a tank healing itself while
+		// riding its own invulnerability.
+		var normal = Lerp(healSingle, healSingleHot, ratio);
+		var threshold = StatusHelper.PlayerNoNeedHealingInvuln()
+			? normal
+			: Math.Min(normal, Service.Config.HealthProtectedRatio);
+
+		return h < threshold;
 	}
 
 	private static bool ShouldHealSingle(IBattleChara target, StatusID[] hotStatus, float healSingle, float healSingleHot)
@@ -767,14 +773,29 @@ internal static class StateUpdater
 			h = Math.Max(h, target.GetEffectiveHpPercent() / 100f);
 		}
 
-		// If the target's health is zero or they are invulnerable to healing, return false.
-		if (h == 0 || !target.NoNeedHealingInvuln())
+		// Healing that lands for nothing is still excluded outright - NoNeedHealingStatus mixes
+		// that case in with genuine invulnerabilities, and only the latter get the softer
+		// treatment below.
+		if (h == 0 || target.HasStatus(false, StatusHelper.HealingIneffectiveStatus))
 		{
 			return false;
 		}
 
-		// Compare the target's health ratio to a threshold determined by linear interpolation (Lerp) between `healSingle` and `healSingleHot`.
-		return h < Lerp(healSingle, healSingleHot, ratio);
+		// A protective status lowers the threshold instead of removing it. "Cannot die right now"
+		// is not "does not need healing": Superbolide puts the gunbreaker at 1 HP on purpose, and
+		// when the window closes the target stands exactly where it left them. Suppressing the flag
+		// outright meant that a protected tank who was the only wounded member got no healing at
+		// all, and the two-GCD release before expiry is not enough time to bring one back up from
+		// a few percent.
+		//
+		// Math.Min keeps the invariant that a protected target is never healed more readily than an
+		// unprotected one, whatever the two settings are configured to.
+		var normal = Lerp(healSingle, healSingleHot, ratio);
+		var threshold = target.NoNeedHealingInvuln()
+			? normal
+			: Math.Min(normal, Service.Config.HealthProtectedRatio);
+
+		return h < threshold;
 	}
 
 	private static float Lerp(float a, float b, float ratio)

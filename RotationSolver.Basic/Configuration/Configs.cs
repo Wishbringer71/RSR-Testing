@@ -904,6 +904,20 @@ internal partial class Configs : IPluginConfiguration
 	[Range(0, 1, ConfigUnitType.Percent, 0.02f)]
 	public float HealthHealerRatio { get; set; } = 0.4f;
 
+	/// <markdown file="Basic" name="Protected target heal threshold" section="Healing">
+	/// A target riding an invulnerability cannot die right now, but it still keeps whatever health
+	/// it has when the window closes - Superbolide puts the gunbreaker at 1 HP on purpose. Rather
+	/// than suppressing healing for the whole window, the threshold drops to this value, so a
+	/// protected target is healed once it gets low enough to matter.
+	///
+	/// The effective threshold is never higher than the normal one: a protected target is never
+	/// healed more readily than an unprotected one.
+	/// </markdown>
+	[UI("Heal a target under an invulnerability only below this HP.",
+		Filter = HealingActionCondition, Section = 1)]
+	[Range(0, 1, ConfigUnitType.Percent, 0.02f)]
+	public float HealthProtectedRatio { get; set; } = 0.15f;
+
 	[UI("Heal self first if your HP is lower than this.",
 		Filter = HealingActionCondition, Section = 1)]
 	[Range(0, 1, ConfigUnitType.Percent, 0.02f)]
