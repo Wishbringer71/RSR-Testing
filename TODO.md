@@ -66,7 +66,7 @@ Zündet ein Paladin Hallowed Ground bei fünf Prozent Gesundheit, um einen Schla
 
 **Zusätzlich, unabhängig davon:** Keine der vier `HallowedGround`-Ids (82, 1302, 2287, 2794) steht in der Liste, und von vier Holmgang-Ids nur `Holmgang_409`, während `BeirutaWHM.cs:236` gegen `StatusID.Holmgang` (88) prüft. Welche das Spiel setzt, ist statisch nicht zu klären. Solange die Regel in ihrer heutigen Form falsch ist, wäre das Ergänzen der fehlenden Ids allerdings eine Verschlimmerung — erst die Konstruktion, dann die Abdeckung.
 
-**Auflösungsbedingung:** gemeinsam mit dem vorigen Punkt, weil beide dieselbe Prüfung betreffen.
+**Auflösungsbedingung:** gemeinsam mit dem vorigen Punkt, weil beide dieselbe Prüfung betreffen. Beide sind in `docs/rotation-flow/09-tank-selfprotection.md` als Teil eines umfassenderen Bildes eingeordnet: Dort sind sämtliche Tank-Selbstschutzmechaniken danach getrennt, ob sie einen Auslöser haben, den fremde Heilung oder ein fremder Schild abfangen kann. Die Einzelheiten und der Umsetzungsplan stehen dort, nicht hier.
 
 ## Technische Schuld
 
