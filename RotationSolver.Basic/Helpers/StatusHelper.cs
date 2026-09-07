@@ -440,8 +440,28 @@ public static class StatusHelper
 		StatusID.Holmgang_409,
 		StatusID.LivingDead,
 		//StatusID.WalkingDead,
+		StatusID.UndeadRebirth,
 		StatusID.Superbolide,
 		StatusID.Invulnerability,
+	];
+
+	/// <summary>
+	/// The subset of <see cref="NoNeedHealingStatus"/> whose trigger is the bearer's own death.
+	/// Living Dead is the only one: the dark knight spends it expecting to be killed, and the kill
+	/// is what converts it into Walking Dead and its self-healing. Healing the bearer above zero
+	/// while it is up does not merely waste a cast - it removes the very event the ability is
+	/// waiting for, which is why these get a full hold rather than the lowered threshold the other
+	/// invulnerabilities get.
+	/// <para>
+	/// The hold is not open-ended. Every caller reaches this list through
+	/// <see cref="NoNeedHealingInvuln"/>, which reports the status as ended two GCDs before it
+	/// actually expires - so once the death can no longer arrive in time, the normal threshold
+	/// returns and the bearer is healed like anyone else.
+	/// </para>
+	/// </summary>
+	public static StatusID[] DeathTriggeredStatus { get; } =
+	[
+		StatusID.LivingDead,
 	];
 
 	/// <summary>

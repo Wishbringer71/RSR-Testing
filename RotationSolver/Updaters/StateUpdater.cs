@@ -727,6 +727,15 @@ internal static class StateUpdater
 			return false;
 		}
 
+		// See ShouldHealSingle: Living Dead is held in full until its window is nearly over, since
+		// healing it away costs the trigger rather than just the cast. Relevant here for a dark
+		// knight running a rotation that heals itself.
+		if (!StatusHelper.PlayerNoNeedHealingInvuln()
+			&& StatusHelper.PlayerHasStatus(false, StatusHelper.DeathTriggeredStatus))
+		{
+			return false;
+		}
+
 		// Same construction as ShouldHealSingle: a protective status lowers the threshold rather
 		// than suppressing the flag entirely. This path matters for a tank healing itself while
 		// riding its own invulnerability.
@@ -777,6 +786,16 @@ internal static class StateUpdater
 		// that case in with genuine invulnerabilities, and only the latter get the softer
 		// treatment below.
 		if (h == 0 || target.HasStatus(false, StatusHelper.HealingIneffectiveStatus))
+		{
+			return false;
+		}
+
+		// Living Dead is waiting for its bearer to die, and a heal above zero takes that away -
+		// not a wasted cast but the loss of the trigger, which is worse than the cast. So it keeps
+		// a full hold rather than the lowered threshold, until NoNeedHealingInvuln reports the
+		// status as ending: two GCDs out the death can no longer arrive in time, and from there the
+		// bearer is healed on the normal threshold like anyone else.
+		if (!target.NoNeedHealingInvuln() && target.HasStatus(false, StatusHelper.DeathTriggeredStatus))
 		{
 			return false;
 		}
