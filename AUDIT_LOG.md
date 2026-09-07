@@ -345,6 +345,27 @@ Check-in-Trigger `trig_01NLjkn2dFqmrZXhmxJcWGsQ` ließ sich nicht löschen (Tool
 
 ---
 
+### A20 · Zweite Konzeptprüfung und Umsetzung der Schritte 1 und 2 (07.09.2026)
+
+**Anlass:** Auftrag, Konzept und Plan erneut vollständig zu prüfen, Hindernisse zu beseitigen und die im Konzept stehenden Teile umzusetzen.
+
+**Zwei weitere Hindernisse, beide im eigenen Entwurf.**
+
+| # | Hindernis | Auflösung |
+|---|---|---|
+| H5 | Die Messskizze filterte auf `DataCenter.JobRange` — für Heiler **25 Yalms**, die Angriffsreichweite, nicht der 8-Yalm-Wirkradius von Sanctus. Ferne, nie betäubte Gegner hätten die Deckung dauerhaft unvollständig erscheinen lassen; die Regel hätte nie gegriffen | Radius als Parameter, gespeist aus `Info.EffectRange`. Nebenwirkung: Die Messung gehört zur Aktion, nicht in einen jobunabhängigen Updater — die Einhängung in den `MajorUpdater` entfällt |
+| H6 | `StunRemainingShortest > 0` beschreibt einen einzelnen Gegner. Bei laufend hinzukommenden Gegnern hätte die Regel gestreckt, obwohl ein Cast die Neuzugänge mit voller Dauer erwischt hätte — die Resistenz zählt je Gegner | Zwei Wahrheitswerte statt einer Zeit: gestreckt wird, wenn alle im Radius betäubt sind oder keiner mehr betäubt werden kann. Bei einem Gegner gleichbedeutend, das Modell bleibt gültig |
+
+**Zwei Notfallvorbehalte gestrichen, nicht gebaut.** Der HP-Vorbehalt ist wirkungslos, weil der Dispatcher alle Heil- und Verteidigungszweige vor `GeneralGCD` aufruft — ein kritischer Zustand erreicht den Code nicht. Der BMR-Vorbehalt ist wirkungslos, weil ein vorhergesagter Raidwide vom Boss kommt und von der Betäubung nicht berührt wird. Ein Vorbehalt, der nachweislich nichts abfängt, ist toter Code.
+
+**Umsetzung.** `StatusHelper.StunStatus` (18 Ids) und `.StunResistanceStatus` (2), beide aus den generierten Spieldaten belegt; `CustomRotation_OtherInfo.SurveyStuns(radius, out allStunned, out headroom)`; in `WHM_Reborn` die Optionen `StretchHolyStun` (Standard aus) und `StretchHolyMinHostiles` (Standard 3) sowie `ShouldStretchHolyStun()` als Bedingung vor dem unveränderten Sanctus-Block. Kein Block verschoben.
+
+**Ersatzgarantie** über die gesamte DoT-Kaskade (`DiaPvE`, `AeroIiPvE`, `AeroPvE`), nicht nur über `DiaPvE` — auf niedrigerem Level ist Dia nicht verfügbar, und ohne die Kaskade wäre der ausgesetzte GCD auf Glare gefallen, also reiner Verlust.
+
+**Erreichter Prüfgrad:** statische Prüfung, Verifikation aller verwendeten Bausteine am Quellcode (`RotationConfigAttribute.Parent`, `IBaseAction.Info.EffectRange`, `AllHostileTargets`, `DistanceToPlayer`), Modellrechnung mit Selbsttest, CI-Kompilierung. Keine Laufzeitbeobachtung: dass die Regel im Spiel den gemeinten Zeitpunkt trifft, ist nicht belegt — deshalb Standard aus.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.

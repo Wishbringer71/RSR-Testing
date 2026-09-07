@@ -258,6 +258,46 @@ Muster (`StatusHelper.RangePhysicalDefense`, `.PhysicalResistance`) fasst alle
 Betäubungs-Ids zusammen. Damit ist die Frage gegenstandslos, und fremde Betäubungen
 zählen mit — was erwünscht ist, weil auch sie Schaden verhindern.
 
+### H5 — gemessen wurde über die falsche Gegnermenge
+
+Die Messskizze filterte auf `DataCenter.JobRange`. Für einen Heiler sind das **25
+Yalms** (`DataCenter.cs:912`) — die Angriffsreichweite, nicht der Wirkradius von
+Sanctus. Gemessen worden wäre also über Gegner, die der Zauber nie trifft; ferne,
+nie betäubte Gegner hätten die Deckung dauerhaft unvollständig erscheinen lassen und
+die Regel nie greifen lassen.
+
+**Aufgelöst durch einen Radius-Parameter.** `SurveyStuns(radius, …)` bekommt den
+Wirkradius der Aktion (`HolyIiiPvE.Info.EffectRange`), nicht die Jobreichweite.
+Nebenwirkung: Die Messung gehört damit nicht in einen jobunabhängigen Updater,
+sondern zur Aktion — womit die Einhängung in den `MajorUpdater` und die dafür nötige
+Änderung an der Aktualisierungsreihenfolge entfallen.
+
+### H6 — die Bedingung trägt gemischte Gegnergruppen nicht
+
+`StunRemainingShortest > 0` beschreibt einen einzelnen Gegner. Im Pull kommen
+laufend ungestunnte Gegner hinzu; dann sagt eine Restzeit über die bereits
+betäubten nichts über die neuen, und die Regel würde strecken, obwohl ein Cast die
+Neuzugänge mit **voller** Dauer erwischt hätte — die Resistenz zählt je Gegner.
+
+**Aufgelöst durch zwei Wahrheitswerte statt einer Zeit**: gestreckt wird, wenn
+**alle** Gegner im Radius betäubt sind, oder wenn **keiner** von ihnen noch betäubt
+werden kann. Bei einem einzelnen Gegner ist das gleichbedeutend mit der
+Restzeit-Bedingung, das Modell bleibt also gültig; bei gemischten Gruppen
+entscheidet es richtig.
+
+### Zwei Notfallvorbehalte entfallen nach Prüfung
+
+Der Entwurf trug einen HP- und einen BMR-Vorbehalt. Beide schützen vor nichts:
+
+- Der Dispatcher ruft sämtliche Heil- und Verteidigungszweige **vor** `GeneralGCD`
+  auf. Ein kritischer Gruppenzustand erreicht diesen Code also gar nicht.
+- Ein vorhergesagter Raidwide kommt vom Boss, nicht von den betäubbaren
+  Trash-Gegnern. Die Betäubung ändert daran nichts, ein Zurückhalten der Streckung
+  also auch nicht.
+
+Ein Vorbehalt, der nachweislich nichts abfängt, ist toter Code und wurde nicht
+gebaut.
+
 ### Was aus der Prüfung für den Plan folgt
 
 Der frühere Schritt A ist kein eigener Schritt mehr. Er und die Streckung sind zwei
@@ -290,8 +330,8 @@ In `WHM_Reborn.GeneralGCD`, am vorhandenen Block (518-527), ohne ihn zu verschie
 var stretch = HolyStretchEnabled
     && !EmergencyMitigationNeeded
     && NumberOfHostilesInRange >= HostileCountThreshold
-    && (DataCenter.StunRemainingShortest > 0f || !DataCenter.StunHeadroom)
-    && DiaPvE.CanUse(out _);          // Ersatz mit Eigenwert vorhanden
+    && (allStunned || !headroom)      // aus SurveyStuns(radius, out allStunned, out headroom)
+    && (DiaPvE.CanUse(out _) || AeroIiPvE.CanUse(out _) || AeroPvE.CanUse(out _));
 
 if (!stretch && HolyPvE.EnoughLevel)
 {

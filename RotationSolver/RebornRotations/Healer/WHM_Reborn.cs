@@ -76,6 +76,13 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Spend Thin Air on an expensive spell only while MP is low and Lucid Dreaming cannot cover it")]
 	public bool ThinAirOnMpPressureOnly { get; set; } = false;
 
+	[RotationConfig(CombatType.PvE, Name = "Skip Holy for one GCD while every enemy it would hit is already stunned")]
+	public bool StretchHolyStun { get; set; } = false;
+
+	[Range(2, 8, ConfigUnitType.None, 1)]
+	[RotationConfig(CombatType.PvE, Name = "Minimum enemies in Holy's radius before the stun stretch applies", Parent = nameof(StretchHolyStun))]
+	public int StretchHolyMinHostiles { get; set; } = 3;
+
 	public enum ThinAirUsageStrategy : byte
 	{
 		[Description("Use all thin air charges on expensive spells")]
@@ -458,6 +465,47 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		return base.RaiseGCD(out act);
 	}
 
+	/// <summary>
+	/// Whether this GCD should go to something other than Holy so the stun is not overwritten while
+	/// it still runs.
+	/// </summary>
+	/// <remarks>
+	/// A stun lasts 4s, then 2s, then 1s, after which the target is immune - seven seconds to place,
+	/// once per pull. Recasting on cooldown lands the second application inside the first and wastes
+	/// part of it: about 5.5s of coverage instead of 7s. Yielding a single GCD while the stun runs
+	/// recovers the difference, and only one is needed, because the shorter follow-ups are over
+	/// before the next cast comes round. Modelled in .github/scripts/audit/stun_coverage.py.
+	///
+	/// The damage lost is not weighed against this. Keeping the party alive ranks above dealing
+	/// damage, so more coverage decides; only the absence of a worthwhile replacement stops it.
+	/// The two emergency checks the design first carried were dropped after inspection: the
+	/// dispatcher already runs every heal and defense branch ahead of GeneralGCD, so a critical
+	/// state never reaches this code, and a predicted raidwide comes from a boss the stun does not
+	/// touch.
+	///
+	/// Radius rather than job range: Holy covers eight yalms while a caster reaches twenty-five,
+	/// and the wider set would count enemies the cast never hits.
+	/// </remarks>
+	private bool ShouldStretchHolyStun()
+	{
+		if (!StretchHolyStun)
+		{
+			return false;
+		}
+
+		// Only worth it where an area cast is the filler at all, and where a stun still does something.
+		var radius = HolyIiiPvE.EnoughLevel ? HolyIiiPvE.Info.EffectRange : HolyPvE.Info.EffectRange;
+		var inRange = SurveyStuns(radius, out var allStunned, out var headroom);
+		if (inRange < StretchHolyMinHostiles || (!allStunned && headroom))
+		{
+			return false;
+		}
+
+		// Replacement guarantee: yield the GCD only when something with value of its own can take
+		// it. Without this the rotation would fall through to Glare, which is a plain loss.
+		return DiaPvE.CanUse(out _) || AeroIiPvE.CanUse(out _) || AeroPvE.CanUse(out _);
+	}
+
 	protected override bool GeneralGCD(out IAction? act)
 	{
 		if (HasThinAir && MergedStatus.HasFlag(AutoStatus.Raise))
@@ -515,7 +563,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			}
 		}
 
-		if (HolyPvE.EnoughLevel)
+		if (HolyPvE.EnoughLevel && !ShouldStretchHolyStun())
 		{
 			if (HolyIiiPvE.EnoughLevel && HolyIiiPvE.CanUse(out act))
 			{

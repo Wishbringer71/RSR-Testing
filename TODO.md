@@ -86,6 +86,14 @@ Geprüfte Nicht-Fehlstellen: `DTRManualAuto` bildet den vom Enum-Text beschriebe
 
 **Auflösungsbedingung:** Der Ausweis erfolgt in `CHANGELOG.md`, weil die Versionsnummer ihn nicht tragen kann: sie folgt der Upstream-Version, und das Fork-Suffix ist SemVer-Build-Metadatum ohne Präzedenz. Offen bleibt allein, den Abschnitt „Unreleased" bei der nächsten Versionsvergabe auf die dann vergebene Version zu setzen. Der Zeitpunkt der Veröffentlichung liegt beim Auftraggeber.
 
+### Übertragung der Mitigations-Synergie auf weitere Doppelnutzen-Aktionen · N
+
+Schritt 3 aus `docs/rotation-flow/08-mitigation-synergy.md`. Die Schritte 1 und 2 — Messung und Aussetzbedingung für Sanctus — sind umgesetzt (AUDIT_LOG A20). Offen ist die Übertragung auf weitere Aktionen, die Schaden erzeugen und zugleich Schaden vermeiden.
+
+**Zur Führung dieses Punktes:** Die Einzelheiten stehen im Konzeptdokument, nicht hier. `TODO.md` führt die offene Arbeit und verweist; eine zweite Beschreibung derselben Sache würde mit der ersten auseinanderlaufen. Was hier stehen muss, ist allein, dass noch etwas offen ist und wo es beschrieben wird.
+
+**Auflösungsbedingung:** erst nach Beobachtung der Schritte 1 und 2 im Spiel. Kandidatensuche über ein Prüfskript, nicht über Erinnerung.
+
 ### Drei Prüfskripte ohne Selbsttest · —
 
 `.github/scripts/audit/scan.py`, `mitscan.py` und `scan2.py` haben keinen Selbsttest gegen konstruierte Defekte, `scan3.py` bis `scan7.py` schon — dort deckte er bisher vier Erkennungsfehler auf, die sonst als sauberer Baum durchgegangen wären, zuletzt zwei in `scan6.py` (AUDIT_LOG A16). **Kosten:** ein Nullbefund dieser drei ist nicht belastbar. Derzeit liefern alle drei Treffer, die Lücke hat also nichts verdeckt. **Auflösung:** vor dem zweiten Audit-Durchgang nachrüsten.

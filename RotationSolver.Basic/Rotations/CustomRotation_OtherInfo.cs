@@ -515,6 +515,57 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
+	/// Surveys the stun state of the hostiles an area action would actually hit.
+	/// </summary>
+	/// <param name="radius">
+	/// The action's effect radius, not the job's attack range: a caster reaches 25 yalms while Holy
+	/// covers 8, and measuring over the wider set would count enemies the cast never touches.
+	/// </param>
+	/// <param name="allStunned">True when every hostile inside the radius is currently stunned.</param>
+	/// <param name="headroom">
+	/// True when at least one of them could still be stunned, that is, carries no stun resistance.
+	/// The game tracks resistance as a status, so it clears itself when the immunity expires and a
+	/// long fight needs no special case.
+	/// </param>
+	/// <returns>How many hostiles were inside the radius. Zero means neither flag says anything.</returns>
+	protected static int SurveyStuns(float radius, out bool allStunned, out bool headroom)
+	{
+		allStunned = false;
+		headroom = false;
+
+		var hostiles = DataCenter.AllHostileTargets;
+		if (hostiles == null || hostiles.Count == 0)
+		{
+			return 0;
+		}
+
+		int inRange = 0, stunned = 0;
+		for (int i = 0, n = hostiles.Count; i < n; i++)
+		{
+			var hostile = hostiles[i];
+			if (hostile == null || hostile.DistanceToPlayer() > radius)
+			{
+				continue;
+			}
+
+			inRange++;
+
+			// Any source counts: a stun applied by the tank protects just as well as our own.
+			if (hostile.HasStatus(false, StatusHelper.StunStatus))
+			{
+				stunned++;
+			}
+			else if (!hostile.HasStatus(false, StatusHelper.StunResistanceStatus))
+			{
+				headroom = true;
+			}
+		}
+
+		allStunned = inRange > 0 && stunned == inRange;
+		return inRange;
+	}
+
+	/// <summary>
 	/// Calculates the current cumulative mitigation percentage applied to an imminent AoE or raid-wide hit.
 	/// </summary>
 	/// <returns>

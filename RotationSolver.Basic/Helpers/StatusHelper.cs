@@ -549,6 +549,44 @@ public static class StatusHelper
 	];
 
 	/// <summary>
+	/// Every stun the game knows, bundled because which id a given action applies cannot be
+	/// determined from the name alone. A stun stops the target from acting at all, so for the
+	/// duration it is stronger than any damage reduction - who applied it does not matter.
+	/// </summary>
+	public static StatusID[] StunStatus { get; } =
+	[
+		StatusID.Stun,
+		StatusID.Stun_142,
+		StatusID.Stun_149,
+		StatusID.Stun_201,
+		StatusID.Stun_1343,
+		StatusID.Stun_1513,
+		StatusID.Stun_1521,
+		StatusID.Stun_1522,
+		StatusID.Stun_2656,
+		StatusID.Stun_2953,
+		StatusID.Stun_3408,
+		StatusID.Stun_3465,
+		StatusID.Stun_4163,
+		StatusID.Stun_4374,
+		StatusID.Stun_4378,
+		StatusID.Stun_4433,
+		StatusID.Stun_5043,
+		StatusID.Stun_5411
+	];
+
+	/// <summary>
+	/// The resistance a target builds up against being stunned again. The game tracks it as a
+	/// status of its own, so no application has to be counted: while this sits on a target, a
+	/// further stun is shorter or does not land at all, and when it falls off the budget is back.
+	/// </summary>
+	public static StatusID[] StunResistanceStatus { get; } =
+	[
+		StatusID.StunResistance,
+		StatusID.StunResistance_1349
+	];
+
+	/// <summary>
 	/// Determines if the specified battle character has reached the maximum number of status effects.
 	/// </summary>
 	/// <param name="battleChara">The battle character to check.</param>
