@@ -20,43 +20,62 @@ Grund, warum das Thema als Synergiefrage geführt wird.
 
 ### Rechenbeispiel als Größenordnung
 
-In Sekunden-Äquivalenten verhinderten Schadens, bei gleichmäßigem Gegnerschaden.
-Reprisal senkt den Gegnerschaden um 10 % für 10 s; die Betäubung durch Sanctus wirkt
-4 s, bei Wiederholung 2 s und 1 s, danach ist das Ziel 45 s immun.
+Die Betäubungsressource ist **einmalig je Pull**, nicht wiederkehrend. Erste
+Anwendung 4 s, zweite 2 s, dritte 1 s, danach 45 s Immunität. Ein stehender
+Gruppenpull ist selten länger als diese 45 s, der Zurücksetzen der Resistenz fällt
+also praktisch nicht mehr in den Kampf. Zu verteilen sind damit genau **7 Sekunden
+Betäubung**, und die Frage lautet nicht, wie viele Zyklen man unterbringt, sondern
+wie man diese sieben Sekunden legt.
 
-| | Betäubung im Reprisal-Fenster | Betäubung außerhalb |
+**Posten 1 — Ausnutzung der Dauern.** Bei einem GCD von rund 2,5 s deckt
+ununterbrochenes Nachcasten 0–4,5 s und 5,0–6,0 s ab, zusammen etwa **5,5 s** mit
+einer Lücke: Die zweite Anwendung fällt, während die erste noch läuft, und ihre
+kürzere Dauer verfällt teilweise. Wird jeweils erst nach Ablauf nachgecastet,
+stehen die vollen **7 s** zur Verfügung. Gewinn: rund **1,5 s** je Gegner.
+
+**Posten 2 — Entzerrung gegen fremde Mitigation.** Reprisal senkt den
+Gegnerschaden um 10 % für 10 s. Liegt die Betäubung darin, ist ihr Reprisal-Anteil
+verloren: 7 s × 10 % = **0,7 s** je Gegner.
+
+| | überlappend | entzerrt |
 |---|---|---|
-| Betäubungsanteil | 4 s × 100 % = 4,0 | 4 s × 100 % = 4,0 |
-| Reprisal-Anteil | 6 s × 10 % = 0,6 | 10 s × 10 % = 1,0 |
-| **Summe** | **4,6** | **5,0** |
+| Betäubungsdauer genutzt | 5,5 s | 7,0 s |
+| Reprisal-Anteil erhalten | 0,3 | 1,0 |
+| **Summe je Gegner** | **5,8** | **8,0** |
 
-Über einen 90-Sekunden-Pull mit zwei Reprisal-Anwendungen und zwei Resistenzzyklen:
-getrennt 2,0 + 14,0 = **16,0**, vollständig überlappt 14,0 + 0,6 = **14,6**. Rund
-ein Zehntel der Mitigation geht an der Überlappung verloren, dazu die GCDs, die
-dafür aufgewendet wurden.
+Posten 1 ist damit **mehr als doppelt so schwer** wie Posten 2. Für die Reihenfolge
+der Umsetzung heißt das: Die Streckung der Betäubung (B) trägt den Nutzen, die
+Abstimmung mit fremder Mitigation (C) ist ein Zusatz.
 
-Modell, keine Messung. Annahmen: gleichmäßiger Schaden, keine Bewegung, alle
-Werkzeuge verfügbar.
+Modell, keine Messung. Annahmen: gleichmäßiger Schaden, stehender Kampf, alle
+Werkzeuge verfügbar, Nachcasten im GCD-Takt.
 
-### Zwei gegenläufige Skalierungen
+### Warum die Gegnerzahl den Ausschlag *nicht* gibt
 
-Die Tabelle rechnet **pro Gegner**. Der absolute Nutzen der Betäubung multipliziert
-sich mit der Zahl der getroffenen Ziele, weil alle drei Quellen flächig wirken. Aus
-1,4 Sekunden-Äquivalenten werden bei fünfzehn Gegnern einundzwanzig.
+Naheliegend ist die Annahme, der Einschub lohne sich mit steigender Gegnerzahl
+zunehmend — der vermiedene Schaden multipliziert sich schließlich mit jedem Ziel.
+Das trifft für den absoluten Betrag zu, für die Entscheidung aber nicht: **Der Preis
+skaliert mit derselben Zahl.** Ein entgangener Sanctus kostet Schaden auf allen
+getroffenen Zielen. Betäubungsgewinn und Sanctus-Verlust wachsen beide linear mit
+der Gegnerzahl, ihr Verhältnis bleibt konstant.
 
-Der Wert eines eingeschobenen Einzelziel-Casts skaliert dagegen **nicht** mit der
-Gegnerzahl, und der Preis des Einschubs — ein entgangener Sanctus — steigt mit ihr.
-Daraus folgt kein Widerspruch, sondern ein Regimewechsel:
+Nicht mitskaliert nur der DoT-Anteil: Ein Einzelziel-DoT bringt unabhängig von der
+Gegnerzahl denselben Betrag, während sein Preis mit ihr steigt.
 
-| Gegnerzahl | Was den Einschub trägt |
-|---|---|
-| 3 bis 4 | Der DoT-Wert. Der entgangene Sanctus-Schaden ist klein, die DoT-Uptime relativ viel wert |
-| ab etwa 8 | Der Betäubungswert. Der DoT fällt kaum ins Gewicht, die gestreckte Betäubung dagegen stark |
-| dazwischen | Beides mittel — das ist der Bereich, in dem die Regel am wenigsten trägt und am ehesten falsch liegen kann |
+| Posten | Nutzen skaliert mit n | Preis skaliert mit n | Folge |
+|---|---|---|---|
+| Betäubungsstreckung | ja | ja | gegnerzahl-neutral |
+| DoT-Einschub | nein | ja | lohnt bei **wenigen** Zielen |
 
-Der Einschub ist damit in beiden Randbereichen aus je eigenem Grund richtig. Das
-macht ihn robuster als eine Regel, die nur eine der beiden Begründungen kennt, und
-benennt zugleich, wo er am schwächsten ist.
+Die eigentliche Steuergröße ist damit nicht die Gegnerzahl, sondern das Verhältnis
+von eingehendem zu ausgehendem Schaden: Steht die Gruppe unter Druck, ist
+vermiedener Schaden mehr wert als erzeugter; ist der Pull ohnehin sicher, gilt das
+Gegenteil. Dafür sind die vorhandenen HP-Schwellen das Maß, nicht
+`NumberOfHostilesInRange`.
+
+Die Gegnerzahl bleibt trotzdem als **Untergrenze** sinnvoll — unterhalb von drei
+Zielen fällt Sanctus wegen `AoeCount` ohnehin nicht, und Einzelziele sind meist
+betäubungsimmun. Sie ist ein Filter, kein Gewicht.
 
 ## Vorhandene Bausteine
 
@@ -253,14 +272,50 @@ Modell.
 
 ## Nachweisbarkeit
 
-| Ebene | Möglich | Nicht möglich |
-|---|---|---|
-| Statisch | Prüfskript nach Bauart der vorhandenen Audit-Skripte, mit Selbsttest: findet Aktionen mit Mitigationswirkung im Schadenszweig und gleicht sie gegen die Erhebung aus Schritt 1 ab | — |
-| Kompilierung | CI | — |
-| Laufzeit | Die UI zeigt den Mitigationsfaktor bereits; ein Verlauf statt eines Momentwerts würde Überlappungen sichtbar machen | Beweis, dass die Rotation besser spielt |
+### Wirksamkeitsmessung im Spiel
 
-Weil der Nutzen nicht belegbar ist, gilt die Feature-Toggle-Regel: **jeder Schritt
-hinter eine eigene Option, Standard aus.**
+Die frühere Fassung dieses Dokuments hielt einen Nachweis, dass die Rotation besser
+spielt, schlicht für unmöglich. Das war zu bequem: RSR sieht den Ereignisstrom und
+kann sich selbst messen.
+
+`Watcher.ActionFromEnemy` wertet jeden gegnerischen Treffer aus, summiert die
+Schadensanteile und legt sie über `DataCenter.AddDamageRec` als
+`DamageRec(ReceiveTime, Ratio)` in eine Warteschlange (`DataCenter.cs:1294`,
+`:1403-1411`). Der erlittene Schaden über die Zeit ist damit bereits erfasst —
+gebraucht wird nur eine Auswertung je Kampf statt eines gleitenden Fensters.
+
+Vier Kennzahlen, alle aus vorhandenen Quellen ableitbar:
+
+| Kennzahl | Quelle | Aussage |
+|---|---|---|
+| Erlittener Schadensanteil je Pull | `_damages`, summiert zwischen Kampfbeginn und -ende | Das Zielkriterium |
+| Genutzte Betäubungsdauer | `StunCoverage` über die Zeit integriert | Ob die 7 s ausgeschöpft wurden |
+| Überlappungsanteil | Anteil der Betäubungszeit, in der `MitigationFraction` bereits über der Schwelle lag | Ob Posten 2 greift |
+| DoT-Laufzeitanteil | Zeit mit aktivem DoT auf dem Hauptziel geteilt durch Kampfdauer | Ob A wirkt |
+
+**Versuchsanordnung.** Dieselbe Instanz, derselbe Pull, Option abwechselnd an und
+aus, mehrere Durchläufe. Weil die vier Kennzahlen alle innerhalb des Plugins
+anfallen, genügt eine Anzeige im Einstellungsfenster neben dem bereits vorhandenen
+Mitigationswert; ein externes Werkzeug ist nicht nötig.
+
+**Was die Messung nicht leistet.** Sie ist nicht kontrolliert: Gegnerzahl,
+Tankverhalten und Gruppenzusammensetzung schwanken zwischen Durchläufen und
+überdecken einen Effekt in der Größenordnung weniger Prozent leicht. Sie taugt
+daher, um eine **Verschlechterung** zu erkennen und die Größenordnung einzugrenzen,
+nicht um einen kleinen Gewinn zu beweisen. Das ist trotzdem mehr als die bisherige
+Annahme, es sei gar nichts messbar.
+
+### Übrige Ebenen
+
+| Ebene | Möglich |
+|---|---|
+| Statisch | Prüfskript nach Bauart der vorhandenen Audit-Skripte, mit Selbsttest: findet Aktionen mit Mitigationswirkung im Schadenszweig und gleicht sie gegen die Erhebung aus Schritt 1 ab |
+| Kompilierung | CI |
+
+Solange die Wirksamkeitsmessung nicht vorliegt, gilt die Feature-Toggle-Regel
+unverändert: **jeder Schritt hinter eine eigene Option, Standard aus.** Die Messung
+ist der Weg, diese Vorsichtsmaßnahme später begründet aufzuheben — sie gehört
+deshalb vor Schritt 3, nicht danach.
 
 ## Konsequenzen
 
