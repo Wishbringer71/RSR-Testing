@@ -3543,31 +3543,45 @@ public struct ActionTargetInfo(IBaseAction action)
 					healingNeededObjs.Add(r.Obj);
 				}
 
+				// The role short-cuts below return their candidate outright once it drops under its
+				// ratio, so they run ahead of the ordering above. Feeding them protected members
+				// would undo the demotion at exactly the case it exists for: a Superbolide tank
+				// sits at 1 HP, clears HealthTankRatio immediately, and would be picked over an
+				// unprotected member at 20%. So the role passes see unprotected members only;
+				// anyone protected is left to the final worst-hurt pick, which still reaches them
+				// when nobody else needs healing.
 				List<IBattleChara> healerTars = [];
-				foreach (var o in healingNeededObjs)
+				List<IBattleChara> tankTars = [];
+				foreach (var r in ranked)
 				{
-					var enumHealer = TargetFilter.GetJobCategory([o], JobRole.Healer).GetEnumerator();
+					if (!r.Unprotected)
+					{
+						continue;
+					}
+
+					var enumHealer = TargetFilter.GetJobCategory([r.Obj], JobRole.Healer).GetEnumerator();
 					var isHealer = enumHealer.MoveNext();
 					enumHealer.Dispose();
 					if (isHealer)
 					{
-						healerTars.Add(o);
+						healerTars.Add(r.Obj);
+						continue;
 					}
-				}
 
-				List<IBattleChara> tankTars = [];
-				foreach (var o in healingNeededObjs)
-				{
-					var enumTank = TargetFilter.GetJobCategory([o], JobRole.Tank).GetEnumerator();
+					var enumTank = TargetFilter.GetJobCategory([r.Obj], JobRole.Tank).GetEnumerator();
 					var isTank = enumTank.MoveNext();
 					enumTank.Dispose();
 					if (isTank)
 					{
-						tankTars.Add(o);
+						tankTars.Add(r.Obj);
 					}
 				}
 
-				if (ObjectHelper.GetPlayerHealthRatio() <= Service.Config.HealthSelfRatio)
+				// The self short-cut bypasses the candidate list, so it needs the same check that
+				// keeps it out: a heal on a target that nullifies HP recovery is a wasted cast.
+				if (Player.Object != null
+					&& !Player.Object.HasStatus(false, StatusHelper.HealingIneffectiveStatus)
+					&& ObjectHelper.GetPlayerHealthRatio() <= Service.Config.HealthSelfRatio)
 				{
 					return Player.Object;
 				}

@@ -441,10 +441,15 @@ public static class StatusHelper
 	/// reduces it, does not.
 	/// </para>
 	/// </summary>
+	/// <remarks>
+	/// Only <see cref="StatusID.Mounted"/> (1420) qualifies on the evidence: its description says
+	/// "HP recovery and beneficial effects conferred by actions are nullified". Mounted_1520 is
+	/// "Riding atop a Rathalos" and says nothing about healing, so it is deliberately absent - a
+	/// shared identifier is not evidence of a shared effect.
+	/// </remarks>
 	public static StatusID[] HealingIneffectiveStatus { get; } =
 	[
 		StatusID.Mounted,
-		StatusID.Mounted_1520,
 	];
 
 	/// <summary>
