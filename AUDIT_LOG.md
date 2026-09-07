@@ -518,6 +518,31 @@ Die Gegenseite dazu: **Verwendet** wird die Liste bei Cast-Beginn (`IsHostileCas
 
 **Erreichter Prüfgrad:** statische Selbstprüfung, Selbsttests und Erstlauf der Skripte, Klammerbilanz und Schleifenkontext der sieben `continue`-Stellen von Hand geprüft, CI-Kompilierung. Keine Laufzeitbeobachtung und kein Vier-Augen-Prinzip. Dass die neue Rangfolge im Spiel besser spielt, ist damit **nicht** belegt — belegt ist nur, dass die alte den am schwersten Verletzten nicht erreichen konnte.
 
+### A28 · Audit und Code-Review der Umsetzung aus A27 (07.09.2026)
+
+**Anlass:** Auftrag, die Umsetzung kritisch zu prüfen, mit Freigabe für Korrekturen.
+
+**Erreichter Prüfgrad, ehrlich benannt:** Selbstprüfung **plus** ein Code-Review mit eigenem Kontext über den Bereich `c08bccfe..HEAD`. Das ist mehr als das erneute Lesen des eigenen Diffs, aber es bleibt maschinelle Prüfung ohne menschliches Vier-Augen-Prinzip und ohne Laufzeitbeobachtung.
+
+**Selbstprüfung — ein Befund, eine Entlastung.**
+
+Der Befund: Der neue Sortier-Komparator wertete `NoNeedHealingInvuln()` und `GetHealthRatio()` bei **jedem** Vergleich aus, also O(n log n) statt O(n) mal, jeweils mit Statuslisten-Durchlauf, im Kampfpfad. Beide Schlüssel werden jetzt einmal je Mitglied gelesen (`8e669e05`). Nebenwirkung derselben Korrektur: Die Schlüssel liegen für die Dauer der Sortierung fest — `NoNeedHealingInvuln` vergleicht eine laufende Reststatuszeit gegen ein GCD-Fenster, und ein genau auf dieser Grenze liegender Status hätte zwischen zwei Vergleichen kippen können, was `List.Sort` bei inkonsistentem Komparator werfen lässt. Dieses Fenster ist schmal und wurde **nicht beobachtet**; tragend ist das Laufzeitargument.
+
+Die Entlastung: Geprüft wurde, ob die Aufhebung des Filters Tote in die Kandidatenliste bringt — ein Toter hätte Gesundheitsanteil 0 und stünde ganz vorn. Er tut es nicht: `GetCanTargets` entfernt ihn eine Ebene höher, wo `CanUseTo` das Spiel selbst über `ActionManager.CanUseActionOnTarget` fragt. Vollständig Geheilte fallen an derselben Stelle heraus.
+
+**Code-Review — vier Befunde, drei davon echte Regressionen dieser Runde.**
+
+| # | Fundstelle | Befund |
+|---|---|---|
+| 1 | `ActionTargetInfo.cs` Rollenstufen | **Die Herabstufung wurde umgangen.** Die Heiler- und Tank-Abkürzungen liefern ihren Kandidaten sofort zurück, sobald er unter `HealthHealerRatio`/`HealthTankRatio` fällt — sie laufen also *vor* der Sortierung. Mit geschützten Mitgliedern gefüttert hoben sie die Herabstufung genau im Zielfall auf: Ein Superbolide-Tank bei 1 HP unterschreitet die Tankschwelle sofort und gewann gegen ein ungeschütztes Mitglied bei 20 % |
+| 2 | `StatusHelper.cs` | `Mounted_1520` stand ohne Beleg in `HealingIneffectiveStatus`. Status 1420 sagt „HP recovery … nullified", 1520 ist „Riding atop a Rathalos" und sagt nichts über Heilung. Ein verletztes Mitglied damit wäre ganz aus der Heilzielwahl gefallen |
+| 3 | `SCH_Reborn.cs` | Fehlender `IsDead`-Schutz. Eine Leiche hat Anteil 0 und, mit gelöschten Status, keinen Schutzstatus — erfüllt nach dem Entfernen der Negation also beide Hälften und verbraucht Recitation für eine Excogitation, die nicht landen kann |
+| 4 | `ActionTargetInfo.cs` Selbstabkürzung | Umgeht die Kandidatenliste und damit den neuen Filter: zielte weiterhin auf einen Spieler unter `Mounted` |
+
+Alle vier behoben (`2b03843e`). Befund 1 ist der schwerste — die Änderung erreichte ohne ihn den Fall nicht, für den sie geschrieben wurde, und der Kommentar im Code behauptete das Gegenteil.
+
+**Befund 2 ist ein wiederholter eigener Fehler.** Drei Commits zuvor steht als C15 im Archiv, dass ein Nullbefund über den bloßen Bezeichner kein Beleg ist — hergeleitet an genau den Holmgang-Ids. Danach wurde `Mounted_1520` allein wegen des gleichen Namens aufgenommen. Die Regel war notiert und wurde beim nächsten Anlass nicht angewandt; die Lehre daraus betrifft nicht die Regel, sondern den Zeitpunkt ihrer Anwendung: Sie gehört an die Stelle, an der eine Statusliste **geschrieben** wird, nicht nur an die, an der sie geprüft wird.
+
 ---
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
