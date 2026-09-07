@@ -59,3 +59,16 @@ by declaring type, it reported 55 phantom removals, because a prose comment cont
 "struct" was read as a type declaration and re-owned every member below it in that file; and it
 counted `internal` interface members, which are not package surface. Only the third result — two
 members — is the measured one.
+
+## scan8.py — negated-name predicates read with both polarities
+
+Added after the same defect was found twice by hand, months apart, in
+`NoNeedHealingInvuln()`: the value means "healing is due again", the name reads as the opposite, and
+callers split along that gap without anything failing. The scan lists every bool member whose name
+already spells a negation ("No", "Not", "Never", "Cannot", "Without") and reports those read with
+both polarities somewhere in the tree. A mixed reading is not proof — a two-sided predicate is
+legitimate — but it is a short list, and one side is likely to hold the wrong belief.
+
+It found its anchor case on the first run, and a second class that had nothing to do with healing:
+`IsConditionCannotTarget()` is read `return null` in seven places where the three neighbouring
+correct sites use `continue`. See `TODO.md`.
