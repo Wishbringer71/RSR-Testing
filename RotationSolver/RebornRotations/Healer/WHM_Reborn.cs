@@ -73,6 +73,9 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "How to manage the last thin air charge")]
 	public ThinAirUsageStrategy ThinAirLastChargeUsage { get; set; } = ThinAirUsageStrategy.ReserveLastChargeForRaise;
 
+	[RotationConfig(CombatType.PvE, Name = "Spend Thin Air on an expensive spell only while MP is low and Lucid Dreaming cannot cover it")]
+	public bool ThinAirOnMpPressureOnly { get; set; } = false;
+
 	public enum ThinAirUsageStrategy : byte
 	{
 		[Description("Use all thin air charges on expensive spells")]
@@ -129,10 +132,21 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		return base.MoveForwardAbility(nextGCD, out act);
 	}
 
+	/// <summary>
+	/// MP has fallen to where Lucid Dreaming would be cast, and Lucid cannot answer it: it is on
+	/// cooldown, not yet learned, or switched off. Thin Air is then the only MP relief left, which is
+	/// what ThinAirOnMpPressureOnly reserves it for. The threshold is Lucid's own configured one
+	/// rather than a second value, so both sides of the decision read the same number.
+	/// </summary>
+	private bool UnderMpPressure =>
+		CurrentMp < Service.Config.LucidDreamingMpThreshold
+		&& (!LucidDreamingPvE.EnoughLevel || !LucidDreamingPvE.IsEnabled
+			|| LucidDreamingPvE.Cooldown.IsCoolingDown);
+
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
 	{
 		var useLastThinAirCharge = ThinAirLastChargeUsage == ThinAirUsageStrategy.UseAllCharges || (ThinAirLastChargeUsage == ThinAirUsageStrategy.ReserveLastChargeForRaise && nextGCD == RaisePvE);
-		if (((nextGCD is IBaseAction action && action.Info.MPNeed >= ThinAirNeed && IsLastAction() == IsLastGCD()) || ((MergedStatus.HasFlag(AutoStatus.Raise) || (nextGCD == RaisePvE)) && IsLastAction() == IsLastGCD())) &&
+		if (((nextGCD is IBaseAction action && action.Info.MPNeed >= ThinAirNeed && (!ThinAirOnMpPressureOnly || UnderMpPressure) && IsLastAction() == IsLastGCD()) || ((MergedStatus.HasFlag(AutoStatus.Raise) || (nextGCD == RaisePvE)) && IsLastAction() == IsLastGCD())) &&
 			ThinAirPvE.CanUse(out act, usedUp: useLastThinAirCharge))
 		{
 			return true;

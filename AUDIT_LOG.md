@@ -300,6 +300,28 @@ Check-in-Trigger `trig_01NLjkn2dFqmrZXhmxJcWGsQ` ließ sich nicht löschen (Tool
 
 ---
 
+### A18 · Thin Air an den MP-Druck koppeln (07.09.2026)
+
+**Anlass:** Auftraggeberwunsch, die Ladung für teure Zauber erst dann einzusetzen, wenn die MP knapp sind und Klartraum (Lucid Dreaming) sie nicht auffangen kann. Der Rez-Zweig und die Reservierung der letzten Ladung sind ausdrücklich als richtig bestätigt und bleiben unangetastet.
+
+**Ausgangslage am Artefakt.** `WHM_Reborn.cs` zündet Thin Air aus zwei Gründen: der nächste GCD kostet mindestens `ThinAirNeed` MP (Standard 1000), oder ein Rez steht an. Der Kostenzweig las bislang ausschließlich `action.Info.MPNeed`; der eigene MP-Stand kam in der Bedingung nicht vor.
+
+**Optionen.** Nullvariante (Verhalten belassen, Wunsch als technische Schuld führen) · eigener MP-Schwellenwert für Thin Air · Anbindung an den bereits vorhandenen `LucidDreamingMpThreshold` · Kopplung an eine Aufzählung der Heilzauber statt an die Kostenschwelle.
+
+**Abwägung und Wahl.** Die Anbindung an `LucidDreamingMpThreshold` (`Configs.cs:1309-1311`, `[JobConfig]`, Standard 6000) gewinnt: Es ist derselbe Wert, an dem `ModifyLucidDreamingPvE` entscheidet, ob Klartraum fällt, und beide Seiten der Entscheidung lesen damit dieselbe Zahl. Ein zweiter Schwellenwert wäre eine zweite Wahrheit, die auseinanderlaufen kann. Die Aufzählung der Heilzauber scheidet nach Parnas' *Lack of Movement* aus — sie veraltet mit dem nächsten Zauber, während die Kostenschwelle das gemeinte Merkmal direkt misst.
+
+**Falsifikation.** Gegen die Notwendigkeit spricht, dass Thin Air zwei Ladungen mit je 60 s hat und eine „verschwendete" Ladung nachlädt; dagegen steht, dass die Reservierungsoption die Knappheit der Ladungen bereits als real anerkennt. Gegen die gewählte Bedingung spricht der Fall, dass Klartraum zwar läuft — und damit auf Cooldown ist —, die MP aber trotzdem unter der Schwelle liegen; dann feuert Thin Air zusätzlich. Das ist gewollt: Wenn die MP trotz laufender Regeneration unter der Schwelle bleiben, ist die Lage tatsächlich knapp.
+
+**Randfall, der die Bedingung geformt hat.** „Klartraum auf Cooldown" allein greift zu kurz: Ist Klartraum abgeschaltet oder das Level nicht erreicht, ist die Aktion nie auf Cooldown, und die Bedingung wäre dauerhaft falsch — Thin Air hätte dann bei aktivierter Option nie mehr auf einem teuren Zauber gelegen. `UnderMpPressure` prüft deshalb `!EnoughLevel || !IsEnabled || Cooldown.IsCoolingDown`.
+
+**Umsetzung.** `ThinAirOnMpPressureOnly`, Standard `false`. Damit bleibt das ausgelieferte Verhalten unverändert, wie es die Feature-Toggle-Regel für Verbesserungen ohne Nachweismöglichkeit verlangt — eine Laufzeitbeobachtung ist hier nicht verfügbar. Der Rez-Zweig ist bewusst nicht berührt: ein Rez soll auch bei vollen MP von der Ladung profitieren.
+
+**Bewusst nicht mitgeändert:** `BeirutaWHM.cs:397-404` trägt dieselbe Konstruktion, ist aber eine fremde Rotation; eine Änderung dort setzt die Absicht ihres Autors voraus.
+
+**Erreichter Prüfgrad:** statische Prüfung und CI-Kompilierung. Keine Laufzeitbeobachtung, die Wirkung im Spiel ist nicht nachgestellt.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.
