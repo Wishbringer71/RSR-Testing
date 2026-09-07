@@ -34,6 +34,25 @@ Fünf Fundstellen, alle aus Upstream übernommen und dort unverändert vorhanden
 
 **Auflösung:** Ersetzung durch `IsLastActionGCD()` beziehungsweise durch eine gleichwertige Prüfung für `HasWeaved()`. Für die beiden Churin-Rotationen ist die Absicht des fremden Autors zu berücksichtigen, weil die Behebung deren Weave-Zeitpunkte tatsächlich verschiebt.
 
+### Die Heilzielauswahl legt die Invulnerabilitätsprüfung invertiert aus · N
+
+`NoNeedHealingInvuln()` (`StatusHelper.cs:653`) ist `WillStatusEndGCD(2, 0, false, NoNeedHealingStatus)` und liefert **true**, wenn der Schutzstatus fehlt oder binnen zwei GCDs endet — also „heilen ist wieder sinnvoll". Der Name sagt das Gegenteil, und die beiden Aufrufstellen folgen verschiedenen Lesarten:
+
+- `StateUpdater.cs:726` und `:771` folgen der Implementierung: `if (h == 0 || !NoNeedHealingInvuln()) return false;` — kein Heilflag, solange der Schutz läuft. **Richtig.**
+- `ActionTargetInfo.cs:3536` in `GeneralHealTarget` folgt dem Namen: `if (!o.NoNeedHealingInvuln()) healingNeededObjs.Add(o);` — aufgenommen wird, wessen Schutz **noch läuft**. **Invertiert.**
+
+**Wirkung:** In die priorisierte Zielliste kommen nur Spieler mit laufendem Living Dead, Holmgang oder Superbolide; alle übrigen fallen heraus. Normalerweise ist die Liste damit leer, und `FindHealTarget` greift auf `filteredGameObjects[0]` zurück (`ActionTargetInfo.cs:3524`) — die gesamte Sortierung nach Gesundheit und die Rollenreihenfolge Selbst → Heiler → Tank laufen also ins Leere, ohne dass es auffällt. Trägt dagegen ein Tank gerade Living Dead und braucht ein anderer Spieler Heilung, wird **der geschützte Tank bevorzugt** — das Gegenteil der Absicht, und beim Dunkelritter verhindert es womöglich den Tod, der die Selbstheilung von Walking Dead erst freischaltet.
+
+**Auflösung:** `if (o.NoNeedHealingInvuln())` an der einen Stelle. Der Wirkungsbereich ist allerdings die zentrale Heilzielwahl aller Jobs: Nach der Korrektur greift die Priorisierung erstmals wirklich, was das Heilverhalten breit verändert. Freigabepflichtig, nicht nebenbei zu ändern. Der irreführende Name ist getrennt zu behandeln — ihn anzupassen, ohne die Aufrufstellen zu prüfen, würde den Beleg tilgen.
+
+### Schilde und Mitigation kennen die Invulnerabilität des Ziels nicht · N
+
+Die Prüfung aus dem vorigen Punkt greift ausschließlich in den Heilzweigen. `ShouldAddDefenseSingle` (`StateUpdater.cs:193-292`) enthält keine Entsprechung, also legt ein Heiler weiterhin Divine Benison und Aquaveil auf einen Tank, dessen Schutz gerade läuft.
+
+**Kosten:** Beim Dunkelritter verzögert oder verhindert die abgefangene Schadensmenge den Tod, ohne den Walking Dead und dessen Selbstheilung nicht zustande kommen. Bei Holmgang und Superbolide ist der Schild schlicht wirkungslos, kostet aber einen Cooldown von 30 bis 60 Sekunden.
+
+**Auflösungsbedingung:** dieselbe Ablaufregel wie bei der Heilung — freigeben, sobald der Schutz binnen zwei GCDs endet. Umsetzung erst nach der Entscheidung zum vorigen Punkt, weil beide dieselbe Prüfung verwenden.
+
 ## Technische Schuld
 
 ### Doppelte Zustandswahl in den Zustandskommandos · N
