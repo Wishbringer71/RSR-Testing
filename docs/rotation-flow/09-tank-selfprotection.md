@@ -13,6 +13,37 @@ zeigte, dass das kein Einzelfall ist: Mehrere Tank-Fähigkeiten haben einen
 RSR kennt heute nur eine einzige dieser Wechselwirkungen, und die ist fehlerhaft
 umgesetzt (`TODO.md`, zwei Defekte). Die übrigen sind ihm unbekannt.
 
+## Prüfmaßstab — die Rangordnung
+
+Alles Folgende ist an dieser Ordnung zu messen. Sie ist **lexikographisch**: Eine
+nachrangige Stufe darf eine vorrangige nie aufwiegen, gleich wie groß ihr Betrag
+wäre.
+
+1. **Das Überleben des Tanks.**
+2. **Die Mitnahme positiver Effekte** — Dark Arts, Catharsis, die Selbstheilung von
+   Walking Dead.
+3. **Die Vermeidung unnötiger Aktionen** — verbrauchte oGCDs, MP, Cooldowns.
+
+**Befund aus der Anwendung dieses Maßstabs auf die erste Fassung dieses Dokuments:
+Alle drei Rückhaltefälle verletzten die Ordnung.** Sie hielten Heilung oder Schild
+zurück, um einen Effekt der Stufe 2 zu sichern, ohne vorher Stufe 1 zu prüfen. Am
+schwersten bei Living Dead: Der Verzicht auf Heilung führt planmäßig in Walking
+Dead, wo das Überleben an einer kumulativen Heilung in Höhe der **vollen maximalen
+HP** hängt. Kann der Heiler die nicht aufbringen — weil MP fehlen, Cooldowns liegen
+oder andere verletzt sind —, tauscht der Verzicht ein sicheres Überleben gegen ein
+unsicheres. Das ist genau die verbotene Aufwiegung.
+
+Die Beseitigung ist keine Randausnahme, sondern eine **Vorbedingung**: Jede
+Rückhaltung wird erst geprüft, wenn Stufe 1 gesichert ist.
+
+**Eine Lesart bleibt offen und ist hier festzuhalten.** „Überleben des Tanks" ist
+oben als Vorrang *innerhalb* der Frage verstanden, ob eine Tank-Schutzmechanik
+respektiert wird — nicht als genereller Vorrang des Tanks vor der übrigen Gruppe.
+RSR führt für diesen anderen Fall bereits eine eigene Rangfolge (Selbst → Heiler →
+Tank → niedrigste Gesundheit, `ActionTargetInfo.cs:3566-3583`). Sollte die Ordnung
+auch dort gelten, wäre das eine zweite, größere Änderung; sie ist hier nicht
+unterstellt.
+
 ## Research — Taxonomie nach Auslöser
 
 Entscheidend ist nicht, ob eine Fähigkeit schützt, sondern **ob sie auf ein
@@ -78,16 +109,19 @@ Heileraktion. „Richtig" meint jeweils die Handlung, die dem Vorrang der
 
 | # | Lage | Heilung richtig? | Schild richtig? | Begründung |
 |---|---|---|---|---|
-| 1 | DRK, Living Dead aktiv, HP hoch | **nein** | **nein** | Beides verhindert den Tod, den die Fähigkeit einplant |
-| 2 | DRK, Living Dead aktiv, HP niedrig, Ablauf fern | **nein** | **nein** | wie 1; der Schutz trägt noch |
+| 1 | DRK, Living Dead aktiv, HP hoch, **Heilkapazität für Phase 2 gesichert** | **nein** | **nein** | Stufe 1 ist gesichert, also darf Stufe 2 entscheiden: beides verhindert den Tod, den die Fähigkeit einplant |
+| 1b | dieselbe Lage, **Heilkapazität nicht gesichert** | **ja** | ja | Stufe 1 schlägt Stufe 2. Ohne die Kapazität für die volle Heilmenge in Walking Dead ist der Verzicht ein Tausch von sicherem gegen unsicheres Überleben |
+| 2 | DRK, Living Dead aktiv, HP niedrig, Ablauf fern | wie 1 / 1b | wie 1 / 1b | Der Gesundheitsstand allein ändert nichts; entscheidend bleibt die Kapazität für Phase 2 |
 | 3 | DRK, Living Dead läuft in ≤ 2 GCDs ab, HP niedrig | **ja, dringend** | ja | Der Schutz endet, ohne dass der Tod eintrat — danach ist er ungeschützt |
 | 4 | DRK, Walking Dead aktiv | **ja, zwingend** | nein, wirkungslos bei 1 HP | Überlebensbedingung ist kumulative Heilung in Höhe der maximalen HP |
-| 5 | DRK, TBN aktiv, Schaden läuft | zurückhaltend | **nein** | Ein Schild vergrößert den Gesamtpuffer und verhindert womöglich den vollständigen Verbrauch. Dann sind 3000 MP verloren, samt dem Edge of Shadow und dessen Beitrag zur Darkside-Laufzeit |
+| 5 | DRK, TBN aktiv, Schaden läuft, **Tank nicht in Gefahr** | zurückhaltend | **nein** | Stufe 1 gesichert, also entscheidet Stufe 2: Ein Schild vergrößert den Gesamtpuffer und verhindert womöglich den vollständigen Verbrauch. Dann sind 3000 MP verloren, samt dem Edge of Shadow und dessen Beitrag zur Darkside-Laufzeit |
+| 5b | dieselbe Lage, **Tank in Gefahr** | **ja** | **ja** | Stufe 1 schlägt Stufe 2. Ein verlorener Dark Arts wiegt keinen toten Tank auf |
 | 6 | GNB, Superbolide aktiv | **ja** | ja | HP stehen auf 1; das Fenster ist die einzige gefahrlose Gelegenheit |
 | 7 | WAR, Holmgang aktiv, HP heruntergedrückt | **ja** | ja | wie 6 |
 | 8 | PLD, Hallowed Ground aktiv, beim Zünden wenig HP | **ja** | ja | Die HP bleiben unverändert; nach Ablauf steht er, wo er stand |
 | 9 | PLD, Hallowed Ground aktiv, beim Zünden viel HP | nein, nachrangig | nein | Einziger Fall echter Entbehrlichkeit in Klasse B |
-| 10 | GNB, HP knapp über 50 %, Heart of Corundum aktiv | zurückhaltend | zurückhaltend | Über der Schwelle zu halten verschenkt den Catharsis-Stoß |
+| 10 | GNB, HP knapp über 50 %, Auslöser noch offen, **Tank nicht in Gefahr** | zurückhaltend | zurückhaltend | Stufe 1 gesichert; über der Schwelle zu halten verschenkt den Catharsis-Stoß |
+| 10b | dieselbe Lage, **Tank in Gefahr** | **ja** | ja | Stufe 1 schlägt Stufe 2. Den Tank absichtlich unter 50 % fallen zu lassen, ist eine Wette auf den nächsten Schlag |
 | 11 | GNB, HP bereits unter 50 %, Catharsis ausgelöst | **ja** | ja | Der Auslöser ist verbraucht, nichts steht mehr im Weg |
 | 12 | Beliebig, Klasse C aktiv | nach normaler Regel | nach normaler Regel | keine Wechselwirkung |
 | 13 | Beliebig, Klasse D aktiv | nachrangig | nach normaler Regel | Die Selbstheilung trägt einen Teil, ersetzt sie aber nicht |
@@ -95,8 +129,15 @@ Heileraktion. „Richtig" meint jeweils die Handlung, die dem Vorrang der
 | 15 | Nur der geschützte Tank braucht Heilung, kein Auslöser betroffen | **ja** | ja | Nichts spricht dagegen; das Fenster ist die sicherste Gelegenheit |
 
 Zeile 14 und 15 sind der Kern: **Der Schutz verschiebt die Reihenfolge, er hebt den
-Bedarf nicht auf.** Nur die Zeilen 1, 2, 5 und 10 sind Fälle, in denen Handeln
-tatsächlich schadet — alle vier gehören zu Klasse A.
+Bedarf nicht auf.** Handeln schadet nur in den Zeilen 1, 2, 5 und 10 — und dort
+ausschließlich, solange Stufe 1 gesichert ist. Die b-Zeilen sind nicht Ausnahmen am
+Rand, sondern der Regelfall, sobald der Tank in Gefahr gerät: **Jede Rückhaltung
+steht unter dem Vorbehalt des Überlebens.**
+
+Bemerkenswert ist die Verteilung: Von siebzehn Lagen sind drei Rückhaltefälle, drei
+ihre Gegenstücke unter Gefahr, und elf verlangen normales oder nachrangiges
+Handeln. Ein Entwurf, der die Rückhaltung zum Leitmotiv macht, hätte das Verhältnis
+verfehlt.
 
 ## Was RSR heute tut
 
@@ -191,68 +232,89 @@ Damit entfällt zugleich die Frage nach den fehlenden `HallowedGround`- und
 `Holmgang`-Ids: Ihre Ergänzung ist erst nach diesem Schritt unschädlich, weil sie
 dann nur noch die Reihenfolge beeinflusst, nicht mehr das Ob.
 
-### Schritt 3 — Klasse A als Rückhalteliste
+### Schritt 3 — Klasse A als Rückhalteliste, unter dem Überlebensvorbehalt
 
-Eine eigene, kleine Liste für die Fälle, in denen Handeln tatsächlich schadet:
+Eine kleine, begründete Liste für die Fälle, in denen Handeln tatsächlich schadet —
+jeder Eintrag steht für einen belegten Auslöser, nicht für „ist gerade geschützt":
 
 ```
-StatusHelper.SuppressHealingStatus = [ LivingDead, BlackestNight, HeartOfCorundum ]
+StatusHelper.TriggerBearingStatus = [ LivingDead, BlackestNight ]
 ```
-
-Wirkung: Solange eines dieser Statuseffekte auf dem Ziel liegt, wird es nicht
-geheilt und nicht beschildet — mit denselben Notfallausnahmen wie sonst. Anders als
-die heutige Liste ist diese **klein und begründet**: Jeder Eintrag steht für einen
-belegten Auslöser, nicht für „ist gerade geschützt".
 
 `WalkingDead` gehört ausdrücklich **nicht** hinein: Dort ist Heilung die
-Überlebensbedingung.
+Überlebensbedingung. `ClarityOfCorundum` erst nach Prüfung am Artefakt.
+
+**Die Rückhaltung greift nur, wenn Stufe 1 gesichert ist.** Das ist keine
+Ausnahme am Ende der Bedingung, sondern die erste Prüfung:
+
+```
+protected bool MayWithholdForTrigger(IBattleChara tank) =>
+       TankSurvivesWithoutMe(tank)                       // Stufe 1
+    && tank.HasStatus(false, StatusHelper.TriggerBearingStatus)   // Stufe 2
+    && WithholdForTriggersEnabled;
+```
+
+`TankSurvivesWithoutMe` ist konservativ zu bauen, aus vorhandenen Größen:
+
+- `tank.GetEffectiveHpPercent()` über `Service.Config.HealthForDyingTanks`
+  (`ObjectHelper.cs:126` nutzt dieselbe Schwelle bereits für sterbende Tanks),
+- kein `DataCenter.IsHostileCastingToTank` und kein
+  `DataCenter.BMRTankbusterImminent`,
+- **für Living Dead zusätzlich:** genug eigene Kapazität für Phase 2. Ohne
+  belastbares Maß dafür wird konservativ gefordert, dass `DataCenter.CurrentMp`
+  über einer Schwelle liegt und kein weiteres Gruppenmitglied unter
+  `Service.Config.HealthTankRatio` steht. Ist eines davon nicht erfüllt, wird nicht
+  zurückgehalten.
+
+Für `BlackestNight` gilt die Rückhaltung **vorrangig dem Schild**, nicht der
+Heilung: Die Barriere wird von Schaden verzehrt, nicht von fehlender Heilung, und
+ein zusätzlicher Schild ist die direkte Störung. Heilung wirkt nur mittelbar, indem
+sie den Schadensdruck senkt. Wo beides zur Wahl steht, ist der Schild zurückzuhalten
+und die Heilung nur herabzustufen.
+
+Stufe 3 — verbrauchte oGCDs und MP — kommt in dieser Bedingung **nicht** vor. Sie
+darf keine Rückhaltung begründen, sondern wirkt allein über die Herabstufung aus
+Schritt 2, die ohnehin verhindert, dass Ressourcen auf ein geschütztes Ziel gehen,
+solange ein anderes sie braucht.
 
 ## Audit des Umsetzungskonzepts
 
 Selbstprüfung, kein Vier-Augen-Prinzip — der erreichte Prüfgrad ist statische
-Selbstkontrolle.
+Selbstkontrolle. Die erste Fassung dieses Audits prüfte auf Lauffähigkeit und
+Vollständigkeit; diese zweite prüft zusätzlich gegen die Rangordnung.
 
 | Prüffrage | Ergebnis |
 |---|---|
-| Ist Schritt 1 für sich lauffähig? | Ja, aber er verschärft Schritt 2: Sobald die Liste normale Ziele enthält, **fallen die geschützten heraus** — der heutige Zufallszustand kippt in den entgegengesetzten. Beides ist falsch, nur verschieden |
-| Kann Schritt 2 ohne Schritt 1? | Nein. Solange die Prüfung invertiert ist, sortiert Schritt 2 die falsche Menge |
-| Ist die Reihenfolge damit richtig? | **Nein.** Die Prüfung ergibt: 1 und 2 gehören in **einen** Schritt, sonst entsteht ein Zwischenzustand, in dem geschützte Tanks gar nicht mehr geheilt werden — schlechter als heute |
-| Deckt Schritt 3 Fall 5 und 10 ab? | Fall 5 ja. Fall 10 nur teilweise: `HeartOfCorundum` liegt auch dann, wenn Catharsis schon ausgelöst wurde. Die Rückhaltung liefe dann weiter, obwohl der Auslöser verbraucht ist |
-| Ist die Notfallausnahme definiert? | Nein — sie fehlt in Schritt 3 |
-| Wirkungsbereich benannt? | Für Schritt 1 und 2 ja, für Schritt 3 nicht: Die Liste wirkt auf **alle** Heiler und alle Ziele, nicht nur auf Tanks |
+| Ist Schritt 1 für sich lauffähig? | Nein. Sobald die Liste normale Ziele enthält, fallen die geschützten heraus — der heutige Zufallszustand kippt in den entgegengesetzten. Schritt 1 und 2 gehören in **einen** Eingriff |
+| Kann Schritt 2 ohne Schritt 1? | Nein; er sortierte die falsche Menge |
+| Stellt eine Regel Stufe 2 über Stufe 1? | **Behoben.** Alle drei Rückhaltefälle standen ohne Überlebensprüfung da; sie ist jetzt erste Bedingung, nicht Randausnahme |
+| Stellt eine Regel Stufe 3 über Stufe 1 oder 2? | Nein — Stufe 3 begründet keine Rückhaltung mehr, sondern wirkt nur über die Herabstufung |
+| Ist der Living-Dead-Fall vollständig? | **Nur konservativ.** Ob die Heilkapazität für Phase 2 reicht, ist nicht exakt bestimmbar; die Ersatzbedingung (MP-Schwelle, keine weiteren Verletzten) ist gröber als die Frage. Das ist im Zweifel zu wenig Rückhaltung — die sichere Richtung |
+| Deckt Schritt 3 Fall 10 ab? | Nein, und bewusst nicht: `HeartOfCorundum` liegt über den Auslöser hinaus, `ClarityOfCorundum` ist ungeprüft. Fall 10 bleibt offen |
+| Wirkungsbereich benannt? | Ja: Die Liste wirkt nur auf Ziele in der Tankrolle |
+| Was passiert bei zwei Tanks? | **Neue Lücke.** `TankSurvivesWithoutMe` prüft ein Ziel. Trägt der Zweittank denselben Status, gilt die Prüfung je Ziel — richtig, aber die MP-Ersatzbedingung ist global und würde die Rückhaltung für beide gleichzeitig aufheben. Konservativ und damit hinnehmbar |
 
-## Verbesserung nach dem Audit
+## Verbesserung nach dem zweiten Audit
 
-**Schritt 1 und 2 werden zusammengelegt.** Getrennt erzeugen sie einen
-Zwischenzustand, der schlechter ist als der heutige — geschützte Tanks fielen ganz
-aus der Zielwahl. Die Korrektur der Prüfung und der Umbau zur Prioritätsstufe
-gehören in einen Eingriff.
+**Schritt 1 und 2 bleiben zusammengelegt** — Ergebnis des ersten Audits, bestätigt.
 
-**Fall 10 wird präzisiert.** `HeartOfCorundum` ist der falsche Marker, weil er
-über den Auslöser hinaus liegt. Richtig ist `ClarityOfCorundum` — der Teilstatus,
-der den Nachheilstoß trägt und mit ihm endet. Zu prüfen bleibt am Artefakt, ob das
-zutrifft; solange das offen ist, wird Fall 10 **nicht** umgesetzt.
+**Die Überlebensprüfung wird zur ersten Bedingung** statt zur Ausnahme. Das ist die
+Beseitigung des Hauptmissstands: Ohne sie hätte das Konzept in drei von siebzehn
+Lagen einen Effekt der Stufe 2 über das Überleben gestellt.
 
-**Schritt 3 erhält Notfallausnahmen und eine Rollenbindung.** Die Rückhaltung gilt
-nur, solange kein Gruppenmitglied unter der Notfallschwelle steht, und nur für
-Ziele in der Tankrolle — sonst wirkte ein Statuseffekt gleichen Namens auf einem
-anderen Job unbeabsichtigt mit.
+**Stufe 3 verliert jede eigenständige Wirkung.** Ressourcenschonung darf nichts
+zurückhalten; sie ergibt sich als Nebenwirkung der Herabstufung.
 
-**Ergebnis: zwei Schritte statt drei.**
+**Ergebnis: zwei Schritte.**
 
-1. **Zielwahl richten und herabstufen** — die invertierte Prüfung korrigieren und
-   im selben Eingriff vom Filter auf die Prioritätsstufe umstellen. Danach die
+1. **Zielwahl richten und herabstufen** — die invertierte Prüfung korrigieren und im
+   selben Eingriff vom Filter auf die Prioritätsstufe umstellen. Danach die
    fehlenden `HallowedGround`- und `Holmgang`-Ids ergänzen, deren Aufnahme dann
-   unschädlich ist.
-2. **Klasse-A-Rückhalteliste** mit `LivingDead` und `BlackestNight`, gebunden an
-   die Tankrolle, mit Notfallausnahme, hinter einer Option mit Standard aus.
-   `ClarityOfCorundum` erst nach Prüfung am Artefakt.
-
-   Für `BlackestNight` gilt die Rückhaltung **vorrangig dem Schild**, nicht der
-   Heilung: Die Barriere wird von Schaden verzehrt, nicht von fehlender Heilung,
-   und ein zusätzlicher Schild ist die direkte Störung. Heilung wirkt nur mittelbar,
-   indem sie den Schadensdruck senkt. Wo beides zur Wahl steht, ist der Schild
-   zurückzuhalten und die Heilung nur herabzustufen.
+   unschädlich ist. Defektbehebung, ohne Option.
+2. **Auslöser-Rückhalteliste** mit `LivingDead` und `BlackestNight`, gebunden an die
+   Tankrolle, mit dem Überlebensvorbehalt als erster Bedingung, hinter einer Option
+   mit Standard aus. `ClarityOfCorundum` und damit Fall 10 erst nach Prüfung am
+   Artefakt.
 
 ## Nachweisbarkeit
 
