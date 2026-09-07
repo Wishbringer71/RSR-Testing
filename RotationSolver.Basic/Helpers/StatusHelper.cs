@@ -442,6 +442,8 @@ public static class StatusHelper
 		//StatusID.WalkingDead,
 		StatusID.UndeadRebirth,
 		StatusID.Superbolide,
+		StatusID.HallowedGround,
+		StatusID.HallowedGround_1302,
 		StatusID.Invulnerability,
 	];
 
@@ -474,19 +476,29 @@ public static class StatusHelper
 	/// invulnerability on the same target - a Phantom Oracle's, say - would report the window as
 	/// ending while Living Dead still had most of its duration left.
 	/// </para>
+	/// <para>
+	/// One GCD of lead time, not the two the general check uses. The hold's one real cost is that
+	/// it can cancel a death that would still have arrived in time, and that cost is exactly the
+	/// lead time: against Living Dead's ten seconds, two GCDs give away half the window and one
+	/// gives away a quarter. One is still safe, because the heal lands while the invulnerability
+	/// is up - the bearer cannot die during it either way.
+	/// </para>
 	/// </summary>
 	public static bool InDeathTriggerWindow(this IBattleChara battleChara)
 	{
 		return battleChara.HasStatus(false, DeathTriggeredStatus)
-			&& !battleChara.WillStatusEndGCD(2, 0, false, DeathTriggeredStatus);
+			&& !battleChara.WillStatusEndGCD(DeathTriggerLeadGCDs, 0, false, DeathTriggeredStatus);
 	}
 
 	/// <inheritdoc cref="InDeathTriggerWindow(IBattleChara)"/>
 	public static bool PlayerInDeathTriggerWindow()
 	{
 		return PlayerHasStatus(false, DeathTriggeredStatus)
-			&& !PlayerWillStatusEndGCD(2, 0, false, DeathTriggeredStatus);
+			&& !PlayerWillStatusEndGCD(DeathTriggerLeadGCDs, 0, false, DeathTriggeredStatus);
 	}
+
+	/// <summary>How early the death-trigger hold releases; see <see cref="InDeathTriggerWindow"/>.</summary>
+	private const uint DeathTriggerLeadGCDs = 1;
 
 	/// <summary>
 	/// Statuses under which a heal lands for nothing at all, as opposed to merely being less urgent.

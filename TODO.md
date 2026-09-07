@@ -34,62 +34,6 @@ Fünf Fundstellen, alle aus Upstream übernommen und dort unverändert vorhanden
 
 **Auflösung:** Ersetzung durch `IsLastActionGCD()` beziehungsweise durch eine gleichwertige Prüfung für `HasWeaved()`. Für die beiden Churin-Rotationen ist die Absicht des fremden Autors zu berücksichtigen, weil die Behebung deren Weave-Zeitpunkte tatsächlich verschiebt.
 
-### Die Heilunterdrückung bei Unverwundbarkeit prüft den Gesundheitsstand nicht · N
-
-`NoNeedHealingStatus` unterdrückt Heilung, solange ein Schutzstatus läuft. Die dahinterliegende Annahme — wer nicht sterben kann, braucht keine Heilung — gilt nur, wenn der Tank den **Ablauf** des Schutzes überlebt. Genau das prüft die Regel nicht.
-
-**Korrektur des Belegs:** Die erste Fassung führte hier den Paladin an — er zünde Hallowed Ground bei fünf Prozent und stehe zehn Sekunden später bei denselben fünf Prozent. Das Beispiel trägt nicht: `HallowedGround` steht in **keiner** Form in `NoNeedHealingStatus`, der Paladin löst also gar keine Unterdrückung aus. Der tragfähige Beleg ist **Superbolide**: Es steht in der Liste, setzt die Gesundheit sofort auf 1 und unterdrückt die Heilung anschließend zehn Sekunden lang, ohne diesen Stand je zu prüfen. Für Holmgang gilt dasselbe, sobald der Krieger heruntergedrückt wurde. Am Sachverhalt ändert die Korrektur nichts, nur am Beleg — und der Paladin-Fall wird real, sobald die fehlenden Ids ergänzt werden.
-
-**Die Unverwundbarkeit ist damit nicht der Grund, Heilung auszusetzen, sondern die beste Gelegenheit, sie anzubringen.** Die Zwei-GCD-Freigabe vor Ablauf mildert das, reicht aber nicht: Einen Tank von wenigen Prozent auf sicher zu bringen, dauert länger als zwei GCDs.
-
-| Job | Fähigkeit | Wirkung auf die HP | Heilung im Schutzfenster |
-|---|---|---|---|
-| PLD | Hallowed Ground | unverändert, kein Schaden geht durch | nötig, wenn beim Zünden wenig HP standen |
-| WAR | Holmgang | fallen nicht unter 1 | nötig, sobald er heruntergedrückt wurde |
-| GNB | Superbolide | **sofort auf 1** | zwingend |
-| DRK | Living Dead | Tod wird in Walking Dead umgewandelt | Phase 1 **schädlich**, Phase 2 erforderlich |
-
-**Zwei frühere Aussagen dieses Eintrags sind damit falsch** und hier ersetzt: dass ein Schild auf Holmgang oder Superbolide wirkungslos sei (er überdauert die Phase und liegt, wenn der Tank am verwundbarsten ist), und dass bei Hallowed Ground Heilung wirklich unnötig sei (sie ist es nur, wenn der Paladin mit hohen HP gezündet hat — was die Regel nicht wissen kann).
-
-**Richtige Konstruktion:** nicht ausschließen, sondern **in der Priorität herabstufen**. Ein geschützter Tank soll hinter jedem ungeschützten Gruppenmitglied stehen, aber geheilt werden, wenn sonst niemand Bedarf hat — im Schutzfenster, wo es am sichersten ist. Einzige echte Ausnahme bleibt der Dunkelritter in Phase 1.
-
-**Zur Hälfte erledigt.** In `GeneralHealTarget` (`ActionTargetInfo.cs`) ist die Herabstufung umgesetzt (Commit `f1e8844a`): Schutz ist dort ein Sortierkriterium, kein Filter. Offen bleibt die **zweite Fundstelle derselben Konstruktion**, und sie ist der eigentliche Kern:
-
-`StateUpdater.ShouldHealSingle` (`:771`) und `ShouldHealSelf` (`:726`) benutzen dieselbe Prüfung als **harten Ausschluss** — `if (h == 0 || !target.NoNeedHealingInvuln()) return false;`. Wird dort kein Heilbedarf gemeldet, setzt der Updater `AutoStatus.HealSingle` nicht, der Dispatcher ruft `HealSingleGCD` gar nicht auf, und die Zielwahl kommt nie zum Zug. **Die Herabstufung wirkt daher heute nur, wenn ein *anderes* Gruppenmitglied das Heilflag bereits ausgelöst hat.**
-
-Damit ist der praktische Stand: Bei mehreren Verletzten wird jetzt richtig priorisiert. Ist der geschützte Tank der einzige Verletzte, wird weiterhin gar nicht geheilt.
-
-**Hindernis für den Rest:** `ShouldHealSingle` liefert einen Wahrheitswert, keine Rangfolge — eine Herabstufung ist dort begrifflich nicht unterzubringen. Nötig wäre stattdessen die im Konzept beschriebene Gesundheitsprüfung: den Schutz nur dann als Grund zum Aussetzen nehmen, wenn der Tank den Ablauf voraussichtlich übersteht. Das ist ein eigener Eingriff mit eigener Abwägung und nicht Teil des erledigten Umbaus.
-
-**Abdeckung der Liste, am Artefakt geprüft.** Die erste Fassung meldete pauschal vier fehlende `HallowedGround`- und drei fehlende `Holmgang`-Ids. Das war ein Nullbefund über den bloßen Bezeichner, ohne Prüfung der Wirkbeschreibung in `Status.resx`. Tatsächlich gilt:
-
-| Status | Beschreibung | Bewertung |
-|---|---|---|
-| `HallowedGround` (82), `HallowedGround_1302` | „Impervious to most attacks" | **fehlen, sind zu ergänzen** |
-| `UndeadRebirth` (3255) | „Most attacks cannot reduce your HP to less than 1" | **fehlt, ist zu ergänzen** — dritte Living-Dead-Phase, siehe eigener Eintrag |
-| `Holmgang_409` | „Most attacks cannot reduce your HP to less than 1" | bereits vorhanden, **richtig** |
-| `Holmgang` (88), `Holmgang_1305` | „Unable to move until effect fades" | **nicht** ergänzen — Bewegungs-Debuff auf dem Ziel, kein Schutz |
-| `Holmgang_1304` | Bewegungsunfähigkeit **und** HP-Schutz | PvP-Selbstform; nur relevant, wenn PvP-Rotationen die Liste lesen |
-| `WalkingDead` (811) | Heilung ist dort Überlebensbedingung | auskommentiert, **richtig so** — Beleg verstandener Entwurfsabsicht |
-
-Solange die Regel in ihrer heutigen Form falsch ist, wäre das Ergänzen der fehlenden Ids eine Verschlimmerung — erst die Konstruktion, dann die Abdeckung.
-
-**Die Ergänzung ist deshalb weiterhin ausgesetzt, auch nach dem Umbau der Zielwahl.** Der Grund liegt an der zweiten Fundstelle: `NoNeedHealingStatus` wird von `StateUpdater` weiterhin als harter Ausschluss gelesen. Würden `HallowedGround`, `HallowedGround_1302` und `UndeadRebirth` heute ergänzt, entstünde für Paladine unter Hallowed Ground genau der Defekt neu, den dieser Eintrag beschreibt — ein Paladin, der bei fünf Prozent zündet, bekäme dann zehn Sekunden lang kein Heilflag mehr. Die Ergänzung ist also an die Umstellung von `StateUpdater` gebunden, nicht an die bereits erfolgte der Zielwahl.
-
-**Auflösungsbedingung:** gemeinsam mit dem vorigen Punkt, weil beide dieselbe Prüfung betreffen. Beide sind in `docs/rotation-flow/09-tank-selfprotection.md` als Teil eines umfassenderen Bildes eingeordnet: Dort sind sämtliche Tank-Selbstschutzmechaniken danach getrennt, ob sie einen Auslöser haben, den fremde Heilung oder ein fremder Schild abfangen kann. Die Einzelheiten und der Umsetzungsplan stehen dort, nicht hier.
-
-### Die dritte Living-Dead-Phase ist der Heilentscheidung unbekannt · N
-
-Die Aktionsbeschreibung zu Living Dead (`ActionId.resx`, Aktion 3638) benennt drei Phasen: **Living Dead** (10 s, Tod wird umgewandelt), **Walking Dead** (10 s, kumulierte Heilung in Höhe der maximalen HP entscheidet über Leben und Tod) und — bei Erfolg — **Undead Rebirth** über die Restlaufzeit, in der Angriffe die Gesundheit nicht unter 1 drücken.
-
-`StatusID.UndeadRebirth` (3255) kommt im gesamten Baum genau einmal vor: als `StatusProvide` von `ModifyLivingDeadPvE` (`DarkKnightRotation.cs:267`). In `NoNeedHealingStatus` fehlt der Status. Der Heiler heilt einen Dunkelritter in dieser Phase also weiter, obwohl dieser nicht sterben kann und die Heilbedingung bereits erfüllt ist.
-
-**Wirkung:** verschwendete GCDs und MP in genau dem Moment, in dem der Rest der Gruppe die Heilung braucht — der Dunkelritter hat gerade eine volle Maximalgesundheit an Heilung aufgenommen. Das Überleben des Tanks ist nicht berührt; betroffen ist allein die Ressourcenschonung.
-
-**Entstehung** nach Parnas' *Lack of Movement*: Die Aufzählung war bei ihrer Entstehung vollständig und wurde durch eine spätere Spielerweiterung unrichtig, ohne dass etwas fehlschlug. Das macht den Fund zu einer Defektklasse: Solange dort eine Aufzählung steht, wo eine Fähigkeitsprüfung stehen müsste, ist ein Nachfolgebefund bei der nächsten Erweiterung zu erwarten.
-
-**Auflösung:** Aufnahme in `NoNeedHealingStatus`, aber erst nachdem **`StateUpdater`** die Prüfung nicht mehr als harten Ausschluss liest. Der Umbau der Zielwahl (`f1e8844a`) genügt dafür nicht: Dort ist der Schutz jetzt ein Sortierkriterium, in `StateUpdater.ShouldHealSingle` bleibt er ein Wahrheitswert, der das Heilflag ganz unterdrückt. Ein heute ergänzter `UndeadRebirth` würde dort also weiterhin das Ob beeinflussen statt die Reihenfolge — im konkreten Fall harmlos, weil der Dunkelritter in dieser Phase tatsächlich keine Heilung braucht, aber es wäre die richtige Wirkung aus dem falschen Grund und würde bei der nächsten Ergänzung zum Fehler.
-
 ### Die Beiruta-Rotationen prüfen den falschen Holmgang-Status · N
 
 `BeirutaAST.cs:387`, `BeirutaSCH.cs:1102` und `:1118` sowie `BeirutaWHM.cs:236` prüfen `StatusID.Holmgang` (88). Status 88 ist laut `Status.resx` „Unable to move until effect fades" — der Bewegungs-Debuff, den Holmgang auf dem **Ziel** des Kriegers hinterlässt. Der Schutzstatus auf dem Krieger selbst ist Status 409 („Most attacks cannot reduce your HP to less than 1"), im Code als `Holmgang_409` geführt und an allen zentralen Stellen richtig verwendet.
@@ -232,26 +176,17 @@ Schritt 3 aus `docs/rotation-flow/08-mitigation-synergy.md`. Die Schritte 1 und 
 
 **Auflösungsbedingung:** erst nach Beobachtung der Schritte 1 und 2 im Spiel. Kandidatensuche über ein Prüfskript, nicht über Erinnerung.
 
-### Keine Messgrundlage für Schadens- und Heilungsraten auf Gruppenmitglieder · N
+### Keine Messgrundlage für Schadens- und Heilungsraten auf Gruppenmitglieder · —
 
-Jede Entscheidung der Form „reicht das, was gerade passiert, bis zum Ablauf einer Frist" braucht eine Rate. Für Gruppenmitglieder gibt es sie nicht, obwohl die Datenquellen anliegen:
+**Geprüft und bewusst nicht gebaut.** Der Befund selbst besteht fort: Für Gruppenmitglieder gibt es keine Rate. `DataCenter.RecordedHP` (`DataCenter.cs:197`) wird in `TargetUpdater.cs:513-535` ausschließlich aus `AllHostileTargets` gefüllt, weshalb `GetTTK` für eine Party-Id `NaN` liefert; die Abtastrate ist 1 Hz (`TargetUpdater.cs:19`); und ein Heilpaket eines fremden Heilers passiert beide Watcher-Filter (`Watcher.cs:17-18`) ungelesen. Es fehlt der Aufnehmer, nicht die Quelle.
 
-| Größe | Lage | Beleg |
-|---|---|---|
-| Gesundheitshistorie | nur Gegner | `DataCenter.RecordedHP` (`DataCenter.cs:197`) wird in `TargetUpdater.cs:513-535` ausschließlich aus `AllHostileTargets` gefüllt |
-| Zeit bis zum Tod | auf Gruppenmitglieder nicht anwendbar | `GetTTK` (`ObjectHelper.cs:3468`) liest genau diese Historie; für eine Party-Id bleibt `startTime` auf `DateTime.MinValue`, Rückgabe `NaN` |
-| Abtastrate | 1 Hz | `TimeToKillUpdateInterval` (`TargetUpdater.cs:19`) |
-| Eingehende Heilung | nicht ausgewertet | `Watcher.cs:17-18` hängt zwei Handler an `ActionEffect.ActionEffectEvent`, gefiltert auf Quelle = Gegner beziehungsweise Quelle = Spieler. Ein Paket eines fremden Heilers auf ein Gruppenmitglied passiert beide Filter |
+**Warum er trotzdem nicht gebaut wird:** Er hatte genau einen vorgesehenen Verbraucher — die Hochrechnung, ob der Tod eines Dunkelritters noch vor Ablauf von Living Dead eintritt. Diese Frage ist inzwischen anders beantwortet: `StatusHelper.InDeathTriggerWindow` misst die Restzeit des Status selbst und gibt den Halt einen GCD vor Ablauf frei. Damit gibt es im gesamten Baum keinen Verbraucher mehr, und ein Baustein ohne Verbraucher ist Vorratsarbeit.
 
-**Das ist kein fehlendes Datum, sondern ein fehlender Aufnehmer.** Die Ereignisse liegen an, sie werden für diese Objektmenge nur nicht gelesen.
+Die Kostenseite bliebe dagegen bestehen: Ein Ringpuffer über alle Gruppenmitglieder und ein dritter Effekt-Handler laufen in jedem Kampf für jeden Nutzer, auch für die, die nie einen Dunkelritter sehen. Nutzen bei einem Job in einer Fähigkeit, Kosten bei allen — und der Nutzen wäre statisch nicht belegbar.
 
-**Kosten:** Ohne diese Grundlage bleibt jede Regel über Living Dead, Walking Dead oder eine Tankbuster-Sequenz eine Statusabfrage — sie kann „liegt der Effekt" beantworten, aber nicht „reicht die Zeit". Dieselbe Lücke trifft künftige Regeln derselben Bauart.
+**Der Restfehler, den er verkleinert hätte, ist stattdessen direkt verkleinert worden.** Die Uhrregel kann einen Tod verhindern, der noch rechtzeitig gekommen wäre; dieser Fehler ist genau so groß wie der Vorlauf. Zwei GCDs hätten bei zehn Sekunden Fenster die halbe Phase verschenkt, ein GCD verschenkt ein Viertel. Das ist die billige Abhilfe; der Messbaustein wäre die teure gewesen.
 
-**Zwei Genauigkeitsgrenzen, die beim Bau zu beachten sind:** 1 Hz ist für ein Zehn-Sekunden-Fenster zu grob (zehn Stützstellen, Entscheidung in der letzten Sekunde), weshalb ein eigener kurzer Ringpuffer mit feinerem Takt der richtige Weg ist statt der Erweiterung von `RecordedHP`. Und ein Gesundheitsdelta ist ein **Surrogat** für kumulierte Heilung: fallen Heilung und Schaden in dasselbe Intervall, heben sie sich auf, obwohl die Heilung zählt. Die Effektpakete zu lesen misst die Größe selbst.
-
-**Nachrangig, nicht vorausgesetzt.** Eine frühere Fassung dieses Eintrags stellte den Messbaustein der Living-Dead-Regelung voran. Das war zu weit gegriffen: Deren Kern — im letzten Augenblick vor Ablauf retten — ist eine Uhrregel über die Reststatuszeit und braucht keine Rate. Die Messung verkleinert nur den Restfehler, dass die Uhrregel gelegentlich einen Tod verhindert, der noch rechtzeitig gekommen wäre.
-
-**Auflösungsbedingung:** Der Aufwand fällt bei allen Nutzern an, der Nutzen zunächst nur beim Dunkelritter. Als letzter und getrennt zu entscheidender Schritt zu führen; Konstruktion und Verwendung stehen in `docs/rotation-flow/09-tank-selfprotection.md`. Sinnvoll ist, den Aufnehmer nur zu betreiben, solange ihn jemand liest.
+**Wieder aufzugreifen, wenn** ein konkreter Verbraucher entsteht — etwa eine gestaffelte Phase-2-Unterstützung, die den Heilungskurs gegen die Restzeit prüft. Bis dahin ist der Befund dokumentiert und die Entscheidung begründet, nicht offen.
 
 ## Offene Arbeit
 
