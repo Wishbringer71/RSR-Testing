@@ -51,11 +51,25 @@ Ereignis wartet**, das der Heiler abfangen kann.
 
 ### Klasse A — auslöserbehaftet: Heilung oder Schild kann den Effekt verhindern
 
-| Job | Fähigkeit | Auslöser | Was fremde Heilung bewirkt | Was ein fremder Schild bewirkt |
-|---|---|---|---|---|
-| DRK | Living Dead | HP fallen auf 0 | verhindert den Tod, also den Übergang in Walking Dead samt dessen Selbstheilung | dasselbe, über abgefangenen Schaden |
-| DRK | The Blackest Night | Barriere wird **vollständig** absorbiert | indirekt: hebt die HP, sodass weniger Schaden gegen die Barriere läuft | unbelegt, siehe Klasse A+ |
-| SCH | Excogitation | HP-Schwelle auf dem Ziel | vorzeitige Heilung entwertet die eigene, bereits gesetzte Fähigkeit | dasselbe |
+| Job | Fähigkeit | Auslöser | Auslöser ist… | Was fremde Heilung bewirkt | Was ein fremder Schild bewirkt |
+|---|---|---|---|---|---|
+| DRK | Living Dead | HP fallen auf 0 | **der Tod selbst** | verhindert den Tod, also den Übergang in Walking Dead samt dessen Selbstheilung | dasselbe, über abgefangenen Schaden |
+| DRK | The Blackest Night | Barriere wird **vollständig** absorbiert | ein Schadensereignis unterhalb des Todes | indirekt: hebt die HP, sodass weniger Schaden gegen die Barriere läuft | unbelegt, siehe Klasse A+ |
+| SCH | Excogitation | HP-Schwelle auf dem Ziel | ein Schadensereignis unterhalb des Todes | vorzeitige Heilung entwertet die eigene, bereits gesetzte Fähigkeit | dasselbe |
+
+**Die vierte Spalte trennt die Klasse in zwei, und diese Trennung entscheidet über
+alles Weitere.** Sie fehlte in allen bisherigen Fassungen und hat dort zu einer
+falschen Regel geführt.
+
+**A-tödlich — der Auslöser *ist* der Tod.** Living Dead ist der einzige Fall. Hier
+ist das Ereignis, das der Heiler sonst um jeden Preis verhindert, genau das
+erwünschte. Jede Regel, die sonst gilt — „bei niedriger Gesundheit heilen", „bei
+drohendem Tankbuster heilen" —, ist hier **nicht** bloß unnötig, sondern
+kontraproduktiv: Sie zielt auf die Verhinderung dessen, worauf die Fähigkeit wartet.
+
+**A-nichttödlich — der Auslöser liegt unterhalb des Todes.** The Blackest Night und
+Excogitation. Hier ist der Tod weiterhin die Katastrophe und nicht das Ziel; die
+üblichen Aufhebungsregeln gelten unverändert.
 
 **Gunbreaker gehört nicht mehr hierher.** Die erste Fassung führte Catharsis of
 Corundum als auslöserbehaftet. Das ist am Artefakt widerlegt:
@@ -256,7 +270,7 @@ ist vorab nicht erkennbar. Nach der Rangordnung entscheidet bei Gleichstand auf 
 1 die Stufe 2, aber eben nur bei belegtem Gleichstand, und der ist hier nicht
 herstellbar.
 
-Die tragfähige Folgerung ist eine andere und strenger als die bisherige:
+Die tragfähige Folgerung lautet für **A-nichttödliche** Auslöser:
 
 > **Jedes erkannte Tankbuster-Fenster hebt die Rückhaltung auf, unabhängig vom
 > Gesundheitsstand.** Nicht erst, wenn der Tank nach HP „in Gefahr" ist.
@@ -264,8 +278,46 @@ Die tragfähige Folgerung ist eine andere und strenger als die bisherige:
 Denn genau in diesem Fenster ist die Prognose unmöglich: Zielwechsel, Trefferzahl und
 Gesamtschaden sind allesamt unbekannt. Eine Regel, die in einem Zustand
 zurückhält, den sie nicht beurteilen kann, ist eine Wette, keine Entscheidung. Die
-bisherige HP-Schwelle bleibt als zweite, unabhängige Aufhebung bestehen — sie fängt
-den Dauerschaden ab, das Buster-Fenster den Einzelschlag.
+HP-Schwelle bleibt als zweite, unabhängige Aufhebung bestehen — sie fängt den
+Dauerschaden ab, das Buster-Fenster den Einzelschlag.
+
+### Für Living Dead gilt das Gegenteil, und das ist keine Ausnahme, sondern die Regel
+
+Eine frühere Fassung dieses Abschnitts erklärte die Buster-Aufhebung für **alle**
+Auslöser. Das ist für Living Dead falsch, und zwar grundlegend:
+
+> **In Phase 1 ist der Tod das Ziel.** Ein Tankbuster ist dort nicht die Gefahr, vor
+> der zu retten wäre — er ist das Ereignis, auf das die Fähigkeit wartet.
+
+Beide üblichen Aufhebungen kehren sich damit um:
+
+| Aufhebung | Bei A-nichttödlich | Bei Living Dead Phase 1 |
+|---|---|---|
+| Niedrige Gesundheit | hebt auf — der Tank droht zu sterben | **hebt nicht auf** — niedrige Gesundheit ist der erwünschte Zustand, sie bringt den Auslöser näher |
+| Tankbuster-Fenster | hebt auf — die Sequenz ist nicht beurteilbar | **hebt nicht auf** — der Buster liefert den Auslöser |
+
+Der Auftraggeber benennt die beiden Weisen, auf die eine Vollheilung bei zehn Prozent
+Gesundheit in Phase 1 danebengeht, und beide treffen zu:
+
+1. **Sie rettet nicht.** Tötet der Buster den Tank auch vollgeheilt, war die Heilung
+   wirkungslos — genau der Einwand aus dem vorigen Abschnitt, hier gegen die Heilung
+   gewendet statt für sie.
+2. **Sie schadet.** Rettet sie ihn, hat sie den Übergang in Phase 2 verhindert und
+   damit die Fähigkeit entwertet, die der Tank für genau diesen Moment gezündet hat.
+
+Es gibt keinen dritten Ausgang: Eine Heilung, die den Tod in Phase 1 verhindert,
+verhindert per Konstruktion den Auslöser. Das ist keine Abwägung, sondern eine
+Identität.
+
+**Damit bleibt für Living Dead Phase 1 genau eine Aufhebung übrig** — und sie hat
+nichts mit Gefahr zu tun, sondern mit der Uhr:
+
+> Die Rückhaltung wird aufgehoben, **wenn der Tod nicht mehr vor dem Ende der ersten
+> Phase eintreten würde.** Dann und nur dann.
+
+Dazu kommt die Vorbedingung aus Fall 1b, die vor der Phase liegt und keine Aufhebung
+im Verlauf ist: Wer die Heilmenge für Phase 2 gar nicht aufbringen kann, darf den Weg
+über den Tod nicht einschlagen.
 
 ## Fallvarianten
 
@@ -277,10 +329,11 @@ Heileraktion. „Richtig" meint jeweils die Handlung, die dem Vorrang der
 |---|---|---|---|---|
 | 1 | DRK, Living Dead aktiv, **Hochrechnung: Tod tritt vor Ablauf ein**, Heilkapazität für Phase 2 gesichert | **nein** | **nein** | Stufe 1 ist gesichert, also darf Stufe 2 entscheiden: beides verhindert den Tod, den die Fähigkeit einplant |
 | 1b | dieselbe Lage, **Heilkapazität nicht gesichert** | **ja** | ja | Stufe 1 schlägt Stufe 2. Ohne die Kapazität für die volle Heilmenge in Walking Dead ist der Verzicht ein Tausch von sicherem gegen unsicheres Überleben |
-| 1c | DRK, Living Dead aktiv, **Hochrechnung kippt: Tod käme erst nach Ablauf** | **ja, in der Ablaufsekunde** | ja | Der Schutz verpufft. Weiter zurückzuhalten lässt den Tank ungeheilt und ungeschützt zurück. Der Eingriff gehört an das Ende der Phase, nicht sofort — bis dahin kann die Hochrechnung erneut kippen |
-| 1d | DRK, Living Dead aktiv, **Tankbuster-Fenster erkannt** | **ja** | ja | Zielwechsel, Trefferzahl und Gesamtschaden sind unbekannt; eine Rückhaltung wäre eine Wette. Gilt unabhängig vom Gesundheitsstand |
-| 2 | DRK, Living Dead aktiv, HP niedrig, Ablauf fern | wie 1 / 1b / 1c | dito | Der Gesundheitsstand allein entscheidet nicht; entscheidend sind Hochrechnung und Kapazität für Phase 2 |
-| 3 | DRK, Living Dead läuft in ≤ 2 GCDs ab, HP niedrig | **ja, dringend** | ja | Sonderfall von 1c mit bereits niedriger Gesundheit — hier ist der Späteingriff nicht optional |
+| 1c | DRK, Living Dead aktiv, **Tod würde nicht mehr vor Phasenende eintreten** | **ja, rechtzeitig vor Ablauf** | ja | Die **einzige** Aufhebung in Phase 1. Der Schutz verpufft sonst und lässt den Tank ungeheilt und ungeschützt zurück |
+| 1d | DRK, Living Dead aktiv, **Tankbuster-Fenster erkannt** | **nein** | **nein** | Kehrseite der allgemeinen Regel: Der Buster liefert den Auslöser. Ihn abzufangen verhindert entweder nichts (er tötet ohnehin) oder das Gewollte (Phase 2) |
+| 1e | DRK, Living Dead aktiv, **HP sehr niedrig**, Tod aber noch vor Ablauf zu erwarten | **nein** | **nein** | Niedrige Gesundheit ist hier der erwünschte Zustand, keine Gefahrenmeldung. Eine Vollheilung rettet nicht oder entwertet die Fähigkeit — ein dritter Ausgang existiert nicht |
+| 2 | DRK, Living Dead aktiv, HP niedrig, Ablauf fern | wie 1 / 1b / 1e | dito | Der Gesundheitsstand entscheidet in dieser Phase überhaupt nicht; entscheidend sind allein die Uhr und die Kapazität für Phase 2 |
+| 3 | DRK, Living Dead läuft ab und der Tod ist nicht eingetreten | **ja, dringend** | ja | Ausführungsform von 1c: Der Eingriff muss so früh beginnen, dass er vor dem Ablauf wirkt — bei einem Heilzauber mit Wirkzeit also mit Vorlauf, bei einer Fähigkeit ohne Wirkzeit erst in der Ablaufsekunde |
 | 4 | DRK, Walking Dead aktiv, **Kurs trägt bis zum Phasenende** | leicht unterstützen (HoT, Regeneration) | nein, wirkungslos bei 1 HP | Billige Beiträge zählen voll gegen die geforderte Summe; ein teurer Notfallzauber wäre hier Überheilung |
 | 4a | DRK, Walking Dead aktiv, **Kurs reicht nicht** | **ja, in voller Höhe** | nein | Die Alternative ist der Tod am Phasenende. Kein Rückhaltefall mehr |
 | 4b | DRK, **Undead Rebirth** aktiv | nein, nachrangig | nein | Die Bedingung ist erfüllt, der Tank kann nicht sterben. Reine Stufe 3, ohne Berührung von Stufe 1 oder 2 |
@@ -515,44 +568,101 @@ Ausnahme am Ende der Bedingung, sondern die erste Prüfung. Nach Einarbeitung de
 Spielpraxis kommt eine zweite Vorbedingung hinzu — die Hochrechnung — und die
 Buster-Aufhebung wandert aus der Gefahrenprüfung heraus in eine eigene Bedingung:
 
+**Es gibt nicht eine Bedingung, sondern zwei — je Auslöserklasse eine.** Eine
+gemeinsame Bedingung war der Fehler der vorigen Fassung: Was bei A-nichttödlichen
+Auslösern aufhebt, muss bei Living Dead gerade nicht aufheben.
+
 ```
 protected bool MayWithholdForTrigger(IBattleChara tank) =>
-       !TankbusterWindowOpen()                           // Aufhebung, HP-unabhängig
-    && TankSurvivesWithoutMe(tank)                       // Stufe 1
-    && TriggerStillReachable(tank)                       // Hochrechnung
-    && tank.HasStatus(false, StatusHelper.TriggerBearingStatus)   // Stufe 2
-    && WithholdForTriggersEnabled;
+    WithholdForTriggersEnabled && (
+        tank.HasStatus(false, StatusID.LivingDead)
+            ? MayWithholdForDeathTrigger(tank)
+            : tank.HasStatus(false, StatusHelper.NonLethalTriggerStatus)
+              && MayWithholdForNonLethalTrigger(tank));
+
+// A-tödlich: der Tod IST der Auslöser. Weder niedrige Gesundheit noch ein
+// Tankbuster heben auf - beide bringen den Auslöser näher.
+protected bool MayWithholdForDeathTrigger(IBattleChara tank) =>
+       DeathStillArrivesInTime(tank)     // einzige Aufhebung im Verlauf
+    && CanSustainPhaseTwo();             // Vorbedingung, vor der Phase
+
+// A-nichttödlich: der Tod ist die Katastrophe, nicht das Ziel.
+protected bool MayWithholdForNonLethalTrigger(IBattleChara tank) =>
+       !TankbusterWindowOpen()
+    && TankSurvivesWithoutMe(tank);
 ```
 
 `TankbusterWindowOpen()` fasst `DataCenter.BMRTankbusterImminent` und
-`DataCenter.IsHostileCastingToTank` zusammen. Es steht **vor** der Gesundheitsprüfung
-und nicht in ihr, weil es aus einem anderen Grund aufhebt: nicht weil der Tank in
-Gefahr *ist*, sondern weil in diesem Fenster nicht beurteilbar ist, ob er es wird.
-Zielwechsel zwischen zwei Tanks, Trefferzahl und Gesamtschaden sind aus den
-vorhandenen Größen nicht abzulesen.
+`DataCenter.IsHostileCastingToTank` zusammen. Es steht bei den nichttödlichen
+Auslösern **vor** der Gesundheitsprüfung, weil es aus einem anderen Grund aufhebt:
+nicht weil der Tank in Gefahr *ist*, sondern weil in diesem Fenster nicht beurteilbar
+ist, ob er es wird.
 
-`TankSurvivesWithoutMe` bleibt konservativ, aus vorhandenen Größen:
+`TankSurvivesWithoutMe` prüft `tank.GetEffectiveHpPercent()` gegen
+`Service.Config.HealthForDyingTanks` (`ObjectHelper.cs:126` nutzt dieselbe Schwelle
+bereits für sterbende Tanks). **Es kommt im tödlichen Zweig nicht vor.**
 
-- `tank.GetEffectiveHpPercent()` über `Service.Config.HealthForDyingTanks`
-  (`ObjectHelper.cs:126` nutzt dieselbe Schwelle bereits für sterbende Tanks),
-- **für Living Dead zusätzlich:** genug eigene Kapazität für Phase 2. Ohne
-  belastbares Maß dafür wird konservativ gefordert, dass `DataCenter.CurrentMp`
-  über einer Schwelle liegt und kein weiteres Gruppenmitglied unter
-  `Service.Config.HealthTankRatio` steht. Ist eines davon nicht erfüllt, wird nicht
-  zurückgehalten.
+`CanSustainPhaseTwo()` ist Fall 1b und die einzige Vorbedingung des tödlichen
+Zweiges: Wer die volle Heilmenge für Walking Dead nicht aufbringen kann, darf den Weg
+über den Tod nicht einschlagen. Ohne belastbares Maß konservativ genähert —
+`DataCenter.CurrentMp` über einer Schwelle und kein weiteres Gruppenmitglied unter
+`Service.Config.HealthTankRatio`. Sie wird **vor** dem Eintritt geprüft und nicht
+laufend, damit sie nicht mitten in der Phase kippt und den Weg auf halber Strecke
+abbricht.
 
-`TriggerStillReachable(tank)` ist neu und trägt die Ratenbetrachtung. Für Living Dead
-lautet sie: *Erreicht die Gesundheit bei der beobachteten Schadensrate die Null noch
-vor Ablauf des Status?* Sie setzt den Messbaustein aus Schritt 0 voraus und liefert
-ohne ihn `false` — also keine Rückhaltung. **Das Fehlen der Messung darf nie
-Rückhaltung begründen**, sonst wäre die Vorbedingung ein Feigenblatt.
+`DeathStillArrivesInTime(tank)` trägt die Zeitbetrachtung und ist die einzige
+Aufhebung im Verlauf. Sie ist in zwei Ausbaustufen zu bauen, und **die erste kommt
+ohne den Messbaustein aus** — was die Aufwandsdarstellung des vorigen Durchgangs
+korrigiert:
 
-### Schritt 0 — der fehlende Messbaustein
+**Stufe 1 — reine Uhr, ohne jede Messung.** Zurückgehalten wird, solange
+`StatusTime(LivingDead)` größer ist als der Vorlauf, den das vorgesehene Heilmittel
+braucht. Unterschreitet die Restzeit ihn, wird gehandelt. Mehr verlangt der Kern der
+Anforderung nicht: „im letzten Augenblick retten" ist eine Aussage über die Uhr, nicht
+über eine Rate. Damit ist Schritt 0 für Living Dead **keine Voraussetzung**, sondern
+eine Verbesserung.
 
-Ohne ihn ist der Auftrag „prüfe, ob der Tod rechtzeitig eintritt" nicht ausführbar,
-und Schritt 3 bliebe die Zustandsprüfung, die er nicht sein soll. Er geht den anderen
-Schritten deshalb voraus und ist für sich allein nutzbar, weil er nichts entscheidet,
-sondern nur misst.
+**Der Vorlauf ist die entscheidende Größe und hängt am Heilmittel:**
+
+| Heilmittel | Vorlauf | Folge |
+|---|---|---|
+| Fähigkeit ohne Wirkzeit (Benediction, Tetragrammaton) | praktisch nur die Verzögerung zum Server | Das Rettungsfenster liegt in der **letzten Sekunde**. Der Zeitraum, in dem fälschlich ein noch rechtzeitiger Tod verhindert wird, ist minimal |
+| Zauber mit Wirkzeit | Wirkzeit plus Puffer, also ein bis zwei GCDs | Das Fenster beginnt früher und der Fehler wird entsprechend größer |
+
+Daraus folgt eine Vorgabe für die Umsetzung: **In dieser Phase ist einer Fähigkeit
+ohne Wirkzeit der Vorzug zu geben**, und zwar nicht aus Effizienz, sondern weil sie
+den einzigen echten Fehler der Uhrregel klein hält. Benediction ist für diesen Zweck
+das genaue Werkzeug — Vollheilung, sofort, in der letzten Sekunde.
+
+**Stufe 2 — mit Messung, früher und genauer.** Zeigt die beobachtete Schadensrate,
+dass die Gesundheit die Null bis zum Ablauf ohnehin nicht mehr erreicht, kann früher
+aufgehoben werden. Das verlängert das Rettungsfenster und erlaubt auch ein Heilmittel
+mit Wirkzeit.
+
+**Der eine Fehler, den die Uhrregel behält, ist zu benennen:** Sie kann in den
+letzten Sekunden einen Tod verhindern, der noch rechtzeitig gekommen wäre — der
+Auslöser geht dann verloren. Genau diesen Fehler verkleinert der knappe Vorlauf, und
+genau ihn beseitigt die Messung. Er ist der Preis dafür, ohne Messbaustein
+auszukommen, und in dieser Richtung der sichere: Ein verlorener Auslöser kostet einen
+Cooldown, ein zu spät geretteter Tank kostet den Kampf.
+
+**Was ohne Messung ausdrücklich nicht gilt:** Die frühere Fassung ließ
+`TriggerStillReachable` ohne Messbaustein `false` liefern, also nie zurückhalten. Für
+Living Dead wäre das falsch — „nicht zurückhalten" heißt dort heilen, und Heilung
+entwertet die Fähigkeit. Der Rückfall ohne Messung ist die Uhrregel, nicht die
+Freigabe.
+
+### Schritt 0 — der fehlende Messbaustein (nachrangig, nicht vorausgesetzt)
+
+Der vorige Durchgang stellte diesen Schritt allen anderen voran, weil die
+Hochrechnung ohne ihn nicht ausführbar sei. **Das war zu weit gegriffen.** Die
+Kernanforderung — im letzten Augenblick retten — ist eine Uhrregel und braucht keine
+Rate. Der Messbaustein verkleinert nur den verbleibenden Fehler: dass die Uhrregel
+gelegentlich einen Tod verhindert, der noch rechtzeitig gekommen wäre.
+
+Er bleibt sinnvoll und wird hier vollständig beschrieben, rutscht aber ans Ende der
+Reihenfolge. Er entscheidet nichts, er misst nur, und ist deshalb für sich allein
+nutzbar.
 
 **Was zu bauen ist:**
 
@@ -611,7 +721,7 @@ Vollständigkeit; diese zweite prüft zusätzlich gegen die Rangordnung.
 | Ist der Living-Dead-Fall vollständig? | **Nur konservativ.** Ob die Heilkapazität für Phase 2 reicht, ist nicht exakt bestimmbar; die Ersatzbedingung (MP-Schwelle, keine weiteren Verletzten) ist gröber als die Frage. Das ist im Zweifel zu wenig Rückhaltung — die sichere Richtung |
 | Deckt Schritt 3 Fall 10 ab? | **Gegenstandslos.** Fall 10 ist nach der Artefaktprüfung kein Rückhaltefall mehr |
 | Wirkungsbereich benannt? | Ja: Die Liste wirkt nur auf Ziele in der Tankrolle |
-| Was passiert bei zwei Tanks? | **Neue Lücke.** `TankSurvivesWithoutMe` prüft ein Ziel. Trägt der Zweittank denselben Status, gilt die Prüfung je Ziel — richtig, aber die MP-Ersatzbedingung ist global und würde die Rückhaltung für beide gleichzeitig aufheben. Konservativ und damit hinnehmbar |
+| Was passiert bei zwei Tanks? | **Neue Lücke.** Die Prüfung gilt je Ziel — richtig, aber die MP-Ersatzbedingung ist global und würde die Rückhaltung für beide gleichzeitig aufheben. Konservativ und damit hinnehmbar. *Nach dem fünften Audit sitzt diese Bedingung in `CanSustainPhaseTwo`, nicht mehr in `TankSurvivesWithoutMe`; die Lücke bleibt dieselbe* |
 
 ## Drittes Audit — gegen die Artefaktprüfung
 
@@ -646,7 +756,7 @@ Artefaktprüfung.
 | Folgt daraus, die Rückhaltung freizugeben? | **Nein**, und diese Gegenposition ist zu benennen: Dass Heilung manchmal nichts nützt, macht Zurückhaltung nicht besser, nur nicht schlechter. Welcher Fall vorliegt, ist vorab unbekannt. Die Folgerung ist strenger, nicht laxer — jedes Buster-Fenster hebt auf, HP-unabhängig |
 | Ist die geforderte Hochrechnung überhaupt messbar? | **Heute nicht, aber baubar.** `RecordedHP` führt nur Gegner (`TargetUpdater.cs:513-535`), also liefert `GetTTK` auf ein Party-Mitglied `NaN`. Die Effektpakete fremder Heiler passieren beide Watcher-Filter. Beides sind fehlende Aufnehmer, keine fehlenden Quellen |
 | Wurde die Grenze der Messung benannt statt geglättet? | Ja: 1 Hz ist für ein 10-s-Fenster zu grob, und ein Gesundheitsdelta ist ein Surrogat für kumulierte Heilung. Deshalb eigener Puffer und Paketauswertung statt Mitbenutzung |
-| Was, wenn die Messung fehlt oder unsicher ist? | `TriggerStillReachable` liefert dann `false`, also **keine** Rückhaltung. Fehlende Messung darf nie Rückhaltung begründen |
+| Was, wenn die Messung fehlt oder unsicher ist? | `TriggerStillReachable` liefert dann `false`, also **keine** Rückhaltung. Fehlende Messung darf nie Rückhaltung begründen — *im fünften Audit für Living Dead widerrufen: „nicht zurückhalten" heißt dort heilen und entwertet die Fähigkeit. Der Rückfall ist die Uhrregel. Für A-nichttödliche Auslöser gilt die Zeile weiter* |
 | Ist der Aufwand noch verhältnismäßig? | **Offen, und ehrlich zu benennen.** Schritt 3 bedient einen Job in einer Fähigkeit, Schritt 0 kostet bei allen Nutzern. Das gehört in die Vorlage, nicht in eine Fußnote |
 
 **Nicht geprüft, weil außerhalb der Artefaktlage:** die konkreten Trefferzahlen und
@@ -654,6 +764,23 @@ Schadenswerte der genannten Begegnungen (Unreal Shinryu, Arkh Monh). Sie sind al
 Beleg dafür genommen, dass mehrfach einschlagende Buster existieren — das genügt für
 die Konstruktion. Ein Nullbefund über den englischen Bossnamen wäre nach der
 Sprachregel ohnehin kein Beleg gewesen.
+
+## Fünftes Audit — die Aufhebungen waren für den Hauptfall verkehrt herum
+
+Anlass war ein Einwand des Auftraggebers gegen die im vierten Durchgang eingeführte
+Buster-Aufhebung. Er trifft, und er trifft mehr als nur diese eine Regel.
+
+| Prüffrage | Ergebnis |
+|---|---|
+| Gilt die Buster-Aufhebung für alle Auslöser? | **Nein, und die Verallgemeinerung war der Fehler.** Bei Living Dead liefert der Tankbuster den Auslöser. Ihn abzufangen verhindert entweder nichts oder das Gewollte |
+| Gilt die Gesundheitsschwelle für alle Auslöser? | **Ebenfalls nein**, aus demselben Grund. Niedrige Gesundheit ist in Phase 1 der erwünschte Zustand, keine Gefahrenmeldung. Diese Aufhebung stand seit dem dritten Durchgang darin und war die ganze Zeit falsch |
+| Gibt es einen Fall, in dem Heilung in Phase 1 rettet **und** Phase 2 erhält? | **Nein.** Eine Heilung, die den Tod verhindert, verhindert per Konstruktion den Auslöser. Das ist keine Abwägung, sondern eine Identität — die Gegenhypothese ist nicht bloß schwach, sie ist nicht formulierbar |
+| Was bleibt dann als Aufhebung in Phase 1? | Genau eine: **der Tod käme nicht mehr vor Phasenende.** Dazu die Vorbedingung aus 1b, die vor dem Eintritt liegt und keine laufende Aufhebung ist |
+| Braucht diese Aufhebung den Messbaustein? | **Nein** — das war die zweite Fehleinschätzung des vierten Durchgangs. „Im letzten Augenblick retten" ist eine Uhrregel. Die Messung verkleinert nur den Restfehler |
+| Welcher Restfehler bleibt? | Die Uhrregel kann in den letzten Sekunden einen Tod verhindern, der noch rechtzeitig gekommen wäre. Klein zu halten über einen knappen Vorlauf, also über ein Heilmittel **ohne Wirkzeit** |
+| Ist die Fehlerrichtung vertretbar? | Ja, und das ist zu begründen statt zu behaupten: Ein verlorener Auslöser kostet einen Cooldown, ein zu spät geretteter Tank den Kampf. Die Uhrregel irrt in die billigere Richtung |
+| War der frühere Rückfall „ohne Messung nie zurückhalten" richtig? | **Nein.** Für Living Dead heißt „nicht zurückhalten" heilen, und Heilung entwertet die Fähigkeit. Der Rückfall ist die Uhrregel, nicht die Freigabe. Die Regel „fehlende Messung darf nie Rückhaltung begründen" gilt weiter für A-nichttödliche Auslöser, wo sie herkam |
+| Bleibt die Kapazitätsprüfung laufend oder einmalig? | **Einmalig vor dem Eintritt.** Eine laufende Prüfung könnte mitten in der Phase kippen und den Weg auf halber Strecke abbrechen — das wäre der schlechteste aller Ausgänge: kein Auslöser und trotzdem eine ausgegebene Heilung |
 
 ## Verbesserung nach dem zweiten Audit
 
@@ -666,12 +793,7 @@ Lagen einen Effekt der Stufe 2 über das Überleben gestellt.
 **Stufe 3 verliert jede eigenständige Wirkung.** Ressourcenschonung darf nichts
 zurückhalten; sie ergibt sich als Nebenwirkung der Herabstufung.
 
-**Ergebnis nach dem vierten Audit: vier Schritte, nach Beleglage geordnet.**
-
-0. **Messbaustein** — Party-Gesundheitshistorie mit kurzem, feinem Fenster und ein
-   dritter Effekt-Handler für eingehende Heilung, dazu zwei Lesefunktionen. Entscheidet
-   nichts, misst nur; Voraussetzung für Schritt 3 in seiner richtigen Form. Kosten
-   fallen bei allen Nutzern an, Nutzen zunächst nur beim Dunkelritter.
+**Ergebnis nach dem fünften Audit: vier Schritte, nach Beleglage geordnet.**
 
 1. **Excogitation-Invertierung** (`SCH_Reborn.cs:830`). Belegte Defektbehebung,
    kleiner Blast Radius: eine Rotation, eine Fähigkeit. Ohne Option. Für sich
@@ -682,26 +804,38 @@ zurückhalten; sie ergibt sich als Nebenwirkung der Herabstufung.
    Ohne Option — ein Schalter würde den fehlerhaften Zustand konservieren. Danach
    die fehlenden Ids ergänzen: `HallowedGround`, `HallowedGround_1302`,
    `UndeadRebirth`. Keine weiteren Holmgang-Ids.
-3. **Auslöser-Rückhalteliste**, hinter einer Option mit Standard aus, gebunden an
-   die Tankrolle, mit der Buster-Aufhebung und dem Überlebensvorbehalt als
-   Vorbedingungen und der Hochrechnung als dritter. Dazu die gestaffelte
-   Phase-2-Unterstützung (leicht am Anfang, voll bei nicht tragendem Kurs) und der
-   Späteingriff in der Ablaufsekunde von Phase 1. `LivingDead` ist belegt und trägt.
-   `BlackestNight` ruht auf unbelegter Mechanik und ist ein vertretbarer
-   Streichkandidat. `CatharsisOfCorundum` und `Excogitation` sind ausgeschieden.
+3. **Auslöser-Rückhaltung**, hinter einer Option mit Standard aus, gebunden an die
+   Tankrolle — **mit zwei getrennten Bedingungen je Auslöserklasse**. Für Living Dead
+   (Auslöser = Tod): Uhrregel mit knappem Vorlauf, vorzugsweise über eine Fähigkeit
+   ohne Wirkzeit; **keine** Aufhebung durch niedrige Gesundheit oder Tankbuster;
+   Vorbedingung ist allein die Kapazität für Phase 2. Für The Blackest Night (Auslöser
+   unterhalb des Todes): Buster-Fenster und Gesundheitsschwelle heben auf.
+   Dazu die gestaffelte Phase-2-Unterstützung — leicht am Anfang, voll bei nicht
+   tragendem Kurs. `LivingDead` ist belegt und trägt; `BlackestNight` ruht auf
+   unbelegter Mechanik und ist ein vertretbarer Streichkandidat.
+   `CatharsisOfCorundum` und `Excogitation` sind ausgeschieden.
+
+4. **Messbaustein** (Schritt 0 dieses Dokuments), nachrangig. Verkleinert den
+   verbleibenden Fehler der Uhrregel und erlaubt Heilmittel mit Wirkzeit. Kosten
+   fallen bei allen Nutzern an, Nutzen zunächst nur beim Dunkelritter — als letzter
+   Schritt getrennt zu entscheiden.
 
 Die Umstellung gegenüber der zweiten Fassung ist nicht kosmetisch: Was dort als
 Kern galt — die Rückhaltung —, ist nach der Artefaktprüfung der schwächste Teil,
 und was dort als Nebenschritt geführt wurde, betrifft das Überleben der Gruppe.
 
-**Der vierte Durchgang hat den Aufwand von Schritt 3 erheblich erhöht.** Aus einer
-Statusabfrage ist eine Regelung mit zwei Hochrechnungen, einer Staffelung über die
-Phasenzeit und einem eigenen Messbaustein geworden. Das ist die sachlich richtige
-Konstruktion — die Anforderung des Auftraggebers ist zutreffend und die bisherige
-Fassung wäre in beiden Phasen falsch gelaufen —, aber es verschiebt das
-Aufwand-Nutzen-Verhältnis deutlich. Schritt 3 bedient **einen** Job in **einer**
-Fähigkeit; Schritt 0 kostet bei allen Nutzern. Das ist bei der Freigabe abzuwägen und
-wird in der Vorlage nicht kleingeredet.
+**Der vierte Durchgang hatte den Aufwand von Schritt 3 zu hoch angesetzt, der fünfte
+korrigiert das nach unten.** Die Kernanforderung ist eine Uhrregel — zurückhalten,
+bis die Restzeit den Vorlauf des Heilmittels unterschreitet — und die kommt ohne
+Messbaustein aus. Was bleibt, ist eine Statusprüfung, eine Restzeitprüfung und eine
+Vorbedingung; der Messbaustein rutscht ans Ende und wird getrennt entschieden.
+
+**Zugleich hat der fünfte Durchgang die Konstruktion an einer Stelle grundlegend
+geändert:** Es gibt nicht eine Rückhaltebedingung, sondern zwei — und was in der
+einen aufhebt, darf in der anderen gerade nicht aufheben. Diese Trennung nach der
+Art des Auslösers fehlte in allen vorigen Fassungen und hat dort zu einer Regel
+geführt, die dem Dunkelritter genau das genommen hätte, wofür er seine Fähigkeit
+zündet.
 
 ## Nachweisbarkeit
 

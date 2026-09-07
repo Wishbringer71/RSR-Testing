@@ -244,7 +244,9 @@ Jede Entscheidung der Form „reicht das, was gerade passiert, bis zum Ablauf ei
 
 **Zwei Genauigkeitsgrenzen, die beim Bau zu beachten sind:** 1 Hz ist für ein Zehn-Sekunden-Fenster zu grob (zehn Stützstellen, Entscheidung in der letzten Sekunde), weshalb ein eigener kurzer Ringpuffer mit feinerem Takt der richtige Weg ist statt der Erweiterung von `RecordedHP`. Und ein Gesundheitsdelta ist ein **Surrogat** für kumulierte Heilung: fallen Heilung und Schaden in dasselbe Intervall, heben sie sich auf, obwohl die Heilung zählt. Die Effektpakete zu lesen misst die Größe selbst.
 
-**Auflösungsbedingung:** Der Aufwand fällt bei allen Nutzern an, der Nutzen zunächst nur beim Dunkelritter. Freigabe und Umfang sind deshalb gemeinsam mit Schritt 3 aus `docs/rotation-flow/09-tank-selfprotection.md` zu entscheiden, wo Konstruktion und Verwendung beschrieben sind. Sinnvoll ist, den Aufnehmer nur zu betreiben, solange ihn jemand liest.
+**Nachrangig, nicht vorausgesetzt.** Eine frühere Fassung dieses Eintrags stellte den Messbaustein der Living-Dead-Regelung voran. Das war zu weit gegriffen: Deren Kern — im letzten Augenblick vor Ablauf retten — ist eine Uhrregel über die Reststatuszeit und braucht keine Rate. Die Messung verkleinert nur den Restfehler, dass die Uhrregel gelegentlich einen Tod verhindert, der noch rechtzeitig gekommen wäre.
+
+**Auflösungsbedingung:** Der Aufwand fällt bei allen Nutzern an, der Nutzen zunächst nur beim Dunkelritter. Als letzter und getrennt zu entscheidender Schritt zu führen; Konstruktion und Verwendung stehen in `docs/rotation-flow/09-tank-selfprotection.md`. Sinnvoll ist, den Aufnehmer nur zu betreiben, solange ihn jemand liest.
 
 ### Drei Prüfskripte ohne Selbsttest · —
 
