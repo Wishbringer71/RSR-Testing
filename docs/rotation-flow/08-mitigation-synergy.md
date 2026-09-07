@@ -67,15 +67,47 @@ Gegnerzahl denselben Betrag, während sein Preis mit ihr steigt.
 | Betäubungsstreckung | ja | ja | gegnerzahl-neutral |
 | DoT-Einschub | nein | ja | lohnt bei **wenigen** Zielen |
 
-Die eigentliche Steuergröße ist damit nicht die Gegnerzahl, sondern das Verhältnis
-von eingehendem zu ausgehendem Schaden: Steht die Gruppe unter Druck, ist
-vermiedener Schaden mehr wert als erzeugter; ist der Pull ohnehin sicher, gilt das
-Gegenteil. Dafür sind die vorhandenen HP-Schwellen das Maß, nicht
-`NumberOfHostilesInRange`.
+### Die beiden Seiten sind nicht verrechenbar
 
-Die Gegnerzahl bleibt trotzdem als **Untergrenze** sinnvoll — unterhalb von drei
-Zielen fällt Sanctus wegen `AoeCount` ohnehin nicht, und Einzelziele sind meist
-betäubungsimmun. Sie ist ein Filter, kein Gewicht.
+Naheliegend wäre nun, vermiedenen gegen erzeugten Schaden aufzuwiegen. Das ist der
+schwerwiegendere Denkfehler, und er lag den obigen Tabellen zugrunde: Die Aufgabe
+eines Heilers ist, Tank und Gruppe am Leben zu halten; Schaden ist wichtig, steht
+aber im Rang darunter. Ein lebender Tank oder Schadensausteiler erzeugt mehr
+Schaden als ein Heiler — und ungleich mehr als ein toter. Die beiden Größen bilden
+eine **Rangordnung, keine Verrechnung**: erst Überleben sichern, dann Schaden
+maximieren.
+
+Für die Regel folgt daraus eine Umkehrung der Beweislast. Die gestreckte Betäubung
+liefert mehr Deckung als das Nachcasten im GCD-Takt — 7 s gegen 5,5 s. In einer
+Rangordnung, deren erstes Kriterium die Schadensvermeidung ist, ist sie damit
+**immer** die richtige Wahl, sobald sie überhaupt anwendbar ist. Der entgangene
+Sanctus-Schaden ist nachrangig und taugt nicht als Gegengrund. Nicht die Streckung
+braucht eine Rechtfertigung, sondern ihr Unterlassen.
+
+Zwei Einschränkungen, die dagegen stehen und die die Regel nicht auflösen darf:
+
+- **Mitigation hat keinen linearen Wert.** Sie ist folgenlos, solange niemand
+  stirbt, und entscheidend, wenn sie einen Tod verhindert. Im gut gehaltenen
+  Trash-Pull vermeidet die gestreckte Betäubung Schaden, den ohnehin niemand
+  gespürt hätte. Die Rangordnung greift dort also ins Leere — sie schadet aber auch
+  nicht.
+- **Schaden ist selbst eine Form der Schadensvermeidung.** Ein schneller Kill
+  verkürzt den Kampf und spart Gegner-Angriffe. Der Anteil des Heilers am
+  Gruppenschaden ist allerdings klein, weshalb dieser Rückkopplungseffekt den
+  Vorrang nicht umkehrt.
+
+**Warum die Architektur das nicht von selbst löst.** Der Dispatch prüft Heilung und
+Verteidigung vor dem Schadenszweig, setzt die Rangordnung also bereits um — aber
+nur **reaktiv**: Ein Heilflag entsteht, wenn HP fehlen. Eine Betäubung ist
+Prävention und wirkt, bevor Heilbedarf sichtbar wird. Für Prävention hat die
+Architektur keinen Ort, und deshalb liegt die Betäubung im Schadenszweig — nicht
+weil sie nachrangig wäre, sondern weil sie dort mangels Alternative gelandet ist.
+Das ist der eigentliche Befund hinter der gesamten Frage.
+
+Die Gegnerzahl bleibt als **Untergrenze** sinnvoll — unterhalb von drei Zielen
+fällt Sanctus wegen `AoeCount` ohnehin nicht, und Einzelziele sind meist
+betäubungsimmun. Sie ist ein Filter, kein Gewicht. Die HP-Schwellen bleiben als
+Notfallvorbehalt, nicht als Abwägungsgröße.
 
 ## Vorhandene Bausteine
 
@@ -262,22 +294,41 @@ der Einschub mehr als einen GCD je DoT-Laufzeit kostet.
 
 ### Schritt 3 — B/C: Zeitpunkt des Einschubs
 
-Die Bedingung aus Schritt 2 wird um die Rückhalteprüfung ergänzt, als eigene
-Option, damit Schritt 2 unabhängig bleibt:
+Die Bedingung aus Schritt 2 wird um die Betäubungsprüfung ergänzt, als eigene
+Option, damit Schritt 2 unabhängig bleibt.
+
+**Die Regel ist eine Rangordnung, keine Abwägung.** Die gestreckte Betäubung liefert
+mehr Deckung als das Nachcasten im Takt; nach dem Vorrang der Schadensvermeidung
+ist sie damit die Vorgabe, und nur ihr Unterlassen braucht einen Grund. Die
+Bedingung ist deshalb positiv formuliert — sie fragt, ob gestreckt werden **soll**,
+nicht ob der Einschub erlaubt ist:
 
 ```
-protected static bool StunWouldBeWasted =>
-    !DataCenter.StunHeadroom                       // resistent oder immun
-    || DataCenter.StunRemainingShortest > GCDTime(1)  // laeuft noch, Einschub streckt sie
-    || GetCurrentMitigationPercent() >= StunYieldThreshold; // fremde Mitigation traegt gerade
+protected static bool ShouldStretchStun =>
+       DataCenter.StunRemainingShortest > GCDTime(1)   // laeuft noch: nachcasten verfiele
+    || !DataCenter.StunHeadroom;                       // wirkt ohnehin nicht mehr
 ```
 
-Vorbehalte, die den Rückhalt aufheben — sie stehen vor der Regel, nicht in ihr:
+Zwei Notfallvorbehalte heben die Streckung auf. Sie sind Ausnahmen, keine
+Abwägungsgrößen, und stehen deshalb vor der Regel:
 
-- `NumberOfHostilesInRange < HostileCountThreshold` (Muster:
-  `MitigationSustainHostileCount`),
-- vorhergesagter Schaden innerhalb `BMRRaidwideMitWindow` / `BMRTankbusterMitWindow`,
-- Gruppen-HP unterhalb der eingestellten Schwelle.
+- Gruppen-HP unterhalb der eingestellten Schwelle,
+- vorhergesagter Schaden innerhalb `BMRRaidwideMitWindow` / `BMRTankbusterMitWindow`.
+
+In beiden Fällen ist der unmittelbare Bedarf größer als jede Planung über die
+nächsten Sekunden.
+
+Die Abstimmung gegen fremde Mitigation (C) kommt als dritter, **nachrangiger**
+Grund hinzu — sie ist nach der neuen Rechnung weniger als halb so schwer wie die
+Streckung selbst:
+
+```
+    || GetCurrentMitigationPercent() >= StunYieldThreshold  // fremde Mitigation traegt gerade
+```
+
+Die Gegnerzahl-Schwelle wirkt allein als Filter davor: Unterhalb von
+`HostileCountThreshold` (Muster: `MitigationSustainHostileCount`) greift die Regel
+gar nicht, weil Sanctus dort ohnehin nicht fällt.
 
 ### Schritt 4 — Übertragung auf andere Doppelnutzen-Aktionen
 
