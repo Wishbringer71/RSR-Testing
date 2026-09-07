@@ -418,6 +418,23 @@ public static class StatusHelper
 	/// <summary>
 	/// 
 	/// </summary>
+	/// <summary>
+	/// Statuses under which the bearer cannot be killed, so healing them is less urgent than
+	/// healing anyone else - not unnecessary. The window is the safest moment to heal, and when it
+	/// closes the target keeps whatever health it had; Superbolide leaves them at 1 HP on purpose.
+	/// <para>
+	/// Only genuine invulnerabilities belong here. Two entries were removed because they are a
+	/// different thing and were being read as if they were the same: <c>Mounted</c> nullifies HP
+	/// recovery outright, which is an exclusion and lives in <see cref="HealingIneffectiveStatus"/>;
+	/// <c>HpRecoveryDown</c> only reduces incoming healing, which is a reason to heal harder, not
+	/// later. Both are still handled where they actually matter - StateUpdater checks them for
+	/// their own duties, and the target selection excludes what healing cannot reach.
+	/// </para>
+	/// <para>
+	/// <c>WalkingDead</c> stays commented out deliberately: there, healing is the survival
+	/// condition rather than a courtesy.
+	/// </para>
+	/// </summary>
 	public static StatusID[] NoNeedHealingStatus { get; } =
 	[
 		StatusID.Holmgang_409,
@@ -425,8 +442,6 @@ public static class StatusHelper
 		//StatusID.WalkingDead,
 		StatusID.Superbolide,
 		StatusID.Invulnerability,
-		StatusID.HpRecoveryDown,
-		StatusID.Mounted,
 	];
 
 	/// <summary>
