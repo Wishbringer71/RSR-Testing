@@ -162,6 +162,33 @@ Geprüfte Nicht-Fehlstellen: `DTRManualAuto` bildet den vom Enum-Text beschriebe
 
 **Auflösungsbedingung:** ob sich echte Raidwides beim Lernen von ausweichbaren Flächen unterscheiden lassen (Kandidat: `CastType`/`EffectRange`), ist ohne Spieldaten nicht entscheidbar. Eine Verschärfung wäre eine Verhaltensänderung ohne Nachweismöglichkeit und gehörte deshalb hinter eine eigene Option, nicht in den Standardpfad. Geprüfte Nicht-Fehlstelle: das Speichern läuft asynchron, kein blockierendes Schreiben im Kampfpfad.
 
+#### Geprüfter Vorschlag: Schadenshöhe als Aufnahmekriterium
+
+Vorschlag des Auftraggebers: Liegt der Schaden unterhalb dessen, was der Schild ohnehin auffängt, braucht die Aktion nicht in die Liste — der Schild wäre verschwendet. Auftrag war, das zu widerlegen oder modifiziert aufzunehmen. Ergebnis: **der Kerngedanke trifft eine echte Lücke, die vorgeschlagene Form trägt nicht, eine modifizierte Form ist umsetzbar.**
+
+**Die Lücke ist real.** `HostileCastingArea` ist ein `HashSet<uint>` (`OtherConfiguration.cs:28`) — eine Aktion ist drin oder nicht. Eine Fläche, die zwei Prozent der Gesundheit nimmt, steht gleichberechtigt neben einer, die sechzig nimmt, und löst über `IsHostileCastingAOE` → `ShouldAddDefenseArea` (`StateUpdater.cs:178`) dieselbe Gruppenmitigation aus. Die Kostenseite ist ebenfalls real, nur anders benannt als im Vorschlag: Was verbraucht wird, ist nicht „der Schild", sondern der **Cooldown** — eine auf eine Bagatelle gelegte Reprisal fehlt beim nächsten großen Einschlag.
+
+**Die Datenquelle liegt bereits an der richtigen Stelle.** `Watcher.cs:137` liest beim Lernen `damageEffect.value`, prüft davon aber nur `> 0`. Der Betrag ist da und wird verworfen.
+
+**Vier Einwände gegen die einfache Form (Filter beim Lernen):**
+
+1. **Zirkelschluss.** Gemessen wird der Schaden *nach* der damals wirkenden Mitigation. Hat die Gruppe beim ersten Vorkommen gut mitigiert, fällt der Wert klein aus, die Aktion wird ausgeschlossen — und künftig wird nicht mehr mitigiert, wodurch der Schaden groß wird. Die Regel würde ihre eigene Voraussetzung zerstören.
+2. **Alterung.** Ein absoluter Betrag oder ein an einem Schildwert gemessener Schwellwert veraltet mit Item-Level, Content-Sync und Vulnerability-Stapeln. Das ist dasselbe *Lack of Movement*-Muster wie bei den Statusaufzählungen: heute richtig, nach der nächsten Erweiterung still falsch.
+3. **„Der Schild" ist der falsche Maßstab.** Was `DefenseArea` auslöst, ist überwiegend prozentuale Schadensminderung (Reprisal, Addle, Feint, Kerachole), nicht Absorption. Prozentuale Minderung wird nicht „verschwendet" — sie skaliert mit dem Schaden, ihr Nutzen ist bei kleinem Schaden nur klein. Und welcher Schild gemeint wäre, hängt an Job und Level; ein gruppenweiter Schwellwert daraus ist nicht ableitbar.
+4. **Serien.** Mehrere kleine Einschläge kurz hintereinander summieren sich. Jeder einzeln unter der Schwelle, zusammen tödlich — eine Einzelwertprüfung sieht das nicht.
+
+**Modifizierte Form, die die vier Einwände umgeht:** nicht beim Lernen filtern, sondern die Größenordnung **mitspeichern** und erst beim Verbrauch entscheiden.
+
+- `HashSet<uint>` → Zuordnung Aktion auf **höchsten je beobachteten Schadensanteil**, gemessen als `value / MaxHp` des getroffenen Mitglieds.
+- *Anteil statt Betrag* entschärft Einwand 2 — ein Anteil altert nicht mit dem Item-Level.
+- *Höchstwert statt letztem Wert* entschärft Einwand 1 — eine einzige ungemitigierte Beobachtung setzt den wahren Wert, und spätere gut mitigierte Vorkommen senken ihn nicht wieder.
+- *Entscheidung beim Verbrauch* entschärft Einwand 3 und 4 — die Schwelle ist eine Nutzeroption, keine feste Zahl, und sie kann später um eine Serienbetrachtung ergänzt werden, ohne die gelernten Daten neu zu erheben.
+- **Standard 0**, also unverändertes Verhalten, bis der Nutzer eine Schwelle setzt. Die Wirkung ist statisch nicht belegbar, gehört also nach der Projektregel hinter eine Option.
+
+**Kosten dieser Form, die nicht zu verschweigen sind:** `HostileCastingArea` ist gespeicherte Nutzerkonfiguration und damit ein Persistenzvertrag. Ein Typwechsel von `HashSet<uint>` auf eine Zuordnung bricht die vorhandene Datei; nötig wäre ein Migrationspfad, der bestehende Einträge mit unbekanntem Anteil übernimmt und sie bis zur ersten Neubeobachtung wie heute behandelt. Zudem ist der gemessene Anteil je Gruppenmitglied verschieden (verschiedene Maximalgesundheit, verschiedene Mitigation) — festzulegen wäre, ob der höchste oder der mittlere Anteil des Effektsatzes zählt.
+
+**Bewertung:** technische Schuld, kein Defekt — die heutige Grobheit ist eine bewusste Vereinfachung, keine Fehlfunktion. Die Auflösung ist an dieselbe Bedingung gebunden wie der Rest dieses Eintrags: Ohne Spielbeobachtung ist nicht belegbar, dass die Schwelle mehr nützt als schadet.
+
 ### `SpreadDamagePaths` enthält keinen Spread-Marker · N
 
 `DataCenter.cs:2036-2043`. Zwei der vier Pfade stehen wortgleich in `SharedDamagePaths` (2025-2026), die anderen beiden sind laut eigenem Kommentar „AOE share markers", also ebenfalls Stack-Marker. Ohne Fehlwirkung, weil `IsCastingAreaVfx` alle drei Listen prüft. **Kosten:** eine Kategorie, die etwas anderes verspricht, als sie enthält. **Auflösung:** entweder echte Spread-Marker ergänzen oder die Liste streichen — beides erfordert Spieldaten, die offline nicht vorliegen. Nebenbefund: `SharedDamagePaths` führt `vfx/lockon/eff/com_trg01_0c` zweimal (2022 und 2024), im `FrozenSet` folgenlos.
@@ -199,6 +226,25 @@ Schritt 3 aus `docs/rotation-flow/08-mitigation-synergy.md`. Die Schritte 1 und 
 **Zur Führung dieses Punktes:** Die Einzelheiten stehen im Konzeptdokument, nicht hier. `TODO.md` führt die offene Arbeit und verweist; eine zweite Beschreibung derselben Sache würde mit der ersten auseinanderlaufen. Was hier stehen muss, ist allein, dass noch etwas offen ist und wo es beschrieben wird.
 
 **Auflösungsbedingung:** erst nach Beobachtung der Schritte 1 und 2 im Spiel. Kandidatensuche über ein Prüfskript, nicht über Erinnerung.
+
+### Keine Messgrundlage für Schadens- und Heilungsraten auf Gruppenmitglieder · N
+
+Jede Entscheidung der Form „reicht das, was gerade passiert, bis zum Ablauf einer Frist" braucht eine Rate. Für Gruppenmitglieder gibt es sie nicht, obwohl die Datenquellen anliegen:
+
+| Größe | Lage | Beleg |
+|---|---|---|
+| Gesundheitshistorie | nur Gegner | `DataCenter.RecordedHP` (`DataCenter.cs:197`) wird in `TargetUpdater.cs:513-535` ausschließlich aus `AllHostileTargets` gefüllt |
+| Zeit bis zum Tod | auf Gruppenmitglieder nicht anwendbar | `GetTTK` (`ObjectHelper.cs:3468`) liest genau diese Historie; für eine Party-Id bleibt `startTime` auf `DateTime.MinValue`, Rückgabe `NaN` |
+| Abtastrate | 1 Hz | `TimeToKillUpdateInterval` (`TargetUpdater.cs:19`) |
+| Eingehende Heilung | nicht ausgewertet | `Watcher.cs:17-18` hängt zwei Handler an `ActionEffect.ActionEffectEvent`, gefiltert auf Quelle = Gegner beziehungsweise Quelle = Spieler. Ein Paket eines fremden Heilers auf ein Gruppenmitglied passiert beide Filter |
+
+**Das ist kein fehlendes Datum, sondern ein fehlender Aufnehmer.** Die Ereignisse liegen an, sie werden für diese Objektmenge nur nicht gelesen.
+
+**Kosten:** Ohne diese Grundlage bleibt jede Regel über Living Dead, Walking Dead oder eine Tankbuster-Sequenz eine Statusabfrage — sie kann „liegt der Effekt" beantworten, aber nicht „reicht die Zeit". Dieselbe Lücke trifft künftige Regeln derselben Bauart.
+
+**Zwei Genauigkeitsgrenzen, die beim Bau zu beachten sind:** 1 Hz ist für ein Zehn-Sekunden-Fenster zu grob (zehn Stützstellen, Entscheidung in der letzten Sekunde), weshalb ein eigener kurzer Ringpuffer mit feinerem Takt der richtige Weg ist statt der Erweiterung von `RecordedHP`. Und ein Gesundheitsdelta ist ein **Surrogat** für kumulierte Heilung: fallen Heilung und Schaden in dasselbe Intervall, heben sie sich auf, obwohl die Heilung zählt. Die Effektpakete zu lesen misst die Größe selbst.
+
+**Auflösungsbedingung:** Der Aufwand fällt bei allen Nutzern an, der Nutzen zunächst nur beim Dunkelritter. Freigabe und Umfang sind deshalb gemeinsam mit Schritt 3 aus `docs/rotation-flow/09-tank-selfprotection.md` zu entscheiden, wo Konstruktion und Verwendung beschrieben sind. Sinnvoll ist, den Aufnehmer nur zu betreiben, solange ihn jemand liest.
 
 ### Drei Prüfskripte ohne Selbsttest · —
 

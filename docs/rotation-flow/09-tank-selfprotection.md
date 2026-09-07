@@ -138,6 +138,78 @@ Diese dritte Phase fehlte in der ersten Fassung des Konzepts vollständig. Sie i
 der einzige Zustand der ganzen Taxonomie, in dem Zurückhaltung weder Stufe 1 noch
 Stufe 2 berührt, sondern rein Stufe 3 bedient.
 
+### Living Dead ist ein Zeitproblem, kein Zustandsproblem
+
+Alle bisherigen Fassungen dieses Konzepts fragten: *Liegt der Status?* Das ist die
+falsche Frage, und sie führt in beiden Phasen zu falschem Verhalten. Die richtige
+Frage ist in beiden Fällen eine über **Rate und Restzeit**:
+
+**Phase 1 — reicht der eingehende Schaden, um vor Ablauf auf 0 zu kommen?**
+Living Dead nützt nur, wenn der Tod **innerhalb** der zehn Sekunden eintritt. Zeichnet
+sich ab, dass der eingehende Schaden dafür nicht ausreicht — der Tod also erst nach
+Ablauf käme —, dann war die Rückhaltung nicht nur nutzlos, sondern hat den Tank zehn
+Sekunden lang ungeheilt gelassen und steht nun mit niedriger Gesundheit ohne Schutz
+da. In diesem Fall ist **im letzten Augenblick** zu handeln: in der Ablaufsekunde
+oder unmittelbar danach, und zwar ausreichend, nicht symbolisch.
+
+Das kehrt die Logik um. Zurückgehalten wird nicht, *weil* der Status liegt, sondern
+solange die Hochrechnung sagt, dass der Tod noch rechtzeitig kommt. Kippt die
+Hochrechnung, kippt die Entscheidung — mitten in der Phase.
+
+**Phase 2 — heilt er sich schnell genug selbst?** Walking Dead verlangt kumuliert
+eine volle Maximalgesundheit an Heilung in zehn Sekunden. Die Selbstheilung liefert
+1500 Potenz je Waffenskill oder Zauber; bei rund 2,4 s GCD sind das etwa vier
+Auslösungen. Ob das reicht, hängt an der Maximalgesundheit des Dunkelritters und
+daran, ob er überhaupt zum Angreifen kommt. Auch hier ist die Frage eine Rate:
+*Liegt die bisher aufgenommene Heilung auf einem Kurs, der bis zum Ablauf die volle
+Maximalgesundheit erreicht?*
+
+Daraus folgt ein gestaffeltes Verhalten statt eines einzigen Schalters:
+
+| Zeitpunkt in Phase 2 | Verhalten | Begründung |
+|---|---|---|
+| Anfang | **leicht unterstützen** — Regeneration, ein günstiges HoT, kein teurer Notfallzauber | Der Beitrag zählt voll gegen die geforderte Summe, kostet aber wenig. Nichts zu tun verschenkt die billigste Hilfe |
+| Mitte | Kurs prüfen, weiter leicht unterstützen | Solange der Kurs trägt, ist ein großer Zauber vergeudet |
+| Kurs reicht nicht | **eingreifen, in voller Höhe** | Die Alternative ist der Tod am Phasenende |
+| Kurs trägt bis zum Ende | nichts weiter | Der Rest ist Überheilung |
+
+Die frühere Fassung kannte nur „Phase 2: ja, zwingend". Das ist im Ergebnis nicht
+falsch, aber es verschenkt die Unterscheidung zwischen billiger Frühunterstützung
+und teurem Späteingriff — und es lässt offen, wann der teure Eingriff fällig ist.
+
+### Was diese Ratenbetrachtung an Messmitteln voraussetzt — und was davon fehlt
+
+Die Anforderung ist berechtigt; die Frage ist, ob sie mit den vorhandenen Mitteln zu
+beantworten ist. Erhebung am Artefakt:
+
+| Größe | Vorhanden? | Beleg |
+|---|---|---|
+| Restzeit des Status | **ja** | `StatusHelper.StatusTime(…)` liefert die verbleibende Sekundenzahl |
+| Historie der Gesundheit über die Zeit | **nur für Gegner** | `DataCenter.RecordedHP` (`DataCenter.cs:197`) wird in `TargetUpdater.cs:513-535` ausschließlich aus `AllHostileTargets` gefüllt. Party-Mitglieder stehen nicht darin |
+| Zeit bis zum Tod eines Ziels | **auf Party-Mitglieder nicht anwendbar** | `GetTTK` (`ObjectHelper.cs:3468`) liest genau diese Historie; für eine Party-Id findet es keinen Eintrag, `startTime` bleibt `DateTime.MinValue` und die Funktion liefert `NaN` |
+| Abtastrate der Historie | **1 Hz** | `TimeToKillUpdateInterval = TimeSpan.FromSeconds(1)` (`TargetUpdater.cs:19`) |
+| Eingehende Heilung auf ein Party-Mitglied | **nicht ausgewertet, aber verfügbar** | `ActionEffect.ActionEffectEvent` liefert jedes Effektpaket mit Betrag und Ziel; `Watcher.cs:17-18` hängt daran nur zwei Handler, gefiltert auf Quelle = Gegner beziehungsweise Quelle = Spieler. Ein Paket eines fremden Heilers passiert beide Filter, wird also von niemandem gelesen |
+| Schadensbetrag eines Gegnertreffers | **verfügbar und heute schon gelesen** | `Watcher.cs:137` wertet `damageEffect.value` aus, prüft aber nur `> 0` |
+
+**Der Befund ist damit nicht „nicht messbar", sondern „der Aufnehmer fehlt".** Die
+Datenquelle liegt an, sie wird nur nicht auf Party-Mitglieder angewandt. Das ist ein
+wesentlicher Unterschied für die Umsetzbarkeit — und es benennt genau, was zu bauen
+wäre.
+
+Zwei Genauigkeitsgrenzen bleiben auch nach einem solchen Umbau und sind zu benennen,
+nicht wegzuformulieren:
+
+1. **Die 1-Hz-Abtastung ist für ein Zehn-Sekunden-Fenster zu grob.** Zehn Stützstellen
+   für eine Kursprognose, deren Entscheidung in der letzten Sekunde fällt, sind zu
+   wenig; die Prognose wäre in der entscheidenden Sekunde eine Sekunde alt. Für diesen
+   Zweck ist eine eigene, feinere Aufzeichnung nötig, nicht die vorhandene mitbenutzt.
+2. **Ein Gesundheitsdelta ist ein Surrogat für die kumulierte Heilung.** Fallen
+   Heilung und Schaden in dasselbe Abtastintervall, heben sie sich im Delta auf,
+   obwohl die Heilung gegen die geforderte Summe zählt. Die Effektpakete zu lesen
+   misst die Größe selbst; das Delta misst nur ihre Nettowirkung. Nach der
+   Projektregel zur Surrogatmessung ist die Paketauswertung der zulässige Weg und
+   das Delta bestenfalls eine Rückfallebene.
+
 ### Klasse C — reine Schadensreduktion: keine Wechselwirkung
 
 Rampart, Sentinel, Shadow Wall, Nebula, Sheltron und Holy Sheltron, Bulwark,
@@ -150,6 +222,51 @@ besonders dringend.
 Bloodwhetting und Raw Intuition (heilen bei Waffenskill-Treffern), Aurora,
 Clemency, Nascent Flash. Fremde Heilung addiert sich, verhindert aber nichts.
 
+## Warum die Überlebensprüfung in ihrer bisherigen Form nicht trägt
+
+`TankSurvivesWithoutMe` sollte die Rückhaltung absichern: erst prüfen, ob der Tank
+ohne mich überlebt, dann zurückhalten. Drei Einwände aus der Spielpraxis zeigen, dass
+die vorgesehene Konstruktion diese Zusage nicht einlösen kann.
+
+**Erstens: Tankbuster wechseln das Ziel mitten in der Sequenz.** In Begegnungen mit
+zwei Tanks ist der übliche Ablauf, dass der erste Tank einen Buster nimmt, der
+Offtank danach die Aggro übernimmt und den zweiten auf sich zieht. Die vorhandene
+Vorhersage bildet das nicht ab: `DataCenter.BMRNextTankbusterIn` ist **eine einzige
+Zahl** — die Zeit bis zum nächsten Tankbuster, ohne Angabe, auf wen. Und
+`IsHostileCastingTankBusterAtMe` ist ausdrücklich spielerzentriert; der Kommentar bei
+`DataCenter.cs:2087` begründet das ausführlich. Für die Frage „welcher der beiden
+Tanks bekommt den nächsten Schlag" gibt es keine Größe.
+
+**Zweitens: Ein Tankbuster ist nicht ein Einschlag.** Mehrfach einschlagende Buster —
+der Auftraggeber nennt Unreal Shinryu und Arkh Monh — sind eine Folge von Treffern in
+kurzem Abstand. `BMRNextTankbusterIn` nennt den Beginn, nicht die Anzahl und nicht die
+Gesamtsumme. Eine Prüfung „steht gerade ein Tankbuster an?" beantwortet also nicht,
+ob der Tank *diese Sequenz* übersteht.
+
+**Drittens, und das wiegt am schwersten: Manche Buster töten auch einen vollgeheilten
+und geschildeten Tank.** Wenn der Tank seine eigene Notfallfähigkeit nicht zündet,
+ändern Vollheilung und Schild vorab nichts am Ausgang. Die stillschweigende Annahme
+hinter jeder b-Zeile — „wenn ich rechtzeitig heile, überlebt er" — trifft für diese
+Fälle nicht zu.
+
+**Was daraus folgt, ist nicht, die Rückhaltung freizugeben.** Der dritte Einwand
+belegt, dass Heilung manchmal nichts nützt; er belegt nicht, dass Zurückhaltung dann
+besser wäre. Sie ist in diesem Fall nur nicht schlechter — und welcher Fall vorliegt,
+ist vorab nicht erkennbar. Nach der Rangordnung entscheidet bei Gleichstand auf Stufe
+1 die Stufe 2, aber eben nur bei belegtem Gleichstand, und der ist hier nicht
+herstellbar.
+
+Die tragfähige Folgerung ist eine andere und strenger als die bisherige:
+
+> **Jedes erkannte Tankbuster-Fenster hebt die Rückhaltung auf, unabhängig vom
+> Gesundheitsstand.** Nicht erst, wenn der Tank nach HP „in Gefahr" ist.
+
+Denn genau in diesem Fenster ist die Prognose unmöglich: Zielwechsel, Trefferzahl und
+Gesamtschaden sind allesamt unbekannt. Eine Regel, die in einem Zustand
+zurückhält, den sie nicht beurteilen kann, ist eine Wette, keine Entscheidung. Die
+bisherige HP-Schwelle bleibt als zweite, unabhängige Aufhebung bestehen — sie fängt
+den Dauerschaden ab, das Buster-Fenster den Einzelschlag.
+
 ## Fallvarianten
 
 Vollständig über die Dimensionen Fähigkeitsklasse × Gesundheitsstand ×
@@ -158,14 +275,17 @@ Heileraktion. „Richtig" meint jeweils die Handlung, die dem Vorrang der
 
 | # | Lage | Heilung richtig? | Schild richtig? | Begründung |
 |---|---|---|---|---|
-| 1 | DRK, Living Dead aktiv, HP hoch, **Heilkapazität für Phase 2 gesichert** | **nein** | **nein** | Stufe 1 ist gesichert, also darf Stufe 2 entscheiden: beides verhindert den Tod, den die Fähigkeit einplant |
+| 1 | DRK, Living Dead aktiv, **Hochrechnung: Tod tritt vor Ablauf ein**, Heilkapazität für Phase 2 gesichert | **nein** | **nein** | Stufe 1 ist gesichert, also darf Stufe 2 entscheiden: beides verhindert den Tod, den die Fähigkeit einplant |
 | 1b | dieselbe Lage, **Heilkapazität nicht gesichert** | **ja** | ja | Stufe 1 schlägt Stufe 2. Ohne die Kapazität für die volle Heilmenge in Walking Dead ist der Verzicht ein Tausch von sicherem gegen unsicheres Überleben |
-| 2 | DRK, Living Dead aktiv, HP niedrig, Ablauf fern | wie 1 / 1b | wie 1 / 1b | Der Gesundheitsstand allein ändert nichts; entscheidend bleibt die Kapazität für Phase 2 |
-| 3 | DRK, Living Dead läuft in ≤ 2 GCDs ab, HP niedrig | **ja, dringend** | ja | Der Schutz endet, ohne dass der Tod eintrat — danach ist er ungeschützt |
-| 4 | DRK, Walking Dead aktiv | **ja, zwingend** | nein, wirkungslos bei 1 HP | Überlebensbedingung ist kumulative Heilung in Höhe der maximalen HP; fremde Heilung zählt mit |
+| 1c | DRK, Living Dead aktiv, **Hochrechnung kippt: Tod käme erst nach Ablauf** | **ja, in der Ablaufsekunde** | ja | Der Schutz verpufft. Weiter zurückzuhalten lässt den Tank ungeheilt und ungeschützt zurück. Der Eingriff gehört an das Ende der Phase, nicht sofort — bis dahin kann die Hochrechnung erneut kippen |
+| 1d | DRK, Living Dead aktiv, **Tankbuster-Fenster erkannt** | **ja** | ja | Zielwechsel, Trefferzahl und Gesamtschaden sind unbekannt; eine Rückhaltung wäre eine Wette. Gilt unabhängig vom Gesundheitsstand |
+| 2 | DRK, Living Dead aktiv, HP niedrig, Ablauf fern | wie 1 / 1b / 1c | dito | Der Gesundheitsstand allein entscheidet nicht; entscheidend sind Hochrechnung und Kapazität für Phase 2 |
+| 3 | DRK, Living Dead läuft in ≤ 2 GCDs ab, HP niedrig | **ja, dringend** | ja | Sonderfall von 1c mit bereits niedriger Gesundheit — hier ist der Späteingriff nicht optional |
+| 4 | DRK, Walking Dead aktiv, **Kurs trägt bis zum Phasenende** | leicht unterstützen (HoT, Regeneration) | nein, wirkungslos bei 1 HP | Billige Beiträge zählen voll gegen die geforderte Summe; ein teurer Notfallzauber wäre hier Überheilung |
+| 4a | DRK, Walking Dead aktiv, **Kurs reicht nicht** | **ja, in voller Höhe** | nein | Die Alternative ist der Tod am Phasenende. Kein Rückhaltefall mehr |
 | 4b | DRK, **Undead Rebirth** aktiv | nein, nachrangig | nein | Die Bedingung ist erfüllt, der Tank kann nicht sterben. Reine Stufe 3, ohne Berührung von Stufe 1 oder 2 |
 | 5 | DRK, TBN aktiv, Schaden läuft, **Tank nicht in Gefahr** | zurückhaltend | zurückhaltend | Stufe 1 gesichert. Die Wirkung eines fremden Schildes auf die Barriere ist **unbelegt** und für das Plugin **nicht beobachtbar** (ein einziger `ShieldPercentage`-Wert je Charakter). Der Fall trägt keine Regel ohne Option |
-| 5b | dieselbe Lage, **Tank in Gefahr** | **ja** | **ja** | Stufe 1 schlägt Stufe 2. Ein möglicherweise verlorener Dark Arts wiegt keinen toten Tank auf |
+| 5b | dieselbe Lage, **Tank in Gefahr oder Tankbuster-Fenster** | **ja** | **ja** | Stufe 1 schlägt Stufe 2. Ein möglicherweise verlorener Dark Arts wiegt keinen toten Tank auf |
 | 6 | GNB, Superbolide aktiv | **ja** | ja | HP stehen auf 1; das Fenster ist die einzige gefahrlose Gelegenheit |
 | 7 | WAR, Holmgang aktiv, HP heruntergedrückt | **ja** | ja | wie 6 |
 | 8 | PLD, Hallowed Ground aktiv, beim Zünden wenig HP | **ja** | ja | Die HP bleiben unverändert; nach Ablauf steht er, wo er stand |
@@ -183,13 +303,18 @@ ausschließlich, solange Stufe 1 gesichert ist. Die b-Zeilen sind nicht Ausnahme
 Rand, sondern der Regelfall, sobald der Tank in Gefahr gerät: **Jede Rückhaltung
 steht unter dem Vorbehalt des Überlebens.**
 
-Die Prüfung am Artefakt hat das Verhältnis weiter zu Ungunsten der Rückhaltung
-verschoben. Von sechzehn Lagen bleiben **zwei** echte Rückhaltefälle (1, 5), zwei
-ihre Gegenstücke unter Gefahr (1b, 5b), einer ist reine Ressourcenschonung ohne
-Risiko (4b) und elf verlangen normales oder nachrangiges Handeln. Der Gunbreaker-Fall
-ist ganz entfallen, und von den zwei verbliebenen Rückhaltefällen ruht einer (5) auf
-unbelegter Mechanik. **Der belastbare Kern des Vorhabens ist damit nicht die
-Rückhaltung, sondern die Richtigstellung der Zielwahl.**
+Die Prüfung am Artefakt und die Einarbeitung der Spielpraxis haben das Verhältnis
+weiter zu Ungunsten der Rückhaltung verschoben. Von neunzehn Lagen bleiben **zwei**
+echte Rückhaltefälle (1, 5); ihnen stehen fünf Aufhebungen gegenüber (1b, 1c, 1d, 4a,
+5b), einer ist reine Ressourcenschonung ohne Risiko (4b), und der Rest verlangt
+normales, leicht unterstützendes oder nachrangiges Handeln. Der Gunbreaker-Fall ist
+ganz entfallen, und von den zwei verbliebenen Rückhaltefällen ruht einer (5) auf
+unbelegter Mechanik.
+
+Bemerkenswert ist, dass die Zahl der Aufhebungen die der Rückhaltefälle nun um mehr
+als das Doppelte übersteigt. Eine Bedingung, die häufiger nicht gilt als gilt, ist
+kein Leitmotiv. **Der belastbare Kern des Vorhabens ist die Richtigstellung der
+Zielwahl; die Rückhaltung ist ein eng umgrenzter Sonderfall mit vielen Ausnahmen.**
 
 ## Was RSR heute tut
 
@@ -386,26 +511,72 @@ Ablauf der Wirkdauer aus, ist also nicht raubbar; `ClarityOfCorundum` ist reine
 Schadensreduktion.
 
 **Die Rückhaltung greift nur, wenn Stufe 1 gesichert ist.** Das ist keine
-Ausnahme am Ende der Bedingung, sondern die erste Prüfung:
+Ausnahme am Ende der Bedingung, sondern die erste Prüfung. Nach Einarbeitung der
+Spielpraxis kommt eine zweite Vorbedingung hinzu — die Hochrechnung — und die
+Buster-Aufhebung wandert aus der Gefahrenprüfung heraus in eine eigene Bedingung:
 
 ```
 protected bool MayWithholdForTrigger(IBattleChara tank) =>
-       TankSurvivesWithoutMe(tank)                       // Stufe 1
+       !TankbusterWindowOpen()                           // Aufhebung, HP-unabhängig
+    && TankSurvivesWithoutMe(tank)                       // Stufe 1
+    && TriggerStillReachable(tank)                       // Hochrechnung
     && tank.HasStatus(false, StatusHelper.TriggerBearingStatus)   // Stufe 2
     && WithholdForTriggersEnabled;
 ```
 
-`TankSurvivesWithoutMe` ist konservativ zu bauen, aus vorhandenen Größen:
+`TankbusterWindowOpen()` fasst `DataCenter.BMRTankbusterImminent` und
+`DataCenter.IsHostileCastingToTank` zusammen. Es steht **vor** der Gesundheitsprüfung
+und nicht in ihr, weil es aus einem anderen Grund aufhebt: nicht weil der Tank in
+Gefahr *ist*, sondern weil in diesem Fenster nicht beurteilbar ist, ob er es wird.
+Zielwechsel zwischen zwei Tanks, Trefferzahl und Gesamtschaden sind aus den
+vorhandenen Größen nicht abzulesen.
+
+`TankSurvivesWithoutMe` bleibt konservativ, aus vorhandenen Größen:
 
 - `tank.GetEffectiveHpPercent()` über `Service.Config.HealthForDyingTanks`
   (`ObjectHelper.cs:126` nutzt dieselbe Schwelle bereits für sterbende Tanks),
-- kein `DataCenter.IsHostileCastingToTank` und kein
-  `DataCenter.BMRTankbusterImminent`,
 - **für Living Dead zusätzlich:** genug eigene Kapazität für Phase 2. Ohne
   belastbares Maß dafür wird konservativ gefordert, dass `DataCenter.CurrentMp`
   über einer Schwelle liegt und kein weiteres Gruppenmitglied unter
   `Service.Config.HealthTankRatio` steht. Ist eines davon nicht erfüllt, wird nicht
   zurückgehalten.
+
+`TriggerStillReachable(tank)` ist neu und trägt die Ratenbetrachtung. Für Living Dead
+lautet sie: *Erreicht die Gesundheit bei der beobachteten Schadensrate die Null noch
+vor Ablauf des Status?* Sie setzt den Messbaustein aus Schritt 0 voraus und liefert
+ohne ihn `false` — also keine Rückhaltung. **Das Fehlen der Messung darf nie
+Rückhaltung begründen**, sonst wäre die Vorbedingung ein Feigenblatt.
+
+### Schritt 0 — der fehlende Messbaustein
+
+Ohne ihn ist der Auftrag „prüfe, ob der Tod rechtzeitig eintritt" nicht ausführbar,
+und Schritt 3 bliebe die Zustandsprüfung, die er nicht sein soll. Er geht den anderen
+Schritten deshalb voraus und ist für sich allein nutzbar, weil er nichts entscheidet,
+sondern nur misst.
+
+**Was zu bauen ist:**
+
+1. **Gesundheitshistorie für Party-Mitglieder.** Nicht durch Erweiterung von
+   `DataCenter.RecordedHP` — dessen 1-Hz-Takt und Vier-Minuten-Fenster sind auf die
+   Gegner-Lebensdauer zugeschnitten, für ein Zehn-Sekunden-Fenster zu grob und für
+   acht zusätzliche Objekte über vier Minuten unnötig teuer. Stattdessen ein eigener
+   Ringpuffer über ein kurzes Fenster mit deutlich feinerem Takt, gefüllt aus dem
+   bestehenden Updater-Pfad.
+2. **Ein dritter Effekt-Handler.** `Watcher.cs:17-18` hängt heute zwei Handler an
+   `ActionEffect.ActionEffectEvent`, gefiltert auf Quelle = Gegner und Quelle =
+   Spieler. Ein Paket eines fremden Heilers auf ein Party-Mitglied passiert beide.
+   Ein `ActionOnPartyMember`-Handler liest daraus `ActionEffectType.Heal` mit Betrag
+   und Ziel — und misst damit die kumulierte Heilung selbst statt ihrer Nettowirkung.
+   Das ist der Unterschied zwischen Messung und Surrogat.
+3. **Zwei abgeleitete Größen**, beide als reine Lesefunktionen:
+   `IncomingDamageRate(member)` in Gesundheitsanteil je Sekunde, und
+   `HealingReceivedSince(member, seconds)` als absolute Summe.
+
+**Betroffenenkreis.** Punkt 1 und 2 laufen in jedem Kampf für jedes Party-Mitglied
+mit, also auch bei Nutzern, die nie einen Dunkelritter sehen. Die Kosten sind damit
+allgemein, der Nutzen ist es zunächst nicht — das ist bei der Freigabe zu
+berücksichtigen und spricht dafür, den Aufnehmer nur zu betreiben, solange ihn
+jemand liest.
 
 Für `BlackestNight` gilt die Rückhaltung **vorrangig dem Schild**, nicht der
 Heilung: Die Barriere wird von Schaden verzehrt, nicht von fehlender Heilung, und
@@ -460,6 +631,30 @@ Schildmechanik; keine Laufzeitbeobachtung, kein Vier-Augen-Prinzip.
 | Ändert sich dadurch die gewählte Option? | **Die Gewichtung ja, die Wahl nein.** O1 wird schwerer (Rangstufe 1 statt 3), O2 leichter (nur noch `LivingDead` belastbar, `BlackestNight` unbelegt). Die Reihenfolge „erst O1, dann O2" wird dadurch bestätigt, nicht in Frage gestellt |
 | Wurde eine Aussage geglättet, statt sie zurückzunehmen? | Zu prüfen war das für die Schild-Aussage. Sie ist ausdrücklich zurückgenommen und der Widerspruch benannt, nicht durch Umformulierung getilgt |
 
+## Viertes Audit — gegen die Spielpraxis
+
+Anlass waren drei Einwände des Auftraggebers, die sich nicht am Code, sondern an der
+Begegnungswirklichkeit stoßen. Sie haben die Konstruktion stärker verändert als die
+Artefaktprüfung.
+
+| Prüffrage | Ergebnis |
+|---|---|
+| Fragt das Konzept nach dem Zustand oder nach der Zeit? | **Nach dem Zustand — und das war falsch.** Living Dead nützt nur, wenn der Tod *vor* Ablauf eintritt; Walking Dead nur, wenn die Heilung *bis* zum Ablauf reicht. Beide Male ist die Frage eine Rate, keine Statusabfrage |
+| Konnte die bisherige Fassung „im letzten Augenblick retten"? | **Nein.** Sie kannte keinen Ablaufzeitpunkt als Auslöser, nur die Zwei-GCD-Freigabe, die aus einem anderen Grund existiert. Fall 1c war nicht abgedeckt |
+| Kannte sie die Staffelung in Phase 2? | **Nein.** „ja, zwingend" verschenkt die billige Frühunterstützung und benennt nicht, wann der teure Eingriff fällig ist |
+| Trägt `TankSurvivesWithoutMe` die ihm zugedachte Zusage? | **Nein.** Es prüft den Gesundheitsstand, aber der entscheidet nicht über einen Mehrfachbuster, einen Zielwechsel zwischen zwei Tanks oder einen Buster, der auch vollgeheilt tötet. Die Zusage „er überlebt ohne mich" ist aus den vorhandenen Größen nicht herstellbar |
+| Folgt daraus, die Rückhaltung freizugeben? | **Nein**, und diese Gegenposition ist zu benennen: Dass Heilung manchmal nichts nützt, macht Zurückhaltung nicht besser, nur nicht schlechter. Welcher Fall vorliegt, ist vorab unbekannt. Die Folgerung ist strenger, nicht laxer — jedes Buster-Fenster hebt auf, HP-unabhängig |
+| Ist die geforderte Hochrechnung überhaupt messbar? | **Heute nicht, aber baubar.** `RecordedHP` führt nur Gegner (`TargetUpdater.cs:513-535`), also liefert `GetTTK` auf ein Party-Mitglied `NaN`. Die Effektpakete fremder Heiler passieren beide Watcher-Filter. Beides sind fehlende Aufnehmer, keine fehlenden Quellen |
+| Wurde die Grenze der Messung benannt statt geglättet? | Ja: 1 Hz ist für ein 10-s-Fenster zu grob, und ein Gesundheitsdelta ist ein Surrogat für kumulierte Heilung. Deshalb eigener Puffer und Paketauswertung statt Mitbenutzung |
+| Was, wenn die Messung fehlt oder unsicher ist? | `TriggerStillReachable` liefert dann `false`, also **keine** Rückhaltung. Fehlende Messung darf nie Rückhaltung begründen |
+| Ist der Aufwand noch verhältnismäßig? | **Offen, und ehrlich zu benennen.** Schritt 3 bedient einen Job in einer Fähigkeit, Schritt 0 kostet bei allen Nutzern. Das gehört in die Vorlage, nicht in eine Fußnote |
+
+**Nicht geprüft, weil außerhalb der Artefaktlage:** die konkreten Trefferzahlen und
+Schadenswerte der genannten Begegnungen (Unreal Shinryu, Arkh Monh). Sie sind als
+Beleg dafür genommen, dass mehrfach einschlagende Buster existieren — das genügt für
+die Konstruktion. Ein Nullbefund über den englischen Bossnamen wäre nach der
+Sprachregel ohnehin kein Beleg gewesen.
+
 ## Verbesserung nach dem zweiten Audit
 
 **Schritt 1 und 2 bleiben zusammengelegt** — Ergebnis des ersten Audits, bestätigt.
@@ -471,7 +666,12 @@ Lagen einen Effekt der Stufe 2 über das Überleben gestellt.
 **Stufe 3 verliert jede eigenständige Wirkung.** Ressourcenschonung darf nichts
 zurückhalten; sie ergibt sich als Nebenwirkung der Herabstufung.
 
-**Ergebnis nach dem dritten Audit: drei Schritte, nach Beleglage geordnet.**
+**Ergebnis nach dem vierten Audit: vier Schritte, nach Beleglage geordnet.**
+
+0. **Messbaustein** — Party-Gesundheitshistorie mit kurzem, feinem Fenster und ein
+   dritter Effekt-Handler für eingehende Heilung, dazu zwei Lesefunktionen. Entscheidet
+   nichts, misst nur; Voraussetzung für Schritt 3 in seiner richtigen Form. Kosten
+   fallen bei allen Nutzern an, Nutzen zunächst nur beim Dunkelritter.
 
 1. **Excogitation-Invertierung** (`SCH_Reborn.cs:830`). Belegte Defektbehebung,
    kleiner Blast Radius: eine Rotation, eine Fähigkeit. Ohne Option. Für sich
@@ -483,14 +683,25 @@ zurückhalten; sie ergibt sich als Nebenwirkung der Herabstufung.
    die fehlenden Ids ergänzen: `HallowedGround`, `HallowedGround_1302`,
    `UndeadRebirth`. Keine weiteren Holmgang-Ids.
 3. **Auslöser-Rückhalteliste**, hinter einer Option mit Standard aus, gebunden an
-   die Tankrolle, mit dem Überlebensvorbehalt als erster Bedingung. `LivingDead` ist
-   belegt und trägt. `BlackestNight` ruht auf unbelegter Mechanik und ist ein
-   vertretbarer Streichkandidat. `CatharsisOfCorundum` und `Excogitation` sind
-   ausgeschieden.
+   die Tankrolle, mit der Buster-Aufhebung und dem Überlebensvorbehalt als
+   Vorbedingungen und der Hochrechnung als dritter. Dazu die gestaffelte
+   Phase-2-Unterstützung (leicht am Anfang, voll bei nicht tragendem Kurs) und der
+   Späteingriff in der Ablaufsekunde von Phase 1. `LivingDead` ist belegt und trägt.
+   `BlackestNight` ruht auf unbelegter Mechanik und ist ein vertretbarer
+   Streichkandidat. `CatharsisOfCorundum` und `Excogitation` sind ausgeschieden.
 
 Die Umstellung gegenüber der zweiten Fassung ist nicht kosmetisch: Was dort als
 Kern galt — die Rückhaltung —, ist nach der Artefaktprüfung der schwächste Teil,
 und was dort als Nebenschritt geführt wurde, betrifft das Überleben der Gruppe.
+
+**Der vierte Durchgang hat den Aufwand von Schritt 3 erheblich erhöht.** Aus einer
+Statusabfrage ist eine Regelung mit zwei Hochrechnungen, einer Staffelung über die
+Phasenzeit und einem eigenen Messbaustein geworden. Das ist die sachlich richtige
+Konstruktion — die Anforderung des Auftraggebers ist zutreffend und die bisherige
+Fassung wäre in beiden Phasen falsch gelaufen —, aber es verschiebt das
+Aufwand-Nutzen-Verhältnis deutlich. Schritt 3 bedient **einen** Job in **einer**
+Fähigkeit; Schritt 0 kostet bei allen Nutzern. Das ist bei der Freigabe abzuwägen und
+wird in der Vorlage nicht kleingeredet.
 
 ## Nachweisbarkeit
 
