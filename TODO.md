@@ -45,13 +45,28 @@ Fünf Fundstellen, alle aus Upstream übernommen und dort unverändert vorhanden
 
 **Auflösung:** `if (o.NoNeedHealingInvuln())` an der einen Stelle. Der Wirkungsbereich ist allerdings die zentrale Heilzielwahl aller Jobs: Nach der Korrektur greift die Priorisierung erstmals wirklich, was das Heilverhalten breit verändert. Freigabepflichtig, nicht nebenbei zu ändern. Der irreführende Name ist getrennt zu behandeln — ihn anzupassen, ohne die Aufrufstellen zu prüfen, würde den Beleg tilgen.
 
-### Schilde und Mitigation kennen die Invulnerabilität des Ziels nicht · N
+### Die vier Tank-Unverwundbarkeiten werden gleich behandelt, obwohl sie es nicht sind · N
 
-Die Prüfung aus dem vorigen Punkt greift ausschließlich in den Heilzweigen. `ShouldAddDefenseSingle` (`StateUpdater.cs:193-292`) enthält keine Entsprechung, also legt ein Heiler weiterhin Divine Benison und Aquaveil auf einen Tank, dessen Schutz gerade läuft.
+`NoNeedHealingStatus` unterdrückt Heilung pauschal, solange einer der gelisteten Schutzstatus läuft. Die vier Fähigkeiten unterscheiden sich aber gerade darin, was Heilung in dieser Zeit bewirkt:
 
-**Kosten:** Beim Dunkelritter verzögert oder verhindert die abgefangene Schadensmenge den Tod, ohne den Walking Dead und dessen Selbstheilung nicht zustande kommen. Bei Holmgang und Superbolide ist der Schild schlicht wirkungslos, kostet aber einen Cooldown von 30 bis 60 Sekunden.
+| Job | Fähigkeit | Wirkung auf die HP | Heilung währenddessen | Schild währenddessen |
+|---|---|---|---|---|
+| PLD | Hallowed Ground | HP unverändert, kein Schaden geht durch | wirklich unnötig | unnötig, schadet aber nicht |
+| WAR | Holmgang | HP fallen nicht unter 1 | nicht dringend, danach sofort nötig | nützlich: er überdauert die Phase |
+| GNB | Superbolide | setzt die HP **sofort auf 1** | **erforderlich** — sonst endet die Phase bei 1 HP | **nützlich** — fängt den ersten Treffer danach ab |
+| DRK | Living Dead | Tod wird in Walking Dead umgewandelt | Phase 1 **schädlich**, Phase 2 erforderlich | Phase 1 **schädlich** |
 
-**Auflösungsbedingung:** dieselbe Ablaufregel wie bei der Heilung — freigeben, sobald der Schutz binnen zwei GCDs endet. Umsetzung erst nach der Entscheidung zum vorigen Punkt, weil beide dieselbe Prüfung verwenden.
+**Korrektur einer früheren Aussage in diesem Eintrag:** Hier stand, bei Holmgang und Superbolide sei ein Schild „schlicht wirkungslos". Das ist falsch. Divine Benison hält 15 Sekunden, die Unverwundbarkeiten 8 bis 10 — der Schild überlebt sie und liegt genau dann, wenn der Tank mit 1 HP am verwundbarsten ist. Nur beim Dunkelritter ist er in Phase 1 tatsächlich schädlich, weil die abgefangene Schadensmenge den Tod verhindert, der Walking Dead und dessen Selbstheilung erst freischaltet.
+
+Eine gemeinsame Regel für alle vier wäre damit selbst der Fehler. Zu unterscheiden ist:
+
+- **Nur DRK, Phase 1:** Heilung und Schild zurückhalten — das ist der einzige Fall, in dem beide aktiv schaden.
+- **GNB:** Heilung ist die eigentliche Aufgabe, nicht der Verzicht. Die Freigabe erst zwei GCDs vor Ablauf lässt wenig Zeit, einen Tank von 1 HP hochzubringen.
+- **WAR, PLD:** Zurückhalten ist richtig und effizient; die Zwei-GCD-Regel deckt den Übergang.
+
+**Zusätzlich: Hallowed Ground fehlt in der Liste.** Sie führt `Holmgang_409`, `LivingDead`, `Superbolide` und `Invulnerability`, aber keine der vier `HallowedGround`-Ids (82, 1302, 2287, 2794). Ausgerechnet der Fall, in dem Heilung vollständig unnötig ist, wird nicht unterdrückt. Ebenfalls offen: von vier Holmgang-Ids (88, 409, 1304, 1305) steht nur `Holmgang_409` in der Liste, während `BeirutaWHM.cs:236` mit `StatusID.Holmgang` (88) prüft — welche das Spiel heute setzt, ist statisch nicht zu klären.
+
+**Auflösungsbedingung:** Erst die Entscheidung zum vorigen Punkt, weil beide dieselbe Prüfung verwenden. Danach je Job getrennt, nicht als eine Regel.
 
 ## Technische Schuld
 
