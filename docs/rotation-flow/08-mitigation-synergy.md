@@ -1,29 +1,28 @@
 # 08 · Synergie von Schadensvermeidung und Schadenserzeugung
 
-Entwurfsdokument nach ADR-Struktur. Beschreibt einen Mechanismus, kein umgesetztes
-Verhalten: Stand dieses Dokuments ist ein Konzept ohne Code.
+Entwurfsdokument nach ADR-Struktur, mit Umsetzungsplan. Beschreibt einen
+Mechanismus, kein umgesetztes Verhalten: Stand dieses Dokuments ist ein Konzept
+ohne Code.
 
 ## Kontext
 
 Ausgangspunkt war die Frage, wie Sanctus (Holy) eingesetzt wird und ob seine
-Betäubungswirkung berücksichtigt wird. Die Prüfung ergab: sie wird nicht
-berücksichtigt, und die Frage öffnet ein allgemeineres Thema. RSR trifft
-Mitigationsentscheidungen heute **je Werkzeug und reaktiv**. Es gibt keine Stelle,
-an der die Frage beantwortet wird, wie viel Schadensvermeidung gerade anliegt und
-ob ein weiteres Werkzeug daran noch etwas ändert.
+Betäubungswirkung berücksichtigt wird. Sie wird nicht berücksichtigt, und die Frage
+öffnet ein allgemeineres Thema: RSR trifft Mitigationsentscheidungen **je Werkzeug
+und reaktiv**. Es gibt keine Stelle, an der beantwortet wird, wie viel
+Schadensvermeidung gerade anliegt und ob ein weiteres Werkzeug daran noch etwas
+ändert.
 
 Das ist nicht nur eine Frage der Mitigation. Jedes Werkzeug, das redundant fällt,
-kostet einen GCD oder einen Weave-Slot, der Schaden hätte erzeugen können. **Die
-Vermeidung von Überlappung dient beiden Zielen gleichzeitig** — das ist der
-Leitgedanke dieses Konzepts und der Grund, warum es nicht als reine
-Mitigationsoptimierung geführt wird.
+kostet einen GCD oder einen Weave-Slot, der Schaden erzeugt hätte. **Die Vermeidung
+von Überlappung dient beiden Zielen gleichzeitig** — das ist der Leitgedanke und der
+Grund, warum das Thema als Synergiefrage geführt wird.
 
 ### Rechenbeispiel als Größenordnung
 
 In Sekunden-Äquivalenten verhinderten Schadens, bei gleichmäßigem Gegnerschaden.
-Reprisal senkt den Gegnerschaden um 10 % für 10 s; die Betäubung durch Sanctus
-wirkt 4 s, bei Wiederholung 2 s und 1 s, danach ist das Ziel 45 s immun
-(Resistenzstufen, Fremdquelle).
+Reprisal senkt den Gegnerschaden um 10 % für 10 s; die Betäubung durch Sanctus wirkt
+4 s, bei Wiederholung 2 s und 1 s, danach ist das Ziel 45 s immun.
 
 | | Betäubung im Reprisal-Fenster | Betäubung außerhalb |
 |---|---|---|
@@ -31,235 +30,229 @@ wirkt 4 s, bei Wiederholung 2 s und 1 s, danach ist das Ziel 45 s immun
 | Reprisal-Anteil | 6 s × 10 % = 0,6 | 10 s × 10 % = 1,0 |
 | **Summe** | **4,6** | **5,0** |
 
-Über einen 90-Sekunden-Pull mit zwei Reprisal-Anwendungen und zwei
-Resistenzzyklen: getrennt 2,0 + 14,0 = **16,0**, vollständig überlappt
-14,0 + 0,6 = **14,6**. Rund ein Zehntel der gesamten Mitigation geht an der
-Überlappung verloren, dazu die GCDs, die dafür aufgewendet wurden.
+Über einen 90-Sekunden-Pull mit zwei Reprisal-Anwendungen und zwei Resistenzzyklen:
+getrennt 2,0 + 14,0 = **16,0**, vollständig überlappt 14,0 + 0,6 = **14,6**. Rund
+ein Zehntel der Mitigation geht an der Überlappung verloren, dazu die GCDs, die
+dafür aufgewendet wurden.
 
-Die Zahlen sind ein Modell, keine Messung. Annahmen: gleichmäßiger Schaden, keine
-Bewegung, alle Werkzeuge verfügbar. Sie begründen die Größenordnung des Themas,
-nicht die Auslegung einer einzelnen Bedingung.
+Modell, keine Messung. Annahmen: gleichmäßiger Schaden, keine Bewegung, alle
+Werkzeuge verfügbar.
 
-### Skalierung mit der Gegneranzahl
+### Zwei gegenläufige Skalierungen
 
-Die Tabelle rechnet pro Gegner. Der absolute Nutzen ist mit der Zahl der
-betroffenen Gegner zu multiplizieren, weil jede der drei Quellen flächig wirkt:
-die Betäubung auf alle Ziele im Wirkbereich von Sanctus, Reprisal auf alle nahen
-Gegner, die Verlangsamung auf alle, die den Träger angreifen. Aus 1,4
-Sekunden-Äquivalenten je Gegner über einen 90-Sekunden-Pull werden bei fünfzehn
-Gegnern einundzwanzig.
+Die Tabelle rechnet **pro Gegner**. Der absolute Nutzen der Betäubung multipliziert
+sich mit der Zahl der getroffenen Ziele, weil alle drei Quellen flächig wirken. Aus
+1,4 Sekunden-Äquivalenten werden bei fünfzehn Gegnern einundzwanzig.
 
-Daraus folgt eine Entwurfsvorgabe, keine bloße Beobachtung: **Die Regeln dieses
-Konzepts sind an eine Gegnerzahl-Schwelle zu binden.** Im Einzelzielkampf ist der
-Gewinn vernachlässigbar und die zusätzliche Bedingung reines Risiko; im großen Pull
-— dem Fall, in dem die Heilerlast überhaupt kritisch wird — ist er entscheidend.
+Der Wert eines eingeschobenen Einzelziel-Casts skaliert dagegen **nicht** mit der
+Gegnerzahl, und der Preis des Einschubs — ein entgangener Sanctus — steigt mit ihr.
+Daraus folgt kein Widerspruch, sondern ein Regimewechsel:
 
-Für die Betäubung verschärft sich das noch: Sanctus fällt nach `AoeCount = 3`
-ohnehin erst ab drei getroffenen Zielen, und Bossgegner sind in aller Regel
-betäubungsimmun. Die Frage stellt sich also von vornherein nur im Flächenkampf.
+| Gegnerzahl | Was den Einschub trägt |
+|---|---|
+| 3 bis 4 | Der DoT-Wert. Der entgangene Sanctus-Schaden ist klein, die DoT-Uptime relativ viel wert |
+| ab etwa 8 | Der Betäubungswert. Der DoT fällt kaum ins Gewicht, die gestreckte Betäubung dagegen stark |
+| dazwischen | Beides mittel — das ist der Bereich, in dem die Regel am wenigsten trägt und am ehesten falsch liegen kann |
 
-Das Projekt hat für solche Schwellen bereits ein Muster:
-`Service.Config.MitigationSustainHostileCount` (`Configs.cs:757-759`, Bereich 1–8,
-Standard 4) steuert, ab wie vielen Gegnern in Reichweite ein Mitigations-Debuff
-ohne Vorhersage nachgezogen wird. Dieselbe Größe — `NumberOfHostilesInRange` — ist
-hier zu verwenden, statt eine zweite Zählweise einzuführen.
+Der Einschub ist damit in beiden Randbereichen aus je eigenem Grund richtig. Das
+macht ihn robuster als eine Regel, die nur eine der beiden Begründungen kennt, und
+benennt zugleich, wo er am schwächsten ist.
 
 ## Vorhandene Bausteine
 
-Der Entwurf erfindet wenig; das meiste liegt bereits im Baum und ist nur nicht
-verbunden.
+Der Entwurf erfindet wenig; das meiste liegt im Baum und ist nur nicht verbunden.
 
 | Baustein | Fundstelle | Zustand |
 |---|---|---|
-| Vollständige Mitigationsmessung: Gegner-Debuffs (Addle, Feint, Dismantle, Reprisal) und Party-Buffs (Tank-LB3, Sacred Soil, Temperance, Kerachole, Troubadour-Familie, Dark Missionary u. a.), verrechnet zu einem Schadensfaktor | `CustomRotation_OtherInfo.cs:534` | Wird an genau einer Stelle gelesen: `RotationConfigWindow.cs:4863`, also **nur zur Anzeige**. Keine Entscheidung liest sie |
-| Vorhersagefenster aus der BossModReborn-Timeline | `Configs.cs:742` (`BMRRaidwideMitWindow`, 5 s), `:747` (`BMRTankbusterMitWindow`, 3 s), ausgewertet in `StateUpdater.cs:185` und `DataCenter.cs:2640` | In Betrieb, treibt die `AutoStatus`-Flags |
-| Zentralisierte Nachzieh-Regel für Gegner-Debuffs | `CustomRotation_OtherInfo.cs:1327` (`ShouldSustainMitigationDebuff`) | In Betrieb, 27 Aufrufstellen. Beispiel dafür, dass eine gemeinsame Regel für viele Jobs tragfähig ist |
-| Ereignisstrom eigener Aktionen samt angewandter Statuseffekte je Ziel | `Watcher.ActionFromSelf` → `DataCenter.AddActionRec`, `DataCenter.ApplyStatus`, `DataCenter.AttackedTargets` | In Betrieb. Trägt die Daten, die eine Zählung von Resistenzstufen bräuchte |
-| Trennung von Mitigation und Schaden im Dispatch | `CustomRotation_GCD.cs`: HealArea 240, HealSingle 282, DefenseArea 322, DefenseSingle 337, GeneralGCD erst 449 | In Betrieb. Mitigation und Heilung haben Vorrang; der Schadenszweig läuft nur, wenn kein Flag gesetzt ist |
+| Mitigationsmessung: Gegner-Debuffs (Addle, Feint, Dismantle, Reprisal) und Party-Buffs (Tank-LB3, Sacred Soil, Temperance, Kerachole, Troubadour-Familie, Dark Missionary u. a.), verrechnet zu einem Schadensfaktor | `CustomRotation_OtherInfo.cs:534` | Gelesen an genau einer Stelle: `RotationConfigWindow.cs:4863`, also **nur zur Anzeige** |
+| Betäubung, Verlangsamung und **deren Resistenzen** als Statuseffekte | `StatusID.Stun` (+ Varianten), `StatusID.StunResistance`, `StatusID.Slow`, `StatusID.SlowResistance`, `StatusID.ArmsLength` | Vorhanden in den generierten Spieldaten, von keiner Rotation gelesen |
+| Statusabfragen mit Restzeit und Stapelzahl | `StatusHelper.HasStatus`, `.StatusTime`, `.StatusStack` (`StatusHelper.cs:898`, `:807`, `:978`) | In Betrieb |
+| Vorhersagefenster aus der BossModReborn-Timeline | `Configs.cs:742` (`BMRRaidwideMitWindow`, 5 s), `:747` (`BMRTankbusterMitWindow`, 3 s), ausgewertet in `StateUpdater.cs:185`, `DataCenter.cs:2640` | In Betrieb |
+| Zentralisierte Nachzieh-Regel für Gegner-Debuffs | `CustomRotation_OtherInfo.cs:1327` (`ShouldSustainMitigationDebuff`) | In Betrieb, 27 Aufrufstellen. Beleg, dass eine gemeinsame Regel über viele Jobs trägt |
+| Gegnerzahl-Schwelle als etabliertes Muster | `Configs.cs:757-759` (`MitigationSustainHostileCount`, 1–8, Standard 4) über `NumberOfHostilesInRange` | In Betrieb |
+| Trennung von Mitigation und Schaden im Dispatch | `CustomRotation_GCD.cs`: HealArea 240, HealSingle 282, DefenseArea 322, DefenseSingle 337, GeneralGCD erst 449 | In Betrieb. Mitigation und Heilung haben Vorrang |
+
+**Korrektur gegenüber der ersten Fassung dieses Dokuments:** Dort stand, die
+Resistenzstufe einer Betäubung müsse aus dem Ereignisstrom des `Watcher`
+mitgezählt werden. Das war eine unbelegte Annahme. Das Spiel führt sie als eigenen
+Statuseffekt (`StunResistance`, analog `SlowResistance`), der über die vorhandenen
+Statusabfragen direkt lesbar ist. Eine eigene Buchführung entfällt damit, und der
+Aufwand des Vorhabens sinkt erheblich.
 
 ## Die Lücke
 
 **Aktionen mit doppelter Wirkung sind nur nach einer ihrer Wirkungen eingeordnet.**
 Sanctus steht im Schadenszweig (`WHM_Reborn.cs:518-527`); dass es betäubt, ist im
-Entscheidungsmodell nicht vorhanden. Assize steht im Angriffs-oGCD
-(`WHM_Reborn.cs:308`); dass es heilt, ebenfalls nicht. Umgekehrt kennt
-`GetCurrentMitigationPercent` die Wirkung von Reprisal, aber keine Betäubung und
-keine Verlangsamung, weil beide keine Schadensreduktion im engeren Sinn sind,
-obwohl sie so wirken.
+Entscheidungsmodell nicht vorhanden. Assize steht im Angriffs-oGCD (`:308`); dass es
+heilt, ebenfalls nicht. Umgekehrt kennt `GetCurrentMitigationPercent` die Wirkung
+von Reprisal, aber weder Betäubung noch Verlangsamung, obwohl beide wie
+Schadensreduktion wirken.
 
-Daraus folgen zwei beobachtbare Effekte:
+Zweite, unabhängig belegte Fundstelle: Im Schadenszweig steht der Sanctus-Block
+(518-527) **vor** dem DoT-Block (530-544). Sobald `AoeCount = 3` erfüllt ist, greift
+Sanctus, und der DoT wird nie gesetzt — bei einem Boss mit zwei Adds läuft also nie
+Dia. Dass das nicht gewollt ist, zeigt der DoT selbst: `ModifyDiaPvE`
+(`WhiteMageRotation.cs:300-311`) setzt `TargetStatusProvide` gegen Nachlegen und
+`IsRestrictedDOT` gegen ungeeignete Ziele — beide Vorkehrungen laufen bei AoE ins
+Leere, weil der Zweig nicht erreicht wird.
 
-1. Mitigationsquellen überlappen unkontrolliert, weil niemand fragt, was schon
-   anliegt.
-2. Die Doppelwirkung wird nicht genutzt: Der Schadenszweig weiß nicht, dass eine
-   seiner Aktionen zugleich Schaden vermeidet, und der Verteidigungszweig weiß
-   nicht, dass eine Schadensaktion seine Aufgabe teilweise erledigt.
+## Die verwobene Entscheidung
+
+Die drei bisher getrennt geführten Punkte sind eine einzige Frage: **Wann lohnt es
+sich, einen GCD nicht in Sanctus zu stecken?**
+
+- **A** liefert den Grund: Der DoT fehlt oder läuft aus, und der eingeschobene Cast
+  hat damit eigenen Wert.
+- **B** liefert das Timing: Läuft die Betäubung noch, streckt der Einschub sie, statt
+  sie zu überschreiben. Ist das Ziel bereits resistent oder immun, ist die
+  Betäubung ohnehin kein Argument mehr — dann entscheidet A allein.
+- **C** liefert den zweiten Grund für dasselbe Timing: Läuft eine fremde Mitigation,
+  ist ein Stun jetzt weniger wert als später.
+
+Als eine Regel:
+
+> Ein Nicht-Sanctus-GCD wird eingeschoben, wenn er eigenen Wert hat **und** die
+> Betäubung dadurch nicht verloren geht — weil sie noch läuft, weil sie ohnehin
+> nicht mehr wirkt, oder weil gerade eine stärkere Mitigation trägt. Bei Gefahr
+> wird nicht eingeschoben.
+
+A ist dabei die einzige Stufe, die **allein** einen Nutzen hat: Sie stellt die
+DoT-Uptime her, unabhängig von jeder Betäubungsbetrachtung. B und C verbessern nur
+ihren Zeitpunkt. Das bestimmt die Reihenfolge der Umsetzung.
 
 ## Optionen
 
-**O0 — Nullvariante.** Verhalten belassen. Kosten: die oben bezifferte Überlappung
-bleibt, `GetCurrentMitigationPercent` bleibt eine reine Anzeige.
+**O0 — Nullvariante.** Verhalten belassen. Die bezifferte Überlappung bleibt, der
+DoT bleibt bei AoE unerreichbar, `GetCurrentMitigationPercent` bleibt Anzeige.
 
-**O1 — Je Rotation einzeln lösen.** Jede Jobdatei bekommt ihre eigenen
-Bedingungen. Erfüllt die Anforderung, verstößt aber gegen die
-Defektklassen-Regel: dasselbe Muster würde für jeden Job neu geschrieben und
-altert je Datei getrennt.
+**O1 — Je Rotation einzeln.** Verstößt gegen die Defektklassen-Regel; dasselbe
+Muster altert je Datei getrennt.
 
-**O2 — Zentrale Auslösung.** Ein gemeinsamer Trigger, der Mitigation anfordert,
-wenn zu wenig anliegt. Genau diese Bauform wurde in diesem Fork schon einmal
-gebaut und zurückgebaut: `HasHostileCountAoeMitigation` setzte `AutoStatus.DefenseArea`
-und öffnete damit die gesamte Defensivkette des Jobs statt der einen gemeinten
-Zeile. Ein zentraler Öffner hat im Fehlerfall den größten Wirkungsbereich.
+**O2 — Zentrale Auslösung.** Ein gemeinsamer Trigger, der Mitigation anfordert.
+Diese Bauform wurde in diesem Fork gebaut und zurückgebaut:
+`HasHostileCountAoeMitigation` setzte `AutoStatus.DefenseArea` und öffnete die
+gesamte Defensivkette statt der einen gemeinten Zeile.
 
-**O3 — Zentrale Bremse, dezentrale Auslösung.** Die vorhandenen Auslöser bleiben
-unverändert; hinzu kommt nur eine Prüfung, die ein Werkzeug **zurückhält**, solange
-eine gleichwertige oder stärkere Quelle bereits wirkt. Fällt die Prüfung aus,
-verhält sich RSR wie heute.
+**O3 — Zentrale Bremse, dezentrale Auslösung.** Vorhandene Auslöser bleiben; hinzu
+kommt eine Prüfung, die **zurückhält**. Fällt sie aus, verhält sich RSR wie heute.
 
-**O4 — Rückbau.** `GetCurrentMitigationPercent` aus der UI entfernen, Thema
-schließen. Verwirft eine funktionsfähige Messung, die für dieses Thema die
-Grundlage ist.
+**O4 — Rückbau.** Messung entfernen, Thema schließen.
 
-## Abwägung
+**Gewählt: O3**, ausschlaggebend ist das Ausfallverhalten. Eine Bremse, die nicht
+greift, führt zum heutigen Verhalten zurück; ein Öffner, der fälschlich feuert,
+löst die ganze Kette aus.
 
-| Option | Schweregrad des gelösten Problems | Aufwand | Blast Radius | Folgekosten |
-|---|---|---|---|---|
-| O0 | — | keiner | keiner | Überlappung bleibt, rund ein Zehntel der Mitigation |
-| O1 | mittel | hoch, je Job | je Datei klein | Wartung an vielen Stellen, Defektklasse bleibt offen |
-| O2 | mittel | mittel | **sehr groß** — ein Flag öffnet ganze Ketten | belegter Rückbau als Präzedenz |
-| O3 | mittel | mittel | klein je Fundstelle, additiv | eine zusätzliche zentrale Funktion |
-| O4 | — | klein | klein | Messung verloren |
+## Umsetzungsplan
 
-**Gewählt: O3.** Ausschlaggebend ist das Ausfallverhalten. Eine Bremse, die
-irrtümlich nicht greift, führt zum heutigen Verhalten zurück. Ein Öffner, der
-irrtümlich greift, feuert die gesamte Defensivkette — das ist der Unterschied
-zwischen einem Rückschritt und einem Defekt, und der Fork hat für die zweite
-Variante bereits bezahlt.
+Vier Schritte. Jeder ist für sich lieferbar, prüfbar und abschaltbar; jeder Schritt
+lässt den vorherigen unverändert. Standard ist überall das heutige Verhalten.
 
-## Entwurf
+### Schritt 1 — Zielbezogene Messung (kein Verhalten)
 
-Drei Schichten, die einzeln nutzbar und einzeln abschaltbar sind. Jede Schicht ist
-für sich lieferbar; keine setzt die folgende voraus.
+Neu in `CustomRotation_OtherInfo`, neben `GetCurrentMitigationPercent`:
 
-### Schicht 1 — Messung sichtbar machen
+```
+protected static float StunRemainingOn(IBattleChara? target)
+protected static bool  StunStillEffectiveOn(IBattleChara? target)
+protected static float MitigationFactorOn(IBattleChara? target)
+```
 
-`GetCurrentMitigationPercent()` von der Anzeige in die Entscheidung heben. Dazu
-gehört, die Erhebung um die beiden Träger zu ergänzen, die heute fehlen, obwohl sie
-wie Schadensreduktion wirken:
+`StunRemainingOn` liest `target.StatusTime(false, StatusID.Stun, …)`.
+`StunStillEffectiveOn` prüft `StunResistance` samt Stapelzahl über
+`target.StatusStack`. `MitigationFactorOn` multipliziert den Gruppenfaktor aus
+`GetCurrentMitigationPercent()` mit den zielbezogenen Anteilen (Betäubung, Slow).
 
-- **Betäubung** auf Gegnern — Wirkung 100 % für ihre Restdauer, aber nur auf den
-  betäubten Zielen, nicht auf der Gruppe.
-- **Verlangsamung** durch Arm's Length — wirkt nur auf Gegner, die den Träger
-  angreifen, und erhöht zusätzlich deren Castzeiten.
+Die bestehende Funktion bleibt unverändert, damit die UI-Anzeige stabil bleibt.
+Kein Aufrufer in einer Rotation — dieser Schritt ändert nichts und ist allein durch
+Kompilierung und ein Prüfskript abgesichert.
 
-Beide sind zielbezogen, nicht gruppenbezogen. Das erzwingt eine Erweiterung des
-Rückgabewerts: ein einzelner Faktor für die Gruppe reicht nicht mehr. Vorschlag:
-die bestehende Funktion unverändert lassen und eine zweite danebenstellen, die je
-Ziel antwortet. Damit bleibt die UI-Anzeige stabil.
+### Schritt 2 — A: DoT-Zweig vor Sanctus
 
-### Schicht 2 — Nicht-Überlappung als Rückhalteregel
+In `WHM_Reborn.GeneralGCD` den DoT-Block (530-544) vor den Sanctus-Block (518-527)
+ziehen, hinter eine Option:
 
-Eine gemeinsame Prüfung nach dem Muster des vorhandenen
-`ShouldSustainMitigationDebuff`: Ein Werkzeug wird zurückgehalten, wenn eine
-Quelle mit **mindestens gleicher Wirkung** auf demselben Ziel bereits läuft und
-deren Restdauer die eigene Wirkung überdeckt.
+```
+[RotationConfig(CombatType.PvE, Name = "Keep the damage-over-time up in AoE, ahead of Holy")]
+public bool DotAheadOfAoe { get; set; } = false;
+```
 
-Drei Eigenschaften sind entwurfsentscheidend:
+Wirksam ohne Schritt 1 und ohne 3. `TargetStatusProvide` auf Dia verhindert, dass
+der Einschub mehr als einen GCD je DoT-Laufzeit kostet.
 
-- **Nur zurückhalten, nie auslösen.** Die Regel darf kein `AutoStatus`-Flag setzen.
-- **Vorbehalt bei Gefahr.** Unterhalb einer HP-Schwelle oder bei vorhergesagtem
-  Schaden innerhalb des Mitigationsfensters wird nicht zurückgehalten. Eine
-  Effizienzoptimierung von rund zehn Prozent darf keinen Tank kosten. Die
-  vorhandenen Fenster `BMRRaidwideMitWindow` und `BMRTankbusterMitWindow` sind
-  dafür die natürlichen Schwellen.
-- **Erst ab einer Gegnerzahl.** Unterhalb der Schwelle greift die Regel nicht,
-  weil der Gewinn dort im Rundungsbereich liegt, das Risiko einer
-  zurückgehaltenen Mitigation aber unverändert besteht. Maß ist
-  `NumberOfHostilesInRange`, Vorbild ist `MitigationSustainHostileCount`.
+### Schritt 3 — B/C: Zeitpunkt des Einschubs
 
-### Schicht 3 — Doppelnutzen abbilden
+Die Bedingung aus Schritt 2 wird um die Rückhalteprüfung ergänzt, als eigene
+Option, damit Schritt 2 unabhängig bleibt:
 
-Aktionen, die Schaden erzeugen und zugleich Schaden vermeiden, bleiben in ihrem
-bisherigen Dispatch-Zweig. Neu ist allein, dass ihre Mitigationswirkung in Schicht 1
-sichtbar wird und Schicht 2 sie berücksichtigt. Für Sanctus heißt das: Die
-Rotation castet es weiterhin im Schadenszweig, aber die Betäubung wird als
-Mitigationsquelle geführt, und ein Werkzeug, das dieselbe Wirkung schwächer
-liefert, wird währenddessen zurückgehalten.
+```
+protected bool StunWouldBeWasted(IBattleChara? target) =>
+    !StunStillEffectiveOn(target)                       // resistent oder immun
+    || StunRemainingOn(target) > GCDTime(1)             // läuft noch, Einschub streckt
+    || MitigationFactorOn(target) <= StunYieldThreshold; // fremde Mitigation trägt gerade
+```
 
-Der umgekehrte Weg — Sanctus in den Verteidigungszweig zu verschieben — wird
-verworfen: Er würde den Schadensfiller vom Mitigationsflag abhängig machen und
-damit den DPS-Anteil der Rotation an eine Bedingung hängen, die dafür nicht gebaut
-ist.
+Vorbehalte, die den Rückhalt aufheben — sie stehen vor der Regel, nicht in ihr:
 
-### Voraussetzung, die noch fehlt
+- `NumberOfHostilesInRange < HostileCountThreshold` (Muster:
+  `MitigationSustainHostileCount`),
+- vorhergesagter Schaden innerhalb `BMRRaidwideMitWindow` / `BMRTankbusterMitWindow`,
+- Gruppen-HP unterhalb der eingestellten Schwelle.
 
-Die Resistenzstufe einer Betäubung ist aus dem Statuseffekt nicht ablesbar. Sie
-muss aus dem Ereignisstrom mitgezählt werden: `Watcher.ActionFromSelf` liefert je
-Aktion die angewandten Statuseffekte je Ziel (`DataCenter.ApplyStatus`), daraus ist
-je Gegner-Id eine Zählung mit Zeitstempel und 45-Sekunden-Verfall aufzubauen. Ohne
-diese Zählung kann Schicht 1 die Betäubung nur als „liegt an / liegt nicht an"
-führen, nicht als „wirkt noch". Das genügt für Schicht 2, nicht für eine gezielte
-Streckung der Betäubungen.
+### Schritt 4 — Übertragung auf andere Doppelnutzen-Aktionen
+
+Erst wenn 1 bis 3 im Einsatz beobachtet wurden. Kandidatensuche über ein Prüfskript
+statt über Erinnerung: Aktionen, die in einem Schadenszweig stehen und einen
+Statuseffekt mit Mitigationswirkung anlegen.
+
+### Was der Plan nicht vorsieht
+
+Sanctus in den Verteidigungszweig zu verschieben. Das würde den Schadensfiller an
+ein Mitigationsflag hängen, das dafür nicht gebaut ist.
 
 ## Falsifikation
 
-**Hypothese 1: Es liegt kein Defekt vor.** Vertreten mit dem Argument, dass die
-Überlappung eine kleine Ineffizienz ist und RSR reaktiv korrekt handelt.
-Widerlegt durch zweierlei: die bezifferte Größenordnung von rund einem Zehntel der
-Gesamtmitigation, und die Existenz von `GetCurrentMitigationPercent`, das die
-gemeinte Größe bereits berechnet und nur nicht verwendet — die Entwurfsabsicht ist
-also vorhanden, die Verdrahtung fehlt.
+**Hypothese 1: Es liegt kein Defekt vor.** Widerlegt durch zweierlei: die bezifferte
+Größenordnung, und die Existenz von `GetCurrentMitigationPercent` — die
+Entwurfsabsicht ist vorhanden, die Verdrahtung fehlt. Für A zusätzlich durch die
+beiden Vorkehrungen an `ModifyDiaPvE`, die bei AoE nie zur Wirkung kommen.
 
-**Hypothese 2: Die gewählte Option ist falsch.** Vertreten mit dem Argument, dass
-eine zentrale Regel den Blast Radius unnötig vergrößert und O1 (je Rotation) sicherer
-wäre. Widerlegt für die Bremse, nicht für einen Auslöser: Eine Rückhalteregel kann
-im Fehlerfall nur zum heutigen Verhalten zurückführen, während der bereits
-zurückgebaute zentrale Öffner das Gegenteil zeigte. Für Schicht 3 hält der Einwand
-teilweise stand, weil Doppelnutzen je Job unterschiedlich aussieht; deshalb ist
-Schicht 3 auf die Sichtbarmachung beschränkt und ändert keine Dispatch-Zuordnung.
+**Hypothese 2: Die gewählte Option ist falsch.** Widerlegt für die Bremse, nicht für
+einen Auslöser — siehe O2 und den belegten Rückbau. Für Schritt 4 hält der Einwand
+teilweise stand, weshalb er von Beobachtung abhängig gemacht ist.
+
+**Hypothese 3: Der Einschub ist im mittleren Gegnerzahlbereich falsch.** Hält
+stand. Bei etwa fünf bis sieben Zielen ist weder der DoT-Wert noch der
+Betäubungswert groß, der entgangene Sanctus aber schon spürbar. Die Regel wird
+deshalb nicht als „immer" formuliert, sondern an eine Schwelle gebunden, und der
+Bereich ist hier ausdrücklich als der schwächste benannt.
 
 **Was nicht widerlegt ist:** dass der Nutzen im Spiel eintritt. Die Rechnung ist ein
-Modell. Ob eine zurückgehaltene Mitigation in der Praxis besser fällt, hängt am
-Spielverlauf und ist statisch nicht zu belegen.
+Modell.
 
 ## Nachweisbarkeit
 
 | Ebene | Möglich | Nicht möglich |
 |---|---|---|
-| Statisch | Prüfskript, das Aktionen mit Mitigationswirkung im Schadenszweig findet und gegen die Erhebung in Schicht 1 abgleicht — dieselbe Bauart wie die vorhandenen Audit-Skripte, mit Selbsttest | — |
-| Kompilierung | CI, wie bei allen Änderungen | — |
-| Laufzeit | Die UI zeigt den Mitigationsfaktor bereits an; ein Verlauf statt eines Momentwerts würde Überlappungen sichtbar machen | Beweis, dass die Rotation dadurch besser spielt |
+| Statisch | Prüfskript nach Bauart der vorhandenen Audit-Skripte, mit Selbsttest: findet Aktionen mit Mitigationswirkung im Schadenszweig und gleicht sie gegen die Erhebung aus Schritt 1 ab | — |
+| Kompilierung | CI | — |
+| Laufzeit | Die UI zeigt den Mitigationsfaktor bereits; ein Verlauf statt eines Momentwerts würde Überlappungen sichtbar machen | Beweis, dass die Rotation besser spielt |
 
-Weil der Nutzen nicht belegbar ist, gilt die Feature-Toggle-Regel: **jede Schicht
-kommt hinter eine eigene Option, Standard aus.** Das bisherige Verhalten bleibt der
-Auslieferungszustand.
+Weil der Nutzen nicht belegbar ist, gilt die Feature-Toggle-Regel: **jeder Schritt
+hinter eine eigene Option, Standard aus.**
 
 ## Konsequenzen
 
-**Endnutzer.** Bei eingeschalteter Option fallen Mitigationswerkzeuge seltener,
-aber gezielter; die frei werdenden GCDs und Weave-Slots gehen in Schaden. Bei
-ausgeschalteter Option ändert sich nichts. Spürbar wird der Unterschied im großen
-Flächenpull — dort, wo die Heilerlast tatsächlich zum Problem wird und wo der
-Nutzen mit jedem zusätzlichen Gegner wächst. Im Einzelzielkampf bleibt er
-folgenlos, was durch die Gegnerzahl-Schwelle auch so gewollt ist.
+**Endnutzer.** Bei eingeschalteter Option fallen Mitigationswerkzeuge seltener, aber
+gezielter; die frei werdenden GCDs gehen in Schaden, und die DoT-Uptime steigt.
+Spürbar im großen Flächenpull, folgenlos im Einzelzielkampf — was durch die
+Gegnerzahl-Schwelle so gewollt ist.
 
-**Autoren abgeleiteter Rotationen.** Schicht 1 und 2 ergänzen die öffentliche
-Oberfläche von `RotationSolver.Basic` um Member; das ist additiv und bricht keine
-Signatur. Wer die neuen Prüfungen nicht aufruft, merkt nichts.
+**Autoren abgeleiteter Rotationen.** Die Schritte 1 und 3 ergänzen die öffentliche
+Oberfläche von `RotationSolver.Basic` additiv; keine Signatur bricht. Wer die neuen
+Prüfungen nicht aufruft, merkt nichts.
 
-**Upstream-Pflege.** Der Eingriff liegt in `CustomRotation_OtherInfo` und im
-`Watcher`, beides Dateien mit regelmäßiger Upstream-Aktivität. Der Merge-Aufwand
-steigt. Eine Umsetzung sollte die neuen Teile in eigene Regionen legen, statt
-bestehende Blöcke umzubauen.
-
-## Abgrenzung
-
-Das Konzept sagt **nicht**, wann welches Werkzeug fallen soll. Es ändert keine
-bestehende Auslösebedingung und keine Dispatch-Zuordnung. Es fügt eine Messung, eine
-Rückhalteregel und die Sichtbarkeit der Doppelwirkung hinzu. Alles, was darüber
-hinausgeht — insbesondere eine aktive Streckung der Betäubungen über den
-Resistenzzyklus —, setzt die fehlende Zählung voraus und ist ein eigenes Vorhaben.
-
-Ebenfalls nicht Gegenstand: die Reihenfolge von Sanctus und dem DoT-Zweig in
-`WHM_Reborn.GeneralGCD`. Das ist ein eigener, unabhängig belegter Punkt und in
-`TODO.md` geführt.
+**Upstream-Pflege.** Der Eingriff liegt in `CustomRotation_OtherInfo` und
+`WHM_Reborn`, beides Dateien mit regelmäßiger Upstream-Aktivität. Neue Teile gehören
+in eigene Regionen, statt bestehende Blöcke umzubauen. Schritt 2 verschiebt einen
+bestehenden Block und erzeugt damit den größten Merge-Aufwand des Plans — die
+Verschiebung sollte als eigener Commit ohne inhaltliche Änderung erfolgen.
