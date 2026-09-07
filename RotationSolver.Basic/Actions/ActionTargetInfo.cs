@@ -3513,22 +3513,35 @@ public struct ActionTargetInfo(IBaseAction action)
 				// Demoting rather than excluding is what the protection actually warrants: the
 				// invulnerability window is the safest moment to heal, and when it ends the target
 				// stands wherever it left them - Superbolide leaves them at 1 HP on purpose.
-				List<IBattleChara> healingNeededObjs = [];
+				// Both sort keys are read once per member rather than inside the comparator. Sorting
+				// n members costs O(n log n) comparisons, and each key walks a status list or the
+				// party/doom checks in GetHealthRatio - this runs in the combat path. Reading them
+				// up front also fixes the keys for the duration of the sort: NoNeedHealingInvuln
+				// compares a live RemainingTime against a GCD window, so a status sitting on that
+				// boundary could otherwise answer differently between two comparisons, and an
+				// inconsistent comparer makes List.Sort throw.
+				List<(IBattleChara Obj, bool Unprotected, float Health)> ranked = [];
 				foreach (var o in objs)
 				{
-					if (!o.HasStatus(false, StatusHelper.HealingIneffectiveStatus))
+					if (o.HasStatus(false, StatusHelper.HealingIneffectiveStatus))
 					{
-						healingNeededObjs.Add(o);
+						continue;
 					}
+					ranked.Add((o, o.NoNeedHealingInvuln(), ObjectHelper.GetHealthRatio(o)));
 				}
+
 				// Unprotected before protected, then lowest health first inside each group.
-				healingNeededObjs.Sort((a, b) =>
+				ranked.Sort((a, b) =>
 				{
-					var byProtection = b.NoNeedHealingInvuln().CompareTo(a.NoNeedHealingInvuln());
-					return byProtection != 0
-						? byProtection
-						: ObjectHelper.GetHealthRatio(a).CompareTo(ObjectHelper.GetHealthRatio(b));
+					var byProtection = b.Unprotected.CompareTo(a.Unprotected);
+					return byProtection != 0 ? byProtection : a.Health.CompareTo(b.Health);
 				});
+
+				List<IBattleChara> healingNeededObjs = [];
+				foreach (var r in ranked)
+				{
+					healingNeededObjs.Add(r.Obj);
+				}
 
 				List<IBattleChara> healerTars = [];
 				foreach (var o in healingNeededObjs)
