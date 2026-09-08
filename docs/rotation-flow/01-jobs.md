@@ -1,8 +1,14 @@
 # 01 · Ablaufstruktur je Job
 
-Grundlage: Override-Matrix und `GeneralGCD`-Skelette, beide maschinell aus dem
-Quellcode extrahiert (nicht aus dem Gedächtnis rekonstruiert). Stand: Branch
-`claude/bmr-mitigation-refresh`.
+Bestandsaufnahme, kein Entwurf. Grundlage: Override-Matrix und
+`GeneralGCD`-Skelette, beide maschinell aus dem Quellcode extrahiert, nicht aus dem
+Gedächtnis rekonstruiert.
+
+Die Zweigzahlen und Zeilenumfänge sind eine Momentaufnahme des Quellcodes. Für die
+fünf Dateien, deren `GeneralGCD` nach `04-concept.md` A4a in benannte Stufen zerlegt
+wurde — BLU, PhantomDefault, PCT, SAM, SMN —, ist die dortige Zweigzahl die vor dem
+Umbau; die Aufrufreihenfolge ist unverändert. Wer die aktuellen Zahlen braucht, misst
+sie neu, statt sie hier zu lesen.
 
 ## Lesehilfe
 

@@ -641,6 +641,63 @@ Das ist der Beleg für die Regel, verfügbare Quellen auszuschöpfen, bevor eine
 
 **Erreichter Prüfgrad:** statische Selbstprüfung, Prüfskript mit Selbsttest, Wirkbeschreibungen und zwei externe Quellen als Beleg, Code-Review mit eigenem Kontext, CI-Kompilierung. Keine Laufzeitbeobachtung. Belegt ist, dass `PeripheralSynthesisPvE` ohne Skip-Flag nicht nutzbar war und eine ihrer beiden Aufrufstellen tot; nicht belegt ist, dass die Blaumagier-Rotation dadurch im Spiel messbar besser läuft.
 
+
+### A33 · Konzeptdokumente auf Urteilsstil umgestellt (08.09.2026)
+
+**Anlass:** Vorgabe des Auftraggebers. Konzepte seien im Gutachtenstil geschrieben —
+Annahmen, revidierte Annahmen, erneute Anpassungen bis zum Ergebnis —, weshalb beim
+Lesen nicht erkennbar sei, was der aktuelle Sachstand ist. Zu prüfen war, ob der
+Urteilsstil die Umsetzung verbessert, und die Regel gegebenenfalls allgemein zu fassen.
+
+**Der Befund ist am Artefakt belegt, nicht nur plausibel.** `09-tank-selfprotection.md`
+trug sieben Abschnitte reiner Prozesshistorie und einen Nachtrag, der einleitend
+feststellte, „mehrere Aussagen weiter oben" seien überholt. `08-mitigation-synergy.md`
+bezeichnete sich in Zeile 4 als „Konzept ohne Code", während beide Schritte gebaut sind
+(A20). `04-concept.md` führte A4a als „offen", obwohl fünf Dateien umgebaut sind
+(Register #66). `06-fork-audit.md` schrieb „Was offen bleibt: Nichts. `TODO.md` ist
+leer" bei vierzehn offenen Einträgen. `03-universal.md` führte U2 weiter als Schwäche,
+obwohl `04` sie ausdrücklich widerlegt und das dort auch vermerkt — die Korrektur war
+nie zurückgetragen worden.
+
+**Falsifikation, drei Gegenpositionen.** *Die Historie sei der Beleg* — widerlegt: Die
+verworfenen Optionen bleiben mitsamt Begründung, das ist ADR-Bestandteil; was entfällt,
+ist die Reihenfolge der eigenen Irrtümer, und die liegt bereits als A21–A23, A27–A29 und
+C13–C22 im Archiv. Dieselbe Information wurde doppelt geführt. *Der Urteilsstil verdecke
+Unsicherheit* — widerlegt: Die Kalibrierungspflicht gilt unabhängig vom Aufbau, und der
+Gutachtenstil ist hier schlechter, weil er einen Fehlerpfad hat, den der Urteilsstil
+nicht hat: Wer auf halber Strecke aufhört, hält eine zurückgenommene Position für den
+Stand. *Der Aufwand* — begrenzt: Drei Dokumente trugen echte Chronik, vier sind
+Bestandsaufnahmen ohne Entscheidungsverlauf.
+
+**Eine Abgrenzung war nötig und ist Teil der Regel geworden.** Die Historie des
+**Gegenstands** ist Inhalt, die des **Dokuments** nicht. `06-fork-audit.md` existiert
+gerade, um zu sagen, wo die Fork-Änderungen sich als falsch erwiesen haben; ohne diese
+Abgrenzung hätte die Regel es entkernt.
+
+**Umgesetzt.** `09` von 963 auf 330 Zeilen, `08` und `04` neu gefasst, alle drei mit
+vorangestelltem Ergebnis, Umsetzungsstand als Tabelle und einem Abschnitt „Was
+ausgeschlossen wurde und warum". `03`, `01`, `05`, `06` gezielt nachgezogen. Die
+Kürzung ist fast ausschließlich entfallene Chronik; die drei überholten Stände sind
+gegen den Code gemessen und richtiggestellt, nicht fortgeschrieben.
+
+**Prüfmittel.** `scan12.py` meldet Chronik-Überschriften und Formulierungen, die eine
+Aussage gegen eine frühere Fassung desselben Dokuments stellen, und schließt
+Codevarianten über den Satzkontext aus. Gegen den Vor-Zustand 43 Treffer, danach keiner.
+
+**Blameless Postmortem zur Priorisierung derselben Sitzung.** Aus einer
+Zwei-Zeilen-Fundstelle in der Rotmagier-PvP-Konfiguration wurde ein vollständiger
+Durchgang über Blaumagier, PvP und Bozja (A32), während die Punkte des laufenden
+Auftrags warteten. Ursache war die Defektklassenregel, die die *Erhebung* vollständig
+verlangt — sie sagt nichts über die *Bearbeitung*. Der Auftraggeber hat das als
+fehlgeleitetes Investment beanstandet. Die fehlende Regel ist ergänzt: Priorität folgt
+dem Auftrag und dem Nutzungsprofil, Fundstellen außerhalb davon werden erfasst, nicht
+bearbeitet. Der Befund selbst bleibt gültig, die Reihenfolge war falsch.
+
+**Erreichter Prüfgrad:** statische Selbstprüfung, Prüfskript mit Selbsttest und
+Gegenprobe am Vor-Zustand, Abgleich jedes berichteten Stands gegen den Code
+(`git show upstream/main`, Zählung benannter Stufen je Datei, `git ls-remote --tags`).
+Kein Vier-Augen-Prinzip.
+
 ---
 
 ## B · Commit-Register (Fork vs. `upstream/main`)

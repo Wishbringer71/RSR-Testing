@@ -152,3 +152,32 @@ spell exactly when it is worth most. Both settings were removed rather than move
 
 The remaining entries (RDM PvP, SCH PvP, two Bozja lost actions) are recorded in `TODO.md`: they turn
 on PvP and Bozja behaviour that cannot be observed with the means available here.
+
+## scan12.py — Konzeptdokumente, die ihre eigene Fassungsgeschichte erzählen
+
+`CLAUDE.md` verlangt für die Dokumente unter `docs/` den Urteilsstil: geltender
+Sachstand voran, Begründung danach — BLUF und Pyramid Principle statt eines Gutachtens,
+das sich über Annahmen, revidierte Annahmen und weitere Korrekturen zum Ergebnis
+vorarbeitet. Was ein Dokument ausgeschlossen hat, gehört mit Begründung ins Ergebnis;
+die Chronik seiner eigenen Fassungen nicht, weil sie in `AUDIT_LOG.md` bereits geführt
+wird.
+
+Der Fehler, gegen den das schützt, ist keine Unordnung. Ein Dokument, dessen Anfang nur
+im Licht seines Endes richtig ist, hat einen Fehlerpfad: Wer auf halber Strecke aufhört,
+hält eine zurückgenommene Position für den geltenden Stand.
+`09-tank-selfprotection.md` trug sieben solcher Abschnitte und einen Nachtrag, der
+einleitend feststellte, „mehrere Aussagen weiter oben" seien überholt — und drei seiner
+Aussagen waren tatsächlich von bereits ausgelieferter Arbeit überholt.
+`08-mitigation-synergy.md` bezeichnete sich in Zeile 4 als „Konzept ohne Code",
+während beide seiner Schritte gebaut waren.
+
+Zwei Heuristiken: Überschriften, die eine Runde des Verfahrens statt eines Gegenstands
+ankündigen („Drittes Audit", „Nachtrag", „Verbesserung nach dem zweiten Audit"), und
+Formulierungen, die eine Aussage gegen eine frühere Fassung desselben Dokuments stellen
+(„die erste Fassung", „in allen bisherigen Fassungen").
+
+Beides ist kein Beweis. Die Historie des *Gegenstands* ist zulässiger Inhalt —
+`06-fork-audit.md` existiert gerade, um zu sagen, wo die Fork-Änderungen sich als falsch
+erwiesen haben —, und Prosa darf zwei Codevarianten „die erste" und „die zweite" nennen;
+letzteres schließt der Scan über den Satzkontext aus. Gegen den Vor-Zustand gelaufen
+meldet er 43 Treffer, gegen den überarbeiteten Bestand keinen.

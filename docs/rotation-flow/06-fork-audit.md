@@ -156,22 +156,24 @@ einzuziehen: keine neue Vererbungsebene, keine neuen Dispatch-Slots, keine
 
 ## 5 · Was offen bleibt
 
-Nichts. Die WHM-Ursache (`CanUseHealAction`, §3) ist über die gesamte Kette
-vom Heil-Flag bis zur Zielwahl im Code belegt (`AUDIT_LOG.md`, #54); ein
-Spieltest steht der Fork-Seite nicht zur Verfügung und ist nicht Bedingung.
-Versionierung ist erledigt: Release `7.5.5.41+wsh1` auf `ba269301`, Schema
-`<upstream>+wsh<n>`. `TODO.md` ist leer.
+Für den hier geprüften Diff nichts: Die WHM-Ursache (`CanUseHealAction`, §3) ist
+über die gesamte Kette vom Heil-Flag bis zur Zielwahl im Code belegt
+(`AUDIT_LOG.md`, #54); ein Spieltest steht der Fork-Seite nicht zur Verfügung und
+ist nicht Bedingung. Versionierung: Release `7.5.5.41+wsh1` auf `ba269301`, Schema
+`<upstream>+wsh<n>`.
+
+Offene Arbeit aus **späteren** Durchgängen führt `TODO.md`, nicht dieses Dokument.
+Es beschreibt den Abstand zum Original, nicht den Arbeitsvorrat.
 
 ---
 
-## 6 · Zweiter Durchgang: Review-Loop über den gesamten Diff
+## 6 · Der gesamte Diff, Hunk für Hunk gegengelesen
 
-Nach dem Audit oben wurde der komplette Diff noch einmal Hunk für Hunk
-gelesen, mit anderen Mustern: Mehrspieler-Interaktion (zwei Tanks, zwei
-Melees, zwei Caster in einer Gruppe), Randbedingungen (Null-Ziel,
-Unverwundbarkeit, Level-Sync), Duplikate, tote Symbole, Diff-Rauschen.
-Ergebnis: zwölf Commits — fünf Verhaltensfehler im Fork-Code, zwei im
-Upstream-Code, der Rest Hygiene.
+Über das Audit oben hinaus wurde der komplette Diff mit anderen Mustern geprüft:
+Mehrspieler-Interaktion (zwei Tanks, zwei Melees, zwei Caster in einer Gruppe),
+Randbedingungen (Null-Ziel, Unverwundbarkeit, Level-Sync), Duplikate, tote
+Symbole, Diff-Rauschen. Ergebnis: zwölf Commits — fünf Verhaltensfehler im
+Fork-Code, zwei im Upstream-Code, der Rest Hygiene.
 
 | Commit | Fund | Art |
 |---|---|---|

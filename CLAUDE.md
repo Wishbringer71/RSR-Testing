@@ -73,6 +73,8 @@ Ein Ergebnis ist erst vollständig, wenn Einzelfall und Muster getrennt benannt 
 
 **Systemweite Konsistenzprüfung vor Einzelfalllösung.** Ein Defekt gilt als Defektklasse, bis das Gegenteil belegt ist: alle strukturell gleichen Stellen erheben, dann begründet einschränken. Ein nicht nachgewiesener Nichtbedarf ist ein unentdeckter Defekt, keine Ausnahme. Beleg: Aggro-Helfer B1 mit „nur zwei Verwender" verworfen, ohne die Lücke bei den DPS-Klassen zu erheben.
 
+**Priorität folgt dem Auftrag, nicht der Fundlage.** Die Klassenerhebung ist vollständig zu führen — die Bearbeitung ist es nicht. Maßgeblich ist das Nutzungsprofil des Auftraggebers: PvE, deutscher Client, die von ihm gespielten Jobs und Rotationen. Fundstellen außerhalb davon — PvP, Blaumagier und andere begrenzte Jobs, Bozja und vergleichbare Sonderinhalte, fremde Rotationen, die er nicht nutzt — werden **erfasst**, nicht bearbeitet, solange der Auftrag sie nicht nennt oder er die Bearbeitung nicht freigibt. Dass eine Erhebung dorthin führt, ist ihr Zweck, kein Arbeitsauftrag. Beleg: Aus einer Zwei-Zeilen-Fundstelle in der Rotmagier-PvP-Konfiguration wurde ein Durchgang über Blaumagier, PvP und Bozja, während die Punkte aus dem laufenden Auftrag warteten; der Auftraggeber hat das als fehlgeleitetes Investment beanstandet.
+
 **Change Size ist kein Risikoproxy.** Prüftiefe richtet sich nach Wirkungsbereich und Fehlerklasse, nicht nach Zeilenzahl. Beleg: CountAllianceTanks, Provoke-Distanz, RPR/VPR-Gate — je eine Zeile, je schwerwiegend.
 
 **Trigger werden an ihrer Wirkung gemessen, nicht an ihrem Geltungsbereich.** Bei einem Zustandsflag ist zu erheben, welche Codepfade es öffnet, nicht nur, für wen es gesetzt wird. Beleg: `HasHostileCountAoeMitigation` wurde als „richtig eingegrenzt" freigegeben, während das gesetzte Flag die gesamte Defensivkette öffnete.
@@ -118,6 +120,16 @@ Chat durchgehend Deutsch, vor jeder Antwort verifiziert (Beleg: englische Antwor
 **TODO.md führt ausschließlich offene Arbeit.** Kein abgeschlossener Vorgang, keine Statushistorie, kein Kopftext über das Archiv. Ohne offene Punkte: „Derzeit keine." Neu erkannte Defekte werden sofort erfasst, auch außerhalb des laufenden Auftrags; abgeschlossene werden nach AUDIT_LOG.md überführt, eine Statusänderung im Text genügt nicht. Beleg: Roadmap, Nummernliste und Archivkopf dreimal in Folge belassen.
 
 **AUDIT_LOG.md** ist das Nachweisarchiv abgeschlossener Prüfungen und die Traceability-Quelle: vor jeder Neuprüfung eines Commits oder Bereichs dort nachsehen. Beide Dateien werden bei Sitzungsbeginn und nach Kontextkomprimierung gelesen. Fehlt eine, wird das gemeldet.
+
+**Konzeptdokumente stehen im Urteilsstil, nicht im Gutachtenstil.** Ein Konzept stellt den geltenden Sachstand als Ganzes voran und begründet ihn danach; es bildet nicht den Weg dorthin nach. Die Entsprechungen der Disziplin sind BLUF (Bottom Line Up Front) und das Pyramid Principle (Minto): Aussage zuerst, Stützung danach. Was ausgeschlossen wurde, gehört mit seiner Begründung ins Ergebnis — das ist ADR-Bestandteil und entfällt nicht. Was entfällt, ist die Chronik der eigenen Fassungen: keine nummerierten Auditrunden, keine „Verbesserung nach dem zweiten Audit", keine Nachträge, keine Tabelle „Aussage weiter oben / Stand". Änderungen werden **eingearbeitet**, nicht angehängt.
+
+*Prüfkriterium:* Wer einen einzelnen Abschnitt liest, darf keinen überholten Stand erhalten. Ein Dokument, dessen Anfang nur im Licht seines Endes richtig ist, hat einen Fehlerpfad, den der Urteilsstil nicht hat — und die eigene Umsetzung liest diese Dokumente nach jeder Kontextkomprimierung erneut.
+
+*Abgrenzung:* Die Historie des **Gegenstands** ist Inhalt, die Historie des **Dokuments** ist es nicht. Wo die Entwicklung des beschriebenen Codes selbst der Gegenstand ist — wie in `06-fork-audit.md`, das jede Abweichung samt der Frage beantwortet, wo sie sich als falsch erwiesen hat —, gehört sie in den Ergebnisteil und wird nicht getilgt. Was entfällt, ist ausschließlich die Chronik der eigenen Fassungen dieses Dokuments.
+
+Der Loop ist ein Arbeitsverfahren, kein Dokumentschema. Seine Stufen dürfen die Gliederung eines Konzepts nicht bestimmen. Die Historie geht nicht verloren, sie steht am richtigen Ort: abgeschlossene Prüfungen in `AUDIT_LOG.md` Abschnitt A, zurückgenommene Aussagen in Abschnitt C. Bevor ein Historienabschnitt aus einem Konzept entfernt wird, ist zu prüfen, dass sein Beleg dort geführt ist; fehlt er, wird er zuerst übertragen.
+
+Beleg: `09-tank-selfprotection.md` trug sieben Abschnitte reiner Prozesshistorie und einen Nachtrag, der einleitend feststellt, „mehrere Aussagen weiter oben" seien überholt — dieselben Vorgänge lagen bereits als A21–A23 und C13–C19 im Archiv. Der Auftraggeber konnte dem Dokument den aktuellen Sachstand nicht mehr entnehmen.
 
 # Versionskontrolle
 
