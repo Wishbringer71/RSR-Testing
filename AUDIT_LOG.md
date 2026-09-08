@@ -603,6 +603,25 @@ Mit der Umstellung wurde außerdem möglich, was drei Runden lang zurückgestell
 
 **Erreichter Prüfgrad:** statische Selbstprüfung, Prüfskript mit Selbsttest und Gegenprobe am konstruierten Defekt, Code-Review mit eigenem Kontext, CI-Kompilierung. Keine Laufzeitbeobachtung. Dass die vier Rotationsstellen im Spiel besser weaven, ist **nicht** belegt; belegt ist, dass die Einschränkung, die sie ausschreiben, bisher nicht existierte.
 
+
+### A31 · Einzelabarbeitung: der falsche Holmgang-Status in den Beiruta-Rotationen (08.09.2026)
+
+**Research am Artefakt.** `Status.resx` führt vier Statuseinträge unter dem Anzeigenamen Holmgang: 88 „Unable to move until effect fades" ↓, 409 „Most attacks cannot reduce your HP to less than 1" ↑, sowie 1304 und 1305, beide ↓. Der Schutz auf dem Krieger ist 409; 88 ist der Bewegungs-Debuff auf dessen Ziel. Die zentralen Listen in `StatusHelper` (`:440`, `:579`) und `WAR_Reborn` führen durchgehend 409 — der Fork enthält den Beleg für die richtige Zuordnung also selbst.
+
+**Gesamtheitlichkeit: Der TODO-Eintrag war unvollständig.** Er nannte vier Fundstellen; es sind fünf. `BeirutaSGE.cs:193` trägt dieselbe Prüfung und fehlte in der Aufzählung — der Nachweis, dass die Erhebung „alle strukturell gleichen Stellen" beim ersten Mal nicht vollständig war.
+
+**Inhaltlichkeit förderte den schwereren Defekt zutage.** Drei der fünf Prüfungen sperren die Einzelheilung außer bei Living Dead und Holmgang auch bei **Walking Dead**. Deren Wirkbeschreibung (`Status.resx` 811) lautet: „Most attacks will not reduce HP below 1. Restoring HP with each weaponskill successfully delivered and spell cast. The inability to restore 100% of HP before timer runs out will result in KO." Heilung ist dort die Überlebensbedingung, nicht die Höflichkeit; eine Heilsperre tötet den Dunkelritter. Beim Weißmagier trifft sie unter anderem Benediktion — die Vollheilung, die genau diese Phase beantwortet. `StatusHelper.NoNeedHealingStatus` hat `WalkingDead` aus demselben Grund ausdrücklich auskommentiert.
+
+**Entstehungsrichtung.** Alle fünf Stellen stammen aus dem Upstream-Merge `0246bea5` und stehen in `upstream/main` unverändert. Kein späterer Eingriff hat eine Prämisse gebrochen; die Zuordnung war von Anfang an falsch. Betroffen sind Endnutzer der Beiruta-Rotationen und die Upstream-Pflege.
+
+**Umgesetzt.** Statt die Aufzählungen zu flicken, verweisen alle fünf auf `StatusHelper.NoNeedHealingStatus`. Das ist die Parnas-Antwort auf eine alternde Konstruktion: die Aufzählung wird durch die gepflegte Liste ersetzt, sonst fallen dieselben Stellen nach der nächsten Ergänzung erneut zurück. Nebeneffekt und Beleg zugleich: Paladin und Gunbreaker fehlten in vier der fünf Listen vollständig — die fünfte, `BeirutaSCH.HasDefenseSingleLockoutStatus`, zählte sie auf und belegt damit, dass der Autor sie derselben Klasse zurechnet.
+
+**Prüfmittel.** `scan10.py` erfasst die Defektklasse dahinter: Statusbezeichner, deren Anzeigename von einem Status entgegengesetzter Polarität geteilt wird. Bei 4489 Mitgliedern liegen 111 in solchen Gruppen, 12 Bezeichner werden an 26 Stellen benutzt — eine von Hand prüfbare Liste. Gegen den Vor-Zustand gelaufen meldet das Skript alle fünf Holmgang-88-Stellen einschließlich der übersehenen SGE-Stelle, gegen den Nach-Zustand keine. Dieselbe Falle hat dieses Projekt einmal von der anderen Seite erwischt: Nullbefund über den Bezeichner `HallowedGround` ohne Prüfung der Wirkbeschreibung (C15).
+
+**Ein zweiter Defekt aus derselben Liste, außerhalb dieses Punktes.** `RedMageRotation.cs:756` und `:763` setzen `StatusProvide` — den Status auf dem **Spieler** — auf 3238 und 3239, die Schadenswirkungen auf dem **Ziel**; die Barrieren auf dem Spieler sind 3235 und 3236. Die Nachbarzeile `:749` greift richtig zu, und dieselbe Datei trennt `StatusProvide` von `TargetStatusProvide` überall sonst konsistent. Erfasst in `TODO.md`, Behebung im nächsten Einzelzyklus.
+
+**Erreichter Prüfgrad:** statische Selbstprüfung, Wirkbeschreibungen als Quelle, Prüfskript mit Selbsttest und Gegenprobe am konstruierten Defekt, Code-Review mit eigenem Kontext, CI-Kompilierung. Keine Laufzeitbeobachtung; der Auftraggeber nutzt die Beiruta-Rotationen nach eigener Angabe nicht. Belegt ist, dass die Holmgang-Sperre nie gegriffen hat und die Walking-Dead-Sperre der Wirkbeschreibung des Status widerspricht.
+
 ---
 
 ## B · Commit-Register (Fork vs. `upstream/main`)

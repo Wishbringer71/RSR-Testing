@@ -20,15 +20,13 @@ Das Suffix nachzureichen behebt es nicht: NuGet entfernt SemVer-2.0-Build-Metada
 
 **Auflösungsbedingung:** Die Wahl zwischen eigenem `PackageId`, Prerelease-Label und dem Verzicht auf die Paketauslieferung trifft der Auftraggeber; alle drei berühren die Autoren abgeleiteter Rotationen unterschiedlich. Zusammen mit dem Eintrag zum Release-Ballast zu entscheiden, der dasselbe `.nupkg` betrifft.
 
-### Die Beiruta-Rotationen prüfen den falschen Holmgang-Status · N
+### RDM-PvP: `StatusProvide` trägt den Ziel-Debuff statt des eigenen Status · N, U
 
-`BeirutaAST.cs:387`, `BeirutaSCH.cs:1102` und `:1118` sowie `BeirutaWHM.cs:236` prüfen `StatusID.Holmgang` (88). Status 88 ist laut `Status.resx` „Unable to move until effect fades" — der Bewegungs-Debuff, den Holmgang auf dem **Ziel** des Kriegers hinterlässt. Der Schutzstatus auf dem Krieger selbst ist Status 409 („Most attacks cannot reduce your HP to less than 1"), im Code als `Holmgang_409` geführt und an allen zentralen Stellen richtig verwendet.
+`RedMageRotation.cs:756` und `:763` setzen `StatusProvide` auf `EnchantedZwerchhau_3238` und `EnchantedRedoublement_3239`. Die Statusdefinitionen weisen 3237–3239 als ↓ „Suffering damage over time" aus — die Schadenswirkung auf dem **Ziel** —, während 3234–3236 die ↑ „A magicked barrier is nullifying damage" auf dem **Spieler** sind. `StatusProvide` beschreibt den Status auf dem Spieler; für das Ziel führt dieselbe Datei `TargetStatusProvide`, konsistent belegt an `ModifyResolutionPvP` (`Silence_1347`) und `ModifyCorpsacorpsPvP` (`Monomachy_3242`). Die Nachbarzeile `ModifyEnchantedRipostePvP` (`:749`) greift mit `EnchantedRiposte` (3234) richtig zu — drei Geschwisteraktionen, zwei davon aus der falschen Hälfte der Gruppe: die Klonsignatur der Ignorant Surgery.
 
-**Wirkung:** Die betroffenen Prüfungen erkennen einen Krieger unter Holmgang nie. Da es sich um Ausschlussprüfungen handelt, ist die Folge zusätzliche statt fehlender Heilung — die sichere Richtung, aber nicht die gemeinte.
+**Wirkung:** Der Status wird auf dem Spieler nie gefunden, die von `StatusProvide` beabsichtigte Unterdrückung greift also nie. Praktisch gering, weil `ActionCheck` die Kombo ohnehin über `IsLastComboAction` bindet; die Sperre existiert aber nicht, obwohl der Code sie ausschreibt.
 
-**Betroffenenkreis:** nur Nutzer der Beiruta-Rotationen; der Auftraggeber nutzt sie nach eigener Angabe nicht. Der Code stammt aus Upstream.
-
-**Auflösung:** `Holmgang_409` statt `Holmgang`, oder besser der Verweis auf `StatusHelper.NoNeedHealingStatus`, damit die Fundstellen nicht erneut hinter der Statusliste zurückbleiben. Fremde Rotation, deshalb mit derselben Zurückhaltung zu behandeln wie die übrigen Upstream-Befunde: Adressat ist der Upstream-Autor.
+**Auflösungsbedingung:** Ersetzung durch 3235 beziehungsweise 3236 im nächsten Einzelzyklus. PvP-Verhalten ist mit den verfügbaren Mitteln nicht beobachtbar, die Absicht ist aber aus der Nachbarzeile und der `StatusProvide`/`TargetStatusProvide`-Trennung derselben Datei belegt. Gefunden über `scan10.py`.
 
 ## Technische Schuld
 

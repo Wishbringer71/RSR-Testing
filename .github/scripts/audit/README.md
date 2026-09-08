@@ -99,3 +99,28 @@ declaring the same name can pull in a false positive; the list is short enough t
 Verified against a constructed defect rather than trusted on a null result: run over the pre-fix tree
 it reports both halves of the `HasWeaved` line, and over the fixed tree it reports nothing, with 18
 params-only predicates in scope either way.
+
+## scan10.py — status identifiers whose display name is shared by an opposite-polarity status
+
+Square Enix gives several statuses the same in-game name and separates them only by id; the generated
+`StatusID` enum mirrors that, with the first member keeping the bare name and the rest carrying an
+`_<id>` suffix. Where such a group mixes a buff and a debuff, choosing the identifier by name gets
+the wrong effect and nothing fails — the check simply never fires, or fires on the wrong character.
+
+The anchor case: `StatusID.Holmgang` is id 88, "Unable to move until effect fades", the movement
+debuff Holmgang used to leave on the warrior's *target*. The protection on the warrior himself is 409.
+Five heal-lockout checks in the Beiruta rotations asked for 88 and therefore never fired for a warrior
+in Holmgang; `StatusHelper`'s central lists had 409 all along, which is what made the mismatch
+visible. The same trap caught this project's own audit from the other side once — a null result
+reported over the identifier `HallowedGround` without reading what the neighbouring ids do (`C15`).
+
+Verified against a constructed defect: over the pre-fix tree the scan reports all five Holmgang-88
+sites, including the one in `BeirutaSGE.cs` that the TODO entry had missed; over the fixed tree that
+group is gone. 4489 status members, 111 in mixed-polarity groups, 12 identifiers used in 26 places —
+short enough to resolve each by hand against the effect text.
+
+Reviewing that list found a second defect, unrelated to healing: `ModifyEnchantedZwerchhauPvP` and
+`ModifyEnchantedRedoublementPvP` set `StatusProvide` — a status on the *player* — to ids 3238 and
+3239, which are the damage-over-time debuffs on the target; the barriers on the player are 3235 and
+3236. The neighbouring `ModifyEnchantedRipostePvP` picks correctly, and the same file separates
+`StatusProvide` from `TargetStatusProvide` consistently everywhere else. See `TODO.md`.

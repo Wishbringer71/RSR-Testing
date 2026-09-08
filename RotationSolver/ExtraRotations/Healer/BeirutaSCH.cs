@@ -1098,8 +1098,11 @@ public sealed class BeirutaSCH : ScholarRotation
 
 		try
 		{
-			return target.HasStatus(false, StatusID.LivingDead) ||
-				   target.HasStatus(false, StatusID.Holmgang);
+			// The shared list is what this enumeration was hand-rolling. StatusID.Holmgang is id 88,
+			// "Unable to move until effect fades" - the movement debuff on the warrior's target,
+			// not the 409 protection on the warrior himself - so the check never fired for Holmgang
+			// at all; Paladin and Gunbreaker were missing outright.
+			return target.HasStatus(false, StatusHelper.NoNeedHealingStatus);
 		}
 		catch
 		{
@@ -1114,10 +1117,11 @@ public sealed class BeirutaSCH : ScholarRotation
 
 		try
 		{
-			return target.HasStatus(false, StatusID.LivingDead) ||
-				   target.HasStatus(false, StatusID.Holmgang) ||
-				   target.HasStatus(false, StatusID.HallowedGround) ||
-				   target.HasStatus(false, StatusID.Superbolide);
+			// Same list as above. This enumeration was the most complete of the five in the Beiruta
+			// rotations - it is the evidence that Paladin and Gunbreaker belong in the others too -
+			// and it still carried Holmgang as id 88, the movement debuff on the warrior's target
+			// rather than the 409 protection on the warrior himself.
+			return target.HasStatus(false, StatusHelper.NoNeedHealingStatus);
 		}
 		catch
 		{
