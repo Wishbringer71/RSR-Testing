@@ -1111,6 +1111,54 @@ der Veröffentlichungspfad selbst, der nur auf einen Tag läuft.
 
 ---
 
+### A41 · Barrierekandidaten nach der Aktion sortiert, nicht nach dem Statusnamen (08.09.2026)
+
+**Anlass:** Auftrag, die offenen Punkte im Loop zu prüfen, zu begründen und Empfehlungen
+auszusprechen. Erster Punkt: die 55 Barrieregruppen ohne Vertreter in `StatusHelper.ShieldStatus`.
+
+**Ergebnis:** Von den 61 Ids stehen **15** hinter einer PvE-Aktion, die eine Barriere erzeugt; zehn
+davon sind Jobbarrieren im Nutzungsprofil des Auftraggebers. Die zuvor vorgelegte Sechserliste war
+zu zwei Dritteln falsch und ließ acht der zehn aus (C28).
+
+**Warum der Statustext nicht reicht.** PvE- und PvP-Form einer Fähigkeit tragen denselben
+Anzeigenamen **und** dieselbe Wirkbeschreibung — „A magicked barrier is nullifying damage". Der
+Geltungsbereich in Klammern nennt nur den Job. Die frühere Liste hatte daraus geschlossen, ein
+Jobkürzel bedeute PvE; das ist ein Surrogat, und es zeigte in die falsche Richtung:
+
+| Id | Statustext | PvE-Aktion desselben Namens | Folge |
+|---|---|---|---|
+| `Aquaveil_3086` (WHM) | Barriere | „Reduces damage taken by a party member or self by 15%" | PvP-Form, nicht aufnehmen |
+| `HolySheltron_3026` (PLD) | Barriere | „Reduces damage taken by 15% … Grants Knight's Resolve" | PvP-Form, nicht aufnehmen |
+| `DivineCaress` (WHM) | Barriere | „Creates a barrier … absorbs damage equivalent to a heal of 400 potency" | aufnehmen |
+| `ShakeItOff` (WAR) | Barriere | „Creates a barrier … absorbs damage totaling 15% of maximum HP" | aufnehmen |
+
+**Die Erhebung, vollständig.** Zehn Jobbarrieren: `ShakeItOff` 1457 und `ShakeItOff_1993` 1993
+(WAR) · `SeraphicVeil` 1917, `SeraphicVeil_2040` 2040, `SeraphicVeil_3097` 3097 (SCH-Seraph) ·
+`NeutralSect_1921` 1921 und `NeutralSect_3988` 3988 (AST) · `TheSpire_3892` 3892 (AST-Karte) ·
+`ImprovisedFinish` 2697 (DNC) · `DivineCaress` 3903 (WHM). Fünf Occult-Crescent-Ids:
+`OccultUnicorn` 4243, `BlessedRain` 4253, `MagicShell` 4788, `SteadfastStance` 4800, `Lance` 5319.
+Die übrigen 46 sind PvP-Formen, entfernte Nocturnal-Sekt-Status des Astrologen oder Duty- und
+Gegenstandseffekte ohne Spieleraktion.
+
+**Das Prüfmittel trägt die Erkenntnis jetzt selbst.** `scan13.py` liest zusätzlich `ActionId.resx`
+und schreibt hinter jeden Kandidaten, was die Aktion gleichen Namens in PvE tut — „PvE barrier",
+„PvE action grants no barrier", „PvP only", „no action of this name" — und listet am Ende die
+PvE-Barrieren gesondert auf. Der Selbsttest deckt alle vier Fälle an konstruierten Aktionen ab,
+darunter genau den Fall, der den Fehler ausgelöst hat: Aquaveil mit Barrierestatus und
+mindernder PvE-Aktion. Ohne diese Ergänzung wäre die Korrektur eine Einzelfallbehebung geblieben
+und derselbe Fehlschluss bei der nächsten Erweiterung erneut möglich.
+
+**Empfehlung:** die zehn Jobbarrieren aufnehmen, die fünf Occult-Ids zurückstellen. Die zehn sind
+Instanzen derselben Defektklasse, die A37 behoben hat — eine fehlende Id kehrt die Antwort um,
+statt sie zu vergröbern — und liegen im Nutzungsprofil. Die Occult-Ids sind harmlos, aber ohne
+Nutzen, solange der Inhalt nicht gespielt wird. **Nicht umgesetzt**, weil der Auftrag Prüfung,
+Begründung und Empfehlung verlangt hat und die Aufnahme selbst nicht freigegeben ist.
+
+**Erreichter Prüfgrad:** statische Prüfung gegen `Status.resx` und `ActionId.resx`, Prüfskript mit
+Selbsttest, CI-Kompilierung. Die Wirkung im Spiel ist nicht beobachtet.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.
@@ -1188,3 +1236,4 @@ Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt e
 | C25 | Konzept 09: The Blackest Night sei nicht behandelbar, weil „der Auslöser nicht beobachtbar" ist | Richtig, aber nicht die Frage, die die Regel braucht. Für eine Werkzeugwahl genügt „liegt TBN?", und das steht in der Statusliste. Dieselbe Fehlerform wie C19: eine schwerere Frage gestellt als nötig und den Fall daran scheitern lassen — dort eine Rate statt einer Uhr, hier der Verbrauch statt des Vorhandenseins. Lehre: Vor dem Verwerfen wegen fehlender Messbarkeit ist zu prüfen, welche Größe die Regel wirklich braucht | A35: Fall wieder aufgenommen, Umsetzungsweg mit zwei Vorbedingungen beschrieben |
 | C26 | A35: die Schild-Zurückstellung bei The Blackest Night sei zu empfehlen, weil „der Vorteil in beiden Zweigen der offenen Frage" bestehe | Die nachgeholte Recherche schließt die Frage: TBN hat Verbrauchsrang 3, Eukrasian Diagnosis 4, Divine Benison 12 — TBN wird vor jedem Heilerschild aufgezehrt, Dark Arts bleibt unberührt. Und der zurückgestellte Schild verfällt nicht, er absorbiert nach TBN; Zurückstellen spart also nichts. Der dritte, übersehene Zweig war „der Schild kostet gar nichts". Lehre: Eine offene Frage ist kein Anlass, das Ergebnis gegen sie zu immunisieren, sondern sie zu schließen — und der als gesperrt gemeldete Egress war kein Grund, die Recherche für erschöpft zu halten | A36: Regel zurückgenommen, Fall 5 auf „kein Sonderfall" gesetzt |
 | C27 | A36: Radiant Aegis sei für die TBN-Frage gegenstandslos, weil sie „ein Selbstschild des Beschwörers ist, der nie auf dem Dunkelritter liegt" | Falsch herum gedacht. Nicht Radiant Aegis wandert, sondern **The Blackest Night**: `ActionId.resx` (7393) beschreibt es als „Creates a barrier around self or **target party member**", und `DRK_Reborn.cs:128` legt es mit `targetOverride: TargetType.LowHP` auf Fremdziele. Ein Beschwörer kann also seinen eigenen Radiant Aegis tragen **und** zusätzlich TBN — der vom Job-Guide beschriebene Fall ist real, nur vom Heiler nicht beeinflussbar. Der Auftraggeber hat die ungeprüfte Prämisse benannt. Lehre: Bevor ein Fall über den Träger eines Status ausgeschlossen wird, ist die Zielmenge der Aktion an ihrer Beschreibung zu belegen, nicht aus dem Jobnamen zu schließen | A36 ergänzt; zwei Defekte daraus in TODO.md |
+| C28 | TODO-Eintrag zu den fehlenden Barrieregruppen: sechs Ids seien die „PvE-Spielerbarrieren, die vermutlich hineingehören" (`Aquaveil_3086`, `DivineCaress`, `Epicycle`, `GuardiansWill`, `HolySheltron_3026`, `ImprovisedFinish`) | Vier der sechs sind es nicht, und acht echte fehlten. Die Prüfung über die **Aktion** gleichen Namens zeigt: Aquaveil und Holy Sheltron senken in PvE nur den erlittenen Schaden, die Barriere-Ids 3086 und 3026 gehören zu ihren PvP-Formen; `Epicycle` hat nur eine PvP-Aktion, `GuardiansWill` gar keine. Nicht genannt waren dagegen `ShakeItOff` (1457/1993), `SeraphicVeil` (1917/2040/3097), `NeutralSect` (1921/3988), `TheSpire_3892` — Barrieren, die ein Heiler in fast jedem Gruppenkampf sieht. Ursache: Die Liste war nach dem Jobkürzel im Status-Scope gebildet, einem Surrogat, das PvE und PvP nicht trennt — beide Formen tragen denselben Anzeigenamen und dieselbe Wirkbeschreibung. Lehre: Wo zwei Formen einer Fähigkeit denselben Text tragen, entscheidet nicht der Status, sondern die Aktion, die ihn verleiht | `scan13.py` um die Aktionszuordnung erweitert, Eintrag neu gefasst (A41) |

@@ -207,5 +207,19 @@ mindern (`Catalyze_3088`, „Damage taken is reduced"), und die, die eine Barrie
 Erster Lauf: 22 geführte Ids, **21 fehlende Geschwister** in 15 Gruppen — darunter Galvanize,
 Eukrasian Diagnosis, Divine Benison, Haima und Blackest Night, also die Schilde, die ein
 Heiler täglich sieht. Alle 21 sind ergänzt, dazu Celestial Intersection als Heiler-Einzelschild
-in normalem Inhalt; der Scan meldet dort jetzt null. Die 55 Gruppen ohne jeden Vertreter sind
-gemischt PvE, PvP und Duty-Effekte und brauchen je eine eigene Lesung — erfasst in `TODO.md`.
+in normalem Inhalt; der Scan meldet dort jetzt null.
+
+**PvE gegen PvP entscheidet die Aktion, nicht der Status.** Beide Formen einer Fähigkeit tragen
+denselben Anzeigenamen und dieselbe Wirkbeschreibung, der Geltungsbereich nennt nur den Job —
+aus dem Status allein ist die Frage nicht zu beantworten. Der Scan liest deshalb zusätzlich
+`ActionId.resx` und setzt hinter jeden Kandidaten, was die **Aktion gleichen Namens in PvE**
+tut: `PvE barrier`, `PvE action grants no barrier`, `PvP only` oder `no action of this name`.
+Der zweite Fall ist der, für den die Prüfung existiert: Aquaveil und Holy Sheltron senken in
+PvE nur den erlittenen Schaden, ihre Barriere-Ids 3086 und 3026 gehören zu den PvP-Formen —
+beide standen vorher als PvE-Kandidaten in `TODO.md` (AUDIT_LOG C28). Der Selbsttest deckt alle
+vier Fälle an konstruierten Aktionen ab, den Aquaveil-Fall eingeschlossen.
+
+Von den 55 Gruppen ohne jeden Vertreter bleiben damit 15 Ids hinter einer PvE-Barriereaktion,
+zehn davon Jobbarrieren (Shake It Off, Seraphic Veil, Neutral Sect, The Spire, Improvised
+Finish, Divine Caress) und fünf aus dem Occult Crescent; die übrigen 46 sind PvP-Formen,
+entfernte Alt-Status oder Duty-Effekte. Erfasst mit Empfehlung in `TODO.md`.

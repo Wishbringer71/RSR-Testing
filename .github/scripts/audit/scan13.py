@@ -28,6 +28,19 @@ The scan reports; it does not decide. A hit is a candidate, and the effect text 
 with it is what the reader judges - a PvP-only form is harmless to add but pointless, and
 a stack counter that restores a barrier is not itself one.
 
+Telling the PvE form from the PvP one is what the status text alone cannot do: both carry
+the same display name and the same "a magicked barrier is nullifying damage". The action
+resx can. Each candidate is therefore matched against the action of the same name, and the
+label says what that action does in PvE:
+
+  * **PvE barrier** - a `<name>PvE` action exists and its description creates a barrier.
+  * **PvE action grants no barrier** - a `<name>PvE` action exists but only mitigates, so
+    the barrier id belongs to the PvP form. `Aquaveil` and `Holy Sheltron` are the cases
+    that motivated this: in PvE both reduce damage taken, and only their PvP versions put
+    up a barrier. Both had been listed as PvE candidates before this check existed.
+  * **PvP only** / **no action of this name** - a PvP-exclusive action, or a duty, item or
+    removed-job effect with no player action behind it.
+
 Usage: python3 .github/scripts/audit/scan13.py
 """
 import re
@@ -35,6 +48,7 @@ import sys
 from collections import defaultdict
 
 RESX = 'RotationSolver.SourceGenerators/Properties/Status.resx'
+ACTION_RESX = 'RotationSolver.SourceGenerators/Properties/ActionId.resx'
 HELPER = 'RotationSolver.Basic/Helpers/StatusHelper.cs'
 
 SEE = re.compile(r'&lt;strong&gt;(?P<disp>[^&]+)&lt;/strong&gt;&lt;/see&gt;\s*(?P<pol>[↑↓])'
@@ -83,6 +97,37 @@ def is_barrier(text):
     return bool(IS_BARRIER.search(text)) and not SETS_UP_LATER.search(text)
 
 
+# An action doc block: display name, PvE/PvP marker, description paragraph, then the member.
+ACTION = re.compile(
+    r'&lt;i&gt;(?P<kind>PvE|PvP)&lt;/i&gt;'
+    r'(?:(?!^\s*\w+ = \d+,).)*?'
+    r'(?:&lt;para&gt;(?P<desc>.*?)&lt;/para&gt;(?:(?!^\s*\w+ = \d+,).)*?)?'
+    r'^\s*(?P<name>\w+) = \d+,',
+    re.S | re.M)
+# A barrier in an action description: it creates, erects or absorbs, not merely reduces.
+ACTION_BARRIER = re.compile(r'\bbarrier\b|\bnullif\w+ damage\b|\babsorbs?\b', re.IGNORECASE)
+
+
+def parse_action_enum(path):
+    """{action identifier: (PvE|PvP, description text)}."""
+    raw = open(path, encoding='utf-8').read()
+    out = {}
+    for m in ACTION.finditer(raw):
+        desc = re.sub(r'&lt;.*?&gt;|<.*?>', ' ', m.group('desc') or '')
+        out[m.group('name')] = (m.group('kind'), ' '.join(desc.split()))
+    return out
+
+
+def classify(ident, actions):
+    """What the action of the same name does in PvE - see the module docstring."""
+    base = re.sub(r'_\d+$', '', ident)
+    pve = actions.get(base + 'PvE')
+    if pve:
+        return ('PvE barrier' if ACTION_BARRIER.search(pve[1])
+                else 'PvE action grants no barrier')
+    return 'PvP only' if base + 'PvP' in actions else 'no action of this name'
+
+
 def self_test():
     cases = [
         ('A magicked barrier is nullifying damage.', True),
@@ -121,15 +166,43 @@ def self_test():
     assert set(members) == {'BlackestNight', 'BlackestNight_1308'}, members
     assert members['BlackestNight_1308'][:3] == (1308, 'Blackest Night', 'DRK')
 
-    print('self-test ok: barriers told from mitigation and from set-up statuses\n')
+    # The PvE/PvP split, against constructed actions of both shapes.
+    adoc = '\n'.join([
+        '/// &lt;see href="x/1"&gt;&lt;strong&gt;Divine Caress&lt;/strong&gt;&lt;/see&gt; &lt;i&gt;PvE&lt;/i&gt; (WHM)',
+        '/// &lt;para&gt;Creates a barrier around self and all party members near you.&lt;/para&gt;',
+        'DivineCaressPvE = 1,',
+        '/// &lt;see href="x/2"&gt;&lt;strong&gt;Aquaveil&lt;/strong&gt;&lt;/see&gt; &lt;i&gt;PvE&lt;/i&gt; (WHM)',
+        '/// &lt;para&gt;Reduces damage taken by a party member or self by 15%.&lt;/para&gt;',
+        'AquaveilPvE = 2,',
+        '/// &lt;see href="x/3"&gt;&lt;strong&gt;Epicycle&lt;/strong&gt;&lt;/see&gt; &lt;i&gt;PvP&lt;/i&gt; (AST)',
+        '/// &lt;para&gt;Creates a barrier around self.&lt;/para&gt;',
+        'EpicyclePvP = 3,',
+    ])
+    fd, tmp = tempfile.mkstemp(suffix='.resx')
+    with os.fdopen(fd, 'w', encoding='utf-8') as fh:
+        fh.write(adoc)
+    try:
+        actions = parse_action_enum(tmp)
+    finally:
+        os.unlink(tmp)
+    assert set(actions) == {'DivineCaressPvE', 'AquaveilPvE', 'EpicyclePvP'}, actions
+    assert classify('DivineCaress', actions) == 'PvE barrier'
+    # The case this check exists for: the PvE action mitigates, the barrier id is the PvP form.
+    assert classify('Aquaveil_3086', actions) == 'PvE action grants no barrier'
+    assert classify('Epicycle', actions) == 'PvP only'
+    assert classify('GuardiansWill', actions) == 'no action of this name'
+
+    print('self-test ok: barriers told from mitigation, from set-up statuses '
+          'and from PvP-only forms\n')
 
 
 def main():
     self_test()
     members = parse_status_enum(RESX)
     listed = listed_shields(HELPER)
-    if not members or not listed:
-        print('could not parse the status enum or ShieldStatus')
+    actions = parse_action_enum(ACTION_RESX)
+    if not members or not listed or not actions:
+        print('could not parse the status enum, ShieldStatus or the action enum')
         return 1
 
     by_name = defaultdict(list)
@@ -157,7 +230,8 @@ def main():
             have = [n for n, _, _, _ in entries if n in listed]
             print(f'  "{disp}"' + (f'   listed: {have}' if have else '   (nothing listed)'))
             for name, sid, scope, text in sorted(missing, key=lambda e: e[1]):
-                print(f'      {name} ({sid}) ({scope}) - {text[:90]}')
+                print(f'      {name} ({sid}) ({scope}) [{classify(name, actions)}]'
+                      f' - {text[:90]}')
             print()
 
     show('Missing siblings of a listed barrier', siblings)
@@ -169,7 +243,15 @@ def main():
         return 0
     print(f'{total} candidate id(s). Read the effect text before adding any: a PvP-only\n'
           'form is harmless but pointless, and the scope in brackets says which job or\n'
-          'content it belongs to.')
+          'content it belongs to. The label after the scope says what the action of the\n'
+          'same name does in PvE - "PvE action grants no barrier" means the id is the PvP\n'
+          'form of an ability that only mitigates in PvE.')
+    pve = sorted((sid, name, scope) for _, _, missing in siblings + groups
+                 for name, sid, scope, _ in missing
+                 if classify(name, actions) == 'PvE barrier')
+    print(f'\nOf those, {len(pve)} sit behind a PvE action that creates a barrier:')
+    for sid, name, scope in pve:
+        print(f'  {name} ({sid}) ({scope})')
     return 0
 
 
