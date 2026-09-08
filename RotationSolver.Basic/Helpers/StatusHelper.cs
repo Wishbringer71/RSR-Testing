@@ -393,10 +393,17 @@ public static class StatusHelper
 	/// (<c>DivineVeil</c> 726).
 	/// </para>
 	/// <para>
-	/// Still absent, deliberately: barrier groups with no representative here at all. The scan lists
-	/// 56 of them, mixed PvE, PvP and duty effects, and each needs its own reading - see
-	/// <c>TODO.md</c>. Celestial Intersection is the exception, added below because it is a healer's
-	/// single-target shield in ordinary content.
+	/// Which form of an ability an id belongs to cannot be read off the status: the PvE and the PvP
+	/// version share the display name and the effect text alike. The scan therefore matches each
+	/// candidate against the action of the same name, and only ids whose PvE action actually creates
+	/// a barrier are listed here. Aquaveil (3086) and Holy Sheltron (3026) are the counter-examples
+	/// that show why - both PvE actions only reduce damage taken, so those barrier ids are PvP forms.
+	/// </para>
+	/// <para>
+	/// Still absent, deliberately: 46 ids in 44 groups with no representative here, none of which
+	/// sits behind a PvE action that creates a barrier - PvP forms, the astrologian's removed
+	/// nocturnal sect statuses, and duty or item effects with no player action behind them. The scan
+	/// fails the build if that number ever stops being zero.
 	/// </para>
 	/// </summary>
 	public static StatusID[] ShieldStatus { get; } =
@@ -406,6 +413,9 @@ public static class StatusHelper
 		StatusID.Galvanize_3087,
 		StatusID.Catalyze,
 		StatusID.Consolation,
+		StatusID.SeraphicVeil,
+		StatusID.SeraphicVeil_2040,
+		StatusID.SeraphicVeil_3097,
 		StatusID.EukrasianDiagnosis,
 		StatusID.EukrasianDiagnosis_2865,
 		StatusID.EukrasianDiagnosis_3109,
@@ -425,14 +435,22 @@ public static class StatusHelper
 		StatusID.DivineVeil_727,
 		StatusID.DivineVeil_2168,
 		StatusID.DivineVeil_2169,
+		StatusID.DivineCaress,
 		StatusID.Intersection,
 		StatusID.Intersection_4040,
+		// The barrier Neutral Sect puts on the receiver of an aspected spell, not the astrologian's
+		// own healing buff of the same display name - that one reads "increases healing magic potency".
+		StatusID.NeutralSect_1921,
+		StatusID.NeutralSect_3988,
+		StatusID.TheSpire_3892,
 		StatusID.BlackestNight,
 		StatusID.BlackestNight_1308,
 		StatusID.BrutalShell,
 		StatusID.BrutalShell_1997,
 		StatusID.StemTheTide,
 		StatusID.StemTheTide_3031,
+		StatusID.ShakeItOff,
+		StatusID.ShakeItOff_1993,
 		StatusID.ShadeShift,
 		StatusID.ShadeShift_2011,
 		StatusID.CrestOfTimeBorrowed,
@@ -446,6 +464,14 @@ public static class StatusHelper
 		StatusID.TemperaCoat_4114,
 		StatusID.TemperaGrassa,
 		StatusID.TemperaGrassa_4115,
+		StatusID.ImprovisedFinish,
+		// Occult Crescent. Phantom job and duty actions, all of them party barriers, so they land on
+		// the same targets a healer is judging.
+		StatusID.OccultUnicorn,
+		StatusID.BlessedRain,
+		StatusID.MagicShell,
+		StatusID.SteadfastStance,
+		StatusID.Lance,
 	];
 
 	/// <summary>

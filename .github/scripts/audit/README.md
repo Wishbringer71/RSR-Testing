@@ -219,7 +219,16 @@ PvE nur den erlittenen Schaden, ihre Barriere-Ids 3086 und 3026 gehören zu den 
 beide standen vorher als PvE-Kandidaten in `TODO.md` (AUDIT_LOG C28). Der Selbsttest deckt alle
 vier Fälle an konstruierten Aktionen ab, den Aquaveil-Fall eingeschlossen.
 
-Von den 55 Gruppen ohne jeden Vertreter bleiben damit 15 Ids hinter einer PvE-Barriereaktion,
-zehn davon Jobbarrieren (Shake It Off, Seraphic Veil, Neutral Sect, The Spire, Improvised
-Finish, Divine Caress) und fünf aus dem Occult Crescent; die übrigen 46 sind PvP-Formen,
-entfernte Alt-Status oder Duty-Effekte. Erfasst mit Empfehlung in `TODO.md`.
+Von den 55 Gruppen ohne jeden Vertreter standen 15 Ids hinter einer PvE-Barriereaktion — zehn
+Jobbarrieren (Shake It Off, Seraphic Veil, Neutral Sect, The Spire, Improvised Finish, Divine
+Caress) und fünf aus dem Occult Crescent, den der Auftraggeber spielt. Alle 15 sind aufgenommen
+(A43); `ShieldStatus` führt jetzt 60 Ids, der Scan meldet dort null. Die verbliebenen 46 Ids in
+44 Gruppen sind PvP-Formen, entfernte Alt-Status oder Duty-Effekte ohne Spieleraktion.
+
+**Dieser Scan ist zugleich eine Schranke in der CI.** Er endet mit Rückgabewert 1, sobald ein
+Kandidat mit dem Label `PvE barrier` ungelistet ist, und läuft im `DispatchChain`-Job von
+`build.yaml` — dem Job ohne .NET, der in Sekunden antwortet (der Scan selbst braucht 0,1 s).
+Das ist die Antwort auf die Alterung, nicht auf den Einzelfall: Die Liste war korrekt, als sie
+geschrieben wurde, und wurde durch Erweiterungen anderswo unvollständig, ohne dass etwas
+fehlschlug. Gegenprobe am konstruierten Defekt: eine Id entfernt → Rückgabewert 1 und die Id
+wird benannt; wieder eingefügt → 0.

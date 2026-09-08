@@ -1205,6 +1205,74 @@ zusätzlich eine erfolglose externe Recherche. Keine Laufzeitbeobachtung.
 
 ---
 
+### A43 · Die fünfzehn fehlenden Barrieren aufgenommen und die Lücke verriegelt (08.09.2026)
+
+**Anlass:** Freigabe des Auftraggebers, den Empfehlungen aus A42 zu folgen, mit der Angabe, dass er
+Occult Crescent spielt — womit auch die fünf zurückgestellten Ids in den Auftrag fallen. Vorgabe:
+kritische Umsetzung im vollständigen Loop.
+
+**Umgesetzt:** `StatusHelper.ShieldStatus` von 45 auf 60 Ids. Zehn Jobbarrieren — `ShakeItOff`
+1457/1993, `SeraphicVeil` 1917/2040/3097, `NeutralSect_1921`/`_3988`, `TheSpire_3892`,
+`ImprovisedFinish` 2697, `DivineCaress` 3903 — und fünf Occult-Crescent-Barrieren `OccultUnicorn`
+4243, `BlessedRain` 4253, `MagicShell` 4788, `SteadfastStance` 4800, `Lance` 5319. Jede einzeln
+gegen `Status.resx` (Wirkbeschreibung) und `ActionId.resx` (die PvE-Aktion erzeugt eine Barriere)
+belegt.
+
+**Wirkungsbereich vor der Änderung erhoben, nicht danach.** `ShieldStatus` hat genau einen Leser,
+`HasSurvivingShield`; dieser hat genau zwei, `StateUpdater.cs:719` und `:776`. Beide heben dort die
+Gesundheitsquote auf `GetEffectiveHpPercent` an — und beide nur, wenn `ShieldCreditAllowed` gilt,
+also eine BMR-Vorhersage oder ein erkannter Cast tatsächlich Schaden erwarten lässt. Die Änderung
+wirkt damit ausschließlich in Situationen, in denen ein Schild gegen einen konkreten Treffer
+gerechnet wird, nicht im Leerlauf.
+
+**Der Nebenbefund, den erst diese Erhebung sichtbar gemacht hat.** `WillStatusEnd` stützt sich auf
+`StatusTime`, und das liefert das **Minimum** über alle vorhandenen gelisteten Status. Beantwortet
+wird also „laufen *alle* Barrieren noch?", während der Doku-Kommentar „has an active shield that
+will still be up" sagt. Für einen Träger mehrerer Barrieren — in einer Gruppe mit Heiler der
+Regelfall — bedeutet das: Sobald die kürzeste unter den Horizont fällt, gilt er als ungeschützt.
+
+Damit stand die Frage, ob die Aufnahme netto schadet, denn fast alle fünfzehn sind
+**Gruppen**barrieren und liegen typischerweise zusätzlich zu einem Heilerschild. Die Antwort ist
+nein, und sie folgt aus der Richtung des Fehlers: Beide Abweichungen — die behobene wie die
+verbliebene — führen zu **überflüssiger Heilung**, nie zu ausbleibender. Der bisherige Zustand
+verlor die Anrechnung, sobald gar kein gelisteter Status vorlag; der neue verliert sie, wenn die
+kürzeste von mehreren ausläuft. Ein Ziel, das nur eine der neu aufgenommenen Barrieren trägt —
+etwa ein DPS unter Shake It Off ohne Heilerschild —, gewinnt die Anrechnung vollständig. Der
+Nebenbefund ist als eigener Defekt in `TODO.md` erfasst, mit der Begründung, warum die naheliegende
+Umkehr auf das Maximum ihn nur austauscht: Unterschätzung kostet eine Heilung, Überschätzung einen
+Tod.
+
+**Verworfene Optionen.** *Nullvariante:* lässt eine belegte Inversion im Nutzungsprofil stehen.
+*Nur die zehn Jobbarrieren:* der Auftraggeber spielt Occult Crescent, die fünf sind Party-Barrieren
+auf denselben Zielen. *Die Aufzählung durch eine Erzeugung ersetzen* — ein Generator, der
+`ShieldStatus` aus den Wirkbeschreibungen bildet: verworfen, weil die Trennung PvE/PvP an der
+Aktionsbeschreibung hängt und damit heuristisch bleibt; eine Fehlklassifikation wäre dann still und
+im Code nicht mehr sichtbar. Stattdessen bleibt die Liste explizit, und die Alterung wird an der
+Schranke abgefangen.
+
+**Die Wiederholbarkeit ist adressiert, nicht nur der Fundort.** `scan13.py` endet jetzt mit
+Rückgabewert 1, sobald ein Kandidat mit dem Label „PvE barrier" ungelistet ist, und läuft im
+`DispatchChain`-Job von `build.yaml` — dem Job ohne .NET, der in Sekunden antwortet; der Scan
+selbst braucht 0,1 s. Das ist die Antwort auf *Lack of Movement*: Die Liste war bei ihrer
+Entstehung richtig und wurde durch Erweiterungen anderswo unvollständig, **ohne dass etwas
+fehlschlug**. Jetzt schlägt etwas fehl.
+
+**Nachweis.** Vor der Änderung meldete der Scan 15 ungelistete PvE-Barrieren, danach 0; fehlende
+Geschwister 0; verbliebene Gruppen 44 mit 46 Ids, keine davon mit PvE-Barriereaktion. Gegenprobe am
+konstruierten Defekt: `ShakeItOff` wieder entfernt → Rückgabewert 1 und die Id wird benannt;
+wieder eingefügt → 0. Selbsttest des Skripts unverändert grün.
+
+**Betroffenenkreis benannt.** Gruppe **R**: `ShieldStatus` ist öffentlich, die Signatur bleibt, der
+Inhalt ändert sich — eine abgeleitete Rotation, die die Liste liest, sieht mehr Ids und damit
+weniger Ziele als ungeschützt. In `CHANGELOG.md` eingetragen, weil die Versionsnummer das nicht
+ausdrücken kann. Gruppe **U**: eine weitere Zeile in `build.yaml`, die Upstream nicht hat.
+
+**Erreichter Prüfgrad:** statische Prüfung gegen beide Ressourcendateien, Prüfskript mit Selbsttest
+und Gegenprobe, CI-Kompilierung, CI-Schranke. Nicht geprüft: die Wirkung im Spiel — dafür wäre zu
+beobachten, ob eine Heilung auf einen beschildeten Träger ausbleibt.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.

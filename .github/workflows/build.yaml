@@ -15,6 +15,12 @@ jobs:
       - name: Check base call targets
         run: python3 .github/scripts/check_base_calls.py
 
+      # Fails when a barrier whose PvE action creates one is missing from ShieldStatus. That list
+      # ages by omission: an unlisted barrier counts as none at all, so the gap is invisible in the
+      # code and only shows as a healer topping up a target that was already covered.
+      - name: Check ShieldStatus covers every PvE barrier
+        run: python3 .github/scripts/audit/scan13.py
+
   Build:
     runs-on: windows-latest
     steps:

@@ -252,6 +252,15 @@ def main():
     print(f'\nOf those, {len(pve)} sit behind a PvE action that creates a barrier:')
     for sid, name, scope in pve:
         print(f'  {name} ({sid}) ({scope})')
+    if pve:
+        # The gate. Everything else on this list needs a human reading - a PvP form is harmless but
+        # pointless, a duty effect depends on the instance - but an id whose PvE action creates a
+        # barrier belongs in ShieldStatus, and its absence inverts the answer for whoever carries it.
+        # This is the ageing the list is prone to: correct when written, silently short one expansion
+        # later. Failing here is what keeps that from going unnoticed again.
+        print('\nThese belong in StatusHelper.ShieldStatus. Add them, or say in the doc comment '
+              'why not.')
+        return 1
     return 0
 
 

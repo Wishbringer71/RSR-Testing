@@ -40,6 +40,15 @@ so a derived rotation reading it sees different behaviour without any compile er
 A rotation that reads `NoNeedHealingStatus` to decide whether to skip a heal keeps working; one
 that relied on `HpRecoveryDown` or `Mounted` being in there has to name them itself now.
 
+`StatusHelper.ShieldStatus` grew from 22 ids to 60, again without a signature change. The list
+decides, through `HasSurvivingShield` and `GetEffectiveHpPercent`, whether a shield counts toward a
+target's effective health; an id that is missing inverts the answer rather than blurring it, because
+`WillStatusEnd` reports an absent status as ending. Added were the 21 missing siblings of ids
+already listed, Celestial Intersection, and the barriers whose PvE action creates one: Shake It Off,
+Seraphic Veil, Neutral Sect, The Spire, Improvised Finish, Divine Caress, plus the Occult Crescent
+party barriers. A derived rotation that reads the list sees more ids and therefore fewer targets
+counted as unshielded.
+
 ### Removed from RotationSolver.Basic
 
 Both members were part of the shipped `7.5.5.41+wsh1` package. Code that overrides or reads them no
