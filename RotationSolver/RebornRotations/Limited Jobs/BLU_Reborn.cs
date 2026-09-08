@@ -473,7 +473,9 @@ public sealed class BLU_Reborn : BlueMageRotation
 			return true;
 		}
 
-		if (PeripheralSynthesisPvE.CanUse(out act, skipStatusProvideCheck: true))
+		// Both skip flags this action used to be called with are gone: the StatusProvide and
+		// StatusNeed settings they were working around have been removed as unsatisfiable.
+		if (PeripheralSynthesisPvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -605,7 +607,7 @@ public sealed class BLU_Reborn : BlueMageRotation
 			return true;
 		}
 
-		if (PeripheralSynthesisPvE.CanUse(out act, skipStatusNeed: true))
+		if (PeripheralSynthesisPvE.CanUse(out act))
 		{
 			return true;
 		}

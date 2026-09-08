@@ -20,13 +20,16 @@ Das Suffix nachzureichen behebt es nicht: NuGet entfernt SemVer-2.0-Build-Metada
 
 **Auflösungsbedingung:** Die Wahl zwischen eigenem `PackageId`, Prerelease-Label und dem Verzicht auf die Paketauslieferung trifft der Auftraggeber; alle drei berühren die Autoren abgeleiteter Rotationen unterschiedlich. Zusammen mit dem Eintrag zum Release-Ballast zu entscheiden, der dasselbe `.nupkg` betrifft.
 
-### RDM-PvP: `StatusProvide` trägt den Ziel-Debuff statt des eigenen Status · N, U
+### Status-Einstellungen auf der falschen Seite der Aktion · N, U
 
-`RedMageRotation.cs:756` und `:763` setzen `StatusProvide` auf `EnchantedZwerchhau_3238` und `EnchantedRedoublement_3239`. Die Statusdefinitionen weisen 3237–3239 als ↓ „Suffering damage over time" aus — die Schadenswirkung auf dem **Ziel** —, während 3234–3236 die ↑ „A magicked barrier is nullifying damage" auf dem **Spieler** sind. `StatusProvide` beschreibt den Status auf dem Spieler; für das Ziel führt dieselbe Datei `TargetStatusProvide`, konsistent belegt an `ModifyResolutionPvP` (`Silence_1347`) und `ModifyCorpsacorpsPvP` (`Monomachy_3242`). Die Nachbarzeile `ModifyEnchantedRipostePvP` (`:749`) greift mit `EnchantedRiposte` (3234) richtig zu — drei Geschwisteraktionen, zwei davon aus der falschen Hälfte der Gruppe: die Klonsignatur der Ignorant Surgery.
+`ActionSetting` liest `StatusProvide` und `StatusNeed` gegen `Player.Object`, `TargetStatusProvide` und `TargetStatusNeed` gegen das Ziel. Eine ID, die der Spieler nie tragen kann, macht die erste Sperre wirkungslos und die zweite dauerhaft blockierend. `scan11.py` erhebt die Klasse; nach der Behebung der beiden Blaumagier-Stellen (A32) bleiben vier Fundstellen, deren richtige Auflösung PvP- beziehungsweise Bozja-Verhalten voraussetzt.
 
-**Wirkung:** Der Status wird auf dem Spieler nie gefunden, die von `StatusProvide` beabsichtigte Unterdrückung greift also nie. Praktisch gering, weil `ActionCheck` die Kombo ohnehin über `IsLastComboAction` bindet; die Sperre existiert aber nicht, obwohl der Code sie ausschreibt.
+- `RedMageRotation.cs:756` und `:763` (PvP): `StatusProvide` trägt 3238 und 3239, die Schadenswirkungen auf dem **Ziel**; die Barrieren auf dem Spieler sind 3235 und 3236, und die Nachbarzeile `:749` greift mit 3234 auf diese Hälfte zu. Die Feldwahl ist damit belegbar falsch — welche Behebung richtig ist, aber nicht: Nach dem Blaumagier-Befund ist ebenso denkbar, dass die **greifende** Zeile (Riposte) der Defekt ist, weil eine Barrieren-Sperre die feste Kombo Riposte → Zwerchhau → Redoublement → Scorch unterbrechen kann. Beide Lesarten sind ohne PvP-Beobachtung nicht zu trennen.
+- `ScholarRotation.cs:497` (PvP, Deployment Tactics): `StatusProvide` trägt `Biolysis_3089`, wirkungslos. Als `TargetStatusProvide` gelesen widerspräche es dem `TargetStatusNeed` derselben ID zwei Zeilen darüber und machte die Aktion unbenutzbar; ersatzloses Streichen ist daher die wahrscheinliche Auflösung. `SCH_Default.PVP.cs:30` hat sich mit einer eigenen `!IsLastAction`-Sperre beholfen.
+- `BozjaRotation.cs:368` (Lost Paralyze III): `StatusProvide` trägt `Paralysis`, den Ziel-Debuff. Hier ist die Sperre fachlich plausibel — der Zauber hat keinen nennenswerten anderen Zweck und Lost Actions haben begrenzte Ladungen —, aber die Verschiebung aktiviert eine Sperre, die nie gegriffen hat.
+- `BozjaRotation.cs:140` (Lost Excellence): `StatusNeed = [Weakness]`. Anders als die übrigen wirkt diese Prüfung, weil der Spieler `Weakness` tragen kann; sie beschränkt Lost Excellence auf den geschwächten Zustand. Ein Zusammenhang zwischen beiden ist nicht erkennbar — fachliche Frage, kein Seitenfehler.
 
-**Auflösungsbedingung:** Ersetzung durch 3235 beziehungsweise 3236 im nächsten Einzelzyklus. PvP-Verhalten ist mit den verfügbaren Mitteln nicht beobachtbar, die Absicht ist aber aus der Nachbarzeile und der `StatusProvide`/`TargetStatusProvide`-Trennung derselben Datei belegt. Gefunden über `scan10.py`.
+**Auflösungsbedingung:** je Fundstelle eine Beobachtung im betreffenden Inhalt oder eine Rückfrage an den Upstream-Autor. Alle vier stammen aus Upstream und sind dort unverändert.
 
 ## Technische Schuld
 

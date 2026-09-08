@@ -124,3 +124,31 @@ Reviewing that list found a second defect, unrelated to healing: `ModifyEnchante
 3239, which are the damage-over-time debuffs on the target; the barriers on the player are 3235 and
 3236. The neighbouring `ModifyEnchantedRipostePvP` picks correctly, and the same file separates
 `StatusProvide` from `TargetStatusProvide` consistently everywhere else. See `TODO.md`.
+
+## scan11.py — status settings on the wrong side of the action
+
+`ActionSetting` has four status fields, read against two different characters: `StatusProvide` and
+`StatusNeed` against `Player.Object` (`ActionBasicInfo.IsStatusProvided` / `IsStatusNeeded`),
+`TargetStatusProvide` and `TargetStatusNeed` against the target (`ActionTargetInfo.CheckStatus`).
+Put a status the player can never carry into a player-side field and nothing fails: `StatusProvide`
+degrades into a lockout that never locks, and `StatusNeed` into a condition that never holds, which
+blocks the action outright.
+
+The scan uses the ↑/↓ marker the status generator writes into each member's doc block. Sixteen
+settings came back on the first run, and the value of the list was in how many of them were **not**
+defects: a debuff the action really does put on the player (Dark Knight's Walking Dead, Bozja's
+Heavy from Lost Manawall), `StatusProvide` used as a deliberate lockout rather than as "already
+applied" (Sprint's Sprint Penalty, Bind on Hell's Ingress — jumping while bound is pointless), and a
+dispel naming the buffs it strips (Eerie Soundwave). The rule cannot separate those; a reader can.
+
+It earned its keep twice over on the remaining entries. `ModifyPeripheralSynthesisPvE` held
+`Lightheaded_2501` in **both** player-side fields, so the action could not be used at all without a
+skip flag — and `BLU_Reborn` passed a *different* skip flag at each of its two call sites, one of
+which picked the wrong one, leaving that rotation line permanently dead. Then the obvious repair —
+move each setting to the matching side — was falsified for both Blue Mage entries by looking up what
+the spells do: Magic Hammer is a 250-potency filler that also restores 1000 MP, and Peripheral
+Synthesis goes from 220 to 400 potency *while* its debuff is up. A lockout there would suppress the
+spell exactly when it is worth most. Both settings were removed rather than moved.
+
+The remaining entries (RDM PvP, SCH PvP, two Bozja lost actions) are recorded in `TODO.md`: they turn
+on PvP and Bozja behaviour that cannot be observed with the means available here.
