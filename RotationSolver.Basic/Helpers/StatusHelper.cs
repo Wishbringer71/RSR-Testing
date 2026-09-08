@@ -376,31 +376,76 @@ public static class StatusHelper
 	/// Shields (absorb effects) that have their own tracked duration, as opposed to instant HP-based
 	/// mitigation. Used to decide whether a shield will still be up when it matters, e.g. for
 	/// shield-aware heal prioritization.
+	/// <para>
+	/// A missing id here does not merely lose precision, it inverts the answer:
+	/// <see cref="HasSurvivingShield"/> reads <c>GetObjectShield() &gt; 0 &amp;&amp;
+	/// !WillStatusEnd(..., ShieldStatus)</c>, and <c>WillStatusEnd</c> reports an *absent* status as
+	/// ending. A real barrier whose id is not listed therefore counts as no barrier at all, and its
+	/// bearer looks more hurt than they are.
+	/// </para>
+	/// <para>
+	/// The game gives most barriers several ids under one display name - one per version of the
+	/// ability, plus PvP forms - so naming one and omitting the siblings ages the list silently.
+	/// The ids below were collected with <c>.github/scripts/audit/scan13.py</c>, which decides
+	/// membership on the effect text rather than the name: a status counts when its text says a
+	/// barrier is nullifying or preventing damage. That excludes the neighbours that only reduce
+	/// damage (<c>Catalyze_3088</c>) and those that merely set a barrier up for later
+	/// (<c>DivineVeil</c> 726).
+	/// </para>
+	/// <para>
+	/// Still absent, deliberately: barrier groups with no representative here at all. The scan lists
+	/// 56 of them, mixed PvE, PvP and duty effects, and each needs its own reading - see
+	/// <c>TODO.md</c>. Celestial Intersection is the exception, added below because it is a healer's
+	/// single-target shield in ordinary content.
+	/// </para>
 	/// </summary>
 	public static StatusID[] ShieldStatus { get; } =
 	[
 		StatusID.Galvanize,
+		StatusID.Galvanize_1331,
+		StatusID.Galvanize_3087,
 		StatusID.Catalyze,
 		StatusID.Consolation,
 		StatusID.EukrasianDiagnosis,
+		StatusID.EukrasianDiagnosis_2865,
+		StatusID.EukrasianDiagnosis_3109,
 		StatusID.DifferentialDiagnosis,
 		StatusID.EukrasianPrognosis,
+		StatusID.EukrasianPrognosis_2866,
 		StatusID.Haima,
+		StatusID.Haima_2869,
+		StatusID.Haima_3110,
 		StatusID.Haimatinon,
 		StatusID.Panhaima,
 		StatusID.Panhaimatinon,
 		StatusID.Holosakos,
 		StatusID.DivineBenison,
+		StatusID.DivineBenison_1404,
 		StatusID.DivineVeil_1362,
+		StatusID.DivineVeil_727,
+		StatusID.DivineVeil_2168,
+		StatusID.DivineVeil_2169,
+		StatusID.Intersection,
+		StatusID.Intersection_4040,
 		StatusID.BlackestNight,
+		StatusID.BlackestNight_1308,
 		StatusID.BrutalShell,
+		StatusID.BrutalShell_1997,
 		StatusID.StemTheTide,
+		StatusID.StemTheTide_3031,
 		StatusID.ShadeShift,
+		StatusID.ShadeShift_2011,
 		StatusID.CrestOfTimeBorrowed,
+		StatusID.CrestOfTimeBorrowed_2597,
+		StatusID.CrestOfTimeBorrowed_2861,
 		StatusID.Manaward,
+		StatusID.Manaward_1989,
 		StatusID.RadiantAegis,
+		StatusID.RadiantAegis_3224,
 		StatusID.TemperaCoat,
+		StatusID.TemperaCoat_4114,
 		StatusID.TemperaGrassa,
+		StatusID.TemperaGrassa_4115,
 	];
 
 	/// <summary>

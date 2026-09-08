@@ -31,29 +31,17 @@ Das Suffix nachzureichen behebt es nicht: NuGet entfernt SemVer-2.0-Build-Metada
 
 **Auflösungsbedingung:** je Fundstelle eine Beobachtung im betreffenden Inhalt oder eine Rückfrage an den Upstream-Autor. Alle vier stammen aus Upstream und sind dort unverändert.
 
-### Schildaktionen auf Selbst-oder-Fremdziel prüfen nur die Spielerseite · N, U
+### Barrieregruppen ohne jeden Vertreter in `StatusHelper.ShieldStatus` · N
 
-`WhiteMageRotation.cs:285` setzt `setting.StatusProvide = [StatusID.DivineBenison]`. `StatusProvide` wird gegen `Player.Object` gelesen (`ActionBasicInfo.IsStatusProvided`), `TargetStatusProvide` gegen das Ziel (`ActionTargetInfo.CheckStatus`). Divine Benison wird aber auf **fremde** Ziele gelegt — `BeirutaWHM.cs:516` liest `DivineBenisonPvE.Target.Target`, und `WHM_Reborn.cs:120`, `:245`, `:287` rufen ohne Zielvorgabe, also über die Heilzielwahl.
+`scan13.py` meldet nach der Ergänzung der fehlenden Geschwister (A37) noch **55 Gruppen mit 61 Ids**, deren Anzeigename in `ShieldStatus` gar nicht vorkommt. Eine fehlende Id kehrt die Antwort um, nicht nur ihre Genauigkeit: `HasSurvivingShield` meldet einen abwesenden Status als endend, eine ungeführte Barriere zählt also als keine, und ihr Träger erscheint verletzter, als er ist.
 
-**Zweite Fundstelle derselben Art:** `DarkKnightRotation.cs:329` setzt für `TheBlackestNightPvE` ebenfalls `StatusProvide = [StatusID.BlackestNight]`. Auch diese Aktion geht auf Fremdziele — `ActionId.resx` (7393) beschreibt sie als „Creates a barrier around **self or target party member**", und `DRK_Reborn.cs:128` legt sie mit `targetOverride: TargetType.LowHP` auf das am schwersten verletzte Gruppenmitglied.
+Die Liste ist gemischt und deshalb nicht pauschal zu übernehmen:
 
-Drei Geschwisteraktionen greifen richtig zu: `AdloquiumPvE`, `EukrasianDiagnosisPvE` und `CelestialIntersectionPvE` nutzen `TargetStatusProvide`. Das Muster ist damit erhoben, die beiden Ausreißer sind die Klonsignatur der Ignorant Surgery.
+- **PvE-Spielerbarrieren**, die vermutlich hineingehören: `Aquaveil_3086` (WHM), `DivineCaress` (WHM), `Epicycle` (AST), `GuardiansWill` (PLD), `HolySheltron_3026` (PLD), `ImprovisedFinish` (DNC).
+- **PvP-Formen** ganzer Kombos: die GNB-Kette (`AbdomenTear`, `JugularRip`, `EyeGouge`, `Hypervelocity`, `FatedBrand`), die RDM-Kette (`EnchantedRiposte`, `EnchantedZwerchhau`, `EnchantedRedoublement`, `Corpsacorps`, `Engagement`, `Forte`). Harmlos aufzunehmen, aber ohne Wirkung in PvE.
+- **Duty- und Gegenstandseffekte** (`AlexandrianBarrier`, `BlessedRain`, `BlessingOfEarth`, `BlessingOfTheVoid`, `DamageBarrier`, `HeartOfTheRroneek`), deren Zugehörigkeit von der Instanz abhängt.
 
-**Wirkung:** Die Sperre gegen Doppelbelegung greift nie, sobald die Aktion auf ein fremdes Ziel geht. Der Weißmagier kann eine Divine-Benison-Ladung auf ein Ziel legen, das den Schild bereits trägt (zwei Ladungen, 30 s Aufladung je Ladung); beim Dunkelritter überschreibt es die eigene Barriere und wirft damit den Auslöser weg, für den sie gezündet wurde.
-
-**Auflösungsbedingung:** Umstellung auf `TargetStatusProvide` an beiden Stellen. Vor der Umsetzung ist je Aktion zu prüfen, ob eine Rotation sie bewusst auf sich selbst legt und sich auf die Spielerprüfung stützt — nach A32 folgt aus „das Feld ist falsch" nicht ohne Weiteres die Umbuchung. Für den Selbstcast-Fall ist `TargetStatusProvide` ebenfalls richtig, weil das Ziel dann der Spieler ist.
-
-### Schildstatus mit mehreren Ids sind nur mit einer Id geführt · N, U
-
-`ShieldStatus` (`StatusHelper.cs:380`) führt die Schildstatus, die `HasSurvivingShield` und über `GetEffectiveHpPercent` die Heilentscheidung berücksichtigen. `Intersection` — der Schildanteil von Celestial Intersection (`AstrologianRotation.cs:530`) — steht nicht darin, obwohl die Liste die Schilde aller anderen Heiler führt (`Galvanize`, `DivineBenison`, `EukrasianDiagnosis`, `EukrasianPrognosis`, `Haima`, `Panhaima`, `Holosakos`, `Consolation`).
-
-Die Barriereneigenschaft ist belegt: `Status.resx` beschreibt 1889 mit „A magicked barrier is nullifying damage". Dieselbe Beschreibung trägt `Intersection_4040` — eine zweite, als „(All Classes)" geführte Id, die `AstrologianRotation.cs:530` auch in `TargetStatusProvide` nicht führt. Beide fehlen.
-
-**Wirkung:** Der Schild eines Astrologen zählt nicht zur effektiven Gesundheit seines Ziels; das Ziel erscheint verletzter, als es ist, und wird bevorzugt weitergeheilt. Über die fehlende zweite Id greift zusätzlich die Doppelbelegungssperre der Aktion nicht, sofern das Spiel 4040 setzt — welche der beiden Ids gesetzt wird, ist offline nicht entscheidbar und spricht dafür, beide zu führen (Muster wie bei `Galvanize`/`Galvanize_3087`).
-
-**Zweite Fundstelle derselben Art:** `BlackestNight_1308` kommt im gesamten Code nicht vor — weder in `ShieldStatus` noch in `DarkKnightRotation.cs:329`. Geführt ist allein 1178. Beide tragen dieselbe Beschreibung „An all-encompassing darkness is nullifying damage".
-
-**Auflösungsbedingung:** je Statusgruppe alle Ids in `ShieldStatus` und in `TargetStatusProvide` ergänzen. Welche Id das Spiel jeweils setzt, ist offline nicht entscheidbar; das etablierte Muster im Baum ist, alle zu führen (`Galvanize`/`Galvanize_3087`, `Holmgang`/`Holmgang_409`).
+**Auflösungsbedingung:** je Id die Wirkbeschreibung und den Geltungsbereich lesen und begründet aufnehmen oder auslassen. Ein pauschales Übernehmen wäre der Fehler, den `scan13.py` gerade verhindern soll — sein Filter trennt Barrieren von Schadensminderung, nicht PvE von PvP.
 
 ## Technische Schuld
 

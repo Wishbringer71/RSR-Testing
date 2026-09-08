@@ -326,7 +326,13 @@ public partial class DarkKnightRotation
 
 	static partial void ModifyTheBlackestNightPvE(ref ActionSetting setting)
 	{
-		setting.StatusProvide = [StatusID.BlackestNight];
+		// Target side, not player side. ActionId.resx (7393) describes this as "Creates a barrier
+		// around self or target party member", and DRK_Reborn casts it with
+		// targetOverride: TargetType.LowHP. Read against Player.Object the guard blocked the action
+		// entirely while the dark knight carried its own barrier - including when it wanted to put
+		// one on someone else - and never stopped overwriting a barrier already on the target, which
+		// discards the Dark Arts trigger it was cast for. Both ids, because the game has two.
+		setting.TargetStatusProvide = [StatusID.BlackestNight, StatusID.BlackestNight_1308];
 		setting.UnlockedByQuestID = 68455;
 		setting.IsFriendly = true;
 	}

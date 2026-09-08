@@ -284,7 +284,13 @@ public partial class WhiteMageRotation
 
 	static partial void ModifyDivineBenisonPvE(ref ActionSetting setting)
 	{
-		setting.StatusProvide = [StatusID.DivineBenison];
+		// Target side, not player side: this shield goes on a party member as often as on the caster,
+		// and StatusProvide is read against Player.Object. On the player side the guard did the
+		// opposite of its job - it never stopped a second cast on a target that already had the
+		// shield, and it blocked the action outright whenever the white mage happened to carry
+		// Divine Benison itself, even when shielding someone else. Both ids, because the game has
+		// two under this name.
+		setting.TargetStatusProvide = [StatusID.DivineBenison, StatusID.DivineBenison_1404];
 	}
 
 	static partial void ModifyPlenaryIndulgencePvE(ref ActionSetting setting)

@@ -181,3 +181,31 @@ Beides ist kein Beweis. Die Historie des *Gegenstands* ist zulässiger Inhalt �
 erwiesen haben —, und Prosa darf zwei Codevarianten „die erste" und „die zweite" nennen;
 letzteres schließt der Scan über den Satzkontext aus. Gegen den Vor-Zustand gelaufen
 meldet er 43 Treffer, gegen den überarbeiteten Bestand keinen.
+
+## scan13.py — Barrieren, die in `StatusHelper.ShieldStatus` fehlen
+
+`ShieldStatus` ist die Liste, die `HasSurvivingShield` und über `GetEffectiveHpPercent` die
+Heilentscheidung lesen, um einen Schild auf die effektive Gesundheit anzurechnen. Eine
+fehlende Id verliert dabei nicht nur Genauigkeit, sie **kehrt die Antwort um**:
+`HasSurvivingShield` liest `GetObjectShield() > 0 && !WillStatusEnd(…, ShieldStatus)`, und
+`WillStatusEnd` meldet einen *abwesenden* Status als endend. Eine reale Barriere, deren Id
+nicht geführt ist, zählt damit als gar keine — ihr Träger erscheint verletzter, als er ist,
+und bekommt eine Heilung, die er nicht braucht.
+
+Das Spiel führt die meisten Barrieren unter **mehreren** Ids desselben Anzeigenamens: eine je
+Fassung der Fähigkeit, dazu PvP-Formen. Eine zu nennen und die Geschwister auszulassen ist
+dieselbe Alterung wie bei jeder Aufzählung — bei ihrer Entstehung richtig, nach der nächsten
+Erweiterung still unvollständig.
+
+Der Scan beantwortet zwei Fragen: fehlende **Geschwister** einer geführten Gruppe, und
+Barrieregruppen, die **gar nicht** vertreten sind. Die Mitgliedschaft entscheidet die
+Wirkbeschreibung, nicht der Name — ein Status zählt, wenn sein Text sagt, dass eine Barriere
+Schaden aufhebt oder verhindert. Das schließt bewusst die Nachbarn aus, die nur Schaden
+mindern (`Catalyze_3088`, „Damage taken is reduced"), und die, die eine Barriere erst später
+*erzeugen* (`DivineVeil` 726). Beide würden sonst über ihren Namen mit eingesammelt.
+
+Erster Lauf: 22 geführte Ids, **21 fehlende Geschwister** in 15 Gruppen — darunter Galvanize,
+Eukrasian Diagnosis, Divine Benison, Haima und Blackest Night, also die Schilde, die ein
+Heiler täglich sieht. Alle 21 sind ergänzt, dazu Celestial Intersection als Heiler-Einzelschild
+in normalem Inhalt; der Scan meldet dort jetzt null. Die 55 Gruppen ohne jeden Vertreter sind
+gemischt PvE, PvP und Duty-Effekte und brauchen je eine eigene Lesung — erfasst in `TODO.md`.

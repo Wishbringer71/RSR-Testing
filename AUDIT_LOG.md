@@ -877,6 +877,61 @@ Zwei neue Fundstellen fielen dabei an, beide Instanzen bereits erfasster Klassen
 Umgebungsdokumentation, drei Websuchen. Die Reihenfolge ruht auf Spielerdokumentation,
 nicht auf einer offiziellen Beschreibung. Kein Code geändert.
 
+
+### A37 · Die beiden Schild-Defektklassen behoben (08.09.2026)
+
+**Anlass:** Freigabe des Auftraggebers für die zwei Klassen, die aus der
+Blackest-Night-Prüfung (A35/A36) abgefallen waren.
+
+**Klasse 1 — Schildaktionen prüfen die falsche Seite.** `ModifyDivineBenisonPvE` und
+`ModifyTheBlackestNightPvE` setzten `StatusProvide`, das gegen `Player.Object` gelesen
+wird. Beide Aktionen gehen aber auf Fremdziele: `ActionId.resx` (7393) beschreibt The
+Blackest Night als „Creates a barrier around self or **target party member**",
+`DRK_Reborn.cs:128` castet mit `targetOverride: TargetType.LowHP`, und `BeirutaWHM.cs:516`
+liest `DivineBenisonPvE.Target.Target`. Die Wirkung war **zweiseitig**, was zuvor nur zur
+Hälfte erfasst war: Die Sperre gegen Doppelbelegung griff auf Fremdzielen nie — **und** sie
+blockierte die Aktion vollständig, sobald der Spieler den Status selbst trug, auch wenn er
+jemand anderen schilden wollte. Beim Dunkelritter wiegt das doppelt: Eine überschriebene
+eigene Barriere wirft den Dark-Arts-Auslöser weg, für den sie gezündet wurde. Drei
+Geschwisteraktionen (`AdloquiumPvE`, `EukrasianDiagnosisPvE`, `CelestialIntersectionPvE`)
+belegen das richtige Muster.
+
+**Klasse 2 — Barrieren mit mehreren Ids nur einfach geführt.** Der Fund war „drei fehlende
+Ids"; die Erhebung mit `scan13.py` ergab **21 in 15 Gruppen**, darunter Galvanize,
+Eukrasian Diagnosis, Divine Benison, Haima und Blackest Night — die Schilde, die ein Heiler
+täglich sieht. Der Defekt ist schwerer als eine Ungenauigkeit: `HasSurvivingShield` liest
+`GetObjectShield() > 0 && !WillStatusEnd(…, ShieldStatus)`, und `WillStatusEnd` meldet einen
+**abwesenden** Status als endend. Eine ungeführte Barriere zählt damit als gar keine, und
+ihr Träger erscheint verletzter, als er ist. Alle 21 sind ergänzt, dazu Celestial
+Intersection als Heiler-Einzelschild in normalem Inhalt.
+
+**Was der Filter ausschließt, und warum das nötig war.** `scan13.py` entscheidet die
+Zugehörigkeit an der Wirkbeschreibung, nicht am Namen. Drei Nachbarn wären sonst über ihren
+Namen mit eingesammelt worden und gehören nicht hinein: `Catalyze_3088` mindert Schaden,
+statt ihn aufzuhalten; `DivineVeil` (726) erzeugt eine Barriere erst bei späterer Heilung;
+`Haimatinon_2870`/`_3111` sind der Stapelzähler, der eine Barriere wiederherstellt, nicht
+die Barriere. Ein pauschales Übernehmen aller gleichnamigen Ids hätte drei Fehleinstufungen
+erzeugt.
+
+**Betroffenenkreis, ausdrücklich benannt.** Die Umstellung auf `TargetStatusProvide` wirkt
+mittelbar auf fremde Rotationen: `ChurinDRK.cs:173`, `:196` und `BeirutaWHM.cs:516`
+vergleichen `…Target.Target` mit einem erwarteten Ziel. Fällt ein Ziel wegen des nun
+greifenden Filters aus der Kandidatenmenge, liefert `Target.Target` ein anderes und der
+Vergleich schlägt fehl. Nach der Vorgabe des Auftraggebers ist das zulässig — die
+Einschränkung gilt der direkten Bearbeitung fremder Dateien, nicht der mittelbaren Wirkung
+zentraler Änderungen —, aber es ist eine reale Verhaltensänderung in fremdem Werk und
+gehört benannt. Die Schildliste selbst ist davon frei: Kein Churin- oder Beiruta-Modul liest
+`ShieldStatus`, `HasSurvivingShield` oder `GetEffectiveHpPercent`.
+
+**Nicht umgesetzt.** 55 Barrieregruppen ohne jeden Vertreter in `ShieldStatus`, gemischt
+PvE, PvP und Duty. Sie brauchen je eine eigene Lesung nach Geltungsbereich — der Filter des
+Skripts trennt Barrieren von Schadensminderung, nicht PvE von PvP. In `TODO.md` mit der
+Vorsortierung erfasst.
+
+**Erreichter Prüfgrad:** statische Selbstprüfung, Prüfskript mit Selbsttest gegen die drei
+Abgrenzungsfälle, Gegenprobe (21 gemeldet vor der Änderung, 0 danach), CI-Kompilierung.
+Keine Laufzeitbeobachtung.
+
 ---
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
