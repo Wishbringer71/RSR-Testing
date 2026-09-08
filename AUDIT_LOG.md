@@ -1159,6 +1159,52 @@ Selbsttest, CI-Kompilierung. Die Wirkung im Spiel ist nicht beobachtet.
 
 ---
 
+### A42 · Durchsicht aller offenen Punkte mit Empfehlung (08.09.2026)
+
+**Anlass:** Auftrag, die offenen Punkte zu prüfen, zu begründen und Empfehlungen auszusprechen.
+Jeder Eintrag aus `TODO.md` trägt danach eine Empfehlung; die beiden Punkte mit neuem Messergebnis
+stehen als A40 und A41 gesondert.
+
+**Neu gemessen wurde einer:** `SpreadDamagePaths`. Der Einführungs-Commit lag außerhalb des flachen
+Klons, die Historie war dafür zu vertiefen (`git fetch --deepen`, 152 → 1844 Commits). Ergebnis:
+`33e6acb1` vom 07.05.2026, ein Sammel-Refactoring, legt die Liste **bereits vollständig so** an, wie
+sie heute ist — mit den beiden Einträgen, die wortgleich in `SharedDamagePaths` stehen, und mit dem
+von dort übernommenen Kommentar „Duty-specific AOE share markers" über einer Liste namens *Spread*.
+Das ist *Ignorant Surgery* nach Parnas, kein späteres Veralten. Die Zuordnung der beiden
+einzigartigen Pfade bleibt unbelegt: Eine Websuche nach `x6fd_loc04m_5s1v` und `m0922tar_a0w`
+liefert nichts.
+
+| Offener Punkt | Empfehlung | Tragender Grund |
+|---|---|---|
+| Barrieregruppen ohne Vertreter | zehn Jobbarrieren aufnehmen, fünf Occult-Ids zurückstellen | belegte Defektklasse im Nutzungsprofil (A41) |
+| ChurinDNC-Vorzeichen | nicht bearbeiten | fremde Rotation, Behebung verlangt die Entscheidung des Autors |
+| Statusfelder auf der falschen Seite | liegen lassen | alle vier Reste in PvP/Bozja, Klasse erhoben und durch `scan11.py` gesichert |
+| `CanEarlyWeave` | belassen | beide Wiederherstellungen verschieben fremdes Verhalten |
+| Doppelte Zustandswahl | belassen | Zustandsautomat statisch nicht abzusichern |
+| `AutodutyUpdateState` | nicht eigens angehen | Kosten fallen erst mit dem Umbau an, der oben nicht empfohlen ist |
+| Selbstlernende AoE-Liste | Nullvariante (entschieden, A24–A26) | Kosten-Nutzen trägt nicht, UI-Kopplung über vier Listen |
+| `SpreadDamagePaths` | Nullvariante | kein Verbraucher für die Unterscheidung, Zuordnung der Pfade unbelegt |
+| Release-Ballast | nicht aufgreifen | Upstream liefert denselben Ballast, Verpackungspfad ungeprüft (A40) |
+| Staging-Kanal in `build.yaml` | folgen, bis Upstream zurückwechselt | Prüfung muss das Auslieferungsartefakt messen (A40) |
+| VPR-Leerzweig | belassen | der leere Zweig ist der Hinweis auf die Lücke |
+| Zwei entfernte öffentliche Member | mit dem nächsten Tag erledigen | „Unreleased" braucht eine vergebene Nummer |
+| Plugin-Identität | belassen | geteilte Identität erhält die Nutzerkonfiguration beim Wechsel |
+| Mitigations-Synergie Schritt 3 | warten | Übertragung vor dem Nachweis vervielfacht einen möglichen Fehler |
+| Messgrundlage für Raten | nicht bauen (entschieden, A29) | kein Verbraucher mehr, Kosten bei allen Nutzern |
+| Codebasis-Audit Phasen 5+ | **nächster Arbeitsblock** | einziger Punkt ohne Vorbedingung |
+
+**Das Bild, das die Durchsicht ergibt:** Von sechzehn Punkten wartet genau einer auf nichts — der
+zweite Durchgang der dreizehn Prüfskripte über den bereinigten Baum. Zwei warten auf eine Freigabe
+(die zehn Barrieren, die fünf Occult-Ids), fünf auf Laufzeitbeobachtung, vier sind erfasste
+Fremdbefunde mit dem Upstream als Adressat, drei sind bereits entschiedene Nullvarianten, und einer
+hängt am nächsten Release-Tag. Es gibt keinen offenen Punkt, der einen belegten Defekt im
+Nutzungsprofil unbehandelt lässt — außer den zehn Barrieren, deren Aufnahme freizugeben ist.
+
+**Erreichter Prüfgrad:** statische Prüfung und Versionsgeschichte, für `SpreadDamagePaths`
+zusätzlich eine erfolglose externe Recherche. Keine Laufzeitbeobachtung.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.
