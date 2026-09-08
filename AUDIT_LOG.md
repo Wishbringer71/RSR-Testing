@@ -752,6 +752,69 @@ Lücke lag nicht dort, wo sein Titel sie vermutete.
 Wirkungskette bis zu beiden Fallbacks, Erhebung aller `TargetType.Heal`-Pfade und aller
 Stellen mit selbstgesetztem Heilziel, CI-Kompilierung. Keine Laufzeitbeobachtung.
 
+
+### A35 · The Blackest Night: Werkzeugwahl statt Rückhaltung (08.09.2026)
+
+**Anlass:** Frage des Auftraggebers, ob sich ein Schild zurückstellen lässt, bis
+`BlackestNight` aus der Statusliste verschwindet, und stattdessen Heilung oder ein HoT
+zu wirken sei — mit der Begründung, Heilung und HoT wirkten sich auf die
+TBN-Barriere nicht aus. Die Prüfung bestätigt beide Prämissen und legt zwei eigene
+Fehler des Konzepts offen.
+
+**Erste Korrektur: Heilung berührt den Auslöser nicht.** Konzept 09 führte in der
+Klasse-A-Tabelle, fremde Heilung wirke „indirekt: hebt die HP, sodass weniger Schaden
+gegen die Barriere läuft". Das ist mechanisch falsch. Eine Barriere absorbiert
+eingehenden Schaden **vor** den HP; ihr Verbrauch hängt am Schaden, nicht am
+Gesundheitsstand. Die einzige Kopplung läuft umgekehrt: Stirbt der Träger, bevor die
+Barriere aufgebraucht ist, entfällt Dark Arts — Heilung wirkt also **für** den
+Auslöser. Damit ist TBN kein Fall, in dem Heilung zurückzuhalten wäre.
+
+**Zweite Korrektur: die falsche Frage.** Der Fall war verworfen worden, weil „der
+Auslöser nicht beobachtbar" sei — der Client führt je Charakter genau einen
+Schildwert. Das stimmt, ist aber nicht die Frage, die die Regel braucht. Für eine
+Werkzeugwahl genügt „liegt TBN?", und das steht in der Statusliste
+(`StatusID.BlackestNight` 1178, PvP-Form 1308). Dieselbe Fehlerform wie C19: eine
+schwerere Frage gestellt als nötig und den Fall daran scheitern lassen.
+
+**Dritte Korrektur: der Mechanismus.** Die frühere Sorge war „mehr Gesamtpuffer =
+langsamerer Verbrauch" beziehungsweise Verdrängung des schwächeren Schildes durch den
+stärkeren. Der überlieferte Mechanismus ist ein anderer: eine feste
+**Verbrauchsreihenfolge** mehrerer Barrieren. TBN hat gegenüber typischen
+Heilerschilden Vorrang, einzelne Barrieren stehen aber davor und können verhindern,
+dass es rechtzeitig aufgezehrt wird; genannt werden Radiant Aegis und Eukrasian
+Diagnosis. Quellenstatus: Spielerforen und Job-Guides, **teils widersprüchlich** — eine
+Quelle ordnet TBN über Eukrasian Diagnosis ein, eine andere darunter. Zwei
+Primärquellen (Consolegames-Wiki, ein Lodestone-Blog mit systematischer
+Prioritätsliste) sind vom Netzwerk-Egress dieser Umgebung blockiert. Die Reihenfolge
+bleibt unbelegt.
+
+**Warum die Entscheidung daran trotzdem nicht hängt.** Solange TBN liegt, ist der
+Träger bereits geschildet. Ein zweiter Schild verdoppelt vorhandenen Schutz, während
+die HP ungefüllt bleiben, die er nach dem Ablauf braucht; Heilung leistet dort mehr und
+kostet den Auslöser nichts. Fällt die Prioritätsfrage ungünstig aus, verhindert die
+Zurückstellung zusätzlich den Verlust von Dark Arts. Der Vorteil besteht in beiden
+Zweigen der offenen Frage — die Reihenfolge bestimmt nur seine Größe, nicht sein
+Vorzeichen.
+
+**Gegenposition, die stehen bleibt:** Gegen einen einschlagenden Tankbuster verhindert
+ein Schild, statt zu reparieren. Ist der Buster größer als die TBN-Barriere, gehört der
+zweite Schild dazu. Die Regel braucht deshalb dieselbe Aufhebung wie die übrigen: bei
+Buster-Fenster oder niedriger Gesundheit fällt der Schild.
+
+**Umsetzungsweg, nicht gebaut.** Der Eingriff gehört in `ActionTargetInfo.CheckStatus`;
+eine Aktion ist ohne neue Liste als schildgewährend erkennbar, wenn ihr
+`TargetStatusProvide` einen Eintrag aus `StatusHelper.ShieldStatus` enthält. Zwei
+Vorbedingungen sind dabei aufgefallen und als eigene Defekte erfasst:
+`ModifyDivineBenisonPvE` setzt `StatusProvide` statt `TargetStatusProvide`, obwohl
+Divine Benison auf fremde Ziele geht — die Doppelbelegungssperre greift dort nie, und
+die Erkennung sähe die Aktion nicht; und `StatusID.Intersection` (1889) samt
+`Intersection_4040` fehlt in `ShieldStatus`, obwohl beide als „A magicked barrier is
+nullifying damage" ausgewiesen sind.
+
+**Erreichter Prüfgrad:** statische Selbstprüfung am Artefakt (Statusbeschreibungen,
+`ShieldStatus`, alle `TargetStatusProvide` der Heilerschilde), zwei Websuchen, zwei
+gescheiterte Primärquellenabrufe. Keine Laufzeitbeobachtung. Kein Code geändert.
+
 ---
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
@@ -827,3 +890,5 @@ Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt e
 | C22 | A29 Punkt 3: kürzerer Vorlauf der Uhrregel (ein GCD statt zwei) senke den Restfehler, die Heilung lande ohnehin noch im Schutzfenster | Der Vorlauf misst bis zur **Entscheidung**. Bis die Heilung landet, müssen der laufende GCD auslaufen und eine Wirkzeit vergehen — zusammen zwei GCDs. Bei einem GCD landet sie nach Ablauf, wenn der Tank ungeschützt ist. Lehre: Bei einer Zeitregel ist zu prüfen, welches Ereignis sie datiert — Entscheidung, Beginn oder Wirkung sind drei verschiedene Zeitpunkte | Vorlauf zurückgenommen (A29, `cea66c79`) |
 | C10 | A9: „`IsHostileCastingTank`-Fallback · KEIN FEHLER, nicht angetastet" | Die Begründung galt der Tankbuster-Erkennung für Tanks (`IsHostileCastingToTank`) und wurde ungeprüft auf `…TankBusterAtMe` übertragen, obwohl das eine andere Frage beantwortet: nicht „kommt ein Tankbuster", sondern „kommt einer auf mich". Für Nicht-Tanks ist der Fallback dort schlicht falsch. Nutzer: „wenn mich ein Mob aus einer großen Mobgruppe angreift, wird bereits Schimmerschild und Stumpfsinn gecastet" | `…TankBusterAtMe` auf gesicherte Tankbuster eingeschränkt (A9, d9a99de7) |
 | C23 | A31 und der daraus abgeleitete TODO-Eintrag: die beiden RDM-PvP-Zeilen seien durch die Nachbarzeile belegt und „im nächsten Einzelzyklus" auf 3235/3236 zu setzen | Die Feldwahl ist belegbar falsch, die Behebung war es nicht. Dieselbe Erhebung fand zwei Blaumagier-Stellen, an denen die analoge Verschiebung die Zauber genau dann gesperrt hätte, wenn sie am meisten wert sind (Magic Hammer: 250 Potenz plus 1000 MP; Peripheral Synthesis: 220 → 400 Potenz **mit** liegendem Debuff). Damit ist auch für RDM offen, ob die zwei wirkungslosen Zeilen der Defekt sind oder die eine wirksame. Lehre: Aus „das Feld ist nachweislich falsch" folgt nicht „die Umbuchung auf das andere Feld ist richtig" — der Zweck der Aktion entscheidet, nicht die Feldsemantik | A32: Blaumagier-Zeilen entfernt, RDM/SCH/Bozja als offen erfasst |
+| C24 | Konzept 09, Klasse-A-Tabelle: fremde Heilung wirke bei The Blackest Night „indirekt: hebt die HP, sodass weniger Schaden gegen die Barriere läuft" | Mechanisch falsch. Eine Barriere absorbiert eingehenden Schaden vor den HP; ihr Verbrauch hängt am Schaden, nicht am Gesundheitsstand. Die einzige Kopplung läuft umgekehrt — Heilung verhindert den Tod, der den Auslöser vereiteln würde, und wirkt damit **für** ihn. Lehre: Bevor eine Wechselwirkung als Kostenposten geführt wird, ist ihre Richtung an der Mechanik zu prüfen, nicht aus der Nähe zweier Größen zu schließen | A35: Zeile ersetzt, Fall 5 von Rückhaltung auf Werkzeugwahl umgestellt |
+| C25 | Konzept 09: The Blackest Night sei nicht behandelbar, weil „der Auslöser nicht beobachtbar" ist | Richtig, aber nicht die Frage, die die Regel braucht. Für eine Werkzeugwahl genügt „liegt TBN?", und das steht in der Statusliste. Dieselbe Fehlerform wie C19: eine schwerere Frage gestellt als nötig und den Fall daran scheitern lassen — dort eine Rate statt einer Uhr, hier der Verbrauch statt des Vorhandenseins. Lehre: Vor dem Verwerfen wegen fehlender Messbarkeit ist zu prüfen, welche Größe die Regel wirklich braucht | A35: Fall wieder aufgenommen, Umsetzungsweg mit zwei Vorbedingungen beschrieben |

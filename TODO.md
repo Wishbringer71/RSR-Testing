@@ -31,6 +31,26 @@ Das Suffix nachzureichen behebt es nicht: NuGet entfernt SemVer-2.0-Build-Metada
 
 **Auflösungsbedingung:** je Fundstelle eine Beobachtung im betreffenden Inhalt oder eine Rückfrage an den Upstream-Autor. Alle vier stammen aus Upstream und sind dort unverändert.
 
+### WHM Divine Benison prüft die Doppelbelegung auf dem Spieler statt auf dem Ziel · N
+
+`WhiteMageRotation.cs:285` setzt `setting.StatusProvide = [StatusID.DivineBenison]`. `StatusProvide` wird gegen `Player.Object` gelesen (`ActionBasicInfo.IsStatusProvided`), `TargetStatusProvide` gegen das Ziel (`ActionTargetInfo.CheckStatus`). Divine Benison wird aber auf **fremde** Ziele gelegt — `BeirutaWHM.cs:516` liest `DivineBenisonPvE.Target.Target`, und `WHM_Reborn.cs:120`, `:245`, `:287` rufen ohne Zielvorgabe, also über die Heilzielwahl.
+
+Alle drei Geschwisteraktionen greifen richtig zu: `AdloquiumPvE`, `EukrasianDiagnosisPvE` und `CelestialIntersectionPvE` nutzen `TargetStatusProvide`. Divine Benison ist der einzige Ausreißer — die Klonsignatur der Ignorant Surgery.
+
+**Wirkung:** Die Sperre gegen Doppelbelegung greift nie. Der Weißmagier kann eine Ladung auf ein Ziel legen, das den Schild bereits trägt. Zwei Ladungen, 30 s Aufladung je Ladung.
+
+**Auflösungsbedingung:** Umstellung auf `TargetStatusProvide`. Vor der Umsetzung ist zu prüfen, ob eine Rotation Divine Benison bewusst auf sich selbst legt und sich auf die Spielerprüfung stützt — nach A32 folgt aus „das Feld ist falsch" nicht ohne Weiteres die Umbuchung. Zugleich Vorbedingung für die Schild-Nachrangigkeit bei The Blackest Night (`09-tank-selfprotection.md`).
+
+### `StatusID.Intersection` fehlt in `StatusHelper.ShieldStatus` · N
+
+`ShieldStatus` (`StatusHelper.cs:380`) führt die Schildstatus, die `HasSurvivingShield` und über `GetEffectiveHpPercent` die Heilentscheidung berücksichtigen. `Intersection` — der Schildanteil von Celestial Intersection (`AstrologianRotation.cs:530`) — steht nicht darin, obwohl die Liste die Schilde aller anderen Heiler führt (`Galvanize`, `DivineBenison`, `EukrasianDiagnosis`, `EukrasianPrognosis`, `Haima`, `Panhaima`, `Holosakos`, `Consolation`).
+
+Die Barriereneigenschaft ist belegt: `Status.resx` beschreibt 1889 mit „A magicked barrier is nullifying damage". Dieselbe Beschreibung trägt `Intersection_4040` — eine zweite, als „(All Classes)" geführte Id, die `AstrologianRotation.cs:530` auch in `TargetStatusProvide` nicht führt. Beide fehlen.
+
+**Wirkung:** Der Schild eines Astrologen zählt nicht zur effektiven Gesundheit seines Ziels; das Ziel erscheint verletzter, als es ist, und wird bevorzugt weitergeheilt. Über die fehlende zweite Id greift zusätzlich die Doppelbelegungssperre der Aktion nicht, sofern das Spiel 4040 setzt — welche der beiden Ids gesetzt wird, ist offline nicht entscheidbar und spricht dafür, beide zu führen (Muster wie bei `Galvanize`/`Galvanize_3087`).
+
+**Auflösungsbedingung:** beide Ids in `ShieldStatus` und in `TargetStatusProvide` ergänzen. Zugleich Vorbedingung für die Schild-Nachrangigkeit bei The Blackest Night.
+
 ## Technische Schuld
 
 ### `CanEarlyWeave` steht auf dem beobachteten statt auf dem geschriebenen Verhalten · N, R
@@ -205,6 +225,12 @@ Die Kostenseite bliebe dagegen bestehen: Ein Ringpuffer über alle Gruppenmitgli
 **Wieder aufzugreifen, wenn** ein konkreter Verbraucher entsteht — etwa eine gestaffelte Phase-2-Unterstützung, die den Heilungskurs gegen die Restzeit prüft. Bis dahin ist der Befund dokumentiert und die Entscheidung begründet, nicht offen.
 
 ## Offene Arbeit
+
+### Schild-Nachrangigkeit bei The Blackest Night · N
+
+Kein Defekt, sondern eine Verbesserung: Solange `BlackestNight` auf dem Ziel liegt, ist ein **zusätzlicher Schild** nachrangig, während Heilung und HoT unverändert laufen — sie berühren den Auslöser nicht. Mechanismus, Vorbedingungen und die offene Frage der Verbrauchsreihenfolge stehen in `09-tank-selfprotection.md` (Klasse A+ und „Was offen bleibt"); hier steht nur, dass es offen ist und wo es beschrieben wird.
+
+**Auflösungsbedingung:** zuerst die beiden Defekte „WHM Divine Benison" und „`StatusID.Intersection` fehlt", sonst greift der Mechanismus lückenhaft. Danach Umsetzung hinter einer Option mit Standard aus.
 
 ### Audit + Code-Review der gesamten Codebasis
 
