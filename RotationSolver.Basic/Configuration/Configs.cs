@@ -913,7 +913,8 @@ internal partial class Configs : IPluginConfiguration
 	//
 	// Living Dead is the exception and this setting does not apply to it: with
 	// WithholdHealingForLivingDead on, the bearer is held in full rather than merely demoted,
-	// because there the death is the trigger and not the disaster.
+	// because there the death is the trigger and not the disaster. That hold releases on its own
+	// clock, measured on Living Dead alone (StatusHelper.InDeathTriggerWindow).
 	[UI("Heal a target under an invulnerability only below this HP.",
 		Filter = HealingActionCondition, Section = 1)]
 	[Range(0, 1, ConfigUnitType.Percent, 0.02f)]

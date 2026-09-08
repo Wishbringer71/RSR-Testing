@@ -898,6 +898,32 @@ Dead wurde also aktiv verhindert. Jetzt steht er hinten und wird nur geheilt, we
 sonst niemand Bedarf hat. Das ist noch nicht die Rückhaltung, aber es ist die
 richtige Richtung, und es ist der Grund, warum Schritt 3 nicht dringlich ist.
 
+## Nachtrag — Umsetzungsstand nach der Einzelabarbeitung
+
+Dieser Abschnitt hält fest, was seit dem fünften Audit tatsächlich gebaut wurde, weil
+mehrere Aussagen weiter oben davon überholt sind.
+
+| Aussage weiter oben | Stand |
+|---|---|
+| „`HallowedGround` fehlt in **jeder** Form" | **erledigt.** `HallowedGround` und `HallowedGround_1302` sind ergänzt, ebenso `UndeadRebirth` |
+| Ergänzung der Ids sei an die `StateUpdater`-Umstellung gebunden | **erledigt.** Die Umstellung ist erfolgt: Ein Schutzstatus senkt dort die Schwelle auf `HealthProtectedRatio`, statt das Heilflag zu unterdrücken |
+| Die Uhrregel müsse erst gebaut werden | **Sie existierte bereits.** `WillStatusEndGCD` meldet einen Status vor seinem Ablauf als endend; `StatusHelper.InDeathTriggerWindow` nutzt das mit eigener Messung auf `DeathTriggeredStatus` |
+| Schritt 3 gehöre in die Heilerrotationen (H1–H3) | **teilweise überholt.** Die Rückhaltung liegt zentral in `StateUpdater`, hinter `WithholdHealingForLivingDead` (Standard aus). H1 bleibt als Restfehler bestehen, siehe unten |
+| Schritt 4, Messbaustein | **verworfen.** Nach der Uhrregel gibt es keinen Verbraucher mehr; Begründung in `TODO.md` |
+
+**Der Restfehler von H1, jetzt beziffert.** Der Vorlauf der Freigabe misst bis zur
+*Entscheidung*, nicht bis zum Landen der Heilung. Im ungünstigsten Fall muss der
+laufende GCD auslaufen und ein Zauber mit Wirkzeit darauf noch fertig werden — zusammen
+zwei GCDs. Der Vorlauf muss daher mindestens zwei GCDs betragen, und genau diese zwei
+GCDs sind zugleich der Preis: Bei einem Zehn-Sekunden-Fenster wird die halbe Phase
+verschenkt, in der ein noch rechtzeitiger Tod abgefangen werden kann.
+
+Ein kürzerer Vorlauf wurde probiert und wieder zurückgenommen: Er senkt den Preis, lässt
+die Heilung aber nach Ablauf landen, wenn der Tank bereits ungeschützt ist. Eine
+Fähigkeit ohne Wirkzeit würde beides lösen — welche Heilung gleich fällt, ist jedoch
+eine Rotationsentscheidung, die die zentrale Schicht weder kennt noch erzwingen kann.
+Das ist der harte Kern von H1 und bleibt offen.
+
 ## Nachweisbarkeit
 
 | Ebene | Möglich | Nicht möglich |

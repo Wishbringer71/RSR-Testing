@@ -16,6 +16,23 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Changed in RotationSolver.Basic
+
+`StatusHelper.NoNeedHealingStatus` still exists with the same signature, but its contents changed,
+so a derived rotation reading it sees different behaviour without any compile error to warn it.
+
+- **Removed** `HpRecoveryDown` and `Mounted`. Neither is an invulnerability: the first only reduces
+  incoming healing, the second nullifies HP recovery outright. Anything asking this list "can the
+  bearer be killed right now" was getting a wrong answer for both. `Mounted` moved to the new
+  `StatusHelper.HealingIneffectiveStatus`, which is what the target selection excludes.
+- **Added** `HallowedGround`, `HallowedGround_1302` and `UndeadRebirth`. The first two were simply
+  missing, so paladins were treated as unprotected; the third is the success phase of Living Dead.
+- **Added** `StatusHelper.DeathTriggeredStatus` and `HealingIneffectiveStatus` as separate lists,
+  plus `InDeathTriggerWindow`/`PlayerInDeathTriggerWindow`. All additive.
+
+A rotation that reads `NoNeedHealingStatus` to decide whether to skip a heal keeps working; one
+that relied on `HpRecoveryDown` or `Mounted` being in there has to name them itself now.
+
 ### Removed from RotationSolver.Basic
 
 Both members were part of the shipped `7.5.5.41+wsh1` package. Code that overrides or reads them no

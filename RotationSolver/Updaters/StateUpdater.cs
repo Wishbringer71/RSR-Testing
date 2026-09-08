@@ -789,8 +789,8 @@ internal static class StateUpdater
 
 		// Living Dead is waiting for its bearer to die, and a heal above zero takes that away - not
 		// a wasted cast but the loss of the trigger. Off by default: RSR also fires Living Dead as
-		// a last-ditch save, and under that usage the death is not wanted at all. The window closes
-		// two GCDs before expiry, after which the bearer is healed on the normal threshold.
+		// a last-ditch save, and under that usage the death is not wanted at all. The hold releases
+		// itself with enough lead time for a heal to land, after which the normal threshold applies.
 		if (Service.Config.WithholdHealingForLivingDead && target.InDeathTriggerWindow())
 		{
 			return false;

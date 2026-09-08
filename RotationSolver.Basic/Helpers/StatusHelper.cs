@@ -455,9 +455,9 @@ public static class StatusHelper
 	/// waiting for, which is why these get a full hold rather than the lowered threshold the other
 	/// invulnerabilities get.
 	/// <para>
-	/// The hold is not open-ended. Every caller reaches this list through
-	/// <see cref="NoNeedHealingInvuln"/>, which reports the status as ended two GCDs before it
-	/// actually expires - so once the death can no longer arrive in time, the normal threshold
+	/// The hold is not open-ended. Callers reach this list through
+	/// <see cref="InDeathTriggerWindow(IBattleChara)"/>, which releases it while the status still
+	/// has lead time left - so once the death can no longer arrive in time, the normal threshold
 	/// returns and the bearer is healed like anyone else.
 	/// </para>
 	/// </summary>
@@ -477,11 +477,17 @@ public static class StatusHelper
 	/// ending while Living Dead still had most of its duration left.
 	/// </para>
 	/// <para>
-	/// One GCD of lead time, not the two the general check uses. The hold's one real cost is that
-	/// it can cancel a death that would still have arrived in time, and that cost is exactly the
-	/// lead time: against Living Dead's ten seconds, two GCDs give away half the window and one
-	/// gives away a quarter. One is still safe, because the heal lands while the invulnerability
-	/// is up - the bearer cannot die during it either way.
+	/// Two GCDs of lead time. The tempting optimisation is to shorten it: the hold's one real cost
+	/// is that it can cancel a death that would still have arrived in time, and that cost is exactly
+	/// the lead time - against Living Dead's ten seconds, two GCDs give away half the window. But
+	/// the lead time is measured to the *decision*, not to the heal landing. Worst case the current
+	/// GCD has to run out and a cast has to finish on top of it, which is two GCDs on its own, so
+	/// anything shorter lands the heal after the window has already closed and the bearer is
+	/// unprotected. Half the window is the price of the heal actually arriving.
+	/// </para>
+	/// <para>
+	/// An instant heal would land immediately and make a shorter lead time safe, but which heal is
+	/// about to be cast is a rotation decision that this layer cannot see, let alone enforce.
 	/// </para>
 	/// </summary>
 	public static bool InDeathTriggerWindow(this IBattleChara battleChara)
@@ -498,7 +504,7 @@ public static class StatusHelper
 	}
 
 	/// <summary>How early the death-trigger hold releases; see <see cref="InDeathTriggerWindow"/>.</summary>
-	private const uint DeathTriggerLeadGCDs = 1;
+	private const uint DeathTriggerLeadGCDs = 2;
 
 	/// <summary>
 	/// Statuses under which a heal lands for nothing at all, as opposed to merely being less urgent.
