@@ -1,3 +1,40 @@
+# RotationSolverReborn — `wsh` fork
+
+This repository is a fork of
+[FFXIV-CombatReborn/RotationSolverReborn](https://github.com/FFXIV-CombatReborn/RotationSolverReborn).
+It tracks upstream `main` and carries patches that were not offered upstream. **Everything
+below the horizontal rule is the upstream README, taken over unchanged** — its badges, its
+install instructions and its release links all refer to upstream, not to this repository.
+
+**Releases** are tagged `<upstream version>+wsh<n>`, currently `7.5.5.41+wsh1`, and publish a
+`latest.zip` asset. This repository ships no plugin repository manifest of its own, so the
+install instructions below add the *upstream* plugin. `manifest.json` is unchanged as well —
+`InternalName: RotationSolver` and the upstream `RepoUrl` included — so a fork build presents
+itself to Dalamud under the same plugin identity as upstream.
+
+**The `RotationSolverReborn.Basic` package** keeps upstream's `PackageId` and marks the fork
+with the pre-release label `-wsh1`, so the published package is `7.5.5.41-wsh1`. Consuming it
+means allowing pre-release versions or pinning the exact version: a version without a suffix
+sorts higher, so in a feed holding both, a consumer that asks for neither still resolves to
+upstream. Changes to the package surface are listed in [CHANGELOG.md](CHANGELOG.md), because
+the version number cannot express them — its numeric part follows the upstream release, not
+this fork's own compatibility.
+
+**Where the fork documents itself**
+
+| | |
+|---|---|
+| [`CHANGELOG.md`](CHANGELOG.md) | changes a consumer of `RotationSolver.Basic` has to act on |
+| [`docs/rotation-flow/`](docs/rotation-flow) | design documents for the areas this fork changes |
+| [`AUDIT_LOG.md`](AUDIT_LOG.md) | archive of completed reviews, including the claims that were withdrawn |
+| [`TODO.md`](TODO.md) | open work only, separated into defects, technical debt and planned work |
+| [`.github/scripts/audit/`](.github/scripts/audit) | the static scans that found the recorded defect classes, kept as regression protection |
+| [`CLAUDE.md`](CLAUDE.md) | the working rules this fork is developed under |
+
+Documents addressed to consumers are written in English; the working documents (`AUDIT_LOG.md`,
+`TODO.md`, `docs/`) are in German.
+
+---
 
 # [![](https://raw.githubusercontent.com/FFXIV-CombatReborn/RebornAssets/main/IconAssets/RSR_Icon.png)](https://github.com/FFXIV-CombatReborn/RotationSolverReborn)
 

@@ -984,6 +984,70 @@ läuft nur auf einen Tag, und `build.yaml` kompiliert lediglich.
 
 ---
 
+### A39 · Die README beschrieb ausschließlich den Upstream (08.09.2026)
+
+**Anlass:** Auftrag „auch readme aktualisieren und anpassen", unmittelbar nach der Umstellung
+der Paketidentität (A38).
+
+**Befund, gemessen statt erinnert.** `git diff upstream/main -- README.md` ist leer: Die
+Root-README ist zeichengleich mit der Upstream-Fassung. Sie nennt folglich weder diesen Fork
+noch irgendeine seiner Abweichungen — ihre Badges zählen Upstream-Downloads, ihre
+Installationsanleitung fügt das Upstream-Plugin-Repository hinzu, ihre Release-Links zeigen auf
+Upstream-Tags (7.4.1.10, 7.4.5.35), und der Abschnitt „Latest version of RSR for each FFXIV
+version" ist für einen Fork auf `7.5.5.41` gegenstandslos. Wer das Repository auf GitHub öffnet,
+liest die Beschreibung eines anderen Projekts.
+
+**Wirkungsbereich erhoben.** Die Identität dieses Forks steht an fünf Stellen und war an keiner
+davon aus der README erreichbar: `publish.yaml` (Tag-Schema `<upstream>+wsh<n>`, Asset
+`latest.zip`), `Directory.Build.props` (`PackageVersion 7.5.5.41-wsh1`),
+`RotationSolver.Basic.csproj` (`PackageId RotationSolverReborn.Basic`, unverändert),
+`CHANGELOG.md` (Brüche der Paketoberfläche) und `manifest.json`. Ebenso wenig verwiesen war die
+Arbeitsdokumentation des Forks — `docs/rotation-flow/`, `AUDIT_LOG.md`, `TODO.md`,
+`.github/scripts/audit/`, `CLAUDE.md`. Die zweite README des Baums,
+`.github/scripts/audit/README.md`, ist aktuell (scan9 bis scan13 dokumentiert) und war nicht
+Gegenstand.
+
+**Konfliktrisiko regionsgenau statt über Dateiaktivität.** Der Klon ist flach; über die
+enthaltenen 152 Upstream-Commits (25.05. bis 04.09.2026) berührt genau einer `README.md`, und
+`git blame upstream/main` setzt **alle** 43 Zeilen auf diesen einen Commit. Upstream schreibt
+die Datei also nicht abschnittsweise fort, sondern als Ganzes, wenn er sie anfasst. Das
+entscheidet die Form des Eingriffs: ein eigener Block **vor** dem Upstream-Text, dieser selbst
+unangetastet. Ein Konflikt entsteht dann nur beim nächsten Gesamt-Rewrite und ist trivial
+aufzulösen — eigenen Block behalten, Upstream-Text übernehmen.
+
+**Verworfene Optionen.** *Nullvariante:* Die Startseite behauptet weiterhin die
+Upstream-Identität, und ein Bezieher des Pakets findet die Prerelease-Bedingung aus A38 nicht.
+*README vollständig neu schreiben:* maximiert die Merge-Fläche gegenüber der Gruppe U und wirft
+Upstream-Inhalte weg, die für dieses Repository unverändert gelten. *Separates `FORK.md`:*
+GitHub zeigt auf der Startseite die README, nicht eine Nebendatei — der Hinweis erreicht den
+Leser nicht, dem er gilt.
+
+**Was bewusst nicht in die README kam, weil unbelegt.** Wie ein Fork-Build zu installieren ist:
+Der Baum enthält kein `pluginmaster.json` (`git ls-files` ohne Treffer), der Weg über das
+Release-Asset ist in dieser Umgebung nicht nachprüfbar, und eine erfundene Anleitung wäre
+schlechter als keine. Die README stellt deshalb nur fest, dass die vorhandene Anleitung den
+Upstream betrifft. Ebenso ausgelassen sind die Folgen der geteilten Plugin-Identität; sie sind
+Inferenz und stehen als solche gekennzeichnet in `TODO.md`.
+
+**Mit korrigiert.** Der TODO-Eintrag „Zwei entfernte öffentliche Member seit dem letzten
+Release" begründete den Ausweis im CHANGELOG noch damit, das Fork-Suffix sei
+SemVer-Build-Metadatum — seit A38 unzutreffend. Ersetzt durch den Grund, der trägt: Der
+numerische Teil folgt dem Upstream-Release, nicht der Kompatibilität dieses Forks.
+
+**Neu erfasst.** `manifest.json` ist gegenüber Upstream unverändert, `InternalName` und
+`RepoUrl` eingeschlossen. Als technische Schuld mit Gegenposition und offener Freigabe in
+`TODO.md` aufgenommen, nicht im Vorbeigehen geändert: Ein eigener `InternalName` trennt die
+gespeicherte Nutzerkonfiguration und wäre ohne Migrationspfad ein Verlust.
+
+**Nachgetragen zu A38:** Der CI-Lauf 144 zu `20b665b8` ist grün (`conclusion: success`).
+
+**Erreichter Prüfgrad:** statische Selbstprüfung, gestützt auf Messungen am Repository
+(`git diff` gegen `upstream/main`, `git blame`, `git ls-files`, `git ls-remote --tags origin`).
+Die Datei enthält keinen Code; die Verweisziele wurden im Baum nachgesehen, die Darstellung auf
+GitHub selbst ist nicht geprüft.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.
