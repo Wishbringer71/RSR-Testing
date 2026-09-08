@@ -3,13 +3,20 @@
 Changes in this fork that a consumer has to act on, kept because the version number cannot carry
 them.
 
-`Directory.Build.props` ties `<Version>` to the upstream release the fork is based on and marks the
-fork with the build-metadata suffix `+wsh1`. NuGet strips build metadata when it normalises a
-version — `1.0.7+r3456` is treated as `1.0.7`
-([Package versioning](https://learn.microsoft.com/nuget/concepts/package-versioning#normalized-version-numbers))
-— and `publish.yaml` passes `PackageVersion` without the suffix in any case. A breaking change to
-the package surface therefore has nowhere to show up in the number under Semantic Versioning's
-rules, so it is written down here instead.
+`Directory.Build.props` ties `<Version>` to the upstream release the fork is based on. The package
+carries the fork marker as the **pre-release label** `-wsh1`, which is part of the version identity
+and survives normalization — unlike the build metadata `+wsh1`, which NuGet strips (`1.0.7+r3456` is
+treated as `1.0.7`,
+[Package versioning](https://learn.microsoft.com/nuget/concepts/package-versioning#normalized-version-numbers)).
+The assembly and informational versions keep `+wsh1`, since that is what the settings window shows.
+
+The number therefore identifies the fork, but it still cannot express *what changed*: the numeric
+part follows the upstream release the fork tracks, not this fork's own compatibility, so a breaking
+change to the package surface has nowhere to show up under Semantic Versioning's rules. That is what
+this file is for.
+
+Consuming the package means opting into pre-release versions — reference the exact version, or allow
+pre-release in the client. That is the price of sharing `PackageId` with upstream.
 
 Entries below the unreleased section start with the first release that carries one; earlier releases
 are not reconstructed here.

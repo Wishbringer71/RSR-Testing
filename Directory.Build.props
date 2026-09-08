@@ -16,6 +16,13 @@
 		<Version>7.5.5.41</Version>
 		<InformationalVersion>7.5.5.41+wsh1</InformationalVersion>
 
+		<!-- The package identity needs the fork suffix as a pre-release label. RotationSolver.Basic
+		     builds with GeneratePackageOnBuild, so every local and PR build produces a .nupkg too -
+		     without this they all carried RotationSolverReborn.Basic 7.5.5.41, the upstream identity.
+		     NuGet strips "+wsh1" as build metadata during normalization but keeps "-wsh1", which is
+		     part of the version identity. The publish workflow derives the same value from the tag. -->
+		<PackageVersion>7.5.5.41-wsh1</PackageVersion>
+
 		<!-- .NET 8 and later append SourceRevisionId - the full git commit hash, filled in
 		     automatically by Source Link - to InformationalVersion. That is the attribute the
 		     settings window title reads, so the version showed up with a 40-character hash after it

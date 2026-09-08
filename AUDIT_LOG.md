@@ -932,6 +932,56 @@ Vorsortierung erfasst.
 Abgrenzungsfälle, Gegenprobe (21 gemeldet vor der Änderung, 0 danach), CI-Kompilierung.
 Keine Laufzeitbeobachtung.
 
+
+### A38 · Paketidentität: Prerelease-Label statt Build-Metadaten (08.09.2026)
+
+**Anlass:** Entscheidung des Auftraggebers zwischen den drei vorgelegten Wegen —
+eigener `PackageId`, Prerelease-Label, Verzicht auf die Paketauslieferung. Gewählt:
+Prerelease-Label `-wsh1`.
+
+**Der Defekt, noch einmal am Artefakt gemessen.** `publish.yaml:23` bildete
+`$numericVersion = ($tag -split '\+')[0]`, weil `AssemblyVersion` und `FileVersion`
+rein numerisch sein müssen (CS7034). Zeile 42 reichte **denselben** Wert als
+`PackageVersion` weiter. Das ausgelieferte `.nupkg` hieß damit
+`RotationSolverReborn.Basic 7.5.5.41` — die Upstream-Identität. Zweiter, bis dahin
+nicht erfasster Fundort: `Directory.Build.props` setzt nur `<Version>`, und
+`RotationSolver.Basic` baut mit `GeneratePackageOnBuild`, sodass **jeder** lokale und
+PR-Build ebenfalls ein Paket unter der Upstream-Identität erzeugte.
+
+**An der offiziellen Quelle belegt** (Microsoft Learn, „Package versioning"), weil hier
+ein Schnittstellenvertrag berührt ist:
+
+| Frage | Beleg |
+|---|---|
+| Ist `7.5.5.41-wsh1` gültig? | `NuGetVersion` kennt ein viertes Segment `Revision`; ausgenommen Prerelease- und Metadaten-Label lautet die Form `Major.Minor.Patch.Revision` |
+| Geht das Label in die Identität ein? | Build-Metadaten werden bei der Normalisierung entfernt, Prerelease-Label nicht |
+| Sehen ältere Clients das Paket? | SemVer-2.0-spezifisch ist eine Version nur bei **punktgetrenntem** Label oder bei Build-Metadaten. `-wsh1` hat keinen Punkt, ist also SemVer-1.0-konform und für alle Clients sichtbar — anders als `-wsh.1` |
+| Was kostet es die Verbraucher? | „By default, NuGet does not include pre-release versions"; wer das Paket bezieht, muss die Version exakt angeben oder Prerelease zulassen |
+
+**Was die Wahl nicht leistet, und das gehört benannt.** Bei gleichem `PackageId` sortiert
+`7.5.5.41-wsh1` **unter** `7.5.5.41` — NuGet wählt eine Version ohne Suffix zuerst. In
+einem Feed mit beiden Paketen bekommt ein Verbraucher ohne ausdrückliche Version weiterhin
+Upstream. Der Zweck der Entscheidung war Unterscheidbarkeit, und die ist erreicht; Vorrang
+wäre nur über einen eigenen `PackageId` zu haben.
+
+**Umgesetzt.** `publish.yaml` leitet `packageVersion` aus dem Tag ab (`+` → `-`) und bricht
+ab, wenn der Tag dem Schema `<upstream>+wsh<n>` nicht folgt — ohne diese Schranke käme der
+Defekt bei einem schemawidrigen Tag still zurück. `Directory.Build.props` setzt
+`<PackageVersion>7.5.5.41-wsh1</PackageVersion>` für alle untagged Builds.
+
+**Der CHANGELOG-Kopf war nach der Änderung falsch** und ist mit korrigiert: Er begründete
+seine Existenz damit, dass die Nummer den Fork nicht kennzeichnen könne. Das trifft nicht
+mehr zu. Was bleibt, ist der eigentliche Grund — der numerische Teil folgt dem
+Upstream-Release, nicht der Kompatibilität dieses Forks, kann also keinen Bruch der
+Paketoberfläche ausdrücken.
+
+**Nicht erledigt:** der Release-Ballast, der dasselbe `.nupkg` betrifft. Eigene Frage, eigener
+Eintrag in `TODO.md`.
+
+**Erreichter Prüfgrad:** statische Selbstprüfung, offizielle Herstellerdokumentation für alle
+vier Vertragsfragen, CI-Kompilierung. Der Veröffentlichungspfad selbst ist nicht geprüft — er
+läuft nur auf einen Tag, und `build.yaml` kompiliert lediglich.
+
 ---
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
