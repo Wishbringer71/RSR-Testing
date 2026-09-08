@@ -543,6 +543,47 @@ Alle vier behoben (`2b03843e`). Befund 1 ist der schwerste — die Änderung err
 
 **Befund 2 ist ein wiederholter eigener Fehler.** Drei Commits zuvor steht als C15 im Archiv, dass ein Nullbefund über den bloßen Bezeichner kein Beleg ist — hergeleitet an genau den Holmgang-Ids. Danach wurde `Mounted_1520` allein wegen des gleichen Namens aufgenommen. Die Regel war notiert und wurde beim nächsten Anlass nicht angewandt; die Lehre daraus betrifft nicht die Regel, sondern den Zeitpunkt ihrer Anwendung: Sie gehört an die Stelle, an der eine Statusliste **geschrieben** wird, nicht nur an die, an der sie geprüft wird.
 
+### A29 · Einzelabarbeitung: StateUpdater, Living Dead, Messbaustein (07./08.09.2026)
+
+**Anlass:** Auftrag, die verbliebenen Punkte einzeln im vollständigen Loop zu prüfen, umzusetzen, zu auditieren und einem Code-Review zu unterziehen.
+
+**Vorgehen je Punkt:** Research am Artefakt → Optionen mit Nullvariante → Abwägung → Falsifikation → Umsetzung → Selbstprüfung → Code-Review mit eigenem Kontext → Korrekturen. Drei Punkte, zusammen **sechs Commits** und **dreizehn Review-Befunde**, davon zehn Regressionen oder Fehler dieser Runde.
+
+#### Punkt 1 — `StateUpdater`-Umstellung (`7e2ba594`, `4b15d27f`)
+
+Ein Schutzstatus senkt die Heilschwelle auf `HealthProtectedRatio`, statt das Flag zu unterdrücken. Damit erreicht die Zielwahl-Herabstufung aus A27 überhaupt erst ihren Zweck: Ohne Flag ruft der Dispatcher `HealSingleGCD` nicht auf.
+
+| Review-Befund | Kern |
+|---|---|
+| `HealthForDyingTanks` war der falsche Regler | `[JobConfig]`, über `DataCenter.Job` aufgelöst und mit `PvEFilter = Tank` auf einem Heiler nicht editierbar. Der Kommentar behauptete, es sei dieselbe Zahl wie in den Tank-Rotationen — sie ist es nicht |
+| Fehlende Klemmung | `Range(0,1)` erlaubt eine geschützte Schwelle über der normalen; `Math.Min` sichert die Invariante |
+| `Mounted` in der Schwellensenkung | Nullifiziert Heilung — Ausschluss, nicht Herabstufung |
+| `HpRecoveryDown` desgleichen | Mindert Heilung nur; das ist ein Grund, **härter** zu heilen. In der eigenen Fallmatrix zuvor als „gewollte Lockerung" fehlbewertet |
+| `NoNeedHealingStatus` vermengte drei Kategorien | Beide Nicht-Invulnerabilitäten entfernt; der einzige `HasTankInvuln`-Verwender fragt „already invuln'd" |
+| Doku-Attribut ohne Präzedenz | Hätte die Einstellung von den beiden getrennt, mit denen sie über `Math.Min` zusammenwirkt |
+
+#### Punkt 2 — Living Dead (`d54b47c0`, `2e215715`)
+
+**Der Research widerlegte die eigene Umsetzung aus Punkt 1**: Die Schwellensenkung hätte Phase 1 bei zehn Prozent geheilt — genau der vom Auftraggeber als sinnlos benannte Fall. `DeathTriggeredStatus` trennt den einen Status, dessen Auslöser der eigene Tod ist, und behält für ihn den vollen Halt.
+
+**Zweiter Research-Befund: Die Uhrregel existierte bereits.** `WillStatusEndGCD` meldet einen Status vor seinem Ablauf als endend. Konzept 09 hatte diese Freigabe als mildernden Nebenumstand eines anderen Mechanismus behandelt und angenommen, die Uhrregel müsse erst gebaut werden.
+
+| Review-Befund | Kern |
+|---|---|
+| **Uhr auf der falschen Liste** | `StatusTime` liefert das *früheste* Ablaufen über die **ganze** `NoNeedHealingStatus`. Eine fremde kurze Unverwundbarkeit hätte das Fenster als endend gemeldet — und dasselbe Prädikat wählte dann die Schwelle, sodass das Ziel **bereitwilliger** geheilt worden wäre als ein ungeschütztes |
+| **Der Tod ist nicht immer gewollt** | RSR zündet Living Dead selbst als Notrettung bei `HealthForDyingTanks`. Dort ist der Tod die Katastrophe, und Walking Dead verlangt danach eine volle Maximalgesundheit an Heilung in zehn Sekunden. Der Halt liegt seither hinter `WithholdHealingForLivingDead`, Standard aus — was das Konzept vorgesehen und die Umsetzung fallen gelassen hatte |
+| Halt fehlte in der Zielwahl | Die Selbstabkürzung hätte den Träger aus dem Auslöser heraus geheilt, sobald ein anderer das Flag setzt |
+
+#### Punkt 3 — Messbaustein: Nullvariante gewählt (`ff46f0a8`, `cea66c79`)
+
+**Ergebnis: nicht gebaut, und das ist der Befund.** Er hatte genau einen vorgesehenen Verbraucher — die Hochrechnung, ob der Tod rechtzeitig eintritt —, und die ist durch `InDeathTriggerWindow` anders beantwortet. Kein Verbraucher im Baum, aber Laufzeitkosten bei allen Nutzern in jedem Kampf: Ein Baustein ohne Verbraucher ist Vorratsarbeit.
+
+**Ein eigener Fehler im selben Commit, vom Review gefangen:** Der Restfehler der Uhrregel sollte durch einen kürzeren Vorlauf gesenkt werden — ein GCD statt zwei. Das war falsch, weil der Vorlauf bis zur **Entscheidung** misst, nicht bis zum Landen der Heilung: Im ungünstigsten Fall muss der laufende GCD auslaufen und ein Zauber darauf fertig werden, zusammen zwei GCDs. Ein GCD lässt die Heilung nach Ablauf landen, wenn der Tank bereits ungeschützt ist. Zurückgenommen; die halbe Phase ist der Preis dafür, dass die Heilung überhaupt ankommt.
+
+Mit der Umstellung wurde außerdem möglich, was drei Runden lang zurückgestellt war: `HallowedGround`, `HallowedGround_1302` und `UndeadRebirth` sind ergänzt.
+
+**Erreichter Prüfgrad:** statische Selbstprüfung, Fallmatrizen je Änderung, drei Code-Reviews mit eigenem Kontext, CI-Kompilierung. Keine Laufzeitbeobachtung, kein menschliches Vier-Augen-Prinzip. Dass die neuen Schwellen im Spiel besser spielen, ist **nicht** belegt; belegt ist, dass die alte Konstruktion einen geschützten Tank als einzigen Verletzten gar nicht erreichte.
+
 ---
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
@@ -614,4 +655,6 @@ Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt e
 | C18 | Konzept 09, drittes und viertes Audit: die Aufhebungen der Rückhaltung gelten für **alle** Auslöser — niedrige Gesundheit (drittes) und jedes Tankbuster-Fenster (viertes) | Für Living Dead ist beides kontraproduktiv: Dort **ist der Tod der Auslöser**. Niedrige Gesundheit ist der erwünschte Zustand, und der Buster liefert genau das Ereignis, auf das die Fähigkeit wartet. Eine Heilung, die den Tod verhindert, verhindert per Konstruktion den Auslöser — eine Gegenhypothese ist nicht formulierbar. Ursache war die fehlende Unterscheidung, ob der Auslöser der Tod selbst ist oder unterhalb davon liegt. Lehre: Eine Aufhebungsregel gilt nur für die Auslöserklasse, für die sie hergeleitet wurde; ihre Verallgemeinerung ist zu begründen, nicht zu unterstellen | Klasse A in A-tödlich und A-nichttödlich getrennt, `MayWithholdForTrigger` in zwei Bedingungen zerlegt (A23) |
 | C19 | Konzept 09, viertes Audit: der Messbaustein sei Voraussetzung der Living-Dead-Regelung, und ohne Messung dürfe nie zurückgehalten werden | Die Kernanforderung „im letzten Augenblick retten" ist eine **Uhrregel** über die Reststatuszeit und braucht keine Rate; der Messbaustein verkleinert nur den Restfehler. Und der Rückfall war falsch herum: Bei Living Dead heißt „nicht zurückhalten" heilen, was die Fähigkeit entwertet. Lehre: Bevor eine Anforderung eine neue Messung verlangt, ist zu prüfen, ob sie eine Frage nach der Zeit statt nach einer Rate ist | Messbaustein ans Ende der Reihenfolge, Uhrregel als Stufe 1 (A23) |
 | C20 | A24 zur AoE-Liste: „Eine Formel braucht nicht, wer das Ergebnis hat" — die Potenz sei hier ein Umweg, weil der Wert bereits beobachtet vorliege | Zu absolut. Der Rechenweg lässt sich **umkehren**: Eine Beobachtung kann um bekannte Störfaktoren bereinigt werden, und `GetCurrentMitigationPercent()` (`CustomRotation_OtherInfo.cs:585`) liefert den Divisor bereits — im Effekt-Handler aufgerufen also zum Trefferzeitpunkt. Damit entfällt der Zirkelschluss weitgehend, den A24 noch der Höchstwertregel überließ. Die Rückrechnung endet erst vor der Potenz selbst, weil Angriffs- und Verteidigungswerte außerhalb des Clients liegen — dorthin muss sie aber auch nicht. Lehre: Bevor eine beobachtete Größe als endgültig behandelt wird, ist zu prüfen, ob ihre Störfaktoren bekannt und herausrechenbar sind | Rückrechnung in den Vorschlag aufgenommen, Höchstwertregel zur Absicherung herabgestuft (A26) |
+| C21 | A29 Punkt 1: `HpRecoveryDown` in der Schwellensenkung sei eine „gewollte Lockerung" — vorher hart ausgeschlossen, jetzt ab 15 % geheilt | Der Status mindert Heilung („Healing effects received are reduced"), er hebt sie nicht auf. Wer weniger Heilung *empfängt*, braucht **mehr** davon, nicht später. Die eigene Fallmatrix hatte den Fall aufgeführt und als Gewinn verbucht, statt zu fragen, was der Status bedeutet. Lehre: Eine Fallmatrix belegt, dass eine Regel greift — nicht, dass sie richtig greift | Aus `NoNeedHealingStatus` entfernt (A29) |
+| C22 | A29 Punkt 3: kürzerer Vorlauf der Uhrregel (ein GCD statt zwei) senke den Restfehler, die Heilung lande ohnehin noch im Schutzfenster | Der Vorlauf misst bis zur **Entscheidung**. Bis die Heilung landet, müssen der laufende GCD auslaufen und eine Wirkzeit vergehen — zusammen zwei GCDs. Bei einem GCD landet sie nach Ablauf, wenn der Tank ungeschützt ist. Lehre: Bei einer Zeitregel ist zu prüfen, welches Ereignis sie datiert — Entscheidung, Beginn oder Wirkung sind drei verschiedene Zeitpunkte | Vorlauf zurückgenommen (A29, `cea66c79`) |
 | C10 | A9: „`IsHostileCastingTank`-Fallback · KEIN FEHLER, nicht angetastet" | Die Begründung galt der Tankbuster-Erkennung für Tanks (`IsHostileCastingToTank`) und wurde ungeprüft auf `…TankBusterAtMe` übertragen, obwohl das eine andere Frage beantwortet: nicht „kommt ein Tankbuster", sondern „kommt einer auf mich". Für Nicht-Tanks ist der Fallback dort schlicht falsch. Nutzer: „wenn mich ein Mob aus einer großen Mobgruppe angreift, wird bereits Schimmerschild und Stumpfsinn gecastet" | `…TankBusterAtMe` auf gesicherte Tankbuster eingeschränkt (A9, d9a99de7) |
