@@ -1048,6 +1048,69 @@ GitHub selbst ist nicht geprüft.
 
 ---
 
+### A40 · Upstream-Angleichung und Prüfung des Release-ZIPs (08.09.2026)
+
+**Anlass:** zwei Aufträge — „Das zip Release muss eine spielbare Version enthalten" und „fork vom
+upstream her angleichen".
+
+**Ergebnis vorweg:** Das ausgelieferte ZIP ist im Aufbau deckungsgleich mit dem Upstream-Release,
+das nachweislich spielbar ist. Was fehlte, war nicht sein Inhalt, sondern sein Stand: Upstream hat
+am 08.09.2026 das Release `7.5.6.0` herausgegeben, und dessen **einzige** Änderung gegenüber
+`7.5.5.41` ist der Wechsel der Dalamud-Bezugsquelle auf den Staging-Kanal. Der Fork steht jetzt auf
+diesem Stand.
+
+**Messung am Artefakt.** Drei Release-Assets heruntergeladen und ausgelesen — Fork `7.5.5.41+wsh1`,
+Upstream `7.5.5.41` und Upstream `7.5.6.0`:
+
+| Prüfpunkt | Ergebnis |
+|---|---|
+| Dateibestand | je 12 Dateien, gleiche Namen und Rollen. Nutzlast `RotationSolver.dll`, `RotationSolver.Basic.dll`, `ECommons.dll`, `RotationSolver.json`; der übrige Inhalt ist in allen drei ZIPs derselbe Ballast |
+| Größe | Fork 5.346.696 Bytes, Upstream 7.5.6.0 5.336.327 — der Unterschied liegt in den eigenen Assemblies |
+| Manifest | identisch bis auf `AssemblyVersion` (7.5.5.41 / 7.5.6.0); `DalamudApiLevel` in beiden 15 |
+| `deps.json` | Bibliotheks- und Laufzeitlisten deckungsgleich, einziger Unterschied der eigene Eintrag `RotationSolver.Basic/<version>` |
+| fehlende Laufzeit-DLLs | neun in `deps.json` genannte DLLs liegen in **keinem** der ZIPs, in allen dieselben — sie stellt Dalamud |
+
+Kein fehlender Bestandteil, keine zusätzliche Abhängigkeit, kein struktureller Unterschied zum
+spielbaren Upstream-Paket.
+
+**Ursache des Fehlerbildes, so weit belegbar.** Der Tag `7.5.6.0` zeigt auf `b6de6807`;
+`git rev-list --count 7.5.5.41..7.5.6.0` ergibt 1, und dieser eine Commit ändert eine Zeile in
+`publish.yaml`: `dalamud-distrib/latest.zip` → `dalamud-distrib/stg/latest.zip`. Primärquelle
+`goatcorp/dalamud-distrib`: Release-Kanal `15.0.3.2`, Staging-Kanal `15.0.3.2-36-g43e65e2b6`. Die
+Dalamud-Dokumentation beschreibt den Ablauf nach einem Spielpatch — Dalamud lädt ein Plugin nicht
+mehr, bis beide nachgezogen sind, und Staging folgt `master` schneller als Release.
+**Inferenz, als solche gekennzeichnet:** dass das Fork-ZIP beim Auftraggeber nicht lief, folgt
+daraus, dass es vor diesem Wechsel gebaut wurde. Am Artefakt ist das nicht zu belegen; dazu fehlt
+die Fehlermeldung aus dem Spiel.
+
+**Angleichung.** `git merge upstream/main` konfliktfrei — Upstreams Zeile und die
+Fork-Änderungen an `publish.yaml` liegen in verschiedenen Schritten derselben Datei. Nachweis
+danach: `git rev-list --left-right --count upstream/main...HEAD` = 0 / 344.
+
+**Drei Folgeänderungen, jede mit eigenem Grund:**
+
+1. `Directory.Build.props` auf `7.5.6.0`, `7.5.6.0+wsh1`, `7.5.6.0-wsh1`. Der Kommentar band diese
+   Werte an den letzten **Fork**-Tag; sobald ein Upstream-Release darüber hinaus gemergt ist,
+   untertreibt das, was der Code ist. Umgestellt auf den Upstream-Release-Stand, auf dem der
+   gemergte Baum steht — der Kommentar ist mit korrigiert, statt den Widerspruch stehen zu lassen.
+2. `build.yaml` auf denselben Dalamud-Kanal wie `publish.yaml`. Andernfalls kompiliert die
+   PR-Prüfung gegen andere Assemblies als der Release-Build, und die stärkste hier erreichbare
+   Prüfung misst nicht mehr das Auslieferungsartefakt. Die Zeile ist eine Fork-Abweichung und als
+   solche in `TODO.md` geführt, mit der Bedingung, sie mitzuziehen, wenn Upstream zurückwechselt.
+3. Der Ballast-Eintrag in `TODO.md` ist um den Messbeleg ergänzt: Upstream liefert denselben
+   Ballast aus, der Fork weicht nicht ab. Empfehlung dort ergänzt, ihn nicht aufzugreifen.
+
+**Was das nicht leistet:** Ein Release entsteht erst mit einem Tag, und die Freigabe dafür liegt
+beim Auftraggeber. Bis dahin bleibt `7.5.5.41+wsh1` das jüngste Fork-Release, gebaut gegen den
+Release-Kanal.
+
+**Erreichter Prüfgrad:** Artefaktprüfung an drei heruntergeladenen ZIPs, Messungen an der
+Versionsgeschichte, Primärquelle für die beiden Dalamud-Kanäle, Fachdokumentation für den
+Patch-Ablauf, CI-Kompilierung gegen den Staging-Kanal. Nicht geprüft: der Ladevorgang im Spiel und
+der Veröffentlichungspfad selbst, der nur auf einen Tag läuft.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.

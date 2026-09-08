@@ -164,11 +164,23 @@ Dem steht als Ertrag eine Nutzeroption gegenüber, deren Wirkung unbelegt ist un
 
 **Am Artefakt belegt** (`latest.zip` von 7.5.5.41+wsh1, 5,35 MB): Nutzlast sind `RotationSolver.dll`, `RotationSolver.Basic.dll`, `ECommons.dll` und `RotationSolver.json`; dazu kommen `RotationSolver.Basic.xml` (7,52 MB), der Analyzer samt Symbolen (5,59 MB), das NuGet-Paket (1,54 MB) und `RotationSolver.Basic.pdb` (1,27 MB).
 
+**Kein Fork-Defekt, sondern Upstream-Verhalten** (A40): Die Upstream-Releases 7.5.5.41 und 7.5.6.0 enthalten dieselben zwölf Dateien in denselben Rollen, 5,34 MB gegenüber 5,35 MB. Der Fork weicht im Dateibestand nicht ab; auch der Abhängigkeitsgraph beider `deps.json` ist deckungsgleich. Eine Bereinigung wäre damit eine eigene Abweichung im Verpackungspfad.
+
 **Ursache** ist weder die Prune-Regel — `PruneOutputDlls` arbeitet auf `ReferenceCopyLocalPaths` und erfasst nichts davon — noch das `OutputPath` der Projektdatei: `publish.yaml:42` baut mit `--output .\build`, wodurch die Ausgaben aller beteiligten Projekte in einem Verzeichnis landen, das DalamudPackager packt. `GeneratePackageOnBuild` bedient dabei bewusst die Autoren abgeleiteter Rotationen.
 
 **Kosten:** 5,35 MB Download statt rund 1,8 MB, funktional folgenlos.
 
 **Auflösungsbedingung:** Der naheliegende Weg trägt nicht — der Standard-Target von DalamudPackager reicht `Exclude` nicht durch und läuft nur, solange keine eigene `DalamudPackager.targets` im Projektverzeichnis liegt; diese müsste den vollständigen Task-Aufruf samt aller Manifest-Felder nachbauen. `Exclude` vergleicht exakt über `List.Contains` (`DalamudPackager.cs:187`), kennt also keine Muster, und das NuGet-Paket trägt die Version im Dateinamen. Der Build-Workflow kompiliert nur und prüft das Paket nicht. Aufgreifen erst, wenn der Veröffentlichungspfad prüfbar ist. Geprüft: die XML-Dokumentation wird zur Laufzeit nicht gelesen.
+
+**Empfehlung: nicht aufgreifen.** Der Auftraggeber hat die Spielbarkeit des Release-ZIPs zur Anforderung gemacht. Ein Eingriff in den Verpackungspfad ist genau die Klasse von Änderung, deren Ergebnis erst am fertigen Release sichtbar wird — und dieser Pfad läuft nur auf einen Tag, wird von keiner Prüfung abgedeckt und weicht dann zusätzlich vom Upstream ab. 3,5 MB Download stehen gegen das Risiko, ein nicht ladbares Paket zu bauen.
+
+### PR-Prüfung folgt dem Staging-Kanal von Dalamud · U
+
+`publish.yaml` bezieht Dalamud seit dem Upstream-Release 7.5.6.0 aus `dalamud-distrib/stg/latest.zip` — das ist die **einzige** Änderung, die dieses Release gegenüber 7.5.5.41 trägt. `build.yaml` ist dieser Zeile nachgezogen (A40), damit die PR-Prüfung gegen dieselben Assemblies kompiliert, gegen die das Release gebaut wird. Upstream hat nur `publish.yaml` umgestellt; die Zeile in `build.yaml` ist deshalb eine Fork-Abweichung.
+
+**Kosten:** eine Zeile Merge-Fläche. Zudem hängt die PR-Prüfung nun an einem Kanal, der nach der Dalamud-Dokumentation häufiger bricht als der Release-Kanal — ein Bruch dort blockiert die Prüfung, hätte aber ebenso den Release-Build blockiert, nur später.
+
+**Auflösungsbedingung:** Stellt Upstream `publish.yaml` auf den Release-Kanal zurück, ist `build.yaml` mitzuziehen. Beide Zeilen sind bewusst gleich zu halten; laufen sie auseinander, misst die Prüfung nicht mehr, was ausgeliefert wird.
 
 ### VPR: leerer Zweig einer Struktur, die anderswo eine Entscheidung trägt · U
 

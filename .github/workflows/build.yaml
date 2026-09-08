@@ -29,8 +29,11 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Download Dalamud Latest
+        # Same track as publish.yaml. Upstream moved the release build to the staging
+        # channel in 7.5.6.0 - the only change that release carries - so a check against
+        # the release channel would no longer compile what a release actually builds.
         run: |
-          Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
+          Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/stg/latest.zip -OutFile latest.zip
           Expand-Archive -Force latest.zip -DestinationPath "$env:AppData\XIVLauncher\addon\Hooks\dev"
 
       - name: Restore NuGet Packages
