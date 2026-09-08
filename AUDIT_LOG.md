@@ -698,6 +698,60 @@ Gegenprobe am Vor-Zustand, Abgleich jedes berichteten Stands gegen den Code
 (`git show upstream/main`, Zählung benannter Stufen je Datei, `git ls-remote --tags`).
 Kein Vier-Augen-Prinzip.
 
+
+### A34 · Die Living-Dead-Rückhaltung hielt nur auf einem Teil der Wege (08.09.2026)
+
+**Anlass:** Nachfrage des Auftraggebers, warum der Punkt weiter als offen geführt wird,
+mit dem Auftrag, kritisch zu prüfen, was wie umgesetzt wurde. Die Prüfung hat ihn
+bestätigt — allerdings aus einem anderen Grund, als der Titel des Punktes nannte.
+
+**Was gebaut war.** Die Rückhaltung wirkte auf der Flag-Ebene (`ShouldHealSingle`,
+`ShouldHealSelf`) und in der Selbstabkürzung von `GeneralHealTarget`. Drei Stellen, an
+denen die Bedingung `Service.Config.WithholdHealingForLivingDead && …InDeathTriggerWindow()`
+wortgleich ausgeschrieben stand.
+
+**Was fehlte.** Die **Kandidatenliste** derselben Zielwahl kannte den Halt nicht: Zeile
+3526 filtert `HealingIneffectiveStatus`, mehr nicht. Und der Kommentar unmittelbar
+darunter behauptete das Gegenteil — die Selbstabkürzung brauche „die gleichen Prüfungen,
+die ein Ziel aus der Liste heraushalten", und nannte dabei ausdrücklich den
+Living-Dead-Fall. Ein Widerspruch zwischen Kommentar und Code, und nach der
+Auslegungsregel ist der Widerspruch der Befund.
+
+**Die Wirkungskette, vollständig verfolgt.** Der Träger stand in `ranked`, als geschützt
+nach hinten sortiert. Solange ein ungeschütztes Mitglied in der Kandidatenmenge liegt,
+gewinnt dieses — deshalb fiel es nicht auf. Das Heilflag kann aber von einem Mitglied
+gesetzt worden sein, das **außerhalb der Reichweite der gewählten Heilaktion** liegt;
+dann ist der Träger der einzige Kandidat und wird geheilt. Und liefert `GeneralHealTarget`
+`null`, greift der Fallback auf den Träger der Tank-Haltung — also genau auf den
+Dunkelritter, der Grit trägt. Der Halt war damit in dem Zustand wirkungslos, für den er
+gebaut wurde.
+
+**Umgesetzt.** Die Bedingung ist zu `ObjectHelper.IsHeldForDeathTrigger` /
+`PlayerIsHeldForDeathTrigger` zusammengezogen — in `ObjectHelper`, weil `StatusHelper`
+bewusst keine Konfiguration liest — und der Halt sitzt jetzt im **Eingangsfilter** von
+`FindHealTarget`. Das ist der kleinste wirksame Eingriff: Kandidatenliste, Heiler- und
+Tankpass, Auswahl des am schwersten Verletzten sowie beide Fallbacks schöpfen aus
+derselben Menge und sind mit einer Zeile abgedeckt, statt mit vier verstreuten Prüfungen,
+von denen wieder eine vergessen werden kann. Rohe Vorkommen der Einstellung außerhalb
+des Helfers: keine.
+
+**Zwei Wege bleiben offen, mit Begründung.** Flächenheilung trifft den Träger als
+Nebenwirkung; sie zu unterlassen würde die Gruppe für den Auslöser opfern und verstieße
+gegen die Rangordnung. Fremde Rotationen mit `targetOverride: TargetType.Tank` (Beiruta)
+umgehen die zentrale Zielwahl, halten aber über ihre eigene Sperrliste ohnehin zurück —
+nach der Priorisierungsregel erfasst, nicht bearbeitet.
+
+**Zum Titel des Punktes.** „Gehört in die Heilerrotationen, nicht in die Zielwahl" war
+die Schlussfolgerung aus H1 und ist nicht umgesetzt worden: Die Rückhaltung liegt
+zentral. Das ist begründet — der Vorlauf ist die einzige rotationsabhängige Größe, und
+er ist mit zwei GCDs konservativ gewählt. Der Restfehler bleibt bestehen und steht in
+`09-tank-selfprotection.md` unter „Was offen bleibt". Der Punkt war also offen, aber die
+Lücke lag nicht dort, wo sein Titel sie vermutete.
+
+**Erreichter Prüfgrad:** statische Selbstprüfung mit vollständiger Verfolgung der
+Wirkungskette bis zu beiden Fallbacks, Erhebung aller `TargetType.Heal`-Pfade und aller
+Stellen mit selbstgesetztem Heilziel, CI-Kompilierung. Keine Laufzeitbeobachtung.
+
 ---
 
 ## B · Commit-Register (Fork vs. `upstream/main`)

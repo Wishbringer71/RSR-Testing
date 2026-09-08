@@ -3766,6 +3766,34 @@ public static class ObjectHelper
 	}
 
 	/// <summary>
+	/// Whether healing is being withheld from <paramref name="battleChara"/> so that the death its
+	/// own ability is waiting for can happen - the user's <c>WithholdHealingForLivingDead</c>
+	/// setting together with <see cref="StatusHelper.InDeathTriggerWindow"/>.
+	/// <para>
+	/// The pairing lives here rather than in <see cref="StatusHelper"/>, which deliberately reads no
+	/// configuration, and it lives in one place rather than at each decision because the hold has to
+	/// hold on every path a heal can reach the bearer through. Missing one of them does not weaken
+	/// the hold, it defeats it: the bearer is healed out of the trigger and the ability is spent for
+	/// nothing.
+	/// </para>
+	/// </summary>
+	public static bool IsHeldForDeathTrigger(this IBattleChara battleChara)
+	{
+		return battleChara != null
+			&& Service.Config != null
+			&& Service.Config.WithholdHealingForLivingDead
+			&& battleChara.InDeathTriggerWindow();
+	}
+
+	/// <inheritdoc cref="IsHeldForDeathTrigger(IBattleChara)"/>
+	public static bool PlayerIsHeldForDeathTrigger()
+	{
+		return Service.Config != null
+			&& Service.Config.WithholdHealingForLivingDead
+			&& StatusHelper.PlayerInDeathTriggerWindow();
+	}
+
+	/// <summary>
 	/// Get the Player's current HP percentage.
 	/// </summary>
 	/// <returns></returns>

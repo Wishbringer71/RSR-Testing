@@ -300,10 +300,34 @@ erreicht die Herabstufung ihren Zweck nicht: Ohne Flag ruft der Dispatcher
 
 ### Die Living-Dead-Rückhaltung
 
-Sie liegt zentral im `StateUpdater` hinter `WithholdHealingForLivingDead`
-(Standard **aus**) und benutzt `StatusHelper.InDeathTriggerWindow` auf einer eigenen
-Liste `DeathTriggeredStatus`, die genau den einen Status führt, dessen Auslöser der
-eigene Tod ist.
+Sie liegt hinter `WithholdHealingForLivingDead` (Standard **aus**) und benutzt
+`StatusHelper.InDeathTriggerWindow` auf einer eigenen Liste `DeathTriggeredStatus`,
+die genau den einen Status führt, dessen Auslöser der eigene Tod ist. Die Paarung aus
+Einstellung und Fenster steht als `ObjectHelper.IsHeldForDeathTrigger` an **einem**
+Ort; die Bedingung selbst kommt im Baum kein zweites Mal vor.
+
+**Ein Halt muss auf jedem Weg halten, auf dem eine Heilung den Träger erreicht.** Eine
+einzelne Lücke schwächt ihn nicht, sie hebt ihn auf — der Träger wird aus dem Auslöser
+herausgeheilt und die Fähigkeit ist umsonst gezündet. Erfasst sind deshalb:
+
+| Weg | Ort |
+|---|---|
+| Heilflag für ein Gruppenmitglied | `StateUpdater.ShouldHealSingle` |
+| Heilflag für den Spieler selbst | `StateUpdater.ShouldHealSelf` |
+| Kandidatenliste, Rollenpässe, Auswahl des am schwersten Verletzten, Tank-Haltungs-Fallback und `partyMembers[0]`-Fallback | Eingangsfilter von `ActionTargetInfo.FindHealTarget` |
+| Selbstabkürzung, die die Kandidatenliste umgeht | eigene Prüfung in `GeneralHealTarget` |
+
+Der Eingangsfilter ist der tragende Teil: Das Heilflag kann von einem **anderen**
+Gruppenmitglied gesetzt worden sein, und liegt dieses außerhalb der Reichweite der
+gewählten Heilaktion, bleibt der Träger als einziger Kandidat übrig. Ohne den Filter
+holt ihn spätestens der Tank-Haltungs-Fallback zurück — ein Dunkelritter trägt Grit.
+
+Zwei Wege bleiben bewusst offen. **Flächenheilung** trifft den Träger als
+Nebenwirkung; sie deswegen zu unterlassen hieße, die Gruppe für den Auslöser zu
+opfern, und verstieße gegen die Rangordnung. **Fremde Rotationen, die ihr Heilziel
+selbst setzen** (`targetOverride: TargetType.Tank`, in den Beiruta-Heilern) umgehen
+die zentrale Zielwahl; sie halten allerdings über ihre eigene Sperrliste ohnehin
+zurück, dort sogar unabhängig von der Einstellung.
 
 Die Uhrregel musste nicht gebaut werden: `WillStatusEndGCD` meldet einen Status vor
 seinem Ablauf als endend. Sie braucht aber eine **eigene** Liste — `StatusTime`

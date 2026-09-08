@@ -3443,6 +3443,19 @@ public struct ActionTargetInfo(IBaseAction action)
 			List<IBattleChara> filteredGameObjects = [];
 			foreach (var o in battleChara)
 			{
+				// The death-trigger hold has to bite at the entrance, not further down. Everything
+				// below draws from this set - the ranked candidate list, the healer and tank passes,
+				// the worst-hurt pick and both fallbacks - and the tank-stance fallback would
+				// otherwise hand back the very dark knight being held, since it wears Grit. The hold
+				// then failed exactly where it was needed: whenever the member who raised the heal
+				// flag is out of this action's range, the bearer is the only candidate left.
+				//
+				// The self short-cut below bypasses this set and carries the same check of its own.
+				if (o.IsHeldForDeathTrigger())
+				{
+					continue;
+				}
+
 				if (!IBaseAction.AutoHealCheck || o.GetHealthRatio() < healRatio)
 				{
 					filteredGameObjects.Add(o);
@@ -3577,14 +3590,14 @@ public struct ActionTargetInfo(IBaseAction action)
 					}
 				}
 
-				// The self short-cut bypasses the candidate list, so it needs the same checks that
+				// The self short-cut bypasses the candidate list, so it repeats the two checks that
 				// keep a target out of it: a heal on a target that nullifies HP recovery is a wasted
 				// cast, and a dark knight inside its Living Dead window is being held on purpose.
 				// Without the second check, any other member raising the heal flag would let the
 				// bearer heal itself out of the trigger through this path.
 				if (Player.Object != null
 					&& !Player.Object.HasStatus(false, StatusHelper.HealingIneffectiveStatus)
-					&& !(Service.Config.WithholdHealingForLivingDead && Player.Object.InDeathTriggerWindow())
+					&& !ObjectHelper.PlayerIsHeldForDeathTrigger()
 					&& ObjectHelper.GetPlayerHealthRatio() <= Service.Config.HealthSelfRatio)
 				{
 					return Player.Object;
