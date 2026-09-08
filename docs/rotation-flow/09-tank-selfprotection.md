@@ -22,11 +22,11 @@ Lagen bleiben **zwei** echte Rückhaltefälle, denen fünf Aufhebungen gegenübe
 Sie ist für Living Dead als **Uhrregel** umgesetzt — zurückhalten, solange der Tod
 noch rechtzeitig kommt — hinter einer Option mit Standard aus.
 
-Für The Blackest Night stellt sich die Frage anders: Dort ist **keine** Rückhaltung
-richtig, sondern eine **Werkzeugwahl**. Heilung und HoT berühren den Auslöser nicht;
-ein zweiter Schild auf einem bereits geschildeten Träger ist der schwächste Beitrag
-und kann die Absorption sogar verzögern. Die Regel ist entworfen und nicht gebaut —
-sie hat zwei benannte Vorbedingungen im Code.
+Für The Blackest Night ist **gar keine** Sonderregel richtig. Heilung berührt den
+Auslöser nicht, und ein Heilerschild wird erst nach der TBN-Barriere aufgezehrt, kann
+sie also weder verzögern noch verdrängen. Die Nachrangigkeit, die dort sinnvoll ist,
+leistet RSR bereits: `BlackestNight` steht in `StatusHelper.ShieldStatus` und geht
+über `GetEffectiveHpPercent` in die Heilentscheidung ein.
 
 | Baustein | Stand |
 |---|---|
@@ -35,7 +35,7 @@ sie hat zwei benannte Vorbedingungen im Code.
 | Fehlende Ids (`HallowedGround`, `HallowedGround_1302`, `UndeadRebirth`) | umgesetzt |
 | Schutzstatus senkt die Heilschwelle, statt das Flag zu unterdrücken | umgesetzt |
 | Living-Dead-Rückhaltung als Uhrregel, hinter Option | umgesetzt |
-| Schild-Nachrangigkeit bei The Blackest Night | entworfen, nicht gebaut — zwei Vorbedingungen offen |
+| Sonderbehandlung für The Blackest Night | **nicht nötig** — die vorhandene Schildanrechnung deckt den Fall ab |
 | Messbaustein für Heilraten auf Gruppenmitglieder | verworfen, kein Verbraucher |
 
 ## Prüfmaßstab — die Rangordnung
@@ -107,47 +107,41 @@ Barriere aufgebraucht ist, entfällt Dark Arts — Heilung wirkt also für den A
 nicht gegen ihn. *Schluss aus der Wirkbeschreibung („nullifying damage") und der
 Auslösebedingung („completely absorbed"), nicht wörtlich belegt.*
 
-**Ein zweiter Schild ist etwas anderes.** Mehrere Barrieren auf demselben Charakter
-werden in einer festen **Verbrauchsreihenfolge** aufgezehrt, nicht anteilig. Für The
-Blackest Night ist überliefert, dass es gegenüber typischen Heilerschilden Vorrang hat
-— Schaden zählt zuerst gegen die eigene Barriere —, dass aber einzelne Barrieren
-*davor* stehen und dann verhindern können, dass TBN rechtzeitig aufgezehrt wird.
-Genannt werden Radiant Aegis und Eukrasian Diagnosis. Quellenstatus: Spielerforen und
-Job-Guides, teils **widersprüchlich** — eine Quelle ordnet TBN über Eukrasian
-Diagnosis ein, eine andere darunter. Zwei Primärquellen (Consolegames-Wiki, ein
-Lodestone-Blog mit systematischer Prioritätsliste) sind vom Netzwerk-Egress dieser
-Umgebung blockiert und konnten nicht eingesehen werden. Die Reihenfolge gilt damit als
-**unbelegt**.
+**Ein zweiter Schild schadet ebenfalls nicht.** Mehrere Barrieren auf demselben
+Charakter werden in einer festen **Verbrauchsreihenfolge** aufgezehrt, nicht anteilig,
+und The Blackest Night steht in dieser Reihenfolge **vor** den Schilden, die ein Heiler
+auf einen Tank legen kann:
 
-**Die Entscheidung hängt an dieser Reihenfolge trotzdem nicht.** Solange TBN liegt,
-ist der Träger bereits geschildet. Ein zweiter Schild ist dann der am wenigsten
-wertvolle Beitrag, den ein Heiler leisten kann — er verdoppelt vorhandenen Schutz,
-während die HP, die der Träger nach dem Ablauf braucht, ungefüllt bleiben. Heilung
-oder ein HoT leisten dort mehr, und sie kosten den Auslöser nichts. Fällt die
-Prioritätsfrage zusätzlich ungünstig aus, verhindert die Zurückstellung obendrein den
-Verlust von Dark Arts. Der Vorteil besteht also in beiden Zweigen der offenen Frage.
+| Barriere | Verbrauchsrang |
+|---|---|
+| The Blackest Night | 3 |
+| Eukrasian Diagnosis (SGE) | 4 |
+| Divine Benison (WHM) | 12 |
 
-**Die Regel lautet deshalb nicht „zurückhalten", sondern „anderes Werkzeug":**
+Der niedrigere Rang wird zuerst aufgezehrt. Ein Heilerschild verzögert die Absorption
+von TBN also nicht — Dark Arts wird davon nicht berührt. Er geht dabei auch nicht
+verloren: Er bleibt liegen und absorbiert, sobald TBN aufgebraucht ist. Zurückstellen
+spart deshalb nichts, es verschiebt nur.
 
-> Solange `BlackestNight` in der Statusliste des Ziels steht, ist ein **zusätzlicher
-> Schild** nachrangig; **Heilung und HoT** laufen unverändert. Sobald der Status
-> verschwindet — durch vollständige Absorption oder durch Ablauf —, gilt wieder die
-> normale Regel.
+*Quellenstatus:* Spielerdokumentation (eine nummerierte Prioritätsliste in einem
+Lodestone-Blog, wiedergegeben über die Suche), keine offizielle Beschreibung. Die
+Primärseite selbst und das Consolegames-Wiki sind vom Egress dieser Umgebung nach
+Organisationsrichtlinie gesperrt; das ist keine Fehlkonfiguration und nicht zu
+umgehen. **Ein Quellenkonflikt bleibt offen:** Ein Job-Guide führt Eukrasian Diagnosis
+als vorrangig gegenüber TBN, die Liste ordnet sie dahinter. Betroffen wäre allein der
+Weise. Für Weißmagier, Gelehrten und Astrologen sagen beide Quellen dasselbe, weil
+deren Schilde deutlich hinter TBN liegen.
 
-Das ist mit den vorhandenen Mitteln entscheidbar: Gebraucht wird nur die Antwort auf
-„liegt TBN?", und die steht in der Statusliste (`StatusID.BlackestNight` 1178, in der
-PvP-Form 1308). Ob die Barriere *verbraucht* wurde, muss dafür niemand wissen — und
-das ist der Punkt, an dem die frühere Bewertung dieses Falls scheiterte: Sie hat die
-schwerere Frage gestellt als nötig. Nicht beobachtbar bleibt allein der Auslöser
-selbst, weil der Client je Charakter genau einen Schildwert führt
-(`ICharacter.ShieldPercentage`, umgerechnet in `ObjectHelper.GetObjectShield`) und
-keine Buchführung je Quelle.
+Die ebenfalls genannte Radiant Aegis ist gegenstandslos: `Status.resx` weist sie als
+**(SMN)** aus — ein Selbstschild des Beschwörers, der nie auf dem Dunkelritter liegt.
 
-**Gegenposition, die stehen bleibt.** Gegen einen einschlagenden Tankbuster ist ein
-Schild wertvoller als Heilung — er verhindert Schaden, statt ihn zu reparieren. Ist
-der Buster größer als die TBN-Barriere, gehört der zweite Schild dazu. Die
-Zurückstellung braucht deshalb dieselbe Aufhebung wie jede andere Regel dieses
-Konzepts: bei erkanntem Buster-Fenster oder niedriger Gesundheit fällt der Schild.
+**Damit bleibt kein Grund, den Schild zurückzustellen.** Was bleibt, ist die
+gewöhnliche Dringlichkeitsfrage: Ein Träger mit TBN ist bereits geschützt und deshalb
+weniger dringend zu versorgen als ein ungeschütztes Gruppenmitglied. **Genau das
+leistet RSR bereits** — `StatusID.BlackestNight` steht in `StatusHelper.ShieldStatus`
+und geht über `GetEffectiveHpPercent` in die Heilentscheidung ein, sodass der Träger
+mit angerechneter Barriere gesünder erscheint und nachrangig behandelt wird. Eine
+eigene TBN-Regel würde diesem Mechanismus nichts hinzufügen.
 
 ### Klasse B — Unverwundbarkeit
 
@@ -280,8 +274,7 @@ Vollständig über die Dimensionen Fähigkeitsklasse × Gesundheitsstand × Heil
 | 4 | DRK, Walking Dead aktiv, **Kurs trägt** | leicht unterstützen | nein, wirkungslos bei 1 HP | Billige Beiträge zählen voll gegen die Summe |
 | 4a | DRK, Walking Dead aktiv, **Kurs reicht nicht** | **ja, in voller Höhe** | nein | Die Alternative ist der Tod am Phasenende |
 | 4b | DRK, **Undead Rebirth** aktiv | nein, nachrangig | nein | Bedingung erfüllt, reine Stufe 3 |
-| 5 | DRK, TBN aktiv, **Tank nicht in Gefahr** | **ja, normal** | **nachrangig** | Heilung berührt den Auslöser nicht und verhindert den Tod, der ihn vereiteln würde. Ein zweiter Schild verdoppelt dagegen vorhandenen Schutz, statt die HP zu füllen, die nach dem Ablauf gebraucht werden |
-| 5b | dieselbe Lage, **Tank in Gefahr oder Buster-Fenster** | **ja** | **ja** | Ein möglicherweise verlorener Dark Arts wiegt keinen toten Tank auf, und gegen einen Einschlag verhindert ein Schild, statt zu reparieren |
+| 5 | DRK, TBN aktiv | **nach normaler Regel** | **nach normaler Regel** | **Kein Sonderfall.** Heilung berührt den Auslöser nicht, und ein Heilerschild wird erst nach TBN aufgezehrt. Die angerechnete Barriere macht den Träger über `GetEffectiveHpPercent` ohnehin nachrangig |
 | 6 | GNB, Superbolide aktiv | **ja** | ja | HP stehen auf 1; das Fenster ist die einzige gefahrlose Gelegenheit |
 | 7 | WAR, Holmgang aktiv, HP heruntergedrückt | **ja** | ja | wie 6 |
 | 8 | PLD, Hallowed Ground aktiv, beim Zünden wenig HP | **ja** | ja | Die HP bleiben unverändert; nach Ablauf steht er, wo er stand |
@@ -294,12 +287,12 @@ Vollständig über die Dimensionen Fähigkeitsklasse × Gesundheitsstand × Heil
 | 15 | Nur der geschützte Tank braucht Heilung | **ja** | ja | Das Fenster ist die sicherste Gelegenheit |
 
 Zeile 14 und 15 sind der Kern: **Der Schutz verschiebt die Reihenfolge, er hebt den
-Bedarf nicht auf.** Heilung schadet nur in den Zeilen 1 und 2 — und dort nur, solange
-Stufe 1 gesichert ist. Von neunzehn Lagen bleibt damit **ein** echter Rückhaltefall
-(1), dem fünf Aufhebungen (1b, 1c, 1d, 4a, 5b) gegenüberstehen; einer ist reine
-Ressourcenschonung ohne Risiko (4b), und Zeile 5 ist keine Rückhaltung, sondern eine
-Werkzeugwahl. Eine Bedingung, die häufiger nicht gilt als gilt, ist kein Leitmotiv:
-Der belastbare Kern bleibt die Richtigstellung der Zielwahl.
+Bedarf nicht auf.** Handeln schadet nur in den Zeilen 1 und 2 — und dort nur, solange
+Stufe 1 gesichert ist. Von achtzehn Lagen bleibt damit **ein** echter Rückhaltefall
+(1), dem vier Aufhebungen (1b, 1c, 1d, 4a) gegenüberstehen; einer ist reine
+Ressourcenschonung ohne Risiko (4b). Eine Bedingung, die häufiger nicht gilt als gilt,
+ist kein Leitmotiv: Der belastbare Kern bleibt die Richtigstellung der Zielwahl, und
+der einzige verbliebene Sonderfall ist Living Dead.
 
 ## Was gebaut ist
 
@@ -438,31 +431,21 @@ Rotationsentscheidung, die die zentrale Schicht weder kennt noch erzwingen kann.
 **Die gestaffelte Phase-2-Unterstützung** (Fälle 4 und 4a) ist nicht gebaut. Sie
 verlangt eine Kursprognose und damit den verworfenen Messbaustein.
 
-### Die Schild-Nachrangigkeit bei The Blackest Night: Mechanismus und zwei Vorbedingungen
+### Zwei Lücken in der Schildanrechnung, die diese Prüfung nebenbei fand
 
-Der Eingriff gehört in `ActionTargetInfo.CheckStatus` — dort werden Ziele bereits
-anhand von `TargetStatusProvide` ausgeschlossen, und dieselbe Stelle kann eine Aktion
-als schildgewährend erkennen, ohne dafür eine neue Liste zu pflegen: Sie gewährt einen
-Schild, wenn ihr `TargetStatusProvide` einen Eintrag aus `StatusHelper.ShieldStatus`
-enthält. Trägt das Ziel dann `BlackestNight`, wird es für diese Aktion übersprungen —
-hinter einer Option mit Standard aus und aufgehoben bei niedriger Gesundheit oder
-erkanntem Buster-Fenster. Heilaktionen ohne Schildanteil sind davon nicht berührt, was
-genau die gewünschte Trennung ist.
+Beide sind unabhängig von The Blackest Night und in `TODO.md` als Defekte geführt:
 
-Zwei Stellen im Code müssen dafür zuerst stimmen, sonst greift der Mechanismus
-lückenhaft:
-
-| Vorbedingung | Befund |
+| Befund | Wirkung |
 |---|---|
-| `ModifyDivineBenisonPvE` (`WhiteMageRotation.cs:285`) setzt `StatusProvide` statt `TargetStatusProvide` | Divine Benison wird auf **fremde** Ziele gelegt — `BeirutaWHM.cs:516` liest `DivineBenisonPvE.Target.Target`. Die Doppelbelegungssperre prüft damit den Spieler statt das Ziel und greift nie; und für die Schilderkennung wäre die Aktion unsichtbar. Alle Geschwister (`AdloquiumPvE`, `EukrasianDiagnosisPvE`, `CelestialIntersectionPvE`) nutzen `TargetStatusProvide` |
-| `StatusID.Intersection` fehlt in `StatusHelper.ShieldStatus` | Der Schildanteil von Celestial Intersection wird weder zur effektiven Gesundheit gezählt noch von der Schilderkennung erfasst |
+| `ModifyDivineBenisonPvE` (`WhiteMageRotation.cs:285`) setzt `StatusProvide` statt `TargetStatusProvide` | Divine Benison geht auf **fremde** Ziele — `BeirutaWHM.cs:516` liest `DivineBenisonPvE.Target.Target`. Die Doppelbelegungssperre prüft damit den Spieler statt das Ziel und greift nie. Die drei Geschwister (`AdloquiumPvE`, `EukrasianDiagnosisPvE`, `CelestialIntersectionPvE`) nutzen `TargetStatusProvide` |
+| `StatusID.Intersection` (1889) und `Intersection_4040` fehlen in `StatusHelper.ShieldStatus` | Beide sind als „A magicked barrier is nullifying damage" ausgewiesen. Der Schild eines Astrologen zählt damit nicht zur effektiven Gesundheit; sein Ziel erscheint verletzter, als es ist |
 
-Beide sind eigenständige Befunde und in `TODO.md` geführt; der zweite ist zugleich eine
-Lücke in der bestehenden Schildanrechnung, unabhängig von diesem Vorhaben.
-
-**Nicht entscheidbar bleibt die Verbrauchsreihenfolge** (siehe Klasse A+). Sie bestimmt
-nur die *Größe* des Gewinns, nicht sein Vorzeichen — deshalb steht sie der Umsetzung
-nicht im Weg, wohl aber einem Standard-an.
+**Offen bleibt eine einzige Frage zum Weisen.** Die Verbrauchsreihenfolge ordnet
+Eukrasian Diagnosis hinter The Blackest Night ein, ein Job-Guide davor. Träfe Letzteres
+zu, könnte der Einzelschild des Weisen die TBN-Absorption verzögern und Dark Arts
+kosten. Die beiden Primärquellen, die das klären würden, sind vom Egress nach
+Organisationsrichtlinie gesperrt. Für Weißmagier, Gelehrten und Astrologen besteht die
+Frage nicht — deren Schilde liegen nach beiden Quellen deutlich hinter TBN.
 
 ## Nachweisbarkeit
 

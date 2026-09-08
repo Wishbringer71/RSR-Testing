@@ -39,7 +39,7 @@ Alle drei Geschwisteraktionen greifen richtig zu: `AdloquiumPvE`, `EukrasianDiag
 
 **Wirkung:** Die Sperre gegen Doppelbelegung greift nie. Der Weißmagier kann eine Ladung auf ein Ziel legen, das den Schild bereits trägt. Zwei Ladungen, 30 s Aufladung je Ladung.
 
-**Auflösungsbedingung:** Umstellung auf `TargetStatusProvide`. Vor der Umsetzung ist zu prüfen, ob eine Rotation Divine Benison bewusst auf sich selbst legt und sich auf die Spielerprüfung stützt — nach A32 folgt aus „das Feld ist falsch" nicht ohne Weiteres die Umbuchung. Zugleich Vorbedingung für die Schild-Nachrangigkeit bei The Blackest Night (`09-tank-selfprotection.md`).
+**Auflösungsbedingung:** Umstellung auf `TargetStatusProvide`. Vor der Umsetzung ist zu prüfen, ob eine Rotation Divine Benison bewusst auf sich selbst legt und sich auf die Spielerprüfung stützt — nach A32 folgt aus „das Feld ist falsch" nicht ohne Weiteres die Umbuchung.
 
 ### `StatusID.Intersection` fehlt in `StatusHelper.ShieldStatus` · N
 
@@ -49,7 +49,7 @@ Die Barriereneigenschaft ist belegt: `Status.resx` beschreibt 1889 mit „A magi
 
 **Wirkung:** Der Schild eines Astrologen zählt nicht zur effektiven Gesundheit seines Ziels; das Ziel erscheint verletzter, als es ist, und wird bevorzugt weitergeheilt. Über die fehlende zweite Id greift zusätzlich die Doppelbelegungssperre der Aktion nicht, sofern das Spiel 4040 setzt — welche der beiden Ids gesetzt wird, ist offline nicht entscheidbar und spricht dafür, beide zu führen (Muster wie bei `Galvanize`/`Galvanize_3087`).
 
-**Auflösungsbedingung:** beide Ids in `ShieldStatus` und in `TargetStatusProvide` ergänzen. Zugleich Vorbedingung für die Schild-Nachrangigkeit bei The Blackest Night.
+**Auflösungsbedingung:** beide Ids in `ShieldStatus` und in `TargetStatusProvide` ergänzen.
 
 ## Technische Schuld
 
@@ -225,12 +225,6 @@ Die Kostenseite bliebe dagegen bestehen: Ein Ringpuffer über alle Gruppenmitgli
 **Wieder aufzugreifen, wenn** ein konkreter Verbraucher entsteht — etwa eine gestaffelte Phase-2-Unterstützung, die den Heilungskurs gegen die Restzeit prüft. Bis dahin ist der Befund dokumentiert und die Entscheidung begründet, nicht offen.
 
 ## Offene Arbeit
-
-### Schild-Nachrangigkeit bei The Blackest Night · N
-
-Kein Defekt, sondern eine Verbesserung: Solange `BlackestNight` auf dem Ziel liegt, ist ein **zusätzlicher Schild** nachrangig, während Heilung und HoT unverändert laufen — sie berühren den Auslöser nicht. Mechanismus, Vorbedingungen und die offene Frage der Verbrauchsreihenfolge stehen in `09-tank-selfprotection.md` (Klasse A+ und „Was offen bleibt"); hier steht nur, dass es offen ist und wo es beschrieben wird.
-
-**Auflösungsbedingung:** zuerst die beiden Defekte „WHM Divine Benison" und „`StatusID.Intersection` fehlt", sonst greift der Mechanismus lückenhaft. Danach Umsetzung hinter einer Option mit Standard aus.
 
 ### Audit + Code-Review der gesamten Codebasis
 

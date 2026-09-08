@@ -815,6 +815,59 @@ nullifying damage" ausgewiesen sind.
 `ShieldStatus`, alle `TargetStatusProvide` der Heilerschilde), zwei Websuchen, zwei
 gescheiterte Primärquellenabrufe. Keine Laufzeitbeobachtung. Kein Code geändert.
 
+
+### A36 · Die Verbrauchsreihenfolge belegt — die eigene Empfehlung fällt (08.09.2026)
+
+**Anlass:** Aufforderung des Auftraggebers, es erneut zu versuchen. Der einzige in A35
+gescheiterte Vorgang war der Abruf der Primärquellen zur Barriere-Reihenfolge; A35
+hatte daraus „unbelegt" gemacht und die Regel trotzdem empfohlen.
+
+**Erst der Umgebungsweg, dann die Quelle.** Die Umgebung dokumentiert für
+Egress-Fehler einen eigenen Diagnoseweg (`/root/.ccr/README.md`,
+`$HTTPS_PROXY/__agentproxy/status`), den A35 nicht benutzt hatte — die Grenze war
+behauptet, ohne den vorgesehenen Weg zu prüfen. Nachgeholt: Der Status weist keine
+Relay-Fehler aus, und die README ordnet den Fall als Organisationsrichtlinie ein, die
+ausdrücklich **nicht** zu umgehen, sondern zu melden ist. Die Sperre ist damit bestätigt
+und korrekt behandelt. Was fehlte, war nicht der Zugriff, sondern eine bessere Suche.
+
+**Die nachgeholte Suche liefert die Reihenfolge.** The Blackest Night hat
+Verbrauchsrang 3, Eukrasian Diagnosis 4, Divine Benison 12 — der niedrigere Rang wird
+zuerst aufgezehrt. Damit steht TBN **vor** allen Schilden, die ein Heiler auf einen Tank
+legen kann.
+
+**Folge: die Empfehlung aus A35 fällt.** Ein Heilerschild verzögert die TBN-Absorption
+nicht, kostet also kein Dark Arts. Er geht auch nicht verloren, sondern absorbiert,
+sobald TBN aufgebraucht ist — Zurückstellen spart nichts, es verschiebt nur. Von der
+vorgeschlagenen Regel bleibt die gewöhnliche Dringlichkeitsfrage übrig, und die ist
+bereits gelöst: `BlackestNight` steht in `StatusHelper.ShieldStatus` und geht über
+`GetEffectiveHpPercent` in die Heilentscheidung ein.
+
+**Die dritte genannte Barriere ist gegenstandslos.** Radiant Aegis ist laut
+`Status.resx` **(SMN)** — ein Selbstschild des Beschwörers, der nie auf dem
+Dunkelritter liegt. Der Job-Guide, der sie neben Eukrasian Diagnosis als vorrangig
+führt, beschreibt insoweit einen Fall, den es beim Tank nicht gibt.
+
+**Ein Quellenkonflikt bleibt, eng begrenzt.** Für Eukrasian Diagnosis widersprechen
+sich Liste (Rang 4, also hinter TBN) und Job-Guide (vorrangig). Betroffen wäre allein
+der Weise. Für Weißmagier, Gelehrten und Astrologen sagen beide Quellen dasselbe.
+
+**Was aus dem Durchgang bleibt.** Die beiden Korrekturen aus A35 stehen unverändert:
+Heilung berührt den Auslöser nicht (C24), und die Frage „liegt TBN?" ist beantwortbar
+(C25). Ebenso die zwei nebenbei gefundenen Defekte — Divine Benison auf der Zielseite
+und die fehlenden `Intersection`-Ids —, die von The Blackest Night unabhängig sind und
+in `TODO.md` bleiben. Was fällt, ist allein die abgeleitete Regel.
+
+**Lehre.** A35 hat aus einer widersprüchlichen Quellenlage eine Empfehlung gemacht und
+die Widersprüchlichkeit mit dem Argument entschärft, der Vorteil bestehe „in beiden
+Zweigen". Dieses Argument war falsch, weil es einen dritten Zweig übersah: dass der
+zusätzliche Schild gar nichts kostet, weil er nicht verfällt. Eine offene Frage ist
+kein Anlass, das Ergebnis gegen sie zu immunisieren — sie ist ein Anlass, sie zu
+schließen.
+
+**Erreichter Prüfgrad:** statische Selbstprüfung am Artefakt, Proxy-Diagnose nach der
+Umgebungsdokumentation, drei Websuchen. Die Reihenfolge ruht auf Spielerdokumentation,
+nicht auf einer offiziellen Beschreibung. Kein Code geändert.
+
 ---
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
@@ -892,3 +945,4 @@ Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt e
 | C23 | A31 und der daraus abgeleitete TODO-Eintrag: die beiden RDM-PvP-Zeilen seien durch die Nachbarzeile belegt und „im nächsten Einzelzyklus" auf 3235/3236 zu setzen | Die Feldwahl ist belegbar falsch, die Behebung war es nicht. Dieselbe Erhebung fand zwei Blaumagier-Stellen, an denen die analoge Verschiebung die Zauber genau dann gesperrt hätte, wenn sie am meisten wert sind (Magic Hammer: 250 Potenz plus 1000 MP; Peripheral Synthesis: 220 → 400 Potenz **mit** liegendem Debuff). Damit ist auch für RDM offen, ob die zwei wirkungslosen Zeilen der Defekt sind oder die eine wirksame. Lehre: Aus „das Feld ist nachweislich falsch" folgt nicht „die Umbuchung auf das andere Feld ist richtig" — der Zweck der Aktion entscheidet, nicht die Feldsemantik | A32: Blaumagier-Zeilen entfernt, RDM/SCH/Bozja als offen erfasst |
 | C24 | Konzept 09, Klasse-A-Tabelle: fremde Heilung wirke bei The Blackest Night „indirekt: hebt die HP, sodass weniger Schaden gegen die Barriere läuft" | Mechanisch falsch. Eine Barriere absorbiert eingehenden Schaden vor den HP; ihr Verbrauch hängt am Schaden, nicht am Gesundheitsstand. Die einzige Kopplung läuft umgekehrt — Heilung verhindert den Tod, der den Auslöser vereiteln würde, und wirkt damit **für** ihn. Lehre: Bevor eine Wechselwirkung als Kostenposten geführt wird, ist ihre Richtung an der Mechanik zu prüfen, nicht aus der Nähe zweier Größen zu schließen | A35: Zeile ersetzt, Fall 5 von Rückhaltung auf Werkzeugwahl umgestellt |
 | C25 | Konzept 09: The Blackest Night sei nicht behandelbar, weil „der Auslöser nicht beobachtbar" ist | Richtig, aber nicht die Frage, die die Regel braucht. Für eine Werkzeugwahl genügt „liegt TBN?", und das steht in der Statusliste. Dieselbe Fehlerform wie C19: eine schwerere Frage gestellt als nötig und den Fall daran scheitern lassen — dort eine Rate statt einer Uhr, hier der Verbrauch statt des Vorhandenseins. Lehre: Vor dem Verwerfen wegen fehlender Messbarkeit ist zu prüfen, welche Größe die Regel wirklich braucht | A35: Fall wieder aufgenommen, Umsetzungsweg mit zwei Vorbedingungen beschrieben |
+| C26 | A35: die Schild-Zurückstellung bei The Blackest Night sei zu empfehlen, weil „der Vorteil in beiden Zweigen der offenen Frage" bestehe | Die nachgeholte Recherche schließt die Frage: TBN hat Verbrauchsrang 3, Eukrasian Diagnosis 4, Divine Benison 12 — TBN wird vor jedem Heilerschild aufgezehrt, Dark Arts bleibt unberührt. Und der zurückgestellte Schild verfällt nicht, er absorbiert nach TBN; Zurückstellen spart also nichts. Der dritte, übersehene Zweig war „der Schild kostet gar nichts". Lehre: Eine offene Frage ist kein Anlass, das Ergebnis gegen sie zu immunisieren, sondern sie zu schließen — und der als gesperrt gemeldete Egress war kein Grund, die Recherche für erschöpft zu halten | A36: Regel zurückgenommen, Fall 5 auf „kein Sonderfall" gesetzt |
