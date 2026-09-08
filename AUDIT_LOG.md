@@ -864,6 +864,15 @@ zusätzliche Schild gar nichts kostet, weil er nicht verfällt. Eine offene Frag
 kein Anlass, das Ergebnis gegen sie zu immunisieren — sie ist ein Anlass, sie zu
 schließen.
 
+**Nachgereichte Prämissenprüfung.** Die Frage des Auftraggebers, ob der Dunkelritter TBN
+auch auf andere wirken kann, deckte eine ungeprüfte Annahme auf: `ActionId.resx` (7393)
+sagt „self or **target party member**". Damit ist der Träger nicht zwingend der
+Dunkelritter, und die Abtuung von Radiant Aegis war falsch begründet (C27). Am Ergebnis
+ändert das nichts — die Schilde, die ein *Heiler* legen kann, stehen weiter hinter TBN.
+Zwei neue Fundstellen fielen dabei an, beide Instanzen bereits erfasster Klassen:
+`ModifyTheBlackestNightPvE` setzt `StatusProvide` statt `TargetStatusProvide`, und
+`BlackestNight_1308` kommt im Code nirgends vor.
+
 **Erreichter Prüfgrad:** statische Selbstprüfung am Artefakt, Proxy-Diagnose nach der
 Umgebungsdokumentation, drei Websuchen. Die Reihenfolge ruht auf Spielerdokumentation,
 nicht auf einer offiziellen Beschreibung. Kein Code geändert.
@@ -946,3 +955,4 @@ Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt e
 | C24 | Konzept 09, Klasse-A-Tabelle: fremde Heilung wirke bei The Blackest Night „indirekt: hebt die HP, sodass weniger Schaden gegen die Barriere läuft" | Mechanisch falsch. Eine Barriere absorbiert eingehenden Schaden vor den HP; ihr Verbrauch hängt am Schaden, nicht am Gesundheitsstand. Die einzige Kopplung läuft umgekehrt — Heilung verhindert den Tod, der den Auslöser vereiteln würde, und wirkt damit **für** ihn. Lehre: Bevor eine Wechselwirkung als Kostenposten geführt wird, ist ihre Richtung an der Mechanik zu prüfen, nicht aus der Nähe zweier Größen zu schließen | A35: Zeile ersetzt, Fall 5 von Rückhaltung auf Werkzeugwahl umgestellt |
 | C25 | Konzept 09: The Blackest Night sei nicht behandelbar, weil „der Auslöser nicht beobachtbar" ist | Richtig, aber nicht die Frage, die die Regel braucht. Für eine Werkzeugwahl genügt „liegt TBN?", und das steht in der Statusliste. Dieselbe Fehlerform wie C19: eine schwerere Frage gestellt als nötig und den Fall daran scheitern lassen — dort eine Rate statt einer Uhr, hier der Verbrauch statt des Vorhandenseins. Lehre: Vor dem Verwerfen wegen fehlender Messbarkeit ist zu prüfen, welche Größe die Regel wirklich braucht | A35: Fall wieder aufgenommen, Umsetzungsweg mit zwei Vorbedingungen beschrieben |
 | C26 | A35: die Schild-Zurückstellung bei The Blackest Night sei zu empfehlen, weil „der Vorteil in beiden Zweigen der offenen Frage" bestehe | Die nachgeholte Recherche schließt die Frage: TBN hat Verbrauchsrang 3, Eukrasian Diagnosis 4, Divine Benison 12 — TBN wird vor jedem Heilerschild aufgezehrt, Dark Arts bleibt unberührt. Und der zurückgestellte Schild verfällt nicht, er absorbiert nach TBN; Zurückstellen spart also nichts. Der dritte, übersehene Zweig war „der Schild kostet gar nichts". Lehre: Eine offene Frage ist kein Anlass, das Ergebnis gegen sie zu immunisieren, sondern sie zu schließen — und der als gesperrt gemeldete Egress war kein Grund, die Recherche für erschöpft zu halten | A36: Regel zurückgenommen, Fall 5 auf „kein Sonderfall" gesetzt |
+| C27 | A36: Radiant Aegis sei für die TBN-Frage gegenstandslos, weil sie „ein Selbstschild des Beschwörers ist, der nie auf dem Dunkelritter liegt" | Falsch herum gedacht. Nicht Radiant Aegis wandert, sondern **The Blackest Night**: `ActionId.resx` (7393) beschreibt es als „Creates a barrier around self or **target party member**", und `DRK_Reborn.cs:128` legt es mit `targetOverride: TargetType.LowHP` auf Fremdziele. Ein Beschwörer kann also seinen eigenen Radiant Aegis tragen **und** zusätzlich TBN — der vom Job-Guide beschriebene Fall ist real, nur vom Heiler nicht beeinflussbar. Der Auftraggeber hat die ungeprüfte Prämisse benannt. Lehre: Bevor ein Fall über den Träger eines Status ausgeschlossen wird, ist die Zielmenge der Aktion an ihrer Beschreibung zu belegen, nicht aus dem Jobnamen zu schließen | A36 ergänzt; zwei Defekte daraus in TODO.md |

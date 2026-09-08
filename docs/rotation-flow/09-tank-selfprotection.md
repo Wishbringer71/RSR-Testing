@@ -132,8 +132,15 @@ als vorrangig gegenüber TBN, die Liste ordnet sie dahinter. Betroffen wäre all
 Weise. Für Weißmagier, Gelehrten und Astrologen sagen beide Quellen dasselbe, weil
 deren Schilde deutlich hinter TBN liegen.
 
-Die ebenfalls genannte Radiant Aegis ist gegenstandslos: `Status.resx` weist sie als
-**(SMN)** aus — ein Selbstschild des Beschwörers, der nie auf dem Dunkelritter liegt.
+**Der Träger ist nicht zwingend der Dunkelritter.** `ActionId.resx` (Aktion 7393)
+beschreibt TBN als „Creates a barrier around **self or target party member**" — die
+Barriere kann auf jedem Gruppenmitglied liegen, und `DRK_Reborn.cs:128` nutzt das mit
+`targetOverride: TargetType.LowHP`. Damit ist die ebenfalls genannte Radiant Aegis
+**nicht** gegenstandslos: Sie ist zwar ein Selbstschild des Beschwörers
+(`Status.resx`: **(SMN)**), aber ein Beschwörer kann sie tragen **und** zusätzlich TBN
+vom Dunkelritter bekommen. Steht sie in der Reihenfolge vor TBN, verzögert sie dessen
+Absorption. Das ist ein realer Fall — nur keiner, den ein Heiler beeinflussen kann,
+denn Radiant Aegis wirft der Beschwörer selbst.
 
 **Damit bleibt kein Grund, den Schild zurückzustellen.** Was bleibt, ist die
 gewöhnliche Dringlichkeitsfrage: Ein Träger mit TBN ist bereits geschützt und deshalb
