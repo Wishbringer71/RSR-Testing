@@ -398,8 +398,8 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			ThinAirLastChargeUsage == ThinAirUsageStrategy.UseAllCharges ||
 			(ThinAirLastChargeUsage == ThinAirUsageStrategy.ReserveLastChargeForRaise && nextGCD == RaisePvE);
 
-		if (((nextGCD is IBaseAction action && action.Info.MPNeed >= ThinAirNeed && IsLastAction() == IsLastGCD()) ||
-			 ((MergedStatus.HasFlag(AutoStatus.Raise) || nextGCD == RaisePvE) && IsLastAction() == IsLastGCD())) &&
+		if (((nextGCD is IBaseAction action && action.Info.MPNeed >= ThinAirNeed && IActionHelper.IsLastActionGCD()) ||
+			 ((MergedStatus.HasFlag(AutoStatus.Raise) || nextGCD == RaisePvE) && IActionHelper.IsLastActionGCD())) &&
 			ThinAirPvE.CanUse(out act, usedUp: useLastThinAirCharge))
 		{
 			return true;

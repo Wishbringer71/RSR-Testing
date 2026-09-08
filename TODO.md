@@ -20,20 +20,6 @@ Das Suffix nachzureichen behebt es nicht: NuGet entfernt SemVer-2.0-Build-Metada
 
 **Auflösungsbedingung:** Die Wahl zwischen eigenem `PackageId`, Prerelease-Label und dem Verzicht auf die Paketauslieferung trifft der Auftraggeber; alle drei berühren die Autoren abgeleiteter Rotationen unterschiedlich. Zusammen mit dem Eintrag zum Release-Ballast zu entscheiden, der dasselbe `.nupkg` betrifft.
 
-### Argumentlose `IsLastAction()`-Vergleiche sind konstant wahr · N, U
-
-`IsLastAction()`, `IsLastGCD()` und `IsLastAbility()` sind `params ActionID[]`-Überladungen. Ohne Argument prüft `IsActionID` eine leere Liste und liefert `false` (`IActionHelper.cs:196-211`). Der Ausdruck `IsLastAction() == IsLastGCD()` ist damit `false == false` und immer wahr; für `IsLastAction() == IsLastAbility()` gilt dasselbe. Die gemeinte Prüfung existiert bereits als `IActionHelper.IsLastActionGCD()` (`DataCenter.LastAction == DataCenter.LastGCD`) und wird in `CustomRotation_Ability.cs:688`, `697` und `705` korrekt verwendet.
-
-Fünf Fundstellen, alle aus Upstream übernommen und dort unverändert vorhanden:
-
-- `WHM_Reborn.cs:135` (zweimal) und `BeirutaWHM.cs:401-402` (zweimal) — sollen Thin Air auf das Weave-Fenster unmittelbar nach einem GCD beschränken.
-- `DRG_Reborn.cs:131` — dieselbe Absicht vor Stardiver.
-- `CustomRotation_OtherInfo.cs:1798` in `HasWeaved()`. Der Kommentar darüber schreibt die gemeinte Prüfung wörtlich aus, der Code führt sie nicht aus — nach der Auslegungsregel ist der Widerspruch der Befund, nicht der Kommentar.
-
-**Wirkung:** In den vier Rotationsstellen entfällt eine Einschränkung, die nie gegriffen hat; Thin Air und Stardiver können damit in jedem Weave-Slot statt nur im ersten fallen. Schwerer wiegt `HasWeaved()`: über `CanEarlyWeave` (`CustomRotation_OtherInfo.cs:1353`) kollabiert `(!HasWeaved() || WeaponRemain > LateWeaveWindow)` auf die zweite Hälfte, die „noch nicht geweavt"-Bedingung fällt also weg. Verbraucher sind `ChurinMNK` (drei Stellen) und `ChurinBRD` (vier); die Reborn-Rotationen nutzen `CanEarlyWeave` nicht.
-
-**Auflösung:** Ersetzung durch `IsLastActionGCD()` beziehungsweise durch eine gleichwertige Prüfung für `HasWeaved()`. Für die beiden Churin-Rotationen ist die Absicht des fremden Autors zu berücksichtigen, weil die Behebung deren Weave-Zeitpunkte tatsächlich verschiebt.
-
 ### Die Beiruta-Rotationen prüfen den falschen Holmgang-Status · N
 
 `BeirutaAST.cs:387`, `BeirutaSCH.cs:1102` und `:1118` sowie `BeirutaWHM.cs:236` prüfen `StatusID.Holmgang` (88). Status 88 ist laut `Status.resx` „Unable to move until effect fades" — der Bewegungs-Debuff, den Holmgang auf dem **Ziel** des Kriegers hinterlässt. Der Schutzstatus auf dem Krieger selbst ist Status 409 („Most attacks cannot reduce your HP to less than 1"), im Code als `Holmgang_409` geführt und an allen zentralen Stellen richtig verwendet.
@@ -45,6 +31,16 @@ Fünf Fundstellen, alle aus Upstream übernommen und dort unverändert vorhanden
 **Auflösung:** `Holmgang_409` statt `Holmgang`, oder besser der Verweis auf `StatusHelper.NoNeedHealingStatus`, damit die Fundstellen nicht erneut hinter der Statusliste zurückbleiben. Fremde Rotation, deshalb mit derselben Zurückhaltung zu behandeln wie die übrigen Upstream-Befunde: Adressat ist der Upstream-Autor.
 
 ## Technische Schuld
+
+### `CanEarlyWeave` steht auf dem beobachteten statt auf dem geschriebenen Verhalten · N, R
+
+`CanEarlyWeave` wurde in `0246bea5` als `(!HasWeaved() || WeaponRemain > LateWeaveWindow) && CanWeave` eingeführt, im selben Commit wie ein `HasWeaved()`, das nicht `false` liefern konnte. Die erste Hälfte der Disjunktion hat deshalb nie beigetragen; sämtliche Verbraucher — alle in `ExtraRotations` — sind gegen die zweite Hälfte allein geschrieben und eingestellt worden.
+
+`HasWeaved()` ist behoben (A30). Die Disjunktion mitzuwecken hätte aber keine Absicht wiederhergestellt, sondern das Verhalten verschoben: Sie macht `CanEarlyWeave` auch im späten Fenster wahr, sobald noch nichts geweavt wurde, und `ChurinMNK.TryUseRiddleOfFire` (`ChurinMNK.cs:804`) liest `CanEarlyWeave` **ausschließend** gegen `CanLateWeave`. Im Einzel-Weave-Fall — spätes Fenster, nichts geweavt — fiele Riddle of Fire damit ganz aus. `ChurinBRD` liest `CanEarlyWeave` an drei Stellen einschließend (`:698`, `:810`, `:837`), davon einmal als benutzergewählte Zeitpunktoption `WandererWeave.Early`, deren Bedeutung sich mit der Ausweitung verwischt.
+
+**Kosten des Kompromisses:** `CanEarlyWeave` heißt jetzt, was es tut — „erste Hälfte der Wiederholzeit" —, und ist damit exakt das Komplement von `CanLateWeave`. Die Frage, ob der ursprüngliche Autor eine Disjunktion oder eine Konjunktion (`!HasWeaved() && WeaponRemain > LateWeaveWindow`) meinte, bleibt offen; beide Lesarten hätten je eigene Verschiebungen in den beiden fremden Rotationen zur Folge. Die Konjunktion erzeugt zusätzlich eine Lücke: Ein zweiter Weave in der frühen Hälfte wäre dann weder früh noch spät.
+
+**Auflösungsbedingung:** Entscheidbar nur über die Absicht der beiden fremden Autoren oder über Laufzeitbeobachtung der Weave-Zeitpunkte in ChurinMNK und ChurinBRD. Statische Prüfung reicht nicht aus, und ohne Beleg gilt die Regel, das bisherige Standardverhalten beizubehalten.
 
 ### Doppelte Zustandswahl in den Zustandskommandos · N
 

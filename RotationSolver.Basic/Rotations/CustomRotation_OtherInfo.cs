@@ -1399,9 +1399,24 @@ public partial class CustomRotation
 	public static bool CanLateWeave => WeaponRemain <= LateWeaveWindow && CanWeave;
 
 	/// <summary>
-	/// Indicates whether the player can currently execute an early weave.
+	/// Indicates whether the player can currently execute an early weave, i.e. whether the first
+	/// half of the recast is still running. Deliberately the complement of <see cref="CanLateWeave"/>.
 	/// </summary>
-	public static bool CanEarlyWeave => (!HasWeaved() || WeaponRemain > LateWeaveWindow) && CanWeave;
+	/// <remarks>
+	/// This was written as <c>(!HasWeaved() || WeaponRemain &gt; LateWeaveWindow) &amp;&amp; CanWeave</c>
+	/// in the commit that introduced it, together with a HasWeaved that could not return false (see
+	/// there). The first half of the disjunction has therefore never contributed, and every consumer
+	/// - all of them in ExtraRotations - was written and tuned against the second half alone.
+	///
+	/// Repairing HasWeaved alone would have woken that half rather than restoring an intent: it
+	/// widens CanEarlyWeave into the late window whenever nothing has been weaved yet, and
+	/// ChurinMNK.TryUseRiddleOfFire reads CanEarlyWeave as an exclusion against CanLateWeave. In the
+	/// single-weave case - late window, nothing weaved - Riddle of Fire would then be skipped
+	/// entirely. Whether the disjunction or a conjunction was meant is not decidable from this tree,
+	/// and neither reading is verifiable without playing the two affected rotations, so the
+	/// established behaviour stands and the question is recorded in TODO.md.
+	/// </remarks>
+	public static bool CanEarlyWeave => WeaponRemain > LateWeaveWindow && CanWeave;
 
 	/// <summary>
 	/// Safely verifies that the player is in the middle of a GCD and has enough time to weave an oGCD.
@@ -1840,13 +1855,25 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
-	/// Have you already weaved an oGCD.
+	/// Have you already weaved an oGCD since the last GCD.
 	/// </summary>
+	/// <remarks>
+	/// The summary above has always stated the intent; the body did not carry it out. It read
+	/// <c>IsLastAction() == IsLastAbility()</c>, and both are <c>params ActionID[]</c> overloads:
+	/// called with no arguments they search an empty list and return false, so the comparison was
+	/// <c>false == false</c> and the method unconditionally true. IActionHelper.IsLastActionAbility,
+	/// the helper for exactly this question, was added in the same commit and was not used.
+	///
+	/// No caller remains in this tree - see <see cref="CanEarlyWeave"/> for why the one that existed
+	/// no longer reads it - but the method is public surface for derived rotations, and a predicate
+	/// that cannot return false is worse there than none at all.
+	/// </remarks>
 	public static bool HasWeaved()
 	{
-		// Returns true if the last action and last ability are the same (i.e., an oGCD was weaved).
-		// Returns false otherwise.
-		return IsLastAction() == IsLastAbility();
+		// DataCenter.ResetAllRecords sets LastAction, LastGCD and LastAbility all to None, so the
+		// plain comparison also holds while nothing has been used at all. Nothing is weaved then,
+		// hence the explicit guard here rather than in the symmetric IActionHelper pair.
+		return DataCenter.LastAction != ActionID.None && IActionHelper.IsLastActionAbility();
 	}
 
 	/// <summary>

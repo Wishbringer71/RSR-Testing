@@ -128,7 +128,7 @@ public sealed class DRG_Reborn : DragoonRotation
 	#region oGCD Logic
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
 	{
-		if (IsLastAction() == IsLastGCD() && (StardiverMoving || (!StardiverMoving && !IsMoving)))
+		if (IActionHelper.IsLastActionGCD() && (StardiverMoving || (!StardiverMoving && !IsMoving)))
 		{
 			if (StardiverPvE.CanUse(out act))
 			{

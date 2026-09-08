@@ -78,3 +78,24 @@ legitimate — but it is a short list, and one side is likely to hold the wrong 
 It found its anchor case on the first run, and a second class that had nothing to do with healing:
 `IsConditionCannotTarget()` is read `return null` in seven places where the three neighbouring
 correct sites use `continue`. See `TODO.md`.
+
+## scan9.py — bool params-predicates called with an empty argument list
+
+A method declared `bool Name(params T[] xs)` is callable as `Name()`. C# passes an empty array, and a
+predicate that answers "is any of xs the case" then answers `false` for every game state. Nothing
+fails: the compiler is content, and the call site still reads as if it asked a question.
+
+The anchor case is `CustomRotation.HasWeaved()`, which read `IsLastAction() == IsLastAbility()` —
+`false == false`, so unconditionally true. Its only consumer,
+`CanEarlyWeave => (!HasWeaved() || WeaponRemain > LateWeaveWindow) && CanWeave`, therefore collapsed
+to its second half and lost the "nothing weaved yet" condition entirely. `IsLastActionAbility()`, the
+helper meant for exactly this, was added in the same commit (`0246bea5`) and was not used — Ignorant
+Surgery in Parnas' sense, not an assumption that aged out.
+
+The scan reports a call with an empty argument list only when the name has no genuine zero-argument
+overload, since C# would bind to that one instead. Receivers are not resolved, so an unrelated type
+declaring the same name can pull in a false positive; the list is short enough to read.
+
+Verified against a constructed defect rather than trusted on a null result: run over the pre-fix tree
+it reports both halves of the `HasWeaved` line, and over the fixed tree it reports nothing, with 18
+params-only predicates in scope either way.

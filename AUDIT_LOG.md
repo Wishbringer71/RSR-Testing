@@ -584,6 +584,25 @@ Mit der Umstellung wurde außerdem möglich, was drei Runden lang zurückgestell
 
 **Erreichter Prüfgrad:** statische Selbstprüfung, Fallmatrizen je Änderung, drei Code-Reviews mit eigenem Kontext, CI-Kompilierung. Keine Laufzeitbeobachtung, kein menschliches Vier-Augen-Prinzip. Dass die neuen Schwellen im Spiel besser spielen, ist **nicht** belegt; belegt ist, dass die alte Konstruktion einen geschützten Tank als einzigen Verletzten gar nicht erreichte.
 
+
+### A30 · Einzelabarbeitung: argumentlose `params`-Prädikate (08.09.2026)
+
+**Anlass:** Fortsetzung des Auftrags, jeden verbliebenen Punkt einzeln im vollständigen Loop zu prüfen, umzusetzen, zu auditieren und einem Code-Review zu unterziehen. Punkt: die fünf Fundstellen `IsLastAction() == IsLastGCD()` beziehungsweise `== IsLastAbility()`.
+
+**Research am Artefakt.** `IsLastAction`, `IsLastGCD` und `IsLastAbility` sind `params ActionID[]`-Überladungen; ohne Argument durchsucht `IsActionID` eine leere Liste und liefert `false`. Der Vergleich `false == false` ist konstant wahr. Die gemeinte Prüfung liegt als `IActionHelper.IsLastActionGCD()` vor und wird in `CustomRotation_Ability.cs:688`, `697`, `705` korrekt verwendet.
+
+**Entstehungsrichtung.** `git log -S` weist `HasWeaved()`, `CanEarlyWeave` **und** `IActionHelper.IsLastActionAbility()` demselben Commit zu: `0246bea5` (25.05.2026). Das passende Mittel lag also im selben Commit und wurde nicht benutzt — **Ignorant Surgery** nach Parnas, nicht Lack of Movement. Kein späterer Eingriff hat eine Prämisse gebrochen; die Stelle war von Anfang an inkonsistent zur eigenen Entwurfsabsicht, die der Kommentar darüber wörtlich ausschreibt.
+
+**Umgesetzt.** Vier Rotationsstellen auf `IActionHelper.IsLastActionGCD()` umgestellt (`DRG_Reborn.cs:131`, `WHM_Reborn.cs:156` zweimal, `BeirutaWHM.cs:401-402` zweimal); dort ist der Ausdruck selbst der Befund, und die Behebung tut, was die Zeile sagt. `HasWeaved()` auf `IActionHelper.IsLastActionAbility()` umgestellt, mit einem Zusatz, den die Kausalitätsprüfung erbrachte: `ResetAllRecords` setzt `LastAction`, `LastGCD` und `LastAbility` gemeinsam auf `None`, weshalb die nackte Gleichheit auch dann hält, wenn überhaupt nichts benutzt wurde. Der Nullwert-Ausschluss steht in `HasWeaved()` statt im Helferpaar, weil dessen Symmetrie und dessen fünf bestehende Verwender sonst mit betroffen wären.
+
+**Der Code-Review widerlegte die naheliegende Vervollständigung.** `CanEarlyWeave => (!HasWeaved() || WeaponRemain > LateWeaveWindow) && CanWeave` sieht nach der Behebung von `HasWeaved()` wie die zweite Hälfte derselben Reparatur aus. Die Wirkungsanalyse zeigt das Gegenteil: Die Disjunktion **weitet** `CanEarlyWeave` ins späte Fenster aus, sobald noch nichts geweavt wurde, und `ChurinMNK.TryUseRiddleOfFire` (`:804`) liest `CanEarlyWeave` ausschließend — `if (!IsEnabled || CanEarlyWeave || !CanLateWeave) return false;`. Solange `HasWeaved()` konstant wahr war, waren früh und spät exakte Komplemente und die Zeile bedeutete „nur im späten Slot"; mit geweckter Disjunktion fiele Riddle of Fire im Einzel-Weave-Fall vollständig aus. `ChurinBRD` liest dieselbe Eigenschaft dreimal einschließend, einmal als benutzergewählte Zeitpunktoption `WandererWeave.Early`, deren Bedeutung die Ausweitung verwischt.
+
+`CanEarlyWeave` steht deshalb jetzt auf `WeaponRemain > LateWeaveWindow && CanWeave` — dem Verhalten, gegen das jeder Verbraucher geschrieben wurde —, und die Frage Disjunktion oder Konjunktion ist als technische Schuld erfasst. Das ist die Regel für Verhaltensänderungen ohne Nachweismöglichkeit, angewandt auf den Fall, in dem sie unbequem ist: Die Behebung sah vollständiger aus als das, was sich belegen ließ.
+
+**Prüfmittel.** `scan9.py` erfasst die Defektklasse: bool-Prädikate mit `params`-Feld, die mit leerer Argumentliste gerufen werden, ausgenommen Namen mit echter parameterloser Überladung, auf die C# stattdessen bindet. Gegen den Vor-Zustand des Baums gelaufen meldet es beide Hälften der `HasWeaved`-Zeile, gegen den Nach-Zustand nichts, bei 18 `params`-Prädikaten im Suchraum — der Nullbefund ist damit von einem stillen Fehlschlag unterscheidbar. Repo-weit gibt es keine weitere Fundstelle: Einzelfall in der Ausprägung, Defektklasse in der Wiederholbarkeit, und das Skript adressiert die zweite.
+
+**Erreichter Prüfgrad:** statische Selbstprüfung, Prüfskript mit Selbsttest und Gegenprobe am konstruierten Defekt, Code-Review mit eigenem Kontext, CI-Kompilierung. Keine Laufzeitbeobachtung. Dass die vier Rotationsstellen im Spiel besser weaven, ist **nicht** belegt; belegt ist, dass die Einschränkung, die sie ausschreiben, bisher nicht existierte.
+
 ---
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
