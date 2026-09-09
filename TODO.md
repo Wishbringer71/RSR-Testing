@@ -256,6 +256,18 @@ Die Kostenseite bliebe dagegen bestehen: Ein Ringpuffer über alle Gruppenmitgli
 
 ## Offene Arbeit
 
+### DRK: Rückhaltung von The Blackest Night während der Betäubungsphase — Klärung offen · N
+
+Vorgabe des Auftraggebers: The Blackest Night soll auch dann nicht kommen, „wenn der WHM seine drei Stuns noch nicht abgearbeitet hat", und erst „nach Reflexion und Abtausch". Der Gedanke ist mechanisch stimmig — eine Betäubung hält den Schadensstrom vollständig an, die Barriere verfällt dann ungenutzt.
+
+**Die Messgrößen liegen vor**, aus der Umsetzung von Konzept 08: `SurveyStuns(radius, out allStunned, out headroom)` (`CustomRotation_OtherInfo.cs:531`) meldet, ob alle Gegner im Radius betäubt sind und ob überhaupt noch einer betäubbar ist; `StatusHelper.StunStatus` und `StunResistanceStatus` (39, „Immune to stun effects") tragen die Ids. `WHM_Reborn.cs:498` nutzt beides bereits für die Streckung von Heiliger. Die Regel wäre damit zwei Zeilen im Pull-Zweig.
+
+**Drei Fragen sind vor der Umsetzung zu klären:**
+
+1. **Welche Aktionen sind „Reflexion" und „Abtausch"?** Die Erhebung über alle PvE-Aktionen mit Betäubungswirkung ergibt für den Weißmagier ausschließlich Heiliger (139) und Heiliger III (25860); Occult-seitig kommen Occult Falcon (41601), Mineuchi (41603) und Heavenly Judge (6871) in Frage. Keine davon trägt einen dieser deutschen Namen erkennbar. Ohne belegte Zuordnung wird nichts gebaut — die Projektregel verlangt den Abgleich deutscher und englischer Namen.
+2. **„Während betäubt" oder „solange noch betäubbar"?** Nur das Erste ist eine Tatsache (`allStunned`); das Zweite (`headroom`) ist eine Prognose über das Verhalten eines anderen Spielers und würde die Fähigkeit über den ganzen frühen Pull sperren.
+3. **Ist der Weißmagier RSR-gesteuert?** Die Streckung von Heiliger ist eine Regel dieses Plugins. Bei einem fremden Spieler oder einem Duty-Support-NPC greift sie nicht, und die Betäubungslage ist dann nur zu beobachten, nicht vorherzusagen.
+
 ### Audit + Code-Review der gesamten Codebasis
 
 Umfang: `RotationSolver.Basic` (48k Zeilen) · RebornRotations (21k) · ExtraRotations (15k) · Updaters (4k) · UI (11k) · Commands/IPC/Data (3k). Der ganze Baum, Upstream-Code eingeschlossen. Phasen 1 bis 4 sind abgeschlossen (AUDIT_LOG A8, A10).
