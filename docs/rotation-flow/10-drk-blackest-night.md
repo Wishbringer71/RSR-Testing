@@ -60,6 +60,46 @@ Shadowed Vigil (−40 %) wäre der Aufschlag entsprechend größer. Die Reihenfo
 also gegen die Bedingung, unter der die Fähigkeit sich bezahlt macht. Der Tank-Haltung ist das
 nicht anzulasten: Grit erhöht ausschließlich die Feindseligkeit und mindert keinen Schaden.
 
+### Warum „nicht zusammen mit anderen Verteidigungen" die falsche Regel wäre
+
+Der naheliegende Schluss aus der Schwelle oben lautet: The Blackest Night nur wirken, wenn keine
+andere Barriere und keine Minderung läuft, damit die Barriere sicher aufgezehrt wird. Der Schluss
+trägt nicht, und zwar aus zwei verschiedenen Gründen für die beiden Hälften.
+
+**Andere Barrieren sind kein Hindernis.** Die Verbrauchsreihenfolge des Spiels führt The Blackest
+Night auf Rang 3, Eukrasian Diagnosis auf 4 und Divine Benison auf 12 (A36, Spielerdokumentation).
+Ein Heilerschild wird also **nach** der eigenen Barriere aufgezehrt und verzögert deren Verbrauch
+nicht. Genau diese Frage ist in A36 bereits entschieden worden — mit dem Ergebnis, dass ein
+zusätzlicher Schild auf einem Träger von The Blackest Night dessen Auslöser nicht kostet.
+
+**Minderungen verzögern den Verbrauch, aber nur unterhalb der Busterschwelle.** Bei einer
+Gesamtminderung *m* wird die Barriere vollständig aufgezehrt, sobald der Einschlag *b* — gemessen
+in Prozent der maximalen Gesundheit — die Bedingung `b · (1 − m) ≥ 25 %` erfüllt:
+
+| laufende Minderung | *m* | nötiger Einschlag *b* |
+|---|---|---|
+| keine | 0 % | 25 % |
+| Oblation | 10 % | 27,8 % |
+| Rampart | 20 % | 31,3 % |
+| Shadow Wall | 30 % | 35,7 % |
+| Shadowed Vigil | 40 % | 41,7 % |
+| Shadow Wall + Rampart | 44 % | 44,6 % |
+
+Ein Tankbuster liegt regelmäßig darüber — *als Inferenz gekennzeichnet*, denn eine belastbare Quelle
+für Busterschaden in Prozent der Tankgesundheit liegt hier nicht vor. Belegt ist die Struktur der
+Rechnung: Gerade in der Lage, für die die Fähigkeit gedacht ist, kostet die gleichzeitige Minderung
+den Auslöser **nicht**. Unterhalb dieser Schwelle bleibt die Barriere unverbraucht — aber dort war
+schon der Einsatz selbst falsch, unabhängig von den anderen Fähigkeiten.
+
+Die Regel „nur allein wirken" wäre damit ein Surrogat, das die falsche Größe misst. Sie würde die
+Fähigkeit ausgerechnet dann unterdrücken, wenn Rampart (20 s Dauer) oder Shadow Wall (15 s) noch
+laufen — Zustände, die im Kampf über weite Strecken zutreffen — und tauschte im Ernstfall Überleben
+gegen 600 Potenz aus Dark Arts. Das ist dieselbe Fehlerform wie C18: eine Aufhebungsregel, die für
+eine Auslöserklasse hergeleitet und auf eine andere übertragen wird.
+
+**Was von dem Gedanken bleibt**, ist die Schadenserwartung, nicht die Anwesenheit anderer Buffs —
+und genau darauf stellt die Regel unten ab.
+
 ### Wo die Fähigkeit heute gezogen wird
 
 Drei Wege, alle in `DRK_Reborn.cs`:
@@ -170,6 +210,13 @@ MP-Vorrat bliebe das beobachtete Verhalten unverändert.
 **Eine Sperre, solange Dark Arts anliegt.** Naheliegend, weil ein zweiter Auslöser nicht stapelt.
 Verworfen: Die Barriere selbst bleibt auch dann wertvoll, und die Sperre griffe ausgerechnet in der
 Lage, in der der Tank Schutz braucht. Der verlorene Auslöser ist der kleinere Schaden.
+
+**Eine Sperre, solange eine andere Barriere oder Minderung läuft.** Vom Auftraggeber vorgeschlagen,
+begründet abgelehnt — siehe „Warum ‚nicht zusammen mit anderen Verteidigungen' die falsche Regel
+wäre" oben. Kurz: Andere Barrieren verzögern nichts, weil The Blackest Night in der
+Verbrauchsreihenfolge vor ihnen liegt; Minderungen heben die nötige Einschlagsgröße, aber ein
+Tankbuster überschreitet auch die angehobene Schwelle, und unterhalb davon ist bereits der Einsatz
+selbst falsch. Als vierte Stufe nachrüstbar, falls eine Beobachtung sie doch stützt.
 
 **Nullvariante.** Lässt eine im Spiel beobachtete Fehlausgabe stehen und die Option `BlackLantern`
 wirkungslos.
