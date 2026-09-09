@@ -25,30 +25,6 @@ Nicht behoben, weil die Absicht dieser fremden Rotation ohne ihren Autor nicht b
 
 **Empfehlung: liegen lassen.** Alle vier verbliebenen Fundstellen liegen in PvP oder Bozja, also außerhalb des Nutzungsprofils, und jede verlangt eine Richtungsentscheidung, die eine Beobachtung im jeweiligen Inhalt voraussetzt. Die Klasse ist vollständig erhoben und durch `scan11.py` gegen Rückfall gesichert — das ist der Zweck der Erfassung, die Bearbeitung ist es hier nicht.
 
-### DRK: Der Blackest-Night-Party-Zweig fragt seine eigene Option nicht ab · N, U
-
-`DRK_Reborn.cs:128` legt The Blackest Night auf das Party-Mitglied mit den niedrigsten HP, sobald dessen Gesundheit unter `BlackLanternRatio` (Standard 50 %) liegt. Die Option, die das steuern soll — „Use The Blackest Night on lowest HP party member during AOE scenarios", `BlackLantern`, Standard **aus** —, wird in der Bedingung nicht geprüft. Sie ist im ganzen Baum nur deklariert (`:18`) und als `Parent` des Schwellwerts genannt (`:21`); gelesen wird sie nirgends.
-
-**Belege für die Entwurfsabsicht:** Die Nachbarzeile `:135` führt dieselbe Konstruktion für Oblation **mit** `OblationLantern &&`. `ChurinDRK.cs:173` führt denselben TBN-Zweig **mit** `BlackLantern &&`. Der Optionstext selbst verspricht Schaltbarkeit.
-
-**Wirkung:** Der Zweig läuft, obwohl der Nutzer ihn ausgeschaltet gelassen hat. Verschärfend: Wegen `Parent = nameof(BlackLantern)` blendet die Oberfläche den Schwellwert aus, solange der Schalter aus ist — die einzige Stellschraube des laufenden Zweigs ist damit unsichtbar. Kosten je Auslösung: 3000 MP für eine Barriere von 25 % der maximalen Gesundheit, die bei mäßigem Flächenschaden nicht aufgezehrt wird und dann keinen Dark-Arts-Auslöser bringt.
-
-**Herkunft:** Upstream-Code, vom Fork unverändert (`git diff upstream/main` berührt diese Zeile nicht). Fehlende Verdrahtung, kein toter Code — das Muster von *Ignorant Surgery*.
-
-**Empfehlung: `BlackLantern &&` in die Bedingung aufnehmen.** Einzeiliger Eingriff, die Absicht ist dreifach belegt, und das Ergebnis stellt den Zustand her, den die Oberfläche anzeigt. Betrifft Gruppe U als eine Zeile Abweichung.
-
-### DRK: The Blackest Night hängt am groben Verteidigungs-Trigger · N
-
-`DRK_Reborn.cs:181` zieht TBN im Selbstschutzpfad **ohne eigene Bedingung** — zweite Priorität nach Oblation, noch vor Dark Mind, Shadow Wall und Rampart. Ausgelöst wird der Pfad von `AutoStatus.DefenseSingle`, und dessen Tank-Zweig (`StateUpdater.cs:232-276`) genügt schon eine der folgenden Lagen:
-
-- **ab zwei Gegnern:** `tarOnMeCount >= AutoDefenseNumber` (Standard **2**) in ≤ 3 y, die den Spieler anvisieren, mehr als 30 % aller Gegner in Nahreichweite, mindestens einer hat angegriffen — die zusätzliche Gesundheitsbedingung `HealthForAutoDefense` steht per Vorgabe auf **1 = 100 %** (`Configs.cs:764`) und ist damit im Auslieferungszustand immer erfüllt;
-- **ein einziger castender Gegner:** `IsHostileCastingToTank`. `IsHostileCastingTank` (`DataCenter.cs:2441`) erkennt einen Tankbuster an der gelernten Liste **oder** — als Fallback — daran, dass der Gegner auf sein eigenes Ziel castet. Für einen Tank, der die Gruppe hält, trifft der Fallback auf jeden nicht unterbrechbaren Cast von mehr als einem GCD Länge zu;
-- `BMRTankbusterImminent` aus der Timeline.
-
-**Wirkung, vom Auftraggeber im Spiel beobachtet:** TBN wird bei wenigen Gegnern gezogen, und die Barriere wird nicht aufgezehrt. Das ist der teure Fall: 3000 MP, und der Gegenwert — Dark Arts, also ein kostenloses Edge/Flood — entsteht ausschließlich beim vollständigen Verbrauch der Barriere. Die übrigen Aktionen desselben Pfades (Rampart, Dark Mind, Reprisal) kosten kein MP und sind an diesem Trigger unbedenklich; TBN ist die einzige mit einer Verbrauchsbedingung.
-
-**Auflösungsbedingung / Optionen:** Der Trigger ist zentral und bedient alle Tanks — dort einzugreifen hätte den Blast Radius, den A9 schon einmal gezeigt hat. Die Behebung gehört in die Rotation: TBN an eine Lage binden, die den Verbrauch wahrscheinlich macht (vorhergesagter Tankbuster über `BMRTankbusterImminent`, gelernter Tankbuster über die Liste statt des Fallbacks, oder eine Gesundheitsschwelle), und den generischen Zweig darunter als Rückfall belassen. **Empfehlung: hinter eine Rotationsoption mit Standard = heutiges Verhalten**, weil der Nutzen für andere Spieler eine Annahme bleibt — für den Auftraggeber liegt die Beobachtung dagegen vor.
-
 ### `HasSurvivingShield` misst die **kürzeste** Schildrestzeit, nicht die längste · N, R
 
 `StatusHelper.cs:942`: `GetObjectShield() > 0 && !WillStatusEnd(horizon, false, ShieldStatus)`. `WillStatusEnd` stützt sich auf `StatusTime`, und das liefert das **Minimum** über alle vorhandenen gelisteten Status (`StatusHelper.cs:990-1011`). Beantwortet wird damit „laufen **alle** Barrieren noch?", während der Doku-Kommentar derselben Methode „has an active shield that will still be up" sagt — Singular.
@@ -207,6 +183,16 @@ Dem steht als Ertrag eine Nutzeroption gegenüber, deren Wirkung unbelegt ist un
 **Auflösungsbedingung:** Der naheliegende Weg trägt nicht — der Standard-Target von DalamudPackager reicht `Exclude` nicht durch und läuft nur, solange keine eigene `DalamudPackager.targets` im Projektverzeichnis liegt; diese müsste den vollständigen Task-Aufruf samt aller Manifest-Felder nachbauen. `Exclude` vergleicht exakt über `List.Contains` (`DalamudPackager.cs:187`), kennt also keine Muster, und das NuGet-Paket trägt die Version im Dateinamen. Der Build-Workflow kompiliert nur und prüft das Paket nicht. Aufgreifen erst, wenn der Veröffentlichungspfad prüfbar ist. Geprüft: die XML-Dokumentation wird zur Laufzeit nicht gelesen.
 
 **Empfehlung: nicht aufgreifen.** Der Auftraggeber hat die Spielbarkeit des Release-ZIPs zur Anforderung gemacht. Ein Eingriff in den Verpackungspfad ist genau die Klasse von Änderung, deren Ergebnis erst am fertigen Release sichtbar wird — und dieser Pfad läuft nur auf einen Tag, wird von keiner Prüfung abgedeckt und weicht dann zusätzlich vom Upstream ab. 3,5 MB Download stehen gegen das Risiko, ein nicht ladbares Paket zu bauen.
+
+### DRK: Die Zeitpunktwahl für The Blackest Night steht auf dem alten Verhalten · N, U
+
+`BlackestNightUsage` (`DRK_Reborn.cs:35`) bietet drei Stufen für den Selbstschutz-Zweig: wie bisher, nur bei erkanntem oder vorhergesagtem Tankbuster, oder zusätzlich unterhalb einer Gesundheitsschwelle. Voreingestellt ist **die erste**, also das Verhalten, das der Auftraggeber beanstandet hat (A44, Konzept `docs/rotation-flow/10-drk-blackest-night.md`).
+
+**Kosten des Kompromisses:** Wer nichts umstellt, behält die Fehlausgabe — 3000 MP für eine Barriere, die bei mäßigem Schaden nicht aufgezehrt wird und deshalb kein Dark Arts auslöst. Für den Auftraggeber ist das mit einem Klick erledigt; für andere Nutzer des Forks bleibt es der Standard.
+
+**Warum trotzdem so:** Die Beobachtung liegt für ein Nutzungsprofil vor, nicht allgemein. Ob `TankbusterOnly` in Inhalten mit vielen kleinen Einschlägen besser abschneidet, ist ohne Beobachtung nicht zu belegen, und ein geänderter Standard wäre eine Verhaltensänderung ohne Nachweis für alle.
+
+**Auflösungsbedingung:** eine Spielbeobachtung über mehrere Kämpfe — wird die Barriere unter `TankbusterOnly` regelmäßig aufgezehrt und fehlt sie nie dort, wo sie gebraucht wurde, ist der Standard umzustellen. Bis dahin bleibt die Voreinstellung konservativ.
 
 ### PR-Prüfung folgt dem Staging-Kanal von Dalamud · U
 

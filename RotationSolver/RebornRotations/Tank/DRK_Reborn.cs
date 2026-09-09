@@ -31,6 +31,25 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	[RotationConfig(CombatType.PvE, Name = "Target health threshold needed to use Oblation with above option", Parent = nameof(OblationLantern))]
 	private float OblationLanternRatio { get; set; } = 0.5f;
 
+	[RotationConfig(CombatType.PvE, Name = "When to use The Blackest Night on yourself")]
+	public BlackestNightStrategy BlackestNightUsage { get; set; } = BlackestNightStrategy.WheneverDefensesOpen;
+
+	public enum BlackestNightStrategy : byte
+	{
+		[Description("Whenever single-target defences open")]
+		WheneverDefensesOpen,
+
+		[Description("Only for a detected or predicted tankbuster")]
+		TankbusterOnly,
+
+		[Description("Tankbuster, or below the health threshold below")]
+		TankbusterOrLowHealth,
+	}
+
+	[Range(0, 1, ConfigUnitType.Percent)]
+	[RotationConfig(CombatType.PvE, Name = "Health threshold for the Blackest Night option above")]
+	private float BlackestNightHealthRatio { get; set; } = 0.6f;
+
 	[RotationConfig(CombatType.PvE, Name = "Opener action")]
 	public OpenerActionStrategy OpenerActionUsage { get; set; } = OpenerActionStrategy.Unmend;
 
@@ -125,7 +144,11 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	[RotationDesc(ActionID.DarkMissionaryPvE, ActionID.ReprisalPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		if (!InTwoMIsBurst && TheBlackestNightPvE.CanUse(out act, targetOverride: TargetType.LowHP) && !TheBlackestNightPvE.Target.Target.HasStatus(false, StatusID.Transcendent) && TheBlackestNightPvE.Target.Target.GetHealthRatio() <= BlackLanternRatio)
+		// BlackLantern was declared and named as the threshold's parent but never read, so this
+		// branch ran regardless of the switch - and the UI hides the threshold while the switch is
+		// off, leaving the only adjustment invisible. The Oblation line below checks its own option,
+		// and ChurinDRK checks this one on the same branch.
+		if (BlackLantern && !InTwoMIsBurst && TheBlackestNightPvE.CanUse(out act, targetOverride: TargetType.LowHP) && !TheBlackestNightPvE.Target.Target.HasStatus(false, StatusID.Transcendent) && TheBlackestNightPvE.Target.Target.GetHealthRatio() <= BlackLanternRatio)
 		{
 			return true;
 		}
@@ -166,6 +189,23 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		return base.DefenseAreaAbility(nextGCD, out act);
 	}
 
+	/// <summary>
+	/// Whether the self-cast of The Blackest Night is wanted in the current situation. See
+	/// docs/rotation-flow/10-drk-blackest-night.md: the barrier repays its 3000 MP as Dark Arts only
+	/// when it is absorbed in full, which takes 25% of maximum HP in 7 seconds - roughly 3.6% per
+	/// second, and less than that once Oblation has cut the incoming damage by a tenth.
+	/// </summary>
+	private bool ShouldUseBlackestNightOnSelf()
+	{
+		return BlackestNightUsage switch
+		{
+			BlackestNightStrategy.TankbusterOnly => TankbusterOnMe,
+			BlackestNightStrategy.TankbusterOrLowHealth =>
+				TankbusterOnMe || Player?.GetHealthRatio() <= BlackestNightHealthRatio,
+			_ => true,
+		};
+	}
+
 	[RotationDesc(ActionID.OblationPvE, ActionID.TheBlackestNightPvE, ActionID.DarkMindPvE, ActionID.ShadowWallPvE, ActionID.ShadowedVigilPvE, ActionID.RampartPvE, ActionID.ReprisalPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
@@ -178,7 +218,11 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			}
 		}
 
-		if (TheBlackestNightPvE.CanUse(out act, targetOverride: TargetType.Self))
+		// The trigger that opens this path says "defending is warranted", not "damage worth 25% of
+		// maximum HP is coming" - it fires on two enemies in melee range, or on any uninterruptible
+		// cast aimed at its own target. Rampart and Reprisal cost nothing but their cooldown; this
+		// costs 3000 MP and only repays it as Dark Arts when the barrier is absorbed in full.
+		if (ShouldUseBlackestNightOnSelf() && TheBlackestNightPvE.CanUse(out act, targetOverride: TargetType.Self))
 		{
 			return true;
 		}

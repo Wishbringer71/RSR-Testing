@@ -1338,6 +1338,18 @@ public partial class CustomRotation
 		=> Service.Config.UseBmrTimeline && BMRActive && BMRRaidwideIn is > 0f and < float.MaxValue && BMRRaidwideIn <= seconds;
 
 	/// <summary>
+	/// Whether a tankbuster is aimed at the player: a lock-on VFX or a cast from the learned list
+	/// landing now, or one BMR predicts inside the mitigation window.
+	/// <para>
+	/// Deliberately not <c>IsHostileCastingToTank</c>. That one falls back to "the enemy is casting
+	/// at its own target", which for a tank holding the pull matches any uninterruptible trash cast -
+	/// harmless for a free mitigation, wrong for an action with a resource cost (AUDIT_LOG C10).
+	/// </para>
+	/// </summary>
+	public static bool TankbusterOnMe
+		=> DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterImminent;
+
+	/// <summary>
 	/// True when BMR reports a tankbuster within the specified seconds.
 	/// Always false when BMR is inactive, or when the user has UseBmrTimeline disabled.
 	/// </summary>

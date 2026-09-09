@@ -1273,6 +1273,66 @@ beobachten, ob eine Heilung auf einen beschildeten Träger ausbleibt.
 
 ---
 
+### A44 · The Blackest Night: Verdrahtung nachgeholt, Zeitpunkt wählbar gemacht (09.09.2026)
+
+**Anlass:** Frage des Auftraggebers aus dem Spiel — wann und ab wie vielen Gegnern der Dunkelritter
+The Blackest Night nutzt; die Barriere werde in diesen Lagen nie aufgezehrt. Danach der Auftrag,
+ein Konzept im Loop zu erstellen und umzusetzen. Konzept: `docs/rotation-flow/10-drk-blackest-night.md`.
+
+**Die Zahl, die die Frage beantwortet.** Aus der Aktionsbeschreibung (`ActionId.resx` 7393):
+Barriere = 25 % der maximalen Gesundheit, Dauer 7 s, Dark Arts **nur bei vollständiger Absorption**.
+Daraus folgt eine ausrüstungs- und inhaltsunabhängige Schwelle, weil beide Seiten an der maximalen
+Gesundheit hängen: aufgezehrt wird die Barriere ab **rund 3,6 % der maximalen Gesundheit pro
+Sekunde** eingehenden Schadens — gemessen **nach** allen Minderungen. Die Umrechnung auf eine
+Gegnerzahl ist danach reine Arithmetik (`n = 3,6 / x` bei *x* % je Gegner und Sekunde); der Wert
+*x* selbst ist aus dem Repository nicht zu belegen und bleibt als solcher gekennzeichnet.
+
+Belegbar ist dagegen die Richtung: Die Rotation wirkt **Oblation (−10 %) unmittelbar vor** The
+Blackest Night — Priorität 10 gegen 20 im selben Pfad —, und jede Minderung erhöht die nötige
+Gegnerzahl um denselben Anteil. Die Reihenfolge des Pfades arbeitet also gegen die Bedingung, unter
+der sich die Fähigkeit bezahlt macht. Der Tank-Haltung ist das nicht anzulasten: Grit erhöht laut
+Beschreibung ausschließlich die Feindseligkeit.
+
+**Zwei Ursachen, beide in Upstream-Code, beide behoben:**
+
+1. **`DRK_Reborn.cs:151`** legte The Blackest Night auf das Party-Mitglied mit den niedrigsten HP,
+   ohne `BlackLantern` zu lesen — die Option, die genau das schalten soll und ausgeliefert **aus**
+   ist. Sie war deklariert und als `Parent` des Schwellwerts genannt, sonst nirgends. Dreifach
+   belegte Absicht: Optionstext, die Oblation-Nachbarzeile mit `OblationLantern &&`, und
+   `ChurinDRK.cs:173` mit `BlackLantern &&` am selben Zweig. Verdrahtung nachgeholt. Verschärfend
+   war die Oberfläche: `Parent = nameof(BlackLantern)` blendet den Schwellwert aus, solange der
+   Schalter aus ist — die einzige Stellschraube des laufenden Zweigs war unsichtbar.
+2. **`DRK_Reborn.cs:225`** zog die Fähigkeit im Selbstschutzpfad ohne eigene Bedingung. Der Pfad
+   öffnet mit `AutoStatus.DefenseSingle`, und dessen Tank-Zweig genügt entweder zwei Gegner im
+   Nahbereich — die begleitende Gesundheitsbedingung steht per Vorgabe auf 100 % und schränkt nichts
+   ein — oder ein einziges `IsHostileCastingToTank`, das über den Rückfall „castet auf sein eigenes
+   Ziel" jeden nicht unterbrechbaren Trash-Cast trifft. Neue Rotationsoption `BlackestNightUsage`
+   mit drei Stufen; Voreinstellung ist das heutige Verhalten.
+
+**Die Prüfgröße ist zentral abgelegt.** `CustomRotation.TankbusterOnMe` fasst
+`IsHostileCastingTankBusterAtMe` und `BMRTankbusterImminent` zusammen und ist damit für jede
+Rotation verfügbar. Bewusst **nicht** `IsHostileCastingToTank` — dieselbe Unterscheidung, die C10
+für diese beiden Größen bereits herausgearbeitet hat.
+
+**Verworfen, mit Begründung im Konzept:** der Eingriff am zentralen Auslöser (Wirkungsbereich, C9);
+eine Messung des Schadensflusses (dieselbe Kostenrechnung, die den Messbaustein verworfen hat, und
+der Fluss der letzten Sekunden sagt nichts über die nächsten sieben); eine reine MP-Schwelle (trifft
+die falsche Größe); eine Sperre, solange Dark Arts anliegt (die Barriere bleibt wertvoll, und die
+Sperre griffe in der Lage, in der der Tank Schutz braucht); die Nullvariante.
+
+**Zwei Randbedingungen mitgeprüft.** Der Countdown-Zweig bleibt außen vor — dort gibt es keinen
+Tankbuster, eine engere Stufe würde Dark Arts für die Eröffnung verlieren. Und Rotationsoptionen
+speichern Enums als **Namen**, nicht als Ordinalzahlen (`RotationConfigBase.cs:208`); die
+Reihenfolge der Stufen ist damit frei, ihre Bezeichner sind Vertrag.
+
+**Erreichter Prüfgrad:** statische Selbstprüfung entlang der vollständigen Kette (Aktionstext →
+`AutoStatus.DefenseSingle` → Rotationszweig), Spielbeobachtung des Auftraggebers als Anlass,
+CI-Kompilierung. Nicht beobachtet: ob die engeren Stufen im Spiel besser abschneiden — deshalb
+steht die Voreinstellung auf dem alten Verhalten, und der Punkt bleibt als technische Schuld in
+`TODO.md`.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.

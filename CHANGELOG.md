@@ -36,6 +36,10 @@ so a derived rotation reading it sees different behaviour without any compile er
   missing, so paladins were treated as unprotected; the third is the success phase of Living Dead.
 - **Added** `StatusHelper.DeathTriggeredStatus` and `HealingIneffectiveStatus` as separate lists,
   plus `InDeathTriggerWindow`/`PlayerInDeathTriggerWindow`. All additive.
+- **Added** `CustomRotation.TankbusterOnMe` — a tankbuster landing on the player, either detected
+  (lock-on VFX or an action from the learned list) or predicted by BMR inside the mitigation window.
+  Additive. It deliberately excludes `IsHostileCastingToTank`, which counts any enemy casting at its
+  own target and therefore fires on ordinary trash casts for whoever holds the pull.
 
 A rotation that reads `NoNeedHealingStatus` to decide whether to skip a heal keeps working; one
 that relied on `HpRecoveryDown` or `Mounted` being in there has to name them itself now.
