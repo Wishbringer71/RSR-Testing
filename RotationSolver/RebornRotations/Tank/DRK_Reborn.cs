@@ -39,11 +39,11 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		[Description("Whenever single-target defences open")]
 		WheneverDefensesOpen,
 
-		[Description("Only for a detected or predicted tankbuster")]
-		TankbusterOnly,
+		[Description("Tankbuster, or a big pull with no other mitigation running")]
+		TankbusterOrHeavyPull,
 
-		[Description("Tankbuster, or below the health threshold below")]
-		TankbusterOrLowHealth,
+		[Description("As above, plus below the health threshold")]
+		TankbusterHeavyPullOrLowHealth,
 	}
 
 	[Range(0, 1, ConfigUnitType.Percent)]
@@ -193,15 +193,27 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	/// Whether the self-cast of The Blackest Night is wanted in the current situation. See
 	/// docs/rotation-flow/10-drk-blackest-night.md: the barrier repays its 3000 MP as Dark Arts only
 	/// when it is absorbed in full, which takes 25% of maximum HP in 7 seconds - roughly 3.6% per
-	/// second, and less than that once Oblation has cut the incoming damage by a tenth.
+	/// second, and more than that once another mitigation has cut the incoming damage.
+	/// <para>
+	/// Two situations reach that rate, and they want opposite handling. Against a tankbuster the
+	/// hit clears the threshold even under Shadow Wall, so mitigating alongside costs nothing and
+	/// stacking is right. In a wall-to-wall pull the damage is a stream, and stacking wastes
+	/// coverage that should be staggered - so there the barrier goes up only while no big
+	/// mitigation is running, the same stagger Shadow Wall and Shadowed Vigil already keep against
+	/// each other through StatusProvide.
+	/// </para>
 	/// </summary>
 	private bool ShouldUseBlackestNightOnSelf()
 	{
+		var staggeredHeavyPull = InHeavyPull && !HasMajorMitigation;
+
 		return BlackestNightUsage switch
 		{
-			BlackestNightStrategy.TankbusterOnly => TankbusterOnMe,
-			BlackestNightStrategy.TankbusterOrLowHealth =>
-				TankbusterOnMe || Player?.GetHealthRatio() <= BlackestNightHealthRatio,
+			BlackestNightStrategy.TankbusterOrHeavyPull => TankbusterOnMe || staggeredHeavyPull,
+			// Low health is an emergency, so it deliberately skips the stagger condition.
+			BlackestNightStrategy.TankbusterHeavyPullOrLowHealth =>
+				TankbusterOnMe || staggeredHeavyPull
+				|| Player?.GetHealthRatio() <= BlackestNightHealthRatio,
 			_ => true,
 		};
 	}

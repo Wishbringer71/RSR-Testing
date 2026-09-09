@@ -12,8 +12,14 @@ Zwei Eingriffe in `DRK_Reborn.cs`, beide auf Upstream-Code:
    nicht gelesen. Die Verdrahtung wird nachgeholt — eine Defektbehebung, kein Verhaltensentwurf.
 2. **Der Selbstschutz-Zweig bekommt eine Zeitpunktwahl.** Eine neue Rotationsoption
    `BlackestNightUsage` mit drei Stufen entscheidet, bei welcher Lage die Fähigkeit auf den eigenen
-   Charakter geht. Voreinstellung ist das heutige Verhalten; die engeren Stufen verlangen einen
-   erkannten oder vorhergesagten Tankbuster, wahlweise zusätzlich eine Gesundheitsschwelle.
+   Charakter geht. Voreinstellung ist das heutige Verhalten. Die engeren Stufen lassen sie in zwei
+   Lagen zu — beim erkannten oder vorhergesagten Tankbuster **ohne** weitere Bedingung, und im
+   großen Pull **nur, solange keine große Minderung läuft** —, wahlweise ergänzt um eine
+   Gesundheitsschwelle als Notfall.
+
+Die beiden Lagen verlangen entgegengesetzte Behandlung: Gegen einen Einschlag stapelt man
+Verteidigung, gegen einen Schadensstrom staffelt man sie. Das ist der Grund, warum die
+Staffelungsbedingung nur an einem der beiden Zweige hängt.
 
 Nicht angetastet bleibt der zentrale Auslöser `AutoStatus.DefenseSingle`. Er bedient alle Tanks und
 alle Verteidigungsaktionen; ein Eingriff dort hätte den Wirkungsbereich, den `AUDIT_LOG` C9 bereits
@@ -60,21 +66,19 @@ Shadowed Vigil (−40 %) wäre der Aufschlag entsprechend größer. Die Reihenfo
 also gegen die Bedingung, unter der die Fähigkeit sich bezahlt macht. Der Tank-Haltung ist das
 nicht anzulasten: Grit erhöht ausschließlich die Feindseligkeit und mindert keinen Schaden.
 
-### Warum „nicht zusammen mit anderen Verteidigungen" die falsche Regel wäre
+### Zwei Lagen, die entgegengesetzte Behandlung verlangen
 
-Der naheliegende Schluss aus der Schwelle oben lautet: The Blackest Night nur wirken, wenn keine
-andere Barriere und keine Minderung läuft, damit die Barriere sicher aufgezehrt wird. Der Schluss
-trägt nicht, und zwar aus zwei verschiedenen Gründen für die beiden Hälften.
+Die Schwelle wird auf zwei ganz verschiedenen Wegen erreicht, und was für die eine Lage richtig
+ist, ist für die andere falsch. Das ist der Kern dieses Konzepts.
 
-**Andere Barrieren sind kein Hindernis.** Die Verbrauchsreihenfolge des Spiels führt The Blackest
-Night auf Rang 3, Eukrasian Diagnosis auf 4 und Divine Benison auf 12 (A36, Spielerdokumentation).
-Ein Heilerschild wird also **nach** der eigenen Barriere aufgezehrt und verzögert deren Verbrauch
-nicht. Genau diese Frage ist in A36 bereits entschieden worden — mit dem Ergebnis, dass ein
-zusätzlicher Schild auf einem Träger von The Blackest Night dessen Auslöser nicht kostet.
+**Andere Barrieren sind in beiden Lagen kein Hindernis.** Die Verbrauchsreihenfolge des Spiels führt
+The Blackest Night auf Rang 3, Eukrasian Diagnosis auf 4 und Divine Benison auf 12 (A36,
+Spielerdokumentation). Ein Heilerschild wird **nach** der eigenen Barriere aufgezehrt und verzögert
+deren Verbrauch nicht.
 
-**Minderungen verzögern den Verbrauch, aber nur unterhalb der Busterschwelle.** Bei einer
-Gesamtminderung *m* wird die Barriere vollständig aufgezehrt, sobald der Einschlag *b* — gemessen
-in Prozent der maximalen Gesundheit — die Bedingung `b · (1 − m) ≥ 25 %` erfüllt:
+**Beim Tankbuster ist Stapeln richtig.** Bei einer Gesamtminderung *m* wird die Barriere vollständig
+aufgezehrt, sobald der Einschlag *b* — in Prozent der maximalen Gesundheit — die Bedingung
+`b · (1 − m) ≥ 25 %` erfüllt:
 
 | laufende Minderung | *m* | nötiger Einschlag *b* |
 |---|---|---|
@@ -85,20 +89,30 @@ in Prozent der maximalen Gesundheit — die Bedingung `b · (1 − m) ≥ 25 %` 
 | Shadowed Vigil | 40 % | 41,7 % |
 | Shadow Wall + Rampart | 44 % | 44,6 % |
 
-Ein Tankbuster liegt regelmäßig darüber — *als Inferenz gekennzeichnet*, denn eine belastbare Quelle
-für Busterschaden in Prozent der Tankgesundheit liegt hier nicht vor. Belegt ist die Struktur der
-Rechnung: Gerade in der Lage, für die die Fähigkeit gedacht ist, kostet die gleichzeitige Minderung
-den Auslöser **nicht**. Unterhalb dieser Schwelle bleibt die Barriere unverbraucht — aber dort war
-schon der Einsatz selbst falsch, unabhängig von den anderen Fähigkeiten.
+Ein Tankbuster liegt regelmäßig darüber — *als Inferenz gekennzeichnet*, eine belastbare Quelle für
+Busterschaden in Prozent der Tankgesundheit liegt hier nicht vor. Belegt ist die Struktur: Der
+Einschlag kommt als **ein** Paket, das die angehobene Schwelle mitnimmt. Die gleichzeitige Minderung
+kostet den Auslöser also nicht, und sie zu meiden hieße, Überleben gegen 600 Potenz aus Dark Arts zu
+tauschen.
 
-Die Regel „nur allein wirken" wäre damit ein Surrogat, das die falsche Größe misst. Sie würde die
-Fähigkeit ausgerechnet dann unterdrücken, wenn Rampart (20 s Dauer) oder Shadow Wall (15 s) noch
-laufen — Zustände, die im Kampf über weite Strecken zutreffen — und tauschte im Ernstfall Überleben
-gegen 600 Potenz aus Dark Arts. Das ist dieselbe Fehlerform wie C18: eine Aufhebungsregel, die für
-eine Auslöserklasse hergeleitet und auf eine andere übertragen wird.
+**Im Wall-to-Wall ist Staffeln richtig.** Hier kommt der Schaden nicht als Paket, sondern als
+Strom über die Dauer des Pulls. Zwei Minderungen gleichzeitig decken dann dieselben Sekunden doppelt
+ab und lassen den Rest ungedeckt; nacheinander gelegt decken sie die doppelte Zeit. Für die Barriere
+gilt zusätzlich: Läuft parallel eine große Minderung, sinkt der Strom unter die Rate, die sie in
+sieben Sekunden aufzehrt — die 3,6 % pro Sekunde werden zu 5,1 % unter Shadow Wall und zu 6 % unter
+Shadowed Vigil. Beides zeigt in dieselbe Richtung: The Blackest Night gehört in eine Lücke der
+Minderungskette, nicht in deren Mitte.
 
-**Was von dem Gedanken bleibt**, ist die Schadenserwartung, nicht die Anwesenheit anderer Buffs —
-und genau darauf stellt die Regel unten ab.
+**Das ist keine neue Konstruktion, sondern die vorhandene.** Shadow Wall und Shadowed Vigil tragen
+`StatusProvide = StatusHelper.RampartStatus` (`DarkKnightRotation.cs:238`, `:404`) und überlappen
+sich deshalb nie. The Blackest Night kann dieselbe Staffelung nicht über `StatusProvide` ausdrücken,
+weil sein eigener Status eine Barriere ist und kein Minderungsstatus — die Prüfung muss deshalb in
+der Rotation stehen. `CustomRotation.HasMajorMitigation` liest genau diese Liste.
+
+**Was das kostet, und warum es trotzdem so bleibt.** Während einer langen Minderung fällt ein
+Fenster von The Blackest Night aus; die MP fließen dann in Edge of Shadow, also in Schaden. Wer
+stattdessen die Zahl der Dark-Arts-Auslösungen maximieren wollte, müsste die Minderungskette
+auflösen — genau das Gegenteil einer streckenden Abdeckung.
 
 ### Wo die Fähigkeit heute gezogen wird
 
@@ -157,8 +171,18 @@ Der Selbstschutz-Zweig fragt `BlackestNightUsage`:
 | Stufe | Bedingung | Für wen |
 |---|---|---|
 | `WheneverDefensesOpen` (Voreinstellung) | wie bisher: keine zusätzliche Bedingung | unverändertes Verhalten für alle, die nichts umstellen |
-| `TankbusterOnly` | `IsHostileCastingTankBusterAtMe` **oder** `BMRTankbusterImminent` | wer die Fähigkeit als Tankbuster-Antwort führt |
-| `TankbusterOrLowHealth` | zusätzlich: Gesundheit ≤ `BlackestNightHealthRatio` (Vorgabe 60 %) | wer sie auch als Notschild will |
+| `TankbusterOrHeavyPull` | `TankbusterOnMe` **oder** (`InHeavyPull` **und nicht** `HasMajorMitigation`) | wer die Fähigkeit als Tankbuster-Antwort und als gestaffeltes Glied der Wall-to-Wall-Kette führt |
+| `TankbusterHeavyPullOrLowHealth` | zusätzlich: Gesundheit ≤ `BlackestNightHealthRatio` (Vorgabe 60 %) | wer sie auch als Notschild will |
+
+`InHeavyPull` misst `NumberOfHostilesInRange >= MitigationSustainHostileCount` — dieselbe Schwelle,
+mit der die Rotation schon entscheidet, ob Addle, Feint und Reprisal im Trash dauerhaft gehalten
+werden (Vorgabe 4). Damit gibt es für „genug Trash" eine Zahl im Projekt und nicht zwei, und wer sie
+verstellt, verstellt beide Regeln gemeinsam. Ob vier Gegner die Rate von 3,6 % erreichen, ist eine
+Annahme — sie folgt aus rund 0,9 % je Gegner und Sekunde und ist hier nicht belegbar.
+
+Die Staffelungsbedingung gilt **nur** für den Wall-to-Wall-Zweig. Beim Tankbuster bleibt sie außen
+vor, weil dort Stapeln richtig ist, und bei niedriger Gesundheit ebenfalls: Ein Notschild wartet
+nicht auf das Ende einer Minderung.
 
 Beide Bedingungen stehen als `TankbusterOnMe` in `CustomRotation_OtherInfo.cs` und sind damit für
 jede Rotation verfügbar, nicht nur für diese. `IsHostileCastingTankBusterAtMe` ist dort bewusst
@@ -211,12 +235,15 @@ MP-Vorrat bliebe das beobachtete Verhalten unverändert.
 Verworfen: Die Barriere selbst bleibt auch dann wertvoll, und die Sperre griffe ausgerechnet in der
 Lage, in der der Tank Schutz braucht. Der verlorene Auslöser ist der kleinere Schaden.
 
-**Eine Sperre, solange eine andere Barriere oder Minderung läuft.** Vom Auftraggeber vorgeschlagen,
-begründet abgelehnt — siehe „Warum ‚nicht zusammen mit anderen Verteidigungen' die falsche Regel
-wäre" oben. Kurz: Andere Barrieren verzögern nichts, weil The Blackest Night in der
-Verbrauchsreihenfolge vor ihnen liegt; Minderungen heben die nötige Einschlagsgröße, aber ein
-Tankbuster überschreitet auch die angehobene Schwelle, und unterhalb davon ist bereits der Einsatz
-selbst falsch. Als vierte Stufe nachrüstbar, falls eine Beobachtung sie doch stützt.
+**Eine Sperre gegen andere Barrieren.** Anders als die Minderungssperre nicht übernommen: The
+Blackest Night liegt in der Verbrauchsreihenfolge vor den Heilerschilden und wird deshalb von ihnen
+nicht verzögert (A36).
+
+**Die Staffelungsbedingung auf alle Lagen ausdehnen.** Sie gilt bewusst nur im Wall-to-Wall-Zweig.
+Auf den Tankbuster übertragen, würde sie die Fähigkeit ausgerechnet dann unterdrücken, wenn Rampart
+(20 s) oder Shadow Wall (15 s) läuft — Zustände, die über weite Strecken zutreffen —, obwohl der
+Einschlag die angehobene Schwelle mitnimmt. Das wäre C18 in neuer Gestalt: eine Aufhebungsregel, die
+für eine Auslöserklasse hergeleitet und ungeprüft auf eine andere übertragen wird.
 
 **Nullvariante.** Lässt eine im Spiel beobachtete Fehlausgabe stehen und die Option `BlackLantern`
 wirkungslos.

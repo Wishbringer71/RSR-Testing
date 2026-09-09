@@ -1333,6 +1333,49 @@ steht die Voreinstellung auf dem alten Verhalten, und der Punkt bleibt als techn
 
 ---
 
+### A45 · Wall-to-Wall ist die zweite Lage, und sie verlangt das Gegenteil (09.09.2026)
+
+**Anlass:** Einwand des Auftraggebers gegen A44 — The Blackest Night soll auch im
+Wall-to-Wall-Pull genutzt werden, dort aber allein, damit die Minderung „so effizient und lang wie
+möglich" ausfällt. Der Einwand trifft, und er deckt zwei Fehler in A44 auf.
+
+**Erster Fehler: die Stufe hätte die Lage ausgeschlossen.** `TankbusterOnly` verlangte einen
+erkannten oder vorhergesagten Tankbuster. In einem Trash-Pull gibt es keinen — die Fähigkeit wäre
+dort **nie** gekommen, obwohl gerade dort der Schadensstrom die Barriere aufzehrt. Die Stufe heißt
+jetzt `TankbusterOrHeavyPull` und lässt beide Lagen zu.
+
+**Zweiter Fehler: die pauschale Ablehnung der Staffelungsregel** (C29). Geprüft worden war sie
+gegen die Buster-Lage, wo Stapeln richtig ist; das Ergebnis wurde ungeprüft auf die Dauerschaden-Lage
+übertragen. Dort gilt das Gegenteil, aus zwei unabhängigen Gründen: Zwei Minderungen gleichzeitig
+decken dieselben Sekunden doppelt und lassen den Rest ungedeckt — nacheinander gelegt decken sie die
+doppelte Zeit —, und die parallele Minderung senkt den Strom unter die Rate, die die Barriere in
+sieben Sekunden aufzehrt (3,6 % der maximalen Gesundheit pro Sekunde ohne Minderung, 5,1 % unter
+Shadow Wall, 6,0 % unter Shadowed Vigil).
+
+**Die Konstruktion war schon da.** `ShadowWallPvE` und `ShadowedVigilPvE` tragen
+`StatusProvide = StatusHelper.RampartStatus` (`DarkKnightRotation.cs:238`, `:404`) und überlappen
+sich deshalb nie — die Staffelung ist im Projekt etabliert, The Blackest Night stand nur außerhalb.
+Es kann sie über `StatusProvide` auch nicht ausdrücken, weil sein eigener Status eine Barriere ist
+und kein Minderungsstatus. Deshalb zwei neue Prüfgrößen in `CustomRotation_OtherInfo`:
+`HasMajorMitigation` liest dieselbe `RampartStatus`-Liste, `InHeavyPull` misst
+`NumberOfHostilesInRange >= MitigationSustainHostileCount`.
+
+**Keine neue Zahl.** Die Gegnerschwelle ist die vorhandene aus der Mitigations-Sustain-Regel
+(Vorgabe 4), nicht ein zweiter Schwellwert daneben. Dass vier Gegner die Rate von 3,6 % erreichen,
+bleibt eine Annahme — sie entspricht rund 0,9 % je Gegner und Sekunde und ist hier nicht belegbar.
+
+**Grenze der Regel, benannt statt verschwiegen.** Während einer langen Minderung fällt ein Fenster
+von The Blackest Night aus; die MP fließen dann in Edge of Shadow. Wer die Zahl der
+Dark-Arts-Auslösungen maximieren wollte, müsste die Minderungskette auflösen — das Gegenteil einer
+streckenden Abdeckung. Die Staffelung gilt deshalb nur im Pull-Zweig: beim Tankbuster bleibt Stapeln
+richtig, und der Notfallzweig bei niedriger Gesundheit wartet nicht auf das Ende einer Minderung.
+
+**Erreichter Prüfgrad:** statische Prüfung, Konzept `docs/rotation-flow/10-drk-blackest-night.md`
+neu gefasst, CI-Kompilierung. Die Wirkung im Spiel ist nicht beobachtet; die Voreinstellung bleibt
+deshalb das alte Verhalten.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.
@@ -1411,3 +1454,4 @@ Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt e
 | C26 | A35: die Schild-Zurückstellung bei The Blackest Night sei zu empfehlen, weil „der Vorteil in beiden Zweigen der offenen Frage" bestehe | Die nachgeholte Recherche schließt die Frage: TBN hat Verbrauchsrang 3, Eukrasian Diagnosis 4, Divine Benison 12 — TBN wird vor jedem Heilerschild aufgezehrt, Dark Arts bleibt unberührt. Und der zurückgestellte Schild verfällt nicht, er absorbiert nach TBN; Zurückstellen spart also nichts. Der dritte, übersehene Zweig war „der Schild kostet gar nichts". Lehre: Eine offene Frage ist kein Anlass, das Ergebnis gegen sie zu immunisieren, sondern sie zu schließen — und der als gesperrt gemeldete Egress war kein Grund, die Recherche für erschöpft zu halten | A36: Regel zurückgenommen, Fall 5 auf „kein Sonderfall" gesetzt |
 | C27 | A36: Radiant Aegis sei für die TBN-Frage gegenstandslos, weil sie „ein Selbstschild des Beschwörers ist, der nie auf dem Dunkelritter liegt" | Falsch herum gedacht. Nicht Radiant Aegis wandert, sondern **The Blackest Night**: `ActionId.resx` (7393) beschreibt es als „Creates a barrier around self or **target party member**", und `DRK_Reborn.cs:128` legt es mit `targetOverride: TargetType.LowHP` auf Fremdziele. Ein Beschwörer kann also seinen eigenen Radiant Aegis tragen **und** zusätzlich TBN — der vom Job-Guide beschriebene Fall ist real, nur vom Heiler nicht beeinflussbar. Der Auftraggeber hat die ungeprüfte Prämisse benannt. Lehre: Bevor ein Fall über den Träger eines Status ausgeschlossen wird, ist die Zielmenge der Aktion an ihrer Beschreibung zu belegen, nicht aus dem Jobnamen zu schließen | A36 ergänzt; zwei Defekte daraus in TODO.md |
 | C28 | TODO-Eintrag zu den fehlenden Barrieregruppen: sechs Ids seien die „PvE-Spielerbarrieren, die vermutlich hineingehören" (`Aquaveil_3086`, `DivineCaress`, `Epicycle`, `GuardiansWill`, `HolySheltron_3026`, `ImprovisedFinish`) | Vier der sechs sind es nicht, und acht echte fehlten. Die Prüfung über die **Aktion** gleichen Namens zeigt: Aquaveil und Holy Sheltron senken in PvE nur den erlittenen Schaden, die Barriere-Ids 3086 und 3026 gehören zu ihren PvP-Formen; `Epicycle` hat nur eine PvP-Aktion, `GuardiansWill` gar keine. Nicht genannt waren dagegen `ShakeItOff` (1457/1993), `SeraphicVeil` (1917/2040/3097), `NeutralSect` (1921/3988), `TheSpire_3892` — Barrieren, die ein Heiler in fast jedem Gruppenkampf sieht. Ursache: Die Liste war nach dem Jobkürzel im Status-Scope gebildet, einem Surrogat, das PvE und PvP nicht trennt — beide Formen tragen denselben Anzeigenamen und dieselbe Wirkbeschreibung. Lehre: Wo zwei Formen einer Fähigkeit denselben Text tragen, entscheidet nicht der Status, sondern die Aktion, die ihn verleiht | `scan13.py` um die Aktionszuordnung erweitert, Eintrag neu gefasst (A41) |
+| C29 | A44 und die Antwort dazu: der Vorschlag, The Blackest Night nicht zusammen mit anderen Schilden und Minderungen zu wirken, sei „ein Surrogat, das die falsche Größe misst" — pauschal abgelehnt | Für den Tankbuster richtig, für den Wall-to-Wall-Pull falsch. Dort kommt der Schaden als **Strom**, nicht als Paket: Zwei Minderungen gleichzeitig decken dieselben Sekunden doppelt und lassen den Rest ungedeckt, und die parallele Minderung senkt den Strom unter die Rate, die die Barriere in sieben Sekunden aufzehrt (3,6 % → 5,1 % unter Shadow Wall). Die Prüfung war gegen die Buster-Lage geführt und ihr Ergebnis ungeprüft auf die Dauerschaden-Lage übertragen — dieselbe Fehlerform, die C18 für die Aufhebungsregeln festgehalten hat, diesmal in der Gegenrichtung. Der Auftraggeber hat die fehlende Lage benannt. Lehre: Bevor ein Vorschlag verworfen wird, ist zu prüfen, für welche Auslöserklasse er gilt — eine Regel kann für die eine richtig und für die andere falsch sein, und dann ist die Antwort eine Fallunterscheidung, keine Ablehnung | A45: `TankbusterOrHeavyPull` mit Staffelungsbedingung, Konzept 10 neu gefasst |

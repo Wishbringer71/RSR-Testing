@@ -186,13 +186,13 @@ Dem steht als Ertrag eine Nutzeroption gegenüber, deren Wirkung unbelegt ist un
 
 ### DRK: Die Zeitpunktwahl für The Blackest Night steht auf dem alten Verhalten · N, U
 
-`BlackestNightUsage` (`DRK_Reborn.cs:35`) bietet drei Stufen für den Selbstschutz-Zweig: wie bisher, nur bei erkanntem oder vorhergesagtem Tankbuster, oder zusätzlich unterhalb einer Gesundheitsschwelle. Voreingestellt ist **die erste**, also das Verhalten, das der Auftraggeber beanstandet hat (A44, Konzept `docs/rotation-flow/10-drk-blackest-night.md`).
+`BlackestNightUsage` (`DRK_Reborn.cs:35`) bietet drei Stufen für den Selbstschutz-Zweig: wie bisher; Tankbuster oder großer Pull ohne laufende große Minderung; dasselbe plus Gesundheitsschwelle. Voreingestellt ist **die erste**, also das Verhalten, das der Auftraggeber beanstandet hat (A44/A45, Konzept `docs/rotation-flow/10-drk-blackest-night.md`).
 
 **Kosten des Kompromisses:** Wer nichts umstellt, behält die Fehlausgabe — 3000 MP für eine Barriere, die bei mäßigem Schaden nicht aufgezehrt wird und deshalb kein Dark Arts auslöst. Für den Auftraggeber ist das mit einem Klick erledigt; für andere Nutzer des Forks bleibt es der Standard.
 
-**Warum trotzdem so:** Die Beobachtung liegt für ein Nutzungsprofil vor, nicht allgemein. Ob `TankbusterOnly` in Inhalten mit vielen kleinen Einschlägen besser abschneidet, ist ohne Beobachtung nicht zu belegen, und ein geänderter Standard wäre eine Verhaltensänderung ohne Nachweis für alle.
+**Warum trotzdem so:** Die Beobachtung liegt für ein Nutzungsprofil vor, nicht allgemein. Zwei Größen der engeren Stufen sind zudem Annahmen: dass vier Gegner die Verbrauchsrate von 3,6 % der maximalen Gesundheit pro Sekunde erreichen, und dass ein Tankbuster die unter Minderung angehobene Schwelle mitnimmt.
 
-**Auflösungsbedingung:** eine Spielbeobachtung über mehrere Kämpfe — wird die Barriere unter `TankbusterOnly` regelmäßig aufgezehrt und fehlt sie nie dort, wo sie gebraucht wurde, ist der Standard umzustellen. Bis dahin bleibt die Voreinstellung konservativ.
+**Auflösungsbedingung:** eine Spielbeobachtung über mehrere Kämpfe — wird die Barriere unter `TankbusterOrHeavyPull` regelmäßig aufgezehrt, und fehlt sie nie dort, wo sie gebraucht wurde, ist der Standard umzustellen. Zu beobachten ist dabei auch die Gegnerschwelle: Kommt The Blackest Night im Wall-to-Wall zu selten, ist `MitigationSustainHostileCount` zu hoch angesetzt — sie steuert beide Regeln gemeinsam.
 
 ### PR-Prüfung folgt dem Staging-Kanal von Dalamud · U
 

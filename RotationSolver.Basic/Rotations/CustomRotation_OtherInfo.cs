@@ -1338,6 +1338,26 @@ public partial class CustomRotation
 		=> Service.Config.UseBmrTimeline && BMRActive && BMRRaidwideIn is > 0f and < float.MaxValue && BMRRaidwideIn <= seconds;
 
 	/// <summary>
+	/// Whether the pull is large enough that damage arrives as a continuous stream rather than as
+	/// single hits - the wall-to-wall case. Uses the same hostile count as the mitigation-debuff
+	/// sustain rule, so a user who tunes that threshold tunes both.
+	/// </summary>
+	protected static bool InHeavyPull
+		=> NumberOfHostilesInRange >= Service.Config.MitigationSustainHostileCount;
+
+	/// <summary>
+	/// Whether one of the big personal mitigations is already running on the player.
+	/// <para>
+	/// <see cref="StatusHelper.RampartStatus"/> is what the job rotations already use as
+	/// <c>StatusProvide</c> on Shadow Wall and Shadowed Vigil, so those never overlap each other.
+	/// Reading the same list here extends that stagger to an action that cannot express it through
+	/// <c>StatusProvide</c>, because its own status is a barrier rather than a mitigation.
+	/// </para>
+	/// </summary>
+	protected static bool HasMajorMitigation
+		=> StatusHelper.PlayerHasStatus(true, StatusHelper.RampartStatus);
+
+	/// <summary>
 	/// Whether a tankbuster is aimed at the player: a lock-on VFX or a cast from the learned list
 	/// landing now, or one BMR predicts inside the mitigation window.
 	/// <para>
