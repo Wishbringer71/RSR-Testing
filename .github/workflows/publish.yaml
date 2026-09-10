@@ -57,3 +57,27 @@ jobs:
         with:
           files: ./build/RotationSolver/latest.zip
           token: ${{ secrets.GITHUB_TOKEN }}
+          # Without these the release carried the bare tag as its title and an empty body, so the
+          # page said nothing about what the build is or which upstream release it contains - the
+          # one question a fork build has to answer. The heading names both halves of the version;
+          # the fixed text below explains what does not change between releases, and
+          # generate_release_notes appends the merged pull requests since the previous tag, which
+          # is the part that would otherwise be written by hand and go stale.
+          name: ${{ env.tag }} - fork build on upstream ${{ env.numericVersion }}
+          generate_release_notes: true
+          body: |
+            Fork of [RotationSolverReborn](https://github.com/FFXIV-CombatReborn/RotationSolverReborn),
+            built from upstream release **${{ env.numericVersion }}** plus this fork's own changes.
+
+            **Install:** download `latest.zip` and point Dalamud at it, or use the repository's
+            plugin manifest. The plugin registers under the same internal name as upstream, so a
+            fork install and an upstream install replace one another and share their settings.
+
+            **Version:** the settings window shows `${{ env.numericVersion }}`, the upstream release
+            this code contains. The full identity including the fork marker is `${{ env.tag }}`.
+
+            **Behaviour changes ship switched off.** Every rotation change that could not be proven
+            in game sits behind its own option and defaults to the previous behaviour, so an update
+            never changes how a job plays until you turn something on. What each option does is in
+            `CHANGELOG.md`; what is still open is in `TODO.md`.
+
