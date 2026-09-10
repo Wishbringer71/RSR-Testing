@@ -488,6 +488,27 @@ public static class StatusHelper
 	];
 
 	/// <summary>
+	/// Barriers that pay a reward only when they are absorbed in full, so letting one expire unspent
+	/// wastes its cost rather than merely leaving protection unused.
+	/// <para>
+	/// The Blackest Night is the only one in the game: it grants Dark Arts when its barrier - 25% of
+	/// maximum HP over 7s - is consumed completely (action 7393), and nothing at all when it is not.
+	/// Every other barrier in <see cref="ShieldStatus"/> is pure protection, where an unspent barrier
+	/// is a good outcome. That difference is why this list exists separately instead of asking
+	/// whether any shield is running.
+	/// </para>
+	/// <para>
+	/// Read by rules that would otherwise stop the damage stream while such a barrier is up - the
+	/// white mage's Holy stun is the case this was written for.
+	/// </para>
+	/// </summary>
+	public static StatusID[] FullAbsorbRewardStatus { get; } =
+	[
+		StatusID.BlackestNight,
+		StatusID.BlackestNight_1308,
+	];
+
+	/// <summary>
 	///
 	/// </summary>
 	public static StatusID[] TankStanceStatus { get; } =

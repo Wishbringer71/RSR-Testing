@@ -72,6 +72,13 @@ every list rather than of the barriers alone.
 Both are inclusions, not removals: a derived rotation reading either list gets `true` in states
 where it previously got `false`, and nothing that used to match stops matching.
 
+- **Added** `StatusHelper.FullAbsorbRewardStatus`, holding The Blackest Night alone. Additive, and
+  deliberately not a subset of `ShieldStatus` for callers to filter: it answers a different
+  question. Every other barrier is pure protection, where an unspent remainder is a good outcome;
+  this one grants Dark Arts only when the barrier is absorbed in full, so letting it expire wastes
+  its cost. A rotation that would otherwise stop the damage stream — the white mage's Holy stun is
+  the first caller — needs that distinction, not "is any shield up".
+
 ### Removed from RotationSolver.Basic
 
 Both members were part of the shipped `7.5.5.41+wsh1` package. Code that overrides or reads them no

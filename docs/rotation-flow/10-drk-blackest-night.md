@@ -1,7 +1,7 @@
 # 10 · The Blackest Night beim Dunkelritter
 
 Entwurfsdokument nach ADR-Struktur. Es stellt den geltenden Stand dar; die Prüfhistorie steht in
-`AUDIT_LOG.md` (A44 bis A48).
+`AUDIT_LOG.md` (A44 bis A50).
 
 ## Ergebnis
 
@@ -17,6 +17,9 @@ Eingriffe in `DRK_Reborn.cs`, alle auf Upstream-Code:
 3. **Zwei Prüfgrößen liegen zentral** in `CustomRotation_OtherInfo`: `TankbusterOnMe` (`:1377`) und
    `HasMajorMitigation` (`:1365`); `SurveyStuns` hat eine Überladung mit der Trefferzahl bekommen
    (`:544`).
+4. **Die Gegenrichtung steht beim Weißmagier** (`WHM_Reborn.ShouldHoldHolyForBarrier()`, Option
+   `HoldHolyForBlackestNight`): Sanctus wartet, solange ein Tank die Barriere trägt. Ohne diese
+   Seite behandelt die Betäubungsbedingung nur den Fall, dass der Heiler zuerst da war.
 
 | Stufe | Bedingung |
 |---|---|
@@ -187,6 +190,37 @@ genau dann hat der Dunkelritter seine großen Minderungen typischerweise noch ni
 zuvor kaum etwas auf ihn einschlug. Die Betäubungsphase fällt oft mit diesem Moment zusammen, weil
 der Heiler zu betäuben beginnt, sobald die Gruppe steht; sie ist deshalb die einzige der vier
 Bedingungen, die **aufschiebt statt auszuschließen**.
+
+### Die Gegenrichtung: der Weißmagier hält Sanctus zurück
+
+Die Betäubungsbedingung behandelt die Kollision nur von einer Seite. Trifft der Dunkelritter zuerst,
+läuft die Barriere, und der Heiler unterbricht den Schadensstrom, gegen den sie aufgezehrt werden
+müsste. Deshalb steht in `WHM_Reborn` die Gegenbedingung: `ShouldHoldHolyForBarrier()` hält Sanctus
+zurück, solange ein Gruppenmitglied in Tankrolle The Blackest Night trägt
+(`StatusHelper.FullAbsorbRewardStatus`).
+
+**Das ist kein Warten aufeinander.** Jede Seite wartet nur, während der Zustand der anderen aktiv
+ist, und beide Zustände laufen von selbst ab — die Betäubung nach vier Sekunden, die Barriere nach
+sieben. Ein Zustand, in dem beide warten, ist nicht erreichbar; sind beide frei, handeln beide. Was
+die zweite Regel herstellt, ist Nachrang für den, der später kommt.
+
+**Und der Gruppenschutz spricht nicht dagegen.** Im Wall-to-Wall liegt die Aggro beim Tank, der
+Schaden also auch, und derselbe Tank trägt die Barriere. Die Betäubung verhindert dort genau den
+Schaden, den die Barriere aufgefangen hätte — statt doppelten Schutzes entsteht doppelte
+Verschwendung: die Barriere samt Dark Arts verfällt, und das Betäubungsbudget von rund sieben
+Sekunden bis zur Immunität ist verbraucht.
+
+Zwei Grenzen halten die Kosten klein, und die Kosten sind real — Sanctus ist der einzige
+Flächenzauber dieses Jobs, ein zurückgehaltener GCD fällt auf Einzelzielschaden zurück:
+
+| Grenze | Wirkung |
+|---|---|
+| nur solange die Betäubung noch landen könnte (`headroom`) | mit der Betäubungsimmunität endet die Rückhaltung für den Rest des Pulls |
+| nur solange die Barriere die Wirkzeit überdauert (`WillStatusEnd` gegen `Info.CastTime`) | eine auslaufende Barriere ist kein Wartegrund |
+
+Die Regel steht hinter `HoldHolyForBlackestNight`, Vorgabe aus. `StatusHelper.FullAbsorbRewardStatus`
+führt nur The Blackest Night: Jede andere Barriere ist reiner Schutz, bei dem ein unverbrauchter Rest
+ein gutes Ergebnis ist — nur hier ist der vollständige Verbrauch die Bedingung einer Belohnung.
 
 ### Der Ausgangsbefund
 

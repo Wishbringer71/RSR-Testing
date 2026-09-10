@@ -83,6 +83,9 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Minimum enemies in Holy's radius before the stun stretch applies", Parent = nameof(StretchHolyStun))]
 	public int StretchHolyMinHostiles { get; set; } = 3;
 
+	[RotationConfig(CombatType.PvE, Name = "Hold Holy while a tank carries The Blackest Night, so its barrier is spent")]
+	public bool HoldHolyForBlackestNight { get; set; } = false;
+
 	public enum ThinAirUsageStrategy : byte
 	{
 		[Description("Use all thin air charges on expensive spells")]
@@ -512,6 +515,69 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		return DiaPvE.CanUse(out _) || AeroIiPvE.CanUse(out _) || AeroPvE.CanUse(out _);
 	}
 
+	/// <summary>
+	/// Whether Holy has to wait because its stun would strand a barrier that pays off only when it
+	/// is spent in full.
+	/// </summary>
+	/// <remarks>
+	/// The Blackest Night grants Dark Arts only when its barrier - 25% of maximum HP over 7s - is
+	/// absorbed completely (action 7393), and nothing at all when it is not. Stopping the damage
+	/// stream for four of those seven seconds is therefore not a saving but a double loss: the
+	/// barrier expires unspent, and the stun budget - about seven seconds per pull before the
+	/// enemies turn immune - is gone with it. What the stun prevents does not buy that back, because
+	/// in a wall-to-wall pull the damage it stops is the damage the barrier was absorbing anyway, on
+	/// the same target: the enemies are on the tank, which is who holds the barrier.
+	///
+	/// This does not wait on the dark knight's rule, which holds the barrier back while a group stun
+	/// runs. Both states expire on their own - the stun after four seconds, the barrier after seven
+	/// - so neither side can hold the other indefinitely. They yield to whichever landed first, and
+	/// when neither is up both simply go.
+	///
+	/// Two limits keep the cost bounded, and the cost is real: Holy is the only area spell this job
+	/// has, so a held GCD falls through to single-target damage. Once every enemy in radius is
+	/// immune the cast can no longer interrupt anything and goes out normally, which ends the hold
+	/// for the rest of the pull; and a barrier that is over before this cast lands is not worth
+	/// waiting for.
+	/// </remarks>
+	private bool ShouldHoldHolyForBarrier()
+	{
+		if (!HoldHolyForBlackestNight)
+		{
+			return false;
+		}
+
+		var radius = HolyIiiPvE.EnoughLevel ? HolyIiiPvE.Info.EffectRange : HolyPvE.Info.EffectRange;
+		_ = SurveyStuns(radius, out _, out _, out var headroom);
+		if (!headroom)
+		{
+			return false;
+		}
+
+		var party = PartyMembers;
+		if (party == null)
+		{
+			return false;
+		}
+
+		var cast = HolyIiiPvE.EnoughLevel ? HolyIiiPvE.Info.CastTime : HolyPvE.Info.CastTime;
+		foreach (var member in party)
+		{
+			if (member == null || !member.IsJobCategory(JobRole.Tank))
+			{
+				continue;
+			}
+
+			// isFromSelf false: the barrier belongs to the dark knight, not to this healer.
+			if (member.HasStatus(false, StatusHelper.FullAbsorbRewardStatus)
+				&& !member.WillStatusEnd(cast, false, StatusHelper.FullAbsorbRewardStatus))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	protected override bool GeneralGCD(out IAction? act)
 	{
 		if (HasThinAir && MergedStatus.HasFlag(AutoStatus.Raise))
@@ -569,7 +635,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			}
 		}
 
-		if (HolyPvE.EnoughLevel && !ShouldStretchHolyStun())
+		if (HolyPvE.EnoughLevel && !ShouldStretchHolyStun() && !ShouldHoldHolyForBarrier())
 		{
 			if (HolyIiiPvE.EnoughLevel && HolyIiiPvE.CanUse(out act))
 			{
