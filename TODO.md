@@ -4,14 +4,6 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 ## Defekte
 
-### `ObjectHelper.CanBeRaised` prüft für jeden Job die Aktion des Weißmagiers · N, R
-
-`ObjectHelper.cs:657` fragt `ActionManager.CanUseActionOnTarget((uint)ActionID.RaisePvE, …)` — und zwar unabhängig davon, welcher Job gerade spielt. Gelehrter, Astrologe, Weiser, Rotmagier, Beschwörer und Blaumagier haben eine andere Wiederbelebung; `RaisePvE` ist für sie keine erlernte Aktion. Das Ergebnis dieser Prüfung entscheidet in `TargetFilter.GetDeath` darüber, ob ein Toter überhaupt als Wiederbelebungsziel geführt wird, und damit über `DataCenter.DeathTarget` und `AutoStatus.Raise`.
-
-Wie die native Funktion auf eine nicht erlernte Aktion antwortet, ist offline nicht entscheidbar und extern nicht dokumentiert (Websuche ohne belastbares Ergebnis). Die richtige Prüfung wäre die Wiederbelebung des eigenen Jobs, die die Rotationsbasis als `Raise` bereits führt — `ObjectHelper` ist aber jobunabhängig und hat keinen Zugriff darauf, weshalb die Behebung eine Signaturänderung oder eine Durchreichung verlangt.
-
-**Auflösungsbedingung:** Laufzeitbeobachtung mit einem Rezzer, der nicht Weißmagier ist. Bleibt die Wiederbelebung dort vollständig aus, ist der Befund bestätigt und die Behebung dringend.
-
 ### `SwiftcastBuffer` hat keinen Leser, und ihre Absicht ist überholt · N
 
 `Configs.cs:978` definiert die Einstellung (0,6 s, eigene Oberfläche, eigene Dokumentation „how early before next GCD should RSR use swiftcast for raise"). Eine Volltextsuche über den Baum findet genau diese eine Fundstelle: Sie wird nirgends gelesen.
@@ -26,17 +18,23 @@ Sie ist nicht nur unverbunden, sondern in ihrer dokumentierten Bedeutung unerfü
 
 Die Klasse ist belegt, weil die beiden Geschwister derselben Bauart **gelesen** werden: `RaiseDelay2` und `EsunaDelay` speisen die `ObjectListDelay`-Instanzen in `TargetUpdater.cs:13-15`. Für Provoke- und Unterbrechungsziele gibt es keine solche Instanz; `TargetUpdater.cs:43-46` ermittelt beide ohne jede Verzögerung.
 
-**Nicht behoben, weil die Behebung eine Entscheidung ist und keine Reparatur.** Die Verdrahtung würde das ausgelieferte Verhalten verlangsamen, und bei der Unterbrechung ist das gefährlich: Eine Verzögerung von bis zu einer Sekunde kann das Fenster eines Zaubers verbrauchen, den zu stoppen der Zweck der Aktion ist. Der Zweck der Verzögerung ist Tarnung, nicht Kampfwirkung — die Abwägung gehört dem Auftraggeber.
+**Nicht verdrahtet, und das ist keine offene Entscheidung, sondern das Ergebnis der Regeln.** Drei Gründe, die zusammen nur einen Schluss zulassen:
 
-**Optionen:** (a) unverdrahtet lassen und beide Einstellungen entfernen, mit Migrationspfad für gespeicherte Konfiguration; (b) verdrahten mit Vorgabe `(0; 0)`, sodass das heutige Verhalten Vorgabe bleibt und die Verzögerung wählbar wird; (c) verdrahten mit der bestehenden Vorgabe. **Empfehlung: (b)** — sie stellt die Zusage der Oberfläche her, ohne das Kampfverhalten ungefragt zu verlangsamen, und entspricht der Feature-Toggle-Regel für Änderungen ohne Nachweismöglichkeit.
+1. *Es gibt keinen Migrationsweg.* `Configs.Migrate` (`Configs.cs:1440`) ist keine Migration, sondern ein Zurücksetzen: bei abweichender Version `return new Configs()`. Eine geänderte Vorgabe erreicht deshalb nur Neuinstallationen; wer das Plugin schon benutzt, hat `(0,5; 1)` in seiner gespeicherten Konfiguration stehen und bekäme die Verzögerung beim Verdrahten tatsächlich eingeschaltet.
+2. *Damit verletzt jede Verdrahtung die Feature-Toggle-Regel*, die für eine Änderung ohne Nachweismöglichkeit das bisherige Standardverhalten als Vorgabe verlangt. Das bisherige Verhalten ist „keine Verzögerung", und es lässt sich ohne Migration nicht erhalten.
+3. *Der Nutzen liegt außerhalb der Zielrichtung.* Die Verzögerung dient der Tarnung, nicht der Kampfwirkung. Bei der Unterbrechung wirkt sie sogar gegen den Zweck der Aktion: bis zu eine Sekunde kann das Fenster des Zaubers verbrauchen, der gestoppt werden soll.
 
-### `TargetColor` ist ihr eigener Bedienelement-Elternteil und wird nicht gelesen · N
+**Auflösungsbedingung:** Sobald ein echter Migrationsmechanismus existiert — einer, der einzelne Felder umstellt, statt die Datei zu verwerfen —, ist zu verdrahten und die Vorgabe zugleich auf `(0; 0)` zu ziehen. Vorher ist die wirkungslose Einstellung das kleinere Übel gegenüber einer ungefragt eingeschalteten Verzögerung.
 
-`Configs.cs:1181-1182` trägt `[UI("Target color", Parent = nameof(TargetColor))]` — die Eigenschaft verweist als Elternschalter auf sich selbst. Die Zeile unmittelbar darüber, `TeachingModeColor`, zeigt die richtige Bauart mit `Parent = nameof(TeachingMode)`. Kennzeichen eines Klons ohne Anpassung (Parnas, *Ignorant Surgery*).
+### `TargetColor` wird nicht gelesen, und ihr Elternverweis zeigt auf sie selbst · N
 
-Zweiter, unabhängiger Befund an derselben Eigenschaft: Sie wird im gesamten Baum nicht gelesen, die Farbe wirkt also ohnehin nicht.
+`Configs.cs:1181-1182` trägt `[UI("Target color", Parent = nameof(TargetColor))]` — die Eigenschaft nennt sich selbst als Elternschalter. Die Zeile darüber, `TeachingModeColor`, zeigt die richtige Bauart mit `Parent = nameof(TeachingMode)`; Kennzeichen eines Klons ohne Anpassung (Parnas, *Ignorant Surgery*).
 
-**Nicht behoben,** weil die Behebung voraussetzt zu wissen, welcher Schalter der gemeinte Elternteil ist und wo die Farbe gezeichnet werden sollte. Beides geht aus dem Code nicht hervor.
+**Der Elternverweis ist folgenlos, entgegen der ersten Einschätzung.** `SearchableCollection.cs:45` nimmt ausschließlich `CheckBoxSearch` in die Elternliste auf, also boolesche Einstellungen. `TargetColor` ist ein `Vector4`, landet nie darin, der `TryGetValue` schlägt fehl, und der Eintrag wird auf oberster Ebene einsortiert. Kein Absturz, keine Rekursion in `GetParent`, nur eine Einrückung, die fehlt.
+
+**Der wirkliche Befund ist der fehlende Leser:** Die Farbe wird im gesamten Baum nicht gelesen, wirkt also ohnehin nicht.
+
+**Nicht behoben,** weil die Behebung voraussetzt zu wissen, wo die Farbe gezeichnet werden sollte und welcher Schalter der gemeinte Elternteil ist. Beides geht aus dem Code nicht hervor, und eine erfundene Zuordnung wäre schlechter als der sichtbare Rest. Technische Schuld, kein Defekt mit Wirkung.
 
 ### `IBaseAction.IgnoreClipping` wird geschrieben und nirgends gelesen · N, R
 
@@ -45,12 +43,6 @@ Zweiter, unabhängiger Befund an derselben Eigenschaft: Sie wird im gesamten Bau
 Nicht behoben, weil der Wirkungsbereich den Vorgang sprengt. Das Flag wird in `Invoke` breit gesetzt, auch für Fälle ohne Bezug zur Wiederbelebung; ein Leser in `RSCommands_Actions.DoAction` würde die Sperre praktisch überall aushebeln und damit das Verhalten jeder Rotation ändern. Die Behebung verlangt zuerst eine Entscheidung, für welche Aktionen das Flag gelten soll.
 
 **Auflösungsbedingung:** eine Erhebung, welche der sechs Setzstellen eine Ausnahme rechtfertigen, und eine Engführung des Flags auf diese.
-
-### `GetPriorityDeathTarget` prüft `deathTanks.Count > 1`, wo `> 0` gemeint ist · N
-
-`TargetUpdater.cs:385`. Folgenlos für die Frage, **ob** wiederbelebt wird — der Rückfallzweig fünfzehn Zeilen tiefer findet denselben Tank. Die Rangfolge kippt aber: Liegen zwei Tanks, kommt der Tank vor dem Heiler; liegt einer, kommt der Heiler zuerst. Eine der beiden Rangfolgen ist ungewollt.
-
-Nicht mitbehoben, weil die Behebung eine Rangfolgeentscheidung ist und nicht aus dem Code hervorgeht, welche der beiden gemeint war. **Empfehlung:** Tank vor Heiler in beiden Fällen, weil der Rückfallzweig diese Reihenfolge bereits ausschreibt und die Sonderbehandlung damit nur einen Fall davon vorwegnimmt.
 
 ### ChurinDNC wertet die BMR-Downtime ohne Vorzeichenprüfung aus · N, U
 
@@ -99,6 +91,16 @@ Das Spiel führt jede Wirkung unter mehreren Status-Ids desselben Anzeigenamens 
 **Empfehlung: erfassen, nicht bearbeiten.** Behoben ist, was eine Wirkkette im Code liest und wo der Beleg trägt. Der Rest ist eine Klasse ohne Schranke: Ein Rückgabewert, den nur Wegsehen grün hält, wäre schlechter als keiner, und `scan14.py` hält die Liste jederzeit wieder abrufbar.
 
 ## Technische Schuld
+
+### `Configs.Migrate` ist kein Migrationspfad, sondern ein Zurücksetzen · N, R
+
+`Configs.cs:1440` lautet vollständig: weicht die gespeicherte `Version` von `CurrentVersion` ab, wird `new Configs()` zurückgegeben — **die gesamte Nutzerkonfiguration fällt auf die Vorgaben zurück**. Der Kommentar „Implement migration logic if needed" weist die Stelle als bewusst offenen Platzhalter aus, nicht als Fehler; sie ist damit technische Schuld und kein Defekt.
+
+**Kosten, und sie sind höher als sie aussehen.** Die Schuld ist nicht nur ein fehlendes Bequemlichkeitsmerkmal, sie **blockiert andere Behebungen**: Jede Korrektur, die einen Vorgabewert ändern muss, um das bisherige Verhalten zu erhalten, ist ohne Feldmigration nicht durchführbar. Der Eintrag zu `InterruptDelay`/`ProvokeDelay` weiter oben ist genau daran gescheitert. Dieselbe Sperre trifft künftig jede Einstellung, deren Vorgabe sich als falsch erweist.
+
+Hinzu kommt die unmittelbare Wirkung für den Auftraggeber: Erhöht Upstream `CurrentVersion` — etwa weil dort ein Feld hinzukommt —, sind beim nächsten Start **alle** eigenen Einstellungen weg. Ein Sicherungsstand lässt sich über `Backup()` anlegen; `Restore()` verweigert allerdings genau dann, wenn die Version abweicht, also im einzigen Fall, in dem man ihn bräuchte.
+
+**Auflösungsbedingung:** eine feldweise Migration, die die gespeicherte Version liest und nur die geänderten Felder umstellt, statt die Datei zu verwerfen. Erst danach sind Vorgabewert-Korrekturen überhaupt möglich.
 
 ### `CanEarlyWeave` steht auf dem beobachteten statt auf dem geschriebenen Verhalten · N, R
 

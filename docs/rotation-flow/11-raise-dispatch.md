@@ -142,19 +142,45 @@ Die Einstellung ist damit nicht bloß unverbunden, sondern seit `92f109d3` in ih
 Entfernung samt Migrationspfad oder Neudefinition als Untergrenze im Einschiebefenster — ist ein
 eigener Vorgang und in `TODO.md` erfasst.
 
+## Die Zielprüfung, die eine Aktionsprüfung war
+
+`ObjectHelper.CanBeRaised` beantwortet eine **Zielfrage** — ist dieser Leichnam überhaupt ein
+gültiges Wiederbelebungsziel — und beantwortete sie mit einer **Aktionsprüfung**:
+`CanUseActionOnTarget(ActionID.RaisePvE, …)`, für jeden Job dieselbe Aktion, nämlich die des
+Weißmagiers. Gelehrter, Astrologe, Weiser, Rotmagier, Beschwörer und Blaumagier beleben mit einer
+anderen wieder, und `PheonixDownItem` — der eine Aufrufer, den es gerade für Jobs **ohne**
+Wiederbelebung gibt — fragte, ob der Spieler einen Zauber wirken kann, den er nie besitzt.
+
+Die Prüfung war in beiden möglichen Ausgängen falsch, weshalb der unbekannte Rückgabewert nichts
+entscheidet: Antwortet die native Funktion für eine nicht erlernte Aktion `false`, war jeder
+Nicht-Weißmagier-Rezzer blockiert; antwortet sie `true`, tat die Zeile nichts. FFXIVClientStructs
+bindet `CanUseActionOnTarget` als bloße Signatur mit Byte-Pattern und ohne Dokumentation, die
+Semantik ist also von außen nicht zu klären. Ein Indiz liegt im Nachbarcode: `IsOtherPlayerOutOfDuty`
+hedgt denselben Aufruf mit „Raise **oder** Cure" ab, was nur sinnvoll ist, wenn eine nicht erlernte
+Aktion `false` liefert.
+
+Aufgelöst wird das mit derselben Trennung wie oben: Die Zielfrage bleibt zielbezogen
+(`IsTargetable`), die Aktionsfrage übernehmen die Aufrufer, die ihre eigene Aktion kennen — der
+Zauber über `Raise.CanUse` mit Reichweite, MP, Stufe und Freischaltung, der Gegenstand über
+`BaseItem`. Die übrigen Zielbedingungen stehen ohnehin schon in `TargetFilter.GetDeath`:
+Zugehörigkeit zu Gruppe oder Allianz, Entfernung, Sichtlinie, laufender Wiederbelebungsstatus.
+
+**Warum das sicher ist:** Die Änderung kann Ziele nur zulassen, nie ausschließen. Ein zusätzlich
+zugelassenes Ziel, das sich als unbrauchbar erweist, fällt in derselben `CanUse`-Kette durch, die
+den Zauber ohnehin prüft. `IsOtherPlayerOutOfDuty` bleibt unangetastet: dort ist die Absicht die
+Zielbarkeit eines Fremdspielers, nicht die Wiederbelebbarkeit.
+
 ## Erfasst, nicht behoben
 
 - **`IBaseAction.IgnoreClipping` wird geschrieben und nirgends gelesen** (sechs Schreibzugriffe in
-  `CustomRotation_Invoke.cs`, Definition in `IBaseAction.cs:14`). Begründung oben; Wirkungsbereich
-  zu groß für diesen Vorgang.
-- **`ObjectHelper.CanBeRaised` prüft für jeden Job `ActionID.RaisePvE`** (`:657`), also die Aktion
-  des Weißmagiers. Ob `ActionManager.CanUseActionOnTarget` mit einer nicht erlernten Aktion
-  antwortet wie mit einer erlernten, ist offline nicht entscheidbar und extern nicht dokumentiert.
-  Auflösung verlangt Laufzeitbeobachtung mit einem anderen Rezzer.
-- **`GetPriorityDeathTarget` prüft `deathTanks.Count > 1`** (`TargetUpdater.cs:385`), wo `> 0`
-  gemeint ist. Folgenlos für die Frage, *ob* wiederbelebt wird, weil der Rückfallzweig denselben
-  Tank findet; die Rangfolge zwischen totem Tank und totem Heiler kippt aber je nachdem, ob ein oder
-  zwei Tanks liegen. Eigener Vorgang, weil eine Rangfolgeänderung eine eigene Begründung braucht.
+  `CustomRotation_Invoke.cs`, Definition in `IBaseAction.cs:14`). Wirkungsbereich zu groß für
+  diesen Vorgang: Ein Leser in `DoAction` hebelte die Anti-Clipping-Regel überall aus.
+- **`Configs.Migrate` ist ein Zurücksetzen, kein Migrationspfad** (`Configs.cs:1440`). Das ist
+  nicht nur unbequem, es **sperrt andere Behebungen**: Jede Korrektur, die einen Vorgabewert
+  ändern muss, um das bisherige Verhalten zu erhalten, ist ohne Feldmigration nicht durchführbar.
+  Daran ist die Verdrahtung von `InterruptDelay` und `ProvokeDelay` gescheitert.
+- **`TargetColor` hat keinen Leser.** Der zunächst gemeldete selbstbezügliche Elternverweis ist
+  folgenlos — nur Kontrollkästchen werden Elternelemente, ein `Vector4` sortiert schlicht nach oben.
 
 ## Grenzen des Nachweises
 

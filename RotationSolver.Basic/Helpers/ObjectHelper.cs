@@ -642,19 +642,31 @@ public static class ObjectHelper
 			|| ActionManager.CanUseActionOnTarget((uint)ActionID.CurePvE, (FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject*)obj.Struct()));
 	}
 
-	internal static unsafe bool CanBeRaised(this IBattleChara battleChara)
+	/// <summary>
+	/// Is this corpse a valid target for a resurrection at all?
+	///
+	/// A target question, deliberately answered without naming an action. It used to end in
+	/// <c>CanUseActionOnTarget(ActionID.RaisePvE, …)</c> for every job, which is the White Mage's
+	/// spell: Scholar, Astrologian, Sage, Red Mage, Summoner and Blue Mage raise with something
+	/// else, and <see cref="PheonixDownItem"/> - the one caller that exists precisely for jobs with
+	/// no raise at all - asked whether the player could cast a spell it can never have.
+	///
+	/// That check could not be right either way. If the native call answers false for an unlearned
+	/// action, every non-White-Mage raiser was blocked outright; if it answers true, the line did
+	/// nothing. FFXIVClientStructs binds it as a bare signature with no documentation, so which of
+	/// the two holds is not decidable from here - but a measure that either blocks or does nothing
+	/// is not a measure. The neighbouring IsOtherPlayerOutOfDuty hedges the same call with
+	/// "Raise or Cure", which only makes sense if an unlearned action answers false.
+	///
+	/// Whether the raise can be cast is decided later anyway, by each caller with its own action:
+	/// the spell through Raise.CanUse (range, MP, level, enabled), the item through BaseItem. This
+	/// leaves the target question here and the action question there, and dropping the line can
+	/// only admit targets, never remove them - an admitted target that turns out unusable is
+	/// rejected by that same later check.
+	/// </summary>
+	internal static bool CanBeRaised(this IBattleChara battleChara)
 	{
-		if (battleChara == null)
-		{
-			return false;
-		}
-
-		if (!battleChara.IsTargetable)
-		{
-			return false;
-		}
-
-		return ActionManager.CanUseActionOnTarget((uint)ActionID.RaisePvE, (FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject*)battleChara.Struct());
+		return battleChara != null && battleChara.IsTargetable;
 	}
 
 	internal static unsafe bool IsPlayer(this IBattleChara battleChara)

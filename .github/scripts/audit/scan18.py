@@ -39,13 +39,14 @@ ACCEPTED = {
         'recorded in TODO.md: its documented meaning puts Swiftcast inside the window the '
         'execution gate refuses, so wiring it would rebuild the defect it belongs to',
     'InterruptDelay':
-        'recorded in TODO.md: wiring it would delay interrupts by 0.5-1s by default, which can '
-        'lose the cast it exists to stop - needs a decision, not a patch',
+        'recorded in TODO.md: blocked on Configs.Migrate being a reset rather than a migration - '
+        'wiring it cannot keep the current no-delay behaviour for existing configurations',
     'ProvokeDelay':
-        'recorded in TODO.md: same shape as InterruptDelay, decided together with it',
+        'recorded in TODO.md: same shape as InterruptDelay, blocked on the same missing migration',
     'TargetColor':
-        'recorded in TODO.md: also declares itself as its own UI parent, so the setting cannot '
-        'be reached in the interface either - one finding, two causes',
+        'recorded in TODO.md: no reader, and where the colour should be drawn does not follow '
+        'from the code (its self-referential UI parent is harmless - only checkboxes become '
+        'parents, so the entry just sorts to the top level)',
     'RotationLibs':
         'recorded in TODO.md: external rotation library paths; LoadCustomRotationGroup takes its '
         'assemblies from elsewhere, so the feature this configured is gone rather than broken',
