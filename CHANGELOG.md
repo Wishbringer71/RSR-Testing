@@ -57,6 +57,21 @@ Seraphic Veil, Neutral Sect, The Spire, Improvised Finish, Divine Caress, plus t
 party barriers. A derived rotation that reads the list sees more ids and therefore fewer targets
 counted as unshielded.
 
+`StatusHelper.RampartStatus` and `StatusHelper.ReprisalStatus` gained ids the same way, again
+without a signature change, after `.github/scripts/audit/scan14.py` asked the sibling question of
+every list rather than of the barriers alone.
+
+- `RampartStatus` **added** `Rampart_1191`, `Rampart_1978`, `Rampart_4168` and
+  `HallowedGround_1302`. `Rampart_1978` is the form a tank carries from level 94, so the most
+  common mitigation in the game was invisible to every reader of the list — including the
+  `StatusProvide` staggering that keeps Shadow Wall and Shadowed Vigil off a running Rampart.
+- `ReprisalStatus` **added** `Reprisal_2101`, the form Enhanced Reprisal upgrades into at level 98
+  (15% for 15s). `ReprisalPvE` carries the list as `TargetStatusProvide`, so the guard against
+  re-applying the debuff never saw it on an end-game tank's target.
+
+Both are inclusions, not removals: a derived rotation reading either list gets `true` in states
+where it previously got `false`, and nothing that used to match stops matching.
+
 ### Removed from RotationSolver.Basic
 
 Both members were part of the shipped `7.5.5.41+wsh1` package. Code that overrides or reads them no

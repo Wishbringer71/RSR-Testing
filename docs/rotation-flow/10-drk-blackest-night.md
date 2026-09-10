@@ -106,7 +106,7 @@ Forderung nicht erfüllbar. Die Dauern summieren sich, jede Fähigkeit nur einma
 
 | Fähigkeit | Dauer | Minderung |
 |---|---|---|
-| Reprisal | 15 s (ab Stufe 98) | −10 % (auf den Gegnern) |
+| Reprisal | 10 s, ab Stufe 98 15 s | −10 %, ab Stufe 98 −15 % (auf den Gegnern) |
 | Oblation | 2 × 10 s | −10 % |
 | Dark Mind | 10 s | −10 % / −20 % |
 | Dark Missionary | 15 s | −5 % / −10 % |
@@ -114,8 +114,9 @@ Forderung nicht erfüllbar. Die Dauern summieren sich, jede Fähigkeit nur einma
 | Shadow Wall / Shadowed Vigil | 15 s | −30 % / −40 % |
 
 Zusammen **95 Sekunden** — mehr, als ein Wall-to-Wall-Pull dauert. Sperrte jede davon die Barriere,
-käme sie nie. Die Grenze verläuft deshalb bei der Wirkungsstärke: Die schwachen (10 %) heben die
-nötige Rate um ein Neuntel, die starken (ab 20 %) um ein Viertel bis zwei Drittel.
+käme sie nie. Die Grenze verläuft deshalb bei der Wirkungsstärke: Die schwachen (10 bis 15 %) heben
+die nötige Rate um ein Neuntel bis ein Sechstel, die starken (ab 20 %) um ein Viertel bis zwei
+Drittel.
 `StatusHelper.RampartStatus` führt genau die starken, und dieselbe Liste tragen Shadow Wall und
 Shadowed Vigil bereits als `StatusProvide` (`DarkKnightRotation.cs:238`, `:404`) — die Staffelung
 ist im Projekt etabliert, The Blackest Night stand nur außerhalb. Über `StatusProvide` kann sie

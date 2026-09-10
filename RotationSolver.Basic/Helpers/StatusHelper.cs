@@ -362,14 +362,27 @@ public static class StatusHelper
 	];
 
 	/// <summary>
-	/// Both status IDs the game data lists under the name Reprisal with the same description. Which one
-	/// the current role action applies is not verifiable from the data alone, so every Reprisal check
-	/// looks for either.
+	/// Every status the game data lists under the name Reprisal with the same effect text. Which of
+	/// them the role action applies at a given level is not verifiable from the data alone, so every
+	/// Reprisal check looks for any of them.
+	/// <para>
+	/// <c>Reprisal_2101</c> is scoped to PLD WAR DRK GNB rather than to the shared role, which is the
+	/// signature of the form a trait upgrades into - Enhanced Reprisal at level 98 raises the
+	/// reduction to 15% and the duration to 15s. Its absence made every reader of this list blind to
+	/// the version an end-game tank actually applies: <c>ReprisalPvE</c> carries this list as
+	/// <c>TargetStatusProvide</c>, so the guard against re-applying it never saw the debuff, and the
+	/// mitigation surveys that read it counted a reprised pull as unmitigated.
+	/// </para>
+	/// <para>
+	/// Kept out: no id under this name carries a different effect text, so the list is complete as
+	/// long as no new one appears. <c>.github/scripts/audit/scan14.py</c> reports one that does.
+	/// </para>
 	/// </summary>
 	public static StatusID[] ReprisalStatus { get; } =
 	[
 		StatusID.Reprisal,
 		StatusID.Reprisal_1193,
+		StatusID.Reprisal_2101,
 	];
 
 	/// <summary>
@@ -625,11 +638,27 @@ public static class StatusHelper
 	];
 
 	/// <summary>
-	/// 
+	/// The big personal mitigations and the invulnerabilities, read in two places that both depend
+	/// on it being complete: the job rotations put it on Shadow Wall and Shadowed Vigil as
+	/// <c>StatusProvide</c> so those never overlap, and <c>CustomRotation.HasMajorMitigation</c>
+	/// reads it to keep a barrier from being spent while one of them is up.
+	/// <para>
+	/// Membership is decided on the effect text, not on the display name. Both directions have a
+	/// case here: <c>Rampart_1978</c> is the form a tank from level 94 actually carries - "damage
+	/// taken is reduced while HP recovered via healing actions is increased", scoped PLD WAR DRK GNB
+	/// - and its absence made the whole list miss the most common mitigation in the game. In the
+	/// other direction, <c>Nebula_3051</c> ("inflicting a portion of sustained damage back to its
+	/// source") and <c>Bloodwhetting_3030</c> ("weaponskills generate HP") share a name with a
+	/// mitigation but are the reflect and lifesteal halves, so they stay out. So do the Holmgang ids
+	/// 88 and 1305, which sit on the target rather than the tank (AUDIT_LOG C15).
+	/// </para>
 	/// </summary>
 	public static StatusID[] RampartStatus { get; } =
 	[
 		StatusID.Rampart,
+		StatusID.Rampart_1191,
+		StatusID.Rampart_1978,
+		StatusID.Rampart_4168,
 		StatusID.Bulwark,
 		StatusID.Bloodwhetting,
 
@@ -647,6 +676,7 @@ public static class StatusHelper
 
 		StatusID.Superbolide,
 		StatusID.HallowedGround,
+		StatusID.HallowedGround_1302,
 		StatusID.Holmgang_409,
 		StatusID.LivingDead,
 	];

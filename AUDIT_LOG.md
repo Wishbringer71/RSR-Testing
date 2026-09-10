@@ -1519,6 +1519,69 @@ betäubte Gruppe den Strom weit genug drückt, ist eine Annahme.
 
 ---
 
+### A49 · Statuslisten mit fehlenden Geschwistern: aus dem Einzelfall wird eine Defektklasse (10.09.2026)
+
+**Anlass:** Die Ergänzung des Auftraggebers, auch andere Gruppenmitglieder — meist physische
+Schadensklassen — trügen Betäubungen. Die Prüfung der Frage ergab, dass die Regel davon nicht
+berührt ist: `StatusHelper.StunStatus` führt **alle 18** Ids mit dem Anzeigenamen „Stun", und die
+Bedingung misst den Status auf den Gegnern, nicht die Gruppenzusammensetzung. Quelle der
+Betäubung ist damit gleichgültig. Die Erhebung, die das belegen sollte, deckte jedoch eine größere
+Sache auf.
+
+**Der Befund ist die Bauform, nicht die Liste.** `ShieldStatus` war in A43 unvollständig, weil das
+Spiel jede Wirkung unter mehreren Ids desselben Anzeigenamens führt und eine handgepflegte
+Aufzählung nach der nächsten Erweiterung still veraltet — Parnas' *Lack of Movement*. Dieselbe
+Bauform tragen alle 24 Listen in `StatusHelper.cs`. Die Frage einmal an alle gestellt
+(`scan14.py`, neu): **187 fehlende Geschwister über 17 Listen**.
+
+**Zwei davon sind Defekte im Sinn der umgekehrten Antwort und sind behoben.** Maßstab war nicht die
+Fundzahl, sondern ob eine Wirkkette im Code die Liste liest:
+
+- **`RampartStatus`** ohne `Rampart_1978` — die Fassung, die ein Tank ab Stufe 94 trägt
+  (Geltungsbereich „PLD WAR DRK GNB", Wirktext um die Heilaufwertung der Trait ergänzt). Zwei
+  Verbraucher waren dadurch blind: das in A47 eingeführte `HasMajorMitigation`, und die bereits
+  vorhandene `StatusProvide`-Staffelung, die Shadow Wall und Shadowed Vigil von einem laufenden
+  Rampart fernhält. Aufgenommen wurden `Rampart_1191`, `Rampart_1978`, `Rampart_4168` und
+  `HallowedGround_1302`.
+- **`ReprisalStatus`** ohne `Reprisal_2101`. Belegt über die Aktion, nicht über den Namen: In
+  `ActionId.resx` steht nur `ReprisalPvE` (7535), eine PvP-Form existiert nicht — der
+  Geltungsbereich „PLD WAR DRK GNB" statt der geteilten Rolle GLA MRD PLD WAR DRK GNB ist hier
+  also die Signatur der Trait-Fassung. *Enhanced Reprisal* hebt auf Stufe 98 die Minderung auf
+  15 % und die Dauer auf 15 s. Betroffen sind alle vier Tanks: `ReprisalPvE` trägt die Liste als
+  `TargetStatusProvide` (`CustomRotation_Actions.cs:73`), die Sperre gegen erneutes Anwenden sah
+  die Schwächung eines Endstufen-Tanks nie; dazu `ShouldSustainMitigationDebuff` in PLD/WAR/DRK/GNB
+  und die Minderungsbilanz in `GetCurrentMitigationPercent`. Für den laufenden Auftrag zählt die
+  Bedingung `reprisalDone` in `ShouldUseBlackestNightOnSelf`, die genau diesen Status liest.
+
+**Was bewusst draußen bleibt, meldet der Scan weiter**, und das ist Absicht: `Nebula_3051` und
+`Bloodwhetting_3030` teilen den Namen einer Minderung, sind aber deren Reflexions- und
+Lebensraubhälfte; `Holmgang` 88 und 1305 sitzen auf dem *Ziel* der Unverwundbarkeit (C15). Ein
+gemeinsamer Anzeigename macht zwei Ids nicht zur selben Wirkung — der Scan druckt deshalb zu jedem
+Kandidaten die Wirkbeschreibung und die Marke `same opening` / `differs` und **entscheidet nicht**.
+
+**Keine CI-Schranke, anders als bei `scan13.py`.** Dort ist die Mitgliedschaft aus der Aktion
+maschinell entscheidbar; hier sind von den 186 verbliebenen Treffern 114 Rauschen aus zwei Listen,
+die bewusst Teilmengen sind (`PhantomDispellable`, `PurifyPvPStatuses`). Ein Rückgabewert, den man
+nur durch Wegsehen grün hält, wäre schlechter als keiner.
+
+**Grenze der Erhebung, offen geführt:** Der Scan sieht nur Ids in den Listen. Prüfpunkte, die eine
+einzelne Id direkt nennen, altern genauso und sind nicht erfasst — belegt an
+`GetCurrentMitigationPercent`, das `StatusID.Addle` und `StatusID.Feint` bar liest, während
+`Addle_1988` (Geltungsbereich BLM SMN RDM BLU PCT, keine PvP-Aktion) und `Feint_2185` existieren.
+Ebenso offen ist `TankStanceStatus`: geführt sind `IronWill` (79) und `RoyalGuard_1833`, nicht aber
+`IronWill_393`, `IronWill_2843` und `RoyalGuard` (392) bei gleichem Wirktext „Enmity is increased."
+Welche Id das Spiel heute setzt, ist aus den Daten nicht zu entscheiden; `Defiance_1396` und
+`Grit_1397` („Damage dealt and taken are reduced.") sind erkennbar die Fassungen vor Shadowbringers
+und gehören nicht hinein. Beides ist in `TODO.md` erfasst, nicht bearbeitet — die Zuordnung
+verlangt Laufzeitbeobachtung, und der Auftrag nennt sie nicht.
+
+**Erreichter Prüfgrad:** statische Prüfung, Prüfskript mit Selbsttest gegen einen konstruierten
+Rampart-Defekt, Zuordnung der Reprisal-Fassung über `ActionId.resx` und eine Websuche zum
+Trait-Stufenwert, CI-Kompilierung. Nicht beobachtet: welche Id das Spiel je Stufe tatsächlich
+setzt — die Regel fragt deshalb nach *irgendeiner* der Fassungen.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.
