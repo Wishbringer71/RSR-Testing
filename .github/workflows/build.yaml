@@ -33,6 +33,12 @@ jobs:
       - name: Check no GCD selection collides with the execution gate
         run: python3 .github/scripts/audit/scan17.py
 
+      # A setting with a label and a default promises the user it does something. When nothing
+      # reads it the promise fails silently and forever. Two such settings sat in the raise path
+      # alone, so this guards against the next one rather than against those two.
+      - name: Check every user setting has a reader
+        run: python3 .github/scripts/audit/scan18.py
+
   Build:
     runs-on: windows-latest
     steps:

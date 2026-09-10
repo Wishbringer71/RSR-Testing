@@ -20,6 +20,24 @@ Sie ist nicht nur unverbunden, sondern in ihrer dokumentierten Bedeutung unerfü
 
 **Auflösung:** entweder entfernen — dann ist zu prüfen, ob der Name in gespeicherter Nutzerkonfiguration liegt und ein Migrationspfad nötig ist — oder als **Untergrenze** im Einschiebefenster neu definieren, also „wie weit oberhalb der Sperre darf Spontanität frühestens fallen". Die zweite Lesart erhält die Absicht des Autors und ist mit der Sperre vereinbar. Beides ist eine Entscheidung über Nutzerkonfiguration und gehört nicht in den Behebungsvorgang.
 
+### `InterruptDelay` und `ProvokeDelay` haben keinen Leser · N
+
+`Configs.cs:1057` und `:1061`. Beide sind `Vector2` mit Vorgabe `(0,5 s; 1 s)`, eigener Beschriftung und Wertebereich — und versprechen damit eine Zufallsverzögerung vor dem Unterbrechen beziehungsweise vor Provoke. Gelesen werden sie nirgends.
+
+Die Klasse ist belegt, weil die beiden Geschwister derselben Bauart **gelesen** werden: `RaiseDelay2` und `EsunaDelay` speisen die `ObjectListDelay`-Instanzen in `TargetUpdater.cs:13-15`. Für Provoke- und Unterbrechungsziele gibt es keine solche Instanz; `TargetUpdater.cs:43-46` ermittelt beide ohne jede Verzögerung.
+
+**Nicht behoben, weil die Behebung eine Entscheidung ist und keine Reparatur.** Die Verdrahtung würde das ausgelieferte Verhalten verlangsamen, und bei der Unterbrechung ist das gefährlich: Eine Verzögerung von bis zu einer Sekunde kann das Fenster eines Zaubers verbrauchen, den zu stoppen der Zweck der Aktion ist. Der Zweck der Verzögerung ist Tarnung, nicht Kampfwirkung — die Abwägung gehört dem Auftraggeber.
+
+**Optionen:** (a) unverdrahtet lassen und beide Einstellungen entfernen, mit Migrationspfad für gespeicherte Konfiguration; (b) verdrahten mit Vorgabe `(0; 0)`, sodass das heutige Verhalten Vorgabe bleibt und die Verzögerung wählbar wird; (c) verdrahten mit der bestehenden Vorgabe. **Empfehlung: (b)** — sie stellt die Zusage der Oberfläche her, ohne das Kampfverhalten ungefragt zu verlangsamen, und entspricht der Feature-Toggle-Regel für Änderungen ohne Nachweismöglichkeit.
+
+### `TargetColor` ist ihr eigener Bedienelement-Elternteil und wird nicht gelesen · N
+
+`Configs.cs:1181-1182` trägt `[UI("Target color", Parent = nameof(TargetColor))]` — die Eigenschaft verweist als Elternschalter auf sich selbst. Die Zeile unmittelbar darüber, `TeachingModeColor`, zeigt die richtige Bauart mit `Parent = nameof(TeachingMode)`. Kennzeichen eines Klons ohne Anpassung (Parnas, *Ignorant Surgery*).
+
+Zweiter, unabhängiger Befund an derselben Eigenschaft: Sie wird im gesamten Baum nicht gelesen, die Farbe wirkt also ohnehin nicht.
+
+**Nicht behoben,** weil die Behebung voraussetzt zu wissen, welcher Schalter der gemeinte Elternteil ist und wo die Farbe gezeichnet werden sollte. Beides geht aus dem Code nicht hervor.
+
 ### `IBaseAction.IgnoreClipping` wird geschrieben und nirgends gelesen · N, R
 
 `IBaseAction.cs:14` definiert das Flag, `CustomRotation_Invoke.cs` setzt es an sechs Stellen (`:212`, `:228`, `:238`, `:243`, `:257`). Kein einziger Leser im gesamten Baum. Der Name benennt genau den Mechanismus, der beim Wiederbelebungsdefekt gefehlt hat: die Anti-Clipping-Sperre für einen Einzelfall aufheben.
