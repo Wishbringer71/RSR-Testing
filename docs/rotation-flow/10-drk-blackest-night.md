@@ -184,6 +184,28 @@ Die Staffelungsbedingung gilt **nur** für den Wall-to-Wall-Zweig. Beim Tankbust
 vor, weil dort Stapeln richtig ist, und bei niedriger Gesundheit ebenfalls: Ein Notschild wartet
 nicht auf das Ende einer Minderung.
 
+### Reflexion zuerst: die Reihenfolge im Pfad ist teuer vor billig
+
+Der Pfad arbeitet seine Prioritäten von oben nach unten ab und gibt je Gelegenheit **eine** Aktion
+zurück. Die Reihenfolge in `DefenseSingleAbility` lautet: Oblation (10) · **The Blackest Night
+(20)** · Dark Mind · Shadowed Vigil/Shadow Wall · Rampart · … · **Reprisal (`:296`, `:301`)**.
+
+Reprisal — im deutschen Client **Reflexion** — steht damit ganz am Ende, The Blackest Night an
+zweiter Stelle. Weil die Barriere nur 15 Sekunden Abklingzeit hat, gewinnt sie fast jede
+Gelegenheit gegen die Rollenaktion; Reprisal landet erst, wenn sie gerade nicht verfügbar ist. Das
+ist für einen Pull die verkehrte Reihenfolge: Reprisal senkt den Schaden **aller** Gegner um 10 %,
+gilt der ganzen Gruppe, kostet nichts als seine Abklingzeit und deckt 15 Sekunden ab — The Blackest
+Night kostet 3000 MP, schützt einen Charakter und hält 7 Sekunden.
+
+Der Pull-Zweig verlangt deshalb zusätzlich, dass Reprisal bereits liegt, auf Abklingzeit ist oder
+mangels Stufe nicht zur Verfügung steht. Gegen einen Tankbuster gilt das nicht: Dort entscheidet
+eine einzelne Gelegenheit, und die Rangfolge zwischen beiden ist gleichgültig.
+
+**Abtausch (Shirk) gehört nicht in diese Kette.** Die Aktion überträgt Feindseligkeit auf ein
+anderes Gruppenmitglied und mindert keinen Schaden; RSR führt sie zentral über `AutoStatus.Shirk`
+(`CustomRotation_Ability.cs:123`) als Befehlsaktion. Für die Minderungsreihenfolge ist sie ohne
+Belang, für die Aufgabenteilung zweier Tanks im großen Pull sehr wohl — nur an anderer Stelle.
+
 Beide Bedingungen stehen als `TankbusterOnMe` in `CustomRotation_OtherInfo.cs` und sind damit für
 jede Rotation verfügbar, nicht nur für diese. `IsHostileCastingTankBusterAtMe` ist dort bewusst
 gewählt und nicht `IsHostileCastingToTank`: Erstere Fassung (`DataCenter.cs:2097`) kennt den

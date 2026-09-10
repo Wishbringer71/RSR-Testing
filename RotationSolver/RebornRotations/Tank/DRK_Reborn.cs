@@ -205,7 +205,16 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	/// </summary>
 	private bool ShouldUseBlackestNightOnSelf()
 	{
-		var staggeredHeavyPull = InHeavyPull && !HasMajorMitigation;
+		// Reprisal first. It is a free party-wide -10% and sits at the very end of this path, so
+		// while The Blackest Night is off cooldown every opportunity goes to the 3000 MP action and
+		// Reprisal only lands once the cheap one happens to be unavailable. In a pull that ordering
+		// is backwards; against a tankbuster it does not matter, which is why this only gates the
+		// pull branch.
+		var reprisalDone = !ReprisalPvE.EnoughLevel
+			|| ReprisalPvE.Cooldown.IsCoolingDown
+			|| (HostileTarget?.HasStatus(false, StatusHelper.ReprisalStatus) ?? false);
+
+		var staggeredHeavyPull = InHeavyPull && !HasMajorMitigation && reprisalDone;
 
 		return BlackestNightUsage switch
 		{

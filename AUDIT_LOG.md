@@ -1376,6 +1376,44 @@ deshalb das alte Verhalten.
 
 ---
 
+### A46 · Reflexion vor der Barriere: die Reihenfolge im Verteidigungspfad (10.09.2026)
+
+**Anlass:** Auflösung der offenen Namensfrage aus A45 durch den Auftraggeber — die deutschen
+Bezeichnungen gehören zu den **Tank-Rollenaktionen**. Belegt per Websuche: **Reflexion = Reprisal**,
+**Abtausch = Shirk**. Der eigene Nullbefund davor war im falschen Suchraum entstanden (C30).
+
+**Der Befund am Artefakt.** `DefenseSingleAbility` gibt je Gelegenheit genau eine Aktion zurück und
+arbeitet von oben nach unten: Oblation (10) · **The Blackest Night (20)** · Dark Mind · Shadowed
+Vigil/Shadow Wall · Rampart · … · **Reprisal (`:296`, `:301`)**. Reprisal steht damit am Ende, die
+Barriere fast am Anfang. Da sie nur 15 Sekunden Abklingzeit hat, gewinnt sie nahezu jede
+Gelegenheit, und Reprisal landet erst, wenn sie zufällig nicht verfügbar ist.
+
+Für einen Pull ist das die verkehrte Rangfolge, und die Gegenüberstellung ist eindeutig:
+
+| | Reprisal (Reflexion) | The Blackest Night |
+|---|---|---|
+| Kosten | nur Abklingzeit | 3000 MP |
+| Wirkung | −10 % Schaden **aller** Gegner | Barriere über 25 % der maximalen Gesundheit |
+| Reichweite | die ganze Gruppe | ein Charakter |
+| Dauer | 15 s (ab Stufe 98) | 7 s |
+
+**Umgesetzt:** Der Pull-Zweig verlangt zusätzlich, dass Reprisal bereits liegt, auf Abklingzeit ist
+oder mangels Stufe ausfällt. Gegen einen Tankbuster gilt die Bedingung nicht — dort entscheidet eine
+einzelne Gelegenheit, und die Rangfolge zwischen beiden ist gleichgültig.
+
+**Nicht umgesetzt, und warum:** die Reihenfolge im Pfad selbst umzustellen. Das wäre der direktere
+Weg, ändert aber das Verhalten für alle Nutzer und alle Lagen, während die Bedingung im Zweig hinter
+der Option `BlackestNightUsage` bleibt und nur greift, wer sie umstellt. Als Vorlage erfasst.
+
+**Abtausch (Shirk) gehört nicht in die Minderungskette.** Die Aktion überträgt Feindseligkeit und
+mindert keinen Schaden; RSR führt sie zentral über `AutoStatus.Shirk`
+(`CustomRotation_Ability.cs:123`). Kein Eingriff nötig.
+
+**Erreichter Prüfgrad:** statische Prüfung der Pfadreihenfolge, Websuche für die Namenszuordnung,
+CI-Kompilierung. Nicht beobachtet: wie oft Reprisal dadurch im Spiel tatsächlich vorzieht.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.
@@ -1455,3 +1493,4 @@ Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt e
 | C27 | A36: Radiant Aegis sei für die TBN-Frage gegenstandslos, weil sie „ein Selbstschild des Beschwörers ist, der nie auf dem Dunkelritter liegt" | Falsch herum gedacht. Nicht Radiant Aegis wandert, sondern **The Blackest Night**: `ActionId.resx` (7393) beschreibt es als „Creates a barrier around self or **target party member**", und `DRK_Reborn.cs:128` legt es mit `targetOverride: TargetType.LowHP` auf Fremdziele. Ein Beschwörer kann also seinen eigenen Radiant Aegis tragen **und** zusätzlich TBN — der vom Job-Guide beschriebene Fall ist real, nur vom Heiler nicht beeinflussbar. Der Auftraggeber hat die ungeprüfte Prämisse benannt. Lehre: Bevor ein Fall über den Träger eines Status ausgeschlossen wird, ist die Zielmenge der Aktion an ihrer Beschreibung zu belegen, nicht aus dem Jobnamen zu schließen | A36 ergänzt; zwei Defekte daraus in TODO.md |
 | C28 | TODO-Eintrag zu den fehlenden Barrieregruppen: sechs Ids seien die „PvE-Spielerbarrieren, die vermutlich hineingehören" (`Aquaveil_3086`, `DivineCaress`, `Epicycle`, `GuardiansWill`, `HolySheltron_3026`, `ImprovisedFinish`) | Vier der sechs sind es nicht, und acht echte fehlten. Die Prüfung über die **Aktion** gleichen Namens zeigt: Aquaveil und Holy Sheltron senken in PvE nur den erlittenen Schaden, die Barriere-Ids 3086 und 3026 gehören zu ihren PvP-Formen; `Epicycle` hat nur eine PvP-Aktion, `GuardiansWill` gar keine. Nicht genannt waren dagegen `ShakeItOff` (1457/1993), `SeraphicVeil` (1917/2040/3097), `NeutralSect` (1921/3988), `TheSpire_3892` — Barrieren, die ein Heiler in fast jedem Gruppenkampf sieht. Ursache: Die Liste war nach dem Jobkürzel im Status-Scope gebildet, einem Surrogat, das PvE und PvP nicht trennt — beide Formen tragen denselben Anzeigenamen und dieselbe Wirkbeschreibung. Lehre: Wo zwei Formen einer Fähigkeit denselben Text tragen, entscheidet nicht der Status, sondern die Aktion, die ihn verleiht | `scan13.py` um die Aktionszuordnung erweitert, Eintrag neu gefasst (A41) |
 | C29 | A44 und die Antwort dazu: der Vorschlag, The Blackest Night nicht zusammen mit anderen Schilden und Minderungen zu wirken, sei „ein Surrogat, das die falsche Größe misst" — pauschal abgelehnt | Für den Tankbuster richtig, für den Wall-to-Wall-Pull falsch. Dort kommt der Schaden als **Strom**, nicht als Paket: Zwei Minderungen gleichzeitig decken dieselben Sekunden doppelt und lassen den Rest ungedeckt, und die parallele Minderung senkt den Strom unter die Rate, die die Barriere in sieben Sekunden aufzehrt (3,6 % → 5,1 % unter Shadow Wall). Die Prüfung war gegen die Buster-Lage geführt und ihr Ergebnis ungeprüft auf die Dauerschaden-Lage übertragen — dieselbe Fehlerform, die C18 für die Aufhebungsregeln festgehalten hat, diesmal in der Gegenrichtung. Der Auftraggeber hat die fehlende Lage benannt. Lehre: Bevor ein Vorschlag verworfen wird, ist zu prüfen, für welche Auslöserklasse er gilt — eine Regel kann für die eine richtig und für die andere falsch sein, und dann ist die Antwort eine Fallunterscheidung, keine Ablehnung | A45: `TankbusterOrHeavyPull` mit Staffelungsbedingung, Konzept 10 neu gefasst |
+| C30 | A45-Nachtrag: die deutschen Namen „Reflexion" und „Abtausch" ließen sich keiner Aktion zuordnen, „keine trägt einen dieser Namen erkennbar" | Der Suchraum war falsch gewählt. Gesucht wurde ausschließlich unter Aktionen mit **Betäubungswirkung**, weil beide Namen im selben Satz wie die Stuns des Weißmagiers standen. Reflexion ist Reprisal, Abtausch ist Shirk — Tank-Rollenaktionen ohne Betäubung, die in diesem Filter gar nicht auftauchen konnten. Der Auftraggeber hat den richtigen Suchraum genannt („die deutschen Beschreibungen der Tankskills"), danach war die Zuordnung in einer Websuche belegt. Lehre: Der Suchraum folgt der Rollen- und Kategoriezuordnung des gesuchten Gegenstands, nicht dem Satz, in dem er erwähnt wurde — ein Nullbefund im falschen Raum ist kein Nullbefund | A46: Reihenfolgebedingung umgesetzt, Namensfrage im TODO geschlossen |

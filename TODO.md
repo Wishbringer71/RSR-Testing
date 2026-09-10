@@ -256,17 +256,26 @@ Die Kostenseite bliebe dagegen bestehen: Ein Ringpuffer über alle Gruppenmitgli
 
 ## Offene Arbeit
 
-### DRK: Rückhaltung von The Blackest Night während der Betäubungsphase — Klärung offen · N
+### DRK: Rückhaltung von The Blackest Night während der Betäubungsphase — zwei Fragen offen · N
 
-Vorgabe des Auftraggebers: The Blackest Night soll auch dann nicht kommen, „wenn der WHM seine drei Stuns noch nicht abgearbeitet hat", und erst „nach Reflexion und Abtausch". Der Gedanke ist mechanisch stimmig — eine Betäubung hält den Schadensstrom vollständig an, die Barriere verfällt dann ungenutzt.
+Vorgabe des Auftraggebers: The Blackest Night soll nicht kommen, solange der Weißmagier seine Betäubungen noch nicht abgearbeitet hat. Der Gedanke ist mechanisch stimmig — eine Betäubung hält den Schadensstrom vollständig an, die Barriere verfällt dann ungenutzt.
 
-**Die Messgrößen liegen vor**, aus der Umsetzung von Konzept 08: `SurveyStuns(radius, out allStunned, out headroom)` (`CustomRotation_OtherInfo.cs:531`) meldet, ob alle Gegner im Radius betäubt sind und ob überhaupt noch einer betäubbar ist; `StatusHelper.StunStatus` und `StunResistanceStatus` (39, „Immune to stun effects") tragen die Ids. `WHM_Reborn.cs:498` nutzt beides bereits für die Streckung von Heiliger. Die Regel wäre damit zwei Zeilen im Pull-Zweig.
+**Die Messgrößen liegen vor**, aus der Umsetzung von Konzept 08: `SurveyStuns(radius, out allStunned, out headroom)` (`CustomRotation_OtherInfo.cs:531`) meldet, ob alle Gegner im Radius betäubt sind und ob überhaupt noch einer betäubbar ist; `StatusHelper.StunStatus` und `StunResistanceStatus` (39, „Immune to stun effects") tragen die Ids. `WHM_Reborn.cs:498` nutzt beides bereits für die Streckung von Heiliger. Die Regel wäre zwei Zeilen im Pull-Zweig.
 
-**Drei Fragen sind vor der Umsetzung zu klären:**
+**Geklärt ist die Reihenfolgefrage** (A46): „Reflexion und Abtausch zuerst" meint Reprisal und Shirk. Die Reprisal-Bedingung ist umgesetzt; Shirk ist keine Minderung und bleibt außen vor.
 
-1. **Welche Aktionen sind „Reflexion" und „Abtausch"?** Die Erhebung über alle PvE-Aktionen mit Betäubungswirkung ergibt für den Weißmagier ausschließlich Heiliger (139) und Heiliger III (25860); Occult-seitig kommen Occult Falcon (41601), Mineuchi (41603) und Heavenly Judge (6871) in Frage. Keine davon trägt einen dieser deutschen Namen erkennbar. Ohne belegte Zuordnung wird nichts gebaut — die Projektregel verlangt den Abgleich deutscher und englischer Namen.
-2. **„Während betäubt" oder „solange noch betäubbar"?** Nur das Erste ist eine Tatsache (`allStunned`); das Zweite (`headroom`) ist eine Prognose über das Verhalten eines anderen Spielers und würde die Fähigkeit über den ganzen frühen Pull sperren.
-3. **Ist der Weißmagier RSR-gesteuert?** Die Streckung von Heiliger ist eine Regel dieses Plugins. Bei einem fremden Spieler oder einem Duty-Support-NPC greift sie nicht, und die Betäubungslage ist dann nur zu beobachten, nicht vorherzusagen.
+**Zwei Fragen bleiben:**
+
+1. **„Während betäubt" oder „solange noch betäubbar"?** Nur das Erste ist eine Tatsache (`allStunned`); das Zweite (`headroom`) ist eine Prognose über den nächsten Zauber eines anderen Spielers und würde die Fähigkeit über den ganzen frühen Pull sperren — genau die Phase mit dem höchsten Schadensdruck.
+2. **Ist der Weißmagier RSR-gesteuert?** Die Streckung von Heiliger ist eine Regel dieses Plugins. Bei einem fremden Spieler oder einem Duty-Support-NPC greift sie nicht, und die Betäubungslage ist dann nur zu beobachten, nicht vorherzusagen.
+
+### Reihenfolge im Verteidigungspfad des Dunkelritters: teuer vor billig · N, U
+
+`DefenseSingleAbility` gibt je Gelegenheit eine Aktion zurück und führt The Blackest Night (Priorität 20) weit vor Reprisal (`:296`, `:301`). Weil die Barriere nur 15 s Abklingzeit hat, gewinnt sie fast jede Gelegenheit; die kostenlose, gruppenweite Minderung landet erst, wenn sie gerade nicht verfügbar ist.
+
+**Behandelt, aber nicht behoben:** Der Pull-Zweig der Option `BlackestNightUsage` verlangt jetzt, dass Reprisal zuerst liegt (A46). Das wirkt nur für den, der die Option umstellt.
+
+**Kosten des Kompromisses:** In der Voreinstellung bleibt die Rangfolge, wie sie ist. **Auflösung:** die Reprisal-Zeilen im Pfad vor The Blackest Night ziehen. Das ist der direktere Weg und trifft alle Lagen — deshalb erst nach einer Beobachtung, ob die Bedingung im Zweig ausreicht.
 
 ### Audit + Code-Review der gesamten Codebasis
 
