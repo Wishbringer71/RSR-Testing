@@ -26,9 +26,9 @@ muss (Konzept 10) — und eine dritte für die Verlangsamung, die bis dahin
 |---|---|
 | Messung: `SurveyStuns`, `SurveyHostileStatus`, `StatusHelper.StunStatus` und `SlowStatus` | umgesetzt in `CustomRotation_OtherInfo` und `StatusHelper` |
 | Aussetzbedingung am Sanctus-Block, hinter `StretchHolyStun` (Standard aus) | umgesetzt (`WHM_Reborn.ShouldStretchHolyStun`) |
-| Erhebung der übrigen Doppelnutzen-Aktionen | umgesetzt als `scan16.py`; ein Fund im Tank-/Heilerprofil (Armlänge) |
-| Zweite Aktion nach ihrer stillen Wirkung geregelt: Armlänge verlangsamt | umgesetzt in der Barrierenregel (Konzept 10, `DRK_Reborn.PackSlowed`) |
-| Armlänge auch **als** Minderungswerkzeug wirken | offen, siehe `TODO.md` — Zielkonflikt mit ihrer Rolle als einziger Rückstoßschutz |
+| Erhebung der übrigen Doppelnutzen-Aktionen | umgesetzt als `scan16.py`; ein Fund im Tank-/Heilerprofil (Rückstoß (Arm’s Length)) |
+| Zweite Aktion nach ihrer stillen Wirkung geregelt: Rückstoß (Arm’s Length) verlangsamt | umgesetzt in der Barrierenregel (Konzept 10, `DRK_Reborn.PackSlowed`) |
+| Rückstoß (Arm’s Length) auch **als** Minderungswerkzeug wirken | offen, siehe `TODO.md` — Zielkonflikt mit ihrer Rolle als einziger Rückstoßschutz |
 | Wirksamkeitsmessung im Spiel | offen, Voraussetzung für weitere Übertragungen |
 
 ## Warum die Streckung richtig ist
@@ -126,7 +126,7 @@ Die Erhebung dazu ist geführt und liegt als `scan16.py` im Repository: Sie nimm
 jede PvE-Aktion, deren Wirktext eine Kontroll- oder Minderungswirkung auf Gegner
 nennt, und fragt, ob der Baum den zugehörigen Status irgendwo liest. Im
 Tank- und Heilerprofil bleibt **eine** Aktion übrig, deren zweite Wirkung
-nirgends gelesen wurde: **Armlänge**. Sie ist als Rückstoßschutz eingeordnet
+nirgends gelesen wurde: **Rückstoß (Arm’s Length)**. Sie ist als Rückstoßschutz eingeordnet
 (`CustomRotation_Ability.AntiKnockbackAbility`), legt aber zugleich
 Verlangsamung +20 % auf jeden physischen Angreifer für 15 Sekunden. Der Wirktext
 der Verlangsamung nennt ausdrücklich die Verzögerung der **Automatikangriffe**,

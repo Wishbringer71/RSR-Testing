@@ -184,7 +184,7 @@ entscheidet — deshalb gilt auch diese Bedingung nur im Pull-Zweig.
 **Keine verlangsamte Gruppe.** Verlangsamung ist nicht bloß ein Zauberer-Debuff: Ihr Wirktext nennt
 neben Wirk- und Wiederholzeit ausdrücklich die **Verzögerung der Automatikangriffe**, und Trash-Gegner
 liefern den Großteil ihres Schadens genau darüber. Eine verlangsamte Gruppe verdünnt den Strom
-deshalb etwa um die Stärke des Debuffs — Armlänge legt Verlangsamung +20 % auf jeden physischen
+deshalb etwa um die Stärke des Debuffs — Rückstoß (Arm’s Length) legt Verlangsamung +20 % auf jeden physischen
 Angreifer für 15 s, dieselbe Größenordnung wie Rampart und damit jenseits der Linie, ab der die
 Barriere in sieben Sekunden nicht mehr aufgezehrt wird.
 

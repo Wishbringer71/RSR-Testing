@@ -105,6 +105,10 @@ Chat durchgehend Deutsch, vor jeder Antwort verifiziert (Beleg: englische Antwor
 
 **Der Auftraggeber spielt mit deutschem Client.** Aktions-, Status- und Inhaltsnamen aus seinen Angaben sind deutsche Spielnamen; die Bezeichner im Code und in den generierten Ressourcen (`RotationSolver.SourceGenerators/Properties/*.resx`) sind englisch. Bei jeder Namensnennung ist deshalb beides zu prüfen und die Zuordnung zu belegen, bevor eine Fundstelle gesucht oder ihr Fehlen behauptet wird. Ein Nullbefund über den englischen Namen allein ist kein Beleg. Beleg: „Ex Machina" wurde als im Baum nicht vorhanden gemeldet — es ist der deutsche Name von Thin Air.
 
+**Ein deutscher Name wird nie selbst gebildet.** Weder übersetzt noch aus dem englischen Namen abgeleitet noch aus einer Suchmaschinenzusammenfassung übernommen. Zulässig sind zwei Quellen: der Job-Guide von Square Enix, englisch und deutsch nebeneinander (`https://de.finalfantasyxiv.com/jobguide/<job>/` gegen `https://na.finalfantasyxiv.com/jobguide/<job>/`), und die Angabe des Auftraggebers. Ist der Job-Guide vom Egress gesperrt — er ist es derzeit —, gilt seine Angabe, und zwar ohne erneute Rückfrage: Bereits Gesagtes wird nicht ein zweites Mal erfragt. Steht kein belegter deutscher Name zur Verfügung, wird der **englische Bezeichner** benutzt.
+
+Belege, beide aus demselben Vorgang: Die Rollenaktion Arm's Length wurde erst mit Shirk verwechselt (C30) und der Widerspruch trotz eigener richtiger Wirkbeschreibung erneut zur Rückfrage gestellt statt aufgelöst (C33); anschließend wurde für dieselbe Aktion der Name „Armlänge" erfunden — ihr deutscher Name ist nach Angabe des Auftraggebers **Rückstoß**.
+
 # Entscheidungen und Eskalation
 
 **Entscheidungsbedarf wird gebündelt am Ende vorgelegt**, mit Entscheidungsgrundlage, Optionen samt Konsequenzen und begründeter Empfehlung. Eine Vorlage ohne Empfehlung ist unvollständig. Alles ohne Entscheidungsabhängigkeit wird vorher fertiggestellt; keine Zwischenrückfragen im laufenden Ablauf.

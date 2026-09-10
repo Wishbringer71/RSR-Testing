@@ -50,6 +50,9 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	[RotationConfig(CombatType.PvE, Name = "Hostiles needed before The Blackest Night counts a pull as big enough")]
 	private int BlackestNightMinHostiles { get; set; } = 4;
 
+	[RotationConfig(CombatType.PvE, Name = "Use Arm's Length on a pull for its Slow, not only against knockback")]
+	private bool UseArmsLengthOnPull { get; set; } = false;
+
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Health threshold for the Blackest Night option above")]
 	private float BlackestNightHealthRatio { get; set; } = 0.6f;
@@ -275,16 +278,42 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		return inRange > 0 && slowed >= 2 && slowed * 2 >= inRange;
 	}
 
+	/// <summary>
+	/// Whether Arm's Length is worth spending on the pull rather than kept for a knockback.
+	/// </summary>
+	/// <remarks>
+	/// The action has two effects and the plugin read only one of them: it nullifies knockback, and
+	/// it afflicts every physical attacker with Slow +20% for 15s. The slow raises auto-attack delay
+	/// as well as cast and recast time, and trash enemies deal most of their damage by auto-attack,
+	/// so on a standing pack it throttles the incoming stream by about the size of the debuff - the
+	/// same order as Rampart, for nothing but a 120s cooldown.
+	///
+	/// The obvious objection - it is the job's only knockback protection - does not hold where this
+	/// rule fires: knockback is a boss mechanic, and a wall-to-wall pull has none. The hostile-count
+	/// condition is what keeps the two apart, so it uses the same threshold as the barrier rather
+	/// than a second number that could drift away from it.
+	/// </remarks>
+	private bool ShouldUseArmsLengthOnPull()
+		=> UseArmsLengthOnPull
+			&& NumberOfHostilesInRange >= BlackestNightMinHostiles
+			&& !PackSlowed();
+
 	private bool ShouldUseBlackestNightOnSelf()
 	{
-		// Reprisal first. It is a free party-wide -10% and sits at the very end of this path, so
-		// while The Blackest Night is off cooldown every opportunity goes to the 3000 MP action and
-		// Reprisal only lands once the cheap one happens to be unavailable. In a pull that ordering
-		// is backwards; against a tankbuster it does not matter, which is why this only gates the
-		// pull branch.
+		// The free mitigations first. Both cost nothing but their cooldown and sit at or near the
+		// end of this path, so while The Blackest Night is off cooldown every opportunity goes to
+		// the 3000 MP action and the cheap ones only land once it happens to be unavailable. In a
+		// pull that ordering is backwards; against a tankbuster it does not matter, which is why
+		// this only gates the pull branch.
 		var reprisalDone = !ReprisalPvE.EnoughLevel
 			|| ReprisalPvE.Cooldown.IsCoolingDown
 			|| (HostileTarget?.HasStatus(false, StatusHelper.ReprisalStatus) ?? false);
+
+		// Arm's Length is the second one. "Done" means the same thing: either it cannot be cast, or
+		// it already is - a cooling-down Arm's Length is one that has been spent on this pull.
+		var armsLengthDone = !UseArmsLengthOnPull
+			|| !ArmsLengthPvE.EnoughLevel
+			|| ArmsLengthPvE.Cooldown.IsCoolingDown;
 
 		// In a pull the barrier has to stand on its own: a big mitigation running alongside drops
 		// the damage stream below the rate that spends it, a stun chain stops the stream outright,
@@ -293,7 +322,8 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			&& !HasMajorMitigation
 			&& !GroupStunRunning()
 			&& !PackSlowed()
-			&& reprisalDone;
+			&& reprisalDone
+			&& armsLengthDone;
 
 		return BlackestNightUsage switch
 		{
@@ -306,7 +336,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		};
 	}
 
-	[RotationDesc(ActionID.OblationPvE, ActionID.TheBlackestNightPvE, ActionID.DarkMindPvE, ActionID.ShadowWallPvE, ActionID.ShadowedVigilPvE, ActionID.RampartPvE, ActionID.ReprisalPvE)]
+	[RotationDesc(ActionID.OblationPvE, ActionID.ArmsLengthPvE, ActionID.TheBlackestNightPvE, ActionID.DarkMindPvE, ActionID.ShadowWallPvE, ActionID.ShadowedVigilPvE, ActionID.RampartPvE, ActionID.ReprisalPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		//10
@@ -316,6 +346,15 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			{
 				return true;
 			}
+		}
+
+		// Arm's Length before the barrier, for the same reason Reprisal goes before it: it costs
+		// nothing but its cooldown. Its Slow +20% lands on every enemy that strikes, and the slow
+		// delays auto-attacks as well as casts, so in a standing pack it throttles the whole stream
+		// for 15s. The plugin only ever used this action as knockback protection.
+		if (ShouldUseArmsLengthOnPull() && ArmsLengthPvE.CanUse(out act))
+		{
+			return true;
 		}
 
 		// The trigger that opens this path says "defending is warranted", not "damage worth 25% of

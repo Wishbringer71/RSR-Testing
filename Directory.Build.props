@@ -11,11 +11,12 @@
 		<!-- Without these the assembly reports 1.0.0, because no project sets a version and that is
 		     the SDK default. The publish workflow passes AssemblyVersion, FileVersion and
 		     InformationalVersion from the pushed tag, so it overrides all of this; these values are
-		     what local, PR and any other untagged build reports. Keep them in step with the
-		     upstream release the merged tree stands on - not with the fork's last tag, which would
-		     understate what the code is once an upstream release has been merged past it.
-		     Nothing updates this by itself: upstream carries no version in its source tree at all,
-		     so a merge has nothing to bring along. check_fork_version.py measures the gap. -->
+		     what local, PR and any other untagged build reports.
+		     They are a FALLBACK only. The DeriveUpstreamVersion target below reads the real answer
+		     out of the repository on every build, because the point of this number is to say which
+		     upstream release the compiled code contains - and a hand-maintained figure cannot say
+		     that reliably: upstream carries no version in its source tree at all, so a merge brings
+		     nothing along, and the number silently keeps naming the previous release. -->
 		<Version>7.5.6.1</Version>
 		<InformationalVersion>7.5.6.1+wsh1</InformationalVersion>
 
@@ -38,4 +39,45 @@
 		<Using Include="System.Numerics" />
 		<Using Include="System.Reflection" />
     </ItemGroup>
+
+	<!-- Read the upstream release out of the repository instead of trusting the literal above.
+
+	     What this number is for: a build made from fork sources has to say which upstream release
+	     its code contains. Maintained by hand it cannot - upstream has no version in its tree, so
+	     merging one brings nothing along, and the figure keeps naming the previous release until
+	     somebody remembers. It named 7.5.6.0 while the tree already held 7.5.6.1.
+
+	     `git describe --abbrev=0` names the newest tag reachable from HEAD, which is exactly the
+	     question: not which release exists, but which one this code is built on. Fork tags carry a
+	     wsh marker and are excluded, so 7.5.5.41+wsh1 cannot answer for an upstream release.
+
+	     Two ways out, both intentional. When AssemblyVersion is already set the target does nothing
+	     - that is the publish workflow passing the pushed tag, which outranks anything derived here.
+	     When git is missing, the checkout is shallow or no upstream tag is reachable, the Exec fails
+	     and the literals above stand; a source drop without history therefore still builds. -->
+	<Target Name="DeriveUpstreamVersion"
+	        BeforeTargets="GetAssemblyVersion;GenerateNuspec;CoreCompile"
+	        Condition="'$(AssemblyVersion)' == '' AND '$(DeriveVersionFromGit)' != 'false'">
+		<Exec Command="git describe --tags --abbrev=0 --exclude=*wsh* --match=[0-9]*"
+		      WorkingDirectory="$(MSBuildThisFileDirectory)"
+		      ConsoleToMSBuild="true"
+		      StandardOutputImportance="low"
+		      StandardErrorImportance="low"
+		      ContinueOnError="true"
+		      IgnoreExitCode="true">
+			<Output TaskParameter="ConsoleOutput" PropertyName="_UpstreamTag" />
+			<Output TaskParameter="ExitCode" PropertyName="_UpstreamTagExitCode" />
+		</Exec>
+		<PropertyGroup Condition="'$(_UpstreamTagExitCode)' == '0' AND '$(_UpstreamTag)' != ''">
+			<Version>$(_UpstreamTag)</Version>
+			<InformationalVersion>$(_UpstreamTag)+wsh1</InformationalVersion>
+			<PackageVersion>$(_UpstreamTag)-wsh1</PackageVersion>
+		</PropertyGroup>
+		<Message Importance="normal"
+		         Condition="'$(_UpstreamTagExitCode)' == '0' AND '$(_UpstreamTag)' != ''"
+		         Text="Fork version derived from the repository: $(Version) (upstream release this tree contains)" />
+		<Message Importance="normal"
+		         Condition="'$(_UpstreamTagExitCode)' != '0' OR '$(_UpstreamTag)' == ''"
+		         Text="No upstream tag reachable from HEAD - falling back to the literal $(Version). Run .github/scripts/audit/check_fork_version.py if this build is meant to be current." />
+	</Target>
 </Project>

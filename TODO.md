@@ -257,7 +257,7 @@ Schritt 3 aus `docs/rotation-flow/08-mitigation-synergy.md`. Die Schritte 1 und 
 
 **Zur Führung dieses Punktes:** Die Einzelheiten stehen im Konzeptdokument, nicht hier. `TODO.md` führt die offene Arbeit und verweist; eine zweite Beschreibung derselben Sache würde mit der ersten auseinanderlaufen. Was hier stehen muss, ist allein, dass noch etwas offen ist und wo es beschrieben wird.
 
-**Die Kandidatensuche ist erledigt** und lief, wie hier gefordert, über ein Prüfskript statt über Erinnerung: `scan16.py` erhebt jede PvE-Aktion mit Kontroll- oder Minderungswirkung auf Gegner und prüft, ob der Baum den zugehörigen Status liest. Im Tank- und Heilerprofil bleibt genau eine Aktion, deren zweite Wirkung eine Entscheidung ändern würde — Armlänge, eigener Eintrag oben. Offen ist damit nur noch die **Übertragung** selbst.
+**Die Kandidatensuche ist erledigt** und lief, wie hier gefordert, über ein Prüfskript statt über Erinnerung: `scan16.py` erhebt jede PvE-Aktion mit Kontroll- oder Minderungswirkung auf Gegner und prüft, ob der Baum den zugehörigen Status liest. Im Tank- und Heilerprofil bleibt genau eine Aktion, deren zweite Wirkung eine Entscheidung ändern würde — Rückstoß (Arm’s Length), eigener Eintrag oben. Offen ist damit nur noch die **Übertragung** selbst.
 
 **Auflösungsbedingung:** erst nach Beobachtung der Schritte 1 und 2 im Spiel.
 
@@ -277,27 +277,15 @@ Die Kostenseite bliebe dagegen bestehen: Ein Ringpuffer über alle Gruppenmitgli
 
 ## Offene Arbeit
 
-### Armlänge wird nur als Rückstoßschutz genutzt, nicht als Minderung · N, U
+### Rückstoß im Pull nur beim Dunkelritter, nicht bei den übrigen Tanks · N, U
 
-`ArmsLengthPvE` (7548) steht ausschließlich in `CustomRotation_Ability.AntiKnockbackAbility`. Ihre zweite Wirkung — Verlangsamung +20 % auf jeden physischen Angreifer für 15 Sekunden — wurde bis A51 im ganzen Baum nicht gelesen. Der Wirktext der Verlangsamung nennt ausdrücklich die Verzögerung der **Automatikangriffe**, aus denen Trash-Gegner den Großteil ihres Schadens liefern; im Wall-to-Wall ist sie damit eine Drosselung in der Größenordnung von Rampart — kostenlos, bei 120 Sekunden Abklingzeit.
+Arm's Length (deutsch Rückstoß) ist eine **Rollenaktion**: Paladin, Krieger, Dunkelritter, Revolverklinge und die Nahkämpfer tragen sie alle. Gewirkt wird sie für ihre Verlangsamung bisher nur im Dunkelritter (`DRK_Reborn.ShouldUseArmsLengthOnPull`, A53), weil dort die Pull-Bedingung schon steht und der Auftraggeber diesen Job spielt.
 
-**Behandelt ist bisher nur die stille Wirkung:** Läuft die Verlangsamung, hält der Dunkelritter seine Barriere zurück (`PackSlowed`, A51). Nicht behandelt ist die naheliegende Nutzung, sie **zu wirken**, wenn ein Pull steht.
+**Warum nicht gleich zentral:** Eine gemeinsame Zeile in `CustomRotation_Ability` träfe jeden Tank und jeden Nahkämpfer auf einmal. Genau diese Bauform hat schon einmal die gesamte Defensivkette geöffnet, statt die eine gemeinte Zeile zu bedienen (C9). Die Übertragung ist deshalb Job für Job zu machen, mit je eigener Schwelle.
 
-**Der Zielkonflikt, der das offen hält:** Armlänge ist zugleich der einzige Rückstoßschutz dieser Jobs. Wer sie im Trash verbraucht, hat sie an der Mechanik nicht, die sie eigentlich vorsieht — und ob im nächsten Kampfabschnitt ein Rückstoß kommt, kann RSR nicht wissen. Die vorhandene Erkennung (`HostileCastingKnockback`) ist eine gelernte Liste und greift erst beim zweiten Vorkommen einer Aktion.
+**Auflösungsbedingung:** eine Beobachtung beim Dunkelritter, dass die Regel trägt — dann PLD, WAR und GNB nach demselben Muster.
 
-**Auflösungsbedingung:** entweder eine Beobachtung, wie oft der Rückstoßfall im gespielten Inhalt tatsächlich eintritt, oder eine Einschränkung auf Inhalte ohne Rückstoßmechanik, die aus den Daten ableitbar wäre.
-
-**Empfehlung: hinter eine eigene Option, Vorgabe aus, und erst nach einer Beobachtung.** Der Nutzen ist plausibel und die Kosten sind es auch; das ist genau die Lage, für die die Projektregel das Standardverhalten stehen lässt. Als Zuschnitt böte sich dieselbe Bedingung an wie beim Pull-Zweig der Barriere — genug Gegner in Jobreichweite, keine große Minderung laufend.
-
-### Der deutsche Name „Abtausch" ist keiner Aktion sicher zugeordnet · —
-
-Der Auftraggeber nennt eine Tank-Rollenaktion „Abtausch" und beschreibt sie als „anhaltende Verlangsamung der Gegner". C30 hat denselben Namen Shirk zugeordnet. Beides zusammen geht nicht: Shirk (7537) überträgt 25 % Feindseligkeit und verlangsamt nichts; die beschriebene Wirkung gehört zu Armlänge (7548).
-
-**Nicht entscheidbar mit den hier verfügbaren Mitteln:** Die generierten Ressourcen führen ausschließlich englische Namen, und die drei Quellen, die den deutschen Namen belegen würden — Lodestone-Datenbank, Garland Tools, XIVAPI —, sind vom Egress nach Organisationsrichtlinie gesperrt. Zwei Suchmaschinenzusammenfassungen widersprechen einander; eine davon als Beleg zu nehmen wäre geglätteter Quellenstatus.
-
-**Warum es nicht folgenlos ist:** Die Reihenfolgebedingung aus A46 (`reprisalDone`) setzt die Aussage „Reflexion und Abtausch zuerst" um und kennt nur Reflexion. Steht „Abtausch" für Armlänge, fehlt dort eine zweite Stufe — dieselbe Bedingung, nur für die zweite kostenlose Minderung.
-
-**Auflösung:** eine Angabe des Auftraggebers aus seinem Client — welche der beiden Beschreibungen bei „Abtausch" steht. Danach ist die Bedingung in einer Zeile ergänzt oder die Frage erledigt.
+**Empfehlung: warten.** Erst die Wirkung an einem Job sehen, dann übertragen; die Reihenfolge ist dieselbe wie bei der Mitigations-Synergie.
 
 ### DRK: Die Betäubungsregel prüft die Tatsache, nicht die Prognose · N
 

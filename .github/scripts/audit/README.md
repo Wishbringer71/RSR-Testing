@@ -319,7 +319,7 @@ Umbenennung, und die fällt beim Kompilieren auf.
 
 Konzept 08 benennt die Bauform: Eine Aktion mit zwei Wirkungen ist nur nach einer von ihnen
 eingeordnet. Sanctus ist ein Schadenszauber, der auch betäubt — die Betäubung war bis zu
-diesem Fork Teil keiner Entscheidung. Assize ist ein Angriffs-oGCD, der auch heilt. Armlänge
+diesem Fork Teil keiner Entscheidung. Assize ist ein Angriffs-oGCD, der auch heilt. Rückstoß (Arm’s Length)
 gilt als Rückstoßschutz, und ihre Verlangsamung +20 % auf jeden Angreifer wurde **nirgends**
 gelesen.
 
@@ -330,10 +330,10 @@ oder wenigstens als einzelne `StatusID`. Die Ausgabe trennt Tank und Heiler vom 
 Erhebung vollständig zu führen ist, die Bearbeitung aber dem Nutzungsprofil folgt.
 
 Ergebnis: 1457 PvE-Aktionen, 52 mit einer solchen Wirkung, **ein** Fund im Tank- und
-Heilerprofil, der eine Entscheidung ändert — Armlänge. Der Wirktext der Verlangsamung nennt
+Heilerprofil, der eine Entscheidung ändert — Rückstoß (Arm’s Length). Der Wirktext der Verlangsamung nennt
 ausdrücklich die Verzögerung der **Automatikangriffe**, aus denen Trash-Gegner den Großteil
 ihres Schadens liefern; die Drosselung liegt damit in der Größenordnung von Rampart. Genutzt
-ist der Befund in der Barrierenregel des Dunkelritters (`PackSlowed`); die Frage, ob Armlänge
+ist der Befund in der Barrierenregel des Dunkelritters (`PackSlowed`); die Frage, ob Rückstoß (Arm’s Length)
 auch **als** Minderungswerkzeug gewirkt werden soll, steht in `TODO.md`, weil sie mit ihrer
 Rolle als einzigem Rückstoßschutz kollidiert. Die übrigen Treffer liegen in Bozja und den
 Tiefen Gewölben und sind erfasst, nicht bearbeitet.
