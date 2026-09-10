@@ -208,10 +208,51 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	/// </para>
 	/// </summary>
 	/// <summary>
-	/// The radius Holy and Holy III cover. A healer's stun silences the enemies inside it, which is
-	/// the set that decides whether damage is still arriving.
+	/// How long after an area stun the hold continues, so the gap between two casts of Sanctus does
+	/// not open a window. Roughly one global cooldown.
 	/// </summary>
-	private const float StunSurveyRadius = 8f;
+	private const float StunChainGrace = 3f;
+
+	private static DateTime _lastGroupStunSeen = DateTime.MinValue;
+
+	/// <summary>
+	/// Whether an <b>area</b> stun is currently keeping the damage stream down.
+	/// <para>
+	/// Neither "any enemy is stunned" nor "every enemy is stunned" answers that. The first counts
+	/// Low Blow - which this job carries itself and the interrupt path uses - where one enemy stops
+	/// and the rest of the pull keeps hitting. The second fails as soon as a single straggler joins
+	/// the pack unstunned, although the stream is plainly interrupted. What separates the two cases
+	/// is the share: an area stun catches the pack, a single-target stun catches one of it. The rule
+	/// therefore asks for at least two stunned enemies and at least half of those in range.
+	/// </para>
+	/// <para>
+	/// The radius is the job's own reach, the same set of enemies the hostile count is measured
+	/// over. Both conditions answer one question - is damage still arriving on me - so they have to
+	/// look at the same enemies; a wider radius would count enemies that are not hitting anyone.
+	/// </para>
+	/// <para>
+	/// Between two casts of Sanctus the stun lapses for about a global cooldown, so the hold
+	/// continues through that gap while the enemies can still be stunned. Once they carry stun
+	/// resistance there is no headroom left and the hold ends by itself - "wait until the stuns stop
+	/// working" needs no counter of its own.
+	/// </para>
+	/// </summary>
+	private bool GroupStunRunning()
+	{
+		var inRange = SurveyStuns(DataCenter.JobRange, out var stunned, out _, out var headroom);
+		if (inRange == 0)
+		{
+			return false;
+		}
+
+		if (stunned >= 2 && stunned * 2 >= inRange)
+		{
+			_lastGroupStunSeen = DateTime.Now;
+			return true;
+		}
+
+		return headroom && (DateTime.Now - _lastGroupStunSeen).TotalSeconds < StunChainGrace;
+	}
 
 	private bool ShouldUseBlackestNightOnSelf()
 	{
@@ -225,11 +266,11 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			|| (HostileTarget?.HasStatus(false, StatusHelper.ReprisalStatus) ?? false);
 
 		// In a pull the barrier has to stand on its own: a big mitigation running alongside drops
-		// the damage stream below the rate that spends it, and a stun stops the stream outright.
-		// Eight yalms is what Holy covers, so it is the set of enemies a healer's stun silences.
+		// the damage stream below the rate that spends it, and a stun chain stops the stream
+		// outright.
 		var staggeredHeavyPull = NumberOfHostilesInRange >= BlackestNightMinHostiles
 			&& !HasMajorMitigation
-			&& !AnyHostileStunned(StunSurveyRadius)
+			&& !GroupStunRunning()
 			&& reprisalDone;
 
 		return BlackestNightUsage switch

@@ -1468,6 +1468,57 @@ dafür ist die Zahl einstellbar.
 
 ---
 
+### A48 · Gruppenbetäubung: Quantor und Bezugsmenge nachgezogen (10.09.2026)
+
+**Anlass:** Rückfrage des Auftraggebers, ob außer dem Weißmagier andere Heiler betäuben können —
+und, nach der ersten Korrektur, die Feststellung: „Es geht um Gruppenstuns, nicht um einzelne
+Gegner. Du arbeitest zu oberflächlich." Die Kritik trifft; die Bedingung war zweimal falsch gefasst
+(C31).
+
+**Die Erhebung, die die Frage beantwortet.** Alle PvE-Aktionen mit Betäubungswirkung, nach Rolle:
+
+| Rolle | Aktion | Wirkung | Dauer |
+|---|---|---|---|
+| Heiler | Sanctus (Holy), Holy III — **nur Weißmagier** | Fläche, 8 Yalm | 4 s |
+| Tank | Schildhieb — nur Paladin | Einzelziel | 6 s |
+| Tank | **Tiefschlag — alle Tanks, auch der Dunkelritter** | Einzelziel | 5 s |
+| Nahkampf | Fußfeger | Einzelziel | 3 s |
+| Occult Crescent | Occult Falcon, Mineuchi, Variant Ultimatum | Fläche / Einzelziel | 4–6 s |
+
+Gelehrter, Astrologe und Weiser haben keine. Eine Fallunterscheidung nach Gruppenzusammensetzung
+braucht die Regel dennoch nicht: Sie misst den Status **auf den Gegnern**. Ohne Betäubung ist die
+Bedingung nie erfüllt.
+
+**Der eigentliche Befund liegt im Quantor.** Der Dunkelritter trägt Tiefschlag selbst, und RSR
+wirkt es über den Unterbrechungspfad (`CustomRotation_Ability.cs:575`). Damit scheitern beide
+naheliegenden Formulierungen: „irgendein Gegner betäubt" hätte die eigene Unterbrechung die eigene
+Barriere sperren lassen; „alle Gegner betäubt" fällt um, sobald ein Nachzügler unbetäubt zur Gruppe
+stößt, obwohl der Strom erkennbar steht. Maßgeblich ist der **Anteil** — mindestens zwei betäubte
+Gegner und mindestens die Hälfte der Gegner in Reichweite. Eine Flächenbetäubung erfüllt das, eine
+Einzelbetäubung nicht.
+
+**Zweiter Fehler derselben Oberflächlichkeit: die Bezugsmenge.** Die Betäubungsprüfung lief über
+acht Yalm, die Gegnerzahl über die Jobreichweite (`DataCenter.JobRange`, für Tanks drei Yalm) —
+zwei verschiedene Mengen für zwei Bedingungen, die dieselbe Frage beantworten sollen. Beide messen
+jetzt über die Jobreichweite: die Gegner, die tatsächlich zuschlagen.
+
+**Umgesetzt:** `SurveyStuns` erhält eine **Überladung** mit der Trefferzahl (`out int
+stunnedCount`) — additiv, die vorhandene Signatur bleibt und ruft die neue auf, damit kein
+Paketbruch für Gruppe R entsteht. `GroupStunRunning()` in `DRK_Reborn` wertet Anteil und
+Nachlauffenster aus; `AnyHostileStunned` ist wieder entfernt.
+
+**Was der Auftraggeber zum zeitlichen Verlauf ergänzt hat**, ist im Konzept aufgenommen: Am Ende des
+Pulls steht die Gruppe beieinander, die Gegnerzahl ist am höchsten, und der Dunkelritter hat seine
+großen Minderungen typischerweise noch nicht gezogen — die Bedingungen „genug Gegner" und „keine
+große Minderung" treffen also im selben Moment zu. Die Betäubungsphase fällt oft mit ebendiesem
+Moment zusammen; sie schiebt auf statt auszuschließen und endet mit der Betäubungsimmunität.
+
+**Erreichter Prüfgrad:** statische Prüfung, vollständige Erhebung der Betäubungsaktionen aus
+`ActionId.resx`, CI-Kompilierung. Nicht beobachtet: der Anteilsschwellwert im Spiel — ob eine halbe
+betäubte Gruppe den Strom weit genug drückt, ist eine Annahme.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.
@@ -1548,3 +1599,4 @@ Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt e
 | C28 | TODO-Eintrag zu den fehlenden Barrieregruppen: sechs Ids seien die „PvE-Spielerbarrieren, die vermutlich hineingehören" (`Aquaveil_3086`, `DivineCaress`, `Epicycle`, `GuardiansWill`, `HolySheltron_3026`, `ImprovisedFinish`) | Vier der sechs sind es nicht, und acht echte fehlten. Die Prüfung über die **Aktion** gleichen Namens zeigt: Aquaveil und Holy Sheltron senken in PvE nur den erlittenen Schaden, die Barriere-Ids 3086 und 3026 gehören zu ihren PvP-Formen; `Epicycle` hat nur eine PvP-Aktion, `GuardiansWill` gar keine. Nicht genannt waren dagegen `ShakeItOff` (1457/1993), `SeraphicVeil` (1917/2040/3097), `NeutralSect` (1921/3988), `TheSpire_3892` — Barrieren, die ein Heiler in fast jedem Gruppenkampf sieht. Ursache: Die Liste war nach dem Jobkürzel im Status-Scope gebildet, einem Surrogat, das PvE und PvP nicht trennt — beide Formen tragen denselben Anzeigenamen und dieselbe Wirkbeschreibung. Lehre: Wo zwei Formen einer Fähigkeit denselben Text tragen, entscheidet nicht der Status, sondern die Aktion, die ihn verleiht | `scan13.py` um die Aktionszuordnung erweitert, Eintrag neu gefasst (A41) |
 | C29 | A44 und die Antwort dazu: der Vorschlag, The Blackest Night nicht zusammen mit anderen Schilden und Minderungen zu wirken, sei „ein Surrogat, das die falsche Größe misst" — pauschal abgelehnt | Für den Tankbuster richtig, für den Wall-to-Wall-Pull falsch. Dort kommt der Schaden als **Strom**, nicht als Paket: Zwei Minderungen gleichzeitig decken dieselben Sekunden doppelt und lassen den Rest ungedeckt, und die parallele Minderung senkt den Strom unter die Rate, die die Barriere in sieben Sekunden aufzehrt (3,6 % → 5,1 % unter Shadow Wall). Die Prüfung war gegen die Buster-Lage geführt und ihr Ergebnis ungeprüft auf die Dauerschaden-Lage übertragen — dieselbe Fehlerform, die C18 für die Aufhebungsregeln festgehalten hat, diesmal in der Gegenrichtung. Der Auftraggeber hat die fehlende Lage benannt. Lehre: Bevor ein Vorschlag verworfen wird, ist zu prüfen, für welche Auslöserklasse er gilt — eine Regel kann für die eine richtig und für die andere falsch sein, und dann ist die Antwort eine Fallunterscheidung, keine Ablehnung | A45: `TankbusterOrHeavyPull` mit Staffelungsbedingung, Konzept 10 neu gefasst |
 | C30 | A45-Nachtrag: die deutschen Namen „Reflexion" und „Abtausch" ließen sich keiner Aktion zuordnen, „keine trägt einen dieser Namen erkennbar" | Der Suchraum war falsch gewählt. Gesucht wurde ausschließlich unter Aktionen mit **Betäubungswirkung**, weil beide Namen im selben Satz wie die Stuns des Weißmagiers standen. Reflexion ist Reprisal, Abtausch ist Shirk — Tank-Rollenaktionen ohne Betäubung, die in diesem Filter gar nicht auftauchen konnten. Der Auftraggeber hat den richtigen Suchraum genannt („die deutschen Beschreibungen der Tankskills"), danach war die Zuordnung in einer Websuche belegt. Lehre: Der Suchraum folgt der Rollen- und Kategoriezuordnung des gesuchten Gegenstands, nicht dem Satz, in dem er erwähnt wurde — ein Nullbefund im falschen Raum ist kein Nullbefund | A46: Reihenfolgebedingung umgesetzt, Namensfrage im TODO geschlossen |
+| C31 | A47: Die Betäubungssperre prüfte `AnyHostileStunned` — „irgendein Gegner im Umkreis ist betäubt"; der erste Korrekturversuch setzte dagegen „**alle** Gegner betäubt" | Beide Quantoren messen die falsche Größe, und der Auftraggeber hat den richtigen Begriff genannt: Es geht um **Gruppenbetäubungen**. „Irgendeiner" zählt Tiefschlag mit — die Einzelbetäubung, die der Dunkelritter selbst trägt und die RSR über den Unterbrechungspfad wirkt (`CustomRotation_Ability.cs:575`) —, sodass die eigene Unterbrechung die eigene Barriere gesperrt hätte. „Alle" fällt um, sobald ein einzelner Nachzügler unbetäubt zur Gruppe stößt, obwohl der Schadensstrom erkennbar steht. Maßgeblich ist der **Anteil**: eine Flächenbetäubung erfasst das Rudel, eine Einzelbetäubung einen daraus. Zweiter Fehler derselben Oberflächlichkeit: Die Betäubungsprüfung lief über acht Yalm, die Gegnerzahl-Prüfung über die Jobreichweite — zwei verschiedene Mengen für zwei Bedingungen, die dieselbe Frage beantworten sollen. Lehre: Bei einer Bedingung über eine Menge sind Quantor **und** Bezugsmenge Teil des Befunds; beide folgen aus der Wirkung, nicht aus der bequemeren Prüfung | A48: `GroupStunRunning()` mit Anteilsregel über die Jobreichweite, `SurveyStuns`-Überladung mit Trefferzahl |

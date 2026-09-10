@@ -529,9 +529,24 @@ public partial class CustomRotation
 	/// </param>
 	/// <returns>How many hostiles were inside the radius. Zero means neither flag says anything.</returns>
 	protected static int SurveyStuns(float radius, out bool allStunned, out bool headroom)
+		=> SurveyStuns(radius, out _, out allStunned, out headroom);
+
+	/// <summary>
+	/// As <see cref="SurveyStuns(float, out bool, out bool)"/>, and additionally reports how many of
+	/// the hostiles inside the radius are stunned.
+	/// </summary>
+	/// <param name="stunnedCount">
+	/// How many are stunned right now. The count is what separates an area stun from a single-target
+	/// one: Holy stops everything within its radius, while Low Blow, Shield Bash and Leg Sweep stop
+	/// exactly one enemy while the rest of a pull keeps hitting. A rule that reacts to "the damage
+	/// stream is interrupted" has to read the share, not the presence, of stunned enemies.
+	/// </param>
+	protected static int SurveyStuns(float radius, out int stunnedCount, out bool allStunned,
+		out bool headroom)
 	{
 		allStunned = false;
 		headroom = false;
+		stunnedCount = 0;
 
 		var hostiles = DataCenter.AllHostileTargets;
 		if (hostiles == null || hostiles.Count == 0)
@@ -562,6 +577,7 @@ public partial class CustomRotation
 		}
 
 		allStunned = inRange > 0 && stunned == inRange;
+		stunnedCount = stunned;
 		return inRange;
 	}
 
@@ -1336,36 +1352,6 @@ public partial class CustomRotation
 	/// </summary>
 	public static bool BMRRaidwideWithin(float seconds)
 		=> Service.Config.UseBmrTimeline && BMRActive && BMRRaidwideIn is > 0f and < float.MaxValue && BMRRaidwideIn <= seconds;
-
-	/// <summary>
-	/// Whether any hostile within <paramref name="radius"/> is currently stunned, from any source.
-	/// <para>
-	/// A stun stops its target from acting at all, so while one is running the damage stream is
-	/// interrupted rather than merely reduced. An absorbing barrier put up in that window expires
-	/// unspent. The radius is the one the stun covers - Holy reaches eight yalms - not the job's
-	/// attack range, for the same reason <see cref="SurveyStuns"/> takes one.
-	/// </para>
-	/// </summary>
-	protected static bool AnyHostileStunned(float radius)
-	{
-		var hostiles = DataCenter.AllHostileTargets;
-		if (hostiles == null)
-		{
-			return false;
-		}
-
-		for (int i = 0, n = hostiles.Count; i < n; i++)
-		{
-			var hostile = hostiles[i];
-			if (hostile != null && hostile.DistanceToPlayer() <= radius
-				&& hostile.HasStatus(false, StatusHelper.StunStatus))
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
 
 	/// <summary>
 	/// Whether one of the big personal mitigations is already running on the player.

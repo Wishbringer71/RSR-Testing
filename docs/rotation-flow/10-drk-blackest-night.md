@@ -113,10 +113,46 @@ streckt Sanctus über `SurveyStuns`, solange die Gegner noch betäubbar sind. Na
 Anwendungen tragen sie `StunResistance` (39, „Immune to stun effects"), und erst dann läuft der
 Schadensstrom wieder.
 
-Deshalb prüft der Pull-Zweig die **Tatsache**, nicht die Prognose: Läuft gerade eine Betäubung im
-Acht-Yalm-Umkreis, unterbleibt die Barriere. „Der Heiler könnte gleich betäuben" wäre eine Aussage
-über den nächsten Zauber eines anderen Spielers; sie würde die Fähigkeit über den ganzen frühen Pull
-sperren, also in der Phase mit dem höchsten Schadensdruck.
+### Wer betäuben kann, und warum die Frage die Regel verändert
+
+Erhebung über alle PvE-Aktionen mit Betäubungswirkung, nach Rolle geordnet:
+
+| Rolle | Aktion | Wirkung | Dauer |
+|---|---|---|---|
+| Heiler | **Sanctus** (Holy) und Holy III, **nur Weißmagier** | Fläche, 8 Yalm | 4 s |
+| Tank | Schildhieb (Shield Bash), nur Paladin | Einzelziel | 6 s |
+| Tank | **Tiefschlag (Low Blow), alle Tanks — auch der Dunkelritter** | Einzelziel | 5 s |
+| Nahkampf | Fußfeger (Leg Sweep) | Einzelziel | 3 s |
+| Occult Crescent | Occult Falcon, Mineuchi, Variant Ultimatum | Fläche bzw. Einzelziel | 4–6 s |
+
+Gelehrter, Astrologe und Weiser haben **keine** Betäubung. Die Rückhaltung greift also nur in
+Gruppen mit Weißmagier — und das ist kein Sonderfall, den die Regel behandeln müsste: Sie misst den
+**Status auf den Gegnern**, nicht die Gruppenzusammensetzung. Ohne Betäubung ist die Bedingung nie
+erfüllt und die Regel damit von selbst wirkungslos.
+
+**Gemeint sind Gruppenbetäubungen, und der Unterschied ist der Anteil.** Tiefschlag trägt der
+Dunkelritter selbst, und RSR wirkt es über den Unterbrechungspfad
+(`CustomRotation_Ability.cs:575`); es hält **ein** Ziel an, während die übrigen sieben Gegner eines
+Pulls weiter zuschlagen. Zwei naheliegende Formulierungen scheitern daran:
+
+- „**irgendein** Gegner ist betäubt" zählt Tiefschlag mit — die eigene Unterbrechung würde die
+  eigene Barriere sperren;
+- „**alle** Gegner sind betäubt" fällt um, sobald ein einzelner Nachzügler unbetäubt zur Gruppe
+  stößt, obwohl der Schadensstrom erkennbar steht.
+
+Die Regel fragt deshalb nach dem Anteil: **mindestens zwei betäubte Gegner und mindestens die
+Hälfte der Gegner in Reichweite**. Sanctus erfasst das Rudel und erfüllt das; Tiefschlag,
+Schildhieb und Fußfeger erfassen einen daraus und erfüllen es nicht.
+
+**Gemessen wird über dieselbe Menge wie die Gegnerzahl** — die Jobreichweite, für einen Tank drei
+Yalm (`DataCenter.JobRange`). Beide Bedingungen beantworten dieselbe Frage, ob noch Schaden auf mich
+zuläuft; ein weiterer Radius zählte Gegner mit, die niemanden schlagen.
+
+**Der Halt trägt über die Lücke.** Zwischen zwei Anwendungen von Sanctus läuft die Betäubung etwa
+einen globalen Cooldown lang aus. Der Pull-Zweig hält deshalb noch drei Sekunden nach der letzten
+Gruppenbetäubung zurück — aber nur, solange `headroom` besteht, die Gegner also überhaupt noch
+betäubbar sind. Tragen sie `StunResistance`, endet der Halt von selbst. Das ist „zurückhalten, bis
+die Betäubungen nicht mehr wirken", ohne einen eigenen Zähler für die Zahl der Anwendungen.
 
 **Das ist keine neue Konstruktion, sondern die vorhandene.** Shadow Wall und Shadowed Vigil tragen
 `StatusProvide = StatusHelper.RampartStatus` (`DarkKnightRotation.cs:238`, `:404`) und überlappen
@@ -195,11 +231,29 @@ Der Pull-Zweig verlangt **vier** Dinge zugleich, und jedes hat seinen eigenen Gr
 |---|---|
 | `NumberOfHostilesInRange >= BlackestNightMinHostiles` (Vorgabe 4) | erst ab genug Gegnern erreicht der Schadensstrom die Verbrauchsrate |
 | `!HasMajorMitigation` | eine große Minderung senkt den Strom unter diese Rate |
-| `!AnyHostileStunned(8)` | eine Betäubung hält den Strom ganz an; die Barriere verfällt ungenutzt |
+| `!GroupStunRunning()` | eine Gruppenbetäubung hält den Strom ganz an; die Barriere verfällt ungenutzt |
 | Reprisal ist erledigt | die kostenlose Gruppenminderung gehört zuerst gewirkt |
 
 Beim Tankbuster gilt keine davon: Dort ist Stapeln richtig, und eine einzelne Gelegenheit
 entscheidet. Der Notfallzweig bei niedriger Gesundheit wartet ebenfalls auf nichts.
+
+### Der zeitliche Verlauf eines Pulls, und warum die vier Bedingungen zusammenpassen
+
+Die Bedingungen sind nicht vier voneinander unabhängige Filter, sondern beschreiben zusammen den
+Zeitpunkt, an dem die Fähigkeit am meisten leistet.
+
+Während des Einsammelns läuft der Dunkelritter; die Gegner folgen verstreut, und nur ein Teil steht
+in Schlagreichweite. Die Gegnerzahl ist niedrig, der Schadensstrom ebenfalls — die
+Gegnerzahl-Bedingung hält die Barriere hier heraus. Am **Ende** des Pulls, wenn alles beieinander
+steht, ist die Zahl am größten und der Strom am stärksten. Genau dann hat der Dunkelritter seine
+großen Minderungen typischerweise noch nicht gezogen, weil zuvor kaum etwas auf ihn einschlug: Die
+Bedingung „keine große Minderung aktiv" ist also im selben Moment erfüllt, in dem die Gegnerzahl
+ihren Höchststand erreicht.
+
+Die Ausnahme ist die Betäubungsphase. Sie fällt oft mit demselben Moment zusammen, weil der Heiler
+zu betäuben beginnt, sobald die Gruppe steht — und für ihre Dauer ist die Barriere wertlos. Deshalb
+ist sie die einzige der vier Bedingungen, die aufschiebt statt auszuschließen: Sie endet mit der
+Betäubungsimmunität der Gegner, und danach steht der stärkste Moment des Pulls noch bevor.
 
 ### Die Gegnerzahl: was sie leisten kann und was nicht
 
