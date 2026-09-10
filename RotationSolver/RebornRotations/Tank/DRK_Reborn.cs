@@ -46,6 +46,10 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		TankbusterHeavyPullOrLowHealth,
 	}
 
+	[Range(1, 8, ConfigUnitType.None, 1)]
+	[RotationConfig(CombatType.PvE, Name = "Hostiles needed before The Blackest Night counts a pull as big enough")]
+	private int BlackestNightMinHostiles { get; set; } = 4;
+
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Health threshold for the Blackest Night option above")]
 	private float BlackestNightHealthRatio { get; set; } = 0.6f;
@@ -203,6 +207,12 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	/// each other through StatusProvide.
 	/// </para>
 	/// </summary>
+	/// <summary>
+	/// The radius Holy and Holy III cover. A healer's stun silences the enemies inside it, which is
+	/// the set that decides whether damage is still arriving.
+	/// </summary>
+	private const float StunSurveyRadius = 8f;
+
 	private bool ShouldUseBlackestNightOnSelf()
 	{
 		// Reprisal first. It is a free party-wide -10% and sits at the very end of this path, so
@@ -214,7 +224,13 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			|| ReprisalPvE.Cooldown.IsCoolingDown
 			|| (HostileTarget?.HasStatus(false, StatusHelper.ReprisalStatus) ?? false);
 
-		var staggeredHeavyPull = InHeavyPull && !HasMajorMitigation && reprisalDone;
+		// In a pull the barrier has to stand on its own: a big mitigation running alongside drops
+		// the damage stream below the rate that spends it, and a stun stops the stream outright.
+		// Eight yalms is what Holy covers, so it is the set of enemies a healer's stun silences.
+		var staggeredHeavyPull = NumberOfHostilesInRange >= BlackestNightMinHostiles
+			&& !HasMajorMitigation
+			&& !AnyHostileStunned(StunSurveyRadius)
+			&& reprisalDone;
 
 		return BlackestNightUsage switch
 		{

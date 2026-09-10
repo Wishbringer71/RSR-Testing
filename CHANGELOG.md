@@ -40,10 +40,11 @@ so a derived rotation reading it sees different behaviour without any compile er
   (lock-on VFX or an action from the learned list) or predicted by BMR inside the mitigation window.
   Additive. It deliberately excludes `IsHostileCastingToTank`, which counts any enemy casting at its
   own target and therefore fires on ordinary trash casts for whoever holds the pull.
-- **Added** `CustomRotation.InHeavyPull` and `CustomRotation.HasMajorMitigation` (both `protected
-  static`). The first is `NumberOfHostilesInRange >= MitigationSustainHostileCount`, the second reads
-  `StatusHelper.RampartStatus` on the player — together they express "a wall-to-wall pull with no big
-  mitigation running", the situation in which mitigation is staggered rather than stacked. Additive.
+- **Added** `CustomRotation.HasMajorMitigation` and `CustomRotation.AnyHostileStunned(float radius)`
+  (both `protected static`). The first reads `StatusHelper.RampartStatus` on the player, the second
+  reports whether any hostile inside the radius is stunned from any source. Together they express
+  the two conditions under which an absorbing barrier goes to waste in a pull: a big mitigation
+  running alongside it, or a stun that stops the damage stream. Additive.
 
 A rotation that reads `NoNeedHealingStatus` to decide whether to skip a heal keeps working; one
 that relied on `HpRecoveryDown` or `Mounted` being in there has to name them itself now.

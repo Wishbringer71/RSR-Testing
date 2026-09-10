@@ -1358,7 +1358,8 @@ sich deshalb nie — die Staffelung ist im Projekt etabliert, The Blackest Night
 Es kann sie über `StatusProvide` auch nicht ausdrücken, weil sein eigener Status eine Barriere ist
 und kein Minderungsstatus. Deshalb zwei neue Prüfgrößen in `CustomRotation_OtherInfo`:
 `HasMajorMitigation` liest dieselbe `RampartStatus`-Liste, `InHeavyPull` misst
-`NumberOfHostilesInRange >= MitigationSustainHostileCount`.
+`NumberOfHostilesInRange >= MitigationSustainHostileCount` (in A47 durch eine eigene Option
+ersetzt).
 
 **Keine neue Zahl.** Die Gegnerschwelle ist die vorhandene aus der Mitigations-Sustain-Regel
 (Vorgabe 4), nicht ein zweiter Schwellwert daneben. Dass vier Gegner die Rate von 3,6 % erreichen,
@@ -1411,6 +1412,59 @@ mindert keinen Schaden; RSR führt sie zentral über `AutoStatus.Shirk`
 
 **Erreichter Prüfgrad:** statische Prüfung der Pfadreihenfolge, Websuche für die Namenszuordnung,
 CI-Kompilierung. Nicht beobachtet: wie oft Reprisal dadurch im Spiel tatsächlich vorzieht.
+
+---
+
+### A47 · Die Pull-Bedingung vollständig gemacht: Betäubung, Gegnerzahl, eigene Minderungen (10.09.2026)
+
+**Anlass:** Der Auftraggeber stellt klar, worum es ihm von Anfang an ging. Beim Tankbuster ist alles
+richtig — die Fähigkeit soll kommen, die Barriere wird aufgezehrt, das Stapeln mit anderen
+Verteidigungen ist korrekt. Sein Problem ist ausschließlich der Wall-to-Wall-Pull: Dort sei die
+Fähigkeit so stark, dass sie mit anderen Verteidigungen interferiert; wenn der Heiler Sanctus wirkt
+und betäubt, bringe sie gar nichts; sie solle allein stehen und erst ab mehr als drei Gegnern
+kommen. Vorgabe: alles erneut im vollständigen Loop prüfen, das Konzept optimieren, Fehler
+beseitigen.
+
+**Abgleich mit dem Stand aus A45/A46 — drei Punkte trafen bereits zu, drei fehlten.** Zutreffend
+waren die Trennung der beiden Lagen, die Staffelung gegen große Minderungen und die Reprisal-Vorfahrt.
+Es fehlten:
+
+1. **Die Betäubung.** Sanctus — Holy, ab Stufe 82 Holy III — betäubt 4 Sekunden im Umkreis von acht
+   Yalm (`ActionId.resx` 139, 25860). In dieser Zeit kommt **kein** Schaden, die Barriere verfällt
+   also vollständig statt nur langsamer zu verfallen. Damit ist die Betäubung nicht ein weiterer
+   Minderungsfall, sondern dessen Grenzwert. Neue Prüfgröße `AnyHostileStunned(radius)`.
+2. **Die Gegnerzahl als eigene Größe.** A45 hatte sie an `MitigationSustainHostileCount` gekoppelt,
+   um „eine Zahl statt zwei" zu haben. Das war die falsche Sparsamkeit: Die Sustain-Zahl beantwortet
+   die Frage nach der Debuff-Aufrechterhaltung, hier geht es um die Verbrauchsrate einer Barriere.
+   Jetzt eigene Option `BlackestNightMinHostiles`, Vorgabe 4 — „mehr als drei", wie verlangt.
+3. **Der Verweis auf die Erwartung des Auftraggebers**, die Zahl möge den Verbrauch *sichern*. Das
+   kann sie nicht, und das steht jetzt im Konzept: Ohne den Schaden je Gegner ist keine Schwelle
+   beweisbar; die Zahl hält nur Lagen heraus, in denen sicher zu wenig kommt.
+
+**Die harte Fassung des Wunsches ist nicht erfüllbar, und das ist gerechnet.** „Keine andere
+Verteidigung darf laufen" scheitert an den Dauern: Reprisal 15 s, Oblation 2 × 10 s, Dark Mind 10 s,
+Dark Missionary 15 s, Rampart 20 s, Shadow Wall/Vigil 15 s — zusammen **95 Sekunden**, jede Fähigkeit
+nur einmal gewirkt. Ein Wall-to-Wall-Pull dauert selten so lange. Sperrte jede davon die Barriere,
+käme sie praktisch nie. Die Grenze verläuft deshalb bei der Wirkungsstärke: Die schwachen (10 %)
+heben die nötige Rate um ein Neuntel, die starken (ab 20 %) um ein Viertel bis zwei Drittel.
+`StatusHelper.RampartStatus` führt genau die starken. Oblation bleibt zusätzlich deshalb außen vor,
+weil es im selben Pfad **vor** der Barriere steht und diese sonst hinter der eigenen Vorgängerin
+hängen bliebe.
+
+**Der Pull-Zweig verlangt jetzt vier Dinge:** genug Gegner · keine große Minderung aktiv · keine
+laufende Betäubung im Acht-Yalm-Umkreis · Reprisal erledigt. Für den Tankbuster gilt keine davon.
+
+**Gewählt wurde die Tatsache, nicht die Prognose.** Geprüft wird, ob **gerade** betäubt ist, nicht ob
+noch betäubt werden *könnte*. Letzteres ist eine Aussage über den nächsten Zauber eines anderen
+Spielers und würde die Fähigkeit über den ganzen frühen Pull sperren — die Phase mit dem höchsten
+Schadensdruck.
+
+**Vorbedingung eingehalten:** Upstream war zwischenzeitlich zwei Commits weiter (Tag `7.5.6.1`,
+„Fixes for Dalamud version 15.0.3.4"); vor der Codeänderung gemergt, danach 0 / 355.
+
+**Erreichter Prüfgrad:** statische Prüfung, Aktionstexte als Quelle für alle Dauern und Radien,
+CI-Kompilierung. Nicht beobachtet: ob vier Gegner die Verbrauchsrate im gespielten Inhalt erreichen —
+dafür ist die Zahl einstellbar.
 
 ---
 

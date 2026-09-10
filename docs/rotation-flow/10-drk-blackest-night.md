@@ -14,7 +14,8 @@ Zwei Eingriffe in `DRK_Reborn.cs`, beide auf Upstream-Code:
    `BlackestNightUsage` mit drei Stufen entscheidet, bei welcher Lage die Fähigkeit auf den eigenen
    Charakter geht. Voreinstellung ist das heutige Verhalten. Die engeren Stufen lassen sie in zwei
    Lagen zu — beim erkannten oder vorhergesagten Tankbuster **ohne** weitere Bedingung, und im
-   großen Pull **nur, solange keine große Minderung läuft** —, wahlweise ergänzt um eine
+   großen Pull nur, solange die Barriere dort **allein steht**: genug Gegner, keine große Minderung
+   aktiv, keine laufende Betäubung, Reprisal zuerst gewirkt. Wahlweise ergänzt um eine
    Gesundheitsschwelle als Notfall.
 
 Die beiden Lagen verlangen entgegengesetzte Behandlung: Gegen einen Einschlag stapelt man
@@ -103,6 +104,20 @@ sieben Sekunden aufzehrt — die 3,6 % pro Sekunde werden zu 5,1 % unter Shadow 
 Shadowed Vigil. Beides zeigt in dieselbe Richtung: The Blackest Night gehört in eine Lücke der
 Minderungskette, nicht in deren Mitte.
 
+**Eine Betäubung ist der Extremfall davon.** Sanctus — Holy, und ab Stufe 82 Holy III — betäubt für
+4 Sekunden alles im Umkreis von acht Yalm (`ActionId.resx`, 139 und 25860). Für diese Zeit kommt
+nicht weniger Schaden, sondern gar keiner; eine in diesem Fenster gewirkte Barriere verfällt
+vollständig. Und die Betäubung ist keine Einzelerscheinung: Der Weißmagier hält sie im Trash
+absichtlich aufrecht, was dieses Projekt in Konzept 08 selbst umgesetzt hat — `WHM_Reborn.cs:498`
+streckt Sanctus über `SurveyStuns`, solange die Gegner noch betäubbar sind. Nach mehreren
+Anwendungen tragen sie `StunResistance` (39, „Immune to stun effects"), und erst dann läuft der
+Schadensstrom wieder.
+
+Deshalb prüft der Pull-Zweig die **Tatsache**, nicht die Prognose: Läuft gerade eine Betäubung im
+Acht-Yalm-Umkreis, unterbleibt die Barriere. „Der Heiler könnte gleich betäuben" wäre eine Aussage
+über den nächsten Zauber eines anderen Spielers; sie würde die Fähigkeit über den ganzen frühen Pull
+sperren, also in der Phase mit dem höchsten Schadensdruck.
+
 **Das ist keine neue Konstruktion, sondern die vorhandene.** Shadow Wall und Shadowed Vigil tragen
 `StatusProvide = StatusHelper.RampartStatus` (`DarkKnightRotation.cs:238`, `:404`) und überlappen
 sich deshalb nie. The Blackest Night kann dieselbe Staffelung nicht über `StatusProvide` ausdrücken,
@@ -171,18 +186,63 @@ Der Selbstschutz-Zweig fragt `BlackestNightUsage`:
 | Stufe | Bedingung | Für wen |
 |---|---|---|
 | `WheneverDefensesOpen` (Voreinstellung) | wie bisher: keine zusätzliche Bedingung | unverändertes Verhalten für alle, die nichts umstellen |
-| `TankbusterOrHeavyPull` | `TankbusterOnMe` **oder** (`InHeavyPull` **und nicht** `HasMajorMitigation`) | wer die Fähigkeit als Tankbuster-Antwort und als gestaffeltes Glied der Wall-to-Wall-Kette führt |
+| `TankbusterOrHeavyPull` | `TankbusterOnMe` **oder** der gestaffelte Pull (vier Bedingungen unten) | wer die Fähigkeit als Tankbuster-Antwort und als eigenständiges Glied der Wall-to-Wall-Kette führt |
 | `TankbusterHeavyPullOrLowHealth` | zusätzlich: Gesundheit ≤ `BlackestNightHealthRatio` (Vorgabe 60 %) | wer sie auch als Notschild will |
 
-`InHeavyPull` misst `NumberOfHostilesInRange >= MitigationSustainHostileCount` — dieselbe Schwelle,
-mit der die Rotation schon entscheidet, ob Addle, Feint und Reprisal im Trash dauerhaft gehalten
-werden (Vorgabe 4). Damit gibt es für „genug Trash" eine Zahl im Projekt und nicht zwei, und wer sie
-verstellt, verstellt beide Regeln gemeinsam. Ob vier Gegner die Rate von 3,6 % erreichen, ist eine
-Annahme — sie folgt aus rund 0,9 % je Gegner und Sekunde und ist hier nicht belegbar.
+Der Pull-Zweig verlangt **vier** Dinge zugleich, und jedes hat seinen eigenen Grund:
 
-Die Staffelungsbedingung gilt **nur** für den Wall-to-Wall-Zweig. Beim Tankbuster bleibt sie außen
-vor, weil dort Stapeln richtig ist, und bei niedriger Gesundheit ebenfalls: Ein Notschild wartet
-nicht auf das Ende einer Minderung.
+| Bedingung | Warum |
+|---|---|
+| `NumberOfHostilesInRange >= BlackestNightMinHostiles` (Vorgabe 4) | erst ab genug Gegnern erreicht der Schadensstrom die Verbrauchsrate |
+| `!HasMajorMitigation` | eine große Minderung senkt den Strom unter diese Rate |
+| `!AnyHostileStunned(8)` | eine Betäubung hält den Strom ganz an; die Barriere verfällt ungenutzt |
+| Reprisal ist erledigt | die kostenlose Gruppenminderung gehört zuerst gewirkt |
+
+Beim Tankbuster gilt keine davon: Dort ist Stapeln richtig, und eine einzelne Gelegenheit
+entscheidet. Der Notfallzweig bei niedriger Gesundheit wartet ebenfalls auf nichts.
+
+### Die Gegnerzahl: was sie leisten kann und was nicht
+
+Die Schwelle steht als eigene Rotationsoption, nicht als Ableitung der Mitigations-Sustain-Zahl.
+Beide beantworten verschiedene Fragen: Dort geht es um die Aufrechterhaltung eines Debuffs, hier um
+die Verbrauchsrate einer Barriere. Ein gemeinsamer Wert hätte die eine Frage der anderen
+untergeordnet.
+
+Was die Zahl leisten kann: Sie hält die Fähigkeit aus Lagen heraus, in denen sicher zu wenig Schaden
+kommt — zwei Gegner erreichen 3,6 % der maximalen Gesundheit pro Sekunde nur, wenn jeder 1,8 %
+beiträgt, was für gewöhnlichen Trash unplausibel ist.
+
+Was sie **nicht** leisten kann: garantieren, dass die Barriere aufgezehrt wird. Dafür müsste der
+Schaden je Gegner bekannt sein, und der hängt an Inhalt, Stufe und Gegnertyp. Vier Gegner sind die
+Vorgabe, weil sie rund 0,9 % je Gegner und Sekunde entsprechen; belegen lässt sich das hier nicht.
+Die Zahl ist deshalb einstellbar, und die Beobachtung im Spiel entscheidet: Bleibt die Barriere trotz
+Auslösung stehen, gehört sie höher; kommt die Fähigkeit im Pull kaum noch, niedriger.
+
+### Warum nicht jede Minderung sperrt
+
+Der Wunsch „im Pull soll die Fähigkeit allein für sich stehen" ist in der harten Fassung — keine
+andere Verteidigung darf laufen — nicht erfüllbar. Die Dauern der Minderungen eines Dunkelritters
+summieren sich, jede nur einmal gewirkt, auf mehr Zeit als ein Pull hat:
+
+| Fähigkeit | Dauer | Minderung |
+|---|---|---|
+| Reprisal | 15 s (ab Stufe 98) | −10 % (Gegner) |
+| Oblation | 2 × 10 s | −10 % |
+| Dark Mind | 10 s | −10 % / −20 % |
+| Dark Missionary | 15 s | −5 % / −10 % |
+| Rampart | 20 s | −20 % |
+| Shadow Wall / Shadowed Vigil | 15 s | −30 % / −40 % |
+
+Zusammen 95 Sekunden Abdeckung. Ein Wall-to-Wall-Pull dauert selten so lange; sperrte jede davon die
+Barriere, käme sie praktisch nie. Die Grenze verläuft deshalb dort, wo die Minderung die
+Verbrauchsrate ernsthaft verschiebt: Die schwachen (10 %) heben sie um ein Neuntel, die starken (ab
+20 %) um ein Viertel bis zwei Drittel. `StatusHelper.RampartStatus` enthält genau die starken —
+Rampart, Shadow Wall, Shadowed Vigil und die Entsprechungen der übrigen Tanks — und ist damit die
+richtige Liste, ohne dass eine neue Aufzählung entsteht.
+
+Oblation bleibt bewusst außen vor, und das hat neben der Rechnung einen zweiten Grund: Es steht im
+selben Pfad **vor** der Barriere. Würde es sperren, bliebe die Fähigkeit hinter der eigenen
+Vorgängerin hängen, sobald der Pfad einmal Oblation gewählt hat.
 
 ### Reflexion zuerst: die Reihenfolge im Pfad ist teuer vor billig
 

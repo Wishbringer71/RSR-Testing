@@ -1338,12 +1338,34 @@ public partial class CustomRotation
 		=> Service.Config.UseBmrTimeline && BMRActive && BMRRaidwideIn is > 0f and < float.MaxValue && BMRRaidwideIn <= seconds;
 
 	/// <summary>
-	/// Whether the pull is large enough that damage arrives as a continuous stream rather than as
-	/// single hits - the wall-to-wall case. Uses the same hostile count as the mitigation-debuff
-	/// sustain rule, so a user who tunes that threshold tunes both.
+	/// Whether any hostile within <paramref name="radius"/> is currently stunned, from any source.
+	/// <para>
+	/// A stun stops its target from acting at all, so while one is running the damage stream is
+	/// interrupted rather than merely reduced. An absorbing barrier put up in that window expires
+	/// unspent. The radius is the one the stun covers - Holy reaches eight yalms - not the job's
+	/// attack range, for the same reason <see cref="SurveyStuns"/> takes one.
+	/// </para>
 	/// </summary>
-	protected static bool InHeavyPull
-		=> NumberOfHostilesInRange >= Service.Config.MitigationSustainHostileCount;
+	protected static bool AnyHostileStunned(float radius)
+	{
+		var hostiles = DataCenter.AllHostileTargets;
+		if (hostiles == null)
+		{
+			return false;
+		}
+
+		for (int i = 0, n = hostiles.Count; i < n; i++)
+		{
+			var hostile = hostiles[i];
+			if (hostile != null && hostile.DistanceToPlayer() <= radius
+				&& hostile.HasStatus(false, StatusHelper.StunStatus))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 	/// <summary>
 	/// Whether one of the big personal mitigations is already running on the player.

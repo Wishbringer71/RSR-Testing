@@ -256,18 +256,13 @@ Die Kostenseite bliebe dagegen bestehen: Ein Ringpuffer über alle Gruppenmitgli
 
 ## Offene Arbeit
 
-### DRK: Rückhaltung von The Blackest Night während der Betäubungsphase — zwei Fragen offen · N
+### DRK: Die Betäubungsregel prüft die Tatsache, nicht die Prognose · N
 
-Vorgabe des Auftraggebers: The Blackest Night soll nicht kommen, solange der Weißmagier seine Betäubungen noch nicht abgearbeitet hat. Der Gedanke ist mechanisch stimmig — eine Betäubung hält den Schadensstrom vollständig an, die Barriere verfällt dann ungenutzt.
+Der Pull-Zweig unterbleibt, solange im Acht-Yalm-Umkreis ein Gegner betäubt ist (`AnyHostileStunned`, A47). Was er **nicht** prüft: ob der Heiler gleich betäuben wird. Der Auftraggeber hatte ursprünglich auf „solange der Weißmagier seine drei Betäubungen noch nicht abgearbeitet hat" gezielt; das ist über `SurveyStuns(..., out headroom)` messbar, wäre aber eine Aussage über den nächsten Zauber eines anderen Spielers.
 
-**Die Messgrößen liegen vor**, aus der Umsetzung von Konzept 08: `SurveyStuns(radius, out allStunned, out headroom)` (`CustomRotation_OtherInfo.cs:531`) meldet, ob alle Gegner im Radius betäubt sind und ob überhaupt noch einer betäubbar ist; `StatusHelper.StunStatus` und `StunResistanceStatus` (39, „Immune to stun effects") tragen die Ids. `WHM_Reborn.cs:498` nutzt beides bereits für die Streckung von Heiliger. Die Regel wäre zwei Zeilen im Pull-Zweig.
+**Kosten des Kompromisses:** Zwischen zwei Sanctus-Anwendungen entsteht ein kurzes Fenster, in dem die Betäubung ausläuft und die Barriere trotzdem gewirkt werden kann — sie wird dann von der nächsten Betäubung unterbrochen und verfällt teilweise.
 
-**Geklärt ist die Reihenfolgefrage** (A46): „Reflexion und Abtausch zuerst" meint Reprisal und Shirk. Die Reprisal-Bedingung ist umgesetzt; Shirk ist keine Minderung und bleibt außen vor.
-
-**Zwei Fragen bleiben:**
-
-1. **„Während betäubt" oder „solange noch betäubbar"?** Nur das Erste ist eine Tatsache (`allStunned`); das Zweite (`headroom`) ist eine Prognose über den nächsten Zauber eines anderen Spielers und würde die Fähigkeit über den ganzen frühen Pull sperren — genau die Phase mit dem höchsten Schadensdruck.
-2. **Ist der Weißmagier RSR-gesteuert?** Die Streckung von Heiliger ist eine Regel dieses Plugins. Bei einem fremden Spieler oder einem Duty-Support-NPC greift sie nicht, und die Betäubungslage ist dann nur zu beobachten, nicht vorherzusagen.
+**Auflösungsbedingung:** eine Beobachtung, wie oft das im Spiel vorkommt. Fällt es auf, ist `headroom` die vorhandene Größe dafür; die Sperre gälte dann bis zur Betäubungsimmunität der Gegner (`StunResistance`). Zu bedenken ist, dass die Streckung von Sanctus eine Regel **dieses** Plugins ist (`WHM_Reborn.cs:498`) — bei einem fremden Heiler greift sie nicht.
 
 ### Reihenfolge im Verteidigungspfad des Dunkelritters: teuer vor billig · N, U
 
