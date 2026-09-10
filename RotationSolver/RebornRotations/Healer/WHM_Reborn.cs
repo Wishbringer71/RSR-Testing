@@ -494,9 +494,15 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		}
 
 		// Only worth it where an area cast is the filler at all, and where a stun still does something.
+		//
+		// "No headroom" generalises "everyone is stunned" to "nobody left this cast could stun", which
+		// covers a pack of two stunned enemies and one already immune. It must not be read as a reason
+		// on its own: once every enemy in radius is immune and none is still stunned, there is no stun
+		// to protect, and yielding the GCD would trade an area cast for a single-target dot for the
+		// rest of the pull. Hence the explicit requirement that a stun is actually running.
 		var radius = HolyIiiPvE.EnoughLevel ? HolyIiiPvE.Info.EffectRange : HolyPvE.Info.EffectRange;
-		var inRange = SurveyStuns(radius, out var allStunned, out var headroom);
-		if (inRange < StretchHolyMinHostiles || (!allStunned && headroom))
+		var inRange = SurveyStuns(radius, out var stunned, out var allStunned, out var headroom);
+		if (inRange < StretchHolyMinHostiles || stunned == 0 || (!allStunned && headroom))
 		{
 			return false;
 		}

@@ -1582,6 +1582,28 @@ setzt — die Regel fragt deshalb nach *irgendeiner* der Fassungen.
 
 ---
 
+### A50 · Kein Blocker für Sanctus bei laufender Barriere — und ein Fehlauslöser in der Betäubungsstreckung (10.09.2026)
+
+**Anlass:** Frage des Auftraggebers, ob der Weißmagier sein Sanctus zurückhält, während die Barriere des Dunkelritters läuft.
+
+**Antwort am Artefakt: nein, an keiner Stelle.** Erhoben wurde der gesamte Wirkungsbereich der Aktion:
+
+- `HolyPvE` und `HolyIiiPvE` tragen in `WhiteMageRotation.cs:202` und `:353` nur `IsFriendly = false`, die Freischaltquest und `AoeCount = 3` — keine `StatusNeed`, keine `TargetStatusNeed`, keine Sperre über einen fremden Status.
+- Die einzige Aussetzbedingung ist `ShouldStretchHolyStun()` (`WHM_Reborn.cs:489`), gelesen an genau einer Stelle (`:566`). Sie liest ausschließlich die Betäubungslage über `SurveyStuns` — Gegnerzahl im Wirkradius, betäubt, immun. Weder `ShieldStatus` noch `BlackestNight` noch der Tank kommen darin vor.
+- Sie ist zudem standardmäßig **aus** (`StretchHolyStun = false`).
+
+Die Kopplung zwischen beiden Jobs ist damit einseitig: Der Dunkelritter weicht der Betäubung aus (A48), der Weißmagier weicht der Barriere nicht aus.
+
+**Bewertung: Das ist richtig so, und die Gegenrichtung wäre schädlich.** Zwei wartende Regeln, die aufeinander zeigen, sind eine wechselseitige Sperre — der Dunkelritter hielte die Barriere zurück, weil eine Betäubung läuft, und der Weißmagier die Betäubung, weil eine Barriere läuft. Inhaltlich ist die Asymmetrie ebenfalls begründet: Die Betäubung schützt die ganze Gruppe und hat ein hartes Zeitbudget von rund sieben Sekunden bis zur Immunität, die Barriere schützt einen Spieler und ist um 15 Sekunden Abklingzeit aufschiebbar. Der aufschiebbare Teil weicht aus, nicht der Gruppenschutz — dieselbe Rangfolge, die der Kommentar der Streckungsregel bereits festhält.
+
+**Nebenbefund aus derselben Erhebung, behoben:** Die Streckungsbedingung setzte auch dann aus, wenn **kein** Gegner betäubt ist. `!headroom` heißt „kein Gegner in Reichweite, den dieser Zauber noch betäuben könnte", und verallgemeinert damit richtig von „alle betäubt" auf „zwei betäubt, einer immun". Für sich genommen trifft es aber auch die Lage nach der Betäubungskette: alle immun, keiner mehr betäubt. Dann gibt es keine Betäubung, die vor dem Überschreiben zu schützen wäre, und die Regel tauschte für den Rest des Pulls bei jedem fälligen Schadenszauber über Zeit einen Flächenzauber gegen einen Einzelzielzauber. Der Optionstext sagt „while every enemy it would hit is already stunned", der Kommentar „so the stun is not overwritten **while it still runs**" — beide decken diesen Fall nicht; ein Widerspruch zwischen Absicht und Code.
+
+**Umgesetzt:** `stunned == 0` als zusätzliche Ausschlussbedingung, über die in A48 eingeführte `SurveyStuns`-Überladung. Der Eingriff wirkt nur einschränkend — die Regel setzt seltener aus, nie häufiger —, betrifft also den Gruppenschutz nicht.
+
+**Erreichter Prüfgrad:** statische Prüfung, vollständige Erhebung aller Sperrstellen für beide Sanctus-Aktionen, CI-Kompilierung. Nicht beobachtet: wie oft die Immunitätslage im Spiel eintritt, bevor der Pull endet.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.
