@@ -381,3 +381,16 @@ den wir noch nicht gemergt haben, ist deshalb kein Befund.
 Rückgabewert 1, wenn die Zahl zurückliegt — als Schranke tauglich, aber **nicht** in `build.yaml`
 eingehängt: Das ist eine Entscheidung über den Veröffentlichungspfad und liegt beim Auftraggeber.
 Bis dahin gehört das Skript in den Sync-Ablauf, gleich nach `git fetch --prune --tags upstream`.
+
+## check_msbuild_xml.py — sind die MSBuild-Dateien wohlgeformtes XML?
+
+Eine fehlerhafte `Directory.Build.props` lässt **jedes** Projekt des Baums schon beim Import
+scheitern, bevor eine Zeile übersetzt wird — und das merkt man erst nach einem vollen
+Windows-Build. Der Anlass war ein Kommentar mit `--` darin: Die Datei zitierte eine
+git-Kommandozeile im Fließtext, was XML verbietet, und der Build starb mit MSB4024 am
+SDK-eigenen Props-Import.
+
+Der Check parst jede MSBuild-Datei mit einem XML-Parser — genau das, was MSBuild zuerst tut. Er
+läuft im `DispatchChain`-Job in unter einer Sekunde, wo derselbe Befund sonst eine Minute
+Windows-Runner kostet. MSBuild-Semantik prüft er nicht; die Klasse, die er schließt, ist die, in
+der gar nichts übersetzt wird. Der Selbsttest konstruiert genau den Defekt, der ihn ausgelöst hat.

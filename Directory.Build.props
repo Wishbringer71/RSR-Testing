@@ -47,7 +47,7 @@
 	     merging one brings nothing along, and the figure keeps naming the previous release until
 	     somebody remembers. It named 7.5.6.0 while the tree already held 7.5.6.1.
 
-	     `git describe --abbrev=0` names the newest tag reachable from HEAD, which is exactly the
+	     `git describe` with abbrev 0 names the newest tag reachable from HEAD, which is exactly the
 	     question: not which release exists, but which one this code is built on. Fork tags carry a
 	     wsh marker and are excluded, so 7.5.5.41+wsh1 cannot answer for an upstream release.
 

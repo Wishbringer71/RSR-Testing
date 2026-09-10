@@ -21,6 +21,11 @@ jobs:
       - name: Check ShieldStatus covers every PvE barrier
         run: python3 .github/scripts/audit/scan13.py
 
+      # MSBuild imports these before compiling anything, so a parse error fails every project.
+      # Catching it here costs a second; the same finding in the Windows job costs a minute.
+      - name: Check the MSBuild files are well-formed XML
+        run: python3 .github/scripts/audit/check_msbuild_xml.py
+
   Build:
     runs-on: windows-latest
     steps:

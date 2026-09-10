@@ -1701,7 +1701,11 @@ Dazu die **fehlende zweite Stufe der Reihenfolgebedingung**, die seit A46 offen 
 
 **3. Der Namensfehler, der das aufgehalten hat.** Die Zuordnung der Aktion war zweimal falsch und einmal erfunden (C33). Der deutsche Name ist nach Angabe des Auftraggebers **Rückstoß**; „Armlänge" war eine eigene Übersetzung und ist repo-weit ersetzt. Die Namensregel in `CLAUDE.md` ist entsprechend verschärft: Ein deutscher Name wird nie gebildet, sondern belegt oder übernommen; liegt keiner vor, steht der englische Bezeichner.
 
-**Erreichter Prüfgrad:** statische Prüfung, `git describe` am Repository gegen den erwarteten Wert getestet, CI-Kompilierung. **Nicht** geprüft: dass das MSBuild-Target unter Windows die Versionseigenschaften rechtzeitig setzt — das zeigt erst ein Release-Build oder die Build-Ausgabe eines lokalen Compilats. Wer den nächsten Build macht, sieht in der Ausgabe die Zeile „Fork version derived from the repository".
+**Der erste Anlauf brach den Build**, und zwar an einer Stelle, die keine Rotation berührt: Der Kommentar über dem Target zitierte die git-Kommandozeile im Fließtext, und XML verbietet `--` innerhalb eines Kommentars. MSBuild importiert `Directory.Build.props` vor allem anderen, also scheiterte jedes Projekt mit MSB4024, bevor eine Zeile übersetzt wurde. Kosten: ein voller Windows-Lauf für einen Fehler, den ein XML-Parser in einer Sekunde findet.
+
+**Daraus die Schranke:** `check_msbuild_xml.py` parst alle MSBuild-Dateien und läuft im `DispatchChain`-Job, dem Job ohne .NET. Der Selbsttest konstruiert genau diesen Defekt — einen Kommentar mit `--` — und verlangt, dass der Parser ihn ablehnt. Das ist dieselbe Antwort wie bei den Statuslisten: nicht der Einzelfall wird behoben, sondern die Wiederholbarkeit.
+
+**Erreichter Prüfgrad:** statische Prüfung, `git describe` am Repository gegen den erwarteten Wert getestet, XML-Wohlgeformtheit als CI-Schranke, CI-Kompilierung. **Nicht** geprüft: dass das MSBuild-Target unter Windows die Versionseigenschaften rechtzeitig setzt — das zeigt erst ein Release-Build oder die Build-Ausgabe eines lokalen Compilats. Wer den nächsten Build macht, sieht in der Ausgabe die Zeile „Fork version derived from the repository".
 
 ---
 
