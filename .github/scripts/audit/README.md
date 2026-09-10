@@ -340,3 +340,44 @@ Tiefen Gewölben und sind erfasst, nicht bearbeitet.
 
 Der Selbsttest deckt die Unterscheidung ab, die den Scan trägt: Ein Kontrolleffekt wird
 erkannt, eine reine Heilung nicht, und die Rollenzuordnung trennt Tank, Heiler und den Rest.
+
+## Bekannte Fehlanzeigen der älteren Skripte
+
+Beim zweiten Durchgang über den Heiler- und Tankbestand (A52) meldeten drei Skripte Treffer, die
+keine sind. Sie stehen hier, damit der nächste Durchgang sie nicht erneut aufrollt:
+
+- **`scan.py`, „RotationDesc nennt X, Rumpf benutzt X nie"** liest nur den unmittelbaren
+  Methodenrumpf. Wo eine Rotation die Aktion in eine Hilfsmethode auslagert, meldet der Scan sie als
+  ungenutzt, obwohl sie gewirkt wird — belegt an `SCH_Reborn` (Sacred Soil, in einer Hilfsmethode),
+  `PLD_Reborn` (Sheltron/Holy Sheltron, in `DefenseSingleAbility` weiter unten) und `SGE_Reborn`
+  (Eukrasian Prognosis II über `SetEukrasia`). Die `RotationDesc` ist zudem eine Anzeigeliste; selbst
+  ein echter Treffer wäre ein Oberflächen-, kein Kampffehler.
+- **`scan2.py`, „wiederholte Bedingung in derselben Methode"** trennt keine Rollenzweige.
+  `StateUpdater.ShouldAddDefenseSingle` prüft `IsHostileCastingTankBusterAtMe` und
+  `BMRTankbusterImminent` je zweimal, aber in verschiedenen Rollenzweigen mit verschiedener
+  Bedeutung — der Zweig für Schadensklassen trägt zusätzlich `PartyTank == null` (A6).
+- **`scan11.py`, `ModifyLivingDeadPvE`** ist der in seinem eigenen Abschnitt bereits beschriebene
+  Fall: ein Debuff, den die Aktion tatsächlich auf den Spieler legt (Walking Dead).
+
+## check_fork_version.py — steht die Fork-Versionsnummer noch auf dem Upstream-Release?
+
+**Warum es diese Prüfung braucht, ist selbst der Befund:** Upstream führt im Quellbaum **gar keine**
+Version. Sein `Directory.Build.props` hat keine `<Version>`-Zeile; `publish.yaml` leitet
+`AssemblyVersion`, `FileVersion`, `PackageVersion` und `InformationalVersion` erst beim
+Veröffentlichen aus dem **Git-Tag** ab, der den Lauf ausgelöst hat. Die drei Versionszeilen in
+unserer Fassung sind eine Fork-Ergänzung — sonst meldete die Assembly 1.0.0, und das Paket trüge die
+nackte Upstream-Identität.
+
+Daraus folgt: **Ein Upstream-Merge kann die Zahl nicht mitbringen, weil dort nichts ist, was
+mitkäme.** Sie ist eine handgepflegte Zahl, die eine Tatsache anderswo spiegelt — den höchsten
+Upstream-Tag in der eigenen Historie. Dieselbe Alterungsform wie eine handgepflegte Statusliste, und
+sie ist genauso gealtert: nach dem Sync auf 7.5.6.0 gesetzt, während Upstream längst 7.5.6.1
+getaggt hatte.
+
+Der Vergleich läuft bewusst gegen die Tags, die **Vorfahr von HEAD** sind, nicht gegen alle Tags des
+Upstreams: Die Zahl behauptet, auf welchem Release der Fork *steht*, nicht welches es gibt. Ein Tag,
+den wir noch nicht gemergt haben, ist deshalb kein Befund.
+
+Rückgabewert 1, wenn die Zahl zurückliegt — als Schranke tauglich, aber **nicht** in `build.yaml`
+eingehängt: Das ist eine Entscheidung über den Veröffentlichungspfad und liegt beim Auftraggeber.
+Bis dahin gehört das Skript in den Sync-Ablauf, gleich nach `git fetch --prune --tags upstream`.

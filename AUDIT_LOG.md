@@ -1649,6 +1649,40 @@ Die eigene erste Bewertung war dabei falsch und wurde durch die Quelle widerlegt
 
 ---
 
+### A52 · Code-Review des Heiler- und Tankbestands, und die Versionsnummer, die niemand nachzieht (10.09.2026)
+
+**Anlass:** Auftrag, nach der Konzeptprüfung ein Audit und Code-Review der bisherigen Heiler- und Tank-Patches durchzuführen; dazu die Frage, warum die Versionsnummer beim Angleichen an Upstream nicht automatisch angepasst wurde.
+
+**Review-Ergebnis: keine neuen Defekte.** Geprüft wurde mit den vorhandenen Prüfmitteln über den gesamten Heiler- und Tankbestand (`scan`, `mitscan`, `scan2` bis `scan4`, `scan8` bis `scan11`), dazu die in dieser Sitzung gebauten Regeln von Hand gegen ihre Wirkkette. Die Skripte meldeten drei Treffergruppen, alle drei Fehlanzeigen — sie sind jetzt in `.github/scripts/audit/README.md` als bekannt vermerkt, damit der nächste Durchgang sie nicht erneut aufrollt:
+
+- `scan.py` liest bei „RotationDesc nennt X, Rumpf benutzt X nie" nur den unmittelbaren Methodenrumpf. Sacred Soil (Gelehrter), Sheltron und Holy Sheltron (Paladin) und Eukrasian Prognosis II (Weiser) werden sehr wohl gewirkt, nur aus einer Hilfsmethode oder weiter unten im Pfad.
+- `scan2.py` trennt bei „wiederholte Bedingung" keine Rollenzweige. `ShouldAddDefenseSingle` prüft `IsHostileCastingTankBusterAtMe` und `BMRTankbusterImminent` je zweimal, aber in verschiedenen Rollen — der Zweig für Schadensklassen trägt zusätzlich `PartyTank == null` (A6).
+- `scan11.py` meldet `ModifyLivingDeadPvE`; das ist der in seinem eigenen Abschnitt bereits beschriebene Fall eines Debuffs, den die Aktion wirklich auf den Spieler legt.
+
+**Drei Genauigkeitsmängel eigener Arbeit, eingearbeitet:**
+
+1. `HasMajorMitigation` liest `RampartStatus`, und diese Liste führt zwei Einträge, die keine Stromdrosselung sind: `LivingDead` mindert nichts, sondern verschiebt den Tod, und `Bloodwhetting` ist eine 10-%-Minderung unterhalb der Linie, die die Liste sonst zieht. Für den einen Verbraucher stimmt die Antwort trotzdem — beim Dunkelritter aus einem anderen Grund —, aber ein zweiter Verbraucher würde darüber stolpern. Als Bemerkung an der Eigenschaft festgehalten.
+2. `ShouldHoldHolyForBarrier` greift nur, wenn ein Gruppenmitglied **in Tankrolle** die Barriere trägt. Die Beschränkung war umgesetzt, aber nicht begründet: Die Barriere kann auf jedem liegen, und auf einer Schadensklasse ist die Betäubung eher das, was sie am Leben hält — dort wäre die Rückhaltung ein Tausch von Leben gegen Ressource.
+3. Die Wirkkette wurde gegengeprüft: `ShouldUseBlackestNightOnSelf` wirkt ausschließlich im Selbstwurf des Verteidigungspfads. Der Countdown-Zweig und der Party-Zweig sind unberührt.
+
+**Zur Versionsnummer — die Antwort ist, dass es nichts zum Automatisieren gab.** Am Artefakt gemessen:
+
+| Beobachtung | Beleg |
+|---|---|
+| Upstream führt im Quellbaum **keine** Version | `git show upstream/main:Directory.Build.props` enthält keine `<Version>`-Zeile |
+| Die Version entsteht erst beim Veröffentlichen aus dem Tag | `publish.yaml` übergibt `AssemblyVersion`, `FileVersion`, `PackageVersion`, `InformationalVersion` aus `env.tag` |
+| Die drei Versionszeilen sind eine Fork-Ergänzung | ohne sie meldete die Assembly 1.0.0, und das Paket trüge die nackte Upstream-Identität |
+
+Ein Merge kann die Zahl also nicht mitbringen, weil dort nichts ist, was mitkäme. Sie ist eine **handgepflegte Zahl, die eine Tatsache anderswo spiegelt** — den höchsten Upstream-Tag in der eigenen Historie —, und damit dieselbe Alterungsform wie eine handgepflegte Statusliste. Sie ist auch genauso gealtert: bei A40 auf 7.5.6.0 gesetzt, während Upstream inzwischen 7.5.6.1 getaggt hat, dessen Commit in unserer Historie liegt.
+
+**Umgesetzt:** Zahl auf 7.5.6.1 gezogen (alle drei Zeilen samt Markern), der Kommentar an der Stelle sagt jetzt, dass nichts sie automatisch nachzieht, und `check_fork_version.py` misst die Lücke. Verglichen wird gegen die Upstream-Tags, die **Vorfahr von HEAD** sind — die Zahl behauptet, auf welchem Release der Fork steht, nicht welches existiert. Rückgabewert 1, wenn sie zurückliegt.
+
+**Nicht in die CI eingehängt, sondern vorgelegt:** Eine Schranke im Build ist eine Entscheidung über den Veröffentlichungspfad, und der liegt beim Auftraggeber. Bis dahin gehört das Skript in den Sync-Ablauf, direkt nach `git fetch --prune --tags upstream`.
+
+**Erreichter Prüfgrad:** statische Selbstprüfung, neun Prüfskripte über den Heiler- und Tankbestand, Messung am Repository-Zustand statt aus dem Gesprächsverlauf, CI-Kompilierung. Kein Vier-Augen-Prinzip, keine Laufzeitbeobachtung.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.

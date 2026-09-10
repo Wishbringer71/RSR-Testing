@@ -538,6 +538,13 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	/// immune the cast can no longer interrupt anything and goes out normally, which ends the hold
 	/// for the rest of the pull; and a barrier that is over before this cast lands is not worth
 	/// waiting for.
+	///
+	/// A third limit is the tank role. The barrier can sit on anyone - the action reads "self or
+	/// target party member", and the dark knight's party branch aims it at the lowest HP - but the
+	/// case this rule exists for is the one where the barrier and the stun protect the same person:
+	/// the pull is on the tank, so the damage is too. On a damage dealer carrying the barrier, the
+	/// stun is likelier to be what keeps them alive, and holding it back would trade a life for a
+	/// resource.
 	/// </remarks>
 	private bool ShouldHoldHolyForBarrier()
 	{

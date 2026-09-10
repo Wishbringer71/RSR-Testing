@@ -13,9 +13,11 @@
 		     InformationalVersion from the pushed tag, so it overrides all of this; these values are
 		     what local, PR and any other untagged build reports. Keep them in step with the
 		     upstream release the merged tree stands on - not with the fork's last tag, which would
-		     understate what the code is once an upstream release has been merged past it. -->
-		<Version>7.5.6.0</Version>
-		<InformationalVersion>7.5.6.0+wsh1</InformationalVersion>
+		     understate what the code is once an upstream release has been merged past it.
+		     Nothing updates this by itself: upstream carries no version in its source tree at all,
+		     so a merge has nothing to bring along. check_fork_version.py measures the gap. -->
+		<Version>7.5.6.1</Version>
+		<InformationalVersion>7.5.6.1+wsh1</InformationalVersion>
 
 		<!-- The package identity needs the fork suffix as a pre-release label. RotationSolver.Basic
 		     builds with GeneratePackageOnBuild, so every local and PR build produces a .nupkg too -
@@ -23,7 +25,7 @@
 		     with the upstream release number.
 		     NuGet strips "+wsh1" as build metadata during normalization but keeps "-wsh1", which is
 		     part of the version identity. The publish workflow derives the same value from the tag. -->
-		<PackageVersion>7.5.6.0-wsh1</PackageVersion>
+		<PackageVersion>7.5.6.1-wsh1</PackageVersion>
 
 		<!-- .NET 8 and later append SourceRevisionId - the full git commit hash, filled in
 		     automatically by Source Link - to InformationalVersion. That is the attribute the
