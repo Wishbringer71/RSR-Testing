@@ -1,16 +1,31 @@
 # Wiederbelebung: Auswahl und Ausführung
 
-## Sachstand
+## Sachstand: nicht behoben, Behebungsversuch zurückgenommen
 
-Der Weg zur Wiederbelebung ist unterbrochen, und zwar zwischen Auswahl und Ausführung. Die Rotation
-wählt Spontanität (Swiftcast) in einem Zeitfenster, in dem die Ausführungsschicht grundsätzlich
-keine Fähigkeit zulässt. Die Aktion erscheint deshalb im Vorschaufenster und wird nie gewirkt; die
-Rotation macht stattdessen weiter Schaden und Heilung, und die Wiederbelebung kommt erst zustande,
-wenn ein Frame zufällig den einen Punkt trifft, an dem beide Fenster sich berühren.
+Der Defekt steht. Der erste Behebungsversuch war im Spiel **schlechter als der Defekt** und ist
+zurückgenommen; dieses Dokument beschreibt die belegte Ursache und den gescheiterten Versuch, damit
+der nächste Anlauf nicht dieselbe Falle trifft.
 
-Die Behebung verlegt die Zündung von Spontanität aus dem GCD-Pfad in den Fähigkeitenpfad, wo das
-Einschieben zwischen zwei GCDs hingehört und wo bereits eine dafür gebaute Stelle steht. Der
-GCD-Pfad meldet danach die Wiederbelebung selbst, nicht ihr Hilfsmittel.
+**Was der Versuch falsch gemacht hat.** Er stellte die Meldung des Wiederbelebungszaubers von „fast
+nie" auf „fast immer" um: Sobald ein Toter in Reichweite lag und Spontanität bereit war, meldete
+`RaiseSpell` die Wiederbelebung als nächsten GCD. Zwei Folgen, beide im Spiel beobachtet und keine
+davon in der statischen Prüfung sichtbar:
+
+1. Der Wiederbelebungsblock steht bei `RaisePlayerFirst` **vor** Heilung und Schaden, und sein
+   `return act` beendet den Durchlauf. Solange ein Toter dalag, endete der GCD-Pfad dort.
+2. `nextGCD` war damit die Wiederbelebung statt des normalen Zaubers — und **jeder** Zweig im
+   Fähigkeitenpfad, der `nextGCD` auswertet, entschied dadurch anders. Beim Beschwörer fiel so
+   Schimmerschild (Radiant Aegis) aus.
+
+Verschärfend kam die gleichzeitige Änderung an `ObjectHelper.CanBeRaised` hinzu: Sie erweiterte den
+Kreis der Wiederbelebungsziele, wodurch `AutoStatus.Raise` häufiger stand als zuvor — und damit
+Punkt 1 häufiger auslöste.
+
+**Lehre für den nächsten Anlauf.** Die Meldung eines GCD ist kein folgenloser Hinweis. Sie beendet
+den Dispatcher und ist zugleich der Eingabewert des gesamten Fähigkeitenpfads. Eine Bedingung, die
+regelt, wann etwas gemeldet wird, ist deshalb an ihrer Wirkung auf **beide** Pfade zu messen, nicht
+nur daran, ob die gemeldete Aktion die richtige ist. Wer sie lockert, muss vorher auszählen, welche
+`nextGCD`-Leser es im Baum gibt und was sie bei der neuen Meldung tun.
 
 ## Warum es heute nicht funktioniert
 
@@ -58,7 +73,7 @@ Daraus folgt, dass die Behebung nicht die Zahl `0.5f` verschieben darf. Das repr
 dieselbe Kopplung an einem anderen Punkt. Zu ersetzen ist die Konstruktion: die Zuständigkeit für
 das Einschieben.
 
-## Die gewählte Lösung
+## Der zurückgenommene Lösungsversuch
 
 Der GCD-Pfad meldet die Wiederbelebung, sobald sie wirkbar ist und Spontanität zur Verfügung steht.
 Der Fähigkeitenpfad erkennt an dieser Meldung, dass eine Wiederbelebung ansteht, und schiebt
@@ -97,7 +112,7 @@ Konstruktion, die hier fehlt. `SMN_Reborn.cs:478` löst dieselbe Frage für Slip
 - **Ausführungssperre für Spontanität ausnehmen.** Behandelte das Symptom in der falschen Schicht
   und öffnete das Einschiebefenster für eine Aktion, die dort nicht hingehört.
 
-## Mitbehobene Defekte derselben Kette
+## Im selben Versuch mitgeändert, ebenfalls zurückgenommen
 
 **Die Aufzählung der Wiederbelebungsaktionen veraltet.** `CustomRotation_Ability.cs:705` prüft
 `nextGCD.IsTheSameTo(true, RaisePvE, EgeiroPvE, ResurrectionPvE, AscendPvE)`. Verraise des
@@ -142,7 +157,7 @@ Die Einstellung ist damit nicht bloß unverbunden, sondern seit `92f109d3` in ih
 Entfernung samt Migrationspfad oder Neudefinition als Untergrenze im Einschiebefenster — ist ein
 eigener Vorgang und in `TODO.md` erfasst.
 
-## Die Zielprüfung, die eine Aktionsprüfung war
+## Die Zielprüfung, die eine Aktionsprüfung war — ebenfalls zurückgenommen
 
 `ObjectHelper.CanBeRaised` beantwortet eine **Zielfrage** — ist dieser Leichnam überhaupt ein
 gültiges Wiederbelebungsziel — und beantwortete sie mit einer **Aktionsprüfung**:
