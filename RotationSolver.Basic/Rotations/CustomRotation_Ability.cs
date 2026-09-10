@@ -702,7 +702,28 @@ public partial class CustomRotation
 			}
 		}
 
-		if (Service.Config.RaisePlayerBySwift && DataCenter.CanRaise() && IActionHelper.IsLastActionGCD() && nextGCD.IsTheSameTo(true, ActionID.RaisePvE, ActionID.EgeiroPvE, ActionID.ResurrectionPvE, ActionID.AscendPvE))
+		// Swiftcast for a raise, spent in the weave window where the execution gate lets an ability
+		// through at all.
+		//
+		// The first condition is the original one: the raise is already the next GCD. It only ever
+		// holds once Swiftcast is up, because RaiseSpell reports the raise from its HasSwift stage -
+		// so on its own it can never be what *starts* the sequence.
+		//
+		// The second closes that circle. RaiseSpell's own Swiftcast attempt sits under
+		// WeaponRemain <= 0.5f, and RSCommands_Actions.DoAction refuses every ability while
+		// 0 < DefaultGCDRemain <= 0.5f - the same clock, mutually exclusive. The only state where
+		// both agree is a GCD sitting at exactly 0, which in automatic mode is immediately spent on
+		// an attack. That is why raising works at once in manual mode with the corpse hard-targeted
+		// (no hostile target, so the GCD stays free) and takes an arbitrary time otherwise.
+		//
+		// Asking about the pending raise here instead of about nextGCD is deliberate. Naming the
+		// raise as the next GCD was tried and reverted (AUDIT_LOG C37): it ends the GCD dispatcher
+		// ahead of healing and damage, and it rewrites nextGCD for every branch that reads it -
+		// 447 occurrences in this tree, among them Radiant Aegis on Summoner, which stopped coming
+		// out. This condition leaves the GCD path untouched and only adds one weave.
+		if (Service.Config.RaisePlayerBySwift && DataCenter.CanRaise() && IActionHelper.IsLastActionGCD()
+			&& (nextGCD.IsTheSameTo(true, ActionID.RaisePvE, ActionID.EgeiroPvE, ActionID.ResurrectionPvE, ActionID.AscendPvE)
+				|| RaisePendingAndCastable()))
 		{
 			if (SwiftcastPvE.CanUse(out act))
 			{
@@ -728,6 +749,39 @@ public partial class CustomRotation
 
 		act = null;
 		return false;
+	}
+
+	/// <summary>
+	/// Is a raise waiting, and would it actually go out once the cast time is gone?
+	///
+	/// Both halves matter. Without the pending check Swiftcast would be spent whenever it happens
+	/// to be ready; without the castable check it would be spent on a raise that then fails on MP,
+	/// range or level, and the charge is gone for nothing.
+	///
+	/// The target override is not decoration. Raise actions declare no target type of their own -
+	/// they are merely IsFriendly - and their target comes from TargetType.Death, which only the
+	/// GCD path sets. Asking CanUse here without it would search the wrong set, and CanUse assigns
+	/// Target as a side effect, so a stray call would also leave the action pointing somewhere
+	/// else. The previous value is restored rather than cleared, because this runs inside the
+	/// ability dispatcher, which sets overrides of its own around its branches.
+	/// </summary>
+	private bool RaisePendingAndCastable()
+	{
+		if (Raise == null || !DataCenter.MergedStatus.HasFlag(AutoStatus.Raise) || HasSwift)
+		{
+			return false;
+		}
+
+		var previousOverride = IBaseAction.TargetOverride;
+		IBaseAction.TargetOverride = TargetType.Death;
+		try
+		{
+			return Raise.CanUse(out _);
+		}
+		finally
+		{
+			IBaseAction.TargetOverride = previousOverride;
+		}
 	}
 
 	/// <summary>

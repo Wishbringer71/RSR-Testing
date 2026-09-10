@@ -4,14 +4,13 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 ## Defekte
 
-### Wiederbelebung wird gewählt und nicht ausgeführt — Behebungsversuch zurückgenommen · N, R
+### Wiederbelebung: zweiter Behebungsversuch wartet auf Spielbeobachtung · N, R
 
-Der Defekt ist belegt und steht: `CustomRotation_GCD.cs:560` wählt Spontanität nur bei `WeaponRemain <= 0.5f`, `RSCommands_Actions.cs:78` verweigert jede Fähigkeit bei `0 < DefaultGCDRemain <= 0.5f`, und beide lesen dieselbe Uhr. Vollständige Ursachenanalyse in `docs/rotation-flow/11-raise-dispatch.md`, Nachweis in `AUDIT_LOG.md` A54.
+Ursache belegt und durch ein natürliches Experiment des Auftraggebers bestätigt (manuell + Toten anvisiert lässt den GCD frei, dann fällt die Wiederbelebung sofort). Analyse in `docs/rotation-flow/11-raise-dispatch.md`, Nachweise in `AUDIT_LOG.md` A54 und A56, gescheiterter erster Versuch in C37.
 
-**Der erste Behebungsversuch war im Spiel schlechter als der Defekt und ist zurückgenommen** (C37). Er meldete die Wiederbelebung als nächsten GCD, sobald ein Toter in Reichweite lag — was den Dispatcher im Wiederbelebungsblock beendete und zugleich `nextGCD` für den gesamten Fähigkeitenpfad umstellte. Beobachtete Folgen: keine Wiederbelebung **und** kein Schimmerschild beim Beschwörer.
+**Der zweite Versuch liegt auf `claude/raise-swiftcast-weave-2` und ist im Spiel nicht bestätigt.** Er zündet Spontanität im Einschiebefenster, wenn eine Wiederbelebung ansteht und wirkbar wäre, und lässt den GCD-Pfad unangetastet — kein Dispatcher-Abbruch, keine Veränderung von `nextGCD`.
 
-**Bedingung für den nächsten Anlauf:** Vor jeder Änderung an der Meldebedingung ist zu erheben, welche Zweige im Baum `nextGCD` auswerten und wie sie sich bei der neuen Meldung verhalten; und die Wirkung ist im Spiel zu beobachten, bevor sie als behoben gilt. Eine grüne CI belegt hier nichts — der Versuch war compile- und skriptgrün und trotzdem falsch.
-
+**Auflösungsbedingung:** Beobachtung im Spiel. Erst wenn die Wiederbelebung dort zügig fällt **und** keine andere Fähigkeit ausbleibt, gilt der Punkt als behoben. Eine grüne CI belegt hier nichts; der erste Versuch war ebenfalls compile- und skriptgrün.
 
 ### `SwiftcastBuffer` hat keinen Leser, und ihre Absicht ist überholt · N
 

@@ -1,31 +1,74 @@
 # Wiederbelebung: Auswahl und Ausführung
 
-## Sachstand: nicht behoben, Behebungsversuch zurückgenommen
+## Sachstand
 
-Der Defekt steht. Der erste Behebungsversuch war im Spiel **schlechter als der Defekt** und ist
-zurückgenommen; dieses Dokument beschreibt die belegte Ursache und den gescheiterten Versuch, damit
-der nächste Anlauf nicht dieselbe Falle trifft.
+Der zweite Behebungsversuch steht zum Test und ist **im Spiel nicht bestätigt**. Der erste ist
+gescheitert und zurückgenommen; was ihn scheitern ließ, bestimmt den Entwurf des zweiten.
 
-**Was der Versuch falsch gemacht hat.** Er stellte die Meldung des Wiederbelebungszaubers von „fast
-nie" auf „fast immer" um: Sobald ein Toter in Reichweite lag und Spontanität bereit war, meldete
-`RaiseSpell` die Wiederbelebung als nächsten GCD. Zwei Folgen, beide im Spiel beobachtet und keine
-davon in der statischen Prüfung sichtbar:
+Die Ursache ist belegt und durch eine Laufzeitbeobachtung des Auftraggebers bestätigt: Auswahl und
+Ausführung lesen dieselbe Uhr mit einander ausschließenden Bedingungen. Der zweite Versuch zündet
+Spontanität dort, wo die Ausführungsschicht eine Fähigkeit überhaupt durchlässt — im
+Einschiebefenster —, und lässt den GCD-Pfad dabei vollständig unangetastet.
 
-1. Der Wiederbelebungsblock steht bei `RaisePlayerFirst` **vor** Heilung und Schaden, und sein
-   `return act` beendet den Durchlauf. Solange ein Toter dalag, endete der GCD-Pfad dort.
-2. `nextGCD` war damit die Wiederbelebung statt des normalen Zaubers — und **jeder** Zweig im
-   Fähigkeitenpfad, der `nextGCD` auswertet, entschied dadurch anders. Beim Beschwörer fiel so
-   Schimmerschild (Radiant Aegis) aus.
+## Der Beleg aus dem Spiel: warum manuell funktioniert
 
-Verschärfend kam die gleichzeitige Änderung an `ObjectHelper.CanBeRaised` hinzu: Sie erweiterte den
-Kreis der Wiederbelebungsziele, wodurch `AutoStatus.Raise` häufiger stand als zuvor — und damit
-Punkt 1 häufiger auslöste.
+Der Auftraggeber hat berichtet, dass die Wiederbelebung sofort erfolgt, wenn er von automatisch auf
+manuell stellt und den Toten anvisiert. Das ist kein Zufall, sondern ein natürliches Experiment, und
+es bestätigt die Ursachenanalyse:
 
-**Lehre für den nächsten Anlauf.** Die Meldung eines GCD ist kein folgenloser Hinweis. Sie beendet
-den Dispatcher und ist zugleich der Eingabewert des gesamten Fähigkeitenpfads. Eine Bedingung, die
-regelt, wann etwas gemeldet wird, ist deshalb an ihrer Wirkung auf **beide** Pfade zu messen, nicht
-nur daran, ob die gemeldete Aktion die richtige ist. Wer sie lockert, muss vorher auszählen, welche
-`nextGCD`-Leser es im Baum gibt und was sie bei der neuen Meldung tun.
+`ActionTargetInfo.cs:117` lässt im manuellen Modus ein **feindliches** Ziel nur zu, wenn es das
+angewählte Hauptziel ist. Wer einen Toten anvisiert, hat kein feindliches Ziel — sämtliche
+Angriffsaktionen finden keines und fallen aus. Der GCD bleibt frei, `DefaultGCDRemain` steht auf
+genau `0`, und das ist der einzige Zustand, in dem beide Fenster zusammenpassen: Die Auswahl in
+`RaiseSpell` verlangt `WeaponRemain <= 0.5f` (bei 0 erfüllt), die Sperre in `DoAction` greift erst
+bei `> 0f` (bei 0 also nicht). Spontanität wird gewirkt, im nächsten Frame greift die
+`HasSwift`-Stufe, die Wiederbelebung geht sofort raus.
+
+Im automatischen Modus wird jeder frei werdende GCD sofort mit einem Angriff belegt; der Nullpunkt
+ist praktisch immer von laufender Aktion, Animationssperre oder Klickverzögerung überdeckt. Daher
+„dauert sehr lange" statt „geht nie" — es braucht einen Zufallstreffer.
+
+## Der Entwurf, und was ihn vom gescheiterten unterscheidet
+
+Der Fähigkeitenpfad zündet Spontanität bereits für die Wiederbelebung, aber nur, wenn diese schon
+als nächster GCD gemeldet ist. Das kann den Ablauf nie **starten**, weil die Meldung ihrerseits
+Spontanität voraussetzt. Der Entwurf ergänzt genau diese eine Lücke: Spontanität fällt auch dann,
+wenn eine Wiederbelebung ansteht und wirkbar wäre.
+
+Was dabei bewusst **nicht** geschieht, ist die Lehre aus dem Fehlversuch:
+
+| | Erster Versuch (zurückgenommen) | Zweiter Versuch |
+|---|---|---|
+| GCD-Pfad | meldete die Wiederbelebung als nächsten GCD | unverändert |
+| Dispatcher | endete im Wiederbelebungsblock vor Heilung und Schaden | läuft normal durch |
+| `nextGCD` | wurde zur Wiederbelebung umgeschrieben — **447 Fundstellen** im Baum lesen ihn, darunter Schimmerschild beim Beschwörer | unverändert |
+| Dauer | griff dauerhaft, solange ein Toter dalag | höchstens ein Frame je Gelegenheit, danach durch `HasSwift` gesperrt |
+
+**Warum der Zweig im richtigen Fenster läuft:** `Ability()` kehrt bei `0 < WeaponRemain <= 0.5f`
+sofort zurück, und bei freiem GCD ruft `Invoke` den Fähigkeitenpfad gar nicht erst auf. Der Zweig
+kann also nur bei `WeaponRemain > 0,5 s` greifen — dem Einschiebefenster, in dem die
+Ausführungssperre nicht gilt.
+
+**Warum er nichts verdrängt:** Nach ihm stehen in `EmergencyAbility` nur zwei Zweige, beide Second
+Wind für Nahkämpfer beziehungsweise physische Fernkämpfer bei Doom-Status. Für einen Rezzer ist
+dort nichts, was ausfallen könnte. Ein Einschiebefenster wird verbraucht — einmal je Gelegenheit.
+
+**Der Zielüberschreibungs-Fallstrick.** Wiederbelebungsaktionen führen keinen eigenen Zieltyp, sie
+sind nur `IsFriendly`; ihr Ziel stammt aus `TargetType.Death`, das ausschließlich der GCD-Pfad
+setzt. Eine Wirkbarkeitsprüfung im Fähigkeitenpfad ohne diese Überschreibung durchsucht die falsche
+Menge — und `CanUse` weist als Nebenwirkung `Target` zu, ließe die Aktion also auf ein fremdes Ziel
+zeigen. `RaisePendingAndCastable` setzt die Überschreibung deshalb selbst und stellt den vorherigen
+Wert wieder her, statt ihn zu löschen, weil der Fähigkeiten-Dispatcher eigene Überschreibungen um
+seine Zweige legt.
+
+### Restrisiken, offen benannt
+
+- Eine Ladung Spontanität kann verpuffen, wenn ein anderer Heiler die Wiederbelebung übernimmt,
+  nachdem sie gezündet wurde. Begrenzt dadurch, dass `GetDeath` ein Ziel mit laufendem
+  Wiederbelebungsstatus ausschließt, also aus der Menge fällt, sobald jemand anders wirkt.
+- Ein Einschiebefenster geht für Spontanität weg statt für eine Heil- oder Schadensfähigkeit.
+- **Nicht gemessen:** Ob die Wiederbelebung im Spiel nun zügig fällt, ist begründet und nicht
+  beobachtet. Der erste Versuch war ebenfalls compile- und skriptgrün und trotzdem falsch.
 
 ## Warum es heute nicht funktioniert
 
@@ -73,32 +116,16 @@ Daraus folgt, dass die Behebung nicht die Zahl `0.5f` verschieben darf. Das repr
 dieselbe Kopplung an einem anderen Punkt. Zu ersetzen ist die Konstruktion: die Zuständigkeit für
 das Einschieben.
 
-## Der zurückgenommene Lösungsversuch
+## Der zurückgenommene erste Versuch
 
-Der GCD-Pfad meldet die Wiederbelebung, sobald sie wirkbar ist und Spontanität zur Verfügung steht.
-Der Fähigkeitenpfad erkennt an dieser Meldung, dass eine Wiederbelebung ansteht, und schiebt
-Spontanität im regulären Einschiebefenster ein. Im folgenden GCD liegt der Spontanitäts-Status vor,
-und die bereits vorhandene erste Stufe von `RaiseSpell` gibt die Wiederbelebung sofort frei.
+Er meldete die Wiederbelebung aus dem GCD-Pfad als nächsten GCD und überließ das Einschieben dem
+Fähigkeitenpfad. Der Gedanke war richtig, die Stelle falsch: Die Meldung eines GCD ist kein
+folgenloser Hinweis, sondern beendet den Dispatcher **und** setzt die Eingabe des gesamten
+Fähigkeitenpfads. Beides ist oben in der Vergleichstabelle beziffert. Vollständige Aufarbeitung des
+Fehlers in `AUDIT_LOG.md` C37.
 
-Ablauf mit der Änderung:
-
-1. GCD läuft, ein Toter ist da, Spontanität bereit → `GCD()` meldet die Wiederbelebung.
-2. `Invoke` sieht `CanUseGCD == false` und ruft den Fähigkeitenpfad mit dieser Meldung auf.
-3. `CustomRotation_Ability.cs:705` erkennt die Wiederbelebung als nächsten GCD und zündet
-   Spontanität. Das Einschiebefenster liegt bei `WeaponRemain > 0,5 s`, wo die Ausführungssperre
-   nicht greift — die Fähigkeit wird tatsächlich gewirkt.
-4. Nächster GCD: Spontanitäts-Status liegt an, `RaiseSpell` gibt die Wiederbelebung ohne Wirkzeit
-   frei.
-
-Die Ausführungsschicht wird nicht angefasst. Ihre Sperre ist richtig, und der Eingriff dort hätte
-den größten denkbaren Wirkungsbereich: `IBaseAction.IgnoreClipping` wird an sechs Stellen gesetzt,
-auch für Fälle ohne Bezug zur Wiederbelebung, und ein Leser in `DoAction` würde die Anti-Clipping-
-Regel praktisch überall aushebeln.
-
-**Präzedenz im eigenen Baum, zweifach.** `SMN_Reborn.cs:374` zündet Spontanität in
-`EmergencyAbility` und prüft dort `nextGCD.IsTheSameTo(false, ResurrectionPvE)` — genau die
-Konstruktion, die hier fehlt. `SMN_Reborn.cs:478` löst dieselbe Frage für Slipstream über
-`skipCastingCheck`. Der Entwurf ist damit hausüblich und kein Neubau.
+Die Lehre, die den zweiten Entwurf bestimmt: Wer eine Meldebedingung lockert, misst ihre Wirkung an
+beiden Pfaden und zählt vorher aus, wer `nextGCD` liest.
 
 ### Verworfene Optionen
 
