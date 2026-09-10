@@ -73,10 +73,10 @@
 			<InformationalVersion>$(_UpstreamTag)+wsh1</InformationalVersion>
 			<PackageVersion>$(_UpstreamTag)-wsh1</PackageVersion>
 		</PropertyGroup>
-		<Message Importance="normal"
+		<Message Importance="high"
 		         Condition="'$(_UpstreamTagExitCode)' == '0' AND '$(_UpstreamTag)' != ''"
 		         Text="Fork version derived from the repository: $(Version) (upstream release this tree contains)" />
-		<Message Importance="normal"
+		<Message Importance="high"
 		         Condition="'$(_UpstreamTagExitCode)' != '0' OR '$(_UpstreamTag)' == ''"
 		         Text="No upstream tag reachable from HEAD - falling back to the literal $(Version). Run .github/scripts/audit/check_fork_version.py if this build is meant to be current." />
 	</Target>
