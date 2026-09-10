@@ -283,3 +283,60 @@ wird nicht erfasst. Auch das steht in `TODO.md`.
 Selbsttest: gegen einen konstruierten Rampart-Fall (Basis-Id geführt, Trait-Fassung fehlt) meldet
 er das Geschwister, und die Gegenprobe stellt sicher, dass Reflexionstext und Minderungstext als
 verschiedene Anfänge gelten.
+
+## scan15.py — Codeverweise in den Dokumenten, die ihr Ziel verloren haben
+
+Die Konzepte zitieren den Baum nach Datei und Zeile — `WHM_Reborn.cs:566`,
+`StatusHelper.cs:781` —, und jeder Commit an diesen Dateien verschiebt das Ziel, ohne das
+Zitat anzufassen. Das Zitat sieht weiterhin richtig aus; wer ihm folgt, landet auf fremdem
+Code oder, schlimmer, auf Code, der sich plausibel wie der Gegenstand liest. Das ist dieselbe
+Alterung wie bei den Statuslisten, eine Ebene höher: bei der Niederschrift richtig, nach der
+nächsten Änderung anderswo still falsch.
+
+Prüfbar ist eine Zeilennummer für sich nicht — jede Zeile existiert. Prüfbar ist, ob **das,
+wovon der Satz spricht**, dort steht, wo der Satz es behauptet. Der Scan paart deshalb jedes
+Zitat mit den Bezeichnern in Backticks daneben und meldet `ok`, `moved` (Bezeichner in der
+Datei, aber anderswo — mit Fundstelle), `gone` (Bezeichner gar nicht mehr da) oder
+`no anchor` (kein prüfbarer Bezeichner; kein Befund, aber ausgewiesen, damit die Abdeckung
+des Laufs sichtbar bleibt).
+
+**`AUDIT_LOG.md` ist ausgenommen und wird getrennt ausgewiesen.** Das Archiv hält fest, was
+zum Prüfzeitpunkt galt; eine seither verschobene Zeile datiert den Befund, sie entwertet ihn
+nicht. Nur Dokumente, die den **geltenden** Stand behaupten, müssen stimmen.
+
+Erster Lauf: 122 Zitate, 26 Befunde. Zwei Fehler des Scans selbst kamen dabei heraus und sind
+behoben — in einer Tabellenzeile mit zwei Zitaten prüfte er jeden Bezeichner gegen beide
+Dateien, was als „Code ist weg" gelesen wurde, und das Abschneiden am Nachbarzitat zerlegte
+die Backtick-Paarung, sodass Prosa als Bezeichner gelesen wurde. Der Selbsttest deckt beides
+ab. Nach der Korrektur blieben zehn echte Befunde in den geltenden Dokumenten.
+
+**Behoben wurde nicht die Nummer, sondern die Bauform.** Wo ein eindeutiger Bezeichner
+existiert, steht jetzt er statt der Zeile — `WHM_Reborn.ShouldStretchHolyStun` statt
+`WHM_Reborn.cs:498`. Eine Zeilennummer altert bei jedem Commit, ein Bezeichner erst bei einer
+Umbenennung, und die fällt beim Kompilieren auf.
+
+## scan16.py — Aktionen, deren zweite Wirkung niemand liest
+
+Konzept 08 benennt die Bauform: Eine Aktion mit zwei Wirkungen ist nur nach einer von ihnen
+eingeordnet. Sanctus ist ein Schadenszauber, der auch betäubt — die Betäubung war bis zu
+diesem Fork Teil keiner Entscheidung. Assize ist ein Angriffs-oGCD, der auch heilt. Armlänge
+gilt als Rückstoßschutz, und ihre Verlangsamung +20 % auf jeden Angreifer wurde **nirgends**
+gelesen.
+
+Der Scan nimmt den Wirktext jeder PvE-Aktion, zieht die Kontroll- und Minderungswirkungen auf
+Gegner heraus (Slow, Stun, Heavy, Bind, Blind, Silence, Paralysis, „reduces damage dealt by")
+und fragt, ob der Baum den zugehörigen Status je liest — als Mitglied einer `StatusHelper`-Liste
+oder wenigstens als einzelne `StatusID`. Die Ausgabe trennt Tank und Heiler vom Rest, weil die
+Erhebung vollständig zu führen ist, die Bearbeitung aber dem Nutzungsprofil folgt.
+
+Ergebnis: 1457 PvE-Aktionen, 52 mit einer solchen Wirkung, **ein** Fund im Tank- und
+Heilerprofil, der eine Entscheidung ändert — Armlänge. Der Wirktext der Verlangsamung nennt
+ausdrücklich die Verzögerung der **Automatikangriffe**, aus denen Trash-Gegner den Großteil
+ihres Schadens liefern; die Drosselung liegt damit in der Größenordnung von Rampart. Genutzt
+ist der Befund in der Barrierenregel des Dunkelritters (`PackSlowed`); die Frage, ob Armlänge
+auch **als** Minderungswerkzeug gewirkt werden soll, steht in `TODO.md`, weil sie mit ihrer
+Rolle als einzigem Rückstoßschutz kollidiert. Die übrigen Treffer liegen in Bozja und den
+Tiefen Gewölben und sind erfasst, nicht bearbeitet.
+
+Der Selbsttest deckt die Unterscheidung ab, die den Scan trägt: Ein Kontrolleffekt wird
+erkannt, eine reine Heilung nicht, und die Rollenzuordnung trennt Tank, Heiler und den Rest.
