@@ -27,13 +27,14 @@ Eingriffe in `DRK_Reborn.cs`, alle auf Upstream-Code:
 | `TankbusterOrHeavyPull` | `TankbusterOnMe` **oder** der gestaffelte Pull |
 | `TankbusterHeavyPullOrLowHealth` | zusätzlich Gesundheit ≤ `BlackestNightHealthRatio` (Vorgabe 60 %) |
 
-Der **gestaffelte Pull** verlangt vier Dinge gleichzeitig:
+Der **gestaffelte Pull** verlangt fünf Dinge gleichzeitig:
 
 | Bedingung | Grund |
 |---|---|
 | `NumberOfHostilesInRange >= BlackestNightMinHostiles` (Vorgabe 4) | erst ab genug Gegnern erreicht der Schadensstrom die Verbrauchsrate |
 | `!HasMajorMitigation` | eine große Minderung senkt den Strom unter diese Rate |
 | `!GroupStunRunning()` | eine Gruppenbetäubung hält den Strom ganz an |
+| `!PackSlowed()` | eine verlangsamte Gruppe verdünnt ihn für die Dauer des Debuffs |
 | Reprisal ist erledigt | die kostenlose Gruppenminderung gehört zuerst gewirkt |
 
 Beim Tankbuster gilt **keine** davon, und der Notfallzweig bei niedriger Gesundheit wartet ebenfalls
@@ -93,7 +94,7 @@ Andere **Barrieren** sind in beiden Lagen kein Hindernis: Die Verbrauchsreihenfo
 The Blackest Night auf Rang 3, Eukrasian Diagnosis auf 4 und Divine Benison auf 12 (A36,
 Spielerdokumentation). Ein Heilerschild wird nach der eigenen Barriere aufgezehrt.
 
-### Die vier Bedingungen des Pull-Zweigs
+### Die fünf Bedingungen des Pull-Zweigs
 
 **Genug Gegner.** Die Schwelle steht als eigene Rotationsoption, nicht als Ableitung der
 Mitigations-Sustain-Zahl: Dort geht es um die Aufrechterhaltung eines Debuffs, hier um eine
@@ -180,16 +181,33 @@ zufällig nicht verfügbar ist. Für einen Pull ist das die verkehrte Rangfolge:
 Gegen einen Tankbuster ist die Rangfolge gleichgültig, weil dort eine einzelne Gelegenheit
 entscheidet — deshalb gilt auch diese Bedingung nur im Pull-Zweig.
 
-### Warum die vier Bedingungen zusammenpassen
+**Keine verlangsamte Gruppe.** Verlangsamung ist nicht bloß ein Zauberer-Debuff: Ihr Wirktext nennt
+neben Wirk- und Wiederholzeit ausdrücklich die **Verzögerung der Automatikangriffe**, und Trash-Gegner
+liefern den Großteil ihres Schadens genau darüber. Eine verlangsamte Gruppe verdünnt den Strom
+deshalb etwa um die Stärke des Debuffs — Armlänge legt Verlangsamung +20 % auf jeden physischen
+Angreifer für 15 s, dieselbe Größenordnung wie Rampart und damit jenseits der Linie, ab der die
+Barriere in sieben Sekunden nicht mehr aufgezehrt wird.
 
-Sie sind keine vier unabhängigen Filter, sondern beschreiben denselben Zeitpunkt. Während des
+Dieselbe Anteilsregel wie bei der Betäubung, aus demselben Grund: ein verlangsamter Gegner von acht
+sagt über den Strom nichts. Der Unterschied liegt im Zeitverlauf — eine Betäubung hält den Strom an
+und läuft in Sekunden aus, eine Verlangsamung verdünnt ihn fünfzehn Sekunden lang. Ein Nachlauffenster
+hat diese Bedingung deshalb nicht; sie endet mit dem Debuff.
+
+*Herkunft des Befunds:* Rückfrage des Auftraggebers, ob die Regel die anhaltende Verlangsamung
+mitprüft. Sie tat es nicht — und die Erhebung dahinter (`scan16.py`) zeigt, dass die
+Verlangsamungswirkung im gesamten Baum an keiner Stelle gelesen wurde, obwohl jeder Tank sie über
+eine Rollenaktion mitbringt.
+
+### Warum die Bedingungen zusammenpassen
+
+Sie sind keine unabhängigen Filter, sondern beschreiben denselben Zeitpunkt. Während des
 Einsammelns läuft der Dunkelritter, die Gegner folgen verstreut, und nur ein Teil steht in
 Schlagreichweite: wenig Gegner, schwacher Strom — die Gegnerzahl hält die Barriere heraus. Am
 **Ende** des Pulls steht alles beieinander, die Zahl ist am höchsten und der Strom am stärksten, und
 genau dann hat der Dunkelritter seine großen Minderungen typischerweise noch nicht gezogen, weil
 zuvor kaum etwas auf ihn einschlug. Die Betäubungsphase fällt oft mit diesem Moment zusammen, weil
-der Heiler zu betäuben beginnt, sobald die Gruppe steht; sie ist deshalb die einzige der vier
-Bedingungen, die **aufschiebt statt auszuschließen**.
+der Heiler zu betäuben beginnt, sobald die Gruppe steht; sie ist deshalb — zusammen mit der
+Verlangsamung — eine der beiden Bedingungen, die **aufschieben statt auszuschließen**.
 
 ### Die Gegenrichtung: der Weißmagier hält Sanctus zurück
 
@@ -239,10 +257,10 @@ Schalter aus ist (`Parent = nameof(BlackLantern)`, `:21`) — die einzige Stells
 Zweigs war unsichtbar.
 
 Der Selbstschutz-Zweig öffnet mit `AutoStatus.DefenseSingle`, und dessen Tank-Zweig
-(`StateUpdater.cs:232-276`) genügt schon eine dieser Lagen: zwei Gegner in Nahreichweite, die den
+(`StateUpdater.ShouldAddDefenseSingle`) genügt schon eine dieser Lagen: zwei Gegner in Nahreichweite, die den
 Spieler anvisieren — die begleitende Gesundheitsbedingung steht per Vorgabe auf 100 %
-(`Configs.cs:764`) und schränkt nichts ein —, oder ein einziges `IsHostileCastingToTank`, das über
-den Rückfall „castet auf sein eigenes Ziel" (`DataCenter.cs:2441`) jeden nicht unterbrechbaren
+(`Configs._healthForAutoDefense`) und schränkt nichts ein —, oder ein einziges `IsHostileCastingToTank`, das über
+den Rückfall „castet auf sein eigenes Ziel" (`DataCenter.IsHostileCastingArea`) jeden nicht unterbrechbaren
 Trash-Cast trifft, oder `BMRTankbusterImminent`. Für Rampart und Reprisal ist dieser Auslöser
 unbedenklich; The Blackest Night ist die einzige Aktion des Pfades mit Ressourcenkosten und
 Verbrauchsbedingung.

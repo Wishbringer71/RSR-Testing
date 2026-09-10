@@ -582,6 +582,51 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
+	/// Counts the hostiles within <paramref name="radius"/> and how many of them carry any of
+	/// <paramref name="statuses"/>.
+	/// </summary>
+	/// <remarks>
+	/// The plain counterpart to <see cref="SurveyStuns(float, out int, out bool, out bool)"/>, which
+	/// carries stun-specific reasoning (resistance, headroom) that no other effect needs. Written for
+	/// the question "is the incoming damage stream being throttled": a share of slowed enemies
+	/// answers it the same way a share of stunned ones does, only weaker and for longer.
+	/// </remarks>
+	/// <param name="radius">The radius to measure over, in yalms.</param>
+	/// <param name="statuses">The status group to look for; any one of them counts.</param>
+	/// <param name="carrying">How many hostiles inside the radius carry one.</param>
+	/// <returns>How many hostiles were inside the radius. Zero means the count says nothing.</returns>
+	protected static int SurveyHostileStatus(float radius, StatusID[] statuses, out int carrying)
+	{
+		carrying = 0;
+		var hostiles = DataCenter.AllHostileTargets;
+		if (hostiles == null || hostiles.Count == 0)
+		{
+			return 0;
+		}
+
+		var inRange = 0;
+		for (int i = 0, n = hostiles.Count; i < n; i++)
+		{
+			var hostile = hostiles[i];
+			if (hostile == null || hostile.DistanceToPlayer() > radius)
+			{
+				continue;
+			}
+
+			inRange++;
+
+			// Any source counts, as with stuns: what matters is the state of the enemy, not who put
+			// it there.
+			if (hostile.HasStatus(false, statuses))
+			{
+				carrying++;
+			}
+		}
+
+		return inRange;
+	}
+
+	/// <summary>
 	/// Calculates the current cumulative mitigation percentage applied to an imminent AoE or raid-wide hit.
 	/// </summary>
 	/// <returns>

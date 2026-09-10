@@ -1615,6 +1615,40 @@ Der zweite war der Gruppenschutz. Im Wall-to-Wall-Pull liegt die Aggro beim Tank
 
 ---
 
+### A51 · Heiler- und Tank-Konzepte nachgeprüft, und die Verlangsamung, die niemand las (10.09.2026)
+
+**Anlass:** Auftrag, die Konzepte 08 bis 10 erneut vollständig zu prüfen und zusätzlich zu erheben, ob weitere Synergieeffekte erreichbar sind. Dazu die Rückfrage des Auftraggebers, ob die Sanctus-Rückhaltung auch auf die anhaltende Verlangsamung der Gegner achtet.
+
+**Erster Befund: die Dokumente selbst waren an mehreren Stellen überholt.** Das fiel nicht bei der Lektüre auf, sondern erst durch eine Erhebung — die Prüfung nach Augenschein hatte die Stellen zuvor zweimal übersehen.
+
+- `09-tank-selfprotection.md` führte zwei Lücken der Schildanrechnung als offene Defekte, die längst geschlossen sind: `ModifyDivineBenisonPvE` steht auf der Zielseite, `Intersection`/`Intersection_4040` stehen in `ShieldStatus` (A43). Der Abschnitt lag zudem unter „Was offen bleibt".
+- Derselbe Text erklärte pauschal, für The Blackest Night sei „gar keine Sonderregel richtig". Das galt für Heilung und Schild und ist dort weiter richtig; seit A50 gibt es eine für den **Schadensstrom**. Ohne Abgrenzung liest ein Abschnittsleser den überholten Stand — genau der Fehlerpfad, den der Urteilsstil vermeiden soll.
+- `08-mitigation-synergy.md` beschrieb die Streckungsbedingung ohne die in A50 ergänzte Forderung nach einer laufenden Betäubung und führte die Übertragung auf weitere Doppelnutzen-Aktionen als offen, obwohl sie inzwischen erhoben ist.
+
+**Zweiter Befund: die Zeilenverweise altern, und zwar als Klasse.** `scan15.py` (neu) paart jedes `Datei.cs:Zeile`-Zitat mit den Bezeichnern daneben und prüft, ob der Bezeichner dort steht. Erster Lauf: 122 Zitate, 26 Befunde; nach Behebung zweier Fehler im Scan selbst — in einer Tabellenzeile mit zwei Zitaten wurden die Bezeichner vermischt, und das Abschneiden am Nachbarzitat zerlegte die Backtick-Paarung — blieben zehn echte in den geltenden Dokumenten. `AUDIT_LOG.md` ist ausgenommen und wird getrennt ausgewiesen: Das Archiv datiert seine Befunde, eine seither verschobene Zeile ist dort kein Fehler.
+
+Behoben wurde **nicht die Nummer, sondern die Bauform**: Wo ein eindeutiger Bezeichner existiert, steht jetzt er. Eine Zeilennummer altert bei jedem Commit, ein Bezeichner erst bei einer Umbenennung — und die fällt beim Kompilieren auf. Das ist die Konsequenz aus Parnas' *Lack of Movement*, angewandt auf die Dokumentation statt auf den Code.
+
+**Dritter Befund, der die Rückfrage beantwortet: Armlänge verlangsamt, und niemand liest das.** `scan16.py` (neu) nimmt den Wirktext jeder PvE-Aktion, zieht die Kontroll- und Minderungswirkungen auf Gegner heraus und fragt, ob der Baum den zugehörigen Status je liest. 1457 PvE-Aktionen, 52 mit einer solchen Wirkung, **ein** Fund im Tank- und Heilerprofil, der eine Entscheidung ändert:
+
+| Aktion | zweite Wirkung | Stand vorher |
+|---|---|---|
+| Armlänge (7548) | Verlangsamung +20 % auf jeden physischen Angreifer, 15 s | nur als Rückstoßschutz eingeordnet (`AntiKnockbackAbility`); die Verlangsamung wird nirgends gelesen |
+
+Die eigene erste Bewertung war dabei falsch und wurde durch die Quelle widerlegt: Ich hatte den abgeschnittenen Wirktext gelesen und Verlangsamung für einen reinen Zauberer-Debuff gehalten. Der vollständige Text nennt neben Wirk- und Wiederholzeit ausdrücklich die **Verzögerung der Automatikangriffe** — aus denen Trash-Gegner den Großteil ihres Schadens liefern. Die Drosselung liegt damit in der Größenordnung von Rampart und jenseits der Linie, ab der die Barriere in sieben Sekunden nicht mehr aufgezehrt wird.
+
+**Umgesetzt:** `StatusHelper.SlowStatus` (alle zwölf Ids desselben Anzeigenamens, Slow+ eingeschlossen), `CustomRotation_OtherInfo.SurveyHostileStatus` als schlichter Zähler für „wie viele Gegner in Reichweite tragen einen dieser Status", und `DRK_Reborn.PackSlowed()` als fünfte Bedingung des Pull-Zweigs. Dieselbe Anteilsregel wie bei der Betäubung, aber **ohne** Nachlauffenster: Eine Betäubung hält den Strom an und läuft in Sekunden aus, eine Verlangsamung verdünnt ihn fünfzehn Sekunden lang und endet mit dem Debuff.
+
+**Was die Frage nach der Quelle angeht** — geprüft wird der Status **auf den Gegnern**, nicht der Buff auf dem Tank. Das ist dieselbe Wahl wie bei den Betäubungen und aus demselben Grund richtig: Die Verlangsamung entsteht erst, wenn ein Gegner den Träger tatsächlich trifft, der Buff allein sagt darüber nichts, und fremde Quellen (Blaumagier, Phantom-Jobs) zählen mit.
+
+**Offen und vorgelegt, nicht umgesetzt:** Armlänge auch **als** Minderungswerkzeug zu wirken. Der Nutzen ist erheblich — kostenlos, 120 s Abklingzeit, 15 s Drosselung —, aber sie ist zugleich der einzige Rückstoßschutz des Jobs, und ob im nächsten Kampfabschnitt ein Rückstoß kommt, kann RSR nicht wissen. In `TODO.md` mit Empfehlung geführt.
+
+**Nicht geklärt: der deutsche Name.** Der Auftraggeber nennt die Fähigkeit „Abtausch"; C30 hat denselben Namen Shirk zugeordnet. Shirk überträgt Feindseligkeit und verlangsamt nichts — die vom Auftraggeber beschriebene Wirkung gehört eindeutig zu Armlänge. Welche der beiden Aktionen im deutschen Client „Abtausch" heißt, ist hier **nicht** belegbar: Die drei Quellen, die es klären würden (Lodestone-Datenbank, Garland Tools, XIVAPI), sind vom Egress gesperrt, und zwei Suchmaschinenzusammenfassungen widersprechen einander. Für die Umsetzung ist das folgenlos, weil sie über die Wirkung geht; für die Reihenfolgebedingung aus A46 ist es das nicht — steht dort „Abtausch" für Armlänge, fehlt in `reprisalDone` eine zweite Stufe. Als offene Frage geführt.
+
+**Erreichter Prüfgrad:** statische Prüfung, zwei neue Prüfskripte mit Selbsttest, Wirktext-Beleg aus `Status.resx` und `ActionId.resx`, Websuche zur Auto-Attack-Frage, CI-Kompilierung. Nicht beobachtet: ob die Anteilsschwelle für Verlangsamung im Spiel trägt.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.

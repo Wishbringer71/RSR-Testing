@@ -44,7 +44,7 @@ Das Spiel führt jede Wirkung unter mehreren Status-Ids desselben Anzeigenamens 
 **Zwei benannte Fundstellen, an denen die Zuordnung offen ist:**
 
 - `TankStanceStatus` führt `IronWill` (79) und `RoyalGuard_1833`, nicht aber `IronWill_393`, `IronWill_2843` und `RoyalGuard` (392) — gleicher Anzeigename, gleicher Wirktext „Enmity is increased." Die Liste entscheidet, wen die Zielwahl für einen Tank hält (`ActionTargetInfo.cs`, sieben Stellen, darunter `FindTankTarget` und `FindKardia`) und ob `HasTankStance` für den Spieler greift. `Defiance_1396` und `Grit_1397` („Damage dealt and taken are reduced.") sind die Fassungen vor Shadowbringers und gehören **nicht** hinein.
-- `GetCurrentMitigationPercent` (`CustomRotation_OtherInfo.cs:627`, `:633`) liest `StatusID.Addle` und `StatusID.Feint` als **einzelne** Id. `Addle_1988` (Geltungsbereich BLM SMN RDM BLU PCT, keine PvP-Aktion in `ActionId.resx`) und `Feint_2185` existieren; die Minderungsbilanz zählt eine vorhandene Schwächung dann als nicht vorhanden. Einzelprüfungen dieser Art sieht `scan14.py` nicht — er erhebt nur Ids in Listen.
+- `GetCurrentMitigationPercent` (`CustomRotation_OtherInfo`) liest `StatusID.Addle` und `StatusID.Feint` als **einzelne** Id. `Addle_1988` (Geltungsbereich BLM SMN RDM BLU PCT, keine PvP-Aktion in `ActionId.resx`) und `Feint_2185` existieren; die Minderungsbilanz zählt eine vorhandene Schwächung dann als nicht vorhanden. Einzelprüfungen dieser Art sieht `scan14.py` nicht — er erhebt nur Ids in Listen.
 
 **Warum nicht behoben:** Welche Id das Spiel je Stufe tatsächlich setzt, ist aus den Daten nicht zu entscheiden. Bei `Reprisal_2101` trug der Beleg — genau eine PvE-Aktion, Geltungsbereich auf die vier Jobs verengt, belegter Trait-Stufenwert; bei den Tankhaltungen tut er das nicht, und eine falsch aufgenommene Id kehrt die Antwort in die andere Richtung um. **Auflösungsbedingung:** Laufzeitbeobachtung, welche Id ein Tank beziehungsweise ein Zauberer im Ziel trägt, oder eine Quelle für die Id-Zuordnung je Stufe.
 
@@ -179,7 +179,7 @@ Dem steht als Ertrag eine Nutzeroption gegenüber, deren Wirkung unbelegt ist un
 
 ### `SpreadDamagePaths` enthält keinen Spread-Marker · N
 
-`DataCenter.cs:2036-2043`. Zwei der vier Pfade stehen wortgleich in `SharedDamagePaths` (2025-2026), die anderen beiden sind laut eigenem Kommentar „AOE share markers", also ebenfalls Stack-Marker. Ohne Fehlwirkung, weil `IsCastingAreaVfx` alle drei Listen prüft. **Kosten:** eine Kategorie, die etwas anderes verspricht, als sie enthält. Nebenbefund: `SharedDamagePaths` führt `vfx/lockon/eff/com_trg01_0c` zweimal (2022 und 2024), im `FrozenSet` folgenlos.
+`DataCenter.SpreadDamagePaths`. Zwei der vier Pfade stehen wortgleich in `SharedDamagePaths`, die anderen beiden sind laut eigenem Kommentar „AOE share markers", also ebenfalls Stack-Marker. Ohne Fehlwirkung, weil `IsCastingAreaVfx` alle drei Listen prüft. **Kosten:** eine Kategorie, die etwas anderes verspricht, als sie enthält. Nebenbefund: `SharedDamagePaths` führt `vfx/lockon/eff/com_trg01_0c` zweimal (2022 und 2024), im `FrozenSet` folgenlos.
 
 **Entstehung belegt** (A41): eingeführt in `33e6acb1` vom 07.05.2026, einem Sammel-Refactoring („Refactor for var usage, safety checks, and plugin compat"), und zwar bereits mit den beiden Duplikaten und dem übernommenen Kommentar. Das ist *Ignorant Surgery* nach Parnas — Klon einer Nachbarliste ohne Anpassung —, kein späteres Veralten. Die Historie war dafür zu vertiefen; im flachen Klon lag der Einführungs-Commit vor dem Anfang.
 
@@ -195,7 +195,7 @@ Dem steht als Ertrag eine Nutzeroption gegenüber, deren Wirkung unbelegt ist un
 
 **Kosten:** 5,35 MB Download statt rund 1,8 MB, funktional folgenlos.
 
-**Auflösungsbedingung:** Der naheliegende Weg trägt nicht — der Standard-Target von DalamudPackager reicht `Exclude` nicht durch und läuft nur, solange keine eigene `DalamudPackager.targets` im Projektverzeichnis liegt; diese müsste den vollständigen Task-Aufruf samt aller Manifest-Felder nachbauen. `Exclude` vergleicht exakt über `List.Contains` (`DalamudPackager.cs:187`), kennt also keine Muster, und das NuGet-Paket trägt die Version im Dateinamen. Der Build-Workflow kompiliert nur und prüft das Paket nicht. Aufgreifen erst, wenn der Veröffentlichungspfad prüfbar ist. Geprüft: die XML-Dokumentation wird zur Laufzeit nicht gelesen.
+**Auflösungsbedingung:** Der naheliegende Weg trägt nicht — der Standard-Target von DalamudPackager reicht `Exclude` nicht durch und läuft nur, solange keine eigene `DalamudPackager.targets` im Projektverzeichnis liegt; diese müsste den vollständigen Task-Aufruf samt aller Manifest-Felder nachbauen. `Exclude` vergleicht exakt über `List.Contains` (im Paket DalamudPackager, nicht in diesem Baum), kennt also keine Muster, und das NuGet-Paket trägt die Version im Dateinamen. Der Build-Workflow kompiliert nur und prüft das Paket nicht. Aufgreifen erst, wenn der Veröffentlichungspfad prüfbar ist. Geprüft: die XML-Dokumentation wird zur Laufzeit nicht gelesen.
 
 **Empfehlung: nicht aufgreifen.** Der Auftraggeber hat die Spielbarkeit des Release-ZIPs zur Anforderung gemacht. Ein Eingriff in den Verpackungspfad ist genau die Klasse von Änderung, deren Ergebnis erst am fertigen Release sichtbar wird — und dieser Pfad läuft nur auf einen Tag, wird von keiner Prüfung abgedeckt und weicht dann zusätzlich vom Upstream ab. 3,5 MB Download stehen gegen das Risiko, ein nicht ladbares Paket zu bauen.
 
@@ -255,7 +255,9 @@ Schritt 3 aus `docs/rotation-flow/08-mitigation-synergy.md`. Die Schritte 1 und 
 
 **Zur Führung dieses Punktes:** Die Einzelheiten stehen im Konzeptdokument, nicht hier. `TODO.md` führt die offene Arbeit und verweist; eine zweite Beschreibung derselben Sache würde mit der ersten auseinanderlaufen. Was hier stehen muss, ist allein, dass noch etwas offen ist und wo es beschrieben wird.
 
-**Auflösungsbedingung:** erst nach Beobachtung der Schritte 1 und 2 im Spiel. Kandidatensuche über ein Prüfskript, nicht über Erinnerung.
+**Die Kandidatensuche ist erledigt** und lief, wie hier gefordert, über ein Prüfskript statt über Erinnerung: `scan16.py` erhebt jede PvE-Aktion mit Kontroll- oder Minderungswirkung auf Gegner und prüft, ob der Baum den zugehörigen Status liest. Im Tank- und Heilerprofil bleibt genau eine Aktion, deren zweite Wirkung eine Entscheidung ändern würde — Armlänge, eigener Eintrag oben. Offen ist damit nur noch die **Übertragung** selbst.
+
+**Auflösungsbedingung:** erst nach Beobachtung der Schritte 1 und 2 im Spiel.
 
 **Empfehlung: warten.** Schritt 3 überträgt eine Regel, deren Nutzen in den Schritten 1 und 2 noch nicht beobachtet ist; eine Übertragung vor dem Nachweis vervielfacht einen möglichen Fehler, statt einen Nutzen zu vervielfachen.
 
@@ -273,13 +275,35 @@ Die Kostenseite bliebe dagegen bestehen: Ein Ringpuffer über alle Gruppenmitgli
 
 ## Offene Arbeit
 
+### Armlänge wird nur als Rückstoßschutz genutzt, nicht als Minderung · N, U
+
+`ArmsLengthPvE` (7548) steht ausschließlich in `CustomRotation_Ability.AntiKnockbackAbility`. Ihre zweite Wirkung — Verlangsamung +20 % auf jeden physischen Angreifer für 15 Sekunden — wurde bis A51 im ganzen Baum nicht gelesen. Der Wirktext der Verlangsamung nennt ausdrücklich die Verzögerung der **Automatikangriffe**, aus denen Trash-Gegner den Großteil ihres Schadens liefern; im Wall-to-Wall ist sie damit eine Drosselung in der Größenordnung von Rampart — kostenlos, bei 120 Sekunden Abklingzeit.
+
+**Behandelt ist bisher nur die stille Wirkung:** Läuft die Verlangsamung, hält der Dunkelritter seine Barriere zurück (`PackSlowed`, A51). Nicht behandelt ist die naheliegende Nutzung, sie **zu wirken**, wenn ein Pull steht.
+
+**Der Zielkonflikt, der das offen hält:** Armlänge ist zugleich der einzige Rückstoßschutz dieser Jobs. Wer sie im Trash verbraucht, hat sie an der Mechanik nicht, die sie eigentlich vorsieht — und ob im nächsten Kampfabschnitt ein Rückstoß kommt, kann RSR nicht wissen. Die vorhandene Erkennung (`HostileCastingKnockback`) ist eine gelernte Liste und greift erst beim zweiten Vorkommen einer Aktion.
+
+**Auflösungsbedingung:** entweder eine Beobachtung, wie oft der Rückstoßfall im gespielten Inhalt tatsächlich eintritt, oder eine Einschränkung auf Inhalte ohne Rückstoßmechanik, die aus den Daten ableitbar wäre.
+
+**Empfehlung: hinter eine eigene Option, Vorgabe aus, und erst nach einer Beobachtung.** Der Nutzen ist plausibel und die Kosten sind es auch; das ist genau die Lage, für die die Projektregel das Standardverhalten stehen lässt. Als Zuschnitt böte sich dieselbe Bedingung an wie beim Pull-Zweig der Barriere — genug Gegner in Jobreichweite, keine große Minderung laufend.
+
+### Der deutsche Name „Abtausch" ist keiner Aktion sicher zugeordnet · —
+
+Der Auftraggeber nennt eine Tank-Rollenaktion „Abtausch" und beschreibt sie als „anhaltende Verlangsamung der Gegner". C30 hat denselben Namen Shirk zugeordnet. Beides zusammen geht nicht: Shirk (7537) überträgt 25 % Feindseligkeit und verlangsamt nichts; die beschriebene Wirkung gehört zu Armlänge (7548).
+
+**Nicht entscheidbar mit den hier verfügbaren Mitteln:** Die generierten Ressourcen führen ausschließlich englische Namen, und die drei Quellen, die den deutschen Namen belegen würden — Lodestone-Datenbank, Garland Tools, XIVAPI —, sind vom Egress nach Organisationsrichtlinie gesperrt. Zwei Suchmaschinenzusammenfassungen widersprechen einander; eine davon als Beleg zu nehmen wäre geglätteter Quellenstatus.
+
+**Warum es nicht folgenlos ist:** Die Reihenfolgebedingung aus A46 (`reprisalDone`) setzt die Aussage „Reflexion und Abtausch zuerst" um und kennt nur Reflexion. Steht „Abtausch" für Armlänge, fehlt dort eine zweite Stufe — dieselbe Bedingung, nur für die zweite kostenlose Minderung.
+
+**Auflösung:** eine Angabe des Auftraggebers aus seinem Client — welche der beiden Beschreibungen bei „Abtausch" steht. Danach ist die Bedingung in einer Zeile ergänzt oder die Frage erledigt.
+
 ### DRK: Die Betäubungsregel prüft die Tatsache, nicht die Prognose · N
 
 Der Pull-Zweig unterbleibt, solange eine **Gruppenbetäubung** läuft: mindestens zwei betäubte Gegner und mindestens die Hälfte der Gegner in Jobreichweite, dazu ein Nachlauffenster von drei Sekunden, solange noch Betäubungsspielraum besteht (`GroupStunRunning`, A48). Was die Regel **nicht** prüft: ob der Heiler gleich betäuben wird. Der Auftraggeber hatte ursprünglich auf „solange der Weißmagier seine drei Betäubungen noch nicht abgearbeitet hat" gezielt — das wäre eine Aussage über den nächsten Zauber eines anderen Spielers.
 
 **Kosten des Kompromisses:** Das Nachlauffenster überbrückt die Lücke zwischen zwei Anwendungen nur pauschal. Ist der Abstand größer als drei Sekunden, kann die Barriere dazwischen fallen und wird von der nächsten Betäubung unterbrochen; ist er kleiner und die Kette endet dort, wartet die Barriere drei Sekunden zu lang.
 
-**Auflösungsbedingung:** eine Beobachtung, wie oft beides im Spiel vorkommt. Fällt der erste Fall auf, ist `headroom` aus `SurveyStuns` die vorhandene Größe für eine schärfere Fassung: Die Sperre gälte dann bis zur Betäubungsimmunität der Gegner (`StunResistance`) statt bis zum Ablauf des Fensters. Zu bedenken ist, dass die Streckung von Sanctus eine Regel **dieses** Plugins ist (`WHM_Reborn.cs:498`) — bei einem fremden Heiler greift sie nicht.
+**Auflösungsbedingung:** eine Beobachtung, wie oft beides im Spiel vorkommt. Fällt der erste Fall auf, ist `headroom` aus `SurveyStuns` die vorhandene Größe für eine schärfere Fassung: Die Sperre gälte dann bis zur Betäubungsimmunität der Gegner (`StunResistance`) statt bis zum Ablauf des Fensters. Zu bedenken ist, dass die Streckung von Sanctus eine Regel **dieses** Plugins ist (`WHM_Reborn.ShouldStretchHolyStun`) — bei einem fremden Heiler greift sie nicht.
 
 ### Reihenfolge im Verteidigungspfad des Dunkelritters: teuer vor billig · N, U
 

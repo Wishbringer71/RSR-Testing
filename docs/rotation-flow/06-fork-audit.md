@@ -54,7 +54,7 @@ entfernt.**
 
 Weakness halbiert empfangene Heilung, also wurde die Heilschwelle mit 1,5
 multipliziert. Mit den Standardwerten (`_healthSingleAbility = 0.7`,
-`_healthSingleSpell = 0.65`, `Configs.cs:1369/1375`) ergibt das 1,05 → auf
+`_healthSingleSpell = 0.65`, `Configs`) ergibt das 1,05 → auf
 1,0 geklemmt, bzw. 0,975. Ein geschwächter Spieler galt damit bei **jeder**
 HP unter voll als heilbedürftig — 100 s lang bei Weakness, 300 s bei Brink of
 Death, also nach jedem Rez.

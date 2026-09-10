@@ -488,6 +488,39 @@ public static class StatusHelper
 	];
 
 	/// <summary>
+	/// Every id the game files under the display name Slow, all of them carrying the same effect:
+	/// "weaponskill cast time and recast time, spell cast time and recast time, and auto-attack
+	/// delay are increased".
+	/// <para>
+	/// The auto-attack half is what makes this a mitigation and not a caster nuisance. Trash enemies
+	/// deal most of their damage by auto-attack, so a slowed pack throttles the incoming stream by
+	/// roughly the size of the debuff - the same order as Rampart, and enough to stop a barrier that
+	/// only pays off when it is spent from being spent at all.
+	/// </para>
+	/// <para>
+	/// Read as a group, like <see cref="StunStatus"/> and for the same reason: which id a given
+	/// action applies is not decidable from the data, and the source does not matter. Arm's Length
+	/// is the one a tank brings; Blue Mage and the Occult Crescent phantom jobs bring others.
+	/// Slow+ (427, 1568) is the stronger grade of the same effect and belongs here too.
+	/// </para>
+	/// </summary>
+	public static StatusID[] SlowStatus { get; } =
+	[
+		StatusID.Slow,
+		StatusID.Slow_10,
+		StatusID.Slow_193,
+		StatusID.Slow_427,
+		StatusID.Slow_442,
+		StatusID.Slow_561,
+		StatusID.Slow_1346,
+		StatusID.Slow_1509,
+		StatusID.Slow_1568,
+		StatusID.Slow_2246,
+		StatusID.Slow_3464,
+		StatusID.Slow_3493,
+	];
+
+	/// <summary>
 	/// Barriers that pay a reward only when they are absorbed in full, so letting one expire unspent
 	/// wastes its cost rather than merely leaving protection unused.
 	/// <para>

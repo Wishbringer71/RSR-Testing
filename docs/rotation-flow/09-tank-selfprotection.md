@@ -22,11 +22,19 @@ Lagen bleiben **zwei** echte Rückhaltefälle, denen fünf Aufhebungen gegenübe
 Sie ist für Living Dead als **Uhrregel** umgesetzt — zurückhalten, solange der Tod
 noch rechtzeitig kommt — hinter einer Option mit Standard aus.
 
-Für The Blackest Night ist **gar keine** Sonderregel richtig. Heilung berührt den
-Auslöser nicht, und ein Heilerschild wird erst nach der TBN-Barriere aufgezehrt, kann
-sie also weder verzögern noch verdrängen. Die Nachrangigkeit, die dort sinnvoll ist,
-leistet RSR bereits: `BlackestNight` steht in `StatusHelper.ShieldStatus` und geht
-über `GetEffectiveHpPercent` in die Heilentscheidung ein.
+Für The Blackest Night ist **im Heilverhalten** gar keine Sonderregel richtig. Heilung
+berührt den Auslöser nicht, und ein Heilerschild wird erst nach der TBN-Barriere
+aufgezehrt, kann sie also weder verzögern noch verdrängen. Die Nachrangigkeit, die
+dort sinnvoll ist, leistet RSR bereits: `BlackestNight` steht in
+`StatusHelper.ShieldStatus` und geht über `GetEffectiveHpPercent` in die
+Heilentscheidung ein.
+
+*Abgrenzung, weil dieser Satz sonst zu weit gelesen wird:* Er gilt für Heilung und
+Schild. Für den **Schadensstrom** gilt das Gegenteil, und dort liegt inzwischen eine
+Sonderregel — der Weißmagier hält Sanctus zurück, solange ein Tank die Barriere trägt,
+weil dessen Betäubung genau den Schaden anhält, an dem die Barriere aufgezehrt werden
+müsste. Das ist keine Frage der Heilzielwahl und steht deshalb in Konzept 10, nicht
+hier.
 
 | Baustein | Stand |
 |---|---|
@@ -134,7 +142,7 @@ deren Schilde deutlich hinter TBN liegen.
 
 **Der Träger ist nicht zwingend der Dunkelritter.** `ActionId.resx` (Aktion 7393)
 beschreibt TBN als „Creates a barrier around **self or target party member**" — die
-Barriere kann auf jedem Gruppenmitglied liegen, und `DRK_Reborn.cs:128` nutzt das mit
+Barriere kann auf jedem Gruppenmitglied liegen, und der Party-Zweig in `DRK_Reborn` nutzt das mit
 `targetOverride: TargetType.LowHP`. Damit ist die ebenfalls genannte Radiant Aegis
 **nicht** gegenstandslos: Sie ist zwar ein Selbstschild des Beschwörers
 (`Status.resx`: **(SMN)**), aber ein Beschwörer kann sie tragen **und** zusätzlich TBN
@@ -306,7 +314,7 @@ der einzige verbliebene Sonderfall ist Living Dead.
 ### Die Zielwahl (Rangstufe 1)
 
 `NoNeedHealingInvuln()` ruft `WillStatusEndGCD(2, 0, false, …)`. Die Kette
-`WillStatusEnd` → `StatusTime` (`StatusHelper.cs:781`, `:845`) liefert bei
+`WillStatusEnd` → `StatusTime` (beide in `StatusHelper.cs`) liefert bei
 **fehlendem** Status die Zeit `0f`, und `(0 >= 0 || !HasStatus) && 0 <= time` ergibt
 `true`. Der Rückgabewert bedeutet also: *kein schützender Status aktiv, Heilung ist
 zuzulassen* — der Name sagt das Gegenteil, was die ganze Defektklasse erklärt.
@@ -371,6 +379,14 @@ Unverwundbarkeit das Fenster als endend gemeldet hätte.
 Die Option ist nötig, weil RSR Living Dead selbst als Notrettung bei
 `HealthForDyingTanks` zündet. Dort ist der Tod die Katastrophe, und Walking Dead
 verlangt danach eine volle Maximalgesundheit an Heilung in zehn Sekunden.
+
+### Zwei Lücken in der Schildanrechnung, die diese Prüfung nebenbei fand — beide geschlossen
+
+| Befund | Wirkung | Stand |
+|---|---|---|
+| `ModifyDivineBenisonPvE` setzte `StatusProvide` statt `TargetStatusProvide` | Divine Benison geht auf **fremde** Ziele. Die Doppelbelegungssperre prüfte damit den Spieler statt das Ziel und griff nie; zugleich sperrte sie die Aktion ganz, sobald der Weißmagier den Schild selbst trug. Die drei Geschwister (`AdloquiumPvE`, `EukrasianDiagnosisPvE`, `CelestialIntersectionPvE`) nutzen `TargetStatusProvide` | behoben, beide Ids auf der Zielseite |
+| `StatusID.Intersection` (1889) und `Intersection_4040` fehlten in `StatusHelper.ShieldStatus` | Beide sind als „A magicked barrier is nullifying damage" ausgewiesen. Der Schild eines Astrologen zählte nicht zur effektiven Gesundheit; sein Ziel erschien verletzter, als es ist | behoben (A43) |
+
 
 ## Was ausgeschlossen wurde und warum
 
@@ -438,21 +454,12 @@ Rotationsentscheidung, die die zentrale Schicht weder kennt noch erzwingen kann.
 **Die gestaffelte Phase-2-Unterstützung** (Fälle 4 und 4a) ist nicht gebaut. Sie
 verlangt eine Kursprognose und damit den verworfenen Messbaustein.
 
-### Zwei Lücken in der Schildanrechnung, die diese Prüfung nebenbei fand
-
-Beide sind unabhängig von The Blackest Night und in `TODO.md` als Defekte geführt:
-
-| Befund | Wirkung |
-|---|---|
-| `ModifyDivineBenisonPvE` (`WhiteMageRotation.cs:285`) setzt `StatusProvide` statt `TargetStatusProvide` | Divine Benison geht auf **fremde** Ziele — `BeirutaWHM.cs:516` liest `DivineBenisonPvE.Target.Target`. Die Doppelbelegungssperre prüft damit den Spieler statt das Ziel und greift nie. Die drei Geschwister (`AdloquiumPvE`, `EukrasianDiagnosisPvE`, `CelestialIntersectionPvE`) nutzen `TargetStatusProvide` |
-| `StatusID.Intersection` (1889) und `Intersection_4040` fehlen in `StatusHelper.ShieldStatus` | Beide sind als „A magicked barrier is nullifying damage" ausgewiesen. Der Schild eines Astrologen zählt damit nicht zur effektiven Gesundheit; sein Ziel erscheint verletzter, als es ist |
-
-**Offen bleibt eine einzige Frage zum Weisen.** Die Verbrauchsreihenfolge ordnet
-Eukrasian Diagnosis hinter The Blackest Night ein, ein Job-Guide davor. Träfe Letzteres
-zu, könnte der Einzelschild des Weisen die TBN-Absorption verzögern und Dark Arts
-kosten. Die beiden Primärquellen, die das klären würden, sind vom Egress nach
-Organisationsrichtlinie gesperrt. Für Weißmagier, Gelehrten und Astrologen besteht die
-Frage nicht — deren Schilde liegen nach beiden Quellen deutlich hinter TBN.
+**Eine einzige Frage zum Weisen.** Die Verbrauchsreihenfolge ordnet Eukrasian Diagnosis
+hinter The Blackest Night ein, ein Job-Guide davor. Träfe Letzteres zu, könnte der
+Einzelschild des Weisen die TBN-Absorption verzögern und Dark Arts kosten. Die beiden
+Primärquellen, die das klären würden, sind vom Egress nach Organisationsrichtlinie
+gesperrt. Für Weißmagier, Gelehrten und Astrologen besteht die Frage nicht — deren
+Schilde liegen nach beiden Quellen deutlich hinter TBN.
 
 ## Nachweisbarkeit
 

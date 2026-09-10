@@ -254,6 +254,27 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		return headroom && (DateTime.Now - _lastGroupStunSeen).TotalSeconds < StunChainGrace;
 	}
 
+	/// <summary>
+	/// Whether the pack is slowed hard enough that the barrier would not be spent.
+	/// </summary>
+	/// <remarks>
+	/// Slow is not only a caster debuff: its effect text names the auto-attack delay alongside cast
+	/// and recast time, and trash enemies deal most of their damage by auto-attack. A slowed pack
+	/// therefore throttles the incoming stream by about the size of the debuff - Arm's Length applies
+	/// Slow +20% to every physical attacker for 15s, which is the same order as Rampart and past the
+	/// line where the stream no longer spends 25% of maximum HP in seven seconds.
+	///
+	/// Same share rule as the stun condition, and for the same reason: one slowed enemy out of eight
+	/// says nothing about the stream. The difference is the timing - a stun stops the stream and
+	/// lapses in seconds, a slow thins it for fifteen, so this one has no grace window. It ends when
+	/// the debuff does.
+	/// </remarks>
+	private static bool PackSlowed()
+	{
+		var inRange = SurveyHostileStatus(DataCenter.JobRange, StatusHelper.SlowStatus, out var slowed);
+		return inRange > 0 && slowed >= 2 && slowed * 2 >= inRange;
+	}
+
 	private bool ShouldUseBlackestNightOnSelf()
 	{
 		// Reprisal first. It is a free party-wide -10% and sits at the very end of this path, so
@@ -266,11 +287,12 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			|| (HostileTarget?.HasStatus(false, StatusHelper.ReprisalStatus) ?? false);
 
 		// In a pull the barrier has to stand on its own: a big mitigation running alongside drops
-		// the damage stream below the rate that spends it, and a stun chain stops the stream
-		// outright.
+		// the damage stream below the rate that spends it, a stun chain stops the stream outright,
+		// and a slowed pack thins it for as long as the debuff lasts.
 		var staggeredHeavyPull = NumberOfHostilesInRange >= BlackestNightMinHostiles
 			&& !HasMajorMitigation
 			&& !GroupStunRunning()
+			&& !PackSlowed()
 			&& reprisalDone;
 
 		return BlackestNightUsage switch

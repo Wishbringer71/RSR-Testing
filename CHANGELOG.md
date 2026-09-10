@@ -72,6 +72,14 @@ every list rather than of the barriers alone.
 Both are inclusions, not removals: a derived rotation reading either list gets `true` in states
 where it previously got `false`, and nothing that used to match stops matching.
 
+- **Added** `StatusHelper.SlowStatus`, all twelve ids the game files under that display name,
+  Slow+ included. Additive. Its effect text names the auto-attack delay alongside cast and recast
+  time, which is what makes a slowed pack a throttled damage stream rather than a caster nuisance —
+  the reason a rule can read it at all.
+- **Added** `CustomRotation.SurveyHostileStatus(float, StatusID[], out int)` (`protected static`),
+  a plain "how many hostiles in radius carry one of these" counter. Additive, and deliberately
+  separate from `SurveyStuns`, which carries stun-specific reasoning (resistance, headroom) that no
+  other effect needs.
 - **Added** `StatusHelper.FullAbsorbRewardStatus`, holding The Blackest Night alone. Additive, and
   deliberately not a subset of `ShieldStatus` for callers to filter: it answers a different
   question. Every other barrier is pure protection, where an unspent remainder is a good outcome;

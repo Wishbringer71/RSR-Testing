@@ -14,16 +14,22 @@ Synergiefrage geführt wird.
 
 Gewählt ist eine **zentrale Bremse bei dezentraler Auslösung**: Die vorhandenen
 Auslöser bleiben, hinzu kommt eine Prüfung, die *zurückhält*. Fällt sie aus,
-verhält sich RSR wie zuvor. Umgesetzt ist das am Beispiel Sanctus beim Weißmagier:
+verhält sich RSR wie zuvor. Umgesetzt ist das zuerst am Beispiel Sanctus beim Weißmagier:
 Der Zauber wird ausgesetzt, wenn seine Betäubung dadurch gestreckt statt
-überschrieben wird und ein Cast mit eigenem Wert bereitsteht.
+überschrieben wird und ein Cast mit eigenem Wert bereitsteht. Inzwischen liegt
+eine zweite Anwendung derselben Bremse in der Gegenrichtung — der Weißmagier
+hält Sanctus zurück, solange die Barriere eines Dunkelritters aufgezehrt werden
+muss (Konzept 10) — und eine dritte für die Verlangsamung, die bis dahin
+überhaupt nicht gelesen wurde.
 
 | Baustein | Stand |
 |---|---|
-| Messung: `SurveyStuns(radius, out allStunned, out headroom)`, `StatusHelper.StunStatus` | umgesetzt (`CustomRotation_OtherInfo.cs:531`, `StatusHelper.cs:656`) |
-| Aussetzbedingung am Sanctus-Block, hinter `StretchHolyStun` (Standard aus) | umgesetzt (`WHM_Reborn.cs:489`, `:566`) |
-| Übertragung auf weitere Doppelnutzen-Aktionen | offen, siehe `TODO.md` |
-| Wirksamkeitsmessung im Spiel | offen, Voraussetzung für die Übertragung |
+| Messung: `SurveyStuns`, `SurveyHostileStatus`, `StatusHelper.StunStatus` und `SlowStatus` | umgesetzt in `CustomRotation_OtherInfo` und `StatusHelper` |
+| Aussetzbedingung am Sanctus-Block, hinter `StretchHolyStun` (Standard aus) | umgesetzt (`WHM_Reborn.ShouldStretchHolyStun`) |
+| Erhebung der übrigen Doppelnutzen-Aktionen | umgesetzt als `scan16.py`; ein Fund im Tank-/Heilerprofil (Armlänge) |
+| Zweite Aktion nach ihrer stillen Wirkung geregelt: Armlänge verlangsamt | umgesetzt in der Barrierenregel (Konzept 10, `DRK_Reborn.PackSlowed`) |
+| Armlänge auch **als** Minderungswerkzeug wirken | offen, siehe `TODO.md` — Zielkonflikt mit ihrer Rolle als einziger Rückstoßschutz |
+| Wirksamkeitsmessung im Spiel | offen, Voraussetzung für weitere Übertragungen |
 
 ## Warum die Streckung richtig ist
 
@@ -112,7 +118,22 @@ Sanctus steht im Schadenszweig; dass es betäubt, ist im Entscheidungsmodell nic
 vorhanden. Assize steht im Angriffs-oGCD (`WHM_Reborn.cs:308`); dass es heilt,
 ebenfalls nicht. Umgekehrt kennt `GetCurrentMitigationPercent` die Wirkung von
 Reprisal, aber weder Betäubung noch Verlangsamung, obwohl beide wie
-Schadensreduktion wirken.
+Schadensreduktion wirken. Beide sind inzwischen an der Stelle gelesen, an der sie
+eine Entscheidung ändern — der Barrierenregel des Dunkelritters —, in der
+Minderungsbilanz selbst aber weiterhin nicht.
+
+Die Erhebung dazu ist geführt und liegt als `scan16.py` im Repository: Sie nimmt
+jede PvE-Aktion, deren Wirktext eine Kontroll- oder Minderungswirkung auf Gegner
+nennt, und fragt, ob der Baum den zugehörigen Status irgendwo liest. Im
+Tank- und Heilerprofil bleibt **eine** Aktion übrig, deren zweite Wirkung
+nirgends gelesen wurde: **Armlänge**. Sie ist als Rückstoßschutz eingeordnet
+(`CustomRotation_Ability.AntiKnockbackAbility`), legt aber zugleich
+Verlangsamung +20 % auf jeden physischen Angreifer für 15 Sekunden. Der Wirktext
+der Verlangsamung nennt ausdrücklich die Verzögerung der **Automatikangriffe**,
+aus denen Trash-Gegner den Großteil ihres Schadens liefern — die Wirkung liegt
+damit in derselben Größenordnung wie Rampart. Die übrigen Treffer der Erhebung
+liegen in Bozja und den Tiefen Gewölben, also außerhalb des Nutzungsprofils, und
+sind erfasst statt bearbeitet.
 
 Zweite, unabhängig belegte Fundstelle: Im Schadenszweig steht der Sanctus-Block
 **vor** dem DoT-Block. Sobald `AoeCount = 3` erfüllt ist, greift Sanctus und der DoT
@@ -160,8 +181,13 @@ beschreibt einen einzelnen Gegner. Im Pull kommen laufend ungestunnte Gegner hin
 dann sagt die Restzeit über die bereits Betäubten nichts über die Neuzugänge, und die
 Regel würde strecken, obwohl ein Cast die Neuen mit **voller** Dauer erwischt hätte —
 die Resistenz zählt je Gegner. Gestreckt wird deshalb, wenn **alle** Gegner im Radius
-betäubt sind, oder wenn **keiner** von ihnen noch betäubt werden kann. Bei einem
-einzelnen Gegner ist das gleichbedeutend mit der Restzeit-Bedingung.
+betäubt sind, oder wenn **keiner** von ihnen noch betäubt werden kann — in
+beiden Fällen zusätzlich nur, solange überhaupt **eine Betäubung läuft**. Ohne
+diesen Zusatz griff die zweite Hälfte auch nach der abgearbeiteten
+Betäubungskette, wenn alle Gegner immun und keiner mehr betäubt ist: Dort gibt es
+nichts zu schützen, und die Regel tauschte für den Rest des Pulls einen
+Flächenzauber gegen einen Einzelzielzauber (A50). Bei einem einzelnen Gegner ist
+die Bedingung gleichbedeutend mit der Restzeit-Bedingung.
 
 Eine Schwelle der Form `Restzeit > ein GCD` wäre zusätzlich falsch gewesen: Nach dem
 ersten Sanctus beträgt die Restzeit beim nächsten GCD noch 1,5 s, die Regel hätte den
@@ -197,7 +223,7 @@ Der Entwurf erfindet wenig; das meiste lag im Baum und war nur nicht verbunden.
 | Statusabfragen mit Restzeit und Stapelzahl | `StatusHelper.HasStatus`, `.StatusTime`, `.StatusStack` | In Betrieb |
 | Vorhersagefenster aus der BossModReborn-Timeline | `Configs.cs:742`, `:747`, ausgewertet in `StateUpdater.cs:185` | In Betrieb |
 | Zentralisierte Nachzieh-Regel für Gegner-Debuffs | `CustomRotation_OtherInfo.cs:1327` | In Betrieb, 27 Aufrufstellen — Beleg, dass eine gemeinsame Regel über viele Jobs trägt |
-| Gegnerzahl-Schwelle als etabliertes Muster | `Configs.cs:757-759` über `NumberOfHostilesInRange` | In Betrieb |
+| Gegnerzahl-Schwelle als etabliertes Muster | `Configs.MitigationSustainHostileCount` gegen `NumberOfHostilesInRange` | In Betrieb |
 | Trennung von Mitigation und Schaden im Dispatch | `CustomRotation_GCD.cs`: HealArea 240, HealSingle 282, DefenseArea 322, DefenseSingle 337, GeneralGCD erst 449 | In Betrieb |
 
 ## Was ausgeschlossen wurde und warum
