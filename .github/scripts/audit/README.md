@@ -232,3 +232,54 @@ Das ist die Antwort auf die Alterung, nicht auf den Einzelfall: Die Liste war ko
 geschrieben wurde, und wurde durch Erweiterungen anderswo unvollständig, ohne dass etwas
 fehlschlug. Gegenprobe am konstruierten Defekt: eine Id entfernt → Rückgabewert 1 und die Id
 wird benannt; wieder eingefügt → 0.
+
+## scan14.py — fehlende Geschwister in **allen** Statuslisten
+
+`scan13.py` beantwortet die Geschwisterfrage für `ShieldStatus`. Die Alterung, gegen die er
+schützt, ist aber keine Eigenheit der Barrierenliste, sondern der Bauform: Jede handgepflegte
+Aufzählung von Status-Ids ist bei ihrer Entstehung vollständig und wird durch eine Erweiterung
+anderswo still unvollständig — Parnas' *Lack of Movement*. Dieser Scan stellt dieselbe Frage an
+jede der 24 Listen in `StatusHelper.cs`.
+
+**Er meldet, er entscheidet nicht**, und der Grund steht im Ergebnis: Ein gemeinsamer Anzeigename
+macht zwei Ids nicht zur selben Wirkung. Damit die Beurteilung billig bleibt, wird zu jedem
+fehlenden Geschwister die eigene Wirkbeschreibung gedruckt, dazu die Marke `same opening` oder
+`differs` — ob der Text so beginnt wie der der bereits geführten Id. Ein gemeinsamer Anfang ist
+die Signatur einer Trait-Aufwertung und gehört meist hinein; ein anderer Anfang ist eine andere
+Wirkung unter geteiltem Namen und gehört meist nicht.
+
+Erster Lauf: **187 fehlende Geschwister über 17 Listen**. Zwei davon waren Defekte im Sinn der
+umgekehrten Antwort und sind behoben:
+
+- **`RampartStatus`** führte `Rampart` (71), nicht aber `Rampart_1978` — die Fassung, die ein Tank
+  ab Stufe 94 trägt (Geltungsbereich PLD WAR DRK GNB, Wirktext um die Heilaufwertung der Trait
+  ergänzt). Die häufigste Minderung des Spiels war damit für jeden Leser der Liste unsichtbar:
+  `HasMajorMitigation` blind, und die vorhandene `StatusProvide`-Staffelung von Shadow Wall und
+  Shadowed Vigil löchrig. Ergänzt wurden `Rampart_1191`, `Rampart_1978`, `Rampart_4168` und
+  `HallowedGround_1302`.
+- **`ReprisalStatus`** führte 753 und 1193, nicht aber `Reprisal_2101`. Der Geltungsbereich
+  PLD WAR DRK GNB statt der geteilten Rolle ist hier die Signatur der Trait-Fassung — *Enhanced
+  Reprisal* hebt auf Stufe 98 die Minderung auf 15 % und die Dauer auf 15 s. `ReprisalPvE` trägt
+  die Liste als `TargetStatusProvide`, die Sperre gegen erneutes Anwenden sah die Schwächung
+  eines Endstufen-Tanks also nie.
+
+Die Gegenprobe steht im Scan selbst: `Nebula_3051` („inflicting a portion of sustained damage back
+to its source") und `Bloodwhetting_3030` („weaponskills generate HP equal to the amount of damage
+dealt") teilen ihren Namen mit Minderungen, sind aber deren Reflexions- und Lebensraubhälfte, und
+`Holmgang` 88 und 1305 sitzen auf dem *Ziel* der Unverwundbarkeit (AUDIT_LOG C15). Alle fünf
+bleiben draußen und werden weiter gemeldet — die verbleibenden Treffer in `RampartStatus` und
+`ShieldStatus` sind genau diese bewussten Ausschlüsse.
+
+**Keine CI-Schranke.** Von den 186 verbliebenen Treffern sind 114 Rauschen aus zwei Listen, die
+bewusst Teilmengen sind (`PhantomDispellable`, `PurifyPvPStatuses`), und der Rest verlangt je einen
+Blick in die Wirkbeschreibung. Ein Rückgabewert, den man nur durch Wegsehen grün hält, wäre
+schlechter als keiner; die Schranke bleibt bei `scan13.py`, wo die Mitgliedschaft aus der Aktion
+maschinell entscheidbar ist. Der offene Rest ist in `TODO.md` als Defektklasse geführt.
+
+*Grenze des Scans:* Er sieht nur Ids **in den Listen**. Ein Prüfpunkt, der eine einzelne Id direkt
+nennt — `e.HasStatus(false, StatusID.Addle)` in `GetCurrentMitigationPercent` — altert genauso und
+wird nicht erfasst. Auch das steht in `TODO.md`.
+
+Selbsttest: gegen einen konstruierten Rampart-Fall (Basis-Id geführt, Trait-Fassung fehlt) meldet
+er das Geschwister, und die Gegenprobe stellt sicher, dass Reflexionstext und Minderungstext als
+verschiedene Anfänge gelten.
