@@ -1103,7 +1103,6 @@ internal static class DataCenter
 		}
 	}
 
-	private static readonly Dictionary<ulong, uint> _lastHp = [];
 
 	private static float GetPartyMemberHPRatio(IBattleChara member)
 	{
@@ -1122,14 +1121,6 @@ internal static class DataCenter
 		var currentHp = member.CurrentHp;
 		if (currentHp > 0)
 		{
-			_ = _lastHp.TryGetValue(member.GameObjectId, out var lastHp);
-
-			if (currentHp - lastHp == healedHp)
-			{
-				_ = HealHP.Remove(member.GameObjectId);
-				return (float)currentHp / member.MaxHp;
-			}
-
 			return Math.Min(1, (healedHp + currentHp) / (float)member.MaxHp);
 		}
 
@@ -2095,23 +2086,90 @@ internal static class DataCenter
 
 	/// <summary>
 	/// True if a hostile is casting a tankbuster at the player specifically, whatever their role.
+	/// Counts only casts actually known to be tankbusters: an action on the curated
+	/// <see cref="OtherConfiguration.HostileCastingTank"/> list, or one that placed a tankbuster
+	/// lock-on VFX on the player. The "casting at its current target" fallback inside
+	/// <see cref="IsHostileCastingTank"/> is deliberately not used here. That fallback holds for
+	/// practically every uninterruptible cast a hostile aims at whoever it is attacking, which for
+	/// a tank is a fair guess at a tankbuster but for anyone else is an ordinary trash-mob attack -
+	/// and it made every such cast open the whole single-target defensive chain.
 	/// </summary>
 	public static bool IsHostileCastingTankBusterAtMe =>
-		InCombat && Player.Object != null && AllHostileTargets != null && IsAnyHostileCastingTankBusterAtMe();
+		InCombat && Player.Object != null
+		&& (IsTankbusterVfxOnPlayer() || (AllHostileTargets != null && IsAnyHostileCastingListedTankBusterAtMe()));
 
-	private static bool IsAnyHostileCastingTankBusterAtMe()
+	private static bool IsAnyHostileCastingListedTankBusterAtMe()
 	{
 		if (AllHostileTargets == null || Player.Object == null)
 		{
 			return false;
 		}
 
+		var playerId = Player.Object.GameObjectId;
 		for (var i = 0; i < AllHostileTargets.Count; i++)
 		{
 			var h = AllHostileTargets[i];
-			if (h != null && h.CastTargetObjectId == Player.Object.GameObjectId && IsHostileCastingTank(h))
+			if (h != null && h.CastTargetObjectId == playerId && IsHostileCastingListedTank(h))
 			{
 				return true;
+			}
+		}
+		return false;
+	}
+
+	/// <summary>
+	/// Whether the hostile is casting an action from the curated tankbuster list, without the
+	/// target-identity fallback that <see cref="IsHostileCastingTank"/> adds on top of it.
+	/// </summary>
+	public static bool IsHostileCastingListedTank(IBattleChara h)
+	{
+		return h != null && IsHostileCastingBase(h, (act) =>
+		{
+			foreach (var id in OtherConfiguration.HostileCastingTank)
+			{
+				if (id == act.RowId)
+				{
+					return true;
+				}
+			}
+			return false;
+		});
+	}
+
+	/// <summary>
+	/// Whether a tankbuster lock-on VFX currently sits on the player. Read-only counterpart to
+	/// <see cref="IsCastingTankVfx"/>, which also rebuilds <see cref="TankbusterTargets"/> and
+	/// answers for the party rather than for the player alone.
+	/// </summary>
+	public static bool IsTankbusterVfxOnPlayer()
+	{
+		var player = Player.Object;
+		if (player == null || VfxDataQueue == null || VfxDataQueue.IsEmpty)
+		{
+			return false;
+		}
+
+		var playerId = player.GameObjectId;
+		foreach (var s in VfxDataQueue)
+		{
+			try
+			{
+				if (s.ObjectId != playerId || string.IsNullOrEmpty(s.Path))
+				{
+					continue;
+				}
+
+				foreach (var p in TankbusterPaths)
+				{
+					if (s.Path.StartsWith(p, PathCmp))
+					{
+						return true;
+					}
+				}
+			}
+			catch (AccessViolationException ex)
+			{
+				PluginLog.Warning($"AccessViolation in IsTankbusterVfxOnPlayer while scanning VFX: {ex.Message}");
 			}
 		}
 		return false;
@@ -2392,11 +2450,36 @@ internal static class DataCenter
 			{
 				if (id == act.RowId)
 				{
-					return true;
+					return AreaCastCanReachPlayer(h, act);
 				}
 			}
 			return false;
 		});
+	}
+
+	/// <summary>
+	/// Whether an area cast could reach the player at all. Hostiles are collected out to 48 yalms and
+	/// the area list only records that an action once hit a whole party, never whether the player is
+	/// inside this instance of it - so without this check any listed cast anywhere in that radius
+	/// raised <see cref="AutoStatus.DefenseArea"/>, which opens the job's entire area-defense chain.
+	/// Two cases pass regardless of distance: an effect range of 0, which covers both "not filled in"
+	/// and the party-wide hits that carry no radius of their own, and a cast aimed at the player,
+	/// since a ground-placed effect follows its target rather than its caster.
+	/// </summary>
+	private static bool AreaCastCanReachPlayer(IBattleChara h, Action act)
+	{
+		if (act.EffectRange == 0)
+		{
+			return true;
+		}
+
+		var player = Player.Object;
+		if (player != null && h.CastTargetObjectId == player.GameObjectId)
+		{
+			return true;
+		}
+
+		return h.DistanceToPlayer() <= act.EffectRange;
 	}
 
 	public static bool AreHostilesCastingKnockback
@@ -2549,6 +2632,12 @@ internal static class DataCenter
 	public static float BMRNextVulnerableEndIn { get; set; } = float.MaxValue;
 	public static float BMRNextDamageIn { get; set; } = float.MaxValue;
 	public static PredictedDamageType BMRNextDamageType { get; set; } = PredictedDamageType.None;
+
+	/// <summary>
+	/// BMR predicts a tankbuster inside the user's single-target mitigation window.
+	/// </summary>
+	public static bool BMRTankbusterImminent =>
+		Service.Config.UseBmrTimeline && BMRNextTankbusterIn > 0.6f && BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow;
 	public static float BMRSpecialModeIn { get; set; } = float.MaxValue;
 	public static SpecialMode BMRSpecialModeType { get; set; } = SpecialMode.Normal;
 

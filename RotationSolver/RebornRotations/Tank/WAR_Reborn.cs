@@ -1,4 +1,4 @@
-﻿namespace RotationSolver.RebornRotations.Tank;
+namespace RotationSolver.RebornRotations.Tank;
 
 [Rotation("Reborn", CombatType.PvE, GameVersion = "7.55")]
 [SourceCode(Path = "main/RebornRotations/Tank/WAR_Reborn.cs")]
@@ -269,7 +269,7 @@ public sealed class WAR_Reborn : WarriorRotation
 			}
 		}
 
-		if (ShouldSustainMitigationDebuff(StatusID.Reprisal)
+		if (ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
@@ -287,6 +287,17 @@ public sealed class WAR_Reborn : WarriorRotation
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
 		if (ShakeItOffPvE.CanUse(out act, skipAoeCheck: true))
+		{
+			return true;
+		}
+
+		if (ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
+			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
+		if (ReprisalPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}

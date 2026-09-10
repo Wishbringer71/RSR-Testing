@@ -1,12 +1,10 @@
-﻿namespace RotationSolver.RebornRotations.Melee;
+namespace RotationSolver.RebornRotations.Melee;
 
 [Rotation("Reborn", CombatType.PvE, GameVersion = "7.55")]
 [SourceCode(Path = "main/RebornRotations/Melee/DRG_Reborn.cs")]
 
 public sealed class DRG_Reborn : DragoonRotation
 {
-	public override bool HasHostileCountAoeMitigation => true;
-
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Use Doom Spike for damage uptime if out of melee range even if it breaks combo")]
 	public bool DoomSpikeWhenever { get; set; } = true;
@@ -118,6 +116,11 @@ public sealed class DRG_Reborn : DragoonRotation
 			return true;
 		}
 
+		if (FeintPvE.CanUse(out act, skipComboCheck: true))
+		{
+			return true;
+		}
+
 		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 	#endregion
@@ -125,7 +128,7 @@ public sealed class DRG_Reborn : DragoonRotation
 	#region oGCD Logic
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
 	{
-		if (IsLastAction() == IsLastGCD() && (StardiverMoving || (!StardiverMoving && !IsMoving)))
+		if (IActionHelper.IsLastActionGCD() && (StardiverMoving || (!StardiverMoving && !IsMoving)))
 		{
 			if (StardiverPvE.CanUse(out act))
 			{

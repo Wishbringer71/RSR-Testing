@@ -515,6 +515,118 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
+	/// Surveys the stun state of the hostiles an area action would actually hit.
+	/// </summary>
+	/// <param name="radius">
+	/// The action's effect radius, not the job's attack range: a caster reaches 25 yalms while Holy
+	/// covers 8, and measuring over the wider set would count enemies the cast never touches.
+	/// </param>
+	/// <param name="allStunned">True when every hostile inside the radius is currently stunned.</param>
+	/// <param name="headroom">
+	/// True when at least one of them could still be stunned, that is, carries no stun resistance.
+	/// The game tracks resistance as a status, so it clears itself when the immunity expires and a
+	/// long fight needs no special case.
+	/// </param>
+	/// <returns>How many hostiles were inside the radius. Zero means neither flag says anything.</returns>
+	protected static int SurveyStuns(float radius, out bool allStunned, out bool headroom)
+		=> SurveyStuns(radius, out _, out allStunned, out headroom);
+
+	/// <summary>
+	/// As <see cref="SurveyStuns(float, out bool, out bool)"/>, and additionally reports how many of
+	/// the hostiles inside the radius are stunned.
+	/// </summary>
+	/// <param name="stunnedCount">
+	/// How many are stunned right now. The count is what separates an area stun from a single-target
+	/// one: Holy stops everything within its radius, while Low Blow, Shield Bash and Leg Sweep stop
+	/// exactly one enemy while the rest of a pull keeps hitting. A rule that reacts to "the damage
+	/// stream is interrupted" has to read the share, not the presence, of stunned enemies.
+	/// </param>
+	protected static int SurveyStuns(float radius, out int stunnedCount, out bool allStunned,
+		out bool headroom)
+	{
+		allStunned = false;
+		headroom = false;
+		stunnedCount = 0;
+
+		var hostiles = DataCenter.AllHostileTargets;
+		if (hostiles == null || hostiles.Count == 0)
+		{
+			return 0;
+		}
+
+		int inRange = 0, stunned = 0;
+		for (int i = 0, n = hostiles.Count; i < n; i++)
+		{
+			var hostile = hostiles[i];
+			if (hostile == null || hostile.DistanceToPlayer() > radius)
+			{
+				continue;
+			}
+
+			inRange++;
+
+			// Any source counts: a stun applied by the tank protects just as well as our own.
+			if (hostile.HasStatus(false, StatusHelper.StunStatus))
+			{
+				stunned++;
+			}
+			else if (!hostile.HasStatus(false, StatusHelper.StunResistanceStatus))
+			{
+				headroom = true;
+			}
+		}
+
+		allStunned = inRange > 0 && stunned == inRange;
+		stunnedCount = stunned;
+		return inRange;
+	}
+
+	/// <summary>
+	/// Counts the hostiles within <paramref name="radius"/> and how many of them carry any of
+	/// <paramref name="statuses"/>.
+	/// </summary>
+	/// <remarks>
+	/// The plain counterpart to <see cref="SurveyStuns(float, out int, out bool, out bool)"/>, which
+	/// carries stun-specific reasoning (resistance, headroom) that no other effect needs. Written for
+	/// the question "is the incoming damage stream being throttled": a share of slowed enemies
+	/// answers it the same way a share of stunned ones does, only weaker and for longer.
+	/// </remarks>
+	/// <param name="radius">The radius to measure over, in yalms.</param>
+	/// <param name="statuses">The status group to look for; any one of them counts.</param>
+	/// <param name="carrying">How many hostiles inside the radius carry one.</param>
+	/// <returns>How many hostiles were inside the radius. Zero means the count says nothing.</returns>
+	protected static int SurveyHostileStatus(float radius, StatusID[] statuses, out int carrying)
+	{
+		carrying = 0;
+		var hostiles = DataCenter.AllHostileTargets;
+		if (hostiles == null || hostiles.Count == 0)
+		{
+			return 0;
+		}
+
+		var inRange = 0;
+		for (int i = 0, n = hostiles.Count; i < n; i++)
+		{
+			var hostile = hostiles[i];
+			if (hostile == null || hostile.DistanceToPlayer() > radius)
+			{
+				continue;
+			}
+
+			inRange++;
+
+			// Any source counts, as with stuns: what matters is the state of the enemy, not who put
+			// it there.
+			if (hostile.HasStatus(false, statuses))
+			{
+				carrying++;
+			}
+		}
+
+		return inRange;
+	}
+
+	/// <summary>
 	/// Calculates the current cumulative mitigation percentage applied to an imminent AoE or raid-wide hit.
 	/// </summary>
 	/// <returns>
@@ -574,7 +686,7 @@ public partial class CustomRotation
 				}
 
 				// Reprisal: -10% all damage (missing previously)
-				if (!reprisal && e.HasStatus(false, StatusID.Reprisal))
+				if (!reprisal && e.HasStatus(false, StatusHelper.ReprisalStatus))
 				{
 					reprisal = true;
 				}
@@ -606,20 +718,8 @@ public partial class CustomRotation
 			damageFactor *= 0.90f;
 		}
 
-		// Collect party statuses once into a hash set for O(1) lookups.
+		// Party statuses found so far, filled lazily by HasPartyStatus below.
 		HashSet<StatusID> partyStatuses = [];
-		if (partyEnum != null)
-		{
-			foreach (var m in partyEnum)
-			{
-				if (m == null)
-				{
-					continue;
-				}
-				// Here we just probe the relevant IDs.
-				// To avoid N*M calls, we gather by probing only needed IDs below if not already present.
-			}
-		}
 
 		// Helper to lazily test & cache a status.
 		bool HasPartyStatus(StatusID id)
@@ -1299,6 +1399,38 @@ public partial class CustomRotation
 		=> Service.Config.UseBmrTimeline && BMRActive && BMRRaidwideIn is > 0f and < float.MaxValue && BMRRaidwideIn <= seconds;
 
 	/// <summary>
+	/// Whether one of the big personal mitigations is already running on the player.
+	/// <para>
+	/// <see cref="StatusHelper.RampartStatus"/> is what the job rotations already use as
+	/// <c>StatusProvide</c> on Shadow Wall and Shadowed Vigil, so those never overlap each other.
+	/// Reading the same list here extends that stagger to an action that cannot express it through
+	/// <c>StatusProvide</c>, because its own status is a barrier rather than a mitigation.
+	/// </para>
+	/// </summary>
+	/// <remarks>
+	/// Two entries of that list are not throttles and are worth knowing about before a second caller
+	/// appears. <c>LivingDead</c> does not reduce the incoming stream at all - it postpones death -
+	/// so for a dark knight this reads true while the stream is unchanged; the answer still suits the
+	/// one caller, because a barrier is the wrong thing to spend during it for a different reason.
+	/// <c>Bloodwhetting</c> is a 10% mitigation, below the line the list otherwise draws, and would
+	/// make this predicate stricter than intended for a warrior.
+	/// </remarks>
+	protected static bool HasMajorMitigation
+		=> StatusHelper.PlayerHasStatus(true, StatusHelper.RampartStatus);
+
+	/// <summary>
+	/// Whether a tankbuster is aimed at the player: a lock-on VFX or a cast from the learned list
+	/// landing now, or one BMR predicts inside the mitigation window.
+	/// <para>
+	/// Deliberately not <c>IsHostileCastingToTank</c>. That one falls back to "the enemy is casting
+	/// at its own target", which for a tank holding the pull matches any uninterruptible trash cast -
+	/// harmless for a free mitigation, wrong for an action with a resource cost (AUDIT_LOG C10).
+	/// </para>
+	/// </summary>
+	public static bool TankbusterOnMe
+		=> DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterImminent;
+
+	/// <summary>
 	/// True when BMR reports a tankbuster within the specified seconds.
 	/// Always false when BMR is inactive, or when the user has UseBmrTimeline disabled.
 	/// </summary>
@@ -1319,7 +1451,7 @@ public partial class CustomRotation
 			return false;
 		}
 
-		var chara = target ?? Player;
+		var chara = statusFromSelf ? Player : target;
 		return chara != null && chara.WillStatusEnd(predictedIn, statusFromSelf, statusIDs);
 	}
 
@@ -1333,12 +1465,14 @@ public partial class CustomRotation
 	/// Whether an enemy mitigation debuff (Addle/Feint/Reprisal) is due for a proactive refresh: either
 	/// BMR predicts damage landing after the debuff would have expired, or enough hostiles are in range
 	/// to keep it up without a prediction to time it against, since trash pulls usually have no active
-	/// BMR module at all.
+	/// BMR module at all. Both branches look at the target's status from any source, so a debuff another
+	/// party member already applied is not overwritten.
 	/// </summary>
 	protected static bool ShouldSustainMitigationDebuff(params StatusID[] statusIDs)
 	{
 		return BMRShouldRefreshBefore(BMRDamageIn, MitigationDebuffDuration, false, HostileTarget, statusIDs)
-			|| NumberOfHostilesInRange >= Service.Config.MitigationSustainHostileCount;
+			|| (NumberOfHostilesInRange >= Service.Config.MitigationSustainHostileCount
+				&& (HostileTarget?.WillStatusEndGCD(2, 0, false, statusIDs) ?? false));
 	}
 	#endregion
 
@@ -1358,9 +1492,24 @@ public partial class CustomRotation
 	public static bool CanLateWeave => WeaponRemain <= LateWeaveWindow && CanWeave;
 
 	/// <summary>
-	/// Indicates whether the player can currently execute an early weave.
+	/// Indicates whether the player can currently execute an early weave, i.e. whether the first
+	/// half of the recast is still running. Deliberately the complement of <see cref="CanLateWeave"/>.
 	/// </summary>
-	public static bool CanEarlyWeave => (!HasWeaved() || WeaponRemain > LateWeaveWindow) && CanWeave;
+	/// <remarks>
+	/// This was written as <c>(!HasWeaved() || WeaponRemain &gt; LateWeaveWindow) &amp;&amp; CanWeave</c>
+	/// in the commit that introduced it, together with a HasWeaved that could not return false (see
+	/// there). The first half of the disjunction has therefore never contributed, and every consumer
+	/// - all of them in ExtraRotations - was written and tuned against the second half alone.
+	///
+	/// Repairing HasWeaved alone would have woken that half rather than restoring an intent: it
+	/// widens CanEarlyWeave into the late window whenever nothing has been weaved yet, and
+	/// ChurinMNK.TryUseRiddleOfFire reads CanEarlyWeave as an exclusion against CanLateWeave. In the
+	/// single-weave case - late window, nothing weaved - Riddle of Fire would then be skipped
+	/// entirely. Whether the disjunction or a conjunction was meant is not decidable from this tree,
+	/// and neither reading is verifiable without playing the two affected rotations, so the
+	/// established behaviour stands and the question is recorded in TODO.md.
+	/// </remarks>
+	public static bool CanEarlyWeave => WeaponRemain > LateWeaveWindow && CanWeave;
 
 	/// <summary>
 	/// Safely verifies that the player is in the middle of a GCD and has enough time to weave an oGCD.
@@ -1799,13 +1948,25 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
-	/// Have you already weaved an oGCD.
+	/// Have you already weaved an oGCD since the last GCD.
 	/// </summary>
+	/// <remarks>
+	/// The summary above has always stated the intent; the body did not carry it out. It read
+	/// <c>IsLastAction() == IsLastAbility()</c>, and both are <c>params ActionID[]</c> overloads:
+	/// called with no arguments they search an empty list and return false, so the comparison was
+	/// <c>false == false</c> and the method unconditionally true. IActionHelper.IsLastActionAbility,
+	/// the helper for exactly this question, was added in the same commit and was not used.
+	///
+	/// No caller remains in this tree - see <see cref="CanEarlyWeave"/> for why the one that existed
+	/// no longer reads it - but the method is public surface for derived rotations, and a predicate
+	/// that cannot return false is worse there than none at all.
+	/// </remarks>
 	public static bool HasWeaved()
 	{
-		// Returns true if the last action and last ability are the same (i.e., an oGCD was weaved).
-		// Returns false otherwise.
-		return IsLastAction() == IsLastAbility();
+		// DataCenter.ResetAllRecords sets LastAction, LastGCD and LastAbility all to None, so the
+		// plain comparison also holds while nothing has been used at all. Nothing is weaved then,
+		// hence the explicit guard here rather than in the symmetric IActionHelper pair.
+		return DataCenter.LastAction != ActionID.None && IActionHelper.IsLastActionAbility();
 	}
 
 	/// <summary>

@@ -11,11 +11,14 @@ internal static class StateUpdater
 	private static bool CanUseHealAction =>
 		// PvP
 		DataCenter.IsPvP
-		// Job
-		|| ((DataCenter.Role == JobRole.Healer || Service.Config.UseHealWhenNotAHealer)
-		&& Service.Config.AutoHeal
-		&& ((DataCenter.InCombat && CustomRotation.IsLongerThan(Service.Config.AutoHealTimeToKill))
-			|| Service.Config.HealOutOfCombat));
+		// Job. AutoHealTimeToKill is a child option of UseHealWhenNotAHealer and only gates non-healers:
+		// a healer's heal flags must not switch off because the average time-to-kill of a trash pack
+		// dipped under eight seconds while the tank is still taking the hits.
+		|| (Service.Config.AutoHeal
+			&& (DataCenter.Role == JobRole.Healer
+				|| (Service.Config.UseHealWhenNotAHealer
+					&& (!DataCenter.InCombat || CustomRotation.IsLongerThan(Service.Config.AutoHealTimeToKill))))
+			&& (DataCenter.InCombat || Service.Config.HealOutOfCombat));
 
 	public static void UpdateState()
 	{
@@ -184,16 +187,6 @@ internal static class StateUpdater
 			return true;
 		}
 
-		// Sustain fallback for trash pulls without an active BMR module. Scoped to jobs that actually
-		// declare such a branch, so this doesn't run every job's whole defense chain on enemy count
-		// alone. Same threshold the job branches themselves use, so the gate can't disagree with them.
-		if (DataCenter.InCombat && Service.Config.UseAoeDefense
-			&& DataCenter.NumberOfHostilesInRange >= Service.Config.MitigationSustainHostileCount
-			&& (DataCenter.CurrentRotation?.HasHostileCountAoeMitigation ?? false))
-		{
-			return true;
-		}
-
 		return false;
 	}
 
@@ -203,11 +196,6 @@ internal static class StateUpdater
 		{
 			return false;
 		}
-
-		// Shared by every role below: a predicted tankbuster matters to whoever ends up eating it.
-		var bmrTankbusterImminent = Service.Config.UseBmrTimeline
-			&& DataCenter.BMRNextTankbusterIn > 0.6f
-			&& DataCenter.BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow;
 
 		if (DataCenter.Role == JobRole.Healer)
 		{
@@ -234,7 +222,7 @@ internal static class StateUpdater
 				return true;
 			}
 
-			if (bmrTankbusterImminent)
+			if (DataCenter.BMRTankbusterImminent)
 			{
 				return true;
 			}
@@ -281,7 +269,7 @@ internal static class StateUpdater
 				return true;
 			}
 
-			if (bmrTankbusterImminent)
+			if (DataCenter.BMRTankbusterImminent)
 			{
 				return true;
 			}
@@ -298,19 +286,13 @@ internal static class StateUpdater
 
 			// BMR predicts timing, not who gets hit, so for this role it is only a reasonable proxy when
 			// no tank is alive to eat it. Otherwise the cast-verified branch above is the only trigger.
-			if (bmrTankbusterImminent && !AnyLivingTankInParty())
+			if (DataCenter.BMRTankbusterImminent && DataCenter.PartyTank == null)
 			{
 				return true;
 			}
 		}
 
 		return false;
-	}
-
-	// Helper: Returns true if there are any tanks in the party with HP > 0
-	private static bool AnyLivingTankInParty()
-	{
-		return DataCenter.PartyTank != null;
 	}
 
 	// Helper: Returns true if there are any healers in the party with HP > 0
@@ -740,14 +722,26 @@ internal static class StateUpdater
 			h = Math.Max(h, Player.Object.GetEffectiveHpPercent() / 100f);
 		}
 
-		// If the target's health is zero or they are invulnerable to healing, return false.
-		if (h == 0 || !StatusHelper.PlayerNoNeedHealingInvuln())
+		if (h == 0 || StatusHelper.PlayerHasStatus(false, StatusHelper.HealingIneffectiveStatus))
 		{
 			return false;
 		}
 
-		// Compare the target's health ratio to a threshold determined by linear interpolation (Lerp) between `healSingle` and `healSingleHot`.
-		return h < Lerp(healSingle, healSingleHot, ratio);
+		// See ShouldHealSingle. Relevant here for a dark knight running a rotation that heals itself.
+		if (ObjectHelper.PlayerIsHeldForDeathTrigger())
+		{
+			return false;
+		}
+
+		// Same construction as ShouldHealSingle: a protective status lowers the threshold rather
+		// than suppressing the flag entirely. This path matters for a tank healing itself while
+		// riding its own invulnerability.
+		var normal = Lerp(healSingle, healSingleHot, ratio);
+		var threshold = StatusHelper.PlayerNoNeedHealingInvuln()
+			? normal
+			: Math.Min(normal, Service.Config.HealthProtectedRatio);
+
+		return h < threshold;
 	}
 
 	private static bool ShouldHealSingle(IBattleChara target, StatusID[] hotStatus, float healSingle, float healSingleHot)
@@ -785,14 +779,38 @@ internal static class StateUpdater
 			h = Math.Max(h, target.GetEffectiveHpPercent() / 100f);
 		}
 
-		// If the target's health is zero or they are invulnerable to healing, return false.
-		if (h == 0 || !target.NoNeedHealingInvuln())
+		// Healing that lands for nothing is still excluded outright - NoNeedHealingStatus mixes
+		// that case in with genuine invulnerabilities, and only the latter get the softer
+		// treatment below.
+		if (h == 0 || target.HasStatus(false, StatusHelper.HealingIneffectiveStatus))
 		{
 			return false;
 		}
 
-		// Compare the target's health ratio to a threshold determined by linear interpolation (Lerp) between `healSingle` and `healSingleHot`.
-		return h < Lerp(healSingle, healSingleHot, ratio);
+		// Living Dead is waiting for its bearer to die, and a heal above zero takes that away - not
+		// a wasted cast but the loss of the trigger. Off by default: RSR also fires Living Dead as
+		// a last-ditch save, and under that usage the death is not wanted at all. The hold releases
+		// itself with enough lead time for a heal to land, after which the normal threshold applies.
+		if (target.IsHeldForDeathTrigger())
+		{
+			return false;
+		}
+
+		// A protective status lowers the threshold instead of removing it. "Cannot die right now"
+		// is not "does not need healing": Superbolide puts the gunbreaker at 1 HP on purpose, and
+		// when the window closes the target stands exactly where it left them. Suppressing the flag
+		// outright meant that a protected tank who was the only wounded member got no healing at
+		// all, and the two-GCD release before expiry is not enough time to bring one back up from
+		// a few percent.
+		//
+		// Math.Min keeps the invariant that a protected target is never healed more readily than an
+		// unprotected one, whatever the two settings are configured to.
+		var normal = Lerp(healSingle, healSingleHot, ratio);
+		var threshold = target.NoNeedHealingInvuln()
+			? normal
+			: Math.Min(normal, Service.Config.HealthProtectedRatio);
+
+		return h < threshold;
 	}
 
 	private static float Lerp(float a, float b, float ratio)

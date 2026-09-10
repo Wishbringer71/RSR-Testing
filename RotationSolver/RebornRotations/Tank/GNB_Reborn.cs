@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
 namespace RotationSolver.RebornRotations.Tank;
 
@@ -7,8 +7,6 @@ namespace RotationSolver.RebornRotations.Tank;
 
 public sealed class GNB_Reborn : GunbreakerRotation
 {
-	public override bool HasHostileCountAoeMitigation => true;
-
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "How to use Aurora")]
 	public AuroraUsageStrategy AuroraUsage { get; set; } = AuroraUsageStrategy.TankbusterTarget;
@@ -115,7 +113,7 @@ public sealed class GNB_Reborn : GunbreakerRotation
 		}
 
 		if (!HasNoMercy
-			&& ShouldSustainMitigationDebuff(StatusID.Reprisal)
+			&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
@@ -232,7 +230,7 @@ public sealed class GNB_Reborn : GunbreakerRotation
 			}
 		}
 
-		if (ShouldSustainMitigationDebuff(StatusID.Reprisal)
+		if (ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;

@@ -13,20 +13,21 @@ wird die Datei offline von `RotationSolver.GameData` aus den Spieldateien.
 Damit ist der Abgleich „was hat der Job" gegen „was benutzt RSR" nicht
 geschätzt, sondern gezählt.
 
-## Methodik — und drei Fehler darin, die vor dem Ergebnis gefunden wurden
+## Methodik und ihre Fallstricke
 
-Die Zählung ist dreimal falsch gewesen, bevor sie stimmte. Alle drei Fehler
-waren Scoping-Fehler derselben Art, deshalb stehen sie hier: sie sind die
-eigentliche Lehre für jede künftige Messung dieser Art.
+Die Zahlen unten gelten unter drei Regeln, die diese Art Messung braucht. Alle drei
+sind Scoping-Fragen derselben Art, und jede von ihnen verfälscht das Ergebnis in eine
+andere Richtung:
 
-| Fehler | Wirkung | Korrektur |
+| Regel | Warum | Ohne sie |
 |---|---|---|
-| `RotationSolver.Basic/Rotations` als „Verwendung" mitgezählt | dort steht die **Deklaration**; `IcarusPvE` galt als benutzt, obwohl keine Rotation es rief | Verwendung nur in `RebornRotations` und `ExtraRotations` zählen |
-| Bewegungserkennung per `\brush\b` | „Rush**es** to a target" nicht erfasst — SAM Gyoten, PLD Intervene, DRG Elusive Jump fehlten | Wortstamm statt Wort |
-| Dispatch-Overrides nur in `RebornRotations` gesucht | die **handgeschriebenen Basic-Partials** überschreiben teils selbst; SGE hatte Icarus längst verdrahtet | beide Ebenen durchsuchen |
+| Verwendung nur in `RebornRotations` und `ExtraRotations` zählen | In `RotationSolver.Basic/Rotations` steht die **Deklaration**, nicht die Verwendung | `IcarusPvE` gilt als benutzt, obwohl keine Rotation es ruft |
+| Bewegungserkennung über den Wortstamm, nicht das Wort | Die Aktionstexte schreiben „Rush**es** to a target" | SAM Gyoten, PLD Intervene, DRG Elusive Jump fehlen |
+| Dispatch-Overrides auf **beiden** Ebenen suchen | Die handgeschriebenen Basic-Partials überschreiben teils selbst | SGE erscheint als Lücke, obwohl Icarus längst verdrahtet ist |
 
-Der dritte Fehler hätte beinahe eine überflüssige Änderung produziert. Er ist
-zugleich ein inhaltlicher Befund, siehe „Zwei Ebenen" unten.
+Die dritte Regel ist zugleich ein inhaltlicher Befund, siehe „Zwei Ebenen" unten: Die
+Verdrahtung liegt nicht überall auf derselben Ebene, und wer nur eine davon liest,
+meldet Lücken, die keine sind.
 
 ## Zahlen
 

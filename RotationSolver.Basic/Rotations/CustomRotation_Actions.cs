@@ -67,6 +67,12 @@ public partial class CustomRotation
 		setting.TargetStatusProvide = [StatusID.Feint];
 	}
 
+	static partial void ModifyReprisalPvE(ref ActionSetting setting)
+	{
+		setting.StatusFromSelf = false;
+		setting.TargetStatusProvide = StatusHelper.ReprisalStatus;
+	}
+
 	static partial void ModifyLowBlowPvE(ref ActionSetting setting)
 	{
 		setting.CanTarget = o =>

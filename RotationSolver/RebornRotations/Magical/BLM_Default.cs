@@ -5,14 +5,9 @@
 
 public class BLM_Default : BlackMageRotation
 {
-	public override bool HasHostileCountAoeMitigation => true;
-
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Use Transpose to Astral Fire before Paradox")]
 	public bool UseTransposeForParadox { get; set; } = true;
-
-	[RotationConfig(CombatType.PvE, Name = "Extend Astral Fire time more conservatively (3 GCDs) (Default is 2 GCDs)")]
-	public bool ExtendTimeSafely { get; set; } = false;
 
 	[RotationConfig(CombatType.PvE, Name = @"Use ""Double Paradox"" rotation [N15]")]
 	public bool UseN15 { get; set; } = false;
@@ -134,6 +129,11 @@ public class BLM_Default : BlackMageRotation
 			return true;
 		}
 
+		if (AddlePvE.CanUse(out act))
+		{
+			return true;
+		}
+
 		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 
@@ -161,7 +161,7 @@ public class BLM_Default : BlackMageRotation
 	#endregion
 
 	#region oGCD Logic
-	[RotationDesc(ActionID.TransposePvE, ActionID.LeyLinesPvE, ActionID.RetracePvE)]
+	[RotationDesc(ActionID.TriplecastPvE, ActionID.LeyLinesPvE, ActionID.RetracePvE)]
 	protected override bool GeneralAbility(IAction nextGCD, out IAction? act)
 	{
 		if (IsMoving && HasHostilesInRange && InCombat && TriplecastPvE.CanUse(out act, usedUp: true))
@@ -182,7 +182,7 @@ public class BLM_Default : BlackMageRotation
 		return base.GeneralAbility(nextGCD, out act);
 	}
 
-	[RotationDesc(ActionID.RetracePvE, ActionID.SwiftcastPvE, ActionID.TriplecastPvE, ActionID.AmplifierPvE)]
+	[RotationDesc(ActionID.SwiftcastPvE, ActionID.TriplecastPvE, ActionID.LucidDreamingPvE, ActionID.AmplifierPvE)]
 	protected override bool AttackAbility(IAction nextGCD, out IAction? act)
 	{
 		if (InUmbralIce)
@@ -544,12 +544,6 @@ public class BLM_Default : BlackMageRotation
 				break;
 		}
 
-		//if (ElementTimeEndAfterGCD(ExtendTimeSafely ? 3u : 2u))
-		//{
-		//    if (CurrentMp >= FirePvE.Info.MPNeed * 2 + 800 && FirePvE.CanUse(out act)) return true;
-		//    if (FlarePvE.CanUse(out act)) return true;
-		//    if (DespairPvE.CanUse(out act)) return true;
-		//}
 
 		return false;
 	}

@@ -383,9 +383,15 @@ public sealed class BeirutaAST : AstrologianRotation
 
 		try
 		{
-			return target.HasStatus(false, StatusID.LivingDead) ||
-				   target.HasStatus(false, StatusID.Holmgang) ||
-				   target.HasStatus(false, StatusID.WalkingDead);
+			// The shared list is what this enumeration was hand-rolling, and it corrects two errors
+			// at once. StatusID.Holmgang is id 88, "Unable to move until effect fades" - the
+			// movement debuff on the warrior's target, not the 409 protection on the warrior
+			// himself - so the check never fired for Holmgang at all; and Paladin and Gunbreaker
+			// were missing outright. WalkingDead is deliberately absent from the shared list (see
+			// StatusHelper.NoNeedHealingStatus): "The inability to restore 100% of HP before timer
+			// runs out will result in KO", so locking out single-target healing there kills the
+			// dark knight instead of sparing a heal.
+			return target.HasStatus(false, StatusHelper.NoNeedHealingStatus);
 		}
 		catch
 		{
@@ -649,7 +655,7 @@ public sealed class BeirutaAST : AstrologianRotation
 		return base.EmergencyAbility(nextGCD, out act);
 	}
 
-	[RotationDesc(ActionID.ExaltationPvE, ActionID.TheArrowPvE, ActionID.TheSpirePvE, ActionID.TheBolePvE, ActionID.TheEwerPvE, ActionID.CelestialIntersectionPvE)]
+	[RotationDesc(ActionID.ExaltationPvE, ActionID.TheSpirePvE, ActionID.TheBolePvE, ActionID.CelestialIntersectionPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		UpdateMovementCooldownTracking();

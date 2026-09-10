@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
 namespace RotationSolver.RebornRotations.Healer;
 
@@ -827,7 +827,16 @@ public sealed class SCH_Reborn : ScholarRotation
 			var tanks = PartyMembers.GetJobCategory(JobRole.Tank);
 			foreach (var member in tanks)
 			{
-				if (member.GetHealthRatio() <= ExcogHeal && !member.NoNeedHealingInvuln())
+				// NoNeedHealingInvuln() returns true when NO protective status is up, so the
+				// negation asked for a tank that is currently invulnerable - the opposite of the
+				// "looks dangerous" this block is written for.
+				//
+				// IsDead has to be checked explicitly here: a corpse has ratio 0 and, with its
+				// statuses cleared, no protective status either, so it would satisfy both halves
+				// and spend Recitation on an Excogitation that cannot land. The inverted form
+				// happened to mask that. The tank searches in ActionTargetInfo carry the same
+				// guard at the same place.
+				if (!member.IsDead && member.GetHealthRatio() <= ExcogHeal && member.NoNeedHealingInvuln())
 				{
 					tankNeedsExcog = true;
 					break;

@@ -51,14 +51,6 @@ public sealed class BeirutaSGE : SageRotation
 	public OpenerStrategy OpenerSelection { get; set; } = OpenerStrategy.PneumaOpener;
 
 	[Range(0, 1, ConfigUnitType.Percent)]
-	[RotationConfig(CombatType.PvE, Name = "Health threshold target needs to be to use Taurochole")]
-	public float TaurocholeHeal { get; set; } = 0.7f;
-
-	[Range(0, 1, ConfigUnitType.Percent)]
-	[RotationConfig(CombatType.PvE, Name = "Health threshold target needs to be to use Druochole")]
-	public float DruocholeHeal { get; set; } = 0.6f;
-
-	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Health threshold Kardion target needs to be to use Soteria")]
 	public float SoteriaHeal { get; set; } = 0.8f;
 
@@ -197,9 +189,15 @@ public sealed class BeirutaSGE : SageRotation
 
 		try
 		{
-			return target.HasStatus(false, StatusID.LivingDead) ||
-				   target.HasStatus(false, StatusID.Holmgang) ||
-				   target.HasStatus(false, StatusID.WalkingDead);
+			// The shared list is what this enumeration was hand-rolling, and it corrects two errors
+			// at once. StatusID.Holmgang is id 88, "Unable to move until effect fades" - the
+			// movement debuff on the warrior's target, not the 409 protection on the warrior
+			// himself - so the check never fired for Holmgang at all; and Paladin and Gunbreaker
+			// were missing outright. WalkingDead is deliberately absent from the shared list (see
+			// StatusHelper.NoNeedHealingStatus): "The inability to restore 100% of HP before timer
+			// runs out will result in KO", so locking out single-target healing there kills the
+			// dark knight instead of sparing a heal.
+			return target.HasStatus(false, StatusHelper.NoNeedHealingStatus);
 		}
 		catch
 		{

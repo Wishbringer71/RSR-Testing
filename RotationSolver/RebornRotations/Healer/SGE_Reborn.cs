@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
 namespace RotationSolver.RebornRotations.Healer;
 
@@ -50,14 +50,6 @@ public sealed class SGE_Reborn : SageRotation
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Average health threshold party members need to be to use Holos", Parent = nameof(HolosHealOption))]
 	public float HolosHeal { get; set; } = 0.5f;
-
-	[Range(0, 1, ConfigUnitType.Percent)]
-	[RotationConfig(CombatType.PvE, Name = "Health threshold tank party member needs to use Zoe")]
-	public float ZoeHeal { get; set; } = 0.6f;
-
-	[Range(0, 1, ConfigUnitType.Percent)]
-	[RotationConfig(CombatType.PvE, Name = "Health threshold party member needs to be to use an OGCD Heal while not holding addersgal stacks")]
-	public float OGCDHeal { get; set; } = 0.20f;
 
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Health threshold tank party member needs to use an OGCD Heal on Tanks while not holding addersgal stacks")]

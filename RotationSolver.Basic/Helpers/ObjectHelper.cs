@@ -117,10 +117,12 @@ public static class ObjectHelper
 					}
 
 					// The co-tank is at the HP the user already set for a tank in danger, and is still
-					// being attacked - take it back. No distance gate: any healthy tank should react.
+					// being attacked - take it back, unless they are riding an invulnerability (Superbolide
+					// leaves them at 1 HP on purpose). No distance gate: any healthy tank should react.
 					if (targetObject.IsJobCategory(JobRole.Tank)
 						&& !targetObject.IsDead
 						&& targetObject.GameObjectId != Player.Object?.GameObjectId
+						&& targetObject.NoNeedHealingInvuln()
 						&& targetObject.GetEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f)
 					{
 						return true;
@@ -927,12 +929,13 @@ public static class ObjectHelper
 	/// </returns>
 	internal static bool IsTopPriorityHostile(this IBattleChara battleChara)
 	{
-		var icon = battleChara.GetNamePlateIcon();
-
 		if (battleChara == null)
 		{
 			return false;
 		}
+
+		// After the null check: GetNamePlateIcon dereferences the object's struct without one of its own.
+		var icon = battleChara.GetNamePlateIcon();
 
 		if (battleChara.IsAllianceMember() || battleChara.IsParty())
 		{
@@ -3760,6 +3763,34 @@ public static class ObjectHelper
 		}
 
 		return (float)Player.Object.CurrentMp / Player.Object.MaxMp;
+	}
+
+	/// <summary>
+	/// Whether healing is being withheld from <paramref name="battleChara"/> so that the death its
+	/// own ability is waiting for can happen - the user's <c>WithholdHealingForLivingDead</c>
+	/// setting together with <see cref="StatusHelper.InDeathTriggerWindow"/>.
+	/// <para>
+	/// The pairing lives here rather than in <see cref="StatusHelper"/>, which deliberately reads no
+	/// configuration, and it lives in one place rather than at each decision because the hold has to
+	/// hold on every path a heal can reach the bearer through. Missing one of them does not weaken
+	/// the hold, it defeats it: the bearer is healed out of the trigger and the ability is spent for
+	/// nothing.
+	/// </para>
+	/// </summary>
+	public static bool IsHeldForDeathTrigger(this IBattleChara battleChara)
+	{
+		return battleChara != null
+			&& Service.Config != null
+			&& Service.Config.WithholdHealingForLivingDead
+			&& battleChara.InDeathTriggerWindow();
+	}
+
+	/// <inheritdoc cref="IsHeldForDeathTrigger(IBattleChara)"/>
+	public static bool PlayerIsHeldForDeathTrigger()
+	{
+		return Service.Config != null
+			&& Service.Config.WithholdHealingForLivingDead
+			&& StatusHelper.PlayerInDeathTriggerWindow();
 	}
 
 	/// <summary>

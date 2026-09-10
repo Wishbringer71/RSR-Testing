@@ -5,8 +5,6 @@
 
 public sealed class RPR_Reborn : ReaperRotation
 {
-	public override bool HasHostileCountAoeMitigation => true;
-
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Pool Shroud for Arcane Circle.")]
 	public bool EnshroudPooling { get; set; } = false;
@@ -106,6 +104,11 @@ public sealed class RPR_Reborn : ReaperRotation
 			&& !(GluttonyPvE.CanUse(out _, skipAoeCheck: true) || EnshroudPvE.CanUse(out _))
 			&& ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
+		if (NotInActiveCombo && FeintPvE.CanUse(out act))
 		{
 			return true;
 		}

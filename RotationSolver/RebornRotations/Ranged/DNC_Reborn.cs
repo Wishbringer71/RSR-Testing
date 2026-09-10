@@ -132,12 +132,38 @@ public sealed class DNC_Reborn : DancerRotation
 	[RotationDesc(ActionID.ShieldSambaPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
+		if ((!BurstDefense || (BurstDefense && !InBurstStatus))
+			&& BMRShouldRefreshBefore(BMRRaidwideIn, 15f, true, null, StatusID.ShieldSamba)
+			&& ShieldSambaPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		if ((!BurstDefense || (BurstDefense && !InBurstStatus)) && ShieldSambaPvE.CanUse(out act))
 		{
 			return true;
 		}
 
 		return base.DefenseAreaAbility(nextGCD, out act);
+	}
+
+	[RotationDesc(ActionID.ShieldSambaPvE)]
+	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
+	{
+		if ((!BurstDefense || (BurstDefense && !InBurstStatus))
+			&& BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, StatusID.ShieldSamba)
+			&& ShieldSambaPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
+		// A tankbuster actually cast at us, with no BMR to time it: the 10% is the only lever there is.
+		if ((!BurstDefense || (BurstDefense && !InBurstStatus)) && ShieldSambaPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 
 	[RotationDesc(ActionID.EnAvantPvE)]

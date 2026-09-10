@@ -15,6 +15,17 @@ jobs:
       - name: Check base call targets
         run: python3 .github/scripts/check_base_calls.py
 
+      # Fails when a barrier whose PvE action creates one is missing from ShieldStatus. That list
+      # ages by omission: an unlisted barrier counts as none at all, so the gap is invisible in the
+      # code and only shows as a healer topping up a target that was already covered.
+      - name: Check ShieldStatus covers every PvE barrier
+        run: python3 .github/scripts/audit/scan13.py
+
+      # MSBuild imports these before compiling anything, so a parse error fails every project.
+      # Catching it here costs a second; the same finding in the Windows job costs a minute.
+      - name: Check the MSBuild files are well-formed XML
+        run: python3 .github/scripts/audit/check_msbuild_xml.py
+
   Build:
     runs-on: windows-latest
     steps:
@@ -29,8 +40,11 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Download Dalamud Latest
+        # Same track as publish.yaml. Upstream moved the release build to the staging
+        # channel in 7.5.6.0 - the only change that release carries - so a check against
+        # the release channel would no longer compile what a release actually builds.
         run: |
-          Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
+          Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/stg/latest.zip -OutFile latest.zip
           Expand-Archive -Force latest.zip -DestinationPath "$env:AppData\XIVLauncher\addon\Hooks\dev"
 
       - name: Restore NuGet Packages

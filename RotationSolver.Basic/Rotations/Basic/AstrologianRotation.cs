@@ -527,7 +527,9 @@ public partial class AstrologianRotation
 
 	static partial void ModifyCelestialIntersectionPvE(ref ActionSetting setting)
 	{
-		setting.TargetStatusProvide = [StatusID.Intersection];
+		// Both ids: the game has Intersection (1889) and Intersection_4040 under this name, and which
+		// one it applies is not decidable offline.
+		setting.TargetStatusProvide = [StatusID.Intersection, StatusID.Intersection_4040];
 		setting.IsFriendly = true;
 	}
 

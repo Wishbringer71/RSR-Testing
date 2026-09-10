@@ -131,7 +131,10 @@ public static class IActionHelper
 	}
 
 	/// <summary>
-	/// Determines if the last action was an ability.
+	/// Determines if the last action was an ability, i.e. whether an oGCD has already been weaved
+	/// since the last GCD. The counterpart to <see cref="IsLastActionGCD"/>; both read the
+	/// bookkeeping in <see cref="DataCenter"/>, which assigns <c>LastAction</c> together with either
+	/// <c>LastGCD</c> or <c>LastAbility</c> depending on what was used.
 	/// </summary>
 	/// <returns>True if the last action was an ability, otherwise false.</returns>
 	public static bool IsLastActionAbility()

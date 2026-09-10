@@ -182,7 +182,7 @@ public sealed class ChurinDRK : DarkKnightRotation
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		//10
-		if (OblationPvE.CanUse(out act, usedUp: true, skipStatusProvideCheck: false))
+		if (!IsLastAbility(false, OblationPvE) && OblationPvE.CanUse(out act, usedUp: true, skipStatusProvideCheck: false))
 		{
 			return true;
 		}

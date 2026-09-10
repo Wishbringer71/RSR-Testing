@@ -122,6 +122,18 @@ public class BaseAction : IBaseAction
 	/// <inheritdoc/>
 	public ActionSetting Setting { get; set; }
 
+	private ActionConfig? _defaultConfig;
+
+	/// <summary>
+	/// The rotation's own defaults for this action, built once. <see cref="Config"/> compares against
+	/// them on every read to carry default changes over into stored user configs, and it is read
+	/// several times per <see cref="CanUse"/> for every action the rotation evaluates each frame -
+	/// rebuilding them per read allocated an <see cref="ActionConfig"/> that was thrown away again.
+	/// Safe to keep: every <c>CreateConfig</c> in this repository returns literal values, and
+	/// <see cref="Setting"/> is assigned once during construction.
+	/// </summary>
+	private ActionConfig DefaultConfig => _defaultConfig ??= Setting.CreateConfig?.Invoke() ?? new ActionConfig();
+
 	/// <inheritdoc/>
 	public ActionConfig Config
 	{
@@ -153,12 +165,9 @@ public class BaseAction : IBaseAction
 			// Keep user configs in sync with rotation defaults: whenever the default value for
 			// AOE Count or Status Refresh GCD Count changes between plugin updates, reset the
 			// user's stored value to the new default, without touching other user-configured fields.
-			ActionConfig? defaults = null;
-			ActionConfig GetDefaults() => defaults ??= Setting.CreateConfig?.Invoke() ?? new ActionConfig();
-
 			var changed = false;
 
-			var defaultAoe = GetDefaults().AoeCount;
+			var defaultAoe = DefaultConfig.AoeCount;
 			if (!value.AoeResetDone || value.AppliedDefaultAoeCount != defaultAoe)
 			{
 				value.AoeCount = defaultAoe;
@@ -167,7 +176,7 @@ public class BaseAction : IBaseAction
 				changed = true;
 			}
 
-			var defaultStatusRefresh = GetDefaults().StatusRefreshGcdCount;
+			var defaultStatusRefresh = DefaultConfig.StatusRefreshGcdCount;
 			if (value.AppliedDefaultStatusRefreshGcdCount != defaultStatusRefresh)
 			{
 				value.StatusRefreshGcdCount = defaultStatusRefresh;

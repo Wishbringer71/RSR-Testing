@@ -153,16 +153,16 @@ es schon sind:
 
 ## E · Universelle Strukturschwächen
 
-| # | Schwäche | Beleg |
-|---|---|---|
-| U1 | `GeneralGCD` ist Sammelbecken ohne Untergliederung | 7–81 Zweige auf einer Ebene, Median ~19 |
-| U2 | Proaktive Logik muss in 3 Methoden dupliziert werden | Heiler-Sustain, vorher 9 Kopien |
-| U3 | Level-Ketten von Hand | 65 Ketten, 2 Schreibweisen, 1 realer Bug daraus |
-| U4 | Hook-Belegung ohne Regel | 2 Jobs ohne CountDown, 3 ohne Emergency, MNK/DNC-Heal-Slot-Tausch |
-| U5 | Gleiche Rolle, verschiedene Orte | AoE-Schwelle an 3 Orten; Mitigation mal Area, mal Single, mal beides |
-| U6 | Kein Job kann sagen „ich bin fertig" | jede Ebene muss `base.X` aufrufen; Vergessen/Vertauschen war die häufigste Fehlerklasse im AUDIT_LOG (9 Fälle) |
+| # | Schwäche | Beleg | Stand |
+|---|---|---|---|
+| U1 | `GeneralGCD` ist Sammelbecken ohne Untergliederung | 7–81 Zweige auf einer Ebene, Median ~19 | für die fünf größten Dateien behoben (`04` A4a); MCH bewusst ausgelassen |
+| U2 | Proaktive Logik steht in drei Methoden | Heiler-Sustain | **keine Schwäche.** Die Bedingung liegt in genau einem Helfer je Job; dreifach steht nur die **Position**, und die ist je Dispatch-Slot eine eigene Prioritätsaussage. Herleitung in `04-concept.md` unter A1 |
+| U3 | Level-Ketten von Hand | 65 Ketten, 2 Schreibweisen, 1 realer Bug daraus | Fehlerklasse durch den Wächter A2′ geschlossen; die Ketten selbst bleiben |
+| U4 | Hook-Belegung ohne Regel | 2 Jobs ohne CountDown, 3 ohne Emergency, MNK/DNC-Heal-Slot-Tausch | offen, Spielfragen (`04` B4/B5) |
+| U5 | Gleiche Rolle, verschiedene Orte | AoE-Schwelle an 3 Orten; Mitigation mal Area, mal Single, mal beides | offen, Spielfrage (`04` B3) |
+| U6 | Kein Job kann sagen „ich bin fertig" | jede Ebene muss `base.X` aufrufen; Vergessen oder Vertauschen war mit neun Fällen die häufigste Fehlerklasse im AUDIT_LOG | Fehlerklasse durch den Wächter A3 in der CI geschlossen; die Kette selbst bleibt |
 
-U6 ist der unauffälligste und teuerste Punkt: die Kette wird über
+U6 war der unauffälligste und teuerste Punkt: Die Kette wird über
 `return base.Methode(out act)` fortgesetzt, und ein falscher Methodenname im
-`base`-Aufruf ist syntaktisch korrekt, kompiliert und ist im Diff unsichtbar.
-Neun solcher Fälle stehen im AUDIT_LOG.
+`base`-Aufruf ist syntaktisch korrekt, kompiliert und im Diff unsichtbar. Genau
+deshalb ist er nicht durch Sorgfalt, sondern durch eine CI-Prüfung zu schließen.

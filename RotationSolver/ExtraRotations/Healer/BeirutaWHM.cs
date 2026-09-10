@@ -232,9 +232,16 @@ public sealed class WHM_Reborn : WhiteMageRotation
 
 		try
 		{
-			return target.HasStatus(false, StatusID.LivingDead) ||
-				   target.HasStatus(false, StatusID.Holmgang) ||
-				   target.HasStatus(false, StatusID.WalkingDead);
+			// The shared list is what this enumeration was hand-rolling, and it corrects two errors
+			// at once. StatusID.Holmgang is id 88, "Unable to move until effect fades" - the
+			// movement debuff on the warrior's target, not the 409 protection on the warrior
+			// himself - so the check never fired for Holmgang at all; and Paladin and Gunbreaker
+			// were missing outright. WalkingDead is deliberately absent from the shared list (see
+			// StatusHelper.NoNeedHealingStatus): "The inability to restore 100% of HP before timer
+			// runs out will result in KO", so locking out single-target healing there kills the
+			// dark knight instead of sparing a heal - Benediction is the answer to that phase, not
+			// something to withhold during it.
+			return target.HasStatus(false, StatusHelper.NoNeedHealingStatus);
 		}
 		catch
 		{
@@ -398,8 +405,8 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			ThinAirLastChargeUsage == ThinAirUsageStrategy.UseAllCharges ||
 			(ThinAirLastChargeUsage == ThinAirUsageStrategy.ReserveLastChargeForRaise && nextGCD == RaisePvE);
 
-		if (((nextGCD is IBaseAction action && action.Info.MPNeed >= ThinAirNeed && IsLastAction() == IsLastGCD()) ||
-			 ((MergedStatus.HasFlag(AutoStatus.Raise) || nextGCD == RaisePvE) && IsLastAction() == IsLastGCD())) &&
+		if (((nextGCD is IBaseAction action && action.Info.MPNeed >= ThinAirNeed && IActionHelper.IsLastActionGCD()) ||
+			 ((MergedStatus.HasFlag(AutoStatus.Raise) || nextGCD == RaisePvE) && IActionHelper.IsLastActionGCD())) &&
 			ThinAirPvE.CanUse(out act, usedUp: useLastThinAirCharge))
 		{
 			return true;

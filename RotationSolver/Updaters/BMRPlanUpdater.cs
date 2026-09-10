@@ -13,8 +13,8 @@ namespace RotationSolver.Updaters;
 internal static class BMRPlanUpdater
 {
 	private static bool _subscribed;
-	private static bool _checkedAvailability;
 	private static bool _isAvailable;
+	private static DateTime _lastAvailabilityCheck = DateTime.MinValue;
 	private static volatile bool _dirty = true;
 	private static DateTime _lastPoll = DateTime.MinValue;
 
@@ -22,6 +22,11 @@ internal static class BMRPlanUpdater
 	private static readonly HashSet<uint> _queuedActionIds = [];
 
 	private static readonly TimeSpan FallbackPollInterval = TimeSpan.FromSeconds(5);
+
+	// BossModReborn can be enabled or disabled while RSR is already running, and Dalamud does not
+	// notify us about it, so availability is re-polled on an interval instead of latched on the
+	// first tick. The reflection lookup behind IsEnabled is too expensive to run every frame.
+	private static readonly TimeSpan AvailabilityCheckInterval = TimeSpan.FromSeconds(5);
 
 	public static void Enable()
 	{
@@ -84,10 +89,11 @@ internal static class BMRPlanUpdater
 
 		Enable();
 
-		if (!_checkedAvailability)
+		var now = DateTime.Now;
+		if (now - _lastAvailabilityCheck >= AvailabilityCheckInterval)
 		{
 			_isAvailable = BMRPlan_IPCSubscriber.IsEnabled;
-			_checkedAvailability = true;
+			_lastAvailabilityCheck = now;
 		}
 
 		if (!_isAvailable)
@@ -97,7 +103,6 @@ internal static class BMRPlanUpdater
 			return;
 		}
 
-		var now = DateTime.Now;
 		if (_dirty || now - _lastPoll >= FallbackPollInterval)
 		{
 			try
@@ -110,7 +115,7 @@ internal static class BMRPlanUpdater
 			{
 				PluginLog.Error($"[BMRPlanUpdater] Failed to poll Plan.GetUpcomingActions: {ex}");
 				DataCenter.ResetBmrPlanData();
-				_checkedAvailability = false;
+				ResetAvailabilityCheck();
 				return;
 			}
 		}
@@ -176,7 +181,7 @@ internal static class BMRPlanUpdater
 
 	public static void ResetAvailabilityCheck()
 	{
-		_checkedAvailability = false;
+		_lastAvailabilityCheck = DateTime.MinValue;
 		_dirty = true;
 	}
 }

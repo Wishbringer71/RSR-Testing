@@ -116,7 +116,9 @@ public struct ActionTargetInfo(IBaseAction action)
 			// then => Check target is in the view && ActionManager.CanUse on target && CanSee Target && action.setting predicate is true of target
 			if (!DataCenter.IsManual || IsTargetFriendly || target.GameObjectId == Svc.Targets.Target?.GameObjectId || target.GameObjectId == Player.Object.GameObjectId)
 			{
-				var view = TargetOnScreen(target);
+				// "Only attack targets in view" is about attacking; a party member behind the camera is
+				// still on the party list and still needs the heal.
+				var view = IsTargetFriendly || TargetOnScreen(target);
 				var canUse = CanUseTo(target);
 				var asCanTarget = action.Setting.CanTarget(target);
 				var MinHPPass = !action.MinHPFeature || (action.MinHPFeature && target.GetHealthRatio() > action.MinHPPercent);
@@ -333,11 +335,6 @@ public struct ActionTargetInfo(IBaseAction action)
 			return false;
 		}
 
-		if (!action.Config.ShouldCheckTargetStatus && !action.Config.ShouldCheckStatus)
-		{
-			return true;
-		}
-
 		if (action.Setting.TargetStatusNeed != null && !skipTargetStatusNeedCheck)
 		{
 			if (DataCenter.IsInOccultCrescentOp && battleChara.NameId != 0)
@@ -357,7 +354,11 @@ public struct ActionTargetInfo(IBaseAction action)
 			}
 		}
 
-		if (action.Setting.TargetStatusProvide != null && !skipStatusProvideCheck)
+		// ShouldCheckStatus is the user's "does this action check status effects" toggle. It belongs on
+		// the provide side only: that check skips the action because the status it grants is already
+		// there, which is what the option is meant to switch off. The need side is a precondition, not
+		// redundancy, so it stays in force either way.
+		if (action.Setting.TargetStatusProvide != null && !skipStatusProvideCheck && action.Config.ShouldCheckStatus)
 		{
 			if (!battleChara.WillStatusEndGCD(action.Config.StatusRefreshGcdCount, 0, action.Setting.StatusFromSelf, action.Setting.TargetStatusProvide) || (Service.Config.Statuscap2 && StatusHelper.IsStatusCapped(battleChara)))
 			{
@@ -2004,7 +2005,6 @@ public struct ActionTargetInfo(IBaseAction action)
 				TargetType.Interrupt => FindInterruptTarget(),
 				TargetType.Tank => FindTankTarget(),
 				TargetType.Tankbuster => FindTankbusterTarget(),
-				TargetType.SafeDotTarget => FindSafeDotTarget(),
 				TargetType.Melee => battleChara != null ? RandomMeleeTarget(battleChara) : null,
 				TargetType.Range => battleChara != null ? RandomRangeTarget(battleChara) : null,
 				TargetType.Magical => battleChara != null ? RandomMagicalTarget(battleChara) : null,
@@ -2083,7 +2083,6 @@ public struct ActionTargetInfo(IBaseAction action)
 				TargetType.Interrupt => FindInterruptTarget(),
 				TargetType.Tank => FindTankTarget(),
 				TargetType.Tankbuster => FindTankbusterTarget(),
-				TargetType.SafeDotTarget => FindSafeDotTarget(),
 				TargetType.Melee => battleChara != null ? RandomMeleeTarget(battleChara) : null,
 				TargetType.Range => battleChara != null ? RandomRangeTarget(battleChara) : null,
 				TargetType.Magical => battleChara != null ? RandomMagicalTarget(battleChara) : null,
@@ -2699,20 +2698,14 @@ public struct ActionTargetInfo(IBaseAction action)
 					{
 						if (member.IsConditionCannotTarget())
 						{
-							if (Service.Config.InDebug)
-							{
-								PluginLog.Debug($"FindDancePartner: {member.Name} selected target.");
-							}
-							return null;
+							continue;
 						}
-						if (!member.IsConditionCannotTarget())
+
+						if (Service.Config.InDebug)
 						{
-							if (Service.Config.InDebug)
-							{
-								PluginLog.Debug($"FindDancePartner: {member.Name} selected target.");
-							}
-							return member;
+							PluginLog.Debug($"FindDancePartner: {member.Name} selected target.");
 						}
+						return member;
 					}
 				}
 			}
@@ -2730,20 +2723,14 @@ public struct ActionTargetInfo(IBaseAction action)
 					{
 						if (member.IsConditionCannotTarget())
 						{
-							if (Service.Config.InDebug)
-							{
-								PluginLog.Debug($"FindDancePartner: {member.Name} secondary logic target.");
-							}
-							return null;
+							continue;
 						}
-						if (!member.IsConditionCannotTarget())
+
+						if (Service.Config.InDebug)
 						{
-							if (Service.Config.InDebug)
-							{
-								PluginLog.Debug($"FindDancePartner: {member.Name} secondary logic target.");
-							}
-							return member;
+							PluginLog.Debug($"FindDancePartner: {member.Name} secondary logic target.");
 						}
+						return member;
 					}
 				}
 			}
@@ -3154,20 +3141,14 @@ public struct ActionTargetInfo(IBaseAction action)
 						{
 							if (m.IsConditionCannotTarget())
 							{
-								if (Service.Config.InDebug)
-								{
-									PluginLog.Debug($"FindKardia 1: {m.Name} is a tank with TankStanceStatus and without Kardion.");
-								}
-								return null;
+								continue;
 							}
-							if (!m.IsConditionCannotTarget())
+
+							if (Service.Config.InDebug)
 							{
-								if (Service.Config.InDebug)
-								{
-									PluginLog.Debug($"FindKardia 1: {m.Name} is a tank with TankStanceStatus and without Kardion.");
-								}
-								return m;
+								PluginLog.Debug($"FindKardia 1: {m.Name} is a tank with TankStanceStatus and without Kardion.");
 							}
+							return m;
 						}
 					}
 				}
@@ -3184,20 +3165,14 @@ public struct ActionTargetInfo(IBaseAction action)
 						{
 							if (m.IsConditionCannotTarget())
 							{
-								if (Service.Config.InDebug)
-								{
-									PluginLog.Debug($"FindKardia 2: {m.Name} is a tank with TankStanceStatus.");
-								}
-								return null;
+								continue;
 							}
-							if (!m.IsConditionCannotTarget())
+
+							if (Service.Config.InDebug)
 							{
-								if (Service.Config.InDebug)
-								{
-									PluginLog.Debug($"FindKardia 2: {m.Name} is a tank with TankStanceStatus.");
-								}
-								return m;
+								PluginLog.Debug($"FindKardia 2: {m.Name} is a tank with TankStanceStatus.");
 							}
+							return m;
 						}
 					}
 				}
@@ -3212,20 +3187,14 @@ public struct ActionTargetInfo(IBaseAction action)
 						// 3. Any alive tank in priority order
 						if (m.IsConditionCannotTarget())
 						{
-							if (Service.Config.InDebug)
-							{
-								PluginLog.Debug($"FindKardia 3: {m.Name} is a tank fallback.");
-							}
-							return null;
+							continue;
 						}
-						if (!m.IsConditionCannotTarget())
+
+						if (Service.Config.InDebug)
 						{
-							if (Service.Config.InDebug)
-							{
-								PluginLog.Debug($"FindKardia 3: {m.Name} is a tank fallback.");
-							}
-							return m;
+							PluginLog.Debug($"FindKardia 3: {m.Name} is a tank fallback.");
 						}
+						return m;
 					}
 				}
 			}
@@ -3376,26 +3345,6 @@ public struct ActionTargetInfo(IBaseAction action)
 			return null;
 		}
 
-		// First valid candidate that isn't currently attacking me - used to redirect DoT filler
-		// (e.g. WHM's wall-to-wall Dia upkeep) away from a target that's already aggro'd onto a
-		// squishy caster, instead of just skipping the filler cast entirely.
-		IBattleChara? FindSafeDotTarget()
-		{
-			if (battleChara == null)
-			{
-				return null;
-			}
-
-			foreach (var t in battleChara)
-			{
-				if (t.TargetObject != Player.Object)
-				{
-					return t;
-				}
-			}
-			return null;
-		}
-
 		IBattleChara? FindTargetForMoving()
 		{
 			return Service.Config == null || battleChara == null
@@ -3494,6 +3443,19 @@ public struct ActionTargetInfo(IBaseAction action)
 			List<IBattleChara> filteredGameObjects = [];
 			foreach (var o in battleChara)
 			{
+				// The death-trigger hold has to bite at the entrance, not further down. Everything
+				// below draws from this set - the ranked candidate list, the healer and tank passes,
+				// the worst-hurt pick and both fallbacks - and the tank-stance fallback would
+				// otherwise hand back the very dark knight being held, since it wears Grit. The hold
+				// then failed exactly where it was needed: whenever the member who raised the heal
+				// flag is out of this action's range, the bearer is the only candidate left.
+				//
+				// The self short-cut below bypasses this set and carries the same check of its own.
+				if (o.IsHeldForDeathTrigger())
+				{
+					continue;
+				}
+
 				if (!IBaseAction.AutoHealCheck || o.GetHealthRatio() < healRatio)
 				{
 					filteredGameObjects.Add(o);
@@ -3551,41 +3513,92 @@ public struct ActionTargetInfo(IBaseAction action)
 
 			static IBattleChara? GeneralHealTarget(List<IBattleChara> objs)
 			{
-				List<IBattleChara> healingNeededObjs = [];
+				// Everyone healable is a candidate. Only a status that nullifies healing outright
+				// takes a target out; a protective status merely moves it back in the queue.
+				//
+				// This used to read `if (!o.NoNeedHealingInvuln())`, which collected the exact
+				// opposite set: NoNeedHealingInvuln() returns true when NO protective status is up
+				// (an absent status has trivially "ended"), so the list held only the invulnerable
+				// and was empty in the ordinary case. Everything below it - the healer pass, the
+				// tank pass, the worst-hurt pick - then ran over nothing and the caller fell back
+				// to the tank-stance holder, so the worst-hurt member could never be chosen.
+				//
+				// Demoting rather than excluding is what the protection actually warrants: the
+				// invulnerability window is the safest moment to heal, and when it ends the target
+				// stands wherever it left them - Superbolide leaves them at 1 HP on purpose.
+				// Both sort keys are read once per member rather than inside the comparator. Sorting
+				// n members costs O(n log n) comparisons, and each key walks a status list or the
+				// party/doom checks in GetHealthRatio - this runs in the combat path. Reading them
+				// up front also fixes the keys for the duration of the sort: NoNeedHealingInvuln
+				// compares a live RemainingTime against a GCD window, so a status sitting on that
+				// boundary could otherwise answer differently between two comparisons, and an
+				// inconsistent comparer makes List.Sort throw.
+				List<(IBattleChara Obj, bool Unprotected, float Health)> ranked = [];
 				foreach (var o in objs)
 				{
-					if (!o.NoNeedHealingInvuln())
+					if (o.HasStatus(false, StatusHelper.HealingIneffectiveStatus))
 					{
-						healingNeededObjs.Add(o);
+						continue;
 					}
+					ranked.Add((o, o.NoNeedHealingInvuln(), ObjectHelper.GetHealthRatio(o)));
 				}
-				healingNeededObjs.Sort((a, b) => ObjectHelper.GetHealthRatio(a).CompareTo(ObjectHelper.GetHealthRatio(b)));
 
-				List<IBattleChara> healerTars = [];
-				foreach (var o in healingNeededObjs)
+				// Unprotected before protected, then lowest health first inside each group.
+				ranked.Sort((a, b) =>
 				{
-					var enumHealer = TargetFilter.GetJobCategory([o], JobRole.Healer).GetEnumerator();
+					var byProtection = b.Unprotected.CompareTo(a.Unprotected);
+					return byProtection != 0 ? byProtection : a.Health.CompareTo(b.Health);
+				});
+
+				List<IBattleChara> healingNeededObjs = [];
+				foreach (var r in ranked)
+				{
+					healingNeededObjs.Add(r.Obj);
+				}
+
+				// The role short-cuts below return their candidate outright once it drops under its
+				// ratio, so they run ahead of the ordering above. Feeding them protected members
+				// would undo the demotion at exactly the case it exists for: a Superbolide tank
+				// sits at 1 HP, clears HealthTankRatio immediately, and would be picked over an
+				// unprotected member at 20%. So the role passes see unprotected members only;
+				// anyone protected is left to the final worst-hurt pick, which still reaches them
+				// when nobody else needs healing.
+				List<IBattleChara> healerTars = [];
+				List<IBattleChara> tankTars = [];
+				foreach (var r in ranked)
+				{
+					if (!r.Unprotected)
+					{
+						continue;
+					}
+
+					var enumHealer = TargetFilter.GetJobCategory([r.Obj], JobRole.Healer).GetEnumerator();
 					var isHealer = enumHealer.MoveNext();
 					enumHealer.Dispose();
 					if (isHealer)
 					{
-						healerTars.Add(o);
+						healerTars.Add(r.Obj);
+						continue;
 					}
-				}
 
-				List<IBattleChara> tankTars = [];
-				foreach (var o in healingNeededObjs)
-				{
-					var enumTank = TargetFilter.GetJobCategory([o], JobRole.Tank).GetEnumerator();
+					var enumTank = TargetFilter.GetJobCategory([r.Obj], JobRole.Tank).GetEnumerator();
 					var isTank = enumTank.MoveNext();
 					enumTank.Dispose();
 					if (isTank)
 					{
-						tankTars.Add(o);
+						tankTars.Add(r.Obj);
 					}
 				}
 
-				if (ObjectHelper.GetPlayerHealthRatio() <= Service.Config.HealthSelfRatio)
+				// The self short-cut bypasses the candidate list, so it repeats the two checks that
+				// keep a target out of it: a heal on a target that nullifies HP recovery is a wasted
+				// cast, and a dark knight inside its Living Dead window is being held on purpose.
+				// Without the second check, any other member raising the heal flag would let the
+				// bearer heal itself out of the trigger through this path.
+				if (Player.Object != null
+					&& !Player.Object.HasStatus(false, StatusHelper.HealingIneffectiveStatus)
+					&& !ObjectHelper.PlayerIsHeldForDeathTrigger()
+					&& ObjectHelper.GetPlayerHealthRatio() <= Service.Config.HealthSelfRatio)
 				{
 					return Player.Object;
 				}
@@ -4041,20 +4054,14 @@ public struct ActionTargetInfo(IBaseAction action)
 					{
 						if (m.IsConditionCannotTarget())
 						{
-							if (Service.Config.InDebug)
-							{
-								PluginLog.Debug($"FindTankTarget 1: {m.Name} is a tank with TankStanceStatus.");
-							}
-							return null;
+							continue;
 						}
-						if (!m.IsConditionCannotTarget())
+
+						if (Service.Config.InDebug)
 						{
-							if (Service.Config.InDebug)
-							{
-								PluginLog.Debug($"FindTankTarget 1: {m.Name} is a tank with TankStanceStatus.");
-							}
-							return m;
+							PluginLog.Debug($"FindTankTarget 1: {m.Name} is a tank with TankStanceStatus.");
 						}
+						return m;
 					}
 				}
 			}
@@ -4065,20 +4072,14 @@ public struct ActionTargetInfo(IBaseAction action)
 				{
 					if (m.IsConditionCannotTarget())
 					{
-						if (Service.Config.InDebug)
-						{
-							PluginLog.Debug($"FindTankTarget 2: {m.Name} is a tank fallback.");
-						}
-						return null;
+						continue;
 					}
-					if (!m.IsConditionCannotTarget())
+
+					if (Service.Config.InDebug)
 					{
-						if (Service.Config.InDebug)
-						{
-							PluginLog.Debug($"FindTankTarget 2: {m.Name} is a tank fallback.");
-						}
-						return m;
+						PluginLog.Debug($"FindTankTarget 2: {m.Name} is a tank fallback.");
 					}
+					return m;
 				}
 			}
 
@@ -4300,8 +4301,7 @@ public enum TargetType : byte
 	PvPDPS,
 	HighHPPercent,
 	LowHPPercent,
-	Tankbuster,
-	SafeDotTarget
+	Tankbuster
 }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 

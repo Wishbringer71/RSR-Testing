@@ -37,7 +37,7 @@ namespace RotationSolver.Commands
 
 		public static void DoStateCommandType(StateCommandType stateType, int index = -1)
 		{
-			DoOneCommandType((type, role) => type.ToStateString(role), role =>
+			WithPlayerRole(role =>
 			{
 				if (!DataCenter.State && DataCenter.IsPvP && !DataCenter.IsPvPStateEnabled && Service.Config.PvpStateControl)
 				{
@@ -59,17 +59,12 @@ namespace RotationSolver.Commands
 				{
 					Svc.GameConfig.UiControl.Set(UiControlOption.AutoFaceTargetOnAction.ToString(), 1);
 				}
-				return stateType;
 			});
 		}
 
 		public static void DoAutodutyStateCommandType(StateCommandType stateType, TargetingType targetingType)
 		{
-			DoOneCommandType((type, role) => type.ToStateString(role), role =>
-			{
-				AutodutyUpdateState(stateType, role, targetingType);
-				return stateType;
-			});
+			WithPlayerRole(role => AutodutyUpdateState(stateType, role, targetingType));
 		}
 
 		private static StateCommandType AdjustStateType(StateCommandType stateType, ref int index)
@@ -509,7 +504,7 @@ namespace RotationSolver.Commands
 
 		public static void DoSpecialCommandType(SpecialCommandType specialType, bool sayout = true)
 		{
-			DoOneCommandType((type, role) => type.ToSpecialString(role), role =>
+			WithPlayerRole(role =>
 			{
 				_specialString = specialType.ToSpecialString(role);
 				DataCenter.SpecialType = specialType;
@@ -517,13 +512,13 @@ namespace RotationSolver.Commands
 				{
 					UpdateToast();
 				}
-
-				return specialType;
 			});
 		}
 
-		private static void DoOneCommandType<T>(Func<T, JobRole, string> sayout, Func<JobRole, T> doingSomething)
-			where T : struct, Enum
+		/// <summary>
+		/// Runs the action with the player's current role, or does nothing when there is no job.
+		/// </summary>
+		private static void WithPlayerRole(Action<JobRole> action)
 		{
 			var role = Player.Object?.ClassJob.Value.GetJobRole() ?? JobRole.None;
 
@@ -532,7 +527,7 @@ namespace RotationSolver.Commands
 				return;
 			}
 
-			_ = doingSomething(role);
+			action(role);
 		}
 	}
 }

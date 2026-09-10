@@ -22,8 +22,19 @@ jobs:
           # settings window shows.
           $numericVersion = ($tag -split '\+')[0]
 
+          # The package version needs the fork suffix as a PRE-RELEASE label, not as build metadata.
+          # NuGet drops "+wsh1" during normalization, so the shipped .nupkg carried the upstream
+          # identity RotationSolverReborn.Basic 7.5.5.41 and was indistinguishable from it in a local
+          # feed. A "-wsh1" label is part of the identity and survives. It stays SemVer 1.0 compliant
+          # because it contains no dot, so older clients can still see it.
+          if ($tag -notmatch '\+wsh\d+$') {
+            throw "Tag '$tag' does not follow <upstream>+wsh<n>; without the suffix the package would ship under the upstream identity. Retag before publishing."
+          }
+          $packageVersion = $tag -replace '\+', '-'
+
           "tag=$tag" | Out-File -Append -FilePath $Env:GITHUB_ENV
           "numericVersion=$numericVersion" | Out-File -Append -FilePath $Env:GITHUB_ENV
+          "packageVersion=$packageVersion" | Out-File -Append -FilePath $Env:GITHUB_ENV
           
       - name: Set up .NET
         uses: actions/setup-dotnet@v5
@@ -32,14 +43,14 @@ jobs:
 
       - name: Download Dalamud Latest
         run: |
-          Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
+          Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/stg/latest.zip -OutFile latest.zip
           Expand-Archive -Force latest.zip -DestinationPath "$env:AppData\XIVLauncher\addon\Hooks\dev"
 
       - name: Restore Nuget Packages for RSR
         run: dotnet restore RotationSolver/RotationSolver.csproj
 
       - name: Build Plugin
-        run: dotnet build --no-restore -c Release RotationSolver/RotationSolver.csproj -p:AssemblyVersion=${{ env.numericVersion }} -p:FileVersion=${{ env.numericVersion }} -p:PackageVersion=${{ env.numericVersion }} -p:InformationalVersion=${{ env.tag }} --output .\build
+        run: dotnet build --no-restore -c Release RotationSolver/RotationSolver.csproj -p:AssemblyVersion=${{ env.numericVersion }} -p:FileVersion=${{ env.numericVersion }} -p:PackageVersion=${{ env.packageVersion }} -p:InformationalVersion=${{ env.tag }} --output .\build
 
       - name: Publish Plugin
         uses: softprops/action-gh-release@v3

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
 namespace RotationSolver.RebornRotations.Tank;
 
@@ -7,8 +7,6 @@ namespace RotationSolver.RebornRotations.Tank;
 
 public sealed class DRK_Reborn : DarkKnightRotation
 {
-	public override bool HasHostileCountAoeMitigation => true;
-
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Use provoke in opening if tank stance is on")]
 	public bool UseProvokeInOpening { get; set; } = true;
@@ -32,6 +30,32 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Target health threshold needed to use Oblation with above option", Parent = nameof(OblationLantern))]
 	private float OblationLanternRatio { get; set; } = 0.5f;
+
+	[RotationConfig(CombatType.PvE, Name = "When to use The Blackest Night on yourself")]
+	public BlackestNightStrategy BlackestNightUsage { get; set; } = BlackestNightStrategy.WheneverDefensesOpen;
+
+	public enum BlackestNightStrategy : byte
+	{
+		[Description("Whenever single-target defences open")]
+		WheneverDefensesOpen,
+
+		[Description("Tankbuster, or a big pull with no other mitigation running")]
+		TankbusterOrHeavyPull,
+
+		[Description("As above, plus below the health threshold")]
+		TankbusterHeavyPullOrLowHealth,
+	}
+
+	[Range(1, 8, ConfigUnitType.None, 1)]
+	[RotationConfig(CombatType.PvE, Name = "Hostiles needed before The Blackest Night counts a pull as big enough")]
+	private int BlackestNightMinHostiles { get; set; } = 4;
+
+	[RotationConfig(CombatType.PvE, Name = "Use Arm's Length on a pull for its Slow, not only against knockback")]
+	private bool UseArmsLengthOnPull { get; set; } = false;
+
+	[Range(0, 1, ConfigUnitType.Percent)]
+	[RotationConfig(CombatType.PvE, Name = "Health threshold for the Blackest Night option above")]
+	private float BlackestNightHealthRatio { get; set; } = 0.6f;
 
 	[RotationConfig(CombatType.PvE, Name = "Opener action")]
 	public OpenerActionStrategy OpenerActionUsage { get; set; } = OpenerActionStrategy.Unmend;
@@ -127,7 +151,11 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	[RotationDesc(ActionID.DarkMissionaryPvE, ActionID.ReprisalPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		if (!InTwoMIsBurst && TheBlackestNightPvE.CanUse(out act, targetOverride: TargetType.LowHP) && !TheBlackestNightPvE.Target.Target.HasStatus(false, StatusID.Transcendent) && TheBlackestNightPvE.Target.Target.GetHealthRatio() <= BlackLanternRatio)
+		// BlackLantern was declared and named as the threshold's parent but never read, so this
+		// branch ran regardless of the switch - and the UI hides the threshold while the switch is
+		// off, leaving the only adjustment invisible. The Oblation line below checks its own option,
+		// and ChurinDRK checks this one on the same branch.
+		if (BlackLantern && !InTwoMIsBurst && TheBlackestNightPvE.CanUse(out act, targetOverride: TargetType.LowHP) && !TheBlackestNightPvE.Target.Target.HasStatus(false, StatusID.Transcendent) && TheBlackestNightPvE.Target.Target.GetHealthRatio() <= BlackLanternRatio)
 		{
 			return true;
 		}
@@ -146,7 +174,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		}
 
 		if (!InTwoMIsBurst
-			&& ShouldSustainMitigationDebuff(StatusID.Reprisal)
+			&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
@@ -168,7 +196,147 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		return base.DefenseAreaAbility(nextGCD, out act);
 	}
 
-	[RotationDesc(ActionID.OblationPvE, ActionID.TheBlackestNightPvE, ActionID.DarkMindPvE, ActionID.ShadowWallPvE, ActionID.ShadowedVigilPvE, ActionID.RampartPvE, ActionID.ReprisalPvE)]
+	/// <summary>
+	/// Whether the self-cast of The Blackest Night is wanted in the current situation. See
+	/// docs/rotation-flow/10-drk-blackest-night.md: the barrier repays its 3000 MP as Dark Arts only
+	/// when it is absorbed in full, which takes 25% of maximum HP in 7 seconds - roughly 3.6% per
+	/// second, and more than that once another mitigation has cut the incoming damage.
+	/// <para>
+	/// Two situations reach that rate, and they want opposite handling. Against a tankbuster the
+	/// hit clears the threshold even under Shadow Wall, so mitigating alongside costs nothing and
+	/// stacking is right. In a wall-to-wall pull the damage is a stream, and stacking wastes
+	/// coverage that should be staggered - so there the barrier goes up only while no big
+	/// mitigation is running, the same stagger Shadow Wall and Shadowed Vigil already keep against
+	/// each other through StatusProvide.
+	/// </para>
+	/// </summary>
+	/// <summary>
+	/// How long after an area stun the hold continues, so the gap between two casts of Sanctus does
+	/// not open a window. Roughly one global cooldown.
+	/// </summary>
+	private const float StunChainGrace = 3f;
+
+	private static DateTime _lastGroupStunSeen = DateTime.MinValue;
+
+	/// <summary>
+	/// Whether an <b>area</b> stun is currently keeping the damage stream down.
+	/// <para>
+	/// Neither "any enemy is stunned" nor "every enemy is stunned" answers that. The first counts
+	/// Low Blow - which this job carries itself and the interrupt path uses - where one enemy stops
+	/// and the rest of the pull keeps hitting. The second fails as soon as a single straggler joins
+	/// the pack unstunned, although the stream is plainly interrupted. What separates the two cases
+	/// is the share: an area stun catches the pack, a single-target stun catches one of it. The rule
+	/// therefore asks for at least two stunned enemies and at least half of those in range.
+	/// </para>
+	/// <para>
+	/// The radius is the job's own reach, the same set of enemies the hostile count is measured
+	/// over. Both conditions answer one question - is damage still arriving on me - so they have to
+	/// look at the same enemies; a wider radius would count enemies that are not hitting anyone.
+	/// </para>
+	/// <para>
+	/// Between two casts of Sanctus the stun lapses for about a global cooldown, so the hold
+	/// continues through that gap while the enemies can still be stunned. Once they carry stun
+	/// resistance there is no headroom left and the hold ends by itself - "wait until the stuns stop
+	/// working" needs no counter of its own.
+	/// </para>
+	/// </summary>
+	private bool GroupStunRunning()
+	{
+		var inRange = SurveyStuns(DataCenter.JobRange, out var stunned, out _, out var headroom);
+		if (inRange == 0)
+		{
+			return false;
+		}
+
+		if (stunned >= 2 && stunned * 2 >= inRange)
+		{
+			_lastGroupStunSeen = DateTime.Now;
+			return true;
+		}
+
+		return headroom && (DateTime.Now - _lastGroupStunSeen).TotalSeconds < StunChainGrace;
+	}
+
+	/// <summary>
+	/// Whether the pack is slowed hard enough that the barrier would not be spent.
+	/// </summary>
+	/// <remarks>
+	/// Slow is not only a caster debuff: its effect text names the auto-attack delay alongside cast
+	/// and recast time, and trash enemies deal most of their damage by auto-attack. A slowed pack
+	/// therefore throttles the incoming stream by about the size of the debuff - Arm's Length applies
+	/// Slow +20% to every physical attacker for 15s, which is the same order as Rampart and past the
+	/// line where the stream no longer spends 25% of maximum HP in seven seconds.
+	///
+	/// Same share rule as the stun condition, and for the same reason: one slowed enemy out of eight
+	/// says nothing about the stream. The difference is the timing - a stun stops the stream and
+	/// lapses in seconds, a slow thins it for fifteen, so this one has no grace window. It ends when
+	/// the debuff does.
+	/// </remarks>
+	private static bool PackSlowed()
+	{
+		var inRange = SurveyHostileStatus(DataCenter.JobRange, StatusHelper.SlowStatus, out var slowed);
+		return inRange > 0 && slowed >= 2 && slowed * 2 >= inRange;
+	}
+
+	/// <summary>
+	/// Whether Arm's Length is worth spending on the pull rather than kept for a knockback.
+	/// </summary>
+	/// <remarks>
+	/// The action has two effects and the plugin read only one of them: it nullifies knockback, and
+	/// it afflicts every physical attacker with Slow +20% for 15s. The slow raises auto-attack delay
+	/// as well as cast and recast time, and trash enemies deal most of their damage by auto-attack,
+	/// so on a standing pack it throttles the incoming stream by about the size of the debuff - the
+	/// same order as Rampart, for nothing but a 120s cooldown.
+	///
+	/// The obvious objection - it is the job's only knockback protection - does not hold where this
+	/// rule fires: knockback is a boss mechanic, and a wall-to-wall pull has none. The hostile-count
+	/// condition is what keeps the two apart, so it uses the same threshold as the barrier rather
+	/// than a second number that could drift away from it.
+	/// </remarks>
+	private bool ShouldUseArmsLengthOnPull()
+		=> UseArmsLengthOnPull
+			&& NumberOfHostilesInRange >= BlackestNightMinHostiles
+			&& !PackSlowed();
+
+	private bool ShouldUseBlackestNightOnSelf()
+	{
+		// The free mitigations first. Both cost nothing but their cooldown and sit at or near the
+		// end of this path, so while The Blackest Night is off cooldown every opportunity goes to
+		// the 3000 MP action and the cheap ones only land once it happens to be unavailable. In a
+		// pull that ordering is backwards; against a tankbuster it does not matter, which is why
+		// this only gates the pull branch.
+		var reprisalDone = !ReprisalPvE.EnoughLevel
+			|| ReprisalPvE.Cooldown.IsCoolingDown
+			|| (HostileTarget?.HasStatus(false, StatusHelper.ReprisalStatus) ?? false);
+
+		// Arm's Length is the second one. "Done" means the same thing: either it cannot be cast, or
+		// it already is - a cooling-down Arm's Length is one that has been spent on this pull.
+		var armsLengthDone = !UseArmsLengthOnPull
+			|| !ArmsLengthPvE.EnoughLevel
+			|| ArmsLengthPvE.Cooldown.IsCoolingDown;
+
+		// In a pull the barrier has to stand on its own: a big mitigation running alongside drops
+		// the damage stream below the rate that spends it, a stun chain stops the stream outright,
+		// and a slowed pack thins it for as long as the debuff lasts.
+		var staggeredHeavyPull = NumberOfHostilesInRange >= BlackestNightMinHostiles
+			&& !HasMajorMitigation
+			&& !GroupStunRunning()
+			&& !PackSlowed()
+			&& reprisalDone
+			&& armsLengthDone;
+
+		return BlackestNightUsage switch
+		{
+			BlackestNightStrategy.TankbusterOrHeavyPull => TankbusterOnMe || staggeredHeavyPull,
+			// Low health is an emergency, so it deliberately skips the stagger condition.
+			BlackestNightStrategy.TankbusterHeavyPullOrLowHealth =>
+				TankbusterOnMe || staggeredHeavyPull
+				|| Player?.GetHealthRatio() <= BlackestNightHealthRatio,
+			_ => true,
+		};
+	}
+
+	[RotationDesc(ActionID.OblationPvE, ActionID.ArmsLengthPvE, ActionID.TheBlackestNightPvE, ActionID.DarkMindPvE, ActionID.ShadowWallPvE, ActionID.ShadowedVigilPvE, ActionID.RampartPvE, ActionID.ReprisalPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		//10
@@ -180,7 +348,20 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			}
 		}
 
-		if (TheBlackestNightPvE.CanUse(out act, targetOverride: TargetType.Self))
+		// Arm's Length before the barrier, for the same reason Reprisal goes before it: it costs
+		// nothing but its cooldown. Its Slow +20% lands on every enemy that strikes, and the slow
+		// delays auto-attacks as well as casts, so in a standing pack it throttles the whole stream
+		// for 15s. The plugin only ever used this action as knockback protection.
+		if (ShouldUseArmsLengthOnPull() && ArmsLengthPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		// The trigger that opens this path says "defending is warranted", not "damage worth 25% of
+		// maximum HP is coming" - it fires on two enemies in melee range, or on any uninterruptible
+		// cast aimed at its own target. Rampart and Reprisal cost nothing but their cooldown; this
+		// costs 3000 MP and only repays it as Dark Arts when the barrier is absorbed in full.
+		if (ShouldUseBlackestNightOnSelf() && TheBlackestNightPvE.CanUse(out act, targetOverride: TargetType.Self))
 		{
 			return true;
 		}
@@ -238,7 +419,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			}
 		}
 
-		if (ShouldSustainMitigationDebuff(StatusID.Reprisal)
+		if (ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;

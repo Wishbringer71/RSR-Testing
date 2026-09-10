@@ -904,6 +904,33 @@ internal partial class Configs : IPluginConfiguration
 	[Range(0, 1, ConfigUnitType.Percent, 0.02f)]
 	public float HealthHealerRatio { get; set; } = 0.4f;
 
+	// A target riding an invulnerability cannot die right now, but keeps whatever health it has when
+	// the window closes - Superbolide puts the gunbreaker at 1 HP on purpose. So the threshold drops
+	// to this value instead of healing being suppressed for the whole window. It is clamped against
+	// the normal threshold, so a protected target is never healed more readily than an unprotected
+	// one, and it governs the automatic decision only: a manual heal command and the Doom
+	// short-circuit still reach a protected target above this value, which is the point of both.
+	//
+	// Living Dead is the exception and this setting does not apply to it: with
+	// WithholdHealingForLivingDead on, the bearer is held in full rather than merely demoted,
+	// because there the death is the trigger and not the disaster. That hold releases on its own
+	// clock, measured on Living Dead alone (StatusHelper.InDeathTriggerWindow).
+	[UI("Heal a target under an invulnerability only below this HP.",
+		Filter = HealingActionCondition, Section = 1)]
+	[Range(0, 1, ConfigUnitType.Percent, 0.02f)]
+	public float HealthProtectedRatio { get; set; } = 0.15f;
+
+	// Living Dead is the one invulnerability whose trigger is the bearer's own death: dying converts
+	// it into Walking Dead and its self-healing. Healing the dark knight above zero while it is up
+	// removes that trigger. Off by default, and deliberately so - RSR fires Living Dead itself as a
+	// last-ditch save at HealthForDyingTanks (DarkKnightRotation.EmergencyAbility), and under that
+	// usage the death is not wanted at all. Walking Dead demands healing equal to full max HP within
+	// ten seconds or it kills, so holding the heal is only right when the death was the plan and the
+	// healer can carry phase two. Whoever knows that for their group turns this on.
+	[UI("Withhold healing from a dark knight under Living Dead, so the death that converts it can happen.",
+		Filter = HealingActionCondition, Section = 1)]
+	public bool WithholdHealingForLivingDead { get; set; } = false;
+
 	[UI("Heal self first if your HP is lower than this.",
 		Filter = HealingActionCondition, Section = 1)]
 	[Range(0, 1, ConfigUnitType.Percent, 0.02f)]

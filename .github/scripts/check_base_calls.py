@@ -9,7 +9,7 @@ this repository actually had (see AUDIT_LOG.md).
    by hand here.
 
 2. No-op guard loop
-   A `for` whose body is nothing but `if (...) { continue; }` advances only its
+   A loop whose body is nothing but `if (...) continue;` advances only its
    own counter. Written inside a `foreach` it reads like a filter on the outer
    loop and silently is not one - the restricted-DoT target filter in
    ActionTargetInfo had exactly this shape, with the correct version of the
@@ -59,7 +59,9 @@ def iter_methods(src: str):
     """Yield (name, body, line) for every overriding bool/IAction? method."""
     for match in _SIGNATURE.finditer(src):
         start = src.find('{', match.end())
-        if start < 0:
+        # An expression-bodied override has no block of its own; the next brace
+        # belongs to the following member and must not be attributed to this one.
+        if start < 0 or '=>' in src[match.end():start]:
             continue
         depth, end = 0, start
         while end < len(src):
@@ -73,9 +75,9 @@ def iter_methods(src: str):
         yield match.group(1), src[start:end], src[:match.start()].count('\n') + 1
 
 
-_LOOP = re.compile(r'\b(?:for|while)\s*\(', re.M)
+_LOOP = re.compile(r'\b(?:for|foreach|while)\s*\(', re.M)
 _NO_OP_LOOP_BODY = re.compile(
-    r'^\s*if\s*\([^{}]*\)\s*\{\s*continue\s*;\s*\}\s*$', re.S)
+    r'^\s*if\s*\([^{}]*\)\s*(?:\{\s*continue\s*;\s*\}|continue\s*;)\s*$', re.S)
 
 
 def no_op_loops(src: str):

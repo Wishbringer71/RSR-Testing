@@ -362,19 +362,183 @@ public static class StatusHelper
 	];
 
 	/// <summary>
+	/// Every status the game data lists under the name Reprisal with the same effect text. Which of
+	/// them the role action applies at a given level is not verifiable from the data alone, so every
+	/// Reprisal check looks for any of them.
+	/// <para>
+	/// <c>Reprisal_2101</c> is scoped to PLD WAR DRK GNB rather than to the shared role, which is the
+	/// signature of the form a trait upgrades into - Enhanced Reprisal at level 98 raises the
+	/// reduction to 15% and the duration to 15s. Its absence made every reader of this list blind to
+	/// the version an end-game tank actually applies: <c>ReprisalPvE</c> carries this list as
+	/// <c>TargetStatusProvide</c>, so the guard against re-applying it never saw the debuff, and the
+	/// mitigation surveys that read it counted a reprised pull as unmitigated.
+	/// </para>
+	/// <para>
+	/// Kept out: no id under this name carries a different effect text, so the list is complete as
+	/// long as no new one appears. <c>.github/scripts/audit/scan14.py</c> reports one that does.
+	/// </para>
+	/// </summary>
+	public static StatusID[] ReprisalStatus { get; } =
+	[
+		StatusID.Reprisal,
+		StatusID.Reprisal_1193,
+		StatusID.Reprisal_2101,
+	];
+
+	/// <summary>
 	/// Shields (absorb effects) that have their own tracked duration, as opposed to instant HP-based
 	/// mitigation. Used to decide whether a shield will still be up when it matters, e.g. for
 	/// shield-aware heal prioritization.
+	/// <para>
+	/// A missing id here does not merely lose precision, it inverts the answer:
+	/// <see cref="HasSurvivingShield"/> reads <c>GetObjectShield() &gt; 0 &amp;&amp;
+	/// !WillStatusEnd(..., ShieldStatus)</c>, and <c>WillStatusEnd</c> reports an *absent* status as
+	/// ending. A real barrier whose id is not listed therefore counts as no barrier at all, and its
+	/// bearer looks more hurt than they are.
+	/// </para>
+	/// <para>
+	/// The game gives most barriers several ids under one display name - one per version of the
+	/// ability, plus PvP forms - so naming one and omitting the siblings ages the list silently.
+	/// The ids below were collected with <c>.github/scripts/audit/scan13.py</c>, which decides
+	/// membership on the effect text rather than the name: a status counts when its text says a
+	/// barrier is nullifying or preventing damage. That excludes the neighbours that only reduce
+	/// damage (<c>Catalyze_3088</c>) and those that merely set a barrier up for later
+	/// (<c>DivineVeil</c> 726).
+	/// </para>
+	/// <para>
+	/// Which form of an ability an id belongs to cannot be read off the status: the PvE and the PvP
+	/// version share the display name and the effect text alike. The scan therefore matches each
+	/// candidate against the action of the same name, and only ids whose PvE action actually creates
+	/// a barrier are listed here. Aquaveil (3086) and Holy Sheltron (3026) are the counter-examples
+	/// that show why - both PvE actions only reduce damage taken, so those barrier ids are PvP forms.
+	/// </para>
+	/// <para>
+	/// Still absent, deliberately: 46 ids in 44 groups with no representative here, none of which
+	/// sits behind a PvE action that creates a barrier - PvP forms, the astrologian's removed
+	/// nocturnal sect statuses, and duty or item effects with no player action behind them. The scan
+	/// fails the build if that number ever stops being zero.
+	/// </para>
 	/// </summary>
 	public static StatusID[] ShieldStatus { get; } =
 	[
 		StatusID.Galvanize,
+		StatusID.Galvanize_1331,
+		StatusID.Galvanize_3087,
+		StatusID.Catalyze,
+		StatusID.Consolation,
+		StatusID.SeraphicVeil,
+		StatusID.SeraphicVeil_2040,
+		StatusID.SeraphicVeil_3097,
 		StatusID.EukrasianDiagnosis,
+		StatusID.EukrasianDiagnosis_2865,
+		StatusID.EukrasianDiagnosis_3109,
+		StatusID.DifferentialDiagnosis,
 		StatusID.EukrasianPrognosis,
+		StatusID.EukrasianPrognosis_2866,
 		StatusID.Haima,
+		StatusID.Haima_2869,
+		StatusID.Haima_3110,
+		StatusID.Haimatinon,
 		StatusID.Panhaima,
 		StatusID.Panhaimatinon,
+		StatusID.Holosakos,
+		StatusID.DivineBenison,
+		StatusID.DivineBenison_1404,
 		StatusID.DivineVeil_1362,
+		StatusID.DivineVeil_727,
+		StatusID.DivineVeil_2168,
+		StatusID.DivineVeil_2169,
+		StatusID.DivineCaress,
+		StatusID.Intersection,
+		StatusID.Intersection_4040,
+		// The barrier Neutral Sect puts on the receiver of an aspected spell, not the astrologian's
+		// own healing buff of the same display name - that one reads "increases healing magic potency".
+		StatusID.NeutralSect_1921,
+		StatusID.NeutralSect_3988,
+		StatusID.TheSpire_3892,
+		StatusID.BlackestNight,
+		StatusID.BlackestNight_1308,
+		StatusID.BrutalShell,
+		StatusID.BrutalShell_1997,
+		StatusID.StemTheTide,
+		StatusID.StemTheTide_3031,
+		StatusID.ShakeItOff,
+		StatusID.ShakeItOff_1993,
+		StatusID.ShadeShift,
+		StatusID.ShadeShift_2011,
+		StatusID.CrestOfTimeBorrowed,
+		StatusID.CrestOfTimeBorrowed_2597,
+		StatusID.CrestOfTimeBorrowed_2861,
+		StatusID.Manaward,
+		StatusID.Manaward_1989,
+		StatusID.RadiantAegis,
+		StatusID.RadiantAegis_3224,
+		StatusID.TemperaCoat,
+		StatusID.TemperaCoat_4114,
+		StatusID.TemperaGrassa,
+		StatusID.TemperaGrassa_4115,
+		StatusID.ImprovisedFinish,
+		// Occult Crescent. Phantom job and duty actions, all of them party barriers, so they land on
+		// the same targets a healer is judging.
+		StatusID.OccultUnicorn,
+		StatusID.BlessedRain,
+		StatusID.MagicShell,
+		StatusID.SteadfastStance,
+		StatusID.Lance,
+	];
+
+	/// <summary>
+	/// Every id the game files under the display name Slow, all of them carrying the same effect:
+	/// "weaponskill cast time and recast time, spell cast time and recast time, and auto-attack
+	/// delay are increased".
+	/// <para>
+	/// The auto-attack half is what makes this a mitigation and not a caster nuisance. Trash enemies
+	/// deal most of their damage by auto-attack, so a slowed pack throttles the incoming stream by
+	/// roughly the size of the debuff - the same order as Rampart, and enough to stop a barrier that
+	/// only pays off when it is spent from being spent at all.
+	/// </para>
+	/// <para>
+	/// Read as a group, like <see cref="StunStatus"/> and for the same reason: which id a given
+	/// action applies is not decidable from the data, and the source does not matter. Arm's Length
+	/// is the one a tank brings; Blue Mage and the Occult Crescent phantom jobs bring others.
+	/// Slow+ (427, 1568) is the stronger grade of the same effect and belongs here too.
+	/// </para>
+	/// </summary>
+	public static StatusID[] SlowStatus { get; } =
+	[
+		StatusID.Slow,
+		StatusID.Slow_10,
+		StatusID.Slow_193,
+		StatusID.Slow_427,
+		StatusID.Slow_442,
+		StatusID.Slow_561,
+		StatusID.Slow_1346,
+		StatusID.Slow_1509,
+		StatusID.Slow_1568,
+		StatusID.Slow_2246,
+		StatusID.Slow_3464,
+		StatusID.Slow_3493,
+	];
+
+	/// <summary>
+	/// Barriers that pay a reward only when they are absorbed in full, so letting one expire unspent
+	/// wastes its cost rather than merely leaving protection unused.
+	/// <para>
+	/// The Blackest Night is the only one in the game: it grants Dark Arts when its barrier - 25% of
+	/// maximum HP over 7s - is consumed completely (action 7393), and nothing at all when it is not.
+	/// Every other barrier in <see cref="ShieldStatus"/> is pure protection, where an unspent barrier
+	/// is a good outcome. That difference is why this list exists separately instead of asking
+	/// whether any shield is running.
+	/// </para>
+	/// <para>
+	/// Read by rules that would otherwise stop the damage stream while such a barrier is up - the
+	/// white mage's Holy stun is the case this was written for.
+	/// </para>
+	/// </summary>
+	public static StatusID[] FullAbsorbRewardStatus { get; } =
+	[
+		StatusID.BlackestNight,
+		StatusID.BlackestNight_1308,
 	];
 
 	/// <summary>
@@ -392,19 +556,119 @@ public static class StatusHelper
 	/// <summary>
 	/// 
 	/// </summary>
+	/// <summary>
+	/// Statuses under which the bearer cannot be killed, so healing them is less urgent than
+	/// healing anyone else - not unnecessary. The window is the safest moment to heal, and when it
+	/// closes the target keeps whatever health it had; Superbolide leaves them at 1 HP on purpose.
+	/// <para>
+	/// Only genuine invulnerabilities belong here. Two entries were removed because they are a
+	/// different thing and were being read as if they were the same: <c>Mounted</c> nullifies HP
+	/// recovery outright, which is an exclusion and lives in <see cref="HealingIneffectiveStatus"/>;
+	/// <c>HpRecoveryDown</c> only reduces incoming healing, which is a reason to heal harder, not
+	/// later. Both are still handled where they actually matter - StateUpdater checks them for
+	/// their own duties, and the target selection excludes what healing cannot reach.
+	/// </para>
+	/// <para>
+	/// <c>WalkingDead</c> stays commented out deliberately: there, healing is the survival
+	/// condition rather than a courtesy.
+	/// </para>
+	/// </summary>
 	public static StatusID[] NoNeedHealingStatus { get; } =
 	[
 		StatusID.Holmgang_409,
 		StatusID.LivingDead,
 		//StatusID.WalkingDead,
+		StatusID.UndeadRebirth,
 		StatusID.Superbolide,
+		StatusID.HallowedGround,
+		StatusID.HallowedGround_1302,
 		StatusID.Invulnerability,
-		StatusID.HpRecoveryDown,
+	];
+
+	/// <summary>
+	/// The subset of <see cref="NoNeedHealingStatus"/> whose trigger is the bearer's own death.
+	/// Living Dead is the only one: the dark knight spends it expecting to be killed, and the kill
+	/// is what converts it into Walking Dead and its self-healing. Healing the bearer above zero
+	/// while it is up does not merely waste a cast - it removes the very event the ability is
+	/// waiting for, which is why these get a full hold rather than the lowered threshold the other
+	/// invulnerabilities get.
+	/// <para>
+	/// The hold is not open-ended. Callers reach this list through
+	/// <see cref="InDeathTriggerWindow(IBattleChara)"/>, which releases it while the status still
+	/// has lead time left - so once the death can no longer arrive in time, the normal threshold
+	/// returns and the bearer is healed like anyone else.
+	/// </para>
+	/// </summary>
+	public static StatusID[] DeathTriggeredStatus { get; } =
+	[
+		StatusID.LivingDead,
+	];
+
+	/// <summary>
+	/// Whether <paramref name="battleChara"/> is inside a death-triggered window that still has room
+	/// for the death to arrive - that is, <see cref="DeathTriggeredStatus"/> is up and not about to
+	/// expire.
+	/// <para>
+	/// The clock has to be read on this list alone. <see cref="NoNeedHealingInvuln"/> measures the
+	/// *earliest* expiry across all of <see cref="NoNeedHealingStatus"/>, so an unrelated short
+	/// invulnerability on the same target - a Phantom Oracle's, say - would report the window as
+	/// ending while Living Dead still had most of its duration left.
+	/// </para>
+	/// <para>
+	/// Two GCDs of lead time. The tempting optimisation is to shorten it: the hold's one real cost
+	/// is that it can cancel a death that would still have arrived in time, and that cost is exactly
+	/// the lead time - against Living Dead's ten seconds, two GCDs give away half the window. But
+	/// the lead time is measured to the *decision*, not to the heal landing. Worst case the current
+	/// GCD has to run out and a cast has to finish on top of it, which is two GCDs on its own, so
+	/// anything shorter lands the heal after the window has already closed and the bearer is
+	/// unprotected. Half the window is the price of the heal actually arriving.
+	/// </para>
+	/// <para>
+	/// An instant heal would land immediately and make a shorter lead time safe, but which heal is
+	/// about to be cast is a rotation decision that this layer cannot see, let alone enforce.
+	/// </para>
+	/// </summary>
+	public static bool InDeathTriggerWindow(this IBattleChara battleChara)
+	{
+		return battleChara.HasStatus(false, DeathTriggeredStatus)
+			&& !battleChara.WillStatusEndGCD(DeathTriggerLeadGCDs, 0, false, DeathTriggeredStatus);
+	}
+
+	/// <inheritdoc cref="InDeathTriggerWindow(IBattleChara)"/>
+	public static bool PlayerInDeathTriggerWindow()
+	{
+		return PlayerHasStatus(false, DeathTriggeredStatus)
+			&& !PlayerWillStatusEndGCD(DeathTriggerLeadGCDs, 0, false, DeathTriggeredStatus);
+	}
+
+	/// <summary>How early the death-trigger hold releases; see <see cref="InDeathTriggerWindow"/>.</summary>
+	private const uint DeathTriggerLeadGCDs = 2;
+
+	/// <summary>
+	/// Statuses under which a heal lands for nothing at all, as opposed to merely being less urgent.
+	/// A target carrying one of these is not a healing candidate: the cast would be spent and the
+	/// target left exactly as it was. Mounted's own description says HP recovery is "nullified".
+	/// <para>
+	/// Deliberately narrower than <see cref="NoNeedHealingStatus"/>, which mixes this case in with
+	/// genuine invulnerabilities. Those postpone the need for healing, they do not remove it - a
+	/// Superbolide gunbreaker sits at 1 HP and needs healing more than anyone, just not this second.
+	/// Only a status that nullifies healing outright belongs here; HpRecoveryDown, which merely
+	/// reduces it, does not.
+	/// </para>
+	/// </summary>
+	/// <remarks>
+	/// Only <see cref="StatusID.Mounted"/> (1420) qualifies on the evidence: its description says
+	/// "HP recovery and beneficial effects conferred by actions are nullified". Mounted_1520 is
+	/// "Riding atop a Rathalos" and says nothing about healing, so it is deliberately absent - a
+	/// shared identifier is not evidence of a shared effect.
+	/// </remarks>
+	public static StatusID[] HealingIneffectiveStatus { get; } =
+	[
 		StatusID.Mounted,
 	];
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	public static StatusID[] SwiftcastStatus { get; } =
 	[
@@ -428,11 +692,27 @@ public static class StatusHelper
 	];
 
 	/// <summary>
-	/// 
+	/// The big personal mitigations and the invulnerabilities, read in two places that both depend
+	/// on it being complete: the job rotations put it on Shadow Wall and Shadowed Vigil as
+	/// <c>StatusProvide</c> so those never overlap, and <c>CustomRotation.HasMajorMitigation</c>
+	/// reads it to keep a barrier from being spent while one of them is up.
+	/// <para>
+	/// Membership is decided on the effect text, not on the display name. Both directions have a
+	/// case here: <c>Rampart_1978</c> is the form a tank from level 94 actually carries - "damage
+	/// taken is reduced while HP recovered via healing actions is increased", scoped PLD WAR DRK GNB
+	/// - and its absence made the whole list miss the most common mitigation in the game. In the
+	/// other direction, <c>Nebula_3051</c> ("inflicting a portion of sustained damage back to its
+	/// source") and <c>Bloodwhetting_3030</c> ("weaponskills generate HP") share a name with a
+	/// mitigation but are the reflect and lifesteal halves, so they stay out. So do the Holmgang ids
+	/// 88 and 1305, which sit on the target rather than the tank (AUDIT_LOG C15).
+	/// </para>
 	/// </summary>
 	public static StatusID[] RampartStatus { get; } =
 	[
 		StatusID.Rampart,
+		StatusID.Rampart_1191,
+		StatusID.Rampart_1978,
+		StatusID.Rampart_4168,
 		StatusID.Bulwark,
 		StatusID.Bloodwhetting,
 
@@ -450,6 +730,7 @@ public static class StatusHelper
 
 		StatusID.Superbolide,
 		StatusID.HallowedGround,
+		StatusID.HallowedGround_1302,
 		StatusID.Holmgang_409,
 		StatusID.LivingDead,
 	];
@@ -520,6 +801,44 @@ public static class StatusHelper
 		StatusID.Mudra,
 		StatusID.TenChiJin,
 		StatusID.FullMetalMachinist
+	];
+
+	/// <summary>
+	/// Every stun the game knows, bundled because which id a given action applies cannot be
+	/// determined from the name alone. A stun stops the target from acting at all, so for the
+	/// duration it is stronger than any damage reduction - who applied it does not matter.
+	/// </summary>
+	public static StatusID[] StunStatus { get; } =
+	[
+		StatusID.Stun,
+		StatusID.Stun_142,
+		StatusID.Stun_149,
+		StatusID.Stun_201,
+		StatusID.Stun_1343,
+		StatusID.Stun_1513,
+		StatusID.Stun_1521,
+		StatusID.Stun_1522,
+		StatusID.Stun_2656,
+		StatusID.Stun_2953,
+		StatusID.Stun_3408,
+		StatusID.Stun_3465,
+		StatusID.Stun_4163,
+		StatusID.Stun_4374,
+		StatusID.Stun_4378,
+		StatusID.Stun_4433,
+		StatusID.Stun_5043,
+		StatusID.Stun_5411
+	];
+
+	/// <summary>
+	/// The resistance a target builds up against being stunned again. The game tracks it as a
+	/// status of its own, so no application has to be counted: while this sits on a target, a
+	/// further stun is shorter or does not land at all, and when it falls off the budget is back.
+	/// </summary>
+	public static StatusID[] StunResistanceStatus { get; } =
+	[
+		StatusID.StunResistance,
+		StatusID.StunResistance_1349
 	];
 
 	/// <summary>

@@ -716,7 +716,12 @@ public partial class BlueMageRotation
 	{
 		setting.AttackTypeOverride = AttackType.Magic;
 		setting.AspectOverride = Aspect.Unaspected;
-		setting.StatusProvide = [StatusID.Conked];
+		// StatusProvide = [Conked] used to sit here. It never fired - Conked is the debuff on the
+		// target and StatusProvide is read against the player - and firing is not what one would
+		// want either: Magic Hammer is a 250-potency area attack that also restores 1000 MP, used
+		// from BLU_Reborn.UseFiller. Conked is its side effect, not its purpose, so a lockout while
+		// Conked is up would cost damage and MP to avoid refreshing a debuff nobody waits on.
+
 		setting.CreateConfig = () => new ActionConfig()
 		{
 			AoeCount = 1,
@@ -1128,8 +1133,17 @@ public partial class BlueMageRotation
 	{
 		setting.AttackTypeOverride = AttackType.Physical;
 		setting.AspectOverride = Aspect.Blunt;
-		setting.StatusProvide = [StatusID.Lightheaded_2501];
-		setting.StatusNeed = [StatusID.Lightheaded_2501];
+		// StatusProvide and StatusNeed both held Lightheaded_2501 here, and both are read against
+		// the player, who never carries it - it is the debuff this spell puts on its target. The
+		// StatusNeed half therefore blocked the action outright: IsStatusNeeded reports true
+		// whenever the status is absent, so PeripheralSynthesisPvE.CanUse could not succeed without
+		// skipStatusNeed. BLU_Reborn passed a different skip flag at each of its two call sites,
+		// and the one in SpendCooldowns picked skipStatusProvideCheck - that line could never fire.
+		//
+		// Neither belongs on the target side either. Lightheaded raises this spell's potency from
+		// 220 to 400 while it is up, so a lockout would suppress the action exactly when it is
+		// strongest, and a requirement would prevent the first cast that applies it.
+
 		setting.CreateConfig = () => new ActionConfig()
 		{
 			AoeCount = 1,

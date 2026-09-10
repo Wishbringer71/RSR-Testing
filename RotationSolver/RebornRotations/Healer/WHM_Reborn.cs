@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
 namespace RotationSolver.RebornRotations.Healer;
 
@@ -73,6 +73,19 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "How to manage the last thin air charge")]
 	public ThinAirUsageStrategy ThinAirLastChargeUsage { get; set; } = ThinAirUsageStrategy.ReserveLastChargeForRaise;
 
+	[RotationConfig(CombatType.PvE, Name = "Spend Thin Air on an expensive spell only while MP is low and Lucid Dreaming cannot cover it")]
+	public bool ThinAirOnMpPressureOnly { get; set; } = false;
+
+	[RotationConfig(CombatType.PvE, Name = "Skip Holy for one GCD while every enemy it would hit is already stunned")]
+	public bool StretchHolyStun { get; set; } = false;
+
+	[Range(2, 8, ConfigUnitType.None, 1)]
+	[RotationConfig(CombatType.PvE, Name = "Minimum enemies in Holy's radius before the stun stretch applies", Parent = nameof(StretchHolyStun))]
+	public int StretchHolyMinHostiles { get; set; } = 3;
+
+	[RotationConfig(CombatType.PvE, Name = "Hold Holy while a tank carries The Blackest Night, so its barrier is spent")]
+	public bool HoldHolyForBlackestNight { get; set; } = false;
+
 	public enum ThinAirUsageStrategy : byte
 	{
 		[Description("Use all thin air charges on expensive spells")]
@@ -129,10 +142,21 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		return base.MoveForwardAbility(nextGCD, out act);
 	}
 
+	/// <summary>
+	/// MP has fallen to where Lucid Dreaming would be cast, and Lucid cannot answer it: it is on
+	/// cooldown, not yet learned, or switched off. Thin Air is then the only MP relief left, which is
+	/// what ThinAirOnMpPressureOnly reserves it for. The threshold is Lucid's own configured one
+	/// rather than a second value, so both sides of the decision read the same number.
+	/// </summary>
+	private bool UnderMpPressure =>
+		CurrentMp < Service.Config.LucidDreamingMpThreshold
+		&& (!LucidDreamingPvE.EnoughLevel || !LucidDreamingPvE.IsEnabled
+			|| LucidDreamingPvE.Cooldown.IsCoolingDown);
+
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
 	{
 		var useLastThinAirCharge = ThinAirLastChargeUsage == ThinAirUsageStrategy.UseAllCharges || (ThinAirLastChargeUsage == ThinAirUsageStrategy.ReserveLastChargeForRaise && nextGCD == RaisePvE);
-		if (((nextGCD is IBaseAction action && action.Info.MPNeed >= ThinAirNeed && IsLastAction() == IsLastGCD()) || ((MergedStatus.HasFlag(AutoStatus.Raise) || (nextGCD == RaisePvE)) && IsLastAction() == IsLastGCD())) &&
+		if (((nextGCD is IBaseAction action && action.Info.MPNeed >= ThinAirNeed && (!ThinAirOnMpPressureOnly || UnderMpPressure) && IActionHelper.IsLastActionGCD()) || ((MergedStatus.HasFlag(AutoStatus.Raise) || (nextGCD == RaisePvE)) && IActionHelper.IsLastActionGCD())) &&
 			ThinAirPvE.CanUse(out act, usedUp: useLastThinAirCharge))
 		{
 			return true;
@@ -444,6 +468,123 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		return base.RaiseGCD(out act);
 	}
 
+	/// <summary>
+	/// Whether this GCD should go to something other than Holy so the stun is not overwritten while
+	/// it still runs.
+	/// </summary>
+	/// <remarks>
+	/// A stun lasts 4s, then 2s, then 1s, after which the target is immune - seven seconds to place,
+	/// once per pull. Recasting on cooldown lands the second application inside the first and wastes
+	/// part of it: about 5.5s of coverage instead of 7s. Yielding a single GCD while the stun runs
+	/// recovers the difference, and only one is needed, because the shorter follow-ups are over
+	/// before the next cast comes round. Modelled in .github/scripts/audit/stun_coverage.py.
+	///
+	/// The damage lost is not weighed against this. Keeping the party alive ranks above dealing
+	/// damage, so more coverage decides; only the absence of a worthwhile replacement stops it.
+	/// The two emergency checks the design first carried were dropped after inspection: the
+	/// dispatcher already runs every heal and defense branch ahead of GeneralGCD, so a critical
+	/// state never reaches this code, and a predicted raidwide comes from a boss the stun does not
+	/// touch.
+	///
+	/// Radius rather than job range: Holy covers eight yalms while a caster reaches twenty-five,
+	/// and the wider set would count enemies the cast never hits.
+	/// </remarks>
+	private bool ShouldStretchHolyStun()
+	{
+		if (!StretchHolyStun)
+		{
+			return false;
+		}
+
+		// Only worth it where an area cast is the filler at all, and where a stun still does something.
+		//
+		// "No headroom" generalises "everyone is stunned" to "nobody left this cast could stun", which
+		// covers a pack of two stunned enemies and one already immune. It must not be read as a reason
+		// on its own: once every enemy in radius is immune and none is still stunned, there is no stun
+		// to protect, and yielding the GCD would trade an area cast for a single-target dot for the
+		// rest of the pull. Hence the explicit requirement that a stun is actually running.
+		var radius = HolyIiiPvE.EnoughLevel ? HolyIiiPvE.Info.EffectRange : HolyPvE.Info.EffectRange;
+		var inRange = SurveyStuns(radius, out var stunned, out var allStunned, out var headroom);
+		if (inRange < StretchHolyMinHostiles || stunned == 0 || (!allStunned && headroom))
+		{
+			return false;
+		}
+
+		// Replacement guarantee: yield the GCD only when something with value of its own can take
+		// it. Without this the rotation would fall through to Glare, which is a plain loss.
+		return DiaPvE.CanUse(out _) || AeroIiPvE.CanUse(out _) || AeroPvE.CanUse(out _);
+	}
+
+	/// <summary>
+	/// Whether Holy has to wait because its stun would strand a barrier that pays off only when it
+	/// is spent in full.
+	/// </summary>
+	/// <remarks>
+	/// The Blackest Night grants Dark Arts only when its barrier - 25% of maximum HP over 7s - is
+	/// absorbed completely (action 7393), and nothing at all when it is not. Stopping the damage
+	/// stream for four of those seven seconds is therefore not a saving but a double loss: the
+	/// barrier expires unspent, and the stun budget - about seven seconds per pull before the
+	/// enemies turn immune - is gone with it. What the stun prevents does not buy that back, because
+	/// in a wall-to-wall pull the damage it stops is the damage the barrier was absorbing anyway, on
+	/// the same target: the enemies are on the tank, which is who holds the barrier.
+	///
+	/// This does not wait on the dark knight's rule, which holds the barrier back while a group stun
+	/// runs. Both states expire on their own - the stun after four seconds, the barrier after seven
+	/// - so neither side can hold the other indefinitely. They yield to whichever landed first, and
+	/// when neither is up both simply go.
+	///
+	/// Two limits keep the cost bounded, and the cost is real: Holy is the only area spell this job
+	/// has, so a held GCD falls through to single-target damage. Once every enemy in radius is
+	/// immune the cast can no longer interrupt anything and goes out normally, which ends the hold
+	/// for the rest of the pull; and a barrier that is over before this cast lands is not worth
+	/// waiting for.
+	///
+	/// A third limit is the tank role. The barrier can sit on anyone - the action reads "self or
+	/// target party member", and the dark knight's party branch aims it at the lowest HP - but the
+	/// case this rule exists for is the one where the barrier and the stun protect the same person:
+	/// the pull is on the tank, so the damage is too. On a damage dealer carrying the barrier, the
+	/// stun is likelier to be what keeps them alive, and holding it back would trade a life for a
+	/// resource.
+	/// </remarks>
+	private bool ShouldHoldHolyForBarrier()
+	{
+		if (!HoldHolyForBlackestNight)
+		{
+			return false;
+		}
+
+		var radius = HolyIiiPvE.EnoughLevel ? HolyIiiPvE.Info.EffectRange : HolyPvE.Info.EffectRange;
+		_ = SurveyStuns(radius, out _, out _, out var headroom);
+		if (!headroom)
+		{
+			return false;
+		}
+
+		var party = PartyMembers;
+		if (party == null)
+		{
+			return false;
+		}
+
+		var cast = HolyIiiPvE.EnoughLevel ? HolyIiiPvE.Info.CastTime : HolyPvE.Info.CastTime;
+		foreach (var member in party)
+		{
+			if (member == null || !member.IsJobCategory(JobRole.Tank))
+			{
+				continue;
+			}
+
+			// isFromSelf false: the barrier belongs to the dark knight, not to this healer.
+			if (member.HasStatus(false, StatusHelper.FullAbsorbRewardStatus)
+				&& !member.WillStatusEnd(cast, false, StatusHelper.FullAbsorbRewardStatus))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	protected override bool GeneralGCD(out IAction? act)
 	{
 		if (HasThinAir && MergedStatus.HasFlag(AutoStatus.Raise))
@@ -501,7 +642,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			}
 		}
 
-		if (HolyPvE.EnoughLevel)
+		if (HolyPvE.EnoughLevel && !ShouldStretchHolyStun() && !ShouldHoldHolyForBarrier())
 		{
 			if (HolyIiiPvE.EnoughLevel && HolyIiiPvE.CanUse(out act))
 			{
