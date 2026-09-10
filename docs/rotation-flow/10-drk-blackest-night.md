@@ -1,85 +1,70 @@
 # 10 · The Blackest Night beim Dunkelritter
 
 Entwurfsdokument nach ADR-Struktur. Es stellt den geltenden Stand dar; die Prüfhistorie steht in
-`AUDIT_LOG.md` (A44).
+`AUDIT_LOG.md` (A44 bis A48).
 
 ## Ergebnis
 
-Zwei Eingriffe in `DRK_Reborn.cs`, beide auf Upstream-Code:
+The Blackest Night ist keine Verteidigung wie die anderen: Sie kostet 3000 MP und zahlt sie nur
+zurück, wenn ihre Barriere **vollständig** aufgezehrt wird. Die Rotation behandelte sie dennoch wie
+Rampart oder Reprisal — als beliebiges Glied einer Prioritätsliste, ohne eigene Bedingung. Drei
+Eingriffe in `DRK_Reborn.cs`, alle auf Upstream-Code:
 
-1. **Der Party-Zweig fragt seine Option ab.** `BlackLantern` steuert laut Optionstext, ob The
-   Blackest Night auf das Party-Mitglied mit den niedrigsten HP geht, wird in der Bedingung aber
-   nicht gelesen. Die Verdrahtung wird nachgeholt — eine Defektbehebung, kein Verhaltensentwurf.
-2. **Der Selbstschutz-Zweig bekommt eine Zeitpunktwahl.** Eine neue Rotationsoption
-   `BlackestNightUsage` mit drei Stufen entscheidet, bei welcher Lage die Fähigkeit auf den eigenen
-   Charakter geht. Voreinstellung ist das heutige Verhalten. Die engeren Stufen lassen sie in zwei
-   Lagen zu — beim erkannten oder vorhergesagten Tankbuster **ohne** weitere Bedingung, und im
-   großen Pull nur, solange die Barriere dort **allein steht**: genug Gegner, keine große Minderung
-   aktiv, keine laufende Betäubung, Reprisal zuerst gewirkt. Wahlweise ergänzt um eine
-   Gesundheitsschwelle als Notfall.
+1. **Der Party-Zweig fragt seine Option ab** (`:155`). `BlackLantern` soll steuern, ob die Fähigkeit
+   auf das Party-Mitglied mit den niedrigsten HP geht, wurde aber nie gelesen. Defektbehebung.
+2. **Der Selbstschutz-Zweig bekommt eine Zeitpunktwahl** (`BlackestNightUsage`, `:35`) mit drei
+   Stufen. Voreinstellung bleibt das heutige Verhalten.
+3. **Zwei Prüfgrößen liegen zentral** in `CustomRotation_OtherInfo`: `TankbusterOnMe` (`:1377`) und
+   `HasMajorMitigation` (`:1365`); `SurveyStuns` hat eine Überladung mit der Trefferzahl bekommen
+   (`:544`).
 
-Die beiden Lagen verlangen entgegengesetzte Behandlung: Gegen einen Einschlag stapelt man
-Verteidigung, gegen einen Schadensstrom staffelt man sie. Das ist der Grund, warum die
-Staffelungsbedingung nur an einem der beiden Zweige hängt.
+| Stufe | Bedingung |
+|---|---|
+| `WheneverDefensesOpen` (Voreinstellung) | keine zusätzliche Bedingung — Verhalten wie bisher |
+| `TankbusterOrHeavyPull` | `TankbusterOnMe` **oder** der gestaffelte Pull |
+| `TankbusterHeavyPullOrLowHealth` | zusätzlich Gesundheit ≤ `BlackestNightHealthRatio` (Vorgabe 60 %) |
 
-Nicht angetastet bleibt der zentrale Auslöser `AutoStatus.DefenseSingle`. Er bedient alle Tanks und
-alle Verteidigungsaktionen; ein Eingriff dort hätte den Wirkungsbereich, den `AUDIT_LOG` C9 bereits
-einmal als Fehlgriff belegt hat.
+Der **gestaffelte Pull** verlangt vier Dinge gleichzeitig:
+
+| Bedingung | Grund |
+|---|---|
+| `NumberOfHostilesInRange >= BlackestNightMinHostiles` (Vorgabe 4) | erst ab genug Gegnern erreicht der Schadensstrom die Verbrauchsrate |
+| `!HasMajorMitigation` | eine große Minderung senkt den Strom unter diese Rate |
+| `!GroupStunRunning()` | eine Gruppenbetäubung hält den Strom ganz an |
+| Reprisal ist erledigt | die kostenlose Gruppenminderung gehört zuerst gewirkt |
+
+Beim Tankbuster gilt **keine** davon, und der Notfallzweig bei niedriger Gesundheit wartet ebenfalls
+auf nichts. Der zentrale Auslöser `AutoStatus.DefenseSingle` bleibt unangetastet; er bedient alle
+Tanks und ihre gesamte Verteidigungskette, und ein Eingriff dort hat den Wirkungsbereich, den
+`AUDIT_LOG` C9 bereits einmal als Fehlgriff belegt hat.
 
 ## Warum
 
-### Was die Fähigkeit kostet und was sie einbringt
+### Die Verbrauchsbedingung
 
 Die Aktionsbeschreibung (`ActionId.resx`, 7393) ist eindeutig: „Creates a barrier around self or
 target party member that absorbs damage totaling 25% of target's maximum HP. Duration: 7s **Grants
-Dark Arts when barrier is completely absorbed.**" Der Gegenwert der 3000 MP ist also nicht die
-Barriere allein, sondern Dark Arts — ein kostenloses Edge oder Flood of Shadow —, und der entsteht
-**nur bei vollständiger Absorption**. Eine zur Hälfte verbrauchte Barriere gibt nichts zurück.
+Dark Arts when barrier is completely absorbed.**" Der Gegenwert der 3000 MP ist nicht die Barriere,
+sondern Dark Arts — ein kostenloses Edge oder Flood of Shadow. Eine zur Hälfte verbrauchte Barriere
+gibt nichts zurück.
 
-### Wie viel Schaden das verlangt
-
-Die Schwelle folgt unmittelbar aus den beiden Zahlen der Beschreibung und ist von Ausrüstung und
-Inhalt unabhängig, weil beide Seiten an der maximalen Gesundheit hängen:
+Daraus folgt eine von Ausrüstung und Inhalt unabhängige Schwelle, weil beide Seiten an derselben
+Bezugsgröße hängen:
 
 > Aufgezehrt wird die Barriere, wenn der eingehende Schaden **25 % der maximalen Gesundheit in
-> 7 Sekunden** erreicht — also im Mittel **rund 3,6 % der maximalen Gesundheit pro Sekunde**.
+> 7 Sekunden** erreicht — im Mittel **rund 3,6 % pro Sekunde**, gemessen **nach** allen Minderungen.
 
-Maßgeblich ist der Schaden **nach** allen Minderungen, denn die Barriere absorbiert, was nach ihnen
-übrig bleibt. Daraus folgt die Umrechnung auf eine Gegnerzahl: Trägt ein einzelner Gegner *x* %
-der maximalen Gesundheit pro Sekunde bei, sind **n = 3,6 / x** Gegner nötig.
+Diese eine Zahl trägt alles Folgende: die Gegnerzahl, die Minderungsgrenze und die Betäubungsregel
+sind nur die drei Wege, auf denen sie verfehlt wird.
 
-| Schaden je Gegner (% max. HP/s) | benötigte Gegner |
-|---|---|
-| 0,5 | 8 |
-| 1,0 | 4 |
-| 1,5 | 3 |
-| 2,0 | 2 |
+### Zwei Lagen: Einschlag gegen Strom
 
-**Der Wert von *x* ist aus diesem Repository nicht zu belegen** und hängt an Inhalt, Stufe,
-Gegnertyp und Angriffsgeschwindigkeit; die Tabelle ist Arithmetik, keine Aussage über die
-Spielwelt. Was sich belegen lässt, ist die Richtung: Jede eigene Minderung erhöht die nötige
-Gegnerzahl, weil sie den Schaden senkt, der die Barriere aufzehrt.
+Die Schwelle wird auf zwei verschiedenen Wegen erreicht, und was für die eine Lage richtig ist, ist
+für die andere falsch.
 
-Und genau das tut die Rotation, bevor sie The Blackest Night wirkt. Im selben Pfad steht Oblation
-(−10 %) auf Priorität 10, The Blackest Night auf Priorität 20 — die vorgeschaltete Minderung
-verlangt rund 11 % mehr eingehenden Schaden für denselben Auslöser. Bei Shadow Wall (−30 %) oder
-Shadowed Vigil (−40 %) wäre der Aufschlag entsprechend größer. Die Reihenfolge des Pfades arbeitet
-also gegen die Bedingung, unter der die Fähigkeit sich bezahlt macht. Der Tank-Haltung ist das
-nicht anzulasten: Grit erhöht ausschließlich die Feindseligkeit und mindert keinen Schaden.
-
-### Zwei Lagen, die entgegengesetzte Behandlung verlangen
-
-Die Schwelle wird auf zwei ganz verschiedenen Wegen erreicht, und was für die eine Lage richtig
-ist, ist für die andere falsch. Das ist der Kern dieses Konzepts.
-
-**Andere Barrieren sind in beiden Lagen kein Hindernis.** Die Verbrauchsreihenfolge des Spiels führt
-The Blackest Night auf Rang 3, Eukrasian Diagnosis auf 4 und Divine Benison auf 12 (A36,
-Spielerdokumentation). Ein Heilerschild wird **nach** der eigenen Barriere aufgezehrt und verzögert
-deren Verbrauch nicht.
-
-**Beim Tankbuster ist Stapeln richtig.** Bei einer Gesamtminderung *m* wird die Barriere vollständig
-aufgezehrt, sobald der Einschlag *b* — in Prozent der maximalen Gesundheit — die Bedingung
-`b · (1 − m) ≥ 25 %` erfüllt:
+**Beim Tankbuster kommt der Schaden als ein Paket, und Stapeln ist richtig.** Bei einer
+Gesamtminderung *m* wird die Barriere vollständig aufgezehrt, sobald der Einschlag *b* — in Prozent
+der maximalen Gesundheit — die Bedingung `b · (1 − m) ≥ 25 %` erfüllt:
 
 | laufende Minderung | *m* | nötiger Einschlag *b* |
 |---|---|---|
@@ -91,313 +76,201 @@ aufgezehrt, sobald der Einschlag *b* — in Prozent der maximalen Gesundheit —
 | Shadow Wall + Rampart | 44 % | 44,6 % |
 
 Ein Tankbuster liegt regelmäßig darüber — *als Inferenz gekennzeichnet*, eine belastbare Quelle für
-Busterschaden in Prozent der Tankgesundheit liegt hier nicht vor. Belegt ist die Struktur: Der
-Einschlag kommt als **ein** Paket, das die angehobene Schwelle mitnimmt. Die gleichzeitige Minderung
-kostet den Auslöser also nicht, und sie zu meiden hieße, Überleben gegen 600 Potenz aus Dark Arts zu
-tauschen.
+Busterschaden in Prozent der Tankgesundheit liegt hier nicht vor. Belegt ist die Struktur: Ein
+einzelnes Paket nimmt die angehobene Schwelle mit. Gleichzeitige Minderung kostet den Auslöser also
+nicht, und sie zu meiden hieße, Überleben gegen 600 Potenz zu tauschen.
 
-**Im Wall-to-Wall ist Staffeln richtig.** Hier kommt der Schaden nicht als Paket, sondern als
-Strom über die Dauer des Pulls. Zwei Minderungen gleichzeitig decken dann dieselben Sekunden doppelt
-ab und lassen den Rest ungedeckt; nacheinander gelegt decken sie die doppelte Zeit. Für die Barriere
-gilt zusätzlich: Läuft parallel eine große Minderung, sinkt der Strom unter die Rate, die sie in
-sieben Sekunden aufzehrt — die 3,6 % pro Sekunde werden zu 5,1 % unter Shadow Wall und zu 6 % unter
-Shadowed Vigil. Beides zeigt in dieselbe Richtung: The Blackest Night gehört in eine Lücke der
-Minderungskette, nicht in deren Mitte.
+**Im Wall-to-Wall kommt der Schaden als Strom, und Staffeln ist richtig.** Zwei Minderungen
+gleichzeitig decken dieselben Sekunden doppelt ab und lassen den Rest ungedeckt; nacheinander gelegt
+decken sie die doppelte Zeit. Für die Barriere kommt hinzu, dass eine parallele große Minderung den
+Strom unter die Verbrauchsrate drückt — aus 3,6 % pro Sekunde werden 5,1 % unter Shadow Wall und
+6,0 % unter Shadowed Vigil.
 
-**Eine Betäubung ist der Extremfall davon.** Sanctus — Holy, und ab Stufe 82 Holy III — betäubt für
-4 Sekunden alles im Umkreis von acht Yalm (`ActionId.resx`, 139 und 25860). Für diese Zeit kommt
-nicht weniger Schaden, sondern gar keiner; eine in diesem Fenster gewirkte Barriere verfällt
-vollständig. Und die Betäubung ist keine Einzelerscheinung: Der Weißmagier hält sie im Trash
-absichtlich aufrecht, was dieses Projekt in Konzept 08 selbst umgesetzt hat — `WHM_Reborn.cs:498`
-streckt Sanctus über `SurveyStuns`, solange die Gegner noch betäubbar sind. Nach mehreren
-Anwendungen tragen sie `StunResistance` (39, „Immune to stun effects"), und erst dann läuft der
-Schadensstrom wieder.
+Andere **Barrieren** sind in beiden Lagen kein Hindernis: Die Verbrauchsreihenfolge des Spiels führt
+The Blackest Night auf Rang 3, Eukrasian Diagnosis auf 4 und Divine Benison auf 12 (A36,
+Spielerdokumentation). Ein Heilerschild wird nach der eigenen Barriere aufgezehrt.
 
-### Wer betäuben kann, und warum die Frage die Regel verändert
+### Die vier Bedingungen des Pull-Zweigs
 
-Erhebung über alle PvE-Aktionen mit Betäubungswirkung, nach Rolle geordnet:
+**Genug Gegner.** Die Schwelle steht als eigene Rotationsoption, nicht als Ableitung der
+Mitigations-Sustain-Zahl: Dort geht es um die Aufrechterhaltung eines Debuffs, hier um eine
+Verbrauchsrate. Was die Zahl leisten kann, ist, die Fähigkeit aus Lagen herauszuhalten, in denen
+sicher zu wenig Schaden kommt — zwei Gegner erreichen 3,6 % pro Sekunde nur, wenn jeder 1,8 %
+beiträgt, was für gewöhnlichen Trash unplausibel ist. Was sie **nicht** leisten kann, ist eine
+Garantie: Dafür müsste der Schaden je Gegner bekannt sein, und der hängt an Inhalt, Stufe und
+Gegnertyp. Die Vorgabe 4 entspricht rund 0,9 % je Gegner und Sekunde und ist eine Annahme; deshalb
+ist die Zahl einstellbar, und die Beobachtung im Spiel entscheidet.
 
-| Rolle | Aktion | Wirkung | Dauer |
-|---|---|---|---|
-| Heiler | **Sanctus** (Holy) und Holy III, **nur Weißmagier** | Fläche, 8 Yalm | 4 s |
-| Tank | Schildhieb (Shield Bash), nur Paladin | Einzelziel | 6 s |
-| Tank | **Tiefschlag (Low Blow), alle Tanks — auch der Dunkelritter** | Einzelziel | 5 s |
-| Nahkampf | Fußfeger (Leg Sweep) | Einzelziel | 3 s |
-| Occult Crescent | Occult Falcon, Mineuchi, Variant Ultimatum | Fläche bzw. Einzelziel | 4–6 s |
-
-Gelehrter, Astrologe und Weiser haben **keine** Betäubung. Die Rückhaltung greift also nur in
-Gruppen mit Weißmagier — und das ist kein Sonderfall, den die Regel behandeln müsste: Sie misst den
-**Status auf den Gegnern**, nicht die Gruppenzusammensetzung. Ohne Betäubung ist die Bedingung nie
-erfüllt und die Regel damit von selbst wirkungslos.
-
-**Gemeint sind Gruppenbetäubungen, und der Unterschied ist der Anteil.** Tiefschlag trägt der
-Dunkelritter selbst, und RSR wirkt es über den Unterbrechungspfad
-(`CustomRotation_Ability.cs:575`); es hält **ein** Ziel an, während die übrigen sieben Gegner eines
-Pulls weiter zuschlagen. Zwei naheliegende Formulierungen scheitern daran:
-
-- „**irgendein** Gegner ist betäubt" zählt Tiefschlag mit — die eigene Unterbrechung würde die
-  eigene Barriere sperren;
-- „**alle** Gegner sind betäubt" fällt um, sobald ein einzelner Nachzügler unbetäubt zur Gruppe
-  stößt, obwohl der Schadensstrom erkennbar steht.
-
-Die Regel fragt deshalb nach dem Anteil: **mindestens zwei betäubte Gegner und mindestens die
-Hälfte der Gegner in Reichweite**. Sanctus erfasst das Rudel und erfüllt das; Tiefschlag,
-Schildhieb und Fußfeger erfassen einen daraus und erfüllen es nicht.
-
-**Gemessen wird über dieselbe Menge wie die Gegnerzahl** — die Jobreichweite, für einen Tank drei
-Yalm (`DataCenter.JobRange`). Beide Bedingungen beantworten dieselbe Frage, ob noch Schaden auf mich
-zuläuft; ein weiterer Radius zählte Gegner mit, die niemanden schlagen.
-
-**Der Halt trägt über die Lücke.** Zwischen zwei Anwendungen von Sanctus läuft die Betäubung etwa
-einen globalen Cooldown lang aus. Der Pull-Zweig hält deshalb noch drei Sekunden nach der letzten
-Gruppenbetäubung zurück — aber nur, solange `headroom` besteht, die Gegner also überhaupt noch
-betäubbar sind. Tragen sie `StunResistance`, endet der Halt von selbst. Das ist „zurückhalten, bis
-die Betäubungen nicht mehr wirken", ohne einen eigenen Zähler für die Zahl der Anwendungen.
-
-**Das ist keine neue Konstruktion, sondern die vorhandene.** Shadow Wall und Shadowed Vigil tragen
-`StatusProvide = StatusHelper.RampartStatus` (`DarkKnightRotation.cs:238`, `:404`) und überlappen
-sich deshalb nie. The Blackest Night kann dieselbe Staffelung nicht über `StatusProvide` ausdrücken,
-weil sein eigener Status eine Barriere ist und kein Minderungsstatus — die Prüfung muss deshalb in
-der Rotation stehen. `CustomRotation.HasMajorMitigation` liest genau diese Liste.
-
-**Was das kostet, und warum es trotzdem so bleibt.** Während einer langen Minderung fällt ein
-Fenster von The Blackest Night aus; die MP fließen dann in Edge of Shadow, also in Schaden. Wer
-stattdessen die Zahl der Dark-Arts-Auslösungen maximieren wollte, müsste die Minderungskette
-auflösen — genau das Gegenteil einer streckenden Abdeckung.
-
-### Wo die Fähigkeit heute gezogen wird
-
-Drei Wege, alle in `DRK_Reborn.cs`:
-
-| Weg | Fundstelle | Bedingung |
-|---|---|---|
-| Opener | `:69` | `remainTime <= 3f` im Countdown — Dark Arts steht zum Kampfbeginn bereit |
-| Party-Schild | `:128` | Ziel mit den niedrigsten HP unter `BlackLanternRatio` (50 %), sobald `AutoStatus.DefenseArea` gesetzt ist |
-| Selbstschutz | `:181` | **keine eigene Bedingung**; zweite Priorität nach Oblation, vor Dark Mind, Shadow Wall/Vigil und Rampart |
-
-Der Selbstschutz-Weg öffnet sich mit `AutoStatus.DefenseSingle`. Dessen Tank-Zweig
-(`StateUpdater.cs:232-276`) genügt eine von drei Lagen:
-
-- **ab zwei Gegnern:** `tarOnMeCount >= AutoDefenseNumber` (Voreinstellung 2) innerhalb von 3 Yalm,
-  die den Spieler anvisieren, mehr als 30 % aller Gegner in Nahreichweite, mindestens einer hat
-  angegriffen. Die begleitende Gesundheitsbedingung `HealthForAutoDefense` steht per Vorgabe auf
-  `1`, also 100 % (`Configs.cs:764`), und schränkt damit nichts ein.
-- **ein einziger castender Gegner:** `IsHostileCastingToTank`. Die Erkennung
-  (`DataCenter.cs:2441`) nimmt einen Tankbuster aus der gelernten Liste **oder** — als Rückfall —
-  jeden Gegner, der auf sein eigenes Ziel castet. Für den Tank, der die Gruppe hält, trifft das auf
-  jeden nicht unterbrechbaren Cast von mehr als einem GCD Länge zu.
-- **Timeline:** `BMRTankbusterImminent`.
-
-### Der Defekt im Party-Zweig
-
-`BlackLantern` ist deklariert (`:18`) und als übergeordnetes Element des Schwellwerts genannt
-(`:21`) — gelesen wird die Option nirgends im Baum. Die Absicht ist dreifach belegt: Der Optionstext
-verspricht Schaltbarkeit, die Oblation-Zeile daneben (`:135`) prüft ihr Gegenstück
-`OblationLantern`, und `ChurinDRK.cs:173` prüft bei genau diesem Zweig `BlackLantern`. Es fehlt die
-Verdrahtung, nicht die Entwurfsabsicht.
-
-Verschärfend wirkt die Oberfläche: Weil der Schwellwert `Parent = nameof(BlackLantern)` trägt, wird
-er ausgeblendet, solange der Schalter aus ist. Der Nutzer sieht also weder den Schalter greifen noch
-die einzige Stellschraube des Zweigs, der trotzdem läuft.
-
-### Der teure Fall im Selbstschutz-Zweig
-
-Der Auslöser sagt „Verteidigung ist angebracht", nicht „es kommt Schaden in Höhe von 25 % der
-maximalen Gesundheit". Für Rampart, Dark Mind und Reprisal ist das unerheblich — sie kosten nichts
-außer ihrer Abklingzeit. The Blackest Night ist die einzige Aktion dieses Pfades mit einer
-Verbrauchsbedingung, und sie ist die einzige mit MP-Kosten. Trifft der Auslöser eine Lage, die die
-Schwelle oben nicht erreicht, sind 3000 MP ausgegeben und kein Dark Arts entstanden.
-
-Der Auftraggeber hat genau das im Spiel beobachtet: The Blackest Night wird bei wenigen Gegnern
-gezogen, die Barriere nicht aufgezehrt. Diese Beobachtung ist der Beleg, den eine rein statische
-Prüfung nicht liefern kann.
-
-## Die Regel
-
-Der Party-Zweig prüft künftig `BlackLantern`. Sonst ändert sich dort nichts — insbesondere bleibt
-`BlackLanternRatio` die Schwelle, und der Zweig bleibt an `AutoStatus.DefenseArea` gebunden.
-
-Der Selbstschutz-Zweig fragt `BlackestNightUsage`:
-
-| Stufe | Bedingung | Für wen |
-|---|---|---|
-| `WheneverDefensesOpen` (Voreinstellung) | wie bisher: keine zusätzliche Bedingung | unverändertes Verhalten für alle, die nichts umstellen |
-| `TankbusterOrHeavyPull` | `TankbusterOnMe` **oder** der gestaffelte Pull (vier Bedingungen unten) | wer die Fähigkeit als Tankbuster-Antwort und als eigenständiges Glied der Wall-to-Wall-Kette führt |
-| `TankbusterHeavyPullOrLowHealth` | zusätzlich: Gesundheit ≤ `BlackestNightHealthRatio` (Vorgabe 60 %) | wer sie auch als Notschild will |
-
-Der Pull-Zweig verlangt **vier** Dinge zugleich, und jedes hat seinen eigenen Grund:
-
-| Bedingung | Warum |
-|---|---|
-| `NumberOfHostilesInRange >= BlackestNightMinHostiles` (Vorgabe 4) | erst ab genug Gegnern erreicht der Schadensstrom die Verbrauchsrate |
-| `!HasMajorMitigation` | eine große Minderung senkt den Strom unter diese Rate |
-| `!GroupStunRunning()` | eine Gruppenbetäubung hält den Strom ganz an; die Barriere verfällt ungenutzt |
-| Reprisal ist erledigt | die kostenlose Gruppenminderung gehört zuerst gewirkt |
-
-Beim Tankbuster gilt keine davon: Dort ist Stapeln richtig, und eine einzelne Gelegenheit
-entscheidet. Der Notfallzweig bei niedriger Gesundheit wartet ebenfalls auf nichts.
-
-### Der zeitliche Verlauf eines Pulls, und warum die vier Bedingungen zusammenpassen
-
-Die Bedingungen sind nicht vier voneinander unabhängige Filter, sondern beschreiben zusammen den
-Zeitpunkt, an dem die Fähigkeit am meisten leistet.
-
-Während des Einsammelns läuft der Dunkelritter; die Gegner folgen verstreut, und nur ein Teil steht
-in Schlagreichweite. Die Gegnerzahl ist niedrig, der Schadensstrom ebenfalls — die
-Gegnerzahl-Bedingung hält die Barriere hier heraus. Am **Ende** des Pulls, wenn alles beieinander
-steht, ist die Zahl am größten und der Strom am stärksten. Genau dann hat der Dunkelritter seine
-großen Minderungen typischerweise noch nicht gezogen, weil zuvor kaum etwas auf ihn einschlug: Die
-Bedingung „keine große Minderung aktiv" ist also im selben Moment erfüllt, in dem die Gegnerzahl
-ihren Höchststand erreicht.
-
-Die Ausnahme ist die Betäubungsphase. Sie fällt oft mit demselben Moment zusammen, weil der Heiler
-zu betäuben beginnt, sobald die Gruppe steht — und für ihre Dauer ist die Barriere wertlos. Deshalb
-ist sie die einzige der vier Bedingungen, die aufschiebt statt auszuschließen: Sie endet mit der
-Betäubungsimmunität der Gegner, und danach steht der stärkste Moment des Pulls noch bevor.
-
-### Die Gegnerzahl: was sie leisten kann und was nicht
-
-Die Schwelle steht als eigene Rotationsoption, nicht als Ableitung der Mitigations-Sustain-Zahl.
-Beide beantworten verschiedene Fragen: Dort geht es um die Aufrechterhaltung eines Debuffs, hier um
-die Verbrauchsrate einer Barriere. Ein gemeinsamer Wert hätte die eine Frage der anderen
-untergeordnet.
-
-Was die Zahl leisten kann: Sie hält die Fähigkeit aus Lagen heraus, in denen sicher zu wenig Schaden
-kommt — zwei Gegner erreichen 3,6 % der maximalen Gesundheit pro Sekunde nur, wenn jeder 1,8 %
-beiträgt, was für gewöhnlichen Trash unplausibel ist.
-
-Was sie **nicht** leisten kann: garantieren, dass die Barriere aufgezehrt wird. Dafür müsste der
-Schaden je Gegner bekannt sein, und der hängt an Inhalt, Stufe und Gegnertyp. Vier Gegner sind die
-Vorgabe, weil sie rund 0,9 % je Gegner und Sekunde entsprechen; belegen lässt sich das hier nicht.
-Die Zahl ist deshalb einstellbar, und die Beobachtung im Spiel entscheidet: Bleibt die Barriere trotz
-Auslösung stehen, gehört sie höher; kommt die Fähigkeit im Pull kaum noch, niedriger.
-
-### Warum nicht jede Minderung sperrt
-
-Der Wunsch „im Pull soll die Fähigkeit allein für sich stehen" ist in der harten Fassung — keine
-andere Verteidigung darf laufen — nicht erfüllbar. Die Dauern der Minderungen eines Dunkelritters
-summieren sich, jede nur einmal gewirkt, auf mehr Zeit als ein Pull hat:
+**Keine große Minderung.** In der harten Fassung — keine andere Verteidigung darf laufen — ist die
+Forderung nicht erfüllbar. Die Dauern summieren sich, jede Fähigkeit nur einmal gewirkt:
 
 | Fähigkeit | Dauer | Minderung |
 |---|---|---|
-| Reprisal | 15 s (ab Stufe 98) | −10 % (Gegner) |
+| Reprisal | 15 s (ab Stufe 98) | −10 % (auf den Gegnern) |
 | Oblation | 2 × 10 s | −10 % |
 | Dark Mind | 10 s | −10 % / −20 % |
 | Dark Missionary | 15 s | −5 % / −10 % |
 | Rampart | 20 s | −20 % |
 | Shadow Wall / Shadowed Vigil | 15 s | −30 % / −40 % |
 
-Zusammen 95 Sekunden Abdeckung. Ein Wall-to-Wall-Pull dauert selten so lange; sperrte jede davon die
-Barriere, käme sie praktisch nie. Die Grenze verläuft deshalb dort, wo die Minderung die
-Verbrauchsrate ernsthaft verschiebt: Die schwachen (10 %) heben sie um ein Neuntel, die starken (ab
-20 %) um ein Viertel bis zwei Drittel. `StatusHelper.RampartStatus` enthält genau die starken —
-Rampart, Shadow Wall, Shadowed Vigil und die Entsprechungen der übrigen Tanks — und ist damit die
-richtige Liste, ohne dass eine neue Aufzählung entsteht.
+Zusammen **95 Sekunden** — mehr, als ein Wall-to-Wall-Pull dauert. Sperrte jede davon die Barriere,
+käme sie nie. Die Grenze verläuft deshalb bei der Wirkungsstärke: Die schwachen (10 %) heben die
+nötige Rate um ein Neuntel, die starken (ab 20 %) um ein Viertel bis zwei Drittel.
+`StatusHelper.RampartStatus` führt genau die starken, und dieselbe Liste tragen Shadow Wall und
+Shadowed Vigil bereits als `StatusProvide` (`DarkKnightRotation.cs:238`, `:404`) — die Staffelung
+ist im Projekt etabliert, The Blackest Night stand nur außerhalb. Über `StatusProvide` kann sie
+diese Staffelung nicht ausdrücken, weil ihr eigener Status eine Barriere ist und kein
+Minderungsstatus; deshalb steht die Prüfung in der Rotation.
 
-Oblation bleibt bewusst außen vor, und das hat neben der Rechnung einen zweiten Grund: Es steht im
-selben Pfad **vor** der Barriere. Würde es sperren, bliebe die Fähigkeit hinter der eigenen
-Vorgängerin hängen, sobald der Pfad einmal Oblation gewählt hat.
+Oblation bleibt zusätzlich aus einem zweiten Grund außen vor: Sie steht im selben Pfad **vor** der
+Barriere, die sonst hinter ihrer eigenen Vorgängerin hängen bliebe.
 
-### Reflexion zuerst: die Reihenfolge im Pfad ist teuer vor billig
+**Keine Gruppenbetäubung.** Eine Betäubung ist der Grenzfall der Minderung: Für ihre Dauer kommt
+nicht weniger Schaden, sondern gar keiner. Sanctus — Holy, ab Stufe 82 Holy III — hält alles im
+Umkreis von acht Yalm 4 Sekunden lang an (`ActionId.resx` 139, 25860), und der Weißmagier hält das
+im Trash absichtlich aufrecht: `WHM_Reborn.cs:498` streckt Sanctus über `SurveyStuns`, solange die
+Gegner betäubbar sind. Erst wenn sie `StunResistance` tragen (39, „Immune to stun effects"), läuft
+der Strom wieder.
 
-Der Pfad arbeitet seine Prioritäten von oben nach unten ab und gibt je Gelegenheit **eine** Aktion
-zurück. Die Reihenfolge in `DefenseSingleAbility` lautet: Oblation (10) · **The Blackest Night
-(20)** · Dark Mind · Shadowed Vigil/Shadow Wall · Rampart · … · **Reprisal (`:296`, `:301`)**.
+Wer betäuben kann, entscheidet über die Reichweite der Regel:
 
-Reprisal — im deutschen Client **Reflexion** — steht damit ganz am Ende, The Blackest Night an
-zweiter Stelle. Weil die Barriere nur 15 Sekunden Abklingzeit hat, gewinnt sie fast jede
-Gelegenheit gegen die Rollenaktion; Reprisal landet erst, wenn sie gerade nicht verfügbar ist. Das
-ist für einen Pull die verkehrte Reihenfolge: Reprisal senkt den Schaden **aller** Gegner um 10 %,
-gilt der ganzen Gruppe, kostet nichts als seine Abklingzeit und deckt 15 Sekunden ab — The Blackest
-Night kostet 3000 MP, schützt einen Charakter und hält 7 Sekunden.
+| Rolle | Aktion | Wirkung | Dauer |
+|---|---|---|---|
+| Heiler | Sanctus, Sanctus III — **nur Weißmagier** | Fläche, 8 Yalm | 4 s |
+| Tank | Schildhieb — nur Paladin | Einzelziel | 6 s |
+| Tank | **Tiefschlag — alle Tanks, auch der Dunkelritter** | Einzelziel | 5 s |
+| Nahkampf | Fußfeger | Einzelziel | 3 s |
+| Occult Crescent | Occult Falcon, Mineuchi, Variant Ultimatum | Fläche / Einzelziel | 4–6 s |
 
-Der Pull-Zweig verlangt deshalb zusätzlich, dass Reprisal bereits liegt, auf Abklingzeit ist oder
-mangels Stufe nicht zur Verfügung steht. Gegen einen Tankbuster gilt das nicht: Dort entscheidet
-eine einzelne Gelegenheit, und die Rangfolge zwischen beiden ist gleichgültig.
+Gelehrter, Astrologe und Weiser haben keine. Eine Fallunterscheidung nach Gruppenzusammensetzung
+braucht die Regel trotzdem nicht — sie misst den Status **auf den Gegnern**, ist ohne Betäubung
+also von selbst wirkungslos.
 
-**Abtausch (Shirk) gehört nicht in diese Kette.** Die Aktion überträgt Feindseligkeit auf ein
-anderes Gruppenmitglied und mindert keinen Schaden; RSR führt sie zentral über `AutoStatus.Shirk`
-(`CustomRotation_Ability.cs:123`) als Befehlsaktion. Für die Minderungsreihenfolge ist sie ohne
-Belang, für die Aufgabenteilung zweier Tanks im großen Pull sehr wohl — nur an anderer Stelle.
+Der Quantor folgt aus dieser Tabelle. Tiefschlag trägt der Dunkelritter selbst, und RSR wirkt es
+über den Unterbrechungspfad (`CustomRotation_Ability.cs:575`): „**irgendein** Gegner betäubt" hätte
+die eigene Unterbrechung die eigene Barriere sperren lassen, während sieben von acht Gegnern weiter
+zuschlagen. „**Alle** Gegner betäubt" fällt um, sobald ein Nachzügler unbetäubt dazustößt, obwohl
+der Strom erkennbar steht. Maßgeblich ist der **Anteil**: mindestens zwei betäubte Gegner und
+mindestens die Hälfte der Gegner in Reichweite. Gemessen wird über die Jobreichweite
+(`DataCenter.JobRange`, für Tanks drei Yalm) — dieselbe Menge, über die auch die Gegnerzahl zählt,
+denn beide Bedingungen beantworten dieselbe Frage.
 
-Beide Bedingungen stehen als `TankbusterOnMe` in `CustomRotation_OtherInfo.cs` und sind damit für
-jede Rotation verfügbar, nicht nur für diese. `IsHostileCastingTankBusterAtMe` ist dort bewusst
-gewählt und nicht `IsHostileCastingToTank`: Erstere Fassung (`DataCenter.cs:2097`) kennt den
-Rückfall „castet auf sein eigenes Ziel" nicht, sondern verlangt einen Tankbuster-Wirbel auf dem
-Spieler oder einen Treffer in der gelernten Liste. Das ist dieselbe Unterscheidung, die
-`AUDIT_LOG` C10 für diese beiden Größen bereits herausgearbeitet hat.
+Zwischen zwei Anwendungen von Sanctus läuft die Betäubung etwa einen globalen Cooldown lang aus; der
+Halt trägt deshalb noch drei Sekunden über diese Lücke, aber nur solange die Gegner überhaupt
+betäubbar sind. Mit ihrer Immunität endet er von selbst — „zurückhalten, bis die Betäubungen nicht
+mehr wirken" braucht keinen eigenen Zähler.
 
-**Der Opener bleibt unberührt.** Die Zeitpunktwahl gilt nur für den Selbstschutz-Zweig. Im
-Countdown gibt es keinen Tankbuster und keine niedrige Gesundheit; eine engere Stufe würde die
-Fähigkeit dort ausfallen lassen und damit Dark Arts für die Eröffnung verlieren — das Gegenteil des
-Zwecks.
+**Reprisal zuerst.** Der Pfad gibt je Gelegenheit **eine** Aktion zurück und arbeitet von oben nach
+unten: Oblation (10) · The Blackest Night (20) · Dark Mind · Shadowed Vigil/Shadow Wall · Rampart ·
+… · Reprisal (`:175`, `:180` im Flächenpfad, am Ende auch im Einzelpfad). Bei 15 Sekunden
+Abklingzeit gewinnt die Barriere fast jede Gelegenheit, und die Rollenaktion landet erst, wenn jene
+zufällig nicht verfügbar ist. Für einen Pull ist das die verkehrte Rangfolge:
 
-**Zum Persistenzvertrag.** Rotationskonfigurationen speichern Enums als **Namen**, nicht als
-Ordinalzahlen (`RotationConfigBase.cs:208`, `Enum.Parse(type, value)`). Die Reihenfolge der Stufen
-ist deshalb frei änderbar, ihre Bezeichner sind es nicht.
+| | Reprisal | The Blackest Night |
+|---|---|---|
+| Kosten | nur Abklingzeit | 3000 MP |
+| Wirkung | −10 % Schaden aller Gegner | Barriere über 25 % der maximalen Gesundheit |
+| Reichweite | ganze Gruppe | ein Charakter |
+| Dauer | 15 s | 7 s |
 
-**Zum MP-Haushalt.** Die Option „Keep at least 3000 MP" (`TheBlackestNight`) hält Vorrat für diese
-Fähigkeit zurück: `CheckDarkSide` gibt MP für Edge und Flood of Shadow erst oberhalb von 8500 frei
-(`DRK_Reborn.cs:525`). Wird The Blackest Night seltener gewirkt, bleibt die Reserve stehen, ohne
-etwas zu kosten — der Vorrat ist bei 10000 gedeckelt, und oberhalb von 8500 fließt er über Edge
-ohnehin ab. Dieselbe Eigenschaft behandelt bereits den Fall „Dark Arts liegt an, während The
-Blackest Night noch läuft" (`:515`), was zeigt, dass die Wechselwirkung zwischen Barriere und
-Auslöser dem ursprünglichen Autor bewusst war.
+Gegen einen Tankbuster ist die Rangfolge gleichgültig, weil dort eine einzelne Gelegenheit
+entscheidet — deshalb gilt auch diese Bedingung nur im Pull-Zweig.
 
-Die Voreinstellung bleibt das heutige Verhalten, weil der Nutzen der engeren Stufen für andere
-Spieler eine Annahme bleibt — die Beobachtung liegt für ein Nutzungsprofil vor, nicht allgemein.
-Das ist die Projektregel für Verhaltensänderungen ohne allgemeinen Nachweis.
+### Warum die vier Bedingungen zusammenpassen
+
+Sie sind keine vier unabhängigen Filter, sondern beschreiben denselben Zeitpunkt. Während des
+Einsammelns läuft der Dunkelritter, die Gegner folgen verstreut, und nur ein Teil steht in
+Schlagreichweite: wenig Gegner, schwacher Strom — die Gegnerzahl hält die Barriere heraus. Am
+**Ende** des Pulls steht alles beieinander, die Zahl ist am höchsten und der Strom am stärksten, und
+genau dann hat der Dunkelritter seine großen Minderungen typischerweise noch nicht gezogen, weil
+zuvor kaum etwas auf ihn einschlug. Die Betäubungsphase fällt oft mit diesem Moment zusammen, weil
+der Heiler zu betäuben beginnt, sobald die Gruppe steht; sie ist deshalb die einzige der vier
+Bedingungen, die **aufschiebt statt auszuschließen**.
+
+### Der Ausgangsbefund
+
+Drei Stellen wirken die Fähigkeit, und zwei davon trugen keine eigene Bedingung:
+
+| Weg | Fundstelle | Zustand vorher |
+|---|---|---|
+| Opener | `:92` | `remainTime <= 3f` im Countdown — Dark Arts steht zum Kampfbeginn bereit; unverändert |
+| Party-Schild | `:155` | Ziel unter `BlackLanternRatio`, **ohne** `BlackLantern` zu prüfen |
+| Selbstschutz | `:303` | **keine** eigene Bedingung, zweite Priorität nach Oblation |
+
+Beim Party-Zweig ist die Absicht dreifach belegt: Der Optionstext verspricht Schaltbarkeit, die
+Oblation-Nachbarzeile prüft ihr Gegenstück `OblationLantern`, und `ChurinDRK.cs:173` prüft
+`BlackLantern` am selben Zweig. Verschärfend blendet die Oberfläche den Schwellwert aus, solange der
+Schalter aus ist (`Parent = nameof(BlackLantern)`, `:21`) — die einzige Stellschraube des laufenden
+Zweigs war unsichtbar.
+
+Der Selbstschutz-Zweig öffnet mit `AutoStatus.DefenseSingle`, und dessen Tank-Zweig
+(`StateUpdater.cs:232-276`) genügt schon eine dieser Lagen: zwei Gegner in Nahreichweite, die den
+Spieler anvisieren — die begleitende Gesundheitsbedingung steht per Vorgabe auf 100 %
+(`Configs.cs:764`) und schränkt nichts ein —, oder ein einziges `IsHostileCastingToTank`, das über
+den Rückfall „castet auf sein eigenes Ziel" (`DataCenter.cs:2441`) jeden nicht unterbrechbaren
+Trash-Cast trifft, oder `BMRTankbusterImminent`. Für Rampart und Reprisal ist dieser Auslöser
+unbedenklich; The Blackest Night ist die einzige Aktion des Pfades mit Ressourcenkosten und
+Verbrauchsbedingung.
+
+`TankbusterOnMe` stützt sich deshalb auf `IsHostileCastingTankBusterAtMe` und
+`BMRTankbusterImminent`, nicht auf `IsHostileCastingToTank` — dieselbe Unterscheidung, die C10 für
+diese beiden Größen herausgearbeitet hat.
 
 ## Verworfene Optionen
 
-**Am zentralen Auslöser ansetzen.** `ShouldAddDefenseSingle` an eine Schadensabschätzung binden oder
-den Rückfall in `IsHostileCastingTank` entfernen. Verworfen: Der Auslöser öffnet für jeden Tank die
-gesamte Verteidigungskette. Eine Verschärfung dort nimmt Rampart und Reprisal Gelegenheiten weg, die
-sie zu Recht nutzen — und C9 belegt, wie eine an einer Stelle plausible Änderung an diesem Flag sich
-über die ganze Kette auswirkt.
+**Am zentralen Auslöser ansetzen.** `ShouldAddDefenseSingle` verschärfen oder den Rückfall in
+`IsHostileCastingTank` entfernen. Das öffnet und schließt die Verteidigungskette **aller** Tanks;
+C9 belegt, wie weit eine an einer Stelle plausible Änderung an diesem Flag reicht.
 
 **Den Verbrauch messen statt die Lage zu prüfen.** Der eingehende Schaden ist im Effekt-Handler
-sichtbar (`Watcher`, `damageEffect.value`), eine Regel „nur wenn der beobachtete Schadensfluss
-3,6 % der maximalen Gesundheit pro Sekunde übersteigt" wäre also grundsätzlich baubar. Verworfen aus
-demselben Grund wie der Messbaustein in `TODO.md`: Ein Ringpuffer über eingehende Treffer läuft in
-jedem Kampf für jeden Nutzer, der Nutzen entstünde bei einem Job in einer Fähigkeit, und der
-Schadensfluss der vergangenen Sekunden sagt nichts über die nächsten sieben.
+sichtbar (`Watcher`, `damageEffect.value`). Verworfen aus derselben Kostenrechnung, die den
+Messbaustein verworfen hat: Ein Ringpuffer läuft in jedem Kampf für jeden Nutzer, der Nutzen entsteht
+bei einem Job in einer Fähigkeit — und der Schadensfluss der letzten Sekunden sagt nichts über die
+nächsten sieben.
 
-**Eine reine MP-Schwelle.** „The Blackest Night nur oberhalb von *n* MP" ist billig, trifft aber die
-falsche Größe: Sie begrenzt, wie oft die Fähigkeit ausfällt, nicht ob sie sich lohnt. Bei vollem
-MP-Vorrat bliebe das beobachtete Verhalten unverändert.
+**Eine reine MP-Schwelle.** Begrenzt, wie oft die Fähigkeit ausfällt, nicht ob sie sich lohnt. Bei
+vollem Vorrat bliebe das beanstandete Verhalten unverändert.
 
-**Eine Sperre, solange Dark Arts anliegt.** Naheliegend, weil ein zweiter Auslöser nicht stapelt.
-Verworfen: Die Barriere selbst bleibt auch dann wertvoll, und die Sperre griffe ausgerechnet in der
-Lage, in der der Tank Schutz braucht. Der verlorene Auslöser ist der kleinere Schaden.
+**Eine Sperre, solange Dark Arts anliegt.** Der Auslöser stapelt nicht, die Barriere bleibt aber
+wertvoll — die Sperre griffe ausgerechnet dann, wenn der Tank Schutz braucht.
 
-**Eine Sperre gegen andere Barrieren.** Anders als die Minderungssperre nicht übernommen: The
-Blackest Night liegt in der Verbrauchsreihenfolge vor den Heilerschilden und wird deshalb von ihnen
-nicht verzögert (A36).
+**Eine Sperre gegen andere Barrieren.** Nicht nötig: The Blackest Night wird vor den Heilerschilden
+aufgezehrt (A36).
 
-**Die Staffelungsbedingung auf alle Lagen ausdehnen.** Sie gilt bewusst nur im Wall-to-Wall-Zweig.
-Auf den Tankbuster übertragen, würde sie die Fähigkeit ausgerechnet dann unterdrücken, wenn Rampart
-(20 s) oder Shadow Wall (15 s) läuft — Zustände, die über weite Strecken zutreffen —, obwohl der
-Einschlag die angehobene Schwelle mitnimmt. Das wäre C18 in neuer Gestalt: eine Aufhebungsregel, die
-für eine Auslöserklasse hergeleitet und ungeprüft auf eine andere übertragen wird.
+**Die Staffelungsbedingung auf alle Lagen ausdehnen.** Auf den Tankbuster übertragen, würde sie die
+Fähigkeit unterdrücken, während Rampart (20 s) oder Shadow Wall (15 s) laufen, obwohl der Einschlag
+die angehobene Schwelle mitnimmt — C18 in neuer Gestalt.
+
+**Die Reihenfolge im Pfad selbst umstellen**, statt Reprisal über eine Bedingung vorzuziehen. Der
+direktere Weg, aber er ändert das Verhalten für alle Nutzer in allen Lagen, während die Bedingung
+hinter der Option bleibt. In `TODO.md` mit Auflösungsbedingung geführt.
 
 **Nullvariante.** Lässt eine im Spiel beobachtete Fehlausgabe stehen und die Option `BlackLantern`
 wirkungslos.
 
 ## Konsequenzen
 
-**Endnutzer (N).** Ohne Umstellung ändert sich nur der Party-Zweig — und der nur für Nutzer, die
-`BlackLantern` ausgeschaltet gelassen haben, also in der Voreinstellung. Wer die Fähigkeit auf
-Gruppenmitglieder legen will, schaltet die Option ein und erhält das bisherige Verhalten.
+**Endnutzer (N).** Ohne Umstellung ändert sich nur der Party-Zweig, und der nur in der
+Voreinstellung, in der `BlackLantern` ausgeschaltet ist. Wer die Fähigkeit auf Gruppenmitglieder
+legen will, schaltet die Option ein und erhält das bisherige Verhalten.
 
-**Upstream-Pflege (U).** Beide Eingriffe liegen in `DRK_Reborn.cs`, einer Upstream-Datei. Die
-Verdrahtung ist eine Zeile; die Zeitpunktwahl fügt eine Option, ein Enum und eine Hilfsmethode
-hinzu. Nimmt Upstream die Verdrahtung selbst vor, entfällt unsere Zeile im Merge folgenlos.
+**Autoren abgeleiteter Rotationen (R).** `TankbusterOnMe`, `HasMajorMitigation` und die
+`SurveyStuns`-Überladung sind additiv; die vorhandene Signatur bleibt bestehen und delegiert. Kein
+Bruch, Eintrag in `CHANGELOG.md`.
 
-**Autoren abgeleiteter Rotationen (R).** Nicht betroffen: `DRK_Reborn` ist Teil des Plugins, nicht
-des Pakets `RotationSolver.Basic`. Keine Signatur ändert sich.
+**Upstream-Pflege (U).** Alle Eingriffe liegen in `DRK_Reborn.cs` und `CustomRotation_OtherInfo.cs`.
+Nimmt Upstream die Verdrahtung von `BlackLantern` selbst vor, entfällt unsere Zeile im Merge
+folgenlos.
 
-**Was das nicht leistet.** Die Frage, ab wie vielen Gegnern sich die Fähigkeit lohnt, bleibt ohne
-Messung des eingehenden Schadens unbeantwortet; die Regel weicht ihr aus, indem sie auf die Lage
-abstellt statt auf eine Zahl. Und ob die engeren Stufen im Spiel besser abschneiden, ist erst nach
-einer Beobachtung zu sagen — die Voreinstellung ist deshalb das alte Verhalten.
+**Randbedingungen.** Der Opener bleibt außen vor: Im Countdown gibt es weder Tankbuster noch Pull,
+eine engere Stufe würde dort nur Dark Arts für die Eröffnung kosten. Rotationskonfigurationen
+speichern Enums als **Namen**, nicht als Ordinalzahlen (`RotationConfigBase.cs:208`) — die
+Reihenfolge der Stufen ist frei, ihre Bezeichner sind Vertrag. Und der MP-Haushalt bleibt
+unberührt: `CheckDarkSide` gibt MP für Edge erst oberhalb von 8500 frei (`:525`) und behandelt den
+Fall „Dark Arts liegt an, während die Barriere noch läuft" bereits selbst (`:515`).
+
+**Was das nicht leistet.** Ob vier Gegner die Verbrauchsrate im gespielten Inhalt erreichen, ob eine
+halb betäubte Gruppe den Strom weit genug drückt und ob die engeren Stufen insgesamt besser
+abschneiden — all das ist ohne Spielbeobachtung nicht zu belegen. Deshalb ist die Voreinstellung das
+alte Verhalten, sind Gegnerzahl und Gesundheitsschwelle einstellbar, und deshalb steht der offene
+Rest in `TODO.md`.
