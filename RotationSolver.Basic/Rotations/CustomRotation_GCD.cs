@@ -127,7 +127,7 @@ public partial class CustomRotation
 					return act;
 				}
 
-				if (hardcastraisetype == HardCastRaiseType.HardCastNormal && SwiftcastPvE.Cooldown.IsCoolingDown)
+				if (hardcastraisetype == HardCastRaiseType.HardCastNormal && !SwiftcastComingForRaise)
 				{
 					if (RaiseSpell(out act, true))
 					{
@@ -137,7 +137,7 @@ public partial class CustomRotation
 
 				if (hardcastraisetype == HardCastRaiseType.HardCastSwiftCooldown)
 				{
-					if (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge)
+					if (!Service.Config.RaisePlayerBySwift || (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge))
 					{
 						if (RaiseSpell(out act, true))
 						{
@@ -179,7 +179,7 @@ public partial class CustomRotation
 
 				if (hardcastraisetype == HardCastRaiseType.HardCastOnlyHealerSwiftCooldown)
 				{
-					if (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge)
+					if (!Service.Config.RaisePlayerBySwift || (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge))
 					{
 						var deadhealers = new HashSet<IBattleChara>();
 						if (DataCenter.PartyMembers != null)
@@ -354,7 +354,7 @@ public partial class CustomRotation
 					return act;
 				}
 
-				if (hardcastraisetype == HardCastRaiseType.HardCastNormal && SwiftcastPvE.Cooldown.IsCoolingDown)
+				if (hardcastraisetype == HardCastRaiseType.HardCastNormal && !SwiftcastComingForRaise)
 				{
 					if (RaiseSpell(out act, true))
 					{
@@ -364,7 +364,7 @@ public partial class CustomRotation
 
 				if (hardcastraisetype == HardCastRaiseType.HardCastSwiftCooldown)
 				{
-					if (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge)
+					if (!Service.Config.RaisePlayerBySwift || (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge))
 					{
 						if (RaiseSpell(out act, true))
 						{
@@ -406,7 +406,7 @@ public partial class CustomRotation
 
 				if (hardcastraisetype == HardCastRaiseType.HardCastOnlyHealerSwiftCooldown)
 				{
-					if (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge)
+					if (!Service.Config.RaisePlayerBySwift || (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge))
 					{
 						var deadhealers = new HashSet<IBattleChara>();
 						if (DataCenter.PartyMembers != null)
@@ -522,6 +522,18 @@ public partial class CustomRotation
 		return null;
 	}
 
+	/// <summary>
+	/// Is the rotation still going to spend Swiftcast on the raise?
+	///
+	/// The hard cast branches used to ask <c>SwiftcastPvE.Cooldown.IsCoolingDown</c> instead, which
+	/// answers a different question and creates a state the branch cannot leave: with
+	/// <c>RaisePlayerBySwift</c> off, nothing ever spends Swiftcast on a raise, so it never enters
+	/// recovery, so the hard cast branch never fires either - and nobody gets raised at all. The
+	/// setting only promises not to spend Swiftcast on raises, not to stop raising.
+	/// </summary>
+	private bool SwiftcastComingForRaise =>
+		Service.Config.RaisePlayerBySwift && !SwiftcastPvE.Cooldown.IsCoolingDown;
+
 	private bool RaiseSpell(out IAction? act, bool mustUse)
 	{
 		act = null;
@@ -557,7 +569,17 @@ public partial class CustomRotation
 						return true;
 					}
 
-					if (Service.Config.RaisePlayerBySwift && !SwiftcastPvE.Cooldown.IsCoolingDown && WeaponRemain <= 0.5f && SwiftcastPvE.CanUse(out act))
+					// Report the raise, not Swiftcast. Weaving belongs to the ability path, and this
+					// used to return Swiftcast itself under WeaponRemain <= 0.5f - the one window in
+					// which DoAction refuses every ability (RSCommands_Actions.cs:78, mirrored at :46
+					// and in the ability dispatcher). The action showed up in the preview and was
+					// never cast, because selection and execution read the same value
+					// (WeaponRemain is DefaultGCDRemain) with mutually exclusive conditions.
+					// Naming the raise instead lets CustomRotation_Ability's raise branch see it as
+					// the next GCD and weave Swiftcast where the execution gate lets one through.
+					// Only while a GCD is still running: with the GCD free this would hard cast the
+					// raise and throw the instant away, and that decision belongs to mustUse below.
+					if (SwiftcastComingForRaise && !ActionHelper.CanUseGCD)
 					{
 						return true;
 					}

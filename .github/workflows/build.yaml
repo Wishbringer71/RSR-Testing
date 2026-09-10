@@ -26,6 +26,13 @@ jobs:
       - name: Check the MSBuild files are well-formed XML
         run: python3 .github/scripts/audit/check_msbuild_xml.py
 
+      # Fails when the GCD path picks an ability inside the window the execution gate refuses.
+      # Nothing fails at runtime when it does - the action shows up in the preview and is silently
+      # never cast - so only a static check notices. That is how raising stayed broken for over a
+      # year after a gate was added elsewhere.
+      - name: Check no GCD selection collides with the execution gate
+        run: python3 .github/scripts/audit/scan17.py
+
   Build:
     runs-on: windows-latest
     steps:

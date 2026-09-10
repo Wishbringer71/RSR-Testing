@@ -702,7 +702,15 @@ public partial class CustomRotation
 			}
 		}
 
-		if (Service.Config.RaisePlayerBySwift && DataCenter.CanRaise() && IActionHelper.IsLastActionGCD() && nextGCD.IsTheSameTo(true, ActionID.RaisePvE, ActionID.EgeiroPvE, ActionID.ResurrectionPvE, ActionID.AscendPvE))
+		// This is where Swiftcast for a raise is actually spent. The GCD path names the raise as the
+		// next GCD and this weaves the instant in front of it; it used to try that in the GCD path
+		// itself, in the one window where DoAction refuses every ability.
+		//
+		// Against the job's own Raise rather than a list of ids: the enumeration this replaced held
+		// four and was missing Verraise and Angel Whisper, and would have missed whatever comes next.
+		// Raise is what the rotation itself declares (CustomRotation_Actions.cs).
+		if (Service.Config.RaisePlayerBySwift && DataCenter.CanRaise() && IActionHelper.IsLastActionGCD()
+			&& Raise != null && nextGCD.IsTheSameTo(true, Raise))
 		{
 			if (SwiftcastPvE.CanUse(out act))
 			{

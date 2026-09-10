@@ -4,6 +4,36 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 ## Defekte
 
+### `ObjectHelper.CanBeRaised` prüft für jeden Job die Aktion des Weißmagiers · N, R
+
+`ObjectHelper.cs:657` fragt `ActionManager.CanUseActionOnTarget((uint)ActionID.RaisePvE, …)` — und zwar unabhängig davon, welcher Job gerade spielt. Gelehrter, Astrologe, Weiser, Rotmagier, Beschwörer und Blaumagier haben eine andere Wiederbelebung; `RaisePvE` ist für sie keine erlernte Aktion. Das Ergebnis dieser Prüfung entscheidet in `TargetFilter.GetDeath` darüber, ob ein Toter überhaupt als Wiederbelebungsziel geführt wird, und damit über `DataCenter.DeathTarget` und `AutoStatus.Raise`.
+
+Wie die native Funktion auf eine nicht erlernte Aktion antwortet, ist offline nicht entscheidbar und extern nicht dokumentiert (Websuche ohne belastbares Ergebnis). Die richtige Prüfung wäre die Wiederbelebung des eigenen Jobs, die die Rotationsbasis als `Raise` bereits führt — `ObjectHelper` ist aber jobunabhängig und hat keinen Zugriff darauf, weshalb die Behebung eine Signaturänderung oder eine Durchreichung verlangt.
+
+**Auflösungsbedingung:** Laufzeitbeobachtung mit einem Rezzer, der nicht Weißmagier ist. Bleibt die Wiederbelebung dort vollständig aus, ist der Befund bestätigt und die Behebung dringend.
+
+### `SwiftcastBuffer` hat keinen Leser, und ihre Absicht ist überholt · N
+
+`Configs.cs:978` definiert die Einstellung (0,6 s, eigene Oberfläche, eigene Dokumentation „how early before next GCD should RSR use swiftcast for raise"). Eine Volltextsuche über den Baum findet genau diese eine Fundstelle: Sie wird nirgends gelesen.
+
+Sie ist nicht nur unverbunden, sondern in ihrer dokumentierten Bedeutung unerfüllbar geworden. Sie besagt, Spontanität solle erst fallen, wenn nur noch `SwiftcastBuffer` Restzeit auf dem GCD liegt — bei 0,6 s liegt dieses Fenster fast vollständig, bei 0 vollständig in dem Bereich, den `RSCommands_Actions.cs:78` für Fähigkeiten sperrt. Sie zu verdrahten hieße, den in `docs/rotation-flow/11-raise-dispatch.md` behobenen Defekt an einer zweiten Stelle neu zu bauen; deshalb ist sie bei der dortigen Behebung bewusst unangetastet geblieben.
+
+**Auflösung:** entweder entfernen — dann ist zu prüfen, ob der Name in gespeicherter Nutzerkonfiguration liegt und ein Migrationspfad nötig ist — oder als **Untergrenze** im Einschiebefenster neu definieren, also „wie weit oberhalb der Sperre darf Spontanität frühestens fallen". Die zweite Lesart erhält die Absicht des Autors und ist mit der Sperre vereinbar. Beides ist eine Entscheidung über Nutzerkonfiguration und gehört nicht in den Behebungsvorgang.
+
+### `IBaseAction.IgnoreClipping` wird geschrieben und nirgends gelesen · N, R
+
+`IBaseAction.cs:14` definiert das Flag, `CustomRotation_Invoke.cs` setzt es an sechs Stellen (`:212`, `:228`, `:238`, `:243`, `:257`). Kein einziger Leser im gesamten Baum. Der Name benennt genau den Mechanismus, der beim Wiederbelebungsdefekt gefehlt hat: die Anti-Clipping-Sperre für einen Einzelfall aufheben.
+
+Nicht behoben, weil der Wirkungsbereich den Vorgang sprengt. Das Flag wird in `Invoke` breit gesetzt, auch für Fälle ohne Bezug zur Wiederbelebung; ein Leser in `RSCommands_Actions.DoAction` würde die Sperre praktisch überall aushebeln und damit das Verhalten jeder Rotation ändern. Die Behebung verlangt zuerst eine Entscheidung, für welche Aktionen das Flag gelten soll.
+
+**Auflösungsbedingung:** eine Erhebung, welche der sechs Setzstellen eine Ausnahme rechtfertigen, und eine Engführung des Flags auf diese.
+
+### `GetPriorityDeathTarget` prüft `deathTanks.Count > 1`, wo `> 0` gemeint ist · N
+
+`TargetUpdater.cs:385`. Folgenlos für die Frage, **ob** wiederbelebt wird — der Rückfallzweig fünfzehn Zeilen tiefer findet denselben Tank. Die Rangfolge kippt aber: Liegen zwei Tanks, kommt der Tank vor dem Heiler; liegt einer, kommt der Heiler zuerst. Eine der beiden Rangfolgen ist ungewollt.
+
+Nicht mitbehoben, weil die Behebung eine Rangfolgeentscheidung ist und nicht aus dem Code hervorgeht, welche der beiden gemeint war. **Empfehlung:** Tank vor Heiler in beiden Fällen, weil der Rückfallzweig diese Reihenfolge bereits ausschreibt und die Sonderbehandlung damit nur einen Fall davon vorwegnimmt.
+
 ### ChurinDNC wertet die BMR-Downtime ohne Vorzeichenprüfung aus · N, U
 
 `ChurinDNC.cs:777-843` (Upstream) liest `BMRNextDowntimeIn`/`-EndIn` ohne Vorzeichenprüfung. BossModReborn liefert diese Werte als `(Aktivierung − jetzt)`, sie sind während einer laufenden Downtime also negativ, und die Rotation kann „Downtime läuft" nicht von „Downtime kommt gleich" unterscheiden: `if (BMRNextDowntimeIn >= 15f) return;` kehrt dann nicht zurück, und die folgende `<`-Bedingung ist immer erfüllt. Die Normalisierung der Schadensvorhersagen ist erledigt (AUDIT_LOG A11); hier wäre ein Filter falsch, weil das Vorzeichen die Information trägt.
