@@ -32,7 +32,7 @@ RECAST = 120.0
 DEMI_STAND = 15.0
 DEMI_EVERY = 60.0
 GUARD_LEAD = 5.0
-FIGHT = 600.0
+FIGHT = 1200.0          # a normal raid fight; --long runs 40 minutes instead
 STEP = 0.1
 # Comparisons need a tolerance in the order of the time grid: one step is STEP/FIGHT of the result,
 # and a boundary condition can land on either side of a step. Anything tighter tests the grid, not
@@ -65,14 +65,19 @@ def in_window(t, offset, mode):
     return index % 2 == 0  # Solar sits on every second demi
 
 
-def simulate(n, mode, drift):
+def simulate(n, mode, drift, fight=None, window=None):
     """Return the fraction of the fight covered by a Searing Light.
+
+    `window` restricts the measurement to (start, end) seconds without changing the run, which is
+    how the settling behaviour is read: compare the first two minutes against the last two.
 
     For 'informed' (V5) each Summoner also keeps what every client can actually observe: the status
     carries its source, so once another Summoner has cast, his earliest possible return is known -
     that cast plus the recast. The rule is to hold to the demi windows as in V2, and to cast outside
     one only when nobody else can possibly cover the coming gap.
     """
+    fight = FIGHT if fight is None else fight
+    lo, hi = window if window else (0.0, fight)
     offsets = [0.0] * n if n == 1 or drift == 0 else [drift * i / (n - 1) for i in range(n)]
     ready = [0.0] * n          # earliest time each Summoner may cast again
     buff_until = -1.0          # when the running buff expires
@@ -83,8 +88,8 @@ def simulate(n, mode, drift):
     seen_ready = [None] * n
 
     t = 0.0
-    while t < FIGHT:
-        if buff_until > t:
+    while t < fight:
+        if buff_until > t and lo <= t < hi:
             covered += STEP
 
         remaining = buff_until - t
@@ -121,7 +126,7 @@ def simulate(n, mode, drift):
 
         t += STEP
 
-    return covered / FIGHT
+    return covered / (hi - lo)
 
 
 def self_test():
@@ -175,34 +180,60 @@ def self_test():
 def main():
     self_test()
 
+    long_fight = '--long' in sys.argv
+    fight = 2400.0 if long_fight else FIGHT
     as_csv = '--csv' in sys.argv
+    upto = 9 if '--all' in sys.argv else 6   # regular parties hold at most five Summoners
+
     if as_csv:
         print('summoners,drift,solar,demi,anytime,informed')
+
+    print('Fight length: %.0f minutes%s\n'
+          % (fight / 60, '' if long_fight else '  (--long for 40 minutes)'))
 
     for drift, label in ((0, 'synchronised (clean pull)'),
                          (30, 'half drifted'),
                          (60, 'fully drifted (deaths, movement, stuns)')):
         if not as_csv:
             print('%s' % label)
-            print('  %-11s %-20s %-15s %-15s %s'
-                  % ('Summoners', 'Solar only', 'any demi (V2)', 'anytime (V4)', 'informed (V5)'))
-        for n in range(1, 9):
-            narrow = simulate(n, 'solar', drift=drift)
-            wide = simulate(n, 'demi', drift=drift)
-            free = simulate(n, 'anytime', drift=drift)
-            informed = simulate(n, 'informed', drift=drift)
+            print('  %-11s %-13s %-15s %-15s %-15s %s'
+                  % ('Summoners', 'Solar only', 'any demi (V2)', 'anytime (V4)', 'informed (V5)',
+                     'ceiling'))
+        for n in range(1, upto):
+            narrow = simulate(n, 'solar', drift, fight)
+            wide = simulate(n, 'demi', drift, fight)
+            free = simulate(n, 'anytime', drift, fight)
+            informed = simulate(n, 'informed', drift, fight)
+            ceiling = min(1.0, n * BUFF / RECAST)
             if as_csv:
                 print('%d,%d,%.3f,%.3f,%.3f,%.3f' % (n, drift, narrow, wide, free, informed))
             else:
-                print('  %-11d %-20s %-15s %-15s %s'
+                print('  %-11d %-13s %-15s %-15s %-15s %s'
                       % (n, '%.0f%%' % (narrow * 100), '%.0f%%' % (wide * 100),
-                         '%.0f%%' % (free * 100), '%.0f%%' % (informed * 100)))
+                         '%.0f%%' % (free * 100), '%.0f%%' % (informed * 100),
+                         '%.0f%%' % (ceiling * 100)))
         if not as_csv:
             print()
 
-    if not as_csv:
-        print('Charge ceiling: n x 20s per 120s, so 100%% needs six Summoners casting on time.')
-        print('Coverage is not damage - a buff outside the two-minute window buffs less of it.')
+    if as_csv:
+        return 0
+
+    # Settling: a long fight can afford an untidy start if the pattern improves.
+    print('Settling - first two minutes against the last two, synchronised pull')
+    print('  %-11s %-22s %s' % ('Summoners', 'any demi (V2)', 'informed (V5)'))
+    for n in range(2, upto):
+        early_v2 = simulate(n, 'demi', 0, fight, window=(0.0, 120.0))
+        late_v2 = simulate(n, 'demi', 0, fight, window=(fight - 120.0, fight))
+        early_v5 = simulate(n, 'informed', 0, fight, window=(0.0, 120.0))
+        late_v5 = simulate(n, 'informed', 0, fight, window=(fight - 120.0, fight))
+        print('  %-11d %-22s %s'
+              % (n, '%.0f%% -> %.0f%%' % (early_v2 * 100, late_v2 * 100),
+                 '%.0f%% -> %.0f%%' % (early_v5 * 100, late_v5 * 100)))
+
+    print()
+    print('Ceiling: n x 20s per 120s. A regular eight-man party holds four to five damage jobs, so')
+    print('five Summoners is the practical maximum; six and above need --all.')
+    print('Coverage is not damage - a buff outside the two-minute window buffs less of it.')
     return 0
 
 

@@ -2037,6 +2037,28 @@ Die Behebung stammt aus PR #7 und war mit dem Revert verlorengegangen; sie ist z
 
 ---
 
+### A71 · Der maßgebliche Bereich ist eins bis fünf, und das kehrt die Empfehlung um (11.09.2026)
+
+**Anlass:** Der Auftraggeber hat den Betrachtungsbereich begründet eingegrenzt und eine zweite Bedingung gelockert. Eine reguläre Achtergruppe trägt vier bis fünf Schadensklassen, eine Vierergruppe zwei; sechs bis acht Beschwörer sind Sondergruppen außerhalb des regulären Spiels. Und: Die Verteilung muss sich nicht sofort einstellen — Raidkämpfe dauern bis zu zwanzig Minuten, Ultimates bis zu vierzig, die Ablösezeiten dürfen sich einpendeln.
+
+**Die Eingrenzung kehrt die Bewertung von V5 um.** In A70 war V5 mit drei Gründen abgelehnt worden; zwei davon fallen mit dem Bereich weg. Der Einbruch auf 60 % trat bei sieben und acht Beschwörern auf — kein regulärer Spielbetrieb. Und „der Gewinn liegt bei drei bis sechs" ist kein Einwand mehr, wenn der Bereich bei fünf endet.
+
+**Was die Messung im Bereich eins bis fünf zeigt:** V5 trifft die Obergrenze der Ladungen auf den Punkt — 17, 33, 50, 66, 83 Prozent gegen eine Obergrenze von 17, 33, 50, 67, 83. Mehr ist aus den vorhandenen Ladungen nicht zu holen. V2 bleibt im synchronen Fall ab zwei Beschwörern bei 33 %, liegt ab drei also unter dem Erreichbaren, bei fünf Beschwörern um fünfzig Prozentpunkte.
+
+**Zweiter Befund derselben Messung, gegen die Erwartung:** Versatz nützt nur dem heutigen Code. Bei voll auseinandergelaufenen Rotationen liegen alle vier Regeln gleichauf — wo die Fenster ohnehin gestreut sind, finden die Erweiterungen nichts mehr vor. Umgekehrt heißt das, dass V5 genau dort stark ist, wo der heutige Code am schwächsten ist: beim sauberen, synchronen Pull, also zu Beginn jedes Kampfes.
+
+**Zum Einpendeln, gemessen über zwanzig und über vierzig Minuten:** Es findet nicht statt, und es ist auch nicht nötig. Erste zwei Minuten und letzte zwei Minuten liefern bei jeder Regel und jeder Gruppengröße denselben Wert; V5 liegt von der ersten Periode an auf seinem Endwert. Bei V2 ändert sich ebenfalls nichts, aber aus dem gegenteiligen Grund — bei festem Versatz bleibt das Muster, in dem es begonnen hat.
+
+**Was das Modell dabei nicht kann, und das ist zu benennen:** Es hält den Versatz über den ganzen Lauf fest. Real wächst er mit der Kampfdauer, weil jede Mechanik und jeder Tod die Zyklen weiter verschiebt. Eine Gruppe wandert im Lauf eines langen Kampfes also von der synchronen in die versetzte Tabelle. Die Richtung steht fest — sie verbessert die Lage —, das Tempo nicht. Der lange Kampf ist damit der Fall, der sich von selbst bessert; der Anfang jedes Kampfes ist der, der es nicht tut.
+
+**Neue Empfehlung, in zwei Stufen:** Erst V1 und V2 — ohne Zustandshaltung, wirksam im häufigsten Fall von ein bis zwei Beschwörern, einzeln im Spiel beurteilbar. Dann V5 darauf, das im Bereich drei bis fünf die Obergrenze erreicht. V5 ist als „V2 plus eine zusätzliche Erlaubnis" gebaut und im Modell auch so gemessen, die Stufen sind also unabhängig prüfbar.
+
+**Erfasst, nicht behoben:** V5 hängt daran, den fremden Buff zu sehen. Searing Light reicht dreißig Yalm; zündet ein Beschwörer weiter entfernt, fehlt die Beobachtung. Die Fehlerrichtung ist die zurückhaltende — ein bekannter Beschwörer, dessen Zündung verpasst wurde, gilt als bereit und hält die eigene Zündung zurück.
+
+**Erreichter Prüfgrad:** Modellrechnung über zehn, zwanzig und vierzig Minuten mit Selbsttest gegen vier Invarianten. Keine Laufzeitbeobachtung. Das Modell zählt Sekunden mit Buff, nicht Schaden.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.

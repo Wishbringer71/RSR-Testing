@@ -104,17 +104,42 @@ künftig im schwächeren Demi zünden und dauerhaft aus dem Zwei-Minuten-Takt fa
 unverändert zu übernehmen ist deshalb **nicht** der Weg — es brächte zusätzlich eine Bindung an
 `AutoStatus.Burst` mit, also zwei Verhaltensänderungen in einer Zeile.
 
-**Empfehlung:** beide umsetzen, auf einem eigenen Zweig. Nicht im laufenden Vorgang, weil
-`claude/raise-swiftcast-weave-2` fünf ungemessene Eingriffe am Wiederbelebungspfad trägt und
-sachfremde Änderungen deren Spieltest unauswertbar machen.
+**V5 — die Lücke schließen, die V2 offenlässt.** Zusätzlich außerhalb eines Beschwörungsfensters
+zünden, wenn kein anderer *bekannter* Beschwörer die kommende Lücke decken kann und der Buff
+vollständig abgelaufen ist. Die Information ist verfügbar: `IStatus.SourceId` benennt den Urheber,
+`StatusHelper.PlayerGetStatus` liest ihn bereits. Man weiß zwar nicht, wann ein anderer zünden wird,
+aber ab seiner ersten Zündung, wann er frühestens wieder kann.
 
-**Abgelehnt, beide gemessen statt argumentiert** (`.github/scripts/audit/searing_light_coverage.py`):
-Die Zündung ganz von der Beschwörung zu lösen ist bei **zwei** Beschwörern schlechter als V2 (29
-gegen 33 %) und gewinnt erst ab drei. Und die informierte Regel — außerhalb eines Fensters zünden,
-wenn kein anderer bekannter Beschwörer die Lücke decken kann, ableitbar aus `IStatus.SourceId` —
-ist bei drei bis sechs Beschwörern die beste von allen (bis 99 %), bricht bei sieben auf 60 % ein
-und bringt im Nutzungsprofil von einem bis zwei Beschwörern gegenüber V2 nichts. Ihr Preis wäre ein
-Gedächtnis über Frames hinweg mit Rücksetzpunkten bei Kampf-, Gruppen- und Zonenwechsel.
+**Gemessen** (`.github/scripts/audit/searing_light_coverage.py`, synchroner Pull, Bereich der
+regulären Gruppe):
+
+| Beschwörer | heute | V2 | V5 | Obergrenze |
+|---|---|---|---|---|
+| 1 | 17 % | 17 % | 17 % | 17 % |
+| 2 | 17 % | 33 % | 33 % | 33 % |
+| 3 | 17 % | 33 % | **50 %** | 50 % |
+| 4 | 17 % | 33 % | **66 %** | 67 % |
+| 5 | 17 % | 33 % | **83 %** | 83 % |
+
+V5 trifft die Obergrenze der Ladungen. Sechs und mehr Beschwörer sind kein regulärer Spielbetrieb
+und bestimmen die Entscheidung nicht — dort bricht V5 ein, im maßgeblichen Bereich nicht.
+
+**Empfehlung: zwei Stufen, auf einem eigenen Zweig.** Erst V1 und V2 — ohne Zustandshaltung, wirksam
+im häufigsten Fall, einzeln beurteilbar. Dann V5 darauf; es ist als „V2 plus eine Erlaubnis" gebaut,
+die Stufen sind also unabhängig prüfbar. Nicht im laufenden Vorgang, weil
+`claude/raise-swiftcast-weave-2` fünf ungemessene Eingriffe am Wiederbelebungspfad trägt.
+
+**Preis von V5:** ein Gedächtnis über Frames hinweg — beobachtete Zündungen je Urheber, mit
+Rücksetzpunkten bei Kampf-, Gruppen- und Zonenwechsel. Und eine Lücke: Zündet ein Beschwörer weiter
+als dreißig Yalm entfernt, fehlt die Beobachtung. Die Fehlerrichtung ist die zurückhaltende.
+
+**Abgelehnt:** die Zündung ganz von der Beschwörung zu lösen. Gemessen bei zwei Beschwörern
+schlechter als V2 (29 gegen 33 %) und in keiner Gruppengröße des maßgeblichen Bereichs die beste
+Wahl.
+
+**Kein Einpendeln nötig und keines vorhanden:** Über zwanzig wie über vierzig Minuten liefern erste
+und letzte zwei Minuten denselben Wert. Was die Kampfdauer real bewirkt — wachsender Versatz — kann
+das Modell nicht zeigen; die Richtung steht fest, das Tempo nicht.
 
 **Erfasst, nicht bearbeitet:** `ChurinSMN.cs:1015` trägt denselben V1-Befund; beim Zündfenster ist die
 fremde Rotation bereits weiter (`:948` nutzt `BahamutBurst`), allerdings ohne Gruppenprüfung.

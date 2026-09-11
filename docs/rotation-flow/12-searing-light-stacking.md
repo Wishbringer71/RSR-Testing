@@ -21,8 +21,12 @@ mit einer Bedingung, einer ist abzulehnen:
 |---|---|---|
 | **V1** | Den Searing Light eines anderen Beschwörers als Buff-Fenster für die eigenen Aetherflow-Ausgaben werten | umsetzen |
 | **V2** | Das Zündfenster auf alle großen Beschwörungen erweitern, sobald ein zweiter Beschwörer in der Gruppe ist | umsetzen, mit Gruppenprüfung als Schalter |
-| **V4** | Die Bindung an die Beschwörung ganz lösen, Zündung bei Kampf und vorhandenem Ziel | gemessen, im Nutzungsprofil nicht besser — nicht umsetzen |
-| **V5** | Zusätzlich außerhalb eines Fensters zünden, wenn kein anderer bekannter Beschwörer die Lücke decken kann | gemessen, bei drei bis sechs Beschwörern am besten, bricht bei sieben ein — nicht umsetzen |
+| **V4** | Die Bindung an die Beschwörung ganz lösen, Zündung bei Kampf und vorhandenem Ziel | gemessen, nie die beste Wahl — nicht umsetzen |
+| **V5** | Zusätzlich außerhalb eines Fensters zünden, wenn kein anderer bekannter Beschwörer die Lücke decken kann | **erreicht im gesamten realistischen Bereich die theoretische Obergrenze** — als zweite Stufe umsetzen |
+
+**Der maßgebliche Bereich ist eins bis fünf.** Eine reguläre Achtergruppe trägt vier bis fünf
+Schadensklassen, eine Vierergruppe zwei. Sechs und mehr Beschwörer sind Sondergruppen außerhalb des
+regulären Spiels; sie bleiben im Modell abrufbar (`--all`), bestimmen aber keine Entscheidung.
 
 **Der begrenzende Faktor ist nicht die Wiederholzeit, sondern das Zündfenster.** Sechs Beschwörer
 haben zusammen genug Ladungen für lückenlose Abdeckung (6 × 20 s = 120 s). Dass sie nicht ankommt,
@@ -76,7 +80,7 @@ fremde Buff. Sein Gegenstück `HasSearingLight` (`SummonerRotation.cs:271`) ruft
 `PlayerHasStatus(true, …)` und zählt nur den eigenen — auch das ist für seine ursprüngliche Frage
 richtig. Aus dem Zusammentreffen beider entsteht der Befund von V1.
 
-## Die Fälle von einem bis acht Beschwörern, gemessen
+## Die Fälle von einem bis fünf Beschwörern, gemessen
 
 Die Prozentzahlen früherer Fassungen waren Kopfrechnungen, und eine davon war falsch. Sie stammen
 jetzt aus `.github/scripts/audit/searing_light_coverage.py`, das die Regeln durchrechnet statt ihr
@@ -84,33 +88,38 @@ Ergebnis abzuschätzen: 20 s Wirkung, 120 s Wiederholzeit ab Zündung, Überschr
 Beschwörungen 15 s alle 60 s in der Reihenfolge Solar, Bahamut, Solar, Phoenix, und die Sperre, die
 fünf Sekunden vor Buff-Ende öffnet. Gemessen wird der Anteil der Kampfzeit mit laufendem Buff.
 
+Gemessen wird bis fünf Beschwörer, weil dort die reguläre Gruppe endet. Die Spalte „Obergrenze" ist
+das, was die Ladungen überhaupt hergeben: *n* × 20 s je 120 s.
+
 **Synchrone Rotationen — der saubere Pull:**
 
-| Beschwörer | heute (nur Solar) | V2 (alle Demis) | V4 (ohne Bindung) |
-|---|---|---|---|
-| 1 | 17 % | 17 % | 17 % |
-| 2 | 17 % | **33 %** | 29 % |
-| 3 | 17 % | 33 % | 42 % |
-| 4 | 17 % | 33 % | 54 % |
-| 5 | 17 % | 33 % | 67 % |
-| 6 | 17 % | 33 % | 79 % |
-| 7 | 17 % | 33 % | 92 % |
-| 8 | 17 % | 33 % | **100 %** |
+| Beschwörer | heute | V2 | V4 | **V5** | Obergrenze |
+|---|---|---|---|---|---|
+| 1 | 17 % | 17 % | 17 % | 17 % | 17 % |
+| 2 | 17 % | 33 % | 29 % | **33 %** | 33 % |
+| 3 | 17 % | 33 % | 42 % | **50 %** | 50 % |
+| 4 | 17 % | 33 % | 54 % | **66 %** | 67 % |
+| 5 | 17 % | 33 % | 67 % | **83 %** | 83 % |
 
-**Voll auseinandergelaufene Rotationen — nach Toden, Bewegung, Betäubungen:**
+**Voll auseinandergelaufene Rotationen:**
 
-| Beschwörer | heute (nur Solar) | V2 (alle Demis) | V4 (ohne Bindung) |
-|---|---|---|---|
-| 1 | 17 % | 17 % | 17 % |
-| 2 | 33 % | 33 % | 33 % |
-| 3 | 50 % | 50 % | 50 % |
-| 4 | 66 % | 66 % | 66 % |
-| 5 | 67 % | 67 % | 67 % |
-| 6 | 67 % | 74 % | 79 % |
-| 7 | 67 % | **90 %** | 92 % |
-| 8 | 67 % | **96 %** | 100 % |
+| Beschwörer | heute | V2 | V4 | V5 | Obergrenze |
+|---|---|---|---|---|---|
+| 1 | 17 % | 17 % | 17 % | 17 % | 17 % |
+| 2 | 33 % | 33 % | 33 % | 33 % | 33 % |
+| 3 | 50 % | 50 % | 50 % | 50 % | 50 % |
+| 4 | 66 % | 66 % | 66 % | 66 % | 67 % |
+| 5 | 67 % | 67 % | 67 % | 67 % | 83 % |
 
-Die Zwischenstufe (halb auseinandergelaufen) liegt dazwischen; das Skript gibt sie mit aus.
+**Das auffälligste Ergebnis steht in der ersten Tabelle: V5 trifft die Obergrenze auf den Punkt.**
+Bei einem bis fünf Beschwörern holt die Regel aus den vorhandenen Ladungen heraus, was überhaupt
+darin steckt. Mehr ist nicht möglich, ohne dass jemand zusätzliche Ladungen bekäme.
+
+**Und das zweitauffälligste: Versatz hilft nur dem heutigen Code.** In der zweiten Tabelle liegen
+alle vier Regeln gleichauf. Wo die Beschwörungsfenster ohnehin gestreut sind, trifft schon die enge
+Regel die Lücken; die Erweiterungen finden nichts mehr vor. Umgekehrt heißt das: **V5 ist genau dort
+stark, wo der heutige Code schwach ist** — beim sauberen, synchronen Pull, also dem Regelfall zu
+Beginn eines Kampfes.
 
 ### Was die Zahlen sagen
 
@@ -127,12 +136,14 @@ Beschwörern und heutigem Code steigt die Abdeckung allein durch auseinandergela
 17 % auf 67 %. Der Grund: Gestreute Beschwörungsfenster treffen die Lücken zwischen den Buffs, die
 bei synchronem Pull sämtlich unbesetzt bleiben.
 
-**Mehr Beschwörer heißt nicht immer mehr Abdeckung.** Bei halbem Versatz liefert V2 mit sieben
-Beschwörern 84 % und mit acht 83 %. Das ist kein Rechenfehler des Modells, sondern gierige Zuteilung
-und damit ein echter Effekt: Wer zuerst in einem Fenster steht, zündet — und kann damit jemandem
-zuvorkommen, dessen eigene Wiederholzeit eine spätere Lücke gedeckt hätte. Kein Client sieht die
-Wiederholzeiten der anderen und kann zurückstehen. Der Selbsttest des Skripts prüft diese
-Eigenschaft deshalb ausdrücklich **nicht**; eine frühere Fassung behauptete sie und war widerlegt.
+**Mehr Beschwörer heißt nicht immer mehr Abdeckung.** Außerhalb des regulären Bereichs zeigt sich
+das deutlich: Bei halbem Versatz liefert V2 mit sieben Beschwörern 84 % und mit acht 83 %, und V5
+bricht bei sieben von 99 % auf 60 % ein. Das ist kein Rechenfehler, sondern gierige Zuteilung — wer
+zuerst in einem Fenster steht, zündet, und kann jemandem zuvorkommen, dessen Wiederholzeit eine
+spätere Lücke gedeckt hätte. Für die Entscheidung ist das ohne Belang, weil sechs und mehr
+Beschwörer keine reguläre Gruppe sind; für den Selbsttest des Skripts ist es entscheidend, der diese
+Eigenschaft deshalb ausdrücklich **nicht** prüft. Eine frühere Fassung behauptete sie und war
+widerlegt.
 
 ## Die Gruppenzusammensetzung als Schalter
 
@@ -207,32 +218,56 @@ wird für wenige Sekunden Nettogewinn verbrannt. Was innerhalb eines Fensters al
 sinnvoll ist, ist außerhalb Verschwendung. Die Regel verlangt deshalb, dass der Buff **vollständig
 abgelaufen** ist.
 
-**Gemessene Abdeckung (synchroner Pull):**
+**Gemessene Abdeckung im maßgeblichen Bereich, synchroner Pull:**
 
-| Beschwörer | V2 | V4 | **V5** |
-|---|---|---|---|
-| 2 | 33 % | 29 % | 33 % |
-| 3 | 33 % | 42 % | **50 %** |
-| 4 | 33 % | 54 % | **66 %** |
-| 5 | 33 % | 67 % | **83 %** |
-| 6 | 33 % | 79 % | **99 %** |
-| 7 | 33 % | 92 % | 60 % |
-| 8 | 33 % | 100 % | 60 % |
+| Beschwörer | V2 | V4 | **V5** | Obergrenze |
+|---|---|---|---|---|
+| 2 | 33 % | 29 % | 33 % | 33 % |
+| 3 | 33 % | 42 % | **50 %** | 50 % |
+| 4 | 33 % | 54 % | **66 %** | 67 % |
+| 5 | 33 % | 67 % | **83 %** | 83 % |
 
-**Der Einbruch bei sieben und acht ist kein Messfehler, sondern die Grenze des Ansatzes.** Bei sechs
-Beschwörern verteilen sich die Ladungen gerade so, dass jede Lücke gedeckt wird — 99 %. Kommt ein
-siebter dazu, besetzt er eine Lücke einen Moment zu früh, die Staffelung zerfällt, und das Muster
-läuft in eine ungünstige Selbstorganisation. Dieselbe gierige Zuteilung wie oben, hier mit
-sichtbarer Folge: Die Regel ist **nicht robust gegenüber der Gruppengröße**. Ein Client, der nur
-weiß, wann andere frühestens *könnten*, kann nicht verhindern, dass mehrere dieselbe Lücke anpeilen.
+V5 trifft die Obergrenze. Was die Ladungen hergeben, holt die Regel heraus.
 
-**Bewertung: nicht umsetzen, aber festhalten.** Der Gedanke ist richtig und die Information
-tatsächlich verfügbar. Gegen die Umsetzung sprechen drei Dinge: Im Nutzungsprofil (ein bis zwei
-Beschwörer) bringt V5 gegenüber V2 **nichts** — beide liefern 33 %. Der Gewinn liegt bei drei bis
-sechs Beschwörern, und dort bricht er bei sieben wieder ein. Und der Preis ist ein Gedächtnis über
-Frames hinweg: beobachtete Zündungen je Urheber, mit Rücksetzen bei Kampfende, Gruppenwechsel und
-Zonenwechsel — deutlich mehr Zustand als V1 und V2 zusammen, für einen Fall, der praktisch nicht
-eintritt.
+### Einschwingen über die Kampfdauer
+
+Der Auftraggeber hat darauf hingewiesen, dass die Verteilung sich nicht sofort einstellen muss:
+Raidkämpfe dauern bis zu zwanzig Minuten, Ultimates bis zu vierzig. Eine Regel dürfte also
+unordentlich anfangen, wenn sie sich einpendelt.
+
+**Gemessen — sie braucht es nicht, und sie täte es auch nicht.** Erste zwei Minuten gegen letzte zwei
+Minuten, über zwanzig wie über vierzig Minuten:
+
+| Beschwörer | V2 | V5 |
+|---|---|---|
+| 2 | 33 % → 33 % | 33 % → 33 % |
+| 3 | 33 % → 33 % | 50 % → 50 % |
+| 4 | 33 % → 33 % | 66 % → 66 % |
+| 5 | 33 % → 33 % | 83 % → 83 % |
+
+V5 liegt von der ersten Periode an auf seinem Endwert; ein Einschwingen findet nicht statt, weil
+keines nötig ist. Bei V2 ändert sich ebenfalls nichts — aber aus dem gegenteiligen Grund: Bei
+festem Versatz bleibt das Muster, in dem es begonnen hat, und die Kampfdauer allein bringt keine
+Verbesserung.
+
+**Was die Kampfdauer real dennoch bewirkt, kann dieses Modell nicht zeigen.** Es hält den Versatz
+über den ganzen Kampf fest. In Wirklichkeit wächst er: Jede Mechanik, jeder Tod, jede
+Bewegungsphase verschiebt die Zyklen weiter gegeneinander. Über zwanzig oder vierzig Minuten wandert
+eine Gruppe damit von der oberen Tabelle in die untere — und die untere ist für den heutigen Code
+deutlich freundlicher (67 % statt 17 % bei fünf Beschwörern). **Der lange Kampf ist also der Fall,
+der sich von selbst bessert; der Anfang jedes Kampfes ist der, der es nicht tut.** Genau dort setzt
+V5 an.
+
+### Was V5 nicht sieht
+
+Die Beobachtung hängt daran, den fremden Buff überhaupt zu bekommen. Searing Light reicht dreißig
+Yalm; zündet ein anderer Beschwörer außerhalb dieser Reichweite, sieht der Client weder Buff noch
+Quelle. Die Buchführung ist dann unvollständig, und zwar in eine bestimmte Richtung: Ein nie
+beobachteter Beschwörer zählt gar nicht und blockiert nichts — unschädlich. Ein bekannter, dessen
+letzte Zündung verpasst wurde, gilt als längst wieder bereit und hält die eigene Zündung zurück —
+das ist die zurückhaltende, nicht die verschwenderische Richtung, aber es kostet Abdeckung. Beide
+Fälle sind selten, weil Beschwörer, die denselben Gegner angreifen, in aller Regel innerhalb von
+dreißig Yalm voneinander stehen.
 
 ## Gesamtbetrachtung
 
@@ -256,16 +291,21 @@ und nur als Beschwörer.
 
 **Eine Wechselwirkung ist zu benennen:** Mit V2 zündet ein zweiter Beschwörer bei Sekunde 60. Damit
 liegt ab dann häufiger ein fremder Buff — was V1 häufiger wirksam macht. Die beiden verstärken
-einander, ohne sich zu widersprechen.
+einander, ohne sich zu widersprechen. Für V5 gilt dasselbe in stärkerem Maß: Je höher die Abdeckung,
+desto öfter greift V1.
 
-**Was keiner der Vorschläge löst — und die frühere Fassung sagte es falsch.** Sie behauptete, die
-Abdeckung bleibe auch mit V2 bei 33 %. Das gilt nur für den synchronen Pull; sobald die Rotationen
-auseinanderlaufen, erreicht V2 bei sieben und acht Beschwörern 90 bis 96 %. Die Aussage widersprach
-dem Versatz-Abschnitt desselben Dokuments und ist zurückgenommen (`AUDIT_LOG.md` C41).
+**V5 setzt V2 voraus, nicht umgekehrt.** V5 ist als „V2 plus eine zusätzliche Erlaubnis" gebaut und
+im Modell auch so gemessen. Beide sind deshalb nacheinander umsetzbar und einzeln prüfbar: erst die
+Fenstererweiterung ohne Zustandshaltung, dann die Beobachtung fremder Zündungen darauf.
 
-Was bleibt: Der synchrone Pull ist mit V2 bei 33 % gedeckelt, weil es dort schlicht nur zwei
-Beschwörungsfenster je 120 Sekunden gibt. Diese Lücke schließt nur V4 — und V4 ist im Nutzungsprofil
-nicht besser, siehe unten.
+**Was V2 allein nicht löst.** Der synchrone Pull bleibt mit V2 bei 33 % gedeckelt, weil es dort nur
+zwei Beschwörungsfenster je 120 Sekunden gibt. Ab drei Beschwörern liegt diese Decke unter der
+Obergrenze der Ladungen — bei fünf Beschwörern 33 % gegenüber möglichen 83 %. Diese Lücke schließt
+im maßgeblichen Bereich allein V5, und zwar vollständig.
+
+Eine frühere Fassung behauptete an dieser Stelle, die Abdeckung bleibe auch mit V2 generell bei 33 %.
+Das gilt nur synchron; bei auseinandergelaufenen Rotationen erreicht V2 deutlich mehr. Zurückgenommen
+als `AUDIT_LOG.md` C41.
 
 ## Die Vorschläge im Einzelnen
 
@@ -331,10 +371,26 @@ dann vollständig greifen und zwei Beschwörer in einer Gruppe gewöhnlich sind.
 
 ## Empfehlung
 
-**V1 und V2 umsetzen, V4 nicht.** V1 und V2 verstärken einander und bewegen sich in getrennten
-Wirkungsbereichen; beide ändern nur ab zwei Beschwörern etwas. V4 bringt seinen Gewinn erst in
-Gruppengrößen, die im Spiel nicht vorkommen, und zahlt dafür bei zwei Beschwörern drauf — das ist
-gemessen, nicht abgeschätzt.
+**In zwei Stufen: erst V1 und V2, dann V5. V4 nicht.**
+
+| Stufe | Inhalt | Gewinn im maßgeblichen Bereich | Preis |
+|---|---|---|---|
+| 1 | V1 und V2 | bei zwei Beschwörern 33 % statt 17 %; V1 wirkt ab zwei ohne Ausnahme | zwei kleine Änderungen, kein Zustand |
+| 2 | V5 darauf | bei drei bis fünf Beschwörern 50 / 66 / 83 % statt 33 % — die Obergrenze | ein Gedächtnis über Frames, mit Rücksetzpunkten |
+
+**Warum Stufe 1 zuerst und getrennt:** Sie ist ohne Zustandshaltung umsetzbar, deckt den häufigsten
+Fall ab — ein bis zwei Beschwörer —, und ihr Ergebnis ist im Spiel einzeln beurteilbar. Stufe 2
+bringt darüber hinaus nur etwas, wenn tatsächlich drei oder mehr Beschwörer in der Gruppe stehen.
+
+**Warum Stufe 2 trotzdem lohnt:** Sie holt im Bereich drei bis fünf genau das heraus, was die
+Ladungen hergeben, und sie tut es dort, wo der heutige Code am schwächsten ist — beim sauberen,
+synchronen Pull. Die frühere Bewertung, sie sei nicht umsetzenswert, stützte sich auf den Einbruch
+bei sieben und acht Beschwörern; diese Gruppengrößen sind kein regulärer Spielbetrieb und bestimmen
+keine Entscheidung.
+
+**Was für beide Stufen gilt:** die Gruppenprüfung als Schalter. Bei einem einzelnen Beschwörer
+ändert sich nichts, und das ist nachweisbar so und nicht bloß beabsichtigt — das Modell weist für
+einen Beschwörer in allen Varianten 17 % aus.
 
 **Noch nicht umgesetzt.** Der Zweig `claude/raise-swiftcast-weave-2` trägt fünf ungemessene Eingriffe
 am Wiederbelebungspfad, deren Spieltest offen ist; sachfremde Änderungen daneben würden dessen
@@ -371,6 +427,12 @@ benannte Grenzen:
   Sekundenbruchteils. Bei nahezu gleichzeitigen Zündungen kann die Wirklichkeit davon abweichen.
 - Der Versatz ist als **gleichmäßige** Verteilung modelliert. Im Kampf entsteht er ungleichmäßig und
   in Sprüngen.
+- Der Versatz bleibt über den ganzen Lauf **fest**. Real wächst er mit der Kampfdauer, weil jede
+  Mechanik und jeder Tod die Zyklen weiter gegeneinander verschiebt. Deshalb kann das Modell die
+  Frage nach dem Einpendeln über zwanzig oder vierzig Minuten nur zur Hälfte beantworten: Es zeigt,
+  dass keine der Regeln eine Anlaufzeit braucht, aber nicht, wie eine Gruppe im Lauf eines langen
+  Kampfes von der synchronen in die versetzte Tabelle wandert. Die Richtung dieser Wanderung steht
+  fest — sie verbessert die Lage —, ihr Tempo nicht.
 
 Nicht entschieden und nur im Spiel zu klären: welcher Ausgang bei gleichzeitiger Zündung eintritt;
 wie groß der Wertunterschied zwischen einem Buff im Zwei-Minuten-Takt und einem daneben tatsächlich
