@@ -1957,6 +1957,36 @@ Die Behebung stammt aus PR #7 und war mit dem Revert verlorengegangen; sie ist z
 
 ---
 
+### A67 · Searing Light bei mehreren Beschwörern, Fälle eins bis acht (11.09.2026)
+
+**Anlass:** Frage des Auftraggebers, wann die Aktion gewirkt wird und was bei einer Gruppe aus acht Beschwörern geschähe, die alle diesen Fork laufen haben; anschließend präzisiert auf alle Gruppengrößen von eins bis acht.
+
+**Zum Namen:** Der Auftraggeber nennt die Aktion „Gleißender Schein". Der Job-Guide ist vom Egress gesperrt — erneut geprüft, nicht erinnert —, eine belegte Zuordnung steht also nicht zur Verfügung. Dass Searing Light gemeint ist, ist aus der Fragestellung geschlossen und im Konzept als Schluss gekennzeichnet; gearbeitet wird mit dem englischen Bezeichner.
+
+**Kette vollständig erhoben:** Zündung unter `burstInSolar` (`SMN_Reborn.cs:204`), Aktionseinstellung mit `StatusProvide = [SearingLight]` und `StatusFromSelf = false` (`SummonerRotation.cs:490`), Sperrlogik in `IsStatusProvided` (`ActionBasicInfo.cs:691`), Vorgabewerte `ShouldCheckStatus = true` und `StatusRefreshGcdCount = 2` (`ActionConfig.cs:50`, `:66`), Quellenfilter in `PlayerGetStatus` (`StatusHelper.cs:1529`). Die Beschwörung ist ihrerseits an Searing Lights Wiederholzeit gekoppelt (`SMN_Reborn.cs:467`).
+
+**Befund: Der Doppelzündungsschutz ist richtig gebaut, seine Folge nicht behandelt.** `StatusFromSelf = false` sperrt korrekt gegen jeden fremden Buff; `HasSearingLight` zählt korrekt nur den eigenen. Beide Einstellungen sind für ihre jeweilige Frage richtig — und aus ihrem Zusammentreffen entstehen ab zwei Beschwörern drei Verluste: kein Nachzünden im selben Zyklus (der fremde Buff hält 20 Sekunden, die eigene Beschwörung 15), keine bevorzugte Aetherflow-Ausgabe im laufenden fremden Fenster, und dadurch kein Ruby's Glimmer und kein Searing Flash.
+
+**Ab sechs Beschwörern** wäre durchgehende Buff-Abdeckung möglich (sechs mal zwanzig Sekunden gleich eine Wiederholzeit); genau die entgeht.
+
+**Vorgelegt:** V1 (fremden Buff als Buff-Fenster behandeln) mit Empfehlung zur Umsetzung — Abweichung zwischen Absicht und Umsetzung, bei einem Beschwörer wirkungslos, ohne erkennbaren Nachteil. V2 (Zündung von der eigenen Beschwörung lösen) mit Empfehlung dagegen — Verhaltensänderung ohne Nachweismöglichkeit, die im Regelfall schadet. Nullvariante geprüft und für V1 verworfen, weil zwei Beschwörer in einer Gruppe gewöhnlich sind.
+
+**Nicht umgesetzt**, weil der Auftrag die Erarbeitung im Konzept war und ein sachfremder sechster Eingriff die Auswertung des offenen Spieltests am Wiederbelebungspfad beschädigt hätte.
+
+**Erreichter Prüfgrad:** statische Prüfung am Quelltext für die gesamte Kette; Wirkdauer, Wiederholzeit und Stärke von Searing Light, Standzeit von Solar Bahamut und Herkunft von Ruby's Glimmer aus Fremdquellen. Keine Laufzeitbeobachtung. Nicht entschieden: welcher Ausgang bei gleichzeitiger Zündung eintritt.
+
+---
+
+### A68 · Die Sync-Messung erkannte einen flachen Klon nicht (11.09.2026)
+
+**Anlass:** Die Arbeitsumgebung wurde mitten in der Sitzung gegen einen **neuen, flachen** Klon getauscht — die lokalen Zweige waren fort, `main` stand auf einem alten Stand, `upstream` war als Gegenstelle nicht eingerichtet. Das widerlegt zugleich die Annahme aus A63, die Arbeitskopie sei durchgehend langlebig; die daraus gezogene Regel — lokale Referenzen sind kein Zustandsnachweis — gilt dadurch erst recht.
+
+**Befund am eigenen Prüfmittel.** `check_sync_state.py` meldete „HEAD is up to date with upstream/main" und „0 behind, 123 ahead". Nach `git fetch --unshallow` lauteten dieselben Zahlen „0 behind, **390** ahead". In einem flachen Klon läuft `rev-list` über Historie, die nicht da ist; das Ergebnis sieht nicht falsch aus, es ist falsch. Dass die erste Zahl zufällig stimmte, macht den Fall schlimmer statt besser — genau die Form des stillen Nullbefunds, gegen die `check_fork_version.py` kurz zuvor mit `--require-tags` abgesichert worden war, nur an der nächsten Stelle.
+
+**Behebung:** Das Skript prüft `git rev-parse --is-shallow-repository` und bricht mit Rückgabewert 1 ab, bevor es irgendeine Zahl nennt. Der Selbsttest trägt den Fall jetzt mit: ein `--depth 1`-Klon eines Wegwerf-Repositorys muss als flach erkannt werden.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.

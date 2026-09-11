@@ -82,7 +82,17 @@ def self_test():
             raise AssertionError('the constructed lag was not seen: %d' % behind_local)
         if ahead_local != 0:
             raise AssertionError('local main should carry nothing of its own')
-        print('self-test ok: a local branch left behind by its remote is detected (behind 1)\n')
+
+        # Second case: a shallow clone has to be recognised as one, because its counts are worthless.
+        shallow = os.path.join(workspace, 'shallow')
+        os.chdir(workspace)
+        git('clone', '-q', '--depth', '1', 'file://' + origin, shallow)
+        os.chdir(shallow)
+        if git('rev-parse', '--is-shallow-repository') != 'true':
+            raise AssertionError('a --depth 1 clone has to report as shallow')
+
+        print('self-test ok: a local branch left behind by its remote is detected (behind 1), '
+              'and a shallow clone is recognised\n')
     finally:
         os.chdir(original)
         subprocess.run(['rm', '-rf', workspace], capture_output=True)
@@ -105,6 +115,17 @@ def main():
     print('checked out: %s (%s)' % (head, git('rev-parse', '--short', 'HEAD')))
 
     failed = False
+
+    # A shallow clone cannot answer this question at all: rev-list walks history that is not there,
+    # and the count it returns is not wrong-looking, it is simply wrong. Found the hard way - a
+    # freshly provisioned working copy reported "0 behind, 123 ahead" where the real figures were
+    # "0 behind, 390 ahead". The first number happened to be right, which is the dangerous kind of
+    # silent null result: it reads exactly like a clean measurement.
+    if git('rev-parse', '--is-shallow-repository') == 'true':
+        print('\nThis is a SHALLOW clone. Every count below is unreliable, because the history the\n'
+              'comparison needs is not present. Run `git fetch --unshallow origin` (and fetch\n'
+              'upstream afterwards) before making any statement about sync state.')
+        return 1
 
     if 'upstream' in present:
         behind, ahead = counts('upstream/main', 'HEAD')

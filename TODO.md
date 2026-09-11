@@ -76,6 +76,33 @@ Nicht behoben, weil der Wirkungsbereich den Vorgang sprengt. Das Flag wird in `I
 
 **Auflösungsbedingung:** eine Erhebung, welche der sechs Setzstellen eine Ausnahme rechtfertigen, und eine Engführung des Flags auf diese.
 
+### Beschwörer: der fremde Searing Light gilt nicht als Buff-Fenster · N
+
+`SMN_Reborn.cs:320`, `:332`, `:348` bevorzugen Painflare, Necrotize und Fester unter
+`inSolarUnique && HasSearingLight`. `HasSearingLight` ruft `PlayerHasStatus(true, …)`, zählt also nur
+den **eigenen** Buff. Steht bereits der Searing Light eines anderen Beschwörers, hält der Spieler
+seine Aetherflow-Ausgaben zurück, obwohl ein Fünf-Prozent-Fenster auf ihm liegt, und feuert sie nur
+über die Nebenbedingungen (sterbender Boss, drohender Überlauf).
+
+**Bei einem Beschwörer wirkungslos** — beide Prüfungen fallen zusammen. Ab zwei greift der Verlust
+vollständig, und zwei Beschwörer in einer Gruppe sind gewöhnlich.
+
+Vollständige Analyse samt der Fälle von einem bis acht Beschwörern und zwei weiteren Verlusten
+(kein Nachzünden nach Ablauf des fremden Buffs, dadurch kein Ruby's Glimmer und kein Searing Flash)
+in `docs/rotation-flow/12-searing-light-stacking.md`.
+
+**Empfehlung:** beheben — die Bedingung soll „im Buff-Fenster" heißen und sagt „in meinem
+Buff-Fenster". Für die Frage, ob sich Aetherflow-Schaden jetzt besonders lohnt, ist die Herkunft des
+Buffs ohne Bedeutung. Nicht im laufenden Vorgang umgesetzt, weil der Auftrag die Erarbeitung im
+Konzept war und der Zweig bereits fünf ungemessene Eingriffe am Wiederbelebungspfad trägt.
+
+**Nicht empfohlen, aber erfasst:** die Zündung selbst von der eigenen Beschwörung zu lösen, damit ein
+gesperrter Beschwörer nachzündet. Das tauscht einen belegten Nutzen im Regelfall — Bündelung mit dem
+eigenen Schadensfenster und dem Zwei-Minuten-Takt — gegen einen unbelegten im Sonderfall und käme
+allenfalls hinter einer abschaltbaren Einstellung in Frage.
+
+**Erfasst, nicht bearbeitet:** `ChurinSMN.cs:1015` trägt dasselbe Muster. Fremde Rotationsdatei.
+
 ### ChurinDNC wertet die BMR-Downtime ohne Vorzeichenprüfung aus · N, U
 
 `ChurinDNC.cs:777-843` (Upstream) liest `BMRNextDowntimeIn`/`-EndIn` ohne Vorzeichenprüfung. BossModReborn liefert diese Werte als `(Aktivierung − jetzt)`, sie sind während einer laufenden Downtime also negativ, und die Rotation kann „Downtime läuft" nicht von „Downtime kommt gleich" unterscheiden: `if (BMRNextDowntimeIn >= 15f) return;` kehrt dann nicht zurück, und die folgende `<`-Bedingung ist immer erfüllt. Die Normalisierung der Schadensvorhersagen ist erledigt (AUDIT_LOG A11); hier wäre ein Filter falsch, weil das Vorzeichen die Information trägt.
