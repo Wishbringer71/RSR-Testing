@@ -127,7 +127,7 @@ public partial class CustomRotation
 					return act;
 				}
 
-				if (hardcastraisetype == HardCastRaiseType.HardCastNormal && SwiftcastPvE.Cooldown.IsCoolingDown)
+				if (hardcastraisetype == HardCastRaiseType.HardCastNormal && !SwiftcastComingForRaise)
 				{
 					if (RaiseSpell(out act, true))
 					{
@@ -137,7 +137,7 @@ public partial class CustomRotation
 
 				if (hardcastraisetype == HardCastRaiseType.HardCastSwiftCooldown)
 				{
-					if (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge)
+					if (!Service.Config.RaisePlayerBySwift || (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge))
 					{
 						if (RaiseSpell(out act, true))
 						{
@@ -179,7 +179,7 @@ public partial class CustomRotation
 
 				if (hardcastraisetype == HardCastRaiseType.HardCastOnlyHealerSwiftCooldown)
 				{
-					if (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge)
+					if (!Service.Config.RaisePlayerBySwift || (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge))
 					{
 						var deadhealers = new HashSet<IBattleChara>();
 						if (DataCenter.PartyMembers != null)
@@ -354,7 +354,7 @@ public partial class CustomRotation
 					return act;
 				}
 
-				if (hardcastraisetype == HardCastRaiseType.HardCastNormal && SwiftcastPvE.Cooldown.IsCoolingDown)
+				if (hardcastraisetype == HardCastRaiseType.HardCastNormal && !SwiftcastComingForRaise)
 				{
 					if (RaiseSpell(out act, true))
 					{
@@ -364,7 +364,7 @@ public partial class CustomRotation
 
 				if (hardcastraisetype == HardCastRaiseType.HardCastSwiftCooldown)
 				{
-					if (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge)
+					if (!Service.Config.RaisePlayerBySwift || (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge))
 					{
 						if (RaiseSpell(out act, true))
 						{
@@ -406,7 +406,7 @@ public partial class CustomRotation
 
 				if (hardcastraisetype == HardCastRaiseType.HardCastOnlyHealerSwiftCooldown)
 				{
-					if (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge)
+					if (!Service.Config.RaisePlayerBySwift || (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge))
 					{
 						var deadhealers = new HashSet<IBattleChara>();
 						if (DataCenter.PartyMembers != null)
@@ -521,6 +521,23 @@ public partial class CustomRotation
 
 		return null;
 	}
+
+	/// <summary>
+	/// Is the rotation still going to spend Swiftcast on the raise?
+	///
+	/// The hard cast branches used to ask <c>SwiftcastPvE.Cooldown.IsCoolingDown</c>, which answers
+	/// a different question and leaves a state they cannot get out of. For a healer this rotation
+	/// spends Swiftcast on the raise path alone - the two other triggers in CustomRotation_Ability
+	/// are gated on JobRole.RangedMagical - so with RaisePlayerBySwift off it is never spent, never
+	/// enters recovery, the hard cast branch never fires, and nobody is raised at all. The setting
+	/// only promises not to spend Swiftcast on raises, not to stop raising.
+	///
+	/// With the setting on, `!SwiftcastComingForRaise` equals the old `IsCoolingDown` in every
+	/// combination; it differs only for setting-off with Swiftcast ready, which is exactly the
+	/// state that raised nobody.
+	/// </summary>
+	private bool SwiftcastComingForRaise =>
+		Service.Config.RaisePlayerBySwift && !SwiftcastPvE.Cooldown.IsCoolingDown;
 
 	private bool RaiseSpell(out IAction? act, bool mustUse)
 	{

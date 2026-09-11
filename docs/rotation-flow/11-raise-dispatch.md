@@ -61,6 +61,51 @@ zeigen. `RaisePendingAndCastable` setzt die Überschreibung deshalb selbst und s
 Wert wieder her, statt ihn zu löschen, weil der Fähigkeiten-Dispatcher eigene Überschreibungen um
 seine Zweige legt.
 
+## Wenn Spontanität nicht zur Verfügung steht
+
+Der Einschiebe-Entwurf oben deckt nur den Fall ab, dass Spontanität bereit ist. Die beiden anderen
+Fälle verhalten sich verschieden, und einer davon war ein eigener Defekt.
+
+**Spontanität in Erholung, Einstellung an.** `IsCoolingDown` ist wahr, der Hartwirk-Zweig greift,
+`RaiseSpell` wird mit `mustUse` aufgerufen und die Wiederbelebung wird hart gewirkt. Das
+funktioniert — mit einer bauartbedingten Grenze: Stufe (C) verlangt `!IsMoving`, weil ein
+Acht-Sekunden-Zauber im Laufen nicht zustande kommt. Wer sich bewegt, wartet auf Spontanität. Das
+ist keine Fehlfunktion, sondern die Spielmechanik; der Einschiebe-Entwurf verkürzt die Wartezeit auf
+die Erholung von Spontanität.
+
+**Einstellung abgeschaltet: es wurde überhaupt nicht wiederbelebt.** Die Kette ist geschlossen und
+am Artefakt belegt:
+
+- Für einen Heiler zündet diese Rotation Spontanität **ausschließlich** über den
+  Wiederbelebungspfad. Die beiden anderen Zünder (`CustomRotation_Ability.cs:688` und `:697`) sind
+  auf `JobRole.RangedMagical` eingeschränkt; Heiler tragen `JobRole.Healer`.
+- Ist die Einstellung aus, wird Spontanität also nie gezündet, geht nie in Erholung, und
+  `IsCoolingDown` bleibt falsch.
+- Damit feuert der Hartwirk-Zweig nie. Stufe (B) verlangt die Einstellung selbst, Stufe (C) braucht
+  `mustUse`, das nur der Hartwirk-Zweig setzt. Alle drei Wege sind zu.
+
+Die Beschreibung der Einstellung sagt zu, Spontanität nicht **dafür** zu verwenden — nicht, das
+Wiederbeleben einzustellen.
+
+**Behebung: die Hartwirk-Zweige fragen nach der richtigen Größe.** Statt „ist Spontanität in
+Erholung" fragen sie „kommt Spontanität für diese Wiederbelebung überhaupt noch". Die
+Verhaltenswirkung ist auszählbar und beschränkt sich auf **eine** von vier Kombinationen:
+
+| Einstellung | Erholung | alt | neu | |
+|---|---|---|---|---|
+| an | ja | wirkt | wirkt | gleich |
+| an | nein | wirkt nicht | wirkt nicht | gleich |
+| aus | ja | wirkt | wirkt | gleich |
+| aus | nein | **wirkt nicht** | **wirkt** | der Fall, der niemanden wiederbelebte |
+
+Bei eingeschalteter Einstellung — der Vorgabe — ist das Verhalten unverändert. Das ist zugleich der
+Nachweis, dass diese Korrektur nicht die Ursache der zurückgenommenen Regression gewesen sein kann:
+Sie greift in deren Konfiguration überhaupt nicht.
+
+Die vier Zweige mit Wirkzeit-gegen-Wartezeit-Abwägung (`HardCastSwiftCooldown` und
+`HardCastOnlyHealerSwiftCooldown`) behalten diese Abwägung unverändert und bekommen allein den Fall
+dazu, in dem es nichts gibt, worauf zu warten wäre.
+
 ### Restrisiken, offen benannt
 
 - Eine Ladung Spontanität kann verpuffen, wenn ein anderer Heiler die Wiederbelebung übernimmt,
