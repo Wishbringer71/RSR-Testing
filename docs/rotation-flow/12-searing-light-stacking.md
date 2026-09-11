@@ -380,8 +380,13 @@ Annahme. Der Schaden außerhalb des Bursts ist als gleichmäßig modelliert, was
 Beschwörungsfenster der einzelnen Beschwörer sind selbst Spitzen. Wie hoch diese Spitzen sind, ist im
 folgenden Abschnitt beziffert: ein Beschwörungsfenster trägt das Zwei- bis Zweieinhalbfache eines
 gleich langen Primalfensters. Da V7 gerade diese Fenster mit abdeckt, wird sein Vorsprung
-unterschätzt, nicht überschätzt. Nicht modelliert sind Phasen ohne Ziel und Unterbrechungen des
-Schadens überhaupt.
+unterschätzt, nicht überschätzt. Unterbrechungen des Schadens sind nicht modelliert.
+
+**Phasen ohne Ziel waren als Modellgrenze benannt und sind keine.** Sie wären eine, wenn V7 dort
+zünden könnte — eine Ladung auf einen Abschnitt ohne Gegner ist reiner Verlust. Der Pfad gibt das
+aber nicht her: `AttackAbility` wird in `CustomRotation_Ability.cs:383` nur unter
+`HasHostilesInRange` aufgerufen, die Zielprüfung steht also vor jeder Zündung, der heutigen wie der
+neuen. Das Modell darf diesen Fall auslassen, weil der Code ihn ausschließt.
 
 ## Was eine Phase wert ist
 
