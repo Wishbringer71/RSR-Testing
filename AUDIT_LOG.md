@@ -2189,6 +2189,8 @@ Die zweite Fassung verlor die gewebte Fähigkeit des führenden Blocks. Mountain
 
 **Anlass:** Auftrag, das Konzept weiter zu schärfen, die Umsetzung zu planen, die Planung kritisch zu prüfen und erst dann umzusetzen.
 
+**Der Nachweis fehlte zunächst still.** Nach dem Upstream-Merge galt der Zweig gegen `origin/main` als `dirty`, und GitHub erzeugt für einen Pull Request ohne bildbaren Merge-Commit keinen `pull_request`-Lauf: Drei Commits, die gesamte Umsetzung eingeschlossen, liefen ungeprüft durch, ohne dass etwas fehlschlug. Aufgelöst durch den Merge von `origin/main`. Der erste Lauf danach schlug an `check_fork_version.py --require-tags` fehl — der Upstream-Merge hatte neuere Release-Tags hereingebracht. Die frische Messung zeigte Upstream erneut zwei Commits weiter mit 7.5.6.4 als höchstem Tag; beides eingebunden, Version gesetzt. Dieselbe Fehlerform wie der stille Nullbefund in A68: Die Abwesenheit eines Signals sah aus wie ein sauberer Zustand.
+
 **Vorbedingung erfüllt:** `check_sync_state.py` wies HEAD als drei Commits hinter `upstream/main` aus. Die drei Commits härten die Objektvalidierung (`ObjectHelper`, `RSCommands_Actions`, `StateUpdater`) und berühren weder den Zünd- noch den Wiederbelebungspfad. Nach dem Merge: null ausstehend.
 
 **Was die Falsifikationsstufe gebracht hat — sie hat die Planung einmal umgeworfen und dann gerettet.** Die Hypothese, die Erweiterung des Zündfensters sei folgenlos, fiel zuerst: `UseSummonsAndTrances:491` bindet die Solar-Beschwörung an `!SearingLightPvE.Cooldown.IsCoolingDown`. Wer außerhalb des Solar-Fensters zündet, setzt Searing Light zu anderer Zeit auf Abklingzeit und könnte damit die teuerste Beschwörung des Zyklus verschieben — 1600 Potenz je Verschiebung gegen etwa 200 Potenz Zugewinn an Buffzeit. Das Modell kann das nicht sehen, weil es die Beschwörungsfolge als fest annimmt.
@@ -2199,7 +2201,7 @@ Die zweite Fassung verlor die gewebte Fähigkeit des führenden Blocks. Mountain
 
 **Bewusst nicht geändert:** die Burst-Medizin in `:182`, die weiter den eigenen Buff verlangt, weil sie als Fünfzehn-Minuten-Ressource in das stärkste Fenster gehört; und `ChurinSMN.cs`, fremdes Werk.
 
-**Erreichter Prüfgrad:** Statische Selbstprüfung, `check_cs_structure.py`, Kompilierung über die CI. Keine Laufzeitbeobachtung. Zwei Punkte sind ausdrücklich offen und im Konzept als Beobachtungspunkte benannt: ob der Solar-Takt hält, und ob gleichzeitiges Zünden mehrerer Beschwörer beim Buffende auftritt.
+**Erreichter Prüfgrad:** Statische Selbstprüfung, `check_cs_structure.py`, Kompilierung grün auf `c025e0802` (Windows-Build und DispatchChain). Keine Laufzeitbeobachtung. Zwei Punkte sind ausdrücklich offen und im Konzept als Beobachtungspunkte benannt: ob der Solar-Takt hält, und ob gleichzeitiges Zünden mehrerer Beschwörer beim Buffende auftritt.
 
 ---
 
