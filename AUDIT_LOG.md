@@ -2185,6 +2185,22 @@ Die zweite Fassung verlor die gewebte Fähigkeit des führenden Blocks. Mountain
 
 **Erreichter Prüfgrad:** Statische Erhebung aller Auslöser im Baum, Voreinstellungen am Code belegt. Keine Laufzeitbeobachtung.
 
+### A78 · Searing Light: V1, V2 und V7 umgesetzt, nachdem die Falsifikation die Kopplung geklärt hat (11.09.2026)
+
+**Anlass:** Auftrag, das Konzept weiter zu schärfen, die Umsetzung zu planen, die Planung kritisch zu prüfen und erst dann umzusetzen.
+
+**Vorbedingung erfüllt:** `check_sync_state.py` wies HEAD als drei Commits hinter `upstream/main` aus. Die drei Commits härten die Objektvalidierung (`ObjectHelper`, `RSCommands_Actions`, `StateUpdater`) und berühren weder den Zünd- noch den Wiederbelebungspfad. Nach dem Merge: null ausstehend.
+
+**Was die Falsifikationsstufe gebracht hat — sie hat die Planung einmal umgeworfen und dann gerettet.** Die Hypothese, die Erweiterung des Zündfensters sei folgenlos, fiel zuerst: `UseSummonsAndTrances:491` bindet die Solar-Beschwörung an `!SearingLightPvE.Cooldown.IsCoolingDown`. Wer außerhalb des Solar-Fensters zündet, setzt Searing Light zu anderer Zeit auf Abklingzeit und könnte damit die teuerste Beschwörung des Zyklus verschieben — 1600 Potenz je Verschiebung gegen etwa 200 Potenz Zugewinn an Buffzeit. Das Modell kann das nicht sehen, weil es die Beschwörungsfolge als fest annimmt.
+
+**Die Gegenprüfung entkräftete den Einwand am Code:** `:478` ruft `SummonBahamutPvE.CanUse(out act)` ohne Vorbedingung, `:487` denselben Ausdruck mit einer Zusatzbedingung — eine strikte Teilmenge und damit beweisbar unerreichbar. `:491` ist nur erreichbar, wenn `CanUse` in derselben Lage falsch liefert. Welche der beiden Zeilen tot ist, hängt daran, ob Summon Bahamut auf Stufe 100 spielseitig umgewandelt wird; RSR ruft über `AdjustedID`, und die Antwort steht nicht im Repository. Der Befund ist als Defekt in `TODO.md` erfasst, ausdrücklich mit der Warnung, dass ein Aufräumen von `:478` die Kopplung aktivieren würde.
+
+**Umgesetzt:** `HasAnySearingLight` und `AnotherSummonerInParty` in `SummonerRotation.cs`; V1 an drei Stellen in `SMN_Reborn.cs`; die Zündbedingung als `burstInSolar || (AnotherSummonerInParty && (inBigInvocation || !HasAnySearingLight))`. Die Stufenschwelle kommt aus `SearingLightPvE.Level` statt aus einer Zahl — dieselbe Lehre wie beim Rotmagier in `AnyLivingRaiser`. Die Allianz wird nicht gefragt, weil Searing Light nur die Gruppe erreicht.
+
+**Bewusst nicht geändert:** die Burst-Medizin in `:182`, die weiter den eigenen Buff verlangt, weil sie als Fünfzehn-Minuten-Ressource in das stärkste Fenster gehört; und `ChurinSMN.cs`, fremdes Werk.
+
+**Erreichter Prüfgrad:** Statische Selbstprüfung, `check_cs_structure.py`, Kompilierung über die CI. Keine Laufzeitbeobachtung. Zwei Punkte sind ausdrücklich offen und im Konzept als Beobachtungspunkte benannt: ob der Solar-Takt hält, und ob gleichzeitiges Zünden mehrerer Beschwörer beim Buffende auftritt.
+
 ---
 
 ## B · Commit-Register (Fork vs. `upstream/main`)

@@ -270,6 +270,57 @@ public partial class SummonerRotation
 	/// </summary>
 	public static bool HasSearingLight => StatusHelper.PlayerHasStatus(true, StatusID.SearingLight);
 
+	/// <summary>
+	/// Is a Searing Light on the player at all, no matter who cast it?
+	///
+	/// Searing Light does not stack, it overwrites, and it raises damage by the same 5% whoever it
+	/// came from. <see cref="HasSearingLight"/> counts the player's own buff alone, which is the
+	/// right question for "may I cast it" and the wrong one for "am I standing in a buff window".
+	/// </summary>
+	public static bool HasAnySearingLight => StatusHelper.PlayerHasStatus(false, StatusID.SearingLight);
+
+	/// <summary>
+	/// Is there another Summoner in the party who could cast Searing Light?
+	///
+	/// Alliance members are not asked: Searing Light reaches nearby party members, so a Summoner in
+	/// another alliance party never buffs this player. The dead are not asked either - they cast
+	/// nothing. The level comes from the action's own data rather than a literal, and it is applied
+	/// to the other player for the same reason it is applied here: a Summoner below it has no
+	/// Searing Light to give, and counting him would hold this one back for a buff that cannot come.
+	/// That is the mistake <see cref="DataCenter.AnyLivingRaiser"/> made with Red Mage.
+	///
+	/// What this cannot answer is whether the other Summoner runs this rotation, runs any plugin at
+	/// all, or plays the job well. It answers "can a second Searing Light exist here", which is the
+	/// question the firing window turns on.
+	/// </summary>
+	protected bool AnotherSummonerInParty
+	{
+		get
+		{
+			var members = DataCenter.PartyMembers;
+			if (members == null)
+			{
+				return false;
+			}
+
+			foreach (var member in members)
+			{
+				if (member == null || member.IsDead || member.IsPlayer())
+				{
+					continue;
+				}
+
+				if (member.IsJobs(ECommons.ExcelServices.Job.SMN)
+					&& member.Level >= SearingLightPvE.Level)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+	}
+
 	#endregion
 
 	#region PvE Actions Unassignable Status

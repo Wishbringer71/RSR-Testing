@@ -688,9 +688,62 @@ Varianten 17 % aus. In einer zweiten Ausbaustufe ließe sich die Bedingung auf d
 verschärfen — ausweichen nur nach tatsächlicher Blockade —, was allerdings den Zustand verlangt, den
 V7 gerade vermeidet.
 
-**Noch nicht umgesetzt.** Der Zweig `claude/raise-swiftcast-weave-2` trägt Eingriffe am
-Wiederbelebungspfad, deren Nachweis teilweise noch offen ist; sachfremde Änderungen daneben würden
-die Zuordnung erschweren. Die Umsetzung gehört auf einen eigenen Zweig, nach Freigabe.
+## Die Umsetzung
+
+**Drei Eingriffe, alle zustandsfrei, zusammen 60 Zeilen einschließlich Begründung.**
+
+| Ort | Eingriff |
+|---|---|
+| `SummonerRotation.cs` | `HasAnySearingLight` — `PlayerHasStatus(false, …)` statt `true`, also der Buff gleich welcher Herkunft |
+| `SummonerRotation.cs` | `AnotherSummonerInParty` — lebender Beschwörer in der Gruppe, Stufe aus `SearingLightPvE.Level` |
+| `SMN_Reborn.cs` (dreimal) | V1: Painflare, Necrotize und Fester fragen nach `HasAnySearingLight` |
+| `SMN_Reborn.cs` | V2 und V7: `burstInSolar \|\| (AnotherSummonerInParty && (inBigInvocation \|\| !HasAnySearingLight))` |
+
+**Die Stufenschwelle kommt aus den Spieldaten, nicht aus einer Zahl im Code.** `SearingLightPvE.Level`
+liest `ClassJobLevel` der Aktion; ein Beschwörer unterhalb dieser Stufe hat kein Searing Light zu
+geben, und ihn mitzuzählen hielte diesen hier für einen Buff zurück, der nicht kommen kann. Genau
+diesen Fehler hatte `AnyLivingRaiser` beim Rotmagier gemacht.
+
+**Die Allianz wird nicht gefragt.** Searing Light erreicht nach seinem eigenen Text „nearby party
+members"; ein Beschwörer in einer anderen Allianzgruppe verstärkt diesen Spieler nie. Die Frage ist
+damit eine Gruppenfrage, keine Allianzfrage — anders als bei der Wiederbelebung, wo die Allianz je
+nach `RaiseType` mitzählt.
+
+**Zwei Stellen bleiben bewusst unverändert.** Die Burst-Medizin in `SMN_Reborn.cs:182` fragt weiter
+nach dem **eigenen** Buff: Sie ist eine Fünfzehn-Minuten-Ressource und gehört in das eigene
+Solar-Fenster, das stärkste des Zyklus; an einen fremden Buff gehängt landete sie irgendwo. Und
+`ChurinSMN.cs` trägt denselben V1-Befund (`:995`, `:1015`), ist aber fremdes Werk mit eigener
+Abstimmung — erfasst, nicht bearbeitet.
+
+### Die Kopplung zwischen Zündung und Beschwörungswahl
+
+**Der stärkste Einwand gegen diese Umsetzung ist eine Rückwirkung auf die Beschwörungswahl, und er
+hält nur zur Hälfte.** `UseSummonsAndTrances` entscheidet in `:491` über die Solar-Beschwörung unter
+der Bedingung `IsBurst && !SearingLightPvE.Cooldown.IsCoolingDown`. Wer außerhalb des Solar-Fensters
+zündet, setzt Searing Light zu einem anderen Zeitpunkt auf Abklingzeit — und könnte damit die
+Beschwörung verschieben, die das teuerste Fenster des Zyklus ist. Eine Verschiebung um ein Fenster
+kostete 1600 Potenz und wäre teurer als der gesamte Zugewinn an Buffzeit.
+
+**Der Einwand ist entkräftet, weil die koppelnde Stelle nicht erreicht wird.** Unmittelbar davor
+steht in `:478` derselbe Aufruf `SummonBahamutPvE.CanUse(out act)` **ohne jede Vorbedingung**. Die
+Zeile `:487` prüft denselben Aufruf mit einer zusätzlichen Bedingung davor und ist damit eine strikte
+Teilmenge — sie kann nie erreicht werden. `:491` ist nur erreichbar, wenn `SummonBahamutPvE.CanUse`
+in derselben Lage falsch liefert.
+
+**Was offen bleibt, ist welche der beiden Zeilen tot ist.** RSR ruft jede Aktion über ihre
+umgewandelte Kennung (`ActionBasicInfo.AdjustedID`), und ob Summon Bahamut auf Stufe 100 spielseitig
+zu Summon Solar Bahamut umgewandelt wird, ist aus diesem Repository nicht zu entscheiden. Wird es
+umgewandelt, castet `:478` alle großen Beschwörungen und `:491` ist ebenfalls tot; wird es nicht
+umgewandelt, ist `:491` der wirksame Pfad und die Kopplung real. **Beobachtungspunkt für den
+Spieltest: Kommt Solar Bahamut weiterhin alle 120 Sekunden, oder rutscht der Takt?** Fällt die
+Beobachtung gegen die Umsetzung aus, ist der Eingriff eine Zeile — die V7-Bedingung entfällt, V2
+bleibt.
+
+**Ein zweiter Einwand, der bleibt, aber nicht neu ist:** Läuft der Buff aus, sind mehrere Beschwörer
+gleichzeitig frei und können im selben Augenblick zünden; einer verschwendet. Das Modell schreibt
+sequenziell zu und bildet das nicht ab. Der Fall besteht heute schon — heute fallen sogar **alle**
+Gelegenheiten zusammen, weil jeder nur im Solar-Fenster zünden darf. V7 verteilt die Gelegenheiten
+und macht die Kollision seltener, nicht häufiger.
 
 ## Erfasst, nicht bearbeitet
 
