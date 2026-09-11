@@ -21,7 +21,12 @@ mit einer Bedingung, einer ist abzulehnen:
 |---|---|---|
 | **V1** | Den Searing Light eines anderen Beschwörers als Buff-Fenster für die eigenen Aetherflow-Ausgaben werten | umsetzen |
 | **V2** | Das Zündfenster auf alle großen Beschwörungen erweitern, sobald ein zweiter Beschwörer in der Gruppe ist | umsetzen, mit Gruppenprüfung als Schalter |
-| **V3** | Die Zündung ganz von der Beschwörung lösen | ablehnen |
+| **V4** | Die Bindung an die Beschwörung ganz lösen, Zündung bei Kampf und vorhandenem Ziel | gemessen, im Nutzungsprofil nicht besser — nicht umsetzen |
+| **V5** | Zusätzlich außerhalb eines Fensters zünden, wenn kein anderer bekannter Beschwörer die Lücke decken kann | gemessen, bei drei bis sechs Beschwörern am besten, bricht bei sieben ein — nicht umsetzen |
+
+**Der begrenzende Faktor ist nicht die Wiederholzeit, sondern das Zündfenster.** Sechs Beschwörer
+haben zusammen genug Ladungen für lückenlose Abdeckung (6 × 20 s = 120 s). Dass sie nicht ankommt,
+liegt allein daran, wann gezündet werden darf.
 
 ## Die Zeitstruktur
 
@@ -71,74 +76,63 @@ fremde Buff. Sein Gegenstück `HasSearingLight` (`SummonerRotation.cs:271`) ruft
 `PlayerHasStatus(true, …)` und zählt nur den eigenen — auch das ist für seine ursprüngliche Frage
 richtig. Aus dem Zusammentreffen beider entsteht der Befund von V1.
 
-## Die Fälle von einem bis acht Beschwörern
+## Die Fälle von einem bis acht Beschwörern, gemessen
 
-Angenommen sind synchrone Rotationen (gemeinsamer Pull, niemand stirbt) und ein Kampf von mindestens
-120 Sekunden. Der Versatz-Fall steht weiter unten und ändert das Bild erheblich.
+Die Prozentzahlen früherer Fassungen waren Kopfrechnungen, und eine davon war falsch. Sie stammen
+jetzt aus `.github/scripts/audit/searing_light_coverage.py`, das die Regeln durchrechnet statt ihr
+Ergebnis abzuschätzen: 20 s Wirkung, 120 s Wiederholzeit ab Zündung, Überschreiben statt Stapeln,
+Beschwörungen 15 s alle 60 s in der Reihenfolge Solar, Bahamut, Solar, Phoenix, und die Sperre, die
+fünf Sekunden vor Buff-Ende öffnet. Gemessen wird der Anteil der Kampfzeit mit laufendem Buff.
 
-| Beschwörer | Zündungen je 120 s | Buff-Abdeckung | Ungenutzte Ladungen je 120 s | Was zusätzlich verloren geht |
-|---|---|---|---|---|
-| 1 | 1 | 20 s (17 %) | 0 | nichts — Referenzfall |
-| 2 | 1 | 20 s (17 %) | 1 | bei einem Spieler: Aetherflow-Fenster, Ruby's Glimmer, Searing Flash |
-| 3 | 1 | 20 s (17 %) | 2 | bei zwei Spielern |
-| 4 | 1 | 20 s (17 %) | 3 | bei drei Spielern |
-| 5 | 1 | 20 s (17 %) | 4 | bei vier Spielern |
-| 6 | 1 | 20 s (17 %) | 5 | bei fünf — und ab hier wäre **100 % Abdeckung** möglich |
-| 7 | 1 | 20 s (17 %) | 6 | bei sechs |
-| 8 | 1 | 20 s (17 %) | 7 | bei sieben |
+**Synchrone Rotationen — der saubere Pull:**
 
-Die Zeile ist absichtlich eintönig: **Die Abdeckung steigt mit der Zahl der Beschwörer nicht an.**
-Sie bleibt bei einem Fenster je 120 Sekunden, weil alle an dieselbe Gelegenheit gebunden sind. Der
-gesamte Zuwachs an Ladungen verfällt.
+| Beschwörer | heute (nur Solar) | V2 (alle Demis) | V4 (ohne Bindung) |
+|---|---|---|---|
+| 1 | 17 % | 17 % | 17 % |
+| 2 | 17 % | **33 %** | 29 % |
+| 3 | 17 % | 33 % | 42 % |
+| 4 | 17 % | 33 % | 54 % |
+| 5 | 17 % | 33 % | 67 % |
+| 6 | 17 % | 33 % | 79 % |
+| 7 | 17 % | 33 % | 92 % |
+| 8 | 17 % | 33 % | **100 %** |
 
-### Wann es nicht mehr passt
+**Voll auseinandergelaufene Rotationen — nach Toden, Bewegung, Betäubungen:**
 
-**Ab zwei.** Das ist keine graduelle Verschlechterung, sondern die Schwelle: Ein Fenster kann eine
-Ladung sinnvoll aufnehmen, die zweite ist in demselben Fenster wertlos (siehe Überschreiben-Tabelle,
-Zeile 1). Zwei Beschwörer in einer Gruppe sind gewöhnlich; acht sind der Grenzfall, der die Frage nur
-zuspitzt.
+| Beschwörer | heute (nur Solar) | V2 (alle Demis) | V4 (ohne Bindung) |
+|---|---|---|---|
+| 1 | 17 % | 17 % | 17 % |
+| 2 | 33 % | 33 % | 33 % |
+| 3 | 50 % | 50 % | 50 % |
+| 4 | 66 % | 66 % | 66 % |
+| 5 | 67 % | 67 % | 67 % |
+| 6 | 67 % | 74 % | 79 % |
+| 7 | 67 % | **90 %** | 92 % |
+| 8 | 67 % | **96 %** | 100 % |
 
-### Warum der Gesperrte nicht später nachzündet
+Die Zwischenstufe (halb auseinandergelaufen) liegt dazwischen; das Skript gibt sie mit aus.
 
-Die Sperre löst sich etwa fünf Sekunden vor Buff-Ende, also bei Sekunde 15. Die Beschwörung, die das
-Zünden erlaubt, steht ebenfalls 15 Sekunden. Beide Fenster enden im selben Moment — der Gesperrte
-verpasst seine Gelegenheit um Sekunden. Danach ist `burstInSolar` falsch, und das bleibt es bis zur
-nächsten Solar-Beschwörung 120 Sekunden später, wo dieselbe Kollision erneut auftritt.
+### Was die Zahlen sagen
 
-Ein zweiter Ausgang ist nicht auszuschließen und von hier nicht entscheidbar: Zünden alle im selben
-Sekundenbruchteil, hat der Status den Serverumlauf noch nicht hinter sich, keiner sieht ihn, und alle
-zünden. Dann sind *n−1* Ladungen **verbraucht** statt zurückgehalten, bei gleichem Ergebnis.
+**Die Rechnung des Auftraggebers geht auf, mit zwei Korrekturen.** Searing Light wirkt 20 Sekunden,
+nicht 15 — die 15 sind die Standzeit der Beschwörung. Und die Wiederholzeit läuft ab der Zündung,
+nicht ab Buff-Ende; ein Intervall von 135 Sekunden gibt es nicht, der Zyklus ist 120. Damit liegt die
+Schwelle für rechnerisch lückenlose Abdeckung bei **sechs** Beschwörern, nicht erst bei acht:
+6 × 20 s = 120 s. Die Schlussfolgerung — bei acht Beschwörern wäre der Buff nahezu dauerhaft — ist
+richtig und wird von der Messung bestätigt, allerdings nur unter Bedingungen, die weiter unten
+stehen.
 
-## Alternative Fenster: die übrigen großen Beschwörungen
+**Der Versatz ist der stärkste einzelne Hebel, stärker als jede der drei Zündregeln.** Bei acht
+Beschwörern und heutigem Code steigt die Abdeckung allein durch auseinandergelaufene Rotationen von
+17 % auf 67 %. Der Grund: Gestreute Beschwörungsfenster treffen die Lücken zwischen den Buffs, die
+bei synchronem Pull sämtlich unbesetzt bleiben.
 
-Der Vorschlag des Auftraggebers — nicht nur Solar Bahamut, sondern auch Bahamut oder Phoenix — trifft
-den wirksamen Punkt, und die Rotationsbasis stellt die dafür nötige Eigenschaft bereits bereit.
-
-`BahamutBurst` (`SummonerRotation.cs:231`) ist ab Stufe 100 in **jeder** großen Beschwörung wahr.
-`ChurinSMN` benutzt sie so (`:948`); `SMN_Reborn` benutzt sie nicht, sondern baut mit `burstInSolar`
-eine engere eigene Variable. Das ist kein Versehen, sondern eine erkennbare Entwurfsabsicht: Solar
-Bahamut ist die stärkste der großen Beschwörungen, und den Gruppenbuff mit dem eigenen stärksten
-Schadensfenster zu bündeln ist bei **einem** Beschwörer richtig.
-
-**Was die Erweiterung einbringt:** Ein zweites Fenster je 120 Sekunden, bei Sekunde 60. Zu diesem
-Zeitpunkt ist der Buff des ersten Beschwörers seit 40 Sekunden abgelaufen, die Sperre greift also
-nicht, und ein zweiter Beschwörer zündet mit voller Wirkung.
-
-| Beschwörer | heute | mit Erweiterung |
-|---|---|---|
-| 1 | 20 s (17 %) | 20 s (17 %) — unverändert, siehe Gruppenprüfung |
-| 2 | 20 s (17 %) | **40 s (33 %)** |
-| 3 – 8 | 20 s (17 %) | **40 s (33 %)** |
-
-Der Gewinn tritt vollständig beim Schritt von einem auf zwei Fenster ein und wächst danach nicht
-weiter — bei synchronen Rotationen gibt es nicht mehr als zwei Beschwörungsfenster je 120 Sekunden.
-Wer mehr will, braucht V3, und V3 ist abzulehnen.
-
-**Der Einwand, der bestehen bleibt:** Ein Searing Light bei Sekunde 60 liegt außerhalb des
-Zwei-Minuten-Takts, in dem die übrige Gruppe ihre eigenen Verstärkungen bündelt. Er buffft dort
-weniger Schaden als bei Sekunde 0. Sein Wert ist damit geringer als der des ersten, aber deutlich
-größer als null — und die Alternative ist nicht „Buff bei Sekunde 0", sondern „gar kein zweiter
-Buff". Der Einwand schwächt den Vorschlag ab, widerlegt ihn nicht.
+**Mehr Beschwörer heißt nicht immer mehr Abdeckung.** Bei halbem Versatz liefert V2 mit sieben
+Beschwörern 84 % und mit acht 83 %. Das ist kein Rechenfehler des Modells, sondern gierige Zuteilung
+und damit ein echter Effekt: Wer zuerst in einem Fenster steht, zündet — und kann damit jemandem
+zuvorkommen, dessen eigene Wiederholzeit eine spätere Lücke gedeckt hätte. Kein Client sieht die
+Wiederholzeiten der anderen und kann zurückstehen. Der Selbsttest des Skripts prüft diese
+Eigenschaft deshalb ausdrücklich **nicht**; eine frühere Fassung behauptete sie und war widerlegt.
 
 ## Die Gruppenzusammensetzung als Schalter
 
@@ -184,11 +178,61 @@ Fenster je 120 Sekunden; bei versetzten liegen bis zu *2n* Fenster verteilt, und
 Gelegenheit, die der laufende Sperrmechanismus korrekt filtert — er lässt zünden, wenn kein Buff
 steht, und blockiert, wenn einer steht.
 
-Daraus folgt zweierlei. Erstens: Die Erweiterung wirkt bei Versatz **stärker** als in der Rechnung
-oben, weil mehr Fenster in Zeiten fallen, in denen kein Buff läuft. Zweitens: Eine ausdrückliche
-Staffelung zwischen den Spielern ist weder nötig noch möglich — kein Client kennt die
-Wiederholzeiten der anderen, und die einzige verfügbare Abstimmung ist der Buff selbst, den alle
-sehen.
+Daraus folgt: Der Versatz ist der **stärkste einzelne Hebel** — bei acht Beschwörern hebt er die
+Abdeckung allein, ohne jede Codeänderung, von 17 % auf 67 %. Keine der Zündregeln bewirkt im
+synchronen Fall auch nur annähernd so viel.
+
+## Was über die anderen Beschwörer bekannt ist
+
+Eine frühere Fassung dieses Dokuments behauptete, kein Client kenne die Wiederholzeiten der anderen
+und eine Staffelung sei deshalb unmöglich. **Das ist falsch, und der Auftraggeber hat es widerlegt**
+(`AUDIT_LOG.md` C42): Man weiß zwar nicht, wann ein anderer Beschwörer zünden *wird* — aber ab
+seiner ersten Zündung weiß man, wann er frühestens wieder kann.
+
+Die Information liegt im Status selbst. `IStatus.SourceId` benennt den Urheber, und
+`StatusHelper.PlayerGetStatus` (`:1529`) liest ihn bereits — die Unterscheidung eigener und fremder
+Buffs beruht darauf. Sieht ein Client einen Searing Light mit fremder Quelle, kennt er damit den
+Urheber und über die Restzeit auch den Zündzeitpunkt. Frühestmögliche Wiederkehr: Zündung plus 120
+Sekunden.
+
+**Was daraus eine Regel macht (V5):** Halte dich an die Beschwörungsfenster wie in V2 — und zünde
+zusätzlich außerhalb eines Fensters, wenn kein anderer *bekannter* Beschwörer die kommende Lücke
+überhaupt decken kann. Das ist der informierte Mittelweg zwischen V2 (wartet immer auf ein Fenster)
+und V4 (zündet blind, sobald möglich).
+
+**Eine Bedingung davon stammt aus der Messung, nicht aus der Überlegung.** Die erste Fassung der
+Regel erlaubte das Zünden außerhalb, sobald die Sperre sich löste — also in den letzten fünf Sekunden
+des laufenden Buffs. Gemessen fiel sie damit bei zwei Beschwörern **unter** V2: Eine ganze Ladung
+wird für wenige Sekunden Nettogewinn verbrannt. Was innerhalb eines Fensters als Auffrischung
+sinnvoll ist, ist außerhalb Verschwendung. Die Regel verlangt deshalb, dass der Buff **vollständig
+abgelaufen** ist.
+
+**Gemessene Abdeckung (synchroner Pull):**
+
+| Beschwörer | V2 | V4 | **V5** |
+|---|---|---|---|
+| 2 | 33 % | 29 % | 33 % |
+| 3 | 33 % | 42 % | **50 %** |
+| 4 | 33 % | 54 % | **66 %** |
+| 5 | 33 % | 67 % | **83 %** |
+| 6 | 33 % | 79 % | **99 %** |
+| 7 | 33 % | 92 % | 60 % |
+| 8 | 33 % | 100 % | 60 % |
+
+**Der Einbruch bei sieben und acht ist kein Messfehler, sondern die Grenze des Ansatzes.** Bei sechs
+Beschwörern verteilen sich die Ladungen gerade so, dass jede Lücke gedeckt wird — 99 %. Kommt ein
+siebter dazu, besetzt er eine Lücke einen Moment zu früh, die Staffelung zerfällt, und das Muster
+läuft in eine ungünstige Selbstorganisation. Dieselbe gierige Zuteilung wie oben, hier mit
+sichtbarer Folge: Die Regel ist **nicht robust gegenüber der Gruppengröße**. Ein Client, der nur
+weiß, wann andere frühestens *könnten*, kann nicht verhindern, dass mehrere dieselbe Lücke anpeilen.
+
+**Bewertung: nicht umsetzen, aber festhalten.** Der Gedanke ist richtig und die Information
+tatsächlich verfügbar. Gegen die Umsetzung sprechen drei Dinge: Im Nutzungsprofil (ein bis zwei
+Beschwörer) bringt V5 gegenüber V2 **nichts** — beide liefern 33 %. Der Gewinn liegt bei drei bis
+sechs Beschwörern, und dort bricht er bei sieben wieder ein. Und der Preis ist ein Gedächtnis über
+Frames hinweg: beobachtete Zündungen je Urheber, mit Rücksetzen bei Kampfende, Gruppenwechsel und
+Zonenwechsel — deutlich mehr Zustand als V1 und V2 zusammen, für einen Fall, der praktisch nicht
+eintritt.
 
 ## Gesamtbetrachtung
 
@@ -214,10 +258,14 @@ und nur als Beschwörer.
 liegt ab dann häufiger ein fremder Buff — was V1 häufiger wirksam macht. Die beiden verstärken
 einander, ohne sich zu widersprechen.
 
-**Was keiner der Vorschläge löst:** Die Abdeckung bleibt auch mit V2 bei 33 % statt der theoretisch
-möglichen 100 %. Der Rest ist ohne Absprache zwischen den Spielern nicht zu holen, und eine solche
-Absprache kann ein Rotationshelfer nicht herstellen. Das ist die Grenze, und sie ist zu benennen
-statt zu überspielen.
+**Was keiner der Vorschläge löst — und die frühere Fassung sagte es falsch.** Sie behauptete, die
+Abdeckung bleibe auch mit V2 bei 33 %. Das gilt nur für den synchronen Pull; sobald die Rotationen
+auseinanderlaufen, erreicht V2 bei sieben und acht Beschwörern 90 bis 96 %. Die Aussage widersprach
+dem Versatz-Abschnitt desselben Dokuments und ist zurückgenommen (`AUDIT_LOG.md` C41).
+
+Was bleibt: Der synchrone Pull ist mit V2 bei 33 % gedeckelt, weil es dort schlicht nur zwei
+Beschwörungsfenster je 120 Sekunden gibt. Diese Lücke schließt nur V4 — und V4 ist im Nutzungsprofil
+nicht besser, siehe unten.
 
 ## Die Vorschläge im Einzelnen
 
@@ -241,23 +289,40 @@ Buff-Fenster". Der Auftraggeber hat das ausdrücklich bestätigt.
 
 **Kontext und Mechanismus:** oben, Abschnitte „Alternative Fenster" und „Gruppenzusammensetzung".
 
-**Konsequenzen:** Bei einem Beschwörer unverändert, ab zwei verdoppelte Abdeckung, bei Versatz mehr.
-Der Buff bei Sekunde 60 ist weniger wert als der bei Sekunde 0, aber mehr als keiner.
+**Konsequenzen, gemessen:** Bei einem Beschwörer unverändert (17 %). Bei zwei 33 % statt 17 % im
+synchronen Fall. Bei auseinandergelaufenen Rotationen und sieben bis acht Beschwörern 90 bis 96 %
+statt 67 %. Der Buff bei Sekunde 60 ist weniger wert als der bei Sekunde 0, aber mehr als keiner.
 
 **Bewertung: Erweiterung mit Bedingung.** Die Gruppenprüfung ist der Feature-Toggle, den die
 Projektregel für eine nicht nachweisbare Verhaltensänderung verlangt — nur ist der Schalter hier
 nicht der Nutzer, sondern die Lage, und das ist die bessere Lösung: Sie schaltet genau dann, wenn die
 Voraussetzung tatsächlich vorliegt.
 
-### V3 — Zündung ganz von der Beschwörung lösen
+### V4 — Zündung ganz von der Beschwörung lösen
 
-**Mechanismus:** Zünden, sobald kein Buff steht und die eigene Wiederholzeit frei ist.
+Der Vorschlag, nach dem der Auftraggeber ausdrücklich gefragt hat: ein Ansatz jenseits der
+Beschwörungsfenster. Er ist gemessen worden, statt ihn wie in der früheren Fassung mit einem Argument
+abzutun.
 
-**Konsequenzen:** Höchste Abdeckung, aber die Bindung an ein eigenes Schadensfenster fällt ganz weg.
-Der Beschwörer zündet dann möglicherweise in einer Phase ohne Ziel, kurz vor einem Phasenwechsel oder
-während die Gruppe nichts angreift. Der Buff verpufft, die Ladung ist für 120 Sekunden weg.
+**Mechanismus:** Zünden, sobald kein Buff steht, die eigene Wiederholzeit frei ist und ein Ziel im
+Kampf vorliegt. Die letzte Bedingung entschärft den Einwand der früheren Fassung — der Buff verpufft
+nicht in einer Phase ohne Gegner.
 
-**Bewertung: ablehnen.** Der Gewinn ist unbelegt, der Verlust benennbar.
+**Konsequenzen, gemessen:** Im synchronen Fall die mit Abstand höchste Abdeckung — 100 % bei acht
+Beschwörern gegenüber 33 % mit V2. Bei auseinandergelaufenen Rotationen liegt es fast gleichauf mit
+V2 (92 gegen 90 bei sieben, 100 gegen 96 bei acht).
+
+**Und der Grund, es dennoch nicht zu nehmen, steht in derselben Messung:** Im tatsächlichen
+Nutzungsprofil ist es nicht besser, sondern schlechter. Bei **zwei** Beschwörern synchron liefert V4
+29 % gegenüber 33 % bei V2 — es zündet früher und bringt damit die Wiederholzeiten in eine
+ungünstigere Lage. Bei einem Beschwörer ist die gemessene Abdeckung zwar gleich, der Schaden aber
+geringer, weil die Zündung die Bündelung mit dem stärksten eigenen Fenster verliert; das misst dieses
+Modell nicht, denn es zählt Sekunden und keinen Schaden.
+
+**Bewertung: nicht umsetzen.** V4 gewinnt erst ab drei Beschwörern und richtig deutlich erst ab
+sechs — Gruppen, die es im Spiel praktisch nicht gibt. Bezahlt würde das mit einer Verschlechterung
+genau dort, wo Gruppen tatsächlich stehen. Sollte der Auftraggeber je in einer Gruppe mit sechs oder
+mehr Beschwörern spielen, ist der Eintrag hier und die Zahlen liegen vor.
 
 ### Nullvariante
 
@@ -266,9 +331,10 @@ dann vollständig greifen und zwei Beschwörer in einer Gruppe gewöhnlich sind.
 
 ## Empfehlung
 
-**V1 und V2 umsetzen, V3 nicht.** Beide zusammen, weil sie einander verstärken und sich in getrennten
-Wirkungsbereichen bewegen; beide unter derselben Gruppenprüfung nachvollziehbar, weil beide nur ab
-zwei Beschwörern etwas ändern.
+**V1 und V2 umsetzen, V4 nicht.** V1 und V2 verstärken einander und bewegen sich in getrennten
+Wirkungsbereichen; beide ändern nur ab zwei Beschwörern etwas. V4 bringt seinen Gewinn erst in
+Gruppengrößen, die im Spiel nicht vorkommen, und zahlt dafür bei zwei Beschwörern drauf — das ist
+gemessen, nicht abgeschätzt.
 
 **Noch nicht umgesetzt.** Der Zweig `claude/raise-swiftcast-weave-2` trägt fünf ungemessene Eingriffe
 am Wiederbelebungspfad, deren Spieltest offen ist; sachfremde Änderungen daneben würden dessen
@@ -294,7 +360,18 @@ der großen Beschwörungen, ihre Reihenfolge, und dass Ruby's Glimmer aus der ei
 stammt. Dass ein zweiter Searing Light überschreibt statt zu stapeln, ist die Angabe des
 Auftraggebers.
 
+Die Abdeckungszahlen stammen aus `.github/scripts/audit/searing_light_coverage.py`, das die oben
+genannten Regeln durchrechnet. Das ist eine Messung am Modell, keine am Spiel — und das Modell hat
+benannte Grenzen:
+
+- Es zählt **Sekunden mit Buff, nicht Schaden**. Ein Buff außerhalb des Zwei-Minuten-Takts buffft
+  weniger Schaden als einer darin; das fällt in diesen Zahlen nicht auf und ist der Hauptgrund, V4
+  nicht allein nach der Abdeckung zu beurteilen.
+- Es teilt Fenster **gierig** zu: Wer zuerst darf, zündet. Real entscheidet der Zufall des
+  Sekundenbruchteils. Bei nahezu gleichzeitigen Zündungen kann die Wirklichkeit davon abweichen.
+- Der Versatz ist als **gleichmäßige** Verteilung modelliert. Im Kampf entsteht er ungleichmäßig und
+  in Sprüngen.
+
 Nicht entschieden und nur im Spiel zu klären: welcher Ausgang bei gleichzeitiger Zündung eintritt;
-wie groß der Wertunterschied zwischen einem Buff im Zwei-Minuten-Takt und einem bei Sekunde 60
-tatsächlich ist; und wie stark der Versatz in einem echten Kampf ausfällt. Die Rechnungen in diesem
-Dokument sind Abschätzungen aus den oben genannten Größen, keine Messungen.
+wie groß der Wertunterschied zwischen einem Buff im Zwei-Minuten-Takt und einem daneben tatsächlich
+ist; und wie stark der Versatz in einem echten Kampf ausfällt.

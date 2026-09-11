@@ -108,8 +108,13 @@ unverändert zu übernehmen ist deshalb **nicht** der Weg — es brächte zusät
 `claude/raise-swiftcast-weave-2` fünf ungemessene Eingriffe am Wiederbelebungspfad trägt und
 sachfremde Änderungen deren Spieltest unauswertbar machen.
 
-**Abgelehnt:** die Zündung ganz von der Beschwörung zu lösen. Höchste Abdeckung, aber der Buff kann
-dann in eine Phase ohne Ziel fallen und für 120 Sekunden verpuffen.
+**Abgelehnt, beide gemessen statt argumentiert** (`.github/scripts/audit/searing_light_coverage.py`):
+Die Zündung ganz von der Beschwörung zu lösen ist bei **zwei** Beschwörern schlechter als V2 (29
+gegen 33 %) und gewinnt erst ab drei. Und die informierte Regel — außerhalb eines Fensters zünden,
+wenn kein anderer bekannter Beschwörer die Lücke decken kann, ableitbar aus `IStatus.SourceId` —
+ist bei drei bis sechs Beschwörern die beste von allen (bis 99 %), bricht bei sieben auf 60 % ein
+und bringt im Nutzungsprofil von einem bis zwei Beschwörern gegenüber V2 nichts. Ihr Preis wäre ein
+Gedächtnis über Frames hinweg mit Rücksetzpunkten bei Kampf-, Gruppen- und Zonenwechsel.
 
 **Erfasst, nicht bearbeitet:** `ChurinSMN.cs:1015` trägt denselben V1-Befund; beim Zündfenster ist die
 fremde Rotation bereits weiter (`:948` nutzt `BahamutBurst`), allerdings ohne Gruppenprüfung.
