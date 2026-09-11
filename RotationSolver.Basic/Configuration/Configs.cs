@@ -511,7 +511,8 @@ internal partial class Configs : IPluginConfiguration
 	Filter = AutoActionUsage)]
 	private static readonly bool _usePhoenixDown = false;
 
-	[ConditionBool, UI("Use Phoenix Down only if no Raiser alive in party",
+	[ConditionBool, UI("Use Phoenix Down only if no raiser is alive",
+	Description = "A raiser is a living healer, Summoner or Red Mage of a high enough level to have their raise. Which of them count follows the raise target setting: the party alone under Party only and Party healers only, party and alliance under the alliance modes and All.",
 	Parent = nameof(UsePhoenixDown))]
 	private static readonly bool _usePhoenixDownHealerLogic = true;
 
