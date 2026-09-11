@@ -147,6 +147,8 @@ Beleg: `09-tank-selfprotection.md` trug sieben Abschnitte reiner Prozesshistorie
 
 **`upstream` ist Read-only** (FFXIV-CombatReborn/RotationSolverReborn): ausschließlich `fetch`, keine Pushes, keine Pull Requests dorthin. Commits auf `origin` sind regulärer Ablauf, klein geschnitten und zeitnah gepusht.
 
+**Ein ausbleibender Prüflauf ist ein Befund, kein Zufall.** Der Build hängt am `pull_request`-Ereignis, und GitHub erzeugt keinen Lauf, solange der Pull Request gegen seine Basis nicht mergebar ist. Bleibt nach einem Push der Lauf aus, ist zuerst `mergeable_state` zu messen und die Basis in den Zweig zu mergen — nicht erneut zu pushen und nicht zu warten. Beleg: Drei Commits liefen ungeprüft durch, weil der Zweig nach dem Upstream-Merge gegen `origin/main` als `dirty` galt; der Nachweis fehlte, ohne dass etwas fehlschlug.
+
 **Ein eigener Zweig je Vorhaben ist nicht gefordert.** Themen dürfen auf demselben lebenden Zweig zusammenlaufen; der klein geschnittene Commit ist die Trenneinheit und erlaubt es, im kritischen Fall nachträglich aufzuteilen. Ein zusätzlicher Zweig ist von hier aus ohnehin nicht mehr zu entfernen (Ref-Löschung endet mit 403), also ist seine Erzeugung die teurere Entscheidung. Für die Nachvollziehbarkeit zählt folglich der Zuschnitt der Commits, nicht die Zahl der Zweige.
 
 **Repository-Zustand wird gemessen, nicht erinnert.** Branch-, PR-, Tag- und Release-Zustand vor jeder Aussage frisch erheben: `git fetch --prune`, `git branch -r`, `git ls-remote --tags origin`. Lokale Branch-Referenzen überdauern Remote-Löschungen und sind kein Zustandsnachweis. Belege: Branch als blockiert bezeichnet, den der Auftraggeber längst gelöscht hatte; Release als ausstehend gemeldet, während der Tag auf `origin` stand.
