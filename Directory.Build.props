@@ -17,8 +17,8 @@
 		     upstream release the compiled code contains - and a hand-maintained figure cannot say
 		     that reliably: upstream carries no version in its source tree at all, so a merge brings
 		     nothing along, and the number silently keeps naming the previous release. -->
-		<Version>7.5.6.2</Version>
-		<InformationalVersion>7.5.6.2+wsh1</InformationalVersion>
+		<Version>7.5.6.4</Version>
+		<InformationalVersion>7.5.6.4+wsh1</InformationalVersion>
 
 		<!-- The package identity needs the fork suffix as a pre-release label. RotationSolver.Basic
 		     builds with GeneratePackageOnBuild, so every local and PR build produces a .nupkg too -
@@ -26,7 +26,7 @@
 		     with the upstream release number.
 		     NuGet strips "+wsh1" as build metadata during normalization but keeps "-wsh1", which is
 		     part of the version identity. The publish workflow derives the same value from the tag. -->
-		<PackageVersion>7.5.6.2-wsh1</PackageVersion>
+		<PackageVersion>7.5.6.4-wsh1</PackageVersion>
 
 		<!-- .NET 8 and later append SourceRevisionId - the full git commit hash, filled in
 		     automatically by Source Link - to InformationalVersion. That is the attribute the
