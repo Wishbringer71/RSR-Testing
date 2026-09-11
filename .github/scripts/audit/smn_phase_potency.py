@@ -180,6 +180,11 @@ def tail_window(order, gcd=GCD, swiftcast=False, after_demi=True, blocks=None,
                 unknown_cast='instant'):
     """Everything that still snapshots inside Searing Light after the demi.
 
+    The swiftcast argument is a comparison, not a recommendation: this fork's
+    user keeps Swiftcast for raises and does not spend it in the rotation, so
+    the branch that makes a cast instant is there to show what the cast time
+    costs, not to propose paying for it.
+
     The demi holds the GCD from the pull until its 15 s are up; the buff runs
     20 s from the same moment, which is the assumption this makes -- Searing
     Light is woven into the summon, not cast seconds later.  From there the

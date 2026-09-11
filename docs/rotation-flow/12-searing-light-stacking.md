@@ -452,8 +452,10 @@ innerhalb des Buffs beginnt und nach seinem Ende fertig wird, bekommt ihn nicht.
 
 **Der Ausreißer ist Garuda, nicht Ifrit.** Slipstream beginnt auf dem zweiten Platz bei 17,5 Sekunden
 und ist mit seiner Gießzeit erst nach dem Buffende fertig; der Buff greift beim Fertigwerden, nicht
-beim Anfangen. Mit Swiftcast wäre Slipstream sofort wirksam und käme auf 1320 — RSR hat dafür die
-Option `AddSwiftcastOnGaruda`, die voreingestellt aus ist. Titan verliert dagegen nichts: Seine
+beim Anfangen. Rechnerisch käme Slipstream mit Swiftcast auf 1320, und RSR hat dafür die Option
+`AddSwiftcastOnGaruda` — **diese Möglichkeit steht hier aber nicht offen**, weil der Auftraggeber
+Swiftcast für Wiederbelebungen zurückhält. Die 800 Potenz sind für Garuda zuerst damit fest. Titan
+verliert dagegen nichts: Seine
 GCDs sind sofort wirksam, und Mountain Buster kostet keinen Platz, sondern wird gewebt — deshalb
 liefert Titan die meisten Attacken bei fast derselben Potenz.
 
