@@ -76,32 +76,43 @@ Nicht behoben, weil der Wirkungsbereich den Vorgang sprengt. Das Flag wird in `I
 
 **Auflösungsbedingung:** eine Erhebung, welche der sechs Setzstellen eine Ausnahme rechtfertigen, und eine Engführung des Flags auf diese.
 
-### Beschwörer: der fremde Searing Light gilt nicht als Buff-Fenster · N
+### Beschwörer: Searing Light bei mehreren Beschwörern · N
 
-`SMN_Reborn.cs:320`, `:332`, `:348` bevorzugen Painflare, Necrotize und Fester unter
-`inSolarUnique && HasSearingLight`. `HasSearingLight` ruft `PlayerHasStatus(true, …)`, zählt also nur
-den **eigenen** Buff. Steht bereits der Searing Light eines anderen Beschwörers, hält der Spieler
-seine Aetherflow-Ausgaben zurück, obwohl ein Fünf-Prozent-Fenster auf ihm liegt, und feuert sie nur
-über die Nebenbedingungen (sterbender Boss, drohender Überlauf).
+Zwei Punkte, beide erst ab dem zweiten Beschwörer in der Gruppe wirksam, beide bei einem einzelnen
+wirkungslos. Vollständige Analyse mit den Fällen eins bis acht, der Zeitstruktur, dem Versatz durch
+Tod, Bewegung und Betäubung und der gesamtheitlichen Betrachtung in
+`docs/rotation-flow/12-searing-light-stacking.md`.
 
-**Bei einem Beschwörer wirkungslos** — beide Prüfungen fallen zusammen. Ab zwei greift der Verlust
-vollständig, und zwei Beschwörer in einer Gruppe sind gewöhnlich.
+**V1 — der fremde Buff gilt nicht als Buff-Fenster.** `SMN_Reborn.cs:320`, `:332`, `:348` bevorzugen
+Painflare, Necrotize und Fester unter `inSolarUnique && HasSearingLight`; `HasSearingLight` zählt nur
+den eigenen Buff. Ein gesperrter Beschwörer hält seine Aetherflow-Ausgaben zurück, während ein
+Fünf-Prozent-Fenster auf ihm liegt. Defektbehebung — die Bedingung soll „im Buff-Fenster" heißen und
+sagt „in meinem Buff-Fenster".
 
-Vollständige Analyse samt der Fälle von einem bis acht Beschwörern und zwei weiteren Verlusten
-(kein Nachzünden nach Ablauf des fremden Buffs, dadurch kein Ruby's Glimmer und kein Searing Flash)
-in `docs/rotation-flow/12-searing-light-stacking.md`.
+**V2 — das Zündfenster reicht ab zwei Beschwörern nicht.** Gezündet wird nur während Solar Bahamut
+(`:203`), und dieses Fenster kommt alle 120 Sekunden, genau so oft wie die Aktion selbst. Sind die
+Rotationen synchron, fallen alle Gelegenheiten zusammen und alle bis auf eine verfallen; die
+Abdeckung bleibt bei 20 Sekunden je 120, unabhängig davon, ob zwei oder acht Beschwörer dabei sind.
+Erweiterung auf alle großen Beschwörungen verdoppelt sie auf 40 Sekunden. Die Rotationsbasis führt
+mit `BahamutBurst` (`SummonerRotation.cs:231`) bereits eine solche Fassung, die `SMN_Reborn` nicht
+benutzt.
 
-**Empfehlung:** beheben — die Bedingung soll „im Buff-Fenster" heißen und sagt „in meinem
-Buff-Fenster". Für die Frage, ob sich Aetherflow-Schaden jetzt besonders lohnt, ist die Herkunft des
-Buffs ohne Bedeutung. Nicht im laufenden Vorgang umgesetzt, weil der Auftrag die Erarbeitung im
-Konzept war und der Zweig bereits fünf ungemessene Eingriffe am Wiederbelebungspfad trägt.
+**Bedingung für V2:** nur bei mindestens einem weiteren lebenden Beschwörer in der Gruppe, ermittelt
+über `DataCenter.PartyMembers` und `IsJobs(Job.SMN)`. Ohne diese Prüfung zahlt der Regelfall für
+einen Gewinn im Sonderfall: Ein einzelner Beschwörer würde bei ungünstig freiwerdender Wiederholzeit
+künftig im schwächeren Demi zünden und dauerhaft aus dem Zwei-Minuten-Takt fallen. `BahamutBurst`
+unverändert zu übernehmen ist deshalb **nicht** der Weg — es brächte zusätzlich eine Bindung an
+`AutoStatus.Burst` mit, also zwei Verhaltensänderungen in einer Zeile.
 
-**Nicht empfohlen, aber erfasst:** die Zündung selbst von der eigenen Beschwörung zu lösen, damit ein
-gesperrter Beschwörer nachzündet. Das tauscht einen belegten Nutzen im Regelfall — Bündelung mit dem
-eigenen Schadensfenster und dem Zwei-Minuten-Takt — gegen einen unbelegten im Sonderfall und käme
-allenfalls hinter einer abschaltbaren Einstellung in Frage.
+**Empfehlung:** beide umsetzen, auf einem eigenen Zweig. Nicht im laufenden Vorgang, weil
+`claude/raise-swiftcast-weave-2` fünf ungemessene Eingriffe am Wiederbelebungspfad trägt und
+sachfremde Änderungen deren Spieltest unauswertbar machen.
 
-**Erfasst, nicht bearbeitet:** `ChurinSMN.cs:1015` trägt dasselbe Muster. Fremde Rotationsdatei.
+**Abgelehnt:** die Zündung ganz von der Beschwörung zu lösen. Höchste Abdeckung, aber der Buff kann
+dann in eine Phase ohne Ziel fallen und für 120 Sekunden verpuffen.
+
+**Erfasst, nicht bearbeitet:** `ChurinSMN.cs:1015` trägt denselben V1-Befund; beim Zündfenster ist die
+fremde Rotation bereits weiter (`:948` nutzt `BahamutBurst`), allerdings ohne Gruppenprüfung.
 
 ### ChurinDNC wertet die BMR-Downtime ohne Vorzeichenprüfung aus · N, U
 

@@ -1987,6 +1987,32 @@ Die Behebung stammt aus PR #7 und war mit dem Revert verlorengegangen; sie ist z
 
 ---
 
+### A69 · Searing Light, zweiter Durchgang: Zeitstruktur, alternative Fenster, Versatz (11.09.2026)
+
+**Anlass:** Der Auftraggeber hat A67 in vier Punkten vertieft: Searing Light stapelt nicht, sondern überschreibt; der fremde Buff ist für die eigene Burstphase nutzbar (Bestätigung von V1); ab wann passt die Zündung nicht mehr in die genutzten Fenster, und welche anderen Schadensphasen kämen in Frage; die Gruppenzusammensetzung wäre vorab zu prüfen; und zwischen den Rotationen entsteht Versatz durch Tod, Bewegung und Betäubung. Auftrag: jede Frage in einem eigenen vollständigen Loop und zusätzlich gesamtheitlich.
+
+**Die Zeitstruktur war die fehlende Grundlage.** A67 hatte die Verluste benannt, aber nicht beziffert, warum sie mit der Zahl der Beschwörer nicht wachsen. Der Grund ist eine Asymmetrie: Große Beschwörungen stehen 15 Sekunden und kehren alle 60 wieder, in der Reihenfolge Solar Bahamut, Bahamut, Solar Bahamut, Phoenix. Solar Bahamut kommt damit alle 120 Sekunden — genau so oft wie Searing Light selbst. Da `SMN_Reborn.cs:203` ausschließlich dort zündet, hat jeder Beschwörer **eine** Gelegenheit je Wiederholzeit, und bei synchronen Rotationen fallen alle zusammen.
+
+**Folge, gegen die Erwartung:** Die Abdeckung bleibt bei 20 Sekunden je 120 — bei zwei Beschwörern wie bei acht. Der gesamte Zuwachs an Ladungen verfällt. Die Schwelle liegt bei **zwei**, nicht bei einer höheren Zahl.
+
+**Zum Überschreiben.** Die Angabe des Auftraggebers schärft den Befund: Der Wert einer zweiten Zündung hängt allein vom Zeitpunkt ab — sofort null, nach zehn Sekunden zehn, nach Ablauf voll. Der vorhandene Sperrmechanismus nutzt genau das, weil er zwei GCDs vor Ablauf öffnet (`StatusRefreshGcdCount = 2`). Er ist richtig gebaut und bleibt unangetastet; er ist zugleich das einzige Abstimmungsmittel zwischen Clients, die einander nicht kennen.
+
+**Alternative Fenster — und die Rotationsbasis führt sie bereits.** `BahamutBurst` (`SummonerRotation.cs:231`) ist ab Stufe 100 in jeder großen Beschwörung wahr. `ChurinSMN` benutzt sie (`:948`), `SMN_Reborn` nicht. Die Erweiterung bringt ein zweites Fenster bei Sekunde 60 und verdoppelt die Abdeckung auf 40 Sekunden je 120. Sie unverändert zu übernehmen wäre allerdings falsch: `BahamutBurst` ist zusätzlich an `CanBurst` und damit an `AutoStatus.Burst` gebunden (`StateUpdater.cs:847`), was `burstInSolar` heute nicht prüft — zwei Verhaltensänderungen in einer Zeile sind bei einem fehlschlagenden Spieltest nicht auseinanderzuhalten.
+
+**Gruppenzusammensetzung als Schalter, und warum sie nötig ist.** Bei einem einzelnen Beschwörer ist die Erweiterung nicht neutral: Wird seine Wiederholzeit frei, während Bahamut oder Phoenix steht, zündet er künftig dort, verliert die Bündelung mit seinem stärksten Fenster und fällt aus dem Zwei-Minuten-Takt. Die Prüfung über `DataCenter.PartyMembers` und `IsJobs(Job.SMN)` — dasselbe Muster wie `HasLivingRaiser` — schaltet die Erweiterung nur, wenn die Voraussetzung tatsächlich vorliegt. Das ist der von der Projektregel verlangte Feature-Toggle, nur an der Lage statt am Nutzer.
+
+**Versatz: der erwartete Befund trat nicht ein.** Tod, Bewegung, Betäubung und zielfreie Phasen streuen die Beschwörungsfenster über die Zeit. Damit ist der Versatz kein Problem, sondern der Verbündete der Erweiterung — mehr Fenster fallen in Zeiten ohne laufenden Buff, und der Sperrmechanismus filtert sie korrekt. Eine ausdrückliche Staffelung zwischen Spielern ist weder nötig noch möglich: Kein Client kennt die Wiederholzeiten der anderen.
+
+**Gesamtheitlich:** V1 und V2 wirken in getrennte Richtungen (was der Gesperrte tut / wann er zünden darf), stören einander nicht und verstärken sich — mit V2 liegt häufiger ein fremder Buff, was V1 häufiger wirksam macht. Beide bleiben innerhalb der Beschwörer-Rotation; Basisklasse, Aktionseinstellungen und Sperrmechanismus bleiben unberührt. Betroffen ist allein der Endnutzer als Beschwörer.
+
+**Benannte Grenze:** Auch mit beiden Vorschlägen bleibt die Abdeckung bei 33 % statt der theoretisch möglichen 100 %. Der Rest setzt Absprache zwischen den Spielern voraus, die ein Rotationshelfer nicht herstellen kann.
+
+**Nicht umgesetzt**, weil der Auftrag die Konzeptarbeit war und der laufende Zweig fünf ungemessene Eingriffe am Wiederbelebungspfad trägt.
+
+**Erreichter Prüfgrad:** statische Prüfung am Quelltext für die gesamte Kette einschließlich der ungenutzten `BahamutBurst`-Fassung und der Burst-Bindung; Zeitgrößen und Beschwörungsreihenfolge aus Fremdquellen; das Überschreiben nach Angabe des Auftraggebers. Keine Laufzeitbeobachtung. Die Abdeckungszahlen sind Abschätzungen aus diesen Größen, keine Messungen.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.

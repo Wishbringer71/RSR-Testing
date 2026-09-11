@@ -1,170 +1,300 @@
 # Searing Light bei mehreren Beschwörern
 
 *Zum Namen: Der Auftraggeber nennt die Aktion „Gleißender Schein". Der Job-Guide von Square Enix ist
-vom Egress gesperrt — erneut geprüft, nicht erinnert —, eine belegte Zuordnung deutscher zu
+vom Egress gesperrt — wiederholt geprüft, nicht erinnert —, eine belegte Zuordnung deutscher zu
 englischer Bezeichnung steht damit nicht zur Verfügung. Dass **Searing Light** gemeint ist, ist aus
-der Fragestellung geschlossen (ein Gruppenbuff, bei dem acht Beschwörer kollidieren können) und als
-Schluss gekennzeichnet. Das Dokument benutzt durchgehend den englischen Bezeichner.*
+der Fragestellung geschlossen und als Schluss gekennzeichnet. Das Dokument benutzt durchgehend den
+englischen Bezeichner.*
 
 ## Sachstand
 
-Bei **einem** Beschwörer ist der Ablauf richtig. Ab **zwei** entstehen drei Verluste, und sie wachsen
-mit der Zahl der Beschwörer: der blockierte Spieler zündet in diesem Fenster nicht mehr, er behandelt
-den laufenden fremden Buff nicht als Buff-Fenster für seine Aetherflow-Ausgaben, und er bekommt
-mangels eigener Zündung kein Ruby's Glimmer und damit kein Searing Flash.
+Bei **einem** Beschwörer ist der Ablauf richtig. Ab **zwei** reicht das genutzte Zündfenster nicht
+mehr aus, und der Verlust ist strukturell, nicht graduell: Jeder Beschwörer darf Searing Light nur
+während seiner Solar-Bahamut-Beschwörung zünden, und dieses Fenster kommt nur alle 120 Sekunden —
+genau so oft wie die Aktion selbst. Sind die Rotationen synchron, fallen alle Gelegenheiten
+zusammen, und alle bis auf eine verfallen.
 
-Der Doppelzündungsschutz selbst ist vorhanden und richtig gebaut. Was fehlt, ist die Behandlung des
-Zustands **nach** dem Blockieren.
+Drei Eingriffe sind möglich. Einer ist eine Defektbehebung ohne Gegenargument, einer eine Erweiterung
+mit einer Bedingung, einer ist abzulehnen:
 
-## Wann Searing Light gewirkt wird
-
-Die Kette in `SMN_Reborn.cs`, vollständig:
-
-| Stufe | Stelle | Bedingung |
+| | Inhalt | Bewertung |
 |---|---|---|
-| Dispatcher | `AttackAbility`, `:204` | `burstInSolar` — Solar Bahamut läuft (ab Stufe 100), sonst Bahamut, unterhalb der Beschwörungsstufe immer wahr |
-| Aktion | `SummonerRotation.cs:490` | `ActionCheck = InCombat`, `TargetType.Self` |
-| Sperre | derselbe Block | `StatusProvide = [SearingLight]` mit `StatusFromSelf = false` |
+| **V1** | Den Searing Light eines anderen Beschwörers als Buff-Fenster für die eigenen Aetherflow-Ausgaben werten | umsetzen |
+| **V2** | Das Zündfenster auf alle großen Beschwörungen erweitern, sobald ein zweiter Beschwörer in der Gruppe ist | umsetzen, mit Gruppenprüfung als Schalter |
+| **V3** | Die Zündung ganz von der Beschwörung lösen | ablehnen |
 
-Die Beschwörung ihrerseits ist an Searing Light gekoppelt: `SMN_Reborn.cs:467` verlangt für Solar
-Bahamut `IsBurst && !SearingLightPvE.Cooldown.IsCoolingDown`. Beide Zyklen hängen also aneinander —
-Searing Light fällt nur während der großen Beschwörung, und die große Beschwörung wartet auf Searing
-Lights Wiederholzeit.
+## Die Zeitstruktur
 
-**Größenordnungen** (Fremdquelle, siehe Nachweisgrenzen): Searing Light wirkt 20 Sekunden, hat 120
-Sekunden Wiederholzeit und erhöht den Schaden der Gruppe um 5 %. Solar Bahamut steht 15 Sekunden.
-Das Buff-Fenster ist damit **länger** als die Beschwörung, in der es gezündet werden darf.
+Ohne sie ist keine der Fragen zu beantworten. Alle Größen außerhalb des Quelltextes stammen aus
+Fremdquellen (siehe Nachweisgrenzen).
 
-## Der Kollisionsschutz und seine Reichweite
+| Größe | Wert |
+|---|---|
+| Searing Light, Wirkdauer | 20 s |
+| Searing Light, Wiederholzeit | 120 s |
+| Wirkung | +5 % Schaden für die ganze Gruppe |
+| Große Beschwörung, Standzeit | 15 s |
+| Große Beschwörung, Wiederholzeit | 60 s |
+| Reihenfolge der großen Beschwörungen | Solar Bahamut → Bahamut → Solar Bahamut → Phoenix |
 
-`IsStatusProvided` (`ActionBasicInfo.cs:691`) blockiert die Aktion, wenn der Spieler den Status
-`SearingLight` trägt und dieser nicht innerhalb von `StatusRefreshGcdCount` GCDs endet. Zwei
-Vorgabewerte bestimmen die Schärfe: `ShouldCheckStatus = true` und `StatusRefreshGcdCount = 2`
-(`ActionConfig.cs:50`, `:66`). Der Schutz löst sich also **zwei GCDs vor Ablauf** des fremden Buffs,
-nicht erst danach.
+Daraus folgt die entscheidende Asymmetrie: **Pro 120 Sekunden gibt es zwei Beschwörungsfenster, aber
+nur eines davon ist Solar Bahamut.** Die Rotation zündet ausschließlich im Solar-Fenster
+(`SMN_Reborn.cs:203`, lokale Variable `burstInSolar`). Ein Beschwörer hat damit genau **eine**
+Gelegenheit pro Wiederholzeit — und sie liegt bei allen Beschwörern einer synchron gestarteten
+Gruppe zur selben Zeit.
 
-Entscheidend ist `StatusFromSelf = false`: `PlayerGetStatus` (`StatusHelper.cs:1529`) filtert nur bei
-`isFromSelf` auf `status.SourceId == playerId`. Mit `false` zählt **jeder** Searing Light, von wem
-auch immer. Das ist die richtige Einstellung für diese Frage, und sie ist bewusst gesetzt.
+Zum Vergleich: Für lückenlose Abdeckung wären sechs Zündungen pro 120 Sekunden nötig (6 × 20 s).
 
-Ihr Gegenstück ist ebenso bewusst: `HasSearingLight` (`SummonerRotation.cs:271`) ruft
-`PlayerHasStatus(true, …)`, zählt also **nur den eigenen** Buff. Auch das ist für seine ursprüngliche
-Frage richtig — „läuft mein Burst-Fenster" —, und genau daraus entsteht der zweite Verlust unten.
+## Überschreiben, nicht stapeln
+
+Der Auftraggeber hat darauf hingewiesen, und die Folge ist schärfer, als „verschwendet" es trifft.
+Ein zweiter Searing Light auf einen laufenden ersten stapelt nicht, er **ersetzt** ihn — die Wirkung
+bleibt bei 5 %, die Restzeit springt zurück auf 20 Sekunden.
+
+Daraus folgt ein Wert, der vom Zeitpunkt abhängt, nicht von der Zündung selbst:
+
+| Zündung von Beschwörer B, nachdem A gezündet hat | Nettogewinn |
+|---|---|
+| sofort (Restzeit 20 s) | 0 s — die Ladung ist vollständig verloren |
+| nach 10 s (Restzeit 10 s) | 10 s |
+| nach 19 s (Restzeit 1 s) | 19 s |
+| nach Ablauf | 20 s, volle Wirkung |
+
+Der vorhandene Schutz nutzt genau das: `IsStatusProvided` (`ActionBasicInfo.cs:691`) sperrt die
+Zündung, solange der Status nicht innerhalb von `StatusRefreshGcdCount` GCDs endet — Vorgabe 2
+(`ActionConfig.cs:66`), also etwa fünf Sekunden vor Ablauf. Der Schutz verhindert damit die teuren
+Fälle und erlaubt die billigen. **Er ist richtig gebaut und bleibt unangetastet.**
+
+Entscheidend dafür ist `StatusFromSelf = false` (`SummonerRotation.cs:490`): `PlayerGetStatus`
+(`StatusHelper.cs:1529`) filtert nur bei `isFromSelf` auf die eigene Quelle, hier zählt also jeder
+fremde Buff. Sein Gegenstück `HasSearingLight` (`SummonerRotation.cs:271`) ruft
+`PlayerHasStatus(true, …)` und zählt nur den eigenen — auch das ist für seine ursprüngliche Frage
+richtig. Aus dem Zusammentreffen beider entsteht der Befund von V1.
 
 ## Die Fälle von einem bis acht Beschwörern
 
-Die Zahl der Beschwörer ändert nichts an der Mechanik, nur an der Höhe des Verlusts. Qualitativ gibt
-es drei Bereiche.
+Angenommen sind synchrone Rotationen (gemeinsamer Pull, niemand stirbt) und ein Kampf von mindestens
+120 Sekunden. Der Versatz-Fall steht weiter unten und ändert das Bild erheblich.
 
-| Anzahl | Was geschieht | Bewertung |
+| Beschwörer | Zündungen je 120 s | Buff-Abdeckung | Ungenutzte Ladungen je 120 s | Was zusätzlich verloren geht |
+|---|---|---|---|---|
+| 1 | 1 | 20 s (17 %) | 0 | nichts — Referenzfall |
+| 2 | 1 | 20 s (17 %) | 1 | bei einem Spieler: Aetherflow-Fenster, Ruby's Glimmer, Searing Flash |
+| 3 | 1 | 20 s (17 %) | 2 | bei zwei Spielern |
+| 4 | 1 | 20 s (17 %) | 3 | bei drei Spielern |
+| 5 | 1 | 20 s (17 %) | 4 | bei vier Spielern |
+| 6 | 1 | 20 s (17 %) | 5 | bei fünf — und ab hier wäre **100 % Abdeckung** möglich |
+| 7 | 1 | 20 s (17 %) | 6 | bei sechs |
+| 8 | 1 | 20 s (17 %) | 7 | bei sieben |
+
+Die Zeile ist absichtlich eintönig: **Die Abdeckung steigt mit der Zahl der Beschwörer nicht an.**
+Sie bleibt bei einem Fenster je 120 Sekunden, weil alle an dieselbe Gelegenheit gebunden sind. Der
+gesamte Zuwachs an Ladungen verfällt.
+
+### Wann es nicht mehr passt
+
+**Ab zwei.** Das ist keine graduelle Verschlechterung, sondern die Schwelle: Ein Fenster kann eine
+Ladung sinnvoll aufnehmen, die zweite ist in demselben Fenster wertlos (siehe Überschreiben-Tabelle,
+Zeile 1). Zwei Beschwörer in einer Gruppe sind gewöhnlich; acht sind der Grenzfall, der die Frage nur
+zuspitzt.
+
+### Warum der Gesperrte nicht später nachzündet
+
+Die Sperre löst sich etwa fünf Sekunden vor Buff-Ende, also bei Sekunde 15. Die Beschwörung, die das
+Zünden erlaubt, steht ebenfalls 15 Sekunden. Beide Fenster enden im selben Moment — der Gesperrte
+verpasst seine Gelegenheit um Sekunden. Danach ist `burstInSolar` falsch, und das bleibt es bis zur
+nächsten Solar-Beschwörung 120 Sekunden später, wo dieselbe Kollision erneut auftritt.
+
+Ein zweiter Ausgang ist nicht auszuschließen und von hier nicht entscheidbar: Zünden alle im selben
+Sekundenbruchteil, hat der Status den Serverumlauf noch nicht hinter sich, keiner sieht ihn, und alle
+zünden. Dann sind *n−1* Ladungen **verbraucht** statt zurückgehalten, bei gleichem Ergebnis.
+
+## Alternative Fenster: die übrigen großen Beschwörungen
+
+Der Vorschlag des Auftraggebers — nicht nur Solar Bahamut, sondern auch Bahamut oder Phoenix — trifft
+den wirksamen Punkt, und die Rotationsbasis stellt die dafür nötige Eigenschaft bereits bereit.
+
+`BahamutBurst` (`SummonerRotation.cs:231`) ist ab Stufe 100 in **jeder** großen Beschwörung wahr.
+`ChurinSMN` benutzt sie so (`:948`); `SMN_Reborn` benutzt sie nicht, sondern baut mit `burstInSolar`
+eine engere eigene Variable. Das ist kein Versehen, sondern eine erkennbare Entwurfsabsicht: Solar
+Bahamut ist die stärkste der großen Beschwörungen, und den Gruppenbuff mit dem eigenen stärksten
+Schadensfenster zu bündeln ist bei **einem** Beschwörer richtig.
+
+**Was die Erweiterung einbringt:** Ein zweites Fenster je 120 Sekunden, bei Sekunde 60. Zu diesem
+Zeitpunkt ist der Buff des ersten Beschwörers seit 40 Sekunden abgelaufen, die Sperre greift also
+nicht, und ein zweiter Beschwörer zündet mit voller Wirkung.
+
+| Beschwörer | heute | mit Erweiterung |
 |---|---|---|
-| **1** | Zündet zu Beginn der eigenen großen Beschwörung, Buff 20 s, Aetherflow-Ausgaben liegen im eigenen Fenster, Ruby's Glimmer kommt, Searing Flash folgt | richtig, kein Befund |
-| **2** | Einer zündet, der zweite wird gesperrt. Beim zweiten: kein Searing Light in diesem Fenster, keine bevorzugte Aetherflow-Ausgabe, kein Searing Flash | erster Verlust, drei Teile |
-| **3 – 5** | Wie 2, mit *n−1* gesperrten Spielern je Fenster | Verlust wächst linear |
-| **6 – 8** | Wie 2. Zugleich wäre ab sechs Beschwörern **durchgehende** Buff-Abdeckung möglich (6 × 20 s = 120 s = eine Wiederholzeit), und genau die entgeht | Verlust am größten, zugleich der größte entgangene Gewinn |
+| 1 | 20 s (17 %) | 20 s (17 %) — unverändert, siehe Gruppenprüfung |
+| 2 | 20 s (17 %) | **40 s (33 %)** |
+| 3 – 8 | 20 s (17 %) | **40 s (33 %)** |
 
-**Der Grund, warum der Gesperrte nicht nachzündet:** Seine Zündbedingung ist `burstInSolar`. Der
-fremde Buff hält 20 Sekunden, seine eigene Beschwörung nur 15. Wenn die Sperre sich löst — zwei GCDs
-vor Buff-Ende, also etwa bei Sekunde 15 — ist sein Beschwörungsfenster gerade abgelaufen. Er zündet
-erst, wenn die nächste große Beschwörung läuft **und** zu diesem Zeitpunkt kein fremder Buff steht.
-Bei gleichzeitigem Pull laufen alle Zyklen synchron, sodass sich die Lage bei jeder Runde
-wiederholt.
+Der Gewinn tritt vollständig beim Schritt von einem auf zwei Fenster ein und wächst danach nicht
+weiter — bei synchronen Rotationen gibt es nicht mehr als zwei Beschwörungsfenster je 120 Sekunden.
+Wer mehr will, braucht V3, und V3 ist abzulehnen.
 
-**Ein zweiter Ausgang ist nicht auszuschließen und hier nicht entscheidbar:** Wenn alle Beschwörer im
-selben Sekundenbruchteil zünden, hat der Status den Serverumlauf noch nicht hinter sich, keiner sieht
-ihn, und alle zünden. Dann sind *n−1* Ladungen verbraucht statt zurückgehalten — bei gleichem
-Buff-Ergebnis. Welcher der beiden Ausgänge eintritt, hängt am Zeitversatz zwischen den Spielern und
-ist nur im Spiel zu beobachten.
+**Der Einwand, der bestehen bleibt:** Ein Searing Light bei Sekunde 60 liegt außerhalb des
+Zwei-Minuten-Takts, in dem die übrige Gruppe ihre eigenen Verstärkungen bündelt. Er buffft dort
+weniger Schaden als bei Sekunde 0. Sein Wert ist damit geringer als der des ersten, aber deutlich
+größer als null — und die Alternative ist nicht „Buff bei Sekunde 0", sondern „gar kein zweiter
+Buff". Der Einwand schwächt den Vorschlag ab, widerlegt ihn nicht.
 
-## Die drei Verluste, einzeln
+## Die Gruppenzusammensetzung als Schalter
 
-**1 — Das Buff-Fenster wird nicht nachbesetzt.** Beschrieben oben. Nicht der Schutz ist falsch,
-sondern seine Folgenlosigkeit: Wer gesperrt wurde, hat keinen zweiten Anlauf innerhalb desselben
-Zyklus.
+Die Erweiterung darf nicht bedingungslos gelten, und der Auftraggeber hat den richtigen Ort dafür
+benannt: die Zusammensetzung der Gruppe.
 
-**2 — Der laufende fremde Buff gilt nicht als Buff-Fenster.** `SMN_Reborn.cs:320`, `:332`, `:348`
-bevorzugen Painflare, Necrotize und Fester unter `inSolarUnique && HasSearingLight` — und
-`HasSearingLight` zählt nur den eigenen Buff. Ein gesperrter Beschwörer hält seine
-Aetherflow-Ausgaben also zurück, während ein 5-%-Buff auf ihm liegt, und gibt sie nur über die
-Nebenbedingungen aus (sterbender Boss, drohender Überlauf bei `EnergyDrainPvE.Cooldown.WillHaveOneChargeGCD(2)`).
-Das ist der klarste der drei Befunde: Für die Frage „lohnt sich mein Aetherflow-Schaden jetzt
-besonders" ist die Herkunft des Buffs ohne Bedeutung. Die Umsetzung weicht hier von der erkennbaren
-Absicht ab.
+**Warum die Prüfung nötig ist.** Bei einem einzelnen Beschwörer ist die Erweiterung nicht neutral.
+Wird seine Wiederholzeit zu einem Zeitpunkt frei, an dem gerade Bahamut oder Phoenix steht — nach
+verzögertem Kampfbeginn, nach einer Unterbrechung, nach einer Phase ohne Ziel —, zündet er künftig
+dort statt im nächsten Solar-Fenster. Das kostet ihn die Bündelung mit seinem stärksten Fenster und
+verschiebt ihn dauerhaft aus dem Takt der Gruppe. Der Regelfall würde also für einen Gewinn im
+Sonderfall bezahlen.
 
-**3 — Searing Flash entfällt.** `ModifySearingFlashPvE` verlangt `StatusNeed = [RubysGlimmer]`
-(`SummonerRotation.cs:542`), und Ruby's Glimmer entsteht laut Fremdquelle aus der **eigenen**
-Ausführung von Searing Light (Trait ab Stufe 96). Wer nie zündet, bekommt es nie. Dieser Verlust
-folgt aus Verlust 1 und verschwindet mit dessen Behebung.
+**Mechanismus.** Die Zahl der weiteren Beschwörer in der Gruppe ist aus `DataCenter.PartyMembers` und
+`IsJobs(Job.SMN)` zu ermitteln — dasselbe Muster, das `DataCenter.HasLivingRaiser` für die
+Rezzerfrage benutzt. Die Erweiterung des Zündfensters gilt nur, wenn mindestens ein weiterer
+Beschwörer lebt. Tote zählen nicht mit, denn sie zünden nichts.
 
-## Vorschläge
+**Was die Prüfung nicht leisten kann:** Sie sieht nicht, ob der andere Beschwörer überhaupt RSR
+benutzt, ob seine Rotation dieselbe ist oder ob er von Hand spielt. Sie beantwortet nur „kann
+überhaupt ein zweiter Searing Light kommen" — und genau das ist die Frage, auf die es ankommt.
 
-### V1 — Den laufenden Buff als Buff-Fenster behandeln
+**Nicht empfohlen: einfach `BahamutBurst` übernehmen.** Das wäre die kleinste Textänderung, brächte
+aber eine zweite Verhaltensänderung mit: `BahamutBurst` ist zusätzlich an `CanBurst` gebunden, also
+an `AutoStatus.Burst`, der nur gesetzt ist, wenn der Nutzer den Burst-Befehl gibt oder
+`Service.Config.AutoBurst` an ist (`StateUpdater.cs:847`). `burstInSolar` prüft das heute nicht. Zwei
+Änderungen in einer Zeile sind nicht auswertbar, wenn der Spieltest fehlschlägt.
 
-**Kontext:** Verlust 2. **Betroffene Stellen:** `SMN_Reborn.cs:320`, `:332`, `:348`.
+## Versatz zwischen den Rotationen
 
-**Mechanismus:** Die drei Bedingungen fragen zusätzlich nach einem Searing Light beliebiger Herkunft,
-etwa über eine benannte Eigenschaft neben `HasSearingLight`, die `PlayerHasStatus(false, …)` ruft.
+Der Auftraggeber nennt Tod, Bewegung und Betäubung. Der Befund dazu ist nicht der erwartete: **Der
+Versatz ist kein Problem, sondern der Verbündete der Erweiterung.**
 
-**Konsequenzen:** Bei einem Beschwörer ändert sich **nichts** — beide Prüfungen fallen zusammen. Ab
-zwei landen die Aetherflow-Ausgaben des Gesperrten im laufenden Fenster statt außerhalb. Ein Nachteil
-ist nicht erkennbar: Der Buff wirkt multiplikativ auf den Schaden, unabhängig davon, wer ihn gesetzt
-hat. Betroffenenkreis: nur Endnutzer, nur Beschwörer.
+| Ursache | Wirkung auf den Zyklus |
+|---|---|
+| Tod und Wiederbelebung | Beschwörungen und Wiederholzeiten laufen weiter, die Rotation setzt aber versetzt wieder ein; zusätzlich kostet die Schwäche nach der Wiederbelebung Schaden |
+| Bewegung | Wirkzeitgebundene Zauber entfallen, die Beschwörungskette verschiebt sich um GCDs |
+| Betäubung, Stille, Bewegungsunfähigkeit | dasselbe, in Stufen |
+| Phasenwechsel ohne Ziel | die Beschwörung wird nicht gestartet, das Fenster verschiebt sich um bis zu 60 s |
 
-**Bewertung:** Defektbehebung, keine Geschmacksfrage — die Bedingung sollte „im Buff-Fenster" heißen
-und sagt „in meinem Buff-Fenster".
+Alle vier streuen die Beschwörungsfenster über die Zeit. Bei synchronen Rotationen liegen zwei
+Fenster je 120 Sekunden; bei versetzten liegen bis zu *2n* Fenster verteilt, und jedes davon ist eine
+Gelegenheit, die der laufende Sperrmechanismus korrekt filtert — er lässt zünden, wenn kein Buff
+steht, und blockiert, wenn einer steht.
 
-### V2 — Nachzünden, sobald der Buff ausläuft
+Daraus folgt zweierlei. Erstens: Die Erweiterung wirkt bei Versatz **stärker** als in der Rechnung
+oben, weil mehr Fenster in Zeiten fallen, in denen kein Buff läuft. Zweitens: Eine ausdrückliche
+Staffelung zwischen den Spielern ist weder nötig noch möglich — kein Client kennt die
+Wiederholzeiten der anderen, und die einzige verfügbare Abstimmung ist der Buff selbst, den alle
+sehen.
 
-**Kontext:** Verlust 1. **Betroffene Stelle:** `SMN_Reborn.cs:204`.
+## Gesamtbetrachtung
 
-**Mechanismus:** Die Zündung nicht allein an `burstInSolar` binden, sondern zusätzlich zulassen, wenn
-kein Searing Light steht, die eigene Wiederholzeit frei ist und der Kampf läuft.
+Die drei Fragen greifen ineinander, und die Reihenfolge ihrer Behandlung ist nicht beliebig.
 
-**Konsequenzen, und hier liegt der Haken:** Für einen einzelnen Beschwörer ist die Kopplung an die
-eigene Beschwörung **richtig** — sie bündelt den Gruppenbuff mit dem eigenen Schadensfenster und mit
-dem Zwei-Minuten-Takt der übrigen Gruppe. Eine Lockerung würde bei einem Beschwörer Schaden kosten,
-bei mehreren welchen gewinnen. Die Wirkung ist mit statischer Prüfung nicht zu belegen.
+**Der Sperrmechanismus ist die Grundlage und bleibt.** Er ist das einzige Abstimmungsmittel zwischen
+Clients, die einander nicht kennen. Jede Erweiterung des Zündfensters ist nur deshalb ungefährlich,
+weil er dahinter steht: Mehr Gelegenheiten führen nicht zu mehr Überschreibungen, sondern zu mehr
+genutzten Lücken.
 
-**Bewertung:** Verhaltensänderung ohne Nachweismöglichkeit. Nach der Projektregel gehört sie hinter
-eine abschaltbare Einstellung mit dem bisherigen Verhalten als Vorgabe — und selbst dann bleibt
-offen, ob der Nutzen die zusätzliche Einstellung rechtfertigt.
+**V1 und V2 wirken in verschiedene Richtungen und stören einander nicht.** V1 verbessert, was der
+**gesperrte** Beschwörer während eines fremden Buffs tut; V2 verbessert, **wann** er selbst zünden
+darf. V1 wirkt auch dann, wenn V2 nicht greift — etwa bei einem Beschwörer, der von Hand spielt und
+seinen Buff zu einem beliebigen Zeitpunkt setzt.
 
-### V3 — Nichts tun
+**Die Wirkungsbereiche sind getrennt.** V1 berührt drei Bedingungen in `SMN_Reborn.AttackAbility`,
+die ausschließlich Aetherflow-Ausgaben steuern. V2 berührt eine lokale Variable derselben Methode.
+Keine der beiden Änderungen verlässt die Beschwörer-Rotation; die Basisklasse, die
+Aktionseinstellungen und der Sperrmechanismus bleiben unberührt. Betroffen ist allein der Endnutzer,
+und nur als Beschwörer.
 
-**Konsequenz:** Acht Beschwörer in einer Gruppe sind kein Nutzungsprofil, sondern ein Grenzfall. Zwei
-sind es allerdings nicht: Eine Gruppe mit zwei Beschwörern ist gewöhnlich, und dort greifen alle drei
-Verluste bereits vollständig.
+**Eine Wechselwirkung ist zu benennen:** Mit V2 zündet ein zweiter Beschwörer bei Sekunde 60. Damit
+liegt ab dann häufiger ein fremder Buff — was V1 häufiger wirksam macht. Die beiden verstärken
+einander, ohne sich zu widersprechen.
 
-**Bewertung:** Für V2 tragfähig, für V1 nicht.
+**Was keiner der Vorschläge löst:** Die Abdeckung bleibt auch mit V2 bei 33 % statt der theoretisch
+möglichen 100 %. Der Rest ist ohne Absprache zwischen den Spielern nicht zu holen, und eine solche
+Absprache kann ein Rotationshelfer nicht herstellen. Das ist die Grenze, und sie ist zu benennen
+statt zu überspielen.
+
+## Die Vorschläge im Einzelnen
+
+### V1 — Den fremden Buff als Buff-Fenster werten
+
+**Kontext:** `SMN_Reborn.cs:320`, `:332`, `:348` bevorzugen Painflare, Necrotize und Fester unter
+`inSolarUnique && HasSearingLight`, und `HasSearingLight` zählt nur den eigenen Buff. Ein gesperrter
+Beschwörer hält seine Aetherflow-Ausgaben also zurück, während ein 5-%-Fenster auf ihm liegt.
+
+**Mechanismus:** Eine zweite, benannte Eigenschaft neben `HasSearingLight`, die
+`PlayerHasStatus(false, …)` ruft, und die drei Bedingungen fragen nach ihr.
+
+**Konsequenzen:** Bei einem Beschwörer wirkungslos — beide Prüfungen fallen zusammen. Ab zwei landen
+die Ausgaben im laufenden Fenster. Ein Nachteil ist nicht erkennbar: Der Buff wirkt multiplikativ,
+unabhängig von seiner Herkunft.
+
+**Bewertung: Defektbehebung.** Die Bedingung soll „im Buff-Fenster" heißen und sagt „in meinem
+Buff-Fenster". Der Auftraggeber hat das ausdrücklich bestätigt.
+
+### V2 — Zündfenster auf alle großen Beschwörungen, bei mehreren Beschwörern
+
+**Kontext und Mechanismus:** oben, Abschnitte „Alternative Fenster" und „Gruppenzusammensetzung".
+
+**Konsequenzen:** Bei einem Beschwörer unverändert, ab zwei verdoppelte Abdeckung, bei Versatz mehr.
+Der Buff bei Sekunde 60 ist weniger wert als der bei Sekunde 0, aber mehr als keiner.
+
+**Bewertung: Erweiterung mit Bedingung.** Die Gruppenprüfung ist der Feature-Toggle, den die
+Projektregel für eine nicht nachweisbare Verhaltensänderung verlangt — nur ist der Schalter hier
+nicht der Nutzer, sondern die Lage, und das ist die bessere Lösung: Sie schaltet genau dann, wenn die
+Voraussetzung tatsächlich vorliegt.
+
+### V3 — Zündung ganz von der Beschwörung lösen
+
+**Mechanismus:** Zünden, sobald kein Buff steht und die eigene Wiederholzeit frei ist.
+
+**Konsequenzen:** Höchste Abdeckung, aber die Bindung an ein eigenes Schadensfenster fällt ganz weg.
+Der Beschwörer zündet dann möglicherweise in einer Phase ohne Ziel, kurz vor einem Phasenwechsel oder
+während die Gruppe nichts angreift. Der Buff verpufft, die Ladung ist für 120 Sekunden weg.
+
+**Bewertung: ablehnen.** Der Gewinn ist unbelegt, der Verlust benennbar.
+
+### Nullvariante
+
+Für einen Beschwörer richtig und die Empfehlung. Ab zwei nicht mehr tragfähig, weil beide Verluste
+dann vollständig greifen und zwei Beschwörer in einer Gruppe gewöhnlich sind.
 
 ## Empfehlung
 
-**V1 umsetzen, V2 nicht.** V1 behebt eine Abweichung zwischen Absicht und Umsetzung, ist bei einem
-Beschwörer wirkungslos und hat keinen erkennbaren Nachteil. V2 tauscht einen belegten Nutzen im
-Regelfall gegen einen unbelegten im Sonderfall und käme allenfalls als abschaltbare Einstellung in
-Frage.
+**V1 und V2 umsetzen, V3 nicht.** Beide zusammen, weil sie einander verstärken und sich in getrennten
+Wirkungsbereichen bewegen; beide unter derselben Gruppenprüfung nachvollziehbar, weil beide nur ab
+zwei Beschwörern etwas ändern.
 
-Nicht umgesetzt, weil der laufende Vorgang es nicht verlangt: Der Auftrag war die Erarbeitung im
-Konzept. Der Zweig `claude/raise-swiftcast-weave-2` trägt zudem bereits fünf ungemessene Eingriffe
-am Wiederbelebungspfad; ein sechster, sachfremder würde die Auswertung des offenen Spieltests
-beschädigen.
+**Noch nicht umgesetzt.** Der Zweig `claude/raise-swiftcast-weave-2` trägt fünf ungemessene Eingriffe
+am Wiederbelebungspfad, deren Spieltest offen ist; sachfremde Änderungen daneben würden dessen
+Auswertung beschädigen. Die Umsetzung gehört auf einen eigenen Zweig, nach Freigabe.
 
 ## Erfasst, nicht bearbeitet
 
-`ChurinSMN.cs` trägt dasselbe Muster: Die Zündung hängt an `BahamutBurst && InBigSummon &&
-BigSummonGCDLeft <= 5` (`:953`), die Aetherflow-Ausgabe an `HasSearingLight` (`:1015`), also erneut am
-eigenen Buff. Fremde Rotationsdatei mit eigener Abstimmung — der Befund wird benannt, nicht behoben.
+`ChurinSMN.cs` trägt denselben V1-Befund (`:1015`, Aetherflow-Ausgabe an `HasSearingLight`). Beim
+Zündfenster ist die fremde Rotation dagegen bereits weiter: Sie benutzt `BahamutBurst` (`:948`),
+zündet also in jeder großen Beschwörung — allerdings ohne Gruppenprüfung, also auch bei einem
+einzelnen Beschwörer. Fremde Rotationsdatei mit eigener Abstimmung; der Befund wird benannt, nicht
+behoben.
 
 ## Grenzen des Nachweises
 
-Statische Prüfung am Quelltext für die gesamte Kette: Dispatcher, Aktionseinstellung, Statusprüfung,
-Vorgabewerte der Aktionskonfiguration und die Filterung nach Statusquelle sind alle am Artefakt
-belegt.
+Am Quelltext belegt: die gesamte Kette von der Zündbedingung über die Aktionseinstellung und die
+Sperrlogik bis zu den Vorgabewerten und der Filterung nach Statusquelle; ebenso, dass die Basisklasse
+mit `BahamutBurst` bereits eine weitere Fassung des Zündfensters führt und dass `SMN_Reborn` sie
+nicht benutzt.
 
-Aus Fremdquellen und damit außerhalb dieses Baums: Wirkdauer, Wiederholzeit und Stärke von Searing
-Light, die Standzeit von Solar Bahamut und die Herkunft von Ruby's Glimmer.
+Aus Fremdquellen: Wirkdauer, Wiederholzeit und Stärke von Searing Light, Standzeit und Wiederholzeit
+der großen Beschwörungen, ihre Reihenfolge, und dass Ruby's Glimmer aus der eigenen Ausführung
+stammt. Dass ein zweiter Searing Light überschreibt statt zu stapeln, ist die Angabe des
+Auftraggebers.
 
-Nicht entschieden: welcher der beiden Ausgänge bei gleichzeitiger Zündung eintritt (Sperre greift
-oder Serverumlauf ist zu langsam), und wie oft die große Beschwörung bei einem gesperrten Beschwörer
-tatsächlich wiederkehrt — sein Searing-Light-Cooldown läuft mangels Zündung nicht an, was den
-gekoppelten Zyklus verschiebt. Beides braucht Laufzeitbeobachtung.
+Nicht entschieden und nur im Spiel zu klären: welcher Ausgang bei gleichzeitiger Zündung eintritt;
+wie groß der Wertunterschied zwischen einem Buff im Zwei-Minuten-Takt und einem bei Sekunde 60
+tatsächlich ist; und wie stark der Versatz in einem echten Kampf ausfällt. Die Rechnungen in diesem
+Dokument sind Abschätzungen aus den oben genannten Größen, keine Messungen.
