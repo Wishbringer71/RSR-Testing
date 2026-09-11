@@ -461,6 +461,23 @@ liefert Titan die meisten Attacken bei fast derselben Potenz.
 Beschwörungsfenster sieben statt sechs Zauber, die Restzeit schrumpft auf 2,85 beziehungsweise 3,20
 Sekunden — es bleiben dieselben zwei Plätze und dieselben Werte.
 
+**Wer nicht heranspringt, verliert bei Ifrit doppelt.** Crimson Strike entsteht erst aus Crimson
+Cyclone („Grants Crimson Strike Ready", `ActionId.resx`); wird der Anlauf aus Sicherheitsgründen
+ausgelassen, fällt der Ifrit-Block von 3160 Potenz über fünf GCDs auf 2040 über drei, und die beiden
+frei werdenden Plätze gehen an den Füller zurück — 568 Potenz je GCD statt 632. Im Bufffenster ist der
+Rückschlag größer, weil der Ersatz auf dem zweiten Platz Ruby Rite ist und Ruby Rite eine Gießzeit hat:
+
+| Zuerst gerufen, ohne Anlauf | Attacken im Buff | Potenz |
+|---|---|---|
+| **Titan** | 3 | **1300** |
+| Ifrit | 1 bis 2 | 800 bis 1420 |
+| Garuda | 1 | 800 |
+
+**Titan ist der einzige Block, dessen Wert weder an der Position noch an einer unbelegten Gießzeit
+hängt.** Seine GCDs sind sofort wirksam, und Mountain Buster wird gewebt, kostet also keinen Platz.
+Die Spanne bei Ifrit ist genau die offene Gießzeit von Ruby Rite: sofort wirksam landet es im Buff,
+eine volle Wiederholzeit lang nicht mehr.
+
 **Der Gewinn bleibt klein.** Zwischen der besten und der schlechtesten Reihenfolge liegen 560 Potenz
 innerhalb des Buffs; der Buff steigert um 5 Prozent, also 28 Potenz gegen 30 440 Potenz
 Zyklusleistung — 0,09 Prozent. Zwischen Ifrit und der heutigen Voreinstellung Titan sind es 60
@@ -472,17 +489,21 @@ eines Beschwörungsfensters, füllen ihn acht GCDs Primalblock: Ifrit zuerst 480
 3920, Garuda zuerst 3740. Zwischen bester und schlechtester Reihenfolge liegen dann 1060 Potenz,
 0,17 Prozent des Zyklus. Auch das bleibt klein.
 
-**Eine Codeänderung ist dafür nicht nötig.** RSR hat die Reihenfolge bereits als Einstellung:
-`SummonOrderType.RubyEmeraldTopaz` beginnt mit Ifrit. Wer den Vorschlag umsetzen will, stellt um; die
-Entscheidungsvorlage dazu steht unten.
+**Die Voreinstellung bleibt, und das ist die Entscheidung des Auftraggebers.** Ifrit zuerst lohnt nur,
+wenn man ohnehin in Nahkampfreichweite des Ziels steht; der Anlauf von Crimson Cyclone in eine
+Burstphase hinein ist ein Positionsrisiko, das 0,01 Prozent Schaden nicht rechtfertigen. Titan ist
+sicher, erlaubt Bewegung und kostet 60 Potenz — drei Potenz Schaden je Zyklus.
 
-**Der Gegeneinwand hält der Prüfung stand und ist der Grund, es nicht als Automatik zu bauen.** Crimson
-Cyclone ist ein Anlauf auf das Ziel; RSR gibt ihm dafür eine Distanzoption und eine Bewegungsoption
-(`AddCrimsonCyclone`, `CrimsonCycloneDistance`, `AddCrimsonCycloneMoving`). Dass Slipstream eine
-Gießzeit hat, ist aus `AddSwiftcastOnGaruda` belegt, und dass die Topaz-GCDs sofort wirken, aus dem
-Optionstext von `PreferTitanWhileMoving`. Ifrit zuerst tauscht also ein Bewegungsrisiko in der
-Burstphase gegen 0,01 Prozent Schaden — eine dynamische Umsortierung nach Bufflage würde dieses Risiko
-automatisieren, ohne dass der Gewinn mit den hier verfügbaren Mitteln nachweisbar wäre.
+**Zwei Einstellungen stützen diese Wahl, beide am Code belegt.** `PreferTitanWhileMoving`
+(`SMN_Reborn.cs:518`) zieht Titan bei Bewegung vor, unabhängig von der eingestellten Reihenfolge;
+voreingestellt aus. Und `AddCrimsonCyclone` ist voreingestellt **an** und bedeutet ausweislich seines
+Optionstexts und der Bedingung in `:483` — `AddCrimsonCyclone || DistanceToPlayer() <=
+CrimsonCycloneDistance` —, dass die Distanzprüfung übersprungen wird: RSR springt aus beliebiger
+Entfernung heran. Wer den Anlauf auf Nahkampfreichweite begrenzen will, schaltet die Option aus; dann
+greifen die drei Yalm aus `CrimsonCycloneDistance`.
+
+Dass Slipstream eine Gießzeit hat, ist aus `AddSwiftcastOnGaruda` belegt, und dass die Topaz-GCDs
+sofort wirken, aus dem Optionstext von `PreferTitanWhileMoving`.
 
 *Offen bleibt die Länge der Gießzeiten.* Belegt ist aus dem Repository nur, **dass** Slipstream und die
 Ruby- und Emerald-GCDs eine haben. Die drei Sekunden für Slipstream sind Fremdquelle. Das Prüfmittel
@@ -652,11 +673,12 @@ gemacht hätten: Es gibt keine Beobachtungsmechanik, die für sich zu erproben w
 trotzdem zuerst nur die Fenstererweiterung (V2) setzen und die zweite Bedingung nachziehen — V7 ist
 so gebaut.
 
-**Die Reihenfolge der Primals gehört nicht dazu.** Sie ist gemessen: Gegenüber der Voreinstellung
-trägt Ifrit zuerst 0,01 Prozent, gegenüber der schlechtesten Reihenfolge 0,09 Prozent, und außerhalb
-eines Beschwörungsfensters 0,17 Prozent. Sie ist bereits als Einstellung vorhanden, und ihre
-Automatisierung würde ein Bewegungsrisiko in die Burstphase legen, dessen Preis hier nicht messbar
-ist. Sie steht deshalb als Einstellungsempfehlung in der Vorlage, nicht als Vorschlag am Code.
+**Die Reihenfolge der Primals gehört nicht dazu, und sie bleibt, wie sie ist.** Gemessen trägt Ifrit
+zuerst 0,01 Prozent gegenüber der Voreinstellung, 0,09 gegenüber der schlechtesten Reihenfolge und
+0,17 außerhalb eines Beschwörungsfensters. Dem steht der Anlauf von Crimson Cyclone in die Burstphase
+gegenüber; Titan ist sicher, erlaubt Bewegung und kostet drei Potenz Schaden je Zyklus. Was hier
+aussteht, ist deshalb keine Codeänderung, sondern die Empfehlung, `AddCrimsonCyclone` auszuschalten
+und `PreferTitanWhileMoving` einzuschalten.
 
 **Die Gruppenprüfung bleibt der Schalter.** Bei einem einzelnen Beschwörer ändert sich nichts, und
 das ist gemessen und nicht bloß beabsichtigt: Das Modell weist für einen Beschwörer in allen

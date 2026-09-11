@@ -140,6 +140,14 @@ PRIMAL_BLOCKS = {
                ('Emerald Rite', True), ('Emerald Rite', True)],
 }
 
+# What is left of the Ifrit block when the summoner stays at range.  Crimson
+# Strike only exists because Crimson Cyclone granted it ("Grants Crimson
+# Strike Ready", ActionId.resx), so declining the approach costs both, and the
+# block shrinks from five GCDs to three.
+PRIMAL_BLOCKS_AT_RANGE = dict(PRIMAL_BLOCKS)
+PRIMAL_BLOCKS_AT_RANGE['Ifrit'] = [('Inferno', True), ('Ruby Rite', True),
+                                   ('Ruby Rite', True)]
+
 # The one-off action each primal grants on top of its two repeatable gemshine
 # forms -- the action Astral Flow or the favor turns into.
 PRIMAL_SIGNATURE = {
@@ -168,7 +176,8 @@ def primal_sequence(order):
 WEAVES_PER_GCD = 2
 
 
-def tail_window(order, gcd=GCD, swiftcast=False, after_demi=True):
+def tail_window(order, gcd=GCD, swiftcast=False, after_demi=True, blocks=None,
+                unknown_cast='instant'):
     """Everything that still snapshots inside Searing Light after the demi.
 
     The demi holds the GCD from the pull until its 15 s are up; the buff runs
@@ -186,7 +195,7 @@ def tail_window(order, gcd=GCD, swiftcast=False, after_demi=True):
     hits = []
     unknown = []
     for block_name in order:
-        block = PRIMAL_BLOCKS[block_name]
+        block = (blocks or PRIMAL_BLOCKS)[block_name]
         weave_slots = 0
         for name, costs_gcd in block:
             if not costs_gcd:
@@ -196,7 +205,10 @@ def tail_window(order, gcd=GCD, swiftcast=False, after_demi=True):
             cast = cast_time(name)
             if cast is None:
                 unknown.append(name)
-                cast = 0.0     # counted, and reported as unproven
+                # An unproven cast time is reported either way; 'instant' is
+                # the upper bound of what can land inside the buff, a full
+                # recast the lower one.
+                cast = 0.0 if unknown_cast == 'instant' else gcd
             elif swiftcast and cast > 0.0:
                 cast = 0.0
             if t + cast < SEARING_LIGHT:
@@ -336,6 +348,40 @@ def report():
                     print('      counted as instant although the cast time is '
                           'not established: %s' % ', '.join(w['unknown_cast']))
             print()
+
+    # The same tail, but with the summoner staying at range.  Declining the
+    # Crimson Cyclone approach costs Crimson Strike with it.
+    print('== the same tail with the Crimson Cyclone approach declined ==')
+    for lead in ('Ifrit', 'Titan', 'Garuda'):
+        order = tuple([lead] + [x for x in ('Ifrit', 'Titan', 'Garuda')
+                                if x != lead])
+        high = tail_window(order, blocks=PRIMAL_BLOCKS_AT_RANGE)
+        low = tail_window(order, blocks=PRIMAL_BLOCKS_AT_RANGE,
+                          unknown_cast='recast')
+        names = ', '.join('%s %d' % (n, p) for n, _, p in high['hits'])
+        if high['potency'] == low['potency']:
+            print('    %-7s first: %d attacks, %5d potency  [%s]'
+                  % (lead, len(high['hits']), high['potency'], names))
+        else:
+            print('    %-7s first: %d to %d attacks, %d to %d potency  [%s]'
+                  % (lead, len(low['hits']), len(high['hits']),
+                     low['potency'], high['potency'], names))
+            print('      the spread is the unproven cast time of %s: instant '
+                  'it lands, a full recast long it does not'
+                  % ', '.join(sorted(set(high['unknown_cast']))))
+    safe = block_potency(PRIMAL_BLOCKS_AT_RANGE['Ifrit'])
+    safe_gcds = block_gcds(PRIMAL_BLOCKS_AT_RANGE['Ifrit'])
+    spare = block_gcds(PRIMAL_BLOCKS['Ifrit']) - safe_gcds
+    print('  the Ifrit block itself falls from %d potency over %d GCDs to %d '
+          'over %d,' % (block_potency(PRIMAL_BLOCKS['Ifrit']),
+                        block_gcds(PRIMAL_BLOCKS['Ifrit']), safe, safe_gcds))
+    print('  and the %d freed GCDs go back to the filler: %.0f potency per GCD '
+          'instead of %.0f.'
+          % (spare, (safe + spare * pot('Ruin III'))
+             / block_gcds(PRIMAL_BLOCKS['Ifrit']),
+             block_potency(PRIMAL_BLOCKS['Ifrit'])
+             / block_gcds(PRIMAL_BLOCKS['Ifrit'])))
+    print()
 
     # What RotationSolver additionally parks in the Solar Bahamut window.
     # SMN_Reborn.cs holds Necrotize and Fester behind "inSolarUnique &&
