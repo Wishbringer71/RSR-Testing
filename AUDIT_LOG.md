@@ -1798,6 +1798,28 @@ Die Behebung stammt aus PR #7 und war mit dem Revert verlorengegangen; sie ist z
 
 ---
 
+### A58 · Die Nur-Heiler-Hartwirkmodi messen die falsche Menge (11.09.2026)
+
+**Anlass:** Zwei Präzisierungen des Auftraggebers zur Use-Case-Analyse aus A57: Die Einstellung, außerhalb der Gruppe wiederzubeleben, sei „auch bei einem Heiler in der Gruppe oder sogar solo" mitzudenken; und wenn in anderen Gruppen einer Allianz kein Heiler und kein Rezzer mehr lebe, solle den Einstellungen entsprechend wiederbelebt werden.
+
+**Befund.** `HardCastOnlyHealer` und `HardCastOnlyHealerSwiftCooldown` bauten zwei Mengen toter beziehungsweise vorhandener **Heiler der eigenen Gruppe** und verglichen ihre Größe. Die gemeinte Frage ist eine andere: Hartwirken kostet acht Sekunden GCD und lohnt nur, wenn es sonst niemand übernehmen kann. Drei Abweichungen:
+
+1. **Heiler statt Rezzer.** Ein lebender Beschwörer oder Rotmagier belebt ebenso wieder. Der Baum weiß das an anderer Stelle bereits — `PheonixDownItem.AnyLivingRaiserInParty` zählt Heiler, SMN und RDM.
+2. **Der Spieler war aus beiden Mengen gefiltert.** Als einziger Heiler sind damit beide leer: `0 == 0` trifft zu, die Nachbedingung `deadhealers.Count > 0` nicht. **In jeder Vierergruppe und solo wurde nie hart gewirkt** — genau dort, wo Hartwirken der einzige Weg ist, dass überhaupt jemand hochkommt.
+3. **Ein Größenvergleich kann „niemand sonst" nicht ausdrücken,** nur „so viele tot wie vorhanden".
+
+**Bezugsmenge — hier hat der Auftraggeber eine erste, zu enge Fassung korrigiert.** Der erste Entwurf beschränkte die Prüfung auf die eigene Gruppe, begründet damit, dass fremde Heiler keine verlässliche Reserve seien. Das trifft für die offene Welt zu, nicht für einen Allianzraid: Dort sind die anderen Allianzen echte Gruppen mit eigenen Rezzern, und solange dort einer lebt, ist die Wiederbelebung deren Sache — lebt keiner mehr, ist Hartwirken der einzige Weg. Die Bezugsmenge folgt deshalb `RaiseType`: Gruppe allein bei `PartyOnly` und `PartyHealersOnly`, Gruppe und Allianz bei den Allianzmodi und `All`. `AllOutOfDuty` bleibt bewusst ausgenommen — Fremde in der offenen Welt sind keine Reserve, und sie mitzuzählen blockierte das Hartwirken praktisch immer.
+
+**Umsetzung.** `AnyOtherLivingRaiser()` mit `HasLivingRaiser(members)` als Mengenprüfung, in allen vier Zweigen. Nebenbei behoben: Die Bedingungsreihenfolge rief bisher `RaiseSpell` — mit seinen Nebenwirkungen auf `Target` und `ShouldEndSpecial` — **vor** der Mengenprüfung auf; jetzt steht die nebenwirkungsfreie Prüfung vorn.
+
+**Nicht mitbehoben und weiter offen:** Der Optionstext verspricht zusätzlich „while Swiftcast is on cooldown", was der Code nicht prüft. Ob der Vorbehalt in die Bedingung gehört oder aus dem Text zu streichen ist, ist eine Festlegung über die Bedeutung der Einstellung; die Existenz von `HardCastOnlyHealerSwiftCooldown` spricht dafür, dass er gemeint war. In `TODO.md` erfasst.
+
+**Phönixfeder — Absicht bestätigt, Verdrahtung bleibt offen.** Der Auftraggeber hat die gemeinte Bedingung genannt: kein Rezzer in der Gruppe oder alle tot, soweit der Inhalt es zulässt. Beides ist im Code bereits vorhanden — `CanUseThis` prüft `!AnyLivingRaiserInParty()`, und `BaseItem.CanUse` fragt `GetActionStatus` gegen `ConfigurationHelper.BadStatus`, deckt die Inhaltssperre also ab. Nicht vorhanden ist der Aufruf. Bei der Prüfung der Einhängung kam ein zweiter Defekt zutage: Das Hausmuster für Gegenstände (`CustomRotation_Ability.cs:361`) **meldet** eine Aktion, `UsePhoenixDown` dagegen **wirkt selbst** und setzt zusätzlich `act` — eine Einhängung nach Hausmuster verbrauchte die Feder zweimal. Der Grund für das Selbstwirken entfällt zudem, weil `BaseItem.Use` die Feder (Item 4570) bereits eigens auf `DataCenter.DeathTarget` wirkt. Deshalb nicht in den laufenden Testzweig aufgenommen, sondern als eigener Vorgang erfasst.
+
+**Erreichter Prüfgrad:** statische Prüfung, Fallunterscheidung je `RaiseType` am Quelltext belegt, Prüfskripte, CI-Kompilierung. Keine Laufzeitbeobachtung.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.

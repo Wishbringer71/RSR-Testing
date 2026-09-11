@@ -157,26 +157,33 @@ Der Rotmagier fällt aus der Reihe: Dualcast steht in `StatusHelper.SwiftcastSta
 | `HardCastOnlyHealer` | „**while Swiftcast is on cooldown** and other healers are dead" | **nur** die Heiler-Bedingung | **Widerspruch** |
 | `HardCastOnlyHealerSwiftCooldown` | beides | beides | stimmig |
 
-### Drei Defekte im Zweig `HardCastOnlyHealer`
+### Die Nur-Heiler-Hartwirkmodi maßen die falsche Menge
 
-`CustomRotation_GCD.cs:149-178`, alle drei am selben Zweig:
+`HardCastOnlyHealer` und `HardCastOnlyHealerSwiftCooldown` bauten zwei Mengen toter beziehungsweise
+vorhandener **Heiler der eigenen Gruppe** und verglichen deren Größe. Die gemeinte Frage ist eine
+andere: Hartwirken kostet acht Sekunden GCD und lohnt nur, wenn es sonst niemand übernehmen kann.
 
-1. **Der Optionstext verspricht eine Bedingung, die der Code nicht prüft.** „Raise while Swiftcast
-   is on cooldown and other healers are dead" — geprüft wird allein der zweite Teil. Wer diesen Wert
-   wählt, bekommt Hartwirk auch bei bereiter Spontanität. Nach der Auslegungsregel ist der
-   Optionstext Beleg der Entwurfsabsicht; der Widerspruch ist ein Befund, und er darf nicht durch
-   Umschreiben des Textes aufgelöst werden.
-2. **Der Spieler zählt in keiner der beiden Mengen mit** — beide Schleifen filtern mit
-   `!battleChara.IsPlayer()`. Ist man der einzige Heiler, sind `deadhealers` und `allhealers` beide
-   leer: `0 == 0` trifft zu, `deadhealers.Count > 0` nicht. **In einer Vierergruppe mit einem
-   Heiler wird mit dieser Einstellung nie hart gewirkt.** Ob das gemeint war, ist dem Code nicht zu
-   entnehmen: „andere Heiler sind tot" ist bei nur einem Heiler unentscheidbar formuliert.
-3. **Die Bedingungsreihenfolge wertet zuerst aus, was Nebenwirkungen hat.**
-   `RaiseSpell(out act, true) && deadhealers.Count == allhealers.Count && …` ruft `RaiseSpell`
-   **vor** der Mengenprüfung auf. `RaiseSpell` führt über `RaiseGCD` ein `CanUse` aus, das `Target`
-   zuweist, und verstellt `IBaseAction.ShouldEndSpecial`. Der Rückgabewert ist dadurch nicht falsch,
-   aber die Aktion wird auch dann angefasst, wenn der Zweig gar nicht greifen darf. Die billige und
-   nebenwirkungsfreie Mengenprüfung gehört nach vorn.
+| | maß bisher | gemeint |
+|---|---|---|
+| Wer zählt | nur Heiler | Rezzer: Heiler, Beschwörer, Rotmagier |
+| Bezugsmenge | immer die eigene Gruppe | die Menge, aus der das Ziel stammen darf — also nach `RaiseType` |
+| Einzelheiler, solo | beide Mengen leer, `> 0` scheitert → **nie Hartwirk** | niemand sonst da → Hartwirken ist genau richtig |
+| Ausdruckskraft | Größenvergleich | „niemand außer mir" |
+
+Die Bezugsmenge folgt jetzt `RaiseType`. Bei `PartyOnly` und `PartyHealersOnly` bleibt es die
+Gruppe. Unter den Allianzmodi und `All` zählt die Allianz mit, weil die anderen Allianzen echte
+Gruppen mit eigenen Rezzern sind: Solange dort einer lebt, ist die Wiederbelebung deren Sache; lebt
+keiner mehr, ist Hartwirken der einzige Weg, dass dort jemand hochkommt. `AllOutOfDuty` ist
+ausgenommen — Fremde in der offenen Welt sind keine Reserve, und sie mitzuzählen blockierte das
+Hartwirken praktisch immer.
+
+Mitbehoben: Die Bedingungsreihenfolge rief `RaiseSpell` — mit seinen Nebenwirkungen auf `Target` und
+`ShouldEndSpecial` — vor der Mengenprüfung auf. Jetzt steht die nebenwirkungsfreie Prüfung vorn.
+
+**Weiter offen:** Der Optionstext verspricht zusätzlich „while Swiftcast is on cooldown", was der
+Code nicht prüft. Ob der Vorbehalt in die Bedingung gehört oder aus dem Text zu streichen ist, ist
+eine Festlegung über die Bedeutung der Einstellung — die Existenz von
+`HardCastOnlyHealerSwiftCooldown` spricht dafür, dass er gemeint war.
 
 ### Die Phönixfeder ist vollständig unverdrahtet
 

@@ -4,26 +4,25 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 ## Defekte
 
-### Die Phönixfeder ist vollständig unverdrahtet · N
+### `HardCastOnlyHealer`: Optionstext verspricht eine Bedingung, die der Code nicht prüft · N
 
-`CustomRotation_Items.UsePhoenixDown` (`:34`) ist fertig implementiert — samt korrekt gesicherter und wiederhergestellter Zielüberschreibung — und hat **keinen einzigen Aufrufer** im Baum. Ebenso vorhanden und ungenutzt: die Einstellungen `UsePhoenixDown`, `UsePhoenixDownHealerLogic` und der Typ `PheonixDownItem`.
+`CustomRotation_GCD.cs:149`. Der Text lautet „Raise while Swiftcast is on cooldown and other healers are dead"; geprüft wird allein der zweite Teil. Wer diesen Wert wählt, bekommt Hartwirk auch bei bereiter Spontanität.
 
-**Die Wirkung reicht über die tote Funktion hinaus.** `DataCenter.CanRaise()` liefert **wahr**, sobald `UsePhoenixDown` eingeschaltet ist und eine Feder im Gepäck liegt — jobunabhängig. Ein Tank oder Schadensjob bekommt dadurch `AutoStatus.Raise` gesetzt und durchläuft in jedem Frame den Wiederbelebungsblock, in dem nichts geschehen kann, weil `Raise` für ihn null ist. Schaden entsteht daraus nicht, aber die Lage „es ist etwas wiederzubeleben" wird für Jobs gemeldet, die es nicht können.
+Die Mengenfrage des zweiten Teils ist behoben (A58), dieser Widerspruch nicht: Ob der Spontanitäts-Vorbehalt in die Bedingung gehört oder aus dem Text zu streichen ist, ist eine Festlegung über die Bedeutung der Einstellung. Der Optionstext ist Beleg der Entwurfsabsicht und darf nicht einfach dem Code angeglichen werden.
 
-Dieselbe Fehlerklasse wie `SwiftcastBuffer` und `IBaseAction.IgnoreClipping`: fertige Konstruktion ohne Verdrahtung. Die Gegenhypothese nach der Inhaltlichkeitsregel — der Code ist richtig, nur der Aufruf fehlt — trifft zu, die Funktion ist also nicht zu entfernen, sondern einzuhängen.
+**Empfehlung:** die Bedingung ergänzen, nicht den Text kürzen — `HardCastOnlyHealerSwiftCooldown` existiert bereits als die Variante mit zusätzlicher Wirkzeit-Abwägung, was dafür spricht, dass der Spontanitäts-Vorbehalt in **beiden** Nur-Heiler-Modi gemeint war.
 
-**Nicht umgesetzt,** weil die Einhängestelle eine Entwurfsentscheidung ist: Der Gegenstandspfad hat keinen Platz im GCD-Dispatcher, an dem er heute vorgesehen wäre, und ein Gegenstandseinsatz konkurriert anders um den GCD als ein Zauber. **Auflösungsbedingung:** Festlegen, an welcher Stelle der Kette der Gegenstand geprüft wird, und ob `CanRaise()` bis dahin nicht besser ohne die Federprüfung auskommt — Letzteres ist die kleinere und sofort mögliche Teilbehebung.
+### Die Phönixfeder ist unverdrahtet, und ihre Wirk-Methode meldet zugleich · N
 
-### `HardCastOnlyHealer`: drei Defekte an einem Zweig · N
+`CustomRotation_Items.UsePhoenixDown` (`:34`) ist vollständig implementiert und hat **keinen Aufrufer**. Die Bedingung stimmt bereits mit der Absicht des Auftraggebers überein: `PheonixDownItem.CanUseThis` verlangt `!AnyLivingRaiserInParty()`, also keinen lebenden Heiler, Beschwörer oder Rotmagier in der Gruppe. Die Inhaltssperre ist ebenfalls abgedeckt — `BaseItem.CanUse` fragt `GetActionStatus` gegen `ConfigurationHelper.BadStatus`, das Spiel meldet also selbst, wenn die Feder im Inhalt gesperrt ist.
 
-`CustomRotation_GCD.cs:149-178`.
+**Die Einhängung ist nicht trivial, und darin liegt ein zweiter Defekt.** Das Hausmuster für Gegenstände ist der Fähigkeitenpfad (`CustomRotation_Ability.cs:361` für den Heiltrank), und die Methoden dort **melden** eine Aktion. `UsePhoenixDown` dagegen **wirkt selbst** (`phoenixdown.Use()`) **und** setzt `act`. Wer sie nach dem Hausmuster einhängt, verbraucht die Feder zweimal: einmal durch `Use()`, einmal durch den Dispatcher.
 
-1. **Optionstext und Code widersprechen sich.** Der Text lautet „Raise while Swiftcast is on cooldown and other healers are dead"; geprüft wird allein der zweite Teil. Wer diesen Wert wählt, bekommt Hartwirk auch bei bereiter Spontanität. Der Optionstext ist Beleg der Entwurfsabsicht — der Widerspruch ist nicht durch Umschreiben des Textes aufzulösen.
-2. **Ein einzelner Heiler wirkt nie hart.** Beide Mengen filtern mit `!battleChara.IsPlayer()`. Ist man der einzige Heiler, sind `deadhealers` und `allhealers` leer: `0 == 0` trifft zu, `deadhealers.Count > 0` nicht. In einer Vierergruppe ist die Einstellung damit wirkungslos. Ob das gemeint war, geht aus Code und Text nicht hervor — „andere Heiler sind tot" ist für den Einzelheiler unentscheidbar formuliert.
-3. **Die Bedingungsreihenfolge wertet zuerst das Nebenwirkungsbehaftete aus.** `RaiseSpell(out act, true) && deadhealers.Count == allhealers.Count && …` ruft `RaiseSpell` vor der Mengenprüfung. `RaiseSpell` führt über `RaiseGCD` ein `CanUse` aus, das `Target` zuweist, und verstellt `IBaseAction.ShouldEndSpecial`. Der Rückgabewert wird dadurch nicht falsch, aber die Aktion wird auch dann angefasst, wenn der Zweig nicht greifen darf. Die nebenwirkungsfreie Mengenprüfung gehört nach vorn.
+Der Grund für das Selbstwirken entfällt zudem: Der Kommentar nennt die Zielsetzung, aber `BaseItem.Use` behandelt die Feder (Item 4570) bereits eigens und wirkt sie auf `DataCenter.DeathTarget`.
 
-Punkt 3 ist ohne Entscheidungsbedarf und rein mechanisch; Punkt 1 und 2 verlangen eine Festlegung, was die Einstellung bedeuten soll, und sind deshalb nicht mitbehoben. Dieselbe Prüfung gilt für `HardCastOnlyHealerSwiftCooldown`, das die Mengenbildung wortgleich wiederholt.
+**Auflösungsbedingung:** Vor der Einhängung ist `UsePhoenixDown` auf reines Melden umzustellen — ohne den `Use()`-Aufruf —, und dann ist zu prüfen, ob der Ausführungsweg für einen gemeldeten Gegenstand das Ziel tatsächlich setzt. Beides zusammen ist ein eigener Vorgang und gehört nicht in den laufenden Testzweig zur Wiederbelebung.
 
+**Weiterer Nebenbefund:** `DataCenter.CanRaise()` liefert jobunabhängig wahr, sobald `UsePhoenixDown` eingeschaltet ist und eine Feder im Gepäck liegt. Tanks und Schadensjobs bekommen dadurch `AutoStatus.Raise` und durchlaufen den Wiederbelebungsblock, in dem nichts geschehen kann. Solange die Feder unverdrahtet ist, ist diese Federprüfung in `CanRaise()` ohne Nutzen.
 
 ### Wiederbelebung: zweiter Behebungsversuch wartet auf Spielbeobachtung · N, R
 

@@ -148,30 +148,7 @@ public partial class CustomRotation
 
 				if (hardcastraisetype == HardCastRaiseType.HardCastOnlyHealer)
 				{
-					var deadhealers = new HashSet<IBattleChara>();
-					if (DataCenter.PartyMembers != null)
-					{
-						foreach (var battleChara in DataCenter.PartyMembers.GetDeath())
-						{
-							if (TargetFilter.IsJobCategory(battleChara, JobRole.Healer) && !battleChara.IsPlayer())
-							{
-								deadhealers.Add(battleChara);
-							}
-						}
-					}
-
-					var allhealers = new HashSet<IBattleChara>();
-					if (DataCenter.PartyMembers != null)
-					{
-						foreach (var battleChara in DataCenter.PartyMembers)
-						{
-							if (TargetFilter.IsJobCategory(battleChara, JobRole.Healer) && !battleChara.IsPlayer())
-							{
-								allhealers.Add(battleChara);
-							}
-						}
-					}
-					if (RaiseSpell(out act, true) && deadhealers.Count == allhealers.Count && deadhealers.Count > 0)
+					if (!AnyOtherLivingRaiser() && RaiseSpell(out act, true))
 					{
 						return act;
 					}
@@ -181,30 +158,7 @@ public partial class CustomRotation
 				{
 					if (!Service.Config.RaisePlayerBySwift || (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge))
 					{
-						var deadhealers = new HashSet<IBattleChara>();
-						if (DataCenter.PartyMembers != null)
-						{
-							foreach (var battleChara in DataCenter.PartyMembers.GetDeath())
-							{
-								if (TargetFilter.IsJobCategory(battleChara, JobRole.Healer) && !battleChara.IsPlayer())
-								{
-									deadhealers.Add(battleChara);
-								}
-							}
-						}
-
-						var allhealers = new HashSet<IBattleChara>();
-						if (DataCenter.PartyMembers != null)
-						{
-							foreach (var battleChara in DataCenter.PartyMembers)
-							{
-								if (TargetFilter.IsJobCategory(battleChara, JobRole.Healer) && !battleChara.IsPlayer())
-								{
-									allhealers.Add(battleChara);
-								}
-							}
-						}
-						if (RaiseSpell(out act, true) && deadhealers.Count == allhealers.Count && deadhealers.Count > 0)
+						if (!AnyOtherLivingRaiser() && RaiseSpell(out act, true))
 						{
 							return act;
 						}
@@ -375,30 +329,7 @@ public partial class CustomRotation
 
 				if (hardcastraisetype == HardCastRaiseType.HardCastOnlyHealer)
 				{
-					var deadhealers = new HashSet<IBattleChara>();
-					if (DataCenter.PartyMembers != null)
-					{
-						foreach (var battleChara in DataCenter.PartyMembers.GetDeath())
-						{
-							if (TargetFilter.IsJobCategory(battleChara, JobRole.Healer) && !battleChara.IsPlayer())
-							{
-								deadhealers.Add(battleChara);
-							}
-						}
-					}
-
-					var allhealers = new HashSet<IBattleChara>();
-					if (DataCenter.PartyMembers != null)
-					{
-						foreach (var battleChara in DataCenter.PartyMembers)
-						{
-							if (TargetFilter.IsJobCategory(battleChara, JobRole.Healer) && !battleChara.IsPlayer())
-							{
-								allhealers.Add(battleChara);
-							}
-						}
-					}
-					if (RaiseSpell(out act, true) && deadhealers.Count == allhealers.Count && deadhealers.Count > 0)
+					if (!AnyOtherLivingRaiser() && RaiseSpell(out act, true))
 					{
 						return act;
 					}
@@ -408,30 +339,7 @@ public partial class CustomRotation
 				{
 					if (!Service.Config.RaisePlayerBySwift || (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge))
 					{
-						var deadhealers = new HashSet<IBattleChara>();
-						if (DataCenter.PartyMembers != null)
-						{
-							foreach (var battleChara in DataCenter.PartyMembers.GetDeath())
-							{
-								if (TargetFilter.IsJobCategory(battleChara, JobRole.Healer) && !battleChara.IsPlayer())
-								{
-									deadhealers.Add(battleChara);
-								}
-							}
-						}
-
-						var allhealers = new HashSet<IBattleChara>();
-						if (DataCenter.PartyMembers != null)
-						{
-							foreach (var battleChara in DataCenter.PartyMembers)
-							{
-								if (TargetFilter.IsJobCategory(battleChara, JobRole.Healer) && !battleChara.IsPlayer())
-								{
-									allhealers.Add(battleChara);
-								}
-							}
-						}
-						if (RaiseSpell(out act, true) && deadhealers.Count == allhealers.Count && deadhealers.Count > 0)
+						if (!AnyOtherLivingRaiser() && RaiseSpell(out act, true))
 						{
 							return act;
 						}
@@ -520,6 +428,80 @@ public partial class CustomRotation
 		}
 
 		return null;
+	}
+
+	/// <summary>
+	/// Is anyone besides the player still standing who could take this raise?
+	///
+	/// This is the question the "only healer" hard cast modes mean to ask: hard casting costs eight
+	/// seconds of GCD, which is only worth it when nobody else can do it instead. The branches used
+	/// to build two sets of party healers and compare their sizes, which answered a different
+	/// question and failed in three ways:
+	///
+	/// - It counted healers, not raisers. A living Summoner or Red Mage raises just as well, and
+	///   PheonixDownItem.AnyLivingRaiserInParty already knows that.
+	/// - Both sets excluded the player, so a lone healer - every four-man party, and solo - ended up
+	///   comparing 0 == 0 with a "&gt; 0" guard behind it, and never hard cast at all. That is the
+	///   exact case where hard casting is the only way anyone gets up.
+	/// - Being a count comparison, it could not express "nobody else", only "as many dead as there
+	///   are".
+	///
+	/// The reference set follows RaiseType, because that is what decides where the corpse may come
+	/// from. Under the alliance modes the other alliances are real parties with their own raisers:
+	/// while one of them is alive the raise is theirs to take, and once none is, hard casting is
+	/// the only way anyone there gets up. AllOutOfDuty is deliberately excluded - strangers in the
+	/// open world are not a raise reserve, and counting them would block hard casting almost always.
+	/// </summary>
+	private static bool AnyOtherLivingRaiser()
+	{
+		if (HasLivingRaiser(DataCenter.PartyMembers))
+		{
+			return true;
+		}
+
+		return Service.Config.RaiseType is RaiseType.PartyAndAllianceSupports
+				or RaiseType.PartyAndAllianceHealers
+				or RaiseType.All
+			&& HasLivingRaiser(DataCenter.AllianceMembers);
+	}
+
+	/// <summary>
+	/// Does this set hold someone other than the player who is alive and able to raise?
+	/// </summary>
+	private static bool HasLivingRaiser(IEnumerable<IBattleChara>? members)
+	{
+		if (members == null)
+		{
+			return false;
+		}
+
+		foreach (var member in members)
+		{
+			if (member == null || member.IsDead || member.IsPlayer())
+			{
+				continue;
+			}
+
+			if (member.IsJobCategory(JobRole.Healer)
+				|| member.IsJobs(Job.SMN)
+				|| member.IsJobs(Job.RDM))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+			if (member.IsJobCategory(JobRole.Healer)
+				|| member.IsJobs(Job.SMN)
+				|| member.IsJobs(Job.RDM))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/// <summary>
