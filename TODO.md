@@ -289,14 +289,6 @@ Dem steht als Ertrag eine Nutzeroption gegenüber, deren Wirkung unbelegt ist un
 
 **Auflösungsbedingung:** eine Spielbeobachtung über mehrere Kämpfe — wird die Barriere unter `TankbusterOrHeavyPull` regelmäßig aufgezehrt, und fehlt sie nie dort, wo sie gebraucht wurde, ist der Standard umzustellen. Für die Heilerseite ist zusätzlich zu beobachten, was die Rückhaltung kostet: Sanctus ist der einzige Flächenzauber des Jobs, ein zurückgehaltener GCD fällt auf Einzelzielschaden zurück. Zu beobachten ist dabei auch die Gegnerschwelle: Kommt The Blackest Night im Wall-to-Wall zu selten, ist `BlackestNightMinHostiles` (Vorgabe 4) zu hoch angesetzt. Sie ist bewusst eine **eigene** Option der Rotation und nicht der globale `MitigationSustainHostileCount`, weil die Frage hier eine andere ist: nicht „lohnt eine Minderung", sondern „reicht der Schadensstrom, um 25 % der maximalen Gesundheit in sieben Sekunden aufzuzehren".
 
-### PR-Prüfung folgt dem Staging-Kanal von Dalamud · U
-
-`publish.yaml` bezieht Dalamud seit dem Upstream-Release 7.5.6.0 aus `dalamud-distrib/stg/latest.zip` — das ist die **einzige** Änderung, die dieses Release gegenüber 7.5.5.41 trägt. `build.yaml` ist dieser Zeile nachgezogen (A40), damit die PR-Prüfung gegen dieselben Assemblies kompiliert, gegen die das Release gebaut wird. Upstream hat nur `publish.yaml` umgestellt; die Zeile in `build.yaml` ist deshalb eine Fork-Abweichung.
-
-**Kosten:** eine Zeile Merge-Fläche. Zudem hängt die PR-Prüfung nun an einem Kanal, der nach der Dalamud-Dokumentation häufiger bricht als der Release-Kanal — ein Bruch dort blockiert die Prüfung, hätte aber ebenso den Release-Build blockiert, nur später.
-
-**Auflösungsbedingung:** Stellt Upstream `publish.yaml` auf den Release-Kanal zurück, ist `build.yaml` mitzuziehen. Beide Zeilen sind bewusst gleich zu halten; laufen sie auseinander, misst die Prüfung nicht mehr, was ausgeliefert wird.
-
 ### VPR: leerer Zweig einer Struktur, die anderswo eine Entscheidung trägt · U
 
 `VPR_Reborn.cs:591-597` und `975-981`. Das Muster `!HasHunterAndSwift` kommt viermal vor; der Vorspann `!IsHunter && !IsSwift` trägt nur an der Coil-Stelle (751-807) Inhalt, an der Den-Stelle (424-493) fehlt er ganz. Weder ein fehlender Inhalt noch dessen Entbehrlichkeit ist belegbar. **Bewusst nicht gelöscht** (AUDIT_LOG A11): Die Entfernung wäre verhaltensneutral, würde aber die Asymmetrie verdecken, die den Befund sichtbar macht. **Auflösung:** Adressat ist der Upstream. **Empfehlung: belassen** — der leere Zweig ist der einzige Hinweis auf die Lücke, und ohne den Autor ist nicht zu entscheiden, ob Inhalt fehlt oder der Vorspann überflüssig ist.
