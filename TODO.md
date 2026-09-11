@@ -91,70 +91,16 @@ Nicht behoben, weil der Wirkungsbereich den Vorgang sprengt. Das Flag wird in `I
 
 **Auflösungsbedingung:** eine Erhebung, welche der sechs Setzstellen eine Ausnahme rechtfertigen, und eine Engführung des Flags auf diese.
 
-### Beschwörer: Searing Light bei mehreren Beschwörern · N
+### Beschwörer: Searing Light bei mehreren Beschwörern — im Spiel zu bestätigen · N
 
-Zwei Punkte, beide erst ab dem zweiten Beschwörer in der Gruppe wirksam, beide bei einem einzelnen
-wirkungslos. Vollständige Analyse mit den Fällen eins bis acht, der Zeitstruktur, dem Versatz durch
-Tod, Bewegung und Betäubung und der gesamtheitlichen Betrachtung in
-`docs/rotation-flow/12-searing-light-stacking.md`.
+Umgesetzt und in `AUDIT_LOG.md` A78 nachgewiesen, soweit statisch möglich; Konzept in `docs/rotation-flow/12-searing-light-stacking.md`. Offen sind zwei Beobachtungen, die nur im Spiel zu machen sind, beide mit einer Gruppe aus mindestens zwei Beschwörern:
 
-**V1 — der fremde Buff gilt nicht als Buff-Fenster.** `SMN_Reborn.cs:320`, `:332`, `:348` bevorzugen
-Painflare, Necrotize und Fester unter `inSolarUnique && HasSearingLight`; `HasSearingLight` zählt nur
-den eigenen Buff. Ein gesperrter Beschwörer hält seine Aetherflow-Ausgaben zurück, während ein
-Fünf-Prozent-Fenster auf ihm liegt. Defektbehebung — die Bedingung soll „im Buff-Fenster" heißen und
-sagt „in meinem Buff-Fenster".
+**Kommt Solar Bahamut weiterhin alle 120 Sekunden?** Das entscheidet die Kopplungsfrage aus dem Defekt zu `UseSummonsAndTrances` weiter oben. Rutscht der Takt, ist `:491` der wirksame Pfad, und dann ist die V7-Bedingung — das `|| !HasAnySearingLight` — wieder zu entfernen; V2 bliebe.
 
-**V2 — das Zündfenster reicht ab zwei Beschwörern nicht.** Gezündet wird nur während Solar Bahamut
-(`:203`), und dieses Fenster kommt alle 120 Sekunden, genau so oft wie die Aktion selbst. Sind die
-Rotationen synchron, fallen alle Gelegenheiten zusammen und alle bis auf eine verfallen; die
-Abdeckung bleibt bei 20 Sekunden je 120, unabhängig davon, ob zwei oder acht Beschwörer dabei sind.
-Erweiterung auf alle großen Beschwörungen verdoppelt sie auf 40 Sekunden. Die Rotationsbasis führt
-mit `BahamutBurst` (`SummonerRotation.cs:231`) bereits eine solche Fassung, die `SMN_Reborn` nicht
-benutzt.
+**Zünden mehrere Beschwörer beim Buffende gleichzeitig?** Das Modell schreibt sequenziell zu und bildet das nicht ab. Der Fall besteht heute schon und sollte seltener werden, nicht häufiger; belegt ist das nicht.
 
-**Bedingung für V2:** nur bei mindestens einem weiteren lebenden Beschwörer in der Gruppe, ermittelt
-über `DataCenter.PartyMembers` und `IsJobs(Job.SMN)`. Ohne diese Prüfung zahlt der Regelfall für
-einen Gewinn im Sonderfall: Ein einzelner Beschwörer würde bei ungünstig freiwerdender Wiederholzeit
-künftig im schwächeren Demi zünden und dauerhaft aus dem Zwei-Minuten-Takt fallen. `BahamutBurst`
-unverändert zu übernehmen ist deshalb **nicht** der Weg — es brächte zusätzlich eine Bindung an
-`AutoStatus.Burst` mit, also zwei Verhaltensänderungen in einer Zeile.
+**Erfasst, nicht bearbeitet:** `ChurinSMN.cs:1015` trägt denselben V1-Befund; beim Zündfenster ist die fremde Rotation bereits weiter (`:948` nutzt `BahamutBurst`), allerdings ohne Gruppenprüfung.
 
-**V7 — die Lücke schließen, die V2 offenlässt.** Zusätzlich außerhalb eines Beschwörungsfensters
-zünden, sobald der laufende Buff **vollständig** abgelaufen ist (die eigene Wiederholzeit wird
-ohnehin geprüft). Zwei Bedingungen in derselben Methode, in der heute `burstInSolar` steht — kein
-Zustand, keine Beobachtung fremder Status.
-
-**Gemessen** (`.github/scripts/audit/searing_light_coverage.py`), synchroner Pull, nach
-Schadensdichte gewichtet bei 30 % Burst-Anteil, gegen die optimale Platzierung derselben Ladungen:
-
-| Beschwörer | heute | V2 | V7 | bestmöglich |
-|---|---|---|---|---|
-| 1 | 30 % | 30 % | 30 % | 30 % |
-| 2 | 30 % | 44 % | **44 %** | 44 % |
-| 3 | 30 % | 44 % | **58 %** | 58 % |
-| 4 | 30 % | 44 % | **71 %** | 72 % |
-| 5 | 30 % | 44 % | **85 %** | 86 % |
-
-**V7 erreicht das Schadensoptimum auf einen Prozentpunkt genau**, bei jedem der drei geprüften
-Burst-Anteile. Die Bündelung gewinnt nicht, weil V7 das Burst-Fenster nicht aufgibt: Der erste
-Zünder steht in seinem Solar-Fenster, und wer den Burst gedeckt hat, ist 120 Sekunden später — zum
-nächsten Burst — wieder bereit.
-
-**Empfehlung: V1 und V7 zusammen, auf einem eigenen Zweig, beide unter der Gruppenprüfung.** Beide
-sind zustandsfrei; eine Aufteilung in Stufen ist nicht nötig. Nicht im laufenden Vorgang, weil
-`claude/raise-swiftcast-weave-2` Eingriffe am Wiederbelebungspfad trägt, deren Nachweis teilweise
-offen ist.
-
-**Verworfen, nachdem der Auftraggeber die Prämisse widerlegt hat:** eine Fassung, die mitschreibt,
-wann die anderen Beschwörer frühestens wiederkehren können. Sie können ohnehin nicht vor ihrer
-eigenen Wiederholzeit zünden — es gibt nichts, worauf zurückzustehen wäre. Gemessen liefert die
-Fassung ohne Buchführung überall dieselben Werte, im Ausfallszenario eingeschlossen; außerhalb des
-maßgeblichen Bereichs ist die Buchführung sogar schädlich (46 statt 100 % bei sieben Beschwörern).
-Auch abgelehnt: die Zündung ganz von der Beschwörung zu lösen — bei zwei Beschwörern schlechter als
-V2.
-
-**Erfasst, nicht bearbeitet:** `ChurinSMN.cs:1015` trägt denselben V1-Befund; beim Zündfenster ist die
-fremde Rotation bereits weiter (`:948` nutzt `BahamutBurst`), allerdings ohne Gruppenprüfung.
 
 ### ChurinDNC wertet die BMR-Downtime ohne Vorzeichenprüfung aus · N, U
 
