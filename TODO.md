@@ -16,9 +16,21 @@ Die Mengenfrage des zweiten Teils ist behoben (A58), dieser Widerspruch nicht: O
 
 Ursache belegt und durch ein natürliches Experiment des Auftraggebers bestätigt (manuell + Toten anvisiert lässt den GCD frei, dann fällt die Wiederbelebung sofort). Analyse in `docs/rotation-flow/11-raise-dispatch.md`, Nachweise in `AUDIT_LOG.md` A54 und A56, gescheiterter erster Versuch in C37.
 
-**Der zweite Versuch liegt auf `claude/raise-swiftcast-weave-2` und ist im Spiel nicht bestätigt.** Er zündet Spontanität im Einschiebefenster, wenn eine Wiederbelebung ansteht und wirkbar wäre, und lässt den GCD-Pfad unangetastet — kein Dispatcher-Abbruch, keine Veränderung von `nextGCD`. Derselbe Zweig trägt inzwischen zwei weitere Eingriffe am Wiederbelebungspfad, die ebenfalls ungemessen sind: die Bezugsmenge der Nur-Heiler-Hartwirkmodi (A58) und die Verdrahtung der Phönixfeder (A59). Schlägt der Test fehl, sind drei Änderungen gleichzeitig im Spiel — die Trennung in eigene Zweige wurde auf Wunsch des Auftraggebers aufgegeben.
+**Der zweite Versuch liegt auf `claude/raise-swiftcast-weave-2` und ist im Spiel nicht bestätigt.** Er zündet Spontanität im Einschiebefenster, wenn eine Wiederbelebung ansteht und wirkbar wäre, und lässt den GCD-Pfad unangetastet — kein Dispatcher-Abbruch, keine Veränderung von `nextGCD`. Derselbe Zweig trägt inzwischen vier weitere Eingriffe am Wiederbelebungspfad, alle ebenfalls ungemessen: die Bezugsmenge der Nur-Heiler-Hartwirkmodi (A58), die Verdrahtung der Phönixfeder (A59) sowie deren Zieleignung über den Item-Status und die Stufenprüfung der Rezzereigenschaft (A60). Schlägt der Test fehl, sind fünf Änderungen gleichzeitig im Spiel — die Trennung in eigene Zweige wurde auf Wunsch des Auftraggebers aufgegeben.
 
 **Auflösungsbedingung:** Beobachtung im Spiel. Erst wenn die Wiederbelebung dort zügig fällt **und** keine andere Fähigkeit ausbleibt, gilt der Punkt als behoben. Eine grüne CI belegt hier nichts; der erste Versuch war ebenfalls compile- und skriptgrün.
+
+### `H2` bleibt im Modus `PartyAndAllianceHealers` wirkungslos · N
+
+`TargetUpdater.GetPriorityDeathTarget`. Der Sonderfall `if (raiseType == RaiseType.PartyAndAllianceHealers && deathHealers.Count > 0) return deathHealers[0];` steht **vor** der Umkehrung der vier Listen durch `Service.Config.H2`. In allen anderen Modi dreht diese Einstellung die Reihenfolge, in diesem einen nicht.
+
+Ohne Wirkung auf die Frage, *ob* wiederbelebt wird — nur darauf, *welcher* von mehreren toten Heilern zuerst drankommt. **Auflösung:** den Sonderfall hinter die Umkehrung ziehen. **Nicht im laufenden Vorgang behoben,** weil der Zweig bereits fünf ungemessene Eingriffe am Wiederbelebungspfad trägt; ein sechster verschlechtert die Auswertbarkeit des Spieltests, ohne dass diesem Punkt Dringlichkeit zukäme.
+
+### Die Aufzählung der Wiederbelebungsaktionen im Einschiebezweig veraltet · N, R
+
+`CustomRotation_Ability.cs` prüft `nextGCD.IsTheSameTo(true, RaisePvE, EgeiroPvE, ResurrectionPvE, AscendPvE)`. Verraise des Rotmagiers und Angel Whisper des Blaumagiers fehlen, obwohl beide Rotationen `Raise` setzen — dieselbe Alterungsursache wie die Hauptursache des Wiederbelebungsdefekts: eine handgepflegte Liste statt der vorhandenen Fähigkeitsprüfung.
+
+**Derzeit folgenlos,** weil der zweite Zweig derselben Bedingung (`RaisePendingAndCastable`) die Liste nicht braucht und über `Raise` geht. Der Punkt bleibt, weil die Liste beim nächsten Rezzer-Job erneut still falsch wird. **Auflösung:** den Vergleich gegen `Raise` führen statt gegen die Aufzählung.
 
 ### `SwiftcastBuffer` hat keinen Leser, und ihre Absicht ist überholt · N
 
