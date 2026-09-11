@@ -1925,6 +1925,24 @@ Die Behebung stammt aus PR #7 und war mit dem Revert verlorengegangen; sie ist z
 
 ---
 
+### A65 · Die Fork-Version benennt wieder den Upstream-Stand, den sie enthält (11.09.2026)
+
+**Anlass:** Rückfrage des Auftraggebers, ob im Arbeitszweig `7.5.6.2` gesetzt ist. War es nicht.
+
+**Befund.** `Directory.Build.props` trug weiter `7.5.6.1`, obwohl der Zweig seit A62 den Upstream-Stand 7.5.6.2 enthält. Das ist die Fehlerform, die der Kommentar derselben Datei bereits beschreibt — „It named 7.5.6.0 while the tree already held 7.5.6.1" —, zum zweiten Mal aufgetreten. Ursache am Ablauf: Der Upstream-Merge zog die Zahl nicht nach, und `check_fork_version.py`, das genau das meldet, wurde nach dem Merge nicht ausgeführt, obwohl die Build-Ausgabe ausdrücklich dazu auffordert. Literale auf `7.5.6.2` gezogen, in allen drei Feldern samt `+wsh1`- und `-wsh1`-Markierung.
+
+**Warum die Prüfung nicht von allein lief, und was daran der eigentliche Befund ist.** Sie hing in keinem Arbeitsablauf. Der Grund dafür liegt tiefer, als er zunächst aussah, und die erste Fassung dieser Einhängung trug bereits die falsche Begründung: Es ist nicht nur die flache Klonung der CI. **Die eigene Gegenstelle trägt überhaupt keine Upstream-Tags** — `git ls-remote --tags origin` liefert ausschließlich `7.5.5.41+wsh1` und `7.5.6.1+wsh1` —, und Tags lassen sich von hier aus nicht pushen. Ein `git describe` findet dort also auch mit vollständiger Historie nichts.
+
+**Behebung, dreiteilig:**
+
+1. `fetch-depth: 0` im Linux-Auftrag, damit die Historie überhaupt vorliegt.
+2. Ein eigener Schritt, der `upstream` hinzufügt und dessen Tags holt. Ohne ihn ist die Frage in der CI nicht beantwortbar.
+3. **Der stille Nullbefund wird laut.** `check_fork_version.py` gab bei fehlenden Tags `0` zurück, meldete also Erfolg, ohne geprüft zu haben — in der CI wäre die Prüfung grün gewesen und wirkungslos, was schlechter ist als keine Prüfung. Der neue Schalter `--require-tags`, den allein die CI setzt, macht daraus einen Fehlschlag; die nachsichtige Fassung bleibt für Arbeitskopien ohne Upstream-Gegenstelle.
+
+**Erreichter Prüfgrad:** Skript gegen beide Ausgänge ausgeführt (mit Tags grün, ohne Tags und mit Schalter rot), Arbeitsablauf gegen einen YAML-Parser geprüft, alle sieben Prüfskripte grün. Ob der Tag-Abruf auf dem Läufer durchgeht, zeigt erst der Lauf selbst.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.
