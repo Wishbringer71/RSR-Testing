@@ -12,17 +12,26 @@ Die Mengenfrage des zweiten Teils ist behoben (A58), dieser Widerspruch nicht: O
 
 **Empfehlung:** die Bedingung ergänzen, nicht den Text kürzen — `HardCastOnlyHealerSwiftCooldown` existiert bereits als die Variante mit zusätzlicher Wirkzeit-Abwägung, was dafür spricht, dass der Spontanitäts-Vorbehalt in **beiden** Nur-Heiler-Modi gemeint war.
 
-### Wiederbelebung: zweiter Behebungsversuch wartet auf Spielbeobachtung · N, R
+### Wiederbelebung: drei Eingriffe des Zweigs sind weiter ungemessen · N, R
 
-Ursache belegt und durch ein natürliches Experiment des Auftraggebers bestätigt (manuell + Toten anvisiert lässt den GCD frei, dann fällt die Wiederbelebung sofort). Analyse in `docs/rotation-flow/11-raise-dispatch.md`, Nachweise in `AUDIT_LOG.md` A54 und A56, gescheiterter erster Versuch in C37.
+**Der Kerndefekt ist behoben und im Spiel bestätigt** — Beobachtung, Erklärung und Nachweis in
+`AUDIT_LOG.md` A73. Dieser Punkt führt nur noch, was der Spieltest nicht abdecken konnte.
 
-**Der zweite Versuch liegt auf `claude/raise-swiftcast-weave-2` und ist im Spiel nicht bestätigt.** Er zündet Spontanität im Einschiebefenster, wenn eine Wiederbelebung ansteht und wirkbar wäre, und lässt den GCD-Pfad unangetastet — kein Dispatcher-Abbruch, keine Veränderung von `nextGCD`. Derselbe Zweig trägt inzwischen vier weitere Eingriffe am Wiederbelebungspfad, alle ebenfalls ungemessen: die Bezugsmenge der Nur-Heiler-Hartwirkmodi (A58), die Verdrahtung der Phönixfeder (A59) sowie deren Zieleignung über den Item-Status und die Stufenprüfung der Rezzereigenschaft (A60). Schlägt der Test fehl, sind fünf Änderungen gleichzeitig im Spiel — die Trennung in eigene Zweige wurde auf Wunsch des Auftraggebers aufgegeben.
+Drei der fünf Eingriffe auf `claude/raise-swiftcast-weave-2` sind nur unter Einstellungen wirksam,
+die abseits der Vorgabe liegen, und wurden deshalb mit dem Kernpfad nicht mitgetestet:
 
-**Auflösungsbedingung:** Beobachtung im Spiel. Erst wenn die Wiederbelebung dort zügig fällt **und** keine andere Fähigkeit ausbleibt, gilt der Punkt als behoben. Eine grüne CI belegt hier nichts; der erste Versuch war ebenfalls compile- und skriptgrün.
+- **Phönixfeder** samt Zieleignung über den Item-Status und Stufenprüfung der Rezzereigenschaft
+  (A59, A60). `UsePhoenixDown` ist ab Werk **aus**; ohne Einschalten passiert nichts.
+- **Hartwirk-Korrektur** (A56). Greift nur bei abgeschaltetem `RaisePlayerBySwift` — dem Fall, in dem
+  vorher überhaupt nicht wiederbelebt wurde.
+- **Bezugsmenge der Nur-Heiler-Modi** (A58). Nur bei `HardCastOnlyHealer` und
+  `HardCastOnlyHealerSwiftCooldown`.
 
-**Erste Beobachtung liegt vor, sie trägt eine Hälfte.** Der Auftraggeber meldet: Schimmerschild kommt, die Wiederbelebung erfolgt automatisch — beides „bislang", also vorläufig. Damit ist die zweite Hälfte der Bedingung gestützt: Die Regression aus C37 ist nicht zurückgekehrt, der Einschub verdrängt Radiant Aegis nicht. Die erste Hälfte ist es **nicht**: Gemeldet ist, *dass* wiederbelebt wird, nicht *wie schnell*. Die ursprüngliche Beanstandung lautete nicht „es wird nicht wiederbelebt", sondern „es dauert sehr lange"; ohne eine Aussage zur Dauer ist der Kern des Defekts unbestätigt.
+**Auflösungsbedingung:** je Eingriff eine Beobachtung unter der zugehörigen Einstellung. Für die
+Phönixfeder zusätzlich eine Gruppe ohne lebenden Rezzer, weil die Bedingung sonst nicht greift.
 
-**Was die Beobachtung nicht abdeckt.** Drei der fünf Eingriffe auf diesem Zweig sind nur unter Einstellungen wirksam, die abseits der Vorgabe liegen und deshalb mit hoher Wahrscheinlichkeit nicht mitgetestet wurden: die Phönixfeder samt Zieleignung und Stufenprüfung (`UsePhoenixDown` ist ab Werk **aus**), die Hartwirk-Korrektur (greift nur bei abgeschaltetem `RaisePlayerBySwift`) und die Bezugsmenge der Nur-Heiler-Modi (nur bei `HardCastOnlyHealer` und `HardCastOnlyHealerSwiftCooldown`).
+**Bewertung:** kein Defektverdacht, sondern offener Nachweis. Die Wirkketten sind im Code
+nachvollzogen; was fehlt, ist die Bestätigung im Spiel.
 
 ### `H2` bleibt im Modus `PartyAndAllianceHealers` wirkungslos · N
 

@@ -7,8 +7,15 @@ und Ausführung dieselbe Uhr mit einander ausschließenden Bedingungen lesen. Di
 am Quelltext und durch eine Laufzeitbeobachtung des Auftraggebers belegt.
 
 Die Behebung zündet Spontanität dort, wo die Ausführungsschicht eine Fähigkeit überhaupt durchlässt
-— im Einschiebefenster — und lässt den GCD-Pfad unangetastet. Sie steht zum Test und ist **im Spiel
-nicht bestätigt**. Daneben stehen vier Korrekturen an den Bedingungen, unter denen überhaupt
+— im Einschiebefenster — und lässt den GCD-Pfad unangetastet. Sie ist **im Spiel bestätigt**: Die
+Wiederbelebung fällt teils sofort, teils nach wenigen Sekunden, gegenüber „über 15 Sekunden oder
+länger" vorher, und keine andere Fähigkeit bleibt aus (`AUDIT_LOG.md` A73).
+
+**Die verbleibenden Sekunden sind Bauart, kein Rest des Defekts.** Der Einschub greift nur bei
+`WeaponRemain > 0,5 s`, danach geht die Wiederbelebung als nächster GCD hinaus — dazwischen liegt die
+Restzeit des laufenden GCD. Mit der Vorgabe `RaisePlayerFirst = aus` kann zusätzlich eine Heilung
+dazwischenkommen. Eine Verkürzung darüber hinaus ist eine Entscheidung über diese Einstellung, keine
+Fehlerbehebung. Daneben stehen vier Korrekturen an den Bedingungen, unter denen überhaupt
 entschieden wird, wer wiederbelebt: die Hartwirk-Zweige, die Bezugsmenge der Nur-Heiler-Modi, die
 Verdrahtung der Phönixfeder und deren Zieleignung.
 
@@ -347,7 +354,10 @@ Statische Prüfung am Quelltext, Versionsgeschichte für die Entstehung, Fremddo
 Vorschaufenster und wird nicht gewirkt, unabhängig von Bewegung; im manuellen Betrieb mit
 anvisiertem Leichnam fällt die Wiederbelebung sofort.
 
-Keine eigene Laufzeitbeobachtung, kein Vier-Augen-Prinzip. Dass die Änderungen die Wiederbelebung im
-Spiel tatsächlich beschleunigen, ist begründet, nicht gemessen. Für die Federverdrahtung, die
-Zieleignung und die Stufenprüfung gilt dasselbe; sie liegen auf demselben Zweig, ein
-fehlschlagender Spieltest trifft also mehrere ungemessene Eingriffe zugleich.
+Für den Kernpfad liegt die Laufzeitbestätigung inzwischen vor (A73): teils sofortige, teils um
+wenige Sekunden verzögerte Wiederbelebung, ohne Ausfall anderer Fähigkeiten. Kein Vier-Augen-Prinzip.
+
+**Ungemessen bleiben die drei einstellungsabhängigen Eingriffe desselben Zweigs** — Federverdrahtung,
+Zieleignung über den Item-Status und Stufenprüfung der Rezzereigenschaft sowie die Hartwirk-Korrektur
+und die Bezugsmenge der Nur-Heiler-Modi. Sie liegen hinter Vorgaben, die im Spieltest nicht verändert
+wurden, und sind in `TODO.md` als offener Nachweis geführt.

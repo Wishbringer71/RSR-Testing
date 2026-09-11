@@ -2083,6 +2083,28 @@ Die Behebung stammt aus PR #7 und war mit dem Revert verlorengegangen; sie ist z
 
 ---
 
+### A73 · Der Wiederbelebungsdefekt ist im Spiel bestätigt behoben (11.09.2026)
+
+**Beobachtung des Auftraggebers:** „die rezzgeschwindigkeit war in einigen fällen sofort, in anderen hat es ein paar sekunden gedauert."
+
+**Gegen den Ausgangsbefund gehalten.** Gemeldet worden war: „manchmal machen heiler und sonstige rezzer keine rezzes sofort. es dauert manchmal über 15 sekunden oder länger, bis ein rezz durchgeführt wird" — bei laufendem Schaden und laufender Heilung. Der Zustand jetzt ist teils sofort, teils wenige Sekunden. **Der gemeldete Defekt ist damit behoben**, und zwar zusammen mit der zweiten Hälfte der Auflösungsbedingung, die A66 schon gestützt hatte: Es bleibt keine andere Fähigkeit aus, Radiant Aegis kommt weiter.
+
+**Die verbleibende Wartezeit ist Bauart, nicht Rest des Defekts, und sie ist an der Kette belegt.** Drei Glieder bestimmen sie:
+
+1. Der Einschub kann nur im Einschiebefenster greifen. `CustomRotation_Ability.cs:28` kehrt bei `0 < WeaponRemain <= 0.5f` sofort zurück, und bei freiem GCD ruft `Invoke` den Fähigkeitenpfad gar nicht erst auf. Gezündet wird also bei `WeaponRemain > 0,5 s`.
+2. Danach geht die Wiederbelebung als nächster GCD hinaus — `RaiseSpell` Stufe (A) verlangt `HasSwift || IsLastAction(SwiftcastPvE)`. Bis dahin vergeht die Restzeit des laufenden GCD, also zwischen 0,5 Sekunden und einer vollen Wiederholzeit; bei laufendem Zauber mit Wirkzeit entsprechend mehr.
+3. Mit der Vorgabe `RaisePlayerFirst = aus` liegt der Wiederbelebungsblock hinter der gesamten Heilung (`CustomRotation_GCD.cs:350`). Ist gleichzeitig zu heilen, gewinnt die Heilung den GCD, und die Wiederbelebung rückt einen weiteren GCD nach hinten.
+
+„Sofort" tritt danach ein, wenn Spontanität bereits lag oder der GCD fast frei war; „ein paar Sekunden", wenn ein Zauber lief oder eine Heilung dazwischenkam. Beides ist das vorhergesagte Verhalten. Eine Verkürzung darüber hinaus wäre nur über die Einstellung `RaisePlayerFirst` zu haben — das ist eine Nutzerentscheidung über den Vorrang zwischen Heilen und Aufheben, kein Defekt.
+
+**Damit schließt sich die Kette dieses Vorgangs:** Ursache statisch belegt (A54), durch das Manual-Experiment des Auftraggebers bestätigt, erster Behebungsversuch im Spiel gescheitert und vollständig zurückgenommen (C37), zweiter Versuch entworfen (A56), im Loop geprüft (A57, A60) und jetzt im Spiel bestätigt. Der Prüfgrad ist erstmals in diesem Vorgang **Laufzeitbeobachtung**, nicht nur statische Prüfung.
+
+**Was der Spieltest nicht abdeckt und in `TODO.md` weitergeführt wird:** Die drei einstellungsabhängigen Eingriffe desselben Zweigs — Phönixfeder samt Zieleignung und Stufenprüfung, Hartwirk-Korrektur bei abgeschaltetem `RaisePlayerBySwift`, Bezugsmenge der Nur-Heiler-Modi. Sie liegen hinter Vorgaben, die der Auftraggeber nicht verändert hat, und sind deshalb mit dem Kernpfad nicht mitgetestet worden.
+
+**Folge für PR #7:** Der Zweig `claude/raise-swiftcast-weave` wurde als Rückfallstand geführt, für den Fall, dass der zweite Versuch ebenfalls scheitert. Dieser Fall ist nicht eingetreten. Ob der Pull Request geschlossen wird, entscheidet der Auftraggeber.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.
