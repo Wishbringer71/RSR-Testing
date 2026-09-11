@@ -35,41 +35,34 @@ public partial class CustomRotation
 	{
 		act = null;
 
-		var target = DataCenter.DeathTarget;
-		if (target == null || !ObjectHelper.CanBeRaised(target))
+		if (DataCenter.DeathTarget == null)
 		{
 			return false;
 		}
 
-		var prevOverride = IBaseAction.TargetOverride;
-		IBaseAction.TargetOverride = TargetType.Death;
-		try
+		foreach (var phoenixdown in PhoenixDowns)
 		{
-			foreach (var phoenixdown in PhoenixDowns)
+			// Report it, do not cast it. This used to call Use() here and set act as well, so
+			// hooking it up the way every other item is hooked up would have fired UseAction twice
+			// for one corpse in the same frame - once here, once in RSCommands.DoAction, which calls
+			// Use() on whatever is reported. That second call is not discarded: UseAction queues an
+			// action that arrives during a lock, which its own documentation says outright. And even
+			// where the game refuses it, DoAction books the result of that second call as the
+			// outcome, so CurrentAction, _lastActionID and _lastUsedTime all follow a call that did
+			// not do the work. The reason for casting here is gone anyway: BaseItem.Use gives item
+			// 4570 its own branch targeting DataCenter.DeathTarget, HQ and NQ included.
+			//
+			// No target override around this either. Items carry no target of their own - BaseItem
+			// reads DataCenter.DeathTarget directly in both CanUse and Use - so setting one here
+			// changed nothing and suggested a target selection that never happened.
+			if (phoenixdown.CanUse(out act, true))
 			{
-				// Report it, do not cast it. This used to call Use() here and set act as well, so
-				// hooking it up the way every other item is hooked up would have fired UseAction
-				// twice for one corpse in the same frame - once here, once in RSCommands.DoAction,
-				// which calls Use() on whatever is reported. Whether the second call reaches the
-				// server or the client refuses it during the first one's lock is not decidable from
-				// this side; what is certain is that DoAction then books the result of that second
-				// call as the outcome - CurrentAction, _lastActionID and _lastUsedTime all follow a
-				// call that did not do the work. The reason for casting here is gone anyway:
-				// BaseItem.Use gives item 4570 its own branch targeting DataCenter.DeathTarget, HQ
-				// and NQ included.
-				if (phoenixdown.CanUse(out act, true))
-				{
-					return true;
-				}
+				return true;
 			}
+		}
 
-			act = null;
-			return false;
-		}
-		finally
-		{
-			IBaseAction.TargetOverride = prevOverride;
-		}
+		act = null;
+		return false;
 	}
 
 	#region Burst Medicine
