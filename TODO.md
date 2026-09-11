@@ -124,10 +124,20 @@ regulären Gruppe):
 V5 trifft die Obergrenze der Ladungen. Sechs und mehr Beschwörer sind kein regulärer Spielbetrieb
 und bestimmen die Entscheidung nicht — dort bricht V5 ein, im maßgeblichen Bereich nicht.
 
+**V6 — V5 mit Verfallsdatum.** V5 vergisst nicht: Wer einmal gezündet hat, steht dauerhaft mit
+„kommt in 120 Sekunden wieder" in den Büchern, auch wenn er inzwischen tot ist oder aufgehört hat.
+Alle anderen halten sich dann für eine Lücke zurück, die er nie füllt. Ist ein beobachteter
+Beschwörer um mehr als eine Buffdauer überfällig, zählt er nicht mehr. Gemessen an einem
+dreiminütigen Ausfall: 22 statt 11 % bei drei Beschwörern, 44 statt 22 bei vier, 66 statt 33 bei
+fünf — **das Verfallsdatum verdoppelt die Abdeckung im Störungsfenster.** Der Preis ist ein
+Zeitstempel je Beschwörer; der übrige Zustand wird für V5 ohnehin geführt.
+
 **Empfehlung: zwei Stufen, auf einem eigenen Zweig.** Erst V1 und V2 — ohne Zustandshaltung, wirksam
-im häufigsten Fall, einzeln beurteilbar. Dann V5 darauf; es ist als „V2 plus eine Erlaubnis" gebaut,
-die Stufen sind also unabhängig prüfbar. Nicht im laufenden Vorgang, weil
-`claude/raise-swiftcast-weave-2` fünf ungemessene Eingriffe am Wiederbelebungspfad trägt.
+im häufigsten Fall, einzeln beurteilbar. Dann V6 darauf (V5 mit Verfall); es ist als „V2 plus eine
+Erlaubnis" gebaut, die Stufen sind also unabhängig prüfbar. In Stufe 2 kann zugleich die
+Fenstererweiterung von der Gruppenprüfung auf die genauere Bedingung umgestellt werden: ausweichen
+nur nach tatsächlicher Blockade. Nicht im laufenden Vorgang, weil `claude/raise-swiftcast-weave-2`
+fünf ungemessene Eingriffe am Wiederbelebungspfad trägt.
 
 **Preis von V5:** ein Gedächtnis über Frames hinweg — beobachtete Zündungen je Urheber, mit
 Rücksetzpunkten bei Kampf-, Gruppen- und Zonenwechsel. Und eine Lücke: Zündet ein Beschwörer weiter

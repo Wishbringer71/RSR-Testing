@@ -38,6 +38,9 @@ STEP = 0.1
 # and a boundary condition can land on either side of a step. Anything tighter tests the grid, not
 # the rules - the first version used 1e-9 and failed on a 0.02 percentage point difference.
 TOL = 0.002
+# How long past a Summoner's earliest return the adaptive rule keeps counting on him before writing
+# him off. One buff length: long enough to absorb a late cast, short enough to notice a dropout.
+STALE_AFTER = 20.0
 
 
 def in_window(t, offset, mode):
@@ -50,8 +53,8 @@ def in_window(t, offset, mode):
     """
     if mode == 'anytime':
         return t >= offset
-    if mode == 'informed':
-        return t >= offset  # the caller decides; window handling for V5 lives in simulate()
+    if mode in ('informed', 'adaptive'):
+        return t >= offset  # the caller decides; window handling lives in simulate()
     local = t - offset
     if local < 0:
         return False
@@ -65,7 +68,7 @@ def in_window(t, offset, mode):
     return index % 2 == 0  # Solar sits on every second demi
 
 
-def simulate(n, mode, drift, fight=None, window=None):
+def simulate(n, mode, drift, fight=None, window=None, dropout=None):
     """Return the fraction of the fight covered by a Searing Light.
 
     `window` restricts the measurement to (start, end) seconds without changing the run, which is
@@ -83,6 +86,7 @@ def simulate(n, mode, drift, fight=None, window=None):
     buff_until = -1.0          # when the running buff expires
     covered = 0.0
 
+    last_seen = [None] * n     # when each Summoner was last observed casting
     # What the party has observed: earliest possible return per Summoner, or None if never seen.
     # Before a Summoner's first cast nobody knows he exists as a caster - that is the honest state.
     seen_ready = [None] * n
@@ -100,8 +104,11 @@ def simulate(n, mode, drift, fight=None, window=None):
                 if ready[i] > t:
                     continue
 
+                if dropout and i == dropout[0] and dropout[1] <= t < dropout[2]:
+                    continue   # this Summoner is out and casts nothing
+
                 allowed = False
-                if mode == 'informed':
+                if mode in ('informed', 'adaptive'):
                     if in_window(t, offsets[i], 'demi'):
                         allowed = True
                     else:
@@ -112,7 +119,15 @@ def simulate(n, mode, drift, fight=None, window=None):
                         # guard permits for a refresh, but out here it burns a whole charge for a
                         # few seconds of gain - the first version of this rule did exactly that and
                         # came out *below* V2 at two Summoners.
-                        others = [seen_ready[j] for j in range(n) if j != i and seen_ready[j] is not None]
+                        others = []
+                        for j in range(n):
+                            if j == i or seen_ready[j] is None:
+                                continue
+                            if mode == 'adaptive' and last_seen[j] is not None \
+                                    and t - last_seen[j] > RECAST + STALE_AFTER:
+                                # Adaptive: he was due back and did not come. Stop counting on him.
+                                continue
+                            others.append(seen_ready[j])
                         nobody_else = all(r > t + GUARD_LEAD for r in others) if others else False
                         allowed = nobody_else and buff_until <= t
                 elif in_window(t, offsets[i], mode):
@@ -122,6 +137,7 @@ def simulate(n, mode, drift, fight=None, window=None):
                     buff_until = t + BUFF   # overwrite, never stack
                     ready[i] = t + RECAST
                     seen_ready[i] = t + RECAST   # every client sees the source of the status
+                    last_seen[i] = t
                     break
 
         t += STEP
@@ -148,6 +164,14 @@ def self_test():
         for drift in (0, 30, 60):
             if simulate(n, 'informed', drift) < simulate(n, 'demi', drift) - TOL:
                 raise AssertionError('informed fell below demi at n=%d drift=%d' % (n, drift))
+
+    # Writing off a Summoner who stopped casting can never do worse than keeping him in the books.
+    for n in range(2, 6):
+        out = (0, 300.0, 480.0)
+        v5 = simulate(n, 'informed', 0, window=(300.0, 480.0), dropout=out)
+        v6 = simulate(n, 'adaptive', 0, window=(300.0, 480.0), dropout=out)
+        if v6 < v5 - TOL:
+            raise AssertionError('adaptive fell below informed under dropout at n=%d' % n)
 
     # Dropping the demi tie entirely can never do worse than only casting in Solar.
     for n in range(1, 9):
@@ -229,6 +253,15 @@ def main():
         print('  %-11d %-22s %s'
               % (n, '%.0f%% -> %.0f%%' % (early_v2 * 100, late_v2 * 100),
                  '%.0f%% -> %.0f%%' % (early_v5 * 100, late_v5 * 100)))
+
+    print()
+    print('One Summoner drops out for three minutes, synchronised pull, measured over that window')
+    print('  %-11s %-22s %s' % ('Summoners', 'informed (V5)', 'adaptive (V6)'))
+    for n in range(2, upto):
+        out = (0, 300.0, 480.0)
+        v5 = simulate(n, 'informed', 0, fight, window=(300.0, 480.0), dropout=out)
+        v6 = simulate(n, 'adaptive', 0, fight, window=(300.0, 480.0), dropout=out)
+        print('  %-11d %-22s %s' % (n, '%.0f%%' % (v5 * 100), '%.0f%%' % (v6 * 100)))
 
     print()
     print('Ceiling: n x 20s per 120s. A regular eight-man party holds four to five damage jobs, so')

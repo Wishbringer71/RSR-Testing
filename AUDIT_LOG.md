@@ -2059,6 +2059,30 @@ Die Behebung stammt aus PR #7 und war mit dem Revert verlorengegangen; sie ist z
 
 ---
 
+### A72 · Ausweichregel, Kampfgebiet und eine geregelte statt gesteuerte Fassung (11.09.2026)
+
+**Anlass:** Drei Nachfragen des Auftraggebers — ob es eine Fokussierung auf Bahamut und Phoenix gibt, falls Solar bereits durch einen anderen abgedeckt war; wie groß ein Raid- oder Prüfungsgebiet üblicherweise ist; und ob das Konzept dynamischer zu bauen wäre, mit unterschiedlichen Richtlinien bei Abweichungen im Verlauf.
+
+**Zur Ausweichregel: Es gibt keine, und die Formulierung des Auftraggebers ist genauer als die bisherige.** `SMN_Reborn.cs:205` ist die einzige Zündstelle, `burstInSolar` (`:203`) lässt ab Stufe 100 nur Solar zu; kein Zweig weicht aus, kein Zustand hält eine Blockade fest. Das Konzept hatte die Erweiterung als pauschale Lockerung beschrieben — „zünde in jedem Beschwörungsfenster" —, gemeint ist aber eine Ausweichregel: „weiche aus, falls Solar belegt war". Im Kollisionsfall sind beide deckungsgleich; sie gehen auseinander, wenn die eigene Wiederholzeit während Bahamut frei wird, ohne dass eine Kollision vorlag. Die genauere Fassung verlangt denselben Zustand, den V5 ohnehin mitbringt, und wird deshalb der zweiten Stufe zugeordnet. **Nicht gemessen**, weil das Modell alle Beschwörer mit freier Wiederholzeit startet und diesen Fall gar nicht erzeugen kann — die Aussage ist aus der Regel abgeleitet.
+
+**Zum Kampfgebiet: keine belastbare Zahl gefunden.** Die Recherche nach einem üblichen Arenadurchmesser blieb ohne verwertbares Ergebnis, und im Quelltext steht er nicht. Die Angabe des Auftraggebers — keine langen Wege — wird als solche geführt.
+
+**Der Einwand aus dem Reichweitenargument war überzeichnet und ist korrigiert.** Die Beobachtungslücke fällt mit der Wirkungslücke zusammen: Wer den Buff nicht bekommt, hat auch nichts von ihm, und für den ist die eigene Zündung dann richtig. Die vorhandene Sperre leistet das von selbst, weil sie den Status **auf dem Spieler selbst** prüft. Betroffen ist allein die Buchführung, und auch die nur außerhalb eines Beschwörungsfensters.
+
+**Zur Dynamik: ja, und es ist der stärkste Einzelschritt nach V1.** V5 ist bereits halb geregelt — es zählt nur Beschwörer, die tatsächlich gezündet haben. Seine Lücke liegt in der anderen Richtung: Es **vergisst nicht**. Wer einmal gezündet hat, steht dauerhaft mit „kommt in 120 Sekunden wieder" in den Büchern; stirbt er danach oder hört auf zu zünden, halten sich alle anderen für eine Lücke zurück, die er nie füllt.
+
+**V6 setzt ein Verfallsdatum.** Ist ein beobachteter Beschwörer um mehr als eine Buffdauer überfällig, zählt er nicht mehr; kommt er zurück, trägt seine nächste Zündung ihn wieder ein. Gemessen an einem dreiminütigen Ausfall, gemessen über dieses Fenster: bei drei Beschwörern 22 statt 11 Prozent, bei vier 44 statt 22, bei fünf 66 statt 33. **Das Verfallsdatum verdoppelt die Abdeckung im Störungsfenster.** Bei zwei Beschwörern ändert sich nichts, weil dort nach einem Ausfall nur einer übrig ist.
+
+**Der Preis ist gering, weil der Zustand ohnehin geführt wird:** ein Zeitstempel je beobachtetem Beschwörer und eine Verfallsprüfung. Eine Buchführung, die nie vergisst, ist schlechter als gar keine — sie wird mit wachsender Kampfdauer immer falscher.
+
+**Wo die Dynamik zu enden hat, ausdrücklich benannt:** Die Projektregel warnt vor Zustandsautomaten, die statisch nicht abzusichern sind; der Eintrag zur doppelten Zustandswahl ist genau daran hängengeblieben. V6 ist keiner — eine Größe je Beschwörer und zwei Ableitungen daraus. Weitergehende Richtlinien nach Lage, etwa ein Umschalten nach gemessener Abdeckung oder erkanntem Versatz, wären ein Automat und sind bewusst nicht vorgeschlagen.
+
+**Stufe 2 der Empfehlung ist damit V6 statt V5.**
+
+**Erreichter Prüfgrad:** Modellrechnung mit Selbsttest, jetzt auch gegen ein Ausfallszenario. Keine Laufzeitbeobachtung. Das Modell zählt Sekunden mit Buff, nicht Schaden, und kann den Fall der ungünstig liegenden Wiederholzeit nicht erzeugen.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.
