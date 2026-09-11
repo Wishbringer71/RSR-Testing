@@ -377,9 +377,138 @@ Prüfung ist entsprechend begründet gesetzt, nicht aufgeweitet, bis es passt.
 
 **Grenzen dieser Gegenprobe, und eine davon wirkt zugunsten von V7.** Der Burst-Anteil ist eine
 Annahme. Der Schaden außerhalb des Bursts ist als gleichmäßig modelliert, was er nicht ist — die
-Beschwörungsfenster der einzelnen Beschwörer sind selbst Spitzen. Da V7 gerade diese Fenster mit
-abdeckt, wird sein Vorsprung eher unterschätzt als überschätzt. Nicht modelliert sind außerdem
-Phasen ohne Ziel und Unterbrechungen des Schadens überhaupt.
+Beschwörungsfenster der einzelnen Beschwörer sind selbst Spitzen. Wie hoch diese Spitzen sind, ist im
+folgenden Abschnitt beziffert: ein Beschwörungsfenster trägt das Zwei- bis Zweieinhalbfache eines
+gleich langen Primalfensters. Da V7 gerade diese Fenster mit abdeckt, wird sein Vorsprung
+unterschätzt, nicht überschätzt. Nicht modelliert sind Phasen ohne Ziel und Unterbrechungen des
+Schadens überhaupt.
+
+## Was eine Phase wert ist
+
+**Ein Solar-Bahamut-Fenster trägt 7300 Potenz, ein Bahamut- oder Phoenix-Fenster 78 Prozent davon und
+ein gleich langes Primalfenster 41 Prozent.** Der Zwei-Minuten-Zyklus ist damit nicht annähernd
+gleichmäßig: Auf ein Viertel der Zeit entfällt gut die Hälfte des Schadens. Die Zahlen stammen aus
+`.github/scripts/audit/smn_phase_potency.py`; Aufbau der Phasen aus der Dispatch-Reihenfolge in
+`SMN_Reborn.cs`, Dauer 15 s aus dem Tooltip-Text der drei Beschwörungen in `ActionId.resx`, Einzelziel,
+Stufe 100, ohne Searing Light.
+
+| Fenster (15 s) | Potenz | je GCD | gegen Solar | gegen Primalfenster |
+|---|---|---|---|---|
+| Solar Bahamut | 7300 | 1217 | 100 % | 2,46× |
+| Bahamut | 5700 | 950 | 78 % | 1,92× |
+| Phoenix | 5680 | 947 | 78 % | 1,91× |
+| Primal (Mittel) | 2970 | 495 | 41 % | 1,00× |
+
+**Bahamut und Phoenix sind gleichwertig**, obwohl sie verschieden aussehen: Phoenix' stärkerer Füller
+(580 gegen 500) gleicht genau aus, dass seine Astral-Flow-Aktion Rekindle heilt statt zu schaden,
+während Bahamut dort Deathflare mit 500 Potenz hat. Der Vorsprung von Solar Bahamut kommt aus drei
+Quellen zugleich: stärkerer Füller (640), stärkerer Begleitangriff (Luxwave 160 gegen 150) und vor
+allem die beiden Abschlüsse Sunflare 1000 und Exodus 1500 gegen Deathflare 500 und Akh Morn 1300.
+
+**Der Abstand zur Zwischenphase ist in Wahrheit noch größer als die Tabelle zeigt.** RSR parkt
+zusätzlich Energy Drain, zweimal Necrotize und Searing Flash im Solar-Fenster — Necrotize und Fester
+hinter der Bedingung `inSolarUnique && HasSearingLight` (`SMN_Reborn.cs`), Searing Flash, weil es erst
+durch Searing Light entsteht. Das sind 1800 Potenz obendrauf, 25 Prozent mehr, und sie stehen nicht in
+der Tabelle, weil der Vergleich ohne Searing Light geführt ist.
+
+**Ein Punkt des Modells ist offen und ändert nichts.** Ob die Beschwörung selbst einen GCD kostet, ist
+aus den Artefakten nicht eindeutig zu entscheiden: Ihr Tooltip sagt, sie teile keinen Recast mit
+anderen Aktionen, und anders als Slipstream fehlt ihr der Satz, der den Recast auf alle übrigen Zauber
+überträgt — das liest sich als GCD-frei; RSR ruft sie dagegen aus `GeneralGCD` auf. Das Skript rechnet
+beide Lesarten. Die Rangfolge ist in beiden dieselbe, nur der Abstand zur Zwischenphase schrumpft von
+2,46× auf 2,19×.
+
+### Die Sonderaktion der drei Primals
+
+**Ifrit hat die stärkste, und zwar in jedem der drei sinnvollen Maße.** Neben den beiden
+wiederholbaren Gemshine-Formen für Einzel- und Gruppenschaden gewährt jeder Primal genau eine
+Sonderaktion; sie unterscheiden sich nicht nur in der Potenz, sondern auch darin, ob sie einen
+GCD-Platz kosten.
+
+| Sonderaktion | Potenz | GCDs | je GCD | Zugewinn gegenüber dem Füller |
+|---|---|---|---|---|
+| Ifrit — Crimson Cyclone + Crimson Strike | 1120 | 2 | 560 | +320 |
+| Titan — Mountain Buster | 160 | 0 | — | +160 |
+| Garuda — Slipstream | 520 | 1 | 520 | +120 |
+
+Die letzte Spalte ist das eigentliche Maß: Eine Sonderaktion, die einen GCD belegt, verdrängt einen
+Füller (Ruin III, 400) und ist nur die Differenz wert. Mountain Buster kostet keinen GCD und behält
+deshalb seinen vollen Wert, bleibt aber absolut der kleinste Beitrag. Dieselbe Rangfolge ergibt sich
+für die ganzen Blöcke: Ifrit 632 Potenz je GCD, Titan 464, Garuda 407.
+
+### Was in die Restzeit von Searing Light noch hineingeht
+
+**Zwei bis drei Attacken, zusammen 800 bis 1360 Potenz — und welche es sind, entscheidet nicht die
+Potenz, sondern die Gießzeit.** Searing Light deckt 20 Sekunden, das Solar-Fenster 15; nach dem
+letzten Beschwörungs-GCD bleiben bei 2,50 s Wiederholzeit 5,0 Sekunden Buff, also zwei GCD-Plätze und
+die daran gewebten Fähigkeiten. Gezählt wird nicht nach Plätzen, sondern auf der Uhr: Ein Zauber, der
+innerhalb des Buffs beginnt und nach seinem Ende fertig wird, bekommt ihn nicht.
+
+| Zuerst gerufen | Attacken im Buff | Potenz | was hineingeht |
+|---|---|---|---|
+| **Ifrit** | 2 | **1360** | Inferno 800, Crimson Cyclone 560 |
+| Titan (heutige Voreinstellung) | 3 | 1300 | Earthen Fury 800, Topaz Rite 340, Mountain Buster 160 |
+| Garuda | 1 | 800 | Aerial Blast 800 — **Slipstream fällt heraus** |
+
+**Der Ausreißer ist Garuda, nicht Ifrit.** Slipstream beginnt auf dem zweiten Platz bei 17,5 Sekunden
+und ist mit seiner Gießzeit erst nach dem Buffende fertig; der Buff greift beim Fertigwerden, nicht
+beim Anfangen. Mit Swiftcast wäre Slipstream sofort wirksam und käme auf 1320 — RSR hat dafür die
+Option `AddSwiftcastOnGaruda`, die voreingestellt aus ist. Titan verliert dagegen nichts: Seine
+GCDs sind sofort wirksam, und Mountain Buster kostet keinen Platz, sondern wird gewebt — deshalb
+liefert Titan die meisten Attacken bei fast derselben Potenz.
+
+**Bei schnellerer Wiederholzeit ändert sich die Rangfolge nicht.** Bei 2,45 s und 2,40 s trägt das
+Beschwörungsfenster sieben statt sechs Zauber, die Restzeit schrumpft auf 2,85 beziehungsweise 3,20
+Sekunden — es bleiben dieselben zwei Plätze und dieselben Werte.
+
+**Der Gewinn bleibt klein.** Zwischen der besten und der schlechtesten Reihenfolge liegen 560 Potenz
+innerhalb des Buffs; der Buff steigert um 5 Prozent, also 28 Potenz gegen 30 440 Potenz
+Zyklusleistung — 0,09 Prozent. Zwischen Ifrit und der heutigen Voreinstellung Titan sind es 60
+Potenz, drei Potenz Schaden, 0,01 Prozent. **Die Voreinstellung ist damit bereits nahezu optimal, und
+die einzige Reihenfolge, die wirklich etwas kostet, ist Garuda zuerst — die sie ohnehin vermeidet.**
+
+**Bedeutung bekommt die Reihenfolge erst dort, wo V7 zündet.** Liegt der Buff vollständig außerhalb
+eines Beschwörungsfensters, füllen ihn acht GCDs Primalblock: Ifrit zuerst 4800 Potenz, Titan zuerst
+3920, Garuda zuerst 3740. Zwischen bester und schlechtester Reihenfolge liegen dann 1060 Potenz,
+0,17 Prozent des Zyklus. Auch das bleibt klein.
+
+**Eine Codeänderung ist dafür nicht nötig.** RSR hat die Reihenfolge bereits als Einstellung:
+`SummonOrderType.RubyEmeraldTopaz` beginnt mit Ifrit. Wer den Vorschlag umsetzen will, stellt um; die
+Entscheidungsvorlage dazu steht unten.
+
+**Der Gegeneinwand hält der Prüfung stand und ist der Grund, es nicht als Automatik zu bauen.** Crimson
+Cyclone ist ein Anlauf auf das Ziel; RSR gibt ihm dafür eine Distanzoption und eine Bewegungsoption
+(`AddCrimsonCyclone`, `CrimsonCycloneDistance`, `AddCrimsonCycloneMoving`). Dass Slipstream eine
+Gießzeit hat, ist aus `AddSwiftcastOnGaruda` belegt, und dass die Topaz-GCDs sofort wirken, aus dem
+Optionstext von `PreferTitanWhileMoving`. Ifrit zuerst tauscht also ein Bewegungsrisiko in der
+Burstphase gegen 0,01 Prozent Schaden — eine dynamische Umsortierung nach Bufflage würde dieses Risiko
+automatisieren, ohne dass der Gewinn mit den hier verfügbaren Mitteln nachweisbar wäre.
+
+*Offen bleibt die Länge der Gießzeiten.* Belegt ist aus dem Repository nur, **dass** Slipstream und die
+Ruby- und Emerald-GCDs eine haben. Die drei Sekunden für Slipstream sind Fremdquelle. Das Prüfmittel
+führt Aktionen mit unbelegter Gießzeit als sofort wirksam und benennt sie ausdrücklich, damit aus
+einer fehlenden Zahl kein stiller Nullbefund wird.
+
+### Woher die Zahlen kommen
+
+Alle Potenzen ohne Merkmalsaufwertung stammen aus `ActionId.resx` in diesem Repository und sind damit
+am Artefakt belegt: Umbral Impulse 640, Luxwave 160, Wyrmwave 150, Scarlet Flame 150, Sunflare 1000,
+Exodus 1500, Deathflare 500, Akh Morn 1300, Revelation 1300, Necrotize 500, Searing Flash 700, Energy
+Drain 100.
+
+**Vierzehn Werte sind nicht am Repository belegt**, weil das Spiel die Zahl im Tooltip leer lässt,
+sobald ein Merkmal sie überschreibt — `ActionId.resx` enthält an diesen Stellen wörtlich „with a
+potency of ." Betroffen sind Astral Impulse 500, Fountain of Fire 580, Ruin III 400, Ruin IV 520, Ruby
+Rite 620, Topaz Rite 340, Emerald Rite 280, Crimson Cyclone 560, Crimson Strike 560, Slipstream 520,
+Mountain Buster 160, Inferno 800, Earthen Fury 800, Aerial Blast 800. Sie stammen aus
+Suchmaschinenzusammenfassungen; die Primärquellen — Job-Guide, FFXIV-Wiki, Icy Veins, The Balance —
+sind vom Egress dieser Umgebung gesperrt. Ein Kalibrierungspunkt spricht für sie: Für Umbral Impulse
+nennt dieselbe Quelle 640, und das ist der Wert, den `ActionId.resx` unabhängig belegt.
+
+Die Tragfähigkeit der Aussagen hängt unterschiedlich stark daran. Der Abstand der drei
+Beschwörungsfenster untereinander ruht überwiegend auf belegten Werten. Der Abstand zur Zwischenphase
+und die Rangfolge der drei Sonderaktionen ruhen auf den unbelegten. Inferno, Earthen Fury und Aerial
+Blast sind mit 800 gleich angesetzt und heben sich im Vergleich der Reihenfolgen ohnehin auf.
 
 ## Gesamtbetrachtung
 
@@ -522,6 +651,12 @@ dann vollständig greifen und zwei Beschwörer in einer Gruppe gewöhnlich sind.
 gemacht hätten: Es gibt keine Beobachtungsmechanik, die für sich zu erproben wäre. Wer will, kann
 trotzdem zuerst nur die Fenstererweiterung (V2) setzen und die zweite Bedingung nachziehen — V7 ist
 so gebaut.
+
+**Die Reihenfolge der Primals gehört nicht dazu.** Sie ist gemessen: Gegenüber der Voreinstellung
+trägt Ifrit zuerst 0,01 Prozent, gegenüber der schlechtesten Reihenfolge 0,09 Prozent, und außerhalb
+eines Beschwörungsfensters 0,17 Prozent. Sie ist bereits als Einstellung vorhanden, und ihre
+Automatisierung würde ein Bewegungsrisiko in die Burstphase legen, dessen Preis hier nicht messbar
+ist. Sie steht deshalb als Einstellungsempfehlung in der Vorlage, nicht als Vorschlag am Code.
 
 **Die Gruppenprüfung bleibt der Schalter.** Bei einem einzelnen Beschwörer ändert sich nichts, und
 das ist gemessen und nicht bloß beabsichtigt: Das Modell weist für einen Beschwörer in allen

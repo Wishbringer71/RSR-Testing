@@ -2149,6 +2149,28 @@ Die zweite Fassung zeigte einen Rückgang von 0,8 Prozentpunkten — in genau de
 
 **Erreichter Prüfgrad:** Modellrechnung mit Selbsttest gegen jetzt acht Invarianten. Keine Laufzeitbeobachtung.
 
+### A76 · Was eine Beschwörungsphase wert ist, und was in die Restzeit von Searing Light passt (11.09.2026)
+
+**Anlass:** Zwei Fragen des Auftraggebers. Erstens der prozentuale Schadensanteil von Solar Bahamut gegen Bahamut gegen Phoenix und gegen ein gleich langes Fenster aus Ifrit, Titan oder Garuda, ohne Searing Light. Zweitens, ob die stärkste der drei einmaligen Primal-Sonderaktionen vorgezogen werden sollte, solange der Buff noch läuft, und wie viele Attacken in die Restzeit überhaupt passen. A75 hatte genau diese Lücke als Modellgrenze benannt: Der Schaden außerhalb des Bursts war als gleichmäßig angesetzt, obwohl die Beschwörungsfenster selbst Spitzen sind.
+
+**Prüfmittel:** `.github/scripts/audit/smn_phase_potency.py`, neu. Phasenaufbau aus der Dispatch-Reihenfolge in `SMN_Reborn.cs`, Dauern und Potenzen aus `ActionId.resx`, Selbsttest gegen sechs Invarianten.
+
+**Ergebnis Phasenwert:** Solar-Bahamut-Fenster 7300 Potenz, Bahamut 5700, Phoenix 5680, gleich langes Primalfenster 2970 — also 100 / 78 / 78 / 41 Prozent. Bahamut und Phoenix sind gleichwertig, weil Phoenix' stärkerer Füller genau ausgleicht, dass seine Astral-Flow-Aktion heilt statt zu schaden. Dazu parkt RSR 1800 Potenz an Fähigkeiten im Solar-Fenster, die an Searing Light gebunden sind und deshalb nicht in den Vergleich gehören.
+
+**Ergebnis Restzeit:** Nach dem Beschwörungsfenster bleiben fünf Sekunden Buff. Hinein gehen bei Ifrit zuerst zwei Attacken mit 1360 Potenz, bei Titan drei mit 1300, bei Garuda **eine** mit 800 — Slipstream beginnt auf dem zweiten Platz und wird erst nach dem Buffende fertig. Der Unterschied zwischen bester und schlechtester Reihenfolge ist 560 Potenz, bei fünf Prozent Verstärkung 28 Potenz gegen 30 440 Potenz Zyklusleistung.
+
+**Bewertung: kein Eingriff.** Die Reihenfolge ist bereits als Einstellung vorhanden (`SummonOrderType`), die Voreinstellung beginnt mit Titan und ist damit nahezu optimal, und die einzige teure Reihenfolge vermeidet sie ohnehin. Eine Automatik nach Bufflage würde das Bewegungsrisiko von Crimson Cyclone in die Burstphase legen, ohne dass der Gewinn hier nachweisbar wäre.
+
+**Zwei Befunde am Prüfmittel selbst:**
+
+Die erste Fassung der Restzeitrechnung zählte GCD-Plätze statt Zeitpunkte. Damit lag Slipstream mit 1320 Potenz scheinbar vor Titan — die Gießzeit fiel unter den Tisch, und die Rangfolge stand falsch herum im Konzept, bevor die zeitgenaue Fassung sie umgeworfen hat. Dieselbe Fehlerform wie beim Konfliktrisiko über Dateiaktivität: Ein Surrogat misst nicht den Wirkungsbereich.
+
+Die zweite Fassung verlor die gewebte Fähigkeit des führenden Blocks. Mountain Buster steht in der Blockliste hinter vier Topaz-GCDs, die nicht mehr ins Fenster passen, und die Schleife brach vorher ab. Der Selbsttest verlangt jetzt ausdrücklich, dass die gewebte Aktion des führenden Blocks erscheint.
+
+**Erreichter Prüfgrad:** Potenzrechnung mit Selbsttest, statisch gegen die Artefakte. Keine Laufzeitbeobachtung, kein Schadensrechner.
+
+**Belegschwäche, ausdrücklich:** Vierzehn Potenzen und alle Gießzeiten sind nicht am Repository belegt. `ActionId.resx` lässt die Zahl leer, sobald ein Merkmal sie überschreibt — dort steht wörtlich „with a potency of ." Die Werte stammen aus Suchmaschinenzusammenfassungen; Job-Guide, FFXIV-Wiki, Icy Veins und The Balance sind vom Egress dieser Umgebung gesperrt. Ein Kreuztreffer stützt sie: Für Umbral Impulse nennt die Fremdquelle 640, und diesen Wert belegt `ActionId.resx` unabhängig.
+
 ---
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
