@@ -1943,6 +1943,20 @@ Die Behebung stammt aus PR #7 und war mit dem Revert verlorengegangen; sie ist z
 
 ---
 
+### A66 · Erste Laufzeitbeobachtung zum zweiten Wiederbelebungsversuch (11.09.2026)
+
+**Meldung des Auftraggebers:** „schimmerschild klappt bislang, rezz klappt bislang automatisch."
+
+**Was das belegt.** Die Regression aus C37 ist nicht zurückgekehrt: Radiant Aegis wird weiter gewirkt, der Einschub im Fähigkeitenpfad verdrängt sie also nicht. Das ist der Punkt, an dem der erste Versuch gescheitert ist, und die Bestätigung ist genau dort wertvoll, wo der Entwurf sie beansprucht hat — `nextGCD` bleibt unangetastet, seine 447 Leser ebenfalls. Und die Wiederbelebung erfolgt im Automatikbetrieb, ohne Umschalten auf manuell.
+
+**Was das nicht belegt, und der Unterschied ist der Kern des Vorgangs.** Gemeldet ist, *dass* wiederbelebt wird, nicht *wie schnell*. Die ursprüngliche Beanstandung lautete „es dauert manchmal über 15 Sekunden", nicht „es geschieht nicht". Solange die Dauer nicht beurteilt ist, bleibt der gemeldete Defekt unbestätigt behoben. Das Wort „bislang" in beiden Hälften ist ebenfalls ernst zu nehmen: eine vorläufige Beobachtung, kein abgeschlossener Test.
+
+**Abdeckung des Tests, gegen die Einstellungsvorgaben geprüft.** Von den fünf Eingriffen auf dem Zweig kann diese Beobachtung nur zwei berühren — den Spontanitäts-Einschub (A56) und, negativ, die Nichtverdrängung anderer Fähigkeiten. Die drei übrigen liegen hinter Einstellungen abseits der Vorgabe: die Phönixfeder mit Zieleignung und Stufenprüfung (`UsePhoenixDown` ist ab Werk aus), die Hartwirk-Korrektur (nur bei abgeschaltetem `RaisePlayerBySwift`) und die Bezugsmenge der Nur-Heiler-Modi. Sie bleiben ungemessen, und das ist bei der Auswertung eines späteren Fehlschlags zu berücksichtigen.
+
+**Erreichter Prüfgrad:** Laufzeitbeobachtung des Auftraggebers für einen Teil der Wirkung, vorläufig. Keine Aussage zur Dauer, keine Beobachtung der drei einstellungsabhängigen Eingriffe.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.

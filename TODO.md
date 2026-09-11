@@ -20,6 +20,10 @@ Ursache belegt und durch ein natürliches Experiment des Auftraggebers bestätig
 
 **Auflösungsbedingung:** Beobachtung im Spiel. Erst wenn die Wiederbelebung dort zügig fällt **und** keine andere Fähigkeit ausbleibt, gilt der Punkt als behoben. Eine grüne CI belegt hier nichts; der erste Versuch war ebenfalls compile- und skriptgrün.
 
+**Erste Beobachtung liegt vor, sie trägt eine Hälfte.** Der Auftraggeber meldet: Schimmerschild kommt, die Wiederbelebung erfolgt automatisch — beides „bislang", also vorläufig. Damit ist die zweite Hälfte der Bedingung gestützt: Die Regression aus C37 ist nicht zurückgekehrt, der Einschub verdrängt Radiant Aegis nicht. Die erste Hälfte ist es **nicht**: Gemeldet ist, *dass* wiederbelebt wird, nicht *wie schnell*. Die ursprüngliche Beanstandung lautete nicht „es wird nicht wiederbelebt", sondern „es dauert sehr lange"; ohne eine Aussage zur Dauer ist der Kern des Defekts unbestätigt.
+
+**Was die Beobachtung nicht abdeckt.** Drei der fünf Eingriffe auf diesem Zweig sind nur unter Einstellungen wirksam, die abseits der Vorgabe liegen und deshalb mit hoher Wahrscheinlichkeit nicht mitgetestet wurden: die Phönixfeder samt Zieleignung und Stufenprüfung (`UsePhoenixDown` ist ab Werk **aus**), die Hartwirk-Korrektur (greift nur bei abgeschaltetem `RaisePlayerBySwift`) und die Bezugsmenge der Nur-Heiler-Modi (nur bei `HardCastOnlyHealer` und `HardCastOnlyHealerSwiftCooldown`).
+
 ### `H2` bleibt im Modus `PartyAndAllianceHealers` wirkungslos · N
 
 `TargetUpdater.GetPriorityDeathTarget`. Der Sonderfall `if (raiseType == RaiseType.PartyAndAllianceHealers && deathHealers.Count > 0) return deathHealers[0];` steht **vor** der Umkehrung der vier Listen durch `Service.Config.H2`. In allen anderen Modi dreht diese Einstellung die Reihenfolge, in diesem einen nicht.
