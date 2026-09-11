@@ -1901,6 +1901,30 @@ Die Behebung stammt aus PR #7 und war mit dem Revert verlorengegangen; sie ist z
 
 ---
 
+### A64 · Verwaiste lokale Zweige abgewickelt (11.09.2026)
+
+**Anlass:** Die Zustandsmessung aus A63 legte fünf lokale Zweige offen, die niemand mehr braucht. Freigabe durch den Auftraggeber erteilt.
+
+**Verifikation vor der Löschung, je Zweig.** Gezählt wurden Commits, die weder in `origin/main` noch in einem der beiden lebenden Arbeitszweige stecken:
+
+| Zweig | Eigene Commits | Nachweis |
+|---|---|---|
+| `claude/bmr-mitigation-refresh` | 0 | vollständig in `origin/main` |
+| `claude/release-tag-limits` | 0 | über PR #5 gemergt |
+| `claude/rotation-flow-refactor` | 0 | über PR #4 gemergt |
+| `backup/pre-msgfix` | 8 | Sicherungsstand vor dem Umschreiben der Commit-Nachrichten; alle acht Titel einzeln in `origin/main` wiedergefunden, nur unter anderen Hashes |
+| `claude/release-notes` | 2 | PR #6, vom Auftraggeber ohne Merge geschlossen |
+
+**Der einzige Zweig mit eigenem Inhalt war `claude/release-notes`,** und auch dort geht nichts verloren: GitHub hält die Köpfe geschlossener Pull Requests dauerhaft unter `refs/pull/<n>/head`. Gemessen statt angenommen — `git ls-remote origin refs/pull/6/head` liefert genau `d84759c0`, den Kopf des gelöschten Zweigs; für die PRs #3, #4 und #5 ebenso. Das ist zugleich die allgemeine Auflösung für künftige Fälle dieser Art: Ein Zweig, dessen Arbeit durch einen Pull Request gelaufen ist, ist auch nach dem Schließen kein Verlustfall.
+
+**Eine Erkenntnis wurde vor der Löschung gerettet.** `d84759c0` trug eine Verschärfung in `CLAUDE.md`, die im geltenden Stand fehlte: Ein Release lässt sich von hier aus nicht nur nicht auslösen, sondern auch nicht nachträglich beschriften — `PATCH` auf einen Release antwortet `403 Creating, editing, or deleting releases is not permitted for this session type`. Sie ist übernommen. Der zweite Teil jenes Zweigs — Titel und Text für die Release-Seite in `publish.yaml` — bleibt verworfen: Der Auftraggeber hat den Pull Request selbst geschlossen, und der Inhalt ist über PR #6 einsehbar, falls er ihn doch will.
+
+**Nicht gelöscht:** `claude/raise-swiftcast-weave` — er trägt PR #7 und ist der benannte Rückfallstand für den laufenden Wiederbelebungsvorgang.
+
+**Nebenbefund, ebenfalls gemessen:** Der Probe-Zweig `tmp-push-probe`, den diese Umgebung auf `origin` nicht selbst löschen konnte, ist fort. `git branch -r` führt neben den beiden Arbeitszweigen nur noch `origin/main`. Der offene Punkt aus PR #5 ist damit erledigt.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.
