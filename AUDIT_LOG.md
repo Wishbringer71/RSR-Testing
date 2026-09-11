@@ -2131,6 +2131,26 @@ Die Behebung stammt aus PR #7 und war mit dem Revert verlorengegangen; sie ist z
 
 ---
 
+### A75 · Die Burst-Abdeckung getrennt gemessen — keine Verschiebung aus dem Burst (11.09.2026)
+
+**Anlass:** Der Auftraggeber hat den Einwand gegen die Schadensgewichtung geschärft: Ein Buff im Burst steigert einen Anteil des Burst-Schadens, derselbe Buff in der Zwischenphase denselben Anteil eines viel kleineren Schadens. Wandert Buffzeit aus dem Burst heraus, ist das eine Regression — und eine gewichtete **Gesamtzahl** kann sie verdecken, weil der Zugewinn in der Zwischenphase den Verlust im Burst rechnerisch ausgleicht. Seine Folgerung: Sekunden zählen genauso wie Schaden.
+
+**Der Einwand war berechtigt und die Prüfung fehlte.** A74 hatte gezeigt, dass V7 in der gewichteten Gesamtzahl am Optimum liegt — aber nicht, dass diese Zahl nicht aus einer Verschiebung entstanden ist. Das Modell misst die Burst-Abdeckung jetzt getrennt.
+
+**Ergebnis: Es wandert nichts aus dem Burst.** Bei jeder Regel, jeder Beschwörerzahl von eins bis fünf und jeder Versatzstufe bleibt die Abdeckung des Burst-Fensters bei 99 bis 100 Prozent. Der Grund steckt in der Taktung: Wer den Burst gedeckt hat, ist genau 120 Sekunden später wieder bereit — zum nächsten Burst. Diese Ladung bleibt dauerhaft an den Burst gebunden; nur die übrigen füllen die Zwischenzeit. V7 fügt Abdeckung hinzu, ohne bestehende zu verschieben.
+
+**Damit gilt die Folgerung des Auftraggebers.** Die Gleichsetzung von Sekunden und Schaden ist hier erlaubt — nicht allgemein, sondern weil der Burst gedeckt bleibt. Das steht jetzt als Invariante im Selbsttest: Keine Erweiterung darf die Burst-Abdeckung senken.
+
+**Zwei Befunde am Prüfmittel selbst, beide aus diesem Durchgang:**
+
+Die erste Fassung der Burst-Messung lieferte durchgehend 0 Prozent. Ein `continue` stand vor der Zündlogik, sodass niemand zündete. **Die Vergleichsprüfung schlug trotzdem nicht an, weil 0 nicht kleiner ist als 0** — ein Test, der nur zwei Zahlen ins Verhältnis setzt, merkt nicht, dass beide kaputt sind. Der Selbsttest verlangt jetzt zusätzlich, dass ein einzelner Beschwörer seinen eigenen Burst tatsächlich deckt. Dieselbe Fehlerform wie der stille Nullbefund in A68, an einer anderen Stelle.
+
+Die zweite Fassung zeigte einen Rückgang von 0,8 Prozentpunkten — in genau der Richtung des Einwands. Statt die Toleranz aufzuweiten, wurde nachgemessen: Bei zehnfach feinerem Zeitraster schrumpft der Rückgang auf 0,14 Prozentpunkte, skaliert also mit der Rasterweite und ist Diskretisierung. Die Toleranz der Burst-Prüfung ist entsprechend hergeleitet — `STEP / BURST_WINDOW`, weil das Burst-Fenster nur ein Sechstel des Zyklus ausmacht und derselbe Rasterfehler dort relativ sechsmal schwerer wiegt.
+
+**Erreichter Prüfgrad:** Modellrechnung mit Selbsttest gegen jetzt acht Invarianten. Keine Laufzeitbeobachtung.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.

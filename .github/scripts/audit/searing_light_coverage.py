@@ -99,7 +99,8 @@ def best_possible(n, burst_share):
             + (1.0 - burst_share) * covered_rest / rest_span)
 
 
-def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=None):
+def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=None,
+             burst_only=False):
     """Return the fraction of the fight covered by a Searing Light.
 
     `window` restricts the measurement to (start, end) seconds without changing the run, which is
@@ -132,8 +133,14 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
             # Weight of this instant: burst share concentrated in the first BURST_WINDOW of each
             # 120s cycle, the rest spread evenly over the remainder.
             in_burst = (t % RECAST) < BURST_WINDOW
-            w = (burst_share / BURST_WINDOW) if in_burst \
-                else ((1.0 - burst_share) / (RECAST - BURST_WINDOW))
+            # burst_only measures the burst window alone: every instant inside it counts, everything
+            # else counts zero. A rule that raises total coverage while lowering this one has moved
+            # buff time out of the party's burst - a regression the combined figure would hide.
+            if burst_only:
+                w = 1.0 if in_burst else 0.0
+            else:
+                w = (burst_share / BURST_WINDOW) if in_burst \
+                    else ((1.0 - burst_share) / (RECAST - BURST_WINDOW))
             weight_total += w
             if buff_until > t:
                 weighted += w
@@ -189,7 +196,7 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
 
         t += STEP
 
-    if weighting:
+    if weighting or burst_only:
         return weighted / weight_total if weight_total else 0.0
     return covered / (hi - lo)
 
@@ -240,6 +247,35 @@ def self_test():
                 if got > best + TOL:
                     raise AssertionError('%s beat the optimum at n=%d burst=%.2f: %.3f > %.3f'
                                          % (mode, n, bs, got, best))
+
+    # Before comparing burst coverage, check the measurement returns anything at all. The first
+    # version of it put a `continue` before the casting logic, so nobody ever cast and every figure
+    # came out 0% - and the comparison below passed, because 0 is not less than 0. A test that only
+    # relates two numbers cannot notice that both are broken.
+    lone_burst = simulate(1, 'solar', 0, burst_only=True)
+    if lone_burst < 0.9:
+        raise AssertionError('a single Summoner casting in Solar must cover his own burst window, '
+                             'got %.3f' % lone_burst)
+
+    # The regression the user warned about: no widening may lower burst coverage. Total coverage
+    # going up while the burst goes down would mean buff time was moved out of the party's burst,
+    # and the combined figure would hide it.
+    #
+    # The tolerance here is larger than TOL and that is not a loosening to make the test pass. The
+    # burst window is 20s of each 120s cycle, so a cast landing one grid step later costs STEP of
+    # those 20 seconds - a relative error of STEP/BURST_WINDOW, five times coarser than for a
+    # full-cycle figure. Checked rather than assumed: at STEP 0.1 the largest gap between the rules
+    # is 0.8 percentage points, at STEP 0.01 it is 0.14 - it scales with the grid, so it is
+    # discretisation and not a real loss.
+    burst_tol = STEP / BURST_WINDOW * 2
+    for n in range(1, 6):
+        for drift in (0, 30, 60):
+            base = simulate(n, 'solar', drift, burst_only=True)
+            for mode in ('demi', 'simple'):
+                got = simulate(n, mode, drift, burst_only=True)
+                if got < base - burst_tol:
+                    raise AssertionError('%s lowered burst coverage at n=%d drift=%d: %.3f < %.3f'
+                                         % (mode, n, drift, got, base))
 
     # Writing off a Summoner who stopped casting can never do worse than keeping him in the books.
     for n in range(2, 6):
@@ -347,6 +383,19 @@ def main():
             print('    %-11d %-13s %-15s %-11s %s'
                   % (n, '%.0f%%' % (a * 100), '%.0f%%' % (b * 100), '%.0f%%' % (c * 100),
                      '%.0f%%' % (best * 100)))
+    print()
+    print('The burst window alone - is it still covered? A rule that raises the total while')
+    print('lowering this has moved buff time out of the burst, which would be a regression.')
+    for drift, label in ((0, 'synchronised'), (60, 'fully drifted')):
+        print('  %s' % label)
+        print('    %-11s %-13s %-15s %s' % ('Summoners', 'Solar only', 'any demi (V2)', 'V7'))
+        for n in range(1, upto):
+            a = simulate(n, 'solar', drift, fight, burst_only=True)
+            b = simulate(n, 'demi', drift, fight, burst_only=True)
+            c = simulate(n, 'simple', drift, fight, burst_only=True)
+            print('    %-11d %-13s %-15s %s'
+                  % (n, '%.0f%%' % (a * 100), '%.0f%%' % (b * 100), '%.0f%%' % (c * 100)))
+
     print()
     print('One Summoner drops out for three minutes, synchronised pull, measured over that window')
     print('  %-11s %-16s %-16s %s'

@@ -340,6 +340,41 @@ nächsten Burst — wieder bereit.
 Beschwörern deckt er 45 % des Schadens ab, möglich wären 89 %. Die Hälfte des Erreichbaren bleibt
 liegen.
 
+### Die Regression, die eine Gesamtzahl verdecken würde
+
+Der Auftraggeber hat den Einwand geschärft: Ein Buff im Burst steigert einen Anteil des
+Burst-Schadens, ein Buff in der Zwischenphase denselben Anteil eines viel kleineren Schadens. Wandert
+Buffzeit aus dem Burst in die Zwischenphase, ist das eine **Regression** — und eine gewichtete
+Gesamtzahl kann sie verstecken, weil der Zugewinn in der Zwischenphase den Verlust im Burst
+rechnerisch ausgleicht.
+
+**Deshalb wird die Burst-Abdeckung getrennt gemessen**, und das Ergebnis ist eindeutig: Bei jeder
+Regel, jeder Beschwörerzahl und jeder Versatzstufe bleibt sie bei 99 bis 100 Prozent. **Es wandert
+nichts aus dem Burst heraus.**
+
+Der Grund steckt in der Taktung: Wer den Burst gedeckt hat, ist genau 120 Sekunden später wieder
+bereit — zum nächsten Burst. Die Ladung, die den Burst deckt, bleibt also dauerhaft an den Burst
+gebunden, und nur die **übrigen** Ladungen füllen die Zwischenzeit. V7 fügt Abdeckung hinzu, ohne
+bestehende zu verschieben.
+
+**Damit gilt die Folgerung des Auftraggebers: Sekunden zählen hier genauso wie Schaden.** Die
+Gleichsetzung ist erlaubt, solange der Burst gedeckt bleibt — und genau das ist jetzt geprüft, statt
+angenommen. Die Prüfung steht als Invariante im Selbsttest des Modells: Keine Erweiterung darf die
+Burst-Abdeckung senken.
+
+**Zwei Befunde aus dieser Messung selbst, beide festgehalten:**
+
+Die erste Fassung der Burst-Messung lieferte durchgehend 0 % — ein `continue` stand vor der
+Zündlogik, also zündete niemand. Die Vergleichsprüfung schlug trotzdem nicht an, weil 0 nicht
+kleiner ist als 0. Ein Test, der nur zwei Zahlen ins Verhältnis setzt, merkt nicht, dass beide kaputt
+sind; der Selbsttest verlangt jetzt zusätzlich, dass ein einzelner Beschwörer seinen eigenen Burst
+tatsächlich deckt.
+
+Die zweite Fassung zeigte einen Rückgang von 0,8 Prozentpunkten bei zwei Beschwörern — in genau der
+Richtung, vor der der Einwand warnt. Nachgemessen mit zehnfach feinerem Zeitraster schrumpft er auf
+0,14: Er skaliert mit der Rasterweite und ist damit Diskretisierung, kein Verlust. Die Toleranz der
+Prüfung ist entsprechend begründet gesetzt, nicht aufgeweitet, bis es passt.
+
 **Grenzen dieser Gegenprobe, und eine davon wirkt zugunsten von V7.** Der Burst-Anteil ist eine
 Annahme. Der Schaden außerhalb des Bursts ist als gleichmäßig modelliert, was er nicht ist — die
 Beschwörungsfenster der einzelnen Beschwörer sind selbst Spitzen. Da V7 gerade diese Fenster mit
