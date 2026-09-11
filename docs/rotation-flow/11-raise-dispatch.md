@@ -115,6 +115,105 @@ dazu, in dem es nichts gibt, worauf zu warten wäre.
 - **Nicht gemessen:** Ob die Wiederbelebung im Spiel nun zügig fällt, ist begründet und nicht
   beobachtet. Der erste Versuch war ebenfalls compile- und skriptgrün und trotzdem falsch.
 
+## Anwendungsfälle der Wiederbelebung, systematisch durchgegangen
+
+Die Erhebung folgt den sechs Größen, die den Pfad tatsächlich steuern: Rolle und Job, Zustand von
+Spontanität, `HardCastRaiseType`, `RaisePlayerFirst`, `RaiseType` und Bewegung. Jede Zelle ist am
+Quelltext belegt; wo eine Aussage nicht entscheidbar war, steht das ausdrücklich dabei.
+
+### Die zwei Einhängepunkte
+
+Der Wiederbelebungsblock existiert **zweimal**, und die Einstellung entscheidet, welcher läuft:
+
+| `RaisePlayerFirst` | Ort | Was davor gewinnt |
+|---|---|---|
+| an | `CustomRotation_GCD.cs:123` | Notfall, Unterbrechung, Reinigung, Provokation |
+| **aus (Vorgabe)** | `:350` | zusätzlich **die gesamte Heilung** (`:235`) und die Einzelziel-Verteidigung (`:333`) |
+
+Mit der Vorgabe steht die Wiederbelebung also hinter jeder Heilung. Das ist die dokumentierte
+Bedeutung der Einstellung und kein Defekt — aber es erklärt, warum die Wahl dieser Einstellung das
+beobachtete Verhalten stark verändert.
+
+### Zustand von Spontanität
+
+| Zustand | Weg | Ergebnis |
+|---|---|---|
+| läuft (`HasSwift`) | Stufe (A) in `RaiseSpell` | Wiederbelebung sofort, ohne Wirkzeit |
+| bereit, Einstellung an | Einschiebefenster (`EmergencyAbility`) | zündet, danach Fall 1 |
+| in Erholung, Einstellung an | Hartwirk-Zweig | Hartwirk, **nur im Stehen** — Stufe (C) verlangt `!IsMoving` |
+| bereit, Einstellung aus | Hartwirk-Zweig über `!SwiftcastComingForRaise` | Hartwirk im Stehen |
+| `NoHardCast` **und** Einstellung aus | keiner | keine Wiederbelebung — beide Wege bewusst abgeschaltet, kein Defekt |
+
+Der Rotmagier fällt aus der Reihe: Dualcast steht in `StatusHelper.SwiftcastStatus`, also ist
+`HasSwift` nach jedem Zauber wahr und Stufe (A) greift ohnehin. Für ihn war der Pfad nie defekt.
+
+### `HardCastRaiseType`
+
+| Wert | Optionstext | Code prüft | Bewertung |
+|---|---|---|---|
+| `NoHardCast` | nicht hart wirken | kein Zweig | stimmig |
+| `HardCastNormal` | „while Swiftcast is on cooldown" | Erholung bzw. „kommt nicht mehr" | stimmig |
+| `HardCastSwiftCooldown` | „… and cooldown is higher than raise cast time" | genau das | stimmig |
+| `HardCastOnlyHealer` | „**while Swiftcast is on cooldown** and other healers are dead" | **nur** die Heiler-Bedingung | **Widerspruch** |
+| `HardCastOnlyHealerSwiftCooldown` | beides | beides | stimmig |
+
+### Drei Defekte im Zweig `HardCastOnlyHealer`
+
+`CustomRotation_GCD.cs:149-178`, alle drei am selben Zweig:
+
+1. **Der Optionstext verspricht eine Bedingung, die der Code nicht prüft.** „Raise while Swiftcast
+   is on cooldown and other healers are dead" — geprüft wird allein der zweite Teil. Wer diesen Wert
+   wählt, bekommt Hartwirk auch bei bereiter Spontanität. Nach der Auslegungsregel ist der
+   Optionstext Beleg der Entwurfsabsicht; der Widerspruch ist ein Befund, und er darf nicht durch
+   Umschreiben des Textes aufgelöst werden.
+2. **Der Spieler zählt in keiner der beiden Mengen mit** — beide Schleifen filtern mit
+   `!battleChara.IsPlayer()`. Ist man der einzige Heiler, sind `deadhealers` und `allhealers` beide
+   leer: `0 == 0` trifft zu, `deadhealers.Count > 0` nicht. **In einer Vierergruppe mit einem
+   Heiler wird mit dieser Einstellung nie hart gewirkt.** Ob das gemeint war, ist dem Code nicht zu
+   entnehmen: „andere Heiler sind tot" ist bei nur einem Heiler unentscheidbar formuliert.
+3. **Die Bedingungsreihenfolge wertet zuerst aus, was Nebenwirkungen hat.**
+   `RaiseSpell(out act, true) && deadhealers.Count == allhealers.Count && …` ruft `RaiseSpell`
+   **vor** der Mengenprüfung auf. `RaiseSpell` führt über `RaiseGCD` ein `CanUse` aus, das `Target`
+   zuweist, und verstellt `IBaseAction.ShouldEndSpecial`. Der Rückgabewert ist dadurch nicht falsch,
+   aber die Aktion wird auch dann angefasst, wenn der Zweig gar nicht greifen darf. Die billige und
+   nebenwirkungsfreie Mengenprüfung gehört nach vorn.
+
+### Die Phönixfeder ist vollständig unverdrahtet
+
+`CustomRotation_Items.UsePhoenixDown` (`:34`) ist implementiert — samt korrekt gesicherter
+Zielüberschreibung — und hat **keinen einzigen Aufrufer** im Baum. Die Einstellungen
+`UsePhoenixDown` und `UsePhoenixDownHealerLogic` sowie `PheonixDownItem` existieren ebenfalls.
+
+Die Folge greift weiter, als es zunächst aussieht: `DataCenter.CanRaise()` liefert **wahr**, sobald
+`UsePhoenixDown` eingeschaltet ist und eine Feder im Gepäck liegt — unabhängig vom Job. Ein Tank
+oder Schadensjob bekommt damit `AutoStatus.Raise` gesetzt und durchläuft in jedem Frame den
+Wiederbelebungsblock, in dem nichts geschehen kann, weil `Raise` für ihn null ist. Schaden richtet
+das nicht an, aber die Lage „es gibt etwas wiederzubeleben" wird für Jobs gemeldet, die es nicht
+können, und die Einstellung verspricht eine Funktion, die es nicht gibt.
+
+Dieselbe Fehlerklasse wie `SwiftcastBuffer` und `IBaseAction.IgnoreClipping`: vorhandene, fertige
+Konstruktion ohne Verdrahtung. Nach der Inhaltlichkeitsregel ist die Gegenhypothese zu prüfen, dass
+der Code richtig ist und nur der Aufruf fehlt — sie trifft hier zu.
+
+### Zielauswahl und `RaiseType`
+
+Geprüft und ohne Befund: `PartyOnly` (Vorgabe) und `PartyHealersOnly` werden in `GetDeathTarget`
+getrennt behandelt, die Allianz-Varianten fügen ohne Doppelzählung hinzu (`deathPartyIds`).
+`GetPriorityDeathTarget` staffelt Tank, Heiler, Ersatzrezzer und Übrige; die Sonderregel für zwei
+tote Tanks ist eine begründete Fallunterscheidung und kein Tippfehler (C36).
+
+Die Filter in `GetDeath` sind vollständig und schließen jeweils sinnvoll aus: kein Wiederbelebungs-
+oder Verweigerungsstatus, Entfernung über 30 Yalm, fehlende Sichtlinie, Gruppen- oder
+Allianzzugehörigkeit. Der Auftraggeber hat bestätigt, dass Leichen ruhig liegen und anvisierbar
+sind, womit `IsTargetMoving` und `IsTargetable` als Ursache ausscheiden.
+
+### Was dieser Durchgang nicht entscheiden kann
+
+Ob `HardCastOnlyHealer` bei einem einzigen Heiler greifen *soll*, folgt weder aus dem Code noch aus
+dem Optionstext. Und ob die Phönixfeder je verdrahtet war oder von Anfang an fehlte, ist eine Frage
+an die Versionsgeschichte, die für die Bewertung des Befunds nicht nötig ist: Der Zustand ist so
+oder so unvollständig.
+
 ## Warum es heute nicht funktioniert
 
 `WeaponRemain` ist derselbe Wert wie `DataCenter.DefaultGCDRemain`

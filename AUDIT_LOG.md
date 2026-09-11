@@ -1777,6 +1777,27 @@ Die Behebung stammt aus PR #7 und war mit dem Revert verlorengegangen; sie ist z
 
 ---
 
+### A57 · Alle Anwendungsfälle der Wiederbelebung durchgegangen (11.09.2026)
+
+**Anlass:** Auftrag, sämtliche Anwendungsfälle beim Wiederbeleben im vollständigen Loop kritisch durchzugehen.
+
+**Erhebung entlang der sechs steuernden Größen:** Rolle und Job, Zustand von Spontanität, `HardCastRaiseType` (fünf Werte), `RaisePlayerFirst`, `RaiseType` (sechs Werte), Bewegung. Vollständig in `docs/rotation-flow/11-raise-dispatch.md` ausgeschrieben.
+
+**Struktureller Befund ohne Defektcharakter:** Der Wiederbelebungsblock existiert zweimal. Bei `RaisePlayerFirst` steht er auf `:123` vor der Heilung, ohne die Einstellung auf `:350` dahinter — also hinter der gesamten Heilung und der Einzelziel-Verteidigung. Die Vorgabe ist **aus**. Das ist die dokumentierte Bedeutung der Einstellung, erklärt aber, warum ihre Wahl das beobachtete Verhalten stark verschiebt.
+
+**Neue Defekte, alle in `TODO.md` erfasst, keiner behoben:**
+
+1. **Die Phönixfeder ist vollständig unverdrahtet.** `CustomRotation_Items.UsePhoenixDown` ist fertig implementiert — samt korrekt gesicherter Zielüberschreibung, dasselbe Muster, das in dieser Sitzung für `RaisePendingAndCastable` gebaut wurde — und hat keinen Aufrufer. Die Wirkung reicht weiter: `DataCenter.CanRaise()` liefert jobunabhängig wahr, sobald die Einstellung an ist und eine Feder im Gepäck liegt, wodurch Tanks und Schadensjobs `AutoStatus.Raise` gesetzt bekommen und den Wiederbelebungsblock durchlaufen, in dem nichts geschehen kann. Dritter Fall derselben Klasse nach `SwiftcastBuffer` und `IgnoreClipping`.
+2. **`HardCastOnlyHealer`, drei Defekte an einem Zweig.** Der Optionstext verspricht „while Swiftcast is on cooldown", der Code prüft es nicht. Beide Heilermengen schließen den Spieler aus, weshalb ein einzelner Heiler nie hart wirkt — in einer Vierergruppe ist die Einstellung wirkungslos. Und die Bedingungsreihenfolge ruft `RaiseSpell` mit seinen Nebenwirkungen auf `Target` und `ShouldEndSpecial` vor der billigen Mengenprüfung. `HardCastOnlyHealerSwiftCooldown` wiederholt die Mengenbildung wortgleich.
+
+**Geprüft und ohne Befund:** Die `RaiseType`-Varianten werden in `GetDeathTarget` getrennt behandelt, die Allianz-Zweige ohne Doppelzählung. Die Filterkette in `GetDeath` ist vollständig und schließt jeweils sinnvoll aus. Der Rotmagier war von der Kernursache nie betroffen, weil Dualcast in `StatusHelper.SwiftcastStatus` steht und damit Stufe (A) von `RaiseSpell` ohnehin greift. Die Kombination `NoHardCast` mit abgeschalteter `RaisePlayerBySwift` belebt niemanden wieder — das ist gewollt, beide Wege sind bewusst abgeschaltet.
+
+**Nicht entscheidbar:** Ob `HardCastOnlyHealer` beim Einzelheiler greifen soll, folgt weder aus Code noch Optionstext. Das ist eine Festlegung, keine Erhebung.
+
+**Erreichter Prüfgrad:** statische Prüfung am Quelltext, jede Zelle der Matrix belegt. Keine Laufzeitbeobachtung.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.

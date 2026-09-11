@@ -4,6 +4,27 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 ## Defekte
 
+### Die Phönixfeder ist vollständig unverdrahtet · N
+
+`CustomRotation_Items.UsePhoenixDown` (`:34`) ist fertig implementiert — samt korrekt gesicherter und wiederhergestellter Zielüberschreibung — und hat **keinen einzigen Aufrufer** im Baum. Ebenso vorhanden und ungenutzt: die Einstellungen `UsePhoenixDown`, `UsePhoenixDownHealerLogic` und der Typ `PheonixDownItem`.
+
+**Die Wirkung reicht über die tote Funktion hinaus.** `DataCenter.CanRaise()` liefert **wahr**, sobald `UsePhoenixDown` eingeschaltet ist und eine Feder im Gepäck liegt — jobunabhängig. Ein Tank oder Schadensjob bekommt dadurch `AutoStatus.Raise` gesetzt und durchläuft in jedem Frame den Wiederbelebungsblock, in dem nichts geschehen kann, weil `Raise` für ihn null ist. Schaden entsteht daraus nicht, aber die Lage „es ist etwas wiederzubeleben" wird für Jobs gemeldet, die es nicht können.
+
+Dieselbe Fehlerklasse wie `SwiftcastBuffer` und `IBaseAction.IgnoreClipping`: fertige Konstruktion ohne Verdrahtung. Die Gegenhypothese nach der Inhaltlichkeitsregel — der Code ist richtig, nur der Aufruf fehlt — trifft zu, die Funktion ist also nicht zu entfernen, sondern einzuhängen.
+
+**Nicht umgesetzt,** weil die Einhängestelle eine Entwurfsentscheidung ist: Der Gegenstandspfad hat keinen Platz im GCD-Dispatcher, an dem er heute vorgesehen wäre, und ein Gegenstandseinsatz konkurriert anders um den GCD als ein Zauber. **Auflösungsbedingung:** Festlegen, an welcher Stelle der Kette der Gegenstand geprüft wird, und ob `CanRaise()` bis dahin nicht besser ohne die Federprüfung auskommt — Letzteres ist die kleinere und sofort mögliche Teilbehebung.
+
+### `HardCastOnlyHealer`: drei Defekte an einem Zweig · N
+
+`CustomRotation_GCD.cs:149-178`.
+
+1. **Optionstext und Code widersprechen sich.** Der Text lautet „Raise while Swiftcast is on cooldown and other healers are dead"; geprüft wird allein der zweite Teil. Wer diesen Wert wählt, bekommt Hartwirk auch bei bereiter Spontanität. Der Optionstext ist Beleg der Entwurfsabsicht — der Widerspruch ist nicht durch Umschreiben des Textes aufzulösen.
+2. **Ein einzelner Heiler wirkt nie hart.** Beide Mengen filtern mit `!battleChara.IsPlayer()`. Ist man der einzige Heiler, sind `deadhealers` und `allhealers` leer: `0 == 0` trifft zu, `deadhealers.Count > 0` nicht. In einer Vierergruppe ist die Einstellung damit wirkungslos. Ob das gemeint war, geht aus Code und Text nicht hervor — „andere Heiler sind tot" ist für den Einzelheiler unentscheidbar formuliert.
+3. **Die Bedingungsreihenfolge wertet zuerst das Nebenwirkungsbehaftete aus.** `RaiseSpell(out act, true) && deadhealers.Count == allhealers.Count && …` ruft `RaiseSpell` vor der Mengenprüfung. `RaiseSpell` führt über `RaiseGCD` ein `CanUse` aus, das `Target` zuweist, und verstellt `IBaseAction.ShouldEndSpecial`. Der Rückgabewert wird dadurch nicht falsch, aber die Aktion wird auch dann angefasst, wenn der Zweig nicht greifen darf. Die nebenwirkungsfreie Mengenprüfung gehört nach vorn.
+
+Punkt 3 ist ohne Entscheidungsbedarf und rein mechanisch; Punkt 1 und 2 verlangen eine Festlegung, was die Einstellung bedeuten soll, und sind deshalb nicht mitbehoben. Dieselbe Prüfung gilt für `HardCastOnlyHealerSwiftCooldown`, das die Mengenbildung wortgleich wiederholt.
+
+
 ### Wiederbelebung: zweiter Behebungsversuch wartet auf Spielbeobachtung · N, R
 
 Ursache belegt und durch ein natürliches Experiment des Auftraggebers bestätigt (manuell + Toten anvisiert lässt den GCD frei, dann fällt die Wiederbelebung sofort). Analyse in `docs/rotation-flow/11-raise-dispatch.md`, Nachweise in `AUDIT_LOG.md` A54 und A56, gescheiterter erster Versuch in C37.
