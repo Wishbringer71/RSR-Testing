@@ -14,32 +14,6 @@ internal class PhoenixDownItem : BaseItem
 		};
 	}
 
-	private static bool AnyLivingRaiserInParty()
-	{
-		foreach (var member in DataCenter.PartyMembers)
-		{
-			if (member.IsDead)
-			{
-				continue;
-			}
 
-			if (member.IsJobCategory(JobRole.Healer))
-			{
-				return true;
-			}
-
-			if (member.IsJobs(ECommons.ExcelServices.Job.SMN))
-			{
-				return true;
-			}
-
-			if (member.IsJobs(ECommons.ExcelServices.Job.RDM))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
-	protected override bool CanUseThis => Service.Config.UsePhoenixDown && ((Service.Config.UsePhoenixDownHealerLogic && !AnyLivingRaiserInParty()) || !Service.Config.UsePhoenixDownHealerLogic) && DataCenter.DeathTarget != null;
+	protected override bool CanUseThis => Service.Config.UsePhoenixDown && ((Service.Config.UsePhoenixDownHealerLogic && !DataCenter.AnyLivingRaiser(excludeSelf: false)) || !Service.Config.UsePhoenixDownHealerLogic) && DataCenter.DeathTarget != null;
 }

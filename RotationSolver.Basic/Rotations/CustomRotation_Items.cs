@@ -47,18 +47,18 @@ public partial class CustomRotation
 		{
 			foreach (var phoenixdown in PhoenixDowns)
 			{
-				// Ensure we propagate the action outward if needed by upstream code
+				// Report it, do not cast it. This used to call Use() here and set act as well, so
+				// hooking it up the way every other item is hooked up would have spent two feathers
+				// for one corpse. The reason for casting here is gone anyway: RSCommands.DoAction
+				// calls Use() on whatever is reported, and BaseItem.Use gives item 4570 its own
+				// branch that targets DataCenter.DeathTarget - HQ and NQ included.
 				if (phoenixdown.CanUse(out act, true))
 				{
-					// Use() handles HQ/NQ and correct target GameObjectId
-					if (phoenixdown.Use())
-					{
-						return true;
-					}
-					// If use failed, clear and continue scanning
-					act = null;
+					return true;
 				}
 			}
+
+			act = null;
 			return false;
 		}
 		finally

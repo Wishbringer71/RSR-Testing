@@ -433,47 +433,19 @@ public partial class CustomRotation
 	/// <summary>
 	/// Is anyone besides the player still standing who could take this raise?
 	///
-	/// This is the question the "only healer" hard cast modes mean to ask: hard casting costs eight
-	/// seconds of GCD, which is only worth it when nobody else can do it instead. The branches used
-	/// to build two sets of party healers and compare their sizes, which answered a different
-	/// question and failed in three ways:
+	/// This is what the "only healer" hard cast modes mean to ask: hard casting costs eight seconds
+	/// of GCD and is only worth it when nobody else can do it instead. The branches used to build
+	/// two sets of party healers and compare their sizes, which counted healers rather than raisers,
+	/// excluded the player from both - so a lone healer compared 0 == 0 behind a "&gt; 0" guard and
+	/// never hard cast at all - and could not express "nobody else" in the first place.
 	///
-	/// - It counted healers, not raisers. A living Summoner or Red Mage raises just as well, and
-	///   PheonixDownItem.AnyLivingRaiserInParty already knows that.
-	/// - Both sets excluded the player, so a lone healer - every four-man party, and solo - ended up
-	///   comparing 0 == 0 with a "&gt; 0" guard behind it, and never hard cast at all. That is the
-	///   exact case where hard casting is the only way anyone gets up.
-	/// - Being a count comparison, it could not express "nobody else", only "as many dead as there
-	///   are".
-	///
-	/// The reference set follows RaiseType, because that is what decides where the corpse may come
-	/// from. Under the alliance modes the other alliances are real parties with their own raisers:
-	/// while one of them is alive the raise is theirs to take, and once none is, hard casting is
-	/// the only way anyone there gets up. AllOutOfDuty is deliberately excluded - strangers in the
-	/// open world are not a raise reserve, and counting them would block hard casting almost always.
+	/// The reference set and the raiser jobs live in <see cref="DataCenter.AnyLivingRaiser"/>,
+	/// shared with the Phoenix Down decision, which asks the same question with the player counted.
 	/// </summary>
 	private static bool AnyOtherLivingRaiser()
 	{
-		if (HasLivingRaiser(DataCenter.PartyMembers))
-		{
-			return true;
-		}
-
-		return Service.Config.RaiseType is RaiseType.PartyAndAllianceSupports
-				or RaiseType.PartyAndAllianceHealers
-				or RaiseType.All
-			&& HasLivingRaiser(DataCenter.AllianceMembers);
+		return DataCenter.AnyLivingRaiser(excludeSelf: true);
 	}
-
-	/// <summary>
-	/// Does this set hold someone other than the player who is alive and able to raise?
-	/// </summary>
-	private static bool HasLivingRaiser(IEnumerable<IBattleChara>? members)
-	{
-		if (members == null)
-		{
-			return false;
-		}
 
 		foreach (var member in members)
 		{

@@ -12,23 +12,11 @@ Die Mengenfrage des zweiten Teils ist behoben (A58), dieser Widerspruch nicht: O
 
 **Empfehlung:** die Bedingung ergänzen, nicht den Text kürzen — `HardCastOnlyHealerSwiftCooldown` existiert bereits als die Variante mit zusätzlicher Wirkzeit-Abwägung, was dafür spricht, dass der Spontanitäts-Vorbehalt in **beiden** Nur-Heiler-Modi gemeint war.
 
-### Die Phönixfeder ist unverdrahtet, und ihre Wirk-Methode meldet zugleich · N
-
-`CustomRotation_Items.UsePhoenixDown` (`:34`) ist vollständig implementiert und hat **keinen Aufrufer**. Die Bedingung stimmt bereits mit der Absicht des Auftraggebers überein: `PheonixDownItem.CanUseThis` verlangt `!AnyLivingRaiserInParty()`, also keinen lebenden Heiler, Beschwörer oder Rotmagier in der Gruppe. Die Inhaltssperre ist ebenfalls abgedeckt — `BaseItem.CanUse` fragt `GetActionStatus` gegen `ConfigurationHelper.BadStatus`, das Spiel meldet also selbst, wenn die Feder im Inhalt gesperrt ist.
-
-**Die Einhängung ist nicht trivial, und darin liegt ein zweiter Defekt.** Das Hausmuster für Gegenstände ist der Fähigkeitenpfad (`CustomRotation_Ability.cs:361` für den Heiltrank), und die Methoden dort **melden** eine Aktion. `UsePhoenixDown` dagegen **wirkt selbst** (`phoenixdown.Use()`) **und** setzt `act`. Wer sie nach dem Hausmuster einhängt, verbraucht die Feder zweimal: einmal durch `Use()`, einmal durch den Dispatcher.
-
-Der Grund für das Selbstwirken entfällt zudem: Der Kommentar nennt die Zielsetzung, aber `BaseItem.Use` behandelt die Feder (Item 4570) bereits eigens und wirkt sie auf `DataCenter.DeathTarget`.
-
-**Auflösungsbedingung:** Vor der Einhängung ist `UsePhoenixDown` auf reines Melden umzustellen — ohne den `Use()`-Aufruf —, und dann ist zu prüfen, ob der Ausführungsweg für einen gemeldeten Gegenstand das Ziel tatsächlich setzt. Beides zusammen ist ein eigener Vorgang und gehört nicht in den laufenden Testzweig zur Wiederbelebung.
-
-**Weiterer Nebenbefund:** `DataCenter.CanRaise()` liefert jobunabhängig wahr, sobald `UsePhoenixDown` eingeschaltet ist und eine Feder im Gepäck liegt. Tanks und Schadensjobs bekommen dadurch `AutoStatus.Raise` und durchlaufen den Wiederbelebungsblock, in dem nichts geschehen kann. Solange die Feder unverdrahtet ist, ist diese Federprüfung in `CanRaise()` ohne Nutzen.
-
 ### Wiederbelebung: zweiter Behebungsversuch wartet auf Spielbeobachtung · N, R
 
 Ursache belegt und durch ein natürliches Experiment des Auftraggebers bestätigt (manuell + Toten anvisiert lässt den GCD frei, dann fällt die Wiederbelebung sofort). Analyse in `docs/rotation-flow/11-raise-dispatch.md`, Nachweise in `AUDIT_LOG.md` A54 und A56, gescheiterter erster Versuch in C37.
 
-**Der zweite Versuch liegt auf `claude/raise-swiftcast-weave-2` und ist im Spiel nicht bestätigt.** Er zündet Spontanität im Einschiebefenster, wenn eine Wiederbelebung ansteht und wirkbar wäre, und lässt den GCD-Pfad unangetastet — kein Dispatcher-Abbruch, keine Veränderung von `nextGCD`.
+**Der zweite Versuch liegt auf `claude/raise-swiftcast-weave-2` und ist im Spiel nicht bestätigt.** Er zündet Spontanität im Einschiebefenster, wenn eine Wiederbelebung ansteht und wirkbar wäre, und lässt den GCD-Pfad unangetastet — kein Dispatcher-Abbruch, keine Veränderung von `nextGCD`. Derselbe Zweig trägt inzwischen zwei weitere Eingriffe am Wiederbelebungspfad, die ebenfalls ungemessen sind: die Bezugsmenge der Nur-Heiler-Hartwirkmodi (A58) und die Verdrahtung der Phönixfeder (A59). Schlägt der Test fehl, sind drei Änderungen gleichzeitig im Spiel — die Trennung in eigene Zweige wurde auf Wunsch des Auftraggebers aufgegeben.
 
 **Auflösungsbedingung:** Beobachtung im Spiel. Erst wenn die Wiederbelebung dort zügig fällt **und** keine andere Fähigkeit ausbleibt, gilt der Punkt als behoben. Eine grüne CI belegt hier nichts; der erste Versuch war ebenfalls compile- und skriptgrün.
 

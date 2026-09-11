@@ -1820,6 +1820,24 @@ Die Behebung stammt aus PR #7 und war mit dem Revert verlorengegangen; sie ist z
 
 ---
 
+### A59 · Die Phönixfeder verdrahtet, und das Doppelwirken dabei beseitigt (11.09.2026)
+
+**Anlass:** Der Auftraggeber hat die gemeinte Bedingung genannt — kein Rezzer in der Gruppe oder alle tot, dann Feder, soweit der Inhalt es zulässt — und sie an einem Szenario ausgeschrieben: In einer Achtergruppe eines Allianzraids sind die eigenen Heiler tot und niemand in der eigenen Gruppe kann wiederbeleben; dann soll ein Federträger einen Heiler hochbringen, bei mehreren Trägern auch den zweiten, und wenn auch in den anderen Allianzgruppen keine Heiler und Rezzer mehr leben, ebenso dort.
+
+**Ausgangslage.** Die Bedingung stand bereits richtig im Code (`PheonixDownItem.CanUseThis` mit `!AnyLivingRaiserInParty()`), und die Inhaltssperre ebenfalls: `BaseItem.CanUse` fragt `GetActionStatus` gegen `ConfigurationHelper.BadStatus`, das Spiel meldet also selbst, wenn Gegenstände im Inhalt verboten sind. Gefehlt hat allein der Aufruf — `UsePhoenixDown` hatte keinen.
+
+**Der Defekt, der die Verdrahtung blockiert hätte.** `UsePhoenixDown` wirkte die Feder **selbst** (`phoenixdown.Use()`) und setzte zusätzlich `act`. Das Hausmuster für Gegenstände ist aber das Melden — `CustomRotation_Ability.cs` hängt den Heiltrank über `UseHpPotion(nextGCD, out act)` ein, und `RSCommands.DoAction` ruft `Use()` auf dem gemeldeten Ergebnis auf. Eine Einhängung nach Hausmuster hätte also **zwei Federn für eine Leiche** verbraucht. Der Grund für das Selbstwirken entfällt zudem: `BaseItem.Use` führt für Item 4570 einen eigenen Zweig, der auf `DataCenter.DeathTarget` zielt und HQ wie NQ behandelt. Der `Use()`-Aufruf ist entfernt, die Methode meldet jetzt nur.
+
+**Bezugsmenge vereinheitlicht.** `AnyLivingRaiserInParty` in `PheonixDownItem` und die neue Rezzer-Prüfung aus A58 stellten dieselbe Frage in zwei Fassungen. Beide zeigen jetzt auf `DataCenter.AnyLivingRaiser(bool excludeSelf)`: dieselbe Menge nach `RaiseType` — Gruppe bei `PartyOnly` und `PartyHealersOnly`, Gruppe und Allianz unter den Allianzmodi und `All`, `AllOutOfDuty` ausgenommen — und dieselben Rezzerjobs (Heiler, Beschwörer, Rotmagier). Der Unterschied liegt allein im Parameter, und er ist sachlich: Die Feder fragt „kann das niemand richtig", zählt den Spieler also mit, weil ein lebender Rezzer seinen Zauber statt eines Gegenstands benutzt; die Hartwirkmodi fragen „kann es jemand **anders**", dort ist der Spieler der Entscheidende.
+
+**Einhängung.** Im Fähigkeitenpfad hinter der Heilung, vor dem Angriff: Jemanden am Leben zu halten geht vor, jemanden aufzusammeln kostet nur ein Einschiebefenster. Die Zielüberschreibung setzt `UsePhoenixDown` selbst und stellt sie wieder her. Die Fähigkeitensperre in `DoAction` greift nicht, weil sie `nextAction is BaseAction` prüft und ein `BaseItem` das nicht ist.
+
+**Zum Szenario mit mehreren Federträgern:** Dass jeder Träger einen anderen Toten nimmt, ist nicht zu garantieren — jeder Client entscheidet für sich, und eine Feder wirkt ohne Wirkzeit, sodass der Wiederbelebungsstatus des Ziels erst im Folgeframe sichtbar wird. Die vorhandene Absicherung (`GetDeath` schließt Ziele mit laufendem Wiederbelebungsstatus aus) greift also erst danach. Ein gleichzeitiger Einsatz auf dasselbe Ziel bleibt möglich; das ist ein Verteilungsproblem ohne Koordination und nicht im Client lösbar.
+
+**Erreichter Prüfgrad:** statische Prüfung, Ausführungsweg für gemeldete Gegenstände am Quelltext belegt (`DoAction` ruft `Use()`), Prüfskripte, CI-Kompilierung. **Keine Laufzeitbeobachtung.** Der Eingriff liegt auf demselben Zweig wie der Wiederbelebungsversuch aus A56 und die Mengenkorrektur aus A58 — auf Wunsch des Auftraggebers ohne Trennung in eigene Zweige. Schlägt der Spieltest fehl, sind drei ungemessene Änderungen gleichzeitig wirksam; das ist bei der Auswertung zu berücksichtigen.
+
+---
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.

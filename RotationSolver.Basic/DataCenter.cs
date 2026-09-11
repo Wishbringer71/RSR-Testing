@@ -856,6 +856,64 @@ internal static class DataCenter
 	public static Job Job => Player.Job;
 
 	private static readonly BaseItem PhoenixDownItem = new(4570);
+	/// <summary>
+	/// Is someone alive who could raise, in the set the current raise settings draw targets from?
+	///
+	/// Two callers ask this with opposite intent, which is why the player is a parameter rather
+	/// than a fixed rule. A Phoenix Down asks "can nobody do this properly" and must count the
+	/// player, because a living raiser uses their spell instead of an item. The only-healer hard
+	/// cast modes ask "is there anyone else", and there the player is the one deciding.
+	///
+	/// The reference set follows <see cref="Configs.RaiseType"/>, because that is what decides
+	/// where a corpse may come from. Under the alliance modes the other alliances are real parties
+	/// with their own raisers: while one of them is alive the raise is theirs to take. AllOutOfDuty
+	/// is deliberately excluded - strangers in the open world are not a raise reserve, and counting
+	/// them would suppress raising almost always.
+	/// </summary>
+	/// <param name="excludeSelf">Skip the player, for callers asking whether anyone *else* can.</param>
+	public static bool AnyLivingRaiser(bool excludeSelf)
+	{
+		if (HasLivingRaiser(PartyMembers, excludeSelf))
+		{
+			return true;
+		}
+
+		return Service.Config.RaiseType is RaiseType.PartyAndAllianceSupports
+				or RaiseType.PartyAndAllianceHealers
+				or RaiseType.All
+			&& HasLivingRaiser(AllianceMembers, excludeSelf);
+	}
+
+	private static bool HasLivingRaiser(IEnumerable<IBattleChara>? members, bool excludeSelf)
+	{
+		if (members == null)
+		{
+			return false;
+		}
+
+		foreach (var member in members)
+		{
+			if (member == null || member.IsDead)
+			{
+				continue;
+			}
+
+			if (excludeSelf && member.IsPlayer())
+			{
+				continue;
+			}
+
+			if (member.IsJobCategory(JobRole.Healer)
+				|| member.IsJobs(ECommons.ExcelServices.Job.SMN)
+				|| member.IsJobs(ECommons.ExcelServices.Job.RDM))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public static bool CanRaise()
 	{
 		if (IsPvP)

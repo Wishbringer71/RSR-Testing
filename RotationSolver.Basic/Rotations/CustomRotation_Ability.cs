@@ -364,6 +364,18 @@ public partial class CustomRotation
 		}
 		IBaseAction.ShouldEndSpecial = false;
 
+		// The last resort for a corpse nobody can raise properly. PhoenixDownItem.CanUseThis carries
+		// the condition - a raise target exists and, under the healer logic, no living raiser is
+		// left in the set the raise settings draw from - and BaseItem.CanUse asks the game through
+		// GetActionStatus, so a duty that forbids items refuses it here without a check of our own.
+		//
+		// It sits behind healing on purpose: keeping someone alive beats picking someone up, and a
+		// feather only costs a weave window. It was written long ago and never called at all.
+		if (DataCenter.MergedStatus.HasFlag(AutoStatus.Raise) && UsePhoenixDown(nextGCD, out act))
+		{
+			return true;
+		}
+
 		if (HasHostilesInRange && DataCenter.CurrentDutyRotation?.AttackAbility(nextGCD, out act) == true)
 		{
 			return true;
