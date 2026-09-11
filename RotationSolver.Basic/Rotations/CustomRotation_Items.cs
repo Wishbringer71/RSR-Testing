@@ -48,10 +48,15 @@ public partial class CustomRotation
 			foreach (var phoenixdown in PhoenixDowns)
 			{
 				// Report it, do not cast it. This used to call Use() here and set act as well, so
-				// hooking it up the way every other item is hooked up would have spent two feathers
-				// for one corpse. The reason for casting here is gone anyway: RSCommands.DoAction
-				// calls Use() on whatever is reported, and BaseItem.Use gives item 4570 its own
-				// branch that targets DataCenter.DeathTarget - HQ and NQ included.
+				// hooking it up the way every other item is hooked up would have fired UseAction
+				// twice for one corpse in the same frame - once here, once in RSCommands.DoAction,
+				// which calls Use() on whatever is reported. Whether the second call reaches the
+				// server or the client refuses it during the first one's lock is not decidable from
+				// this side; what is certain is that DoAction then books the result of that second
+				// call as the outcome - CurrentAction, _lastActionID and _lastUsedTime all follow a
+				// call that did not do the work. The reason for casting here is gone anyway:
+				// BaseItem.Use gives item 4570 its own branch targeting DataCenter.DeathTarget, HQ
+				// and NQ included.
 				if (phoenixdown.CanUse(out act, true))
 				{
 					return true;

@@ -447,35 +447,6 @@ public partial class CustomRotation
 		return DataCenter.AnyLivingRaiser(excludeSelf: true);
 	}
 
-		foreach (var member in members)
-		{
-			if (member == null || member.IsDead || member.IsPlayer())
-			{
-				continue;
-			}
-
-			if (member.IsJobCategory(JobRole.Healer)
-				|| member.IsJobs(Job.SMN)
-				|| member.IsJobs(Job.RDM))
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-			if (member.IsJobCategory(JobRole.Healer)
-				|| member.IsJobs(Job.SMN)
-				|| member.IsJobs(Job.RDM))
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 	/// <summary>
 	/// Is the rotation still going to spend Swiftcast on the raise?
 	///

@@ -12,6 +12,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v6
 
+      # First, because it is the cheapest answer to the most expensive failure: a file that does not
+      # parse fails the Windows build after a minute and a half, and there is no local .NET here to
+      # catch it sooner. A move that left two method bodies without their signatures cost exactly
+      # that round trip.
+      - name: Check the C# files are structurally intact
+        run: python3 .github/scripts/audit/check_cs_structure.py
+
       - name: Check base call targets
         run: python3 .github/scripts/check_base_calls.py
 
