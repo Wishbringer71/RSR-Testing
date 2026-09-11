@@ -113,52 +113,39 @@ künftig im schwächeren Demi zünden und dauerhaft aus dem Zwei-Minuten-Takt fa
 unverändert zu übernehmen ist deshalb **nicht** der Weg — es brächte zusätzlich eine Bindung an
 `AutoStatus.Burst` mit, also zwei Verhaltensänderungen in einer Zeile.
 
-**V5 — die Lücke schließen, die V2 offenlässt.** Zusätzlich außerhalb eines Beschwörungsfensters
-zünden, wenn kein anderer *bekannter* Beschwörer die kommende Lücke decken kann und der Buff
-vollständig abgelaufen ist. Die Information ist verfügbar: `IStatus.SourceId` benennt den Urheber,
-`StatusHelper.PlayerGetStatus` liest ihn bereits. Man weiß zwar nicht, wann ein anderer zünden wird,
-aber ab seiner ersten Zündung, wann er frühestens wieder kann.
+**V7 — die Lücke schließen, die V2 offenlässt.** Zusätzlich außerhalb eines Beschwörungsfensters
+zünden, sobald der laufende Buff **vollständig** abgelaufen ist (die eigene Wiederholzeit wird
+ohnehin geprüft). Zwei Bedingungen in derselben Methode, in der heute `burstInSolar` steht — kein
+Zustand, keine Beobachtung fremder Status.
 
-**Gemessen** (`.github/scripts/audit/searing_light_coverage.py`, synchroner Pull, Bereich der
-regulären Gruppe):
+**Gemessen** (`.github/scripts/audit/searing_light_coverage.py`), synchroner Pull, nach
+Schadensdichte gewichtet bei 30 % Burst-Anteil, gegen die optimale Platzierung derselben Ladungen:
 
-| Beschwörer | heute | V2 | V5 | Obergrenze |
+| Beschwörer | heute | V2 | V7 | bestmöglich |
 |---|---|---|---|---|
-| 1 | 17 % | 17 % | 17 % | 17 % |
-| 2 | 17 % | 33 % | 33 % | 33 % |
-| 3 | 17 % | 33 % | **50 %** | 50 % |
-| 4 | 17 % | 33 % | **66 %** | 67 % |
-| 5 | 17 % | 33 % | **83 %** | 83 % |
+| 1 | 30 % | 30 % | 30 % | 30 % |
+| 2 | 30 % | 44 % | **44 %** | 44 % |
+| 3 | 30 % | 44 % | **58 %** | 58 % |
+| 4 | 30 % | 44 % | **71 %** | 72 % |
+| 5 | 30 % | 44 % | **85 %** | 86 % |
 
-V5 trifft die Obergrenze der Ladungen. Sechs und mehr Beschwörer sind kein regulärer Spielbetrieb
-und bestimmen die Entscheidung nicht — dort bricht V5 ein, im maßgeblichen Bereich nicht.
+**V7 erreicht das Schadensoptimum auf einen Prozentpunkt genau**, bei jedem der drei geprüften
+Burst-Anteile. Die Bündelung gewinnt nicht, weil V7 das Burst-Fenster nicht aufgibt: Der erste
+Zünder steht in seinem Solar-Fenster, und wer den Burst gedeckt hat, ist 120 Sekunden später — zum
+nächsten Burst — wieder bereit.
 
-**V6 — V5 mit Verfallsdatum.** V5 vergisst nicht: Wer einmal gezündet hat, steht dauerhaft mit
-„kommt in 120 Sekunden wieder" in den Büchern, auch wenn er inzwischen tot ist oder aufgehört hat.
-Alle anderen halten sich dann für eine Lücke zurück, die er nie füllt. Ist ein beobachteter
-Beschwörer um mehr als eine Buffdauer überfällig, zählt er nicht mehr. Gemessen an einem
-dreiminütigen Ausfall: 22 statt 11 % bei drei Beschwörern, 44 statt 22 bei vier, 66 statt 33 bei
-fünf — **das Verfallsdatum verdoppelt die Abdeckung im Störungsfenster.** Der Preis ist ein
-Zeitstempel je Beschwörer; der übrige Zustand wird für V5 ohnehin geführt.
+**Empfehlung: V1 und V7 zusammen, auf einem eigenen Zweig, beide unter der Gruppenprüfung.** Beide
+sind zustandsfrei; eine Aufteilung in Stufen ist nicht nötig. Nicht im laufenden Vorgang, weil
+`claude/raise-swiftcast-weave-2` Eingriffe am Wiederbelebungspfad trägt, deren Nachweis teilweise
+offen ist.
 
-**Empfehlung: zwei Stufen, auf einem eigenen Zweig.** Erst V1 und V2 — ohne Zustandshaltung, wirksam
-im häufigsten Fall, einzeln beurteilbar. Dann V6 darauf (V5 mit Verfall); es ist als „V2 plus eine
-Erlaubnis" gebaut, die Stufen sind also unabhängig prüfbar. In Stufe 2 kann zugleich die
-Fenstererweiterung von der Gruppenprüfung auf die genauere Bedingung umgestellt werden: ausweichen
-nur nach tatsächlicher Blockade. Nicht im laufenden Vorgang, weil `claude/raise-swiftcast-weave-2`
-fünf ungemessene Eingriffe am Wiederbelebungspfad trägt.
-
-**Preis von V5:** ein Gedächtnis über Frames hinweg — beobachtete Zündungen je Urheber, mit
-Rücksetzpunkten bei Kampf-, Gruppen- und Zonenwechsel. Und eine Lücke: Zündet ein Beschwörer weiter
-als dreißig Yalm entfernt, fehlt die Beobachtung. Die Fehlerrichtung ist die zurückhaltende.
-
-**Abgelehnt:** die Zündung ganz von der Beschwörung zu lösen. Gemessen bei zwei Beschwörern
-schlechter als V2 (29 gegen 33 %) und in keiner Gruppengröße des maßgeblichen Bereichs die beste
-Wahl.
-
-**Kein Einpendeln nötig und keines vorhanden:** Über zwanzig wie über vierzig Minuten liefern erste
-und letzte zwei Minuten denselben Wert. Was die Kampfdauer real bewirkt — wachsender Versatz — kann
-das Modell nicht zeigen; die Richtung steht fest, das Tempo nicht.
+**Verworfen, nachdem der Auftraggeber die Prämisse widerlegt hat:** eine Fassung, die mitschreibt,
+wann die anderen Beschwörer frühestens wiederkehren können. Sie können ohnehin nicht vor ihrer
+eigenen Wiederholzeit zünden — es gibt nichts, worauf zurückzustehen wäre. Gemessen liefert die
+Fassung ohne Buchführung überall dieselben Werte, im Ausfallszenario eingeschlossen; außerhalb des
+maßgeblichen Bereichs ist die Buchführung sogar schädlich (46 statt 100 % bei sieben Beschwörern).
+Auch abgelehnt: die Zündung ganz von der Beschwörung zu lösen — bei zwei Beschwörern schlechter als
+V2.
 
 **Erfasst, nicht bearbeitet:** `ChurinSMN.cs:1015` trägt denselben V1-Befund; beim Zündfenster ist die
 fremde Rotation bereits weiter (`:948` nutzt `BahamutBurst`), allerdings ohne Gruppenprüfung.

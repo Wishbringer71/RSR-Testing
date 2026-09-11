@@ -41,6 +41,12 @@ TOL = 0.002
 # How long past a Summoner's earliest return the adaptive rule keeps counting on him before writing
 # him off. One buff length: long enough to absorb a late cast, short enough to notice a dropout.
 STALE_AFTER = 20.0
+# Damage is not spread evenly over the two-minute cycle: raid buffs and cooldowns are bundled into
+# the burst window, so a share of the fight's damage well above its share of the time falls there.
+# The exact figure is a party-composition question and cannot be settled from this repository, so it
+# is a parameter and the output shows several values. BURST_WINDOW is the 20s at the top of each
+# cycle, the one every job aligns to.
+BURST_WINDOW = 20.0
 
 
 def in_window(t, offset, mode):
@@ -50,10 +56,13 @@ def in_window(t, offset, mode):
     mode 'demi'   - while any demi stands (V2)
     mode 'anytime' - whenever a target is up, i.e. the demi tie is dropped entirely (V4)
     mode 'informed' - any demi, plus outside one when no other known Summoner can cover the gap (V5)
+    mode 'simple'  - any demi, plus outside one whenever the buff has fully expired (V7). No books
+                     about anyone else at all - the user's objection: the others cannot cast before
+                     their own recast is up anyway, so what is there to defer to?
     """
     if mode == 'anytime':
         return t >= offset
-    if mode in ('informed', 'adaptive'):
+    if mode in ('informed', 'adaptive', 'simple'):
         return t >= offset  # the caller decides; window handling lives in simulate()
     local = t - offset
     if local < 0:
@@ -68,7 +77,29 @@ def in_window(t, offset, mode):
     return index % 2 == 0  # Solar sits on every second demi
 
 
-def simulate(n, mode, drift, fight=None, window=None, dropout=None):
+
+def best_possible(n, burst_share):
+    """The damage-weighted ceiling: n charges of 20s per 120s cycle, placed as well as possible.
+
+    Placement is not free - a charge covers 20 contiguous seconds - but the optimum is easy to state
+    because the burst window is exactly one buff long: put the first charge on the burst, where the
+    damage density is highest, and spread the rest over the remainder, where density is uniform. Any
+    other placement moves buff time from a denser second to a thinner one.
+
+    This is what the rules are measured against. "Better than the alternatives" is not the same as
+    "as good as it gets", and without this line the difference cannot be seen.
+    """
+    if n <= 0:
+        return 0.0
+    covered_burst = min(BURST_WINDOW, n * BUFF)
+    rest_charges = max(0.0, n * BUFF - BURST_WINDOW)
+    rest_span = RECAST - BURST_WINDOW
+    covered_rest = min(rest_span, rest_charges)
+    return (burst_share * covered_burst / BURST_WINDOW
+            + (1.0 - burst_share) * covered_rest / rest_span)
+
+
+def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=None):
     """Return the fraction of the fight covered by a Searing Light.
 
     `window` restricts the measurement to (start, end) seconds without changing the run, which is
@@ -80,6 +111,8 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None):
     one only when nobody else can possibly cover the coming gap.
     """
     fight = FIGHT if fight is None else fight
+    weighting = burst_share is not None
+    burst_share = 0.0 if burst_share is None else burst_share
     lo, hi = window if window else (0.0, fight)
     offsets = [0.0] * n if n == 1 or drift == 0 else [drift * i / (n - 1) for i in range(n)]
     ready = [0.0] * n          # earliest time each Summoner may cast again
@@ -92,8 +125,20 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None):
     seen_ready = [None] * n
 
     t = 0.0
+    weighted = 0.0            # damage-weighted coverage
+    weight_total = 0.0
     while t < fight:
-        if buff_until > t and lo <= t < hi:
+        if lo <= t < hi:
+            # Weight of this instant: burst share concentrated in the first BURST_WINDOW of each
+            # 120s cycle, the rest spread evenly over the remainder.
+            in_burst = (t % RECAST) < BURST_WINDOW
+            w = (burst_share / BURST_WINDOW) if in_burst \
+                else ((1.0 - burst_share) / (RECAST - BURST_WINDOW))
+            weight_total += w
+            if buff_until > t:
+                weighted += w
+                covered += STEP
+        elif buff_until > t:
             covered += STEP
 
         remaining = buff_until - t
@@ -108,7 +153,9 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None):
                     continue   # this Summoner is out and casts nothing
 
                 allowed = False
-                if mode in ('informed', 'adaptive'):
+                if mode == 'simple':
+                    allowed = in_window(t, offsets[i], 'demi') or buff_until <= t
+                elif mode in ('informed', 'adaptive'):
                     if in_window(t, offsets[i], 'demi'):
                         allowed = True
                     else:
@@ -142,6 +189,8 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None):
 
         t += STEP
 
+    if weighting:
+        return weighted / weight_total if weight_total else 0.0
     return covered / (hi - lo)
 
 
@@ -164,6 +213,33 @@ def self_test():
         for drift in (0, 30, 60):
             if simulate(n, 'informed', drift) < simulate(n, 'demi', drift) - TOL:
                 raise AssertionError('informed fell below demi at n=%d drift=%d' % (n, drift))
+
+    # The finding that made two whole variants unnecessary, kept as a test so it cannot quietly stop
+    # being true: keeping books on the other Summoners buys nothing. V7 asks only whether the buff
+    # has expired and whether its own recast is up; V5 additionally tracks when every other observed
+    # Summoner could return. They come out equal everywhere, and the reason is the user's: nobody can
+    # cast before their own recast is up, so there is nothing to defer to - and the existing guard
+    # already prevents the waste that deferring was meant to avoid.
+    for n in range(1, 9):
+        for drift in (0, 30, 60):
+            simple = simulate(n, 'simple', drift)
+            informed = simulate(n, 'informed', drift)
+            if simple < informed - TOL:
+                raise AssertionError('the simple rule fell below the informed one at n=%d drift=%d'
+                                     % (n, drift))
+            # Inside the range that decides anything they are not merely comparable, they are equal.
+            if n <= 5 and abs(simple - informed) > TOL:
+                raise AssertionError('simple and informed diverged at n=%d drift=%d' % (n, drift))
+
+    # No rule may beat the optimal placement - that would mean the model is cheating somewhere.
+    for n in range(1, 6):
+        for bs in (0.17, 0.30, 0.45):
+            best = best_possible(n, bs)
+            for mode in ('solar', 'demi', 'simple'):
+                got = simulate(n, mode, 0, burst_share=bs)
+                if got > best + TOL:
+                    raise AssertionError('%s beat the optimum at n=%d burst=%.2f: %.3f > %.3f'
+                                         % (mode, n, bs, got, best))
 
     # Writing off a Summoner who stopped casting can never do worse than keeping him in the books.
     for n in range(2, 6):
@@ -198,7 +274,7 @@ def self_test():
                                          % (n, got, ceiling))
 
     print('self-test ok: single Summoner near 20/120, each widening step never lowers coverage, '
-          'charge ceiling respected\n')
+          'charge ceiling respected, bookkeeping buys nothing\n')
 
 
 def main():
@@ -210,7 +286,7 @@ def main():
     upto = 9 if '--all' in sys.argv else 6   # regular parties hold at most five Summoners
 
     if as_csv:
-        print('summoners,drift,solar,demi,anytime,informed')
+        print('summoners,drift,solar,demi,anytime,informed,simple')
 
     print('Fight length: %.0f minutes%s\n'
           % (fight / 60, '' if long_fight else '  (--long for 40 minutes)'))
@@ -221,20 +297,22 @@ def main():
         if not as_csv:
             print('%s' % label)
             print('  %-11s %-13s %-15s %-15s %-15s %s'
-                  % ('Summoners', 'Solar only', 'any demi (V2)', 'anytime (V4)', 'informed (V5)',
+                  % ('Summoners', 'Solar only', 'any demi (V2)', 'informed (V5)', 'simple (V7)',
                      'ceiling'))
         for n in range(1, upto):
             narrow = simulate(n, 'solar', drift, fight)
             wide = simulate(n, 'demi', drift, fight)
             free = simulate(n, 'anytime', drift, fight)
             informed = simulate(n, 'informed', drift, fight)
+            simple = simulate(n, 'simple', drift, fight)
             ceiling = min(1.0, n * BUFF / RECAST)
             if as_csv:
-                print('%d,%d,%.3f,%.3f,%.3f,%.3f' % (n, drift, narrow, wide, free, informed))
+                print('%d,%d,%.3f,%.3f,%.3f,%.3f,%.3f'
+                      % (n, drift, narrow, wide, free, informed, simple))
             else:
                 print('  %-11d %-13s %-15s %-15s %-15s %s'
                       % (n, '%.0f%%' % (narrow * 100), '%.0f%%' % (wide * 100),
-                         '%.0f%%' % (free * 100), '%.0f%%' % (informed * 100),
+                         '%.0f%%' % (informed * 100), '%.0f%%' % (simple * 100),
                          '%.0f%%' % (ceiling * 100)))
         if not as_csv:
             print()
@@ -255,13 +333,31 @@ def main():
                  '%.0f%% -> %.0f%%' % (early_v5 * 100, late_v5 * 100)))
 
     print()
+    print('Damage-weighted, synchronised pull: share of the fight\'s DAMAGE that falls under a buff')
+    print('(burst share = how much of the damage lands in the 20s burst window of each cycle)')
+    for bs in (0.17, 0.30, 0.45):
+        print('  burst share %.0f%%' % (bs * 100))
+        print('    %-11s %-13s %-15s %-11s %s'
+              % ('Summoners', 'Solar only', 'any demi (V2)', 'V7', 'best possible'))
+        for n in range(1, upto):
+            a = simulate(n, 'solar', 0, fight, burst_share=bs)
+            b = simulate(n, 'demi', 0, fight, burst_share=bs)
+            c = simulate(n, 'simple', 0, fight, burst_share=bs)
+            best = best_possible(n, bs)
+            print('    %-11d %-13s %-15s %-11s %s'
+                  % (n, '%.0f%%' % (a * 100), '%.0f%%' % (b * 100), '%.0f%%' % (c * 100),
+                     '%.0f%%' % (best * 100)))
+    print()
     print('One Summoner drops out for three minutes, synchronised pull, measured over that window')
-    print('  %-11s %-22s %s' % ('Summoners', 'informed (V5)', 'adaptive (V6)'))
+    print('  %-11s %-16s %-16s %s'
+          % ('Summoners', 'informed (V5)', 'adaptive (V6)', 'simple (V7)'))
     for n in range(2, upto):
         out = (0, 300.0, 480.0)
         v5 = simulate(n, 'informed', 0, fight, window=(300.0, 480.0), dropout=out)
         v6 = simulate(n, 'adaptive', 0, fight, window=(300.0, 480.0), dropout=out)
-        print('  %-11d %-22s %s' % (n, '%.0f%%' % (v5 * 100), '%.0f%%' % (v6 * 100)))
+        v7 = simulate(n, 'simple', 0, fight, window=(300.0, 480.0), dropout=out)
+        print('  %-11d %-16s %-16s %s'
+              % (n, '%.0f%%' % (v5 * 100), '%.0f%%' % (v6 * 100), '%.0f%%' % (v7 * 100)))
 
     print()
     print('Ceiling: n x 20s per 120s. A regular eight-man party holds four to five damage jobs, so')

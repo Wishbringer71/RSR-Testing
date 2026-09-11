@@ -22,8 +22,8 @@ mit einer Bedingung, einer ist abzulehnen:
 | **V1** | Den Searing Light eines anderen Beschwörers als Buff-Fenster für die eigenen Aetherflow-Ausgaben werten | umsetzen |
 | **V2** | Das Zündfenster auf alle großen Beschwörungen erweitern, sobald ein zweiter Beschwörer in der Gruppe ist | umsetzen, mit Gruppenprüfung als Schalter |
 | **V4** | Die Bindung an die Beschwörung ganz lösen, Zündung bei Kampf und vorhandenem Ziel | gemessen, nie die beste Wahl — nicht umsetzen |
-| **V5** | Zusätzlich außerhalb eines Fensters zünden, wenn kein anderer bekannter Beschwörer die Lücke decken kann | **erreicht im gesamten realistischen Bereich die theoretische Obergrenze** |
-| **V6** | V5, aber mit Verfallsdatum: Wer überfällig ist, zählt nicht mehr | **verdoppelt die Abdeckung bei Ausfällen** — als zweite Stufe umsetzen, statt V5 |
+| **V7** | Zusätzlich außerhalb eines Fensters zünden, sobald der Buff vollständig abgelaufen ist — ohne jede Buchführung über andere | **erreicht das Schadensoptimum auf einen Prozentpunkt genau, zustandsfrei** — umsetzen |
+| V5 / V6 | dasselbe, aber mit Buch über die Wiederholzeiten der anderen | gemessen wirkungslos, außerhalb des Bereichs sogar schädlich — verworfen |
 
 **Der maßgebliche Bereich ist eins bis fünf.** Eine reguläre Achtergruppe trägt vier bis fünf
 Schadensklassen, eine Vierergruppe zwei. Sechs und mehr Beschwörer sind Sondergruppen außerhalb des
@@ -94,7 +94,7 @@ das, was die Ladungen überhaupt hergeben: *n* × 20 s je 120 s.
 
 **Synchrone Rotationen — der saubere Pull:**
 
-| Beschwörer | heute | V2 | V4 | **V5** | Obergrenze |
+| Beschwörer | heute | V2 | V4 | **V7** | Obergrenze |
 |---|---|---|---|---|---|
 | 1 | 17 % | 17 % | 17 % | 17 % | 17 % |
 | 2 | 17 % | 33 % | 29 % | **33 %** | 33 % |
@@ -104,7 +104,7 @@ das, was die Ladungen überhaupt hergeben: *n* × 20 s je 120 s.
 
 **Voll auseinandergelaufene Rotationen:**
 
-| Beschwörer | heute | V2 | V4 | V5 | Obergrenze |
+| Beschwörer | heute | V2 | V4 | V7 | Obergrenze |
 |---|---|---|---|---|---|
 | 1 | 17 % | 17 % | 17 % | 17 % | 17 % |
 | 2 | 33 % | 33 % | 33 % | 33 % | 33 % |
@@ -112,13 +112,13 @@ das, was die Ladungen überhaupt hergeben: *n* × 20 s je 120 s.
 | 4 | 66 % | 66 % | 66 % | 66 % | 67 % |
 | 5 | 67 % | 67 % | 67 % | 67 % | 83 % |
 
-**Das auffälligste Ergebnis steht in der ersten Tabelle: V5 trifft die Obergrenze auf den Punkt.**
+**Das auffälligste Ergebnis steht in der ersten Tabelle: V7 trifft die Obergrenze auf den Punkt.**
 Bei einem bis fünf Beschwörern holt die Regel aus den vorhandenen Ladungen heraus, was überhaupt
 darin steckt. Mehr ist nicht möglich, ohne dass jemand zusätzliche Ladungen bekäme.
 
 **Und das zweitauffälligste: Versatz hilft nur dem heutigen Code.** In der zweiten Tabelle liegen
 alle vier Regeln gleichauf. Wo die Beschwörungsfenster ohnehin gestreut sind, trifft schon die enge
-Regel die Lücken; die Erweiterungen finden nichts mehr vor. Umgekehrt heißt das: **V5 ist genau dort
+Regel die Lücken; die Erweiterungen finden nichts mehr vor. Umgekehrt heißt das: **V7 ist genau dort
 stark, wo der heutige Code schwach ist** — beim sauberen, synchronen Pull, also dem Regelfall zu
 Beginn eines Kampfes.
 
@@ -228,145 +228,123 @@ Daraus folgt: Der Versatz ist der **stärkste einzelne Hebel** — bei acht Besc
 Abdeckung allein, ohne jede Codeänderung, von 17 % auf 67 %. Keine der Zündregeln bewirkt im
 synchronen Fall auch nur annähernd so viel.
 
-## Was über die anderen Beschwörer bekannt ist
+## Die Lücke füllen, ohne Buch zu führen
 
-Eine frühere Fassung dieses Dokuments behauptete, kein Client kenne die Wiederholzeiten der anderen
-und eine Staffelung sei deshalb unmöglich. **Das ist falsch, und der Auftraggeber hat es widerlegt**
-(`AUDIT_LOG.md` C42): Man weiß zwar nicht, wann ein anderer Beschwörer zünden *wird* — aber ab
-seiner ersten Zündung weiß man, wann er frühestens wieder kann.
+Zwischen zwei Beschwörungsfenstern liegen bei synchronem Pull vierzig Sekunden, in denen kein Buff
+läuft und niemand zünden darf. V7 schließt sie mit einer einzigen zusätzlichen Erlaubnis: **Zünde
+außerhalb eines Fensters, sobald der laufende Buff vollständig abgelaufen ist** — die eigene
+Wiederholzeit vorausgesetzt, die ohnehin geprüft wird.
 
-Die Information liegt im Status selbst. `IStatus.SourceId` benennt den Urheber, und
-`StatusHelper.PlayerGetStatus` (`:1529`) liest ihn bereits — die Unterscheidung eigener und fremder
-Buffs beruht darauf. Sieht ein Client einen Searing Light mit fremder Quelle, kennt er damit den
-Urheber und über die Restzeit auch den Zündzeitpunkt. Frühestmögliche Wiederkehr: Zündung plus 120
-Sekunden.
+**Zwei Bedingungen, und die zweite stammt aus der Messung, nicht aus der Überlegung.** Die Erlaubnis
+verlangt einen **vollständig** abgelaufenen Buff, nicht bloß einen, dessen Sperre sich gelöst hat.
+Die Sperre öffnet fünf Sekunden vor Ablauf, damit eine Auffrischung im Fenster möglich ist; außerhalb
+eines Fensters ist dasselbe Verschwendung — eine ganze Ladung für wenige Sekunden Nettogewinn. Eine
+Fassung ohne diese Bedingung wurde gemessen und fiel bei zwei Beschwörern **unter** V2.
 
-**Was daraus eine Regel macht (V5):** Halte dich an die Beschwörungsfenster wie in V2 — und zünde
-zusätzlich außerhalb eines Fensters, wenn kein anderer *bekannter* Beschwörer die kommende Lücke
-überhaupt decken kann. Das ist der informierte Mittelweg zwischen V2 (wartet immer auf ein Fenster)
-und V4 (zündet blind, sobald möglich).
+### Die Buchführung, die nichts bringt
 
-**Eine Bedingung davon stammt aus der Messung, nicht aus der Überlegung.** Die erste Fassung der
-Regel erlaubte das Zünden außerhalb, sobald die Sperre sich löste — also in den letzten fünf Sekunden
-des laufenden Buffs. Gemessen fiel sie damit bei zwei Beschwörern **unter** V2: Eine ganze Ladung
-wird für wenige Sekunden Nettogewinn verbrannt. Was innerhalb eines Fensters als Auffrischung
-sinnvoll ist, ist außerhalb Verschwendung. Die Regel verlangt deshalb, dass der Buff **vollständig
-abgelaufen** ist.
+Der naheliegende Zusatz wäre, die Wiederholzeiten der anderen mitzuschreiben. Die Information ist
+verfügbar: `IStatus.SourceId` benennt den Urheber, `StatusHelper.PlayerGetStatus` (`:1529`) liest ihn
+bereits. Ab der ersten beobachteten Zündung eines Beschwörers steht fest, wann er frühestens
+wiederkehren kann. Die Regel wäre dann: außerhalb eines Fensters nur zünden, wenn kein anderer
+bekannter Beschwörer die Lücke decken könnte.
 
-**Gemessene Abdeckung im maßgeblichen Bereich, synchroner Pull:**
+**Gemessen bringt das nichts.** Im gesamten maßgeblichen Bereich, bei jeder Versatzstufe, liefert die
+Fassung mit Buchführung dieselben Werte wie die ohne — der Selbsttest des Modells hält das als
+Invariante fest, damit es nicht unbemerkt aufhört zu gelten.
 
-| Beschwörer | V2 | V4 | **V5** | Obergrenze |
+**Der Grund ist einfach und war zu übersehen:** Ein anderer Beschwörer kann ohnehin nicht zünden,
+bevor seine eigene Wiederholzeit frei ist. Es gibt also nichts, worauf zurückzustehen wäre. Kann er,
+dann zündet er — und die vorhandene Sperre verhindert, dass die eigene Ladung dabei verschwendet
+wird. Kann er nicht, muss man selbst. Die Frage „könnte jemand anders" ist für die eigene Entscheidung
+belanglos, weil beide Antworten zum selben Verhalten führen.
+
+**Außerhalb des maßgeblichen Bereichs ist die Buchführung sogar schädlich.** Bei sieben und acht
+Beschwörern erreicht die Fassung ohne Buch 100 %, die mit Buch 46 %. Das Zurückstehen führt dort in
+eine ungünstige Selbstorganisation: Mehrere halten sich für denselben Kandidaten zurück, der dann
+seinerseits gebunden ist.
+
+**Und eine Erweiterung um ein Verfallsdatum** — wer überfällig ist, zählt nicht mehr — heilt nur den
+Schaden, den die Buchführung selbst anrichtet. Gegen einen dreiminütigen Ausfall gemessen liefert sie
+genau dasselbe wie die Fassung, die nie Buch geführt hat: 11, 22, 44, 66 Prozent bei zwei bis fünf
+Beschwörern. Wer nichts aufschreibt, hat auch nichts zu vergessen.
+
+### Was damit entfällt
+
+Kein Zustand über Frames hinweg, keine Beobachtung fremder Statusquellen, keine Rücksetzpunkte bei
+Kampf-, Gruppen- oder Zonenwechsel, kein Verfallsdatum. V7 ist zwei Bedingungen in derselben
+Methode, in der heute `burstInSolar` steht. Damit entfällt auch der Einwand aus der Reichweite: Es
+wird nichts beobachtet, was ausbleiben könnte.
+
+## Richtlinien nach Lage — geprüft und nicht nötig
+
+Der Auftraggeber hat gefragt, ob das Konzept dynamischer zu bauen wäre, mit unterschiedlichen
+Richtlinien bei Abweichungen im Verlauf. Die Antwort fällt nach der Messung anders aus, als sie
+zunächst ausfiel: **Die Dynamik ist bereits da, und zwar an der richtigen Stelle.**
+
+Der laufende Buff ist selbst die Rückmeldung. Ob er steht, sagt alles, was für die eigene
+Entscheidung zählt — ob jemand anders gerade gedeckt hat, ob eine Lücke offen ist, ob die eigene
+Ladung gebraucht wird. Eine Regelung, die diesen einen beobachteten Wert auswertet, braucht kein
+Modell der anderen Teilnehmer. Genau das tut V7, und deshalb schlägt es die Fassungen, die sich ein
+solches Modell aufbauen.
+
+**Weitergehende Richtlinien nach Lage sind deshalb nicht vorgeschlagen.** Ein Umschalten nach
+gemessener Abdeckung oder erkanntem Versatz wäre ein Zustandsautomat — und die Projektregel warnt zu
+Recht vor Automaten, die sich statisch nicht absichern lassen; der Eintrag zur doppelten
+Zustandswahl in `TODO.md` ist genau daran hängengeblieben. Der Fall hier zeigt zusätzlich, dass mehr
+Zustand nicht mehr Wirkung bedeutet: Die aufwendigste der geprüften Fassungen war die schlechteste.
+
+## Abdeckung ist nicht Schaden — die Gegenprobe
+
+Alle Zahlen bis hierher zählen Sekunden mit Buff. Das Ziel ist aber Schaden, und der fällt im
+Zwei-Minuten-Zyklus nicht gleichmäßig: Raidverstärkungen und Abklingzeiten der ganzen Gruppe sind
+auf das Burst-Fenster gebündelt, sodass dort ein Anteil des Schadens liegt, der weit über dem Anteil
+an der Zeit liegt. Eine Regel, die viel Abdeckung an den falschen Stellen erzeugt, wäre deshalb
+möglicherweise schlechter als eine, die wenig Abdeckung genau im Burst liefert.
+
+**Gemessen ist sie es nicht.** Das Modell gewichtet jede Sekunde mit der Schadensdichte und zeigt den
+Anteil des **Schadens**, der unter einem Buff fällt. Wie hoch der Burst-Anteil tatsächlich ist, hängt
+von der Gruppenzusammensetzung ab und ist aus diesem Repository nicht zu klären — deshalb steht er
+als Parameter, und die Tabelle zeigt drei Werte. Die Spalte „bestmöglich" ist die optimale
+Platzierung derselben Ladungen: erst das Burst-Fenster, dann der Rest.
+
+**Burst-Anteil 30 % (die mittlere der geprüften Annahmen):**
+
+| Beschwörer | heute | V2 | **V7** | bestmöglich |
 |---|---|---|---|---|
-| 2 | 33 % | 29 % | 33 % | 33 % |
-| 3 | 33 % | 42 % | **50 %** | 50 % |
-| 4 | 33 % | 54 % | **66 %** | 67 % |
-| 5 | 33 % | 67 % | **83 %** | 83 % |
+| 1 | 30 % | 30 % | 30 % | 30 % |
+| 2 | 30 % | 44 % | **44 %** | 44 % |
+| 3 | 30 % | 44 % | **58 %** | 58 % |
+| 4 | 30 % | 44 % | **71 %** | 72 % |
+| 5 | 30 % | 44 % | **85 %** | 86 % |
 
-V5 trifft die Obergrenze. Was die Ladungen hergeben, holt die Regel heraus.
+**Burst-Anteil 45 % — die für V7 ungünstigste der geprüften Annahmen**, weil sie den einen gut
+platzierten Buff des heutigen Codes am stärksten aufwertet:
 
-### Einschwingen über die Kampfdauer
+| Beschwörer | heute | V2 | **V7** | bestmöglich |
+|---|---|---|---|---|
+| 1 | 45 % | 45 % | 45 % | 45 % |
+| 2 | 45 % | 55 % | **55 %** | 56 % |
+| 3 | 45 % | 56 % | **66 %** | 67 % |
+| 4 | 45 % | 56 % | **77 %** | 78 % |
+| 5 | 45 % | 56 % | **88 %** | 89 % |
 
-Der Auftraggeber hat darauf hingewiesen, dass die Verteilung sich nicht sofort einstellen muss:
-Raidkämpfe dauern bis zu zwanzig Minuten, Ultimates bis zu vierzig. Eine Regel dürfte also
-unordentlich anfangen, wenn sie sich einpendelt.
+**Das Ergebnis ist in allen drei Annahmen dasselbe: V7 liegt innerhalb eines Prozentpunkts am
+Optimum.** Bei zwei bis fünf Beschwörern ist das Schadensoptimum damit erreicht, nicht bloß
+angenähert. Der Grund, warum die Bündelung nicht gewinnt: V7 gibt das Burst-Fenster nicht auf. Der
+erste Zünder steht in seinem Solar-Fenster, das mit dem Burst der Gruppe zusammenfällt; die übrigen
+füllen nur die Zeit danach. Und wer den Burst gedeckt hat, ist genau 120 Sekunden später — zum
+nächsten Burst — wieder bereit.
 
-**Gemessen — sie braucht es nicht, und sie täte es auch nicht.** Erste zwei Minuten gegen letzte zwei
-Minuten, über zwanzig wie über vierzig Minuten:
+**Der heutige Code verschenkt umso mehr, je stärker gebündelt wird.** Bei 45 % Burst-Anteil und fünf
+Beschwörern deckt er 45 % des Schadens ab, möglich wären 89 %. Die Hälfte des Erreichbaren bleibt
+liegen.
 
-| Beschwörer | V2 | V5 |
-|---|---|---|
-| 2 | 33 % → 33 % | 33 % → 33 % |
-| 3 | 33 % → 33 % | 50 % → 50 % |
-| 4 | 33 % → 33 % | 66 % → 66 % |
-| 5 | 33 % → 33 % | 83 % → 83 % |
-
-V5 liegt von der ersten Periode an auf seinem Endwert; ein Einschwingen findet nicht statt, weil
-keines nötig ist. Bei V2 ändert sich ebenfalls nichts — aber aus dem gegenteiligen Grund: Bei
-festem Versatz bleibt das Muster, in dem es begonnen hat, und die Kampfdauer allein bringt keine
-Verbesserung.
-
-**Was die Kampfdauer real dennoch bewirkt, kann dieses Modell nicht zeigen.** Es hält den Versatz
-über den ganzen Kampf fest. In Wirklichkeit wächst er: Jede Mechanik, jeder Tod, jede
-Bewegungsphase verschiebt die Zyklen weiter gegeneinander. Über zwanzig oder vierzig Minuten wandert
-eine Gruppe damit von der oberen Tabelle in die untere — und die untere ist für den heutigen Code
-deutlich freundlicher (67 % statt 17 % bei fünf Beschwörern). **Der lange Kampf ist also der Fall,
-der sich von selbst bessert; der Anfang jedes Kampfes ist der, der es nicht tut.** Genau dort setzt
-V5 an.
-
-### Was V5 nicht sieht
-
-Die Beobachtung hängt daran, den fremden Buff überhaupt zu bekommen. Zündet ein anderer Beschwörer
-außerhalb der Wirkreichweite, sieht der Client weder Buff noch Quelle.
-
-**Der Einwand wiegt weniger, als er zunächst aussieht, und zwar aus zwei Gründen.**
-
-Erstens fällt die Beobachtungslücke mit der Wirkungslücke zusammen. Wer den Buff nicht bekommt, hat
-auch nichts von ihm — und genau für den ist die eigene Zündung dann richtig. Die vorhandene Sperre
-leistet das bereits von selbst, weil sie den Status **auf dem Spieler selbst** prüft: Kein Buff
-angekommen heißt Sperre offen heißt zünden. Die Lücke betrifft deshalb nicht die Frage „soll ich
-zünden", sondern allein die Buchführung „wann kann der andere wieder".
-
-Zweitens bleibt auch diese Buchführungslücke folgenlos, solange man in einem Beschwörungsfenster
-steht — dort zündet die Regel ohnehin. Sie kostet nur außerhalb eines Fensters, und nur bei einem
-Beschwörer, dessen frühere Zündung man gesehen, dessen letzte man aber verpasst hat. Die
-Fehlerrichtung ist dabei die zurückhaltende: Man hält die eigene Zündung zurück, statt sie zu
-verschwenden.
-
-**Zur Größe des Kampfgebiets:** Der Auftraggeber gibt an, dass Raid- und Prüfungsarenen keine langen
-Wege haben. Eine belastbare Zahl für den üblichen Durchmesser ließ sich nicht belegen — die Suche
-danach blieb ohne verwertbares Ergebnis, und im Quelltext steht sie nicht. Was der Quelltext zeigt,
-sind die Reichweiten, mit denen das Plugin arbeitet: Wiederbelebungsziele werden über dreißig Yalm
-verworfen, Gegner bis achtundvierzig Yalm gesammelt. Beides sind Werte für das Verhältnis
-Spieler-zu-Gegner, nicht für Spieler untereinander. Nach der Angabe des Auftraggebers und der
-Selbstkorrektur oben wird der Fall als selten und in seiner Wirkung begrenzt geführt.
-
-## Richtlinien nach Lage statt einer festen Regel
-
-Der Auftraggeber hat gefragt, ob das Konzept dynamischer zu bauen wäre — mit unterschiedlichen
-Richtlinien, wenn der Verlauf abweicht. **Ja, und es ist messbar der stärkste Einzelschritt nach
-V1.**
-
-Der Fachbegriff dafür ist die Unterscheidung zwischen Steuerung und Regelung: Eine feste Regel
-handelt nach einer Annahme über die Lage (V2 nach der Gruppenzusammensetzung), eine Regelung nach
-dem beobachteten Ergebnis. V5 ist bereits halb geregelt — es zählt nur Beschwörer, die tatsächlich
-gezündet haben, und übergeht damit von selbst, wer tot ist, von Hand spielt oder die Aktion
-abgeschaltet hat.
-
-**Die Lücke von V5 liegt in der anderen Richtung: Es vergisst nicht.** Wer einmal gezündet hat,
-steht auf ewig mit „kommt in 120 Sekunden wieder" in den Büchern. Stirbt er danach, verliert die
-Verbindung oder hört auf zu zünden, halten sich alle anderen weiter für ihn zurück — für eine Lücke,
-die er nie füllt.
-
-**V6 schließt sie mit einem Verfallsdatum:** Ist ein beobachteter Beschwörer über seine früheste
-Wiederkehr hinaus um mehr als eine Buffdauer überfällig, zählt er nicht mehr. Kommt er zurück, trägt
-seine nächste Zündung ihn von selbst wieder ein.
-
-**Gemessen an dem Fall, für den es gebaut ist** — ein Beschwörer fällt drei Minuten aus, Messung über
-dieses Fenster, synchroner Pull:
-
-| Beschwörer | V5 | **V6** |
-|---|---|---|
-| 2 | 11 % | 11 % |
-| 3 | 11 % | **22 %** |
-| 4 | 22 % | **44 %** |
-| 5 | 33 % | **66 %** |
-
-Von drei Beschwörern aufwärts **verdoppelt** das Verfallsdatum die Abdeckung im Störungsfenster. Bei
-zwei ändert sich nichts, weil dort nach einem Ausfall nur einer übrig ist, der ohnehin nach eigener
-Regel zündet.
-
-**Der Preis ist gering, weil der Zustand schon da ist.** V6 ist V5 plus einen Zeitstempel je
-beobachtetem Beschwörer und eine Verfallsprüfung. Wer den Zustand für V5 ohnehin führt, sollte ihn
-auch pflegen — eine Buchführung, die nie vergisst, ist schlechter als gar keine, weil sie mit
-wachsender Kampfdauer immer falscher wird.
-
-**Wo die Dynamik enden muss.** Die Projektregel warnt zu Recht vor Zustandsautomaten, die sich
-statisch nicht absichern lassen; der Eintrag zur doppelten Zustandswahl in `TODO.md` ist genau
-daran hängengeblieben. V6 ist keiner: Es gibt keine Zustände mit Übergängen, sondern **eine** Größe
-je Beschwörer — die letzte beobachtete Zündung — und zwei Ableitungen daraus. Weitere Richtlinien
-nach Lage, etwa ein Umschalten nach gemessener Abdeckung oder nach erkanntem Versatz, wären dagegen
-ein Automat und sind hier bewusst nicht vorgeschlagen: Ihr Nutzen wäre eine Annahme, ihre
-Absicherung ohne Laufzeitbeobachtung nicht zu leisten.
+**Grenzen dieser Gegenprobe, und eine davon wirkt zugunsten von V7.** Der Burst-Anteil ist eine
+Annahme. Der Schaden außerhalb des Bursts ist als gleichmäßig modelliert, was er nicht ist — die
+Beschwörungsfenster der einzelnen Beschwörer sind selbst Spitzen. Da V7 gerade diese Fenster mit
+abdeckt, wird sein Vorsprung eher unterschätzt als überschätzt. Nicht modelliert sind außerdem
+Phasen ohne Ziel und Unterbrechungen des Schadens überhaupt.
 
 ## Gesamtbetrachtung
 
@@ -390,17 +368,17 @@ und nur als Beschwörer.
 
 **Eine Wechselwirkung ist zu benennen:** Mit V2 zündet ein zweiter Beschwörer bei Sekunde 60. Damit
 liegt ab dann häufiger ein fremder Buff — was V1 häufiger wirksam macht. Die beiden verstärken
-einander, ohne sich zu widersprechen. Für V5 gilt dasselbe in stärkerem Maß: Je höher die Abdeckung,
+einander, ohne sich zu widersprechen. Für V7 gilt dasselbe in stärkerem Maß: Je höher die Abdeckung,
 desto öfter greift V1.
 
-**V5 setzt V2 voraus, nicht umgekehrt.** V5 ist als „V2 plus eine zusätzliche Erlaubnis" gebaut und
-im Modell auch so gemessen. Beide sind deshalb nacheinander umsetzbar und einzeln prüfbar: erst die
-Fenstererweiterung ohne Zustandshaltung, dann die Beobachtung fremder Zündungen darauf.
+**V7 enthält V2.** Es ist als „V2 plus eine zusätzliche Erlaubnis" gebaut und im Modell auch so
+gemessen. Beide sind deshalb nacheinander umsetzbar und einzeln prüfbar — oder in einem Schritt,
+weil V7 ohne Zustandshaltung auskommt und damit nicht aufwendiger ist als V2 allein.
 
 **Was V2 allein nicht löst.** Der synchrone Pull bleibt mit V2 bei 33 % gedeckelt, weil es dort nur
 zwei Beschwörungsfenster je 120 Sekunden gibt. Ab drei Beschwörern liegt diese Decke unter der
 Obergrenze der Ladungen — bei fünf Beschwörern 33 % gegenüber möglichen 83 %. Diese Lücke schließt
-im maßgeblichen Bereich allein V5, und zwar vollständig.
+im maßgeblichen Bereich allein V7, und zwar vollständig.
 
 Eine frühere Fassung behauptete an dieser Stelle, die Abdeckung bleibe auch mit V2 generell bei 33 %.
 Das gilt nur synchron; bei auseinandergelaufenen Rotationen erreicht V2 deutlich mehr. Zurückgenommen
@@ -463,6 +441,34 @@ sechs — Gruppen, die es im Spiel praktisch nicht gibt. Bezahlt würde das mit 
 genau dort, wo Gruppen tatsächlich stehen. Sollte der Auftraggeber je in einer Gruppe mit sechs oder
 mehr Beschwörern spielen, ist der Eintrag hier und die Zahlen liegen vor.
 
+### V7 — Außerhalb eines Fensters zünden, wenn der Buff abgelaufen ist
+
+**Kontext und Mechanismus:** oben, Abschnitt „Die Lücke füllen, ohne Buch zu führen". Zwei
+Bedingungen zusätzlich zu V2: vollständig abgelaufener Buff, eigene Wiederholzeit frei.
+
+**Konsequenzen, gemessen:** Bei einem Beschwörer unverändert. Bei drei bis fünf 50, 66 und 83 Prozent
+statt 33 — die Obergrenze dessen, was die Ladungen hergeben. Bei einem dreiminütigen Ausfall eines
+Beschwörers dieselben Werte wie die aufwendigste geprüfte Fassung.
+
+**Bewertung: umsetzen, zusammen mit V2 und unter derselben Gruppenprüfung.** Zustandsfrei, damit
+ohne Rücksetzpunkte und ohne die Reichweitenabhängigkeit, die jede Beobachtungsfassung mitbringt.
+
+### V5 und V6 — verworfen, obwohl sie richtig gedacht waren
+
+**Mechanismus:** V5 schreibt mit, wann jeder beobachtete Beschwörer frühestens wiederkehren kann
+(`IStatus.SourceId` benennt den Urheber), und stellt außerhalb eines Fensters zurück, wenn ein
+anderer die Lücke decken könnte. V6 ergänzt ein Verfallsdatum für Beobachtungen, die überfällig sind.
+
+**Warum sie verworfen sind:** Ein anderer Beschwörer kann ohnehin nicht zünden, bevor seine eigene
+Wiederholzeit frei ist — es gibt nichts, worauf zurückzustehen wäre, und gegen die Verschwendung
+steht bereits die Sperre. Gemessen liefern beide im maßgeblichen Bereich exakt dieselben Werte wie
+V7 ohne jede Buchführung; außerhalb davon liegt V5 bei sieben und acht Beschwörern mit 46 % weit
+unter den 100 % von V7, weil das Zurückstehen in eine ungünstige Selbstorganisation führt. Das
+Verfallsdatum von V6 heilt nur den Schaden, den die Buchführung selbst anrichtet.
+
+**Der Gedanke war richtig, die Voraussetzung nicht.** Die Information ist tatsächlich verfügbar und
+ableitbar; sie beantwortet nur keine Frage, die für die eigene Entscheidung zählt.
+
 ### Nullvariante
 
 Für einen Beschwörer richtig und die Empfehlung. Ab zwei nicht mehr tragfähig, weil beide Verluste
@@ -470,31 +476,27 @@ dann vollständig greifen und zwei Beschwörer in einer Gruppe gewöhnlich sind.
 
 ## Empfehlung
 
-**In zwei Stufen: erst V1 und V2, dann V5. V4 nicht.**
+**V1 und V7 umsetzen, beide unter der Gruppenprüfung. V4, V5 und V6 nicht.**
 
-| Stufe | Inhalt | Gewinn im maßgeblichen Bereich | Preis |
-|---|---|---|---|
-| 1 | V1 und V2 | bei zwei Beschwörern 33 % statt 17 %; V1 wirkt ab zwei ohne Ausnahme | zwei kleine Änderungen, kein Zustand |
-| 2 | V6 darauf (V5 mit Verfallsdatum) | bei drei bis fünf Beschwörern 50 / 66 / 83 % statt 33 % — die Obergrenze; bei Ausfall eines Beschwörers zusätzlich die doppelte Abdeckung gegenüber V5 | ein Gedächtnis über Frames, mit Rücksetzpunkten und Verfall |
+| | Gewinn im maßgeblichen Bereich | Preis |
+|---|---|---|
+| **V1** | Aetherflow-Ausgaben liegen ab zwei Beschwörern im laufenden Fenster statt daneben | eine zusätzliche Eigenschaft, keine Zustandshaltung |
+| **V7** | bei drei bis fünf Beschwörern 50 / 66 / 83 % statt 33 % — die Obergrenze; bei zwei 33 % statt 17 % | zwei Bedingungen in derselben Methode, keine Zustandshaltung |
 
-**Warum Stufe 1 zuerst und getrennt:** Sie ist ohne Zustandshaltung umsetzbar, deckt den häufigsten
-Fall ab — ein bis zwei Beschwörer —, und ihr Ergebnis ist im Spiel einzeln beurteilbar. Stufe 2
-bringt darüber hinaus nur etwas, wenn tatsächlich drei oder mehr Beschwörer in der Gruppe stehen.
+**Beide sind zustandsfrei.** Damit entfallen die Gründe, die eine Aufteilung in zwei Stufen sinnvoll
+gemacht hätten: Es gibt keine Beobachtungsmechanik, die für sich zu erproben wäre. Wer will, kann
+trotzdem zuerst nur die Fenstererweiterung (V2) setzen und die zweite Bedingung nachziehen — V7 ist
+so gebaut.
 
-**Warum Stufe 2 trotzdem lohnt:** Sie holt im Bereich drei bis fünf genau das heraus, was die
-Ladungen hergeben, und sie tut es dort, wo der heutige Code am schwächsten ist — beim sauberen,
-synchronen Pull. Und sie bleibt belastbar, wenn der Verlauf abweicht: Fällt ein Beschwörer aus,
-liefert V6 im Störungsfenster das Doppelte von V5. Die frühere Bewertung, sie sei nicht umsetzenswert, stützte sich auf den Einbruch
-bei sieben und acht Beschwörern; diese Gruppengrößen sind kein regulärer Spielbetrieb und bestimmen
-keine Entscheidung.
+**Die Gruppenprüfung bleibt der Schalter.** Bei einem einzelnen Beschwörer ändert sich nichts, und
+das ist gemessen und nicht bloß beabsichtigt: Das Modell weist für einen Beschwörer in allen
+Varianten 17 % aus. In einer zweiten Ausbaustufe ließe sich die Bedingung auf die genauere Fassung
+verschärfen — ausweichen nur nach tatsächlicher Blockade —, was allerdings den Zustand verlangt, den
+V7 gerade vermeidet.
 
-**Was für beide Stufen gilt:** die Gruppenprüfung als Schalter. Bei einem einzelnen Beschwörer
-ändert sich nichts, und das ist nachweisbar so und nicht bloß beabsichtigt — das Modell weist für
-einen Beschwörer in allen Varianten 17 % aus.
-
-**Noch nicht umgesetzt.** Der Zweig `claude/raise-swiftcast-weave-2` trägt fünf ungemessene Eingriffe
-am Wiederbelebungspfad, deren Spieltest offen ist; sachfremde Änderungen daneben würden dessen
-Auswertung beschädigen. Die Umsetzung gehört auf einen eigenen Zweig, nach Freigabe.
+**Noch nicht umgesetzt.** Der Zweig `claude/raise-swiftcast-weave-2` trägt Eingriffe am
+Wiederbelebungspfad, deren Nachweis teilweise noch offen ist; sachfremde Änderungen daneben würden
+die Zuordnung erschweren. Die Umsetzung gehört auf einen eigenen Zweig, nach Freigabe.
 
 ## Erfasst, nicht bearbeitet
 
