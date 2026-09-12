@@ -462,6 +462,38 @@ Rückgabewert 1, wenn die Zahl zurückliegt — als Schranke tauglich, aber **ni
 eingehängt: Das ist eine Entscheidung über den Veröffentlichungspfad und liegt beim Auftraggeber.
 Bis dahin gehört das Skript in den Sync-Ablauf, gleich nach `git fetch --prune --tags upstream`.
 
+## check_resource_lists.py — eine Änderung, die niemals geladen wird
+
+Die gepflegten Listen — welche Zauber Tankbuster sind, welche Flächenangriffe, welche Status
+Unverwundbarkeiten — werden **nicht aus dem Baum gelesen**. `OtherConfiguration.InitOne` nimmt die
+lokale Datei des Nutzers, und wenn sie fehlt, lädt es
+
+```
+https://raw.githubusercontent.com/{Service.USERNAME}/{Service.REPO}/main/Resources/<Name>.json
+```
+
+Beide Konstanten nennen **Upstream** (`FFXIV-CombatReborn/RotationSolverReborn`). Die Kopien unter
+`Resources/` in diesem Fork sind damit Zierde: Wer dort eine Tankbuster-Id ergänzt, ändert nichts,
+und **nichts schlägt fehl** — das Plugin lädt weiter die Upstream-Liste, und der Autor hat keine
+Möglichkeit, es zu merken. Genau diese Klasse schließt der Check.
+
+Gemessen statt vermutet: Alle 18 Listen im Baum sind mit den geladenen identisch, der Download
+antwortet mit HTTP 200, und `Service.USERNAME`/`REPO` sind aus `Service.cs` ausgelesen, nicht
+angenommen. Verglichen wird die **Mitgliedschaft** als Menge, nicht der Text — sonst wäre jede
+Umformatierung ein Treffer, und das Maß wieder ein Surrogat.
+
+Ein Netzfehler führt zu **übersprungen**, nicht zu fehlgeschlagen: Ein Ausfall würde sonst einen
+roten Lauf ohne Defekt erzeugen, und ein Prüfmittel, das grundlos Alarm schlägt, wird abgeschaltet.
+Ein `404` ist dagegen ein Treffer — die Liste ist dann dort gar nicht vorhanden und kann nicht
+geladen werden.
+
+Gegenprobe am konstruierten Defekt: eine Id ergänzt → Rückgabewert 1 und die Liste wird benannt;
+eine Id entfernt → ebenso; nach der Rücknahme 0.
+
+**Nicht in `build.yaml` eingehängt.** Der Check braucht Netzzugang, und ob der Prüfpfad davon
+abhängen soll, ist eine Entscheidung des Auftraggebers — dieselbe Abgrenzung wie bei
+`check_fork_version.py`. Bis dahin gehört er in den Ablauf vor jeder Änderung an `Resources/`.
+
 ## check_msbuild_xml.py — sind die MSBuild-Dateien wohlgeformtes XML?
 
 Eine fehlerhafte `Directory.Build.props` lässt **jedes** Projekt des Baums schon beim Import
