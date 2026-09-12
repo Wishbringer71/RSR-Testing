@@ -522,18 +522,6 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	}
 
 	/// <summary>
-	/// How much of an enemy's output a slow takes away, in percent.
-	/// </summary>
-	/// <remarks>
-	/// From the effect text of Arm's Length (ActionId.resx, action 7548): "the striker will be
-	/// afflicted with Slow +20%". That is the slow a tank brings and the one this rule was written
-	/// for. StatusHelper.SlowStatus also lists Slow+ (427, 1568), a stronger grade whose figure the
-	/// status text does not state, and the survey does not tell the ids apart. Counting a stronger
-	/// slow as 20% overstates that enemy and lets Holy out sooner, which is the side to err on.
-	/// </remarks>
-	private const int SlowThrottlePercent = 20;
-
-	/// <summary>
 	/// Whether Holy has to wait because a stronger mitigation is already carrying the pull, so the
 	/// stun is worth less now than later.
 	/// </summary>
@@ -549,10 +537,11 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	/// applications on it burns a budget that is gone for good: 4s, then 2s, then 1s, then immunity.
 	///
 	/// The measure is total enemy output, not a head count, which is the area rule itself restated:
-	/// AoeCount enemies at full output is what Holy has always asked for. A slowed enemy still
-	/// contributes, just less - Arm's Length afflicts "Slow +20%" (action 7548), so it counts for
-	/// 80 - and the sum decides. Three enemies with one slowed come to 280 against a threshold of
-	/// 300, so Holy waits; four with two slowed come to 360 and it goes out.
+	/// AoeCount enemies at full output is what Holy has always asked for. A throttled enemy still
+	/// contributes, just less, and the sum decides. Three enemies with one slowed come to 280
+	/// against a threshold of 300, so Holy waits; four with two slowed come to 360 and it goes out.
+	/// SurveyHostileOutput weighs every throttle the tree can read, not the slow alone - a reprised
+	/// pull counts differently from an untouched one, which is the same question asked once.
 	///
 	/// Two properties follow from that and neither is an accident. The threshold comes from
 	/// Config.AoeCount, the same number ActionTargetInfo uses, so a user who changes it moves both
@@ -580,16 +569,15 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		}
 
 		var holy = HolyIiiPvE.EnoughLevel ? HolyIiiPvE : HolyPvE;
-		var inRange = SurveyHostileStatus(holy.Info.EffectRange, StatusHelper.SlowStatus, out var slowed);
-		if (slowed == 0)
+		var inRange = SurveyHostileOutput(holy.Info.EffectRange, out var output);
+
+		// Nothing throttled: the ordinary area decision applies and this rule has no business in it.
+		if (inRange == 0 || output == inRange * 100)
 		{
 			return false;
 		}
 
-		// The area threshold, restated as output rather than as heads. AoeCount enemies at full
-		// output is what the rule has always asked for; a slowed one contributes less, so it takes
-		// more of them to reach the same total.
-		var output = ((inRange - slowed) * 100) + (slowed * (100 - SlowThrottlePercent));
+		// The area threshold, restated as output rather than as heads.
 		if (output >= holy.Config.AoeCount * 100)
 		{
 			return false;

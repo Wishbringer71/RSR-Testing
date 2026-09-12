@@ -582,6 +582,112 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
+	/// What share of its damage output a hostile still has, in percent, given the throttles on it.
+	/// </summary>
+	/// <remarks>
+	/// The generalisation of a head count. A rule that asks "is this pull still worth an area cast"
+	/// is really asking about output, and a throttled enemy has not left the fight - it contributes
+	/// less. Counting heads answers that only in the special case where every throttle is all or
+	/// nothing.
+	/// <para>
+	/// Every factor is quoted from the action's own effect text in ActionId.resx, and they multiply,
+	/// as <see cref="GetCurrentMitigationPercent"/> already has them do: Slow +20% (Arm's Length,
+	/// 7548), Reprisal 10% (7535) or 15% for the form Enhanced Reprisal upgrades into, Feint 10%
+	/// physical (7549), Addle 5% physical (7560), Dismantle 10% (2887).
+	/// </para>
+	/// <para>
+	/// The physical column is the one taken, without the magical/physical heuristic
+	/// <see cref="GetCurrentMitigationPercent"/> uses for a single imminent hit. The question here is
+	/// a standing pull's continuous stream, and that stream is auto-attacks - which is also why the
+	/// slow belongs in the product at all: it raises auto-attack delay, so it thins exactly the
+	/// damage this measures.
+	/// </para>
+	/// <para>
+	/// Reprisal is read by id rather than through the group: <c>Reprisal_2101</c> is scoped to the
+	/// four tank jobs instead of the shared role, which is the signature of the upgraded form, and
+	/// taking the group alone would price an end-game tank's debuff at two thirds of its worth.
+	/// </para>
+	/// </remarks>
+	/// <param name="hostile">The enemy to weigh.</param>
+	/// <returns>100 for an untouched enemy, less for a throttled one; 0 if there is no enemy.</returns>
+	protected static int HostileOutputPercent(IBattleChara hostile)
+	{
+		if (hostile == null)
+		{
+			return 0;
+		}
+
+		var factor = 1.0f;
+
+		if (hostile.HasStatus(false, StatusHelper.SlowStatus))
+		{
+			factor *= 0.80f;
+		}
+
+		if (hostile.HasStatus(false, StatusID.Reprisal_2101))
+		{
+			factor *= 0.85f;
+		}
+		else if (hostile.HasStatus(false, StatusHelper.ReprisalStatus))
+		{
+			factor *= 0.90f;
+		}
+
+		if (hostile.HasStatus(false, StatusID.Feint))
+		{
+			factor *= 0.90f;
+		}
+
+		if (hostile.HasStatus(false, StatusID.Addle))
+		{
+			factor *= 0.95f;
+		}
+
+		if (hostile.HasStatus(false, StatusID.Dismantled))
+		{
+			factor *= 0.90f;
+		}
+
+		return (int)Math.Round(factor * 100f);
+	}
+
+	/// <summary>
+	/// Counts the hostiles within <paramref name="radius"/> and sums what output they still have.
+	/// </summary>
+	/// <remarks>
+	/// The measure an area rule wants: <c>AoeCount</c> enemies at full output is what a threshold of
+	/// <c>AoeCount * 100</c> expresses, and throttled enemies move the sum without being struck from
+	/// the count. Three enemies with one slowed come to 280; four with two come to 360.
+	/// </remarks>
+	/// <param name="radius">The radius to measure over, in yalms.</param>
+	/// <param name="output">Summed output in percent across the hostiles inside the radius.</param>
+	/// <returns>How many hostiles were inside the radius. Zero means the sum says nothing.</returns>
+	protected static int SurveyHostileOutput(float radius, out int output)
+	{
+		output = 0;
+		var hostiles = DataCenter.AllHostileTargets;
+		if (hostiles == null || hostiles.Count == 0)
+		{
+			return 0;
+		}
+
+		var inRange = 0;
+		for (int i = 0, n = hostiles.Count; i < n; i++)
+		{
+			var hostile = hostiles[i];
+			if (hostile == null || hostile.DistanceToPlayer() > radius)
+			{
+				continue;
+			}
+
+			inRange++;
+			output += HostileOutputPercent(hostile);
+		}
+
+		return inRange;
+	}
+
+	/// <summary>
 	/// Counts the hostiles within <paramref name="radius"/> and how many of them carry any of
 	/// <paramref name="statuses"/>.
 	/// </summary>
