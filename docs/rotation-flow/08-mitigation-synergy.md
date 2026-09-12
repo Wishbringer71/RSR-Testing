@@ -29,11 +29,53 @@ endlich ist.
 |---|---|
 | Messung: `SurveyStuns`, `SurveyHostileStatus`, `StatusHelper.StunStatus` und `SlowStatus` | umgesetzt in `CustomRotation_OtherInfo` und `StatusHelper` |
 | Aussetzbedingung am Sanctus-Block aus dem **Betäubungsgrund**, hinter `StretchHolyStun` (Standard aus) | umgesetzt (`WHM_Reborn.ShouldStretchHolyStun`) |
-| Aussetzbedingung aus dem **Mitigationsgrund** — eine fremde Verlangsamung trägt bereits | umgesetzt (`WHM_Reborn.ShouldHoldHolyWhilePackSlowed`, Standard an) |
+| Aussetzbedingung aus dem **Mitigationsgrund** — eine fremde Minderung trägt bereits | umgesetzt (`WHM_Reborn.ShouldHoldHolyWhilePackSlowed`, Standard an) |
+| Messung als **Leistung** statt als Kopfzahl | umgesetzt (`HostileOutputPercent`, `SurveyHostileOutput`) |
 | Erhebung der übrigen Doppelnutzen-Aktionen | umgesetzt als `scan16.py`; ein Fund im Tank-/Heilerprofil (Rückstoß (Arm’s Length)) |
 | Zweite Aktion nach ihrer stillen Wirkung geregelt: Rückstoß (Arm’s Length) verlangsamt | umgesetzt in der Barrierenregel (Konzept 10, `DRK_Reborn.PackSlowed`) |
 | Rückstoß (Arm’s Length) auch **als** Minderungswerkzeug wirken | offen, siehe `TODO.md` — Zielkonflikt mit ihrer Rolle als einziger Rückstoßschutz |
 | Wirksamkeitsmessung im Spiel | offen, Voraussetzung für weitere Übertragungen |
+
+## Die Messgröße ist Leistung, nicht Kopfzahl
+
+**Eine Flächenregel fragt nach dem Schadensstrom, und den misst die Zahl der Gegner nur im
+Sonderfall.** „Drei Gegner" heißt in Wahrheit „dreifache Leistung"; ein gedrosselter Gegner
+hat den Kampf nicht verlassen, er trägt weniger bei. Damit ist die vorhandene
+Flächenschwelle nicht zu ergänzen, sondern zu verallgemeinern: `AoeCount * 100` ist
+dieselbe Regel, nur in der Einheit, in der sich Minderungen ausdrücken lassen.
+
+`CustomRotation_OtherInfo.HostileOutputPercent` liefert die Restleistung eines Gegners,
+`SurveyHostileOutput` summiert sie über einen Radius. Jeder Faktor ist dem Wirktext seiner
+Aktion entnommen, und sie multiplizieren sich, wie es `GetCurrentMitigationPercent` für die
+eigene Seite schon tut:
+
+| Drosselung | Beleg | Restleistung |
+|---|---|---|
+| Verlangsamung +20 % | Rückstoß (Arm's Length), Aktion 7548 | 80 |
+| Reflexion (Reprisal) | Aktion 7535 | 90 |
+| Feint, physisch | Aktion 7549 | 90 |
+| Stumpfsinn (Addle), physisch | Aktion 7560 | 95 |
+| Dismantle | Aktion 2887 | 90 |
+
+Kumuliert wird multiplikativ: Rückstoß und Reflexion zusammen ergeben 72, nicht 70.
+Genommen wird die **physische** Spalte, nicht die Magisch-Heuristik, die
+`GetCurrentMitigationPercent` für einen einzelnen bevorstehenden Treffer anlegt — hier geht
+es um den Dauerstrom eines stehenden Pulls, und der besteht aus Automatikangriffen. Das ist
+zugleich der Grund, warum die Verlangsamung überhaupt in dasselbe Produkt gehört: Sie
+erhöht die Automatikangriffs-Verzögerung und drosselt damit genau den Schaden, den diese
+Rechnung misst.
+
+**Die Betäubung bleibt bewusst draußen.** Sie wäre die stärkste Drosselung überhaupt — ein
+betäubter Gegner trägt null —, aber ihre Frage ist eine zeitliche: Die Betäubung dauert
+länger als der Recast, ein zweiter Sanctus überschriebe sie, statt sie zu verlängern. Eine
+Momentaufnahme der Leistung kann das nicht ausdrücken; sie sagt „betäubt, also nicht
+wirken", während die Streckung gerade **später wieder** betäuben will. Beide Regeln stehen
+deshalb nebeneinander und nicht ineinander.
+
+**Grenze der Zählung, benannt statt verschwiegen:** `SlowStatus` führt auch Slow+, eine
+stärkere Stufe, deren Satz die Spieldaten nicht nennen, und die Erhebung unterscheidet die
+Ids nicht. Ein stärkerer Slow wird damit als 20 % gerechnet, der Gegner also überschätzt
+und Sanctus eher zugelassen — die richtige Seite zum Irren.
 
 ## Warum die Streckung richtig ist
 
@@ -119,7 +161,7 @@ hinter der gesamten Frage.
 
 **Aktionen mit doppelter Wirkung sind nur nach einer ihrer Wirkungen eingeordnet.**
 Sanctus steht im Schadenszweig; dass es betäubt, ist im Entscheidungsmodell nicht
-vorhanden. Assize steht im Angriffs-oGCD (`WHM_Reborn.cs:308`); dass es heilt,
+vorhanden. Assize steht im Angriffs-oGCD (`WHM_Reborn.AttackAbility`); dass es heilt,
 ebenfalls nicht. Umgekehrt kennt `GetCurrentMitigationPercent` die Wirkung von
 Reprisal, aber weder Betäubung noch Verlangsamung, obwohl beide wie
 Schadensreduktion wirken. Beide sind inzwischen an der Stelle gelesen, an der sie
