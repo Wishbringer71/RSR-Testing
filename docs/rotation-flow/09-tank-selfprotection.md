@@ -466,29 +466,9 @@ aber nach Ablauf landen, wenn der Tank bereits ungeschützt ist. Eine Fähigkeit
 Wirkzeit würde beides lösen — welche Heilung gleich fällt, ist jedoch eine
 Rotationsentscheidung, die die zentrale Schicht weder kennt noch erzwingen kann.
 
-**Die gestaffelte Phase-2-Unterstützung** (Fälle 4 und 4a) ist nicht gebaut — und der
-Code verhält sich nicht neutral, sondern **gegenläufig**, an zwei Stellen:
-
-- Das leichte Mittel ist **gesperrt**. `WHM_Reborn.HealSingleGCD` wirkt Regen nur bei
-  `GetHealthRatio() > RegenHeal` (0,30); unter Walking Dead liegt der Träger bei 1 HP.
-  Die Sperre greift also genau dann, wenn der HoT gewollt ist. Ihr Optionstext
-  beschreibt die Absicht richtig — bei echter Not keine Zeitheilung —, nur ist 1 HP
-  unter Walking Dead keine Not: Angriffe senken die Gesundheit nicht darunter.
-- Das schwere Mittel feuert **am Anfang**. `BenedictionPvE` steht als erstes in
-  `HealSingleAbility` und zündet unter `BenedictionHeal` (0,30), bei 1 HP also sofort
-  und vollständig — mit 90 s Abklingzeit, auch wenn die Selbstheilung gereicht hätte.
-
-**Die Prognose ist für die beiden Hälften nicht gleich nötig.** Fall 4 verlangt die
-leichte Unterstützung **unabhängig** vom Kurs — ein HoT zählt voll gegen die Summe,
-kostet einen GCD und schadet in keiner Lage. Die Freigabe des HoT braucht also keine
-Kursrechnung, sondern nur die Feststellung, dass Walking Dead liegt.
-
-Fall 4a braucht sie dagegen wirklich: Vollständig zu heilen ist nur richtig, **wenn**
-der Kurs nicht trägt; trägt er, ist es Überheilung. Der Gesundheitsstand ist dafür kein
-Ersatz, und zwar aus dem Grund, der oben bei den Genauigkeitsgrenzen steht — Angriffe
-drücken den Träger wieder auf 1, ohne die bereits aufgenommene Heilung zu mindern, und
-verlangt ist die **Summe**, nicht der Stand. Die Restzeit sagt nur, *wann* entschieden
-wird, nicht *ob*.
+**Die gestaffelte Phase-2-Unterstützung** (Fälle 4 und 4a) ist nicht gebaut. Sie
+verlangt eine Kursprognose und damit den verworfenen Messbaustein. Welche Stellen im
+Code ihr entgegenstehen, führt `TODO.md`.
 
 **Eine einzige Frage zum Weisen.** Die Verbrauchsreihenfolge ordnet Eukrasian Diagnosis
 hinter The Blackest Night ein, ein Job-Guide davor. Träfe Letzteres zu, könnte der
