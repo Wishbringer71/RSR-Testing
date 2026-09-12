@@ -57,6 +57,13 @@ jobs:
       - name: Check the MSBuild files are well-formed XML
         run: python3 .github/scripts/audit/check_msbuild_xml.py
 
+      # The user plays a German client, so every name he states has to be translated back to an
+      # identifier before anything can be searched for. Getting that wrong has produced both a false
+      # "not in the tree" report and an invented German name, so the pairs are recorded rather than
+      # looked up again, and this keeps each one pointing at something that exists.
+      - name: Check the German action-name dictionary resolves
+        run: python3 .github/scripts/audit/check_action_names.py
+
       # Fails when the GCD path picks an ability inside the window the execution gate refuses.
       # Nothing fails at runtime when it does - the action shows up in the preview and is silently
       # never cast - so only a static check notices. That is how raising stayed broken for over a
