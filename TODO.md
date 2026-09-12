@@ -264,6 +264,20 @@ Genau dort steht das Muster, sechsmal im Heilerbestand:
 
 **Empfehlung: erfassen, entscheiden, dann bauen.** Der Schweregrad ist gering — Anzeige und Lograuschen, kein Kampfeffekt —, der Wirkungsbereich jeder Behebung dagegen groß, und keiner der sechs erreichbaren Punkte liegt in einem Job des Nutzungsprofils.
 
+### `PredictedDamageType` ist an ein fremdes Enum gebunden, und die Zuordnung ist ungeprüft · N, R
+
+BossModReborn liefert `Hints.NextDamageType` als `(int)predicted[0].Type` — das Ordinal **seines** Enums —, und `BossModUpdater` castet den Wert direkt in unser `PredictedDamageType`. Die Nummerierung ist damit Schnittstellenvertrag, nicht innere Angelegenheit.
+
+**Beim Schwesterfall derselben Datei war genau diese Zuordnung falsch.** `SpecialMode` überschreitet dieselbe Grenze; die Angleichung (`8dc2bd658`) stellte fest, dass unser `Freezing` auf BossModReborns `Misdirection` zeigte und unser `Misdirection` auf nichts. Dort wurde der Vertrag danach mit expliziten Werten und einem Kommentar festgeschrieben — `PredictedDamageType` stand daneben und wurde nicht mitgeprüft. Das ist die Klassenlücke: dieselbe Bauform, eine Stelle gesichert, die Nachbarstelle nicht.
+
+**Umgesetzt ist nur, was verhaltensneutral ist:** Die heutigen impliziten Werte 0–3 sind jetzt ausgeschrieben, der Vertrag steht als Kommentar am Enum, und die beiden Rücksetzungen in `ResetBmrData` nennen `PredictedDamageType.None` und `SpecialMode.Normal` statt des Literals `0`. Damit fällt eine Einfügung an falscher Stelle beim Lesen auf, statt die Bedeutung des Fremdwerts still zu verschieben.
+
+**Was offen bleibt, ist die Zuordnung selbst.** Ob BossModReborn `None, Tankbuster, Raidwide, Shared` in dieser Reihenfolge führt, ist nicht belegt: Das Enum liegt in `AIHints`, und dessen Pfad ist ohne Code-Suche nicht auffindbar — `api.github.com` ist für diese Sitzung auf die freigegebenen Repositories beschränkt, `raw.githubusercontent.com` liefert nur, was man benennen kann (`IPCProvider.cs` ist so belegt worden).
+
+**Heute folgenlos, und das ist gemessen:** `BMRNextDamageType` wird geschrieben, als `CustomRotation.BMRDamageType` weitergegeben und von **keinem** Entscheidungspfad gelesen — dieselbe Lage wie bei `SpecialMode` zum Zeitpunkt seiner Angleichung. `SMN_Reborn` erwähnt das Paar im Kommentar ausdrücklich als das, was man **nicht** benutzt, weil es nicht sagt, wen der Tankbuster trifft.
+
+**Auflösungsbedingung:** der Pfad zu BossModReborns `AIHints.SpecialMode`/`PredictedDamage.Type` oder eine Laufzeitbeobachtung der gelieferten Zahlen. **Empfehlung: vor dem ersten Verbraucher auflösen** — Konzept 08 sieht die Schadensart als künftige Grundlage der Minderungswahl, und dann wäre eine vertauschte Zuordnung keine Randnotiz mehr.
+
 ### Die Minderungsbilanz kennt zwei Schadensarten, die Datenquelle drei · N, R
 
 `GetCurrentMitigationPercent` gewichtet sechs Faktoren binär nach `incomingMagical ? 0.90f : 0.95f` — Addle, Feint, Fey Illumination, Magick Barrier und zwei weitere. Der Wert kommt aus `DataCenter.IsMagicalDamageIncoming()`, das `AttackType.RowId == 5` prüft. Das Blatt kennt aber mehr Werte als 5 und 7; und wenn gerade **niemand** wirkt, ist `CastActionId` überall 0 und die Antwort ebenfalls `false`. Beide Fälle rechnet die Bilanz als **physisch** — mit vertauschten Vorzeichen: Addle zählt dann −5 % statt −10 %, Feint −10 % statt −5 %.

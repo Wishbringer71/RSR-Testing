@@ -3043,9 +3043,9 @@ internal static class DataCenter
 		BMRNextVulnerableIn = float.MaxValue;
 		BMRNextVulnerableEndIn = float.MaxValue;
 		BMRNextDamageIn = float.MaxValue;
-		BMRNextDamageType = 0;
+		BMRNextDamageType = PredictedDamageType.None;
 		BMRSpecialModeIn = float.MaxValue;
-		BMRSpecialModeType = 0;
+		BMRSpecialModeType = SpecialMode.Normal;
 		BMRForceCancelCast = false;
 		BMRForceCancelCastAI = false;
 		BMRIsMoving = false;
