@@ -4,14 +4,6 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 ## Defekte
 
-### `HardCastOnlyHealer`: Optionstext verspricht eine Bedingung, die der Code nicht prüft · N
-
-`CustomRotation_GCD.cs:149`. Der Text lautet „Raise while Swiftcast is on cooldown and other healers are dead"; geprüft wird allein der zweite Teil. Wer diesen Wert wählt, bekommt Hartwirk auch bei bereiter Spontanität.
-
-Die Mengenfrage des zweiten Teils ist behoben (A58), dieser Widerspruch nicht: Ob der Spontanitäts-Vorbehalt in die Bedingung gehört oder aus dem Text zu streichen ist, ist eine Festlegung über die Bedeutung der Einstellung. Der Optionstext ist Beleg der Entwurfsabsicht und darf nicht einfach dem Code angeglichen werden.
-
-**Empfehlung:** die Bedingung ergänzen, nicht den Text kürzen — `HardCastOnlyHealerSwiftCooldown` existiert bereits als die Variante mit zusätzlicher Wirkzeit-Abwägung, was dafür spricht, dass der Spontanitäts-Vorbehalt in **beiden** Nur-Heiler-Modi gemeint war.
-
 ### 19 Fänge von `AccessViolationException`, die im gemeinten Fall nicht greifen · N, U
 
 `DataCenter.cs`, unter anderem `:1366`, `:1416`, `:1543`, `:2538`. Muster überall gleich: ein nativer Lesezugriff über ein Dalamud-Objekt steht in einem `try`, dessen `catch (AccessViolationException)` den Absturz abfangen soll.

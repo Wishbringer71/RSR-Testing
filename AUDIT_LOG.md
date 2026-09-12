@@ -2287,6 +2287,23 @@ Die zweite Fassung verlor die gewebte Fähigkeit des führenden Blocks. Mountain
 **Erreichter Prüfgrad:** Statische Selbstprüfung, `check_cs_structure`, `scan18` (die neue Einstellung hat einen Leser), `scan4` (Bereich/Vorgabe stimmig), Compile in der CI. **Die Wirkung ist nicht gemessen** — genau dafür ist der Schalter da: zwei Durchläufe derselben Instanz, einer je Stellung.
 
 ---
+### A84 · `HardCastOnlyHealer` hält jetzt den Spontanitäts-Vorbehalt, den sein Text verspricht (12.09.2026)
+
+**Anlass:** Offener Punkt aus dem Wiederbelebungsvorgang. Der Optionstext lautet „Raise while Swiftcast is on cooldown and other healers are dead"; geprüft wurde allein der zweite Teil.
+
+**Der Beleg steckt im Raster, nicht in der einzelnen Zeile.** `HardCastRaiseType` führt vier Hartwirk-Modi, und **jede** ihrer Beschreibungen beginnt mit „Raise while Swiftcast is on cooldown". Der Vorbehalt ist also allen gemeinsam, unterschieden wird nach zwei unabhängigen Zusätzen — „andere Wiederbeleber tot" und „Abklingzeit größer als Wirkzeit". Drei der vier prüfen ihn: `HardCastNormal` als `!SwiftcastComingForRaise`, `HardCastSwiftCooldown` und `HardCastOnlyHealerSwiftCooldown` in der Fassung mit Wirkzeit-Abwägung. `HardCastOnlyHealer` war die einzige Lücke.
+
+**Welche der beiden Fassungen fehlte, sagt die Symmetrie:** `HardCastOnlyHealer` verhält sich zu `HardCastNormal` wie `HardCastOnlyHealerSwiftCooldown` zu `HardCastSwiftCooldown` — jeweils plus „andere Wiederbeleber tot". Sie erbt damit die **einfache** Form `!SwiftcastComingForRaise`, nicht die abwägende. Das ist keine Wahl, sondern die Fortsetzung des vorhandenen Rasters.
+
+**Zwei Fundstellen**, beide Dispatch-Zweige in `CustomRotation_GCD` (Spieler zuerst und Gruppe), gleich behandelt.
+
+**Zwei eigene Fehlschlüsse auf dem Weg dorthin, beide vor dem Eingriff bemerkt:** Zuerst schien die Existenz von `HardCastOnlyHealerSwiftCooldown` dafür zu sprechen, dass der Vorbehalt bei `HardCastOnlyHealer` **absichtlich** fehlt — die beiden Modi wären sonst identisch. Das Lesen des Enums widerlegte es: Sie unterscheiden sich durch die Wirkzeit-Abwägung, nicht durch den Vorbehalt. Umgekehrt war die frühere Empfehlung im TODO-Eintrag richtig, aber falsch begründet; sie stützte sich auf dieselbe Existenz des zweiten Modus, ohne die Beschreibungen aller vier gelesen zu haben.
+
+**`!SwiftcastComingForRaise` statt `IsCoolingDown`** ist die Fassung aus A56: `RaisePlayerBySwift && !IsCoolingDown`, negiert also „die Rotation wird Spontanität noch für die Wiederbelebung ausgeben". Mit ausgeschalteter Option wird Spontanität nie ausgegeben, kommt nie in Abklingzeit, und der rohe `IsCoolingDown`-Vorbehalt hätte den Hartwirk-Zweig dauerhaft gesperrt — die Sackgasse, die dort behoben wurde.
+
+**Erreichter Prüfgrad:** Statische Selbstprüfung, `check_cs_structure`, `scan17` (keine Kollision mit der Ausführungssperre), Compile in der CI. Nicht im Spiel beobachtet.
+
+---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.

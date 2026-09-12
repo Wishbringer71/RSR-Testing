@@ -146,7 +146,14 @@ public partial class CustomRotation
 					}
 				}
 
-				if (hardcastraisetype == HardCastRaiseType.HardCastOnlyHealer)
+				// The Swiftcast reservation belongs here too. All four hard cast modes promise it -
+				// every description starts "Raise while Swiftcast is on cooldown" - and the other
+				// three check it: HardCastNormal in the plain form, the two SwiftCooldown modes in
+				// the form that also weighs the cast time. This mode is to HardCastNormal what
+				// HardCastOnlyHealerSwiftCooldown is to HardCastSwiftCooldown, namely plus "the
+				// other raisers are dead", so it inherits the plain form rather than the weighing
+				// one. Without it, choosing this mode hard cast even with Swiftcast ready.
+				if (hardcastraisetype == HardCastRaiseType.HardCastOnlyHealer && !SwiftcastComingForRaise)
 				{
 					if (!AnyOtherLivingRaiser() && RaiseSpell(out act, true))
 					{
@@ -327,7 +334,8 @@ public partial class CustomRotation
 					}
 				}
 
-				if (hardcastraisetype == HardCastRaiseType.HardCastOnlyHealer)
+				// Same reservation as in the branch above; see the comment there.
+				if (hardcastraisetype == HardCastRaiseType.HardCastOnlyHealer && !SwiftcastComingForRaise)
 				{
 					if (!AnyOtherLivingRaiser() && RaiseSpell(out act, true))
 					{
