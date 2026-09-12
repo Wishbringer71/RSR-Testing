@@ -2231,6 +2231,22 @@ Die zweite Fassung verlor die gewebte Fähigkeit des führenden Blocks. Mountain
 
 **Erreichter Prüfgrad:** Skriptlauf mit Selbsttest, alle zehn Einträge auflösbar. Die Richtigkeit der deutschen Namen selbst ist nicht prüfbar — der Job-Guide ist vom Egress gesperrt —, sie ruht auf der Angabe des Auftraggebers, und genau das hält das Feld `source` fest.
 
+### A81 · Konzepte auf den Sitzungsstand gebracht, Referenzen prüfbar gemacht (12.09.2026)
+
+**Anlass:** Auftrag, die Konzepte mit den Erkenntnissen dieser Sitzung kritisch zu überarbeiten, offene Punkte einzubauen und anschließend Audit, Code-Review und Ärgernisbeseitigung zu führen.
+
+**Der schwerste Fund liegt in Konzept 09.** Es führte die Schildanrechnung als erledigt — „Sonderbehandlung nicht nötig, das leistet RSR bereits" — mit der Begründung, ein abgeschirmter Tank sei weniger dringend zu versorgen als ein ungeschützter. Das ist eine Aussage über den **Rang**, und den ändert die Anrechnung nicht: Sie hebt die Gesundheitsquote und verschiebt damit die **Schwelle**, ab der überhaupt geheilt wird — auch dann, wenn der Träger der einzige Verwundete ist und es nichts zu priorisieren gibt. Derselbe Kategorienfehler wie bei `HasHostileCountAoeMitigation` (C9): ein Mechanismus am Geltungsbereich beurteilt statt an dem, was er auslöst. Das Konzept nennt jetzt die Größe — 25 Prozentpunkte, Heilung ab rund 40 % statt 65 % — und führt die Bemessung als offene Frage.
+
+**Konzept 08** nimmt die Messgröße dieser Sitzung auf: Leistung statt Kopfzahl, als Verallgemeinerung der Flächenschwelle und nicht als Bedingung daneben, mit den Faktoren aus den Wirktexten und der Begründung, warum die Betäubung draußen bleibt. **Konzept 10** erhält die dritte Gegenbedingung und verliert eine Formulierung, die die Betäubungsstreckung als voreingestellt aktiv darstellte.
+
+**Neues Prüfmittel: `check_doc_references.py`.** Im Baum standen 167 Verweise der Form `Datei.cs:123`; jede Einfügung oberhalb verschiebt sie, ohne dass etwas fehlschlägt. Das Skript prüft hart, dass die Zeile existiert, und meldet weich, wenn der im selben Satz genannte Bezeichner anderswo sitzt. **Es entscheidet nicht, was es nicht entscheiden kann:** Eine richtige Referenz darf eine Zeile im Rumpf der genannten Methode zitieren — `BaseAction.cs:257` liegt 45 Zeilen unter seinem `CanUse` und ist korrekt. Der Geltungsbereich endet am Archiv: In `AUDIT_LOG` und `CHANGELOG` ist eine damals richtige Zeilennummer eine historische Tatsache, kein Defekt.
+
+**Zwei Fehlalarme der ersten Fassung, beide vor der ersten Korrektur gefunden:** ein Satz mit zwei Referenzen, dem der Bezeichner falsch zugeordnet wurde, und Schlüsselwörter wie `true`, die dem Bezeichnermuster entsprechen. Hätte ich die Funde ungeprüft „behoben", wären drei richtige Referenzen zerstört worden. Drei tatsächlich verrutschte sind berichtigt, und zwar durch Bezeichner statt neuer Zeilennummern, die beim nächsten Einschub wieder falsch wären.
+
+**Code-Review der eigenen Sitzungsänderungen, zwei Befunde, beide in `TODO.md`:** `SurveyHostileOutput` läuft als einzige voreingestellt aktive Sanctus-Bremse bei jeder GCD-Entscheidung über alle Gegner, und die Ersatzgarantie benutzt `CanUse` als Prüfung, was `Target` als Nebenwirkung zuweist — dasselbe Muster, das am Wiederbelebungspfad eine eigene Vorkehrung nötig gemacht hat.
+
+**Erreichter Prüfgrad:** Statische Selbstprüfung und Skriptläufe. Das ist **kein** Audit im Sinne des Vier-Augen-Prinzips: Geprüft hat dieselbe Instanz, die geschrieben hat.
+
 ---
 
 ## B · Commit-Register (Fork vs. `upstream/main`)

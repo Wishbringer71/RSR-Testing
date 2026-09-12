@@ -151,6 +151,22 @@ Belegt: `Status.resx` führt `Rampart_1978` — die Form, die ein Tank ab Stufe 
 
 **Nicht sofort behoben:** Die Änderung liegt im Generator, der nur mit installiertem Spiel läuft, und sie vergrößert den erzeugten Satz um eine ganze Kategorie — Wirkungsbereich und Nutzen sind vor dem Eingriff zu erheben. Zu klären ist außerdem, ob `ClassJob.RowId == 0` tatsächlich das Kennzeichen von Rollenmerkmalen ist oder nur eines von mehreren Merkmalen ohne Klassenbezug.
 
+### `SurveyHostileOutput` läuft bei jedem GCD über alle Gegner · N
+
+`ShouldHoldHolyWhilePackSlowed` steht als einzige der drei Sanctus-Bremsen auf Standard an und ruft deshalb bei jeder GCD-Entscheidung `SurveyHostileOutput`. Das iteriert `AllHostileTargets` und fragt je Gegner im Radius sechs Status ab. In einem Wall-to-Wall mit zehn Gegnern sind das sechzig Statusabfragen je Auswertung.
+
+**Kein belegter Defekt, sondern ein ungemessener Posten.** `GetCurrentMitigationPercent` macht dasselbe mit vier Abfragen je Gegner und läuft ebenfalls regelmäßig, `SurveyStuns` mit einer. Die Größenordnung ist also nicht neu, aber sie ist nie gemessen worden.
+
+**Auflösungsbedingung:** eine Laufzeitmessung. Fällt sie ungünstig aus, ist der naheliegende Eingriff, die Statusliste je Gegner **einmal** zu durchlaufen statt sechs `HasStatus`-Aufrufe zu stellen — das ist eine Änderung an der Hilfsmethode allein und berührt keine Entscheidung.
+
+### `CanUse` als Prüfung, nicht als Wahl — mit Zuweisung als Nebenwirkung · N, R
+
+`ShouldStretchHolyStun` und `ShouldHoldHolyWhilePackSlowed` fragen beide `DiaPvE.CanUse(out _) || AeroIiPvE.CanUse(out _) || AeroPvE.CanUse(out _)`, um die Ersatzgarantie zu prüfen. `CanUse` weist dabei `Target` zu — dieselbe Nebenwirkung, die beim Wiederbelebungspfad eine eigene Vorkehrung nötig gemacht hat (`RaisePendingAndCastable` sichert und stellt den Zielüberschreiber wieder her, A56).
+
+**Hier bislang folgenlos:** Wird der DoT anschließend tatsächlich gewirkt, ruft der Schadenszweig `CanUse` erneut und setzt das Ziel neu; wird Sanctus gewirkt, bleibt ein Ziel an einer Aktion stehen, die niemand liest. Belegt ist die Folgenlosigkeit allerdings nicht, und das Muster steht jetzt an zwei Stellen statt an einer.
+
+**Vor einer Änderung zu klären:** ob RSR eine seiteneffektfreie Prüfung anbietet. Gibt es keine, ist die Frage, ob eine solche eingeführt werden soll — mit einem Wirkungsbereich über alle Rotationen, die `CanUse` als Prüfung benutzen.
+
 ### Betäubungsstreckung von Sanctus steht weiterhin auf aus · N
 
 `StretchHolyStun` ist voreingestellt aus, weil die Wirkung ohne Laufzeitbeobachtung nicht zu belegen war. Der **Mitigationsgrund** derselben Regel ist inzwischen umgesetzt und voreingestellt an (`ShouldHoldHolyWhilePackSlowed`, A79); der **Betäubungsgrund** — Sanctus einen GCD aussetzen, solange die eigene Betäubung noch läuft, statt sie zu überschreiben — wartet weiter auf die Beobachtung, ob die Streckung im Spiel eintritt.
