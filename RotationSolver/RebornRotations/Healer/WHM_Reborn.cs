@@ -86,6 +86,12 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Hold Holy while a tank carries The Blackest Night, so its barrier is spent")]
 	public bool HoldHolyForBlackestNight { get; set; } = false;
 
+	// On by default, unlike the two above: this one is not a proposal but the third timing of the
+	// rule in concept 08, and the user asked for it directly after seeing Holy cast into a slow that
+	// had just landed. The cost stays bounded by the same replacement guarantee the stun branch uses.
+	[RotationConfig(CombatType.PvE, Name = "Hold Holy while the pack is slowed (Arm's Length), so the stun is kept for when the damage stream is not already thinned")]
+	public bool HoldHolyWhilePackSlowed { get; set; } = true;
+
 	public enum ThinAirUsageStrategy : byte
 	{
 		[Description("Use all thin air charges on expensive spells")]
@@ -516,6 +522,46 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	}
 
 	/// <summary>
+	/// Whether Holy has to wait because a stronger mitigation is already carrying the pull, so the
+	/// stun is worth less now than later.
+	/// </summary>
+	/// <remarks>
+	/// The third of the three timings in concept 08: a non-Holy GCD is inserted when it has value of
+	/// its own and the stun is not lost by it - because it still runs, because it no longer works,
+	/// or because a stronger mitigation is carrying right now. The first two were implemented, this
+	/// one was not, while the same document listed the hold as done.
+	///
+	/// Arm's Length applies Slow +20% to every physical attacker for 15s, and the slow raises
+	/// auto-attack delay, which is where trash damage comes from - the same order as Rampart. While
+	/// that runs, the stream is already thinned, and spending one of the pull's three stun
+	/// applications on it burns a budget that is gone for good: 4s, then 2s, then 1s, then immunity.
+	///
+	/// The share rule and the numbers are DRK_Reborn.PackSlowed's, deliberately the same rather than
+	/// a second set that could drift: one slowed enemy out of eight says nothing about the stream.
+	///
+	/// The replacement guarantee is the stun branch's and bounds the cost the same way: Holy is this
+	/// job's only area spell, so a held GCD falls through to single-target damage. Without a DoT
+	/// worth placing, Holy goes out no matter how slowed the pack is - which is also why a 15s slow
+	/// does not translate into 15s without Holy.
+	/// </remarks>
+	private bool ShouldHoldHolyWhilePackSlowed()
+	{
+		if (!HoldHolyWhilePackSlowed)
+		{
+			return false;
+		}
+
+		var radius = HolyIiiPvE.EnoughLevel ? HolyIiiPvE.Info.EffectRange : HolyPvE.Info.EffectRange;
+		var inRange = SurveyHostileStatus(radius, StatusHelper.SlowStatus, out var slowed);
+		if (inRange == 0 || slowed < 2 || slowed * 2 < inRange)
+		{
+			return false;
+		}
+
+		return DiaPvE.CanUse(out _) || AeroIiPvE.CanUse(out _) || AeroPvE.CanUse(out _);
+	}
+
+	/// <summary>
 	/// Whether Holy has to wait because its stun would strand a barrier that pays off only when it
 	/// is spent in full.
 	/// </summary>
@@ -642,7 +688,8 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			}
 		}
 
-		if (HolyPvE.EnoughLevel && !ShouldStretchHolyStun() && !ShouldHoldHolyForBarrier())
+		if (HolyPvE.EnoughLevel && !ShouldStretchHolyStun() && !ShouldHoldHolyForBarrier()
+			&& !ShouldHoldHolyWhilePackSlowed())
 		{
 			if (HolyIiiPvE.EnoughLevel && HolyIiiPvE.CanUse(out act))
 			{

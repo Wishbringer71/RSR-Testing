@@ -20,12 +20,16 @@ Der Zauber wird ausgesetzt, wenn seine Betäubung dadurch gestreckt statt
 eine zweite Anwendung derselben Bremse in der Gegenrichtung — der Weißmagier
 hält Sanctus zurück, solange die Barriere eines Dunkelritters aufgezehrt werden
 muss (Konzept 10) — und eine dritte für die Verlangsamung, die bis dahin
-überhaupt nicht gelesen wurde.
+überhaupt nicht gelesen wurde. Die Verlangsamung wirkt in beide Richtungen: Sie hält
+die Barriere des Dunkelritters zurück **und** den Sanctus des Weißmagiers, weil ein
+bereits gedrosselter Schadensstrom die Betäubung nicht braucht und ihr Vorrat je Pull
+endlich ist.
 
 | Baustein | Stand |
 |---|---|
 | Messung: `SurveyStuns`, `SurveyHostileStatus`, `StatusHelper.StunStatus` und `SlowStatus` | umgesetzt in `CustomRotation_OtherInfo` und `StatusHelper` |
-| Aussetzbedingung am Sanctus-Block, hinter `StretchHolyStun` (Standard aus) | umgesetzt (`WHM_Reborn.ShouldStretchHolyStun`) |
+| Aussetzbedingung am Sanctus-Block aus dem **Betäubungsgrund**, hinter `StretchHolyStun` (Standard aus) | umgesetzt (`WHM_Reborn.ShouldStretchHolyStun`) |
+| Aussetzbedingung aus dem **Mitigationsgrund** — eine fremde Verlangsamung trägt bereits | umgesetzt (`WHM_Reborn.ShouldHoldHolyWhilePackSlowed`, Standard an) |
 | Erhebung der übrigen Doppelnutzen-Aktionen | umgesetzt als `scan16.py`; ein Fund im Tank-/Heilerprofil (Rückstoß (Arm’s Length)) |
 | Zweite Aktion nach ihrer stillen Wirkung geregelt: Rückstoß (Arm’s Length) verlangsamt | umgesetzt in der Barrierenregel (Konzept 10, `DRK_Reborn.PackSlowed`) |
 | Rückstoß (Arm’s Length) auch **als** Minderungswerkzeug wirken | offen, siehe `TODO.md` — Zielkonflikt mit ihrer Rolle als einziger Rückstoßschutz |

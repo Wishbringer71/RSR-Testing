@@ -133,21 +133,11 @@ Nicht behoben, weil die Absicht dieser fremden Rotation ohne ihren Autor nicht b
 
 **Empfehlung: liegen lassen.** Alle vier verbliebenen Fundstellen liegen in PvP oder Bozja, also außerhalb des Nutzungsprofils, und jede verlangt eine Richtungsentscheidung, die eine Beobachtung im jeweiligen Inhalt voraussetzt. Die Klasse ist vollständig erhoben und durch `scan11.py` gegen Rückfall gesichert — das ist der Zweck der Erfassung, die Bearbeitung ist es hier nicht.
 
-### Holy nimmt keine Rücksicht auf laufende Gegner-Debuffs — Stun nur auf Wunsch, Slow gar nicht · N
+### Betäubungsstreckung von Sanctus steht weiterhin auf aus · N
 
-Im Spiel beobachtet: Der Weißmagier wirkt Holy in einen laufenden Stun und einen eben erst gesetzten Slow hinein.
+`StretchHolyStun` ist voreingestellt aus, weil die Wirkung ohne Laufzeitbeobachtung nicht zu belegen war. Der **Mitigationsgrund** derselben Regel ist inzwischen umgesetzt und voreingestellt an (`ShouldHoldHolyWhilePackSlowed`, A79); der **Betäubungsgrund** — Sanctus einen GCD aussetzen, solange die eigene Betäubung noch läuft, statt sie zu überschreiben — wartet weiter auf die Beobachtung, ob die Streckung im Spiel eintritt.
 
-**Am Code belegt, drei Teile:**
-
-`WHM_Reborn.cs:645` gibt Holy frei, sobald `!ShouldStretchHolyStun() && !ShouldHoldHolyForBarrier()`. Beide Bremsen hängen an Optionen, die **voreingestellt aus** sind (`StretchHolyStun`, `HoldHolyForBlackestNight`). Ab Werk wirkt Holy also ohne jede Prüfung.
-
-Für **Slow** existiert überhaupt keine Prüfung. `StatusHelper.SlowStatus` hat genau einen Leser im gesamten Baum: `DRK_Reborn.cs:277`.
-
-Die Wechselwirkung ist im Fork bereits ausformuliert — nur auf der Tankseite. `DRK_Reborn.PackSlowed()` hält The Blackest Night zurück, wenn mindestens zwei Gegner und mindestens die Hälfte verlangsamt sind, weil ein verlangsamtes Paket den Schadensstrom „past the line where the stream no longer spends 25% of maximum HP in seven seconds" drosselt. Dieselbe Überlegung gilt für Holys Stun: Ist der Strom bereits gedrosselt, ist der Stun weniger wert und verbraucht trotzdem Budget — vier Sekunden, dann zwei, dann eine, danach Immunität.
-
-**Was die Beobachtung ändert:** `StretchHolyStun` steht auf aus, weil die Wirkung ohne Laufzeitbeobachtung nicht zu belegen war. Die Beobachtung ist damit die Auflösungsbedingung dieses Kompromisses.
-
-**Empfehlung:** `StretchHolyStun` auf Standard an, und die Prüfung um `SlowStatus` erweitern — mit derselben Anteilsregel, die `PackSlowed` schon benutzt, statt einer zweiten Zahl daneben. Offen ist, welcher Zustand außerdem bremsen soll: Der Auftraggeber nennt einen „Abtausch", dessen Zuordnung zu einer Aktion aus dem Repository nicht zu belegen ist — es gibt keine deutsche Lokalisierung im Baum und der Job-Guide ist vom Egress gesperrt.
+**Auflösungsbedingung:** eine Beobachtung, ob Sanctus in eine laufende Betäubung hinein gewirkt wird und ob die Streckung die vom Modell gerechneten 5,5 auf 7,0 Sekunden bringt.
 
 ### Living Dead drückt die Heilschwelle auf `HealthProtectedRatio`, zehn Sekunden lang · N
 
