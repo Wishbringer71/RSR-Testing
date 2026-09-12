@@ -123,6 +123,26 @@ sind darüber erreichbar. Die Wirkkette, der Betroffenenkreis und die drei Beheb
 `TODO.md`; der Scan kann den Fall nicht von den 81 korrekten trennen und benennt die Grenze im
 Kommentar, statt sie zu verschweigen.
 
+## scan2.py — 541 Treffer, kein einziger Defekt
+
+Der Extremfall derselben Fehlerform. Über dem bereinigten Baum meldete `scan2.py` **541 Treffer in
+sieben Klassen**, und geprüft war jeder davon richtiger Code. Vier Klassen sind verengt, drei sind
+gar nicht entscheidbar und werden nur noch gezählt.
+
+| Klasse | vorher | nachher | Was falsch gemessen wurde |
+|---|---|---|---|
+| (a) Prozentskala gegen 0..1-Einstellung | 5 | 0 | Der Ausdruck wurde **vor** der Umrechnung abgeschnitten. `GetEffectiveHpPercent()` liefert 0..100, und alle fünf Stellen rechnen die Einstellung mit `* 100f` um — der Scan meldete also genau die Umrechnung, nach der er suchen sollte. |
+| (c) Gleichheit auf Fließkomma | 3 | 0 | Der **Name** statt des Typs. `CurrentMp` ist ein `uint` mit `Math.Min(10000, …)`; `== 10000` prüft die Schranke exakt und ist richtig. Entschieden wird das jetzt über einen Index der ganzzahlig deklarierten Namen (510 im Baum) — eine Fähigkeitsprüfung statt einer alternden Ausnahmeliste. |
+| (g) widersprüchliche Stufenprädikate | 12 | 0 | Die **Zeile** statt des Zweigs. `(X.EnoughLevel && A) \|\| (!X.EnoughLevel && B)` ist die reguläre Stufen-Fallunterscheidung; ein Widerspruch wären beide Polaritäten im *selben* `\|\|`-Zweig. Gesplittet wird an der flachsten Klammertiefe, auf der ein `\|\|` vorkommt, weil ein `if (` den Operator schon eine Ebene hineinschiebt. |
+| (i) Division ohne Nullprüfung | 3 | 0 | Vier Zeilen Kontext statt des Geltungsbereichs. Die Partie-HP-Rechnung in `DataCenter` kehrt bei `hpCount == 0` **dreißig Zeilen** über der Division zurück, und `ActionQueueManager` trägt einen ausdrücklichen Guard drei Zeilen davor. Gesucht wird jetzt im ganzen Rumpf bis zur Fundstelle. |
+| (e) `usedUp: true` ohne Bedingung | 156 | gezählt | Nichts — die Klasse ist nicht entscheidbar. Ob „gib die letzte Ladung frei" an eine Burst-Bedingung gehört, ist ein Urteil über Rotationsentwurf; 156 Stellen über alle Jobs tun es, und keine Regel trennt die falschen heraus. |
+| (f) `skipStatusProvideCheck: true` ohne Gate | 105 | gezählt | Ebenso: das Flag heißt „wirke es, obwohl der Status steht", was für eine Erneuerung richtig und für eine Verschwendung falsch ist — entscheidbar nur je Aktion. |
+| (h) gleiche Bedingung zweimal je Methode | 257 | gezählt | Zwei Fehler. Gemessen wird der **gestrippte** Quelltext, in dem jedes Stringliteral zu `""` geworden ist: sieben `ImGui.CollapsingHeader("…")` in einer UI-Methode lesen sich damit als eine siebenfach wiederholte Bedingung. Und selbst bei verschiedenem Text ist die Klasse kein Defekt — dieselbe Frage in zwei Rollenzweigen ist richtig (A6). |
+
+**Der Nullbefund ist gegengeprüft, nicht geglaubt.** Am echten Baum konstruiert: die `* 100f`-Umrechnung
+in `ObjectHelper` entfernt → (a) meldet die Stelle; den `hpCount == 0`-Rücksprung in `DataCenter`
+stillgelegt → (i) meldet beide Divisionen. Nach der Rücknahme beide wieder null.
+
 ## scan8.py — negated-name predicates read with both polarities
 
 Added after the same defect was found twice by hand, months apart, in
