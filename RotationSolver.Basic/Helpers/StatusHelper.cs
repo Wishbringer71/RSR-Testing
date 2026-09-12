@@ -618,7 +618,8 @@ public static class StatusHelper
 	/// <para>
 	/// Two GCDs of lead time. The tempting optimisation is to shorten it: the hold's one real cost
 	/// is that it can cancel a death that would still have arrived in time, and that cost is exactly
-	/// the lead time - against Living Dead's ten seconds, two GCDs give away half the window. But
+	/// the lead time - against Living Dead's ten seconds (ActionId.resx, action 3638: "Living Dead
+	/// Duration: 10s"), two GCDs give away about half the window. But
 	/// the lead time is measured to the *decision*, not to the heal landing. Worst case the current
 	/// GCD has to run out and a cast has to finish on top of it, which is two GCDs on its own, so
 	/// anything shorter lands the heal after the window has already closed and the bearer is

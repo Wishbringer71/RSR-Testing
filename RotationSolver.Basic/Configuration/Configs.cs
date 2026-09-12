@@ -944,12 +944,21 @@ internal partial class Configs : IPluginConfiguration
 	public bool CreditShieldToEffectiveHp { get; set; }
 
 	// Living Dead is the one invulnerability whose trigger is the bearer's own death: dying converts
-	// it into Walking Dead and its self-healing. Healing the dark knight above zero while it is up
-	// removes that trigger. Off by default, and deliberately so - RSR fires Living Dead itself as a
-	// last-ditch save at HealthForDyingTanks (DarkKnightRotation.EmergencyAbility), and under that
-	// usage the death is not wanted at all. Walking Dead demands healing equal to full max HP within
-	// ten seconds or it kills, so holding the heal is only right when the death was the plan and the
-	// healer can carry phase two. Whoever knows that for their group turns this on.
+	// it into Walking Dead. Healing the dark knight above zero while it is up removes that trigger.
+	//
+	// What phase two demands is quoted from the action's own effect text (ActionId.resx, action
+	// 3638), not from memory: Living Dead lasts 10s, Walking Dead another 10s, "most attacks will
+	// not lower your HP below 1", and "if before the Walking Dead timer runs out an amount of HP
+	// totaling your maximum HP is restored the effect will change to Undead Rebirth. If this amount
+	// is not restored you will be KO'd." The bearer contributes to that total himself - "Restores HP
+	// with each weaponskill successfully delivered or spell cast, Cure Potency: 1500" - so the
+	// healer carries the remainder, not the whole of it. Which is also why the hold is not a
+	// gamble on one heal: a white mage's Benediction restores the target fully on its own.
+	//
+	// Off by default, and deliberately so - RSR fires Living Dead itself as a last-ditch save at
+	// HealthForDyingTanks (DarkKnightRotation.EmergencyAbility), and under that usage the death is
+	// not wanted at all. Holding the heal is right where the death was the plan. Whoever knows that
+	// for their group turns this on.
 	[UI("Withhold healing from a dark knight under Living Dead, so the death that converts it can happen.",
 		Filter = HealingActionCondition, Section = 1)]
 	public bool WithholdHealingForLivingDead { get; set; } = false;
