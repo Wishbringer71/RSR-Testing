@@ -536,8 +536,13 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	/// that runs, the stream is already thinned, and spending one of the pull's three stun
 	/// applications on it burns a budget that is gone for good: 4s, then 2s, then 1s, then immunity.
 	///
-	/// The share rule and the numbers are DRK_Reborn.PackSlowed's, deliberately the same rather than
-	/// a second set that could drift: one slowed enemy out of eight says nothing about the stream.
+	/// The share is the majority of what stands in Holy's radius - strictly more than half, and with
+	/// no minimum count. That differs from DRK_Reborn.PackSlowed on purpose, and the two questions
+	/// are not the same one: PackSlowed asks whether the stream reaching the tank is thin enough to
+	/// strand a barrier, so a single slowed enemy out of eight says nothing and a floor of two is
+	/// needed. Here the radius has already narrowed the set to what this cast would hit, and the
+	/// question is whether the stun still buys anything against them - so one slowed enemy alone in
+	/// the radius is a majority, and half of them is not.
 	///
 	/// The replacement guarantee is the stun branch's and bounds the cost the same way: Holy is this
 	/// job's only area spell, so a held GCD falls through to single-target damage. Without a DoT
@@ -553,7 +558,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 
 		var radius = HolyIiiPvE.EnoughLevel ? HolyIiiPvE.Info.EffectRange : HolyPvE.Info.EffectRange;
 		var inRange = SurveyHostileStatus(radius, StatusHelper.SlowStatus, out var slowed);
-		if (inRange == 0 || slowed < 2 || slowed * 2 < inRange)
+		if (inRange == 0 || slowed * 2 <= inRange)
 		{
 			return false;
 		}
