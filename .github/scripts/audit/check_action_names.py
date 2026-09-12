@@ -113,6 +113,53 @@ def self_test(identifiers):
     print()
 
 
+GAME_PATH = os.path.join(HERE, 'action_names_game.json')
+
+
+def check_against_game_data():
+    """Compare the hand-kept entries with the generated index, if it has been produced.
+
+    The generated file comes from the game files themselves and settles anything the hand-kept
+    file can only record: it is what decides whether the German client prints Abtausch or
+    Rückstoß. Until someone runs RotationSolver.GameData it is simply absent, which is not a
+    failure - the build environment cannot produce it, because it has no game installation.
+    """
+    if not os.path.exists(GAME_PATH):
+        print('action_names_game.json is not present: run RotationSolver.GameData on a machine')
+        print('with the game installed to generate the full index, all jobs included.')
+        print()
+        return None
+
+    with open(GAME_PATH, encoding='utf-8') as handle:
+        game = json.load(handle)
+
+    by_de = {}
+    for entry in game.get('entries', []):
+        by_de.setdefault(entry['de'], []).append(entry)
+
+    data = load_dictionary()
+    confirmed, contradicted, unknown = [], [], []
+    for entry in data.get('entries', []):
+        matches = by_de.get(entry['de'])
+        if not matches:
+            unknown.append(entry)
+        elif any(m['en'] == entry['en'] for m in matches):
+            confirmed.append(entry)
+        else:
+            contradicted.append((entry, matches))
+
+    print('against the generated index: %d confirmed, %d contradicted, %d not found'
+          % (len(confirmed), len(contradicted), len(unknown)))
+    for entry, matches in contradicted:
+        print('  %s is recorded as %s but the game data says %s'
+              % (entry['de'], entry['en'], ' / '.join(sorted({m['en'] for m in matches}))))
+    for entry in unknown:
+        print('  %s does not appear in the game data at all' % entry['de'])
+    print()
+    return {'confirmed': len(confirmed), 'contradicted': len(contradicted),
+            'unknown': len(unknown), 'total': len(game.get('entries', []))}
+
+
 def main():
     with open(RESX, encoding='utf-8') as handle:
         identifiers = load_identifiers(handle.read())
@@ -121,6 +168,8 @@ def main():
         return 1
 
     self_test(identifiers)
+
+    generated = check_against_game_data()
 
     data = load_dictionary()
     problems = validate(data, identifiers)
@@ -148,7 +197,11 @@ def main():
                   'identifier until the user settles it' % (en, ' and '.join(names)))
 
     print()
-    print('%d entries, all resolvable.' % len(entries))
+    if generated:
+        print('%d hand-kept entries, all resolvable; %d pairs in the generated index.'
+              % (len(entries), generated['total']))
+    else:
+        print('%d hand-kept entries, all resolvable.' % len(entries))
     return 0
 
 

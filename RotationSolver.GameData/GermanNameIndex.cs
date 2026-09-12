@@ -1,0 +1,182 @@
+using Lumina.Data;
+using Lumina.Excel.Sheets;
+using Action = Lumina.Excel.Sheets.Action;
+
+namespace RotationSolver.GameData;
+
+/// <summary>
+/// Writes the German-to-English name index that the audit scripts and the assistant read.
+/// </summary>
+/// <remarks>
+/// The user plays a German client and states German names; the tree speaks English identifiers.
+/// Every lookup in between used to be a research pass, and it produced a wrong assignment
+/// (Abtausch to Shirk, from a web search), an invented name ("Armlänge"), and a "not in the tree"
+/// report for a name that was in the tree eight times.
+/// <para>
+/// None of the outside sources is reachable from the build environment: the job guide, XIVAPI and
+/// the datamining mirrors are all blocked by its egress. The game files are the one primary source
+/// left, and this program already reads them - it is what generates the English resources in
+/// SourceGenerators/Properties. Asking Lumina for the same sheets a second time under
+/// <see cref="Language.German"/> costs one more read of data that is already on disk.
+/// </para>
+/// <para>
+/// The output is data, not code: <c>.github/scripts/audit/action_names_game.json</c>, checked by
+/// check_action_names.py. Its hand-kept counterpart action_names_de.json stays, because it records
+/// which names the user actually used and where a statement of his conflicts with the game data -
+/// that is a fact about the conversation, and this file cannot carry it.
+/// </para>
+/// <para>
+/// Only the API this program already relies on is used here - GetExcelSheet and GetRow - because a
+/// generator that does not compile costs a CI round trip and this one cannot be run from the build
+/// environment at all: it needs the game files.
+/// </para>
+/// </remarks>
+internal static class GermanNameIndex
+{
+	private sealed record Pair(string De, string En, uint Id, string Kind, string Jobs);
+
+	/// <summary>
+	/// Reads every named action, status and item in both languages and writes the pairs as JSON.
+	/// </summary>
+	/// <param name="english">The game data already opened in English by the caller.</param>
+	/// <param name="sqpackPath">Same path the caller used, reopened in German.</param>
+	/// <param name="outputPath">Full path of the JSON file to write.</param>
+	public static void Write(Lumina.GameData english, string sqpackPath, string outputPath)
+	{
+		// A second GameData rather than a per-sheet language argument: the option this program
+		// already sets is the API that is known to work here, and the generator runs once by hand.
+		var german = new Lumina.GameData(sqpackPath, new LuminaOptions
+		{
+			LoadMultithreaded = true,
+			CacheFileResources = true,
+			PanicOnSheetChecksumMismatch = false,
+			DefaultExcelLanguage = Language.German,
+		});
+
+		var pairs = new List<Pair>();
+
+		var actionsEn = english.GetExcelSheet<Action>();
+		var actionsDe = german.GetExcelSheet<Action>();
+		if (actionsEn != null && actionsDe != null)
+		{
+			foreach (var row in actionsEn)
+			{
+				var en = row.Name.ToString();
+				if (string.IsNullOrWhiteSpace(en))
+				{
+					continue;
+				}
+
+				var de = GermanName(() => actionsDe.GetRow(row.RowId).Name.ToString());
+				if (de == null || de == en)
+				{
+					continue;
+				}
+
+				// The job category is what makes the file usable as a lookup: the user names an
+				// action, and the answer has to say which job it belongs to before anything can be
+				// searched for.
+				var jobs = row.ClassJobCategory.IsValid
+					? row.ClassJobCategory.Value.Name.ToString()
+					: string.Empty;
+				pairs.Add(new Pair(de, en, row.RowId, "action", jobs));
+			}
+		}
+
+		var statusEn = english.GetExcelSheet<Status>();
+		var statusDe = german.GetExcelSheet<Status>();
+		if (statusEn != null && statusDe != null)
+		{
+			foreach (var row in statusEn)
+			{
+				var en = row.Name.ToString();
+				if (string.IsNullOrWhiteSpace(en))
+				{
+					continue;
+				}
+
+				var de = GermanName(() => statusDe.GetRow(row.RowId).Name.ToString());
+				if (de == null || de == en)
+				{
+					continue;
+				}
+
+				pairs.Add(new Pair(de, en, row.RowId, "status", string.Empty));
+			}
+		}
+
+		var itemsEn = english.GetExcelSheet<Item>();
+		var itemsDe = german.GetExcelSheet<Item>();
+		if (itemsEn != null && itemsDe != null)
+		{
+			foreach (var row in itemsEn)
+			{
+				var en = row.Name.ToString();
+				if (string.IsNullOrWhiteSpace(en))
+				{
+					continue;
+				}
+
+				var de = GermanName(() => itemsDe.GetRow(row.RowId).Name.ToString());
+				if (de == null || de == en)
+				{
+					continue;
+				}
+
+				pairs.Add(new Pair(de, en, row.RowId, "item", string.Empty));
+			}
+		}
+
+		Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
+		using var writer = new StreamWriter(outputPath, false, System.Text.Encoding.UTF8);
+		writer.WriteLine("{");
+		writer.WriteLine("  \"_comment\": [");
+		writer.WriteLine("    \"Generated by RotationSolver.GameData - do not edit by hand.\",");
+		writer.WriteLine("    \"German and English names straight from the game files, the only primary\",");
+		writer.WriteLine("    \"source the build environment can reach. Regenerate after a patch.\"");
+		writer.WriteLine("  ],");
+		writer.WriteLine("  \"entries\": [");
+
+		for (var i = 0; i < pairs.Count; i++)
+		{
+			var pair = pairs[i];
+			var comma = i == pairs.Count - 1 ? string.Empty : ",";
+			writer.WriteLine(
+				$"    {{\"de\": {Json(pair.De)}, \"en\": {Json(pair.En)}, \"id\": {pair.Id}, " +
+				$"\"kind\": \"{pair.Kind}\", \"jobs\": {Json(pair.Jobs)}}}{comma}");
+		}
+
+		writer.WriteLine("  ]");
+		writer.WriteLine("}");
+
+		Console.WriteLine($"Wrote {pairs.Count} name pairs to {outputPath}");
+	}
+
+	/// <summary>
+	/// The German row for an id, or null when it is absent or empty. A sheet can be shorter in one
+	/// language than in another, and a row that only exists in English is not a finding here.
+	/// </summary>
+	private static string? GermanName(Func<string> read)
+	{
+		try
+		{
+			var name = read();
+			return string.IsNullOrWhiteSpace(name) ? null : name;
+		}
+		catch (Exception)
+		{
+			return null;
+		}
+	}
+
+	/// <summary>Minimal JSON string escaping; the names carry quotes and backslashes in a few cases.</summary>
+	private static string Json(string value)
+	{
+		var escaped = value
+			.Replace("\\", "\\\\")
+			.Replace("\"", "\\\"")
+			.Replace("\n", " ")
+			.Replace("\r", " ");
+		return $"\"{escaped}\"";
+	}
+}

@@ -22,7 +22,8 @@ namespace RotationSolver.GameData
 		{
 			try
 			{
-				var gameData = new Lumina.GameData(@"C:\FF14\game\sqpack", new LuminaOptions
+				var sqpackPath = @"C:\FF14\game\sqpack";
+				var gameData = new Lumina.GameData(sqpackPath, new LuminaOptions
 				{
 					LoadMultithreaded = true,
 					CacheFileResources = true,
@@ -51,6 +52,12 @@ namespace RotationSolver.GameData
 					writer.AddResource("Value", content);
 					writer.Generate();
 				}
+
+				// The German-to-English name index, so a name the user states can be looked up
+				// instead of researched. See GermanNameIndex for why the game files are the only
+				// source left for it.
+				GermanNameIndex.Write(gameData, sqpackPath, Path.Combine(
+					solutionRoot, ".github", "scripts", "audit", "action_names_game.json"));
 
 				WriteResource("Status", new StatusGetter(gameData).GetCode());
 				WriteResource("ContentType", new ContentTypeGetter(gameData).GetCode());
