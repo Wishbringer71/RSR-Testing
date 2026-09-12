@@ -133,6 +133,18 @@ Nicht behoben, weil die Absicht dieser fremden Rotation ohne ihren Autor nicht b
 
 **Empfehlung: liegen lassen.** Alle vier verbliebenen Fundstellen liegen in PvP oder Bozja, also außerhalb des Nutzungsprofils, und jede verlangt eine Richtungsentscheidung, die eine Beobachtung im jeweiligen Inhalt voraussetzt. Die Klasse ist vollständig erhoben und durch `scan11.py` gegen Rückfall gesichert — das ist der Zweck der Erfassung, die Bearbeitung ist es hier nicht.
 
+### Die Schildanrechnung senkt die Heilschwelle um den vollen Barrierenwert, ohne Schalter · N
+
+`StateUpdater.cs:719` und `:776`: `h = Math.Max(h, target.GetEffectiveHpPercent() / 100f)`, sobald `ShieldCreditAllowed` gilt. Die Anrechnung ist am tatsächlichen Restschild bemessen und insoweit sauber gebaut — aber ihre **Größe** wurde nie erhoben, nur ihr Wirkungsbereich (A43 prüfte, ob die Erweiterung von `ShieldStatus` netto schadet, und beantwortete das für den `HasSurvivingShield`-Nebenbefund mit „führt zu überflüssiger Heilung, nie zu ausbleibender"; für die Anrechnung selbst gilt das Gegenteil, denn genau das ist ihr Zweck).
+
+**Gerechnet:** The Blackest Night ist eine Barriere von 25 % der maximalen HP und steht in `ShieldStatus`. Die oGCD-Schwelle ist `HealthSingleAbility` 0,70, mit laufendem HoT auf 0,65 interpoliert. Ein Dunkelritter mit frischer Barriere erreicht die Schwelle damit erst bei real rund 40 % statt 65 %. Im Wall-to-Wall ist `ShieldCreditAllowed` über `IsHostileCastingAOE` nahezu durchgehend erfüllt.
+
+**Warum das ein Befund ist und nicht bloß eine Auslegung:** Die Projektregel verlangt, dass eine Verhaltensänderung ohne Nachweismöglichkeit hinter einer Option steht und das bisherige Standardverhalten bleibt. Diese hat keine — `ShieldCreditAllowed` schaltet nur den BMR-Zweig über `UseBmrTimeline`, die beiden Cast-Zweige sind schalterlos. Upstream rechnet keinen Schild an.
+
+**Offen ist die Sachfrage**, nicht die Regelfrage: Die Barriere wird gegen den **kommenden** Treffer angerechnet, die Heilentscheidung gilt aber dem Zustand **danach** — nach dem Treffer ist die Barriere verbraucht und die HP unverändert niedrig. Ob das in der Praxis trägt, ist nur im Spiel zu entscheiden.
+
+**Empfehlung:** Option nachrüsten, Standard aus (= Upstream-Verhalten), damit der Vergleich zweier Durchläufe die Sachfrage beantwortet.
+
 ### `HasSurvivingShield` misst die **kürzeste** Schildrestzeit, nicht die längste · N, R
 
 `StatusHelper.cs:942`: `GetObjectShield() > 0 && !WillStatusEnd(horizon, false, ShieldStatus)`. `WillStatusEnd` stützt sich auf `StatusTime`, und das liefert das **Minimum** über alle vorhandenen gelisteten Status (`StatusHelper.cs:990-1011`). Beantwortet wird damit „laufen **alle** Barrieren noch?", während der Doku-Kommentar derselben Methode „has an active shield that will still be up" sagt — Singular.
