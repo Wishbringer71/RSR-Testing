@@ -18,7 +18,7 @@ python3 .github/scripts/audit/scan.py
 | `scan3.py` | Discarded `CanUse` results, unreachable duplicate branches, inverted level gates | A10: Viper structural finding |
 | `scan4.py` | `[Range]` attribute versus declared default, duplicate config property names | A10: none open; the class had a real hit in A8 |
 | `scan5.py` | Fork behaviour changes sitting in a dispatch path that has no switch of its own | A16: six lines, all covered by an option or already logged |
-| `scan6.py` | Enum members whose ordinal moved, split by whether the enum reaches stored configuration | A16: none persisted; `SpecialMode` in-memory only |
+| `scan6.py` | Enum members whose ordinal moved, split by whether the enum is bound - by stored configuration, or by a cast from a foreign int | A16: none persisted; `SpecialMode` is bound over IPC, aligned in `8dc2bd658` and marked known |
 | `scan7.py` | Public and protected members of `RotationSolver.Basic` removed or re-signed since a release, keyed by declaring type, interface members included | A16: `HasHostileCountAoeMitigation`, `ShouldCheckTargetStatus` |
 
 `stun_coverage.py` is the odd one out: not a scanner but a model calculator for the
@@ -142,6 +142,29 @@ gar nicht entscheidbar und werden nur noch gezählt.
 **Der Nullbefund ist gegengeprüft, nicht geglaubt.** Am echten Baum konstruiert: die `* 100f`-Umrechnung
 in `ObjectHelper` entfernt → (a) meldet die Stelle; den `hpCount == 0`-Rücksprung in `DataCenter`
 stillgelegt → (i) meldet beide Divisionen. Nach der Rücknahme beide wieder null.
+
+## scan6.py — die dritte Bindung: ein Enum, das per Cast von außen gefüllt wird
+
+Der Scan teilte Ordinaländerungen in zwei Klassen: erreicht die gespeicherte Konfiguration
+(Vertragsbruch) oder nicht (informativ). Die zweite Klasse war zu weit. `SpecialMode` ist nicht
+persistiert und galt damit als frei umnummerierbar — während BossModReborn sein eigenes Ordinal
+als `int` über IPC schickt und `BossModUpdater` es direkt hineincastet. Die Angleichung
+(`8dc2bd658`) fand dort eine **tatsächliche** Fehlzuordnung: unser `Freezing` saß auf ihrem
+`Misdirection`, unser `Misdirection` auf nichts.
+
+„Wird der Typ persistiert" war also die falsche Frage. Der Scan kennt jetzt eine dritte Bindung:
+ein Enum, in das der Baum irgendwo einen nicht-Enum-Ausdruck castet. Der Kandidatenfilter ist
+absichtlich weit — er liefert jeden Cast-Zieltyp und wird erst mit den Enums geschnitten, die
+überhaupt ein Ordinal verschoben haben.
+
+Die beiden Zeilen der Angleichung sind als **`known`** ausgewiesen, mit Commit als Begründung.
+Ein Vertragsbruch, der selbst die dokumentierte Reparatur ist, würde sonst für immer gemeldet —
+und eine Ausgabe, die man überlesen muss, wird nicht mehr gelesen. Dieselbe Behandlung wie bei
+`scan17.py`.
+
+Der Selbsttest prüft die neue Klasse von beiden Seiten: derselbe verschobene Ordinalwert gilt als
+Bruch, wenn das Enum per Cast gefüllt wird, und bleibt informativ, wenn keine der drei Bindungen
+vorliegt.
 
 ## scan8.py — negated-name predicates read with both polarities
 
