@@ -582,6 +582,21 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
+	/// Level at which Enhanced Reprisal raises the reduction from 10% to 15%.
+	/// </summary>
+	/// <remarks>
+	/// The level was already in the tree, as the threshold MitigationDebuffDuration uses for the same
+	/// trait: Enhanced Addle, Feint and Reprisal each extend their debuff from 10s to 15s there. Both
+	/// that number and the 15% reduction come from the documentation of
+	/// <see cref="StatusHelper.ReprisalStatus"/>, which names no source of its own, and the game data
+	/// cannot confirm either: the effect text of action 7535 states the base 10% and leaves the
+	/// duration blank, the way it leaves every trait-modified figure blank. Recorded as open in
+	/// TODO.md. The consequence of being wrong is bounded - one debuff priced five points off - and
+	/// it errs towards treating the pull as more dangerous than it is.
+	/// </remarks>
+	private const int EnhancedReprisalLevel = 98;
+
+	/// <summary>
 	/// What share of its damage output a hostile still has, in percent, given the throttles on it.
 	/// </summary>
 	/// <remarks>
@@ -603,9 +618,13 @@ public partial class CustomRotation
 	/// damage this measures.
 	/// </para>
 	/// <para>
-	/// Reprisal is read by id rather than through the group: <c>Reprisal_2101</c> is scoped to the
-	/// four tank jobs instead of the shared role, which is the signature of the upgraded form, and
-	/// taking the group alone would price an end-game tank's debuff at two thirds of its worth.
+	/// Which grade of Reprisal is running is decided by level, not by status id. The trait hangs on
+	/// the level of whoever applies it, and inside a duty every level is capped to the same sync,
+	/// with an entry requirement at the same height - so the player's own synced level answers it.
+	/// Reading the id instead would be a surrogate resting on a further inference, that
+	/// <c>Reprisal_2101</c> is the upgraded form because it is scoped to the four tank jobs rather
+	/// than to the shared role. No trait object can be asked: the generated set contains no role
+	/// traits at all, because the getter drops every trait whose ClassJob is unset.
 	/// </para>
 	/// </remarks>
 	/// <param name="hostile">The enemy to weigh.</param>
@@ -624,13 +643,9 @@ public partial class CustomRotation
 			factor *= 0.80f;
 		}
 
-		if (hostile.HasStatus(false, StatusID.Reprisal_2101))
+		if (hostile.HasStatus(false, StatusHelper.ReprisalStatus))
 		{
-			factor *= 0.85f;
-		}
-		else if (hostile.HasStatus(false, StatusHelper.ReprisalStatus))
-		{
-			factor *= 0.90f;
+			factor *= DataCenter.PlayerSyncedLevel() >= EnhancedReprisalLevel ? 0.85f : 0.90f;
 		}
 
 		if (hostile.HasStatus(false, StatusID.Feint))
@@ -1563,9 +1578,15 @@ public partial class CustomRotation
 
 	/// <summary>
 	/// Shared duration of the enemy mitigation debuffs Addle, Feint and Reprisal, whose Enhanced traits
-	/// at level 98 extend all three from 10s to 15s.
+	/// extend all three from 10s to 15s.
 	/// </summary>
-	protected static float MitigationDebuffDuration => DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f;
+	/// <remarks>
+	/// Shares <see cref="EnhancedReprisalLevel"/> with <see cref="HostileOutputPercent"/> rather than
+	/// repeating the number: both read the same trait, one for how long the debuff lasts and one for
+	/// how much it takes off, and a patch that moved the level would otherwise move only one of them.
+	/// </remarks>
+	protected static float MitigationDebuffDuration =>
+		DataCenter.PlayerSyncedLevel() >= EnhancedReprisalLevel ? 15f : 10f;
 
 	/// <summary>
 	/// Whether an enemy mitigation debuff (Addle/Feint/Reprisal) is due for a proactive refresh: either
