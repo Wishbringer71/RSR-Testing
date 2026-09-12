@@ -163,9 +163,11 @@ Belegt: `Status.resx` führt `Rampart_1978` — die Form, die ein Tank ab Stufe 
 
 `ShouldStretchHolyStun` und `ShouldHoldHolyWhilePackSlowed` fragen beide `DiaPvE.CanUse(out _) || AeroIiPvE.CanUse(out _) || AeroPvE.CanUse(out _)`, um die Ersatzgarantie zu prüfen. `CanUse` weist dabei `Target` zu — dieselbe Nebenwirkung, die beim Wiederbelebungspfad eine eigene Vorkehrung nötig gemacht hat (`RaisePendingAndCastable` sichert und stellt den Zielüberschreiber wieder her, A56).
 
-**Hier bislang folgenlos:** Wird der DoT anschließend tatsächlich gewirkt, ruft der Schadenszweig `CanUse` erneut und setzt das Ziel neu; wird Sanctus gewirkt, bleibt ein Ziel an einer Aktion stehen, die niemand liest. Belegt ist die Folgenlosigkeit allerdings nicht, und das Muster steht jetzt an zwei Stellen statt an einer.
+**Hier bislang folgenlos:** Wird der DoT anschließend tatsächlich gewirkt, ruft der Schadenszweig `CanUse` erneut und setzt das Ziel neu; wird Sanctus gewirkt, bleibt ein Ziel an einer Aktion stehen, die niemand liest. Belegt ist die Folgenlosigkeit allerdings nicht.
 
-**Vor einer Änderung zu klären:** ob RSR eine seiteneffektfreie Prüfung anbietet. Gibt es keine, ist die Frage, ob eine solche eingeführt werden soll — mit einem Wirkungsbereich über alle Rotationen, die `CanUse` als Prüfung benutzen.
+**Umfang, erhoben statt geschätzt: 120 Fundstellen in 25 Dateien** — `BeirutaRDM` 16, `SGE_Reborn` 11, `NIN_Reborn` 10, `BeirutaSGE` 10, dazu `CustomRotation_Ability`, `CustomRotation_GCD`, `CustomRotation_Items` und die UI. Das Muster ist damit nicht die Ausnahme, die diese Rotation eingeführt hat, sondern die Hausform des gesamten Baums; die beiden Sanctus-Stellen sind zwei von 120. Das ändert die Frage: Nicht „sollen diese zwei Stellen anders gebaut werden", sondern „hat der Baum eine seiteneffektfreie Prüfung nötig".
+
+**Vor einer Änderung zu klären:** ob RSR eine seiteneffektfreie Prüfung anbietet. Gibt es keine, ist die Frage, ob eine solche eingeführt werden soll — mit einem Wirkungsbereich über alle Rotationen, die `CanUse` als Prüfung benutzen, und damit auch über die abgeleiteten Rotationen als Paketnutzer.
 
 ### Betäubungsstreckung von Sanctus steht weiterhin auf aus · N
 
@@ -248,6 +250,21 @@ Das Spiel führt jede Wirkung unter mehreren Status-Ids desselben Anzeigenamens 
 **Warum nicht behoben:** Welche Id das Spiel je Stufe tatsächlich setzt, ist aus den Daten nicht zu entscheiden. Bei `Reprisal_2101` trug der Beleg — genau eine PvE-Aktion, Geltungsbereich auf die vier Jobs verengt, belegter Trait-Stufenwert; bei den Tankhaltungen tut er das nicht, und eine falsch aufgenommene Id kehrt die Antwort in die andere Richtung um. **Auflösungsbedingung:** Laufzeitbeobachtung, welche Id ein Tank beziehungsweise ein Zauberer im Ziel trägt, oder eine Quelle für die Id-Zuordnung je Stufe.
 
 **Empfehlung: erfassen, nicht bearbeiten.** Behoben ist, was eine Wirkkette im Code liest und wo der Beleg trägt. Der Rest ist eine Klasse ohne Schranke: Ein Rückgabewert, den nur Wegsehen grün hält, wäre schlechter als keiner, und `scan14.py` hält die Liste jederzeit wieder abrufbar.
+
+### Vier Vorrangregeln, die nichts entscheiden, weil derselbe Aufruf unbedingt folgt · N, U
+
+`scan.py`, Prüfung (f). Vier Stellen wickeln einen Aktionsaufruf in eine Bedingung und wiederholen denselben Aufruf unmittelbar danach **ohne** Bedingung. Da der innere Zweig zurückkehrt, ist die Bedingung wirkungslos: Sie trifft keine Wahl, die der unbedingte Aufruf nicht ohnehin träfe.
+
+- `VPR_Reborn.cs:518` — `VicepitPvE` unter „letzte Ladung und Wiederholzeit unter 10 s", direkt gefolgt vom unbedingten Aufruf.
+- `VPR_Reborn.cs:835` — dasselbe für `VicewinderPvE`.
+- `PCT_Reborn.cs:199` — dasselbe für `RetributionOfTheMadeenPvE`.
+- `RDM_Reborn.cs:140` — hier ohne erkennbare Absicht: dieselbe Bedingung steht wortgleich in sich selbst geschachtelt (`InCombat && HasHostilesInMaxRange && ManaficationPvE.CanUse(out act)`).
+
+**Warum das ein Defekt und nicht nur Stil ist:** Die Bedingung ist ein Beleg der Entwurfsabsicht — bei den drei Ladungsfällen „gib der Aktion Vorrang, bevor eine Ladung überläuft". Diese Absicht ist nicht umgesetzt. Die Entstehungsform ist bei VPR belegbar an der Versionsgeschichte: Der äußere Zweig wurde in `acebc4537` („fix for VPR weirdness") nachgeschärft, der innere blieb stehen — *Ignorant Surgery* in Parnas' Sinn, kein Altern einer Prämisse.
+
+**Bewusst nicht gelöscht**, aus demselben Grund wie beim leeren VPR-Zweig (A11): Die Entfernung wäre verhaltensneutral, würde aber die einzige Spur der nicht umgesetzten Vorrangregel tilgen. Zu entscheiden ist, ob die Regel gemeint war — dann muss der unbedingte Aufruf nach hinten oder unter eine Gegenbedingung — oder ob sie fallen soll.
+
+**Empfehlung: erfassen, nicht bearbeiten.** Keiner der vier Jobs steht im Nutzungsprofil des Auftraggebers, und die Entscheidung „Vorrang gemeint oder nicht" gehört zum Autor der Rotation; Adressat ist der Upstream.
 
 ## Technische Schuld
 

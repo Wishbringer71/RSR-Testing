@@ -13,11 +13,13 @@ namespace RotationSolver.GameData;
 /// (Abtausch to Shirk, from a web search), an invented name ("Armlänge"), and a "not in the tree"
 /// report for a name that was in the tree eight times.
 /// <para>
-/// None of the outside sources is reachable from the build environment: the job guide, XIVAPI and
-/// the datamining mirrors are all blocked by its egress. The game files are the one primary source
-/// left, and this program already reads them - it is what generates the English resources in
-/// SourceGenerators/Properties. Asking Lumina for the same sheets a second time under
-/// <see cref="Language.German"/> costs one more read of data that is already on disk.
+/// No admissible outside source is reachable from the build environment: the job guide and XIVAPI
+/// are both refused at the proxy (measured, 403 on CONNECT). A datamining mirror would not settle
+/// it either - the naming rule admits the job guide, the user's own statement and the game files,
+/// and a third-hand copy is none of the three. The game files are the one primary source left, and
+/// this program already reads them - it is what generates the English resources in
+/// SourceGenerators/Properties. Reading the same sheets a second time under
+/// <see cref="Language.German"/> costs one more pass over data that is already on disk.
 /// </para>
 /// <para>
 /// The output is data, not code: <c>.github/scripts/audit/action_names_game.json</c>, checked by
@@ -26,9 +28,16 @@ namespace RotationSolver.GameData;
 /// that is a fact about the conversation, and this file cannot carry it.
 /// </para>
 /// <para>
-/// Only the API this program already relies on is used here - GetExcelSheet and GetRow - because a
-/// generator that does not compile costs a CI round trip and this one cannot be run from the build
-/// environment at all: it needs the game files.
+/// The language is an argument of GetExcelSheet, so one GameData answers both: LuminaOptions
+/// documents DefaultExcelLanguage as overridable "on a case-by-case basis". A second instance for
+/// German would need the sqpack path a second time, and that path is a per-machine fact - it is a
+/// hard-coded constant in Program that holds for no one but its author.
+/// </para>
+/// <para>
+/// One consequence of that API has to be handled here: where a sheet has no row in the requested
+/// language, Lumina returns the language-neutral sheet rather than nothing. A pair would then read
+/// as German while carrying the English name, which is why an entry is only written when the two
+/// differ - not as a shortcut, but because equality is exactly the signature of that fallback.
 /// </para>
 /// </remarks>
 internal static class GermanNameIndex
@@ -38,25 +47,14 @@ internal static class GermanNameIndex
 	/// <summary>
 	/// Reads every named action, status and item in both languages and writes the pairs as JSON.
 	/// </summary>
-	/// <param name="english">The game data already opened in English by the caller.</param>
-	/// <param name="sqpackPath">Same path the caller used, reopened in German.</param>
+	/// <param name="gameData">The game data the caller already opened; read twice per sheet here.</param>
 	/// <param name="outputPath">Full path of the JSON file to write.</param>
-	public static void Write(Lumina.GameData english, string sqpackPath, string outputPath)
+	public static void Write(Lumina.GameData gameData, string outputPath)
 	{
-		// A second GameData rather than a per-sheet language argument: the option this program
-		// already sets is the API that is known to work here, and the generator runs once by hand.
-		var german = new Lumina.GameData(sqpackPath, new LuminaOptions
-		{
-			LoadMultithreaded = true,
-			CacheFileResources = true,
-			PanicOnSheetChecksumMismatch = false,
-			DefaultExcelLanguage = Language.German,
-		});
-
 		var pairs = new List<Pair>();
 
-		var actionsEn = english.GetExcelSheet<Action>();
-		var actionsDe = german.GetExcelSheet<Action>();
+		var actionsEn = gameData.GetExcelSheet<Action>(Language.English);
+		var actionsDe = gameData.GetExcelSheet<Action>(Language.German);
 		if (actionsEn != null && actionsDe != null)
 		{
 			foreach (var row in actionsEn)
@@ -83,8 +81,8 @@ internal static class GermanNameIndex
 			}
 		}
 
-		var statusEn = english.GetExcelSheet<Status>();
-		var statusDe = german.GetExcelSheet<Status>();
+		var statusEn = gameData.GetExcelSheet<Status>(Language.English);
+		var statusDe = gameData.GetExcelSheet<Status>(Language.German);
 		if (statusEn != null && statusDe != null)
 		{
 			foreach (var row in statusEn)
@@ -105,8 +103,8 @@ internal static class GermanNameIndex
 			}
 		}
 
-		var itemsEn = english.GetExcelSheet<Item>();
-		var itemsDe = german.GetExcelSheet<Item>();
+		var itemsEn = gameData.GetExcelSheet<Item>(Language.English);
+		var itemsDe = gameData.GetExcelSheet<Item>(Language.German);
 		if (itemsEn != null && itemsDe != null)
 		{
 			foreach (var row in itemsEn)

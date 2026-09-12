@@ -111,3 +111,10 @@ jobs:
 
       - name: Build Plugin
         run: dotnet build --no-restore -c Release RotationSolver/RotationSolver.csproj
+
+      # The generator is in the solution and in no build. Nothing referenced it, so a compile error
+      # in it reached the user instead of the CI - a missing `using Lumina` for LuminaOptions did
+      # exactly that. It needs the game files to *run*, not to compile, so building it here costs a
+      # restore and closes the gap for every future change to it.
+      - name: Build the game-data generator
+        run: dotnet build -c Release RotationSolver.GameData/RotationSolver.GameData.csproj

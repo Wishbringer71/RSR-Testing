@@ -54,8 +54,15 @@ def scan_source(path, src, R):
             R['c_default_outside_range'].append(f'{path}:{line_of(src, m.start())}: {name} = {dv} not in [{lo}, {hi}]')
 
     # (d) [RotationConfig] property never read anywhere in this file
-    for m in re.finditer(r'\[RotationConfig\([^\]]*\)\]\s*(?:\[[^\]]*\]\s*)*public\s+[\w<>?]+\s+(\w+)\s*\{', src):
-        name = m.group(1)
+    for m in re.finditer(r'\[RotationConfig\(([^\]]*)\)\]\s*(?:\[[^\]]*\]\s*)*public\s+[\w<>?]+\s+(\w+)\s*\{', src):
+        args, name = m.group(1), m.group(2)
+        # A label spread over several lines is the setting itself: the rotation notes the Beiruta
+        # files render in the settings window carry their whole content in Name, concatenated line
+        # by line, and the property is only the peg they hang on. Nothing is meant to read it, so
+        # an unread one is not a broken promise. (String contents are blanked by strip() before
+        # this runs, but the line breaks between the concatenated pieces survive.)
+        if '\n' in args:
+            continue
         uses = len(re.findall(r'\b' + name + r'\b', src)) - 1
         if uses == 0:
             R['d_unused_rotation_config'].append(f'{path}:{line_of(src, m.start())}: {name}')
@@ -74,7 +81,13 @@ def scan_source(path, src, R):
             cond = re.sub(r'\s+', '', m.group(1))
             # "out act" has to be looked for in the raw condition: cond has had all whitespace
             # removed, so the spaced form could never be found in it and this check never fired.
-            if cond == prev_cond and i - prev_i <= 6 and 'out act' in m.group(1):
+            # Nothing may divert control between the two, or the second is simply the same
+            # question asked on a different path: a `break` puts them in two switch arms, an
+            # `else` in two arms of one branch. Both were reported as duplicates in BeirutaSCH,
+            # where they are correct.
+            between = '\n'.join(lines[prev_i:i - 1])
+            diverted = bool(re.search(r'\b(?:else|break|case|default|continue|goto)\b', between))
+            if cond == prev_cond and i - prev_i <= 6 and 'out act' in m.group(1) and not diverted:
                 R['f_duplicate_consecutive_if'].append(f'{path}:{i}: {m.group(1).strip()[:100]}')
             prev_cond, prev_i = cond, i
 
@@ -116,6 +129,8 @@ def self_test():
 
     assert _run('[RotationConfig(CombatType.PvE)] public bool Unused { get; set; }')['d_unused_rotation_config'], 'd'
     assert not _run('[RotationConfig(CombatType.PvE)] public bool Used { get; set; }\nif (Used) { }')['d_unused_rotation_config'], 'd: read once'
+    assert not _run('[RotationConfig(CombatType.PvE, Name =\n    "Note:\\n" +\n    "• a line")]\n'
+                    'public bool Notes { get; set; }')['d_unused_rotation_config'], 'd: display label'
 
     assert _run('var x = Player.Target.Target.CurrentHp;')['e_target_deref_without_canuse'], 'e'
     assert not _run('var x = Player.Target.Target?.CurrentHp;')['e_target_deref_without_canuse'], 'e: null-conditional'
@@ -123,6 +138,14 @@ def self_test():
     dup = _run('        if (FooPvE.CanUse(out act))\n        if (FooPvE.CanUse(out act))\n')
     assert dup['f_duplicate_consecutive_if'], 'f'
     assert not _run('        if (FooPvE.CanUse(out act))\n        if (BarPvE.CanUse(out act))\n')['f_duplicate_consecutive_if'], 'f: different conditions'
+    # The same question in two switch arms or two branch arms is not a duplicate: control never
+    # passes from one to the other.
+    assert not _run('            if (FooPvE.CanUse(out act))\n                return act;\n'
+                    '            break;\n        case Other:\n            if (FooPvE.CanUse(out act))\n'
+                    )['f_duplicate_consecutive_if'], 'f: separate switch arms'
+    assert not _run('            if (FooPvE.CanUse(out act))\n                return true;\n'
+                    '        }\n        else\n        {\n            if (FooPvE.CanUse(out act))\n'
+                    )['f_duplicate_consecutive_if'], 'f: separate branch arms'
 
     assert _run('if (HasStatus(true, StatusID.Addle)) { }')['g_self_flag_on_enemy_debuff'], 'g'
     assert not _run('if (HasStatus(false, StatusID.Addle)) { }')['g_self_flag_on_enemy_debuff'], 'g: false flag is correct'
