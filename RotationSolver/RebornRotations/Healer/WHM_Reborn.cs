@@ -522,6 +522,18 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	}
 
 	/// <summary>
+	/// How much of an enemy's output a slow takes away, in percent.
+	/// </summary>
+	/// <remarks>
+	/// From the effect text of Arm's Length (ActionId.resx, action 7548): "the striker will be
+	/// afflicted with Slow +20%". That is the slow a tank brings and the one this rule was written
+	/// for. StatusHelper.SlowStatus also lists Slow+ (427, 1568), a stronger grade whose figure the
+	/// status text does not state, and the survey does not tell the ids apart. Counting a stronger
+	/// slow as 20% overstates that enemy and lets Holy out sooner, which is the side to err on.
+	/// </remarks>
+	private const int SlowThrottlePercent = 20;
+
+	/// <summary>
 	/// Whether Holy has to wait because a stronger mitigation is already carrying the pull, so the
 	/// stun is worth less now than later.
 	/// </summary>
@@ -536,19 +548,24 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	/// that runs, the stream is already thinned, and spending one of the pull's three stun
 	/// applications on it burns a budget that is gone for good: 4s, then 2s, then 1s, then immunity.
 	///
-	/// The measure is the enemies the slow has *not* reached, against the same minimum Holy needs
-	/// when no slow is running at all - Config.AoeCount, the very number ActionTargetInfo uses to
-	/// decide whether an area cast is worth it. A slowed enemy is already being dealt with, so it
-	/// does not count towards the case for stunning; what has to carry the cast is the remainder.
-	/// Five enemies with two slowed still leave three, and Holy goes out; six slowed out of eight
-	/// leave two, and it waits.
+	/// The measure is total enemy output, not a head count, which is the area rule itself restated:
+	/// AoeCount enemies at full output is what Holy has always asked for. A slowed enemy still
+	/// contributes, just less - Arm's Length afflicts "Slow +20%" (action 7548), so it counts for
+	/// 80 - and the sum decides. Three enemies with one slowed come to 280 against a threshold of
+	/// 300, so Holy waits; four with two slowed come to 360 and it goes out.
 	///
-	/// Taking the number from the action rather than from an option of this rule is what keeps the
-	/// two sides of the same question from drifting apart, and it means the condition follows a
-	/// user's changed AoeCount without a second setting to keep in step. Its predecessors did not:
-	/// the first version borrowed DRK_Reborn.PackSlowed's share rule, which measures the stream
-	/// reaching the tank over job range and needs a floor of its own, and the second asked for a
-	/// majority of the radius, which counts the wrong side of the split.
+	/// Two properties follow from that and neither is an accident. The threshold comes from
+	/// Config.AoeCount, the same number ActionTargetInfo uses, so a user who changes it moves both
+	/// sides of the question at once and no second setting has to be kept in step. And the rule
+	/// only ever bites at exactly AoeCount enemies: at one more, the extra body carries at least 80
+	/// and the sum clears the threshold however many are slowed. That narrow reach is correct, not
+	/// a shortfall - with more enemies than the cast needs, Holy is worth casting even against a
+	/// thinned stream.
+	///
+	/// Its predecessors measured the wrong thing. The first borrowed DRK_Reborn.PackSlowed's share
+	/// rule, which weighs the stream reaching the tank over job range; the second asked for a
+	/// majority of the radius; the third counted the enemies the slow had not reached, which throws
+	/// away what the slowed ones still contribute.
 	///
 	/// The replacement guarantee is the stun branch's and bounds the cost the same way: Holy is this
 	/// job's only area spell, so a held GCD falls through to single-target damage. Without a DoT
@@ -564,7 +581,16 @@ public sealed class WHM_Reborn : WhiteMageRotation
 
 		var holy = HolyIiiPvE.EnoughLevel ? HolyIiiPvE : HolyPvE;
 		var inRange = SurveyHostileStatus(holy.Info.EffectRange, StatusHelper.SlowStatus, out var slowed);
-		if (slowed == 0 || inRange - slowed >= holy.Config.AoeCount)
+		if (slowed == 0)
+		{
+			return false;
+		}
+
+		// The area threshold, restated as output rather than as heads. AoeCount enemies at full
+		// output is what the rule has always asked for; a slowed one contributes less, so it takes
+		// more of them to reach the same total.
+		var output = ((inRange - slowed) * 100) + (slowed * (100 - SlowThrottlePercent));
+		if (output >= holy.Config.AoeCount * 100)
 		{
 			return false;
 		}
