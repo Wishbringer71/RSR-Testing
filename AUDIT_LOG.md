@@ -2272,6 +2272,21 @@ Die zweite Fassung verlor die gewebte Fähigkeit des führenden Blocks. Mountain
 
 ---
 
+### A83 · Die Schildanrechnung steht hinter einem Schalter, Standard aus (12.09.2026)
+
+**Anlass:** Der Auftraggeber meldete, ein Dunkelritter sei in einer Stufe-99-Instanz „sehr reduziert geheilt" worden — wenig oGCDs, hauptsächlich der HoT. Die Erhebung fand zwei Mechanismen, die beim Dunkelritter die Heilschwelle senken, und nur einer davon war eine Fork-Änderung ohne Schalter.
+
+**Behoben ist der Regelverstoß, nicht die Sachfrage.** `ShouldHealSingle` rechnete in beiden Zweigen den Restschild über `GetEffectiveHpPercent` auf die Gesundheitsquote — schalterlos, während Upstream keinen Schild anrechnet. Die Projektregel verlangt für eine Verhaltensänderung ohne Nachweismöglichkeit das bisherige Standardverhalten und eine abschaltbare Einstellung; beides fehlte. `CreditShieldToEffectiveHp` ist ergänzt, voreingestellt **aus**, mit der Begründung am Code statt in einer Optionsbeschreibung allein.
+
+**Die Größe war gerechnet und der Grund benannt, bevor der Schalter gebaut wurde:** The Blackest Night erzeugt laut `ActionId.resx` (Aktion 7393) 25 % der maximalen HP als Barriere über 7 s und steht in `ShieldStatus`; die oGCD-Schwelle liegt bei `HealthSingleAbility` 0,70, mit laufendem HoT auf 0,65 interpoliert. Ein Dunkelritter mit frischer Barriere erreicht sie damit erst bei real rund 40 % statt 65 %. Im Wall-to-Wall ist `ShieldCreditAllowed` über `IsHostileCastingAOE` nahezu durchgehend erfüllt.
+
+**Der Einwand, der den Ausschlag gab, stammt vom Auftraggeber** (C46): Falsch, unnötig oder zu spät gezündete Barrieren sind der häufige Fall, nicht der harmlose. Bei real 45 % ergibt eine frische Barriere 70 % effektiv und schaltet die oGCD-Heilung genau im Moment der größten Not ab — und `ShieldCreditAllowed` prüft nur, ob **irgendein** Gegner eine Flächenaktion wirkt, nicht, ob der Barrierenträger ihr Ziel ist.
+
+**Nicht behoben, bewusst:** Die zweite Absenkung — `LivingDead` in `NoNeedHealingStatus` drückt die Schwelle zehn Sekunden lang auf `HealthProtectedRatio` 0,15 — bleibt, weil sie die **mildere** Fassung des Upstream-Verhaltens ist (dort gibt es unter Invulnerabilität gar keine Heilung). Ihr Stellhebel ist die vorhandene Nutzereinstellung, und der richtige Wert ist nicht aus dem Code zu begründen. Ebenso bleibt `HasSurvivingShield` bei der kürzesten Schildrestzeit: Die Umkehr auf das Maximum tauscht den Fehler nur aus, und die heutige Richtung kostet eine überflüssige Heilung statt eines Todes.
+
+**Erreichter Prüfgrad:** Statische Selbstprüfung, `check_cs_structure`, `scan18` (die neue Einstellung hat einen Leser), `scan4` (Bereich/Vorgabe stimmig), Compile in der CI. **Die Wirkung ist nicht gemessen** — genau dafür ist der Schalter da: zwei Durchläufe derselben Instanz, einer je Stellung.
+
+---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.

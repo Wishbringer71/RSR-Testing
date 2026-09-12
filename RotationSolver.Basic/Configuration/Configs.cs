@@ -921,6 +921,28 @@ internal partial class Configs : IPluginConfiguration
 	[Range(0, 1, ConfigUnitType.Percent, 0.02f)]
 	public float HealthProtectedRatio { get; set; } = 0.15f;
 
+	// Counting a barrier toward effective health delays the single-target heal by exactly the
+	// barrier's size: The Blackest Night is 25% of max HP, so the oGCD threshold of 0.65 is only
+	// reached at around 40% real HP. That is a fork behaviour change with no way to demonstrate it
+	// from here, which the project rule puts behind a switch with the previous behaviour as the
+	// default - and upstream credits no shield at all.
+	//
+	// The case against it is not the arithmetic but the misused barrier, and the credit cannot tell
+	// the two apart: ShieldCreditAllowed only asks whether *some* hostile is casting an area
+	// action, not whether the barrier's bearer is its target, nor whether the barrier will still be
+	// there when a heal would land. Fired too late, at 45% real HP, the credit reads 70% and shuts
+	// the oGCD heal off at the moment of greatest need. There is also a feedback loop through the
+	// healer's own barrier: Divine Benison is the white mage's first single-target oGCD, and its
+	// barrier lifts the target back over the threshold, so Tetragrammaton stays down.
+	//
+	// Off by default therefore, so that two runs answer the question the code cannot.
+	[UI("Count a target's remaining barrier toward their HP when damage is expected.\n" +
+		"Off matches upstream: barriers are ignored and healing starts at the plain HP threshold.\n" +
+		"On delays single-target healing by the size of the barrier - about 25 percentage points " +
+		"for The Blackest Night.",
+		Filter = HealingActionCondition, Section = 1)]
+	public bool CreditShieldToEffectiveHp { get; set; }
+
 	// Living Dead is the one invulnerability whose trigger is the bearer's own death: dying converts
 	// it into Walking Dead and its self-healing. Healing the dark knight above zero while it is up
 	// removes that trigger. Off by default, and deliberately so - RSR fires Living Dead itself as a

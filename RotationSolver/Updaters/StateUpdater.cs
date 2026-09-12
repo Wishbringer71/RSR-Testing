@@ -720,8 +720,10 @@ internal static class StateUpdater
 		// Determine the target's health ratio. If they have a "Doom" status, treat their health as critically low (0.2).
 		var h = StatusHelper.PlayerDoomNeedHealing() ? 0.2f : ObjectHelper.GetPlayerHealthRatio();
 
-		// A shield still up when the next damage lands counts toward effective health.
-		if (!StatusHelper.PlayerDoomNeedHealing() && ShieldCreditAllowed
+		// A shield still up when the next damage lands counts toward effective health - only when
+		// the user asks for it. See Configs.CreditShieldToEffectiveHp for why the default is off.
+		if (Service.Config.CreditShieldToEffectiveHp
+			&& !StatusHelper.PlayerDoomNeedHealing() && ShieldCreditAllowed
 			&& Player.Object.HasSurvivingShield(ShieldSurvivalHorizon))
 		{
 			h = Math.Max(h, Player.Object.GetEffectiveHpPercent() / 100f);
@@ -777,8 +779,10 @@ internal static class StateUpdater
 		// Determine the target's health ratio. GetHealthRatio already treats "Doom" status targets as critically low (1%).
 		var h = target.GetHealthRatio();
 
-		// A shield still up when the next damage lands counts toward effective health.
-		if (!target.DoomNeedHealing() && ShieldCreditAllowed
+		// A shield still up when the next damage lands counts toward effective health - only when
+		// the user asks for it. See Configs.CreditShieldToEffectiveHp for why the default is off.
+		if (Service.Config.CreditShieldToEffectiveHp
+			&& !target.DoomNeedHealing() && ShieldCreditAllowed
 			&& target.HasSurvivingShield(ShieldSurvivalHorizon))
 		{
 			h = Math.Max(h, target.GetEffectiveHpPercent() / 100f);

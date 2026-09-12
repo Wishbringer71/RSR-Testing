@@ -77,7 +77,7 @@ Die Klasse ist belegt, weil die beiden Geschwister derselben Bauart **gelesen** 
 
 **Nicht verdrahtet, und das ist keine offene Entscheidung, sondern das Ergebnis der Regeln.** Drei Gründe, die zusammen nur einen Schluss zulassen:
 
-1. *Es gibt keinen Migrationsweg.* `Configs.Migrate` (`Configs.cs:1440`) ist keine Migration, sondern ein Zurücksetzen: bei abweichender Version `return new Configs()`. Eine geänderte Vorgabe erreicht deshalb nur Neuinstallationen; wer das Plugin schon benutzt, hat `(0,5; 1)` in seiner gespeicherten Konfiguration stehen und bekäme die Verzögerung beim Verdrahten tatsächlich eingeschaltet.
+1. *Es gibt keinen Migrationsweg.* `Configs.Migrate` ist keine Migration, sondern ein Zurücksetzen: bei abweichender Version `return new Configs()`. Eine geänderte Vorgabe erreicht deshalb nur Neuinstallationen; wer das Plugin schon benutzt, hat `(0,5; 1)` in seiner gespeicherten Konfiguration stehen und bekäme die Verzögerung beim Verdrahten tatsächlich eingeschaltet.
 2. *Damit verletzt jede Verdrahtung die Feature-Toggle-Regel*, die für eine Änderung ohne Nachweismöglichkeit das bisherige Standardverhalten als Vorgabe verlangt. Das bisherige Verhalten ist „keine Verzögerung", und es lässt sich ohne Migration nicht erhalten.
 3. *Der Nutzen liegt außerhalb der Zielrichtung.* Die Verzögerung dient der Tarnung, nicht der Kampfwirkung. Bei der Unterbrechung wirkt sie sogar gegen den Zweck der Aktion: bis zu eine Sekunde kann das Fenster des Zaubers verbrauchen, der gestoppt werden soll.
 
@@ -192,31 +192,19 @@ Belegt: `Status.resx` führt `Rampart_1978` — die Form, die ein Tank ab Stufe 
 
 Schadensreduktion wirkt also in keinem Fall auf die Heilentscheidung; nur Barriere und Invulnerabilität tun es.
 
-### Die Schildanrechnung senkt die Heilschwelle um den vollen Barrierenwert, ohne Schalter · N
+### Trägt die Schildanrechnung? — jetzt durch Umschalten entscheidbar · N
 
-`StateUpdater.cs:719` und `:776`: `h = Math.Max(h, target.GetEffectiveHpPercent() / 100f)`, sobald `ShieldCreditAllowed` gilt. Die Anrechnung ist am tatsächlichen Restschild bemessen und insoweit sauber gebaut — aber ihre **Größe** wurde nie erhoben, nur ihr Wirkungsbereich (A43 prüfte, ob die Erweiterung von `ShieldStatus` netto schadet, und beantwortete das für den `HasSurvivingShield`-Nebenbefund mit „führt zu überflüssiger Heilung, nie zu ausbleibender"; für die Anrechnung selbst gilt das Gegenteil, denn genau das ist ihr Zweck).
+Die Anrechnung (`StateUpdater.ShouldHealSingle`, beide Zweige) rechnet den Restschild auf die effektive Gesundheit und verzögert die Einzelziel-Heilung um genau die Barrierengröße: The Blackest Night sind 25 % der maximalen HP, die oGCD-Schwelle 0,65 wird damit erst bei real rund 40 % erreicht. Sie steht jetzt hinter `CreditShieldToEffectiveHp`, **voreingestellt aus** (= Upstream-Verhalten); der Regelverstoß — Verhaltensänderung ohne Nachweis und ohne Schalter — ist damit behoben (A83).
 
-**Gerechnet:** The Blackest Night erzeugt laut `ActionId.resx` (Aktion 7393) eine Barriere über 25 % der maximalen HP des Ziels, Dauer 7 s, und steht in `ShieldStatus`. Die oGCD-Schwelle ist `HealthSingleAbility` 0,70, mit laufendem HoT auf 0,65 interpoliert. Ein Dunkelritter mit frischer Barriere erreicht die Schwelle damit erst bei real rund 40 % statt 65 %. Im Wall-to-Wall ist `ShieldCreditAllowed` über `IsHostileCastingAOE` nahezu durchgehend erfüllt.
+**Was offen bleibt, ist die Sachfrage:** Die Barriere wird gegen den **kommenden** Treffer angerechnet, die Heilentscheidung gilt aber dem Zustand **danach** — nach dem Treffer ist die Barriere verbraucht und die HP unverändert niedrig. Dazu kommen drei Fälle, die die Anrechnung nicht von der richtigen unterscheiden kann, weil `ShieldCreditAllowed` nur fragt, ob **irgendein** Gegner eine Flächenaktion wirkt:
 
-**Warum das ein Befund ist und nicht bloß eine Auslegung:** Die Projektregel verlangt, dass eine Verhaltensänderung ohne Nachweismöglichkeit hinter einer Option steht und das bisherige Standardverhalten bleibt. Diese hat keine — `ShieldCreditAllowed` schaltet nur den BMR-Zweig über `UseBmrTimeline`, die beiden Cast-Zweige sind schalterlos. Upstream rechnet keinen Schild an.
+- **unnötig oder zu früh gezündet:** Die Barriere läuft in sieben Sekunden unverbraucht ab, angerechnet wird sie trotzdem.
+- **zu spät gezündet** — der gefährlichste Fall: Bei real 45 % ergibt die Anrechnung 70 % und schaltet die oGCD-Heilung im Moment der größten Not ab.
+- **auf ein anderes Gruppenmitglied gelegt** (die Aktion erlaubt „self or target party member"): Dann wird dessen Heilbedarf unterdrückt.
 
-**Eine falsch gesetzte Barriere kehrt den Nutzen um, und die Prüfung fängt das nicht ab.** `ShieldCreditAllowed` fragt nur, ob **irgendein** Gegner gerade eine Flächenaktion wirkt — nicht, ob der Träger der Barriere das Ziel ist, und nicht, ob die Barriere noch steht, wenn eine Heilung landen würde. Drei Fehlnutzungen, die derselbe Spieler erzeugt:
+**Rückkopplung über die eigene Barriere:** `DivineBenison` steht in `ShieldStatus`, und `DivineBenisonPvE` ist im Weißmagier der erste oGCD der Einzelziel-Heilkette, vor `TetragrammatonPvE`. Der Tank fällt unter die Schwelle, Divine Benison feuert, die Barriere hebt die effektive Quote über die Schwelle, und Tetragrammaton bleibt liegen — pro Abfall genau ein oGCD.
 
-- **Unnötig oder zu früh gezündet:** Die Barriere läuft in sieben Sekunden unverbraucht ab. Angerechnet wird sie trotzdem — die Absorption findet nicht statt, die Anrechnung schon.
-- **Zu spät gezündet:** der gefährlichste Fall. Bei real 45 % ergibt die Anrechnung 70 % und schaltet die oGCD-Heilung genau im Moment der größten Not ab.
-- **Auf ein anderes Gruppenmitglied gelegt** — die Aktion erlaubt „self or target party member" —: Dann wird dessen Heilbedarf unterdrückt.
-
-Die Verzögerung entspricht exakt der Barrierengröße: Ohne Barriere setzt die oGCD-Heilung unter 65 % ein, mit frischer Barriere erst unter 40 %.
-
-**Offen ist die Sachfrage**, nicht die Regelfrage: Die Barriere wird gegen den **kommenden** Treffer angerechnet, die Heilentscheidung gilt aber dem Zustand **danach** — nach dem Treffer ist die Barriere verbraucht und die HP unverändert niedrig. Ob das in der Praxis trägt, ist nur im Spiel zu entscheiden.
-
-**Die Anrechnung braucht keine fremde Barriere — der Heiler erzeugt sie selbst.** `DivineBenison` und `DivineBenison_1404` stehen in `ShieldStatus`, und `DivineBenisonPvE` ist im Weißmagier der erste oGCD der Einzelziel-Heilkette, vor `TetragrammatonPvE` (`WHM_Reborn.cs`). Die Folge ist eine Rückkopplung: Der Tank fällt unter die Schwelle, das Flag geht an, Divine Benison feuert, die Barriere hebt die effektive Quote über die Schwelle, das Flag geht aus — Tetragrammaton bleibt liegen. Pro Abfall genau ein oGCD. `GetObjectShield` liest die Gesamtbarriere des Ziels über `ShieldPercentage`, also zählt jede Quelle mit.
-
-**Erhebung aller vier Fork-Änderungen in `ShouldHealSingle`:** Der engere Ausschluss über `HealingIneffectiveStatus`, die abgesenkte statt unterdrückten Schwelle unter Invulnerabilität und der Wegfall der `AutoHealTimeToKill`-Schranke für Heiler in `CanUseHealAction` wirken sämtlich in Richtung **mehr** Heilung. Die Schildanrechnung ist die einzige, die in Richtung weniger wirkt.
-
-**Zweiter, kleinerer Fork-Effekt auf dieselbe Schwelle:** `GetHealingOfTimeRatio` interpoliert zwischen `HealthSingleAbility` 0,70 und `HealthSingleAbilityHot` 0,65 nach HoT-Restzeit, voll gewichtet ab 15 Sekunden. `TrySustainRegenOnTank` hält Regen auf dem Tank dauerhaft nach, sodass die Schwelle ständig am HoT-Wert liegt statt nur gelegentlich. Das sind fünf Prozentpunkte, dauerhaft.
-
-**Empfehlung:** Option nachrüsten, Standard aus (= Upstream-Verhalten), damit der Vergleich zweier Durchläufe die Sachfrage beantwortet.
+**Auflösungsbedingung:** zwei Durchläufe derselben Instanz, einer je Schalterstellung. **Empfehlung: aus lassen, bis der Vergleich vorliegt** — die Sicherheitsrichtung des Auftraggebers spricht für die Fassung, die früher heilt.
 
 ### `HasSurvivingShield` misst die **kürzeste** Schildrestzeit, nicht die längste · N, R
 
@@ -352,7 +340,7 @@ und `GCDTime(uint gcdCount = 0, float offset = 0)` liefert `(DefaultGCDTotal * 0
 
 ### `Configs.Migrate` ist kein Migrationspfad, sondern ein Zurücksetzen · N, R
 
-`Configs.cs:1440` lautet vollständig: weicht die gespeicherte `Version` von `CurrentVersion` ab, wird `new Configs()` zurückgegeben — **die gesamte Nutzerkonfiguration fällt auf die Vorgaben zurück**. Der Kommentar „Implement migration logic if needed" weist die Stelle als bewusst offenen Platzhalter aus, nicht als Fehler; sie ist damit technische Schuld und kein Defekt.
+`Configs.Migrate` lautet vollständig: weicht die gespeicherte `Version` von `CurrentVersion` ab, wird `new Configs()` zurückgegeben — **die gesamte Nutzerkonfiguration fällt auf die Vorgaben zurück**. Der Kommentar „Implement migration logic if needed" weist die Stelle als bewusst offenen Platzhalter aus, nicht als Fehler; sie ist damit technische Schuld und kein Defekt.
 
 **Kosten, und sie sind höher als sie aussehen.** Die Schuld ist nicht nur ein fehlendes Bequemlichkeitsmerkmal, sie **blockiert andere Behebungen**: Jede Korrektur, die einen Vorgabewert ändern muss, um das bisherige Verhalten zu erhalten, ist ohne Feldmigration nicht durchführbar. Der Eintrag zu `InterruptDelay`/`ProvokeDelay` weiter oben ist genau daran gescheitert. Dieselbe Sperre trifft künftig jede Einstellung, deren Vorgabe sich als falsch erweist.
 

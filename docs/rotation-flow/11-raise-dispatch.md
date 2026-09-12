@@ -333,7 +333,7 @@ eine Festlegung über die Bedeutung der Einstellung. Die Existenz von
 - **`IBaseAction.IgnoreClipping` wird geschrieben und nirgends gelesen** (sechs Schreibzugriffe in
   `CustomRotation_Invoke.cs`, Definition in `IBaseAction.cs:14`). Wirkungsbereich zu groß für diesen
   Vorgang: Ein Leser in `DoAction` hebelte die Anti-Clipping-Regel überall aus.
-- **`Configs.Migrate` ist ein Zurücksetzen, kein Migrationspfad** (`Configs.cs:1440`). Das ist nicht
+- **`Configs.Migrate` ist ein Zurücksetzen, kein Migrationspfad** Das ist nicht
   nur unbequem, es **sperrt andere Behebungen**: Jede Korrektur, die einen Vorgabewert ändern muss,
   um das bisherige Verhalten zu erhalten, ist ohne Feldmigration nicht durchführbar. Daran ist die
   Verdrahtung von `InterruptDelay` und `ProvokeDelay` gescheitert.
