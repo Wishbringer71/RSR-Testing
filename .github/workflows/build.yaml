@@ -64,6 +64,13 @@ jobs:
       - name: Check the German action-name dictionary resolves
         run: python3 .github/scripts/audit/check_action_names.py
 
+      # A line reference is the cheapest way to make a concept verifiable and the first thing to
+      # rot, because any edit above the cited line moves it and nothing fails. This fails the run
+      # only for a line that cannot exist; a reference whose identifier sits elsewhere is reported
+      # for a reader to judge, since a correct reference may well cite a line inside a method.
+      - name: Check the documentation's line references still exist
+        run: python3 .github/scripts/audit/check_doc_references.py
+
       # Fails when the GCD path picks an ability inside the window the execution gate refuses.
       # Nothing fails at runtime when it does - the action shows up in the preview and is silently
       # never cast - so only a static check notices. That is how raising stayed broken for over a
