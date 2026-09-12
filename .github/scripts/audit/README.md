@@ -296,7 +296,7 @@ PvE nur den erlittenen Schaden, ihre Barriere-Ids 3086 und 3026 gehören zu den 
 beide standen vorher als PvE-Kandidaten in `TODO.md` (AUDIT_LOG C28). Der Selbsttest deckt alle
 vier Fälle an konstruierten Aktionen ab, den Aquaveil-Fall eingeschlossen.
 
-Von den 55 Gruppen ohne jeden Vertreter standen 15 Ids hinter einer PvE-Barriereaktion — zehn
+Von den 55 Gruppen ohne jeden Vertreter des ersten Laufs standen 15 Ids hinter einer PvE-Barriereaktion — zehn
 Jobbarrieren (Shake It Off, Seraphic Veil, Neutral Sect, The Spire, Improvised Finish, Divine
 Caress) und fünf aus dem Occult Crescent, den der Auftraggeber spielt. Alle 15 sind aufgenommen
 (A43); `ShieldStatus` führt jetzt 60 Ids, der Scan meldet dort null. Die verbliebenen 46 Ids in
@@ -347,7 +347,7 @@ dealt") teilen ihren Namen mit Minderungen, sind aber deren Reflexions- und Lebe
 bleiben draußen und werden weiter gemeldet — die verbleibenden Treffer in `RampartStatus` und
 `ShieldStatus` sind genau diese bewussten Ausschlüsse.
 
-**Keine CI-Schranke.** Von den 186 verbliebenen Treffern sind 114 Rauschen aus zwei Listen, die
+**Keine CI-Schranke.** Der größte Teil der verbliebenen Treffer ist Rauschen aus zwei Listen, die
 bewusst Teilmengen sind (`PhantomDispellable`, `PurifyPvPStatuses`), und der Rest verlangt je einen
 Blick in die Wirkbeschreibung. Ein Rückgabewert, den man nur durch Wegsehen grün hält, wäre
 schlechter als keiner; die Schranke bleibt bei `scan13.py`, wo die Mitgliedschaft aus der Aktion
@@ -406,8 +406,11 @@ und fragt, ob der Baum den zugehörigen Status je liest — als Mitglied einer `
 oder wenigstens als einzelne `StatusID`. Die Ausgabe trennt Tank und Heiler vom Rest, weil die
 Erhebung vollständig zu führen ist, die Bearbeitung aber dem Nutzungsprofil folgt.
 
-Ergebnis: 1457 PvE-Aktionen, 52 mit einer solchen Wirkung, **ein** Fund im Tank- und
-Heilerprofil, der eine Entscheidung ändert — Rückstoß (Arm’s Length). Der Wirktext der Verlangsamung nennt
+Ergebnis des ersten Laufs: **ein** Fund im Tank- und Heilerprofil, der eine Entscheidung
+ändert — Rückstoß (Arm’s Length). Er ist behoben, und damit hat sich die Klasse verschoben: der
+Scan meldet heute Wirkungen, die nur noch als **einzelne Id** gelesen werden statt als Gruppe —
+dieselbe Alterung wie bei den Statuslisten, eine Ebene tiefer, und in `TODO.md` geführt.
+Die laufenden Zahlen nennt der Lauf; hier stehen sie nicht, weil sie dort altern würden. Der Wirktext der Verlangsamung nennt
 ausdrücklich die Verzögerung der **Automatikangriffe**, aus denen Trash-Gegner den Großteil
 ihres Schadens liefern; die Drosselung liegt damit in der Größenordnung von Rampart. Genutzt
 ist der Befund in der Barrierenregel des Dunkelritters (`PackSlowed`); die Frage, ob Rückstoß (Arm’s Length)
