@@ -536,13 +536,19 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	/// that runs, the stream is already thinned, and spending one of the pull's three stun
 	/// applications on it burns a budget that is gone for good: 4s, then 2s, then 1s, then immunity.
 	///
-	/// The share is the majority of what stands in Holy's radius - strictly more than half, and with
-	/// no minimum count. That differs from DRK_Reborn.PackSlowed on purpose, and the two questions
-	/// are not the same one: PackSlowed asks whether the stream reaching the tank is thin enough to
-	/// strand a barrier, so a single slowed enemy out of eight says nothing and a floor of two is
-	/// needed. Here the radius has already narrowed the set to what this cast would hit, and the
-	/// question is whether the stun still buys anything against them - so one slowed enemy alone in
-	/// the radius is a majority, and half of them is not.
+	/// The measure is the enemies the slow has *not* reached, against the same minimum Holy needs
+	/// when no slow is running at all - Config.AoeCount, the very number ActionTargetInfo uses to
+	/// decide whether an area cast is worth it. A slowed enemy is already being dealt with, so it
+	/// does not count towards the case for stunning; what has to carry the cast is the remainder.
+	/// Five enemies with two slowed still leave three, and Holy goes out; six slowed out of eight
+	/// leave two, and it waits.
+	///
+	/// Taking the number from the action rather than from an option of this rule is what keeps the
+	/// two sides of the same question from drifting apart, and it means the condition follows a
+	/// user's changed AoeCount without a second setting to keep in step. Its predecessors did not:
+	/// the first version borrowed DRK_Reborn.PackSlowed's share rule, which measures the stream
+	/// reaching the tank over job range and needs a floor of its own, and the second asked for a
+	/// majority of the radius, which counts the wrong side of the split.
 	///
 	/// The replacement guarantee is the stun branch's and bounds the cost the same way: Holy is this
 	/// job's only area spell, so a held GCD falls through to single-target damage. Without a DoT
@@ -556,9 +562,9 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			return false;
 		}
 
-		var radius = HolyIiiPvE.EnoughLevel ? HolyIiiPvE.Info.EffectRange : HolyPvE.Info.EffectRange;
-		var inRange = SurveyHostileStatus(radius, StatusHelper.SlowStatus, out var slowed);
-		if (inRange == 0 || slowed * 2 <= inRange)
+		var holy = HolyIiiPvE.EnoughLevel ? HolyIiiPvE : HolyPvE;
+		var inRange = SurveyHostileStatus(holy.Info.EffectRange, StatusHelper.SlowStatus, out var slowed);
+		if (slowed == 0 || inRange - slowed >= holy.Config.AoeCount)
 		{
 			return false;
 		}
