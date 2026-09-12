@@ -175,6 +175,25 @@ already spells a negation ("No", "Not", "Never", "Cannot", "Without") and report
 both polarities somewhere in the tree. A mixed reading is not proof — a two-sided predicate is
 legitimate — but it is a short list, and one side is likely to hold the wrong belief.
 
+**Zweite Klasse, dieselbe Familie:** eine Methode, deren Parameter **alle** optional sind, deren
+Rumpf ein einzelner Ausdruck ist und in dem jeder Parameter vorkommt — ohne Argumente gerufen ist
+ihr Ergebnis durch die Standardwerte konstant. `GCDTime(uint gcdCount = 0, float offset = 0)` gibt
+für `GCDTime()` genau 0 zurück, weshalb `GCDTime() == 0f` unbedingt wahr ist. Das deckt die
+params-Klasse nicht ab: die Parameter sind gewöhnliche optionale, und der Rückgabetyp ist nicht
+`bool`.
+
+**Der konstante Wert allein ist kein Befund**, und das ist der Grund, warum die Prüfung eng gefasst
+ist. Von 14 solchen Methoden im Baum sind 13 richtig: `SongEndAfterGCD()` heißt „endet der Status
+jetzt" und gibt seine 0 sinnvoll an eine weitere Prüfung weiter. Zum Defekt wird es erst, wenn der
+konstante Wert **selbst** die Antwort ist und gegen ein **Literal** verglichen wird — dann steht die
+Entscheidung zur Übersetzungszeit fest. Gemeldet werden deshalb nur solche Vergleiche: zwei, beide
+`GCDTime() == 0f` im Ninja-Zweig, in `TODO.md` erfasst und als `known` ausgewiesen, damit der
+Rückgabewert für einen **neuen** Fall aussagekräftig bleibt.
+
+Der Selbsttest deckt beide Seiten ab: Block- und Ausdruckskörper werden erkannt, ein Parameter, den
+der Ausdruck nicht benutzt, disqualifiziert die Deklaration, und ein konstantes Ergebnis, das als
+Wert oder als `bool` verwendet wird, gilt nicht als Treffer.
+
 It found its anchor case on the first run, and a second class that had nothing to do with healing:
 `IsConditionCannotTarget()` is read `return null` in seven places where the three neighbouring
 correct sites use `continue`. See `TODO.md`.
