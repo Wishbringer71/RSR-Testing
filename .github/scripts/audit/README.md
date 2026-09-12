@@ -15,7 +15,7 @@ python3 .github/scripts/audit/scan.py
 | `scan.py` | Range/default mismatches, config properties never read, stale `RotationDesc`, dead code, unguarded dereferences | A8: SAM `MeikyoShisuiCountdown`, BLU `UseBasicInstinct`/`UseMightyGuard`, nine `RotationDesc`, eleven configs, `OldUpdateTargets` |
 | `mitscan.py` | Mitigation actions in methods that carry no danger gate | A9: SMN Radiant Aegis in `GeneralAbility` |
 | `scan2.py` | Percent-versus-ratio comparisons, float equality, `usedUp`, `skipStatusProvideCheck`, contradictory level predicates, repeated conditions, unguarded division | A10: four HP thresholds compared against the wrong scale |
-| `scan3.py` | `CanUse` blocks that never return, identical bodies in consecutive branches, level gate naming another action | A10: Viper structural finding |
+| `scan3.py` | Discarded `CanUse` results, unreachable duplicate branches, inverted level gates | A10: Viper structural finding |
 | `scan4.py` | `[Range]` attribute versus declared default, duplicate config property names | A10: none open; the class had a real hit in A8 |
 | `scan5.py` | Fork behaviour changes sitting in a dispatch path that has no switch of its own | A16: six lines, all covered by an option or already logged |
 | `scan6.py` | Enum members whose ordinal moved, split by whether the enum reaches stored configuration | A16: none persisted; `SpecialMode` in-memory only |
@@ -40,7 +40,9 @@ each script should carry a self-test against constructed defects and fail loudly
 `scan3.py` shipped an off-by-one that made one of its classes find nothing at all, and `scan4.py`
 did not recognise multi-line attribute blocks; both were caught that way.
 
-State: every script from `scan.py` through `scan8.py` now carries one. The last three - `scan.py`,
+State: every script carries one. `scan3.py` was the last without and is covered in its own section
+below; `scan4.py` carries its self-test inline rather than in a `self_test()` function, which is why a
+grep for that name reported it missing once. The three before those - `scan.py`,
 `mitscan.py` and `scan2.py` - got theirs late, and closing that gap required a small refactor first:
 their checks ran inline in the file loop and could not be called with a constructed source at all.
 They now expose `scan_source()` / `scan_file()`, with the walk and the printing moved into `main()`.
@@ -65,6 +67,39 @@ by declaring type, it reported 55 phantom removals, because a prose comment cont
 "struct" was read as a type declaration and re-owned every member below it in that file; and it
 counted `internal` interface members, which are not package surface. Only the third result — two
 members — is the measured one.
+
+## scan3.py — drei Klassen, jede am Merkmal selbst gemessen
+
+Die erste Fassung meldete nach Ähnlichkeit und wurde deshalb übergangen: 41 Paare aufeinander
+folgender `if`-Blöcke mit gleichem Rumpf und 38 Stufen-Gates — und **jeder einzelne Treffer war
+richtiger Code**. Ein Prüfmittel, dessen Ausgabe der Leser von Hand sortieren muss, ist schlechter
+als keines, weil der eine echte Fund darin untergeht. Dazu fehlte der Selbsttest; sein „nichts
+gefunden" war damit von einem defekten Muster nicht zu unterscheiden.
+
+Beide Muster maßen ein Surrogat statt der gemeinten Eigenschaft:
+
+- **Gleicher Rumpf ist kein Klon.** Zwei aufeinander folgende `if`-Blöcke mit demselben Rumpf sind
+  ein ausgeschriebenes `if (c1 || c2)` und die übliche Bauform dieser Rotationen. Zum Defekt wird
+  es erst, wenn der erste Block die Methode verlässt **und** die zweite Bedingung die erste
+  impliziert — dann ist der zweite Zweig unerreichbar. Die Implikation entscheidet der Scan
+  syntaktisch: beide Bedingungen an `&&` der obersten Klammerebene zerlegt, und wenn jeder
+  Konjunkt der ersten auch in der zweiten steht, ist die zweite die strengere. Innerhalb eines
+  Konjunkts wird nichts gedeutet, ein `||` bleibt ein unteilbares Stück — nur so bleibt der
+  Teilmengentest gültig, gleich was darin steht.
+- **Die negierte Form des Stufen-Gates ist das Fallback.** `!HolyIii.EnoughLevel && Holy.CanUse`
+  ist der reguläre Rückfall auf die alte Aktion. Der reguläre Ausdruck erfasste das `!` nicht und
+  meldete damit genau die richtige Form. Gemeint ist die **un-negierte**: eine alte Aktion, die
+  erst gewirkt wird, sobald die neue bereits gelernt ist.
+
+Ergebnis über den bereinigten Baum: 100 Stufen-Gates geprüft, **kein** un-negiertes; 41 Paare mit
+geteiltem Rumpf, **keines** mit Implikation. Der Nullbefund des Gate-Musters ist unabhängig
+gegengeprüft — eine Textsuche über alle drei Rotationsbäume nach der un-negierten Form mit
+verschiedenen Aktionen liefert ebenfalls nichts.
+
+Selbsttest gegen konstruierte Defekte **und** gegen die richtige Form jeder Klasse, denn der Fehler
+lag hier auf der zweiten Seite: verworfenes `CanUse`-Ergebnis gegen ein genutztes, strengere
+Bedingung zuletzt gegen strengere zuerst und gegen einen ersten Block, der durchfällt, un-negiertes
+Gate gegen das negierte und gegen dasselbe in einem Kommentar.
 
 ## scan8.py — negated-name predicates read with both polarities
 
