@@ -133,6 +133,31 @@ Nicht behoben, weil die Absicht dieser fremden Rotation ohne ihren Autor nicht b
 
 **Empfehlung: liegen lassen.** Alle vier verbliebenen Fundstellen liegen in PvP oder Bozja, also außerhalb des Nutzungsprofils, und jede verlangt eine Richtungsentscheidung, die eine Beobachtung im jeweiligen Inhalt voraussetzt. Die Klasse ist vollständig erhoben und durch `scan11.py` gegen Rückfall gesichert — das ist der Zweck der Erfassung, die Bearbeitung ist es hier nicht.
 
+### Living Dead drückt die Heilschwelle auf `HealthProtectedRatio`, zehn Sekunden lang · N
+
+`StateUpdater.cs:813`: `threshold = target.NoNeedHealingInvuln() ? normal : Math.Min(normal, Service.Config.HealthProtectedRatio)`. `NoNeedHealingInvuln` liefert falsch, solange ein Status aus `NoNeedHealingStatus` mehr als zwei GCDs Restlaufzeit hat, und `LivingDead` steht in dieser Liste. Voreingestellt ist `HealthProtectedRatio` 0,15.
+
+**Wirkung:** Zündet ein Dunkelritter Living Dead, wird er zehn Sekunden lang erst unterhalb von 15 % geheilt statt unterhalb von 65 %. Das gilt unabhängig von `WithholdHealingForLivingDead` — jene Option regelt nur den zusätzlichen **vollständigen** Halt, die Absenkung greift immer.
+
+**Kein Fork-Rückschritt, im Gegenteil:** Upstream gibt einem Ziel unter Invulnerabilität überhaupt keine Heilung (`if (h == 0 || !target.NoNeedHealingInvuln()) return false;`). Die Absenkung auf einen Grenzwert ist die mildere Fassung.
+
+**Der Fall, der sie trotzdem zum Problem macht,** ist der falsch gesetzte Invulnerabilitätsschub: Living Dead bei 70 % im Wall-to-Wall gezündet, wie vom Auftraggeber beobachtet. Die Konstruktion unterstellt, dass die Invulnerabilität gegen einen tödlichen Schlag gesetzt wird; wird sie zu früh gesetzt, kostet sie zehn Sekunden automatische Heilung, ohne dass der Anlass je eintritt.
+
+**Stellhebel ohne Codeänderung:** `HealthProtectedRatio` ist eine Nutzereinstellung („Heal a target under an invulnerability only below this HP"). Ein höherer Wert nimmt dem Fall die Schärfe, macht aber die Heilung unter einer *richtig* gesetzten Invulnerabilität wieder verschwenderisch. Der Grenzwert ist nicht aus dem Code zu begründen, sondern nur an der Spielweise der Gruppe.
+
+**Vollständige Erhebung der Defensivfähigkeiten des Dunkelritters gegen die Heilentscheidung** — nur zwei greifen ein:
+
+| Fähigkeit | Pfad | Wirkung auf die Heilschwelle |
+|---|---|---|
+| The Blackest Night | `ShieldStatus` → Schildanrechnung | effektiv −25 Prozentpunkte |
+| Living Dead | `NoNeedHealingStatus` → `HealthProtectedRatio` | 0,15 statt 0,65 |
+| Walking Dead | in `NoNeedHealingStatus` **auskommentiert** | keine — richtig, dort ist Heilung überlebensnotwendig |
+| Shadow Wall, Rampart | `RampartStatus` | **keine**: gelesen nur als `StatusProvide` der Tank-Rotationen und von `HasMajorMitigation`, und das fragt `PlayerHasStatus(true, …)`, also allein den eigenen Charakter |
+| Dark Mind, Oblation, Dark Missionary | in keiner heilrelevanten Liste | keine |
+| Reprisal | `ReprisalStatus` | keine — Debuff am Gegner |
+
+Schadensreduktion wirkt also in keinem Fall auf die Heilentscheidung; nur Barriere und Invulnerabilität tun es.
+
 ### Die Schildanrechnung senkt die Heilschwelle um den vollen Barrierenwert, ohne Schalter · N
 
 `StateUpdater.cs:719` und `:776`: `h = Math.Max(h, target.GetEffectiveHpPercent() / 100f)`, sobald `ShieldCreditAllowed` gilt. Die Anrechnung ist am tatsächlichen Restschild bemessen und insoweit sauber gebaut — aber ihre **Größe** wurde nie erhoben, nur ihr Wirkungsbereich (A43 prüfte, ob die Erweiterung von `ShieldStatus` netto schadet, und beantwortete das für den `HasSurvivingShield`-Nebenbefund mit „führt zu überflüssiger Heilung, nie zu ausbleibender"; für die Anrechnung selbst gilt das Gegenteil, denn genau das ist ihr Zweck).
