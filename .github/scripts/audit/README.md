@@ -259,7 +259,7 @@ umgekehrten Antwort und sind behoben:
   `HallowedGround_1302`.
 - **`ReprisalStatus`** führte 753 und 1193, nicht aber `Reprisal_2101`. Der Geltungsbereich
   PLD WAR DRK GNB statt der geteilten Rolle ist hier die Signatur der Trait-Fassung — *Enhanced
-  Reprisal* hebt auf Stufe 98 die Minderung auf 15 % und die Dauer auf 15 s. `ReprisalPvE` trägt
+  Reprisal* verlängert auf Stufe 98 die Dauer auf 15 s; die Minderung bleibt bei 10 %. `ReprisalPvE` trägt
   die Liste als `TargetStatusProvide`, die Sperre gegen erneutes Anwenden sah die Schwächung
   eines Endstufen-Tanks also nie.
 

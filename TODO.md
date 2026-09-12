@@ -141,14 +141,6 @@ Nicht behoben, weil die Absicht dieser fremden Rotation ohne ihren Autor nicht b
 
 **Nicht sofort behoben:** Die Änderung liegt im Generator, der nur mit installiertem Spiel läuft, und sie vergrößert den erzeugten Satz um eine ganze Kategorie — Wirkungsbereich und Nutzen sind vor dem Eingriff zu erheben. Zu klären ist außerdem, ob `ClassJob.RowId == 0` tatsächlich das Kennzeichen von Rollenmerkmalen ist oder nur eines von mehreren Merkmalen ohne Klassenbezug.
 
-### `GetCurrentMitigationPercent` preist Reprisal für einen Endgame-Tank zu niedrig · N, R
-
-`CustomRotation_OtherInfo.cs`: Der Reprisal-Zweig rechnet pauschal `*= 0.90f`. Die Dokumentation von `StatusHelper.ReprisalStatus` hält fest, dass Enhanced Reprisal auf Stufe 98 die Minderung auf 15 % und die Dauer auf 15 s hebt, und dass `Reprisal_2101` die aufgewertete Form ist — auf die vier Tankjobs eingegrenzt statt auf die geteilte Rolle. Unterscheidbar ist der Fall also an der Id.
-
-`HostileOutputPercent` unterscheidet die beiden Stufen bereits — über die gesyncte Stufe des Spielers, dieselbe Schwelle, die `MitigationDebuffDuration` für die Dauer derselben Aufwertung benutzt. `GetCurrentMitigationPercent` nicht, und es ist der Leser, an dem die gesamte Defensivkette hängt — ein zu niedrig gerechneter Minderungsstand führt zu zusätzlicher Verteidigung, die nicht nötig wäre.
-
-**Nicht sofort behoben**, weil der Wirkungsbereich ein anderer ist: Die Funktion speist die Defensiventscheidungen aller Jobs, und der Prozentsatz von 15 % ist im Baum nur als Kommentar belegt — die Spieldaten weisen merkmalsabhängige Werte nicht aus, bei Reprisal fehlt sogar die Dauer (`Duration: s`). Vor der Änderung ist zu klären, woher die 15 % stammen.
-
 ### Betäubungsstreckung von Sanctus steht weiterhin auf aus · N
 
 `StretchHolyStun` ist voreingestellt aus, weil die Wirkung ohne Laufzeitbeobachtung nicht zu belegen war. Der **Mitigationsgrund** derselben Regel ist inzwischen umgesetzt und voreingestellt an (`ShouldHoldHolyWhilePackSlowed`, A79); der **Betäubungsgrund** — Sanctus einen GCD aussetzen, solange die eigene Betäubung noch läuft, statt sie zu überschreiben — wartet weiter auf die Beobachtung, ob die Streckung im Spiel eintritt.

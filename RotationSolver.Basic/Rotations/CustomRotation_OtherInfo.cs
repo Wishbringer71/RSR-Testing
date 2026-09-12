@@ -582,19 +582,17 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
-	/// Level at which Enhanced Reprisal raises the reduction from 10% to 15%.
+	/// Level at which the Enhanced traits of Addle, Feint and Reprisal extend those debuffs from 10s
+	/// to 15s.
 	/// </summary>
 	/// <remarks>
-	/// The level was already in the tree, as the threshold MitigationDebuffDuration uses for the same
-	/// trait: Enhanced Addle, Feint and Reprisal each extend their debuff from 10s to 15s there. Both
-	/// that number and the 15% reduction come from the documentation of
-	/// <see cref="StatusHelper.ReprisalStatus"/>, which names no source of its own, and the game data
-	/// cannot confirm either: the effect text of action 7535 states the base 10% and leaves the
-	/// duration blank, the way it leaves every trait-modified figure blank. Recorded as open in
-	/// TODO.md. The consequence of being wrong is bounded - one debuff priced five points off - and
-	/// it errs towards treating the pull as more dangerous than it is.
+	/// Duration only. The reduction each of them applies does not change with the trait - the user
+	/// checked the Lodestone entry after this code had briefly priced an end-game Reprisal at 15%,
+	/// on the strength of a note in <see cref="StatusHelper.ReprisalStatus"/> that named no source.
+	/// The effect texts agree: action 7535 states 10% and leaves only the duration blank, which is
+	/// how the game data marks a trait-modified figure.
 	/// </remarks>
-	private const int EnhancedReprisalLevel = 98;
+	private const int EnhancedMitigationDebuffLevel = 98;
 
 	/// <summary>
 	/// What share of its damage output a hostile still has, in percent, given the throttles on it.
@@ -607,7 +605,7 @@ public partial class CustomRotation
 	/// <para>
 	/// Every factor is quoted from the action's own effect text in ActionId.resx, and they multiply,
 	/// as <see cref="GetCurrentMitigationPercent"/> already has them do: Slow +20% (Arm's Length,
-	/// 7548), Reprisal 10% (7535) or 15% for the form Enhanced Reprisal upgrades into, Feint 10%
+	/// 7548), Reprisal 10% (7535), Feint 10%
 	/// physical (7549), Addle 5% physical (7560), Dismantle 10% (2887).
 	/// </para>
 	/// <para>
@@ -618,13 +616,10 @@ public partial class CustomRotation
 	/// damage this measures.
 	/// </para>
 	/// <para>
-	/// Which grade of Reprisal is running is decided by level, not by status id. The trait hangs on
-	/// the level of whoever applies it, and inside a duty every level is capped to the same sync,
-	/// with an entry requirement at the same height - so the player's own synced level answers it.
-	/// Reading the id instead would be a surrogate resting on a further inference, that
-	/// <c>Reprisal_2101</c> is the upgraded form because it is scoped to the four tank jobs rather
-	/// than to the shared role. No trait object can be asked: the generated set contains no role
-	/// traits at all, because the getter drops every trait whose ClassJob is unset.
+	/// Reprisal carries one figure at every level: its Enhanced trait extends the debuff from 10s to
+	/// 15s and leaves the 10% alone. An earlier version of this method split it by level into 10%
+	/// and 15%, which was wrong, and the level it read now serves only
+	/// <see cref="MitigationDebuffDuration"/>, where the trait does change the answer.
 	/// </para>
 	/// </remarks>
 	/// <param name="hostile">The enemy to weigh.</param>
@@ -645,7 +640,7 @@ public partial class CustomRotation
 
 		if (hostile.HasStatus(false, StatusHelper.ReprisalStatus))
 		{
-			factor *= DataCenter.PlayerSyncedLevel() >= EnhancedReprisalLevel ? 0.85f : 0.90f;
+			factor *= 0.90f;
 		}
 
 		if (hostile.HasStatus(false, StatusID.Feint))
@@ -1581,12 +1576,11 @@ public partial class CustomRotation
 	/// extend all three from 10s to 15s.
 	/// </summary>
 	/// <remarks>
-	/// Shares <see cref="EnhancedReprisalLevel"/> with <see cref="HostileOutputPercent"/> rather than
-	/// repeating the number: both read the same trait, one for how long the debuff lasts and one for
-	/// how much it takes off, and a patch that moved the level would otherwise move only one of them.
+	/// The trait changes the duration and nothing else - not the reduction, which stays at each
+	/// debuff's base figure whatever the level.
 	/// </remarks>
 	protected static float MitigationDebuffDuration =>
-		DataCenter.PlayerSyncedLevel() >= EnhancedReprisalLevel ? 15f : 10f;
+		DataCenter.PlayerSyncedLevel() >= EnhancedMitigationDebuffLevel ? 15f : 10f;
 
 	/// <summary>
 	/// Whether an enemy mitigation debuff (Addle/Feint/Reprisal) is due for a proactive refresh: either

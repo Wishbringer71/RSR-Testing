@@ -110,7 +110,7 @@ Forderung nicht erfüllbar. Die Dauern summieren sich, jede Fähigkeit nur einma
 
 | Fähigkeit | Dauer | Minderung |
 |---|---|---|
-| Reprisal | 10 s, ab Stufe 98 15 s | −10 %, ab Stufe 98 −15 % (auf den Gegnern) |
+| Reprisal | 10 s, ab Stufe 98 15 s | −10 % (auf den Gegnern), von der Stufe unabhängig |
 | Oblation | 2 × 10 s | −10 % |
 | Dark Mind | 10 s | −10 % / −20 % |
 | Dark Missionary | 15 s | −5 % / −10 % |
