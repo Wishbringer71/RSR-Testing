@@ -143,6 +143,12 @@ Nicht behoben, weil die Absicht dieser fremden Rotation ohne ihren Autor nicht b
 
 **Offen ist die Sachfrage**, nicht die Regelfrage: Die Barriere wird gegen den **kommenden** Treffer angerechnet, die Heilentscheidung gilt aber dem Zustand **danach** — nach dem Treffer ist die Barriere verbraucht und die HP unverändert niedrig. Ob das in der Praxis trägt, ist nur im Spiel zu entscheiden.
 
+**Die Anrechnung braucht keine fremde Barriere — der Heiler erzeugt sie selbst.** `DivineBenison` und `DivineBenison_1404` stehen in `ShieldStatus`, und `DivineBenisonPvE` ist im Weißmagier der erste oGCD der Einzelziel-Heilkette, vor `TetragrammatonPvE` (`WHM_Reborn.cs`). Die Folge ist eine Rückkopplung: Der Tank fällt unter die Schwelle, das Flag geht an, Divine Benison feuert, die Barriere hebt die effektive Quote über die Schwelle, das Flag geht aus — Tetragrammaton bleibt liegen. Pro Abfall genau ein oGCD. `GetObjectShield` liest die Gesamtbarriere des Ziels über `ShieldPercentage`, also zählt jede Quelle mit.
+
+**Erhebung aller vier Fork-Änderungen in `ShouldHealSingle`:** Der engere Ausschluss über `HealingIneffectiveStatus`, die abgesenkte statt unterdrückten Schwelle unter Invulnerabilität und der Wegfall der `AutoHealTimeToKill`-Schranke für Heiler in `CanUseHealAction` wirken sämtlich in Richtung **mehr** Heilung. Die Schildanrechnung ist die einzige, die in Richtung weniger wirkt.
+
+**Zweiter, kleinerer Fork-Effekt auf dieselbe Schwelle:** `GetHealingOfTimeRatio` interpoliert zwischen `HealthSingleAbility` 0,70 und `HealthSingleAbilityHot` 0,65 nach HoT-Restzeit, voll gewichtet ab 15 Sekunden. `TrySustainRegenOnTank` hält Regen auf dem Tank dauerhaft nach, sodass die Schwelle ständig am HoT-Wert liegt statt nur gelegentlich. Das sind fünf Prozentpunkte, dauerhaft.
+
 **Empfehlung:** Option nachrüsten, Standard aus (= Upstream-Verhalten), damit der Vergleich zweier Durchläufe die Sachfrage beantwortet.
 
 ### `HasSurvivingShield` misst die **kürzeste** Schildrestzeit, nicht die längste · N, R
