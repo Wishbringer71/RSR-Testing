@@ -83,6 +83,14 @@
       "kind": "item",
       "source": "user",
       "note": "An item, not an action: item id 4570, used through BaseItem/PheonixDownItem."
+    },
+    {
+      "de": "Schutzwall",
+      "en": "Rampart",
+      "identifier": "RampartPvE",
+      "kind": "action",
+      "source": "user, 2026-09-12",
+      "note": "The upgraded form Enhanced Rampart grants at level 94 is status Rampart_1978, scoped to PLD WAR DRK GNB, whose effect text adds 'while HP recovered via healing actions is increased' - the plain form (71, 1191) does not. The user gives that increase as 15%; the game data states no figure, as with every trait-modified value."
     }
   ]
 }
