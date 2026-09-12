@@ -101,6 +101,28 @@ lag hier auf der zweiten Seite: verworfenes `CanUse`-Ergebnis gegen ein genutzte
 Bedingung zuletzt gegen strengere zuerst und gegen einen ersten Block, der durchfällt, un-negiertes
 Gate gegen das negierte und gegen dasselbe in einem Kommentar.
 
+## scan.py — vier Prüfungen, die Ähnlichkeit statt Merkmal gemessen haben
+
+Dieselbe Fehlerform wie bei `scan3.py`, und sie war größer: Über den bereinigten Baum meldete
+`scan.py` 105 Treffer in sechs Klassen, von denen **94 richtiger Code** waren. Die Verengungen sind
+jeweils am Merkmal begründet, nicht am Ergebnis, und jede trägt ihren Selbsttest für beide Seiten.
+
+| Klasse | vorher | nachher | Was falsch gemessen wurde |
+|---|---|---|---|
+| (a) `RotationDesc` nennt eine Aktion, die der Rumpf nie benutzt | 10 | 2 | Der **unmittelbare** Rumpf statt des Wirkungsbereichs. Eine Rotation, die die Aktion in eine Hilfsmethode auslagert, wirkt sie trotzdem; die Beschreibung behauptet, die Methode *führe zu* der Aktion. Gelesen werden jetzt der Rumpf und die Rümpfe der von ihm gerufenen Methoden derselben Datei, zwei Sprünge tief. |
+| (b) `if (X.CanUse(out _)) { return true; }` | 5 | 0 | Das verworfene Ergebnis allein. `CanUse(out _)` als reine Prüfung neben einer Aktion, die eine frühere Zeile schon gewählt hat, ist richtig — der Revolverklinge prüft Demon Slice innerhalb eines Bow-Shock-Blocks, `CustomRotation_Ability` prüft eine Aktion nach, die sie **übergeben** bekommt. Defekt ist es nur, wo die umgebende Methode `act` nie zuweist. |
+| (d) Einstellung ohne Leser | 7 | 0 | Ein mehrzeiliges Label **ist** die Einstellung: die Rotationshinweise der Beiruta-Dateien tragen ihren ganzen Inhalt in `Name`, die Eigenschaft ist nur der Haken. Gegenprobe: Im ganzen Baum haben genau diese sieben mehrzeilige Attributargumente, die Verengung verdeckt also nichts. |
+| (e) `X.Target.Target.member` ohne Absicherung | 60 | 5 | Eine Zeile statt des Geltungsbereichs. `BaseAction.Target` ist ein nicht-nullbares `TargetResult`; null sein kann nur das `IBattleChara` darin, und die Absicherung steht nach Hausform eine Zeile höher in derselben Bedingung oder als umgebendes `if (X.CanUse(out act))`. Dass `CanUse` das Ziel wirklich herstellt, ist belegt: es liefert `false` bei leerem `PreviewTarget` und setzt `Target` andernfalls. |
+| (f) zwei gleiche `if`-Bedingungen in Folge | 6 | 4 | Ein `break` oder `else` zwischen den beiden. Dann stehen sie in zwei Zweigen eines `switch` beziehungsweise einer Verzweigung, und Steuerfluss geht nie von einem zum anderen. |
+| (h) Override, der nur `base` ruft | 17 | — | Nichts. Die Klasse ist verhaltensgleich zu gar keinem Override, es gibt also nichts zu beheben. Sie wird jetzt **gezählt statt gemeldet**; den Fall, der zählt — ein Passthrough auf die **falsche** Basismethode — deckt `check_base_calls.py` in der CI ab. |
+
+**Ein Befund kam aus der Verengung von (e) selbst**, und er ist der Grund, warum eine zeilenbasierte
+Prüfung hier an ihre Grenze stößt: `CanUse` liefert im Vorschaulauf `true`, **ohne** `Target` zu
+setzen — die Zuweisung steht unter `if (!IBaseAction.ActionPreview)`. Sechs Stellen im Heilerbestand
+sind darüber erreichbar. Die Wirkkette, der Betroffenenkreis und die drei Behebungswege stehen in
+`TODO.md`; der Scan kann den Fall nicht von den 81 korrekten trennen und benennt die Grenze im
+Kommentar, statt sie zu verschweigen.
+
 ## scan8.py — negated-name predicates read with both polarities
 
 Added after the same defect was found twice by hand, months apart, in

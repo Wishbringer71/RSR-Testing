@@ -43,6 +43,10 @@ ARCHIVE = {'AUDIT_LOG.md'}
 # `Something.cs:123` or `Something.cs:123-456`, with or without the backticks around it.
 CITE = re.compile(r'(?P<file>[A-Za-z0-9_.]+\.(?:cs|py|yaml|yml|resx|props|json)):(?P<line>\d+)'
                   r'(?:-(?P<end>\d+))?')
+# `:286` or `:1403-1411` - a second line in the file just cited, written without repeating the
+# name. It carries no file, so CITE cannot see it, yet it bounds a segment exactly like a full
+# citation: the identifier after it belongs to it, not to the citation before.
+CONTINUATION = re.compile(r'`:(\d+)(?:-\d+)?`')
 # Backticked identifiers: C# members, types, options. Dotted names are split on the dot.
 IDENT = re.compile(r'`([^`]+)`')
 # A backticked file name with no line number - `CustomRotation_Invoke.cs`. Not an identifier: the
@@ -89,7 +93,8 @@ def anchors(chunk, at):
     type it lives in (`WHM_Reborn`), and one hit is enough to accept the citation.
     """
     start, end = max(0, at - ANCHOR_BEFORE), min(len(chunk), at + ANCHOR_AFTER)
-    for other in CITE.finditer(chunk):
+    bounds = list(CITE.finditer(chunk)) + list(CONTINUATION.finditer(chunk))
+    for other in bounds:
         if other.end() <= at and other.end() > start:
             start = other.end()
         if other.start() > at and other.start() < end:
@@ -118,9 +123,15 @@ def anchors(chunk, at):
     return list(dict.fromkeys(ordered))
 
 
+# A markdown list item. Like a table row it is a unit of its own: a list of findings puts one
+# citation per bullet, and reading the whole block as a paragraph hands each bullet's identifier
+# to its neighbour's citation - which reads as "the code is gone".
+LIST_ITEM = re.compile(r'^\s*(?:[-*+]\s|\d+[.)]\s)')
+
+
 def chunk_of(lines, index):
-    """(text, offset of this line inside it) for the paragraph or table row of the citation."""
-    if lines[index].lstrip().startswith('|'):
+    """(text, offset of this line inside it) for the paragraph, table row or list item."""
+    if lines[index].lstrip().startswith('|') or LIST_ITEM.match(lines[index]):
         return lines[index], 0
     start = index
     while start > 0 and lines[start - 1].strip():
