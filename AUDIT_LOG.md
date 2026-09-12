@@ -2247,6 +2247,29 @@ Die zweite Fassung verlor die gewebte Fähigkeit des führenden Blocks. Mountain
 
 **Erreichter Prüfgrad:** Statische Selbstprüfung und Skriptläufe. Das ist **kein** Audit im Sinne des Vier-Augen-Prinzips: Geprüft hat dieselbe Instanz, die geschrieben hat.
 
+### A82 · Zweiter Durchgang mit allen Prüfmitteln: 685 Treffer, elf Defekte (12.09.2026)
+
+**Anlass:** Der in `TODO.md` als nächster Arbeitsblock geführte zweite Durchgang mit den Skripten aus `.github/scripts/audit/` über den bereinigten Baum, nach dem Nachrüsten des fehlenden Selbsttests.
+
+**Alle 28 Skripte liefen mit Rückgabewert 0.** Die kritische Prüfung dieses Nullbefunds war der eigentliche Vorgang: Drei Skripte druckten zusammen **685 Treffer**, von denen nach Prüfung **elf** Defekte waren — `scan2.py` 541 Treffer und **null** Defekte, `scan.py` 105 Treffer und elf, `scan3.py` 79 Treffer und null. Ein Prüfmittel in diesem Zustand wird übergangen, und mit ihm der eine echte Fund.
+
+**Die Fehlerform ist in allen drei Fällen dieselbe und in `CLAUDE.md` benannt:** gemessen wurde ein Surrogat statt des Wirkungsbereichs. Eine Zeile statt der Anweisung (`Target.Target` mit dem Nullschutz eine Zeile höher), der unmittelbare Methodenrumpf statt der von ihm gerufenen Hilfsmethoden (`RotationDesc`), der Name statt des Typs (`CurrentMp` als vermeintlicher Fließkommawert), vier Zeilen Kontext statt des Rumpfs (der Nullschutz 30 Zeilen über der Division), die Zeile statt des `||`-Zweigs (die Stufen-Fallunterscheidung als Widerspruch gelesen), und der gestrippte Quelltext, in dem sieben verschiedene `ImGui`-Aufrufe zu einer siebenfach wiederholten Bedingung werden.
+
+**Drei Klassen sind gar nicht entscheidbar** und werden jetzt gezählt statt gemeldet: `usedUp: true`, `skipStatusProvideCheck: true` und der Passthrough-Override. Die ersten zwei sind Urteile über Rotationsentwurf, der dritte ist verhaltensgleich zu keinem Override — den Fall, der zählt, deckt `check_base_calls.py` ab.
+
+**`scan3.py` war das letzte Skript ohne Selbsttest**, und beide seiner strukturellen Muster erfassten genau die **richtige** Form des Gesuchten. Sein „nichts gefunden" war damit von einem defekten Muster nicht zu unterscheiden — der Zustand, den die Projektregel ausdrücklich als wertlos bezeichnet.
+
+**Nullbefunde sind gegengeprüft, nicht geglaubt.** Am echten Baum konstruiert: die `* 100f`-Umrechnung in `ObjectHelper` entfernt → die Skalenprüfung meldet sie; den `hpCount == 0`-Rücksprung in `DataCenter` stillgelegt → die Divisionsprüfung meldet beide Stellen; beide nach der Rücknahme wieder null. Das Stufen-Gate zusätzlich durch eine unabhängige Textsuche über alle drei Rotationsbäume.
+
+**Zwei neue Defektklassen kamen aus den Verengungen selbst**, beide in `TODO.md`:
+
+- **`CanUse` liefert im Vorschaulauf wahr, ohne ein Ziel zu setzen.** Die Zuweisung steht unter `if (!IBaseAction.ActionPreview)`; `TryInvoke` setzt dieses Flag und ruft darunter die echten Heil- und Verteidigungsmethoden. Sechs Stellen im Heilerbestand lesen dort ein veraltetes oder ein `default(TargetResult)`, dessen `Target` trotz nicht-nullbarer Deklaration null ist. Kein Kampffehler — der echte `Invoke` läuft mit gelöschtem Flag —, aber `UpdateHealingActions` verschluckt die Ausnahme und leert seine vier Anzeigeaktionen.
+- **Vier Vorrangregeln, die nichts entscheiden**, weil derselbe Aufruf unmittelbar danach unbedingt folgt (VPR zweimal, PCT, RDM). Bei VPR am Einführungs-Commit als *Ignorant Surgery* belegt: der äußere Zweig wurde nachgeschärft, der innere blieb stehen.
+
+**Ein Nebenbefund an den Dokumenten selbst:** `scan14.py` meldete 201 fehlende Geschwister-Ids über 18 Listen, während README und `TODO.md` 186 über 16 als geltenden Stand führten. Die Zahl war nicht durch Vernachlässigung gestiegen, sondern **durch die Behebung** — jede ergänzte Id gibt weiteren Gruppen einen Vertreter und macht deren Geschwister überhaupt sichtbar. Dieselbe Alterung wie bei einem Zeilenverweis, nur ohne Prüfmittel dagegen; die Regel dazu steht jetzt in `CLAUDE.md`.
+
+**Erreichter Prüfgrad:** Statische Selbstprüfung, Skriptläufe mit Selbsttest, Gegenprobe am konstruierten Defekt, und für den Generator ein echter Compile in der CI. Kein Vier-Augen-Prinzip: geprüft hat dieselbe Instanz, die geschrieben hat.
+
 ---
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
