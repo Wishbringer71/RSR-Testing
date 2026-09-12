@@ -271,7 +271,7 @@ zurückhalten" ist aus den vorhandenen Größen **nicht herstellbar**:
 
 - **Tankbuster wechseln das Ziel mitten in der Sequenz.** `DataCenter.BMRNextTankbusterIn`
   ist eine einzige Zahl ohne Angabe, auf wen; `IsHostileCastingTankBusterAtMe` ist
-  ausdrücklich spielerzentriert (`DataCenter.cs:2087`).
+  ausdrücklich spielerzentriert (`DataCenter.IsHostileCastingTankBusterAtMe`).
 - **Ein Tankbuster ist nicht ein Einschlag.** Mehrfach einschlagende Buster sind eine
   Folge von Treffern; die Vorhersage nennt den Beginn, nicht die Anzahl und nicht die
   Gesamtsumme.

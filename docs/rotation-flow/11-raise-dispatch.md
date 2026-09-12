@@ -27,8 +27,8 @@ Bedingungen schließen einander aus:
 
 | Stelle | Bedingung | Schicht |
 |---|---|---|
-| `CustomRotation_GCD.cs:560` | wählt Spontanität **nur** bei `WeaponRemain <= 0.5f` | Auswahl |
-| `RSCommands_Actions.cs:78` (`DoAction`) | verweigert **jede** Fähigkeit bei `0 < DefaultGCDRemain <= 0.5f` | Ausführung |
+| `CustomRotation_GCD.RaiseSpell`, Zweig `RaisePlayerBySwift` | wählt Spontanität **nur** bei `WeaponRemain <= 0.5f` | Auswahl |
+| `RSCommands_Actions.DoAction` | verweigert **jede** Fähigkeit bei `0 < DefaultGCDRemain <= 0.5f` | Ausführung |
 | `RSCommands_Actions.cs:46` | dieselbe Sperre im Klick-Gate | Ausführung |
 | `CustomRotation_Ability.cs:28` | dieselbe Sperre im Fähigkeiten-Dispatcher | Auswahl |
 

@@ -28,6 +28,11 @@ ROOT = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
 
 # `Some/Path/File.cs:123` or `File.cs`:123 - both spellings occur in the tree.
 REFERENCE = re.compile(r'`([A-Za-z0-9_./-]+\.(?:cs|py|yaml|yml|json|props|resx))`?:(\d+)')
+# A follow-up citation into the file just named, spelled `:948` or `:1403-1411`. The documents
+# use it to give a second line without repeating the file name, so it carries none and the
+# reference pattern cannot see it - which makes a sentence with two citations look like one with
+# a single citation, and the identifier belonging to the second gets held against the first.
+CONTINUATION = re.compile(r'`:(\d+)(?:-\d+)?`')
 # An identifier in backticks: method, property or type name, optionally qualified.
 IDENTIFIER = re.compile(r'`([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)`')
 
@@ -122,7 +127,7 @@ def check(paths):
                 # in it be attributed to that reference. Two references in one sentence and
                 # the pairing is a guess - which produced three false reports before this
                 # condition existed.
-                if len(REFERENCE.findall(text)) > 1:
+                if len(REFERENCE.findall(text)) + len(CONTINUATION.findall(text)) > 1:
                     unverifiable.append('%s cites %s:%d in a sentence with several '
                                         'references' % (where, cited, line_no))
                     continue
@@ -166,6 +171,16 @@ def self_test():
 
         if total != 51:  # 40 blank + the method + 10 blank
             raise AssertionError('line count is wrong: %d' % total)
+
+    # A sentence that cites one file and then a second line inside it carries two references,
+    # not one, and none of its identifiers can be attributed to either.
+    two = '`ChurinSMN.cs:1015` trägt den Befund, `:948` nutzt `BahamutBurst`.'
+    if len(REFERENCE.findall(two)) + len(CONTINUATION.findall(two)) != 2:
+        raise AssertionError('the `:948` continuation is not counted as a second reference')
+
+    one = 'Die Regel steht in `WHM_Reborn.cs:723` als `ShouldHoldHoly`.'
+    if len(REFERENCE.findall(one)) + len(CONTINUATION.findall(one)) != 1:
+        raise AssertionError('a single reference was miscounted')
 
     print('self-test ok: an identifier at the cited line is accepted, one 36 lines away is '
           'reported with its real position')

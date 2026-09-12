@@ -45,6 +45,10 @@ CITE = re.compile(r'(?P<file>[A-Za-z0-9_.]+\.(?:cs|py|yaml|yml|resx|props|json))
                   r'(?:-(?P<end>\d+))?')
 # Backticked identifiers: C# members, types, options. Dotted names are split on the dot.
 IDENT = re.compile(r'`([^`]+)`')
+# A backticked file name with no line number - `CustomRotation_Invoke.cs`. Not an identifier: the
+# sentence names the file it lives in, and holding that name against the *other* file cited beside
+# it reads as "the code is gone".
+FILENAME = re.compile(r'^[A-Za-z0-9_./-]+\.(?:cs|py|yaml|yml|resx|props|json|md)$')
 WORD = re.compile(r'[A-Za-z_][A-Za-z0-9_]{3,}')
 DEFAULT_WINDOW = 12
 
@@ -104,7 +108,7 @@ def anchors(chunk, at):
     # so a name standing after the citation usually belongs to the next clause, not to this one.
     left, right = [], []
     for group in IDENT.finditer(segment):
-        if CITE.search(group.group(1)):
+        if CITE.search(group.group(1)) or FILENAME.match(group.group(1).strip()):
             continue
         side = left if group.end() <= at - start else right
         for word in WORD.findall(group.group(1)):
@@ -225,6 +229,13 @@ def self_test():
     assert got == ['ok', 'ok'], got
     del index['Other.cs']
     os.unlink(other)
+
+    # A bare file name in backticks is the name of a file, not an identifier to look for inside
+    # the file cited next to it. Held against `Sample.cs` it read as "the code is gone".
+    with open(path, 'w', encoding='utf-8') as fh:
+        fh.write('`Sample.cs:41` definiert es, `Other.cs` liest es.')
+    assert check(path, index, DEFAULT_WINDOW)[0][0] == 'no anchor', check(path, index,
+                                                                         DEFAULT_WINDOW)
 
     for name in os.listdir(work):
         os.unlink(os.path.join(work, name))

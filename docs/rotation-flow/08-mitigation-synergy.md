@@ -332,7 +332,7 @@ Ein Nachweis, dass die Rotation besser spielt, ist **nicht** unmöglich: RSR sie
 Ereignisstrom und kann sich selbst messen. `Watcher.ActionFromEnemy` wertet jeden
 gegnerischen Treffer aus, summiert die Schadensanteile und legt sie über
 `DataCenter.AddDamageRec` als `DamageRec(ReceiveTime, Ratio)` in eine Warteschlange
-(`DataCenter.cs:1294`, `:1403-1411`). Der erlittene Schaden über die Zeit ist damit
+(`DataCenter.AddDamageRec`, gefüllt aus `Watcher.cs`). Der erlittene Schaden über die Zeit ist damit
 bereits erfasst — gebraucht wird nur eine Auswertung je Kampf statt eines gleitenden
 Fensters.
 

@@ -75,7 +75,7 @@ Zündung, solange der Status nicht innerhalb von `StatusRefreshGcdCount` GCDs en
 (`ActionConfig.cs:66`), also etwa fünf Sekunden vor Ablauf. Der Schutz verhindert damit die teuren
 Fälle und erlaubt die billigen. **Er ist richtig gebaut und bleibt unangetastet.**
 
-Entscheidend dafür ist `StatusFromSelf = false` (`SummonerRotation.cs:490`): `PlayerGetStatus`
+Entscheidend dafür ist `StatusFromSelf = false` in `ModifySearingLightPvE`: `PlayerGetStatus`
 (`StatusHelper.cs:1529`) filtert nur bei `isFromSelf` auf die eigene Quelle, hier zählt also jeder
 fremde Buff. Sein Gegenstück `HasSearingLight` (`SummonerRotation.cs:271`) ruft
 `PlayerHasStatus(true, …)` und zählt nur den eigenen — auch das ist für seine ursprüngliche Frage
@@ -142,13 +142,12 @@ das deutlich: Bei halbem Versatz liefert V2 mit sieben Beschwörern 84 % und mit
 bricht bei sieben von 99 % auf 60 % ein. Das ist kein Rechenfehler, sondern gierige Zuteilung — wer
 zuerst in einem Fenster steht, zündet, und kann jemandem zuvorkommen, dessen Wiederholzeit eine
 spätere Lücke gedeckt hätte. Für die Entscheidung ist das ohne Belang, weil sechs und mehr
-Beschwörer keine reguläre Gruppe sind; für den Selbsttest des Skripts ist es entscheidend, der diese
-Eigenschaft deshalb ausdrücklich **nicht** prüft. Eine frühere Fassung behauptete sie und war
-widerlegt.
+Beschwörer keine reguläre Gruppe sind; für den Selbsttest des Skripts ist es entscheidend: Er darf
+keine Monotonie zwischen Beschwörerzahl und Abdeckung verlangen, weil sie nicht gilt.
 
 ## Ausweichen statt Lockern
 
-Der Auftraggeber hat die Erweiterung genauer gefasst, als sie hier zunächst stand: Nicht „zünde in
+Der Auftraggeber hat die Erweiterung eng gefasst: Nicht „zünde in
 jedem Beschwörungsfenster", sondern „**weiche auf Bahamut oder Phoenix aus, falls Solar Bahamut
 bereits durch einen anderen abgedeckt war**". Das ist nicht dasselbe, und der Unterschied ist zu
 benennen.
@@ -362,18 +361,18 @@ Gleichsetzung ist erlaubt, solange der Burst gedeckt bleibt — und genau das is
 angenommen. Die Prüfung steht als Invariante im Selbsttest des Modells: Keine Erweiterung darf die
 Burst-Abdeckung senken.
 
-**Zwei Befunde aus dieser Messung selbst, beide festgehalten:**
+**Zwei Eigenschaften der Messung tragen dieses Ergebnis, und beide stehen als Invariante im
+Selbsttest:**
 
-Die erste Fassung der Burst-Messung lieferte durchgehend 0 % — ein `continue` stand vor der
-Zündlogik, also zündete niemand. Die Vergleichsprüfung schlug trotzdem nicht an, weil 0 nicht
-kleiner ist als 0. Ein Test, der nur zwei Zahlen ins Verhältnis setzt, merkt nicht, dass beide kaputt
-sind; der Selbsttest verlangt jetzt zusätzlich, dass ein einzelner Beschwörer seinen eigenen Burst
-tatsächlich deckt.
+Ein Vergleich zweier Zahlen merkt nicht, wenn beide kaputt sind. Steht die Burst-Abdeckung
+durchgehend auf 0 %, ist 0 nicht kleiner als 0, und die Prüfung bleibt still — genau der Fall, den
+ein `continue` vor der Zündlogik erzeugt. Der Selbsttest verlangt deshalb zusätzlich, dass ein
+einzelner Beschwörer seinen eigenen Burst tatsächlich deckt.
 
-Die zweite Fassung zeigte einen Rückgang von 0,8 Prozentpunkten bei zwei Beschwörern — in genau der
-Richtung, vor der der Einwand warnt. Nachgemessen mit zehnfach feinerem Zeitraster schrumpft er auf
-0,14: Er skaliert mit der Rasterweite und ist damit Diskretisierung, kein Verlust. Die Toleranz der
-Prüfung ist entsprechend begründet gesetzt, nicht aufgeweitet, bis es passt.
+Die Toleranz des Vergleichs ist begründet gesetzt, nicht aufgeweitet, bis es passt. Der einzige
+gemessene Rückgang — 0,8 Prozentpunkte bei zwei Beschwörern, in genau der Richtung, vor der der
+Einwand warnt — schrumpft mit zehnfach feinerem Zeitraster auf 0,14. Er skaliert mit der Rasterweite
+und ist damit Diskretisierung, kein Verlust.
 
 **Grenzen dieser Gegenprobe, und eine davon wirkt zugunsten von V7.** Der Burst-Anteil ist eine
 Annahme. Der Schaden außerhalb des Bursts ist als gleichmäßig modelliert, was er nicht ist — die
@@ -502,7 +501,7 @@ Burstphase hinein ist ein Positionsrisiko, das 0,01 Prozent Schaden nicht rechtf
 sicher, erlaubt Bewegung und kostet 60 Potenz — drei Potenz Schaden je Zyklus.
 
 **Zwei Einstellungen stützen diese Wahl, beide am Code belegt.** `PreferTitanWhileMoving`
-(`SMN_Reborn.cs:518`) zieht Titan bei Bewegung vor, unabhängig von der eingestellten Reihenfolge;
+zieht in `SummonPrimals` Titan bei Bewegung vor, unabhängig von der eingestellten Reihenfolge;
 voreingestellt aus. Und `AddCrimsonCyclone` ist voreingestellt **an** und bedeutet ausweislich seines
 Optionstexts und der Bedingung in `:483` — `AddCrimsonCyclone || DistanceToPlayer() <=
 CrimsonCycloneDistance` —, dass die Distanzprüfung übersprungen wird: RSR springt aus beliebiger
@@ -572,10 +571,6 @@ zwei Beschwörungsfenster je 120 Sekunden gibt. Ab drei Beschwörern liegt diese
 Obergrenze der Ladungen — bei fünf Beschwörern 33 % gegenüber möglichen 83 %. Diese Lücke schließt
 im maßgeblichen Bereich allein V7, und zwar vollständig.
 
-Eine frühere Fassung behauptete an dieser Stelle, die Abdeckung bleibe auch mit V2 generell bei 33 %.
-Das gilt nur synchron; bei auseinandergelaufenen Rotationen erreicht V2 deutlich mehr. Zurückgenommen
-als `AUDIT_LOG.md` C41.
-
 ## Die Vorschläge im Einzelnen
 
 ### V1 — Den fremden Buff als Buff-Fenster werten
@@ -610,12 +605,11 @@ Voraussetzung tatsächlich vorliegt.
 ### V4 — Zündung ganz von der Beschwörung lösen
 
 Der Vorschlag, nach dem der Auftraggeber ausdrücklich gefragt hat: ein Ansatz jenseits der
-Beschwörungsfenster. Er ist gemessen worden, statt ihn wie in der früheren Fassung mit einem Argument
-abzutun.
+Beschwörungsfenster. Er ist gemessen, nicht mit einem Argument abgetan.
 
 **Mechanismus:** Zünden, sobald kein Buff steht, die eigene Wiederholzeit frei ist und ein Ziel im
-Kampf vorliegt. Die letzte Bedingung entschärft den Einwand der früheren Fassung — der Buff verpufft
-nicht in einer Phase ohne Gegner.
+Kampf vorliegt. Die letzte Bedingung trägt den naheliegenden Einwand ab — der Buff verpufft nicht in
+einer Phase ohne Gegner.
 
 **Konsequenzen, gemessen:** Im synchronen Fall die mit Abstand höchste Abdeckung — 100 % bei acht
 Beschwörern gegenüber 33 % mit V2. Bei auseinandergelaufenen Rotationen liegt es fast gleichauf mit
