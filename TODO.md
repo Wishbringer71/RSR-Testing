@@ -25,7 +25,7 @@ Welche der beiden Zeilen tot ist, hängt daran, ob Summon Bahamut auf Stufe 100 
 **Der Kerndefekt ist behoben und im Spiel bestätigt** — Beobachtung, Erklärung und Nachweis in
 `AUDIT_LOG.md` A73. Dieser Punkt führt nur noch, was der Spieltest nicht abdecken konnte.
 
-Drei der fünf Eingriffe auf `claude/raise-swiftcast-weave-2` sind nur unter Einstellungen wirksam,
+Vier Eingriffe auf `claude/raise-swiftcast-weave-2` sind nur unter Einstellungen wirksam,
 die abseits der Vorgabe liegen, und wurden deshalb mit dem Kernpfad nicht mitgetestet:
 
 - **Phönixfeder** samt Zieleignung über den Item-Status und Stufenprüfung der Rezzereigenschaft
@@ -34,6 +34,9 @@ die abseits der Vorgabe liegen, und wurden deshalb mit dem Kernpfad nicht mitget
   vorher überhaupt nicht wiederbelebt wurde.
 - **Bezugsmenge der Nur-Heiler-Modi** (A58). Nur bei `HardCastOnlyHealer` und
   `HardCastOnlyHealerSwiftCooldown`.
+- **Spontanitäts-Vorbehalt in `HardCastOnlyHealer`** (A84). Derselbe Modus wie der Punkt darüber,
+  aber in einer Beobachtung davon trennbar: Der Vorbehalt zeigt sich daran, dass bei **bereiter**
+  Spontanität nicht mehr hartgewirkt wird, die Bezugsmenge daran, **welche** Heiler zählen.
 
 **Auflösungsbedingung:** je Eingriff eine Beobachtung unter der zugehörigen Einstellung. Für die
 Phönixfeder zusätzlich eine Gruppe ohne lebenden Rezzer, weil die Bedingung sonst nicht greift.
