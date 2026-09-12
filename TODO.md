@@ -137,9 +137,17 @@ Nicht behoben, weil die Absicht dieser fremden Rotation ohne ihren Autor nicht b
 
 `StateUpdater.cs:719` und `:776`: `h = Math.Max(h, target.GetEffectiveHpPercent() / 100f)`, sobald `ShieldCreditAllowed` gilt. Die Anrechnung ist am tatsächlichen Restschild bemessen und insoweit sauber gebaut — aber ihre **Größe** wurde nie erhoben, nur ihr Wirkungsbereich (A43 prüfte, ob die Erweiterung von `ShieldStatus` netto schadet, und beantwortete das für den `HasSurvivingShield`-Nebenbefund mit „führt zu überflüssiger Heilung, nie zu ausbleibender"; für die Anrechnung selbst gilt das Gegenteil, denn genau das ist ihr Zweck).
 
-**Gerechnet:** The Blackest Night ist eine Barriere von 25 % der maximalen HP und steht in `ShieldStatus`. Die oGCD-Schwelle ist `HealthSingleAbility` 0,70, mit laufendem HoT auf 0,65 interpoliert. Ein Dunkelritter mit frischer Barriere erreicht die Schwelle damit erst bei real rund 40 % statt 65 %. Im Wall-to-Wall ist `ShieldCreditAllowed` über `IsHostileCastingAOE` nahezu durchgehend erfüllt.
+**Gerechnet:** The Blackest Night erzeugt laut `ActionId.resx` (Aktion 7393) eine Barriere über 25 % der maximalen HP des Ziels, Dauer 7 s, und steht in `ShieldStatus`. Die oGCD-Schwelle ist `HealthSingleAbility` 0,70, mit laufendem HoT auf 0,65 interpoliert. Ein Dunkelritter mit frischer Barriere erreicht die Schwelle damit erst bei real rund 40 % statt 65 %. Im Wall-to-Wall ist `ShieldCreditAllowed` über `IsHostileCastingAOE` nahezu durchgehend erfüllt.
 
 **Warum das ein Befund ist und nicht bloß eine Auslegung:** Die Projektregel verlangt, dass eine Verhaltensänderung ohne Nachweismöglichkeit hinter einer Option steht und das bisherige Standardverhalten bleibt. Diese hat keine — `ShieldCreditAllowed` schaltet nur den BMR-Zweig über `UseBmrTimeline`, die beiden Cast-Zweige sind schalterlos. Upstream rechnet keinen Schild an.
+
+**Eine falsch gesetzte Barriere kehrt den Nutzen um, und die Prüfung fängt das nicht ab.** `ShieldCreditAllowed` fragt nur, ob **irgendein** Gegner gerade eine Flächenaktion wirkt — nicht, ob der Träger der Barriere das Ziel ist, und nicht, ob die Barriere noch steht, wenn eine Heilung landen würde. Drei Fehlnutzungen, die derselbe Spieler erzeugt:
+
+- **Unnötig oder zu früh gezündet:** Die Barriere läuft in sieben Sekunden unverbraucht ab. Angerechnet wird sie trotzdem — die Absorption findet nicht statt, die Anrechnung schon.
+- **Zu spät gezündet:** der gefährlichste Fall. Bei real 45 % ergibt die Anrechnung 70 % und schaltet die oGCD-Heilung genau im Moment der größten Not ab.
+- **Auf ein anderes Gruppenmitglied gelegt** — die Aktion erlaubt „self or target party member" —: Dann wird dessen Heilbedarf unterdrückt.
+
+Die Verzögerung entspricht exakt der Barrierengröße: Ohne Barriere setzt die oGCD-Heilung unter 65 % ein, mit frischer Barriere erst unter 40 %.
 
 **Offen ist die Sachfrage**, nicht die Regelfrage: Die Barriere wird gegen den **kommenden** Treffer angerechnet, die Heilentscheidung gilt aber dem Zustand **danach** — nach dem Treffer ist die Barriere verbraucht und die HP unverändert niedrig. Ob das in der Praxis trägt, ist nur im Spiel zu entscheiden.
 
