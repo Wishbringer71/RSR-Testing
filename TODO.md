@@ -575,6 +575,23 @@ Die Kostenseite bliebe dagegen bestehen: Ein Ringpuffer über alle Gruppenmitgli
 
 ## Offene Arbeit
 
+### Nachprüfung der 73 Commits vom 11. und 12. September 2026 · N, R, U
+
+Der Auftraggeber hat die Arbeit dieser beiden Tage als nicht belastbar zurückgewiesen und angeordnet, sie zur Nachprüfung vorzumerken. Die Liste steht vollständig in `AUDIT_LOG.md` B2, Prüfstand **ZWEIFELHAFT**: 73 eigene Commits ohne Merges und 5 eigene Merge-Commits, 72 davon nur auf `claude/raise-swiftcast-weave-2` und dort noch änderbar.
+
+**Was die Vormerkung besagt:** nichts über den Inhalt. Kein Commit ist damit widerlegt. Zweifelhaft ist der **Prüfstand** — die Belege zu diesen Commits in Teil A stammen aus denselben beiden Tagen und sind Selbstauskunft, also Gegenstand der Nachprüfung und nicht ihre Grundlage.
+
+**Reihenfolge**, nach Wirkung auf den Betroffenenkreis:
+
+1. **Code (18)** — wirkt im Kampf auf jeden Endnutzer, Fehler sind hier am teuersten. Darunter die drei Eingriffe, die ohnehin ungemessen sind (Wiederbelebung, Schildanrechnung, Verlangsamungs-Halt von Sanctus).
+2. **Generator (2) und CI (4)** — falsch erhobene Namen und ein falsch messendes Prüfmittel vergiften jede spätere Aussage, die sich darauf stützt.
+3. **Prüfmittel (18)** — ein Skript, das das Surrogat statt der Wirkung misst, erzeugt stille Nullbefunde; genau diese Fehlerklasse war der Anlass ihrer Überarbeitung.
+4. **Doku (29) und sonstiges (2)** — zuletzt, weil eine falsche Aussage dort nur mitträgt, was der Code ohnehin zeigt.
+
+**Prüfmaßstab je Commit:** Belegt der Diff, was die Nachricht behauptet? Ist die zugehörige Wirkkette im Code nachvollzogen oder nur erzählt? Welcher Prüfgrad war tatsächlich erreicht — statisch, Prüfskript, Compile, Spiel? Ergebnis je Commit als **KEIN FEHLER**, **KORRIGIERT** oder **VERWORFEN** in B2 eintragen; ZWEIFELHAFT bleibt stehen, bis geprüft.
+
+**Diese Nachprüfung beginnt auf Freigabe des Auftraggebers**, nicht aus eigenem Antrieb — der Auftrag nennt als Bedingung ausdrücklich den Zeitpunkt, zu dem die Arbeitsqualität wieder stimmt, und das ist seine Feststellung, nicht meine.
+
 ### Rückstoß im Pull nur beim Dunkelritter, nicht bei den übrigen Tanks · N, U
 
 Arm's Length (deutsch Rückstoß) ist eine **Rollenaktion**: Paladin, Krieger, Dunkelritter, Revolverklinge und die Nahkämpfer tragen sie alle. Gewirkt wird sie für ihre Verlangsamung bisher nur im Dunkelritter (`DRK_Reborn.ShouldUseArmsLengthOnPull`, A53), weil dort die Pull-Bedingung schon steht und der Auftraggeber diesen Job spielt.
@@ -612,4 +629,4 @@ Umfang: `RotationSolver.Basic` (48k Zeilen) · RebornRotations (21k) · ExtraRot
 
 Der zweite Durchgang mit allen Prüfmitteln ist geführt (A82) und hat die Skripte selbst instand gesetzt; als Messlage für den Rest des Blocks ist er damit verbraucht.
 
-**Empfehlung: das ist der nächste Arbeitsblock.** Von allen offenen Punkten ist er der einzige, der weder auf eine Entscheidung noch auf eine Spielbeobachtung wartet — die übrigen sind entweder erfasste Fremdbefunde oder brauchen Laufzeitdaten. Sinnvoller Einstieg ist jetzt das Lesen, nicht das Messen: Die Skripte erfassen Muster, die schon einmal aufgefallen sind, und der verbliebene Bestand — der Rest von `DataCenter`, die Rotationen Datei für Datei, die UI — ist genau der Teil, den kein Muster abdeckt.
+**Empfehlung: der nächste Arbeitsblock, sobald die Nachprüfung der vorgemerkten Commits durch ist.** Sie geht vor, weil sie den Bestand betrifft, auf dem jeder weitere Durchgang aufsetzt — ein Prüfmittel aus dem zweifelhaften Fenster misst sonst den Rest des Baums. Von den übrigen offenen Punkten ist dieser hier der einzige, der weder auf eine Entscheidung noch auf eine Spielbeobachtung wartet — die übrigen sind entweder erfasste Fremdbefunde oder brauchen Laufzeitdaten. Sinnvoller Einstieg ist jetzt das Lesen, nicht das Messen: Die Skripte erfassen Muster, die schon einmal aufgefallen sind, und der verbliebene Bestand — der Rest von `DataCenter`, die Rotationen Datei für Datei, die UI — ist genau der Teil, den kein Muster abdeckt.

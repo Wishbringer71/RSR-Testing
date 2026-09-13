@@ -4,7 +4,7 @@ Archiv abgeschlossener Prüfungen dieses Forks. Zweck: „wurde X schon geprüft
 
 Aufbau: **A** Vorgänge in chronologischer Reihenfolge, je Vorgang Anlass → Ergebnis → Belege; **B** Commit-Register aller Fork-Commits mit Prüfstatus; **C** widerrufene Aussagen dieses Archivs.
 
-Statusbegriffe: **GEFIXT** (Code geändert) · **KEIN FEHLER** (geprüft, nichts zu tun) · **VERWORFEN** (Idee/Fix zurückgenommen) · **KORRIGIERT** (frühere Aussage hier widerrufen, s. Teil C). Prüftiefe: *statisch* = Code/Diff gelesen · *CI* = kompiliert und Prüfskript sauber · *Spiel* = vom Nutzer beobachtet. Ohne Zusatz gilt *statisch + CI*.
+Statusbegriffe: **GEFIXT** (Code geändert) · **KEIN FEHLER** (geprüft, nichts zu tun) · **VERWORFEN** (Idee/Fix zurückgenommen) · **KORRIGIERT** (frühere Aussage hier widerrufen, s. Teil C) · **ZWEIFELHAFT** (vorgemerkt zur Nachprüfung; weder bestätigt noch widerlegt, und der hier geführte Beleg ist selbst mitzuprüfen). Prüftiefe: *statisch* = Code/Diff gelesen · *CI* = kompiliert und Prüfskript sauber · *Spiel* = vom Nutzer beobachtet. Ohne Zusatz gilt *statisch + CI*.
 
 ---
 
@@ -2306,6 +2306,8 @@ Die zweite Fassung verlor die gewebte Fähigkeit des führenden Blocks. Mountain
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
+### B1 · Einzelgeprüfte Fork-Commits
+
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.
 
 | Commit | Inhalt | Prüfung / Ergebnis |
@@ -2347,6 +2349,106 @@ Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt e
 | A9: b8018cf0 · 6704335d · 1c259f10 · 9f815bf3 · d9a99de7 · 6588832b | Mitigations-Trigger, Version | s. A9 |
 | A10: ad00090e · efc4d039 · d0523a8d · 331c1254 · f2384007 · 6189c4cb · 5de07717 | Codebasis-Audit Phasen 2–4 | s. A10 |
 | A11: 8dc2bd65 · 06c60e97 · 33f8cdff · 364433e6 | Entscheidungsvorlage E1–E4 | s. A11 |
+
+### B2 · Commits vom 11. und 12. September 2026 — ZWEIFELHAFT
+
+**Anlass:** Auftrag vom 12.09.2026: „aktuell alle commits von dir, welche am 11.09. und am 12.09 erstellt wurden als zweifelhaft vormerken, damit sie überprüft werden können, wenn du wieder vernünftig arbeitest". Die Vormerkung ist eine Aussage über den **Prüfstand**, keine inhaltliche Bewertung: Kein Commit dieser Liste ist damit widerlegt und keiner bestätigt. Was Teil A zu diesen Commits ausweist, stammt aus denselben beiden Tagen und ist Selbstauskunft; es ersetzt die Nachprüfung nicht und ist bei ihr mitzuprüfen.
+
+**Erhebung am 13.09.2026** gegen `HEAD` von `claude/raise-swiftcast-weave-2` (`4973b9d0c`): `git log --no-merges --author=Claude`, Fenster 11.–12.09.2026. Commit- und Autorendatum wählen dieselbe Menge aus (geprüft, Mengen identisch). Ergebnis: **73 eigene Commits ohne Merges**, dazu **5 eigene Merge-Commits**. Nicht enthalten und nicht betroffen sind die Commits von LTS-FFXIV aus demselben Fenster (`9ff7238c0`, `7cf074a18`, `6baba6a94`) — Upstream-Arbeit.
+
+**Lage im Baum, gemessen am selben Tag:** 72 der 73 liegen ausschließlich auf `claude/raise-swiftcast-weave-2` und sind dort noch änderbar; `50e50e5e3` ist der Kopf von `origin/main` und damit bereits im Standardzweig.
+
+**Spalte „Art"** nennt den stärksten Artefakttyp, den ein Commit berührt. Je Datei gilt die erste zutreffende Zuordnung: `RotationSolver.GameData/` → Generator · `.github/scripts/` → Prüfmittel · `.github/workflows/` → CI · `*.cs`, `*.csproj`, `*.resx`, `Resources/` → Code · `*.md` → Doku · sonst sonstiges. Je Commit gilt davon die erste in der Reihenfolge Code → Generator → CI → Prüfmittel → Doku → sonstiges. Die Spalte ordnet die Nachprüfung, sie ersetzt das Lesen des Diffs nicht.
+
+| Commit | Datum | Art | Betreff | Prüfstand |
+|---|---|---|---|---|
+| `9188ca490` | 2026-09-11 | Code | Ask the game about the feather, and ask everyone about their level | ZWEIFELHAFT |
+| `7606f3cbd` | 2026-09-11 | Code | Ask the only-healer modes whether anyone else can raise at all | ZWEIFELHAFT |
+| `93789065c` | 2026-09-11 | Code | feat(SMN): widen the Searing Light window when a second Summoner is present | ZWEIFELHAFT |
+| `e0ec82d74` | 2026-09-11 | Code | Hard cast the raise when Swiftcast is not coming at all | ZWEIFELHAFT |
+| `6e0c3bfc5` | 2026-09-11 | Code | Repair the file the move broke, and check for that class from now on | ZWEIFELHAFT |
+| `95f0139c1` | 2026-09-11 | Code | Say what the feather setting now actually does | ZWEIFELHAFT |
+| `c3e1126e7` | 2026-09-11 | Code | Wire up Phoenix Down, and stop it spending two feathers | ZWEIFELHAFT |
+| `78856488b` | 2026-09-12 | Code | Correct the ten-second claim, and name the lever the rule actually has | ZWEIFELHAFT |
+| `2ebd54728` | 2026-09-12 | Code | feat(WHM): hold Holy while the pack is slowed, the rule's third timing | ZWEIFELHAFT |
+| `da96afac1` | 2026-09-12 | Code | feat: weigh a hostile's remaining output, not just whether it is slowed | ZWEIFELHAFT |
+| `6b27618d2` | 2026-09-12 | Code | fix(WHM): the slow hold asks for a majority inside Holy's radius | ZWEIFELHAFT |
+| `28fe2c9e0` | 2026-09-12 | Code | fix(WHM): the slow hold counts the enemies the slow has not reached | ZWEIFELHAFT |
+| `115a58988` | 2026-09-12 | Code | fix(WHM): weigh the slow hold by enemy output, not by head count | ZWEIFELHAFT |
+| `934b222b0` | 2026-09-12 | Code | fix: decide the Reprisal grade by level, not by status id | ZWEIFELHAFT |
+| `8a88ec299` | 2026-09-12 | Code | fix: Enhanced Reprisal extends the duration only, not the reduction | ZWEIFELHAFT |
+| `c99da333a` | 2026-09-12 | Code | Give HardCastOnlyHealer the Swiftcast reservation its text promises | ZWEIFELHAFT |
+| `9e1a0eb9e` | 2026-09-12 | Code | Put the shield credit behind a switch, default off | ZWEIFELHAFT |
+| `a8ba8b0ed` | 2026-09-12 | Code | Write out the ordinals PredictedDamageType owes a foreign plugin | ZWEIFELHAFT |
+| `92bad597e` | 2026-09-12 | Generator | feat(gamedata): generate the full German name index from the game files | ZWEIFELHAFT |
+| `bddeb5e03` | 2026-09-12 | Generator | Read German names through the language argument, and resolve the game path | ZWEIFELHAFT |
+| `2c6f2b5c1` | 2026-09-11 | CI | Name the upstream release the tree actually holds, and check it in CI | ZWEIFELHAFT |
+| `08b8c82a4` | 2026-09-11 | CI | Take in upstream 7.5.6.2, and fix how sync state gets measured | ZWEIFELHAFT |
+| `d4e81f70f` | 2026-09-12 | CI | feat(audit): check that the documentation's line references still exist | ZWEIFELHAFT |
+| `f13b812a2` | 2026-09-12 | CI | feat(audit): record the German action names instead of researching them again | ZWEIFELHAFT |
+| `a90fb264e` | 2026-09-11 | Prüfmittel | docs: at range the Ifrit block loses Crimson Strike with the approach | ZWEIFELHAFT |
+| `dca7bd913` | 2026-09-11 | Prüfmittel | docs: measure what each Summoner phase is worth and what fits in the buff tail | ZWEIFELHAFT |
+| `a48b67d24` | 2026-09-11 | Prüfmittel | docs: Swiftcast is held for raises, not spent in the rotation | ZWEIFELHAFT |
+| `befbb3ebf` | 2026-09-11 | Prüfmittel | Drop the bookkeeping, then check coverage against damage | ZWEIFELHAFT |
+| `a7075ea4b` | 2026-09-11 | Prüfmittel | Measure burst coverage on its own, because a total would hide the loss | ZWEIFELHAFT |
+| `8bcaaea32` | 2026-09-11 | Prüfmittel | Measure the Searing Light coverage instead of estimating it | ZWEIFELHAFT |
+| `e81195537` | 2026-09-11 | Prüfmittel | Narrow the range to real parties, which reverses the V5 verdict | ZWEIFELHAFT |
+| `d1763e2f3` | 2026-09-11 | Prüfmittel | Regulate on what is observed instead of steering by assumption | ZWEIFELHAFT |
+| `e5fc338c2` | 2026-09-11 | Prüfmittel | Work out what happens to Searing Light with two to eight Summoners | ZWEIFELHAFT |
+| `2bb009344` | 2026-09-12 | Prüfmittel | Catch the neighbour class of HasWeaved: GCDTime() == 0f | ZWEIFELHAFT |
+| `cb5db4452` | 2026-09-12 | Prüfmittel | docs: record Rampart's healing bonus and the dictionary entry for Schutzwall | ZWEIFELHAFT |
+| `4455fa2bb` | 2026-09-12 | Prüfmittel | Guard the class where an edit to Resources/ is never loaded | ZWEIFELHAFT |
+| `c962a1366` | 2026-09-12 | Prüfmittel | Make scan.py measure the defect too, and record what that turned up | ZWEIFELHAFT |
+| `165e69e09` | 2026-09-12 | Prüfmittel | Make scan3 measure the defect, not the resemblance | ZWEIFELHAFT |
+| `5748a9ddd` | 2026-09-12 | Prüfmittel | Narrow scan2: 541 findings, not one of them a defect | ZWEIFELHAFT |
+| `374534aa0` | 2026-09-12 | Prüfmittel | Repair nine aged code citations, and the two blind spots that hid them | ZWEIFELHAFT |
+| `a70fe20b7` | 2026-09-12 | Prüfmittel | Stop documenting measured numbers as the current state | ZWEIFELHAFT |
+| `1c2f67d2e` | 2026-09-12 | Prüfmittel | Teach scan6 the binding that made its own classification wrong | ZWEIFELHAFT |
+| `6cd15453a` | 2026-09-11 | Doku | Bring the raise concept up to the state it actually describes | ZWEIFELHAFT |
+| `e7c0dca6e` | 2026-09-11 | Doku | docs: a missing check run is a finding, not a coincidence | ZWEIFELHAFT |
+| `aeea25b0a` | 2026-09-11 | Doku | docs: downtime was listed as a model limit and is none | ZWEIFELHAFT |
+| `138e7c1b8` | 2026-09-11 | Doku | docs: one branch per topic is not required, the commit is the unit | ZWEIFELHAFT |
+| `714b899e1` | 2026-09-11 | Doku | docs: record the AccessViolationException catches upstream did not harden | ZWEIFELHAFT |
+| `539b7bda3` | 2026-09-11 | Doku | docs: record the verification actually reached for the Searing Light change | ZWEIFELHAFT |
+| `5702d695c` | 2026-09-11 | Doku | Record the first play observation, and what it does not cover | ZWEIFELHAFT |
+| `5c94ecf29` | 2026-09-11 | Doku | Record the Swiftcast-unavailable finding in the audit log | ZWEIFELHAFT |
+| `3a233b03c` | 2026-09-11 | Doku | The raise defect is confirmed fixed in play | ZWEIFELHAFT |
+| `6ab021908` | 2026-09-11 | Doku | Walk every raise use case, and record what falls out | ZWEIFELHAFT |
+| `0bff1c175` | 2026-09-11 | Doku | Wind up the orphaned branches, keeping what one of them carried | ZWEIFELHAFT |
+| `d274d54de` | 2026-09-11 | Doku | Work the Searing Light question again, from the timing structure up | ZWEIFELHAFT |
+| `59675ee33` | 2026-09-12 | Doku | Add A84 to the raise path's list of unmeasured interventions | ZWEIFELHAFT |
+| `aeea1e7e6` | 2026-09-12 | Doku | docs: a misplaced barrier inverts the shield credit, and nothing catches it | ZWEIFELHAFT |
+| `52af29a53` | 2026-09-12 | Doku | docs: bring concepts 08, 09 and 10 onto the state this session established | ZWEIFELHAFT |
+| `e66bd3f79` | 2026-09-12 | Doku | docs: Holy ignores running enemy debuffs - stun only on request, slow never | ZWEIFELHAFT |
+| `bd4f4046e` | 2026-09-12 | Doku | docs: record the concept pass and two findings from reviewing my own changes | ZWEIFELHAFT |
+| `58cf8f8f6` | 2026-09-12 | Doku | docs: record the output-weighted slow rule and its three predecessors | ZWEIFELHAFT |
+| `2c2e3f0d3` | 2026-09-12 | Doku | docs: survey every dark knight defensive against the healing decision | ZWEIFELHAFT |
+| `87e6d8f4d` | 2026-09-12 | Doku | docs: the shield credit lowers the heal threshold by the full barrier, unswitched | ZWEIFELHAFT |
+| `56bf37581` | 2026-09-12 | Doku | docs: the shield credit needs no foreign barrier, the healer makes its own | ZWEIFELHAFT |
+| `8d8176695` | 2026-09-12 | Doku | Move the finished second pass into the archive | ZWEIFELHAFT |
+| `1f9ac197e` | 2026-09-12 | Doku | Raise the per-read iteration finding from one case to its class | ZWEIFELHAFT |
+| `5b87c32fc` | 2026-09-12 | Doku | Record the mitigation balance's two-way split of a three-way fact | ZWEIFELHAFT |
+| `8bceac769` | 2026-09-12 | Doku | Record the one candidate a sweep of DataCenter's 179 members turned up | ZWEIFELHAFT |
+| `1070d53d6` | 2026-09-12 | Doku | Record the two code sites that work against the phase-2 staggering | ZWEIFELHAFT |
+| `2cc1329b8` | 2026-09-12 | Doku | Repair the sentence the citation removal broke | ZWEIFELHAFT |
+| `bc893957b` | 2026-09-12 | Doku | Retract the second fork effect on the healing threshold: it is upstream | ZWEIFELHAFT |
+| `4973b9d0c` | 2026-09-12 | Doku | Take my interpretation back out of concept 09 | ZWEIFELHAFT |
+| `c025e0802` | 2026-09-11 | sonstiges | chore: name the upstream release this tree sits on, 7.5.6.4 | ZWEIFELHAFT |
+| `50e50e5e3` | 2026-09-11 | sonstiges | Name the release this tree holds, after taking in 7.5.6.2 | ZWEIFELHAFT |
+
+Code 18 · Generator 2 · CI 4 · Prüfmittel 18 · Doku 29 · sonstiges 2 · insgesamt: 73
+
+**Eigene Merge-Commits desselben Fensters, ebenfalls ZWEIFELHAFT** (Konfliktauflösungen sind darin nicht sichtbar und beim Nachprüfen eigens zu lesen):
+
+| Commit | Datum | Inhalt |
+|---|---|---|
+| `394695427` | 2026-09-11 | Merge `upstream/main` |
+| `bee5fe92a` | 2026-09-11 | Merge `upstream/main` |
+| `faef4f04d` | 2026-09-11 | Merge `upstream/main` |
+| `fc41210ce` | 2026-09-11 | Merge `upstream/main` |
+| `60eb6d106` | 2026-09-11 | Merge `origin/main` |
+
+Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung — steht in `TODO.md`.
 
 ---
 
