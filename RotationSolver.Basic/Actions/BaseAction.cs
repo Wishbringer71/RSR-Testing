@@ -134,6 +134,12 @@ public class BaseAction : IBaseAction
 	/// </summary>
 	private ActionConfig DefaultConfig => _defaultConfig ??= Setting.CreateConfig?.Invoke() ?? new ActionConfig();
 
+	// Once the rotation-defaults sync below has run for this instance, the defaults (deterministic
+	// for the process lifetime) can't have changed again, so it's skipped on later Config accesses -
+	// Config is read on essentially every CanUse()/target lookup and was otherwise allocating a
+	// fresh ActionConfig via Setting.CreateConfig every single time just to compare against it.
+	private bool _defaultsInSync;
+
 	/// <inheritdoc/>
 	public ActionConfig Config
 	{
@@ -143,6 +149,7 @@ public class BaseAction : IBaseAction
 			{
 				value = Setting.CreateConfig?.Invoke() ?? new ActionConfig();
 				Service.Config.RotationActionConfig[ID] = value;
+				_defaultsInSync = false;
 
 				if (!Action.ClassJob.IsValid)
 				{
@@ -160,6 +167,11 @@ public class BaseAction : IBaseAction
 				{
 					value.TimeToKill = 0;
 				}
+			}
+
+			if (_defaultsInSync)
+			{
+				return value;
 			}
 
 			// Keep user configs in sync with rotation defaults: whenever the default value for
@@ -189,6 +201,7 @@ public class BaseAction : IBaseAction
 				Service.Config.RotationActionConfig[ID] = value;
 			}
 
+			_defaultsInSync = true;
 			return value;
 		}
 	}
