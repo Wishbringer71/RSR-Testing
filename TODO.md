@@ -144,7 +144,9 @@ Belegt: `Status.resx` führt `Rampart_1978` — die Form, die ein Tank ab Stufe 
 
 **Gelesen wird die Wirkung nirgends.** `Rampart_1978` steht allein in `StatusHelper.RampartStatus`, und deren zwei Leser — `StatusProvide` der Tank-Rotationen und `HasMajorMitigation` — fragen nach Überlappung, nicht nach Heilwirkung. Die Gegenrichtung ist dagegen bekannt: `HpRecoveryDown` wird an drei Stellen im `StateUpdater` geprüft, allerdings nur im Sonderfall `IsInWindurst`.
 
-**Kandidat, kein Defekt.** Es gibt derzeit keine Entscheidung im Baum, die davon abhinge: RSR entscheidet über Heilung an HP-Schwellen, nicht an Heilmengen, und eine um 15 % stärkere Heilung ändert nicht, **ob** geheilt werden muss. Wo sie zählen würde, ist der Fall, den die Schildanrechnung bereits behandelt — ein Tank unter Schutzwall braucht die Heilung weniger dringend, weil er weniger Schaden nimmt und die Heilung stärker wirkt.
+**Kandidat, kein Defekt.** Es gibt derzeit keine Entscheidung im Baum, die davon abhinge: RSR entscheidet über Heilung an HP-Schwellen, nicht an Heilmengen, und eine um 15 % stärkere Heilung ändert nicht, **ob** geheilt werden muss.
+
+**Was sie ändert, ist die Menge, nicht die Dringlichkeit** — und die frühere Fassung dieses Eintrags hat beides verwechselt. Sie schloss, ein Tank unter Schutzwall brauche die Heilung „weniger dringend". Das ist derselbe Fehlschluss wie bei der Schildanrechnung: Ein Tank bei 40 % steht bei 40 %, ob Schutzwall läuft oder nicht. Die stärkere Wirkung heißt, dass **eine Heilung** ihn weiter hochbringt, nicht dass er sie später braucht. Der einzige Fall, in dem die Kenntnis etwas einbrächte, ist die Wahl **welcher** Heilung: Unter Schutzwall genügt vielleicht das billigere oGCD, wo sonst der Zauber nötig wäre. Eine Schwelle zu verschieben ist es nicht.
 
 **Auflösungsbedingung:** die Entscheidung über die Schildanrechnung. Fällt sie für eine Anrechnung des Schutzzustands aus, gehört die Heilverstärkung in dieselbe Rechnung; bleibt es beim Upstream-Verhalten, ist dieser Punkt gegenstandslos. Vorher zu klären wäre die Herkunft der 15 %.
 
