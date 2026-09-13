@@ -161,7 +161,7 @@ def best_possible(n, burst_share):
 
 
 def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=None,
-             burst_only=False, modes=None, mine=None, by_potency=False):
+             burst_only=False, modes=None, mine=None, by_potency=False, first=0):
     """Return the fraction of the fight covered by a Searing Light.
 
     `window` restricts the measurement to (start, end) seconds without changing the run, which is
@@ -201,6 +201,9 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
     # comes back to the same position in the cycle. That is what makes the position, and not the
     # single occasion, the thing worth recording.
     taken = [dict() for _ in range(n)]
+    # The run-up needs no counting of its own: whoever casts first takes the strongest phase, and
+    # everybody else finds it held in the books and moves to the next. The direction is set by the
+    # first cast, which is what every client sees anyway.
 
     last_seen = [None] * n     # when each Summoner was last observed casting
     # What the party has observed: earliest possible return per Summoner, or None if never seen.
@@ -247,7 +250,7 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
         # aim stuck on Solar forever: the charge was blocked, the aim never moved, and the rule
         # measured exactly like the unchanged code.
         for i in range(n):
-            if per[i] not in ('phased', 'booked'):
+            if per[i] not in ('phased', 'booked', 'hybrid'):
                 continue
             if buff_until <= t or buff_owner is None or buff_owner == i:
                 continue
@@ -280,7 +283,12 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
                 conceded[i] = instance
 
         if not blocked:
-            for i in range(n):
+            # Who gets the tie is decided by a fraction of a second in the real fight, not by the
+            # order of a loop. Iterating from index 0 every time handed Summoner 0 every contested
+            # window, which measured the loop and not the rule - the caller varies `first` and
+            # averages over the starts.
+            for step in range(n):
+                i = (step + first) % n
                 if ready[i] > t:
                     continue
 
@@ -297,20 +305,29 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
                     # unchanged narrow rule already wins once rotations have drifted apart. So the
                     # rule switches rather than choosing once.
                     idx = demi_index(t, offsets[i])
-                    free = []
-                    for pos in (0, 2, 1, 3):
-                        book = taken[i].get(PHASE_KIND[pos])
-                        held = (book is not None and book[2] >= 2
-                                and t - book[1] <= KIND_PERIOD[PHASE_KIND[pos]] + STALE_AFTER)
-                        if not held:
-                            free.append(pos)
+                    # Free phase *kinds*, strongest first. Kinds, not positions: Solar occupies two
+                    # positions in the cycle and a Summoner who owns it takes both, so picking a
+                    # single position would make him skip every second Solar - which is what the
+                    # first version of this did, and it halved a lone Summoner's uptime.
+                    kinds_free = [k for k in ('solar', 'bahamut', 'phoenix')
+                                  if not (taken[i].get(k) is not None
+                                          and taken[i][k][2] >= 2
+                                          and t - taken[i][k][1] <= KIND_PERIOD[k] + STALE_AFTER)]
+                    # Always aim at the strongest phase still free - the assumption is "I cast
+                    # first", and it is given up only when somebody actually gets there first. An
+                    # earlier version ranked by how many others had been seen casting and stepped
+                    # aside before even trying; that hands the phase away on a guess, and a
+                    # Summoner who would have won it ends up in a weaker one for the whole fight.
+                    # The staggering comes out of the books instead: whoever holds a phase keeps
+                    # showing up in it, so the others find it taken and move on by themselves.
+                    mine_kind = kinds_free[0] if kinds_free else None
                     if buff_until <= t:
-                        if free:
+                        if mine_kind is not None:
                             # A phase of one's own is still to be had. Wait for it rather than
                             # filling a gap: a Solar second is worth 2.46 primal seconds, and the
                             # recast is two windows long, so a charge spent outside does not come
                             # back in time for the position it was meant for.
-                            allowed = idx is not None and idx in free
+                            allowed = idx is not None and PHASE_KIND[idx] == mine_kind
                         else:
                             # Every position is held by somebody who keeps coming back. Waiting
                             # buys nothing now, so the rule switches to filling whatever gap is
