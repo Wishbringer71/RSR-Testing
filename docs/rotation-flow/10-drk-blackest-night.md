@@ -3,6 +3,32 @@
 Entwurfsdokument nach ADR-Struktur. Es stellt den geltenden Stand dar; die Prüfhistorie steht in
 `AUDIT_LOG.md` (A44 bis A50).
 
+## Vorgabe des Auftraggebers
+
+**Steht The Blackest Night, wird keine Schadensminderung gewirkt — beim Dunkelritter weder Reflexion
+(Reprisal) noch Abtausch (Arm's Length), beim Weißmagier keine Betäubung durch Sanctus. Das gilt
+ausschließlich für Gruppenpulls, Wall-to-Wall; in Bosskämpfen gilt die Aussage nicht.**
+
+Der Grund liegt im Spielgeschehen und nicht in der Symmetrie der Regeln: Die Barriere zahlt ihre 3000
+MP nur als Dark Arts zurück, wenn sie **vollständig** aufgezehrt wird, und aufgezehrt wird sie allein
+vom eingehenden Schaden. Jede Minderung, die währenddessen läuft, drosselt genau den Strom, der die
+Barriere brechen soll — Reflexion nimmt 10 % von jedem Gegner, Abtausch verlangsamt jeden physischen
+Angreifer um 20 % für 15 Sekunden, eine Betäubung hält den Strom ganz an. Im Bosskampf ist das
+umgekehrt: Dort kommt der Schaden als angesagter Einzeltreffer, der die Barriere ohnehin bricht, und
+die Minderung wäre echter Schutz, den aufzugeben nichts einbringt.
+
+**Heilung ist davon ausdrücklich nicht betroffen.** Eine Barriere absorbiert Schaden, bevor er die HP
+erreicht; der Gesundheitsstand des Trägers ändert nichts an ihrem Verbrauch. Weder ein HoT noch eine
+direkte Heilung steht dem Aufzehren im Weg — die einzige Kopplung läuft umgekehrt, denn ein Träger,
+der vorher stirbt, bekommt gar kein Dark Arts.
+
+Umgesetzt ist das als `DRK_Reborn.HoldMitigationForBarrier()` — Sperre der beiden Reflexion-Zweige in
+`DefenseAreaAbility` und `DefenseSingleAbility` sowie des Abtausch-Zweigs auf dem Pull — und auf der
+Heilerseite als `WHM_Reborn.ShouldHoldHolyForBarrier()`, Option `HoldHolyForBlackestNight`,
+**voreingestellt an**. Den Gruppenpull erkennen beide Seiten an derselben Gegnerzahl, die ihre eigene
+Regel ohnehin verlangt, statt an einer zweiten Zahl daneben. Unberührt bleiben die zentralen
+Abtausch-Zweige gegen Rückstoß: Von einer Plattform geworfen zu werden ist keine Schadensfrage.
+
 ## Ergebnis
 
 The Blackest Night ist keine Verteidigung wie die anderen: Sie kostet 3000 MP und zahlt sie nur

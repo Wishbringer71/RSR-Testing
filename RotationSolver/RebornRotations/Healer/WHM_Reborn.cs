@@ -83,8 +83,8 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Minimum enemies in Holy's radius before the stun stretch applies", Parent = nameof(StretchHolyStun))]
 	public int StretchHolyMinHostiles { get; set; } = 3;
 
-	[RotationConfig(CombatType.PvE, Name = "Hold Holy while a tank carries The Blackest Night, so its barrier is spent")]
-	public bool HoldHolyForBlackestNight { get; set; } = false;
+	[RotationConfig(CombatType.PvE, Name = "Hold Holy on a group pull while a tank carries The Blackest Night, so its barrier is spent")]
+	public bool HoldHolyForBlackestNight { get; set; } = true;
 
 	// On by default, unlike the two above: this one is not a proposal but the third timing of the
 	// rule in concept 08, and the user asked for it directly after seeing Holy cast into a slow that
@@ -620,6 +620,15 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	private bool ShouldHoldHolyForBarrier()
 	{
 		if (!HoldHolyForBlackestNight)
+		{
+			return false;
+		}
+
+		// Group pulls only, by the user's qualification: in a boss fight the rule does not apply.
+		// There the damage arrives as scripted single hits that break the barrier on their own
+		// whatever the stun does, so holding Holy would give up its damage for a reward that is not
+		// at risk. The same hostile count the stun stretch uses, rather than a second number.
+		if (NumberOfHostilesInRange < StretchHolyMinHostiles)
 		{
 			return false;
 		}
