@@ -1049,7 +1049,9 @@ public partial class BeastmasterRotation
 	{
 		//shirk
 		setting.IsFriendly = false;
-		setting.TargetType = TargetType.Provoke;
+		//setting.TargetType = TargetType.Provoke;
+		setting.TargetStatusNeed = [StatusID.UnnamedStatus_2552];
+		setting.StatusFromSelf = false;
 	}
 
 	static partial void ModifyChallengePvE(ref ActionSetting setting)
@@ -1277,42 +1279,49 @@ public partial class BeastmasterRotation
 	//Vilekin Borrow
 	static partial void ModifyBorrowPvE_47239(ref ActionSetting setting)
 	{
+		setting.ActionCheck = () => KinshipBattlehorn != ActiveBattlehorn;
 		setting.StatusNeed = [StatusID.OneWithNature];
 	}
 
 	//Cloudkin Borrow
 	static partial void ModifyBorrowPvE_47240(ref ActionSetting setting)
 	{
+		setting.ActionCheck = () => KinshipBattlehorn != ActiveBattlehorn;
 		setting.StatusNeed = [StatusID.OneWithNature];
 	}
 
 	//Seedkin Borrow
 	static partial void ModifyBorrowPvE_47241(ref ActionSetting setting)
 	{
+		setting.ActionCheck = () => KinshipBattlehorn != ActiveBattlehorn;
 		setting.StatusNeed = [StatusID.OneWithNature];
 	}
 
 	//Wavekin Borrow
 	static partial void ModifyBorrowPvE_47242(ref ActionSetting setting)
 	{
+		setting.ActionCheck = () => KinshipBattlehorn != ActiveBattlehorn;
 		setting.StatusNeed = [StatusID.OneWithNature];
 	}
 
 	//Scalekin Borrow
 	static partial void ModifyBorrowPvE_47243(ref ActionSetting setting)
 	{
+		setting.ActionCheck = () => KinshipBattlehorn != ActiveBattlehorn;
 		setting.StatusNeed = [StatusID.OneWithNature];
 	}
 
 	//Soulkin Borrow
 	static partial void ModifyBorrowPvE_47244(ref ActionSetting setting)
 	{
+		setting.ActionCheck = () => KinshipBattlehorn != ActiveBattlehorn;
 		setting.StatusNeed = [StatusID.OneWithNature];
 	}
 
 	//Ashkin Borrow
 	static partial void ModifyBorrowPvE_47245(ref ActionSetting setting)
 	{
+		setting.ActionCheck = () => KinshipBattlehorn != ActiveBattlehorn;
 		setting.StatusNeed = [StatusID.OneWithNature];
 	}
 	#endregion
@@ -1378,7 +1387,8 @@ public partial class BeastmasterRotation
 	{
 		setting.ActionCheck = () => KinshipBattlehorn > 0 && KinshipKinType == BeastmasterKinType.Wavekin;
 		setting.StatusNeed = [StatusID.WaveKinship, StatusID.WaveKinship_4648];
-		setting.TargetStatusNeed = [StatusID.PopotoSkin, StatusID.DamageUp_2550];
+		setting.TargetStatusNeed = [StatusID.PopotoSkin, StatusID.DamageUp_2550, StatusID.PhysicalDamageUp_2074, StatusID.DamageUp_1225];
+		setting.StatusFromSelf = false;
 		setting.IsFriendly = false;
 		setting.CreateConfig = () => new ActionConfig()
 		{

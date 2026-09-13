@@ -718,22 +718,13 @@ public partial class CustomRotation
 			damageFactor *= 0.90f;
 		}
 
-		// Party statuses found so far, filled lazily by HasPartyStatus below.
+		// Party statuses are probed and cached lazily per-id below, to avoid an N*M scan upfront.
 		HashSet<StatusID> partyStatuses = [];
 
 		// Helper to lazily test & cache a status.
 		bool HasPartyStatus(StatusID id)
 		{
-			var haspartyStatuses = false;
-			foreach (var status in partyStatuses)
-			{
-				if (status == id)
-				{
-					haspartyStatuses = true;
-					break;
-				}
-			}
-			if (haspartyStatuses)
+			if (partyStatuses.Contains(id))
 			{
 				return true;
 			}
@@ -1176,13 +1167,7 @@ public partial class CustomRotation
 				return false;
 			}
 
-			// Finally, attempt to use the burst medicine
-			if (IsConditionMet() && CanUseAtTime())
-			{
-				return rotation.UseBurstMedicine(out act, clippingCheck);
-			}
-
-			return false;
+			return rotation.UseBurstMedicine(out act, clippingCheck);
 		}
 
 		/// <summary>
@@ -1535,7 +1520,7 @@ public partial class CustomRotation
 				continue;
 			}
 
-			if (target.IsDead != false)
+			if (target.IsDead)
 			{
 				continue;
 			}
@@ -1831,7 +1816,7 @@ public partial class CustomRotation
 	/// <param name="actions">True if any of this is matched.</param>
 	/// <returns></returns>
 	[Description("Just used GCD")]
-	public static bool IsLastGCD(bool isAdjust, params IAction[] actions)
+	public static bool IsLastGCD(bool isAdjust, params ReadOnlySpan<IAction> actions)
 	{
 		CountingOfLastUsing++;
 		return IActionHelper.IsLastGCD(isAdjust, actions);
@@ -1843,7 +1828,7 @@ public partial class CustomRotation
 	/// </summary>
 	/// <param name="ids">True if any of this is matched.</param>
 	/// <returns></returns>
-	public static bool IsLastGCD(params ActionID[] ids)
+	public static bool IsLastGCD(params ReadOnlySpan<ActionID> ids)
 	{
 		CountingOfLastUsing++;
 		return IActionHelper.IsLastGCD(ids);
@@ -1857,7 +1842,7 @@ public partial class CustomRotation
 	/// <param name="actions">True if any of this is matched.</param>
 	/// <returns></returns>
 	[Description("Just used Ability")]
-	public static bool IsLastAbility(bool isAdjust, params IAction[] actions)
+	public static bool IsLastAbility(bool isAdjust, params ReadOnlySpan<IAction> actions)
 	{
 		CountingOfLastUsing++;
 		return IActionHelper.IsLastAbility(isAdjust, actions);
@@ -1869,7 +1854,7 @@ public partial class CustomRotation
 	/// </summary>
 	/// <param name="ids">True if any of this is matched.</param>
 	/// <returns></returns>
-	public static bool IsLastAbility(params ActionID[] ids)
+	public static bool IsLastAbility(params ReadOnlySpan<ActionID> ids)
 	{
 		CountingOfLastUsing++;
 		return IActionHelper.IsLastAbility(ids);
@@ -1883,7 +1868,7 @@ public partial class CustomRotation
 	/// <param name="actions">True if any of this is matched.</param>
 	/// <returns></returns>
 	[Description("Just used Action")]
-	public static bool IsLastAction(bool isAdjust, params IAction[] actions)
+	public static bool IsLastAction(bool isAdjust, params ReadOnlySpan<IAction> actions)
 	{
 		CountingOfLastUsing++;
 		return IActionHelper.IsLastAction(isAdjust, actions);
@@ -1895,7 +1880,7 @@ public partial class CustomRotation
 	/// </summary>
 	/// <param name="ids">True if any of this is matched.</param>
 	/// <returns></returns>
-	public static bool IsLastAction(params ActionID[] ids)
+	public static bool IsLastAction(params ReadOnlySpan<ActionID> ids)
 	{
 		CountingOfLastUsing++;
 		return IActionHelper.IsLastAction(ids);
@@ -1921,7 +1906,7 @@ public partial class CustomRotation
 	/// <param name="actions">True if any of this is matched.</param>
 	/// <returns></returns>
 	[Description("Just used Combo Action")]
-	public static bool IsLastComboAction(bool isAdjust, params IAction[] actions)
+	public static bool IsLastComboAction(bool isAdjust, params ReadOnlySpan<IAction> actions)
 	{
 		CountingOfLastUsing++;
 		return IActionHelper.IsLastComboAction(isAdjust, actions);
@@ -1933,7 +1918,7 @@ public partial class CustomRotation
 	/// </summary>
 	/// <param name="ids">True if any of this is matched.</param>
 	/// <returns></returns>
-	public static bool IsLastComboAction(params ActionID[] ids)
+	public static bool IsLastComboAction(params ReadOnlySpan<ActionID> ids)
 	{
 		CountingOfLastUsing++;
 		return IActionHelper.IsLastComboAction(ids);

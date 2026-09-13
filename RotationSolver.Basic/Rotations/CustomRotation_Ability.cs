@@ -851,10 +851,6 @@ public partial class CustomRotation
 	/// <returns>True if the ability can be used; otherwise, false.</returns>
 	protected virtual bool GeneralAbility(IAction nextGCD, out IAction? act)
 	{
-		if (DataCenter.MergedStatus.HasFlag(AutoStatus.NoCasting))
-		{
-		}
-
 		act = null;
 		return false;
 	}
@@ -867,10 +863,6 @@ public partial class CustomRotation
 	/// <returns>True if the ability can be used; otherwise, false.</returns>
 	protected virtual bool AttackAbility(IAction nextGCD, out IAction? act)
 	{
-		if (DataCenter.MergedStatus.HasFlag(AutoStatus.NoCasting))
-		{
-		}
-
 		act = null;
 		return false;
 	}
