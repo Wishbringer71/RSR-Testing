@@ -228,6 +228,15 @@ symbolisch.
 Zurückgehalten wird also nicht, *weil* der Status liegt, sondern solange der Tod
 noch rechtzeitig kommt.
 
+**Umgesetzt ist das in `StatusHelper.InDeathTriggerWindow` als zwei Bedingungen, nicht
+als eine Uhr.** Die Zurückhaltung endet einen Vorlauf von zwei GCDs vor Ablauf, damit
+die Heilung noch landen kann — **aber nur, solange der Träger über
+`HealthForDyingTanks` steht.** Darunter läuft sie bis zum Ablauf durch, weil dort der
+Fall auf 0 die wahrscheinliche Fortsetzung ist und der Vorlauf sonst genau den Auslöser
+wegheilen würde, für den die ganze Regel da ist. Die Uhr allein hätte die Fälle 1c und
+1e der Tabelle oben nicht mehr unterschieden: Sie beantwortet „wie viel Zeit bleibt",
+nicht „kommt der Tod noch".
+
 **Phase 2 — heilt er sich schnell genug selbst?** Walking Dead verlangt kumuliert
 eine volle Maximalgesundheit in zehn Sekunden. Die Selbstheilung liefert 1500 Potenz
 je Waffenskill oder Zauber, bei rund 2,4 s GCD also etwa vier Auslösungen. Daraus
@@ -477,12 +486,31 @@ nullifiziert Heilung und gehört in einen Ausschluss, nicht in eine Herabstufung
 **Der Vorlauf der Uhrregel misst bis zur Entscheidung, nicht bis zum Landen der
 Heilung.** Im ungünstigsten Fall muss der laufende GCD auslaufen und ein Zauber mit
 Wirkzeit darauf fertig werden — zusammen zwei GCDs. Der Vorlauf muss daher mindestens
-zwei GCDs betragen, und genau diese zwei GCDs sind der Preis: Bei einem
-Zehn-Sekunden-Fenster wird die halbe Phase verschenkt, in der ein noch rechtzeitiger
-Tod abgefangen werden kann. Ein kürzerer Vorlauf senkt den Preis, lässt die Heilung
-aber nach Ablauf landen, wenn der Tank bereits ungeschützt ist. Eine Fähigkeit ohne
-Wirkzeit würde beides lösen — welche Heilung gleich fällt, ist jedoch eine
-Rotationsentscheidung, die die zentrale Schicht weder kennt noch erzwingen kann.
+zwei GCDs betragen. Wie viele Sekunden das sind, steht nicht fest: Gemessen wird die
+**tatsächliche** Erholzeit des Spielers, die das Spiel meldet
+(`DataCenter.DefaultGCDTotal` über `ActionManagerHelper.GetDefaultRecastTime`), also
+verkürzt Zaubertempo den Vorlauf mit. Gegen die zehn Sekunden von Living Dead
+(`ActionId.resx`, Aktion 3638) ist es rund die halbe Phase.
+
+**Der Vorlauf greift nicht, solange der Tod noch erreichbar ist** — das ist Fall 1e der
+Tabelle oben, und er ist die Bedingung, unter der der Preis des Vorlaufs überhaupt
+tragbar ist. Ohne ihn wird die Startbahn für die Heilung mit genau dem Ergebnis
+bezahlt, das die Zurückhaltung erzeugen soll: Ein Träger, der tief genug für den Fall
+auf 0 steht, würde in der Vorlaufzeit über die Linie zurückgeheilt, Living Dead liefe
+ungenutzt ab, und der Tank hätte seine Unverwundbarkeit für nichts ausgegeben. Die
+Grenze ist `HealthForDyingTanks` — der Wert, bei dem die Tank-Rotationen die
+Unverwundbarkeit selbst zünden, also die Aussage des Baums über „dieser Tank fällt
+gleich". Darüber kommt der Tod nicht mehr, und die Heilung soll laufen, bevor der
+Träger wieder sterblich ist; darunter kommt er, und nichts darf ihn aufhalten.
+
+**Verloren geht dabei nichts:** Läuft Living Dead ab, endet die Zurückhaltung mit ihm,
+und der Träger ist wieder gewöhnliches Heilziel. Was er nicht mehr kann, ist über die
+Schwelle geheilt zu werden, solange der Auslöser noch erreichbar ist.
+
+Ein kürzerer Vorlauf senkt den Preis weiter, lässt die Heilung aber nach Ablauf landen,
+wenn der Tank bereits ungeschützt ist. Eine Fähigkeit ohne Wirkzeit würde beides lösen
+— welche Heilung gleich fällt, ist jedoch eine Rotationsentscheidung, die die zentrale
+Schicht weder kennt noch erzwingen kann.
 
 **Die gestaffelte Phase-2-Unterstützung** (Fälle 4 und 4a) ist nicht gebaut. Sie
 verlangt eine Kursprognose und damit den verworfenen Messbaustein. Welche Stellen im

@@ -14,14 +14,6 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 **Behebung:** den `elif`-Zweig streichen, damit außerhalb des Fensters nicht gezählt wird; der Selbsttest ist danach auf das Ausfallfenster zu schärfen, sonst deckt er die Rückkehr des Fehlers nicht ab. **Empfehlung: beheben** — es ist ein Prüfmittel, und ein Prüfmittel, das eine undeutbare Zahl druckt, entwertet auch seine richtigen.
 
-### `HardCastOnlyHealer` prüft Wiederbeleber, der Optionstext verspricht Heiler · N
-
-Der Text lautet „Raise while Swiftcast is on cooldown and other **healers** are dead" (`HardCastRaiseType.cs`); geprüft wird seit `7606f3cbd` `AnyOtherLivingRaiser()`, und das zählt über `DataCenter.AnyLivingRaiser` auch Beschwörer ab Stufe 12 und Rotmagier ab Stufe 64 mit. Der Code ist strenger als sein Text.
-
-**Die Verschiebung war in der Sache richtig** — ein lebender Beschwörer beherrscht die Wiederbelebung so gut wie ein Heiler, und der eigentliche Defekt (der Alleinheiler, der `0 == 0` verglich und nie hart wirkte) ist damit behoben, s. A86. **Im Kampf ändert sie aber einen Fall zum Schlechteren:** In der Achtergruppe mit zwei Heilern, von denen einer liegt, während ein Beschwörer lebt, hat der Weißmagier vorher hart gewirkt und tut es jetzt nicht mehr. Ob das richtig ist, hängt daran, ob der fremde Beschwörer tatsächlich wiederbelebt — eine Annahme über das Verhalten eines Mitspielers, nicht eine messbare Größe. Die Vierergruppe ist nicht betroffen: Dort scheiterte die alte Bedingung ohnehin.
-
-**Zwei Wege, und die Entscheidung gehört dem Auftraggeber, weil sie sein Kampfverhalten betrifft:** den Text an den Code angleichen („other raisers are dead") und die weitere Bedingung behalten, oder die Bedingung auf Heiler zurücknehmen und den Text so lassen. **Empfehlung: Text angleichen.** Der Beschwörer ist ein Wiederbeleber, die enge Lesart war die ursprüngliche Ungenauigkeit, und wer trotzdem immer hart wirken will, hat dafür `HardCastNormal`. Den Widerspruch durch Anpassen des Textes aufzulösen ist hier zulässig, weil die Entwurfsabsicht nachweislich gewechselt hat — der Text ist der zurückgebliebene Teil, nicht der Beleg.
-
 ### Fänge von `AccessViolationException`, die im gemeinten Fall nicht greifen · N, U
 
 `DataCenter.cs`, unter anderem `:1316`, `:1402`, `:1534`, `:1803`. Muster überall gleich: ein nativer Lesezugriff über ein Dalamud-Objekt steht in einem `try`, dessen `catch (AccessViolationException)` den Absturz abfangen soll. Die Überschrift nannte zuvor 19 Fänge; gezählt waren die Zeilen, die den Ausnahmenamen **erwähnen**, nicht die Fänge selbst — ein Surrogat, das drei Kommentarzeilen mitzählte. `grep -c "catch (AccessViolationException"` beziffert den Bestand jederzeit.

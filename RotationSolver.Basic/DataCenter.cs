@@ -1002,7 +1002,29 @@ internal static class DataCenter
 	/// <param name="excludeSelf">Skip the player, for callers asking whether anyone *else* can.</param>
 	public static bool AnyLivingRaiser(bool excludeSelf)
 	{
-		if (HasLivingRaiser(PartyMembers, excludeSelf))
+		return AnyLivingRaiser(excludeSelf, healersOnly: false);
+	}
+
+	/// <inheritdoc cref="AnyLivingRaiser(bool)"/>
+	/// <param name="excludeSelf">Skip the player, for callers asking whether anyone *else* can.</param>
+	/// <param name="healersOnly">
+	/// Count only the healer jobs, leaving Summoner and Red Mage out.
+	///
+	/// The two "only healer" hard cast modes ask for this, because their option text does: "Raise
+	/// while Swiftcast is on cooldown and other <i>healers</i> are dead". The wider question - can
+	/// anybody raise - would hold the hard cast back on the strength of a living Summoner, that is
+	/// on an assumption about what another player is going to do. The user's instruction is the
+	/// text: those modes wait for healers and for nobody else.
+	///
+	/// The feather keeps the wide set, because his instruction there is the opposite one and says
+	/// raiser: a Phoenix Down goes out when nobody left can raise at all.
+	///
+	/// The level check applies either way - a healer below <see cref="RaiseLevel"/> has no raise to
+	/// wait for.
+	/// </param>
+	public static bool AnyLivingRaiser(bool excludeSelf, bool healersOnly)
+	{
+		if (HasLivingRaiser(PartyMembers, excludeSelf, healersOnly))
 		{
 			return true;
 		}
@@ -1010,10 +1032,10 @@ internal static class DataCenter
 		return Service.Config.RaiseType is RaiseType.PartyAndAllianceSupports
 				or RaiseType.PartyAndAllianceHealers
 				or RaiseType.All
-			&& HasLivingRaiser(AllianceMembers, excludeSelf);
+			&& HasLivingRaiser(AllianceMembers, excludeSelf, healersOnly);
 	}
 
-	private static bool HasLivingRaiser(IEnumerable<IBattleChara>? members, bool excludeSelf)
+	private static bool HasLivingRaiser(IEnumerable<IBattleChara>? members, bool excludeSelf, bool healersOnly)
 	{
 		if (members == null)
 		{
@@ -1033,7 +1055,7 @@ internal static class DataCenter
 			}
 
 			if (member.IsJobCategory(JobRole.Healer)
-				|| member.IsJobs(ECommons.ExcelServices.Job.SMN))
+				|| (!healersOnly && member.IsJobs(ECommons.ExcelServices.Job.SMN)))
 			{
 				if (member.Level >= RaiseLevel)
 				{
@@ -1043,7 +1065,7 @@ internal static class DataCenter
 				continue;
 			}
 
-			if (member.IsJobs(ECommons.ExcelServices.Job.RDM) && member.Level >= VerraiseLevel)
+			if (!healersOnly && member.IsJobs(ECommons.ExcelServices.Job.RDM) && member.Level >= VerraiseLevel)
 			{
 				return true;
 			}

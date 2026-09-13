@@ -181,14 +181,20 @@ Bei eingeschalteter Einstellung — der Vorgabe — ist das Verhalten unverände
 | `NoHardCast` | nicht hart wirken | kein Zweig | stimmig |
 | `HardCastNormal` | „while Swiftcast is on cooldown" | „kommt Spontanität noch" | stimmig |
 | `HardCastSwiftCooldown` | „… and cooldown is higher than raise cast time" | genau das | stimmig |
-| `HardCastOnlyHealer` | „while Swiftcast is on cooldown and other **healers** are dead" | Reservierung **und** Rezzer-Bedingung | **Widerspruch im zweiten Halbsatz, offen** |
-| `HardCastOnlyHealerSwiftCooldown` | beides, ebenfalls „healers" | beides | derselbe Widerspruch |
+| `HardCastOnlyHealer` | „while Swiftcast is on cooldown and other **healers** are dead" | Reservierung und Heiler-Bedingung | stimmig |
+| `HardCastOnlyHealerSwiftCooldown` | beides, ebenfalls „healers" | beides | stimmig |
 
 Die Reservierung ist in allen vier Hartwirk-Modi geprüft; das war zeitweise nur bei dreien der Fall.
-Offen ist der zweite Halbsatz: Der Text sagt „healers", geprüft wird die weitere Menge der Rezzer
-(siehe unten). Der Code ist damit strenger als sein Text — in der Achtergruppe mit einem toten und
-einem lebenden Heiler, aber einem lebenden Beschwörer, wirkt der Weißmagier nicht mehr hart. Die
-Auflösung steht als Entscheidungspunkt in `TODO.md`.
+
+**Der zweite Halbsatz zählt Heiler, nicht Rezzer — Vorgabe des Auftraggebers.** Die weitere Menge
+hätte das Hartwirken zurückgehalten, weil ein Beschwörer lebt, also aufgrund einer Annahme darüber,
+was ein fremder Spieler mit einer Leiche tun wird. Im Kampf ist das der Unterschied, ob der Tote in
+der Achtergruppe jetzt aufsteht oder auf jemand anderen wartet. Seine Anweisung ist der Optionstext:
+Diese Modi warten auf Heiler und auf sonst niemanden. Die Stufenprüfung bleibt in beiden Fällen — ein
+Heiler unterhalb der Wiederbelebungsstufe hat nichts, worauf zu warten wäre.
+
+**Die Feder behält die weite Menge**, weil seine Vorgabe dort die umgekehrte ist und ausdrücklich
+vom Rezzer spricht: Eine Phönixfeder fliegt, wenn niemand mehr überhaupt wiederbeleben kann.
 
 **Die Reservierung fragt zusätzlich, ob Spontanität dem Spieler überhaupt zur Verfügung steht.**
 `IsCoolingDown` liest den Recast-Zeitgeber, und eine Aktion, die der Spieler nicht wirken kann, hat
@@ -208,7 +214,7 @@ andere: Hartwirken kostet acht Sekunden GCD und lohnt nur, wenn es sonst niemand
 
 | | maß bisher | gemeint |
 |---|---|---|
-| Wer zählt | nur Heiler | Rezzer: Heiler, Beschwörer, Rotmagier |
+| Wer zählt | nur Heiler | **Hartwirken: nur Heiler** (Vorgabe, s. o.) · **Feder: Rezzer** — Heiler, Beschwörer, Rotmagier |
 | Stufe | ungeprüft | ein Rotmagier unter 64 hat Verraise nicht |
 | Bezugsmenge | immer die eigene Gruppe | die Menge, aus der das Ziel stammen darf — also nach `RaiseType` |
 | Einzelheiler, solo | beide Mengen leer, `> 0` scheitert → **nie Hartwirk** | niemand sonst da → Hartwirken ist genau richtig |

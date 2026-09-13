@@ -447,12 +447,19 @@ public partial class CustomRotation
 	/// excluded the player from both - so a lone healer compared 0 == 0 behind a "&gt; 0" guard and
 	/// never hard cast at all - and could not express "nobody else" in the first place.
 	///
-	/// The reference set and the raiser jobs live in <see cref="DataCenter.AnyLivingRaiser"/>,
-	/// shared with the Phoenix Down decision, which asks the same question with the player counted.
+	/// The reference set lives in <see cref="DataCenter.AnyLivingRaiser(bool, bool)"/>, shared with
+	/// the Phoenix Down decision, which asks the same question with the player counted.
+	///
+	/// Healers only, and that is the user's instruction rather than a narrowing of my own: every
+	/// one of these modes says "other <i>healers</i> are dead" in its own option text, and the
+	/// wider raiser set would hold the hard cast back because a Summoner is alive - an assumption
+	/// about what a stranger is going to do with a corpse. In an eight-man party with one healer
+	/// down that is the difference between the dead player getting up now and waiting on somebody
+	/// else. The feather keeps the wide set; there his instruction says raiser.
 	/// </summary>
 	private static bool AnyOtherLivingRaiser()
 	{
-		return DataCenter.AnyLivingRaiser(excludeSelf: true);
+		return DataCenter.AnyLivingRaiser(excludeSelf: true, healersOnly: true);
 	}
 
 	/// <summary>

@@ -2361,6 +2361,26 @@ Die zweite Fassung verlor die gewebte Fähigkeit des führenden Blocks. Mountain
 
 **Erreichter Prüfgrad:** statische Prüfung gegen Quelltext, Wirktexte in `Action.resx`/`ActionId.resx` und den jeweiligen Vorzustand; `check_cs_structure`, `check_doc_references`, Compile in der CI. Im Spiel nicht beobachtet.
 
+### A88 · Zwei Vorgaben des Auftraggebers umgesetzt: Vorlauf der Totenerweckung, Bezugsmenge der Nur-Heiler-Modi
+
+**Anlass:** Zwei Rückfragen zum Bericht aus A86/A87, beide mit einer Vorgabe verbunden.
+
+**Erste Frage — wie lang sind zwei GCDs, und kann der Vorlauf den Tod verhindern?** Die Sekundenzahl steht nicht fest: `DataCenter.DefaultGCDTotal` liest über `ActionManagerHelper.GetDefaultRecastTime` die **tatsächliche** Erholzeit, die das Spiel für den Spieler meldet, Zaubertempo also eingerechnet. Gegen die zehn Sekunden von Living Dead (`ActionId.resx`, Aktion 3638) ist der Vorlauf rund die halbe Phase.
+
+**Die Sorge des Auftraggebers war berechtigt und der Befund ist belegt.** `InDeathTriggerWindow` gab die Zurückhaltung zwei GCDs vor Ablauf frei, unabhängig vom Gesundheitsstand. Ab diesem Punkt liefert `NoNeedHealingInvuln` für den Träger wieder „ungeschützt", er ist damit vollwertiger Kandidat der Zielwahl **einschließlich** des Tank-Kurzschlusses bei `HealthTankRatio` — und genau dieser greift, wenn er tief steht. Im Kampf: Der Dunkelritter steht bei 20 %, der Strom läuft weiter, der Fall auf 0 käme in der neunten Sekunde — und in der fünften wird er hochgeheilt. Living Dead läuft ungenutzt ab, Walking Dead tritt nie ein, die Unverwundbarkeit ist für fünf Minuten verbraucht, ohne etwas verhindert zu haben. Der Kommentar an der Stelle benannte das als bewussten Preis („can cancel a death that would still have arrived in time"), und der Preis fällt ausgerechnet in dem Zustand an, in dem die Regel gebraucht wird: Je tiefer der Träger steht, desto eher kommt der Tod noch — und desto eher greift die freigegebene Heilung.
+
+**Ursache: die Uhr ersetzte eine Fallunterscheidung, die das Konzept bereits führte.** `09-tank-selfprotection.md` unterscheidet Fall 1c („Tod würde nicht mehr vor Phasenende eintreten" → rechtzeitig heilen) von Fall 1e („HP sehr niedrig, Tod noch vor Ablauf zu erwarten" → nicht heilen) und stellt im selben Dokument fest: „Zurückgehalten wird nicht, *weil* der Status liegt, sondern solange der Tod noch rechtzeitig kommt." Umgesetzt war davon allein die Uhr, und die beantwortet „wie viel Zeit bleibt", nicht „kommt der Tod noch". Dieselbe Form wie beim Duty-Heilzweig: Die Vorgabe stand im Dokument und wurde bei der Umsetzung nicht gelesen.
+
+**Behebung:** `DeathStillLikely` setzt den Vorlauf aus, solange der Träger auf oder unter `HealthForDyingTanks` steht — der Wert, bei dem die Tank-Rotationen die Unverwundbarkeit selbst zünden, also die Aussage des Baums über „dieser Tank fällt gleich". Darüber bleibt der Vorlauf wie bisher und bringt die Heilung auf den Weg, bevor der Träger wieder sterblich ist. Nichts geht verloren: Läuft Living Dead ab, endet die Zurückhaltung mit ihm, und der Träger ist wieder gewöhnliches Heilziel.
+
+**Nicht betroffen: Walking Dead.** Der Status steht bewusst **nicht** in `NoNeedHealingStatus` und nicht in `DeathTriggeredStatus`; in Phase 2 ist Heilung das Überleben, und dort wirkt keine Sperre. Ebenso unberührt bleibt, wer die Option gar nicht nutzt: `WithholdHealingForLivingDead` ist im Code auf **aus** voreingestellt, weil RSR Living Dead auch als Notrettung bei `HealthForDyingTanks` zündet, wo der Tod nicht gewollt ist. Welchen Wert die Einstellung beim Auftraggeber hat, ist von hier nicht messbar.
+
+**Zweite Vorgabe — die Nur-Heiler-Modi zählen Heiler, nicht Rezzer.** Der Auftraggeber hat den Entscheidungspunkt aus A86 entschieden: „so wie es der Text besagt". `AnyOtherLivingRaiser` fragt jetzt `DataCenter.AnyLivingRaiser(excludeSelf: true, healersOnly: true)`; Beschwörer und Rotmagier zählen dort nicht mehr. Im Kampf heißt das: Achtergruppe, ein Heiler liegt, ein Beschwörer lebt — der Weißmagier wirkt wieder hart, statt darauf zu bauen, dass ein fremder Spieler die Leiche aufhebt. Die Stufenprüfung bleibt in beiden Mengen. Die Phönixfeder behält die weite Menge, weil die Vorgabe dort ausdrücklich vom Rezzer spricht.
+
+**Schnittstelle gewahrt:** `AnyLivingRaiser(bool)` bleibt als Signatur bestehen und ruft die neue Überladung; abgeleitete Rotationen, die `RotationSolver.Basic` als Paket beziehen (Betroffenenkreis R), sind nicht zu ändern — ein voreingestellter Parameter statt einer Überladung hätte die bestehende Signatur binär entfernt.
+
+**Erreichter Prüfgrad:** statische Prüfung gegen Quelltext und Wirktexte, `check_cs_structure`, `check_doc_references`, Compile in der CI. Im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
