@@ -45,9 +45,18 @@ Aus den ersten beiden folgt der Puffer, aus allen vieren die **Zeit bis zum Tod*
 
 **Der kleine Puffer ist damit für sich gefährlich.** Wer bei 10 % steht, braucht keine Aggro, um an
 der nächsten Flächenaktion zu sterben; die Aggro entscheidet nur, ob er auch ohne Mechanik fällt. Ein
-Maß, das erst bei Aggro anschlägt, verfehlt genau diesen Fall — und es ist der Fall, den die heutige
-Rangfolge in ihrem letzten Rang eigentlich abdeckt, nur mit dem falschen Maß: Prozentsatz statt
-absoluter Punkte.
+Maß, das erst bei Aggro anschlägt, verfehlt genau diesen Fall.
+
+**Prozentsatz und absolute Punkte sind beide Surrogate, und jedes bricht in einer anderen Lage.** Der
+Prozentsatz normiert stillschweigend auf die erwartete Schadensrate: Ein Tank hat den größeren
+Lebenspool und nimmt auch den größeren Schaden, ein Schadensausteiler beides kleiner — deshalb
+vergleicht der Prozentsatz bei **gerichtetem** Schaden ungefähr die richtige Größe. Bei
+**ungerichtetem** Flächenschaden bricht er, denn der trifft alle mit derselben absoluten Zahl, und
+dort zählen die Punkte. Die absoluten Punkte brechen genau umgekehrt: Sie halten den Tank bei 30 %
+für sicherer als den Schadensausteiler bei 45 %, obwohl der Tank den Dauerschaden nimmt.
+
+Das Maß ist also nicht zu **tauschen**, sondern von der Lage abhängig zu machen — und die Lage ist
+lesbar, weil angekündigter Flächenschaden im Baum steht.
 
 ## Sachstand
 
@@ -70,6 +79,24 @@ ohne; und ein Schadensausteiler mit kleinem Lebenspool wie einer mit großem.
 `healRatio` gefiltertes Feld und beantwortet nur noch, **wen** die ohnehin fallende Heilung trifft.
 Eine dieser Rollenschwellen zu heben erzeugt deshalb keine zusätzliche Heilung und keine
 Überheilung — es verschiebt die Reihenfolge.
+
+### Befund: ein Rollen-Kurzschluss überholt den, der tatsächlich stirbt
+
+**Die Rollenabkürzungen kehren sofort zurück, sobald ihre Schwelle erfüllt ist, und sehen dabei
+niemanden sonst an.** `healerTars[0]` unter `HealthHealerRatio` beendet die Suche, `tankTars[0]`
+unter `HealthTankRatio` ebenso — der Prozentvergleich in Rang 4 wird gar nicht mehr erreicht.
+
+Im Kampf heißt das: **Ein Schadensausteiler bei 10 % wird übergangen, sobald der Tank bei 44 %
+steht.** Das ist genau der Fall, den die Vorgabe nennt — „auch ein Damagedealer ohne Aggro mit 10 %
+Leben kann bei einem AoE sterben" —, und er ist heute falsch entschieden. Der Tank bei 44 % hinter
+Minderungen und einem großen Lebenspool ist nicht gefährdeter als ein Schadensausteiler bei 10 %; er
+ist nur früher in der Reihenfolge.
+
+**Das ist der schwerere der beiden Befunde**, weil er ohne jede neue Messung zu beheben ist: Wer
+unter der Schwelle steht, an der der Baum selbst „dieser Spieler fällt gleich" sagt
+(`HealthForDyingTanks`), gehört vor jeden Rollen-Kurzschluss. Die Rangfolge der Vorgabe — Heiler vor
+Tank vor Schadensausteiler — gilt bei **gleicher** Gefährdung, und 10 % gegen 44 % ist keine gleiche
+Gefährdung.
 
 ### Befund: die Rangfolge steht, die Schwellen kehren sie um
 
@@ -129,6 +156,11 @@ absoluten Punkten, die Aggro und der angekündigte Flächenschaden sind sofort v
 drei der vier genannten Fälle ab — Tank mit Aggro, Heiler mit Aggro, und den Schadensausteiler bei
 10 %, der ohne Aggro an einer Flächenaktion stirbt. Die Rate wird erst gebraucht, wenn **mehrere**
 zugleich unter Beschuss stehen; dann entscheidet sie, wer zuerst fällt.
+
+**Die Reihenfolge des Bauens folgt dem Schweregrad, nicht dem Aufwand.** Zuerst die Notrangstufe:
+Wer unter `HealthForDyingTanks` steht, kommt vor jeden Rollen-Kurzschluss. Das ist eine Bedingung vor
+zwei bestehenden Zweigen, braucht keine neue Messung und behebt den Fall, in dem heute jemand stirbt.
+Danach erst die Aggro und das lageabhängige Maß.
 
 **Die Aggroabfrage löst den Schwellenbefund mit auf, und zwar an seiner Ursache.** Die
 Schwellendifferenz vertritt heute die Aussage „der Tank bekommt den Schaden". Sobald diese Aussage
