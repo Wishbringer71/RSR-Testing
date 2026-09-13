@@ -214,6 +214,23 @@ Die Dauer ist belegt, nicht erinnert: `ActionId.resx`, Aktion 3638, „Living De
 
 Schadensreduktion wirkt also in keinem Fall auf die Heilentscheidung; nur Barriere und Invulnerabilität tun es.
 
+### Die Zielwahl der Heilung vergleicht Prozentsätze, nicht Überlebensfähigkeit · N
+
+**Beobachtung des Auftraggebers:** Wen heilt man zuerst — einen Tank bei 50 % mit Schild oder einen Schadensausteiler bei 60 % mit deutlich kleinerem Lebenspool? Heute entscheidet allein der Prozentsatz.
+
+**Die Rangfolge, am Code belegt** (`ActionTargetInfo.FindHealTarget`): selbst bei ≤ 40 % (`HealthSelfRatio`), dann ungeschützter Heiler bei ≤ 40 % (`HealthHealerRatio`), dann ungeschützter Tank bei ≤ 45 % (`HealthTankRatio`), sonst der niedrigste **Prozentsatz** zuerst — ungeschützt vor geschützt, wobei „geschützt" `NoNeedHealingInvuln` meint, also Unverwundbarkeit und **nicht** Barriere. Im genannten Beispiel greift keine Rollenabkürzung, der Tank liegt über 45 %; es entscheidet der Prozentvergleich, und der wählt den Tank.
+
+**Zwei Größen fehlen dem Vergleich, beide mit Spielwirkung:**
+
+- **Die Barriere.** 50 % plus ein Schild über 25 % der maximalen HP sind effektiv 75 % — mehr als die 60 % des Schadensausteilers. Der Vergleich sieht davon nichts.
+- **Der absolute Puffer.** 60 % eines kleinen Lebenspools sind weniger Gesundheit als 50 % eines großen. Wer weniger absolute Punkte zwischen sich und dem Tod hat, stirbt am selben Treffer früher, gleich welcher Prozentsatz darübersteht.
+
+**Dies ist der einzige Ort, an dem effektive Gesundheit die richtige Größe ist** — als Vergleich zwischen Zielen, nicht als Schwelle. Der Unterschied ist entscheidend und trennt diesen Punkt von der Schildanrechnung: Dort wird gefragt „muss ich überhaupt heilen", und darauf ist die Barriere keine Antwort; hier wird gefragt „wen zuerst", und darauf ist sie eine.
+
+**Was zur Entscheidung fehlt, ist keine Rechnung, sondern eine Tatsache über den Kampf:** wer den nächsten Schaden bekommt. Der Tank nimmt Dauerschaden aus der Aggro, der Schadensausteiler nur Flächenschaden und Mechaniken. Ein Tank bei 50 % mit Barriere kann im nächsten Moment bei 20 % ohne Barriere stehen, der Schadensausteiler bei 60 % bleibt dort, bis eine Mechanik ihn trifft. Ohne diese Richtung ist die Umstellung eine Verbesserung auf Verdacht.
+
+**Empfehlung: erfassen, nicht umstellen.** Die Reihenfolge zu ändern ist eine Verhaltensänderung ohne Nachweismöglichkeit und gehörte nach Projektregel hinter eine Option mit beibehaltener Voreinstellung. Vorher ist die Beobachtung zu klären, welcher der beiden Fälle im Spiel überhaupt auftritt.
+
 ### Die Schildanrechnung ist fachlich falsch gebaut und gehört entfernt · N
 
 Die Anrechnung (`StateUpdater.ShouldHealSingle`, beide Zweige) rechnet den Restschild auf die effektive Gesundheit und verzögert die Einzelziel-Heilung um genau die Barrierengröße: The Blackest Night sind 25 % der maximalen HP, die oGCD-Schwelle 0,65 wird damit erst bei real rund 40 % erreicht. Sie steht jetzt hinter `CreditShieldToEffectiveHp`, **voreingestellt aus** (= Upstream-Verhalten); der Regelverstoß — Verhaltensänderung ohne Nachweis und ohne Schalter — ist damit behoben (A83).
