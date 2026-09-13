@@ -96,6 +96,23 @@ def own_potency(t, offset):
     return PRIMAL_POTENCY[cycle % len(PRIMAL_POTENCY)]
 
 
+def time_to_kind(t, offset, kind):
+    """Seconds until this Summoner's next window of the given phase kind begins.
+
+    Needed to decide whether a charge spent outside a window would still be back in time for the
+    phase it was meant for: the recast is 120s, Solar returns every 120s, Bahamut and Phoenix every
+    240s. So filling a gap costs a Solar but is free ahead of a Phoenix that is three windows out -
+    a distinction a rule of thumb cannot make and arithmetic can.
+    """
+    local = max(0.0, t - offset)
+    start = int(local // DEMI_EVERY)
+    for step in range(1, 9):
+        window = start + step
+        if PHASE_KIND[window % 4] == kind:
+            return window * DEMI_EVERY - local
+    return float('inf')
+
+
 def demi_index(t, offset):
     """Which demi is standing for this Summoner right now, or None between them.
 
@@ -205,6 +222,7 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
     # everybody else finds it held in the books and moves to the next. The direction is set by the
     # first cast, which is what every client sees anyway.
 
+
     last_seen = [None] * n     # when each Summoner was last observed casting
     # What the party has observed: earliest possible return per Summoner, or None if never seen.
     # Before a Summoner's first cast nobody knows he exists as a caster - that is the honest state.
@@ -254,22 +272,33 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
                 continue
             if buff_until <= t or buff_owner is None or buff_owner == i:
                 continue
-            # Book the position first: this is the observation both variants make, and the booked
-            # variant needs it even once its aim has settled.
+            # Book what the foreign cast actually says about the future, which follows from the two
+            # periods and not from where I happened to be standing. Searing Light returns after
+            # 120s and a demi window comes every 60s, so a caster always comes back to windows of
+            # the same *parity*: a cast seen in one of my even windows (both Solar) means he will
+            # keep taking Solar; one seen in an odd window (Bahamut, Phoenix) means he alternates
+            # between those two, so both are spoken for.
+            #
+            # And a cast that falls *between* my windows books nothing at all. He is not competing
+            # for any phase of mine - he is casting in his own, which has drifted away from mine.
+            # Booking it as "the phase I was in is taken" is what made the rule give up phases
+            # nobody held, and it cost the most exactly where today's narrow rule is already
+            # optimal: at full drift every Summoner sits in his own Solar and they do not collide.
             local_b = t - offsets[i]
             if local_b >= 0 and local_b % DEMI_EVERY < DEMI_STAND:
-                pos = PHASE_KIND[int(local_b // DEMI_EVERY) % 4]
-                prev = taken[i].get(pos)
-                # A position counts as held only when the *same* Summoner takes it again after his
-                # own recast - the user's wording: assume you are first, and only once he really
-                # comes back to it conclude that he owns it. Booking on a single occasion is what
-                # made the first version give up positions that were never contested, which cost
-                # more than it saved wherever rotations had drifted apart.
-                if prev and prev[0] == buff_owner \
-                        and t - prev[1] <= KIND_PERIOD[pos] + STALE_AFTER:
-                    taken[i][pos] = (buff_owner, t, prev[2] + 1)
-                else:
-                    taken[i][pos] = (buff_owner, t, 1)
+                window = int(local_b // DEMI_EVERY)
+                kinds = ('solar',) if window % 2 == 0 else ('bahamut', 'phoenix')
+                for kind in kinds:
+                    prev = taken[i].get(kind)
+                    # A phase counts as held only when the *same* Summoner takes it again after his
+                    # own recast - the user's wording: assume you are first, and only once he really
+                    # comes back to it conclude that he owns it. Booking on a single occasion gave
+                    # up phases that were never contested.
+                    if prev and prev[0] == buff_owner \
+                            and t - prev[1] <= KIND_PERIOD[kind] + STALE_AFTER:
+                        taken[i][kind] = (buff_owner, t, prev[2] + 1)
+                    else:
+                        taken[i][kind] = (buff_owner, t, 1)
             if per[i] != 'phased' or phase_target[i] >= 3:
                 continue
             local = t - offsets[i]
@@ -321,13 +350,28 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
                     # The staggering comes out of the books instead: whoever holds a phase keeps
                     # showing up in it, so the others find it taken and move on by themselves.
                     mine_kind = kinds_free[0] if kinds_free else None
+                    # Tried and dropped: yielding the strongest phase to a Summoner who is present
+                    # but never seen casting. The reasoning was sound - standing in the same window
+                    # and losing every tie, his charge never enters the fight, so stepping aside
+                    # would put two charges in play. Measured, it bought one point at a
+                    # synchronised pull and cost two at half drift, where a Summoner can be quiet
+                    # for a cycle without being blocked at all. Not kept: the rule cannot tell
+                    # "blocked by me" from "unlucky this cycle", and guessing wrong gives away the
+                    # best phase for nothing.
                     if buff_until <= t:
                         if mine_kind is not None:
-                            # A phase of one's own is still to be had. Wait for it rather than
-                            # filling a gap: a Solar second is worth 2.46 primal seconds, and the
-                            # recast is two windows long, so a charge spent outside does not come
-                            # back in time for the position it was meant for.
-                            allowed = idx is not None and PHASE_KIND[idx] == mine_kind
+                            # A phase of one's own is still to be had.
+                            if idx is not None and PHASE_KIND[idx] == mine_kind:
+                                allowed = True
+                            elif idx is None and min(
+                                    time_to_kind(t, offsets[i], k) for k in kinds_free) >= RECAST:
+                                # Far enough ahead of *every* phase still free that this charge is
+                                # back in time for all of them: fill the gap instead of standing
+                                # idle. Measuring only the aimed-at phase was not enough - a charge
+                                # spent 130s before a Phoenix still misses the Solar that falls in
+                                # between, and Solar is the most valuable second there is. So the
+                                # test is the nearest free phase, not the intended one.
+                                allowed = True
                         else:
                             # Every position is held by somebody who keeps coming back. Waiting
                             # buys nothing now, so the rule switches to filling whatever gap is
@@ -413,6 +457,7 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
                 if allowed:
                     buff_until = t + BUFF   # overwrite, never stack
                     buff_owner = i
+
                     ready[i] = t + RECAST
                     seen_ready[i] = t + RECAST   # every client sees the source of the status
                     last_seen[i] = t
