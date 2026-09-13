@@ -229,9 +229,25 @@ Schadensreduktion wirkt also in keinem Fall auf die Heilentscheidung; nur Barrie
 
 **Dies ist der einzige Ort, an dem effektive Gesundheit die richtige Größe ist** — als Vergleich zwischen Zielen, nicht als Schwelle. **Und es ist der Ort, an den die Schildanrechnung ursprünglich gehörte:** Ihr einführender Commit nennt im Titel „heal-priority decisions" und begründet mit dem Vergleich zwischen einem geschildeten und einem ungeschildeten Verbündeten — umgesetzt hat er dann eine Schwelle. Beide Einträge behandeln damit denselben Vorgang von zwei Seiten: hier die gemeinte Stelle, dort die getroffene. Der Unterschied ist entscheidend und trennt diesen Punkt von der Schildanrechnung: Dort wird gefragt „muss ich überhaupt heilen", und darauf ist die Barriere keine Antwort; hier wird gefragt „wen zuerst", und darauf ist sie eine.
 
-**Was zur Entscheidung fehlt, ist keine Rechnung, sondern eine Tatsache über den Kampf:** wer den nächsten Schaden bekommt. Der Tank nimmt Dauerschaden aus der Aggro, der Schadensausteiler nur Flächenschaden und Mechaniken. Ein Tank bei 50 % mit Barriere kann im nächsten Moment bei 20 % ohne Barriere stehen, der Schadensausteiler bei 60 % bleibt dort, bis eine Mechanik ihn trifft. Ohne diese Richtung ist die Umstellung eine Verbesserung auf Verdacht.
+**Die Optionen, durchgerechnet an eben diesem Beispiel** — Tank bei 50 % mit einer Barriere über 25 % seiner maximalen Gesundheit, Schadensausteiler bei 60 %. Die Verhältnisse sind allgemein gehalten, weil die absoluten Lebenspunkte vom Ausrüstungsstand abhängen und hier nicht belegbar sind:
 
-**Empfehlung: erfassen, nicht umstellen.** Die Reihenfolge zu ändern ist eine Verhaltensänderung ohne Nachweismöglichkeit und gehörte nach Projektregel hinter eine Option mit beibehaltener Voreinstellung. Vorher ist die Beobachtung zu klären, welcher der beiden Fälle im Spiel überhaupt auftritt.
+| | Maß | Wen es wählt | Folge |
+|---|---|---|---|
+| **N** | Prozentsatz (heute, Upstream) | **Tank** (50 < 60) | Barriere und Poolgröße bleiben unsichtbar |
+| **A** | effektiver Prozentsatz, Barriere eingerechnet | **Schadensausteiler** (75 > 60) | die ursprüngliche Absicht von `27c7b6942`, am richtigen Ort |
+| **B** | absolute verbleibende Lebenspunkte | **Schadensausteiler**, sobald sein Pool kleiner ist als 83 % des Tank-Pools (0,5·T gegen 0,6·D) | behebt die Verzerrung durch verschiedene Poolgrößen |
+| **C** | A und B zusammen: effektiver absoluter Puffer | **Schadensausteiler**, sobald sein Pool kleiner ist als das 1,25-fache des Tank-Pools — also praktisch immer | vollständigstes Maß der Überlebensfähigkeit |
+| **D** | zusätzlich die eingehende Schadensrate je Ziel | offen | **nicht baubar**, s. u. |
+
+**D ist die einzige Option, die die Frage wirklich beantwortet, und sie hat keine Datengrundlage.** `DataCenter.DPSTaken` misst gruppenweit und nicht je Mitglied: `DamageRec` trägt nur Zeitpunkt und Anteil, kein Ziel, und der einzige Leser ist die Diagnoseanzeige. Der Messbaustein dafür ist als eigener Punkt erfasst und **bewusst nicht gebaut** — Kosten bei allen Nutzern, Nutzen damals bei einer Fähigkeit. Dieser Eintrag hier wäre der zweite mögliche Verbraucher; solange die Umstellung selbst nicht belegt ist, begründet er den Bau aber nicht.
+
+**Empfehlung: N, nicht umstellen.** Drei Gründe, der dritte ist der schwerste:
+
+1. **Es ist Upstream-Verhalten.** Nach der Projektregel wird es erfasst, nicht bearbeitet; Adressat einer Behebung wäre auch der Upstream.
+2. **Die entscheidende Größe fehlt.** Ob der Tank bei 50 % hinter seiner Barriere gefährdeter ist als der Schadensausteiler bei 60 %, hängt daran, wer den nächsten Schaden nimmt — und genau das ist nicht messbar.
+3. **Alle drei Umstellungen heilen den Tank später.** A, B und C wählen in diesem Beispiel den Schadensausteiler zuerst. Kann in diesem Moment nur ein Ziel versorgt werden, ist das für den Tank dasselbe Ergebnis wie die soeben entfernte Schildanrechnung — die Heilung kommt später, nur aus anderem Grund. Das ist die Richtung, die der Spielweise des Auftraggebers entgegensteht.
+
+**Wieder aufzugreifen, wenn** eine Beobachtung vorliegt, dass ein Gruppenmitglied stirbt, während ein geschützterer Tank zuerst geheilt wurde. Dann ist der Fall benannt, und mit ihm der Verbraucher für den Messbaustein.
 
 ### `HasSurvivingShield` misst die **kürzeste** Schildrestzeit, nicht die längste · N, R
 
