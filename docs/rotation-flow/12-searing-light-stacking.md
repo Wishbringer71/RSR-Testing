@@ -75,8 +75,8 @@ Zündung, solange der Status nicht innerhalb von `StatusRefreshGcdCount` GCDs en
 (`ActionConfig.cs:66`), also etwa fünf Sekunden vor Ablauf. Der Schutz verhindert damit die teuren
 Fälle und erlaubt die billigen. **Er ist richtig gebaut und bleibt unangetastet.**
 
-Entscheidend dafür ist `StatusFromSelf = false` in `ModifySearingLightPvE`: `PlayerGetStatus`
-(`StatusHelper.cs:1529`) filtert nur bei `isFromSelf` auf die eigene Quelle, hier zählt also jeder
+Entscheidend dafür ist `StatusFromSelf = false` in `ModifySearingLightPvE`: `PlayerHasStatus`
+(`StatusHelper.cs:1164`, Quellenfilter in `AnyStatusMatches`) filtert nur bei `isFromSelf` auf die eigene Quelle, hier zählt also jeder
 fremde Buff. Sein Gegenstück `HasSearingLight` (`SummonerRotation.cs:271`) ruft
 `PlayerHasStatus(true, …)` und zählt nur den eigenen — auch das ist für seine ursprüngliche Frage
 richtig. Aus dem Zusammentreffen beider entsteht der Befund von V1.

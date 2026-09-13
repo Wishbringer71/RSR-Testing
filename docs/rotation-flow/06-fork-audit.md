@@ -66,7 +66,7 @@ langsamer, und darauf reagieren die bestehenden Schwellen bereits von selbst.
 ### 2.3 WHM-DoT-Guard prüfte das Ziel des vorigen Casts
 
 `BaseAction.Target` ist eine schlichte Auto-Property, die **ausschließlich in
-`CanUse`** zugewiesen wird (`BaseAction.cs:257`). Der Guard las
+`CanUse`** zugewiesen wird (`BaseAction.cs:225`). Der Guard las
 `DiaPvE.Target.Target` **vor** dem ersten `CanUse` des Frames und prüfte damit
 das Ziel des letzten erfolgreichen Casts. Die Absicht — keine Aggro durch
 DoT-Refresh auf einen Gegner, der schon auf einem drauf ist — trägt ohnehin
