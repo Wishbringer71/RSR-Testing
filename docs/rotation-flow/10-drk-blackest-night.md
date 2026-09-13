@@ -110,7 +110,7 @@ Forderung nicht erfüllbar. Die Dauern summieren sich, jede Fähigkeit nur einma
 
 | Fähigkeit | Dauer | Minderung |
 |---|---|---|
-| Reprisal | 10 s, ab Stufe 98 15 s | −10 %, ab Stufe 98 −15 % (auf den Gegnern) |
+| Reprisal | 10 s, ab Stufe 98 15 s | −10 % (auf den Gegnern), von der Stufe unabhängig |
 | Oblation | 2 × 10 s | −10 % |
 | Dark Mind | 10 s | −10 % / −20 % |
 | Dark Missionary | 15 s | −5 % / −10 % |
@@ -132,10 +132,11 @@ Barriere, die sonst hinter ihrer eigenen Vorgängerin hängen bliebe.
 
 **Keine Gruppenbetäubung.** Eine Betäubung ist der Grenzfall der Minderung: Für ihre Dauer kommt
 nicht weniger Schaden, sondern gar keiner. Sanctus — Holy, ab Stufe 82 Holy III — hält alles im
-Umkreis von acht Yalm 4 Sekunden lang an (`ActionId.resx` 139, 25860), und der Weißmagier hält das
-im Trash absichtlich aufrecht: `WHM_Reborn.cs:498` streckt Sanctus über `SurveyStuns`, solange die
-Gegner betäubbar sind. Erst wenn sie `StunResistance` tragen (39, „Immune to stun effects"), läuft
-der Strom wieder.
+Umkreis von acht Yalm 4 Sekunden lang an (`ActionId.resx` 139, 25860). Der Weißmagier kann das im
+Trash absichtlich aufrechterhalten: `WHM_Reborn.ShouldStretchHolyStun` streckt die Betäubung über
+`SurveyStuns`, solange die Gegner betäubbar sind — **hinter einer Option mit Standard aus**, weil
+die Wirkung ohne Laufzeitbeobachtung nicht zu belegen war. Erst wenn sie `StunResistance` tragen
+(39, „Immune to stun effects"), läuft der Strom wieder.
 
 Wer betäuben kann, entscheidet über die Reichweite der Regel:
 
@@ -216,6 +217,15 @@ läuft die Barriere, und der Heiler unterbricht den Schadensstrom, gegen den sie
 müsste. Deshalb steht in `WHM_Reborn` die Gegenbedingung: `ShouldHoldHolyForBarrier()` hält Sanctus
 zurück, solange ein Gruppenmitglied in Tankrolle The Blackest Night trägt
 (`StatusHelper.FullAbsorbRewardStatus`).
+
+**Eine dritte Bedingung steht inzwischen daneben und misst breiter.**
+`ShouldHoldHolyWhilePackSlowed` hält Sanctus zurück, wenn die **Leistung** der Gegner im Wirkradius
+unter die Flächenschwelle gefallen ist — gleich durch welche Minderung, nicht nur durch die
+Barriere. Sie ist der dritte Zeitpunkt der Regel aus Konzept 08 und der Grund, warum die
+Verlangsamung hier in beide Richtungen wirkt: Sie hält die Barriere des Dunkelritters zurück
+(`PackSlowed`) **und** den Sanctus des Weißmagiers. Anders als die beiden Nachbarbedingungen steht
+sie auf Standard an, weil sie eine Anweisung des Auftraggebers mit einer Beobachtung aus dem Spiel
+dahinter ist und kein Vorschlag, dessen Nutzen eine Annahme bleibt.
 
 **Das ist kein Warten aufeinander.** Jede Seite wartet nur, während der Zustand der anderen aktiv
 ist, und beide Zustände laufen von selbst ab — die Betäubung nach vier Sekunden, die Barriere nach

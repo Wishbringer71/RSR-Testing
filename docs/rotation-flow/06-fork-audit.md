@@ -66,7 +66,7 @@ langsamer, und darauf reagieren die bestehenden Schwellen bereits von selbst.
 ### 2.3 WHM-DoT-Guard prüfte das Ziel des vorigen Casts
 
 `BaseAction.Target` ist eine schlichte Auto-Property, die **ausschließlich in
-`CanUse`** zugewiesen wird (`BaseAction.cs:257`). Der Guard las
+`CanUse`** zugewiesen wird (`BaseAction.cs:225`). Der Guard las
 `DiaPvE.Target.Target` **vor** dem ersten `CanUse` des Frames und prüfte damit
 das Ziel des letzten erfolgreichen Casts. Die Absicht — keine Aggro durch
 DoT-Refresh auf einen Gegner, der schon auf einem drauf ist — trägt ohnehin
@@ -106,7 +106,7 @@ warum dieser Fork überhaupt existiert.
 
 | Datei | Fehler im Original | Wirkung |
 |---|---|---|
-| `ActionTargetInfo.cs:88` | `continue` in einer inneren `for`-Schleife statt in der äußeren `foreach` — der Block war wirkungslos | Ziele auf der Restricted-DoT-Sperrliste wurden nicht übersprungen. Die **korrekte** Fassung desselben Guards steht 80 Zeilen tiefer in derselben Datei |
+| `ActionTargetInfo.GetCanTargets`, Guard `IsRestrictedDOT` | `continue` in einer inneren `for`-Schleife statt in der äußeren `foreach` — der Block war wirkungslos | Ziele auf der Restricted-DoT-Sperrliste wurden nicht übersprungen. Die **korrekte** Fassung desselben Guards steht in `GetCanAffects` derselben Datei |
 | `DataCenter.AverageTTK` | Fallback `0f`, wenn noch kein Ziel eine Schätzung hat | Jeder TTK-Verbraucher las „Kampf endet sofort" und blockierte u. a. Auto-Heilung für die ersten ~2,5 s jedes Pulls |
 | 9 × `base.X`-Aufrufe | Overrides riefen eine **andere** Basismethode (z. B. `DefenseSingleGCD` → `base.DefenseAreaGCD`) | Dispatch-Kette lief still an falscher Stelle weiter. Kompiliert, im Diff unsichtbar |
 | `RDM_Reborn` Impact | `!ImpactPvE.EnoughLevel && ImpactPvE.CanUse` | Bedingung nie wahr, Zweig tot |

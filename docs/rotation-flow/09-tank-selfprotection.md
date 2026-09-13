@@ -22,12 +22,16 @@ Lagen bleiben **zwei** echte Rückhaltefälle, denen fünf Aufhebungen gegenübe
 Sie ist für Living Dead als **Uhrregel** umgesetzt — zurückhalten, solange der Tod
 noch rechtzeitig kommt — hinter einer Option mit Standard aus.
 
-Für The Blackest Night ist **im Heilverhalten** gar keine Sonderregel richtig. Heilung
-berührt den Auslöser nicht, und ein Heilerschild wird erst nach der TBN-Barriere
-aufgezehrt, kann sie also weder verzögern noch verdrängen. Die Nachrangigkeit, die
-dort sinnvoll ist, leistet RSR bereits: `BlackestNight` steht in
-`StatusHelper.ShieldStatus` und geht über `GetEffectiveHpPercent` in die
-Heilentscheidung ein.
+Für The Blackest Night ist **keine eigene Rückhalteregel** richtig: Heilung berührt den
+Auslöser nicht, und ein Heilerschild wird erst nach der TBN-Barriere aufgezehrt, kann sie
+also weder verzögern noch verdrängen. Was RSR stattdessen tut, ist allerdings nicht die
+Nachrangigkeit, als die dieses Konzept es zunächst geführt hat: `BlackestNight` steht in
+`StatusHelper.ShieldStatus`, und die Anrechnung über `GetEffectiveHpPercent` hebt die
+Gesundheitsquote des Trägers — sie verschiebt damit nicht seinen **Rang** unter den
+Heilzielen, sondern die **Schwelle**, ab der überhaupt geheilt wird. Bei einer Barriere
+über 25 % der maximalen HP sind das 25 Prozentpunkte: Die oGCD-Heilung setzt erst bei
+real rund 40 % ein statt bei 65 %. Ob das richtig bemessen ist, ist offen und steht in
+`TODO.md`; entschieden ist hier nur, dass eine **zusätzliche** TBN-Regel nichts beiträgt.
 
 *Abgrenzung, weil dieser Satz sonst zu weit gelesen wird:* Er gilt für Heilung und
 Schild. Für den **Schadensstrom** gilt das Gegenteil, und dort liegt inzwischen eine
@@ -43,7 +47,8 @@ hier.
 | Fehlende Ids (`HallowedGround`, `HallowedGround_1302`, `UndeadRebirth`) | umgesetzt |
 | Schutzstatus senkt die Heilschwelle, statt das Flag zu unterdrücken | umgesetzt |
 | Living-Dead-Rückhaltung als Uhrregel, hinter Option | umgesetzt |
-| Sonderbehandlung für The Blackest Night | **nicht nötig** — die vorhandene Schildanrechnung deckt den Fall ab |
+| Sonderbehandlung für The Blackest Night | **nicht nötig** — die vorhandene Schildanrechnung erfasst den Fall |
+| Bemessung dieser Anrechnung | **offen** — sie senkt die Schwelle um den vollen Barrierenwert, nicht nur den Rang (`TODO.md`) |
 | Messbaustein für Heilraten auf Gruppenmitglieder | verworfen, kein Verbraucher |
 
 ## Prüfmaßstab — die Rangordnung
@@ -150,13 +155,23 @@ vom Dunkelritter bekommen. Steht sie in der Reihenfolge vor TBN, verzögert sie 
 Absorption. Das ist ein realer Fall — nur keiner, den ein Heiler beeinflussen kann,
 denn Radiant Aegis wirft der Beschwörer selbst.
 
-**Damit bleibt kein Grund, den Schild zurückzustellen.** Was bleibt, ist die
-gewöhnliche Dringlichkeitsfrage: Ein Träger mit TBN ist bereits geschützt und deshalb
-weniger dringend zu versorgen als ein ungeschütztes Gruppenmitglied. **Genau das
-leistet RSR bereits** — `StatusID.BlackestNight` steht in `StatusHelper.ShieldStatus`
-und geht über `GetEffectiveHpPercent` in die Heilentscheidung ein, sodass der Träger
-mit angerechneter Barriere gesünder erscheint und nachrangig behandelt wird. Eine
-eigene TBN-Regel würde diesem Mechanismus nichts hinzufügen.
+**Damit bleibt kein Grund, den Schild zurückzustellen.** Was bleibt, ist die gewöhnliche
+Dringlichkeitsfrage: Ein Träger mit TBN ist bereits geschützt und deshalb weniger dringend
+zu versorgen als ein ungeschütztes Gruppenmitglied. Eine eigene TBN-Regel fügt dem nichts
+hinzu, denn `StatusID.BlackestNight` steht in `StatusHelper.ShieldStatus` und geht über
+`GetEffectiveHpPercent` in die Heilentscheidung ein.
+
+**Womit dieser Mechanismus allerdings nicht das tut, was der Absatz von ihm verlangt.**
+Die Dringlichkeitsfrage ist eine Frage des Rangs — wer von mehreren Verwundeten zuerst
+versorgt wird. Die Anrechnung hebt dagegen die Gesundheitsquote und verschiebt damit die
+**Schwelle**, ab der überhaupt geheilt wird; sie wirkt auch dann, wenn der Träger der
+einzige Verwundete ist und es gar nichts zu priorisieren gibt. Das ist derselbe
+Kategorienfehler, den dieses Projekt bei `HasHostileCountAoeMitigation` schon einmal
+gemacht hat: Ein Mechanismus wurde an seinem Geltungsbereich beurteilt statt an dem, was
+er auslöst. Die Anrechnung ist deshalb hier nicht mehr als erledigt geführt, sondern als
+offene Bemessungsfrage in `TODO.md` — einschließlich des Falls, für den sie am
+schlechtesten gebaut ist: eine Barriere, die zu spät oder unnötig gesetzt wurde, wird
+voll angerechnet, ohne je Schaden abzufangen.
 
 ### Klasse B — Unverwundbarkeit
 
@@ -256,7 +271,7 @@ zurückhalten" ist aus den vorhandenen Größen **nicht herstellbar**:
 
 - **Tankbuster wechseln das Ziel mitten in der Sequenz.** `DataCenter.BMRNextTankbusterIn`
   ist eine einzige Zahl ohne Angabe, auf wen; `IsHostileCastingTankBusterAtMe` ist
-  ausdrücklich spielerzentriert (`DataCenter.cs:2087`).
+  ausdrücklich spielerzentriert (`DataCenter.IsHostileCastingTankBusterAtMe`).
 - **Ein Tankbuster ist nicht ein Einschlag.** Mehrfach einschlagende Buster sind eine
   Folge von Treffern; die Vorhersage nennt den Beginn, nicht die Anzahl und nicht die
   Gesamtsumme.
@@ -452,7 +467,8 @@ Wirkzeit würde beides lösen — welche Heilung gleich fällt, ist jedoch eine
 Rotationsentscheidung, die die zentrale Schicht weder kennt noch erzwingen kann.
 
 **Die gestaffelte Phase-2-Unterstützung** (Fälle 4 und 4a) ist nicht gebaut. Sie
-verlangt eine Kursprognose und damit den verworfenen Messbaustein.
+verlangt eine Kursprognose und damit den verworfenen Messbaustein. Welche Stellen im
+Code ihr entgegenstehen, führt `TODO.md`.
 
 **Eine einzige Frage zum Weisen.** Die Verbrauchsreihenfolge ordnet Eukrasian Diagnosis
 hinter The Blackest Night ein, ein Job-Guide davor. Träfe Letzteres zu, könnte der

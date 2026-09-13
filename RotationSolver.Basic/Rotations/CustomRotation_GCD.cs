@@ -128,7 +128,7 @@ public partial class CustomRotation
 					return act;
 				}
 
-				if (hardcastraisetype == HardCastRaiseType.HardCastNormal && SwiftcastPvE.Cooldown.IsCoolingDown)
+				if (hardcastraisetype == HardCastRaiseType.HardCastNormal && !SwiftcastComingForRaise)
 				{
 					if (RaiseSpell(out act, true))
 					{
@@ -138,7 +138,7 @@ public partial class CustomRotation
 
 				if (hardcastraisetype == HardCastRaiseType.HardCastSwiftCooldown)
 				{
-					if (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge)
+					if (!Service.Config.RaisePlayerBySwift || (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge))
 					{
 						if (RaiseSpell(out act, true))
 						{
@@ -147,32 +147,16 @@ public partial class CustomRotation
 					}
 				}
 
-				if (hardcastraisetype == HardCastRaiseType.HardCastOnlyHealer)
+				// The Swiftcast reservation belongs here too. All four hard cast modes promise it -
+				// every description starts "Raise while Swiftcast is on cooldown" - and the other
+				// three check it: HardCastNormal in the plain form, the two SwiftCooldown modes in
+				// the form that also weighs the cast time. This mode is to HardCastNormal what
+				// HardCastOnlyHealerSwiftCooldown is to HardCastSwiftCooldown, namely plus "the
+				// other raisers are dead", so it inherits the plain form rather than the weighing
+				// one. Without it, choosing this mode hard cast even with Swiftcast ready.
+				if (hardcastraisetype == HardCastRaiseType.HardCastOnlyHealer && !SwiftcastComingForRaise)
 				{
-					var deadhealers = new HashSet<IBattleChara>();
-					if (DataCenter.PartyMembers != null)
-					{
-						foreach (var battleChara in DataCenter.PartyMembers.GetDeath())
-						{
-							if (TargetFilter.IsJobCategory(battleChara, JobRole.Healer) && !battleChara.IsPlayer())
-							{
-								deadhealers.Add(battleChara);
-							}
-						}
-					}
-
-					var allhealers = new HashSet<IBattleChara>();
-					if (DataCenter.PartyMembers != null)
-					{
-						foreach (var battleChara in DataCenter.PartyMembers)
-						{
-							if (TargetFilter.IsJobCategory(battleChara, JobRole.Healer) && !battleChara.IsPlayer())
-							{
-								allhealers.Add(battleChara);
-							}
-						}
-					}
-					if (RaiseSpell(out act, true) && deadhealers.Count == allhealers.Count && deadhealers.Count > 0)
+					if (!AnyOtherLivingRaiser() && RaiseSpell(out act, true))
 					{
 						return act;
 					}
@@ -180,32 +164,9 @@ public partial class CustomRotation
 
 				if (hardcastraisetype == HardCastRaiseType.HardCastOnlyHealerSwiftCooldown)
 				{
-					if (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge)
+					if (!Service.Config.RaisePlayerBySwift || (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge))
 					{
-						var deadhealers = new HashSet<IBattleChara>();
-						if (DataCenter.PartyMembers != null)
-						{
-							foreach (var battleChara in DataCenter.PartyMembers.GetDeath())
-							{
-								if (TargetFilter.IsJobCategory(battleChara, JobRole.Healer) && !battleChara.IsPlayer())
-								{
-									deadhealers.Add(battleChara);
-								}
-							}
-						}
-
-						var allhealers = new HashSet<IBattleChara>();
-						if (DataCenter.PartyMembers != null)
-						{
-							foreach (var battleChara in DataCenter.PartyMembers)
-							{
-								if (TargetFilter.IsJobCategory(battleChara, JobRole.Healer) && !battleChara.IsPlayer())
-								{
-									allhealers.Add(battleChara);
-								}
-							}
-						}
-						if (RaiseSpell(out act, true) && deadhealers.Count == allhealers.Count && deadhealers.Count > 0)
+						if (!AnyOtherLivingRaiser() && RaiseSpell(out act, true))
 						{
 							return act;
 						}
@@ -355,7 +316,7 @@ public partial class CustomRotation
 					return act;
 				}
 
-				if (hardcastraisetype == HardCastRaiseType.HardCastNormal && SwiftcastPvE.Cooldown.IsCoolingDown)
+				if (hardcastraisetype == HardCastRaiseType.HardCastNormal && !SwiftcastComingForRaise)
 				{
 					if (RaiseSpell(out act, true))
 					{
@@ -365,7 +326,7 @@ public partial class CustomRotation
 
 				if (hardcastraisetype == HardCastRaiseType.HardCastSwiftCooldown)
 				{
-					if (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge)
+					if (!Service.Config.RaisePlayerBySwift || (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge))
 					{
 						if (RaiseSpell(out act, true))
 						{
@@ -374,32 +335,10 @@ public partial class CustomRotation
 					}
 				}
 
-				if (hardcastraisetype == HardCastRaiseType.HardCastOnlyHealer)
+				// Same reservation as in the branch above; see the comment there.
+				if (hardcastraisetype == HardCastRaiseType.HardCastOnlyHealer && !SwiftcastComingForRaise)
 				{
-					var deadhealers = new HashSet<IBattleChara>();
-					if (DataCenter.PartyMembers != null)
-					{
-						foreach (var battleChara in DataCenter.PartyMembers.GetDeath())
-						{
-							if (TargetFilter.IsJobCategory(battleChara, JobRole.Healer) && !battleChara.IsPlayer())
-							{
-								deadhealers.Add(battleChara);
-							}
-						}
-					}
-
-					var allhealers = new HashSet<IBattleChara>();
-					if (DataCenter.PartyMembers != null)
-					{
-						foreach (var battleChara in DataCenter.PartyMembers)
-						{
-							if (TargetFilter.IsJobCategory(battleChara, JobRole.Healer) && !battleChara.IsPlayer())
-							{
-								allhealers.Add(battleChara);
-							}
-						}
-					}
-					if (RaiseSpell(out act, true) && deadhealers.Count == allhealers.Count && deadhealers.Count > 0)
+					if (!AnyOtherLivingRaiser() && RaiseSpell(out act, true))
 					{
 						return act;
 					}
@@ -407,32 +346,9 @@ public partial class CustomRotation
 
 				if (hardcastraisetype == HardCastRaiseType.HardCastOnlyHealerSwiftCooldown)
 				{
-					if (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge)
+					if (!Service.Config.RaisePlayerBySwift || (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge))
 					{
-						var deadhealers = new HashSet<IBattleChara>();
-						if (DataCenter.PartyMembers != null)
-						{
-							foreach (var battleChara in DataCenter.PartyMembers.GetDeath())
-							{
-								if (TargetFilter.IsJobCategory(battleChara, JobRole.Healer) && !battleChara.IsPlayer())
-								{
-									deadhealers.Add(battleChara);
-								}
-							}
-						}
-
-						var allhealers = new HashSet<IBattleChara>();
-						if (DataCenter.PartyMembers != null)
-						{
-							foreach (var battleChara in DataCenter.PartyMembers)
-							{
-								if (TargetFilter.IsJobCategory(battleChara, JobRole.Healer) && !battleChara.IsPlayer())
-								{
-									allhealers.Add(battleChara);
-								}
-							}
-						}
-						if (RaiseSpell(out act, true) && deadhealers.Count == allhealers.Count && deadhealers.Count > 0)
+						if (!AnyOtherLivingRaiser() && RaiseSpell(out act, true))
 						{
 							return act;
 						}
@@ -521,6 +437,40 @@ public partial class CustomRotation
 
 		return null;
 	}
+
+	/// <summary>
+	/// Is anyone besides the player still standing who could take this raise?
+	///
+	/// This is what the "only healer" hard cast modes mean to ask: hard casting costs eight seconds
+	/// of GCD and is only worth it when nobody else can do it instead. The branches used to build
+	/// two sets of party healers and compare their sizes, which counted healers rather than raisers,
+	/// excluded the player from both - so a lone healer compared 0 == 0 behind a "&gt; 0" guard and
+	/// never hard cast at all - and could not express "nobody else" in the first place.
+	///
+	/// The reference set and the raiser jobs live in <see cref="DataCenter.AnyLivingRaiser"/>,
+	/// shared with the Phoenix Down decision, which asks the same question with the player counted.
+	/// </summary>
+	private static bool AnyOtherLivingRaiser()
+	{
+		return DataCenter.AnyLivingRaiser(excludeSelf: true);
+	}
+
+	/// <summary>
+	/// Is the rotation still going to spend Swiftcast on the raise?
+	///
+	/// The hard cast branches used to ask <c>SwiftcastPvE.Cooldown.IsCoolingDown</c>, which answers
+	/// a different question and leaves a state they cannot get out of. For a healer this rotation
+	/// spends Swiftcast on the raise path alone - the two other triggers in CustomRotation_Ability
+	/// are gated on JobRole.RangedMagical - so with RaisePlayerBySwift off it is never spent, never
+	/// enters recovery, the hard cast branch never fires, and nobody is raised at all. The setting
+	/// only promises not to spend Swiftcast on raises, not to stop raising.
+	///
+	/// With the setting on, `!SwiftcastComingForRaise` equals the old `IsCoolingDown` in every
+	/// combination; it differs only for setting-off with Swiftcast ready, which is exactly the
+	/// state that raised nobody.
+	/// </summary>
+	private bool SwiftcastComingForRaise =>
+		Service.Config.RaisePlayerBySwift && !SwiftcastPvE.Cooldown.IsCoolingDown;
 
 	private bool RaiseSpell(out IAction? act, bool mustUse)
 	{

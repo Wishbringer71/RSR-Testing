@@ -11,6 +11,37 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v6
+        with:
+          # Full history, because the fork version check asks `git describe` which upstream release
+          # this code sits on, and the default checkout is one commit deep.
+          fetch-depth: 0
+
+      # First, because it is the cheapest answer to the most expensive failure: a file that does not
+      # parse fails the Windows build after a minute and a half, and there is no local .NET here to
+      # catch it sooner. A move that left two method bodies without their signatures cost exactly
+      # that round trip.
+      - name: Check the C# files are structurally intact
+        run: python3 .github/scripts/audit/check_cs_structure.py
+
+      # Depth alone is not enough: this fork's own remote carries no upstream tags at all, only
+      # 7.5.5.41+wsh1 and 7.5.6.1+wsh1, and this environment cannot push tags to fix that. So the
+      # release tags have to come from upstream directly, or `git describe` finds nothing to
+      # compare against.
+      - name: Fetch the upstream release tags
+        run: |
+          git remote add upstream https://github.com/FFXIV-CombatReborn/RotationSolverReborn.git || true
+          git fetch --tags --no-recurse-submodules upstream
+
+      # The version literals in Directory.Build.props name the upstream release the code contains.
+      # Nothing updates them on a merge - upstream carries no version in its source tree - so they
+      # age silently, and that number is what the settings window shows the user. It said 7.5.6.1
+      # after upstream 7.5.6.2 had already been merged in.
+      #
+      # --require-tags turns "no tag found" from a pass into a failure. Without it the check would
+      # wave the run through in exactly the situation it cannot answer, which is worse than not
+      # checking: a silent pass is indistinguishable from a clean tree.
+      - name: Check the fork version names the upstream release it sits on
+        run: python3 .github/scripts/audit/check_fork_version.py --require-tags
 
       - name: Check base call targets
         run: python3 .github/scripts/check_base_calls.py
@@ -26,6 +57,33 @@ jobs:
       - name: Check the MSBuild files are well-formed XML
         run: python3 .github/scripts/audit/check_msbuild_xml.py
 
+      # The user plays a German client, so every name he states has to be translated back to an
+      # identifier before anything can be searched for. Getting that wrong has produced both a false
+      # "not in the tree" report and an invented German name, so the pairs are recorded rather than
+      # looked up again, and this keeps each one pointing at something that exists.
+      - name: Check the German action-name dictionary resolves
+        run: python3 .github/scripts/audit/check_action_names.py
+
+      # A line reference is the cheapest way to make a concept verifiable and the first thing to
+      # rot, because any edit above the cited line moves it and nothing fails. This fails the run
+      # only for a line that cannot exist; a reference whose identifier sits elsewhere is reported
+      # for a reader to judge, since a correct reference may well cite a line inside a method.
+      - name: Check the documentation's line references still exist
+        run: python3 .github/scripts/audit/check_doc_references.py
+
+      # Fails when the GCD path picks an ability inside the window the execution gate refuses.
+      # Nothing fails at runtime when it does - the action shows up in the preview and is silently
+      # never cast - so only a static check notices. That is how raising stayed broken for over a
+      # year after a gate was added elsewhere.
+      - name: Check no GCD selection collides with the execution gate
+        run: python3 .github/scripts/audit/scan17.py
+
+      # A setting with a label and a default promises the user it does something. When nothing
+      # reads it the promise fails silently and forever. Two such settings sat in the raise path
+      # alone, so this guards against the next one rather than against those two.
+      - name: Check every user setting has a reader
+        run: python3 .github/scripts/audit/scan18.py
+
   Build:
     runs-on: windows-latest
     steps:
@@ -40,11 +98,12 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Download Dalamud Latest
-        # Same track as publish.yaml. Upstream moved the release build to the staging
-        # channel in 7.5.6.0 - the only change that release carries - so a check against
-        # the release channel would no longer compile what a release actually builds.
+        # Same track as publish.yaml, always. Upstream moved the release build to the
+        # staging channel in 7.5.6.0 and back to the release channel in the Beastmaster
+        # commit; this line follows, because a check against a different channel than the
+        # release builds against no longer measures what is shipped.
         run: |
-          Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/stg/latest.zip -OutFile latest.zip
+          Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
           Expand-Archive -Force latest.zip -DestinationPath "$env:AppData\XIVLauncher\addon\Hooks\dev"
 
       - name: Restore NuGet Packages
@@ -52,3 +111,10 @@ jobs:
 
       - name: Build Plugin
         run: dotnet build --no-restore -c Release RotationSolver/RotationSolver.csproj
+
+      # The generator is in the solution and in no build. Nothing referenced it, so a compile error
+      # in it reached the user instead of the CI - a missing `using Lumina` for LuminaOptions did
+      # exactly that. It needs the game files to *run*, not to compile, so building it here costs a
+      # restore and closes the gap for every future change to it.
+      - name: Build the game-data generator
+        run: dotnet build -c Release RotationSolver.GameData/RotationSolver.GameData.csproj

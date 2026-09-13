@@ -202,7 +202,28 @@ public sealed class SMN_Reborn : SummonerRotation
 		var inSolarUnique = DataCenter.PlayerSyncedLevel() == 100 ? !InBahamut && !InPhoenix && InSolarBahamut : InBahamut && !InPhoenix;
 		var burstInSolar = (SummonSolarBahamutPvE.EnoughLevel && InSolarBahamut) || (!SummonSolarBahamutPvE.EnoughLevel && InBahamut) || !SummonBahamutPvE.EnoughLevel;
 
-		if (burstInSolar)
+		// Searing Light overwrites, it does not stack, and it comes back exactly as often as the
+		// Solar Bahamut window it is tied to. With one Summoner that tie is right. With a second one
+		// every window collides and all but one charge is wasted, so with another Summoner in the
+		// party the firing window widens twice over:
+		//
+		//   - any big summon, not just Solar (the minor windows carry 78% of a Solar window and are
+		//     the natural place for a second caster);
+		//   - outside a summon as well, but only once the running buff has fully expired.
+		//
+		// The second condition is not the same as "the guard has opened". StatusProvide lets a cast
+		// through five seconds before the buff ends so that a refresh inside a window is possible;
+		// out here that would burn a whole charge for those few seconds, and the model measured such
+		// a version *below* the plain window widening. Hence HasAnySearingLight, which is false only
+		// when no buff is on the player at all.
+		//
+		// No bookkeeping about the other Summoners is involved, deliberately: they cannot cast
+		// before their own recast is up, so there is nothing to defer to, and the overwrite guard
+		// already prevents the waste that bookkeeping would try to avoid.
+		var mayFireSearingLight = burstInSolar
+			|| (AnotherSummonerInParty && (inBigInvocation || !HasAnySearingLight));
+
+		if (mayFireSearingLight)
 		{
 			if (SearingLightPvE.CanUse(out act))
 			{
@@ -317,7 +338,11 @@ public sealed class SMN_Reborn : SummonerRotation
 
 		if (PainflarePvE.CanUse(out act))
 		{
-			if ((inSolarUnique && HasSearingLight) || !SearingLightPvE.EnoughLevel)
+			// HasAnySearingLight, not HasSearingLight: the question here is whether a buff window is
+			// running, and a second Summoner's Searing Light raises this player's damage by the same
+			// 5%. Asking only about the own buff held the Aetherflow spenders back while standing in
+			// someone else's window.
+			if ((inSolarUnique && HasAnySearingLight) || !SearingLightPvE.EnoughLevel)
 			{
 				return true;
 			}
@@ -329,7 +354,7 @@ public sealed class SMN_Reborn : SummonerRotation
 
 		if (NecrotizePvE.CanUse(out act))
 		{
-			if ((inSolarUnique && HasSearingLight) || !SearingLightPvE.EnoughLevel)
+			if ((inSolarUnique && HasAnySearingLight) || !SearingLightPvE.EnoughLevel)
 			{
 				return true;
 			}
@@ -345,7 +370,7 @@ public sealed class SMN_Reborn : SummonerRotation
 
 		if (FesterPvE.CanUse(out act))
 		{
-			if ((inSolarUnique && HasSearingLight) || !SearingLightPvE.EnoughLevel)
+			if ((inSolarUnique && HasAnySearingLight) || !SearingLightPvE.EnoughLevel)
 			{
 				return true;
 			}

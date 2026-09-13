@@ -15,10 +15,10 @@ python3 .github/scripts/audit/scan.py
 | `scan.py` | Range/default mismatches, config properties never read, stale `RotationDesc`, dead code, unguarded dereferences | A8: SAM `MeikyoShisuiCountdown`, BLU `UseBasicInstinct`/`UseMightyGuard`, nine `RotationDesc`, eleven configs, `OldUpdateTargets` |
 | `mitscan.py` | Mitigation actions in methods that carry no danger gate | A9: SMN Radiant Aegis in `GeneralAbility` |
 | `scan2.py` | Percent-versus-ratio comparisons, float equality, `usedUp`, `skipStatusProvideCheck`, contradictory level predicates, repeated conditions, unguarded division | A10: four HP thresholds compared against the wrong scale |
-| `scan3.py` | `CanUse` blocks that never return, identical bodies in consecutive branches, level gate naming another action | A10: Viper structural finding |
+| `scan3.py` | Discarded `CanUse` results, unreachable duplicate branches, inverted level gates | A10: Viper structural finding |
 | `scan4.py` | `[Range]` attribute versus declared default, duplicate config property names | A10: none open; the class had a real hit in A8 |
 | `scan5.py` | Fork behaviour changes sitting in a dispatch path that has no switch of its own | A16: six lines, all covered by an option or already logged |
-| `scan6.py` | Enum members whose ordinal moved, split by whether the enum reaches stored configuration | A16: none persisted; `SpecialMode` in-memory only |
+| `scan6.py` | Enum members whose ordinal moved, split by whether the enum is bound - by stored configuration, or by a cast from a foreign int | A16: none persisted; `SpecialMode` is bound over IPC, aligned in `8dc2bd658` and marked known |
 | `scan7.py` | Public and protected members of `RotationSolver.Basic` removed or re-signed since a release, keyed by declaring type, interface members included | A16: `HasHostileCountAoeMitigation`, `ShouldCheckTargetStatus` |
 
 `stun_coverage.py` is the odd one out: not a scanner but a model calculator for the
@@ -40,7 +40,9 @@ each script should carry a self-test against constructed defects and fail loudly
 `scan3.py` shipped an off-by-one that made one of its classes find nothing at all, and `scan4.py`
 did not recognise multi-line attribute blocks; both were caught that way.
 
-State: every script from `scan.py` through `scan8.py` now carries one. The last three - `scan.py`,
+State: every script carries one. `scan3.py` was the last without and is covered in its own section
+below; `scan4.py` carries its self-test inline rather than in a `self_test()` function, which is why a
+grep for that name reported it missing once. The three before those - `scan.py`,
 `mitscan.py` and `scan2.py` - got theirs late, and closing that gap required a small refactor first:
 their checks ran inline in the file loop and could not be called with a constructed source at all.
 They now expose `scan_source()` / `scan_file()`, with the walk and the printing moved into `main()`.
@@ -66,6 +68,104 @@ by declaring type, it reported 55 phantom removals, because a prose comment cont
 counted `internal` interface members, which are not package surface. Only the third result — two
 members — is the measured one.
 
+## scan3.py — drei Klassen, jede am Merkmal selbst gemessen
+
+Die erste Fassung meldete nach Ähnlichkeit und wurde deshalb übergangen: 41 Paare aufeinander
+folgender `if`-Blöcke mit gleichem Rumpf und 38 Stufen-Gates — und **jeder einzelne Treffer war
+richtiger Code**. Ein Prüfmittel, dessen Ausgabe der Leser von Hand sortieren muss, ist schlechter
+als keines, weil der eine echte Fund darin untergeht. Dazu fehlte der Selbsttest; sein „nichts
+gefunden" war damit von einem defekten Muster nicht zu unterscheiden.
+
+Beide Muster maßen ein Surrogat statt der gemeinten Eigenschaft:
+
+- **Gleicher Rumpf ist kein Klon.** Zwei aufeinander folgende `if`-Blöcke mit demselben Rumpf sind
+  ein ausgeschriebenes `if (c1 || c2)` und die übliche Bauform dieser Rotationen. Zum Defekt wird
+  es erst, wenn der erste Block die Methode verlässt **und** die zweite Bedingung die erste
+  impliziert — dann ist der zweite Zweig unerreichbar. Die Implikation entscheidet der Scan
+  syntaktisch: beide Bedingungen an `&&` der obersten Klammerebene zerlegt, und wenn jeder
+  Konjunkt der ersten auch in der zweiten steht, ist die zweite die strengere. Innerhalb eines
+  Konjunkts wird nichts gedeutet, ein `||` bleibt ein unteilbares Stück — nur so bleibt der
+  Teilmengentest gültig, gleich was darin steht.
+- **Die negierte Form des Stufen-Gates ist das Fallback.** `!HolyIii.EnoughLevel && Holy.CanUse`
+  ist der reguläre Rückfall auf die alte Aktion. Der reguläre Ausdruck erfasste das `!` nicht und
+  meldete damit genau die richtige Form. Gemeint ist die **un-negierte**: eine alte Aktion, die
+  erst gewirkt wird, sobald die neue bereits gelernt ist.
+
+Ergebnis über den bereinigten Baum: 100 Stufen-Gates geprüft, **kein** un-negiertes; 41 Paare mit
+geteiltem Rumpf, **keines** mit Implikation. Der Nullbefund des Gate-Musters ist unabhängig
+gegengeprüft — eine Textsuche über alle drei Rotationsbäume nach der un-negierten Form mit
+verschiedenen Aktionen liefert ebenfalls nichts.
+
+Selbsttest gegen konstruierte Defekte **und** gegen die richtige Form jeder Klasse, denn der Fehler
+lag hier auf der zweiten Seite: verworfenes `CanUse`-Ergebnis gegen ein genutztes, strengere
+Bedingung zuletzt gegen strengere zuerst und gegen einen ersten Block, der durchfällt, un-negiertes
+Gate gegen das negierte und gegen dasselbe in einem Kommentar.
+
+## scan.py — vier Prüfungen, die Ähnlichkeit statt Merkmal gemessen haben
+
+Dieselbe Fehlerform wie bei `scan3.py`, und sie war größer: Über den bereinigten Baum meldete
+`scan.py` 105 Treffer in sechs Klassen, von denen **94 richtiger Code** waren. Die Verengungen sind
+jeweils am Merkmal begründet, nicht am Ergebnis, und jede trägt ihren Selbsttest für beide Seiten.
+
+| Klasse | vorher | nachher | Was falsch gemessen wurde |
+|---|---|---|---|
+| (a) `RotationDesc` nennt eine Aktion, die der Rumpf nie benutzt | 10 | 2 | Der **unmittelbare** Rumpf statt des Wirkungsbereichs. Eine Rotation, die die Aktion in eine Hilfsmethode auslagert, wirkt sie trotzdem; die Beschreibung behauptet, die Methode *führe zu* der Aktion. Gelesen werden jetzt der Rumpf und die Rümpfe der von ihm gerufenen Methoden derselben Datei, zwei Sprünge tief. |
+| (b) `if (X.CanUse(out _)) { return true; }` | 5 | 0 | Das verworfene Ergebnis allein. `CanUse(out _)` als reine Prüfung neben einer Aktion, die eine frühere Zeile schon gewählt hat, ist richtig — der Revolverklinge prüft Demon Slice innerhalb eines Bow-Shock-Blocks, `CustomRotation_Ability` prüft eine Aktion nach, die sie **übergeben** bekommt. Defekt ist es nur, wo die umgebende Methode `act` nie zuweist. |
+| (d) Einstellung ohne Leser | 7 | 0 | Ein mehrzeiliges Label **ist** die Einstellung: die Rotationshinweise der Beiruta-Dateien tragen ihren ganzen Inhalt in `Name`, die Eigenschaft ist nur der Haken. Gegenprobe: Im ganzen Baum haben genau diese sieben mehrzeilige Attributargumente, die Verengung verdeckt also nichts. |
+| (e) `X.Target.Target.member` ohne Absicherung | 60 | 5 | Eine Zeile statt des Geltungsbereichs. `BaseAction.Target` ist ein nicht-nullbares `TargetResult`; null sein kann nur das `IBattleChara` darin, und die Absicherung steht nach Hausform eine Zeile höher in derselben Bedingung oder als umgebendes `if (X.CanUse(out act))`. Dass `CanUse` das Ziel wirklich herstellt, ist belegt: es liefert `false` bei leerem `PreviewTarget` und setzt `Target` andernfalls. |
+| (f) zwei gleiche `if`-Bedingungen in Folge | 6 | 4 | Ein `break` oder `else` zwischen den beiden. Dann stehen sie in zwei Zweigen eines `switch` beziehungsweise einer Verzweigung, und Steuerfluss geht nie von einem zum anderen. |
+| (h) Override, der nur `base` ruft | 17 | — | Nichts. Die Klasse ist verhaltensgleich zu gar keinem Override, es gibt also nichts zu beheben. Sie wird jetzt **gezählt statt gemeldet**; den Fall, der zählt — ein Passthrough auf die **falsche** Basismethode — deckt `check_base_calls.py` in der CI ab. |
+
+**Ein Befund kam aus der Verengung von (e) selbst**, und er ist der Grund, warum eine zeilenbasierte
+Prüfung hier an ihre Grenze stößt: `CanUse` liefert im Vorschaulauf `true`, **ohne** `Target` zu
+setzen — die Zuweisung steht unter `if (!IBaseAction.ActionPreview)`. Sechs Stellen im Heilerbestand
+sind darüber erreichbar. Die Wirkkette, der Betroffenenkreis und die drei Behebungswege stehen in
+`TODO.md`; der Scan kann den Fall nicht von den 81 korrekten trennen und benennt die Grenze im
+Kommentar, statt sie zu verschweigen.
+
+## scan2.py — 541 Treffer, kein einziger Defekt
+
+Der Extremfall derselben Fehlerform. Über dem bereinigten Baum meldete `scan2.py` **541 Treffer in
+sieben Klassen**, und geprüft war jeder davon richtiger Code. Vier Klassen sind verengt, drei sind
+gar nicht entscheidbar und werden nur noch gezählt.
+
+| Klasse | vorher | nachher | Was falsch gemessen wurde |
+|---|---|---|---|
+| (a) Prozentskala gegen 0..1-Einstellung | 5 | 0 | Der Ausdruck wurde **vor** der Umrechnung abgeschnitten. `GetEffectiveHpPercent()` liefert 0..100, und alle fünf Stellen rechnen die Einstellung mit `* 100f` um — der Scan meldete also genau die Umrechnung, nach der er suchen sollte. |
+| (c) Gleichheit auf Fließkomma | 3 | 0 | Der **Name** statt des Typs. `CurrentMp` ist ein `uint` mit `Math.Min(10000, …)`; `== 10000` prüft die Schranke exakt und ist richtig. Entschieden wird das jetzt über einen Index der ganzzahlig deklarierten Namen (510 im Baum) — eine Fähigkeitsprüfung statt einer alternden Ausnahmeliste. |
+| (g) widersprüchliche Stufenprädikate | 12 | 0 | Die **Zeile** statt des Zweigs. `(X.EnoughLevel && A) \|\| (!X.EnoughLevel && B)` ist die reguläre Stufen-Fallunterscheidung; ein Widerspruch wären beide Polaritäten im *selben* `\|\|`-Zweig. Gesplittet wird an der flachsten Klammertiefe, auf der ein `\|\|` vorkommt, weil ein `if (` den Operator schon eine Ebene hineinschiebt. |
+| (i) Division ohne Nullprüfung | 3 | 0 | Vier Zeilen Kontext statt des Geltungsbereichs. Die Partie-HP-Rechnung in `DataCenter` kehrt bei `hpCount == 0` **dreißig Zeilen** über der Division zurück, und `ActionQueueManager` trägt einen ausdrücklichen Guard drei Zeilen davor. Gesucht wird jetzt im ganzen Rumpf bis zur Fundstelle. |
+| (e) `usedUp: true` ohne Bedingung | 156 | gezählt | Nichts — die Klasse ist nicht entscheidbar. Ob „gib die letzte Ladung frei" an eine Burst-Bedingung gehört, ist ein Urteil über Rotationsentwurf; 156 Stellen über alle Jobs tun es, und keine Regel trennt die falschen heraus. |
+| (f) `skipStatusProvideCheck: true` ohne Gate | 105 | gezählt | Ebenso: das Flag heißt „wirke es, obwohl der Status steht", was für eine Erneuerung richtig und für eine Verschwendung falsch ist — entscheidbar nur je Aktion. |
+| (h) gleiche Bedingung zweimal je Methode | 257 | gezählt | Zwei Fehler. Gemessen wird der **gestrippte** Quelltext, in dem jedes Stringliteral zu `""` geworden ist: sieben `ImGui.CollapsingHeader("…")` in einer UI-Methode lesen sich damit als eine siebenfach wiederholte Bedingung. Und selbst bei verschiedenem Text ist die Klasse kein Defekt — dieselbe Frage in zwei Rollenzweigen ist richtig (A6). |
+
+**Der Nullbefund ist gegengeprüft, nicht geglaubt.** Am echten Baum konstruiert: die `* 100f`-Umrechnung
+in `ObjectHelper` entfernt → (a) meldet die Stelle; den `hpCount == 0`-Rücksprung in `DataCenter`
+stillgelegt → (i) meldet beide Divisionen. Nach der Rücknahme beide wieder null.
+
+## scan6.py — die dritte Bindung: ein Enum, das per Cast von außen gefüllt wird
+
+Der Scan teilte Ordinaländerungen in zwei Klassen: erreicht die gespeicherte Konfiguration
+(Vertragsbruch) oder nicht (informativ). Die zweite Klasse war zu weit. `SpecialMode` ist nicht
+persistiert und galt damit als frei umnummerierbar — während BossModReborn sein eigenes Ordinal
+als `int` über IPC schickt und `BossModUpdater` es direkt hineincastet. Die Angleichung
+(`8dc2bd658`) fand dort eine **tatsächliche** Fehlzuordnung: unser `Freezing` saß auf ihrem
+`Misdirection`, unser `Misdirection` auf nichts.
+
+„Wird der Typ persistiert" war also die falsche Frage. Der Scan kennt jetzt eine dritte Bindung:
+ein Enum, in das der Baum irgendwo einen nicht-Enum-Ausdruck castet. Der Kandidatenfilter ist
+absichtlich weit — er liefert jeden Cast-Zieltyp und wird erst mit den Enums geschnitten, die
+überhaupt ein Ordinal verschoben haben.
+
+Die beiden Zeilen der Angleichung sind als **`known`** ausgewiesen, mit Commit als Begründung.
+Ein Vertragsbruch, der selbst die dokumentierte Reparatur ist, würde sonst für immer gemeldet —
+und eine Ausgabe, die man überlesen muss, wird nicht mehr gelesen. Dieselbe Behandlung wie bei
+`scan17.py`.
+
+Der Selbsttest prüft die neue Klasse von beiden Seiten: derselbe verschobene Ordinalwert gilt als
+Bruch, wenn das Enum per Cast gefüllt wird, und bleibt informativ, wenn keine der drei Bindungen
+vorliegt.
+
 ## scan8.py — negated-name predicates read with both polarities
 
 Added after the same defect was found twice by hand, months apart, in
@@ -74,6 +174,25 @@ callers split along that gap without anything failing. The scan lists every bool
 already spells a negation ("No", "Not", "Never", "Cannot", "Without") and reports those read with
 both polarities somewhere in the tree. A mixed reading is not proof — a two-sided predicate is
 legitimate — but it is a short list, and one side is likely to hold the wrong belief.
+
+**Zweite Klasse, dieselbe Familie:** eine Methode, deren Parameter **alle** optional sind, deren
+Rumpf ein einzelner Ausdruck ist und in dem jeder Parameter vorkommt — ohne Argumente gerufen ist
+ihr Ergebnis durch die Standardwerte konstant. `GCDTime(uint gcdCount = 0, float offset = 0)` gibt
+für `GCDTime()` genau 0 zurück, weshalb `GCDTime() == 0f` unbedingt wahr ist. Das deckt die
+params-Klasse nicht ab: die Parameter sind gewöhnliche optionale, und der Rückgabetyp ist nicht
+`bool`.
+
+**Der konstante Wert allein ist kein Befund**, und das ist der Grund, warum die Prüfung eng gefasst
+ist. Von 14 solchen Methoden im Baum sind 13 richtig: `SongEndAfterGCD()` heißt „endet der Status
+jetzt" und gibt seine 0 sinnvoll an eine weitere Prüfung weiter. Zum Defekt wird es erst, wenn der
+konstante Wert **selbst** die Antwort ist und gegen ein **Literal** verglichen wird — dann steht die
+Entscheidung zur Übersetzungszeit fest. Gemeldet werden deshalb nur solche Vergleiche: zwei, beide
+`GCDTime() == 0f` im Ninja-Zweig, in `TODO.md` erfasst und als `known` ausgewiesen, damit der
+Rückgabewert für einen **neuen** Fall aussagekräftig bleibt.
+
+Der Selbsttest deckt beide Seiten ab: Block- und Ausdruckskörper werden erkannt, ein Parameter, den
+der Ausdruck nicht benutzt, disqualifiziert die Deklaration, und ein konstantes Ergebnis, das als
+Wert oder als `bool` verwendet wird, gilt nicht als Treffer.
 
 It found its anchor case on the first run, and a second class that had nothing to do with healing:
 `IsConditionCannotTarget()` is read `return null` in seven places where the three neighbouring
@@ -219,7 +338,7 @@ PvE nur den erlittenen Schaden, ihre Barriere-Ids 3086 und 3026 gehören zu den 
 beide standen vorher als PvE-Kandidaten in `TODO.md` (AUDIT_LOG C28). Der Selbsttest deckt alle
 vier Fälle an konstruierten Aktionen ab, den Aquaveil-Fall eingeschlossen.
 
-Von den 55 Gruppen ohne jeden Vertreter standen 15 Ids hinter einer PvE-Barriereaktion — zehn
+Von den 55 Gruppen ohne jeden Vertreter des ersten Laufs standen 15 Ids hinter einer PvE-Barriereaktion — zehn
 Jobbarrieren (Shake It Off, Seraphic Veil, Neutral Sect, The Spire, Improvised Finish, Divine
 Caress) und fünf aus dem Occult Crescent, den der Auftraggeber spielt. Alle 15 sind aufgenommen
 (A43); `ShieldStatus` führt jetzt 60 Ids, der Scan meldet dort null. Die verbliebenen 46 Ids in
@@ -259,7 +378,7 @@ umgekehrten Antwort und sind behoben:
   `HallowedGround_1302`.
 - **`ReprisalStatus`** führte 753 und 1193, nicht aber `Reprisal_2101`. Der Geltungsbereich
   PLD WAR DRK GNB statt der geteilten Rolle ist hier die Signatur der Trait-Fassung — *Enhanced
-  Reprisal* hebt auf Stufe 98 die Minderung auf 15 % und die Dauer auf 15 s. `ReprisalPvE` trägt
+  Reprisal* verlängert auf Stufe 98 die Dauer auf 15 s; die Minderung bleibt bei 10 %. `ReprisalPvE` trägt
   die Liste als `TargetStatusProvide`, die Sperre gegen erneutes Anwenden sah die Schwächung
   eines Endstufen-Tanks also nie.
 
@@ -270,7 +389,7 @@ dealt") teilen ihren Namen mit Minderungen, sind aber deren Reflexions- und Lebe
 bleiben draußen und werden weiter gemeldet — die verbleibenden Treffer in `RampartStatus` und
 `ShieldStatus` sind genau diese bewussten Ausschlüsse.
 
-**Keine CI-Schranke.** Von den 186 verbliebenen Treffern sind 114 Rauschen aus zwei Listen, die
+**Keine CI-Schranke.** Der größte Teil der verbliebenen Treffer ist Rauschen aus zwei Listen, die
 bewusst Teilmengen sind (`PhantomDispellable`, `PurifyPvPStatuses`), und der Rest verlangt je einen
 Blick in die Wirkbeschreibung. Ein Rückgabewert, den man nur durch Wegsehen grün hält, wäre
 schlechter als keiner; die Schranke bleibt bei `scan13.py`, wo die Mitgliedschaft aus der Aktion
@@ -329,8 +448,11 @@ und fragt, ob der Baum den zugehörigen Status je liest — als Mitglied einer `
 oder wenigstens als einzelne `StatusID`. Die Ausgabe trennt Tank und Heiler vom Rest, weil die
 Erhebung vollständig zu führen ist, die Bearbeitung aber dem Nutzungsprofil folgt.
 
-Ergebnis: 1457 PvE-Aktionen, 52 mit einer solchen Wirkung, **ein** Fund im Tank- und
-Heilerprofil, der eine Entscheidung ändert — Rückstoß (Arm’s Length). Der Wirktext der Verlangsamung nennt
+Ergebnis des ersten Laufs: **ein** Fund im Tank- und Heilerprofil, der eine Entscheidung
+ändert — Rückstoß (Arm’s Length). Er ist behoben, und damit hat sich die Klasse verschoben: der
+Scan meldet heute Wirkungen, die nur noch als **einzelne Id** gelesen werden statt als Gruppe —
+dieselbe Alterung wie bei den Statuslisten, eine Ebene tiefer, und in `TODO.md` geführt.
+Die laufenden Zahlen nennt der Lauf; hier stehen sie nicht, weil sie dort altern würden. Der Wirktext der Verlangsamung nennt
 ausdrücklich die Verzögerung der **Automatikangriffe**, aus denen Trash-Gegner den Großteil
 ihres Schadens liefern; die Drosselung liegt damit in der Größenordnung von Rampart. Genutzt
 ist der Befund in der Barrierenregel des Dunkelritters (`PackSlowed`); die Frage, ob Rückstoß (Arm’s Length)
@@ -381,6 +503,38 @@ den wir noch nicht gemergt haben, ist deshalb kein Befund.
 Rückgabewert 1, wenn die Zahl zurückliegt — als Schranke tauglich, aber **nicht** in `build.yaml`
 eingehängt: Das ist eine Entscheidung über den Veröffentlichungspfad und liegt beim Auftraggeber.
 Bis dahin gehört das Skript in den Sync-Ablauf, gleich nach `git fetch --prune --tags upstream`.
+
+## check_resource_lists.py — eine Änderung, die niemals geladen wird
+
+Die gepflegten Listen — welche Zauber Tankbuster sind, welche Flächenangriffe, welche Status
+Unverwundbarkeiten — werden **nicht aus dem Baum gelesen**. `OtherConfiguration.InitOne` nimmt die
+lokale Datei des Nutzers, und wenn sie fehlt, lädt es
+
+```
+https://raw.githubusercontent.com/{Service.USERNAME}/{Service.REPO}/main/Resources/<Name>.json
+```
+
+Beide Konstanten nennen **Upstream** (`FFXIV-CombatReborn/RotationSolverReborn`). Die Kopien unter
+`Resources/` in diesem Fork sind damit Zierde: Wer dort eine Tankbuster-Id ergänzt, ändert nichts,
+und **nichts schlägt fehl** — das Plugin lädt weiter die Upstream-Liste, und der Autor hat keine
+Möglichkeit, es zu merken. Genau diese Klasse schließt der Check.
+
+Gemessen statt vermutet: Alle 18 Listen im Baum sind mit den geladenen identisch, der Download
+antwortet mit HTTP 200, und `Service.USERNAME`/`REPO` sind aus `Service.cs` ausgelesen, nicht
+angenommen. Verglichen wird die **Mitgliedschaft** als Menge, nicht der Text — sonst wäre jede
+Umformatierung ein Treffer, und das Maß wieder ein Surrogat.
+
+Ein Netzfehler führt zu **übersprungen**, nicht zu fehlgeschlagen: Ein Ausfall würde sonst einen
+roten Lauf ohne Defekt erzeugen, und ein Prüfmittel, das grundlos Alarm schlägt, wird abgeschaltet.
+Ein `404` ist dagegen ein Treffer — die Liste ist dann dort gar nicht vorhanden und kann nicht
+geladen werden.
+
+Gegenprobe am konstruierten Defekt: eine Id ergänzt → Rückgabewert 1 und die Liste wird benannt;
+eine Id entfernt → ebenso; nach der Rücknahme 0.
+
+**Nicht in `build.yaml` eingehängt.** Der Check braucht Netzzugang, und ob der Prüfpfad davon
+abhängen soll, ist eine Entscheidung des Auftraggebers — dieselbe Abgrenzung wie bei
+`check_fork_version.py`. Bis dahin gehört er in den Ablauf vor jeder Änderung an `Resources/`.
 
 ## check_msbuild_xml.py — sind die MSBuild-Dateien wohlgeformtes XML?
 

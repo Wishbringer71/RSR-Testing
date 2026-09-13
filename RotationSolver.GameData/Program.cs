@@ -18,11 +18,24 @@ namespace RotationSolver.GameData
 		/// <summary>
 		/// Main method to execute the program.
 		/// </summary>
-		public static async Task Main()
+		public static async Task Main(string[] args)
 		{
 			try
 			{
-				var gameData = new Lumina.GameData(@"C:\FF14\game\sqpack", new LuminaOptions
+				var sqpackPath = ResolveSqpackPath(args);
+				if (sqpackPath == null)
+				{
+					Console.Error.WriteLine(
+						"Could not find the game's sqpack directory. Pass it as the first argument, " +
+						"or set FFXIV_GAME_PATH to the game folder or to sqpack itself:");
+					Console.Error.WriteLine(
+						"  dotnet run --project RotationSolver.GameData -- " +
+						"\"C:\\Spiele\\SquareEnix\\FINAL FANTASY XIV - A Realm Reborn\\game\\sqpack\"");
+					return;
+				}
+
+				Console.WriteLine($"Game data: {sqpackPath}");
+				var gameData = new Lumina.GameData(sqpackPath, new LuminaOptions
 				{
 					LoadMultithreaded = true,
 					CacheFileResources = true,
@@ -51,6 +64,12 @@ namespace RotationSolver.GameData
 					writer.AddResource("Value", content);
 					writer.Generate();
 				}
+
+				// The German-to-English name index, so a name the user states can be looked up
+				// instead of researched. See GermanNameIndex for why the game files are the only
+				// source left for it.
+				GermanNameIndex.Write(gameData, Path.Combine(
+					solutionRoot, ".github", "scripts", "audit", "action_names_game.json"));
 
 				WriteResource("Status", new StatusGetter(gameData).GetCode());
 				WriteResource("ContentType", new ContentTypeGetter(gameData).GetCode());
@@ -171,6 +190,58 @@ namespace RotationSolver.GameData
 			{
 				Console.Error.WriteLine($"An error occurred: {ex.Message}");
 			}
+		}
+
+		/// <summary>
+		/// The game's sqpack directory, or null when none of the sources names an existing one.
+		/// </summary>
+		/// <remarks>
+		/// Where the game sits is a fact about the machine, not about the repository. A constant here
+		/// holds for exactly one installation and fails everywhere else with a Lumina exception that
+		/// names neither the path nor the remedy, so the caller gets an explicit answer instead.
+		/// <para>
+		/// Order: the argument beats the environment variable, which beats the usual install
+		/// locations, which beat the constant this file used to carry - kept last so a machine that
+		/// worked before keeps working. Each candidate may name the game folder or sqpack itself,
+		/// because both spellings are what a person has at hand.
+		/// </para>
+		/// </remarks>
+		private static string? ResolveSqpackPath(string[] args)
+		{
+			string?[] candidates =
+			[
+				args.Length > 0 ? args[0] : null,
+				Environment.GetEnvironmentVariable("FFXIV_GAME_PATH"),
+				@"C:\Program Files (x86)\SquareEnix\FINAL FANTASY XIV - A Realm Reborn\game",
+				@"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XIV Online\game",
+				@"C:\Spiele\SquareEnix\FINAL FANTASY XIV - A Realm Reborn\game",
+				@"C:\FF14\game\sqpack",
+			];
+
+			foreach (var candidate in candidates)
+			{
+				if (string.IsNullOrWhiteSpace(candidate))
+				{
+					continue;
+				}
+
+				var trimmed = candidate.Trim().Trim('"');
+				// Accept either spelling: the game folder, or the sqpack folder inside it.
+				var direct = Path.Combine(trimmed, "sqpack");
+				if (Directory.Exists(direct))
+				{
+					return direct;
+				}
+
+				if (Directory.Exists(trimmed) &&
+					string.Equals(Path.GetFileName(trimmed.TrimEnd(Path.DirectorySeparatorChar)),
+						"sqpack", StringComparison.OrdinalIgnoreCase))
+				{
+					return trimmed;
+				}
+			}
+
+			return null;
 		}
 	}
 }

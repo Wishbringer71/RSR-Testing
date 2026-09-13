@@ -86,6 +86,12 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Hold Holy while a tank carries The Blackest Night, so its barrier is spent")]
 	public bool HoldHolyForBlackestNight { get; set; } = false;
 
+	// On by default, unlike the two above: this one is not a proposal but the third timing of the
+	// rule in concept 08, and the user asked for it directly after seeing Holy cast into a slow that
+	// had just landed. The cost stays bounded by the same replacement guarantee the stun branch uses.
+	[RotationConfig(CombatType.PvE, Name = "Hold Holy while the pack is slowed (Arm's Length), so the stun is kept for when the damage stream is not already thinned")]
+	public bool HoldHolyWhilePackSlowed { get; set; } = true;
+
 	public enum ThinAirUsageStrategy : byte
 	{
 		[Description("Use all thin air charges on expensive spells")]
@@ -516,6 +522,71 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	}
 
 	/// <summary>
+	/// Whether Holy has to wait because a stronger mitigation is already carrying the pull, so the
+	/// stun is worth less now than later.
+	/// </summary>
+	/// <remarks>
+	/// The third of the three timings in concept 08: a non-Holy GCD is inserted when it has value of
+	/// its own and the stun is not lost by it - because it still runs, because it no longer works,
+	/// or because a stronger mitigation is carrying right now. The first two were implemented, this
+	/// one was not, while the same document listed the hold as done.
+	///
+	/// Arm's Length applies Slow +20% to every physical attacker for 15s, and the slow raises
+	/// auto-attack delay, which is where trash damage comes from - the same order as Rampart. While
+	/// that runs, the stream is already thinned, and spending one of the pull's three stun
+	/// applications on it burns a budget that is gone for good: 4s, then 2s, then 1s, then immunity.
+	///
+	/// The measure is total enemy output, not a head count, which is the area rule itself restated:
+	/// AoeCount enemies at full output is what Holy has always asked for. A throttled enemy still
+	/// contributes, just less, and the sum decides. Three enemies with one slowed come to 280
+	/// against a threshold of 300, so Holy waits; four with two slowed come to 360 and it goes out.
+	/// SurveyHostileOutput weighs every throttle the tree can read, not the slow alone - a reprised
+	/// pull counts differently from an untouched one, which is the same question asked once.
+	///
+	/// Two properties follow from that and neither is an accident. The threshold comes from
+	/// Config.AoeCount, the same number ActionTargetInfo uses, so a user who changes it moves both
+	/// sides of the question at once and no second setting has to be kept in step. And the rule
+	/// only ever bites at exactly AoeCount enemies: at one more, the extra body carries at least 80
+	/// and the sum clears the threshold however many are slowed. That narrow reach is correct, not
+	/// a shortfall - with more enemies than the cast needs, Holy is worth casting even against a
+	/// thinned stream.
+	///
+	/// Its predecessors measured the wrong thing. The first borrowed DRK_Reborn.PackSlowed's share
+	/// rule, which weighs the stream reaching the tank over job range; the second asked for a
+	/// majority of the radius; the third counted the enemies the slow had not reached, which throws
+	/// away what the slowed ones still contribute.
+	///
+	/// The replacement guarantee is the stun branch's and bounds the cost the same way: Holy is this
+	/// job's only area spell, so a held GCD falls through to single-target damage. Without a DoT
+	/// worth placing, Holy goes out no matter how slowed the pack is - which is also why a 15s slow
+	/// does not translate into 15s without Holy.
+	/// </remarks>
+	private bool ShouldHoldHolyWhilePackSlowed()
+	{
+		if (!HoldHolyWhilePackSlowed)
+		{
+			return false;
+		}
+
+		var holy = HolyIiiPvE.EnoughLevel ? HolyIiiPvE : HolyPvE;
+		var inRange = SurveyHostileOutput(holy.Info.EffectRange, out var output);
+
+		// Nothing throttled: the ordinary area decision applies and this rule has no business in it.
+		if (inRange == 0 || output == inRange * 100)
+		{
+			return false;
+		}
+
+		// The area threshold, restated as output rather than as heads.
+		if (output >= holy.Config.AoeCount * 100)
+		{
+			return false;
+		}
+
+		return DiaPvE.CanUse(out _) || AeroIiPvE.CanUse(out _) || AeroPvE.CanUse(out _);
+	}
+
+	/// <summary>
 	/// Whether Holy has to wait because its stun would strand a barrier that pays off only when it
 	/// is spent in full.
 	/// </summary>
@@ -642,7 +713,8 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			}
 		}
 
-		if (HolyPvE.EnoughLevel && !ShouldStretchHolyStun() && !ShouldHoldHolyForBarrier())
+		if (HolyPvE.EnoughLevel && !ShouldStretchHolyStun() && !ShouldHoldHolyForBarrier()
+			&& !ShouldHoldHolyWhilePackSlowed())
 		{
 			if (HolyIiiPvE.EnoughLevel && HolyIiiPvE.CanUse(out act))
 			{

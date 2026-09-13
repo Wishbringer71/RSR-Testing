@@ -4,6 +4,119 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 ## Defekte
 
+### `searing_light_coverage.py` misst über das Fenster hinaus, das es zu messen vorgibt · —
+
+`simulate(…, window=(lo, hi))` soll die Abdeckung **innerhalb** eines Zeitfensters messen. Der Zähler wird aber auch außerhalb hochgezählt — der `elif buff_until > t: covered += STEP` neben dem Fensterzweig —, geteilt wird dagegen durch die Fensterlänge `(hi - lo)`. Das Ergebnis ist die Gesamtabdeckung des Kampfes, gestreckt um das Verhältnis Kampflänge zu Fensterlänge. Sichtbar an der Ausgabe selbst: Die Einschwingtabelle meldet 332 %, die Ausfalltabelle 210 bis 542 % — Abdeckungsanteile über 100 % sind nicht deutbar.
+
+**Betroffen sind drei Auswertungen, alle mit `window=`:** die Einschwingtabelle (Anfang gegen Ende des Kampfes), die Ausfalltabelle (ein Beschwörer fällt drei Minuten aus) und der Selbsttest, der prüft, dass die abschreibende Fassung unter Ausfall nie schlechter ist als die buchführende. Der Selbsttest bleibt gültig, weil beide Seiten gleich verzerrt sind — aber er prüft nicht, was sein Kommentar sagt: verglichen wird die Abdeckung über den ganzen Kampf, nicht die im Ausfallfenster. Genau die Bauform „Test misst ein Surrogat statt der gemeinten Eigenschaft".
+
+**Nicht betroffen ist jede Zahl, die in einem Dokument steht.** Alle Tabellen in `docs/rotation-flow/12-searing-light-stacking.md` stammen aus Aufrufen ohne `window`; dort ist `lo, hi = 0, fight`, und der fehlerhafte Zweig kann nicht greifen. Nachgerechnet: Die zwanzig Werte der beiden Abdeckungstabellen des Konzepts sind heute Ziffer für Ziffer reproduzierbar, einschließlich der V4-Spalte, die der Bericht nicht mehr druckt (Modus `anytime`). Die Einschwingzahlen sind in keinem Dokument verwendet.
+
+**Behebung:** den `elif`-Zweig streichen, damit außerhalb des Fensters nicht gezählt wird; der Selbsttest ist danach auf das Ausfallfenster zu schärfen, sonst deckt er die Rückkehr des Fehlers nicht ab. **Empfehlung: beheben** — es ist ein Prüfmittel, und ein Prüfmittel, das eine undeutbare Zahl druckt, entwertet auch seine richtigen.
+
+### Fänge von `AccessViolationException`, die im gemeinten Fall nicht greifen · N, U
+
+`DataCenter.cs`, unter anderem `:1316`, `:1402`, `:1534`, `:1803`. Muster überall gleich: ein nativer Lesezugriff über ein Dalamud-Objekt steht in einem `try`, dessen `catch (AccessViolationException)` den Absturz abfangen soll. Die Überschrift nannte zuvor 19 Fänge; gezählt waren die Zeilen, die den Ausnahmenamen **erwähnen**, nicht die Fänge selbst — ein Surrogat, das drei Kommentarzeilen mitzählte. `grep -c "catch (AccessViolationException"` beziffert den Bestand jederzeit.
+
+**Der Fang greift genau dann nicht, wenn er gebraucht wird.** Microsoft dokumentiert für .NET Core: „corrupted-process-state exceptions cannot be handled by managed code", die Laufzeit liefert sie nicht an verwaltete Handler aus, und `HandleProcessCorruptedStateExceptionsAttribute` ist obsolet und wird ignoriert. Die Doku zu `AccessViolationException` präzisiert, dass der `catch` nur greift, solange die Verletzung **innerhalb** des von der Laufzeit reservierten Speichers auftritt — bei einem freigegebenen Spielobjekt ist sie das nicht.
+
+Upstream hat dieselbe Klasse in 7.5.6.3 an vier Stellen aufgelöst (`ObjectHelper.IsEnemy`, `FindEnemyPositional`, `GetFaceVector`, dazu `RSCommands_Actions` und `StateUpdater`) und dort `IsValid()` sowie `Address != nint.Zero` **vor** den nativen Zugriff gesetzt. Die Stellen in `DataCenter.cs` sind dabei nicht mitgegangen.
+
+**Empfehlung:** dasselbe Muster nachziehen, nicht die Fänge entfernen — ein `catch`, der nie feuert, ist harmlos, der fehlende Vorab-Test ist es nicht. Vorher zu klären: ob `PartyMembers` und die Feindlisten überhaupt freigegebene Objekte führen können oder ob sie je Rahmen neu erhoben werden; trifft Letzteres zu, ist die Klasse hier gegenstandslos und die Fänge sind der eigentliche Befund.
+
+### `UseSummonsAndTrances`: eine der beiden Searing-Light-Kopplungen ist unerreichbar · N
+
+`SMN_Reborn.cs:478` ruft `SummonBahamutPvE.CanUse(out act)` ohne Vorbedingung. `:487` ruft denselben Ausdruck mit einer zusätzlichen Bedingung davor und ist damit eine strikte Teilmenge — **beweisbar toter Code**. `:491` steuert die Solar-Beschwörung über `!SearingLightPvE.Cooldown.IsCoolingDown` und ist nur erreichbar, wenn `CanUse` in derselben Lage falsch liefert.
+
+Welche der beiden Zeilen tot ist, hängt daran, ob Summon Bahamut auf Stufe 100 spielseitig zu Summon Solar Bahamut umgewandelt wird; RSR ruft über `AdjustedID`, die Antwort steht nicht im Repository. Das ist kein Aufräumfall: Wird `:478` entfernt, wird die Kopplung aus `:491` wirksam, und dann greift die Zündregel aus A78 in die Beschwörungswahl ein. Erst messen, dann anfassen — Beobachtungspunkt ist, ob Solar Bahamut alle 120 Sekunden kommt.
+
+### Wiederbelebung: drei Eingriffe des Zweigs sind weiter ungemessen · N, R
+
+**Der Kerndefekt ist behoben und im Spiel bestätigt** — Beobachtung, Erklärung und Nachweis in
+`AUDIT_LOG.md` A73. Dieser Punkt führt nur noch, was der Spieltest nicht abdecken konnte.
+
+Vier Eingriffe auf `claude/raise-swiftcast-weave-2` sind nur unter Einstellungen wirksam,
+die abseits der Vorgabe liegen, und wurden deshalb mit dem Kernpfad nicht mitgetestet:
+
+- **Phönixfeder** samt Zieleignung über den Item-Status und Stufenprüfung der Rezzereigenschaft
+  (A59, A60). `UsePhoenixDown` ist ab Werk **aus**; ohne Einschalten passiert nichts.
+- **Hartwirk-Korrektur** (A56). Greift nur bei abgeschaltetem `RaisePlayerBySwift` — dem Fall, in dem
+  vorher überhaupt nicht wiederbelebt wurde.
+- **Bezugsmenge der Nur-Heiler-Modi** (A58). Nur bei `HardCastOnlyHealer` und
+  `HardCastOnlyHealerSwiftCooldown`.
+- **Spontanitäts-Vorbehalt in `HardCastOnlyHealer`** (A84). Derselbe Modus wie der Punkt darüber,
+  aber in einer Beobachtung davon trennbar: Der Vorbehalt zeigt sich daran, dass bei **bereiter**
+  Spontanität nicht mehr hartgewirkt wird, die Bezugsmenge daran, **welche** Heiler zählen.
+
+**Auflösungsbedingung:** je Eingriff eine Beobachtung unter der zugehörigen Einstellung. Für die
+Phönixfeder zusätzlich eine Gruppe ohne lebenden Rezzer, weil die Bedingung sonst nicht greift.
+
+**Bewertung:** kein Defektverdacht, sondern offener Nachweis. Die Wirkketten sind im Code
+nachvollzogen; was fehlt, ist die Bestätigung im Spiel.
+
+### `H2` bleibt im Modus `PartyAndAllianceHealers` wirkungslos · N
+
+`TargetUpdater.GetPriorityDeathTarget`. Der Sonderfall `if (raiseType == RaiseType.PartyAndAllianceHealers && deathHealers.Count > 0) return deathHealers[0];` steht **vor** der Umkehrung der vier Listen durch `Service.Config.H2`. In allen anderen Modi dreht diese Einstellung die Reihenfolge, in diesem einen nicht.
+
+Ohne Wirkung auf die Frage, *ob* wiederbelebt wird — nur darauf, *welcher* von mehreren toten Heilern zuerst drankommt. **Auflösung:** den Sonderfall hinter die Umkehrung ziehen. **Nicht im laufenden Vorgang behoben,** weil der Zweig bereits fünf ungemessene Eingriffe am Wiederbelebungspfad trägt; ein sechster verschlechtert die Auswertbarkeit des Spieltests, ohne dass diesem Punkt Dringlichkeit zukäme.
+
+### Die Aufzählung der Wiederbelebungsaktionen im Einschiebezweig veraltet · N, R
+
+`CustomRotation_Ability.cs` prüft `nextGCD.IsTheSameTo(true, RaisePvE, EgeiroPvE, ResurrectionPvE, AscendPvE)`. Verraise des Rotmagiers und Angel Whisper des Blaumagiers fehlen, obwohl beide Rotationen `Raise` setzen — dieselbe Alterungsursache wie die Hauptursache des Wiederbelebungsdefekts: eine handgepflegte Liste statt der vorhandenen Fähigkeitsprüfung.
+
+**Derzeit folgenlos,** weil der zweite Zweig derselben Bedingung (`RaisePendingAndCastable`) die Liste nicht braucht und über `Raise` geht. Der Punkt bleibt, weil die Liste beim nächsten Rezzer-Job erneut still falsch wird. **Auflösung:** den Vergleich gegen `Raise` führen statt gegen die Aufzählung.
+
+### `SwiftcastBuffer` hat keinen Leser, und ihre Absicht ist überholt · N
+
+`Configs.cs:978` definiert die Einstellung (0,6 s, eigene Oberfläche, eigene Dokumentation „how early before next GCD should RSR use swiftcast for raise"). Eine Volltextsuche über den Baum findet genau diese eine Fundstelle: Sie wird nirgends gelesen.
+
+Sie ist nicht nur unverbunden, sondern in ihrer dokumentierten Bedeutung unerfüllbar geworden. Sie besagt, Spontanität solle erst fallen, wenn nur noch `SwiftcastBuffer` Restzeit auf dem GCD liegt — bei 0,6 s liegt dieses Fenster fast vollständig, bei 0 vollständig in dem Bereich, den `RSCommands_Actions.DoAction` für Fähigkeiten sperrt. Sie zu verdrahten hieße, den in `docs/rotation-flow/11-raise-dispatch.md` behobenen Defekt an einer zweiten Stelle neu zu bauen; deshalb ist sie bei der dortigen Behebung bewusst unangetastet geblieben.
+
+**Auflösung:** entweder entfernen — dann ist zu prüfen, ob der Name in gespeicherter Nutzerkonfiguration liegt und ein Migrationspfad nötig ist — oder als **Untergrenze** im Einschiebefenster neu definieren, also „wie weit oberhalb der Sperre darf Spontanität frühestens fallen". Die zweite Lesart erhält die Absicht des Autors und ist mit der Sperre vereinbar. Beides ist eine Entscheidung über Nutzerkonfiguration und gehört nicht in den Behebungsvorgang.
+
+### `InterruptDelay` und `ProvokeDelay` haben keinen Leser · N
+
+`Configs.cs:1057` und `:1061`. Beide sind `Vector2` mit Vorgabe `(0,5 s; 1 s)`, eigener Beschriftung und Wertebereich — und versprechen damit eine Zufallsverzögerung vor dem Unterbrechen beziehungsweise vor Provoke. Gelesen werden sie nirgends.
+
+Die Klasse ist belegt, weil die beiden Geschwister derselben Bauart **gelesen** werden: `RaiseDelay2` und `EsunaDelay` speisen die `ObjectListDelay`-Instanzen in `TargetUpdater.cs:13-15`. Für Provoke- und Unterbrechungsziele gibt es keine solche Instanz; `TargetUpdater.cs:43-46` ermittelt beide ohne jede Verzögerung.
+
+**Nicht verdrahtet, und das ist keine offene Entscheidung, sondern das Ergebnis der Regeln.** Drei Gründe, die zusammen nur einen Schluss zulassen:
+
+1. *Es gibt keinen Migrationsweg.* `Configs.Migrate` ist keine Migration, sondern ein Zurücksetzen: bei abweichender Version `return new Configs()`. Eine geänderte Vorgabe erreicht deshalb nur Neuinstallationen; wer das Plugin schon benutzt, hat `(0,5; 1)` in seiner gespeicherten Konfiguration stehen und bekäme die Verzögerung beim Verdrahten tatsächlich eingeschaltet.
+2. *Damit verletzt jede Verdrahtung die Feature-Toggle-Regel*, die für eine Änderung ohne Nachweismöglichkeit das bisherige Standardverhalten als Vorgabe verlangt. Das bisherige Verhalten ist „keine Verzögerung", und es lässt sich ohne Migration nicht erhalten.
+3. *Der Nutzen liegt außerhalb der Zielrichtung.* Die Verzögerung dient der Tarnung, nicht der Kampfwirkung. Bei der Unterbrechung wirkt sie sogar gegen den Zweck der Aktion: bis zu eine Sekunde kann das Fenster des Zaubers verbrauchen, der gestoppt werden soll.
+
+**Auflösungsbedingung:** Sobald ein echter Migrationsmechanismus existiert — einer, der einzelne Felder umstellt, statt die Datei zu verwerfen —, ist zu verdrahten und die Vorgabe zugleich auf `(0; 0)` zu ziehen. Vorher ist die wirkungslose Einstellung das kleinere Übel gegenüber einer ungefragt eingeschalteten Verzögerung.
+
+### `TargetColor` wird nicht gelesen, und ihr Elternverweis zeigt auf sie selbst · N
+
+`Configs.cs:1211-1212` trägt `[UI("Target color", Parent = nameof(TargetColor))]` — die Eigenschaft nennt sich selbst als Elternschalter. Die Zeile darüber, `TeachingModeColor`, zeigt die richtige Bauart mit `Parent = nameof(TeachingMode)`; Kennzeichen eines Klons ohne Anpassung (Parnas, *Ignorant Surgery*).
+
+**Der Elternverweis ist folgenlos, entgegen der ersten Einschätzung.** `SearchableCollection.cs:45` nimmt ausschließlich `CheckBoxSearch` in die Elternliste auf, also boolesche Einstellungen. `TargetColor` ist ein `Vector4`, landet nie darin, der `TryGetValue` schlägt fehl, und der Eintrag wird auf oberster Ebene einsortiert. Kein Absturz, keine Rekursion in `GetParent`, nur eine Einrückung, die fehlt.
+
+**Der wirkliche Befund ist der fehlende Leser:** Die Farbe wird im gesamten Baum nicht gelesen, wirkt also ohnehin nicht.
+
+**Nicht behoben,** weil die Behebung voraussetzt zu wissen, wo die Farbe gezeichnet werden sollte und welcher Schalter der gemeinte Elternteil ist. Beides geht aus dem Code nicht hervor, und eine erfundene Zuordnung wäre schlechter als der sichtbare Rest. Technische Schuld, kein Defekt mit Wirkung.
+
+### `IBaseAction.IgnoreClipping` wird geschrieben und nirgends gelesen · N, R
+
+`IBaseAction.cs:14` definiert das Flag, `CustomRotation_Invoke.cs` setzt es an sechs Stellen (`:212`, `:228`, `:238`, `:243`, `:257`). Kein einziger Leser im gesamten Baum. Der Name benennt genau den Mechanismus, der beim Wiederbelebungsdefekt gefehlt hat: die Anti-Clipping-Sperre für einen Einzelfall aufheben.
+
+Nicht behoben, weil der Wirkungsbereich den Vorgang sprengt. Das Flag wird in `Invoke` breit gesetzt, auch für Fälle ohne Bezug zur Wiederbelebung; ein Leser in `RSCommands_Actions.DoAction` würde die Sperre praktisch überall aushebeln und damit das Verhalten jeder Rotation ändern. Die Behebung verlangt zuerst eine Entscheidung, für welche Aktionen das Flag gelten soll.
+
+**Auflösungsbedingung:** eine Erhebung, welche der sechs Setzstellen eine Ausnahme rechtfertigen, und eine Engführung des Flags auf diese.
+
+### Beschwörer: Searing Light bei mehreren Beschwörern — im Spiel zu bestätigen · N
+
+Umgesetzt und in `AUDIT_LOG.md` A78 nachgewiesen, soweit statisch möglich; Konzept in `docs/rotation-flow/12-searing-light-stacking.md`. Offen sind zwei Beobachtungen, die nur im Spiel zu machen sind, beide mit einer Gruppe aus mindestens zwei Beschwörern:
+
+**Kommt Solar Bahamut weiterhin alle 120 Sekunden?** Das entscheidet die Kopplungsfrage aus dem Defekt zu `UseSummonsAndTrances` weiter oben. Rutscht der Takt, ist `:491` der wirksame Pfad, und dann ist die V7-Bedingung — das `|| !HasAnySearingLight` — wieder zu entfernen; V2 bliebe.
+
+**Zünden mehrere Beschwörer beim Buffende gleichzeitig?** Das Modell schreibt sequenziell zu und bildet das nicht ab. Der Fall besteht heute schon und sollte seltener werden, nicht häufiger; belegt ist das nicht.
+
+**Erfasst, nicht bearbeitet:** `ChurinSMN.cs:1015` trägt denselben V1-Befund; beim Zündfenster ist die fremde Rotation bereits weiter (`:948` nutzt `BahamutBurst`), allerdings ohne Gruppenprüfung.
+
+
 ### ChurinDNC wertet die BMR-Downtime ohne Vorzeichenprüfung aus · N, U
 
 `ChurinDNC.cs:777-843` (Upstream) liest `BMRNextDowntimeIn`/`-EndIn` ohne Vorzeichenprüfung. BossModReborn liefert diese Werte als `(Aktivierung − jetzt)`, sie sind während einer laufenden Downtime also negativ, und die Rotation kann „Downtime läuft" nicht von „Downtime kommt gleich" unterscheiden: `if (BMRNextDowntimeIn >= 15f) return;` kehrt dann nicht zurück, und die folgende `<`-Bedingung ist immer erfüllt. Die Normalisierung der Schadensvorhersagen ist erledigt (AUDIT_LOG A11); hier wäre ein Filter falsch, weil das Vorzeichen die Information trägt.
@@ -25,6 +138,94 @@ Nicht behoben, weil die Absicht dieser fremden Rotation ohne ihren Autor nicht b
 
 **Empfehlung: liegen lassen.** Alle vier verbliebenen Fundstellen liegen in PvP oder Bozja, also außerhalb des Nutzungsprofils, und jede verlangt eine Richtungsentscheidung, die eine Beobachtung im jeweiligen Inhalt voraussetzt. Die Klasse ist vollständig erhoben und durch `scan11.py` gegen Rückfall gesichert — das ist der Zweck der Erfassung, die Bearbeitung ist es hier nicht.
 
+### Die erhöhte Heilwirkung unter Schutzwall wird nirgends gelesen · N
+
+Belegt: `Status.resx` führt `Rampart_1978` — die Form, die ein Tank ab Stufe 94 trägt, eingegrenzt auf PLD WAR DRK GNB — mit „Damage taken is reduced **while HP recovered via healing actions is increased**". Die Grundformen 71 und 1191 sagen nur „Damage taken is reduced". Der Auftraggeber gibt die Erhöhung mit 15 % an; die Spieldaten nennen keine Zahl, wie bei jedem merkmalsabhängigen Wert.
+
+**Gelesen wird die Wirkung nirgends.** `Rampart_1978` steht allein in `StatusHelper.RampartStatus`, und deren zwei Leser — `StatusProvide` der Tank-Rotationen und `HasMajorMitigation` — fragen nach Überlappung, nicht nach Heilwirkung. Die Gegenrichtung ist dagegen bekannt: `HpRecoveryDown` wird an drei Stellen im `StateUpdater` geprüft, allerdings nur im Sonderfall `IsInWindurst`.
+
+**Kandidat, kein Defekt.** Es gibt derzeit keine Entscheidung im Baum, die davon abhinge: RSR entscheidet über Heilung an HP-Schwellen, nicht an Heilmengen, und eine um 15 % stärkere Heilung ändert nicht, **ob** geheilt werden muss. Wo sie zählen würde, ist der Fall, den die Schildanrechnung bereits behandelt — ein Tank unter Schutzwall braucht die Heilung weniger dringend, weil er weniger Schaden nimmt und die Heilung stärker wirkt.
+
+**Auflösungsbedingung:** die Entscheidung über die Schildanrechnung. Fällt sie für eine Anrechnung des Schutzzustands aus, gehört die Heilverstärkung in dieselbe Rechnung; bleibt es beim Upstream-Verhalten, ist dieser Punkt gegenstandslos. Vorher zu klären wäre die Herkunft der 15 %.
+
+### Der erzeugte Merkmalssatz enthält keine Rollenmerkmale · N, R
+
+`TraitRotationGetter.AddToList` verwirft jedes Merkmal mit `item.ClassJob.RowId == 0`. Rollenmerkmale sind keiner einzelnen Klasse zugeordnet und fallen damit sämtlich heraus: Im erzeugten `Rotation.resx` findet sich kein `EnhancedReprisalTrait`, `EnhancedRampartTrait`, `EnhancedSecondWindTrait`, `EnhancedSwiftcastTrait`, `EnhancedFeintTrait`, `EnhancedAddleTrait` — null Treffer für jedes davon.
+
+**Wirkung:** Wo eine Rollenaktion durch ein Merkmal aufgewertet wird, muss die Stufe als Zahl im Code stehen, statt vom Merkmalsobjekt gelesen zu werden. Zwei Stellen tun das bereits, beide mit 98 für dieselbe Aufwertung (`MitigationDebuffDuration`, `EnhancedReprisalLevel`), inzwischen über eine gemeinsame Konstante.
+
+**Nicht sofort behoben:** Die Änderung liegt im Generator, der nur mit installiertem Spiel läuft, und sie vergrößert den erzeugten Satz um eine ganze Kategorie — Wirkungsbereich und Nutzen sind vor dem Eingriff zu erheben. Zu klären ist außerdem, ob `ClassJob.RowId == 0` tatsächlich das Kennzeichen von Rollenmerkmalen ist oder nur eines von mehreren Merkmalen ohne Klassenbezug.
+
+### `CanUse` als Prüfung, nicht als Wahl — mit Zuweisung als Nebenwirkung · N, R
+
+`ShouldStretchHolyStun` und `ShouldHoldHolyWhilePackSlowed` fragen beide `DiaPvE.CanUse(out _) || AeroIiPvE.CanUse(out _) || AeroPvE.CanUse(out _)`, um die Ersatzgarantie zu prüfen. `CanUse` weist dabei `Target` zu — dieselbe Nebenwirkung, die beim Wiederbelebungspfad eine eigene Vorkehrung nötig gemacht hat (`RaisePendingAndCastable` sichert und stellt den Zielüberschreiber wieder her, A56).
+
+**Hier bislang folgenlos:** Wird der DoT anschließend tatsächlich gewirkt, ruft der Schadenszweig `CanUse` erneut und setzt das Ziel neu; wird Sanctus gewirkt, bleibt ein Ziel an einer Aktion stehen, die niemand liest. Belegt ist die Folgenlosigkeit allerdings nicht.
+
+**Umfang, erhoben statt geschätzt: 120 Fundstellen in 25 Dateien** — `BeirutaRDM` 16, `SGE_Reborn` 11, `NIN_Reborn` 10, `BeirutaSGE` 10, dazu `CustomRotation_Ability`, `CustomRotation_GCD`, `CustomRotation_Items` und die UI. Das Muster ist damit nicht die Ausnahme, die diese Rotation eingeführt hat, sondern die Hausform des gesamten Baums; die beiden Sanctus-Stellen sind zwei von 120. Das ändert die Frage: Nicht „sollen diese zwei Stellen anders gebaut werden", sondern „hat der Baum eine seiteneffektfreie Prüfung nötig".
+
+**Vor einer Änderung zu klären:** ob RSR eine seiteneffektfreie Prüfung anbietet. Gibt es keine, ist die Frage, ob eine solche eingeführt werden soll — mit einem Wirkungsbereich über alle Rotationen, die `CanUse` als Prüfung benutzen, und damit auch über die abgeleiteten Rotationen als Paketnutzer.
+
+### Betäubungsstreckung von Sanctus: Voreinstellung aus, Wirkung unbeobachtet · N
+
+`StretchHolyStun` ist voreingestellt aus, weil die Wirkung ohne Laufzeitbeobachtung nicht zu belegen war. Der **Mitigationsgrund** derselben Regel ist inzwischen umgesetzt und voreingestellt an (`ShouldHoldHolyWhilePackSlowed`, A79); der **Betäubungsgrund** — Sanctus einen GCD aussetzen, solange die eigene Betäubung noch läuft, statt sie zu überschreiben — wartet weiter auf die Beobachtung, ob die Streckung im Spiel eintritt.
+
+**Auflösungsbedingung:** eine Beobachtung, ob Sanctus in eine laufende Betäubung hinein gewirkt wird und ob die Streckung die vom Modell gerechneten 5,5 auf 7,0 Sekunden bringt. Der Auftraggeber hat die Einstellung eingeschaltet, um überhaupt testen zu können; offen ist allein, ob die Streckung messbar eintritt — und danach, ob die **Voreinstellung** im Code folgen soll.
+
+### Walking Dead: zwei Stellen wirken gegen die gestaffelte Unterstützung · N
+
+Die Regel steht in `docs/rotation-flow/09-tank-selfprotection.md`, Abschnitt „Living Dead ist ein Zeitproblem": am Anfang der Phase leicht mit einem HoT unterstützen, am Ende die Lücke zu 100 % schließen, falls die Selbstheilung nicht reicht. Dieser Punkt führt nur, was im Code dagegen steht.
+
+- **Der HoT ist gesperrt:** `WHM_Reborn.HealSingleGCD` verlangt `GetHealthRatio() > RegenHeal` (0,30), der Träger liegt bei 1 HP.
+- **Die Vollheilung feuert am Anfang:** `BenedictionPvE` zündet unter `BenedictionHeal` (0,30), also sofort, mit 90 s Abklingzeit.
+
+**Nur die erste Hälfte ist ohne den verworfenen Messbaustein baubar.** Fall 4 des Konzepts verlangt die leichte Unterstützung unabhängig vom Kurs — die HoT-Freigabe braucht also keine Prognose, sondern nur die Feststellung, dass Walking Dead liegt. Fall 4a braucht sie: Vollständig zu heilen ist nur richtig, wenn der Kurs nicht trägt, und der Gesundheitsstand ist dafür kein Ersatz, weil Angriffe den Träger wieder auf 1 drücken, ohne die aufgenommene Heilung zu mindern.
+
+**Empfehlung: die HoT-Sperre aufheben, den Benediction-Vorrang offen lassen.** Der erste Teil ist eine belegte Behebung mit einer Bedingung; der zweite hängt an der Prognose, die dieses Projekt begründet verworfen hat. Gekoppelt an `WithholdHealingForLivingDead`, weil wer Phase eins einschaltet den Tod als Auslöser will — das hält das heutige Verhalten für alle anderen unverändert.
+
+### Living Dead: der Hebel ist die Option, nicht der HP-Grenzwert · N
+
+`StateUpdater.ShouldHealSingle`: `threshold = target.NoNeedHealingInvuln() ? normal : Math.Min(normal, Service.Config.HealthProtectedRatio)`. `NoNeedHealingInvuln` ist `WillStatusEndGCD(2, …)` über `NoNeedHealingStatus`, und `LivingDead` steht in dieser Liste.
+
+**Wirkung, in zwei Abschnitten — und genau so, wie der Auftraggeber die Regel gefasst hat:** Solange Living Dead noch **mehr als zwei GCDs** Restzeit hat, liegt die Schwelle bei `HealthProtectedRatio` 0,15; der Todeseffekt kann also eintreten. Läuft der Status in zwei GCDs oder weniger ab, liefert `NoNeedHealingInvuln` wahr und die **normale** Schwelle kehrt zurück — kurz vor Ablauf wird geheilt. Die Vorlaufzeit ist bis zur **Entscheidung** gemessen, nicht bis zum Landen der Heilung, weshalb zwei GCDs und nicht weniger.
+
+Die Dauer ist belegt, nicht erinnert: `ActionId.resx`, Aktion 3638, „Living Dead Duration: 10s". Bei rund 2,5 s Gießzeit sind zwei GCDs damit etwa die halbe Restzeit.
+
+**`WithholdHealingForLivingDead` verschärft nur den ersten Abschnitt** — aus 0,15 wird „gar nicht", der zweite Abschnitt bleibt unverändert. Voreingestellt aus.
+
+**Kein Fork-Rückschritt, im Gegenteil:** Upstream gibt einem Ziel unter Invulnerabilität überhaupt keine Heilung (`if (h == 0 || !target.NoNeedHealingInvuln()) return false;`). Die Absenkung auf einen Grenzwert ist die mildere Fassung.
+
+**Der Fall, der sie trotzdem zum Problem macht,** ist der falsch gesetzte Invulnerabilitätsschub: Living Dead bei 70 % im Wall-to-Wall gezündet, wie vom Auftraggeber beobachtet. Die Konstruktion unterstellt, dass die Invulnerabilität gegen einen tödlichen Schlag gesetzt wird; wird sie zu früh gesetzt, kostet sie zehn Sekunden automatische Heilung, ohne dass der Anlass je eintritt.
+
+**Der richtige Stellhebel ist die Option, nicht der Grenzwert.** `HealthProtectedRatio` anzuheben würde beide Abschnitte verschieben und damit gerade den Tod verhindern, auf den die Regel wartet — ein höherer Wert heilt **früher** im Fenster. Wer den Todeseffekt will, schaltet `WithholdHealingForLivingDead` ein; wer ihn nicht will, lässt beides, wie es ist. Der Grenzwert ist nur für die **anderen** Invulnerabilitäten der Liste maßgeblich (Holmgang, Superbolide, Hallowed Ground), bei denen kein Tod gewollt ist.
+
+**Vollständige Erhebung der Defensivfähigkeiten des Dunkelritters gegen die Heilentscheidung** — nur zwei greifen ein:
+
+| Fähigkeit | Pfad | Wirkung auf die Heilschwelle |
+|---|---|---|
+| The Blackest Night | `ShieldStatus` → Schildanrechnung | effektiv −25 Prozentpunkte |
+| Living Dead | `NoNeedHealingStatus` → `HealthProtectedRatio` | 0,15 statt 0,65 |
+| Walking Dead | in `NoNeedHealingStatus` **auskommentiert** | keine — richtig, dort ist Heilung überlebensnotwendig |
+| Shadow Wall, Rampart | `RampartStatus` | **keine**: gelesen nur als `StatusProvide` der Tank-Rotationen und von `HasMajorMitigation`, und das fragt `PlayerHasStatus(true, …)`, also allein den eigenen Charakter |
+| Dark Mind, Oblation, Dark Missionary | in keiner heilrelevanten Liste | keine |
+| Reprisal | `ReprisalStatus` | keine — Debuff am Gegner |
+
+Schadensreduktion wirkt also in keinem Fall auf die Heilentscheidung; nur Barriere und Invulnerabilität tun es.
+
+### Trägt die Schildanrechnung? — jetzt durch Umschalten entscheidbar · N
+
+Die Anrechnung (`StateUpdater.ShouldHealSingle`, beide Zweige) rechnet den Restschild auf die effektive Gesundheit und verzögert die Einzelziel-Heilung um genau die Barrierengröße: The Blackest Night sind 25 % der maximalen HP, die oGCD-Schwelle 0,65 wird damit erst bei real rund 40 % erreicht. Sie steht jetzt hinter `CreditShieldToEffectiveHp`, **voreingestellt aus** (= Upstream-Verhalten); der Regelverstoß — Verhaltensänderung ohne Nachweis und ohne Schalter — ist damit behoben (A83).
+
+**Was offen bleibt, ist die Sachfrage:** Die Barriere wird gegen den **kommenden** Treffer angerechnet, die Heilentscheidung gilt aber dem Zustand **danach** — nach dem Treffer ist die Barriere verbraucht und die HP unverändert niedrig. Dazu kommen drei Fälle, die die Anrechnung nicht von der richtigen unterscheiden kann, weil `ShieldCreditAllowed` nur fragt, ob **irgendein** Gegner eine Flächenaktion wirkt:
+
+- **unnötig oder zu früh gezündet:** Die Barriere läuft in sieben Sekunden unverbraucht ab, angerechnet wird sie trotzdem.
+- **zu spät gezündet** — der gefährlichste Fall: Bei real 45 % ergibt die Anrechnung 70 % und schaltet die oGCD-Heilung im Moment der größten Not ab.
+- **auf ein anderes Gruppenmitglied gelegt** (die Aktion erlaubt „self or target party member"): Dann wird dessen Heilbedarf unterdrückt.
+
+**Rückkopplung über die eigene Barriere:** `DivineBenison` steht in `ShieldStatus`, und `DivineBenisonPvE` ist im Weißmagier der erste oGCD der Einzelziel-Heilkette, vor `TetragrammatonPvE`. Der Tank fällt unter die Schwelle, Divine Benison feuert, die Barriere hebt die effektive Quote über die Schwelle, und Tetragrammaton bleibt liegen — pro Abfall genau ein oGCD.
+
+**Auflösungsbedingung:** zwei Durchläufe derselben Instanz, einer je Schalterstellung. **Empfehlung: aus lassen, bis der Vergleich vorliegt** — die Sicherheitsrichtung des Auftraggebers spricht für die Fassung, die früher heilt.
+
 ### `HasSurvivingShield` misst die **kürzeste** Schildrestzeit, nicht die längste · N, R
 
 `StatusHelper.cs:942`: `GetObjectShield() > 0 && !WillStatusEnd(horizon, false, ShieldStatus)`. `WillStatusEnd` stützt sich auf `StatusTime`, und das liefert das **Minimum** über alle vorhandenen gelisteten Status (`StatusHelper.cs:990-1011`). Beantwortet wird damit „laufen **alle** Barrieren noch?", während der Doku-Kommentar derselben Methode „has an active shield that will still be up" sagt — Singular.
@@ -37,7 +238,7 @@ Nicht behoben, weil die Absicht dieser fremden Rotation ohne ihren Autor nicht b
 
 ### Statuslisten und Einzelprüfungen ohne die Geschwister-Ids ihrer Wirkung · N, R
 
-Das Spiel führt jede Wirkung unter mehreren Status-Ids desselben Anzeigenamens — eine je Fassung der Fähigkeit, dazu PvP-Formen und die Fassungen, in die eine Trait aufwertet. Eine handgepflegte Aufzählung, die eine Id nennt und die Geschwister auslässt, antwortet für den Träger der ausgelassenen Id **falsch**, nicht nur ungenau. `scan14.py` erhebt die Klasse über alle 24 Listen in `StatusHelper.cs` (A49): **186 fehlende Geschwister in 16 Listen** nach der Behebung von `RampartStatus` und `ReprisalStatus`.
+Das Spiel führt jede Wirkung unter mehreren Status-Ids desselben Anzeigenamens — eine je Fassung der Fähigkeit, dazu PvP-Formen und die Fassungen, in die eine Trait aufwertet. Eine handgepflegte Aufzählung, die eine Id nennt und die Geschwister auslässt, antwortet für den Träger der ausgelassenen Id **falsch**, nicht nur ungenau. `scan14.py` erhebt die Klasse über alle Statuslisten in `StatusHelper.cs` (A49) und nennt die jeweils aktuelle Zahl; sie steht hier bewusst nicht, weil sie mit jeder Ergänzung wächst. Genau das ist nach der Behebung von `RampartStatus` und `ReprisalStatus` geschehen: Je mehr Ids geführt sind, desto mehr Gruppen haben einen Vertreter, und desto mehr Geschwister werden überhaupt sichtbar. Eine steigende Zahl ist hier also Fortschritt, nicht Verfall.
 
 **Was davon kein Defekt ist:** 114 Treffer stammen aus `PhantomDispellable` und `PurifyPvPStatuses`, die bewusst Teilmengen sind. Weitere Treffer sind andere Wirkungen unter geteiltem Namen — `Nebula_3051` (Reflexion), `Bloodwhetting_3030` (Lebensraub), `Holmgang` 88 und 1305 auf dem Ziel statt dem Träger (C15). Der Scan druckt zu jedem Kandidaten die Wirkbeschreibung und die Marke `same opening`/`differs`; entscheiden muss ein Leser.
 
@@ -50,7 +251,122 @@ Das Spiel führt jede Wirkung unter mehreren Status-Ids desselben Anzeigenamens 
 
 **Empfehlung: erfassen, nicht bearbeiten.** Behoben ist, was eine Wirkkette im Code liest und wo der Beleg trägt. Der Rest ist eine Klasse ohne Schranke: Ein Rückgabewert, den nur Wegsehen grün hält, wäre schlechter als keiner, und `scan14.py` hält die Liste jederzeit wieder abrufbar.
 
+### Im Vorschaulauf liefert `CanUse` wahr, ohne ein Ziel zu setzen · N, R
+
+`BaseAction.CanUse` schreibt das gefundene Ziel nur außerhalb der Vorschau: `Target = PreviewTarget.Value` steht unter `if (!IBaseAction.ActionPreview)` (`BaseAction.cs:264`). Zurückgegeben wird trotzdem `true`. Wer also im Vorschaulauf nach einem erfolgreichen `CanUse` auf `X.Target.Target` zugreift, liest entweder ein **veraltetes** Ziel aus einem früheren echten Lauf oder — solange die Aktion noch nie erfolgreich gewählt wurde — `default(TargetResult)`, dessen `Target` trotz nicht-nullbarer Deklaration **null** ist (ein Struct umgeht die Nullability-Garantie).
+
+**Die Wirkkette ist geschlossen**, nicht vermutet: `CustomRotation_Invoke.TryInvoke` setzt `ActionPreview = true` (nur bei `DataCenter.DrawingActions`), ruft darunter `UpdateActions`, und das ruft die echten Dispatch-Methoden der Heilung und Verteidigung — Fläche und Einzelziel, GCD und Fähigkeit — samt Dispel-, Wiederbelebungs-, Positional- und Bewegungspfad.
+
+Genau dort steht das Muster, sechsmal im Heilerbestand:
+
+- `AST_Reborn`, Essential Dignity in der Einzelheilung (drei Schwellenstufen)
+- `AST_Reborn`, Aspected Benefic
+- `SCH_Reborn`, Excogitation
+- `ScholarRotation`, Excogitation — die Basisrotation, also Paketoberfläche
+
+**Kein Kampffehler.** Der eigentliche `Invoke` läuft nach `ActionPreview = false`, dort wird das Ziel gesetzt. Die Folge trifft die Anzeige: `UpdateHealingActions` fängt jede `Exception`, setzt die vier Heilanzeigen auf `null` und schreibt in den PluginLog — die Vorschau zeigt dann keine Heilaktion, obwohl eine anstünde. `UpdateDefenseActions` fängt nur `MissingMethodException`, eine Nullreferenz propagiert von dort also weiter nach `TryInvoke`.
+
+**Die Angriffspfade sind nicht betroffen**, weil `UpdateActions` sie nicht aufruft: die 58 Stellen in `SMN_Reborn`, `BRD_Reborn`, `MCH_Reborn`, `DRG_Reborn` und `PhantomDefault` liegen in `AttackAbility` und `GeneralGCD`. Von den 87 Fundstellen des Musters im eigenen Baum sind damit sechs erreichbar.
+
+**Zu entscheiden ist die Richtung**, deshalb nicht behoben: Dass die Vorschau `Target` nicht überschreibt, ist eine ausdrückliche Entscheidung im Code — sie soll den echten Zustand nicht verändern. Falsch ist folglich nicht die Nicht-Zuweisung, sondern der Zugriff auf `Target` im Vorschaulauf. Drei Wege, alle mit Wirkungsbereich über sämtliche Rotationen und damit auch über die Paketnutzer: die Rotationen auf `PreviewTarget ?? Target` umstellen (viele Stellen, dauerhaft), `Target` in der Vorschau in ein Schattenfeld schreiben und die Leser dorthin lenken (eine Stelle, aber neue Zustandshaltung), oder `CanUse` in der Vorschau `false` liefern lassen, sobald ein Ziel nötig ist (kleinster Eingriff, verändert aber, was die Vorschau anzeigt).
+
+**Empfehlung: erfassen, entscheiden, dann bauen.** Der Schweregrad ist gering — Anzeige und Lograuschen, kein Kampfeffekt —, der Wirkungsbereich jeder Behebung dagegen groß, und keiner der sechs erreichbaren Punkte liegt in einem Job des Nutzungsprofils.
+
+### `PredictedDamageType` ist an ein fremdes Enum gebunden, und die Zuordnung ist ungeprüft · N, R
+
+BossModReborn liefert `Hints.NextDamageType` als `(int)predicted[0].Type` — das Ordinal **seines** Enums —, und `BossModUpdater` castet den Wert direkt in unser `PredictedDamageType`. Die Nummerierung ist damit Schnittstellenvertrag, nicht innere Angelegenheit.
+
+**Beim Schwesterfall derselben Datei war genau diese Zuordnung falsch.** `SpecialMode` überschreitet dieselbe Grenze; die Angleichung (`8dc2bd658`) stellte fest, dass unser `Freezing` auf BossModReborns `Misdirection` zeigte und unser `Misdirection` auf nichts. Dort wurde der Vertrag danach mit expliziten Werten und einem Kommentar festgeschrieben — `PredictedDamageType` stand daneben und wurde nicht mitgeprüft. Das ist die Klassenlücke: dieselbe Bauform, eine Stelle gesichert, die Nachbarstelle nicht.
+
+**Umgesetzt ist nur, was verhaltensneutral ist:** Die heutigen impliziten Werte 0–3 sind jetzt ausgeschrieben, der Vertrag steht als Kommentar am Enum, und die beiden Rücksetzungen in `ResetBmrData` nennen `PredictedDamageType.None` und `SpecialMode.Normal` statt des Literals `0`. Damit fällt eine Einfügung an falscher Stelle beim Lesen auf, statt die Bedeutung des Fremdwerts still zu verschieben.
+
+**Was offen bleibt, ist die Zuordnung selbst.** Ob BossModReborn `None, Tankbuster, Raidwide, Shared` in dieser Reihenfolge führt, ist nicht belegt: Das Enum liegt in `AIHints`, und dessen Pfad ist ohne Code-Suche nicht auffindbar — `api.github.com` ist für diese Sitzung auf die freigegebenen Repositories beschränkt, `raw.githubusercontent.com` liefert nur, was man benennen kann (`IPCProvider.cs` ist so belegt worden).
+
+**Heute folgenlos, und das ist gemessen:** `BMRNextDamageType` wird geschrieben, als `CustomRotation.BMRDamageType` weitergegeben und von **keinem** Entscheidungspfad gelesen — dieselbe Lage wie bei `SpecialMode` zum Zeitpunkt seiner Angleichung. `SMN_Reborn` erwähnt das Paar im Kommentar ausdrücklich als das, was man **nicht** benutzt, weil es nicht sagt, wen der Tankbuster trifft.
+
+**Auflösungsbedingung:** der Pfad zu BossModReborns `AIHints.SpecialMode`/`PredictedDamage.Type` oder eine Laufzeitbeobachtung der gelieferten Zahlen. **Empfehlung: vor dem ersten Verbraucher auflösen** — Konzept 08 sieht die Schadensart als künftige Grundlage der Minderungswahl, und dann wäre eine vertauschte Zuordnung keine Randnotiz mehr.
+
+### Die Minderungsbilanz kennt zwei Schadensarten, die Datenquelle drei · N, R
+
+`GetCurrentMitigationPercent` gewichtet sechs Faktoren binär nach `incomingMagical ? 0.90f : 0.95f` — Addle, Feint, Fey Illumination, Magick Barrier und zwei weitere. Der Wert kommt aus `DataCenter.IsMagicalDamageIncoming()`, das `AttackType.RowId == 5` prüft. Das Blatt kennt aber mehr Werte als 5 und 7; und wenn gerade **niemand** wirkt, ist `CastActionId` überall 0 und die Antwort ebenfalls `false`. Beide Fälle rechnet die Bilanz als **physisch** — mit vertauschten Vorzeichen: Addle zählt dann −5 % statt −10 %, Feint −10 % statt −5 %.
+
+**Der Baustein, der das trennen würde, ist vorhanden und nicht verdrahtet.** `IsPhysicalDamageIncoming()` (`AttackType.RowId == 7`) hat im ganzen Baum **keinen Leser** — kein Kampfpfad, nicht einmal die Diagnoseanzeige, die ihr magisches Gegenstück zeigt. Das ist die Bauform, die `CLAUDE.md` als fehlende Verdrahtung statt tote Stelle führt (Beleg `ResetAvailabilityCheck`): Mit beiden Prädikaten ließe sich „unbekannt" von „physisch" unterscheiden, statt es stillschweigend zusammenzulegen.
+
+**Wirkung: klein, und das ist belegt, nicht vermutet.** `GetCurrentMitigationPercent` hat genau **einen** Verbraucher, die Diagnosezeile in `RotationConfigWindow` (`0.0–0.95`). Kein Kampfpfad liest sie; in meiner eigenen Arbeit dieser Sitzung ist sie als **Vorbild** zitiert, nicht als Aufrufziel. Der Fehler zeigt sich also derzeit nur in einer Anzeige — aber die Bilanz ist öffentlich und damit für abgeleitete Rotationen lesbar, und Konzept 08 sieht sie als künftige Entscheidungsgrundlage.
+
+**Zwei weitere Klon-Reste an derselben Stelle**, ohne eigene Wirkung: Die beiden Methoden sind Kopien mit geänderter Konstante, und die `<remarks>` der physischen Fassung sagt „Returns early on the first confirmed **magical** cast". Der Kommentar bleibt stehen, bis die Stelle bearbeitet wird — ihn allein anzugleichen würde den Beleg der Entstehung tilgen.
+
+**Auflösungsbedingung:** die Zuordnung der `AttackType`-Zeilen. Dass 5 magisch und 7 physisch ist, steht im Code ausdrücklich als Deutung („interpreted as"), nicht als Beleg; welche weiteren Zeilen vorkommen und wie häufig, ist ohne die Spieldaten nicht zu entscheiden — `RotationSolver.GameData` könnte das Blatt ausgeben, läuft aber nur beim Auftraggeber.
+
+**Empfehlung: erfassen.** Solange nur eine Anzeige betroffen ist, wäre eine Umstellung auf geratener Zuordnung teurer als der Fehler. Wird die Bilanz zur Entscheidungsgrundlage, ist sie vorher aufzulösen — dann gehört auch der dritte Fall benannt, statt ihn als physisch zu führen.
+
+### NIN: Der GCD-Vorbehalt vor der Ninjutsu-Ausführung ist konstant wahr · N, U
+
+`NIN_Reborn.cs:977` und `BeirutaNIN.cs:1003` tragen beide
+
+```
+if (_ninActionAim != null && GCDTime() == 0f)
+```
+
+und `GCDTime(uint gcdCount = 0, float offset = 0)` liefert `(DefaultGCDTotal * 0) + 0`, also **konstant 0**. Der Vergleich ist damit zur Übersetzungszeit entschieden, und die Bedingung reduziert sich auf `_ninActionAim != null`. Der Block dahinter führt die Ninjutsu-Aktionen aus (`DoGokaMekkyaku`, `DoHuton`, `DoDoton`).
+
+**Die Absicht ist erkennbar und nicht umgesetzt:** Ein Aufruf von `GCDTime()` an dieser Stelle kann nur einen Zeitvergleich gemeint haben — vermutlich „der GCD ist frei", also `DefaultGCDRemain == 0f`, oder ein Fenster von einem GCD. Welcher der beiden, sagt der Code nicht; beides zu raten hieße, die Rotation auf Verdacht zu ändern.
+
+**Klasse und Abgrenzung:** `scan9.py` erfasst das Muster jetzt. Von 14 Methoden im Baum, deren argumentloser Aufruf durch die Standardwerte konstant ist, sind genau diese zwei Stellen Treffer — der konstante Wert allein ist **kein** Befund: `SongEndAfterGCD()` heißt „endet der Status jetzt" und gibt seine 0 sinnvoll an eine weitere Prüfung weiter. Zum Defekt wird es erst, wenn der konstante Wert **selbst** die Antwort ist und gegen ein Literal verglichen wird.
+
+**Empfehlung: erfassen, nicht bearbeiten.** Ninja steht nicht im Nutzungsprofil, und die zweite Fundstelle liegt in einer fremden Rotation. **Auflösungsbedingung:** eine Angabe, welcher Zeitvergleich gemeint war — oder eine Beobachtung, ob das Ninjutsu-Timing im Spiel auffällt.
+
+### Die Aquapolis fehlt in der Zielpriorisierung der Schatzkarten-Dungeons · N, U
+
+`ObjectHelper.TreasureDungeonPrio` zählt neun Schatzkarten-Dungeons auf und nennt zu jedem die NPCs, die Vorrang haben — Namazu Stickywhisker in den Lost Canals, Alpaca of Fortune in Cenote Ja Ja Gural, Vaultkeeper in Vault Oneiron. `DataCenter.IsInTheAquapolis` ist der zehnte und **einzige** ohne Zweig; von den elf Flags der Region `Treasure Hunt` ist es das einzige ohne jeden Leser im Baum.
+
+**Entstehung belegt:** Konstante und Aufzählung stammen aus demselben Commit (`4ee849eca`, 14.05.2026, „Add Treasure Dungeon support"). Die Stelle war also nie vollständig — *Ignorant Surgery* in Parnas' Sinn, nicht das Altern einer zuvor richtigen Aufzählung.
+
+**Kandidat, nicht Befund.** Die Gegenhypothese ist nicht widerlegt: Hat die Aquapolis gar keinen Vorrang-NPC dieser Art, dann ist ihre Auslassung aus der Aufzählung richtig und der Befund verschiebt sich auf die Konstante, die dann keinen Verwender braucht. Das ist eine Spieltatsache, und sie ist von hier aus nicht belegbar — das Enum `NPCName` ist aus den Spieldaten erzeugt, führt aber keinen Territoriumsbezug, und die Wikis sind vom Egress gesperrt.
+
+**Auflösungsbedingung:** eine Angabe des Auftraggebers oder eine Spielbeobachtung, welche Gegner in der Aquapolis Vorrang haben sollen. **Empfehlung: erfassen, nicht bearbeiten** — Schatzkarten stehen nicht im benannten Nutzungsprofil, und ohne die Namen wäre jeder Zweig geraten.
+
+### Vier Vorrangregeln, die nichts entscheiden, weil derselbe Aufruf unbedingt folgt · N, U
+
+`scan.py`, Prüfung (f). Vier Stellen wickeln einen Aktionsaufruf in eine Bedingung und wiederholen denselben Aufruf unmittelbar danach **ohne** Bedingung. Da der innere Zweig zurückkehrt, ist die Bedingung wirkungslos: Sie trifft keine Wahl, die der unbedingte Aufruf nicht ohnehin träfe.
+
+- `VPR_Reborn.cs:518` — `VicepitPvE` unter „letzte Ladung und Wiederholzeit unter 10 s", direkt gefolgt vom unbedingten Aufruf.
+- `VPR_Reborn.cs:835` — dasselbe für `VicewinderPvE`.
+- `PCT_Reborn.cs:199` — dasselbe für `RetributionOfTheMadeenPvE`.
+- `RDM_Reborn.cs:140` — hier ohne erkennbare Absicht: dieselbe Bedingung steht wortgleich in sich selbst geschachtelt (`InCombat && HasHostilesInMaxRange && ManaficationPvE.CanUse(out act)`).
+
+**Warum das ein Defekt und nicht nur Stil ist:** Die Bedingung ist ein Beleg der Entwurfsabsicht — bei den drei Ladungsfällen „gib der Aktion Vorrang, bevor eine Ladung überläuft". Diese Absicht ist nicht umgesetzt. Die Entstehungsform ist bei VPR belegbar an der Versionsgeschichte: Der äußere Zweig wurde in `acebc4537` („fix for VPR weirdness") nachgeschärft, der innere blieb stehen — *Ignorant Surgery* in Parnas' Sinn, kein Altern einer Prämisse.
+
+**Bewusst nicht gelöscht**, aus demselben Grund wie beim leeren VPR-Zweig (A11): Die Entfernung wäre verhaltensneutral, würde aber die einzige Spur der nicht umgesetzten Vorrangregel tilgen. Zu entscheiden ist, ob die Regel gemeint war — dann muss der unbedingte Aufruf nach hinten oder unter eine Gegenbedingung — oder ob sie fallen soll.
+
+**Empfehlung: erfassen, nicht bearbeiten.** Keiner der vier Jobs steht im Nutzungsprofil des Auftraggebers, und die Entscheidung „Vorrang gemeint oder nicht" gehört zum Autor der Rotation; Adressat ist der Upstream.
+
 ## Technische Schuld
+
+### Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen · N, R
+
+`DataCenter` führt **15 öffentliche statische Eigenschaften, deren Getter iteriert** — darunter genau die, die in den heißen Pfaden stehen: `PartyTank`, `RefinedHP`, `PartyMembersHP`, `NumberOfHostilesInRange`, `NumberOfHostilesInMaxRange`, `AverageTTK`, `DPSTaken`, `AreHostilesCastingKnockback`. Dazu die Helfer derselben Bauform: `SurveyHostileOutput` fragt je Gegner im Radius sechs Status ab, `GetCurrentMitigationPercent` vier, `SurveyStuns` einen.
+
+**Der schwerste Fall war `RefinedHP`, und Upstream hat ihn behoben.** `5ffd22056` (Upstream, 12.09.2026, mit 7.5.6.6 eingezogen) legt einen Cache mit 15 ms Lebensdauer davor, ebenso für `AverageTTK` und die Gruppen-HP-Kennzahlen; `ResetAllRecords` verwirft ihn. Der folgende Absatz beschreibt den Stand davor und bleibt als Begründung stehen, weil das Muster in den übrigen Eigenschaften unverändert vorliegt: Es baute bei **jedem** Lesen ein neues `Dictionary` über alle Gruppenmitglieder, mit einem `try/catch` je Mitglied — und es ist die Nachschlagetabelle, aus der `ObjectHelper.GetHealthRatio` und `GetPlayerHealthRatio` ihren Wert holen. Eine Tabelle, die bei jedem Nachschlagen neu gebaut wird, ist unabhängig von der Häufigkeit eine verkehrte Konstruktion. `GetHealthRatio()` hat 129 Aufrufstellen im Baum.
+
+**Die Kosten sind geschätzt, nicht gemessen.** Aufrufstellen sind kein Maß für Aufrufe je Frame: die meisten liegen in Rotationen, die nie zugleich laufen. Ein Profiler ist von hier aus nicht verfügbar, und statische Prüfung reicht dafür nicht — die Zahl ist deshalb ausdrücklich als Surrogat gekennzeichnet und nicht als Wirkung.
+
+**Warum trotzdem kein Defekt:** Das Verhalten ist richtig, nur der Aufwand ist es vielleicht nicht. `PartyMembers` ist auf die eigene Gruppe begrenzt (Allianzmitglieder gehen in `AllianceMembers`, geprüft an `TargetUpdater`), es geht also um maximal acht Einträge je Aufbau.
+
+**Auflösungsbedingung:** eine Laufzeitbeobachtung, ob es spürbar ist. **Auflösungsweg, falls ja:** Das Muster liegt im Baum bereits vor — `TargetUpdater` schreibt `PartyMembers`, `AllianceMembers` und `AllHostileTargets` einmal je Frame in `DataCenter`. `RefinedHP` gehört auf denselben Weg. Zu bedenken ist, dass `InEffectTime` zeitbasiert ist: ein Wert je Frame ist damit nicht bitgleich zum Wert je Lesen, also eine Verhaltensänderung ohne Nachweismöglichkeit und nach Projektregel nur mit beibehaltener Voreinstellung zu bauen.
+
+**Empfehlung: erfassen.** Ohne Messung wäre jede Umstellung eine Verbesserung auf Verdacht, und der Betroffenenkreis umfasst die Paketnutzer: `RefinedHP` und die übrigen Eigenschaften sind öffentlich, ihr Aufrufverhalten ist Teil des Vertrags.
+
+
+### `Configs.Migrate` ist kein Migrationspfad, sondern ein Zurücksetzen · N, R
+
+`Configs.Migrate` lautet vollständig: weicht die gespeicherte `Version` von `CurrentVersion` ab, wird `new Configs()` zurückgegeben — **die gesamte Nutzerkonfiguration fällt auf die Vorgaben zurück**. Der Kommentar „Implement migration logic if needed" weist die Stelle als bewusst offenen Platzhalter aus, nicht als Fehler; sie ist damit technische Schuld und kein Defekt.
+
+**Kosten, und sie sind höher als sie aussehen.** Die Schuld ist nicht nur ein fehlendes Bequemlichkeitsmerkmal, sie **blockiert andere Behebungen**: Jede Korrektur, die einen Vorgabewert ändern muss, um das bisherige Verhalten zu erhalten, ist ohne Feldmigration nicht durchführbar. Der Eintrag zu `InterruptDelay`/`ProvokeDelay` weiter oben ist genau daran gescheitert. Dieselbe Sperre trifft künftig jede Einstellung, deren Vorgabe sich als falsch erweist.
+
+Hinzu kommt die unmittelbare Wirkung für den Auftraggeber: Erhöht Upstream `CurrentVersion` — etwa weil dort ein Feld hinzukommt —, sind beim nächsten Start **alle** eigenen Einstellungen weg. Ein Sicherungsstand lässt sich über `Backup()` anlegen; `Restore()` verweigert allerdings genau dann, wenn die Version abweicht, also im einzigen Fall, in dem man ihn bräuchte.
+
+**Auflösungsbedingung:** eine feldweise Migration, die die gespeicherte Version liest und nur die geänderten Felder umstellt, statt die Datei zu verwerfen. Erst danach sind Vorgabewert-Korrekturen überhaupt möglich.
 
 ### `CanEarlyWeave` steht auf dem beobachteten statt auf dem geschriebenen Verhalten · N, R
 
@@ -74,7 +390,7 @@ Die Zustandswahl liegt an zwei Orten: implizit in `AdjustStateType`, wo `/rotati
 
 **Auflösungsbedingung:** erst mit einer Möglichkeit zur Laufzeitbeobachtung; ein Zustandsautomat mit acht Zuständen, fünf Zykluswegen und zwei Schaltern ist statisch nicht abzusichern. Bei einem Eingriff ist der Persistenzvertrag zu beachten: `DTRType` und `CycleType` liegen als Ordinalzahlen in der Nutzerkonfiguration, ihre Reihenfolge ist nicht frei änderbar.
 
-Geprüfte Nicht-Fehlstellen: `DTRManualAuto` bildet den vom Enum-Text beschriebenen Zwei-Zustands-Zyklus ab (kein Fehler, AUDIT_LOG A14); ein zu großer `TargetingIndex` kann keinen Indexfehler auslösen, `DataCenter.TargetingType` rechnet `% Count` (`DataCenter.cs:284-302`).
+Geprüfte Nicht-Fehlstellen: `DTRManualAuto` bildet den vom Enum-Text beschriebenen Zwei-Zustands-Zyklus ab (kein Fehler, AUDIT_LOG A14); ein zu großer `TargetingIndex` kann keinen Indexfehler auslösen, `DataCenter.TargetingType` rechnet `% Count`.
 
 ### Selbstlernende AoE-Liste wächst ohne fachliche Schranke · N
 
@@ -96,7 +412,7 @@ Vorschlag des Auftraggebers: Liegt der Schaden unterhalb dessen, was der Schild 
 
 **Zeitpunkt der Aufnahme — geprüft, und er ist bereits der richtige.** Gelernt wird **nach dem Effekt**, nicht bei Cast-Beginn: `Watcher.Enable` (`Watcher.cs:17`) hängt `ActionFromEnemy` an `ActionEffect.ActionEffectEvent`, das Effektpaket-Ereignis. Dass dort `set.TargetEffects` mit Schadenswerten ausgewertet wird, ist der Beleg — Schadenswerte entstehen erst beim Treffer. Die Bedingung `set.Action?.Cast100ms > 0` prüft nur, ob die Aktion überhaupt eine Wirkzeit *besitzt*, nicht ob gerade gewirkt wird.
 
-Die Größenordnung steht beim Lernen also fest. **Verwendet** wird die Liste dagegen bei Cast-Beginn: `IsHostileCastingArea` (`DataCenter.cs:2445`) prüft laufende Casts gegen die gelernten Ids. Aus beidem zusammen ergibt sich die eigentliche Konstruktion — beim **ersten** Vorkommen einer Aktion wird nie mitigiert, ab dem zweiten schon. Das ist stimmig und nicht zu ändern.
+Die Größenordnung steht beim Lernen also fest. **Verwendet** wird die Liste dagegen bei Cast-Beginn: `IsHostileCastingArea` (`DataCenter.IsHostileCastingArea`) prüft laufende Casts gegen die gelernten Ids. Aus beidem zusammen ergibt sich die eigentliche Konstruktion — beim **ersten** Vorkommen einer Aktion wird nie mitigiert, ab dem zweiten schon. Das ist stimmig und nicht zu ändern.
 
 **Vier Einwände gegen die einfache Form (Filter beim Lernen):**
 
@@ -123,7 +439,7 @@ Der Auftraggeber schlägt statt eines absoluten Werts die **Potenz** vor, analog
 
 3. **Potenz ist keine Gefahrenaussage, sondern eine Eingangsgröße.** Sie ist der erste Faktor einer Formel, deren übrige Faktoren — Gegnerstufe, Inhaltssynchronisation, Verwundbarkeitsstapel, Maximalgesundheit der Gruppe — erst bestimmen, was den Heiler interessiert. Der Anteil misst das Ergebnis unmittelbar.
 
-4. **Der Vergleichspartner liegt bereits in dieser Einheit vor.** Der ursprüngliche Gedanke war, Schadensgröße gegen Schildkapazität zu halten. Das Spiel selbst führt Schilde als **Prozent der maximalen Gesundheit**: `ICharacter.ShieldPercentage`, in `ObjectHelper.GetObjectShield` (`ObjectHelper.cs:3372`) als `MaxHp * ShieldPercentage / 100` gelesen. Beide Seiten des Vergleichs stehen damit in derselben Einheit; die Potenz wäre eine dritte, in die erst umzurechnen wäre.
+4. **Der Vergleichspartner liegt bereits in dieser Einheit vor.** Der ursprüngliche Gedanke war, Schadensgröße gegen Schildkapazität zu halten. Das Spiel selbst führt Schilde als **Prozent der maximalen Gesundheit**: `ICharacter.ShieldPercentage`, in `ObjectHelper.GetObjectShield` (`ObjectHelper.cs:3409`) als `MaxHp * ShieldPercentage / 100` gelesen. Beide Seiten des Vergleichs stehen damit in derselben Einheit; die Potenz wäre eine dritte, in die erst umzurechnen wäre.
 
 ##### Rückrechnung statt Vorhersage — Korrektur einer zu absoluten Aussage
 
@@ -211,14 +527,6 @@ Dem steht als Ertrag eine Nutzeroption gegenüber, deren Wirkung unbelegt ist un
 
 **Auflösungsbedingung:** eine Spielbeobachtung über mehrere Kämpfe — wird die Barriere unter `TankbusterOrHeavyPull` regelmäßig aufgezehrt, und fehlt sie nie dort, wo sie gebraucht wurde, ist der Standard umzustellen. Für die Heilerseite ist zusätzlich zu beobachten, was die Rückhaltung kostet: Sanctus ist der einzige Flächenzauber des Jobs, ein zurückgehaltener GCD fällt auf Einzelzielschaden zurück. Zu beobachten ist dabei auch die Gegnerschwelle: Kommt The Blackest Night im Wall-to-Wall zu selten, ist `BlackestNightMinHostiles` (Vorgabe 4) zu hoch angesetzt. Sie ist bewusst eine **eigene** Option der Rotation und nicht der globale `MitigationSustainHostileCount`, weil die Frage hier eine andere ist: nicht „lohnt eine Minderung", sondern „reicht der Schadensstrom, um 25 % der maximalen Gesundheit in sieben Sekunden aufzuzehren".
 
-### PR-Prüfung folgt dem Staging-Kanal von Dalamud · U
-
-`publish.yaml` bezieht Dalamud seit dem Upstream-Release 7.5.6.0 aus `dalamud-distrib/stg/latest.zip` — das ist die **einzige** Änderung, die dieses Release gegenüber 7.5.5.41 trägt. `build.yaml` ist dieser Zeile nachgezogen (A40), damit die PR-Prüfung gegen dieselben Assemblies kompiliert, gegen die das Release gebaut wird. Upstream hat nur `publish.yaml` umgestellt; die Zeile in `build.yaml` ist deshalb eine Fork-Abweichung.
-
-**Kosten:** eine Zeile Merge-Fläche. Zudem hängt die PR-Prüfung nun an einem Kanal, der nach der Dalamud-Dokumentation häufiger bricht als der Release-Kanal — ein Bruch dort blockiert die Prüfung, hätte aber ebenso den Release-Build blockiert, nur später.
-
-**Auflösungsbedingung:** Stellt Upstream `publish.yaml` auf den Release-Kanal zurück, ist `build.yaml` mitzuziehen. Beide Zeilen sind bewusst gleich zu halten; laufen sie auseinander, misst die Prüfung nicht mehr, was ausgeliefert wird.
-
 ### VPR: leerer Zweig einer Struktur, die anderswo eine Entscheidung trägt · U
 
 `VPR_Reborn.cs:591-597` und `975-981`. Das Muster `!HasHunterAndSwift` kommt viermal vor; der Vorspann `!IsHunter && !IsSwift` trägt nur an der Coil-Stelle (751-807) Inhalt, an der Den-Stelle (424-493) fehlt er ganz. Weder ein fehlender Inhalt noch dessen Entbehrlichkeit ist belegbar. **Bewusst nicht gelöscht** (AUDIT_LOG A11): Die Entfernung wäre verhaltensneutral, würde aber die Asymmetrie verdecken, die den Befund sichtbar macht. **Auflösung:** Adressat ist der Upstream. **Empfehlung: belassen** — der leere Zweig ist der einzige Hinweis auf die Lücke, und ohne den Autor ist nicht zu entscheiden, ob Inhalt fehlt oder der Vorspann überflüssig ist.
@@ -265,7 +573,7 @@ Schritt 3 aus `docs/rotation-flow/08-mitigation-synergy.md`. Die Schritte 1 und 
 
 ### Keine Messgrundlage für Schadens- und Heilungsraten auf Gruppenmitglieder · —
 
-**Geprüft und bewusst nicht gebaut.** Der Befund selbst besteht fort: Für Gruppenmitglieder gibt es keine Rate. `DataCenter.RecordedHP` (`DataCenter.cs:197`) wird in `TargetUpdater.cs:513-535` ausschließlich aus `AllHostileTargets` gefüllt, weshalb `GetTTK` für eine Party-Id `NaN` liefert; die Abtastrate ist 1 Hz (`TargetUpdater.cs:19`); und ein Heilpaket eines fremden Heilers passiert beide Watcher-Filter (`Watcher.cs:17-18`) ungelesen. Es fehlt der Aufnehmer, nicht die Quelle.
+**Geprüft und bewusst nicht gebaut.** Der Befund selbst besteht fort: Für Gruppenmitglieder gibt es keine Rate. `DataCenter.RecordedHP` wird in `TargetUpdater.cs:513-535` ausschließlich aus `AllHostileTargets` gefüllt, weshalb `GetTTK` für eine Party-Id `NaN` liefert; die Abtastrate ist 1 Hz (`TargetUpdater.cs:19`); und ein Heilpaket eines fremden Heilers passiert beide Watcher-Filter (`Watcher.cs:17-18`) ungelesen. Es fehlt der Aufnehmer, nicht die Quelle.
 
 **Warum er trotzdem nicht gebaut wird:** Er hatte genau einen vorgesehenen Verbraucher — die Hochrechnung, ob der Tod eines Dunkelritters noch vor Ablauf von Living Dead eintritt. Diese Frage ist inzwischen anders beantwortet: `StatusHelper.InDeathTriggerWindow` misst die Restzeit des Status selbst und gibt den Halt einen GCD vor Ablauf frei. Damit gibt es im gesamten Baum keinen Verbraucher mehr, und ein Baustein ohne Verbraucher ist Vorratsarbeit.
 
@@ -276,6 +584,23 @@ Die Kostenseite bliebe dagegen bestehen: Ein Ringpuffer über alle Gruppenmitgli
 **Wieder aufzugreifen, wenn** ein konkreter Verbraucher entsteht — etwa eine gestaffelte Phase-2-Unterstützung, die den Heilungskurs gegen die Restzeit prüft. Bis dahin ist der Befund dokumentiert und die Entscheidung begründet, nicht offen.
 
 ## Offene Arbeit
+
+### Nachprüfung der 73 Commits vom 11. und 12. September 2026 · N, R, U
+
+Der Auftraggeber hat die Arbeit dieser beiden Tage als nicht belastbar zurückgewiesen und angeordnet, sie zur Nachprüfung vorzumerken. Die Liste steht vollständig in `AUDIT_LOG.md` B2, Prüfstand **ZWEIFELHAFT**: 73 eigene Commits ohne Merges und 5 eigene Merge-Commits, 72 davon nur auf `claude/raise-swiftcast-weave-2` und dort noch änderbar.
+
+**Was die Vormerkung besagt:** nichts über den Inhalt. Kein Commit ist damit widerlegt. Zweifelhaft ist der **Prüfstand** — die Belege zu diesen Commits in Teil A stammen aus denselben beiden Tagen und sind Selbstauskunft, also Gegenstand der Nachprüfung und nicht ihre Grundlage.
+
+**Reihenfolge**, nach Wirkung auf den Betroffenenkreis:
+
+1. **Code (18)** — wirkt im Kampf auf jeden Endnutzer, Fehler sind hier am teuersten. Darunter die drei Eingriffe, die ohnehin ungemessen sind (Wiederbelebung, Schildanrechnung, Verlangsamungs-Halt von Sanctus).
+2. **Generator (2) und CI (4)** — falsch erhobene Namen und ein falsch messendes Prüfmittel vergiften jede spätere Aussage, die sich darauf stützt.
+3. **Prüfmittel (18)** — ein Skript, das das Surrogat statt der Wirkung misst, erzeugt stille Nullbefunde; genau diese Fehlerklasse war der Anlass ihrer Überarbeitung.
+4. **Doku (29) und sonstiges (2)** — zuletzt, weil eine falsche Aussage dort nur mitträgt, was der Code ohnehin zeigt.
+
+**Prüfmaßstab je Commit:** Belegt der Diff, was die Nachricht behauptet? Ist die zugehörige Wirkkette im Code nachvollzogen oder nur erzählt? Welcher Prüfgrad war tatsächlich erreicht — statisch, Prüfskript, Compile, Spiel? Ergebnis je Commit als **KEIN FEHLER**, **KORRIGIERT** oder **VERWORFEN** in B2 eintragen; ZWEIFELHAFT bleibt stehen, bis geprüft.
+
+**Diese Nachprüfung beginnt auf Freigabe des Auftraggebers**, nicht aus eigenem Antrieb — der Auftrag nennt als Bedingung ausdrücklich den Zeitpunkt, zu dem die Arbeitsqualität wieder stimmt, und das ist seine Feststellung, nicht meine.
 
 ### Rückstoß im Pull nur beim Dunkelritter, nicht bei den übrigen Tanks · N, U
 
@@ -310,7 +635,8 @@ Umfang: `RotationSolver.Basic` (48k Zeilen) · RebornRotations (21k) · ExtraRot
 - **Kern tief lesen:** Rest von `DataCenter`; `StateUpdater`, `TargetUpdater`, `ActionTargetInfo`, `BaseAction`/`ActionBasicInfo`, `CustomRotation_Ability`/`GCD`, `Watcher`, `MajorUpdater`, `ObjectHelper`/`StatusHelper` sind gelesen.
 - **Rotationen je Job:** Dispatch-Reihenfolge, Gates, Status-IDs, Zielwahl; bisher nur über die Scanner abgedeckt, nicht Datei für Datei.
 - **`RotationSolver/UI`** jenseits der Paar- und Totcode-Scans.
-- **Zweiter Durchgang** mit den Skripten aus `.github/scripts/audit/` über den bereinigten Baum, nach dem Nachrüsten der fehlenden Selbsttests.
 - **Dokumentation** in `docs/rotation-flow/07-codebase-audit.md`.
 
-**Empfehlung: das ist der nächste Arbeitsblock.** Von allen offenen Punkten ist er der einzige, der weder auf eine Entscheidung noch auf eine Spielbeobachtung wartet — die übrigen sind entweder erfasste Fremdbefunde oder brauchen Laufzeitdaten. Sinnvoller Einstieg ist der zweite Durchgang mit den dreizehn Skripten über den bereinigten Baum, weil er ohne neue Lesearbeit misst, was die bisherigen Eingriffe hinterlassen haben.
+Der zweite Durchgang mit allen Prüfmitteln ist geführt (A82) und hat die Skripte selbst instand gesetzt; als Messlage für den Rest des Blocks ist er damit verbraucht.
+
+**Empfehlung: der nächste Arbeitsblock, sobald die Nachprüfung der vorgemerkten Commits durch ist.** Sie geht vor, weil sie den Bestand betrifft, auf dem jeder weitere Durchgang aufsetzt — ein Prüfmittel aus dem zweifelhaften Fenster misst sonst den Rest des Baums. Von den übrigen offenen Punkten ist dieser hier der einzige, der weder auf eine Entscheidung noch auf eine Spielbeobachtung wartet — die übrigen sind entweder erfasste Fremdbefunde oder brauchen Laufzeitdaten. Sinnvoller Einstieg ist jetzt das Lesen, nicht das Messen: Die Skripte erfassen Muster, die schon einmal aufgefallen sind, und der verbliebene Bestand — der Rest von `DataCenter`, die Rotationen Datei für Datei, die UI — ist genau der Teil, den kein Muster abdeckt.

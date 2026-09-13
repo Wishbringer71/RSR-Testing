@@ -511,7 +511,8 @@ internal partial class Configs : IPluginConfiguration
 	Filter = AutoActionUsage)]
 	private static readonly bool _usePhoenixDown = false;
 
-	[ConditionBool, UI("Use Phoenix Down only if no Raiser alive in party",
+	[ConditionBool, UI("Use Phoenix Down only if no raiser is alive",
+	Description = "A raiser is a living healer, Summoner or Red Mage of a high enough level to have their raise. Which of them count follows the raise target setting: the party alone under Party only and Party healers only, party and alliance under the alliance modes and All.",
 	Parent = nameof(UsePhoenixDown))]
 	private static readonly bool _usePhoenixDownHealerLogic = true;
 
@@ -920,13 +921,44 @@ internal partial class Configs : IPluginConfiguration
 	[Range(0, 1, ConfigUnitType.Percent, 0.02f)]
 	public float HealthProtectedRatio { get; set; } = 0.15f;
 
+	// Counting a barrier toward effective health delays the single-target heal by exactly the
+	// barrier's size: The Blackest Night is 25% of max HP, so the oGCD threshold of 0.65 is only
+	// reached at around 40% real HP. That is a fork behaviour change with no way to demonstrate it
+	// from here, which the project rule puts behind a switch with the previous behaviour as the
+	// default - and upstream credits no shield at all.
+	//
+	// The case against it is not the arithmetic but the misused barrier, and the credit cannot tell
+	// the two apart: ShieldCreditAllowed only asks whether *some* hostile is casting an area
+	// action, not whether the barrier's bearer is its target, nor whether the barrier will still be
+	// there when a heal would land. Fired too late, at 45% real HP, the credit reads 70% and shuts
+	// the oGCD heal off at the moment of greatest need. There is also a feedback loop through the
+	// healer's own barrier: Divine Benison is the white mage's first single-target oGCD, and its
+	// barrier lifts the target back over the threshold, so Tetragrammaton stays down.
+	//
+	// Off by default therefore, so that two runs answer the question the code cannot.
+	[UI("Count a target's remaining barrier toward their HP when damage is expected.\n" +
+		"Off matches upstream: barriers are ignored and healing starts at the plain HP threshold.\n" +
+		"On delays single-target healing by the size of the barrier - about 25 percentage points " +
+		"for The Blackest Night.",
+		Filter = HealingActionCondition, Section = 1)]
+	public bool CreditShieldToEffectiveHp { get; set; }
+
 	// Living Dead is the one invulnerability whose trigger is the bearer's own death: dying converts
-	// it into Walking Dead and its self-healing. Healing the dark knight above zero while it is up
-	// removes that trigger. Off by default, and deliberately so - RSR fires Living Dead itself as a
-	// last-ditch save at HealthForDyingTanks (DarkKnightRotation.EmergencyAbility), and under that
-	// usage the death is not wanted at all. Walking Dead demands healing equal to full max HP within
-	// ten seconds or it kills, so holding the heal is only right when the death was the plan and the
-	// healer can carry phase two. Whoever knows that for their group turns this on.
+	// it into Walking Dead. Healing the dark knight above zero while it is up removes that trigger.
+	//
+	// What phase two demands is quoted from the action's own effect text (ActionId.resx, action
+	// 3638), not from memory: Living Dead lasts 10s, Walking Dead another 10s, "most attacks will
+	// not lower your HP below 1", and "if before the Walking Dead timer runs out an amount of HP
+	// totaling your maximum HP is restored the effect will change to Undead Rebirth. If this amount
+	// is not restored you will be KO'd." The bearer contributes to that total himself - "Restores HP
+	// with each weaponskill successfully delivered or spell cast, Cure Potency: 1500" - so the
+	// healer carries the remainder, not the whole of it. Which is also why the hold is not a
+	// gamble on one heal: a white mage's Benediction restores the target fully on its own.
+	//
+	// Off by default, and deliberately so - RSR fires Living Dead itself as a last-ditch save at
+	// HealthForDyingTanks (DarkKnightRotation.EmergencyAbility), and under that usage the death is
+	// not wanted at all. Holding the heal is right where the death was the plan. Whoever knows that
+	// for their group turns this on.
 	[UI("Withhold healing from a dark knight under Living Dead, so the death that converts it can happen.",
 		Filter = HealingActionCondition, Section = 1)]
 	public bool WithholdHealingForLivingDead { get; set; } = false;

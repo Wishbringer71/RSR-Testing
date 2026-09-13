@@ -1,4 +1,4 @@
-﻿using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Config;
 using ECommons;
 using ECommons.DalamudServices;
@@ -976,6 +976,93 @@ internal static class DataCenter
 	public static Job Job => Player.Job;
 
 	private static readonly BaseItem PhoenixDownItem = new(4570);
+	/// <summary>
+	/// Is someone alive who could raise, in the set the current raise settings draw targets from?
+	///
+	/// Two callers ask this with opposite intent, which is why the player is a parameter rather
+	/// than a fixed rule. A Phoenix Down asks "can nobody do this properly" and must count the
+	/// player, because a living raiser uses their spell instead of an item. The only-healer hard
+	/// cast modes ask "is there anyone else", and there the player is the one deciding.
+	///
+	/// The reference set follows <see cref="Configs.RaiseType"/>, because that is what decides
+	/// where a corpse may come from. Under the alliance modes the other alliances are real parties
+	/// with their own raisers: while one of them is alive the raise is theirs to take. AllOutOfDuty
+	/// is deliberately excluded - strangers in the open world are not a raise reserve, and counting
+	/// them would suppress raising almost always.
+	/// </summary>
+	/// <param name="excludeSelf">Skip the player, for callers asking whether anyone *else* can.</param>
+	public static bool AnyLivingRaiser(bool excludeSelf)
+	{
+		if (HasLivingRaiser(PartyMembers, excludeSelf))
+		{
+			return true;
+		}
+
+		return Service.Config.RaiseType is RaiseType.PartyAndAllianceSupports
+				or RaiseType.PartyAndAllianceHealers
+				or RaiseType.All
+			&& HasLivingRaiser(AllianceMembers, excludeSelf);
+	}
+
+	private static bool HasLivingRaiser(IEnumerable<IBattleChara>? members, bool excludeSelf)
+	{
+		if (members == null)
+		{
+			return false;
+		}
+
+		foreach (var member in members)
+		{
+			if (member == null || member.IsDead)
+			{
+				continue;
+			}
+
+			if (excludeSelf && member.IsPlayer())
+			{
+				continue;
+			}
+
+			if (member.IsJobCategory(JobRole.Healer)
+				|| member.IsJobs(ECommons.ExcelServices.Job.SMN))
+			{
+				if (member.Level >= RaiseLevel)
+				{
+					return true;
+				}
+
+				continue;
+			}
+
+			if (member.IsJobs(ECommons.ExcelServices.Job.RDM) && member.Level >= VerraiseLevel)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// The level at which a healer or a Summoner has their raise, and the one at which a Red Mage has
+	/// Verraise.
+	///
+	/// <see cref="CanRaise"/> has always applied these to the player. <see cref="HasLivingRaiser"/> did
+	/// not apply them to anyone else, so a Red Mage below 64 - every level-synced run through the older
+	/// content - counted as a living raiser and held back the feather that was the only way anyone was
+	/// getting up. Sharing the two numbers is what keeps the question from being answered differently
+	/// for the player than for the party.
+	///
+	/// For another party member the level comes from ICharacter.Level, which is what the client shows
+	/// for them; whether that reports the synced level or the true one inside a synced duty is not
+	/// established here. Either way it is strictly better than the assumption it replaces, which was
+	/// that every healer, Summoner and Red Mage alive can raise.
+	/// </summary>
+	private const byte RaiseLevel = 12;
+
+	/// <inheritdoc cref="RaiseLevel"/>
+	private const byte VerraiseLevel = 64;
+
 	public static bool CanRaise()
 	{
 		if (IsPvP)
@@ -988,12 +1075,12 @@ internal static class DataCenter
 			return true;
 		}
 
-		if ((Role == JobRole.Healer || Job == Job.SMN) && PlayerSyncedLevel() >= 12)
+		if ((Role == JobRole.Healer || Job == Job.SMN) && PlayerSyncedLevel() >= RaiseLevel)
 		{
 			return true;
 		}
 
-		if (Job == Job.RDM && PlayerSyncedLevel() >= 64)
+		if (Job == Job.RDM && PlayerSyncedLevel() >= VerraiseLevel)
 		{
 			return true;
 		}
@@ -2967,9 +3054,9 @@ internal static class DataCenter
 		BMRNextVulnerableIn = float.MaxValue;
 		BMRNextVulnerableEndIn = float.MaxValue;
 		BMRNextDamageIn = float.MaxValue;
-		BMRNextDamageType = 0;
+		BMRNextDamageType = PredictedDamageType.None;
 		BMRSpecialModeIn = float.MaxValue;
-		BMRSpecialModeType = 0;
+		BMRSpecialModeType = SpecialMode.Normal;
 		BMRForceCancelCast = false;
 		BMRForceCancelCastAI = false;
 		BMRIsMoving = false;

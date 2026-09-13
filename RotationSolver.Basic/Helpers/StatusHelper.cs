@@ -368,8 +368,9 @@ public static class StatusHelper
 	/// Reprisal check looks for any of them.
 	/// <para>
 	/// <c>Reprisal_2101</c> is scoped to PLD WAR DRK GNB rather than to the shared role, which is the
-	/// signature of the form a trait upgrades into - Enhanced Reprisal at level 98 raises the
-	/// reduction to 15% and the duration to 15s. Its absence made every reader of this list blind to
+	/// signature of the form a trait upgrades into - Enhanced Reprisal at level 98 extends the
+	/// duration to 15s. It leaves the reduction at 10%: an earlier version of this note claimed 15%
+	/// without naming a source, and the Lodestone entry says otherwise. Its absence made every reader of this list blind to
 	/// the version an end-game tank actually applies: <c>ReprisalPvE</c> carries this list as
 	/// <c>TargetStatusProvide</c>, so the guard against re-applying it never saw the debuff, and the
 	/// mitigation surveys that read it counted a reprised pull as unmitigated.
@@ -618,7 +619,8 @@ public static class StatusHelper
 	/// <para>
 	/// Two GCDs of lead time. The tempting optimisation is to shorten it: the hold's one real cost
 	/// is that it can cancel a death that would still have arrived in time, and that cost is exactly
-	/// the lead time - against Living Dead's ten seconds, two GCDs give away half the window. But
+	/// the lead time - against Living Dead's ten seconds (ActionId.resx, action 3638: "Living Dead
+	/// Duration: 10s"), two GCDs give away about half the window. But
 	/// the lead time is measured to the *decision*, not to the heal landing. Worst case the current
 	/// GCD has to run out and a cast has to finish on top of it, which is two GCDs on its own, so
 	/// anything shorter lands the heal after the window has already closed and the bearer is

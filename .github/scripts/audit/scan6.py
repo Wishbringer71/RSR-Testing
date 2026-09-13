@@ -159,7 +159,31 @@ def persisted_enum_names():
     return names
 
 
-def compare(base_enums, head_enums, persisted):
+# A cast of something that is not an enum member into that enum: `(SpecialMode)(x ?? 0)`. Where
+# the value comes from outside - an IPC int from another plugin - the ordinals are bound to the
+# foreign order, and no compiler checks it.
+def cast_filled_enum_names():
+    """Enum type names the tree fills by casting a non-enum expression into them.
+
+    This is the third kind of contract, beside stored configuration and published signatures, and
+    the one that made the earlier reasoning about SpecialMode wrong: it is not persisted, so it was
+    classed as free to renumber - while BossModReborn hands its own ordinal across IPC and
+    BossModUpdater casts it straight in. The alignment found a real mismatch there.
+    """
+    names = set()
+    listing = subprocess.run(['git', 'ls-files'], capture_output=True, text=True,
+                             check=True).stdout.split()
+    for path in (f for f in listing if f.endswith('.cs')):
+        try:
+            text = open(path, encoding='utf-8', errors='replace').read()
+        except OSError:
+            continue
+        for m in re.finditer(r'\(([A-Z]\w+)\)\s*(?!\1\.)([A-Za-z_(])', text):
+            names.add(m.group(1))
+    return names
+
+
+def compare(base_enums, head_enums, persisted, cast_filled=frozenset()):
     breaks, informational = [], []
     for name, (path, members) in sorted(head_enums.items()):
         if name not in base_enums:
@@ -168,7 +192,10 @@ def compare(base_enums, head_enums, persisted):
         for member, ordinal in members:
             if member in before and before[member] != ordinal:
                 row = (name, member, before[member], ordinal, path)
-                (breaks if name in persisted else informational).append(row)
+                if name in persisted or name in cast_filled:
+                    breaks.append(row)
+                else:
+                    informational.append(row)
     return breaks, informational
 
 
@@ -218,7 +245,19 @@ def self_test():
     if os.path.exists(CONFIG_FILES[0]):
         assert 'TargetHostileType' in persisted_enum_names(), \
             'generator-backed private config fields are no longer recognised'
-    print('self-test ok: ordinals tracked, enums separated, both revisions non-empty\n')
+    # An enum filled by a cast from a foreign int is a contract even though nothing persists it.
+    # Classing SpecialMode as free to renumber on that basis was the misclassification this
+    # category exists to close - BossModReborn sends its own ordinal over IPC, and the alignment
+    # found our Freezing sitting on its Misdirection.
+    base = {'SpecialMode': ('x.cs', [('Normal', 0), ('Freezing', 4)])}
+    head = {'SpecialMode': ('x.cs', [('Normal', 0), ('Freezing', 3)])}
+    got_break, got_info = compare(base, head, frozenset(), frozenset(['SpecialMode']))
+    assert got_break and not got_info, 'a cast-filled enum must count as a contract break'
+    got_break, got_info = compare(base, head, frozenset(), frozenset())
+    assert got_info and not got_break, 'without either binding it stays informational'
+
+    print('self-test ok: ordinals tracked, the three bindings separated, both revisions '
+          'non-empty\n')
 
 
 if __name__ == '__main__':
@@ -232,12 +271,26 @@ if __name__ == '__main__':
 
     head_enums = tree_enums()
     persisted = persisted_enum_names()
-    breaks, informational = compare(base_enums, head_enums, persisted)
+    cast_filled = cast_filled_enum_names()
+    breaks, informational = compare(base_enums, head_enums, persisted, cast_filled)
 
-    print(f'== contract breaks: {len(breaks)} members of a persisted enum changed ordinal')
-    for name, member, was, now, path in breaks:
+    # A break that is itself the documented repair would otherwise be reported for ever, and an
+    # output that has to be ignored stops being read. Same treatment scan17 gives its known case.
+    known = {
+        ('SpecialMode', 'Freezing'): 'commit 8dc2bd658 - aligned with the enum BMR sends over IPC',
+        ('SpecialMode', 'Misdirection'): 'commit 8dc2bd658 - same alignment',
+    }
+    open_breaks = [r for r in breaks if (r[0], r[1]) not in known]
+
+    print(f'== contract breaks: {len(open_breaks)} member(s) of a persisted or cast-filled enum '
+          f'changed ordinal')
+    for name, member, was, now, path in open_breaks:
         print(f'  {path}  {name}.{member}: {was} -> {now}')
+    for name, member, was, now, path in breaks:
+        if (name, member) in known:
+            print(f'  known: {name}.{member}: {was} -> {now} ({known[(name, member)]})')
     print()
-    print(f'== informational: {len(informational)} members of an in-memory enum changed ordinal')
+    print(f'== informational: {len(informational)} member(s) of an enum that is neither '
+          f'persisted nor cast-filled changed ordinal')
     for name, member, was, now, path in informational:
         print(f'  {path}  {name}.{member}: {was} -> {now}')

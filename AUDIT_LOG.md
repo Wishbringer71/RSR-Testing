@@ -4,7 +4,7 @@ Archiv abgeschlossener Prüfungen dieses Forks. Zweck: „wurde X schon geprüft
 
 Aufbau: **A** Vorgänge in chronologischer Reihenfolge, je Vorgang Anlass → Ergebnis → Belege; **B** Commit-Register aller Fork-Commits mit Prüfstatus; **C** widerrufene Aussagen dieses Archivs.
 
-Statusbegriffe: **GEFIXT** (Code geändert) · **KEIN FEHLER** (geprüft, nichts zu tun) · **VERWORFEN** (Idee/Fix zurückgenommen) · **KORRIGIERT** (frühere Aussage hier widerrufen, s. Teil C). Prüftiefe: *statisch* = Code/Diff gelesen · *CI* = kompiliert und Prüfskript sauber · *Spiel* = vom Nutzer beobachtet. Ohne Zusatz gilt *statisch + CI*.
+Statusbegriffe: **GEFIXT** (Code geändert) · **KEIN FEHLER** (geprüft, nichts zu tun) · **VERWORFEN** (Idee/Fix zurückgenommen) · **KORRIGIERT** (frühere Aussage hier widerrufen, s. Teil C) · **ZWEIFELHAFT** (vorgemerkt zur Nachprüfung; weder bestätigt noch widerlegt, und der hier geführte Beleg ist selbst mitzuprüfen). Prüftiefe: *statisch* = Code/Diff gelesen · *CI* = kompiliert und Prüfskript sauber · *Spiel* = vom Nutzer beobachtet. Ohne Zusatz gilt *statisch + CI*.
 
 ---
 
@@ -1707,9 +1707,606 @@ Dazu die **fehlende zweite Stufe der Reihenfolgebedingung**, die seit A46 offen 
 
 **Erreichter Prüfgrad:** statische Prüfung, `git describe` am Repository gegen den erwarteten Wert getestet, XML-Wohlgeformtheit als CI-Schranke, CI-Kompilierung. **Nicht** geprüft: dass das MSBuild-Target unter Windows die Versionseigenschaften rechtzeitig setzt — das zeigt erst ein Release-Build oder die Build-Ausgabe eines lokalen Compilats. Wer den nächsten Build macht, sieht in der Ausgabe die Zeile „Fork version derived from the repository".
 
+### A54 · Die Wiederbelebung wurde gewählt und nie ausgeführt (10.09.2026)
+
+**Anlass:** Nutzermeldung, seit Beginn bestehend: Heiler und übrige Rezzer wirken die Wiederbelebung verzögert oder gar nicht, während Schaden und Heilung weiterlaufen — trotz `RaisePlayerFirst`. Nachgeschobene Laufzeitbeobachtungen des Auftraggebers, die den Befund tragen: die Verzögerungswerte stehen auf 0; die Toten liegen ruhig und sind anvisierbar; es tritt im Stehen wie im Laufen auf; und **im Vorschaufenster erscheint Spontanität und wird nie gewirkt**.
+
+**Befund.** `WeaponRemain` ist `DataCenter.DefaultGCDRemain` (`CustomRotation_OtherInfo.cs:1624`). `CustomRotation_GCD.cs:560` wählte Spontanität **nur** bei `WeaponRemain <= 0.5f`; `RSCommands_Actions.cs:78` verweigert **jede** Fähigkeit bei `0 < DefaultGCDRemain <= 0.5f` (gespiegelt bei `:46` und in `CustomRotation_Ability.cs:28`). Spontanität ist eine Fähigkeit, die Fenster sind bis auf `DefaultGCDRemain == 0` deckungsgleich. Über 0,5 s wurde sie nicht einmal gewählt und der Dispatcher fiel zu Heilung und Schaden durch; darunter wurde sie gewählt, angezeigt und verworfen. Beide Umgehungen waren zu: der Hartwirk-Zweig verlangte Spontanität in Erholung, die ohne Nutzung nie eintrat, und der Einschiebe-Pfad verlangte die Wiederbelebung als `nextGCD`, die dort nie stand.
+
+**Entstehung — Parnas, *Lack of Movement*.** `f22be318` (10.01.2025) führte den Zweig ein, als es keine Ausführungssperre gab; `92f109d3` (02.03.2026) fügte die Sperre hinzu und entwertete ihn, ohne dass etwas fehlschlug. Vierzehn Monate ohne Signal.
+
+**Vier eigene Fehldiagnosen auf dem Weg, alle vom Auftraggeber widerlegt** (Einzelheiten in C35): Verzögerungsparameter, `IsTargetMoving` auf der Leiche, Anvisierbarkeit, und zuletzt die Bewegungssperre in `NeedsCasting` — Letztere zweimal behauptet, obwohl der Nutzer „ich stehe mal, und mal bewege ich mich" gesagt hatte. Die Beobachtung „Spontanität steht im Fenster" hat den Fall entschieden, nicht die Codelektüre; sie beweist, dass `RaiseGCD` true lieferte und der Defekt hinter der Auswahl saß.
+
+**Umsetzung.** Der GCD-Pfad meldet die Wiederbelebung statt Spontanität, und zwar nur bei laufendem GCD (`!ActionHelper.CanUseGCD`), damit bei freiem GCD nicht ohne Instant hartgewirkt wird. Der Einschiebe-Pfad (`CustomRotation_Ability.cs`) zündet Spontanität davor, im Fenster oberhalb der Sperre. Gegen `Raise` statt gegen eine Vier-Ids-Liste, der Verraise und Angel Whisper fehlten. Die beiden `HardCastNormal`-Zweige fragen über `SwiftcastComingForRaise`, ob Spontanität noch kommt, statt ob sie in Erholung ist; die vier Abwägungszweige behalten ihren Wirkzeit-gegen-Wartezeit-Vergleich und bekommen nur den Fall `!RaisePlayerBySwift` dazu. Mit abgeschaltetem `RaisePlayerBySwift` wurde sonst überhaupt nicht wiederbelebt. Die einheitliche Ersetzung in allen sechs Zweigen war zwischenzeitlich umgesetzt und ist im Code-Review dieses Vorgangs als eigene Regression zurückgenommen worden: sie hätte die Abwägung entfernt, die `HardCastSwiftCooldown` ausmacht. Die Ausführungsschicht ist unangetastet; ihre Sperre ist richtig.
+
+**Falsifikation.** Zwei Hypothesen widerlegt: „kein Defekt" scheitert an der Deckungsgleichheit der Fenster und an der Laufzeitbeobachtung; „andere oGCD verdrängt Spontanität" scheitert daran, dass `EmergencyAbility` als **erster** Zweig des Fähigkeiten-Dispatchers läuft, vor Interrupt, Dispel, Heilung und Angriff. Präzedenz im Baum zweifach: `SMN_Reborn.cs:374` und `:478`.
+
+**Beim Umsetzen widerlegte sich ein Teil des eigenen Konzepts.** `SwiftcastBuffer` sollte verdrahtet werden; die Prüfung ergab, dass ihre dokumentierte Bedeutung („warte, bis nur noch so viel Restzeit bleibt") bei 0,6 s fast vollständig und bei 0 vollständig im gesperrten Fenster liegt. Eine Verdrahtung hätte den Defekt an zweiter Stelle neu gebaut. Sie bleibt unangetastet und ist in `TODO.md` erfasst.
+
+**Prüfmittel.** `.github/scripts/audit/scan17.py`, im `DispatchChain`-Job. Es liest das Sperrfenster **aus der Ausführungsschicht** statt es anzunehmen und meldet jede Auswahl im GCD-Pfad, die darin liegt; der Selbsttest konstruiert die exakte alte Zeile und verlangt ihre Ablehnung.
+
+**Erfasst, nicht behoben** (alle in `TODO.md`): `CanBeRaised` prüft jobunabhängig `RaisePvE`; `IgnoreClipping` wird sechsfach geschrieben und nie gelesen; `GetPriorityDeathTarget` prüft `deathTanks.Count > 1`.
+
+**Wirksamkeitsprüfung (Stufe 10) — die Defektklasse hinter dem Fund.** Zwei ungelesene Einstellungen in einem einzigen Codepfad sind kein Zufall, deshalb wurde die Klasse erhoben: `scan18.py` prüft jede in `Configs.cs` deklarierte öffentliche Einstellung auf einen Leser. Von 75 haben sieben keinen. Neu daraus: **`InterruptDelay` und `ProvokeDelay`** — dieselbe Bauart wie `RaiseDelay2` und `EsunaDelay`, die gelesen werden, während diese beiden nirgends ankommen; und **`TargetColor`**, die sich in `[UI(... Parent = nameof(TargetColor))]` selbst als Elternschalter nennt und zusätzlich keinen Leser hat. Alle drei sind in `TODO.md` erfasst, keine davon behoben: Die Verdrahtung der Verzögerungen verlangsamt das Kampfverhalten und ist eine Entscheidung des Auftraggebers, und bei `TargetColor` ist der gemeinte Elternschalter nicht aus dem Code zu erschließen. Bei der Erhebung selbst wurde ein Methodenfehler abgefangen: Die erste Fassung leitete Eigenschaftsnamen aus privaten `[UI]`-Feldern ab und meldete fünf Namen, die in der Datei überhaupt nicht vorkommen. Das Skript deckt private Felder deshalb bewusst nicht ab und schreibt diese Lücke aus, statt Befunde zu erfinden.
+
+**Erreichter Prüfgrad:** statische Prüfung, Versionsgeschichte für die Entstehung, zwei Prüfskripte mit Selbsttest, CI-Kompilierung. **Keine** eigene Laufzeitbeobachtung und kein Vier-Augen-Prinzip — das Code-Review dieses Vorgangs war Selbstkontrolle und hat immerhin eine selbst eingebaute Regression gefunden, ersetzt aber das Vier-Augen-Prinzip nicht. Dass die Wiederbelebung im Spiel nun zügig fällt, ist begründet, nicht gemessen.
+
+### A55 · Die eigene Entscheidungsvorlage geprüft: drei von vier Punkten waren keine (10.09.2026)
+
+**Anlass:** Auftrag, alle offenen Fragen im vollständigen Loop daraufhin zu prüfen, ob eine Entscheidung des Auftraggebers wirklich nötig ist, welche Entscheidung optimal wäre, und ob die vorgelegten überhaupt die richtigen sind — gesamtheitlich und kausal auf die bisherige Programmierrichtung hin.
+
+**Ergebnis: Von vier vorgelegten Punkten war einer gar kein Defekt, zwei sind ohne den Auftraggeber entscheidbar, und bei einem war die eigene Empfehlung falsch.** Übrig bleibt keine Entscheidung, die er treffen muss.
+
+| Vorgelegt als | Prüfergebnis |
+|---|---|
+| `deathTanks.Count > 1` sei ein Tippfehler für `> 0` | **Kein Defekt, zurückgenommen** (C36). Der Block wurde in `9190888d` als Ganzes neu geschrieben, es gibt keine ersetzte Vorgängerzeile. Die Staffelung ist eine Fallunterscheidung mit Sinn: bei **einem** toten Tank hält der Co-Tank, der Heiler ist wichtiger; bei **zwei** hält niemand mehr, dann muss zuerst ein Tank hoch |
+| `CanBeRaised` brauche Laufzeitbeobachtung mit einem Nicht-Weißmagier | **Ohne ihn entscheidbar, behoben.** Die Semantik der nativen Funktion ist tatsächlich nicht ermittelbar — FFXIVClientStructs bindet `CanUseActionOnTarget` als bloße Signatur mit Byte-Pattern, ohne Dokumentation. Sie wird aber nicht gebraucht: Die Prüfung ist per Signatur aktionsbezogen und wurde mit einer Aktion geführt, die der Spieler nicht besitzt. Liefert sie dafür `false`, waren alle Nicht-Weißmagier-Rezzer blockiert; liefert sie `true`, war die Zeile wirkungslos. **Beide Ausgänge machen die Konstruktion falsch**, also entscheidet der unbekannte Rückgabewert nichts |
+| `TargetColor` brauche die Angabe des gemeinten Elternschalters | **Keine Entscheidung, und der gemeldete Elternfehler ist folgenlos.** `SearchableCollection.cs:45` nimmt nur `CheckBoxSearch` in die Elternliste auf; ein `Vector4` landet nie darin, der Verweis läuft ins Leere und der Eintrag sortiert auf oberster Ebene. Kein Absturz, keine Rekursion. Der wirkliche Befund ist der fehlende Leser, und dessen Behebung verlangt zu erfinden, wo die Farbe zu zeichnen wäre — deshalb erfasst, nicht vorgelegt |
+| `InterruptDelay`/`ProvokeDelay`: Empfehlung „verdrahten mit Vorgabe (0;0)" | **Eigene Empfehlung war falsch.** Sie setzt voraus, dass gespeicherte Werte auf die neue Vorgabe gezogen werden können. `Configs.Migrate` (`:1440`) kann das nicht: Es gibt bei abweichender Version `new Configs()` zurück, verwirft also die ganze Datei. Bestandsnutzer haben `(0,5; 1)` gespeichert und bekämen die Verzögerung eingeschaltet — ein Verstoß gegen die Feature-Toggle-Regel. Richtig ist deshalb: **nicht verdrahten**, mit der fehlenden Migration als Auflösungsbedingung |
+
+**Der eigentliche Fund liegt eine Ebene tiefer.** `Configs.Migrate` ist kein Migrationspfad, sondern ein Zurücksetzen. Das ist nicht nur eine Unbequemlichkeit, sondern eine **Sperre für andere Behebungen**: Jede Korrektur, die einen Vorgabewert ändern muss, um das bisherige Verhalten zu erhalten, ist ohne Feldmigration nicht durchführbar. Der Verzögerungs-Eintrag ist genau daran gescheitert. Als technische Schuld mit dieser Begründung in `TODO.md` aufgenommen; für den Auftraggeber unmittelbar bedeutsam, weil eine Upstream-Erhöhung von `CurrentVersion` seine Einstellungen löscht und `Restore()` ausgerechnet bei Versionsabweichung verweigert.
+
+**Umsetzung.** `CanBeRaised` beantwortet die Zielfrage jetzt zielbezogen (`IsTargetable`) und überlässt die Aktionsfrage den Aufrufern, die ihre eigene Aktion kennen — dem Zauber über `Raise.CanUse`, dem Gegenstand über `BaseItem`. Dieselbe Trennung wie in A54: Lage von Ausführbarkeit lösen. **Risikoabschätzung:** Die Änderung kann nur Ziele zulassen, nie ausschließen; ein zusätzlich zugelassenes Ziel fällt in der nachgelagerten `CanUse`-Kette durch. `IsOtherPlayerOutOfDuty` bleibt unangetastet — dort ist die Absicht eine andere (Zielbarkeit eines Fremdspielers) und der Autor hat mit „Raise oder Cure" bereits kompensiert.
+
+**Erreichter Prüfgrad:** statische Prüfung, Versionsgeschichte, Fremdquelle (FFXIVClientStructs) ausgeschöpft und als undokumentiert belegt, Prüfskripte, CI-Kompilierung. Keine Laufzeitbeobachtung.
+
 ---
 
+
+### A56 · Zweiter Anlauf am Wiederbelebungspfad, diesmal ohne den GCD-Pfad anzufassen (10.09.2026)
+
+**Anlass:** Auftrag, den Defekt erneut anzugehen, nachdem der erste Versuch zurückgenommen war („die aktuelle Situation ist unbefriedigend"), mit Konzept, vollständigem Loop, Audit und Code-Review.
+
+**Entscheidender neuer Beleg — ein natürliches Experiment des Auftraggebers.** Er berichtete, dass die Wiederbelebung sofort erfolgt, wenn er von automatisch auf manuell stellt und den Toten anvisiert. Das bestätigt die Ursachenanalyse am Artefakt: `ActionTargetInfo.cs:117` lässt im manuellen Modus ein feindliches Ziel nur als angewähltes Hauptziel zu; wer einen Toten anvisiert, hat keines, sämtliche Angriffe fallen aus, der GCD bleibt frei und `DefaultGCDRemain` steht auf `0` — dem einzigen Punkt, an dem Auswahl (`WeaponRemain <= 0.5f`) und Ausführungssperre (`> 0f`) zusammenpassen. Im automatischen Modus ist dieser Punkt von laufender Aktion, Animationssperre oder Klickverzögerung überdeckt.
+
+**Die Change Impact Analysis, die beim ersten Versuch gefehlt hat, wurde diesmal geführt und beziffert:** 447 `nextGCD`-Fundstellen im Baum, davon auswertende Stellen in DRG, GNB, NIN, SAM, SMN und den PvP-Rotationen. Genau dieser Kreis wurde beim ersten Versuch umgeschrieben und hat Radiant Aegis gekostet. Der zweite Entwurf lässt `GCD()` und `RaiseSpell` unverändert, womit alle 447 unberührt bleiben.
+
+**Umsetzung.** Der vorhandene Spontanitäts-Zweig in `EmergencyAbility` bekommt einen zweiten Auslöser: `RaisePendingAndCastable()`. Er verlangt eine anstehende Wiederbelebung (`AutoStatus.Raise`), eine wirkbare Wiederbelebungsaktion und **kein** laufendes Spontanität; letzteres begrenzt den Zweig auf höchstens einen Frame je Gelegenheit.
+
+**Zwei Funde aus dem eigenen Code-Review, beide vor dem Commit eingearbeitet:**
+- *Fensterlage.* `Ability()` kehrt bei `0 < WeaponRemain <= 0.5f` sofort zurück, und bei freiem GCD ruft `Invoke` den Fähigkeitenpfad gar nicht auf. Der Zweig kann also ausschließlich bei `WeaponRemain > 0,5 s` greifen — genau dem Fenster, in dem `DoAction` eine Fähigkeit durchlässt. Das war zu belegen, nicht anzunehmen.
+- *Zielüberschreibung.* Wiederbelebungsaktionen führen keinen eigenen Zieltyp (nur `IsFriendly`); ihr Ziel kommt aus `TargetType.Death`, das allein der GCD-Pfad setzt. Eine Wirkbarkeitsprüfung im Fähigkeitenpfad ohne diese Überschreibung durchsucht die falsche Menge, und `CanUse` weist `Target` als Nebenwirkung zu. `RaisePendingAndCastable` setzt die Überschreibung deshalb selbst und **stellt den vorherigen Wert wieder her**, statt ihn zu löschen, weil der Dispatcher eigene Überschreibungen um seine Zweige legt.
+
+**Verdrängungsprüfung.** Nach dem Zweig stehen in `EmergencyAbility` nur zwei weitere: Second Wind für Nahkämpfer und für physische Fernkämpfer bei Doom-Status. Für einen Rezzer fällt dort nichts aus. Verbraucht wird ein Einschiebefenster, einmal je Gelegenheit.
+
+**Nachtrag auf Rückfrage des Auftraggebers — der Fall, dass Spontanität nicht zur Verfügung steht.** Die Frage deckte eine Lücke des Entwurfs auf: Er behandelte allein die verfügbare Spontanität. Erhebung: Bei Spontanität in Erholung greift der Hartwirk-Zweig und die Wiederbelebung wird hart gewirkt — bauartbedingt nur im Stehen, weil Stufe (C) `!IsMoving` verlangt. Bei **abgeschalteter** `RaisePlayerBySwift` dagegen wurde überhaupt nicht wiederbelebt: Für einen Heiler zündet die Rotation Spontanität ausschließlich über den Wiederbelebungspfad — die beiden anderen Zünder (`CustomRotation_Ability.cs:688`, `:697`) sind auf `JobRole.RangedMagical` eingeschränkt —, sie geht also nie in Erholung, und der Hartwirk-Zweig fordert genau diese Erholung. Alle drei Stufen von `RaiseSpell` sind damit zu. Die Beschreibung der Einstellung sagt zu, Spontanität nicht dafür zu verwenden, nicht das Wiederbeleben einzustellen.
+
+Die Behebung stammt aus PR #7 und war mit dem Revert verlorengegangen; sie ist zurückgeholt: Die Hartwirk-Zweige fragen über `SwiftcastComingForRaise`, ob Spontanität für diese Wiederbelebung noch kommt, statt ob sie in Erholung ist. **Die Wirkung ist als Wahrheitstabelle ausgezählt und beschränkt sich auf eine von vier Kombinationen** — Einstellung aus und Spontanität bereit; bei eingeschalteter Einstellung, der Vorgabe, ist das Verhalten bitidentisch. Das ist zugleich der Nachweis, dass diese Korrektur die zurückgenommene Regression nicht verursacht haben kann: Sie greift in deren Konfiguration überhaupt nicht. Die vier Abwägungszweige behalten ihren Wirkzeit-gegen-Wartezeit-Vergleich und bekommen allein den Fall dazu, in dem nichts kommt, worauf zu warten wäre.
+
+**Erreichter Prüfgrad:** statische Prüfung, Wirkungsbereich beziffert statt geschätzt (447 `nextGCD`-Leser, Wahrheitstabelle der Hartwirk-Bedingung), Prüfskripte, CI-Kompilierung. **Keine Laufzeitbeobachtung.** Der Vorgang gilt ausdrücklich als **nicht abgeschlossen**: Er liegt auf einem eigenen Branch, damit der zurückgenommene Stand als sicherer Rückfall erhalten bleibt, und wird erst nach einer Spielbeobachtung des Auftraggebers als behoben geführt. Das ist die unmittelbare Folge aus C37 — dort war der als „begründet, nicht gemessen" ausgewiesene Prüfgrad ehrlich benannt, aber nicht zum Anlass genommen, die Änderung vom Build des Auftraggebers fernzuhalten.
+
+---
+
+### A57 · Alle Anwendungsfälle der Wiederbelebung durchgegangen (11.09.2026)
+
+**Anlass:** Auftrag, sämtliche Anwendungsfälle beim Wiederbeleben im vollständigen Loop kritisch durchzugehen.
+
+**Erhebung entlang der sechs steuernden Größen:** Rolle und Job, Zustand von Spontanität, `HardCastRaiseType` (fünf Werte), `RaisePlayerFirst`, `RaiseType` (sechs Werte), Bewegung. Vollständig in `docs/rotation-flow/11-raise-dispatch.md` ausgeschrieben.
+
+**Struktureller Befund ohne Defektcharakter:** Der Wiederbelebungsblock existiert zweimal. Bei `RaisePlayerFirst` steht er auf `:123` vor der Heilung, ohne die Einstellung auf `:350` dahinter — also hinter der gesamten Heilung und der Einzelziel-Verteidigung. Die Vorgabe ist **aus**. Das ist die dokumentierte Bedeutung der Einstellung, erklärt aber, warum ihre Wahl das beobachtete Verhalten stark verschiebt.
+
+**Neue Defekte, alle in `TODO.md` erfasst, keiner behoben:**
+
+1. **Die Phönixfeder ist vollständig unverdrahtet.** `CustomRotation_Items.UsePhoenixDown` ist fertig implementiert — samt korrekt gesicherter Zielüberschreibung, dasselbe Muster, das in dieser Sitzung für `RaisePendingAndCastable` gebaut wurde — und hat keinen Aufrufer. Die Wirkung reicht weiter: `DataCenter.CanRaise()` liefert jobunabhängig wahr, sobald die Einstellung an ist und eine Feder im Gepäck liegt, wodurch Tanks und Schadensjobs `AutoStatus.Raise` gesetzt bekommen und den Wiederbelebungsblock durchlaufen, in dem nichts geschehen kann. Dritter Fall derselben Klasse nach `SwiftcastBuffer` und `IgnoreClipping`.
+2. **`HardCastOnlyHealer`, drei Defekte an einem Zweig.** Der Optionstext verspricht „while Swiftcast is on cooldown", der Code prüft es nicht. Beide Heilermengen schließen den Spieler aus, weshalb ein einzelner Heiler nie hart wirkt — in einer Vierergruppe ist die Einstellung wirkungslos. Und die Bedingungsreihenfolge ruft `RaiseSpell` mit seinen Nebenwirkungen auf `Target` und `ShouldEndSpecial` vor der billigen Mengenprüfung. `HardCastOnlyHealerSwiftCooldown` wiederholt die Mengenbildung wortgleich.
+
+**Geprüft und ohne Befund:** Die `RaiseType`-Varianten werden in `GetDeathTarget` getrennt behandelt, die Allianz-Zweige ohne Doppelzählung. Die Filterkette in `GetDeath` ist vollständig und schließt jeweils sinnvoll aus. Der Rotmagier war von der Kernursache nie betroffen, weil Dualcast in `StatusHelper.SwiftcastStatus` steht und damit Stufe (A) von `RaiseSpell` ohnehin greift. Die Kombination `NoHardCast` mit abgeschalteter `RaisePlayerBySwift` belebt niemanden wieder — das ist gewollt, beide Wege sind bewusst abgeschaltet.
+
+**Nicht entscheidbar:** Ob `HardCastOnlyHealer` beim Einzelheiler greifen soll, folgt weder aus Code noch Optionstext. Das ist eine Festlegung, keine Erhebung.
+
+**Erreichter Prüfgrad:** statische Prüfung am Quelltext, jede Zelle der Matrix belegt. Keine Laufzeitbeobachtung.
+
+---
+
+### A58 · Die Nur-Heiler-Hartwirkmodi messen die falsche Menge (11.09.2026)
+
+**Anlass:** Zwei Präzisierungen des Auftraggebers zur Use-Case-Analyse aus A57: Die Einstellung, außerhalb der Gruppe wiederzubeleben, sei „auch bei einem Heiler in der Gruppe oder sogar solo" mitzudenken; und wenn in anderen Gruppen einer Allianz kein Heiler und kein Rezzer mehr lebe, solle den Einstellungen entsprechend wiederbelebt werden.
+
+**Befund.** `HardCastOnlyHealer` und `HardCastOnlyHealerSwiftCooldown` bauten zwei Mengen toter beziehungsweise vorhandener **Heiler der eigenen Gruppe** und verglichen ihre Größe. Die gemeinte Frage ist eine andere: Hartwirken kostet acht Sekunden GCD und lohnt nur, wenn es sonst niemand übernehmen kann. Drei Abweichungen:
+
+1. **Heiler statt Rezzer.** Ein lebender Beschwörer oder Rotmagier belebt ebenso wieder. Der Baum weiß das an anderer Stelle bereits — `PheonixDownItem.AnyLivingRaiserInParty` zählt Heiler, SMN und RDM.
+2. **Der Spieler war aus beiden Mengen gefiltert.** Als einziger Heiler sind damit beide leer: `0 == 0` trifft zu, die Nachbedingung `deadhealers.Count > 0` nicht. **In jeder Vierergruppe und solo wurde nie hart gewirkt** — genau dort, wo Hartwirken der einzige Weg ist, dass überhaupt jemand hochkommt.
+3. **Ein Größenvergleich kann „niemand sonst" nicht ausdrücken,** nur „so viele tot wie vorhanden".
+
+**Bezugsmenge — hier hat der Auftraggeber eine erste, zu enge Fassung korrigiert.** Der erste Entwurf beschränkte die Prüfung auf die eigene Gruppe, begründet damit, dass fremde Heiler keine verlässliche Reserve seien. Das trifft für die offene Welt zu, nicht für einen Allianzraid: Dort sind die anderen Allianzen echte Gruppen mit eigenen Rezzern, und solange dort einer lebt, ist die Wiederbelebung deren Sache — lebt keiner mehr, ist Hartwirken der einzige Weg. Die Bezugsmenge folgt deshalb `RaiseType`: Gruppe allein bei `PartyOnly` und `PartyHealersOnly`, Gruppe und Allianz bei den Allianzmodi und `All`. `AllOutOfDuty` bleibt bewusst ausgenommen — Fremde in der offenen Welt sind keine Reserve, und sie mitzuzählen blockierte das Hartwirken praktisch immer.
+
+**Umsetzung.** `AnyOtherLivingRaiser()` mit `HasLivingRaiser(members)` als Mengenprüfung, in allen vier Zweigen. Nebenbei behoben: Die Bedingungsreihenfolge rief bisher `RaiseSpell` — mit seinen Nebenwirkungen auf `Target` und `ShouldEndSpecial` — **vor** der Mengenprüfung auf; jetzt steht die nebenwirkungsfreie Prüfung vorn.
+
+**Nicht mitbehoben und weiter offen:** Der Optionstext verspricht zusätzlich „while Swiftcast is on cooldown", was der Code nicht prüft. Ob der Vorbehalt in die Bedingung gehört oder aus dem Text zu streichen ist, ist eine Festlegung über die Bedeutung der Einstellung; die Existenz von `HardCastOnlyHealerSwiftCooldown` spricht dafür, dass er gemeint war. In `TODO.md` erfasst.
+
+**Phönixfeder — Absicht bestätigt, Verdrahtung bleibt offen.** Der Auftraggeber hat die gemeinte Bedingung genannt: kein Rezzer in der Gruppe oder alle tot, soweit der Inhalt es zulässt. Beides ist im Code bereits vorhanden — `CanUseThis` prüft `!AnyLivingRaiserInParty()`, und `BaseItem.CanUse` fragt `GetActionStatus` gegen `ConfigurationHelper.BadStatus`, deckt die Inhaltssperre also ab. Nicht vorhanden ist der Aufruf. Bei der Prüfung der Einhängung kam ein zweiter Defekt zutage: Das Hausmuster für Gegenstände (`CustomRotation_Ability.cs:361`) **meldet** eine Aktion, `UsePhoenixDown` dagegen **wirkt selbst** und setzt zusätzlich `act` — eine Einhängung nach Hausmuster verbrauchte die Feder zweimal. Der Grund für das Selbstwirken entfällt zudem, weil `BaseItem.Use` die Feder (Item 4570) bereits eigens auf `DataCenter.DeathTarget` wirkt. Deshalb nicht in den laufenden Testzweig aufgenommen, sondern als eigener Vorgang erfasst.
+
+**Erreichter Prüfgrad:** statische Prüfung, Fallunterscheidung je `RaiseType` am Quelltext belegt, Prüfskripte, CI-Kompilierung. Keine Laufzeitbeobachtung.
+
+---
+
+### A59 · Die Phönixfeder verdrahtet, und das Doppelwirken dabei beseitigt (11.09.2026)
+
+**Anlass:** Der Auftraggeber hat die gemeinte Bedingung genannt — kein Rezzer in der Gruppe oder alle tot, dann Feder, soweit der Inhalt es zulässt — und sie an einem Szenario ausgeschrieben: In einer Achtergruppe eines Allianzraids sind die eigenen Heiler tot und niemand in der eigenen Gruppe kann wiederbeleben; dann soll ein Federträger einen Heiler hochbringen, bei mehreren Trägern auch den zweiten, und wenn auch in den anderen Allianzgruppen keine Heiler und Rezzer mehr leben, ebenso dort.
+
+**Ausgangslage.** Die Bedingung stand bereits richtig im Code (`PheonixDownItem.CanUseThis` mit `!AnyLivingRaiserInParty()`), und die Inhaltssperre ebenfalls: `BaseItem.CanUse` fragt `GetActionStatus` gegen `ConfigurationHelper.BadStatus`, das Spiel meldet also selbst, wenn Gegenstände im Inhalt verboten sind. Gefehlt hat allein der Aufruf — `UsePhoenixDown` hatte keinen.
+
+**Der Defekt, der die Verdrahtung blockiert hätte.** `UsePhoenixDown` wirkte die Feder **selbst** (`phoenixdown.Use()`) und setzte zusätzlich `act`. Das Hausmuster für Gegenstände ist aber das Melden — `CustomRotation_Ability.cs` hängt den Heiltrank über `UseHpPotion(nextGCD, out act)` ein, und `RSCommands.DoAction` ruft `Use()` auf dem gemeldeten Ergebnis auf. Eine Einhängung nach Hausmuster hätte also **zwei Federn für eine Leiche** verbraucht. Der Grund für das Selbstwirken entfällt zudem: `BaseItem.Use` führt für Item 4570 einen eigenen Zweig, der auf `DataCenter.DeathTarget` zielt und HQ wie NQ behandelt. Der `Use()`-Aufruf ist entfernt, die Methode meldet jetzt nur.
+
+**Bezugsmenge vereinheitlicht.** `AnyLivingRaiserInParty` in `PheonixDownItem` und die neue Rezzer-Prüfung aus A58 stellten dieselbe Frage in zwei Fassungen. Beide zeigen jetzt auf `DataCenter.AnyLivingRaiser(bool excludeSelf)`: dieselbe Menge nach `RaiseType` — Gruppe bei `PartyOnly` und `PartyHealersOnly`, Gruppe und Allianz unter den Allianzmodi und `All`, `AllOutOfDuty` ausgenommen — und dieselben Rezzerjobs (Heiler, Beschwörer, Rotmagier). Der Unterschied liegt allein im Parameter, und er ist sachlich: Die Feder fragt „kann das niemand richtig", zählt den Spieler also mit, weil ein lebender Rezzer seinen Zauber statt eines Gegenstands benutzt; die Hartwirkmodi fragen „kann es jemand **anders**", dort ist der Spieler der Entscheidende.
+
+**Einhängung.** Im Fähigkeitenpfad hinter der Heilung, vor dem Angriff: Jemanden am Leben zu halten geht vor, jemanden aufzusammeln kostet nur ein Einschiebefenster. Die Zielüberschreibung setzt `UsePhoenixDown` selbst und stellt sie wieder her. Die Fähigkeitensperre in `DoAction` greift nicht, weil sie `nextAction is BaseAction` prüft und ein `BaseItem` das nicht ist.
+
+**Zum Szenario mit mehreren Federträgern:** Dass jeder Träger einen anderen Toten nimmt, ist nicht zu garantieren — jeder Client entscheidet für sich, und eine Feder wirkt ohne Wirkzeit, sodass der Wiederbelebungsstatus des Ziels erst im Folgeframe sichtbar wird. Die vorhandene Absicherung (`GetDeath` schließt Ziele mit laufendem Wiederbelebungsstatus aus) greift also erst danach. Ein gleichzeitiger Einsatz auf dasselbe Ziel bleibt möglich; das ist ein Verteilungsproblem ohne Koordination und nicht im Client lösbar.
+
+**Erreichter Prüfgrad:** statische Prüfung, Ausführungsweg für gemeldete Gegenstände am Quelltext belegt (`DoAction` ruft `Use()`), Prüfskripte, CI-Kompilierung. **Keine Laufzeitbeobachtung.** Der Eingriff liegt auf demselben Zweig wie der Wiederbelebungsversuch aus A56 und die Mengenkorrektur aus A58 — auf Wunsch des Auftraggebers ohne Trennung in eigene Zweige. Schlägt der Spieltest fehl, sind drei ungemessene Änderungen gleichzeitig wirksam; das ist bei der Auswertung zu berücksichtigen.
+
+---
+
+### A60 · Zweiter Durchgang durch die Anwendungsfälle, nach einem Einwand des Auftraggebers (11.09.2026)
+
+**Anlass:** Der Auftraggeber hat die Aussage aus A59, eine Verdrahtung nach Hausmuster hätte „zwei Federn" gekostet, mit einem Sachargument bestritten: Ein Wiederbelebungsvorgang dauert mehrere Sekunden, und er hat gefragt, ob die Zeit zwischen Wirken und Annahme gemeint sei. Der Einwand trifft (C38) und hat den Durchgang auf eine Achse gelenkt, die in A57 fehlte: die zeitliche.
+
+**Zeitachse, jetzt belegt.** Maßgeblich ist nicht die Annahme durch den Gefallenen, sondern der Statuswechsel: `TargetFilter.GetDeath:105` schließt ein Ziel mit `StatusID.Raise` aus, sobald die Wirkung gelandet ist. Die Annahme selbst braucht keine eigene Behandlung; läuft der Status ungenutzt ab, wird der Leichnam wieder Kandidat, was richtig ist. Offen bleiben genau zwei Spannen, beide zwischen Absenden und Statusrückmeldung: das gleichzeitige Hartwirken zweier Rezzer auf dasselbe Ziel (Abstimmungsproblem ohne Koordination, nicht im Client lösbar) und der Serverumlauf nach einer Feder.
+
+**Befund 1 — die Rezzereigenschaft ignorierte die Stufe.** `DataCenter.HasLivingRaiser` zählte jeden lebenden Heiler, Beschwörer und Rotmagier als Rezzer, während `CanRaise()` für den Spieler selbst seit jeher Stufe 12 beziehungsweise 64 verlangt. Ein Rotmagier unter 64 — jeder stufensynchronisierte Durchgang durch ältere Inhalte — hielt damit die Feder zurück, die dort der einzige Weg war. Beide Stellen teilen sich jetzt dieselben zwei Konstanten. Die Stufe eines Gruppenmitglieds stammt aus `ICharacter.Level`; ob der Wert in einem synchronisierten Inhalt die synchronisierte oder die wahre Stufe meldet, ist von hier nicht entschieden und ausdrücklich so vermerkt.
+
+**Befund 2 — die Zieleignung der Feder war als Zauberfrage gestellt.** `PheonixDownItem.ItemCheck` und `UsePhoenixDown` fragten beide `ObjectHelper.CanBeRaised`, also `CanUseActionOnTarget` gegen den Zauber Wiederbelebung. Die Feder fragt jetzt den Spielclient nach sich selbst: `GetActionStatus(ActionType.Item, 4570, Ziel) == 0`. Das beantwortet Reichweite, Sichtlinie, Wiederbelebbarkeit, Inhaltsverbot und einen bereits laufenden Wiederbelebungsstatus in einer Frage — und deckt damit genau die Spanne ab, nach der der Auftraggeber gefragt hat. `== 0` statt der Liste `BadStatus`, weil eine zielbezogene Ablehnung in dieser Liste nicht vorkommt und sonst als Erlaubnis gelesen würde.
+
+**Befund 3 — eine wirkungslose Zielüberschreibung.** `UsePhoenixDown` legte `TargetType.Death` um seine Schleife. `BaseItem` liest `DataCenter.DeathTarget` in `CanUse` wie in `Use` unmittelbar und kennt das Überschreibungssystem nicht; die Überschreibung wirkte nichts und täuschte eine Zielwahl vor. Entfernt.
+
+**Erfasst, nicht behoben:** Der Sonderfall für `RaiseType.PartyAndAllianceHealers` in `GetPriorityDeathTarget` steht vor der Umkehrung durch `H2`, die damit in diesem einen Modus wirkungslos bleibt.
+
+**Erreichter Prüfgrad:** statische Prüfung, Fremddokumentation (FFXIVClientStructs zu `UseAction`), Prüfskripte, CI-Kompilierung. Keine Laufzeitbeobachtung. Der Eingriff liegt auf demselben Zweig wie A56, A58 und A59.
+
+---
+
+### A61 · Eine Fehlerklasse aus der eigenen Abwicklung geschlossen (11.09.2026)
+
+**Anlass:** Beim Verschieben zweier Hilfsmethoden nach `DataCenter` blieben ihre Rümpfe in `CustomRotation_GCD.cs` stehen. Dreißig Compilerfehler, alle Folge einer Stelle, und der Zweig stand bis zum Ende eines vollständigen Windows-Builds rot.
+
+**Ursache am System, nicht an der Sorgfalt:** Zwischen der Bearbeitung und der CI sieht in dieser Arbeitsumgebung niemand die Datei an — es gibt kein lokales .NET. Eine Fehlerklasse, die eine Sekunde kostet, kostete deshalb eineinhalb Minuten Windows-Läufer und eine Runde Verzögerung.
+
+**Behebung:** `.github/scripts/audit/check_cs_structure.py`, erster Schritt im Linux-Auftrag. Zwei Prüfungen, weil die erste die zweite nicht abdeckt: Klammerbilanz außerhalb von Kommentaren, Zeichenketten und Zeichenliteralen; und ein Anweisungsschlüsselwort auf Elementebene eines Typs, wo ausschließlich Deklarationen stehen dürfen — ein zurückgebliebener Rumpf mit zufällig ausgeglichener Bilanz fällt nur dort auf.
+
+**Wirksamkeit gemessen, nicht behauptet:** gegen den tatsächlich kaputten Commit `c3e1126e` ausgeführt, nennt das Skript Zeile 450 zuerst — dieselbe Zeile, die der Compiler zuerst nannte. Der Selbsttest trägt alle drei Fälle: saubere Datei, verwaister Rumpf, verwaister Rumpf mit ausgeglichener Bilanz.
+
+---
+
+### A62 · Upstream 7.5.6.2 eingebunden und ausgewertet (11.09.2026)
+
+**Anlass:** Rückfrage des Auftraggebers, ob das Upstream-Update eingebunden und analysiert wurde. Es war beides nicht — geprüft war nur auf Dateiebene, ob der Wiederbelebungspfad berührt ist.
+
+**Zustand, frisch gemessen.** `origin/main` steht auf `1391de57` und ist mit Upstream bis `1896086b` (PR #1365) synchron. Ausstehend waren genau **zwei** Commits: `2fe925f4` „Beastmaster" und der Merge `317de0ed`, auf dem das Tag `7.5.6.2` sitzt. Die zuvor berichteten 21 Commits waren gegen eine tote lokale Referenz gemessen (C40).
+
+**Umfang:** 7278 Einfügungen, 1311 Löschungen in 18 Dateien. Schwerpunkt ist der neue Job: `BestiaryHelper.cs`, `BST_Reborn.cs` an Stelle von `BSM_Reborn.cs`, ein stark erweitertes `BeastmasterRotation.cs` und die generierten Ressourcen.
+
+**Berührung mit Fork-Abweichungen, regionsgenau geprüft statt über Dateiaktivität geschätzt:**
+
+- `DataCenter.cs` +183 Zeilen, vollständig im Bereich ab Zeile 59 (Begleiter-Zustand: `ActivePet`, `BMPet`, `BMPetKinType`, `BMPetAffinity`, dazu auskommentierte Pet-Erkennung). Die Helfer dieses Vorgangs liegen ab Zeile 874. Keine Überschneidung, weder textlich noch sachlich.
+- `ActionTargetInfo.cs`: `Range` wird zur Eigenschaft mit vier Beastmaster-Sonderfällen, vier Aktionen kommen in `IsSpecialAbility`, der Rest ist auskommentierter Fang-Code. Die im Konzept belegte Stelle zur manuellen Zielwahl ist unberührt; nur ihre Zeilennummer verschiebt sich.
+- `ActionBasicInfo.Range` wechselt von den Tabellendaten (`_action.Action.Range`) auf die Clientabfrage `ActionManager.GetActionRange`. Das ist eine allgemeine Verhaltensänderung, aber der Leserkreis ist klein und liegt außerhalb des Kampfpfads dieses Forks: drei fremde Rotationen (`BeirutaNIN`, `BeirutaRDM`, `Rabbs_BLM`) und zwei Anzeigestellen. `ActionTargetInfo.Range`, das die Zielwahl benutzt, fragte den Client schon vorher.
+- **`publish.yaml`: der eine Punkt mit Handlungsbedarf.** Upstream stellt Dalamud vom Staging- zurück auf den Release-Kanal. Die Fork-Versionslogik (numerische Fassung, Paketkennung mit `wsh`-Suffix, Abbruch bei fehlendem Suffix) hat der Merge erhalten, die Kanalzeile hat er übernommen. Damit lief `build.yaml` auf einem anderen Kanal als der Veröffentlichungspfad — genau die Bedingung, unter der `TODO.md` das Nachziehen vorsah. `build.yaml` ist nachgezogen, der Punkt aus `TODO.md` nach hier überführt.
+
+**Prüfgrad:** Probe-Merge konfliktfrei (`git merge-tree --write-tree`, danach der wirkliche Merge ohne Konflikt), alle sechs Prüfskripte auf dem gemergten Baum grün, CI-Kompilierung. Keine Laufzeitbeobachtung; der neue Job ist nicht Teil des Nutzungsprofils und wurde nicht bewertet.
+
+---
+
+### A63 · Die Messung des Repository-Zustands abgesichert (11.09.2026)
+
+**Anlass:** C40 — eine Zustandsaussage war gegen eine lokale Referenz gemessen, die seit dem 18.08.2026 niemand mehr fortgeschrieben hatte.
+
+**Ursache am System.** Diese Arbeitsumgebung ist ein **langlebiger** Klon, kein Neuklon je Sitzung: Das Reflog von `main` trägt fünf eigene Upstream-Merges, und vier lokale Zweige zeigen auf Gegenstücke, die auf `origin` gelöscht sind. In einem solchen Klon ist jede lokale Referenz eine Aussage über die Vergangenheit. `main` wurde seit August ausschließlich **auf GitHub** durch Pull-Request-Merges fortgeschrieben; ein lokaler Zweig folgt dem nie von allein, und `git branch -vv` sagte es die ganze Zeit an: „behind 382".
+
+**Behebung:** `.github/scripts/audit/check_sync_state.py`. Es holt beide Gegenstellen mit `--prune`, misst **HEAD** gegen `upstream/main` statt einen benannten lokalen Zweig, und benennt jeden lokalen Zweig, der hinterherhinkt oder dessen Gegenstück fort ist. Rückgabewert 1, wenn HEAD hinter Upstream liegt — das ist die Vorbedingung jeder Codeänderung. Der Selbsttest baut den Fall in einem Wegwerf-Repository nach: Gegenstelle wandert weiter, lokaler Zweig bleibt stehen, Erkennung wird verlangt.
+
+**Nicht in der CI**, und das ist kein Versehen: Dort ist der Klon frisch und jede Referenz aktuell, es gäbe nichts zu finden. Der Fehler gehört zur dauerhaften Arbeitskopie.
+
+**Mitbehoben:** Die lokale `main` ist auf `origin/main` nachgezogen (reines Vorspulen, 382 Commits, keine eigenen Commits darauf). Die vier Zweige mit gelöschtem Gegenstück und `backup/pre-msgfix` sind Löschfälle und dem Auftraggeber zur Freigabe vorgelegt, nicht gelöscht.
+
+---
+
+### A64 · Verwaiste lokale Zweige abgewickelt (11.09.2026)
+
+**Anlass:** Die Zustandsmessung aus A63 legte fünf lokale Zweige offen, die niemand mehr braucht. Freigabe durch den Auftraggeber erteilt.
+
+**Verifikation vor der Löschung, je Zweig.** Gezählt wurden Commits, die weder in `origin/main` noch in einem der beiden lebenden Arbeitszweige stecken:
+
+| Zweig | Eigene Commits | Nachweis |
+|---|---|---|
+| `claude/bmr-mitigation-refresh` | 0 | vollständig in `origin/main` |
+| `claude/release-tag-limits` | 0 | über PR #5 gemergt |
+| `claude/rotation-flow-refactor` | 0 | über PR #4 gemergt |
+| `backup/pre-msgfix` | 8 | Sicherungsstand vor dem Umschreiben der Commit-Nachrichten; alle acht Titel einzeln in `origin/main` wiedergefunden, nur unter anderen Hashes |
+| `claude/release-notes` | 2 | PR #6, vom Auftraggeber ohne Merge geschlossen |
+
+**Der einzige Zweig mit eigenem Inhalt war `claude/release-notes`,** und auch dort geht nichts verloren: GitHub hält die Köpfe geschlossener Pull Requests dauerhaft unter `refs/pull/<n>/head`. Gemessen statt angenommen — `git ls-remote origin refs/pull/6/head` liefert genau `d84759c0`, den Kopf des gelöschten Zweigs; für die PRs #3, #4 und #5 ebenso. Das ist zugleich die allgemeine Auflösung für künftige Fälle dieser Art: Ein Zweig, dessen Arbeit durch einen Pull Request gelaufen ist, ist auch nach dem Schließen kein Verlustfall.
+
+**Eine Erkenntnis wurde vor der Löschung gerettet.** `d84759c0` trug eine Verschärfung in `CLAUDE.md`, die im geltenden Stand fehlte: Ein Release lässt sich von hier aus nicht nur nicht auslösen, sondern auch nicht nachträglich beschriften — `PATCH` auf einen Release antwortet `403 Creating, editing, or deleting releases is not permitted for this session type`. Sie ist übernommen. Der zweite Teil jenes Zweigs — Titel und Text für die Release-Seite in `publish.yaml` — bleibt verworfen: Der Auftraggeber hat den Pull Request selbst geschlossen, und der Inhalt ist über PR #6 einsehbar, falls er ihn doch will.
+
+**Nicht gelöscht:** `claude/raise-swiftcast-weave` — er trägt PR #7 und ist der benannte Rückfallstand für den laufenden Wiederbelebungsvorgang.
+
+**Nebenbefund, ebenfalls gemessen:** Der Probe-Zweig `tmp-push-probe`, den diese Umgebung auf `origin` nicht selbst löschen konnte, ist fort. `git branch -r` führt neben den beiden Arbeitszweigen nur noch `origin/main`. Der offene Punkt aus PR #5 ist damit erledigt.
+
+---
+
+### A65 · Die Fork-Version benennt wieder den Upstream-Stand, den sie enthält (11.09.2026)
+
+**Anlass:** Rückfrage des Auftraggebers, ob im Arbeitszweig `7.5.6.2` gesetzt ist. War es nicht.
+
+**Befund.** `Directory.Build.props` trug weiter `7.5.6.1`, obwohl der Zweig seit A62 den Upstream-Stand 7.5.6.2 enthält. Das ist die Fehlerform, die der Kommentar derselben Datei bereits beschreibt — „It named 7.5.6.0 while the tree already held 7.5.6.1" —, zum zweiten Mal aufgetreten. Ursache am Ablauf: Der Upstream-Merge zog die Zahl nicht nach, und `check_fork_version.py`, das genau das meldet, wurde nach dem Merge nicht ausgeführt, obwohl die Build-Ausgabe ausdrücklich dazu auffordert. Literale auf `7.5.6.2` gezogen, in allen drei Feldern samt `+wsh1`- und `-wsh1`-Markierung.
+
+**Warum die Prüfung nicht von allein lief, und was daran der eigentliche Befund ist.** Sie hing in keinem Arbeitsablauf. Der Grund dafür liegt tiefer, als er zunächst aussah, und die erste Fassung dieser Einhängung trug bereits die falsche Begründung: Es ist nicht nur die flache Klonung der CI. **Die eigene Gegenstelle trägt überhaupt keine Upstream-Tags** — `git ls-remote --tags origin` liefert ausschließlich `7.5.5.41+wsh1` und `7.5.6.1+wsh1` —, und Tags lassen sich von hier aus nicht pushen. Ein `git describe` findet dort also auch mit vollständiger Historie nichts.
+
+**Behebung, dreiteilig:**
+
+1. `fetch-depth: 0` im Linux-Auftrag, damit die Historie überhaupt vorliegt.
+2. Ein eigener Schritt, der `upstream` hinzufügt und dessen Tags holt. Ohne ihn ist die Frage in der CI nicht beantwortbar.
+3. **Der stille Nullbefund wird laut.** `check_fork_version.py` gab bei fehlenden Tags `0` zurück, meldete also Erfolg, ohne geprüft zu haben — in der CI wäre die Prüfung grün gewesen und wirkungslos, was schlechter ist als keine Prüfung. Der neue Schalter `--require-tags`, den allein die CI setzt, macht daraus einen Fehlschlag; die nachsichtige Fassung bleibt für Arbeitskopien ohne Upstream-Gegenstelle.
+
+**Erreichter Prüfgrad:** Skript gegen beide Ausgänge ausgeführt (mit Tags grün, ohne Tags und mit Schalter rot), Arbeitsablauf gegen einen YAML-Parser geprüft, alle sieben Prüfskripte grün. Ob der Tag-Abruf auf dem Läufer durchgeht, zeigt erst der Lauf selbst.
+
+---
+
+### A66 · Erste Laufzeitbeobachtung zum zweiten Wiederbelebungsversuch (11.09.2026)
+
+**Meldung des Auftraggebers:** „schimmerschild klappt bislang, rezz klappt bislang automatisch."
+
+**Was das belegt.** Die Regression aus C37 ist nicht zurückgekehrt: Radiant Aegis wird weiter gewirkt, der Einschub im Fähigkeitenpfad verdrängt sie also nicht. Das ist der Punkt, an dem der erste Versuch gescheitert ist, und die Bestätigung ist genau dort wertvoll, wo der Entwurf sie beansprucht hat — `nextGCD` bleibt unangetastet, seine 447 Leser ebenfalls. Und die Wiederbelebung erfolgt im Automatikbetrieb, ohne Umschalten auf manuell.
+
+**Was das nicht belegt, und der Unterschied ist der Kern des Vorgangs.** Gemeldet ist, *dass* wiederbelebt wird, nicht *wie schnell*. Die ursprüngliche Beanstandung lautete „es dauert manchmal über 15 Sekunden", nicht „es geschieht nicht". Solange die Dauer nicht beurteilt ist, bleibt der gemeldete Defekt unbestätigt behoben. Das Wort „bislang" in beiden Hälften ist ebenfalls ernst zu nehmen: eine vorläufige Beobachtung, kein abgeschlossener Test.
+
+**Abdeckung des Tests, gegen die Einstellungsvorgaben geprüft.** Von den fünf Eingriffen auf dem Zweig kann diese Beobachtung nur zwei berühren — den Spontanitäts-Einschub (A56) und, negativ, die Nichtverdrängung anderer Fähigkeiten. Die drei übrigen liegen hinter Einstellungen abseits der Vorgabe: die Phönixfeder mit Zieleignung und Stufenprüfung (`UsePhoenixDown` ist ab Werk aus), die Hartwirk-Korrektur (nur bei abgeschaltetem `RaisePlayerBySwift`) und die Bezugsmenge der Nur-Heiler-Modi. Sie bleiben ungemessen, und das ist bei der Auswertung eines späteren Fehlschlags zu berücksichtigen.
+
+**Erreichter Prüfgrad:** Laufzeitbeobachtung des Auftraggebers für einen Teil der Wirkung, vorläufig. Keine Aussage zur Dauer, keine Beobachtung der drei einstellungsabhängigen Eingriffe.
+
+---
+
+### A67 · Searing Light bei mehreren Beschwörern, Fälle eins bis acht (11.09.2026)
+
+**Anlass:** Frage des Auftraggebers, wann die Aktion gewirkt wird und was bei einer Gruppe aus acht Beschwörern geschähe, die alle diesen Fork laufen haben; anschließend präzisiert auf alle Gruppengrößen von eins bis acht.
+
+**Zum Namen:** Der Auftraggeber nennt die Aktion „Gleißender Schein". Der Job-Guide ist vom Egress gesperrt — erneut geprüft, nicht erinnert —, eine belegte Zuordnung steht also nicht zur Verfügung. Dass Searing Light gemeint ist, ist aus der Fragestellung geschlossen und im Konzept als Schluss gekennzeichnet; gearbeitet wird mit dem englischen Bezeichner.
+
+**Kette vollständig erhoben:** Zündung unter `burstInSolar` (`SMN_Reborn.cs:204`), Aktionseinstellung mit `StatusProvide = [SearingLight]` und `StatusFromSelf = false` (`SummonerRotation.cs:490`), Sperrlogik in `IsStatusProvided` (`ActionBasicInfo.cs:691`), Vorgabewerte `ShouldCheckStatus = true` und `StatusRefreshGcdCount = 2` (`ActionConfig.cs:50`, `:66`), Quellenfilter in `PlayerGetStatus` (`StatusHelper.cs:1529`). Die Beschwörung ist ihrerseits an Searing Lights Wiederholzeit gekoppelt (`SMN_Reborn.cs:467`).
+
+**Befund: Der Doppelzündungsschutz ist richtig gebaut, seine Folge nicht behandelt.** `StatusFromSelf = false` sperrt korrekt gegen jeden fremden Buff; `HasSearingLight` zählt korrekt nur den eigenen. Beide Einstellungen sind für ihre jeweilige Frage richtig — und aus ihrem Zusammentreffen entstehen ab zwei Beschwörern drei Verluste: kein Nachzünden im selben Zyklus (der fremde Buff hält 20 Sekunden, die eigene Beschwörung 15), keine bevorzugte Aetherflow-Ausgabe im laufenden fremden Fenster, und dadurch kein Ruby's Glimmer und kein Searing Flash.
+
+**Ab sechs Beschwörern** wäre durchgehende Buff-Abdeckung möglich (sechs mal zwanzig Sekunden gleich eine Wiederholzeit); genau die entgeht.
+
+**Vorgelegt:** V1 (fremden Buff als Buff-Fenster behandeln) mit Empfehlung zur Umsetzung — Abweichung zwischen Absicht und Umsetzung, bei einem Beschwörer wirkungslos, ohne erkennbaren Nachteil. V2 (Zündung von der eigenen Beschwörung lösen) mit Empfehlung dagegen — Verhaltensänderung ohne Nachweismöglichkeit, die im Regelfall schadet. Nullvariante geprüft und für V1 verworfen, weil zwei Beschwörer in einer Gruppe gewöhnlich sind.
+
+**Nicht umgesetzt**, weil der Auftrag die Erarbeitung im Konzept war und ein sachfremder sechster Eingriff die Auswertung des offenen Spieltests am Wiederbelebungspfad beschädigt hätte.
+
+**Erreichter Prüfgrad:** statische Prüfung am Quelltext für die gesamte Kette; Wirkdauer, Wiederholzeit und Stärke von Searing Light, Standzeit von Solar Bahamut und Herkunft von Ruby's Glimmer aus Fremdquellen. Keine Laufzeitbeobachtung. Nicht entschieden: welcher Ausgang bei gleichzeitiger Zündung eintritt.
+
+---
+
+### A68 · Die Sync-Messung erkannte einen flachen Klon nicht (11.09.2026)
+
+**Anlass:** Die Arbeitsumgebung wurde mitten in der Sitzung gegen einen **neuen, flachen** Klon getauscht — die lokalen Zweige waren fort, `main` stand auf einem alten Stand, `upstream` war als Gegenstelle nicht eingerichtet. Das widerlegt zugleich die Annahme aus A63, die Arbeitskopie sei durchgehend langlebig; die daraus gezogene Regel — lokale Referenzen sind kein Zustandsnachweis — gilt dadurch erst recht.
+
+**Befund am eigenen Prüfmittel.** `check_sync_state.py` meldete „HEAD is up to date with upstream/main" und „0 behind, 123 ahead". Nach `git fetch --unshallow` lauteten dieselben Zahlen „0 behind, **390** ahead". In einem flachen Klon läuft `rev-list` über Historie, die nicht da ist; das Ergebnis sieht nicht falsch aus, es ist falsch. Dass die erste Zahl zufällig stimmte, macht den Fall schlimmer statt besser — genau die Form des stillen Nullbefunds, gegen die `check_fork_version.py` kurz zuvor mit `--require-tags` abgesichert worden war, nur an der nächsten Stelle.
+
+**Behebung:** Das Skript prüft `git rev-parse --is-shallow-repository` und bricht mit Rückgabewert 1 ab, bevor es irgendeine Zahl nennt. Der Selbsttest trägt den Fall jetzt mit: ein `--depth 1`-Klon eines Wegwerf-Repositorys muss als flach erkannt werden.
+
+---
+
+### A69 · Searing Light, zweiter Durchgang: Zeitstruktur, alternative Fenster, Versatz (11.09.2026)
+
+**Anlass:** Der Auftraggeber hat A67 in vier Punkten vertieft: Searing Light stapelt nicht, sondern überschreibt; der fremde Buff ist für die eigene Burstphase nutzbar (Bestätigung von V1); ab wann passt die Zündung nicht mehr in die genutzten Fenster, und welche anderen Schadensphasen kämen in Frage; die Gruppenzusammensetzung wäre vorab zu prüfen; und zwischen den Rotationen entsteht Versatz durch Tod, Bewegung und Betäubung. Auftrag: jede Frage in einem eigenen vollständigen Loop und zusätzlich gesamtheitlich.
+
+**Die Zeitstruktur war die fehlende Grundlage.** A67 hatte die Verluste benannt, aber nicht beziffert, warum sie mit der Zahl der Beschwörer nicht wachsen. Der Grund ist eine Asymmetrie: Große Beschwörungen stehen 15 Sekunden und kehren alle 60 wieder, in der Reihenfolge Solar Bahamut, Bahamut, Solar Bahamut, Phoenix. Solar Bahamut kommt damit alle 120 Sekunden — genau so oft wie Searing Light selbst. Da `SMN_Reborn.cs:203` ausschließlich dort zündet, hat jeder Beschwörer **eine** Gelegenheit je Wiederholzeit, und bei synchronen Rotationen fallen alle zusammen.
+
+**Folge, gegen die Erwartung:** Die Abdeckung bleibt bei 20 Sekunden je 120 — bei zwei Beschwörern wie bei acht. Der gesamte Zuwachs an Ladungen verfällt. Die Schwelle liegt bei **zwei**, nicht bei einer höheren Zahl.
+
+**Zum Überschreiben.** Die Angabe des Auftraggebers schärft den Befund: Der Wert einer zweiten Zündung hängt allein vom Zeitpunkt ab — sofort null, nach zehn Sekunden zehn, nach Ablauf voll. Der vorhandene Sperrmechanismus nutzt genau das, weil er zwei GCDs vor Ablauf öffnet (`StatusRefreshGcdCount = 2`). Er ist richtig gebaut und bleibt unangetastet; er ist zugleich das einzige Abstimmungsmittel zwischen Clients, die einander nicht kennen.
+
+**Alternative Fenster — und die Rotationsbasis führt sie bereits.** `BahamutBurst` (`SummonerRotation.cs:231`) ist ab Stufe 100 in jeder großen Beschwörung wahr. `ChurinSMN` benutzt sie (`:948`), `SMN_Reborn` nicht. Die Erweiterung bringt ein zweites Fenster bei Sekunde 60 und verdoppelt die Abdeckung auf 40 Sekunden je 120. Sie unverändert zu übernehmen wäre allerdings falsch: `BahamutBurst` ist zusätzlich an `CanBurst` und damit an `AutoStatus.Burst` gebunden (`StateUpdater.cs:847`), was `burstInSolar` heute nicht prüft — zwei Verhaltensänderungen in einer Zeile sind bei einem fehlschlagenden Spieltest nicht auseinanderzuhalten.
+
+**Gruppenzusammensetzung als Schalter, und warum sie nötig ist.** Bei einem einzelnen Beschwörer ist die Erweiterung nicht neutral: Wird seine Wiederholzeit frei, während Bahamut oder Phoenix steht, zündet er künftig dort, verliert die Bündelung mit seinem stärksten Fenster und fällt aus dem Zwei-Minuten-Takt. Die Prüfung über `DataCenter.PartyMembers` und `IsJobs(Job.SMN)` — dasselbe Muster wie `HasLivingRaiser` — schaltet die Erweiterung nur, wenn die Voraussetzung tatsächlich vorliegt. Das ist der von der Projektregel verlangte Feature-Toggle, nur an der Lage statt am Nutzer.
+
+**Versatz: der erwartete Befund trat nicht ein.** Tod, Bewegung, Betäubung und zielfreie Phasen streuen die Beschwörungsfenster über die Zeit. Damit ist der Versatz kein Problem, sondern der Verbündete der Erweiterung — mehr Fenster fallen in Zeiten ohne laufenden Buff, und der Sperrmechanismus filtert sie korrekt. Eine ausdrückliche Staffelung zwischen Spielern ist weder nötig noch möglich: Kein Client kennt die Wiederholzeiten der anderen.
+
+**Gesamtheitlich:** V1 und V2 wirken in getrennte Richtungen (was der Gesperrte tut / wann er zünden darf), stören einander nicht und verstärken sich — mit V2 liegt häufiger ein fremder Buff, was V1 häufiger wirksam macht. Beide bleiben innerhalb der Beschwörer-Rotation; Basisklasse, Aktionseinstellungen und Sperrmechanismus bleiben unberührt. Betroffen ist allein der Endnutzer als Beschwörer.
+
+**Benannte Grenze:** Auch mit beiden Vorschlägen bleibt die Abdeckung bei 33 % statt der theoretisch möglichen 100 %. Der Rest setzt Absprache zwischen den Spielern voraus, die ein Rotationshelfer nicht herstellen kann.
+
+**Nicht umgesetzt**, weil der Auftrag die Konzeptarbeit war und der laufende Zweig fünf ungemessene Eingriffe am Wiederbelebungspfad trägt.
+
+**Erreichter Prüfgrad:** statische Prüfung am Quelltext für die gesamte Kette einschließlich der ungenutzten `BahamutBurst`-Fassung und der Burst-Bindung; Zeitgrößen und Beschwörungsreihenfolge aus Fremdquellen; das Überschreiben nach Angabe des Auftraggebers. Keine Laufzeitbeobachtung. Die Abdeckungszahlen sind Abschätzungen aus diesen Größen, keine Messungen.
+
+---
+
+### A70 · Die Abdeckung gemessen statt geschätzt, und zwei Ansätze mehr geprüft (11.09.2026)
+
+**Anlass:** Der Auftraggeber hat nachgerechnet — 15 Sekunden Wirkung bei 120 Sekunden Wiederholzeit ergäben 135, geteilt durch acht Beschwörer knapp 17 Sekunden, also müsste der Buff dauerhaft stehen können. Anschließend die Aufforderung, die Gruppengrößen zwei bis acht zu prüfen und alternative Ansätze zu finden, und schließlich der Hinweis, dass die Wiederholzeit eines anderen Beschwörers ab dessen erster Zündung bekannt ist.
+
+**Zwei Zahlen der Rechnung sind falsch, die Schlussfolgerung ist richtig.** Searing Light wirkt 20 Sekunden, nicht 15 — die 15 sind die Standzeit der Beschwörung. Die Wiederholzeit läuft ab der Zündung, nicht ab Buff-Ende; ein Intervall von 135 Sekunden existiert nicht. Die Schwelle für rechnerisch lückenlose Abdeckung liegt damit bei **sechs** Beschwörern (6 × 20 s = 120 s), nicht erst bei acht. Dass bei acht nahezu dauerhafte Abdeckung möglich ist, bestätigt die Messung.
+
+**Prüfmittel statt Kopfrechnung.** `.github/scripts/audit/searing_light_coverage.py` rechnet die Regeln durch: Wirkung, Wiederholzeit, Überschreiben statt Stapeln, Beschwörungsfenster, Sperrverhalten, Versatz. Es hat drei Aussagen dieses Vorgangs korrigiert, die alle plausibel klangen:
+
+- Die Behauptung, die Abdeckung bleibe auch mit V2 bei 33 %, gilt nur für den synchronen Pull; bei auseinandergelaufenen Rotationen erreicht V2 bei sieben und acht Beschwörern 90 bis 96 % (C41).
+- V4 — die Bindung an die Beschwörung ganz zu lösen — war in A69 mit einem Argument abgetan worden. Gemessen ist es bei **zwei** Beschwörern sogar schlechter als V2 (29 gegen 33 %), weil frühere Zündungen die Wiederholzeiten ungünstiger legen. Das Argument war richtig, die Begründung nicht.
+- Die erste Fassung der informierten Regel V5 erlaubte das Zünden, sobald die Sperre sich löst, also in den letzten fünf Sekunden des laufenden Buffs. Sie fiel damit unter V2: Außerhalb eines Fensters verbrennt das eine volle Ladung für wenige Sekunden Gewinn. Die Regel verlangt jetzt einen vollständig abgelaufenen Buff.
+
+**V5, der Ansatz des Auftraggebers, ist tragfähig und wird trotzdem nicht empfohlen.** Die Information ist tatsächlich verfügbar — `IStatus.SourceId` benennt den Urheber, `PlayerGetStatus` liest ihn bereits —, und die Regel ist bei drei bis sechs Beschwörern die beste aller geprüften (50 bis 99 % gegenüber 33 % heute). Dagegen stehen drei Befunde: Im Nutzungsprofil von einem bis zwei Beschwörern bringt sie gegenüber V2 **nichts**; bei sieben und acht bricht sie auf 60 % ein, weil die Staffelung in eine ungünstige Selbstorganisation läuft; und sie verlangt ein Gedächtnis über Frames hinweg mit Rücksetzpunkten bei Kampf-, Gruppen- und Zonenwechsel.
+
+**Befund über das Modell, nicht nur damit:** Mehr Beschwörer bedeuten nicht immer mehr Abdeckung. Gierige Zuteilung — wer zuerst in einem Fenster steht, zündet — kann jemandem zuvorkommen, dessen Wiederholzeit eine spätere Lücke gedeckt hätte. Der Selbsttest prüft diese Eigenschaft deshalb ausdrücklich nicht; eine frühere Fassung behauptete sie und war widerlegt.
+
+**Zweiter Befund am eigenen Werkzeug:** Die Vergleiche im Selbsttest liefen zunächst mit einer Toleranz von 1e-9 gegen ein Modell mit 0,1-Sekunden-Raster und schlugen auf einen Unterschied von 0,02 Prozentpunkten an. Eine Prüfung, die enger ist als die Auflösung ihres Gegenstands, misst das Raster statt die Sache. Toleranz auf die Größenordnung eines Rasterschritts gesetzt und begründet.
+
+**Unverändert empfohlen bleiben V1 und V2.** Beide wirken im tatsächlichen Nutzungsprofil, beide sind ohne Zustandshaltung umsetzbar, und keine der drei Messungen hat etwas gegen sie ergeben.
+
+**Erreichter Prüfgrad:** Modellrechnung mit Selbsttest gegen vier Invarianten; alle Eingangsgrößen aus dem Quelltext oder aus den im Konzept benannten Fremdquellen. Das Modell zählt Sekunden mit Buff, nicht Schaden — ein Buff außerhalb des Zwei-Minuten-Takts buffft weniger davon, was in keiner der Zahlen erscheint. Keine Laufzeitbeobachtung.
+
+---
+
+### A71 · Der maßgebliche Bereich ist eins bis fünf, und das kehrt die Empfehlung um (11.09.2026)
+
+**Anlass:** Der Auftraggeber hat den Betrachtungsbereich begründet eingegrenzt und eine zweite Bedingung gelockert. Eine reguläre Achtergruppe trägt vier bis fünf Schadensklassen, eine Vierergruppe zwei; sechs bis acht Beschwörer sind Sondergruppen außerhalb des regulären Spiels. Und: Die Verteilung muss sich nicht sofort einstellen — Raidkämpfe dauern bis zu zwanzig Minuten, Ultimates bis zu vierzig, die Ablösezeiten dürfen sich einpendeln.
+
+**Die Eingrenzung kehrt die Bewertung von V5 um.** In A70 war V5 mit drei Gründen abgelehnt worden; zwei davon fallen mit dem Bereich weg. Der Einbruch auf 60 % trat bei sieben und acht Beschwörern auf — kein regulärer Spielbetrieb. Und „der Gewinn liegt bei drei bis sechs" ist kein Einwand mehr, wenn der Bereich bei fünf endet.
+
+**Was die Messung im Bereich eins bis fünf zeigt:** V5 trifft die Obergrenze der Ladungen auf den Punkt — 17, 33, 50, 66, 83 Prozent gegen eine Obergrenze von 17, 33, 50, 67, 83. Mehr ist aus den vorhandenen Ladungen nicht zu holen. V2 bleibt im synchronen Fall ab zwei Beschwörern bei 33 %, liegt ab drei also unter dem Erreichbaren, bei fünf Beschwörern um fünfzig Prozentpunkte.
+
+**Zweiter Befund derselben Messung, gegen die Erwartung:** Versatz nützt nur dem heutigen Code. Bei voll auseinandergelaufenen Rotationen liegen alle vier Regeln gleichauf — wo die Fenster ohnehin gestreut sind, finden die Erweiterungen nichts mehr vor. Umgekehrt heißt das, dass V5 genau dort stark ist, wo der heutige Code am schwächsten ist: beim sauberen, synchronen Pull, also zu Beginn jedes Kampfes.
+
+**Zum Einpendeln, gemessen über zwanzig und über vierzig Minuten:** Es findet nicht statt, und es ist auch nicht nötig. Erste zwei Minuten und letzte zwei Minuten liefern bei jeder Regel und jeder Gruppengröße denselben Wert; V5 liegt von der ersten Periode an auf seinem Endwert. Bei V2 ändert sich ebenfalls nichts, aber aus dem gegenteiligen Grund — bei festem Versatz bleibt das Muster, in dem es begonnen hat.
+
+**Was das Modell dabei nicht kann, und das ist zu benennen:** Es hält den Versatz über den ganzen Lauf fest. Real wächst er mit der Kampfdauer, weil jede Mechanik und jeder Tod die Zyklen weiter verschiebt. Eine Gruppe wandert im Lauf eines langen Kampfes also von der synchronen in die versetzte Tabelle. Die Richtung steht fest — sie verbessert die Lage —, das Tempo nicht. Der lange Kampf ist damit der Fall, der sich von selbst bessert; der Anfang jedes Kampfes ist der, der es nicht tut.
+
+**Neue Empfehlung, in zwei Stufen:** Erst V1 und V2 — ohne Zustandshaltung, wirksam im häufigsten Fall von ein bis zwei Beschwörern, einzeln im Spiel beurteilbar. Dann V5 darauf, das im Bereich drei bis fünf die Obergrenze erreicht. V5 ist als „V2 plus eine zusätzliche Erlaubnis" gebaut und im Modell auch so gemessen, die Stufen sind also unabhängig prüfbar.
+
+**Erfasst, nicht behoben:** V5 hängt daran, den fremden Buff zu sehen. Searing Light reicht dreißig Yalm; zündet ein Beschwörer weiter entfernt, fehlt die Beobachtung. Die Fehlerrichtung ist die zurückhaltende — ein bekannter Beschwörer, dessen Zündung verpasst wurde, gilt als bereit und hält die eigene Zündung zurück.
+
+**Erreichter Prüfgrad:** Modellrechnung über zehn, zwanzig und vierzig Minuten mit Selbsttest gegen vier Invarianten. Keine Laufzeitbeobachtung. Das Modell zählt Sekunden mit Buff, nicht Schaden.
+
+---
+
+### A72 · Ausweichregel, Kampfgebiet und eine geregelte statt gesteuerte Fassung (11.09.2026)
+
+**Anlass:** Drei Nachfragen des Auftraggebers — ob es eine Fokussierung auf Bahamut und Phoenix gibt, falls Solar bereits durch einen anderen abgedeckt war; wie groß ein Raid- oder Prüfungsgebiet üblicherweise ist; und ob das Konzept dynamischer zu bauen wäre, mit unterschiedlichen Richtlinien bei Abweichungen im Verlauf.
+
+**Zur Ausweichregel: Es gibt keine, und die Formulierung des Auftraggebers ist genauer als die bisherige.** `SMN_Reborn.cs:205` ist die einzige Zündstelle, `burstInSolar` (`:203`) lässt ab Stufe 100 nur Solar zu; kein Zweig weicht aus, kein Zustand hält eine Blockade fest. Das Konzept hatte die Erweiterung als pauschale Lockerung beschrieben — „zünde in jedem Beschwörungsfenster" —, gemeint ist aber eine Ausweichregel: „weiche aus, falls Solar belegt war". Im Kollisionsfall sind beide deckungsgleich; sie gehen auseinander, wenn die eigene Wiederholzeit während Bahamut frei wird, ohne dass eine Kollision vorlag. Die genauere Fassung verlangt denselben Zustand, den V5 ohnehin mitbringt, und wird deshalb der zweiten Stufe zugeordnet. **Nicht gemessen**, weil das Modell alle Beschwörer mit freier Wiederholzeit startet und diesen Fall gar nicht erzeugen kann — die Aussage ist aus der Regel abgeleitet.
+
+**Zum Kampfgebiet: keine belastbare Zahl gefunden.** Die Recherche nach einem üblichen Arenadurchmesser blieb ohne verwertbares Ergebnis, und im Quelltext steht er nicht. Die Angabe des Auftraggebers — keine langen Wege — wird als solche geführt.
+
+**Der Einwand aus dem Reichweitenargument war überzeichnet und ist korrigiert.** Die Beobachtungslücke fällt mit der Wirkungslücke zusammen: Wer den Buff nicht bekommt, hat auch nichts von ihm, und für den ist die eigene Zündung dann richtig. Die vorhandene Sperre leistet das von selbst, weil sie den Status **auf dem Spieler selbst** prüft. Betroffen ist allein die Buchführung, und auch die nur außerhalb eines Beschwörungsfensters.
+
+**Zur Dynamik: ja, und es ist der stärkste Einzelschritt nach V1.** V5 ist bereits halb geregelt — es zählt nur Beschwörer, die tatsächlich gezündet haben. Seine Lücke liegt in der anderen Richtung: Es **vergisst nicht**. Wer einmal gezündet hat, steht dauerhaft mit „kommt in 120 Sekunden wieder" in den Büchern; stirbt er danach oder hört auf zu zünden, halten sich alle anderen für eine Lücke zurück, die er nie füllt.
+
+**V6 setzt ein Verfallsdatum.** Ist ein beobachteter Beschwörer um mehr als eine Buffdauer überfällig, zählt er nicht mehr; kommt er zurück, trägt seine nächste Zündung ihn wieder ein. Gemessen an einem dreiminütigen Ausfall, gemessen über dieses Fenster: bei drei Beschwörern 22 statt 11 Prozent, bei vier 44 statt 22, bei fünf 66 statt 33. **Das Verfallsdatum verdoppelt die Abdeckung im Störungsfenster.** Bei zwei Beschwörern ändert sich nichts, weil dort nach einem Ausfall nur einer übrig ist.
+
+**Der Preis ist gering, weil der Zustand ohnehin geführt wird:** ein Zeitstempel je beobachtetem Beschwörer und eine Verfallsprüfung. Eine Buchführung, die nie vergisst, ist schlechter als gar keine — sie wird mit wachsender Kampfdauer immer falscher.
+
+**Wo die Dynamik zu enden hat, ausdrücklich benannt:** Die Projektregel warnt vor Zustandsautomaten, die statisch nicht abzusichern sind; der Eintrag zur doppelten Zustandswahl ist genau daran hängengeblieben. V6 ist keiner — eine Größe je Beschwörer und zwei Ableitungen daraus. Weitergehende Richtlinien nach Lage, etwa ein Umschalten nach gemessener Abdeckung oder erkanntem Versatz, wären ein Automat und sind bewusst nicht vorgeschlagen.
+
+**Stufe 2 der Empfehlung ist damit V6 statt V5.**
+
+**Erreichter Prüfgrad:** Modellrechnung mit Selbsttest, jetzt auch gegen ein Ausfallszenario. Keine Laufzeitbeobachtung. Das Modell zählt Sekunden mit Buff, nicht Schaden, und kann den Fall der ungünstig liegenden Wiederholzeit nicht erzeugen.
+
+---
+
+### A73 · Der Wiederbelebungsdefekt ist im Spiel bestätigt behoben (11.09.2026)
+
+**Beobachtung des Auftraggebers:** „die rezzgeschwindigkeit war in einigen fällen sofort, in anderen hat es ein paar sekunden gedauert."
+
+**Gegen den Ausgangsbefund gehalten.** Gemeldet worden war: „manchmal machen heiler und sonstige rezzer keine rezzes sofort. es dauert manchmal über 15 sekunden oder länger, bis ein rezz durchgeführt wird" — bei laufendem Schaden und laufender Heilung. Der Zustand jetzt ist teils sofort, teils wenige Sekunden. **Der gemeldete Defekt ist damit behoben**, und zwar zusammen mit der zweiten Hälfte der Auflösungsbedingung, die A66 schon gestützt hatte: Es bleibt keine andere Fähigkeit aus, Radiant Aegis kommt weiter.
+
+**Die verbleibende Wartezeit ist Bauart, nicht Rest des Defekts, und sie ist an der Kette belegt.** Drei Glieder bestimmen sie:
+
+1. Der Einschub kann nur im Einschiebefenster greifen. `CustomRotation_Ability.cs:28` kehrt bei `0 < WeaponRemain <= 0.5f` sofort zurück, und bei freiem GCD ruft `Invoke` den Fähigkeitenpfad gar nicht erst auf. Gezündet wird also bei `WeaponRemain > 0,5 s`.
+2. Danach geht die Wiederbelebung als nächster GCD hinaus — `RaiseSpell` Stufe (A) verlangt `HasSwift || IsLastAction(SwiftcastPvE)`. Bis dahin vergeht die Restzeit des laufenden GCD, also zwischen 0,5 Sekunden und einer vollen Wiederholzeit; bei laufendem Zauber mit Wirkzeit entsprechend mehr.
+3. Mit der Vorgabe `RaisePlayerFirst = aus` liegt der Wiederbelebungsblock hinter der gesamten Heilung (`CustomRotation_GCD.cs:350`). Ist gleichzeitig zu heilen, gewinnt die Heilung den GCD, und die Wiederbelebung rückt einen weiteren GCD nach hinten.
+
+„Sofort" tritt danach ein, wenn Spontanität bereits lag oder der GCD fast frei war; „ein paar Sekunden", wenn ein Zauber lief oder eine Heilung dazwischenkam. Beides ist das vorhergesagte Verhalten. Eine Verkürzung darüber hinaus wäre nur über die Einstellung `RaisePlayerFirst` zu haben — das ist eine Nutzerentscheidung über den Vorrang zwischen Heilen und Aufheben, kein Defekt.
+
+**Damit schließt sich die Kette dieses Vorgangs:** Ursache statisch belegt (A54), durch das Manual-Experiment des Auftraggebers bestätigt, erster Behebungsversuch im Spiel gescheitert und vollständig zurückgenommen (C37), zweiter Versuch entworfen (A56), im Loop geprüft (A57, A60) und jetzt im Spiel bestätigt. Der Prüfgrad ist erstmals in diesem Vorgang **Laufzeitbeobachtung**, nicht nur statische Prüfung.
+
+**Was der Spieltest nicht abdeckt und in `TODO.md` weitergeführt wird:** Die drei einstellungsabhängigen Eingriffe desselben Zweigs — Phönixfeder samt Zieleignung und Stufenprüfung, Hartwirk-Korrektur bei abgeschaltetem `RaisePlayerBySwift`, Bezugsmenge der Nur-Heiler-Modi. Sie liegen hinter Vorgaben, die der Auftraggeber nicht verändert hat, und sind deshalb mit dem Kernpfad nicht mitgetestet worden.
+
+**Folge für PR #7:** Der Zweig `claude/raise-swiftcast-weave` wurde als Rückfallstand geführt, für den Fall, dass der zweite Versuch ebenfalls scheitert. Dieser Fall ist nicht eingetreten. Ob der Pull Request geschlossen wird, entscheidet der Auftraggeber.
+
+---
+
+### A74 · Die Buchführung über andere Beschwörer bringt nichts, und das Schadensoptimum ist erreicht (11.09.2026)
+
+**Zwei Einwände des Auftraggebers, beide durchschlagend.**
+
+**Erstens:** „wieso halten sich andere bei searing light für eine lücke zurück? sie haben doch eigene abklingzeiten, so dass sie gar nicht vor ihrem eigenen neuen fenster zünden können." Der Einwand trifft die Konstruktion von V5 und V6 im Kern. Die eigene Wiederholzeit wird in der Regel zuerst geprüft; wer nicht bereit ist, kommt gar nicht bis zur Frage nach den anderen. Für den, der bereit ist, gibt es nichts, worauf zurückzustehen wäre: Kann ein anderer zünden, tut er es — und gegen die Verschwendung steht bereits die vorhandene Sperre. Kann er nicht, muss man selbst.
+
+**Gemessen bestätigt.** V7 — dieselbe Erlaubnis ohne jede Buchführung, nur „Buff vollständig abgelaufen" und „eigene Wiederholzeit frei" — liefert im gesamten maßgeblichen Bereich und bei jeder Versatzstufe **exakt dieselben Werte** wie V5. Auch gegen den dreiminütigen Ausfall, für den V6 gebaut war: 11, 22, 44, 66 Prozent — identisch. Wer nichts aufschreibt, hat auch nichts zu vergessen.
+
+**Außerhalb des maßgeblichen Bereichs ist die Buchführung sogar schädlich:** Bei sieben und acht Beschwörern erreicht V7 100 %, V5 dagegen 46 %. Das Zurückstehen führt dort in eine ungünstige Selbstorganisation. V5 und V6 sind damit verworfen, und die Invariante „Buchführung bringt nichts" steht als Prüfung im Selbsttest des Modells, damit sie nicht unbemerkt aufhört zu gelten.
+
+**Was entfällt:** Zustand über Frames, Beobachtung fremder Statusquellen, Rücksetzpunkte bei Kampf-, Gruppen- und Zonenwechsel, Verfallsdatum — und der Reichweiteneinwand, weil nichts mehr beobachtet wird, das ausbleiben könnte. Die zweistufige Empfehlung wird einstufig: V1 und V7, beide zustandsfrei, beide unter der Gruppenprüfung.
+
+**Zweitens:** „die frage ist eher, ist das schadensoptimum bei 2-5 beschwörern erreicht." Das trifft die Grenze, die das Modell bis dahin selbst benannt hatte — es zählte Sekunden, nicht Schaden. Der Schaden fällt im Zwei-Minuten-Zyklus nicht gleichmäßig: Raidverstärkungen und Abklingzeiten sind auf das Burst-Fenster gebündelt.
+
+**Das Modell gewichtet jetzt nach Schadensdichte und vergleicht gegen die optimale Platzierung derselben Ladungen** (erst das Burst-Fenster, dann der Rest). Ergebnis bei Burst-Anteilen von 17, 30 und 45 Prozent: **V7 liegt überall innerhalb eines Prozentpunkts am Optimum.** Bei zwei bis fünf Beschwörern ist das Schadensoptimum damit erreicht, nicht bloß angenähert.
+
+**Warum die Bündelung nicht gewinnt:** V7 gibt das Burst-Fenster nicht auf. Der erste Zünder steht in seinem Solar-Fenster, das mit dem Gruppen-Burst zusammenfällt; die übrigen füllen nur die Zeit danach. Und wer den Burst gedeckt hat, ist genau 120 Sekunden später — zum nächsten Burst — wieder bereit. Der heutige Code verschenkt dagegen umso mehr, je stärker gebündelt wird: bei 45 Prozent Burst-Anteil und fünf Beschwörern 45 gegen mögliche 89 Prozent.
+
+**Grenzen der Gegenprobe, eine davon zugunsten von V7:** Der Burst-Anteil ist eine Annahme und aus diesem Repository nicht zu klären; der Schaden außerhalb des Bursts ist als gleichmäßig modelliert, obwohl die Beschwörungsfenster selbst Spitzen sind — da V7 gerade diese abdeckt, wird sein Vorsprung eher unterschätzt. Phasen ohne Ziel sind nicht modelliert.
+
+**Lehre, in zwei Sätzen:** Eine Konstruktion, die Information sammelt, ist erst dann gerechtfertigt, wenn gezeigt ist, dass die Entscheidung ohne sie anders ausfiele. Und ein Modell, das ein Surrogat misst — hier Sekunden statt Schaden —, ist erst dann belastbar, wenn die Gegenprobe mit der gemeinten Größe dieselbe Rangfolge liefert.
+
+**Erreichter Prüfgrad:** Modellrechnung mit Selbsttest gegen sechs Invarianten, darunter „keine Regel schlägt das Optimum" und „Buchführung bringt nichts". Keine Laufzeitbeobachtung.
+
+---
+
+### A75 · Die Burst-Abdeckung getrennt gemessen — keine Verschiebung aus dem Burst (11.09.2026)
+
+**Anlass:** Der Auftraggeber hat den Einwand gegen die Schadensgewichtung geschärft: Ein Buff im Burst steigert einen Anteil des Burst-Schadens, derselbe Buff in der Zwischenphase denselben Anteil eines viel kleineren Schadens. Wandert Buffzeit aus dem Burst heraus, ist das eine Regression — und eine gewichtete **Gesamtzahl** kann sie verdecken, weil der Zugewinn in der Zwischenphase den Verlust im Burst rechnerisch ausgleicht. Seine Folgerung: Sekunden zählen genauso wie Schaden.
+
+**Der Einwand war berechtigt und die Prüfung fehlte.** A74 hatte gezeigt, dass V7 in der gewichteten Gesamtzahl am Optimum liegt — aber nicht, dass diese Zahl nicht aus einer Verschiebung entstanden ist. Das Modell misst die Burst-Abdeckung jetzt getrennt.
+
+**Ergebnis: Es wandert nichts aus dem Burst.** Bei jeder Regel, jeder Beschwörerzahl von eins bis fünf und jeder Versatzstufe bleibt die Abdeckung des Burst-Fensters bei 99 bis 100 Prozent. Der Grund steckt in der Taktung: Wer den Burst gedeckt hat, ist genau 120 Sekunden später wieder bereit — zum nächsten Burst. Diese Ladung bleibt dauerhaft an den Burst gebunden; nur die übrigen füllen die Zwischenzeit. V7 fügt Abdeckung hinzu, ohne bestehende zu verschieben.
+
+**Damit gilt die Folgerung des Auftraggebers.** Die Gleichsetzung von Sekunden und Schaden ist hier erlaubt — nicht allgemein, sondern weil der Burst gedeckt bleibt. Das steht jetzt als Invariante im Selbsttest: Keine Erweiterung darf die Burst-Abdeckung senken.
+
+**Zwei Befunde am Prüfmittel selbst, beide aus diesem Durchgang:**
+
+Die erste Fassung der Burst-Messung lieferte durchgehend 0 Prozent. Ein `continue` stand vor der Zündlogik, sodass niemand zündete. **Die Vergleichsprüfung schlug trotzdem nicht an, weil 0 nicht kleiner ist als 0** — ein Test, der nur zwei Zahlen ins Verhältnis setzt, merkt nicht, dass beide kaputt sind. Der Selbsttest verlangt jetzt zusätzlich, dass ein einzelner Beschwörer seinen eigenen Burst tatsächlich deckt. Dieselbe Fehlerform wie der stille Nullbefund in A68, an einer anderen Stelle.
+
+Die zweite Fassung zeigte einen Rückgang von 0,8 Prozentpunkten — in genau der Richtung des Einwands. Statt die Toleranz aufzuweiten, wurde nachgemessen: Bei zehnfach feinerem Zeitraster schrumpft der Rückgang auf 0,14 Prozentpunkte, skaliert also mit der Rasterweite und ist Diskretisierung. Die Toleranz der Burst-Prüfung ist entsprechend hergeleitet — `STEP / BURST_WINDOW`, weil das Burst-Fenster nur ein Sechstel des Zyklus ausmacht und derselbe Rasterfehler dort relativ sechsmal schwerer wiegt.
+
+**Erreichter Prüfgrad:** Modellrechnung mit Selbsttest gegen jetzt acht Invarianten. Keine Laufzeitbeobachtung.
+
+### A76 · Was eine Beschwörungsphase wert ist, und was in die Restzeit von Searing Light passt (11.09.2026)
+
+**Anlass:** Zwei Fragen des Auftraggebers. Erstens der prozentuale Schadensanteil von Solar Bahamut gegen Bahamut gegen Phoenix und gegen ein gleich langes Fenster aus Ifrit, Titan oder Garuda, ohne Searing Light. Zweitens, ob die stärkste der drei einmaligen Primal-Sonderaktionen vorgezogen werden sollte, solange der Buff noch läuft, und wie viele Attacken in die Restzeit überhaupt passen. A75 hatte genau diese Lücke als Modellgrenze benannt: Der Schaden außerhalb des Bursts war als gleichmäßig angesetzt, obwohl die Beschwörungsfenster selbst Spitzen sind.
+
+**Prüfmittel:** `.github/scripts/audit/smn_phase_potency.py`, neu. Phasenaufbau aus der Dispatch-Reihenfolge in `SMN_Reborn.cs`, Dauern und Potenzen aus `ActionId.resx`, Selbsttest gegen sechs Invarianten.
+
+**Ergebnis Phasenwert:** Solar-Bahamut-Fenster 7300 Potenz, Bahamut 5700, Phoenix 5680, gleich langes Primalfenster 2970 — also 100 / 78 / 78 / 41 Prozent. Bahamut und Phoenix sind gleichwertig, weil Phoenix' stärkerer Füller genau ausgleicht, dass seine Astral-Flow-Aktion heilt statt zu schaden. Dazu parkt RSR 1800 Potenz an Fähigkeiten im Solar-Fenster, die an Searing Light gebunden sind und deshalb nicht in den Vergleich gehören.
+
+**Ergebnis Restzeit:** Nach dem Beschwörungsfenster bleiben fünf Sekunden Buff. Hinein gehen bei Ifrit zuerst zwei Attacken mit 1360 Potenz, bei Titan drei mit 1300, bei Garuda **eine** mit 800 — Slipstream beginnt auf dem zweiten Platz und wird erst nach dem Buffende fertig. Der Unterschied zwischen bester und schlechtester Reihenfolge ist 560 Potenz, bei fünf Prozent Verstärkung 28 Potenz gegen 30 440 Potenz Zyklusleistung.
+
+**Nachgerechnet auf Einwand des Auftraggebers: Ifrit lohnt nur in Nahkampfreichweite.** Ohne den Anlauf von Crimson Cyclone entfällt auch Crimson Strike, das erst daraus entsteht; der Ifrit-Block sinkt von 3160 Potenz über fünf GCDs auf 2040 über drei, und der Ersatz auf dem zweiten Platz im Bufffenster ist Ruby Rite mit unbelegter Gießzeit. Ifrit zuerst liegt dann zwischen 800 und 1420 Potenz, Titan sicher bei 1300 — Titan ist der einzige Block, dessen Wert weder an der Position noch an einer unbelegten Gießzeit hängt. Das Prüfmittel weist unbelegte Gießzeiten seither als Spanne aus statt als Einzelwert. Anschlussbefund: `AddCrimsonCyclone` ist voreingestellt an und überspringt ausweislich `SMN_Reborn.cs:483` die Distanzprüfung, RSR springt also aus beliebiger Entfernung heran.
+
+**Bewertung: kein Eingriff.** Die Reihenfolge ist bereits als Einstellung vorhanden (`SummonOrderType`), die Voreinstellung beginnt mit Titan und ist damit nahezu optimal, und die einzige teure Reihenfolge vermeidet sie ohnehin. Eine Automatik nach Bufflage würde das Bewegungsrisiko von Crimson Cyclone in die Burstphase legen, ohne dass der Gewinn hier nachweisbar wäre.
+
+**Zwei Befunde am Prüfmittel selbst:**
+
+Die erste Fassung der Restzeitrechnung zählte GCD-Plätze statt Zeitpunkte. Damit lag Slipstream mit 1320 Potenz scheinbar vor Titan — die Gießzeit fiel unter den Tisch, und die Rangfolge stand falsch herum im Konzept, bevor die zeitgenaue Fassung sie umgeworfen hat. Dieselbe Fehlerform wie beim Konfliktrisiko über Dateiaktivität: Ein Surrogat misst nicht den Wirkungsbereich.
+
+Die zweite Fassung verlor die gewebte Fähigkeit des führenden Blocks. Mountain Buster steht in der Blockliste hinter vier Topaz-GCDs, die nicht mehr ins Fenster passen, und die Schleife brach vorher ab. Der Selbsttest verlangt jetzt ausdrücklich, dass die gewebte Aktion des führenden Blocks erscheint.
+
+**Erreichter Prüfgrad:** Potenzrechnung mit Selbsttest, statisch gegen die Artefakte. Keine Laufzeitbeobachtung, kein Schadensrechner.
+
+**Belegschwäche, ausdrücklich:** Vierzehn Potenzen und alle Gießzeiten sind nicht am Repository belegt. `ActionId.resx` lässt die Zahl leer, sobald ein Merkmal sie überschreibt — dort steht wörtlich „with a potency of ." Die Werte stammen aus Suchmaschinenzusammenfassungen; Job-Guide, FFXIV-Wiki, Icy Veins und The Balance sind vom Egress dieser Umgebung gesperrt. Ein Kreuztreffer stützt sie: Für Umbral Impulse nennt die Fremdquelle 640, und diesen Wert belegt `ActionId.resx` unabhängig.
+
+### A77 · Swiftcast wird in der Beschwörer-Rotation nicht verbraucht (11.09.2026)
+
+**Anlass:** Der Auftraggeber hält Swiftcast für Wiederbelebungen zurück und setzt es nicht in der Rotation ein — Sicherheit der Gruppe vor Schadensausstoß. Zu prüfen war, ob RSR mit den Voreinstellungen dieser Praxis zuwiderläuft, und ob die Empfehlung aus der vorangegangenen Antwort, `AddSwiftcastOnGaruda` einzuschalten, damit hinfällig ist.
+
+**Erhebung über alle Auslöser, nicht über die eine Option.** Swiftcast kann in dieser Rotation an sechs Stellen fallen. Vier davon stehen in `SMN_Reborn.cs` und sind auf Stufe 100 sämtlich geschlossen: `AddSwiftcastOnLowST` und `AddSwiftcastOnLowAOE` sind zwar voreingestellt an, hängen aber an `!RubyRitePvE.EnoughLevel`; `AddSwiftcastOnRuby` ist aus und zusätzlich an `!ElementalMasteryTrait.EnoughLevel` gebunden; `AddSwiftcastOnGaruda` ist aus. Zwei stehen in der Basisklasse: `CustomRotation_Ability.cs:700` verlangt eine Gießzeit von mindestens fünf Sekunden, die keine Aktion der Beschwörer-Rotation erreicht, und `:708` gilt nur Occult Comet, also Occult Crescent und damit Sonderinhalt.
+
+**Ergebnis: Mit den Voreinstellungen verbraucht RSR auf Stufe 100 kein Swiftcast in der Beschwörer-Rotation.** Die Praxis des Auftraggebers und der Auslieferungszustand decken sich; kein Eingriff nötig. Für den beabsichtigten Zweck bleibt Swiftcast verfügbar: `CustomRotation_Ability.cs:736` gibt es unter `RaisePlayerBySwift` für die Wiederbelebung frei, und diese Einstellung ist voreingestellt an (`Configs.cs:947`) sowie je Job getrennt einstellbar.
+
+**Folge für die Searing-Light-Rechnung:** Die Swiftcast-Variante von Slipstream (1320 Potenz) ist keine verfügbare Option. Für Garuda zuerst bleiben die 800 Potenz fest. Das Prüfmittel führt den Swiftcast-Zweig weiter, jetzt aber ausdrücklich als Vergleichsgröße und nicht als Vorschlag.
+
+**Erreichter Prüfgrad:** Statische Erhebung aller Auslöser im Baum, Voreinstellungen am Code belegt. Keine Laufzeitbeobachtung.
+
+### A78 · Searing Light: V1, V2 und V7 umgesetzt, nachdem die Falsifikation die Kopplung geklärt hat (11.09.2026)
+
+**Anlass:** Auftrag, das Konzept weiter zu schärfen, die Umsetzung zu planen, die Planung kritisch zu prüfen und erst dann umzusetzen.
+
+**Der Nachweis fehlte zunächst still.** Nach dem Upstream-Merge galt der Zweig gegen `origin/main` als `dirty`, und GitHub erzeugt für einen Pull Request ohne bildbaren Merge-Commit keinen `pull_request`-Lauf: Drei Commits, die gesamte Umsetzung eingeschlossen, liefen ungeprüft durch, ohne dass etwas fehlschlug. Aufgelöst durch den Merge von `origin/main`. Der erste Lauf danach schlug an `check_fork_version.py --require-tags` fehl — der Upstream-Merge hatte neuere Release-Tags hereingebracht. Die frische Messung zeigte Upstream erneut zwei Commits weiter mit 7.5.6.4 als höchstem Tag; beides eingebunden, Version gesetzt. Dieselbe Fehlerform wie der stille Nullbefund in A68: Die Abwesenheit eines Signals sah aus wie ein sauberer Zustand.
+
+**Vorbedingung erfüllt:** `check_sync_state.py` wies HEAD als drei Commits hinter `upstream/main` aus. Die drei Commits härten die Objektvalidierung (`ObjectHelper`, `RSCommands_Actions`, `StateUpdater`) und berühren weder den Zünd- noch den Wiederbelebungspfad. Nach dem Merge: null ausstehend.
+
+**Was die Falsifikationsstufe gebracht hat — sie hat die Planung einmal umgeworfen und dann gerettet.** Die Hypothese, die Erweiterung des Zündfensters sei folgenlos, fiel zuerst: `UseSummonsAndTrances:491` bindet die Solar-Beschwörung an `!SearingLightPvE.Cooldown.IsCoolingDown`. Wer außerhalb des Solar-Fensters zündet, setzt Searing Light zu anderer Zeit auf Abklingzeit und könnte damit die teuerste Beschwörung des Zyklus verschieben — 1600 Potenz je Verschiebung gegen etwa 200 Potenz Zugewinn an Buffzeit. Das Modell kann das nicht sehen, weil es die Beschwörungsfolge als fest annimmt.
+
+**Die Gegenprüfung entkräftete den Einwand am Code:** `:478` ruft `SummonBahamutPvE.CanUse(out act)` ohne Vorbedingung, `:487` denselben Ausdruck mit einer Zusatzbedingung — eine strikte Teilmenge und damit beweisbar unerreichbar. `:491` ist nur erreichbar, wenn `CanUse` in derselben Lage falsch liefert. Welche der beiden Zeilen tot ist, hängt daran, ob Summon Bahamut auf Stufe 100 spielseitig umgewandelt wird; RSR ruft über `AdjustedID`, und die Antwort steht nicht im Repository. Der Befund ist als Defekt in `TODO.md` erfasst, ausdrücklich mit der Warnung, dass ein Aufräumen von `:478` die Kopplung aktivieren würde.
+
+**Umgesetzt:** `HasAnySearingLight` und `AnotherSummonerInParty` in `SummonerRotation.cs`; V1 an drei Stellen in `SMN_Reborn.cs`; die Zündbedingung als `burstInSolar || (AnotherSummonerInParty && (inBigInvocation || !HasAnySearingLight))`. Die Stufenschwelle kommt aus `SearingLightPvE.Level` statt aus einer Zahl — dieselbe Lehre wie beim Rotmagier in `AnyLivingRaiser`. Die Allianz wird nicht gefragt, weil Searing Light nur die Gruppe erreicht.
+
+**Bewusst nicht geändert:** die Burst-Medizin in `:182`, die weiter den eigenen Buff verlangt, weil sie als Fünfzehn-Minuten-Ressource in das stärkste Fenster gehört; und `ChurinSMN.cs`, fremdes Werk.
+
+**Erreichter Prüfgrad:** Statische Selbstprüfung, `check_cs_structure.py`, Kompilierung grün auf `c025e0802` (Windows-Build und DispatchChain). Keine Laufzeitbeobachtung. Zwei Punkte sind ausdrücklich offen und im Konzept als Beobachtungspunkte benannt: ob der Solar-Takt hält, und ob gleichzeitiges Zünden mehrerer Beschwörer beim Buffende auftritt.
+
+### A79 · Der dritte Grund der Sanctus-Regel war nie umgesetzt (12.09.2026)
+
+**Anlass:** Der Auftraggeber meldet aus dem Spiel, der Weißmagier wirke Sanctus bei aktivem Rückstoß (Arm's Length) und eben gesetzter Verlangsamung — und weist darauf hin, dass er genau dafür bereits eine Anweisung gegeben hatte.
+
+**Die Anweisung war im Projekt konserviert, der Code führte sie nur zur Hälfte aus.** Konzept 08 formuliert drei Zeitpunkte, zu denen ein Nicht-Sanctus-GCD eingeschoben wird: weil die Betäubung noch läuft, weil sie ohnehin nicht mehr wirkt, **oder weil gerade eine stärkere Mitigation trägt**. `ShouldStretchHolyStun` prüft ausschließlich den ersten Fall. Die Bausteintabelle desselben Dokuments führte die Aussetzbedingung gleichwohl als „umgesetzt", ohne den fehlenden Zweig zu benennen — ein Widerspruch zwischen Konzept und Code, der über mehrere Sitzungen unbemerkt blieb, weil die Tabelle als Nachweis gelesen wurde und nicht der Code.
+
+**Die Messmittel lagen vollständig vor.** `StatusHelper.SlowStatus` und `SurveyHostileStatus` sind seit A20 vorhanden; `SlowStatus` hatte im ganzen Baum genau einen Leser, `DRK_Reborn.PackSlowed`. Die Verlangsamung war also auf der Tankseite geregelt und auf der Heilerseite nicht — obwohl beide Seiten aus demselben Satz derselben Regel folgen.
+
+**Umgesetzt:** `WHM_Reborn.ShouldHoldHolyWhilePackSlowed`, hinter `HoldHolyWhilePackSlowed` mit Standard **an**. Maßgeblich ist die **Gesamtleistung der Gegner im Wirkradius**, nicht ihre Zahl — die Flächenregel selbst, anders ausgedrückt: `Config.AoeCount` Gegner bei voller Leistung ist, was Sanctus seit jeher verlangt. Ein verlangsamter Gegner trägt weiter bei, nur weniger; Arm's Length belegt ihn mit „Slow +20 %“ (`ActionId.resx`, Aktion 7548), er zählt also 80. Drei Gegner mit einem Verlangsamten ergeben 280 gegen eine Schwelle von 300 und Sanctus wartet; vier mit zwei Verlangsamten ergeben 360 und es wird gewirkt. Der Vorschlag stammt vom Auftraggeber und ersetzt drei Fassungen, die jeweils die falsche Größe maßen: die Anteilsregel von `PackSlowed` (C50), die Mehrzahl des Radius (C51) und die Zahl der nicht Verlangsamten (C52), die verwirft, was die Verlangsamten noch beitragen.
+
+**Zwei Eigenschaften der Regel, beide gewollt.** Die Schwelle kommt aus der Aktion, sodass eine geänderte Nutzereinstellung beide Seiten derselben Frage zugleich verschiebt. Und die Regel greift ausschließlich bei genau `AoeCount` Gegnern: Ein Gegner mehr trägt mindestens 80 bei, und die Summe überschreitet die Schwelle, gleich wie viele verlangsamt sind. Dieser schmale Wirkbereich ist richtig und kein Mangel — stehen mehr Gegner da, als der Zauber braucht, lohnt er auch gegen einen gedrosselten Strom.
+
+**Warum Standard an, anders als bei den beiden Nachbaroptionen:** Diese Bedingung ist kein Vorschlag, dessen Nutzen eine Annahme bleibt, sondern eine Anweisung des Auftraggebers mit Laufzeitbeobachtung als Anlass. Die Regel, Verhaltensänderungen ohne Nachweis hinter einer abgeschalteten Option zu halten, greift damit nicht.
+
+**Erreichter Prüfgrad:** Statische Selbstprüfung, `check_cs_structure.py`, Kompilierung über die CI. Keine Laufzeitbeobachtung der neuen Bedingung.
+
+### A80 · Namenswörterbuch angelegt, und der Namenskonflikt aus A-1646 ist entschieden (12.09.2026)
+
+**Anlass:** Auftrag des Auftraggebers, ein Wörterbuch der Zauber und Fähigkeiten zu erzeugen, damit die Zuordnung nicht jedes Mal neu recherchiert wird — mit dem Hinweis, er habe „Abtausch" und „Sanctus" über zehnmal erklärt.
+
+**Der Vorwurf trifft, und die Messung zeigt mehr als erwartet.** „Abtausch" steht achtmal in den Dokumenten des Baums, „Sanctus" 62-mal, „Rückstoß" 33-mal. Gleichwohl wurde in dieser Sitzung gemeldet, „Abtausch" sei nicht zuordenbar — gesucht worden war ausschließlich in `ActionId.resx` und nach Lokalisierungsdateien, also erneut im falschen Suchraum, genau die Fehlerform aus C30.
+
+**Die seit A-1646 offene Frage ist damit beantwortet: Abtausch ist Arm's Length.** Der Auftraggeber hat es auf die Rückfrage hin unmittelbar bestätigt. Die Zuordnung aus C30 zu Shirk stammte aus einer Websuche und ist nach der Namensregel ohnehin keine zulässige Quelle; sie ist als C49 zurückgenommen. Offen bleibt allein, ob im deutschen Client „Abtausch" oder „Rückstoß" steht — beide Angaben stammen vom Auftraggeber, zu verschiedenen Zeiten, für dieselbe Aktion. Das Wörterbuch führt beide, benennt den Konflikt und empfiehlt bis zur Klärung den englischen Bezeichner.
+
+**Umgesetzt:** `.github/scripts/audit/action_names_de.json` mit zehn belegten Paaren und `check_action_names.py`, das jeden Eintrag gegen die generierten Bezeichner auflöst, eine fehlende Quelle beanstandet und einen deutschen Namen für zwei Aktionen als Fehler meldet. Selbsttest gegen drei konstruierte Defekte. In der CI, weil ein stiller Nullbefund hier besonders teuer ist: Er sieht aus wie ein sauberer Baum und führt zu einer Fundstellensuche im Leeren.
+
+**Erreichter Prüfgrad:** Skriptlauf mit Selbsttest, alle zehn Einträge auflösbar. Die Richtigkeit der deutschen Namen selbst ist nicht prüfbar — der Job-Guide ist vom Egress gesperrt —, sie ruht auf der Angabe des Auftraggebers, und genau das hält das Feld `source` fest.
+
+### A81 · Konzepte auf den Sitzungsstand gebracht, Referenzen prüfbar gemacht (12.09.2026)
+
+**Anlass:** Auftrag, die Konzepte mit den Erkenntnissen dieser Sitzung kritisch zu überarbeiten, offene Punkte einzubauen und anschließend Audit, Code-Review und Ärgernisbeseitigung zu führen.
+
+**Der schwerste Fund liegt in Konzept 09.** Es führte die Schildanrechnung als erledigt — „Sonderbehandlung nicht nötig, das leistet RSR bereits" — mit der Begründung, ein abgeschirmter Tank sei weniger dringend zu versorgen als ein ungeschützter. Das ist eine Aussage über den **Rang**, und den ändert die Anrechnung nicht: Sie hebt die Gesundheitsquote und verschiebt damit die **Schwelle**, ab der überhaupt geheilt wird — auch dann, wenn der Träger der einzige Verwundete ist und es nichts zu priorisieren gibt. Derselbe Kategorienfehler wie bei `HasHostileCountAoeMitigation` (C9): ein Mechanismus am Geltungsbereich beurteilt statt an dem, was er auslöst. Das Konzept nennt jetzt die Größe — 25 Prozentpunkte, Heilung ab rund 40 % statt 65 % — und führt die Bemessung als offene Frage.
+
+**Konzept 08** nimmt die Messgröße dieser Sitzung auf: Leistung statt Kopfzahl, als Verallgemeinerung der Flächenschwelle und nicht als Bedingung daneben, mit den Faktoren aus den Wirktexten und der Begründung, warum die Betäubung draußen bleibt. **Konzept 10** erhält die dritte Gegenbedingung und verliert eine Formulierung, die die Betäubungsstreckung als voreingestellt aktiv darstellte.
+
+**Neues Prüfmittel: `check_doc_references.py`.** Im Baum standen 167 Verweise der Form `Datei.cs:123`; jede Einfügung oberhalb verschiebt sie, ohne dass etwas fehlschlägt. Das Skript prüft hart, dass die Zeile existiert, und meldet weich, wenn der im selben Satz genannte Bezeichner anderswo sitzt. **Es entscheidet nicht, was es nicht entscheiden kann:** Eine richtige Referenz darf eine Zeile im Rumpf der genannten Methode zitieren — `BaseAction.cs:257` liegt 45 Zeilen unter seinem `CanUse` und ist korrekt. Der Geltungsbereich endet am Archiv: In `AUDIT_LOG` und `CHANGELOG` ist eine damals richtige Zeilennummer eine historische Tatsache, kein Defekt.
+
+**Zwei Fehlalarme der ersten Fassung, beide vor der ersten Korrektur gefunden:** ein Satz mit zwei Referenzen, dem der Bezeichner falsch zugeordnet wurde, und Schlüsselwörter wie `true`, die dem Bezeichnermuster entsprechen. Hätte ich die Funde ungeprüft „behoben", wären drei richtige Referenzen zerstört worden. Drei tatsächlich verrutschte sind berichtigt, und zwar durch Bezeichner statt neuer Zeilennummern, die beim nächsten Einschub wieder falsch wären.
+
+**Code-Review der eigenen Sitzungsänderungen, zwei Befunde, beide in `TODO.md`:** `SurveyHostileOutput` läuft als einzige voreingestellt aktive Sanctus-Bremse bei jeder GCD-Entscheidung über alle Gegner, und die Ersatzgarantie benutzt `CanUse` als Prüfung, was `Target` als Nebenwirkung zuweist — dasselbe Muster, das am Wiederbelebungspfad eine eigene Vorkehrung nötig gemacht hat.
+
+**Erreichter Prüfgrad:** Statische Selbstprüfung und Skriptläufe. Das ist **kein** Audit im Sinne des Vier-Augen-Prinzips: Geprüft hat dieselbe Instanz, die geschrieben hat.
+
+### A82 · Zweiter Durchgang mit allen Prüfmitteln: 685 Treffer, elf Defekte (12.09.2026)
+
+**Anlass:** Der in `TODO.md` als nächster Arbeitsblock geführte zweite Durchgang mit den Skripten aus `.github/scripts/audit/` über den bereinigten Baum, nach dem Nachrüsten des fehlenden Selbsttests.
+
+**Alle 28 Skripte liefen mit Rückgabewert 0.** Die kritische Prüfung dieses Nullbefunds war der eigentliche Vorgang: Drei Skripte druckten zusammen **685 Treffer**, von denen nach Prüfung **elf** Defekte waren — `scan2.py` 541 Treffer und **null** Defekte, `scan.py` 105 Treffer und elf, `scan3.py` 79 Treffer und null. Ein Prüfmittel in diesem Zustand wird übergangen, und mit ihm der eine echte Fund.
+
+**Die Fehlerform ist in allen drei Fällen dieselbe und in `CLAUDE.md` benannt:** gemessen wurde ein Surrogat statt des Wirkungsbereichs. Eine Zeile statt der Anweisung (`Target.Target` mit dem Nullschutz eine Zeile höher), der unmittelbare Methodenrumpf statt der von ihm gerufenen Hilfsmethoden (`RotationDesc`), der Name statt des Typs (`CurrentMp` als vermeintlicher Fließkommawert), vier Zeilen Kontext statt des Rumpfs (der Nullschutz 30 Zeilen über der Division), die Zeile statt des `||`-Zweigs (die Stufen-Fallunterscheidung als Widerspruch gelesen), und der gestrippte Quelltext, in dem sieben verschiedene `ImGui`-Aufrufe zu einer siebenfach wiederholten Bedingung werden.
+
+**Drei Klassen sind gar nicht entscheidbar** und werden jetzt gezählt statt gemeldet: `usedUp: true`, `skipStatusProvideCheck: true` und der Passthrough-Override. Die ersten zwei sind Urteile über Rotationsentwurf, der dritte ist verhaltensgleich zu keinem Override — den Fall, der zählt, deckt `check_base_calls.py` ab.
+
+**`scan3.py` war das letzte Skript ohne Selbsttest**, und beide seiner strukturellen Muster erfassten genau die **richtige** Form des Gesuchten. Sein „nichts gefunden" war damit von einem defekten Muster nicht zu unterscheiden — der Zustand, den die Projektregel ausdrücklich als wertlos bezeichnet.
+
+**Nullbefunde sind gegengeprüft, nicht geglaubt.** Am echten Baum konstruiert: die `* 100f`-Umrechnung in `ObjectHelper` entfernt → die Skalenprüfung meldet sie; den `hpCount == 0`-Rücksprung in `DataCenter` stillgelegt → die Divisionsprüfung meldet beide Stellen; beide nach der Rücknahme wieder null. Das Stufen-Gate zusätzlich durch eine unabhängige Textsuche über alle drei Rotationsbäume.
+
+**Zwei neue Defektklassen kamen aus den Verengungen selbst**, beide in `TODO.md`:
+
+- **`CanUse` liefert im Vorschaulauf wahr, ohne ein Ziel zu setzen.** Die Zuweisung steht unter `if (!IBaseAction.ActionPreview)`; `TryInvoke` setzt dieses Flag und ruft darunter die echten Heil- und Verteidigungsmethoden. Sechs Stellen im Heilerbestand lesen dort ein veraltetes oder ein `default(TargetResult)`, dessen `Target` trotz nicht-nullbarer Deklaration null ist. Kein Kampffehler — der echte `Invoke` läuft mit gelöschtem Flag —, aber `UpdateHealingActions` verschluckt die Ausnahme und leert seine vier Anzeigeaktionen.
+- **Vier Vorrangregeln, die nichts entscheiden**, weil derselbe Aufruf unmittelbar danach unbedingt folgt (VPR zweimal, PCT, RDM). Bei VPR am Einführungs-Commit als *Ignorant Surgery* belegt: der äußere Zweig wurde nachgeschärft, der innere blieb stehen.
+
+**Ein Nebenbefund an den Dokumenten selbst:** `scan14.py` meldete 201 fehlende Geschwister-Ids über 18 Listen, während README und `TODO.md` 186 über 16 als geltenden Stand führten. Die Zahl war nicht durch Vernachlässigung gestiegen, sondern **durch die Behebung** — jede ergänzte Id gibt weiteren Gruppen einen Vertreter und macht deren Geschwister überhaupt sichtbar. Dieselbe Alterung wie bei einem Zeilenverweis, nur ohne Prüfmittel dagegen; die Regel dazu steht jetzt in `CLAUDE.md`.
+
+**Erreichter Prüfgrad:** Statische Selbstprüfung, Skriptläufe mit Selbsttest, Gegenprobe am konstruierten Defekt, und für den Generator ein echter Compile in der CI. Kein Vier-Augen-Prinzip: geprüft hat dieselbe Instanz, die geschrieben hat.
+
+---
+
+### A83 · Die Schildanrechnung steht hinter einem Schalter, Standard aus (12.09.2026)
+
+**Anlass:** Der Auftraggeber meldete, ein Dunkelritter sei in einer Stufe-99-Instanz „sehr reduziert geheilt" worden — wenig oGCDs, hauptsächlich der HoT. Die Erhebung fand zwei Mechanismen, die beim Dunkelritter die Heilschwelle senken, und nur einer davon war eine Fork-Änderung ohne Schalter.
+
+**Behoben ist der Regelverstoß, nicht die Sachfrage.** `ShouldHealSingle` rechnete in beiden Zweigen den Restschild über `GetEffectiveHpPercent` auf die Gesundheitsquote — schalterlos, während Upstream keinen Schild anrechnet. Die Projektregel verlangt für eine Verhaltensänderung ohne Nachweismöglichkeit das bisherige Standardverhalten und eine abschaltbare Einstellung; beides fehlte. `CreditShieldToEffectiveHp` ist ergänzt, voreingestellt **aus**, mit der Begründung am Code statt in einer Optionsbeschreibung allein.
+
+**Die Größe war gerechnet und der Grund benannt, bevor der Schalter gebaut wurde:** The Blackest Night erzeugt laut `ActionId.resx` (Aktion 7393) 25 % der maximalen HP als Barriere über 7 s und steht in `ShieldStatus`; die oGCD-Schwelle liegt bei `HealthSingleAbility` 0,70, mit laufendem HoT auf 0,65 interpoliert. Ein Dunkelritter mit frischer Barriere erreicht sie damit erst bei real rund 40 % statt 65 %. Im Wall-to-Wall ist `ShieldCreditAllowed` über `IsHostileCastingAOE` nahezu durchgehend erfüllt.
+
+**Der Einwand, der den Ausschlag gab, stammt vom Auftraggeber** (C46): Falsch, unnötig oder zu spät gezündete Barrieren sind der häufige Fall, nicht der harmlose. Bei real 45 % ergibt eine frische Barriere 70 % effektiv und schaltet die oGCD-Heilung genau im Moment der größten Not ab — und `ShieldCreditAllowed` prüft nur, ob **irgendein** Gegner eine Flächenaktion wirkt, nicht, ob der Barrierenträger ihr Ziel ist.
+
+**Nicht behoben, bewusst:** Die zweite Absenkung — `LivingDead` in `NoNeedHealingStatus` drückt die Schwelle zehn Sekunden lang auf `HealthProtectedRatio` 0,15 — bleibt, weil sie die **mildere** Fassung des Upstream-Verhaltens ist (dort gibt es unter Invulnerabilität gar keine Heilung). Ihr Stellhebel ist die vorhandene Nutzereinstellung, und der richtige Wert ist nicht aus dem Code zu begründen. Ebenso bleibt `HasSurvivingShield` bei der kürzesten Schildrestzeit: Die Umkehr auf das Maximum tauscht den Fehler nur aus, und die heutige Richtung kostet eine überflüssige Heilung statt eines Todes.
+
+**Erreichter Prüfgrad:** Statische Selbstprüfung, `check_cs_structure`, `scan18` (die neue Einstellung hat einen Leser), `scan4` (Bereich/Vorgabe stimmig), Compile in der CI. **Die Wirkung ist nicht gemessen** — genau dafür ist der Schalter da: zwei Durchläufe derselben Instanz, einer je Stellung.
+
+---
+### A84 · `HardCastOnlyHealer` hält jetzt den Spontanitäts-Vorbehalt, den sein Text verspricht (12.09.2026)
+
+**Anlass:** Offener Punkt aus dem Wiederbelebungsvorgang. Der Optionstext lautet „Raise while Swiftcast is on cooldown and other healers are dead"; geprüft wurde allein der zweite Teil.
+
+**Der Beleg steckt im Raster, nicht in der einzelnen Zeile.** `HardCastRaiseType` führt vier Hartwirk-Modi, und **jede** ihrer Beschreibungen beginnt mit „Raise while Swiftcast is on cooldown". Der Vorbehalt ist also allen gemeinsam, unterschieden wird nach zwei unabhängigen Zusätzen — „andere Wiederbeleber tot" und „Abklingzeit größer als Wirkzeit". Drei der vier prüfen ihn: `HardCastNormal` als `!SwiftcastComingForRaise`, `HardCastSwiftCooldown` und `HardCastOnlyHealerSwiftCooldown` in der Fassung mit Wirkzeit-Abwägung. `HardCastOnlyHealer` war die einzige Lücke.
+
+**Welche der beiden Fassungen fehlte, sagt die Symmetrie:** `HardCastOnlyHealer` verhält sich zu `HardCastNormal` wie `HardCastOnlyHealerSwiftCooldown` zu `HardCastSwiftCooldown` — jeweils plus „andere Wiederbeleber tot". Sie erbt damit die **einfache** Form `!SwiftcastComingForRaise`, nicht die abwägende. Das ist keine Wahl, sondern die Fortsetzung des vorhandenen Rasters.
+
+**Zwei Fundstellen**, beide Dispatch-Zweige in `CustomRotation_GCD` (Spieler zuerst und Gruppe), gleich behandelt.
+
+**Zwei eigene Fehlschlüsse auf dem Weg dorthin, beide vor dem Eingriff bemerkt:** Zuerst schien die Existenz von `HardCastOnlyHealerSwiftCooldown` dafür zu sprechen, dass der Vorbehalt bei `HardCastOnlyHealer` **absichtlich** fehlt — die beiden Modi wären sonst identisch. Das Lesen des Enums widerlegte es: Sie unterscheiden sich durch die Wirkzeit-Abwägung, nicht durch den Vorbehalt. Umgekehrt war die frühere Empfehlung im TODO-Eintrag richtig, aber falsch begründet; sie stützte sich auf dieselbe Existenz des zweiten Modus, ohne die Beschreibungen aller vier gelesen zu haben.
+
+**`!SwiftcastComingForRaise` statt `IsCoolingDown`** ist die Fassung aus A56: `RaisePlayerBySwift && !IsCoolingDown`, negiert also „die Rotation wird Spontanität noch für die Wiederbelebung ausgeben". Mit ausgeschalteter Option wird Spontanität nie ausgegeben, kommt nie in Abklingzeit, und der rohe `IsCoolingDown`-Vorbehalt hätte den Hartwirk-Zweig dauerhaft gesperrt — die Sackgasse, die dort behoben wurde.
+
+**Erreichter Prüfgrad:** Statische Selbstprüfung, `check_cs_structure`, `scan17` (keine Kollision mit der Ausführungssperre), Compile in der CI. Nicht im Spiel beobachtet.
+
+---
 ## B · Commit-Register (Fork vs. `upstream/main`)
+
+### B1 · Einzelgeprüfte Fork-Commits
 
 Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt es Besseres. Ausgenommen: Marker-Bumps, Merge-Commits, Netto-Null-Revert-Paare (5ae845b+37e47d0, 4358fc0+c82ea88, 6ebdb14+27abd85, 6717e5d+4e09493), Doku-Commits.
 
@@ -1753,6 +2350,106 @@ Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt e
 | A10: ad00090e · efc4d039 · d0523a8d · 331c1254 · f2384007 · 6189c4cb · 5de07717 | Codebasis-Audit Phasen 2–4 | s. A10 |
 | A11: 8dc2bd65 · 06c60e97 · 33f8cdff · 364433e6 | Entscheidungsvorlage E1–E4 | s. A11 |
 
+### B2 · Commits vom 11. und 12. September 2026 — ZWEIFELHAFT
+
+**Anlass:** Auftrag vom 12.09.2026: „aktuell alle commits von dir, welche am 11.09. und am 12.09 erstellt wurden als zweifelhaft vormerken, damit sie überprüft werden können, wenn du wieder vernünftig arbeitest". Die Vormerkung ist eine Aussage über den **Prüfstand**, keine inhaltliche Bewertung: Kein Commit dieser Liste ist damit widerlegt und keiner bestätigt. Was Teil A zu diesen Commits ausweist, stammt aus denselben beiden Tagen und ist Selbstauskunft; es ersetzt die Nachprüfung nicht und ist bei ihr mitzuprüfen.
+
+**Erhebung am 13.09.2026** gegen `HEAD` von `claude/raise-swiftcast-weave-2` (`4973b9d0c`): `git log --no-merges --author=Claude`, Fenster 11.–12.09.2026. Commit- und Autorendatum wählen dieselbe Menge aus (geprüft, Mengen identisch). Ergebnis: **73 eigene Commits ohne Merges**, dazu **5 eigene Merge-Commits**. Nicht enthalten und nicht betroffen sind die Commits von LTS-FFXIV aus demselben Fenster (`9ff7238c0`, `7cf074a18`, `6baba6a94`) — Upstream-Arbeit.
+
+**Lage im Baum, gemessen am selben Tag:** 72 der 73 liegen ausschließlich auf `claude/raise-swiftcast-weave-2` und sind dort noch änderbar; `50e50e5e3` ist der Kopf von `origin/main` und damit bereits im Standardzweig.
+
+**Spalte „Art"** nennt den stärksten Artefakttyp, den ein Commit berührt. Je Datei gilt die erste zutreffende Zuordnung: `RotationSolver.GameData/` → Generator · `.github/scripts/` → Prüfmittel · `.github/workflows/` → CI · `*.cs`, `*.csproj`, `*.resx`, `Resources/` → Code · `*.md` → Doku · sonst sonstiges. Je Commit gilt davon die erste in der Reihenfolge Code → Generator → CI → Prüfmittel → Doku → sonstiges. Die Spalte ordnet die Nachprüfung, sie ersetzt das Lesen des Diffs nicht.
+
+| Commit | Datum | Art | Betreff | Prüfstand |
+|---|---|---|---|---|
+| `9188ca490` | 2026-09-11 | Code | Ask the game about the feather, and ask everyone about their level | ZWEIFELHAFT |
+| `7606f3cbd` | 2026-09-11 | Code | Ask the only-healer modes whether anyone else can raise at all | ZWEIFELHAFT |
+| `93789065c` | 2026-09-11 | Code | feat(SMN): widen the Searing Light window when a second Summoner is present | ZWEIFELHAFT |
+| `e0ec82d74` | 2026-09-11 | Code | Hard cast the raise when Swiftcast is not coming at all | ZWEIFELHAFT |
+| `6e0c3bfc5` | 2026-09-11 | Code | Repair the file the move broke, and check for that class from now on | ZWEIFELHAFT |
+| `95f0139c1` | 2026-09-11 | Code | Say what the feather setting now actually does | ZWEIFELHAFT |
+| `c3e1126e7` | 2026-09-11 | Code | Wire up Phoenix Down, and stop it spending two feathers | ZWEIFELHAFT |
+| `78856488b` | 2026-09-12 | Code | Correct the ten-second claim, and name the lever the rule actually has | ZWEIFELHAFT |
+| `2ebd54728` | 2026-09-12 | Code | feat(WHM): hold Holy while the pack is slowed, the rule's third timing | ZWEIFELHAFT |
+| `da96afac1` | 2026-09-12 | Code | feat: weigh a hostile's remaining output, not just whether it is slowed | ZWEIFELHAFT |
+| `6b27618d2` | 2026-09-12 | Code | fix(WHM): the slow hold asks for a majority inside Holy's radius | ZWEIFELHAFT |
+| `28fe2c9e0` | 2026-09-12 | Code | fix(WHM): the slow hold counts the enemies the slow has not reached | ZWEIFELHAFT |
+| `115a58988` | 2026-09-12 | Code | fix(WHM): weigh the slow hold by enemy output, not by head count | ZWEIFELHAFT |
+| `934b222b0` | 2026-09-12 | Code | fix: decide the Reprisal grade by level, not by status id | ZWEIFELHAFT |
+| `8a88ec299` | 2026-09-12 | Code | fix: Enhanced Reprisal extends the duration only, not the reduction | ZWEIFELHAFT |
+| `c99da333a` | 2026-09-12 | Code | Give HardCastOnlyHealer the Swiftcast reservation its text promises | ZWEIFELHAFT |
+| `9e1a0eb9e` | 2026-09-12 | Code | Put the shield credit behind a switch, default off | ZWEIFELHAFT |
+| `a8ba8b0ed` | 2026-09-12 | Code | Write out the ordinals PredictedDamageType owes a foreign plugin | ZWEIFELHAFT |
+| `92bad597e` | 2026-09-12 | Generator | feat(gamedata): generate the full German name index from the game files | ZWEIFELHAFT |
+| `bddeb5e03` | 2026-09-12 | Generator | Read German names through the language argument, and resolve the game path | ZWEIFELHAFT |
+| `2c6f2b5c1` | 2026-09-11 | CI | Name the upstream release the tree actually holds, and check it in CI | ZWEIFELHAFT |
+| `08b8c82a4` | 2026-09-11 | CI | Take in upstream 7.5.6.2, and fix how sync state gets measured | ZWEIFELHAFT |
+| `d4e81f70f` | 2026-09-12 | CI | feat(audit): check that the documentation's line references still exist | ZWEIFELHAFT |
+| `f13b812a2` | 2026-09-12 | CI | feat(audit): record the German action names instead of researching them again | ZWEIFELHAFT |
+| `a90fb264e` | 2026-09-11 | Prüfmittel | docs: at range the Ifrit block loses Crimson Strike with the approach | ZWEIFELHAFT |
+| `dca7bd913` | 2026-09-11 | Prüfmittel | docs: measure what each Summoner phase is worth and what fits in the buff tail | ZWEIFELHAFT |
+| `a48b67d24` | 2026-09-11 | Prüfmittel | docs: Swiftcast is held for raises, not spent in the rotation | ZWEIFELHAFT |
+| `befbb3ebf` | 2026-09-11 | Prüfmittel | Drop the bookkeeping, then check coverage against damage | ZWEIFELHAFT |
+| `a7075ea4b` | 2026-09-11 | Prüfmittel | Measure burst coverage on its own, because a total would hide the loss | ZWEIFELHAFT |
+| `8bcaaea32` | 2026-09-11 | Prüfmittel | Measure the Searing Light coverage instead of estimating it | ZWEIFELHAFT |
+| `e81195537` | 2026-09-11 | Prüfmittel | Narrow the range to real parties, which reverses the V5 verdict | ZWEIFELHAFT |
+| `d1763e2f3` | 2026-09-11 | Prüfmittel | Regulate on what is observed instead of steering by assumption | ZWEIFELHAFT |
+| `e5fc338c2` | 2026-09-11 | Prüfmittel | Work out what happens to Searing Light with two to eight Summoners | ZWEIFELHAFT |
+| `2bb009344` | 2026-09-12 | Prüfmittel | Catch the neighbour class of HasWeaved: GCDTime() == 0f | ZWEIFELHAFT |
+| `cb5db4452` | 2026-09-12 | Prüfmittel | docs: record Rampart's healing bonus and the dictionary entry for Schutzwall | ZWEIFELHAFT |
+| `4455fa2bb` | 2026-09-12 | Prüfmittel | Guard the class where an edit to Resources/ is never loaded | ZWEIFELHAFT |
+| `c962a1366` | 2026-09-12 | Prüfmittel | Make scan.py measure the defect too, and record what that turned up | ZWEIFELHAFT |
+| `165e69e09` | 2026-09-12 | Prüfmittel | Make scan3 measure the defect, not the resemblance | ZWEIFELHAFT |
+| `5748a9ddd` | 2026-09-12 | Prüfmittel | Narrow scan2: 541 findings, not one of them a defect | ZWEIFELHAFT |
+| `374534aa0` | 2026-09-12 | Prüfmittel | Repair nine aged code citations, and the two blind spots that hid them | ZWEIFELHAFT |
+| `a70fe20b7` | 2026-09-12 | Prüfmittel | Stop documenting measured numbers as the current state | ZWEIFELHAFT |
+| `1c2f67d2e` | 2026-09-12 | Prüfmittel | Teach scan6 the binding that made its own classification wrong | ZWEIFELHAFT |
+| `6cd15453a` | 2026-09-11 | Doku | Bring the raise concept up to the state it actually describes | ZWEIFELHAFT |
+| `e7c0dca6e` | 2026-09-11 | Doku | docs: a missing check run is a finding, not a coincidence | ZWEIFELHAFT |
+| `aeea25b0a` | 2026-09-11 | Doku | docs: downtime was listed as a model limit and is none | ZWEIFELHAFT |
+| `138e7c1b8` | 2026-09-11 | Doku | docs: one branch per topic is not required, the commit is the unit | ZWEIFELHAFT |
+| `714b899e1` | 2026-09-11 | Doku | docs: record the AccessViolationException catches upstream did not harden | ZWEIFELHAFT |
+| `539b7bda3` | 2026-09-11 | Doku | docs: record the verification actually reached for the Searing Light change | ZWEIFELHAFT |
+| `5702d695c` | 2026-09-11 | Doku | Record the first play observation, and what it does not cover | ZWEIFELHAFT |
+| `5c94ecf29` | 2026-09-11 | Doku | Record the Swiftcast-unavailable finding in the audit log | ZWEIFELHAFT |
+| `3a233b03c` | 2026-09-11 | Doku | The raise defect is confirmed fixed in play | ZWEIFELHAFT |
+| `6ab021908` | 2026-09-11 | Doku | Walk every raise use case, and record what falls out | ZWEIFELHAFT |
+| `0bff1c175` | 2026-09-11 | Doku | Wind up the orphaned branches, keeping what one of them carried | ZWEIFELHAFT |
+| `d274d54de` | 2026-09-11 | Doku | Work the Searing Light question again, from the timing structure up | ZWEIFELHAFT |
+| `59675ee33` | 2026-09-12 | Doku | Add A84 to the raise path's list of unmeasured interventions | ZWEIFELHAFT |
+| `aeea1e7e6` | 2026-09-12 | Doku | docs: a misplaced barrier inverts the shield credit, and nothing catches it | ZWEIFELHAFT |
+| `52af29a53` | 2026-09-12 | Doku | docs: bring concepts 08, 09 and 10 onto the state this session established | ZWEIFELHAFT |
+| `e66bd3f79` | 2026-09-12 | Doku | docs: Holy ignores running enemy debuffs - stun only on request, slow never | ZWEIFELHAFT |
+| `bd4f4046e` | 2026-09-12 | Doku | docs: record the concept pass and two findings from reviewing my own changes | ZWEIFELHAFT |
+| `58cf8f8f6` | 2026-09-12 | Doku | docs: record the output-weighted slow rule and its three predecessors | ZWEIFELHAFT |
+| `2c2e3f0d3` | 2026-09-12 | Doku | docs: survey every dark knight defensive against the healing decision | ZWEIFELHAFT |
+| `87e6d8f4d` | 2026-09-12 | Doku | docs: the shield credit lowers the heal threshold by the full barrier, unswitched | ZWEIFELHAFT |
+| `56bf37581` | 2026-09-12 | Doku | docs: the shield credit needs no foreign barrier, the healer makes its own | ZWEIFELHAFT |
+| `8d8176695` | 2026-09-12 | Doku | Move the finished second pass into the archive | ZWEIFELHAFT |
+| `1f9ac197e` | 2026-09-12 | Doku | Raise the per-read iteration finding from one case to its class | ZWEIFELHAFT |
+| `5b87c32fc` | 2026-09-12 | Doku | Record the mitigation balance's two-way split of a three-way fact | ZWEIFELHAFT |
+| `8bceac769` | 2026-09-12 | Doku | Record the one candidate a sweep of DataCenter's 179 members turned up | ZWEIFELHAFT |
+| `1070d53d6` | 2026-09-12 | Doku | Record the two code sites that work against the phase-2 staggering | ZWEIFELHAFT |
+| `2cc1329b8` | 2026-09-12 | Doku | Repair the sentence the citation removal broke | ZWEIFELHAFT |
+| `bc893957b` | 2026-09-12 | Doku | Retract the second fork effect on the healing threshold: it is upstream | ZWEIFELHAFT |
+| `4973b9d0c` | 2026-09-12 | Doku | Take my interpretation back out of concept 09 | ZWEIFELHAFT |
+| `c025e0802` | 2026-09-11 | sonstiges | chore: name the upstream release this tree sits on, 7.5.6.4 | ZWEIFELHAFT |
+| `50e50e5e3` | 2026-09-11 | sonstiges | Name the release this tree holds, after taking in 7.5.6.2 | ZWEIFELHAFT |
+
+Code 18 · Generator 2 · CI 4 · Prüfmittel 18 · Doku 29 · sonstiges 2 · insgesamt: 73
+
+**Eigene Merge-Commits desselben Fensters, ebenfalls ZWEIFELHAFT** (Konfliktauflösungen sind darin nicht sichtbar und beim Nachprüfen eigens zu lesen):
+
+| Commit | Datum | Inhalt |
+|---|---|---|
+| `394695427` | 2026-09-11 | Merge `upstream/main` |
+| `bee5fe92a` | 2026-09-11 | Merge `upstream/main` |
+| `faef4f04d` | 2026-09-11 | Merge `upstream/main` |
+| `fc41210ce` | 2026-09-11 | Merge `upstream/main` |
+| `60eb6d106` | 2026-09-11 | Merge `origin/main` |
+
+Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung — steht in `TODO.md`.
+
 ---
 
 ## C · Widerrufene Aussagen dieses Archivs
@@ -1793,3 +2490,24 @@ Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt e
 | C32 | A50, erste Fassung: der Weißmagier solle Sanctus **nicht** zurückhalten, während die Barriere des Dunkelritters läuft — begründet mit einer wechselseitigen Sperre und mit dem Vorrang des Gruppenschutzes | Beide Gründe tragen nicht. Die Sperre wurde behauptet, nicht als Zustandsfolge ausgeschrieben: Jede der beiden Regeln wartet nur, während der Zustand der anderen aktiv ist, und beide Zustände laufen von selbst ab (Betäubung vier Sekunden, Barriere sieben) — ein Zustand, in dem beide aufeinander warten, ist nicht erreichbar. Und der Gruppenschutz ist im Wall-to-Wall keiner: Die Aggro liegt beim Tank, der Schaden also auch, und derselbe Tank trägt die Barriere — die Betäubung verhindert genau den Schaden, den die Barriere aufgefangen hätte. Statt doppeltem Schutz entsteht doppelte Verschwendung: Barriere und Dark Arts verfallen, das Betäubungsbudget ist verbraucht. Der Auftraggeber hat widersprochen („Wenn tdn an ist und der Buff beim Dunkelritter läuft, schadet Holy mehr als es hilft"). Lehre: Die Warnung vor einer wechselseitigen Sperre ist selbst eine Aussage über einen Zustandsautomaten und verlangt dieselbe Auswertung wie jede andere — dieselbe Vorgabe, an der schon `applyToggle` gescheitert ist | A50: `ShouldHoldHolyForBarrier()` hinter `HoldHolyForBlackestNight`, begrenzt auf laufenden Betäubungsspielraum und die Restdauer der Barriere |
 | C33 | C30 und A51 zur Rollenaktion Arm's Length (deutsch **Rückstoß**, Stufe 32): erst Shirk zugeordnet, dann in A51 als „nicht entscheidbar" geführt, weil die Namensquellen vom Egress gesperrt sind — und die Frage dem Auftraggeber erneut vorgelegt | Dreifach falsch, und jede Stufe war vermeidbar. Die Zuordnung zu Shirk war schon in C30 widerlegt; A51 beschrieb die Wirkung selbst richtig (Verlangsamung, gehört zu Arm's Length) und schloss daraus nicht auf die Aktion; und die daraus folgende Rückfrage stellte etwas erneut, das der Auftraggeber bereits beantwortet hatte. Anschließend wurde für dieselbe Aktion der deutsche Name „Armlänge" **erfunden** — eine Ad-hoc-Übersetzung, also genau das, was die Namensregel seit dem Ex-Machina-Fall untersagt. Gesperrte Quellen sind kein Grund, eine Angabe des Auftraggebers als offen zu führen, und erst recht keiner, einen Namen selbst zu bilden. Lehre: ein deutscher Name wird nie gebildet, nur belegt oder von ihm übernommen; liegt keiner vor, steht der englische Bezeichner (in CLAUDE.md aufgenommen) | A53: `armsLengthDone` als zweite Stufe der Reihenfolgebedingung, Arm's Length wird im Pull gewirkt, „Armlänge" repo-weit ersetzt |
 | C34 | A51 und A52: die Fork-Versionsnummer sei durch Nachziehen auf 7.5.6.1 und ein Prüfskript hinreichend behandelt | Nicht hinreichend. Der Auftraggeber compiliert aus den Fork-Quellen und will der Anzeige entnehmen, welchen Upstream-Stand der Build enthält; eine handgepflegte Zahl beantwortet das nur bis zum nächsten Sync, den jemand vergisst — und genau das war eingetreten. Ein Prüfskript, das niemand aufruft, ist kein Ersatz für eine Ableitung. Die Zahl steht jetzt aus `git describe` und stimmt bei jedem Build von selbst. Lehre: Wo eine Zahl eine Tatsache im Repository spiegelt, ist sie abzuleiten, nicht zu pflegen; die Behebung des Einzelfalls ist erst dann vollständig, wenn die Wiederholbarkeit adressiert ist | A53: Target `DeriveUpstreamVersion` in `Directory.Build.props` |
+| C35 | A54, vier aufeinanderfolgende Fassungen zur Ursache der ausbleibenden Wiederbelebung: (a) die Zufallsverzögerung `RaiseDelay2`, (b) `IsTargetMoving` auf der Leiche in `GetDeath`, (c) die Anvisierbarkeitsprüfung, (d) die Wirkzeitsperre bei eigener Bewegung in `NeedsCasting` | Alle vier falsch, alle vier vom Auftraggeber mit je einem Satz widerlegt: die Werte stehen auf 0; die Toten liegen ruhig; sie sind anvisierbar; es tritt im Stehen wie im Laufen auf. Die vierte war die schlechteste: Sie wurde aufgestellt, **nachdem** er „ich stehe mal, und mal bewege ich mich" gesagt hatte, also aus einer Aussage, die die Bewegung gerade als Variable ausschloss — und nach seinem „falsch." ein zweites Mal vertreten. Gemeinsame Ursache aller vier: Es wurde die Kette von der Datenquelle zur Aktion vorwärts gelesen und beim ersten plausibel aussehenden Filter angehalten, statt zu fragen, welche Beobachtung die Hypothese widerlegen würde. Entschieden hat der Fall erst eine Beobachtung, die vorher nicht erfragt worden war — „im Vorschaufenster erscheint Spontanität und wird nie gewirkt" —, und die beweist, dass die Auswahl gelang und der Defekt dahinter lag. Lehre: Liegt ein Laufzeitbeobachter vor, ist zuerst zu erheben, **was er sieht**, statt Hypothesen zu bilden, die er längst ausgeschlossen hat; und eine Nutzeraussage, die eine Variable ausschließt, ist ein Beleg und keine Bestätigung der eigenen Vermutung | A54: Ursache in der Kollision von Auswahl- und Ausführungsfenster belegt, Behebung im Einschiebepfad, `scan17.py` als Schranke |
+| C36 | A54 und PR #7: `GetPriorityDeathTarget` prüfe `deathTanks.Count > 1`, wo `> 0` gemeint sei — als Nebenfund gemeldet und in `TODO.md` mit einer Empfehlung versehen | Kein Defekt. Die Entstehungsprüfung wurde erst nach der Meldung geführt und ergab, dass `9190888d` den Block vollständig neu schrieb — es gibt keine Vorgängerzeile, die `> 0` gelautet hätte, also auch keinen Umbau, bei dem eine Null verlorengehen konnte. Inhaltlich ist die Staffelung eine begründete Fallunterscheidung: Ein toter Tank lässt den Co-Tank halten, dann ist der Heiler das dringendere Ziel; zwei tote Tanks lassen niemanden halten, dann geht der Tank vor. Der Fund entstand daraus, dass eine ungewöhnliche Zahl als Tippfehler gelesen wurde, ohne die Gegenhypothese zu prüfen, dass sie Absicht ist — dieselbe Form wie der Kalibrierungsbeleg zu CountAllianceTanks. Lehre: Eine auffällige Konstante ist ein Anlass zur Prüfung, kein Befund; erst die Entstehungs- und Absichtsprüfung entscheidet, und sie gehört **vor** die Meldung, nicht danach | Eintrag aus `TODO.md` ersatzlos entfernt, PR-Beschreibung berichtigt |
+| C37 | A54/A55 und PR #7: der Wiederbelebungspfad sei behoben — Ursache belegt, Umsetzung compile- und skriptgrün, Prüfgrad als „begründet, nicht gemessen" benannt | Die Umsetzung war im Spiel **schlechter als der Defekt** und ist vollständig zurückgenommen. Der Auftraggeber hat den Branch kompiliert und gemeldet: keine Wiederbelebung **und** kein Schimmerschild mehr. Ursache: Die Änderung stellte die Meldung des Wiederbelebungszaubers von „fast nie" auf „fast immer" um. Damit endete der GCD-Dispatcher, solange ein Toter in Reichweite lag, in seinem Wiederbelebungsblock (`return act` vor Heilung und Schaden bei `RaisePlayerFirst`) — und `nextGCD` war für den gesamten Fähigkeitenpfad die Wiederbelebung statt des normalen Zaubers, wodurch jeder Zweig, der `nextGCD` liest, anders entschied; beim Beschwörer fiel so Radiant Aegis aus. Die gleichzeitige `CanBeRaised`-Lockerung verschärfte es, weil `AutoStatus.Raise` dadurch häufiger stand. **Der methodische Fehler ist nicht die Analyse, sondern die Wirkungsprüfung:** Die Meldung eines GCD wurde als folgenloser Hinweis behandelt, obwohl sie den Dispatcher beendet **und** die Eingabe des gesamten Fähigkeitenpfads ist. Die Change Impact Analysis erhob den Weg der Wiederbelebung, nicht den Kreis der `nextGCD`-Leser. Zweiter Fehler: Der als „begründet, nicht gemessen" benannte Prüfgrad wurde zwar ehrlich ausgewiesen, aber nicht als Grund behandelt, die Änderung zurückzuhalten, statt sie zum Bauen freizugeben. Lehre: Wo eine Änderung die Eingabe einer nachgelagerten Entscheidungskette verschiebt, ist der Betroffenenkreis diese Kette — sie ist vor der Umsetzung auszuzählen; und ein Eingriff in den zentralen Dispatcher gehört nicht ohne Laufzeitbeobachtung in einen Branch, den der Auftraggeber baut | Code auf `main`-Stand zurückgesetzt, Defekt in `TODO.md` als offen geführt, `scan17.py` führt die Stelle als bekannt-offen, Konzept 11 auf den gescheiterten Versuch umgeschrieben |
+| C38 | A59 und der Codekommentar in `UsePhoenixDown`: eine Verdrahtung nach Hausmuster hätte „zwei Federn für eine Leiche" verbraucht | Als Tatsache ausgegeben, was eine Inferenz war. Belegt ist allein, dass `UseAction` in einem Frame zweimal aufgerufen worden wäre — einmal in `UsePhoenixDown`, einmal in `DoAction`. Ob daraus zwei Verbräuche werden, ist von dieser Seite nicht entscheidbar. Die Fremddokumentation stützt den Verdacht allerdings deutlicher als der ursprüngliche Text: `UseAction` reiht eine während einer Sperre eintreffende Aktion ein, statt sie zu verwerfen. Unabhängig davon bleibt der zweite, belegbare Grund, den der Kommentar gar nicht nannte — `DoAction` verbucht das Ergebnis des zweiten Aufrufs als das Ergebnis, sodass `CurrentAction`, `_lastActionID` und `_lastUsedTime` einem Aufruf folgen, der nichts getan hat. Lehre: Eine Folge, die aus Spielinterna erst entstehen müsste, ist als Inferenz zu kennzeichnen, auch wenn die daraus abgeleitete Korrektur richtig bleibt | Kommentar und Konzept auf die belegbare Aussage zurückgeführt; die Entfernung des `Use()`-Aufrufs bleibt |
+| C39 | A59, Begründung der Federverdrahtung: `ObjectHelper.CanBeRaised` sei für Federträger die falsche Prüfung und habe sie **blockiert**, weil ein Tank oder Schadensjob `RaisePvE` nicht besitzt | Die Blockade ist durch die Beobachtung des Auftraggebers widerlegt: Er erlebt Wiederbelebungen als Beschwörer, der `RaisePvE` ebenfalls nicht besitzt — `CanUseActionOnTarget` antwortet also nicht nach Erlernbarkeit. Die Umstellung auf die Item-Statusfrage bleibt richtig, aber als Gewinn an Genauigkeit (Reichweite, Inhaltsverbot, laufender Wiederbelebungsstatus), nicht als Beseitigung einer Sperre. Lehre: Eine Beobachtung des Auftraggebers aus dem laufenden Vorgang ist auch dann als Beleg heranzuziehen, wenn sie zu einem anderen Zweck berichtet wurde | Begründung in Konzept und A60 korrigiert; Code unverändert |
+| C40 | Bericht vom 11.09.2026: „Upstream ist 21 Commits weiter … `DataCenter.cs` hat 262 geänderte Zeilen, und genau dort liegt der neue Helfer", mit der Empfehlung, den Sync bis nach dem Spieltest zu verschieben | Beide Zahlen stammen aus einer Messung gegen die **lokale** `main`, die seit dem 18.08.2026 nicht fortgeschrieben war — `git branch -vv` wies sie als „behind 382" aus. Gemessen gegen `origin/main` sind es **zwei** Commits, und die 262 Zeilen waren längst eingearbeitet; ausstehend waren 183 Zeilen Beastmaster-Zustand in einem Bereich, der die Helfer dieses Vorgangs nicht berührt. Zwei Abweichungen von der eigenen Regel in einer Zeile: `CLAUDE.md` schreibt `upstream/main...HEAD` vor, benutzt wurde `...main`; und gefetcht wurde nur `upstream`, nicht `origin`. Lehre: In einer dauerhaften Arbeitskopie ist eine lokale Zweigreferenz nie ein Zustandsnachweis, auch nicht für den eigenen Standardzweig | Zahlen korrigiert (A62), Messung durch `check_sync_state.py` abgesichert (A63), Regel in `CLAUDE.md` verschärft |
+| C41 | A69 und das Konzept `12-searing-light-stacking.md`: „Die Abdeckung bleibt auch mit V2 bei 33 % statt der theoretisch möglichen 100 %" | Gilt nur für den synchronen Pull. Gemessen erreicht V2 bei auseinandergelaufenen Rotationen 90 % (sieben Beschwörer) und 96 % (acht). Die Aussage widersprach dem Versatz-Abschnitt desselben Dokuments, der die Streuung der Fenster als Gewinn beschreibt — ein innerer Widerspruch, den der Auftraggeber mit einer Überschlagsrechnung aufgedeckt hat. Lehre: Eine Prozentzahl aus dem Kopf ist eine Schätzung und als solche zu kennzeichnen oder zu messen; hier war ein Modell in einer Stunde gebaut | Konzept korrigiert, `searing_light_coverage.py` als Prüfmittel angelegt (A70) |
+| C42 | Konzept `12-searing-light-stacking.md`, Versatz-Abschnitt: „Eine ausdrückliche Staffelung zwischen den Spielern ist weder nötig noch möglich — kein Client kennt die Wiederholzeiten der anderen" | Der Auftraggeber hat widersprochen: Man weiß zwar nicht, wann ein anderer zünden wird, aber ab seiner ersten Zündung, wann er frühestens wieder kann. Die Information liegt im Status selbst — `IStatus.SourceId` benennt den Urheber, und `StatusHelper.PlayerGetStatus` liest ihn bereits für die Unterscheidung eigener und fremder Buffs. Die Aussage war damit durch Code widerlegt, den dieses Dokument an anderer Stelle selbst zitiert. Lehre: Eine Unmöglichkeitsbehauptung ist gegen die Daten zu prüfen, die das eigene System ohnehin liest | Als V5 ausgearbeitet, gemessen und mit anderer Begründung verworfen (A70) |
+| C43 | A72 und das Konzept: V6 sei nötig, weil V5 „nicht vergisst" — wer einmal gezündet hat, stehe dauerhaft in den Büchern und halte die anderen von einer Lücke zurück, die er nie füllt | Der Auftraggeber hat die Prämisse widerlegt: Die anderen haben eigene Abklingzeiten und können ohnehin nicht vor ihrem eigenen Fenster zünden, es gibt also nichts, wovon sie zurückzuhalten wären. Gemessen liefert die Fassung **ohne jede Buchführung** überall dieselben Werte wie V5 und V6, im Ausfallszenario eingeschlossen; bei sieben und acht Beschwörern ist die Buchführung sogar aktiv schädlich (46 gegen 100 Prozent). Nicht nur V6 war überflüssig, sondern die ganze Beobachtungsmechanik. Lehre: Bevor eine Konstruktion Information sammelt, ist zu zeigen, dass die Entscheidung ohne sie anders ausfiele | V5 und V6 verworfen, V7 an ihre Stelle; Invariante im Selbsttest verankert (A74) |
+| C44 | A76 und das Konzept `12-searing-light-stacking.md`: Empfehlung, `SummonOrder` auf `Ruby-Emerald-Topaz` umzustellen, damit Ifrit im Bufffenster zuerst gerufen wird | Der Auftraggeber hat das Positionsrisiko benannt: Der Anlauf von Crimson Cyclone in eine Burstphase ist gefährlich, Titan ist sicher und erlaubt Bewegung. Die Vorlage hatte dieses Risiko zwar benannt, aber nur gegen die Automatisierung gewendet und die manuelle Umstellung trotzdem empfohlen — ein Widerspruch in derselben Vorlage. Zwei Folgen waren zudem ungerechnet: Ohne Crimson Cyclone entfällt auch Crimson Strike, das erst daraus entsteht (Ifrit-Block 2040 statt 3160 Potenz), und der Ersatz auf dem zweiten Platz ist Ruby Rite, dessen Gießzeit unbelegt ist — Ifrit zuerst liegt damit zwischen 800 und 1420 Potenz, Titan sicher bei 1300. Der Gewinn war mit 0,01 Prozent des Zyklus ohnehin kleiner als das Risiko | Voreinstellung bleibt; stattdessen empfohlen, `AddCrimsonCyclone` auszuschalten und `PreferTitanWhileMoving` einzuschalten |
+| C45 | Antwort vom 11.09.2026: Empfehlung, `AddSwiftcastOnGaruda` einzuschalten, damit Slipstream im Bufffenster nicht verfällt | Der Auftraggeber hält Swiftcast für Wiederbelebungen zurück und setzt es nicht in der Rotation ein. Die Empfehlung hätte eine Sicherheitsentscheidung gegen einen Schadensgewinn getauscht, ohne sie als solche zu erkennen — dieselbe Fehlerform wie C44, eine Stufe weiter. Sein Nutzungsprofil war zu diesem Punkt nicht erhoben | Vorgabe in CLAUDE.md aufgenommen; Slipstream bleibt im Bufffenster außen vor (A77) |
+| C46 | Antwort vom 12.09.2026 zur Heilmeldung: Living Dead bei 70 % als Erklärungsträger der ausbleibenden Heilung behandelt, und im Folgezug aus „der Tank nutzt seine Defensives schlecht" ein „er zündet die Barriere selten" abgeleitet | Beide Male eine Nebenangabe des Auftraggebers zur Tatsachenbehauptung gemacht, ohne sie als Schluss zu kennzeichnen. Die zweite Ableitung kehrte den Befund sogar um: Falsch, unnötig oder zu spät gezündete Barrieren liegen häufig und sind für die Schildanrechnung der schlechteste Fall, nicht der harmloseste — bei real 45 % ergibt eine frische Barriere 70 % effektiv und schaltet die oGCD-Heilung im Moment der größten Not ab | Befund in TODO.md um die drei Fehlnutzungsfälle ergänzt; Barrierengröße aus `ActionId.resx` (7393) belegt statt aus einem Codekommentar übernommen |
+| C47 | Antwort vom 12.09.2026: den Living-Dead-Zusammenhang nach der ersten Rüge ganz verworfen, weil `WithholdHealingForLivingDead` voreingestellt aus ist | Die Option ist nicht der einzige Pfad. `LivingDead` steht in `NoNeedHealingStatus`, und `ShouldHealSingle` drückt die Schwelle für jedes Ziel unter einem dieser Status auf `HealthProtectedRatio` 0,15 — ohne Option, zehn Sekunden lang. Die Beobachtung des Auftraggebers traf den wirksamsten Mechanismus, zweimal an der falschen Stelle gesucht. Ursache: Prüfung am Namen der Option statt am Wirkungsbereich des Status | Erhebung aller neun Defensivfähigkeiten in TODO.md nachgeholt; genau zwei greifen ein |
+| C48 | Konzept 08, Bausteintabelle: „Aussetzbedingung am Sanctus-Block … umgesetzt" | Umgesetzt war nur der Betäubungsgrund. Der dritte Zeitpunkt derselben Regel — eine fremde Mitigation trägt bereits — fehlte im Code, während das Dokument die Bedingung als Ganzes als erledigt auswies. Der Auftraggeber hatte ihn ausdrücklich angewiesen. Lehre: Eine Statuszeile ist kein Nachweis; der Nachweis ist die Stelle im Code, und eine Regel mit mehreren Zweigen ist erst umgesetzt, wenn jeder Zweig eine Fundstelle hat | Zeile aufgeteilt, dritter Zweig umgesetzt (A79) |
+| C49 | C30 und A45: „Abtausch ist Shirk", per Websuche belegt | Der Auftraggeber hat auf Rückfrage **Arm's Length** genannt. Die Websuche war schon als Quelle unzulässig — dieselbe Regel, die das Erfinden von „Armlänge" untersagt, lässt auch Suchmaschinenzusammenfassungen für deutsche Namen nicht zu —, und A-1646 hatte den Widerspruch bereits benannt, ohne ihn aufzulösen: Die vom Auftraggeber beschriebene Wirkung (Verlangsamung) gehörte eindeutig zu Arm's Length. Die Folge für `reprisalDone` war mit `armsLengthDone` in A53 bereits vorsorglich gezogen und ist damit bestätigt | Wörterbuch angelegt (A80), Zuordnung dort belegt |
+| C50 | A79, erste Fassung: für die Sanctus-Sperre bei verlangsamtem Paket die Anteilsregel von `DRK_Reborn.PackSlowed` übernommen — mindestens zwei betroffene Gegner und mindestens die Hälfte — mit der Begründung, es solle „keine zweite Zahl daneben" stehen | Der Auftraggeber hat auf die **Mehrzahl der Gegner im Wirkradius von Sanctus** korrigiert: strikt mehr als die Hälfte, ohne Mindestzahl. Die übernommene Schwelle beantwortet eine andere Frage — `PackSlowed` misst den Schadensstrom auf den Tank über die Jobreichweite, wo ein einzelner verlangsamter Gegner unter acht nichts aussagt; hier ist die Menge durch den Wirkradius bereits auf die Getroffenen eingegrenzt, sodass ein einziger verlangsamter Gegner darin die Mehrzahl ist und die Hälfte keine. **Wiederholung von C31**, dessen Lehre genau das festhält: Bei einer Bedingung über eine Menge sind Quantor und Bezugsmenge Teil des Befunds und folgen aus der Wirkung, nicht aus der vorhandenen Nachbarregel. Die Einheitlichkeit zweier Schwellen ist kein Wert an sich, wenn sie verschiedene Mengen messen | Bedingung auf `slowed * 2 > inRange` geändert, Grenzfälle durchgerechnet: 1 von 1 hält, 2 von 4 nicht, 3 von 4 hält |
+| C51 | A79, zweite Fassung: Sanctus zurückhalten, wenn die **Mehrzahl** der Gegner im Wirkradius verlangsamt ist | Der Auftraggeber hat auf die Zahl der **nicht** verlangsamten Gegner korrigiert, gemessen an derselben Mindestzahl, die ohne Verlangsamung für Sanctus gilt. Die Mehrzahl-Regel zählt die falsche Seite der Teilung: Ob der Zauber sich lohnt, entscheidet die Restmenge, die noch zu betäuben wäre, nicht der Anteil der bereits Versorgten. Beide Fassungen liefern verschiedene Antworten — bei acht Gegnern mit fünf verlangsamten hielt die Mehrzahl-Regel zurück, während drei unverlangsamte Gegner die Flächenschwelle weiterhin erfüllen. Ursache auf meiner Seite: `AoeCount` wurde als bloße Vorbedingung gelesen, die `CanUse` ohnehin prüft, statt als die Größe, die auch die Restmenge misst — obwohl der Auftraggeber unmittelbar zuvor genau auf diese Zahl hingewiesen hatte | Bedingung auf `inRange - slowed >= holy.Config.AoeCount` geändert, Schwelle aus der Aktion statt aus einer eigenen Option |
+| C52 | A79, dritte Fassung: Sanctus an der Zahl der **nicht** verlangsamten Gegner messen | Der Auftraggeber hat die Regel auf die Gesamtleistung umgestellt: Ein verlangsamter Gegner verschwindet nicht aus der Rechnung, er zählt nur weniger — bei „Slow +20 %“ eben 80 statt 100. Die Kopfzählung verwarf diesen Beitrag vollständig und hätte bei vier Gegnern mit zwei Verlangsamten (360 von 300) zurückgehalten. Dass alle drei Vorfassungen Köpfe zählten statt Wirkung, ist dieselbe Ursache in drei Anläufen: Die Regel war als Zusatzbedingung **neben** der Flächenschwelle gedacht, statt als deren Verallgemeinerung | Bedingung auf `(inRange - slowed) * 100 + slowed * 80 >= AoeCount * 100` geändert, Drosselungssatz aus `ActionId.resx` 7548 belegt |
+| C53 | `StatusHelper.ReprisalStatus` (seit A20) und in ihrer Folge `HostileOutputPercent`, `TODO.md`, `10-drk-blackest-night.md` und die Skript-README: Enhanced Reprisal hebe auf Stufe 98 die Minderung auf 15 % | Der Auftraggeber hat die Lodestone-Angabe geprüft: Das Merkmal verlängert **nur die Dauer** auf 15 s, die Minderung bleibt bei 10 %. Die Spieldaten stützen das — der Wirktext von Aktion 7535 nennt 10 % und lässt allein die Dauer leer, was genau die Markierung für einen merkmalsabhängigen Wert ist. Die falsche Zahl stand seit A20 unbelegt in einer Dokumentationszeile und hat sich von dort in vier weitere Dateien und schließlich in eine Fallunterscheidung im Code fortgepflanzt. Eigener Anteil: Die fehlende Quelle war im Kommentar ausdrücklich benannt — und die Zahl wurde trotzdem übernommen, statt bei der belegten 10 % zu bleiben. Eine als unbelegt gekennzeichnete Zahl ist kein Beleg, sondern ein Grund, sie nicht zu benutzen | Minderung wieder stufenunabhängig 10 %; Konstante auf `EnhancedMitigationDebuffLevel` umbenannt, weil sie nur noch die Dauer trägt; alle fünf Fundstellen berichtigt; der TODO-Eintrag zu `GetCurrentMitigationPercent` ist widerlegt und entfernt — dessen pauschale 0,90 waren richtig |
+| C54 | `TODO.md`, Schildanrechnungs-Eintrag: „Zweiter, kleinerer Fork-Effekt auf dieselbe Schwelle“ — `GetHealingOfTimeRatio` interpoliere zwischen 0,70 und 0,65, und `TrySustainRegenOnTank` halte den Regen dauerhaft nach, „das sind fünf Prozentpunkte, dauerhaft“ | Gegen `upstream/main` gemessen ist **nichts** davon Fork-Arbeit: `GetHealingOfTimeRatio` steht dort in `StateUpdater.cs`, `Service.Config.HealthSingleAbilityHot` wird dort an vier Stellen gelesen, und die Vorgaben sind wortgleich — `_healthSingleAbilityHot = 0.65f`, `_healthSingleAbility = 0.7f`. Auch `UsePreRegen` existiert in Upstream und ist dort voreingestellt an; Fork-Arbeit ist allein der **Auslöser** des Pre-Regen (`fd19aad18`, Tankposition statt Countdown), nicht die Schwelle. Eigener Anteil, zweifach: Die Aussage war nie gegen Upstream geprüft, sondern aus der Fork-Nähe des umgebenden Codes geschlossen — und die erste Gegenprüfung lieferte einen **stillen Nullbefund**, weil `grep -c` gegen die Ausgabe eines Befehls lief, der nichts fand: `HealthSingleAbilityHot` ist ein privates Feld hinter dem `[JobConfig]`-Generator, kein `public float`. Dieselbe Fehlerform wie beim fehlenden `re.MULTILINE` desselben Tages | Aussage entfernt; der Eintrag führt jetzt allein die Schildanrechnung als Fork-Effekt, und die ist hinter einem Schalter (A83). Für den Auftraggeber: Von den rund 30 Prozentpunkten Schwellenabsenkung sind 25 Fork und abschaltbar, die übrigen 5 sind Upstream-Verhalten |
+
