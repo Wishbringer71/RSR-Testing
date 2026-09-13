@@ -285,7 +285,7 @@ benutzt, ob seine Rotation dieselbe ist oder ob er von Hand spielt. Sie beantwor
 **Nicht empfohlen: einfach `BahamutBurst` übernehmen.** Das wäre die kleinste Textänderung, brächte
 aber eine zweite Verhaltensänderung mit: `BahamutBurst` ist zusätzlich an `CanBurst` gebunden, also
 an `AutoStatus.Burst`, der nur gesetzt ist, wenn der Nutzer den Burst-Befehl gibt oder
-`Service.Config.AutoBurst` an ist (`StateUpdater.cs:847`). `burstInSolar` prüft das heute nicht. Zwei
+`Service.Config.AutoBurst` an ist (`StateUpdater.cs:814`). `burstInSolar` prüft das heute nicht. Zwei
 Änderungen in einer Zeile sind nicht auswertbar, wenn der Spieltest fehlschlägt.
 
 ## Versatz zwischen den Rotationen
