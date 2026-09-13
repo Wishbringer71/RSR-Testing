@@ -29,6 +29,18 @@ sobald die Beobachtung ihnen widerspricht:
    gehört das eigene Searing Light in eine **Zwischenphase**, und zwar in die, in der der eigene
    Schaden am größten ist: Ifrit oder Titan.
 
+**Die Bauform ist ein hybrides, dynamisches Modell:** eine Regel, die sich an die Lage anpasst und
+bei Bedarf zwischen Strategien **wechselt**, statt einer festen Wahl zu folgen. Die Messung stützt
+das — keine der geprüften Einzelregeln gewinnt überall: Bei auseinandergelaufenen Rotationen ist die
+heutige, enge Regel bereits optimal, weil jeder Beschwörer seinen Buff in seiner stärksten Phase
+setzt und die Streuung die Lücken von selbst schließt; bei synchronem Pull mit fremden Beschwörern
+gewinnt die Buchführung; folgen alle derselben Regel, gewinnt das reine Lückenfüllen. Eine feste
+Regel muss daher in mindestens einer dieser Lagen unterlegen sein.
+
+**Die Buchführung ist genau dafür da.** Sie beantwortet die Frage, in welcher Lage man sich befindet:
+Wer belegt welche Phase, und tut er es wiederholt? Erst aus der Wiederholung folgt, dass eine Phase
+dauerhaft vergeben ist — ein einmaliges Zuvorkommen ist Zufall und darf keine Phase kosten.
+
 **Gruppengrößen, auf die die Anpassung auszurichten ist:** In einer Vierergruppe sind regulär bis zu
 zwei Beschwörer möglich, in einer Achtergruppe bis zu fünf. Eine Vierergruppe aus vier und eine
 Achtergruppe aus acht Beschwörern sind nicht auszuschließen, haben bei der Optimierung aber

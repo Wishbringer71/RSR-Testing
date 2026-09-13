@@ -51,6 +51,16 @@ BURST_WINDOW = 20.0
 # on positions 0 and 2), then Bahamut, then Phoenix. A charge moves on only when somebody else has
 # taken the phase it was aiming at.
 PHASE_AIM = ((0, 2), (1,), (3,))
+# Books are kept per phase *kind*, not per position in the cycle. Solar occupies positions 0 and 2,
+# and Searing Light's 120s recast is exactly two demi windows - so a Summoner who owns Solar shows
+# up alternately at 0 and at 2. Booking positions therefore never saw a repetition, and the rule
+# could not tell a held phase from a contested one.
+PHASE_KIND = {0: 'solar', 2: 'solar', 1: 'bahamut', 3: 'phoenix'}
+# How long until a phase kind comes round again. Solar sits on two of the four positions, so it
+# returns every 120s - exactly Searing Light's recast, which is why one Summoner can hold it every
+# cycle. Bahamut and Phoenix return only every 240s, so a Summoner who takes one of them alternates
+# between the two. Judging all three by the same window made a held Bahamut look contested.
+KIND_PERIOD = {'solar': 2 * DEMI_EVERY, 'bahamut': 4 * DEMI_EVERY, 'phoenix': 4 * DEMI_EVERY}
 
 # Potency per GCD of each phase, from smn_phase_potency.py (summon off the GCD, level 100, single
 # target). Seconds with a buff are a surrogate: the buff raises damage by 5%, so what it is worth
@@ -185,6 +195,12 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
     # Which instance of a demi phase a Summoner has already conceded, so the aim advances once per
     # phase and not once per time step.
     conceded = [None] * n
+    # The books, kept per Summoner: when somebody else last cast while this Summoner stood in each
+    # of his own four phase positions. The status carries its source, so this is what a client can
+    # actually see. A holder returns after his own recast - 120s, which is two demi windows, so he
+    # comes back to the same position in the cycle. That is what makes the position, and not the
+    # single occasion, the thing worth recording.
+    taken = [dict() for _ in range(n)]
 
     last_seen = [None] * n     # when each Summoner was last observed casting
     # What the party has observed: earliest possible return per Summoner, or None if never seen.
@@ -231,9 +247,27 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
         # aim stuck on Solar forever: the charge was blocked, the aim never moved, and the rule
         # measured exactly like the unchanged code.
         for i in range(n):
-            if per[i] != 'phased' or phase_target[i] >= 3:
+            if per[i] not in ('phased', 'booked'):
                 continue
             if buff_until <= t or buff_owner is None or buff_owner == i:
+                continue
+            # Book the position first: this is the observation both variants make, and the booked
+            # variant needs it even once its aim has settled.
+            local_b = t - offsets[i]
+            if local_b >= 0 and local_b % DEMI_EVERY < DEMI_STAND:
+                pos = PHASE_KIND[int(local_b // DEMI_EVERY) % 4]
+                prev = taken[i].get(pos)
+                # A position counts as held only when the *same* Summoner takes it again after his
+                # own recast - the user's wording: assume you are first, and only once he really
+                # comes back to it conclude that he owns it. Booking on a single occasion is what
+                # made the first version give up positions that were never contested, which cost
+                # more than it saved wherever rotations had drifted apart.
+                if prev and prev[0] == buff_owner \
+                        and t - prev[1] <= KIND_PERIOD[pos] + STALE_AFTER:
+                    taken[i][pos] = (buff_owner, t, prev[2] + 1)
+                else:
+                    taken[i][pos] = (buff_owner, t, 1)
+            if per[i] != 'phased' or phase_target[i] >= 3:
                 continue
             local = t - offsets[i]
             if local < 0 or local % DEMI_EVERY >= DEMI_STAND:
@@ -255,7 +289,58 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
 
                 allowed = False
                 mine_mode = per[i]
-                if mine_mode == 'phased':
+                if mine_mode == 'hybrid':
+                    # The user's hybrid: books decide which phase is worth aiming at, and when no
+                    # phase of one's own is coming up in time, the charge fills the gap instead of
+                    # waiting. Neither half wins everywhere - the books win a synchronised pull
+                    # among strangers, gap-filling wins when everyone runs the same rule, and the
+                    # unchanged narrow rule already wins once rotations have drifted apart. So the
+                    # rule switches rather than choosing once.
+                    idx = demi_index(t, offsets[i])
+                    free = []
+                    for pos in (0, 2, 1, 3):
+                        book = taken[i].get(PHASE_KIND[pos])
+                        held = (book is not None and book[2] >= 2
+                                and t - book[1] <= KIND_PERIOD[PHASE_KIND[pos]] + STALE_AFTER)
+                        if not held:
+                            free.append(pos)
+                    if buff_until <= t:
+                        if free:
+                            # A phase of one's own is still to be had. Wait for it rather than
+                            # filling a gap: a Solar second is worth 2.46 primal seconds, and the
+                            # recast is two windows long, so a charge spent outside does not come
+                            # back in time for the position it was meant for.
+                            allowed = idx is not None and idx in free
+                        else:
+                            # Every position is held by somebody who keeps coming back. Waiting
+                            # buys nothing now, so the rule switches to filling whatever gap is
+                            # open - which is what wins when several Summoners share this rule and
+                            # crowd each other out of the same phases.
+                            allowed = True
+                elif mine_mode == 'booked':
+                    # The user's rule with books. Rather than only stepping forward, pick the
+                    # strongest phase position nobody else is holding - and a holder is somebody
+                    # seen casting there within his own recast plus a grace. Two Solar positions,
+                    # then Bahamut, then Phoenix, by what a second of each is worth. This is what
+                    # the step-forward variant cannot do: it gives up a position for good, so with
+                    # several Summoners on the same rule they all walk away from the same phases
+                    # together.
+                    idx = demi_index(t, offsets[i])
+                    free = []
+                    for pos in (0, 2, 1, 3):
+                        book = taken[i].get(PHASE_KIND[pos])
+                        held = (book is not None and book[2] >= 2
+                                and t - book[1] <= KIND_PERIOD[PHASE_KIND[pos]] + STALE_AFTER)
+                        if not held:
+                            free.append(pos)
+                    if idx is not None and buff_until <= t:
+                        allowed = idx in free
+                    elif idx is None and not free and buff_until <= t:
+                        local = t - offsets[i]
+                        block = int(local // DEMI_EVERY) % len(PRIMAL_POTENCY) if local >= 0 else 0
+                        best = max(range(len(PRIMAL_POTENCY)), key=lambda k: PRIMAL_POTENCY[k])
+                        allowed = block == best
+                elif mine_mode == 'phased':
                     # The user's rule. Aim at one burst phase at a time, and only move on when
                     # somebody else got there first - a second cast onto a running buff is the one
                     # thing that is certainly wasted.
@@ -433,6 +518,26 @@ def self_test():
     if beaten <= today + TOL:
         raise AssertionError('the phased rule no longer beats today in a mixed party: %.3f vs %.3f'
                              % (beaten, today))
+
+    # The hybrid must be at least as good as today's rule everywhere in the party sizes that decide
+    # anything, in the party that actually occurs: one Summoner on this rule, the rest on their own.
+    # A rule that wins one situation by losing another is not an adaptation.
+    for drift in (0, 30, 60):
+        for n in range(2, 6):
+            mixed = ['hybrid'] + ['solar'] * (n - 1)
+            got = simulate(n, None, drift, modes=mixed, mine=0, by_potency=True)
+            base = simulate(n, None, drift, modes=['solar'] * n, mine=0, by_potency=True)
+            if got < base - TOL:
+                raise AssertionError('hybrid fell below today at n=%d drift=%d: %.3f < %.3f'
+                                     % (n, drift, got, base))
+
+    # Books are kept per phase kind. Booking by position could never see a repetition, because the
+    # 120s recast moves a Solar holder between the two Solar positions - the defect that made the
+    # rule unable to tell a held phase from a contested one.
+    if PHASE_KIND[0] != PHASE_KIND[2]:
+        raise AssertionError('the two Solar positions must book as one phase')
+    if KIND_PERIOD['solar'] >= KIND_PERIOD['bahamut']:
+        raise AssertionError('Solar returns twice as often as Bahamut; the periods say otherwise')
 
     # Potency weighting must separate a Solar second from a primal one, or it is measuring seconds
     # again under another name.
