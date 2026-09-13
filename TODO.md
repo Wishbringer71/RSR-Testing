@@ -214,40 +214,15 @@ Die Dauer ist belegt, nicht erinnert: `ActionId.resx`, Aktion 3638, „Living De
 
 Schadensreduktion wirkt also in keinem Fall auf die Heilentscheidung; nur Barriere und Invulnerabilität tun es.
 
-### Die Zielwahl der Heilung vergleicht Prozentsätze, nicht Überlebensfähigkeit · N, U
+### Die Zielwahl der Heilung misst nicht die Sterbegefährdung · N, U
 
-**Beobachtung des Auftraggebers:** Wen heilt man zuerst — einen Tank bei 50 % mit Schild oder einen Schadensausteiler bei 60 % mit deutlich kleinerem Lebenspool? Heute entscheidet allein der Prozentsatz.
+**Vorgabe des Auftraggebers, vollständig in `docs/rotation-flow/07-heal-target-priority.md`:** Maßgeblich ist, wer wie stark gefährdet ist zu sterben — Tank mit Aggro hat Priorität, Heiler mit Aggro muss überleben, bei mehreren Betroffenen entscheidet die Schadensrate, und ein Schadensausteiler ohne Aggro bei 10 % stirbt an der nächsten Flächenaktion.
 
-**Herkunft: Upstream, kein Fork-Defekt.** `upstream/main` sortiert an derselben Stelle mit `GetHealthRatio(a).CompareTo(GetHealthRatio(b))`, also ebenfalls rein nach Prozentsatz. Fork-Arbeit ist allein die Behandlung der Unverwundbaren: Upstream **entfernt** sie aus der Kandidatenliste, der Fork stuft sie zurück, statt sie auszuschließen (`896718184`, Behebung eines invertierten Filters, der zuvor genau die Unverwundbaren und sonst niemanden sammelte). Der Punkt ist damit nach der Projektregel **erfasst, nicht zu bearbeiten**, solange kein Auftrag ihn nennt — und Adressat einer Behebung wäre auch der Upstream.
+**Heute entscheidet allein der Prozentsatz** (`ActionTargetInfo.FindHealTarget`, Rang 4), davor zwei Rollenabkürzungen mit festen Schwellen. Weder Aggro noch Barriere noch absoluter Lebenspuffer gehen ein. Die Sortierung stammt aus dem Upstream; Fork-Arbeit ist allein die Behandlung der Unverwundbaren.
 
-**Die Rangfolge, am Code belegt** (`ActionTargetInfo.FindHealTarget`): selbst bei ≤ 40 % (`HealthSelfRatio`), dann ungeschützter Heiler bei ≤ 40 % (`HealthHealerRatio`), dann ungeschützter Tank bei ≤ 45 % (`HealthTankRatio`), sonst der niedrigste **Prozentsatz** zuerst — ungeschützt vor geschützt, wobei „geschützt" `NoNeedHealingInvuln` meint, also Unverwundbarkeit und **nicht** Barriere. Im genannten Beispiel greift keine Rollenabkürzung, der Tank liegt über 45 %; es entscheidet der Prozentvergleich, und der wählt den Tank.
+**Drei der vier Größen sind sofort verfügbar:** der effektive Puffer in absoluten Punkten (`GetEffectiveHp`), die Aggro (`TargetObject`, wie in `CanProvoke` bereits aufgelöst) und der angekündigte Flächenschaden (`IsHostileCastingAOE`, BMR-Vorhersage). **Die vierte fehlt:** die eingehende Schadensrate je Mitglied — `DamageRec` trägt kein Ziel, `RecordedHP` wird nur aus Gegnern gefüllt, `GetTTK` liefert für eine Gruppen-Id `NaN`. Sie steht als eigener Punkt unter technischer Schuld und hat mit dieser Vorgabe ihren Verbraucher bekommen.
 
-**Zwei Größen fehlen dem Vergleich, beide mit Spielwirkung:**
-
-- **Die Barriere.** 50 % plus ein Schild über 25 % der maximalen HP sind effektiv 75 % — mehr als die 60 % des Schadensausteilers. Der Vergleich sieht davon nichts.
-- **Der absolute Puffer.** 60 % eines kleinen Lebenspools sind weniger Gesundheit als 50 % eines großen. Wer weniger absolute Punkte zwischen sich und dem Tod hat, stirbt am selben Treffer früher, gleich welcher Prozentsatz darübersteht.
-
-**Dies ist der einzige Ort, an dem effektive Gesundheit die richtige Größe ist** — als Vergleich zwischen Zielen, nicht als Schwelle. **Und es ist der Ort, an den die Schildanrechnung ursprünglich gehörte:** Ihr einführender Commit nennt im Titel „heal-priority decisions" und begründet mit dem Vergleich zwischen einem geschildeten und einem ungeschildeten Verbündeten — umgesetzt hat er dann eine Schwelle. Beide Einträge behandeln damit denselben Vorgang von zwei Seiten: hier die gemeinte Stelle, dort die getroffene. Der Unterschied ist entscheidend und trennt diesen Punkt von der Schildanrechnung: Dort wird gefragt „muss ich überhaupt heilen", und darauf ist die Barriere keine Antwort; hier wird gefragt „wen zuerst", und darauf ist sie eine.
-
-**Die Optionen, durchgerechnet an eben diesem Beispiel** — Tank bei 50 % mit einer Barriere über 25 % seiner maximalen Gesundheit, Schadensausteiler bei 60 %. Die Verhältnisse sind allgemein gehalten, weil die absoluten Lebenspunkte vom Ausrüstungsstand abhängen und hier nicht belegbar sind:
-
-| | Maß | Wen es wählt | Folge |
-|---|---|---|---|
-| **N** | Prozentsatz (heute, Upstream) | **Tank** (50 < 60) | Barriere und Poolgröße bleiben unsichtbar |
-| **A** | effektiver Prozentsatz, Barriere eingerechnet | **Schadensausteiler** (75 > 60) | die ursprüngliche Absicht von `27c7b6942`, am richtigen Ort |
-| **B** | absolute verbleibende Lebenspunkte | **Schadensausteiler**, sobald sein Pool kleiner ist als 83 % des Tank-Pools (0,5·T gegen 0,6·D) | behebt die Verzerrung durch verschiedene Poolgrößen |
-| **C** | A und B zusammen: effektiver absoluter Puffer | **Schadensausteiler**, sobald sein Pool kleiner ist als das 1,25-fache des Tank-Pools — also praktisch immer | vollständigstes Maß der Überlebensfähigkeit |
-| **D** | zusätzlich die eingehende Schadensrate je Ziel | offen | **nicht baubar**, s. u. |
-
-**D ist die einzige Option, die die Frage wirklich beantwortet, und sie hat keine Datengrundlage.** `DataCenter.DPSTaken` misst gruppenweit und nicht je Mitglied: `DamageRec` trägt nur Zeitpunkt und Anteil, kein Ziel, und der einzige Leser ist die Diagnoseanzeige. Der Messbaustein dafür ist als eigener Punkt erfasst und **bewusst nicht gebaut** — Kosten bei allen Nutzern, Nutzen damals bei einer Fähigkeit. Dieser Eintrag hier wäre der zweite mögliche Verbraucher; solange die Umstellung selbst nicht belegt ist, begründet er den Bau aber nicht.
-
-**Empfehlung: N, nicht umstellen.** Drei Gründe, der dritte ist der schwerste:
-
-1. **Es ist Upstream-Verhalten.** Nach der Projektregel wird es erfasst, nicht bearbeitet; Adressat einer Behebung wäre auch der Upstream.
-2. **Die entscheidende Größe fehlt.** Ob der Tank bei 50 % hinter seiner Barriere gefährdeter ist als der Schadensausteiler bei 60 %, hängt daran, wer den nächsten Schaden nimmt — und genau das ist nicht messbar.
-3. **Alle drei Umstellungen heilen den Tank später.** A, B und C wählen in diesem Beispiel den Schadensausteiler zuerst. Kann in diesem Moment nur ein Ziel versorgt werden, ist das für den Tank dasselbe Ergebnis wie die soeben entfernte Schildanrechnung — die Heilung kommt später, nur aus anderem Grund. Das ist die Richtung, die der Spielweise des Auftraggebers entgegensteht.
-
-**Wieder aufzugreifen, wenn** eine Beobachtung vorliegt, dass ein Gruppenmitglied stirbt, während ein geschützterer Tank zuerst geheilt wurde. Dann ist der Fall benannt, und mit ihm der Verbraucher für den Messbaustein.
+**Empfehlung: in zwei Stufen, die erste ohne die Rate.** Stufe 1 ersetzt das Maß in Rang 4 durch den effektiven Puffer in absoluten Punkten und lässt Aggro und angekündigten Flächenschaden die Rollenabkürzungen tragen. Das deckt drei der vier Fälle und braucht keinen neuen Messbaustein. Stufe 2 ergänzt die Rate für den Fall mehrerer Betroffener und setzt den Aufnehmer voraus. **Verhaltensänderung ohne Nachweismöglichkeit von hier aus** — nach Projektregel hinter eine Option mit beibehaltener Voreinstellung, bis eine Spielbeobachtung vorliegt.
 
 ### `HasSurvivingShield` misst die **kürzeste** Schildrestzeit, nicht die längste · N, R
 
@@ -608,7 +583,9 @@ Schritt 3 aus `docs/rotation-flow/08-mitigation-synergy.md`. Die Schritte 1 und 
 
 **Geprüft und bewusst nicht gebaut.** Der Befund selbst besteht fort: Für Gruppenmitglieder gibt es keine Rate. `DataCenter.RecordedHP` wird in `TargetUpdater.cs:513-535` ausschließlich aus `AllHostileTargets` gefüllt, weshalb `GetTTK` für eine Party-Id `NaN` liefert; die Abtastrate ist 1 Hz (`TargetUpdater.cs:19`); und ein Heilpaket eines fremden Heilers passiert beide Watcher-Filter (`Watcher.cs:17-18`) ungelesen. Es fehlt der Aufnehmer, nicht die Quelle.
 
-**Warum er trotzdem nicht gebaut wird:** Er hatte genau einen vorgesehenen Verbraucher — die Hochrechnung, ob der Tod eines Dunkelritters noch vor Ablauf von Living Dead eintritt. Diese Frage ist inzwischen anders beantwortet: `StatusHelper.InDeathTriggerWindow` misst die Restzeit des Status selbst und gibt den Halt einen GCD vor Ablauf frei. Damit gibt es im gesamten Baum keinen Verbraucher mehr, und ein Baustein ohne Verbraucher ist Vorratsarbeit.
+**Der Verbraucher besteht jetzt.** Die Vorgabe des Auftraggebers zur Heilzielwahl (`docs/rotation-flow/07-heal-target-priority.md`) macht die Rate zur Entscheidungsgröße, sobald **mehrere** Gruppenmitglieder zugleich unter Beschuss stehen: Dann reicht „wer wird angegriffen" nicht, es zählt, wie schnell die Gesundheit fällt. Der folgende Absatz beschreibt die Lage, in der es diesen Verbraucher noch nicht gab.
+
+**Warum er bis dahin nicht gebaut wurde:** Er hatte genau einen vorgesehenen Verbraucher — die Hochrechnung, ob der Tod eines Dunkelritters noch vor Ablauf von Living Dead eintritt. Diese Frage ist inzwischen anders beantwortet: `StatusHelper.InDeathTriggerWindow` misst die Restzeit des Status selbst und gibt den Halt einen GCD vor Ablauf frei. Damit gibt es im gesamten Baum keinen Verbraucher mehr, und ein Baustein ohne Verbraucher ist Vorratsarbeit.
 
 Die Kostenseite bliebe dagegen bestehen: Ein Ringpuffer über alle Gruppenmitglieder und ein dritter Effekt-Handler laufen in jedem Kampf für jeden Nutzer, auch für die, die nie einen Dunkelritter sehen. Nutzen bei einem Job in einer Fähigkeit, Kosten bei allen — und der Nutzen wäre statisch nicht belegbar.
 
