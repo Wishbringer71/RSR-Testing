@@ -6,6 +6,39 @@ englischer Bezeichnung steht damit nicht zur Verfügung. Dass **Searing Light** 
 der Fragestellung geschlossen und als Schluss gekennzeichnet. Das Dokument benutzt durchgehend den
 englischen Bezeichner.*
 
+## Vorgabe des Auftraggebers: eine Regel, die sich der Lage anpasst
+
+**Die Regel hat nicht fest zu sein, sondern sich optimal auf die bestehende Situation
+auszurichten.** Sie darf dabei auf Annahmen aufbauen und diese Schritt für Schritt korrigieren,
+sobald die Beobachtung ihnen widerspricht:
+
+1. **Annahme: Ich bin der Erste.** Der Kampf beginnt mit Solar Bahamut, und Searing Light wird dort
+   gezündet.
+2. **Kommt mir ein anderer Beschwörer zuvor**, halte ich meine Ladung für diese Solar-Phase zurück —
+   ein zweiter Buff auf einen laufenden ersten wäre doppelt gezündet und damit verschwendet. Das
+   Zurückhalten gilt nur für diese Phase, nicht grundsätzlich.
+3. **Nächster Versuch in der nächsten anstehenden Burstphase** (Bahamut oder Phoenix), wieder unter
+   der Annahme, dass ich dort der Erste bin.
+4. **Kommt mir auch dort jemand zuvor**, rückt der Versuch auf die darauffolgende Burstphase weiter —
+   die übriggebliebene von Phoenix beziehungsweise Bahamut, erneut unter derselben Annahme.
+5. **Dabei ist zu beachten**, dass der Beschwörer, der beim ersten Solar Bahamut gezündet hat, beim
+   nächsten Solar Bahamut wieder dran sein kann. Auch hier gilt zunächst die Annahme, dass ich als
+   Erster zünde.
+6. **Trifft auch das nicht zu** und er kommt erneut zuvor, ist von der Wahrscheinlichkeit auszugehen,
+   dass es bei den übrigen ebenso läuft — bei vier Beschwörern in der Gruppe also durchgehend. Dann
+   gehört das eigene Searing Light in eine **Zwischenphase**, und zwar in die, in der der eigene
+   Schaden am größten ist: Ifrit oder Titan.
+
+**Gruppengrößen, auf die die Anpassung auszurichten ist:** In einer Vierergruppe sind regulär bis zu
+zwei Beschwörer möglich, in einer Achtergruppe bis zu fünf. Eine Vierergruppe aus vier und eine
+Achtergruppe aus acht Beschwörern sind nicht auszuschließen, haben bei der Optimierung aber
+nachrangig zu gelten: **Vorrang haben die regulären Gruppen.**
+
+**Was damit widerlegt ist:** Die Annahme, ab zwei Beschwörern fielen die Gelegenheiten ohnehin
+zusammen. Spielstile und RSR-Einstellungen unterscheiden sich, und schon der Zeitpunkt des
+Kampfeintritts streut die Zyklen. Der synchrone Fall ist ein Randfall, kein Regelfall — und eine
+Regel, die nur ihn behandelt, behandelt den seltensten Fall.
+
 ## Sachstand
 
 Bei **einem** Beschwörer ist der Ablauf richtig. Ab **zwei** reicht das genutzte Zündfenster nicht

@@ -47,6 +47,57 @@ STALE_AFTER = 20.0
 # is a parameter and the output shows several values. BURST_WINDOW is the 20s at the top of each
 # cycle, the one every job aligns to.
 BURST_WINDOW = 20.0
+# The order the user's rule works through, by position in the four-demi cycle: Solar first (it sits
+# on positions 0 and 2), then Bahamut, then Phoenix. A charge moves on only when somebody else has
+# taken the phase it was aiming at.
+PHASE_AIM = ((0, 2), (1,), (3,))
+
+# Potency per GCD of each phase, from smn_phase_potency.py (summon off the GCD, level 100, single
+# target). Seconds with a buff are a surrogate: the buff raises damage by 5%, so what it is worth
+# depends on how much damage the second carries. Solar is worth 2.46 times a primal second, which is
+# why "cover as many seconds as possible" and "put the buff where it pays" are different questions -
+# and the user's rule answers the second one.
+PHASE_POTENCY = {
+    0: 1217.0,   # Solar Bahamut
+    1: 950.0,    # Bahamut
+    2: 1217.0,   # Solar Bahamut again
+    3: 947.0,    # Phoenix
+}
+# Between the demis the primal block runs. The rotation's order is Ifrit, Titan, Garuda, and their
+# per-GCD potencies differ enough to matter for where a charge lands: this is the "intermediate
+# phase with the most damage" the user's rule aims at once the burst phases are taken.
+PRIMAL_POTENCY = (632.0, 464.0, 407.0)
+
+
+def own_potency(t, offset):
+    """Potency per GCD this Summoner is producing at time t.
+
+    A demi contributes its own figure; between demis the primal block runs, and which of the three
+    it is follows the rotation's order. This is what makes a buffed second worth what it is worth,
+    and it is deliberately the *own* rotation: Searing Light raises the whole party's damage, but
+    the decision the rule makes is where to spend a charge of one's own.
+    """
+    local = t - offset
+    if local < 0:
+        return PRIMAL_POTENCY[0]
+    cycle = int(local // DEMI_EVERY)
+    if local % DEMI_EVERY < DEMI_STAND:
+        return PHASE_POTENCY[cycle % 4]
+    return PRIMAL_POTENCY[cycle % len(PRIMAL_POTENCY)]
+
+
+def demi_index(t, offset):
+    """Which demi is standing for this Summoner right now, or None between them.
+
+    0 Solar, 1 Bahamut, 2 Solar, 3 Phoenix, then repeating - the order the concept records. The
+    user's rule aims at these by position, so it needs the index and not merely "a demi stands".
+    """
+    local = t - offset
+    if local < 0:
+        return None
+    if local % DEMI_EVERY >= DEMI_STAND:
+        return None
+    return int(local // DEMI_EVERY) % 4
 
 
 def in_window(t, offset, mode):
@@ -100,7 +151,7 @@ def best_possible(n, burst_share):
 
 
 def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=None,
-             burst_only=False):
+             burst_only=False, modes=None, mine=None, by_potency=False):
     """Return the fraction of the fight covered by a Searing Light.
 
     `window` restricts the measurement to (start, end) seconds without changing the run, which is
@@ -110,15 +161,30 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
     carries its source, so once another Summoner has cast, his earliest possible return is known -
     that cast plus the recast. The rule is to hold to the demi windows as in V2, and to cast outside
     one only when nobody else can possibly cover the coming gap.
+
+    `modes` gives each Summoner his own rule, which is what a real party looks like: the other
+    Summoners are other players, running their own rotation or none. Passing one mode for everybody
+    answers a question nobody is in - it was the model's unstated assumption and the reason its
+    recommendation rested on the rarest case. `mine` names the index whose own burst is measured
+    when burst_only is asked for.
     """
     fight = FIGHT if fight is None else fight
-    weighting = burst_share is not None
+    weighting = burst_share is not None or by_potency
     burst_share = 0.0 if burst_share is None else burst_share
     lo, hi = window if window else (0.0, fight)
+    per = list(modes) if modes else [mode] * n
     offsets = [0.0] * n if n == 1 or drift == 0 else [drift * i / (n - 1) for i in range(n)]
     ready = [0.0] * n          # earliest time each Summoner may cast again
+    # The user's rule, per Summoner: which burst phase he is currently aiming at. 0 Solar, 1 the
+    # next demi, 2 the one after, 3 means all three were taken and the charge goes into a primal
+    # phase instead. It only ever moves forward when somebody else got there first.
+    phase_target = [0] * n
     buff_until = -1.0          # when the running buff expires
+    buff_owner = None          # who cast the running buff - the user's rule needs "somebody else"
     covered = 0.0
+    # Which instance of a demi phase a Summoner has already conceded, so the aim advances once per
+    # phase and not once per time step.
+    conceded = [None] * n
 
     last_seen = [None] * n     # when each Summoner was last observed casting
     # What the party has observed: earliest possible return per Summoner, or None if never seen.
@@ -136,7 +202,12 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
             # burst_only measures the burst window alone: every instant inside it counts, everything
             # else counts zero. A rule that raises total coverage while lowering this one has moved
             # buff time out of the party's burst - a regression the combined figure would hide.
-            if burst_only:
+            if by_potency:
+                # Weight every instant by the damage actually being produced in it, so the figure
+                # answers "how much of my damage was buffed" instead of "how many seconds carried a
+                # buff". The two differ by a factor of 2.46 between a Solar second and a primal one.
+                w = own_potency(t, offsets[mine or 0])
+            elif burst_only:
                 w = 1.0 if in_burst else 0.0
             else:
                 w = (burst_share / BURST_WINDOW) if in_burst \
@@ -154,6 +225,26 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
         remaining = buff_until - t
         blocked = remaining > GUARD_LEAD
 
+        # Conceding a phase is an observation, not a cast attempt, so it has to happen even while
+        # the guard is shut - and the guard is shut precisely when somebody else has just cast,
+        # which is the case the rule is about. Running this inside the casting loop below left the
+        # aim stuck on Solar forever: the charge was blocked, the aim never moved, and the rule
+        # measured exactly like the unchanged code.
+        for i in range(n):
+            if per[i] != 'phased' or phase_target[i] >= 3:
+                continue
+            if buff_until <= t or buff_owner is None or buff_owner == i:
+                continue
+            local = t - offsets[i]
+            if local < 0 or local % DEMI_EVERY >= DEMI_STAND:
+                continue
+            instance = int(local // DEMI_EVERY)
+            if conceded[i] == instance:
+                continue
+            if (instance % 4) in PHASE_AIM[phase_target[i]]:
+                phase_target[i] += 1
+                conceded[i] = instance
+
         if not blocked:
             for i in range(n):
                 if ready[i] > t:
@@ -163,9 +254,36 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
                     continue   # this Summoner is out and casts nothing
 
                 allowed = False
-                if mode == 'simple':
+                mine_mode = per[i]
+                if mine_mode == 'phased':
+                    # The user's rule. Aim at one burst phase at a time, and only move on when
+                    # somebody else got there first - a second cast onto a running buff is the one
+                    # thing that is certainly wasted.
+                    idx = demi_index(t, offsets[i])
+                    if idx is not None:
+                        # The aim moves Solar -> Bahamut -> Phoenix. Solar occupies two of the four
+                        # positions in the cycle (0 and 2), which is why this is a lookup and not a
+                        # comparison against the index - the first version compared them directly
+                        # and the rule then skipped every second Solar.
+                        wanted = PHASE_AIM[phase_target[i]] if phase_target[i] < 3 else ()
+                        if phase_target[i] >= 3:
+                            allowed = False          # the burst phases are spoken for
+                        elif idx in wanted and buff_until <= t:
+                            allowed = True
+                    elif phase_target[i] >= 3 and buff_until <= t:
+                        # All three burst phases taken every cycle, so the charge goes where this
+                        # Summoner's own damage is highest instead - and that is a specific primal
+                        # block, not merely "outside a demi". Ifrit carries 632 potency per GCD
+                        # against Titan's 464 and Garuda's 407, so aiming at the strongest one is
+                        # the difference between spending the charge well and spending it anywhere.
+                        # It waits at most two primal blocks, and the recast is longer than that.
+                        local = t - offsets[i]
+                        block = int(local // DEMI_EVERY) % len(PRIMAL_POTENCY) if local >= 0 else 0
+                        best = max(range(len(PRIMAL_POTENCY)), key=lambda k: PRIMAL_POTENCY[k])
+                        allowed = block == best
+                elif mine_mode == 'simple':
                     allowed = in_window(t, offsets[i], 'demi') or buff_until <= t
-                elif mode in ('informed', 'adaptive'):
+                elif mine_mode in ('informed', 'adaptive'):
                     if in_window(t, offsets[i], 'demi'):
                         allowed = True
                     else:
@@ -180,18 +298,19 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
                         for j in range(n):
                             if j == i or seen_ready[j] is None:
                                 continue
-                            if mode == 'adaptive' and last_seen[j] is not None \
+                            if mine_mode == 'adaptive' and last_seen[j] is not None \
                                     and t - last_seen[j] > RECAST + STALE_AFTER:
                                 # Adaptive: he was due back and did not come. Stop counting on him.
                                 continue
                             others.append(seen_ready[j])
                         nobody_else = all(r > t + GUARD_LEAD for r in others) if others else False
                         allowed = nobody_else and buff_until <= t
-                elif in_window(t, offsets[i], mode):
+                elif in_window(t, offsets[i], mine_mode):
                     allowed = True
 
                 if allowed:
                     buff_until = t + BUFF   # overwrite, never stack
+                    buff_owner = i
                     ready[i] = t + RECAST
                     seen_ready[i] = t + RECAST   # every client sees the source of the status
                     last_seen[i] = t
@@ -303,6 +422,22 @@ def self_test():
         v6 = simulate(n, 'adaptive', 0, window=(300.0, 480.0), dropout=out)
         if v6 < v5 - TOL:
             raise AssertionError('adaptive fell below informed under dropout at n=%d' % n)
+
+    # The user's rule has to reach a phase it aims at. Beaten to Solar, it moves to Bahamut; beaten
+    # there, to Phoenix; beaten there too, to the strongest primal block. If the concession step
+    # ever stops working the rule collapses into today's behaviour without anything failing - the
+    # first version did exactly that, because conceding was attempted only while the guard was open
+    # and the guard is shut precisely when somebody else has just cast.
+    beaten = simulate(3, None, 0, modes=['phased', 'solar', 'solar'])
+    today = simulate(3, 'solar', 0)
+    if beaten <= today + TOL:
+        raise AssertionError('the phased rule no longer beats today in a mixed party: %.3f vs %.3f'
+                             % (beaten, today))
+
+    # Potency weighting must separate a Solar second from a primal one, or it is measuring seconds
+    # again under another name.
+    if own_potency(1.0, 0.0) <= own_potency(20.0, 0.0):
+        raise AssertionError('a Solar second is not weighted above a primal one')
 
     # What the repaired measurement shows, kept so it cannot quietly stop being true: while one
     # Summoner is out, keeping books on him costs half the coverage. V5 holds its charge waiting
