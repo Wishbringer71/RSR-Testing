@@ -54,21 +54,23 @@ Regel, die nur ihn behandelt, behandelt den seltensten Fall.
 ## Sachstand
 
 Bei **einem** Beschwörer ist der Ablauf richtig. Ab **zwei** reicht das genutzte Zündfenster nicht
-mehr aus, und der Verlust ist strukturell, nicht graduell: Jeder Beschwörer darf Searing Light nur
-während seiner Solar-Bahamut-Beschwörung zünden, und dieses Fenster kommt nur alle 120 Sekunden —
-genau so oft wie die Aktion selbst. Sind die Rotationen synchron, fallen alle Gelegenheiten
-zusammen, und alle bis auf eine verfallen.
+mehr aus: Jeder Beschwörer darf Searing Light nur während seiner Solar-Bahamut-Beschwörung zünden,
+und dieses Fenster kommt nur alle 120 Sekunden — genau so oft wie die Aktion selbst. Treffen zwei
+Beschwörer im selben Fenster aufeinander, verfällt eine Ladung.
 
-Drei Eingriffe sind möglich. Einer ist eine Defektbehebung ohne Gegenargument, einer eine Erweiterung
-mit einer Bedingung, einer ist abzulehnen:
+**Wie oft das eintritt, hängt an der Lage und nicht an der Beschwörerzahl.** Spielstile und
+RSR-Einstellungen unterscheiden sich, und schon der Zeitpunkt des Kampfeintritts streut die Zyklen;
+der synchrone Pull ist der Randfall, nicht der Regelfall. Deshalb ist die Antwort keine feste Regel,
+sondern eine, die die Lage erkennt und zwischen Strategien wechselt.
 
 | | Inhalt | Bewertung |
 |---|---|---|
 | **V1** | Den Searing Light eines anderen Beschwörers als Buff-Fenster für die eigenen Aetherflow-Ausgaben werten | umsetzen |
 | **V2** | Das Zündfenster auf alle großen Beschwörungen erweitern, sobald ein zweiter Beschwörer in der Gruppe ist | umsetzen, mit Gruppenprüfung als Schalter |
-| **V4** | Die Bindung an die Beschwörung ganz lösen, Zündung bei Kampf und vorhandenem Ziel | gemessen, nie die beste Wahl — nicht umsetzen |
-| **V7** | Zusätzlich außerhalb eines Fensters zünden, sobald der Buff vollständig abgelaufen ist — ohne jede Buchführung über andere | **erreicht das Schadensoptimum auf einen Prozentpunkt genau, zustandsfrei** — umsetzen |
-| V5 / V6 | dasselbe, aber mit Buch über die Wiederholzeiten der anderen | gemessen wirkungslos, außerhalb des Bereichs sogar schädlich — verworfen |
+| **V8** | Die hybride Regel des Auftraggebers: Phase anstreben, bei tatsächlichem Zuvorkommen weiterrücken, Buchführung über belegte Phasen, Lückenfüllen nur mit rechtzeitiger Rückkehr | **umsetzen** |
+| V4 | Die Bindung an die Beschwörung ganz lösen, Zündung bei Kampf und vorhandenem Ziel | gemessen, nie die beste Wahl — nicht umsetzen |
+| V7 | Außerhalb eines Fensters zünden, sobald der Buff abgelaufen ist, ohne jede Buchführung | im Schadensmaß knapp vor V8 in der gemischten Gruppe, aber blind gegen die Lage — nicht umsetzen |
+| V5 / V6 | Buch über die **Wiederholzeiten** der anderen führen | die Frage war falsch gestellt, s. unten — in V8 aufgegangen |
 
 **Der maßgebliche Bereich ist eins bis fünf.** Eine reguläre Achtergruppe trägt vier bis fünf
 Schadensklassen, eine Vierergruppe zwei. Sechs und mehr Beschwörer sind Sondergruppen außerhalb des
@@ -126,7 +128,42 @@ fremde Buff. Sein Gegenstück `HasSearingLight` (`SummonerRotation.cs:271`) ruft
 `PlayerHasStatus(true, …)` und zählt nur den eigenen — auch das ist für seine ursprüngliche Frage
 richtig. Aus dem Zusammentreffen beider entsteht der Befund von V1.
 
-## Die Fälle von einem bis fünf Beschwörern, gemessen
+## Was im Kampf ankommt, gemessen
+
+**Das Maß ist der Anteil des eigenen Schadens, der unter einem Buff fällt** — nicht die Zahl der
+Sekunden mit Buff. Searing Light hebt den Schaden um 5 %, eine Sekunde ist also wert, was sie
+produziert, und eine Solar-Sekunde trägt 1217 Potenz je GCD gegen 495 in einem Primal-Block, Faktor
+2,46 (`smn_phase_potency.py`). Sekunden zu zählen beantwortet deshalb eine andere Frage als „wo zahlt
+sich die Ladung aus"; die Abdeckungstabellen weiter unten bleiben als Zwischengröße stehen und sind
+als solche zu lesen.
+
+**Die Gruppe, die tatsächlich vorkommt, ist die gemischte:** Ein Beschwörer folgt dieser Regel, die
+anderen sind fremde Spieler mit eigener Rotation. Lauf vom 13.09.2026, über alle Reihenfolgen
+gemittelt, wer bei gleichzeitiger Gelegenheit zuerst zündet:
+
+| Lage | heute | **V8** | V7 |
+|---|---|---|---|
+| synchroner Pull | 27 % | **37 %** | 39 % |
+| halb versetzt | 46 % | 46 % | 46 % |
+| voll versetzt | 74 % | 74 % | 74 % |
+
+**Sobald die Rotationen auseinanderlaufen, ist die heutige enge Regel bereits optimal** — jeder
+Beschwörer setzt seinen Buff in seine stärkste Phase, und die Streuung schließt die Lücken von
+selbst. Der Gewinn entsteht ausschließlich im synchronen Fall, und dort um zehn Prozentpunkte.
+
+**Folgen alle Beschwörer dieser Regel**, liegt V8 überall über dem heutigen Verhalten, auch bei fünf
+Beschwörern und vollem Versatz (78 % gegen 74 %). V7 liegt beim synchronen Pull höher (87 % gegen
+74 %), weil dort alle Phasen kollidieren und blindes Lückenfüllen der einzige Ausweg ist — ein Fall,
+der nur einträte, wenn die ganze Gruppe diesen Fork benutzte.
+
+**Warum V8 und nicht V7**, obwohl V7 in der gemischten Gruppe zwei Punkte vorn liegt: V7 zündet, sobald
+der Buff aus ist, und gibt damit die eigene Solar-Phase auf, sobald irgendeine Lücke entsteht. Der
+Vorsprung entsteht nicht aus besserer Platzierung, sondern daraus, dass der fremde Beschwörer dann
+seinerseits zum Zug kommt — ein Nebeneffekt, der verschwindet, sobald der andere nicht mehr blind
+zündet. V8 trifft dieselbe Entscheidung aus der Lage heraus und behält die stärkste Phase, wenn sie
+zu halten ist.
+
+## Die Fälle von einem bis fünf Beschwörern, Abdeckung in Sekunden
 
 Die Prozentzahlen früherer Fassungen waren Kopfrechnungen, und eine davon war falsch. Sie stammen
 jetzt aus `.github/scripts/audit/searing_light_coverage.py`, das die Regeln durchrechnet statt ihr
@@ -285,7 +322,7 @@ Die Sperre öffnet fünf Sekunden vor Ablauf, damit eine Auffrischung im Fenster
 eines Fensters ist dasselbe Verschwendung — eine ganze Ladung für wenige Sekunden Nettogewinn. Eine
 Fassung ohne diese Bedingung wurde gemessen und fiel bei zwei Beschwörern **unter** V2.
 
-### Die Buchführung, die nichts bringt
+### Die Buchführung: die Frage war falsch gestellt
 
 Der naheliegende Zusatz wäre, die Wiederholzeiten der anderen mitzuschreiben. Die Information ist
 verfügbar: `IStatus.SourceId` benennt den Urheber, `StatusHelper.PlayerHasStatus` (`:1164`) liest ihn
@@ -293,9 +330,23 @@ verfügbar: `IStatus.SourceId` benennt den Urheber, `StatusHelper.PlayerHasStatu
 wiederkehren kann. Die Regel wäre dann: außerhalb eines Fensters nur zünden, wenn kein anderer
 bekannter Beschwörer die Lücke decken könnte.
 
-**Gemessen bringt das nichts.** Im gesamten maßgeblichen Bereich, bei jeder Versatzstufe, liefert die
-Fassung mit Buchführung dieselben Werte wie die ohne — der Selbsttest des Modells hält das als
-Invariante fest, damit es nicht unbemerkt aufhört zu gelten.
+**Als „wer könnte die nächste Lücke decken" gestellt, bringt die Frage nichts.** Im gesamten
+maßgeblichen Bereich liefert diese Fassung dieselben Werte wie die ohne Buch, und der Grund steht
+unten: Niemand kann vor seiner eigenen Wiederholzeit zünden, es gibt also nichts, worauf
+zurückzustehen wäre.
+
+**Als „wer besetzt dauerhaft welche Phase" gestellt, ist sie der Kern der Regel.** Das ist die
+Auskunft, die ein Client wirklich hat: Der Status nennt seine Quelle, und aus den beiden Perioden
+folgt, wohin ein fremder Zünder zurückkehrt. Searing Light kommt nach 120 Sekunden wieder, ein
+Beschwörungsfenster alle 60 — ein Zünder trifft also stets Fenster **gleicher Parität**. Ein fremder
+Cast in einem meiner geraden Fenster heißt: Er nimmt dauerhaft Solar. Einer in einem ungeraden: Er
+wechselt zwischen Bahamut und Phoenix, beide sind vergeben. Und ein Cast **zwischen** meinen Fenstern
+sagt über meine Phasen gar nichts — er zündet in seiner eigenen, die von meiner weggelaufen ist.
+
+**Belegt gilt eine Phase erst bei Wiederholung.** Ein einmaliges Zuvorkommen ist Zufall; erst wenn
+derselbe Beschwörer nach seiner Wiederholzeit erneut dort steht, gehört ihm die Phase. Die frühere
+Fassung buchte schon beim ersten Mal und gab dadurch Phasen auf, die niemand hielt — bei fünf
+Beschwörern und vollem Versatz kostete das 53 gegen 78 Prozent.
 
 **Der Grund ist einfach und war zu übersehen:** Ein anderer Beschwörer kann ohnehin nicht zünden,
 bevor seine eigene Wiederholzeit frei ist. Es gibt also nichts, worauf zurückzustehen wäre. Kann er,
@@ -715,17 +766,22 @@ dann vollständig greifen und zwei Beschwörer in einer Gruppe gewöhnlich sind.
 
 ## Empfehlung
 
-**V1 und V7 umsetzen, beide unter der Gruppenprüfung. V4, V5 und V6 nicht.**
+**V1 und V8 umsetzen, beide unter der Gruppenprüfung. V4, V5, V6 und V7 nicht.**
 
 | | Gewinn im maßgeblichen Bereich | Preis |
 |---|---|---|
 | **V1** | Aetherflow-Ausgaben liegen ab zwei Beschwörern im laufenden Fenster statt daneben | eine zusätzliche Eigenschaft, keine Zustandshaltung |
-| **V7** | bei drei bis fünf Beschwörern 50 / 66 / 83 % statt 33 % — die Obergrenze; bei zwei 33 % statt 17 % | zwei Bedingungen in derselben Methode, keine Zustandshaltung |
+| **V8** | beim synchronen Pull 37 % des eigenen Schadens unter Buff statt 27 %; bei versetzten Rotationen unverändert, also kein Rückschritt dort, wo heute schon optimal gespielt wird | Zustand über den Kampf: je Phasenart der zuletzt beobachtete fremde Zünder und wie oft er wiederkam |
 
-**Beide sind zustandsfrei.** Damit entfallen die Gründe, die eine Aufteilung in zwei Stufen sinnvoll
-gemacht hätten: Es gibt keine Beobachtungsmechanik, die für sich zu erproben wäre. Wer will, kann
-trotzdem zuerst nur die Fenstererweiterung (V2) setzen und die zweite Bedingung nachziehen — V7 ist
-so gebaut.
+**V8 verlangt Zustand, und das ist der bewusst gezahlte Preis.** Ohne Beobachtung lässt sich die Lage
+nicht erkennen, und ohne Lageerkennung ist jede feste Regel in mindestens einer Lage unterlegen. Der
+Zustand ist klein und selbstheilend: drei Einträge, jeder verfällt, wenn der Zünder nach seiner
+Wiederholzeit plus Nachfrist ausbleibt. Rücksetzpunkte bei Kampf-, Gruppen- und Zonenwechsel sind
+damit nicht nötig — ein neuer Kampf beginnt ohne gültige Einträge, weil alle verfallen sind.
+
+**Was zu beobachten ist, beobachtet der Client ohnehin:** `IStatus.SourceId` nennt den Urheber des
+laufenden Buffs, und die eigene Phase steht fest. Mehr braucht die Regel nicht — insbesondere keine
+Abfrage fremder Abklingzeiten, die es nicht gibt.
 
 **Die Reihenfolge der Primals gehört nicht dazu, und sie bleibt, wie sie ist.** Gemessen trägt Ifrit
 zuerst 0,01 Prozent gegenüber der Voreinstellung, 0,09 gegenüber der schlechtesten Reihenfolge und
@@ -735,21 +791,32 @@ aussteht, ist deshalb keine Codeänderung, sondern die Empfehlung, `AddCrimsonCy
 und `PreferTitanWhileMoving` einzuschalten.
 
 **Die Gruppenprüfung bleibt der Schalter.** Bei einem einzelnen Beschwörer ändert sich nichts, und
-das ist gemessen und nicht bloß beabsichtigt: Das Modell weist für einen Beschwörer in allen
-Varianten 17 % aus. In einer zweiten Ausbaustufe ließe sich die Bedingung auf die genauere Fassung
-verschärfen — ausweichen nur nach tatsächlicher Blockade —, was allerdings den Zustand verlangt, den
-V7 gerade vermeidet.
+das ist gemessen und nicht bloß beabsichtigt: Das Modell weist für einen Beschwörer in jeder Variante
+denselben Wert aus.
+
+**Ein Ansatz ist geprüft und verworfen:** einem Beschwörer, der in der Gruppe steht, aber nie zündet,
+die stärkste Phase zu überlassen. Der Gedanke trägt — wer im selben Fenster steht und jede
+Gleichzeitigkeit verliert, bringt seine Ladung nie in den Kampf, und Ausweichen brächte zwei Ladungen
+statt einer ins Spiel. Gemessen bringt es beim synchronen Pull einen Prozentpunkt und kostet bei
+halbem Versatz zwei, weil die Regel „durch mich blockiert" nicht von „diesen Zyklus still" trennen
+kann. Wer falsch rät, verschenkt die beste Phase umsonst.
 
 ## Die Umsetzung
 
-**Drei Eingriffe, alle zustandsfrei, zusammen 60 Zeilen einschließlich Begründung.**
+**Umgesetzt ist bisher V1 und die Fenstererweiterung.** Die hybride Regel V8 ist im Modell gebaut und
+gemessen, im Plugin noch nicht.
 
-| Ort | Eingriff |
-|---|---|
-| `SummonerRotation.cs` | `HasAnySearingLight` — `PlayerHasStatus(false, …)` statt `true`, also der Buff gleich welcher Herkunft |
-| `SummonerRotation.cs` | `AnotherSummonerInParty` — lebender Beschwörer in der Gruppe, Stufe aus `SearingLightPvE.Level` |
-| `SMN_Reborn.cs` (dreimal) | V1: Painflare, Necrotize und Fester fragen nach `HasAnySearingLight` |
-| `SMN_Reborn.cs` | V2 und V7: `burstInSolar \|\| (AnotherSummonerInParty && (inBigInvocation \|\| !HasAnySearingLight))` |
+| Ort | Eingriff | Stand |
+|---|---|---|
+| `SummonerRotation.cs` | `HasAnySearingLight` — `PlayerHasStatus(false, …)` statt `true`, also der Buff gleich welcher Herkunft | umgesetzt |
+| `SummonerRotation.cs` | `AnotherSummonerInParty` — lebender Beschwörer in der Gruppe, Stufe aus `SearingLightPvE.Level` | umgesetzt |
+| `SMN_Reborn.cs` (dreimal) | V1: Painflare, Necrotize und Fester fragen nach `HasAnySearingLight` | umgesetzt |
+| `SMN_Reborn.cs` | Zündfenster `burstInSolar \|\| (AnotherSummonerInParty && (inBigInvocation \|\| !HasAnySearingLight))` | umgesetzt, entspricht V7 |
+| **offen** | **V8**: Phasenbuch je Phasenart, Ausweichen erst bei belegter Phase, Lückenfüllen nur bei rechtzeitiger Rückkehr | im Modell fertig, im Plugin offen |
+
+**Der offene Teil ersetzt die letzte Zeile, er ergänzt sie nicht.** V7 zündet blind, sobald der Buff
+aus ist; V8 entscheidet aus der Lage. Beides nebeneinander hieße, dass die blinde Bedingung die
+überlegte jedes Mal überholt.
 
 **Die Stufenschwelle kommt aus den Spieldaten, nicht aus einer Zahl im Code.** `SearingLightPvE.Level`
 liest `ClassJobLevel` der Aktion; ein Beschwörer unterhalb dieser Stufe hat kein Searing Light zu
