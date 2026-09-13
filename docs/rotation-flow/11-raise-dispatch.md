@@ -181,8 +181,24 @@ Bei eingeschalteter Einstellung — der Vorgabe — ist das Verhalten unverände
 | `NoHardCast` | nicht hart wirken | kein Zweig | stimmig |
 | `HardCastNormal` | „while Swiftcast is on cooldown" | „kommt Spontanität noch" | stimmig |
 | `HardCastSwiftCooldown` | „… and cooldown is higher than raise cast time" | genau das | stimmig |
-| `HardCastOnlyHealer` | „**while Swiftcast is on cooldown** and other healers are dead" | **nur** die Rezzer-Bedingung | **Widerspruch, offen** |
-| `HardCastOnlyHealerSwiftCooldown` | beides | beides | stimmig |
+| `HardCastOnlyHealer` | „while Swiftcast is on cooldown and other **healers** are dead" | Reservierung **und** Rezzer-Bedingung | **Widerspruch im zweiten Halbsatz, offen** |
+| `HardCastOnlyHealerSwiftCooldown` | beides, ebenfalls „healers" | beides | derselbe Widerspruch |
+
+Die Reservierung ist in allen vier Hartwirk-Modi geprüft; das war zeitweise nur bei dreien der Fall.
+Offen ist der zweite Halbsatz: Der Text sagt „healers", geprüft wird die weitere Menge der Rezzer
+(siehe unten). Der Code ist damit strenger als sein Text — in der Achtergruppe mit einem toten und
+einem lebenden Heiler, aber einem lebenden Beschwörer, wirkt der Weißmagier nicht mehr hart. Die
+Auflösung steht als Entscheidungspunkt in `TODO.md`.
+
+**Die Reservierung fragt zusätzlich, ob Spontanität dem Spieler überhaupt zur Verfügung steht.**
+`IsCoolingDown` liest den Recast-Zeitgeber, und eine Aktion, die der Spieler nicht wirken kann, hat
+keinen laufenden. Ohne eine Stufenprüfung meldete der Ausdruck für jeden Rezzer unterhalb der
+Spontanitätsstufe — auch für den gesynchten in älterem Inhalt — dauerhaft „Spontanität ist bereit",
+schloss damit jeden Hartwirk-Zweig, während der Spontanitätspfad an `CanUse` scheiterte: **niemand
+wurde wiederbelebt.** Die Wiederbelebung kommt im Stufenaufstieg deutlich vor der Spontanität, die
+Lücke ist also eine ganze Stufenspanne und kein Randfall. `SwiftcastComingForRaise` und
+`HardCastBeatsWaitingForSwiftcast` prüfen deshalb `EnoughLevel` mit; auf voller Stufe ändert das
+nichts (A86).
 
 ### Die Bezugsmenge: wer gilt als lebender Rezzer
 

@@ -2321,6 +2321,22 @@ Die zweite Fassung verlor die gewebte Fähigkeit des führenden Blocks. Mountain
 
 **Erreichter Prüfgrad:** statische Prüfung, `check_cs_structure`, `scan13`, `scan18`, Compile in der CI. Im Spiel nicht beobachtet — die Wirkung ist die Rückkehr zum Upstream-Verhalten, das der Auftraggeber vor dem Eingriff gespielt hat.
 
+### A86 · Nachprüfung der Wiederbelebungs-Commits vom 11./12.09. (B2, Gruppe Wiederbelebung)
+
+**Anlass:** Schritt 4 des Auftrags vom 12.09. — die Code-Commits des Registers B2 zusammenhängend nachprüfen. Diese Gruppe umfasst `7606f3cbd` (Wiederbeleber statt Heiler zählen), `e0ec82d74` (`SwiftcastComingForRaise` statt `IsCoolingDown`) und `c99da333a` (Swiftcast-Reservierung für `HardCastOnlyHealer`). Alle drei sitzen im selben Dispatch in `CustomRotation_GCD.GCD()`, zweimal ausgeschrieben für Spieler-zuerst und Gruppe.
+
+**Bestätigt, am alten Code gemessen statt aus der Commit-Nachricht übernommen:** Der Vorzustand lautete `RaiseSpell(out act, true) && deadhealers.Count == allhealers.Count && deadhealers.Count > 0`, beide Mengen **ohne** den Spieler. Ein Alleinheiler — jede Vierergruppe, also der Regelfall des Auftraggebers im Dungeon — verglich damit `0 == 0` hinter `> 0` und hat **nie** hart gewirkt. Im Kampf hieß das: Mitspieler liegt tot, Swiftcast in der Erholung, und der Weißmagier fängt den Acht-Sekunden-Zauber trotz gewählter Einstellung nicht an. Das ist behoben. Ebenfalls bestätigt: `RaiseSpell` stand vor dem Mengenvergleich und setzte dabei Ziel und `ShouldEndSpecial`; die Reihenfolge ist jetzt umgekehrt.
+
+**Bestätigt:** Die Behauptung aus `c99da333a`, alle vier Hardcast-Modi versprächen die Reservierung, trägt — jede der vier `[Description]`-Zeichenketten in `HardCastRaiseType.cs` beginnt mit „Raise while Swiftcast is on cooldown". Die Wahrheitstabelle aus `e0ec82d74` stimmt ebenfalls: `!SwiftcastComingForRaise` und das alte `IsCoolingDown` unterscheiden sich allein bei „Einstellung aus, Swiftcast bereit".
+
+**Gefunden und behoben — derselbe Fehler eine Ebene tiefer:** `IsCoolingDown` liest den Recast-Zeitgeber (`ActionIdHelper.IsCoolingDown` → `IsActionOffCooldown`), und eine Aktion, die der Spieler gar nicht wirken kann, hat keinen laufenden Zeitgeber. Für einen Wiederbeleber unterhalb der Swiftcast-Stufe — oder darunter gesyncht in älterem Inhalt, einschließlich der unteren Ebenen des Palasts der Toten — meldete der Ausdruck also dauerhaft „Swiftcast ist bereit". Mit der Einstellung an schloss das **alle vier** Hardcast-Zweige, während der Swiftcast-Pfad in `RaiseSpell` an `CanUse` scheiterte: **niemand wurde wiederbelebt, weder schnell noch hart.** Die Wiederbelebung kommt deutlich vor Swiftcast, die Lücke ist also eine ganze Stufenspanne. Behoben durch `SwiftcastPvE.EnoughLevel` in `SwiftcastComingForRaise` und in der neuen Eigenschaft `HardCastBeatsWaitingForSwiftcast`, die zugleich die vier wortgleichen Kopien der Abwägungsbedingung zusammenzieht — die Lücke lag in allen vieren zugleich, was die Kopien als Defektklasse ausweist. Auf voller Stufe ist `EnoughLevel` wahr und nichts ändert sich.
+
+**Zuordnung der Verantwortung:** Drei der vier Zweige erbten den Defekt aus dem Upstream. Bei `HardCastOnlyHealer` hat `c99da333a` ihn **eingeführt** — vorher hatte dieser Modus überhaupt keine Swiftcast-Bedingung. Der Commit war in der Sache richtig, sein Wirkungsbereich wurde nur nicht bis zur Verfügbarkeit der Aktion verfolgt.
+
+**Offen, als eigener Punkt in `TODO.md`:** `7606f3cbd` hat die Bedingung von „andere Heiler" auf „andere Wiederbeleber" verschoben, der Optionstext sagt weiterhin „other healers are dead". Code und Text widersprechen sich, und die Verschiebung ändert das Kampfverhalten in der Achtergruppe.
+
+**Erreichter Prüfgrad:** statische Prüfung gegen den alten und den neuen Quelltext, Compile in der CI. Im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -2381,9 +2397,9 @@ Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt e
 | Commit | Datum | Art | Betreff | Prüfstand |
 |---|---|---|---|---|
 | `9188ca490` | 2026-09-11 | Code | Ask the game about the feather, and ask everyone about their level | ZWEIFELHAFT |
-| `7606f3cbd` | 2026-09-11 | Code | Ask the only-healer modes whether anyone else can raise at all | ZWEIFELHAFT |
+| `7606f3cbd` | 2026-09-11 | Code | Ask the only-healer modes whether anyone else can raise at all | **NACHGEPRÜFT → A86** |
 | `93789065c` | 2026-09-11 | Code | feat(SMN): widen the Searing Light window when a second Summoner is present | ZWEIFELHAFT |
-| `e0ec82d74` | 2026-09-11 | Code | Hard cast the raise when Swiftcast is not coming at all | ZWEIFELHAFT |
+| `e0ec82d74` | 2026-09-11 | Code | Hard cast the raise when Swiftcast is not coming at all | **NACHGEPRÜFT → A86** |
 | `6e0c3bfc5` | 2026-09-11 | Code | Repair the file the move broke, and check for that class from now on | ZWEIFELHAFT |
 | `95f0139c1` | 2026-09-11 | Code | Say what the feather setting now actually does | ZWEIFELHAFT |
 | `c3e1126e7` | 2026-09-11 | Code | Wire up Phoenix Down, and stop it spending two feathers | ZWEIFELHAFT |
@@ -2395,7 +2411,7 @@ Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt e
 | `115a58988` | 2026-09-12 | Code | fix(WHM): weigh the slow hold by enemy output, not by head count | ZWEIFELHAFT |
 | `934b222b0` | 2026-09-12 | Code | fix: decide the Reprisal grade by level, not by status id | ZWEIFELHAFT |
 | `8a88ec299` | 2026-09-12 | Code | fix: Enhanced Reprisal extends the duration only, not the reduction | ZWEIFELHAFT |
-| `c99da333a` | 2026-09-12 | Code | Give HardCastOnlyHealer the Swiftcast reservation its text promises | ZWEIFELHAFT |
+| `c99da333a` | 2026-09-12 | Code | Give HardCastOnlyHealer the Swiftcast reservation its text promises | **NACHGEPRÜFT → A86** |
 | `9e1a0eb9e` | 2026-09-12 | Code | Put the shield credit behind a switch, default off | ZWEIFELHAFT |
 | `a8ba8b0ed` | 2026-09-12 | Code | Write out the ordinals PredictedDamageType owes a foreign plugin | ZWEIFELHAFT |
 | `92bad597e` | 2026-09-12 | Generator | feat(gamedata): generate the full German name index from the game files | ZWEIFELHAFT |

@@ -138,7 +138,7 @@ public partial class CustomRotation
 
 				if (hardcastraisetype == HardCastRaiseType.HardCastSwiftCooldown)
 				{
-					if (!Service.Config.RaisePlayerBySwift || (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge))
+					if (HardCastBeatsWaitingForSwiftcast)
 					{
 						if (RaiseSpell(out act, true))
 						{
@@ -164,7 +164,7 @@ public partial class CustomRotation
 
 				if (hardcastraisetype == HardCastRaiseType.HardCastOnlyHealerSwiftCooldown)
 				{
-					if (!Service.Config.RaisePlayerBySwift || (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge))
+					if (HardCastBeatsWaitingForSwiftcast)
 					{
 						if (!AnyOtherLivingRaiser() && RaiseSpell(out act, true))
 						{
@@ -326,7 +326,7 @@ public partial class CustomRotation
 
 				if (hardcastraisetype == HardCastRaiseType.HardCastSwiftCooldown)
 				{
-					if (!Service.Config.RaisePlayerBySwift || (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge))
+					if (HardCastBeatsWaitingForSwiftcast)
 					{
 						if (RaiseSpell(out act, true))
 						{
@@ -346,7 +346,7 @@ public partial class CustomRotation
 
 				if (hardcastraisetype == HardCastRaiseType.HardCastOnlyHealerSwiftCooldown)
 				{
-					if (!Service.Config.RaisePlayerBySwift || (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null && Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge))
+					if (HardCastBeatsWaitingForSwiftcast)
 					{
 						if (!AnyOtherLivingRaiser() && RaiseSpell(out act, true))
 						{
@@ -468,9 +468,38 @@ public partial class CustomRotation
 	/// With the setting on, `!SwiftcastComingForRaise` equals the old `IsCoolingDown` in every
 	/// combination; it differs only for setting-off with Swiftcast ready, which is exactly the
 	/// state that raised nobody.
+	///
+	/// <c>EnoughLevel</c> closes the same hole one level down. <c>IsCoolingDown</c> reads the recast
+	/// timer (<see cref="ActionIdHelper.IsCoolingDown"/>), and an action the player cannot cast at
+	/// all has no timer running - so a raiser below Swiftcast's level, or synced under it in older
+	/// content, reported "Swiftcast is ready" forever. With the setting on that shut every hard cast
+	/// branch while the Swiftcast path itself failed on CanUse, and nobody was raised by either.
+	/// Raise comes well before Swiftcast, so the gap is a real span of levels rather than a corner
+	/// case. At full level EnoughLevel is true and nothing changes.
 	/// </summary>
 	private bool SwiftcastComingForRaise =>
-		Service.Config.RaisePlayerBySwift && !SwiftcastPvE.Cooldown.IsCoolingDown;
+		Service.Config.RaisePlayerBySwift
+		&& SwiftcastPvE.EnoughLevel
+		&& !SwiftcastPvE.Cooldown.IsCoolingDown;
+
+	/// <summary>
+	/// For the two modes that promise "cooldown is higher than raise cast time": is starting the
+	/// hard cast now better than waiting for Swiftcast?
+	///
+	/// It is when the rotation is not spending Swiftcast on raises at all, when Swiftcast is not
+	/// available to this player in the first place (same reason as in
+	/// <see cref="SwiftcastComingForRaise"/>), or when the wait is longer than the cast itself.
+	/// This cannot simply read <c>!SwiftcastComingForRaise</c>: that is true for any running
+	/// cooldown and would drop the very comparison these two modes exist for.
+	///
+	/// It lives here rather than four times in the dispatch because the four copies are the same
+	/// decision - the previous gap was in all four of them at once.
+	/// </summary>
+	private bool HardCastBeatsWaitingForSwiftcast =>
+		!Service.Config.RaisePlayerBySwift
+		|| !SwiftcastPvE.EnoughLevel
+		|| (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null
+			&& Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge);
 
 	private bool RaiseSpell(out IAction? act, bool mustUse)
 	{
