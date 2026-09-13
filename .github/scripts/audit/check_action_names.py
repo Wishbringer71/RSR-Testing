@@ -40,6 +40,19 @@ def load_dictionary(path=DICT_PATH):
         return json.load(handle)
 
 
+# The naming rule admits two sources and no others: the Square Enix job guide, and the user's own
+# statement. Anything else - a web search, a translation, a derivation from the English name - is
+# not a source but a guess, and the rule exists because guessing produced "Armlänge" for an action
+# actually called Rückstoß. Checking only that *a* source is named measures the wrong thing: it
+# passes an entry that names an inadmissible one, which is exactly what the Reflexion entry does.
+ADMISSIBLE_SOURCES = ('user', 'job guide', 'jobguide')
+
+
+def source_is_admissible(source):
+    lowered = (source or '').lower()
+    return any(token in lowered for token in ADMISSIBLE_SOURCES)
+
+
 def validate(data, identifiers):
     """Return a list of problems; empty means the dictionary is sound."""
     problems = []
@@ -108,7 +121,15 @@ def self_test(identifiers):
     if not validate(clash, identifiers):
         raise AssertionError('one German name for two actions was accepted')
 
-    print('self-test ok: sound entry accepted; unknown identifier, missing source and '
+    if source_is_admissible('C30, via web search'):
+        raise AssertionError('a web search was accepted as an admissible source')
+    if not source_is_admissible('user, 2026-09-12'):
+        raise AssertionError('the user\'s own statement was rejected as a source')
+    if not source_is_admissible('Square Enix job guide'):
+        raise AssertionError('the job guide was rejected as a source')
+
+    print('self-test ok: sound entry accepted; unknown identifier, missing source, '
+          'an inadmissible source and '
           'a clashing German name each caught')
     print()
 
@@ -184,6 +205,20 @@ def main():
     print('%-*s  %-22s %s' % (width, 'German', 'English', 'identifier'))
     for entry in entries:
         print('%-*s  %-22s %s' % (width, entry['de'], entry['en'], entry['identifier']))
+
+    # An entry whose source the naming rule does not admit is not a build failure: while the job
+    # guide is blocked by the egress there is no way to replace it, and a check that is red for
+    # a reason nobody can act on gets ignored - which costs more than it buys. It is named on
+    # every run instead, so that using such a name in new text is a decision and not an oversight.
+    inadmissible = [e for e in entries if not source_is_admissible(e.get('source'))]
+    if inadmissible:
+        print()
+        print('%d entr%s on a source the naming rule does not admit. Use the English '
+              'identifier' % (len(inadmissible),
+                              'y rests' if len(inadmissible) == 1 else 'ies rest'))
+        print('in new text until the user states the German name:')
+        for entry in inadmissible:
+            print('  %s = %s (source: %s)' % (entry['de'], entry['en'], entry.get('source')))
 
     # The same action under two German names is not an error, but it is worth seeing.
     by_en = {}

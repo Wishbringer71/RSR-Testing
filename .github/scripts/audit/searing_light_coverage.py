@@ -145,8 +145,11 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
             if buff_until > t:
                 weighted += w
                 covered += STEP
-        elif buff_until > t:
-            covered += STEP
+        # Nothing is counted outside the window. `covered` is divided by the window length, so
+        # counting the rest of the fight into it made the result the whole fight's coverage
+        # stretched by fight/window - the settling table printed 332%, the dropout table up to
+        # 542%. Both are meant to answer "how well is this stretch covered", and that question
+        # only takes the instants inside it.
 
         remaining = buff_until - t
         blocked = remaining > GUARD_LEAD
@@ -277,6 +280,22 @@ def self_test():
                     raise AssertionError('%s lowered burst coverage at n=%d drift=%d: %.3f < %.3f'
                                          % (mode, n, drift, got, base))
 
+    # A windowed measurement is a share of that window and cannot exceed it. This is the defect the
+    # review found: coverage was accumulated over the whole fight and divided by the window length,
+    # so the settling and dropout tables printed 332% and up to 542%. Both tables read as plain
+    # percentages, so nothing failed and nobody could tell the figure was not the one asked for.
+    for n in (1, 3, 5):
+        for w in ((0.0, 120.0), (300.0, 480.0), (FIGHT - 120.0, FIGHT)):
+            got = simulate(n, 'simple', 0, FIGHT, window=w)
+            if not 0.0 <= got <= 1.0 + TOL:
+                raise AssertionError('windowed coverage outside 0..1 at n=%d window=%s: %.3f'
+                                     % (n, w, got))
+        whole = simulate(n, 'simple', 0, FIGHT)
+        full_window = simulate(n, 'simple', 0, FIGHT, window=(0.0, FIGHT))
+        if abs(whole - full_window) > TOL:
+            raise AssertionError('a window spanning the fight must equal the unwindowed run at n=%d'
+                                 % n)
+
     # Writing off a Summoner who stopped casting can never do worse than keeping him in the books.
     for n in range(2, 6):
         out = (0, 300.0, 480.0)
@@ -284,6 +303,20 @@ def self_test():
         v6 = simulate(n, 'adaptive', 0, window=(300.0, 480.0), dropout=out)
         if v6 < v5 - TOL:
             raise AssertionError('adaptive fell below informed under dropout at n=%d' % n)
+
+    # What the repaired measurement shows, kept so it cannot quietly stop being true: while one
+    # Summoner is out, keeping books on him costs half the coverage. V5 holds its charge waiting
+    # for a caster who never returns; V7 asks only whether the buff is running and fires. At three
+    # Summoners and up that is a factor of two - which is the cost of bookkeeping in the one
+    # situation bookkeeping was supposed to be good at, and the reason the simple rule is not
+    # merely equal to the informed one but safer.
+    for n in range(3, 6):
+        out = (0, 300.0, 480.0)
+        v5 = simulate(n, 'informed', 0, window=(300.0, 480.0), dropout=out)
+        v7 = simulate(n, 'simple', 0, window=(300.0, 480.0), dropout=out)
+        if v7 < v5 + TOL:
+            raise AssertionError('the simple rule no longer beats the informed one under dropout '
+                                 'at n=%d: %.3f vs %.3f' % (n, v7, v5))
 
     # Dropping the demi tie entirely can never do worse than only casting in Solar.
     for n in range(1, 9):
@@ -310,7 +343,9 @@ def self_test():
                                          % (n, got, ceiling))
 
     print('self-test ok: single Summoner near 20/120, each widening step never lowers coverage, '
-          'charge ceiling respected, bookkeeping buys nothing\n')
+          'charge ceiling respected, bookkeeping buys nothing,\n'
+          '  a windowed measurement stays a share of its window, and under dropout the simple '
+          'rule beats the informed one\n')
 
 
 def main():

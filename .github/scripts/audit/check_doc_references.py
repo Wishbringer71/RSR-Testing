@@ -104,6 +104,24 @@ def identifiers_near(path, line_no, names):
     return near, elsewhere, len(lines)
 
 
+# A line worth citing has something on it. These do not: a blank, or a line that carries only
+# block punctuation. The review that added this check found four references in TODO.md pointing at
+# a closing brace and a blank line after an upstream merge - all four had been right when written,
+# and all four sat in the blind spot below, because their sentence names no identifier. Citing a
+# line means claiming something stands there, so this needs no identifier to be decidable.
+EMPTY_LINE = re.compile(r'^[\s{}()\[\];,]*$')
+
+
+def cited_line_is_empty(path, line_no):
+    """Does the cited line carry nothing but whitespace or block punctuation?"""
+    with open(path, encoding='utf-8', errors='replace') as handle:
+        lines = handle.readlines()
+    if not 1 <= line_no <= len(lines):
+        return False, ''
+    text = lines[line_no - 1].rstrip('\n')
+    return bool(EMPTY_LINE.match(text)), text
+
+
 def check(paths):
     """Return (hard, drifted, unverifiable) findings."""
     hard, drifted, unverifiable = [], [], []
@@ -143,8 +161,15 @@ def check(paths):
                     continue
 
                 if not names:
-                    unverifiable.append('%s cites %s:%d with no identifier to check it '
-                                        'against' % (where, cited, line_no))
+                    empty, content = cited_line_is_empty(target, line_no)
+                    if empty:
+                        hard.append('%s cites %s:%d, but that line is empty%s'
+                                    % (where, cited, line_no,
+                                       '' if not content.strip()
+                                       else ' but for %r' % content.strip()))
+                    else:
+                        unverifiable.append('%s cites %s:%d with no identifier to check it '
+                                            'against' % (where, cited, line_no))
                 elif not near and elsewhere:
                     first = sorted(elsewhere.items(), key=lambda kv: kv[1])[0]
                     drifted.append('%s cites %s:%d, but %s sits at line %d'
@@ -182,8 +207,26 @@ def self_test():
     if len(REFERENCE.findall(one)) + len(CONTINUATION.findall(one)) != 1:
         raise AssertionError('a single reference was miscounted')
 
+    # The blind spot this check was extended to cover: a sentence naming no identifier used to
+    # pass unexamined, and eleven references in the tree pointed at a closing brace or a blank
+    # line. A cited line has to carry something.
+    with tempfile.TemporaryDirectory() as tmp:
+        code = os.path.join(tmp, 'Empty.cs')
+        with open(code, 'w', encoding='utf-8') as handle:
+            handle.write('void Real() { }\n' + '\n' + '\t}\n' + '\tvar x = 1;\n')
+
+        for line_no, expect_empty in ((1, False), (2, True), (3, True), (4, False)):
+            empty, _ = cited_line_is_empty(code, line_no)
+            if empty != expect_empty:
+                raise AssertionError('line %d judged %s' % (line_no, 'empty' if empty else 'full'))
+
+        # Out of range is the other check's business, not this one's.
+        if cited_line_is_empty(code, 99)[0]:
+            raise AssertionError('a line past the end must not be reported as empty')
+
     print('self-test ok: an identifier at the cited line is accepted, one 36 lines away is '
-          'reported with its real position')
+          'reported with its real position, and a citation of a blank or brace-only line is '
+          'caught without one')
     print()
 
 

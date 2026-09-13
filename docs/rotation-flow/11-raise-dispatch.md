@@ -22,14 +22,14 @@ Verdrahtung der Phönixfeder und deren Zieleignung.
 ## Ursache
 
 `WeaponRemain` ist derselbe Wert wie `DataCenter.DefaultGCDRemain`
-(`CustomRotation_OtherInfo.cs:1624`). Auswahl und Ausführung messen dieselbe Größe, und ihre
+(`CustomRotation_OtherInfo.cs:1730`). Auswahl und Ausführung messen dieselbe Größe, und ihre
 Bedingungen schließen einander aus:
 
 | Stelle | Bedingung | Schicht |
 |---|---|---|
 | `CustomRotation_GCD.RaiseSpell`, Zweig `RaisePlayerBySwift` | wählt Spontanität **nur** bei `WeaponRemain <= 0.5f` | Auswahl |
 | `RSCommands_Actions.DoAction` | verweigert **jede** Fähigkeit bei `0 < DefaultGCDRemain <= 0.5f` | Ausführung |
-| `RSCommands_Actions.cs:46` | dieselbe Sperre im Klick-Gate | Ausführung |
+| `RSCommands_Actions.cs:47` | dieselbe Sperre im Klick-Gate | Ausführung |
 | `CustomRotation_Ability.cs:28` | dieselbe Sperre im Fähigkeiten-Dispatcher | Auswahl |
 
 Spontanität ist eine Fähigkeit. Die beiden Fenster decken sich bis auf den einzigen Punkt
@@ -122,8 +122,8 @@ Der Wiederbelebungsblock existiert **zweimal**, und eine Einstellung entscheidet
 
 | `RaisePlayerFirst` | Ort | Was davor gewinnt |
 |---|---|---|
-| an | `CustomRotation_GCD.cs:123` | Notfall, Unterbrechung, Reinigung, Provokation |
-| **aus (Vorgabe)** | `:350` | zusätzlich **die gesamte Heilung** (`:235`) und die Einzelziel-Verteidigung (`:333`) |
+| an | `CustomRotation_GCD.cs:124` | Notfall, Unterbrechung, Reinigung, Provokation |
+| **aus (Vorgabe)** | `:312` | zusätzlich **die gesamte Heilung** (`:241`) und die Einzelziel-Verteidigung (`:299`) |
 
 Mit der Vorgabe steht die Wiederbelebung hinter jeder Heilung. Das ist die dokumentierte Bedeutung
 der Einstellung und kein Defekt — es erklärt aber, warum ihre Wahl das beobachtete Verhalten stark

@@ -192,7 +192,7 @@ Schreibweise zusätzlich die Vorgängeraktion, die gegatete nicht.
 
 Ob das schadet, hängt daran, ob `FullThrustPvE.CanUse` oberhalb der Traitstufe
 überhaupt noch `true` liefern kann. `BaseAction.Use()` castet `ID`, nicht `AdjustedID`
-(`BaseAction.cs:278/301`), verlässt sich also auf die Aktionsersetzung des Spiels — der
+(`BaseAction.cs:225/300`), verlässt sich also auf die Aktionsersetzung des Spiels — der
 Cast wäre folgenlos richtig, aber die Combo-Buchführung von RSR läuft über die andere
 Aktion. Ohne Spielbeobachtung nicht entscheidbar.
 

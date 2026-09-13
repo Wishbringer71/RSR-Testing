@@ -212,7 +212,7 @@ Die Dauer ist belegt, nicht erinnert: `ActionId.resx`, Aktion 3638, „Living De
 
 Schadensreduktion wirkt also in keinem Fall auf die Heilentscheidung; nur Barriere und Invulnerabilität tun es.
 
-### Trägt die Schildanrechnung? — jetzt durch Umschalten entscheidbar · N
+### Die Schildanrechnung ist fachlich falsch gebaut und gehört entfernt · N
 
 Die Anrechnung (`StateUpdater.ShouldHealSingle`, beide Zweige) rechnet den Restschild auf die effektive Gesundheit und verzögert die Einzelziel-Heilung um genau die Barrierengröße: The Blackest Night sind 25 % der maximalen HP, die oGCD-Schwelle 0,65 wird damit erst bei real rund 40 % erreicht. Sie steht jetzt hinter `CreditShieldToEffectiveHp`, **voreingestellt aus** (= Upstream-Verhalten); der Regelverstoß — Verhaltensänderung ohne Nachweis und ohne Schalter — ist damit behoben (A83).
 
@@ -224,7 +224,11 @@ Die Anrechnung (`StateUpdater.ShouldHealSingle`, beide Zweige) rechnet den Rests
 
 **Rückkopplung über die eigene Barriere:** `DivineBenison` steht in `ShieldStatus`, und `DivineBenisonPvE` ist im Weißmagier der erste oGCD der Einzelziel-Heilkette, vor `TetragrammatonPvE`. Der Tank fällt unter die Schwelle, Divine Benison feuert, die Barriere hebt die effektive Quote über die Schwelle, und Tetragrammaton bleibt liegen — pro Abfall genau ein oGCD.
 
-**Auflösungsbedingung:** zwei Durchläufe derselben Instanz, einer je Schalterstellung. **Empfehlung: aus lassen, bis der Vergleich vorliegt** — die Sicherheitsrichtung des Auftraggebers spricht für die Fassung, die früher heilt.
+**Die Sachfrage ist entschieden, und zwar ohne Spieltest.** Der Auftraggeber hat sie gestellt: Ein Schild läuft ab — ist das Ziel danach geheilt? Nein. Eine Barriere verhindert Schaden, sie stellt keine Gesundheit her. Beide Ausgänge lassen den Träger genau dort stehen, wo er vorher stand: Läuft sie ungenutzt ab, sind die HP unverändert; fängt sie den Treffer, ist sie verbraucht und die HP sind unverändert. Verändert hat sich nur die verbleibende Zeit — der nächste Treffer kommt jetzt auf einen Träger ohne Barriere, und der Heiler beginnt später als er müsste. Die Anrechnung verrechnet also eine Größe, die Schaden abwehrt, mit einer Größe, die Schaden ausgleicht, und behandelt die Barriere wie bereits geflossene Heilung.
+
+**Der Gegenbeleg steht zehn Zeilen tiefer in derselben Methode.** Für Unverwundbarkeiten ist die Lehre dort ausgeschrieben: „‚Cannot die right now' is not ‚does not need healing': Superbolide puts the gunbreaker at 1 HP on purpose, and when the window closes the target stands exactly where it left them." Umgesetzt ist sie als **abgesenkte Schwelle** (`Math.Min(normal, HealthProtectedRatio)`) — der Schutz macht die Heilung seltener, nicht die Gesundheit größer. Die Schildanrechnung wählt im selben Block die stärkere Form, die genau den Fehler macht, den der Nachbarfall benennt: Sie rechnet die HP hoch. Was für eine Unverwundbarkeit nicht zulässig war — und die schützt sicherer als jede Barriere —, kann für einen Schild nicht zulässig sein.
+
+**Empfehlung: die Anrechnung samt Schalter entfernen**, Verhalten also endgültig auf Upstream. Sie kann im Spiel nichts gewinnen, was ihren Preis wert wäre: Im besten Fall spart sie eine Heilung, die ohnehin nur Ressourcen gekostet hätte, im schlechtesten schaltet sie die oGCD-Heilung im Moment der größten Not ab (der „zu spät gezündet"-Fall oben). Das ist die Richtung, die der Spielweise des Auftraggebers — Sicherheit der Gruppe vor Schadensausstoß — entgegensteht. Ein Schalter, dessen eine Stellung belegbar schlechter ist, ist keine Wahlmöglichkeit, sondern eine Falle. **Vor der Entscheidung des Auftraggebers wird nichts entfernt.**
 
 ### `HasSurvivingShield` misst die **kürzeste** Schildrestzeit, nicht die längste · N, R
 

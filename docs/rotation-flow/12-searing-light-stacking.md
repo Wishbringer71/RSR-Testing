@@ -243,8 +243,8 @@ Fassung ohne diese Bedingung wurde gemessen und fiel bei zwei Beschwörern **unt
 ### Die Buchführung, die nichts bringt
 
 Der naheliegende Zusatz wäre, die Wiederholzeiten der anderen mitzuschreiben. Die Information ist
-verfügbar: `IStatus.SourceId` benennt den Urheber, `StatusHelper.PlayerGetStatus` (`:1529`) liest ihn
-bereits. Ab der ersten beobachteten Zündung eines Beschwörers steht fest, wann er frühestens
+verfügbar: `IStatus.SourceId` benennt den Urheber, `StatusHelper.PlayerHasStatus` (`:1164`) liest ihn
+über den Quellenfilter in `AnyStatusMatches` bereits. Ab der ersten beobachteten Zündung eines Beschwörers steht fest, wann er frühestens
 wiederkehren kann. Die Regel wäre dann: außerhalb eines Fensters nur zünden, wenn kein anderer
 bekannter Beschwörer die Lücke decken könnte.
 
@@ -267,6 +267,14 @@ seinerseits gebunden ist.
 Schaden, den die Buchführung selbst anrichtet. Gegen einen dreiminütigen Ausfall gemessen liefert sie
 genau dasselbe wie die Fassung, die nie Buch geführt hat: 11, 22, 44, 66 Prozent bei zwei bis fünf
 Beschwörern. Wer nichts aufschreibt, hat auch nichts zu vergessen.
+
+**Was die Buchführung in diesem Fall kostet, ist beziffert: die Hälfte.** Ohne Verfallsdatum kommt sie
+über denselben Ausfall auf 11, 11, 22, 33 Prozent — bei drei Beschwörern und mehr genau halb so viel
+Abdeckung wie die Fassung ohne Buch. Der Vorgang im Kampf ist der, den jeder kennt: Ein Beschwörer
+stirbt, wird gerade wiederbelebt oder steht in einer Mechanik. Wer Buch führt, hält seine eigene
+Ladung zurück, weil der Ausgefallene rechnerisch „dran" wäre — und der zündet nie. Wer nur fragt, ob
+gerade ein Buff läuft, zündet und deckt die Lücke. Damit ist die einfache Regel der aufwendigen nicht
+bloß ebenbürtig, sondern im ungünstigen Fall überlegen; der Selbsttest des Modells hält das fest.
 
 ### Was damit entfällt
 

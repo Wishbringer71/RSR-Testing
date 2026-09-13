@@ -74,7 +74,7 @@ Eine Lesart bleibt bewusst ausgeklammert: „Überleben des Tanks" gilt hier als
 Vorrang *innerhalb* der Frage, ob eine Tank-Schutzmechanik respektiert wird — nicht
 als genereller Vorrang des Tanks vor der Gruppe. Für diesen anderen Fall führt RSR
 bereits eine eigene Rangfolge (Selbst → Heiler → Tank → niedrigste Gesundheit,
-`ActionTargetInfo.cs:3566-3583`). Sie hier ebenfalls umzustellen wäre eine zweite,
+`ActionTargetInfo.cs:3180-3205`). Sie hier ebenfalls umzustellen wäre eine zweite,
 größere Änderung.
 
 ## Taxonomie nach Auslöser

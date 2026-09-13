@@ -123,10 +123,10 @@ sind darüber erreichbar. Die Wirkkette, der Betroffenenkreis und die drei Beheb
 `TODO.md`; der Scan kann den Fall nicht von den 81 korrekten trennen und benennt die Grenze im
 Kommentar, statt sie zu verschweigen.
 
-## scan2.py — 541 Treffer, kein einziger Defekt
+## scan2.py — Treffer in Masse, kein einziger Defekt
 
-Der Extremfall derselben Fehlerform. Über dem bereinigten Baum meldete `scan2.py` **541 Treffer in
-sieben Klassen**, und geprüft war jeder davon richtiger Code. Vier Klassen sind verengt, drei sind
+Der Extremfall derselben Fehlerform. Über dem bereinigten Baum meldete `scan2.py` beim Durchgang vom
+12.09.2026 **541 Treffer in sieben Klassen**, und geprüft war jeder davon richtiger Code. Vier Klassen sind verengt, drei sind
 gar nicht entscheidbar und werden nur noch gezählt.
 
 | Klasse | vorher | nachher | Was falsch gemessen wurde |
@@ -142,6 +142,14 @@ gar nicht entscheidbar und werden nur noch gezählt.
 **Der Nullbefund ist gegengeprüft, nicht geglaubt.** Am echten Baum konstruiert: die `* 100f`-Umrechnung
 in `ObjectHelper` entfernt → (a) meldet die Stelle; den `hpCount == 0`-Rücksprung in `DataCenter`
 stillgelegt → (i) meldet beide Divisionen. Nach der Rücknahme beide wieder null.
+
+**Die drei gezählten Klassen werden nicht Stelle für Stelle nachgeprüft**, und das ist eine
+Entscheidung, keine offene Aufgabe. Für sie existiert keine Regel, die richtig von falsch trennt —
+das ist ihr Grund, gezählt statt gemeldet zu werden. Ohne Regel wäre eine Durchsicht kein Nachweis,
+sondern mein Urteil je Stelle, und für eine Frage wie „gehört diese letzte Ladung an eine
+Burst-Bedingung" ist das Urteil ohne Spielbeobachtung nicht belastbar. Der Zähler bleibt, damit ein
+sprunghaftes Wachstum auffällt; er wird wieder zur Fundstelle, sobald ein Defekt auftritt, den eine
+dieser Klassen hätte sehen müssen.
 
 ## scan6.py — die dritte Bindung: ein Enum, das per Cast von außen gefüllt wird
 
@@ -405,8 +413,8 @@ verschiedene Anfänge gelten.
 
 ## scan15.py — Codeverweise in den Dokumenten, die ihr Ziel verloren haben
 
-Die Konzepte zitieren den Baum nach Datei und Zeile — `WHM_Reborn.cs:566`,
-`StatusHelper.cs:781` —, und jeder Commit an diesen Dateien verschiebt das Ziel, ohne das
+Die Konzepte zitieren den Baum nach Datei und Zeile — `WHM_Reborn.cs` samt Zeilennummer,
+`StatusHelper.cs` samt Zeilennummer —, und jeder Commit an diesen Dateien verschiebt das Ziel, ohne das
 Zitat anzufassen. Das Zitat sieht weiterhin richtig aus; wer ihm folgt, landet auf fremdem
 Code oder, schlimmer, auf Code, der sich plausibel wie der Gegenstand liest. Das ist dieselbe
 Alterung wie bei den Statuslisten, eine Ebene höher: bei der Niederschrift richtig, nach der
