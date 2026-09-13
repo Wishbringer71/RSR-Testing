@@ -47,8 +47,8 @@ hier.
 | Fehlende Ids (`HallowedGround`, `HallowedGround_1302`, `UndeadRebirth`) | umgesetzt |
 | Schutzstatus senkt die Heilschwelle, statt das Flag zu unterdrücken | umgesetzt |
 | Living-Dead-Rückhaltung als Uhrregel, hinter Option | umgesetzt |
-| Sonderbehandlung für The Blackest Night | **nicht nötig** — die vorhandene Schildanrechnung erfasst den Fall |
-| Bemessung dieser Anrechnung | **offen** — sie senkt die Schwelle um den vollen Barrierenwert, nicht nur den Rang (`TODO.md`) |
+| Sonderbehandlung für The Blackest Night | **nicht nötig**, aber aus dem umgekehrten Grund: Eine Barriere ist kein Grund, später zu heilen — s. u. |
+| Schildanrechnung auf die Heilschwelle | **entfernt** (A85). Gesundheit und Schild addieren sich, sie ersetzen einander nicht |
 | Messbaustein für Heilraten auf Gruppenmitglieder | verworfen, kein Verbraucher |
 
 ## Prüfmaßstab — die Rangordnung
@@ -394,6 +394,24 @@ Unverwundbarkeit das Fenster als endend gemeldet hätte.
 Die Option ist nötig, weil RSR Living Dead selbst als Notrettung bei
 `HealthForDyingTanks` zündet. Dort ist der Tod die Katastrophe, und Walking Dead
 verlangt danach eine volle Maximalgesundheit an Heilung in zehn Sekunden.
+
+### Die Barriere senkt den Heilbedarf nicht
+
+**Ein Schild verhindert Schaden, er stellt keine Gesundheit her.** Ein vollgeheilter Tank **mit**
+Barriere ist besser geschützt als ein geschildeter Tank mit wenig Gesundheit; beide Größen addieren
+sich, sie ersetzen einander nicht. Eine laufende Barriere ist damit die Gelegenheit, das Polster zu
+vergrößern, nicht der Grund, es kleiner zu lassen. Läuft sie ungenutzt ab, steht der Träger
+unverändert tief; fängt sie den Treffer, ist sie verbraucht und er steht ebenso tief — verändert hat
+sich nur die verbleibende Zeit.
+
+Die frühere Anrechnung (`CreditShieldToEffectiveHp`) rechnete den Schild auf die Gesundheitsquote und
+verzögerte damit die Einzelziel-Heilung um die Barrierengröße — bei The Blackest Night 25
+Prozentpunkte. Sie ist entfernt (A85); das Verhalten entspricht wieder dem Upstream.
+
+**Heilung steht dem Aufzehren der Barriere nicht entgegen**, und darin liegt der Unterschied zur
+Minderungssperre: Wie schnell eine Barriere verbraucht wird, hängt allein am eingehenden Schaden. Die
+einzige Kopplung läuft umgekehrt — stirbt der Träger vorher, entfällt Dark Arts. Was den Verbrauch
+verhindert, ist Schadensminderung, und dagegen steht die Sperre in Konzept 10.
 
 ### Zwei Lücken in der Schildanrechnung, die diese Prüfung nebenbei fand — beide geschlossen
 

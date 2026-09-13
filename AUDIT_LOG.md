@@ -2303,6 +2303,24 @@ Die zweite Fassung verlor die gewebte Fähigkeit des führenden Blocks. Mountain
 
 **Erreichter Prüfgrad:** Statische Selbstprüfung, `check_cs_structure`, `scan17` (keine Kollision mit der Ausführungssperre), Compile in der CI. Nicht im Spiel beobachtet.
 
+### A85 · Schildanrechnung auf die Heilschwelle entfernt (Nutzerentscheidung)
+
+**Anlass:** Der Auftraggeber hat die Sachfrage gestellt, die der Eingriff nie beantwortet hatte — „der Schild läuft irgendwann ab, ist dann das Ziel geheilt?" — und anschließend das Argument geliefert, das sie entscheidet: **Ein vollgeheilter Tank mit Schild ist besser geschützt als ein geschildeter Tank mit wenig Gesundheit.** Gesundheit und Barriere addieren sich, sie ersetzen einander nicht.
+
+**Was entfernt wurde:** die Option `CreditShieldToEffectiveHp`, die beiden Anrechnungsstellen in `StateUpdater.ShouldHealSelf` und `ShouldHealSingle`, die nur dort gelesenen Helfer `ShieldCreditAllowed` und `ShieldSurvivalHorizon` sowie die Konstante `ShieldSurvivalFallbackSeconds`. Das Verhalten entspricht wieder dem Upstream: Barrieren gehen nicht in die Heilschwelle ein.
+
+**Wirkung im Kampf:** Trug der Tank The Blackest Night, sprang die oGCD-Heilung erst bei real 45 % statt 70 % an, die Zauber-Heilung bei 40 % statt 65 %. Dazu die Rückkopplung beim Weißmagier — Divine Benison steht in `ShieldStatus` und ist der erste oGCD der Einzelziel-Heilkette; seine eigene Barriere hob die Quote über die Schwelle, und Tetragrammaton blieb liegen. Beides entfällt.
+
+**Entstehung, und sie erklärt den Fehler:** Der einführende Commit `27c7b6942` (13.08.2026) heißt „Weigh shield magnitude and duration in heal-**priority** decisions" und begründet mit einem Vergleich **zwischen Zielen**. Angefasst wurden dann `StatusHelper` und `StateUpdater`; die Zielwahl in `ActionTargetInfo` blieb unberührt. Die Absicht war die Priorisierung, die Umsetzung wurde eine Schwelle — Ignorant Surgery nach Parnas. Die Entwarnung derselben Nachricht („it can only defer a heal, never suppress a genuine emergency") enthielt den Fehler bereits: Das Verzögern ist der Schaden.
+
+**Klassenerhebung, begründet eingeschränkt:** `GetEffectiveHpPercent` hat 18 Leser. Alle übrigen stellen die **Überlebensfrage**, für die die Größe richtig ist — Notfall-Provoke auf einen sterbenden Co-Tank, Starfall-Abwägung in `PhantomDefault`, Blaumagier-Schwellen, Immunitätsgrenze des Jagd-Dolls. Kein Defektklassenfall.
+
+**Nicht entfernt:** `HasSurvivingShield` bleibt trotz fehlender Leser — `public static` in `RotationSolver.Basic` und damit Paketschnittstelle (Betroffenenkreis R); für ihre eigene Frage ist sie richtig gebaut. Ebenso bleibt `StatusHelper.ShieldStatus`, die `scan13` in der CI gegen ausgelassene Barrieren prüft.
+
+**Was offen bleibt und als eigener Punkt in `TODO.md` steht:** die ursprüngliche Absicht des Commits. Die Zielwahl der Heilung vergleicht reine Prozentsätze und kennt weder Barriere noch absoluten Lebenspuffer — 60 % eines kleinen Pools sind weniger Punkte als 50 % eines großen. Das ist Upstream-Verhalten, nicht Fork-Arbeit, und ohne Spielbeobachtung nicht zu entscheiden: Der Tank nimmt Dauerschaden, der Schadensausteiler nur Mechaniken.
+
+**Erreichter Prüfgrad:** statische Prüfung, `check_cs_structure`, `scan13`, `scan18`, Compile in der CI. Im Spiel nicht beobachtet — die Wirkung ist die Rückkehr zum Upstream-Verhalten, das der Auftraggeber vor dem Eingriff gespielt hat.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
