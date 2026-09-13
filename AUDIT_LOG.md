@@ -2337,6 +2337,30 @@ Die zweite Fassung verlor die gewebte Fähigkeit des führenden Blocks. Mountain
 
 **Erreichter Prüfgrad:** statische Prüfung gegen den alten und den neuen Quelltext, Compile in der CI. Im Spiel nicht beobachtet.
 
+### A87 · Nachprüfung der übrigen Code-Commits vom 11./12.09. (B2)
+
+**Anlass:** Schritt 4 des Auftrags, Fortsetzung von A86. Geprüft wurden die verbleibenden fünfzehn Code-Commits des Registers, gruppiert nach inhaltlichem Zusammenhang statt nach Reihenfolge.
+
+**Phönixfeder (`9188ca490`, `95f0139c1`, `c3e1126e7`) — bestätigt.** Die Eignungsprüfung fragt jetzt das Spiel nach Gegenstand 4570 mit der Leiche als Ziel statt nach dem Zauber Wiederbelebung. Das ist im Kampf der entscheidende Unterschied: Eine Feder trägt typischerweise ein Tank oder Schadensausteiler, und der hat gar keine Wiederbelebung — die alte Prüfung konnte am **Träger** scheitern statt an der Leiche. Der Doppelverbrauch ist ebenfalls belegt behoben: `UsePhoenixDown` meldet die Feder jetzt nur noch, statt sie zusätzlich selbst zu wirken, während `RSCommands.DoAction` sie ein zweites Mal gewirkt hätte. `CanUseThis` zählt den Spieler mit (`excludeSelf: false`) — richtig, denn ein lebender eigener Heiler wirkt statt zu werfen.
+
+**Reprisal (`934b222b0`, `8a88ec299`) — bestätigt, mit einer offenen Belegstelle.** Die 10 % sind am Artefakt belegt: Der Wirktext von Aktion 7535 in `Action.resx` lautet „Reduces damage dealt by nearby enemies by 10%. Duration: s" — die Minderung steht da, die Dauer ist leer, und genau so markieren die Spieldaten einen merkmalsabhängigen Wert. Die Stufe **98** dagegen ist im Baum nicht belegbar: `TraitRotationGetter.AddToList` verwirft jedes Merkmal ohne Klassenzuordnung, sämtliche Rollenmerkmale fehlen also im erzeugten `Rotation.resx` (eigener Eintrag in `TODO.md`). Die Zahl trägt nur die Dauer, nicht die Minderung; eine falsche Stufe verschöbe die Auffrischung um fünf Sekunden und nichts weiter.
+
+**Sanctus-Halten bei verlangsamtem Pull (`2ebd54728`, `da96afac1`, `6b27618d2`, `28fe2c9e0`, `115a58988`) — vier Fassungen, die letzte trägt, aber mit einem Rechenfehler.** Der Endstand misst nicht mehr Köpfe, sondern Restausstoß gegen `AoeCount * 100`, und das ist die Flächenregel in der Einheit, in der Minderungen sich ausdrücken lassen. **Gefunden:** Die Verlangsamung ging mit Faktor 0,80 ins Produkt, obwohl sie als einzige der fünf Drosselungen keine Schadensminderung ist — s. C57. Behoben.
+
+**Die Kosten der Zwischenfassungen sind keine Laufzeitkosten:** Alle vier lagen auf demselben Zweig und wurden vom Auftraggeber jeweils vor der nächsten korrigiert; im Spiel war nie eine davon.
+
+**Living Dead (`78856488b`) — bestätigt.** Der Commit nimmt eine eigene Falschaussage zurück (die Schwelle sei zehn Sekunden lang gesenkt) und belegt die Dauer aus `ActionId.resx`. Die Wirkung im Kampf steht im Code: `NoNeedHealingInvuln` ist `WillStatusEndGCD(2, …)`, die gesenkte Schwelle gilt also nur, solange mehr als zwei GCDs bleiben, und die letzten beiden GCDs gehören wieder der normalen Schwelle — genau die Regel des Auftraggebers, und sie war bereits Voreinstellung.
+
+**`PredictedDamageType` (`a8ba8b0ed`) — bestätigt, verhaltensneutral.** Ausgeschriebene Ordinalwerte plus Vertragskommentar an der Grenze zu BossModReborn. Die eigentliche Frage — ob die Zuordnung stimmt, wie sie es bei `SpecialMode` nicht tat — ist damit **nicht** beantwortet und steht weiter offen.
+
+**`check_cs_structure.py` (`6e0c3bfc5`) — bestätigt und im Betrieb bewährt.** Das Skript ist seither Teil jeder Prüfung dieser Sitzung und hat in ihr keinen Fehlalarm erzeugt.
+
+**Searing Light (`93789065c`) — im Code richtig, aber hinter dem Konzept zurück.** Die drei Bausteine sind sauber: `HasAnySearingLight` fragt nach dem Buff statt nach dem eigenen, `AnotherSummonerInParty` nimmt die Stufenschwelle aus `SearingLightPvE.Level` statt aus einer Zahl, und Allianzmitglieder bleiben draußen, weil der Buff sie nicht erreicht. Umgesetzt ist damit V1 des Konzepts. Die Empfehlung des Konzepts lautet nach der Vorgabe des Auftraggebers **V1 und V8**; V8 — Phase anstreben, bei Zuvorkommen weiterrücken, Buchführung über belegte Phasen — ist nicht gebaut.
+
+**Schildanrechnung (`9e1a0eb9e`) — widerlegt und bereits zurückgenommen**, s. A85.
+
+**Erreichter Prüfgrad:** statische Prüfung gegen Quelltext, Wirktexte in `Action.resx`/`ActionId.resx` und den jeweiligen Vorzustand; `check_cs_structure`, `check_doc_references`, Compile in der CI. Im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -2396,24 +2420,24 @@ Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt e
 
 | Commit | Datum | Art | Betreff | Prüfstand |
 |---|---|---|---|---|
-| `9188ca490` | 2026-09-11 | Code | Ask the game about the feather, and ask everyone about their level | ZWEIFELHAFT |
+| `9188ca490` | 2026-09-11 | Code | Ask the game about the feather, and ask everyone about their level | **NACHGEPRÜFT → A87** |
 | `7606f3cbd` | 2026-09-11 | Code | Ask the only-healer modes whether anyone else can raise at all | **NACHGEPRÜFT → A86** |
-| `93789065c` | 2026-09-11 | Code | feat(SMN): widen the Searing Light window when a second Summoner is present | ZWEIFELHAFT |
+| `93789065c` | 2026-09-11 | Code | feat(SMN): widen the Searing Light window when a second Summoner is present | **NACHGEPRÜFT → A87** |
 | `e0ec82d74` | 2026-09-11 | Code | Hard cast the raise when Swiftcast is not coming at all | **NACHGEPRÜFT → A86** |
-| `6e0c3bfc5` | 2026-09-11 | Code | Repair the file the move broke, and check for that class from now on | ZWEIFELHAFT |
-| `95f0139c1` | 2026-09-11 | Code | Say what the feather setting now actually does | ZWEIFELHAFT |
-| `c3e1126e7` | 2026-09-11 | Code | Wire up Phoenix Down, and stop it spending two feathers | ZWEIFELHAFT |
-| `78856488b` | 2026-09-12 | Code | Correct the ten-second claim, and name the lever the rule actually has | ZWEIFELHAFT |
-| `2ebd54728` | 2026-09-12 | Code | feat(WHM): hold Holy while the pack is slowed, the rule's third timing | ZWEIFELHAFT |
-| `da96afac1` | 2026-09-12 | Code | feat: weigh a hostile's remaining output, not just whether it is slowed | ZWEIFELHAFT |
-| `6b27618d2` | 2026-09-12 | Code | fix(WHM): the slow hold asks for a majority inside Holy's radius | ZWEIFELHAFT |
-| `28fe2c9e0` | 2026-09-12 | Code | fix(WHM): the slow hold counts the enemies the slow has not reached | ZWEIFELHAFT |
-| `115a58988` | 2026-09-12 | Code | fix(WHM): weigh the slow hold by enemy output, not by head count | ZWEIFELHAFT |
-| `934b222b0` | 2026-09-12 | Code | fix: decide the Reprisal grade by level, not by status id | ZWEIFELHAFT |
-| `8a88ec299` | 2026-09-12 | Code | fix: Enhanced Reprisal extends the duration only, not the reduction | ZWEIFELHAFT |
+| `6e0c3bfc5` | 2026-09-11 | Code | Repair the file the move broke, and check for that class from now on | **NACHGEPRÜFT → A87** |
+| `95f0139c1` | 2026-09-11 | Code | Say what the feather setting now actually does | **NACHGEPRÜFT → A87** |
+| `c3e1126e7` | 2026-09-11 | Code | Wire up Phoenix Down, and stop it spending two feathers | **NACHGEPRÜFT → A87** |
+| `78856488b` | 2026-09-12 | Code | Correct the ten-second claim, and name the lever the rule actually has | **NACHGEPRÜFT → A87** |
+| `2ebd54728` | 2026-09-12 | Code | feat(WHM): hold Holy while the pack is slowed, the rule's third timing | **NACHGEPRÜFT → A87** |
+| `da96afac1` | 2026-09-12 | Code | feat: weigh a hostile's remaining output, not just whether it is slowed | **NACHGEPRÜFT → A87** |
+| `6b27618d2` | 2026-09-12 | Code | fix(WHM): the slow hold asks for a majority inside Holy's radius | **NACHGEPRÜFT → A87** |
+| `28fe2c9e0` | 2026-09-12 | Code | fix(WHM): the slow hold counts the enemies the slow has not reached | **NACHGEPRÜFT → A87** |
+| `115a58988` | 2026-09-12 | Code | fix(WHM): weigh the slow hold by enemy output, not by head count | **NACHGEPRÜFT → A87** |
+| `934b222b0` | 2026-09-12 | Code | fix: decide the Reprisal grade by level, not by status id | **NACHGEPRÜFT → A87** |
+| `8a88ec299` | 2026-09-12 | Code | fix: Enhanced Reprisal extends the duration only, not the reduction | **NACHGEPRÜFT → A87** |
 | `c99da333a` | 2026-09-12 | Code | Give HardCastOnlyHealer the Swiftcast reservation its text promises | **NACHGEPRÜFT → A86** |
-| `9e1a0eb9e` | 2026-09-12 | Code | Put the shield credit behind a switch, default off | ZWEIFELHAFT |
-| `a8ba8b0ed` | 2026-09-12 | Code | Write out the ordinals PredictedDamageType owes a foreign plugin | ZWEIFELHAFT |
+| `9e1a0eb9e` | 2026-09-12 | Code | Put the shield credit behind a switch, default off | **NACHGEPRÜFT → A85** |
+| `a8ba8b0ed` | 2026-09-12 | Code | Write out the ordinals PredictedDamageType owes a foreign plugin | **NACHGEPRÜFT → A87** |
 | `92bad597e` | 2026-09-12 | Generator | feat(gamedata): generate the full German name index from the game files | ZWEIFELHAFT |
 | `bddeb5e03` | 2026-09-12 | Generator | Read German names through the language argument, and resolve the game path | ZWEIFELHAFT |
 | `2c6f2b5c1` | 2026-09-11 | CI | Name the upstream release the tree actually holds, and check it in CI | ZWEIFELHAFT |
@@ -2546,4 +2570,5 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C54 | `TODO.md`, Schildanrechnungs-Eintrag: „Zweiter, kleinerer Fork-Effekt auf dieselbe Schwelle“ — `GetHealingOfTimeRatio` interpoliere zwischen 0,70 und 0,65, und `TrySustainRegenOnTank` halte den Regen dauerhaft nach, „das sind fünf Prozentpunkte, dauerhaft“ | Gegen `upstream/main` gemessen ist **nichts** davon Fork-Arbeit: `GetHealingOfTimeRatio` steht dort in `StateUpdater.cs`, `Service.Config.HealthSingleAbilityHot` wird dort an vier Stellen gelesen, und die Vorgaben sind wortgleich — `_healthSingleAbilityHot = 0.65f`, `_healthSingleAbility = 0.7f`. Auch `UsePreRegen` existiert in Upstream und ist dort voreingestellt an; Fork-Arbeit ist allein der **Auslöser** des Pre-Regen (`fd19aad18`, Tankposition statt Countdown), nicht die Schwelle. Eigener Anteil, zweifach: Die Aussage war nie gegen Upstream geprüft, sondern aus der Fork-Nähe des umgebenden Codes geschlossen — und die erste Gegenprüfung lieferte einen **stillen Nullbefund**, weil `grep -c` gegen die Ausgabe eines Befehls lief, der nichts fand: `HealthSingleAbilityHot` ist ein privates Feld hinter dem `[JobConfig]`-Generator, kein `public float`. Dieselbe Fehlerform wie beim fehlenden `re.MULTILINE` desselben Tages | Aussage entfernt; der Eintrag führt jetzt allein die Schildanrechnung als Fork-Effekt, und die ist hinter einem Schalter (A83). Für den Auftraggeber: Von den rund 30 Prozentpunkten Schwellenabsenkung sind 25 Fork und abschaltbar, die übrigen 5 sind Upstream-Verhalten |
 | C55 | `TODO.md`, Eintrag zur Barrieren-Sperre: Verlangsamung aus fremder Hand sei „von hier aus nicht zu schließen“, weil `SlowStatus` nur einen Leser habe | Der Auftraggeber hat widersprochen, und die Widerlegung stand in derselben Sitzung bereits gelesen im Baum: Der Slow-Debuff sitzt auf den **Gegnern**, und `PackSlowed` misst ihn genau so — `SurveyHostileStatus(JobRange, SlowStatus, out slowed)` fragt nicht, wer ihn gelegt hat. Die Zahl der **Leser** einer Statusliste wurde als Aussage über die **Messbarkeit** des Zustands genommen — dasselbe Surrogat wie „Fundstellen statt Wirkungsbereich“. Sachlich bleibt der Punkt klein, aber aus dem richtigen Grund: Abtausch verlangsamt nur Gegner, die den **Träger** treffen — der Tank hält die Aggro, ein Schadensausteiler müsste sie erst bekommen und getroffen werden. Die Wirkung ist zudem einseitig: Fremder Slow kann das Zünden der Barriere verzögern, die Barriere aber nicht den fremden Cast | Eintrag berichtigt: messbar, praktisch vernachlässigbar, Empfehlung „nicht bearbeiten“ |
 | C56 | Bericht vom 13.09. und die Gewichtung in `12-searing-light-stacking.md`: „Mit einem zweiten Beschwörer fallen alle Zündgelegenheiten auf dieselbe Sekunde“, synchroner Pull als Regelfall behandelt | Der Auftraggeber hat widersprochen: Spielstile und RSR-Einstellungen unterscheiden sich, und schon der Zeitpunkt des Kampfeintritts streut die Zyklen. Der synchrone Fall ist ein Randfall. Eigener Anteil: Das Modell rechnet jede Gruppe so, als folgten **alle** Beschwörer derselben Regel — im Kampf ist der zweite Beschwörer ein fremder Spieler mit eigener Rotation. Diese Annahme war die einzige der sechs Modellgrenzen, die nicht benannt war, und sie trägt die gesamte Spalte „synchron“, aus der die Empfehlung abgeleitet wurde. Zweiter Anteil: V5/V6 wurden als „Buchführung bringt nichts“ verworfen, ohne die Bauform zu prüfen, die der Auftraggeber meint — nicht „wer könnte als nächstes“, sondern „wer war zuerst, und was lerne ich daraus für meine nächste Phase“ | Vorgabe des Auftraggebers im Konzept aufgenommen; Modell und Empfehlung sind daran neu zu messen |
+| C57 | `HostileOutputPercent`, `08-mitigation-synergy.md` und die Wirkungstabelle: ein verlangsamter Gegner behalte **80** Prozent seines Ausstoßes | Die Verlangsamung ist der einzige Eintrag des Produkts, der **keine Schadensminderung** ist, und wurde gleichwohl wie eine verrechnet. Der Wirktext von Rückstoß (Aktion 7548) sagt Slow **+20 %** — die Verzögerung zwischen den Angriffen wächst, der einzelne Treffer bleibt gleich groß. Zwanzig Prozent mehr Zeit je Angriff lassen im selben Zeitraum 1/1,20 der Angriffe übrig, also **83 %** der Rate. Eigener Anteil: genau die Bauform, die `CLAUDE.md` seit der Schildanrechnung benennt — eine Größe des Spiels verrechnet, ohne zuerst zu klären, was sie im Spiel bedeutet. Der Wirktext lag dabei die ganze Zeit in `Action.resx`, und sein Vorzeichen war der Beleg | Faktor auf `1/(1+SlowDelayIncrease)` umgestellt, Konstante am Wirktext belegt; Tabelle und Rechenbeispiele in Konzept 08 und im Code berichtigt (283 statt 280, 366 statt 360, kumuliert 75 statt 72). Im Kampf ändert sich die Entscheidung nur bei einem `AoeCount` ab 5 — darunter liegen beide Zahlen auf derselben Seite der Schwelle |
 

@@ -595,6 +595,12 @@ public partial class CustomRotation
 	private const int EnhancedMitigationDebuffLevel = 98;
 
 	/// <summary>
+	/// How much longer a slowed enemy takes between attacks. Arm's Length (7548) afflicts
+	/// "Slow +20%", and the sign is the point: the delay grows, the hit does not shrink.
+	/// </summary>
+	private const float SlowDelayIncrease = 0.20f;
+
+	/// <summary>
 	/// What share of its damage output a hostile still has, in percent, given the throttles on it.
 	/// </summary>
 	/// <remarks>
@@ -635,7 +641,13 @@ public partial class CustomRotation
 
 		if (hostile.HasStatus(false, StatusHelper.SlowStatus))
 		{
-			factor *= 0.80f;
+			// Slow is the one entry here that is not a damage reduction, so it cannot be multiplied
+			// in like one. The effect text of Arm's Length (7548) reads "Slow +20%" - a *longer*
+			// delay between the enemy's attacks, not a smaller hit. Twenty percent more time per
+			// attack leaves 1/1.20 of the attacks in the same span, so the stream runs at 83% of its
+			// rate and not at 80%. The other four below reduce the damage of each hit outright and
+			// do multiply in directly.
+			factor *= 1f / (1f + SlowDelayIncrease);
 		}
 
 		if (hostile.HasStatus(false, StatusHelper.ReprisalStatus))
@@ -667,7 +679,7 @@ public partial class CustomRotation
 	/// <remarks>
 	/// The measure an area rule wants: <c>AoeCount</c> enemies at full output is what a threshold of
 	/// <c>AoeCount * 100</c> expresses, and throttled enemies move the sum without being struck from
-	/// the count. Three enemies with one slowed come to 280; four with two come to 360.
+	/// the count. Three enemies with one slowed come to 283; four with two come to 366.
 	/// </remarks>
 	/// <param name="radius">The radius to measure over, in yalms.</param>
 	/// <param name="output">Summed output in percent across the hostiles inside the radius.</param>

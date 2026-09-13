@@ -51,13 +51,19 @@ eigene Seite schon tut:
 
 | Drosselung | Beleg | Restleistung |
 |---|---|---|
-| Verlangsamung +20 % | Rückstoß (Arm's Length), Aktion 7548 | 80 |
+| Verlangsamung +20 % | Rückstoß (Arm's Length), Aktion 7548 | 83 |
 | Reflexion (Reprisal) | Aktion 7535 | 90 |
 | Feint, physisch | Aktion 7549 | 90 |
 | Stumpfsinn (Addle), physisch | Aktion 7560 | 95 |
 | Dismantle | Aktion 2887 | 90 |
 
-Kumuliert wird multiplikativ: Rückstoß und Reflexion zusammen ergeben 72, nicht 70.
+Kumuliert wird multiplikativ: Rückstoß und Reflexion zusammen ergeben 75, nicht 73.
+
+**Die Verlangsamung ist der einzige Eintrag, der keine Schadensminderung ist, und wird deshalb
+anders umgerechnet.** Der Wirktext sagt Slow **+20 %** — die Verzögerung zwischen den Angriffen
+**wächst**, der einzelne Treffer bleibt gleich groß. Zwanzig Prozent mehr Zeit je Angriff lassen im
+selben Zeitraum 1/1,20 der Angriffe übrig, also 83 % der Rate und nicht 80 %. Die vier übrigen
+Einträge senken den Schaden jedes Treffers unmittelbar und gehen deshalb direkt ins Produkt.
 Genommen wird die **physische** Spalte, nicht die Magisch-Heuristik, die
 `GetCurrentMitigationPercent` für einen einzelnen bevorstehenden Treffer anlegt — hier geht
 es um den Dauerstrom eines stehenden Pulls, und der besteht aus Automatikangriffen. Das ist
@@ -74,7 +80,7 @@ deshalb nebeneinander und nicht ineinander.
 
 **Grenze der Zählung, benannt statt verschwiegen:** `SlowStatus` führt auch Slow+, eine
 stärkere Stufe, deren Satz die Spieldaten nicht nennen, und die Erhebung unterscheidet die
-Ids nicht. Ein stärkerer Slow wird damit als 20 % gerechnet, der Gegner also überschätzt
+Ids nicht. Ein stärkerer Slow wird damit als 20 % Verzögerung gerechnet, der Gegner also überschätzt
 und Sanctus eher zugelassen — die richtige Seite zum Irren.
 
 ## Warum die Streckung richtig ist
