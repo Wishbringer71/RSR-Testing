@@ -67,9 +67,9 @@ sondern eine, die die Lage erkennt und zwischen Strategien wechselt.
 |---|---|---|
 | **V1** | Den Searing Light eines anderen Beschwörers als Buff-Fenster für die eigenen Aetherflow-Ausgaben werten | umsetzen |
 | **V2** | Das Zündfenster auf alle großen Beschwörungen erweitern, sobald ein zweiter Beschwörer in der Gruppe ist | umsetzen, mit Gruppenprüfung als Schalter |
-| **V8** | Die hybride Regel des Auftraggebers: Phase anstreben, bei tatsächlichem Zuvorkommen weiterrücken, Buchführung über belegte Phasen, Lückenfüllen nur mit rechtzeitiger Rückkehr | **nicht umsetzen** — gemessen schwächer als V2, s. u. |
+| **V8** | Die hybride Regel des Auftraggebers: in jeder freien Burstphase zünden, und erst wenn **alle** Phasenarten dauerhaft belegt sind, in die stärkste Zwischenphase ausweichen | **umsetzen** |
 | V4 | Die Bindung an die Beschwörung ganz lösen, Zündung bei Kampf und vorhandenem Ziel | gemessen, nie die beste Wahl — nicht umsetzen |
-| V7 | Außerhalb eines Fensters zünden, sobald der Buff abgelaufen ist, ohne jede Buchführung | **zurückbauen** — im Code, aber in der maßgeblichen Gruppe schwächer als V2 |
+| V7 | Außerhalb eines Fensters zünden, sobald der Buff abgelaufen ist, ohne jede Buchführung | **zurückbauen** — blind: gewinnt eine Lage, verliert zwei andere |
 | V5 / V6 | Buch über die **Wiederholzeiten** der anderen führen | die Frage war falsch gestellt, s. unten — in V8 aufgegangen |
 
 **Der maßgebliche Bereich ist eins bis fünf.** Eine reguläre Achtergruppe trägt vier bis fünf
@@ -141,34 +141,51 @@ als solche zu lesen.
 anderen sind fremde Spieler mit eigener Rotation. Lauf vom 13.09.2026, über alle Reihenfolgen
 gemittelt, wer bei gleichzeitiger Gelegenheit zuerst zündet:
 
-| Lage | heute | **V2** | V7 (gebaut) | V8 |
+**V8 ist V2 plus eine einzige weitere Klausel** — Punkt 6 der Vorgabe: außerhalb einer Burstphase
+zünden, sobald **alle** Phasenarten dauerhaft belegt sind. Solange irgendeine frei ist, verhält sich
+V8 wie V2. Daraus folgt, womit gemessen werden muss: nicht gegen die heutige Regel, sondern gegen V2,
+und gegen Gegenspieler, die die Phasen tatsächlich belegen.
+
+**Gegenspieler, die nur Solar nutzen** — Bahamut und Phoenix bleiben frei, die Klausel greift nie:
+
+| Lage | heute | V2 | V7 (gebaut) | V8 |
 |---|---|---|---|---|
-| synchroner Pull | 26,6 % | **46,4 %** | 38,8 % | 36,5 % |
+| synchroner Pull | 26,6 % | 46,4 % | 38,8 % | 46,4 % |
+| halb versetzt | 46,3 % | 46,3 % | 46,3 % | 46,3 % |
+| voll versetzt | 60,8 % | 60,8 % | 60,8 % | 60,8 % |
+
+**Gegenspieler, die jede Phasenart belegen** — die Lage, für die Punkt 6 gemacht ist:
+
+| Lage | heute | V2 | V7 (gebaut) | **V8** |
+|---|---|---|---|---|
+| synchroner Pull | 47,9 % | 47,9 % | 60,0 % | **56,4 %** |
 | halb versetzt | 46,3 % | 46,3 % | 46,3 % | 46,3 % |
 | voll versetzt | 60,8 % | 60,8 % | 60,8 % | 60,8 % |
 
 (drei Beschwörer; über alle Reihenfolgen gemittelt, wer bei gleichzeitiger Gelegenheit zuerst zündet.
-Die Werte für zwei bis fünf Beschwörer liegen innerhalb eines Prozentpunkts davon.)
+Zwei bis fünf Beschwörer liegen innerhalb eines Prozentpunkts, außer bei zwei Beschwörern, wo die
+Klausel mangels Belegung nicht greift.)
+
+**Damit steht die Bewertung:** V8 ist nirgends schlechter als V2 und in der einen Lage, für die seine
+zusätzliche Klausel gebaut ist, um achteinhalb Prozentpunkte besser. Das ist die Bedingung, die eine
+Anpassung erfüllen muss — sie darf keine Lage verschlechtern, um eine andere zu gewinnen.
 
 **Sobald die Rotationen auseinanderlaufen, ist die heutige enge Regel bereits optimal** — jeder
 Beschwörer setzt seinen Buff in seine stärkste Phase, und die Streuung schließt die Lücken von
-selbst. Der Unterschied entsteht ausschließlich im synchronen Fall.
+selbst. Alle Unterschiede entstehen im synchronen Fall.
 
-**Und dort gewinnt die einfachste der drei Erweiterungen.** V2 hält die Ladung in einer
-Burstphase — Solar, Bahamut oder Phoenix, je nachdem, welche als nächste frei ist. V7 und V8
-verlassen dieses Fenster: V7 blind, sobald der Buff aus ist, V8 überlegt in eine Zwischenphase. Beide
-setzen den Buff damit auf schwächeren Schaden, und das kostet mehr, als die frühere Zündung einbringt.
-Die Potenzen sagen, warum: Solar trägt 1217 je GCD, Bahamut 950, Phoenix 947 — eine Zwischenphase im
-Mittel 495. Eine verlorene Gelegenheit kostet nichts, weil die Ladung liegen bleibt und ihre
-Wiederholzeit erst mit der Zündung beginnt; ein früh gesetzter Buff dagegen kostet die Differenz
-zwischen Burst- und Zwischenphase dauerhaft.
+**V7 ist der Ausreißer und deshalb zurückzubauen.** Es liegt im synchronen Pull gegen belegte Phasen
+vorn (60,0 % gegen 56,4 %), weil blindes Füllen dort zufällig trifft — und es verliert in zwei
+anderen Lagen: gegen Gegenspieler auf Solar fällt es auf 38,8 % gegen 46,4 %, und bei zwei
+Beschwörern auf derselben Regel mit voll versetzten Rotationen auf 39,6 % gegen 47,7 % der heutigen
+Regel. Es gibt die eigene Burstphase auf, ohne dass eine Kollision vorliegt. Genau das unterscheidet
+eine blinde Regel von einer, die die Lage liest.
 
-**Folgen alle Beschwörer derselben Regel** — was voraussetzt, dass die ganze Gruppe diesen Fork
-benutzt —, kehrt sich das Bild ab drei Beschwörern um: Dort kollidieren alle Burstphasen, und blindes
-Lückenfüllen ist der einzige Ausweg (V7 52,8 % gegen V2 47,9 % bei drei, 86,7 % gegen 47,9 % bei
-fünf). Dieselbe Lage zeigt aber auch den Preis von V7: Bei **zwei** Beschwörern mit voll versetzten
-Rotationen liegt V7 bei 39,6 % gegen 47,7 % der heutigen Regel — es gibt die eigene Burstphase auf,
-ohne dass eine Kollision vorliegt.
+**Warum die Klausel nicht früher greifen darf, ist die Potenzdichte.** Solar trägt 1217 je GCD,
+Bahamut 950, Phoenix 947; eine Zwischenphase im besten Fall 632 und im Mittel 495. Eine ausgelassene
+Gelegenheit kostet dabei nichts: Die Ladung bleibt liegen, ihre Wiederholzeit beginnt erst mit der
+Zündung, und die nächste Burstphase kommt in höchstens 60 Sekunden. Erst wenn **keine** Burstphase
+mehr zu bekommen ist, ist die Zwischenphase besser als gar nichts — und dann ist sie es deutlich.
 
 ## Die Fälle von einem bis fünf Beschwörern, Abdeckung in Sekunden
 
@@ -773,33 +790,29 @@ dann vollständig greifen und zwei Beschwörer in einer Gruppe gewöhnlich sind.
 
 ## Empfehlung
 
-**V1 und V2 behalten, V7 zurückbauen. V4, V5, V6 und V8 nicht umsetzen.**
+**V1 und V8 umsetzen, V7 zurückbauen. V4, V5, V6 nicht.**
 
-Das ist die Empfehlung gegen die Messung, nicht gegen die Anschauung, und sie kehrt eine frühere
-Empfehlung dieses Dokuments um. Der Grund ist unten ausgeschrieben: Die Vorgabe des Auftraggebers
-verlangt eine Regel, die sich der Lage anpasst — und die Messung sagt, dass die Anpassung, die dabei
-gewinnt, das **Festhalten an der Burstphase** ist und nicht das Ausweichen aus ihr.
+V8 enthält V2 vollständig und ergänzt es um eine Klausel, die nur greift, wenn alle Burstphasen
+dauerhaft belegt sind. Wer V8 baut, baut V2 mit.
 
 | | Gewinn im maßgeblichen Bereich | Preis |
 |---|---|---|
 | **V1** | Aetherflow-Ausgaben liegen ab zwei Beschwörern im laufenden Fenster statt daneben | eine zusätzliche Eigenschaft, keine Zustandshaltung |
-| **V2** | beim synchronen Pull 46 % des eigenen Schadens unter Buff statt 27 %; bei versetzten Rotationen unverändert | keine Zustandshaltung; eine Gruppenprüfung als Schalter |
-| ~~V7~~ | 39 % statt 46 % — es verlässt die Burstphase, sobald eine Lücke entsteht | zusätzlich der Fall „zwei Beschwörer, voll versetzt", wo es unter die heutige Regel fällt |
-| ~~V8~~ | 36,5 % — weicht überlegt in Zwischenphasen aus, die weniger Schaden tragen | Zustand über den Kampf, für ein schlechteres Ergebnis |
+| **V8** | beim synchronen Pull 46 % des eigenen Schadens unter Buff statt 27 %, und 56 % statt 48 %, sobald fremde Beschwörer alle Phasenarten belegen; bei versetzten Rotationen unverändert | Zustand über den Kampf: je Phasenart der zuletzt beobachtete fremde Zünder und wie oft er wiederkam |
+| ~~V7~~ | im synchronen Pull gegen belegte Phasen vorn | verliert gegen Gegenspieler auf Solar und bei zwei Beschwörern mit vollem Versatz, dort unter die heutige Regel |
 
-**Warum die Buchführung nicht trägt, obwohl die Vorgabe sie verlangt.** Ihre Frage ist richtig: Wer
-belegt welche Phase, und tut er es wiederholt? Ihre Antwort — bei dauerhafter Belegung in eine
-Zwischenphase ausweichen — ist es nicht, weil eine Zwischenphase im Mittel 495 Potenz je GCD trägt
-gegen 947 bis 1217 in einer Burstphase. Das Ausweichen bringt den Buff früher ins Spiel und dabei auf
-schwächeren Schaden, und die Rechnung geht nicht auf. Eine ausgelassene Gelegenheit kostet dagegen
-nichts: Die Ladung bleibt liegen, ihre Wiederholzeit beginnt erst mit der Zündung, und die nächste
-Burstphase kommt in spätestens 60 Sekunden.
+**V8 verlangt Zustand, und das ist der bewusst gezahlte Preis.** Ohne Beobachtung lässt sich nicht
+erkennen, ob alle Phasenarten belegt sind, und ohne diese Erkennung bleibt nur die Wahl zwischen
+„nie ausweichen" (V2, verschenkt den belegten Fall) und „blind ausweichen" (V7, verschenkt zwei
+andere). Der Zustand ist klein und selbstheilend: drei Einträge, jeder verfällt, wenn der Zünder nach
+seiner Wiederholzeit plus Nachfrist ausbleibt. Rücksetzpunkte bei Kampf-, Gruppen- und Zonenwechsel
+sind damit nicht nötig — ein neuer Kampf beginnt ohne gültige Einträge, weil alle verfallen sind.
 
-**Der Fall, für den V8 gebaut wurde, bleibt unbestritten** — vier oder fünf Beschwörer, die synchron
-laufen und jede Burstphase dauerhaft belegen. Er ist der Randfall eines Randfalls: Der synchrone Pull
-ist nach der Vorgabe selbst nicht der Regelfall, und dort vier fremde Beschwörer zu haben, die alle
-zuerst zünden, ist der seltenste Teil davon. Die Buchführung kostet in diesem Fall nichts und in
-allen übrigen zehn Prozentpunkte.
+**Die Buchführung beantwortet genau eine Frage, und das ist ihre Aufgabenteilung:** Sind **alle**
+Phasenarten dauerhaft belegt? Sie sagt **nicht**, welche Phase anzustreben ist — angestrebt wird
+immer jede freie Burstphase, die gerade steht. Das ist der Unterschied zwischen „für diese Phase
+zurückhalten" und „diese Phase aufgeben"; die Vorgabe sagt ausdrücklich das Erste, und ihr Punkt 5
+versucht Solar in der nächsten Runde erneut.
 
 **Was zu beobachten ist, beobachtet der Client ohnehin:** `IStatus.SourceId` nennt den Urheber des
 laufenden Buffs, und die eigene Phase steht fest. Mehr braucht die Regel nicht — insbesondere keine
@@ -825,8 +838,9 @@ kann. Wer falsch rät, verschenkt die beste Phase umsonst.
 
 ## Die Umsetzung
 
-**Umgesetzt sind V1, V2 und V7.** Der letzte Teil ist der, der zurückzubauen ist: Er besteht aus der
-Teilbedingung `!HasAnySearingLight` im Zündausdruck, und sie zu streichen stellt V2 rein her.
+**Umgesetzt sind V1, V2 und V7.** V7 ist zurückzubauen — die Teilbedingung `!HasAnySearingLight` im
+Zündausdruck —, und an seine Stelle tritt die Klausel aus Punkt 6, die dasselbe Ausweichen aus der
+Lage heraus entscheidet statt blind.
 
 | Ort | Eingriff | Stand |
 |---|---|---|
@@ -834,11 +848,11 @@ Teilbedingung `!HasAnySearingLight` im Zündausdruck, und sie zu streichen stell
 | `SummonerRotation.cs` | `AnotherSummonerInParty` — lebender Beschwörer in der Gruppe, Stufe aus `SearingLightPvE.Level` | umgesetzt |
 | `SMN_Reborn.cs` (dreimal) | V1: Painflare, Necrotize und Fester fragen nach `HasAnySearingLight` | umgesetzt |
 | `SMN_Reborn.cs` | Zündfenster `burstInSolar \|\| (AnotherSummonerInParty && (inBigInvocation \|\| !HasAnySearingLight))` | umgesetzt, entspricht V7 |
-| **offen** | **Rückbau von V7**: `!HasAnySearingLight` aus dem Zündausdruck streichen, so dass `burstInSolar \|\| (AnotherSummonerInParty && inBigInvocation)` bleibt | einzeilig, gemessen |
+| **offen** | **V8**: `!HasAnySearingLight` durch die Punkt-6-Klausel ersetzen — Phasenbuch je Phasenart, Ausweichen in die stärkste Zwischenphase erst, wenn alle drei dauerhaft belegt sind | im Modell fertig und gemessen, im Plugin offen |
 
-**V8 steht nicht mehr auf der Liste.** Das Phasenbuch ist im Modell gebaut und gemessen und bleibt
-dort als Vergleichsmaßstab; im Plugin würde es Zustand über den Kampf verlangen und dabei hinter V2
-zurückbleiben.
+**Der offene Teil ersetzt die letzte Zeile, er ergänzt sie nicht.** V7 zündet blind, sobald der Buff
+aus ist; V8 entscheidet dasselbe aus der Lage. Beides nebeneinander hieße, dass die blinde Bedingung
+die überlegte jedes Mal überholt.
 
 **Die Stufenschwelle kommt aus den Spieldaten, nicht aus einer Zahl im Code.** `SearingLightPvE.Level`
 liest `ClassJobLevel` der Aktion; ein Beschwörer unterhalb dieser Stufe hat kein Searing Light zu

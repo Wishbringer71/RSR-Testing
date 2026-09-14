@@ -334,10 +334,10 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
                     # unchanged narrow rule already wins once rotations have drifted apart. So the
                     # rule switches rather than choosing once.
                     idx = demi_index(t, offsets[i])
-                    # Free phase *kinds*, strongest first. Kinds, not positions: Solar occupies two
-                    # positions in the cycle and a Summoner who owns it takes both, so picking a
-                    # single position would make him skip every second Solar - which is what the
-                    # first version of this did, and it halved a lone Summoner's uptime.
+                    # Free phase *kinds*. Kinds, not positions: Solar occupies two positions in the
+                    # cycle and a Summoner who owns it takes both, so picking a single position
+                    # would make him skip every second Solar - which is what the first version of
+                    # this did, and it halved a lone Summoner's uptime.
                     kinds_free = [k for k in ('solar', 'bahamut', 'phoenix')
                                   if not (taken[i].get(k) is not None
                                           and taken[i][k][2] >= 2
@@ -349,6 +349,17 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
                     # Summoner who would have won it ends up in a weaker one for the whole fight.
                     # The staggering comes out of the books instead: whoever holds a phase keeps
                     # showing up in it, so the others find it taken and move on by themselves.
+                    # The books say which phases are *permanently* taken. They do not say which
+                    # one to aim at, and an earlier version read them that way: with Solar booked
+                    # it waited for Bahamut and cast nothing in between. Bahamut and Phoenix come
+                    # round every 240s against Solar's 120s, so binding the charge to one of them
+                    # halved the number of chances taken - measured, ten points of damage-weighted
+                    # uptime against the plain widening, for a rule that was supposed to beat it.
+                    #
+                    # The rule says the opposite: holding back applies "only to this phase, not as
+                    # a matter of principle", and its point 5 tries Solar again next time round.
+                    # So every burst phase is fair game whenever no buff is running; the books
+                    # decide one thing only, namely whether *all* of them are permanently held.
                     mine_kind = kinds_free[0] if kinds_free else None
                     # Tried and dropped: yielding the strongest phase to a Summoner who is present
                     # but never seen casting. The reasoning was sound - standing in the same window
@@ -360,24 +371,29 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
                     # best phase for nothing.
                     if buff_until <= t:
                         if mine_kind is not None:
-                            # A phase of one's own is still to be had.
-                            if idx is not None and PHASE_KIND[idx] == mine_kind:
-                                allowed = True
-                            elif idx is None and min(
-                                    time_to_kind(t, offsets[i], k) for k in kinds_free) >= RECAST:
-                                # Far enough ahead of *every* phase still free that this charge is
-                                # back in time for all of them: fill the gap instead of standing
-                                # idle. Measuring only the aimed-at phase was not enough - a charge
-                                # spent 130s before a Phoenix still misses the Solar that falls in
-                                # between, and Solar is the most valuable second there is. So the
-                                # test is the nearest free phase, not the intended one.
-                                allowed = True
+                            # Some burst phase is still to be had, so the charge goes into whichever
+                            # one is standing right now and carries no buff.
+                            #
+                            # It does *not* fill a gap outside a burst phase in the meantime. An
+                            # earlier version did, whenever the charge would be back in time for
+                            # every phase still free, and that was an addition of mine rather than
+                            # the rule being modelled: the rule steps outside a burst phase only
+                            # when all of them are held (its point 6). An intermediate block carries
+                            # 632 potency per GCD at best against 947 to 1217 in a burst phase, so
+                            # filling a gap is not free just because the charge returns in time.
+                            allowed = idx is not None
                         else:
-                            # Every position is held by somebody who keeps coming back. Waiting
-                            # buys nothing now, so the rule switches to filling whatever gap is
-                            # open - which is what wins when several Summoners share this rule and
-                            # crowd each other out of the same phases.
-                            allowed = True
+                            # Every phase kind is held by somebody who keeps coming back. Waiting
+                            # buys nothing now, so the charge goes into the strongest intermediate
+                            # block instead - the rule's point 6, and the same choice `booked`
+                            # makes: Ifrit ahead of Titan ahead of Garuda.
+                            if idx is None:
+                                local = t - offsets[i]
+                                block = (int(local // DEMI_EVERY) % len(PRIMAL_POTENCY)
+                                         if local >= 0 else 0)
+                                best = max(range(len(PRIMAL_POTENCY)),
+                                           key=lambda k: PRIMAL_POTENCY[k])
+                                allowed = block == best
                 elif mine_mode == 'booked':
                     # The user's rule with books. Rather than only stepping forward, pick the
                     # strongest phase position nobody else is holding - and a holder is somebody
@@ -592,6 +608,38 @@ def self_test():
             if got < base - TOL:
                 raise AssertionError('hybrid fell below today at n=%d drift=%d: %.3f < %.3f'
                                      % (n, drift, got, base))
+
+    # The hybrid must never fall below the plain widening either, against opponents of any shape.
+    # It is the widening *plus* one extra clause - step outside a burst phase when every phase kind
+    # is permanently held - so anything below it means the extra clause is firing where it should
+    # not. Two versions of this model did exactly that and went unnoticed, because the only
+    # comparison drawn was against today's narrow rule, which both of them still beat:
+    #
+    #   - one filled gaps outside a burst phase while a phase kind was still free, which is an
+    #     addition to the rule rather than the rule;
+    #   - one read the books as "aim here" rather than "all held?", so with Solar booked it waited
+    #     for Bahamut and cast nothing in between. Bahamut and Phoenix come round every 240s against
+    #     Solar's 120s, so that halved the chances taken.
+    #
+    # Opponents on 'solar' leave Bahamut and Phoenix free, so the extra clause never fires and the
+    # two must be equal; opponents on 'demi' hold every kind, which is the case the clause exists
+    # for and where the hybrid must come out ahead at three or more.
+    for opponents in ('solar', 'demi'):
+        for drift in (0, 30, 60):
+            for n in range(2, 6):
+                hyb = simulate(n, None, drift, modes=['hybrid'] + [opponents] * (n - 1),
+                               mine=0, by_potency=True)
+                wide = simulate(n, None, drift, modes=['demi'] + [opponents] * (n - 1),
+                                mine=0, by_potency=True)
+                if hyb < wide - TOL:
+                    raise AssertionError(
+                        'hybrid fell below the widening vs %s at n=%d drift=%d: %.3f < %.3f'
+                        % (opponents, n, drift, hyb, wide))
+    crowded = simulate(3, None, 0, modes=['hybrid', 'demi', 'demi'], mine=0, by_potency=True)
+    plain = simulate(3, None, 0, modes=['demi'] * 3, mine=0, by_potency=True)
+    if crowded <= plain + TOL:
+        raise AssertionError('the point-6 clause bought nothing where every phase is held: '
+                             '%.3f vs %.3f' % (crowded, plain))
 
     # Books are kept per phase kind. Booking by position could never see a repetition, because the
     # 120s recast moves a Solar holder between the two Solar positions - the defect that made the
