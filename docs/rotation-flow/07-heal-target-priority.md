@@ -142,40 +142,73 @@ einer Barriere über 25 % seiner maximalen Gesundheit steht effektiv bei 75 %. U
 Lebenspools sind weniger Punkte als 50 % eines großen — derselbe Treffer tötet den mit den wenigeren
 Punkten.
 
-## Was zu bauen wäre
+## Der Entwurf: Gefährdungsklassen statt einer Kette von Kurzschlüssen
 
-**Die Rate ist der fehlende Baustein, und er hat jetzt einen Verbraucher.** `DataCenter.DPSTaken`
-misst die Gruppe als Ganzes: `DamageRec` trägt Zeitpunkt und Anteil, **kein Ziel**, und der einzige
-Leser ist die Diagnoseanzeige. `DataCenter.RecordedHP` wird ausschließlich aus `AllHostileTargets`
-gefüllt, weshalb `GetTTK` für eine Gruppen-Id `NaN` liefert. Es fehlt der Aufnehmer, nicht die
-Quelle — bisher wurde er nicht gebaut, weil kein Verbraucher bestand (`TODO.md`). Die Zielwahl nach
-Gefährdung ist dieser Verbraucher.
+**Keines der Einzelmaße trägt allein, und der Grund ist derselbe bei allen: Jedes ist ein Surrogat,
+und jedes bricht in einer anderen Lage.** Die Lösung ist deshalb nicht, eines davon zu wählen,
+sondern jedes dort einzusetzen, wo es das Richtige misst.
 
-**Ohne die Rate lässt sich die Vorgabe zum größeren Teil umsetzen:** Der effektive Puffer in
-absoluten Punkten, die Aggro und der angekündigte Flächenschaden sind sofort verfügbar. Sie decken
-drei der vier genannten Fälle ab — Tank mit Aggro, Heiler mit Aggro, und den Schadensausteiler bei
-10 %, der ohne Aggro an einer Flächenaktion stirbt. Die Rate wird erst gebraucht, wenn **mehrere**
-zugleich unter Beschuss stehen; dann entscheidet sie, wer zuerst fällt.
+| Maß | Sein Vorteil | Wo es bricht |
+|---|---|---|
+| Prozentsatz | normiert stillschweigend auf die erwartete Rate — wer mehr Pool hat, nimmt auch mehr Schaden | bei ungerichtetem Flächenschaden, der alle mit derselben absoluten Zahl trifft |
+| absolute effektive Punkte | genau dort richtig: sie sagen, wer den nächsten Einschlag nicht überlebt | hält den Tank bei 30 % für sicherer als den Schadensausteiler bei 45 %, obwohl der Tank den Dauerschaden nimmt |
+| Rollenvorrang | bildet die Ersetzbarkeit ab, die die Vorgabe verlangt | überholt als Kurzschluss den, der tatsächlich stirbt |
+| Rollenschwellen 45/40 | vertreten die fehlende Schadensrate | rollenfest statt lagefest: falsch, sobald der Heiler die Aggro hält |
+| Aggro | misst, wer gerichteten Schaden bekommt, statt es aus der Rolle zu schließen | sagt nichts über Flächenschaden |
 
-**Die Reihenfolge des Bauens folgt dem Schweregrad, nicht dem Aufwand.** Zuerst die Notrangstufe:
-Wer unter `HealthForDyingTanks` steht, kommt vor jeden Rollen-Kurzschluss. Das ist eine Bedingung vor
-zwei bestehenden Zweigen, braucht keine neue Messung und behebt den Fall, in dem heute jemand stirbt.
-Danach erst die Aggro und das lageabhängige Maß.
+**Der Entwurf ordnet die Kandidaten in drei Gefährdungsklassen. Innerhalb einer Klasse entscheidet
+das Maß, das für diese Lage das richtige ist; bei Gleichstand die Rolle.**
 
-**Die Aggroabfrage löst den Schwellenbefund mit auf, und zwar an seiner Ursache.** Die
-Schwellendifferenz vertritt heute die Aussage „der Tank bekommt den Schaden". Sobald diese Aussage
-gemessen statt unterstellt wird, braucht es keine rollenfeste Zahl mehr: Wer die Aggro hält, steht
-vorn; halten beide keine, greift die Rangfolge der Vorgabe, also Heiler vor Tank. Beide Lagen werden
-dann richtig behandelt, und zwar mit **einer** Regel statt zwei gegenläufigen Zahlen. Die Rate bleibt
-für den Fall übrig, dass mehrere zugleich Aggro haben.
+| Klasse | Wer hineinfällt | Ordnung darin | Warum dieses Maß |
+|---|---|---|---|
+| **1 — kritisch** | effektive Gesundheit ≤ `HealthForDyingTanks` | niedrigste **absolute** effektive Punkte zuerst | Wer hier steht, stirbt am nächsten Treffer, und ein Treffer ist eine absolute Zahl |
+| **2 — unter Beschuss** | mindestens ein Gegner visiert ihn an, oder er trägt eine Tankhaltung | niedrigster **Prozentsatz** zuerst | Hier ist die Rate rollenproportional, und genau dafür ist der Prozentsatz das brauchbare Surrogat |
+| **3 — übrige** | alle anderen | absolute Punkte, solange ein Flächenschaden angekündigt ist; sonst Prozentsatz | Ein Raidwide trifft alle mit derselben Zahl; ohne ihn gilt wieder die Rollenproportionalität |
 
-**Bis dahin ist die Schwellendifferenz das kleinere Übel und bleibt stehen.** `HealthHealerRatio`
-ohne die Aggroabfrage auf Tankhöhe zu ziehen, wäre der Tausch eines Fehlers gegen den anderen: Es
-brächte den Heiler-mit-Aggro-Fall in Ordnung und verlöre den Regelfall, in dem der Tank tatsächlich
-schneller fällt. Die Werte sind zudem Upstream-Voreinstellungen; sie ohne gemessenen Nutzen
-abweichen zu lassen, kostet Merge-Aufwand ohne Gegenwert. Wer die eigene Gruppe anders erlebt, kann
-den Wert in seiner Konfiguration heben — eine Codeänderung ist dafür nicht nötig, weil es eine reine
-Zielwahlschwelle ist.
+**Gleichstandsregel in jeder Klasse: Heiler vor Tank vor Schadensausteiler** — die Triage der
+Vorgabe, und nur dort, wo sie hingehört, nämlich bei gleicher Gefährdung.
+
+**Was der Entwurf damit von jedem Maß nimmt und was er ablegt:**
+
+- Der Rollenvorrang bleibt erhalten, **überholt aber niemanden mehr**, der tiefer steht: Er wirkt
+  nur noch innerhalb einer Klasse. Der Schadensausteiler bei 10 % steht in Klasse 1, der Tank bei
+  44 % in Klasse 2 — die Reihenfolge ist damit entschieden, bevor die Rolle überhaupt gefragt wird.
+- Der Prozentsatz behält die Lage, in der er richtig ist, und verliert die, in der er blind ist.
+- Die absoluten Punkte bekommen genau die zwei Lagen, für die sie gebaut sind, und keine weitere.
+- Die Aggro ersetzt die Rollenschwellen als Aussage „dieser bekommt Schaden" — gemessen statt aus
+  der Rolle geschlossen. Damit ist der zweite Befund an seiner Ursache aufgelöst: Hält der Heiler die
+  Aggro, steht er in Klasse 2 und der Tank ohne Aggro in Klasse 3.
+- **Kein Maß wird gewichtet und keine Zahl erfunden.** Die Klassen sind Ja/Nein-Fragen an
+  vorhandene Größen; innerhalb einer Klasse wird verglichen, nicht verrechnet. Das ist der
+  Unterschied zu einer gemeinsamen Gefährdungszahl, die einen Nenner bräuchte, den es nicht gibt:
+  BossModReborn nennt Art und Zeitpunkt des nächsten Einschlags (`BMRNextDamageType`,
+  `BMRNextDamageIn`), **nicht seine Höhe**.
+
+**Was der Entwurf nicht löst, und das ist ehrlich zu benennen:** Die Schwellendifferenz 45/40 ist in
+jeder Fassung entweder wirksam — dann kehrt sie im Band zwischen den beiden Werten die Rangfolge um —
+oder unwirksam, dann ist eine Einstellung des Nutzers stillgelegt. Die Klassenordnung entschärft sie,
+weil Klasse 1 und die Aggro davorstehen, aber sie beseitigt sie nicht. Ob die beiden Werte
+vereinheitlicht werden, ist eine Wertentscheidung über eine Konfiguration und gehört dem
+Auftraggeber.
+
+**Die Rate bleibt der einzige fehlende Baustein**, und sie wird erst innerhalb von Klasse 2 gebraucht:
+wenn mehrere zugleich unter Beschuss stehen und zu entscheiden ist, wer von ihnen zuerst fällt.
+`DataCenter.DPSTaken` misst die Gruppe als Ganzes — `DamageRec` trägt Zeitpunkt und Anteil, **kein
+Ziel** —, und `DataCenter.RecordedHP` wird ausschließlich aus `AllHostileTargets` gefüllt, weshalb
+`GetTTK` für eine Gruppen-Id `NaN` liefert. Es fehlt der Aufnehmer, nicht die Quelle.
+
+**Kosten der Erhebung, gemessen am Ort:** Die Aggro braucht keinen Vergleich je Mitglied. In
+`TargetUpdater.UpdateLists`, wo `AllHostileTargets` ohnehin einmal je Bild aufgebaut wird, sammelt
+ein Durchlauf über die Gegner deren `TargetObjectId` in ein Set — danach ist „wird angegriffen" eine
+Nachschlageoperation. Der Aufwand wächst mit der Zahl der Gegner, nicht mit ihrem Produkt.
+
+## Die Stufen
+
+| Stufe | Inhalt | Nachweislage |
+|---|---|---|
+| **1** | Klasse 1 vor beide Rollen-Kurzschlüsse ziehen | belegte Defektbehebung — der Schadensausteiler bei 10 % stirbt heute, während der Tank bei 44 % geheilt wird. Keine neue Messung, keine Option |
+| **2** | Klassen 2 und 3 mit Aggro und lageabhängigem Maß | Verbesserung, deren Nutzen ohne Spielbeobachtung eine Annahme bleibt → hinter eine Einstellung, Voreinstellung wie bisher |
+| **3** | Rate je Mitglied, für die Ordnung innerhalb von Klasse 2 | setzt den Aufnehmer voraus; erst bauen, wenn Stufe 2 den Verbraucher gezeigt hat |
 
 ## Abgrenzung zur Schildanrechnung
 
