@@ -161,9 +161,21 @@ das Maß, das für diese Lage das richtige ist; bei Gleichstand die Rolle.**
 
 | Klasse | Wer hineinfällt | Ordnung darin | Warum dieses Maß |
 |---|---|---|---|
-| **1 — kritisch** | effektive Gesundheit ≤ `HealthForDyingTanks` | niedrigste **absolute** effektive Punkte zuerst | Wer hier steht, stirbt am nächsten Treffer, und ein Treffer ist eine absolute Zahl |
-| **2 — unter Beschuss** | mindestens ein Gegner visiert ihn an, oder er trägt eine Tankhaltung | niedrigster **Prozentsatz** zuerst | Hier ist die Rate rollenproportional, und genau dafür ist der Prozentsatz das brauchbare Surrogat |
+| **1 — kritisch** | effektive Gesundheit ≤ `HealthForDyingTanks` (Vorgabe 0,15) | niedrigste **absolute** effektive Punkte zuerst | Wer hier steht, stirbt am nächsten Treffer, und ein Treffer ist eine absolute Zahl |
+| **2 — Rollenvorrang, bedingt** | Heiler ≤ `HealthHealerRatio` oder Tank ≤ `HealthTankRatio`, **und** unter Beschuss | niedrigster **Prozentsatz** zuerst, bei Gleichstand Heiler vor Tank | Hier ist die Rate rollenproportional, und genau dafür ist der Prozentsatz das brauchbare Surrogat |
 | **3 — übrige** | alle anderen | absolute Punkte, solange ein Flächenschaden angekündigt ist; sonst Prozentsatz | Ein Raidwide trifft alle mit derselben Zahl; ohne ihn gilt wieder die Rollenproportionalität |
+
+**Über allen Klassen steht weiterhin die Unterscheidung geschützt/ungeschützt**, und zwar
+unverändert: Wer eine Unverwundbarkeit trägt, wird nach hinten gestellt, nicht ausgeschlossen. Ohne
+diesen äußersten Schlüssel kehrt sich Klasse 1 gegen sich selbst — ein Krieger der Dunkelheit unter
+Superbolide steht auf 1 Trefferpunkt, hätte also die wenigsten absoluten Punkte von allen und stünde
+vor jedem echten Notfall. Die Klassenordnung wirkt innerhalb der Ungeschützten.
+
+**Die Gesundheitsschranke in Klasse 2 ist nicht schmückendes Beiwerk, sondern trägt die Klasse.**
+Ohne sie wäre jeder Tank dauerhaft in Klasse 2, denn er trägt seine Tankhaltung immer — und ein Tank
+bei 65 % stünde vor einem Schadensausteiler bei 30 % in Klasse 3. Das Kandidatenfeld fängt das nicht
+ab: `healRatio` filtert bei 0,70, beide sind darin. Die beiden Rollenschwellen behalten damit genau
+die Bedeutung, die sie heute haben, und bekommen zusätzlich die Bedingung, die ihnen fehlte.
 
 **Gleichstandsregel in jeder Klasse: Heiler vor Tank vor Schadensausteiler** — die Triage der
 Vorgabe, und nur dort, wo sie hingehört, nämlich bei gleicher Gefährdung.
@@ -175,9 +187,13 @@ Vorgabe, und nur dort, wo sie hingehört, nämlich bei gleicher Gefährdung.
   44 % in Klasse 2 — die Reihenfolge ist damit entschieden, bevor die Rolle überhaupt gefragt wird.
 - Der Prozentsatz behält die Lage, in der er richtig ist, und verliert die, in der er blind ist.
 - Die absoluten Punkte bekommen genau die zwei Lagen, für die sie gebaut sind, und keine weitere.
-- Die Aggro ersetzt die Rollenschwellen als Aussage „dieser bekommt Schaden" — gemessen statt aus
-  der Rolle geschlossen. Damit ist der zweite Befund an seiner Ursache aufgelöst: Hält der Heiler die
-  Aggro, steht er in Klasse 2 und der Tank ohne Aggro in Klasse 3.
+- Die Aggro tritt **neben** die Rollenschwellen, statt sie zu ersetzen: Die Schwelle sagt weiterhin
+  „tief genug", die Aggro neu „und er bekommt tatsächlich Schaden". Damit ist der zweite Befund
+  entschärft — hält der Heiler die Aggro und der Tank nicht, steht der Heiler in Klasse 2 und der
+  Tank in Klasse 3, obwohl die Zahlen unverändert sind.
+- Auch der Selbst-Kurzschluss rückt hinter Klasse 1. Er trägt denselben Überholfehler wie die beiden
+  Rollenzweige: Heute wird ein Schadensausteiler bei 10 % übergangen, sobald der Spieler selbst bei
+  39 % steht.
 - **Kein Maß wird gewichtet und keine Zahl erfunden.** Die Klassen sind Ja/Nein-Fragen an
   vorhandene Größen; innerhalb einer Klasse wird verglichen, nicht verrechnet. Das ist der
   Unterschied zu einer gemeinsamen Gefährdungszahl, die einen Nenner bräuchte, den es nicht gibt:
@@ -206,7 +222,7 @@ Nachschlageoperation. Der Aufwand wächst mit der Zahl der Gegner, nicht mit ihr
 
 | Stufe | Inhalt | Nachweislage |
 |---|---|---|
-| **1** | Klasse 1 vor beide Rollen-Kurzschlüsse ziehen | belegte Defektbehebung — der Schadensausteiler bei 10 % stirbt heute, während der Tank bei 44 % geheilt wird. Keine neue Messung, keine Option |
+| **1** | Klasse 1 vor alle drei Kurzschlüsse ziehen | **umgesetzt** in `ActionTargetInfo.GeneralHealTarget`: ungeschützte Kandidaten auf oder unter `HealthForDyingTanks` (effektive Gesundheit, wie `CanProvoke` sie liest) werden vor Selbst-, Heiler- und Tankzweig zurückgegeben, geordnet nach absoluten effektiven Punkten, bei Gleichstand Heiler vor Tank vor Schadensausteiler |
 | **2** | Klassen 2 und 3 mit Aggro und lageabhängigem Maß | Verbesserung, deren Nutzen ohne Spielbeobachtung eine Annahme bleibt → hinter eine Einstellung, Voreinstellung wie bisher |
 | **3** | Rate je Mitglied, für die Ordnung innerhalb von Klasse 2 | setzt den Aufnehmer voraus; erst bauen, wenn Stufe 2 den Verbraucher gezeigt hat |
 

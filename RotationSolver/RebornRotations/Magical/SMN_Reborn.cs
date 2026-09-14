@@ -205,23 +205,28 @@ public sealed class SMN_Reborn : SummonerRotation
 		// Searing Light overwrites, it does not stack, and it comes back exactly as often as the
 		// Solar Bahamut window it is tied to. With one Summoner that tie is right. With a second one
 		// every window collides and all but one charge is wasted, so with another Summoner in the
-		// party the firing window widens twice over:
+		// party the firing window widens - to any big summon, not just Solar, because the minor
+		// windows carry 78% of a Solar window and are the natural place for a second caster.
 		//
-		//   - any big summon, not just Solar (the minor windows carry 78% of a Solar window and are
-		//     the natural place for a second caster);
-		//   - outside a summon as well, but only once the running buff has fully expired.
+		// Outside a summon the charge goes out only when every burst phase is held by somebody who
+		// keeps coming back, and then into Ifrit: an intermediate block carries 632 potency per GCD
+		// at its best against 947 to 1217 inside a demi, so leaving a burst phase costs more than
+		// firing early gains. Skipping a chance costs nothing by comparison - the charge stays up,
+		// its recast only starts when it is spent, and the next burst phase is at most one minor
+		// window away.
 		//
-		// The second condition is not the same as "the guard has opened". StatusProvide lets a cast
-		// through five seconds before the buff ends so that a refresh inside a window is possible;
-		// out here that would burn a whole charge for those few seconds, and the model measured such
-		// a version *below* the plain window widening. Hence HasAnySearingLight, which is false only
-		// when no buff is on the player at all.
+		// The condition this replaces was `!HasAnySearingLight` - fire as soon as the buff is gone,
+		// with no books at all. Measured, that is the blind version of the same move: it wins where
+		// every phase happens to be taken and loses where they are not, including below today's
+		// narrow rule with two Summoners on fully drifted rotations. The book decides the same thing
+		// from the situation instead of from the buff timer.
 		//
-		// No bookkeeping about the other Summoners is involved, deliberately: they cannot cast
-		// before their own recast is up, so there is nothing to defer to, and the overwrite guard
-		// already prevents the waste that bookkeeping would try to avoid.
+		// Ifrit specifically, not "any gap": it is the strongest of the three primal blocks. The
+		// limit is that a rotation which skips Ifrit would leave the charge unspent in this state;
+		// the default order summons it every cycle.
 		var mayFireSearingLight = burstInSolar
-			|| (AnotherSummonerInParty && (inBigInvocation || !HasAnySearingLight));
+			|| (AnotherSummonerInParty
+				&& (inBigInvocation || (AllSearingPhasesHeld && IfritActive)));
 
 		if (mayFireSearingLight)
 		{

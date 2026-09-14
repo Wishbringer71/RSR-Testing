@@ -848,11 +848,31 @@ Lage heraus entscheidet statt blind.
 | `SummonerRotation.cs` | `AnotherSummonerInParty` — lebender Beschwörer in der Gruppe, Stufe aus `SearingLightPvE.Level` | umgesetzt |
 | `SMN_Reborn.cs` (dreimal) | V1: Painflare, Necrotize und Fester fragen nach `HasAnySearingLight` | umgesetzt |
 | `SMN_Reborn.cs` | Zündfenster `burstInSolar \|\| (AnotherSummonerInParty && (inBigInvocation \|\| !HasAnySearingLight))` | umgesetzt, entspricht V7 |
-| **offen** | **V8**: `!HasAnySearingLight` durch die Punkt-6-Klausel ersetzen — Phasenbuch je Phasenart, Ausweichen in die stärkste Zwischenphase erst, wenn alle drei dauerhaft belegt sind | im Modell fertig und gemessen, im Plugin offen |
+| `SummonerRotation.cs` | **V8**: Phasenbuch je Phasenart (`UpdateSearingPhaseBook`, `AllSearingPhasesHeld`), fortgeschrieben in `UpdateInfo` | umgesetzt |
+| `SMN_Reborn.cs` | Zündfenster `burstInSolar \|\| (AnotherSummonerInParty && (inBigInvocation \|\| (AllSearingPhasesHeld && IfritActive)))` — V7 ersetzt | umgesetzt |
 
-**Der offene Teil ersetzt die letzte Zeile, er ergänzt sie nicht.** V7 zündet blind, sobald der Buff
-aus ist; V8 entscheidet dasselbe aus der Lage. Beides nebeneinander hieße, dass die blinde Bedingung
-die überlegte jedes Mal überholt.
+**V8 hat V7 ersetzt und nicht ergänzt.** V7 zündet blind, sobald der Buff aus ist; V8 entscheidet
+dasselbe aus der Lage. Beides nebeneinander hieße, dass die blinde Bedingung die überlegte jedes Mal
+überholt.
+
+**Das Buch im Plugin ist einfacher gebaut als im Modell, und zwar bewusst.** Das Modell führt je
+Phasenart den zuletzt beobachteten fremden Zünder samt Zeitstempel und lässt den Eintrag nach
+Wiederholzeit plus Nachfrist verfallen. Die Umsetzung führt je Phasenart nur einen Zähler: Beim
+Betreten einer Burstphase steigt er, wenn ein fremdes Searing Light läuft, und wird auf null gesetzt,
+wenn keines läuft. Drei Folgen, alle geprüft:
+
+- **Kein Zeitwert wird gebraucht und keiner erfunden.** Die Rücksetzung geschieht durch die
+  Beobachtung selbst — wer aufhört zu zünden, wird beim nächsten Durchgang nicht mehr angetroffen.
+- **Wechselnde Zünder werden richtiger behandelt als im Modell.** Teilen sich zwei fremde Beschwörer
+  eine Phase, erreicht im Modell keiner von beiden die zweite Beobachtung und die Phase gilt als
+  frei; für den eigenen Beschwörer ist sie gleichwohl verloren. Der Zähler ohne Urheber beantwortet
+  die Frage, die zählt: Ist diese Phase für mich zu haben?
+- **Der eigene Buff urteilt nicht.** Läuft die eigene Ladung, wird das Fenster übergangen statt
+  gebucht oder gelöscht, sonst löschte eine in Solar gesetzte Ladung beim Betreten von Bahamut
+  dessen Eintrag auf die Kraft eines selbst gewirkten Buffs hin.
+
+Außerhalb des Kampfes wird das Buch geleert; ein neuer Kampf beginnt also bei V2-Verhalten und
+erreicht die Punkt-6-Klausel erst, wenn jede Phasenart zweimal belegt angetroffen wurde.
 
 **Die Stufenschwelle kommt aus den Spieldaten, nicht aus einer Zahl im Code.** `SearingLightPvE.Level`
 liest `ClassJobLevel` der Aktion; ein Beschwörer unterhalb dieser Stufe hat kein Searing Light zu

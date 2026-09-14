@@ -2381,6 +2381,28 @@ Die zweite Fassung verlor die gewebte Fähigkeit des führenden Blocks. Mountain
 
 **Erreichter Prüfgrad:** statische Prüfung gegen Quelltext und Wirktexte, `check_cs_structure`, `check_doc_references`, Compile in der CI. Im Spiel nicht beobachtet.
 
+### A89 · Zielwahl Stufe 1 und Searing Light V8 umgesetzt
+
+**Anlass:** Auftrag, beide Vorlagen erneut kritisch zu prüfen, die Probleme zu lösen und dann umzusetzen.
+
+**Die erneute Falsifikation hat zwei Defekte im eigenen Entwurf gefunden, beide vor der Umsetzung behoben:**
+
+**Erstens hatte Klasse 2 keine Gesundheitsschranke.** Ein Tank trägt seine Tankhaltung dauerhaft, wäre also immer „unter Beschuss" gewesen — und da Klasse 2 vor Klasse 3 steht, hätte ein Tank bei 65 % einen Schadensausteiler bei 30 % überholt. Das Kandidatenfeld fängt das nicht ab: `healRatio` filtert bei 0,70, beide sind darin. Klasse 2 verlangt deshalb die Rollenschwelle **und** den Beschuss; die beiden Einstellungen behalten damit ihre heutige Bedeutung und bekommen die Bedingung, die ihnen fehlte.
+
+**Zweitens hätte Klasse 1 sich gegen sich selbst gekehrt.** Sie ordnet nach absoluten effektiven Punkten, und ein Krieger der Dunkelheit unter Superbolide steht planmäßig auf 1 Trefferpunkt — er hätte die wenigsten Punkte von allen gehalten und vor jedem echten Notfall gestanden. Die Unterscheidung geschützt/ungeschützt bleibt deshalb der äußerste Schlüssel; die Klassenordnung wirkt innerhalb der Ungeschützten.
+
+Dazu kam der Überholfehler des **Selbst-Kurzschlusses**, der bis dahin nur für die beiden Rollenzweige benannt war: Heute wird ein Schadensausteiler bei 10 % auch dann übergangen, wenn der Spieler selbst bei 39 % steht.
+
+**Umgesetzt, Zielwahl Stufe 1** (`ActionTargetInfo.GeneralHealTarget`): Vor allen drei Kurzschlüssen werden die ungeschützten Kandidaten auf oder unter `HealthForDyingTanks` gesucht — effektive Gesundheit, also mit Barriere und in derselben Form, in der `CanProvoke` sie liest. Zurückgegeben wird der mit den **wenigsten absoluten effektiven Punkten**, bei Gleichstand Heiler vor Tank vor Schadensausteiler. **Im Kampf:** Der Schadensausteiler bei 10 % bekommt die Heilung, statt dass sie an den Tank bei 44 % geht. Die Voreinstellung der Schwelle ist 0,15, der Tank bei 44 % fällt also nicht in die Klasse.
+
+**Umgesetzt, Searing Light V8** (`SummonerRotation`, `SMN_Reborn`): Das Phasenbuch führt je Phasenart einen Zähler, den `UpdateInfo` je Durchlauf fortschreibt. Beim Betreten einer Burstphase steigt er, wenn ein fremdes Searing Light läuft, und fällt auf null, wenn keines läuft; die eigene laufende Ladung urteilt nicht. Ab zwei Beobachtungen gilt eine Phasenart als belegt — ein einmaliges Zuvorkommen ist Zufall. Sind alle drei belegt, zündet die Ladung im Ifrit-Block; sonst gilt V2, also jede große Beschwörung. Damit ist `!HasAnySearingLight` (V7) **ersetzt**, nicht ergänzt.
+
+**Die Umsetzung ist einfacher als das Modell, und das ist geprüft, nicht übersehen:** Das Modell führt Urheber und Zeitstempel und lässt Einträge verfallen. Der Zähler ohne Urheber braucht keinen Zeitwert — die Rücksetzung geschieht durch die Beobachtung selbst — und behandelt wechselnde Zünder sogar richtiger: Teilen sich zwei fremde Beschwörer eine Phase, erreicht im Modell keiner die zweite Beobachtung, für den eigenen Beschwörer ist die Phase gleichwohl verloren.
+
+**Upstream-Sync nachgeholt statt übergangen:** Die Messung vor dem Commit wies zwei ausstehende Commits aus (`bcc6e9a8c`, `e0a0a794d`, Beastmaster). Sie sind gemergt, die Arbeitskopie stand danach auf 0 zurück. Eigener Anteil: Die Messung gehört vor die Codeänderung, nicht vor den Commit.
+
+**Erreichter Prüfgrad:** statische Prüfung, `check_cs_structure`, `check_doc_references`, `check_sync_state`, Selbsttest des Modells, Compile in der CI. Im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

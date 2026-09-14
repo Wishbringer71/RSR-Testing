@@ -280,6 +280,113 @@ public partial class SummonerRotation
 	public static bool HasAnySearingLight => StatusHelper.PlayerHasStatus(false, StatusID.SearingLight);
 
 	/// <summary>
+	/// Which burst phase the Summoner is standing in, if any. Kinds, not positions: Solar occupies
+	/// two of the four demi slots in a cycle, and whoever holds it holds both.
+	/// </summary>
+	protected enum SearingPhase
+	{
+		/// <summary>Outside every demi window.</summary>
+		None,
+
+		/// <summary>Solar Bahamut.</summary>
+		Solar,
+
+		/// <summary>Demi-Bahamut.</summary>
+		Bahamut,
+
+		/// <summary>Demi-Phoenix.</summary>
+		Phoenix,
+	}
+
+	/// <inheritdoc cref="SearingPhase"/>
+	protected static SearingPhase CurrentSearingPhase =>
+		InPhoenix ? SearingPhase.Phoenix
+		: InBahamut ? SearingPhase.Bahamut
+		: InSolarBahamut ? SearingPhase.Solar
+		: SearingPhase.None;
+
+	/// <summary>
+	/// How often a phase has to be found occupied before it counts as held. One Summoner getting
+	/// there first is chance and must not cost a phase; the same one twice running is a pattern.
+	/// </summary>
+	private const int SearingPhaseHeldAfter = 2;
+
+	private readonly int[] _searingPhaseHeld = new int[4];
+	private SearingPhase _lastSearingPhase = SearingPhase.None;
+	private bool _searingPhaseBooked;
+
+	/// <summary>
+	/// Is every burst phase held by somebody who keeps coming back?
+	///
+	/// This is the only question the book answers, and the distinction matters: it does **not** say
+	/// which phase to aim at. Holding back applies to the phase at hand, not as a matter of
+	/// principle - so every free burst phase is fair game whenever no buff is running, and only
+	/// when all three are spoken for is there a reason to look outside them at all.
+	/// </summary>
+	protected bool AllSearingPhasesHeld =>
+		_searingPhaseHeld[(int)SearingPhase.Solar] >= SearingPhaseHeldAfter
+		&& _searingPhaseHeld[(int)SearingPhase.Bahamut] >= SearingPhaseHeldAfter
+		&& _searingPhaseHeld[(int)SearingPhase.Phoenix] >= SearingPhaseHeldAfter;
+
+	/// <summary>
+	/// Keeps the phase book, once per window entered rather than once per frame.
+	///
+	/// Entering a burst phase while somebody else's Searing Light is running books that phase kind
+	/// one step further; entering it and finding no foreign buff clears the entry outright. That is
+	/// what makes the book self-healing without a clock: a Summoner who stops casting - died,
+	/// left, switched job - stops being found there, and his phase comes back on the next pass. No
+	/// grace period has to be guessed, and no reset point beyond leaving combat is needed.
+	/// </summary>
+	protected void UpdateSearingPhaseBook()
+	{
+		if (!DataCenter.InCombat)
+		{
+			Array.Clear(_searingPhaseHeld, 0, _searingPhaseHeld.Length);
+			_lastSearingPhase = SearingPhase.None;
+			_searingPhaseBooked = false;
+			return;
+		}
+
+		var phase = CurrentSearingPhase;
+		if (phase != _lastSearingPhase)
+		{
+			_lastSearingPhase = phase;
+			_searingPhaseBooked = false;
+		}
+
+		if (phase == SearingPhase.None || _searingPhaseBooked)
+		{
+			return;
+		}
+
+		// The player's own buff says nothing about whether anyone else holds this phase, so it
+		// neither books nor clears - the window is simply left unjudged and asked again later in the
+		// same phase. Without this a charge spent in Solar would clear the Bahamut entry on entry,
+		// on the strength of a buff the player cast himself.
+		if (HasSearingLight)
+		{
+			return;
+		}
+
+		_searingPhaseBooked = true;
+		if (HasAnySearingLight)
+		{
+			_searingPhaseHeld[(int)phase]++;
+		}
+		else
+		{
+			_searingPhaseHeld[(int)phase] = 0;
+		}
+	}
+
+	/// <inheritdoc/>
+	protected override void UpdateInfo()
+	{
+		base.UpdateInfo();
+		UpdateSearingPhaseBook();
+	}
+
+	/// <summary>
 	/// Is there another Summoner in the party who could cast Searing Light?
 	///
 	/// Alliance members are not asked: Searing Light reaches nearby party members, so a Summoner in
