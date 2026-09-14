@@ -23,6 +23,12 @@ jobs:
       - name: Check the C# files are structurally intact
         run: python3 .github/scripts/audit/check_cs_structure.py
 
+      # The heal target ranking is upstream code with one fork change in it: a critical rank ahead of
+      # the three role short-cuts. Nothing fails when that order is lost - a merge bringing the
+      # upstream version back would just quietly pass the dying member over again.
+      - name: Check the heal target order
+        run: python3 .github/scripts/audit/check_heal_target_order.py
+
       # Depth alone is not enough: this fork's own remote carries no upstream tags at all, only
       # 7.5.5.41+wsh1 and 7.5.6.1+wsh1, and this environment cannot push tags to fix that. So the
       # release tags have to come from upstream directly, or `git describe` finds nothing to

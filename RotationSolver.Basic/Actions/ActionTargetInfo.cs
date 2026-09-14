@@ -3150,7 +3150,17 @@ public struct ActionTargetInfo(IBaseAction action)
 				List<(IBattleChara Obj, bool Unprotected, float Health)> ranked = [];
 				foreach (var o in objs)
 				{
-					if (o.HasStatus(false, StatusHelper.HealingIneffectiveStatus))
+					// A corpse takes no healing, so it is not a healing candidate - the same reason
+					// HealingIneffectiveStatus keeps its bearers out, taken to its extreme.
+					//
+					// Nothing upstream of here excludes the dead: GetCanTargets only drops targets at
+					// full health, and GetHealthRatio returns 0 for a corpse rather than something
+					// out of range. The worst-hurt pick therefore always rated a dead member as the
+					// most urgent, and only the role short-cuts ahead of it kept that from showing.
+					// The critical rank below would have made it unconditional, because a corpse
+					// holds the fewest effective points there can be. Raising is a separate path
+					// with its own target type, so nothing here is taken away from it.
+					if (o.IsDead || o.HasStatus(false, StatusHelper.HealingIneffectiveStatus))
 					{
 						continue;
 					}

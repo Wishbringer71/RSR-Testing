@@ -2401,7 +2401,11 @@ Dazu kam der Überholfehler des **Selbst-Kurzschlusses**, der bis dahin nur für
 
 **Upstream-Sync nachgeholt statt übergangen:** Die Messung vor dem Commit wies zwei ausstehende Commits aus (`bcc6e9a8c`, `e0a0a794d`, Beastmaster). Sie sind gemergt, die Arbeitskopie stand danach auf 0 zurück. Eigener Anteil: Die Messung gehört vor die Codeänderung, nicht vor den Commit.
 
-**Erreichter Prüfgrad:** statische Prüfung, `check_cs_structure`, `check_doc_references`, `check_sync_state`, Selbsttest des Modells, Compile in der CI. Im Spiel nicht beobachtet.
+**Im Review der eigenen Umsetzung gefunden und behoben — Tote in der Heilzielmenge.** `GetHealthRatio` liefert für eine Leiche **0**, und nichts filtert sie aus: `GetCanTargets` verwirft nur Ziele bei voller Gesundheit. Bisher fiel das nicht auf, weil die Rollen-Kurzschlüsse davorstanden und der Fall erst den letzten Rang erreichte. Die neue kritische Rangstufe hätte ihn **bedingungslos** gemacht — eine Leiche hält die wenigsten effektiven Punkte, die es gibt, und hätte jede Heilung auf sich gezogen. `IsDead` steht jetzt neben `HealingIneffectiveStatus` im Aufbau der Kandidatenliste, also an der Stelle, die dieselbe Absicht bereits verfolgt. Die Wiederbelebung ist nicht betroffen: Sie läuft über `TargetType.Death` mit eigener Zielmenge.
+
+**Prüfmittel, weil die Ordnung sonst still verloren geht:** `check_heal_target_order.py` liest `GeneralHealTarget` und prüft zweierlei am Quelltext — dass die kritische Rangstufe vor allen drei Kurzschlüssen steht und dass die Kandidatenliste die Toten auslässt. `ActionTargetInfo` ist Upstream-Code mit genau einer Fork-Änderung darin; ein Merge, der die Upstream-Fassung zurückbringt, stellt den Defekt wieder her, ohne dass etwas fehlschlägt. Das Skript trägt seinen Selbsttest gegen drei konstruierte Defekte und läuft in der CI.
+
+**Erreichter Prüfgrad:** statische Prüfung, `check_cs_structure`, `check_doc_references`, `check_heal_target_order`, `check_msbuild_xml`, `check_sync_state`, Selbsttest des Beschwörer-Modells, Compile in der CI. **Unabhängig geprüft ist nichts davon** — es ist Selbstkontrolle am eigenen Diff, ergänzt um Skripte, die ich selbst geschrieben habe. Im Spiel nicht beobachtet.
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
