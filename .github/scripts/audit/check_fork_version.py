@@ -86,6 +86,17 @@ def main(argv):
     if not tags:
         print(f'No numeric tag of "{remote}" is an ancestor of HEAD - is the remote fetched? '
               f'(git fetch --tags {remote})')
+        # Without a tag this check has nothing to compare against. Saying so and exiting 0 is right
+        # for a working copy that simply has no upstream remote, and wrong wherever the check is
+        # relied on: there a silent pass is indistinguishable from a clean tree. The fork's own
+        # remote carries no upstream tags at all - only 7.5.5.41+wsh1 and 7.5.6.1+wsh1 - so in CI
+        # this branch is the normal outcome unless the workflow fetches upstream itself, and it must
+        # fail there rather than wave the run through.
+        if '--require-tags' in argv:
+            print('\nRun with --require-tags, so this is a failure: the check could not be '
+                  'performed.\nFetch the upstream tags before it (git fetch --tags upstream) or '
+                  'drop the flag.')
+            return 1
         return 0
 
     newest = tags[0]

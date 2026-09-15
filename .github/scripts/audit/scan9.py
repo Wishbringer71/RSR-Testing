@@ -46,9 +46,65 @@ BOOL_DECL = re.compile(
 PARAMS_ARG = re.compile(r'\bparams\s+[\w\.\<\>\?]+\[\]\s*\w+')
 
 
+# Second class, same family: a method whose parameters are *all* optional, whose body is a single
+# expression, and in which every parameter appears. Called with no arguments, the result is then a
+# constant - and a comparison against it collapses. `GCDTime(uint gcdCount = 0, float offset = 0)
+# => (DefaultGCDTotal * gcdCount) + offset` returns 0 for `GCDTime()`, so `GCDTime() == 0f` is
+# unconditionally true. scan9's params class does not cover this: the parameters are ordinary
+# optional ones, not a params array, and the return type is not bool.
+CONSTANT_DEFAULT_DECL = re.compile(
+    r'(?:public|protected|internal|private)' + MODIFIERS +
+    r'\s+(?!class\b|struct\b|record\b|enum\b)[\w\.<>\?\[\]]+\s+(?P<name>\w+)\s*'
+    r'\((?P<args>[^()]*)\)\s*(?:=>\s*(?P<expr>[^;]+);|\{\s*return\s+(?P<ret>[^;]+);\s*\})')
+
+
+def constant_default_declarations(files):
+    """{name: location} for methods whose no-argument call yields a constant.
+
+    Every parameter must carry a default and must appear in the single returned expression; then
+    substituting the defaults leaves an expression over constants alone. Methods that merely have
+    optional parameters are not enough - Reset() and Save() are called without arguments on
+    purpose, and reporting them would drown the one case that matters.
+    """
+    found = {}
+    for path in files:
+        try:
+            text = open(path, encoding='utf-8-sig').read()
+        except OSError:
+            continue
+        for m in CONSTANT_DEFAULT_DECL.finditer(text):
+            args = m.group('args').strip()
+            if not args:
+                continue
+            parts = [a.strip() for a in args.split(',') if a.strip()]
+            if not all('=' in a for a in parts):
+                continue
+            names = [a.split('=')[0].strip().split()[-1] for a in parts]
+            body = m.group('expr') or m.group('ret') or ''
+            if not all(re.search(r'\b' + re.escape(n) + r'\b', body) for n in names):
+                continue
+            line = text[:m.start()].count('\n') + 1
+            found.setdefault(m.group('name'), f'{path}:{line}')
+    return found
+
+
 def call_re(name):
     """`Name()` with an empty argument list, optionally through a receiver."""
     return re.compile(r'(?P<bang>!\s*)?(?:[\w\.\?]+\.)?\b' + re.escape(name) + r'\s*\(\s*\)')
+
+
+def collapsed_comparison_re(name):
+    """`Name() == 0f` and its kin - the constant result compared against a literal.
+
+    A constant result is not by itself wrong. `SongEndAfterGCD()` means "does the status end right
+    now" and feeds its constant 0 into a further test, which is exactly what it is for. It becomes a
+    defect when the constant *is* the answer and is then compared against a literal: the comparison
+    is decidable at compile time and contributes nothing. That is the property, and testing for the
+    constant alone would have reported all fourteen candidates in this tree, thirteen of them
+    correct.
+    """
+    return re.compile(r'(?:[\w\.\?]+\.)?\b' + re.escape(name) +
+                      r'\s*\(\s*\)\s*(?:==|!=|<=|>=|<|>)\s*-?\d+(?:\.\d+)?[fdmFDM]?\b')
 
 
 def tracked_files():
@@ -151,7 +207,32 @@ def self_test():
     reportable = {n for n in names if n not in zeros}
     assert reportable == {'IsLastAbility'}, reportable
 
-    print('self-test ok: params overloads told apart from zero-argument ones, empty calls matched\n')
+    # Second class: all parameters optional, single returned expression using each of them, and the
+    # result compared against a literal. The constant alone is not the property - thirteen of the
+    # fourteen candidates in this tree are correct - so the comparison has to be there too.
+    decl = CONSTANT_DEFAULT_DECL.search(
+        '\tpublic static float GCDTime(uint gcdCount = 0, float offset = 0)\n'
+        '\t{\n\t\treturn (DefaultGCDTotal * gcdCount) + offset;\n\t}')
+    assert decl and decl.group('name') == 'GCDTime', 'block-bodied single return not recognised'
+    assert CONSTANT_DEFAULT_DECL.search('\tpublic static float T(uint n = 0) => X * n;'), \
+        'expression body not recognised'
+    # A parameter the expression ignores means the default does not determine the result.
+    m = CONSTANT_DEFAULT_DECL.search('\tpublic static float T(uint n = 0, float o = 0) => X * n;')
+    args = [a.strip() for a in m.group('args').split(',')]
+    names = [a.split('=')[0].strip().split()[-1] for a in args]
+    body = m.group('expr')
+    assert not all(re.search(r'\b' + n + r'\b', body) for n in names), \
+        'an unused parameter must disqualify the declaration'
+
+    cmp_pat = collapsed_comparison_re('GCDTime')
+    assert cmp_pat.search('\t\tif (_aim != null && GCDTime() == 0f)')
+    # Used as a value or as a bool, a constant result is legitimate.
+    assert not cmp_pat.search('\t\tif (SongEndAfterGCD())')
+    assert not cmp_pat.search('\t\tvar t = GCDTime();')
+    assert not cmp_pat.search('\t\tif (GCDTime(2) == 0f)')
+
+    print('self-test ok: params overloads told apart from zero-argument ones, empty calls '
+          'matched, and a constant result only reported where a literal comparison collapses\n')
 
 
 def main():
@@ -170,18 +251,64 @@ def main():
         return 0
 
     hits = empty_calls(files, reportable)
-    if not hits:
+    if hits:
+        print(f'{len(hits)} call site(s) pass an empty array to a params predicate - '
+              f'constant false:\n')
+        for name, loc, text in hits:
+            print(f'=== {name}   declared at {reportable[name]}')
+            print(f'      {loc}  {text}')
+        print('\nA constant-valued predicate is not what the call site reads as. Resolve each '
+              'against\nthe intent stated in the surrounding comment and name, not against the '
+              'compiler.')
+    else:
         print(f'None of the {len(reportable)} params-only predicates is called with an empty '
               f'argument list.')
-        return 0
 
-    print(f'{len(hits)} call site(s) pass an empty array to a params predicate - constant false:\n')
-    for name, loc, text in hits:
-        print(f'=== {name}   declared at {reportable[name]}')
+    collapsed = check_collapsed_comparisons(files)
+    print()
+    return 1 if collapsed else 0
+
+
+def check_collapsed_comparisons(files):
+    """Report every literal comparison against a call whose default arguments make it constant."""
+    candidates = constant_default_declarations(files)
+    hits = []
+    for name, where in sorted(candidates.items()):
+        pattern = collapsed_comparison_re(name)
+        for path in files:
+            try:
+                lines = open(path, encoding='utf-8-sig').readlines()
+            except OSError:
+                continue
+            for no, raw in enumerate(lines, 1):
+                line = strip_comment(raw)
+                if line and pattern.search(line):
+                    hits.append((name, where, f'{path}:{no}', line.strip()[:110]))
+
+    # Recorded and not repaired: the intended expression cannot be recovered from the code, and
+    # Ninja is outside the usage profile this fork is maintained for. Listing them as known keeps
+    # the return value meaningful for a *new* one instead of staying red for ever. See TODO.md.
+    known = {
+        ('GCDTime', 'RotationSolver/RebornRotations/Melee/NIN_Reborn.cs:977'),
+        ('GCDTime', 'RotationSolver/ExtraRotations/Melee/BeirutaNIN.cs:1003'),
+    }
+    open_hits = [h for h in hits if (h[0], h[2]) not in known]
+
+    print(f'{len(candidates)} method(s) whose no-argument call is constant by its defaults.')
+    for name, where, loc, text in hits:
+        if (name, loc) in known:
+            print(f'  known: {loc}  {text}  (TODO.md)')
+    if not open_hits:
+        print('No further literal comparison against such a call collapses.')
+        return open_hits
+
+    print(f'{len(open_hits)} comparison(s) that are decided at compile time:\n')
+    for name, where, loc, text in open_hits:
+        print(f'=== {name}   declared at {where}')
         print(f'      {loc}  {text}')
-    print('\nA constant-valued predicate is not what the call site reads as. Resolve each against\n'
-          'the intent stated in the surrounding comment and name, not against the compiler.')
-    return 0
+    print('\nThe call site reads as a condition and is none. What the intent was has to come from\n'
+          'the surrounding code - the constant only says the question was not asked.')
+    return hits
 
 
 if __name__ == '__main__':

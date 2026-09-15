@@ -582,6 +582,134 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
+	/// Level at which the Enhanced traits of Addle, Feint and Reprisal extend those debuffs from 10s
+	/// to 15s.
+	/// </summary>
+	/// <remarks>
+	/// Duration only. The reduction each of them applies does not change with the trait - the user
+	/// checked the Lodestone entry after this code had briefly priced an end-game Reprisal at 15%,
+	/// on the strength of a note in <see cref="StatusHelper.ReprisalStatus"/> that named no source.
+	/// The effect texts agree: action 7535 states 10% and leaves only the duration blank, which is
+	/// how the game data marks a trait-modified figure.
+	/// </remarks>
+	private const int EnhancedMitigationDebuffLevel = 98;
+
+	/// <summary>
+	/// How much longer a slowed enemy takes between attacks. Arm's Length (7548) afflicts
+	/// "Slow +20%", and the sign is the point: the delay grows, the hit does not shrink.
+	/// </summary>
+	private const float SlowDelayIncrease = 0.20f;
+
+	/// <summary>
+	/// What share of its damage output a hostile still has, in percent, given the throttles on it.
+	/// </summary>
+	/// <remarks>
+	/// The generalisation of a head count. A rule that asks "is this pull still worth an area cast"
+	/// is really asking about output, and a throttled enemy has not left the fight - it contributes
+	/// less. Counting heads answers that only in the special case where every throttle is all or
+	/// nothing.
+	/// <para>
+	/// Every factor is quoted from the action's own effect text in ActionId.resx, and they multiply,
+	/// as <see cref="GetCurrentMitigationPercent"/> already has them do: Slow +20% (Arm's Length,
+	/// 7548), Reprisal 10% (7535), Feint 10%
+	/// physical (7549), Addle 5% physical (7560), Dismantle 10% (2887).
+	/// </para>
+	/// <para>
+	/// The physical column is the one taken, without the magical/physical heuristic
+	/// <see cref="GetCurrentMitigationPercent"/> uses for a single imminent hit. The question here is
+	/// a standing pull's continuous stream, and that stream is auto-attacks - which is also why the
+	/// slow belongs in the product at all: it raises auto-attack delay, so it thins exactly the
+	/// damage this measures.
+	/// </para>
+	/// <para>
+	/// Reprisal carries one figure at every level: its Enhanced trait extends the debuff from 10s to
+	/// 15s and leaves the 10% alone. An earlier version of this method split it by level into 10%
+	/// and 15%, which was wrong, and the level it read now serves only
+	/// <see cref="MitigationDebuffDuration"/>, where the trait does change the answer.
+	/// </para>
+	/// </remarks>
+	/// <param name="hostile">The enemy to weigh.</param>
+	/// <returns>100 for an untouched enemy, less for a throttled one; 0 if there is no enemy.</returns>
+	protected static int HostileOutputPercent(IBattleChara hostile)
+	{
+		if (hostile == null)
+		{
+			return 0;
+		}
+
+		var factor = 1.0f;
+
+		if (hostile.HasStatus(false, StatusHelper.SlowStatus))
+		{
+			// Slow is the one entry here that is not a damage reduction, so it cannot be multiplied
+			// in like one. The effect text of Arm's Length (7548) reads "Slow +20%" - a *longer*
+			// delay between the enemy's attacks, not a smaller hit. Twenty percent more time per
+			// attack leaves 1/1.20 of the attacks in the same span, so the stream runs at 83% of its
+			// rate and not at 80%. The other four below reduce the damage of each hit outright and
+			// do multiply in directly.
+			factor *= 1f / (1f + SlowDelayIncrease);
+		}
+
+		if (hostile.HasStatus(false, StatusHelper.ReprisalStatus))
+		{
+			factor *= 0.90f;
+		}
+
+		if (hostile.HasStatus(false, StatusID.Feint))
+		{
+			factor *= 0.90f;
+		}
+
+		if (hostile.HasStatus(false, StatusID.Addle))
+		{
+			factor *= 0.95f;
+		}
+
+		if (hostile.HasStatus(false, StatusID.Dismantled))
+		{
+			factor *= 0.90f;
+		}
+
+		return (int)Math.Round(factor * 100f);
+	}
+
+	/// <summary>
+	/// Counts the hostiles within <paramref name="radius"/> and sums what output they still have.
+	/// </summary>
+	/// <remarks>
+	/// The measure an area rule wants: <c>AoeCount</c> enemies at full output is what a threshold of
+	/// <c>AoeCount * 100</c> expresses, and throttled enemies move the sum without being struck from
+	/// the count. Three enemies with one slowed come to 283; four with two come to 366.
+	/// </remarks>
+	/// <param name="radius">The radius to measure over, in yalms.</param>
+	/// <param name="output">Summed output in percent across the hostiles inside the radius.</param>
+	/// <returns>How many hostiles were inside the radius. Zero means the sum says nothing.</returns>
+	protected static int SurveyHostileOutput(float radius, out int output)
+	{
+		output = 0;
+		var hostiles = DataCenter.AllHostileTargets;
+		if (hostiles == null || hostiles.Count == 0)
+		{
+			return 0;
+		}
+
+		var inRange = 0;
+		for (int i = 0, n = hostiles.Count; i < n; i++)
+		{
+			var hostile = hostiles[i];
+			if (hostile == null || hostile.DistanceToPlayer() > radius)
+			{
+				continue;
+			}
+
+			inRange++;
+			output += HostileOutputPercent(hostile);
+		}
+
+		return inRange;
+	}
+
+	/// <summary>
 	/// Counts the hostiles within <paramref name="radius"/> and how many of them carry any of
 	/// <paramref name="statuses"/>.
 	/// </summary>
@@ -1442,9 +1570,14 @@ public partial class CustomRotation
 
 	/// <summary>
 	/// Shared duration of the enemy mitigation debuffs Addle, Feint and Reprisal, whose Enhanced traits
-	/// at level 98 extend all three from 10s to 15s.
+	/// extend all three from 10s to 15s.
 	/// </summary>
-	protected static float MitigationDebuffDuration => DataCenter.PlayerSyncedLevel() >= 98 ? 15f : 10f;
+	/// <remarks>
+	/// The trait changes the duration and nothing else - not the reduction, which stays at each
+	/// debuff's base figure whatever the level.
+	/// </remarks>
+	protected static float MitigationDebuffDuration =>
+		DataCenter.PlayerSyncedLevel() >= EnhancedMitigationDebuffLevel ? 15f : 10f;
 
 	/// <summary>
 	/// Whether an enemy mitigation debuff (Addle/Feint/Reprisal) is due for a proactive refresh: either

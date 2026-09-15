@@ -5,9 +5,6 @@ namespace RotationSolver.Updaters;
 
 internal static class StateUpdater
 {
-	/// <summary>Shield-survival floor used when no BMR prediction is available.</summary>
-	private const float ShieldSurvivalFallbackSeconds = 3f;
-
 	private static bool CanUseHealAction =>
 		// PvP
 		DataCenter.IsPvP
@@ -671,27 +668,6 @@ internal static class StateUpdater
 		return count;
 	}
 
-	/// <summary>
-	/// Whether there is an actual reason to expect incoming damage, so that a shield can be credited
-	/// against a specific hit rather than merely being up right now.
-	/// </summary>
-	private static bool ShieldCreditAllowed =>
-		(Service.Config.UseBmrTimeline && DataCenter.BMRHasActiveModule
-			&& DataCenter.BMRNextDamageIn is > 0f and < float.MaxValue)
-		|| DataCenter.IsHostileCastingAOE
-		|| DataCenter.IsHostileCastingToTank
-		|| DataCenter.IsHostileCastingTankBusterAtMe;
-
-	/// <summary>
-	/// How long a shield must still last to count: until BMR's next predicted damage, or a short
-	/// floor when the reason came from cast detection and carries no lead time of its own.
-	/// </summary>
-	private static float ShieldSurvivalHorizon =>
-		Service.Config.UseBmrTimeline && DataCenter.BMRHasActiveModule
-			&& DataCenter.BMRNextDamageIn is > 0f and < float.MaxValue
-			? DataCenter.BMRNextDamageIn
-			: ShieldSurvivalFallbackSeconds;
-
 	private static bool ShouldHealSelf(StatusID[] hotStatus, float healSingle, float healSingleHot)
 	{
 		if (Player.Object == null)
@@ -719,13 +695,6 @@ internal static class StateUpdater
 
 		// Determine the target's health ratio. If they have a "Doom" status, treat their health as critically low (0.2).
 		var h = StatusHelper.PlayerDoomNeedHealing() ? 0.2f : ObjectHelper.GetPlayerHealthRatio();
-
-		// A shield still up when the next damage lands counts toward effective health.
-		if (!StatusHelper.PlayerDoomNeedHealing() && ShieldCreditAllowed
-			&& Player.Object.HasSurvivingShield(ShieldSurvivalHorizon))
-		{
-			h = Math.Max(h, Player.Object.GetEffectiveHpPercent() / 100f);
-		}
 
 		if (h == 0 || StatusHelper.PlayerHasStatus(false, StatusHelper.HealingIneffectiveStatus))
 		{
@@ -776,13 +745,6 @@ internal static class StateUpdater
 
 		// Determine the target's health ratio. GetHealthRatio already treats "Doom" status targets as critically low (1%).
 		var h = target.GetHealthRatio();
-
-		// A shield still up when the next damage lands counts toward effective health.
-		if (!target.DoomNeedHealing() && ShieldCreditAllowed
-			&& target.HasSurvivingShield(ShieldSurvivalHorizon))
-		{
-			h = Math.Max(h, target.GetEffectiveHpPercent() / 100f);
-		}
 
 		// Healing that lands for nothing is still excluded outright - NoNeedHealingStatus mixes
 		// that case in with genuine invulnerabilities, and only the latter get the softer

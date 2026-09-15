@@ -173,14 +173,16 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			return true;
 		}
 
-		if (!InTwoMIsBurst
+		// Held while a barrier waits to be spent - see HoldMitigationForBarrier. Reprisal takes 10%
+		// off the stream that has to break The Blackest Night within its seven seconds.
+		if (!InTwoMIsBurst && !HoldMitigationForBarrier()
 			&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
 
-		if (!InTwoMIsBurst && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
+		if (!InTwoMIsBurst && !HoldMitigationForBarrier() && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}
@@ -279,6 +281,71 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	}
 
 	/// <summary>
+	/// Hold a damage mitigation because a barrier is waiting to be spent - group pulls only.
+	/// </summary>
+	/// <remarks>
+	/// The Blackest Night absorbs 25% of maximum HP over 7s and grants Dark Arts only when that
+	/// barrier is broken; a barrier that expires unbroken has cost 3000 MP and returned nothing but
+	/// the absorption. What decides it is the size of the incoming stream, so every mitigation cast
+	/// while the barrier stands works against it: Reprisal takes 10% off every enemy's damage,
+	/// Arm's Length slows every physical attacker by 20% for 15s. The user's instruction is to hold
+	/// both while the barrier is up.
+	///
+	/// <para>
+	/// <b>Group pulls only, by the user's own qualification - in a boss fight the rule does not
+	/// apply.</b> There the incoming damage arrives as scripted single hits rather than as a stream
+	/// of auto-attacks: a tankbuster breaks the barrier on its own whatever Reprisal does, so
+	/// holding the mitigation would give up real damage reduction for a reward that is not at risk.
+	/// The pull is recognised by the same hostile count the barrier itself requires
+	/// (<see cref="BlackestNightMinHostiles"/>) rather than a second number that could drift away
+	/// from it.
+	/// </para>
+	///
+	/// <para>
+	/// Healing is deliberately not part of this. A barrier absorbs damage before it reaches HP, so
+	/// the bearer's health does not change how fast it is spent - the only coupling runs the other
+	/// way, since a bearer who dies first gets no Dark Arts at all.
+	/// </para>
+	///
+	/// <para>
+	/// The whole party is asked, not just the player: the barrier can be placed on any member
+	/// (<c>"self or target party member"</c>), and Reprisal thins the stream for whoever is being
+	/// hit. <c>isFromSelf: false</c> for the same reason - a second dark knight's barrier is just
+	/// as real as this one's. The one-GCD lead releases the hold before the barrier lapses, so a
+	/// mitigation that can no longer affect the outcome is not held back for nothing.
+	/// </para>
+	/// </remarks>
+	private bool HoldMitigationForBarrier()
+	{
+		if (NumberOfHostilesInRange < BlackestNightMinHostiles)
+		{
+			return false;
+		}
+
+		var party = DataCenter.PartyMembers;
+		if (party == null)
+		{
+			return false;
+		}
+
+		foreach (var member in party)
+		{
+			if (member == null)
+			{
+				continue;
+			}
+
+			if (member.HasStatus(false, StatusHelper.FullAbsorbRewardStatus)
+				&& !member.WillStatusEndGCD(1, 0, false, StatusHelper.FullAbsorbRewardStatus))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>
 	/// Whether Arm's Length is worth spending on the pull rather than kept for a knockback.
 	/// </summary>
 	/// <remarks>
@@ -296,7 +363,12 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	private bool ShouldUseArmsLengthOnPull()
 		=> UseArmsLengthOnPull
 			&& NumberOfHostilesInRange >= BlackestNightMinHostiles
-			&& !PackSlowed();
+			&& !PackSlowed()
+			// The slow is the point of casting it here, and it is exactly what a barrier waiting to
+			// be spent cannot afford. Only this branch is held: the central anti-knockback uses of
+			// Arm's Length stay untouched, because being thrown off a platform is not a damage
+			// question.
+			&& !HoldMitigationForBarrier();
 
 	private bool ShouldUseBlackestNightOnSelf()
 	{
@@ -419,13 +491,17 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			}
 		}
 
-		if (ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
+		// Same hold as in the area path, and for the same reason: on a group pull the barrier's
+		// reward depends on the stream that Reprisal would thin. In a boss fight the condition is
+		// false by the hostile count, so a tankbuster keeps its mitigation.
+		if (!HoldMitigationForBarrier()
+			&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
 
-		if (ReprisalPvE.CanUse(out act, skipAoeCheck: true))
+		if (!HoldMitigationForBarrier() && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}

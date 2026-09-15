@@ -3,6 +3,32 @@
 Entwurfsdokument nach ADR-Struktur. Es stellt den geltenden Stand dar; die Prüfhistorie steht in
 `AUDIT_LOG.md` (A44 bis A50).
 
+## Vorgabe des Auftraggebers
+
+**Steht The Blackest Night, wird keine Schadensminderung gewirkt — beim Dunkelritter weder Reflexion
+(Reprisal) noch Abtausch (Arm's Length), beim Weißmagier keine Betäubung durch Sanctus. Das gilt
+ausschließlich für Gruppenpulls, Wall-to-Wall; in Bosskämpfen gilt die Aussage nicht.**
+
+Der Grund liegt im Spielgeschehen und nicht in der Symmetrie der Regeln: Die Barriere zahlt ihre 3000
+MP nur als Dark Arts zurück, wenn sie **vollständig** aufgezehrt wird, und aufgezehrt wird sie allein
+vom eingehenden Schaden. Jede Minderung, die währenddessen läuft, drosselt genau den Strom, der die
+Barriere brechen soll — Reflexion nimmt 10 % von jedem Gegner, Abtausch verlangsamt jeden physischen
+Angreifer um 20 % für 15 Sekunden, eine Betäubung hält den Strom ganz an. Im Bosskampf ist das
+umgekehrt: Dort kommt der Schaden als angesagter Einzeltreffer, der die Barriere ohnehin bricht, und
+die Minderung wäre echter Schutz, den aufzugeben nichts einbringt.
+
+**Heilung ist davon ausdrücklich nicht betroffen.** Eine Barriere absorbiert Schaden, bevor er die HP
+erreicht; der Gesundheitsstand des Trägers ändert nichts an ihrem Verbrauch. Weder ein HoT noch eine
+direkte Heilung steht dem Aufzehren im Weg — die einzige Kopplung läuft umgekehrt, denn ein Träger,
+der vorher stirbt, bekommt gar kein Dark Arts.
+
+Umgesetzt ist das als `DRK_Reborn.HoldMitigationForBarrier()` — Sperre der beiden Reflexion-Zweige in
+`DefenseAreaAbility` und `DefenseSingleAbility` sowie des Abtausch-Zweigs auf dem Pull — und auf der
+Heilerseite als `WHM_Reborn.ShouldHoldHolyForBarrier()`, Option `HoldHolyForBlackestNight`,
+**voreingestellt an**. Den Gruppenpull erkennen beide Seiten an derselben Gegnerzahl, die ihre eigene
+Regel ohnehin verlangt, statt an einer zweiten Zahl daneben. Unberührt bleiben die zentralen
+Abtausch-Zweige gegen Rückstoß: Von einer Plattform geworfen zu werden ist keine Schadensfrage.
+
 ## Ergebnis
 
 The Blackest Night ist keine Verteidigung wie die anderen: Sie kostet 3000 MP und zahlt sie nur
@@ -110,7 +136,7 @@ Forderung nicht erfüllbar. Die Dauern summieren sich, jede Fähigkeit nur einma
 
 | Fähigkeit | Dauer | Minderung |
 |---|---|---|
-| Reprisal | 10 s, ab Stufe 98 15 s | −10 %, ab Stufe 98 −15 % (auf den Gegnern) |
+| Reprisal | 10 s, ab Stufe 98 15 s | −10 % (auf den Gegnern), von der Stufe unabhängig |
 | Oblation | 2 × 10 s | −10 % |
 | Dark Mind | 10 s | −10 % / −20 % |
 | Dark Missionary | 15 s | −5 % / −10 % |
@@ -132,10 +158,11 @@ Barriere, die sonst hinter ihrer eigenen Vorgängerin hängen bliebe.
 
 **Keine Gruppenbetäubung.** Eine Betäubung ist der Grenzfall der Minderung: Für ihre Dauer kommt
 nicht weniger Schaden, sondern gar keiner. Sanctus — Holy, ab Stufe 82 Holy III — hält alles im
-Umkreis von acht Yalm 4 Sekunden lang an (`ActionId.resx` 139, 25860), und der Weißmagier hält das
-im Trash absichtlich aufrecht: `WHM_Reborn.cs:498` streckt Sanctus über `SurveyStuns`, solange die
-Gegner betäubbar sind. Erst wenn sie `StunResistance` tragen (39, „Immune to stun effects"), läuft
-der Strom wieder.
+Umkreis von acht Yalm 4 Sekunden lang an (`ActionId.resx` 139, 25860). Der Weißmagier kann das im
+Trash absichtlich aufrechterhalten: `WHM_Reborn.ShouldStretchHolyStun` streckt die Betäubung über
+`SurveyStuns`, solange die Gegner betäubbar sind — **hinter einer Option mit Standard aus**, weil
+die Wirkung ohne Laufzeitbeobachtung nicht zu belegen war. Erst wenn sie `StunResistance` tragen
+(39, „Immune to stun effects"), läuft der Strom wieder.
 
 Wer betäuben kann, entscheidet über die Reichweite der Regel:
 
@@ -216,6 +243,15 @@ läuft die Barriere, und der Heiler unterbricht den Schadensstrom, gegen den sie
 müsste. Deshalb steht in `WHM_Reborn` die Gegenbedingung: `ShouldHoldHolyForBarrier()` hält Sanctus
 zurück, solange ein Gruppenmitglied in Tankrolle The Blackest Night trägt
 (`StatusHelper.FullAbsorbRewardStatus`).
+
+**Eine dritte Bedingung steht inzwischen daneben und misst breiter.**
+`ShouldHoldHolyWhilePackSlowed` hält Sanctus zurück, wenn die **Leistung** der Gegner im Wirkradius
+unter die Flächenschwelle gefallen ist — gleich durch welche Minderung, nicht nur durch die
+Barriere. Sie ist der dritte Zeitpunkt der Regel aus Konzept 08 und der Grund, warum die
+Verlangsamung hier in beide Richtungen wirkt: Sie hält die Barriere des Dunkelritters zurück
+(`PackSlowed`) **und** den Sanctus des Weißmagiers. Anders als die beiden Nachbarbedingungen steht
+sie auf Standard an, weil sie eine Anweisung des Auftraggebers mit einer Beobachtung aus dem Spiel
+dahinter ist und kein Vorschlag, dessen Nutzen eine Annahme bleibt.
 
 **Das ist kein Warten aufeinander.** Jede Seite wartet nur, während der Zustand der anderen aktiv
 ist, und beide Zustände laufen von selbst ab — die Betäubung nach vier Sekunden, die Barriere nach

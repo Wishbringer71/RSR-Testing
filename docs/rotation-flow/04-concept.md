@@ -183,7 +183,7 @@ if (!LanceMasteryIiTrait.EnoughLevel) { if (FullThrustPvE.CanUse(out act))    re
 ```
 
 Die naheliegende Vereinfachung ist, die Gates zu streichen — `CanUse` prüft
-`EnoughLevel` bereits selbst (`ActionBasicInfo.cs:452`). **Das ist nicht
+`EnoughLevel` bereits selbst (`ActionBasicInfo.BasicCheck`). **Das ist nicht
 verhaltensgleich, und der Unterschied ist kein Randfall.** Die gegateten Fassungen
 schließen einander aus; die ordnende Fassung ist ein Fallback. Sie unterscheiden sich
 genau dann, wenn `HeavensThrustPvE.CanUse` aus einem **anderen Grund als dem Level**
@@ -192,7 +192,7 @@ Schreibweise zusätzlich die Vorgängeraktion, die gegatete nicht.
 
 Ob das schadet, hängt daran, ob `FullThrustPvE.CanUse` oberhalb der Traitstufe
 überhaupt noch `true` liefern kann. `BaseAction.Use()` castet `ID`, nicht `AdjustedID`
-(`BaseAction.cs:278/301`), verlässt sich also auf die Aktionsersetzung des Spiels — der
+(`BaseAction.cs:225/300`), verlässt sich also auf die Aktionsersetzung des Spiels — der
 Cast wäre folgenlos richtig, aber die Combo-Buchführung von RSR läuft über die andere
 Aktion. Ohne Spielbeobachtung nicht entscheidbar.
 

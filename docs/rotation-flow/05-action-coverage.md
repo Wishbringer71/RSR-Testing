@@ -55,7 +55,7 @@ richtig ist:
 ### Der Befund, der den größten Teil des Rests erklärt: `AdjustedID`
 
 `BaseAction.Use()` castet nicht die deklarierte ID, sondern
-`adjustId = AdjustedID` (`BaseAction.cs:278/319`), und das ist
+`adjustId = AdjustedID` (`BaseAction.cs:48/300`), und das ist
 `ActionManager->GetAdjustedActionId(ID)` — die vom **Spiel** aufgelöste
 Ersetzung.
 

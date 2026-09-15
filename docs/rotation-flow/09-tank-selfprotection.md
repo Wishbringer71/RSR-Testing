@@ -22,12 +22,16 @@ Lagen bleiben **zwei** echte Rückhaltefälle, denen fünf Aufhebungen gegenübe
 Sie ist für Living Dead als **Uhrregel** umgesetzt — zurückhalten, solange der Tod
 noch rechtzeitig kommt — hinter einer Option mit Standard aus.
 
-Für The Blackest Night ist **im Heilverhalten** gar keine Sonderregel richtig. Heilung
-berührt den Auslöser nicht, und ein Heilerschild wird erst nach der TBN-Barriere
-aufgezehrt, kann sie also weder verzögern noch verdrängen. Die Nachrangigkeit, die
-dort sinnvoll ist, leistet RSR bereits: `BlackestNight` steht in
-`StatusHelper.ShieldStatus` und geht über `GetEffectiveHpPercent` in die
-Heilentscheidung ein.
+Für The Blackest Night ist **keine eigene Rückhalteregel** richtig: Heilung berührt den
+Auslöser nicht, und ein Heilerschild wird erst nach der TBN-Barriere aufgezehrt, kann sie
+also weder verzögern noch verdrängen. Was RSR stattdessen tut, ist allerdings nicht die
+Nachrangigkeit, als die dieses Konzept es zunächst geführt hat: `BlackestNight` steht in
+`StatusHelper.ShieldStatus`, und die Anrechnung über `GetEffectiveHpPercent` hebt die
+Gesundheitsquote des Trägers — sie verschiebt damit nicht seinen **Rang** unter den
+Heilzielen, sondern die **Schwelle**, ab der überhaupt geheilt wird. Bei einer Barriere
+über 25 % der maximalen HP sind das 25 Prozentpunkte: Die oGCD-Heilung setzt erst bei
+real rund 40 % ein statt bei 65 %. Ob das richtig bemessen ist, ist offen und steht in
+`TODO.md`; entschieden ist hier nur, dass eine **zusätzliche** TBN-Regel nichts beiträgt.
 
 *Abgrenzung, weil dieser Satz sonst zu weit gelesen wird:* Er gilt für Heilung und
 Schild. Für den **Schadensstrom** gilt das Gegenteil, und dort liegt inzwischen eine
@@ -43,7 +47,8 @@ hier.
 | Fehlende Ids (`HallowedGround`, `HallowedGround_1302`, `UndeadRebirth`) | umgesetzt |
 | Schutzstatus senkt die Heilschwelle, statt das Flag zu unterdrücken | umgesetzt |
 | Living-Dead-Rückhaltung als Uhrregel, hinter Option | umgesetzt |
-| Sonderbehandlung für The Blackest Night | **nicht nötig** — die vorhandene Schildanrechnung deckt den Fall ab |
+| Sonderbehandlung für The Blackest Night | **nicht nötig**, aber aus dem umgekehrten Grund: Eine Barriere ist kein Grund, später zu heilen — s. u. |
+| Schildanrechnung auf die Heilschwelle | **entfernt** (A85). Gesundheit und Schild addieren sich, sie ersetzen einander nicht |
 | Messbaustein für Heilraten auf Gruppenmitglieder | verworfen, kein Verbraucher |
 
 ## Prüfmaßstab — die Rangordnung
@@ -69,7 +74,7 @@ Eine Lesart bleibt bewusst ausgeklammert: „Überleben des Tanks" gilt hier als
 Vorrang *innerhalb* der Frage, ob eine Tank-Schutzmechanik respektiert wird — nicht
 als genereller Vorrang des Tanks vor der Gruppe. Für diesen anderen Fall führt RSR
 bereits eine eigene Rangfolge (Selbst → Heiler → Tank → niedrigste Gesundheit,
-`ActionTargetInfo.cs:3566-3583`). Sie hier ebenfalls umzustellen wäre eine zweite,
+`ActionTargetInfo.cs:3180-3205`). Sie hier ebenfalls umzustellen wäre eine zweite,
 größere Änderung.
 
 ## Taxonomie nach Auslöser
@@ -150,13 +155,23 @@ vom Dunkelritter bekommen. Steht sie in der Reihenfolge vor TBN, verzögert sie 
 Absorption. Das ist ein realer Fall — nur keiner, den ein Heiler beeinflussen kann,
 denn Radiant Aegis wirft der Beschwörer selbst.
 
-**Damit bleibt kein Grund, den Schild zurückzustellen.** Was bleibt, ist die
-gewöhnliche Dringlichkeitsfrage: Ein Träger mit TBN ist bereits geschützt und deshalb
-weniger dringend zu versorgen als ein ungeschütztes Gruppenmitglied. **Genau das
-leistet RSR bereits** — `StatusID.BlackestNight` steht in `StatusHelper.ShieldStatus`
-und geht über `GetEffectiveHpPercent` in die Heilentscheidung ein, sodass der Träger
-mit angerechneter Barriere gesünder erscheint und nachrangig behandelt wird. Eine
-eigene TBN-Regel würde diesem Mechanismus nichts hinzufügen.
+**Damit bleibt kein Grund, den Schild zurückzustellen.** Was bleibt, ist die gewöhnliche
+Dringlichkeitsfrage: Ein Träger mit TBN ist bereits geschützt und deshalb weniger dringend
+zu versorgen als ein ungeschütztes Gruppenmitglied. Eine eigene TBN-Regel fügt dem nichts
+hinzu, denn `StatusID.BlackestNight` steht in `StatusHelper.ShieldStatus` und geht über
+`GetEffectiveHpPercent` in die Heilentscheidung ein.
+
+**Womit dieser Mechanismus allerdings nicht das tut, was der Absatz von ihm verlangt.**
+Die Dringlichkeitsfrage ist eine Frage des Rangs — wer von mehreren Verwundeten zuerst
+versorgt wird. Die Anrechnung hebt dagegen die Gesundheitsquote und verschiebt damit die
+**Schwelle**, ab der überhaupt geheilt wird; sie wirkt auch dann, wenn der Träger der
+einzige Verwundete ist und es gar nichts zu priorisieren gibt. Das ist derselbe
+Kategorienfehler, den dieses Projekt bei `HasHostileCountAoeMitigation` schon einmal
+gemacht hat: Ein Mechanismus wurde an seinem Geltungsbereich beurteilt statt an dem, was
+er auslöst. Die Anrechnung ist deshalb hier nicht mehr als erledigt geführt, sondern als
+offene Bemessungsfrage in `TODO.md` — einschließlich des Falls, für den sie am
+schlechtesten gebaut ist: eine Barriere, die zu spät oder unnötig gesetzt wurde, wird
+voll angerechnet, ohne je Schaden abzufangen.
 
 ### Klasse B — Unverwundbarkeit
 
@@ -213,6 +228,15 @@ symbolisch.
 Zurückgehalten wird also nicht, *weil* der Status liegt, sondern solange der Tod
 noch rechtzeitig kommt.
 
+**Umgesetzt ist das in `StatusHelper.InDeathTriggerWindow` als zwei Bedingungen, nicht
+als eine Uhr.** Die Zurückhaltung endet einen Vorlauf von zwei GCDs vor Ablauf, damit
+die Heilung noch landen kann — **aber nur, solange der Träger über
+`HealthForDyingTanks` steht.** Darunter läuft sie bis zum Ablauf durch, weil dort der
+Fall auf 0 die wahrscheinliche Fortsetzung ist und der Vorlauf sonst genau den Auslöser
+wegheilen würde, für den die ganze Regel da ist. Die Uhr allein hätte die Fälle 1c und
+1e der Tabelle oben nicht mehr unterschieden: Sie beantwortet „wie viel Zeit bleibt",
+nicht „kommt der Tod noch".
+
 **Phase 2 — heilt er sich schnell genug selbst?** Walking Dead verlangt kumuliert
 eine volle Maximalgesundheit in zehn Sekunden. Die Selbstheilung liefert 1500 Potenz
 je Waffenskill oder Zauber, bei rund 2,4 s GCD also etwa vier Auslösungen. Daraus
@@ -256,7 +280,7 @@ zurückhalten" ist aus den vorhandenen Größen **nicht herstellbar**:
 
 - **Tankbuster wechseln das Ziel mitten in der Sequenz.** `DataCenter.BMRNextTankbusterIn`
   ist eine einzige Zahl ohne Angabe, auf wen; `IsHostileCastingTankBusterAtMe` ist
-  ausdrücklich spielerzentriert (`DataCenter.cs:2087`).
+  ausdrücklich spielerzentriert (`DataCenter.IsHostileCastingTankBusterAtMe`).
 - **Ein Tankbuster ist nicht ein Einschlag.** Mehrfach einschlagende Buster sind eine
   Folge von Treffern; die Vorhersage nennt den Beginn, nicht die Anzahl und nicht die
   Gesamtsumme.
@@ -380,6 +404,24 @@ Die Option ist nötig, weil RSR Living Dead selbst als Notrettung bei
 `HealthForDyingTanks` zündet. Dort ist der Tod die Katastrophe, und Walking Dead
 verlangt danach eine volle Maximalgesundheit an Heilung in zehn Sekunden.
 
+### Die Barriere senkt den Heilbedarf nicht
+
+**Ein Schild verhindert Schaden, er stellt keine Gesundheit her.** Ein vollgeheilter Tank **mit**
+Barriere ist besser geschützt als ein geschildeter Tank mit wenig Gesundheit; beide Größen addieren
+sich, sie ersetzen einander nicht. Eine laufende Barriere ist damit die Gelegenheit, das Polster zu
+vergrößern, nicht der Grund, es kleiner zu lassen. Läuft sie ungenutzt ab, steht der Träger
+unverändert tief; fängt sie den Treffer, ist sie verbraucht und er steht ebenso tief — verändert hat
+sich nur die verbleibende Zeit.
+
+Die frühere Anrechnung (`CreditShieldToEffectiveHp`) rechnete den Schild auf die Gesundheitsquote und
+verzögerte damit die Einzelziel-Heilung um die Barrierengröße — bei The Blackest Night 25
+Prozentpunkte. Sie ist entfernt (A85); das Verhalten entspricht wieder dem Upstream.
+
+**Heilung steht dem Aufzehren der Barriere nicht entgegen**, und darin liegt der Unterschied zur
+Minderungssperre: Wie schnell eine Barriere verbraucht wird, hängt allein am eingehenden Schaden. Die
+einzige Kopplung läuft umgekehrt — stirbt der Träger vorher, entfällt Dark Arts. Was den Verbrauch
+verhindert, ist Schadensminderung, und dagegen steht die Sperre in Konzept 10.
+
 ### Zwei Lücken in der Schildanrechnung, die diese Prüfung nebenbei fand — beide geschlossen
 
 | Befund | Wirkung | Stand |
@@ -444,15 +486,35 @@ nullifiziert Heilung und gehört in einen Ausschluss, nicht in eine Herabstufung
 **Der Vorlauf der Uhrregel misst bis zur Entscheidung, nicht bis zum Landen der
 Heilung.** Im ungünstigsten Fall muss der laufende GCD auslaufen und ein Zauber mit
 Wirkzeit darauf fertig werden — zusammen zwei GCDs. Der Vorlauf muss daher mindestens
-zwei GCDs betragen, und genau diese zwei GCDs sind der Preis: Bei einem
-Zehn-Sekunden-Fenster wird die halbe Phase verschenkt, in der ein noch rechtzeitiger
-Tod abgefangen werden kann. Ein kürzerer Vorlauf senkt den Preis, lässt die Heilung
-aber nach Ablauf landen, wenn der Tank bereits ungeschützt ist. Eine Fähigkeit ohne
-Wirkzeit würde beides lösen — welche Heilung gleich fällt, ist jedoch eine
-Rotationsentscheidung, die die zentrale Schicht weder kennt noch erzwingen kann.
+zwei GCDs betragen. Wie viele Sekunden das sind, steht nicht fest: Gemessen wird die
+**tatsächliche** Erholzeit des Spielers, die das Spiel meldet
+(`DataCenter.DefaultGCDTotal` über `ActionManagerHelper.GetDefaultRecastTime`), also
+verkürzt Zaubertempo den Vorlauf mit. Gegen die zehn Sekunden von Living Dead
+(`ActionId.resx`, Aktion 3638) ist es rund die halbe Phase.
+
+**Der Vorlauf greift nicht, solange der Tod noch erreichbar ist** — das ist Fall 1e der
+Tabelle oben, und er ist die Bedingung, unter der der Preis des Vorlaufs überhaupt
+tragbar ist. Ohne ihn wird die Startbahn für die Heilung mit genau dem Ergebnis
+bezahlt, das die Zurückhaltung erzeugen soll: Ein Träger, der tief genug für den Fall
+auf 0 steht, würde in der Vorlaufzeit über die Linie zurückgeheilt, Living Dead liefe
+ungenutzt ab, und der Tank hätte seine Unverwundbarkeit für nichts ausgegeben. Die
+Grenze ist `HealthForDyingTanks` — der Wert, bei dem die Tank-Rotationen die
+Unverwundbarkeit selbst zünden, also die Aussage des Baums über „dieser Tank fällt
+gleich". Darüber kommt der Tod nicht mehr, und die Heilung soll laufen, bevor der
+Träger wieder sterblich ist; darunter kommt er, und nichts darf ihn aufhalten.
+
+**Verloren geht dabei nichts:** Läuft Living Dead ab, endet die Zurückhaltung mit ihm,
+und der Träger ist wieder gewöhnliches Heilziel. Was er nicht mehr kann, ist über die
+Schwelle geheilt zu werden, solange der Auslöser noch erreichbar ist.
+
+Ein kürzerer Vorlauf senkt den Preis weiter, lässt die Heilung aber nach Ablauf landen,
+wenn der Tank bereits ungeschützt ist. Eine Fähigkeit ohne Wirkzeit würde beides lösen
+— welche Heilung gleich fällt, ist jedoch eine Rotationsentscheidung, die die zentrale
+Schicht weder kennt noch erzwingen kann.
 
 **Die gestaffelte Phase-2-Unterstützung** (Fälle 4 und 4a) ist nicht gebaut. Sie
-verlangt eine Kursprognose und damit den verworfenen Messbaustein.
+verlangt eine Kursprognose und damit den verworfenen Messbaustein. Welche Stellen im
+Code ihr entgegenstehen, führt `TODO.md`.
 
 **Eine einzige Frage zum Weisen.** Die Verbrauchsreihenfolge ordnet Eukrasian Diagnosis
 hinter The Blackest Night ein, ein Job-Guide davor. Träfe Letzteres zu, könnte der

@@ -3150,7 +3150,17 @@ public struct ActionTargetInfo(IBaseAction action)
 				List<(IBattleChara Obj, bool Unprotected, float Health)> ranked = [];
 				foreach (var o in objs)
 				{
-					if (o.HasStatus(false, StatusHelper.HealingIneffectiveStatus))
+					// A corpse takes no healing, so it is not a healing candidate - the same reason
+					// HealingIneffectiveStatus keeps its bearers out, taken to its extreme.
+					//
+					// Nothing upstream of here excludes the dead: GetCanTargets only drops targets at
+					// full health, and GetHealthRatio returns 0 for a corpse rather than something
+					// out of range. The worst-hurt pick therefore always rated a dead member as the
+					// most urgent, and only the role short-cuts ahead of it kept that from showing.
+					// The critical rank below would have made it unconditional, because a corpse
+					// holds the fewest effective points there can be. Raising is a separate path
+					// with its own target type, so nothing here is taken away from it.
+					if (o.IsDead || o.HasStatus(false, StatusHelper.HealingIneffectiveStatus))
 					{
 						continue;
 					}
@@ -3163,6 +3173,57 @@ public struct ActionTargetInfo(IBaseAction action)
 					var byProtection = b.Unprotected.CompareTo(a.Unprotected);
 					return byProtection != 0 ? byProtection : a.Health.CompareTo(b.Health);
 				});
+
+				// Anyone about to die comes before every role short-cut below.
+				//
+				// The three short-cuts return outright once their own threshold is met and look at
+				// nobody else, so a damage dealer at 10% was passed over the moment the tank stood
+				// at 44%, or the player themself at 39%. That is the case the user names - "auch ein
+				// Damagedealer ohne Aggro mit 10% Leben kann bei einem AoE sterben" - and the tank
+				// behind mitigations and a large pool is not in more danger there, only earlier in
+				// the order. His ranking of healer before tank before damage dealer applies at
+				// *equal* danger, which 10% against 44% is not.
+				//
+				// The threshold is the tree's own statement of "this one is about to fall": the
+				// value at which the tank rotations fire their invulnerability. Effective health,
+				// so a barrier counts - a tank at 10% behind The Blackest Night does not die to the
+				// next hit - and read the same way CanProvoke reads it.
+				//
+				// Ordered by absolute effective points rather than by percentage, because whoever
+				// stands here dies to the next hit and a hit is an absolute number: 10% of a small
+				// pool is fewer points than 14% of a large one. Role decides only a tie, which is
+				// where the instruction puts it.
+				//
+				// Protected members stay out. Without that this rank would invert into its own
+				// opposite - a gunbreaker under Superbolide sits at 1 HP on purpose, would hold the
+				// fewest points of anyone and would outrank every genuine emergency.
+				IBattleChara? critical = null;
+				var criticalHp = uint.MaxValue;
+				var criticalRole = int.MaxValue;
+				foreach (var r in ranked)
+				{
+					if (!r.Unprotected
+						|| r.Obj.GetEffectiveHpPercent() > Service.Config.HealthForDyingTanks * 100f)
+					{
+						continue;
+					}
+
+					var hp = r.Obj.GetEffectiveHp();
+					var role = r.Obj.IsJobCategory(JobRole.Healer) ? 0
+						: r.Obj.IsJobCategory(JobRole.Tank) ? 1
+						: 2;
+					if (critical == null || hp < criticalHp || (hp == criticalHp && role < criticalRole))
+					{
+						critical = r.Obj;
+						criticalHp = hp;
+						criticalRole = role;
+					}
+				}
+
+				if (critical != null)
+				{
+					return critical;
+				}
 
 				List<IBattleChara> healingNeededObjs = [];
 				foreach (var r in ranked)
