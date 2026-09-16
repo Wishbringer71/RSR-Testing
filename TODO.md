@@ -12,6 +12,8 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 **Was zum Bauen fehlt:** je Status ein Minderungssatz, belegbar aus den Wirktexten in `Action.resx`, und die Entscheidung, gegen welchen Grenzwert gemessen wird. Beides ist Voraussetzung, nicht Beiwerk.
 
+**Die Barriere gehört in den Zähler, nicht in den Nenner** (Vorgabe des Auftraggebers, Konzept 08): Sie drosselt die Rate nicht, bewertet aber, ob der Tank überlebt und ob genug Zeit zum Heilen bleibt. Die gemeinte Größe ist Puffer geteilt durch Rate — der Puffer einschließlich Barriere wird bereits geführt (`GetEffectiveHp`), der Nenner fehlt. Damit hängt dieser Punkt am selben fehlenden Messbaustein wie die Heilzielwahl, und die Restzeit der Barriere (`HasSurvivingShield`, Defekt s. u.) ist seine zweite Hälfte: Eine Barriere, die vor der Heilung ausläuft, kauft keine Zeit.
+
 **Alternative, die ohne Sätze auskommt:** `DataCenter.DPSTaken` misst den tatsächlich angekommenen Schaden, also bereits nach allen Minderungen. Ihr Zeitfenster von fünf Millisekunden macht sie heute unbrauchbar (ein Bild dauert rund sechzehn); sie ist Upstream-Code mit der Diagnoseanzeige als einzigem Leser.
 
 **Die Richtung der Reaktion steht bereits fest: Heilung vor Minderung** (Vorgabe des Auftraggebers, Konzepte 08 und 10). Eine Grenzwertüberschreitung löst also zuerst Heilung aus; gemindert wird, wo die Heilung nicht reicht. Im Dispatch ist diese Reihenfolge in beiden Pfaden bereits gegeben.

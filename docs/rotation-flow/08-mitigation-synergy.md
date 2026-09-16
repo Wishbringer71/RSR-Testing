@@ -101,10 +101,32 @@ allen Minderungen und Mitigationen; hochrechnen muesste man dafuer gar nichts. I
 betraegt jedoch fuenf Millisekunden, waehrend ein Bild rund sechzehn dauert — die Groesse sieht damit
 fast immer nichts. Sie ist Upstream-Code, und ihr einziger Leser im Baum ist die Diagnoseanzeige.
 
-**Eine Barriere gehoert nicht in diese Rechnung.** The Blackest Night senkt die Rate nicht, es
-absorbiert eine Menge: Der Strom laeuft unveraendert weiter, er trifft nur zuerst den Schild. In
-einer Grenzwertrechnung ueber den Strom darf eine Barriere deshalb nicht als Faktor auftreten — sie
-verlaengert die Zeit bis zum kritischen Zustand, statt den Zufluss zu senken.
+**Eine Barriere gehoert in den Zaehler, nicht in den Nenner.** The Blackest Night senkt die Rate
+nicht, es absorbiert eine Menge: Der Strom laeuft unveraendert weiter, er trifft nur zuerst den
+Schild. Als **Faktor** der Ratenrechnung waere sie deshalb falsch — sie drosselt nichts.
+
+**Sie bewertet aber sehr wohl, ob der Tank ueberlebt und ob genug Zeit zum Heilen bleibt**, und das
+ist der Punkt, an dem sie zaehlt. Die Groesse, um die es geht, ist die Zeit bis zum kritischen
+Zustand: **Puffer geteilt durch Rate**. Die Barriere vergroessert den Puffer, sie verkleinert die
+Rate nicht — also Zaehler, nicht Nenner. Genau daran haengt die Frage, die eine Grenzwertregel
+eigentlich stellt: Nicht „ist der Zufluss hoch", sondern „reicht die Zeit, die er mir laesst, fuer die
+Heilung, die ich brauche".
+
+Dieselbe Trennung traegt bereits zwei bestehende Entscheidungen, und sie ist dieselbe in beide
+Richtungen: In der **Heilschwelle** zaehlt die Barriere nicht, weil sie den Heilbedarf nicht senkt
+(A85) — in der **Ueberlebensfrage** zaehlt sie, weil sie Schaden abfaengt. `GetEffectiveHp` fuehrt
+sie deshalb, und die kritische Rangstufe der Heilzielwahl liest genau diese Groesse (Konzept 07).
+
+**Was zur Zeitrechnung fehlt, ist der Nenner, nicht der Zaehler.** Der Puffer einschliesslich
+Barriere ist vorhanden und wird gelesen; die Rate je Mitglied ist es nicht — derselbe fehlende
+Baustein wie bei der Heilzielwahl. Ohne ihn ist „reicht die Zeit" nicht zu berechnen, und die
+Barriere bleibt auf ihre heutige Rolle beschraenkt: Sie hebt den Puffer, aus dem die
+Ueberlebensbewertung ihre Antwort zieht.
+
+**Die Restzeit der Barriere selbst waere die zweite Haelfte dieser Frage.** `StatusHelper.HasSurvivingShield` wurde
+dafuer gebaut und hat heute keinen Leser; ihr bekannter Defekt — sie misst die **kuerzeste**
+Schildrestzeit statt der laengsten — steht in `TODO.md`. Wer die Zeitrechnung baut, loest ihn mit,
+denn eine Barriere, die vor der Heilung ausläuft, kauft keine Zeit.
 
 **Der scheinbare Zielkonflikt mit der Barrierenregel ist aufgeloest, und zwar durch eine Rangregel
 des Auftraggebers: Heilung vor Minderung.** Seine Vorgabe zu The Blackest Night bleibt unveraendert —
