@@ -14,11 +14,15 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 **Die Barriere gehört in den Zähler, nicht in den Nenner** (Vorgabe des Auftraggebers, Konzept 08): Sie drosselt die Rate nicht, bewertet aber, ob der Tank überlebt und ob genug Zeit zum Heilen bleibt. Die gemeinte Größe ist Puffer geteilt durch Rate — der Puffer einschließlich Barriere wird bereits geführt (`GetEffectiveHp`), der Nenner fehlt. Damit hängt dieser Punkt am selben fehlenden Messbaustein wie die Heilzielwahl, und die Restzeit der Barriere (`HasSurvivingShield`, Defekt s. u.) ist seine zweite Hälfte: Eine Barriere, die vor der Heilung ausläuft, kauft keine Zeit.
 
-**Alternative, die ohne Sätze auskommt:** `DataCenter.DPSTaken` misst den tatsächlich angekommenen Schaden, also bereits nach allen Minderungen. Ihr Zeitfenster von fünf Millisekunden macht sie heute unbrauchbar (ein Bild dauert rund sechzehn); sie ist Upstream-Code mit der Diagnoseanzeige als einzigem Leser.
+**Der Weg ohne jede statische Vorgabe, und er ist der kleinste Eingriff:** `DataCenter.RecordedHP` führt eine Zeitreihe von Gesundheitsanteilen je Objekt-Id (1 Hz, 240 Einträge), und `ObjectHelper.GetTTK` wertet sie für **jede** Id aus — die Methode ist generisch. Gefüllt wird die Reihe nur aus `AllHostileTargets` (`TargetUpdater.UpdateTimeToKill`), deshalb liefert sie für Gruppenmitglieder `NaN`. Nimmt man die Gruppe mit auf, ist die Rate je Mitglied da, **netto nach allem** — Minderung, Mitigation, Barriere und Heilung eingerechnet, ohne eine einzige Liste. Der Grenzwert wird damit relativ: „Ist die Restzeit kürzer als die Zeit, die meine Heilung braucht?" Beide Seiten sind zur Laufzeit bekannt.
+
+**Grenzen, gemessen:** keine Vorausschau (`CheckSpan` 2,5 s, Abtastung 1 Hz — der erste Treffer ist nicht vorhersehbar, dafür bleibt die BossModReborn-Vorhersage zuständig); Trägheit (`GetTTK` mittelt über den ganzen Kampf, nicht über die letzten Sekunden — eine Momentanrate wäre dieselbe Quelle, anders ausgewertet); keine Zuordnung (der Verlauf sagt, *dass* die Gesundheit fällt, nicht *warum*).
+
+**`DataCenter.DPSTaken` ist die schwächere Alternative:** Sie misst ebenfalls netto, trägt aber **kein Ziel** (`DamageRec` hat nur Zeitpunkt und Anteil) und hat ein Fenster von fünf Millisekunden gegen ein Bild von rund sechzehn — sie sieht fast immer nichts. Upstream-Code, einziger Leser ist die Diagnoseanzeige.
 
 **Die Richtung der Reaktion steht bereits fest: Heilung vor Minderung** (Vorgabe des Auftraggebers, Konzepte 08 und 10). Eine Grenzwertüberschreitung löst also zuerst Heilung aus; gemindert wird, wo die Heilung nicht reicht. Im Dispatch ist diese Reihenfolge in beiden Pfaden bereits gegeben.
 
-**Empfehlung: erst entscheiden, dann bauen** — die Wahl zwischen Hochrechnung aus Statussätzen und Messung des angekommenen Schadens bestimmt Aufwand und Genauigkeit, und die Grenzwerte selbst sind eine Aussage über das Heilvermögen der Gruppe. Vorgelegt.
+**Empfehlung: die Gruppe in `RecordedHP` aufnehmen und damit anfangen.** Es ist eine Schleife über `PartyMembers` neben der bestehenden über die Gegner, es braucht keine Pflegeliste, keinen gesetzten Grenzwert und keine Statussätze, und es bedient drei offene Punkte auf einmal — Heilzielwahl Stufe 3, die Grenzwertregel und die Frage, ob die Barriere genug Zeit kauft. Die Hochrechnung aus Statussätzen bleibt danach für das übrig, was Beobachtung nicht kann: die Lage **vor** dem ersten Treffer.
 
 
 ### `searing_light_coverage.py` misst über das Fenster hinaus, das es zu messen vorgibt · —

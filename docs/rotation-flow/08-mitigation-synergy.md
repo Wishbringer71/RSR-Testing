@@ -95,6 +95,48 @@ weil er groesser ist als die Sanctus-Regel, an der er auffiel.
 | Minderung **des Tanks persoenlich** — Rampart, Bollwerk, Sentinel, Schattenwall, Vengeance, Bloodwhetting | **fehlt vollstaendig.** `StatusHelper.RampartStatus` fuehrt die Ids, wird aber ausschliesslich als `StatusProvide` benutzt, also zur Doppelbelegungssperre — nie zur Messung |
 | Die Saetze dieser Minderungen | **fehlen.** `RampartStatus` ist eine reine Id-Liste; Rampart und Sentinel mindern verschieden stark. Ohne Satz je Status ist keine Rechnung moeglich; belegbar waeren sie aus den Wirktexten in `Action.resx` |
 
+**Der ganze Anspruch ist aus Laufzeitbeobachtung erfuellbar, ohne eine einzige statische Vorgabe.**
+Das ist der Weg mit dem kleinsten Eingriff und der groessten Deckung, und die Maschinerie dafuer
+steht bereits im Baum — sie wird nur nicht auf die Gruppe angewandt.
+
+`DataCenter.RecordedHP` ist eine Zeitreihe von Gesundheitsanteilen **je Objekt-Id**: einmal je
+Sekunde ein Eintrag, 240 tief, also vier Minuten Historie. `ObjectHelper.GetTTK` liest daraus fuer
+eine beliebige Id den Verlauf, bildet einen gleitenden Mittelwert und schaetzt die Zeit bis auf null.
+Die Methode fragt nichts weiter als `GameObjectId` — sie ist generisch. **Gefuellt wird die Reihe
+jedoch ausschliesslich aus `AllHostileTargets`** (`TargetUpdater.UpdateTimeToKill`), weshalb sie fuer
+ein Gruppenmitglied `NaN` liefert.
+
+**Was ein beobachteter Verlauf leistet, das eine Hochrechnung nicht leistet:** Er ist bereits netto.
+Jede Minderung, jede Mitigation, jede Barriere und jede fremde Heilung stecken darin, ohne dass
+irgendeine Liste gepflegt werden muesste — auch die, die es im Baum gar nicht gibt. Damit entfaellt
+der ganze Bedarf an Minderungssaetzen je Status, und mit ihm die Alterung, der eine solche Liste
+unterliegt.
+
+**Und der Grenzwert wird damit relativ statt absolut.** Die Frage lautet nicht mehr „liegt der
+Schaden unter X", sondern **„ist die Restzeit kuerzer als die Zeit, die meine Heilung braucht"** —
+und beide Seiten sind zur Laufzeit bekannt: die Restzeit aus dem Verlauf, die Heilzeit aus der
+Restzeit des GCD und der Wirkzeit des Zaubers. Damit ist keine einzige gesetzte Zahl mehr noetig,
+auch nicht die Grenze zwischen „bewaeltigbar" und „aussichtslos".
+
+**Heilung verfaelscht die Messung nicht, sie beantwortet die Frage mit.** Steigt der
+Gesundheitsanteil, liefert `GetTTK` `NaN` — kein Todeszeitpunkt absehbar. Der beobachtete Verlauf ist
+also der **Nettotrend** und damit unmittelbar die Antwort auf „komme ich mit dem Heilen nach": Faellt
+er trotz laufender Heilung, reicht sie nicht.
+
+**Drei Grenzen, gemessen und nicht geschaetzt:**
+
+- **Keine Vorausschau.** Eine Rate entsteht erst, wenn Schaden geflossen ist; `GetTTK` liefert vor
+  2,5 Sekunden Beobachtung (`CheckSpan`) grundsaetzlich `NaN`, und abgetastet wird einmal je Sekunde.
+  Der erste grosse Treffer eines Pulls ist daraus nicht vorhersehbar — dafuer bleibt die
+  Vorhersage von BossModReborn zustaendig.
+- **Traegheit.** `GetTTK` misst den Abfall seit dem **ersten** beobachteten Wert geteilt durch die
+  **gesamte** verstrichene Zeit — eine Durchschnittsrate ueber den Kampf, keine Momentanrate. Ein
+  ploetzlicher Einbruch wird darin verwaessert. Eine Momentanrate aus den letzten Abtastungen waere
+  dieselbe Datenquelle, anders ausgewertet.
+- **Keine Zuordnung.** Der Verlauf sagt, **dass** die Gesundheit faellt, nicht **warum**. Eine Regel,
+  die entscheiden soll, ob gerade Reflexion oder Rueckstoss das richtige Mittel ist, findet die
+  Antwort darin nicht.
+
 **Die Groesse, die den Anspruch unmittelbar erfuellen wuerde, existiert bereits — und ist unbrauchbar
 gebaut.** `DataCenter.DPSTaken` misst den **tatsaechlich angekommenen** Schaden, also bereits nach
 allen Minderungen und Mitigationen; hochrechnen muesste man dafuer gar nichts. Ihr Zeitfenster
