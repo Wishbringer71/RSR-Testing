@@ -4597,6 +4597,37 @@ public partial class RotationConfigWindow : Window
 		}
 
 		ImGui.Text($"DPSTaken: {DataCenter.DPSTaken}");
+
+		// The per-member damage rate, made readable. RecordedHP carries the party since A91, and
+		// GetTTK turns that history into a time to zero - but a measurement nobody can see is a
+		// measurement nobody can judge, and whether it is usable in a fight is exactly what has to
+		// be judged before a rule is hung on it.
+		//
+		// "--" is not an error: GetTTK returns NaN while health is rising (no death in sight) and
+		// for the first 2.5s of observation. Both are answers.
+		//
+		// Cost is one pass over the history per member, and only while this window is open.
+		ImGui.Text("Party time to die (health trend, net of every mitigation and heal):");
+		var partyForTtk = DataCenter.PartyMembers;
+		if (partyForTtk.Count == 0)
+		{
+			ImGui.Text("- no party members");
+		}
+		else
+		{
+			foreach (var member in partyForTtk)
+			{
+				if (member == null)
+				{
+					continue;
+				}
+
+				var ttk = member.GetTTK();
+				var shown = float.IsNaN(ttk) ? "--" : $"{ttk:F1}s";
+				ImGui.Text($"- {member.Name} {member.GetHealthRatio() * 100f:F0}% {shown}");
+			}
+		}
+
 		ImGui.Text($"CurrentRotation: {DataCenter.CurrentRotation}");
 		ImGui.Text($"Job: {DataCenter.Job}");
 		ImGui.Text($"JobRange: {DataCenter.JobRange}");
