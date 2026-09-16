@@ -4,15 +4,6 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 ## Defekte
 
-### `HostileOutputPercent` und `SurveyHostileOutput` haben keinen Leser mehr · R
-
-Beide sind `protected static` in `CustomRotation_OtherInfo` und waren die Messgröße der Sanctus-Aussetzbedingung, bis diese auf die Anteilsregel des Auftraggebers umgestellt wurde (Konzept 08). Ihr einziger Leser ist damit entfallen.
-
-**Nicht entfernt, und das ist begründet:** `protected` in `RotationSolver.Basic` heißt Paketoberfläche für abgeleitete Rotationen (Betroffenenkreis R); eine Entfernung wäre ein Signaturbruch. Für ihre eigene Frage — „wie viel Schaden trägt dieser Gegner noch" — sind sie richtig gebaut, jeder Faktor ist dem Wirktext seiner Aktion entnommen, und die Verlangsamung ist als einzige Nicht-Minderung korrekt über die Angriffsrate umgerechnet (C57).
-
-**Auflösungsbedingung:** ein Verbraucher, der tatsächlich nach Restleistung fragt — etwa eine Entscheidung über den Einsatz einer eigenen Minderung, die wissen will, wie viel Strom nach fremden Drosselungen übrig ist. Bis dahin **erfassen, nicht bearbeiten**; dies ist technische Schuld im Sinne eines bewussten Bestands, kein Defekt.
-
-
 ### `searing_light_coverage.py` misst über das Fenster hinaus, das es zu messen vorgibt · —
 
 `simulate(…, window=(lo, hi))` soll die Abdeckung **innerhalb** eines Zeitfensters messen. Der Zähler wird aber auch außerhalb hochgezählt — der `elif buff_until > t: covered += STEP` neben dem Fensterzweig —, geteilt wird dagegen durch die Fensterlänge `(hi - lo)`. Das Ergebnis ist die Gesamtabdeckung des Kampfes, gestreckt um das Verhältnis Kampflänge zu Fensterlänge. Sichtbar an der Ausgabe selbst: Die Einschwingtabelle meldet 332 %, die Ausfalltabelle 210 bis 542 % — Abdeckungsanteile über 100 % sind nicht deutbar.

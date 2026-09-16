@@ -96,6 +96,15 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Minimum slowed enemies in Holy's radius before the slow hold applies", Parent = nameof(HoldHolyWhilePackSlowed))]
 	public int HoldHolyMinSlowedHostiles { get; set; } = 3;
 
+	// Holding the stun only pays while the incoming stream is still manageable. Three enemies at
+	// full output - 300 - a HoT carries on its own; nine at 900 outrun every oGCD and GCD there is,
+	// and there the stun is needed now rather than later. The bound between the two is a property of
+	// the group's healing, not of the game, so it is a setting rather than a constant. The default
+	// is NOT evidenced: it sits between the two figures the user named as manageable and hopeless.
+	[Range(300, 1200, ConfigUnitType.None, 100)]
+	[RotationConfig(CombatType.PvE, Name = "Hold Holy only while total enemy output in its radius stays below this (100 = one enemy at full strength)", Parent = nameof(HoldHolyWhilePackSlowed))]
+	public int HoldHolyMaxHostileOutput { get; set; } = 600;
+
 	public enum ThinAirUsageStrategy : byte
 	{
 		[Description("Use all thin air charges on expensive spells")]
@@ -608,6 +617,21 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			return false;
 		}
 
+		// And only while what is left is still manageable. The share says the stream is being
+		// throttled; it does not say the remainder can be healed through. Three enemies at full
+		// output a HoT carries, nine outrun everything the job has - and at that point the stun is
+		// worth more now than later, however much of the pack is slowed. Holding it back there would
+		// stretch a throttle the tank does not survive long enough to benefit from.
+		//
+		// This is the output measure kept rather than dropped, and put where it belongs: as a bound
+		// on the hold, not as its trigger. As the trigger it asked "is this pull still worth an area
+		// cast", answered yes almost always, and the hold never fired (C59).
+		_ = SurveyHostileOutput(radius, out var output);
+		if (output > HoldHolyMaxHostileOutput)
+		{
+			return false;
+		}
+
 		return DiaPvE.CanUse(out _) || AeroIiPvE.CanUse(out _) || AeroPvE.CanUse(out _);
 	}
 
@@ -667,17 +691,6 @@ public sealed class WHM_Reborn : WhiteMageRotation
 
 		var party = PartyMembers;
 		if (party == null)
-		{
-			return false;
-		}
-
-		// Same condition as the slow hold, for the same reason one step removed: this rule holds Holy
-		// so the damage stream keeps running into the barrier, and the only way Holy stops that
-		// stream is its stun. With nobody left to stun, Holy costs the barrier nothing, and holding
-		// it back gives up an area cast for no gain.
-		var radius = HolyIiiPvE.EnoughLevel ? HolyIiiPvE.Info.EffectRange : HolyPvE.Info.EffectRange;
-		SurveyStuns(radius, out _, out var headroom);
-		if (!headroom)
 		{
 			return false;
 		}

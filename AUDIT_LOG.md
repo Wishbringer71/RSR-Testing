@@ -2413,13 +2413,19 @@ Dazu kam der Überholfehler des **Selbst-Kurzschlusses**, der bis dahin nur für
 
 **Der Zweck, und er ordnet alles Weitere:** Die Heilbarkeit des Tanks haengt an der Gegnerzahl — bei drei Gegnern genuegt ein HoT, bei neun ist der Strom kaum aufzuholen. Die Drosselung ist deshalb nicht so stark wie moeglich zu setzen, sondern so **lange** wie moeglich: Sie kauft die Zeit, in der der eigene Schaden die Gegnerzahl senkt. Daraus folgen der Einschub nach dem ersten Stun (Betaeubung 4 s gegen Erholzeit 2,5 s, ein sofortiger zweiter Sanctus ueberschriebe statt zu verlaengern) und das Aussetzen bei fremder Drosselung.
 
-**Befund, als Defektklasse erhoben statt am Fundort behandelt:** Drei Regeln setzen Sanctus aus, und nur `ShouldStretchHolyStun` pruefte, ob ueberhaupt noch ein Gegner betaeubbar ist. `ShouldHoldHolyWhilePackSlowed` und `ShouldHoldHolyForBarrier` taten es nicht.
+**Befund:** Drei Regeln setzen Sanctus aus. `ShouldStretchHolyStun` und `ShouldHoldHolyForBarrier` pruefen, ob ueberhaupt noch ein Gegner betaeubbar ist; **`ShouldHoldHolyWhilePackSlowed` tat es nicht.**
 
-**Wirkung im Kampf, je Stelle verschieden begruendet, aber mit derselben Folge:** Ist die Betaeubungskette abgearbeitet und alles im Wirkbereich immun, stunnt Sanctus nicht mehr. Dann gibt es bei der Slow-Regel **kein Budget mehr zu sparen**, und bei der Barrierenregel **keinen Strom-Stopp mehr zu verhindern** — Sanctus kostet die Barriere nichts. In beiden Faellen tauscht das Aussetzen einen Flaechenzauber gegen einen Einzelzielzauber, ohne irgendetwas dafuer zu bekommen, und zwar fuer den Rest des Pulls.
+**Wirkung im Kampf:** Ist die Betaeubungskette abgearbeitet und alles im Wirkbereich immun, stunnt Sanctus nicht mehr — dann gibt es kein Budget mehr zu sparen, und das Aussetzen tauscht einen Flaechenzauber gegen einen Einzelzielzauber, ohne irgendetwas dafuer zu bekommen, und zwar fuer den Rest des Pulls. Genau dort, wo der eigene Schaden die Gegnerzahl senken soll.
 
-**Behoben** durch `SurveyStuns(radius, out _, out var headroom)` und Abbruch bei `!headroom` in beiden Regeln — dieselbe Groesse, die `ShouldStretchHolyStun` seit A50 benutzt.
+**Behoben** durch `SurveyStuns(radius, out _, out var headroom)` und Abbruch bei `!headroom` — dieselbe Groesse, die die beiden anderen Regeln benutzen.
 
-**Entstehung:** Die Bedingung war bei der ersten Regel aus einem konkreten Fehlverhalten entstanden (A50) und wurde bei den beiden spaeteren nicht mitgenommen. Kein Wissensmangel, sondern eine fehlende Klassenerhebung: Als die zweite und dritte Aussetzregel gebaut wurden, ist nicht gefragt worden, welche Bedingungen der ersten fuer sie ebenso gelten.
+**Eigener Fehler bei der Erhebung, im selben Zug berichtigt:** Gemeldet und gebaut wurde die Bedingung zunaechst fuer **zwei** Regeln. `ShouldHoldHolyForBarrier` fuehrte sie bereits seit A50; die Erhebung hatte die Methode ab einer zu spaeten Zeile gelesen und den vorhandenen Aufruf uebersehen. Der Compiler hat es gemeldet (`CS0128`, `radius` und `headroom` doppelt), nicht die eigene Pruefung — eine Klassenerhebung, die eine Fundstelle erfindet, ist so falsch wie eine, die eine auslaesst. Die Dopplung ist entfernt.
+
+**Entstehung der echten Luecke:** Die Bedingung entstand bei der ersten Regel aus einem konkreten Fehlverhalten (A50) und wurde bei der Barrierenregel mitgenommen, bei der spaeter gebauten Slow-Regel nicht.
+
+**Leistungsmessung wiederhergestellt, an der richtigen Stelle** — Entscheidung des Auftraggebers auf die Vorlage zu C52: Sie ist **nicht** aufgegeben, denn der eingehende Schaden muss bewaeltigbar bleiben; sie zaehlt aber **nur bei Stunbarkeit**. Umgesetzt als **Schranke** der Aussetzregel statt als deren Ausloeser: Nach Stunbarkeit, Mindestzahl und Anteil wird geprueft, ob die Restleistung im Wirkbereich unter `HoldHolyMaxHostileOutput` liegt; darueber wird nicht gespart, sondern jetzt betaeubt. Als Ausloeser fragte dieselbe Groesse „lohnt sich hier noch ein Flaechenzauber", beantwortete das fast immer mit ja, und die Regel griff nie (C59).
+
+**Der Vorgabewert 600 ist ausdruecklich unbelegt.** Der Auftraggeber hat 300 als mit einem HoT tragbar und 900 als aussichtslos benannt; die Grenze dazwischen ist eine Eigenschaft seiner Gruppe und seines Heilvermoegens, nicht der Spieldaten. Deshalb eine Einstellung und keine Konstante, und deshalb ist der Wert als Setzung gekennzeichnet statt als Messung.
 
 **Erreichter Pruefgrad:** statische Pruefung, `check_cs_structure`, `check_doc_references`, Compile in der CI. Im Spiel nicht beobachtet.
 

@@ -65,6 +65,19 @@ Wirkbereich immun, gibt es nichts mehr zu strecken und nichts mehr zu sparen - d
 sinnfrei und kostet nur den Flaechenzauber. Umgesetzt ist das als `headroom` aus `SurveyStuns`, also
 "mindestens ein Gegner ist weder betaeubt noch resistent", in allen drei Aussetzregeln.
 
+**Zweite Bedingung ueber allem: der verbleibende Strom muss bewaeltigbar sein.** Der Anteil sagt, dass
+gedrosselt wird - er sagt nicht, dass der Rest durchzuheilen ist. Drei Gegner bei voller Leistung
+traegt ein HoT, neun laufen jeder Faehigkeit davon; dort ist die Betaeubung **jetzt** mehr wert als
+spaeter, gleich wie gross der verlangsamte Anteil ist. Eine Drosselung zu strecken, die der Tank
+nicht lange genug ueberlebt, um von ihr zu haben, ist kein Gewinn. Gemessen wird das mit der
+Leistungsrechnung unten, als **Schranke** der Aussetzregel und nicht als ihr Ausloeser — und sie
+zaehlt nur, wo ueberhaupt betaeubt werden kann.
+
+**Die Grenze ist eine Einstellung, kein Spielwert.** `HoldHolyMaxHostileOutput` (Vorgabe 600) trennt
+„bewaeltigbar" von „aussichtslos". Wo genau sie liegt, haengt am Heilvermoegen der Gruppe; die beiden
+Eckwerte stammen vom Auftraggeber (300 tragbar, 900 aussichtslos), der Vorgabewert dazwischen ist
+eine **Setzung und kein Messergebnis**.
+
 ## Vorgabe des Auftraggebers: die Aussetzbedingung ist ein Anteil
 
 **Sanctus wird aufgeschoben, solange mehr als die Hälfte der Gegner im Wirkbereich verlangsamt ist
@@ -100,11 +113,11 @@ vorgelegt worden. Eine erkannte Bedingung, unter der ein Eingriff im gesamten ma
 nichts tut, ist keine Eigenschaft, sondern seine Widerlegung, und gehört dem Auftraggeber
 vorgetragen, bevor sie im Spiel auffällt.
 
-**Die Leistungsrechnung bleibt als Baustein erhalten**, ohne Leser im Baum:
-`HostileOutputPercent` und `SurveyHostileOutput` sind `protected static` in
-`CustomRotation_OtherInfo` und damit Paketoberfläche für abgeleitete Rotationen. Ihre Faktoren sind
-den Wirktexten entnommen und für ihre eigene Frage richtig; sie stehen in `TODO.md` als erfasster
-Bestand, nicht als toter Code.
+**Die Leistungsrechnung ist nicht entfallen, sondern versetzt.** `HostileOutputPercent` und
+`SurveyHostileOutput` messen weiter, was sie immer gemessen haben — nur steht das Ergebnis jetzt als
+Obergrenze am Ende der Bedingungskette statt als deren Auslöser am Anfang. Ihre Faktoren sind den
+Wirktexten entnommen, die Verlangsamung als einzige Nicht-Minderung über die Angriffsrate
+umgerechnet (C57).
 
 **Die Betäubung bleibt aus der Bedingung heraus.** Sie wäre die stärkste Drosselung überhaupt — ein
 betäubter Gegner trägt null —, aber ihre Frage ist eine zeitliche: Die Betäubung dauert länger als
