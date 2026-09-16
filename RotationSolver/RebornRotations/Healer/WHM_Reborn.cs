@@ -92,6 +92,10 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Hold Holy while the pack is slowed (Arm's Length), so the stun is kept for when the damage stream is not already thinned")]
 	public bool HoldHolyWhilePackSlowed { get; set; } = true;
 
+	[Range(2, 8, ConfigUnitType.None, 1)]
+	[RotationConfig(CombatType.PvE, Name = "Minimum slowed enemies in Holy's radius before the slow hold applies", Parent = nameof(HoldHolyWhilePackSlowed))]
+	public int HoldHolyMinSlowedHostiles { get; set; } = 3;
+
 	public enum ThinAirUsageStrategy : byte
 	{
 		[Description("Use all thin air charges on expensive spells")]
@@ -536,25 +540,29 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	/// that runs, the stream is already thinned, and spending one of the pull's three stun
 	/// applications on it burns a budget that is gone for good: 4s, then 2s, then 1s, then immunity.
 	///
-	/// The measure is total enemy output, not a head count, which is the area rule itself restated:
-	/// AoeCount enemies at full output is what Holy has always asked for. A throttled enemy still
-	/// contributes, just less, and the sum decides. Three enemies with one slowed come to 280
-	/// against a threshold of 300, so Holy waits; four with two slowed come to 360 and it goes out.
-	/// SurveyHostileOutput weighs every throttle the tree can read, not the slow alone - a reprised
-	/// pull counts differently from an untouched one, which is the same question asked once.
+	/// The measure is a head count over Holy's own radius, and both halves of it are the user's:
+	/// **more than half** the enemies in radius carry the slow, and at least
+	/// <see cref="HoldHolyMinSlowedHostiles"/> of them do. The share says the stream as a whole is
+	/// thinned rather than one straggler being clipped; the floor keeps a two-enemy remnant from
+	/// satisfying the share by arithmetic alone.
 	///
-	/// Two properties follow from that and neither is an accident. The threshold comes from
-	/// Config.AoeCount, the same number ActionTargetInfo uses, so a user who changes it moves both
-	/// sides of the question at once and no second setting has to be kept in step. And the rule
-	/// only ever bites at exactly AoeCount enemies: at one more, the extra body carries at least 80
-	/// and the sum clears the threshold however many are slowed. That narrow reach is correct, not
-	/// a shortfall - with more enemies than the cast needs, Holy is worth casting even against a
-	/// thinned stream.
+	/// The measure this replaced was total enemy output against AoeCount * 100 - the area rule
+	/// restated in the unit mitigations are expressed in. It was mine rather than his, and in play
+	/// it did nothing: its own documentation noted that it "only ever bites at exactly AoeCount
+	/// enemies", because one body beyond that carries at least 80 on its own and clears the
+	/// threshold however many are slowed. A wall-to-wall pull always holds more enemies than the
+	/// cast needs, so the hold never fired there - which is exactly what the user observed, Holy
+	/// going out into a slow that had caught almost every enemy. Five enemies with four slowed came
+	/// to 432 against a threshold of 300.
 	///
-	/// Its predecessors measured the wrong thing. The first borrowed DRK_Reborn.PackSlowed's share
-	/// rule, which weighs the stream reaching the tank over job range; the second asked for a
-	/// majority of the radius; the third counted the enemies the slow had not reached, which throws
-	/// away what the slowed ones still contribute.
+	/// What that shows is not a wrong number but a wrong question. Output asks "is this pull still
+	/// worth an area cast", and the answer is yes almost always; the rule has to ask "is the stream
+	/// already being handled", and that is a share, not a sum.
+	///
+	/// Its earlier forms measured the wrong set rather than the wrong quantity: the first borrowed
+	/// DRK_Reborn.PackSlowed's share rule, which weighs the stream reaching the tank over job range
+	/// instead of what this cast would hit; the next asked for a bare majority with no floor; the
+	/// next counted the enemies the slow had not reached.
 	///
 	/// The replacement guarantee is the stun branch's and bounds the cost the same way: Holy is this
 	/// job's only area spell, so a held GCD falls through to single-target damage. Without a DoT
@@ -569,16 +577,17 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		}
 
 		var holy = HolyIiiPvE.EnoughLevel ? HolyIiiPvE : HolyPvE;
-		var inRange = SurveyHostileOutput(holy.Info.EffectRange, out var output);
+		var inRange = SurveyHostileStatus(holy.Info.EffectRange, StatusHelper.SlowStatus, out var slowed);
 
-		// Nothing throttled: the ordinary area decision applies and this rule has no business in it.
-		if (inRange == 0 || output == inRange * 100)
+		// Nothing in radius says nothing at all - not "no slow".
+		if (inRange == 0 || slowed < HoldHolyMinSlowedHostiles)
 		{
 			return false;
 		}
 
-		// The area threshold, restated as output rather than as heads.
-		if (output >= holy.Config.AoeCount * 100)
+		// Strictly more than half, so a slow on exactly half the pack is not enough: 3 of 5 holds,
+		// 3 of 6 does not, 4 of 6 does.
+		if (slowed * 2 <= inRange)
 		{
 			return false;
 		}

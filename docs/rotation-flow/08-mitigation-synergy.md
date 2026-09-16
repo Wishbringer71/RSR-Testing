@@ -30,58 +30,55 @@ endlich ist.
 | Messung: `SurveyStuns`, `SurveyHostileStatus`, `StatusHelper.StunStatus` und `SlowStatus` | umgesetzt in `CustomRotation_OtherInfo` und `StatusHelper` |
 | Aussetzbedingung am Sanctus-Block aus dem **Betäubungsgrund**, hinter `StretchHolyStun` (Standard aus) | umgesetzt (`WHM_Reborn.ShouldStretchHolyStun`) |
 | Aussetzbedingung aus dem **Mitigationsgrund** — eine fremde Minderung trägt bereits | umgesetzt (`WHM_Reborn.ShouldHoldHolyWhilePackSlowed`, Standard an) |
-| Messung als **Leistung** statt als Kopfzahl | umgesetzt (`HostileOutputPercent`, `SurveyHostileOutput`) |
+| Sanctus-Aussetzbedingung als **Anteil** der verlangsamten Gegner, mit Mindestzahl | umgesetzt (`HoldHolyMinSlowedHostiles`, Standard 3) — Vorgabe des Auftraggebers, s. u. |
 | Erhebung der übrigen Doppelnutzen-Aktionen | umgesetzt als `scan16.py`; ein Fund im Tank-/Heilerprofil (Rückstoß (Arm’s Length)) |
 | Zweite Aktion nach ihrer stillen Wirkung geregelt: Rückstoß (Arm’s Length) verlangsamt | umgesetzt in der Barrierenregel (Konzept 10, `DRK_Reborn.PackSlowed`) |
 | Rückstoß (Arm’s Length) auch **als** Minderungswerkzeug wirken | offen, siehe `TODO.md` — Zielkonflikt mit ihrer Rolle als einziger Rückstoßschutz |
 | Wirksamkeitsmessung im Spiel | offen, Voraussetzung für weitere Übertragungen |
 
-## Die Messgröße ist Leistung, nicht Kopfzahl
+## Vorgabe des Auftraggebers: die Aussetzbedingung ist ein Anteil
 
-**Eine Flächenregel fragt nach dem Schadensstrom, und den misst die Zahl der Gegner nur im
-Sonderfall.** „Drei Gegner" heißt in Wahrheit „dreifache Leistung"; ein gedrosselter Gegner
-hat den Kampf nicht verlassen, er trägt weniger bei. Damit ist die vorhandene
-Flächenschwelle nicht zu ergänzen, sondern zu verallgemeinern: `AoeCount * 100` ist
-dieselbe Regel, nur in der Einheit, in der sich Minderungen ausdrücken lassen.
+**Sanctus wird aufgeschoben, solange mehr als die Hälfte der Gegner im Wirkbereich verlangsamt ist
+und mindestens drei von ihnen den Slow tragen.** Beide Teile sind seine Angabe, und beide haben eine
+eigene Aufgabe: Der **Anteil** sagt, dass der Strom als Ganzes gedrosselt ist und nicht ein
+Nachzügler; die **Mindestzahl** verhindert, dass ein Rest von zwei Gegnern den Anteil rechnerisch
+erfüllt. Aufgeschoben heißt aufgeschoben, nicht aufgegeben — sobald die Bedingung nicht mehr
+zutrifft, fällt Sanctus wieder.
 
-`CustomRotation_OtherInfo.HostileOutputPercent` liefert die Restleistung eines Gegners,
-`SurveyHostileOutput` summiert sie über einen Radius. Jeder Faktor ist dem Wirktext seiner
-Aktion entnommen, und sie multiplizieren sich, wie es `GetCurrentMitigationPercent` für die
-eigene Seite schon tut:
+Umgesetzt als `WHM_Reborn.ShouldHoldHolyWhilePackSlowed` über `SurveyHostileStatus` im Wirkbereich
+von Sanctus; die Mindestzahl steht als `HoldHolyMinSlowedHostiles` (Vorgabewert 3) hinter derselben
+Einstellung. Streng mehr als die Hälfte: 3 von 5 hält, 3 von 6 hält nicht, 4 von 6 hält.
 
-| Drosselung | Beleg | Restleistung |
-|---|---|---|
-| Verlangsamung +20 % | Rückstoß (Arm's Length), Aktion 7548 | 83 |
-| Reflexion (Reprisal) | Aktion 7535 | 90 |
-| Feint, physisch | Aktion 7549 | 90 |
-| Stumpfsinn (Addle), physisch | Aktion 7560 | 95 |
-| Dismantle | Aktion 2887 | 90 |
+**Die vorige Messgröße war Leistung statt Kopfzahl, und sie hat im Spiel nichts bewirkt.** Sie
+summierte die Restleistung aller Gegner im Radius gegen `AoeCount * 100` — die Flächenschwelle in
+der Einheit, in der sich Minderungen ausdrücken lassen. Ihre eigene Dokumentation hielt bereits
+fest, dass sie „nur bei genau `AoeCount` Gegnern greift": Ein Gegner mehr trägt für sich mindestens
+80 und hebt die Summe über die Schwelle, gleich wie viele verlangsamt sind. Ein Wall-to-Wall-Pull
+hält immer mehr Gegner, als der Zauber braucht — dort ist die Regel nie eingetreten. Genau das hat
+der Auftraggeber beobachtet: Sanctus fiel weiter, obwohl der Slow fast alle Gegner erfasst hatte.
+Fünf Gegner mit vier verlangsamten ergaben 432 gegen eine Schwelle von 300.
 
-Kumuliert wird multiplikativ: Rückstoß und Reflexion zusammen ergeben 75, nicht 73.
+**Der Fehler war nicht die Zahl, sondern die Frage.** Die Leistungssumme beantwortet „lohnt sich für
+diesen Pull noch ein Flächenzauber", und die Antwort lautet fast immer ja. Die Regel hat aber zu
+fragen: „wird der Strom bereits gebändigt" — und das ist ein Anteil, keine Summe.
 
-**Die Verlangsamung ist der einzige Eintrag, der keine Schadensminderung ist, und wird deshalb
-anders umgerechnet.** Der Wirktext sagt Slow **+20 %** — die Verzögerung zwischen den Angriffen
-**wächst**, der einzelne Treffer bleibt gleich groß. Zwanzig Prozent mehr Zeit je Angriff lassen im
-selben Zeitraum 1/1,20 der Angriffe übrig, also 83 % der Rate und nicht 80 %. Die vier übrigen
-Einträge senken den Schaden jedes Treffers unmittelbar und gehen deshalb direkt ins Produkt.
-Genommen wird die **physische** Spalte, nicht die Magisch-Heuristik, die
-`GetCurrentMitigationPercent` für einen einzelnen bevorstehenden Treffer anlegt — hier geht
-es um den Dauerstrom eines stehenden Pulls, und der besteht aus Automatikangriffen. Das ist
-zugleich der Grund, warum die Verlangsamung überhaupt in dasselbe Produkt gehört: Sie
-erhöht die Automatikangriffs-Verzögerung und drosselt damit genau den Schaden, den diese
-Rechnung misst.
+**Die Leistungsrechnung bleibt als Baustein erhalten**, ohne Leser im Baum:
+`HostileOutputPercent` und `SurveyHostileOutput` sind `protected static` in
+`CustomRotation_OtherInfo` und damit Paketoberfläche für abgeleitete Rotationen. Ihre Faktoren sind
+den Wirktexten entnommen und für ihre eigene Frage richtig; sie stehen in `TODO.md` als erfasster
+Bestand, nicht als toter Code.
 
-**Die Betäubung bleibt bewusst draußen.** Sie wäre die stärkste Drosselung überhaupt — ein
-betäubter Gegner trägt null —, aber ihre Frage ist eine zeitliche: Die Betäubung dauert
-länger als der Recast, ein zweiter Sanctus überschriebe sie, statt sie zu verlängern. Eine
-Momentaufnahme der Leistung kann das nicht ausdrücken; sie sagt „betäubt, also nicht
-wirken", während die Streckung gerade **später wieder** betäuben will. Beide Regeln stehen
-deshalb nebeneinander und nicht ineinander.
+**Die Betäubung bleibt aus der Bedingung heraus.** Sie wäre die stärkste Drosselung überhaupt — ein
+betäubter Gegner trägt null —, aber ihre Frage ist eine zeitliche: Die Betäubung dauert länger als
+der Recast, ein zweiter Sanctus überschriebe sie, statt sie zu verlängern. Eine Momentaufnahme kann
+das nicht ausdrücken; sie sagt „betäubt, also nicht wirken", während die Streckung gerade **später
+wieder** betäuben will. Beide Regeln stehen deshalb nebeneinander und nicht ineinander.
 
-**Grenze der Zählung, benannt statt verschwiegen:** `SlowStatus` führt auch Slow+, eine
-stärkere Stufe, deren Satz die Spieldaten nicht nennen, und die Erhebung unterscheidet die
-Ids nicht. Ein stärkerer Slow wird damit als 20 % Verzögerung gerechnet, der Gegner also überschätzt
-und Sanctus eher zugelassen — die richtige Seite zum Irren.
+**Grenze der Zählung, benannt statt verschwiegen:** `SlowStatus` führt zwölf Ids einschließlich
+Slow+, und die Erhebung unterscheidet sie nicht. Für eine Anteilsregel ist das ohne Belang — gezählt
+wird, ob ein Gegner verlangsamt ist, nicht wie stark. Welche Id Rückstoß tatsächlich setzt, ist von
+hier aus nicht zu bestimmen; bliebe die Regel im Spiel weiterhin wirkungslos, wäre das die nächste
+zu prüfende Ursache.
 
 ## Warum die Streckung richtig ist
 
