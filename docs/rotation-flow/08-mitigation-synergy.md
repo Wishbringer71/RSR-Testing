@@ -5,38 +5,50 @@ Prüfhistorie steht in `AUDIT_LOG.md` (A20).
 
 ## Ergebnis
 
-RSR trifft Mitigationsentscheidungen **je Werkzeug und reaktiv**. Es gibt keine
-Stelle, an der beantwortet wird, wie viel Schadensvermeidung gerade anliegt und ob
-ein weiteres Werkzeug daran noch etwas ändert. Jedes Werkzeug, das redundant fällt,
-kostet zugleich einen GCD oder Weave-Slot, der Schaden erzeugt hätte — **die
-Vermeidung von Überlappung dient beiden Zielen gleichzeitig**, weshalb das Thema als
-Synergiefrage geführt wird.
+**Zweck der ganzen Regelfamilie ist die Heilbarkeit des Tanks, und der Engpass ist die Gegnerzahl.**
+Bei drei Gegnern traegt ein HoT; bei neun laeuft der Strom jeder Faehigkeit davon. Der eingehende
+Schaden **einschliesslich Schadensreduktion und Mitigation** soll deshalb zu jedem Zeitpunkt
+bestimmte Grenzwerte nicht ueberschreiten — und entscheidend ist nicht, wie **stark** gedrosselt
+wird, sondern wie **lange**: Die Drosselung kauft die Zeit, in der der eigene Schaden die Gegnerzahl
+senkt.
 
-Gewählt ist eine **zentrale Bremse bei dezentraler Auslösung**: Die vorhandenen
-Auslöser bleiben, hinzu kommt eine Prüfung, die *zurückhält*. Fällt sie aus,
-verhält sich RSR wie zuvor. Umgesetzt ist das zuerst am Beispiel Sanctus beim Weißmagier:
-Der Zauber wird ausgesetzt, wenn seine Betäubung dadurch gestreckt statt
-überschrieben wird und ein Cast mit eigenem Wert bereitsteht. Inzwischen liegt
-eine zweite Anwendung derselben Bremse in der Gegenrichtung — der Weißmagier
-hält Sanctus zurück, solange die Barriere eines Dunkelritters aufgezehrt werden
-muss (Konzept 10) — und eine dritte für die Verlangsamung, die bis dahin
-überhaupt nicht gelesen wurde. Die Verlangsamung wirkt in beide Richtungen: Sie hält
-die Barriere des Dunkelritters zurück **und** den Sanctus des Weißmagiers, weil ein
-bereits gedrosselter Schadensstrom die Betäubung nicht braucht und ihr Vorrat je Pull
-endlich ist.
+**Vier Vorgaben des Auftraggebers ordnen alles Weitere, und sie gelten zusammen:**
+
+1. **Strecken statt stapeln.** Faellt alles zugleich, ist die Drosselung nach Sekunden verbraucht und
+   der volle Strom trifft eine unveraendert grosse Gruppe.
+2. **Heilung vor Minderung.** Wo der Strom zu gross wird, ist zuerst zu heilen. Gemindert wird, wo
+   die Heilung nicht reicht.
+3. **Die Barriere zaehlt im Zaehler, nicht im Nenner.** Sie drosselt nichts, bewertet aber, ob der
+   Traeger ueberlebt und ob genug Zeit zum Heilen bleibt.
+4. **Ausgesetzt wird nur bei Stunbarkeit.** Ist im Wirkbereich alles betaeubt oder immun, gibt es
+   nichts zu strecken und nichts zu sparen; dann kostet das Aussetzen nur den Flaechenzauber.
+
+**Gewaehlt ist eine zentrale Bremse bei dezentraler Ausloesung:** Die vorhandenen Ausloeser bleiben,
+hinzu kommt eine Pruefung, die *zurueckhaelt*. Faellt sie aus, verhaelt sich RSR wie zuvor.
+
+**Der Grenzwertanspruch ist heute zur Haelfte erfuellt, und der fehlende Teil ist seit Kurzem
+messbar.** Gemessen wurde bisher allein die Gegnerseite; die persoenlichen Minderungen des Tanks
+gehen in keine Rechnung ein. Die Luecke schliesst nicht eine Tabelle von Minderungssaetzen, sondern
+die Beobachtung: Der Gesundheitsverlauf je Gruppenmitglied ist bereits netto und braucht keine Liste.
 
 | Baustein | Stand |
 |---|---|
 | Messung: `SurveyStuns`, `SurveyHostileStatus`, `StatusHelper.StunStatus` und `SlowStatus` | umgesetzt in `CustomRotation_OtherInfo` und `StatusHelper` |
-| Aussetzbedingung am Sanctus-Block aus dem **Betäubungsgrund**, hinter `StretchHolyStun` (Standard aus) | umgesetzt (`WHM_Reborn.ShouldStretchHolyStun`) |
-| Aussetzbedingung aus dem **Mitigationsgrund** — eine fremde Minderung trägt bereits | umgesetzt (`WHM_Reborn.ShouldHoldHolyWhilePackSlowed`, Standard an) |
-| Sanctus-Aussetzbedingung als **Anteil** der verlangsamten Gegner, mit Mindestzahl | umgesetzt (`HoldHolyMinSlowedHostiles`, Standard 3) — Vorgabe des Auftraggebers, s. u. |
-| Erhebung der übrigen Doppelnutzen-Aktionen | umgesetzt als `scan16.py`; ein Fund im Tank-/Heilerprofil (Rückstoß (Arm’s Length)) |
-| Zweite Aktion nach ihrer stillen Wirkung geregelt: Rückstoß (Arm’s Length) verlangsamt | umgesetzt in der Barrierenregel (Konzept 10, `DRK_Reborn.PackSlowed`) |
-| Rückstoß (Arm’s Length) auch **als** Minderungswerkzeug wirken | offen, siehe `TODO.md` — Zielkonflikt mit ihrer Rolle als einziger Rückstoßschutz |
-| Wirksamkeitsmessung im Spiel | offen, Voraussetzung für weitere Übertragungen |
+| Aussetzbedingung aus dem **Betaeubungsgrund**, hinter `StretchHolyStun` (Standard aus) | umgesetzt (`WHM_Reborn.ShouldStretchHolyStun`) |
+| Aussetzbedingung aus dem **Mitigationsgrund** — eine fremde Minderung traegt bereits | umgesetzt (`WHM_Reborn.ShouldHoldHolyWhilePackSlowed`, Standard an) |
+| **Stunbarkeit** als Bedingung ueber allen drei Aussetzregeln | umgesetzt (`headroom` aus `SurveyStuns`) |
+| Aussetzbedingung als **Anteil** der verlangsamten Gegner, mit Mindestzahl | umgesetzt (`HoldHolyMinSlowedHostiles`, Standard 3) |
+| **Schranke** der Aussetzregel: der Rest muss bewaeltigbar sein | umgesetzt (`HoldHolyMaxHostileOutput`, Standard 600 — **Setzung, kein Messergebnis**) |
+| **Schadensrate je Gruppenmitglied**, netto nach allem | umgesetzt: die Gruppe steht in `RecordedHP`, `GetTTK` antwortet fuer sie |
+| Minderungen des Tanks **rechnerisch** erfassen (Vorausschau vor dem ersten Treffer) | offen, siehe `TODO.md` — braucht Saetze je Status aus `Action.resx` |
+| Restzeit der Barriere (`HasSurvivingShield` misst die kuerzeste statt der laengsten) | offen, siehe `TODO.md` |
+| Erhebung der uebrigen Doppelnutzen-Aktionen | umgesetzt als `scan16.py`; ein Fund im Tank-/Heilerprofil (Rueckstoss) |
+| Rueckstoss auch **als** Minderungswerkzeug wirken | offen, siehe `TODO.md` — Zielkonflikt mit der Rolle als einziger Rueckstossschutz |
+| Wirksamkeitsmessung im Spiel | offen |
 
-## Vorgabe des Auftraggebers: wozu die Aussetzbedingungen da sind
+## Die Vorgaben des Auftraggebers
+
+### Wozu die Aussetzbedingungen da sind
 
 **Der Zweck ist die Heilbarkeit des Tanks, und der Engpass ist die Gegnerzahl.** Bei drei Gegnern
 genuegt ein HoT, um den Tank zu halten; bei neun ist der eingehende Strom auch mit allen Faehigkeiten
@@ -78,7 +90,7 @@ zaehlt nur, wo ueberhaupt betaeubt werden kann.
 Eckwerte stammen vom Auftraggeber (300 tragbar, 900 aussichtslos), der Vorgabewert dazwischen ist
 eine **Setzung und kein Messergebnis**.
 
-## Vorgabe des Auftraggebers: der Grenzwert gilt fuer den gesamten Schadenseingang
+### Der Grenzwert gilt fuer den gesamten Schadenseingang
 
 **Es geht nicht um die Verlangsamung, sondern um die Kontrolle des eingehenden Schadens.** Dazu
 dienen Reflexion, The Blackest Night und die uebrigen Minderungen des Tanks ebenso. Der
@@ -183,7 +195,7 @@ Gegengeprueft und bereits erfuellt: In beiden Dispatch-Pfaden steht die Heilung 
 (`HealAreaAbility`/`HealSingleAbility` vor `DefenseAreaAbility`/`DefenseSingleAbility`, im GCD-Pfad
 ebenso), sodass bei gleichzeitig gesetzten Zustaenden die Heilung ohne weiteres Zutun gewinnt.
 
-## Vorgabe des Auftraggebers: die Aussetzbedingung ist ein Anteil
+### Die Aussetzbedingung ist ein Anteil, mit Schranke
 
 **Sanctus wird aufgeschoben, solange mehr als die Hälfte der Gegner im Wirkbereich verlangsamt ist
 und mindestens drei von ihnen den Slow tragen.** Beide Teile sind seine Angabe, und beide haben eine

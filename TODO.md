@@ -4,7 +4,7 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 ## Defekte
 
-### Der Schadenseingang wird nur auf der Gegnerseite gemessen · N
+### Der Schadenseingang wird rechnerisch nur auf der Gegnerseite erfasst · N
 
 **Vorgabe des Auftraggebers, vollständig in `docs/rotation-flow/08-mitigation-synergy.md`:** Der Schadenseingang einschließlich eingerechneter Schadensreduktion **und Mitigation** soll zu jedem Zeitpunkt bestimmte Grenzwerte nicht überschreiten. Dazu dienen Reflexion, The Blackest Night und die übrigen Minderungen des Tanks ebenso wie die Verlangsamung.
 
@@ -22,7 +22,11 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 **Die Richtung der Reaktion steht bereits fest: Heilung vor Minderung** (Vorgabe des Auftraggebers, Konzepte 08 und 10). Eine Grenzwertüberschreitung löst also zuerst Heilung aus; gemindert wird, wo die Heilung nicht reicht. Im Dispatch ist diese Reihenfolge in beiden Pfaden bereits gegeben.
 
-**Empfehlung: die Gruppe in `RecordedHP` aufnehmen und damit anfangen.** Es ist eine Schleife über `PartyMembers` neben der bestehenden über die Gegner, es braucht keine Pflegeliste, keinen gesetzten Grenzwert und keine Statussätze, und es bedient drei offene Punkte auf einmal — Heilzielwahl Stufe 3, die Grenzwertregel und die Frage, ob die Barriere genug Zeit kauft. Die Hochrechnung aus Statussätzen bleibt danach für das übrig, was Beobachtung nicht kann: die Lage **vor** dem ersten Treffer.
+**Die Beobachtung ist umgesetzt** (A91): Die Gruppe steht in `RecordedHP`, `GetTTK` antwortet für Gruppenmitglieder, und der Wert ist netto nach allem — Minderung, Mitigation, Barriere und Heilung eingerechnet, ohne Pflegeliste.
+
+**Offen bleibt der Teil, den Beobachtung nicht leisten kann: die Lage vor dem ersten Treffer.** Dafür braucht es die Hochrechnung aus Statussätzen, und dafür je Status einen Satz aus `Action.resx`. Hybride Lösung nach Vorgabe des Auftraggebers: Beobachtung trägt den laufenden Kampf, die Hochrechnung den Eröffnungsmoment und alles, wofür noch keine Historie vorliegt (`GetTTK` liefert vor 2,5 s `NaN`).
+
+**Zweiter offener Teil: die Auswertung.** `GetTTK` mittelt über den ganzen Kampf statt über die letzten Sekunden — für einen Gegner richtig, für ein Gruppenmitglied träge, weil Heilung und Einbruch sich abwechseln. Eine Momentanrate wäre dieselbe Datenquelle, anders gelesen. **Empfehlung: erst im Spiel beobachten, ob die Trägheit stört**, bevor eine zweite Auswertung danebengestellt wird.
 
 
 ### `searing_light_coverage.py` misst über das Fenster hinaus, das es zu messen vorgibt · —

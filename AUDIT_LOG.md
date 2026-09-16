@@ -2429,6 +2429,24 @@ Dazu kam der Überholfehler des **Selbst-Kurzschlusses**, der bis dahin nur für
 
 **Erreichter Pruefgrad:** statische Pruefung, `check_cs_structure`, `check_doc_references`, Compile in der CI. Im Spiel nicht beobachtet.
 
+### A91 · Schadensrate je Gruppenmitglied aus der vorhandenen Historie, und der Schutz davor
+
+**Anlass:** Die Frage des Auftraggebers, was sich rein aus Laufzeitbeobachtung ohne statische Vorgaben umsetzen laesst, samt der Freigabe hybrider Loesungen.
+
+**Befund:** `DataCenter.RecordedHP` fuehrt eine Zeitreihe von Gesundheitsanteilen **je Objekt-Id** (1 Hz, 240 Eintraege), und `ObjectHelper.GetTTK` wertet sie fuer **jede** Id aus — die Methode fragt nichts ausser `GameObjectId`. Gefuellt wurde sie ausschliesslich aus `AllHostileTargets`, weshalb sie fuer Gruppenmitglieder `NaN` lieferte. Der Eingriff ist eine Schleife neben der bestehenden.
+
+**Was das im Kampf bringt:** eine Schadensrate je Mitglied, die **keine Liste braucht**. Der beobachtete Abfall ist bereits netto — jede Minderung, jede Mitigation, jede Barriere und jede fremde Heilung stecken darin, auch die, fuer die der Baum keine Tabelle fuehrt. Steigt der Anteil, liefert `GetTTK` `NaN`, also „kein Todeszeitpunkt absehbar"; der Verlauf beantwortet damit unmittelbar, ob die Heilung nachkommt, statt es aus Saetzen zu erschliessen. Drei offene Punkte verlangen genau diese Groesse: Heilzielwahl Stufe 3, die Grenzwertregel und die Frage, ob die Barriere genug Zeit kauft.
+
+**Die Falsifikation hat einen schweren Seiteneffekt gefunden, und er ist vor der Erweiterung behoben worden.** `ActionTargetInfo.CheckTimeToKill` fragt, ob ein Ziel lange genug lebt, um den Cast zu lohnen — und fragte das auch bei **freundlichen** Zielen. Bei einem Gruppenmitglied kehrt sich die Frage um: Wer der naechste Tote waere, fiele aus der Kandidatenliste, also genau der, fuer den die Heilung da ist. Bisher antwortete jedes Gruppenmitglied `NaN`, und der `NaN`-Zweig liess sie durch — das ist kein Entwurf, sondern eine Folge davon, welche Objekte die Historie zufaellig fuehrt, und es waere mit dieser Erweiterung gebrochen. `CheckTimeToKill` nimmt freundliche Ziele jetzt ausdruecklich aus; das Verhalten ist davor und danach identisch. Parnas' *Lack of Movement* in Reinform: Die Stelle war richtig, solange die Reihe nur Gegner fuehrte.
+
+**Gesamtheitlichkeit, erhoben statt angenommen:** `RecordedHP` hat genau **einen** Leser (`GetTTK`), und jeder `GetTTK`-Aufrufer waehlt sein Objekt selbst — `AverageTTK` iteriert ueber `AllHostileTargets`, `IsBossFromTTK` und `IsDying` werden auf Gegnern gerufen. Zusaetzliche Ids in der Reihe brechen keinen davon. Der einzige Aufrufer, der seine Menge **nicht** selbst einschraenkt, war `CheckTimeToKill` — und genau der ist abgesichert.
+
+**Prueфmittel erweitert:** `check_heal_target_order.py` prueft die Ausnahme fuer freundliche Ziele mit, samt Selbsttest gegen beide Verlustformen — entfernt, oder hinter den `GetTTK`-Aufruf gerutscht.
+
+**Konzept 08 im selben Zug neu gefasst.** Der Abschnitt „Ergebnis" trug einen Stand von mehreren Runden zuvor: Zweck, Grenzwertvorgabe, „Heilung vor Minderung", Stunbarkeit und die Laufzeitbeobachtung fehlten dort saemtlich, obwohl sie weiter unten standen. Ausserdem trugen drei Abschnitte den Titel „Vorgabe des Auftraggebers" — eine Chronik der Ergaenzungen statt einer geordneten Darstellung. Beides ist behoben; das Ergebnis traegt jetzt die vier Vorgaben und den vollstaendigen Baustein-Stand.
+
+**Erreichter Pruefgrad:** statische Pruefung, `check_cs_structure`, `check_heal_target_order`, `check_doc_references`, `check_sync_state`, Compile in der CI. Im Spiel nicht beobachtet — insbesondere ist die Traegheit von `GetTTK` (Mittel ueber den ganzen Kampf statt ueber die letzten Sekunden) fuer ein Gruppenmitglied nicht gemessen.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
