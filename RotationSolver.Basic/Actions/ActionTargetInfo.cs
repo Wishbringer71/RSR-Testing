@@ -620,6 +620,21 @@ public struct ActionTargetInfo(IBaseAction action)
 			return false;
 		}
 
+		// An attack question, and only an attack question: "is this target going to live long enough
+		// for the cast to be worth it". Asked of a friendly target it inverts into nonsense - the
+		// party member closest to dying would be the one dropped from the candidate list, which is
+		// exactly the one a heal is for.
+		//
+		// Today the answer happens to be right for the wrong reason: RecordedHP is filled from
+		// AllHostileTargets alone, so GetTTK returns NaN for every party member and the NaN branch
+		// lets them through. That is not a decision, it is a side effect of which objects the
+		// history happens to hold - and it breaks the moment the history holds more. Stating the
+		// condition outright makes the behaviour identical today and keeps it identical afterwards.
+		if (action.Setting.IsFriendly)
+		{
+			return true;
+		}
+
 		if (battleChara is not IBattleChara b)
 		{
 			return false;

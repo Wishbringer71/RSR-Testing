@@ -522,13 +522,38 @@ internal static partial class TargetUpdater
 			_ = DataCenter.RecordedHP.Dequeue();
 		}
 
-		Dictionary<ulong, float> currentHPs = new(hostiles.Count);
+		// Party members are recorded alongside the hostiles, which is what lets GetTTK answer for
+		// them at all. The method never cared who it was asked about - it looks an id up in this
+		// history and reads the trend - so the only reason it returned NaN for a healer or a tank was
+		// that nobody ever put them in here.
+		//
+		// What that buys is a damage rate per member that needs no list of any kind: the observed
+		// fall is already net of every reduction, mitigation, barrier and foreign heal, including the
+		// ones this plugin has no table for. A rising ratio yields NaN from GetTTK, which reads as
+		// "no death in sight" - so the trend answers "is the healing keeping up" directly rather
+		// than by inference.
+		//
+		// Cost is one dictionary entry per member at 1 Hz. The read side needed one guard first:
+		// ActionTargetInfo.CheckTimeToKill asked this question of friendly targets too and was only
+		// ever right because the answer was NaN.
+		var party = DataCenter.PartyMembers;
+
+		Dictionary<ulong, float> currentHPs = new(hostiles.Count + party.Count);
 		for (var i = 0; i < hostiles.Count; i++)
 		{
 			var target = hostiles[i];
 			if (target != null && target.CurrentHp != 0)
 			{
 				currentHPs[target.GameObjectId] = target.GetHealthRatio();
+			}
+		}
+
+		for (var i = 0; i < party.Count; i++)
+		{
+			var member = party[i];
+			if (member != null && member.CurrentHp != 0)
+			{
+				currentHPs[member.GameObjectId] = member.GetHealthRatio();
 			}
 		}
 

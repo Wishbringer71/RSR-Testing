@@ -27,11 +27,14 @@ HEALER_CUT = re.compile(r'GetHealthRatio\(\)\s*<=\s*Service\.Config\.HealthHeale
 TANK_CUT = re.compile(r'GetHealthRatio\(\)\s*<=\s*Service\.Config\.HealthTankRatio')
 DEAD_FILTER = re.compile(r'o\.IsDead\s*\|\|')
 METHOD = re.compile(r'static IBattleChara\?\s+GeneralHealTarget\s*\(')
+TTK_METHOD = re.compile(r'bool\s+CheckTimeToKill\s*\(')
+TTK_FRIENDLY = re.compile(r'action\.Setting\.IsFriendly')
+TTK_CALL = re.compile(r'GetTTK\(\)')
 
 
-def body_of_general_heal_target(text):
-    """The source of GeneralHealTarget alone, so a match elsewhere in the file cannot stand in."""
-    start = METHOD.search(text)
+def body_of(text, pattern):
+    """The source of one method, so a match elsewhere in the file cannot stand in."""
+    start = pattern.search(text)
     if start is None:
         return None
     i = text.index('{', start.end())
@@ -46,9 +49,31 @@ def body_of_general_heal_target(text):
     return None
 
 
+def check_time_to_kill(text):
+    """CheckTimeToKill must let friendly targets through before it asks GetTTK.
+
+    It asks an attack question - will this target live long enough to be worth the cast - and on a
+    friendly target that inverts: the member closest to dying is the one dropped from the candidate
+    list, which is the one a heal exists for. Party members are in RecordedHP now, so GetTTK answers
+    for them with a real number; before that the NaN branch covered this by accident.
+    """
+    body = body_of(text, TTK_METHOD)
+    if body is None:
+        return ['CheckTimeToKill not found - renamed or removed']
+
+    friendly = TTK_FRIENDLY.search(body)
+    call = TTK_CALL.search(body)
+    if friendly is None:
+        return ['CheckTimeToKill no longer exempts friendly targets: a dying party member would be '
+                'dropped from the heal candidates']
+    if call is not None and call.start() < friendly.start():
+        return ['CheckTimeToKill asks GetTTK before exempting friendly targets']
+    return []
+
+
 def check(text):
     """Returns a list of complaints; empty means the order is intact."""
-    body = body_of_general_heal_target(text)
+    body = body_of(text, METHOD)
     if body is None:
         return ['GeneralHealTarget not found - the method was renamed or removed']
 
@@ -108,9 +133,27 @@ def self_test():
     if not any('critical rank is gone' in p for p in check(outside)):
         raise AssertionError('a match outside the method was accepted as one inside it')
 
+    good_ttk = '''
+        bool CheckTimeToKill(IBattleChara battleChara)
+        {
+            if (action.Setting.IsFriendly) { return true; }
+            var time = b.GetTTK();
+        }
+    '''
+    if check_time_to_kill(good_ttk):
+        raise AssertionError('the guarded CheckTimeToKill was rejected: %s'
+                             % check_time_to_kill(good_ttk))
+    if not check_time_to_kill(good_ttk.replace('if (action.Setting.IsFriendly) { return true; }', '')):
+        raise AssertionError('a CheckTimeToKill without the friendly exemption went unnoticed')
+    swapped_ttk = good_ttk.replace(
+        'if (action.Setting.IsFriendly) { return true; }\n            var time = b.GetTTK();',
+        'var time = b.GetTTK();\n            if (action.Setting.IsFriendly) { return true; }')
+    if not check_time_to_kill(swapped_ttk):
+        raise AssertionError('GetTTK asked before the friendly exemption went unnoticed')
+
     print('self-test ok: the intact order is accepted, a short-cut moved ahead of the critical rank '
-          'is caught,\n  a candidate list keeping the dead is caught, and a match outside the method '
-          'does not count')
+          'is caught,\n  a candidate list keeping the dead is caught, a match outside the method '
+          'does not count,\n  and CheckTimeToKill is checked for its friendly exemption')
 
 
 def main():
@@ -118,7 +161,8 @@ def main():
     if not TARGET.exists():
         print('%s not found - run from the repository root' % TARGET)
         return 1
-    problems = check(TARGET.read_text(encoding='utf-8'))
+    text = TARGET.read_text(encoding='utf-8')
+    problems = check(text) + check_time_to_kill(text)
     if problems:
         print('heal target order is broken:')
         for p in problems:
