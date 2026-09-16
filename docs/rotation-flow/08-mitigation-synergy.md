@@ -78,6 +78,40 @@ zaehlt nur, wo ueberhaupt betaeubt werden kann.
 Eckwerte stammen vom Auftraggeber (300 tragbar, 900 aussichtslos), der Vorgabewert dazwischen ist
 eine **Setzung und kein Messergebnis**.
 
+## Vorgabe des Auftraggebers: der Grenzwert gilt fuer den gesamten Schadenseingang
+
+**Es geht nicht um die Verlangsamung, sondern um die Kontrolle des eingehenden Schadens.** Dazu
+dienen Reflexion, The Blackest Night und die uebrigen Minderungen des Tanks ebenso. Der
+Schadenseingang **einschliesslich eingerechneter Schadensreduktion und Mitigation** soll zu jedem
+Zeitpunkt bestimmte Grenzwerte nicht ueberschreiten.
+
+**Gegengeprueft: die Umsetzung deckt davon eine Haelfte ab.** Der Befund steht hier vollstaendig,
+weil er groesser ist als die Sanctus-Regel, an der er auffiel.
+
+| Was zu messen waere | Stand im Baum |
+|---|---|
+| Drosselung **auf der Gegnerseite** — Slow, Reflexion, Feint, Stumpfsinn, Dismantle | `HostileOutputPercent`, je Satz aus dem Wirktext belegt |
+| Minderung **auf der eigenen Seite**, gruppenweit — Sacred Soil, Temperance, Troubadour | `GetCurrentMitigationPercent`, aber fuer einen **einzelnen bevorstehenden Treffer** gebaut, mit Magisch/Physisch-Heuristik, nicht fuer den Dauerstrom |
+| Minderung **des Tanks persoenlich** — Rampart, Bollwerk, Sentinel, Schattenwall, Vengeance, Bloodwhetting | **fehlt vollstaendig.** `StatusHelper.RampartStatus` fuehrt die Ids, wird aber ausschliesslich als `StatusProvide` benutzt, also zur Doppelbelegungssperre — nie zur Messung |
+| Die Saetze dieser Minderungen | **fehlen.** `RampartStatus` ist eine reine Id-Liste; Rampart und Sentinel mindern verschieden stark. Ohne Satz je Status ist keine Rechnung moeglich; belegbar waeren sie aus den Wirktexten in `Action.resx` |
+
+**Die Groesse, die den Anspruch unmittelbar erfuellen wuerde, existiert bereits — und ist unbrauchbar
+gebaut.** `DataCenter.DPSTaken` misst den **tatsaechlich angekommenen** Schaden, also bereits nach
+allen Minderungen und Mitigationen; hochrechnen muesste man dafuer gar nichts. Ihr Zeitfenster
+betraegt jedoch fuenf Millisekunden, waehrend ein Bild rund sechzehn dauert — die Groesse sieht damit
+fast immer nichts. Sie ist Upstream-Code, und ihr einziger Leser im Baum ist die Diagnoseanzeige.
+
+**Eine Barriere gehoert nicht in diese Rechnung.** The Blackest Night senkt die Rate nicht, es
+absorbiert eine Menge: Der Strom laeuft unveraendert weiter, er trifft nur zuerst den Schild. In
+einer Grenzwertrechnung ueber den Strom darf eine Barriere deshalb nicht als Faktor auftreten — sie
+verlaengert die Zeit bis zum kritischen Zustand, statt den Zufluss zu senken.
+
+**Zielkonflikt mit der Barrierenregel, benannt statt aufgeloest:** Konzept 10 haelt fest, dass bei
+einem Gruppenpull waehrend The Blackest Night **keine** Minderung gewirkt wird, damit die Barriere
+vollstaendig aufgezehrt wird. Der Grenzwertanspruch zieht in die andere Richtung. Beide sind
+vereinbar, aber nur, wenn die Grenzwertregel die Barrierenphase kennt: Dort ist der hohe Strom
+gewollt, solange der Traeger ihn ueberlebt.
+
 ## Vorgabe des Auftraggebers: die Aussetzbedingung ist ein Anteil
 
 **Sanctus wird aufgeschoben, solange mehr als die Hälfte der Gegner im Wirkbereich verlangsamt ist

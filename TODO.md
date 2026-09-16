@@ -4,6 +4,19 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 ## Defekte
 
+### Der Schadenseingang wird nur auf der Gegnerseite gemessen · N
+
+**Vorgabe des Auftraggebers, vollständig in `docs/rotation-flow/08-mitigation-synergy.md`:** Der Schadenseingang einschließlich eingerechneter Schadensreduktion **und Mitigation** soll zu jedem Zeitpunkt bestimmte Grenzwerte nicht überschreiten. Dazu dienen Reflexion, The Blackest Night und die übrigen Minderungen des Tanks ebenso wie die Verlangsamung.
+
+**Gemessen wird davon die Hälfte.** `HostileOutputPercent` rechnet die gegnerseitigen Drosselungen. Die persönlichen Minderungen des Tanks — Rampart, Bollwerk, Sentinel, Schattenwall, Vengeance, Bloodwhetting — gehen **nirgends** ein: `StatusHelper.RampartStatus` führt die Ids, wird aber nur als `StatusProvide` benutzt. `GetCurrentMitigationPercent` deckt die gruppenweiten Minderungen ab, ist aber für einen einzelnen bevorstehenden Treffer gebaut, nicht für den Dauerstrom.
+
+**Was zum Bauen fehlt:** je Status ein Minderungssatz, belegbar aus den Wirktexten in `Action.resx`, und die Entscheidung, gegen welchen Grenzwert gemessen wird. Beides ist Voraussetzung, nicht Beiwerk.
+
+**Alternative, die ohne Sätze auskommt:** `DataCenter.DPSTaken` misst den tatsächlich angekommenen Schaden, also bereits nach allen Minderungen. Ihr Zeitfenster von fünf Millisekunden macht sie heute unbrauchbar (ein Bild dauert rund sechzehn); sie ist Upstream-Code mit der Diagnoseanzeige als einzigem Leser.
+
+**Empfehlung: erst entscheiden, dann bauen** — die Wahl zwischen Hochrechnung aus Statussätzen und Messung des angekommenen Schadens bestimmt Aufwand und Genauigkeit, und die Grenzwerte selbst sind eine Aussage über das Heilvermögen der Gruppe. Vorgelegt.
+
+
 ### `searing_light_coverage.py` misst über das Fenster hinaus, das es zu messen vorgibt · —
 
 `simulate(…, window=(lo, hi))` soll die Abdeckung **innerhalb** eines Zeitfensters messen. Der Zähler wird aber auch außerhalb hochgezählt — der `elif buff_until > t: covered += STEP` neben dem Fensterzweig —, geteilt wird dagegen durch die Fensterlänge `(hi - lo)`. Das Ergebnis ist die Gesamtabdeckung des Kampfes, gestreckt um das Verhältnis Kampflänge zu Fensterlänge. Sichtbar an der Ausgabe selbst: Die Einschwingtabelle meldet 332 %, die Ausfalltabelle 210 bis 542 % — Abdeckungsanteile über 100 % sind nicht deutbar.
