@@ -106,11 +106,18 @@ absorbiert eine Menge: Der Strom laeuft unveraendert weiter, er trifft nur zuers
 einer Grenzwertrechnung ueber den Strom darf eine Barriere deshalb nicht als Faktor auftreten — sie
 verlaengert die Zeit bis zum kritischen Zustand, statt den Zufluss zu senken.
 
-**Zielkonflikt mit der Barrierenregel, benannt statt aufgeloest:** Konzept 10 haelt fest, dass bei
-einem Gruppenpull waehrend The Blackest Night **keine** Minderung gewirkt wird, damit die Barriere
-vollstaendig aufgezehrt wird. Der Grenzwertanspruch zieht in die andere Richtung. Beide sind
-vereinbar, aber nur, wenn die Grenzwertregel die Barrierenphase kennt: Dort ist der hohe Strom
-gewollt, solange der Traeger ihn ueberlebt.
+**Der scheinbare Zielkonflikt mit der Barrierenregel ist aufgeloest, und zwar durch eine Rangregel
+des Auftraggebers: Heilung vor Minderung.** Seine Vorgabe zu The Blackest Night bleibt unveraendert —
+bei einem Gruppenpull wird waehrend der Barriere keine Minderung gewirkt, damit der Schild moeglichst
+immer vollstaendig aufgezehrt wird. Der Traeger soll den Strom also **abbekommen** und ihn zugleich
+**ueberleben**, und das geht allein ueber die Heilung: Jede Minderung nimmt genau den Strom weg, der
+den Schild brechen soll, eine Heilung nimmt ihm nichts.
+
+**Damit ist auch die Richtung der Grenzwertregel festgelegt.** Wird ein Grenzwert ueberschritten, ist
+die erste Antwort die Heilung und nicht die Minderung; gemindert wird, wo die Heilung nicht reicht.
+Gegengeprueft und bereits erfuellt: In beiden Dispatch-Pfaden steht die Heilung vor der Verteidigung
+(`HealAreaAbility`/`HealSingleAbility` vor `DefenseAreaAbility`/`DefenseSingleAbility`, im GCD-Pfad
+ebenso), sodass bei gleichzeitig gesetzten Zustaenden die Heilung ohne weiteres Zutun gewinnt.
 
 ## Vorgabe des Auftraggebers: die Aussetzbedingung ist ein Anteil
 

@@ -17,6 +17,17 @@ Angreifer um 20 % für 15 Sekunden, eine Betäubung hält den Strom ganz an. Im 
 umgekehrt: Dort kommt der Schaden als angesagter Einzeltreffer, der die Barriere ohnehin bricht, und
 die Minderung wäre echter Schutz, den aufzugeben nichts einbringt.
 
+**Heilung vor Minderung, und das ist die allgemeine Rangregel.** Wo der eingehende Schaden zu gross
+wird, ist zuerst zu heilen und erst dann zu mindern — nicht umgekehrt. Fuer die Barriere ist das die
+Aufloesung des scheinbaren Zielkonflikts: Der Traeger soll den Strom **abbekommen**, damit der Schild
+aufgezehrt wird, und er soll ihn **ueberleben**; beides zugleich geht allein ueber die Heilung, denn
+jede Minderung nimmt genau den Strom weg, der den Schild brechen soll.
+
+Gegengeprueft und bereits erfuellt: In beiden Dispatch-Pfaden steht die Heilung vor der Verteidigung —
+im Faehigkeitenpfad `HealAreaAbility` und `HealSingleAbility` vor `DefenseAreaAbility` und
+`DefenseSingleAbility`, im GCD-Pfad ebenso. Sind beide Zustaende zugleich gesetzt, gewinnt die
+Heilung ohne weiteres Zutun.
+
 **Heilung ist davon ausdrücklich nicht betroffen.** Eine Barriere absorbiert Schaden, bevor er die HP
 erreicht; der Gesundheitsstand des Trägers ändert nichts an ihrem Verbrauch. Weder ein HoT noch eine
 direkte Heilung steht dem Aufzehren im Weg — die einzige Kopplung läuft umgekehrt, denn ein Träger,

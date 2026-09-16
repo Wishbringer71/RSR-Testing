@@ -14,6 +14,8 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 **Alternative, die ohne Sätze auskommt:** `DataCenter.DPSTaken` misst den tatsächlich angekommenen Schaden, also bereits nach allen Minderungen. Ihr Zeitfenster von fünf Millisekunden macht sie heute unbrauchbar (ein Bild dauert rund sechzehn); sie ist Upstream-Code mit der Diagnoseanzeige als einzigem Leser.
 
+**Die Richtung der Reaktion steht bereits fest: Heilung vor Minderung** (Vorgabe des Auftraggebers, Konzepte 08 und 10). Eine Grenzwertüberschreitung löst also zuerst Heilung aus; gemindert wird, wo die Heilung nicht reicht. Im Dispatch ist diese Reihenfolge in beiden Pfaden bereits gegeben.
+
 **Empfehlung: erst entscheiden, dann bauen** — die Wahl zwischen Hochrechnung aus Statussätzen und Messung des angekommenen Schadens bestimmt Aufwand und Genauigkeit, und die Grenzwerte selbst sind eine Aussage über das Heilvermögen der Gruppe. Vorgelegt.
 
 
