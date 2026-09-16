@@ -577,7 +577,23 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		}
 
 		var holy = HolyIiiPvE.EnoughLevel ? HolyIiiPvE : HolyPvE;
-		var inRange = SurveyHostileStatus(holy.Info.EffectRange, StatusHelper.SlowStatus, out var slowed);
+		var radius = holy.Info.EffectRange;
+
+		// No enemy left that this cast could stun, no reason to hold it back. The point of holding
+		// is to keep the stun budget for a moment when the stream is not already thinned; once every
+		// enemy in radius is stunned or resistant, there is no budget left to keep, and yielding the
+		// GCD trades an area cast for a single-target dot without buying anything at all.
+		//
+		// The user states it as the condition on every hold: only suspend Holy while the enemies can
+		// still be stunned by it, otherwise it is pointless. ShouldStretchHolyStun carried this from
+		// the start (A50); the two later holds did not, which is one cause in two places.
+		SurveyStuns(radius, out _, out var headroom);
+		if (!headroom)
+		{
+			return false;
+		}
+
+		var inRange = SurveyHostileStatus(radius, StatusHelper.SlowStatus, out var slowed);
 
 		// Nothing in radius says nothing at all - not "no slow".
 		if (inRange == 0 || slowed < HoldHolyMinSlowedHostiles)
@@ -651,6 +667,17 @@ public sealed class WHM_Reborn : WhiteMageRotation
 
 		var party = PartyMembers;
 		if (party == null)
+		{
+			return false;
+		}
+
+		// Same condition as the slow hold, for the same reason one step removed: this rule holds Holy
+		// so the damage stream keeps running into the barrier, and the only way Holy stops that
+		// stream is its stun. With nobody left to stun, Holy costs the barrier nothing, and holding
+		// it back gives up an area cast for no gain.
+		var radius = HolyIiiPvE.EnoughLevel ? HolyIiiPvE.Info.EffectRange : HolyPvE.Info.EffectRange;
+		SurveyStuns(radius, out _, out var headroom);
+		if (!headroom)
 		{
 			return false;
 		}

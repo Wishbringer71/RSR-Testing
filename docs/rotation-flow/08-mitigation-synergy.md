@@ -36,6 +36,35 @@ endlich ist.
 | Rückstoß (Arm’s Length) auch **als** Minderungswerkzeug wirken | offen, siehe `TODO.md` — Zielkonflikt mit ihrer Rolle als einziger Rückstoßschutz |
 | Wirksamkeitsmessung im Spiel | offen, Voraussetzung für weitere Übertragungen |
 
+## Vorgabe des Auftraggebers: wozu die Aussetzbedingungen da sind
+
+**Der Zweck ist die Heilbarkeit des Tanks, und der Engpass ist die Gegnerzahl.** Bei drei Gegnern
+genuegt ein HoT, um den Tank zu halten; bei neun ist der eingehende Strom auch mit allen Faehigkeiten
+und Zaubern kaum noch aufzuholen. Also muss der Strom gedrosselt werden - Verlangsamung, Betaeubung
+durch Sanctus und was sonst zur Verfuegung steht.
+
+**Entscheidend ist dabei nicht, wie stark gedrosselt wird, sondern wie lange.** Faellt alles zugleich,
+ist die Drosselung nach wenigen Sekunden verbraucht und der volle Strom trifft einen Tank, dessen
+Gruppe noch genauso gross ist. Gestreckt dagegen haelt sie so lange an, bis der eigene Schaden die
+Gegnerzahl gesenkt hat - und dann traegt der Tank, was uebrig ist. Die Drosselung kauft die Zeit, in
+der die Gegner sterben.
+
+Daraus folgen beide Regeln dieses Konzepts:
+
+- **Der Einschub nach dem ersten Stun.** Die Betaeubung durch Sanctus haelt vier Sekunden, seine
+  Erholzeit betraegt zweieinhalb - ein sofort folgender zweiter Sanctus fiele also mitten in die
+  laufende Betaeubung und ueberschriebe sie, statt sie zu verlaengern. Ein anderer Zauber dazwischen
+  legt die zweite Betaeubung ans Ende der ersten.
+- **Das Aussetzen bei fremder Drosselung.** Traegt bereits eine andere Minderung, ist die Betaeubung
+  jetzt weniger wert als spaeter; sie wird aufgehoben, damit sie den Zeitraum verlaengert, statt ihn
+  zu verdoppeln.
+
+**Bedingung ueber allem, und sie gilt fuer jede dieser Regeln: ausgesetzt wird nur, solange die
+Gegner ueberhaupt noch betaeubt werden koennen.** Ist die Betaeubungskette abgearbeitet und alles im
+Wirkbereich immun, gibt es nichts mehr zu strecken und nichts mehr zu sparen - dann ist das Aussetzen
+sinnfrei und kostet nur den Flaechenzauber. Umgesetzt ist das als `headroom` aus `SurveyStuns`, also
+"mindestens ein Gegner ist weder betaeubt noch resistent", in allen drei Aussetzregeln.
+
 ## Vorgabe des Auftraggebers: die Aussetzbedingung ist ein Anteil
 
 **Sanctus wird aufgeschoben, solange mehr als die Hälfte der Gegner im Wirkbereich verlangsamt ist

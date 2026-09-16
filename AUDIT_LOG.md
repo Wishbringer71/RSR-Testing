@@ -2407,6 +2407,22 @@ Dazu kam der Überholfehler des **Selbst-Kurzschlusses**, der bis dahin nur für
 
 **Erreichter Prüfgrad:** statische Prüfung, `check_cs_structure`, `check_doc_references`, `check_heal_target_order`, `check_msbuild_xml`, `check_sync_state`, Selbsttest des Beschwörer-Modells, Compile in der CI. **Unabhängig geprüft ist nichts davon** — es ist Selbstkontrolle am eigenen Diff, ergänzt um Skripte, die ich selbst geschrieben habe. Im Spiel nicht beobachtet.
 
+### A90 · Zweck der Sanctus-Aussetzregeln erhoben, Immunitaetsbedingung in zwei von drei nachgezogen
+
+**Anlass:** Der Auftraggeber hat den Zweck der ganzen Regelfamilie genannt und dabei eine Bedingung als „wichtig" hervorgehoben, die nur eine der drei Regeln fuehrte.
+
+**Der Zweck, und er ordnet alles Weitere:** Die Heilbarkeit des Tanks haengt an der Gegnerzahl — bei drei Gegnern genuegt ein HoT, bei neun ist der Strom kaum aufzuholen. Die Drosselung ist deshalb nicht so stark wie moeglich zu setzen, sondern so **lange** wie moeglich: Sie kauft die Zeit, in der der eigene Schaden die Gegnerzahl senkt. Daraus folgen der Einschub nach dem ersten Stun (Betaeubung 4 s gegen Erholzeit 2,5 s, ein sofortiger zweiter Sanctus ueberschriebe statt zu verlaengern) und das Aussetzen bei fremder Drosselung.
+
+**Befund, als Defektklasse erhoben statt am Fundort behandelt:** Drei Regeln setzen Sanctus aus, und nur `ShouldStretchHolyStun` pruefte, ob ueberhaupt noch ein Gegner betaeubbar ist. `ShouldHoldHolyWhilePackSlowed` und `ShouldHoldHolyForBarrier` taten es nicht.
+
+**Wirkung im Kampf, je Stelle verschieden begruendet, aber mit derselben Folge:** Ist die Betaeubungskette abgearbeitet und alles im Wirkbereich immun, stunnt Sanctus nicht mehr. Dann gibt es bei der Slow-Regel **kein Budget mehr zu sparen**, und bei der Barrierenregel **keinen Strom-Stopp mehr zu verhindern** — Sanctus kostet die Barriere nichts. In beiden Faellen tauscht das Aussetzen einen Flaechenzauber gegen einen Einzelzielzauber, ohne irgendetwas dafuer zu bekommen, und zwar fuer den Rest des Pulls.
+
+**Behoben** durch `SurveyStuns(radius, out _, out var headroom)` und Abbruch bei `!headroom` in beiden Regeln — dieselbe Groesse, die `ShouldStretchHolyStun` seit A50 benutzt.
+
+**Entstehung:** Die Bedingung war bei der ersten Regel aus einem konkreten Fehlverhalten entstanden (A50) und wurde bei den beiden spaeteren nicht mitgenommen. Kein Wissensmangel, sondern eine fehlende Klassenerhebung: Als die zweite und dritte Aussetzregel gebaut wurden, ist nicht gefragt worden, welche Bedingungen der ersten fuer sie ebenso gelten.
+
+**Erreichter Pruefgrad:** statische Pruefung, `check_cs_structure`, `check_doc_references`, Compile in der CI. Im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
