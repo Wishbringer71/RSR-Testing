@@ -51,16 +51,25 @@ Einstellung. Streng mehr als die Hälfte: 3 von 5 hält, 3 von 6 hält nicht, 4 
 
 **Die vorige Messgröße war Leistung statt Kopfzahl, und sie hat im Spiel nichts bewirkt.** Sie
 summierte die Restleistung aller Gegner im Radius gegen `AoeCount * 100` — die Flächenschwelle in
-der Einheit, in der sich Minderungen ausdrücken lassen. Ihre eigene Dokumentation hielt bereits
-fest, dass sie „nur bei genau `AoeCount` Gegnern greift": Ein Gegner mehr trägt für sich mindestens
-80 und hebt die Summe über die Schwelle, gleich wie viele verlangsamt sind. Ein Wall-to-Wall-Pull
-hält immer mehr Gegner, als der Zauber braucht — dort ist die Regel nie eingetreten. Genau das hat
-der Auftraggeber beobachtet: Sanctus fiel weiter, obwohl der Slow fast alle Gegner erfasst hatte.
-Fünf Gegner mit vier verlangsamten ergaben 432 gegen eine Schwelle von 300.
+der Einheit, in der sich Minderungen ausdrücken lassen, und sie ging ebenfalls auf eine Korrektur
+des Auftraggebers zurück (C52). Ihre eigene Dokumentation hielt bereits fest, dass sie „nur bei
+genau `AoeCount` Gegnern greift": Ein Gegner mehr trägt für sich mindestens 80 und hebt die Summe
+über die Schwelle, gleich wie viele verlangsamt sind. Ein Wall-to-Wall-Pull hält immer mehr Gegner,
+als der Zauber braucht — dort ist die Regel nie eingetreten. Genau das hat der Auftraggeber
+beobachtet: Sanctus fiel weiter, obwohl der Slow fast alle Gegner erfasst hatte. Fünf Gegner mit
+vier verlangsamten ergaben 432 gegen eine Schwelle von 300.
 
 **Der Fehler war nicht die Zahl, sondern die Frage.** Die Leistungssumme beantwortet „lohnt sich für
 diesen Pull noch ein Flächenzauber", und die Antwort lautet fast immer ja. Die Regel hat aber zu
 fragen: „wird der Strom bereits gebändigt" — und das ist ein Anteil, keine Summe.
+
+**Wo der eigene Anteil daran liegt, und er liegt nicht bei der Wahl des Maßes:** Die Einschränkung
+„greift nur bei genau `AoeCount` Gegnern" wurde bei der Umsetzung erkannt und als **richtige
+Eigenschaft** ausgeschrieben — „that narrow reach is correct, not a shortfall". Damit war der
+Nachweis, dass die Regel im Regelfall wirkungslos ist, bereits geführt und ist gleichwohl nicht
+vorgelegt worden. Eine erkannte Bedingung, unter der ein Eingriff im gesamten maßgeblichen Bereich
+nichts tut, ist keine Eigenschaft, sondern seine Widerlegung, und gehört dem Auftraggeber
+vorgetragen, bevor sie im Spiel auffällt.
 
 **Die Leistungsrechnung bleibt als Baustein erhalten**, ohne Leser im Baum:
 `HostileOutputPercent` und `SurveyHostileOutput` sind `protected static` in
