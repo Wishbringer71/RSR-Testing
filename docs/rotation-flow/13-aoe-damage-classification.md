@@ -43,7 +43,7 @@ sondern das Ergebnis der Rechnung — und sie kann nicht veralten.
 | Kategorie „unbewertet" mit heutigem Verhalten | offen, und Vorbedingung für alles Weitere |
 | Entscheidung beim Verbrauch statt gespeicherter Kategorie | offen |
 | Höchstwert-Fortschreibung über Durchläufe | offen |
-| **Nebenbefund:** die Liste wird linear durchsucht, obwohl sie ein `HashSet` ist | offen, siehe `TODO.md` — trifft fünf Stellen und ist unabhängig hiervon zu beheben |
+| **Nebenbefund:** die Liste wurde linear durchsucht, obwohl sie ein `HashSet` ist | **behoben** (A98): `Contains` an allen fünf Stellen, `check_set_lookups.py` hält es |
 
 **Stand: konzipiert, nicht gebaut.** Die frühere Bewertung war eine Nullvariante aus Kostengründen.
 Drei ihrer vier Kostenpunkte sind durch diese Vorgabe entfallen; **ein** Punkt besteht fort, und er
@@ -330,14 +330,45 @@ Den Typ einer davon zu ändern erzwingt eine Überladung oder den Umbau aller vi
 verbliebene Einwand, und er ist rein technisch: kein fachlicher Grund, sondern Aufwand an einer
 Stelle, die mit der Sache nichts zu tun hat.
 
-**Empfehlung: umsetzen, und die Reihenfolge hat sich durch die Chancenprüfung geändert.** Die erste
-Fassung dieses Konzepts empfahl „umsetzen, aber nicht als Erstes" — auf der Kostenrechnung, die den
-Umbau von `DrawActionsList` einmal als Aufwand zählte. Gegen den Ertrag gerechnet steht derselbe
-Umbau für vier Listen und schließt zugleich die letzte benannte Lücke der Laufzeitbeobachtung. Damit
-ist er kein Hindernis mehr, sondern der Einstieg.
+**Empfehlung: umsetzen, im Zuschnitt C — erst messen, später entscheiden.** Die erste Fassung dieses
+Konzepts empfahl „umsetzen, aber nicht als Erstes", gestützt auf eine Kostenrechnung, die den Umbau
+von `DrawActionsList` einmal als Aufwand zählte. Gegen den Ertrag gerechnet steht derselbe Umbau für
+vier Listen und schließt zugleich die letzte benannte Lücke der Laufzeitbeobachtung; er ist damit
+kein Hindernis, sondern der Einstieg.
 
-Vorzuziehen bleibt allein der Nebenbefund unten, weil er unabhängig davon wirkt, ungleich kleiner ist
-und die Grundlage des Bedenkens entschärft, mit dem der Auftraggeber begonnen hat.
+Der Nebenbefund unten ist inzwischen erledigt und war nie eine Entscheidung: Er hing an nichts, was
+der Auftraggeber zu wählen hatte.
+
+## Der Zuschnitt der Umsetzung: erst messen, später entscheiden
+
+Die Frage „wird gebaut" ist eine andere als „in welchem Umfang und in welcher Reihenfolge", und sie
+ist hier gesondert durch den Loop geführt worden, nachdem der Auftraggeber angemerkt hatte, dass eine
+Empfehlung ohne diesen Durchgang keine ist.
+
+| Zuschnitt | Was entsteht | Bewertung |
+|---|---|---|
+| **A** nicht bauen | — | Die fachlichen Gründe sind entfallen; bleibt ohne Begründung |
+| **B** alles auf einmal: Ablage, Umbau der vier Listen, Rechnung, Sonden | vollständige Wirkung | **Der Bestand startet leer.** Jede Aktion ist unbewertet, also verhält sich das Plugin monatelang wie heute — die ganze Konstruktion wirkt erst, wenn genug beobachtet wurde |
+| **C** erst Messung und Ablage, Verhalten unverändert; Rechnung später | keine Verhaltensänderung, aber der Bestand füllt sich ab sofort | **gewählt** |
+| **D** nur die Flächenliste umbauen, die drei anderen später | ein Viertel des Ertrags | Verschenkt den Hebel, den der Umbau gerade darstellt |
+
+**Warum C.** Die hybride Form lebt davon, dass Einträge aus dem unbewerteten Zustand herauswachsen,
+und das braucht **Zeit im Spiel**, nicht Arbeitszeit. Wer zuerst nur misst, lässt diesen Vorgang
+laufen, während sich am Verhalten nichts ändert: kein Risiko, keine Option nötig, keine
+Rückbaufrage. Wenn die Rechnung später dazukommt, trifft sie auf einen bereits bewerteten Bestand
+und wirkt sofort statt erst nach Wochen.
+
+Das ist zugleich die Reihenfolge, die die Sonde verlangt: Der gemessene Anteil steht in der
+Listenverwaltung, **bevor** eine Entscheidung auf ihm aufsetzt. Ob die Werte plausibel sind — ob ein
+bekannter Raidwide tatsächlich als großer Anteil erscheint und eine Bagatelle als kleiner —, ist
+damit im Spiel prüfbar, bevor irgendein Kampfverhalten davon abhängt.
+
+**Falsifikation dieses Zuschnitts.** Der Einwand liegt nahe, dass eine Messung ohne Verbraucher
+Vorratsarbeit ist — derselbe Satz, mit dem dieses Vorhaben schon einmal abgelehnt wurde. Er trägt
+hier nicht: Der Verbraucher ist die Anzeige, der Zweck ist die Anlaufzeit, und beides ist benannt
+statt erhofft. Und das Premortem: „Die Messung läuft, und die Werte sind unbrauchbar" — die beiden
+Gründe dafür (Alteinträge werden nicht angefasst, die Aufnahmebedingung ist zu streng) sind oben
+behandelt und gehören genau deshalb in **diesen** Schritt, nicht in den späteren.
 
 ## Nebenbefund: die Sorge ums Wachstum trifft zu, aus einem anderen Grund
 
@@ -357,7 +388,16 @@ Bauform steht an **fünf** Stellen in `DataCenter` und betrifft alle vier Listen
 unverändert aus Upstream.
 
 **Das ist die eigentliche Antwort auf sein Bedenken:** Die Liste darf wachsen, sobald sie richtig
-befragt wird. Der Punkt ist unabhängig von allem Übrigen in diesem Konzept und steht in `TODO.md`.
+befragt wird. **Behoben** (A98) — `Contains` an allen fünf Stellen, gehalten von
+`check_set_lookups.py`, das eine zurückkehrende Schleife in der CI meldet.
+
+*Zur Größenordnung, gemessen statt überschlagen:* Die erste Fassung dieses Abschnitts sprach von
+Hunderttausenden Vergleichen je Sekunde im Wall-to-Wall-Pull. Das war überzeichnet — der Vorfilter
+`IsHostileCastingBase` war nicht mitgeprüft. Er lässt das Prädikat nur durch, während ein Gegner
+etwas Nicht-Unterbrechbares wirkt, das länger als ein GCD dauert und dessen Restzeit gerade im
+Fenster zwischen einem und zwei GCDs liegt. Trash-Gegner erreichen das kaum; im Bosskampf sind es bei
+850 Einträgen rund 50.000 Vergleiche je Sekunde für **einen** Gegner. Falsch gebaut war es trotzdem,
+und der Aufwand wuchs linear mit einer Liste, die wachsen soll.
 
 ## Konsequenzen
 

@@ -46,16 +46,6 @@ Erfasst, nicht bearbeitet (A94). Die Vorgabe des Auftraggebers — eine Notfallm
 
 **Zweiter offener Punkt derselben Familie:** `IsUnderThreat` ist `internal`. Rotationen im Baum lesen es, abgeleitete Rotationen aus dem Paket `RotationSolver.Basic` (Betroffenenkreis R) nicht. Ob es öffentlich werden soll, ist erst zu entscheiden, wenn die Größe im Spiel bestätigt ist — eine öffentliche Signatur ist danach ein Vertrag.
 
-### Vier gespeicherte Aktionslisten werden linear durchsucht, obwohl sie `HashSet` sind · N, U
-
-`DataCenter` fragt `HostileCastingArea`, `HostileCastingTank`, `HostileCastingKnockback` und `HostileCastingStop` an **fünf** Stellen mit `foreach (var id in …) if (id == act.RowId)` statt mit `Contains` — O(n) statt O(1). Vier der fünf Stellen stammen unverändert aus Upstream.
-
-**Wirkung im Spiel:** Die Flächenliste wird mit **850 Einträgen** ausgeliefert (`Resources/HostileCastingArea.json`) und wächst im Betrieb weiter. Gefragt wird je Gegner und je Bild; in einem Wall-to-Wall-Pull mit zehn Gegnern sind das Hunderttausende Vergleiche je Sekunde für eine einzige Ja-Nein-Frage. Spürbar wird das als Bildrate, nicht als Fehlverhalten — deshalb fällt es nicht auf.
-
-**Das ist zugleich die Antwort auf das Bedenken des Auftraggebers, die Liste könne unbegrenzt wachsen** (Konzept `13-aoe-damage-classification.md`): Die Ablage ist nicht das Problem, ein `HashSet` ist dafür gebaut, groß zu sein. Falsch ist, wie sie befragt wird. Die Liste darf wachsen, sobald das behoben ist.
-
-**Auflösung:** `Contains` statt Schleife an allen fünf Stellen. Verhaltensneutral, weil beide Formen dieselbe Frage beantworten. Vorzuziehen vor der Bewertung nach Schadenspotential, weil unabhängig davon wirksam und ungleich kleiner.
-
 ### Die Flächenheilung entscheidet weiter nach Pegel statt nach Rate · N
 
 Erfasst, nicht bearbeitet (A93). `HealthAreaAbility`/`HealthAreaSpell` werden gegen `DataCenter.PartyMembersAverHP` und `LowestPartyMembersAverHP` verglichen — dieselbe Verwechslung von Stand und Zufluss, die für die Einzelheilung mit der Vorausschau behoben ist. Die Flächenheilung fällt daher weiterhin zu spät, wenn die Gruppe schnell fällt.

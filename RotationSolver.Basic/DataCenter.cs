@@ -2434,14 +2434,7 @@ internal static class DataCenter
 	{
 		return h != null && IsHostileCastingBase(h, (act) =>
 		{
-			foreach (var id in OtherConfiguration.HostileCastingTank)
-			{
-				if (id == act.RowId)
-				{
-					return true;
-				}
-			}
-			return false;
+			return OtherConfiguration.HostileCastingTank.Contains(act.RowId);
 		});
 	}
 
@@ -2514,14 +2507,7 @@ internal static class DataCenter
 					return false;
 				}
 
-				foreach (var id in OtherConfiguration.HostileCastingStop)
-				{
-					if (id == act.RowId)
-					{
-						return true;
-					}
-				}
-				return false;
+				return OtherConfiguration.HostileCastingStop.Contains(act.RowId);
 			});
 	}
 
@@ -2740,14 +2726,8 @@ internal static class DataCenter
 	{
 		return h != null && IsHostileCastingBase(h, (act) =>
 		{
-			foreach (var id in OtherConfiguration.HostileCastingTank)
-			{
-				if (id == act.RowId)
-				{
-					return true;
-				}
-			}
-			return h.CastTargetObjectId == h.TargetObjectId;
+			return OtherConfiguration.HostileCastingTank.Contains(act.RowId)
+				|| h.CastTargetObjectId == h.TargetObjectId;
 		});
 	}
 
@@ -2755,14 +2735,18 @@ internal static class DataCenter
 	{
 		return IsHostileCastingBase(h, (act) =>
 		{
-			foreach (var id in OtherConfiguration.HostileCastingArea)
-			{
-				if (id == act.RowId)
-				{
-					return AreaCastCanReachPlayer(h, act);
-				}
-			}
-			return false;
+			// Contains, not a walk over the set. All four of these lists were searched with a
+			// foreach that compared every id in turn - O(n) out of a structure whose whole purpose
+			// is O(1). The area list ships with 850 entries and grows in play, so the cost of the
+			// question grew with the list while it could have been constant.
+			//
+			// Not a hot-path emergency: IsHostileCastingBase only reaches this predicate while an
+			// enemy is casting something uninterruptible that is longer than a GCD and sits in a
+			// one-GCD window before it lands, so a trash pull barely gets here. It is simply wrong
+			// as built, and it is the reason the list cannot be allowed to grow freely - see
+			// docs/rotation-flow/13-aoe-damage-classification.md.
+			return OtherConfiguration.HostileCastingArea.Contains(act.RowId)
+				&& AreaCastCanReachPlayer(h, act);
 		});
 	}
 
@@ -2825,14 +2809,7 @@ internal static class DataCenter
 					return false;
 				}
 
-				foreach (var id in OtherConfiguration.HostileCastingKnockback)
-				{
-					if (id == act.RowId)
-					{
-						return true;
-					}
-				}
-				return false;
+				return OtherConfiguration.HostileCastingKnockback.Contains(act.RowId);
 			});
 	}
 

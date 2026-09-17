@@ -2582,6 +2582,24 @@ Dazu kam der Überholfehler des **Selbst-Kurzschlusses**, der bis dahin nur für
 
 **Erreichter Pruefgrad:** Recherche mit Quellenpruefung, statische Bewertung der eigenen Projekthistorie, `check_doc_references`. **Kein Code geaendert.** Die Erweiterungen betreffen die Arbeitsweise; wer sie zuruecknehmen will, streicht drei Absaetze in `CLAUDE.md`.
 
+### A98 · Eine Vorlage, die keine war — und der Fund, der sie widerlegt hat
+
+**Anlass:** Rueckfrage des Auftraggebers, ob die beiden ihm zur Entscheidung vorgelegten Punkte selbst durch den neuen Loop gegangen seien. **Sie waren es nicht.** Beide standen als Empfehlung ohne Optionsstufe, ohne Abwaegung, ohne Falsifikation — und beim ersten ohne den Moeglichkeitssinn, der im selben Zug als vierte Querschnittsanforderung eingefuehrt worden war. Der Loop verlangt fuer diesen Fall das Nachholen, nicht das Anbieten.
+
+**Nachgeholt, Stufe 6: Die Falsifikation widerlegt die eigene Dringlichkeitsaussage.** Der Eintrag zur linearen Suche nannte „Hunderttausende Vergleiche je Sekunde im Wall-to-Wall-Pull". Der Vorfilter war nicht mitgeprueft: `IsHostileCastingBase` erreicht das Praedikat nur, waehrend ein Gegner etwas **Nicht-Unterbrechbares** wirkt, das laenger als ein GCD dauert und dessen Restzeit im Fenster zwischen einem und zwei GCDs liegt. Trash-Gegner erfuellen das kaum — im Wall-to-Wall-Pull laeuft die Suche also fast nie; im Bosskampf sind es bei 850 Eintraegen rund 50.000 Vergleiche je Sekunde fuer **einen** Gegner. Die Zahl war eine Ueberzeichnung aus einer halben Erhebung, und sie stand bereits in `TODO.md`. Berichtigt.
+
+**Zweite Ruege des Auftraggebers, und sie trifft die Form der Vorlage:** „wenn die empfehlung ist, eins sofort umzusetzen und das andere darauf aufbaut und optional ist, dann ist das erste keine entscheidung, sondern nur das zweite." Richtig. Eine Entscheidung liegt nur vor, wo es zu waehlen gibt; was ohnehin zu tun ist und von seiner Wahl nicht abhaengt, wird getan und berichtet. **Umgesetzt statt vorgelegt.**
+
+**Umsetzung:** `Contains` statt Schleife an allen fuenf Stellen in `DataCenter` — `HostileCastingTank` (zweimal), `HostileCastingStop`, `HostileCastingArea`, `HostileCastingKnockback`. Verhaltensneutral: Beide Formen beantworten dieselbe Frage. Die zwei Stellen, die bei einem Treffer nicht schlicht `true` liefern, behalten ihren Ausdruck (`&& AreaCastCanReachPlayer`, `|| CastTargetObjectId == TargetObjectId`).
+
+**Pruefmittel:** `check_set_lookups.py`, neu und in der CI. Es meldet eine `foreach`-Schleife ueber eine der vier Listen, deren Rumpf gegen eine `RowId` vergleicht — also die von Hand ausgeschriebene Mitgliedschaftspruefung —, und **nicht** das Iterieren einer Menge zu anderem Zweck (Speichern, Anzeigen, Zaehlen). Selbsttest gegen je einen konstruierten Rueckfall pro Liste und gegen den Fehlalarm. Der Schutz zaehlt, weil vier der fuenf Stellen Upstream-Code sind: Ein Merge bringt die Schleife zurueck, und nichts schlaegt dabei fehl.
+
+**Nachgeholt, Moeglichkeitssinn (Punkt 2, Zuschnitt der Umsetzung):** Die Vorlage nannte „Schadenspotential bauen" ohne Zuschnitt. Der Loop liefert vier — nicht bauen · alles auf einmal · **erst Messung und Ablage, Verhalten unveraendert** · nur eine Liste. Gewaehlt ist der dritte, und der Grund stand in keiner der bisherigen Fassungen: Die hybride Form lebt davon, dass Eintraege aus dem unbewerteten Zustand herauswachsen, und das braucht **Zeit im Spiel**, nicht Arbeitszeit. Wer alles auf einmal baut, liefert eine Konstruktion aus, die bei leerem Bestand monatelang wirkungslos bleibt. Wer zuerst nur misst, laesst den Bestand waehrenddessen volllaufen, ohne ein einziges Verhalten zu aendern — und die Sonde (der gemessene Anteil je Eintrag) steht dann **vor** der ersten Entscheidung, die auf ihr aufsetzt.
+
+**Eigener Anteil, benannt:** Die Querschnittsanforderung Moeglichkeitssinn wurde in A97 mit der Begruendung eingefuehrt, dass der Loop Optionen nur gegen Kosten und Risiko bewertet. Im selben Zug wurde eine Entscheidungsvorlage geschrieben, die genau das tat. Eine Regel aufzunehmen und sie unmittelbar danach nicht anzuwenden, ist kein Ausfuehrungsfehler des Loops, sondern meiner.
+
+**Erreichter Pruefgrad:** statische Pruefung, `check_cs_structure`, `check_set_lookups`, `check_doc_references`, Compile in der CI. Die Verhaltensneutralitaet ist am Quelltext belegt (gleiche Frage, gleiche Rueckgabe), nicht im Spiel beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -84,6 +84,13 @@ jobs:
       - name: Check no GCD selection collides with the execution gate
         run: python3 .github/scripts/audit/scan17.py
 
+      # The stored action lists are sets and have to be asked with Contains. All four were walked
+      # with a foreach instead, four of the five sites upstream code, and the area list ships with
+      # 850 entries - so the cost of one membership question grew with the list. Nothing fails when
+      # the loop returns; only frame time changes.
+      - name: Check the stored action lists are looked up, not walked
+        run: python3 .github/scripts/audit/check_set_lookups.py
+
       # The once-per-cooldown full heal has to be tied to actual danger, or it goes out on whoever
       # happens to stand lowest - a player who was just raised, most visibly - and is missing when a
       # tank needs it. Nothing fails when the condition is lost; an upstream merge simply brings the
