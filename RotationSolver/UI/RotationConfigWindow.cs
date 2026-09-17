@@ -3771,7 +3771,8 @@ public partial class RotationConfigWindow : Window
 			_ = ImGui.TableNextColumn();
 			_allSearchable.DrawItems(Configs.List);
 			ImGui.TextWrapped(UiString.ConfigWindow_List_HostileCastingAreaDesc.GetDescription());
-			DrawActionsList(nameof(OtherConfiguration.HostileCastingArea), OtherConfiguration.HostileCastingArea);
+			DrawActionsList(nameof(OtherConfiguration.HostileCastingArea), OtherConfiguration.HostileCastingArea,
+				OtherConfiguration.HostileCastingAreaPotential);
 
 			// How much of the list has been rated, and how hard those actions were seen to hit. This
 			// is the probe for a change that deliberately alters no behaviour: without it, whether
@@ -3795,9 +3796,33 @@ public partial class RotationConfigWindow : Window
 				}
 				ImGui.Text($"Hardest hit seen: {highest * 100f:F0}% of a member's maximum HP");
 
+				// Whether the arithmetic has ever fired, which the two numbers above cannot say: they
+				// report that the store fills up, and between "a value exists" and "a cooldown was
+				// saved" lies the whole calculation. The premortem found exactly that gap once already
+				// - an earlier draft compared against 0.15 and could never have fired - and it was
+				// caught by thinking it through rather than by measuring. This line measures it.
+				//
+				// Zero is two different answers, so the setting is named alongside: switched off the
+				// rule cannot fire, switched on it means every rated action in the content played so
+				// far was worth its mitigation.
+				if (!Service.Config.SkipMitigationForSmallAreaCasts)
+				{
+					ImGui.TextColored(ImGuiColors.DalamudYellow,
+						"Mitigation is never withheld: \"Skip party mitigation for small area casts\" is off.");
+				}
+				else
+				{
+					ImGui.Text("Mitigation withheld as too small, this session: "
+						+ $"{DataCenter.AreaMitigationSkipped.Count} of {rated.Count} rated action(s)");
+				}
+
 				if (ImGui.Button("Forget recorded damage potential"))
 				{
 					OtherConfiguration.ResetHostileCastingAreaPotential();
+					// The record of withheld mitigations refers to those measurements, so it goes with
+					// them: left standing it would name an action at "--" and count against a store
+					// of zero.
+					DataCenter.AreaMitigationSkipped.Clear();
 				}
 				ImguiTooltips.HoveredTooltip("Kept when the list itself is reset, because these values "
 					+ "cost runs in the game rather than a download. Clear them when a patch has "
@@ -3822,7 +3847,13 @@ public partial class RotationConfigWindow : Window
 	private static string _lastActionPopupSearching = string.Empty;
 	private static readonly List<(GAction action, float sim)> _cachedPopupFiltered = [];
 
-	private static void DrawActionsList(string name, HashSet<uint> actions)
+	/// <summary>
+	/// Draws one of the learned action lists. <paramref name="potential"/> is optional and only the
+	/// area list passes it: where a measured damage share exists for an entry, the entry says so.
+	/// Four lists share this one signature, so the parameter is additive and the other three callers
+	/// are unchanged.
+	/// </summary>
+	private static void DrawActionsList(string name, HashSet<uint> actions, Dictionary<uint, float>? potential = null)
 	{
 		actions ??= [];
 		if (name == null)
@@ -3885,7 +3916,19 @@ public partial class RotationConfigWindow : Window
 
 			ImGuiHelper.DrawHotKeysPopup(key, string.Empty, (UiString.ConfigWindow_List_Remove.GetDescription(), Reset, pairs));
 
-			_ = ImGui.Selectable($"{action.Name} ({action.RowId})");
+			// The measurement per entry, not just the total. A raidwide sitting at three percent is a
+			// reading taken while the party was well shielded, and only the name beside the number
+			// makes that visible - the alternative is a single "hardest hit" figure that cannot say
+			// which action is rated wrong. The second half says whether this entry has actually
+			// withheld a mitigation, which is what turns a stored number into an observed effect.
+			var label = $"{action.Name} ({action.RowId})";
+			if (potential != null && potential.TryGetValue(action.RowId, out var measured) && measured > 0f)
+			{
+				label += DataCenter.AreaMitigationSkipped.ContainsKey(action.RowId)
+					? $"  -  {measured * 100f:F0}% measured, mitigation withheld"
+					: $"  -  {measured * 100f:F0}% measured";
+			}
+			_ = ImGui.Selectable(label);
 
 			ImGuiHelper.ExecuteHotKeysPopup(key, string.Empty, string.Empty, false, (Reset, new[] { VirtualKey.DELETE }));
 		}
@@ -4689,6 +4732,31 @@ public partial class RotationConfigWindow : Window
 					+ $" raw {shown} corrected {shownCorrected} (x{member.GetTtkBias():F2})"
 					+ $" [{threat}]");
 			}
+		}
+
+		// What the "aoe" mark above cannot say: whether the announced area cast was let through
+		// because it was measured as too small to need mitigation. Without this, a fight in which no
+		// mitigation goes out looks the same whether the rule worked or the chain broke.
+		if (!DataCenter.AreaMitigationSkipped.IsEmpty)
+		{
+			var newestId = 0u;
+			var newestAt = DateTime.MinValue;
+			foreach (var skipped in DataCenter.AreaMitigationSkipped)
+			{
+				if (skipped.Value > newestAt)
+				{
+					newestAt = skipped.Value;
+					newestId = skipped.Key;
+				}
+			}
+
+			GAction? skippedAction = Service.GetSheet<GAction>().GetRow(newestId);
+			var skippedName = skippedAction == null ? $"{newestId}" : $"{skippedAction.Value.Name} ({newestId})";
+			var measuredShare = OtherConfiguration.HostileCastingAreaPotential.TryGetValue(newestId, out var lastShare)
+				? $"{lastShare * 100f:F0}%"
+				: "--";
+			ImGui.Text($"Area mitigation last withheld: {skippedName} at {measuredShare},"
+				+ $" {(DateTime.Now - newestAt).TotalSeconds:F0}s ago");
 		}
 
 		ImGui.Text($"CurrentRotation: {DataCenter.CurrentRotation}");

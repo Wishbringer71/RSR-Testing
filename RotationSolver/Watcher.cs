@@ -163,9 +163,10 @@ public static class Watcher
 						_ = OtherConfiguration.SaveHostileCastingArea();
 					}
 
-					// Recording how hard it hits, which nothing reads yet - the store is filled first
-					// and used second, so that entries have left the unrated state by the time a rule
-					// depends on them. In repeated content that is one clear of the fight.
+					// Recording how hard it hits. DataCenter.AreaCastIsWorthMitigating reads this, and
+					// the store is what carries a reading past the end of a session: without it every
+					// login would start from nothing and a fight progged over several evenings would
+					// never leave the unrated state. In repeated content one clear rates it.
 					//
 					// Two conditions, and they are deliberately not the intake's. First, the id has
 					// to be a known area action already: the strict "every member was hit" test is

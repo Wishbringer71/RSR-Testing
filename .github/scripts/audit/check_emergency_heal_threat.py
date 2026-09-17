@@ -31,6 +31,7 @@ HELPER = Path('RotationSolver.Basic/Helpers/ObjectHelper.cs')
 UPDATER = Path('RotationSolver/Updaters/TargetUpdater.cs')
 CENTER = Path('RotationSolver.Basic/DataCenter.cs')
 CONFIGS = Path('RotationSolver.Basic/Configuration/Configs.cs')
+WINDOW = Path('RotationSolver/UI/RotationConfigWindow.cs')
 
 BENEDICTION_BRANCH = re.compile(
     r'BenedictionPvE\.CanUse\(out act\).*?\)\s*\{', re.DOTALL)
@@ -79,6 +80,15 @@ AREA_HEAL_THRESHOLD = re.compile(r'Service\.Config\.HealthAreaSpell')
 AREA_DYING_THRESHOLD = re.compile(r'HealthForDyingTanks')
 AREA_TOGGLE_DECL = re.compile(
     r'bool\s+SkipMitigationForSmallAreaCasts\s*\{\s*get;\s*set;\s*\}\s*=\s*(\w+)')
+
+# And the probe, which this domain requires rather than merely benefits from: whether a rule that
+# only ever fires in combat fires at all cannot be settled by reading it. The gap is real and was hit
+# once already - an earlier draft compared against 0.15 and could never have fired, and that was
+# caught by thinking it through, not by any measurement. Both halves are needed: the decision has to
+# record that it withheld a mitigation, and something has to show it. Either half alone leaves the
+# effect unobservable, and nothing fails when one is lost.
+AREA_PROBE_WRITE = re.compile(r'AreaMitigationSkipped\[actionId\]\s*=')
+AREA_PROBE_READ = re.compile(r'DataCenter\.AreaMitigationSkipped')
 
 HOLD_METHOD = re.compile(r'bool\s+ShouldHoldHolyWhilePackSlowed\s*\(')
 HOLD_MEASURED = re.compile(r'ObjectHelper\.AnyPartyMemberFallingWithinHealWindow\(\)')
@@ -167,8 +177,19 @@ def check_area_worth(text):
     if AREA_DYING_THRESHOLD.search(body) is not None:
         problems.append('the comparison is back on HealthForDyingTanks, which practically never '
                         'fires - a thirty percent hit leaves a full player at seventy')
+    if AREA_PROBE_WRITE.search(body) is None:
+        problems.append('the decision no longer records that it withheld a mitigation: whether the '
+                        'rule ever fires becomes unobservable in play')
 
     return problems
+
+
+def check_area_probe(text):
+    """Something has to show the withheld mitigations, or recording them changes nothing."""
+    if AREA_PROBE_READ.search(text) is None:
+        return ['nothing reads DataCenter.AreaMitigationSkipped any more: the withheld mitigations '
+                'are recorded and never shown, so the effect is as unknown as before it shipped']
+    return []
 
 
 def check_area_toggle(text):
@@ -283,6 +304,7 @@ def self_test():
                 return true;
             }
             var threshold = Service.Config.HealthAreaSpell;
+            AreaMitigationSkipped[actionId] = DateTime.Now;
             return false;
         }
     '''
@@ -302,6 +324,20 @@ def self_test():
             good_area.replace('Service.Config.HealthAreaSpell',
                               'Service.Config.HealthForDyingTanks'))):
         raise AssertionError('the comparison back on the dying threshold went unnoticed')
+
+    if not any('no longer records that it withheld' in p for p in check_area_worth(
+            good_area.replace('AreaMitigationSkipped[actionId] = DateTime.Now;\n', ''))):
+        raise AssertionError('a decision that withholds mitigation unobservably went unnoticed')
+
+    good_probe = '''
+        ImGui.Text($"Mitigation withheld as too small, this session: "
+            + $"{DataCenter.AreaMitigationSkipped.Count} of {rated.Count} rated action(s)");
+    '''
+    if check_area_probe(good_probe):
+        raise AssertionError('the intact probe was rejected: %s' % check_area_probe(good_probe))
+    if not any('nothing reads' in p for p in check_area_probe(
+            good_probe.replace('DataCenter.AreaMitigationSkipped.Count', '0'))):
+        raise AssertionError('a probe that shows nothing went unnoticed')
 
     good_toggle = 'public bool SkipMitigationForSmallAreaCasts { get; set; } = true;'
     if check_area_toggle(good_toggle):
@@ -363,7 +399,8 @@ def self_test():
           'never cleared is caught;\n  the Sanctus hold falling back on the invented output '
           'number is caught;\n  and the area-cast decision is caught when dropped, when an unrated '
           'action stops falling back\n  to mitigating, when it compares against the dying threshold '
-          'again, and when its toggle is off')
+          'again, and when its toggle is off;\n  and both halves of its probe are caught - the '
+          'record of a withheld mitigation, and the readout of it')
 
 
 def main():
@@ -372,7 +409,7 @@ def main():
     problems = []
     for path, checker in ((WHM, check_branch), (WHM, check_hold_bound), (HELPER, check_threat),
                           (UPDATER, check_targets), (CENTER, check_area_worth),
-                          (CONFIGS, check_area_toggle)):
+                          (CONFIGS, check_area_toggle), (WINDOW, check_area_probe)):
         if not path.exists():
             print('%s not found - run from the repository root' % path)
             return 1
@@ -386,9 +423,9 @@ def main():
 
     print('Benediction asks whether the target is in danger; the question reads who an enemy is '
           'aiming at,\n  announced area casts and the health trend; the target set is filled from '
-          'both sources once\n  per frame and cleared with the rest of the state; and an area cast '
+          'both sources once\n  per frame and cleared with the rest of the state; an area cast '
           'is mitigated unless it\n  was measured small enough to leave everyone above the healing '
-          'threshold.')
+          'threshold; and every\n  withheld mitigation is recorded and shown.')
     return 0
 
 

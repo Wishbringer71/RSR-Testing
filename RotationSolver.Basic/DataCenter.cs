@@ -2752,6 +2752,23 @@ internal static class DataCenter
 	}
 
 	/// <summary>
+	/// Every area action for which <see cref="AreaCastIsWorthMitigating"/> has withheld the party
+	/// mitigation, and when it last did so. This is the probe for that decision, and the domain
+	/// requires one: whether a rule that fires in combat fires at all cannot be settled by reading it.
+	/// </summary>
+	/// <remarks>
+	/// It records actions and not calls on purpose. The predicate is asked once per casting enemy per
+	/// frame, so a counter would report the frame rate rather than the number of hits let through -
+	/// a surrogate for the effect instead of the effect. Writing the id is idempotent, so the same
+	/// cast seen sixty times a second leaves one entry, and the count answers the question that
+	/// matters: for how many of the rated actions has this rule actually saved a cooldown.
+	///
+	/// Diagnostic only, so it is deliberately not persisted: after a restart the honest answer is
+	/// "not yet seen this session". The size is bounded by the number of rated actions.
+	/// </remarks>
+	public static readonly ConcurrentDictionary<uint, DateTime> AreaMitigationSkipped = new();
+
+	/// <summary>
 	/// Whether an incoming area cast is big enough that the party mitigation is worth its cooldown.
 	/// </summary>
 	/// <remarks>
@@ -2815,6 +2832,7 @@ internal static class DataCenter
 			}
 		}
 
+		AreaMitigationSkipped[actionId] = DateTime.Now;
 		return false;
 	}
 
