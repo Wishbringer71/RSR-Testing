@@ -41,6 +41,14 @@ FORECAST_READS = (
     ('the critical rank ordering', re.compile(r'GetForecastEffectiveHp\(\)')),
     ('the self short-cut', re.compile(r'GetForecastPlayerHealthRatio\(\)')),
 )
+
+# The gate ahead of all of them, in the enclosing method rather than in GeneralHealTarget: nothing
+# reaches the rank or the short-cuts that this filter has already dropped. AutoHealRatio defaults to
+# 0.8, so on the plain getter a tank at 90% heading for 34% never becomes a candidate at all, and
+# every check above would still pass while the behaviour is gone.
+PREFILTER_METHOD = re.compile(r'IBattleChara\?\s+FindHealTarget\s*\(')
+PREFILTER_READ = re.compile(r'o\.GetForecastHealthRatio\(\)\s*<\s*healRatio')
+PREFILTER_PLAIN = re.compile(r'o\.GetHealthRatio\(\)\s*<\s*healRatio')
 METHOD = re.compile(r'static IBattleChara\?\s+GeneralHealTarget\s*\(')
 TTK_METHOD = re.compile(r'bool\s+CheckTimeToKill\s*\(')
 TTK_FRIENDLY = re.compile(r'action\.Setting\.IsFriendly')
@@ -103,6 +111,17 @@ def check_forecast(text):
         if pattern.search(body) is None:
             problems.append('%s no longer reads the forecast health: whoever is falling fastest is '
                             'judged by the health they still have' % name)
+
+    outer = body_of(text, PREFILTER_METHOD)
+    if outer is None:
+        problems.append('FindHealTarget not found - renamed or removed')
+    elif PREFILTER_READ.search(outer) is None:
+        problems.append('the AutoHealRatio prefilter no longer reads the forecast health: a member '
+                        'above the ratio now but heading below it never becomes a candidate, and '
+                        'every check below this one still passes')
+    elif PREFILTER_PLAIN.search(outer) is not None:
+        problems.append('the AutoHealRatio prefilter has a second, plain-health comparison beside '
+                        'the forecast one - one of them decides, and which is not evident here')
     return problems
 
 
@@ -134,16 +153,29 @@ def check(text):
 
 def self_test():
     """Constructed defects, because a silent pass is otherwise indistinguishable from a clean tree."""
+    # Nested the way the tree nests it: GeneralHealTarget is a local function inside FindHealTarget,
+    # and the prefilter sits in the outer one, ahead of everything the inner one decides.
     good = '''
-        static IBattleChara? GeneralHealTarget(List<IBattleChara> objs)
+        IBattleChara? FindHealTarget(float healRatio)
         {
-            foreach (var o in objs) { if (o.IsDead || o.HasStatus()) { continue; } }
-            ranked.Add((o, o.NoNeedHealingInvuln(), ObjectHelper.GetForecastHealthRatio(o)));
-            if (x.GetForecastEffectiveHpPercent() > Service.Config.HealthForDyingTanks * 100f) { }
-            var hp = r.Obj.GetForecastEffectiveHp();
-            if (ObjectHelper.GetForecastPlayerHealthRatio() <= Service.Config.HealthSelfRatio) { }
-            if (healerTar.GetForecastHealthRatio() <= Service.Config.HealthHealerRatio) { }
-            if (tankTar.GetForecastHealthRatio() <= Service.Config.HealthTankRatio) { }
+            foreach (var o in battleChara)
+            {
+                if (!IBaseAction.AutoHealCheck || o.GetForecastHealthRatio() < healRatio)
+                {
+                    filteredGameObjects.Add(o);
+                }
+            }
+
+            static IBattleChara? GeneralHealTarget(List<IBattleChara> objs)
+            {
+                foreach (var o in objs) { if (o.IsDead || o.HasStatus()) { continue; } }
+                ranked.Add((o, o.NoNeedHealingInvuln(), ObjectHelper.GetForecastHealthRatio(o)));
+                if (x.GetForecastEffectiveHpPercent() > Service.Config.HealthForDyingTanks * 100f) { }
+                var hp = r.Obj.GetForecastEffectiveHp();
+                if (ObjectHelper.GetForecastPlayerHealthRatio() <= Service.Config.HealthSelfRatio) { }
+                if (healerTar.GetForecastHealthRatio() <= Service.Config.HealthHealerRatio) { }
+                if (tankTar.GetForecastHealthRatio() <= Service.Config.HealthTankRatio) { }
+            }
         }
     '''
     if check(good):
@@ -154,7 +186,7 @@ def self_test():
     tank_line = 'if (tankTar.GetForecastHealthRatio() <= Service.Config.HealthTankRatio) { }'
 
     swapped = good.replace(critical_line + '\n', '')
-    swapped = swapped.replace(tank_line, tank_line + '\n            ' + critical_line)
+    swapped = swapped.replace(tank_line, tank_line + '\n                ' + critical_line)
     found = check(swapped)
     if not any('BEFORE the critical rank' in p for p in found):
         raise AssertionError('a short-cut moved ahead of the critical rank went unnoticed: %s'
@@ -195,6 +227,24 @@ def self_test():
             raise AssertionError('reverting %s broke the order check as well: %s'
                                  % (name, check(reverted)))
 
+    # The gate. Reverting it leaves every other forward-looking read in place, so it is the one
+    # defect that a check over GeneralHealTarget alone cannot see.
+    gate_reverted = good.replace('o.GetForecastHealthRatio() < healRatio',
+                                 'o.GetHealthRatio() < healRatio')
+    if not any('prefilter no longer reads the forecast' in p
+               for p in check_forecast(gate_reverted)):
+        raise AssertionError('the AutoHealRatio prefilter reverted to the current health went '
+                             'unnoticed')
+    if check(gate_reverted):
+        raise AssertionError('reverting the prefilter broke the order check as well: %s'
+                             % check(gate_reverted))
+
+    both_forms = good.replace(
+        'o.GetForecastHealthRatio() < healRatio',
+        'o.GetForecastHealthRatio() < healRatio || o.GetHealthRatio() < healRatio')
+    if not any('second, plain-health comparison' in p for p in check_forecast(both_forms)):
+        raise AssertionError('a plain comparison left beside the forecast one went unnoticed')
+
     good_ttk = '''
         bool CheckTimeToKill(IBattleChara battleChara)
         {
@@ -216,7 +266,8 @@ def self_test():
     print('self-test ok: the intact order is accepted, a short-cut moved ahead of the critical rank '
           'is caught,\n  a candidate list keeping the dead is caught, a match outside the method '
           'does not count,\n  each of the four forward-looking reads is caught when reverted to the '
-          'current health,\n  and CheckTimeToKill is checked for its friendly exemption')
+          'current health,\n  the AutoHealRatio gate is caught both reverted and left doubled, '
+          '\n  and CheckTimeToKill is checked for its friendly exemption')
 
 
 def main():

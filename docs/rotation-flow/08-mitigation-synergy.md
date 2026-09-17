@@ -196,6 +196,15 @@ Frage einer Regel lautet nicht mehr „wie steht dieses Mitglied", sondern „wi
 Heilung ankommt". Damit erben Schwellen, Rangstufen und Kurzschluesse die Vorausschau, ohne dass
 einer von ihnen umgebaut wird.
 
+**Das Tor entscheidet vor allen anderen, und es wurde beim Bauen zuerst uebersehen.**
+`FindHealTarget` verwirft jeden Kandidaten, dessen Gesundheit nicht unter `AutoHealRatio` liegt
+(Vorgabewert 0,8), **bevor** Rangstufe und Kurzschluesse ihn je sehen. Auf der schlichten Groesse
+gelesen faellt damit genau der Fall heraus, fuer den die Vorausschau gebaut ist: ein Tank bei 90 %,
+der in sechs Sekunden bei null ist. Die uebrigen vier Lesestellen haetten weiterhin richtig
+ausgesehen, waehrend die Wirkung vollstaendig ausgeblieben waere. Der Filter liest deshalb ebenfalls
+die Vorausschau — das ist keine Ueberheilung, denn die Grenze soll einen Zauber davor bewahren, an
+jemanden zu gehen, der ihn nicht braucht, und wer beim Landen bei 34 % steht, braucht ihn.
+
 ```
 Anteil = max(0, 1 − Vorlaufzeit / korrigierte Restzeit)
 Vorlaufzeit = GCD-Rest + ein voller GCD

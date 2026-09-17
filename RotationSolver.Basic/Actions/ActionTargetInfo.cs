@@ -3085,7 +3085,16 @@ public struct ActionTargetInfo(IBaseAction action)
 					continue;
 				}
 
-				if (!IBaseAction.AutoHealCheck || o.GetHealthRatio() < healRatio)
+				// Forecast health here too, and this is the gate the rest depends on: everything below
+				// draws from this set, so a member kept out here is invisible to the ranked list, to
+				// the critical rank and to every short-cut. AutoHealRatio defaults to 0.8, which is
+				// exactly where the look-ahead earns its keep - a tank at 90% who reaches zero in six
+				// seconds is at a forecast 34%, and judged by his current health he would be dropped
+				// before anything downstream ever saw him.
+				//
+				// This is not overhealing: the cut exists to keep a cast from being spent on somebody
+				// who does not need it, and somebody who will be at 34% when the cast lands does.
+				if (!IBaseAction.AutoHealCheck || o.GetForecastHealthRatio() < healRatio)
 				{
 					filteredGameObjects.Add(o);
 				}
