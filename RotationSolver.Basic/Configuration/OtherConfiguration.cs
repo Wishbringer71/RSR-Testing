@@ -123,10 +123,13 @@ internal class OtherConfiguration
 	/// value ever seen rather than the last, so one unmitigated observation sets the truth and later
 	/// well-mitigated ones cannot talk it back down.
 	///
-	/// Nothing reads this yet. It is filled first and used second, on purpose: the rating only helps
-	/// once entries have left the unrated state, and that takes runs in the game rather than work
-	/// here. In repeated content - an extreme trial, a savage tier being progged - that is one clear
-	/// of the fight.
+	/// Read by <c>DataCenter.AreaCastIsWorthMitigating</c>, which decides whether an incoming area
+	/// cast is worth a mitigation cooldown. Measured in play, evaluated in play, applied in play -
+	/// and this file is the only thing that carries a reading past the end of a session. Without it
+	/// every login would start from nothing and "rated after one clear" would hold only until the
+	/// player logs out, which for a fight progged over several evenings means never. That is why the
+	/// list reset leaves it alone, why discarding it has its own button, and why it is written
+	/// through a temporary file rather than in place.
 	/// </remarks>
 	public static Dictionary<uint, float> HostileCastingAreaPotential = [];
 

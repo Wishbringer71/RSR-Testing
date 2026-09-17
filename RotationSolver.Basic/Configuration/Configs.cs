@@ -963,6 +963,22 @@ internal partial class Configs : IPluginConfiguration
 		Filter = HealingActionCondition, Section = 1)]
 	public bool HealAheadOfDamage { get; set; } = false;
 
+	// The learned area list holds everything that once hit the whole party, from a raidwide taking
+	// sixty percent to a trash tick taking two, and every entry raised the same party mitigation.
+	// What that spends is the cooldown: a Reprisal laid on a trivial tick is missing at the next
+	// real hit. With this on, an action whose measured damage would leave everybody above the level
+	// at which the tree heals anyway does not raise it.
+	//
+	// It reads what Watcher records, so an action nothing has been measured on behaves exactly as
+	// before - which is how the 850 shipped entries keep their mitigation. Ratings arrive with play:
+	// in content that is repeated, one clear of the fight.
+	//
+	// On by default: it implements a shortcoming the user reported, and its fallback in every
+	// unknown case is the old behaviour. Whoever wants mitigation on everything turns it off.
+	[UI("Skip party mitigation for area casts measured small enough that nobody would need healing after them.",
+		Filter = HealingActionCondition, Section = 1)]
+	public bool SkipMitigationForSmallAreaCasts { get; set; } = true;
+
 	#region
 	[JobConfig, UI("Prioritize raising dead players over Healing/Defense.",
 		Filter = HealingActionCondition, Section = 2)]

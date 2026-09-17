@@ -38,27 +38,48 @@ sondern das Ergebnis der Rechnung — und sie kann nicht veralten.
 | Baustein | Stand |
 |---|---|
 | Aufnahme einer Flächenaktion in die Liste | **vorhanden**, Upstream (`Watcher.ActionFromEnemy`) |
-| Schadensbetrag beim Lernen | **verworfen**: `damageEffect.value` wird gelesen und nur gegen `> 0` geprüft |
 | Schadensbetrag beim Lernen | **umgesetzt** (A99): höchster Anteil an der Maximalgesundheit je Effektsatz |
 | Ablage mit Wert je Aktion | **umgesetzt** als Parallelspeicher `HostileCastingAreaPotential`; `HostileCastingArea` bleibt unverändert |
 | Höchstwert-Fortschreibung über Durchläufe | **umgesetzt**, auch für bereits bekannte Ids und mit gelockerter Bedingung |
 | Sonde: wie viel des Bestands ist bewertet | **umgesetzt** in der Listenverwaltung |
 | Kategorie „unbewertet" mit heutigem Verhalten | **erfüllt, weil nichts liest** — Vorbedingung für alles Weitere |
-| Entscheidung beim Verbrauch statt gespeicherter Kategorie | offen — der zweite Schritt, und die eigentliche Verhaltensänderung |
+| Entscheidung beim Verbrauch statt gespeicherter Kategorie | **umgesetzt** (A101): `DataCenter.AreaCastIsWorthMitigating`, hinter `SkipMitigationForSmallAreaCasts`, Standard an |
 | **Nebenbefund:** die Liste wurde linear durchsucht, obwohl sie ein `HashSet` ist | **behoben** (A98): `Contains` an allen fünf Stellen, `check_set_lookups.py` hält es |
 
-**Stand: der erste Schritt ist gebaut, der zweite ist die offene Entscheidung.** Gemessen und
-gespeichert wird seit A99; gelesen wird noch nichts, das Verhalten ist unverändert. Was aussteht, ist
-die Rechnung, die aus dem gespeicherten Anteil eine Entscheidung im Kampf macht.
+**Stand: gebaut.** Gemessen und gespeichert wird seit A99, gelesen und angewandt seit A101. Beides
+gehört zusammen, und die Trennung in zwei Auslieferungen beruhte auf einem Denkfehler.
 
-**Warum der erste Schritt keine Vorlage war.** Er ändert kein Verhalten, braucht keine Einstellung,
-bricht kein gespeichertes Format und beantwortet die Frage, an der die zweite Entscheidung hängt —
-ob der Bestand überhaupt aus dem unbewerteten Zustand herauswächst und wie hart die gelernten
-Aktionen wirklich treffen. Wo es nichts zu wählen gibt, ist es Arbeit. Die frühere Bewertung war eine Nullvariante aus Kostengründen.
-Drei ihrer vier Kostenpunkte sind durch diese Vorgabe entfallen; **ein** Punkt besteht fort, und er
-ist rein technisch — siehe „Was übrig bleibt".
+**Der Denkfehler, benannt vom Auftraggeber:** „die daten entstehen im spiel, werden im spiel
+ausgewertet und dann genutzt und entsprechend angewendet. wann liefert also schritt 1 daten, die
+schritt 2 auswerten kann? und wann schritt 2 sie nur auswerten, wenn er vorhanden ist."
 
-**Und er ist zugleich der Hebel, nicht nur die Last.** Der gespeicherte Einschlag beantwortet mehr
+Die Antwort ist: **sofort — und nie.** Sofort, weil ein Wert ab dem ersten gemessenen Einschlag da
+ist. Nie, weil ihn ohne den zweiten Schritt nichts liest. Meine Aufteilung unterstellte, die
+Auswertung finde **hier** statt: Werte sammeln, sie mir berichten lassen, dann entscheiden. Das ist
+dreifach falsch. Die Werte liegen auf seinem Rechner und sind von hier nicht einsehbar; sie mir
+berichten zu lassen wäre die Prüfaufgabe an den Nutzer, die dieses Projekt ausdrücklich ausschließt;
+und die Rechnung braucht die konkreten Zahlen gar nicht, weil sie Puffer minus Einschlag gegen eine
+Schwelle vergleicht und mit jedem Wert arbeitet.
+
+**Die Dreizustandsform ist bereits die Sicherung, die ich mit der Aufteilung ein zweites Mal bauen
+wollte.** Unbewertet heißt heutiges Verhalten. Liefert man beides zusammen aus, ist der Anfang überall
+das alte Verhalten, und die Wirkung wächst mit jedem gemessenen Einschlag hinein — ohne Stichtag.
+Getrennt ausgeliefert hätte dieselbe Sicherung gegolten, aber die Wirkung wäre um die ganze Zeit
+zwischen beiden Auslieferungen verzögert worden. Bei wiederholten Inhalten ist das der Unterschied
+zwischen „ab dem zweiten Versuch" und „irgendwann".
+
+**Die Speicherung ist keine Nebensache, sondern die Bedingung dafür, dass das überhaupt trägt.** Eine
+frühere Fassung dieses Dokuments beschrieb den Parallelspeicher vor allem als billig — als etwas, das
+nichts kostet und deshalb keinen Widerstand verdient. Das verfehlt seinen Zweck. Der gemessene Anteil
+wird **im Spiel** erhoben, **im Spiel** ausgewertet und **im Spiel** angewandt; was ihn über das
+Beenden des Spiels hinweg trägt, ist allein die Datei. Ohne sie begänne jeder Start bei null, und
+„nach einem Durchlauf ist der Bestand bewertet" gölte nur bis zum Ausloggen — bei einem Training über
+mehrere Abende also nie. Die Ablage ist deshalb der Baustein, nicht sein Beiwerk, und alles, was sie
+gefährdet — Zurücksetzen, ein Absturz beim Schreiben — ist entsprechend ernst zu nehmen.
+
+**Die frühere Bewertung war eine Nullvariante aus Kostengründen.** Drei ihrer vier Kostenpunkte sind
+durch diese Vorgabe entfallen; **ein** Punkt besteht fort, und er ist rein technisch — siehe „Was
+übrig bleibt". **Und er ist zugleich der Hebel, nicht nur die Last.** Der gespeicherte Einschlag beantwortet mehr
 als die Frage, aus der er entstanden ist: Er schließt die letzte benannte Lücke der
 Laufzeitbeobachtung — die Blindheit vor dem **ersten** Treffer eines Pulls —, und zwar ohne die
 Statussatz-Tabelle, die Konzept 08 dafür bisher vorsieht. Siehe „Was der Baustein eröffnet".
@@ -407,24 +428,26 @@ kein Hindernis, sondern der Einstieg.
 Der Nebenbefund unten ist inzwischen erledigt und war nie eine Entscheidung: Er hing an nichts, was
 der Auftraggeber zu wählen hatte.
 
-## Der Zuschnitt der Umsetzung: erst messen, später entscheiden
+## Der Zuschnitt der Umsetzung: zusammen, nicht nacheinander
 
-Die Frage „wird gebaut" ist eine andere als „in welchem Umfang und in welcher Reihenfolge", und sie
-ist hier gesondert durch den Loop geführt worden, nachdem der Auftraggeber angemerkt hatte, dass eine
-Empfehlung ohne diesen Durchgang keine ist.
+Die Frage „wird gebaut" ist eine andere als „in welchem Umfang", und sie ist gesondert durch den Loop
+geführt worden. Die erste Antwort war falsch und ist hier korrigiert.
 
 | Zuschnitt | Was entsteht | Bewertung |
 |---|---|---|
 | **A** nicht bauen | — | Die fachlichen Gründe sind entfallen; bleibt ohne Begründung |
-| **B** alles auf einmal: Ablage, Umbau der vier Listen, Rechnung, Sonden | vollständige Wirkung | **Der Bestand startet leer.** Jede Aktion ist unbewertet, also verhält sich das Plugin monatelang wie heute — die ganze Konstruktion wirkt erst, wenn genug beobachtet wurde |
-| **C** erst Messung und Ablage, Verhalten unverändert; Rechnung später | keine Verhaltensänderung, aber der Bestand füllt sich ab sofort | **gewählt** |
-| **D** nur die Flächenliste umbauen, die drei anderen später | ein Viertel des Ertrags | Verschenkt den Hebel, den der Umbau gerade darstellt |
+| **B** Messung und Rechnung zusammen | volle Wirkung, sobald ein Wert vorliegt | **gewählt** |
+| **C** erst Messung ausliefern, Rechnung später | dieselbe Endwirkung, aber um die Zeit zwischen beiden Auslieferungen verzögert | **verworfen** — siehe Denkfehler oben |
+| **D** nur die Flächenliste, die drei anderen später | ein Viertel des Ertrags | Verschenkt den Hebel, den der Umbau darstellt |
 
-**Warum C.** Die hybride Form lebt davon, dass Einträge aus dem unbewerteten Zustand herauswachsen,
-und das braucht **Zeit im Spiel**, nicht Arbeitszeit. Wer zuerst nur misst, lässt diesen Vorgang
-laufen, während sich am Verhalten nichts ändert: kein Risiko, keine Option nötig, keine
-Rückbaufrage. Wenn die Rechnung später dazukommt, trifft sie auf einen bereits bewerteten Bestand
-und wirkt sofort statt erst nach Wochen.
+**Warum B und nicht C.** C wurde mit dem Argument gewählt, der Bestand müsse erst volllaufen, damit
+die Rechnung nicht ins Leere greift. Das trifft zu — und es ist genau das, was die Kategorie
+*unbewertet* ohnehin leistet: Solange kein Wert vorliegt, wird gemindert wie bisher. Die zeitliche
+Trennung fügt dieser Sicherung nichts hinzu und kostet die Wirkung in der Zwischenzeit. Bei
+wiederholten Inhalten, wo der Bestand nach einem Durchlauf steht, ist das der ganze Nutzen.
+
+**Was von C bleibt:** die Sonde. Sie ist vor der Rechnung entstanden und gehört dorthin — sie zeigt
+den Bestand, unabhängig davon, ob eine Regel ihn liest.
 
 ### Die Anlaufzeit hängt am Inhalt, und im wichtigsten Fall ist sie ein Durchlauf
 

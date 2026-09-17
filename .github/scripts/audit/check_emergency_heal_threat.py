@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Guard the decisions that hang on measured danger rather than on a set number.
+"""Guard the decisions that hang on a measurement rather than on a set number.
 
-Two rules in WHM_Reborn ask that question, and both are one word away from deciding on a figure
-again: the emergency full heal, and the bound on the Sanctus hold.
-
+Three of them now, and each is one word away from deciding on a figure again: the emergency full
+heal and the bound on the Sanctus hold in WHM_Reborn, and whether an incoming area cast is worth its
+mitigation cooldown in DataCenter.
 
 The user reported Benediction going out on a player the moment he was raised. A resurrected player
 holds a few percent, carries no aggro and is taking no damage, so a health threshold reads him as
@@ -29,6 +29,8 @@ from pathlib import Path
 WHM = Path('RotationSolver/RebornRotations/Healer/WHM_Reborn.cs')
 HELPER = Path('RotationSolver.Basic/Helpers/ObjectHelper.cs')
 UPDATER = Path('RotationSolver/Updaters/TargetUpdater.cs')
+CENTER = Path('RotationSolver.Basic/DataCenter.cs')
+CONFIGS = Path('RotationSolver.Basic/Configuration/Configs.cs')
 
 BENEDICTION_BRANCH = re.compile(
     r'BenedictionPvE\.CanUse\(out act\).*?\)\s*\{', re.DOTALL)
@@ -64,6 +66,20 @@ SET_CLEAR = re.compile(r'DataCenter\.TargetedPartyMembers\.Clear\(\)')
 # figure and is now the measured question "does anyone actually fall inside the GCD this costs".
 # Losing the call puts the invented number back in charge, and the optional ceiling must stay off by
 # default or it decides again on a figure nobody measured.
+
+# Third decision of the same kind, in DataCenter: whether an incoming area cast is worth its
+# mitigation cooldown. It hangs on a measured share rather than on a set figure, and its fallback for
+# an action nothing has been measured on must stay "mitigate" - that fallback is the only thing
+# keeping 850 shipped entries from losing their mitigation the moment this ships.
+AREA_WORTH_METHOD = re.compile(r'bool\s+AreaCastIsWorthMitigating\s*\(')
+AREA_WORTH_CALL = re.compile(r'AreaCastIsWorthMitigating\(act\.RowId\)')
+AREA_UNRATED_FALLBACK = re.compile(
+    r'TryGetValue\(actionId,\s*out\s+var\s+share\).{0,80}?return\s+true;', re.DOTALL)
+AREA_HEAL_THRESHOLD = re.compile(r'Service\.Config\.HealthAreaSpell')
+AREA_DYING_THRESHOLD = re.compile(r'HealthForDyingTanks')
+AREA_TOGGLE_DECL = re.compile(
+    r'bool\s+SkipMitigationForSmallAreaCasts\s*\{\s*get;\s*set;\s*\}\s*=\s*(\w+)')
+
 HOLD_METHOD = re.compile(r'bool\s+ShouldHoldHolyWhilePackSlowed\s*\(')
 HOLD_MEASURED = re.compile(r'ObjectHelper\.AnyPartyMemberFallingWithinHealWindow\(\)')
 OUTPUT_CAP_DECL = re.compile(r'int\s+HoldHolyMaxHostileOutput\s*\{\s*get;\s*set;\s*\}\s*=\s*(\d+)')
@@ -129,6 +145,41 @@ def check_hold_bound(text):
         problems.append('HoldHolyMaxHostileOutput no longer defaults to 0, so an unmeasured output '
                         'figure decides again')
     return problems
+
+
+def check_area_worth(text):
+    """The area-cast decision must read a measurement and fall back to today's behaviour."""
+    problems = []
+    if AREA_WORTH_CALL.search(text) is None:
+        problems.append('IsHostileCastingArea no longer asks whether the cast is worth mitigating: '
+                        'every learned action raises party mitigation again, however small')
+
+    body = body_of(text, AREA_WORTH_METHOD)
+    if body is None:
+        problems.append('AreaCastIsWorthMitigating not found - renamed or removed')
+        return problems
+
+    if AREA_UNRATED_FALLBACK.search(body) is None:
+        problems.append('an unrated action no longer falls back to mitigating: the shipped entries '
+                        'lose their mitigation until each one has been measured')
+    if AREA_HEAL_THRESHOLD.search(body) is None:
+        problems.append('the comparison no longer uses the area healing threshold')
+    if AREA_DYING_THRESHOLD.search(body) is not None:
+        problems.append('the comparison is back on HealthForDyingTanks, which practically never '
+                        'fires - a thirty percent hit leaves a full player at seventy')
+
+    return problems
+
+
+def check_area_toggle(text):
+    """The toggle is declared in Configs.cs, away from the method it guards."""
+    decl = AREA_TOGGLE_DECL.search(text)
+    if decl is None:
+        return ['SkipMitigationForSmallAreaCasts is not declared']
+    if decl.group(1) != 'true':
+        return ['SkipMitigationForSmallAreaCasts no longer defaults to true, so every learned '
+                'action raises party mitigation again for anyone who does not change a setting']
+    return []
 
 
 def check_threat(text):
@@ -218,6 +269,48 @@ def self_test():
                               'HoldHolyMaxHostileOutput { get; set; } = 600;'))):
         raise AssertionError('an output cap switched back on by default went unnoticed')
 
+    good_area = '''
+        public bool SkipMitigationForSmallAreaCasts { get; set; } = true;
+
+        return OtherConfiguration.HostileCastingArea.Contains(act.RowId)
+            && AreaCastCanReachPlayer(h, act)
+            && AreaCastIsWorthMitigating(act.RowId);
+
+        private static bool AreaCastIsWorthMitigating(uint actionId)
+        {
+            if (!OtherConfiguration.HostileCastingAreaPotential.TryGetValue(actionId, out var share))
+            {
+                return true;
+            }
+            var threshold = Service.Config.HealthAreaSpell;
+            return false;
+        }
+    '''
+    if check_area_worth(good_area):
+        raise AssertionError('the intact area decision was rejected: %s'
+                             % check_area_worth(good_area))
+
+    if not any('no longer asks whether the cast is worth' in p for p in check_area_worth(
+            good_area.replace('\n            && AreaCastIsWorthMitigating(act.RowId);', ';'))):
+        raise AssertionError('an area cast decided without the measurement went unnoticed')
+
+    if not any('no longer falls back to mitigating' in p for p in check_area_worth(
+            good_area.replace('return true;\n            }', 'return false;\n            }'))):
+        raise AssertionError('an unrated action falling through to "do not mitigate" went unnoticed')
+
+    if not any('back on HealthForDyingTanks' in p for p in check_area_worth(
+            good_area.replace('Service.Config.HealthAreaSpell',
+                              'Service.Config.HealthForDyingTanks'))):
+        raise AssertionError('the comparison back on the dying threshold went unnoticed')
+
+    good_toggle = 'public bool SkipMitigationForSmallAreaCasts { get; set; } = true;'
+    if check_area_toggle(good_toggle):
+        raise AssertionError('the area toggle was rejected: %s' % check_area_toggle(good_toggle))
+    if not check_area_toggle(good_toggle.replace('true;', 'false;')):
+        raise AssertionError('the area toggle switched off by default went unnoticed')
+    if not check_area_toggle(''):
+        raise AssertionError('a missing area toggle went unnoticed')
+
     good_threat = '''
         internal static bool IsUnderThreat(this IBattleChara battleChara)
         {
@@ -267,8 +360,10 @@ def self_test():
     print('self-test ok: the guarded branch is accepted; an unguarded branch, a condition without '
           'its toggle\n  and a toggle flipped off are each caught; every one of the three danger '
           'arms is caught when\n  removed; a target set that is unfilled, missing either source, or '
-          'never cleared is caught;\n  and the Sanctus hold falling back on the invented output '
-          'number is caught')
+          'never cleared is caught;\n  the Sanctus hold falling back on the invented output '
+          'number is caught;\n  and the area-cast decision is caught when dropped, when an unrated '
+          'action stops falling back\n  to mitigating, when it compares against the dying threshold '
+          'again, and when its toggle is off')
 
 
 def main():
@@ -276,7 +371,8 @@ def main():
 
     problems = []
     for path, checker in ((WHM, check_branch), (WHM, check_hold_bound), (HELPER, check_threat),
-                          (UPDATER, check_targets)):
+                          (UPDATER, check_targets), (CENTER, check_area_worth),
+                          (CONFIGS, check_area_toggle)):
         if not path.exists():
             print('%s not found - run from the repository root' % path)
             return 1
@@ -289,8 +385,10 @@ def main():
         return 1
 
     print('Benediction asks whether the target is in danger; the question reads who an enemy is '
-          'aiming at,\n  announced area casts and the health trend; and the target set is filled '
-          'from both sources\n  once per frame and cleared with the rest of the state.')
+          'aiming at,\n  announced area casts and the health trend; the target set is filled from '
+          'both sources once\n  per frame and cleared with the rest of the state; and an area cast '
+          'is mitigated unless it\n  was measured small enough to leave everyone above the healing '
+          'threshold.')
     return 0
 
 

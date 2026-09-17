@@ -2642,6 +2642,26 @@ Dazu kam der Überholfehler des **Selbst-Kurzschlusses**, der bis dahin nur für
 
 **Erreichter Pruefgrad:** statische Pruefung, `check_cs_structure`, `check_set_lookups` (erweitert), Compile in der CI.
 
+### A101 · Die Auswertung laeuft im Spiel, nicht bei mir
+
+**Anlass:** Zwei Rueckfragen des Auftraggebers, und beide treffen denselben Denkfehler.
+
+**Erstens:** „die daten entstehen im spiel, werden im spiel ausgewertet und dann genutzt und entsprechend angewendet. wann liefert also schritt 1 daten, die schritt 2 auswerten kann? und wann schritt 2 sie nur auswerten, wenn er vorhanden ist."
+
+Die Antwort ist **sofort — und nie**: sofort, weil ein Wert ab dem ersten gemessenen Einschlag vorliegt; nie, weil ihn ohne den zweiten Schritt nichts liest. Meine Aufteilung in „erst sammeln, dann entscheiden, dann bauen" unterstellte, die Auswertung finde **hier** statt. Dreifach falsch: Die Werte liegen auf seinem Rechner und sind von hier nicht einsehbar; sie mir berichten zu lassen waere die Pruefaufgabe an den Nutzer, die `CLAUDE.md` ausschliesst; und die Rechnung braucht die konkreten Zahlen gar nicht, weil sie Puffer minus Einschlag gegen eine Schwelle vergleicht und mit jedem Wert arbeitet.
+
+**Die Dreizustandsform war bereits die Sicherung, die ich mit der Aufteilung ein zweites Mal bauen wollte.** Unbewertet heisst heutiges Verhalten; zusammen ausgeliefert ist der Anfang ueberall das alte Verhalten, und die Wirkung waechst mit jedem Einschlag hinein. Die zeitliche Trennung fuegte dem nichts hinzu und kostete die Wirkung dazwischen — bei wiederholten Inhalten der Unterschied zwischen „ab dem zweiten Versuch" und „irgendwann".
+
+**Zweitens:** „ich habe mich auch bei deiner aussage zur speicherung der schadenspotentiale gewundert. die sind schliesslich zur ingame auswertung notwendig." Derselbe Fehler an zweiter Stelle. Ich hatte den Parallelspeicher vor allem als **billig** beschrieben — als etwas, das nichts kostet und deshalb keinen Widerstand verdient. Sein Zweck ist ein anderer: Er ist das Einzige, was eine Messung ueber das Ende einer Sitzung traegt. Ohne ihn begaenne jeder Login bei null, und „nach einem Durchlauf bewertet" gaelte nur bis zum Ausloggen — bei einem Training ueber mehrere Abende also nie. Kommentar und Konzept sagen das jetzt; der alte Vermerk „nothing reads this yet" war ohnehin ueberholt.
+
+**Umsetzung:** `DataCenter.AreaCastIsWorthMitigating` haengt in `IsHostileCastingArea` hinter der Reichweitenpruefung. Unbewertet oder Anteil null → `true`, also Verhalten wie bisher. Sonst: Fuer jedes lebende Gruppenmitglied wird `effektiver Puffer minus gemessener Anteil` gegen `HealthAreaSpell` geprueft; faellt irgendwer darunter, wird gemindert. Hinter `SkipMitigationForSmallAreaCasts`, Standard **an** — dieselbe Begruendung wie bei `BenedictionNeedsThreat`: Es behebt einen von ihm gemeldeten Mangel, und der Rueckfall in jedem unbekannten Fall ist das alte Verhalten.
+
+**Falsifikation, und ein Einwand war ernster als zunaechst gedacht.** Die gefaehrliche Fehlerrichtung ist eine zu niedrig bewertete Aktion, die deshalb nicht gemindert wird; in einem Savage-Kampf ist ein ungeminderter Raidwide ein Wipe, und „korrigiert sich beim naechsten Mal" ist dort teuer. Durchgerechnet traegt der Einwand aber kaum: Der gemessene Wert ist der Schaden **nach** Minderung, Gruppenminderung liegt bei zehn bis zwanzig Prozent, ein Raidwide mit vierzig Prozent Potential misst sich also bei zweiunddreissig bis sechsunddreissig — weit ueber jeder Bagatelle. Eine Verwechslung verlangte eine Minderung von neunzig Prozent, die es nicht gibt. Fehlklassifikation bleibt auf einen schmalen Grenzbereich beschraenkt, und dort sind beide Antworten vertretbar.
+
+**Pruefmittel erweitert:** `check_emergency_heal_threat.py` prueft jetzt als dritte Entscheidung dieser Art, dass `IsHostileCastingArea` die Frage stellt, dass eine unbewertete Aktion auf „mindern" zurueckfaellt, dass gegen die **Heilschwelle** und nicht gegen `HealthForDyingTanks` verglichen wird, und dass die Einstellung auf `true` steht. Vier konstruierte Defekte im Selbsttest; die Einstellung wird gegen `Configs.cs` geprueft, weil sie nicht neben der Methode liegt.
+
+**Erreichter Pruefgrad:** statische Pruefung, `check_cs_structure`, `check_emergency_heal_threat` (erweitert), `check_set_lookups`, `check_doc_references`, `scan18`, Compile in der CI. Im Spiel nicht beobachtet — und ab hier ist es auch beobachtbar: Die Listenverwaltung zeigt den Bestand, und die Wirkung zeigt sich daran, ob Gruppenminderung bei kleinen Flaechen ausbleibt.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
