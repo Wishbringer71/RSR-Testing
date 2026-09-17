@@ -84,19 +84,12 @@ public static class Watcher
 
 						if (set.Action.HasValue && Service.Config.RecordKnockbackies)
 						{
-							var isContained = false;
-							foreach (var id in OtherConfiguration.HostileCastingKnockback)
+							// Add reports whether it actually added, so the membership test and the
+							// insertion are one lookup instead of a walk over the set followed by an
+							// insertion. Seventh site of the same defect class as the four in
+							// DataCenter - the survey behind those had stopped at that file.
+							if (OtherConfiguration.HostileCastingKnockback.Add(set.Action.Value.RowId))
 							{
-								if (id == set.Action.Value.RowId)
-								{
-									isContained = true;
-									break;
-								}
-							}
-
-							if (!isContained)
-							{
-								_ = OtherConfiguration.HostileCastingKnockback.Add(set.Action.Value.RowId);
 								_ = OtherConfiguration.Save();
 							}
 						}
@@ -133,7 +126,7 @@ public static class Watcher
 
 					foreach (var effect in set.TargetEffects)
 					{
-						if (!partyMaxHp.TryGetValue(effect.TargetID, out var maxHp))
+						if (!partyMaxHp.TryGetValue(effect.TargetID, out var memberMaxHp))
 						{
 							continue;
 						}
@@ -154,9 +147,9 @@ public static class Watcher
 						// action is harmless - it means something absorbed it. Such a set is skipped
 						// for the measurement while still counting for the intake above, so a
 						// raidwide does not fall out of the list just because the party was shielded.
-						if (landed && maxHp > 0)
+						if (landed && memberMaxHp > 0)
 						{
-							var share = (float)damageEffect.value / maxHp;
+							var share = (float)damageEffect.value / memberMaxHp;
 							if (share > highestShare)
 							{
 								highestShare = share;

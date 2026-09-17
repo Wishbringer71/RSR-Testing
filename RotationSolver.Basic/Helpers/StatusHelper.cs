@@ -1567,14 +1567,7 @@ public static class StatusHelper
 			return false;
 		}
 
-		foreach (var id in OtherConfiguration.InvincibleStatus)
-		{
-			if (id == status.StatusId)
-			{
-				return true;
-			}
-		}
-		return false;
+		return OtherConfiguration.InvincibleStatus.Contains(status.StatusId);
 	}
 
 	/// <summary>
@@ -1594,14 +1587,7 @@ public static class StatusHelper
 			return false;
 		}
 
-		foreach (var id in OtherConfiguration.PriorityStatus)
-		{
-			if (id == status.StatusId)
-			{
-				return true;
-			}
-		}
-		return false;
+		return OtherConfiguration.PriorityStatus.Contains(status.StatusId);
 	}
 
 	/// <summary>
@@ -1642,14 +1628,7 @@ public static class StatusHelper
 			return false;
 		}
 
-		foreach (var id in OtherConfiguration.DangerousStatus)
-		{
-			if (id == status.StatusId)
-			{
-				return true;
-			}
-		}
-		return false;
+		return OtherConfiguration.DangerousStatus.Contains(status.StatusId);
 	}
 
 	/// <summary>

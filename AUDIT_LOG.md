@@ -2628,6 +2628,20 @@ Dazu kam der Überholfehler des **Selbst-Kurzschlusses**, der bis dahin nur für
 
 **Erreichter Pruefgrad:** statische Pruefung, `check_cs_structure`, `check_set_lookups`, `check_doc_references`, `scan18`, Compile in der CI. Im Spiel nicht beobachtet — und das ist hier kein Mangel, sondern der Zweck: Der erste Schritt existiert, um genau das beobachtbar zu machen.
 
+### A100 · Roter Build, und die Klassenerhebung aus A98 war zu eng
+
+**Anlass:** Die CI meldete den Build auf `9ce853ef5` als fehlgeschlagen.
+
+**Der Fehler:** `Watcher.cs(136,60): error CS0136` — mein `out var maxHp` kollidierte mit einem `maxHp`, das siebzig Zeilen weiter oben im selben Methodenkoerper steht. Umbenannt in `memberMaxHp`. Die oertliche Pruefung faengt das nicht: `check_cs_structure.py` prueft Struktur, nicht Gueltigkeitsbereiche, und ein Compiler steht hier nicht zur Verfuegung. Was es gefangen haette, ist das Lesen des umgebenden Bereichs vor dem Einfuegen einer neuen lokalen Variablen in fremden Code.
+
+**Beim Beheben ein siebter Fundort der Defektklasse aus A98** — und dann drei weitere. `Watcher.ActionFromEnemy` durchsuchte `HostileCastingKnockback` mit einer Schleife, um danach einzufuegen; ersetzt durch den Rueckgabewert von `HashSet.Add`, der beides in einem Nachschlagevorgang erledigt. `StatusHelper` durchsuchte `InvincibleStatus`, `PriorityStatus` und `DangerousStatus` auf dieselbe Weise — und diese Stellen werden je Status je Ziel gefragt, also haeufiger als die Cast-Listen.
+
+**Eigener Anteil, und es ist derselbe wie in A95:** Die Erhebung in A98 hat bei `DataCenter` und den vier Casting-Listen aufgehoert, ohne die Einengung zu belegen. `CLAUDE.md` benennt genau das: „Ein nicht nachgewiesener Nichtbedarf ist ein unentdeckter Defekt, keine Ausnahme." Das Pruefmittel trug die Einengung mit und haette einen Baum durchgewinkt, in dem sechs von zehn Fundorten noch standen. Behoben: `check_set_lookups.py` deckt jetzt drei Dateien und acht Mengen ab, prueft `RowId` **und** `StatusId`, und der Selbsttest laeuft gegen jede Menge einzeln.
+
+**Gegenprobe:** Im gesamten Baum steht keine `foreach`-Schleife ueber eine `OtherConfiguration`-Menge mehr.
+
+**Erreichter Pruefgrad:** statische Pruefung, `check_cs_structure`, `check_set_lookups` (erweitert), Compile in der CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
