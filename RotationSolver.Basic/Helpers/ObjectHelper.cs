@@ -3576,6 +3576,128 @@ public static class ObjectHelper
 		return elapsedTime / hpRatioDifference * (wholeTime ? 1 : currentHealthRatio);
 	}
 
+	private static readonly ConcurrentDictionary<ulong, (DateTime At, float Ttk, float Ratio)> _ttkForecast = [];
+	private static readonly ConcurrentDictionary<ulong, float> _ttkBias = [];
+
+	/// <summary>
+	/// How far <see cref="GetTTK"/> has been off for this character lately: 1 means its forecasts
+	/// held, above 1 means health fell faster than predicted, below 1 slower.
+	/// </summary>
+	/// <remarks>
+	/// The estimate does not need an outside observer to be judged. It made a prediction a moment
+	/// ago - "this one reaches zero in N seconds" - and the health since then either matches it or
+	/// does not. Comparing the two is arithmetic the plugin can do on itself, every second, for
+	/// every member, which is the whole of what a play session would have contributed and more
+	/// besides: it never looks away.
+	///
+	/// Why it matters for the thing being built rather than for the statistic: a forecast that runs
+	/// optimistic is worse than none, because the rule hanging on it would step in too late. With
+	/// the bias measured, the same forecast divided by it is the corrected one, and the correction
+	/// costs no configured value - it comes out of the observation. That is the adaptation the user
+	/// asks for in the other concepts as well: assume, watch, correct.
+	///
+	/// Only falls are compared. A rising ratio means healing reached the target, which says nothing
+	/// about how well the fall was predicted, so those samples are skipped rather than folded in as
+	/// a negative. The value is smoothed across samples so that one spike does not move it.
+	/// </remarks>
+	internal static float GetTtkBias(this IBattleChara battleChara)
+	{
+		return battleChara != null && _ttkBias.TryGetValue(battleChara.GameObjectId, out var bias)
+			? bias
+			: 1f;
+	}
+
+	/// <summary>
+	/// <see cref="GetTTK"/> corrected by how wrong it has been lately - the value a rule should read.
+	/// </summary>
+	internal static float GetCorrectedTTK(this IBattleChara battleChara)
+	{
+		var ttk = battleChara.GetTTK();
+		if (float.IsNaN(ttk))
+		{
+			return ttk;
+		}
+
+		var bias = battleChara.GetTtkBias();
+		return bias > 0f ? ttk / bias : ttk;
+	}
+
+	/// <summary>
+	/// Scores the forecast made for this character earlier against what its health actually did, and
+	/// files a fresh forecast for the next round. Called once per history sample.
+	/// </summary>
+	internal static void ScoreTtkForecast(this IBattleChara battleChara)
+	{
+		if (battleChara == null)
+		{
+			return;
+		}
+
+		var id = battleChara.GameObjectId;
+		var now = DateTime.Now;
+		var ratio = battleChara.GetHealthRatio();
+		var ttk = battleChara.GetTTK();
+
+		if (_ttkForecast.TryGetValue(id, out var last))
+		{
+			var elapsed = (float)(now - last.At).TotalSeconds;
+			var actualFall = last.Ratio - ratio;
+
+			// Only a fall says anything about a forecast of falling. A rise means a heal landed.
+			// The forecast also has to have been a number, and enough time has to have passed for
+			// the difference to be more than sampling noise.
+			if (!float.IsNaN(last.Ttk) && last.Ttk > 0f && elapsed > 0f && actualFall > 0f)
+			{
+				var expectedFall = elapsed * (last.Ratio / last.Ttk);
+				if (expectedFall > 0f)
+				{
+					var sample = actualFall / expectedFall;
+					var previous = _ttkBias.TryGetValue(id, out var b) ? b : 1f;
+
+					// Smoothed, so a single spike does not take over. Bounded because the ratio can
+					// run away when a forecast was very long and a burst lands.
+					var smoothed = (previous * 3f + sample) / 4f;
+					_ttkBias[id] = Math.Clamp(smoothed, 0.25f, 4f);
+				}
+			}
+		}
+
+		_ttkForecast[id] = (now, ttk, ratio);
+	}
+
+	private static readonly TimeSpan TtkForecastLifetime = TimeSpan.FromSeconds(DataCenter.HP_RECORD_TIME);
+
+	/// <summary>
+	/// Drops the scoring state of characters that have not been seen for a while.
+	/// </summary>
+	/// <remarks>
+	/// Both dictionaries are keyed by object id and would otherwise grow for every member of every
+	/// party of a session. Pruning against the current party instead would be cheaper but wrong: a
+	/// member who walks out of the object table for a few seconds would come back with the learned
+	/// bias reset to 1, which is the one moment - a pull spread over a wide room - where the
+	/// correction is worth the most. Age is the honest criterion, and it is the same window the
+	/// health history itself keeps.
+	/// </remarks>
+	internal static void ForgetStaleTtkForecasts()
+	{
+		// Nothing to do while the table is the size of a party; the scan only earns its keep once
+		// entries have accumulated across duties.
+		if (_ttkForecast.Count <= 24)
+		{
+			return;
+		}
+
+		var cutoff = DateTime.Now - TtkForecastLifetime;
+		foreach ((var id, var entry) in _ttkForecast)
+		{
+			if (entry.At < cutoff)
+			{
+				_ = _ttkForecast.TryRemove(id, out _);
+				_ = _ttkBias.TryRemove(id, out _);
+			}
+		}
+	}
+
 	private static readonly ConcurrentDictionary<ulong, DateTime> _aliveStartTimes = [];
 
 	/// <summary>

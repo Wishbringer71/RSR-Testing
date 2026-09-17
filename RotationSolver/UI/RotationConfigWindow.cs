@@ -4606,6 +4606,13 @@ public partial class RotationConfigWindow : Window
 		// "--" is not an error: GetTTK returns NaN while health is rising (no death in sight) and
 		// for the first 2.5s of observation. Both are answers.
 		//
+		// The second time is the same forecast corrected by how wrong it has been for this member in
+		// the last few seconds, and the factor behind it is that error: x1.0 means the trend held,
+		// x2.0 means health fell twice as fast as the trend predicted and the raw number is twice too
+		// long. That factor is the readout to watch before any rule is allowed to act on the time -
+		// if it sits near 1 through a pull, the plain trend is good enough; if it runs high whenever
+		// a pack lands, the raw number is the late one and the corrected time is the one to use.
+		//
 		// Cost is one pass over the history per member, and only while this window is open.
 		ImGui.Text("Party time to die (health trend, net of every mitigation and heal):");
 		var partyForTtk = DataCenter.PartyMembers;
@@ -4624,7 +4631,10 @@ public partial class RotationConfigWindow : Window
 
 				var ttk = member.GetTTK();
 				var shown = float.IsNaN(ttk) ? "--" : $"{ttk:F1}s";
-				ImGui.Text($"- {member.Name} {member.GetHealthRatio() * 100f:F0}% {shown}");
+				var corrected = member.GetCorrectedTTK();
+				var shownCorrected = float.IsNaN(corrected) ? "--" : $"{corrected:F1}s";
+				ImGui.Text($"- {member.Name} {member.GetHealthRatio() * 100f:F0}% raw {shown}"
+					+ $" corrected {shownCorrected} (x{member.GetTtkBias():F2})");
 			}
 		}
 

@@ -558,6 +558,26 @@ internal static partial class TargetUpdater
 		}
 
 		DataCenter.RecordedHP.Enqueue((now, currentHPs));
+
+		// Scoring the estimate against what actually happened. A second ago GetTTK said "this one
+		// reaches zero in N seconds"; the sample just enqueued says what the health really did since.
+		// Comparing the two needs no outside observer and no play session to report back - it is
+		// arithmetic on two numbers the plugin already holds, and it never looks away.
+		//
+		// What it is for: GetTTK averages the fall over the whole time the member has been damaged,
+		// so a tank who has been chipped for a minute and then takes a pack of autos is still
+		// reported with the slow old trend. That is the "should fall in 8s, falls in 3s" case, and it
+		// is the wrong direction to be wrong in - a rule reading the uncorrected number steps in too
+		// late. The bias measures exactly that gap, and GetCorrectedTTK divides it out.
+		//
+		// Order matters: this runs after the enqueue, so the forecast filed for the next round is the
+		// one the freshest history supports.
+		for (var i = 0; i < party.Count; i++)
+		{
+			party[i]?.ScoreTtkForecast();
+		}
+
+		ObjectHelper.ForgetStaleTtkForecasts();
 	}
 
 	private static void UpdateOccultWeaknesses()

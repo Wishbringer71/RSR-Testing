@@ -30,6 +30,10 @@ hinzu kommt eine Pruefung, die *zurueckhaelt*. Faellt sie aus, verhaelt sich RSR
 messbar.** Gemessen wurde bisher allein die Gegnerseite; die persoenlichen Minderungen des Tanks
 gehen in keine Rechnung ein. Die Luecke schliesst nicht eine Tabelle von Minderungssaetzen, sondern
 die Beobachtung: Der Gesundheitsverlauf je Gruppenmitglied ist bereits netto und braucht keine Liste.
+Die Schaetzung daraus ist **praeventiv** — bei 90 % Gesundheit meldet sie den Tod acht Sekunden im
+Voraus — und sie **korrigiert sich selbst**, indem sie ihre eigene Vorhersage jede Sekunde gegen den
+tatsaechlichen Verlauf haelt. Ein externer Beobachter ist dafuer nicht noetig. Bevor eine Kampfregel
+darauf aufsetzt, ist der gemessene Fehlerfaktor in der Diagnoseanzeige zu beurteilen.
 
 | Baustein | Stand |
 |---|---|
@@ -40,6 +44,8 @@ die Beobachtung: Der Gesundheitsverlauf je Gruppenmitglied ist bereits netto und
 | Aussetzbedingung als **Anteil** der verlangsamten Gegner, mit Mindestzahl | umgesetzt (`HoldHolyMinSlowedHostiles`, Standard 3) |
 | **Schranke** der Aussetzregel: der Rest muss bewaeltigbar sein | umgesetzt (`HoldHolyMaxHostileOutput`, Standard 600 — **Setzung, kein Messergebnis**) |
 | **Schadensrate je Gruppenmitglied**, netto nach allem | umgesetzt: die Gruppe steht in `RecordedHP`, `GetTTK` antwortet fuer sie |
+| **Selbstkorrektur** der Schaetzung gegen ihren eigenen Fehler | umgesetzt (`ScoreTtkForecast`, `GetCorrectedTTK`); Rohzeit, korrigierte Zeit und Faktor stehen in der Diagnoseanzeige |
+| Erster **Verbraucher** der korrigierten Restzeit in einer Kampfregel | offen — erst nach Beurteilung des Faktors im Spiel |
 | Minderungen des Tanks **rechnerisch** erfassen (Vorausschau vor dem ersten Treffer) | offen, siehe `TODO.md` — braucht Saetze je Status aus `Action.resx` |
 | Restzeit der Barriere (`HasSurvivingShield` misst die kuerzeste statt der laengsten) | offen, siehe `TODO.md` |
 | Erhebung der uebrigen Doppelnutzen-Aktionen | umgesetzt als `scan16.py`; ein Fund im Tank-/Heilerprofil (Rueckstoss) |
@@ -135,19 +141,46 @@ Gesundheitsanteil, liefert `GetTTK` `NaN` — kein Todeszeitpunkt absehbar. Der 
 also der **Nettotrend** und damit unmittelbar die Antwort auf „komme ich mit dem Heilen nach": Faellt
 er trotz laufender Heilung, reicht sie nicht.
 
-**Drei Grenzen, gemessen und nicht geschaetzt:**
+**Die Groesse ist praeventiv, nicht rueckwaertsgewandt.** Bei 90 % Gesundheit meldet `GetTTK`
+„in acht Sekunden tot" — das ist die Vorhersage, und sie liegt acht Sekunden vor dem Ereignis, um
+das es geht. Genau darauf zielt die Vorgabe des Auftraggebers, dass **vorab** einzugreifen ist und
+der Tank gar nicht erst fallen soll. Was die Groesse nicht kann, ist enger als frueher hier stand:
 
-- **Keine Vorausschau.** Eine Rate entsteht erst, wenn Schaden geflossen ist; `GetTTK` liefert vor
-  2,5 Sekunden Beobachtung (`CheckSpan`) grundsaetzlich `NaN`, und abgetastet wird einmal je Sekunde.
-  Der erste grosse Treffer eines Pulls ist daraus nicht vorhersehbar — dafuer bleibt die
-  Vorhersage von BossModReborn zustaendig.
-- **Traegheit.** `GetTTK` misst den Abfall seit dem **ersten** beobachteten Wert geteilt durch die
-  **gesamte** verstrichene Zeit — eine Durchschnittsrate ueber den Kampf, keine Momentanrate. Ein
-  ploetzlicher Einbruch wird darin verwaessert. Eine Momentanrate aus den letzten Abtastungen waere
-  dieselbe Datenquelle, anders ausgewertet.
+- **Blind fuer den ersten Treffer.** Vor 2,5 Sekunden Beobachtung (`CheckSpan`) liefert `GetTTK`
+  `NaN`, und abgetastet wird einmal je Sekunde. Der Eroeffnungsschlag eines Pulls ist daraus nicht
+  vorhersehbar — dafuer bleibt die Vorhersage von BossModReborn zustaendig. Ab dem zweiten Treffer
+  hat die Reihe eine Rate, und die Vorausschau steht.
+- **Traegheit, und sie ist gemessen.** `GetTTK` misst den Abfall seit dem **ersten** beobachteten
+  Wert geteilt durch die **gesamte** verstrichene Zeit — eine Durchschnittsrate ueber den Kampf,
+  keine Momentanrate. Ein ploetzlicher Einbruch wird darin verwaessert, und der Fehler geht in die
+  gefaehrliche Richtung: Die gemeldete Restzeit ist **zu lang**, eine Regel darauf griffe zu spaet.
+  Behoben ist das nicht durch eine gesetzte Zahl, sondern durch Selbstkorrektur, siehe unten.
 - **Keine Zuordnung.** Der Verlauf sagt, **dass** die Gesundheit faellt, nicht **warum**. Eine Regel,
   die entscheiden soll, ob gerade Reflexion oder Rueckstoss das richtige Mittel ist, findet die
   Antwort darin nicht.
+
+**Die Schaetzung prueft sich selbst, und dafuer braucht es keinen externen Beobachter.** Vor einer
+Sekunde hat `GetTTK` gesagt, dieses Mitglied erreiche in N Sekunden null; die soeben abgelegte
+Abtastung sagt, was die Gesundheit tatsaechlich getan hat. Der Vergleich beider ist Arithmetik auf
+zwei Zahlen, die das Plugin ohnehin haelt — jede Sekunde, fuer jedes Mitglied, ohne je wegzusehen.
+Er leistet damit mehr, als eine berichtete Spielsitzung leisten koennte.
+
+- **Gemessen wird ein Faktor**, kein Satz: tatsaechlicher Abfall geteilt durch vorhergesagten Abfall
+  (`ObjectHelper.ScoreTtkForecast`). 1,0 heisst, der Trend hielt; 2,0 heisst, die Gesundheit fiel
+  doppelt so schnell wie vorhergesagt, die Rohzahl war also doppelt zu lang.
+- **Nur Abfaelle zaehlen.** Ein steigender Anteil heisst, dass eine Heilung angekommen ist; darueber,
+  wie gut der Fall vorhergesagt war, sagt er nichts, also wird die Abtastung uebersprungen statt als
+  negativer Beitrag verrechnet.
+- **Geglaettet und begrenzt** auf 0,25 bis 4, damit eine einzelne Spitze den Faktor nicht uebernimmt.
+- **Gelesen wird die korrigierte Zeit** (`GetCorrectedTTK` = `GetTTK` geteilt durch den Faktor). Die
+  Korrektur kostet keine einzige gesetzte Zahl; sie faellt aus der Beobachtung.
+
+**Bewertet wird sie vor ihrem ersten Verbraucher, nicht danach.** Rohzeit, korrigierte Zeit und
+Faktor stehen je Mitglied in der Diagnoseanzeige. Bleibt der Faktor ueber einen Pull hinweg nahe 1,
+genuegt der schlichte Trend und die Korrektur ist ueberfluessig; laeuft er hoch, sobald eine Gruppe
+anbindet, ist die Rohzahl die zu spaete und die korrigierte die zu nehmende. Diese Runde aendert
+deshalb kein Kampfverhalten — sie macht die Groesse beurteilbar, auf der das Verhalten spaeter
+aufsetzen soll.
 
 **Die Groesse, die den Anspruch unmittelbar erfuellen wuerde, existiert bereits — und ist unbrauchbar
 gebaut.** `DataCenter.DPSTaken` misst den **tatsaechlich angekommenen** Schaden, also bereits nach
