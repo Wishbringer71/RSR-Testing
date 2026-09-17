@@ -3773,6 +3773,37 @@ public partial class RotationConfigWindow : Window
 			ImGui.TextWrapped(UiString.ConfigWindow_List_HostileCastingAreaDesc.GetDescription());
 			DrawActionsList(nameof(OtherConfiguration.HostileCastingArea), OtherConfiguration.HostileCastingArea);
 
+			// How much of the list has been rated, and how hard those actions were seen to hit. This
+			// is the probe for a change that deliberately alters no behaviour: without it, whether
+			// the store fills up at all would be as unknown after shipping as before. In repeated
+			// content - an extreme trial, a savage fight being progged - "rated" should reach the
+			// number of area actions in that fight after a single clear.
+			//
+			// Separate from the list above on purpose: DrawActionsList serves four lists through one
+			// signature, and leaving it alone is what makes this store free to introduce.
+			var rated = OtherConfiguration.HostileCastingAreaPotential;
+			ImGui.Text($"Damage potential recorded: {rated.Count} of {OtherConfiguration.HostileCastingArea.Count}");
+			if (rated.Count > 0)
+			{
+				var highest = 0f;
+				foreach (var share in rated.Values)
+				{
+					if (share > highest)
+					{
+						highest = share;
+					}
+				}
+				ImGui.Text($"Hardest hit seen: {highest * 100f:F0}% of a member's maximum HP");
+
+				if (ImGui.Button("Forget recorded damage potential"))
+				{
+					OtherConfiguration.ResetHostileCastingAreaPotential();
+				}
+				ImguiTooltips.HoveredTooltip("Kept when the list itself is reset, because these values "
+					+ "cost runs in the game rather than a download. Clear them when a patch has "
+					+ "changed how hard these actions hit - a rating can only ever rise on its own.");
+			}
+
 			_ = ImGui.TableNextColumn();
 			_allSearchable.DrawItems(Configs.List2);
 			ImGui.TextWrapped(UiString.ConfigWindow_List_HostileCastingKnockbackDesc.GetDescription());

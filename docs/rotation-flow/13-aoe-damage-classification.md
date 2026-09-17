@@ -39,13 +39,22 @@ sondern das Ergebnis der Rechnung — und sie kann nicht veralten.
 |---|---|
 | Aufnahme einer Flächenaktion in die Liste | **vorhanden**, Upstream (`Watcher.ActionFromEnemy`) |
 | Schadensbetrag beim Lernen | **verworfen**: `damageEffect.value` wird gelesen und nur gegen `> 0` geprüft |
-| Ablage mit Wert je Aktion | offen — `HostileCastingArea` ist ein `HashSet<uint>` |
-| Kategorie „unbewertet" mit heutigem Verhalten | offen, und Vorbedingung für alles Weitere |
-| Entscheidung beim Verbrauch statt gespeicherter Kategorie | offen |
-| Höchstwert-Fortschreibung über Durchläufe | offen |
+| Schadensbetrag beim Lernen | **umgesetzt** (A99): höchster Anteil an der Maximalgesundheit je Effektsatz |
+| Ablage mit Wert je Aktion | **umgesetzt** als Parallelspeicher `HostileCastingAreaPotential`; `HostileCastingArea` bleibt unverändert |
+| Höchstwert-Fortschreibung über Durchläufe | **umgesetzt**, auch für bereits bekannte Ids und mit gelockerter Bedingung |
+| Sonde: wie viel des Bestands ist bewertet | **umgesetzt** in der Listenverwaltung |
+| Kategorie „unbewertet" mit heutigem Verhalten | **erfüllt, weil nichts liest** — Vorbedingung für alles Weitere |
+| Entscheidung beim Verbrauch statt gespeicherter Kategorie | offen — der zweite Schritt, und die eigentliche Verhaltensänderung |
 | **Nebenbefund:** die Liste wurde linear durchsucht, obwohl sie ein `HashSet` ist | **behoben** (A98): `Contains` an allen fünf Stellen, `check_set_lookups.py` hält es |
 
-**Stand: konzipiert, nicht gebaut.** Die frühere Bewertung war eine Nullvariante aus Kostengründen.
+**Stand: der erste Schritt ist gebaut, der zweite ist die offene Entscheidung.** Gemessen und
+gespeichert wird seit A99; gelesen wird noch nichts, das Verhalten ist unverändert. Was aussteht, ist
+die Rechnung, die aus dem gespeicherten Anteil eine Entscheidung im Kampf macht.
+
+**Warum der erste Schritt keine Vorlage war.** Er ändert kein Verhalten, braucht keine Einstellung,
+bricht kein gespeichertes Format und beantwortet die Frage, an der die zweite Entscheidung hängt —
+ob der Bestand überhaupt aus dem unbewerteten Zustand herauswächst und wie hart die gelernten
+Aktionen wirklich treffen. Wo es nichts zu wählen gibt, ist es Arbeit. Die frühere Bewertung war eine Nullvariante aus Kostengründen.
 Drei ihrer vier Kostenpunkte sind durch diese Vorgabe entfallen; **ein** Punkt besteht fort, und er
 ist rein technisch — siehe „Was übrig bleibt".
 
@@ -163,6 +172,21 @@ sind.
 | **bewertet** | höchster beobachteter Anteil liegt vor | Rechnung Puffer minus Einschlag |
 | *(gering / groß)* | Anzeige, abgeleitet aus Anteil und Lage | — nicht gespeichert |
 
+**Die Erfahrungswerte überleben das Zurücksetzen der Liste** — Vorgabe des Auftraggebers: „wichtig
+wäre aber, dass die alte liste überschrieben, geresetted werden kann. es wäre schade, wenn dann auch
+die Erfahrungswerte weg wären." Die erste Umsetzung löschte sie mit; das war der teurere Fehler. Die
+kuratierte Liste neu zu laden ist ein Download, die Messungen kosten Spielzeit — sie mit dem Listen-
+Reset zu verwerfen hieße, nach jedem Patch bei null anzufangen, wegen der wenigen Aktionen, die sich
+tatsächlich geändert haben. Ein Wert, der zu einer Id stehenbleibt, die die Liste nicht mehr führt,
+kostet nichts: Jede Leseroute geht zuerst über die Liste.
+
+**Wofür es dennoch einen eigenen Knopf gibt.** Die Höchstwert-Regel ist **einseitig**: Sie hebt nur.
+Eine zu niedrig bewertete Aktion korrigiert sich selbst — die Minderung unterbleibt, der nächste
+Treffer kommt ungemildert an und misst sich. Eine **abgeschwächte** Aktion behält ihren zu hohen Wert
+dagegen für immer; die Folge ist Minderung, wo sie nicht mehr nötig wäre — sicher, aber falsch. Der
+Ausweg ist das gezielte Verwerfen durch den Nutzer, nicht ein automatischer Verfall: Verfall würde
+genau die Eigenschaft aufheben, die eine einzelne ungemilderte Beobachtung wertvoll macht.
+
 Alle heutigen Einträge starten als **unbewertet**. Der Umstieg ändert damit kein einziges Verhalten,
 und jede Aktion wechselt erst dann in die Rechnung, wenn sie tatsächlich beobachtet wurde. Das ist
 zugleich die Antwort auf die Projektregel für Verhaltensänderungen ohne Nachweis: Der Standard bleibt
@@ -183,6 +207,15 @@ Eine Aktion wird deshalb erst dann aus **unbewertet** entlassen, wenn ein Anteil
 Einstufung als gering ergibt sich danach aus der Rechnung und nicht aus dem Aufnahmezeitpunkt.
 
 ## Was gemessen wird
+
+**Ein vollständig absorbierter Treffer wird übersprungen, nicht als null gewertet.** Der Lernpfad
+prüft heute `damageEffect.value > 0 || (damageEffect.param0 & 6) == 6` — die zweite Hälfte zählt
+einen Treffer, bei dem kein Schaden ankam, für die Aufnahme trotzdem als Treffer. *Die genaue
+Bedeutung dieses Flags ist hier nicht belegbar* und wird deshalb nicht behauptet; sicher ist nur,
+dass `value` in diesem Fall nicht der Einschlag ist. Für die **Messung** ist ein solcher Satz
+wertlos: Null sagt nicht, dass die Aktion harmlos ist, sondern dass eine Barriere sie geschluckt hat.
+Er wird übersprungen. Für die **Aufnahme** bleibt er zählend, wie bisher — sonst fiele ein Raidwide
+aus der Liste, nur weil die Gruppe gut geschildet war.
 
 **Der höchste Anteil im Effektsatz, nicht der mittlere.** Ein Effektsatz trifft acht Mitglieder mit
 verschiedener Maximalgesundheit und verschiedener eigener Minderung; der höchste Anteil gehört
@@ -322,7 +355,18 @@ Von den vier Kostenpunkten der früheren Bewertung sind drei entfallen:
 | Persistenzvertrag: Typwechsel bricht die gespeicherte Datei | **entfallen** — der Zustand „unbewertet" ist genau der Migrationspfad. Alte Einträge bleiben gültig und verhalten sich wie bisher |
 | Rückrechnung der Minderung ist eine Näherung | **entfallen** — die Höchstwert-Fortschreibung braucht keine Rückrechnung |
 | Die Schwelle selbst ist ohne Spielbeobachtung nicht belegbar | **entfallen** — es gibt keine Schwelle mehr, nur den Vergleich mit dem Puffer |
-| **UI-Kopplung über vier Listen** | **besteht fort** — als Aufwand; als Hebel siehe „Was der Baustein eröffnet" |
+| **UI-Kopplung über vier Listen** | **entfällt für den ersten Schritt** — siehe unten; für die spätere Zusammenführung besteht sie fort, und dort ist sie zugleich der Hebel |
+
+**Der letzte Kostenpunkt entfällt, wenn die Ablage danebengestellt wird statt ersetzt.** Der Umbau von
+`DrawActionsList` wird nur nötig, wenn `HostileCastingArea` selbst seinen Typ ändert. Eine eigene
+Zuordnung Id → höchster Anteil, in eigener Datei, lässt die vorhandene Liste unangetastet: Die
+Oberfläche bleibt, das gespeicherte Format bleibt, die Signatur bleibt. Der frühere Einwand gegen
+diesen Weg war „verdoppelt die Ablage" — richtig, und gemessen an einer zusätzlichen JSON-Datei mit
+einigen hundert Zahlen ist das kein Preis. Damit ist der **erste Schritt vollständig hindernisfrei**:
+kein Persistenzbruch, keine UI-Änderung, keine Verhaltensänderung.
+
+Die Zusammenführung beider Ablagen in eine bleibt möglich und ist dann der Umbau, der vier Listen
+zugleich bedient — aber sie ist kein Eintrittspreis mehr.
 
 `RotationConfigWindow.DrawActionsList(string, HashSet<uint>)` bedient mit **einer** Signatur vier
 Listen — `HostileCastingTank`, `HostileCastingArea`, `HostileCastingKnockback`, `HostileCastingStop`.
@@ -357,6 +401,27 @@ und das braucht **Zeit im Spiel**, nicht Arbeitszeit. Wer zuerst nur misst, läs
 laufen, während sich am Verhalten nichts ändert: kein Risiko, keine Option nötig, keine
 Rückbaufrage. Wenn die Rechnung später dazukommt, trifft sie auf einen bereits bewerteten Bestand
 und wirkt sofort statt erst nach Wochen.
+
+### Die Anlaufzeit hängt am Inhalt, und im wichtigsten Fall ist sie ein Durchlauf
+
+Vorgabe des Auftraggebers: „der effekt bei der umsetzung ergibt sich sofort bei regelmäßigen
+wiederholungen von inhalten. beispiel training in extreme trials und savage raids."
+
+**Das korrigiert die Einschätzung der Anlaufzeit, und zwar dort, wo es am meisten zählt.** Ein
+einzelner Extreme- oder Savage-Kampf führt eine überschaubare Zahl von Flächenaktionen, und sie
+wiederholen sich in **jedem** Versuch. Nach einem Durchlauf ist der Bestand für diesen Kampf
+bewertet; ab dem zweiten wirkt die Rechnung vollständig. Die Rede von „Wochen" trifft nur auf
+Zufallsinhalte zu, in denen selten dieselbe Aktion zweimal vorkommt.
+
+**Und genau dort ist der Nutzen am größten.** Wer einen Kampf trainiert, plant seine Minderungen: Auf
+welchen Einschlag liegt was. Eine Abklingzeit, die an eine Bagatellfläche verloren geht, fehlt am
+nächsten harten Einschlag — in einem Savage-Kampf ist das der Unterschied zwischen Durchkommen und
+Wipe, und es ist der Inhalt, in dem Spieler auf genau diese Planung achten. Im Roulette fällt
+dieselbe Verschwendung niemandem auf.
+
+**Folge für die Reihenfolge:** Sie bleibt. Zuschnitt C wird durch dieses Argument nicht schwächer,
+sondern stärker — wer trainiert, hat nach dem ersten Versuch die Daten und kann den zweiten Schritt
+unmittelbar danach nutzen, statt auf einen Bestand zu warten.
 
 Das ist zugleich die Reihenfolge, die die Sonde verlangt: Der gemessene Anteil steht in der
 Listenverwaltung, **bevor** eine Entscheidung auf ihm aufsetzt. Ob die Werte plausibel sind — ob ein

@@ -2600,6 +2600,28 @@ Dazu kam der Überholfehler des **Selbst-Kurzschlusses**, der bis dahin nur für
 
 **Erreichter Pruefgrad:** statische Pruefung, `check_cs_structure`, `check_set_lookups`, `check_doc_references`, Compile in der CI. Die Verhaltensneutralitaet ist am Quelltext belegt (gleiche Frage, gleiche Rueckgabe), nicht im Spiel beobachtet.
 
+### A99 · Der erste Schritt von Konzept 13 ist gebaut, weil er keine Entscheidung war
+
+**Anlass:** Auftrag des Auftraggebers, das Konzept am Maßstab Spielerlebnis nochmals vollstaendig im Loop zu pruefen, Verbesserungen einzuarbeiten — und die Frage: Wenn es zu einer spuerbaren Verbesserung fuehrt und keine Hindernisse oder Risiken aufweist, wie waere dann die Entscheidung? Zwei Praezisierungen kamen waehrend der Arbeit dazu.
+
+**Die Frage beantwortet sich aus seiner eigenen Regel von A98:** Dann gibt es keine. Geprueft wurde deshalb, ob die Praemisse haelt — und sie haelt fuer den **ersten** Schritt, nicht fuer das Ganze.
+
+**Seine erste Praezisierung hat die Spuerbarkeit belegt, die ich nicht belegen konnte.** Meine Erhebung endete bei „von hier aus nicht messbar, welcher Anteil der 850 Eintraege Bagatellen sind" und bei der Sorge, die Anlaufzeit betrage Wochen. Sein Einwand: „der effekt bei der umsetzung ergibt sich sofort bei regelmäßigen wiederholungen von inhalten. beispiel training in extreme trials und savage raids." Ein solcher Kampf fuehrt wenige Flaechenaktionen, und sie wiederholen sich in jedem Versuch — der Bestand ist nach **einem Durchlauf** bewertet. Und es ist genau der Inhalt, in dem Minderungen geplant werden: Eine Abklingzeit, die an eine Bagatelle geht, fehlt am naechsten harten Einschlag. Im Roulette faellt dieselbe Verschwendung niemandem auf.
+
+**Der letzte Kostenpunkt ist durch den Zuschnitt entfallen, nicht durch Aufwand.** Die UI-Kopplung ueber vier Listen wird nur noetig, wenn `HostileCastingArea` selbst seinen Typ aendert. Ein **Parallelspeicher** — `HostileCastingAreaPotential`, eigene Datei, eigene Anzeige — laesst Liste, Format, Signatur und `DrawActionsList` unangetastet. Der frueher dagegen vorgebrachte Einwand „verdoppelt die Ablage" ist gemessen an einer JSON-Datei mit einigen hundert Zahlen kein Preis. Damit ist der erste Schritt **vollstaendig hindernisfrei**: kein Persistenzbruch, keine Oberflaechenaenderung, keine Verhaltensaenderung.
+
+**Seine zweite Praezisierung hat einen Fehler meiner Umsetzung korrigiert, kurz nachdem ich ihn gemacht hatte.** Ich hatte `ResetHostileCastingArea` die Messwerte mitloeschen lassen, mit der Begruendung, ein Patch koenne die Aktion geaendert haben. Sein Einwand: „es wäre schade, wenn dann auch die Erfahrungswerte weg wären." Richtig, und mein Argument war das schwaechere — die Liste neu zu laden ist ein Download, die Messungen kosten Spielzeit, und der Reset ist der Knopf, den Nutzer nach **jedem** Patch druecken sollen. Ein Wert zu einer nicht mehr gelisteten Id kostet nichts, weil jede Leseroute zuerst ueber die Liste geht. Getrennt in zwei Ruecksetzungen; der eigene Knopf bleibt noetig, weil die Hoechstwert-Regel **einseitig** ist: Sie hebt nur. Eine zu niedrig bewertete Aktion korrigiert sich selbst, eine abgeschwaechte behaelt ihren zu hohen Wert fuer immer.
+
+**Umsetzung:** `Watcher.ActionFromEnemy` ermittelt je Effektsatz den hoechsten Schadensanteil an der Maximalgesundheit eines getroffenen Mitglieds und schreibt ihn fort. Zwei Bedingungen, die bewusst nicht die der Aufnahme sind: Die Id muss bereits als Flaechenaktion gelten (die strenge „jedes Mitglied getroffen"-Pruefung ist fuer die Aufnahme richtig und fuer die Messung falsch — ein Raidwide mit einem toten Mitglied wuerde die Messung verwerfen, in genau den harten Kaempfen), und geschrieben wird nur eine Erhoehung. Ein Treffer, der bei null ankam, wird fuer die **Messung** uebersprungen und zaehlt fuer die **Aufnahme** weiter: Null heisst nicht harmlos, sondern absorbiert.
+
+**Nebenbefund derselben Defektklasse wie A98, sechster Fundort:** `Watcher.ActionFromEnemy` baute ein `HashSet<ulong>` der Gruppen-Ids und durchsuchte es mit einer `foreach`-Schleife. Behoben im selben Zug — es ist jetzt eine Zuordnung Id auf Maximalgesundheit, die die Messung ohnehin braucht. `check_set_lookups.py` deckt diesen Fundort nicht ab, weil es auf die vier `OtherConfiguration`-Listen in `DataCenter` eingeengt ist; die Einengung bleibt, weil eine allgemeine Regel „iteriere nie eine Menge" falsch waere.
+
+**Die Sonde ist mitgeliefert**, wie es die Cynefin-Regel aus A97 fuer die komplexe Domaene verlangt: Die Listenverwaltung zeigt, wie viele Eintraege bewertet sind, den haertesten je beobachteten Anteil und den Knopf zum Verwerfen. Ohne sie waere nach dem Ausliefern so unbekannt wie vorher, ob der Bestand ueberhaupt volllaeuft.
+
+**Was offen bleibt und die eigentliche Entscheidung ist:** der zweite Schritt — die Rechnung, die aus dem gespeicherten Anteil eine Entscheidung im Kampf macht. Sie aendert Verhalten, ihr Nutzen bleibt bis zur Beobachtung eine Annahme, und sie ist erst nach Daten aus dem ersten Schritt fundiert zu treffen.
+
+**Erreichter Pruefgrad:** statische Pruefung, `check_cs_structure`, `check_set_lookups`, `check_doc_references`, `scan18`, Compile in der CI. Im Spiel nicht beobachtet — und das ist hier kein Mangel, sondern der Zweck: Der erste Schritt existiert, um genau das beobachtbar zu machen.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

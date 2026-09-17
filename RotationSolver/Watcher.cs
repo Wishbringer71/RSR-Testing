@@ -115,29 +115,52 @@ public static class Watcher
 				{
 					var damageEffectCount = 0;
 
-					var partyIds = new HashSet<ulong>();
+					// Maximum HP per member, because the measurement below needs it and this is the
+					// one place that already walks the party. The previous form kept only the ids
+					// and searched them with a foreach - a linear walk over a HashSet, the same
+					// defect class that was just removed from DataCenter's four action lists.
+					var partyMaxHp = new Dictionary<ulong, uint>(partyMemberCount);
 					foreach (var pm in partyMembers)
 					{
-						partyIds.Add(pm.GameObjectId);
+						partyMaxHp[pm.GameObjectId] = pm.MaxHp;
 					}
+
+					// The hardest this action has been seen to hit anyone in this set, as a share of
+					// that member's maximum HP. The share does not age with item level or content
+					// sync the way an amount would, and the highest share belongs to whoever is worst
+					// off against it - which is what a decision about mitigating it would ask.
+					var highestShare = 0f;
 
 					foreach (var effect in set.TargetEffects)
 					{
-						var isPartyMember = false;
-						foreach (var pId in partyIds)
+						if (!partyMaxHp.TryGetValue(effect.TargetID, out var maxHp))
 						{
-							if (pId == effect.TargetID)
-							{
-								isPartyMember = true;
-								break;
-							}
+							continue;
 						}
 
-						if (isPartyMember &&
-							effect.GetSpecificTypeEffect(ActionEffectType.Damage, out var damageEffect) &&
-							(damageEffect.value > 0 || (damageEffect.param0 & 6) == 6))
+						if (!effect.GetSpecificTypeEffect(ActionEffectType.Damage, out var damageEffect))
+						{
+							continue;
+						}
+
+						var landed = damageEffect.value > 0;
+						if (landed || (damageEffect.param0 & 6) == 6)
 						{
 							damageEffectCount++;
+						}
+
+						// Only a real amount measures anything. A hit that arrived at zero was
+						// swallowed by a barrier or blocked outright, and zero does not mean the
+						// action is harmless - it means something absorbed it. Such a set is skipped
+						// for the measurement while still counting for the intake above, so a
+						// raidwide does not fall out of the list just because the party was shielded.
+						if (landed && maxHp > 0)
+						{
+							var share = (float)damageEffect.value / maxHp;
+							if (share > highestShare)
+							{
+								highestShare = share;
+							}
 						}
 					}
 
@@ -145,6 +168,30 @@ public static class Watcher
 					{
 						_ = OtherConfiguration.HostileCastingArea.Add(set.Action!.Value.RowId);
 						_ = OtherConfiguration.SaveHostileCastingArea();
+					}
+
+					// Recording how hard it hits, which nothing reads yet - the store is filled first
+					// and used second, so that entries have left the unrated state by the time a rule
+					// depends on them. In repeated content that is one clear of the fight.
+					//
+					// Two conditions, and they are deliberately not the intake's. First, the id has
+					// to be a known area action already: the strict "every member was hit" test is
+					// right for deciding what belongs in the list and wrong for measuring one, since
+					// a raidwide with a member dead, invulnerable or out of range would throw the
+					// reading away - in exactly the hard fights where it matters most. Second, only
+					// an increase is written. The highest value ever seen is the one that survives a
+					// well-mitigated pull, and an underrated action corrects itself: the mitigation
+					// is skipped, so the next hit arrives unmitigated and measures itself.
+					if (highestShare > 0f && Service.Config.RecordCastingArea
+						&& OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
+					{
+						var id = set.Action!.Value.RowId;
+						if (!OtherConfiguration.HostileCastingAreaPotential.TryGetValue(id, out var known)
+							|| highestShare > known)
+						{
+							OtherConfiguration.HostileCastingAreaPotential[id] = highestShare;
+							_ = OtherConfiguration.SaveHostileCastingAreaPotential();
+						}
 					}
 				}
 			}
