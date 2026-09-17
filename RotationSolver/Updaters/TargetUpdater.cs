@@ -172,6 +172,25 @@ internal static partial class TargetUpdater
 		DataCenter.PartyMembers = partyMembers;
 		DataCenter.AllianceMembers = allianceMembers;
 		DataCenter.AllHostileTargets = hostileTargets;
+
+		// Who is being attacked, collected once here rather than asked per member later. The list of
+		// hostiles is built in this loop anyway, and each of them names its target outright, so the
+		// cost is one pass over the enemies and the answer becomes a lookup. Asking it the other way
+		// round - "is any enemy targeting this member" - would walk every enemy for every member.
+		//
+		// This is the aggro half of the danger question. The other two halves are already answered
+		// elsewhere: DataCenter.IsHostileCastingAOE for an announced area cast, and the health trend
+		// for damage that is actually arriving.
+		HashSet<ulong> aggroed = new(capacity: hostileTargets.Count);
+		for (var i = 0; i < hostileTargets.Count; i++)
+		{
+			var targetId = hostileTargets[i]?.TargetObjectId ?? 0;
+			if (targetId != 0)
+			{
+				_ = aggroed.Add(targetId);
+			}
+		}
+		DataCenter.AggroedMembers = aggroed;
 	}
 
 	private static List<IBattleChara> GetAllTargets()

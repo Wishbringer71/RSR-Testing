@@ -3709,6 +3709,59 @@ public static class ObjectHelper
 	}
 
 	/// <summary>
+	/// Is anything actually threatening this character right now?
+	/// </summary>
+	/// <remarks>
+	/// The user's requirement, in his words: an emergency heal on a freshly raised player is right
+	/// "falls Gefahr bevorsteht, z.B. grosser heftiger AoE" - but "wenn der Spieler aber keine Aggro
+	/// hat, kein AoE ansteht, oder kein sonstiger Schaden ansteht, wuerde doch HoT oder kleinere
+	/// Heals bzw. beides reichen".
+	///
+	/// That is three questions, and the tree can answer all three:
+	/// <list type="bullet">
+	/// <item>aggro - some enemy is pointing at this member (<see cref="DataCenter.AggroedMembers"/>)</item>
+	/// <item>an announced area cast - <see cref="DataCenter.IsHostileCastingAOE"/></item>
+	/// <item>damage actually arriving - the health trend has a finite time to zero</item>
+	/// </list>
+	///
+	/// Deliberately not a rule about raising. A player who has just been resurrected is only the
+	/// most visible case: he holds a few percent, carries no aggro and takes no damage, so every
+	/// threshold in the tree reads him as the most urgent member in the party while nothing at all
+	/// is happening to him. The same is true of a damage dealer who has just run out of an area
+	/// effect. The user's requirement is about danger, not about raising, and so is this.
+	///
+	/// The third arm is why this is worth the name: aggro and an announced cast are both predictions
+	/// that can miss - a boss mechanic that neither casts nor retargets shows up in neither - and
+	/// the health trend catches what they miss, one sample after the first hit lands. An emergency
+	/// heal is an ability without a cast time, so the cost of finding out that way is a delay, not a
+	/// death.
+	///
+	/// Errs towards "threatened": every arm that cannot answer says yes by staying silent, and the
+	/// caller then behaves exactly as it does today.
+	/// </remarks>
+	internal static bool IsUnderThreat(this IBattleChara battleChara)
+	{
+		if (battleChara == null)
+		{
+			return true;
+		}
+
+		if (DataCenter.AggroedMembers.Contains(battleChara.GameObjectId))
+		{
+			return true;
+		}
+
+		if (DataCenter.IsHostileCastingAOE)
+		{
+			return true;
+		}
+
+		// A finite time to zero means the health is falling on balance - net of every mitigation,
+		// barrier and foreign heal. NaN means it is not, which is the answer this asks for.
+		return !float.IsNaN(battleChara.GetCorrectedTTK());
+	}
+
+	/// <summary>
 	/// <see cref="GetHealthRatio"/> carried forward to the moment a heal begun now would land.
 	/// </summary>
 	internal static float GetForecastHealthRatio(this IBattleChara battleChara)

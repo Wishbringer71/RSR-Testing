@@ -50,6 +50,18 @@ internal static class DataCenter
 
 	public static List<IBattleChara> AllHostileTargets { get; set; } = [];
 
+	/// <summary>
+	/// The object ids currently being targeted by a hostile, rebuilt once per frame beside the
+	/// hostile list itself in <c>TargetUpdater.UpdateLists</c>.
+	/// </summary>
+	/// <remarks>
+	/// It holds every id an enemy is pointing at, not only party members - filtering it here would
+	/// cost a second pass for a question the callers already answer by looking their own member up.
+	/// Empty out of combat, and empty for a member nothing is attacking, which is the case it exists
+	/// to report.
+	/// </remarks>
+	public static HashSet<ulong> AggroedMembers { get; set; } = [];
+
 	public static IBattleChara? InterruptTarget { get; set; }
 
 	public static IBattleChara? ProvokeTarget { get; set; }

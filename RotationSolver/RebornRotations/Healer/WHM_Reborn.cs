@@ -61,6 +61,26 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Minimum health threshold party member needs to be to use Benediction")]
 	public float BenedictionHeal { get; set; } = 0.3f;
 
+	// The user reported Benediction going out on a player the moment he was raised. A resurrected
+	// player holds a few percent, carries no aggro and is taking no damage, so the health threshold
+	// above reads him as the most urgent member in the party while nothing is happening to him - and
+	// the once-per-90s full heal is gone when the tank next needs it.
+	//
+	// His requirement names the condition rather than the case: the emergency heal is right "falls
+	// Gefahr bevorsteht, z.B. grosser heftiger AoE", and where there is no aggro, no announced area
+	// cast and no damage arriving, "wuerde doch HoT oder kleinere Heals bzw. beides reichen". That
+	// is what IsUnderThreat asks, and it holds for anyone - a damage dealer who just ran out of an
+	// area effect is the same situation.
+	//
+	// Nothing else is needed to get the smaller heals: with Benediction held, this same method falls
+	// through to Asylum, Divine Benison and Tetragrammaton, and the GCD path still has Regen and
+	// Cure II. The target is not being passed over, only the most expensive answer to it.
+	//
+	// On by default: this implements a reported malfunction against the user's own requirement.
+	// Whoever wants the upstream behaviour back turns it off.
+	[RotationConfig(CombatType.PvE, Name = "Hold Benediction unless the target is actually in danger (aggro, an incoming area cast, or health that is falling)")]
+	public bool BenedictionNeedsThreat { get; set; } = true;
+
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "If a party member's health drops below this percentage, the Regen healing ability will not be used on them")]
 	public float RegenHeal { get; set; } = 0.3f;
@@ -291,7 +311,8 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		if (BenedictionPvE.CanUse(out act) &&
-			BenedictionPvE.Target.Target.GetHealthRatio() < BenedictionHeal)
+			BenedictionPvE.Target.Target.GetHealthRatio() < BenedictionHeal &&
+			(!BenedictionNeedsThreat || BenedictionPvE.Target.Target.IsUnderThreat()))
 		{
 			return true;
 		}

@@ -2488,6 +2488,34 @@ Dazu kam der Überholfehler des **Selbst-Kurzschlusses**, der bis dahin nur für
 
 **Erreichter Pruefgrad:** statische Pruefung, `check_cs_structure`, `check_heal_target_order`, `check_doc_references`, `scan18` (Einstellung hat einen Leser), Compile in der CI. **Im Spiel nicht beobachtet** — ob der Vorab-Eingriff den Tank haelt, ist die Frage, und sie ist von hier aus nicht zu beantworten. Deshalb Standard aus.
 
+### A94 · Die Notfall-Vollheilung folgt der Gefahr, nicht dem Gesundheitsstand
+
+**Anlass:** Laufzeitbeobachtung des Auftraggebers — unmittelbar nach einer Wiederbelebung faellt Benediction auf den Wiederbelebten. Auf Nachfrage die Praezisierung, die zugleich die Vorgabe ist: „falls gefahr bevorsteht, z.b. goßer heftiger aoe ist diese notfallmaßnahme gerechtfertigt. wenn der spieler aber keine aggro hat, kein aoe ansteht, oder kein sonstiger schaden ansteht, würde doch hot oder kleinere heals bzw. beides reichen".
+
+**Befund, am Spielgeschehen:** Ein Wiederbelebter steht bei wenigen Prozent, traegt keine Aggro und nimmt keinen Schaden — sein Gesundheitsverlauf steigt gerade. Jede Schwelle im Baum liest ihn damit als den dringendsten Fall der Gruppe, waehrend ihm nichts geschieht. `WHM_Reborn.HealSingleAbility` fragt genau eine Groesse (`GetHealthRatio() < BenedictionHeal`, Vorgabewert 0,30) und gibt die einmalige Vollheilung aus. Sie fehlt dann beim naechsten Tankschaden.
+
+**Entstehungsrichtung, gemessen:** Der Benediction-Zweig ist **unveraendert Upstream** (`git show upstream/main:…WHM_Reborn.cs` zeigt dieselben Zeilen). Kein Fork-Defekt an dieser Stelle. Die Zielwahlstufe aus A89 verschaerft die Lage allerdings: Ein Wiederbelebter unter `HealthForDyingTanks` faellt in die kritische Rangstufe und steht damit **vor** den Rollen-Kurzschluessen, also auch vor einem Tank bei 44 %. Vor A89 gewann er nur, wenn kein Rollen-Kurzschluss zuvor griff.
+
+**Der Baum enthielt die Loesung bereits — an einer Stelle.** `DRK_Reborn` prueft bei zwei Aktionen `!Target.HasStatus(false, StatusID.Transcendent)`, also ausdruecklich „nicht an einen frisch Wiederbelebten". Dieselbe Frage, am Heiler nie gestellt. Eine Einzelfallbehebung, die sich nicht fortgepflanzt hat.
+
+**Gewaehlt ist die Gefahr, nicht der Wiederbelebungsstatus.** `Transcendent` waere der bequemere Weg gewesen und trifft den Wortlaut der Meldung; die Vorgabe des Auftraggebers nennt aber eine **Bedingung**, keinen Fall — und sie gilt fuer jeden, etwa fuer einen Schadensausteiler, der gerade aus einer Flaechenaktion herausgelaufen ist. Eine Regel „nicht auf frisch Wiederbelebte" waere mit dem naechsten gleichartigen Fall erneut faellig geworden.
+
+**Umsetzung:** `ObjectHelper.IsUnderThreat` beantwortet die drei Teilfragen seiner Vorgabe aus vorhandenen Groessen — Aggro ueber das neue `DataCenter.AggroedMembers`, angekuendigter Flaechenschaden ueber `DataCenter.IsHostileCastingAOE`, ankommender Schaden ueber `GetCorrectedTTK` (endliche Restzeit heisst: die Gesundheit faellt netto). Das Aggro-Set wird in `TargetUpdater.UpdateLists` einmal je Bild aus den `TargetObjectId` der Gegner gefuellt — die Bauform, die Konzept 07 dafuer seit Stufe 2 vorsieht: ein Durchlauf ueber die Gegner statt einer Abfrage je Mitglied. Gelesen wird `IsUnderThreat` am Benediction-Zweig, hinter `BenedictionNeedsThreat`.
+
+**Kein zweiter Eingriff noetig, damit die kleineren Mittel greifen:** Faellt Benediction aus, laeuft derselbe Zweig zu Asylum, Divine Benison und Tetragrammaton weiter, und der GCD-Pfad behaelt Regen und Cure II. Das Ziel wird nicht uebergangen, nur die teuerste Antwort darauf — genau das, was die Vorgabe verlangt.
+
+**Falsifikation.** *Es liegt kein Defekt vor* — widerlegt durch seine Beobachtung und die Wirkkette im Code. *Die gewaehlte Option ist falsch* — geprueft gegen den Fall, dass `IsUnderThreat` faelschlich „sicher" sagt: Ein Bossmechanismus, der weder wirkt noch das Ziel anvisiert, liegt ausserhalb der ersten beiden Arme. Der dritte faengt ihn eine Abtastung nach dem ersten Treffer, und Benediction ist eine Faehigkeit ohne Wirkzeit — die Fehlerrichtung ist also eine Verzoegerung, kein Ausfall. Zweiter Einwand, der ernstere: `IsHostileCastingAOE` ist gruppenweit und nicht zielbezogen; waere er im Trash-Pull dauernd wahr, griffe die Regel dort nie — dieselbe Fehlerform wie C59. Gegengeprueft: Trash-Gegner schlagen automatisch zu und wirken selten, der Arm ist dort meist falsch; im Bosskampf ist er oefter wahr, und dort ist die Notfallheilung auch eher gerechtfertigt. Im gemeldeten Fall sind der erste und der dritte Arm nachweislich falsch — der Wiederbelebte hat keine Aggro, und seine Gesundheit steigt —, die Regel greift also.
+
+**Klassenerhebung, gefuehrt und begruendet eingeschraenkt:** Dieselbe Bauform ohne Gefahrenpruefung tragen `SGE.TaurocholePvE`, `SCH.ExcogitationPvE` und `AST.EssentialDignityPvE`. Nicht bearbeitet, weil die Bearbeitung dem Nutzungsprofil folgt und nicht der Fundlage — belegt gespielt sind Weissmagier und Dunkelritter. `IsUnderThreat` ist allgemein gebaut; die Uebertragung ist je Aktion eine Zeile. Erfasst in `TODO.md` samt der offenen Frage, ob die kuerzeren Abklingzeiten den Vorbehalt ueberhaupt rechtfertigen.
+
+**Voreinstellung an, und das ist eine Entscheidung ueber sein Kampfverhalten:** Die Regel setzt eine von ihm gemeldete Fehlfunktion gegen seine ausdrueckliche Vorgabe um, deshalb nicht hinter einem standardmaessig ausgeschalteten Schalter. Abschaltbar bleibt sie fuer den, der das Upstream-Verhalten will.
+
+**Nebenbefund am eigenen Hilfsmittel:** `check_doc_references` meldete eine Zeilenangabe in der Skript-README als gealtert. Sie war dort das **Gegenbeispiel** eines Absatzes, der vor Zeilenangaben warnt — das Skript kann Beispiel und Referenz nicht unterscheiden. Das Beispiel steht jetzt ohne Nummer; das Skript bleibt unveraendert, weil eine Ausnahmeliste fuer Beispiele fragiler waere als der Verzicht auf die Nummer.
+
+**Pruefmittel:** `check_emergency_heal_threat.py`, neu und in der CI. Es prueft den Zweig, die drei Arme der Gefahrenfrage und dass das Aggro-Set ueberhaupt gefuellt wird — ein nie gefuelltes Set saehe wie eine sichere Gruppe aus. Selbsttest gegen sieben konstruierte Defekte, darunter der auf `false` gedrehte Vorgabewert.
+
+**Erreichter Pruefgrad:** statische Pruefung, `check_cs_structure`, `check_emergency_heal_threat`, `check_heal_target_order`, `check_doc_references`, `scan18`, Compile in der CI. **Im Spiel nicht beobachtet.** Offen bleibt insbesondere, wie oft `IsHostileCastingAOE` im Trash-Pull wahr ist — das entscheidet, ob die Regel dort ueberhaupt eintritt, und ist von hier aus nicht messbar.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

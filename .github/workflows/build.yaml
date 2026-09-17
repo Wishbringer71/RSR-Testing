@@ -84,6 +84,13 @@ jobs:
       - name: Check no GCD selection collides with the execution gate
         run: python3 .github/scripts/audit/scan17.py
 
+      # The once-per-cooldown full heal has to be tied to actual danger, or it goes out on whoever
+      # happens to stand lowest - a player who was just raised, most visibly - and is missing when a
+      # tank needs it. Nothing fails when the condition is lost; an upstream merge simply brings the
+      # unguarded branch back.
+      - name: Check the emergency heal asks whether the target is in danger
+        run: python3 .github/scripts/audit/check_emergency_heal_threat.py
+
       # A setting with a label and a default promises the user it does something. When nothing
       # reads it the promise fails silently and forever. Two such settings sat in the raise path
       # alone, so this guards against the next one rather than against those two.

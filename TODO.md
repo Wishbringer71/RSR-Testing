@@ -30,6 +30,22 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 **Der Verbraucher besteht (A93):** Alle Heilentscheidungen lesen die **vorausberechnete** Gesundheit — `GetForecastSurvivingShare` und die drei davon abgeleiteten Getter, hinter `HealAheadOfDamage`, Standard aus. Offen bleibt allein die Beobachtung im Spiel: ob der Fehlerfaktor überhaupt von 1 abweicht und ob der Vorab-Eingriff den Tank hält. Beides steht in der Diagnoseanzeige (Gesundheit jetzt → prognostiziert, Rohzeit, korrigierte Zeit, Faktor).
 
+### Die Notfallheilungen der übrigen Heiler prüfen die Gefahr nicht · N
+
+Erfasst, nicht bearbeitet (A94). Die Vorgabe des Auftraggebers — eine Notfallmaßnahme nur bei Gefahr, sonst genügen HoT und kleinere Heilungen — ist bisher allein am Weißmagier umgesetzt (`WHM_Reborn`, `BenedictionNeedsThreat`). Dieselbe Bauform „`CanUse` **und** Ziel unter Schwelle" ohne jede Gefahrenprüfung tragen:
+
+| Job | Aktion | Bemerkung |
+|---|---|---|
+| SGE | `TaurocholePvE` gegen `TaurocholeHeal` | kürzere Abklingzeit als Benediction, Verlust entsprechend kleiner |
+| SCH | `ExcogitationPvE` gegen `ExcogHeal` | zusätzlich an `Recitation` gebunden, das den Verlust verteuert |
+| AST | `EssentialDignityPvE` gegen drei gestaffelte Schwellen | trägt Ladungen, der Einzelverlust wiegt weniger |
+
+**Warum nicht mitbearbeitet:** Nach der Prioritätsregel folgt die Bearbeitung dem Nutzungsprofil des Auftraggebers, nicht der Fundlage. Belegt gespielt sind Weißmagier und Dunkelritter; für die drei übrigen Heiler liegt weder eine Meldung noch eine Beobachtung vor. `ObjectHelper.IsUnderThreat` ist allgemein gebaut und von jeder dieser Stellen lesbar — die Übertragung ist je Aktion eine Zeile plus Einstellung.
+
+**Auflösungsbedingung:** eine Spielbeobachtung am Weißmagier, dass die Regel trägt, oder die Freigabe des Auftraggebers für die übrigen Heiler. Dabei ist je Aktion neu zu bewerten, ob die Abklingzeit den Vorbehalt überhaupt rechtfertigt — bei Essential Dignity mit Ladungen ist das offen.
+
+**Zweiter offener Punkt derselben Familie:** `IsUnderThreat` ist `internal`. Rotationen im Baum lesen es, abgeleitete Rotationen aus dem Paket `RotationSolver.Basic` (Betroffenenkreis R) nicht. Ob es öffentlich werden soll, ist erst zu entscheiden, wenn die Größe im Spiel bestätigt ist — eine öffentliche Signatur ist danach ein Vertrag.
+
 ### Die Flächenheilung entscheidet weiter nach Pegel statt nach Rate · N
 
 Erfasst, nicht bearbeitet (A93). `HealthAreaAbility`/`HealthAreaSpell` werden gegen `DataCenter.PartyMembersAverHP` und `LowestPartyMembersAverHP` verglichen — dieselbe Verwechslung von Stand und Zufluss, die für die Einzelheilung mit der Vorausschau behoben ist. Die Flächenheilung fällt daher weiterhin zu spät, wenn die Gruppe schnell fällt.

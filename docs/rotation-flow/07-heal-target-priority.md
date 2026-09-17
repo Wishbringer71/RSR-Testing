@@ -27,6 +27,34 @@ Daraus folgen die weiteren Regeln, die er genannt hat:
 - **Ein Schadensausteiler ohne Aggro bei 10 % Leben kann an einer Flächenaktion sterben.** Aggro ist
   also keine Bedingung für Gefährdung, sondern eine ihrer Ursachen.
 
+### Das Mittel richtet sich nach der Gefahr, nicht nach dem Gesundheitsstand
+
+Aus seiner Meldung, dass unmittelbar nach einer Wiederbelebung Benediction auf den Wiederbelebten
+fällt, und seiner Präzisierung dazu — im Wortlaut:
+
+> „falls gefahr bevorsteht, z.b. goßer heftiger aoe ist diese notfallmaßnahme gerechtfertigt. wenn
+> der spieler aber keine aggro hat, kein aoe ansteht, oder kein sonstiger schaden ansteht, würde
+> doch hot oder kleinere heals bzw. beides reichen"
+
+**Die Vorgabe trennt zwei Fragen, die der Baum bisher zu einer verschmolzen hat:** *Wer* braucht
+Heilung — das entscheidet der Gesundheitsstand — und *welches Mittel* er bekommt — das entscheidet
+die Gefahr. Ein Wiederbelebter steht bei wenigen Prozent und ist damit nach jeder Schwelle der
+dringendste Fall, obwohl ihm gerade nichts geschieht: Er trägt keine Aggro, und sein
+Gesundheitsverlauf steigt. Die einmalige Vollheilung dort auszugeben heißt, sie fehlt beim nächsten
+Tankschaden.
+
+**Die Vorgabe gilt nicht der Wiederbelebung, sondern der Gefahr.** Der Wiederbelebte ist nur der
+auffälligste Fall; ein Schadensausteiler, der gerade aus einer Flächenaktion herausgelaufen ist,
+steht genauso da. Eine Regel „nicht auf frisch Wiederbelebte" träfe deshalb den Wortlaut und nicht
+die Sache — und sie würde mit dem nächsten vergleichbaren Fall erneut fällig.
+
+**Drei Gefahrenquellen, alle drei im Baum vorhanden:** Aggro (ein Gegner zielt auf das Mitglied),
+angekündigter Flächenschaden (`DataCenter.IsHostileCastingAOE`) und tatsächlich ankommender Schaden
+(der Gesundheitsverlauf hat eine endliche Restzeit). Liegt keine davon vor, genügen HoT und die
+kleineren Heilungen — und die kommen von selbst, weil der Zweig ohne die Vollheilung zu Asylum,
+Divine Benison und Tetragrammaton weiterläuft und der GCD-Pfad Regen und Cure II behält. Das Ziel
+wird also nicht übergangen, nur die teuerste Antwort darauf.
+
 ## Was Gefährdung heißt
 
 **Aggro sagt nicht, ob jemand Schaden bekommt — nur, ob er *gerichteten* Schaden bekommt.** Eine
@@ -217,7 +245,11 @@ sondern die vorausberechnete Gesundheit selbst — siehe „Die Stufen".
 als Ganzes, `DamageRec` trägt Zeitpunkt und Anteil, **kein Ziel**, und ihr Fenster von fünf
 Millisekunden sieht bei einem Bild von rund sechzehn fast immer nichts.
 
-**Offen bleibt allein die Aggro**, und sie wird innerhalb von Klasse 2 gebraucht.
+**Die Aggro steht ebenfalls.** `DataCenter.AggroedMembers` wird in `TargetUpdater.UpdateLists` einmal
+je Bild aus den `TargetObjectId` der Gegner gefüllt — ein Durchlauf über die Gegner, danach ist „wird
+angegriffen" eine Nachschlageoperation. Gelesen wird sie bisher von `ObjectHelper.IsUnderThreat`,
+nicht von der Zielwahl: Sie beantwortet die Frage nach dem **Mittel**, die Klassen 2 und 3 der
+Zielwahl sind davon unberührt und weiterhin offen.
 
 **Kosten der Erhebung, gemessen am Ort:** Die Aggro braucht keinen Vergleich je Mitglied. In
 `TargetUpdater.UpdateLists`, wo `AllHostileTargets` ohnehin einmal je Bild aufgebaut wird, sammelt

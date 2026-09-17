@@ -438,9 +438,13 @@ die Backtick-Paarung, sodass Prosa als Bezeichner gelesen wurde. Der Selbsttest 
 ab. Nach der Korrektur blieben zehn echte Befunde in den geltenden Dokumenten.
 
 **Behoben wurde nicht die Nummer, sondern die Bauform.** Wo ein eindeutiger Bezeichner
-existiert, steht jetzt er statt der Zeile — `WHM_Reborn.ShouldStretchHolyStun` statt
-`WHM_Reborn.cs:498`. Eine Zeilennummer altert bei jedem Commit, ein Bezeichner erst bei einer
-Umbenennung, und die fällt beim Kompilieren auf.
+existiert, steht jetzt er statt der Zeile — `WHM_Reborn.ShouldStretchHolyStun` statt einer
+Zeilenangabe in derselben Datei. Eine Zeilennummer altert bei jedem Commit, ein Bezeichner
+erst bei einer Umbenennung, und die fällt beim Kompilieren auf.
+
+*(Das Gegenbeispiel steht hier bewusst ohne Nummer: Als Zeilenangabe geschrieben altert es
+mit — und es hat genau das getan, bis das Prüfskript es als vermeintlich echte Referenz
+meldete.)*
 
 ## scan16.py — Aktionen, deren zweite Wirkung niemand liest
 
