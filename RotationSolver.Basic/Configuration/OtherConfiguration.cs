@@ -491,11 +491,22 @@ internal class OtherConfiguration
 		{
 			try
 			{
-				File.WriteAllText(path,
+				// Written to a temporary file and then moved into place, so an interruption cannot
+				// leave a half-written file behind. WriteAllText truncates first and fills after: a
+				// crash in between leaves JSON that no longer parses, and InitOne answers an
+				// unreadable file by silently starting from empty - it does not re-download, because
+				// the file exists.
+				//
+				// For the curated lists that costs a button press. For HostileCastingAreaPotential it
+				// costs everything that was learned in play, and that store is written during combat,
+				// on every new highest reading - which is exactly when a crash is most likely.
+				var temp = path + ".tmp";
+				File.WriteAllText(temp,
 				JsonConvert.SerializeObject(value, Formatting.Indented, new JsonSerializerSettings()
 				{
 					TypeNameHandling = TypeNameHandling.None,
 				}));
+				File.Move(temp, path, true);
 				return; // Exit the method if successful
 			}
 			catch (IOException ex) when (i < retryCount - 1)
@@ -531,6 +542,21 @@ internal class OtherConfiguration
 			{
 				PluginLog.Warning($"Failed to load {name} from local file. Reinitializing to default: {ex.Message}");
 				value = new T(); // Reinitialize to default
+
+				// Keep the unreadable file instead of letting the next save overwrite it, and say so.
+				// Losing a curated list this way is recoverable with the reset button; losing the
+				// learned damage potentials is not, so the loss must not be silent.
+				try
+				{
+					var kept = path + ".corrupt";
+					File.Move(path, kept, true);
+					PluginLog.Warning($"Kept the unreadable {name} as {kept}.");
+					_ = BasicWarningHelper.AddSystemWarning($"{name} could not be read and was set aside.");
+				}
+				catch (Exception moveEx)
+				{
+					PluginLog.Warning($"Could not set aside the unreadable {name}: {moveEx.Message}");
+				}
 			}
 		}
 		else if (download || forceDownload)

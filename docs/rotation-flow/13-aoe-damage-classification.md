@@ -180,6 +180,30 @@ Reset zu verwerfen hieße, nach jedem Patch bei null anzufangen, wegen der wenig
 tatsächlich geändert haben. Ein Wert, der zu einer Id stehenbleibt, die die Liste nicht mehr führt,
 kostet nichts: Jede Leseroute geht zuerst über die Liste.
 
+**Alle Wege erhoben, auf denen die Werte verschwinden könnten** — die Frage des Auftraggebers zielte
+ausdrücklich auf das Zurücksetzen und Neuladen vom Server in den Einstellungen:
+
+| Weg | Wirkung auf die Erfahrungswerte |
+|---|---|
+| „Reset and Update AOE List" (lädt die kuratierte Liste vom Server) | **bleiben erhalten** — fasst den Parallelspeicher nicht an |
+| „Reset RSR Plugin Settings" (globaler Knopf) | **bleiben erhalten** — setzt nur `Service.Config` zurück, nicht die Listendateien |
+| „Forget recorded damage potential" | löscht sie, und das ist sein Zweck |
+| **Unlesbare Datei beim Start** | **löschte sie still** — behoben, siehe unten |
+
+**Die Einordnung „gering oder groß" kann gar nicht verlorengehen**, weil sie nicht gespeichert wird.
+Sie entsteht beim Verbrauch aus dem Anteil und dem Puffer dessen, der getroffen wird — verloren gehen
+kann nur der Anteil, aus dem sie folgt. Das war der Grund, sie nicht abzulegen, und er zahlt sich hier
+ein zweites Mal aus.
+
+**Der vierte Weg war real und ist behoben.** `SavePath` schrieb mit `File.WriteAllText`, das zuerst
+kürzt und dann füllt; ein Absturz dazwischen hinterlässt JSON, das nicht mehr parst. Und `InitOne`
+beantwortet eine unlesbare Datei damit, still von vorn anzufangen — **ohne** neu herunterzuladen, weil
+die Datei ja existiert. Für die kuratierten Listen kostet das einen Knopfdruck; für die
+Erfahrungswerte kostet es alles, und geschrieben wird dieser Speicher **im Kampf**, bei jedem neuen
+Höchstwert — genau dann, wenn ein Absturz am wahrscheinlichsten ist. Geschrieben wird jetzt über eine
+temporäre Datei und ein Ersetzen, und eine unlesbare Datei wird beiseitegelegt statt überschrieben,
+mit Warnung. Der Verlust ist damit unwahrscheinlich und, wenn er doch eintritt, nicht mehr still.
+
 **Wofür es dennoch einen eigenen Knopf gibt.** Die Höchstwert-Regel ist **einseitig**: Sie hebt nur.
 Eine zu niedrig bewertete Aktion korrigiert sich selbst — die Minderung unterbleibt, der nächste
 Treffer kommt ungemildert an und misst sich. Eine **abgeschwächte** Aktion behält ihren zu hohen Wert
