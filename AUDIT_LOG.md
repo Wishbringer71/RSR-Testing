@@ -2538,6 +2538,28 @@ Dazu kam der Überholfehler des **Selbst-Kurzschlusses**, der bis dahin nur für
 
 **Erreichter Pruefgrad:** statische Pruefung, `check_cs_structure`, `check_emergency_heal_threat` (um die Sanctus-Schranke und beide Zielquellen erweitert), `check_heal_target_order`, `check_doc_references`, `scan18`, Compile in der CI. Im Spiel nicht beobachtet.
 
+### A96 · Konzept 13: Schadenspotential der Flaechenaktionen
+
+**Anlass:** Der Auftraggeber hat den frueher als Nullvariante abgelegten Vorschlag ausgearbeitet vorgelegt — Schadenspotential je Flaechenaktion pruefen und mitspeichern, an Schildgroessen bemessen, zurueckhaltend aufnehmen und ueber Durchlaeufe neu bewerten, bestehende Eintraege nachtraeglich anpassen. Auftrag: Konzept im kritischen Loop verbessern. Waehrend der Arbeit hat er zwei Praezisierungen nachgereicht.
+
+**Drei der vier alten Einwaende sind durch seine Vorgabe entfallen.** Der Zirkelschluss (gemessen wird nach der damals wirkenden Minderung) loest sich durch die **Hoechstwert-Fortschreibung**: Eine einzige ungemilderte Beobachtung setzt den Wert, spaetere gemilderte senken ihn nicht. Die Alterung loest sich durch den **Anteil an der Maximalgesundheit** statt eines Betrags. Der dritte Einwand — ein eigener Messbaustein rechne sich nicht — war schon vorher gegenstandslos: `Watcher` liest `damageEffect.value` und wirft ihn weg. Einwand 4 (Serien kleiner Einschlaege) steht unveraendert.
+
+**Sein eigener Nachtrag ist der schwerste Punkt und hat die Bauform geaendert.** Er hat eingewandt, dass bestehende Eintraege ohne Potential als geringe Flaeche gewertet wuerden, obwohl sie mehr Schaden verursachen koennten. Gemessen: `Resources/HostileCastingArea.json` fuehrt **850 Eintraege**. Das waere ein Totalausfall der Gruppenminderung, bis jeder Raidwide einmal neu beobachtet ist. Folge im Konzept: **„unbewertet" ist eine eigene Kategorie mit heutigem Verhalten**, und eine Aktion wechselt erst mit einer Messung in die neue Rechnung. Der Umstieg ist damit verhaltensneutral.
+
+**Zweiter Nachtrag, unabhaengig gefunden:** „einträge ohne potential wie bisher behandeln und nur einträge mit potential nach neuer struktur", von ihm als hybride Variante eingeordnet. Das ist genau die Entscheidung, die zu diesem Zeitpunkt bereits im Konzept stand. Im Dokument als solche vermerkt — die Uebereinstimmung beweist nichts, nimmt der Konstruktion aber die Willkuer.
+
+**Der Maßstab „Schild" ist am Artefakt geprueft und traegt nur an einem Punkt.** Von den Barrieren nennt **allein The Blackest Night** (1234) seine Groesse als Anteil: „25 % of target's maximum HP". Divine Benison (1404) nennt eine Potenz, Adloquium, Succor und die Eukrasia-Formen einen Prozentsatz des geheilten Betrags — beides ohne das Heilattribut nicht in Gesundheit umrechenbar, und das ist von hier nicht auslesbar. Die Zwei-Schwellen-Form seiner Vorgabe waere also ohne erfundene Zahlen nicht baubar.
+
+**Verbesserung, die das aufloest: die Kategorie ist das Ergebnis einer Rechnung, nicht ihre Eingabe.** Gebraucht wird kein Trennwert „zu klein fuer eine Minderung", sondern der Vergleich **effektiver Puffer minus erwarteter Einschlag gegen `HealthForDyingTanks`**. Daraus faellt seine Formulierung woertlich ab — eine geringe Flaeche wirkt nur bei Mitgliedern mit wenig Gesundheit —, dieselbe Aktion ist lageabhaengig gering oder gross, und der Grund, an dem die fruehere Bewertung scheiterte („ohne Spielbeobachtung ist keine Schwelle belegbar"), entfaellt vollstaendig.
+
+**Zwei Umsetzungshindernisse, erst beim Durchdenken der hybriden Form gefunden.** Erstens ruft `Watcher` `HashSet.Add`; eine bereits bekannte Id wird nicht mehr angefasst, ein Alteintrag bekaeme also **nie** ein Potential — die hybride Form waere genau dort wirkungslos, wo sie gebraucht wird. Zweitens verlangt die Aufnahmebedingung, dass **jedes** Gruppenmitglied getroffen wurde; fuer die Aufnahme richtig, fuer die Fortschreibung zu streng, weil ein Raidwide mit einem toten oder unverwundbaren Mitglied die Messung verwuerfe — ausgerechnet in den harten Kaempfen.
+
+**Nebenbefund, und er ist die eigentliche Antwort auf sein Ausgangsbedenken:** Die vier gespeicherten Aktionslisten werden an fuenf Stellen in `DataCenter` **linear** durchsucht (`foreach` statt `Contains`), obwohl sie `HashSet` sind — O(n) statt O(1), je Gegner und je Bild, bei 850 ausgelieferten Eintraegen. Vier der fuenf Stellen sind unveraendert Upstream. Die Liste darf also wachsen; falsch ist, wie sie befragt wird. In `TODO.md` als eigener Defekt erfasst, mit der Empfehlung, ihn vor der Bewertung nach Schadenspotential zu beheben.
+
+**Verbliebener Kostenpunkt:** `RotationConfigWindow.DrawActionsList(string, HashSet<uint>)` bedient vier Listen mit einer Signatur. Rein technisch, kein fachlicher Einwand mehr.
+
+**Erreichter Pruefgrad:** statische Pruefung am Quelltext und an den Wirktexten in `ActionId.resx`, `check_doc_references`. **Kein Code geaendert** — der Auftrag war die Verbesserung des Konzepts.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
