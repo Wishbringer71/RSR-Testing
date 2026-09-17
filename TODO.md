@@ -12,7 +12,7 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 **Was zum Bauen fehlt:** je Status ein Minderungssatz, belegbar aus den Wirktexten in `Action.resx`, und die Entscheidung, gegen welchen Grenzwert gemessen wird. Beides ist Voraussetzung, nicht Beiwerk.
 
-**Die Barriere gehört in den Zähler, nicht in den Nenner** (Vorgabe des Auftraggebers, Konzept 08): Sie drosselt die Rate nicht, bewertet aber, ob der Tank überlebt und ob genug Zeit zum Heilen bleibt. Die gemeinte Größe ist Puffer geteilt durch Rate — der Puffer einschließlich Barriere wird bereits geführt (`GetEffectiveHp`), der Nenner fehlt. Damit hängt dieser Punkt am selben fehlenden Messbaustein wie die Heilzielwahl, und die Restzeit der Barriere (`HasSurvivingShield`, Defekt s. u.) ist seine zweite Hälfte: Eine Barriere, die vor der Heilung ausläuft, kauft keine Zeit.
+**Die Barriere gehört in den Zähler, nicht in den Nenner** (Vorgabe des Auftraggebers, Konzept 08): Sie drosselt die Rate nicht, bewertet aber, ob der Tank überlebt und ob genug Zeit zum Heilen bleibt. Die gemeinte Größe ist Puffer geteilt durch Rate. **Beide stehen inzwischen:** der Puffer einschließlich Barriere in `GetEffectiveHp`, die Rate in `GetCorrectedTTK` — und genau ihr Quotient ist es, den `GetForecastSurvivingShare` seit A93 bildet und die Heilkette liest. Offen an diesem Punkt bleibt die **Restzeit der Barriere** (`HasSurvivingShield`, Defekt s. u.): Eine Barriere, die vor der Heilung ausläuft, kauft keine Zeit, und die Vorausschau skaliert den Schild heute mit, statt seine eigene Laufzeit zu prüfen.
 
 **Der Weg ohne jede statische Vorgabe, und er ist der kleinste Eingriff:** `DataCenter.RecordedHP` führt eine Zeitreihe von Gesundheitsanteilen je Objekt-Id (1 Hz, 240 Einträge), und `ObjectHelper.GetTTK` wertet sie für **jede** Id aus — die Methode ist generisch. Gefüllt wird die Reihe nur aus `AllHostileTargets` (`TargetUpdater.UpdateTimeToKill`), deshalb liefert sie für Gruppenmitglieder `NaN`. Nimmt man die Gruppe mit auf, ist die Rate je Mitglied da, **netto nach allem** — Minderung, Mitigation, Barriere und Heilung eingerechnet, ohne eine einzige Liste. Der Grenzwert wird damit relativ: „Ist die Restzeit kürzer als die Zeit, die meine Heilung braucht?" Beide Seiten sind zur Laufzeit bekannt.
 
@@ -65,7 +65,7 @@ Upstream hat dieselbe Klasse in 7.5.6.3 an vier Stellen aufgelöst (`ObjectHelpe
 
 Welche der beiden Zeilen tot ist, hängt daran, ob Summon Bahamut auf Stufe 100 spielseitig zu Summon Solar Bahamut umgewandelt wird; RSR ruft über `AdjustedID`, die Antwort steht nicht im Repository. Das ist kein Aufräumfall: Wird `:478` entfernt, wird die Kopplung aus `:491` wirksam, und dann greift die Zündregel aus A78 in die Beschwörungswahl ein. Erst messen, dann anfassen — Beobachtungspunkt ist, ob Solar Bahamut alle 120 Sekunden kommt.
 
-### Wiederbelebung: drei Eingriffe des Zweigs sind weiter ungemessen · N, R
+### Wiederbelebung: vier Eingriffe des Zweigs sind weiter ungemessen · N, R
 
 **Der Kerndefekt ist behoben und im Spiel bestätigt** — Beobachtung, Erklärung und Nachweis in
 `AUDIT_LOG.md` A73. Dieser Punkt führt nur noch, was der Spieltest nicht abdecken konnte.
@@ -93,7 +93,7 @@ nachvollzogen; was fehlt, ist die Bestätigung im Spiel.
 
 `TargetUpdater.GetPriorityDeathTarget`. Der Sonderfall `if (raiseType == RaiseType.PartyAndAllianceHealers && deathHealers.Count > 0) return deathHealers[0];` steht **vor** der Umkehrung der vier Listen durch `Service.Config.H2`. In allen anderen Modi dreht diese Einstellung die Reihenfolge, in diesem einen nicht.
 
-Ohne Wirkung auf die Frage, *ob* wiederbelebt wird — nur darauf, *welcher* von mehreren toten Heilern zuerst drankommt. **Auflösung:** den Sonderfall hinter die Umkehrung ziehen. **Nicht im laufenden Vorgang behoben,** weil der Zweig bereits fünf ungemessene Eingriffe am Wiederbelebungspfad trägt; ein sechster verschlechtert die Auswertbarkeit des Spieltests, ohne dass diesem Punkt Dringlichkeit zukäme.
+Ohne Wirkung auf die Frage, *ob* wiederbelebt wird — nur darauf, *welcher* von mehreren toten Heilern zuerst drankommt. **Auflösung:** den Sonderfall hinter die Umkehrung ziehen. **Nicht im laufenden Vorgang behoben,** weil der Zweig bereits mehrere ungemessene Eingriffe am Wiederbelebungspfad trägt (Punkt oben); ein weiterer verschlechtert die Auswertbarkeit des Spieltests, ohne dass diesem Punkt Dringlichkeit zukäme.
 
 ### Die Aufzählung der Wiederbelebungsaktionen im Einschiebezweig veraltet · N, R
 
@@ -143,9 +143,9 @@ Nicht behoben, weil der Wirkungsbereich den Vorgang sprengt. Das Flag wird in `I
 
 ### Beschwörer: Searing Light bei mehreren Beschwörern — im Spiel zu bestätigen · N
 
-Umgesetzt und in `AUDIT_LOG.md` A78 nachgewiesen, soweit statisch möglich; Konzept in `docs/rotation-flow/12-searing-light-stacking.md`. Offen sind zwei Beobachtungen, die nur im Spiel zu machen sind, beide mit einer Gruppe aus mindestens zwei Beschwörern:
+Umgesetzt und in `AUDIT_LOG.md` A78 und A89 nachgewiesen, soweit statisch möglich; Konzept in `docs/rotation-flow/12-searing-light-stacking.md`. Der Stand im Code ist V8: `mayFireSearingLight` fordert die Burstphase in Solar Bahamut oder — bei einem zweiten Beschwörer — die große Beschwörung, und weicht bei **allen** belegten Phasen auf Ifrit aus (`SMN_Reborn.cs:227-229`). V7 ist damit zurückgebaut; das frühere `|| !HasAnySearingLight` steht nicht mehr in der Zündbedingung. Offen sind zwei Beobachtungen, die nur im Spiel zu machen sind, beide mit einer Gruppe aus mindestens zwei Beschwörern:
 
-**Kommt Solar Bahamut weiterhin alle 120 Sekunden?** Das entscheidet die Kopplungsfrage aus dem Defekt zu `UseSummonsAndTrances` weiter oben. Rutscht der Takt, ist `:491` der wirksame Pfad, und dann ist die V7-Bedingung — das `|| !HasAnySearingLight` — wieder zu entfernen; V2 bliebe.
+**Kommt Solar Bahamut weiterhin alle 120 Sekunden?** Das entscheidet die Kopplungsfrage aus dem Defekt zu `UseSummonsAndTrances` weiter oben. Rutscht der Takt, trägt `burstInSolar` nicht mehr, und die Zündbedingung fällt auf den Zweig für den zweiten Beschwörer zurück.
 
 **Zünden mehrere Beschwörer beim Buffende gleichzeitig?** Das Modell schreibt sequenziell zu und bildet das nicht ab. Der Fall besteht heute schon und sollte seltener werden, nicht häufiger; belegt ist das nicht.
 
@@ -205,7 +205,7 @@ Belegt: `Status.resx` führt `Rampart_1978` — die Form, die ein Tank ab Stufe 
 
 ### Betäubungsstreckung von Sanctus: Voreinstellung aus, Wirkung unbeobachtet · N
 
-`StretchHolyStun` ist voreingestellt aus, weil die Wirkung ohne Laufzeitbeobachtung nicht zu belegen war. Der **Mitigationsgrund** derselben Regel ist inzwischen umgesetzt und voreingestellt an (`ShouldHoldHolyWhilePackSlowed`, A79); der **Betäubungsgrund** — Sanctus einen GCD aussetzen, solange die eigene Betäubung noch läuft, statt sie zu überschreiben — wartet weiter auf die Beobachtung, ob die Streckung im Spiel eintritt.
+`StretchHolyStun` ist voreingestellt aus, weil die Wirkung ohne Laufzeitbeobachtung nicht zu belegen war. Der **Mitigationsgrund** derselben Regel ist umgesetzt und voreingestellt an (`ShouldHoldHolyWhilePackSlowed`); ihre heutige Fassung ist die Anteilsregel des Auftraggebers — mehr als die Hälfte der Gegner im Wirkbereich verlangsamt **und** mindestens `HoldHolyMinSlowedHostiles` betroffen, dazu Betäubungsspielraum und eine Schranke für den Restausstoß (A90, C59; die frühere Leistungsrechnung aus A79 ist damit abgelöst). Der **Betäubungsgrund** — Sanctus einen GCD aussetzen, solange die eigene Betäubung noch läuft, statt sie zu überschreiben — wartet weiter auf die Beobachtung, ob die Streckung im Spiel eintritt.
 
 **Auflösungsbedingung:** eine Beobachtung, ob Sanctus in eine laufende Betäubung hinein gewirkt wird und ob die Streckung die vom Modell gerechneten 5,5 auf 7,0 Sekunden bringt. Der Auftraggeber hat die Einstellung eingeschaltet, um überhaupt testen zu können; offen ist allein, ob die Streckung messbar eintritt — und danach, ob die **Voreinstellung** im Code folgen soll.
 
@@ -216,15 +216,19 @@ Die Regel steht in `docs/rotation-flow/09-tank-selfprotection.md`, Abschnitt „
 - **Der HoT ist gesperrt:** `WHM_Reborn.HealSingleGCD` verlangt `GetHealthRatio() > RegenHeal` (0,30), der Träger liegt bei 1 HP.
 - **Die Vollheilung feuert am Anfang:** `BenedictionPvE` zündet unter `BenedictionHeal` (0,30), also sofort, mit 90 s Abklingzeit.
 
-**Nur die erste Hälfte ist ohne den verworfenen Messbaustein baubar.** Fall 4 des Konzepts verlangt die leichte Unterstützung unabhängig vom Kurs — die HoT-Freigabe braucht also keine Prognose, sondern nur die Feststellung, dass Walking Dead liegt. Fall 4a braucht sie: Vollständig zu heilen ist nur richtig, wenn der Kurs nicht trägt, und der Gesundheitsstand ist dafür kein Ersatz, weil Angriffe den Träger wieder auf 1 drücken, ohne die aufgenommene Heilung zu mindern.
+**Fall 4 braucht keine Prognose:** Die leichte Unterstützung gilt unabhängig vom Kurs, die HoT-Freigabe braucht also nur die Feststellung, dass Walking Dead liegt.
 
-**Empfehlung: die HoT-Sperre aufheben, den Benediction-Vorrang offen lassen.** Der erste Teil ist eine belegte Behebung mit einer Bedingung; der zweite hängt an der Prognose, die dieses Projekt begründet verworfen hat. Gekoppelt an `WithholdHealingForLivingDead`, weil wer Phase eins einschaltet den Tod als Auslöser will — das hält das heutige Verhalten für alle anderen unverändert.
+**Fall 4a braucht eine Prognose, und die besteht seit A91 bis A93** — die frühere Begründung „der Messbaustein ist begründet verworfen" ist damit überholt. Vollständig zu heilen ist nur richtig, wenn der Kurs nicht trägt; der Gesundheitsstand ist dafür kein Ersatz, weil Angriffe den Träger wieder auf 1 drücken, ohne die aufgenommene Heilung zu mindern. **Die vorhandene Prognose beantwortet allerdings die Nachbarfrage, nicht diese:** `GetCorrectedTTK` misst den Weg zur Null, Walking Dead fragt nach dem Weg zur **aufgenommenen Heilmenge in Höhe der Maximalgesundheit**. Die Datenquelle taugt für beides — der Gesundheitsverlauf steigt, wenn geheilt wird —, die Auswertung ist eine andere und noch nicht gebaut.
+
+**Empfehlung: die HoT-Sperre aufheben, den Benediction-Vorrang offen lassen.** Der erste Teil ist eine belegte Behebung mit einer Bedingung; für den zweiten ist jetzt die Auswertung zu entwerfen, nicht mehr die Messgrundlage. Gekoppelt an `WithholdHealingForLivingDead`, weil wer Phase eins einschaltet den Tod als Auslöser will — das hält das heutige Verhalten für alle anderen unverändert.
 
 ### Living Dead: der Hebel ist die Option, nicht der HP-Grenzwert · N
 
 `StateUpdater.ShouldHealSingle`: `threshold = target.NoNeedHealingInvuln() ? normal : Math.Min(normal, Service.Config.HealthProtectedRatio)`. `NoNeedHealingInvuln` ist `WillStatusEndGCD(2, …)` über `NoNeedHealingStatus`, und `LivingDead` steht in dieser Liste.
 
 **Wirkung, in zwei Abschnitten — und genau so, wie der Auftraggeber die Regel gefasst hat:** Solange Living Dead noch **mehr als zwei GCDs** Restzeit hat, liegt die Schwelle bei `HealthProtectedRatio` 0,15; der Todeseffekt kann also eintreten. Läuft der Status in zwei GCDs oder weniger ab, liefert `NoNeedHealingInvuln` wahr und die **normale** Schwelle kehrt zurück — kurz vor Ablauf wird geheilt. Die Vorlaufzeit ist bis zur **Entscheidung** gemessen, nicht bis zum Landen der Heilung, weshalb zwei GCDs und nicht weniger.
+
+**Der Vorlauf setzt aus, solange der Tod noch erreichbar ist** (`StatusHelper.DeathStillLikely`, A88, auf ausdrückliche Vorgabe des Auftraggebers): Steht der Träger auf oder unter `HealthForDyingTanks`, greift die Freigabe nicht, weil die Null vor dem Fensterende ankommt. Ohne das hätte der Vorlauf den Tod verhindert, für den die Regel da ist.
 
 Die Dauer ist belegt, nicht erinnert: `ActionId.resx`, Aktion 3638, „Living Dead Duration: 10s". Bei rund 2,5 s Gießzeit sind zwei GCDs damit etwa die halbe Restzeit.
 
@@ -257,13 +261,15 @@ Schadensreduktion wirkt also in keinem Fall auf die Heilentscheidung; nur Barrie
 
 **Die Prüfreihenfolge stellt den Heiler vor den Tank, die Schwellen kehren das um:** Tank ≤ 45 %, Heiler ≤ 40 %. Im Band 40–45 % bekommt der Tank die Heilung, obwohl der Heiler gleich tief steht; spielt der Auftraggeber selbst den Heiler, trifft ihn derselbe Fall über `HealthSelfRatio` (ebenfalls 0,40). Die Differenz vertritt die fehlende Schadensrate — für den Regelfall „Tank hält die Aggro" richtig, für den zweiten Fall der Vorgabe „Heiler hält die Aggro" falsch, weil das Surrogat rollenfest statt lagefest ist. **Alle drei Werte sind identisch mit `upstream/main`**, also kein Fork-Defekt, und es sind Voreinstellungen im Code — die Konfiguration des Auftraggebers ist von hier nicht messbar.
 
-**Drei der vier Größen sind sofort verfügbar:** der effektive Puffer in absoluten Punkten (`GetEffectiveHp`), die Aggro (`TargetObject`, wie in `CanProvoke` bereits aufgelöst) und der angekündigte Flächenschaden (`IsHostileCastingAOE`, BMR-Vorhersage). **Die vierte fehlt:** die eingehende Schadensrate je Mitglied — `DamageRec` trägt kein Ziel, `RecordedHP` wird nur aus Gegnern gefüllt, `GetTTK` liefert für eine Gruppen-Id `NaN`. Sie steht als eigener Punkt unter technischer Schuld und hat mit dieser Vorgabe ihren Verbraucher bekommen.
+**Drei der vier Größen sind verfügbar und zwei davon gelesen:** der effektive Puffer in absoluten Punkten (`GetEffectiveHp`, gelesen), die Schadensrate je Mitglied (`GetCorrectedTTK` aus `RecordedHP`, gelesen — A91 bis A93), die Aggro (`TargetObject`, wie in `CanProvoke` aufgelöst — **nicht** gelesen) und der angekündigte Flächenschaden (`IsHostileCastingAOE`, BMR-Vorhersage — **nicht** gelesen).
 
 **Der schwerste Einzelfall ist ein Kurzschluss, nicht ein Maß:** `tankTars[0]` unter `HealthTankRatio` beendet die Suche sofort, also wird ein Schadensausteiler bei 10 % übergangen, sobald der Tank bei 44 % steht — der von der Vorgabe ausdrücklich genannte Fall.
 
 **Der Entwurf steht vollständig in `docs/rotation-flow/07-heal-target-priority.md`:** drei Gefährdungsklassen statt einer Kette von Kurzschlüssen — kritisch (unter `HealthForDyingTanks`, geordnet nach absoluten Punkten), unter Beschuss (Aggro oder Tankhaltung, geordnet nach Prozentsatz), übrige (absolute Punkte bei angekündigtem Flächenschaden, sonst Prozentsatz); Rolle nur als Gleichstandsregel. Jedes Maß wirkt dort, wo es das Richtige misst, keines wird gewichtet, keine Zahl erfunden — BossModReborn nennt Art und Zeitpunkt des nächsten Einschlags, nicht seine Höhe.
 
-**In drei Stufen, nach Schweregrad geordnet.** Stufe 1 ist **umgesetzt** (A89): Klasse 1 steht vor allen drei Kurzschlüssen. Stufe 2: Klassen 2 und 3, mit einem Aggro-Set, das `TargetUpdater.UpdateLists` einmal je Bild aus den `TargetObjectId` der Gegner aufbaut; Verhaltensänderung ohne Nachweismöglichkeit → hinter eine Einstellung mit beibehaltener Voreinstellung. Stufe 3: Rate je Mitglied für die Ordnung innerhalb von Klasse 2, setzt den Aufnehmer voraus.
+**Umgesetzt sind Stufe 1 und Stufe 3.** Stufe 1 (A89): Klasse 1 steht vor allen drei Kurzschlüssen. Stufe 3 (A93): die Rate je Mitglied — allerdings nicht als zusätzliches Ordnungsmerkmal innerhalb einer Klasse, wie ursprünglich entworfen, sondern als **Ersatz der gelesenen Gesundheit** durch die vorausberechnete, hinter `HealAheadOfDamage` mit Standard aus. Damit erben alle vier Entscheidungen der Methode die Vorausschau, Klasse 1 eingeschlossen; die Begründung der Entwurfsänderung steht in Konzept 07.
+
+**Offen bleibt Stufe 2:** Klassen 2 und 3, mit einem Aggro-Set, das `TargetUpdater.UpdateLists` einmal je Bild aus den `TargetObjectId` der Gegner aufbaut. Verhaltensänderung ohne Nachweismöglichkeit → hinter eine Einstellung mit beibehaltener Voreinstellung. **Empfehlung: erst nach einer Spielbeobachtung der Vorausschau**, weil beide dieselbe Rangstufe betreffen und sich sonst nicht auseinanderhalten lassen.
 
 **Was der Entwurf nicht löst:** Die Schwellendifferenz 45/40 ist entweder wirksam — dann kehrt sie im Band die Rangfolge um — oder unwirksam, dann ist eine Nutzereinstellung stillgelegt. Die Klassenordnung entschärft sie, beseitigt sie nicht. Ob die Werte vereinheitlicht werden, ist eine Wertentscheidung über eine Konfiguration und liegt beim Auftraggeber.
 
@@ -517,7 +523,7 @@ Der Restfehler rechtfertigt die Höchstwertregel weiterhin, aber als Absicherung
 
 ##### Entscheidung nach eigenem Loop: konzipiert, nicht gebaut
 
-Geprüft mit demselben Maßstab, der den Messbaustein verworfen hat. Ergebnis: **Nullvariante**, und die Begründung ist die Kostenseite, nicht der Gedanke.
+Geprüft mit dem Maßstab, den dieses Projekt an jeden neuen Baustein anlegt: Wer trägt die Kosten, und entsteht der Nutzen bei denselben Leuten? Ergebnis: **Nullvariante**, und die Begründung ist die Kostenseite, nicht der Gedanke.
 
 Was die Umsetzung verlangt, vollständig erhoben:
 
@@ -622,20 +628,6 @@ Schritt 3 aus `docs/rotation-flow/08-mitigation-synergy.md`. Die Schritte 1 und 
 
 **Empfehlung: warten.** Schritt 3 überträgt eine Regel, deren Nutzen in den Schritten 1 und 2 noch nicht beobachtet ist; eine Übertragung vor dem Nachweis vervielfacht einen möglichen Fehler, statt einen Nutzen zu vervielfachen.
 
-### Keine Messgrundlage für Schadens- und Heilungsraten auf Gruppenmitglieder · —
-
-**Geprüft und bewusst nicht gebaut.** Der Befund selbst besteht fort: Für Gruppenmitglieder gibt es keine Rate. `DataCenter.RecordedHP` wird in `TargetUpdater.cs:513-535` ausschließlich aus `AllHostileTargets` gefüllt, weshalb `GetTTK` für eine Party-Id `NaN` liefert; die Abtastrate ist 1 Hz (`TargetUpdater.cs:19`); und ein Heilpaket eines fremden Heilers passiert beide Watcher-Filter (`Watcher.cs:17-18`) ungelesen. Es fehlt der Aufnehmer, nicht die Quelle.
-
-**Der Verbraucher besteht jetzt.** Die Vorgabe des Auftraggebers zur Heilzielwahl (`docs/rotation-flow/07-heal-target-priority.md`) macht die Rate zur Entscheidungsgröße, sobald **mehrere** Gruppenmitglieder zugleich unter Beschuss stehen: Dann reicht „wer wird angegriffen" nicht, es zählt, wie schnell die Gesundheit fällt. Der folgende Absatz beschreibt die Lage, in der es diesen Verbraucher noch nicht gab.
-
-**Warum er bis dahin nicht gebaut wurde:** Er hatte genau einen vorgesehenen Verbraucher — die Hochrechnung, ob der Tod eines Dunkelritters noch vor Ablauf von Living Dead eintritt. Diese Frage ist inzwischen anders beantwortet: `StatusHelper.InDeathTriggerWindow` misst die Restzeit des Status selbst und gibt den Halt einen GCD vor Ablauf frei. Damit gibt es im gesamten Baum keinen Verbraucher mehr, und ein Baustein ohne Verbraucher ist Vorratsarbeit.
-
-Die Kostenseite bliebe dagegen bestehen: Ein Ringpuffer über alle Gruppenmitglieder und ein dritter Effekt-Handler laufen in jedem Kampf für jeden Nutzer, auch für die, die nie einen Dunkelritter sehen. Nutzen bei einem Job in einer Fähigkeit, Kosten bei allen — und der Nutzen wäre statisch nicht belegbar.
-
-**Der Restfehler, den er verkleinert hätte, ist stattdessen direkt verkleinert worden.** Die Uhrregel kann einen Tod verhindern, der noch rechtzeitig gekommen wäre; dieser Fehler ist genau so groß wie der Vorlauf. Zwei GCDs hätten bei zehn Sekunden Fenster die halbe Phase verschenkt, ein GCD verschenkt ein Viertel. Das ist die billige Abhilfe; der Messbaustein wäre die teure gewesen.
-
-**Wieder aufzugreifen, wenn** ein konkreter Verbraucher entsteht — etwa eine gestaffelte Phase-2-Unterstützung, die den Heilungskurs gegen die Restzeit prüft. Bis dahin ist der Befund dokumentiert und die Entscheidung begründet, nicht offen.
-
 ## Offene Arbeit
 
 ### Nachprüfung der 73 Commits vom 11. und 12. September 2026 · N, R, U
@@ -646,14 +638,16 @@ Der Auftraggeber hat die Arbeit dieser beiden Tage als nicht belastbar zurückge
 
 **Reihenfolge**, nach Wirkung auf den Betroffenenkreis:
 
-1. **Code (18)** — wirkt im Kampf auf jeden Endnutzer, Fehler sind hier am teuersten. Darunter die drei Eingriffe, die ohnehin ungemessen sind (Wiederbelebung, Schildanrechnung, Verlangsamungs-Halt von Sanctus).
-2. **Generator (2) und CI (4)** — falsch erhobene Namen und ein falsch messendes Prüfmittel vergiften jede spätere Aussage, die sich darauf stützt.
-3. **Prüfmittel (18)** — ein Skript, das das Surrogat statt der Wirkung misst, erzeugt stille Nullbefunde; genau diese Fehlerklasse war der Anlass ihrer Überarbeitung.
-4. **Doku (29) und sonstiges (2)** — zuletzt, weil eine falsche Aussage dort nur mitträgt, was der Code ohnehin zeigt.
+1. **Code** — **erledigt** (A86 für die Wiederbelebungs-Commits, A87 für die übrigen); in B2 als NACHGEPRÜFT eingetragen.
+2. **Generator und CI** — offen. Falsch erhobene Namen und ein falsch messendes Prüfmittel vergiften jede spätere Aussage, die sich darauf stützt.
+3. **Prüfmittel** — offen. Ein Skript, das das Surrogat statt der Wirkung misst, erzeugt stille Nullbefunde; genau diese Fehlerklasse war der Anlass ihrer Überarbeitung.
+4. **Doku und sonstiges** — offen, zuletzt, weil eine falsche Aussage dort nur mitträgt, was der Code ohnehin zeigt.
+
+Wie viele Commits in jeder Gruppe noch auf ZWEIFELHAFT stehen, zählt die Tabelle in B2 aus; eine Zahl hier wäre bei der nächsten Nachprüfung überholt, ohne dass etwas fehlschlüge.
 
 **Prüfmaßstab je Commit:** Belegt der Diff, was die Nachricht behauptet? Ist die zugehörige Wirkkette im Code nachvollzogen oder nur erzählt? Welcher Prüfgrad war tatsächlich erreicht — statisch, Prüfskript, Compile, Spiel? Ergebnis je Commit als **KEIN FEHLER**, **KORRIGIERT** oder **VERWORFEN** in B2 eintragen; ZWEIFELHAFT bleibt stehen, bis geprüft.
 
-**Diese Nachprüfung beginnt auf Freigabe des Auftraggebers**, nicht aus eigenem Antrieb — der Auftrag nennt als Bedingung ausdrücklich den Zeitpunkt, zu dem die Arbeitsqualität wieder stimmt, und das ist seine Feststellung, nicht meine.
+**Die Fortsetzung beginnt auf Freigabe des Auftraggebers**, nicht aus eigenem Antrieb — er hat die Code-Gruppe ausdrücklich beauftragt, die übrigen drei nicht.
 
 ### Rückstoß im Pull nur beim Dunkelritter, nicht bei den übrigen Tanks · N, U
 

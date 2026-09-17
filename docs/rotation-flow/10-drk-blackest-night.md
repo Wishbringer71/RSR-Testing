@@ -323,10 +323,12 @@ diese beiden Größen herausgearbeitet hat.
 C9 belegt, wie weit eine an einer Stelle plausible Änderung an diesem Flag reicht.
 
 **Den Verbrauch messen statt die Lage zu prüfen.** Der eingehende Schaden ist im Effekt-Handler
-sichtbar (`Watcher`, `damageEffect.value`). Verworfen aus derselben Kostenrechnung, die den
-Messbaustein verworfen hat: Ein Ringpuffer läuft in jedem Kampf für jeden Nutzer, der Nutzen entsteht
-bei einem Job in einer Fähigkeit — und der Schadensfluss der letzten Sekunden sagt nichts über die
-nächsten sieben.
+sichtbar (`Watcher`, `damageEffect.value`). Ein eigener Ringpuffer dafür bleibt verworfen — er liefe
+in jedem Kampf für jeden Nutzer, während der Nutzen bei einem Job in einer Fähigkeit entstünde.
+**Eine Rate steht inzwischen allerdings ohne diesen Aufwand zur Verfügung:** `GetCorrectedTTK` liest
+sie aus der Gesundheitshistorie, die ohnehin geführt wird (A91–A93). Was gegen ihren Einsatz **hier**
+spricht, ist deshalb nicht mehr die Kostenseite, sondern die Sache: Der Schadensfluss der letzten
+Sekunden sagt nichts über die nächsten sieben, und die Barriere ist eine Wette auf diese sieben.
 
 **Eine reine MP-Schwelle.** Begrenzt, wie oft die Fähigkeit ausfällt, nicht ob sie sich lohnt. Bei
 vollem Vorrat bliebe das beanstandete Verhalten unverändert.

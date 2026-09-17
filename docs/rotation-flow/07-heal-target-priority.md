@@ -207,11 +207,17 @@ weil Klasse 1 und die Aggro davorstehen, aber sie beseitigt sie nicht. Ob die be
 vereinheitlicht werden, ist eine Wertentscheidung über eine Konfiguration und gehört dem
 Auftraggeber.
 
-**Die Rate bleibt der einzige fehlende Baustein**, und sie wird erst innerhalb von Klasse 2 gebraucht:
-wenn mehrere zugleich unter Beschuss stehen und zu entscheiden ist, wer von ihnen zuerst fällt.
-`DataCenter.DPSTaken` misst die Gruppe als Ganzes — `DamageRec` trägt Zeitpunkt und Anteil, **kein
-Ziel** —, und `DataCenter.RecordedHP` wird ausschließlich aus `AllHostileTargets` gefüllt, weshalb
-`GetTTK` für eine Gruppen-Id `NaN` liefert. Es fehlt der Aufnehmer, nicht die Quelle.
+**Die Rate steht.** `DataCenter.RecordedHP` führt die Gruppe seit A91 mit, `GetTTK` antwortet damit
+für jede Gruppen-Id, `ScoreTtkForecast` korrigiert die Schätzung gegen ihren eigenen Fehler (A92),
+und `GetForecastSurvivingShare` macht daraus die Größe, die alle Heilentscheidungen lesen (A93). Sie
+ist damit nicht, wie hier zunächst geplant, ein Ordnungsmerkmal innerhalb von Klasse 2 geworden,
+sondern die vorausberechnete Gesundheit selbst — siehe „Die Stufen".
+
+**Die schwächere Alternative ist verworfen und bleibt es:** `DataCenter.DPSTaken` misst die Gruppe
+als Ganzes, `DamageRec` trägt Zeitpunkt und Anteil, **kein Ziel**, und ihr Fenster von fünf
+Millisekunden sieht bei einem Bild von rund sechzehn fast immer nichts.
+
+**Offen bleibt allein die Aggro**, und sie wird innerhalb von Klasse 2 gebraucht.
 
 **Kosten der Erhebung, gemessen am Ort:** Die Aggro braucht keinen Vergleich je Mitglied. In
 `TargetUpdater.UpdateLists`, wo `AllHostileTargets` ohnehin einmal je Bild aufgebaut wird, sammelt

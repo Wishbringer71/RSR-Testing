@@ -49,7 +49,7 @@ hier.
 | Living-Dead-Rückhaltung als Uhrregel, hinter Option | umgesetzt |
 | Sonderbehandlung für The Blackest Night | **nicht nötig**, aber aus dem umgekehrten Grund: Eine Barriere ist kein Grund, später zu heilen — s. u. |
 | Schildanrechnung auf die Heilschwelle | **entfernt** (A85). Gesundheit und Schild addieren sich, sie ersetzen einander nicht |
-| Messbaustein für Heilraten auf Gruppenmitglieder | verworfen, kein Verbraucher |
+| Messbaustein für Raten auf Gruppenmitglieder | **gebaut** (A91–A93): `RecordedHP` führt die Gruppe mit, `GetCorrectedTTK` liefert die Restzeit je Mitglied. Die frühere Verwerfung ist überholt |
 
 ## Prüfmaßstab — die Rangordnung
 
@@ -457,25 +457,28 @@ Fall 14 nicht trifft: Sie kennt den Vergleich mit anderen Gruppenmitgliedern nic
 Die Prioritätsstufe leistet beides, und `GeneralHealTarget` besitzt die Rangfolge
 bereits — es fehlte nur eine Ebene.
 
-**Ein Messbaustein für Heilraten auf Gruppenmitglieder.** Ausgeschlossen, weil die
-Uhrregel seinen einzigen vorgesehenen Verbraucher ersetzt. Er hätte bei allen Nutzern
-in jedem Kampf Laufzeit gekostet, ohne einen Verbraucher im Baum zu haben. Die
-Erhebung dazu bleibt als Befund gültig und ist keine Frage der Messbarkeit, sondern
-des fehlenden Aufnehmers:
+**Ein eigener Messbaustein für Heilraten auf Gruppenmitglieder.** Ausgeschlossen — und
+inzwischen auch überflüssig. Ausgeschlossen war er, weil die Uhrregel seinen einzigen
+vorgesehenen Verbraucher ersetzt; überflüssig ist er, weil die Größe ohne neuen
+Baustein entstanden ist: `DataCenter.RecordedHP` nimmt die Gruppenmitglieder seit A91
+mit auf, und `GetTTK` wertet sie seitdem für jede Gruppen-Id aus. Der Eingriff war eine
+Schleife neben der bestehenden, kein Ringpuffer und kein dritter Effekt-Handler.
 
 | Größe | Vorhanden? | Beleg |
 |---|---|---|
 | Restzeit des Status | **ja** | `StatusHelper.StatusTime(…)` |
-| Historie der Gesundheit über die Zeit | **nur für Gegner** | `DataCenter.RecordedHP` wird in `TargetUpdater.cs:513-535` ausschließlich aus `AllHostileTargets` gefüllt |
-| Zeit bis zum Tod eines Ziels | **auf Party-Mitglieder nicht anwendbar** | `GetTTK` (`ObjectHelper.cs:3468`) liest diese Historie; für eine Party-Id liefert es `NaN` |
-| Abtastrate der Historie | **1 Hz** | `TimeToKillUpdateInterval` (`TargetUpdater.cs:19`) |
-| Eingehende Heilung auf ein Party-Mitglied | **nicht ausgewertet, aber verfügbar** | `ActionEffect.ActionEffectEvent` liefert jedes Effektpaket; `Watcher.cs:17-18` filtert auf Quelle = Gegner beziehungsweise Spieler, ein fremder Heiler passiert beide Filter |
+| Historie der Gesundheit über die Zeit | **für Gegner und Gruppe** | `DataCenter.RecordedHP`, gefüllt in `TargetUpdater.UpdateTimeToKill` aus `AllHostileTargets` **und** `PartyMembers` |
+| Zeit bis zum Tod eines Gruppenmitglieds | **ja** | `ObjectHelper.GetCorrectedTTK`, gegen den eigenen Vorhersagefehler kalibriert |
+| Abtastrate der Historie | **1 Hz** | `TimeToKillUpdateInterval` |
+| Eingehende Heilung auf ein Party-Mitglied | **nicht gesondert ausgewertet, und nicht nötig** | Der Gesundheitsverlauf ist bereits netto: Eine fremde Heilung zeigt sich als steigender Anteil, `GetTTK` antwortet dann `NaN` |
 | Schadensbetrag eines Gegnertreffers | **verfügbar und gelesen** | `Watcher.cs:137` wertet `damageEffect.value` aus, prüft aber nur `> 0` |
 
-Zwei Genauigkeitsgrenzen blieben auch nach einem Umbau bestehen: Die 1-Hz-Abtastung
-ist für ein Zehn-Sekunden-Fenster zu grob, und ein Gesundheitsdelta ist ein Surrogat
-für kumulierte Heilung — fallen Heilung und Schaden in dasselbe Intervall, heben sie
-sich auf, obwohl die Heilung gegen die geforderte Summe zählt.
+Zwei Genauigkeitsgrenzen bestehen fort: Die 1-Hz-Abtastung ist für ein
+Zehn-Sekunden-Fenster grob, und ein Gesundheitsdelta ist ein Surrogat für kumulierte
+Heilung — fallen Heilung und Schaden in dasselbe Intervall, heben sie sich auf, obwohl
+die Heilung gegen die von Walking Dead geforderte Summe zählt. Für den Weg **zur Null**
+ist das unerheblich, für den Weg **zur aufgenommenen Heilmenge** nicht; deshalb ist
+Fall 4a mit der vorhandenen Auswertung noch nicht beantwortet.
 
 **`HpRecoveryDown` und `Mounted` in der Schwellensenkung.** Ausgeschlossen: `Mounted`
 nullifiziert Heilung und gehört in einen Ausschluss, nicht in eine Herabstufung;
@@ -512,9 +515,13 @@ wenn der Tank bereits ungeschützt ist. Eine Fähigkeit ohne Wirkzeit würde bei
 — welche Heilung gleich fällt, ist jedoch eine Rotationsentscheidung, die die zentrale
 Schicht weder kennt noch erzwingen kann.
 
-**Die gestaffelte Phase-2-Unterstützung** (Fälle 4 und 4a) ist nicht gebaut. Sie
-verlangt eine Kursprognose und damit den verworfenen Messbaustein. Welche Stellen im
-Code ihr entgegenstehen, führt `TODO.md`.
+**Die gestaffelte Phase-2-Unterstützung** (Fälle 4 und 4a) ist nicht gebaut. Fall 4 —
+die leichte Unterstützung mit einem HoT — braucht keine Prognose, sondern nur die
+Feststellung, dass Walking Dead liegt; ihm steht eine Gesundheitsschwelle entgegen, die
+der Träger bei 1 HP nie erfüllt. Fall 4a verlangt eine Kursprognose: Die Datenquelle
+steht seit A91, die **Auswertung** zur aufgenommenen Heilmenge ist eine andere als die
+zur Restzeit und noch nicht gebaut. Welche Stellen im Code beidem entgegenstehen, führt
+`TODO.md`.
 
 **Eine einzige Frage zum Weisen.** Die Verbrauchsreihenfolge ordnet Eukrasian Diagnosis
 hinter The Blackest Night ein, ein Job-Guide davor. Träfe Letzteres zu, könnte der
