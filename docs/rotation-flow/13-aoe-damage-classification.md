@@ -49,6 +49,11 @@ sondern das Ergebnis der Rechnung — und sie kann nicht veralten.
 Drei ihrer vier Kostenpunkte sind durch diese Vorgabe entfallen; **ein** Punkt besteht fort, und er
 ist rein technisch — siehe „Was übrig bleibt".
 
+**Und er ist zugleich der Hebel, nicht nur die Last.** Der gespeicherte Einschlag beantwortet mehr
+als die Frage, aus der er entstanden ist: Er schließt die letzte benannte Lücke der
+Laufzeitbeobachtung — die Blindheit vor dem **ersten** Treffer eines Pulls —, und zwar ohne die
+Statussatz-Tabelle, die Konzept 08 dafür bisher vorsieht. Siehe „Was der Baustein eröffnet".
+
 ## Die Vorgabe löst drei alte Einwände auf
 
 Der Vorschlag wurde schon einmal geprüft und mit vier Einwänden versehen. Die Vorgabe des
@@ -109,8 +114,20 @@ Und das ist eine Subtraktion aus Größen, die der Baum bereits führt:
 
 > **Effektiver Puffer des Mitglieds** — Gesundheit einschließlich Barriere, `GetEffectiveHp` —
 > **minus** dem gespeicherten Anteil mal seiner Maximalgesundheit. Bleibt das Ergebnis über der
-> Schwelle, an der der Baum selbst „dieser Spieler fällt gleich" sagt (`HealthForDyingTanks`), ist
-> nichts zu tun. Unterschreitet es sie, wird gemindert.
+> Schwelle, ab der der Baum von sich aus heilen würde, ist nichts zu tun. Unterschreitet es sie,
+> wird gemindert.
+
+**Die Schwelle ist die Heilschwelle, nicht die Sterbeschwelle** — und das ist eine Korrektur an
+diesem Konzept selbst, gefunden durch das Premortem der Falsifikationsstufe. Die erste Fassung
+verglich gegen `HealthForDyingTanks` (0,15). Durchgerechnet mindert das so gut wie nie: Ein
+Einschlag mit dreißig Prozent Potential drückt einen vollen Spieler auf siebzig Prozent, und nur
+wer bereits unter fünfundvierzig steht, käme darunter. Eine Regel, die im maßgeblichen Bereich nie
+eintritt, ist keine Regel — dieselbe Fehlerform, die C59 an der Sanctus-Aussetzregel belegt hat.
+
+Richtig ist die Schwelle, ab der ohnehin geheilt würde (`HealthSingleSpell`, `HealthAreaSpell`).
+Dann lautet die Frage: **Erzeugt dieser Einschlag Heilbedarf?** Zwei Prozent auf einen vollen
+Spieler tun das nicht, dreißig schon. Das ist zugleich stimmig mit der Rangregel des Auftraggebers
+„Heilung vor Minderung": Gemindert wird dort, wo sonst geheilt werden müsste.
 
 Daraus folgt alles, was die Vorgabe verlangt, ohne eine einzige gesetzte Zahl:
 
@@ -227,8 +244,74 @@ in Gefahr bringt. Wie er dann gemindert wird, entscheidet die vorhandene Kette. 
 insofern eine Näherung, und die Näherung liegt auf der sicheren Seite: Prozentuale Minderung wirkt
 gerade bei großem Schaden am stärksten, also dort, wo die Rechnung sie auslöst.
 
+**Premortem: Der Baustein ist gebaut und ausgeliefert, und es ändert sich nichts. Warum?** Die
+prospektive Rückschau fragt nicht nach der Richtigkeit der Analyse, sondern nach der Wirkung der
+Umsetzung — und sie hat hier vier Gründe gefunden, von denen drei bereits behoben sind und einer die
+Rechnung selbst betraf:
+
+1. *Alteinträge bekommen nie ein Potential*, weil `HashSet.Add` eine bekannte Id nicht anfasst —
+   behandelt unter „Aufnahme und Fortschreibung".
+2. *Die Fortschreibung greift in den harten Kämpfen nicht*, weil die Aufnahmebedingung jedes
+   Gruppenmitglied verlangt — ebenda behandelt.
+3. *Die Rechnung löst so gut wie nie aus*, weil sie gegen die Sterbeschwelle verglich statt gegen die
+   Heilschwelle — oben korrigiert. **Dieser Punkt wäre ohne das Premortem im Konzept geblieben:** Die
+   beiden vorhandenen Hypothesen der Falsifikationsstufe fragen, ob ein Defekt vorliegt und ob die
+   Option falsch ist; beide waren mit Ja und Nein richtig beantwortet, während die Konstruktion
+   wirkungslos gewesen wäre.
+4. *Niemand kann sehen, ob es wirkt.* Siehe unten.
+
 **Hypothese: Die Nullvariante ist weiterhin richtig.** Widerlegt, aber nur teilweise — siehe unten.
 Der inhaltliche Grund der früheren Ablehnung ist entfallen; der technische besteht fort.
+
+## Die Sonde gehört mitgeliefert
+
+Diese Frage liegt in der **komplexen** Domäne: Ob eine Minderung zu Recht unterblieb, zeigt sich im
+Kampf und nicht in der Analyse. Die Projektregel verlangt für diesen Fall, das Messmittel mitzubauen
+statt hinterher „im Spiel nicht beobachtet" zu vermerken. Konkret sind das zwei Dinge, und beide sind
+klein:
+
+- **In der Listenverwaltung** je Eintrag der gemessene Anteil und, wo keiner vorliegt, „unbewertet".
+  Damit ist sichtbar, wie schnell der Bestand aus dem unbewerteten Zustand herauswächst — die Frage,
+  an der die ganze hybride Form hängt.
+- **In der Diagnoseanzeige** ein Zähler, wie oft eine Minderung wegen zu kleinen Potentials
+  unterblieben ist. Bleibt er über einen Kampf bei null, greift die Regel nicht, und das ist dann
+  belegt statt vermutet.
+
+Ohne diese beiden ist die Wirkung dieses Bausteins nach dem Bauen genauso unbekannt wie vorher.
+
+## Was der Baustein eröffnet
+
+Diese Bewertung ist nachgetragen: Die erste Fassung dieses Konzepts hat den Vorschlag gegen Kosten
+und Risiko geprüft und **nicht** gegen das, was er möglich macht. Genau diese Lücke im Loop ist
+inzwischen als vierte Querschnittsanforderung geschlossen (`docs/method/01-loop-evaluation-methods.md`).
+Angewandt ergibt sie drei Befunde, und der erste kehrt die Bewertung um.
+
+**Er schließt die letzte benannte Lücke der Laufzeitbeobachtung.** Konzept 08 führt als verbliebene
+Grenze: blind für den **ersten** Treffer eines Pulls, weil vor 2,5 Sekunden Beobachtung keine Rate
+existiert. Und es beschreibt den Weg dorthin als „Hochrechnung aus Statussätzen, je Status ein Satz
+aus `Action.resx`" — eine gepflegte Liste, die genau der Alterung unterliegt, die dieses Projekt
+sonst überall vermeidet. **Ein angekündigter Cast mit bekanntem Potential ist die Vorausschau auf den
+ersten Treffer**, und sie kommt ohne Statussätze aus: Sie entsteht aus beobachteten Einschlägen. Das
+ist der zweite Teil der hybriden Lösung, die der Auftraggeber verlangt hat — Beobachtung trägt den
+laufenden Kampf, und der Eröffnungsmoment wird ebenfalls beobachtet statt gerechnet.
+
+**Er macht die Gefahrenfrage quantitativ.** `ObjectHelper.IsUnderThreat` fragt heute binär, ob
+irgendwo eine Flächenaktion läuft. Mit gespeichertem Potential wird daraus „bringt dieser Einschlag
+**dieses** Mitglied unter die Heilschwelle" — dieselbe Rechnung, die die Minderung auslöst, an einer
+zweiten Entscheidung. Damit ist auch die Bagatellfläche erledigt, die heute die Notfall-Vollheilung
+blockiert.
+
+**Und der einzige verbliebene Kostenpunkt ist zugleich der Hebel.** Dass `DrawActionsList` mit einer
+Signatur **vier** Listen bedient, steht unten als Hindernis. Von der Möglichkeitsseite gelesen ist es
+das Gegenteil: `HostileCastingTank` trägt dieselbe Frage — wie hart schlägt dieser Tankbuster zu —
+und `HostileCastingKnockback` und `HostileCastingStop` dieselbe Struktur. **Ein Umbau bedient vier
+Fragen.** Die Kostenrechnung der früheren Bewertung hat den Aufwand einmal gezählt und den Ertrag
+einmal; richtig ist einmal Aufwand gegen vier Erträge.
+
+*Einordnung nach Kano:* Das ist kein Basismerkmal — nichts ist kaputt, und niemand vermisst es. Es
+ist auch kein Leistungsmerkmal, das ein vorhandenes Verhalten besser macht. „Die Rotation weiß, wie
+hart der nächste angekündigte Einschlag trifft, und mindert nur dann" ist ein Begeisterungsmerkmal.
+Der Loop erzeugt solche nicht von allein; er springt auf Defekte an.
 
 ## Was übrig bleibt
 
@@ -239,7 +322,7 @@ Von den vier Kostenpunkten der früheren Bewertung sind drei entfallen:
 | Persistenzvertrag: Typwechsel bricht die gespeicherte Datei | **entfallen** — der Zustand „unbewertet" ist genau der Migrationspfad. Alte Einträge bleiben gültig und verhalten sich wie bisher |
 | Rückrechnung der Minderung ist eine Näherung | **entfallen** — die Höchstwert-Fortschreibung braucht keine Rückrechnung |
 | Die Schwelle selbst ist ohne Spielbeobachtung nicht belegbar | **entfallen** — es gibt keine Schwelle mehr, nur den Vergleich mit dem Puffer |
-| **UI-Kopplung über vier Listen** | **besteht fort** |
+| **UI-Kopplung über vier Listen** | **besteht fort** — als Aufwand; als Hebel siehe „Was der Baustein eröffnet" |
 
 `RotationConfigWindow.DrawActionsList(string, HashSet<uint>)` bedient mit **einer** Signatur vier
 Listen — `HostileCastingTank`, `HostileCastingArea`, `HostileCastingKnockback`, `HostileCastingStop`.
@@ -247,10 +330,14 @@ Den Typ einer davon zu ändern erzwingt eine Überladung oder den Umbau aller vi
 verbliebene Einwand, und er ist rein technisch: kein fachlicher Grund, sondern Aufwand an einer
 Stelle, die mit der Sache nichts zu tun hat.
 
-**Empfehlung: umsetzen, aber nicht als Erstes.** Die fachliche Konstruktion trägt jetzt; was fehlt,
-ist ein Umbau von `DrawActionsList`, der ohnehin ansteht. Vorher zu erledigen ist der Nebenbefund
-unten, weil er unabhängig davon wirkt und die Grundlage des Bedenkens entschärft, mit dem der
-Auftraggeber begonnen hat.
+**Empfehlung: umsetzen, und die Reihenfolge hat sich durch die Chancenprüfung geändert.** Die erste
+Fassung dieses Konzepts empfahl „umsetzen, aber nicht als Erstes" — auf der Kostenrechnung, die den
+Umbau von `DrawActionsList` einmal als Aufwand zählte. Gegen den Ertrag gerechnet steht derselbe
+Umbau für vier Listen und schließt zugleich die letzte benannte Lücke der Laufzeitbeobachtung. Damit
+ist er kein Hindernis mehr, sondern der Einstieg.
+
+Vorzuziehen bleibt allein der Nebenbefund unten, weil er unabhängig davon wirkt, ungleich kleiner ist
+und die Grundlage des Bedenkens entschärft, mit dem der Auftraggeber begonnen hat.
 
 ## Nebenbefund: die Sorge ums Wachstum trifft zu, aus einem anderen Grund
 

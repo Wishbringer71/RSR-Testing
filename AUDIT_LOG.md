@@ -2560,6 +2560,28 @@ Dazu kam der Überholfehler des **Selbst-Kurzschlusses**, der bis dahin nur für
 
 **Erreichter Pruefgrad:** statische Pruefung am Quelltext und an den Wirktexten in `ActionId.resx`, `check_doc_references`. **Kein Code geaendert** — der Auftrag war die Verbesserung des Konzepts.
 
+### A97 · Der Loop hatte keinen Eingang fuer „hier waere etwas moeglich"
+
+**Anlass:** Auftrag des Auftraggebers, Konzept 13 erneut vollstaendig im Loop zu bewerten, mit hohem Augenmerk auf die visionaere Seite — und **davor** einen eigenen Durchgang zu der Frage, ob der Loop Bewertungskonzepte wie die SWOT-Analyse und verwandte Hilfsmittel braucht, samt Recherche.
+
+**Befund, und er ist struktureller Natur:** Der Loop beginnt mit „Research: Fehlerbild vom Fehler trennen" und bewertet Optionen gegen Schweregrad, Behebungsdringlichkeit, Aufwand, Blast Radius und Folgekosten — **fuenf Maße fuer Kosten und Risiko, keines fuer Ertrag**. Wo kein Defekt vorliegt, springt er nicht an. Das ist kein Ausfuehrungsmangel.
+
+**Belegt an der eigenen Historie:** Vier grosse Moeglichkeiten dieses Projekts hat der Loop verworfen oder gar nicht gesehen, und alle vier hat der Auftraggeber eingebracht — die Rate je Gruppenmitglied („Vorratsarbeit"), die Guetepruefung der Schaetzung („braucht einen externen Beobachter"), das Schadenspotential der Flaechenaktionen (Nullvariante aus Kostengruenden) und die Ersetzung der Grenze „bewaeltigbar" durch eine Messung. Das ist eine Defektklasse in der Arbeitsweise, nicht eine Reihe von Einzelfaellen.
+
+**Recherche, und sie hat zwei Fehlzuschreibungen verhindert.** Die Urheberschaft der SWOT-Analyse ist ungeklaert: Die geläufige Zuschreibung an Harvard (Learned/Christensen/Andrews/Guth 1965) gilt als widerlegt — das Buch nennt die vier Woerter, nicht das Werkzeug, und Guth hat die Herkunft 2017 bestritten; die Gegenerzaehlung (Humphrey, Stanford, SOFT→SWOT) ist ebenfalls nicht gesichert. Und die Wirksamkeit des Premortem ist schwaecher belegt als ueblich behauptet: Die 30 % stammen aus einem Laborbefund zur **prospektiven Rueckschau** (Mitchell/Russo/Pennington, *Journal of Behavioral Decision Making* 2, 1989), das Premortem-Verfahren selbst (Klein, *HBR* 2007) ist nicht durch eine begutachtete Studie als risikoaufdeckend belegt. Beides steht so im Methodendokument, statt geglaettet uebernommen zu werden.
+
+**Aufgenommen, drei, ohne neue Stufe:** die Chancenfrage als **vierte Querschnittsanforderung** (SWOT-Zelle *Opportunities*, wirksam erst als TOWS-Kreuzung Staerke × Chance nach Weihrich 1982; Denkhilfe Kano) · das **Premortem** als dritte Hypothese in Stufe 6 — die beiden vorhandenen pruefen die Richtigkeit der Analyse, die dritte die Wirkung der Umsetzung · die **Cynefin-Domaene** in der Aufwandsregel der REGEL: In der komplexen Domaene ist das Messmittel mitzuliefern, und „von hier aus nicht messbar" gilt erst, nachdem geprueft wurde, ob der Code es selbst messen kann.
+
+**Geprueft und nicht aufgenommen:** Engpasstheorie (Goldratt) — die Prioritaetsregel des Auftraggebers steht bereits in `CLAUDE.md`, eine zweite daneben konkurrierte mit ihr · Wardley Mapping — sein Ertrag haengt an einer Wettbewerbsdimension, die dieses Fork nicht hat · Szenariotechnik — die Zukunft dieses Forks besteht aus Upstream und Spielpatches, beides beobachtbar statt zu erdenken, und der tragende Teil steht als *Lack of Movement* nach Parnas bereits in der Querschnittsanforderung Kausalitaet.
+
+**Das neue Werkzeug hat sich an seinem ersten Gegenstand sofort bewaehrt — gegen mein eigenes Konzept.** Das Premortem auf Konzept 13 („es ist ausgeliefert und es aendert sich nichts — warum?") hat einen Konstruktionsfehler gefunden, den beide vorhandenen Hypothesen der Falsifikationsstufe durchgelassen hatten: Die Rechnung verglich gegen `HealthForDyingTanks` (0,15). Durchgerechnet mindert das so gut wie nie — ein Einschlag mit dreissig Prozent Potential drueckt einen vollen Spieler auf siebzig. Dieselbe Fehlerform wie C59. Richtig ist die **Heilschwelle**: Erzeugt dieser Einschlag Heilbedarf? Korrigiert.
+
+**Die Chancenfrage hat die Empfehlung des Konzepts umgekehrt.** Drei Befunde: Der gespeicherte Einschlag schliesst die **letzte benannte Grenze der Laufzeitbeobachtung** — die Blindheit vor dem ersten Treffer — und zwar ohne die Statussatz-Tabelle, die Konzept 08 dafuer vorsah; er macht `IsUnderThreat` quantitativ; und der einzige verbliebene Kostenpunkt, die UI-Kopplung ueber vier Listen, ist von der Ertragsseite gelesen der **Hebel**: ein Umbau bedient vier Fragen, darunter „wie hart schlaegt dieser Tankbuster zu". Die frueher Fassung zaehlte den Aufwand einmal und den Ertrag einmal. Empfehlung deshalb von „umsetzen, aber nicht als Erstes" auf „umsetzen, der Umbau ist der Einstieg" geaendert; vorgezogen bleibt allein die lineare Suche.
+
+**Cynefin angewandt:** Konzept 13 traegt jetzt einen eigenen Abschnitt „Die Sonde gehoert mitgeliefert" — der gemessene Anteil je Listeneintrag und ein Zaehler, wie oft wegen zu kleinen Potentials nicht gemindert wurde. Ohne beides waere die Wirkung nach dem Bauen so unbekannt wie davor.
+
+**Erreichter Pruefgrad:** Recherche mit Quellenpruefung, statische Bewertung der eigenen Projekthistorie, `check_doc_references`. **Kein Code geaendert.** Die Erweiterungen betreffen die Arbeitsweise; wer sie zuruecknehmen will, streicht drei Absaetze in `CLAUDE.md`.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
