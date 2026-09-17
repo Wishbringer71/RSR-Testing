@@ -72,6 +72,29 @@ Neustart lautet die ehrliche Antwort „in dieser Sitzung noch nicht gesehen".
 Aktion der bisher gespielten Inhalte ihre Minderung wert. Ohne diese Unterscheidung hätte die Sonde
 einen abgeschalteten Baustein als unwirksamen gemeldet.
 
+## Wen die Unterdrückung erreicht
+
+Erhoben, nicht geschätzt: `AreaCastIsWorthMitigating` sitzt in `IsHostileCastingArea`, und diese Frage
+hat genau **vier** Leser — zwei, die etwas bewirken, und zwei Anzeigen.
+
+| Leser | Wirkung der Unterdrückung |
+|---|---|
+| `StateUpdater` → `AutoStatus.DefenseArea` (hinter `UseAoeDefense`) | die gemeinte: keine Gruppenminderung auf eine Bagatelle |
+| `ObjectHelper.IsUnderThreat`, zweiter Arm | die Bagatellfläche hält die Notfall-Vollheilung nicht mehr frei — **gewollt**, es ist der Fall aus der Rezz-Meldung |
+| Diagnosezeile der Gruppe, Feld `IsHostileCastingAOE` | keine, Anzeige |
+
+**Kein unerwarteter Verbraucher, und der zweite ist der Grund, warum diese Frage gestellt werden
+musste:** Ein gelernter Flächencast, der zwei Prozent nimmt, hielt Benediction genauso frei wie einer,
+der sechzig nimmt. `IsUnderThreat` behält daneben seine beiden anderen Arme, Aggro und fallende
+Gesundheit — zurückgehalten wird die Vollheilung also nur bei einem Ziel, das weder beschossen wird
+noch fällt.
+
+**Was dabei ungelöst bleibt, ist benannt und kein neuer Befund:** Die Flächenfrage wird gruppenweit
+beantwortet („bringt der Einschlag irgendwen unter die Schwelle"), `IsUnderThreat` fragt aber für ein
+**bestimmtes** Mitglied. Steht der Tank knapp über der Schwelle, gilt die Gefahr auch für den
+Gerezzten. Das ist das Verhalten von vorher und durch diesen Baustein nicht verschärft; die
+mitgliedsgenaue Fassung steht unten als Chance.
+
 ## Was im Kampf anders wird
 
 | Lage | Vorher | Nachher |
