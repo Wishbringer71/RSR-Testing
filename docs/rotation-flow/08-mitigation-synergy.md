@@ -45,7 +45,8 @@ darauf aufsetzt, ist der gemessene Fehlerfaktor in der Diagnoseanzeige zu beurte
 | **Schranke** der Aussetzregel: der Rest muss bewaeltigbar sein | umgesetzt (`HoldHolyMaxHostileOutput`, Standard 600 — **Setzung, kein Messergebnis**) |
 | **Schadensrate je Gruppenmitglied**, netto nach allem | umgesetzt: die Gruppe steht in `RecordedHP`, `GetTTK` antwortet fuer sie |
 | **Selbstkorrektur** der Schaetzung gegen ihren eigenen Fehler | umgesetzt (`ScoreTtkForecast`, `GetCorrectedTTK`); Rohzeit, korrigierte Zeit und Faktor stehen in der Diagnoseanzeige |
-| Erster **Verbraucher** der korrigierten Restzeit in einer Kampfregel | offen — erst nach Beurteilung des Faktors im Spiel |
+| **Vorausschau** als Ersatzgroesse an allen Heilentscheidungen | umgesetzt (`GetForecastSurvivingShare` und die drei davon abgeleiteten Getter), hinter `HealAheadOfDamage`, Standard aus |
+| Vorausschau auch in der **Flaechenheilung** (`PartyMembersAverHP` und Geschwister) | erfasst, nicht bearbeitet — siehe `TODO.md`; 83 Leser ausserhalb der Heilkette, darunter fremde Rotationen |
 | Minderungen des Tanks **rechnerisch** erfassen (Vorausschau vor dem ersten Treffer) | offen, siehe `TODO.md` — braucht Saetze je Status aus `Action.resx` |
 | Restzeit der Barriere (`HasSurvivingShield` misst die kuerzeste statt der laengsten) | offen, siehe `TODO.md` |
 | Erhebung der uebrigen Doppelnutzen-Aktionen | umgesetzt als `scan16.py`; ein Fund im Tank-/Heilerprofil (Rueckstoss) |
@@ -175,12 +176,73 @@ Er leistet damit mehr, als eine berichtete Spielsitzung leisten koennte.
 - **Gelesen wird die korrigierte Zeit** (`GetCorrectedTTK` = `GetTTK` geteilt durch den Faktor). Die
   Korrektur kostet keine einzige gesetzte Zahl; sie faellt aus der Beobachtung.
 
-**Bewertet wird sie vor ihrem ersten Verbraucher, nicht danach.** Rohzeit, korrigierte Zeit und
-Faktor stehen je Mitglied in der Diagnoseanzeige. Bleibt der Faktor ueber einen Pull hinweg nahe 1,
-genuegt der schlichte Trend und die Korrektur ist ueberfluessig; laeuft er hoch, sobald eine Gruppe
-anbindet, ist die Rohzahl die zu spaete und die korrigierte die zu nehmende. Diese Runde aendert
-deshalb kein Kampfverhalten — sie macht die Groesse beurteilbar, auf der das Verhalten spaeter
-aufsetzen soll.
+**Bewertet wird sie neben ihrem Verbraucher, nicht vor ihm.** Rohzeit, korrigierte Zeit und Faktor
+stehen je Mitglied in der Diagnoseanzeige, dazu der prognostizierte Gesundheitsanteil, den die
+Regeln lesen. Bleibt der Faktor ueber einen Pull hinweg nahe 1, genuegt der schlichte Trend und die
+Korrektur ist ueberfluessig; laeuft er hoch, sobald eine Gruppe anbindet, ist die Rohzahl die zu
+spaete und die korrigierte die zu nehmende.
+
+### Der Verbraucher: vorausberechnete Gesundheit statt zweiter Mechanismus
+
+**Der Fehler der heutigen Heilkette ist eine Verwechslung von Pegel und Rate.** Jede Schwelle —
+`HealthSingleAbility`, `HealthTankRatio`, `HealthForDyingTanks` — vergleicht einen **Stand**. Die
+Gefahr ist aber ein **Zufluss**: Wer schnell faellt, unterschreitet seine Schwelle mit weniger
+Restzeit, als die dadurch ausgeloeste Heilung zum Ankommen braucht — GCD-Rest, dann Cast. Der Zauber
+geht nach dem Tod heraus. Bei schwachem Zufluss ist dieselbe Schwelle frueh genug; die Korrektur
+muss deshalb mit der Rate skalieren und darf kein fester Abschlag sein.
+
+**Gewaehlt ist, die gelesene Groesse zu ersetzen, nicht einen Mechanismus danebenzustellen.** Die
+Frage einer Regel lautet nicht mehr „wie steht dieses Mitglied", sondern „wie steht es, wenn meine
+Heilung ankommt". Damit erben Schwellen, Rangstufen und Kurzschluesse die Vorausschau, ohne dass
+einer von ihnen umgebaut wird.
+
+```
+Anteil = max(0, 1 − Vorlaufzeit / korrigierte Restzeit)
+Vorlaufzeit = GCD-Rest + ein voller GCD
+```
+
+Beides aus dem Spielzustand, keine gesetzte Zahl. Ein Heiler unter Presence of Mind blickt kuerzer
+voraus — richtig, er kann frueher handeln.
+
+**Verworfen: ein zweiter Ausloeser samt eigener Rangstufe.** Er waere der naheliegende Weg gewesen
+und ist der schlechtere: Zwei Mechanismen, die dieselbe Frage entscheiden, laufen auseinander, sobald
+einer von beiden angefasst wird. Ausserdem haette er zwei Haelften gebraucht, die einzeln wirkungslos
+sind — ein Ausloeser ohne Zielwahl heilt den Falschen, eine Zielwahl ohne Ausloeser greift erst,
+wenn ohnehin geheilt wird.
+
+**Selbstbegrenzend im teuren Fall.** Steht die Gruppe stabil, ist der Nettotrend nicht fallend,
+`GetTTK` liefert `NaN` und der Anteil ist 1 — kein Unterschied zu heute, kein zusaetzlicher Zauber,
+kein MP. Die Vorausschau erscheint genau dann, wenn der Trend nach unten dreht, und waechst mit
+seiner Steilheit.
+
+**Was im Kampf anders wird, durchgerechnet.** GCD 2,5 s, halb abgelaufen, Vorlaufzeit 3,75 s.
+
+| Lage | Heute | Mit Vorausschau |
+|---|---|---|
+| Tank 90 %, korrigierte Restzeit 6 s (Anteil 0,375 → 34 %) | Heilung faellt erst bei 45 % real, rund 3 s spaeter | Heilung faellt sofort — ein GCD Vorsprung |
+| Tank 44 %, Restzeit 20 s (→ 36 %) · Schwarzmagier 48 %, Restzeit 4 s (→ 3 %) | Tank-Kurzschluss greift bei 44 ≤ 45, der Magier stirbt | Der Magier faellt mit 3 % in die kritische Rangstufe und wird davor abgefangen |
+| Gruppe stabil bei 80 %, kein Nettoabfall | — | — (identisch) |
+| Zwei Mitglieder, beide Restzeit unter der Vorlaufzeit (Anteil 0) | — | Beide auf 0 Punkten; es entscheidet die Rolle: Heiler vor Tank vor Schadensausteiler |
+
+Die letzte Zeile ist die Rangfolge des Auftraggebers, und sie faellt hier von selbst an der Stelle an,
+an der er sie haben will: **bei gleicher Gefaehrdung**, nicht davor.
+
+**Zwei benannte Ungenauigkeiten.**
+
+- *Die Barriere wird mitskaliert.* `GetForecastEffectiveHp` multipliziert effektive Punkte
+  einschliesslich Schild mit einem Anteil, der aus dem **Gesundheits**verlauf ohne Schild stammt.
+  Solange der Schild traegt, faellt die Gesundheit nicht, der Anteil ist 1 und nichts geschieht; der
+  Fall „Schild vorhanden **und** Gesundheit faellt" tritt nur auf, wenn eine frische Barriere auf
+  einen noch fallenden Trend trifft. Dann unterschaetzt die Rechnung den Puffer, also in die sichere
+  Richtung.
+- *Kein Flatterschutz.* Greift die Heilung, steigt die Gesundheit, die Restzeit wird `NaN` und die
+  Vorausschau faellt weg. Ein begonnener Cast wird davon nicht abgebrochen, und „heilen, bis es
+  reicht" ist das gewollte Verhalten — eine Hysterese ist deshalb nicht gebaut, aber auch nicht
+  gemessen.
+
+**Standard aus.** Die Wirkung ist mit den hier verfuegbaren Mitteln nicht zu belegen — statische
+Pruefung und Kompilierung sagen nichts darueber, ob der Tank steht. Bei ausgeschalteter Einstellung
+liefern alle vier Getter exakt die heutigen Werte, die Nullvariante ist also eingebaut.
 
 **Die Groesse, die den Anspruch unmittelbar erfuellen wuerde, existiert bereits — und ist unbrauchbar
 gebaut.** `DataCenter.DPSTaken` misst den **tatsaechlich angekommenen** Schaden, also bereits nach

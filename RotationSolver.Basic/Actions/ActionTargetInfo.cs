@@ -3179,7 +3179,11 @@ public struct ActionTargetInfo(IBaseAction action)
 					{
 						continue;
 					}
-					ranked.Add((o, o.NoNeedHealingInvuln(), ObjectHelper.GetHealthRatio(o)));
+
+					// Forecast health rather than current, so the ordering below answers "who will be
+					// worst off when a heal lands" instead of "who is worst off now". With the
+					// setting off the two are the same number.
+					ranked.Add((o, o.NoNeedHealingInvuln(), ObjectHelper.GetForecastHealthRatio(o)));
 				}
 
 				// Unprotected before protected, then lowest health first inside each group.
@@ -3218,12 +3222,12 @@ public struct ActionTargetInfo(IBaseAction action)
 				foreach (var r in ranked)
 				{
 					if (!r.Unprotected
-						|| r.Obj.GetEffectiveHpPercent() > Service.Config.HealthForDyingTanks * 100f)
+						|| r.Obj.GetForecastEffectiveHpPercent() > Service.Config.HealthForDyingTanks * 100f)
 					{
 						continue;
 					}
 
-					var hp = r.Obj.GetEffectiveHp();
+					var hp = r.Obj.GetForecastEffectiveHp();
 					var role = r.Obj.IsJobCategory(JobRole.Healer) ? 0
 						: r.Obj.IsJobCategory(JobRole.Tank) ? 1
 						: 2;
@@ -3288,23 +3292,26 @@ public struct ActionTargetInfo(IBaseAction action)
 				if (Player.Object != null
 					&& !Player.Object.HasStatus(false, StatusHelper.HealingIneffectiveStatus)
 					&& !ObjectHelper.PlayerIsHeldForDeathTrigger()
-					&& ObjectHelper.GetPlayerHealthRatio() <= Service.Config.HealthSelfRatio)
+					&& ObjectHelper.GetForecastPlayerHealthRatio() <= Service.Config.HealthSelfRatio)
 				{
 					return Player.Object;
 				}
 
 				var healerTar = healerTars.Count > 0 ? healerTars[0] : null;
-				if (healerTar != null && healerTar.GetHealthRatio() <= Service.Config.HealthHealerRatio)
+				if (healerTar != null && healerTar.GetForecastHealthRatio() <= Service.Config.HealthHealerRatio)
 				{
 					return healerTar;
 				}
 
 				var tankTar = tankTars.Count > 0 ? tankTars[0] : null;
-				if (tankTar != null && tankTar.GetHealthRatio() <= Service.Config.HealthTankRatio)
+				if (tankTar != null && tankTar.GetForecastHealthRatio() <= Service.Config.HealthTankRatio)
 				{
 					return tankTar;
 				}
 
+				// The last pick keeps the plain ratio: it asks "is anyone hurt at all", and a member
+				// at full health with a falling trend is not hurt yet. Forecasting here would hand
+				// the heal to somebody the caller never asked about.
 				var tar = healingNeededObjs.Count > 0 ? healingNeededObjs[0] : null;
 				return tar != null && tar.GetHealthRatio() < 1 ? tar : null;
 			}

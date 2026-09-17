@@ -694,9 +694,16 @@ internal static class StateUpdater
 		var ratio = StatusHelper.PlayerDoomNeedHealing() ? 0f : GetHealingOfTimeRatio(Player.Object, hotStatus);
 
 		// Determine the target's health ratio. If they have a "Doom" status, treat their health as critically low (0.2).
-		var h = StatusHelper.PlayerDoomNeedHealing() ? 0.2f : ObjectHelper.GetPlayerHealthRatio();
+		// Outside the Doom case this is the health the player is heading for by the time a heal
+		// begun now would land - identical to the current ratio while HealAheadOfDamage is off, or
+		// while the trend is not downward.
+		var h = StatusHelper.PlayerDoomNeedHealing() ? 0.2f : ObjectHelper.GetForecastPlayerHealthRatio();
 
-		if (h == 0 || StatusHelper.PlayerHasStatus(false, StatusHelper.HealingIneffectiveStatus))
+		// "Zero" here means a corpse, and it has to be asked of the real health. The forecast
+		// reaches zero for somebody who is alive and about to die - the very case this exists for -
+		// and reading it here would suppress the heal exactly then.
+		if (ObjectHelper.GetPlayerHealthRatio() == 0
+			|| StatusHelper.PlayerHasStatus(false, StatusHelper.HealingIneffectiveStatus))
 		{
 			return false;
 		}
@@ -744,12 +751,18 @@ internal static class StateUpdater
 		var ratio = target.DoomNeedHealing() ? 0f : GetHealingOfTimeRatio(target, hotStatus);
 
 		// Determine the target's health ratio. GetHealthRatio already treats "Doom" status targets as critically low (1%).
-		var h = target.GetHealthRatio();
+		// Forecast rather than current: a level threshold crossed at a steep rate leaves less time
+		// than the heal it triggers needs to arrive. Identical to the current ratio while
+		// HealAheadOfDamage is off, or while the member's trend is not downward.
+		var h = target.GetForecastHealthRatio();
 
 		// Healing that lands for nothing is still excluded outright - NoNeedHealingStatus mixes
 		// that case in with genuine invulnerabilities, and only the latter get the softer
 		// treatment below.
-		if (h == 0 || target.HasStatus(false, StatusHelper.HealingIneffectiveStatus))
+		// "Zero" here means a corpse, and it has to be asked of the real health. The forecast
+		// reaches zero for somebody who is alive and about to die - the very case this exists for -
+		// and reading it here would suppress the heal exactly then.
+		if (target.GetHealthRatio() == 0 || target.HasStatus(false, StatusHelper.HealingIneffectiveStatus))
 		{
 			return false;
 		}

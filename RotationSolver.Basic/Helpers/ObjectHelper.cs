@@ -3607,19 +3607,140 @@ public static class ObjectHelper
 			: 1f;
 	}
 
+	// Three samples at the 1 Hz recording rate. A forecast older than that belongs to a character
+	// the sampling loop no longer visits - out of the object table, or out of the party - and a
+	// stale time to death is worse than none, because it would keep answering confidently.
+	private static readonly TimeSpan ForecastFreshness = TimeSpan.FromSeconds(3);
+
 	/// <summary>
 	/// <see cref="GetTTK"/> corrected by how wrong it has been lately - the value a rule should read.
 	/// </summary>
+	/// <remarks>
+	/// Reads the forecast that <see cref="ScoreTtkForecast"/> filed rather than recomputing it.
+	/// GetTTK walks the whole recorded history, which is four minutes of samples; the heal target
+	/// selection asks this question several times per member and runs in the combat path, so
+	/// recomputing there would put a four-minute walk per member into every frame. The filed value
+	/// is at most a second old, and the quantity it carries averages over far longer than that.
+	/// </remarks>
 	internal static float GetCorrectedTTK(this IBattleChara battleChara)
 	{
-		var ttk = battleChara.GetTTK();
-		if (float.IsNaN(ttk))
+		if (battleChara == null
+			|| !_ttkForecast.TryGetValue(battleChara.GameObjectId, out var last)
+			|| float.IsNaN(last.Ttk)
+			|| DateTime.Now - last.At > ForecastFreshness)
 		{
-			return ttk;
+			return float.NaN;
 		}
 
 		var bias = battleChara.GetTtkBias();
-		return bias > 0f ? ttk / bias : ttk;
+		return bias > 0f ? last.Ttk / bias : last.Ttk;
+	}
+
+	/// <summary>
+	/// The share of its health a character is expected to still hold by the time a heal begun now
+	/// could land: 1 when nothing says it is falling, 0 when it would be dead before then.
+	/// </summary>
+	/// <remarks>
+	/// The whole of the forward-looking behaviour sits in this one number, and every rule below
+	/// inherits it by multiplying its own quantity with it. That is deliberate: the alternative was
+	/// a second trigger and a second rank beside the existing ones, and two mechanisms deciding the
+	/// same thing drift apart. Here the question a rule asks changes from "how does this member
+	/// stand" to "how will it stand when my heal arrives", and every threshold, rank and short-cut
+	/// that already exists follows without being touched.
+	///
+	/// Why a level threshold alone is late: it is a level, and the danger is a rate. A tank falling
+	/// at 33% of its pool per second passes the 70% mark with 2.1 seconds left, while the heal that
+	/// mark triggers needs the rest of the GCD plus a cast to land. The cast goes out after the
+	/// death. At a gentle rate the same threshold is early enough, which is why the correction has
+	/// to scale with the rate rather than be a fixed offset.
+	///
+	/// The lead time is read from the game rather than configured: what remains of the current GCD
+	/// plus one full GCD for the cast. A healer under Presence of Mind therefore looks ahead less
+	/// far, which is correct - they can act sooner.
+	///
+	/// Self-limiting in the case that matters for cost: while health is not falling on balance,
+	/// GetTTK answers NaN and this returns 1, so a party held steady sees no change at all. The
+	/// look-ahead appears exactly when the net trend is downward, and grows as it steepens.
+	///
+	/// Off by default. The effect cannot be shown with the means available here - static analysis
+	/// and a compile say nothing about whether a tank lives - so the current behaviour stays the
+	/// default and this is offered as a setting.
+	/// </remarks>
+	internal static float GetForecastSurvivingShare(this IBattleChara battleChara)
+	{
+		if (battleChara == null || !Service.Config.HealAheadOfDamage)
+		{
+			return 1f;
+		}
+
+		var ttk = battleChara.GetCorrectedTTK();
+		if (float.IsNaN(ttk) || ttk <= 0f)
+		{
+			return 1f;
+		}
+
+		var lead = GetHealLeadTime();
+		return lead <= 0f ? 1f : Math.Clamp(1f - (lead / ttk), 0f, 1f);
+	}
+
+	private static long _healLeadCacheTick = long.MinValue;
+	private static float _healLeadCache;
+
+	// Same frame cache as DataCenter's party HP statistics, and for the same reason: the heal target
+	// selection asks this several times per member per frame, and each read of the GCD figures goes
+	// to the action manager. One value per frame is as current as the question can be.
+	private const long HealLeadTtlMs = 15;
+
+	/// <summary>
+	/// How long a heal decided on now takes to land: what is left of this GCD, plus one GCD for the
+	/// cast. Read from the game, so a shortened GCD shortens the look-ahead with it.
+	/// </summary>
+	private static float GetHealLeadTime()
+	{
+		var now = Environment.TickCount64;
+		if (_healLeadCacheTick != long.MinValue && now - _healLeadCacheTick < HealLeadTtlMs)
+		{
+			return _healLeadCache;
+		}
+
+		_healLeadCache = DataCenter.DefaultGCDRemain + DataCenter.DefaultGCDTotal;
+		_healLeadCacheTick = now;
+		return _healLeadCache;
+	}
+
+	/// <summary>
+	/// <see cref="GetHealthRatio"/> carried forward to the moment a heal begun now would land.
+	/// </summary>
+	internal static float GetForecastHealthRatio(this IBattleChara battleChara)
+	{
+		return battleChara.GetHealthRatio() * battleChara.GetForecastSurvivingShare();
+	}
+
+	/// <summary>
+	/// <see cref="GetEffectiveHp"/> carried forward to the moment a heal begun now would land.
+	/// </summary>
+	internal static uint GetForecastEffectiveHp(this IBattleChara battleChara)
+	{
+		return (uint)(battleChara.GetEffectiveHp() * battleChara.GetForecastSurvivingShare());
+	}
+
+	/// <summary>
+	/// <see cref="GetEffectiveHpPercent"/> carried forward to the moment a heal begun now would land.
+	/// </summary>
+	internal static int GetForecastEffectiveHpPercent(this IBattleChara battleChara)
+	{
+		return (int)(battleChara.GetEffectiveHpPercent() * battleChara.GetForecastSurvivingShare());
+	}
+
+	/// <summary>
+	/// <see cref="GetPlayerHealthRatio"/> carried forward the same way, for the paths that ask about
+	/// the player without holding an object reference.
+	/// </summary>
+	internal static float GetForecastPlayerHealthRatio()
+	{
+		return Player.Object == null
+			? GetPlayerHealthRatio()
+			: GetPlayerHealthRatio() * Player.Object.GetForecastSurvivingShare();
 	}
 
 	/// <summary>

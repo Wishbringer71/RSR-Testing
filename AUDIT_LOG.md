@@ -2463,6 +2463,30 @@ Dazu kam der Überholfehler des **Selbst-Kurzschlusses**, der bis dahin nur für
 
 **Erreichter Pruefgrad:** statische Pruefung, `check_cs_structure`, `check_heal_target_order`, Compile in der CI. Im Spiel nicht beobachtet — der Faktor selbst ist das, was dort zu beobachten ist.
 
+### A93 · Der Verbraucher: vorausberechnete Gesundheit an allen Heilentscheidungen
+
+**Anlass:** Auftrag des Auftraggebers, die vorgelegte Variante D kritisch zu pruefen und, wenn sich nichts Besseres findet, umzusetzen.
+
+**Die Pruefung hat etwas Besseres gefunden, und D ist verworfen.** D haette einen zweiten Ausloeser in `StateUpdater` **und** eine zweite Rangstufe in `GeneralHealTarget` neben die vorhandenen gestellt. Zwei Mechanismen, die dieselbe Frage entscheiden, laufen auseinander, sobald einer angefasst wird — dieselbe Fehlerform, die dieses Archiv mehrfach fuehrt. Gewaehlt ist stattdessen, die **gelesene Groesse** zu ersetzen: Die Frage einer Regel lautet nicht mehr „wie steht dieses Mitglied", sondern „wie steht es, wenn meine Heilung ankommt". Schwellen, Rangstufen und Kurzschluesse erben die Vorausschau, ohne dass einer von ihnen umgebaut wird.
+
+**Der Defekt, den das behebt:** Jede Heilschwelle im Baum vergleicht einen **Stand**; die Gefahr ist ein **Zufluss**. Wer schnell faellt, unterschreitet seine Schwelle mit weniger Restzeit, als die dadurch ausgeloeste Heilung zum Ankommen braucht. Belegt am Kampf: Tank bei 90 % mit korrigierter Restzeit 6 s wird heute erst bei 45 % versorgt, rund drei Sekunden und einen GCD zu spaet; ein Schwarzmagier bei 48 % mit vier Sekunden Restzeit verliert die Heilung an den Tank-Kurzschluss, sobald der Tank bei 44 % steht.
+
+**Umsetzung:** `ObjectHelper.GetForecastSurvivingShare` — `max(0, 1 − Vorlaufzeit / korrigierte Restzeit)`, Vorlaufzeit `DefaultGCDRemain + DefaultGCDTotal`, beides aus dem Spielzustand, keine gesetzte Zahl. Darauf `GetForecastHealthRatio`, `GetForecastEffectiveHp`, `GetForecastEffectiveHpPercent`, `GetForecastPlayerHealthRatio`. Gelesen an vier Stellen in `GeneralHealTarget` und an den beiden `ShouldHealSingle`/`ShouldHealSelf`. Hinter `HealAheadOfDamage`, Standard aus; ausgeschaltet liefern alle Getter exakt die heutigen Werte.
+
+**Zwei Funde aus der Falsifikation, beide vor der Fertigstellung behoben.**
+1. **Die Leichenpruefung haette die Heilung genau dann unterdrueckt, wenn sie gebraucht wird.** `ShouldHealSingle` und `ShouldHealSelf` pruefen `h == 0` als „das ist eine Leiche" und lasen dieselbe Variable, die jetzt die Prognose traegt. Die Prognose erreicht 0 fuer einen **lebenden** Kandidaten, der vor der Heilung stuerbe — der Fall, fuer den die Aenderung existiert. Beide Stellen fragen die Null jetzt an der echten Gesundheit.
+2. **Leistung.** `GetCorrectedTTK` rief `GetTTK`, das die gesamte Vier-Minuten-Historie durchlaeuft, und die Zielwahl fragt mehrfach je Mitglied im Kampfpfad. `GetCorrectedTTK` liest jetzt die von `ScoreTtkForecast` abgelegte Vorhersage (hoechstens eine Sekunde alt, bei einer ueber Sekunden gemittelten Groesse unerheblich) und verwirft sie nach drei Abtastungen als veraltet. Die Vorlaufzeit liegt hinter demselben Bildcache, den `DataCenter.ComputePartyHpStats` benutzt.
+
+**Klassenerhebung, gefuehrt und begruendet eingeschraenkt:** Die **Flaechenheilung** traegt denselben Defekt — `HealthAreaAbility`/`HealthAreaSpell` gegen `PartyMembersAverHP`. Nicht mitbehoben, weil diese Groesse aus `ComputePartyHpStats` stammt und **83 Leser ausserhalb der Heilkette** hat, darunter Schwellen in fremden `ExtraRotations`; eine Vorausschau dort haette still das Verhalten aller 83 Stellen geaendert. Erfasst in `TODO.md` mit Aufloesungsbedingung und Zuschnittvorschlag.
+
+**Zwei benannte Ungenauigkeiten, beide in der sicheren Richtung:** Die Barriere wird mitskaliert, obwohl der Anteil aus dem Gesundheitsverlauf ohne Schild stammt — wirksam nur, wenn eine frische Barriere auf einen noch fallenden Trend trifft, und dann wird der Puffer **unterschaetzt**. Und es gibt keinen Flatterschutz: Greift die Heilung, verschwindet die Vorausschau; ein begonnener Cast bricht davon nicht ab.
+
+**Nebenbefund:** `check_doc_references` hat eine gealterte Zeilenangabe gefunden, die meine eigene neue Einstellung verschoben hatte (`TODO.md` → `Configs.cs:978`, tatsaechlich 1005). Berichtigt — genau der Alterungsfall, gegen den das Skript gebaut ist.
+
+**Pruefmittel erweitert:** `check_heal_target_order.py` prueft jetzt zusaetzlich, dass alle vier Entscheidungen in `GeneralHealTarget` die Vorausschau-Getter lesen, mit je einem konstruierten Rueckfall auf die schlichte Form im Selbsttest — die beiden Schreibweisen unterscheiden sich um ein Wort und kompilieren gleich. Die Positionspruefung toleriert beide Schreibweisen, damit die zwei Pruefungen einander nicht verdecken.
+
+**Erreichter Pruefgrad:** statische Pruefung, `check_cs_structure`, `check_heal_target_order`, `check_doc_references`, `scan18` (Einstellung hat einen Leser), Compile in der CI. **Im Spiel nicht beobachtet** — ob der Vorab-Eingriff den Tank haelt, ist die Frage, und sie ist von hier aus nicht zu beantworten. Deshalb Standard aus.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

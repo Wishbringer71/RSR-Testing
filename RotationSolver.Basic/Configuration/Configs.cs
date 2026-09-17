@@ -946,6 +946,23 @@ internal partial class Configs : IPluginConfiguration
 	[Range(0, 1, ConfigUnitType.Percent, 0.02f)]
 	public float HealthSelfRatio { get; set; } = 0.4f;
 
+	// Every health threshold above is a level, and what kills a tank in a wall-to-wall pull is a
+	// rate. A member falling fast crosses its threshold with less time left than the heal that
+	// threshold triggers needs to arrive - the rest of the GCD, then the cast - so the cast goes
+	// out after the death. With this on, the thresholds and the heal target selection read the
+	// health each member is headed for by the time a heal begun now would land, taken from the
+	// observed trend rather than from any table: ObjectHelper.GetForecastSurvivingShare.
+	//
+	// It changes nothing while a party is held steady. The trend is measured net of every
+	// mitigation, barrier and foreign heal, so health that is not falling on balance yields no
+	// look-ahead at all; it appears when the net trend turns downward and grows as it steepens.
+	//
+	// Off by default because the effect cannot be established with the means available here. A
+	// compile says nothing about whether the tank lives.
+	[UI("Heal ahead of incoming damage: judge each member by the health they are heading for, not the health they have.",
+		Filter = HealingActionCondition, Section = 1)]
+	public bool HealAheadOfDamage { get; set; } = false;
+
 	#region
 	[JobConfig, UI("Prioritize raising dead players over Healing/Defense.",
 		Filter = HealingActionCondition, Section = 2)]

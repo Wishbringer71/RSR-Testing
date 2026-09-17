@@ -224,7 +224,31 @@ Nachschlageoperation. Der Aufwand wächst mit der Zahl der Gegner, nicht mit ihr
 |---|---|---|
 | **1** | Klasse 1 vor alle drei Kurzschlüsse ziehen | **umgesetzt** in `ActionTargetInfo.GeneralHealTarget`: ungeschützte Kandidaten auf oder unter `HealthForDyingTanks` (effektive Gesundheit, wie `CanProvoke` sie liest) werden vor Selbst-, Heiler- und Tankzweig zurückgegeben, geordnet nach absoluten effektiven Punkten, bei Gleichstand Heiler vor Tank vor Schadensausteiler |
 | **2** | Klassen 2 und 3 mit Aggro und lageabhängigem Maß | Verbesserung, deren Nutzen ohne Spielbeobachtung eine Annahme bleibt → hinter eine Einstellung, Voreinstellung wie bisher |
-| **3** | Rate je Mitglied, für die Ordnung innerhalb von Klasse 2 | setzt den Aufnehmer voraus; erst bauen, wenn Stufe 2 den Verbraucher gezeigt hat |
+| **3** | Rate je Mitglied | **umgesetzt**, aber anders als hier zunächst geplant — siehe unten |
+
+### Stufe 3 ist nicht die Ordnung innerhalb einer Klasse geworden, sondern die Größe selbst
+
+Geplant war, die Rate als **zusätzliches** Ordnungsmerkmal innerhalb von Klasse 2 einzusetzen. Beim
+Bauen hat sich das als der schlechtere Zuschnitt erwiesen, und der Entwurf ist geändert worden:
+Statt ein zweites Merkmal neben die Gesundheit zu stellen, wird die **gelesene Gesundheit selbst**
+vorausberechnet. Jede der vier Entscheidungen dieser Methode — die Kandidatenordnung, die Schwelle
+der kritischen Klasse, ihre Ordnung nach absoluten Punkten und der Selbstkurzschluss — liest jetzt
+`ObjectHelper.GetForecast*` statt der aktuellen Größe.
+
+**Warum das besser ist:** Ein zusätzliches Merkmal hätte eine zweite Rangregel erzeugt, die mit der
+ersten auseinanderläuft, sobald eine von beiden angefasst wird. Die Ersetzung ändert **eine** Größe,
+und alle vorhandenen Klassen, Schwellen und Kurzschlüsse erben die Vorausschau, ohne umgebaut zu
+werden. Sie wirkt zudem auf Klasse 1 mit, was der ursprüngliche Zuschnitt nicht getan hätte — und
+gerade dort entscheidet sich, wer stirbt.
+
+**Was sie im Kampf ändert:** Ein Schwarzmagier bei 48 %, dessen Gesundheit in vier Sekunden
+aufgebraucht ist, steht prognostiziert bei 3 % und fällt damit in Klasse 1 — vor den Tank-Kurzschluss,
+der ihn bei 44 % des Tanks heute überholt. Rechnung und Grenzfälle in Konzept 08, Abschnitt „Der
+Verbraucher".
+
+Hinter `HealAheadOfDamage`, Standard aus; ausgeschaltet liefern alle vier Getter die heutigen Werte.
+Die Nachweislage ist damit unverändert die der Stufe 2: Der Nutzen bleibt eine Annahme, bis er im
+Spiel beobachtet ist.
 
 ## Abgrenzung zur Schildanrechnung
 

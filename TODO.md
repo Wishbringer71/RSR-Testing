@@ -26,7 +26,17 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 **Offen bleibt der Teil, den Beobachtung nicht leisten kann: die Lage vor dem ersten Treffer.** Dafür braucht es die Hochrechnung aus Statussätzen, und dafür je Status einen Satz aus `Action.resx`. Hybride Lösung nach Vorgabe des Auftraggebers: Beobachtung trägt den laufenden Kampf, die Hochrechnung den Eröffnungsmoment und alles, wofür noch keine Historie vorliegt (`GetTTK` liefert vor 2,5 s `NaN`).
 
-**Zweiter Teil, jetzt gemessen statt vermutet: die Auswertung.** `GetTTK` mittelt über den ganzen Kampf statt über die letzten Sekunden — für einen Gegner richtig, für ein Gruppenmitglied träge, weil Heilung und Einbruch sich abwechseln, und der Fehler geht in die gefährliche Richtung: Die gemeldete Restzeit ist zu lang, eine Regel darauf griffe zu spät. Dafür braucht es keinen externen Beobachter (A92): `ObjectHelper.ScoreTtkForecast` hält jede Sekunde die vorige Vorhersage gegen den tatsächlichen Verlauf und führt daraus je Mitglied einen geglätteten Fehlerfaktor; `GetCorrectedTTK` teilt ihn heraus. **Offen bleibt der erste Verbraucher in einer Kampfregel.** Keine Regel liest die korrigierte Zeit; Rohzeit, korrigierte Zeit und Faktor stehen in der Diagnoseanzeige, damit der Auftraggeber vor dem ersten Verbraucher beurteilen kann, ob die Korrektur überhaupt gebraucht wird — bleibt der Faktor über einen Pull nahe 1, genügt der schlichte Trend.
+**Zweiter Teil, gemessen statt vermutet: die Auswertung.** `GetTTK` mittelt über den ganzen Kampf statt über die letzten Sekunden — für einen Gegner richtig, für ein Gruppenmitglied träge, und der Fehler geht in die gefährliche Richtung: Die gemeldete Restzeit ist zu lang, eine Regel darauf griffe zu spät. Dafür braucht es keinen externen Beobachter (A92): `ObjectHelper.ScoreTtkForecast` hält jede Sekunde die vorige Vorhersage gegen den tatsächlichen Verlauf, `GetCorrectedTTK` teilt den Fehler heraus.
+
+**Der Verbraucher besteht (A93):** Alle Heilentscheidungen lesen die **vorausberechnete** Gesundheit — `GetForecastSurvivingShare` und die drei davon abgeleiteten Getter, hinter `HealAheadOfDamage`, Standard aus. Offen bleibt allein die Beobachtung im Spiel: ob der Fehlerfaktor überhaupt von 1 abweicht und ob der Vorab-Eingriff den Tank hält. Beides steht in der Diagnoseanzeige (Gesundheit jetzt → prognostiziert, Rohzeit, korrigierte Zeit, Faktor).
+
+### Die Flächenheilung entscheidet weiter nach Pegel statt nach Rate · N
+
+Erfasst, nicht bearbeitet (A93). `HealthAreaAbility`/`HealthAreaSpell` werden gegen `DataCenter.PartyMembersAverHP` und `LowestPartyMembersAverHP` verglichen — dieselbe Verwechslung von Stand und Zufluss, die für die Einzelheilung mit der Vorausschau behoben ist. Die Flächenheilung fällt daher weiterhin zu spät, wenn die Gruppe schnell fällt.
+
+**Warum nicht mitbehoben:** Die Größen stammen aus `DataCenter.ComputePartyHpStats` und speisen fünf öffentliche Eigenschaften mit **83 Lesern außerhalb der Heilkette**, darunter Schwellen in fremden `ExtraRotations` (Beiruta, Churin), die auf den heutigen Wert eingestellt sind. Eine Vorausschau dort hinein zu legen änderte still das Verhalten aller 83 Stellen und wäre nicht mehr der kleinste wirksame Eingriff.
+
+**Auflösungsbedingung:** aufzugreifen, sobald die Einzelheilung im Spiel beurteilt ist. Dann ist der Zuschnitt zu wählen, der die fremden Leser nicht trifft — eine eigene, vorausberechnete Kenngröße neben den bestehenden, gelesen allein von den beiden Flächenschwellen.
 
 
 ### `searing_light_coverage.py` misst über das Fenster hinaus, das es zu messen vorgibt · —
@@ -93,7 +103,7 @@ Ohne Wirkung auf die Frage, *ob* wiederbelebt wird — nur darauf, *welcher* von
 
 ### `SwiftcastBuffer` hat keinen Leser, und ihre Absicht ist überholt · N
 
-`Configs.cs:978` definiert die Einstellung (0,6 s, eigene Oberfläche, eigene Dokumentation „how early before next GCD should RSR use swiftcast for raise"). Eine Volltextsuche über den Baum findet genau diese eine Fundstelle: Sie wird nirgends gelesen.
+`Configs.cs:1005` definiert die Einstellung (0,6 s, eigene Oberfläche, eigene Dokumentation „how early before next GCD should RSR use swiftcast for raise"). Eine Volltextsuche über den Baum findet genau diese eine Fundstelle: Sie wird nirgends gelesen.
 
 Sie ist nicht nur unverbunden, sondern in ihrer dokumentierten Bedeutung unerfüllbar geworden. Sie besagt, Spontanität solle erst fallen, wenn nur noch `SwiftcastBuffer` Restzeit auf dem GCD liegt — bei 0,6 s liegt dieses Fenster fast vollständig, bei 0 vollständig in dem Bereich, den `RSCommands_Actions.DoAction` für Fähigkeiten sperrt. Sie zu verdrahten hieße, den in `docs/rotation-flow/11-raise-dispatch.md` behobenen Defekt an einer zweiten Stelle neu zu bauen; deshalb ist sie bei der dortigen Behebung bewusst unangetastet geblieben.
 

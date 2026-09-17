@@ -20,12 +20,27 @@ from pathlib import Path
 
 TARGET = Path('RotationSolver.Basic/Actions/ActionTargetInfo.cs')
 
-# The marks, in the order they have to appear inside GeneralHealTarget.
+# The marks, in the order they have to appear inside GeneralHealTarget. The short-cut patterns
+# tolerate either spelling of the health getter, because what they establish here is a position -
+# that the critical rank runs first - and a rename must not make that check silently vanish. That
+# the forecast spelling is the one in use is a separate question, asked by check_forecast below.
 CRITICAL = re.compile(r'HealthForDyingTanks')
-SELF_CUT = re.compile(r'GetPlayerHealthRatio\(\)\s*<=\s*Service\.Config\.HealthSelfRatio')
-HEALER_CUT = re.compile(r'GetHealthRatio\(\)\s*<=\s*Service\.Config\.HealthHealerRatio')
-TANK_CUT = re.compile(r'GetHealthRatio\(\)\s*<=\s*Service\.Config\.HealthTankRatio')
+SELF_CUT = re.compile(r'Get(?:Forecast)?Player(?:Forecast)?HealthRatio\(\)\s*<=\s*'
+                      r'Service\.Config\.HealthSelfRatio')
+HEALER_CUT = re.compile(r'Get(?:Forecast)?HealthRatio\(\)\s*<=\s*Service\.Config\.HealthHealerRatio')
+TANK_CUT = re.compile(r'Get(?:Forecast)?HealthRatio\(\)\s*<=\s*Service\.Config\.HealthTankRatio')
 DEAD_FILTER = re.compile(r'o\.IsDead\s*\|\|')
+
+# The forward-looking reads. Each of these decides who gets the heal, and each has a plain
+# counterpart that compiles just as well and silently reverts the behaviour to "who is worst off
+# now" - which is the whole of what this change is not. HealAheadOfDamage being off makes the two
+# identical at runtime; it does not make them identical in the source, which is where this looks.
+FORECAST_READS = (
+    ('the candidate ordering', re.compile(r'GetForecastHealthRatio\(o\)')),
+    ('the critical rank threshold', re.compile(r'GetForecastEffectiveHpPercent\(\)')),
+    ('the critical rank ordering', re.compile(r'GetForecastEffectiveHp\(\)')),
+    ('the self short-cut', re.compile(r'GetForecastPlayerHealthRatio\(\)')),
+)
 METHOD = re.compile(r'static IBattleChara\?\s+GeneralHealTarget\s*\(')
 TTK_METHOD = re.compile(r'bool\s+CheckTimeToKill\s*\(')
 TTK_FRIENDLY = re.compile(r'action\.Setting\.IsFriendly')
@@ -71,6 +86,26 @@ def check_time_to_kill(text):
     return []
 
 
+def check_forecast(text):
+    """Every decision in GeneralHealTarget has to read the forecast health, not the current one.
+
+    The two spellings differ by one word and compile alike, so a merge that brings the upstream
+    method back, or an edit made without the concept in hand, reverts the look-ahead without
+    anything failing. Off by default is not a reason to check less: the setting decides whether the
+    forecast differs from the current value, and this decides whether it is asked for at all.
+    """
+    body = body_of(text, METHOD)
+    if body is None:
+        return ['GeneralHealTarget not found - the method was renamed or removed']
+
+    problems = []
+    for name, pattern in FORECAST_READS:
+        if pattern.search(body) is None:
+            problems.append('%s no longer reads the forecast health: whoever is falling fastest is '
+                            'judged by the health they still have' % name)
+    return problems
+
+
 def check(text):
     """Returns a list of complaints; empty means the order is intact."""
     body = body_of(text, METHOD)
@@ -103,21 +138,23 @@ def self_test():
         static IBattleChara? GeneralHealTarget(List<IBattleChara> objs)
         {
             foreach (var o in objs) { if (o.IsDead || o.HasStatus()) { continue; } }
-            if (x.GetEffectiveHpPercent() > Service.Config.HealthForDyingTanks * 100f) { }
-            if (ObjectHelper.GetPlayerHealthRatio() <= Service.Config.HealthSelfRatio) { }
-            if (healerTar.GetHealthRatio() <= Service.Config.HealthHealerRatio) { }
-            if (tankTar.GetHealthRatio() <= Service.Config.HealthTankRatio) { }
+            ranked.Add((o, o.NoNeedHealingInvuln(), ObjectHelper.GetForecastHealthRatio(o)));
+            if (x.GetForecastEffectiveHpPercent() > Service.Config.HealthForDyingTanks * 100f) { }
+            var hp = r.Obj.GetForecastEffectiveHp();
+            if (ObjectHelper.GetForecastPlayerHealthRatio() <= Service.Config.HealthSelfRatio) { }
+            if (healerTar.GetForecastHealthRatio() <= Service.Config.HealthHealerRatio) { }
+            if (tankTar.GetForecastHealthRatio() <= Service.Config.HealthTankRatio) { }
         }
     '''
     if check(good):
         raise AssertionError('the intact order was rejected: %s' % check(good))
 
-    swapped = good.replace(
-        'if (x.GetEffectiveHpPercent() > Service.Config.HealthForDyingTanks * 100f) { }\n', '')
-    swapped = swapped.replace(
-        'if (tankTar.GetHealthRatio() <= Service.Config.HealthTankRatio) { }',
-        'if (tankTar.GetHealthRatio() <= Service.Config.HealthTankRatio) { }\n'
-        '            if (x.GetEffectiveHpPercent() > Service.Config.HealthForDyingTanks * 100f) { }')
+    critical_line = ('if (x.GetForecastEffectiveHpPercent() > '
+                     'Service.Config.HealthForDyingTanks * 100f) { }')
+    tank_line = 'if (tankTar.GetForecastHealthRatio() <= Service.Config.HealthTankRatio) { }'
+
+    swapped = good.replace(critical_line + '\n', '')
+    swapped = swapped.replace(tank_line, tank_line + '\n            ' + critical_line)
     found = check(swapped)
     if not any('BEFORE the critical rank' in p for p in found):
         raise AssertionError('a short-cut moved ahead of the critical rank went unnoticed: %s'
@@ -128,10 +165,35 @@ def self_test():
         raise AssertionError('a candidate list keeping the dead went unnoticed')
 
     # A match outside the method must not stand in for one inside it.
-    outside = good.replace('if (x.GetEffectiveHpPercent() > Service.Config.HealthForDyingTanks * 100f) { }\n', '')
+    outside = good.replace(critical_line + '\n', '')
     outside += '\n void Elsewhere() { var a = Service.Config.HealthForDyingTanks; }'
     if not any('critical rank is gone' in p for p in check(outside)):
         raise AssertionError('a match outside the method was accepted as one inside it')
+
+    # The look-ahead. Each read reverts to its plain counterpart with one word removed, and the
+    # plain form compiles, so every one of them needs its own constructed defect.
+    if check_forecast(good):
+        raise AssertionError('the forward-looking reads were rejected: %s' % check_forecast(good))
+
+    reverts = (
+        ('the candidate ordering',
+         'ObjectHelper.GetForecastHealthRatio(o)', 'ObjectHelper.GetHealthRatio(o)'),
+        ('the critical rank threshold',
+         'x.GetForecastEffectiveHpPercent()', 'x.GetEffectiveHpPercent()'),
+        ('the critical rank ordering',
+         'r.Obj.GetForecastEffectiveHp()', 'r.Obj.GetEffectiveHp()'),
+        ('the self short-cut',
+         'ObjectHelper.GetForecastPlayerHealthRatio()', 'ObjectHelper.GetPlayerHealthRatio()'),
+    )
+    for name, forecast, plain in reverts:
+        reverted = good.replace(forecast, plain)
+        if not any(name in p for p in check_forecast(reverted)):
+            raise AssertionError('%s reverted to the current health went unnoticed' % name)
+        # Reverting a look-ahead must not disturb the position check, or the two would mask
+        # each other and a single edit would report the wrong fault.
+        if check(reverted):
+            raise AssertionError('reverting %s broke the order check as well: %s'
+                                 % (name, check(reverted)))
 
     good_ttk = '''
         bool CheckTimeToKill(IBattleChara battleChara)
@@ -153,7 +215,8 @@ def self_test():
 
     print('self-test ok: the intact order is accepted, a short-cut moved ahead of the critical rank '
           'is caught,\n  a candidate list keeping the dead is caught, a match outside the method '
-          'does not count,\n  and CheckTimeToKill is checked for its friendly exemption')
+          'does not count,\n  each of the four forward-looking reads is caught when reverted to the '
+          'current health,\n  and CheckTimeToKill is checked for its friendly exemption')
 
 
 def main():
@@ -162,14 +225,14 @@ def main():
         print('%s not found - run from the repository root' % TARGET)
         return 1
     text = TARGET.read_text(encoding='utf-8')
-    problems = check(text) + check_time_to_kill(text)
+    problems = check(text) + check_forecast(text) + check_time_to_kill(text)
     if problems:
         print('heal target order is broken:')
         for p in problems:
             print('  - %s' % p)
         return 1
-    print('%s: the critical rank runs ahead of all three short-cuts, and the dead stay out.'
-          % TARGET)
+    print('%s: the critical rank runs ahead of all three short-cuts, the dead stay out, and every\n'
+          '  decision reads the health each member is heading for.' % TARGET)
     return 0
 
 

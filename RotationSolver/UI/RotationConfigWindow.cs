@@ -4613,8 +4613,12 @@ public partial class RotationConfigWindow : Window
 		// if it sits near 1 through a pull, the plain trend is good enough; if it runs high whenever
 		// a pack lands, the raw number is the late one and the corrected time is the one to use.
 		//
+		// The second percentage is the one every heal decision now reads with HealAheadOfDamage on:
+		// the health that member is heading for by the time a heal begun now would land. Equal to
+		// the first while the setting is off or the trend is not downward.
+		//
 		// Cost is one pass over the history per member, and only while this window is open.
-		ImGui.Text("Party time to die (health trend, net of every mitigation and heal):");
+		ImGui.Text("Party health now -> when a heal would land, and time to die:");
 		var partyForTtk = DataCenter.PartyMembers;
 		if (partyForTtk.Count == 0)
 		{
@@ -4633,8 +4637,9 @@ public partial class RotationConfigWindow : Window
 				var shown = float.IsNaN(ttk) ? "--" : $"{ttk:F1}s";
 				var corrected = member.GetCorrectedTTK();
 				var shownCorrected = float.IsNaN(corrected) ? "--" : $"{corrected:F1}s";
-				ImGui.Text($"- {member.Name} {member.GetHealthRatio() * 100f:F0}% raw {shown}"
-					+ $" corrected {shownCorrected} (x{member.GetTtkBias():F2})");
+				ImGui.Text($"- {member.Name} {member.GetHealthRatio() * 100f:F0}%"
+					+ $" -> {member.GetForecastHealthRatio() * 100f:F0}%"
+					+ $" raw {shown} corrected {shownCorrected} (x{member.GetTtkBias():F2})");
 			}
 		}
 
