@@ -556,6 +556,10 @@ Dem steht als Ertrag eine Nutzeroption gegenüber, deren Wirkung unbelegt ist un
 
 **Auflösungsbedingung:** aufzugreifen, sobald eine der drei Voraussetzungen entfällt — eine Spielbeobachtung, die eine Schwelle belegt; ein ohnehin anstehender Umbau von `DrawActionsList`; oder ein zweiter Verbraucher für gespeicherte Schadensanteile, der die Ablage für sich rechtfertigt.
 
+**Stand der dritten Bedingung, fortgeschrieben (A94/A95):** Ein zweiter Leser besteht jetzt. `ObjectHelper.IsUnderThreat` fragt über `DataCenter.IsHostileCastingAOE` dieselbe Liste und entscheidet daran, ob die Notfall-Vollheilung ausgegeben werden darf. Ihm fehlt die Größenordnung genauso: **Ein gelernter Flächencast, der zwei Prozent nimmt, hält Benediction genauso frei wie einer, der sechzig nimmt.** Das ist derselbe Mangel wie bei der Gruppenmitigation, an einer zweiten Entscheidung — die Bedingung ist damit näher gerückt, aber nicht erfüllt: Die Kostenseite (Persistenzvertrag, UI-Kopplung über vier Listen) ist unverändert, und ein zweiter Leser ohne belegte Schwelle rechtfertigt die Ablage nicht für sich.
+
+*Geprüft und entschärft:* Der naheliegende zweite Einwand gegen diesen Arm — `IsHostileCastingAOE` ist gruppenweit, und die Reichweitenprüfung `AreaCastCanReachPlayer` misst gegen den **Spieler**, nicht gegen das beurteilte Mitglied — trägt kaum. Die Lernbedingung verlangt, dass **jedes** Gruppenmitglied im selben Effektsatz getroffen wurde; die Liste führt damit Raidwides, für die die Reichweitenfrage weitgehend gegenstandslos ist. Der VFX-Zweig (`IsCastingAreaVfx`) ist davon unberührt und nicht mitgeprüft.
+
 **Bewertung:** technische Schuld, kein Defekt — die heutige Grobheit ist eine bewusste Vereinfachung, keine Fehlfunktion. Die Auflösung ist an dieselbe Bedingung gebunden wie der Rest dieses Eintrags: Ohne Spielbeobachtung ist nicht belegbar, dass die Schwelle mehr nützt als schadet.
 
 ### `SpreadDamagePaths` enthält keinen Spread-Marker · N
