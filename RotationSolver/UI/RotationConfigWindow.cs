@@ -4617,8 +4617,15 @@ public partial class RotationConfigWindow : Window
 		// the health that member is heading for by the time a heal begun now would land. Equal to
 		// the first while the setting is off or the trend is not downward.
 		//
+		// The trailing marks are the danger question the emergency heal asks, broken into the three
+		// arms that answer it: aim (an enemy is attacking this member or casting at them), aoe (an
+		// area cast is announced anywhere), fall (the health trend has a finite time to zero). That
+		// answers the one thing static analysis could not: whether "aoe" is true so much of the time
+		// in a trash pull that the rule never bites. Watching this line through a pull settles it -
+		// the code counts it itself, no outside observer needed.
+		//
 		// Cost is one pass over the history per member, and only while this window is open.
-		ImGui.Text("Party health now -> when a heal would land, and time to die:");
+		ImGui.Text("Party health now -> when a heal would land, time to die, and what threatens them:");
 		var partyForTtk = DataCenter.PartyMembers;
 		if (partyForTtk.Count == 0)
 		{
@@ -4626,6 +4633,8 @@ public partial class RotationConfigWindow : Window
 		}
 		else
 		{
+			// Group-wide, so it is read once rather than per member.
+			var areaCast = DataCenter.IsHostileCastingAOE;
 			foreach (var member in partyForTtk)
 			{
 				if (member == null)
@@ -4637,9 +4646,17 @@ public partial class RotationConfigWindow : Window
 				var shown = float.IsNaN(ttk) ? "--" : $"{ttk:F1}s";
 				var corrected = member.GetCorrectedTTK();
 				var shownCorrected = float.IsNaN(corrected) ? "--" : $"{corrected:F1}s";
+
+				var aimed = DataCenter.TargetedPartyMembers.Contains(member.GameObjectId);
+				var falling = !float.IsNaN(corrected);
+				var threat = aimed || areaCast || falling
+					? $"{(aimed ? "aim " : "")}{(areaCast ? "aoe " : "")}{(falling ? "fall" : "")}".TrimEnd()
+					: "safe";
+
 				ImGui.Text($"- {member.Name} {member.GetHealthRatio() * 100f:F0}%"
 					+ $" -> {member.GetForecastHealthRatio() * 100f:F0}%"
-					+ $" raw {shown} corrected {shownCorrected} (x{member.GetTtkBias():F2})");
+					+ $" raw {shown} corrected {shownCorrected} (x{member.GetTtkBias():F2})"
+					+ $" [{threat}]");
 			}
 		}
 

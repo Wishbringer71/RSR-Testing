@@ -2516,6 +2516,28 @@ Dazu kam der Überholfehler des **Selbst-Kurzschlusses**, der bis dahin nur für
 
 **Erreichter Pruefgrad:** statische Pruefung, `check_cs_structure`, `check_emergency_heal_threat`, `check_heal_target_order`, `check_doc_references`, `scan18`, Compile in der CI. **Im Spiel nicht beobachtet.** Offen bleibt insbesondere, wie oft `IsHostileCastingAOE` im Trash-Pull wahr ist — das entscheidet, ob die Regel dort ueberhaupt eintritt, und ist von hier aus nicht messbar.
 
+### A95 · Gegenpruefung der Tagesarbeit: sechs Funde, davon einer in der eigenen Zahl
+
+**Anlass:** Auftrag des Auftraggebers, alle an diesem Tag bearbeiteten Dateien kritisch gegenzupruefen — Konzepte, `TODO.md` und Code —, dabei zu fragen, wo hybride Loesungen besser sind und ob Automation Entscheidungen uebernehmen kann, die sonst ihm vorgelegt werden. Ausdruecklich: vor der Umsetzung auditieren, dann weiter optimieren. Nachgereicht: „immer schauen, wie sich das im spielgeschehen auswirken wird."
+
+**F1 — Veralteter Zustand nach Kampfende.** `UpdateTargets` leert auf dem Frueh-Ausstieg alle Listen und Zielfelder, das am selben Tag angelegte Aggro-Set aber nicht. Im Spiel: Wer zuletzt angegriffen wurde, gilt nach dem Kampf dauerhaft als bedroht, und die Notfallheilung behandelt ihn beim naechsten Einbruch entsprechend. Behoben.
+
+**F2 — Das Set enthielt mehr als Gruppenmitglieder.** Gegner zielen auf Begleiter, auf andere Gegner und auf nichts; mein `!= 0`-Filter liess das durch. Ein Set, das nie leer ist, beantwortet die Frage „wird jemand angegriffen" dauerhaft mit ja. Jetzt gegen `partyIds` gefiltert, das dieselbe Schleife ohnehin fuehrt.
+
+**F3 — Die Frage war halb gestellt.** Gelesen wurde nur `TargetObjectId` — wen der Gegner **angreift**. `CastTargetObjectId` — auf wen der laufende Zauber **landen wird** — fehlte, und genau dort trennen sich die beiden: ein Boss, der auf den Tank einschlaegt und dabei einen Zauber auf einen Magier wirkt, der weder Aggro noch bereits Schaden hat. Der Magier galt als sicher, und die Notfallheilung waere ihm verweigert worden — im ausdruecklich vom Auftraggeber genannten Fall „falls Gefahr bevorsteht". Beide Quellen werden jetzt gelesen; F2 und F3 zusammen ergaben eine bessere Loesung als jede fuer sich, und die Groesse heisst deshalb `TargetedPartyMembers` statt `AggroedMembers`.
+
+**F4 — Die erfundene Zahl, und das ist die Antwort auf seine Frage nach Automation.** `HoldHolyMaxHostileOutput` trennte mit dem Wert 600 „bewaeltigbar" von „aussichtslos". Seine Vorgabe war die **Schranke**; die Zahl war meine. Sie ist ersetzt durch `AnyPartyMemberFallingWithinHealWindow`: Faellt ein Mitglied innerhalb der Zeit, die der Einschub kostet (GCD-Rest plus ein GCD), wird nicht ausgesetzt — sonst schon. **Im Spiel dreht das die Regel in beiden Richtungen um:** Neun Gegner, die der Heiler im Griff hat, sind die Lage, in der das Strecken am meisten bringt, und die alte Zahl hat dort gesperrt; drei Gegner, die den Tank umbringen, sind die Lage, in der es nichts bringt, und die alte Zahl hat dort freigegeben. Das Mass wies in beiden Faellen in die falsche Richtung, weil es die Gegnerseite zaehlte statt die eigene. Die Einstellung bleibt als abschaltbarer Deckel, Vorgabewert 0 = aus — sie zu entfernen verwuerfe einen gespeicherten Nutzerwert.
+
+**F5 — Die offene Frage war von hier aus doch messbar.** A94 schloss mit „wie oft `IsHostileCastingAOE` im Trash-Pull wahr ist, ist von hier aus nicht messbar". Von hier aus nicht — vom Code aus schon, und das ist dasselbe Muster, das der Auftraggeber schon einmal benannt hat: dafuer braucht es keinen externen Beobachter. Die Diagnoseanzeige fuehrt je Mitglied jetzt die drei Arme der Gefahrenfrage einzeln (`aim`, `aoe`, `fall`, sonst `safe`). Steht dort im Trash-Pull dauerhaft `aoe`, ist belegt, dass die Regel dort nicht greift.
+
+**F6 — Ein ueberholter Stand in Konzept 08**, derselben Klasse wie die gestern behobenen: Der Abschnitt zur Laufzeitbeobachtung fuehrte weiter „gefuellt wird die Reihe ausschliesslich aus `AllHostileTargets`, weshalb sie fuer ein Gruppenmitglied `NaN` liefert" — falsch seit A91, im selben Dokument, das die Umsetzung beschreibt. Behoben. Der Abschnitt sagte im selben Atemzug voraus, es sei „keine einzige gesetzte Zahl mehr noetig, auch nicht die Grenze zwischen bewaeltigbar und aussichtslos" — die Umsetzung stand bis heute dahinter zurueck.
+
+**Geprueft und verworfen: ein Vertrauensmass fuer die Vorausschau.** Der Gedanke war, die Streuung der Vorhersagefehler zu fuehren und die Vorausschau damit zu daempfen, statt sie ueber einen Schalter zu stellen — Automation anstelle einer Nutzerentscheidung, also genau die gesuchte Bauform. Am Spielgeschehen geprueft faellt sie durch: Schaden kommt stossweise an, Automatikangriffe alle paar Sekunden, und bei 1 Hz Abtastung schwankt die Stichprobe deshalb stark, waehrend der Trend voellig gesund ist. Das Mass haette die Streuung der **Abtastung** gemessen und die Vorausschau ausgerechnet im Normalfall abgeschaltet. Nicht gebaut.
+
+**Geprueft und bestaetigt: die ungleichen Voreinstellungen von gestern.** `BenedictionNeedsThreat` steht an, `HealAheadOfDamage` aus, bei aehnlicher Beleglage — das sah nach Widerspruch aus. Er besteht nicht: Die Projektregel unterscheidet belegte Defektbehebung von Verbesserung ohne Nachweis, und Benediction behebt eine gemeldete Fehlfunktion, waehrend die Vorausschau eine Annahme bleibt. Unveraendert.
+
+**Erreichter Pruefgrad:** statische Pruefung, `check_cs_structure`, `check_emergency_heal_threat` (um die Sanctus-Schranke und beide Zielquellen erweitert), `check_heal_target_order`, `check_doc_references`, `scan18`, Compile in der CI. Im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

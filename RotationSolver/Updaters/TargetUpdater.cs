@@ -29,6 +29,11 @@ internal static partial class TargetUpdater
 			DataCenter.PartyMembers.Clear();
 			DataCenter.AllianceMembers.Clear();
 			DataCenter.AllHostileTargets.Clear();
+			// Cleared with the rest, or it keeps naming whoever was last under fire. Nothing fails
+			// when it is left behind: the set simply reports that member as threatened for as long
+			// as the party stays out of combat, and the emergency heal treats them accordingly the
+			// next time they drop.
+			DataCenter.TargetedPartyMembers.Clear();
 			DataCenter.DeathTarget = null;
 			DataCenter.DispelTarget = null;
 			DataCenter.ProvokeTarget = null;
@@ -173,24 +178,41 @@ internal static partial class TargetUpdater
 		DataCenter.AllianceMembers = allianceMembers;
 		DataCenter.AllHostileTargets = hostileTargets;
 
-		// Who is being attacked, collected once here rather than asked per member later. The list of
-		// hostiles is built in this loop anyway, and each of them names its target outright, so the
-		// cost is one pass over the enemies and the answer becomes a lookup. Asking it the other way
-		// round - "is any enemy targeting this member" - would walk every enemy for every member.
+		// Which party members an enemy is pointing at, collected once here rather than asked per
+		// member later. The hostile list is built in this loop anyway and each enemy names its
+		// target outright, so the cost is one pass over the enemies and the answer becomes a lookup.
+		// Asking it the other way round - "is any enemy aiming at this member" - would walk every
+		// enemy for every member.
 		//
-		// This is the aggro half of the danger question. The other two halves are already answered
-		// elsewhere: DataCenter.IsHostileCastingAOE for an announced area cast, and the health trend
-		// for damage that is actually arriving.
-		HashSet<ulong> aggroed = new(capacity: hostileTargets.Count);
+		// Two sources, because they are not the same question. TargetObjectId is who the enemy is
+		// attacking, which is aggro. CastTargetObjectId is who the cast in progress will land on,
+		// and the two part company exactly where it matters: a boss that keeps hitting the tank
+		// while casting something at a caster who holds no aggro and, until it lands, no damage
+		// either. Reading only the first would call that caster safe.
+		//
+		// Filtered against the party, so an entry means what a reader will take it to mean. Enemies
+		// point at pets, at other enemies and at nothing at all, and an unfiltered set is therefore
+		// never empty - a later reader asking "is anyone under fire" would always get yes.
+		HashSet<ulong> targeted = new(capacity: partyIds.Count);
 		for (var i = 0; i < hostileTargets.Count; i++)
 		{
-			var targetId = hostileTargets[i]?.TargetObjectId ?? 0;
-			if (targetId != 0)
+			var hostile = hostileTargets[i];
+			if (hostile == null)
 			{
-				_ = aggroed.Add(targetId);
+				continue;
+			}
+
+			if (partyIds.Contains(hostile.TargetObjectId))
+			{
+				_ = targeted.Add(hostile.TargetObjectId);
+			}
+
+			if (partyIds.Contains(hostile.CastTargetObjectId))
+			{
+				_ = targeted.Add(hostile.CastTargetObjectId);
 			}
 		}
-		DataCenter.AggroedMembers = aggroed;
+		DataCenter.TargetedPartyMembers = targeted;
 	}
 
 	private static List<IBattleChara> GetAllTargets()

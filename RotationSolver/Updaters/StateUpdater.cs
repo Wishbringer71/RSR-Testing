@@ -762,7 +762,8 @@ internal static class StateUpdater
 		// "Zero" here means a corpse, and it has to be asked of the real health. The forecast
 		// reaches zero for somebody who is alive and about to die - the very case this exists for -
 		// and reading it here would suppress the heal exactly then.
-		if (target.GetHealthRatio() == 0 || target.HasStatus(false, StatusHelper.HealingIneffectiveStatus))
+		var actual = target.GetHealthRatio();
+		if (actual == 0 || target.HasStatus(false, StatusHelper.HealingIneffectiveStatus))
 		{
 			return false;
 		}

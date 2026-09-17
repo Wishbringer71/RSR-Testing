@@ -116,14 +116,19 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Minimum slowed enemies in Holy's radius before the slow hold applies", Parent = nameof(HoldHolyWhilePackSlowed))]
 	public int HoldHolyMinSlowedHostiles { get; set; } = 3;
 
-	// Holding the stun only pays while the incoming stream is still manageable. Three enemies at
-	// full output - 300 - a HoT carries on its own; nine at 900 outrun every oGCD and GCD there is,
-	// and there the stun is needed now rather than later. The bound between the two is a property of
-	// the group's healing, not of the game, so it is a setting rather than a constant. The default
-	// is NOT evidenced: it sits between the two figures the user named as manageable and hopeless.
-	[Range(300, 1200, ConfigUnitType.None, 100)]
-	[RotationConfig(CombatType.PvE, Name = "Hold Holy only while total enemy output in its radius stays below this (100 = one enemy at full strength)", Parent = nameof(HoldHolyWhilePackSlowed))]
-	public int HoldHolyMaxHostileOutput { get; set; } = 600;
+	// Holding the stun only pays while the incoming stream is still manageable - the user's bound on
+	// this rule. That bound is now measured rather than set: ObjectHelper.AnyPartyMemberFalling-
+	// WithinHealWindow asks whether anyone actually goes down inside the GCD the hold costs, which
+	// is what "manageable" means. A head count of enemies never was: a nine-enemy pull the healing
+	// keeps up with is where stretching the throttle pays most, and three enemies killing the tank
+	// is where it pays least.
+	//
+	// This sum stays as an optional ceiling on top, and defaults to 0 = off. Its old default was a
+	// figure I invented, sitting between two numbers the user had named; removing the setting
+	// outright would discard a value already stored in user configuration.
+	[Range(0, 1200, ConfigUnitType.None, 100)]
+	[RotationConfig(CombatType.PvE, Name = "Additionally cap the slow hold at this total enemy output in Holy's radius (0 = no cap, 100 = one enemy at full strength)", Parent = nameof(HoldHolyWhilePackSlowed))]
+	public int HoldHolyMaxHostileOutput { get; set; } = 0;
 
 	public enum ThinAirUsageStrategy : byte
 	{
@@ -639,18 +644,34 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		}
 
 		// And only while what is left is still manageable. The share says the stream is being
-		// throttled; it does not say the remainder can be healed through. Three enemies at full
-		// output a HoT carries, nine outrun everything the job has - and at that point the stun is
-		// worth more now than later, however much of the pack is slowed. Holding it back there would
-		// stretch a throttle the tank does not survive long enough to benefit from.
+		// throttled; it does not say the remainder can be healed through. Holding the stun back
+		// while somebody is going down stretches a throttle the party does not survive long enough
+		// to benefit from.
 		//
-		// This is the output measure kept rather than dropped, and put where it belongs: as a bound
-		// on the hold, not as its trigger. As the trigger it asked "is this pull still worth an area
-		// cast", answered yes almost always, and the hold never fired (C59).
-		_ = SurveyHostileOutput(radius, out var output);
-		if (output > HoldHolyMaxHostileOutput)
+		// Manageable is measured, not set. It used to be a number I invented - 600, sitting between
+		// two figures the user had called manageable and hopeless - and a head count of enemies was
+		// never the question anyway: a nine-enemy pull that the healing is keeping up with is
+		// exactly where stretching the throttle pays, and a three-enemy pull that is killing the
+		// tank is exactly where it does not. What decides is whether anyone actually falls inside
+		// the GCD this hold costs, which the health trend answers per member.
+		//
+		// Nobody falling reads as NaN, and NaN is no death in sight rather than a short time, so a
+		// party being held steady never trips this however large the pack.
+		if (ObjectHelper.AnyPartyMemberFallingWithinHealWindow())
 		{
 			return false;
+		}
+
+		// The old sum is kept as an optional ceiling for whoever wants one, and defaults to off.
+		// Removing the setting outright would discard a value already stored in user configuration;
+		// leaving it at a figure I made up would keep deciding on it.
+		if (HoldHolyMaxHostileOutput > 0)
+		{
+			_ = SurveyHostileOutput(radius, out var output);
+			if (output > HoldHolyMaxHostileOutput)
+			{
+				return false;
+			}
 		}
 
 		return DiaPvE.CanUse(out _) || AeroIiPvE.CanUse(out _) || AeroPvE.CanUse(out _);

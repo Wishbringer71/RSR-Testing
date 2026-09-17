@@ -3695,7 +3695,7 @@ public static class ObjectHelper
 	/// How long a heal decided on now takes to land: what is left of this GCD, plus one GCD for the
 	/// cast. Read from the game, so a shortened GCD shortens the look-ahead with it.
 	/// </summary>
-	private static float GetHealLeadTime()
+	internal static float GetHealLeadTime()
 	{
 		var now = Environment.TickCount64;
 		if (_healLeadCacheTick != long.MinValue && now - _healLeadCacheTick < HealLeadTtlMs)
@@ -3719,7 +3719,8 @@ public static class ObjectHelper
 	///
 	/// That is three questions, and the tree can answer all three:
 	/// <list type="bullet">
-	/// <item>aggro - some enemy is pointing at this member (<see cref="DataCenter.AggroedMembers"/>)</item>
+	/// <item>aimed at - an enemy is attacking this member, or casting something that will land on
+	/// them (<see cref="DataCenter.TargetedPartyMembers"/>)</item>
 	/// <item>an announced area cast - <see cref="DataCenter.IsHostileCastingAOE"/></item>
 	/// <item>damage actually arriving - the health trend has a finite time to zero</item>
 	/// </list>
@@ -3739,6 +3740,55 @@ public static class ObjectHelper
 	/// Errs towards "threatened": every arm that cannot answer says yes by staying silent, and the
 	/// caller then behaves exactly as it does today.
 	/// </remarks>
+	/// <summary>
+	/// Is anybody in the party going to fall before a heal decided on now could reach them?
+	/// </summary>
+	/// <remarks>
+	/// The user's bound on every rule that yields a GCD: suspending something is only right while
+	/// the incoming damage is still manageable. Manageable is not a number of enemies and not a sum
+	/// of their output - it is whether the group holds, and that is measured rather than set.
+	///
+	/// A rule that gives up a GCD costs the party exactly that GCD. So the question is whether
+	/// everyone survives it with enough left over to be healed afterwards, which is the same lead
+	/// time the forward-looking health uses: the rest of this GCD plus one for the cast.
+	///
+	/// Nobody falling means NaN everywhere, and NaN is not a short time - it is no death in sight.
+	/// So a party being held steady never trips this, however many enemies are standing on it, and
+	/// a single member actually going down stops the hold even if the pack is small. That is the
+	/// intended shape: the old proxy measured the pack, and a big pack that is being healed through
+	/// is precisely where stretching the throttle pays.
+	///
+	/// It answers for the whole party rather than for the tank alone, which is deliberately
+	/// conservative: a damage dealer standing in fire blocks the hold even though the stun would not
+	/// have helped him. The cost of that is one GCD of stun stretching, and the user's standing
+	/// order puts the group's survival ahead of output.
+	/// </remarks>
+	internal static bool AnyPartyMemberFallingWithinHealWindow()
+	{
+		var lead = GetHealLeadTime();
+		if (lead <= 0f)
+		{
+			return false;
+		}
+
+		var party = DataCenter.PartyMembers;
+		for (var i = 0; i < party.Count; i++)
+		{
+			var member = party[i];
+			if (member == null || member.IsDead)
+			{
+				continue;
+			}
+
+			var ttk = member.GetCorrectedTTK();
+			if (!float.IsNaN(ttk) && ttk <= lead)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	internal static bool IsUnderThreat(this IBattleChara battleChara)
 	{
 		if (battleChara == null)
@@ -3746,7 +3796,7 @@ public static class ObjectHelper
 			return true;
 		}
 
-		if (DataCenter.AggroedMembers.Contains(battleChara.GameObjectId))
+		if (DataCenter.TargetedPartyMembers.Contains(battleChara.GameObjectId))
 		{
 			return true;
 		}

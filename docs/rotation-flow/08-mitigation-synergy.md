@@ -42,7 +42,7 @@ darauf aufsetzt, ist der gemessene Fehlerfaktor in der Diagnoseanzeige zu beurte
 | Aussetzbedingung aus dem **Mitigationsgrund** — eine fremde Minderung traegt bereits | umgesetzt (`WHM_Reborn.ShouldHoldHolyWhilePackSlowed`, Standard an) |
 | **Stunbarkeit** als Bedingung ueber allen drei Aussetzregeln | umgesetzt (`headroom` aus `SurveyStuns`) |
 | Aussetzbedingung als **Anteil** der verlangsamten Gegner, mit Mindestzahl | umgesetzt (`HoldHolyMinSlowedHostiles`, Standard 3) |
-| **Schranke** der Aussetzregel: der Rest muss bewaeltigbar sein | umgesetzt (`HoldHolyMaxHostileOutput`, Standard 600 — **Setzung, kein Messergebnis**) |
+| **Schranke** der Aussetzregel: der Rest muss bewaeltigbar sein | umgesetzt und **gemessen statt gesetzt**: `AnyPartyMemberFallingWithinHealWindow`. Die frühere Zahl (`HoldHolyMaxHostileOutput` 600) war meine Setzung und ist zum optionalen Deckel mit Standard 0 = aus geworden |
 | **Schadensrate je Gruppenmitglied**, netto nach allem | umgesetzt: die Gruppe steht in `RecordedHP`, `GetTTK` antwortet fuer sie |
 | **Selbstkorrektur** der Schaetzung gegen ihren eigenen Fehler | umgesetzt (`ScoreTtkForecast`, `GetCorrectedTTK`); Rohzeit, korrigierte Zeit und Faktor stehen in der Diagnoseanzeige |
 | **Vorausschau** als Ersatzgroesse an allen Heilentscheidungen | umgesetzt (`GetForecastSurvivingShare` und die drei davon abgeleiteten Getter), hinter `HealAheadOfDamage`, Standard aus |
@@ -88,14 +88,24 @@ sinnfrei und kostet nur den Flaechenzauber. Umgesetzt ist das als `headroom` aus
 gedrosselt wird - er sagt nicht, dass der Rest durchzuheilen ist. Drei Gegner bei voller Leistung
 traegt ein HoT, neun laufen jeder Faehigkeit davon; dort ist die Betaeubung **jetzt** mehr wert als
 spaeter, gleich wie gross der verlangsamte Anteil ist. Eine Drosselung zu strecken, die der Tank
-nicht lange genug ueberlebt, um von ihr zu haben, ist kein Gewinn. Gemessen wird das mit der
-Leistungsrechnung unten, als **Schranke** der Aussetzregel und nicht als ihr Ausloeser — und sie
-zaehlt nur, wo ueberhaupt betaeubt werden kann.
+nicht lange genug ueberlebt, um von ihr zu haben, ist kein Gewinn. Das ist die **Schranke** der
+Aussetzregel und nicht ihr Ausloeser — und sie zaehlt nur, wo ueberhaupt betaeubt werden kann.
 
-**Die Grenze ist eine Einstellung, kein Spielwert.** `HoldHolyMaxHostileOutput` (Vorgabe 600) trennt
-„bewaeltigbar" von „aussichtslos". Wo genau sie liegt, haengt am Heilvermoegen der Gruppe; die beiden
-Eckwerte stammen vom Auftraggeber (300 tragbar, 900 aussichtslos), der Vorgabewert dazwischen ist
-eine **Setzung und kein Messergebnis**.
+**Bewaeltigbar wird gemessen, nicht gesetzt.** Die Frage lautet nicht „wie viele Gegner stehen da",
+sondern „haelt die Gruppe". `AnyPartyMemberFallingWithinHealWindow` beantwortet sie am
+Gesundheitsverlauf: Faellt ein Mitglied innerhalb der Zeit, die der Einschub kostet — GCD-Rest plus
+ein GCD —, wird nicht ausgesetzt. Faellt niemand, wird ausgesetzt, gleich wie gross das Paket ist.
+
+**Warum das die Gegnerzahl schlaegt, am Spielgeschehen:** Neun Gegner, die ein Heiler im Griff hat,
+sind genau die Lage, in der das Strecken der Drosselung am meisten bringt — die alte Zahl hat dort
+gesperrt. Drei Gegner, die den Tank umbringen, sind die Lage, in der es nichts bringt — die alte
+Zahl hat dort freigegeben. Das Maß wies in beiden Faellen in die falsche Richtung, weil es die
+Gegnerseite maß statt der eigenen.
+
+*Herkunft der ersetzten Zahl:* Die beiden Eckwerte stammen vom Auftraggeber (300 tragbar, 900
+aussichtslos); der Vorgabewert 600 dazwischen war **meine** Setzung und kein Messergebnis. Als
+optionaler Deckel bleibt `HoldHolyMaxHostileOutput` erhalten, Standard 0 = aus — eine Einstellung
+zu entfernen verwirft einen bereits gespeicherten Nutzerwert.
 
 ### Der Grenzwert gilt fuer den gesamten Schadenseingang
 
@@ -114,16 +124,16 @@ weil er groesser ist als die Sanctus-Regel, an der er auffiel.
 | Minderung **des Tanks persoenlich** — Rampart, Bollwerk, Sentinel, Schattenwall, Vengeance, Bloodwhetting | **fehlt vollstaendig.** `StatusHelper.RampartStatus` fuehrt die Ids, wird aber ausschliesslich als `StatusProvide` benutzt, also zur Doppelbelegungssperre — nie zur Messung |
 | Die Saetze dieser Minderungen | **fehlen.** `RampartStatus` ist eine reine Id-Liste; Rampart und Sentinel mindern verschieden stark. Ohne Satz je Status ist keine Rechnung moeglich; belegbar waeren sie aus den Wirktexten in `Action.resx` |
 
-**Der ganze Anspruch ist aus Laufzeitbeobachtung erfuellbar, ohne eine einzige statische Vorgabe.**
-Das ist der Weg mit dem kleinsten Eingriff und der groessten Deckung, und die Maschinerie dafuer
-steht bereits im Baum — sie wird nur nicht auf die Gruppe angewandt.
+**Der ganze Anspruch ist aus Laufzeitbeobachtung erfuellbar, ohne eine einzige statische Vorgabe** —
+und er ist es inzwischen. Das ist der Weg mit dem kleinsten Eingriff und der groessten Deckung, weil
+die Maschinerie dafuer bereits im Baum stand; sie war nur nicht auf die Gruppe angewandt.
 
 `DataCenter.RecordedHP` ist eine Zeitreihe von Gesundheitsanteilen **je Objekt-Id**: einmal je
 Sekunde ein Eintrag, 240 tief, also vier Minuten Historie. `ObjectHelper.GetTTK` liest daraus fuer
 eine beliebige Id den Verlauf, bildet einen gleitenden Mittelwert und schaetzt die Zeit bis auf null.
-Die Methode fragt nichts weiter als `GameObjectId` — sie ist generisch. **Gefuellt wird die Reihe
-jedoch ausschliesslich aus `AllHostileTargets`** (`TargetUpdater.UpdateTimeToKill`), weshalb sie fuer
-ein Gruppenmitglied `NaN` liefert.
+Die Methode fragt nichts weiter als `GameObjectId` — sie ist generisch. Gefuellt wurde die Reihe
+lange ausschliesslich aus `AllHostileTargets`, weshalb sie fuer ein Gruppenmitglied `NaN` lieferte;
+seit A91 nimmt `TargetUpdater.UpdateTimeToKill` die Gruppe mit auf.
 
 **Was ein beobachteter Verlauf leistet, das eine Hochrechnung nicht leistet:** Er ist bereits netto.
 Jede Minderung, jede Mitigation, jede Barriere und jede fremde Heilung stecken darin, ohne dass
@@ -334,11 +344,18 @@ vorgelegt worden. Eine erkannte Bedingung, unter der ein Eingriff im gesamten ma
 nichts tut, ist keine Eigenschaft, sondern seine Widerlegung, und gehört dem Auftraggeber
 vorgetragen, bevor sie im Spiel auffällt.
 
-**Die Leistungsrechnung ist nicht entfallen, sondern versetzt.** `HostileOutputPercent` und
-`SurveyHostileOutput` messen weiter, was sie immer gemessen haben — nur steht das Ergebnis jetzt als
-Obergrenze am Ende der Bedingungskette statt als deren Auslöser am Anfang. Ihre Faktoren sind den
-Wirktexten entnommen, die Verlangsamung als einzige Nicht-Minderung über die Angriffsrate
-umgerechnet (C57).
+**Die Leistungsrechnung ist zweimal versetzt worden und steht jetzt ganz hinten.** Zuerst war sie der
+Auslöser der Regel — dort maß sie die falsche Frage und die Regel griff im Wall-to-Wall nie (C59).
+Dann war sie die Schranke am Ende, mit einem von mir gesetzten Trennwert. Heute ist die Schranke
+gemessen (`AnyPartyMemberFallingWithinHealWindow`), und die Leistungsrechnung bleibt als
+**abschaltbarer Deckel** darüber, Standard aus. `HostileOutputPercent` und `SurveyHostileOutput`
+messen unverändert, was sie immer gemessen haben; ihre Faktoren stammen aus den Wirktexten, die
+Verlangsamung als einzige Nicht-Minderung über die Angriffsrate umgerechnet (C57).
+
+*Warum sie nicht ganz entfällt:* Sie ist eine gespeicherte Nutzereinstellung. Sie zu entfernen
+verwürfe einen Wert, den der Auftraggeber möglicherweise gesetzt hat, und die Rechnung selbst ist
+richtig — falsch war nur, sie über die Gegnerseite entscheiden zu lassen, wo die eigene Seite die
+Frage beantwortet.
 
 **Die Betäubung bleibt aus der Bedingung heraus.** Sie wäre die stärkste Drosselung überhaupt — ein
 betäubter Gegner trägt null —, aber ihre Frage ist eine zeitliche: Die Betäubung dauert länger als

@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Guard the danger condition on the emergency full heal.
+"""Guard the decisions that hang on measured danger rather than on a set number.
+
+Two rules in WHM_Reborn ask that question, and both are one word away from deciding on a figure
+again: the emergency full heal, and the bound on the Sanctus hold.
+
 
 The user reported Benediction going out on a player the moment he was raised. A resurrected player
 holds a few percent, carries no aggro and is taking no damage, so a health threshold reads him as
@@ -37,15 +41,32 @@ TOGGLE_DECL = re.compile(r'bool\s+BenedictionNeedsThreat\s*\{\s*get;\s*set;\s*\}
 # without the trend anything that neither casts nor retargets is missed.
 THREAT_METHOD = re.compile(r'bool\s+IsUnderThreat\s*\(')
 THREAT_ARMS = (
-    ('aggro', re.compile(r'DataCenter\.AggroedMembers\.Contains')),
+    ('who an enemy is aiming at', re.compile(r'DataCenter\.TargetedPartyMembers\.Contains')),
     ('the announced area cast', re.compile(r'DataCenter\.IsHostileCastingAOE')),
     ('the health trend', re.compile(r'IsNaN\(\s*battleChara\.GetCorrectedTTK\(\)\s*\)')),
 )
 
-# The aggro set has to be filled, or its arm answers "nobody is being attacked" forever - a silent
-# null result that looks exactly like a safe party.
-AGGRO_FILL = re.compile(r'DataCenter\.AggroedMembers\s*=')
-AGGRO_SOURCE = re.compile(r'TargetObjectId')
+# The set has to be filled, or its arm answers "nobody is being aimed at" forever - a silent null
+# result that looks exactly like a safe party. Both sources are required: the attack target is
+# aggro, the cast target is what is about to land, and a boss beating on the tank while casting at
+# a caster is the case that separates them.
+SET_FILL = re.compile(r'DataCenter\.TargetedPartyMembers\s*=')
+SET_SOURCES = (
+    ('the attack target', re.compile(r'hostile\.TargetObjectId')),
+    ('the cast target', re.compile(r'hostile\.CastTargetObjectId')),
+)
+# And it has to be cleared where the rest of the frame state is, or it names whoever was last under
+# fire for as long as the party stays out of combat.
+SET_CLEAR = re.compile(r'DataCenter\.TargetedPartyMembers\.Clear\(\)')
+
+# The other rule in this file that used to decide on an invented number. The user's bound on the
+# Sanctus hold is that the incoming damage must stay manageable; that was a made-up enemy-output
+# figure and is now the measured question "does anyone actually fall inside the GCD this costs".
+# Losing the call puts the invented number back in charge, and the optional ceiling must stay off by
+# default or it decides again on a figure nobody measured.
+HOLD_METHOD = re.compile(r'bool\s+ShouldHoldHolyWhilePackSlowed\s*\(')
+HOLD_MEASURED = re.compile(r'ObjectHelper\.AnyPartyMemberFallingWithinHealWindow\(\)')
+OUTPUT_CAP_DECL = re.compile(r'int\s+HoldHolyMaxHostileOutput\s*\{\s*get;\s*set;\s*\}\s*=\s*(\d+)')
 
 
 def body_of(text, pattern):
@@ -89,6 +110,27 @@ def check_branch(text):
     return problems
 
 
+def check_hold_bound(text):
+    """The Sanctus hold's bound has to be the measured one, not the invented number."""
+    body = body_of(text, HOLD_METHOD)
+    if body is None:
+        return ['ShouldHoldHolyWhilePackSlowed not found - renamed or removed']
+
+    problems = []
+    if HOLD_MEASURED.search(body) is None:
+        problems.append('the hold no longer asks whether anyone is actually falling: its bound is '
+                        'back to a set number of enemies, which a pull the healing keeps up with '
+                        'trips for no reason')
+
+    decl = OUTPUT_CAP_DECL.search(text)
+    if decl is None:
+        problems.append('HoldHolyMaxHostileOutput is not declared')
+    elif decl.group(1) != '0':
+        problems.append('HoldHolyMaxHostileOutput no longer defaults to 0, so an unmeasured output '
+                        'figure decides again')
+    return problems
+
+
 def check_threat(text):
     """All three arms of the danger question have to be there."""
     body = body_of(text, THREAT_METHOD)
@@ -102,15 +144,23 @@ def check_threat(text):
     return problems
 
 
-def check_aggro(text):
-    """The aggro set has to be filled from the hostiles' own targets."""
-    fill = AGGRO_FILL.search(text)
-    if fill is None:
-        return ['nothing fills DataCenter.AggroedMembers: the aggro arm answers "nobody is being '
-                'attacked" for the whole fight']
-    if AGGRO_SOURCE.search(text) is None:
-        return ['the aggro set is filled without reading TargetObjectId - check what it now holds']
-    return []
+def check_targets(text):
+    """The set has to be filled from both target sources, and cleared with the rest of the state."""
+    problems = []
+    if SET_FILL.search(text) is None:
+        problems.append('nothing fills DataCenter.TargetedPartyMembers: the first arm answers '
+                        '"nobody is being aimed at" for the whole fight')
+        return problems
+
+    for name, pattern in SET_SOURCES:
+        if pattern.search(text) is None:
+            problems.append('the set no longer reads %s, so a member threatened only that way '
+                            'reads as safe' % name)
+
+    if SET_CLEAR.search(text) is None:
+        problems.append('the set is never cleared on the no-targets path: it keeps naming whoever '
+                        'was last under fire after the fight ends')
+    return problems
 
 
 def self_test():
@@ -147,10 +197,31 @@ def self_test():
     if not any('no longer defaults to true' in p for p in check_branch(off_by_default)):
         raise AssertionError('a toggle flipped to off by default went unnoticed')
 
+    good_hold = '''
+        public int HoldHolyMaxHostileOutput { get; set; } = 0;
+
+        private bool ShouldHoldHolyWhilePackSlowed()
+        {
+            if (ObjectHelper.AnyPartyMemberFallingWithinHealWindow()) { return false; }
+            if (HoldHolyMaxHostileOutput > 0) { }
+            return true;
+        }
+    '''
+    if check_hold_bound(good_hold):
+        raise AssertionError('the measured bound was rejected: %s' % check_hold_bound(good_hold))
+    if not any('no longer asks whether anyone is actually falling' in p for p in check_hold_bound(
+            good_hold.replace(
+                'if (ObjectHelper.AnyPartyMemberFallingWithinHealWindow()) { return false; }', ''))):
+        raise AssertionError('a hold back on the invented number went unnoticed')
+    if not any('no longer defaults to 0' in p for p in check_hold_bound(
+            good_hold.replace('HoldHolyMaxHostileOutput { get; set; } = 0;',
+                              'HoldHolyMaxHostileOutput { get; set; } = 600;'))):
+        raise AssertionError('an output cap switched back on by default went unnoticed')
+
     good_threat = '''
         internal static bool IsUnderThreat(this IBattleChara battleChara)
         {
-            if (DataCenter.AggroedMembers.Contains(battleChara.GameObjectId)) { return true; }
+            if (DataCenter.TargetedPartyMembers.Contains(battleChara.GameObjectId)) { return true; }
             if (DataCenter.IsHostileCastingAOE) { return true; }
             return !float.IsNaN(battleChara.GetCorrectedTTK());
         }
@@ -160,32 +231,52 @@ def self_test():
                              % check_threat(good_threat))
 
     for name, snippet in (
-            ('aggro', 'if (DataCenter.AggroedMembers.Contains(battleChara.GameObjectId)) { return true; }\n'),
+            ('who an enemy is aiming at',
+             'if (DataCenter.TargetedPartyMembers.Contains(battleChara.GameObjectId)) { return true; }\n'),
             ('the announced area cast', 'if (DataCenter.IsHostileCastingAOE) { return true; }\n'),
             ('the health trend', 'return !float.IsNaN(battleChara.GetCorrectedTTK());\n')):
         missing = good_threat.replace(snippet, '')
         if not any(name in p for p in check_threat(missing)):
             raise AssertionError('a danger question missing %s went unnoticed' % name)
 
-    good_aggro = '''
-        var targetId = hostileTargets[i]?.TargetObjectId ?? 0;
-        DataCenter.AggroedMembers = aggroed;
+    good_targets = '''
+        DataCenter.TargetedPartyMembers.Clear();
+        if (partyIds.Contains(hostile.TargetObjectId)) { }
+        if (partyIds.Contains(hostile.CastTargetObjectId)) { }
+        DataCenter.TargetedPartyMembers = targeted;
     '''
-    if check_aggro(good_aggro):
-        raise AssertionError('the intact aggro fill was rejected: %s' % check_aggro(good_aggro))
-    if not check_aggro(good_aggro.replace('DataCenter.AggroedMembers = aggroed;', '')):
-        raise AssertionError('an aggro set that is never filled went unnoticed')
+    if check_targets(good_targets):
+        raise AssertionError('the intact target set was rejected: %s' % check_targets(good_targets))
+
+    if not any('nothing fills' in p for p in check_targets(
+            good_targets.replace('DataCenter.TargetedPartyMembers = targeted;', ''))):
+        raise AssertionError('a target set that is never filled went unnoticed')
+
+    if not any('the cast target' in p for p in check_targets(
+            good_targets.replace('if (partyIds.Contains(hostile.CastTargetObjectId)) { }', ''))):
+        raise AssertionError('a target set that ignores the cast target went unnoticed')
+
+    if not any('the attack target' in p for p in check_targets(
+            good_targets.replace('if (partyIds.Contains(hostile.TargetObjectId)) { }', ''))):
+        raise AssertionError('a target set that ignores the attack target went unnoticed')
+
+    if not any('never cleared' in p for p in check_targets(
+            good_targets.replace('DataCenter.TargetedPartyMembers.Clear();', ''))):
+        raise AssertionError('a target set that is never cleared went unnoticed')
 
     print('self-test ok: the guarded branch is accepted; an unguarded branch, a condition without '
           'its toggle\n  and a toggle flipped off are each caught; every one of the three danger '
-          'arms is caught when\n  removed; and an aggro set that nothing fills is caught')
+          'arms is caught when\n  removed; a target set that is unfilled, missing either source, or '
+          'never cleared is caught;\n  and the Sanctus hold falling back on the invented output '
+          'number is caught')
 
 
 def main():
     self_test()
 
     problems = []
-    for path, checker in ((WHM, check_branch), (HELPER, check_threat), (UPDATER, check_aggro)):
+    for path, checker in ((WHM, check_branch), (WHM, check_hold_bound), (HELPER, check_threat),
+                          (UPDATER, check_targets)):
         if not path.exists():
             print('%s not found - run from the repository root' % path)
             return 1
@@ -197,8 +288,9 @@ def main():
             print('  - %s' % p)
         return 1
 
-    print('Benediction asks whether the target is in danger, the question reads aggro, announced '
-          'area casts\n  and the health trend, and the aggro set is filled once per frame.')
+    print('Benediction asks whether the target is in danger; the question reads who an enemy is '
+          'aiming at,\n  announced area casts and the health trend; and the target set is filled '
+          'from both sources\n  once per frame and cleared with the rest of the state.')
     return 0
 
 

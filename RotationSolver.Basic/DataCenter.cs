@@ -51,16 +51,18 @@ internal static class DataCenter
 	public static List<IBattleChara> AllHostileTargets { get; set; } = [];
 
 	/// <summary>
-	/// The object ids currently being targeted by a hostile, rebuilt once per frame beside the
-	/// hostile list itself in <c>TargetUpdater.UpdateLists</c>.
+	/// The party members an enemy is currently aiming at - either attacking them, or casting
+	/// something that will land on them. Rebuilt once per frame beside the hostile list itself in
+	/// <c>TargetUpdater.UpdateLists</c>.
 	/// </summary>
 	/// <remarks>
-	/// It holds every id an enemy is pointing at, not only party members - filtering it here would
-	/// cost a second pass for a question the callers already answer by looking their own member up.
-	/// Empty out of combat, and empty for a member nothing is attacking, which is the case it exists
-	/// to report.
+	/// Both sources are read because they answer different questions: the attack target is aggro,
+	/// the cast target is what is about to arrive, and they part company on a boss that beats on the
+	/// tank while casting at somebody else. Only party members are recorded, so an empty set means
+	/// what it says - nothing is aimed at the party - rather than "no enemy has any target at all".
+	/// Empty out of combat.
 	/// </remarks>
-	public static HashSet<ulong> AggroedMembers { get; set; } = [];
+	public static HashSet<ulong> TargetedPartyMembers { get; set; } = [];
 
 	public static IBattleChara? InterruptTarget { get; set; }
 
