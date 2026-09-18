@@ -141,7 +141,7 @@ Die Klasse ist belegt, weil die beiden Geschwister derselben Bauart **gelesen** 
 
 ### `TargetColor` wird nicht gelesen, und ihr Elternverweis zeigt auf sie selbst · N
 
-`Configs.cs:1211-1212` trägt `[UI("Target color", Parent = nameof(TargetColor))]` — die Eigenschaft nennt sich selbst als Elternschalter. Die Zeile darüber, `TeachingModeColor`, zeigt die richtige Bauart mit `Parent = nameof(TeachingMode)`; Kennzeichen eines Klons ohne Anpassung (Parnas, *Ignorant Surgery*).
+`Configs.cs:1254-1255` trägt `[UI("Target color", Parent = nameof(TargetColor))]` — die Eigenschaft nennt sich selbst als Elternschalter. Die Zeile darüber, `TeachingModeColor`, zeigt die richtige Bauart mit `Parent = nameof(TeachingMode)`; Kennzeichen eines Klons ohne Anpassung (Parnas, *Ignorant Surgery*).
 
 **Der Elternverweis ist folgenlos, entgegen der ersten Einschätzung.** `SearchableCollection.cs:45` nimmt ausschließlich `CheckBoxSearch` in die Elternliste auf, also boolesche Einstellungen. `TargetColor` ist ein `Vector4`, landet nie darin, der `TryGetValue` schlägt fehl, und der Eintrag wird auf oberster Ebene einsortiert. Kein Absturz, keine Rekursion in `GetParent`, nur eine Einrückung, die fehlt.
 
@@ -486,6 +486,30 @@ Upstream-Verhalten, alle vier gelernten Listen betreffend. Der Ladepfad prüft a
 **Die Ursache ist weitgehend entfernt** (A100): Geschrieben wird seit dem über eine temporäre Datei und einen Move, und eine unlesbare Datei wird als `.corrupt` beiseitegelegt und gemeldet, statt still verworfen. Was bleibt, ist der fehlende Neu-Download.
 
 **Nicht behoben, weil der Zweig eine eigene Frage aufwirft:** Was soll geschehen, wenn kein Netz da ist? Ein blockierender Versuch im Startpfad ist keine Option, ein stiller Fehlschlag wäre der heutige Zustand mit mehr Code. **Empfehlung: erfassen, Adressat ist der Upstream.**
+
+### Die globalen Einstellungen zeigen kein Symbol für ihre Erklärung · N, U
+
+Gefunden bei der Erhebung der Fork-Einstellungen (A103). Die beiden Tooltip-Wege verhalten sich verschieden, und der Unterschied trifft die Sichtbarkeit:
+
+| | Rotationseinstellungen (`RotationConfig.Tooltip`) | Globale Einstellungen (`UI.Description`) |
+|---|---|---|
+| Symbol | `(?)` neben der Zeile, gezeichnet **nur** bei vorhandenem Tooltip | keines |
+| Auslöser | Überfahren des Symbols | Überfahren der Einstellung |
+| Schalter „Show tooltips" | wirkt **nicht**, das Symbol nutzt ImGui direkt | wirkt — bei Aus erscheint nichts |
+
+**Wirkung:** Bei einer globalen Einstellung ist nicht erkennbar, dass eine Erklärung vorliegt; wer nicht zufällig darüberfährt, findet sie nie. Und wer „Show tooltips" abgeschaltet hat, bekommt sie überhaupt nicht, während die Rotations-Erklärungen weiter erscheinen — derselbe Nutzer, zwei verschiedene Antworten.
+
+**Nicht behoben, weil der Wirkungsbereich den Auftrag überschreitet.** Das Symbol nachzuziehen heißt, `Searchable.ShowTooltip` beziehungsweise die sieben Zeichner in `RotationSolver/UI/SearchableConfigs/` anzufassen; das trifft **alle** Upstream-Einstellungen mit Beschreibung, nicht nur die des Forks, und erzeugt Merge-Aufwand bei jeder Upstream-Änderung an diesen Dateien. Der Auftrag betraf die Erklärungen der Fork-Einstellungen.
+
+**Auflösungsbedingung:** Freigabe des Auftraggebers für den Eingriff in den gemeinsamen Zeichenpfad. Die kleinere Variante wäre, das Symbol nur dort zu zeichnen, wo eine Beschreibung vorliegt — das ist genau die Bedingung, die der Rotationspfad schon benutzt, und damit kein neues Verhalten, sondern die Übernahme des vorhandenen.
+
+### Zwei Werte des Dunkelritters hängen nicht an der Strategie, für die sie gelten · N
+
+`DRK_Reborn.BlackestNightMinHostiles` und `BlackestNightHealthRatio` gelten nur für die engeren Optionen von `BlackestNightUsage` — die Gegnerzahl für zwei davon, die Gesundheitsschwelle für eine. Beide tragen kein `Parent`, erscheinen also immer und unverändert eingerückt, auch wenn die eingestellte Strategie sie gar nicht liest. Ihre Labels verwiesen zusätzlich auf „die Option oben", obwohl zwischen ihnen und `BlackestNightUsage` andere Einstellungen stehen; das ist mit A103 berichtigt, die Kopplung nicht.
+
+**Warum nicht mitbehoben:** `ShouldShowRotationConfigInternal` vergleicht `ParentValue` gegen **einen** Wert. Für die Gesundheitsschwelle wäre die Kopplung damit korrekt möglich, für die Gegnerzahl nicht — sie gilt für zwei Strategien. Eine halbe Kopplung wäre schlechter als keine: Sie ließe den Nutzer glauben, die sichtbaren Werte seien genau die wirksamen.
+
+**Auflösung:** entweder `ParentValue` auf mehrere zulässige Werte erweitern — Wirkungsbereich ist der gemeinsame Zeichenpfad aller Rotationen, Betroffenenkreis R und U — oder es beim Tooltip belassen, der jetzt sagt, für welche Option jeder Wert gilt. **Empfehlung: beim Tooltip belassen**, solange kein zweiter Fall dieser Art auftritt; der Nutzen ist eine Einrückung, die Kosten sind eine Signaturerweiterung im Upstream-Pfad.
 
 ### Die Holy-Vorbehalte des Weißmagiers entscheiden ohne jede Sonde · N
 

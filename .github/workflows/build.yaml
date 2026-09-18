@@ -98,6 +98,14 @@ jobs:
       - name: Check the emergency heal asks whether the target is in danger
         run: python3 .github/scripts/audit/check_emergency_heal_threat.py
 
+      # The sibling of the check below: that one asks whether a setting is read at all, this one
+      # whether the user can tell what it does. A fork setting with no explanation leaves them
+      # guessing what a slider does to their fight, and for the rotation settings a missing tooltip
+      # also means the "(?)" marker is never drawn - so there is nothing to hover and no sign that
+      # an explanation was ever intended. Nothing fails when one is added without it.
+      - name: Check every fork setting explains its effect in the fight
+        run: python3 .github/scripts/audit/check_setting_tooltips.py
+
       # A setting with a label and a default promises the user it does something. When nothing
       # reads it the promise fails silently and forever. Two such settings sat in the raise path
       # alone, so this guards against the next one rather than against those two.

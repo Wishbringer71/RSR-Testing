@@ -40,15 +40,37 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Number of GCDs before you cap on blue lillies that overcap protection will consider 'near full'.")]
 	public int LilyOvercapTime { get; set; } = 3;
 
-	[RotationConfig(CombatType.PvE, Name = "Regen on Tank as they close in on enemies (dungeons only, not Trials/Raids), and keep it up while it's otherwise idle GCD time (Regen is instant-cast, safe to keep up while moving).")]
+	[RotationConfig(CombatType.PvE, Name = "Keep Regen on the tank through a pull",
+		Tooltip = "Regen goes on the tank at five seconds on the pull countdown, again as they close in "
+			+ "on a group, and is then refreshed for as long as the pull lasts, using GCDs that would "
+			+ "otherwise go to damage.\n"
+			+ "In a fight: the tank takes the first hits with a heal already ticking, so the reactive "
+			+ "heals start from a higher point instead of chasing a tank who is already low. Regen is "
+			+ "instant-cast, so nothing is lost while running.\n"
+			+ "Never fires at or below the Regen health threshold below - a real emergency is left to "
+			+ "Cure II. Dungeons only: in Trials and Raids the rule does not apply at all, because "
+			+ "there the damage is scripted rather than a stream.")]
 	public bool UsePreRegen { get; set; } = true;
 
 	[Range(1, 8, ConfigUnitType.None, 1)]
-	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies near the tank before combat for the pre-pull Regen above to be worth casting", Parent = nameof(UsePreRegen))]
+	[RotationConfig(CombatType.PvE, Name = "Enemies near the tank before the pull", Parent = nameof(UsePreRegen),
+		Tooltip = "How many enemies have to stand within gap-closer range of the tank, before combat "
+			+ "starts, for the Regen above to go out.\n"
+			+ "Lower: Regen also goes up for a single stray enemy, which costs a GCD you would rather "
+			+ "spend on damage. Higher: the tank pulls a small group without it and the first hits land "
+			+ "on a tank with nothing ticking.")]
 	public int PreRegenMinHostiles { get; set; } = 2;
 
 	[Range(1, 12, ConfigUnitType.None, 1)]
-	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies still around the tank during a wall-to-wall pull for the Regen above to keep being force-refreshed, instead of falling back to normal reactive healing", Parent = nameof(UsePreRegen))]
+	[RotationConfig(CombatType.PvE, Name = "Enemies still around the tank during the pull", Parent = nameof(UsePreRegen),
+		Tooltip = "The same count, but during combat: how many enemies have to remain around the tank "
+			+ "for Regen to keep being refreshed. Once the pull thins out below this number, healing "
+			+ "falls back to reacting to health thresholds.\n"
+			+ "Lower: the upkeep runs to the end of the pull, so GCDs keep going to Regen while the "
+			+ "last two enemies are dying and the damage no longer warrants it.\n"
+			+ "Higher: the upkeep stops early and the tail of the pull is healed reactively, which "
+			+ "frees those GCDs for damage but leaves the tank without a regen if the pull is "
+			+ "re-engaged.")]
 	public int PreRegenMinWallToWallHostiles { get; set; } = 3;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Divine Caress as soon as its available")]
@@ -78,7 +100,15 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	//
 	// On by default: this implements a reported malfunction against the user's own requirement.
 	// Whoever wants the upstream behaviour back turns it off.
-	[RotationConfig(CombatType.PvE, Name = "Hold Benediction unless the target is actually in danger (aggro, an incoming area cast, or health that is falling)")]
+	[RotationConfig(CombatType.PvE, Name = "Benediction only on a target in danger",
+		Tooltip = "Benediction needs a reason beyond low health: the target is being attacked or cast "
+			+ "at, an area cast is announced, or their health is measurably falling.\n"
+			+ "In a fight: a player who was just raised holds a few percent, carries no aggro and is "
+			+ "taking no damage - the health threshold reads him as the most urgent member in the party "
+			+ "while nothing is happening to him, and the full heal is then gone for the ninety seconds "
+			+ "in which the tank needs it. With this on he gets a HoT and the smaller heals instead, "
+			+ "and Benediction stays available.\n"
+			+ "Off: the old behaviour - health threshold alone decides.")]
 	public bool BenedictionNeedsThreat { get; set; } = true;
 
 	[Range(0, 1, ConfigUnitType.Percent)]
@@ -93,27 +123,77 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "How to manage the last thin air charge")]
 	public ThinAirUsageStrategy ThinAirLastChargeUsage { get; set; } = ThinAirUsageStrategy.ReserveLastChargeForRaise;
 
-	[RotationConfig(CombatType.PvE, Name = "Spend Thin Air on an expensive spell only while MP is low and Lucid Dreaming cannot cover it")]
+	[RotationConfig(CombatType.PvE, Name = "Thin Air only under MP pressure",
+		Tooltip = "Thin Air is only spent on an expensive spell while MP has actually fallen to where "
+			+ "Lucid Dreaming would be cast and Lucid cannot answer it - on cooldown, not learned, or "
+			+ "switched off. A raise still takes a charge regardless of MP.\n"
+			+ "In a fight: without this, a charge goes to the next expensive spell whenever one comes "
+			+ "up, so both charges can be gone before MP is anywhere near a problem, and the free cast "
+			+ "is missing at the point where MP actually runs out during heavy healing.\n"
+			+ "Off by default, which is the old behaviour. It uses Lucid Dreaming's own MP threshold "
+			+ "rather than a second number, so both decisions read the same value.")]
 	public bool ThinAirOnMpPressureOnly { get; set; } = false;
 
-	[RotationConfig(CombatType.PvE, Name = "Skip Holy for one GCD while every enemy it would hit is already stunned")]
+	[RotationConfig(CombatType.PvE, Name = "Stretch the Holy stun",
+		Tooltip = "Holy (Sanctus) is skipped for one GCD while every enemy it would hit is already "
+			+ "stunned by it.\n"
+			+ "In a fight: Holy's stun does not stack on top of itself - casting into a stun that is "
+			+ "still running overwrites it and the pack starts swinging again sooner. Waiting one GCD "
+			+ "lets the running stun finish first, so the same number of casts holds the pack still for "
+			+ "longer and the damage stream to the tank stays thinner.\n"
+			+ "Costs one GCD of Holy damage each time it triggers, and only where a damage GCD is "
+			+ "guaranteed to replace it. Off by default because the stretch has not been confirmed in "
+			+ "play.")]
 	public bool StretchHolyStun { get; set; } = false;
 
 	[Range(2, 8, ConfigUnitType.None, 1)]
-	[RotationConfig(CombatType.PvE, Name = "Minimum enemies in Holy's radius before the stun stretch applies", Parent = nameof(StretchHolyStun))]
+	[RotationConfig(CombatType.PvE, Name = "Enemies in Holy's radius before holding", Parent = nameof(StretchHolyStun),
+		Tooltip = "How many enemies have to stand in the radius of Holy (Sanctus) before it may be "
+			+ "held back at all.\n"
+			+ "This number governs two rules, not one: the stun stretch above and the Blackest Night "
+			+ "hold below. Raising it switches both off for smaller pulls.\n"
+			+ "In a fight: below this count the pack is thin enough that the tank is not in danger from "
+			+ "the stream, so giving up Holy damage buys nothing. Above it, a held stun is worth more "
+			+ "than one cast of damage.")]
 	public int StretchHolyMinHostiles { get; set; } = 3;
 
-	[RotationConfig(CombatType.PvE, Name = "Hold Holy on a group pull while a tank carries The Blackest Night, so its barrier is spent")]
+	[RotationConfig(CombatType.PvE, Name = "Hold Holy while a tank carries The Blackest Night",
+		Tooltip = "On a group pull, Holy (Sanctus) is held back while a tank carries the barrier from "
+			+ "The "
+			+ "Blackest Night.\n"
+			+ "In a fight: that barrier only pays the dark knight back with mana if it is fully "
+			+ "absorbed. Stunning the pack stops the very hits that would spend it, so the barrier "
+			+ "expires unused and the tank loses the return. Holding Holy lets the hits land into the "
+			+ "barrier, which is what it is for.\n"
+			+ "Group pulls only - in a boss fight the damage arrives as scripted single hits that break "
+			+ "the barrier whatever the stun does. Only while the barrier sits on a tank, and only "
+			+ "while there is stun headroom left to give up; it also needs the enemy count above.")]
 	public bool HoldHolyForBlackestNight { get; set; } = true;
 
 	// On by default, unlike the two above: this one is not a proposal but the third timing of the
 	// rule in concept 08, and the user asked for it directly after seeing Holy cast into a slow that
 	// had just landed. The cost stays bounded by the same replacement guarantee the stun branch uses.
-	[RotationConfig(CombatType.PvE, Name = "Hold Holy while the pack is slowed (Arm's Length), so the stun is kept for when the damage stream is not already thinned")]
+	[RotationConfig(CombatType.PvE, Name = "Hold Holy while the pack is slowed",
+		Tooltip = "Holy (Sanctus) is held back while the pack is already slowed, typically by the "
+			+ "tank's Arm's Length.\n"
+			+ "In a fight: Slow and Holy's stun both throttle the same incoming stream, and a slowed "
+			+ "enemy is already swinging less often. Spending the stun on top of it buys little, while "
+			+ "the same stun is worth much more once the Slow has run out and the pack is back at full "
+			+ "speed. Holding it keeps that option for the harder moment.\n"
+			+ "The hold ends as soon as anyone would actually die inside the GCD it costs - that is "
+			+ "measured from the health trend, not set as a number. On by default, because it is the "
+			+ "case you reported after seeing Holy cast into a Slow that had just landed.")]
 	public bool HoldHolyWhilePackSlowed { get; set; } = true;
 
 	[Range(2, 8, ConfigUnitType.None, 1)]
-	[RotationConfig(CombatType.PvE, Name = "Minimum slowed enemies in Holy's radius before the slow hold applies", Parent = nameof(HoldHolyWhilePackSlowed))]
+	[RotationConfig(CombatType.PvE, Name = "Slowed enemies before holding", Parent = nameof(HoldHolyWhilePackSlowed),
+		Tooltip = "How many enemies in Holy's radius have to carry the Slow before the hold applies. "
+			+ "More than half of those in radius must be slowed as well, so this is a floor and not the "
+			+ "whole condition.\n"
+			+ "Lower: the hold triggers on a couple of slowed enemies while the rest of the pack swings "
+			+ "at full speed, and the stun is given up for a throttle that covers only part of the "
+			+ "stream. Higher: Holy keeps being cast into a well-slowed pack, which is the waste this "
+			+ "rule exists to stop.")]
 	public int HoldHolyMinSlowedHostiles { get; set; } = 3;
 
 	// Holding the stun only pays while the incoming stream is still manageable - the user's bound on
@@ -127,7 +207,19 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	// figure I invented, sitting between two numbers the user had named; removing the setting
 	// outright would discard a value already stored in user configuration.
 	[Range(0, 1200, ConfigUnitType.None, 100)]
-	[RotationConfig(CombatType.PvE, Name = "Additionally cap the slow hold at this total enemy output in Holy's radius (0 = no cap, 100 = one enemy at full strength)", Parent = nameof(HoldHolyWhilePackSlowed))]
+	[RotationConfig(CombatType.PvE, Name = "Extra cap on total enemy output", Parent = nameof(HoldHolyWhilePackSlowed),
+		Tooltip = "An optional second condition on the hold above: it only applies while the summed "
+			+ "output of the enemies in Holy's radius stays at or below this figure. The scale is "
+			+ "percent per enemy after their own throttles, so 100 is one enemy at full strength and "
+			+ "300 is three.\n"
+			+ "In a fight: with a figure set, Holy goes out into a slowed pack again as soon as the "
+			+ "pack is large enough, so the stun is spent on a stream that the Slow has already "
+			+ "thinned - and is no longer available when the Slow expires.\n"
+			+ "0 means no cap, and that is the default - the hold is already bounded by the measured "
+			+ "question of whether anyone actually goes down inside the GCD it costs, which is what "
+			+ "matters. This cap is a head count in disguise: a nine-enemy pull your healing keeps up "
+			+ "with is where stretching the throttle pays most, and three enemies killing the tank is "
+			+ "where it pays least.")]
 	public int HoldHolyMaxHostileOutput { get; set; } = 0;
 
 	public enum ThinAirUsageStrategy : byte

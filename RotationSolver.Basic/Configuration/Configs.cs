@@ -512,7 +512,9 @@ internal partial class Configs : IPluginConfiguration
 	private static readonly bool _usePhoenixDown = false;
 
 	[ConditionBool, UI("Use Phoenix Down only if no raiser is alive",
-	Description = "A raiser is a living healer, Summoner or Red Mage of a high enough level to have their raise. Which of them count follows the raise target setting: the party alone under Party only and Party healers only, party and alliance under the alliance modes and All.",
+	Description = "A raiser is a living healer, Summoner or Red Mage of a high enough level to have their raise. Which of them count follows the raise target setting: the party alone under Party only and Party healers only, party and alliance under the alliance modes and All.\n"
+		+ "On: the item is kept for the case it exists for - nobody left who can cast a raise. A wipe recovery where the healer is up costs no Phoenix Down.\n"
+		+ "Off: a Phoenix Down can go out while a healer is standing next to the corpse, spending a consumable on a raise that was free.",
 	Parent = nameof(UsePhoenixDown))]
 	private static readonly bool _usePhoenixDownHealerLogic = true;
 
@@ -937,7 +939,16 @@ internal partial class Configs : IPluginConfiguration
 	// HealthForDyingTanks (DarkKnightRotation.EmergencyAbility), and under that usage the death is
 	// not wanted at all. Holding the heal is right where the death was the plan. Whoever knows that
 	// for their group turns this on.
-	[UI("Withhold healing from a dark knight under Living Dead, so the death that converts it can happen.",
+	[UI("Withhold healing under Living Dead",
+		Description = "On: a dark knight under Living Dead is left at 1 HP instead of being healed up, "
+			+ "so the killing blow lands and converts the effect into Walking Dead. From that moment "
+			+ "healing totalling his maximum HP has to go in within ten seconds or he is KO'd for real - "
+			+ "he contributes to that himself with every spell and weaponskill, and a Benediction covers "
+			+ "the rest on its own.\n"
+			+ "Off: he is healed normally, the death never happens, and Living Dead expires as plain "
+			+ "damage reduction.\n"
+			+ "Only switch this on if your group plays it that way. RSR also fires Living Dead by itself "
+			+ "as a last-ditch save on a dying tank, and in that use the death is not wanted at all.",
 		Filter = HealingActionCondition, Section = 1)]
 	public bool WithholdHealingForLivingDead { get; set; } = false;
 
@@ -959,7 +970,18 @@ internal partial class Configs : IPluginConfiguration
 	//
 	// Off by default because the effect cannot be established with the means available here. A
 	// compile says nothing about whether the tank lives.
-	[UI("Heal ahead of incoming damage: judge each member by the health they are heading for, not the health they have.",
+	[UI("Heal ahead of incoming damage",
+		Description = "Every healing threshold and the heal target choice read the health a member is "
+			+ "heading for by the time a heal started now would land, instead of the health shown right "
+			+ "now.\n"
+			+ "In a fight: a tank dropping fast gets his heal about one GCD earlier, and someone falling "
+			+ "quickly is picked ahead of someone sitting lower but steady - the case where a cast used "
+			+ "to go out after the death.\n"
+			+ "While a party is held steady it changes nothing. The trend is measured net of every "
+			+ "mitigation, barrier and outside heal, so health that is not falling on balance produces "
+			+ "no look-ahead at all; it appears when the net trend turns downward and grows as it "
+			+ "steepens.\n"
+			+ "Off by default because the effect cannot be proven without playing it.",
 		Filter = HealingActionCondition, Section = 1)]
 	public bool HealAheadOfDamage { get; set; } = false;
 
@@ -975,7 +997,16 @@ internal partial class Configs : IPluginConfiguration
 	//
 	// On by default: it implements a shortcoming the user reported, and its fallback in every
 	// unknown case is the old behaviour. Whoever wants mitigation on everything turns it off.
-	[UI("Skip party mitigation for area casts measured small enough that nobody would need healing after them.",
+	[UI("Skip mitigation for small area casts",
+		Description = "A learned area cast whose measured damage would leave everybody above the level "
+			+ "at which the tree heals anyway no longer raises the party mitigation.\n"
+			+ "In a fight: Reprisal, Addle and the rest stay off cooldown and are ready for the next "
+			+ "real hit, instead of being spent on a two-percent tick. A hit that would push anyone to "
+			+ "where healing is called for is still mitigated in full.\n"
+			+ "An action nothing has been measured on behaves exactly as before, which is what keeps the "
+			+ "850 shipped entries mitigated. Ratings arrive with play - in content you repeat, one "
+			+ "clear of the fight. The AOE list in Lists shows the measured share per entry and which "
+			+ "of them have already saved a cooldown.",
 		Filter = HealingActionCondition, Section = 1)]
 	public bool SkipMitigationForSmallAreaCasts { get; set; } = true;
 

@@ -258,7 +258,7 @@ jedem Beschwörungsfenster", sondern „**weiche auf Bahamut oder Phoenix aus, f
 bereits durch einen anderen abgedeckt war**". Das ist nicht dasselbe, und der Unterschied ist zu
 benennen.
 
-**Im Code gibt es weder das eine noch das andere.** `SMN_Reborn.cs:205` ist die einzige Zündstelle,
+**Im Code gibt es weder das eine noch das andere.** `SMN_Reborn.cs:240` ist die einzige Zündstelle,
 und `burstInSolar` (`:203`) lässt ab Stufe 100 ausschließlich Solar zu. Es gibt keinen Zweig, der
 ausweicht, und keinen Zustand, der eine Blockade festhält.
 
@@ -884,7 +884,7 @@ members"; ein Beschwörer in einer anderen Allianzgruppe verstärkt diesen Spiel
 damit eine Gruppenfrage, keine Allianzfrage — anders als bei der Wiederbelebung, wo die Allianz je
 nach `RaiseType` mitzählt.
 
-**Zwei Stellen bleiben bewusst unverändert.** Die Burst-Medizin in `SMN_Reborn.cs:182` fragt weiter
+**Zwei Stellen bleiben bewusst unverändert.** Die Burst-Medizin in `SMN_Reborn.cs:189` fragt weiter
 nach dem **eigenen** Buff: Sie ist eine Fünfzehn-Minuten-Ressource und gehört in das eigene
 Solar-Fenster, das stärkste des Zyklus; an einen fremden Buff gehängt landete sie irgendwo. Und
 `ChurinSMN.cs` trägt denselben V1-Befund (`:995`, `:1015`), ist aber fremdes Werk mit eigener

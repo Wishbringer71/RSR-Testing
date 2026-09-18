@@ -54,7 +54,14 @@ public sealed class SMN_Reborn : SummonerRotation
 	[RotationConfig(CombatType.PvE, Name = "Order")]
 	public SummonOrderType SummonOrder { get; set; } = SummonOrderType.TopazEmeraldRuby;
 
-	[RotationConfig(CombatType.PvE, Name = "Prefer Titan while moving (Topaz GCDs are instant-cast, unlike Garuda/Ifrit which need you stationary)")]
+	[RotationConfig(CombatType.PvE, Name = "Prefer Titan while moving",
+		Tooltip = "While you are moving, Titan is summoned ahead of the configured order.\n"
+			+ "In a fight: Topaz Rite and its follow-ups are instant-cast, so a Titan phase runs at full "
+			+ "output while you are dodging. Garuda and Ifrit need you standing still - taken during "
+			+ "movement, their casts are interrupted or simply do not go out, and the phase loses GCDs.\n"
+			+ "Titan is only brought forward: whenever Titan is not available at that moment, your "
+			+ "configured summon order applies unchanged. Off by default, because it departs from the "
+			+ "order you set.")]
 	public bool PreferTitanWhileMoving { get; set; } = false;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Physick above level 30")]
