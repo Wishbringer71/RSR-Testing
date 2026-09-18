@@ -485,7 +485,15 @@ Geprüfte Nicht-Fehlstellen: `DTRManualAuto` bildet den vom Enum-Text beschriebe
 
 **Nicht ohne den Auftraggeber zu behebende Frage:** Welche der dokumentierten Entscheidungen fallen soll. Seine Beobachtung belegt, **dass** nichts kommt, nicht **welche** Schraube zu drehen ist — der Gegnerzahl-Fallback, die Tankbuster-Einschränkung, die Voreinstellung von `UseBmrTimeline` oder die Schärfe des Cast-Vorfilters. Vorlage mit Optionen und Empfehlung steht aus.
 
-**Erfasst, nicht geprüft:** ob der von ihm gespielte Stand die Bewertung aus A101 bereits enthält. Falls ja, wäre sie ein zusätzlicher Faktor; die Listenverwaltung zeigt je Eintrag den gemessenen Anteil und den Zähler der unterbliebenen Minderungen, womit es in Sekunden ablesbar ist.
+**Nachgemessen, und damit ist die Bewertung aus A101 kein Nebenfaktor, sondern der wahrscheinliche Auslöser des gemeldeten Bildes.** Drei Belege, alle am Code erhoben, keiner im Spiel bestätigt:
+
+1. *Sie ist ab Werk an.* `SkipMitigationForSmallAreaCasts` ist auf `true` voreingestellt, `AreaCastIsWorthMitigating` hängt in `IsHostileCastingArea` also im Normalpfad.
+2. *Bei gesunder Gruppe schluckt sie fast jeden Raidwide.* Die Bedingung lautet `buffer − share < HealthAreaSpell` mit `HealthAreaSpell` = 0,65. Steht die Gruppe voll, ist `buffer` = 1,0, und gemindert wird erst ab einem gemessenen Anteil über 0,35 — ein Wert, den ein gewöhnlicher Raidwide nicht erreicht. Die Minderung unterbleibt also nicht bei Gefahr, sondern bei ihrem Fehlen, und das ist der Regelfall.
+3. *Sie schaltet sich erst nach dem ersten Treffer scharf.* `Watcher` schreibt `HostileCastingAreaPotential` erst, nachdem die Aktion einmal eingeschlagen ist; ohne Eintrag liefert die Prüfung `true`. Der erste Cast einer Aktion wird daher noch gemindert, jeder weitere nicht — genau das Bild „funktionierte bis vor zwei bis drei Tagen".
+
+**Der Wirkungsbereich reicht über die Minderung hinaus und ist vor jeder Korrektur zu erheben:** `IsHostileCastingAOE` speist auch `ObjectHelper.IsUnderThreat`, und darüber hängt die Gefahrenprüfung der Notfallheilung am Weißmagier (`BenedictionNeedsThreat`) an derselben gefilterten Größe. Eine Änderung am Filter verschiebt beide Pfade zugleich; die Bewertung je Pfad steht aus.
+
+**Zeitliche Einordnung:** A66 (11.09.) führt seine Meldung „schimmerschild klappt bislang", die Bewertung stammt vom 17.09. (`1bc46119a`). Das Fenster deckt sich mit der Beobachtung.
 
 ### Die Aufnahme in die AoE-Liste unterscheidet Raidwide und ausweichbare Fläche nicht · N
 
