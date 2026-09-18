@@ -1,10 +1,8 @@
 # Searing Light bei mehreren Beschwörern
 
-*Zum Namen: Der Auftraggeber nennt die Aktion „Gleißender Schein". Der Job-Guide von Square Enix ist
-vom Egress gesperrt — wiederholt geprüft, nicht erinnert —, eine belegte Zuordnung deutscher zu
-englischer Bezeichnung steht damit nicht zur Verfügung. Dass **Searing Light** gemeint ist, ist aus
-der Fragestellung geschlossen und als Schluss gekennzeichnet. Das Dokument benutzt durchgehend den
-englischen Bezeichner.*
+*Zum Namen: Der Auftraggeber nennt die Aktion „Gleißender Schein". Die Zuordnung zu **Searing Light**
+ist belegt und in `.github/scripts/audit/action_names_de.json` geführt; Quelle ist seine eigene
+Angabe. Das Dokument benutzt den englischen Bezeichner, weil der Code ihn trägt.*
 
 ## Vorgabe des Auftraggebers: eine Regel, die sich der Lage anpasst
 
@@ -53,7 +51,24 @@ Regel, die nur ihn behandelt, behandelt den seltensten Fall.
 
 ## Sachstand
 
-Bei **einem** Beschwörer ist der Ablauf richtig. Ab **zwei** reicht das genutzte Zündfenster nicht
+**Auch bei einem Beschwörer ist der Ablauf nicht richtig, und das ist eine Spielbeobachtung des
+Auftraggebers:** Searing Light fiel nicht zu Beginn der Solar-Bahamut-Phase, sondern irgendwann
+darin, obwohl er der einzige Beschwörer war. Die Regel ist daran unschuldig im Wortsinn — sie sagt
+nur **ob**, nicht **wann**. `mayFireSearingLight` ist während der **gesamten** Phase wahr, und nichts
+im Baum zieht die Zündung an den Phasenanfang. Verpasst die Aktion den ersten Einschiebeplatz — weil
+er belegt ist, weil gerade kein Ziel in Reichweite steht, weil die Ausführungssperre kurz vor dem
+nächsten GCD greift —, fällt sie einfach beim nächsten freien Platz, und niemand holt das nach.
+
+**Warum das Schaden kostet, in Zahlen aus dem Wirktext** (`ActionId.resx`, beides dort wörtlich):
+Searing Light wirkt **20 Sekunden**, Summon Solar Bahamut dauert **15 Sekunden**. Zu Beginn gezündet
+deckt der Buff die ganze Phase ab und läuft fünf Sekunden darüber hinaus — dieser Überhang ist
+eingeplant und harmlos. Jede Sekunde Verzug tauscht dagegen eine gebuffte Sekunde **innerhalb** der
+Phase gegen eine **danach**: Die Demi-GCDs tragen 947 bis 1217 Potenz, die Zwischenblöcke höchstens
+632, und die fünf Prozent wirken auf den jeweils darunterliegenden Wert. Ein Verzug von zwei bis drei
+GCDs verschiebt damit rund 30 Potenz je GCD von der starken in die schwache Phase. Der Verlust
+trifft zudem nicht ihn allein: Der Buff gilt für die nahen Gruppenmitglieder mit.
+
+Ab **zwei** Beschwörern reicht zusätzlich das genutzte Zündfenster nicht
 mehr aus: Jeder Beschwörer darf Searing Light nur während seiner Solar-Bahamut-Beschwörung zünden,
 und dieses Fenster kommt nur alle 120 Sekunden — genau so oft wie die Aktion selbst. Treffen zwei
 Beschwörer im selben Fenster aufeinander, verfällt eine Ladung.

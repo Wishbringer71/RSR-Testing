@@ -457,6 +457,36 @@ Die Zustandswahl liegt an zwei Orten: implizit in `AdjustStateType`, wo `/rotati
 
 Geprüfte Nicht-Fehlstellen: `DTRManualAuto` bildet den vom Enum-Text beschriebenen Zwei-Zustands-Zyklus ab (kein Fehler, AUDIT_LOG A14); ein zu großer `TargetingIndex` kann keinen Indexfehler auslösen, `DataCenter.TargetingType` rechnet `% Count`.
 
+### Searing Light wird erlaubt, aber nicht vorgezogen · N
+
+**Spielbeobachtung des Auftraggebers, 4er-Instanz, einziger Beschwörer:** Searing Light fiel nicht zu Beginn der Solar-Bahamut-Phase, sondern irgendwann darin. Damit ist die Aussage „bei einem Beschwörer ist der Ablauf richtig" aus Konzept 12 widerlegt; das Konzept ist fortgeschrieben.
+
+**Ursache, am Code belegt:** `mayFireSearingLight` ist bei einem Beschwörer über `burstInSolar` während der **gesamten** Phase wahr (`SMN_Reborn.AttackAbility`). Die Bedingung sagt **ob**, nicht **wann**. Verpasst die Aktion den ersten Einschiebeplatz — belegter Platz, kurz kein Ziel in Reichweite, die Ausführungssperre kurz vor dem nächsten GCD —, fällt sie beim nächsten freien Platz, und nichts holt das nach oder priorisiert sie. Searing Light steht zwar an erster Stelle **innerhalb** von `AttackAbility`, aber der Fähigkeitenpfad erreicht `AttackAbility` erst nach Notfall-, Verteidigungs- und Heilzweigen.
+
+**Kosten, aus den Wirktexten** (`ActionId.resx`): Searing Light wirkt 20 s, Summon Solar Bahamut dauert 15 s. Zu Beginn gezündet deckt der Buff die ganze Phase und läuft 5 s über — der Überhang ist eingeplant. Jede Sekunde Verzug tauscht eine gebuffte Sekunde in der Phase gegen eine danach: Demi-GCDs tragen 947–1217 Potenz, Zwischenblöcke höchstens 632, die 5 % wirken auf den darunterliegenden Wert. Zwei bis drei GCDs Verzug verschieben damit rund 30 Potenz je GCD von der starken in die schwache Phase, und zwar auch für die nahen Gruppenmitglieder.
+
+**Vor einer Umsetzung zu klären:** Welcher Zweig den ersten Einschiebeplatz tatsächlich belegt, ist statisch nicht zu bestimmen — das ist eine Laufzeitfrage. Ein Eingriff in die Reihenfolge des Fähigkeitenpfads ist zudem genau die Bauform, die in C37 im Spiel schlechter war als der Defekt. **Empfehlung:** zuerst messen, welcher Platz vergeben wird, dann entscheiden; das Messmittel gehört nach der Cynefin-Regel mitgeliefert.
+
+### Beim Beschwörer bleibt in der 4er-Instanz nur ein einziger Weg zu Radiant Aegis und Addle · N
+
+**Spielbeobachtung des Auftraggebers, 4er-Instanz:** kein Addle und kein Radiant Aegis trotz Flächenschaden. Beide zusammen, was auf eine gemeinsame Ursache deutet — und die gibt es.
+
+**Vollständig erhobene Kette.** Beide Aktionen stehen beim Beschwörer in `DefenseAreaAbility` und `DefenseSingleAbility`; Radiant Aegis zusätzlich in `GeneralAbility`. Was diese drei Wege öffnet:
+
+| Weg | Bedingung | Stand |
+|---|---|---|
+| `GeneralAbility`, Radiant Aegis | `BMRShouldRefreshBefore(BMRRaidwideIn, …)` | **ab Werk tot**: der Helfer gibt sofort `false` zurück, wenn `UseBmrTimeline` aus ist, und `_useBMRTimeline` ist auf `false` voreingestellt |
+| `DefenseSingleAbility` | für RangedMagical nur `IsHostileCastingTankBusterAtMe`, oder BMR-Tankbuster **ohne lebenden Tank** | greift im Gruppenpull praktisch nie; die Einschränkung auf gesicherte Tankbuster stammt aus A9/C10 — seiner eigenen Meldung, dass es zu oft feuerte |
+| `DefenseAreaAbility` | `AutoStatus.DefenseArea` | einziger verbliebener Weg |
+
+`AutoStatus.DefenseArea` wiederum hat zwei Zweige: die BMR-Timeline (ab Werk aus, siehe oben) und `IsHostileCastingAOE`. Letzterer verlangt **kumulativ**: ein Gegner castet, der Cast ist **nicht unterbrechbar**, er dauert länger als ein GCD, seine Restzeit liegt zwischen einem und zwei GCDs, die Aktions-Id steht in `HostileCastingArea`, der Effekt erreicht den Spieler — und seit A101 zusätzlich, dass das gemessene Schadenspotential niemanden unter die Heilschwelle drückt.
+
+**Damit ist der Befund kein einzelner Fehler, sondern eine Pendelbewegung.** A9 hat zwei Auslöser entfernt, die dauerhaft anstanden (der Gegnerzahl-Fallback in `ShouldAddDefenseArea`, Radiant Aegis bedingungslos in `GeneralAbility`) — beides zu Recht, beides auf seine Meldung „zu oft, obwohl keine Gefahr vorliegt". Übrig blieb ein Pfad, der bei Dungeon-Trash kaum je auslöst, weil dessen Casts überwiegend unterbrechbar und kurz sind. A9 vermerkte als Rückfall „bleibt über die BMR-Raidwide-Vorhersage und die Defense-Pfade"; die BMR-Vorhersage ist ab Werk abgeschaltet, und die Defense-Pfade sind der eben beschriebene Engpass. Der Rückfall trug also nicht.
+
+**Nicht ohne den Auftraggeber zu behebende Frage:** Welche der dokumentierten Entscheidungen fallen soll. Seine Beobachtung belegt, **dass** nichts kommt, nicht **welche** Schraube zu drehen ist — der Gegnerzahl-Fallback, die Tankbuster-Einschränkung, die Voreinstellung von `UseBmrTimeline` oder die Schärfe des Cast-Vorfilters. Vorlage mit Optionen und Empfehlung steht aus.
+
+**Erfasst, nicht geprüft:** ob der von ihm gespielte Stand die Bewertung aus A101 bereits enthält. Falls ja, wäre sie ein zusätzlicher Faktor; die Listenverwaltung zeigt je Eintrag den gemessenen Anteil und den Zähler der unterbliebenen Minderungen, womit es in Sekunden ablesbar ist.
+
 ### Die Aufnahme in die AoE-Liste unterscheidet Raidwide und ausweichbare Fläche nicht · N
 
 `Watcher.ActionFromEnemy` nimmt eine Gegneraktion dauerhaft in `HostileCastingArea` auf, wenn die Gruppe mindestens vier Mitglieder hat, die Aktion eine Wirkzeit besitzt, zur Kategorie Spell/Weaponskill/Ability gehört und **jedes** Gruppenmitglied im selben Effektsatz Schaden genommen hat. „Record AOE actions" ist ab Werk an.
