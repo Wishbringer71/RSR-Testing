@@ -1,7 +1,7 @@
 # What this fork does differently in a fight
 
 The subject is the distance to `upstream/main` at **7.5.6.9** (`83033ed79`), measured at
-`ae9f379ae`. It is grouped by what happens in the game — who takes how much damage and
+`096282416`. It is grouped by what happens in the game — who takes how much damage and
 when, which action falls earlier or later, who survives. The origin view (what was a defect
 of the original, what is an extension, what was the fork's own mistake) lives in
 `docs/rotation-flow/06-fork-audit.md`; that document covers the first pass and is not
