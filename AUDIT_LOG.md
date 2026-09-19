@@ -2792,6 +2792,29 @@ Allgemeine Form, in `CLAUDE.md` aufgenommen: Wo ein fremder Schutzmechanismus al
 **Erreichter Prüfgrad:** statische Selbstprüfung, Struktur- und Verweislauf, Compile im Build des Auftraggebers und im Prüflauf des Zweigs. Was ein Skript **nicht** prüfen kann, steht in seinem Kopf: ob zwei Konzepte einander inhaltlich widersprechen. Das bleibt Aufgabe jeder Runde.
 
 ---
+
+### A110 · Koordination der Konzepte untereinander, und was daraus an Synergie folgt (19.09.2026)
+
+**Anlass:** Auftrag des Auftraggebers, die Konzepte miteinander zu koordinieren und Synergieeffekte zu erzeugen, im vollständigen Loop über alle Konzepte und alle dabei erkannten Punkte.
+
+**Zwei überholte Aussagen, beide durch die Kreuzung zweier Dokumente gefunden.**
+
+1. *`07-heal-target-priority.md` führte die eingehende Schadensrate je Mitglied als **nicht vorhanden**, `08-mitigation-synergy.md` als **umgesetzt**.* Am Code gemessen: `TargetUpdater` trägt Gegner **und** Gruppe in `RecordedHP` ein, `GetTTK` antwortet also für Mitglieder (A91). 07 war überholt und ist berichtigt — samt der Präzisierung, worum es wirklich geht: **Die Größe fehlt nicht, ihr Verbraucher fehlt.** Die Zielwahl fragt sie nicht ab.
+2. *Ein Quelltextkommentar behauptete denselben alten Stand.* `ActionTargetInfo.cs` begründete den Schutz für freundliche Ziele damit, `RecordedHP` enthalte nur Gegner, `GetTTK` liefere für Mitglieder `NaN`. Seit A91 trifft das nicht mehr zu — und **gerade deshalb** trägt die ausdrückliche Bedingung heute etwas: Ohne sie fiele das dem Tod nächste Mitglied aus der Heilzielmenge, also genau das, für das die Heilung da ist. Kommentar auf den geltenden Stand gezogen, ohne den Beleg zu tilgen.
+
+**Drei Synergien erhoben, keine davon vorher verbunden.**
+
+- **Ein Wirkungswert je Aktion schließt vier offene Punkte**: die Vorausschau vor dem ersten Treffer, die Wahl des Mittels nach Treffergröße, die Minderungsbilanz ohne Betäubung und Verlangsamung (gemessen: `GetCurrentMitigationPercent` rechnet Addle, Feint, Dismantle, Reprisal — sonst nichts) und Rückstoß als Minderungswerkzeug. Machbarkeit belegt statt vermutet: 69 Wirktexte in `ActionId.resx` nennen „reduces damage taken by X %“ mit ausgeschriebenem Prozentsatz (Lauf vom 19.09.2026).
+- **Das gemessene Schadenspotential je Gegneraktion beantwortet drei Fragen in drei Konzepten** und wird an einer Stelle gelesen: die Gefahrenfrage der Heilung (heute binär), die Lage vor dem ersten Treffer (heute blind), die Tankbuster-Größe (dieselbe Struktur, eigener Speicher fehlt).
+- **Die Sonden sind der gemeinsame Nachweisweg** und standen in **keinem** Konzept — nur im Quelltext und hier im Archiv. Aufgenommen, mit der Auflage: Wer eine Regel dieser Familie ändert, liefert die Sonde mit oder benennt die vorhandene, die sie sichtbar macht.
+
+**Zwei Koordinationspunkte über die Kernfamilie hinaus.** `03-universal.md` kartiert die Zweigkette des Fähigkeitenpfads — und **diese Reihenfolge ist die umgesetzte Antwortordnung**, Heilung vor Verteidigung vor Angriff. Daraus folgt unmittelbar eine Verkleinerung der offenen Frage in `12-searing-light-stacking.md`: Welche Zweige den ersten Einschiebeplatz nehmen **können**, ist statisch bestimmbar und steht dort; offen ist allein, wie oft einer davon in genau diesem Fenster greift — eine Messfrage, keine Lesefrage. Das Konzept hatte die Frage zuvor pauschal als „statisch nicht zu bestimmen" geführt.
+
+**Ablage:** Die Entscheidungsordnung steht einmal (08) mit Zuständigkeitstabelle; die Synergieauswertung im selben Konzept als „Was ein Baustein mehrfach trägt“; 07, 09, 10, 12, 13 und 03 tragen je den Verweis an der Stelle, an der die Frage auftaucht, nicht im Anhang. Ein Vorschlag ist ausdrücklich als **ungeprüft** gekennzeichnet: die Zweitverwendung des Abdeckungsmodells aus 12 für die Streckung in 08.
+
+**Erreichter Prüfgrad:** statische Prüfung an Quelltext und Ressourcen, Verweis- und Zeilenverweislauf, Strukturlauf. Die inhaltliche Widerspruchsfreiheit zwischen Konzepten kann kein Skript prüfen — sie bleibt Aufgabe jeder Runde, und dieser Durchgang hat zwei Widersprüche gefunden, die seit A91 bestanden.
+
+---
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -4,6 +4,12 @@ Diese Ebene beschreibt das, was *kein* Job selbst besitzt, sondern was ihm die
 zentrale Maschinerie vorgibt — plus die Muster, die zwar in jedem Job einzeln
 stehen, aber überall gleich aussehen.
 
+**Die Reihenfolge der Zweige ist die umgesetzte Antwortordnung.** Was `08-mitigation-synergy.md`
+als Vorgabe führt — Heilung vor Minderung —, steht hier als Dispatch-Reihenfolge: Die
+Heilzweige werden vor den Verteidigungszweigen gefragt, und beide vor dem Angriff. Wer eine Regel
+dieser Familie ändert, ändert entweder die Bedingung **in** einem Zweig oder die Reihenfolge der
+Zweige selbst — das Zweite ist der teurere Eingriff und in C37 bereits einmal schiefgegangen.
+
 ---
 
 ## A · Der Rahmen: eine Entscheidung pro Frame

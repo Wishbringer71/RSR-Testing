@@ -59,6 +59,14 @@ im Baum zieht die Zündung an den Phasenanfang. Verpasst die Aktion den ersten E
 er belegt ist, weil gerade kein Ziel in Reichweite steht, weil die Ausführungssperre kurz vor dem
 nächsten GCD greift —, fällt sie einfach beim nächsten freien Platz, und niemand holt das nach.
 
+**Wer den Platz nehmen kann, ist sehr wohl bestimmbar — nur nicht, wer es im Einzelfall tut.**
+`03-universal.md` führt die Zweigkette des Fähigkeitenpfads: Notfall, Unterbrechung, Reinigung,
+Rettungsrückgriff, Haltung, Rückstoßschutz, Positionierung, Flächen- und Einzelheilung, Tempo,
+Spott, Flächen- und Einzelverteidigung, Bewegung, Trank, Phönixfeder — und **danach** erst der
+Angriffszweig, in dem Searing Light an erster Stelle steht. Die offene Frage ist damit kleiner als
+zuvor beschrieben: Sie lautet nicht „welcher Zweig“, sondern „wie oft greift einer von ihnen in
+genau diesem Fenster“ — und das ist eine Messfrage, keine Lesefrage.
+
 **Warum das Schaden kostet, in Zahlen aus dem Wirktext** (`ActionId.resx`, beides dort wörtlich):
 Searing Light wirkt **20 Sekunden**, Summon Solar Bahamut dauert **15 Sekunden**. Zu Beginn gezündet
 deckt der Buff die ganze Phase ab und läuft fünf Sekunden darüber hinaus — dieser Überhang ist
@@ -349,6 +357,11 @@ steht, und blockiert, wenn einer steht.
 Daraus folgt: Der Versatz ist der **stärkste einzelne Hebel** — bei acht Beschwörern hebt er die
 Abdeckung allein, ohne jede Codeänderung, von 17 % auf 67 %. Keine der Zündregeln bewirkt im
 synchronen Fall auch nur annähernd so viel.
+
+**Mögliche Zweitverwendung des Modells, ungeprüft:** `searing_light_coverage.py` rechnet die Abdeckung
+eines Fensters über die Kampfzeit. Dieselbe Frage stellt `08-mitigation-synergy.md` bei der Streckung
+der Drosselung — wie lange sie trägt, nicht wie stark. Ob die Annahmen des Modells dort passen, ist
+nicht geprüft; vermerkt, damit die Frage nicht verlorengeht.
 
 ## Die Lücke füllen, ohne Buch zu führen
 

@@ -58,6 +58,7 @@ darauf aufsetzt, ist der gemessene Fehlerfaktor in der Diagnoseanzeige zu beurte
 | Erhebung der uebrigen Doppelnutzen-Aktionen | umgesetzt als `scan16.py`; ein Fund im Tank-/Heilerprofil (Rueckstoss) |
 | Rueckstoss auch **als** Minderungswerkzeug wirken | offen, siehe `TODO.md` — Zielkonflikt mit der Rolle als einziger Rueckstossschutz |
 | Wirksamkeitsmessung im Spiel | offen |
+| **Sonden, die es schon gibt** — ohne sie ist im Kampf nicht zu sehen, ob eine Regel greift: `DataCenter.AreaMitigationSkipped` nennt je Aktions-Id, wo die Flächenbewertung eine Minderung verworfen hat; Rohzeit, korrigierte Zeit und Fehlerfaktor der Schätzung stehen in der Diagnoseanzeige | in Betrieb, in keinem Konzept genannt gewesen |
 
 ## Die Antwort auf einen eingehenden Treffer
 
@@ -100,6 +101,46 @@ derselbe Baustein, den dieses Konzept schon fuer die Vorausschau vor dem ersten 
 Abwehraktion ein belegter Wert. Fuer Barrieren liegt er vor (25 %, 15 %, 10 % aus den Wirktexten),
 fuer Minderungen steht er im Wirktext und ist aus den Ressourcen erzeugbar statt handzufuehren.
 Blast Radius und Auflagen stehen in `TODO.md`.
+
+## Was ein Baustein mehrfach traegt
+
+**Die offenen Punkte dieser Konzeptfamilie haengen an weniger Bausteinen, als ihre Zahl vermuten
+laesst.** Wer einen davon baut, schliesst mehrere Punkte zugleich — das ist der Grund, die Konzepte
+gemeinsam zu lesen und nicht einzeln.
+
+**Ein Wirkungswert je Aktion, aus dem eigenen Wirktext — vier offene Punkte.**
+
+| Offener Punkt | Konzept | Was der Wert dort beantwortet |
+|---|---|---|
+| Vorausschau vor dem **ersten** Treffer | hier | Wieviel Schaden der angekuendigte Einschlag traegt, bevor eine Beobachtung vorliegt |
+| Wahl des Mittels nach Treffergroesse (Vorgabe 5) | hier | Welche Barriere, welche Minderung den Treffer deckt |
+| Die Minderungsbilanz kennt Betaeubung und Verlangsamung nicht | hier, „Die Luecke" | Um wieviel eine Drosselung den Strom senkt — gemessen: `GetCurrentMitigationPercent` rechnet Addle, Feint, Dismantle und Reprisal, sonst nichts |
+| Rueckstoss auch **als** Minderungswerkzeug | `TODO.md` | Dass seine Verlangsamung in derselben Groessenordnung wirkt wie Rampart |
+
+Der Wert ist **erzeugbar**, nicht handzufuehren, und das ist gemessen statt vermutet: Im Lauf vom
+19.09.2026 nennen **69** Wirktexte in `ActionId.resx` die Formel „reduces damage taken by X %“, mit
+ausgeschriebenem Prozentsatz — 10, 15, 20, 25, 30, 40, 50 und 99 %; die Barrieren nennen ihren
+Anteil ebenso (25 %, 15 %, 10 %). `RotationSolver.GameData` liest dieselben Blätter ohnehin aus. Das unterscheidet ihn von der hier verworfenen
+Statussatz-Tabelle, deren Einwand die Pflege war.
+
+**Das gemessene Schadenspotential je Gegneraktion — drei Fragen in drei Konzepten.** Es liegt seit
+A99 bis A102 vor (`13-aoe-damage-classification.md`) und wird bisher an **einer** Stelle gelesen:
+
+| Frage | Konzept | Heute |
+|---|---|---|
+| Wie gefaehrlich ist der angekuendigte Flaechenschaden? | `07-heal-target-priority.md` | binaer (`IsHostileCastingAOE`) — die Groesse bleibt ungenutzt |
+| Wie steht es vor dem ersten Treffer eines Pulls? | hier | blind; die Beobachtung braucht 2,5 s Anlauf |
+| Wie hart schlaegt dieser Tankbuster, Rueckstoss, Stopp? | `13-…`, Abschnitt „Was der Baustein eroeffnet" | dieselbe Messstruktur, je Liste fehlt der eigene Speicher |
+
+**Die Sonden sind der gemeinsame Nachweisweg.** Keine Regel dieser Familie ist am Code zu belegen —
+ob sie im Kampf greift, zeigt allein die Anzeige: `AreaMitigationSkipped` je Aktions-Id, Rohzeit,
+korrigierte Zeit und Fehlerfaktor der Schaetzung. Wer eine Regel dieser Familie aendert, liefert die
+Sonde mit oder benennt, welche vorhandene sie sichtbar macht.
+
+**Zu pruefen, nicht behauptet:** `12-searing-light-stacking.md` rechnet mit
+`searing_light_coverage.py` die **Abdeckung eines Fensters ueber die Kampfzeit**. Die Streckung
+dieses Konzepts stellt dieselbe Frage — wie lange traegt die Drosselung, nicht wie stark —, und
+womoeglich laesst sich das Modell dafuer zweitverwenden. Ob die Annahmen passen, ist nicht geprueft.
 
 ## Die Vorgaben des Auftraggebers
 

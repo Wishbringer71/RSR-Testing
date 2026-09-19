@@ -304,6 +304,10 @@ Flächenaktion läuft; mit dem Potential wird daraus „bringt dieser Einschlag 
 die Heilschwelle". Damit ist auch die Bagatellfläche erledigt, die heute die Notfall-Vollheilung
 blockiert.
 
+**Wer den Verbraucher baut, löst mehr als eine Frage.** Welche das sind und welcher Baustein wie viele
+offene Punkte zugleich schließt, steht in `08-mitigation-synergy.md`, Abschnitt „Was ein Baustein
+mehrfach trägt“.
+
 **Dieselbe Frage stellt sich bei den Tankbustern.** `HostileCastingTank` trägt sie wörtlich — wie hart
 schlägt dieser zu —, und `HostileCastingKnockback` und `HostileCastingStop` dieselbe Struktur. Der
 Messpfad ist derselbe; was fehlt, ist je Liste ein eigener Speicher und die passende Rechnung.
