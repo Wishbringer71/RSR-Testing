@@ -678,6 +678,12 @@ wenn man ohnehin in Nahkampfreichweite des Ziels steht; der Anlauf von Crimson C
 Burstphase hinein ist ein Positionsrisiko, das 0,01 Prozent Schaden nicht rechtfertigen. Titan ist
 sicher, erlaubt Bewegung und kostet 60 Potenz — drei Potenz Schaden je Zyklus.
 
+**Dieselbe Bedingung gilt für den Ausweichblock des Zündfensters, und sie ist dort umgesetzt (A112, A113).**
+Sind alle drei Hauptphasen — Solar, Bahamut, Phoenix — dauerhaft von anderen Beschwörern belegt, wird in den
+Primalblock ausgewichen: **Titan**, oder **Ifrit genau dann, wenn der Spieler ohnehin am Ziel steht**.
+Dann entfällt der Anlauf, seine Voraussetzung ist erfüllt, und die höhere Zahl gilt ohne Positionsrisiko.
+Gemessen wird an derselben Schwelle, die die Rotation für genau diese Frage schon führt — `CrimsonCycloneDistance`.
+
 **Zwei Einstellungen stützen diese Wahl, beide am Code belegt.** `PreferTitanWhileMoving`
 zieht in `SummonPrimals` Titan bei Bewegung vor, unabhängig von der eingestellten Reihenfolge;
 voreingestellt aus. Und `AddCrimsonCyclone` ist voreingestellt **an** und bedeutet ausweislich seines
@@ -899,7 +905,7 @@ Lage heraus entscheidet statt blind.
 | `SMN_Reborn.cs` (dreimal) | V1: Painflare, Necrotize und Fester fragen nach `HasAnySearingLight` | umgesetzt |
 | `SMN_Reborn.cs` | Zündfenster `burstInSolar \|\| (AnotherSummonerInParty && (inBigInvocation \|\| !HasAnySearingLight))` | umgesetzt, entspricht V7 |
 | `SummonerRotation.cs` | **V8**: Phasenbuch je Phasenart (`UpdateSearingPhaseBook`, `AllSearingPhasesHeld`), fortgeschrieben in `UpdateInfo` | umgesetzt |
-| `SMN_Reborn.cs` | Zündfenster `burstInSolar \|\| (AnotherSummonerInParty && (inBigInvocation \|\| (AllSearingPhasesHeld && TitanActive)))` — V7 ersetzt | umgesetzt |
+| `SMN_Reborn.cs` | Zündfenster `burstInSolar \|\| (AnotherSummonerInParty && (inBigInvocation \|\| (AllSearingPhasesHeld && (TitanActive \|\| (IfritActive && am Ziel stehend)))))` — V7 ersetzt | umgesetzt |
 
 **V8 hat V7 ersetzt und nicht ergänzt.** V7 zündet blind, sobald der Buff aus ist; V8 entscheidet
 dasselbe aus der Lage. Beides nebeneinander hieße, dass die blinde Bedingung die überlegte jedes Mal

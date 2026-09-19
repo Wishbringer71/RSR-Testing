@@ -216,9 +216,9 @@ public sealed class SMN_Reborn : SummonerRotation
 		// windows carry 78% of a Solar window and are the natural place for a second caster.
 		//
 		// Outside a summon the charge goes out only when every burst phase is held by somebody who
-		// keeps coming back, and then into Titan: an intermediate block carries at best 632 potency
-		// per GCD against 947 to 1217 inside a demi, so leaving a burst phase costs more than
-		// firing early gains. Skipping a chance costs nothing by comparison - the charge stays up,
+		// keeps coming back, and then into a primal block: one carries at best 632 potency per GCD
+		// against 947 to 1217 inside a demi, so leaving a burst phase costs more than firing early
+		// gains. Which primal block is the question below. Skipping a chance costs nothing by comparison - the charge stays up,
 		// its recast only starts when it is spent, and the next burst phase is at most one minor
 		// window away.
 		//
@@ -228,22 +228,29 @@ public sealed class SMN_Reborn : SummonerRotation
 		// narrow rule with two Summoners on fully drifted rotations. The book decides the same thing
 		// from the situation instead of from the buff timer.
 		//
-		// Titan specifically, not "any gap" and not Ifrit. Ifrit is the strongest block on paper -
-		// 632 potency per GCD against Titan's 464 - but that number assumes Crimson Cyclone, and
-		// Crimson Cyclone is a gap closer into melee range. The owner does not take it: leaving a
-		// safe position for damage is out, and that decision is recorded (concept 12, "Die
-		// Voreinstellung bleibt, und das ist die Entscheidung des Auftraggebers"; CLAUDE.md names
-		// the same case). Without the gap closer the ranking inverts inside the buff window - Titan
-		// three attacks for 1300 potency, Ifrit one to two for 800 to 1420 - and Titan's attacks are
-		// instant while Ifrit's second slot waits on Ruby Rite's cast time. Titan is also the only
-		// block whose value depends on neither position nor an open cast, which is what "most
-		// flexible" meant in that decision.
+		// Which block to fall back into, and the answer is not fixed: it depends on where the player
+		// is standing. Ifrit is the strongest on paper - 632 potency per GCD against Titan's 464 -
+		// but that figure includes Crimson Cyclone, which is a gap closer into melee range. Run into
+		// a burst phase for it and the block is bought with a position risk the owner does not take.
+		// Without the gap closer the ranking inverts inside the buff: Titan three attacks for 1300
+		// potency, Ifrit one to two for 800 to 1420, and Titan's are instant while Ifrit's second
+		// slot waits on Ruby Rite's cast time (concept 12).
 		//
-		// Waiting for Titan rather than firing into Ifrit costs nothing: the charge stays up and its
-		// recast only starts when it is spent.
+		// So Ifrit takes precedence only where its premise already holds - the player stands at the
+		// target anyway, so there is nothing to run into and the full block is free. The distance is
+		// the one the rotation already uses for exactly this question, the threshold below which
+		// Crimson Cyclone needs no approach. Otherwise Titan, the only block whose value depends on
+		// neither position nor an open cast.
+		//
+		// Waiting for Titan rather than firing into a distant Ifrit costs nothing: the charge stays
+		// up and its recast only starts when it is spent.
+		var standingAtTheTarget =
+			CrimsonCyclonePvE.Target.Target?.DistanceToPlayer() <= CrimsonCycloneDistance;
+		var fallbackBlockIsWorthIt = TitanActive || (IfritActive && standingAtTheTarget);
+
 		var mayFireSearingLight = burstInSolar
 			|| (AnotherSummonerInParty
-				&& (inBigInvocation || (AllSearingPhasesHeld && TitanActive)));
+				&& (inBigInvocation || (AllSearingPhasesHeld && fallbackBlockIsWorthIt)));
 
 		if (mayFireSearingLight)
 		{
