@@ -256,11 +256,17 @@ public sealed class SMN_Reborn : SummonerRotation
 		// rotation already plans for; the summon itself is not delayed, because its condition accepts
 		// a running buff as readiness.
 		//
-		// No probe and no later analysis: the decision is made here, from what the GCD path has
-		// already chosen as the next action.
-		var burstAboutToStart = SummonSolarBahamutPvE.EnoughLevel
-			? nextGCD.IsTheSameTo(true, SummonSolarBahamutPvE)
-			: nextGCD.IsTheSameTo(true, SummonBahamutPvE);
+		// Read from the summon's own readiness, NOT from nextGCD. The summon waits for the buff (see
+		// UseSummonsAndTrances), so asking "is the summon the next GCD" would be the chicken-and-egg
+		// that kept raising broken for a year: the buff waits to be announced, the announcement waits
+		// for the buff, and neither happens. Concept 11 has that case written out.
+		//
+		// No probe and no later analysis either: cooldown and burst flag are both readable here and
+		// now, so the decision stays in the code where it falls.
+		var bigSummonReady = SummonSolarBahamutPvE.EnoughLevel
+			? !SummonSolarBahamutPvE.Cooldown.IsCoolingDown
+			: !SummonBahamutPvE.Cooldown.IsCoolingDown;
+		var burstAboutToStart = IsBurst && bigSummonReady;
 
 		var mayFireSearingLight = burstInSolar
 			|| burstAboutToStart
@@ -519,7 +525,29 @@ public sealed class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
-		if (SummonBahamutPvE.CanUse(out act))
+		// The big summon waits for Searing Light, because the buff has to be up BEFORE the burst deals
+		// its first damage - a buff that lands one weave slot into the phase leaves the strongest GCDs
+		// of the cycle unbuffed, and the demi GCDs carry 947 to 1217 potency against 632 outside.
+		//
+		// Three arms, and the last two are what keep the wait from costing the phase itself: a charge
+		// that is already spent is not coming back inside this window, and below level 66 there is no
+		// Searing Light at all. Waiting in either case would trade a 5% buff for the whole burst.
+		//
+		// This also settles a defect recorded in TODO.md: the same summon was asked twice, once with
+		// no condition and once with this one, so the conditional call could never be reached and the
+		// coupling it expressed never applied. One call, one condition.
+		// The risk of waiting, stated rather than hidden: while the charge is up but the weave slot
+		// keeps going to emergency, interrupt, healing or defence, the phase is held back with it.
+		// Searing Light is a self-buff whose only action check is being in combat, so it is normally
+		// castable in the very next slot - but under sustained healing pressure the burst can start
+		// late. Guarding that with a CanUse probe here would be the "CanUse as a question, with
+		// targeting as a side effect" pattern recorded as a defect class in TODO.md, so it is not
+		// done; the trade is a rare late burst against a buff that regularly missed its own phase.
+		var searingSettled = !SearingLightPvE.EnoughLevel
+			|| HasSearingLight
+			|| SearingLightPvE.Cooldown.IsCoolingDown;
+
+		if (searingSettled && SummonBahamutPvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -528,18 +556,7 @@ public sealed class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
-		if ((HasSearingLight || SearingLightPvE.Cooldown.IsCoolingDown) && SummonBahamutPvE.CanUse(out act))
-		{
-			return true;
-		}
-
-		// "Searing Light is ready for this phase" is the point of the condition, and a buff that is
-		// already running satisfies it just as well as a charge that is still up. Without the second
-		// arm, firing Searing Light into the weave slot ahead of the summon would block the summon it
-		// was fired for: the charge goes on cooldown the moment it is spent. The Bahamut branch above
-		// already reads it this way.
-		if (IsBurst && (!SearingLightPvE.Cooldown.IsCoolingDown || HasSearingLight)
-			&& SummonSolarBahamutPvE.CanUse(out act))
+		if (IsBurst && searingSettled && SummonSolarBahamutPvE.CanUse(out act))
 		{
 			return true;
 		}

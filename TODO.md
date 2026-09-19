@@ -77,13 +77,6 @@ Upstream hat dieselbe Klasse in 7.5.6.3 an vier Stellen aufgelöst (`ObjectHelpe
 
 **Empfehlung:** dasselbe Muster nachziehen, nicht die Fänge entfernen — ein `catch`, der nie feuert, ist harmlos, der fehlende Vorab-Test ist es nicht. Vorher zu klären: ob `PartyMembers` und die Feindlisten überhaupt freigegebene Objekte führen können oder ob sie je Rahmen neu erhoben werden; trifft Letzteres zu, ist die Klasse hier gegenstandslos und die Fänge sind der eigentliche Befund.
 
-### `UseSummonsAndTrances`: eine der beiden Searing-Light-Kopplungen ist unerreichbar · N
-
-**Konzept:** `docs/rotation-flow/12-searing-light-stacking.md`
-`SMN_Reborn.cs:478` ruft `SummonBahamutPvE.CanUse(out act)` ohne Vorbedingung. `:487` ruft denselben Ausdruck mit einer zusätzlichen Bedingung davor und ist damit eine strikte Teilmenge — **beweisbar toter Code**. `:491` steuert die Solar-Beschwörung über `!SearingLightPvE.Cooldown.IsCoolingDown` und ist nur erreichbar, wenn `CanUse` in derselben Lage falsch liefert.
-
-Welche der beiden Zeilen tot ist, hängt daran, ob Summon Bahamut auf Stufe 100 spielseitig zu Summon Solar Bahamut umgewandelt wird; RSR ruft über `AdjustedID`, die Antwort steht nicht im Repository. Das ist kein Aufräumfall: Wird `:478` entfernt, wird die Kopplung aus `:491` wirksam, und dann greift die Zündregel aus A78 in die Beschwörungswahl ein. Erst messen, dann anfassen — Beobachtungspunkt ist, ob Solar Bahamut alle 120 Sekunden kommt.
-
 ### Wiederbelebung: vier Eingriffe des Zweigs sind weiter ungemessen · N, R
 
 **Konzept:** `docs/rotation-flow/11-raise-dispatch.md`
@@ -476,14 +469,13 @@ Die Zustandswahl liegt an zwei Orten: implizit in `AdjustStateType`, wo `/rotati
 
 Geprüfte Nicht-Fehlstellen: `DTRManualAuto` bildet den vom Enum-Text beschriebenen Zwei-Zustands-Zyklus ab (kein Fehler, AUDIT_LOG A14); ein zu großer `TargetingIndex` kann keinen Indexfehler auslösen, `DataCenter.TargetingType` rechnet `% Count`.
 
-### Searing Light: der Einschiebeplatz vor der Beschwörung kann ebenfalls belegt sein · N
+### Searing Light: das Warten der Beschwörung kann den Burst verzögern · N
 
-**Der gemeldete Fall ist behoben** (A114): Die Zündung fällt jetzt im Einschiebeplatz **vor** der großen Beschwörung, nicht erst nach ihr. `burstInSolar` wird erst wahr, wenn die Demi steht — der früheste Platz, den diese Bedingung anbieten konnte, lag also hinter dem Beschwörungs-GCD, und war er belegt, rutschte die Ladung in die Phase hinein. Searing Light wirkt 20 s gegen 15 s Demi, die Zündung davor deckt die Phase also vollständig ab. Die Beschwörung selbst wird nicht verzögert, weil ihre Bedingung einen laufenden Buff als Bereitschaft annimmt.
+**Der gemeldete Fall ist behoben** (A114, A115): Die Zündung wird schon angeboten, sobald die große Beschwörung bereit ist und das Burstfenster steht — gelesen an der Abklingzeit der Beschwörung, nicht am nächsten GCD, weil daraus sonst dasselbe Henne-Ei-Problem würde, das die Wiederbelebung ein Jahr lang lahmgelegt hat (Konzept 11). Und die Beschwörung **wartet** auf den Buff, statt ihn nur zuzulassen: Seine Vorgabe lautet, Searing Light muss aktiv sein, **bevor** der erste Burstschaden entsteht.
 
-**Was bleibt:** Auch der Platz **vor** der Beschwörung kann besetzt sein — durch Notfall, Unterbrechung, Heilung, Verteidigung oder die Ausführungssperre kurz vor dem GCD (Kette in `03-universal.md`). Dann fällt Searing Light weiterhin später. Das ist nicht behandelt, und eine Sonde zur nachträglichen Auswertung scheidet nach Vorgabe des Auftraggebers aus: Eine Messung, deren Auswertung über das Modell läuft, kostet je Wert einen Kampf, ein Ablesen, einen Bericht und eine Runde. Ein Eingriff in die **Reihenfolge** des Fähigkeitenpfads bleibt der einzige verbliebene Weg und ist freigabepflichtig — dieselbe Bauform war in C37 im Spiel schlechter als der Defekt, den sie beheben sollte.
+**Was an seine Stelle tritt:** Liegt die Ladung bereit, wird aber der Einschiebeplatz dauerhaft von Notfall, Unterbrechung, Heilung oder Verteidigung belegt, wartet die Beschwörung mit. Searing Light ist ein Selbstbuff, dessen einzige Aktionsprüfung `InCombat` ist, fällt also normalerweise im nächsten freien Platz; unter Dauerheildruck kann die Burstphase aber später beginnen. Die Sicherung dagegen wäre eine `CanUse`-Abfrage als Prüfung — genau die Defektklasse, die weiter oben in dieser Datei steht —, deshalb ist sie unterblieben. **Zu beobachten:** ob der Burst im Spiel je spürbar später anläuft.
 
 **Konzept:** `docs/rotation-flow/12-searing-light-stacking.md`
-
 ### Beim Beschwörer bleibt in der 4er-Instanz nur ein einziger Weg zu Radiant Aegis und Addle · N
 
 **Konzept:** `docs/rotation-flow/12-searing-light-stacking.md`, `docs/rotation-flow/13-aoe-damage-classification.md`

@@ -2889,6 +2889,23 @@ Allgemeine Form, in `CLAUDE.md` aufgenommen: Wo ein fremder Schutzmechanismus al
 **Erreichter Prüfgrad:** statische Prüfung, Strukturlauf, Kollisionsprüfung gegen die Ausführungssperre, Compile im Prüflauf des Zweigs. Im Spiel unbeobachtet.
 
 ---
+
+### A115 · Die Beschwörung wartet auf Searing Light — und der Eingriff saß zuerst am toten Zweig (19.09.2026)
+
+**Vorgabe des Auftraggebers:** „Somit muss ja searing light aktiv sein, bevor der erste burstschaden entsteht.“ Das ist ein Kriterium, kein Wunsch — und an ihm gemessen reichte A114 nicht: Die Zündung vor der Beschwörung anzubieten verdoppelt die Gelegenheiten, garantiert aber nichts. Garantiert wird es erst, wenn die Beschwörung selbst auf den Buff wartet.
+
+**Zwei Fehler in A114, beide bei der Prüfung dieser Vorgabe gefunden.**
+
+1. *Die Zündbedingung hätte einen Zirkel erzeugt.* Sie las `nextGCD`: zünde, wenn die Beschwörung der nächste GCD ist. Sobald die Beschwörung ihrerseits auf den Buff wartet, warten beide aufeinander — dasselbe Henne-Ei-Problem, das die Wiederbelebung ein Jahr lang lahmgelegt hat (Konzept 11). Gelesen wird jetzt die **Abklingzeit der Beschwörung** zusammen mit dem Burstfenster; beides steht unabhängig vom GCD-Pfad zur Verfügung.
+2. *Der Eingriff saß am unerreichbaren Zweig.* Ich hatte die Bedingung in den Solar-Zweig gesetzt — und `TODO.md` führte seit Längerem, dass dieser Zweig praktisch tot ist, weil der Bahamut-Aufruf zwei Zeilen darüber ohne jede Vorbedingung steht. Der Fix wäre eine Attrappe gewesen. Die Bedingung steht jetzt an dem Aufruf, der tatsächlich feuert, und der Doppelaufruf ist auf einen zusammengeführt — damit ist der erfasste Defekt mit behoben.
+
+**Die Bedingung hält drei Arme**, und die letzten beiden verhindern, dass das Warten teurer wird als der Verzug: Ist die Ladung bereits verbraucht, kommt sie in diesem Fenster nicht zurück; unterhalb von Stufe 66 gibt es Searing Light nicht. In beiden Fällen wird nicht gewartet.
+
+**Das Restrisiko steht im Code und in `TODO.md`, statt verschwiegen zu werden:** Bleibt der Einschiebeplatz dauerhaft belegt — Notfall, Unterbrechung, Heilung, Verteidigung —, wartet die Beschwörung mit und der Burst beginnt später. Searing Light ist ein Selbstbuff, dessen einzige Aktionsprüfung `InCombat` ist, fällt also normalerweise im nächsten freien Platz. Eine Absicherung über `CanUse` als Prüfung wäre die Defektklasse aus `TODO.md` („`CanUse` als Prüfung, nicht als Wahl — mit Zuweisung als Nebenwirkung“) und unterbleibt deshalb.
+
+**Erreichter Prüfgrad:** statische Prüfung, Strukturlauf, Kollisionsprüfung gegen die Ausführungssperre, Compile im Prüflauf des Zweigs. Im Spiel unbeobachtet — und zu beobachten ist hier zweierlei: ob der Buff jetzt vor dem ersten Demi-GCD liegt, und ob der Burst je spürbar später anläuft.
+
+---
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

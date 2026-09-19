@@ -73,6 +73,22 @@ vollständig ab, und der eingeplante Überhang bleibt erhalten. Damit die Beschw
 ausfällt, nimmt ihre Bedingung einen **laufenden** Buff als Bereitschaft an — der Bahamut-Zweig las sie
 schon immer so, der Solar-Zweig nicht.
 
+**Die Beschwörung wartet auf den Buff, statt ihn nur zuzulassen** — Vorgabe des Auftraggebers: Searing
+Light muss aktiv sein, **bevor** der erste Burstschaden entsteht. Umgesetzt an der Stelle, die
+tatsächlich feuert: Der Bahamut-Aufruf stand zweimal da, einmal ohne Bedingung und einmal mit genau
+dieser — der bedingte war damit unerreichbar, die Kopplung wirkungslos. Jetzt ein Aufruf, eine
+Bedingung. Sie hält drei Arme, und die letzten beiden verhindern, dass das Warten die Phase kostet:
+Eine bereits verbrauchte Ladung kommt in diesem Fenster nicht zurück, und unterhalb von Stufe 66 gibt
+es Searing Light gar nicht.
+
+**Gelesen wird die Bereitschaft der Beschwörung, nicht der nächste GCD.** Andernfalls entstünde dasselbe
+Henne-Ei-Problem wie bei der Wiederbelebung (Konzept 11): Der Buff wartete darauf, angekündigt zu
+werden, und die Ankündigung auf den Buff.
+
+**Das verbleibende Risiko ist benannt, nicht beseitigt:** Bleibt der Einschiebeplatz dauerhaft belegt —
+Notfall, Unterbrechung, Heilung, Verteidigung —, wartet die Beschwörung mit, und der Burst beginnt
+später. Eine Absicherung über `CanUse` als Prüfung scheidet aus; das ist die Defektklasse aus `TODO.md`.
+
 **Keine Sonde, und das ist die Vorgabe des Auftraggebers:** Eine Messung, deren Auswertung über das
 Modell läuft, kostet je Wert einen Kampf, ein Ablesen, einen Bericht und eine Runde. Diese
 Entscheidung fällt stattdessen im Code, aus dem, was der GCD-Pfad ohnehin schon als nächste Aktion
