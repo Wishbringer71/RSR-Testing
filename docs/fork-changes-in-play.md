@@ -1,336 +1,336 @@
-# Was dieser Fork im Kampf anders macht
+# What this fork does differently in a fight
 
-Gegenstand ist der Abstand zu `upstream/main` auf dem Stand **7.5.6.9** (`83033ed79`),
-gemessen an `f47d2a40a`. Gegliedert ist er nach dem, was im Kampf geschieht — wer wann
-wie viel Schaden nimmt, welche Aktion früher oder später fällt, wer überlebt. Die
-Herkunftssicht (was war ein Fehler des Originals, was eine Erweiterung, was ein eigener
-Fehler) steht in `docs/rotation-flow/06-fork-audit.md`; sie beschreibt den ersten
-Durchgang und ist für die spätere Arbeit nicht fortgeschrieben.
+The subject is the distance to `upstream/main` at **7.5.6.9** (`83033ed79`), measured at
+`ae9f379ae`. It is grouped by what happens in the game — who takes how much damage and
+when, which action falls earlier or later, who survives. The origin view (what was a defect
+of the original, what is an extension, what was the fork's own mistake) lives in
+`docs/rotation-flow/06-fork-audit.md`; that document covers the first pass and is not
+carried forward.
 
-**Umfang:** 532 Commits. An C#-Quellen 74 Dateien, +5102/−814 Zeilen
-(`git diff --shortstat upstream/main...HEAD -- '*.cs'`); Dokumentation und Prüfskripte
-kommen obendrauf und tun im Spiel nichts (§ 9).
-
----
-
-## Zum Prüfgrad, vorweg
-
-Nur zwei Änderungen sind **im Spiel bestätigt**: die Wiederbelebung (A73, seine Beobachtung
-„rezz klappt bislang automatisch") und der Tank-Sustain-HoT (A2). Alles andere ist am Code
-belegt und in der CI kompiliert — das sagt, **dass** eine Wirkkette schließt, nicht **ob
-sie im Spiel richtig ist**. Wo eine Änderung ab Werk hinter einem Schalter liegt, steht es
-dabei; ohne Vermerk wirkt sie sofort.
-
-**Ein belegter Defekt ist in diesem Stand enthalten.** Er steht in § 5.3 und ist der
-Grund, warum seit dem 17.09. beim Beschwörer weder Addle noch Schimmerschild bei
-Flächenschaden fallen.
+**Size:** 533 commits. In C# sources, 74 files, +5102/−814 lines
+(`git diff --shortstat upstream/main...HEAD -- '*.cs'`); documentation and check scripts
+come on top of that and do nothing in the game (§ 9).
 
 ---
 
-## 1 · Heilung — wann sie fällt
+## On the level of verification, up front
 
-**Der Pull beginnt nicht mehr ohne Heilung.** `DataCenter.AverageTTK` lieferte im Original
-`0f`, solange kein Gegner eine Schätzung trug. Jeder Verbraucher las daraus „der Kampf ist
-gleich vorbei" und schaltete ab — in den ersten rund 2,5 Sekunden jedes Pulls gab es
-deshalb keine automatische Heilung. Behoben.
+Only two changes are **confirmed in play**: the raise dispatch (A73, the user's own
+observation that raising now happens automatically) and the tank sustain HoT (A2).
+Everything else is established in the code and compiled in CI — which says that a chain
+closes, not whether it is right in the game. Where a change sits behind a switch by
+default, it says so; without that note it takes effect immediately.
 
-**Der Weißmagier heilt wieder, wenn ein Pack stirbt.** `StateUpdater.CanUseHealAction`
-wandte das TTK-Gate `AutoHealTimeToKill` (8 s) auch auf Heiler an, obwohl die Option unter
-`UseHealWhenNotAHealer` hängt und Nicht-Heiler meint. Sobald der Mittelwert der
-Gegner-Restzeit unter acht Sekunden fiel — also am Ende jedes Packs —, gingen **alle**
-Heilflags aus: Tank unter 20 %, kein Heilversuch, Sanctus statt Cure. Das war die
-gemeldete Ursache (#54).
-
-**Heilung vor dem Einschlag statt danach** — `Heal ahead of incoming damage`, **ab Werk
-aus**. Jede Heilschwelle und die Zielwahl lesen die Gesundheit, auf die ein Mitglied
-zuläuft, bis eine jetzt begonnene Heilung landet, statt den Stand von jetzt. Im Kampf: Ein
-schnell fallender Tank bekommt seine Heilung rund einen GCD früher, und wer schnell fällt
-wird vor jemandem bedient, der tiefer, aber stabil steht. Die Rate je Gruppenmitglied
-stammt aus der vorhandenen Gesundheitshistorie (`RecordedHP`, 1 Hz über vier Minuten), die
-der Fork auch für die Gruppe füllt statt nur für Gegner; sie ist damit netto nach allem —
-Minderung, Barriere und Heilung eingerechnet. Weil die Schätzung über den ganzen Kampf
-mittelt und damit träge ist, hält `ScoreTtkForecast` jede Sekunde die vorige Vorhersage
-gegen den tatsächlichen Verlauf und `GetCorrectedTTK` teilt den Fehler heraus.
-
-**Die Notfall-Vollheilung wartet auf einen Grund** — `Benediction needs a reason`,
-**ab Werk an**. Benediction verlangt jetzt neben dem niedrigen Stand, dass das Ziel
-angegriffen wird, dass eine Flächenaktion angekündigt ist oder dass seine Gesundheit
-messbar fällt. Im Kampf: Ein gerade Wiederbelebter hält ein paar Prozent, hat keine Aggro
-und nimmt keinen Schaden — die Schwelle las ihn als dringendsten Fall der Gruppe, und die
-Vollheilung war für neunzig Sekunden weg, während nichts passierte.
-
-**Der Tank läuft mit einem tickenden HoT in den Pull** — `UsePreRegen` (WHM),
-`UsePreAspectedBenefic` (AST), je mit zwei Gegnerzahl-Schwellen. Vor dem Kampf geht der
-Regen auf den Tank, sobald genug Gegner in Ansprungweite stehen, und wird gehalten,
-solange das Pack groß genug ist; darunter fällt die Heilung auf die Schwellen zurück. Im
-Kampf: Die ersten Treffer landen auf einem Tank, auf dem schon etwas läuft, statt auf
-einem, der bereits tief steht. Beide Aktionen sind Sofortzauber, unterwegs geht nichts
-verloren. **Im Spiel bestätigt.** Der Countdown-Zweig des Originals für Trials und Raids
-ist dabei wiederhergestellt — der Fork hatte ihn zunächst gelöscht.
+**This build carries a known defect.** It is in § 5.3, and it is why no Addle and no
+Radiant Aegis have gone out against area damage on Summoner since 17 September.
 
 ---
 
-## 2 · Heilung — wen sie trifft
+## 1 · Healing — when it lands
 
-**Wer sterben wird, kommt vor die Rollenabkürzungen.** `ActionTargetInfo.FindHealTarget`
-sortierte im Original nach Rolle mit festen Schwellen (Tank ≤ 45 %, Heiler ≤ 40 %) und
-brach bei der ersten Abkürzung ab. Ein Schadensausteiler bei 10 % wurde damit übergangen,
-sobald der Tank bei 44 % stand. Der Fork setzt einen kritischen Rang davor. Die Reihenfolge
-ist in der CI verriegelt (`check_heal_target_order.py`), weil ein Upstream-Merge sie sonst
-lautlos zurückdrehen würde.
+**A pull no longer starts without healing.** `DataCenter.AverageTTK` returned `0f` in the
+original while no enemy carried an estimate yet. Every consumer read that as "the fight is
+about to end" and switched off — so for roughly the first 2.5 seconds of every pull there
+was no automatic healing at all. Fixed.
 
-**Ein Mitspieler hinter der Kamera ist wieder heilbar.** Der Filter „nur Ziele im Sichtfeld
-angreifen" galt im Original auch für Heilziele.
+**The white mage heals again while a pack is dying.** `StateUpdater.CanUseHealAction`
+applied the TTK gate `AutoHealTimeToKill` (8 s) to healers as well, although the option
+hangs under `UseHealWhenNotAHealer` and means non-healers. As soon as the average enemy
+time-to-kill fell below eight seconds — that is, at the end of every pack — **all** heal
+flags went out: tank below 20 %, no heal attempted, Holy instead of Cure. That was the
+reported cause (#54).
 
-**Unverwundbare Ziele** werden gesondert behandelt statt gar nicht: Upstream gibt einem Ziel
-unter Invulnerabilität überhaupt keine Heilung; der Fork senkt die Schwelle auf
-`HealthProtectedRatio` und lässt kurz vor Ablauf des Status wieder die normale gelten
+**Healing ahead of the hit instead of after it** — `Heal ahead of incoming damage`, **off
+by default**. Every healing threshold and the heal target choice read the health a member
+is heading for by the time a heal started now would land, instead of the health shown right
+now. In a fight: a tank dropping fast gets his heal about one GCD earlier, and someone
+falling quickly is picked ahead of someone sitting lower but steady. The rate per party
+member comes from the health history the tree already keeps (`RecordedHP`, 1 Hz over four
+minutes), which the fork fills for the party as well rather than only for enemies; it is
+therefore net of everything — mitigation, barrier and healing included. Because the
+estimate averages over the whole fight and is sluggish for a party member, `ScoreTtkForecast`
+holds each previous prediction against the actual course every second and `GetCorrectedTTK`
+divides the error back out.
+
+**The emergency full heal waits for a reason** — `Benediction needs a reason`, **on by
+default**. Benediction now requires, beyond the low reading, that the target is being
+attacked, that an area cast is announced, or that their health is measurably falling. In a
+fight: a player who was just raised holds a few percent, carries no aggro and takes no
+damage — the threshold read him as the most urgent member in the party while nothing was
+happening to him, and the full heal was then gone for ninety seconds.
+
+**The tank walks into the pull with a HoT already ticking** — `UsePreRegen` (WHM),
+`UsePreAspectedBenefic` (AST), each with two enemy-count thresholds. Before combat the
+regen goes on the tank once enough enemies stand within gap-closer range, and it is kept up
+while the pack stays large enough; below that, healing falls back to the thresholds. In a
+fight: the first hits land on a tank who already has something running rather than on one
+who is already low. Both actions are instant, so nothing is lost while moving. **Confirmed
+in play.** The original's countdown branch for trials and raids is restored — the fork had
+removed it.
+
+---
+
+## 2 · Healing — who it picks
+
+**Whoever is about to die comes before the role short-cuts.**
+`ActionTargetInfo.FindHealTarget` sorted by role with fixed thresholds in the original
+(tank ≤ 45 %, healer ≤ 40 %) and stopped at the first short-cut. A damage dealer at 10 % was
+therefore passed over as soon as the tank sat at 44 %. The fork puts a critical rank ahead
+of them. That order is locked in CI (`check_heal_target_order.py`), because an upstream
+merge would otherwise undo it silently.
+
+**A party member behind the camera can be healed again.** The "only attack targets in view"
+filter applied to heal targets as well in the original.
+
+**Invulnerable targets** are treated specially rather than not at all: upstream gives a
+target under invulnerability no healing whatsoever; the fork lowers the threshold to
+`HealthProtectedRatio` and lets the normal one return shortly before the status ends
 (§ 6.2).
 
 ---
 
-## 3 · Schilde und Barrieren
+## 3 · Shields and barriers
 
-**Die Schildliste kannte die häufigsten Barrieren nicht.** `ShieldStatus` führte weder
-Divine Benison noch The Blackest Night; fünfzehn Barrieren fehlten insgesamt. Wo der Baum
-fragt „steht auf diesem Ziel noch etwas", war die Antwort für die meisten Tankschilde nein.
-Ergänzt und gegen Rückfall gesichert.
+**The shield list did not know the most common barriers.** `ShieldStatus` carried neither
+Divine Benison nor The Blackest Night; fifteen barriers were missing in total. Wherever the
+tree asked "is anything still up on this target", the answer was no for most tank shields.
+Filled in and locked against regression.
 
-**Die Anrechnung des Schildes auf die Heilschwelle ist wieder draußen** — auf seine
-Entscheidung (A85). Der Grund ist der richtige: Ein Schild verhindert Schaden, er stellt
-keine Gesundheit her. Ein Tank bei 40 % steht bei 40 %, ob eine Barriere läuft oder nicht;
-läuft sie ab, ohne verbraucht zu werden, war die zurückgehaltene Heilung verschenkt.
+**Crediting the shield against the healing threshold is out again** — by the user's
+decision (A85), and for the right reason: a shield prevents damage, it does not restore
+health. A tank at 40 % stands at 40 % whether a barrier is running or not; if it expires
+unspent, the healing withheld for it was thrown away.
 
-**Offen und bewusst so belassen:** `HasSurvivingShield` misst die **kürzeste** Restzeit über
-alle Barrieren, nicht die längste — ein Ziel mit drei Barrieren gilt als ungeschützt, sobald
-die kleinste ausläuft. Die Fehlerrichtung ist „zu viel Heilung", nie „zu wenig"; die
-naheliegende Umkehr tauscht den Fehler gegen die gefährlichere Richtung. Steht in `TODO.md`.
-
----
-
-## 4 · Wiederbelebung
-
-**Sie fällt jetzt sofort statt nach langer Verzögerung** — die einzige Änderung mit
-Spielbestätigung (A73). Ursache war ein Henne-Ei-Problem: Der Fähigkeitspfad gab Spontanität
-für eine Wiederbelebung nur aus, wenn die Wiederbelebung bereits als nächster GCD gemeldet
-war — was sie nicht konnte, weil diese Meldung selbst Spontanität voraussetzte. Im
-Handbetrieb mit hart anvisierter Leiche ging es, weil dort der GCD frei blieb; das war der
-Beweis. Der Fork setzt den fehlenden Auslöser: Spontanität fällt auch, wenn eine
-Wiederbelebung ansteht und wirkbar wäre. Der GCD-Pfad bleibt unangetastet — der erste
-Versuch hatte ihn umgeschrieben und damit unter anderem den Schimmerschild des Beschwörers
-stillgelegt; er wurde zurückgenommen (C37).
-
-**Die Phönixfeder** ist verdrahtet, prüft die Zieleignung über den Gegenstandsstatus und die
-Stufe der Wiederbelebungseigenschaft. **Ab Werk aus.**
-
-**Die Nur-Heiler-Hartwirkmodi** messen die richtige Menge (welche Heiler zählen) und halten
-den Spontanitäts-Vorbehalt, den ihr eigener Text verspricht: Bei bereiter Spontanität wird
-nicht mehr hartgewirkt.
-
-Swiftcast wird in der Beschwörer-Rotation nicht für Schaden verbraucht (A77) — deine Vorgabe,
-Spontanität bleibt für Wiederbelebungen.
+**Open and deliberately left alone:** `HasSurvivingShield` measures the **shortest**
+remaining time across all barriers, not the longest — a target with three barriers counts
+as unshielded as soon as the smallest runs out. The error direction is "too much healing",
+never "too little"; the obvious inversion trades it for the dangerous direction. Recorded in
+`TODO.md`.
 
 ---
 
-## 5 · Minderung und Verteidigung
+## 4 · Raising
 
-### 5.1 Was sicher besser ist
+**It now happens at once instead of after a long delay** — the one change with an
+observation in play (A73). The cause was a chicken-and-egg problem: the ability path only
+spent Swiftcast on a raise once the raise was already reported as the next GCD — which it
+could not be, because that report itself required Swiftcast. In manual mode with the corpse
+hard-targeted it worked, because the GCD stayed free there; that was the proof. The fork
+adds the missing trigger: Swiftcast also falls when a raise is pending and would be
+castable. The GCD path is untouched — the first attempt rewrote it and silenced, among
+other things, Radiant Aegis on Summoner; it was reverted (C37).
 
-**Zwei Tanks legen Reprisal nicht mehr übereinander.** Im Original fehlte Reprisal das
-`TargetStatusProvide`, das Addle und Feint haben; der zweite Tank verschenkte 60 Sekunden
-Abklingzeit. Dasselbe galt für die Gegenzahl-Zweige von Addle und Feint bei zwei Castern
-oder zwei Nahkämpfern.
+**The Phoenix Down** is wired up, checks target eligibility through the item status and the
+level of the raise trait. **Off by default.**
 
-**Paladin und Krieger geben Reprisal jetzt auch bei Raidwides** — es stand nur im
-Einzelzielpfad, obwohl die eigene Beschreibung des Kriegers es für Flächen versprach.
-Dunkelritter und Haudegen hatten es richtig.
+**The healer-only hard-cast modes** measure the right set (which healers count) and hold the
+Swiftcast reservation their own text promises: with Swiftcast ready, nothing is hard-cast
+any more.
 
-**Die Minderungsschwächungen werden aufrechterhalten statt einmal gesetzt**
-(`ShouldSustainMitigationDebuff`, ein Helfer statt 25 Kopien). Die Dauer folgt der
-Aufwertung auf Stufe 98.
-
-**Ein Buster auf einen Schadensausteiler bekommt eine Antwort.** Zwölf Jobs setzen ihre
-vorhandene reaktive Zeile — Feint, Addle, Troubadour, Tactician, Shield Samba, beim Samurai
-zusätzlich Third Eye —, wenn ein Cast tatsächlich auf sie zielt. Vorher war der
-Einzelzielschutz für Schadensausteiler überhaupt nicht besetzt.
-
-**Selbstheilung der Schadensausteiler** (Second Wind, Bloodbath) bei zehn Jobs: Die
-Rollenaktionen waren deklariert und wurden nie benutzt, `HealSingleAbility` war leer.
-
-**Die BossModReborn-Zeitleiste wird nur gelesen, wenn sie eingeschaltet ist.** Vier Helfer
-reagierten darauf, obwohl die Option aus war.
-
-### 5.2 Was die Flächenerkennung heute tut
-
-Der Baum lernt Flächenaktionen mit: Trifft eine Gegneraktion in einer Gruppe ab vier
-Spielern jeden im selben Effektsatz, wird ihre Id dauerhaft vermerkt. Der Fork misst
-zusätzlich, **wie hart** sie trifft — der Anteil der Maximalgesundheit, den der Einschlag
-gekostet hat, wird je Aktion gespeichert. Die Listenverwaltung zeigt beides an.
-
-### 5.3 Der Defekt, der in diesem Stand steckt
-
-`Skip mitigation for small area casts` ist **ab Werk an**, und in dieser Voreinstellung
-unterbleibt die Gruppenminderung in fast jedem gewöhnlichen Fall:
-
-- Die Bedingung lautet „Puffer minus gemessener Anteil unter der Heilschwelle (0,65)".
-  Bei voller Gruppe ist der Puffer 1,0 — gemindert wird also erst ab einem Anteil über
-  **35 %** der Maximalgesundheit. Ein gewöhnlicher Raidwide erreicht das nicht.
-- Der Anteil wird erst **nach dem ersten Einschlag** gespeichert. Der erste Cast einer
-  Aktion mindert daher noch, jeder weitere nicht.
-
-Im Kampf heißt das: Beim Beschwörer fällt seit dem 17.09. weder Addle noch Schimmerschild
-bei Flächenschaden, weil `DefenseArea` nicht mehr gesetzt wird. Betroffen ist jede
-gruppenweite Minderung, die an dieser Kette hängt, und über `IsUnderThreat` auch die
-Gefahrenprüfung der Notfall-Vollheilung (§ 1).
-
-**Handgriff:** Die Einstellung ausschalten stellt das Verhalten von vor dem 17.09. her.
-Die Voreinstellung im Code zu ändern genügt nicht — eine bereits benutzte Konfiguration
-trägt den gespeicherten Wert, und `Configs.Migrate` stellt einzelne Felder nicht um.
-Die Entscheidung, wie die Bewertung selbst zu korrigieren ist, steht in `TODO.md`.
-
-**Woher der Defekt kommt:** Die Bewertung wurde mit Voreinstellung **an** eingeführt. Das
-verstößt gegen die eigene Regel, dass eine Verhaltensänderung ohne Nachweismöglichkeit das
-bisherige Standardverhalten behält und das neue hinter einem Schalter anbietet.
+Swiftcast is not spent for damage in the Summoner rotation (A77) — the user's instruction;
+it stays reserved for raises.
 
 ---
 
-## 6 · Tank-Selbstschutz
+## 5 · Mitigation and defensives
+
+### 5.1 What is safely better
+
+**Two tanks no longer stack Reprisal.** In the original Reprisal lacked the
+`TargetStatusProvide` that Addle and Feint have, so the second tank threw away 60 seconds of
+cooldown. The same applied to the enemy-count branches of Addle and Feint with two casters
+or two melees.
+
+**Paladin and Warrior now give Reprisal on raidwides too** — it sat only in the
+single-target path, although the Warrior's own description promised it for area. Dark Knight
+and Gunbreaker had it right.
+
+**The mitigation debuffs are sustained rather than applied once**
+(`ShouldSustainMitigationDebuff`, one helper instead of 25 copies). The duration follows the
+level 98 trait.
+
+**A buster aimed at a damage dealer gets an answer.** Twelve jobs use their existing
+reactive line — Feint, Addle, Troubadour, Tactician, Shield Samba, and Third Eye on Samurai
+— when a cast is actually aimed at them. Before that, single-target defence for damage
+dealers was not staffed at all.
+
+**Self-healing for damage dealers** (Second Wind, Bloodbath) across ten jobs: the role
+actions were declared and never used, `HealSingleAbility` was empty.
+
+**The BossModReborn timeline is only read when it is switched on.** Four helpers reacted to
+it even with the option off.
+
+### 5.2 What the area detection does today
+
+The tree learns area actions as it goes: when an enemy action hits every member of a party
+of four or more in the same effect set, its id is recorded permanently. The fork
+additionally measures **how hard** it hits — the share of maximum health the impact cost is
+stored per action. The list window shows both.
+
+### 5.3 The defect this build carries
+
+`Skip mitigation for small area casts` is **on by default**, and with that default the party
+mitigation is withheld in almost every ordinary case:
+
+- The condition reads "buffer minus measured share below the healing threshold (0.65)".
+  With a healthy party the buffer is 1.0 — so mitigation only happens above a share of
+  **35 %** of maximum health. An ordinary raidwide does not reach that.
+- The share is only recorded **after the first impact**. So the first cast of an action
+  still mitigates, and every later one does not.
+
+In the fight that means: on Summoner, neither Addle nor Radiant Aegis has gone out against
+area damage since 17 September, because `DefenseArea` is no longer set. Every party-wide
+mitigation hanging off that chain is affected, and through `IsUnderThreat` so is the danger
+check on the emergency full heal (§ 1).
+
+**The handle:** switching the setting off restores the behaviour from before 17 September.
+Changing the default in code is not enough — a configuration already in use carries the
+stored value, and `Configs.Migrate` does not convert individual fields. How the evaluation
+itself should be corrected is a decision recorded in `TODO.md`.
+
+**Where the defect comes from:** the evaluation was introduced with its default **on**. That
+breaks the fork's own rule that a behaviour change without a way to verify it keeps the
+previous default and offers the new behaviour behind a switch.
+
+---
+
+## 6 · Tank self-protection
 
 ### 6.1 The Blackest Night
 
-Die Barriere kostet 3000 MP und zahlt sie nur als Dark Arts zurück, wenn sie **vollständig
-aufgebraucht** wird. Der Auslöser des Originals ist dafür viel zu schwach — zwei Gegner in
-Nahkampfreichweite oder irgendein nicht unterbrechbarer Cast auf dich. `BlackestNightUsage`
-bietet engere Fassungen samt Mindestgegnerzahl und einem Notfallanteil, unter dem die
-Barriere ohne jede Bedingung fällt. **Die Voreinstellung ist das alte Verhalten.**
+The barrier costs 3000 MP and only repays it as Dark Arts when it is **fully absorbed**. The
+original's trigger is far too weak for that — two enemies in melee range, or any
+uninterruptible cast aimed at you. `BlackestNightUsage` offers narrower readings with a
+minimum enemy count and an emergency share below which the barrier goes up unconditionally.
+**The default is the old behaviour.**
 
-Dazu die Gegenseite: Der Weißmagier kann Sanctus zurückhalten, solange ein Tank die Barriere
-trägt (`HoldHolyForBlackestNight`) — die Betäubung stoppt genau die Treffer, die die Barriere
-aufbrauchen würden, und ohne sie verfällt sie ungenutzt.
+The other side of it: the white mage can hold Holy back while a tank carries the barrier
+(`HoldHolyForBlackestNight`) — the stun stops exactly the hits that would spend the barrier,
+and without them it expires unused.
 
-### 6.2 Living Dead und Walking Dead
+### 6.2 Living Dead and Walking Dead
 
-Die Staffelung folgt deiner Vorgabe: Solange Living Dead mehr als zwei GCDs Restzeit hat,
-gilt die abgesenkte Schwelle `HealthProtectedRatio` (0,15) — der Todeseffekt kann also
-eintreten. Läuft der Status in zwei GCDs oder weniger ab, kehrt die normale Schwelle zurück,
-es wird also kurz vor Ablauf geheilt. Der Vorlauf setzt aus, solange die Null vor dem
-Fensterende ankommt (`DeathStillLikely`), sonst hätte er genau den Tod verhindert, für den
-die Regel da ist. `WithholdHealingForLivingDead` verschärft nur den ersten Abschnitt und ist
-**ab Werk aus**.
+The staging follows the user's instruction: while Living Dead has more than two GCDs left,
+the lowered threshold `HealthProtectedRatio` (0.15) applies — so the death effect can
+occur. When the status ends within two GCDs or less, the normal threshold returns, so
+healing resumes shortly before it expires. That lead-in is suspended while zero would arrive
+before the window closes (`DeathStillLikely`), because otherwise it would prevent the very
+death the rule exists for. `WithholdHealingForLivingDead` only sharpens the first part and
+is **off by default**.
 
-Offen und in `TODO.md` erfasst: In der Walking-Dead-Phase ist der HoT durch die
-`RegenHeal`-Schwelle gesperrt (der Träger liegt bei 1 HP), und Benediction feuert am Anfang
-der Phase statt am Ende.
+Open and recorded in `TODO.md`: during the Walking Dead phase the HoT is locked out by the
+`RegenHeal` threshold (the carrier sits at 1 HP), and Benediction fires at the start of the
+phase rather than at its end.
 
-### 6.3 Rückstoß (Arm's Length) und Provoke
+### 6.3 Arm's Length and Provoke
 
-`UseArmsLengthOnPull` benutzt die Aktion auf einem Gruppenpull für ihren Slow, nicht nur als
-Rückstoßschutz — das war bis dahin die einzige Verwendung. Der Slow von +20 % trifft jeden
-Gegner, der zuschlägt, und drosselt fünfzehn Sekunden lang den gesamten eingehenden Strom.
+`UseArmsLengthOnPull` uses the action on a group pull for its Slow, not only as knockback
+protection — which was the only way the plugin ever used it. The Slow of +20 % lands on every
+enemy that strikes you and throttles the whole incoming stream for fifteen seconds.
 
-Der Co-Tank-Provoke zieht den Boss nicht mehr von einem Tank weg, der gerade unter
-Superbolide, Living Dead oder Holmgang steht.
+The co-tank Provoke no longer pulls the boss off a tank standing under Superbolide, Living
+Dead or Holmgang.
 
 ---
 
-## 7 · Schaden und Rotation
+## 7 · Damage and rotation
 
-**Beschwörer.** Das Zündfenster von Searing Light ist an die Burstphase gebunden: in Solar
-Bahamut, bei niedrigerer Stufe in Bahamut. Bei einem zweiten Beschwörer in der Gruppe weicht
-die Regel auf die große Beschwörung aus, und bei allen belegten Phasen auf Ifrit.
-`PreferTitanWhileMoving` (**ab Werk aus**) zieht Titan vor, solange du dich bewegst — Topaz
-Rite und seine Folgeaktionen sind Sofortzauber, während Garuda und Ifrit Stillstand
-verlangen und unterwegs GCDs verlieren. Titan wird nur vorgezogen, nie übersprungen.
+**Summoner.** Searing Light's firing window is tied to the burst phase: in Solar Bahamut,
+or in Bahamut at lower levels. With a second Summoner in the party the rule falls back to
+the big summon, and across all established phases to Ifrit. `PreferTitanWhileMoving` (**off
+by default**) brings Titan forward while you are moving — Topaz Rite and its follow-ups are
+instant, while Garuda and Ifrit need you standing still and lose GCDs on the move. Titan is
+only brought forward, never skipped.
 
-**Weißmagier, Sanctus.** Drei Regeln, jede einzeln abschaltbar: die Betäubung nicht
-überschreiben, solange sie noch läuft (`StretchHolyStun`, **ab Werk aus**); Sanctus
-zurückhalten, solange die Barriere des Dunkelritters gefüllt werden soll; und Sanctus
-zurückhalten, solange mehr als die Hälfte der Gegner im Wirkbereich verlangsamt ist und
-mindestens die eingestellte Zahl den Slow trägt — Slow und Betäubung drosseln denselben
-Strom, und die Betäubung ist mehr wert, wenn der Slow abgelaufen ist. Eine Schranke für den
-Restausstoß der Gegner begrenzt das Sparen.
+**White mage, Holy.** Three rules, each separately switchable: do not overwrite the stun
+while it is still running (`StretchHolyStun`, **off by default**); hold Holy while the dark
+knight's barrier is meant to be filled; and hold Holy while more than half the enemies in
+radius are slowed and at least the configured number carry the Slow — Slow and stun throttle
+the same stream, and the stun is worth more once the Slow has run out. A ceiling on the
+enemies' remaining output limits the saving.
 
-**Thin Air** wird nur noch auf einen teuren Zauber gelegt, wenn der MP-Druck tatsächlich da
-ist und Lucid Dreaming ihn nicht beantworten kann (`ThinAirOnMpPressureOnly`). Eine
-Wiederbelebung nimmt weiterhin immer eine Ladung.
+**Thin Air** is only spent on an expensive spell when MP pressure is actually there and
+Lucid Dreaming cannot answer it (`ThinAirOnMpPressureOnly`). A raise still takes a charge
+regardless.
 
-**Behobene Fehler des Originals mit Kampfwirkung:**
+**Defects of the original with an effect in the fight:**
 
-| Stelle | Was falsch war | Was im Kampf geschah |
+| Site | What was wrong | What happened in the fight |
 |---|---|---|
-| Schwarzmagier, Thunder | Das Refresh-Gate kannte `HighThunder` nicht | Ab Stufensync 92 wurde ein frischer Flächen-DoT bei jedem Cast abgeschnitten |
-| Rotmagier, Impact | `!Impact.EnoughLevel && Impact.CanUse` | Zweig nie erreichbar, Impact fiel nie |
-| Neun `base.X`-Aufrufe | Overrides riefen die falsche Basismethode, z. B. `DefenseSingleGCD` → `base.DefenseAreaGCD` | Die Dispatchkette lief still an der falschen Stelle weiter; kompiliert sauber, im Diff unsichtbar |
-| Unterbrechung / Rückstoßschutz | Der Rollen-Standard lief **vor** dem Job-Override | Schnitter und Viper gaben Leg Sweep bzw. Arm's Length wegen ihres Combo-Gates ab, der Standard nahm sie ungegatet trotzdem |
-| Phantom-Job-Zweig | `out _` statt `out act` | Aktion wurde erkannt und nie zurückgegeben |
-| `MoveBackAbility` | Im `if`-Kopf **und** im Rumpf aufgerufen | Doppelaufruf, falsche Reihenfolge gegenüber der Duty-Rotation |
-| Restricted-DoT-Sperre | `continue` in der inneren statt der äußeren Schleife | Gesperrte Ziele wurden doch mit DoTs belegt |
-| `CalculateDamageFactor` | `foreach` über die Gruppe ohne Rumpf | Toter Code |
+| Black mage, Thunder | The refresh gate did not list `HighThunder` | From level sync 92 a fresh area DoT was cut short on every cast |
+| Red mage, Impact | `!Impact.EnoughLevel && Impact.CanUse` | Branch unreachable, Impact never fired |
+| Nine `base.X` calls | Overrides called the wrong base method, e.g. `DefenseSingleGCD` → `base.DefenseAreaGCD` | The dispatch chain continued silently in the wrong place; compiles cleanly, invisible in a diff |
+| Interrupt / anti-knockback | The role default ran **before** the job override | Reaper and Viper gave up Leg Sweep and Arm's Length to their combo gate, and the default took them ungated anyway |
+| Phantom job branch | `out _` instead of `out act` | The action was recognised and never returned |
+| `MoveBackAbility` | Called in the `if` head **and** in the body | Double call, wrong order against the duty rotation |
+| Restricted DoT guard | `continue` in the inner loop instead of the outer one | Blocked targets got DoTs anyway |
+| `CalculateDamageFactor` | `foreach` over the party with no body | Dead code |
 
-Drei dieser Klassen sind per CI ausgeschlossen (`check_base_calls.py`), damit ein Merge sie
-nicht zurückbringt.
+Three of these classes are locked out in CI (`check_base_calls.py`) so a merge cannot bring
+them back.
 
-**Bewegungsslots** für Haudegen, Weißmagier, Barde und Samurai (je acht Zeilen): Sie laufen
-ausschließlich unter `MoveForward`/`MoveBack` und können die Schadensrotation nicht erreichen.
+**Movement slots** for Gunbreaker, White Mage, Bard and Samurai (eight lines each): they run
+only under `MoveForward`/`MoveBack` and cannot reach the damage rotation.
 
-**Lange GCD-Ketten in benannte Stufen zerlegt** (Blaumagier, Phantom, Piktomant, Samurai,
-Beschwörer): nur Methodengrenzen eingefügt, keine Zeile verschoben, Reihenfolge und
-Verhalten unverändert.
-
----
-
-## 8 · Was der Fork an eigenen Fehlern zurückgebaut hat
-
-- **Sustain des Weisen** lief über den ganzen Pull: Die Bedingung prüfte den Schildstatus
-  selbst, und ein Schild platzt im Wall-to-Wall in Sekunden — zwei GCDs pro Platzer, vor
-  allem Schaden. Entfernt; bei Weißmagier und Astrologe ticken HoTs ihre Dauer ab, dort
-  bleibt der Helfer.
-- **Weakness-Schwellenfaktor** heilte praktisch immer: Die Multiplikation mit 1,5 klemmte die
-  Schwelle auf 1,0, ein geschwächter Spieler galt bei jeder Gesundheit unter voll als
-  heilbedürftig — nach jedem Rezz hundert bis dreihundert Sekunden lang. Entfernt.
-- **DoT-Schutz des Weißmagiers** prüfte das Ziel des **vorigen** Casts, weil `Target` erst in
-  `CanUse` gesetzt wird. Auf Upstream-Form zurückgebaut.
-- **Ein Upstream-Feature war gelöscht**: der Countdown-Regen für Trials und Raids.
-  Wiederhergestellt.
-- **Der erste Wiederbelebungsversuch** schrieb `nextGCD` um — 447 Leser, darunter der
-  Schimmerschild des Beschwörers, der daraufhin verstummte. Zurückgenommen (C37), der zweite
-  Versuch fasst den GCD-Pfad nicht an.
-- **Ein `[WSH 16/18]`-Marker** im Fenstertitel täuschte eine Versionierung vor. Entfernt.
+**Long GCD chains split into named stages** (Blue Mage, Phantom, Pictomancer, Samurai,
+Summoner): method boundaries inserted only, not a line moved, order and behaviour unchanged.
 
 ---
 
-## 9 · Was im Spiel nichts tut
+## 8 · What the fork rolled back of its own mistakes
 
-Rund die Hälfte des Diffs: `TODO.md`, `AUDIT_LOG.md` und dreizehn Konzeptdokumente; das
-deutsche Namensregister und sein Erzeuger (`GermanNameIndex`, läuft nur mit installiertem
-Spiel); und die Prüfskripte samt CI-Job. Letztere sind kein Beiwerk — sie verriegeln
-Fehlerklassen, die schon einmal aufgetreten sind. Dreizehn davon laufen bei jedem Lauf:
-falsches `base.`-Ziel und widersprüchliches Stufenprädikat (`check_base_calls`), strukturell
-zerbrochene C#-Dateien, verlorene Heilzielreihenfolge, Zeilenverweise in Dokumenten,
-deutsche Namenszuordnung, Fork-Versionsbezeichnung, MSBuild-XML, Mengen-Nachschlagen,
-fehlende Erklärungstexte, die Gefahrenprüfung der Notfallheilung und drei Musterscans.
-Die übrigen — darunter die Sync-Messung — sind für den Einsatz von Hand gebaut.
-
-Die Paketidentität trägt ein Prerelease-Label statt Build-Metadaten (`-wsh1` statt `+wsh1`),
-weil NuGet die Metadaten wegnormalisiert und das ausgelieferte Paket sonst nicht von der
-Upstream-Fassung zu unterscheiden war.
+- **Sage sustain** ran for the whole pull: the condition checked the shield status itself,
+  and a shield bursts in seconds in a wall-to-wall — two GCDs per burst, mostly out of
+  damage. Removed; on White Mage and Astrologian the HoTs tick down their duration, so the
+  helper stays there.
+- **The Weakness threshold factor** healed practically always: multiplying by 1.5 clamped
+  the threshold to 1.0, so a weakened player counted as needing healing at any health below
+  full — for one hundred to three hundred seconds after every raise. Removed.
+- **The white mage DoT guard** checked the target of the **previous** cast, because `Target`
+  is only assigned inside `CanUse`. Rolled back to the upstream form.
+- **An upstream feature had been deleted**: the countdown regen for trials and raids.
+  Restored.
+- **The first raise attempt** rewrote `nextGCD` — 447 readers, among them Radiant Aegis on
+  Summoner, which went silent. Reverted (C37); the second attempt does not touch the GCD
+  path.
+- **A `[WSH 16/18]` marker** in the window title implied a versioning that was never
+  updated. Removed.
 
 ---
 
-## 10 · Was offen ist
+## 9 · What does nothing in the game
 
-Vollständig in `TODO.md`, getrennt nach Defekt und technischer Schuld. Die Punkte mit
-Kampfwirkung, kurz:
+Roughly half the diff: `TODO.md`, `AUDIT_LOG.md` and thirteen concept documents; the German
+name index and its generator (`GermanNameIndex`, which only runs with the game installed);
+and the check scripts with their CI job. The last of those are not decoration — they lock
+out defect classes that have occurred at least once. Thirteen run on every build: wrong
+`base.` target and contradictory level predicate (`check_base_calls`), structurally broken
+C# files, lost heal target order, line references in documents, German name mapping, fork
+version designation, MSBuild XML, set lookups, missing explanation texts, the danger check
+on the emergency heal, and three pattern scans. The rest — among them the sync measurement —
+are built to be run by hand.
 
-- **Die Flächenbewertung aus § 5.3** — Entscheidung steht aus.
-- **Die Flächenheilung entscheidet nach Pegel statt nach Rate**, anders als die
-  Einzelheilung. Nicht mitbehoben, weil dieselben Größen 83 Leser außerhalb der Heilkette
-  haben, darunter fremde Rotationen.
-- **Die Notfallheilungen von Weise, Gelehrter und Astrologe** prüfen die Gefahr nicht, anders
-  als der Weißmagier. Erfasst, nicht bearbeitet — außerhalb deines Nutzungsprofils.
-- **Walking Dead**: HoT gesperrt, Benediction am falschen Ende der Phase.
-- **Searing Light fällt nicht am Anfang der Burstphase**, wie von dir gemeldet. Die Ursache
-  ist nicht gefunden: Die Zündbedingung ist für einen einzelnen Beschwörer mit Upstream
-  verhaltensgleich und sagt nur **ob**, nie **wann**. Verpasst die Aktion den ersten
-  Einschiebeplatz, fällt sie am nächsten freien — nichts zieht sie vor.
-- **`HasSurvivingShield`** misst die kürzeste statt der längsten Barrierenrestzeit (§ 3).
+The package identity carries a prerelease label rather than build metadata (`-wsh1` instead
+of `+wsh1`), because NuGet normalises the metadata away and the shipped package was
+otherwise indistinguishable from the upstream one.
+
+---
+
+## 10 · What is open
+
+In full in `TODO.md`, separated into defects and technical debt. The points with an effect in
+the fight, in short:
+
+- **The area evaluation from § 5.3** — decision pending.
+- **Area healing still decides by level rather than by rate**, unlike single-target healing.
+  Not fixed alongside it, because the same figures have 83 readers outside the healing chain,
+  among them third-party rotations.
+- **The emergency heals of Sage, Scholar and Astrologian** do not check for danger, unlike
+  the White Mage. Recorded, not worked on — outside the user's job profile.
+- **Walking Dead**: HoT locked out, Benediction at the wrong end of the phase.
+- **Searing Light does not fire at the start of the burst phase**, as reported. The cause has
+  not been found: for a single Summoner the firing condition is behaviourally identical to
+  upstream and only says **whether**, never **when**. If the action misses the first weave
+  slot it falls at the next free one — nothing pulls it forward.
+- **`HasSurvivingShield`** measures the shortest rather than the longest barrier remaining
+  (§ 3).
