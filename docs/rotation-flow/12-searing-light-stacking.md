@@ -98,9 +98,26 @@ es Searing Light gar nicht.
 Henne-Ei-Problem wie bei der Wiederbelebung (Konzept 11): Der Buff wartete darauf, angekündigt zu
 werden, und die Ankündigung auf den Buff.
 
-**Das verbleibende Risiko ist benannt, nicht beseitigt:** Bleibt der Einschiebeplatz dauerhaft belegt —
-Notfall, Unterbrechung, Heilung, Verteidigung —, wartet die Beschwörung mit, und der Burst beginnt
-später. Eine Absicherung über `CanUse` als Prüfung scheidet aus; das ist die Defektklasse aus `TODO.md`.
+**Das verbleibende Risiko ist benannt, nicht beseitigt — und für diesen Job ist es kleiner, als die
+allgemeine Zweigliste vermuten lässt.** „Heilung oder Verteidigung“ heißt beim Beschwörer konkret
+Schimmerschild und Addle; seine einzige nennenswerte Heilung ist die Flächenheilung aus einer
+laufenden Demi. Und genau die kann **vor** der Beschwörung gar nicht feuern: `ModifyLuxSolarisPvE`
+setzt `StatusNeed = [StatusID.RefulgentLux]`, `ModifyRekindlePvE` prüft `InPhoenix` — beide
+Bedingungen entstehen **aus** der Phase, die noch nicht begonnen hat. Vor der Beschwörung bleiben
+damit Schimmerschild (`ModifyRadiantAegisPvE`, `ActionCheck = () => DataCenter.HasPet()`) und Addle,
+und die nur bei gesetzter Verteidigungsflagge. Eine Absicherung über `CanUse` als Prüfung scheidet
+aus; das ist die Defektklasse aus `TODO.md`.
+
+**Hinter der Beschwörung kehrt sich das um, und das ist der wahrscheinlichere Grund für die
+Spielbeobachtung.** Der Wirktext der Beschwörung gewährt selbst Refulgent Lux („Additional Effect:
+Grants Refulgent Lux Duration: 30s“). In dem Augenblick, in dem die Beschwörung aufgeht, wird Lux
+Solaris also wirkbar — und `HealAreaAbility` fragt die Kette **vor** `AttackAbility`
+(`CustomRotation_Ability.cs:169` und `:188` gegen den Angriffszweig weiter unten), kann den
+Einschiebeplatz hinter der Beschwörung also nehmen, sobald die Flächenheilungsflagge steht. **Die
+Beschwörung erzeugt ihren eigenen Konkurrenten um den Platz dahinter; der Platz davor hat diesen
+Konkurrenten nicht.** Das ist ein zweites, vom Zeitpunktargument unabhängiges Argument für die
+Zündung vor der Beschwörung — und ein Schluss aus Wirktext und Zweigreihenfolge, keine
+Spielbeobachtung.
 
 **Keine Sonde, und das ist die Vorgabe des Auftraggebers:** Eine Messung, deren Auswertung über das
 Modell läuft, kostet je Wert einen Kampf, ein Ablesen, einen Bericht und eine Runde. Diese
@@ -113,7 +130,9 @@ Rettungsrückgriff, Haltung, Rückstoßschutz, Positionierung, Flächen- und Ein
 Spott, Flächen- und Einzelverteidigung, Bewegung, Trank, Phönixfeder — und **danach** erst der
 Angriffszweig, in dem Searing Light an erster Stelle steht. Die offene Frage ist damit kleiner als
 zuvor beschrieben: Sie lautet nicht „welcher Zweig“, sondern „wie oft greift einer von ihnen in
-genau diesem Fenster“ — und das ist eine Messfrage, keine Lesefrage.
+genau diesem Fenster“ — und das ist eine Messfrage, keine Lesefrage. Für den Beschwörer schrumpft
+sie nach dem Abschnitt oben weiter zusammen: Vor der Beschwörung kommen von dieser ganzen Kette nur
+Schimmerschild und Addle überhaupt in Betracht, und auch die nur bei gesetzter Verteidigungsflagge.
 
 **Warum das Schaden kostet, in Zahlen aus dem Wirktext** (`ActionId.resx`, beides dort wörtlich):
 Searing Light wirkt **20 Sekunden**, Summon Solar Bahamut dauert **15 Sekunden**. Zu Beginn gezündet

@@ -473,9 +473,12 @@ Geprüfte Nicht-Fehlstellen: `DTRManualAuto` bildet den vom Enum-Text beschriebe
 
 **Der gemeldete Fall ist behoben** (A114, A115): Die Zündung wird schon angeboten, sobald die große Beschwörung bereit ist und das Burstfenster steht — gelesen an der Abklingzeit der Beschwörung, nicht am nächsten GCD, weil daraus sonst dasselbe Henne-Ei-Problem würde, das die Wiederbelebung ein Jahr lang lahmgelegt hat (Konzept 11). Und die Beschwörung **wartet** auf den Buff, statt ihn nur zuzulassen: Seine Vorgabe lautet, Searing Light muss aktiv sein, **bevor** der erste Burstschaden entsteht.
 
-**Was an seine Stelle tritt:** Liegt die Ladung bereit, wird aber der Einschiebeplatz dauerhaft von Notfall, Unterbrechung, Heilung oder Verteidigung belegt, wartet die Beschwörung mit. Searing Light ist ein Selbstbuff, dessen einzige Aktionsprüfung `InCombat` ist, fällt also normalerweise im nächsten freien Platz; unter Dauerheildruck kann die Burstphase aber später beginnen. Die Sicherung dagegen wäre eine `CanUse`-Abfrage als Prüfung — genau die Defektklasse, die weiter oben in dieser Datei steht —, deshalb ist sie unterblieben. **Zu beobachten:** ob der Burst im Spiel je spürbar später anläuft.
+**Was an seine Stelle tritt, und es ist schmaler als die allgemeine Zweigliste:** „Heilung oder Verteidigung“ heißt bei diesem Job Schimmerschild und Addle; die einzige nennenswerte Heilung des Beschwörers ist die Flächenheilung aus einer laufenden Demi, und die kann **vor** der Beschwörung nicht feuern — `ModifyLuxSolarisPvE` fordert `StatusID.RefulgentLux`, `ModifyRekindlePvE` fordert `InPhoenix`, beides entsteht erst aus der Phase. Vor der Beschwörung bleiben also nur Schimmerschild und Addle, und die nur bei gesetzter Verteidigungsflagge; darauf beschränkt sich das Restrisiko. Die Sicherung dagegen wäre eine `CanUse`-Abfrage als Prüfung — genau die Defektklasse, die weiter oben in dieser Datei steht —, deshalb ist sie unterblieben. **Zu beobachten:** ob der Burst im Spiel je spürbar später anläuft.
+
+**Ein zweites Argument für die Zündung vor der Beschwörung, aus derselben Erhebung:** Die Beschwörung gewährt laut Wirktext selbst Refulgent Lux (30 s). Sobald sie aufgeht, ist Lux Solaris wirkbar, und `HealAreaAbility` wird in `CustomRotation_Ability.cs:169`/`:188` **vor** dem Angriffszweig gefragt — der Platz **hinter** der Beschwörung hat damit einen Konkurrenten, den der Platz **davor** nicht hat. Schluss aus Wirktext und Zweigreihenfolge, keine Spielbeobachtung.
 
 **Konzept:** `docs/rotation-flow/12-searing-light-stacking.md`
+
 ### Beim Beschwörer bleibt in der 4er-Instanz nur ein einziger Weg zu Radiant Aegis und Addle · N
 
 **Konzept:** `docs/rotation-flow/12-searing-light-stacking.md`, `docs/rotation-flow/13-aoe-damage-classification.md`

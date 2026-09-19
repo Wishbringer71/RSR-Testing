@@ -544,13 +544,24 @@ public sealed class SMN_Reborn : SummonerRotation
 		// This also settles a defect recorded in TODO.md: the same summon was asked twice, once with
 		// no condition and once with this one, so the conditional call could never be reached and the
 		// coupling it expressed never applied. One call, one condition.
-		// The risk of waiting, stated rather than hidden: while the charge is up but the weave slot
-		// keeps going to emergency, interrupt, healing or defence, the phase is held back with it.
-		// Searing Light is a self-buff whose only action check is being in combat, so it is normally
-		// castable in the very next slot - but under sustained healing pressure the burst can start
-		// late. Guarding that with a CanUse probe here would be the "CanUse as a question, with
-		// targeting as a side effect" pattern recorded as a defect class in TODO.md, so it is not
-		// done; the trade is a rare late burst against a buff that regularly missed its own phase.
+		//
+		// Waiting is also the smaller risk here, and naming the branches of THIS job rather than the
+		// generic categories is what shows it. Ahead of the summon the Summoner's own heal branches
+		// cannot fire at all: Lux Solaris requires the Refulgent Lux status and Rekindle checks
+		// InPhoenix, and both of those come FROM a demi phase that has not started yet. What is left
+		// ahead of the summon is Radiant Aegis and Addle, and only while a defence flag stands.
+		//
+		// After the summon it reverses, and that is the more likely reason the buff kept landing inside
+		// the phase rather than at its head: the summon's own effect text grants Refulgent Lux, so the
+		// moment it resolves Lux Solaris becomes castable, and HealAreaAbility - which the dispatch asks
+		// ahead of AttackAbility - can take the very weave slot Searing Light needed, as soon as the
+		// heal-area flag stands. The summon creates its own competitor for the slot behind it; the slot
+		// ahead of it has no such competitor. (Inference from the dispatch order and the effect text,
+		// not observed in play.)
+		//
+		// The residual risk of waiting is therefore a defence flag standing while the charge is up.
+		// Guarding against it with a CanUse probe would be the "CanUse as a question, with targeting as
+		// a side effect" pattern recorded as a defect class in TODO.md, so it is not done.
 		var searingSettled = !SearingLightPvE.EnoughLevel
 			|| HasSearingLight
 			|| SearingLightPvE.Cooldown.IsCoolingDown;

@@ -2901,9 +2901,31 @@ Allgemeine Form, in `CLAUDE.md` aufgenommen: Wo ein fremder Schutzmechanismus al
 
 **Die Bedingung hält drei Arme**, und die letzten beiden verhindern, dass das Warten teurer wird als der Verzug: Ist die Ladung bereits verbraucht, kommt sie in diesem Fenster nicht zurück; unterhalb von Stufe 66 gibt es Searing Light nicht. In beiden Fällen wird nicht gewartet.
 
-**Das Restrisiko steht im Code und in `TODO.md`, statt verschwiegen zu werden:** Bleibt der Einschiebeplatz dauerhaft belegt — Notfall, Unterbrechung, Heilung, Verteidigung —, wartet die Beschwörung mit und der Burst beginnt später. Searing Light ist ein Selbstbuff, dessen einzige Aktionsprüfung `InCombat` ist, fällt also normalerweise im nächsten freien Platz. Eine Absicherung über `CanUse` als Prüfung wäre die Defektklasse aus `TODO.md` („`CanUse` als Prüfung, nicht als Wahl — mit Zuweisung als Nebenwirkung“) und unterbleibt deshalb.
+**Das Restrisiko steht im Code und in `TODO.md`, statt verschwiegen zu werden** (die Zweigliste hier ist generisch; A116 grenzt sie auf die Zweige ein, die dieser Job überhaupt besetzt)**:** Bleibt der Einschiebeplatz dauerhaft belegt — Notfall, Unterbrechung, Heilung, Verteidigung —, wartet die Beschwörung mit und der Burst beginnt später. Searing Light ist ein Selbstbuff, dessen einzige Aktionsprüfung `InCombat` ist, fällt also normalerweise im nächsten freien Platz. Eine Absicherung über `CanUse` als Prüfung wäre die Defektklasse aus `TODO.md` („`CanUse` als Prüfung, nicht als Wahl — mit Zuweisung als Nebenwirkung“) und unterbleibt deshalb.
 
 **Erreichter Prüfgrad:** statische Prüfung, Strukturlauf, Kollisionsprüfung gegen die Ausführungssperre, Compile im Prüflauf des Zweigs. Im Spiel unbeobachtet — und zu beobachten ist hier zweierlei: ob der Buff jetzt vor dem ersten Demi-GCD liegt, und ob der Burst je spürbar später anläuft.
+
+---
+
+### A116 · Das Restrisiko war generisch benannt — der Job hat andere Zweige, und die Beschwörung erzeugt ihren eigenen Konkurrenten (19.09.2026)
+
+**Einwand des Auftraggebers gegen A115:** „Was heißt hier Heilung oder Verteidigung? Das sind schimmerschild und addle. Die einzig wichtige Heilung des Beschwörers ist die flächenheilung, die durch aktives Solar bahamut oder aktives Phönix entsteht.“ Der Einwand trifft die Sache: Ich hatte die Zweigkategorien aus `03-universal.md` abgeschrieben, statt zu erheben, welche davon dieser Job überhaupt besetzt — Fundstellenbetrachtung statt Wirkungsbereich.
+
+**Erhoben an den Aktionseinstellungen von `SMN_Reborn.cs`:**
+
+- `ModifyLuxSolarisPvE`: `setting.StatusNeed = [StatusID.RefulgentLux];`
+- `ModifyRekindlePvE`: `setting.ActionCheck = () => InPhoenix;`
+- `ModifyRadiantAegisPvE`: `setting.ActionCheck = () => DataCenter.HasPet();`
+
+**Folge für die Aussage in A115:** Beide Heilzweige des Beschwörers hängen an einer laufenden Demi-Phase. **Vor** der Beschwörung kann also keiner von ihnen feuern; von der ganzen Zweigkette bleiben Schimmerschild und Addle, und die nur bei gesetzter Verteidigungsflagge. Das Restrisiko des Wartens ist damit nicht falsch, aber deutlich schmaler als berichtet.
+
+**Der Nebenbefund ist der eigentliche Ertrag.** Der Wirktext von Summon Solar Bahamut (`ActionId.resx`, 36992) nennt „Additional Effect: Grants Refulgent Lux Duration: 30s“ — **die Beschwörung erfüllt die Bedingung von Lux Solaris selbst.** `CustomRotation_Ability.cs` fragt `HealAreaAbility` in `:169` und `:188`, also **vor** dem Angriffszweig, in dem Searing Light steht. Sobald die Beschwörung aufgeht und die Flächenheilungsflagge steht, kann Lux Solaris genau den Einschiebeplatz nehmen, den Searing Light in der alten Fassung brauchte. Der Platz **hinter** der Beschwörung trägt damit einen Konkurrenten, den der Platz **davor** nicht hat — ein zweites, vom Zeitpunktargument unabhängiges Argument für A114, und der wahrscheinlichere Mechanismus hinter der ursprünglichen Spielbeobachtung („Searing Light fällt mitten in der Burstphase“).
+
+**Als Schluss gekennzeichnet, nicht als Messung:** Beide Aussagen folgen aus Wirktext und Zweigreihenfolge. Dass die Flächenheilungsflagge im fraglichen Augenblick tatsächlich steht, ist damit nicht belegt — ohne sie greift `HealAreaAbility` nicht, und der Konkurrent bleibt aus.
+
+**Geändert:** Kommentar in `SMN_Reborn.cs` (Zweige dieses Jobs statt Kategorien, Nebenbefund aufgenommen), Sachstand in `12-searing-light-stacking.md`, Eintrag in `TODO.md`.
+
+**Erreichter Prüfgrad:** statische Erhebung an Aktionseinstellungen, Wirktext und Dispatch-Reihenfolge; `check_cs_structure.py` ohne Befund. Keine Laufzeitbeobachtung.
 
 ---
 ---
