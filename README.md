@@ -6,15 +6,19 @@ It tracks upstream `main` and carries patches that were not offered upstream. **
 below the horizontal rule is the upstream README, taken over unchanged** — its badges, its
 install instructions and its release links all refer to upstream, not to this repository.
 
-**Releases** are tagged `<upstream version>+wsh<n>`, currently `7.5.5.41+wsh1`, and publish a
-`latest.zip` asset. This repository ships no plugin repository manifest of its own, so the
-install instructions below add the *upstream* plugin. `manifest.json` is unchanged as well —
+**Releases** are tagged `<upstream version>+wsh<n>` and publish a `latest.zip` asset. What a
+release changes in the fight is described in
+[`docs/fork-changes-in-play.md`](docs/fork-changes-in-play.md), which is the text of the
+release description itself and is kept short enough to paste into it. This repository ships
+no plugin repository manifest of its own, so the install instructions below add the
+*upstream* plugin. `manifest.json` is unchanged as well —
 `InternalName: RotationSolver` and the upstream `RepoUrl` included — so a fork build presents
 itself to Dalamud under the same plugin identity as upstream.
 
 **The `RotationSolverReborn.Basic` package** keeps upstream's `PackageId` and marks the fork
-with the pre-release label `-wsh1`, so the published package is `7.5.5.41-wsh1`. Consuming it
-means allowing pre-release versions or pinning the exact version: a version without a suffix
+with the pre-release label `-wsh<n>`, so the published package carries the upstream version
+number with that label appended. Consuming it means allowing pre-release versions or pinning
+the exact version: a version without a suffix
 sorts higher, so in a feed holding both, a consumer that asks for neither still resolves to
 upstream. Changes to the package surface are listed in [CHANGELOG.md](CHANGELOG.md), because
 the version number cannot express them — its numeric part follows the upstream release, not
