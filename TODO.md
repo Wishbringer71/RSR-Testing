@@ -643,6 +643,16 @@ Schritt 3 aus `docs/rotation-flow/08-mitigation-synergy.md`. Die Schritte 1 und 
 
 ## Offene Arbeit
 
+### Das Abwehrmittel nach der Größe des Treffers wählen · N, R
+
+**Vorgabe des Auftraggebers:** „man könnte es auch so anpassen, dass die geeignete schadensverringerung bzw. das geeignete schild bei dem eintreffenden schaden gewählt wird." Mit seiner Rechenregel: „wenn schaden nur 10% auf spieler mit geringster maxhp verursacht, dann reicht ein schild, was 10% blockiert. oder sogar weniger bis kein schild. wenn ein schaden 70% verursacht von maxhp des geringsten spielers, dann sollte das schild möglichst hoch sein, optimal 70%."
+
+**Ausgangslage:** Die Größe des eintreffenden Treffers liegt als Anteil je Aktions-Id vor (Konzept 13), und zwar als höchster Anteil im Effektsatz — das ist der Spieler mit der geringsten Maximalgesundheit, also genau seine Bezugsgröße. Heute entscheidet dieser Wert nur, **ob** die Abwehrkette geöffnet wird; die Reihenfolge innerhalb der Kette ist je Job fest verdrahtet.
+
+**Was zum Bauen fehlt:** je Abwehraktion ein belegter Wert — für Minderungen der Prozentsatz aus dem eigenen Wirktext, für Barrieren der Anteil (25 %, 15 %, 10 % sind belegt). Erzeugbar aus den Ressourcen, nicht handzuführen.
+
+**Blast Radius und Auflage:** Der Eingriff berührt `DefenseAreaAbility` und `DefenseSingleAbility` jedes Jobs und mittelbar die fremden Rotationen unter `ExtraRotations`. Er gehört deshalb hinter eine eigene Option mit dem bisherigen Verhalten als Voreinstellung, und die Sonde je Entscheidung ist mitzuliefern — sonst ist im Kampf nicht unterscheidbar, ob ein schwächeres Mittel gewählt wurde oder gar keines. Vollständige Bewertung in `docs/rotation-flow/13-aoe-damage-classification.md`, Abschnitt „Was der Baustein eröffnet".
+
 ### Nachprüfung der 73 Commits vom 11. und 12. September 2026 · N, R, U
 
 Der Auftraggeber hat die Arbeit dieser beiden Tage als nicht belastbar zurückgewiesen und angeordnet, sie zur Nachprüfung vorzumerken. Die Liste steht vollständig in `AUDIT_LOG.md` B2, Prüfstand **ZWEIFELHAFT**: 73 eigene Commits ohne Merges und 5 eigene Merge-Commits, 72 davon nur auf `claude/raise-swiftcast-weave-2` und dort noch änderbar.

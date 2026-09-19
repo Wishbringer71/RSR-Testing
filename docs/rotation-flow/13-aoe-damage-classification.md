@@ -294,6 +294,40 @@ blockiert.
 schlägt dieser zu —, und `HostileCastingKnockback` und `HostileCastingStop` dieselbe Struktur. Der
 Messpfad ist derselbe; was fehlt, ist je Liste ein eigener Speicher und die passende Rechnung.
 
+**Er erlaubt die Wahl des Mittels, nicht nur die Entscheidung über das Ob — Vorgabe des
+Auftraggebers:** „man könnte es auch so anpassen, dass die geeignete schadensverringerung bzw. das
+geeignete schild bei dem eintreffenden schaden gewählt wird." Heute ist die Reihenfolge der
+Abwehraktionen je Job fest verdrahtet, und die gemessene Größe entscheidet allein, ob diese Kette
+überhaupt geöffnet wird. Mit einem Wert auf beiden Seiten ließe sich stattdessen zuordnen: der
+Zehn-Prozent-Tick zieht das billige Mittel, der Vierzig-Prozent-Raidwide das stärkste verfügbare.
+
+*Die Zuordnungsregel, Vorgabe des Auftraggebers:* „wenn schaden nur 10% auf spieler mit geringster
+maxhp verursacht, dann reicht ein schild, was 10% blockiert. oder sogar weniger bis kein schild. wenn
+ein schaden 70% verursacht von maxhp des geringsten spielers, dann sollte das schild möglichst hoch
+sein, optimal 70%." Gesucht ist also **Deckung**: Der Anteil des Mittels soll den Anteil des Treffers
+erreichen, nicht übertreffen — und wo kein Mittel ihn erreicht, das stärkste verfügbare.
+
+**Die Bezugsgröße dafür liegt bereits richtig vor.** Abgelegt wird der **höchste** Anteil im
+Effektsatz, und das ist bei gleichem absolutem Schaden der Spieler mit der geringsten
+Maximalgesundheit — genau der, den seine Regel nennt. Die Messung muss dafür also nicht geändert
+werden, nur ihr Verbraucher.
+
+*Was dafür vorhanden ist:* die Größe des eintreffenden Treffers als Anteil (dieses Konzept), die
+gruppenweit wirkenden Minderungen mit ihren Sätzen in `GetCurrentMitigationPercent`, und für die
+Barrieren der belegte Anteil aus den Wirktexten (25 %, 15 %, 10 %, siehe oben).
+
+*Was fehlt, und es ist nicht Beiwerk:* je Abwehraktion ein belegter Wert — für die Minderungen der
+Prozentsatz aus ihrem eigenen Wirktext, für die Schilde der bereits belegte Anteil. Diese Tabelle ist
+genau die Bauform, die dieses Projekt sonst meidet, weil sie mit jeder Erweiterung altert; sie ist
+hier aber aus den Ressourcen **erzeugbar** statt handgeführt, und das unterscheidet sie von der in
+Konzept 08 verworfenen Statussatz-Tabelle.
+
+*Der Blast Radius ist der eigentliche Preis:* Die Auswahl greift in `DefenseAreaAbility` und
+`DefenseSingleAbility` **jedes** Jobs ein, und mittelbar in die fremden Rotationen unter
+`ExtraRotations`. Ein Eingriff dieser Breite gehört hinter eine eigene Option mit dem bisherigen
+Verhalten als Voreinstellung, und er braucht die Sonde je Entscheidung — sonst ist im Kampf nicht
+unterscheidbar, ob das schwächere Mittel gewählt wurde oder gar keines.
+
 ## Konsequenzen
 
 **Endnutzer.** Nach dem Umstieg zunächst kein Unterschied — alle vorhandenen Einträge sind unbewertet.
