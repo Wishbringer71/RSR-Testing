@@ -2815,6 +2815,34 @@ Allgemeine Form, in `CLAUDE.md` aufgenommen: Wo ein fremder Schutzmechanismus al
 **Erreichter Prüfgrad:** statische Prüfung an Quelltext und Ressourcen, Verweis- und Zeilenverweislauf, Strukturlauf. Die inhaltliche Widerspruchsfreiheit zwischen Konzepten kann kein Skript prüfen — sie bleibt Aufgabe jeder Runde, und dieser Durchgang hat zwei Widersprüche gefunden, die seit A91 bestanden.
 
 ---
+
+### A111 · Repetitiver Durchgang über alle Konzepte bis zum Plateau (19.09.2026)
+
+**Anlass:** Auftrag, die Koordination der Konzepte erneut und wiederholt zu durchlaufen, bis keine Synergien und Optimierungen mehr zu erfassen sind, dabei neu zu strukturieren, inhaltlich in sich und untereinander zu prüfen und die offenen Punkte ihren Konzepten zuzuordnen. Vorangestellt das Nachrechnen der einzigen Stelle, die der vorige Durchgang ausdrücklich ungeprüft gelassen hatte.
+
+**Nachgerechnet:** Die Zweitverwendung von `searing_light_coverage.py` für die Streckung trägt **nur nach einer Verallgemeinerung.** Das Modell kennt genau eine Aktion — Dauer und Wiederholzeit sind Konstanten — und rechnet mit Überschreiben statt Stapeln. Die Drosselungen sind ungleich lang und stapeln multiplikativ; „Strecken statt stapeln“ ist dort die **Vorgabe**, nicht die Mechanik, und genau diesen Vergleich kann ein Modell ohne Stapeln nicht führen. Übertragbar ist der Kern: Zeitschritt-Simulation mit Quellen, Dauer, Wiederholzeit und Zündregel. Beide Konzepte tragen das Ergebnis, die frühere Kennzeichnung „ungeprüft“ ist ersetzt.
+
+**Fünf Runden, und die Ertragskurve ist der Abbruchgrund.**
+
+| Runde | Gegenstand | Funde |
+|---|---|---|
+| 1 | Zuordnung der offenen Punkte | Toter Verweis auf `07-codebase-audit.md` — ein Dokument, das es unter dieser Nummer nie geben konnte, weil 07 seit Langem die Zielwahl der Heilung ist. Nummer auf 14 berichtigt und als anzulegen gekennzeichnet |
+| 2 | Verweise der Arbeitsdokumente | Das Prüfmittel sah nur in den Konzeptordner, deshalb war der Verweis nie aufgefallen. Erweitert — und die Erweiterung erzeugte sofort einen Fehlalarm auf `docs/method/`, weil nur der Dateiname verglichen wurde. Pfad mitgeführt, Selbsttestfall ergänzt |
+| 3 | Voreinstellungen gegen den Code | Kein Widerspruch, aber drei Defekte im Prüfmittel vor dem ersten CI-Lauf: das Zahlenmaß las Zeilennummern und Aktions-Ids als Vorgaben (zwanzig Funde, zwanzig Rauschen), zwei Definitionsformen fehlten (`private` in den Rotationen, `private readonly _feld` in der Konfiguration — von 200 auf 230 bool und von 169 auf 210 numerische Einstellungen), und Prozentangaben wurden gegen Anteile verglichen |
+| 4 | Bezeichner der Konzepte | **Ein echter inhaltlicher Fund:** `07` beschrieb die Aggro-Erhebung als `DataCenter.AggroedMembers` — einen Namen, den dieser Baum nie getragen hat; die Größe heißt `TargetedPartyMembers`. Dazu zwei deutsche Begriffe in Code-Backticks (01) und eine Entwurfstabelle, deren Namen als vorhandene Größen zu lesen waren (08) |
+| 5 | Aussagen über CI-Läufe, Urteilsstil, Vorspann der Bestandsaufnahmen | **keine.** Alle genannten Prüfskripte existieren, die als CI-Läufe bezeichneten stehen im Workflow; acht Konzepte stehen im Urteilsstil, die fünf übrigen sind Bestandsaufnahmen mit erklärendem Vorspann |
+
+**Zwei weitere Synergien, beide aus vorhandenen Bausteinen.** Die Güte der Potentialschätzung in `13` wird nicht gemessen — der abgelegte Anteil ist eine Vorhersage, die nur nach oben korrigiert wird, sodass ein unter zufälliger Minderung gemessener Wert zu niedrig bleibt; `08` löst dieselbe Frage für die Restzeit bereits (`ScoreTtkForecast`, `GetCorrectedTTK`). Und das Messmittel, das `12` für die Verzugsfrage braucht, existiert als Bauform in `AreaMitigationSkipped`, einschließlich der Feinheit, Aktionen statt Aufrufe zu zählen.
+
+**Struktur:** Ein Index nach Leitfrage (`docs/rotation-flow/README.md`) — dreizehn Dokumente und bisher keine Stelle, die sagt, welches welche Frage beantwortet. Er bleibt aus der Verwaisungsmessung heraus, weil ein Index auf alles zeigt und ein Graph, in dem alles über eine Navigationsseite erreichbar ist, nichts mehr aussagt.
+
+**Zuordnung:** 29 der 57 offenen Punkte tragen jetzt ihr Konzept, geführt an **einer** Stelle (`TODO.md`); die Konzepte verweisen darauf, statt die Titel zu kopieren. 28 Punkte gehören zu keinem Konzept — das ist die Antwort, keine Lücke.
+
+**Drei Prüfmittel neu, alle mit Selbsttest und in `build.yaml`:** `check_concept_links.py` (Verweise, auch aus den Arbeitsdokumenten, plus Zuordnungsbericht), `check_concept_defaults.py` (jede Angabe über eine Voreinstellung gegen den Code, bool und numerisch, einschließlich der Release-Beschreibung), `check_concept_identifiers.py` (genannte Bezeichner existieren — Bericht, kein Fehlschlag, weil keine Wortliste einen Vorschlagsnamen von einem Tippfehler trennt).
+
+**Erreichter Prüfgrad:** statische Prüfung an Quelltext und Ressourcen, drei neue Prüfläufe, Zeilen- und Verweisprüfung, Strukturlauf. Inhaltliche Widerspruchsfreiheit zwischen zwei Konzepten bleibt unprüfbar durch ein Skript; gefunden wurde sie in diesem Durchgang durch Kreuzlesen, und genau das ist der Teil, den kein Riegel ersetzt.
+
+---
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
