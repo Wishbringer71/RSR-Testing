@@ -52,10 +52,23 @@ OUTSIDE = ('TODO.md', 'AUDIT_LOG.md', 'README.md', 'CLAUDE.md')
 PLANNED = re.compile(r'noch nicht angelegt|not created yet|anzulegen')
 
 
+# The index names every concept by design, so counting it as an inbound link would make the orphan
+# report say "all reachable" and mean nothing. It is navigation, not a concept, and stays out of
+# both sides of the measurement.
+INDEX = 'README.md'
+NUMBERED = re.compile(r'^\d\d-')
+
+
 def collect(directory):
-    """Returns {file name: set of concept files it references}, excluding self-references."""
+    """Returns {concept file: set of concept files it references}, excluding self-references.
+
+    Only the numbered series counts as a concept. The index is skipped on purpose: it points at all
+    of them, and a graph in which everything is reachable from one navigation page answers nothing.
+    """
     links = {}
     for path in sorted(directory.glob('*.md')):
+        if path.name == INDEX or not NUMBERED.match(path.name):
+            continue
         text = path.read_text(encoding='utf-8')
         links[path.name] = concept_refs(text) - {path.name}
     return links
@@ -148,6 +161,9 @@ def selftest():
     _, orphans = check({'01-a.md': {'01-a.md'}, '02-b.md': set()})
     if '01-a.md' not in orphans:
         raise AssertionError('a self-reference was counted as an inbound link')
+
+    if NUMBERED.match(INDEX):
+        raise AssertionError('the index would be counted as a concept')
 
     known = {'01-a.md', '02-b.md'}
     probe = Path('_selftest_outside.md')
