@@ -74,7 +74,7 @@ def self_test() -> None:
          [], "a web merge, where GitHub itself is the committer"),
         (f"abc123{SEPARATOR}private.person@example.com"
          f"{SEPARATOR}private.person@example.com{SEPARATOR}msg",
-         ["private.person@example.com"], "the address that actually leaked"),
+         ["private.person@example.com"], "a private address of a real person, the shape that actually leaked"),
         (f"abc123{SEPARATOR}noreply@anthropic.com"
          f"{SEPARATOR}someone@example.com{SEPARATOR}msg",
          ["someone@example.com"], "a clean author with a leaking committer"),
