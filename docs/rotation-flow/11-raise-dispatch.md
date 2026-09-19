@@ -383,3 +383,10 @@ wenige Sekunden verzögerte Wiederbelebung, ohne Ausfall anderer Fähigkeiten. K
 Zieleignung über den Item-Status und Stufenprüfung der Rezzereigenschaft sowie die Hartwirk-Korrektur
 und die Bezugsmenge der Nur-Heiler-Modi. Sie liegen hinter Vorgaben, die im Spieltest nicht verändert
 wurden, und sind in `TODO.md` als offener Nachweis geführt.
+
+## Offene Punkte zu diesem Konzept
+
+Sie stehen in `TODO.md` und sind dort unter der Überschrift des Eintrags mit **Konzept:** auf dieses
+Dokument gekennzeichnet — an **einer** Stelle statt in zweien, damit keine Kopie altert.
+`.github/scripts/audit/check_concept_links.py` listet sie je Konzept und nennt zugleich, wie viele
+Einträge überhaupt keinem Konzept zugeordnet sind.

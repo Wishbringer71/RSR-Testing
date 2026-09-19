@@ -565,3 +565,10 @@ abgeleitete Rotation, die die Liste liest. Im `CHANGELOG` vermerkt.
 
 **Upstream.** Der Eingriff liegt in `ActionTargetInfo`, `StatusHelper` und
 `StateUpdater`, alle mit regelmäßiger Upstream-Aktivität.
+
+## Offene Punkte zu diesem Konzept
+
+Sie stehen in `TODO.md` und sind dort unter der Überschrift des Eintrags mit **Konzept:** auf dieses
+Dokument gekennzeichnet — an **einer** Stelle statt in zweien, damit keine Kopie altert.
+`.github/scripts/audit/check_concept_links.py` listet sie je Konzept und nennt zugleich, wie viele
+Einträge überhaupt keinem Konzept zugeordnet sind.

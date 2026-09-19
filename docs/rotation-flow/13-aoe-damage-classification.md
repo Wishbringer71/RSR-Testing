@@ -344,3 +344,10 @@ Signatur. Die Ergänzung ist additiv; wer sie nicht liest, merkt nichts.
 `DataCenter.IsHostileCastingArea`, beides Upstream-Code mit regelmäßiger Aktivität. Beide sind klein
 und stehen als eigene Blöcke; `check_emergency_heal_threat.py` meldet in der CI, wenn ein Merge die
 Rechnung oder ihren Rückfall auf „mindern" entfernt.
+
+## Offene Punkte zu diesem Konzept
+
+Sie stehen in `TODO.md` und sind dort unter der Überschrift des Eintrags mit **Konzept:** auf dieses
+Dokument gekennzeichnet — an **einer** Stelle statt in zweien, damit keine Kopie altert.
+`.github/scripts/audit/check_concept_links.py` listet sie je Konzept und nennt zugleich, wie viele
+Einträge überhaupt keinem Konzept zugeordnet sind.

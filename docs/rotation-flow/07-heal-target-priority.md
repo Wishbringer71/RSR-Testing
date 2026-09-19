@@ -329,3 +329,10 @@ Nicht belegbar: welche Reihenfolge im Kampf die bessere ist, und wie oft das Ban
 gleich tief stehenden Heiler überhaupt erreicht wird. Das entscheidet sich an einer Beobachtung — ob
 ein Mitglied stirbt, während ein besser geschütztes zuerst versorgt wurde. Ebenfalls nicht messbar:
 die tatsächliche Konfiguration des Auftraggebers.
+
+## Offene Punkte zu diesem Konzept
+
+Sie stehen in `TODO.md` und sind dort unter der Überschrift des Eintrags mit **Konzept:** auf dieses
+Dokument gekennzeichnet — an **einer** Stelle statt in zweien, damit keine Kopie altert.
+`.github/scripts/audit/check_concept_links.py` listet sie je Konzept und nennt zugleich, wie viele
+Einträge überhaupt keinem Konzept zugeordnet sind.

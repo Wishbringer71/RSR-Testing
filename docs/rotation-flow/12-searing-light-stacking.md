@@ -358,10 +358,24 @@ Daraus folgt: Der Versatz ist der **stärkste einzelne Hebel** — bei acht Besc
 Abdeckung allein, ohne jede Codeänderung, von 17 % auf 67 %. Keine der Zündregeln bewirkt im
 synchronen Fall auch nur annähernd so viel.
 
-**Mögliche Zweitverwendung des Modells, ungeprüft:** `searing_light_coverage.py` rechnet die Abdeckung
-eines Fensters über die Kampfzeit. Dieselbe Frage stellt `08-mitigation-synergy.md` bei der Streckung
-der Drosselung — wie lange sie trägt, nicht wie stark. Ob die Annahmen des Modells dort passen, ist
-nicht geprüft; vermerkt, damit die Frage nicht verlorengeht.
+**Zweitverwendung des Modells — nachgerechnet, und sie trägt nur nach einer Verallgemeinerung.**
+`searing_light_coverage.py` beantwortet die Frage „wie viele Sekunden eines Kampfes deckt ein
+nicht stapelbarer Effekt ab, wenn n Quellen ihn nach festen Regeln zünden“ — und genau diese Frage
+stellt `08-mitigation-synergy.md` bei der Streckung der Drosselung. Zwei Annahmen des Modells
+stehen dem aber entgegen:
+
+- **Es kennt nur eine Aktion.** `BUFF` (20 s) und `RECAST` (120 s) sind Konstanten; die Streckung
+  hat es mit ungleichen Quellen zu tun — die Sanctus-Betäubung vier Sekunden, die Verlangsamung
+  des Rückstoßes fünfzehn, die Minderungen wieder anders.
+- **Es rechnet mit Überschreiben, nicht mit Stapeln** (`buff_until = t + BUFF   # overwrite, never
+  stack`). Minderungen stapeln dagegen multiplikativ; „Strecken statt stapeln“ ist dort eine
+  **Vorgabe des Auftraggebers**, keine Spielmechanik, und ein Modell, das das Stapeln gar nicht
+  abbilden kann, kann den Vergleich zwischen beiden Strategien nicht führen.
+
+Was übertragbar bleibt, ist der Kern: die Zeitschritt-Simulation mit Quellen, Dauer, Wiederholzeit
+und einer Zündregel, samt der Trennung „Abdeckung ist nicht Schaden“. Eine Zweitverwendung hieße
+also, Quellenliste und Stapelverhalten zu Parametern zu machen — kein Zufallstreffer, aber auch
+kein bloßes Aufrufen.
 
 ## Die Lücke füllen, ohne Buch zu führen
 
@@ -991,3 +1005,10 @@ benannte Grenzen:
 Nicht entschieden und nur im Spiel zu klären: welcher Ausgang bei gleichzeitiger Zündung eintritt;
 wie groß der Wertunterschied zwischen einem Buff im Zwei-Minuten-Takt und einem daneben tatsächlich
 ist; und wie stark der Versatz in einem echten Kampf ausfällt.
+
+## Offene Punkte zu diesem Konzept
+
+Sie stehen in `TODO.md` und sind dort unter der Überschrift des Eintrags mit **Konzept:** auf dieses
+Dokument gekennzeichnet — an **einer** Stelle statt in zweien, damit keine Kopie altert.
+`.github/scripts/audit/check_concept_links.py` listet sie je Konzept und nennt zugleich, wie viele
+Einträge überhaupt keinem Konzept zugeordnet sind.

@@ -137,10 +137,15 @@ ob sie im Kampf greift, zeigt allein die Anzeige: `AreaMitigationSkipped` je Akt
 korrigierte Zeit und Fehlerfaktor der Schaetzung. Wer eine Regel dieser Familie aendert, liefert die
 Sonde mit oder benennt, welche vorhandene sie sichtbar macht.
 
-**Zu pruefen, nicht behauptet:** `12-searing-light-stacking.md` rechnet mit
-`searing_light_coverage.py` die **Abdeckung eines Fensters ueber die Kampfzeit**. Die Streckung
-dieses Konzepts stellt dieselbe Frage — wie lange traegt die Drosselung, nicht wie stark —, und
-womoeglich laesst sich das Modell dafuer zweitverwenden. Ob die Annahmen passen, ist nicht geprueft.
+**Nachgerechnet, mit geteiltem Ergebnis:** `searing_light_coverage.py` aus
+`12-searing-light-stacking.md` beantwortet dieselbe Frage — wie viele Sekunden deckt ein Effekt ab,
+wenn mehrere Quellen ihn nach Regeln zuenden. Zwei seiner Annahmen passen hier aber nicht: Es
+kennt genau **eine** Aktion (Dauer und Wiederholzeit sind Konstanten), und es rechnet mit
+**Ueberschreiben statt Stapeln**. Die Drosselungen dieses Konzepts sind ungleich lang und stapeln
+multiplikativ — „Strecken statt stapeln“ ist hier die **Vorgabe**, nicht die Mechanik, und genau
+den Vergleich beider Strategien kann ein Modell ohne Stapeln nicht fuehren. Uebertragbar ist der
+Kern: Zeitschritt-Simulation mit Quellen, Dauer, Wiederholzeit und Zuendregel. Eine
+Zweitverwendung verlangt also, Quellenliste und Stapelverhalten zu Parametern zu machen.
 
 ## Die Vorgaben des Auftraggebers
 
@@ -765,3 +770,10 @@ nicht aufruft, merkt nichts.
 **Upstream-Pflege.** Der Eingriff liegt in `CustomRotation_OtherInfo` und
 `WHM_Reborn`, beides Dateien mit regelmäßiger Upstream-Aktivität. Neue Teile liegen in
 eigenen Regionen; kein Block wandert.
+
+## Offene Punkte zu diesem Konzept
+
+Sie stehen in `TODO.md` und sind dort unter der Überschrift des Eintrags mit **Konzept:** auf dieses
+Dokument gekennzeichnet — an **einer** Stelle statt in zweien, damit keine Kopie altert.
+`.github/scripts/audit/check_concept_links.py` listet sie je Konzept und nennt zugleich, wie viele
+Einträge überhaupt keinem Konzept zugeordnet sind.

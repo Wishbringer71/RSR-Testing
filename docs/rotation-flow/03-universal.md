@@ -172,3 +172,10 @@ U6 war der unauffälligste und teuerste Punkt: Die Kette wird über
 `return base.Methode(out act)` fortgesetzt, und ein falscher Methodenname im
 `base`-Aufruf ist syntaktisch korrekt, kompiliert und im Diff unsichtbar. Genau
 deshalb ist er nicht durch Sorgfalt, sondern durch eine CI-Prüfung zu schließen.
+
+## Offene Punkte zu diesem Konzept
+
+Sie stehen in `TODO.md` und sind dort unter der Überschrift des Eintrags mit **Konzept:** auf dieses
+Dokument gekennzeichnet — an **einer** Stelle statt in zweien, damit keine Kopie altert.
+`.github/scripts/audit/check_concept_links.py` listet sie je Konzept und nennt zugleich, wie viele
+Einträge überhaupt keinem Konzept zugeordnet sind.

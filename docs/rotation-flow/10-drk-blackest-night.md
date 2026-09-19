@@ -384,3 +384,10 @@ halb betäubte Gruppe den Strom weit genug drückt und ob die engeren Stufen ins
 abschneiden — all das ist ohne Spielbeobachtung nicht zu belegen. Deshalb ist die Voreinstellung das
 alte Verhalten, sind Gegnerzahl und Gesundheitsschwelle einstellbar, und deshalb steht der offene
 Rest in `TODO.md`.
+
+## Offene Punkte zu diesem Konzept
+
+Sie stehen in `TODO.md` und sind dort unter der Überschrift des Eintrags mit **Konzept:** auf dieses
+Dokument gekennzeichnet — an **einer** Stelle statt in zweien, damit keine Kopie altert.
+`.github/scripts/audit/check_concept_links.py` listet sie je Konzept und nennt zugleich, wie viele
+Einträge überhaupt keinem Konzept zugeordnet sind.
