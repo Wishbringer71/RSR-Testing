@@ -3,6 +3,21 @@ on:
   push:
     tags:
       - '*.*.*.*'
+  # Second entrance, because pushing a tag to this repository is not available from every
+  # environment that may need to cut a release: a `git push origin <tag>` can come back with
+  # HTTP 403 while a branch push to the same commit goes through, and the repository itself
+  # carries no rulesets, so the limit is the credential rather than a repository setting.
+  # Dispatching a workflow IS available there, so the release is cut from inside the run.
+  # The tag is not pushed by a step - action-gh-release creates it from tag_name and
+  # target_commitish below, and only after the build has succeeded. A failed build therefore
+  # leaves nothing behind, which matters because a stray tag cannot be deleted from the same
+  # restricted environment either.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag, <upstream>+wsh<n>, for example 7.5.6.9+wsh1'
+        required: true
+        type: string
 jobs:
   Build:
     permissions:
@@ -16,7 +31,11 @@ jobs:
           
       - name: Get Environment Variables
         run: |
-          $tag = "${{ github.ref }}" -replace 'refs/tags/', ''
+          # On a tag push the name comes from the ref; on a manual run it comes from the input.
+          $tag = "${{ inputs.tag }}"
+          if (-not $tag) {
+            $tag = "${{ github.ref }}" -replace 'refs/tags/', ''
+          }
           # AssemblyVersion and FileVersion must be purely numeric (CS7034), so a fork tag such as
           # 7.5.5.41+wsh1 keeps its suffix only in the informational version, which is what the
           # settings window shows.
@@ -31,6 +50,16 @@ jobs:
             throw "Tag '$tag' does not follow <upstream>+wsh<n>; without the suffix the package would ship under the upstream identity. Retag before publishing."
           }
           $packageVersion = $tag -replace '\+', '-'
+
+          # A tag push cannot land on a tag that already exists - git refuses it. A manual run can,
+          # and action-gh-release would then quietly update the existing release instead of
+          # creating one, so the same version would ship twice under one name.
+          if ("${{ github.event_name }}" -eq 'workflow_dispatch') {
+            $existing = git ls-remote --tags origin "refs/tags/$tag"
+            if ($existing) {
+              throw "Tag '$tag' already exists. Pick the next number rather than republishing over it."
+            }
+          }
 
           "tag=$tag" | Out-File -Append -FilePath $Env:GITHUB_ENV
           "numericVersion=$numericVersion" | Out-File -Append -FilePath $Env:GITHUB_ENV
@@ -57,3 +86,10 @@ jobs:
         with:
           files: ./build/RotationSolver/latest.zip
           token: ${{ secrets.GITHUB_TOKEN }}
+          # Both are needed for the manual entrance and both are harmless on a tag push, where
+          # they name the tag that triggered the run and the commit it already points at. On a
+          # manual run github.ref is a branch, so without tag_name the action would try to
+          # release "refs/heads/main"; target_commitish is what lets it create the tag itself,
+          # here and now, on the commit that was just built.
+          tag_name: ${{ env.tag }}
+          target_commitish: ${{ github.sha }}
