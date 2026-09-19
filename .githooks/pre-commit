@@ -1,0 +1,38 @@
+#!/bin/sh
+# Refuse any commit whose author or committer address is not one of the identities this
+# repository publishes under.
+#
+# Why a hook and not a rule in CLAUDE.md: a rule depends on the discipline of whoever writes the
+# commit, and that failed. Six commits in September went out carrying the owner's real name and
+# his private address in a public repository, because a `git -c user.name=... -c user.email=...`
+# was placed in front of each commit, overriding the repository's already correct configuration.
+#
+# GitHub's own guard did not catch it. "Block command line pushes that expose my email" checks
+# whether the author address is a private email ON the pushing account; an address the account
+# does not list is not recognised as private and passes. The credential in that environment
+# authenticates AS the repository owner, so the commits arrived as his own pushes.
+#
+# A commit is public and permanent, and rewriting history does not reach the commits GitHub keeps
+# for a pull request. So this has to be refused before the commit exists, not repaired after.
+
+# noreply@github.com is GitHub itself, which signs as committer on a merge done on the web.
+allowed='^(noreply@anthropic\.com|noreply@github\.com|[0-9]+\+[A-Za-z0-9_-]+@users\.noreply\.github\.com)$'
+
+author=$(git var GIT_AUTHOR_IDENT | sed -n 's/.*<\(.*\)>.*/\1/p')
+committer=$(git var GIT_COMMITTER_IDENT | sed -n 's/.*<\(.*\)>.*/\1/p')
+
+for address in "$author" "$committer"; do
+    if ! printf '%s' "$address" | grep -Eq "$allowed"; then
+        echo "pre-commit: refusing this commit." >&2
+        echo "  address:  $address" >&2
+        echo "  allowed:  noreply@anthropic.com, or a GitHub noreply address" >&2
+        echo >&2
+        echo "  This repository is public. A real name or a private address in a commit is" >&2
+        echo "  permanent: it stays in every clone, and a history rewrite does not remove it" >&2
+        echo "  from the commits GitHub keeps for a pull request." >&2
+        echo >&2
+        echo "  Do not pass -c user.email=... to work around this. The repository is configured" >&2
+        echo "  correctly; use that configuration." >&2
+        exit 1
+    fi
+done

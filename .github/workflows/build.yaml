@@ -43,6 +43,16 @@ jobs:
           git remote add upstream https://github.com/FFXIV-CombatReborn/RotationSolverReborn.git || true
           git fetch --tags --no-recurse-submodules upstream
 
+      # Second line behind .githooks/pre-commit, for a clone that has no core.hooksPath set. Six
+      # commits went out carrying the owner's real name and his private address in this public
+      # repository, and GitHub's own "block pushes that expose my email" did not stop them: it
+      # only recognises addresses listed on the pushing account, and that one was not. Reporting
+      # here is late - a commit is permanent - but it names them while the number is small.
+      # It needs upstream/main, fetched in the step above, to tell the fork's commits from
+      # upstream's.
+      - name: Check the commit identities
+        run: python3 .github/scripts/audit/check_commit_identity.py
+
       # The version literals in Directory.Build.props name the upstream release the code contains.
       # Nothing updates them on a merge - upstream carries no version in its source tree - so they
       # age silently, and that number is what the settings window shows the user. It said 7.5.6.1
