@@ -231,3 +231,10 @@ python3 .github/scripts/check_base_calls.py
 Der Build läuft in der CI dieses Forks gegen dieselbe Dalamud-Version wie im
 Original (`.github/workflows/build.yaml`, unverändert bis auf einen
 zusätzlichen Job).
+
+## Offene Punkte zu diesem Konzept
+
+Sie stehen in `TODO.md` und sind dort unter der Überschrift des Eintrags mit **Konzept:** auf dieses
+Dokument gekennzeichnet. Dass dieses Dokument nicht fortgeschrieben wird, gilt für seinen **Inhalt**:
+Der erste Durchgang ist abgeschlossen. Die Nachprüfung der vorgemerkten Commits gehört gleichwohl
+hierher, weil sie denselben Gegenstand hat — die Abweichung des Forks von Upstream.

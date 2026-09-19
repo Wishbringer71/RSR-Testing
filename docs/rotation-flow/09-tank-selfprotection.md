@@ -62,6 +62,13 @@ wäre.
    Walking Dead.
 3. **Die Vermeidung unnötiger Aktionen** — verbrauchte oGCDs, MP, Cooldowns.
 
+**Das Maß für „unnötig" auf Stufe 3 ist die Größe des Treffers, nicht das Gefühl.** Vorgabe des
+Auftraggebers, ausgeschrieben in `08-mitigation-synergy.md` („Die Antwort auf einen eingehenden
+Treffer"): Gesucht ist Deckung in Höhe des Treffers, gemessen am schwächsten Mitglied. Ein Zehn-
+Prozent-Tick rechtfertigt keine große Barriere, ein Treffer oberhalb der vollen Gesundheit dagegen
+Barriere **und** Minderung zusammen. Stufe 1 bleibt davon unberührt: Wo das Überleben in Frage steht,
+entscheidet nicht die Sparsamkeit.
+
 Daraus folgt die tragende Vorbedingung: **Jede Rückhaltung wird erst geprüft, wenn
 Stufe 1 gesichert ist.** Eine Rückhaltung, die einen Effekt der Stufe 2 sichern
 will, ohne vorher Stufe 1 zu prüfen, ist die verbotene Aufwiegung. Am schwersten
@@ -558,3 +565,10 @@ abgeleitete Rotation, die die Liste liest. Im `CHANGELOG` vermerkt.
 
 **Upstream.** Der Eingriff liegt in `ActionTargetInfo`, `StatusHelper` und
 `StateUpdater`, alle mit regelmäßiger Upstream-Aktivität.
+
+## Offene Punkte zu diesem Konzept
+
+Sie stehen in `TODO.md` und sind dort unter der Überschrift des Eintrags mit **Konzept:** auf dieses
+Dokument gekennzeichnet — an **einer** Stelle statt in zweien, damit keine Kopie altert.
+`.github/scripts/audit/check_concept_links.py` listet sie je Konzept und nennt zugleich, wie viele
+Einträge überhaupt keinem Konzept zugeordnet sind.

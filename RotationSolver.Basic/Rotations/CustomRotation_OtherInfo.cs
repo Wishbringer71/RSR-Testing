@@ -541,6 +541,12 @@ public partial class CustomRotation
 	/// exactly one enemy while the rest of a pull keeps hitting. A rule that reacts to "the damage
 	/// stream is interrupted" has to read the share, not the presence, of stunned enemies.
 	/// </param>
+	/// <param name="radius">How far around the player hostiles are counted, in yalms.</param>
+	/// <param name="allStunned">Whether every hostile inside the radius is stunned or immune.</param>
+	/// <param name="headroom">
+	/// Whether anything inside the radius could still be stunned. Without it there is nothing to
+	/// stretch and nothing to save, so a hold rule has no reason to fire.
+	/// </param>
 	protected static int SurveyStuns(float radius, out int stunnedCount, out bool allStunned,
 		out bool headroom)
 	{

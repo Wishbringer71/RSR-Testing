@@ -6,17 +6,18 @@ immediately. Two changes are confirmed in play — the raise dispatch and the ta
 HoT. Everything else is established in the code and compiled in CI, which says that a chain
 closes, not that it is right at the target dummy.
 
-## Check this setting first — a known defect in this build
+## Party mitigation answers raidwides again
 
-`Skip mitigation for small area casts` is **on by default**, and with that default party
-mitigation is withheld in almost every ordinary case. The condition only mitigates above an
-impact of roughly 35 % of maximum health, which an ordinary raidwide does not reach, and the
-impact is only known after the first hit of that action. In the fight: on Summoner neither
-Addle nor Radiant Aegis has gone out against area damage since 17 September, and every
-party-wide mitigation on that chain is affected.
+`Skip mitigation for small area casts` spares the cooldown when an area hit is too small to
+matter. Until this build it asked one question only — would this hit push anyone to where
+healing is called for — and a healthy party answered no to almost every raidwide, so Addle
+and Radiant Aegis stopped going out on Summoner. Mitigation is meant to throttle the damage
+*before* a need to heal appears, so that question was the wrong one on its own.
 
-**Switch the setting off** to get the previous behaviour. A new default in code would not
-reach you — a configuration already in use keeps its stored value.
+An area action that costs **25 % of maximum health or more** is now treated as a big hit
+whatever the party's health. The figure is not set by hand: it is what The Blackest Night
+states it absorbs. Below it the buffer comparison still decides, so small repeated ticks keep
+costing no cooldown while the party is healthy.
 
 ## Healing — when it lands
 
@@ -109,11 +110,17 @@ reach you — a configuration already in use keeps its stored value.
 
 ## Damage and rotation
 
+- **Summoner: Searing Light now covers the phase from its first GCD.** It used to be offered only
+  once the demi was standing, so the earliest weave slot it could take was the one after the
+  summon — and when that slot was busy, the buff landed somewhere inside the burst instead of at
+  its start. It now fires in the slot before the summon; the 20-second buff covers the
+  15-second demi either way, and the summon is no longer blocked by its own buff being spent.
 - **Summoner.** Searing Light is tied to the burst phase — Solar Bahamut, or Bahamut at lower
   levels; with a second Summoner in the party it falls back to the big summon, and across all
-  established phases to Ifrit. `PreferTitanWhileMoving` (**off by default**) brings Titan
-  forward while you are moving, because Topaz Rite and its follow-ups are instant while
-  Garuda and Ifrit lose GCDs on the move. Titan is only brought forward, never skipped.
+  established phases to Titan — or to Ifrit when you are standing at the target anyway, since
+  its higher figure assumes a gap closer you then do not need. `PreferTitanWhileMoving` (**off by default**) brings Titan forward while
+  you are moving, because Topaz Rite and its follow-ups are instant while Garuda and Ifrit
+  lose GCDs on the move. Titan is only brought forward, never skipped.
 - **White mage, Holy.** Three separately switchable rules: do not overwrite the stun while it
   is still running (`StretchHolyStun`, **off by default**); hold Holy while the dark knight's
   barrier is meant to be filled; and hold Holy while more than half the enemies in radius are

@@ -12,7 +12,7 @@ bestimmte Grenzwerte nicht ueberschreiten — und entscheidend ist nicht, wie **
 wird, sondern wie **lange**: Die Drosselung kauft die Zeit, in der der eigene Schaden die Gegnerzahl
 senkt.
 
-**Vier Vorgaben des Auftraggebers ordnen alles Weitere, und sie gelten zusammen:**
+**Fuenf Vorgaben des Auftraggebers ordnen alles Weitere, und sie gelten zusammen:**
 
 1. **Strecken statt stapeln.** Faellt alles zugleich, ist die Drosselung nach Sekunden verbraucht und
    der volle Strom trifft eine unveraendert grosse Gruppe.
@@ -22,6 +22,11 @@ senkt.
    Traeger ueberlebt und ob genug Zeit zum Heilen bleibt.
 4. **Ausgesetzt wird nur bei Stunbarkeit.** Ist im Wirkbereich alles betaeubt oder immun, gibt es
    nichts zu strecken und nichts zu sparen; dann kostet das Aussetzen nur den Flaechenzauber.
+5. **Das Mittel wird nach der Groesse des Treffers gewaehlt, nicht nach seiner Verfuegbarkeit.**
+   Gesucht ist Deckung: Der Anteil des Mittels soll den Anteil des Treffers erreichen, nicht
+   uebertreffen. Reicht die Gesundheit des schwaechsten Mitglieds nicht, geht Heilung vor; reicht
+   auch die volle Gesundheit nicht, kommen Barriere und Minderung zusaetzlich. Ausgeschrieben im
+   Abschnitt darunter.
 
 **Gewaehlt ist eine zentrale Bremse bei dezentraler Ausloesung:** Die vorhandenen Ausloeser bleiben,
 hinzu kommt eine Pruefung, die *zurueckhaelt*. Faellt sie aus, verhaelt sich RSR wie zuvor.
@@ -48,10 +53,105 @@ darauf aufsetzt, ist der gemessene Fehlerfaktor in der Diagnoseanzeige zu beurte
 | **Vorausschau** als Ersatzgroesse an allen Heilentscheidungen | umgesetzt (`GetForecastSurvivingShare` und die drei davon abgeleiteten Getter), hinter `HealAheadOfDamage`, Standard aus |
 | Vorausschau auch in der **Flaechenheilung** (`PartyMembersAverHP` und Geschwister) | erfasst, nicht bearbeitet — siehe `TODO.md`; 83 Leser ausserhalb der Heilkette, darunter fremde Rotationen |
 | Minderungen des Tanks **rechnerisch** erfassen (Vorausschau vor dem ersten Treffer) | offen, siehe `TODO.md` — braucht Saetze je Status aus `Action.resx` |
+| **Derselbe Satz je Aktion traegt zwei Zwecke**, und das war bisher nicht gesehen: die Vorausschau in der Zeile darueber **und** die Wahl des Mittels nach Treffergroesse (Vorgabe 5). Wer ihn baut, loest beide Punkte | offen, siehe `TODO.md` |
 | Restzeit der Barriere (`HasSurvivingShield` misst die kuerzeste statt der laengsten) | offen, siehe `TODO.md` |
 | Erhebung der uebrigen Doppelnutzen-Aktionen | umgesetzt als `scan16.py`; ein Fund im Tank-/Heilerprofil (Rueckstoss) |
 | Rueckstoss auch **als** Minderungswerkzeug wirken | offen, siehe `TODO.md` — Zielkonflikt mit der Rolle als einziger Rueckstossschutz |
 | Wirksamkeitsmessung im Spiel | offen |
+| **Sonden, die es schon gibt** — ohne sie ist im Kampf nicht zu sehen, ob eine Regel greift: `DataCenter.AreaMitigationSkipped` nennt je Aktions-Id, wo die Flächenbewertung eine Minderung verworfen hat; Rohzeit, korrigierte Zeit und Fehlerfaktor der Schätzung stehen in der Diagnoseanzeige | in Betrieb, in keinem Konzept genannt gewesen |
+
+## Die Antwort auf einen eingehenden Treffer
+
+**Dieser Abschnitt ist der Knoten zwischen vier Konzepten, und die Zustaendigkeiten sind getrennt:**
+
+| Frage | Konzept |
+|---|---|
+| Wie gross ist der eingehende Treffer? | `13-aoe-damage-classification.md` — Messung je Aktion, Anteil am schwaechsten Mitglied |
+| Welches Mittel antwortet darauf, und in welcher Reihenfolge? | **hier**, Vorgabe 5 und die Tabelle unten |
+| Wer wird geheilt, wenn geheilt wird? | `07-heal-target-priority.md` — Gefaehrdung vor Rolle, Rolle vor Prozentsatz |
+| Wann darf der Tank ein eigenes Mittel zuruecknehmen? | `09-tank-selfprotection.md` — lexikographische Rangordnung, Ueberleben zuerst |
+| Wann ist die grosse Barriere das richtige Mittel? | `10-drk-blackest-night.md` — sie ist zugleich der Maszstab fuer „gross" |
+
+**Heilung, Barriere und Minderung sind drei Antworten auf dieselbe Frage, und die Groesse des
+Treffers entscheidet, welche davon richtig ist.** Bezugsgroesse ist das schwaechste Gruppenmitglied —
+bei gleichem absolutem Schaden traegt der Spieler mit der geringsten Maximalgesundheit den hoechsten
+Anteil, und genau diesen Anteil legt `13-aoe-damage-classification.md` je Aktion ab.
+
+**Vorgabe des Auftraggebers, woertlich:** „wenn schaden nur 10% auf spieler mit geringster maxhp
+verursacht, dann reicht ein schild, was 10% blockiert. oder sogar weniger bis kein schild. wenn ein
+schaden 70% verursacht von maxhp des geringsten spielers, dann sollte das schild moeglichst hoch
+sein, optimal 70%." Und die Ausnahme: „die aktuelle hp liegt unter dem schadenswert. dann waere aber
+eine heilung sinnvoll bis max maxhp. wenn dann die hp unter dem schadenswert liegt, sollte
+zusaetzlich geschildet werden. bzw. der schadensoutput reduziert."
+
+| Lage des schwaechsten Mitglieds | Antwort |
+|---|---|
+| Treffer kleiner als die **aktuelle** Gesundheit | Deckung in Hoehe des Treffers; bei kleinen Werten auch gar keine |
+| Treffer erreicht die aktuelle, bleibt unter der maximalen | **zuerst heilen**, Ziel ist die Maximalgesundheit — danach wieder Deckung |
+| Treffer uebersteigt auch die maximale Gesundheit | Heilung allein rettet nicht: Barriere **und** Minderung zusaetzlich, bis der Rest darunter liegt |
+
+**Das ist Vorgabe 2 dieses Konzepts, zu Ende gedacht.** „Heilung vor Minderung" sagte bisher nur die
+Reihenfolge; die Tabelle sagt, **woran** sich entscheidet, ob der Fall ueberhaupt eintritt. Und sie
+loest die dritte Vorgabe ein: Die Barriere steht im Zaehler, also addiert sie sich in Zeile drei zur
+Minderung, statt mit ihr zu konkurrieren.
+
+**Gebaut ist davon nichts** — heute entscheidet die gemessene Groesse allein, **ob** die Abwehrkette
+geoeffnet wird, und die Reihenfolge innerhalb der Kette ist je Job fest verdrahtet. Was fehlt, ist
+derselbe Baustein, den dieses Konzept schon fuer die Vorausschau vor dem ersten Treffer vermisst: je
+Abwehraktion ein belegter Wert. Fuer Barrieren liegt er vor (25 %, 15 %, 10 % aus den Wirktexten),
+fuer Minderungen steht er im Wirktext und ist aus den Ressourcen erzeugbar statt handzufuehren.
+Blast Radius und Auflagen stehen in `TODO.md`.
+
+## Was ein Baustein mehrfach traegt
+
+**Die offenen Punkte dieser Konzeptfamilie haengen an weniger Bausteinen, als ihre Zahl vermuten
+laesst.** Wer einen davon baut, schliesst mehrere Punkte zugleich — das ist der Grund, die Konzepte
+gemeinsam zu lesen und nicht einzeln.
+
+**Ein Wirkungswert je Aktion, aus dem eigenen Wirktext — vier offene Punkte.**
+
+| Offener Punkt | Konzept | Was der Wert dort beantwortet |
+|---|---|---|
+| Vorausschau vor dem **ersten** Treffer | hier | Wieviel Schaden der angekuendigte Einschlag traegt, bevor eine Beobachtung vorliegt |
+| Wahl des Mittels nach Treffergroesse (Vorgabe 5) | hier | Welche Barriere, welche Minderung den Treffer deckt |
+| Die Minderungsbilanz kennt Betaeubung und Verlangsamung nicht | hier, „Die Luecke" | Um wieviel eine Drosselung den Strom senkt — gemessen: `GetCurrentMitigationPercent` rechnet Addle, Feint, Dismantle und Reprisal, sonst nichts |
+| Rueckstoss auch **als** Minderungswerkzeug | `TODO.md` | Dass seine Verlangsamung in derselben Groessenordnung wirkt wie Rampart |
+
+Der Wert ist **erzeugbar**, nicht handzufuehren, und das ist gemessen statt vermutet: Im Lauf vom
+19.09.2026 nennen **69** Wirktexte in `ActionId.resx` die Formel „reduces damage taken by X %“, mit
+ausgeschriebenem Prozentsatz — 10, 15, 20, 25, 30, 40, 50 und 99 %; die Barrieren nennen ihren
+Anteil ebenso (25 %, 15 %, 10 %). `RotationSolver.GameData` liest dieselben Blätter ohnehin aus. Das unterscheidet ihn von der hier verworfenen
+Statussatz-Tabelle, deren Einwand die Pflege war.
+
+**Das gemessene Schadenspotential je Gegneraktion — drei Fragen in drei Konzepten.** Es liegt seit
+A99 bis A102 vor (`13-aoe-damage-classification.md`) und wird bisher an **einer** Stelle gelesen:
+
+| Frage | Konzept | Heute |
+|---|---|---|
+| Wie gefaehrlich ist der angekuendigte Flaechenschaden? | `07-heal-target-priority.md` | binaer (`IsHostileCastingAOE`) — die Groesse bleibt ungenutzt |
+| Wie steht es vor dem ersten Treffer eines Pulls? | hier | blind; die Beobachtung braucht 2,5 s Anlauf |
+| Wie hart schlaegt dieser Tankbuster, Rueckstoss, Stopp? | `13-…`, Abschnitt „Was der Baustein eroeffnet" | dieselbe Messstruktur, je Liste fehlt der eigene Speicher |
+
+**Die Sonden sind der gemeinsame Nachweisweg, und sie haben selbst zu entscheiden.** Keine Regel
+dieser Familie ist am Code zu belegen — ob sie im Kampf greift, zeigt erst die Laufzeit. Daraus folgt
+aber **nicht**, Daten zur spaeteren Durchsicht zu sammeln: Vorgabe des Auftraggebers ist, dass eine
+Sonde zur Laufzeit **erhebt und bewertet**, weil jede Auswertung ueber das Modell einen Kampf, ein
+Ablesen, einen Bericht und eine Runde kostet — je Messwert. Das Vorbild steht in diesem Konzept:
+`ScoreTtkForecast` haelt die eigene Vorhersage gegen den Verlauf, `GetCorrectedTTK` rechnet den
+Fehler heraus, und niemand muss etwas ablesen. `AreaMitigationSkipped` ist die schwaechere Form —
+sie zeigt, was die Regel verworfen hat, korrigiert sich aber nicht selbst. Wer eine Regel dieser
+Familie aendert, liefert die selbstkorrigierende Sonde mit oder sagt ausdruecklich, warum hier keine
+zu bauen ist.
+
+**Nachgerechnet, mit geteiltem Ergebnis:** `searing_light_coverage.py` aus
+`12-searing-light-stacking.md` beantwortet dieselbe Frage — wie viele Sekunden deckt ein Effekt ab,
+wenn mehrere Quellen ihn nach Regeln zuenden. Zwei seiner Annahmen passen hier aber nicht: Es
+kennt genau **eine** Aktion (Dauer und Wiederholzeit sind Konstanten), und es rechnet mit
+**Ueberschreiben statt Stapeln**. Die Drosselungen dieses Konzepts sind ungleich lang und stapeln
+multiplikativ — „Strecken statt stapeln“ ist hier die **Vorgabe**, nicht die Mechanik, und genau
+den Vergleich beider Strategien kann ein Modell ohne Stapeln nicht fuehren. Uebertragbar ist der
+Kern: Zeitschritt-Simulation mit Quellen, Dauer, Wiederholzeit und Zuendregel. Eine
+Zweitverwendung verlangt also, Quellenliste und Stapelverhalten zu Parametern zu machen.
 
 ## Die Vorgaben des Auftraggebers
 
@@ -633,11 +733,11 @@ gegnerischen Treffer aus, summiert die Schadensanteile und legt sie über
 bereits erfasst — gebraucht wird nur eine Auswertung je Kampf statt eines gleitenden
 Fensters.
 
-| Kennzahl | Quelle | Aussage |
+| Kennzahl | Quelle — **keine davon ist gebaut**, die Namen sind Vorschläge | Aussage |
 |---|---|---|
 | Erlittener Schadensanteil je Pull | `_damages`, summiert zwischen Kampfbeginn und -ende | Das Zielkriterium |
 | Genutzte Betäubungsdauer | `StunCoverage` über die Zeit integriert | Ob die 7 s ausgeschöpft wurden |
-| Überlappungsanteil | Anteil der Betäubungszeit mit bereits erhöhter `MitigationFraction` | Ob Posten 2 greift |
+| Überlappungsanteil | Anteil der Betäubungszeit, in der die Minderungsquote bereits erhöht **wäre** — eine Größe dieses Namens gibt es nicht | Ob Posten 2 greift |
 | DoT-Laufzeitanteil | Zeit mit aktivem DoT geteilt durch Kampfdauer | Ob der DoT-Grund wirkt |
 
 **Versuchsanordnung.** Dieselbe Instanz, derselbe Pull, Option abwechselnd an und aus,
@@ -676,3 +776,10 @@ nicht aufruft, merkt nichts.
 **Upstream-Pflege.** Der Eingriff liegt in `CustomRotation_OtherInfo` und
 `WHM_Reborn`, beides Dateien mit regelmäßiger Upstream-Aktivität. Neue Teile liegen in
 eigenen Regionen; kein Block wandert.
+
+## Offene Punkte zu diesem Konzept
+
+Sie stehen in `TODO.md` und sind dort unter der Überschrift des Eintrags mit **Konzept:** auf dieses
+Dokument gekennzeichnet — an **einer** Stelle statt in zweien, damit keine Kopie altert.
+`.github/scripts/audit/check_concept_links.py` listet sie je Konzept und nennt zugleich, wie viele
+Einträge überhaupt keinem Konzept zugeordnet sind.

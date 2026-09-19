@@ -2794,6 +2794,25 @@ internal static class DataCenter
 	/// only enters the arithmetic once an actual hit has been measured, and in content that is
 	/// repeated - an extreme trial, a savage fight in progression - that is one clear.
 	/// </remarks>
+	/// <summary>
+	/// What a large shield absorbs, as a share of maximum HP: the point from which an area hit counts
+	/// as a big one regardless of how healthy the party is.
+	/// </summary>
+	/// <remarks>
+	/// Not an invented number. The Blackest Night states it in its own effect text - "absorbs damage
+	/// totaling 25% of target's maximum HP" (`ActionId.resx`, row 1234) - and it is the largest
+	/// barrier in the tree that names its size as a share at all. The smaller ones name 10% and 15%
+	/// (`ActionId.resx` 1209, `DutyAction.resx` 1908, 4484, 6715), which is the other end of the
+	/// user's requirement: below a small shield the hit only matters to someone already low. That end
+	/// needs no constant, because the buffer comparison below is exactly that question.
+	///
+	/// Concept 13 once dismissed the two-threshold form as "not implementable without invented
+	/// numbers, and not needed, because the buffer comparison answers the same question". Both halves
+	/// were wrong: five barriers state a share, and the buffer comparison answers a different
+	/// question - whether healing would be needed, not whether the hit is large.
+	/// </remarks>
+	private const float LargeShieldShare = 0.25f;
+
 	private static bool AreaCastIsWorthMitigating(uint actionId)
 	{
 		if (!Service.Config.SkipMitigationForSmallAreaCasts)
@@ -2805,6 +2824,17 @@ internal static class DataCenter
 			|| share <= 0f)
 		{
 			return true; // Unrated: behave exactly as before.
+		}
+
+		// Above the size of a large shield the hit is a big one, whatever the party's health - the
+		// user's requirement says so in as many words, and the party's health does not change how
+		// hard it lands. Without this arm the rule asks only whether healing would be needed, and a
+		// healthy party answers no to almost every raidwide: at a buffer of 1.0 against the area
+		// heal threshold of 0.65, mitigation would need a share above 0.35 to happen at all. That
+		// is what took Addle and Radiant Aegis out of the fight on Summoner.
+		if (share >= LargeShieldShare)
+		{
+			return true;
 		}
 
 		var party = PartyMembers;

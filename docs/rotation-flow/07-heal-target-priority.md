@@ -65,11 +65,14 @@ wurde oder nicht. Vier Größen also, und keine davon genügt allein:
 |---|---|---|
 | **Effektive Gesundheit, absolut** | Wie viele Punkte liegen zwischen ihm und dem Tod? | ja — `GetEffectiveHp` (Gesundheit plus Barriere); die Zielwahl liest sie nur nicht |
 | **Aggro** | Bekommt er gerichteten Schaden — Auto-Angriffe, Tankbuster? | ja — ein Gegner nennt sein Ziel über `TargetObject`, `ObjectHelper.CanProvoke` löst das bereits auf |
-| **Angekündigter Flächenschaden** | Kommt Schaden, der ihn ohne Aggro trifft? | ja — `IsHostileCastingAOE` und die BossModReborn-Vorhersage (`BMRNextDamageIn`) |
-| **Eingehende Schadensrate** | Wie schnell schwindet der Puffer? | **nein**, je Mitglied nicht |
+| **Angekündigter Flächenschaden** | Kommt Schaden, der ihn ohne Aggro trifft? | ja — `IsHostileCastingAOE` und die BossModReborn-Vorhersage (`BMRNextDamageIn`); **wie hart** er trifft, misst `13-aoe-damage-classification.md` je Aktion, hier ungenutzt |
+| **Eingehende Schadensrate** | Wie schnell schwindet der Puffer? | **ja, seit A91** — `RecordedHP` trägt die Gruppe mit, `GetTTK` antwortet für Mitglieder, `GetCorrectedTTK` teilt den Schätzfehler heraus. Die Zielwahl liest sie nicht |
 
-Aus den ersten beiden folgt der Puffer, aus allen vieren die **Zeit bis zum Tod** — das Gegenstück zu
-`GetTTK`, das RSR für Gegner bereits führt. Für Gruppenmitglieder fehlt es.
+Aus den ersten beiden folgt der Puffer, aus allen vieren die **Zeit bis zum Tod**. Sie ist **vorhanden**:
+`08-mitigation-synergy.md` hat sie gebaut — die Gesundheitsreihe `RecordedHP` nimmt die Gruppe seit A91
+mit auf, also antwortet `GetTTK` auch für Mitglieder, und `GetCorrectedTTK` hält jede Vorhersage gegen
+den tatsächlichen Verlauf. **Was fehlt, ist nicht die Größe, sondern ihr Verbraucher:** Die Zielwahl
+fragt sie nicht ab (erfasst in `TODO.md`, „Die Zielwahl der Heilung misst nicht die Sterbegefährdung“).
 
 **Der kleine Puffer ist damit für sich gefährlich.** Wer bei 10 % steht, braucht keine Aggro, um an
 der nächsten Flächenaktion zu sterben; die Aggro entscheidet nur, ob er auch ohne Mechanik fällt. Ein
@@ -245,7 +248,7 @@ sondern die vorausberechnete Gesundheit selbst — siehe „Die Stufen".
 als Ganzes, `DamageRec` trägt Zeitpunkt und Anteil, **kein Ziel**, und ihr Fenster von fünf
 Millisekunden sieht bei einem Bild von rund sechzehn fast immer nichts.
 
-**Die Aggro steht ebenfalls.** `DataCenter.AggroedMembers` wird in `TargetUpdater.UpdateLists` einmal
+**Die Aggro steht ebenfalls.** `DataCenter.TargetedPartyMembers` wird in `TargetUpdater.UpdateLists` einmal
 je Bild aus den `TargetObjectId` der Gegner gefüllt — ein Durchlauf über die Gegner, danach ist „wird
 angegriffen" eine Nachschlageoperation. Gelesen wird sie bisher von `ObjectHelper.IsUnderThreat`,
 nicht von der Zielwahl: Sie beantwortet die Frage nach dem **Mittel**, die Klassen 2 und 3 der
@@ -298,6 +301,23 @@ ist die Barriere dagegen eine zulässige Größe: Dort wird nicht gefragt, ob ge
 zuerst. Der einführende Commit der Anrechnung (`27c7b6942`) nannte im Titel genau diese Frage und
 änderte dann die Schwelle.
 
+## Abgrenzung zur Wiederbelebung
+
+Dieses Konzept ordnet die **Lebenden**. Wer bereits tot ist, fällt nicht unter die Gefährdung,
+sondern unter die Wiederbelebung — deren Auslösung, Reihenfolge und der Spontanitäts-Vorbehalt
+stehen in `11-raise-dispatch.md`. Die Berührung der beiden ist real und in Abschnitt 1 belegt: Der
+frisch Wiederbelebte wechselt in dem Moment aus dem einen Konzept in das andere, und genau dort
+hat die Notfall-Vollheilung ihn früher als dringendsten Fall gelesen.
+
+## Abgrenzung zur Wahl des Mittels
+
+Dieses Konzept beantwortet **wer** zuerst geheilt wird. Ob überhaupt geheilt wird oder stattdessen
+gedeckt — Barriere, Minderung —, entscheidet die Ordnung in `08-mitigation-synergy.md` („Die Antwort
+auf einen eingehenden Treffer"): Heilung geht vor, sobald der angekündigte Treffer die **aktuelle**
+Gesundheit des schwächsten Mitglieds erreicht, und zwar bis zur Maximalgesundheit; darunter genügt
+Deckung in Höhe des Treffers. Beide Konzepte greifen also nacheinander und nicht ineinander — erst
+die Frage nach dem Mittel, dann die nach dem Ziel.
+
 ## Grenzen des Nachweises
 
 Am Quelltext belegt: die Rangfolge samt Vorgabewerten, die Umkehr im Band 40–45 %, die Gleichheit der
@@ -309,3 +329,10 @@ Nicht belegbar: welche Reihenfolge im Kampf die bessere ist, und wie oft das Ban
 gleich tief stehenden Heiler überhaupt erreicht wird. Das entscheidet sich an einer Beobachtung — ob
 ein Mitglied stirbt, während ein besser geschütztes zuerst versorgt wurde. Ebenfalls nicht messbar:
 die tatsächliche Konfiguration des Auftraggebers.
+
+## Offene Punkte zu diesem Konzept
+
+Sie stehen in `TODO.md` und sind dort unter der Überschrift des Eintrags mit **Konzept:** auf dieses
+Dokument gekennzeichnet — an **einer** Stelle statt in zweien, damit keine Kopie altert.
+`.github/scripts/audit/check_concept_links.py` listet sie je Konzept und nennt zugleich, wie viele
+Einträge überhaupt keinem Konzept zugeordnet sind.

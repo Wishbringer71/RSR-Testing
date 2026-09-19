@@ -59,6 +59,81 @@ im Baum zieht die Zündung an den Phasenanfang. Verpasst die Aktion den ersten E
 er belegt ist, weil gerade kein Ziel in Reichweite steht, weil die Ausführungssperre kurz vor dem
 nächsten GCD greift —, fällt sie einfach beim nächsten freien Platz, und niemand holt das nach.
 
+**Das Messmittel dafür ist keine Neuentwicklung.** `DataCenter.AreaMitigationSkipped` vermerkt je
+Aktions-Id, wo eine Regel etwas hat ausfallen lassen, und die Diagnoseanzeige liest es — dieselbe
+Bauform beantwortet hier „wie viele Sekunden nach Phasenbeginn fiel Searing Light“. Was daran zu
+beachten ist, steht dort ebenfalls schon: **Aktionen zählen, nicht Aufrufe**, sonst misst der
+Zähler die Bildrate statt der Sache.
+
+**Behoben ist der Teil, der ohne Laufzeitmessung zu beheben war** (A114): Die Zündung wird jetzt schon
+im Einschiebeplatz **vor** der großen Beschwörung angeboten. `burstInSolar` wird erst wahr, wenn die
+Demi steht — der früheste Platz, den diese Bedingung anbieten konnte, lag also **hinter** dem
+Beschwörungs-GCD. Zwanzig Sekunden Buff gegen fünfzehn Sekunden Demi decken die Phase auch von davor
+vollständig ab, und der eingeplante Überhang bleibt erhalten. Damit die Beschwörung dadurch nicht
+ausfällt, nimmt ihre Bedingung einen **laufenden** Buff als Bereitschaft an — der Bahamut-Zweig las sie
+schon immer so, der Solar-Zweig nicht.
+
+**Wann der erste Burstschaden entsteht, ist am Wirktext belegt — und es ist nicht die Beschwörung.**
+`Summon Solar Bahamut` (`ActionId.resx`, 36992) nennt **keine Potenz**: „Enters Lightwyrm Trance and summons
+Solar Bahamut to fight your target. Solar Bahamut will execute Luxwave automatically on the targets
+attacked by you after summoning.“ Der Beschwörungs-GCD richtet also nichts aus; Luxwave (160) folgt den
+**eigenen** Angriffen. Der erste Schaden der Phase ist damit der erste GCD danach — Umbral Impulse (640)
+samt automatischem Luxwave, zusammen 800 Potenz.
+
+**Daraus folgt, welcher Fehler der billigere ist.** Der Buff verfehlt — 5 % auf jeden GCD, den er nicht
+mehr deckt: 40 Potenz allein auf den ersten, und dasselbe noch einmal für jedes nahe Gruppenmitglied.
+Die Beschwörung wartet — sie fällt einen GCD später, die Trance läuft 15 s innerhalb eines 20-s-Buffs,
+die Phase passt also weiterhin vollständig hinein, und der warte-GCD ist ein Füller, kein Verlust.
+Deshalb wartet die Beschwörung.
+
+**Die Beschwörung wartet auf den Buff, statt ihn nur zuzulassen** — Vorgabe des Auftraggebers: Searing
+Light muss aktiv sein, **bevor** der erste Burstschaden entsteht. Umgesetzt an der Stelle, die
+tatsächlich feuert: Der Bahamut-Aufruf stand zweimal da, einmal ohne Bedingung und einmal mit genau
+dieser — der bedingte war damit unerreichbar, die Kopplung wirkungslos. Jetzt ein Aufruf, eine
+Bedingung. Sie hält drei Arme, und die letzten beiden verhindern, dass das Warten die Phase kostet:
+Eine bereits verbrauchte Ladung kommt in diesem Fenster nicht zurück, und unterhalb von Stufe 66 gibt
+es Searing Light gar nicht.
+
+**Gelesen wird die Bereitschaft der Beschwörung, nicht der nächste GCD.** Andernfalls entstünde dasselbe
+Henne-Ei-Problem wie bei der Wiederbelebung (Konzept 11): Der Buff wartete darauf, angekündigt zu
+werden, und die Ankündigung auf den Buff.
+
+**Das verbleibende Risiko ist benannt, nicht beseitigt — und für diesen Job ist es kleiner, als die
+allgemeine Zweigliste vermuten lässt.** „Heilung oder Verteidigung“ heißt beim Beschwörer konkret
+Schimmerschild und Addle; seine einzige nennenswerte Heilung ist die Flächenheilung aus einer
+laufenden Demi. Und genau die kann **vor** der Beschwörung gar nicht feuern: `ModifyLuxSolarisPvE`
+setzt `StatusNeed = [StatusID.RefulgentLux]`, `ModifyRekindlePvE` prüft `InPhoenix` — beide
+Bedingungen entstehen **aus** der Phase, die noch nicht begonnen hat. Vor der Beschwörung bleiben
+damit Schimmerschild (`ModifyRadiantAegisPvE`, `ActionCheck = () => DataCenter.HasPet()`) und Addle,
+und die nur bei gesetzter Verteidigungsflagge. Eine Absicherung über `CanUse` als Prüfung scheidet
+aus; das ist die Defektklasse aus `TODO.md`.
+
+**Hinter der Beschwörung kehrt sich das um, und das ist der wahrscheinlichere Grund für die
+Spielbeobachtung.** Der Wirktext der Beschwörung gewährt selbst Refulgent Lux („Additional Effect:
+Grants Refulgent Lux Duration: 30s“). In dem Augenblick, in dem die Beschwörung aufgeht, wird Lux
+Solaris also wirkbar — und `HealAreaAbility` fragt die Kette **vor** `AttackAbility`
+(`CustomRotation_Ability.cs:169` und `:188` gegen den Angriffszweig weiter unten), kann den
+Einschiebeplatz hinter der Beschwörung also nehmen, sobald die Flächenheilungsflagge steht. **Die
+Beschwörung erzeugt ihren eigenen Konkurrenten um den Platz dahinter; der Platz davor hat diesen
+Konkurrenten nicht.** Das ist ein zweites, vom Zeitpunktargument unabhängiges Argument für die
+Zündung vor der Beschwörung — und ein Schluss aus Wirktext und Zweigreihenfolge, keine
+Spielbeobachtung.
+
+**Keine Sonde, und das ist die Vorgabe des Auftraggebers:** Eine Messung, deren Auswertung über das
+Modell läuft, kostet je Wert einen Kampf, ein Ablesen, einen Bericht und eine Runde. Diese
+Entscheidung fällt stattdessen im Code, aus dem, was der GCD-Pfad ohnehin schon als nächste Aktion
+gewählt hat.
+
+**Wer den Platz nehmen kann, ist sehr wohl bestimmbar — nur nicht, wer es im Einzelfall tut.**
+`03-universal.md` führt die Zweigkette des Fähigkeitenpfads: Notfall, Unterbrechung, Reinigung,
+Rettungsrückgriff, Haltung, Rückstoßschutz, Positionierung, Flächen- und Einzelheilung, Tempo,
+Spott, Flächen- und Einzelverteidigung, Bewegung, Trank, Phönixfeder — und **danach** erst der
+Angriffszweig, in dem Searing Light an erster Stelle steht. Die offene Frage ist damit kleiner als
+zuvor beschrieben: Sie lautet nicht „welcher Zweig“, sondern „wie oft greift einer von ihnen in
+genau diesem Fenster“ — und das ist eine Messfrage, keine Lesefrage. Für den Beschwörer schrumpft
+sie nach dem Abschnitt oben weiter zusammen: Vor der Beschwörung kommen von dieser ganzen Kette nur
+Schimmerschild und Addle überhaupt in Betracht, und auch die nur bei gesetzter Verteidigungsflagge.
+
 **Warum das Schaden kostet, in Zahlen aus dem Wirktext** (`ActionId.resx`, beides dort wörtlich):
 Searing Light wirkt **20 Sekunden**, Summon Solar Bahamut dauert **15 Sekunden**. Zu Beginn gezündet
 deckt der Buff die ganze Phase ab und läuft fünf Sekunden darüber hinaus — dieser Überhang ist
@@ -303,7 +378,9 @@ diesen Fall gar nicht erzeugen. Die Aussage oben ist damit aus der Regel abgelei
 ## Die Gruppenzusammensetzung als Schalter
 
 Die Erweiterung darf nicht bedingungslos gelten, und der Auftraggeber hat den richtigen Ort dafür
-benannt: die Zusammensetzung der Gruppe.
+benannt: die Zusammensetzung der Gruppe. Welche Zusammensetzungen überhaupt vorkommen und wie sie sich
+unterscheiden, ist in `02-groups.md` erhoben; dieses Konzept setzt darauf auf, statt die Frage
+ein zweites Mal zu beantworten.
 
 **Warum die Prüfung nötig ist.** Bei einem einzelnen Beschwörer ist die Erweiterung nicht neutral.
 Wird seine Wiederholzeit zu einem Zeitpunkt frei, an dem gerade Bahamut oder Phoenix steht — nach
@@ -347,6 +424,25 @@ steht, und blockiert, wenn einer steht.
 Daraus folgt: Der Versatz ist der **stärkste einzelne Hebel** — bei acht Beschwörern hebt er die
 Abdeckung allein, ohne jede Codeänderung, von 17 % auf 67 %. Keine der Zündregeln bewirkt im
 synchronen Fall auch nur annähernd so viel.
+
+**Zweitverwendung des Modells — nachgerechnet, und sie trägt nur nach einer Verallgemeinerung.**
+`searing_light_coverage.py` beantwortet die Frage „wie viele Sekunden eines Kampfes deckt ein
+nicht stapelbarer Effekt ab, wenn n Quellen ihn nach festen Regeln zünden“ — und genau diese Frage
+stellt `08-mitigation-synergy.md` bei der Streckung der Drosselung. Zwei Annahmen des Modells
+stehen dem aber entgegen:
+
+- **Es kennt nur eine Aktion.** `BUFF` (20 s) und `RECAST` (120 s) sind Konstanten; die Streckung
+  hat es mit ungleichen Quellen zu tun — die Sanctus-Betäubung vier Sekunden, die Verlangsamung
+  des Rückstoßes fünfzehn, die Minderungen wieder anders.
+- **Es rechnet mit Überschreiben, nicht mit Stapeln** (`buff_until = t + BUFF   # overwrite, never
+  stack`). Minderungen stapeln dagegen multiplikativ; „Strecken statt stapeln“ ist dort eine
+  **Vorgabe des Auftraggebers**, keine Spielmechanik, und ein Modell, das das Stapeln gar nicht
+  abbilden kann, kann den Vergleich zwischen beiden Strategien nicht führen.
+
+Was übertragbar bleibt, ist der Kern: die Zeitschritt-Simulation mit Quellen, Dauer, Wiederholzeit
+und einer Zündregel, samt der Trennung „Abdeckung ist nicht Schaden“. Eine Zweitverwendung hieße
+also, Quellenliste und Stapelverhalten zu Parametern zu machen — kein Zufallstreffer, aber auch
+kein bloßes Aufrufen.
 
 ## Die Lücke füllen, ohne Buch zu führen
 
@@ -643,6 +739,12 @@ wenn man ohnehin in Nahkampfreichweite des Ziels steht; der Anlauf von Crimson C
 Burstphase hinein ist ein Positionsrisiko, das 0,01 Prozent Schaden nicht rechtfertigen. Titan ist
 sicher, erlaubt Bewegung und kostet 60 Potenz — drei Potenz Schaden je Zyklus.
 
+**Dieselbe Bedingung gilt für den Ausweichblock des Zündfensters, und sie ist dort umgesetzt (A112, A113).**
+Sind alle drei Hauptphasen — Solar, Bahamut, Phoenix — dauerhaft von anderen Beschwörern belegt, wird in den
+Primalblock ausgewichen: **Titan**, oder **Ifrit genau dann, wenn der Spieler ohnehin am Ziel steht**.
+Dann entfällt der Anlauf, seine Voraussetzung ist erfüllt, und die höhere Zahl gilt ohne Positionsrisiko.
+Gemessen wird an derselben Schwelle, die die Rotation für genau diese Frage schon führt — `CrimsonCycloneDistance`.
+
 **Zwei Einstellungen stützen diese Wahl, beide am Code belegt.** `PreferTitanWhileMoving`
 zieht in `SummonPrimals` Titan bei Bewegung vor, unabhängig von der eingestellten Reihenfolge;
 voreingestellt aus. Und `AddCrimsonCyclone` ist voreingestellt **an** und bedeutet ausweislich seines
@@ -864,7 +966,7 @@ Lage heraus entscheidet statt blind.
 | `SMN_Reborn.cs` (dreimal) | V1: Painflare, Necrotize und Fester fragen nach `HasAnySearingLight` | umgesetzt |
 | `SMN_Reborn.cs` | Zündfenster `burstInSolar \|\| (AnotherSummonerInParty && (inBigInvocation \|\| !HasAnySearingLight))` | umgesetzt, entspricht V7 |
 | `SummonerRotation.cs` | **V8**: Phasenbuch je Phasenart (`UpdateSearingPhaseBook`, `AllSearingPhasesHeld`), fortgeschrieben in `UpdateInfo` | umgesetzt |
-| `SMN_Reborn.cs` | Zündfenster `burstInSolar \|\| (AnotherSummonerInParty && (inBigInvocation \|\| (AllSearingPhasesHeld && IfritActive)))` — V7 ersetzt | umgesetzt |
+| `SMN_Reborn.cs` | Zündfenster `burstInSolar \|\| (AnotherSummonerInParty && (inBigInvocation \|\| (AllSearingPhasesHeld && (TitanActive \|\| (IfritActive && am Ziel stehend)))))` — V7 ersetzt | umgesetzt |
 
 **V8 hat V7 ersetzt und nicht ergänzt.** V7 zündet blind, sobald der Buff aus ist; V8 entscheidet
 dasselbe aus der Lage. Beides nebeneinander hieße, dass die blinde Bedingung die überlegte jedes Mal
@@ -976,3 +1078,10 @@ benannte Grenzen:
 Nicht entschieden und nur im Spiel zu klären: welcher Ausgang bei gleichzeitiger Zündung eintritt;
 wie groß der Wertunterschied zwischen einem Buff im Zwei-Minuten-Takt und einem daneben tatsächlich
 ist; und wie stark der Versatz in einem echten Kampf ausfällt.
+
+## Offene Punkte zu diesem Konzept
+
+Sie stehen in `TODO.md` und sind dort unter der Überschrift des Eintrags mit **Konzept:** auf dieses
+Dokument gekennzeichnet — an **einer** Stelle statt in zweien, damit keine Kopie altert.
+`.github/scripts/audit/check_concept_links.py` listet sie je Konzept und nennt zugleich, wie viele
+Einträge überhaupt keinem Konzept zugeordnet sind.

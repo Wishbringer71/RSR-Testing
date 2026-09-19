@@ -37,14 +37,28 @@ behandeln wäre ein Totalausfall der Gruppenminderung.
 
 **Die Rechnung, die alles ersetzt, was sonst gesetzt werden müsste:**
 
-> **Effektiver Puffer** des Mitglieds (Gesundheit einschließlich Barriere) **minus** dem gespeicherten
-> Anteil seiner Maximalgesundheit. Bleibt das über der Schwelle, ab der der Baum von sich aus heilen
-> würde, ist nichts zu tun; unterschreitet es sie, wird gemindert.
+> **Erste Stufe:** Liegt der gespeicherte Anteil bei **0,25 oder darüber**, ist die Fläche groß, und
+> es wird gemindert — ohne Blick auf die Gesundheit der Gruppe. Der Wert ist die Deckung von The
+> Blackest Night aus ihrem eigenen Wirktext, also ein großer Schild.
+>
+> **Zweite Stufe, darunter:** **Effektiver Puffer** des Mitglieds (Gesundheit einschließlich Barriere)
+> **minus** dem gespeicherten Anteil seiner Maximalgesundheit. Bleibt das über der Schwelle, ab der
+> der Baum von sich aus heilen würde, ist nichts zu tun; unterschreitet es sie, wird gemindert.
 
-Die Frage lautet damit **„erzeugt dieser Einschlag Heilbedarf?"** und nicht „ist die Aktion groß". Das
-braucht keinen Trennwert, ist stimmig mit der Rangregel des Auftraggebers *Heilung vor Minderung* —
-gemindert wird, wo sonst geheilt werden müsste — und bringt seine Formulierung wörtlich hervor: Zwei
-Prozent drücken nur den unter die Schwelle, der ohnehin fast dort steht.
+**Beide Stufen zusammen sind nötig, und die erste ist die später nachgerüstete** (A108, C67): Allein
+mit der zweiten fragt die Regel nur, ob **Heilbedarf** entstünde, und bei gesunder Gruppe lautet die
+Antwort für fast jeden Raidwide nein. Gemindert werden soll aber, **bevor** Heilbedarf entsteht. Die
+zweite Stufe bleibt gleichwohl richtig für alles darunter: Dort ist die Rangregel *Heilung vor
+Minderung* maßgeblich — gemindert wird, wo sonst geheilt werden müsste — und sie bringt seine
+Formulierung wörtlich hervor: Zwei Prozent drücken nur den unter die Schwelle, der ohnehin fast dort
+steht.
+
+**Die Barriere zählt in dieser Rechnung mit, und das steht nicht im Widerspruch zu A85.** Dort wurde
+sie aus der **Heilschwelle** entfernt, weil sie keine Gesundheit herstellt — ein Tank bei 40 % steht
+bei 40 %, ob eine Barriere läuft oder nicht. Hier wird eine andere Frage gestellt: ob **dieser**
+angekündigte Treffer durchschlägt. Genau das verhindert eine laufende Barriere, also gehört sie in
+den Puffer. Dieselbe Größe, zwei Fragen, zwei Antworten — nachzulesen in
+`07-heal-target-priority.md`, Abschnitt „Abgrenzung zur Schildanrechnung".
 
 | Baustein | Stand |
 |---|---|
@@ -102,7 +116,8 @@ mitgliedsgenaue Fassung steht unten als Chance.
 | Gelernte Fläche, noch nie gemessen | volle Gruppenminderung | **unverändert** |
 | Gemessene Bagatelle (2 %), Gruppe gesund | volle Gruppenminderung, Abklingzeit weg | keine Minderung, Abklingzeit bleibt |
 | Dieselbe Bagatelle, ein Mitglied knapp über der Heilschwelle | volle Gruppenminderung | volle Gruppenminderung |
-| Gemessener Raidwide (40 %) | volle Gruppenminderung | **unverändert** |
+| Gemessene Fläche ab 25 %, Gruppe gesund | volle Gruppenminderung | **unverändert** — die Obergrenze entscheidet ohne Blick auf die Gesundheit |
+| Gemessene Fläche zwischen 10 % und 25 %, Gruppe gesund | volle Gruppenminderung | keine Minderung, solange der Treffer niemanden unter die Heilschwelle drückt |
 | Savage-Training, zweiter Versuch | jede Fläche gleich behandelt | die kleinen kosten nichts mehr |
 | Nach dem Kampf, Blick in die Listenverwaltung | nichts zu sehen | je Aktion der gemessene Anteil, und welche davon eine Minderung gespart hat |
 
@@ -141,23 +156,33 @@ Fortschreibung bei **bekannten** Ids: `HashSet.Add` fasst eine vorhandene Id nic
 diesen Zusatz bekäme kein Alteintrag je ein Potential — die ganze hybride Form wäre für die 850
 vorhandenen Einträge wirkungslos.
 
-## Warum der Maßstab nicht in Schilden gemessen wird
+## Der Maßstab: der gemessene Anteil, mit belegter Obergrenze
 
-Der Auftraggeber misst in Schilden, und der Gedanke ist richtig: Ein Schild ist die Menge, die ein
-Einschlag ohne Wirkung überstehen kann. Die Übersetzung in eine messbare Größe scheitert aber an der
-Beleglage.
+**Ab einem Anteil von 0,25 der Maximalgesundheit ist die Fläche groß, unabhängig vom Zustand der
+Gruppe.** Darunter entscheidet der Vergleich mit dem Puffer. Damit ist die Zwei-Schwellen-Form der
+Vorgabe umgesetzt, und zwar ohne eine einzige gesetzte Zahl: Die Obergrenze ist der größte Schild,
+der seine Größe im eigenen Wirktext als Anteil nennt.
 
-| Barriere | Angabe im Wirktext | umrechenbar? |
+| Barriere | Angabe im Wirktext | verwendbar? |
 |---|---|---|
-| The Blackest Night (1234) | „absorbs damage totaling **25 % of target's maximum HP**" | **ja**, unmittelbar ein Anteil |
+| The Blackest Night (`ActionId.resx` 1234) | „absorbs damage totaling **25 % of target's maximum HP**" | **ja** — der Maßstab für „großer Schild" |
+| Shake It Off (`ActionId.resx` 1209), drei Duty-Aktionen (`DutyAction.resx` 1908, 4484, 6715) | 15 %, 10 %, 15 %, 10 % der Maximalgesundheit | **ja** — das untere Ende, siehe unten |
 | Divine Benison (1404) | „absorbs damage equivalent to a heal of **500 potency**" | nein — Potenz, ohne Heilattribut nicht umrechenbar |
 | Adloquium, Succor, Eukrasian Diagnosis/Prognosis | „nullifies damage equaling **% of the amount of HP restored**" | nein — der Prozentsatz fehlt im Text, der geheilte Betrag hängt am Heilattribut |
 
-**Genau eine Barriere nennt ihre Größe als Anteil der Maximalgesundheit.** Jeder weitere Schild als
-Maßstab wäre eine Setzung, und das Heilattribut ist von hier nicht auslesbar und je Spieler
-verschieden. Die Zwei-Schwellen-Form der Vorgabe ist deshalb nicht ohne erfundene Zahlen umsetzbar —
-und sie wird nicht gebraucht, weil der Vergleich mit dem Puffer dieselbe Frage ohne Trennwert
-beantwortet.
+**Das untere Ende braucht keine eigene Konstante.** „Was unterhalb eines geringen Schildes liegt,
+löst nur bei Gruppenmitgliedern mit wenig Gesundheit etwas aus" — das ist wörtlich die Frage, die der
+Puffer-Vergleich stellt, und er stellt sie mitgliedsgenau statt an einem Trennwert. Eine zweite
+Konstante träfe deshalb keine Entscheidung, die nicht ohnehin fiele.
+
+**Warum die Obergrenze nicht entbehrlich ist — der Beleg stammt aus dem Spiel.** Ohne sie fragt die
+Regel allein, ob durch den Treffer **Heilbedarf** entstünde. Das ist eine andere Frage als die nach
+der Größe des Treffers, und bei gesunder Gruppe lautet ihre Antwort fast immer nein: Bei einem Puffer
+von 1,0 gegen die Flächenheilschwelle von 0,65 wird erst oberhalb eines Anteils von 0,35 gemindert,
+den ein gewöhnlicher Raidwide nicht erreicht. Der Auftraggeber hat die Folge gemeldet — beim
+Beschwörer fielen Addle und Schimmerschild mal, mal nicht, abhängig davon, ob die Aktion schon
+bewertet war. Minderung soll den Schadensstrom drosseln, **bevor** Heilbedarf entsteht; sie an das
+Entstehen von Heilbedarf zu knüpfen, kehrt ihren Zweck um.
 
 ## Warum der Anteil und nicht die Potenz
 
@@ -279,9 +304,45 @@ Flächenaktion läuft; mit dem Potential wird daraus „bringt dieser Einschlag 
 die Heilschwelle". Damit ist auch die Bagatellfläche erledigt, die heute die Notfall-Vollheilung
 blockiert.
 
+**Die Güte der eigenen Schätzung wird hier nicht gemessen — und die Bauform dafür steht schon.**
+Der abgelegte Anteil ist eine Vorhersage: „so hart schlägt diese Aktion beim nächsten Mal“. Ob sie
+zutrifft, prüft niemand; die Höchstwert-Fortschreibung korrigiert nur nach oben und nie nach
+unten. `08-mitigation-synergy.md` löst dieselbe Frage für die Restzeitschätzung bereits:
+`ScoreTtkForecast` hält jede Vorhersage gegen den tatsächlichen Verlauf, `GetCorrectedTTK` teilt
+den Fehler heraus. Auf diese Messung übertragen heißt das: beim nächsten Einschlag derselben
+Aktion den gespeicherten Anteil gegen den beobachteten halten und den Fehler **selbst herausrechnen** —
+nicht anzeigen und auf eine Auswertung warten. Vorgabe des Auftraggebers: Eine Sonde, deren Auswertung
+über das Modell läuft, kostet je Messwert einen Kampf, einen Bericht und eine Runde; zulässig ist nur,
+was sich selbst nachsteuert. Das ist
+**nicht gebaut**, und der Nutzen ist nicht bloß Diagnose: Ein Anteil, der durch eine zufällig
+laufende Minderung zu niedrig gemessen wurde, bleibt heute zu niedrig, bis ein ungeminderter
+Treffer ihn anhebt.
+
+**Wer den Verbraucher baut, löst mehr als eine Frage.** Welche das sind und welcher Baustein wie viele
+offene Punkte zugleich schließt, steht in `08-mitigation-synergy.md`, Abschnitt „Was ein Baustein
+mehrfach trägt“.
+
 **Dieselbe Frage stellt sich bei den Tankbustern.** `HostileCastingTank` trägt sie wörtlich — wie hart
 schlägt dieser zu —, und `HostileCastingKnockback` und `HostileCastingStop` dieselbe Struktur. Der
 Messpfad ist derselbe; was fehlt, ist je Liste ein eigener Speicher und die passende Rechnung.
+
+**Er erlaubt die Wahl des Mittels, nicht nur die Entscheidung über das Ob — Vorgabe des
+Auftraggebers:** „man könnte es auch so anpassen, dass die geeignete schadensverringerung bzw. das
+geeignete schild bei dem eintreffenden schaden gewählt wird." Heute ist die Reihenfolge der
+Abwehraktionen je Job fest verdrahtet, und die gemessene Größe entscheidet allein, ob diese Kette
+überhaupt geöffnet wird. Mit einem Wert auf beiden Seiten ließe sich stattdessen zuordnen: der
+Zehn-Prozent-Tick zieht das billige Mittel, der Vierzig-Prozent-Raidwide das stärkste verfügbare.
+
+**Die Messgröße dieses Konzepts ist zugleich die Eingangsgröße für die Wahl des Mittels.** Abgelegt
+wird der **höchste** Anteil im Effektsatz, und das ist bei gleichem absolutem Schaden der Spieler mit
+der geringsten Maximalgesundheit — genau die Bezugsgröße, die die Vorgabe des Auftraggebers zur
+Deckung nennt. Für die Wahl muss die Messung also nicht geändert werden, nur ihr Verbraucher.
+
+**Die Entscheidungsordnung selbst steht in `08-mitigation-synergy.md`**, Vorgabe 5 und der Abschnitt
+„Die Antwort auf einen eingehenden Treffer": Deckung in Höhe des Treffers, Heilung zuerst, sobald die
+aktuelle Gesundheit nicht reicht, und Barriere samt Minderung zusätzlich, wo auch die volle nicht
+reicht. Sie gilt nicht nur für Flächen — dieselbe Frage stellt sich beim Tankbuster —, deshalb steht
+sie dort und nicht hier.
 
 ## Konsequenzen
 
@@ -297,3 +358,10 @@ Signatur. Die Ergänzung ist additiv; wer sie nicht liest, merkt nichts.
 `DataCenter.IsHostileCastingArea`, beides Upstream-Code mit regelmäßiger Aktivität. Beide sind klein
 und stehen als eigene Blöcke; `check_emergency_heal_threat.py` meldet in der CI, wenn ein Merge die
 Rechnung oder ihren Rückfall auf „mindern" entfernt.
+
+## Offene Punkte zu diesem Konzept
+
+Sie stehen in `TODO.md` und sind dort unter der Überschrift des Eintrags mit **Konzept:** auf dieses
+Dokument gekennzeichnet — an **einer** Stelle statt in zweien, damit keine Kopie altert.
+`.github/scripts/audit/check_concept_links.py` listet sie je Konzept und nennt zugleich, wie viele
+Einträge überhaupt keinem Konzept zugeordnet sind.
