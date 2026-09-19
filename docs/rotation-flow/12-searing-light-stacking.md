@@ -59,6 +59,12 @@ im Baum zieht die Zündung an den Phasenanfang. Verpasst die Aktion den ersten E
 er belegt ist, weil gerade kein Ziel in Reichweite steht, weil die Ausführungssperre kurz vor dem
 nächsten GCD greift —, fällt sie einfach beim nächsten freien Platz, und niemand holt das nach.
 
+**Das Messmittel dafür ist keine Neuentwicklung.** `DataCenter.AreaMitigationSkipped` vermerkt je
+Aktions-Id, wo eine Regel etwas hat ausfallen lassen, und die Diagnoseanzeige liest es — dieselbe
+Bauform beantwortet hier „wie viele Sekunden nach Phasenbeginn fiel Searing Light“. Was daran zu
+beachten ist, steht dort ebenfalls schon: **Aktionen zählen, nicht Aufrufe**, sonst misst der
+Zähler die Bildrate statt der Sache.
+
 **Wer den Platz nehmen kann, ist sehr wohl bestimmbar — nur nicht, wer es im Einzelfall tut.**
 `03-universal.md` führt die Zweigkette des Fähigkeitenpfads: Notfall, Unterbrechung, Reinigung,
 Rettungsrückgriff, Haltung, Rückstoßschutz, Positionierung, Flächen- und Einzelheilung, Tempo,

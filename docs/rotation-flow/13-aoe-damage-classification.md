@@ -304,6 +304,17 @@ Flächenaktion läuft; mit dem Potential wird daraus „bringt dieser Einschlag 
 die Heilschwelle". Damit ist auch die Bagatellfläche erledigt, die heute die Notfall-Vollheilung
 blockiert.
 
+**Die Güte der eigenen Schätzung wird hier nicht gemessen — und die Bauform dafür steht schon.**
+Der abgelegte Anteil ist eine Vorhersage: „so hart schlägt diese Aktion beim nächsten Mal“. Ob sie
+zutrifft, prüft niemand; die Höchstwert-Fortschreibung korrigiert nur nach oben und nie nach
+unten. `08-mitigation-synergy.md` löst dieselbe Frage für die Restzeitschätzung bereits:
+`ScoreTtkForecast` hält jede Vorhersage gegen den tatsächlichen Verlauf, `GetCorrectedTTK` teilt
+den Fehler heraus. Auf diese Messung übertragen hieße das: beim nächsten Einschlag derselben
+Aktion den gespeicherten Anteil gegen den beobachteten halten und den Fehler ausweisen. Das ist
+**nicht gebaut**, und der Nutzen ist nicht bloß Diagnose: Ein Anteil, der durch eine zufällig
+laufende Minderung zu niedrig gemessen wurde, bleibt heute zu niedrig, bis ein ungeminderter
+Treffer ihn anhebt.
+
 **Wer den Verbraucher baut, löst mehr als eine Frage.** Welche das sind und welcher Baustein wie viele
 offene Punkte zugleich schließt, steht in `08-mitigation-synergy.md`, Abschnitt „Was ein Baustein
 mehrfach trägt“.

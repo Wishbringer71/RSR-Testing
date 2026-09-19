@@ -32,7 +32,9 @@ SOURCE_DIRS = (Path('RotationSolver.Basic'), Path('RotationSolver'))
 
 # `public bool Name { get; set; } = true;` - the form both the configuration class and every
 # rotation file use for a switchable setting.
-DEFINITION = re.compile(r'public\s+bool\s+([A-Za-z0-9_]+)\s*\{\s*get;\s*set;\s*\}\s*=\s*(true|false)\s*;')
+DEFINITION = re.compile(
+    r'(?:public|private)\s+(?:readonly\s+)?bool\s+_?([A-Za-z][A-Za-z0-9_]*)'
+    r'(?:\s*\{\s*get;\s*set;\s*\})?\s*=\s*(true|false)\s*;')
 
 # The wordings the concepts actually use, German and English, in the sentence around the name.
 ON = r'(?:Standard\s+an|voreingestellt\s+an|Voreinstellung\s+an|on\s+by\s+default|Standard\s+ein)'
@@ -45,6 +47,24 @@ CLAIM = re.compile(r'`([A-Z][A-Za-z0-9_]{3,})`(?P<between>[^`]{0,200}?)(?P<value
 # unmatched rather than guess which one it meant.
 ANOTHER_NAME = re.compile(r'`[A-Z][A-Za-z0-9_]{3,}`')
 
+# The same ageing with numbers, and there are more of them: thresholds like HealthAreaSpell 0,65 or
+# BlackestNightMinHostiles 4 are quoted in the concepts and shipped in the code. German decimal
+# commas are the written form here, so both separators have to be read.
+# Three shapes carry a default, and missing the third made the check report a real setting as
+# unknown: `public float X { get; set; } = 0.15f;`, `private float X { get; set; } = 0.6f;` in a
+# rotation, and `private readonly float _x = 0.15f;` in the configuration, where a generator turns
+# the field into the property the tree reads.
+NUMERIC_DEFINITION = re.compile(
+    r'(?:public|private)\s+(?:readonly\s+)?(?:float|int|double)\s+_?([A-Za-z][A-Za-z0-9_]*)'
+    r'(?:\s*\{\s*get;\s*set;\s*\})?\s*=\s*([0-9]*\.?[0-9]+)f?\s*;')
+# Deliberately narrow: only the form the concepts use to STATE a default - the name, then the value
+# in brackets, with at most a qualifying word between them. A wider window read line numbers, action
+# ids and a model's own constants as claims; of twenty findings, twenty were noise. A check that has
+# to be filtered by its reader is not a check.
+NUMERIC_CLAIM = re.compile(
+    r'`([A-Z][A-Za-z0-9_]{3,})`(?P<between>[ ,]*)'
+    r'\((?:Vorgabe|Standard|Voreinstellung|Default)?\s*(?P<value>[0-9]+(?:[.,][0-9]+)?)\s*%?\)')
+
 # Concepts name methods in the same backticks as settings, and a method mentioned anywhere near the
 # word "default" is not a claim about a default. The first run reported four of them and nothing
 # else - a report made entirely of noise teaches its reader to skip it.
@@ -52,17 +72,19 @@ METHOD = re.compile(r'\b(?:bool|void|int|float|string|Task|IAction)\s+([A-Za-z0-
 
 
 def code_defaults(dirs=SOURCE_DIRS):
-    """Returns ({setting: 'true'|'false'}, {method names}) over the configuration class and the rotations."""
-    found, methods = {}, set()
+    """Returns ({bool setting: value}, {numeric setting: value}, {method names}) over the tree."""
+    found, numbers, methods = {}, {}, set()
     for directory in dirs:
         if not directory.is_dir():
             continue
         for path in directory.rglob('*.cs'):
             text = path.read_text(encoding='utf-8', errors='replace')
             for name, value in DEFINITION.findall(text):
-                found.setdefault(name, value)
+                found.setdefault(name[0].upper() + name[1:], value)
+            for name, value in NUMERIC_DEFINITION.findall(text):
+                numbers.setdefault(name[0].upper() + name[1:], float(value))
             methods.update(METHOD.findall(text))
-    return found, methods
+    return found, numbers, methods
 
 
 def claims(text):
@@ -74,6 +96,38 @@ def claims(text):
         stated = 'off' if re.search(OFF, m.group('value'), re.IGNORECASE) else 'on'
         out.append((m.group(1), stated))
     return out
+
+
+def numeric_claims(text):
+    """Returns [(setting, value)] for numbers stated next to a setting name."""
+    out = []
+    for m in NUMERIC_CLAIM.finditer(text):
+        if ANOTHER_NAME.search(m.group('between')):
+            continue
+        out.append((m.group(1), float(m.group('value').replace(',', '.'))))
+    return out
+
+
+def check_numbers(concept_text, numbers, methods=frozenset()):
+    """Returns (wrong, unknown) for the numeric claims of one document.
+
+    A tolerance of one hundredth: the concepts write 0,65 for 0.65f, and a value the code carries as
+    a percentage of a percentage is not worth a failing run over the last digit.
+    """
+    wrong, unknown = [], []
+    for name, stated in numeric_claims(concept_text):
+        actual = numbers.get(name)
+        if actual is None:
+            if name in methods:
+                continue
+            unknown.append((name, stated))
+        else:
+            # A concept writes "Vorgabe 60 %" for a code value of 0.6 - the same number in the
+            # unit the reader thinks in. Comparing them literally would report every ratio.
+            candidates = {stated, stated / 100.0}
+            if not any(abs(actual - c) <= 0.01 for c in candidates):
+                wrong.append((name, stated, actual))
+    return wrong, unknown
 
 
 def check(concept_text, defaults, methods=frozenset()):
@@ -120,14 +174,30 @@ def selftest():
     if unknown:
         raise AssertionError('a method name was reported as a setting: %s' % unknown)
 
+    numbers = {'AlphaThreshold': 0.65, 'BetaCount': 4.0}
+    if check_numbers('`AlphaThreshold` (0,65)', numbers) != ([], []):
+        raise AssertionError('a correct numeric claim was reported')
+    nwrong, _ = check_numbers('`AlphaThreshold` (0,40)', numbers)
+    if not any(n == 'AlphaThreshold' for n, _, _ in nwrong):
+        raise AssertionError('a numeric claim contradicting the code went unnoticed')
+    if check_numbers('`GammaRatio` (60 %)', {'GammaRatio': 0.6}) != ([], []):
+        raise AssertionError('a percentage stated for a ratio was reported as wrong')
+    nwrong, _ = check_numbers('`BetaCount` (Vorgabe 4)', numbers)
+    if nwrong:
+        raise AssertionError('an integer claim in the German wording was rejected: %s' % nwrong)
+    _, nunknown = check_numbers('`SurveyStuns` liefert 3', numbers, {'SurveyStuns'})
+    if nunknown:
+        raise AssertionError('a method name was reported as a numeric setting')
+
     print('self-test ok: a matching claim passes; a contradicting one is caught in both wordings; '
           'a claim\n  about an unknown setting is reported; a sentence naming two settings, and one '
-          'naming a method,\n  are both left alone.')
+          'naming a method,\n  are both left alone; the same four cases hold for the numeric '
+          'thresholds.')
 
 
 def main():
     selftest()
-    defaults, methods = code_defaults()
+    defaults, numbers, methods = code_defaults()
     if not defaults:
         print('no bool settings found in the source tree - the check cannot say anything')
         return 1
@@ -136,12 +206,16 @@ def main():
     for path in sorted(CONCEPT_DIR.glob('*.md')) + [d for d in EXTRA_DOCS if d.exists()]:
         text = path.read_text(encoding='utf-8')
         counted += len(claims(text))
+        counted += len(numeric_claims(text))
         wrong, unknown = check(text, defaults, methods)
         wrong_all += [(str(path), *w) for w in wrong]
         unknown_all += [(str(path), *u) for u in unknown]
+        nwrong, nunknown = check_numbers(text, numbers, methods)
+        wrong_all += [(str(path), n, s, a) for n, s, a in nwrong]
+        unknown_all += [(str(path), n, s) for n, s in nunknown]
 
-    print('%d bool settings in the tree, %d statements about defaults in the concepts and the '
-          'release description.' % (len(defaults), counted))
+    print('%d bool and %d numeric settings in the tree, %d statements about defaults in the '
+          'concepts\nand the release description.' % (len(defaults), len(numbers), counted))
 
     if unknown_all:
         print('\nNamed with a default, but no such setting in the code (report):')
