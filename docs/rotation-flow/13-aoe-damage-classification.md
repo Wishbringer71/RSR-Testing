@@ -307,6 +307,23 @@ ein schaden 70% verursacht von maxhp des geringsten spielers, dann sollte das sc
 sein, optimal 70%." Gesucht ist also **Deckung**: Der Anteil des Mittels soll den Anteil des Treffers
 erreichen, nicht übertreffen — und wo kein Mittel ihn erreicht, das stärkste verfügbare.
 
+*Die Ausnahme und ihre Rangfolge, ebenfalls seine Vorgabe:* „ausnahme, die aktuelle hp liegt unter
+dem schadenswert. dann wäre aber eine heilung sinnvoll bis max maxhp. wenn dann die hp unter dem
+schadenswert liegt, sollte zusätzlich geschildet werden. bzw. der schadensoutput reduziert." Damit
+ist die Entscheidung dreistufig, und sie folgt seiner stehenden Ordnung **Heilung vor Minderung**
+(Konzepte 08 und 10):
+
+| Lage des schwächsten Mitglieds | Antwort |
+|---|---|
+| Treffer kleiner als die **aktuelle** Gesundheit | Deckung in Höhe des Treffers; bei kleinen Werten auch gar keine |
+| Treffer erreicht oder übersteigt die aktuelle Gesundheit, bleibt aber unter der maximalen | **zuerst heilen**, Ziel ist die Maximalgesundheit — danach greift wieder die Deckungsregel |
+| Treffer übersteigt auch die maximale Gesundheit | Heilung allein rettet nicht: **zusätzlich** Barriere und Minderung, bis Treffer minus beides unter der erreichbaren Gesundheit liegt |
+
+Die dritte Zeile ist der Fall, in dem sich Barriere und Minderung **addieren** müssen statt zu
+konkurrieren, und sie ist zugleich der einzige, in dem das stärkste Mittel ohne Rücksicht auf seine
+Abklingzeit richtig ist. Die erste Zeile ist der Regelfall und der Grund für den ganzen Baustein:
+Dort wird heute eine Abklingzeit verbraucht, die später fehlt.
+
 **Die Bezugsgröße dafür liegt bereits richtig vor.** Abgelegt wird der **höchste** Anteil im
 Effektsatz, und das ist bei gleichem absolutem Schaden der Spieler mit der geringsten
 Maximalgesundheit — genau der, den seine Regel nennt. Die Messung muss dafür also nicht geändert

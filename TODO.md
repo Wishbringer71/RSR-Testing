@@ -647,6 +647,8 @@ Schritt 3 aus `docs/rotation-flow/08-mitigation-synergy.md`. Die Schritte 1 und 
 
 **Vorgabe des Auftraggebers:** „man könnte es auch so anpassen, dass die geeignete schadensverringerung bzw. das geeignete schild bei dem eintreffenden schaden gewählt wird." Mit seiner Rechenregel: „wenn schaden nur 10% auf spieler mit geringster maxhp verursacht, dann reicht ein schild, was 10% blockiert. oder sogar weniger bis kein schild. wenn ein schaden 70% verursacht von maxhp des geringsten spielers, dann sollte das schild möglichst hoch sein, optimal 70%."
 
+**Die Regel ist dreistufig** (seine Ergänzung): Liegt der Treffer unter der **aktuellen** Gesundheit des schwächsten Mitglieds, wird in Höhe des Treffers gedeckt — bei kleinen Werten auch gar nicht. Erreicht er sie, wird **zuerst geheilt**, Ziel ist die Maximalgesundheit. Übersteigt er auch die maximale Gesundheit, reicht Heilung nicht: Dann sind Barriere **und** Minderung zusätzlich zu setzen, bis der Rest darunter liegt. Das folgt seiner stehenden Ordnung Heilung vor Minderung.
+
 **Ausgangslage:** Die Größe des eintreffenden Treffers liegt als Anteil je Aktions-Id vor (Konzept 13), und zwar als höchster Anteil im Effektsatz — das ist der Spieler mit der geringsten Maximalgesundheit, also genau seine Bezugsgröße. Heute entscheidet dieser Wert nur, **ob** die Abwehrkette geöffnet wird; die Reihenfolge innerhalb der Kette ist je Job fest verdrahtet.
 
 **Was zum Bauen fehlt:** je Abwehraktion ein belegter Wert — für Minderungen der Prozentsatz aus dem eigenen Wirktext, für Barrieren der Anteil (25 %, 15 %, 10 % sind belegt). Erzeugbar aus den Ressourcen, nicht handzuführen.
