@@ -61,6 +61,18 @@ jobs:
             }
           }
 
+          # The release description is a file in this repository and is handed to the API below,
+          # not pasted into the release form. Checked here rather than in the publish step: a
+          # missing or empty file must stop the run BEFORE action-gh-release creates the tag,
+          # because a tag cannot be deleted from a restricted environment.
+          $note = 'docs/fork-changes-in-play.md'
+          if (-not (Test-Path $note)) {
+            throw "$note is missing - it is the release description and the release would ship empty."
+          }
+          if ((Get-Item $note).Length -eq 0) {
+            throw "$note is empty - the release would ship without a description."
+          }
+
           "tag=$tag" | Out-File -Append -FilePath $Env:GITHUB_ENV
           "numericVersion=$numericVersion" | Out-File -Append -FilePath $Env:GITHUB_ENV
           "packageVersion=$packageVersion" | Out-File -Append -FilePath $Env:GITHUB_ENV
@@ -93,3 +105,8 @@ jobs:
           # here and now, on the commit that was just built.
           tag_name: ${{ env.tag }}
           target_commitish: ${{ github.sha }}
+          # The description comes from the built commit itself, so it always matches what shipped
+          # and nobody has to paste it. That also takes the release form's character counter out
+          # of the path - it was what silently truncated a pasted description mid-section, while
+          # the API takes the body as a whole.
+          body_path: docs/fork-changes-in-play.md
