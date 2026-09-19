@@ -131,6 +131,3 @@ reach you — a configuration already in use keeps its stored value.
 | Nine dispatch overrides | Defensive and healing calls silently continued in the wrong chain |
 | Restricted DoT guard | Targets excluded from DoTs got them anyway |
 | Movement abilities | Double call, in the wrong order against the duty rotation |
-
-Open points are listed in [`TODO.md`](TODO.md), completed reviews and withdrawn claims in
-[`AUDIT_LOG.md`](AUDIT_LOG.md).
