@@ -38,9 +38,9 @@ Wiederkehrende Rollen (in allen Jobs dieselbe Bedeutung):
 
 | Rolle | Bedeutung |
 |---|---|
-| `Kurzschluss` | verlässt die Methode sofort, bevor irgendeine Rotationslogik läuft |
+| **Kurzschluss** | verlässt die Methode sofort, bevor irgendeine Rotationslogik läuft |
 | `Sustain` | proaktives Aufrechterhalten eines eigenen Effekts, kein Reagieren |
-| `Ressource` | Verbrauch/Overcap-Schutz einer Job-Ressource (Lily, Chakra, Aether …) |
+| **Ressource** | Verbrauch/Overcap-Schutz einer Job-Ressource (Lily, Chakra, Aether …) |
 | `Burst` | nur innerhalb eines Burst-Fensters relevant |
 | `DoT` | Aufrechterhalten eines Ziel-Debuffs |
 | `AoE` | Zweig, der an Gegneranzahl gekoppelt ist |

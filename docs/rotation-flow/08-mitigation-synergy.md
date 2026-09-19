@@ -727,11 +727,11 @@ gegnerischen Treffer aus, summiert die Schadensanteile und legt sie über
 bereits erfasst — gebraucht wird nur eine Auswertung je Kampf statt eines gleitenden
 Fensters.
 
-| Kennzahl | Quelle | Aussage |
+| Kennzahl | Quelle — **keine davon ist gebaut**, die Namen sind Vorschläge | Aussage |
 |---|---|---|
 | Erlittener Schadensanteil je Pull | `_damages`, summiert zwischen Kampfbeginn und -ende | Das Zielkriterium |
 | Genutzte Betäubungsdauer | `StunCoverage` über die Zeit integriert | Ob die 7 s ausgeschöpft wurden |
-| Überlappungsanteil | Anteil der Betäubungszeit mit bereits erhöhter `MitigationFraction` | Ob Posten 2 greift |
+| Überlappungsanteil | Anteil der Betäubungszeit, in der die Minderungsquote bereits erhöht **wäre** — eine Größe dieses Namens gibt es nicht | Ob Posten 2 greift |
 | DoT-Laufzeitanteil | Zeit mit aktivem DoT geteilt durch Kampfdauer | Ob der DoT-Grund wirkt |
 
 **Versuchsanordnung.** Dieselbe Instanz, derselbe Pull, Option abwechselnd an und aus,

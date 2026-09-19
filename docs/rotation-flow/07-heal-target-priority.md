@@ -248,7 +248,7 @@ sondern die vorausberechnete Gesundheit selbst — siehe „Die Stufen".
 als Ganzes, `DamageRec` trägt Zeitpunkt und Anteil, **kein Ziel**, und ihr Fenster von fünf
 Millisekunden sieht bei einem Bild von rund sechzehn fast immer nichts.
 
-**Die Aggro steht ebenfalls.** `DataCenter.AggroedMembers` wird in `TargetUpdater.UpdateLists` einmal
+**Die Aggro steht ebenfalls.** `DataCenter.TargetedPartyMembers` wird in `TargetUpdater.UpdateLists` einmal
 je Bild aus den `TargetObjectId` der Gegner gefüllt — ein Durchlauf über die Gegner, danach ist „wird
 angegriffen" eine Nachschlageoperation. Gelesen wird sie bisher von `ObjectHelper.IsUnderThreat`,
 nicht von der Zielwahl: Sie beantwortet die Frage nach dem **Mittel**, die Klassen 2 und 3 der
