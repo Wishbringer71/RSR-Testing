@@ -113,6 +113,13 @@ jobs:
       - name: Check the emergency heal asks whether the target is in danger
         run: python3 .github/scripts/audit/check_emergency_heal_threat.py
 
+      # The release description is pasted into a field that counts characters and stops accepting
+      # them. The 18611-character version ran the counter to "0 remaining" inside section 7, and
+      # everything after that was dropped without a word - the release carried a text ending
+      # mid-sentence. The document grows with every pass, the field does not.
+      - name: Check the release description still fits the release form
+        run: python3 .github/scripts/audit/check_release_note_size.py
+
       # The sibling of the check below: that one asks whether a setting is read at all, this one
       # whether the user can tell what it does. A fork setting with no explanation leaves them
       # guessing what a slider does to their fight, and for the rotation settings a missing tooltip
