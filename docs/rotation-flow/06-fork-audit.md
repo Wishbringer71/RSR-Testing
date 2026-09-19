@@ -10,6 +10,13 @@ Stand: `upstream/main` = `f5c8432`, Branch `claude/rotation-flow-refactor`.
 Alles unten ist gegen genau diesen Stand gemessen und mit
 `git diff upstream/main` reproduzierbar.
 
+**Dieses Dokument beschreibt den ersten Durchgang und wird nicht fortgeschrieben.** Seine
+Zahlen — 4474 Zeilen Diff, rund 500 Anweisungen über 43 Dateien — gelten für `f5c8432` und
+für keinen späteren Stand; der Gegenstand ist die damalige Prüfung, nicht der heutige
+Abstand. **Der aktuelle Abstand zum Original steht in `docs/fork-changes-in-play.md`,**
+gegliedert nach dem, was im Kampf geschieht. Was hier steht, bleibt gültig als Nachweis
+dessen, was damals geprüft und was daraufhin zurückgebaut wurde.
+
 ---
 
 ## 1 · Der Umfang, richtig gezählt
