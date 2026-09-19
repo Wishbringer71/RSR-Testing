@@ -526,8 +526,16 @@ public sealed class SMN_Reborn : SummonerRotation
 		}
 
 		// The big summon waits for Searing Light, because the buff has to be up BEFORE the burst deals
-		// its first damage - a buff that lands one weave slot into the phase leaves the strongest GCDs
-		// of the cycle unbuffed, and the demi GCDs carry 947 to 1217 potency against 632 outside.
+		// its first damage. Read from the effect texts (ActionId.resx): the summon itself states no
+		// potency at all - it enters Lightwyrm Trance and Solar Bahamut then "executes Luxwave
+		// automatically on the targets attacked by you". So the first damage of the phase is the first
+		// GCD after the summon, Umbral Impulse at 640 plus its automatic Luxwave at 160.
+		//
+		// That is why waiting is the cheaper error. Missing the buff costs 5% of every GCD it misses,
+		// 40 potency on the first one alone and again on each that follows, plus the same share for
+		// every nearby party member. Waiting costs a summon one GCD later: the trance runs 15s inside
+		// a 20s buff, so the phase still fits whole, and the GCD spent waiting is a filler rather than
+		// a loss.
 		//
 		// Three arms, and the last two are what keep the wait from costing the phase itself: a charge
 		// that is already spent is not coming back inside this window, and below level 66 there is no

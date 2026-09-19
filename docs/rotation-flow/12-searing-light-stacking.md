@@ -73,6 +73,19 @@ vollständig ab, und der eingeplante Überhang bleibt erhalten. Damit die Beschw
 ausfällt, nimmt ihre Bedingung einen **laufenden** Buff als Bereitschaft an — der Bahamut-Zweig las sie
 schon immer so, der Solar-Zweig nicht.
 
+**Wann der erste Burstschaden entsteht, ist am Wirktext belegt — und es ist nicht die Beschwörung.**
+`Summon Solar Bahamut` (`ActionId.resx`, 36992) nennt **keine Potenz**: „Enters Lightwyrm Trance and summons
+Solar Bahamut to fight your target. Solar Bahamut will execute Luxwave automatically on the targets
+attacked by you after summoning.“ Der Beschwörungs-GCD richtet also nichts aus; Luxwave (160) folgt den
+**eigenen** Angriffen. Der erste Schaden der Phase ist damit der erste GCD danach — Umbral Impulse (640)
+samt automatischem Luxwave, zusammen 800 Potenz.
+
+**Daraus folgt, welcher Fehler der billigere ist.** Der Buff verfehlt — 5 % auf jeden GCD, den er nicht
+mehr deckt: 40 Potenz allein auf den ersten, und dasselbe noch einmal für jedes nahe Gruppenmitglied.
+Die Beschwörung wartet — sie fällt einen GCD später, die Trance läuft 15 s innerhalb eines 20-s-Buffs,
+die Phase passt also weiterhin vollständig hinein, und der warte-GCD ist ein Füller, kein Verlust.
+Deshalb wartet die Beschwörung.
+
 **Die Beschwörung wartet auf den Buff, statt ihn nur zuzulassen** — Vorgabe des Auftraggebers: Searing
 Light muss aktiv sein, **bevor** der erste Burstschaden entsteht. Umgesetzt an der Stelle, die
 tatsächlich feuert: Der Bahamut-Aufruf stand zweimal da, einmal ohne Bedingung und einmal mit genau
