@@ -216,8 +216,8 @@ public sealed class SMN_Reborn : SummonerRotation
 		// windows carry 78% of a Solar window and are the natural place for a second caster.
 		//
 		// Outside a summon the charge goes out only when every burst phase is held by somebody who
-		// keeps coming back, and then into Ifrit: an intermediate block carries 632 potency per GCD
-		// at its best against 947 to 1217 inside a demi, so leaving a burst phase costs more than
+		// keeps coming back, and then into Titan: an intermediate block carries at best 632 potency
+		// per GCD against 947 to 1217 inside a demi, so leaving a burst phase costs more than
 		// firing early gains. Skipping a chance costs nothing by comparison - the charge stays up,
 		// its recast only starts when it is spent, and the next burst phase is at most one minor
 		// window away.
@@ -228,12 +228,22 @@ public sealed class SMN_Reborn : SummonerRotation
 		// narrow rule with two Summoners on fully drifted rotations. The book decides the same thing
 		// from the situation instead of from the buff timer.
 		//
-		// Ifrit specifically, not "any gap": it is the strongest of the three primal blocks. The
-		// limit is that a rotation which skips Ifrit would leave the charge unspent in this state;
-		// the default order summons it every cycle.
+		// Titan specifically, not "any gap" and not Ifrit. Ifrit is the strongest block on paper -
+		// 632 potency per GCD against Titan's 464 - but that number assumes Crimson Cyclone, and
+		// Crimson Cyclone is a gap closer into melee range. The owner does not take it: leaving a
+		// safe position for damage is out, and that decision is recorded (concept 12, "Die
+		// Voreinstellung bleibt, und das ist die Entscheidung des Auftraggebers"; CLAUDE.md names
+		// the same case). Without the gap closer the ranking inverts inside the buff window - Titan
+		// three attacks for 1300 potency, Ifrit one to two for 800 to 1420 - and Titan's attacks are
+		// instant while Ifrit's second slot waits on Ruby Rite's cast time. Titan is also the only
+		// block whose value depends on neither position nor an open cast, which is what "most
+		// flexible" meant in that decision.
+		//
+		// Waiting for Titan rather than firing into Ifrit costs nothing: the charge stays up and its
+		// recast only starts when it is spent.
 		var mayFireSearingLight = burstInSolar
 			|| (AnotherSummonerInParty
-				&& (inBigInvocation || (AllSearingPhasesHeld && IfritActive)));
+				&& (inBigInvocation || (AllSearingPhasesHeld && TitanActive)));
 
 		if (mayFireSearingLight)
 		{

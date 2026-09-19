@@ -112,9 +112,10 @@ costing no cooldown while the party is healthy.
 
 - **Summoner.** Searing Light is tied to the burst phase — Solar Bahamut, or Bahamut at lower
   levels; with a second Summoner in the party it falls back to the big summon, and across all
-  established phases to Ifrit. `PreferTitanWhileMoving` (**off by default**) brings Titan
-  forward while you are moving, because Topaz Rite and its follow-ups are instant while
-  Garuda and Ifrit lose GCDs on the move. Titan is only brought forward, never skipped.
+  established phases to Titan — not Ifrit, whose higher figure on paper assumes a gap closer
+  into melee range. `PreferTitanWhileMoving` (**off by default**) brings Titan forward while
+  you are moving, because Topaz Rite and its follow-ups are instant while Garuda and Ifrit
+  lose GCDs on the move. Titan is only brought forward, never skipped.
 - **White mage, Holy.** Three separately switchable rules: do not overwrite the stun while it
   is still running (`StretchHolyStun`, **off by default**); hold Holy while the dark knight's
   barrier is meant to be filled; and hold Holy while more than half the enemies in radius are

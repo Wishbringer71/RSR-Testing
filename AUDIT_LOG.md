@@ -2843,6 +2843,20 @@ Allgemeine Form, in `CLAUDE.md` aufgenommen: Wo ein fremder Schutzmechanismus al
 **Erreichter Prüfgrad:** statische Prüfung an Quelltext und Ressourcen, drei neue Prüfläufe, Zeilen- und Verweisprüfung, Strukturlauf. Inhaltliche Widerspruchsfreiheit zwischen zwei Konzepten bleibt unprüfbar durch ein Skript; gefunden wurde sie in diesem Durchgang durch Kreuzlesen, und genau das ist der Teil, den kein Riegel ersetzt.
 
 ---
+
+### A112 · Das Ausweichfenster von Searing Light stand auf Ifrit statt auf Titan (19.09.2026)
+
+**Anlass:** Der Auftraggeber hat darauf hingewiesen, dass das Zündfenster längst entschieden ist — volle Abdeckung der großen Beschwörung, Ausweichen nur bei mehreren Beschwörern, und dort auf Titan, weil Ifrit über Crimson Cyclone heranspringt und damit in Flächenschaden laufen kann.
+
+**Gemessen, und er hat recht.** `SMN_Reborn.AttackAbility` band das Ausweichfenster an `IfritActive`, der Kommentar begründete es mit „it is the strongest of the three primal blocks“ — 632 Potenz je GCD gegen Titans 464. Genau diese Zahl setzt aber den Anlauf voraus. Konzept 12 hat das durchgerechnet und die Entscheidung festgehalten: **ohne** Anlauf trägt Titan im Bufffenster drei Attacken zu 1300 Potenz, Ifrit eine bis zwei zu 800 bis 1420, und Titans Attacken sind sofort wirksam, während Ifrits zweiter Platz an der Gießzeit von Ruby Rite hängt. Wortlaut dort: „Die Voreinstellung bleibt, und das ist die Entscheidung des Auftraggebers … der Anlauf von Crimson Cyclone in eine Burstphase hinein ist ein Positionsrisiko, das 0,01 Prozent Schaden nicht rechtfertigen.“ `CLAUDE.md` führt denselben Fall als Kalibrierungsbeleg.
+
+**Behoben:** Bedingung auf `TitanActive`, Kommentar auf die tragende Begründung umgestellt (ohne Anlauf kehrt sich die Rangfolge um; Warten kostet nichts, weil die Ladung stehen bleibt und die Erholzeit erst beim Zünden beginnt). Nachgezogen: die Umsetzungstabelle in Konzept 12, die die alte Bedingung wörtlich führte, und die Release-Beschreibung, die „across all established phases to Ifrit“ sagte — sie hat den Code beschrieben statt der Entscheidung.
+
+**Im Kampf:** Bei mehreren Beschwörern und belegten Burstphasen fällt Searing Light jetzt im Titan-Block. Der Beschwörer bleibt dabei auf Distanz; bisher zielte die Regel auf den Block, dessen Wert nur mit dem Sprung in den Nahkampf zustande kommt.
+
+**Erreichter Prüfgrad:** statische Prüfung, Strukturlauf, Compile im Prüflauf des Zweigs. Ob die Regel im Spiel greift, ist unverändert offen — sie betrifft nur Gruppen mit mindestens zwei Beschwörern.
+
+---
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -3090,3 +3104,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 
 ---
 | C67 | Konzept 13: „Genau eine Barriere nennt ihre Größe als Anteil der Maximalgesundheit. […] Die Zwei-Schwellen-Form der Vorgabe ist deshalb nicht ohne erfundene Zahlen umsetzbar — und sie wird nicht gebraucht, weil der Vergleich mit dem Puffer dieselbe Frage ohne Trennwert beantwortet" | Beide Hälften falsch. **Erstens** nennen fünf Barrieren ihre Größe als Anteil: 25 % (The Blackest Night, `ActionId.resx` 1234), 15 % (Shake It Off, 1209), 15 % und 10 % und 10 % (`DutyAction.resx` 4484, 1908, 6715). Die Erhebung war unvollständig, nicht die Beleglage dünn — derselbe Fehler wie bei „Abtausch steht nicht im Baum". **Zweitens** beantwortet der Puffer-Vergleich eine **andere** Frage: ob Heilbedarf entstünde, nicht ob der Treffer groß ist. Bei gesunder Gruppe verneint er fast jeden Raidwide, und damit fiel die Gruppenminderung genau dort aus, wo sie verhindern soll, dass Heilbedarf überhaupt entsteht. Widerlegt durch die Spielbeobachtung des Auftraggebers | Obergrenze aus dem belegten Wirktext eingezogen (A108), Konzept 13 im Urteilsstil eingearbeitet: Der Abschnitt stellt jetzt den geltenden Maßstab voran statt der verworfenen Alternative |
+| C68 | Als Weg für den Searing-Light-Verzug drei Optionen vorgelegt, darunter „Zündfenster verengen“, und dazu „erst messen, dann entscheiden“ als Empfehlung | Beides falsch. **Erstens** ist das Zündfenster entschieden und in Konzept 12 samt Rechnung begründet; es ihm als offene Option zurückzugeben, ist dieselbe Verschiebung wie eine Revision ohne ihn, nur andersherum — und sie hat den Widerspruch verdeckt, dass der Code gegen diese Entscheidung auf Ifrit stand (A112). **Zweitens** ist eine Sonde, die nur sammelt, kein zulässiges Mittel: Seine Vorgabe lautet, die Entscheidung fällt im Code zur Laufzeit, also hat die Sonde zu erheben **und sofort zu bewerten**. Eigener Anteil: Ich habe das Konzept nicht gelesen, bevor ich Optionen gebildet habe — die Regel dafür steht in `CLAUDE.md` seit dem Fall der Totenerweckung | Bedingung auf Titan zurückgeführt (A112), beide Vorgaben in `CLAUDE.md` aufgenommen, der TODO-Eintrag trennt jetzt Entschiedenes von Offenem |
