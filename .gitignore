@@ -13,3 +13,7 @@ RotationSolver.sln.DotSettings.user
 
 # Leftovers from SDK upgrade tooling
 *.csproj.Backup.tmp
+
+# Python bytecode: every `git add` on a script directory picks it up otherwise.
+__pycache__/
+*.pyc

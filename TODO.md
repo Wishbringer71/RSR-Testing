@@ -406,6 +406,14 @@ und `GCDTime(uint gcdCount = 0, float offset = 0)` liefert `(DefaultGCDTotal * 0
 
 **Empfehlung: erfassen, nicht bearbeiten.** Keiner der vier Jobs steht im Nutzungsprofil des Auftraggebers, und die Entscheidung „Vorrang gemeint oder nicht" gehört zum Autor der Rotation; Adressat ist der Upstream.
 
+### Kompilierter Python-Bytecode liegt im Versionsbestand · U
+
+`git ls-files .github/scripts/audit/__pycache__/` nennt vier `.cpython-311.pyc`-Dateien zu `check_action_names`, `scan6`, `scan13` und `searing_light_coverage`. Sie sind an vier verschiedenen Tagen zwischen dem 6. und 13.09. eingecheckt worden (`6ec26ca20`, `2ae60ead3`, `92bad597e`, `b508c00eb`), jedes Mal als Beifang eines `git add` auf das Verzeichnis. Ursache war ein fehlender Python-Eintrag in `.gitignore`: Ohne ihn nimmt jedes Verzeichnis-`add` den Bytecode mit. Der Eintrag ist ergänzt und verhindert **neue** Fundstellen; auf bereits versionierte Dateien wirkt eine Ignorierregel nicht.
+
+**Wirkung im Spiel: keine.** CPython vergleicht Zeitstempel und Größe der Quelle und erzeugt ein veraltetes `.pyc` neu, ein falscher Stand kann also nicht ausgeführt werden. Betroffen ist die Upstream-Pflege: Vier Binärdateien ohne Quellwert erzeugen bei jedem Merge und jeder Dateidurchsicht Rauschen.
+
+**Auflösung:** die vier Dateien aus dem Versionsbestand nehmen (`git rm --cached`). Das ist eine Löschung im Versionsbestand und damit freigabepflichtig; ohne Freigabe bleiben sie liegen.
+
 ## Technische Schuld
 
 ### Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen · N, R
