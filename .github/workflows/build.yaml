@@ -3,6 +3,11 @@ on:
   pull_request:
     branches:
       - main
+  # Manual trigger, because the pull_request event leaves main itself unbuilt: once a branch is
+  # merged there is no further run, and the only evidence that main compiles is that its tree
+  # equals a tree some pull request run already built. That holds, but it stops holding the moment
+  # anything lands on main directly.
+  workflow_dispatch:
 jobs:
   DispatchChain:
     # Separate from Build: needs no .NET and no Dalamud, so it reports in
