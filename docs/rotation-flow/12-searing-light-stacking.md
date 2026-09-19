@@ -65,6 +65,19 @@ Bauform beantwortet hier „wie viele Sekunden nach Phasenbeginn fiel Searing Li
 beachten ist, steht dort ebenfalls schon: **Aktionen zählen, nicht Aufrufe**, sonst misst der
 Zähler die Bildrate statt der Sache.
 
+**Behoben ist der Teil, der ohne Laufzeitmessung zu beheben war** (A114): Die Zündung wird jetzt schon
+im Einschiebeplatz **vor** der großen Beschwörung angeboten. `burstInSolar` wird erst wahr, wenn die
+Demi steht — der früheste Platz, den diese Bedingung anbieten konnte, lag also **hinter** dem
+Beschwörungs-GCD. Zwanzig Sekunden Buff gegen fünfzehn Sekunden Demi decken die Phase auch von davor
+vollständig ab, und der eingeplante Überhang bleibt erhalten. Damit die Beschwörung dadurch nicht
+ausfällt, nimmt ihre Bedingung einen **laufenden** Buff als Bereitschaft an — der Bahamut-Zweig las sie
+schon immer so, der Solar-Zweig nicht.
+
+**Keine Sonde, und das ist die Vorgabe des Auftraggebers:** Eine Messung, deren Auswertung über das
+Modell läuft, kostet je Wert einen Kampf, ein Ablesen, einen Bericht und eine Runde. Diese
+Entscheidung fällt stattdessen im Code, aus dem, was der GCD-Pfad ohnehin schon als nächste Aktion
+gewählt hat.
+
 **Wer den Platz nehmen kann, ist sehr wohl bestimmbar — nur nicht, wer es im Einzelfall tut.**
 `03-universal.md` führt die Zweigkette des Fähigkeitenpfads: Notfall, Unterbrechung, Reinigung,
 Rettungsrückgriff, Haltung, Rückstoßschutz, Positionierung, Flächen- und Einzelheilung, Tempo,

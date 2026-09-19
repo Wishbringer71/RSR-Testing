@@ -248,7 +248,22 @@ public sealed class SMN_Reborn : SummonerRotation
 			CrimsonCyclonePvE.Target.Target?.DistanceToPlayer() <= CrimsonCycloneDistance;
 		var fallbackBlockIsWorthIt = TitanActive || (IfritActive && standingAtTheTarget);
 
+		// The phase is entered with the buff already up, not a weave slot later. `burstInSolar` only
+		// turns true once the demi stands, so the earliest slot it can offer is the one AFTER the
+		// summon GCD - and if that slot is taken, the charge falls somewhere inside the phase instead
+		// of at its start. Reported from play twice. Searing Light runs 20s against a 15s demi, so
+		// firing it in the slot BEFORE the summon covers the whole phase and keeps the overhang the
+		// rotation already plans for; the summon itself is not delayed, because its condition accepts
+		// a running buff as readiness.
+		//
+		// No probe and no later analysis: the decision is made here, from what the GCD path has
+		// already chosen as the next action.
+		var burstAboutToStart = SummonSolarBahamutPvE.EnoughLevel
+			? nextGCD.IsTheSameTo(true, SummonSolarBahamutPvE)
+			: nextGCD.IsTheSameTo(true, SummonBahamutPvE);
+
 		var mayFireSearingLight = burstInSolar
+			|| burstAboutToStart
 			|| (AnotherSummonerInParty
 				&& (inBigInvocation || (AllSearingPhasesHeld && fallbackBlockIsWorthIt)));
 
@@ -518,7 +533,13 @@ public sealed class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
-		if (IsBurst && !SearingLightPvE.Cooldown.IsCoolingDown && SummonSolarBahamutPvE.CanUse(out act))
+		// "Searing Light is ready for this phase" is the point of the condition, and a buff that is
+		// already running satisfies it just as well as a charge that is still up. Without the second
+		// arm, firing Searing Light into the weave slot ahead of the summon would block the summon it
+		// was fired for: the charge goes on cooldown the moment it is spent. The Bahamut branch above
+		// already reads it this way.
+		if (IsBurst && (!SearingLightPvE.Cooldown.IsCoolingDown || HasSearingLight)
+			&& SummonSolarBahamutPvE.CanUse(out act))
 		{
 			return true;
 		}

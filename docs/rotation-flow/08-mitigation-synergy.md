@@ -132,10 +132,16 @@ A99 bis A102 vor (`13-aoe-damage-classification.md`) und wird bisher an **einer*
 | Wie steht es vor dem ersten Treffer eines Pulls? | hier | blind; die Beobachtung braucht 2,5 s Anlauf |
 | Wie hart schlaegt dieser Tankbuster, Rueckstoss, Stopp? | `13-…`, Abschnitt „Was der Baustein eroeffnet" | dieselbe Messstruktur, je Liste fehlt der eigene Speicher |
 
-**Die Sonden sind der gemeinsame Nachweisweg.** Keine Regel dieser Familie ist am Code zu belegen —
-ob sie im Kampf greift, zeigt allein die Anzeige: `AreaMitigationSkipped` je Aktions-Id, Rohzeit,
-korrigierte Zeit und Fehlerfaktor der Schaetzung. Wer eine Regel dieser Familie aendert, liefert die
-Sonde mit oder benennt, welche vorhandene sie sichtbar macht.
+**Die Sonden sind der gemeinsame Nachweisweg, und sie haben selbst zu entscheiden.** Keine Regel
+dieser Familie ist am Code zu belegen — ob sie im Kampf greift, zeigt erst die Laufzeit. Daraus folgt
+aber **nicht**, Daten zur spaeteren Durchsicht zu sammeln: Vorgabe des Auftraggebers ist, dass eine
+Sonde zur Laufzeit **erhebt und bewertet**, weil jede Auswertung ueber das Modell einen Kampf, ein
+Ablesen, einen Bericht und eine Runde kostet — je Messwert. Das Vorbild steht in diesem Konzept:
+`ScoreTtkForecast` haelt die eigene Vorhersage gegen den Verlauf, `GetCorrectedTTK` rechnet den
+Fehler heraus, und niemand muss etwas ablesen. `AreaMitigationSkipped` ist die schwaechere Form —
+sie zeigt, was die Regel verworfen hat, korrigiert sich aber nicht selbst. Wer eine Regel dieser
+Familie aendert, liefert die selbstkorrigierende Sonde mit oder sagt ausdruecklich, warum hier keine
+zu bauen ist.
 
 **Nachgerechnet, mit geteiltem Ergebnis:** `searing_light_coverage.py` aus
 `12-searing-light-stacking.md` beantwortet dieselbe Frage — wie viele Sekunden deckt ein Effekt ab,

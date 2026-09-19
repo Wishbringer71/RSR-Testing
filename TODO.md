@@ -476,18 +476,13 @@ Die Zustandswahl liegt an zwei Orten: implizit in `AdjustStateType`, wo `/rotati
 
 Geprüfte Nicht-Fehlstellen: `DTRManualAuto` bildet den vom Enum-Text beschriebenen Zwei-Zustands-Zyklus ab (kein Fehler, AUDIT_LOG A14); ein zu großer `TargetingIndex` kann keinen Indexfehler auslösen, `DataCenter.TargetingType` rechnet `% Count`.
 
-### Searing Light wird erlaubt, aber nicht vorgezogen · N
+### Searing Light: der Einschiebeplatz vor der Beschwörung kann ebenfalls belegt sein · N
+
+**Der gemeldete Fall ist behoben** (A114): Die Zündung fällt jetzt im Einschiebeplatz **vor** der großen Beschwörung, nicht erst nach ihr. `burstInSolar` wird erst wahr, wenn die Demi steht — der früheste Platz, den diese Bedingung anbieten konnte, lag also hinter dem Beschwörungs-GCD, und war er belegt, rutschte die Ladung in die Phase hinein. Searing Light wirkt 20 s gegen 15 s Demi, die Zündung davor deckt die Phase also vollständig ab. Die Beschwörung selbst wird nicht verzögert, weil ihre Bedingung einen laufenden Buff als Bereitschaft annimmt.
+
+**Was bleibt:** Auch der Platz **vor** der Beschwörung kann besetzt sein — durch Notfall, Unterbrechung, Heilung, Verteidigung oder die Ausführungssperre kurz vor dem GCD (Kette in `03-universal.md`). Dann fällt Searing Light weiterhin später. Das ist nicht behandelt, und eine Sonde zur nachträglichen Auswertung scheidet nach Vorgabe des Auftraggebers aus: Eine Messung, deren Auswertung über das Modell läuft, kostet je Wert einen Kampf, ein Ablesen, einen Bericht und eine Runde. Ein Eingriff in die **Reihenfolge** des Fähigkeitenpfads bleibt der einzige verbliebene Weg und ist freigabepflichtig — dieselbe Bauform war in C37 im Spiel schlechter als der Defekt, den sie beheben sollte.
 
 **Konzept:** `docs/rotation-flow/12-searing-light-stacking.md`
-**Spielbeobachtung des Auftraggebers, 4er-Instanz, einziger Beschwörer:** Searing Light fiel nicht zu Beginn der Solar-Bahamut-Phase, sondern irgendwann darin. Damit ist die Aussage „bei einem Beschwörer ist der Ablauf richtig" aus Konzept 12 widerlegt; das Konzept ist fortgeschrieben.
-
-**Ursache, am Code belegt:** `mayFireSearingLight` ist bei einem Beschwörer über `burstInSolar` während der **gesamten** Phase wahr (`SMN_Reborn.AttackAbility`). Die Bedingung sagt **ob**, nicht **wann**. Verpasst die Aktion den ersten Einschiebeplatz — belegter Platz, kurz kein Ziel in Reichweite, die Ausführungssperre kurz vor dem nächsten GCD —, fällt sie beim nächsten freien Platz, und nichts holt das nach oder priorisiert sie. Searing Light steht zwar an erster Stelle **innerhalb** von `AttackAbility`, aber der Fähigkeitenpfad erreicht `AttackAbility` erst nach Notfall-, Verteidigungs- und Heilzweigen.
-
-**Kosten, aus den Wirktexten** (`ActionId.resx`): Searing Light wirkt 20 s, Summon Solar Bahamut dauert 15 s. Zu Beginn gezündet deckt der Buff die ganze Phase und läuft 5 s über — der Überhang ist eingeplant. Jede Sekunde Verzug tauscht eine gebuffte Sekunde in der Phase gegen eine danach: Demi-GCDs tragen 947–1217 Potenz, Zwischenblöcke höchstens 632, die 5 % wirken auf den darunterliegenden Wert. Zwei bis drei GCDs Verzug verschieben damit rund 30 Potenz je GCD von der starken in die schwache Phase, und zwar auch für die nahen Gruppenmitglieder.
-
-**Nicht zur Wahl steht das Zündfenster.** Es ist in Konzept 12 entschieden: volle Abdeckung der großen Beschwörung, Ausweichen nur bei mehreren Beschwörern, und dort auf **Titan** — oder auf **Ifrit**, wenn der Spieler ohnehin am Ziel steht, weil dann der Anlauf von Crimson Cyclone entfällt, auf dem Ifrits höhere Zahl beruht. Offen ist allein der **Zeitpunkt innerhalb** der Phase.
-
-**Vor einer Umsetzung zu klären:** Welche Zweige den ersten Einschiebeplatz belegen **können**, steht in `03-universal.md`; welcher es im Einzelfall tut, ist eine Laufzeitfrage. Eine Sonde dafür muss nach Vorgabe des Auftraggebers zur Laufzeit **erheben und sofort bewerten** — eine reine Datensammlung zur späteren Durchsicht scheidet aus. Ein Eingriff in die Reihenfolge des Fähigkeitenpfads ist zudem genau die Bauform, die in C37 im Spiel schlechter war als der Defekt. **Empfehlung:** zuerst messen, welcher Platz vergeben wird, dann entscheiden; das Messmittel gehört nach der Cynefin-Regel mitgeliefert.
 
 ### Beim Beschwörer bleibt in der 4er-Instanz nur ein einziger Weg zu Radiant Aegis und Addle · N
 

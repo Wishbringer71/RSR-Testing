@@ -110,6 +110,11 @@ costing no cooldown while the party is healthy.
 
 ## Damage and rotation
 
+- **Summoner: Searing Light now covers the phase from its first GCD.** It used to be offered only
+  once the demi was standing, so the earliest weave slot it could take was the one after the
+  summon — and when that slot was busy, the buff landed somewhere inside the burst instead of at
+  its start. It now fires in the slot before the summon; the 20-second buff covers the
+  15-second demi either way, and the summon is no longer blocked by its own buff being spent.
 - **Summoner.** Searing Light is tied to the burst phase — Solar Bahamut, or Bahamut at lower
   levels; with a second Summoner in the party it falls back to the big summon, and across all
   established phases to Titan — or to Ifrit when you are standing at the target anyway, since

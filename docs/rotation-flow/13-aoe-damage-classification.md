@@ -309,8 +309,11 @@ Der abgelegte Anteil ist eine Vorhersage: „so hart schlägt diese Aktion beim 
 zutrifft, prüft niemand; die Höchstwert-Fortschreibung korrigiert nur nach oben und nie nach
 unten. `08-mitigation-synergy.md` löst dieselbe Frage für die Restzeitschätzung bereits:
 `ScoreTtkForecast` hält jede Vorhersage gegen den tatsächlichen Verlauf, `GetCorrectedTTK` teilt
-den Fehler heraus. Auf diese Messung übertragen hieße das: beim nächsten Einschlag derselben
-Aktion den gespeicherten Anteil gegen den beobachteten halten und den Fehler ausweisen. Das ist
+den Fehler heraus. Auf diese Messung übertragen heißt das: beim nächsten Einschlag derselben
+Aktion den gespeicherten Anteil gegen den beobachteten halten und den Fehler **selbst herausrechnen** —
+nicht anzeigen und auf eine Auswertung warten. Vorgabe des Auftraggebers: Eine Sonde, deren Auswertung
+über das Modell läuft, kostet je Messwert einen Kampf, einen Bericht und eine Runde; zulässig ist nur,
+was sich selbst nachsteuert. Das ist
 **nicht gebaut**, und der Nutzen ist nicht bloß Diagnose: Ein Anteil, der durch eine zufällig
 laufende Minderung zu niedrig gemessen wurde, bleibt heute zu niedrig, bis ein ungeminderter
 Treffer ihn anhebt.

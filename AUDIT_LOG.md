@@ -2871,6 +2871,24 @@ Allgemeine Form, in `CLAUDE.md` aufgenommen: Wo ein fremder Schutzmechanismus al
 **Erreichter Prüfgrad:** statische Prüfung, Strukturlauf, Compile im Prüflauf des Zweigs. Die Regel betrifft nur Gruppen mit mindestens zwei Beschwörern und ist im Spiel unbeobachtet.
 
 ---
+
+### A114 · Searing Light zündet vor der Beschwörung, nicht nach ihr (19.09.2026)
+
+**Anlass:** Zweimal aus dem Spiel gemeldet — Searing Light fällt mitten in der Burstphase statt an ihrem Anfang. Dazu seine Vorgabe zur Bauform: „Eine Sonde zur späteren Auswertung durch dieses Modell ist suboptimal, da es zu viele Interaktionen des Nutzers voraussetzt.“ Damit schied der Weg aus, den ich vorgelegt hatte (erst messen, dann entscheiden) — und der Zwang, ohne Messung auszukommen, hat die eigentliche Ursache sichtbar gemacht.
+
+**Ursache, am Code belegt.** `burstInSolar` wird erst wahr, **wenn die Demi steht**. Der früheste Einschiebeplatz, den diese Bedingung anbieten konnte, lag damit hinter dem Beschwörungs-GCD; war er belegt, rutschte die Ladung in die Phase hinein, und nichts holte das nach. Die Regel sagte **ob**, nicht **wann** — aber der Grund dafür war nicht der Wettbewerb um den Platz allein, sondern dass das Fenster zu spät aufging.
+
+**Behoben ohne Eingriff in die Zweigreihenfolge.** Die Zündung wird zusätzlich angeboten, wenn der **nächste GCD** die große Beschwörung ist — der Wert steht als Parameter `nextGCD` ohnehin zur Verfügung, die Entscheidung fällt also im Code aus dem, was der GCD-Pfad bereits gewählt hat. Zwanzig Sekunden Buff gegen fünfzehn Sekunden Demi: Von davor gezündet deckt er die Phase vollständig, und der eingeplante Überhang bleibt.
+
+**Der Grund, warum das zuvor nicht ging, ist mitbehoben.** Ich hatte diesen Weg gemessen und verworfen: `UseSummonsAndTrances` beschwor Solar Bahamut nur bei `!SearingLightPvE.Cooldown.IsCoolingDown` — ein vorher gezündetes Searing Light hätte also die Phase verhindert, für die es gezündet wurde. Die Bedingung meint „ist Searing Light für diese Phase da“, und ein **laufender** Buff erfüllt das genauso wie eine stehende Ladung; der Bahamut-Zweig zwei Zeilen darüber liest sie seit jeher so. Ergänzt um `|| HasSearingLight`.
+
+**Im Kampf:** Der Buff liegt beim ersten GCD der Phase an, statt irgendwann darin. Die Demi-GCDs tragen 947 bis 1217 Potenz, die Zwischenblöcke höchstens 632 — jede Sekunde Verzug hatte eine gebuffte Sekunde aus der starken in die schwache Phase getauscht, und zwar auch für die nahen Gruppenmitglieder.
+
+**Was bleibt, und es ist in `TODO.md` erfasst:** Auch der Platz vor der Beschwörung kann belegt sein. Dann fällt die Zündung weiterhin später. Der einzige verbliebene Weg dagegen wäre ein Eingriff in die Reihenfolge des Fähigkeitenpfads — freigabepflichtig, und dieselbe Bauform war in C37 im Spiel schlechter als der Defekt.
+
+**Erreichter Prüfgrad:** statische Prüfung, Strukturlauf, Kollisionsprüfung gegen die Ausführungssperre, Compile im Prüflauf des Zweigs. Im Spiel unbeobachtet.
+
+---
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
