@@ -406,14 +406,6 @@ und `GCDTime(uint gcdCount = 0, float offset = 0)` liefert `(DefaultGCDTotal * 0
 
 **Empfehlung: erfassen, nicht bearbeiten.** Keiner der vier Jobs steht im Nutzungsprofil des Auftraggebers, und die Entscheidung „Vorrang gemeint oder nicht" gehört zum Autor der Rotation; Adressat ist der Upstream.
 
-### Der Release traegt das Paket nicht, auf das die README Bezugnehmende verweist · R
-
-`publish.yaml` laedt unter `files:` ausschliesslich `./build/RotationSolver/latest.zip` hoch. Das `.nupkg` entsteht zwar bei jedem Build (`RotationSolver.Basic.csproj`, `GeneratePackageOnBuild`), liegt aber im Ausgabepfad des Basic-Projekts und wird nicht veroeffentlicht. Die README beschreibt dagegen, wie das Paket zu beziehen ist — Vorabversionen zulassen oder die genaue Version festnageln —, ohne dass ein Bezugsort besteht.
-
-**Wirkung im Spiel: keine.** Betroffen sind Autoren abgeleiteter Rotationen: Sie muessen den Fork selbst bauen, um gegen `RotationSolver.Basic` mit dem `-wsh<n>`-Kennzeichen zu uebersetzen.
-
-**Auflösung:** entweder das `.nupkg` in `files:` aufnehmen — dann ist sein Pfad im Release-Build zu ermitteln — oder die README auf den tatsaechlichen Bezugsweg zurechtruecken. Welche der beiden gilt, ist eine Entscheidung ueber den Veroeffentlichungsumfang und liegt beim Auftraggeber.
-
 ## Technische Schuld
 
 ### Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen · N, R
