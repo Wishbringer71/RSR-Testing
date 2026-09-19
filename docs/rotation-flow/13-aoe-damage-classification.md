@@ -102,7 +102,8 @@ mitgliedsgenaue Fassung steht unten als Chance.
 | Gelernte Fläche, noch nie gemessen | volle Gruppenminderung | **unverändert** |
 | Gemessene Bagatelle (2 %), Gruppe gesund | volle Gruppenminderung, Abklingzeit weg | keine Minderung, Abklingzeit bleibt |
 | Dieselbe Bagatelle, ein Mitglied knapp über der Heilschwelle | volle Gruppenminderung | volle Gruppenminderung |
-| Gemessener Raidwide (40 %) | volle Gruppenminderung | **unverändert** |
+| Gemessene Fläche ab 25 %, Gruppe gesund | volle Gruppenminderung | **unverändert** — die Obergrenze entscheidet ohne Blick auf die Gesundheit |
+| Gemessene Fläche zwischen 10 % und 25 %, Gruppe gesund | volle Gruppenminderung | keine Minderung, solange der Treffer niemanden unter die Heilschwelle drückt |
 | Savage-Training, zweiter Versuch | jede Fläche gleich behandelt | die kleinen kosten nichts mehr |
 | Nach dem Kampf, Blick in die Listenverwaltung | nichts zu sehen | je Aktion der gemessene Anteil, und welche davon eine Minderung gespart hat |
 
@@ -141,23 +142,33 @@ Fortschreibung bei **bekannten** Ids: `HashSet.Add` fasst eine vorhandene Id nic
 diesen Zusatz bekäme kein Alteintrag je ein Potential — die ganze hybride Form wäre für die 850
 vorhandenen Einträge wirkungslos.
 
-## Warum der Maßstab nicht in Schilden gemessen wird
+## Der Maßstab: der gemessene Anteil, mit belegter Obergrenze
 
-Der Auftraggeber misst in Schilden, und der Gedanke ist richtig: Ein Schild ist die Menge, die ein
-Einschlag ohne Wirkung überstehen kann. Die Übersetzung in eine messbare Größe scheitert aber an der
-Beleglage.
+**Ab einem Anteil von 0,25 der Maximalgesundheit ist die Fläche groß, unabhängig vom Zustand der
+Gruppe.** Darunter entscheidet der Vergleich mit dem Puffer. Damit ist die Zwei-Schwellen-Form der
+Vorgabe umgesetzt, und zwar ohne eine einzige gesetzte Zahl: Die Obergrenze ist der größte Schild,
+der seine Größe im eigenen Wirktext als Anteil nennt.
 
-| Barriere | Angabe im Wirktext | umrechenbar? |
+| Barriere | Angabe im Wirktext | verwendbar? |
 |---|---|---|
-| The Blackest Night (1234) | „absorbs damage totaling **25 % of target's maximum HP**" | **ja**, unmittelbar ein Anteil |
+| The Blackest Night (`ActionId.resx` 1234) | „absorbs damage totaling **25 % of target's maximum HP**" | **ja** — der Maßstab für „großer Schild" |
+| Shake It Off (`ActionId.resx` 1209), drei Duty-Aktionen (`DutyAction.resx` 1908, 4484, 6715) | 15 %, 10 %, 15 %, 10 % der Maximalgesundheit | **ja** — das untere Ende, siehe unten |
 | Divine Benison (1404) | „absorbs damage equivalent to a heal of **500 potency**" | nein — Potenz, ohne Heilattribut nicht umrechenbar |
 | Adloquium, Succor, Eukrasian Diagnosis/Prognosis | „nullifies damage equaling **% of the amount of HP restored**" | nein — der Prozentsatz fehlt im Text, der geheilte Betrag hängt am Heilattribut |
 
-**Genau eine Barriere nennt ihre Größe als Anteil der Maximalgesundheit.** Jeder weitere Schild als
-Maßstab wäre eine Setzung, und das Heilattribut ist von hier nicht auslesbar und je Spieler
-verschieden. Die Zwei-Schwellen-Form der Vorgabe ist deshalb nicht ohne erfundene Zahlen umsetzbar —
-und sie wird nicht gebraucht, weil der Vergleich mit dem Puffer dieselbe Frage ohne Trennwert
-beantwortet.
+**Das untere Ende braucht keine eigene Konstante.** „Was unterhalb eines geringen Schildes liegt,
+löst nur bei Gruppenmitgliedern mit wenig Gesundheit etwas aus" — das ist wörtlich die Frage, die der
+Puffer-Vergleich stellt, und er stellt sie mitgliedsgenau statt an einem Trennwert. Eine zweite
+Konstante träfe deshalb keine Entscheidung, die nicht ohnehin fiele.
+
+**Warum die Obergrenze nicht entbehrlich ist — der Beleg stammt aus dem Spiel.** Ohne sie fragt die
+Regel allein, ob durch den Treffer **Heilbedarf** entstünde. Das ist eine andere Frage als die nach
+der Größe des Treffers, und bei gesunder Gruppe lautet ihre Antwort fast immer nein: Bei einem Puffer
+von 1,0 gegen die Flächenheilschwelle von 0,65 wird erst oberhalb eines Anteils von 0,35 gemindert,
+den ein gewöhnlicher Raidwide nicht erreicht. Der Auftraggeber hat die Folge gemeldet — beim
+Beschwörer fielen Addle und Schimmerschild mal, mal nicht, abhängig davon, ob die Aktion schon
+bewertet war. Minderung soll den Schadensstrom drosseln, **bevor** Heilbedarf entsteht; sie an das
+Entstehen von Heilbedarf zu knüpfen, kehrt ihren Zweck um.
 
 ## Warum der Anteil und nicht die Potenz
 

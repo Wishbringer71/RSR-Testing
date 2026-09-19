@@ -6,17 +6,18 @@ immediately. Two changes are confirmed in play — the raise dispatch and the ta
 HoT. Everything else is established in the code and compiled in CI, which says that a chain
 closes, not that it is right at the target dummy.
 
-## Check this setting first — a known defect in this build
+## Party mitigation answers raidwides again
 
-`Skip mitigation for small area casts` is **on by default**, and with that default party
-mitigation is withheld in almost every ordinary case. The condition only mitigates above an
-impact of roughly 35 % of maximum health, which an ordinary raidwide does not reach, and the
-impact is only known after the first hit of that action. In the fight: on Summoner neither
-Addle nor Radiant Aegis has gone out against area damage since 17 September, and every
-party-wide mitigation on that chain is affected.
+`Skip mitigation for small area casts` spares the cooldown when an area hit is too small to
+matter. Until this build it asked one question only — would this hit push anyone to where
+healing is called for — and a healthy party answered no to almost every raidwide, so Addle
+and Radiant Aegis stopped going out on Summoner. Mitigation is meant to throttle the damage
+*before* a need to heal appears, so that question was the wrong one on its own.
 
-**Switch the setting off** to get the previous behaviour. A new default in code would not
-reach you — a configuration already in use keeps its stored value.
+An area action that costs **25 % of maximum health or more** is now treated as a big hit
+whatever the party's health. The figure is not set by hand: it is what The Blackest Night
+states it absorbs. Below it the buffer comparison still decides, so small repeated ticks keep
+costing no cooldown while the party is healthy.
 
 ## Healing — when it lands
 
