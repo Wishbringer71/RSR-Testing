@@ -303,7 +303,9 @@ diesen Fall gar nicht erzeugen. Die Aussage oben ist damit aus der Regel abgelei
 ## Die Gruppenzusammensetzung als Schalter
 
 Die Erweiterung darf nicht bedingungslos gelten, und der Auftraggeber hat den richtigen Ort dafür
-benannt: die Zusammensetzung der Gruppe.
+benannt: die Zusammensetzung der Gruppe. Welche Zusammensetzungen überhaupt vorkommen und wie sie sich
+unterscheiden, ist in `02-groups.md` erhoben; dieses Konzept setzt darauf auf, statt die Frage
+ein zweites Mal zu beantworten.
 
 **Warum die Prüfung nötig ist.** Bei einem einzelnen Beschwörer ist die Erweiterung nicht neutral.
 Wird seine Wiederholzeit zu einem Zeitpunkt frei, an dem gerade Bahamut oder Phoenix steht — nach

@@ -37,14 +37,28 @@ behandeln wäre ein Totalausfall der Gruppenminderung.
 
 **Die Rechnung, die alles ersetzt, was sonst gesetzt werden müsste:**
 
-> **Effektiver Puffer** des Mitglieds (Gesundheit einschließlich Barriere) **minus** dem gespeicherten
-> Anteil seiner Maximalgesundheit. Bleibt das über der Schwelle, ab der der Baum von sich aus heilen
-> würde, ist nichts zu tun; unterschreitet es sie, wird gemindert.
+> **Erste Stufe:** Liegt der gespeicherte Anteil bei **0,25 oder darüber**, ist die Fläche groß, und
+> es wird gemindert — ohne Blick auf die Gesundheit der Gruppe. Der Wert ist die Deckung von The
+> Blackest Night aus ihrem eigenen Wirktext, also ein großer Schild.
+>
+> **Zweite Stufe, darunter:** **Effektiver Puffer** des Mitglieds (Gesundheit einschließlich Barriere)
+> **minus** dem gespeicherten Anteil seiner Maximalgesundheit. Bleibt das über der Schwelle, ab der
+> der Baum von sich aus heilen würde, ist nichts zu tun; unterschreitet es sie, wird gemindert.
 
-Die Frage lautet damit **„erzeugt dieser Einschlag Heilbedarf?"** und nicht „ist die Aktion groß". Das
-braucht keinen Trennwert, ist stimmig mit der Rangregel des Auftraggebers *Heilung vor Minderung* —
-gemindert wird, wo sonst geheilt werden müsste — und bringt seine Formulierung wörtlich hervor: Zwei
-Prozent drücken nur den unter die Schwelle, der ohnehin fast dort steht.
+**Beide Stufen zusammen sind nötig, und die erste ist die später nachgerüstete** (A108, C67): Allein
+mit der zweiten fragt die Regel nur, ob **Heilbedarf** entstünde, und bei gesunder Gruppe lautet die
+Antwort für fast jeden Raidwide nein. Gemindert werden soll aber, **bevor** Heilbedarf entsteht. Die
+zweite Stufe bleibt gleichwohl richtig für alles darunter: Dort ist die Rangregel *Heilung vor
+Minderung* maßgeblich — gemindert wird, wo sonst geheilt werden müsste — und sie bringt seine
+Formulierung wörtlich hervor: Zwei Prozent drücken nur den unter die Schwelle, der ohnehin fast dort
+steht.
+
+**Die Barriere zählt in dieser Rechnung mit, und das steht nicht im Widerspruch zu A85.** Dort wurde
+sie aus der **Heilschwelle** entfernt, weil sie keine Gesundheit herstellt — ein Tank bei 40 % steht
+bei 40 %, ob eine Barriere läuft oder nicht. Hier wird eine andere Frage gestellt: ob **dieser**
+angekündigte Treffer durchschlägt. Genau das verhindert eine laufende Barriere, also gehört sie in
+den Puffer. Dieselbe Größe, zwei Fragen, zwei Antworten — nachzulesen in
+`07-heal-target-priority.md`, Abschnitt „Abgrenzung zur Schildanrechnung".
 
 | Baustein | Stand |
 |---|---|
@@ -301,49 +315,16 @@ Abwehraktionen je Job fest verdrahtet, und die gemessene Größe entscheidet all
 überhaupt geöffnet wird. Mit einem Wert auf beiden Seiten ließe sich stattdessen zuordnen: der
 Zehn-Prozent-Tick zieht das billige Mittel, der Vierzig-Prozent-Raidwide das stärkste verfügbare.
 
-*Die Zuordnungsregel, Vorgabe des Auftraggebers:* „wenn schaden nur 10% auf spieler mit geringster
-maxhp verursacht, dann reicht ein schild, was 10% blockiert. oder sogar weniger bis kein schild. wenn
-ein schaden 70% verursacht von maxhp des geringsten spielers, dann sollte das schild möglichst hoch
-sein, optimal 70%." Gesucht ist also **Deckung**: Der Anteil des Mittels soll den Anteil des Treffers
-erreichen, nicht übertreffen — und wo kein Mittel ihn erreicht, das stärkste verfügbare.
+**Die Messgröße dieses Konzepts ist zugleich die Eingangsgröße für die Wahl des Mittels.** Abgelegt
+wird der **höchste** Anteil im Effektsatz, und das ist bei gleichem absolutem Schaden der Spieler mit
+der geringsten Maximalgesundheit — genau die Bezugsgröße, die die Vorgabe des Auftraggebers zur
+Deckung nennt. Für die Wahl muss die Messung also nicht geändert werden, nur ihr Verbraucher.
 
-*Die Ausnahme und ihre Rangfolge, ebenfalls seine Vorgabe:* „ausnahme, die aktuelle hp liegt unter
-dem schadenswert. dann wäre aber eine heilung sinnvoll bis max maxhp. wenn dann die hp unter dem
-schadenswert liegt, sollte zusätzlich geschildet werden. bzw. der schadensoutput reduziert." Damit
-ist die Entscheidung dreistufig, und sie folgt seiner stehenden Ordnung **Heilung vor Minderung**
-(Konzepte 08 und 10):
-
-| Lage des schwächsten Mitglieds | Antwort |
-|---|---|
-| Treffer kleiner als die **aktuelle** Gesundheit | Deckung in Höhe des Treffers; bei kleinen Werten auch gar keine |
-| Treffer erreicht oder übersteigt die aktuelle Gesundheit, bleibt aber unter der maximalen | **zuerst heilen**, Ziel ist die Maximalgesundheit — danach greift wieder die Deckungsregel |
-| Treffer übersteigt auch die maximale Gesundheit | Heilung allein rettet nicht: **zusätzlich** Barriere und Minderung, bis Treffer minus beides unter der erreichbaren Gesundheit liegt |
-
-Die dritte Zeile ist der Fall, in dem sich Barriere und Minderung **addieren** müssen statt zu
-konkurrieren, und sie ist zugleich der einzige, in dem das stärkste Mittel ohne Rücksicht auf seine
-Abklingzeit richtig ist. Die erste Zeile ist der Regelfall und der Grund für den ganzen Baustein:
-Dort wird heute eine Abklingzeit verbraucht, die später fehlt.
-
-**Die Bezugsgröße dafür liegt bereits richtig vor.** Abgelegt wird der **höchste** Anteil im
-Effektsatz, und das ist bei gleichem absolutem Schaden der Spieler mit der geringsten
-Maximalgesundheit — genau der, den seine Regel nennt. Die Messung muss dafür also nicht geändert
-werden, nur ihr Verbraucher.
-
-*Was dafür vorhanden ist:* die Größe des eintreffenden Treffers als Anteil (dieses Konzept), die
-gruppenweit wirkenden Minderungen mit ihren Sätzen in `GetCurrentMitigationPercent`, und für die
-Barrieren der belegte Anteil aus den Wirktexten (25 %, 15 %, 10 %, siehe oben).
-
-*Was fehlt, und es ist nicht Beiwerk:* je Abwehraktion ein belegter Wert — für die Minderungen der
-Prozentsatz aus ihrem eigenen Wirktext, für die Schilde der bereits belegte Anteil. Diese Tabelle ist
-genau die Bauform, die dieses Projekt sonst meidet, weil sie mit jeder Erweiterung altert; sie ist
-hier aber aus den Ressourcen **erzeugbar** statt handgeführt, und das unterscheidet sie von der in
-Konzept 08 verworfenen Statussatz-Tabelle.
-
-*Der Blast Radius ist der eigentliche Preis:* Die Auswahl greift in `DefenseAreaAbility` und
-`DefenseSingleAbility` **jedes** Jobs ein, und mittelbar in die fremden Rotationen unter
-`ExtraRotations`. Ein Eingriff dieser Breite gehört hinter eine eigene Option mit dem bisherigen
-Verhalten als Voreinstellung, und er braucht die Sonde je Entscheidung — sonst ist im Kampf nicht
-unterscheidbar, ob das schwächere Mittel gewählt wurde oder gar keines.
+**Die Entscheidungsordnung selbst steht in `08-mitigation-synergy.md`**, Vorgabe 5 und der Abschnitt
+„Die Antwort auf einen eingehenden Treffer": Deckung in Höhe des Treffers, Heilung zuerst, sobald die
+aktuelle Gesundheit nicht reicht, und Barriere samt Minderung zusätzlich, wo auch die volle nicht
+reicht. Sie gilt nicht nur für Flächen — dieselbe Frage stellt sich beim Tankbuster —, deshalb steht
+sie dort und nicht hier.
 
 ## Konsequenzen
 

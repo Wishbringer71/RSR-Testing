@@ -113,6 +113,13 @@ jobs:
       - name: Check the emergency heal asks whether the target is in danger
         run: python3 .github/scripts/audit/check_emergency_heal_threat.py
 
+      # The concepts answer neighbouring questions, so a rule written into one of them is invisible
+      # to the others. After a context compaction the next pass reads whichever file it opens first,
+      # and a concept nobody points at ages out of use without anything failing. This checks the two
+      # things a script can check: that every reference resolves, and which concepts are unreachable.
+      - name: Check the concept documents still reference each other
+        run: python3 .github/scripts/audit/check_concept_links.py
+
       # The release description is pasted into a field that counts characters and stops accepting
       # them. The 18611-character version ran the counter to "0 remaining" inside section 7, and
       # everything after that was dropped without a word - the release carried a text ending

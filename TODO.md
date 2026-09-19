@@ -653,7 +653,7 @@ Schritt 3 aus `docs/rotation-flow/08-mitigation-synergy.md`. Die Schritte 1 und 
 
 **Was zum Bauen fehlt:** je Abwehraktion ein belegter Wert — für Minderungen der Prozentsatz aus dem eigenen Wirktext, für Barrieren der Anteil (25 %, 15 %, 10 % sind belegt). Erzeugbar aus den Ressourcen, nicht handzuführen.
 
-**Blast Radius und Auflage:** Der Eingriff berührt `DefenseAreaAbility` und `DefenseSingleAbility` jedes Jobs und mittelbar die fremden Rotationen unter `ExtraRotations`. Er gehört deshalb hinter eine eigene Option mit dem bisherigen Verhalten als Voreinstellung, und die Sonde je Entscheidung ist mitzuliefern — sonst ist im Kampf nicht unterscheidbar, ob ein schwächeres Mittel gewählt wurde oder gar keines. Vollständige Bewertung in `docs/rotation-flow/13-aoe-damage-classification.md`, Abschnitt „Was der Baustein eröffnet".
+**Blast Radius und Auflage:** Der Eingriff berührt `DefenseAreaAbility` und `DefenseSingleAbility` jedes Jobs und mittelbar die fremden Rotationen unter `ExtraRotations`. Er gehört deshalb hinter eine eigene Option mit dem bisherigen Verhalten als Voreinstellung, und die Sonde je Entscheidung ist mitzuliefern — sonst ist im Kampf nicht unterscheidbar, ob ein schwächeres Mittel gewählt wurde oder gar keines. Vollständige Bewertung in `docs/rotation-flow/08-mitigation-synergy.md`, Abschnitt „Die Antwort auf einen eingehenden Treffer“; die Messung der Treffergröße steht in `13-aoe-damage-classification.md`.
 
 ### Nachprüfung der 73 Commits vom 11. und 12. September 2026 · N, R, U
 

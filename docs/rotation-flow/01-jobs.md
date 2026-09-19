@@ -10,6 +10,11 @@ wurde — BLU, PhantomDefault, PCT, SAM, SMN —, ist die dortige Zweigzahl die 
 Umbau; die Aufrufreihenfolge ist unverändert. Wer die aktuellen Zahlen braucht, misst
 sie neu, statt sie hier zu lesen.
 
+**Zwei Nachbarkonzepte beantworten Fragen, die hier bewusst offen bleiben:** Welche Aktionen ein
+Job überhaupt besitzt und welche davon der Baum benutzt, steht in `05-action-coverage.md`; die
+Zusammensetzung der Gruppe, in der ein Job spielt, in `02-groups.md`. Dieses Dokument beschreibt
+allein die **Struktur** des Ablaufs je Job.
+
 ## Lesehilfe
 
 Jeder Job wird in zwei Sichten dargestellt.
@@ -318,6 +323,9 @@ Einziger Fernkämpfer **ohne** `DefenseSingleAbility`, aber mit
 ## Magische Fernkämpfer
 
 ### SMN — 818 LOC, 14 Configs
+
+Die Zündregel von Searing Light samt ihrer Abhängigkeit von der Gruppenzusammensetzung steht in
+`12-searing-light-stacking.md` — hier nur die Ablaufstruktur.
 
 ```
 ├ 1  Setup      Summon Carbuncle

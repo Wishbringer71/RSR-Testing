@@ -2771,6 +2771,27 @@ Allgemeine Form, in `CLAUDE.md` aufgenommen: Wo ein fremder Schutzmechanismus al
 **Mitgenommen, gleicher Fehlertyp:** Die README fuehrte „currently `7.5.5.41+wsh1`" und „`7.5.5.41-wsh1`" als Gegenwartsaussagen — gemessene Zahlen, die mit jedem Release altern, ohne dass etwas fehlschlaegt. Beide durch die Bildungsregel ersetzt. Die README verweist jetzt auf die Release-Beschreibung und nennt ihren Zweck.
 
 ---
+
+### A109 · Konzeptdurchsicht Heilung, Minderung, Schild — und das Zusammenspiel der Konzepte (19.09.2026)
+
+**Anlass:** Auftrag des Auftraggebers, bei Heilung, Schadensminderung und Schildung weiterzuarbeiten und die bestehenden Konzepte zu verbessern, im vollständigen Loop. Auf seine Ergänzung hin — „du hast auch im loop das zusammenspiel aller konzepte zu prüfen“ — wurde die Prüfung von den vier angefassten Dokumenten auf alle dreizehn ausgeweitet.
+
+**Vier Befunde, drei davon erst durch die ausgeweitete Prüfung.**
+
+1. *Das Verweisnetz lief einseitig.* Gemessen: `08-mitigation-synergy.md` wurde von vier Konzepten genannt, nannte aber keines zurück; acht der dreizehn Dokumente hatten **keinen** eingehenden Verweis. Wer beim Knoten einstieg, fand weder die Zielwahl (07) noch die Rangordnung (09). Nach einer Kontextkomprimierung liest die nächste Runde, was sie zuerst öffnet — ein Konzept ohne eingehenden Verweis altert also aus dem Gebrauch heraus, ohne dass etwas fehlschlägt.
+2. *`13-aoe-damage-classification.md` trug den überholten Stand weiter vorn als seine Korrektur.* Die Rechnung im Kopf sagte: „Die Frage lautet damit ,erzeugt dieser Einschlag Heilbedarf?' und nicht ,ist die Aktion groß'“ — genau die Konstruktion, die A108 und C67 widerlegt haben, während die Korrektur hundert Zeilen später stand. Das ist der Fehlerpfad, den der Urteilsstil ausschließen soll: Wer den Abschnitt allein liest, bekommt den alten Stand.
+3. *Der Barrieren-Widerspruch war nirgends aufgelöst.* 07 und 09 halten fest, dass die Barriere **nicht** auf die Heilschwelle angerechnet wird (A85); die Flächenbewertung rechnet sie über `GetEffectiveHp` sehr wohl ein. Beides ist richtig — zwei verschiedene Fragen —, aber die Auflösung stand nur als Kommentar im Quelltext und in keinem Konzept.
+4. *Eigener Fehler beim Ergänzen:* Nach Aufnahme der fünften Vorgabe stand in 08 weiterhin „Vier Vorgaben des Auftraggebers ordnen alles Weitere“. Bei der Selbstprüfung gefunden und korrigiert.
+
+**Umgesetzt.** Die Entscheidungsordnung — Deckung in Höhe des Treffers, Heilung zuerst, sobald die aktuelle Gesundheit nicht reicht, Barriere und Minderung zusätzlich, wo auch die volle nicht reicht — steht jetzt **einmal**, in 08 als Vorgabe 5 samt Abschnitt „Die Antwort auf einen eingehenden Treffer“, mit einer Zuständigkeitstabelle über die vier Nachbarkonzepte. 13 führt die Messung und verweist dorthin, statt die Regel ein zweites Mal zu führen; 07, 09 und 10 tragen je die Folgerung für ihre eigene Frage. Die zweistufige Bewertung und die Barrieren-Abgrenzung sind in 13 **eingearbeitet**, nicht angehängt.
+
+**Riegel statt einmaliger Durchsicht.** `check_concept_links.py` misst, ob jeder Verweis auflöst (Fehlschlag) und welche Konzepte unerreichbar sind (Bericht), läuft in `build.yaml` und trägt seinen Selbsttest. Der Selbsttest hat beim ersten Lauf einen Defekt im Skript gefunden: `check` verließ sich darauf, dass der Aufrufer Selbstverweise entfernt hat — behoben, die Prüfung filtert jetzt selbst. Gemessen: acht verwaiste Konzepte vor der Durchsicht, danach eines, und das begründet — `06-fork-audit.md` ist das Archiv eines abgeschlossenen Durchgangs. Verlinkt wurden nur Verweise, die eine Frage beantworten (01 → 05, 02, 12; 07 → 11; 12 → 02), keine Netzwerkkosmetik.
+
+**Mitgenommen aus dem lokalen Build des Auftraggebers** (4 Projekte erfolgreich, 0 fehlgeschlagen): die drei Warnungen daraus behoben — `CS0419` (mehrdeutiger `cref` auf `AnyLivingRaiser`, auf die dokumentierende Überladung gezogen) und dreimal `CS1573` (`SurveyStuns` mit Trefferzahl hatte für drei Parameter kein `param`-Tag).
+
+**Erreichter Prüfgrad:** statische Selbstprüfung, Struktur- und Verweislauf, Compile im Build des Auftraggebers und im Prüflauf des Zweigs. Was ein Skript **nicht** prüfen kann, steht in seinem Kopf: ob zwei Konzepte einander inhaltlich widersprechen. Das bleibt Aufgabe jeder Runde.
+
+---
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

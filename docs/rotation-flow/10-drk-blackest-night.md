@@ -58,6 +58,14 @@ Eingriffe in `DRK_Reborn.cs`, alle auf Upstream-Code:
    `HoldHolyForBlackestNight`): Sanctus wartet, solange ein Tank die Barriere trägt. Ohne diese
    Seite behandelt die Betäubungsbedingung nur den Fall, dass der Heiler zuerst da war.
 
+**Ihre Größe ist zugleich der Maßstab für alle anderen.** The Blackest Night ist die einzige Barriere
+im Baum, die ihre Deckung im eigenen Wirktext als Anteil nennt — „absorbs damage totaling 25 % of
+target's maximum HP" (`ActionId.resx`, Zeile 1234). Dieser Wert ist seit A108 die Obergrenze der
+Flächenbewertung: Ein Treffer ab 25 % der Maximalgesundheit gilt als groß, unabhängig vom Zustand der
+Gruppe. Und er ist der erste belegte Eintrag für die Wahl des Mittels nach Treffergröße
+(`08-mitigation-synergy.md`, „Die Antwort auf einen eingehenden Treffer") — eine Barriere dieser
+Größe ist die passende Antwort auf einen Treffer dieser Größe, nicht auf jeden.
+
 | Stufe | Bedingung |
 |---|---|
 | `WheneverDefensesOpen` (Voreinstellung) | keine zusätzliche Bedingung — Verhalten wie bisher |

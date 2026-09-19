@@ -12,7 +12,7 @@ bestimmte Grenzwerte nicht ueberschreiten — und entscheidend ist nicht, wie **
 wird, sondern wie **lange**: Die Drosselung kauft die Zeit, in der der eigene Schaden die Gegnerzahl
 senkt.
 
-**Vier Vorgaben des Auftraggebers ordnen alles Weitere, und sie gelten zusammen:**
+**Fuenf Vorgaben des Auftraggebers ordnen alles Weitere, und sie gelten zusammen:**
 
 1. **Strecken statt stapeln.** Faellt alles zugleich, ist die Drosselung nach Sekunden verbraucht und
    der volle Strom trifft eine unveraendert grosse Gruppe.
@@ -22,6 +22,11 @@ senkt.
    Traeger ueberlebt und ob genug Zeit zum Heilen bleibt.
 4. **Ausgesetzt wird nur bei Stunbarkeit.** Ist im Wirkbereich alles betaeubt oder immun, gibt es
    nichts zu strecken und nichts zu sparen; dann kostet das Aussetzen nur den Flaechenzauber.
+5. **Das Mittel wird nach der Groesse des Treffers gewaehlt, nicht nach seiner Verfuegbarkeit.**
+   Gesucht ist Deckung: Der Anteil des Mittels soll den Anteil des Treffers erreichen, nicht
+   uebertreffen. Reicht die Gesundheit des schwaechsten Mitglieds nicht, geht Heilung vor; reicht
+   auch die volle Gesundheit nicht, kommen Barriere und Minderung zusaetzlich. Ausgeschrieben im
+   Abschnitt darunter.
 
 **Gewaehlt ist eine zentrale Bremse bei dezentraler Ausloesung:** Die vorhandenen Ausloeser bleiben,
 hinzu kommt eine Pruefung, die *zurueckhaelt*. Faellt sie aus, verhaelt sich RSR wie zuvor.
@@ -48,10 +53,53 @@ darauf aufsetzt, ist der gemessene Fehlerfaktor in der Diagnoseanzeige zu beurte
 | **Vorausschau** als Ersatzgroesse an allen Heilentscheidungen | umgesetzt (`GetForecastSurvivingShare` und die drei davon abgeleiteten Getter), hinter `HealAheadOfDamage`, Standard aus |
 | Vorausschau auch in der **Flaechenheilung** (`PartyMembersAverHP` und Geschwister) | erfasst, nicht bearbeitet — siehe `TODO.md`; 83 Leser ausserhalb der Heilkette, darunter fremde Rotationen |
 | Minderungen des Tanks **rechnerisch** erfassen (Vorausschau vor dem ersten Treffer) | offen, siehe `TODO.md` — braucht Saetze je Status aus `Action.resx` |
+| **Derselbe Satz je Aktion traegt zwei Zwecke**, und das war bisher nicht gesehen: die Vorausschau in der Zeile darueber **und** die Wahl des Mittels nach Treffergroesse (Vorgabe 5). Wer ihn baut, loest beide Punkte | offen, siehe `TODO.md` |
 | Restzeit der Barriere (`HasSurvivingShield` misst die kuerzeste statt der laengsten) | offen, siehe `TODO.md` |
 | Erhebung der uebrigen Doppelnutzen-Aktionen | umgesetzt als `scan16.py`; ein Fund im Tank-/Heilerprofil (Rueckstoss) |
 | Rueckstoss auch **als** Minderungswerkzeug wirken | offen, siehe `TODO.md` — Zielkonflikt mit der Rolle als einziger Rueckstossschutz |
 | Wirksamkeitsmessung im Spiel | offen |
+
+## Die Antwort auf einen eingehenden Treffer
+
+**Dieser Abschnitt ist der Knoten zwischen vier Konzepten, und die Zustaendigkeiten sind getrennt:**
+
+| Frage | Konzept |
+|---|---|
+| Wie gross ist der eingehende Treffer? | `13-aoe-damage-classification.md` — Messung je Aktion, Anteil am schwaechsten Mitglied |
+| Welches Mittel antwortet darauf, und in welcher Reihenfolge? | **hier**, Vorgabe 5 und die Tabelle unten |
+| Wer wird geheilt, wenn geheilt wird? | `07-heal-target-priority.md` — Gefaehrdung vor Rolle, Rolle vor Prozentsatz |
+| Wann darf der Tank ein eigenes Mittel zuruecknehmen? | `09-tank-selfprotection.md` — lexikographische Rangordnung, Ueberleben zuerst |
+| Wann ist die grosse Barriere das richtige Mittel? | `10-drk-blackest-night.md` — sie ist zugleich der Maszstab fuer „gross" |
+
+**Heilung, Barriere und Minderung sind drei Antworten auf dieselbe Frage, und die Groesse des
+Treffers entscheidet, welche davon richtig ist.** Bezugsgroesse ist das schwaechste Gruppenmitglied —
+bei gleichem absolutem Schaden traegt der Spieler mit der geringsten Maximalgesundheit den hoechsten
+Anteil, und genau diesen Anteil legt `13-aoe-damage-classification.md` je Aktion ab.
+
+**Vorgabe des Auftraggebers, woertlich:** „wenn schaden nur 10% auf spieler mit geringster maxhp
+verursacht, dann reicht ein schild, was 10% blockiert. oder sogar weniger bis kein schild. wenn ein
+schaden 70% verursacht von maxhp des geringsten spielers, dann sollte das schild moeglichst hoch
+sein, optimal 70%." Und die Ausnahme: „die aktuelle hp liegt unter dem schadenswert. dann waere aber
+eine heilung sinnvoll bis max maxhp. wenn dann die hp unter dem schadenswert liegt, sollte
+zusaetzlich geschildet werden. bzw. der schadensoutput reduziert."
+
+| Lage des schwaechsten Mitglieds | Antwort |
+|---|---|
+| Treffer kleiner als die **aktuelle** Gesundheit | Deckung in Hoehe des Treffers; bei kleinen Werten auch gar keine |
+| Treffer erreicht die aktuelle, bleibt unter der maximalen | **zuerst heilen**, Ziel ist die Maximalgesundheit — danach wieder Deckung |
+| Treffer uebersteigt auch die maximale Gesundheit | Heilung allein rettet nicht: Barriere **und** Minderung zusaetzlich, bis der Rest darunter liegt |
+
+**Das ist Vorgabe 2 dieses Konzepts, zu Ende gedacht.** „Heilung vor Minderung" sagte bisher nur die
+Reihenfolge; die Tabelle sagt, **woran** sich entscheidet, ob der Fall ueberhaupt eintritt. Und sie
+loest die dritte Vorgabe ein: Die Barriere steht im Zaehler, also addiert sie sich in Zeile drei zur
+Minderung, statt mit ihr zu konkurrieren.
+
+**Gebaut ist davon nichts** — heute entscheidet die gemessene Groesse allein, **ob** die Abwehrkette
+geoeffnet wird, und die Reihenfolge innerhalb der Kette ist je Job fest verdrahtet. Was fehlt, ist
+derselbe Baustein, den dieses Konzept schon fuer die Vorausschau vor dem ersten Treffer vermisst: je
+Abwehraktion ein belegter Wert. Fuer Barrieren liegt er vor (25 %, 15 %, 10 % aus den Wirktexten),
+fuer Minderungen steht er im Wirktext und ist aus den Ressourcen erzeugbar statt handzufuehren.
+Blast Radius und Auflagen stehen in `TODO.md`.
 
 ## Die Vorgaben des Auftraggebers
 

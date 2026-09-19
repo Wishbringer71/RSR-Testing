@@ -298,6 +298,23 @@ ist die Barriere dagegen eine zulässige Größe: Dort wird nicht gefragt, ob ge
 zuerst. Der einführende Commit der Anrechnung (`27c7b6942`) nannte im Titel genau diese Frage und
 änderte dann die Schwelle.
 
+## Abgrenzung zur Wiederbelebung
+
+Dieses Konzept ordnet die **Lebenden**. Wer bereits tot ist, fällt nicht unter die Gefährdung,
+sondern unter die Wiederbelebung — deren Auslösung, Reihenfolge und der Spontanitäts-Vorbehalt
+stehen in `11-raise-dispatch.md`. Die Berührung der beiden ist real und in Abschnitt 1 belegt: Der
+frisch Wiederbelebte wechselt in dem Moment aus dem einen Konzept in das andere, und genau dort
+hat die Notfall-Vollheilung ihn früher als dringendsten Fall gelesen.
+
+## Abgrenzung zur Wahl des Mittels
+
+Dieses Konzept beantwortet **wer** zuerst geheilt wird. Ob überhaupt geheilt wird oder stattdessen
+gedeckt — Barriere, Minderung —, entscheidet die Ordnung in `08-mitigation-synergy.md` („Die Antwort
+auf einen eingehenden Treffer"): Heilung geht vor, sobald der angekündigte Treffer die **aktuelle**
+Gesundheit des schwächsten Mitglieds erreicht, und zwar bis zur Maximalgesundheit; darunter genügt
+Deckung in Höhe des Treffers. Beide Konzepte greifen also nacheinander und nicht ineinander — erst
+die Frage nach dem Mittel, dann die nach dem Ziel.
+
 ## Grenzen des Nachweises
 
 Am Quelltext belegt: die Rangfolge samt Vorgabewerten, die Umkehr im Band 40–45 %, die Gleichheit der
