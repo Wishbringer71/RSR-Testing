@@ -368,8 +368,9 @@ public static class StatusHelper
 	/// Reprisal check looks for any of them.
 	/// <para>
 	/// <c>Reprisal_2101</c> is scoped to PLD WAR DRK GNB rather than to the shared role, which is the
-	/// signature of the form a trait upgrades into - Enhanced Reprisal at level 98 raises the
-	/// reduction to 15% and the duration to 15s. Its absence made every reader of this list blind to
+	/// signature of the form a trait upgrades into - Enhanced Reprisal at level 98 extends the
+	/// duration to 15s. It leaves the reduction at 10%: an earlier version of this note claimed 15%
+	/// without naming a source, and the Lodestone entry says otherwise. Its absence made every reader of this list blind to
 	/// the version an end-game tank actually applies: <c>ReprisalPvE</c> carries this list as
 	/// <c>TargetStatusProvide</c>, so the guard against re-applying it never saw the debuff, and the
 	/// mitigation surveys that read it counted a reprised pull as unmitigated.
@@ -616,13 +617,19 @@ public static class StatusHelper
 	/// ending while Living Dead still had most of its duration left.
 	/// </para>
 	/// <para>
-	/// Two GCDs of lead time. The tempting optimisation is to shorten it: the hold's one real cost
-	/// is that it can cancel a death that would still have arrived in time, and that cost is exactly
-	/// the lead time - against Living Dead's ten seconds, two GCDs give away half the window. But
-	/// the lead time is measured to the *decision*, not to the heal landing. Worst case the current
-	/// GCD has to run out and a cast has to finish on top of it, which is two GCDs on its own, so
-	/// anything shorter lands the heal after the window has already closed and the bearer is
-	/// unprotected. Half the window is the price of the heal actually arriving.
+	/// Two GCDs of lead time, and they are measured to the *decision*, not to the heal landing:
+	/// worst case the current GCD has to run out and a cast has to finish on top of it, which is two
+	/// GCDs on its own, so anything shorter lands the heal after the window has already closed and
+	/// the bearer is mortal again. Against Living Dead's ten seconds (ActionId.resx, action 3638:
+	/// "Living Dead Duration: 10s") that is roughly half the window. The GCD itself is the player's
+	/// real one - <see cref="DataCenter.DefaultGCDTotal"/> reads the recast the game reports, so
+	/// spell speed shortens both the lead time and the runway it buys.
+	/// </para>
+	/// <para>
+	/// The lead time is suspended while the death is still reachable, see
+	/// <see cref="DeathStillLikely"/>. Without that, the runway is bought with the very outcome the
+	/// hold exists to produce: a bearer deep enough to fall would be healed back over the line and
+	/// Living Dead would lapse unused, having cost the tank his invulnerability for nothing.
 	/// </para>
 	/// <para>
 	/// An instant heal would land immediately and make a shorter lead time safe, but which heal is
@@ -632,18 +639,45 @@ public static class StatusHelper
 	public static bool InDeathTriggerWindow(this IBattleChara battleChara)
 	{
 		return battleChara.HasStatus(false, DeathTriggeredStatus)
-			&& !battleChara.WillStatusEndGCD(DeathTriggerLeadGCDs, 0, false, DeathTriggeredStatus);
+			&& (DeathStillLikely(battleChara.GetHealthRatio())
+				|| !battleChara.WillStatusEndGCD(DeathTriggerLeadGCDs, 0, false, DeathTriggeredStatus));
 	}
 
 	/// <inheritdoc cref="InDeathTriggerWindow(IBattleChara)"/>
 	public static bool PlayerInDeathTriggerWindow()
 	{
 		return PlayerHasStatus(false, DeathTriggeredStatus)
-			&& !PlayerWillStatusEndGCD(DeathTriggerLeadGCDs, 0, false, DeathTriggeredStatus);
+			&& (DeathStillLikely(ObjectHelper.GetPlayerHealthRatio())
+				|| !PlayerWillStatusEndGCD(DeathTriggerLeadGCDs, 0, false, DeathTriggeredStatus));
 	}
 
 	/// <summary>How early the death-trigger hold releases; see <see cref="InDeathTriggerWindow"/>.</summary>
 	private const uint DeathTriggerLeadGCDs = 2;
+
+	/// <summary>
+	/// Is the fall to zero still the likely continuation for a bearer at this health?
+	///
+	/// The lead time above buys the heal enough runway to land, and it pays for that with the one
+	/// thing the hold exists to protect: it can cancel a death that would still have arrived inside
+	/// the window. That price is only acceptable where the death was not coming anyway, and the
+	/// user's requirement is exactly that - the lead time must never heal the bearer out of a death
+	/// he was going to reach.
+	///
+	/// So the lead time is suspended while the bearer stands at or below
+	/// <c>HealthForDyingTanks</c>: that is the tree's own expression of "this tank is about to fall"
+	/// - the value at which the tank rotations fire the invulnerability in the first place - and at
+	/// that depth under a running stream the zero arrives before the window closes. Above it the
+	/// death is not coming, the buff is going to lapse unused, and the heal should be under way
+	/// before the bearer is mortal again.
+	///
+	/// Nothing is lost in the suspended case: once Living Dead does lapse, the hold is gone with it
+	/// and the bearer is an ordinary heal target again. What he cannot do is be healed over the
+	/// threshold while the trigger is still reachable.
+	/// </summary>
+	private static bool DeathStillLikely(float healthRatio)
+	{
+		return Service.Config != null && healthRatio <= Service.Config.HealthForDyingTanks;
+	}
 
 	/// <summary>
 	/// Statuses under which a heal lands for nothing at all, as opposed to merely being less urgent.
@@ -1533,14 +1567,7 @@ public static class StatusHelper
 			return false;
 		}
 
-		foreach (var id in OtherConfiguration.InvincibleStatus)
-		{
-			if (id == status.StatusId)
-			{
-				return true;
-			}
-		}
-		return false;
+		return OtherConfiguration.InvincibleStatus.Contains(status.StatusId);
 	}
 
 	/// <summary>
@@ -1560,14 +1587,7 @@ public static class StatusHelper
 			return false;
 		}
 
-		foreach (var id in OtherConfiguration.PriorityStatus)
-		{
-			if (id == status.StatusId)
-			{
-				return true;
-			}
-		}
-		return false;
+		return OtherConfiguration.PriorityStatus.Contains(status.StatusId);
 	}
 
 	/// <summary>
@@ -1608,14 +1628,7 @@ public static class StatusHelper
 			return false;
 		}
 
-		foreach (var id in OtherConfiguration.DangerousStatus)
-		{
-			if (id == status.StatusId)
-			{
-				return true;
-			}
-		}
-		return false;
+		return OtherConfiguration.DangerousStatus.Contains(status.StatusId);
 	}
 
 	/// <summary>

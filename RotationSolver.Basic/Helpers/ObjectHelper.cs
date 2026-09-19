@@ -3576,6 +3576,352 @@ public static class ObjectHelper
 		return elapsedTime / hpRatioDifference * (wholeTime ? 1 : currentHealthRatio);
 	}
 
+	private static readonly ConcurrentDictionary<ulong, (DateTime At, float Ttk, float Ratio)> _ttkForecast = [];
+	private static readonly ConcurrentDictionary<ulong, float> _ttkBias = [];
+
+	/// <summary>
+	/// How far <see cref="GetTTK"/> has been off for this character lately: 1 means its forecasts
+	/// held, above 1 means health fell faster than predicted, below 1 slower.
+	/// </summary>
+	/// <remarks>
+	/// The estimate does not need an outside observer to be judged. It made a prediction a moment
+	/// ago - "this one reaches zero in N seconds" - and the health since then either matches it or
+	/// does not. Comparing the two is arithmetic the plugin can do on itself, every second, for
+	/// every member, which is the whole of what a play session would have contributed and more
+	/// besides: it never looks away.
+	///
+	/// Why it matters for the thing being built rather than for the statistic: a forecast that runs
+	/// optimistic is worse than none, because the rule hanging on it would step in too late. With
+	/// the bias measured, the same forecast divided by it is the corrected one, and the correction
+	/// costs no configured value - it comes out of the observation. That is the adaptation the user
+	/// asks for in the other concepts as well: assume, watch, correct.
+	///
+	/// Only falls are compared. A rising ratio means healing reached the target, which says nothing
+	/// about how well the fall was predicted, so those samples are skipped rather than folded in as
+	/// a negative. The value is smoothed across samples so that one spike does not move it.
+	/// </remarks>
+	internal static float GetTtkBias(this IBattleChara battleChara)
+	{
+		return battleChara != null && _ttkBias.TryGetValue(battleChara.GameObjectId, out var bias)
+			? bias
+			: 1f;
+	}
+
+	// Three samples at the 1 Hz recording rate. A forecast older than that belongs to a character
+	// the sampling loop no longer visits - out of the object table, or out of the party - and a
+	// stale time to death is worse than none, because it would keep answering confidently.
+	private static readonly TimeSpan ForecastFreshness = TimeSpan.FromSeconds(3);
+
+	/// <summary>
+	/// <see cref="GetTTK"/> corrected by how wrong it has been lately - the value a rule should read.
+	/// </summary>
+	/// <remarks>
+	/// Reads the forecast that <see cref="ScoreTtkForecast"/> filed rather than recomputing it.
+	/// GetTTK walks the whole recorded history, which is four minutes of samples; the heal target
+	/// selection asks this question several times per member and runs in the combat path, so
+	/// recomputing there would put a four-minute walk per member into every frame. The filed value
+	/// is at most a second old, and the quantity it carries averages over far longer than that.
+	/// </remarks>
+	internal static float GetCorrectedTTK(this IBattleChara battleChara)
+	{
+		if (battleChara == null
+			|| !_ttkForecast.TryGetValue(battleChara.GameObjectId, out var last)
+			|| float.IsNaN(last.Ttk)
+			|| DateTime.Now - last.At > ForecastFreshness)
+		{
+			return float.NaN;
+		}
+
+		var bias = battleChara.GetTtkBias();
+		return bias > 0f ? last.Ttk / bias : last.Ttk;
+	}
+
+	/// <summary>
+	/// The share of its health a character is expected to still hold by the time a heal begun now
+	/// could land: 1 when nothing says it is falling, 0 when it would be dead before then.
+	/// </summary>
+	/// <remarks>
+	/// The whole of the forward-looking behaviour sits in this one number, and every rule below
+	/// inherits it by multiplying its own quantity with it. That is deliberate: the alternative was
+	/// a second trigger and a second rank beside the existing ones, and two mechanisms deciding the
+	/// same thing drift apart. Here the question a rule asks changes from "how does this member
+	/// stand" to "how will it stand when my heal arrives", and every threshold, rank and short-cut
+	/// that already exists follows without being touched.
+	///
+	/// Why a level threshold alone is late: it is a level, and the danger is a rate. A tank falling
+	/// at 33% of its pool per second passes the 70% mark with 2.1 seconds left, while the heal that
+	/// mark triggers needs the rest of the GCD plus a cast to land. The cast goes out after the
+	/// death. At a gentle rate the same threshold is early enough, which is why the correction has
+	/// to scale with the rate rather than be a fixed offset.
+	///
+	/// The lead time is read from the game rather than configured: what remains of the current GCD
+	/// plus one full GCD for the cast. A healer under Presence of Mind therefore looks ahead less
+	/// far, which is correct - they can act sooner.
+	///
+	/// Self-limiting in the case that matters for cost: while health is not falling on balance,
+	/// GetTTK answers NaN and this returns 1, so a party held steady sees no change at all. The
+	/// look-ahead appears exactly when the net trend is downward, and grows as it steepens.
+	///
+	/// Off by default. The effect cannot be shown with the means available here - static analysis
+	/// and a compile say nothing about whether a tank lives - so the current behaviour stays the
+	/// default and this is offered as a setting.
+	/// </remarks>
+	internal static float GetForecastSurvivingShare(this IBattleChara battleChara)
+	{
+		if (battleChara == null || !Service.Config.HealAheadOfDamage)
+		{
+			return 1f;
+		}
+
+		var ttk = battleChara.GetCorrectedTTK();
+		if (float.IsNaN(ttk) || ttk <= 0f)
+		{
+			return 1f;
+		}
+
+		var lead = GetHealLeadTime();
+		return lead <= 0f ? 1f : Math.Clamp(1f - (lead / ttk), 0f, 1f);
+	}
+
+	private static long _healLeadCacheTick = long.MinValue;
+	private static float _healLeadCache;
+
+	// Same frame cache as DataCenter's party HP statistics, and for the same reason: the heal target
+	// selection asks this several times per member per frame, and each read of the GCD figures goes
+	// to the action manager. One value per frame is as current as the question can be.
+	private const long HealLeadTtlMs = 15;
+
+	/// <summary>
+	/// How long a heal decided on now takes to land: what is left of this GCD, plus one GCD for the
+	/// cast. Read from the game, so a shortened GCD shortens the look-ahead with it.
+	/// </summary>
+	internal static float GetHealLeadTime()
+	{
+		var now = Environment.TickCount64;
+		if (_healLeadCacheTick != long.MinValue && now - _healLeadCacheTick < HealLeadTtlMs)
+		{
+			return _healLeadCache;
+		}
+
+		_healLeadCache = DataCenter.DefaultGCDRemain + DataCenter.DefaultGCDTotal;
+		_healLeadCacheTick = now;
+		return _healLeadCache;
+	}
+
+	/// <summary>
+	/// Is anything actually threatening this character right now?
+	/// </summary>
+	/// <remarks>
+	/// The user's requirement, in his words: an emergency heal on a freshly raised player is right
+	/// "falls Gefahr bevorsteht, z.B. grosser heftiger AoE" - but "wenn der Spieler aber keine Aggro
+	/// hat, kein AoE ansteht, oder kein sonstiger Schaden ansteht, wuerde doch HoT oder kleinere
+	/// Heals bzw. beides reichen".
+	///
+	/// That is three questions, and the tree can answer all three:
+	/// <list type="bullet">
+	/// <item>aimed at - an enemy is attacking this member, or casting something that will land on
+	/// them (<see cref="DataCenter.TargetedPartyMembers"/>)</item>
+	/// <item>an announced area cast - <see cref="DataCenter.IsHostileCastingAOE"/></item>
+	/// <item>damage actually arriving - the health trend has a finite time to zero</item>
+	/// </list>
+	///
+	/// Deliberately not a rule about raising. A player who has just been resurrected is only the
+	/// most visible case: he holds a few percent, carries no aggro and takes no damage, so every
+	/// threshold in the tree reads him as the most urgent member in the party while nothing at all
+	/// is happening to him. The same is true of a damage dealer who has just run out of an area
+	/// effect. The user's requirement is about danger, not about raising, and so is this.
+	///
+	/// The third arm is why this is worth the name: aggro and an announced cast are both predictions
+	/// that can miss - a boss mechanic that neither casts nor retargets shows up in neither - and
+	/// the health trend catches what they miss, one sample after the first hit lands. An emergency
+	/// heal is an ability without a cast time, so the cost of finding out that way is a delay, not a
+	/// death.
+	///
+	/// Errs towards "threatened": every arm that cannot answer says yes by staying silent, and the
+	/// caller then behaves exactly as it does today.
+	/// </remarks>
+	/// <summary>
+	/// Is anybody in the party going to fall before a heal decided on now could reach them?
+	/// </summary>
+	/// <remarks>
+	/// The user's bound on every rule that yields a GCD: suspending something is only right while
+	/// the incoming damage is still manageable. Manageable is not a number of enemies and not a sum
+	/// of their output - it is whether the group holds, and that is measured rather than set.
+	///
+	/// A rule that gives up a GCD costs the party exactly that GCD. So the question is whether
+	/// everyone survives it with enough left over to be healed afterwards, which is the same lead
+	/// time the forward-looking health uses: the rest of this GCD plus one for the cast.
+	///
+	/// Nobody falling means NaN everywhere, and NaN is not a short time - it is no death in sight.
+	/// So a party being held steady never trips this, however many enemies are standing on it, and
+	/// a single member actually going down stops the hold even if the pack is small. That is the
+	/// intended shape: the old proxy measured the pack, and a big pack that is being healed through
+	/// is precisely where stretching the throttle pays.
+	///
+	/// It answers for the whole party rather than for the tank alone, which is deliberately
+	/// conservative: a damage dealer standing in fire blocks the hold even though the stun would not
+	/// have helped him. The cost of that is one GCD of stun stretching, and the user's standing
+	/// order puts the group's survival ahead of output.
+	/// </remarks>
+	internal static bool AnyPartyMemberFallingWithinHealWindow()
+	{
+		var lead = GetHealLeadTime();
+		if (lead <= 0f)
+		{
+			return false;
+		}
+
+		var party = DataCenter.PartyMembers;
+		for (var i = 0; i < party.Count; i++)
+		{
+			var member = party[i];
+			if (member == null || member.IsDead)
+			{
+				continue;
+			}
+
+			var ttk = member.GetCorrectedTTK();
+			if (!float.IsNaN(ttk) && ttk <= lead)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	internal static bool IsUnderThreat(this IBattleChara battleChara)
+	{
+		if (battleChara == null)
+		{
+			return true;
+		}
+
+		if (DataCenter.TargetedPartyMembers.Contains(battleChara.GameObjectId))
+		{
+			return true;
+		}
+
+		if (DataCenter.IsHostileCastingAOE)
+		{
+			return true;
+		}
+
+		// A finite time to zero means the health is falling on balance - net of every mitigation,
+		// barrier and foreign heal. NaN means it is not, which is the answer this asks for.
+		return !float.IsNaN(battleChara.GetCorrectedTTK());
+	}
+
+	/// <summary>
+	/// <see cref="GetHealthRatio"/> carried forward to the moment a heal begun now would land.
+	/// </summary>
+	internal static float GetForecastHealthRatio(this IBattleChara battleChara)
+	{
+		return battleChara.GetHealthRatio() * battleChara.GetForecastSurvivingShare();
+	}
+
+	/// <summary>
+	/// <see cref="GetEffectiveHp"/> carried forward to the moment a heal begun now would land.
+	/// </summary>
+	internal static uint GetForecastEffectiveHp(this IBattleChara battleChara)
+	{
+		return (uint)(battleChara.GetEffectiveHp() * battleChara.GetForecastSurvivingShare());
+	}
+
+	/// <summary>
+	/// <see cref="GetEffectiveHpPercent"/> carried forward to the moment a heal begun now would land.
+	/// </summary>
+	internal static int GetForecastEffectiveHpPercent(this IBattleChara battleChara)
+	{
+		return (int)(battleChara.GetEffectiveHpPercent() * battleChara.GetForecastSurvivingShare());
+	}
+
+	/// <summary>
+	/// <see cref="GetPlayerHealthRatio"/> carried forward the same way, for the paths that ask about
+	/// the player without holding an object reference.
+	/// </summary>
+	internal static float GetForecastPlayerHealthRatio()
+	{
+		return Player.Object == null
+			? GetPlayerHealthRatio()
+			: GetPlayerHealthRatio() * Player.Object.GetForecastSurvivingShare();
+	}
+
+	/// <summary>
+	/// Scores the forecast made for this character earlier against what its health actually did, and
+	/// files a fresh forecast for the next round. Called once per history sample.
+	/// </summary>
+	internal static void ScoreTtkForecast(this IBattleChara battleChara)
+	{
+		if (battleChara == null)
+		{
+			return;
+		}
+
+		var id = battleChara.GameObjectId;
+		var now = DateTime.Now;
+		var ratio = battleChara.GetHealthRatio();
+		var ttk = battleChara.GetTTK();
+
+		if (_ttkForecast.TryGetValue(id, out var last))
+		{
+			var elapsed = (float)(now - last.At).TotalSeconds;
+			var actualFall = last.Ratio - ratio;
+
+			// Only a fall says anything about a forecast of falling. A rise means a heal landed.
+			// The forecast also has to have been a number, and enough time has to have passed for
+			// the difference to be more than sampling noise.
+			if (!float.IsNaN(last.Ttk) && last.Ttk > 0f && elapsed > 0f && actualFall > 0f)
+			{
+				var expectedFall = elapsed * (last.Ratio / last.Ttk);
+				if (expectedFall > 0f)
+				{
+					var sample = actualFall / expectedFall;
+					var previous = _ttkBias.TryGetValue(id, out var b) ? b : 1f;
+
+					// Smoothed, so a single spike does not take over. Bounded because the ratio can
+					// run away when a forecast was very long and a burst lands.
+					var smoothed = (previous * 3f + sample) / 4f;
+					_ttkBias[id] = Math.Clamp(smoothed, 0.25f, 4f);
+				}
+			}
+		}
+
+		_ttkForecast[id] = (now, ttk, ratio);
+	}
+
+	private static readonly TimeSpan TtkForecastLifetime = TimeSpan.FromSeconds(DataCenter.HP_RECORD_TIME);
+
+	/// <summary>
+	/// Drops the scoring state of characters that have not been seen for a while.
+	/// </summary>
+	/// <remarks>
+	/// Both dictionaries are keyed by object id and would otherwise grow for every member of every
+	/// party of a session. Pruning against the current party instead would be cheaper but wrong: a
+	/// member who walks out of the object table for a few seconds would come back with the learned
+	/// bias reset to 1, which is the one moment - a pull spread over a wide room - where the
+	/// correction is worth the most. Age is the honest criterion, and it is the same window the
+	/// health history itself keeps.
+	/// </remarks>
+	internal static void ForgetStaleTtkForecasts()
+	{
+		// Nothing to do while the table is the size of a party; the scan only earns its keep once
+		// entries have accumulated across duties.
+		if (_ttkForecast.Count <= 24)
+		{
+			return;
+		}
+
+		var cutoff = DateTime.Now - TtkForecastLifetime;
+		foreach ((var id, var entry) in _ttkForecast)
+		{
+			if (entry.At < cutoff)
+			{
+				_ = _ttkForecast.TryRemove(id, out _);
+				_ = _ttkBias.TryRemove(id, out _);
+			}
+		}
+	}
+
 	private static readonly ConcurrentDictionary<ulong, DateTime> _aliveStartTimes = [];
 
 	/// <summary>

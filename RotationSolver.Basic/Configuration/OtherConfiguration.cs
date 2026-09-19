@@ -108,6 +108,31 @@ internal class OtherConfiguration
 	public static List<Job> TheBalancePriority = [];
 	public static List<Job> KardiaTankPriority = [];
 
+	/// <summary>
+	/// The largest share of a party member's maximum HP that each listed area action has ever been
+	/// observed to take, keyed by action id. Learned in play; not shipped with the plugin.
+	/// </summary>
+	/// <remarks>
+	/// Kept beside <see cref="HostileCastingArea"/> rather than folded into it, and that is the whole
+	/// reason this costs nothing to introduce: the list keeps its type, its stored format, its
+	/// surface and the one UI method that draws four such lists. An action missing here is *unrated*,
+	/// which is not the same as *small* - it behaves exactly as it did before, which is what keeps
+	/// the 850 shipped entries from losing their mitigation overnight.
+	///
+	/// A share rather than an amount, so it does not age with item level or content sync. The highest
+	/// value ever seen rather than the last, so one unmitigated observation sets the truth and later
+	/// well-mitigated ones cannot talk it back down.
+	///
+	/// Read by <c>DataCenter.AreaCastIsWorthMitigating</c>, which decides whether an incoming area
+	/// cast is worth a mitigation cooldown. Measured in play, evaluated in play, applied in play -
+	/// and this file is the only thing that carries a reading past the end of a session. Without it
+	/// every login would start from nothing and "rated after one clear" would hold only until the
+	/// player logs out, which for a fight progged over several evenings means never. That is why the
+	/// list reset leaves it alone, why discarding it has its own button, and why it is written
+	/// through a temporary file rather than in place.
+	/// </remarks>
+	public static Dictionary<uint, float> HostileCastingAreaPotential = [];
+
 	public static RotationSolverRecord RotationSolverRecord = new();
 
 	public static void Init()
@@ -127,6 +152,8 @@ internal class OtherConfiguration
 		_ = Task.Run(() => InitOne(ref NoHostileNames, nameof(NoHostileNames)));
 		_ = Task.Run(() => InitOne(ref NoProvokeNames, nameof(NoProvokeNames)));
 		_ = Task.Run(() => InitOne(ref HostileCastingArea, nameof(HostileCastingArea)));
+		// No download: this one is learned in play and has no shipped counterpart to fetch.
+		_ = Task.Run(() => InitOne(ref HostileCastingAreaPotential, nameof(HostileCastingAreaPotential), false));
 		_ = Task.Run(() => InitOne(ref HostileCastingTank, nameof(HostileCastingTank)));
 		_ = Task.Run(() => InitOne(ref BeneficialPositions, nameof(BeneficialPositions)));
 		_ = Task.Run(() => InitOne(ref RotationSolverRecord, nameof(RotationSolverRecord), false));
@@ -179,6 +206,7 @@ internal class OtherConfiguration
 			await SaveKardiaTankPriority();
 			await SaveNoHostileNames();
 			await SaveHostileCastingArea();
+			await SaveHostileCastingAreaPotential();
 			await SaveHostileCastingTank();
 			await SaveBeneficialPositions();
 			await SaveRotationSolverRecord();
@@ -195,6 +223,32 @@ internal class OtherConfiguration
 	{
 		InitOne(ref HostileCastingArea, nameof(HostileCastingArea), true, true);
 		SaveHostileCastingArea().Wait();
+	}
+
+	/// <summary>
+	/// Discards everything learned about how hard the listed area actions hit.
+	/// </summary>
+	/// <remarks>
+	/// Deliberately separate from <see cref="ResetHostileCastingArea"/>, which is the button users
+	/// are told to press after every patch. Reloading the curated list is cheap - it is a download.
+	/// The measurements are not: they cost runs in the game, and throwing them away with the list
+	/// would mean starting from nothing every patch for the sake of the few actions that actually
+	/// changed.
+	///
+	/// A rating left behind for an id the list no longer holds costs nothing, because every route
+	/// that reads a rating goes through the list first.
+	///
+	/// What this button is for is the one case the highest-value rule cannot fix by itself. That rule
+	/// only ever raises: an action rated too low corrects itself, since the mitigation is skipped and
+	/// the next hit arrives unmitigated. An action that was *nerfed* keeps its old, too-high rating
+	/// for good, and the only cost of that is mitigation spent where it is no longer needed - safe,
+	/// but wrong. Clearing is the way out, and it is the user's call rather than an automatic decay:
+	/// decay would undo the very property that makes one unmitigated observation worth keeping.
+	/// </remarks>
+	public static void ResetHostileCastingAreaPotential()
+	{
+		HostileCastingAreaPotential.Clear();
+		SaveHostileCastingAreaPotential().Wait();
 	}
 
 	public static void ResetHostileCastingTank()
@@ -218,6 +272,11 @@ internal class OtherConfiguration
 	public static Task SaveHostileCastingArea()
 	{
 		return Task.Run(() => Save(HostileCastingArea, nameof(HostileCastingArea)));
+	}
+
+	public static Task SaveHostileCastingAreaPotential()
+	{
+		return Task.Run(() => Save(HostileCastingAreaPotential, nameof(HostileCastingAreaPotential)));
 	}
 
 	public static Task SaveHostileCastingTank()
@@ -435,11 +494,22 @@ internal class OtherConfiguration
 		{
 			try
 			{
-				File.WriteAllText(path,
+				// Written to a temporary file and then moved into place, so an interruption cannot
+				// leave a half-written file behind. WriteAllText truncates first and fills after: a
+				// crash in between leaves JSON that no longer parses, and InitOne answers an
+				// unreadable file by silently starting from empty - it does not re-download, because
+				// the file exists.
+				//
+				// For the curated lists that costs a button press. For HostileCastingAreaPotential it
+				// costs everything that was learned in play, and that store is written during combat,
+				// on every new highest reading - which is exactly when a crash is most likely.
+				var temp = path + ".tmp";
+				File.WriteAllText(temp,
 				JsonConvert.SerializeObject(value, Formatting.Indented, new JsonSerializerSettings()
 				{
 					TypeNameHandling = TypeNameHandling.None,
 				}));
+				File.Move(temp, path, true);
 				return; // Exit the method if successful
 			}
 			catch (IOException ex) when (i < retryCount - 1)
@@ -475,6 +545,21 @@ internal class OtherConfiguration
 			{
 				PluginLog.Warning($"Failed to load {name} from local file. Reinitializing to default: {ex.Message}");
 				value = new T(); // Reinitialize to default
+
+				// Keep the unreadable file instead of letting the next save overwrite it, and say so.
+				// Losing a curated list this way is recoverable with the reset button; losing the
+				// learned damage potentials is not, so the loss must not be silent.
+				try
+				{
+					var kept = path + ".corrupt";
+					File.Move(path, kept, true);
+					PluginLog.Warning($"Kept the unreadable {name} as {kept}.");
+					_ = BasicWarningHelper.AddSystemWarning($"{name} could not be read and was set aside.");
+				}
+				catch (Exception moveEx)
+				{
+					PluginLog.Warning($"Could not set aside the unreadable {name}: {moveEx.Message}");
+				}
 			}
 		}
 		else if (download || forceDownload)

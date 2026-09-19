@@ -511,7 +511,10 @@ internal partial class Configs : IPluginConfiguration
 	Filter = AutoActionUsage)]
 	private static readonly bool _usePhoenixDown = false;
 
-	[ConditionBool, UI("Use Phoenix Down only if no Raiser alive in party",
+	[ConditionBool, UI("Use Phoenix Down only if no raiser is alive",
+	Description = "A raiser is a living healer, Summoner or Red Mage of a high enough level to have their raise. Which of them count follows the raise target setting: the party alone under Party only and Party healers only, party and alliance under the alliance modes and All.\n"
+		+ "On: the item is kept for the case it exists for - nobody left who can cast a raise. A wipe recovery where the healer is up costs no Phoenix Down.\n"
+		+ "Off: a Phoenix Down can go out while a healer is standing next to the corpse, spending a consumable on a raise that was free.",
 	Parent = nameof(UsePhoenixDown))]
 	private static readonly bool _usePhoenixDownHealerLogic = true;
 
@@ -921,13 +924,31 @@ internal partial class Configs : IPluginConfiguration
 	public float HealthProtectedRatio { get; set; } = 0.15f;
 
 	// Living Dead is the one invulnerability whose trigger is the bearer's own death: dying converts
-	// it into Walking Dead and its self-healing. Healing the dark knight above zero while it is up
-	// removes that trigger. Off by default, and deliberately so - RSR fires Living Dead itself as a
-	// last-ditch save at HealthForDyingTanks (DarkKnightRotation.EmergencyAbility), and under that
-	// usage the death is not wanted at all. Walking Dead demands healing equal to full max HP within
-	// ten seconds or it kills, so holding the heal is only right when the death was the plan and the
-	// healer can carry phase two. Whoever knows that for their group turns this on.
-	[UI("Withhold healing from a dark knight under Living Dead, so the death that converts it can happen.",
+	// it into Walking Dead. Healing the dark knight above zero while it is up removes that trigger.
+	//
+	// What phase two demands is quoted from the action's own effect text (ActionId.resx, action
+	// 3638), not from memory: Living Dead lasts 10s, Walking Dead another 10s, "most attacks will
+	// not lower your HP below 1", and "if before the Walking Dead timer runs out an amount of HP
+	// totaling your maximum HP is restored the effect will change to Undead Rebirth. If this amount
+	// is not restored you will be KO'd." The bearer contributes to that total himself - "Restores HP
+	// with each weaponskill successfully delivered or spell cast, Cure Potency: 1500" - so the
+	// healer carries the remainder, not the whole of it. Which is also why the hold is not a
+	// gamble on one heal: a white mage's Benediction restores the target fully on its own.
+	//
+	// Off by default, and deliberately so - RSR fires Living Dead itself as a last-ditch save at
+	// HealthForDyingTanks (DarkKnightRotation.EmergencyAbility), and under that usage the death is
+	// not wanted at all. Holding the heal is right where the death was the plan. Whoever knows that
+	// for their group turns this on.
+	[UI("Withhold healing under Living Dead",
+		Description = "On: a dark knight under Living Dead is left at 1 HP instead of being healed up, "
+			+ "so the killing blow lands and converts the effect into Walking Dead. From that moment "
+			+ "healing totalling his maximum HP has to go in within ten seconds or he is KO'd for real - "
+			+ "he contributes to that himself with every spell and weaponskill, and a Benediction covers "
+			+ "the rest on its own.\n"
+			+ "Off: he is healed normally, the death never happens, and Living Dead expires as plain "
+			+ "damage reduction.\n"
+			+ "Only switch this on if your group plays it that way. RSR also fires Living Dead by itself "
+			+ "as a last-ditch save on a dying tank, and in that use the death is not wanted at all.",
 		Filter = HealingActionCondition, Section = 1)]
 	public bool WithholdHealingForLivingDead { get; set; } = false;
 
@@ -935,6 +956,59 @@ internal partial class Configs : IPluginConfiguration
 		Filter = HealingActionCondition, Section = 1)]
 	[Range(0, 1, ConfigUnitType.Percent, 0.02f)]
 	public float HealthSelfRatio { get; set; } = 0.4f;
+
+	// Every health threshold above is a level, and what kills a tank in a wall-to-wall pull is a
+	// rate. A member falling fast crosses its threshold with less time left than the heal that
+	// threshold triggers needs to arrive - the rest of the GCD, then the cast - so the cast goes
+	// out after the death. With this on, the thresholds and the heal target selection read the
+	// health each member is headed for by the time a heal begun now would land, taken from the
+	// observed trend rather than from any table: ObjectHelper.GetForecastSurvivingShare.
+	//
+	// It changes nothing while a party is held steady. The trend is measured net of every
+	// mitigation, barrier and foreign heal, so health that is not falling on balance yields no
+	// look-ahead at all; it appears when the net trend turns downward and grows as it steepens.
+	//
+	// Off by default because the effect cannot be established with the means available here. A
+	// compile says nothing about whether the tank lives.
+	[UI("Heal ahead of incoming damage",
+		Description = "Every healing threshold and the heal target choice read the health a member is "
+			+ "heading for by the time a heal started now would land, instead of the health shown right "
+			+ "now.\n"
+			+ "In a fight: a tank dropping fast gets his heal about one GCD earlier, and someone falling "
+			+ "quickly is picked ahead of someone sitting lower but steady - the case where a cast used "
+			+ "to go out after the death.\n"
+			+ "While a party is held steady it changes nothing. The trend is measured net of every "
+			+ "mitigation, barrier and outside heal, so health that is not falling on balance produces "
+			+ "no look-ahead at all; it appears when the net trend turns downward and grows as it "
+			+ "steepens.\n"
+			+ "Off by default because the effect cannot be proven without playing it.",
+		Filter = HealingActionCondition, Section = 1)]
+	public bool HealAheadOfDamage { get; set; } = false;
+
+	// The learned area list holds everything that once hit the whole party, from a raidwide taking
+	// sixty percent to a trash tick taking two, and every entry raised the same party mitigation.
+	// What that spends is the cooldown: a Reprisal laid on a trivial tick is missing at the next
+	// real hit. With this on, an action whose measured damage would leave everybody above the level
+	// at which the tree heals anyway does not raise it.
+	//
+	// It reads what Watcher records, so an action nothing has been measured on behaves exactly as
+	// before - which is how the 850 shipped entries keep their mitigation. Ratings arrive with play:
+	// in content that is repeated, one clear of the fight.
+	//
+	// On by default: it implements a shortcoming the user reported, and its fallback in every
+	// unknown case is the old behaviour. Whoever wants mitigation on everything turns it off.
+	[UI("Skip mitigation for small area casts",
+		Description = "A learned area cast whose measured damage would leave everybody above the level "
+			+ "at which the tree heals anyway no longer raises the party mitigation.\n"
+			+ "In a fight: Reprisal, Addle and the rest stay off cooldown and are ready for the next "
+			+ "real hit, instead of being spent on a two-percent tick. A hit that would push anyone to "
+			+ "where healing is called for is still mitigated in full.\n"
+			+ "An action nothing has been measured on behaves exactly as before, which is what keeps the "
+			+ "850 shipped entries mitigated. Ratings arrive with play - in content you repeat, one "
+			+ "clear of the fight. The AOE list in Lists shows the measured share per entry and which "
+			+ "of them have already saved a cooldown.",
+		Filter = HealingActionCondition, Section = 1)]
+	public bool SkipMitigationForSmallAreaCasts { get; set; } = true;
 
 	#region
 	[JobConfig, UI("Prioritize raising dead players over Healing/Defense.",

@@ -3771,7 +3771,63 @@ public partial class RotationConfigWindow : Window
 			_ = ImGui.TableNextColumn();
 			_allSearchable.DrawItems(Configs.List);
 			ImGui.TextWrapped(UiString.ConfigWindow_List_HostileCastingAreaDesc.GetDescription());
-			DrawActionsList(nameof(OtherConfiguration.HostileCastingArea), OtherConfiguration.HostileCastingArea);
+			DrawActionsList(nameof(OtherConfiguration.HostileCastingArea), OtherConfiguration.HostileCastingArea,
+				OtherConfiguration.HostileCastingAreaPotential);
+
+			// How much of the list has been rated, and how hard those actions were seen to hit. This
+			// is the probe for a change that deliberately alters no behaviour: without it, whether
+			// the store fills up at all would be as unknown after shipping as before. In repeated
+			// content - an extreme trial, a savage fight being progged - "rated" should reach the
+			// number of area actions in that fight after a single clear.
+			//
+			// Separate from the list above on purpose: DrawActionsList serves four lists through one
+			// signature, and leaving it alone is what makes this store free to introduce.
+			var rated = OtherConfiguration.HostileCastingAreaPotential;
+			ImGui.Text($"Damage potential recorded: {rated.Count} of {OtherConfiguration.HostileCastingArea.Count}");
+			if (rated.Count > 0)
+			{
+				var highest = 0f;
+				foreach (var share in rated.Values)
+				{
+					if (share > highest)
+					{
+						highest = share;
+					}
+				}
+				ImGui.Text($"Hardest hit seen: {highest * 100f:F0}% of a member's maximum HP");
+
+				// Whether the arithmetic has ever fired, which the two numbers above cannot say: they
+				// report that the store fills up, and between "a value exists" and "a cooldown was
+				// saved" lies the whole calculation. The premortem found exactly that gap once already
+				// - an earlier draft compared against 0.15 and could never have fired - and it was
+				// caught by thinking it through rather than by measuring. This line measures it.
+				//
+				// Zero is two different answers, so the setting is named alongside: switched off the
+				// rule cannot fire, switched on it means every rated action in the content played so
+				// far was worth its mitigation.
+				if (!Service.Config.SkipMitigationForSmallAreaCasts)
+				{
+					ImGui.TextColored(ImGuiColors.DalamudYellow,
+						"Mitigation is never withheld: \"Skip party mitigation for small area casts\" is off.");
+				}
+				else
+				{
+					ImGui.Text("Mitigation withheld as too small, this session: "
+						+ $"{DataCenter.AreaMitigationSkipped.Count} of {rated.Count} rated action(s)");
+				}
+
+				if (ImGui.Button("Forget recorded damage potential"))
+				{
+					OtherConfiguration.ResetHostileCastingAreaPotential();
+					// The record of withheld mitigations refers to those measurements, so it goes with
+					// them: left standing it would name an action at "--" and count against a store
+					// of zero.
+					DataCenter.AreaMitigationSkipped.Clear();
+				}
+				ImguiTooltips.HoveredTooltip("Kept when the list itself is reset, because these values "
+					+ "cost runs in the game rather than a download. Clear them when a patch has "
+					+ "changed how hard these actions hit - a rating can only ever rise on its own.");
+			}
 
 			_ = ImGui.TableNextColumn();
 			_allSearchable.DrawItems(Configs.List2);
@@ -3791,7 +3847,13 @@ public partial class RotationConfigWindow : Window
 	private static string _lastActionPopupSearching = string.Empty;
 	private static readonly List<(GAction action, float sim)> _cachedPopupFiltered = [];
 
-	private static void DrawActionsList(string name, HashSet<uint> actions)
+	/// <summary>
+	/// Draws one of the learned action lists. <paramref name="potential"/> is optional and only the
+	/// area list passes it: where a measured damage share exists for an entry, the entry says so.
+	/// Four lists share this one signature, so the parameter is additive and the other three callers
+	/// are unchanged.
+	/// </summary>
+	private static void DrawActionsList(string name, HashSet<uint> actions, Dictionary<uint, float>? potential = null)
 	{
 		actions ??= [];
 		if (name == null)
@@ -3854,7 +3916,19 @@ public partial class RotationConfigWindow : Window
 
 			ImGuiHelper.DrawHotKeysPopup(key, string.Empty, (UiString.ConfigWindow_List_Remove.GetDescription(), Reset, pairs));
 
-			_ = ImGui.Selectable($"{action.Name} ({action.RowId})");
+			// The measurement per entry, not just the total. A raidwide sitting at three percent is a
+			// reading taken while the party was well shielded, and only the name beside the number
+			// makes that visible - the alternative is a single "hardest hit" figure that cannot say
+			// which action is rated wrong. The second half says whether this entry has actually
+			// withheld a mitigation, which is what turns a stored number into an observed effect.
+			var label = $"{action.Name} ({action.RowId})";
+			if (potential != null && potential.TryGetValue(action.RowId, out var measured) && measured > 0f)
+			{
+				label += DataCenter.AreaMitigationSkipped.ContainsKey(action.RowId)
+					? $"  -  {measured * 100f:F0}% measured, mitigation withheld"
+					: $"  -  {measured * 100f:F0}% measured";
+			}
+			_ = ImGui.Selectable(label);
 
 			ImGuiHelper.ExecuteHotKeysPopup(key, string.Empty, string.Empty, false, (Reset, new[] { VirtualKey.DELETE }));
 		}
@@ -4597,6 +4671,94 @@ public partial class RotationConfigWindow : Window
 		}
 
 		ImGui.Text($"DPSTaken: {DataCenter.DPSTaken}");
+
+		// The per-member damage rate, made readable. RecordedHP carries the party since A91, and
+		// GetTTK turns that history into a time to zero - but a measurement nobody can see is a
+		// measurement nobody can judge, and whether it is usable in a fight is exactly what has to
+		// be judged before a rule is hung on it.
+		//
+		// "--" is not an error: GetTTK returns NaN while health is rising (no death in sight) and
+		// for the first 2.5s of observation. Both are answers.
+		//
+		// The second time is the same forecast corrected by how wrong it has been for this member in
+		// the last few seconds, and the factor behind it is that error: x1.0 means the trend held,
+		// x2.0 means health fell twice as fast as the trend predicted and the raw number is twice too
+		// long. That factor is the readout to watch before any rule is allowed to act on the time -
+		// if it sits near 1 through a pull, the plain trend is good enough; if it runs high whenever
+		// a pack lands, the raw number is the late one and the corrected time is the one to use.
+		//
+		// The second percentage is the one every heal decision now reads with HealAheadOfDamage on:
+		// the health that member is heading for by the time a heal begun now would land. Equal to
+		// the first while the setting is off or the trend is not downward.
+		//
+		// The trailing marks are the danger question the emergency heal asks, broken into the three
+		// arms that answer it: aim (an enemy is attacking this member or casting at them), aoe (an
+		// area cast is announced anywhere), fall (the health trend has a finite time to zero). That
+		// answers the one thing static analysis could not: whether "aoe" is true so much of the time
+		// in a trash pull that the rule never bites. Watching this line through a pull settles it -
+		// the code counts it itself, no outside observer needed.
+		//
+		// Cost is one pass over the history per member, and only while this window is open.
+		ImGui.Text("Party health now -> when a heal would land, time to die, and what threatens them:");
+		var partyForTtk = DataCenter.PartyMembers;
+		if (partyForTtk.Count == 0)
+		{
+			ImGui.Text("- no party members");
+		}
+		else
+		{
+			// Group-wide, so it is read once rather than per member.
+			var areaCast = DataCenter.IsHostileCastingAOE;
+			foreach (var member in partyForTtk)
+			{
+				if (member == null)
+				{
+					continue;
+				}
+
+				var ttk = member.GetTTK();
+				var shown = float.IsNaN(ttk) ? "--" : $"{ttk:F1}s";
+				var corrected = member.GetCorrectedTTK();
+				var shownCorrected = float.IsNaN(corrected) ? "--" : $"{corrected:F1}s";
+
+				var aimed = DataCenter.TargetedPartyMembers.Contains(member.GameObjectId);
+				var falling = !float.IsNaN(corrected);
+				var threat = aimed || areaCast || falling
+					? $"{(aimed ? "aim " : "")}{(areaCast ? "aoe " : "")}{(falling ? "fall" : "")}".TrimEnd()
+					: "safe";
+
+				ImGui.Text($"- {member.Name} {member.GetHealthRatio() * 100f:F0}%"
+					+ $" -> {member.GetForecastHealthRatio() * 100f:F0}%"
+					+ $" raw {shown} corrected {shownCorrected} (x{member.GetTtkBias():F2})"
+					+ $" [{threat}]");
+			}
+		}
+
+		// What the "aoe" mark above cannot say: whether the announced area cast was let through
+		// because it was measured as too small to need mitigation. Without this, a fight in which no
+		// mitigation goes out looks the same whether the rule worked or the chain broke.
+		if (!DataCenter.AreaMitigationSkipped.IsEmpty)
+		{
+			var newestId = 0u;
+			var newestAt = DateTime.MinValue;
+			foreach (var skipped in DataCenter.AreaMitigationSkipped)
+			{
+				if (skipped.Value > newestAt)
+				{
+					newestAt = skipped.Value;
+					newestId = skipped.Key;
+				}
+			}
+
+			GAction? skippedAction = Service.GetSheet<GAction>().GetRow(newestId);
+			var skippedName = skippedAction == null ? $"{newestId}" : $"{skippedAction.Value.Name} ({newestId})";
+			var measuredShare = OtherConfiguration.HostileCastingAreaPotential.TryGetValue(newestId, out var lastShare)
+				? $"{lastShare * 100f:F0}%"
+				: "--";
+			ImGui.Text($"Area mitigation last withheld: {skippedName} at {measuredShare},"
+				+ $" {(DateTime.Now - newestAt).TotalSeconds:F0}s ago");
+		}
+
 		ImGui.Text($"CurrentRotation: {DataCenter.CurrentRotation}");
 		ImGui.Text($"Job: {DataCenter.Job}");
 		ImGui.Text($"JobRange: {DataCenter.JobRange}");

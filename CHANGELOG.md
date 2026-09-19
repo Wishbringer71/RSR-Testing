@@ -23,6 +23,32 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Behaviour change in RotationSolver.Basic: the raise dispatch
+
+No signature changed, but a derived rotation that relies on the raise path sees different actions
+come out of it.
+
+- `CustomRotation.RaiseSpell` no longer hands **Swiftcast** back from the GCD path. It reports the
+  raise itself and lets the ability path weave the instant in front of it. The old form picked
+  Swiftcast only while `WeaponRemain <= 0.5f`, which is exactly the window
+  `RSCommands_Actions.DoAction` refuses every ability in — and `WeaponRemain` is
+  `DefaultGCDRemain`, so the two conditions excluded one another. The action reached the preview
+  window and was never cast. A rotation that overrode nothing is fixed by this; one that reads the
+  GCD path's output expecting an ability there will now see a GCD.
+- The Swiftcast weave in `EmergencyAbility` matches against the job's own `Raise` instead of the
+  four-id list `RaisePvE, EgeiroPvE, ResurrectionPvE, AscendPvE`. Red Mage's Verraise and Blue
+  Mage's Angel Whisper were missing from that list and now weave like the rest. A derived rotation
+  that sets `Raise` gets the weave automatically; one that raises with an action it does not
+  declare as `Raise` loses it, and should declare it.
+- The hard cast branches ask whether Swiftcast is still coming for the raise instead of whether it
+  is in recovery. With `RaisePlayerBySwift` off, nothing ever spent Swiftcast on a raise, so it
+  never entered recovery, so the hard cast branch never fired either and nothing was raised at all
+  — although the setting only promises not to spend Swiftcast on raises.
+
+Documented in `docs/rotation-flow/11-raise-dispatch.md`. `.github/scripts/audit/scan17.py` guards
+the class in CI: it reads the ability window out of the execution gate and fails when the GCD path
+picks an ability inside it.
+
 ### Changed in RotationSolver.Basic
 
 `StatusHelper.NoNeedHealingStatus` still exists with the same signature, but its contents changed,

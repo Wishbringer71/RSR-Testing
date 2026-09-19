@@ -620,6 +620,21 @@ public struct ActionTargetInfo(IBaseAction action)
 			return false;
 		}
 
+		// An attack question, and only an attack question: "is this target going to live long enough
+		// for the cast to be worth it". Asked of a friendly target it inverts into nonsense - the
+		// party member closest to dying would be the one dropped from the candidate list, which is
+		// exactly the one a heal is for.
+		//
+		// Today the answer happens to be right for the wrong reason: RecordedHP is filled from
+		// AllHostileTargets alone, so GetTTK returns NaN for every party member and the NaN branch
+		// lets them through. That is not a decision, it is a side effect of which objects the
+		// history happens to hold - and it breaks the moment the history holds more. Stating the
+		// condition outright makes the behaviour identical today and keeps it identical afterwards.
+		if (action.Setting.IsFriendly)
+		{
+			return true;
+		}
+
 		if (battleChara is not IBattleChara b)
 		{
 			return false;
@@ -3070,7 +3085,16 @@ public struct ActionTargetInfo(IBaseAction action)
 					continue;
 				}
 
-				if (!IBaseAction.AutoHealCheck || o.GetHealthRatio() < healRatio)
+				// Forecast health here too, and this is the gate the rest depends on: everything below
+				// draws from this set, so a member kept out here is invisible to the ranked list, to
+				// the critical rank and to every short-cut. AutoHealRatio defaults to 0.8, which is
+				// exactly where the look-ahead earns its keep - a tank at 90% who reaches zero in six
+				// seconds is at a forecast 34%, and judged by his current health he would be dropped
+				// before anything downstream ever saw him.
+				//
+				// This is not overhealing: the cut exists to keep a cast from being spent on somebody
+				// who does not need it, and somebody who will be at 34% when the cast lands does.
+				if (!IBaseAction.AutoHealCheck || o.GetForecastHealthRatio() < healRatio)
 				{
 					filteredGameObjects.Add(o);
 				}
@@ -3150,11 +3174,25 @@ public struct ActionTargetInfo(IBaseAction action)
 				List<(IBattleChara Obj, bool Unprotected, float Health)> ranked = [];
 				foreach (var o in objs)
 				{
-					if (o.HasStatus(false, StatusHelper.HealingIneffectiveStatus))
+					// A corpse takes no healing, so it is not a healing candidate - the same reason
+					// HealingIneffectiveStatus keeps its bearers out, taken to its extreme.
+					//
+					// Nothing upstream of here excludes the dead: GetCanTargets only drops targets at
+					// full health, and GetHealthRatio returns 0 for a corpse rather than something
+					// out of range. The worst-hurt pick therefore always rated a dead member as the
+					// most urgent, and only the role short-cuts ahead of it kept that from showing.
+					// The critical rank below would have made it unconditional, because a corpse
+					// holds the fewest effective points there can be. Raising is a separate path
+					// with its own target type, so nothing here is taken away from it.
+					if (o.IsDead || o.HasStatus(false, StatusHelper.HealingIneffectiveStatus))
 					{
 						continue;
 					}
-					ranked.Add((o, o.NoNeedHealingInvuln(), ObjectHelper.GetHealthRatio(o)));
+
+					// Forecast health rather than current, so the ordering below answers "who will be
+					// worst off when a heal lands" instead of "who is worst off now". With the
+					// setting off the two are the same number.
+					ranked.Add((o, o.NoNeedHealingInvuln(), ObjectHelper.GetForecastHealthRatio(o)));
 				}
 
 				// Unprotected before protected, then lowest health first inside each group.
@@ -3163,6 +3201,57 @@ public struct ActionTargetInfo(IBaseAction action)
 					var byProtection = b.Unprotected.CompareTo(a.Unprotected);
 					return byProtection != 0 ? byProtection : a.Health.CompareTo(b.Health);
 				});
+
+				// Anyone about to die comes before every role short-cut below.
+				//
+				// The three short-cuts return outright once their own threshold is met and look at
+				// nobody else, so a damage dealer at 10% was passed over the moment the tank stood
+				// at 44%, or the player themself at 39%. That is the case the user names - "auch ein
+				// Damagedealer ohne Aggro mit 10% Leben kann bei einem AoE sterben" - and the tank
+				// behind mitigations and a large pool is not in more danger there, only earlier in
+				// the order. His ranking of healer before tank before damage dealer applies at
+				// *equal* danger, which 10% against 44% is not.
+				//
+				// The threshold is the tree's own statement of "this one is about to fall": the
+				// value at which the tank rotations fire their invulnerability. Effective health,
+				// so a barrier counts - a tank at 10% behind The Blackest Night does not die to the
+				// next hit - and read the same way CanProvoke reads it.
+				//
+				// Ordered by absolute effective points rather than by percentage, because whoever
+				// stands here dies to the next hit and a hit is an absolute number: 10% of a small
+				// pool is fewer points than 14% of a large one. Role decides only a tie, which is
+				// where the instruction puts it.
+				//
+				// Protected members stay out. Without that this rank would invert into its own
+				// opposite - a gunbreaker under Superbolide sits at 1 HP on purpose, would hold the
+				// fewest points of anyone and would outrank every genuine emergency.
+				IBattleChara? critical = null;
+				var criticalHp = uint.MaxValue;
+				var criticalRole = int.MaxValue;
+				foreach (var r in ranked)
+				{
+					if (!r.Unprotected
+						|| r.Obj.GetForecastEffectiveHpPercent() > Service.Config.HealthForDyingTanks * 100f)
+					{
+						continue;
+					}
+
+					var hp = r.Obj.GetForecastEffectiveHp();
+					var role = r.Obj.IsJobCategory(JobRole.Healer) ? 0
+						: r.Obj.IsJobCategory(JobRole.Tank) ? 1
+						: 2;
+					if (critical == null || hp < criticalHp || (hp == criticalHp && role < criticalRole))
+					{
+						critical = r.Obj;
+						criticalHp = hp;
+						criticalRole = role;
+					}
+				}
+
+				if (critical != null)
+				{
+					return critical;
+				}
 
 				List<IBattleChara> healingNeededObjs = [];
 				foreach (var r in ranked)
@@ -3212,23 +3301,26 @@ public struct ActionTargetInfo(IBaseAction action)
 				if (Player.Object != null
 					&& !Player.Object.HasStatus(false, StatusHelper.HealingIneffectiveStatus)
 					&& !ObjectHelper.PlayerIsHeldForDeathTrigger()
-					&& ObjectHelper.GetPlayerHealthRatio() <= Service.Config.HealthSelfRatio)
+					&& ObjectHelper.GetForecastPlayerHealthRatio() <= Service.Config.HealthSelfRatio)
 				{
 					return Player.Object;
 				}
 
 				var healerTar = healerTars.Count > 0 ? healerTars[0] : null;
-				if (healerTar != null && healerTar.GetHealthRatio() <= Service.Config.HealthHealerRatio)
+				if (healerTar != null && healerTar.GetForecastHealthRatio() <= Service.Config.HealthHealerRatio)
 				{
 					return healerTar;
 				}
 
 				var tankTar = tankTars.Count > 0 ? tankTars[0] : null;
-				if (tankTar != null && tankTar.GetHealthRatio() <= Service.Config.HealthTankRatio)
+				if (tankTar != null && tankTar.GetForecastHealthRatio() <= Service.Config.HealthTankRatio)
 				{
 					return tankTar;
 				}
 
+				// The last pick keeps the plain ratio: it asks "is anyone hurt at all", and a member
+				// at full health with a falling trend is not hurt yet. Forecasting here would hand
+				// the heal to somebody the caller never asked about.
 				var tar = healingNeededObjs.Count > 0 ? healingNeededObjs[0] : null;
 				return tar != null && tar.GetHealthRatio() < 1 ? tar : null;
 			}

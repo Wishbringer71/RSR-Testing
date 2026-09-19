@@ -1,0 +1,96 @@
+{
+  "_comment": [
+    "German game names the user has stated, paired with the English identifier used in the code.",
+    "Rules for this file, from CLAUDE.md: a German name is never formed here - not translated, not",
+    "derived from the English name, not taken from a search-engine summary. Only two sources count:",
+    "the Square Enix job guide (currently blocked by the egress) and the user's own statement.",
+    "Anything else belongs in 'note', not in 'de'.",
+    "Validated by check_action_names.py, which resolves every 'en' against the generated resources."
+  ],
+  "entries": [
+    {
+      "de": "Abtausch",
+      "en": "Arm's Length",
+      "identifier": "ArmsLengthPvE",
+      "kind": "action",
+      "source": "user, 2026-09-12",
+      "note": "Answered directly when asked which action Abtausch is. Closes the question A-1646 left open. C30 had assigned the name to Shirk from a web search, which the naming rule does not admit as a source; that assignment is superseded. Conflicts with the Rückstoß entry below - both come from the user, at different times, for the same action."
+    },
+    {
+      "de": "Rückstoß",
+      "en": "Arm's Length",
+      "identifier": "ArmsLengthPvE",
+      "kind": "action",
+      "source": "user, recorded in C33",
+      "note": "Same action as the Abtausch entry. Which of the two the German client actually prints is not settled; the tree uses Rückstoß in 33 places. Until the user says otherwise, prefer the English identifier in new text."
+    },
+    {
+      "de": "Sanctus",
+      "en": "Holy",
+      "identifier": "HolyPvE",
+      "kind": "action",
+      "source": "user, used throughout concept 08",
+      "note": "Also covers Holy III (HolyIiiPvE), the level-82 upgrade the rotation casts in its place."
+    },
+    {
+      "de": "Reflexion",
+      "en": "Reprisal",
+      "identifier": "ReprisalPvE",
+      "kind": "action",
+      "source": "C30, via web search",
+      "note": "Not a source the naming rule admits. Kept because the user used the name in the same breath as Abtausch and has not corrected it, but it is the weakest entry in this file."
+    },
+    {
+      "de": "Ex Machina",
+      "en": "Thin Air",
+      "identifier": "ThinAirPvE",
+      "kind": "action",
+      "source": "user, recorded in CLAUDE.md",
+      "note": "The case that produced the naming rule: reported as absent from the tree because only the English name was searched."
+    },
+    {
+      "de": "Totenerweckung",
+      "en": "Living Dead",
+      "identifier": "LivingDeadPvE",
+      "kind": "action",
+      "source": "user, 2026-09-12"
+    },
+    {
+      "de": "Gleißender Schein",
+      "en": "Searing Light",
+      "identifier": "SearingLightPvE",
+      "kind": "action",
+      "source": "user, 2026-09-11"
+    },
+    {
+      "de": "Schimmerschild",
+      "en": "Radiant Aegis",
+      "identifier": "RadiantAegisPvE",
+      "kind": "action",
+      "source": "user, recorded in AUDIT_LOG A-146"
+    },
+    {
+      "de": "Stumpfsinn",
+      "en": "Addle",
+      "identifier": "AddlePvE",
+      "kind": "action",
+      "source": "user, recorded in AUDIT_LOG A-146"
+    },
+    {
+      "de": "Phönixfeder",
+      "en": "Phoenix Down",
+      "identifier": "4570",
+      "kind": "item",
+      "source": "user",
+      "note": "An item, not an action: item id 4570, used through BaseItem/PheonixDownItem."
+    },
+    {
+      "de": "Schutzwall",
+      "en": "Rampart",
+      "identifier": "RampartPvE",
+      "kind": "action",
+      "source": "user, 2026-09-12",
+      "note": "The upgraded form Enhanced Rampart grants at level 94 is status Rampart_1978, scoped to PLD WAR DRK GNB, whose effect text adds 'while HP recovered via healing actions is increased' - the plain form (71, 1191) does not. The user gives that increase as 15%; the game data states no figure, as with every trait-modified value."
+    }
+  ]
+}

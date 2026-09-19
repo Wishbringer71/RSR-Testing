@@ -54,7 +54,14 @@ public sealed class SMN_Reborn : SummonerRotation
 	[RotationConfig(CombatType.PvE, Name = "Order")]
 	public SummonOrderType SummonOrder { get; set; } = SummonOrderType.TopazEmeraldRuby;
 
-	[RotationConfig(CombatType.PvE, Name = "Prefer Titan while moving (Topaz GCDs are instant-cast, unlike Garuda/Ifrit which need you stationary)")]
+	[RotationConfig(CombatType.PvE, Name = "Prefer Titan while moving",
+		Tooltip = "While you are moving, Titan is summoned ahead of the configured order.\n"
+			+ "In a fight: Topaz Rite and its follow-ups are instant-cast, so a Titan phase runs at full "
+			+ "output while you are dodging. Garuda and Ifrit need you standing still - taken during "
+			+ "movement, their casts are interrupted or simply do not go out, and the phase loses GCDs.\n"
+			+ "Titan is only brought forward: whenever Titan is not available at that moment, your "
+			+ "configured summon order applies unchanged. Off by default, because it departs from the "
+			+ "order you set.")]
 	public bool PreferTitanWhileMoving { get; set; } = false;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Physick above level 30")]
@@ -202,7 +209,33 @@ public sealed class SMN_Reborn : SummonerRotation
 		var inSolarUnique = DataCenter.PlayerSyncedLevel() == 100 ? !InBahamut && !InPhoenix && InSolarBahamut : InBahamut && !InPhoenix;
 		var burstInSolar = (SummonSolarBahamutPvE.EnoughLevel && InSolarBahamut) || (!SummonSolarBahamutPvE.EnoughLevel && InBahamut) || !SummonBahamutPvE.EnoughLevel;
 
-		if (burstInSolar)
+		// Searing Light overwrites, it does not stack, and it comes back exactly as often as the
+		// Solar Bahamut window it is tied to. With one Summoner that tie is right. With a second one
+		// every window collides and all but one charge is wasted, so with another Summoner in the
+		// party the firing window widens - to any big summon, not just Solar, because the minor
+		// windows carry 78% of a Solar window and are the natural place for a second caster.
+		//
+		// Outside a summon the charge goes out only when every burst phase is held by somebody who
+		// keeps coming back, and then into Ifrit: an intermediate block carries 632 potency per GCD
+		// at its best against 947 to 1217 inside a demi, so leaving a burst phase costs more than
+		// firing early gains. Skipping a chance costs nothing by comparison - the charge stays up,
+		// its recast only starts when it is spent, and the next burst phase is at most one minor
+		// window away.
+		//
+		// The condition this replaces was `!HasAnySearingLight` - fire as soon as the buff is gone,
+		// with no books at all. Measured, that is the blind version of the same move: it wins where
+		// every phase happens to be taken and loses where they are not, including below today's
+		// narrow rule with two Summoners on fully drifted rotations. The book decides the same thing
+		// from the situation instead of from the buff timer.
+		//
+		// Ifrit specifically, not "any gap": it is the strongest of the three primal blocks. The
+		// limit is that a rotation which skips Ifrit would leave the charge unspent in this state;
+		// the default order summons it every cycle.
+		var mayFireSearingLight = burstInSolar
+			|| (AnotherSummonerInParty
+				&& (inBigInvocation || (AllSearingPhasesHeld && IfritActive)));
+
+		if (mayFireSearingLight)
 		{
 			if (SearingLightPvE.CanUse(out act))
 			{
@@ -317,7 +350,11 @@ public sealed class SMN_Reborn : SummonerRotation
 
 		if (PainflarePvE.CanUse(out act))
 		{
-			if ((inSolarUnique && HasSearingLight) || !SearingLightPvE.EnoughLevel)
+			// HasAnySearingLight, not HasSearingLight: the question here is whether a buff window is
+			// running, and a second Summoner's Searing Light raises this player's damage by the same
+			// 5%. Asking only about the own buff held the Aetherflow spenders back while standing in
+			// someone else's window.
+			if ((inSolarUnique && HasAnySearingLight) || !SearingLightPvE.EnoughLevel)
 			{
 				return true;
 			}
@@ -329,7 +366,7 @@ public sealed class SMN_Reborn : SummonerRotation
 
 		if (NecrotizePvE.CanUse(out act))
 		{
-			if ((inSolarUnique && HasSearingLight) || !SearingLightPvE.EnoughLevel)
+			if ((inSolarUnique && HasAnySearingLight) || !SearingLightPvE.EnoughLevel)
 			{
 				return true;
 			}
@@ -345,7 +382,7 @@ public sealed class SMN_Reborn : SummonerRotation
 
 		if (FesterPvE.CanUse(out act))
 		{
-			if ((inSolarUnique && HasSearingLight) || !SearingLightPvE.EnoughLevel)
+			if ((inSolarUnique && HasAnySearingLight) || !SearingLightPvE.EnoughLevel)
 			{
 				return true;
 			}

@@ -29,6 +29,11 @@ internal static partial class TargetUpdater
 			DataCenter.PartyMembers.Clear();
 			DataCenter.AllianceMembers.Clear();
 			DataCenter.AllHostileTargets.Clear();
+			// Cleared with the rest, or it keeps naming whoever was last under fire. Nothing fails
+			// when it is left behind: the set simply reports that member as threatened for as long
+			// as the party stays out of combat, and the emergency heal treats them accordingly the
+			// next time they drop.
+			DataCenter.TargetedPartyMembers.Clear();
 			DataCenter.DeathTarget = null;
 			DataCenter.DispelTarget = null;
 			DataCenter.ProvokeTarget = null;
@@ -172,6 +177,42 @@ internal static partial class TargetUpdater
 		DataCenter.PartyMembers = partyMembers;
 		DataCenter.AllianceMembers = allianceMembers;
 		DataCenter.AllHostileTargets = hostileTargets;
+
+		// Which party members an enemy is pointing at, collected once here rather than asked per
+		// member later. The hostile list is built in this loop anyway and each enemy names its
+		// target outright, so the cost is one pass over the enemies and the answer becomes a lookup.
+		// Asking it the other way round - "is any enemy aiming at this member" - would walk every
+		// enemy for every member.
+		//
+		// Two sources, because they are not the same question. TargetObjectId is who the enemy is
+		// attacking, which is aggro. CastTargetObjectId is who the cast in progress will land on,
+		// and the two part company exactly where it matters: a boss that keeps hitting the tank
+		// while casting something at a caster who holds no aggro and, until it lands, no damage
+		// either. Reading only the first would call that caster safe.
+		//
+		// Filtered against the party, so an entry means what a reader will take it to mean. Enemies
+		// point at pets, at other enemies and at nothing at all, and an unfiltered set is therefore
+		// never empty - a later reader asking "is anyone under fire" would always get yes.
+		HashSet<ulong> targeted = new(capacity: partyIds.Count);
+		for (var i = 0; i < hostileTargets.Count; i++)
+		{
+			var hostile = hostileTargets[i];
+			if (hostile == null)
+			{
+				continue;
+			}
+
+			if (partyIds.Contains(hostile.TargetObjectId))
+			{
+				_ = targeted.Add(hostile.TargetObjectId);
+			}
+
+			if (partyIds.Contains(hostile.CastTargetObjectId))
+			{
+				_ = targeted.Add(hostile.CastTargetObjectId);
+			}
+		}
+		DataCenter.TargetedPartyMembers = targeted;
 	}
 
 	private static List<IBattleChara> GetAllTargets()
@@ -522,7 +563,23 @@ internal static partial class TargetUpdater
 			_ = DataCenter.RecordedHP.Dequeue();
 		}
 
-		Dictionary<ulong, float> currentHPs = new(hostiles.Count);
+		// Party members are recorded alongside the hostiles, which is what lets GetTTK answer for
+		// them at all. The method never cared who it was asked about - it looks an id up in this
+		// history and reads the trend - so the only reason it returned NaN for a healer or a tank was
+		// that nobody ever put them in here.
+		//
+		// What that buys is a damage rate per member that needs no list of any kind: the observed
+		// fall is already net of every reduction, mitigation, barrier and foreign heal, including the
+		// ones this plugin has no table for. A rising ratio yields NaN from GetTTK, which reads as
+		// "no death in sight" - so the trend answers "is the healing keeping up" directly rather
+		// than by inference.
+		//
+		// Cost is one dictionary entry per member at 1 Hz. The read side needed one guard first:
+		// ActionTargetInfo.CheckTimeToKill asked this question of friendly targets too and was only
+		// ever right because the answer was NaN.
+		var party = DataCenter.PartyMembers;
+
+		Dictionary<ulong, float> currentHPs = new(hostiles.Count + party.Count);
 		for (var i = 0; i < hostiles.Count; i++)
 		{
 			var target = hostiles[i];
@@ -532,7 +589,36 @@ internal static partial class TargetUpdater
 			}
 		}
 
+		for (var i = 0; i < party.Count; i++)
+		{
+			var member = party[i];
+			if (member != null && member.CurrentHp != 0)
+			{
+				currentHPs[member.GameObjectId] = member.GetHealthRatio();
+			}
+		}
+
 		DataCenter.RecordedHP.Enqueue((now, currentHPs));
+
+		// Scoring the estimate against what actually happened. A second ago GetTTK said "this one
+		// reaches zero in N seconds"; the sample just enqueued says what the health really did since.
+		// Comparing the two needs no outside observer and no play session to report back - it is
+		// arithmetic on two numbers the plugin already holds, and it never looks away.
+		//
+		// What it is for: GetTTK averages the fall over the whole time the member has been damaged,
+		// so a tank who has been chipped for a minute and then takes a pack of autos is still
+		// reported with the slow old trend. That is the "should fall in 8s, falls in 3s" case, and it
+		// is the wrong direction to be wrong in - a rule reading the uncorrected number steps in too
+		// late. The bias measures exactly that gap, and GetCorrectedTTK divides it out.
+		//
+		// Order matters: this runs after the enqueue, so the forecast filed for the next round is the
+		// one the freshest history supports.
+		for (var i = 0; i < party.Count; i++)
+		{
+			party[i]?.ScoreTtkForecast();
+		}
+
+		ObjectHelper.ForgetStaleTtkForecasts();
 	}
 
 	private static void UpdateOccultWeaknesses()

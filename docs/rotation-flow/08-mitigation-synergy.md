@@ -5,31 +5,374 @@ Prüfhistorie steht in `AUDIT_LOG.md` (A20).
 
 ## Ergebnis
 
-RSR trifft Mitigationsentscheidungen **je Werkzeug und reaktiv**. Es gibt keine
-Stelle, an der beantwortet wird, wie viel Schadensvermeidung gerade anliegt und ob
-ein weiteres Werkzeug daran noch etwas ändert. Jedes Werkzeug, das redundant fällt,
-kostet zugleich einen GCD oder Weave-Slot, der Schaden erzeugt hätte — **die
-Vermeidung von Überlappung dient beiden Zielen gleichzeitig**, weshalb das Thema als
-Synergiefrage geführt wird.
+**Zweck der ganzen Regelfamilie ist die Heilbarkeit des Tanks, und der Engpass ist die Gegnerzahl.**
+Bei drei Gegnern traegt ein HoT; bei neun laeuft der Strom jeder Faehigkeit davon. Der eingehende
+Schaden **einschliesslich Schadensreduktion und Mitigation** soll deshalb zu jedem Zeitpunkt
+bestimmte Grenzwerte nicht ueberschreiten — und entscheidend ist nicht, wie **stark** gedrosselt
+wird, sondern wie **lange**: Die Drosselung kauft die Zeit, in der der eigene Schaden die Gegnerzahl
+senkt.
 
-Gewählt ist eine **zentrale Bremse bei dezentraler Auslösung**: Die vorhandenen
-Auslöser bleiben, hinzu kommt eine Prüfung, die *zurückhält*. Fällt sie aus,
-verhält sich RSR wie zuvor. Umgesetzt ist das zuerst am Beispiel Sanctus beim Weißmagier:
-Der Zauber wird ausgesetzt, wenn seine Betäubung dadurch gestreckt statt
-überschrieben wird und ein Cast mit eigenem Wert bereitsteht. Inzwischen liegt
-eine zweite Anwendung derselben Bremse in der Gegenrichtung — der Weißmagier
-hält Sanctus zurück, solange die Barriere eines Dunkelritters aufgezehrt werden
-muss (Konzept 10) — und eine dritte für die Verlangsamung, die bis dahin
-überhaupt nicht gelesen wurde.
+**Vier Vorgaben des Auftraggebers ordnen alles Weitere, und sie gelten zusammen:**
+
+1. **Strecken statt stapeln.** Faellt alles zugleich, ist die Drosselung nach Sekunden verbraucht und
+   der volle Strom trifft eine unveraendert grosse Gruppe.
+2. **Heilung vor Minderung.** Wo der Strom zu gross wird, ist zuerst zu heilen. Gemindert wird, wo
+   die Heilung nicht reicht.
+3. **Die Barriere zaehlt im Zaehler, nicht im Nenner.** Sie drosselt nichts, bewertet aber, ob der
+   Traeger ueberlebt und ob genug Zeit zum Heilen bleibt.
+4. **Ausgesetzt wird nur bei Stunbarkeit.** Ist im Wirkbereich alles betaeubt oder immun, gibt es
+   nichts zu strecken und nichts zu sparen; dann kostet das Aussetzen nur den Flaechenzauber.
+
+**Gewaehlt ist eine zentrale Bremse bei dezentraler Ausloesung:** Die vorhandenen Ausloeser bleiben,
+hinzu kommt eine Pruefung, die *zurueckhaelt*. Faellt sie aus, verhaelt sich RSR wie zuvor.
+
+**Der Grenzwertanspruch ist heute zur Haelfte erfuellt, und der fehlende Teil ist seit Kurzem
+messbar.** Gemessen wurde bisher allein die Gegnerseite; die persoenlichen Minderungen des Tanks
+gehen in keine Rechnung ein. Die Luecke schliesst nicht eine Tabelle von Minderungssaetzen, sondern
+die Beobachtung: Der Gesundheitsverlauf je Gruppenmitglied ist bereits netto und braucht keine Liste.
+Die Schaetzung daraus ist **praeventiv** — bei 90 % Gesundheit meldet sie den Tod acht Sekunden im
+Voraus — und sie **korrigiert sich selbst**, indem sie ihre eigene Vorhersage jede Sekunde gegen den
+tatsaechlichen Verlauf haelt. Ein externer Beobachter ist dafuer nicht noetig. Bevor eine Kampfregel
+darauf aufsetzt, ist der gemessene Fehlerfaktor in der Diagnoseanzeige zu beurteilen.
 
 | Baustein | Stand |
 |---|---|
 | Messung: `SurveyStuns`, `SurveyHostileStatus`, `StatusHelper.StunStatus` und `SlowStatus` | umgesetzt in `CustomRotation_OtherInfo` und `StatusHelper` |
-| Aussetzbedingung am Sanctus-Block, hinter `StretchHolyStun` (Standard aus) | umgesetzt (`WHM_Reborn.ShouldStretchHolyStun`) |
-| Erhebung der übrigen Doppelnutzen-Aktionen | umgesetzt als `scan16.py`; ein Fund im Tank-/Heilerprofil (Rückstoß (Arm’s Length)) |
-| Zweite Aktion nach ihrer stillen Wirkung geregelt: Rückstoß (Arm’s Length) verlangsamt | umgesetzt in der Barrierenregel (Konzept 10, `DRK_Reborn.PackSlowed`) |
-| Rückstoß (Arm’s Length) auch **als** Minderungswerkzeug wirken | offen, siehe `TODO.md` — Zielkonflikt mit ihrer Rolle als einziger Rückstoßschutz |
-| Wirksamkeitsmessung im Spiel | offen, Voraussetzung für weitere Übertragungen |
+| Aussetzbedingung aus dem **Betaeubungsgrund**, hinter `StretchHolyStun` (Standard aus) | umgesetzt (`WHM_Reborn.ShouldStretchHolyStun`) |
+| Aussetzbedingung aus dem **Mitigationsgrund** — eine fremde Minderung traegt bereits | umgesetzt (`WHM_Reborn.ShouldHoldHolyWhilePackSlowed`, Standard an) |
+| **Stunbarkeit** als Bedingung ueber allen drei Aussetzregeln | umgesetzt (`headroom` aus `SurveyStuns`) |
+| Aussetzbedingung als **Anteil** der verlangsamten Gegner, mit Mindestzahl | umgesetzt (`HoldHolyMinSlowedHostiles`, Standard 3) |
+| **Schranke** der Aussetzregel: der Rest muss bewaeltigbar sein | umgesetzt und **gemessen statt gesetzt**: `AnyPartyMemberFallingWithinHealWindow`. Die frühere Zahl (`HoldHolyMaxHostileOutput` 600) war meine Setzung und ist zum optionalen Deckel mit Standard 0 = aus geworden |
+| **Schadensrate je Gruppenmitglied**, netto nach allem | umgesetzt: die Gruppe steht in `RecordedHP`, `GetTTK` antwortet fuer sie |
+| **Selbstkorrektur** der Schaetzung gegen ihren eigenen Fehler | umgesetzt (`ScoreTtkForecast`, `GetCorrectedTTK`); Rohzeit, korrigierte Zeit und Faktor stehen in der Diagnoseanzeige |
+| **Vorausschau** als Ersatzgroesse an allen Heilentscheidungen | umgesetzt (`GetForecastSurvivingShare` und die drei davon abgeleiteten Getter), hinter `HealAheadOfDamage`, Standard aus |
+| Vorausschau auch in der **Flaechenheilung** (`PartyMembersAverHP` und Geschwister) | erfasst, nicht bearbeitet — siehe `TODO.md`; 83 Leser ausserhalb der Heilkette, darunter fremde Rotationen |
+| Minderungen des Tanks **rechnerisch** erfassen (Vorausschau vor dem ersten Treffer) | offen, siehe `TODO.md` — braucht Saetze je Status aus `Action.resx` |
+| Restzeit der Barriere (`HasSurvivingShield` misst die kuerzeste statt der laengsten) | offen, siehe `TODO.md` |
+| Erhebung der uebrigen Doppelnutzen-Aktionen | umgesetzt als `scan16.py`; ein Fund im Tank-/Heilerprofil (Rueckstoss) |
+| Rueckstoss auch **als** Minderungswerkzeug wirken | offen, siehe `TODO.md` — Zielkonflikt mit der Rolle als einziger Rueckstossschutz |
+| Wirksamkeitsmessung im Spiel | offen |
+
+## Die Vorgaben des Auftraggebers
+
+### Wozu die Aussetzbedingungen da sind
+
+**Der Zweck ist die Heilbarkeit des Tanks, und der Engpass ist die Gegnerzahl.** Bei drei Gegnern
+genuegt ein HoT, um den Tank zu halten; bei neun ist der eingehende Strom auch mit allen Faehigkeiten
+und Zaubern kaum noch aufzuholen. Also muss der Strom gedrosselt werden - Verlangsamung, Betaeubung
+durch Sanctus und was sonst zur Verfuegung steht.
+
+**Entscheidend ist dabei nicht, wie stark gedrosselt wird, sondern wie lange.** Faellt alles zugleich,
+ist die Drosselung nach wenigen Sekunden verbraucht und der volle Strom trifft einen Tank, dessen
+Gruppe noch genauso gross ist. Gestreckt dagegen haelt sie so lange an, bis der eigene Schaden die
+Gegnerzahl gesenkt hat - und dann traegt der Tank, was uebrig ist. Die Drosselung kauft die Zeit, in
+der die Gegner sterben.
+
+Daraus folgen beide Regeln dieses Konzepts:
+
+- **Der Einschub nach dem ersten Stun.** Die Betaeubung durch Sanctus haelt vier Sekunden, seine
+  Erholzeit betraegt zweieinhalb - ein sofort folgender zweiter Sanctus fiele also mitten in die
+  laufende Betaeubung und ueberschriebe sie, statt sie zu verlaengern. Ein anderer Zauber dazwischen
+  legt die zweite Betaeubung ans Ende der ersten.
+- **Das Aussetzen bei fremder Drosselung.** Traegt bereits eine andere Minderung, ist die Betaeubung
+  jetzt weniger wert als spaeter; sie wird aufgehoben, damit sie den Zeitraum verlaengert, statt ihn
+  zu verdoppeln.
+
+**Bedingung ueber allem, und sie gilt fuer jede dieser Regeln: ausgesetzt wird nur, solange die
+Gegner ueberhaupt noch betaeubt werden koennen.** Ist die Betaeubungskette abgearbeitet und alles im
+Wirkbereich immun, gibt es nichts mehr zu strecken und nichts mehr zu sparen - dann ist das Aussetzen
+sinnfrei und kostet nur den Flaechenzauber. Umgesetzt ist das als `headroom` aus `SurveyStuns`, also
+"mindestens ein Gegner ist weder betaeubt noch resistent", in allen drei Aussetzregeln.
+
+**Zweite Bedingung ueber allem: der verbleibende Strom muss bewaeltigbar sein.** Der Anteil sagt, dass
+gedrosselt wird - er sagt nicht, dass der Rest durchzuheilen ist. Drei Gegner bei voller Leistung
+traegt ein HoT, neun laufen jeder Faehigkeit davon; dort ist die Betaeubung **jetzt** mehr wert als
+spaeter, gleich wie gross der verlangsamte Anteil ist. Eine Drosselung zu strecken, die der Tank
+nicht lange genug ueberlebt, um von ihr zu haben, ist kein Gewinn. Das ist die **Schranke** der
+Aussetzregel und nicht ihr Ausloeser — und sie zaehlt nur, wo ueberhaupt betaeubt werden kann.
+
+**Bewaeltigbar wird gemessen, nicht gesetzt.** Die Frage lautet nicht „wie viele Gegner stehen da",
+sondern „haelt die Gruppe". `AnyPartyMemberFallingWithinHealWindow` beantwortet sie am
+Gesundheitsverlauf: Faellt ein Mitglied innerhalb der Zeit, die der Einschub kostet — GCD-Rest plus
+ein GCD —, wird nicht ausgesetzt. Faellt niemand, wird ausgesetzt, gleich wie gross das Paket ist.
+
+**Warum das die Gegnerzahl schlaegt, am Spielgeschehen:** Neun Gegner, die ein Heiler im Griff hat,
+sind genau die Lage, in der das Strecken der Drosselung am meisten bringt — die alte Zahl hat dort
+gesperrt. Drei Gegner, die den Tank umbringen, sind die Lage, in der es nichts bringt — die alte
+Zahl hat dort freigegeben. Das Maß wies in beiden Faellen in die falsche Richtung, weil es die
+Gegnerseite maß statt der eigenen.
+
+*Herkunft der ersetzten Zahl:* Die beiden Eckwerte stammen vom Auftraggeber (300 tragbar, 900
+aussichtslos); der Vorgabewert 600 dazwischen war **meine** Setzung und kein Messergebnis. Als
+optionaler Deckel bleibt `HoldHolyMaxHostileOutput` erhalten, Standard 0 = aus — eine Einstellung
+zu entfernen verwirft einen bereits gespeicherten Nutzerwert.
+
+### Der Grenzwert gilt fuer den gesamten Schadenseingang
+
+**Es geht nicht um die Verlangsamung, sondern um die Kontrolle des eingehenden Schadens.** Dazu
+dienen Reflexion, The Blackest Night und die uebrigen Minderungen des Tanks ebenso. Der
+Schadenseingang **einschliesslich eingerechneter Schadensreduktion und Mitigation** soll zu jedem
+Zeitpunkt bestimmte Grenzwerte nicht ueberschreiten.
+
+**Gegengeprueft: die Umsetzung deckt davon eine Haelfte ab.** Der Befund steht hier vollstaendig,
+weil er groesser ist als die Sanctus-Regel, an der er auffiel.
+
+| Was zu messen waere | Stand im Baum |
+|---|---|
+| Drosselung **auf der Gegnerseite** — Slow, Reflexion, Feint, Stumpfsinn, Dismantle | `HostileOutputPercent`, je Satz aus dem Wirktext belegt |
+| Minderung **auf der eigenen Seite**, gruppenweit — Sacred Soil, Temperance, Troubadour | `GetCurrentMitigationPercent`, aber fuer einen **einzelnen bevorstehenden Treffer** gebaut, mit Magisch/Physisch-Heuristik, nicht fuer den Dauerstrom |
+| Minderung **des Tanks persoenlich** — Rampart, Bollwerk, Sentinel, Schattenwall, Vengeance, Bloodwhetting | **fehlt vollstaendig.** `StatusHelper.RampartStatus` fuehrt die Ids, wird aber ausschliesslich als `StatusProvide` benutzt, also zur Doppelbelegungssperre — nie zur Messung |
+| Die Saetze dieser Minderungen | **fehlen.** `RampartStatus` ist eine reine Id-Liste; Rampart und Sentinel mindern verschieden stark. Ohne Satz je Status ist keine Rechnung moeglich; belegbar waeren sie aus den Wirktexten in `Action.resx` |
+
+**Der ganze Anspruch ist aus Laufzeitbeobachtung erfuellbar, ohne eine einzige statische Vorgabe** —
+und er ist es inzwischen. Das ist der Weg mit dem kleinsten Eingriff und der groessten Deckung, weil
+die Maschinerie dafuer bereits im Baum stand; sie war nur nicht auf die Gruppe angewandt.
+
+`DataCenter.RecordedHP` ist eine Zeitreihe von Gesundheitsanteilen **je Objekt-Id**: einmal je
+Sekunde ein Eintrag, 240 tief, also vier Minuten Historie. `ObjectHelper.GetTTK` liest daraus fuer
+eine beliebige Id den Verlauf, bildet einen gleitenden Mittelwert und schaetzt die Zeit bis auf null.
+Die Methode fragt nichts weiter als `GameObjectId` — sie ist generisch. Gefuellt wurde die Reihe
+lange ausschliesslich aus `AllHostileTargets`, weshalb sie fuer ein Gruppenmitglied `NaN` lieferte;
+seit A91 nimmt `TargetUpdater.UpdateTimeToKill` die Gruppe mit auf.
+
+**Was ein beobachteter Verlauf leistet, das eine Hochrechnung nicht leistet:** Er ist bereits netto.
+Jede Minderung, jede Mitigation, jede Barriere und jede fremde Heilung stecken darin, ohne dass
+irgendeine Liste gepflegt werden muesste — auch die, die es im Baum gar nicht gibt. Damit entfaellt
+der ganze Bedarf an Minderungssaetzen je Status, und mit ihm die Alterung, der eine solche Liste
+unterliegt.
+
+**Und der Grenzwert wird damit relativ statt absolut.** Die Frage lautet nicht mehr „liegt der
+Schaden unter X", sondern **„ist die Restzeit kuerzer als die Zeit, die meine Heilung braucht"** —
+und beide Seiten sind zur Laufzeit bekannt: die Restzeit aus dem Verlauf, die Heilzeit aus der
+Restzeit des GCD und der Wirkzeit des Zaubers. Damit ist keine einzige gesetzte Zahl mehr noetig,
+auch nicht die Grenze zwischen „bewaeltigbar" und „aussichtslos".
+
+**Heilung verfaelscht die Messung nicht, sie beantwortet die Frage mit.** Steigt der
+Gesundheitsanteil, liefert `GetTTK` `NaN` — kein Todeszeitpunkt absehbar. Der beobachtete Verlauf ist
+also der **Nettotrend** und damit unmittelbar die Antwort auf „komme ich mit dem Heilen nach": Faellt
+er trotz laufender Heilung, reicht sie nicht.
+
+**Die Groesse ist praeventiv, nicht rueckwaertsgewandt.** Bei 90 % Gesundheit meldet `GetTTK`
+„in acht Sekunden tot" — das ist die Vorhersage, und sie liegt acht Sekunden vor dem Ereignis, um
+das es geht. Genau darauf zielt die Vorgabe des Auftraggebers, dass **vorab** einzugreifen ist und
+der Tank gar nicht erst fallen soll. Was die Groesse nicht kann, ist enger als frueher hier stand:
+
+- **Blind fuer den ersten Treffer.** Vor 2,5 Sekunden Beobachtung (`CheckSpan`) liefert `GetTTK`
+  `NaN`, und abgetastet wird einmal je Sekunde. Der Eroeffnungsschlag eines Pulls ist daraus nicht
+  vorhersehbar — dafuer bleibt die Vorhersage von BossModReborn zustaendig. Ab dem zweiten Treffer
+  hat die Reihe eine Rate, und die Vorausschau steht.
+  **Diese Grenze ist inzwischen adressierbar, und zwar ebenfalls aus Beobachtung:** Ein angekuendigter
+  Cast, dessen Schadenspotential aus frueheren Einschlaegen bekannt ist, sagt den ersten Treffer
+  voraus, bevor er faellt. Konzept `13-aoe-damage-classification.md` fuehrt das aus; es ersetzt den
+  unten beschriebenen Weg ueber Statussaetze durch gemessene Einschlaege und braucht damit keine
+  gepflegte Tabelle.
+- **Traegheit, und sie ist gemessen.** `GetTTK` misst den Abfall seit dem **ersten** beobachteten
+  Wert geteilt durch die **gesamte** verstrichene Zeit — eine Durchschnittsrate ueber den Kampf,
+  keine Momentanrate. Ein ploetzlicher Einbruch wird darin verwaessert, und der Fehler geht in die
+  gefaehrliche Richtung: Die gemeldete Restzeit ist **zu lang**, eine Regel darauf griffe zu spaet.
+  Behoben ist das nicht durch eine gesetzte Zahl, sondern durch Selbstkorrektur, siehe unten.
+- **Keine Zuordnung.** Der Verlauf sagt, **dass** die Gesundheit faellt, nicht **warum**. Eine Regel,
+  die entscheiden soll, ob gerade Reflexion oder Rueckstoss das richtige Mittel ist, findet die
+  Antwort darin nicht.
+
+**Die Schaetzung prueft sich selbst, und dafuer braucht es keinen externen Beobachter.** Vor einer
+Sekunde hat `GetTTK` gesagt, dieses Mitglied erreiche in N Sekunden null; die soeben abgelegte
+Abtastung sagt, was die Gesundheit tatsaechlich getan hat. Der Vergleich beider ist Arithmetik auf
+zwei Zahlen, die das Plugin ohnehin haelt — jede Sekunde, fuer jedes Mitglied, ohne je wegzusehen.
+Er leistet damit mehr, als eine berichtete Spielsitzung leisten koennte.
+
+- **Gemessen wird ein Faktor**, kein Satz: tatsaechlicher Abfall geteilt durch vorhergesagten Abfall
+  (`ObjectHelper.ScoreTtkForecast`). 1,0 heisst, der Trend hielt; 2,0 heisst, die Gesundheit fiel
+  doppelt so schnell wie vorhergesagt, die Rohzahl war also doppelt zu lang.
+- **Nur Abfaelle zaehlen.** Ein steigender Anteil heisst, dass eine Heilung angekommen ist; darueber,
+  wie gut der Fall vorhergesagt war, sagt er nichts, also wird die Abtastung uebersprungen statt als
+  negativer Beitrag verrechnet.
+- **Geglaettet und begrenzt** auf 0,25 bis 4, damit eine einzelne Spitze den Faktor nicht uebernimmt.
+- **Gelesen wird die korrigierte Zeit** (`GetCorrectedTTK` = `GetTTK` geteilt durch den Faktor). Die
+  Korrektur kostet keine einzige gesetzte Zahl; sie faellt aus der Beobachtung.
+
+**Bewertet wird sie neben ihrem Verbraucher, nicht vor ihm.** Rohzeit, korrigierte Zeit und Faktor
+stehen je Mitglied in der Diagnoseanzeige, dazu der prognostizierte Gesundheitsanteil, den die
+Regeln lesen. Bleibt der Faktor ueber einen Pull hinweg nahe 1, genuegt der schlichte Trend und die
+Korrektur ist ueberfluessig; laeuft er hoch, sobald eine Gruppe anbindet, ist die Rohzahl die zu
+spaete und die korrigierte die zu nehmende.
+
+### Der Verbraucher: vorausberechnete Gesundheit statt zweiter Mechanismus
+
+**Der Fehler der heutigen Heilkette ist eine Verwechslung von Pegel und Rate.** Jede Schwelle —
+`HealthSingleAbility`, `HealthTankRatio`, `HealthForDyingTanks` — vergleicht einen **Stand**. Die
+Gefahr ist aber ein **Zufluss**: Wer schnell faellt, unterschreitet seine Schwelle mit weniger
+Restzeit, als die dadurch ausgeloeste Heilung zum Ankommen braucht — GCD-Rest, dann Cast. Der Zauber
+geht nach dem Tod heraus. Bei schwachem Zufluss ist dieselbe Schwelle frueh genug; die Korrektur
+muss deshalb mit der Rate skalieren und darf kein fester Abschlag sein.
+
+**Gewaehlt ist, die gelesene Groesse zu ersetzen, nicht einen Mechanismus danebenzustellen.** Die
+Frage einer Regel lautet nicht mehr „wie steht dieses Mitglied", sondern „wie steht es, wenn meine
+Heilung ankommt". Damit erben Schwellen, Rangstufen und Kurzschluesse die Vorausschau, ohne dass
+einer von ihnen umgebaut wird.
+
+**Das Tor entscheidet vor allen anderen, und es wurde beim Bauen zuerst uebersehen.**
+`FindHealTarget` verwirft jeden Kandidaten, dessen Gesundheit nicht unter `AutoHealRatio` liegt
+(Vorgabewert 0,8), **bevor** Rangstufe und Kurzschluesse ihn je sehen. Auf der schlichten Groesse
+gelesen faellt damit genau der Fall heraus, fuer den die Vorausschau gebaut ist: ein Tank bei 90 %,
+der in sechs Sekunden bei null ist. Die uebrigen vier Lesestellen haetten weiterhin richtig
+ausgesehen, waehrend die Wirkung vollstaendig ausgeblieben waere. Der Filter liest deshalb ebenfalls
+die Vorausschau — das ist keine Ueberheilung, denn die Grenze soll einen Zauber davor bewahren, an
+jemanden zu gehen, der ihn nicht braucht, und wer beim Landen bei 34 % steht, braucht ihn.
+
+```
+Anteil = max(0, 1 − Vorlaufzeit / korrigierte Restzeit)
+Vorlaufzeit = GCD-Rest + ein voller GCD
+```
+
+Beides aus dem Spielzustand, keine gesetzte Zahl. Ein Heiler unter Presence of Mind blickt kuerzer
+voraus — richtig, er kann frueher handeln.
+
+**Verworfen: ein zweiter Ausloeser samt eigener Rangstufe.** Er waere der naheliegende Weg gewesen
+und ist der schlechtere: Zwei Mechanismen, die dieselbe Frage entscheiden, laufen auseinander, sobald
+einer von beiden angefasst wird. Ausserdem haette er zwei Haelften gebraucht, die einzeln wirkungslos
+sind — ein Ausloeser ohne Zielwahl heilt den Falschen, eine Zielwahl ohne Ausloeser greift erst,
+wenn ohnehin geheilt wird.
+
+**Selbstbegrenzend im teuren Fall.** Steht die Gruppe stabil, ist der Nettotrend nicht fallend,
+`GetTTK` liefert `NaN` und der Anteil ist 1 — kein Unterschied zu heute, kein zusaetzlicher Zauber,
+kein MP. Die Vorausschau erscheint genau dann, wenn der Trend nach unten dreht, und waechst mit
+seiner Steilheit.
+
+**Was im Kampf anders wird, durchgerechnet.** GCD 2,5 s, halb abgelaufen, Vorlaufzeit 3,75 s.
+
+| Lage | Heute | Mit Vorausschau |
+|---|---|---|
+| Tank 90 %, korrigierte Restzeit 6 s (Anteil 0,375 → 34 %) | Heilung faellt erst bei 45 % real, rund 3 s spaeter | Heilung faellt sofort — ein GCD Vorsprung |
+| Tank 44 %, Restzeit 20 s (→ 36 %) · Schwarzmagier 48 %, Restzeit 4 s (→ 3 %) | Tank-Kurzschluss greift bei 44 ≤ 45, der Magier stirbt | Der Magier faellt mit 3 % in die kritische Rangstufe und wird davor abgefangen |
+| Gruppe stabil bei 80 %, kein Nettoabfall | — | — (identisch) |
+| Zwei Mitglieder, beide Restzeit unter der Vorlaufzeit (Anteil 0) | — | Beide auf 0 Punkten; es entscheidet die Rolle: Heiler vor Tank vor Schadensausteiler |
+
+Die letzte Zeile ist die Rangfolge des Auftraggebers, und sie faellt hier von selbst an der Stelle an,
+an der er sie haben will: **bei gleicher Gefaehrdung**, nicht davor.
+
+**Zwei benannte Ungenauigkeiten.**
+
+- *Die Barriere wird mitskaliert.* `GetForecastEffectiveHp` multipliziert effektive Punkte
+  einschliesslich Schild mit einem Anteil, der aus dem **Gesundheits**verlauf ohne Schild stammt.
+  Solange der Schild traegt, faellt die Gesundheit nicht, der Anteil ist 1 und nichts geschieht; der
+  Fall „Schild vorhanden **und** Gesundheit faellt" tritt nur auf, wenn eine frische Barriere auf
+  einen noch fallenden Trend trifft. Dann unterschaetzt die Rechnung den Puffer, also in die sichere
+  Richtung.
+- *Kein Flatterschutz.* Greift die Heilung, steigt die Gesundheit, die Restzeit wird `NaN` und die
+  Vorausschau faellt weg. Ein begonnener Cast wird davon nicht abgebrochen, und „heilen, bis es
+  reicht" ist das gewollte Verhalten — eine Hysterese ist deshalb nicht gebaut, aber auch nicht
+  gemessen.
+
+**Standard aus.** Die Wirkung ist mit den hier verfuegbaren Mitteln nicht zu belegen — statische
+Pruefung und Kompilierung sagen nichts darueber, ob der Tank steht. Bei ausgeschalteter Einstellung
+liefern alle vier Getter exakt die heutigen Werte, die Nullvariante ist also eingebaut.
+
+**Die Groesse, die den Anspruch unmittelbar erfuellen wuerde, existiert bereits — und ist unbrauchbar
+gebaut.** `DataCenter.DPSTaken` misst den **tatsaechlich angekommenen** Schaden, also bereits nach
+allen Minderungen und Mitigationen; hochrechnen muesste man dafuer gar nichts. Ihr Zeitfenster
+betraegt jedoch fuenf Millisekunden, waehrend ein Bild rund sechzehn dauert — die Groesse sieht damit
+fast immer nichts. Sie ist Upstream-Code, und ihr einziger Leser im Baum ist die Diagnoseanzeige.
+
+**Eine Barriere gehoert in den Zaehler, nicht in den Nenner.** The Blackest Night senkt die Rate
+nicht, es absorbiert eine Menge: Der Strom laeuft unveraendert weiter, er trifft nur zuerst den
+Schild. Als **Faktor** der Ratenrechnung waere sie deshalb falsch — sie drosselt nichts.
+
+**Sie bewertet aber sehr wohl, ob der Tank ueberlebt und ob genug Zeit zum Heilen bleibt**, und das
+ist der Punkt, an dem sie zaehlt. Die Groesse, um die es geht, ist die Zeit bis zum kritischen
+Zustand: **Puffer geteilt durch Rate**. Die Barriere vergroessert den Puffer, sie verkleinert die
+Rate nicht — also Zaehler, nicht Nenner. Genau daran haengt die Frage, die eine Grenzwertregel
+eigentlich stellt: Nicht „ist der Zufluss hoch", sondern „reicht die Zeit, die er mir laesst, fuer die
+Heilung, die ich brauche".
+
+Dieselbe Trennung traegt bereits zwei bestehende Entscheidungen, und sie ist dieselbe in beide
+Richtungen: In der **Heilschwelle** zaehlt die Barriere nicht, weil sie den Heilbedarf nicht senkt
+(A85) — in der **Ueberlebensfrage** zaehlt sie, weil sie Schaden abfaengt. `GetEffectiveHp` fuehrt
+sie deshalb, und die kritische Rangstufe der Heilzielwahl liest genau diese Groesse (Konzept 07).
+
+**Was zur Zeitrechnung fehlt, ist der Nenner, nicht der Zaehler.** Der Puffer einschliesslich
+Barriere ist vorhanden und wird gelesen; die Rate je Mitglied ist es nicht — derselbe fehlende
+Baustein wie bei der Heilzielwahl. Ohne ihn ist „reicht die Zeit" nicht zu berechnen, und die
+Barriere bleibt auf ihre heutige Rolle beschraenkt: Sie hebt den Puffer, aus dem die
+Ueberlebensbewertung ihre Antwort zieht.
+
+**Die Restzeit der Barriere selbst waere die zweite Haelfte dieser Frage.** `StatusHelper.HasSurvivingShield` wurde
+dafuer gebaut und hat heute keinen Leser; ihr bekannter Defekt — sie misst die **kuerzeste**
+Schildrestzeit statt der laengsten — steht in `TODO.md`. Wer die Zeitrechnung baut, loest ihn mit,
+denn eine Barriere, die vor der Heilung ausläuft, kauft keine Zeit.
+
+**Der scheinbare Zielkonflikt mit der Barrierenregel ist aufgeloest, und zwar durch eine Rangregel
+des Auftraggebers: Heilung vor Minderung.** Seine Vorgabe zu The Blackest Night bleibt unveraendert —
+bei einem Gruppenpull wird waehrend der Barriere keine Minderung gewirkt, damit der Schild moeglichst
+immer vollstaendig aufgezehrt wird. Der Traeger soll den Strom also **abbekommen** und ihn zugleich
+**ueberleben**, und das geht allein ueber die Heilung: Jede Minderung nimmt genau den Strom weg, der
+den Schild brechen soll, eine Heilung nimmt ihm nichts.
+
+**Damit ist auch die Richtung der Grenzwertregel festgelegt.** Wird ein Grenzwert ueberschritten, ist
+die erste Antwort die Heilung und nicht die Minderung; gemindert wird, wo die Heilung nicht reicht.
+Gegengeprueft und bereits erfuellt: In beiden Dispatch-Pfaden steht die Heilung vor der Verteidigung
+(`HealAreaAbility`/`HealSingleAbility` vor `DefenseAreaAbility`/`DefenseSingleAbility`, im GCD-Pfad
+ebenso), sodass bei gleichzeitig gesetzten Zustaenden die Heilung ohne weiteres Zutun gewinnt.
+
+### Die Aussetzbedingung ist ein Anteil, mit Schranke
+
+**Sanctus wird aufgeschoben, solange mehr als die Hälfte der Gegner im Wirkbereich verlangsamt ist
+und mindestens drei von ihnen den Slow tragen.** Beide Teile sind seine Angabe, und beide haben eine
+eigene Aufgabe: Der **Anteil** sagt, dass der Strom als Ganzes gedrosselt ist und nicht ein
+Nachzügler; die **Mindestzahl** verhindert, dass ein Rest von zwei Gegnern den Anteil rechnerisch
+erfüllt. Aufgeschoben heißt aufgeschoben, nicht aufgegeben — sobald die Bedingung nicht mehr
+zutrifft, fällt Sanctus wieder.
+
+Umgesetzt als `WHM_Reborn.ShouldHoldHolyWhilePackSlowed` über `SurveyHostileStatus` im Wirkbereich
+von Sanctus; die Mindestzahl steht als `HoldHolyMinSlowedHostiles` (Vorgabewert 3) hinter derselben
+Einstellung. Streng mehr als die Hälfte: 3 von 5 hält, 3 von 6 hält nicht, 4 von 6 hält.
+
+**Die vorige Messgröße war Leistung statt Kopfzahl, und sie hat im Spiel nichts bewirkt.** Sie
+summierte die Restleistung aller Gegner im Radius gegen `AoeCount * 100` — die Flächenschwelle in
+der Einheit, in der sich Minderungen ausdrücken lassen, und sie ging ebenfalls auf eine Korrektur
+des Auftraggebers zurück (C52). Ihre eigene Dokumentation hielt bereits fest, dass sie „nur bei
+genau `AoeCount` Gegnern greift": Ein Gegner mehr trägt für sich mindestens 80 und hebt die Summe
+über die Schwelle, gleich wie viele verlangsamt sind. Ein Wall-to-Wall-Pull hält immer mehr Gegner,
+als der Zauber braucht — dort ist die Regel nie eingetreten. Genau das hat der Auftraggeber
+beobachtet: Sanctus fiel weiter, obwohl der Slow fast alle Gegner erfasst hatte. Fünf Gegner mit
+vier verlangsamten ergaben 432 gegen eine Schwelle von 300.
+
+**Der Fehler war nicht die Zahl, sondern die Frage.** Die Leistungssumme beantwortet „lohnt sich für
+diesen Pull noch ein Flächenzauber", und die Antwort lautet fast immer ja. Die Regel hat aber zu
+fragen: „wird der Strom bereits gebändigt" — und das ist ein Anteil, keine Summe.
+
+**Wo der eigene Anteil daran liegt, und er liegt nicht bei der Wahl des Maßes:** Die Einschränkung
+„greift nur bei genau `AoeCount` Gegnern" wurde bei der Umsetzung erkannt und als **richtige
+Eigenschaft** ausgeschrieben — „that narrow reach is correct, not a shortfall". Damit war der
+Nachweis, dass die Regel im Regelfall wirkungslos ist, bereits geführt und ist gleichwohl nicht
+vorgelegt worden. Eine erkannte Bedingung, unter der ein Eingriff im gesamten maßgeblichen Bereich
+nichts tut, ist keine Eigenschaft, sondern seine Widerlegung, und gehört dem Auftraggeber
+vorgetragen, bevor sie im Spiel auffällt.
+
+**Die Leistungsrechnung ist zweimal versetzt worden und steht jetzt ganz hinten.** Zuerst war sie der
+Auslöser der Regel — dort maß sie die falsche Frage und die Regel griff im Wall-to-Wall nie (C59).
+Dann war sie die Schranke am Ende, mit einem von mir gesetzten Trennwert. Heute ist die Schranke
+gemessen (`AnyPartyMemberFallingWithinHealWindow`), und die Leistungsrechnung bleibt als
+**abschaltbarer Deckel** darüber, Standard aus. `HostileOutputPercent` und `SurveyHostileOutput`
+messen unverändert, was sie immer gemessen haben; ihre Faktoren stammen aus den Wirktexten, die
+Verlangsamung als einzige Nicht-Minderung über die Angriffsrate umgerechnet (C57).
+
+*Warum sie nicht ganz entfällt:* Sie ist eine gespeicherte Nutzereinstellung. Sie zu entfernen
+verwürfe einen Wert, den der Auftraggeber möglicherweise gesetzt hat, und die Rechnung selbst ist
+richtig — falsch war nur, sie über die Gegnerseite entscheiden zu lassen, wo die eigene Seite die
+Frage beantwortet.
+
+**Die Betäubung bleibt aus der Bedingung heraus.** Sie wäre die stärkste Drosselung überhaupt — ein
+betäubter Gegner trägt null —, aber ihre Frage ist eine zeitliche: Die Betäubung dauert länger als
+der Recast, ein zweiter Sanctus überschriebe sie, statt sie zu verlängern. Eine Momentaufnahme kann
+das nicht ausdrücken; sie sagt „betäubt, also nicht wirken", während die Streckung gerade **später
+wieder** betäuben will. Beide Regeln stehen deshalb nebeneinander und nicht ineinander.
+
+**Grenze der Zählung, benannt statt verschwiegen:** `SlowStatus` führt zwölf Ids einschließlich
+Slow+, und die Erhebung unterscheidet sie nicht. Für eine Anteilsregel ist das ohne Belang — gezählt
+wird, ob ein Gegner verlangsamt ist, nicht wie stark. Welche Id Rückstoß tatsächlich setzt, ist von
+hier aus nicht zu bestimmen; bliebe die Regel im Spiel weiterhin wirkungslos, wäre das die nächste
+zu prüfende Ursache.
 
 ## Warum die Streckung richtig ist
 
@@ -115,7 +458,7 @@ hinter der gesamten Frage.
 
 **Aktionen mit doppelter Wirkung sind nur nach einer ihrer Wirkungen eingeordnet.**
 Sanctus steht im Schadenszweig; dass es betäubt, ist im Entscheidungsmodell nicht
-vorhanden. Assize steht im Angriffs-oGCD (`WHM_Reborn.cs:308`); dass es heilt,
+vorhanden. Assize steht im Angriffs-oGCD (`WHM_Reborn.AttackAbility`); dass es heilt,
 ebenfalls nicht. Umgekehrt kennt `GetCurrentMitigationPercent` die Wirkung von
 Reprisal, aber weder Betäubung noch Verlangsamung, obwohl beide wie
 Schadensreduktion wirken. Beide sind inzwischen an der Stelle gelesen, an der sie
@@ -286,7 +629,7 @@ Ein Nachweis, dass die Rotation besser spielt, ist **nicht** unmöglich: RSR sie
 Ereignisstrom und kann sich selbst messen. `Watcher.ActionFromEnemy` wertet jeden
 gegnerischen Treffer aus, summiert die Schadensanteile und legt sie über
 `DataCenter.AddDamageRec` als `DamageRec(ReceiveTime, Ratio)` in eine Warteschlange
-(`DataCenter.cs:1294`, `:1403-1411`). Der erlittene Schaden über die Zeit ist damit
+(`DataCenter.AddDamageRec`, gefüllt aus `Watcher.cs`). Der erlittene Schaden über die Zeit ist damit
 bereits erfasst — gebraucht wird nur eine Auswertung je Kampf statt eines gleitenden
 Fensters.
 

@@ -1,4 +1,4 @@
-﻿using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Config;
 using ECommons;
 using ECommons.DalamudServices;
@@ -49,6 +49,20 @@ internal static class DataCenter
 	public static List<IBattleChara> AllianceMembers { get; set; } = [];
 
 	public static List<IBattleChara> AllHostileTargets { get; set; } = [];
+
+	/// <summary>
+	/// The party members an enemy is currently aiming at - either attacking them, or casting
+	/// something that will land on them. Rebuilt once per frame beside the hostile list itself in
+	/// <c>TargetUpdater.UpdateLists</c>.
+	/// </summary>
+	/// <remarks>
+	/// Both sources are read because they answer different questions: the attack target is aggro,
+	/// the cast target is what is about to arrive, and they part company on a boss that beats on the
+	/// tank while casting at somebody else. Only party members are recorded, so an empty set means
+	/// what it says - nothing is aimed at the party - rather than "no enemy has any target at all".
+	/// Empty out of combat.
+	/// </remarks>
+	public static HashSet<ulong> TargetedPartyMembers { get; set; } = [];
 
 	public static IBattleChara? InterruptTarget { get; set; }
 
@@ -985,6 +999,115 @@ internal static class DataCenter
 	public static Job Job => Player.Job;
 
 	private static readonly BaseItem PhoenixDownItem = new(4570);
+	/// <summary>
+	/// Is someone alive who could raise, in the set the current raise settings draw targets from?
+	///
+	/// Two callers ask this with opposite intent, which is why the player is a parameter rather
+	/// than a fixed rule. A Phoenix Down asks "can nobody do this properly" and must count the
+	/// player, because a living raiser uses their spell instead of an item. The only-healer hard
+	/// cast modes ask "is there anyone else", and there the player is the one deciding.
+	///
+	/// The reference set follows <see cref="Configs.RaiseType"/>, because that is what decides
+	/// where a corpse may come from. Under the alliance modes the other alliances are real parties
+	/// with their own raisers: while one of them is alive the raise is theirs to take. AllOutOfDuty
+	/// is deliberately excluded - strangers in the open world are not a raise reserve, and counting
+	/// them would suppress raising almost always.
+	/// </summary>
+	/// <param name="excludeSelf">Skip the player, for callers asking whether anyone *else* can.</param>
+	public static bool AnyLivingRaiser(bool excludeSelf)
+	{
+		return AnyLivingRaiser(excludeSelf, healersOnly: false);
+	}
+
+	/// <inheritdoc cref="AnyLivingRaiser(bool)"/>
+	/// <param name="excludeSelf">Skip the player, for callers asking whether anyone *else* can.</param>
+	/// <param name="healersOnly">
+	/// Count only the healer jobs, leaving Summoner and Red Mage out.
+	///
+	/// The two "only healer" hard cast modes ask for this, because their option text does: "Raise
+	/// while Swiftcast is on cooldown and other <i>healers</i> are dead". The wider question - can
+	/// anybody raise - would hold the hard cast back on the strength of a living Summoner, that is
+	/// on an assumption about what another player is going to do. The user's instruction is the
+	/// text: those modes wait for healers and for nobody else.
+	///
+	/// The feather keeps the wide set, because his instruction there is the opposite one and says
+	/// raiser: a Phoenix Down goes out when nobody left can raise at all.
+	///
+	/// The level check applies either way - a healer below <see cref="RaiseLevel"/> has no raise to
+	/// wait for.
+	/// </param>
+	public static bool AnyLivingRaiser(bool excludeSelf, bool healersOnly)
+	{
+		if (HasLivingRaiser(PartyMembers, excludeSelf, healersOnly))
+		{
+			return true;
+		}
+
+		return Service.Config.RaiseType is RaiseType.PartyAndAllianceSupports
+				or RaiseType.PartyAndAllianceHealers
+				or RaiseType.All
+			&& HasLivingRaiser(AllianceMembers, excludeSelf, healersOnly);
+	}
+
+	private static bool HasLivingRaiser(IEnumerable<IBattleChara>? members, bool excludeSelf, bool healersOnly)
+	{
+		if (members == null)
+		{
+			return false;
+		}
+
+		foreach (var member in members)
+		{
+			if (member == null || member.IsDead)
+			{
+				continue;
+			}
+
+			if (excludeSelf && member.IsPlayer())
+			{
+				continue;
+			}
+
+			if (member.IsJobCategory(JobRole.Healer)
+				|| (!healersOnly && member.IsJobs(ECommons.ExcelServices.Job.SMN)))
+			{
+				if (member.Level >= RaiseLevel)
+				{
+					return true;
+				}
+
+				continue;
+			}
+
+			if (!healersOnly && member.IsJobs(ECommons.ExcelServices.Job.RDM) && member.Level >= VerraiseLevel)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// The level at which a healer or a Summoner has their raise, and the one at which a Red Mage has
+	/// Verraise.
+	///
+	/// <see cref="CanRaise"/> has always applied these to the player. <see cref="HasLivingRaiser"/> did
+	/// not apply them to anyone else, so a Red Mage below 64 - every level-synced run through the older
+	/// content - counted as a living raiser and held back the feather that was the only way anyone was
+	/// getting up. Sharing the two numbers is what keeps the question from being answered differently
+	/// for the player than for the party.
+	///
+	/// For another party member the level comes from ICharacter.Level, which is what the client shows
+	/// for them; whether that reports the synced level or the true one inside a synced duty is not
+	/// established here. Either way it is strictly better than the assumption it replaces, which was
+	/// that every healer, Summoner and Red Mage alive can raise.
+	/// </summary>
+	private const byte RaiseLevel = 12;
+
+	/// <inheritdoc cref="RaiseLevel"/>
+	private const byte VerraiseLevel = 64;
+
 	public static bool CanRaise()
 	{
 		if (IsPvP)
@@ -997,12 +1120,12 @@ internal static class DataCenter
 			return true;
 		}
 
-		if ((Role == JobRole.Healer || Job == Job.SMN) && PlayerSyncedLevel() >= 12)
+		if ((Role == JobRole.Healer || Job == Job.SMN) && PlayerSyncedLevel() >= RaiseLevel)
 		{
 			return true;
 		}
 
-		if (Job == Job.RDM && PlayerSyncedLevel() >= 64)
+		if (Job == Job.RDM && PlayerSyncedLevel() >= VerraiseLevel)
 		{
 			return true;
 		}
@@ -2311,14 +2434,7 @@ internal static class DataCenter
 	{
 		return h != null && IsHostileCastingBase(h, (act) =>
 		{
-			foreach (var id in OtherConfiguration.HostileCastingTank)
-			{
-				if (id == act.RowId)
-				{
-					return true;
-				}
-			}
-			return false;
+			return OtherConfiguration.HostileCastingTank.Contains(act.RowId);
 		});
 	}
 
@@ -2391,14 +2507,7 @@ internal static class DataCenter
 					return false;
 				}
 
-				foreach (var id in OtherConfiguration.HostileCastingStop)
-				{
-					if (id == act.RowId)
-					{
-						return true;
-					}
-				}
-				return false;
+				return OtherConfiguration.HostileCastingStop.Contains(act.RowId);
 			});
 	}
 
@@ -2617,14 +2726,8 @@ internal static class DataCenter
 	{
 		return h != null && IsHostileCastingBase(h, (act) =>
 		{
-			foreach (var id in OtherConfiguration.HostileCastingTank)
-			{
-				if (id == act.RowId)
-				{
-					return true;
-				}
-			}
-			return h.CastTargetObjectId == h.TargetObjectId;
+			return OtherConfiguration.HostileCastingTank.Contains(act.RowId)
+				|| h.CastTargetObjectId == h.TargetObjectId;
 		});
 	}
 
@@ -2632,15 +2735,105 @@ internal static class DataCenter
 	{
 		return IsHostileCastingBase(h, (act) =>
 		{
-			foreach (var id in OtherConfiguration.HostileCastingArea)
-			{
-				if (id == act.RowId)
-				{
-					return AreaCastCanReachPlayer(h, act);
-				}
-			}
-			return false;
+			// Contains, not a walk over the set. All four of these lists were searched with a
+			// foreach that compared every id in turn - O(n) out of a structure whose whole purpose
+			// is O(1). The area list ships with 850 entries and grows in play, so the cost of the
+			// question grew with the list while it could have been constant.
+			//
+			// Not a hot-path emergency: IsHostileCastingBase only reaches this predicate while an
+			// enemy is casting something uninterruptible that is longer than a GCD and sits in a
+			// one-GCD window before it lands, so a trash pull barely gets here. It is simply wrong
+			// as built, and it is the reason the list cannot be allowed to grow freely - see
+			// docs/rotation-flow/13-aoe-damage-classification.md.
+			return OtherConfiguration.HostileCastingArea.Contains(act.RowId)
+				&& AreaCastCanReachPlayer(h, act)
+				&& AreaCastIsWorthMitigating(act.RowId);
 		});
+	}
+
+	/// <summary>
+	/// Every area action for which <see cref="AreaCastIsWorthMitigating"/> has withheld the party
+	/// mitigation, and when it last did so. This is the probe for that decision, and the domain
+	/// requires one: whether a rule that fires in combat fires at all cannot be settled by reading it.
+	/// </summary>
+	/// <remarks>
+	/// It records actions and not calls on purpose. The predicate is asked once per casting enemy per
+	/// frame, so a counter would report the frame rate rather than the number of hits let through -
+	/// a surrogate for the effect instead of the effect. Writing the id is idempotent, so the same
+	/// cast seen sixty times a second leaves one entry, and the count answers the question that
+	/// matters: for how many of the rated actions has this rule actually saved a cooldown.
+	///
+	/// Diagnostic only, so it is deliberately not persisted: after a restart the honest answer is
+	/// "not yet seen this session". The size is bounded by the number of rated actions.
+	/// </remarks>
+	public static readonly ConcurrentDictionary<uint, DateTime> AreaMitigationSkipped = new();
+
+	/// <summary>
+	/// Whether an incoming area cast is big enough that the party mitigation is worth its cooldown.
+	/// </summary>
+	/// <remarks>
+	/// The user's requirement: an area action whose damage stays below what a small shield absorbs
+	/// does not need to be treated as a big hit; one at or above the size of a large shield does.
+	/// What is actually spent on a trivial hit is not the shield but the **cooldown** - a Reprisal
+	/// laid on a two-percent tick is missing at the next real one.
+	///
+	/// The measure is not a threshold anybody had to invent. It is the same question the healing
+	/// side already answers: **does this hit create a need to heal?** Buffer minus expected hit
+	/// against the level at which the tree would heal by itself. Two percent on a full player does
+	/// not; thirty does. The same action is therefore minor for a healthy tank and major for a
+	/// wounded caster, which no stored category could express - and it fits the standing order that
+	/// healing comes before mitigation, because mitigation goes where healing would otherwise be
+	/// needed.
+	///
+	/// An earlier draft compared against HealthForDyingTanks (0.15). Working it through showed it
+	/// would practically never mitigate: a thirty-percent hit leaves a full player at seventy. A rule
+	/// that cannot fire in its own domain is no rule - the same shape C59 found on the Holy hold.
+	///
+	/// Unrated actions return true, which is the behaviour the tree has always had. That is what
+	/// keeps the 850 shipped entries from losing their mitigation the moment this ships: an entry
+	/// only enters the arithmetic once an actual hit has been measured, and in content that is
+	/// repeated - an extreme trial, a savage fight in progression - that is one clear.
+	/// </remarks>
+	private static bool AreaCastIsWorthMitigating(uint actionId)
+	{
+		if (!Service.Config.SkipMitigationForSmallAreaCasts)
+		{
+			return true;
+		}
+
+		if (!OtherConfiguration.HostileCastingAreaPotential.TryGetValue(actionId, out var share)
+			|| share <= 0f)
+		{
+			return true; // Unrated: behave exactly as before.
+		}
+
+		var party = PartyMembers;
+		if (party.Count == 0)
+		{
+			return true;
+		}
+
+		// Anyone the hit would push to where healing would be called for is reason enough. The
+		// barrier counts here because it absorbs this hit - unlike in the healing threshold, where
+		// it does not lower the need to heal (A85).
+		var threshold = Service.Config.HealthAreaSpell;
+		for (var i = 0; i < party.Count; i++)
+		{
+			var member = party[i];
+			if (member == null || member.IsDead || member.MaxHp == 0)
+			{
+				continue;
+			}
+
+			var buffer = member.GetEffectiveHp() / (float)member.MaxHp;
+			if (buffer - share < threshold)
+			{
+				return true;
+			}
+		}
+
+		AreaMitigationSkipped[actionId] = DateTime.Now;
+		return false;
 	}
 
 	/// <summary>
@@ -2702,14 +2895,7 @@ internal static class DataCenter
 					return false;
 				}
 
-				foreach (var id in OtherConfiguration.HostileCastingKnockback)
-				{
-					if (id == act.RowId)
-					{
-						return true;
-					}
-				}
-				return false;
+				return OtherConfiguration.HostileCastingKnockback.Contains(act.RowId);
 			});
 	}
 
@@ -2976,9 +3162,9 @@ internal static class DataCenter
 		BMRNextVulnerableIn = float.MaxValue;
 		BMRNextVulnerableEndIn = float.MaxValue;
 		BMRNextDamageIn = float.MaxValue;
-		BMRNextDamageType = 0;
+		BMRNextDamageType = PredictedDamageType.None;
 		BMRSpecialModeIn = float.MaxValue;
-		BMRSpecialModeType = 0;
+		BMRSpecialModeType = SpecialMode.Normal;
 		BMRForceCancelCast = false;
 		BMRForceCancelCastAI = false;
 		BMRIsMoving = false;

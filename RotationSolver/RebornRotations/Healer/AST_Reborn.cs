@@ -44,15 +44,37 @@ public sealed class AST_Reborn : AstrologianRotation
 	[RotationConfig(CombatType.PvE, Name = "Minimum HP threshold party member needs to be to use Aspected Benefic")]
 	public float AspectedBeneficHeal { get; set; } = 0.4f;
 
-	[RotationConfig(CombatType.PvE, Name = "Aspected Benefic on Tank as they close in on enemies (dungeons only, not Trials/Raids), and keep it up while it's otherwise idle GCD time (Aspected Benefic is instant-cast, safe to keep up while moving).")]
+	[RotationConfig(CombatType.PvE, Name = "Keep Aspected Benefic on the tank through a pull",
+		Tooltip = "Aspected Benefic goes on the tank as they close in on a group, and is refreshed for "
+			+ "as long as the pull lasts, using GCDs that would otherwise go to damage.\n"
+			+ "In a fight: the tank takes the first hits with a regen already ticking, so the reactive "
+			+ "heals start from a higher point instead of chasing a tank who is already low. "
+			+ "Aspected Benefic is instant-cast, so nothing is lost while running.\n"
+			+ "Never fires at or below the Aspected Benefic health threshold above - a real emergency "
+			+ "is left to Benefic II. Dungeons only: in Trials and Raids the rule does not apply, "
+			+ "because there the damage is scripted rather than a stream. Unlike the white mage's "
+			+ "Regen, it is not placed during the pull countdown, only once the tank moves in.")]
 	public bool UsePreAspectedBenefic { get; set; } = true;
 
 	[Range(1, 8, ConfigUnitType.None, 1)]
-	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies near the tank before combat for the pre-pull Aspected Benefic above to be worth casting", Parent = nameof(UsePreAspectedBenefic))]
+	[RotationConfig(CombatType.PvE, Name = "Enemies near the tank before the pull", Parent = nameof(UsePreAspectedBenefic),
+		Tooltip = "How many enemies have to stand within gap-closer range of the tank, before combat "
+			+ "starts, for the regen above to go out.\n"
+			+ "Lower: it also goes up for a single stray enemy, which costs a GCD you would rather "
+			+ "spend on damage. Higher: the tank pulls a small group without it and the first hits land "
+			+ "on a tank with nothing ticking.")]
 	public int PreAspectedBeneficMinHostiles { get; set; } = 2;
 
 	[Range(1, 12, ConfigUnitType.None, 1)]
-	[RotationConfig(CombatType.PvE, Name = "Minimum number of enemies still around the tank during a wall-to-wall pull for the Aspected Benefic above to keep being force-refreshed, instead of falling back to normal reactive healing", Parent = nameof(UsePreAspectedBenefic))]
+	[RotationConfig(CombatType.PvE, Name = "Enemies still around the tank during the pull", Parent = nameof(UsePreAspectedBenefic),
+		Tooltip = "The same count, but during combat: how many enemies have to remain around the tank "
+			+ "for the regen to keep being refreshed. Once the pull thins out below this number, "
+			+ "healing falls back to reacting to health thresholds.\n"
+			+ "Lower: the upkeep runs to the end of the pull, so GCDs keep going to the regen while "
+			+ "the last two enemies are dying and the damage no longer warrants it.\n"
+			+ "Higher: the upkeep stops early and the tail of the pull is healed reactively, which "
+			+ "frees those GCDs for damage but leaves the tank without a regen if the pull is "
+			+ "re-engaged.")]
 	public int PreAspectedBeneficMinWallToWallHostiles { get; set; } = 3;
 
 	[Range(0, 1, ConfigUnitType.Percent)]
