@@ -350,6 +350,23 @@ eine Festlegung über die Bedeutung der Einstellung. Die Existenz von
   eine zweite Buchführung neben der des Spielclients und veraltet auf dieselbe Weise. Die Frage an
   `GetActionStatus` mit dem Ziel leistet dasselbe, ohne einen eigenen Zustand zu führen.
 
+## Vom Upstream behoben: der Cast brach sich selbst ab
+
+**Dieses Konzept hat die Wiederbelebung an ihrer Auslösung repariert. Am anderen Ende stand ein
+zweiter Defekt, und den hat Upstream mit 7.5.6.10 behoben** (`CancelCastUpdater`, A119): Der Abbruch
+eines laufenden Zaubers bei totem Zielobjekt prüfte allein `castTarget.CurrentHp == 0` — und das
+trifft **jedes** Wiederbelebungsziel. Wer `UseStopCasting` eingeschaltet hatte, brach damit jede
+hart gewirkte Wiederbelebung selbst ab. Jetzt gilt der Abbruch nur noch für feindliche Ziele.
+
+**Die beiden Behebungen greifen ineinander, und erst zusammen tragen sie:** Der Fork sorgt dafür,
+dass Swiftcast für die Wiederbelebung fällt und die Ankündigung nicht auf sich selbst wartet;
+solange Swiftcast bereitsteht, ist die Wiederbelebung spontan und war vom Abbruch ohnehin nicht
+betroffen. Der Fall, den der Fork allein nicht lösen konnte, ist der **ohne** Swiftcast — genau der,
+in dem hart gewirkt wird, und genau der, den der Abbruch traf.
+
+**Der Vorgabewert von `UseStopCasting` ist aus**, die Einstellung des Auftraggebers ist von hier aus
+nicht messbar. Wer sie an hat, konnte ohne Swiftcast niemanden hochholen.
+
 ## Erfasst, nicht behoben
 
 - **`IBaseAction.IgnoreClipping` wird geschrieben und nirgends gelesen** (sechs Schreibzugriffe in

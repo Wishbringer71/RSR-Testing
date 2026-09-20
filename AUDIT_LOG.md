@@ -2983,6 +2983,44 @@ Allgemeine Form, in `CLAUDE.md` aufgenommen: Wo ein fremder Schutzmechanismus al
 **Erreichter Prüfgrad:** statische Erhebung an Wirktexten, Flaggenberechnung und Aufrufreihenfolge; Erzeuger mit Selbsttest gegen konstruierte Wirktexte und `--check` in der CI; Strukturlauf und alle Prüfskripte ohne Befund. Ob die Vorausheilung im Kampf den Unterschied macht, ist von hier aus nicht zu belegen — deshalb steht sie hinter einer Option mit dem bisherigen Verhalten als Vorgabewert.
 
 ---
+
+### A119 · Upstream-Sync 7.5.6.10 inhaltlich geprüft, nicht nur eingepflegt (20.09.2026)
+
+**Beanstandung des Auftraggebers:** „du hast die syncs mit upstream nicht einfach nur einzupflegen, sondern immer auch auf die geänderten codeabschnitte des forks hin zu überprüfen und zu schauen, was sie inhaltlich im spielgeschehen bringen und wie sie mit den eigenen änderungen interferieren. evtl. sogar, ob sie weitere synergieeffekte bringen, wenn man sie weiterdenkt. du hast mal wieder nur formal gedacht." Der Vorwurf trifft: Der Merge war dateiweise gelöst, mit der Frage „welche Seite nehmen", nicht mit der Frage, was die Änderung im Kampf tut. Nachgeholt.
+
+**Was sich im Kampf tatsächlich ändert:**
+
+| Stelle | Änderung | Wirkung im Kampf |
+|---|---|---|
+| `CancelCastUpdater` | Der Abbruch bei totem Zielobjekt prüft jetzt zusätzlich `castTarget.IsEnemy()` | **Eine hart gewirkte Wiederbelebung bricht sich nicht mehr selbst ab.** `CurrentHp == 0` traf jedes Wiederbelebungsziel; wer `UseStopCasting` eingeschaltet hatte, konnte ohne Swiftcast niemanden hochholen |
+| `CancelCastUpdater` | NoCasting-Status bricht den Cast jetzt bedingungslos ab | Vorher nur, wenn die Reststatuszeit **unter** der Restcastzeit und unter 3 s lag — also ausgerechnet dann nicht, wenn der Status noch lange läuft. Mit Pyretic wird jetzt nicht mehr gewirkt |
+| `AutoAttackUpdater` | `SpecialMode.Pyretic` wird **vor** der Statusliste geprüft und ohne sie | Vorher hielt eine leere `NoCastingStatus`-Liste den Auto-Angriff trotz Pyretic-Meldung am Laufen. Jetzt schlägt er nicht mehr zu, auch ohne Konfiguration |
+| `StateUpdater` | Vier Heilflaggen zu `StatusFromHealing` zusammengefasst; `ShouldHealArea` ausgelagert | Inhaltlich unverändert. Neu ist, dass `canUseHealSpell` (M9S, Hell in a Cell) jetzt auch die **Einzel**heilzauber sperrt, nicht nur die Flächenheilzauber |
+| `StateUpdater` | Heiler- und Tank-Zweig der Einzelverteidigung umgebaut | Kein Verhaltensunterschied: die Bedingung wurde aus der Schleife gezogen, der Zielvergleich läuft über die Id statt über das Objekt |
+| `TargetUpdater` | `IsTargetable`- und `IsPet`-Prüfung aus der Hauptschleife entfernt | **Geprüft, weil es die Gruppenliste hätte aufblähen können:** `GetAllTargets` filtert beides bereits. Kein Begleiter gerät in `PartyMembers` — der Karfunkel bleibt draußen |
+| `DataCenter` | 141 Zeilen Beastmaster-Affinitäten | Außerhalb des Nutzungsprofils, erfasst, nicht bearbeitet |
+| `RotationUpdater`, `RotationHelper`, `ActionTimelineManager` | Zwischenspeicher nach Typ statt Instanz, gruppierte Aktionen 1 s gecacht, ein Signatur-Hook entfernt | Keine Kampfwirkung; der entfernte Hook ist ein Stabilitätsgewinn, weil eine Signatur nach einem Patch bricht |
+
+**Interferenz mit der eigenen Arbeit aus A117/A118, jede Stelle einzeln geprüft:**
+
+- `ShouldHealAheadOfAnnouncedHit` hängt in beiden Flächenflaggen. Bei der Zauberflagge steht `canUseHealSpell &&` **davor**, die neue Regel ist also korrekt eingeschlossen — sie kann in M9S keinen gesperrten Heilzauber auslösen.
+- `AnnouncedHitDropsAnyoneBelow`, `LargestMissingHp` und die Zielwahl von Rekindle lesen alle `PartyMembers`. Wäre die Pet-Prüfung ersatzlos entfallen, hätte der Karfunkel den größten Fehlbetrag stellen und Rekindle auf sich ziehen können. Er tut es nicht.
+- `ShouldHealArea` liefert bei **zwei oder weniger** Gruppenmitgliedern grundsätzlich `false`. Die neue Regel steht mit `||` daneben und greift dort trotzdem — ein angekündigter Raidwide trifft auch eine Zweiergruppe. Das ist gewollt und war vorher nicht möglich.
+
+**Der Ertrag des Durchgangs ist ein geschlossener offener Punkt.** Upstream liest `SpecialMode.Pyretic` jetzt an zwei Stellen ohne jede Konfigurationsbedingung. Damit hängt mehr an der Ordinalzuordnung über die IPC-Grenze als zuvor — und `PredictedDamageType` stand daneben und galt seit der `SpecialMode`-Angleichung als **ungeprüft**, mit der Begründung, das fremde Enum sei von hier nicht erreichbar.
+
+**Diese Begründung war behauptet, nicht gemessen.** `raw.githubusercontent.com` antwortet; der Pfad war in vier Versuchen gefunden (`BossMod/BossModule/AIHints.cs`). Gemessen am 20.09.2026:
+
+| Enum | BossmodReborn | Fork |
+|---|---|---|
+| `SpecialMode` | Normal, Pyretic, NoMovement, Freezing, Misdirection | gleiche Reihenfolge, Werte 0–4 ausgeschrieben |
+| `PredictedDamageType` | None, Tankbuster, Raidwide, Shared | gleiche Reihenfolge, Werte 0–3 ausgeschrieben |
+
+**Beide stimmen.** Der Vertragskommentar in `BossModEnums.cs` sagt das jetzt mit Datum und Fundstelle, statt die Zuordnung als offen zu führen; der Punkt ist aus `TODO.md` entfernt. Dieselbe Fehlerform wie bei „Troubadour nur gegen magischen Schaden": eine Grenze behauptet, ohne sie an einer Probe zu messen.
+
+**Erreichter Prüfgrad:** Diff des Upstream-Commits `8eba51387` Datei für Datei gelesen, die kampfwirksamen Stellen gegen den Vorzustand gestellt, die Fremdquelle abgerufen und verglichen. Keine Laufzeitbeobachtung. Die beiden Compilerfehler dieses Merges (A-Eintrag oben, `partyIds` und `now`) waren von hier aus nicht zu finden — es gibt keine .NET-Toolchain in dieser Umgebung, gemessen, nicht angenommen.
+
+---
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

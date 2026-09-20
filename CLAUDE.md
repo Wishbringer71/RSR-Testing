@@ -109,6 +109,8 @@ Belege: `Configs` ist eine `IPluginConfiguration` und wird ohne `StringEnumConve
 
 **Verfügbare Erkenntnisquellen ausschöpfen, bevor eine Grenze behauptet wird.** Fehlende lokale Toolchain begrenzt nicht die Recherche externer Fakten. Beleg: Troubadour/Tactician als „nur gegen magischen Schaden" angenommen, per Websuche in Sekunden widerlegbar.
 
+**Eine unauffindbare Fundstelle ist keine unerreichbare Quelle.** Dass ein Pfad nicht bekannt ist, heißt nicht, dass er nicht zu finden wäre: Vier geratene Kandidaten kosten vier Sekunden, und der Nullbefund der ersten drei ist kein Beleg gegen den vierten. Beleg: Die Ordinalzuordnung von `PredictedDamageType` galt monatelang als ungeprüft, weil „das Enum in `AIHints` liegt und dessen Pfad ohne Code-Suche nicht auffindbar ist" — `BossMod/BossModule/AIHints.cs` war der vierte Versuch und hat beide Enums als richtig belegt.
+
 **Der Umkehrfall: ein Mittel wird erst zugesagt, wenn seine Verfügbarkeit gemessen ist.** Die Regel darüber verbietet, eine Grenze ungeprüft zu behaupten; sie erlaubt nicht, eine Fähigkeit ungeprüft in Aussicht zu stellen. Wo ein Arbeitsergebnis ein Werkzeug voraussetzt, das hier vorhanden sein muss — ein Satzprogramm, ein Übersetzer, ein Paket —, ist dessen Vorhandensein **vor** dem Vorschlag an einer Probe zu belegen, nicht danach an drei nacheinander scheiternden Versuchen. Zur Vorlage gehört außerdem der Preis des Wegs: Was der Auftraggeber an seinem Rechner mit einem Befehl erledigt, ist keine Aufgabe für diese Umgebung, und die Kosten des Umwegs trägt er mit. Beleg: PDF-Erzeugung für die Anlagen des LDI-Schreibens zugesagt, dann LibreOffice, `pip install` und ein selbstgeschriebener Protokollclient nacheinander erprobt, während „als PDF drucken" bei ihm ein Handgriff gewesen wäre; erst der vierte Versuch trug.
 
 **Eine Sonde erhebt nicht nur, sie bewertet sofort — und die Entscheidung fällt im Code zur Laufzeit** (Vorgabe des Auftraggebers). Ein Messmittel, das Daten sammelt, damit ich sie später ansehe, verschiebt die Entscheidung aus dem Kampf heraus, in dem sie fällt. Die Sonde gehört deshalb an die Stelle, an der die Regel entscheidet, und gibt dort ihr Urteil ab; die Anzeige ist die Zweitverwertung, nicht der Zweck.
@@ -196,6 +198,14 @@ Der Loop ist ein Arbeitsverfahren, kein Dokumentschema. Seine Stufen dürfen die
 Beleg: `09-tank-selfprotection.md` trug sieben Abschnitte reiner Prozesshistorie und einen Nachtrag, der einleitend feststellt, „mehrere Aussagen weiter oben" seien überholt — dieselben Vorgänge lagen bereits als A21–A23 und C13–C19 im Archiv. Der Auftraggeber konnte dem Dokument den aktuellen Sachstand nicht mehr entnehmen.
 
 # Versionskontrolle
+
+**Ein Upstream-Sync wird nicht eingepflegt, sondern ausgewertet** (Vorgabe des Auftraggebers). Der Merge ist der Anfang der Arbeit, nicht ihr Ende. Zu jeder fremden Änderung an einem Abschnitt, den der Fork berührt, sind drei Fragen zu beantworten, und keine davon beantwortet der Konfliktmarker:
+
+1. **Was ändert sie im Spielgeschehen?** Wer nimmt wann wie viel Schaden, welche Aktion fällt früher oder später, was sieht der Auftraggeber anders. Eine Umstrukturierung ohne Verhaltensunterschied ist als solche zu belegen, nicht zu vermuten.
+2. **Wie greift sie in die eigenen Änderungen?** Jede Fork-Stelle im Wirkungsbereich ist einzeln zu prüfen — auch die, die im selben Durchgang entstanden ist.
+3. **Was wird daraus, wenn man sie weiterdenkt?** Eine fremde Änderung kann eine eigene Regel erst tragfähig machen, einen bisher folgenlosen Vertrag scharf stellen oder eine als unerreichbar geführte Frage beantwortbar machen.
+
+Beleg: Der Sync auf 7.5.6.10 wurde dateiweise gelöst und als erledigt berichtet. Die nachgeholte inhaltliche Prüfung (A119) fand, dass die hart gewirkte Wiederbelebung sich nicht mehr selbst abbricht, dass der Pyretic-Schutz jetzt ohne Konfiguration greift — und dass damit die Ordinalzuordnung über die IPC-Grenze schärfer gilt als zuvor, worauf die als „nicht erreichbar" geführte Fremdquelle in vier Versuchen abrufbar war und beide Enums als richtig belegt hat.
 
 **Upstream-Sync ist Vorbedingung jeder Codeänderung, auf jedem lebenden Branch.** `git fetch --prune --tags upstream`, dann `git rev-list --left-right --count upstream/main...HEAD` mit null ausstehenden Commits als Nachweis; die frische Messung zählt, nicht der Gesprächsverlauf. Gilt auch mitten in der Sitzung, Beleg: Tag `7.5.5.41` erschien, nachdem `.40` als höchster ermittelt war. Zu prüfen ist außerdem, ob Upstream den Defekt bereits behoben hat. Vollständig gemergte Branches werden nicht nachgezogen, sondern sind Löschfälle.
 

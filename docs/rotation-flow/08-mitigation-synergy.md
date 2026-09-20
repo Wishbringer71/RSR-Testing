@@ -223,6 +223,15 @@ ausgeschriebenem Prozentsatz — 10, 15, 20, 25, 30, 40, 50 und 99 %; die Barrie
 Anteil ebenso (25 %, 15 %, 10 %). `RotationSolver.GameData` liest dieselben Blätter ohnehin aus. Das unterscheidet ihn von der hier verworfenen
 Statussatz-Tabelle, deren Einwand die Pflege war.
 
+**Die Schadensart aus BossModReborn ist ab sofort benutzbar, und das ist neu.** `PredictedDamageType`
+kommt als `int` ueber die IPC-Grenze und wurde direkt in das eigene Enum gecastet; ob die Gegenseite
+gleich nummeriert, galt als ungeprueft und nicht pruefbar. Gemessen am 20.09.2026 gegen
+`BossMod/BossModule/AIHints.cs`: **beide Enums stimmen** (`None, Tankbuster, Raidwide, Shared` und
+`Normal, Pyretic, NoMovement, Freezing, Misdirection`). Damit ist `BMRDamageType` eine belastbare
+Groesse und keine Wette mehr — sie trennt Tankbuster von Raidwide und beantwortet damit
+**Einzel- gegen Flaechenabwehr**, nicht physisch gegen magisch. Letzteres bleibt offen und ist der
+Grund, warum die Minderungsbilanz Addle und Feint weiterhin binaer gewichtet.
+
 **Der gemessene Wert einer eigenen Heilung — dieselbe Bauform, die andere Haelfte der Frage.** Das
 Schadenspotential je Gegneraktion sagt, wie gross der Treffer ist; `GetObservedHealPerCast` sagt, wie
 weit die eigene Antwort reicht. Erst beide zusammen beantworten Vorgabe 5 in Punkten statt in

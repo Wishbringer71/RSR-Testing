@@ -51,9 +51,17 @@ public enum SpecialMode
 /// simply chosen. The values are written out so that is visible while editing, which is the
 /// precaution <see cref="SpecialMode"/> already carries for the same reason.
 /// <para>
-/// What is <i>not</i> established here is that the other side numbers them the same way. That
-/// needs its enum, which is not reachable from the build environment; the numbering below is
-/// today's implicit one, written down unchanged. See TODO.md.
+/// <b>Checked against the other side on 20.09.2026, and it matches.</b> BossmodReborn declares
+/// <c>PredictedDamageType { None, Tankbuster, Raidwide, Shared }</c> in
+/// <c>BossMod/BossModule/AIHints.cs</c>, implicitly numbered 0 to 3 - the same order and the same
+/// values as below. <see cref="SpecialMode"/> agrees with its neighbour in that file as well
+/// (Normal, Pyretic, NoMovement, Freezing, Misdirection).
+/// </para>
+/// <para>
+/// This remark previously said the other enum was "not reachable from the build environment". That
+/// was asserted, never measured: raw.githubusercontent.com answers from here, and the file is one
+/// request away. The reachable path was found by asking for it - the same lesson as Troubadour
+/// being taken for magic-only until a search said otherwise.
 /// </para>
 /// </remarks>
 public enum PredictedDamageType
