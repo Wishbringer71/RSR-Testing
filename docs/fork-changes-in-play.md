@@ -47,8 +47,8 @@ keep costing no cooldown while the party is healthy.
 - **The emergency full heal waits for a reason** — `Benediction needs a reason`, **on by
   default**. Benediction now also requires that the target is being attacked, that an area
   cast is announced, or that their health is measurably falling. Before that, a player who
-  had just been raised read as the most urgent member in the party while nothing was
-  happening to him — and the full heal was gone for ninety seconds.
+  had just been raised read as the most urgent member in the party — and the full heal was
+  gone for ninety seconds.
 - **The tank walks into the pull with a HoT already ticking** — `UsePreRegen` (White Mage),
   `UsePreAspectedBenefic` (Astrologian), each with two enemy-count thresholds. The first hits
   land on a tank who already has something running. Both actions are instant, so nothing is
@@ -99,7 +99,9 @@ keep costing no cooldown while the party is healthy.
   role actions were declared and never used.
 - **The BossModReborn timeline is only read when it is switched on.**
 - **Area actions are measured by how hard they hit**, not only recognised as such; the list
-  window shows the share per action, and which rules acted on it.
+  window shows the share per action, and which rules acted on it. Those readings now survive a
+  logout — until this build they were never read back, so every login started unrated and the
+  first save overwrote the stored ones.
 
 ## Tank self-protection
 
@@ -111,20 +113,18 @@ keep costing no cooldown while the party is healthy.
 - **Living Dead and Walking Dead.** While more than two GCDs of Living Dead remain, a lowered
   healing threshold applies so the death effect can occur; within two GCDs the normal
   threshold returns, so healing resumes shortly before the status expires. The lead-in is
-  suspended while zero would arrive before the window closes, since it would otherwise
-  prevent the very death the rule exists for. `WithholdHealingForLivingDead` sharpens the
-  first part and is **off by default**.
+  suspended while zero would arrive before the window closes.
+  `WithholdHealingForLivingDead` sharpens the first part and is **off by default**.
 - **Arm's Length on a group pull** (`UseArmsLengthOnPull`) for its Slow, not only as
-  knockback protection: +20 % on every enemy that strikes you throttles the whole incoming
-  stream for fifteen seconds.
+  knockback protection: +20 % recast on every enemy that strikes you, for fifteen seconds.
 - **The co-tank Provoke** no longer pulls the boss off a tank standing under Superbolide,
   Living Dead or Holmgang.
 
 ## Damage and rotation
 
 - **Summoner: Searing Light covers the phase from its first GCD.** It was offered only once the
-  demi was standing, so the earliest slot it could take was the one *after* the summon — and a busy
-  slot pushed the buff into the middle of the burst. It now fires in the slot before, and the summon
+  demi was standing, so the earliest slot it could take was the one *after* the summon, and a busy
+  slot then pushed it into the middle of the burst. It now fires in the slot before, and the summon
   waits for it; 20 seconds of buff cover a 15-second demi either way. The window itself is the burst
   phase; with a second Summoner in the party it widens to any big summon, and once every phase is
   taken it falls back to Titan — or to Ifrit when you are standing at the target anyway, since its
@@ -138,8 +138,8 @@ keep costing no cooldown while the party is healthy.
   not from its potency — and in any case before the buff expires.
 - **Summoner: Rekindle picks by share, not by points.** It sorted by current health *points*, and
   pools differ enough that a caster at full health can hold fewer than a tank at half — so the heal
-  went to someone who needed nothing. The action works in shares itself: its follow-up arms "when HP
-  falls below 75 %". With no target it goes on the caster instead of being lost with the phase.
+  went to someone who needed nothing. The action works in shares itself — its follow-up arms at
+  75 %. With no target it goes on the caster instead of being lost with the phase.
 - **White mage, Holy.** Three separately switchable rules: do not overwrite the stun while it
   is still running (`StretchHolyStun`, **off by default**); hold Holy while the dark knight's
   barrier is meant to be filled; and hold Holy while more than half the enemies in radius are
