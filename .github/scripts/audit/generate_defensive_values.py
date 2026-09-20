@@ -162,6 +162,14 @@ def render(table):
         "\tfloat EnemyMagical,",
         "\tfloat Barrier);",
         "",
+        # The type is public and the assembly ships a documentation file, so a missing summary is a
+        # build warning (CS1591) in every consumer's build as well as ours - generated code is not
+        # exempt from that.
+        "/// <summary>",
+        "/// The stated figures of every defensive action, keyed by action row id, generated from the",
+        "/// effect texts. Read through <see cref=\"For\"/> rather than the dictionary, so an action",
+        "/// the texts do not rate answers with zeroes instead of throwing.",
+        "/// </summary>",
         "public static class DefensiveValues",
         "{",
         "\t/// <summary>Action row id to the figures its effect text states.</summary>",

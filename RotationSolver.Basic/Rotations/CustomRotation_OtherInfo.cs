@@ -1558,11 +1558,13 @@ public partial class CustomRotation
 
 	/// <summary>
 	/// True when a status will expire before a predicted BMR event lands, so it should be refreshed
-	/// now rather than on cooldown. <paramref name="predictedIn"/> is one of the BMR*In values,
-	/// <paramref name="statusDuration"/> the status's own duration, <paramref name="target"/> null for
-	/// a self status or the enemy for a debuff. The 0.6s floor matches StateUpdater's own guards.
-	/// Always false when BMR is inactive or UseBmrTimeline is off.
+	/// now rather than on cooldown. The 0.6s floor matches StateUpdater's own guards. Always false
+	/// when BMR is inactive or UseBmrTimeline is off.
 	/// </summary>
+	/// <param name="predictedIn">One of the BMR*In values: seconds until the predicted event.</param>
+	/// <param name="statusDuration">The status's own duration, in seconds.</param>
+	/// <param name="statusFromSelf">Whether the status is read on the player rather than the target.</param>
+	/// <param name="target">Null for a self status, the enemy for a debuff.</param>
 	/// <param name="action">
 	/// The action this refresh would spend, when the caller can name it. Carried for the open
 	/// decision described at the hold below - whether an action with a charge to spare should skip
@@ -1570,6 +1572,7 @@ public partial class CustomRotation
 	/// Radiant Aegis [480]: Maximum Charges: 2") while Troubadour, Tactician and Shield Samba have
 	/// one. Not acted on: spending the second charge is what A9 removed, on the owner's report.
 	/// </param>
+	/// <param name="statusIDs">The status or statuses whose remaining time decides the refresh.</param>
 	public static bool BMRShouldRefreshBefore(float predictedIn, float statusDuration, bool statusFromSelf, IBattleChara? target, IBaseAction? action, params StatusID[] statusIDs)
 	{
 		if (!Service.Config.UseBmrTimeline || !BMRActive || predictedIn is not (> 0.6f and < float.MaxValue) || predictedIn > statusDuration)

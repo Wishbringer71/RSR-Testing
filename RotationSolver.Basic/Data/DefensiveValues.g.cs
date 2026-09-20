@@ -24,6 +24,11 @@ public readonly record struct DefensiveValue(
 	float EnemyMagical,
 	float Barrier);
 
+/// <summary>
+/// The stated figures of every defensive action, keyed by action row id, generated from the
+/// effect texts. Read through <see cref="For"/> rather than the dictionary, so an action
+/// the texts do not rate answers with zeroes instead of throwing.
+/// </summary>
 public static class DefensiveValues
 {
 	/// <summary>Action row id to the figures its effect text states.</summary>
