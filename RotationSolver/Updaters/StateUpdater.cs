@@ -164,6 +164,15 @@ internal static class StateUpdater
 			return true;
 		}
 
+		// The same question asked of a cast the filter above drops for being interruptible. It only
+		// answers for an action whose measured share is at or above what the largest barrier absorbs,
+		// so it cannot reopen the enemy-count fallback A9 removed. See IsHostileCastingLargeArea.
+		if (DataCenter.InCombat && Service.Config.UseAoeDefense && DataCenter.IsHostileCastingLargeArea
+			&& !DataCenter.IsTyrantCastingSpecialIndicator())
+		{
+			return true;
+		}
+
 		if (DataCenter.InCombat && Service.Config.UseBmrTimeline
 			&& DataCenter.BMRNextRaidwideIn > 0.6f
 			&& DataCenter.BMRNextRaidwideIn <= Service.Config.BMRRaidwideMitWindow)

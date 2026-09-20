@@ -3021,6 +3021,28 @@ Allgemeine Form, in `CLAUDE.md` aufgenommen: Wo ein fremder Schutzmechanismus al
 **Erreichter Prüfgrad:** Diff des Upstream-Commits `8eba51387` Datei für Datei gelesen, die kampfwirksamen Stellen gegen den Vorzustand gestellt, die Fremdquelle abgerufen und verglichen. Keine Laufzeitbeobachtung. Die beiden Compilerfehler dieses Merges (A-Eintrag oben, `partyIds` und `now`) waren von hier aus nicht zu finden — es gibt keine .NET-Toolchain in dieser Umgebung, gemessen, nicht angenommen.
 
 ---
+
+### A120 · Schimmerschild und Addle: der Engpass war der Unterbrechbarkeitsfilter (20.09.2026)
+
+**Nachfrage des Auftraggebers:** „schimmerschild, addle, flächenheilung solar bahamut, single hot phoenix konzeptionell und im code bearbeitet, so wie ich vor stop gefordert habe?" Die ehrliche Antwort war: zwei von vier. Lux Solaris und Rekindle lagen fertig vor (A117), Schimmerschild und Addle nicht — dort stand seit A108 nur die halbe Behebung, und der Rest war zweimal als „Vorlage steht aus" vermerkt, statt vorgelegt zu werden. Das ist derselbe Verstoß, den die Loop-Regel ausdrücklich benennt: Entscheidungsbedarf wird vorgelegt, nicht angekündigt.
+
+**Die vollständige Kette, und der Engpass liegt vor der Bewertung.** Jede Flächenfrage läuft durch `IsHostileCastingBase`, und der verlangt kumulativ: Gegner wirkt, Cast **nicht unterbrechbar**, Gesamtzeit über einem GCD, Restzeit zwischen einem und zwei GCDs. Erst danach kommen Id-Prüfung und Größenbewertung. In einer Viererinstanz castet Trash überwiegend unterbrechbar — die Bewertung aus A108 wird für diese Casts also **nie gefragt**.
+
+**Der Filter ist richtig gedacht und trägt nur unter einer Bedingung.** Ein unterbrechbarer Cast soll unterbrochen werden; ihn zu mindern gäbe eine Abklingzeit für etwas aus, das nicht einschlägt. Das gilt, solange jemand unterbricht. **Der Beschwörer hat keinen Interrupt.** Setzt der Tank Interject nicht ein, schlägt der Cast ein und nichts hat geantwortet — genau das gemeldete Bild.
+
+**Gebaut: ein zweiter, eigener Weg.** `DataCenter.IsHostileCastingLargeArea` fragt nicht nach Unterbrechbarkeit und nicht nach Mindestlänge, sondern nach dem **gemessenen** Anteil — mindestens `LargeShieldShare`, also was die größte Barriere des Spiels absorbiert — und nach demselben Ein-GCD-Fenster vor dem Einschlag. Hinter `Mitigate a big area cast even when it is interruptible`, Vorgabewert **aus**.
+
+**Dass dies kein Rückbau der Entscheidung aus A9 ist, ist der Kern der Vorlage.** A9 entfernte auf seine Meldung hin einen Rückfall, der die Verteidigung aus der **Gegnerzahl** heraus hob: kein Gefahrenbeleg, dauernd anstehend. Dieser Weg verlangt das Gegenteil — eine Zahl aus einem tatsächlichen Einschlag. Eine Aktion, von der noch niemand getroffen wurde, öffnet nichts. **Und er war im September nicht baubar:** Den Anteil je Aktion gab es damals nicht, die Grobheit musste der Vorfilter allein tragen. Dieselbe Frage ist heute anders zu beantworten, weil ein Baustein dazugekommen ist.
+
+**Getrennt gehalten statt gelockert.** `IsHostileCastingAOE` speist auch `ObjectHelper.IsUnderThreat` und darüber `BenedictionNeedsThreat` beim Weißmagier. Ein Lockern dort verschöbe zwei Pfade zugleich; der neue Weg hängt allein an `AutoStatus.DefenseArea`.
+
+**Falsifikation, und ein Einwand hat zu einer Präzisierung geführt.** Die dritte Hypothese — ausgeliefert, es ändert sich nichts — hielt zunächst stand: Die Aufnahme in `HostileCastingArea` verlangt, dass **alle** Gruppenmitglieder getroffen wurden. Ein ausweichbarer Trash-AoE kommt also nie in die Liste und wird von diesem Weg nie erfasst. Das ist aber genau richtig: Ein ausweichbarer Flächenangriff soll keine Abklingzeit ziehen. Was bleibt, ist der unausweichliche Einschlag, der alle trifft — und das ist der gemeldete Fall.
+
+**Was offen bleibt, mit Empfehlung statt Ankündigung:** Drei weitere Schrauben (`UseBmrTimeline`, die Tankbuster-Einschränkung für RangedMagical, das Vorfilter-Fenster) sind in `TODO.md` samt Gegenargument aufgeführt. **Empfehlung: keine davon jetzt** — zuerst ist zu beobachten, was der gebaute Weg bringt; er zielt auf genau den gemeldeten Fall, und jede der drei berührt eine seiner dokumentierten Entscheidungen.
+
+**Erreichter Prüfgrad:** statische Erhebung der gesamten Kette vom Vorfilter bis zur Aktion, Abgleich gegen A9/C10 und A101/A108, Strukturlauf und alle Prüfskripte ohne Befund. Keine Laufzeitbeobachtung; die Sonde dafür ist die AoE-Liste, die je Aktion den gemessenen Anteil und die verworfenen Minderungen zeigt.
+
+---
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

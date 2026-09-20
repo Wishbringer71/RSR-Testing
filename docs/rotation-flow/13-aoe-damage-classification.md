@@ -109,6 +109,39 @@ beantwortet („bringt der Einschlag irgendwen unter die Schwelle"), `IsUnderThr
 Gerezzten. Das ist das Verhalten von vorher und durch diesen Baustein nicht verschärft; die
 mitgliedsgenaue Fassung steht unten als Chance.
 
+## Der Vorfilter davor: der unterbrechbare Cast
+
+**Bevor die Messung überhaupt gefragt wird, hat der Cast einen Filter zu passieren, und der ist der
+Engpass.** `IsHostileCastingBase` verlangt kumulativ: ein Gegner wirkt, der Cast ist **nicht
+unterbrechbar**, seine Gesamtzeit übersteigt einen GCD, und seine Restzeit liegt zwischen einem und
+zwei GCDs. Erst danach kommt die Id-Prüfung und die Größenbewertung.
+
+**Der Unterbrechbarkeitsfilter ist richtig gedacht und trägt nur unter einer Bedingung.** Ein
+unterbrechbarer Cast soll unterbrochen werden; ihn zu mindern gäbe eine Abklingzeit für etwas aus,
+das gar nicht einschlägt. Das gilt, **solange jemand unterbricht**. Der Beschwörer hat keinen
+Interrupt; in einer Viererinstanz mit einem Tank, der Interject nicht einsetzt, schlägt der Cast ein,
+und nichts hat geantwortet. Das ist die Spielbeobachtung des Auftraggebers — „mal wird Schimmerschild
+und Addle gecastet, mal nicht" —, und sie ist damit am Code erklärt.
+
+**Die Antwort ist ein zweiter, eigener Weg** (`DataCenter.IsHostileCastingLargeArea`, hinter
+`Mitigate a big area cast even when it is interruptible`, **Vorgabewert aus**): Er fragt nicht nach
+Unterbrechbarkeit und nicht nach Mindestlänge, sondern nach dem **gemessenen** Anteil — mindestens
+das, was die größte Barriere des Spiels absorbiert — und nach demselben Ein-GCD-Fenster vor dem
+Einschlag.
+
+**Warum das kein Rückbau der Entscheidung aus A9 ist.** A9 hat auf seine Meldung hin einen Rückfall
+entfernt, der die Verteidigung aus der **Gegnerzahl** heraus hob: kein Gefahrenbeleg, und er stand
+dauernd an. Dieser Weg verlangt das Gegenteil — eine Zahl, die aus einem tatsächlichen Einschlag
+stammt. Eine Aktion, von der noch niemand getroffen wurde, trägt keine Zahl und öffnet nichts.
+
+**Und er war damals nicht baubar:** Den Anteil je Aktion gab es nicht, als der Rückfall entfernt
+wurde. Die Grobheit musste deshalb der Vorfilter allein tragen. Das ist der Grund, warum dieselbe
+Frage heute anders zu beantworten ist als im September.
+
+**Getrennt gehalten statt gelockert, und das ist Absicht:** `IsHostileCastingAOE` speist auch
+`ObjectHelper.IsUnderThreat` und darüber die Notfallheilung des Weißmagiers. Ein Lockern dort
+verschöbe zwei Pfade auf einmal. Der neue Weg hängt allein an der Verteidigungsflagge.
+
 ## Was im Kampf anders wird
 
 | Lage | Vorher | Nachher |

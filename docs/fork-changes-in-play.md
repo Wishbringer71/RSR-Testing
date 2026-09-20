@@ -2,9 +2,8 @@
 
 Against upstream **7.5.6.10**. Settings are named as they appear in the configuration, and
 where a change sits behind a switch its default is given; without that note it takes effect
-immediately. Two changes are confirmed in play — the raise dispatch and the tank pre-pull
-HoT. Everything else is established in the code and compiled in CI, which says that a chain
-closes, not that it is right at the target dummy.
+immediately. Two changes are confirmed in play — the raise dispatch and the tank pre-pull HoT;
+everything else is established in the code and compiled, not yet measured at a dummy.
 
 ## Party mitigation answers raidwides again
 
@@ -18,6 +17,19 @@ An area action that costs **25 % of maximum health or more** is now treated as a
 whatever the party's health. The figure is not set by hand: it is what The Blackest Night
 states it absorbs. Below it the buffer comparison still decides, so small repeated ticks keep
 costing no cooldown while the party is healthy.
+
+- **An interruptible cast can be mitigated too** — `Mitigate a big area cast even when it is
+  interruptible`, **off by default**. Every area question drops interruptible casts, on the
+  reasoning that they get interrupted. In a dungeon where nobody does, the hit lands unanswered —
+  and a Summoner has no interrupt to offer. With this on, a cast whose measured damage reaches the
+  large-barrier figure raises the defence anyway, within a GCD of landing. Unmeasured and small
+  casts are unaffected, and the healer's threat detection is a separate path that does not widen
+  with it.
+- **Healing ahead of an announced area cast** — `Heal ahead of an announced area cast`, **off by
+  default**. Every threshold reads the health a member has, not the health he will have once the
+  cast already on screen lands: a party at 60 % in front of a 45 % raidwide counts as healthy until
+  it kills somebody. The measured size now raises the area heal beforehand, counting an existing
+  barrier against the hit it absorbs.
 
 ## Healing — when it lands
 
@@ -110,17 +122,24 @@ costing no cooldown while the party is healthy.
 
 ## Damage and rotation
 
-- **Summoner: Searing Light now covers the phase from its first GCD.** It used to be offered only
-  once the demi was standing, so the earliest weave slot it could take was the one after the
-  summon — and when that slot was busy, the buff landed somewhere inside the burst instead of at
-  its start. It now fires in the slot before the summon; the 20-second buff covers the
-  15-second demi either way, and the summon is no longer blocked by its own buff being spent.
-- **Summoner.** Searing Light is tied to the burst phase — Solar Bahamut, or Bahamut at lower
-  levels; with a second Summoner in the party it falls back to the big summon, and across all
-  established phases to Titan — or to Ifrit when you are standing at the target anyway, since
-  its higher figure assumes a gap closer you then do not need. `PreferTitanWhileMoving` (**off by default**) brings Titan forward while
-  you are moving, because Topaz Rite and its follow-ups are instant while Garuda and Ifrit
-  lose GCDs on the move. Titan is only brought forward, never skipped.
+- **Summoner: Searing Light covers the phase from its first GCD.** It was offered only once the
+  demi was standing, so the earliest slot it could take was the one *after* the summon — and a busy
+  slot pushed the buff into the middle of the burst. It now fires in the slot before, and the summon
+  waits for it; 20 seconds of buff cover a 15-second demi either way. The window itself is the burst
+  phase; with a second Summoner in the party it widens to any big summon, and once every phase is
+  taken it falls back to Titan — or to Ifrit when you are standing at the target anyway, since its
+  higher figure assumes a gap closer you then do not need. `PreferTitanWhileMoving` (**off by
+  default**) brings Titan forward while you are moving, never skips it.
+- **Summoner: the phase heal goes out when it lands in full.** Lux Solaris hung on the area heal
+  flag, which wants the party's health spread to be *small* — so one player taking a mechanic kept
+  it down exactly when somebody was hurt. It costs no MP and no GCD and expires with Refulgent Lux,
+  so the question is whether the cast is wasted, not whether area healing is worth it. It now fires
+  once the missing health can absorb the whole heal — measured from what the heal actually restored,
+  not from its potency — and in any case before the buff expires.
+- **Summoner: Rekindle picks by share, not by points.** It sorted by current health *points*, and
+  pools differ enough that a caster at full health can hold fewer than a tank at half — so the heal
+  went to someone who needed nothing. The action works in shares itself: its follow-up arms "when HP
+  falls below 75 %". With no target it goes on the caster instead of being lost with the phase.
 - **White mage, Holy.** Three separately switchable rules: do not overwrite the stun while it
   is still running (`StretchHolyStun`, **off by default**); hold Holy while the dark knight's
   barrier is meant to be filled; and hold Holy while more than half the enemies in radius are

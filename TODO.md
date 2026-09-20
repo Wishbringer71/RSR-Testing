@@ -484,32 +484,25 @@ Dieselbe Bauform wie bei Rekindle, aber **nicht** ohne Weiteres derselbe Fehler:
 
 Die Entscheidung berührt die dokumentierte Begründung in `10-drk-blackest-night.md` und gehört dem Auftraggeber; bearbeitet wird hier nichts. Die Fundstellen in den PvP-Rotationen liegen außerhalb seines Nutzungsprofils und bleiben unbearbeitet.
 
-### Beim Beschwörer bleibt in der 4er-Instanz nur ein einziger Weg zu Radiant Aegis und Addle · N
+### Schimmerschild und Addle: der zweite Weg ist gebaut, die übrigen Schrauben bleiben offen · N
 
-**Konzept:** `docs/rotation-flow/12-searing-light-stacking.md`, `docs/rotation-flow/13-aoe-damage-classification.md`
-**Spielbeobachtung des Auftraggebers, 4er-Instanz:** kein Addle und kein Radiant Aegis trotz Flächenschaden. Beide zusammen, was auf eine gemeinsame Ursache deutet — und die gibt es.
+**Konzept:** `docs/rotation-flow/13-aoe-damage-classification.md`
 
-**Vollständig erhobene Kette.** Beide Aktionen stehen beim Beschwörer in `DefenseAreaAbility` und `DefenseSingleAbility`; Radiant Aegis zusätzlich in `GeneralAbility`. Was diese drei Wege öffnet:
+**Spielbeobachtung des Auftraggebers, 4er-Instanz:** kein Addle und kein Radiant Aegis trotz Flächenschaden — mal ja, mal nein.
 
-| Weg | Bedingung | Stand |
+**Zwei Ursachen, beide behoben.** Die erste war die Bewertung aus A101, die allein nach Heilbedarf fragte und bei gesunder Gruppe jeden Anteil unter 0,35 verwarf (behoben in A108: ab 0,25 der Maximalgesundheit ist die Fläche groß, unabhängig vom Zustand der Gruppe). Die zweite ist der Vorfilter davor: `IsHostileCastingBase` verwirft jeden **unterbrechbaren** Cast, und Dungeon-Trash castet überwiegend unterbrechbar. Der Beschwörer hat keinen Interrupt — wird nicht unterbrochen, schlägt der Cast ein und nichts hat geantwortet. Dafür steht jetzt `IsHostileCastingLargeArea` hinter `Mitigate a big area cast even when it is interruptible` (**Vorgabewert aus**, A120).
+
+**Was offen bleibt, und es ist weniger als vorher.** Der Weg zu Radiant Aegis und Addle führt beim Beschwörer weiterhin allein über `AutoStatus.DefenseArea`; die beiden anderen sind tot (`GeneralAbility` hängt an `UseBmrTimeline`, ab Werk aus; `DefenseSingleAbility` verlangt für RangedMagical einen gesicherten Tankbuster auf den Spieler). Drei Schrauben bleiben, und keine ist ohne den Auftraggeber zu drehen, weil jede eine seiner dokumentierten Entscheidungen berührt:
+
+| Schraube | Was dafür spricht | Was dagegen spricht |
 |---|---|---|
-| `GeneralAbility`, Radiant Aegis | `BMRShouldRefreshBefore(BMRRaidwideIn, …)` | **ab Werk tot**: der Helfer gibt sofort `false` zurück, wenn `UseBmrTimeline` aus ist, und `_useBMRTimeline` ist auf `false` voreingestellt |
-| `DefenseSingleAbility` | für RangedMagical nur `IsHostileCastingTankBusterAtMe`, oder BMR-Tankbuster **ohne lebenden Tank** | greift im Gruppenpull praktisch nie; die Einschränkung auf gesicherte Tankbuster stammt aus A9/C10 — seiner eigenen Meldung, dass es zu oft feuerte |
-| `DefenseAreaAbility` | `AutoStatus.DefenseArea` | einziger verbliebener Weg |
+| `UseBmrTimeline` einschalten | öffnet den `GeneralAbility`-Weg für Radiant Aegis sofort, ohne Codeänderung | hängt an einem Fremdplugin und seiner Vorhersagequalität; es ist **seine** Voreinstellung |
+| Tankbuster-Einschränkung für RangedMagical lockern | öffnet `DefenseSingleAbility` im Gruppenpull | stammt aus A9/C10 — seiner eigenen Meldung, dass es zu oft feuerte |
+| Vorfilter-Fenster (Restzeit 1–2 GCDs) weiten | erfasst kurze Casts | trifft alle Jobs und über `IsUnderThreat` auch die Notfallheilung des Weißmagiers |
 
-`AutoStatus.DefenseArea` wiederum hat zwei Zweige: die BMR-Timeline (ab Werk aus, siehe oben) und `IsHostileCastingAOE`. Letzterer verlangt **kumulativ**: ein Gegner castet, der Cast ist **nicht unterbrechbar**, er dauert länger als ein GCD, seine Restzeit liegt zwischen einem und zwei GCDs, die Aktions-Id steht in `HostileCastingArea`, der Effekt erreicht den Spieler — und seit A101 zusätzlich, dass das gemessene Schadenspotential niemanden unter die Heilschwelle drückt.
+**Empfehlung: keine davon jetzt.** Zuerst ist zu beobachten, was der gebaute Weg im Spiel bringt — er zielt genau auf den gemeldeten Fall. Die Sonde dafür steht bereit: Die AoE-Liste zeigt je Aktion den gemessenen Anteil und ob die Regel etwas verworfen hat.
 
-**Damit ist der Befund kein einzelner Fehler, sondern eine Pendelbewegung.** A9 hat zwei Auslöser entfernt, die dauerhaft anstanden (der Gegnerzahl-Fallback in `ShouldAddDefenseArea`, Radiant Aegis bedingungslos in `GeneralAbility`) — beides zu Recht, beides auf seine Meldung „zu oft, obwohl keine Gefahr vorliegt". Übrig blieb ein Pfad, der bei Dungeon-Trash kaum je auslöst, weil dessen Casts überwiegend unterbrechbar und kurz sind. A9 vermerkte als Rückfall „bleibt über die BMR-Raidwide-Vorhersage und die Defense-Pfade"; die BMR-Vorhersage ist ab Werk abgeschaltet, und die Defense-Pfade sind der eben beschriebene Engpass. Der Rückfall trug also nicht.
-
-**Nicht ohne den Auftraggeber zu behebende Frage:** Welche der dokumentierten Entscheidungen fallen soll. Seine Beobachtung belegt, **dass** nichts kommt, nicht **welche** Schraube zu drehen ist — der Gegnerzahl-Fallback, die Tankbuster-Einschränkung, die Voreinstellung von `UseBmrTimeline` oder die Schärfe des Cast-Vorfilters. Vorlage mit Optionen und Empfehlung steht aus.
-
-**Der wahrscheinliche Auslöser des gemeldeten Bildes ist behoben** (A108): Die Bewertung aus A101 fragte allein, ob der Treffer Heilbedarf erzeugt, und verneinte das bei gesunder Gruppe für jeden Anteil unter 0,35. Seit der belegten Obergrenze — ab 0,25 der Maximalgesundheit ist die Fläche groß, unabhängig vom Zustand der Gruppe — greift sie wieder. Was davon im Spiel ankommt, ist offen: Die Sonde `AreaMitigationSkipped` in der Listenverwaltung zeigt je Aktion, ob die Regel noch etwas verwirft.
-
-**Offen bleibt die Pendelbewegung selbst.** Auch mit greifender Bewertung führt der Weg zu Radiant Aegis und Addle beim Beschwörer allein über `AutoStatus.DefenseArea` und dessen Cast-Vorfilter (nicht unterbrechbar, länger als ein GCD, Restzeit zwischen einem und zwei GCDs). Welche der dokumentierten Entscheidungen zu lockern ist — der Gegnerzahl-Fallback, die Tankbuster-Einschränkung, die Voreinstellung von `UseBmrTimeline` oder die Schärfe des Vorfilters —, ist ohne den Auftraggeber nicht zu entscheiden; seine Beobachtung belegt, **dass** nichts kommt, nicht **welche** Schraube zu drehen ist.
-
-**Der Wirkungsbereich reicht über die Minderung hinaus und ist vor jeder Korrektur zu erheben:** `IsHostileCastingAOE` speist auch `ObjectHelper.IsUnderThreat`, und darüber hängt die Gefahrenprüfung der Notfallheilung am Weißmagier (`BenedictionNeedsThreat`) an derselben gefilterten Größe. Eine Änderung am Filter verschiebt beide Pfade zugleich; die Bewertung je Pfad steht aus.
-
-**Zeitliche Einordnung:** A66 (11.09.) führt seine Meldung „schimmerschild klappt bislang", die Bewertung stammt vom 17.09. (`1bc46119a`). Das Fenster deckt sich mit der Beobachtung.
+**Nicht verschärft, aber zu wissen:** `IsHostileCastingAOE` speist auch `ObjectHelper.IsUnderThreat` und darüber `BenedictionNeedsThreat`. Der neue Weg ist deshalb bewusst eine eigene Eigenschaft und kein Lockern der bestehenden.
 
 ### Die Aufnahme in die AoE-Liste unterscheidet Raidwide und ausweichbare Fläche nicht · N
 

@@ -2481,6 +2481,103 @@ internal static class DataCenter
 	public static bool IsHostileCastingAOE =>
 		InCombat && (IsCastingAreaVfx() || (AllHostileTargets != null && IsAnyHostileCastingArea()));
 
+	/// <summary>
+	/// An enemy is casting an action whose measured area damage is large, that will reach the player,
+	/// and that lands within about one GCD.
+	/// </summary>
+	/// <remarks>
+	/// <para><b>Why this exists beside <see cref="IsHostileCastingAOE"/>.</b> That one routes through
+	/// <see cref="IsHostileCastingBase"/>, which drops every INTERRUPTIBLE cast. The reasoning behind
+	/// that is sound - an interruptible cast is meant to be interrupted, and mitigating it would spend
+	/// a cooldown on something that never lands. It holds only while somebody actually interrupts.
+	/// A Summoner has no interrupt; in a four-player dungeon with a tank who does not use Interject,
+	/// the cast lands anyway, and nothing answered it. That is the reported picture: "sometimes Radiant
+	/// Aegis and Addle go out on area casts, sometimes not".</para>
+	///
+	/// <para><b>Why it is not a return to what A9 removed.</b> A9 took out a fallback that raised the
+	/// defence from the ENEMY COUNT - no evidence of danger at all, and the owner reported it firing
+	/// with nothing happening. This asks the opposite: it requires a figure measured from an actual
+	/// landing, at or above what the largest barrier in the game absorbs. A cast nobody has been hit
+	/// by carries no figure and opens nothing.</para>
+	///
+	/// <para><b>What makes it possible now and not then.</b> The per-action damage share did not exist
+	/// when that fallback was removed, so coarseness had to be handled in the pre-filter. With the
+	/// size measured, the filter no longer has to carry that job alone.</para>
+	///
+	/// <para>Deliberately a separate property rather than a loosening of
+	/// <see cref="IsHostileCastingAOE"/>: that one also feeds <c>ObjectHelper.IsUnderThreat</c> and
+	/// through it the White Mage's Benediction guard. Widening it would move two paths at once.</para>
+	/// </remarks>
+	public static bool IsHostileCastingLargeArea
+	{
+		get
+		{
+			if (!InCombat || !Service.Config.MitigateBigAreaCastsEvenIfInterruptible)
+			{
+				return false;
+			}
+
+			var targets = AllHostileTargets;
+			if (targets == null)
+			{
+				return false;
+			}
+
+			var actionSheet = Service.GetSheet<Action>();
+			if (actionSheet == null)
+			{
+				return false;
+			}
+
+			for (var i = 0; i < targets.Count; i++)
+			{
+				var h = targets[i];
+				try
+				{
+					if (h == null || h.GameObjectId == 0 || !h.IsCasting || !h.IsEnemy())
+					{
+						continue;
+					}
+
+					// The same one-GCD window IsHostileCastingBase uses at its far end, and for the
+					// same reason: answer shortly before the hit, not at the start of the cast. It
+					// also leaves the interrupt its chance - by this point it has happened or it will
+					// not happen at all.
+					var remaining = h.TotalCastTime - h.CurrentCastTime;
+					if (remaining <= 0f || remaining > GCDTime(1))
+					{
+						continue;
+					}
+
+					if (!OtherConfiguration.HostileCastingArea.Contains(h.CastActionId))
+					{
+						continue;
+					}
+
+					if (!OtherConfiguration.HostileCastingAreaPotential.TryGetValue(h.CastActionId, out var share)
+						|| share < LargeShieldShare)
+					{
+						continue;
+					}
+
+					var action = actionSheet.GetRow(h.CastActionId);
+					if (action.RowId == 0 || !AreaCastCanReachPlayer(h, action))
+					{
+						continue;
+					}
+
+					return true;
+				}
+				catch (AccessViolationException ex)
+				{
+					PluginLog.Warning($"AccessViolation in IsHostileCastingLargeArea: {ex.Message}");
+				}
+			}
+
+			return false;
+		}
+	}
+
 	private static bool IsAnyHostileCastingArea()
 	{
 		if (AllHostileTargets == null)
