@@ -233,9 +233,16 @@ public partial class CustomRotation
 		HpPotionItem? best = null;
 		foreach (var a in HpPotions)
 		{
+			// Strictly greater, so a tie keeps the one seen first. HpPotions is ordered strongest
+			// first, and a tie is the normal case rather than an edge: MaxHp is the smaller of the
+			// potion's own percentage and its own cap, so wherever the percentage binds - a synced
+			// health pool, or any pool small enough that the cap is out of reach - every usable
+			// grade answers the same figure. With ">=" the last one examined won, and that is the
+			// WEAKEST grade in the bag: the strong potion the player deliberately enabled sat
+			// unused while a low-grade one was spent on the same emergency.
 			if (a.ID != 47102 && a.ID != 22306 && a.ID != 20309 && a.CanUse(out _, true))
 			{
-				if (best == null || a.MaxHp >= best.MaxHp)
+				if (best == null || a.MaxHp > best.MaxHp)
 				{
 					best = a;
 				}
@@ -247,7 +254,7 @@ public partial class CustomRotation
 			// missing-HP guard against wasting the potion via overheal.
 			if ((DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterImminent) && a.ID != 47102 && a.ID != 22306 && a.ID != 20309 && a.CanUseEmergency(out _))
 			{
-				if (best == null || a.MaxHp >= best.MaxHp)
+				if (best == null || a.MaxHp > best.MaxHp)
 				{
 					best = a;
 				}

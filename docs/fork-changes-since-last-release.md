@@ -19,3 +19,16 @@ and every Ifrit phase falls back to filler.
 The run-up itself is unchanged: `Use damaging gap closer abilites if the distance to your target
 is less than this` still gates it at 3 yalms by default, and as soon as any distance remains the
 path is measured exactly as before.
+
+## The strongest HP potion is the one that gets used
+
+The choice between enabled potions took the last one examined on a tie, and the list runs from
+strongest to weakest — so the weak grade won. Ties are the normal case, not an edge: a potion
+heals a percentage up to its own cap, and wherever the percentage is what binds, every usable
+grade answers the same figure. The potion you deliberately enabled sat in the bag while a
+low-grade one was spent.
+
+The item's debug panel now also says in words why no potion goes out — the setting, this item's
+own enable switch, the health threshold, the missing-health guard, the bag, the game's own
+refusal — and whether anything is asking for one at all. `CanUse: False` was one bit for six
+separate conditions.

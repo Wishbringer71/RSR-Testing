@@ -32,6 +32,56 @@ internal class HpPotionItem : BaseItem
 	}
 
 	/// <summary>
+	/// Names the first condition that currently stops this potion, or "ready" when none does.
+	/// </summary>
+	/// <remarks>
+	/// <see cref="CanUse"/> answers one bit, and six independent conditions produce that bit: the
+	/// global setting, this item's own enable flag, the health threshold, the missing-health guard,
+	/// having one in the bag, and - outside this class - the heal flag at the call site. A player
+	/// asking "why did no potion go out" cannot tell those apart from a False, and neither can a
+	/// reading of the code from somewhere else: which of them holds depends on that player's
+	/// configuration and inventory, which is not observable from the repository.
+	///
+	/// So the item states its own reason. The two conditions it cannot see are named by the caller.
+	/// </remarks>
+	public string DescribeBlock()
+	{
+		if (!Service.Config.UseHpPotions)
+		{
+			return "off: Use HP Potions is disabled";
+		}
+
+		if (!IsEnabled)
+		{
+			return "off: this item is not enabled (per-item switch, separate from the setting above)";
+		}
+
+		if (!HasIt)
+		{
+			return "none in the bag";
+		}
+
+		if (Player.Object == null || !Player.Available)
+		{
+			return "no player";
+		}
+
+		var ratio = ObjectHelper.GetPlayerHealthRatio();
+		if (ratio > Service.Config.UseHpPotionsPercent)
+		{
+			return $"health {ratio:P0} is above the threshold {Service.Config.UseHpPotionsPercent:P0}";
+		}
+
+		var missing = Player.Object.MaxHp - Player.Object.CurrentHp;
+		if (missing < MaxHp)
+		{
+			return $"missing {missing} HP is less than this potion heals ({MaxHp})";
+		}
+
+		return base.CanUse(out _) ? "ready" : "the game refuses it (cooldown, zone or level)";
+	}
+
+	/// <summary>
 	/// Emergency variant for a confirmed incoming tankbuster: the normal <see cref="CanUse"/> only
 	/// reacts to already-low current HP, but a tankbuster can exceed current HP even when it's above
 	/// the configured reactive threshold. Drops the HP% gate but keeps the same missing-HP guard (the

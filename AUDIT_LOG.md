@@ -3076,6 +3076,22 @@ Allgemeine Form, in `CLAUDE.md` aufgenommen: Wo ein fremder Schutzmechanismus al
 
 **Erreichter Prüfgrad:** statische Erhebung beider Aufrufstellen, des Zieltyps von Crimson Cyclone (`SpecialActionType.HostileMovingAttack`) und seiner Einbindung in die Rotation; Abgleich gegen `upstream/main`, wo der Zweig wortgleich steht — die Fehlbehandlung ist geerbt, nicht vom Fork eingeführt. Keine Laufzeitbeobachtung; sichtbar wird die Behebung daran, dass Crimson Cyclone und Crimson Strike in der Ifrit-Phase wieder fallen, während er am Boss steht.
 
+### A123 · Heiltränke: die Kette gegen Upstream geprüft, ein Auswahlfehler behoben (20.09.2026)
+
+**Gemeldet:** „werden heilpotions richtig genutzt? ich habe das gefühl, dass sie gar nicht mehr genutzt werden" — und nach der ersten Analyse die Eingrenzung, die die Richtung umdreht: „ich habe da z.b. aktuell den ultratrank enabled. und er wird dennoch nicht genutzt. und das ist nur in diesem fork so. im upstream geht es."
+
+**Damit war meine erste Antwort widerlegt, bevor sie wirkte.** Ich hatte den Gegenstandsschalter (`ItemConfig.IsEnabled`, ohne Initialisierer also `false`, gegen `ActionConfig` mit `= true`) als Ursache vorgelegt. Der Schalter ist echt und die Falle auch — aber bei ihm steht er auf an, und die Stelle ist Upstream-Code von 2023/2024, den der Fork nie angefasst hat. Seine Entscheidung dazu: Freischaltung bleibt je Gegenstand über die Oberfläche; der Vorschlag einer generellen Vorgabe ist erledigt.
+
+**Die Erhebung gegen `upstream/main`, vollständig und mit dem unbequemen Ergebnis.** Geprüft wurden `HpPotionItem`, `UseHpPotion`, der Einhängepunkt in `CustomRotation_Ability`, `BaseItem`, `ItemConfig`, `ConfigurationHelper.BadStatus`, `ObjectHelper.GetPlayerHealthRatio`, `DataCenter.RefinedHP`/`GetPartyMemberHPRatio`, `DefaultGCDRemain`, `CanUseHealAction`, `NonHealerHealLogic`, `AnyLivingHealerInParty`, die `HealSingleAbility`-Zweige und `ShouldHealSingle` samt `GetForecastSurvivingShare`. **Jede Fork-Abweichung auf diesem Pfad lockert; keine verengt.** Der Einhängepunkt etwa prüft im Fork zusätzlich auf Tankbuster, die Vorhersage in `ShouldHealSingle` ist auf [0,1] geklemmt und kann eine Gesundheit nur nach unten tragen. Auch `Configs.CurrentVersion` ist beidseits 12, ein Zurücksetzen beim Wechsel zwischen den Bauten also keine Erklärung.
+
+**Ein Nullbefund ist kein Freispruch.** Seine Beobachtung ist eine Messung, meine Erhebung ist eine über einen von mir gewählten Ausschnitt. Was daraus folgt, ist nicht „es liegt nicht am Fork", sondern „auf den geprüften Stellen nicht" — und dass die nächste Runde nicht wieder statisch sein darf.
+
+**Gefunden und behoben wurde dabei ein eigener Defekt, der zum Bild passt:** `UseHpPotion` verglich mit `a.MaxHp >= best.MaxHp` über eine absteigend sortierte Liste, sodass bei **Gleichstand der zuletzt geprüfte** gewann — und das ist die schwächste Sorte im Beutel. Gleichstand ist dabei der Regelfall und kein Randfall: `MaxHp` ist das Minimum aus Prozentanteil und eigener Obergrenze, und überall dort, wo der Prozentanteil bindet (synchronisierte Gesundheit, oder ein Vorrat, der die Obergrenze nicht erreicht), antworten alle nutzbaren Sorten dieselbe Zahl. Der starke Trank, den er bewusst freigeschaltet hat, blieb liegen, während ein schwacher verbraucht wurde. Damit ist zugleich sein Zusatzwunsch erfüllt — die passende Sorte zuerst.
+
+**Und das Messmittel, weil die Antwort hier nicht im Repository liegt.** Welche der sechs Bedingungen bei ihm zuschlägt, hängt an seiner Konfiguration und seinem Inventar; beides ist von hier nicht messbar, und `CanUse: False` ist ein Bit für sechs Fragen. `HpPotionItem.DescribeBlock` nennt jetzt den ersten blockierenden Punkt im Klartext, die Anzeige dazu, ob überhaupt etwas nach einem Trank fragt (Heilflagge oder Tankbuster). Das ist keine Sonde zur späteren Auswertung durch mich, sondern die Sichtbarmachung eines Zustands, den nur sein Rechner kennt.
+
+**Erreichter Prüfgrad:** statischer Vergleich jeder Stelle der Kette gegen `upstream/main`, Prüfskripte grün. Keine Laufzeitbeobachtung — die liefert die neue Anzeige.
+
 ---
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)

@@ -3336,6 +3336,22 @@ public partial class RotationConfigWindow : Window
 					if (item is HpPotionItem healPotionItem)
 					{
 						ImGui.Text("MaxHP:" + healPotionItem.MaxHp.ToString());
+
+						// Why it is not going out, in words. "CanUse: False" above is one bit for
+						// six conditions, and which of them holds depends on this player's settings
+						// and bag - so the answer has to be readable here rather than reasoned out
+						// from the source.
+						ImGui.Text("Potion: " + healPotionItem.DescribeBlock());
+
+						// The two conditions the item cannot see: the potion is only offered from a
+						// heal flag or a confirmed tankbuster, so a ready potion still waits for one
+						// of them.
+						var gate = DataCenter.MergedStatus.HasFlag(AutoStatus.HealSingleAbility)
+							? "heal flag up"
+							: DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterImminent
+								? "tankbuster"
+								: "no heal flag and no tankbuster - nothing asks for a potion right now";
+						ImGui.Text("Trigger: " + gate);
 					}
 				}
 				catch (Exception ex)

@@ -4,17 +4,17 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 ## Defekte
 
-### Heiltränke sind ab Werk je Gegenstand abgeschaltet, unabhängig von ihrer eigenen Option · N, U
+### Heiltränke gehen trotz freigeschaltetem Gegenstand nicht heraus · N
 
-**Gemeldet aus dem Spiel:** „werden heilpotions richtig genutzt? ich habe das gefühl, dass sie gar nicht mehr genutzt werden."
+**Gemeldet aus dem Spiel, mit Eingrenzung:** „ich habe da z.b. aktuell den ultratrank enabled. und er wird dennoch nicht genutzt. und das ist nur in diesem fork so. im upstream geht es. früher hat mein beschwörer öfters bei aoes heiltränke benutzt, oder wenn eine mechanik ihn auf 1hp gesetzt hat. jetzt passiert gar nichts mehr."
 
-**Zwei unabhängige Schalter, und der zweite ist unsichtbar.** `Service.Config.UseHpPotions` ist die Option, die der Nutzer sucht (Vorgabewert aus). `BaseItem.CanUse` verlangt zusätzlich `IsEnabled` **je Gegenstand**, und `ItemConfig.IsEnabled` steht ohne Initialisierer da, ist also `false`. Der Gegensatz ist im selben Verzeichnis belegt: `ActionConfig` führt `private bool _isEnable = true`. Wer „Use HP Potions" einschaltet, bekommt damit nichts — jeder einzelne Trank ist bis zum Klick in der Aktionsliste aus.
+**Entschieden (seine Vorgabe):** Die Freischaltung bleibt **je Gegenstand über die Oberfläche**, keine generelle Vorgabe. Der Vorschlag, Heiltränke ab Werk freizuschalten, ist damit erledigt und wird nicht erneut vorgelegt.
 
-**Upstream-Code, unverändert seit `abca46cd6` (28.10.2023) bzw. `3e9b5b164` (31.01.2024); der Fork hat weder `BaseItem.cs` noch `ItemConfig.cs` angefasst.** Der Eindruck „nicht mehr" ist damit nicht durch eine Änderung an dieser Stelle erklärt. Der wahrscheinlichste Auslöser ist `Configs.Migrate` (eigener Eintrag unter technischer Schuld): Bei abweichender Versionsnummer wird `new Configs()` zurückgegeben, und damit ist `RotationItemConfig` samt aller freigeschalteten Tränke weg.
+**Die Kette ist vollständig gegen `upstream/main` geprüft, und der Befund ist ein Nullbefund:** An `HpPotionItem` (nur `CanUseEmergency` ergänzt), an der Auswahl in `UseHpPotion` (nur der Tankbuster-Zweig ergänzt), am Einhängepunkt in `CustomRotation_Ability` (Bedingung **erweitert** um Tankbuster), an `BaseItem`, `ItemConfig`, `ConfigurationHelper.BadStatus`, `GetPlayerHealthRatio`, `DefaultGCDRemain`, `CanUseHealAction`, `NonHealerHealLogic`, `AnyLivingHealerInParty` und den `HealSingleAbility`-Zweigen weicht der Fork entweder gar nicht ab oder nur lockernd. Auch `Configs.CurrentVersion` ist auf beiden Seiten 12, ein Zurücksetzen beim Wechsel zwischen den Bauten also nicht erklärbar. **Eine Fork-Verengung auf diesem Pfad ist statisch nicht nachweisbar** — was den gemeldeten Unterschied nicht widerlegt, sondern heißt, dass die Ursache außerhalb der geprüften Stellen liegt.
 
-**Vier weitere Tore in derselben Kette**, alle erhoben: die Flagge `AutoStatus.HealSingleAbility` oder ein Tankbuster am Einhängepunkt (`CustomRotation_Ability.cs`), Gesundheit unter `UseHpPotionsPercent` (0,5), fehlende Gesundheit mindestens so groß wie die Heilmenge des Tranks, und `HasIt` im Inventar. Die Gesundheit ist dabei die **verfeinerte** (`RefinedHP`), also einschließlich bereits angerechneter, noch nicht eingetroffener Heilung — in einer Gruppe mit aktivem Heiler fällt der Trank deshalb oft aus, und das ist richtig so.
+**Behoben wurde dabei ein eigener Fund**, der zu „der starke Trank wird nicht genutzt" passt: Die Auswahl nahm bei Gleichstand den **schwächsten** Trank (`>=` über eine absteigend sortierte Liste). Gleichstand ist der Regelfall, sobald der Prozentanteil bindet statt der Obergrenze.
 
-**Offen ist die Entscheidung, nicht der Befund:** ob Heiltränke ab Werk freigeschaltet sein sollen (die globale Option entscheidet, der Gegenstandsschalter bleibt Feinsteuerung) oder ob der Doppelschalter bleibt und stattdessen die Option ihn benennt. Betroffen sind alle Nutzer und die Upstream-Pflege.
+**Offen bleibt die Ursachenbestimmung, und sie ist von hier aus nicht zu leisten:** Welche der sechs Bedingungen bei ihm zuschlägt, hängt an seiner Konfiguration und seinem Inventar. Dafür nennt die Gegenstandsanzeige jetzt den ersten blockierenden Punkt im Klartext (`HpPotionItem.DescribeBlock`) und dazu, ob überhaupt etwas nach einem Trank fragt. Der nächste Schritt ist seine Ablesung, nicht eine weitere statische Runde.
 
 ### Zielbasierte Bewegungsaktionen über den Move-Pfad gelten immer als unsicher · N, U
 
