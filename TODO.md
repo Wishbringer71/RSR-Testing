@@ -680,19 +680,27 @@ Schritt 3 aus `docs/rotation-flow/08-mitigation-synergy.md`. Die Schritte 1 und 
 
 ## Offene Arbeit
 
-### Das Abwehrmittel nach der Größe des Treffers wählen · N, R
+### Das Abwehrmittel nach der Größe des Treffers wählen — Stufe 1 widerlegt, Stufe 2 gebaut, Stufe 3 offen · N, R
 
-**Vorgabe des Auftraggebers:** „man könnte es auch so anpassen, dass die geeignete schadensverringerung bzw. das geeignete schild bei dem eintreffenden schaden gewählt wird." Mit seiner Rechenregel: „wenn schaden nur 10% auf spieler mit geringster maxhp verursacht, dann reicht ein schild, was 10% blockiert. oder sogar weniger bis kein schild. wenn ein schaden 70% verursacht von maxhp des geringsten spielers, dann sollte das schild möglichst hoch sein, optimal 70%."
+**Freigegeben vom Auftraggeber** („Abwehrmittel-kaskade soll nach erneuter Prüfung im Loop umgesetzt werden"), im Loop erneut geprüft, und das Ergebnis ist dreigeteilt. **Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
 
-**Die Regel ist dreistufig** (seine Ergänzung): Liegt der Treffer unter der **aktuellen** Gesundheit des schwächsten Mitglieds, wird in Höhe des Treffers gedeckt — bei kleinen Werten auch gar nicht. Erreicht er sie, wird **zuerst geheilt**, Ziel ist die Maximalgesundheit. Übersteigt er auch die maximale Gesundheit, reicht Heilung nicht: Dann sind Barriere **und** Minderung zusätzlich zu setzen, bis der Rest darunter liegt. Das folgt seiner stehenden Ordnung Heilung vor Minderung.
+**Stufe 1 — Deckung nach Treffergröße: widerlegt, nicht umgesetzt.** Die Auswahlregel war gebaut und ist zurückgebaut, weil die Falsifikationsstufe ergab, dass sie im ganzen Baum nie greift: Minderungen kennen kein „zu groß" (sie skalieren mit dem Treffer), und kein Job hält zwei Anteilsbarrieren zur Wahl — beim Maler **entfernt** Tempera Grassa das Tempera Coat. Beleg und Hergang: A118.
 
-**Ausgangslage:** Die Größe des eintreffenden Treffers liegt als Anteil je Aktions-Id vor (Konzept 13), und zwar als höchster Anteil im Effektsatz — das ist der Spieler mit der geringsten Maximalgesundheit, also genau seine Bezugsgröße. Heute entscheidet dieser Wert nur, **ob** die Abwehrkette geöffnet wird; die Reihenfolge innerhalb der Kette ist je Job fest verdrahtet.
+**Stufe 2 — vor dem angekündigten Treffer heilen: gebaut**, hinter `Heal ahead of an announced area cast`, **Vorgabewert aus**. Das ist der Teil, der wirkt, und er schließt zugleich die in Konzept 07 und 08 geführte Lücke „die Zielwahl/die Schwellen lesen die gemessene Treffergröße nicht".
 
-**Derselbe Baustein schließt vier offene Punkte** — Vorausschau vor dem ersten Treffer, Wahl des Mittels, die Minderungsbilanz ohne Betäubung und Verlangsamung, und Rückstoß als Minderungswerkzeug. Aufstellung in `docs/rotation-flow/08-mitigation-synergy.md`, Abschnitt „Was ein Baustein mehrfach trägt“.
+**Stufe 3 — bei Treffern über der Maximalgesundheit Barriere und Minderung zusätzlich: offen.** Heute gibt die Kette ohnehin alles aus, was bereit ist, sobald sie offen ist; ob eine ausdrückliche Regel dafür überhaupt etwas ändert, ist nicht erhoben. Das ist die nächste Frage an diesem Punkt.
 
-**Was zum Bauen fehlt:** je Abwehraktion ein belegter Wert — für Minderungen der Prozentsatz aus dem eigenen Wirktext, für Barrieren der Anteil (25 %, 15 %, 10 % sind belegt). Erzeugbar aus den Ressourcen, nicht handzuführen.
+**Erhalten aus dem Durchgang:** `RotationSolver.Basic/Data/DefensiveValues.g.cs` — je Abwehraktion der im eigenen Wirktext genannte Wert, erzeugt aus den Ressourcen und in der CI gegen sie geprüft. Sie hat Stufe 1 widerlegt, sie trägt die übrigen offenen Punkte der Familie, und sie hat die handgeführte 35-Namen-Liste in `mitscan.py` ersetzt, die unter anderem Seedsower und Plenary Indulgence nicht kannte.
 
-**Blast Radius und Auflage:** Der Eingriff berührt `DefenseAreaAbility` und `DefenseSingleAbility` jedes Jobs und mittelbar die fremden Rotationen unter `ExtraRotations`. Er gehört deshalb hinter eine eigene Option mit dem bisherigen Verhalten als Voreinstellung, und die Sonde je Entscheidung ist mitzuliefern — sonst ist im Kampf nicht unterscheidbar, ob ein schwächeres Mittel gewählt wurde oder gar keines. Vollständige Bewertung in `docs/rotation-flow/08-mitigation-synergy.md`, Abschnitt „Die Antwort auf einen eingehenden Treffer“; die Messung der Treffergröße steht in `13-aoe-damage-classification.md`.
+### Stufe 3 der Abwehr-Kaskade: Treffer über der Maximalgesundheit · N, R
+
+**Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
+
+**Vorgabe des Auftraggebers, der noch offene Teil:** „wenn dann die hp unter dem schadenswert liegt, sollte zusätzlich geschildet werden. bzw. der schadensoutput reduziert." Übersteigt der Treffer auch die Maximalgesundheit des schwächsten Mitglieds, reicht Heilung nicht — dann sind Barriere **und** Minderung zusätzlich zu setzen, bis der Rest darunter liegt.
+
+**Was zu erheben ist, bevor gebaut wird:** ob das überhaupt etwas ändert. Die Kette gibt heute alles aus, was bereit ist, sobald sie offen ist; eine ausdrückliche Regel „beides zusammen" könnte folgenlos sein. Das ist dieselbe Frage, an der Stufe 1 gescheitert ist (A118), und sie ist vor der Umsetzung zu beantworten, nicht danach.
+
+**Vorhanden dafür:** `DefensiveValues.g.cs` mit dem Wert je Abwehraktion, `HostileCastingAreaPotential` mit der Treffergröße, `GetCurrentMitigationPercent` mit der bereits laufenden Minderung.
 
 ### Nachprüfung der 73 Commits vom 11. und 12. September 2026 · N, R, U
 

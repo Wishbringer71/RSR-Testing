@@ -42,6 +42,13 @@ jobs:
       - name: Check the heal target measure matches the action
         run: python3 .github/scripts/audit/check_heal_target_measure.py
 
+      # What a defensive action takes off a hit is stated in its own effect text and generated into
+      # DefensiveValues.g.cs. Checked rather than trusted: the generated file is committed, so a
+      # game patch that restates a figure, or a parser that quietly stops matching, would otherwise
+      # leave a stale table behind that nothing reads as wrong.
+      - name: Check the generated defensive values still match the effect texts
+        run: python3 .github/scripts/audit/generate_defensive_values.py --check
+
       # Depth alone is not enough: this fork's own remote carries no upstream tags at all, only
       # 7.5.5.41+wsh1 and 7.5.6.1+wsh1, and this environment cannot push tags to fix that. So the
       # release tags have to come from upstream directly, or `git describe` finds nothing to

@@ -319,6 +319,42 @@ internal static class StateUpdater
 		return true;
 	}
 
+	// Owner's rule, second stage: "die aktuelle hp liegt unter dem schadenswert. dann wäre aber eine
+	// heilung sinnvoll bis max maxhp."
+	//
+	// Every threshold below reads the health a member HAS. None of them reads the health he will
+	// have once the cast already on screen lands, so a party at 60% in front of a 45% raidwide is
+	// above every threshold and dies to it. The size of that cast is measured (concept 13) and was
+	// so far only used to decide whether to MITIGATE; this is the other half of the same figure.
+	//
+	// Deliberately placed at the same threshold the flag itself uses, not at a stricter one: the
+	// question is "would this hit put anyone where we would heal anyway", asked one cast earlier.
+	// Where nothing is announced or its size has not been measured, the answer is false and the
+	// flags behave exactly as before.
+	private static bool ShouldHealAheadOfAnnouncedHit(float threshold)
+	{
+		if (!Service.Config.HealAheadOfAnnouncedHit)
+		{
+			return false;
+		}
+
+		// Asked here rather than read from whatever ran before: walking the casting enemies is what
+		// establishes the size in the first place. Reading the recorded share on its own would make
+		// this rule depend on the defensive branch having run earlier in the same frame - and that
+		// branch is itself behind UseAoeDefense, so with area defence switched off the size would
+		// never be established and this rule would silently never fire.
+		//
+		// The same call also decides the mitigation question, and its verdicts agree with this one
+		// by construction: a cast it rates too small to mitigate is one that leaves everybody above
+		// the healing level, which is the same sentence read from the other end.
+		if (!DataCenter.IsHostileCastingAOE)
+		{
+			return false;
+		}
+
+		return DataCenter.AnnouncedHitDropsAnyoneBelow(threshold);
+	}
+
 	private static bool ShouldAddHealAreaAbility()
 	{
 		if (!DataCenter.HPNotFull || !CanUseHealAction || DataCenter.IsTyrantCastingSpecialIndicator())
@@ -330,6 +366,11 @@ internal static class StateUpdater
 		if (!NonHealerHealLogic())
 		{
 			return false;
+		}
+
+		if (ShouldHealAheadOfAnnouncedHit(Service.Config.HealthAreaAbility))
+		{
+			return true;
 		}
 
 		// Prioritize area healing if multiple members have DoomNeedHealing
@@ -404,6 +445,11 @@ internal static class StateUpdater
 		if (!NonHealerHealLogic())
 		{
 			return false;
+		}
+
+		if (ShouldHealAheadOfAnnouncedHit(Service.Config.HealthAreaSpell))
+		{
+			return true;
 		}
 
 		// Prioritize area healing if multiple members have DoomNeedHealing

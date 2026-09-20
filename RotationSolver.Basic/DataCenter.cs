@@ -2848,6 +2848,74 @@ internal static class DataCenter
 	/// </remarks>
 	public static readonly ConcurrentDictionary<uint, DateTime> AreaMitigationSkipped = new();
 
+	// How large the announced area cast is, as a share of the weakest member's maximum health, and
+	// when that was last established. This is the same figure AreaCastIsWorthMitigating already
+	// looks up to decide WHETHER to answer; kept here it also answers WITH WHAT.
+	//
+	// Held with a timestamp rather than cleared from somewhere else: the predicate runs while an
+	// enemy is casting and simply stops running when nothing is. A clearing point would have to be
+	// found and kept correct in a second place; an age does not.
+	private static float _announcedAreaShare;
+	private static DateTime _announcedAreaShareTime = DateTime.MinValue;
+
+	// One GCD's worth. The figure describes the cast that is landing now, so it must not outlive it
+	// and steer the next decision; long enough for the defensive branch of the same window to read it.
+	private static readonly TimeSpan AnnouncedAreaShareLifetime = TimeSpan.FromSeconds(2.5);
+
+	/// <summary>
+	/// The share of the weakest party member's maximum health carried by the area cast that is
+	/// currently announced, or 0 when none is announced or its size has not been measured yet.
+	/// 0 means "unknown", never "harmless".
+	/// </summary>
+	public static float AnnouncedAreaShare =>
+		DateTime.Now - _announcedAreaShareTime <= AnnouncedAreaShareLifetime ? _announcedAreaShare : 0f;
+
+	/// <summary>
+	/// Whether the announced area cast would put any living party member below the given share of
+	/// their maximum health. False when nothing is announced or its size has not been measured -
+	/// unknown is not "harmless", it is simply no reason to act.
+	/// </summary>
+	/// <remarks>
+	/// <para>This is the owner's second stage, the one that needs a figure nothing else supplies:
+	/// "die aktuelle hp liegt unter dem schadenswert. dann wäre aber eine heilung sinnvoll bis max
+	/// maxhp." Every healing threshold in the tree reads the health a member HAS; none of them reads
+	/// the health he will have when the cast that is already on screen lands. A member at 60% in
+	/// front of a 45% raidwide is above every threshold and dies to it.</para>
+	///
+	/// <para>The barrier counts here, and that is not a contradiction of A85. A85 removed the
+	/// barrier from the general healing threshold, because a barrier does not restore health - a
+	/// tank at 40% behind a shield is still at 40% once it expires unspent. This question is a
+	/// different one: does he survive THIS hit, the one being cast right now. Against that hit the
+	/// barrier is spent and does absorb it, so leaving it out would call for healing that the shield
+	/// has already paid for.</para>
+	/// </remarks>
+	public static bool AnnouncedHitDropsAnyoneBelow(float threshold)
+	{
+		var share = AnnouncedAreaShare;
+		if (share <= 0f)
+		{
+			return false;
+		}
+
+		var party = PartyMembers;
+		for (var i = 0; i < party.Count; i++)
+		{
+			var member = party[i];
+			if (member == null || member.IsDead || member.MaxHp == 0)
+			{
+				continue;
+			}
+
+			var buffer = member.GetEffectiveHp() / (float)member.MaxHp;
+			if (buffer - share < threshold)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	/// <summary>
 	/// Whether an incoming area cast is big enough that the party mitigation is worth its cooldown.
 	/// </summary>
@@ -2880,21 +2948,42 @@ internal static class DataCenter
 	/// </summary>
 	/// <remarks>
 	/// Not an invented number. The Blackest Night states it in its own effect text - "absorbs damage
-	/// totaling 25% of target's maximum HP" (`ActionId.resx`, row 1234) - and it is the largest
-	/// barrier in the tree that names its size as a share at all. The smaller ones name 10% and 15%
-	/// (`ActionId.resx` 1209, `DutyAction.resx` 1908, 4484, 6715), which is the other end of the
-	/// user's requirement: below a small shield the hit only matters to someone already low. That end
-	/// needs no constant, because the buffer comparison below is exactly that question.
+	/// totaling 25% of target's maximum HP" - and it is the largest barrier in the tree that names
+	/// its size as a share at all. The smaller ones name 10%, 15% and 20%, which is the other end of
+	/// the user's requirement: below a small shield the hit only matters to someone already low. That
+	/// end needs no constant, because the buffer comparison below is exactly that question.
+	///
+	/// The barriers that state a share are no longer counted by hand here: DefensiveValues.g.cs is
+	/// generated from those same effect texts and CI checks it still matches them. An earlier version
+	/// of this remark said "five barriers", listing their row ids; the generated table finds more
+	/// than that, and the figure had no way of noticing.
 	///
 	/// Concept 13 once dismissed the two-threshold form as "not implementable without invented
 	/// numbers, and not needed, because the buffer comparison answers the same question". Both halves
-	/// were wrong: five barriers state a share, and the buffer comparison answers a different
+	/// were wrong: the barriers state their share, and the buffer comparison answers a different
 	/// question - whether healing would be needed, not whether the hit is large.
 	/// </remarks>
 	private const float LargeShieldShare = 0.25f;
 
+	// Kept separate from the verdict below, and called before it, for two reasons. The figure
+	// describes the incoming cast, not this rule's opinion of it - and a second reader, the healing
+	// flag, needs it whether or not the owner wants small casts mitigated. Recorded inside the
+	// verdict it sat behind SkipMitigationForSmallAreaCasts, which would have left that reader blind
+	// to every cast whenever the switch was off.
+	private static void RecordAnnouncedAreaShare(uint actionId)
+	{
+		if (OtherConfiguration.HostileCastingAreaPotential.TryGetValue(actionId, out var share)
+			&& share > 0f)
+		{
+			_announcedAreaShare = share;
+			_announcedAreaShareTime = DateTime.Now;
+		}
+	}
+
 	private static bool AreaCastIsWorthMitigating(uint actionId)
 	{
+		RecordAnnouncedAreaShare(actionId);
+
 		if (!Service.Config.SkipMitigationForSmallAreaCasts)
 		{
 			return true;
@@ -2917,29 +3006,18 @@ internal static class DataCenter
 			return true;
 		}
 
-		var party = PartyMembers;
-		if (party.Count == 0)
+		if (PartyMembers.Count == 0)
 		{
 			return true;
 		}
 
-		// Anyone the hit would push to where healing would be called for is reason enough. The
-		// barrier counts here because it absorbs this hit - unlike in the healing threshold, where
-		// it does not lower the need to heal (A85).
-		var threshold = Service.Config.HealthAreaSpell;
-		for (var i = 0; i < party.Count; i++)
+		// Anyone the hit would push to where healing would be called for is reason enough. The same
+		// question decides whether to heal ahead of the cast, so it is asked in one place - see
+		// AnnouncedHitDropsAnyoneBelow, including why the barrier counts here and not in the general
+		// healing threshold (A85).
+		if (AnnouncedHitDropsAnyoneBelow(Service.Config.HealthAreaSpell))
 		{
-			var member = party[i];
-			if (member == null || member.IsDead || member.MaxHp == 0)
-			{
-				continue;
-			}
-
-			var buffer = member.GetEffectiveHp() / (float)member.MaxHp;
-			if (buffer - share < threshold)
-			{
-				return true;
-			}
+			return true;
 		}
 
 		AreaMitigationSkipped[actionId] = DateTime.Now;

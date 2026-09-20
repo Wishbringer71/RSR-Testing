@@ -95,12 +95,67 @@ Reihenfolge; die Tabelle sagt, **woran** sich entscheidet, ob der Fall ueberhaup
 loest die dritte Vorgabe ein: Die Barriere steht im Zaehler, also addiert sie sich in Zeile drei zur
 Minderung, statt mit ihr zu konkurrieren.
 
-**Gebaut ist davon nichts** — heute entscheidet die gemessene Groesse allein, **ob** die Abwehrkette
-geoeffnet wird, und die Reihenfolge innerhalb der Kette ist je Job fest verdrahtet. Was fehlt, ist
-derselbe Baustein, den dieses Konzept schon fuer die Vorausschau vor dem ersten Treffer vermisst: je
-Abwehraktion ein belegter Wert. Fuer Barrieren liegt er vor (25 %, 15 %, 10 % aus den Wirktexten),
-fuer Minderungen steht er im Wirktext und ist aus den Ressourcen erzeugbar statt handzufuehren.
-Blast Radius und Auflagen stehen in `TODO.md`.
+**Der Wert je Abwehraktion liegt vor.** `generate_defensive_values.py` liest ihn aus den Wirktexten
+in `ActionId.resx` und `DutyAction.resx` und erzeugt `RotationSolver.Basic/Data/DefensiveValues.g.cs`;
+die CI stellt die erzeugte Datei gegen die Wirktexte. Drei Formen, bewusst getrennt gehalten, weil
+sie **nicht** dasselbe bedeuten:
+
+| Form | Wirktext | Was sie im Kampf tut |
+|---|---|---|
+| Minderung am Traeger | „Reduces damage taken by 20%" (Rampart) | nimmt einen Anteil **des Treffers**, skaliert also mit ihm |
+| Minderung am Gegner | „physical damage dealt by 5% and magic damage dealt by 10%" (Addle) | dasselbe ueber den Angreifer, und **je Schadensart verschieden** |
+| Barriere | „absorbs damage totaling 20% of your maximum HP" (Schimmerschild) | absorbiert feste Punkte; gegen einen kleinen Treffer bleibt der Rest ungenutzt, gegen einen grossen ist sie aufgebraucht |
+
+**Von Stufe 1 der Vorgabe — die Deckung nach Treffergroesse waehlen — ist nichts gebaut, und der
+Grund ist ein Messergebnis, keine Kostenfrage.** Die Auswahl setzt voraus, dass ein Job mehrere
+Mittel derselben Art zur Wahl hat. Gemessen an der erzeugten Tabelle trifft das nirgends zu:
+
+- **Minderungen kennen kein „zu gross".** Sie nehmen einen Anteil des Treffers, es bleibt nichts
+  uebrig, und 30 % eines kleinen Treffers sind klein. Die Vorgabe „ein Schild, das 10 % blockiert"
+  ist eine Aussage ueber **Barrieren**.
+- **Barrieren mit ausgeschriebenem Anteil gibt es wenige**, und kein Job haelt zwei davon zur Wahl:
+  Krieger eine, Dunkelritter eine, Beschwoerer eine. Der Maler haelt zwei, aber Tempera Grassa
+  **entfernt** Tempera Coat („Removes Tempera Coat to create a barrier…") — eine Umwandlung, keine
+  Alternative. Die uebrigen sind Bozja-Aktionen ausserhalb des Nutzungsprofils.
+
+**Die Auswahlregel war gebaut und ist zurueckgebaut worden**, nachdem die Falsifikationsstufe das
+ergeben hat (A118). Sie haette im ganzen Baum nie gegriffen.
+
+**Was stattdessen wirkt, ist Stufe 2 — und sie schliesst eine Luecke, die dieses Konzept ohnehin
+fuehrt.** Siehe „Heilung vor dem angekuendigten Treffer" weiter unten.
+
+## Heilung vor dem angekuendigten Treffer
+
+**Jede Heilschwelle im Baum liest die Gesundheit, die ein Mitglied **hat**. Keine liest die, die es
+haben wird, wenn der bereits laufende Cast einschlaegt.** Ein Mitglied bei 60 % vor einem
+45-%-Raidwide steht ueber jeder Schwelle und stirbt daran. Das ist Stufe 2 der Vorgabe, woertlich:
+„die aktuelle hp liegt unter dem schadenswert. dann waere aber eine heilung sinnvoll bis max maxhp."
+
+**Die Groesse dafuer wird seit A99–A102 gemessen und war bisher nur fuer eine Frage im Gebrauch** —
+ob gemindert wird. Dieselbe Zahl beantwortet die andere Haelfte: ob **vorher** zu heilen ist.
+`DataCenter.AnnouncedHitDropsAnyoneBelow` stellt die Frage einmal, und beide Seiten lesen sie.
+
+| Schalter | Frage | Stand |
+|---|---|---|
+| `Skip mitigation for small area casts` | Oeffnet der Treffer die Abwehrkette? | **an** als Vorgabewert |
+| `Heal ahead of an announced area cast` | Wird vor dem Treffer geheilt? | **aus** als Vorgabewert |
+
+**Die Barriere zaehlt hier mit, und das widerspricht A85 nicht.** A85 hat die Barriere aus der
+allgemeinen Heilschwelle entfernt, weil sie keine Gesundheit herstellt — ein Tank bei 40 % hinter
+einem Schild steht bei 40 %, sobald der Schild ungenutzt ablaeuft. Hier ist die Frage eine andere:
+ueberlebt er **diesen** Treffer. Gegen ihn wird die Barriere verbraucht und faengt ihn ab; sie
+herauszurechnen hiesse, eine Heilung zu fordern, die der Schild bereits bezahlt hat.
+
+**Gefragt wird an derselben Schwelle, die die Flagge ohnehin benutzt**, nur einen Cast frueher —
+nicht an einer schaerferen. Die Regel kann deshalb nicht dort heilen, wo der Baum ohnehin nicht
+geheilt haette. Und sie stellt die Frage **selbst** (`IsHostileCastingAOE`), statt einen anderswo
+abgelegten Wert zu lesen: Sonst haenge sie daran, ob der Verteidigungszweig im selben Bild vorher
+lief — und der steht hinter `UseAoeDefense`, sodass die Regel bei abgeschalteter Flaechenabwehr
+still nie gefeuert haette.
+
+**Beim Beschwoerer trifft das auf die Zuendregel unten.** Steht die Flaechenheilungsflagge wegen
+eines angekuendigten Treffers, ist Lux Solaris der Zweig, der sie bedient — und der Wurf faellt
+**vor** dem Einschlag statt danach.
 
 ## Wann eine verfallende Heilung zuendet
 

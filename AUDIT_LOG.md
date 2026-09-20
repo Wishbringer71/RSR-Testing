@@ -2957,6 +2957,32 @@ Allgemeine Form, in `CLAUDE.md` aufgenommen: Wo ein fremder Schutzmechanismus al
 **Erreichter Prüfgrad:** statische Erhebung an Flaggenberechnung, Dispatch-Reihenfolge, Zielsortierung und Wirktexten; Strukturlauf und alle Prüfskripte ohne Befund; Compile im Prüflauf des Zweigs. Keine Laufzeitbeobachtung — und hier ist sie ausnahmsweise nicht der ausstehende Nachweis, weil die Regel ihren eigenen Messwert führt.
 
 ---
+
+### A118 · Die Abwehrmittel-Kaskade: Stufe 1 gebaut, durch die Falsifikationsstufe widerlegt und zurückgebaut (20.09.2026)
+
+**Auftrag des Auftraggebers:** „Abwehrmittel-kaskade soll nach erneuter Prüfung im Loop umgesetzt werden." Die erneute Prüfung hat den umgesetzten Teil widerlegt — das ist der Ertrag dieses Vorgangs, nicht sein Scheitern.
+
+**Gebaut war die erste Stufe seiner Vorgabe:** „wenn schaden nur 10% auf spieler mit geringster maxhp verursacht, dann reicht ein schild, was 10% blockiert." Dafür entstand `generate_defensive_values.py`, das aus `ActionId.resx` und `DutyAction.resx` je Abwehraktion den im Wirktext genannten Wert liest, und eine Sperre in `CanUse`, die eine zu große Deckung zurückhält, solange eine kleinere bereit ist.
+
+**Zwei Denkfehler, beide in der eigenen Formel, beide vor dem Commit gefunden.**
+
+1. *Verglichen wurde, was ankommt, statt was ausgegeben wird.* Die erste Fassung rechnete die tatsächlich absorbierte Menge. Unter dieser Lesart kann eine Barriere **nie** übergroß wirken — sie absorbiert höchstens den Treffer — und eine Minderung **nie** ausreichend, denn 20 % eines Treffers decken den Treffer nicht. Die Regel hätte nichts gefunden und das wäre als „greift selten" durchgegangen.
+2. *Minderung und Barriere wurden gleich behandelt.* Eine Minderung nimmt einen Anteil **des Treffers**, skaliert also mit ihm; es bleibt nichts übrig, und „zu groß" gibt es dort nicht. Nur die Barriere gibt feste Punkte aus und lässt bei einem kleinen Treffer den Rest verfallen. Die Vorgabe ist damit eine Aussage über **Barrieren**.
+
+**Die berichtigte Fassung hat sich dann selbst widerlegt.** Nach der Korrektur setzt die Regel voraus, dass ein Job zwei Anteilsbarrieren zur Wahl hält. Gemessen an der erzeugten Tabelle: Krieger eine (Shake It Off 15 %), Dunkelritter eine (The Blackest Night 25 %), Beschwörer eine (Schimmerschild 20 %), Maler zwei — aber Tempera Grassa **„Removes Tempera Coat to create a barrier…"**, also eine Umwandlung, keine Alternative. Die übrigen sind Bozja-Aktionen außerhalb des Nutzungsprofils. **Im ganzen Baum gibt es keinen Fall, in dem die Regel greifen würde.** Sperre, Sonde und Option sind zurückgebaut; toter Code wird nicht eingebaut, nur weil er fertig ist.
+
+**Was an seine Stelle tritt, ist Stufe 2 seiner Vorgabe, und sie wirkt für jeden heilfähigen Job.** „Die aktuelle hp liegt unter dem schadenswert. dann wäre aber eine heilung sinnvoll bis max maxhp." Jede Heilschwelle im Baum liest die Gesundheit, die ein Mitglied **hat**; keine liest die, die es nach dem bereits laufenden Cast haben wird. Ein Mitglied bei 60 % vor einem 45-%-Raidwide steht über jeder Schwelle und stirbt daran. Die Größe dafür liegt seit A99–A102 gemessen vor und wurde bisher nur für die Minderungsfrage gelesen. `AnnouncedHitDropsAnyoneBelow` stellt die Frage jetzt einmal, `AreaCastIsWorthMitigating` und die Flächenheilflaggen lesen dieselbe Antwort. Hinter `Heal ahead of an announced area cast`, Vorgabewert **aus**.
+
+**Zwei Kopplungen dabei gefunden und beide gelöst:**
+
+- Der gemessene Anteil wurde **hinter** der Option `SkipMitigationForSmallAreaCasts` abgelegt. Mit abgeschalteter Option hätte die Heilregel nie einen Wert gesehen. Die Erfassung steht jetzt vor beiden Verzweigungen — sie beschreibt den eingehenden Cast, nicht das Urteil einer Regel darüber.
+- Die Heilregel hätte den abgelegten Wert gelesen, statt die Frage selbst zu stellen. Damit hinge sie daran, ob der Verteidigungszweig im selben Bild vorher lief — und der steht hinter `UseAoeDefense`. Sie ruft jetzt `IsHostileCastingAOE` selbst.
+
+**Nebenbefunde, beide dieselbe Alterungsform.** Der Kommentar an `LargeShieldShare` führte „fünf Barrieren" samt handgeführter Zeilen-Ids; die erzeugte Tabelle findet mehr, und die Zahl hatte keine Möglichkeit, das zu bemerken — ersetzt durch den Verweis auf die erzeugte Datei. Und `mitscan.py` führte 35 Aktionsnamen von Hand; es liest jetzt die erzeugte Tabelle und findet damit Aktionen, die die Handliste nicht kannte (unter anderem Seedsower und Plenary Indulgence).
+
+**Erreichter Prüfgrad:** statische Erhebung an Wirktexten, Flaggenberechnung und Aufrufreihenfolge; Erzeuger mit Selbsttest gegen konstruierte Wirktexte und `--check` in der CI; Strukturlauf und alle Prüfskripte ohne Befund. Ob die Vorausheilung im Kampf den Unterschied macht, ist von hier aus nicht zu belegen — deshalb steht sie hinter einer Option mit dem bisherigen Verhalten als Vorgabewert.
+
+---
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
