@@ -3135,6 +3135,24 @@ internal static class DataCenter
 	/// immediate future, and a proactive refresh can wait for the next one. A heuristic, and stated
 	/// as one: nothing here proves the prediction means this cast.</para>
 	///
+	/// <para><b>The exact question - which action is the prediction pointing at, so its rating can be
+	/// looked up - cannot be asked. Measured against BossmodReborn's own source on 20.09.2026, not
+	/// assumed:</b></para>
+	/// <list type="bullet">
+	/// <item><c>Timeline.NextRaidwideIn</c> returns
+	/// <c>module.StateMachine.NextTransitionWithFlag(StateHint.Raidwide)</c> - a transition in the
+	/// module's state machine that its author flagged as "a raidwide happens here". There is no cast
+	/// and no action id in it at all.</item>
+	/// <item><c>Hints.NextRaidwideDamageIn</c> returns the activation time of the first
+	/// <c>PredictedDamage</c> entry of that type, and that struct carries exactly three fields:
+	/// <c>Players</c> (a bitmask), <c>Activation</c> and <c>Type</c>. No action.</item>
+	/// <item>The prediction list is not exposed either - each endpoint returns the FIRST matching
+	/// entry. Even with sizes available, "two are coming and the second is the big one" could not be
+	/// read out, which is precisely the reported case.</item>
+	/// </list>
+	/// <para>So the rating cannot be looked up for a predicted event. What is running now is the only
+	/// size information available at that moment, and this is what it is worth.</para>
+	///
 	/// <para>"Small" is the same question the reactive rule asks - would this hit push anyone to
 	/// where the tree heals anyway - so the two sides cannot disagree about the same cast.</para>
 	/// </remarks>

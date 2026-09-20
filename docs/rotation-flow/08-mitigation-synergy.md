@@ -219,6 +219,26 @@ aus**, mit `ProactiveMitigationHeld` als Sonde.
 meint, der gerade laeuft. Laeuft nichts, oder ist der laufende Cast nie gemessen worden, wird keine
 Aussage getroffen und die Vorhersage wie bisher befolgt.
 
+#### Die genaue Frage laesst sich nicht stellen, und das ist gemessen
+
+**Naheliegender waere:** erheben, auf **welches Ereignis** die Vorhersage anspielt, dessen Bewertung
+in der eigenen Liste nachschlagen und nur bei „gering" aussetzen. Der Auftraggeber hat genau das
+vorgeschlagen. **Die Information existiert auf der Gegenseite nicht** — geprueft an
+BossmodReborns Quelltext am 20.09.2026, nicht angenommen:
+
+| Endpunkt | Was er zurueckgibt | Aktionsbezug |
+|---|---|---|
+| `Timeline.NextRaidwideIn` | `module.StateMachine.NextTransitionWithFlag(StateHint.Raidwide)` — ein **Zustandsuebergang**, den der Modulautor als Raidwide markiert hat | keiner; es gibt keinen Cast dahinter |
+| `Hints.NextRaidwideDamageIn` | Aktivierungszeit des ersten `PredictedDamage`-Eintrags dieses Typs | keiner; `DamagePrediction` traegt genau `Players`, `Activation`, `Type` |
+
+**Und selbst mit Groessen waere der gemeldete Fall nicht zu loesen:** Die Vorhersageliste wird nicht
+herausgegeben. Jeder Endpunkt liefert den **ersten** passenden Eintrag. „Es kommen zwei, der zweite
+ist der grosse" ist ueber die Schnittstelle nicht lesbar.
+
+**Daraus folgt die Bauform, nicht aus Bequemlichkeit:** Was gerade laeuft, ist die einzige
+Groesseninformation, die in diesem Moment vorliegt. Die Regel ist deshalb so gut, wie diese Zuordnung
+trifft — und nicht besser.
+
 ## Wann eine verfallende Heilung zuendet
 
 **Die Heilschwellen sind fuer die teure Heilung eines Heilers gebaut, und fuer eine verfallende

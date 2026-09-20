@@ -474,6 +474,16 @@ Die Zündregel für Lux Solaris vergleicht den größten Fehlbetrag der Gruppe m
 
 **Offen und nicht gebaut:** Die Messung bezieht sich auf den absoluten Heilbetrag; für Mitglieder mit kleinerem Lebenspool ist derselbe Betrag ein größerer Anteil. Die Regel vergleicht deshalb gegen den größten Fehlbetrag der Gruppe und nicht je Mitglied. Ob das im Spiel genügt, ist nicht entschieden.
 
+### `Hints.PredictedDamagePlayers` wird nicht abonniert — erfasst, nicht gebaut · N, R
+
+**Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
+
+Bei der Prüfung, ob BossModReborn die **Aktion** einer Vorhersage nennt (Ergebnis: nein, siehe Konzept 08), ist ein Endpunkt aufgefallen, den der Fork nicht abonniert: `Hints.PredictedDamagePlayers` gibt die BitMask der **Betroffenen** des ersten Vorhersageeintrags zurück. Der Fork liest von `PredictedDamage` bisher nur Zeitpunkt und Art.
+
+**Was er beantworten könnte:** ob der vorhergesagte Schaden **den Spieler selbst** trifft. Bei Typ `Raidwide` ist das trivial, bei `Shared` und `None` nicht — und die Einzelverteidigung der Schadensausteiler hängt heute an `IsHostileCastingTankBusterAtMe` und `BMRTankbusterImminent`, also an Cast-Erkennung und Zeitpunkt, nicht an der Betroffenheit.
+
+**Vor dem Bau zu klären:** wie die Bitposition auf ein Gruppenmitglied abzubilden ist (BossModReborn nummeriert nach seiner eigenen Gruppenliste), und ob das über die IPC-Grenze ein weiterer ungeprüfter Vertrag wäre — dieselbe Klasse wie `SpecialMode` und `PredictedDamageType`.
+
 ### Vorhergesagte Minderung bei zwei Treffern in Folge — im Spiel zu bestätigen · N
 
 **Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
