@@ -1,9 +1,14 @@
 # What this fork does differently in a fight
 
-Against upstream **7.5.6.10**. Settings are named as they appear in the configuration, and
-where a change sits behind a switch its default is given; without that note it takes effect
-immediately. Two changes are confirmed in play — the raise dispatch and the tank pre-pull HoT;
-everything else is established in the code and compiled, not yet measured at a dummy.
+The whole distance from upstream **7.5.6.10**, as of release `7.5.6.10+wsh1`. What a single
+release changed is in [`fork-changes-since-last-release.md`](fork-changes-since-last-release.md),
+which is the text of the release description; this document is the standing picture and takes
+each release's text over once it has shipped.
+
+Settings are named as they appear in the configuration, and where a change sits behind a switch
+its default is given; without that note it takes effect immediately. Two changes are confirmed
+in play — the raise dispatch and the tank pre-pull HoT; everything else is established in the
+code and compiled, not yet measured at a dummy.
 
 ## Party mitigation answers raidwides again
 

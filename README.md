@@ -6,10 +6,11 @@ It tracks upstream `main` and carries patches that were not offered upstream. **
 below the horizontal rule is the upstream README, taken over unchanged** — its badges, its
 install instructions and its release links all refer to upstream, not to this repository.
 
-**Releases** are tagged `<upstream version>+wsh<n>` and publish a `latest.zip` asset. What a
-release changes in the fight is described in
-[`docs/fork-changes-in-play.md`](docs/fork-changes-in-play.md), which is the text of the
-release description itself and is kept short enough to paste into it. This repository ships
+**Releases** are tagged `<upstream version>+wsh<n>` and publish a `latest.zip` asset. Each
+release describes what *changed* in the fight since the one before it — that text is
+[`docs/fork-changes-since-last-release.md`](docs/fork-changes-since-last-release.md), handed to
+the release API by the publish workflow. The whole distance from upstream, kept as one standing
+picture, is [`docs/fork-changes-in-play.md`](docs/fork-changes-in-play.md). This repository ships
 no plugin repository manifest of its own, so the install instructions below add the
 *upstream* plugin. `manifest.json` is unchanged as well —
 `InternalName: RotationSolver` and the upstream `RepoUrl` included — so a fork build presents

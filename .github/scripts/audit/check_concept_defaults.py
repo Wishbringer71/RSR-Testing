@@ -25,8 +25,10 @@ from pathlib import Path
 CONCEPT_DIR = Path('docs/rotation-flow')
 
 # The release description states defaults to the user, who then acts on them - the same
-# ageing with a shorter fuse than a concept's, so it is measured with the concepts.
-EXTRA_DOCS = (Path('docs/fork-changes-in-play.md'),)
+# ageing with a shorter fuse than a concept's, so it is measured with the concepts. Both
+# halves count: the standing picture and the text of the release being prepared.
+EXTRA_DOCS = (Path('docs/fork-changes-in-play.md'),
+              Path('docs/fork-changes-since-last-release.md'))
 
 SOURCE_DIRS = (Path('RotationSolver.Basic'), Path('RotationSolver'))
 

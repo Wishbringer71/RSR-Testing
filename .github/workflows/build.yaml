@@ -156,12 +156,13 @@ jobs:
       - name: Check the stated defaults still match the code
         run: python3 .github/scripts/audit/check_concept_defaults.py
 
-      # The release description is pasted into a field that counts characters and stops accepting
-      # them. The 18611-character version ran the counter to "0 remaining" inside section 7, and
-      # everything after that was dropped without a word - the release carried a text ending
-      # mid-sentence. The document grows with every pass, the field does not.
-      - name: Check the release description still fits the release form
-        run: python3 .github/scripts/audit/check_release_note_size.py
+      # A release describes what changed, so its text has to start over after every release. It
+      # does not do that by itself: the file still parses and still publishes, and the next
+      # release would carry the previous one's text with the new part appended - the cumulative
+      # document the rule replaced. The heading's base tag is measured against the newest tag on
+      # origin, which is the one thing that says whether the text has aged out of its purpose.
+      - name: Check the release description describes the next release
+        run: python3 .github/scripts/audit/check_release_note.py
 
       # The sibling of the check below: that one asks whether a setting is read at all, this one
       # whether the user can tell what it does. A fork setting with no explanation leaves them
