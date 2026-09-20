@@ -1010,6 +1010,97 @@ internal partial class Configs : IPluginConfiguration
 		Filter = HealingActionCondition, Section = 1)]
 	public bool SkipMitigationForSmallAreaCasts { get; set; } = true;
 
+	// The setting above uses the measured size of an area cast to decide whether to MITIGATE. This
+	// one uses the same figure for the other half of the answer: whether to HEAL first.
+	//
+	// Every healing threshold reads the health a member has. None of them reads the health he will
+	// have when the cast already on screen lands, so a party at 60% in front of a 45% raidwide is
+	// above every threshold and dies to it. "Heal ahead of incoming damage" above does not cover
+	// this: it extrapolates the observed trend, and a cast that has not landed yet leaves no trend.
+	//
+	// The owner's rule, and the reason this comes before mitigation rather than after: "die aktuelle
+	// hp liegt unter dem schadenswert. dann wäre aber eine heilung sinnvoll bis max maxhp. wenn dann
+	// die hp unter dem schadenswert liegt, sollte zusätzlich geschildet werden."
+	//
+	// Asked at the same threshold the flag itself uses, one cast earlier - not at a stricter one, so
+	// it cannot heal where the tree would not have healed anyway. Area casts only: a hit that
+	// reaches everybody is answered by area healing.
+	//
+	// Off by default because the effect cannot be established from the code. What can be
+	// established is that nothing changes while it is off, and nothing changes for an action whose
+	// size has never been measured.
+	[UI("Heal ahead of an announced area cast",
+		Description = "Raises the area healing flag when the area cast currently being announced would "
+			+ "put somebody below the level at which the tree heals anyway.\n"
+			+ "In a fight: the party is topped up BEFORE the raidwide lands instead of after it, so a "
+			+ "member at sixty percent in front of a forty-five percent hit is no longer treated as "
+			+ "healthy right up to the moment it kills him.\n"
+			+ "Uses the measured size of that action and counts an existing barrier against it, since "
+			+ "the barrier absorbs this particular hit. An action whose size has never been measured "
+			+ "changes nothing - ratings arrive with play, one clear of the fight.",
+		Filter = HealingActionCondition, Section = 1)]
+	public bool HealAheadOfAnnouncedHit { get; set; } = false;
+
+	// Reported from a four-player dungeon: Addle and Radiant Aegis go out against some area casts and
+	// not others. Traced to the pre-filter every area question runs through - it drops any cast that
+	// is INTERRUPTIBLE, on the reasoning that an interruptible cast gets interrupted and mitigating it
+	// would waste a cooldown. That reasoning holds only while somebody interrupts. A Summoner has no
+	// interrupt; in a four-player party with a tank who does not use Interject, the cast lands and
+	// nothing answered it.
+	//
+	// Not a return to the enemy-count fallback removed in A9. That one raised the defence from the
+	// number of enemies - no evidence of danger, and it fired with nothing happening. This requires a
+	// figure measured from an actual landing, at or above what the largest barrier in the game
+	// absorbs, and only within a GCD of the hit. A cast nobody has been hit by opens nothing.
+	//
+	// It was not buildable then: the per-action damage share did not exist, so the pre-filter had to
+	// carry the coarseness alone.
+	//
+	// Off by default: whether the extra cover is worth the cooldown cannot be established from the
+	// code. What can be established is that nothing changes while it is off.
+	[UI("Mitigate a big area cast even when it is interruptible",
+		Description = "Raises the area defence for an interruptible cast too, if its measured damage is "
+			+ "at or above what the largest barrier in the game absorbs and it lands within about one "
+			+ "GCD.\n"
+			+ "In a fight: in a dungeon where nobody interrupts, the big pull-wide gets Addle and "
+			+ "Radiant Aegis instead of passing unanswered. Small casts, unmeasured casts and casts "
+			+ "further out than a GCD are unaffected, so it cannot fire on trash that is doing nothing.\n"
+			+ "Leaves the healer's threat detection alone: it is a separate path, so the White Mage's "
+			+ "Benediction guard does not widen with it.",
+		Filter = HealingActionCondition, Section = 1)]
+	public bool MitigateBigAreaCastsEvenIfInterruptible { get; set; } = false;
+
+	// BossModReborn answers WHEN the next damage lands, never HOW HARD. Every proactive mitigation in
+	// the tree reads that timing and nothing else, so two hits in a row are answered on the first
+	// one regardless of which is worse.
+	//
+	// Reported from play, Eternal Queen's opening: a small area cast, then a big one. The prediction
+	// fires on the first, Radiant Aegis or Tactician is spent on it, and the big one arrives with
+	// the barrier eaten or the debuff expired. A barrier is the plain case - it absorbs points, so a
+	// small hit consumes it outright.
+	//
+	// The size of a cast already on screen IS known: it is measured per action. With this on, a
+	// proactive refresh stands down while a rated SMALL area cast is running, and takes the next
+	// event instead. Where nothing is running, or the running cast has never been measured, nothing
+	// changes.
+	//
+	// This closes the hole the size rating left: the reactive path has asked "is this hit worth a
+	// cooldown" since the large-barrier threshold went in, the proactive path never did.
+	//
+	// Off by default, and honestly a heuristic: nothing here proves the prediction refers to the
+	// cast that happens to be running.
+	[UI("Hold a predicted mitigation while a small cast is running",
+		Description = "Stops a mitigation that fires from a BossMod prediction from being spent on a "
+			+ "small area cast when a bigger one is coming right behind it.\n"
+			+ "In a fight: in an opening with a small area cast followed by a heavy one, Radiant "
+			+ "Aegis, Tactician, Troubadour or Shield Samba wait for the second instead of being "
+			+ "eaten by the first. Only applies while a cast is running whose damage has actually "
+			+ "been measured and came out small; otherwise the prediction is followed as before.\n"
+			+ "A judgement call, not a certainty: BossMod gives the timing of the next event, not "
+			+ "which cast it means.",
+		Filter = HealingActionCondition, Section = 1)]
+	public bool HoldProactiveMitigationForSmallCast { get; set; } = false;
+
 	#region
 	[JobConfig, UI("Prioritize raising dead players over Healing/Defense.",
 		Filter = HealingActionCondition, Section = 2)]

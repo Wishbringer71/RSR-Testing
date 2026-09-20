@@ -12,7 +12,7 @@ bestimmte Grenzwerte nicht ueberschreiten — und entscheidend ist nicht, wie **
 wird, sondern wie **lange**: Die Drosselung kauft die Zeit, in der der eigene Schaden die Gegnerzahl
 senkt.
 
-**Vier Vorgaben des Auftraggebers ordnen alles Weitere, und sie gelten zusammen:**
+**Fuenf Vorgaben des Auftraggebers ordnen alles Weitere, und sie gelten zusammen:**
 
 1. **Strecken statt stapeln.** Faellt alles zugleich, ist die Drosselung nach Sekunden verbraucht und
    der volle Strom trifft eine unveraendert grosse Gruppe.
@@ -22,6 +22,11 @@ senkt.
    Traeger ueberlebt und ob genug Zeit zum Heilen bleibt.
 4. **Ausgesetzt wird nur bei Stunbarkeit.** Ist im Wirkbereich alles betaeubt oder immun, gibt es
    nichts zu strecken und nichts zu sparen; dann kostet das Aussetzen nur den Flaechenzauber.
+5. **Das Mittel wird nach der Groesse des Treffers gewaehlt, nicht nach seiner Verfuegbarkeit.**
+   Gesucht ist Deckung: Der Anteil des Mittels soll den Anteil des Treffers erreichen, nicht
+   uebertreffen. Reicht die Gesundheit des schwaechsten Mitglieds nicht, geht Heilung vor; reicht
+   auch die volle Gesundheit nicht, kommen Barriere und Minderung zusaetzlich. Ausgeschrieben im
+   Abschnitt darunter.
 
 **Gewaehlt ist eine zentrale Bremse bei dezentraler Ausloesung:** Die vorhandenen Ausloeser bleiben,
 hinzu kommt eine Pruefung, die *zurueckhaelt*. Faellt sie aus, verhaelt sich RSR wie zuvor.
@@ -48,10 +53,354 @@ darauf aufsetzt, ist der gemessene Fehlerfaktor in der Diagnoseanzeige zu beurte
 | **Vorausschau** als Ersatzgroesse an allen Heilentscheidungen | umgesetzt (`GetForecastSurvivingShare` und die drei davon abgeleiteten Getter), hinter `HealAheadOfDamage`, Standard aus |
 | Vorausschau auch in der **Flaechenheilung** (`PartyMembersAverHP` und Geschwister) | erfasst, nicht bearbeitet — siehe `TODO.md`; 83 Leser ausserhalb der Heilkette, darunter fremde Rotationen |
 | Minderungen des Tanks **rechnerisch** erfassen (Vorausschau vor dem ersten Treffer) | offen, siehe `TODO.md` — braucht Saetze je Status aus `Action.resx` |
+| **Derselbe Satz je Aktion traegt zwei Zwecke**, und das war bisher nicht gesehen: die Vorausschau in der Zeile darueber **und** die Wahl des Mittels nach Treffergroesse (Vorgabe 5). Wer ihn baut, loest beide Punkte | offen, siehe `TODO.md` |
 | Restzeit der Barriere (`HasSurvivingShield` misst die kuerzeste statt der laengsten) | offen, siehe `TODO.md` |
 | Erhebung der uebrigen Doppelnutzen-Aktionen | umgesetzt als `scan16.py`; ein Fund im Tank-/Heilerprofil (Rueckstoss) |
 | Rueckstoss auch **als** Minderungswerkzeug wirken | offen, siehe `TODO.md` — Zielkonflikt mit der Rolle als einziger Rueckstossschutz |
 | Wirksamkeitsmessung im Spiel | offen |
+| **Sonden, die es schon gibt** — ohne sie ist im Kampf nicht zu sehen, ob eine Regel greift: `DataCenter.AreaMitigationSkipped` nennt je Aktions-Id, wo die Flächenbewertung eine Minderung verworfen hat; Rohzeit, korrigierte Zeit und Fehlerfaktor der Schätzung stehen in der Diagnoseanzeige | in Betrieb, in keinem Konzept genannt gewesen |
+
+## Die Antwort auf einen eingehenden Treffer
+
+**Dieser Abschnitt ist der Knoten zwischen vier Konzepten, und die Zustaendigkeiten sind getrennt:**
+
+| Frage | Konzept |
+|---|---|
+| Wie gross ist der eingehende Treffer? | `13-aoe-damage-classification.md` — Messung je Aktion, Anteil am schwaechsten Mitglied |
+| Welches Mittel antwortet darauf, und in welcher Reihenfolge? | **hier**, Vorgabe 5 und die Tabelle unten |
+| Wer wird geheilt, wenn geheilt wird? | `07-heal-target-priority.md` — Gefaehrdung vor Rolle, Rolle vor Prozentsatz |
+| Wann darf der Tank ein eigenes Mittel zuruecknehmen? | `09-tank-selfprotection.md` — lexikographische Rangordnung, Ueberleben zuerst |
+| Wann ist die grosse Barriere das richtige Mittel? | `10-drk-blackest-night.md` — sie ist zugleich der Maszstab fuer „gross" |
+
+**Heilung, Barriere und Minderung sind drei Antworten auf dieselbe Frage, und die Groesse des
+Treffers entscheidet, welche davon richtig ist.** Bezugsgroesse ist das schwaechste Gruppenmitglied —
+bei gleichem absolutem Schaden traegt der Spieler mit der geringsten Maximalgesundheit den hoechsten
+Anteil, und genau diesen Anteil legt `13-aoe-damage-classification.md` je Aktion ab.
+
+**Vorgabe des Auftraggebers, woertlich:** „wenn schaden nur 10% auf spieler mit geringster maxhp
+verursacht, dann reicht ein schild, was 10% blockiert. oder sogar weniger bis kein schild. wenn ein
+schaden 70% verursacht von maxhp des geringsten spielers, dann sollte das schild moeglichst hoch
+sein, optimal 70%." Und die Ausnahme: „die aktuelle hp liegt unter dem schadenswert. dann waere aber
+eine heilung sinnvoll bis max maxhp. wenn dann die hp unter dem schadenswert liegt, sollte
+zusaetzlich geschildet werden. bzw. der schadensoutput reduziert."
+
+| Lage des schwaechsten Mitglieds | Antwort |
+|---|---|
+| Treffer kleiner als die **aktuelle** Gesundheit | Deckung in Hoehe des Treffers; bei kleinen Werten auch gar keine |
+| Treffer erreicht die aktuelle, bleibt unter der maximalen | **zuerst heilen**, Ziel ist die Maximalgesundheit — danach wieder Deckung |
+| Treffer uebersteigt auch die maximale Gesundheit | Heilung allein rettet nicht: Barriere **und** Minderung zusaetzlich, bis der Rest darunter liegt |
+
+**Das ist Vorgabe 2 dieses Konzepts, zu Ende gedacht.** „Heilung vor Minderung" sagte bisher nur die
+Reihenfolge; die Tabelle sagt, **woran** sich entscheidet, ob der Fall ueberhaupt eintritt. Und sie
+loest die dritte Vorgabe ein: Die Barriere steht im Zaehler, also addiert sie sich in Zeile drei zur
+Minderung, statt mit ihr zu konkurrieren.
+
+**Der Wert je Abwehraktion liegt vor.** `generate_defensive_values.py` liest ihn aus den Wirktexten
+in `ActionId.resx` und `DutyAction.resx` und erzeugt `RotationSolver.Basic/Data/DefensiveValues.g.cs`;
+die CI stellt die erzeugte Datei gegen die Wirktexte. Drei Formen, bewusst getrennt gehalten, weil
+sie **nicht** dasselbe bedeuten:
+
+| Form | Wirktext | Was sie im Kampf tut |
+|---|---|---|
+| Minderung am Traeger | „Reduces damage taken by 20%" (Rampart) | nimmt einen Anteil **des Treffers**, skaliert also mit ihm |
+| Minderung am Gegner | „physical damage dealt by 5% and magic damage dealt by 10%" (Addle) | dasselbe ueber den Angreifer, und **je Schadensart verschieden** |
+| Barriere | „absorbs damage totaling 20% of your maximum HP" (Schimmerschild) | absorbiert feste Punkte; gegen einen kleinen Treffer bleibt der Rest ungenutzt, gegen einen grossen ist sie aufgebraucht |
+
+**Von Stufe 1 der Vorgabe — die Deckung nach Treffergroesse waehlen — ist nichts gebaut, und der
+Grund ist ein Messergebnis, keine Kostenfrage.** Die Auswahl setzt voraus, dass ein Job mehrere
+Mittel derselben Art zur Wahl hat. Gemessen an der erzeugten Tabelle trifft das nirgends zu:
+
+- **Minderungen kennen kein „zu gross".** Sie nehmen einen Anteil des Treffers, es bleibt nichts
+  uebrig, und 30 % eines kleinen Treffers sind klein. Die Vorgabe „ein Schild, das 10 % blockiert"
+  ist eine Aussage ueber **Barrieren**.
+- **Barrieren mit ausgeschriebenem Anteil gibt es wenige**, und kein Job haelt zwei davon zur Wahl:
+  Krieger eine, Dunkelritter eine, Beschwoerer eine. Der Maler haelt zwei, aber Tempera Grassa
+  **entfernt** Tempera Coat („Removes Tempera Coat to create a barrier…") — eine Umwandlung, keine
+  Alternative. Die uebrigen sind Bozja-Aktionen ausserhalb des Nutzungsprofils.
+
+**Die Auswahlregel war gebaut und ist zurueckgebaut worden**, nachdem die Falsifikationsstufe das
+ergeben hat (A118). Sie haette im ganzen Baum nie gegriffen.
+
+**Was stattdessen wirkt, ist Stufe 2 — und sie schliesst eine Luecke, die dieses Konzept ohnehin
+fuehrt.** Siehe „Heilung vor dem angekuendigten Treffer" weiter unten.
+
+## Heilung vor dem angekuendigten Treffer
+
+**Jede Heilschwelle im Baum liest die Gesundheit, die ein Mitglied **hat**. Keine liest die, die es
+haben wird, wenn der bereits laufende Cast einschlaegt.** Ein Mitglied bei 60 % vor einem
+45-%-Raidwide steht ueber jeder Schwelle und stirbt daran. Das ist Stufe 2 der Vorgabe, woertlich:
+„die aktuelle hp liegt unter dem schadenswert. dann waere aber eine heilung sinnvoll bis max maxhp."
+
+**Die Groesse dafuer wird seit A99–A102 gemessen und war bisher nur fuer eine Frage im Gebrauch** —
+ob gemindert wird. Dieselbe Zahl beantwortet die andere Haelfte: ob **vorher** zu heilen ist.
+`DataCenter.AnnouncedHitDropsAnyoneBelow` stellt die Frage einmal, und beide Seiten lesen sie.
+
+| Schalter | Frage | Stand |
+|---|---|---|
+| `Skip mitigation for small area casts` | Oeffnet der Treffer die Abwehrkette? | **an** als Vorgabewert |
+| `Heal ahead of an announced area cast` | Wird vor dem Treffer geheilt? | **aus** als Vorgabewert |
+
+**Die Barriere zaehlt hier mit, und das widerspricht A85 nicht.** A85 hat die Barriere aus der
+allgemeinen Heilschwelle entfernt, weil sie keine Gesundheit herstellt — ein Tank bei 40 % hinter
+einem Schild steht bei 40 %, sobald der Schild ungenutzt ablaeuft. Hier ist die Frage eine andere:
+ueberlebt er **diesen** Treffer. Gegen ihn wird die Barriere verbraucht und faengt ihn ab; sie
+herauszurechnen hiesse, eine Heilung zu fordern, die der Schild bereits bezahlt hat.
+
+**Gefragt wird an derselben Schwelle, die die Flagge ohnehin benutzt**, nur einen Cast frueher —
+nicht an einer schaerferen. Die Regel kann deshalb nicht dort heilen, wo der Baum ohnehin nicht
+geheilt haette. Und sie stellt die Frage **selbst** (`IsHostileCastingAOE`), statt einen anderswo
+abgelegten Wert zu lesen: Sonst haenge sie daran, ob der Verteidigungszweig im selben Bild vorher
+lief — und der steht hinter `UseAoeDefense`, sodass die Regel bei abgeschalteter Flaechenabwehr
+still nie gefeuert haette.
+
+**Beim Beschwoerer trifft das auf die Zuendregel unten.** Steht die Flaechenheilungsflagge wegen
+eines angekuendigten Treffers, ist Lux Solaris der Zweig, der sie bedient — und der Wurf faellt
+**vor** dem Einschlag statt danach.
+
+## Die proaktive Schicht haengt fast vollstaendig an BossModReborn
+
+**Vorgabe des Auftraggebers:** „bossmod liefert nicht für jeden boss werte, sondern nur für
+unterstützte module. und da ist der abdeckungsgrad in bossmod auch unterschiedlich. sich auf bossmod
+zu 100% zu verlassen ist fahrlässig."
+
+**Erhoben, nicht geschaetzt** (Lauf vom 20.09.2026): Der Baum kennt zwei Ebenen der Abwehr, und die
+Trennung verlaeuft genau entlang der Frage, woher die Vorhersage kommt.
+
+| Ebene | Ausloeser | Quelle | Faellt aus, wenn |
+|---|---|---|---|
+| **proaktiv** — mindern, **bevor** etwas ankommt | `BMRShouldRefreshBefore(BMRTankbusterIn \| BMRRaidwideIn, …)` bei allen vier Tanks, bei Barde, Maschinist, Taenzer und beim Beschwoerer (Schimmerschild) | ausschliesslich BMR | kein Modul, oder ein Modul ohne diese Ereignisart |
+| **reaktiv** — antworten, wenn der Cast **laeuft** | `IsHostileCastingAOE`, `IsHostileCastingToTank`, `IsHostileCastingTankBusterAtMe`, Gegnerzahl in `ShouldSustainMitigationDebuff` | eigene Beobachtung | der Cast ist unterbrechbar, zu kurz, oder ausserhalb des Ein-GCD-Fensters |
+
+**Kein Alleinstand, aber eine vollstaendige Ebene.** Jede proaktive Stelle hat einen reaktiven
+Nachbarn, die Abwehr faellt also nicht aus — sie kommt **spaeter**, naemlich erst, wenn der Cast
+schon laeuft und den Vorfilter passiert hat. Das ist der Unterschied zwischen „vor dem Einschlag
+gedeckt" und „waehrend des Einschlags gedeckt".
+
+**Der Ausfall ist still, und das ist der eigentliche Mangel.** Beide Ausfallarten — kein Modul, oder
+ein Modul, das Raidwides nicht fuehrt — erreichen den Baum als `float.MaxValue`, und jede Pruefung
+gegen ein Zeitfenster liest das als „es kommt nichts". Eine ausbleibende Minderung sieht damit aus
+wie ein ruhiger Kampf. Die Diagnoseseite „BMR Data" nennt deshalb jetzt das aktive Modul und, je
+Ereignisart, ob es dafuer ueberhaupt eine Vorhersage liefert.
+
+**Seine Begruendung, woertlich:** „daher die eigene liste mit dem aoe-schadensausmaß.“ Die Messung je
+Aktion ist als **Ersatz** fuer die fehlende Verlaesslichkeit gedacht, nicht als Zusatz — und sie
+beantwortet zudem eine Frage, die BMR gar nicht stellt: wie hart der Treffer ist.
+
+**Die eigene Messung ist die einzige BMR-unabhaengige Vorhersagequelle im Baum**, und sie ist bisher
+an genau einer Stelle proaktiv verdrahtet: `IsHostileCastingLargeArea` (Konzept 13) liest den
+gemessenen Anteil je Aktion und braucht dafuer kein fremdes Plugin. Dass dieselbe Quelle die
+proaktive Schicht der uebrigen Jobs tragen koennte, ist erfasst und nicht gebaut — `TODO.md`.
+
+### BMR sagt wann, nicht wie hart — und daran wird die Abklingzeit verschenkt
+
+**Spielbeobachtung des Auftraggebers, Ewige Koenigin, Anfangsphase:** zwei Flaechenangriffe
+nacheinander, erst ein kleiner, dann ein grosser. Die Vorhersage feuert auf den ersten, Schimmerschild
+oder Tactician geht dafuer hinaus, und beim zweiten ist die Barriere aufgebraucht oder die Minderung
+abgelaufen.
+
+**Die Ursache steht in der Bedingung selbst.** `BMRShouldRefreshBefore` prueft die **Zeit** bis zum
+naechsten Ereignis und ob der eigene Status bis dahin abgelaufen waere — mehr nicht. Eine Groesse
+kommt darin nicht vor, und BMR liefert auch keine: Die Schnittstelle nennt den Zeitpunkt, nicht die
+Wucht. **Das ist das Loch, das die Groessenbewertung offen gelassen hat:** Der reaktive Weg fragt seit
+A108 „ist dieser Treffer eine Abklingzeit wert"; der proaktive hat es nie gefragt.
+
+**Eine Barriere ist dabei der klarere Fall als eine Minderung**, und das folgt aus dem Unterschied,
+den dieses Konzept ohnehin fuehrt: Sie gibt **feste Punkte** aus, also frisst ein kleiner Treffer sie
+ganz auf. Eine Minderung skaliert mit dem Treffer und geht nicht verloren — sie laeuft nur ab, bevor
+der grosse kommt.
+
+**Die Groesse eines laufenden Casts ist bekannt.** Sie wird je Aktion gemessen. Laeuft also gerade
+ein bewertet **kleiner** Flaechencast, ist er der wahrscheinlichste Gegenstand einer Vorhersage, die
+auf die unmittelbare Zukunft zeigt — und die proaktive Auffrischung kann auf das naechste Ereignis
+warten. Gebaut hinter `Hold a predicted mitigation while a small cast is running`, **Vorgabewert
+aus**, mit `ProactiveMitigationHeld` als Sonde.
+
+**Als Heuristik gekennzeichnet, nicht als Beweis:** Nichts hier belegt, dass die Vorhersage den Cast
+meint, der gerade laeuft. Laeuft nichts, oder ist der laufende Cast nie gemessen worden, wird keine
+Aussage getroffen und die Vorhersage wie bisher befolgt.
+
+#### Zwei Ladungen — und warum sie hier trotzdem nicht ausgespielt werden
+
+**Schimmerschild hat auf Stufe 100 zwei Ladungen**, belegt am Merkmalstext: „Enhanced Radiant Aegis
+[480] — Allows the accumulation of charges for consecutive uses of Radiant Aegis. Maximum Charges:
+2“ (Angabe des Auftraggebers, am Merkmal bestätigt). Troubadour, Tactician und Shield Samba haben
+eine.
+
+**Damit scheint der Fall gelöst:** Bei zwei Treffern in Folge deckt eine Ladung den ersten, die
+zweite den zweiten — beide voll, ohne Raten. **Diese Lösung wird nicht genommen, und der Grund ist
+eine dokumentierte Entscheidung des Auftraggebers.**
+
+A9 (`6704335d`) hat den ungegateten Radiant-Aegis-Zweig auf seine Meldung hin entfernt, der Schild
+gehe ohne Gefahr hinaus. Die dort festgehaltene Begründung ist genau diese: **„`usedUp: true` gab
+dabei auch die zweite Ladung frei — bei echter Gefahr war keine mehr da.“** Er hat es bei der Arbeit
+an dieser Regel wiederholt: die Doppelzündung von Schimmerschild war neben Addle einer der ersten
+Fehler, die der Fork behoben hat.
+
+**Die Frage wird nicht vorgelegt, sondern im Kampf entschieden — und das ist der Unterschied
+zwischen dem Buchstaben seiner Entscheidung und ihrem Grund.** A9 verbietet nicht „die zweite Ladung
+ausgeben“, sondern nennt die Folge: „bei echter Gefahr war keine mehr da.“ Das ist eine Aussage
+über **Verfügbarkeit**, und Verfügbarkeit ist zur Laufzeit ausrechenbar:
+
+> Ausgeben ist unbedenklich, wenn danach noch eine Ladung steht **oder** die nächste vor dem
+> vorhergesagten Ereignis zurück ist. Sonst ist die Reserve echt, und die Zurückhaltung gilt.
+
+Der A9-Fall selbst bleibt unberührt: Dort gab es überhaupt keine Vorhersage, dieser Zweig wird also
+nie erreicht.
+
+### Die Regel bewertet sich selbst, statt eine Ablesung zu verlangen
+
+**Vorgabe des Auftraggebers, und sie gilt hier zum zweiten Mal:** „entscheidung immer im spiel, nicht
+retroperspektive auswertung.“ Ein Zähler, den jemand lesen und berichten muss, kostet je Zahl einen
+Kampf, ein Ablesen, einen Bericht und eine Runde.
+
+**Die Zurückhaltung trifft eine prüfbare Vorhersage:** „Das Ereignis, auf das die Vorhersage zeigt,
+ist nicht der kleine Cast, der gerade läuft — es kommt noch ein größerer.“ Die nächsten Sekunden
+beantworten das. Der Effekt-Handler sieht jeden eingehenden Treffer; kommt innerhalb der Statusdauer
+einer auf Höhe der großen Barriere, war die Zurückhaltung richtig, sonst hat sie eine Minderung
+verschenkt.
+
+**Und die Regel handelt nach ihrem eigenen Ergebnis:** Unterhalb des Gleichstands — öfter falsch als
+richtig — hält sie nicht mehr zurück. Der Gleichstand ist keine gesetzte Zahl, sondern der
+Break-even des Tauschs, den sie macht. Die Bilanz gilt je Kampf und wird mit
+`DataCenter.ResetAllRecords` verworfen; sie von einem Boss in den nächsten zu tragen hieße, den einen
+nach dem Muster des anderen zu beurteilen.
+
+**Die Anzeige ist damit Zweitverwertung, nicht Zweck** — sie meldet das Urteil, das die Regel bereits
+gefällt hat, und nennt ausdrücklich, wenn die Regel sich selbst stillgelegt hat.
+
+#### Die genaue Frage laesst sich nicht stellen, und das ist gemessen
+
+**Naheliegender waere:** erheben, auf **welches Ereignis** die Vorhersage anspielt, dessen Bewertung
+in der eigenen Liste nachschlagen und nur bei „gering" aussetzen. Der Auftraggeber hat genau das
+vorgeschlagen. **Die Information existiert auf der Gegenseite nicht** — geprueft an
+BossmodReborns Quelltext am 20.09.2026, nicht angenommen:
+
+| Endpunkt | Was er zurueckgibt | Aktionsbezug |
+|---|---|---|
+| `Timeline.NextRaidwideIn` | `module.StateMachine.NextTransitionWithFlag(StateHint.Raidwide)` — ein **Zustandsuebergang**, den der Modulautor als Raidwide markiert hat | keiner; es gibt keinen Cast dahinter |
+| `Hints.NextRaidwideDamageIn` | Aktivierungszeit des ersten `PredictedDamage`-Eintrags dieses Typs | keiner; `DamagePrediction` traegt genau `Players`, `Activation`, `Type` |
+
+**Und selbst mit Groessen waere der gemeldete Fall nicht zu loesen:** Die Vorhersageliste wird nicht
+herausgegeben. Jeder Endpunkt liefert den **ersten** passenden Eintrag. „Es kommen zwei, der zweite
+ist der grosse" ist ueber die Schnittstelle nicht lesbar.
+
+**Daraus folgt die Bauform, nicht aus Bequemlichkeit:** Was gerade laeuft, ist die einzige
+Groesseninformation, die in diesem Moment vorliegt. Die Regel ist deshalb so gut, wie diese Zuordnung
+trifft — und nicht besser.
+
+## Wann eine verfallende Heilung zuendet
+
+**Die Heilschwellen sind fuer die teure Heilung eines Heilers gebaut, und fuer eine verfallende
+Nebenheilung sind sie das falsche Mass.** `AutoStatus.HealAreaAbility` verlangt zweierlei zugleich:
+die Streuung der Gruppengesundheit unter `HealthDifference` (0,25 im Code) **und** ihren Durchschnitt
+unter `HealthAreaAbility` (0,75 im Code; beides je Job einstellbar, seine eigenen Werte sind von hier
+nicht messbar). Die Streuungsbedingung ist der Grund, warum eine Flaechenheilung ausbleibt, wenn
+**einer** getroffen wurde: Genau dann ist die Streuung gross. Das ist fuer einen Heilzauber richtig —
+eine teure Flaechenheilung fuer einen einzelnen Verletzten ist der falsche Tausch.
+
+**Fuer eine Aktion, die ohnehin verfaellt, ist es der falsche Tausch in die andere Richtung.** Lux
+Solaris kostet kein MP und keinen GCD; ihr einziger Preis ist der Einschiebeplatz, und sie erlischt
+mit Refulgent Lux. Die Frage lautet dort nicht „lohnt Flaechenheilung“, sondern **„ist dieser Wurf
+verschwendet“**.
+
+**Vorgabe des Auftraggebers, woertlich:** „Hier besteht aber nur eine gewisse Zeit die Möglichkeit zu
+heilen. Am besten, wenn die bestehe Gesundheit gerade so hoch ist, dass die Heilung auf 100 % der Hp
+kommt.“
+
+| Lage | Antwort |
+|---|---|
+| Fehlbetrag kleiner als die Heilung | warten — der Ueberschuss verpufft, und das Fenster laeuft noch |
+| Fehlbetrag erreicht die Heilung | zuenden — sie kommt vollstaendig an |
+| Fenster laeuft aus, irgendjemand ist verletzt | zuenden — ungenutzt ist sie ganz verloren |
+
+**Die Groesse dafuer ist der gemessene Heilwert, nicht die Potenz.** 500 Potenz sind von hier aus
+nicht in Lebenspunkte umzurechnen: Heilkraft, Ausruestung und Verstaerkungen entscheiden darueber,
+und sie aendern sich. Gemessen wird sie stattdessen — der Effekt-Handler sieht jede eigene Heilung
+mit ihrem tatsaechlichen Wert (`Watcher.ActionFromSelf`, `ActionEffectType.Heal`), und
+`DataCenter.GetObservedHealPerCast` gibt ihn geglaettet zurueck. **Das ist die selbstkorrigierende
+Sonde, die dieses Konzept von jeder Regelaenderung verlangt:** Sie erhebt und bewertet im selben
+Zug, korrigiert sich mit jedem Wurf, folgt einem Ausruestungswechsel innerhalb weniger Einsaetze und
+verlangt vom Auftraggeber kein Ablesen.
+
+**Der Anlauf ist benannt:** Vor der ersten beobachteten Landung ist der Wert 0, und 0 heisst
+*unbekannt*, nicht *heilt nichts*. Dann gilt das bisherige Verhalten — Heilflagge plus
+Verfallsklausel —, statt eine Zahl anzunehmen. Ebenfalls benannt: Der Wert ist ein **absoluter**
+Betrag und trifft jedes Mitglied mit einem anderen Anteil; verglichen wird er deshalb mit dem
+groessten Fehlbetrag der Gruppe (`DataCenter.LargestMissingHp`), nicht mit einem Durchschnittsanteil.
+Kritische Heilungen streuen den Messwert, weshalb er geglaettet und nicht ueberschrieben wird.
+
+**Die Verfallsklausel kostet hier fast nichts, und das ist am Wirktext belegt:** Refulgent Lux laeuft
+30 s, die Demi-Phase 15 s. Die letzten GCDs des Status liegen also **hinter** der Burstphase, wo der
+Angriffszweig duenn ist — der Einschiebeplatz, den die Klausel dort nimmt, ist kein Burstplatz.
+
+## Was ein Baustein mehrfach traegt
+
+**Die offenen Punkte dieser Konzeptfamilie haengen an weniger Bausteinen, als ihre Zahl vermuten
+laesst.** Wer einen davon baut, schliesst mehrere Punkte zugleich — das ist der Grund, die Konzepte
+gemeinsam zu lesen und nicht einzeln.
+
+**Ein Wirkungswert je Aktion, aus dem eigenen Wirktext — vier offene Punkte.**
+
+| Offener Punkt | Konzept | Was der Wert dort beantwortet |
+|---|---|---|
+| Vorausschau vor dem **ersten** Treffer | hier | Wieviel Schaden der angekuendigte Einschlag traegt, bevor eine Beobachtung vorliegt |
+| Wahl des Mittels nach Treffergroesse (Vorgabe 5) | hier | Welche Barriere, welche Minderung den Treffer deckt |
+| Die Minderungsbilanz kennt Betaeubung und Verlangsamung nicht | hier, „Die Luecke" | Um wieviel eine Drosselung den Strom senkt — gemessen: `GetCurrentMitigationPercent` rechnet Addle, Feint, Dismantle und Reprisal, sonst nichts |
+| Rueckstoss auch **als** Minderungswerkzeug | `TODO.md` | Dass seine Verlangsamung in derselben Groessenordnung wirkt wie Rampart |
+
+Der Wert ist **erzeugbar**, nicht handzufuehren, und das ist gemessen statt vermutet: Im Lauf vom
+19.09.2026 nennen **69** Wirktexte in `ActionId.resx` die Formel „reduces damage taken by X %“, mit
+ausgeschriebenem Prozentsatz — 10, 15, 20, 25, 30, 40, 50 und 99 %; die Barrieren nennen ihren
+Anteil ebenso (25 %, 15 %, 10 %). `RotationSolver.GameData` liest dieselben Blätter ohnehin aus. Das unterscheidet ihn von der hier verworfenen
+Statussatz-Tabelle, deren Einwand die Pflege war.
+
+**Die Schadensart aus BossModReborn ist ab sofort benutzbar, und das ist neu.** `PredictedDamageType`
+kommt als `int` ueber die IPC-Grenze und wurde direkt in das eigene Enum gecastet; ob die Gegenseite
+gleich nummeriert, galt als ungeprueft und nicht pruefbar. Gemessen am 20.09.2026 gegen
+`BossMod/BossModule/AIHints.cs`: **beide Enums stimmen** (`None, Tankbuster, Raidwide, Shared` und
+`Normal, Pyretic, NoMovement, Freezing, Misdirection`). Damit ist `BMRDamageType` eine belastbare
+Groesse und keine Wette mehr — sie trennt Tankbuster von Raidwide und beantwortet damit
+**Einzel- gegen Flaechenabwehr**, nicht physisch gegen magisch. Letzteres bleibt offen und ist der
+Grund, warum die Minderungsbilanz Addle und Feint weiterhin binaer gewichtet.
+
+**Der gemessene Wert einer eigenen Heilung — dieselbe Bauform, die andere Haelfte der Frage.** Das
+Schadenspotential je Gegneraktion sagt, wie gross der Treffer ist; `GetObservedHealPerCast` sagt, wie
+weit die eigene Antwort reicht. Erst beide zusammen beantworten Vorgabe 5 in Punkten statt in
+Kategorien: Ob eine Heilung den Fehlbetrag schliesst, ob sie ueberheilt, und ob Heilung allein
+reicht oder Barriere und Minderung hinzu muessen. Gebaut wurde er fuer die Zuendregel oben, er steht
+aber fuer **jede** Heilaktion zur Verfuegung, weil der Effekt-Handler nicht nach Job unterscheidet.
+Was er nicht beantwortet: den Wert einer Aktion, die noch nie gewirkt wurde — dafuer bleibt der
+Wirktext die Quelle.
+
+**Das gemessene Schadenspotential je Gegneraktion — drei Fragen in drei Konzepten.** Es liegt seit
+A99 bis A102 vor (`13-aoe-damage-classification.md`) und wird bisher an **einer** Stelle gelesen:
+
+| Frage | Konzept | Heute |
+|---|---|---|
+| Wie gefaehrlich ist der angekuendigte Flaechenschaden? | `07-heal-target-priority.md` | binaer (`IsHostileCastingAOE`) — die Groesse bleibt ungenutzt |
+| Wie steht es vor dem ersten Treffer eines Pulls? | hier | blind; die Beobachtung braucht 2,5 s Anlauf |
+| Wie hart schlaegt dieser Tankbuster, Rueckstoss, Stopp? | `13-…`, Abschnitt „Was der Baustein eroeffnet" | dieselbe Messstruktur, je Liste fehlt der eigene Speicher |
+
+**Die Sonden sind der gemeinsame Nachweisweg, und sie haben selbst zu entscheiden.** Keine Regel
+dieser Familie ist am Code zu belegen — ob sie im Kampf greift, zeigt erst die Laufzeit. Daraus folgt
+aber **nicht**, Daten zur spaeteren Durchsicht zu sammeln: Vorgabe des Auftraggebers ist, dass eine
+Sonde zur Laufzeit **erhebt und bewertet**, weil jede Auswertung ueber das Modell einen Kampf, ein
+Ablesen, einen Bericht und eine Runde kostet — je Messwert. Das Vorbild steht in diesem Konzept:
+`ScoreTtkForecast` haelt die eigene Vorhersage gegen den Verlauf, `GetCorrectedTTK` rechnet den
+Fehler heraus, und niemand muss etwas ablesen. `AreaMitigationSkipped` ist die schwaechere Form —
+sie zeigt, was die Regel verworfen hat, korrigiert sich aber nicht selbst. Wer eine Regel dieser
+Familie aendert, liefert die selbstkorrigierende Sonde mit oder sagt ausdruecklich, warum hier keine
+zu bauen ist.
+
+**Nachgerechnet, mit geteiltem Ergebnis:** `searing_light_coverage.py` aus
+`12-searing-light-stacking.md` beantwortet dieselbe Frage — wie viele Sekunden deckt ein Effekt ab,
+wenn mehrere Quellen ihn nach Regeln zuenden. Zwei seiner Annahmen passen hier aber nicht: Es
+kennt genau **eine** Aktion (Dauer und Wiederholzeit sind Konstanten), und es rechnet mit
+**Ueberschreiben statt Stapeln**. Die Drosselungen dieses Konzepts sind ungleich lang und stapeln
+multiplikativ — „Strecken statt stapeln“ ist hier die **Vorgabe**, nicht die Mechanik, und genau
+den Vergleich beider Strategien kann ein Modell ohne Stapeln nicht fuehren. Uebertragbar ist der
+Kern: Zeitschritt-Simulation mit Quellen, Dauer, Wiederholzeit und Zuendregel. Eine
+Zweitverwendung verlangt also, Quellenliste und Stapelverhalten zu Parametern zu machen.
 
 ## Die Vorgaben des Auftraggebers
 
@@ -633,11 +982,11 @@ gegnerischen Treffer aus, summiert die Schadensanteile und legt sie über
 bereits erfasst — gebraucht wird nur eine Auswertung je Kampf statt eines gleitenden
 Fensters.
 
-| Kennzahl | Quelle | Aussage |
+| Kennzahl | Quelle — **keine davon ist gebaut**, die Namen sind Vorschläge | Aussage |
 |---|---|---|
 | Erlittener Schadensanteil je Pull | `_damages`, summiert zwischen Kampfbeginn und -ende | Das Zielkriterium |
 | Genutzte Betäubungsdauer | `StunCoverage` über die Zeit integriert | Ob die 7 s ausgeschöpft wurden |
-| Überlappungsanteil | Anteil der Betäubungszeit mit bereits erhöhter `MitigationFraction` | Ob Posten 2 greift |
+| Überlappungsanteil | Anteil der Betäubungszeit, in der die Minderungsquote bereits erhöht **wäre** — eine Größe dieses Namens gibt es nicht | Ob Posten 2 greift |
 | DoT-Laufzeitanteil | Zeit mit aktivem DoT geteilt durch Kampfdauer | Ob der DoT-Grund wirkt |
 
 **Versuchsanordnung.** Dieselbe Instanz, derselbe Pull, Option abwechselnd an und aus,
@@ -676,3 +1025,10 @@ nicht aufruft, merkt nichts.
 **Upstream-Pflege.** Der Eingriff liegt in `CustomRotation_OtherInfo` und
 `WHM_Reborn`, beides Dateien mit regelmäßiger Upstream-Aktivität. Neue Teile liegen in
 eigenen Regionen; kein Block wandert.
+
+## Offene Punkte zu diesem Konzept
+
+Sie stehen in `TODO.md` und sind dort unter der Überschrift des Eintrags mit **Konzept:** auf dieses
+Dokument gekennzeichnet — an **einer** Stelle statt in zweien, damit keine Kopie altert.
+`.github/scripts/audit/check_concept_links.py` listet sie je Konzept und nennt zugleich, wie viele
+Einträge überhaupt keinem Konzept zugeordnet sind.

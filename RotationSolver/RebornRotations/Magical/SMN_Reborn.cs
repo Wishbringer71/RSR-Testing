@@ -107,11 +107,34 @@ public sealed class SMN_Reborn : SummonerRotation
 	[RotationDesc(ActionID.RekindlePvE)]
 	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		if (RekindlePvE.CanUse(out act, targetOverride: TargetType.LowHP))
+		if (TryRekindle(out act))
 		{
 			return true;
 		}
 		return base.HealSingleAbility(nextGCD, out act);
+	}
+
+	// Owner's rule: lowest percentage first, and the caster himself when there is nobody else.
+	//
+	// It used to be TargetType.LowHP, which sorts by CURRENT health points, not by share. Those are
+	// different questions and the difference decides who gets the heal: a caster at full health can
+	// hold fewer points than a tank at half, because the pools differ by that much. The sort then
+	// hands back somebody who needs nothing while the tank keeps falling - and the cast is spent.
+	//
+	// The game itself measures this action in shares, which settles which of the two is meant: the
+	// Rekindle effect text arms its heal-over-time "when HP falls below 75%". A target picked by
+	// points can therefore be one the follow-up effect will never trigger on.
+	//
+	// The self fallback is not a formality. Rekindle only exists while Firebird Trance runs, so a
+	// cast that finds no target is lost with the phase, and 400 potency on oneself beats nothing.
+	private bool TryRekindle(out IAction? act)
+	{
+		if (RekindlePvE.CanUse(out act, targetOverride: TargetType.LowHPPercent))
+		{
+			return true;
+		}
+
+		return RekindlePvE.CanUse(out act, targetOverride: TargetType.Self);
 	}
 
 	[RotationDesc(ActionID.RadiantAegisPvE, ActionID.AddlePvE)]
@@ -170,17 +193,14 @@ public sealed class SMN_Reborn : SummonerRotation
 			}
 		}
 
-		if (StatusHelper.PlayerWillStatusEndGCD(2, 0, true, StatusID.FirebirdTrance))
-		{
-			if (RekindlePvE.CanUse(out act))
-			{
-				return true;
-			}
-		}
-
+		// One branch, not two. There were two: three GCDs before Firebird Trance ends with a target
+		// choice, and two GCDs before it without one - but the shorter window is contained in the
+		// longer and stood FIRST, so from two GCDs onwards the unaimed call always answered first.
+		// The intent was plainly the other way round, an aimed cast with a last-resort behind it, and
+		// that is what TryRekindle does: lowest share, else the caster himself.
 		if (StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.FirebirdTrance))
 		{
-			if (RekindlePvE.CanUse(out act, targetOverride: TargetType.LowHP))
+			if (TryRekindle(out act))
 			{
 				return true;
 			}
@@ -216,9 +236,9 @@ public sealed class SMN_Reborn : SummonerRotation
 		// windows carry 78% of a Solar window and are the natural place for a second caster.
 		//
 		// Outside a summon the charge goes out only when every burst phase is held by somebody who
-		// keeps coming back, and then into Ifrit: an intermediate block carries 632 potency per GCD
-		// at its best against 947 to 1217 inside a demi, so leaving a burst phase costs more than
-		// firing early gains. Skipping a chance costs nothing by comparison - the charge stays up,
+		// keeps coming back, and then into a primal block: one carries at best 632 potency per GCD
+		// against 947 to 1217 inside a demi, so leaving a burst phase costs more than firing early
+		// gains. Which primal block is the question below. Skipping a chance costs nothing by comparison - the charge stays up,
 		// its recast only starts when it is spent, and the next burst phase is at most one minor
 		// window away.
 		//
@@ -228,16 +248,98 @@ public sealed class SMN_Reborn : SummonerRotation
 		// narrow rule with two Summoners on fully drifted rotations. The book decides the same thing
 		// from the situation instead of from the buff timer.
 		//
-		// Ifrit specifically, not "any gap": it is the strongest of the three primal blocks. The
-		// limit is that a rotation which skips Ifrit would leave the charge unspent in this state;
-		// the default order summons it every cycle.
+		// Which block to fall back into, and the answer is not fixed: it depends on where the player
+		// is standing. Ifrit is the strongest on paper - 632 potency per GCD against Titan's 464 -
+		// but that figure includes Crimson Cyclone, which is a gap closer into melee range. Run into
+		// a burst phase for it and the block is bought with a position risk the owner does not take.
+		// Without the gap closer the ranking inverts inside the buff: Titan three attacks for 1300
+		// potency, Ifrit one to two for 800 to 1420, and Titan's are instant while Ifrit's second
+		// slot waits on Ruby Rite's cast time (concept 12).
+		//
+		// So Ifrit takes precedence only where its premise already holds - the player stands at the
+		// target anyway, so there is nothing to run into and the full block is free. The distance is
+		// the one the rotation already uses for exactly this question, the threshold below which
+		// Crimson Cyclone needs no approach. Otherwise Titan, the only block whose value depends on
+		// neither position nor an open cast.
+		//
+		// Waiting for Titan rather than firing into a distant Ifrit costs nothing: the charge stays
+		// up and its recast only starts when it is spent.
+		var standingAtTheTarget =
+			CrimsonCyclonePvE.Target.Target?.DistanceToPlayer() <= CrimsonCycloneDistance;
+		var fallbackBlockIsWorthIt = TitanActive || (IfritActive && standingAtTheTarget);
+
+		// The phase is entered with the buff already up, not a weave slot later. `burstInSolar` only
+		// turns true once the demi stands, so the earliest slot it can offer is the one AFTER the
+		// summon GCD - and if that slot is taken, the charge falls somewhere inside the phase instead
+		// of at its start. Reported from play twice. Searing Light runs 20s against a 15s demi, so
+		// firing it in the slot BEFORE the summon covers the whole phase and keeps the overhang the
+		// rotation already plans for; the summon itself is not delayed, because its condition accepts
+		// a running buff as readiness.
+		//
+		// Read from the summon's own readiness, NOT from nextGCD. The summon waits for the buff (see
+		// UseSummonsAndTrances), so asking "is the summon the next GCD" would be the chicken-and-egg
+		// that kept raising broken for a year: the buff waits to be announced, the announcement waits
+		// for the buff, and neither happens. Concept 11 has that case written out.
+		//
+		// No probe and no later analysis either: cooldown and burst flag are both readable here and
+		// now, so the decision stays in the code where it falls.
+		var bigSummonReady = SummonSolarBahamutPvE.EnoughLevel
+			? !SummonSolarBahamutPvE.Cooldown.IsCoolingDown
+			: !SummonBahamutPvE.Cooldown.IsCoolingDown;
+		var burstAboutToStart = IsBurst && bigSummonReady;
+
 		var mayFireSearingLight = burstInSolar
+			|| burstAboutToStart
 			|| (AnotherSummonerInParty
-				&& (inBigInvocation || (AllSearingPhasesHeld && IfritActive)));
+				&& (inBigInvocation || (AllSearingPhasesHeld && fallbackBlockIsWorthIt)));
 
 		if (mayFireSearingLight)
 		{
 			if (SearingLightPvE.CanUse(out act))
+			{
+				return true;
+			}
+		}
+
+		// Lux Solaris is asked here, after Searing Light and ahead of the Aetherflow spenders, because
+		// the two branches that could otherwise carry it both fail in this phase:
+		//
+		// - HealAreaAbility is only reached while AutoStatus.HealAreaAbility stands, and that flag
+		//   wants the party's spread below HealthDifference AND its average below HealthAreaAbility.
+		//   One member taking a mechanic raises the spread, so the flag stays down exactly when a
+		//   single player is the one who is hurt.
+		// - GeneralAbility carries an expiry clause already, but the dispatch asks AttackAbility
+		//   first, and in a demi phase that branch always has something - Energy Siphon, Energy Drain,
+		//   Enkindle. The clause therefore does not get a slot while the phase runs.
+		//
+		// Neither is a defect of those branches: the flag is built for a healer's expensive area cast,
+		// where healing one hurt player with it is the wrong trade. Lux Solaris is not that. It costs
+		// no MP and no GCD, its only cost is the weave slot, and it expires unspent with Refulgent Lux.
+		// The question is therefore not "is area healing worth it" but "is this cast wasted".
+		//
+		// Owner's rule, and it is the answer to that question: fire when the missing health is just
+		// large enough for the heal to land in full. That needs the heal in points, which cannot be
+		// derived from the 500 potency in the effect text - healing power and gear decide it. So it is
+		// measured instead: the effect handler sees what every one of our heals actually restored, and
+		// GetObservedHealPerCast hands back the smoothed figure. Nothing is read later and nothing is
+		// asked of the player; the rule corrects itself on every cast.
+		//
+		// Until the first landing has been seen the figure is 0, which means unknown. Then this branch
+		// stays out of the way and the old behaviour applies - the heal flag decides, plus the expiry
+		// clause below.
+		//
+		// The expiry clause pays for itself here. Refulgent Lux runs 30s against a 15s demi, so its
+		// last GCDs fall AFTER the phase, where the attack branch is thin - the slot it takes there is
+		// not a burst slot.
+		var healPerCast = DataCenter.GetObservedHealPerCast((uint)ActionID.LuxSolarisPvE);
+		var largestMissing = DataCenter.LargestMissingHp;
+		var luxLandsInFull = healPerCast > 0 && largestMissing >= healPerCast;
+		var luxAboutToExpire = largestMissing > 0
+			&& StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux);
+
+		if (luxLandsInFull || luxAboutToExpire)
+		{
+			if (LuxSolarisPvE.CanUse(out act))
 			{
 				return true;
 			}
@@ -487,7 +589,48 @@ public sealed class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
-		if (SummonBahamutPvE.CanUse(out act))
+		// The big summon waits for Searing Light, because the buff has to be up BEFORE the burst deals
+		// its first damage. Read from the effect texts (ActionId.resx): the summon itself states no
+		// potency at all - it enters Lightwyrm Trance and Solar Bahamut then "executes Luxwave
+		// automatically on the targets attacked by you". So the first damage of the phase is the first
+		// GCD after the summon, Umbral Impulse at 640 plus its automatic Luxwave at 160.
+		//
+		// That is why waiting is the cheaper error. Missing the buff costs 5% of every GCD it misses,
+		// 40 potency on the first one alone and again on each that follows, plus the same share for
+		// every nearby party member. Waiting costs a summon one GCD later: the trance runs 15s inside
+		// a 20s buff, so the phase still fits whole, and the GCD spent waiting is a filler rather than
+		// a loss.
+		//
+		// Three arms, and the last two are what keep the wait from costing the phase itself: a charge
+		// that is already spent is not coming back inside this window, and below level 66 there is no
+		// Searing Light at all. Waiting in either case would trade a 5% buff for the whole burst.
+		//
+		// This also settles a defect recorded in TODO.md: the same summon was asked twice, once with
+		// no condition and once with this one, so the conditional call could never be reached and the
+		// coupling it expressed never applied. One call, one condition.
+		//
+		// Waiting is also the smaller risk here, and naming the branches of THIS job rather than the
+		// generic categories is what shows it. Ahead of the summon the Summoner's own heal branches
+		// cannot fire at all: Lux Solaris requires the Refulgent Lux status and Rekindle checks
+		// InPhoenix, and both of those come FROM a demi phase that has not started yet. What is left
+		// ahead of the summon is Radiant Aegis and Addle, and only while a defence flag stands.
+		//
+		// After the summon it reverses, and that is the more likely reason the buff kept landing inside
+		// the phase rather than at its head: the summon's own effect text grants Refulgent Lux, so the
+		// moment it resolves Lux Solaris becomes castable, and HealAreaAbility - which the dispatch asks
+		// ahead of AttackAbility - can take the very weave slot Searing Light needed, as soon as the
+		// heal-area flag stands. The summon creates its own competitor for the slot behind it; the slot
+		// ahead of it has no such competitor. (Inference from the dispatch order and the effect text,
+		// not observed in play.)
+		//
+		// The residual risk of waiting is therefore a defence flag standing while the charge is up.
+		// Guarding against it with a CanUse probe would be the "CanUse as a question, with targeting as
+		// a side effect" pattern recorded as a defect class in TODO.md, so it is not done.
+		var searingSettled = !SearingLightPvE.EnoughLevel
+			|| HasSearingLight
+			|| SearingLightPvE.Cooldown.IsCoolingDown;
+
+		if (searingSettled && SummonBahamutPvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -496,12 +639,7 @@ public sealed class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
-		if ((HasSearingLight || SearingLightPvE.Cooldown.IsCoolingDown) && SummonBahamutPvE.CanUse(out act))
-		{
-			return true;
-		}
-
-		if (IsBurst && !SearingLightPvE.Cooldown.IsCoolingDown && SummonSolarBahamutPvE.CanUse(out act))
+		if (IsBurst && searingSettled && SummonSolarBahamutPvE.CanUse(out act))
 		{
 			return true;
 		}

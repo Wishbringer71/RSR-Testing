@@ -2,21 +2,34 @@
 
 Against upstream **7.5.6.10**. Settings are named as they appear in the configuration, and
 where a change sits behind a switch its default is given; without that note it takes effect
-immediately. Two changes are confirmed in play — the raise dispatch and the tank pre-pull
-HoT. Everything else is established in the code and compiled in CI, which says that a chain
-closes, not that it is right at the target dummy.
+immediately. Two changes are confirmed in play — the raise dispatch and the tank pre-pull HoT;
+everything else is established in the code and compiled, not yet measured at a dummy.
 
-## Check this setting first — a known defect in this build
+## Party mitigation answers raidwides again
 
-`Skip mitigation for small area casts` is **on by default**, and with that default party
-mitigation is withheld in almost every ordinary case. The condition only mitigates above an
-impact of roughly 35 % of maximum health, which an ordinary raidwide does not reach, and the
-impact is only known after the first hit of that action. In the fight: on Summoner neither
-Addle nor Radiant Aegis has gone out against area damage since 17 September, and every
-party-wide mitigation on that chain is affected.
+`Skip mitigation for small area casts` spares the cooldown when an area hit is too small to
+matter. It asked one question only — would this hit push anyone to where healing is called for —
+and a healthy party answered no to almost every raidwide, so Addle and Radiant Aegis stopped going
+out on Summoner. Mitigation is meant to throttle the damage *before* a need to heal appears.
 
-**Switch the setting off** to get the previous behaviour. A new default in code would not
-reach you — a configuration already in use keeps its stored value.
+An area action costing **25 % of maximum health or more** is now a big hit whatever the party's
+health. The figure is read from the effect texts — it is what the largest barrier in the game
+absorbs — not set by hand. Below it the buffer comparison still decides, so small repeated ticks
+keep costing no cooldown while the party is healthy.
+
+- **An interruptible cast can be mitigated too** — `Mitigate a big area cast even when it is
+  interruptible`, **off by default**. Area questions drop interruptible casts, because those are
+  meant to be interrupted. In a dungeon where nobody does — and a Summoner has no interrupt — the
+  hit lands unanswered. A cast measured at the large-barrier figure now raises the defence anyway,
+  within a GCD of landing.
+- **A predicted mitigation is not spent on the small hit before the big one** — `Hold a predicted
+  mitigation while a small cast is running`, **off by default**. BossMod gives the timing of the
+  next event, not its size, so in an opening with a small cast ahead of a heavy one the barrier is
+  eaten by the first. It now waits while a measured small cast runs.
+- **Healing ahead of an announced area cast** — `Heal ahead of an announced area cast`, **off by
+  default**. Thresholds read the health a member has, not what he will have once the cast on screen
+  lands: 60 % in front of a 45 % raidwide counts as healthy until it kills him. An existing barrier
+  counts against the hit it absorbs.
 
 ## Healing — when it lands
 
@@ -34,8 +47,8 @@ reach you — a configuration already in use keeps its stored value.
 - **The emergency full heal waits for a reason** — `Benediction needs a reason`, **on by
   default**. Benediction now also requires that the target is being attacked, that an area
   cast is announced, or that their health is measurably falling. Before that, a player who
-  had just been raised read as the most urgent member in the party while nothing was
-  happening to him — and the full heal was gone for ninety seconds.
+  had just been raised read as the most urgent member in the party — and the full heal was
+  gone for ninety seconds.
 - **The tank walks into the pull with a HoT already ticking** — `UsePreRegen` (White Mage),
   `UsePreAspectedBenefic` (Astrologian), each with two enemy-count thresholds. The first hits
   land on a tank who already has something running. Both actions are instant, so nothing is
@@ -85,8 +98,10 @@ reach you — a configuration already in use keeps its stored value.
 - **Self-healing for damage dealers** (Second Wind, Bloodbath) across ten jobs, where the
   role actions were declared and never used.
 - **The BossModReborn timeline is only read when it is switched on.**
-- **Area actions are measured by how hard they hit**, not only recognised as area actions;
-  the list window shows the share of maximum health per action.
+- **Area actions are measured by how hard they hit**, not only recognised as such; the list
+  window shows the share per action, and which rules acted on it. Those readings now survive a
+  logout — until this build they were never read back, so every login started unrated and the
+  first save overwrote the stored ones.
 
 ## Tank self-protection
 
@@ -98,22 +113,33 @@ reach you — a configuration already in use keeps its stored value.
 - **Living Dead and Walking Dead.** While more than two GCDs of Living Dead remain, a lowered
   healing threshold applies so the death effect can occur; within two GCDs the normal
   threshold returns, so healing resumes shortly before the status expires. The lead-in is
-  suspended while zero would arrive before the window closes, since it would otherwise
-  prevent the very death the rule exists for. `WithholdHealingForLivingDead` sharpens the
-  first part and is **off by default**.
+  suspended while zero would arrive before the window closes.
+  `WithholdHealingForLivingDead` sharpens the first part and is **off by default**.
 - **Arm's Length on a group pull** (`UseArmsLengthOnPull`) for its Slow, not only as
-  knockback protection: +20 % on every enemy that strikes you throttles the whole incoming
-  stream for fifteen seconds.
+  knockback protection: +20 % recast on every enemy that strikes you, for fifteen seconds.
 - **The co-tank Provoke** no longer pulls the boss off a tank standing under Superbolide,
   Living Dead or Holmgang.
 
 ## Damage and rotation
 
-- **Summoner.** Searing Light is tied to the burst phase — Solar Bahamut, or Bahamut at lower
-  levels; with a second Summoner in the party it falls back to the big summon, and across all
-  established phases to Ifrit. `PreferTitanWhileMoving` (**off by default**) brings Titan
-  forward while you are moving, because Topaz Rite and its follow-ups are instant while
-  Garuda and Ifrit lose GCDs on the move. Titan is only brought forward, never skipped.
+- **Summoner: Searing Light covers the phase from its first GCD.** It was offered only once the
+  demi was standing, so the earliest slot it could take was the one *after* the summon, and a busy
+  slot then pushed it into the middle of the burst. It now fires in the slot before, and the summon
+  waits for it; 20 seconds of buff cover a 15-second demi either way. The window itself is the burst
+  phase; with a second Summoner in the party it widens to any big summon, and once every phase is
+  taken it falls back to Titan — or to Ifrit when you are standing at the target anyway, since its
+  higher figure assumes a gap closer you then do not need. `PreferTitanWhileMoving` (**off by
+  default**) brings Titan forward while you are moving, never skips it.
+- **Summoner: the phase heal goes out when it lands in full.** Lux Solaris hung on the area heal
+  flag, which wants the party's health spread to be *small* — so one player taking a mechanic kept
+  it down exactly when somebody was hurt. It costs no MP and no GCD and expires with Refulgent Lux,
+  so the question is whether the cast is wasted, not whether area healing is worth it. It now fires
+  once the missing health can absorb the whole heal — measured from what the heal actually restored,
+  not from its potency — and in any case before the buff expires.
+- **Summoner: Rekindle picks by share, not by points.** It sorted by current health *points*, and
+  pools differ enough that a caster at full health can hold fewer than a tank at half — so the heal
+  went to someone who needed nothing. The action works in shares itself — its follow-up arms at
+  75 %. With no target it goes on the caster instead of being lost with the phase.
 - **White mage, Holy.** Three separately switchable rules: do not overwrite the stun while it
   is still running (`StretchHolyStun`, **off by default**); hold Holy while the dark knight's
   barrier is meant to be filled; and hold Holy while more than half the enemies in radius are

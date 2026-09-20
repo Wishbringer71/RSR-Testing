@@ -65,11 +65,14 @@ wurde oder nicht. Vier Größen also, und keine davon genügt allein:
 |---|---|---|
 | **Effektive Gesundheit, absolut** | Wie viele Punkte liegen zwischen ihm und dem Tod? | ja — `GetEffectiveHp` (Gesundheit plus Barriere); die Zielwahl liest sie nur nicht |
 | **Aggro** | Bekommt er gerichteten Schaden — Auto-Angriffe, Tankbuster? | ja — ein Gegner nennt sein Ziel über `TargetObject`, `ObjectHelper.CanProvoke` löst das bereits auf |
-| **Angekündigter Flächenschaden** | Kommt Schaden, der ihn ohne Aggro trifft? | ja — `IsHostileCastingAOE` und die BossModReborn-Vorhersage (`BMRNextDamageIn`) |
-| **Eingehende Schadensrate** | Wie schnell schwindet der Puffer? | **nein**, je Mitglied nicht |
+| **Angekündigter Flächenschaden** | Kommt Schaden, der ihn ohne Aggro trifft? | ja — `IsHostileCastingAOE` und die BossModReborn-Vorhersage (`BMRNextDamageIn`); **wie hart** er trifft, misst `13-aoe-damage-classification.md` je Aktion, hier ungenutzt |
+| **Eingehende Schadensrate** | Wie schnell schwindet der Puffer? | **ja, seit A91** — `RecordedHP` trägt die Gruppe mit, `GetTTK` antwortet für Mitglieder, `GetCorrectedTTK` teilt den Schätzfehler heraus. Die Zielwahl liest sie nicht |
 
-Aus den ersten beiden folgt der Puffer, aus allen vieren die **Zeit bis zum Tod** — das Gegenstück zu
-`GetTTK`, das RSR für Gegner bereits führt. Für Gruppenmitglieder fehlt es.
+Aus den ersten beiden folgt der Puffer, aus allen vieren die **Zeit bis zum Tod**. Sie ist **vorhanden**:
+`08-mitigation-synergy.md` hat sie gebaut — die Gesundheitsreihe `RecordedHP` nimmt die Gruppe seit A91
+mit auf, also antwortet `GetTTK` auch für Mitglieder, und `GetCorrectedTTK` hält jede Vorhersage gegen
+den tatsächlichen Verlauf. **Was fehlt, ist nicht die Größe, sondern ihr Verbraucher:** Die Zielwahl
+fragt sie nicht ab (erfasst in `TODO.md`, „Die Zielwahl der Heilung misst nicht die Sterbegefährdung“).
 
 **Der kleine Puffer ist damit für sich gefährlich.** Wer bei 10 % steht, braucht keine Aggro, um an
 der nächsten Flächenaktion zu sterben; die Aggro entscheidet nur, ob er auch ohne Mechanik fällt. Ein
@@ -245,7 +248,7 @@ sondern die vorausberechnete Gesundheit selbst — siehe „Die Stufen".
 als Ganzes, `DamageRec` trägt Zeitpunkt und Anteil, **kein Ziel**, und ihr Fenster von fünf
 Millisekunden sieht bei einem Bild von rund sechzehn fast immer nichts.
 
-**Die Aggro steht ebenfalls.** `DataCenter.AggroedMembers` wird in `TargetUpdater.UpdateLists` einmal
+**Die Aggro steht ebenfalls.** `DataCenter.TargetedPartyMembers` wird in `TargetUpdater.UpdateLists` einmal
 je Bild aus den `TargetObjectId` der Gegner gefüllt — ein Durchlauf über die Gegner, danach ist „wird
 angegriffen" eine Nachschlageoperation. Gelesen wird sie bisher von `ObjectHelper.IsUnderThreat`,
 nicht von der Zielwahl: Sie beantwortet die Frage nach dem **Mittel**, die Klassen 2 und 3 der
@@ -288,6 +291,50 @@ Hinter `HealAheadOfDamage`, Standard aus; ausgeschaltet liefern alle vier Getter
 Die Nachweislage ist damit unverändert die der Stufe 2: Der Nutzen bleibt eine Annahme, bis er im
 Spiel beobachtet ist.
 
+## Die Zielüberschreibung hebt die ganze Rangfolge auf
+
+**Alles oben Beschriebene gilt nur, solange eine Aktion `FindHealTarget` überhaupt erreicht.** Ein
+`targetOverride` ersetzt die Rangliste durch **eine einzige Sortierung** — und dabei fällt auch der
+Bedarfsfilter weg, den `FindHealTarget` an seinem Eingang führt (`GetForecastHealthRatio() <
+healRatio`, `AutoHealRatio` 0,80 als Vorgabewert im Code). Eine überschriebene Zielwahl kann deshalb
+auf einen Unverletzten zeigen; die Rangfolge kann das nicht.
+
+**Welche Sortierung richtig ist, hängt an der Aktion, und beide Antworten kommen vor:**
+
+| Maß | Beantwortet | Richtig für |
+|---|---|---|
+| `TargetType.LowHP` — aktuelle Gesundheit in **Punkten** | Wer überlebt den nächsten Einschlag nicht? | eine Barriere gegen **einen** angekündigten Treffer; das ist die Ordnung der Gefährdungsklasse 1 |
+| `TargetType.LowHPPercent` — **Anteil** der Maximalgesundheit | Wer ist am weitesten vom sicheren Stand entfernt? | Heilung, und jede Aktion, deren eigener Wirktext eine Prozentschwelle nennt |
+
+**Vorgabe des Auftraggebers zu Rekindle** (Beschwörer, Phönix-Phase): „Auf wen geht der Single hot
+bei Phoenix? Am besten auf den mit der geringsten prozentualen hp, ansonsten auf den Caster selbst.“
+
+**Der Code sortierte nach Punkten, und das ist hier belegbar falsch** — nicht nur abweichend von der
+Vorgabe. Die Lebenspools der Rollen unterscheiden sich so stark, dass ein Magier bei voller
+Gesundheit weniger Punkte tragen kann als ein Tank bei der Hälfte; die Sortierung gab dann den
+Vollen zurück, während der Tank weiter fiel, und die Ladung war ausgegeben. Der Beleg gegen das
+Punktemaß steht im Wirktext der Aktion selbst: Rekindle bewaffnet seine Nachheilung „when HP falls
+below 75%“ — **das Spiel misst diese Aktion in Anteilen.** Ein nach Punkten gewähltes Ziel kann
+damit eines sein, bei dem die Nachwirkung nie auslöst.
+
+**Der Rückfall auf den Wirkenden ist keine Förmlichkeit.** Rekindle besteht nur, solange Firebird
+Trance läuft; ein Aufruf ohne Ziel ist mit der Phase verloren, und 400 Potenz auf sich selbst sind
+mehr als nichts.
+
+**Geprüft wird das jetzt maschinell, nicht erinnert:**
+`.github/scripts/audit/check_heal_target_measure.py` erhebt aus `ActionId.resx` jede Aktion, deren
+Wirktext eine eigene Prozentschwelle nennt, und meldet jede Stelle, die genau eine solche Aktion
+nach Punkten sortiert. Es prüft das Maß, nicht die Zielwahl im Ganzen — eine Barriere nach Punkten
+zu wählen bleibt zulässig und wird nicht gemeldet.
+
+**Die übrigen Fundstellen derselben Bauform sind erhoben und bleiben unbearbeitet**, weil bei ihnen
+das Punktemaß nach der Tabelle oben das richtige sein kann: The Blackest Night und Oblation beim
+Dunkelritter, Heart of Corundum, Heart of Stone und Aurora beim Revolverklinge. Beim Dunkelritter
+hängt eine zweite Prüfung an derselben Wahl — das gewählte Ziel muss zusätzlich unter
+`BlackLanternRatio` stehen —, sodass eine Fehlwahl die Aktion nicht nur verschiebt, sondern ganz
+ausfallen lässt. Die Entscheidung darüber berührt `10-drk-blackest-night.md` und gehört dem
+Auftraggeber. Die Fundstellen in den PvP-Rotationen liegen außerhalb seines Nutzungsprofils.
+
 ## Abgrenzung zur Schildanrechnung
 
 Die entfernte Schildanrechnung (`AUDIT_LOG.md` A85) hat dieselbe Größe an der falschen Stelle
@@ -297,6 +344,23 @@ besser geschützt als ein geschildeter mit wenig Gesundheit. Für die **Reihenfo
 ist die Barriere dagegen eine zulässige Größe: Dort wird nicht gefragt, ob geheilt wird, sondern wer
 zuerst. Der einführende Commit der Anrechnung (`27c7b6942`) nannte im Titel genau diese Frage und
 änderte dann die Schwelle.
+
+## Abgrenzung zur Wiederbelebung
+
+Dieses Konzept ordnet die **Lebenden**. Wer bereits tot ist, fällt nicht unter die Gefährdung,
+sondern unter die Wiederbelebung — deren Auslösung, Reihenfolge und der Spontanitäts-Vorbehalt
+stehen in `11-raise-dispatch.md`. Die Berührung der beiden ist real und in Abschnitt 1 belegt: Der
+frisch Wiederbelebte wechselt in dem Moment aus dem einen Konzept in das andere, und genau dort
+hat die Notfall-Vollheilung ihn früher als dringendsten Fall gelesen.
+
+## Abgrenzung zur Wahl des Mittels
+
+Dieses Konzept beantwortet **wer** zuerst geheilt wird. Ob überhaupt geheilt wird oder stattdessen
+gedeckt — Barriere, Minderung —, entscheidet die Ordnung in `08-mitigation-synergy.md` („Die Antwort
+auf einen eingehenden Treffer"): Heilung geht vor, sobald der angekündigte Treffer die **aktuelle**
+Gesundheit des schwächsten Mitglieds erreicht, und zwar bis zur Maximalgesundheit; darunter genügt
+Deckung in Höhe des Treffers. Beide Konzepte greifen also nacheinander und nicht ineinander — erst
+die Frage nach dem Mittel, dann die nach dem Ziel.
 
 ## Grenzen des Nachweises
 
@@ -309,3 +373,10 @@ Nicht belegbar: welche Reihenfolge im Kampf die bessere ist, und wie oft das Ban
 gleich tief stehenden Heiler überhaupt erreicht wird. Das entscheidet sich an einer Beobachtung — ob
 ein Mitglied stirbt, während ein besser geschütztes zuerst versorgt wurde. Ebenfalls nicht messbar:
 die tatsächliche Konfiguration des Auftraggebers.
+
+## Offene Punkte zu diesem Konzept
+
+Sie stehen in `TODO.md` und sind dort unter der Überschrift des Eintrags mit **Konzept:** auf dieses
+Dokument gekennzeichnet — an **einer** Stelle statt in zweien, damit keine Kopie altert.
+`.github/scripts/audit/check_concept_links.py` listet sie je Konzept und nennt zugleich, wie viele
+Einträge überhaupt keinem Konzept zugeordnet sind.

@@ -3944,6 +3944,57 @@ public partial class RotationConfigWindow : Window
 						+ $"{DataCenter.AreaMitigationSkipped.Count} of {rated.Count} rated action(s)");
 				}
 
+				// The two rules below change behaviour only when switched on, and in the fight their
+				// working looks exactly like their absence - healing that arrives early looks like
+				// ordinary healing, and a mitigation that goes out looks like any other. Each gets a
+				// line that says whether it has fired at all, so switching one on is a test and not
+				// a guess. Both lines name the setting when it is off, because zero then has two
+				// possible meanings.
+				if (!Service.Config.HealAheadOfAnnouncedHit)
+				{
+					ImGui.TextColored(ImGuiColors.DalamudGrey,
+						"No healing ahead of area casts: \"Heal ahead of an announced area cast\" is off.");
+				}
+				else
+				{
+					ImGui.Text("Healed ahead of an announced cast, this session: "
+						+ $"{DataCenter.HealedAheadOfAreaCast.Count} action(s)");
+				}
+
+				if (!Service.Config.HoldProactiveMitigationForSmallCast)
+				{
+					ImGui.TextColored(ImGuiColors.DalamudGrey,
+						"Predicted mitigations follow the timing alone: \"Hold a predicted mitigation "
+						+ "while a small cast is running\" is off.");
+				}
+				else
+				{
+					// The rule scores itself and acts on that score, so this line reports a verdict
+					// rather than asking for one to be drawn from it.
+					var (vindicated, wasted) = DataCenter.ProactiveHoldRecord;
+					ImGui.Text("Predicted mitigation held for a small cast, this fight: "
+						+ $"{DataCenter.ProactiveMitigationHeld.Count} action(s), "
+						+ $"{vindicated} followed by a big hit, {wasted} not");
+					if (vindicated + wasted > 0 && !DataCenter.ProactiveHoldIsEarningItsKeep)
+					{
+						ImGui.TextColored(ImGuiColors.DalamudYellow,
+							"  Holding is wrong more often than right in this fight - the rule has "
+							+ "stood itself down until that turns around.");
+					}
+				}
+
+				if (!Service.Config.MitigateBigAreaCastsEvenIfInterruptible)
+				{
+					ImGui.TextColored(ImGuiColors.DalamudGrey,
+						"Interruptible casts are never mitigated: \"Mitigate a big area cast even when "
+						+ "it is interruptible\" is off.");
+				}
+				else
+				{
+					ImGui.Text("Mitigated although interruptible, this session: "
+						+ $"{DataCenter.MitigatedInterruptibleCast.Count} action(s)");
+				}
+
 				if (ImGui.Button("Forget recorded damage potential"))
 				{
 					OtherConfiguration.ResetHostileCastingAreaPotential();
@@ -3951,6 +4002,9 @@ public partial class RotationConfigWindow : Window
 					// them: left standing it would name an action at "--" and count against a store
 					// of zero.
 					DataCenter.AreaMitigationSkipped.Clear();
+					DataCenter.HealedAheadOfAreaCast.Clear();
+					DataCenter.MitigatedInterruptibleCast.Clear();
+					DataCenter.ProactiveMitigationHeld.Clear();
 				}
 				ImguiTooltips.HoveredTooltip("Kept when the list itself is reset, because these values "
 					+ "cost runs in the game rather than a download. Clear them when a patch has "
@@ -4053,9 +4107,23 @@ public partial class RotationConfigWindow : Window
 			var label = $"{action.Name} ({action.RowId})";
 			if (potential != null && potential.TryGetValue(action.RowId, out var measured) && measured > 0f)
 			{
-				label += DataCenter.AreaMitigationSkipped.ContainsKey(action.RowId)
-					? $"  -  {measured * 100f:F0}% measured, mitigation withheld"
-					: $"  -  {measured * 100f:F0}% measured";
+				label += $"  -  {measured * 100f:F0}% measured";
+				if (DataCenter.AreaMitigationSkipped.ContainsKey(action.RowId))
+				{
+					label += ", mitigation withheld";
+				}
+				if (DataCenter.HealedAheadOfAreaCast.ContainsKey(action.RowId))
+				{
+					label += ", healed ahead";
+				}
+				if (DataCenter.MitigatedInterruptibleCast.ContainsKey(action.RowId))
+				{
+					label += ", mitigated although interruptible";
+				}
+				if (DataCenter.ProactiveMitigationHeld.ContainsKey(action.RowId))
+				{
+					label += ", predicted mitigation held";
+				}
 			}
 			_ = ImGui.Selectable(label);
 
@@ -5393,6 +5461,49 @@ public partial class RotationConfigWindow : Window
 
 	private static void DrawBMRData()
 	{
+		// What this page has to answer first, because everything proactive in the tree hangs on it:
+		// is a module loaded here at all, and is it feeding damage predictions? BossModReborn covers
+		// the fights somebody wrote a module for, and the depth of those modules differs - a module
+		// can be active and still say nothing about raidwides. Both cases arrive as float.MaxValue,
+		// which reads as "nothing is coming", so the failure is silent and looks exactly like a
+		// quiet fight. Without these lines, a mitigation that never fires cannot be told from a
+		// fight that never needed one.
+		if (!Service.Config.UseBmrTimeline)
+		{
+			ImGui.TextColored(ImGuiColors.DalamudGrey, "Timeline integration is off: no prediction is read.");
+		}
+		else if (!DataCenter.BMRHasActiveModule)
+		{
+			ImGui.TextColored(ImGuiColors.DalamudYellow,
+				"No active module here - every proactive mitigation that reads a prediction is idle. "
+				+ "Reactive paths (a cast actually detected, enemy count) still work.");
+		}
+		else
+		{
+			ImGui.TextColored(ImGuiColors.ParsedGreen, $"Active module: {DataCenter.BMRActiveModuleName ?? "(unnamed)"}");
+
+			// A module without timeline entries for these is the case this page exists for.
+			var raidwide = DataCenter.BMRNextRaidwideIn;
+			var tankbuster = DataCenter.BMRNextTankbusterIn;
+			ImGui.Text($"Next raidwide in: {(raidwide >= float.MaxValue ? "not predicted by this module" : $"{raidwide:F1}s")}");
+			ImGui.Text($"Next tankbuster in: {(tankbuster >= float.MaxValue ? "not predicted by this module" : $"{tankbuster:F1}s")}");
+
+			// The three lines below describe ONE event - BossMod's first prediction by activation
+			// time. They are deliberately grouped away from the two above, which search per type and
+			// can be pointing at a different event entirely.
+			var nextDamage = DataCenter.BMRNextDamageIn;
+			if (nextDamage >= float.MaxValue)
+			{
+				ImGui.Text("Next predicted damage: none");
+			}
+			else
+			{
+				ImGui.Text($"Next predicted damage: {nextDamage:F1}s, type {DataCenter.BMRNextDamageType}, "
+					+ $"{(DataCenter.BMRNextDamageHitsPlayer ? "hits you" : "does not hit you")}");
+			}
+		}
+
+		ImGui.Separator();
 		ImGui.Text($"Cooldown Planner IPC Enabled: {BMRPlan_IPCSubscriber.IsEnabled}");
 		ImGui.Text($"BMRPlannedActionsCount: {DataCenter.BMRPlannedActions.Count}");
 		ImGui.Text($"BMRForceCancelCast: {DataCenter.BMRForceCancelCast}");

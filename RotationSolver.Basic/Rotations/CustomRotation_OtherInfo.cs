@@ -541,6 +541,12 @@ public partial class CustomRotation
 	/// exactly one enemy while the rest of a pull keeps hitting. A rule that reacts to "the damage
 	/// stream is interrupted" has to read the share, not the presence, of stunned enemies.
 	/// </param>
+	/// <param name="radius">How far around the player hostiles are counted, in yalms.</param>
+	/// <param name="allStunned">Whether every hostile inside the radius is stunned or immune.</param>
+	/// <param name="headroom">
+	/// Whether anything inside the radius could still be stunned. Without it there is nothing to
+	/// stretch and nothing to save, so a hold rule has no reason to fire.
+	/// </param>
 	protected static int SurveyStuns(float radius, out int stunnedCount, out bool allStunned,
 		out bool headroom)
 	{
@@ -1552,20 +1558,89 @@ public partial class CustomRotation
 
 	/// <summary>
 	/// True when a status will expire before a predicted BMR event lands, so it should be refreshed
-	/// now rather than on cooldown. <paramref name="predictedIn"/> is one of the BMR*In values,
-	/// <paramref name="statusDuration"/> the status's own duration, <paramref name="target"/> null for
-	/// a self status or the enemy for a debuff. The 0.6s floor matches StateUpdater's own guards.
-	/// Always false when BMR is inactive or UseBmrTimeline is off.
+	/// now rather than on cooldown. The 0.6s floor matches StateUpdater's own guards. Always false
+	/// when BMR is inactive or UseBmrTimeline is off.
 	/// </summary>
-	public static bool BMRShouldRefreshBefore(float predictedIn, float statusDuration, bool statusFromSelf, IBattleChara? target, params StatusID[] statusIDs)
+	/// <param name="predictedIn">One of the BMR*In values: seconds until the predicted event.</param>
+	/// <param name="statusDuration">The status's own duration, in seconds.</param>
+	/// <param name="statusFromSelf">Whether the status is read on the player rather than the target.</param>
+	/// <param name="target">Null for a self status, the enemy for a debuff.</param>
+	/// <param name="action">
+	/// The action this refresh would spend, when the caller can name it. Carried for the open
+	/// decision described at the hold below - whether an action with a charge to spare should skip
+	/// the hold, since it could cover both hits of a pair. Radiant Aegis is the case ("Enhanced
+	/// Radiant Aegis [480]: Maximum Charges: 2") while Troubadour, Tactician and Shield Samba have
+	/// one. Not acted on: spending the second charge is what A9 removed, on the owner's report.
+	/// </param>
+	/// <param name="statusIDs">The status or statuses whose remaining time decides the refresh.</param>
+	public static bool BMRShouldRefreshBefore(float predictedIn, float statusDuration, bool statusFromSelf, IBattleChara? target, IBaseAction? action, params StatusID[] statusIDs)
 	{
 		if (!Service.Config.UseBmrTimeline || !BMRActive || predictedIn is not (> 0.6f and < float.MaxValue) || predictedIn > statusDuration)
 		{
 			return false;
 		}
 
+		// BossModReborn answers WHEN, never HOW HARD, and spending on the wrong one of two hits in a
+		// row is the same loss as not spending at all.
+		//
+		// Reported from play, Eternal Queen's opening: a small area cast, then a big one. The
+		// prediction fires on the first, Radiant Aegis or Tactician goes out for it, and by the time
+		// the big one lands the barrier is spent or the debuff has expired. A barrier is the clearer
+		// case - it absorbs points, so a small hit eats it outright.
+		//
+		// The size IS known for a cast that is already on screen: it is measured per action. So when
+		// a rated small area cast is running right now, the event the prediction is pointing at is
+		// most likely that one, and this refresh waits for the next. Where nothing is running, or
+		// the running cast has never been measured, no claim is made and the behaviour is unchanged.
+		//
+		// This is the hole that the size rating left open: the reactive path has asked "is this hit
+		// worth a cooldown" since A108, the proactive path never did.
+		// Whether to spend a charge here is decided in the fight, not by reading a counter afterwards.
+		// Two things are asked, both answerable right now:
+		//
+		// 1. Does holding still earn its keep? Every hold is scored against what actually landed
+		//    (DataCenter.ScoreProactiveHold). Once it has been wrong more often than right, it stops
+		//    holding. A rule that mispredicts this fight's pattern therefore corrects itself inside
+		//    that fight instead of waiting for somebody to look at a number.
+		//
+		// 2. Is the reserve A9 protects actually at risk? The owner's decision there was not "never
+		//    spend the second charge" but its consequence: "when real danger came there was none
+		//    left". That is a question about availability, and it can be computed - spending now is
+		//    safe when a charge remains afterwards, or when the next one returns before the predicted
+		//    event. Where neither holds, the reserve is real and the hold stands.
+		//
+		// The A9 case itself is untouched: there was no prediction at all there, so this branch is
+		// never reached for it.
+		var reserveSurvivesSpending = action != null
+			&& (action.Cooldown.CurrentCharges > 1
+				|| action.Cooldown.RecastTimeRemainOneCharge <= predictedIn);
+
+		if (Service.Config.HoldProactiveMitigationForSmallCast
+			&& DataCenter.AnnouncedHitIsSmall
+			&& DataCenter.ProactiveHoldIsEarningItsKeep
+			&& !reserveSurvivesSpending)
+		{
+			// The window the hold is betting on: the status it would have refreshed has to still be
+			// worth refreshing when the real hit arrives, so that duration is the honest deadline.
+			DataCenter.NoteProactiveHold(statusDuration);
+			var held = DataCenter.AnnouncedAreaAction;
+			if (held != 0)
+			{
+				DataCenter.ProactiveMitigationHeld[held] = DateTime.Now;
+			}
+			return false;
+		}
+
 		var chara = statusFromSelf ? Player : target;
 		return chara != null && chara.WillStatusEnd(predictedIn, statusFromSelf, statusIDs);
+	}
+
+	/// <summary>
+	/// As above, for callers that do not name the action they would spend.
+	/// </summary>
+	public static bool BMRShouldRefreshBefore(float predictedIn, float statusDuration, bool statusFromSelf, IBattleChara? target, params StatusID[] statusIDs)
+	{
+		return BMRShouldRefreshBefore(predictedIn, statusDuration, statusFromSelf, target, null, statusIDs);
 	}
 
 	/// <summary>

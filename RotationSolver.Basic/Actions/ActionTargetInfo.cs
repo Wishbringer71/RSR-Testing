@@ -625,11 +625,12 @@ public struct ActionTargetInfo(IBaseAction action)
 		// party member closest to dying would be the one dropped from the candidate list, which is
 		// exactly the one a heal is for.
 		//
-		// Today the answer happens to be right for the wrong reason: RecordedHP is filled from
-		// AllHostileTargets alone, so GetTTK returns NaN for every party member and the NaN branch
-		// lets them through. That is not a decision, it is a side effect of which objects the
-		// history happens to hold - and it breaks the moment the history holds more. Stating the
-		// condition outright makes the behaviour identical today and keeps it identical afterwards.
+		// The condition is stated outright because the accident that used to cover it is gone. It
+		// once read right for the wrong reason: RecordedHP held hostiles only, so GetTTK returned
+		// NaN for every party member and the NaN branch let them through. Since A91 the history
+		// carries the party as well (TargetUpdater fills both), so GetTTK answers for members - and
+		// without this line the member closest to dying would be dropped from the heal candidates,
+		// which is precisely the one the heal is for.
 		if (action.Setting.IsFriendly)
 		{
 			return true;

@@ -394,7 +394,7 @@ public partial class SummonerRotation
 	/// nothing. The level comes from the action's own data rather than a literal, and it is applied
 	/// to the other player for the same reason it is applied here: a Summoner below it has no
 	/// Searing Light to give, and counting him would hold this one back for a buff that cannot come.
-	/// That is the mistake <see cref="DataCenter.AnyLivingRaiser"/> made with Red Mage.
+	/// That is the mistake <see cref="DataCenter.AnyLivingRaiser(bool)"/> made with Red Mage.
 	///
 	/// What this cannot answer is whether the other Summoner runs this rotation, runs any plugin at
 	/// all, or plays the job well. It answers "can a second Searing Light exist here", which is the

@@ -44,6 +44,17 @@ internal static class BMRTimeline_IPCSubscriber
 	[EzIPC("Hints.NextDamageType", true)]
 	internal static readonly Func<int>? NextDamageType;
 
+	// The bitmask of who the next predicted damage event hits. Belongs with the two above and only
+	// with them: all three read PredictedDamage[0], the entry BossMod sorts to the front by
+	// activation time. The type-specific endpoints below search for the first entry OF THEIR TYPE,
+	// which can be a different one, so this mask must not be paired with those.
+	//
+	// Bit 0 is the player: BossMod's PartyState declares PlayerSlot = 0, so the position is fixed
+	// and does not move with the party list. Bits 1..7 are the rest of the party, 8..23 the
+	// alliance, 24..63 other allies - a mapping this fork does not need and therefore does not make.
+	[EzIPC("Hints.PredictedDamagePlayers", true)]
+	internal static readonly Func<ulong>? PredictedDamagePlayers;
+
 	[EzIPC("Hints.NextRaidwideDamageIn", true)]
 	internal static readonly Func<float>? NextRaidwideDamageIn;
 

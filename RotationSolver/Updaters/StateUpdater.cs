@@ -164,6 +164,29 @@ internal static class StateUpdater
 			return true;
 		}
 
+		// The same question asked of a cast the filter above drops for being interruptible. It only
+		// answers for an action whose measured share is at or above what the largest barrier absorbs,
+		// so it cannot reopen the enemy-count fallback A9 removed. See IsHostileCastingLargeArea.
+		//
+		// MitigateBigAreaCastsEvenIfInterruptible is checked here rather than inside that property:
+		// it is a decision about mitigating, and the property also answers the healing rule, which
+		// must not be switched off by it.
+		if (DataCenter.InCombat && Service.Config.UseAoeDefense
+			&& Service.Config.MitigateBigAreaCastsEvenIfInterruptible
+			&& DataCenter.IsHostileCastingLargeArea
+			&& !DataCenter.IsTyrantCastingSpecialIndicator())
+		{
+			// Recorded where the decision falls, not where the cast is recognised: with the setting
+			// off the recognition still runs for the healing rule, and a probe filled there would
+			// claim mitigations that never happened.
+			var answered = DataCenter.AnnouncedAreaAction;
+			if (answered != 0)
+			{
+				DataCenter.MitigatedInterruptibleCast[answered] = DateTime.Now;
+			}
+			return true;
+		}
+
 		if (DataCenter.InCombat && Service.Config.UseBmrTimeline
 			&& DataCenter.BMRNextRaidwideIn > 0.6f
 			&& DataCenter.BMRNextRaidwideIn <= Service.Config.BMRRaidwideMitWindow)
@@ -302,6 +325,43 @@ internal static class StateUpdater
 		return true;
 	}
 
+	// Owner's rule, second stage: "die aktuelle hp liegt unter dem schadenswert. dann wäre aber eine
+	// heilung sinnvoll bis max maxhp."
+	//
+	// Every threshold below reads the health a member HAS. None of them reads the health he will
+	// have once the cast already on screen lands, so a party at 60% in front of a 45% raidwide is
+	// above every threshold and dies to it. The size of that cast is measured (concept 13) and was
+	// so far only used to decide whether to MITIGATE; this is the other half of the same figure.
+	//
+	// Deliberately placed at the same threshold the flag itself uses, not at a stricter one: the
+	// question is "would this hit put anyone where we would heal anyway", asked one cast earlier.
+	// Where nothing is announced or its size has not been measured, the answer is false and the
+	// flags behave exactly as before.
+	private static bool AnnouncedAreaCastIsUpForHealing()
+	{
+		if (!Service.Config.HealAheadOfAnnouncedHit)
+		{
+			return false;
+		}
+
+		// Asked here rather than read from whatever ran before: walking the casting enemies is what
+		// establishes the size in the first place. Reading the recorded share on its own would make
+		// this rule depend on the defensive branch having run earlier in the same frame - and that
+		// branch is itself behind UseAoeDefense, so with area defence switched off the size would
+		// never be established and this rule would silently never fire.
+		//
+		// Asked of the UNRATED recognitions, not of IsHostileCastingAOE. That one has the mitigation
+		// verdict built into it - a cast leaving everybody above HealthAreaSpell is dropped - and
+		// this rule works at its own, higher threshold. Reading the rated question would lose it the
+		// band between the two: a hit landing the party at 70% counts as too small to mitigate while
+		// the heal flag would have raised at that very health.
+		//
+		// Both are asked because they see different casts: the first drops anything interruptible,
+		// the second takes those back up when their measured share is large. Healing comes before
+		// mitigation, so it must not see less than the defence does.
+		return DataCenter.IsHostileCastingAreaUnrated || DataCenter.IsHostileCastingLargeArea;
+	}
+
 	private static readonly StatusID[] HellInACellStatuses =
 	[
 		StatusID.HellInACell,
@@ -355,14 +415,38 @@ internal static class StateUpdater
 		var partyCount = DataCenter.PartyMembers.Count;
 		var areaHotRatio = partyCount > 2 ? SelfHealingOfTimeRatio(StatusHelper.AreaHots) : 0f;
 
+		// Established once, compared twice. Each recognition walks every casting enemy, and this
+		// method asks the question for the ability flag and the spell flag; reading it per flag put
+		// two full passes in every update, and with the defence branch a third. Same correction
+		// upstream just made for partyCount and areaHotRatio one line above.
+		var announcedAreaCast = AnnouncedAreaCastIsUpForHealing();
+		var healAheadOfHit = announcedAreaCast
+			&& DataCenter.AnnouncedHitDropsAnyoneBelow(Service.Config.HealthAreaAbility);
+		var healSpellAheadOfHit = announcedAreaCast
+			&& DataCenter.AnnouncedHitDropsAnyoneBelow(Service.Config.HealthAreaSpell);
+
+		// The probe the owner's testing needs: healing that arrives before a raidwide looks exactly
+		// like healing that arrives for any other reason, so without this the rule cannot be told
+		// apart from its own absence. Recorded per action, because the question runs every frame.
+		if (healAheadOfHit || healSpellAheadOfHit)
+		{
+			var announced = DataCenter.AnnouncedAreaAction;
+			if (announced != 0)
+			{
+				DataCenter.HealedAheadOfAreaCast[announced] = DateTime.Now;
+			}
+		}
+
 		// Prioritize area healing if multiple members have DoomNeedHealing
 		if (doomNeedHealingCount > 1 || singleAbilityCount > 2
+			|| healAheadOfHit
 			|| ShouldHealArea(partyCount, Service.Config.HealthAreaAbility, Service.Config.HealthAreaAbilityHot, areaHotRatio))
 		{
 			status |= AutoStatus.HealAreaAbility;
 		}
 
 		if (canUseHealSpell && (doomNeedHealingCount > 1 || singleSpellCount > 2
+			|| healSpellAheadOfHit
 			|| ShouldHealArea(partyCount, Service.Config.HealthAreaSpell, Service.Config.HealthAreaSpellHot, areaHotRatio)))
 		{
 			status |= AutoStatus.HealAreaSpell;

@@ -34,6 +34,21 @@ jobs:
       - name: Check the heal target order
         run: python3 .github/scripts/audit/check_heal_target_order.py
 
+      # A target override replaces that whole ranking with one sort, and the two sorts answer
+      # different questions: points say who does not survive the next hit, shares say who is furthest
+      # from safe. Where the action's own effect text names a percentage threshold, the game works in
+      # shares and a points sort can pick a target the follow-up effect never triggers on. Summoner's
+      # Rekindle was exactly that case and nothing failed over it.
+      - name: Check the heal target measure matches the action
+        run: python3 .github/scripts/audit/check_heal_target_measure.py
+
+      # What a defensive action takes off a hit is stated in its own effect text and generated into
+      # DefensiveValues.g.cs. Checked rather than trusted: the generated file is committed, so a
+      # game patch that restates a figure, or a parser that quietly stops matching, would otherwise
+      # leave a stale table behind that nothing reads as wrong.
+      - name: Check the generated defensive values still match the effect texts
+        run: python3 .github/scripts/audit/generate_defensive_values.py --check
+
       # Depth alone is not enough: this fork's own remote carries no upstream tags at all, only
       # 7.5.5.41+wsh1 and 7.5.6.1+wsh1, and this environment cannot push tags to fix that. So the
       # release tags have to come from upstream directly, or `git describe` finds nothing to
@@ -106,12 +121,40 @@ jobs:
       - name: Check the stored action lists are looked up, not walked
         run: python3 .github/scripts/audit/check_set_lookups.py
 
+      # A stored list is written back whole on every save, so one that is never loaded destroys its
+      # own file on the first save of the session. That happened to the learned damage potentials:
+      # the load line went into the Init nobody calls, and what several evenings of pulls had rated
+      # was gone at the next login. Nothing throws, nothing is logged, and in the fight it looks
+      # like the measurement simply never does much.
+      - name: Check every saved list is loaded on the path that runs
+        run: python3 .github/scripts/audit/check_config_store_roundtrip.py
+
       # The once-per-cooldown full heal has to be tied to actual danger, or it goes out on whoever
       # happens to stand lowest - a player who was just raised, most visibly - and is missing when a
       # tank needs it. Nothing fails when the condition is lost; an upstream merge simply brings the
       # unguarded branch back.
       - name: Check the emergency heal asks whether the target is in danger
         run: python3 .github/scripts/audit/check_emergency_heal_threat.py
+
+      # The concepts answer neighbouring questions, so a rule written into one of them is invisible
+      # to the others. After a context compaction the next pass reads whichever file it opens first,
+      # and a concept nobody points at ages out of use without anything failing. This checks the two
+      # things a script can check: that every reference resolves, and which concepts are unreachable.
+      - name: Check the concept documents still reference each other
+        run: python3 .github/scripts/audit/check_concept_links.py
+
+      # A concept naming an identifier the tree does not have describes a tree that does not exist.
+      # `DataCenter.AggroedMembers` was such a name - the field is TargetedPartyMembers - and the
+      # next pass looks for the wrong name, finds nothing and concludes the block is missing.
+      # Reported, never failed: a removed or proposed name is legitimate and says so in its line.
+      - name: Check the identifiers named in the concepts exist
+        run: python3 .github/scripts/audit/check_concept_identifiers.py
+
+      # A document that states "default off" about a setting the code ships as on is worse than one
+      # that says nothing: the next pass reads it and recommends switching on what was on all along.
+      # That has happened here once. Nothing fails when it does - the sentence stays readable.
+      - name: Check the stated defaults still match the code
+        run: python3 .github/scripts/audit/check_concept_defaults.py
 
       # The release description is pasted into a field that counts characters and stops accepting
       # them. The 18611-character version ran the counter to "0 remaining" inside section 7, and

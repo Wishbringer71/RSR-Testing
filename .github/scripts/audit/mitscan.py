@@ -10,12 +10,29 @@ split it ran inline and a broken pattern would have reported a clean tree.
 """
 import os, re, sys
 
-MIT = ['RadiantAegisPvE','AddlePvE','FeintPvE','ManawardPvE','TemperaCoatPvE','TemperaGrassaPvE',
-       'MagickBarrierPvE','ReprisalPvE','RampartPvE','SentinelPvE','GuardianPvE','ShadowWallPvE',
-       'ShadowedVigilPvE','VengeancePvE','DamnationPvE','NebulaPvE','GreatNebulaPvE','BloodwhettingPvE',
-       'RawIntuitionPvE','ThrillOfBattlePvE','DarkMissionaryPvE','HeartOfLightPvE','DivineVeilPvE',
-       'PassageOfArmsPvE','ShieldSambaPvE','TacticianPvE','TroubadourPvE','TengentsuPvE','ThirdEyePvE',
-       'RiddleOfEarthPvE','BloodbathPvE','SecondWindPvE','ArcaneCrestPvE','DismantlePvE','SelfSufficiencePvE']
+# What counts as a mitigation is not listed here any more. It used to be 35 names typed out, which
+# is the ageing form Parnas calls lack of movement: the list was right when it was written, and a
+# job action added later was simply invisible to the scan without anything failing.
+#
+# The tree states it itself - every one of these actions names its own figure in its effect text -
+# and generate_defensive_values.py reads those texts into DefensiveValues.g.cs. Asking the generated
+# table is the capability check that replaces the enumeration.
+def load_mitigations():
+    table = os.path.join(os.path.dirname(__file__), '..', '..', '..',
+                         'RotationSolver.Basic', 'Data', 'DefensiveValues.g.cs')
+    names = []
+    try:
+        with open(table, encoding='utf-8') as handle:
+            for line in handle:
+                found = re.search(r'//\s*(\w+PvE)\s*$', line)
+                if found and '] = new(' in line:
+                    names.append(found.group(1))
+    except OSError:
+        return []
+    return names
+
+
+MIT = load_mitigations()
 # methods that run without any AutoStatus danger gate
 UNGATED = ['GeneralAbility','AttackAbility','EmergencyAbility','GeneralGCD','AttackGCD']
 

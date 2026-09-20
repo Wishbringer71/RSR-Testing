@@ -389,6 +389,86 @@ internal static class DataCenter
 
 	internal static bool InEffectTime => DateTime.Now >= EffectTime && DateTime.Now <= EffectEndTime;
 	internal static Dictionary<ulong, uint> HealHP { get; set; } = [];
+
+	// How much health one of our own healing actions actually restored, in points, per action id.
+	// Healing is an absolute figure just like damage, so it is stored as points and divided by the
+	// member's own maximum where it is read - the same member carries a different share of it.
+	//
+	// This exists because the potency in an effect text cannot be converted into points from here:
+	// the result depends on healing power, on the job gauge and on buffs, and it changes with every
+	// piece of gear. Asking the fight instead costs nothing - the effect handler already sees every
+	// heal we land, with the real number.
+	//
+	// Smoothed rather than overwritten, because a critical heal restores markedly more than an
+	// ordinary one and a single one of those must not move the estimate to where the next decision
+	// is wrong. The weight is even: the most recent landing counts as much as everything before it,
+	// so a gear change is followed within a few casts instead of being averaged away.
+	private static readonly Dictionary<uint, float> _observedHealPerCast = [];
+
+	internal static void RecordHealEffect(uint actionId, IEnumerable<uint> healedAmounts)
+	{
+		float sum = 0;
+		var count = 0;
+		foreach (var amount in healedAmounts)
+		{
+			// A heal that landed on a full target reports the overheal as 0 in the effect packet,
+			// which would drag the estimate towards zero and never recover. Only landings that
+			// actually restored something say what the action is worth.
+			if (amount == 0)
+			{
+				continue;
+			}
+			sum += amount;
+			count++;
+		}
+
+		if (count == 0)
+		{
+			return;
+		}
+
+		var perTarget = sum / count;
+		_observedHealPerCast[actionId] = _observedHealPerCast.TryGetValue(actionId, out var known) && known > 0
+			? (known + perTarget) / 2f
+			: perTarget;
+	}
+
+	/// <summary>
+	/// The healing one cast of this action was last seen to restore, in health points, or 0 when it
+	/// has not been observed yet. 0 means "unknown", never "heals nothing" - a caller that cannot
+	/// act on an unknown value keeps its previous behaviour instead of assuming one.
+	/// </summary>
+	public static float GetObservedHealPerCast(uint actionId)
+	{
+		return _observedHealPerCast.TryGetValue(actionId, out var known) ? known : 0f;
+	}
+
+	/// <summary>
+	/// The largest amount of health missing from any living party member, in points. This is the
+	/// figure a heal has to reach for none of it to be wasted on that member.
+	/// </summary>
+	public static float LargestMissingHp
+	{
+		get
+		{
+			float largest = 0;
+			foreach (var member in PartyMembers)
+			{
+				if (member.IsDead || member.MaxHp == 0 || member.CurrentHp >= member.MaxHp)
+				{
+					continue;
+				}
+
+				var missing = (float)(member.MaxHp - member.CurrentHp);
+				if (missing > largest)
+				{
+					largest = missing;
+				}
+			}
+			return largest;
+		}
+	}
+
 	internal static Dictionary<ulong, uint> ApplyStatus { get; set; } = [];
 	internal static uint MPGain { get; set; }
 
@@ -1745,6 +1825,14 @@ internal static class DataCenter
 		_actions.Clear();
 
 		AttackedTargets.Clear();
+
+		// The hold's record is per fight. Carrying it across would judge one boss by another's
+		// pattern - a fight where the hold was always right would keep it holding through a fight
+		// where it is always wrong, and vice versa.
+		_holdExpectsHitUntil = DateTime.MinValue;
+		_holdsVindicated = 0;
+		_holdsWasted = 0;
+
 		while (VfxDataQueue.TryDequeue(out _))
 		{ }
 		AllHostileTargets.Clear();
@@ -2401,6 +2489,179 @@ internal static class DataCenter
 	public static bool IsHostileCastingAOE =>
 		InCombat && (IsCastingAreaVfx() || (AllHostileTargets != null && IsAnyHostileCastingArea()));
 
+	/// <summary>
+	/// An enemy is casting an action whose measured area damage is large, that will reach the player,
+	/// and that lands within about one GCD.
+	/// </summary>
+	/// <remarks>
+	/// <para><b>Why this exists beside <see cref="IsHostileCastingAOE"/>.</b> That one routes through
+	/// <see cref="IsHostileCastingBase"/>, which drops every INTERRUPTIBLE cast. The reasoning behind
+	/// that is sound - an interruptible cast is meant to be interrupted, and mitigating it would spend
+	/// a cooldown on something that never lands. It holds only while somebody actually interrupts.
+	/// A Summoner has no interrupt; in a four-player dungeon with a tank who does not use Interject,
+	/// the cast lands anyway, and nothing answered it. That is the reported picture: "sometimes Radiant
+	/// Aegis and Addle go out on area casts, sometimes not".</para>
+	///
+	/// <para><b>Why it is not a return to what A9 removed.</b> A9 took out a fallback that raised the
+	/// defence from the ENEMY COUNT - no evidence of danger at all, and the owner reported it firing
+	/// with nothing happening. This asks the opposite: it requires a figure measured from an actual
+	/// landing, at or above what the largest barrier in the game absorbs. A cast nobody has been hit
+	/// by carries no figure and opens nothing.</para>
+	///
+	/// <para><b>What makes it possible now and not then.</b> The per-action damage share did not exist
+	/// when that fallback was removed, so coarseness had to be handled in the pre-filter. With the
+	/// size measured, the filter no longer has to carry that job alone.</para>
+	///
+	/// <para>Deliberately a separate property rather than a loosening of
+	/// <see cref="IsHostileCastingAOE"/>: that one also feeds <c>ObjectHelper.IsUnderThreat</c> and
+	/// through it the White Mage's Benediction guard. Widening it would move two paths at once.</para>
+	///
+	/// <para><b>This answers what is being cast, not what anyone wants done about it</b>, so the
+	/// setting that governs the mitigation decision is checked by its reader and not here. Built the
+	/// other way round first, and it was wrong twice over: the healing rule reads the same question
+	/// and would have been switched off by a setting about mitigating, and the recorded share -
+	/// which the healing rule needs - would never have been written while that setting was off. The
+	/// same coupling had already been found and removed from AreaCastIsWorthMitigating in the same
+	/// session; putting it straight back in a new property makes it a class, not a slip.</para>
+	/// </remarks>
+	public static bool IsHostileCastingLargeArea
+	{
+		get
+		{
+			if (!InCombat)
+			{
+				return false;
+			}
+
+			var targets = AllHostileTargets;
+			if (targets == null)
+			{
+				return false;
+			}
+
+			var actionSheet = Service.GetSheet<Action>();
+			if (actionSheet == null)
+			{
+				return false;
+			}
+
+			for (var i = 0; i < targets.Count; i++)
+			{
+				var h = targets[i];
+				try
+				{
+					if (h == null || h.GameObjectId == 0 || !h.IsCasting || !h.IsEnemy())
+					{
+						continue;
+					}
+
+					// The same one-GCD window IsHostileCastingBase uses at its far end, and for the
+					// same reason: answer shortly before the hit, not at the start of the cast. It
+					// also leaves the interrupt its chance - by this point it has happened or it will
+					// not happen at all.
+					var remaining = h.TotalCastTime - h.CurrentCastTime;
+					if (remaining <= 0f || remaining > GCDTime(1))
+					{
+						continue;
+					}
+
+					if (!OtherConfiguration.HostileCastingArea.Contains(h.CastActionId))
+					{
+						continue;
+					}
+
+					if (!OtherConfiguration.HostileCastingAreaPotential.TryGetValue(h.CastActionId, out var share)
+						|| share < LargeShieldShare)
+					{
+						continue;
+					}
+
+					var action = actionSheet.GetRow(h.CastActionId);
+					if (action.RowId == 0 || !AreaCastCanReachPlayer(h, action))
+					{
+						continue;
+					}
+
+					// Recorded here as well, and not only in AreaCastIsWorthMitigating, because this
+					// path never passes through it. Without this the healing rule would be blind to
+					// exactly the casts this property exists to catch: the defence would open and
+					// the heal would not - and the standing order is healing before mitigation.
+					_announcedAreaShare = share;
+					_announcedAreaShareTime = DateTime.Now;
+					_lastAnnouncedAreaAction = h.CastActionId;
+
+					return true;
+				}
+				catch (AccessViolationException ex)
+				{
+					PluginLog.Warning($"AccessViolation in IsHostileCastingLargeArea: {ex.Message}");
+				}
+			}
+
+			return false;
+		}
+	}
+
+	/// <summary>
+	/// An area cast is announced that will reach the player - <b>without</b> asking whether it is
+	/// worth mitigating. Records its measured share on the way.
+	/// </summary>
+	/// <remarks>
+	/// <para><see cref="IsHostileCastingAOE"/> carries a verdict inside it: <c>AreaCastIsWorthMitigating</c>
+	/// drops a cast that leaves everybody above <c>HealthAreaSpell</c>. That is the right question
+	/// for spending a cooldown, and the wrong one for every other reader, because it is taken at the
+	/// MITIGATION threshold.</para>
+	///
+	/// <para>The healing rule asks at its own, higher threshold (<c>HealthAreaAbility</c>, 0.75
+	/// against 0.65 in the shipped defaults). Reading the mitigation verdict would therefore lose it
+	/// exactly the band between the two: a hit that puts the party at 70% is "too small to mitigate"
+	/// and would have been too small to heal ahead of as well - although the heal flag itself would
+	/// have raised at that health. The rule would have been switched off by a decision that is not
+	/// its own.</para>
+	///
+	/// <para>Same shape as the two couplings already removed in this session - the recorded share
+	/// sitting behind <c>SkipMitigationForSmallAreaCasts</c>, and the mitigation setting sitting
+	/// inside <see cref="IsHostileCastingLargeArea"/>. Three of them is a class: <b>a recognition
+	/// must not contain a decision.</b></para>
+	/// </remarks>
+	public static bool IsHostileCastingAreaUnrated
+	{
+		get
+		{
+			var targets = AllHostileTargets;
+			if (!InCombat || targets == null)
+			{
+				return false;
+			}
+
+			for (var i = 0; i < targets.Count; i++)
+			{
+				var h = targets[i];
+				if (h == null)
+				{
+					continue;
+				}
+
+				if (IsHostileCastingBase(h, act =>
+				{
+					if (!OtherConfiguration.HostileCastingArea.Contains(act.RowId)
+						|| !AreaCastCanReachPlayer(h, act))
+					{
+						return false;
+					}
+
+					RecordAnnouncedAreaShare(act.RowId);
+					return true;
+				}))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+	}
+
 	private static bool IsAnyHostileCastingArea()
 	{
 		if (AllHostileTargets == null)
@@ -2814,6 +3075,244 @@ internal static class DataCenter
 	public static readonly ConcurrentDictionary<uint, DateTime> AreaMitigationSkipped = new();
 
 	/// <summary>
+	/// Every area action the pre-heal rule has raised the healing flag for, and when it last did.
+	/// </summary>
+	/// <remarks>
+	/// The counterpart probe to <see cref="AreaMitigationSkipped"/>, and it exists for a stated
+	/// reason: the owner tests changes by switching the new option ON, so a rule that cannot be told
+	/// apart from its own absence is not testable. Healing that arrives before a raidwide looks in
+	/// the fight exactly like healing that arrives for any other reason.
+	///
+	/// Actions, not calls - the question is asked every frame, so a counter would report the frame
+	/// rate. Diagnostic only and not persisted.
+	/// </remarks>
+	public static readonly ConcurrentDictionary<uint, DateTime> HealedAheadOfAreaCast = new();
+
+	/// <summary>
+	/// Every interruptible area action the defence was raised for because its measured share was
+	/// large, and when it last happened. Same purpose as the two above.
+	/// </summary>
+	public static readonly ConcurrentDictionary<uint, DateTime> MitigatedInterruptibleCast = new();
+
+	// The hold's own prediction, and whether the fight bore it out. Holding back says: "the event
+	// this prediction points at is not the small cast now running - something larger follows". That
+	// is a claim about the next few seconds, and the next few seconds answer it.
+	//
+	// This is the difference between a counter and a probe that decides. A counter would have to be
+	// read by somebody and reported back, which costs a fight, a reading and a round per figure -
+	// the owner's standing objection. This one scores itself: every hold is checked against what
+	// actually landed, and the rule stops holding once its own record says it is wrong.
+	private static DateTime _holdExpectsHitUntil = DateTime.MinValue;
+	private static int _holdsVindicated;
+	private static int _holdsWasted;
+
+	/// <summary>
+	/// How often holding a predicted mitigation was followed by a big hit, against how often it was
+	/// not. Diagnostic read-out of a figure the rule already acts on by itself.
+	/// </summary>
+	public static (int Vindicated, int Wasted) ProactiveHoldRecord => (_holdsVindicated, _holdsWasted);
+
+	/// <summary>
+	/// Whether the hold has earned the right to keep holding.
+	/// </summary>
+	/// <remarks>
+	/// <para>Starts open, because a rule that never fires cannot learn anything. From the first
+	/// scored hold it requires that holding has been right at least as often as it was wrong - a
+	/// simple majority, and no invented threshold: below parity the hold loses more mitigation than
+	/// it saves, which is the exact break-even of the trade it makes.</para>
+	///
+	/// <para>Not persisted. A fight is the unit that matters, and carrying a verdict from one fight
+	/// into another would judge one boss by another's pattern.</para>
+	/// </remarks>
+	public static bool ProactiveHoldIsEarningItsKeep
+	{
+		get
+		{
+			// A hold whose window ran out with nothing in it is settled here rather than waiting for
+			// the next hit to settle it: if nothing lands at all, no hit ever arrives to close it,
+			// and the wrong prediction would stay unscored forever. This property is read every
+			// frame the rule runs, so the window closes reliably.
+			if (_holdExpectsHitUntil != DateTime.MinValue && DateTime.Now > _holdExpectsHitUntil)
+			{
+				_holdsWasted++;
+				_holdExpectsHitUntil = DateTime.MinValue;
+			}
+
+			return _holdsVindicated + _holdsWasted == 0 || _holdsVindicated >= _holdsWasted;
+		}
+	}
+
+	/// <summary>
+	/// Records that a predicted mitigation was held, and until when a big hit would justify it.
+	/// </summary>
+	internal static void NoteProactiveHold(float window)
+	{
+		_holdExpectsHitUntil = DateTime.Now.AddSeconds(window);
+	}
+
+	/// <summary>
+	/// Called for every hit the player takes, to settle an open hold. A hit at or above the
+	/// large-barrier share inside the window is what the hold was waiting for.
+	/// </summary>
+	internal static void ScoreProactiveHold(float incomingShare)
+	{
+		if (_holdExpectsHitUntil == DateTime.MinValue)
+		{
+			return;
+		}
+
+		if (DateTime.Now > _holdExpectsHitUntil)
+		{
+			// The window closed with nothing big in it - the hold gave away a mitigation for nothing.
+			_holdsWasted++;
+			_holdExpectsHitUntil = DateTime.MinValue;
+			return;
+		}
+
+		if (incomingShare >= LargeShieldShare)
+		{
+			_holdsVindicated++;
+			_holdExpectsHitUntil = DateTime.MinValue;
+		}
+	}
+
+	/// <summary>
+	/// Every small area action a predicted mitigation was held back for, and when it last happened.
+	/// Same purpose as the two above: a mitigation that waits looks exactly like one that never
+	/// triggered, so without this the rule cannot be tested by switching it on.
+	/// </summary>
+	public static readonly ConcurrentDictionary<uint, DateTime> ProactiveMitigationHeld = new();
+
+	// How large the announced area cast is, as a share of the weakest member's maximum health, and
+	// when that was last established. This is the same figure AreaCastIsWorthMitigating already
+	// looks up to decide WHETHER to answer; kept here it also answers WITH WHAT.
+	//
+	// Held with a timestamp rather than cleared from somewhere else: the predicate runs while an
+	// enemy is casting and simply stops running when nothing is. A clearing point would have to be
+	// found and kept correct in a second place; an age does not.
+	private static float _announcedAreaShare;
+	private static DateTime _announcedAreaShareTime = DateTime.MinValue;
+
+	// Which action the recorded share belongs to, so a probe can name it rather than counting
+	// anonymously. Carried with the share and subject to the same lifetime.
+	private static uint _lastAnnouncedAreaAction;
+
+	// One GCD's worth. The figure describes the cast that is landing now, so it must not outlive it
+	// and steer the next decision; long enough for the defensive branch of the same window to read it.
+	private static readonly TimeSpan AnnouncedAreaShareLifetime = TimeSpan.FromSeconds(2.5);
+
+	/// <summary>
+	/// The share of the weakest party member's maximum health carried by the area cast that is
+	/// currently announced, or 0 when none is announced or its size has not been measured yet.
+	/// 0 means "unknown", never "harmless".
+	/// </summary>
+	public static float AnnouncedAreaShare =>
+		DateTime.Now - _announcedAreaShareTime <= AnnouncedAreaShareLifetime ? _announcedAreaShare : 0f;
+
+	/// <summary>
+	/// An area cast is running right now whose measured damage is small - small enough that the
+	/// reactive rule would not spend a cooldown on it. False when nothing is running, when the
+	/// running cast has never been measured, or when it is large.
+	/// </summary>
+	/// <remarks>
+	/// <para>The counterpart to <see cref="AreaCastIsWorthMitigating"/> for the PROACTIVE side.
+	/// BossModReborn answers when the next damage arrives, never how hard, and that is enough to
+	/// spend a cooldown on the wrong one of two hits in a row: reported from Eternal Queen's
+	/// opening, a small area cast followed by a big one, where the barrier is eaten by the first.</para>
+	///
+	/// <para>The size of a cast already on screen IS known, because it is measured per action. So a
+	/// rated small cast running now is the most likely referent of a prediction pointing at the
+	/// immediate future, and a proactive refresh can wait for the next one. A heuristic, and stated
+	/// as one: nothing here proves the prediction means this cast.</para>
+	///
+	/// <para><b>The exact question - which action is the prediction pointing at, so its rating can be
+	/// looked up - cannot be asked. Measured against BossmodReborn's own source on 20.09.2026, not
+	/// assumed:</b></para>
+	/// <list type="bullet">
+	/// <item><c>Timeline.NextRaidwideIn</c> returns
+	/// <c>module.StateMachine.NextTransitionWithFlag(StateHint.Raidwide)</c> - a transition in the
+	/// module's state machine that its author flagged as "a raidwide happens here". There is no cast
+	/// and no action id in it at all.</item>
+	/// <item><c>Hints.NextRaidwideDamageIn</c> returns the activation time of the first
+	/// <c>PredictedDamage</c> entry of that type, and that struct carries exactly three fields:
+	/// <c>Players</c> (a bitmask), <c>Activation</c> and <c>Type</c>. No action.</item>
+	/// <item>The prediction list is not exposed either - each endpoint returns the FIRST matching
+	/// entry. Even with sizes available, "two are coming and the second is the big one" could not be
+	/// read out, which is precisely the reported case.</item>
+	/// </list>
+	/// <para>So the rating cannot be looked up for a predicted event. What is running now is the only
+	/// size information available at that moment, and this is what it is worth.</para>
+	///
+	/// <para>"Small" is the same question the reactive rule asks - would this hit push anyone to
+	/// where the tree heals anyway - so the two sides cannot disagree about the same cast.</para>
+	/// </remarks>
+	public static bool AnnouncedHitIsSmall
+	{
+		get
+		{
+			var share = AnnouncedAreaShare;
+			if (share <= 0f || share >= LargeShieldShare)
+			{
+				return false;
+			}
+
+			return !AnnouncedHitDropsAnyoneBelow(Service.Config.HealthAreaSpell);
+		}
+	}
+
+	/// <summary>
+	/// The action id the currently recorded area share belongs to, or 0 when none is recorded.
+	/// </summary>
+	public static uint AnnouncedAreaAction =>
+		DateTime.Now - _announcedAreaShareTime <= AnnouncedAreaShareLifetime ? _lastAnnouncedAreaAction : 0u;
+
+	/// <summary>
+	/// Whether the announced area cast would put any living party member below the given share of
+	/// their maximum health. False when nothing is announced or its size has not been measured -
+	/// unknown is not "harmless", it is simply no reason to act.
+	/// </summary>
+	/// <remarks>
+	/// <para>This is the owner's second stage, the one that needs a figure nothing else supplies:
+	/// "die aktuelle hp liegt unter dem schadenswert. dann wäre aber eine heilung sinnvoll bis max
+	/// maxhp." Every healing threshold in the tree reads the health a member HAS; none of them reads
+	/// the health he will have when the cast that is already on screen lands. A member at 60% in
+	/// front of a 45% raidwide is above every threshold and dies to it.</para>
+	///
+	/// <para>The barrier counts here, and that is not a contradiction of A85. A85 removed the
+	/// barrier from the general healing threshold, because a barrier does not restore health - a
+	/// tank at 40% behind a shield is still at 40% once it expires unspent. This question is a
+	/// different one: does he survive THIS hit, the one being cast right now. Against that hit the
+	/// barrier is spent and does absorb it, so leaving it out would call for healing that the shield
+	/// has already paid for.</para>
+	/// </remarks>
+	public static bool AnnouncedHitDropsAnyoneBelow(float threshold)
+	{
+		var share = AnnouncedAreaShare;
+		if (share <= 0f)
+		{
+			return false;
+		}
+
+		var party = PartyMembers;
+		for (var i = 0; i < party.Count; i++)
+		{
+			var member = party[i];
+			if (member == null || member.IsDead || member.MaxHp == 0)
+			{
+				continue;
+			}
+
+			var buffer = member.GetEffectiveHp() / (float)member.MaxHp;
+			if (buffer - share < threshold)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>
 	/// Whether an incoming area cast is big enough that the party mitigation is worth its cooldown.
 	/// </summary>
 	/// <remarks>
@@ -2839,8 +3338,53 @@ internal static class DataCenter
 	/// only enters the arithmetic once an actual hit has been measured, and in content that is
 	/// repeated - an extreme trial, a savage fight in progression - that is one clear.
 	/// </remarks>
+	/// <summary>
+	/// What a large shield absorbs, as a share of maximum HP: the point from which an area hit counts
+	/// as a big one regardless of how healthy the party is.
+	/// </summary>
+	/// <remarks>
+	/// Not an invented number, and no longer a written-down one either: it is read from the effect
+	/// texts. The largest barrier in the tree that states its size as a share is The Blackest Night -
+	/// "absorbs damage totaling 25% of target's maximum HP" - and DefensiveValues.g.cs carries that
+	/// figure along with every other, generated from the same sheets and checked against them in CI.
+	///
+	/// It used to be a literal 0.25f with the source named in prose. That is the ageing form this
+	/// file has been caught by twice already: an earlier version of this remark said "five barriers"
+	/// and listed their row ids, and the generated table finds more than five. A patch that restates
+	/// a barrier, or a new job action with a larger one, now moves this threshold with it instead of
+	/// leaving a number behind that nothing reads as wrong.
+	///
+	/// The smaller barriers name 10%, 15% and 20%, which is the other end of the user's requirement:
+	/// below a small shield the hit only matters to someone already low. That end needs no constant,
+	/// because the buffer comparison below is exactly that question.
+	///
+	/// Concept 13 once dismissed the two-threshold form as "not implementable without invented
+	/// numbers, and not needed, because the buffer comparison answers the same question". Both halves
+	/// were wrong: the barriers state their share, and the buffer comparison answers a different
+	/// question - whether healing would be needed, not whether the hit is large.
+	/// </remarks>
+	private static float LargeShieldShare => DefensiveValues.LargestStatedBarrierShare;
+
+	// Kept separate from the verdict below, and called before it, for two reasons. The figure
+	// describes the incoming cast, not this rule's opinion of it - and a second reader, the healing
+	// flag, needs it whether or not the owner wants small casts mitigated. Recorded inside the
+	// verdict it sat behind SkipMitigationForSmallAreaCasts, which would have left that reader blind
+	// to every cast whenever the switch was off.
+	private static void RecordAnnouncedAreaShare(uint actionId)
+	{
+		if (OtherConfiguration.HostileCastingAreaPotential.TryGetValue(actionId, out var share)
+			&& share > 0f)
+		{
+			_announcedAreaShare = share;
+			_announcedAreaShareTime = DateTime.Now;
+			_lastAnnouncedAreaAction = actionId;
+		}
+	}
+
 	private static bool AreaCastIsWorthMitigating(uint actionId)
 	{
+		RecordAnnouncedAreaShare(actionId);
+
 		if (!Service.Config.SkipMitigationForSmallAreaCasts)
 		{
 			return true;
@@ -2852,29 +3396,29 @@ internal static class DataCenter
 			return true; // Unrated: behave exactly as before.
 		}
 
-		var party = PartyMembers;
-		if (party.Count == 0)
+		// Above the size of a large shield the hit is a big one, whatever the party's health - the
+		// user's requirement says so in as many words, and the party's health does not change how
+		// hard it lands. Without this arm the rule asks only whether healing would be needed, and a
+		// healthy party answers no to almost every raidwide: at a buffer of 1.0 against the area
+		// heal threshold of 0.65, mitigation would need a share above 0.35 to happen at all. That
+		// is what took Addle and Radiant Aegis out of the fight on Summoner.
+		if (share >= LargeShieldShare)
 		{
 			return true;
 		}
 
-		// Anyone the hit would push to where healing would be called for is reason enough. The
-		// barrier counts here because it absorbs this hit - unlike in the healing threshold, where
-		// it does not lower the need to heal (A85).
-		var threshold = Service.Config.HealthAreaSpell;
-		for (var i = 0; i < party.Count; i++)
+		if (PartyMembers.Count == 0)
 		{
-			var member = party[i];
-			if (member == null || member.IsDead || member.MaxHp == 0)
-			{
-				continue;
-			}
+			return true;
+		}
 
-			var buffer = member.GetEffectiveHp() / (float)member.MaxHp;
-			if (buffer - share < threshold)
-			{
-				return true;
-			}
+		// Anyone the hit would push to where healing would be called for is reason enough. The same
+		// question decides whether to heal ahead of the cast, so it is asked in one place - see
+		// AnnouncedHitDropsAnyoneBelow, including why the barrier counts here and not in the general
+		// healing threshold (A85).
+		if (AnnouncedHitDropsAnyoneBelow(Service.Config.HealthAreaSpell))
+		{
+			return true;
 		}
 
 		AreaMitigationSkipped[actionId] = DateTime.Now;
@@ -3100,6 +3644,32 @@ internal static class DataCenter
 	public static float BMRNextVulnerableEndIn { get; set; } = float.MaxValue;
 	public static float BMRNextDamageIn { get; set; } = float.MaxValue;
 	public static PredictedDamageType BMRNextDamageType { get; set; } = PredictedDamageType.None;
+
+	/// <summary>
+	/// Who the next predicted damage event hits, as BossModReborn's party bitmask. 0 when nothing is
+	/// predicted.
+	/// </summary>
+	/// <remarks>
+	/// Reads the same entry as <see cref="BMRNextDamageIn"/> and <see cref="BMRNextDamageType"/> -
+	/// BossMod sorts its prediction list by activation time and all three endpoints take the first
+	/// element, so the three describe one event. The type-specific endpoints behind
+	/// <see cref="BMRNextRaidwideIn"/> and <see cref="BMRNextTankbusterIn"/> search for the first
+	/// entry of THEIR type instead, which can be a different one - this mask does not belong to
+	/// those and must not be read alongside them.
+	/// </remarks>
+	public static ulong BMRNextDamagePlayers { get; set; }
+
+	/// <summary>
+	/// Whether the next predicted damage event includes the player.
+	/// </summary>
+	/// <remarks>
+	/// Bit 0, and that position is fixed rather than a guess: BossModReborn's <c>PartyState</c>
+	/// declares <c>PlayerSlot = 0</c>, so the player is always the first slot of its party list and
+	/// does not move with party order. The remaining bits - 1..7 party, 8..23 alliance, 24..63 other
+	/// allies - would need a mapping from BossMod's slot order to this tree's party list, which is
+	/// another unverified contract across the IPC boundary and is deliberately not made.
+	/// </remarks>
+	public static bool BMRNextDamageHitsPlayer { get; set; }
 
 	/// <summary>
 	/// BMR predicts a tankbuster inside the user's single-target mitigation window.

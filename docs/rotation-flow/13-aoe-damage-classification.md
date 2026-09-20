@@ -10,6 +10,16 @@ grob.** Eine Aktion, die zwei Prozent der Gesundheit nimmt, löste dieselbe Grup
 eine, die sechzig nimmt. Verbraucht wird dabei nicht der Schild, sondern die **Abklingzeit**: Eine auf
 eine Bagatelle gelegte Reflexion fehlt beim nächsten großen Einschlag.
 
+**Warum diese Liste überhaupt geführt wird — seine Begründung, wörtlich:** „bossmod liefert nicht für
+jeden boss werte, sondern nur für unterstützte module. und da ist der abdeckungsgrad in bossmod auch
+unterschiedlich. sich auf bossmod zu 100% zu verlassen ist fahrlässig. […] daher die eigene liste mit
+dem aoe-schadensausmaß.“
+
+**Die eigene Messung ist damit kein Zusatz zu BossModReborn, sondern die Grundlage**, auf die
+zurückzufallen ist, wo das fremde Plugin nichts weiß — und sie beantwortet eine Frage, die BMR
+überhaupt nicht stellt: **wie hart** der nächste Treffer ist. BMR nennt nur den Zeitpunkt. Was daraus
+für die proaktive Ebene folgt, steht in `08-mitigation-synergy.md`.
+
 **Vorgabe des Auftraggebers:** Das Schadenspotential jeder eingehenden Flächenaktion ist zu prüfen und
 **mitzuspeichern**. Was unterhalb eines geringen Schildes liegt, ist keine große Fläche, sondern eine
 geringe, die nur bei Gruppenmitgliedern mit wenig Gesundheit etwas auslöst; was oberhalb eines großen
@@ -37,14 +47,28 @@ behandeln wäre ein Totalausfall der Gruppenminderung.
 
 **Die Rechnung, die alles ersetzt, was sonst gesetzt werden müsste:**
 
-> **Effektiver Puffer** des Mitglieds (Gesundheit einschließlich Barriere) **minus** dem gespeicherten
-> Anteil seiner Maximalgesundheit. Bleibt das über der Schwelle, ab der der Baum von sich aus heilen
-> würde, ist nichts zu tun; unterschreitet es sie, wird gemindert.
+> **Erste Stufe:** Liegt der gespeicherte Anteil bei **0,25 oder darüber**, ist die Fläche groß, und
+> es wird gemindert — ohne Blick auf die Gesundheit der Gruppe. Der Wert ist die Deckung von The
+> Blackest Night aus ihrem eigenen Wirktext, also ein großer Schild.
+>
+> **Zweite Stufe, darunter:** **Effektiver Puffer** des Mitglieds (Gesundheit einschließlich Barriere)
+> **minus** dem gespeicherten Anteil seiner Maximalgesundheit. Bleibt das über der Schwelle, ab der
+> der Baum von sich aus heilen würde, ist nichts zu tun; unterschreitet es sie, wird gemindert.
 
-Die Frage lautet damit **„erzeugt dieser Einschlag Heilbedarf?"** und nicht „ist die Aktion groß". Das
-braucht keinen Trennwert, ist stimmig mit der Rangregel des Auftraggebers *Heilung vor Minderung* —
-gemindert wird, wo sonst geheilt werden müsste — und bringt seine Formulierung wörtlich hervor: Zwei
-Prozent drücken nur den unter die Schwelle, der ohnehin fast dort steht.
+**Beide Stufen zusammen sind nötig, und die erste ist die später nachgerüstete** (A108, C67): Allein
+mit der zweiten fragt die Regel nur, ob **Heilbedarf** entstünde, und bei gesunder Gruppe lautet die
+Antwort für fast jeden Raidwide nein. Gemindert werden soll aber, **bevor** Heilbedarf entsteht. Die
+zweite Stufe bleibt gleichwohl richtig für alles darunter: Dort ist die Rangregel *Heilung vor
+Minderung* maßgeblich — gemindert wird, wo sonst geheilt werden müsste — und sie bringt seine
+Formulierung wörtlich hervor: Zwei Prozent drücken nur den unter die Schwelle, der ohnehin fast dort
+steht.
+
+**Die Barriere zählt in dieser Rechnung mit, und das steht nicht im Widerspruch zu A85.** Dort wurde
+sie aus der **Heilschwelle** entfernt, weil sie keine Gesundheit herstellt — ein Tank bei 40 % steht
+bei 40 %, ob eine Barriere läuft oder nicht. Hier wird eine andere Frage gestellt: ob **dieser**
+angekündigte Treffer durchschlägt. Genau das verhindert eine laufende Barriere, also gehört sie in
+den Puffer. Dieselbe Größe, zwei Fragen, zwei Antworten — nachzulesen in
+`07-heal-target-priority.md`, Abschnitt „Abgrenzung zur Schildanrechnung".
 
 | Baustein | Stand |
 |---|---|
@@ -74,14 +98,27 @@ einen abgeschalteten Baustein als unwirksamen gemeldet.
 
 ## Wen die Unterdrückung erreicht
 
-Erhoben, nicht geschätzt: `AreaCastIsWorthMitigating` sitzt in `IsHostileCastingArea`, und diese Frage
-hat genau **vier** Leser — zwei, die etwas bewirken, und zwei Anzeigen.
+Erhoben, nicht geschätzt (Lauf vom 20.09.2026): `AreaCastIsWorthMitigating` sitzt in
+`IsHostileCastingArea`, und über `IsHostileCastingAOE` hat diese Frage **zwei** Leser, die etwas
+bewirken, und zwei Anzeigen.
 
 | Leser | Wirkung der Unterdrückung |
 |---|---|
 | `StateUpdater` → `AutoStatus.DefenseArea` (hinter `UseAoeDefense`) | die gemeinte: keine Gruppenminderung auf eine Bagatelle |
 | `ObjectHelper.IsUnderThreat`, zweiter Arm | die Bagatellfläche hält die Notfall-Vollheilung nicht mehr frei — **gewollt**, es ist der Fall aus der Rezz-Meldung |
 | Diagnosezeile der Gruppe, Feld `IsHostileCastingAOE` | keine, Anzeige |
+| Listenverwaltung, Spalte je Aktion | keine, Anzeige |
+
+**Ein dritter wirksamer Leser wurde erwogen und wieder abgetrennt, und das ist der Grund für
+`IsHostileCastingAreaUnrated`.** Die Vorausheilung sollte zunächst dieselbe Frage lesen. Sie arbeitet
+aber an ihrer **eigenen**, höheren Schwelle — `HealthAreaAbility` (0,75 im Code) gegen
+`HealthAreaSpell` (0,65), mit dem die Unterdrückung urteilt. Ein Treffer, der die Gruppe auf 70 %
+bringt, gilt damit als „zu klein zum Mindern"; die Heilflagge hätte bei genau diesem Stand aber
+ausgelöst. Die Heilung hätte also eine Entscheidung geerbt, die nicht ihre ist.
+
+**Daraus die allgemeine Form: eine Erkennung darf keine Entscheidung enthalten.** `IsHostileCastingAOE`
+trägt das Minderungsurteil in sich und ist deshalb nur für die Minderung die richtige Frage. Wer
+etwas anderes entscheidet, fragt die unbewertete Erkennung und legt seine eigene Schwelle an.
 
 **Kein unerwarteter Verbraucher, und der zweite ist der Grund, warum diese Frage gestellt werden
 musste:** Ein gelernter Flächencast, der zwei Prozent nimmt, hielt Benediction genauso frei wie einer,
@@ -95,6 +132,51 @@ beantwortet („bringt der Einschlag irgendwen unter die Schwelle"), `IsUnderThr
 Gerezzten. Das ist das Verhalten von vorher und durch diesen Baustein nicht verschärft; die
 mitgliedsgenaue Fassung steht unten als Chance.
 
+## Der Vorfilter davor: der unterbrechbare Cast
+
+**Bevor die Messung überhaupt gefragt wird, hat der Cast einen Filter zu passieren, und der ist der
+Engpass.** `IsHostileCastingBase` verlangt kumulativ: ein Gegner wirkt, der Cast ist **nicht
+unterbrechbar**, seine Gesamtzeit übersteigt einen GCD, und seine Restzeit liegt zwischen einem und
+zwei GCDs. Erst danach kommt die Id-Prüfung und die Größenbewertung.
+
+**Der Unterbrechbarkeitsfilter ist richtig gedacht und trägt nur unter einer Bedingung.** Ein
+unterbrechbarer Cast soll unterbrochen werden; ihn zu mindern gäbe eine Abklingzeit für etwas aus,
+das gar nicht einschlägt. Das gilt, **solange jemand unterbricht**. Der Beschwörer hat keinen
+Interrupt; in einer Viererinstanz mit einem Tank, der Interject nicht einsetzt, schlägt der Cast ein,
+und nichts hat geantwortet. Das ist die Spielbeobachtung des Auftraggebers — „mal wird Schimmerschild
+und Addle gecastet, mal nicht" —, und sie ist damit am Code erklärt.
+
+**Der BMR-Weg deckt einen Teil der Bosse ab, und nur einen Teil.** `BMRShouldRefreshBefore` verlangt
+`BMRActive` = `BMRHasActiveModule`. BossModReborn führt Module für die Kämpfe, für die jemand eines
+geschrieben hat, und deren Tiefe ist verschieden — **ein aktives Modul sagt nicht, dass es Raidwides
+führt.** Beim Auftraggeber ist `UseBmrTimeline` eingeschaltet (seine Angabe); Schimmerschild ist
+damit dort proaktiv gedeckt, wo ein Modul diese Ereignisart liefert, und sonst nicht. Bei Trash gibt
+es ohnehin kein Modul.
+
+**Beide Ausfälle sind still:** Sie kommen als `float.MaxValue` an, und jede Prüfung gegen ein
+Zeitfenster liest das als „es kommt nichts". Die Diagnoseseite „BMR Data" nennt deshalb jetzt das
+aktive Modul und je Ereignisart, ob überhaupt eine Vorhersage vorliegt. Die vollständige Erhebung,
+welche Regeln des Baums so hängen, steht in `08-mitigation-synergy.md`.
+
+**Die Antwort ist ein zweiter, eigener Weg** (`DataCenter.IsHostileCastingLargeArea`, hinter
+`Mitigate a big area cast even when it is interruptible`, **Vorgabewert aus**): Er fragt nicht nach
+Unterbrechbarkeit und nicht nach Mindestlänge, sondern nach dem **gemessenen** Anteil — mindestens
+das, was die größte Barriere des Spiels absorbiert — und nach demselben Ein-GCD-Fenster vor dem
+Einschlag.
+
+**Warum das kein Rückbau der Entscheidung aus A9 ist.** A9 hat auf seine Meldung hin einen Rückfall
+entfernt, der die Verteidigung aus der **Gegnerzahl** heraus hob: kein Gefahrenbeleg, und er stand
+dauernd an. Dieser Weg verlangt das Gegenteil — eine Zahl, die aus einem tatsächlichen Einschlag
+stammt. Eine Aktion, von der noch niemand getroffen wurde, trägt keine Zahl und öffnet nichts.
+
+**Und er war damals nicht baubar:** Den Anteil je Aktion gab es nicht, als der Rückfall entfernt
+wurde. Die Grobheit musste deshalb der Vorfilter allein tragen. Das ist der Grund, warum dieselbe
+Frage heute anders zu beantworten ist als im September.
+
+**Getrennt gehalten statt gelockert, und das ist Absicht:** `IsHostileCastingAOE` speist auch
+`ObjectHelper.IsUnderThreat` und darüber die Notfallheilung des Weißmagiers. Ein Lockern dort
+verschöbe zwei Pfade auf einmal. Der neue Weg hängt allein an der Verteidigungsflagge.
+
 ## Was im Kampf anders wird
 
 | Lage | Vorher | Nachher |
@@ -102,7 +184,8 @@ mitgliedsgenaue Fassung steht unten als Chance.
 | Gelernte Fläche, noch nie gemessen | volle Gruppenminderung | **unverändert** |
 | Gemessene Bagatelle (2 %), Gruppe gesund | volle Gruppenminderung, Abklingzeit weg | keine Minderung, Abklingzeit bleibt |
 | Dieselbe Bagatelle, ein Mitglied knapp über der Heilschwelle | volle Gruppenminderung | volle Gruppenminderung |
-| Gemessener Raidwide (40 %) | volle Gruppenminderung | **unverändert** |
+| Gemessene Fläche ab 25 %, Gruppe gesund | volle Gruppenminderung | **unverändert** — die Obergrenze entscheidet ohne Blick auf die Gesundheit |
+| Gemessene Fläche zwischen 10 % und 25 %, Gruppe gesund | volle Gruppenminderung | keine Minderung, solange der Treffer niemanden unter die Heilschwelle drückt |
 | Savage-Training, zweiter Versuch | jede Fläche gleich behandelt | die kleinen kosten nichts mehr |
 | Nach dem Kampf, Blick in die Listenverwaltung | nichts zu sehen | je Aktion der gemessene Anteil, und welche davon eine Minderung gespart hat |
 
@@ -141,23 +224,33 @@ Fortschreibung bei **bekannten** Ids: `HashSet.Add` fasst eine vorhandene Id nic
 diesen Zusatz bekäme kein Alteintrag je ein Potential — die ganze hybride Form wäre für die 850
 vorhandenen Einträge wirkungslos.
 
-## Warum der Maßstab nicht in Schilden gemessen wird
+## Der Maßstab: der gemessene Anteil, mit belegter Obergrenze
 
-Der Auftraggeber misst in Schilden, und der Gedanke ist richtig: Ein Schild ist die Menge, die ein
-Einschlag ohne Wirkung überstehen kann. Die Übersetzung in eine messbare Größe scheitert aber an der
-Beleglage.
+**Ab einem Anteil von 0,25 der Maximalgesundheit ist die Fläche groß, unabhängig vom Zustand der
+Gruppe.** Darunter entscheidet der Vergleich mit dem Puffer. Damit ist die Zwei-Schwellen-Form der
+Vorgabe umgesetzt, und zwar ohne eine einzige gesetzte Zahl: Die Obergrenze ist der größte Schild,
+der seine Größe im eigenen Wirktext als Anteil nennt.
 
-| Barriere | Angabe im Wirktext | umrechenbar? |
+| Barriere | Angabe im Wirktext | verwendbar? |
 |---|---|---|
-| The Blackest Night (1234) | „absorbs damage totaling **25 % of target's maximum HP**" | **ja**, unmittelbar ein Anteil |
+| The Blackest Night (`ActionId.resx` 1234) | „absorbs damage totaling **25 % of target's maximum HP**" | **ja** — der Maßstab für „großer Schild" |
+| Shake It Off (`ActionId.resx` 1209), drei Duty-Aktionen (`DutyAction.resx` 1908, 4484, 6715) | 15 %, 10 %, 15 %, 10 % der Maximalgesundheit | **ja** — das untere Ende, siehe unten |
 | Divine Benison (1404) | „absorbs damage equivalent to a heal of **500 potency**" | nein — Potenz, ohne Heilattribut nicht umrechenbar |
 | Adloquium, Succor, Eukrasian Diagnosis/Prognosis | „nullifies damage equaling **% of the amount of HP restored**" | nein — der Prozentsatz fehlt im Text, der geheilte Betrag hängt am Heilattribut |
 
-**Genau eine Barriere nennt ihre Größe als Anteil der Maximalgesundheit.** Jeder weitere Schild als
-Maßstab wäre eine Setzung, und das Heilattribut ist von hier nicht auslesbar und je Spieler
-verschieden. Die Zwei-Schwellen-Form der Vorgabe ist deshalb nicht ohne erfundene Zahlen umsetzbar —
-und sie wird nicht gebraucht, weil der Vergleich mit dem Puffer dieselbe Frage ohne Trennwert
-beantwortet.
+**Das untere Ende braucht keine eigene Konstante.** „Was unterhalb eines geringen Schildes liegt,
+löst nur bei Gruppenmitgliedern mit wenig Gesundheit etwas aus" — das ist wörtlich die Frage, die der
+Puffer-Vergleich stellt, und er stellt sie mitgliedsgenau statt an einem Trennwert. Eine zweite
+Konstante träfe deshalb keine Entscheidung, die nicht ohnehin fiele.
+
+**Warum die Obergrenze nicht entbehrlich ist — der Beleg stammt aus dem Spiel.** Ohne sie fragt die
+Regel allein, ob durch den Treffer **Heilbedarf** entstünde. Das ist eine andere Frage als die nach
+der Größe des Treffers, und bei gesunder Gruppe lautet ihre Antwort fast immer nein: Bei einem Puffer
+von 1,0 gegen die Flächenheilschwelle von 0,65 wird erst oberhalb eines Anteils von 0,35 gemindert,
+den ein gewöhnlicher Raidwide nicht erreicht. Der Auftraggeber hat die Folge gemeldet — beim
+Beschwörer fielen Addle und Schimmerschild mal, mal nicht, abhängig davon, ob die Aktion schon
+bewertet war. Minderung soll den Schadensstrom drosseln, **bevor** Heilbedarf entsteht; sie an das
+Entstehen von Heilbedarf zu knüpfen, kehrt ihren Zweck um.
 
 ## Warum der Anteil und nicht die Potenz
 
@@ -201,6 +294,8 @@ verschwinden kann.
 | „Reset RSR Plugin Settings" (globaler Knopf) | Werte bleiben — setzt nur `Service.Config` zurück |
 | „Forget recorded damage potential" | löscht sie, und das ist sein Zweck |
 | Unlesbare Datei beim Start | Werte bleiben, die Datei wird als `.corrupt` beiseitegelegt und gemeldet |
+| Kampfende, Zustandswechsel, Laden und Entladen (`DataCenter.ResetAllRecords`) | Werte bleiben — die Methode räumt das Laufzeitgedächtnis eines Kampfes ab und fasst keinen Speicher an |
+| **Speicher wird beim Start nicht geladen** | **Totalverlust**, still — behoben, s. u. |
 
 **Das Zurücksetzen der Liste lässt die Werte stehen** — Vorgabe des Auftraggebers: „es wäre schade,
 wenn dann auch die Erfahrungswerte weg wären." Die kuratierte Liste neu zu laden ist ein Download, die
@@ -214,6 +309,17 @@ Treffer kommt ungemildert an und misst sich. Eine **abgeschwächte** Aktion beh�
 dagegen für immer; die Folge ist Minderung, wo sie nicht mehr nötig wäre, also sicher, aber falsch.
 Der Ausweg ist das gezielte Verwerfen durch den Nutzer und kein automatischer Verfall — Verfall würde
 genau die Eigenschaft aufheben, die eine einzelne ungemilderte Beobachtung wertvoll macht.
+
+**Der schwerste Weg war keiner der erhobenen, sondern das Ausbleiben des Ladens** (A121). Der Speicher
+stand nur in `OtherConfiguration.Init()`, und die ruft niemand; gerufen wird `InitAsync`. Die Tabelle
+begann damit jede Sitzung leer, und weil ein Speichervorgang **die ganze** Tabelle schreibt, legte die
+erste Messung des Abends — spätestens das Entladen des Plugins — die leere Fassung über den
+gespeicherten Stand. Im Kampf war das Bild identisch mit „noch nichts gemessen": jede Aktion
+unbewertet, beide Stufen der Rechnung wirkungslos. **Beide Einstiegspunkte teilen sich jetzt eine
+einzige Ladeliste**, und `check_config_store_roundtrip.py` hält in der CI fest, dass kein Speicher
+einen Schreibweg ohne erreichbaren Leseweg hat. Die Lehre daran ist allgemeiner als der Fall: Ein
+Speicher, der geschrieben, aber nicht gelesen wird, ist gefährlicher als gar keiner — er ersetzt den
+Bestand durch das Nichts, das er für richtig hält.
 
 **Geschrieben wird über eine temporäre Datei.** `File.WriteAllText` kürzt zuerst und füllt danach; ein
 Absturz dazwischen hinterlässt unlesbares JSON, und der Ladepfad beantwortet das damit, leer
@@ -279,9 +385,45 @@ Flächenaktion läuft; mit dem Potential wird daraus „bringt dieser Einschlag 
 die Heilschwelle". Damit ist auch die Bagatellfläche erledigt, die heute die Notfall-Vollheilung
 blockiert.
 
+**Die Güte der eigenen Schätzung wird hier nicht gemessen — und die Bauform dafür steht schon.**
+Der abgelegte Anteil ist eine Vorhersage: „so hart schlägt diese Aktion beim nächsten Mal“. Ob sie
+zutrifft, prüft niemand; die Höchstwert-Fortschreibung korrigiert nur nach oben und nie nach
+unten. `08-mitigation-synergy.md` löst dieselbe Frage für die Restzeitschätzung bereits:
+`ScoreTtkForecast` hält jede Vorhersage gegen den tatsächlichen Verlauf, `GetCorrectedTTK` teilt
+den Fehler heraus. Auf diese Messung übertragen heißt das: beim nächsten Einschlag derselben
+Aktion den gespeicherten Anteil gegen den beobachteten halten und den Fehler **selbst herausrechnen** —
+nicht anzeigen und auf eine Auswertung warten. Vorgabe des Auftraggebers: Eine Sonde, deren Auswertung
+über das Modell läuft, kostet je Messwert einen Kampf, einen Bericht und eine Runde; zulässig ist nur,
+was sich selbst nachsteuert. Das ist
+**nicht gebaut**, und der Nutzen ist nicht bloß Diagnose: Ein Anteil, der durch eine zufällig
+laufende Minderung zu niedrig gemessen wurde, bleibt heute zu niedrig, bis ein ungeminderter
+Treffer ihn anhebt.
+
+**Wer den Verbraucher baut, löst mehr als eine Frage.** Welche das sind und welcher Baustein wie viele
+offene Punkte zugleich schließt, steht in `08-mitigation-synergy.md`, Abschnitt „Was ein Baustein
+mehrfach trägt“.
+
 **Dieselbe Frage stellt sich bei den Tankbustern.** `HostileCastingTank` trägt sie wörtlich — wie hart
 schlägt dieser zu —, und `HostileCastingKnockback` und `HostileCastingStop` dieselbe Struktur. Der
 Messpfad ist derselbe; was fehlt, ist je Liste ein eigener Speicher und die passende Rechnung.
+
+**Er erlaubt die Wahl des Mittels, nicht nur die Entscheidung über das Ob — Vorgabe des
+Auftraggebers:** „man könnte es auch so anpassen, dass die geeignete schadensverringerung bzw. das
+geeignete schild bei dem eintreffenden schaden gewählt wird." Heute ist die Reihenfolge der
+Abwehraktionen je Job fest verdrahtet, und die gemessene Größe entscheidet allein, ob diese Kette
+überhaupt geöffnet wird. Mit einem Wert auf beiden Seiten ließe sich stattdessen zuordnen: der
+Zehn-Prozent-Tick zieht das billige Mittel, der Vierzig-Prozent-Raidwide das stärkste verfügbare.
+
+**Die Messgröße dieses Konzepts ist zugleich die Eingangsgröße für die Wahl des Mittels.** Abgelegt
+wird der **höchste** Anteil im Effektsatz, und das ist bei gleichem absolutem Schaden der Spieler mit
+der geringsten Maximalgesundheit — genau die Bezugsgröße, die die Vorgabe des Auftraggebers zur
+Deckung nennt. Für die Wahl muss die Messung also nicht geändert werden, nur ihr Verbraucher.
+
+**Die Entscheidungsordnung selbst steht in `08-mitigation-synergy.md`**, Vorgabe 5 und der Abschnitt
+„Die Antwort auf einen eingehenden Treffer": Deckung in Höhe des Treffers, Heilung zuerst, sobald die
+aktuelle Gesundheit nicht reicht, und Barriere samt Minderung zusätzlich, wo auch die volle nicht
+reicht. Sie gilt nicht nur für Flächen — dieselbe Frage stellt sich beim Tankbuster —, deshalb steht
+sie dort und nicht hier.
 
 ## Konsequenzen
 
@@ -297,3 +439,10 @@ Signatur. Die Ergänzung ist additiv; wer sie nicht liest, merkt nichts.
 `DataCenter.IsHostileCastingArea`, beides Upstream-Code mit regelmäßiger Aktivität. Beide sind klein
 und stehen als eigene Blöcke; `check_emergency_heal_threat.py` meldet in der CI, wenn ein Merge die
 Rechnung oder ihren Rückfall auf „mindern" entfernt.
+
+## Offene Punkte zu diesem Konzept
+
+Sie stehen in `TODO.md` und sind dort unter der Überschrift des Eintrags mit **Konzept:** auf dieses
+Dokument gekennzeichnet — an **einer** Stelle statt in zweien, damit keine Kopie altert.
+`.github/scripts/audit/check_concept_links.py` listet sie je Konzept und nennt zugleich, wie viele
+Einträge überhaupt keinem Konzept zugeordnet sind.
