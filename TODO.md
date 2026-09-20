@@ -474,6 +474,34 @@ Die Zündregel für Lux Solaris vergleicht den größten Fehlbetrag der Gruppe m
 
 **Offen und nicht gebaut:** Die Messung bezieht sich auf den absoluten Heilbetrag; für Mitglieder mit kleinerem Lebenspool ist derselbe Betrag ein größerer Anteil. Die Regel vergleicht deshalb gegen den größten Fehlbetrag der Gruppe und nicht je Mitglied. Ob das im Spiel genügt, ist nicht entschieden.
 
+### Vorhergesagte Minderung bei zwei Treffern in Folge — im Spiel zu bestätigen · N
+
+**Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
+
+**Spielbeobachtung des Auftraggebers, Ewige Königin, Anfangsphase:** erst ein kleiner Flächenangriff, dann ein großer. Die BMR-Vorhersage feuert auf den ersten, Schimmerschild oder Tactician geht dafür hinaus, und beim zweiten ist die Barriere aufgebraucht oder die Minderung abgelaufen.
+
+**Behoben, hinter `Hold a predicted mitigation while a small cast is running` (Vorgabewert aus):** Läuft gerade ein bewertet **kleiner** Flächencast, hält `BMRShouldRefreshBefore` die Auffrischung zurück und nimmt das nächste Ereignis. Sonde: `ProactiveMitigationHeld`, je Aktion und in der Listenanzeige.
+
+**Zu beobachten:** ob Schimmerschild in dieser Anfangsphase jetzt den zweiten Angriff deckt statt des ersten — und ob die Regel in anderen Kämpfen eine Minderung zu lange zurückhält.
+
+**Als Heuristik gekennzeichnet:** Nichts belegt, dass die Vorhersage den Cast meint, der gerade läuft. BMR nennt den Zeitpunkt, nicht die Wucht; die Größe stammt aus der eigenen Messung des laufenden Casts. Läuft nichts oder ist der Cast nie gemessen worden, bleibt das Verhalten unverändert.
+
+### Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle · N, R
+
+**Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
+
+**Vorgabe des Auftraggebers:** „bossmod liefert nicht für jeden boss werte, sondern nur für unterstützte module. und da ist der abdeckungsgrad in bossmod auch unterschiedlich. sich auf bossmod zu 100% zu verlassen ist fahrlässig."
+
+**Erhoben:** Jede Stelle, die **vor** dem Einschlag mindert, liest `BMRShouldRefreshBefore` — alle vier Tanks (Nebula/Guardian/Damnation/Shadowed Vigil und Rampart), Barde, Maschinist und Tänzer (Troubadour, Tactician, Shield Samba) und der Beschwörer (Schimmerschild). Fällt BMR aus, fällt die ganze proaktive Ebene aus; es bleibt der reaktive Weg, der erst greift, wenn der Cast läuft und den Vorfilter passiert.
+
+**Zwei stille Ausfallarten:** kein Modul für diesen Kampf, oder ein Modul, das diese Ereignisart nicht führt. Beide kommen als `float.MaxValue` an und lesen sich wie „es kommt nichts". Die Diagnoseseite nennt jetzt Modul und Vorhersagelage je Ereignisart, sodass der Ausfall wenigstens ablesbar ist.
+
+**Der Weg dahin ist gebaut, aber nur an einer Stelle:** `IsHostileCastingLargeArea` nutzt den gemessenen Anteil je Aktion — die einzige BMR-unabhängige Vorhersagequelle im Baum. Dieselbe Quelle könnte die proaktive Schicht der übrigen Jobs tragen.
+
+**Seine Richtung ist benannt:** „daher die eigene liste mit dem aoe-schadensausmaß“ — die Messung ist als Ersatz für die fehlende Verlässlichkeit gedacht, nicht als Zusatz. Der Umbau der proaktiven Schicht auf diese Quelle ist damit keine offene Richtungsfrage mehr, sondern eine Frage von Umfang und Reihenfolge.
+
+**Nicht bearbeitet, und die Gründe stehen gegeneinander:** Dafür spricht, dass die Messung ohne Fremdplugin auskommt und dass sie bereits vorliegt. Dagegen spricht der Betroffenenkreis — es sind acht Rotationsdateien plus die gemeinsamen Helfer, und die Wirkung ist von hier aus nicht zu belegen. Außerdem liegt der Beschwörer als einziger von ihm gespielter Job bereits versorgt vor. **Empfehlung: erst nach einer Spielbeobachtung zum gebauten Weg entscheiden.**
+
 ### Zielüberschreibungen nach Punkten bei Dunkelritter und Revolverklinge — erfasst, Entscheidung offen · N, U
 
 **Konzept:** `docs/rotation-flow/07-heal-target-priority.md`, `docs/rotation-flow/10-drk-blackest-night.md`
@@ -496,7 +524,8 @@ Die Entscheidung berührt die dokumentierte Begründung in `10-drk-blackest-nigh
 
 | Lage | Radiant Aegis | Addle |
 |---|---|---|
-| **Boss** (Modul aktiv) | über `GeneralAbility` gedeckt — `BMRShouldRefreshBefore(BMRRaidwideIn, 30 s, …)`; zusätzlich öffnet `BMRNextRaidwideIn` die Verteidigungsflagge | über `ShouldSustainMitigationDebuff`, erster Zweig (`BMRDamageIn`) |
+| **Boss mit Modul, das Raidwides führt** | über `GeneralAbility` — `BMRShouldRefreshBefore(BMRRaidwideIn, 30 s, …)`; zusätzlich öffnet `BMRNextRaidwideIn` die Verteidigungsflagge | über `ShouldSustainMitigationDebuff`, erster Zweig (`BMRDamageIn`) |
+| **Boss ohne Modul oder mit Modul ohne Raidwide-Einträge** | wie Trash: nur der Vorfilter-Weg | zweiter Zweig (Gegnerzahl), bei gesetzter Verteidigungsflagge |
 | **Trash** (kein Modul) | nur über `AutoStatus.DefenseArea` und dessen Cast-Vorfilter | zweiter Zweig ohne BMR: `NumberOfHostilesInRange >= MitigationSustainHostileCount` und Status läuft ab — **aber** weiterhin nur bei gesetzter Verteidigungsflagge |
 
 **Für Trash bleibt der Befund bestehen**, und der neu gebaute Weg zielt genau dorthin: Kein Modul heißt keine Vorhersage, und der Vorfilter verwirft unterbrechbare Casts.

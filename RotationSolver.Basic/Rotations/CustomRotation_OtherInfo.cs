@@ -1570,6 +1570,31 @@ public partial class CustomRotation
 			return false;
 		}
 
+		// BossModReborn answers WHEN, never HOW HARD, and spending on the wrong one of two hits in a
+		// row is the same loss as not spending at all.
+		//
+		// Reported from play, Eternal Queen's opening: a small area cast, then a big one. The
+		// prediction fires on the first, Radiant Aegis or Tactician goes out for it, and by the time
+		// the big one lands the barrier is spent or the debuff has expired. A barrier is the clearer
+		// case - it absorbs points, so a small hit eats it outright.
+		//
+		// The size IS known for a cast that is already on screen: it is measured per action. So when
+		// a rated small area cast is running right now, the event the prediction is pointing at is
+		// most likely that one, and this refresh waits for the next. Where nothing is running, or
+		// the running cast has never been measured, no claim is made and the behaviour is unchanged.
+		//
+		// This is the hole that the size rating left open: the reactive path has asked "is this hit
+		// worth a cooldown" since A108, the proactive path never did.
+		if (Service.Config.HoldProactiveMitigationForSmallCast && DataCenter.AnnouncedHitIsSmall)
+		{
+			var held = DataCenter.AnnouncedAreaAction;
+			if (held != 0)
+			{
+				DataCenter.ProactiveMitigationHeld[held] = DateTime.Now;
+			}
+			return false;
+		}
+
 		var chara = statusFromSelf ? Player : target;
 		return chara != null && chara.WillStatusEnd(predictedIn, statusFromSelf, statusIDs);
 	}

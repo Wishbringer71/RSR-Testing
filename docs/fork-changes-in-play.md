@@ -8,28 +8,28 @@ everything else is established in the code and compiled, not yet measured at a d
 ## Party mitigation answers raidwides again
 
 `Skip mitigation for small area casts` spares the cooldown when an area hit is too small to
-matter. Until this build it asked one question only — would this hit push anyone to where
-healing is called for — and a healthy party answered no to almost every raidwide, so Addle
-and Radiant Aegis stopped going out on Summoner. Mitigation is meant to throttle the damage
-*before* a need to heal appears, so that question was the wrong one on its own.
+matter. It asked one question only — would this hit push anyone to where healing is called for —
+and a healthy party answered no to almost every raidwide, so Addle and Radiant Aegis stopped going
+out on Summoner. Mitigation is meant to throttle the damage *before* a need to heal appears.
 
-An area action that costs **25 % of maximum health or more** is now treated as a big hit
-whatever the party's health. The figure is not set by hand: it is what The Blackest Night
-states it absorbs. Below it the buffer comparison still decides, so small repeated ticks keep
-costing no cooldown while the party is healthy.
+An area action costing **25 % of maximum health or more** is now a big hit whatever the party's
+health. The figure is read from the effect texts — it is what the largest barrier in the game
+absorbs — not set by hand. Below it the buffer comparison still decides, so small repeated ticks
+keep costing no cooldown while the party is healthy.
 
 - **An interruptible cast can be mitigated too** — `Mitigate a big area cast even when it is
-  interruptible`, **off by default**. Every area question drops interruptible casts, on the
-  reasoning that they get interrupted. In a dungeon where nobody does, the hit lands unanswered —
-  and a Summoner has no interrupt to offer. With this on, a cast whose measured damage reaches the
-  large-barrier figure raises the defence anyway, within a GCD of landing. Unmeasured and small
-  casts are unaffected, and the healer's threat detection is a separate path that does not widen
-  with it.
+  interruptible`, **off by default**. Area questions drop interruptible casts, because those are
+  meant to be interrupted. In a dungeon where nobody does — and a Summoner has no interrupt — the
+  hit lands unanswered. A cast measured at the large-barrier figure now raises the defence anyway,
+  within a GCD of landing.
+- **A predicted mitigation is not spent on the small hit before the big one** — `Hold a predicted
+  mitigation while a small cast is running`, **off by default**. BossMod gives the timing of the
+  next event, not its size, so in an opening with a small cast ahead of a heavy one the barrier is
+  eaten by the first. It now waits while a measured small cast runs.
 - **Healing ahead of an announced area cast** — `Heal ahead of an announced area cast`, **off by
-  default**. Every threshold reads the health a member has, not the health he will have once the
-  cast already on screen lands: a party at 60 % in front of a 45 % raidwide counts as healthy until
-  it kills somebody. The measured size now raises the area heal beforehand, counting an existing
-  barrier against the hit it absorbs.
+  default**. Thresholds read the health a member has, not what he will have once the cast on screen
+  lands: 60 % in front of a 45 % raidwide counts as healthy until it kills him. An existing barrier
+  counts against the hit it absorbs.
 
 ## Healing — when it lands
 
@@ -98,8 +98,8 @@ costing no cooldown while the party is healthy.
 - **Self-healing for damage dealers** (Second Wind, Bloodbath) across ten jobs, where the
   role actions were declared and never used.
 - **The BossModReborn timeline is only read when it is switched on.**
-- **Area actions are measured by how hard they hit**, not only recognised as area actions;
-  the list window shows the share of maximum health per action.
+- **Area actions are measured by how hard they hit**, not only recognised as such; the list
+  window shows the share per action, and which rules acted on it.
 
 ## Tank self-protection
 

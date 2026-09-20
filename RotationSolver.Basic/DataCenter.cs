@@ -3086,6 +3086,13 @@ internal static class DataCenter
 	/// </summary>
 	public static readonly ConcurrentDictionary<uint, DateTime> MitigatedInterruptibleCast = new();
 
+	/// <summary>
+	/// Every small area action a predicted mitigation was held back for, and when it last happened.
+	/// Same purpose as the two above: a mitigation that waits looks exactly like one that never
+	/// triggered, so without this the rule cannot be tested by switching it on.
+	/// </summary>
+	public static readonly ConcurrentDictionary<uint, DateTime> ProactiveMitigationHeld = new();
+
 	// How large the announced area cast is, as a share of the weakest member's maximum health, and
 	// when that was last established. This is the same figure AreaCastIsWorthMitigating already
 	// looks up to decide WHETHER to answer; kept here it also answers WITH WHAT.
@@ -3111,6 +3118,39 @@ internal static class DataCenter
 	/// </summary>
 	public static float AnnouncedAreaShare =>
 		DateTime.Now - _announcedAreaShareTime <= AnnouncedAreaShareLifetime ? _announcedAreaShare : 0f;
+
+	/// <summary>
+	/// An area cast is running right now whose measured damage is small - small enough that the
+	/// reactive rule would not spend a cooldown on it. False when nothing is running, when the
+	/// running cast has never been measured, or when it is large.
+	/// </summary>
+	/// <remarks>
+	/// <para>The counterpart to <see cref="AreaCastIsWorthMitigating"/> for the PROACTIVE side.
+	/// BossModReborn answers when the next damage arrives, never how hard, and that is enough to
+	/// spend a cooldown on the wrong one of two hits in a row: reported from Eternal Queen's
+	/// opening, a small area cast followed by a big one, where the barrier is eaten by the first.</para>
+	///
+	/// <para>The size of a cast already on screen IS known, because it is measured per action. So a
+	/// rated small cast running now is the most likely referent of a prediction pointing at the
+	/// immediate future, and a proactive refresh can wait for the next one. A heuristic, and stated
+	/// as one: nothing here proves the prediction means this cast.</para>
+	///
+	/// <para>"Small" is the same question the reactive rule asks - would this hit push anyone to
+	/// where the tree heals anyway - so the two sides cannot disagree about the same cast.</para>
+	/// </remarks>
+	public static bool AnnouncedHitIsSmall
+	{
+		get
+		{
+			var share = AnnouncedAreaShare;
+			if (share <= 0f || share >= LargeShieldShare)
+			{
+				return false;
+			}
+
+			return !AnnouncedHitDropsAnyoneBelow(Service.Config.HealthAreaSpell);
+		}
+	}
 
 	/// <summary>
 	/// The action id the currently recorded area share belongs to, or 0 when none is recorded.

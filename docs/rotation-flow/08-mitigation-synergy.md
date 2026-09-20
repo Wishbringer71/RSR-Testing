@@ -157,6 +157,68 @@ still nie gefeuert haette.
 eines angekuendigten Treffers, ist Lux Solaris der Zweig, der sie bedient — und der Wurf faellt
 **vor** dem Einschlag statt danach.
 
+## Die proaktive Schicht haengt fast vollstaendig an BossModReborn
+
+**Vorgabe des Auftraggebers:** „bossmod liefert nicht für jeden boss werte, sondern nur für
+unterstützte module. und da ist der abdeckungsgrad in bossmod auch unterschiedlich. sich auf bossmod
+zu 100% zu verlassen ist fahrlässig."
+
+**Erhoben, nicht geschaetzt** (Lauf vom 20.09.2026): Der Baum kennt zwei Ebenen der Abwehr, und die
+Trennung verlaeuft genau entlang der Frage, woher die Vorhersage kommt.
+
+| Ebene | Ausloeser | Quelle | Faellt aus, wenn |
+|---|---|---|---|
+| **proaktiv** — mindern, **bevor** etwas ankommt | `BMRShouldRefreshBefore(BMRTankbusterIn \| BMRRaidwideIn, …)` bei allen vier Tanks, bei Barde, Maschinist, Taenzer und beim Beschwoerer (Schimmerschild) | ausschliesslich BMR | kein Modul, oder ein Modul ohne diese Ereignisart |
+| **reaktiv** — antworten, wenn der Cast **laeuft** | `IsHostileCastingAOE`, `IsHostileCastingToTank`, `IsHostileCastingTankBusterAtMe`, Gegnerzahl in `ShouldSustainMitigationDebuff` | eigene Beobachtung | der Cast ist unterbrechbar, zu kurz, oder ausserhalb des Ein-GCD-Fensters |
+
+**Kein Alleinstand, aber eine vollstaendige Ebene.** Jede proaktive Stelle hat einen reaktiven
+Nachbarn, die Abwehr faellt also nicht aus — sie kommt **spaeter**, naemlich erst, wenn der Cast
+schon laeuft und den Vorfilter passiert hat. Das ist der Unterschied zwischen „vor dem Einschlag
+gedeckt" und „waehrend des Einschlags gedeckt".
+
+**Der Ausfall ist still, und das ist der eigentliche Mangel.** Beide Ausfallarten — kein Modul, oder
+ein Modul, das Raidwides nicht fuehrt — erreichen den Baum als `float.MaxValue`, und jede Pruefung
+gegen ein Zeitfenster liest das als „es kommt nichts". Eine ausbleibende Minderung sieht damit aus
+wie ein ruhiger Kampf. Die Diagnoseseite „BMR Data" nennt deshalb jetzt das aktive Modul und, je
+Ereignisart, ob es dafuer ueberhaupt eine Vorhersage liefert.
+
+**Seine Begruendung, woertlich:** „daher die eigene liste mit dem aoe-schadensausmaß.“ Die Messung je
+Aktion ist als **Ersatz** fuer die fehlende Verlaesslichkeit gedacht, nicht als Zusatz — und sie
+beantwortet zudem eine Frage, die BMR gar nicht stellt: wie hart der Treffer ist.
+
+**Die eigene Messung ist die einzige BMR-unabhaengige Vorhersagequelle im Baum**, und sie ist bisher
+an genau einer Stelle proaktiv verdrahtet: `IsHostileCastingLargeArea` (Konzept 13) liest den
+gemessenen Anteil je Aktion und braucht dafuer kein fremdes Plugin. Dass dieselbe Quelle die
+proaktive Schicht der uebrigen Jobs tragen koennte, ist erfasst und nicht gebaut — `TODO.md`.
+
+### BMR sagt wann, nicht wie hart — und daran wird die Abklingzeit verschenkt
+
+**Spielbeobachtung des Auftraggebers, Ewige Koenigin, Anfangsphase:** zwei Flaechenangriffe
+nacheinander, erst ein kleiner, dann ein grosser. Die Vorhersage feuert auf den ersten, Schimmerschild
+oder Tactician geht dafuer hinaus, und beim zweiten ist die Barriere aufgebraucht oder die Minderung
+abgelaufen.
+
+**Die Ursache steht in der Bedingung selbst.** `BMRShouldRefreshBefore` prueft die **Zeit** bis zum
+naechsten Ereignis und ob der eigene Status bis dahin abgelaufen waere — mehr nicht. Eine Groesse
+kommt darin nicht vor, und BMR liefert auch keine: Die Schnittstelle nennt den Zeitpunkt, nicht die
+Wucht. **Das ist das Loch, das die Groessenbewertung offen gelassen hat:** Der reaktive Weg fragt seit
+A108 „ist dieser Treffer eine Abklingzeit wert"; der proaktive hat es nie gefragt.
+
+**Eine Barriere ist dabei der klarere Fall als eine Minderung**, und das folgt aus dem Unterschied,
+den dieses Konzept ohnehin fuehrt: Sie gibt **feste Punkte** aus, also frisst ein kleiner Treffer sie
+ganz auf. Eine Minderung skaliert mit dem Treffer und geht nicht verloren — sie laeuft nur ab, bevor
+der grosse kommt.
+
+**Die Groesse eines laufenden Casts ist bekannt.** Sie wird je Aktion gemessen. Laeuft also gerade
+ein bewertet **kleiner** Flaechencast, ist er der wahrscheinlichste Gegenstand einer Vorhersage, die
+auf die unmittelbare Zukunft zeigt — und die proaktive Auffrischung kann auf das naechste Ereignis
+warten. Gebaut hinter `Hold a predicted mitigation while a small cast is running`, **Vorgabewert
+aus**, mit `ProactiveMitigationHeld` als Sonde.
+
+**Als Heuristik gekennzeichnet, nicht als Beweis:** Nichts hier belegt, dass die Vorhersage den Cast
+meint, der gerade laeuft. Laeuft nichts, oder ist der laufende Cast nie gemessen worden, wird keine
+Aussage getroffen und die Vorhersage wie bisher befolgt.
+
 ## Wann eine verfallende Heilung zuendet
 
 **Die Heilschwellen sind fuer die teure Heilung eines Heilers gebaut, und fuer eine verfallende

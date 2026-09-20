@@ -3961,6 +3961,18 @@ public partial class RotationConfigWindow : Window
 						+ $"{DataCenter.HealedAheadOfAreaCast.Count} action(s)");
 				}
 
+				if (!Service.Config.HoldProactiveMitigationForSmallCast)
+				{
+					ImGui.TextColored(ImGuiColors.DalamudGrey,
+						"Predicted mitigations follow the timing alone: \"Hold a predicted mitigation "
+						+ "while a small cast is running\" is off.");
+				}
+				else
+				{
+					ImGui.Text("Predicted mitigation held for a small cast, this session: "
+						+ $"{DataCenter.ProactiveMitigationHeld.Count} action(s)");
+				}
+
 				if (!Service.Config.MitigateBigAreaCastsEvenIfInterruptible)
 				{
 					ImGui.TextColored(ImGuiColors.DalamudGrey,
@@ -3982,6 +3994,7 @@ public partial class RotationConfigWindow : Window
 					DataCenter.AreaMitigationSkipped.Clear();
 					DataCenter.HealedAheadOfAreaCast.Clear();
 					DataCenter.MitigatedInterruptibleCast.Clear();
+					DataCenter.ProactiveMitigationHeld.Clear();
 				}
 				ImguiTooltips.HoveredTooltip("Kept when the list itself is reset, because these values "
 					+ "cost runs in the game rather than a download. Clear them when a patch has "
@@ -4096,6 +4109,10 @@ public partial class RotationConfigWindow : Window
 				if (DataCenter.MitigatedInterruptibleCast.ContainsKey(action.RowId))
 				{
 					label += ", mitigated although interruptible";
+				}
+				if (DataCenter.ProactiveMitigationHeld.ContainsKey(action.RowId))
+				{
+					label += ", predicted mitigation held";
 				}
 			}
 			_ = ImGui.Selectable(label);
@@ -5434,6 +5451,35 @@ public partial class RotationConfigWindow : Window
 
 	private static void DrawBMRData()
 	{
+		// What this page has to answer first, because everything proactive in the tree hangs on it:
+		// is a module loaded here at all, and is it feeding damage predictions? BossModReborn covers
+		// the fights somebody wrote a module for, and the depth of those modules differs - a module
+		// can be active and still say nothing about raidwides. Both cases arrive as float.MaxValue,
+		// which reads as "nothing is coming", so the failure is silent and looks exactly like a
+		// quiet fight. Without these lines, a mitigation that never fires cannot be told from a
+		// fight that never needed one.
+		if (!Service.Config.UseBmrTimeline)
+		{
+			ImGui.TextColored(ImGuiColors.DalamudGrey, "Timeline integration is off: no prediction is read.");
+		}
+		else if (!DataCenter.BMRHasActiveModule)
+		{
+			ImGui.TextColored(ImGuiColors.DalamudYellow,
+				"No active module here - every proactive mitigation that reads a prediction is idle. "
+				+ "Reactive paths (a cast actually detected, enemy count) still work.");
+		}
+		else
+		{
+			ImGui.TextColored(ImGuiColors.ParsedGreen, $"Active module: {DataCenter.BMRActiveModuleName ?? "(unnamed)"}");
+
+			// A module without timeline entries for these is the case this page exists for.
+			var raidwide = DataCenter.BMRNextRaidwideIn;
+			var tankbuster = DataCenter.BMRNextTankbusterIn;
+			ImGui.Text($"Next raidwide in: {(raidwide >= float.MaxValue ? "not predicted by this module" : $"{raidwide:F1}s")}");
+			ImGui.Text($"Next tankbuster in: {(tankbuster >= float.MaxValue ? "not predicted by this module" : $"{tankbuster:F1}s")}");
+		}
+
+		ImGui.Separator();
 		ImGui.Text($"Cooldown Planner IPC Enabled: {BMRPlan_IPCSubscriber.IsEnabled}");
 		ImGui.Text($"BMRPlannedActionsCount: {DataCenter.BMRPlannedActions.Count}");
 		ImGui.Text($"BMRForceCancelCast: {DataCenter.BMRForceCancelCast}");

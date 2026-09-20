@@ -10,6 +10,16 @@ grob.** Eine Aktion, die zwei Prozent der Gesundheit nimmt, löste dieselbe Grup
 eine, die sechzig nimmt. Verbraucht wird dabei nicht der Schild, sondern die **Abklingzeit**: Eine auf
 eine Bagatelle gelegte Reflexion fehlt beim nächsten großen Einschlag.
 
+**Warum diese Liste überhaupt geführt wird — seine Begründung, wörtlich:** „bossmod liefert nicht für
+jeden boss werte, sondern nur für unterstützte module. und da ist der abdeckungsgrad in bossmod auch
+unterschiedlich. sich auf bossmod zu 100% zu verlassen ist fahrlässig. […] daher die eigene liste mit
+dem aoe-schadensausmaß.“
+
+**Die eigene Messung ist damit kein Zusatz zu BossModReborn, sondern die Grundlage**, auf die
+zurückzufallen ist, wo das fremde Plugin nichts weiß — und sie beantwortet eine Frage, die BMR
+überhaupt nicht stellt: **wie hart** der nächste Treffer ist. BMR nennt nur den Zeitpunkt. Was daraus
+für die proaktive Ebene folgt, steht in `08-mitigation-synergy.md`.
+
 **Vorgabe des Auftraggebers:** Das Schadenspotential jeder eingehenden Flächenaktion ist zu prüfen und
 **mitzuspeichern**. Was unterhalb eines geringen Schildes liegt, ist keine große Fläche, sondern eine
 geringe, die nur bei Gruppenmitgliedern mit wenig Gesundheit etwas auslöst; was oberhalb eines großen
@@ -136,10 +146,17 @@ Interrupt; in einer Viererinstanz mit einem Tank, der Interject nicht einsetzt, 
 und nichts hat geantwortet. Das ist die Spielbeobachtung des Auftraggebers — „mal wird Schimmerschild
 und Addle gecastet, mal nicht" —, und sie ist damit am Code erklärt.
 
-**Bei einem Boss greift daneben der BMR-Weg, bei Trash nicht.** `BMRShouldRefreshBefore` verlangt
-`BMRActive` = `BMRHasActiveModule`; BossModReborn lädt Module für Bosse, nicht für Trash. Beim
-Auftraggeber ist `UseBmrTimeline` **eingeschaltet** (seine Angabe), Radiant Aegis ist am Boss also
-über `GeneralAbility` gedeckt. Der hier beschriebene Engpass ist damit der **Trash**-Fall.
+**Der BMR-Weg deckt einen Teil der Bosse ab, und nur einen Teil.** `BMRShouldRefreshBefore` verlangt
+`BMRActive` = `BMRHasActiveModule`. BossModReborn führt Module für die Kämpfe, für die jemand eines
+geschrieben hat, und deren Tiefe ist verschieden — **ein aktives Modul sagt nicht, dass es Raidwides
+führt.** Beim Auftraggeber ist `UseBmrTimeline` eingeschaltet (seine Angabe); Schimmerschild ist
+damit dort proaktiv gedeckt, wo ein Modul diese Ereignisart liefert, und sonst nicht. Bei Trash gibt
+es ohnehin kein Modul.
+
+**Beide Ausfälle sind still:** Sie kommen als `float.MaxValue` an, und jede Prüfung gegen ein
+Zeitfenster liest das als „es kommt nichts". Die Diagnoseseite „BMR Data" nennt deshalb jetzt das
+aktive Modul und je Ereignisart, ob überhaupt eine Vorhersage vorliegt. Die vollständige Erhebung,
+welche Regeln des Baums so hängen, steht in `08-mitigation-synergy.md`.
 
 **Die Antwort ist ein zweiter, eigener Weg** (`DataCenter.IsHostileCastingLargeArea`, hinter
 `Mitigate a big area cast even when it is interruptible`, **Vorgabewert aus**): Er fragt nicht nach

@@ -1070,6 +1070,37 @@ internal partial class Configs : IPluginConfiguration
 		Filter = HealingActionCondition, Section = 1)]
 	public bool MitigateBigAreaCastsEvenIfInterruptible { get; set; } = false;
 
+	// BossModReborn answers WHEN the next damage lands, never HOW HARD. Every proactive mitigation in
+	// the tree reads that timing and nothing else, so two hits in a row are answered on the first
+	// one regardless of which is worse.
+	//
+	// Reported from play, Eternal Queen's opening: a small area cast, then a big one. The prediction
+	// fires on the first, Radiant Aegis or Tactician is spent on it, and the big one arrives with
+	// the barrier eaten or the debuff expired. A barrier is the plain case - it absorbs points, so a
+	// small hit consumes it outright.
+	//
+	// The size of a cast already on screen IS known: it is measured per action. With this on, a
+	// proactive refresh stands down while a rated SMALL area cast is running, and takes the next
+	// event instead. Where nothing is running, or the running cast has never been measured, nothing
+	// changes.
+	//
+	// This closes the hole the size rating left: the reactive path has asked "is this hit worth a
+	// cooldown" since the large-barrier threshold went in, the proactive path never did.
+	//
+	// Off by default, and honestly a heuristic: nothing here proves the prediction refers to the
+	// cast that happens to be running.
+	[UI("Hold a predicted mitigation while a small cast is running",
+		Description = "Stops a mitigation that fires from a BossMod prediction from being spent on a "
+			+ "small area cast when a bigger one is coming right behind it.\n"
+			+ "In a fight: in an opening with a small area cast followed by a heavy one, Radiant "
+			+ "Aegis, Tactician, Troubadour or Shield Samba wait for the second instead of being "
+			+ "eaten by the first. Only applies while a cast is running whose damage has actually "
+			+ "been measured and came out small; otherwise the prediction is followed as before.\n"
+			+ "A judgement call, not a certainty: BossMod gives the timing of the next event, not "
+			+ "which cast it means.",
+		Filter = HealingActionCondition, Section = 1)]
+	public bool HoldProactiveMitigationForSmallCast { get; set; } = false;
+
 	#region
 	[JobConfig, UI("Prioritize raising dead players over Healing/Defense.",
 		Filter = HealingActionCondition, Section = 2)]
