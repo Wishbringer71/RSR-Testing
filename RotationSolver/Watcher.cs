@@ -62,6 +62,12 @@ public static class Watcher
 
 			DataCenter.AddDamageRec(damageRatio);
 
+			// Settles an open hold of a predicted mitigation. The hold claims a bigger hit is still
+			// coming; this is where the fight answers that, with no reading and no report in
+			// between. Called for every hit, including the small ones, because a window that closes
+			// without a big hit is exactly what marks the hold as wrong.
+			DataCenter.ScoreProactiveHold(damageRatio);
+
 			foreach (var effect in set.TargetEffects)
 			{
 				if (effect.TargetID != playerId)

@@ -1592,21 +1592,34 @@ public partial class CustomRotation
 		//
 		// This is the hole that the size rating left open: the reactive path has asked "is this hit
 		// worth a cooldown" since A108, the proactive path never did.
-		// A spare charge looks like the answer - with two, both hits of a pair could be covered in
-		// full - and it is NOT taken, because the owner decided the opposite and said why.
+		// Whether to spend a charge here is decided in the fight, not by reading a counter afterwards.
+		// Two things are asked, both answerable right now:
 		//
-		// A9 (6704335d) removed the ungated Radiant Aegis branch on his report that the shield went
-		// out with no danger present. The reason recorded there is exactly this one: "usedUp: true
-		// gave away the second charge as well - when real danger came there was none left." He
-		// restated it when this was built: the fork's first fixes, beside Addle, were about Radiant
-		// Aegis being cast twice and spending a charge for nothing.
+		// 1. Does holding still earn its keep? Every hold is scored against what actually landed
+		//    (DataCenter.ScoreProactiveHold). Once it has been wrong more often than right, it stops
+		//    holding. A rule that mispredicts this fight's pattern therefore corrects itself inside
+		//    that fight instead of waiting for somebody to look at a number.
 		//
-		// The case here is not identical - two announced hits are both real danger, where the A9
-		// case was no danger at all - and that difference is put to him as a decision rather than
-		// taken unilaterally. Until then the hold applies whatever the charges, and `action` is
-		// carried for that decision, not used to weaken it.
-		if (Service.Config.HoldProactiveMitigationForSmallCast && DataCenter.AnnouncedHitIsSmall)
+		// 2. Is the reserve A9 protects actually at risk? The owner's decision there was not "never
+		//    spend the second charge" but its consequence: "when real danger came there was none
+		//    left". That is a question about availability, and it can be computed - spending now is
+		//    safe when a charge remains afterwards, or when the next one returns before the predicted
+		//    event. Where neither holds, the reserve is real and the hold stands.
+		//
+		// The A9 case itself is untouched: there was no prediction at all there, so this branch is
+		// never reached for it.
+		var reserveSurvivesSpending = action != null
+			&& (action.Cooldown.CurrentCharges > 1
+				|| action.Cooldown.RecastTimeRemainOneCharge <= predictedIn);
+
+		if (Service.Config.HoldProactiveMitigationForSmallCast
+			&& DataCenter.AnnouncedHitIsSmall
+			&& DataCenter.ProactiveHoldIsEarningItsKeep
+			&& !reserveSurvivesSpending)
 		{
+			// The window the hold is betting on: the status it would have refreshed has to still be
+			// worth refreshing when the real hit arrives, so that duration is the honest deadline.
+			DataCenter.NoteProactiveHold(statusDuration);
 			var held = DataCenter.AnnouncedAreaAction;
 			if (held != 0)
 			{

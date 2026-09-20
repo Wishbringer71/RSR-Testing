@@ -3969,8 +3969,18 @@ public partial class RotationConfigWindow : Window
 				}
 				else
 				{
-					ImGui.Text("Predicted mitigation held for a small cast, this session: "
-						+ $"{DataCenter.ProactiveMitigationHeld.Count} action(s)");
+					// The rule scores itself and acts on that score, so this line reports a verdict
+					// rather than asking for one to be drawn from it.
+					var (vindicated, wasted) = DataCenter.ProactiveHoldRecord;
+					ImGui.Text("Predicted mitigation held for a small cast, this fight: "
+						+ $"{DataCenter.ProactiveMitigationHeld.Count} action(s), "
+						+ $"{vindicated} followed by a big hit, {wasted} not");
+					if (vindicated + wasted > 0 && !DataCenter.ProactiveHoldIsEarningItsKeep)
+					{
+						ImGui.TextColored(ImGuiColors.DalamudYellow,
+							"  Holding is wrong more often than right in this fight - the rule has "
+							+ "stood itself down until that turns around.");
+					}
 				}
 
 				if (!Service.Config.MitigateBigAreaCastsEvenIfInterruptible)

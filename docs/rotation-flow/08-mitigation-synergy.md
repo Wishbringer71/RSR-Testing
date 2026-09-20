@@ -236,11 +236,37 @@ dabei auch die zweite Ladung frei — bei echter Gefahr war keine mehr da.“** 
 an dieser Regel wiederholt: die Doppelzündung von Schimmerschild war neben Addle einer der ersten
 Fehler, die der Fork behoben hat.
 
-**Der Unterschied ist real und wird ihm vorgelegt, nicht selbst entschieden:** In A9 ging es um
-**keine** Gefahr, hier um **zwei** angekündigte Treffer, die beide Gefahr sind. Ob die zweite Ladung
-dafür freigegeben wird, ist seine Entscheidung. Bis dahin gilt die Zurückhaltung unabhängig von den
-Ladungen; der Helfer führt die Aktion bereits mit, damit die Entscheidung ohne weiteren Umbau
-umsetzbar ist.
+**Die Frage wird nicht vorgelegt, sondern im Kampf entschieden — und das ist der Unterschied
+zwischen dem Buchstaben seiner Entscheidung und ihrem Grund.** A9 verbietet nicht „die zweite Ladung
+ausgeben“, sondern nennt die Folge: „bei echter Gefahr war keine mehr da.“ Das ist eine Aussage
+über **Verfügbarkeit**, und Verfügbarkeit ist zur Laufzeit ausrechenbar:
+
+> Ausgeben ist unbedenklich, wenn danach noch eine Ladung steht **oder** die nächste vor dem
+> vorhergesagten Ereignis zurück ist. Sonst ist die Reserve echt, und die Zurückhaltung gilt.
+
+Der A9-Fall selbst bleibt unberührt: Dort gab es überhaupt keine Vorhersage, dieser Zweig wird also
+nie erreicht.
+
+### Die Regel bewertet sich selbst, statt eine Ablesung zu verlangen
+
+**Vorgabe des Auftraggebers, und sie gilt hier zum zweiten Mal:** „entscheidung immer im spiel, nicht
+retroperspektive auswertung.“ Ein Zähler, den jemand lesen und berichten muss, kostet je Zahl einen
+Kampf, ein Ablesen, einen Bericht und eine Runde.
+
+**Die Zurückhaltung trifft eine prüfbare Vorhersage:** „Das Ereignis, auf das die Vorhersage zeigt,
+ist nicht der kleine Cast, der gerade läuft — es kommt noch ein größerer.“ Die nächsten Sekunden
+beantworten das. Der Effekt-Handler sieht jeden eingehenden Treffer; kommt innerhalb der Statusdauer
+einer auf Höhe der großen Barriere, war die Zurückhaltung richtig, sonst hat sie eine Minderung
+verschenkt.
+
+**Und die Regel handelt nach ihrem eigenen Ergebnis:** Unterhalb des Gleichstands — öfter falsch als
+richtig — hält sie nicht mehr zurück. Der Gleichstand ist keine gesetzte Zahl, sondern der
+Break-even des Tauschs, den sie macht. Die Bilanz gilt je Kampf und wird mit
+`DataCenter.ResetAllRecords` verworfen; sie von einem Boss in den nächsten zu tragen hieße, den einen
+nach dem Muster des anderen zu beurteilen.
+
+**Die Anzeige ist damit Zweitverwertung, nicht Zweck** — sie meldet das Urteil, das die Regel bereits
+gefällt hat, und nennt ausdrücklich, wenn die Regel sich selbst stillgelegt hat.
 
 #### Die genaue Frage laesst sich nicht stellen, und das ist gemessen
 

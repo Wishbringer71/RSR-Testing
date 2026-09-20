@@ -1825,6 +1825,14 @@ internal static class DataCenter
 		_actions.Clear();
 
 		AttackedTargets.Clear();
+
+		// The hold's record is per fight. Carrying it across would judge one boss by another's
+		// pattern - a fight where the hold was always right would keep it holding through a fight
+		// where it is always wrong, and vice versa.
+		_holdExpectsHitUntil = DateTime.MinValue;
+		_holdsVindicated = 0;
+		_holdsWasted = 0;
+
 		while (VfxDataQueue.TryDequeue(out _))
 		{ }
 		AllHostileTargets.Clear();
@@ -3085,6 +3093,88 @@ internal static class DataCenter
 	/// large, and when it last happened. Same purpose as the two above.
 	/// </summary>
 	public static readonly ConcurrentDictionary<uint, DateTime> MitigatedInterruptibleCast = new();
+
+	// The hold's own prediction, and whether the fight bore it out. Holding back says: "the event
+	// this prediction points at is not the small cast now running - something larger follows". That
+	// is a claim about the next few seconds, and the next few seconds answer it.
+	//
+	// This is the difference between a counter and a probe that decides. A counter would have to be
+	// read by somebody and reported back, which costs a fight, a reading and a round per figure -
+	// the owner's standing objection. This one scores itself: every hold is checked against what
+	// actually landed, and the rule stops holding once its own record says it is wrong.
+	private static DateTime _holdExpectsHitUntil = DateTime.MinValue;
+	private static int _holdsVindicated;
+	private static int _holdsWasted;
+
+	/// <summary>
+	/// How often holding a predicted mitigation was followed by a big hit, against how often it was
+	/// not. Diagnostic read-out of a figure the rule already acts on by itself.
+	/// </summary>
+	public static (int Vindicated, int Wasted) ProactiveHoldRecord => (_holdsVindicated, _holdsWasted);
+
+	/// <summary>
+	/// Whether the hold has earned the right to keep holding.
+	/// </summary>
+	/// <remarks>
+	/// <para>Starts open, because a rule that never fires cannot learn anything. From the first
+	/// scored hold it requires that holding has been right at least as often as it was wrong - a
+	/// simple majority, and no invented threshold: below parity the hold loses more mitigation than
+	/// it saves, which is the exact break-even of the trade it makes.</para>
+	///
+	/// <para>Not persisted. A fight is the unit that matters, and carrying a verdict from one fight
+	/// into another would judge one boss by another's pattern.</para>
+	/// </remarks>
+	public static bool ProactiveHoldIsEarningItsKeep
+	{
+		get
+		{
+			// A hold whose window ran out with nothing in it is settled here rather than waiting for
+			// the next hit to settle it: if nothing lands at all, no hit ever arrives to close it,
+			// and the wrong prediction would stay unscored forever. This property is read every
+			// frame the rule runs, so the window closes reliably.
+			if (_holdExpectsHitUntil != DateTime.MinValue && DateTime.Now > _holdExpectsHitUntil)
+			{
+				_holdsWasted++;
+				_holdExpectsHitUntil = DateTime.MinValue;
+			}
+
+			return _holdsVindicated + _holdsWasted == 0 || _holdsVindicated >= _holdsWasted;
+		}
+	}
+
+	/// <summary>
+	/// Records that a predicted mitigation was held, and until when a big hit would justify it.
+	/// </summary>
+	internal static void NoteProactiveHold(float window)
+	{
+		_holdExpectsHitUntil = DateTime.Now.AddSeconds(window);
+	}
+
+	/// <summary>
+	/// Called for every hit the player takes, to settle an open hold. A hit at or above the
+	/// large-barrier share inside the window is what the hold was waiting for.
+	/// </summary>
+	internal static void ScoreProactiveHold(float incomingShare)
+	{
+		if (_holdExpectsHitUntil == DateTime.MinValue)
+		{
+			return;
+		}
+
+		if (DateTime.Now > _holdExpectsHitUntil)
+		{
+			// The window closed with nothing big in it - the hold gave away a mitigation for nothing.
+			_holdsWasted++;
+			_holdExpectsHitUntil = DateTime.MinValue;
+			return;
+		}
+
+		if (incomingShare >= LargeShieldShare)
+		{
+			_holdsVindicated++;
+			_holdExpectsHitUntil = DateTime.MinValue;
+		}
+	}
 
 	/// <summary>
 	/// Every small area action a predicted mitigation was held back for, and when it last happened.
