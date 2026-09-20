@@ -1,6 +1,6 @@
 # What this fork does differently in a fight
 
-Against upstream **7.5.6.9**. Settings are named as they appear in the configuration, and
+Against upstream **7.5.6.10**. Settings are named as they appear in the configuration, and
 where a change sits behind a switch its default is given; without that note it takes effect
 immediately. Two changes are confirmed in play — the raise dispatch and the tank pre-pull
 HoT. Everything else is established in the code and compiled in CI, which says that a chain
