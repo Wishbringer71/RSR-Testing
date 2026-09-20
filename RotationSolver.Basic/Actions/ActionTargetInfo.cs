@@ -1048,8 +1048,25 @@ public struct ActionTargetInfo(IBaseAction action)
 						var finalDestination = target.Position - direction * target.HitboxRadius;
 						return DataCenter.IsDashSafe(playerPos, finalDestination);
 					}
-					// If already inside hitbox, destination is target position
-					return DataCenter.IsDashSafe(playerPos, target.Position);
+
+					// Already inside the hitbox: the dash ends at the hitbox edge, which is behind
+					// the player, so the character does not travel. Asking whether the line to the
+					// target's CENTRE is safe - which is what this used to do - measures a path that
+					// is never taken, and on a large boss that line runs several yalms through the
+					// boss's own footprint. An area under the boss therefore withheld the ability
+					// from a player already standing in it.
+					//
+					// Owner's report, Summoner: "wenn der beschwörer bereits beim boss steht
+					// (0 yalm), dann wäre der gapcloser nur noch damage und kein risiko". That is
+					// what this check exists to decide - whether the movement takes the player
+					// somewhere dangerous - and with no movement there is nothing to decide. Where
+					// the player is standing is a different question, and refusing the action does
+					// not answer it: he is already there.
+					//
+					// Only the no-movement case is exempt. As soon as any distance remains the
+					// branch above measures it, and the run-up stays gated by DistanceForMoving2
+					// (3 yalms by default) as before.
+					return true;
 				}
 				return false;
 

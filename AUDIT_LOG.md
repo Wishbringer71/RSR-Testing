@@ -3062,6 +3062,20 @@ Allgemeine Form, in `CLAUDE.md` aufgenommen: Wo ein fremder Schutzmechanismus al
 
 **Erreichter Prüfgrad:** statische Erhebung von Definition, Aufrufern und Schreibpfaden; Gegenprobe des Prüfers gegen den defekten Stand aus der Versionsgeschichte; alle Prüfskripte grün. Keine Laufzeitbeobachtung — die liefert die Anzeige, wenn die Zahl nach dem nächsten Login den Stand der Vorsitzung trägt statt bei null zu beginnen.
 
+### A122 · Der Anlaufschutz sperrte den Gapcloser auch ohne Anlauf (20.09.2026)
+
+**Gemeldet aus dem Spiel:** „bossmod gibt in einigen gefährlichen situationen vor, keine gapcloser zu nutzen. rsr bietet sie da nicht an. aber wenn der beschwörer bereits beim boss steht (0 yalm), dann wäre der gapcloser nur noch damage und kein risiko" — und nachgereicht der Grund, warum es mehr als ein verpasster Schadensanteil ist: „vor allem, weil der gapcloser des beschwörers ja teil der rota ist".
+
+**Die Stelle.** `ActionTargetInfo.CheckMovementSafety` teilt den zielbasierten Sprung in zwei Fälle. Bleibt Abstand, wird die Strecke bis zum **Rand** der gegnerischen Hitbox geprüft — richtig. Steht der Spieler bereits **innerhalb** der Hitbox, fragte der Code `IsDashSafe(playerPos, target.Position)`, also die Linie bis zur **Mitte** des Gegners. Diese Linie wird nie zurückgelegt: Der Sprung endet am Hitbox-Rand, und der liegt hinter dem Spieler. Bei einem großen Boss sind das mehrere Yalm quer durch dessen eigene Standfläche, und eine dort liegende Zone verweigerte damit die Aktion einem Spieler, der ohnehin schon darin steht.
+
+**Wirkung im Kampf, und sie ist größer als ein verlorener Sprung.** Crimson Cyclone steht in `SMN_Reborn.UsePrimalFollowUps` unmittelbar vor Crimson Strike, und Strike verlangt den Status, den erst Cyclone vergibt (`CrimsonStrikeReady_4403`). Der ausgefallene Sprung nimmt der Ifrit-Phase deshalb **zwei** GCDs, nicht einen, und beide werden durch Füller ersetzt — bei jeder Ifrit-Beschwörung, nicht als Randfall.
+
+**Warum das keine Revision seiner Sicherheitsentscheidung ist.** Die dokumentierte Vorgabe lautet, ihn nicht für Schaden aus einer sicheren Position zu holen; der belegte Fall ist der **Anlauf** von Crimson Cyclone. Ohne Weg gibt es kein Positionsrisiko, und dieselbe Unterscheidung trägt Konzept 12 bereits für Ifrit („wenn du ohnehin am Ziel stehst"). Der Anlauf selbst bleibt unverändert begrenzt: `DistanceForMoving2` lässt Schadens-Gapcloser ab Werk nur unter drei Yalm zu, und sobald irgendein Abstand bleibt, misst der bestehende Zweig ihn wie zuvor.
+
+**Erhoben, nicht behoben:** `FindTargetAreaMove` ruft dieselbe Prüfung **ohne** Ziel auf; im zielbasierten Zweig ist `target` dann `null` und die Antwort pauschal „unsicher". Ob eine Aktion diesen Pfad überhaupt nimmt, hängt an der Kombination aus zielbasiertem `SpecialType` und Flächen-Zieltyp, und die ist nicht erhoben — steht in `TODO.md`. Crimson Cyclone läuft über den Hauptpfad und ist nicht betroffen.
+
+**Erreichter Prüfgrad:** statische Erhebung beider Aufrufstellen, des Zieltyps von Crimson Cyclone (`SpecialActionType.HostileMovingAttack`) und seiner Einbindung in die Rotation; Abgleich gegen `upstream/main`, wo der Zweig wortgleich steht — die Fehlbehandlung ist geerbt, nicht vom Fork eingeführt. Keine Laufzeitbeobachtung; sichtbar wird die Behebung daran, dass Crimson Cyclone und Crimson Strike in der Ifrit-Phase wieder fallen, während er am Boss steht.
+
 ---
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)

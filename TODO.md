@@ -4,6 +4,24 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 ## Defekte
 
+### Heiltränke sind ab Werk je Gegenstand abgeschaltet, unabhängig von ihrer eigenen Option · N, U
+
+**Gemeldet aus dem Spiel:** „werden heilpotions richtig genutzt? ich habe das gefühl, dass sie gar nicht mehr genutzt werden."
+
+**Zwei unabhängige Schalter, und der zweite ist unsichtbar.** `Service.Config.UseHpPotions` ist die Option, die der Nutzer sucht (Vorgabewert aus). `BaseItem.CanUse` verlangt zusätzlich `IsEnabled` **je Gegenstand**, und `ItemConfig.IsEnabled` steht ohne Initialisierer da, ist also `false`. Der Gegensatz ist im selben Verzeichnis belegt: `ActionConfig` führt `private bool _isEnable = true`. Wer „Use HP Potions" einschaltet, bekommt damit nichts — jeder einzelne Trank ist bis zum Klick in der Aktionsliste aus.
+
+**Upstream-Code, unverändert seit `abca46cd6` (28.10.2023) bzw. `3e9b5b164` (31.01.2024); der Fork hat weder `BaseItem.cs` noch `ItemConfig.cs` angefasst.** Der Eindruck „nicht mehr" ist damit nicht durch eine Änderung an dieser Stelle erklärt. Der wahrscheinlichste Auslöser ist `Configs.Migrate` (eigener Eintrag unter technischer Schuld): Bei abweichender Versionsnummer wird `new Configs()` zurückgegeben, und damit ist `RotationItemConfig` samt aller freigeschalteten Tränke weg.
+
+**Vier weitere Tore in derselben Kette**, alle erhoben: die Flagge `AutoStatus.HealSingleAbility` oder ein Tankbuster am Einhängepunkt (`CustomRotation_Ability.cs`), Gesundheit unter `UseHpPotionsPercent` (0,5), fehlende Gesundheit mindestens so groß wie die Heilmenge des Tranks, und `HasIt` im Inventar. Die Gesundheit ist dabei die **verfeinerte** (`RefinedHP`), also einschließlich bereits angerechneter, noch nicht eingetroffener Heilung — in einer Gruppe mit aktivem Heiler fällt der Trank deshalb oft aus, und das ist richtig so.
+
+**Offen ist die Entscheidung, nicht der Befund:** ob Heiltränke ab Werk freigeschaltet sein sollen (die globale Option entscheidet, der Gegenstandsschalter bleibt Feinsteuerung) oder ob der Doppelschalter bleibt und stattdessen die Option ihn benennt. Betroffen sind alle Nutzer und die Upstream-Pflege.
+
+### Zielbasierte Bewegungsaktionen über den Move-Pfad gelten immer als unsicher · N, U
+
+`FindTargetAreaMove` ruft `CheckMovementSafety(target.Position)` **ohne** das Ziel (`ActionTargetInfo.cs`), während der Hauptpfad es mitgibt. Im Zweig für `HostileMovingForward`, `FriendlyMovingForward`, `HostileFriendlyMovingForward` und `HostileMovingAttack` ist `target` dann `null`, und die Methode antwortet `false` — unsicher, ohne etwas gemessen zu haben. Die Aktion wird damit nie angeboten, solange `BmrSafetyCheckAuto` eingeschaltet ist.
+
+**Nicht behoben, weil der Betroffenenkreis noch nicht erhoben ist:** Es fehlt die Liste der Aktionen, die einen zielbasierten `SpecialType` **und** einen Flächen-/Bewegungs-Zieltyp führen, also tatsächlich über diesen Pfad laufen. Möglicherweise ist sie leer; dann ist der Zweig unerreichbar und die Behebung wäre eine Aussage über etwas, das nicht vorkommt. Crimson Cyclone läuft über den Hauptpfad und ist nicht betroffen.
+
 ### Der Schadenseingang wird rechnerisch nur auf der Gegnerseite erfasst · N
 
 **Vorgabe des Auftraggebers, vollständig in `docs/rotation-flow/08-mitigation-synergy.md`:** Der Schadenseingang einschließlich eingerechneter Schadensreduktion **und Mitigation** soll zu jedem Zeitpunkt bestimmte Grenzwerte nicht überschreiten. Dazu dienen Reflexion, The Blackest Night und die übrigen Minderungen des Tanks ebenso wie die Verlangsamung.
