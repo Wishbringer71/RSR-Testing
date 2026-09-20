@@ -492,15 +492,23 @@ Die Entscheidung berührt die dokumentierte Begründung in `10-drk-blackest-nigh
 
 **Zwei Ursachen, beide behoben.** Die erste war die Bewertung aus A101, die allein nach Heilbedarf fragte und bei gesunder Gruppe jeden Anteil unter 0,35 verwarf (behoben in A108: ab 0,25 der Maximalgesundheit ist die Fläche groß, unabhängig vom Zustand der Gruppe). Die zweite ist der Vorfilter davor: `IsHostileCastingBase` verwirft jeden **unterbrechbaren** Cast, und Dungeon-Trash castet überwiegend unterbrechbar. Der Beschwörer hat keinen Interrupt — wird nicht unterbrochen, schlägt der Cast ein und nichts hat geantwortet. Dafür steht jetzt `IsHostileCastingLargeArea` hinter `Mitigate a big area cast even when it is interruptible` (**Vorgabewert aus**, A120).
 
-**Was offen bleibt, und es ist weniger als vorher.** Der Weg zu Radiant Aegis und Addle führt beim Beschwörer weiterhin allein über `AutoStatus.DefenseArea`; die beiden anderen sind tot (`GeneralAbility` hängt an `UseBmrTimeline`, ab Werk aus; `DefenseSingleAbility` verlangt für RangedMagical einen gesicherten Tankbuster auf den Spieler). Drei Schrauben bleiben, und keine ist ohne den Auftraggeber zu drehen, weil jede eine seiner dokumentierten Entscheidungen berührt:
+**Die Lage ist nach seiner Angabe zu unterscheiden — Boss gegen Trash.** `UseBmrTimeline` ist bei ihm **eingeschaltet** (seine Angabe, 20.09.2026). Die BMR-Wege sind für ihn also nicht tot, sondern hängen an `BMRActive` = `BMRHasActiveModule`:
+
+| Lage | Radiant Aegis | Addle |
+|---|---|---|
+| **Boss** (Modul aktiv) | über `GeneralAbility` gedeckt — `BMRShouldRefreshBefore(BMRRaidwideIn, 30 s, …)`; zusätzlich öffnet `BMRNextRaidwideIn` die Verteidigungsflagge | über `ShouldSustainMitigationDebuff`, erster Zweig (`BMRDamageIn`) |
+| **Trash** (kein Modul) | nur über `AutoStatus.DefenseArea` und dessen Cast-Vorfilter | zweiter Zweig ohne BMR: `NumberOfHostilesInRange >= MitigationSustainHostileCount` und Status läuft ab — **aber** weiterhin nur bei gesetzter Verteidigungsflagge |
+
+**Für Trash bleibt der Befund bestehen**, und der neu gebaute Weg zielt genau dorthin: Kein Modul heißt keine Vorhersage, und der Vorfilter verwirft unterbrechbare Casts.
+
+**Zwei Schrauben bleiben, keine ohne ihn zu drehen:**
 
 | Schraube | Was dafür spricht | Was dagegen spricht |
 |---|---|---|
-| `UseBmrTimeline` einschalten | öffnet den `GeneralAbility`-Weg für Radiant Aegis sofort, ohne Codeänderung | hängt an einem Fremdplugin und seiner Vorhersagequalität; es ist **seine** Voreinstellung |
 | Tankbuster-Einschränkung für RangedMagical lockern | öffnet `DefenseSingleAbility` im Gruppenpull | stammt aus A9/C10 — seiner eigenen Meldung, dass es zu oft feuerte |
 | Vorfilter-Fenster (Restzeit 1–2 GCDs) weiten | erfasst kurze Casts | trifft alle Jobs und über `IsUnderThreat` auch die Notfallheilung des Weißmagiers |
 
-**Empfehlung: keine davon jetzt.** Zuerst ist zu beobachten, was der gebaute Weg im Spiel bringt — er zielt genau auf den gemeldeten Fall. Die Sonde dafür steht bereit: Die AoE-Liste zeigt je Aktion den gemessenen Anteil und ob die Regel etwas verworfen hat.
+**Empfehlung: keine davon jetzt.** Zuerst ist zu beobachten, was der gebaute Weg im Spiel bringt. Die Sonde dafür steht bereit: Die AoE-Liste zeigt je Aktion den gemessenen Anteil und ob die Regel etwas verworfen hat.
 
 **Nicht verschärft, aber zu wissen:** `IsHostileCastingAOE` speist auch `ObjectHelper.IsUnderThreat` und darüber `BenedictionNeedsThreat`. Der neue Weg ist deshalb bewusst eine eigene Eigenschaft und kein Lockern der bestehenden.
 

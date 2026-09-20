@@ -88,14 +88,27 @@ einen abgeschalteten Baustein als unwirksamen gemeldet.
 
 ## Wen die Unterdrückung erreicht
 
-Erhoben, nicht geschätzt: `AreaCastIsWorthMitigating` sitzt in `IsHostileCastingArea`, und diese Frage
-hat genau **vier** Leser — zwei, die etwas bewirken, und zwei Anzeigen.
+Erhoben, nicht geschätzt (Lauf vom 20.09.2026): `AreaCastIsWorthMitigating` sitzt in
+`IsHostileCastingArea`, und über `IsHostileCastingAOE` hat diese Frage **zwei** Leser, die etwas
+bewirken, und zwei Anzeigen.
 
 | Leser | Wirkung der Unterdrückung |
 |---|---|
 | `StateUpdater` → `AutoStatus.DefenseArea` (hinter `UseAoeDefense`) | die gemeinte: keine Gruppenminderung auf eine Bagatelle |
 | `ObjectHelper.IsUnderThreat`, zweiter Arm | die Bagatellfläche hält die Notfall-Vollheilung nicht mehr frei — **gewollt**, es ist der Fall aus der Rezz-Meldung |
 | Diagnosezeile der Gruppe, Feld `IsHostileCastingAOE` | keine, Anzeige |
+| Listenverwaltung, Spalte je Aktion | keine, Anzeige |
+
+**Ein dritter wirksamer Leser wurde erwogen und wieder abgetrennt, und das ist der Grund für
+`IsHostileCastingAreaUnrated`.** Die Vorausheilung sollte zunächst dieselbe Frage lesen. Sie arbeitet
+aber an ihrer **eigenen**, höheren Schwelle — `HealthAreaAbility` (0,75 im Code) gegen
+`HealthAreaSpell` (0,65), mit dem die Unterdrückung urteilt. Ein Treffer, der die Gruppe auf 70 %
+bringt, gilt damit als „zu klein zum Mindern"; die Heilflagge hätte bei genau diesem Stand aber
+ausgelöst. Die Heilung hätte also eine Entscheidung geerbt, die nicht ihre ist.
+
+**Daraus die allgemeine Form: eine Erkennung darf keine Entscheidung enthalten.** `IsHostileCastingAOE`
+trägt das Minderungsurteil in sich und ist deshalb nur für die Minderung die richtige Frage. Wer
+etwas anderes entscheidet, fragt die unbewertete Erkennung und legt seine eigene Schwelle an.
 
 **Kein unerwarteter Verbraucher, und der zweite ist der Grund, warum diese Frage gestellt werden
 musste:** Ein gelernter Flächencast, der zwei Prozent nimmt, hielt Benediction genauso frei wie einer,
@@ -122,6 +135,11 @@ das gar nicht einschlägt. Das gilt, **solange jemand unterbricht**. Der Beschw�
 Interrupt; in einer Viererinstanz mit einem Tank, der Interject nicht einsetzt, schlägt der Cast ein,
 und nichts hat geantwortet. Das ist die Spielbeobachtung des Auftraggebers — „mal wird Schimmerschild
 und Addle gecastet, mal nicht" —, und sie ist damit am Code erklärt.
+
+**Bei einem Boss greift daneben der BMR-Weg, bei Trash nicht.** `BMRShouldRefreshBefore` verlangt
+`BMRActive` = `BMRHasActiveModule`; BossModReborn lädt Module für Bosse, nicht für Trash. Beim
+Auftraggeber ist `UseBmrTimeline` **eingeschaltet** (seine Angabe), Radiant Aegis ist am Boss also
+über `GeneralAbility` gedeckt. Der hier beschriebene Engpass ist damit der **Trash**-Fall.
 
 **Die Antwort ist ein zweiter, eigener Weg** (`DataCenter.IsHostileCastingLargeArea`, hinter
 `Mitigate a big area cast even when it is interruptible`, **Vorgabewert aus**): Er fragt nicht nach

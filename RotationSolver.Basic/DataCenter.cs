@@ -2507,12 +2507,20 @@ internal static class DataCenter
 	/// <para>Deliberately a separate property rather than a loosening of
 	/// <see cref="IsHostileCastingAOE"/>: that one also feeds <c>ObjectHelper.IsUnderThreat</c> and
 	/// through it the White Mage's Benediction guard. Widening it would move two paths at once.</para>
+	///
+	/// <para><b>This answers what is being cast, not what anyone wants done about it</b>, so the
+	/// setting that governs the mitigation decision is checked by its reader and not here. Built the
+	/// other way round first, and it was wrong twice over: the healing rule reads the same question
+	/// and would have been switched off by a setting about mitigating, and the recorded share -
+	/// which the healing rule needs - would never have been written while that setting was off. The
+	/// same coupling had already been found and removed from AreaCastIsWorthMitigating in the same
+	/// session; putting it straight back in a new property makes it a class, not a slip.</para>
 	/// </remarks>
 	public static bool IsHostileCastingLargeArea
 	{
 		get
 		{
-			if (!InCombat || !Service.Config.MitigateBigAreaCastsEvenIfInterruptible)
+			if (!InCombat)
 			{
 				return false;
 			}
@@ -2566,11 +2574,79 @@ internal static class DataCenter
 						continue;
 					}
 
+					// Recorded here as well, and not only in AreaCastIsWorthMitigating, because this
+					// path never passes through it. Without this the healing rule would be blind to
+					// exactly the casts this property exists to catch: the defence would open and
+					// the heal would not - and the standing order is healing before mitigation.
+					_announcedAreaShare = share;
+					_announcedAreaShareTime = DateTime.Now;
+					_lastAnnouncedAreaAction = h.CastActionId;
+
 					return true;
 				}
 				catch (AccessViolationException ex)
 				{
 					PluginLog.Warning($"AccessViolation in IsHostileCastingLargeArea: {ex.Message}");
+				}
+			}
+
+			return false;
+		}
+	}
+
+	/// <summary>
+	/// An area cast is announced that will reach the player - <b>without</b> asking whether it is
+	/// worth mitigating. Records its measured share on the way.
+	/// </summary>
+	/// <remarks>
+	/// <para><see cref="IsHostileCastingAOE"/> carries a verdict inside it: <c>AreaCastIsWorthMitigating</c>
+	/// drops a cast that leaves everybody above <c>HealthAreaSpell</c>. That is the right question
+	/// for spending a cooldown, and the wrong one for every other reader, because it is taken at the
+	/// MITIGATION threshold.</para>
+	///
+	/// <para>The healing rule asks at its own, higher threshold (<c>HealthAreaAbility</c>, 0.75
+	/// against 0.65 in the shipped defaults). Reading the mitigation verdict would therefore lose it
+	/// exactly the band between the two: a hit that puts the party at 70% is "too small to mitigate"
+	/// and would have been too small to heal ahead of as well - although the heal flag itself would
+	/// have raised at that health. The rule would have been switched off by a decision that is not
+	/// its own.</para>
+	///
+	/// <para>Same shape as the two couplings already removed in this session - the recorded share
+	/// sitting behind <c>SkipMitigationForSmallAreaCasts</c>, and the mitigation setting sitting
+	/// inside <see cref="IsHostileCastingLargeArea"/>. Three of them is a class: <b>a recognition
+	/// must not contain a decision.</b></para>
+	/// </remarks>
+	public static bool IsHostileCastingAreaUnrated
+	{
+		get
+		{
+			var targets = AllHostileTargets;
+			if (!InCombat || targets == null)
+			{
+				return false;
+			}
+
+			for (var i = 0; i < targets.Count; i++)
+			{
+				var h = targets[i];
+				if (h == null)
+				{
+					continue;
+				}
+
+				if (IsHostileCastingBase(h, act =>
+				{
+					if (!OtherConfiguration.HostileCastingArea.Contains(act.RowId)
+						|| !AreaCastCanReachPlayer(h, act))
+					{
+						return false;
+					}
+
+					RecordAnnouncedAreaShare(act.RowId);
+					return true;
+				}))
+				{
+					return true;
 				}
 			}
 
@@ -2990,6 +3066,26 @@ internal static class DataCenter
 	/// </remarks>
 	public static readonly ConcurrentDictionary<uint, DateTime> AreaMitigationSkipped = new();
 
+	/// <summary>
+	/// Every area action the pre-heal rule has raised the healing flag for, and when it last did.
+	/// </summary>
+	/// <remarks>
+	/// The counterpart probe to <see cref="AreaMitigationSkipped"/>, and it exists for a stated
+	/// reason: the owner tests changes by switching the new option ON, so a rule that cannot be told
+	/// apart from its own absence is not testable. Healing that arrives before a raidwide looks in
+	/// the fight exactly like healing that arrives for any other reason.
+	///
+	/// Actions, not calls - the question is asked every frame, so a counter would report the frame
+	/// rate. Diagnostic only and not persisted.
+	/// </remarks>
+	public static readonly ConcurrentDictionary<uint, DateTime> HealedAheadOfAreaCast = new();
+
+	/// <summary>
+	/// Every interruptible area action the defence was raised for because its measured share was
+	/// large, and when it last happened. Same purpose as the two above.
+	/// </summary>
+	public static readonly ConcurrentDictionary<uint, DateTime> MitigatedInterruptibleCast = new();
+
 	// How large the announced area cast is, as a share of the weakest member's maximum health, and
 	// when that was last established. This is the same figure AreaCastIsWorthMitigating already
 	// looks up to decide WHETHER to answer; kept here it also answers WITH WHAT.
@@ -2999,6 +3095,10 @@ internal static class DataCenter
 	// found and kept correct in a second place; an age does not.
 	private static float _announcedAreaShare;
 	private static DateTime _announcedAreaShareTime = DateTime.MinValue;
+
+	// Which action the recorded share belongs to, so a probe can name it rather than counting
+	// anonymously. Carried with the share and subject to the same lifetime.
+	private static uint _lastAnnouncedAreaAction;
 
 	// One GCD's worth. The figure describes the cast that is landing now, so it must not outlive it
 	// and steer the next decision; long enough for the defensive branch of the same window to read it.
@@ -3011,6 +3111,12 @@ internal static class DataCenter
 	/// </summary>
 	public static float AnnouncedAreaShare =>
 		DateTime.Now - _announcedAreaShareTime <= AnnouncedAreaShareLifetime ? _announcedAreaShare : 0f;
+
+	/// <summary>
+	/// The action id the currently recorded area share belongs to, or 0 when none is recorded.
+	/// </summary>
+	public static uint AnnouncedAreaAction =>
+		DateTime.Now - _announcedAreaShareTime <= AnnouncedAreaShareLifetime ? _lastAnnouncedAreaAction : 0u;
 
 	/// <summary>
 	/// Whether the announced area cast would put any living party member below the given share of
@@ -3089,23 +3195,27 @@ internal static class DataCenter
 	/// as a big one regardless of how healthy the party is.
 	/// </summary>
 	/// <remarks>
-	/// Not an invented number. The Blackest Night states it in its own effect text - "absorbs damage
-	/// totaling 25% of target's maximum HP" - and it is the largest barrier in the tree that names
-	/// its size as a share at all. The smaller ones name 10%, 15% and 20%, which is the other end of
-	/// the user's requirement: below a small shield the hit only matters to someone already low. That
-	/// end needs no constant, because the buffer comparison below is exactly that question.
+	/// Not an invented number, and no longer a written-down one either: it is read from the effect
+	/// texts. The largest barrier in the tree that states its size as a share is The Blackest Night -
+	/// "absorbs damage totaling 25% of target's maximum HP" - and DefensiveValues.g.cs carries that
+	/// figure along with every other, generated from the same sheets and checked against them in CI.
 	///
-	/// The barriers that state a share are no longer counted by hand here: DefensiveValues.g.cs is
-	/// generated from those same effect texts and CI checks it still matches them. An earlier version
-	/// of this remark said "five barriers", listing their row ids; the generated table finds more
-	/// than that, and the figure had no way of noticing.
+	/// It used to be a literal 0.25f with the source named in prose. That is the ageing form this
+	/// file has been caught by twice already: an earlier version of this remark said "five barriers"
+	/// and listed their row ids, and the generated table finds more than five. A patch that restates
+	/// a barrier, or a new job action with a larger one, now moves this threshold with it instead of
+	/// leaving a number behind that nothing reads as wrong.
+	///
+	/// The smaller barriers name 10%, 15% and 20%, which is the other end of the user's requirement:
+	/// below a small shield the hit only matters to someone already low. That end needs no constant,
+	/// because the buffer comparison below is exactly that question.
 	///
 	/// Concept 13 once dismissed the two-threshold form as "not implementable without invented
 	/// numbers, and not needed, because the buffer comparison answers the same question". Both halves
 	/// were wrong: the barriers state their share, and the buffer comparison answers a different
 	/// question - whether healing would be needed, not whether the hit is large.
 	/// </remarks>
-	private const float LargeShieldShare = 0.25f;
+	private static float LargeShieldShare => DefensiveValues.LargestStatedBarrierShare;
 
 	// Kept separate from the verdict below, and called before it, for two reasons. The figure
 	// describes the incoming cast, not this rule's opinion of it - and a second reader, the healing
@@ -3119,6 +3229,7 @@ internal static class DataCenter
 		{
 			_announcedAreaShare = share;
 			_announcedAreaShareTime = DateTime.Now;
+			_lastAnnouncedAreaAction = actionId;
 		}
 	}
 

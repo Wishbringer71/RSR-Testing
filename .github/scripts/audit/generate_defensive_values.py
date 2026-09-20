@@ -169,12 +169,14 @@ def render(table):
         "\t{",
     ]
 
+    largest_barrier = 0.0
     for row, (identifier, values) in table.items():
         figures = ", ".join(
             f"{values.get(key, 0.0):g}f"
             for key in ("Self", "EnemyPhysical", "EnemyMagical", "Barrier")
         )
         lines.append(f"\t\t[{row}] = new({figures}), // {identifier}")
+        largest_barrier = max(largest_barrier, values.get("Barrier", 0.0))
 
     lines.extend(
         [
@@ -185,6 +187,18 @@ def render(table):
             "\t{",
             "\t\treturn ByActionId.TryGetValue(actionId, out var value) ? value : default;",
             "\t}",
+            "",
+            "\t/// <summary>",
+            "\t/// The largest barrier share any action in the game states in its own effect text.",
+            "\t/// This is the measure of \"a big hit\": an area action that costs at least this much of",
+            "\t/// maximum health is more than the strongest single barrier can absorb.",
+            "\t/// </summary>",
+            "\t/// <remarks>",
+            "\t/// Computed from the table rather than written down, so a patch that restates a barrier",
+            "\t/// or a new job action with a larger one moves the threshold with it. The figure is",
+            "\t/// regenerated from the effect texts and checked against them in CI.",
+            "\t/// </remarks>",
+            f"\tpublic const float LargestStatedBarrierShare = {largest_barrier:g}f;",
             "}",
             "",
         ]

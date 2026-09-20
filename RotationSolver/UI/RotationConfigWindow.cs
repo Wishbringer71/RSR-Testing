@@ -3944,6 +3944,35 @@ public partial class RotationConfigWindow : Window
 						+ $"{DataCenter.AreaMitigationSkipped.Count} of {rated.Count} rated action(s)");
 				}
 
+				// The two rules below change behaviour only when switched on, and in the fight their
+				// working looks exactly like their absence - healing that arrives early looks like
+				// ordinary healing, and a mitigation that goes out looks like any other. Each gets a
+				// line that says whether it has fired at all, so switching one on is a test and not
+				// a guess. Both lines name the setting when it is off, because zero then has two
+				// possible meanings.
+				if (!Service.Config.HealAheadOfAnnouncedHit)
+				{
+					ImGui.TextColored(ImGuiColors.DalamudGrey,
+						"No healing ahead of area casts: \"Heal ahead of an announced area cast\" is off.");
+				}
+				else
+				{
+					ImGui.Text("Healed ahead of an announced cast, this session: "
+						+ $"{DataCenter.HealedAheadOfAreaCast.Count} action(s)");
+				}
+
+				if (!Service.Config.MitigateBigAreaCastsEvenIfInterruptible)
+				{
+					ImGui.TextColored(ImGuiColors.DalamudGrey,
+						"Interruptible casts are never mitigated: \"Mitigate a big area cast even when "
+						+ "it is interruptible\" is off.");
+				}
+				else
+				{
+					ImGui.Text("Mitigated although interruptible, this session: "
+						+ $"{DataCenter.MitigatedInterruptibleCast.Count} action(s)");
+				}
+
 				if (ImGui.Button("Forget recorded damage potential"))
 				{
 					OtherConfiguration.ResetHostileCastingAreaPotential();
@@ -3951,6 +3980,8 @@ public partial class RotationConfigWindow : Window
 					// them: left standing it would name an action at "--" and count against a store
 					// of zero.
 					DataCenter.AreaMitigationSkipped.Clear();
+					DataCenter.HealedAheadOfAreaCast.Clear();
+					DataCenter.MitigatedInterruptibleCast.Clear();
 				}
 				ImguiTooltips.HoveredTooltip("Kept when the list itself is reset, because these values "
 					+ "cost runs in the game rather than a download. Clear them when a patch has "
@@ -4053,9 +4084,19 @@ public partial class RotationConfigWindow : Window
 			var label = $"{action.Name} ({action.RowId})";
 			if (potential != null && potential.TryGetValue(action.RowId, out var measured) && measured > 0f)
 			{
-				label += DataCenter.AreaMitigationSkipped.ContainsKey(action.RowId)
-					? $"  -  {measured * 100f:F0}% measured, mitigation withheld"
-					: $"  -  {measured * 100f:F0}% measured";
+				label += $"  -  {measured * 100f:F0}% measured";
+				if (DataCenter.AreaMitigationSkipped.ContainsKey(action.RowId))
+				{
+					label += ", mitigation withheld";
+				}
+				if (DataCenter.HealedAheadOfAreaCast.ContainsKey(action.RowId))
+				{
+					label += ", healed ahead";
+				}
+				if (DataCenter.MitigatedInterruptibleCast.ContainsKey(action.RowId))
+				{
+					label += ", mitigated although interruptible";
+				}
 			}
 			_ = ImGui.Selectable(label);
 

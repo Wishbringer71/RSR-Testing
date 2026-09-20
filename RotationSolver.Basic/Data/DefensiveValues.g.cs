@@ -91,4 +91,16 @@ public static class DefensiveValues
 	{
 		return ByActionId.TryGetValue(actionId, out var value) ? value : default;
 	}
+
+	/// <summary>
+	/// The largest barrier share any action in the game states in its own effect text.
+	/// This is the measure of "a big hit": an area action that costs at least this much of
+	/// maximum health is more than the strongest single barrier can absorb.
+	/// </summary>
+	/// <remarks>
+	/// Computed from the table rather than written down, so a patch that restates a barrier
+	/// or a new job action with a larger one moves the threshold with it. The figure is
+	/// regenerated from the effect texts and checked against them in CI.
+	/// </remarks>
+	public const float LargestStatedBarrierShare = 0.25f;
 }
