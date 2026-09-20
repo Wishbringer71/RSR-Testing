@@ -121,6 +121,14 @@ jobs:
       - name: Check the stored action lists are looked up, not walked
         run: python3 .github/scripts/audit/check_set_lookups.py
 
+      # A stored list is written back whole on every save, so one that is never loaded destroys its
+      # own file on the first save of the session. That happened to the learned damage potentials:
+      # the load line went into the Init nobody calls, and what several evenings of pulls had rated
+      # was gone at the next login. Nothing throws, nothing is logged, and in the fight it looks
+      # like the measurement simply never does much.
+      - name: Check every saved list is loaded on the path that runs
+        run: python3 .github/scripts/audit/check_config_store_roundtrip.py
+
       # The once-per-cooldown full heal has to be tied to actual danger, or it goes out on whoever
       # happens to stand lowest - a player who was just raised, most visibly - and is missing when a
       # tank needs it. Nothing fails when the condition is lost; an upstream merge simply brings the

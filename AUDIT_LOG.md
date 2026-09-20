@@ -3045,6 +3045,24 @@ Allgemeine Form, in `CLAUDE.md` aufgenommen: Wo ein fremder Schutzmechanismus al
 **Erreichter Prüfgrad:** statische Erhebung der gesamten Kette vom Vorfilter bis zur Aktion, Abgleich gegen A9/C10 und A101/A108, Strukturlauf und alle Prüfskripte ohne Befund. Keine Laufzeitbeobachtung; die Sonde dafür ist die AoE-Liste, die je Aktion den gemessenen Anteil und die verworfenen Minderungen zeigt.
 
 ---
+
+### A121 · Die gelernte Schadenstabelle wurde nie geladen — und überschrieb sich selbst (20.09.2026)
+
+**Auslöser war seine Frage nach `ResetAllRecords`** und die Sorge, ob sie „die Schadenstabelle zu den AoEs zurücksetzt, die ja mühsam über mehrere Tage, Wochen aufgebaut wird". `ResetAllRecords` tut das nicht — sie räumt das Laufzeitgedächtnis eines Kampfes ab (letzte Aktion, TTK-Mittel, Aktionswarteschlange, Ziellisten, seit A118 auch die Bilanz der Zurückhaltung) und rührt keinen gespeicherten Store an. Die Sorge war gleichwohl berechtigt: Der Bestand ging verloren, nur an anderer Stelle.
+
+**Der Defekt.** `OtherConfiguration` führte den Ladeauftrag zweimal — einmal in `Init()`, einmal in `InitAsync()`. `HostileCastingAreaPotential` wurde bei seiner Einführung nur in `Init()` eingetragen. Gerufen wird aber ausschließlich `InitAsync` (`RotationSolverPlugin.cs:145`); `Init()` hat keinen Aufrufer im Baum. Die Tabelle startete damit **jede Sitzung leer**.
+
+**Die Wirkkette bis in den Kampf, und sie hat zwei Enden.** Erstens, im Kampf: Jede Flächenaktion las wieder „unbewertet". Damit fiel die erste Stufe aus `13-aoe-damage-classification.md` aus — Anteil ≥ 0,25 mindert ohne Blick auf die Gesundheit —, und mit ihr die zweite; das Verhalten war exakt das von vor der Messung. Zweitens, auf der Platte: `Save` schreibt die **ganze** In-Memory-Tabelle in die Datei. Die erste neue Messung einer Sitzung (`Watcher.cs`, bei jedem neuen Höchstwert) und jedes `OtherConfiguration.Save()` — darunter das Entladen des Plugins, `RotationSolverPlugin.cs:388` — schrieben die leere oder eben erst begonnene Tabelle über den gespeicherten Stand. Was mehrere Abende Pulls gekostet hat, überlebte bis zum nächsten Ausloggen und nicht weiter. **Der Verlust ist eingetreten und nicht rückholbar**, soweit seit Einführung gespielt wurde; die Datei liegt als `HostileCastingAreaPotential.json` im Plugin-Konfigverzeichnis, eine ältere Kopie daraus wäre die einzige Wiederherstellung.
+
+**Nichts schlug fehl.** Kein Wurf, kein Eintrag im Protokoll, kein roter Lauf. Sichtbar war es allein an der Anzeige „Damage potential recorded: x of y", die nach jedem Login wieder bei einer kleinen Zahl begann — und diese Sonde war genau für diese Frage gebaut worden.
+
+**Entstehungsursache, nach Parnas.** *Ignorant Surgery* im engeren Sinn: die Nachbarstelle wurde nicht mitgepflegt. Die eigentliche Ursache ist aber die Konstruktion — zwei handgeführte Kopien derselben Liste, von denen eine tot ist. Deshalb behebt die Korrektur nicht den Einzelfall: `Init` und `InitAsync` teilen sich jetzt eine einzige `LoadSteps()`-Liste, und ein neuer Store kann keinen Speicherpfad mehr ohne Ladepfad erreichen.
+
+**Der erste Prüfer maß ein Surrogat und ist daran gescheitert.** `check_config_store_roundtrip.py` fragte zunächst, ob die Datei *irgendwo* eine Ladezeile für das Feld führt. Gegen den defekten Stand gehalten, meldete er ihn sauber — die Zeile stand ja da, im toten `Init`. Ein Ladepfad, der nie genommen wird, ist kein Ladepfad. Der Prüfer misst jetzt die erreichbare Liste und meldet zusätzlich jede Ladezeile, die zurück in einen Einstiegspunkt wandert; gegen den defekten Stand schlägt er an, sein Selbsttest deckt beide Formen ab.
+
+**Erreichter Prüfgrad:** statische Erhebung von Definition, Aufrufern und Schreibpfaden; Gegenprobe des Prüfers gegen den defekten Stand aus der Versionsgeschichte; alle Prüfskripte grün. Keine Laufzeitbeobachtung — die liefert die Anzeige, wenn die Zahl nach dem nächsten Login den Stand der Vorsitzung trägt statt bei null zu beginnen.
+
+---
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

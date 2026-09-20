@@ -294,6 +294,8 @@ verschwinden kann.
 | „Reset RSR Plugin Settings" (globaler Knopf) | Werte bleiben — setzt nur `Service.Config` zurück |
 | „Forget recorded damage potential" | löscht sie, und das ist sein Zweck |
 | Unlesbare Datei beim Start | Werte bleiben, die Datei wird als `.corrupt` beiseitegelegt und gemeldet |
+| Kampfende, Zustandswechsel, Laden und Entladen (`DataCenter.ResetAllRecords`) | Werte bleiben — die Methode räumt das Laufzeitgedächtnis eines Kampfes ab und fasst keinen Speicher an |
+| **Speicher wird beim Start nicht geladen** | **Totalverlust**, still — behoben, s. u. |
 
 **Das Zurücksetzen der Liste lässt die Werte stehen** — Vorgabe des Auftraggebers: „es wäre schade,
 wenn dann auch die Erfahrungswerte weg wären." Die kuratierte Liste neu zu laden ist ein Download, die
@@ -307,6 +309,17 @@ Treffer kommt ungemildert an und misst sich. Eine **abgeschwächte** Aktion beh�
 dagegen für immer; die Folge ist Minderung, wo sie nicht mehr nötig wäre, also sicher, aber falsch.
 Der Ausweg ist das gezielte Verwerfen durch den Nutzer und kein automatischer Verfall — Verfall würde
 genau die Eigenschaft aufheben, die eine einzelne ungemilderte Beobachtung wertvoll macht.
+
+**Der schwerste Weg war keiner der erhobenen, sondern das Ausbleiben des Ladens** (A121). Der Speicher
+stand nur in `OtherConfiguration.Init()`, und die ruft niemand; gerufen wird `InitAsync`. Die Tabelle
+begann damit jede Sitzung leer, und weil ein Speichervorgang **die ganze** Tabelle schreibt, legte die
+erste Messung des Abends — spätestens das Entladen des Plugins — die leere Fassung über den
+gespeicherten Stand. Im Kampf war das Bild identisch mit „noch nichts gemessen": jede Aktion
+unbewertet, beide Stufen der Rechnung wirkungslos. **Beide Einstiegspunkte teilen sich jetzt eine
+einzige Ladeliste**, und `check_config_store_roundtrip.py` hält in der CI fest, dass kein Speicher
+einen Schreibweg ohne erreichbaren Leseweg hat. Die Lehre daran ist allgemeiner als der Fall: Ein
+Speicher, der geschrieben, aber nicht gelesen wird, ist gefährlicher als gar keiner — er ersetzt den
+Bestand durch das Nichts, das er für richtig hält.
 
 **Geschrieben wird über eine temporäre Datei.** `File.WriteAllText` kürzt zuerst und füllt danach; ein
 Absturz dazwischen hinterlässt unlesbares JSON, und der Ladepfad beantwortet das damit, leer

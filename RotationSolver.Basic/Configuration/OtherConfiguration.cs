@@ -135,62 +135,74 @@ internal class OtherConfiguration
 
 	public static RotationSolverRecord RotationSolverRecord = new();
 
-	public static void Init()
+	/// <summary>
+	/// Every stored list this plugin loads, in one place.
+	/// </summary>
+	/// <remarks>
+	/// <see cref="Init"/> and <see cref="InitAsync"/> used to carry a copy of this list each, and they
+	/// drifted: <see cref="HostileCastingAreaPotential"/> was entered into Init only, while InitAsync
+	/// is the one the plugin actually calls. The learned damage potentials were therefore never read
+	/// back at login, and the first save of the session wrote the empty table over the file - so a
+	/// measurement bought with a clear survived until the next logout and no further. Nothing failed,
+	/// nothing was logged, and the only symptom in play was mitigation falling back to "unrated".
+	///
+	/// One list instead of two removes the failure mode rather than the instance of it: a store added
+	/// here cannot reach a save path without a load path.
+	/// </remarks>
+	private static Action[] LoadSteps() =>
+	[
+		() => InitOne(ref DangerousStatus, nameof(DangerousStatus)),
+		() => InitOne(ref PriorityStatus, nameof(PriorityStatus)),
+		() => InitOne(ref InvincibleStatus, nameof(InvincibleStatus)),
+		() => InitOne(ref DancePartnerPriority, nameof(DancePartnerPriority)),
+		() => InitOne(ref TheSpearPriority, nameof(TheSpearPriority)),
+		() => InitOne(ref TheBalancePriority, nameof(TheBalancePriority)),
+		() => InitOne(ref KardiaTankPriority, nameof(KardiaTankPriority)),
+		() => InitOne(ref NoHostileNames, nameof(NoHostileNames)),
+		() => InitOne(ref NoProvokeNames, nameof(NoProvokeNames)),
+		() => InitOne(ref HostileCastingArea, nameof(HostileCastingArea)),
+		// No download: this one is learned in play and has no shipped counterpart to fetch.
+		() => InitOne(ref HostileCastingAreaPotential, nameof(HostileCastingAreaPotential), false),
+		() => InitOne(ref HostileCastingTank, nameof(HostileCastingTank)),
+		() => InitOne(ref BeneficialPositions, nameof(BeneficialPositions)),
+		() => InitOne(ref RotationSolverRecord, nameof(RotationSolverRecord), false),
+		() => InitOne(ref NoCastingStatus, nameof(NoCastingStatus)),
+		() => InitOne(ref HostileCastingKnockback, nameof(HostileCastingKnockback)),
+		() => InitOne(ref HostileCastingStop, nameof(HostileCastingStop)),
+		() => InitOne(ref NorthHornWeaknessRecords, nameof(NorthHornWeaknessRecords), false),
+		() => InitOne(ref SouthHornWeaknessRecords, nameof(SouthHornWeaknessRecords), false),
+	];
+
+	private static void EnsureConfigDirectory()
 	{
 		if (!Directory.Exists(Svc.PluginInterface.ConfigDirectory.FullName))
 		{
 			_ = Directory.CreateDirectory(Svc.PluginInterface.ConfigDirectory.FullName);
 		}
+	}
 
-		_ = Task.Run(() => InitOne(ref DangerousStatus, nameof(DangerousStatus)));
-		_ = Task.Run(() => InitOne(ref PriorityStatus, nameof(PriorityStatus)));
-		_ = Task.Run(() => InitOne(ref InvincibleStatus, nameof(InvincibleStatus)));
-		_ = Task.Run(() => InitOne(ref DancePartnerPriority, nameof(DancePartnerPriority)));
-		_ = Task.Run(() => InitOne(ref TheSpearPriority, nameof(TheSpearPriority)));
-		_ = Task.Run(() => InitOne(ref TheBalancePriority, nameof(TheBalancePriority)));
-		_ = Task.Run(() => InitOne(ref KardiaTankPriority, nameof(KardiaTankPriority)));
-		_ = Task.Run(() => InitOne(ref NoHostileNames, nameof(NoHostileNames)));
-		_ = Task.Run(() => InitOne(ref NoProvokeNames, nameof(NoProvokeNames)));
-		_ = Task.Run(() => InitOne(ref HostileCastingArea, nameof(HostileCastingArea)));
-		// No download: this one is learned in play and has no shipped counterpart to fetch.
-		_ = Task.Run(() => InitOne(ref HostileCastingAreaPotential, nameof(HostileCastingAreaPotential), false));
-		_ = Task.Run(() => InitOne(ref HostileCastingTank, nameof(HostileCastingTank)));
-		_ = Task.Run(() => InitOne(ref BeneficialPositions, nameof(BeneficialPositions)));
-		_ = Task.Run(() => InitOne(ref RotationSolverRecord, nameof(RotationSolverRecord), false));
-		_ = Task.Run(() => InitOne(ref NoCastingStatus, nameof(NoCastingStatus)));
-		_ = Task.Run(() => InitOne(ref HostileCastingKnockback, nameof(HostileCastingKnockback)));
-		_ = Task.Run(() => InitOne(ref HostileCastingStop, nameof(HostileCastingStop)));
-		_ = Task.Run(() => InitOne(ref NorthHornWeaknessRecords, nameof(NorthHornWeaknessRecords), false));
-		_ = Task.Run(() => InitOne(ref SouthHornWeaknessRecords, nameof(SouthHornWeaknessRecords), false));
+	public static void Init()
+	{
+		EnsureConfigDirectory();
+
+		foreach (var step in LoadSteps())
+		{
+			_ = Task.Run(step);
+		}
 	}
 
 	public static async Task InitAsync(CancellationToken cancellationToken = default)
 	{
-		if (!Directory.Exists(Svc.PluginInterface.ConfigDirectory.FullName))
+		EnsureConfigDirectory();
+
+		var steps = LoadSteps();
+		var running = new Task[steps.Length];
+		for (var i = 0; i < steps.Length; i++)
 		{
-			_ = Directory.CreateDirectory(Svc.PluginInterface.ConfigDirectory.FullName);
+			running[i] = Task.Run(steps[i], cancellationToken);
 		}
 
-		await Task.WhenAll(
-			Task.Run(() => InitOne(ref DangerousStatus, nameof(DangerousStatus)), cancellationToken),
-			Task.Run(() => InitOne(ref PriorityStatus, nameof(PriorityStatus)), cancellationToken),
-			Task.Run(() => InitOne(ref InvincibleStatus, nameof(InvincibleStatus)), cancellationToken),
-			Task.Run(() => InitOne(ref DancePartnerPriority, nameof(DancePartnerPriority)), cancellationToken),
-			Task.Run(() => InitOne(ref TheSpearPriority, nameof(TheSpearPriority)), cancellationToken),
-			Task.Run(() => InitOne(ref TheBalancePriority, nameof(TheBalancePriority)), cancellationToken),
-			Task.Run(() => InitOne(ref KardiaTankPriority, nameof(KardiaTankPriority)), cancellationToken),
-			Task.Run(() => InitOne(ref NoHostileNames, nameof(NoHostileNames)), cancellationToken),
-			Task.Run(() => InitOne(ref NoProvokeNames, nameof(NoProvokeNames)), cancellationToken),
-			Task.Run(() => InitOne(ref HostileCastingArea, nameof(HostileCastingArea)), cancellationToken),
-			Task.Run(() => InitOne(ref HostileCastingTank, nameof(HostileCastingTank)), cancellationToken),
-			Task.Run(() => InitOne(ref BeneficialPositions, nameof(BeneficialPositions)), cancellationToken),
-			Task.Run(() => InitOne(ref RotationSolverRecord, nameof(RotationSolverRecord), false), cancellationToken),
-			Task.Run(() => InitOne(ref NoCastingStatus, nameof(NoCastingStatus)), cancellationToken),
-			Task.Run(() => InitOne(ref HostileCastingKnockback, nameof(HostileCastingKnockback)), cancellationToken),
-			Task.Run(() => InitOne(ref HostileCastingStop, nameof(HostileCastingStop)), cancellationToken),
-			Task.Run(() => InitOne(ref NorthHornWeaknessRecords, nameof(NorthHornWeaknessRecords), false), cancellationToken),
-			Task.Run(() => InitOne(ref SouthHornWeaknessRecords, nameof(SouthHornWeaknessRecords), false), cancellationToken)
-		);
+		await Task.WhenAll(running);
 	}
 
 	public static Task Save()
