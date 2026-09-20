@@ -185,10 +185,11 @@ Fremdquellen (siehe Nachweisgrenzen).
 | Reihenfolge der großen Beschwörungen | Solar Bahamut → Bahamut → Solar Bahamut → Phoenix |
 
 Daraus folgt die entscheidende Asymmetrie: **Pro 120 Sekunden gibt es zwei Beschwörungsfenster, aber
-nur eines davon ist Solar Bahamut.** Die Rotation zündet ausschließlich im Solar-Fenster
-(`SMN_Reborn.cs:203`, lokale Variable `burstInSolar`). Ein Beschwörer hat damit genau **eine**
-Gelegenheit pro Wiederholzeit — und sie liegt bei allen Beschwörern einer synchron gestarteten
-Gruppe zur selben Zeit.
+nur eines davon ist Solar Bahamut.** Das ist die Ausgangslage, gegen die alle Vorschläge dieses
+Dokuments gerechnet sind: Die Zündung hing allein an `burstInSolar` (`SMN_Reborn.cs`), ein
+Beschwörer hatte damit genau **eine** Gelegenheit pro Wiederholzeit, und sie lag bei allen
+Beschwörern einer synchron gestarteten Gruppe zur selben Zeit. Den heutigen Stand nennt „Die
+Umsetzung“ weiter unten.
 
 Zum Vergleich: Für lückenlose Abdeckung wären sechs Zündungen pro 120 Sekunden nötig (6 × 20 s).
 
@@ -1001,7 +1002,8 @@ members"; ein Beschwörer in einer anderen Allianzgruppe verstärkt diesen Spiel
 damit eine Gruppenfrage, keine Allianzfrage — anders als bei der Wiederbelebung, wo die Allianz je
 nach `RaiseType` mitzählt.
 
-**Zwei Stellen bleiben bewusst unverändert.** Die Burst-Medizin in `SMN_Reborn.cs:189` fragt weiter
+**Zwei Stellen bleiben bewusst unverändert.** Die Burst-Medizin (`UseBurstMedicine` in
+`SMN_Reborn.cs`) fragt weiter
 nach dem **eigenen** Buff: Sie ist eine Fünfzehn-Minuten-Ressource und gehört in das eigene
 Solar-Fenster, das stärkste des Zyklus; an einen fremden Buff gehängt landete sie irgendwo. Und
 `ChurinSMN.cs` trägt denselben V1-Befund (`:995`, `:1015`), ist aber fremdes Werk mit eigener

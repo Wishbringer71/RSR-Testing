@@ -251,6 +251,15 @@ public static class Watcher
 
 			DataCenter.HealHP = set.GetSpecificTypeEffect(ActionEffectType.Heal);
 
+			// Record what this heal was actually worth in health points. HealHP above is consumed and
+			// cleared as soon as the server's own health update catches up, so it answers "do not heal
+			// this target twice" and nothing beyond the next few frames; a rule that wants to know how
+			// far one cast reaches needs the figure to survive the cast.
+			if (DataCenter.HealHP is { Count: > 0 })
+			{
+				DataCenter.RecordHealEffect(action!.Value.RowId, DataCenter.HealHP.Values);
+			}
+
 			// Ensure ApplyStatus dictionary is non-null, then merge source-applied effects
 			DataCenter.ApplyStatus = set.GetSpecificTypeEffect(ActionEffectType.ApplyStatusEffectTarget) ?? [];
 			var sourceApply = set.GetSpecificTypeEffect(ActionEffectType.ApplyStatusEffectSource);

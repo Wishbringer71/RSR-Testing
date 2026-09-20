@@ -34,6 +34,14 @@ jobs:
       - name: Check the heal target order
         run: python3 .github/scripts/audit/check_heal_target_order.py
 
+      # A target override replaces that whole ranking with one sort, and the two sorts answer
+      # different questions: points say who does not survive the next hit, shares say who is furthest
+      # from safe. Where the action's own effect text names a percentage threshold, the game works in
+      # shares and a points sort can pick a target the follow-up effect never triggers on. Summoner's
+      # Rekindle was exactly that case and nothing failed over it.
+      - name: Check the heal target measure matches the action
+        run: python3 .github/scripts/audit/check_heal_target_measure.py
+
       # Depth alone is not enough: this fork's own remote carries no upstream tags at all, only
       # 7.5.5.41+wsh1 and 7.5.6.1+wsh1, and this environment cannot push tags to fix that. So the
       # release tags have to come from upstream directly, or `git describe` finds nothing to

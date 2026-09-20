@@ -102,6 +102,51 @@ Abwehraktion ein belegter Wert. Fuer Barrieren liegt er vor (25 %, 15 %, 10 % au
 fuer Minderungen steht er im Wirktext und ist aus den Ressourcen erzeugbar statt handzufuehren.
 Blast Radius und Auflagen stehen in `TODO.md`.
 
+## Wann eine verfallende Heilung zuendet
+
+**Die Heilschwellen sind fuer die teure Heilung eines Heilers gebaut, und fuer eine verfallende
+Nebenheilung sind sie das falsche Mass.** `AutoStatus.HealAreaAbility` verlangt zweierlei zugleich:
+die Streuung der Gruppengesundheit unter `HealthDifference` (0,25 im Code) **und** ihren Durchschnitt
+unter `HealthAreaAbility` (0,75 im Code; beides je Job einstellbar, seine eigenen Werte sind von hier
+nicht messbar). Die Streuungsbedingung ist der Grund, warum eine Flaechenheilung ausbleibt, wenn
+**einer** getroffen wurde: Genau dann ist die Streuung gross. Das ist fuer einen Heilzauber richtig —
+eine teure Flaechenheilung fuer einen einzelnen Verletzten ist der falsche Tausch.
+
+**Fuer eine Aktion, die ohnehin verfaellt, ist es der falsche Tausch in die andere Richtung.** Lux
+Solaris kostet kein MP und keinen GCD; ihr einziger Preis ist der Einschiebeplatz, und sie erlischt
+mit Refulgent Lux. Die Frage lautet dort nicht „lohnt Flaechenheilung“, sondern **„ist dieser Wurf
+verschwendet“**.
+
+**Vorgabe des Auftraggebers, woertlich:** „Hier besteht aber nur eine gewisse Zeit die Möglichkeit zu
+heilen. Am besten, wenn die bestehe Gesundheit gerade so hoch ist, dass die Heilung auf 100 % der Hp
+kommt.“
+
+| Lage | Antwort |
+|---|---|
+| Fehlbetrag kleiner als die Heilung | warten — der Ueberschuss verpufft, und das Fenster laeuft noch |
+| Fehlbetrag erreicht die Heilung | zuenden — sie kommt vollstaendig an |
+| Fenster laeuft aus, irgendjemand ist verletzt | zuenden — ungenutzt ist sie ganz verloren |
+
+**Die Groesse dafuer ist der gemessene Heilwert, nicht die Potenz.** 500 Potenz sind von hier aus
+nicht in Lebenspunkte umzurechnen: Heilkraft, Ausruestung und Verstaerkungen entscheiden darueber,
+und sie aendern sich. Gemessen wird sie stattdessen — der Effekt-Handler sieht jede eigene Heilung
+mit ihrem tatsaechlichen Wert (`Watcher.ActionFromSelf`, `ActionEffectType.Heal`), und
+`DataCenter.GetObservedHealPerCast` gibt ihn geglaettet zurueck. **Das ist die selbstkorrigierende
+Sonde, die dieses Konzept von jeder Regelaenderung verlangt:** Sie erhebt und bewertet im selben
+Zug, korrigiert sich mit jedem Wurf, folgt einem Ausruestungswechsel innerhalb weniger Einsaetze und
+verlangt vom Auftraggeber kein Ablesen.
+
+**Der Anlauf ist benannt:** Vor der ersten beobachteten Landung ist der Wert 0, und 0 heisst
+*unbekannt*, nicht *heilt nichts*. Dann gilt das bisherige Verhalten — Heilflagge plus
+Verfallsklausel —, statt eine Zahl anzunehmen. Ebenfalls benannt: Der Wert ist ein **absoluter**
+Betrag und trifft jedes Mitglied mit einem anderen Anteil; verglichen wird er deshalb mit dem
+groessten Fehlbetrag der Gruppe (`DataCenter.LargestMissingHp`), nicht mit einem Durchschnittsanteil.
+Kritische Heilungen streuen den Messwert, weshalb er geglaettet und nicht ueberschrieben wird.
+
+**Die Verfallsklausel kostet hier fast nichts, und das ist am Wirktext belegt:** Refulgent Lux laeuft
+30 s, die Demi-Phase 15 s. Die letzten GCDs des Status liegen also **hinter** der Burstphase, wo der
+Angriffszweig duenn ist — der Einschiebeplatz, den die Klausel dort nimmt, ist kein Burstplatz.
+
 ## Was ein Baustein mehrfach traegt
 
 **Die offenen Punkte dieser Konzeptfamilie haengen an weniger Bausteinen, als ihre Zahl vermuten
@@ -122,6 +167,15 @@ Der Wert ist **erzeugbar**, nicht handzufuehren, und das ist gemessen statt verm
 ausgeschriebenem Prozentsatz — 10, 15, 20, 25, 30, 40, 50 und 99 %; die Barrieren nennen ihren
 Anteil ebenso (25 %, 15 %, 10 %). `RotationSolver.GameData` liest dieselben Blätter ohnehin aus. Das unterscheidet ihn von der hier verworfenen
 Statussatz-Tabelle, deren Einwand die Pflege war.
+
+**Der gemessene Wert einer eigenen Heilung — dieselbe Bauform, die andere Haelfte der Frage.** Das
+Schadenspotential je Gegneraktion sagt, wie gross der Treffer ist; `GetObservedHealPerCast` sagt, wie
+weit die eigene Antwort reicht. Erst beide zusammen beantworten Vorgabe 5 in Punkten statt in
+Kategorien: Ob eine Heilung den Fehlbetrag schliesst, ob sie ueberheilt, und ob Heilung allein
+reicht oder Barriere und Minderung hinzu muessen. Gebaut wurde er fuer die Zuendregel oben, er steht
+aber fuer **jede** Heilaktion zur Verfuegung, weil der Effekt-Handler nicht nach Job unterscheidet.
+Was er nicht beantwortet: den Wert einer Aktion, die noch nie gewirkt wurde — dafuer bleibt der
+Wirktext die Quelle.
 
 **Das gemessene Schadenspotential je Gegneraktion — drei Fragen in drei Konzepten.** Es liegt seit
 A99 bis A102 vor (`13-aoe-damage-classification.md`) und wird bisher an **einer** Stelle gelesen:

@@ -2928,6 +2928,35 @@ Allgemeine Form, in `CLAUDE.md` aufgenommen: Wo ein fremder Schutzmechanismus al
 **Erreichter Prüfgrad:** statische Erhebung an Aktionseinstellungen, Wirktext und Dispatch-Reihenfolge; `check_cs_structure.py` ohne Befund. Keine Laufzeitbeobachtung.
 
 ---
+
+### A117 · Die Flächenheilung des Beschwörers wartete auf eine Schwelle, die für sie nicht gemacht ist (19.09.2026)
+
+**Zwei Fragen und zwei Vorgaben des Auftraggebers:** „Wann zündet die flächenheilung von Solar bahamut Phase? Ich habe den Verdacht, dass sie nicht immer zündet, wenn die Gruppe Heilung bräuchte. Vielleicht aufgrund der heilschwelle. Hier besteht aber nur eine gewisse Zeit die Möglichkeit zu heilen. Am besten, wenn die bestehe Gesundheit gerade so hoch ist, dass die Heilung auf 100 % der Hp kommt. Auf wen geht der Single hot bei Phoenix? Am besten auf den mit der geringsten prozentualen hp, ansonsten auf den Caster selbst.“ Der Verdacht trifft zu, und die Ursache ist nicht die Höhe der Schwelle, sondern die zweite Bedingung neben ihr.
+
+**Erhoben: Lux Solaris hatte zwei Wege, und beide verschließen sich in der Burstphase.**
+
+| Weg | Bedingung | Warum er ausfällt |
+|---|---|---|
+| `HealAreaAbility` | `AutoStatus.HealAreaAbility` steht | `ShouldAddHealAreaAbility` fordert **zugleich** Streuung < `HealthDifference` (0,25) und Durchschnitt < `HealthAreaAbility` (0,75). Trifft eine Mechanik **einen** Spieler, ist die Streuung groß — die Flagge bleibt genau dann unten, wenn einer verletzt ist |
+| `GeneralAbility` (Verfallsklausel ≤3 GCDs) | keine Flagge nötig | steht in `CustomRotation_Ability.cs` **hinter** `AttackAbility` (`:379`/`:383` gegen `:388`/`:392`), und der Angriffszweig des Beschwörers hat in einer Demi-Phase immer etwas — Energy Siphon, Energy Drain, Enkindle |
+
+**Das ist kein Defekt dieser beiden Zweige.** Die Streuungsbedingung ist für den teuren Flächenzauber eines Heilers richtig: ihn für einen einzelnen Verletzten auszugeben, ist der falsche Tausch. Lux Solaris ist das nicht — kein MP, kein GCD, und sie erlischt mit Refulgent Lux. Die Frage lautet dort nicht „lohnt Flächenheilung“, sondern „ist dieser Wurf verschwendet“, und seine Vorgabe beantwortet genau die.
+
+**Die Größe dafür wird gemessen, nicht angenommen.** 500 Potenz sind von hier aus nicht in Lebenspunkte umzurechnen — Heilkraft und Ausrüstung entscheiden. Der Effekt-Handler sieht dagegen jede eigene Heilung mit ihrem tatsächlichen Wert; `DataCenter.HealHP` hielt ihn bisher nur wenige Bilder lang, um Doppelheilungen zu vermeiden. `RecordHealEffect` legt ihn jetzt je Aktions-Id ab, geglättet gegen die Streuung kritischer Heilungen, und `GetObservedHealPerCast` gibt ihn zurück. **Das ist die selbstkorrigierende Sonde, die `08-mitigation-synergy.md` von jeder Regeländerung dieser Familie verlangt** — sie erhebt und bewertet im selben Zug und verlangt kein Ablesen. Anlauf benannt: vor der ersten Landung ist der Wert 0 = unbekannt, und dann gilt das bisherige Verhalten.
+
+**Zielwahl von Rekindle: nach Punkten statt nach Anteil, und das ist unabhängig von der Vorgabe falsch.** `targetOverride: TargetType.LowHP` sortiert nach aktuellen Lebenspunkten. Weil die Lebenspools der Rollen weit auseinanderliegen, kann ein Magier bei voller Gesundheit weniger Punkte tragen als ein Tank bei der Hälfte — die Sortierung gab dann den Vollen zurück. Der Beleg gegen das Punktemaß steht im Wirktext der Aktion selbst: Rekindle bewaffnet seine Nachheilung „when HP falls below 75%“, **das Spiel misst diese Aktion also in Anteilen.** Umgestellt auf `LowHPPercent`, mit dem von ihm genannten Rückfall auf den Wirkenden.
+
+**Dabei gefunden: die beiden Rekindle-Zweige in `GeneralAbility` standen in verkehrter Reihenfolge.** Der Zweig für ≤2 GCDs Restdauer stand **vor** dem für ≤3 GCDs und zielte ungerichtet; da der kürzere Bereich im längeren enthalten ist, antwortete ab zwei GCDs immer der ungerichtete. Je dringender die Lage, desto schlechter die Zielwahl — das Gegenteil der erkennbaren Absicht. Zu einem Zweig zusammengeführt.
+
+**Klassenerhebung, begründet eingeschränkt statt gleichgesetzt.** Dieselbe Bauform steht bei The Blackest Night, Oblation, Heart of Corundum, Heart of Stone und Aurora. Dort ist das Punktemaß nach Konzept 07 möglicherweise **richtig** — eine Barriere gegen einen angekündigten Treffer beantwortet „wer überlebt den nächsten Einschlag nicht“, und ein Treffer ist eine absolute Zahl. Erfasst in `TODO.md`, nicht bearbeitet; beim Dunkelritter berührt die Frage seine dokumentierte Entscheidung in `10-drk-blackest-night.md`.
+
+**Regressionsschutz:** `.github/scripts/audit/check_heal_target_measure.py` erhebt aus `ActionId.resx` jede Aktion, deren Wirktext eine eigene Prozentschwelle nennt (Lauf vom 19.09.2026: sechs), und meldet jede Stelle, die eine davon nach Punkten sortiert. Es prüft das **Maß**, nicht die Zielwahl im Ganzen, damit eine Barriere nach Punkten zulässig bleibt. Mit Selbsttest, in `build.yaml` eingebunden.
+
+**Nebenbefund, gefunden durch `check_doc_references.py`:** Der Eintrag zu Searing Light in `TODO.md` führte einen Zeilenverweis, der durch die Änderungen dieser Sitzung gealtert war, und nannte inhaltlich noch Ifrit als Ausweichblock — den Stand vor C69. Beides berichtigt.
+
+**Erreichter Prüfgrad:** statische Erhebung an Flaggenberechnung, Dispatch-Reihenfolge, Zielsortierung und Wirktexten; Strukturlauf und alle Prüfskripte ohne Befund; Compile im Prüflauf des Zweigs. Keine Laufzeitbeobachtung — und hier ist sie ausnahmsweise nicht der ausstehende Nachweis, weil die Regel ihren eigenen Messwert führt.
+
+---
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

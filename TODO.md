@@ -158,7 +158,7 @@ Nicht behoben, weil der Wirkungsbereich den Vorgang sprengt. Das Flag wird in `I
 
 ### Beschwörer: Searing Light bei mehreren Beschwörern — im Spiel zu bestätigen · N
 
-Umgesetzt und in `AUDIT_LOG.md` A78 und A89 nachgewiesen, soweit statisch möglich; Konzept in `docs/rotation-flow/12-searing-light-stacking.md`. Der Stand im Code ist V8: `mayFireSearingLight` fordert die Burstphase in Solar Bahamut oder — bei einem zweiten Beschwörer — die große Beschwörung, und weicht bei **allen** belegten Phasen auf Ifrit aus (`SMN_Reborn.cs:227-229`). V7 ist damit zurückgebaut; das frühere `|| !HasAnySearingLight` steht nicht mehr in der Zündbedingung. Offen sind zwei Beobachtungen, die nur im Spiel zu machen sind, beide mit einer Gruppe aus mindestens zwei Beschwörern:
+Umgesetzt und in `AUDIT_LOG.md` A78 und A89 nachgewiesen, soweit statisch möglich; Konzept in `docs/rotation-flow/12-searing-light-stacking.md`. Der Stand im Code ist V8: `mayFireSearingLight` in `SMN_Reborn.cs` fordert die Burstphase in Solar Bahamut, das unmittelbar bevorstehende Burstfenster, oder — bei einem zweiten Beschwörer — die große Beschwörung, und weicht bei **allen** belegten Phasen auf Titan aus, oder auf Ifrit, wenn der Spieler ohnehin beim Ziel steht (C69). V7 ist damit zurückgebaut; das frühere `|| !HasAnySearingLight` steht nicht mehr in der Zündbedingung. Offen sind zwei Beobachtungen, die nur im Spiel zu machen sind, beide mit einer Gruppe aus mindestens zwei Beschwörern:
 
 **Kommt Solar Bahamut weiterhin alle 120 Sekunden?** Das entscheidet die Kopplungsfrage aus dem Defekt zu `UseSummonsAndTrances` weiter oben. Rutscht der Takt, trägt `burstInSolar` nicht mehr, und die Zündbedingung fällt auf den Zweig für den zweiten Beschwörer zurück.
 
@@ -478,6 +478,26 @@ Geprüfte Nicht-Fehlstellen: `DTRManualAuto` bildet den vom Enum-Text beschriebe
 **Ein zweites Argument für die Zündung vor der Beschwörung, aus derselben Erhebung:** Die Beschwörung gewährt laut Wirktext selbst Refulgent Lux (30 s). Sobald sie aufgeht, ist Lux Solaris wirkbar, und `HealAreaAbility` wird in `CustomRotation_Ability.cs:169`/`:188` **vor** dem Angriffszweig gefragt — der Platz **hinter** der Beschwörung hat damit einen Konkurrenten, den der Platz **davor** nicht hat. Schluss aus Wirktext und Zweigreihenfolge, keine Spielbeobachtung.
 
 **Konzept:** `docs/rotation-flow/12-searing-light-stacking.md`
+
+### Beschwörer: der gemessene Heilwert braucht einen Anlauf — im Spiel zu bestätigen · N
+
+**Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
+
+Die Zündregel für Lux Solaris vergleicht den größten Fehlbetrag der Gruppe mit dem **gemessenen** Wert einer Landung (`DataCenter.GetObservedHealPerCast`). Vor der ersten beobachteten Landung ist dieser Wert 0 = unbekannt, und dann gilt das bisherige Verhalten: Heilflagge plus Verfallsklausel. Ein Kampf beginnt also mit dem alten Verhalten und erreicht die neue Regel erst nach dem ersten Wurf.
+
+**Zu beobachten:** ob Lux Solaris ab dem zweiten Einsatz eines Kampfes sichtbar später und voller trifft, und ob die Verfallsklausel die Aktion am Fensterende zuverlässig noch ausgibt. Beides ist am Gesundheitsbalken abzulesen — eine Ablesung durch den Auftraggeber ist dafür **nicht** nötig, die Regel korrigiert sich selbst.
+
+**Offen und nicht gebaut:** Die Messung bezieht sich auf den absoluten Heilbetrag; für Mitglieder mit kleinerem Lebenspool ist derselbe Betrag ein größerer Anteil. Die Regel vergleicht deshalb gegen den größten Fehlbetrag der Gruppe und nicht je Mitglied. Ob das im Spiel genügt, ist nicht entschieden.
+
+### Zielüberschreibungen nach Punkten bei Dunkelritter und Revolverklinge — erfasst, Entscheidung offen · N, U
+
+**Konzept:** `docs/rotation-flow/07-heal-target-priority.md`, `docs/rotation-flow/10-drk-blackest-night.md`
+
+Dieselbe Bauform wie bei Rekindle, aber **nicht** ohne Weiteres derselbe Fehler: The Blackest Night und Oblation (`DRK_Reborn.cs`), Heart of Corundum, Heart of Stone und Aurora (`GNB_Reborn.cs`) wählen ihr Ziel über `targetOverride: TargetType.LowHP`, also nach aktuellen Lebenspunkten. Für eine Barriere gegen **einen** angekündigten Treffer ist das Punktemaß nach Konzept 07 das richtige — ein Treffer ist eine absolute Zahl.
+
+**Was gleichwohl zu entscheiden ist:** Beim Dunkelritter hängt an derselben Wahl eine zweite Prüfung (`GetHealthRatio() <= BlackLanternRatio`). Zeigt die Sortierung auf einen Unverletzten mit kleinem Pool, schlägt diese Prüfung fehl und die Aktion fällt **gar nicht** — statt auf ein anderes Ziel auszuweichen. Beim Revolverklinge fehlt im `Fullusage`-Zweig jede Bedarfsprüfung.
+
+Die Entscheidung berührt die dokumentierte Begründung in `10-drk-blackest-night.md` und gehört dem Auftraggeber; bearbeitet wird hier nichts. Die Fundstellen in den PvP-Rotationen liegen außerhalb seines Nutzungsprofils und bleiben unbearbeitet.
 
 ### Beim Beschwörer bleibt in der 4er-Instanz nur ein einziger Weg zu Radiant Aegis und Addle · N
 

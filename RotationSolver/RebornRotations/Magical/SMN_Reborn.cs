@@ -107,11 +107,34 @@ public sealed class SMN_Reborn : SummonerRotation
 	[RotationDesc(ActionID.RekindlePvE)]
 	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		if (RekindlePvE.CanUse(out act, targetOverride: TargetType.LowHP))
+		if (TryRekindle(out act))
 		{
 			return true;
 		}
 		return base.HealSingleAbility(nextGCD, out act);
+	}
+
+	// Owner's rule: lowest percentage first, and the caster himself when there is nobody else.
+	//
+	// It used to be TargetType.LowHP, which sorts by CURRENT health points, not by share. Those are
+	// different questions and the difference decides who gets the heal: a caster at full health can
+	// hold fewer points than a tank at half, because the pools differ by that much. The sort then
+	// hands back somebody who needs nothing while the tank keeps falling - and the cast is spent.
+	//
+	// The game itself measures this action in shares, which settles which of the two is meant: the
+	// Rekindle effect text arms its heal-over-time "when HP falls below 75%". A target picked by
+	// points can therefore be one the follow-up effect will never trigger on.
+	//
+	// The self fallback is not a formality. Rekindle only exists while Firebird Trance runs, so a
+	// cast that finds no target is lost with the phase, and 400 potency on oneself beats nothing.
+	private bool TryRekindle(out IAction? act)
+	{
+		if (RekindlePvE.CanUse(out act, targetOverride: TargetType.LowHPPercent))
+		{
+			return true;
+		}
+
+		return RekindlePvE.CanUse(out act, targetOverride: TargetType.Self);
 	}
 
 	[RotationDesc(ActionID.RadiantAegisPvE, ActionID.AddlePvE)]
@@ -170,17 +193,14 @@ public sealed class SMN_Reborn : SummonerRotation
 			}
 		}
 
-		if (StatusHelper.PlayerWillStatusEndGCD(2, 0, true, StatusID.FirebirdTrance))
-		{
-			if (RekindlePvE.CanUse(out act))
-			{
-				return true;
-			}
-		}
-
+		// One branch, not two. There were two: three GCDs before Firebird Trance ends with a target
+		// choice, and two GCDs before it without one - but the shorter window is contained in the
+		// longer and stood FIRST, so from two GCDs onwards the unaimed call always answered first.
+		// The intent was plainly the other way round, an aimed cast with a last-resort behind it, and
+		// that is what TryRekindle does: lowest share, else the caster himself.
 		if (StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.FirebirdTrance))
 		{
-			if (RekindlePvE.CanUse(out act, targetOverride: TargetType.LowHP))
+			if (TryRekindle(out act))
 			{
 				return true;
 			}
@@ -276,6 +296,50 @@ public sealed class SMN_Reborn : SummonerRotation
 		if (mayFireSearingLight)
 		{
 			if (SearingLightPvE.CanUse(out act))
+			{
+				return true;
+			}
+		}
+
+		// Lux Solaris is asked here, after Searing Light and ahead of the Aetherflow spenders, because
+		// the two branches that could otherwise carry it both fail in this phase:
+		//
+		// - HealAreaAbility is only reached while AutoStatus.HealAreaAbility stands, and that flag
+		//   wants the party's spread below HealthDifference AND its average below HealthAreaAbility.
+		//   One member taking a mechanic raises the spread, so the flag stays down exactly when a
+		//   single player is the one who is hurt.
+		// - GeneralAbility carries an expiry clause already, but the dispatch asks AttackAbility
+		//   first, and in a demi phase that branch always has something - Energy Siphon, Energy Drain,
+		//   Enkindle. The clause therefore does not get a slot while the phase runs.
+		//
+		// Neither is a defect of those branches: the flag is built for a healer's expensive area cast,
+		// where healing one hurt player with it is the wrong trade. Lux Solaris is not that. It costs
+		// no MP and no GCD, its only cost is the weave slot, and it expires unspent with Refulgent Lux.
+		// The question is therefore not "is area healing worth it" but "is this cast wasted".
+		//
+		// Owner's rule, and it is the answer to that question: fire when the missing health is just
+		// large enough for the heal to land in full. That needs the heal in points, which cannot be
+		// derived from the 500 potency in the effect text - healing power and gear decide it. So it is
+		// measured instead: the effect handler sees what every one of our heals actually restored, and
+		// GetObservedHealPerCast hands back the smoothed figure. Nothing is read later and nothing is
+		// asked of the player; the rule corrects itself on every cast.
+		//
+		// Until the first landing has been seen the figure is 0, which means unknown. Then this branch
+		// stays out of the way and the old behaviour applies - the heal flag decides, plus the expiry
+		// clause below.
+		//
+		// The expiry clause pays for itself here. Refulgent Lux runs 30s against a 15s demi, so its
+		// last GCDs fall AFTER the phase, where the attack branch is thin - the slot it takes there is
+		// not a burst slot.
+		var healPerCast = DataCenter.GetObservedHealPerCast((uint)ActionID.LuxSolarisPvE);
+		var largestMissing = DataCenter.LargestMissingHp;
+		var luxLandsInFull = healPerCast > 0 && largestMissing >= healPerCast;
+		var luxAboutToExpire = largestMissing > 0
+			&& StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux);
+
+		if (luxLandsInFull || luxAboutToExpire)
+		{
+			if (LuxSolarisPvE.CanUse(out act))
 			{
 				return true;
 			}

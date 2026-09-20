@@ -344,6 +344,86 @@ internal static class DataCenter
 
 	internal static bool InEffectTime => DateTime.Now >= EffectTime && DateTime.Now <= EffectEndTime;
 	internal static Dictionary<ulong, uint> HealHP { get; set; } = [];
+
+	// How much health one of our own healing actions actually restored, in points, per action id.
+	// Healing is an absolute figure just like damage, so it is stored as points and divided by the
+	// member's own maximum where it is read - the same member carries a different share of it.
+	//
+	// This exists because the potency in an effect text cannot be converted into points from here:
+	// the result depends on healing power, on the job gauge and on buffs, and it changes with every
+	// piece of gear. Asking the fight instead costs nothing - the effect handler already sees every
+	// heal we land, with the real number.
+	//
+	// Smoothed rather than overwritten, because a critical heal restores markedly more than an
+	// ordinary one and a single one of those must not move the estimate to where the next decision
+	// is wrong. The weight is even: the most recent landing counts as much as everything before it,
+	// so a gear change is followed within a few casts instead of being averaged away.
+	private static readonly Dictionary<uint, float> _observedHealPerCast = [];
+
+	internal static void RecordHealEffect(uint actionId, IEnumerable<uint> healedAmounts)
+	{
+		float sum = 0;
+		var count = 0;
+		foreach (var amount in healedAmounts)
+		{
+			// A heal that landed on a full target reports the overheal as 0 in the effect packet,
+			// which would drag the estimate towards zero and never recover. Only landings that
+			// actually restored something say what the action is worth.
+			if (amount == 0)
+			{
+				continue;
+			}
+			sum += amount;
+			count++;
+		}
+
+		if (count == 0)
+		{
+			return;
+		}
+
+		var perTarget = sum / count;
+		_observedHealPerCast[actionId] = _observedHealPerCast.TryGetValue(actionId, out var known) && known > 0
+			? (known + perTarget) / 2f
+			: perTarget;
+	}
+
+	/// <summary>
+	/// The healing one cast of this action was last seen to restore, in health points, or 0 when it
+	/// has not been observed yet. 0 means "unknown", never "heals nothing" - a caller that cannot
+	/// act on an unknown value keeps its previous behaviour instead of assuming one.
+	/// </summary>
+	public static float GetObservedHealPerCast(uint actionId)
+	{
+		return _observedHealPerCast.TryGetValue(actionId, out var known) ? known : 0f;
+	}
+
+	/// <summary>
+	/// The largest amount of health missing from any living party member, in points. This is the
+	/// figure a heal has to reach for none of it to be wasted on that member.
+	/// </summary>
+	public static float LargestMissingHp
+	{
+		get
+		{
+			float largest = 0;
+			foreach (var member in PartyMembers)
+			{
+				if (member.IsDead || member.MaxHp == 0 || member.CurrentHp >= member.MaxHp)
+				{
+					continue;
+				}
+
+				var missing = (float)(member.MaxHp - member.CurrentHp);
+				if (missing > largest)
+				{
+					largest = missing;
+				}
+			}
+			return largest;
+		}
+	}
+
 	internal static Dictionary<ulong, uint> ApplyStatus { get; set; } = [];
 	internal static uint MPGain { get; set; }
 

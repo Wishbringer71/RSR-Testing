@@ -291,6 +291,50 @@ Hinter `HealAheadOfDamage`, Standard aus; ausgeschaltet liefern alle vier Getter
 Die Nachweislage ist damit unverändert die der Stufe 2: Der Nutzen bleibt eine Annahme, bis er im
 Spiel beobachtet ist.
 
+## Die Zielüberschreibung hebt die ganze Rangfolge auf
+
+**Alles oben Beschriebene gilt nur, solange eine Aktion `FindHealTarget` überhaupt erreicht.** Ein
+`targetOverride` ersetzt die Rangliste durch **eine einzige Sortierung** — und dabei fällt auch der
+Bedarfsfilter weg, den `FindHealTarget` an seinem Eingang führt (`GetForecastHealthRatio() <
+healRatio`, `AutoHealRatio` 0,80 als Vorgabewert im Code). Eine überschriebene Zielwahl kann deshalb
+auf einen Unverletzten zeigen; die Rangfolge kann das nicht.
+
+**Welche Sortierung richtig ist, hängt an der Aktion, und beide Antworten kommen vor:**
+
+| Maß | Beantwortet | Richtig für |
+|---|---|---|
+| `TargetType.LowHP` — aktuelle Gesundheit in **Punkten** | Wer überlebt den nächsten Einschlag nicht? | eine Barriere gegen **einen** angekündigten Treffer; das ist die Ordnung der Gefährdungsklasse 1 |
+| `TargetType.LowHPPercent` — **Anteil** der Maximalgesundheit | Wer ist am weitesten vom sicheren Stand entfernt? | Heilung, und jede Aktion, deren eigener Wirktext eine Prozentschwelle nennt |
+
+**Vorgabe des Auftraggebers zu Rekindle** (Beschwörer, Phönix-Phase): „Auf wen geht der Single hot
+bei Phoenix? Am besten auf den mit der geringsten prozentualen hp, ansonsten auf den Caster selbst.“
+
+**Der Code sortierte nach Punkten, und das ist hier belegbar falsch** — nicht nur abweichend von der
+Vorgabe. Die Lebenspools der Rollen unterscheiden sich so stark, dass ein Magier bei voller
+Gesundheit weniger Punkte tragen kann als ein Tank bei der Hälfte; die Sortierung gab dann den
+Vollen zurück, während der Tank weiter fiel, und die Ladung war ausgegeben. Der Beleg gegen das
+Punktemaß steht im Wirktext der Aktion selbst: Rekindle bewaffnet seine Nachheilung „when HP falls
+below 75%“ — **das Spiel misst diese Aktion in Anteilen.** Ein nach Punkten gewähltes Ziel kann
+damit eines sein, bei dem die Nachwirkung nie auslöst.
+
+**Der Rückfall auf den Wirkenden ist keine Förmlichkeit.** Rekindle besteht nur, solange Firebird
+Trance läuft; ein Aufruf ohne Ziel ist mit der Phase verloren, und 400 Potenz auf sich selbst sind
+mehr als nichts.
+
+**Geprüft wird das jetzt maschinell, nicht erinnert:**
+`.github/scripts/audit/check_heal_target_measure.py` erhebt aus `ActionId.resx` jede Aktion, deren
+Wirktext eine eigene Prozentschwelle nennt, und meldet jede Stelle, die genau eine solche Aktion
+nach Punkten sortiert. Es prüft das Maß, nicht die Zielwahl im Ganzen — eine Barriere nach Punkten
+zu wählen bleibt zulässig und wird nicht gemeldet.
+
+**Die übrigen Fundstellen derselben Bauform sind erhoben und bleiben unbearbeitet**, weil bei ihnen
+das Punktemaß nach der Tabelle oben das richtige sein kann: The Blackest Night und Oblation beim
+Dunkelritter, Heart of Corundum, Heart of Stone und Aurora beim Revolverklinge. Beim Dunkelritter
+hängt eine zweite Prüfung an derselben Wahl — das gewählte Ziel muss zusätzlich unter
+`BlackLanternRatio` stehen —, sodass eine Fehlwahl die Aktion nicht nur verschiebt, sondern ganz
+ausfallen lässt. Die Entscheidung darüber berührt `10-drk-blackest-night.md` und gehört dem
+Auftraggeber. Die Fundstellen in den PvP-Rotationen liegen außerhalb seines Nutzungsprofils.
+
 ## Abgrenzung zur Schildanrechnung
 
 Die entfernte Schildanrechnung (`AUDIT_LOG.md` A85) hat dieselbe Größe an der falschen Stelle
