@@ -189,6 +189,17 @@ internal static partial class TargetUpdater
 		// Filtered against the party, so an entry means what a reader will take it to mean. Enemies
 		// point at pets, at other enemies and at nothing at all, and an unfiltered set is therefore
 		// never empty - a later reader asking "is anyone under fire" would always get yes.
+		// Built here from the finished party list rather than filled inside the loop above. It used
+		// to be filled there, next to the alliance checks that needed the same lookup - upstream has
+		// since dropped those, the variable went with them, and this reader was left naming something
+		// that no longer existed. One pass over at most eight members costs nothing and does not
+		// depend on how that loop is written next time.
+		HashSet<ulong> partyIds = new(capacity: partyMembers.Count);
+		for (var i = 0; i < partyMembers.Count; i++)
+		{
+			_ = partyIds.Add(partyMembers[i].GameObjectId);
+		}
+
 		HashSet<ulong> targeted = new(capacity: partyIds.Count);
 		for (var i = 0; i < hostileTargets.Count; i++)
 		{

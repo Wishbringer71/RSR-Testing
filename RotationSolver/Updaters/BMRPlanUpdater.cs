@@ -96,6 +96,7 @@ internal static class BMRPlanUpdater
 			return;
 		}
 
+		var now = DateTime.Now;
 		if (_dirty || now - _lastPoll >= FallbackPollInterval)
 		{
 			try
