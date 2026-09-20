@@ -1622,7 +1622,7 @@ public struct ActionTargetInfo(IBaseAction action)
 				default:
 					if (Service.Config.InDebug)
 					{
-						PluginLog.Debug($"{action.Action.Name.ExtractText()}'s CastType is not valid! The value is {action.Action.CastType}");
+						//PluginLog.Debug($"{action.Action.Name.ExtractText()}'s CastType is not valid! The value is {action.Action.CastType}");
 					}
 					return false;
 			}
@@ -1693,7 +1693,7 @@ public struct ActionTargetInfo(IBaseAction action)
 			default:
 				if (Service.Config.InDebug)
 				{
-					PluginLog.Debug($"{action.Action.Name.ExtractText()}'s CastType is not valid! The value is {action.Action.CastType}");
+					//PluginLog.Debug($"{action.Action.Name.ExtractText()}'s CastType is not valid! The value is {action.Action.CastType}");
 				}
 				return false;
 		}
