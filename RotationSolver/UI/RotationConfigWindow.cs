@@ -5477,6 +5477,20 @@ public partial class RotationConfigWindow : Window
 			var tankbuster = DataCenter.BMRNextTankbusterIn;
 			ImGui.Text($"Next raidwide in: {(raidwide >= float.MaxValue ? "not predicted by this module" : $"{raidwide:F1}s")}");
 			ImGui.Text($"Next tankbuster in: {(tankbuster >= float.MaxValue ? "not predicted by this module" : $"{tankbuster:F1}s")}");
+
+			// The three lines below describe ONE event - BossMod's first prediction by activation
+			// time. They are deliberately grouped away from the two above, which search per type and
+			// can be pointing at a different event entirely.
+			var nextDamage = DataCenter.BMRNextDamageIn;
+			if (nextDamage >= float.MaxValue)
+			{
+				ImGui.Text("Next predicted damage: none");
+			}
+			else
+			{
+				ImGui.Text($"Next predicted damage: {nextDamage:F1}s, type {DataCenter.BMRNextDamageType}, "
+					+ $"{(DataCenter.BMRNextDamageHitsPlayer ? "hits you" : "does not hit you")}");
+			}
 		}
 
 		ImGui.Separator();

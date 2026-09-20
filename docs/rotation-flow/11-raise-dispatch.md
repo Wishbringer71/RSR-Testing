@@ -22,7 +22,7 @@ Verdrahtung der Phönixfeder und deren Zieleignung.
 ## Ursache
 
 `WeaponRemain` ist derselbe Wert wie `DataCenter.DefaultGCDRemain`
-(`CustomRotation_OtherInfo.cs:1730`). Auswahl und Ausführung messen dieselbe Größe, und ihre
+(`WeaponRemain` in `CustomRotation_OtherInfo.cs`). Auswahl und Ausführung messen dieselbe Größe, und ihre
 Bedingungen schließen einander aus:
 
 | Stelle | Bedingung | Schicht |

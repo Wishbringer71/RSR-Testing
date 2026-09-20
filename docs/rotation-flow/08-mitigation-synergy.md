@@ -219,6 +219,29 @@ aus**, mit `ProactiveMitigationHeld` als Sonde.
 meint, der gerade laeuft. Laeuft nichts, oder ist der laufende Cast nie gemessen worden, wird keine
 Aussage getroffen und die Vorhersage wie bisher befolgt.
 
+#### Zwei Ladungen — und warum sie hier trotzdem nicht ausgespielt werden
+
+**Schimmerschild hat auf Stufe 100 zwei Ladungen**, belegt am Merkmalstext: „Enhanced Radiant Aegis
+[480] — Allows the accumulation of charges for consecutive uses of Radiant Aegis. Maximum Charges:
+2“ (Angabe des Auftraggebers, am Merkmal bestätigt). Troubadour, Tactician und Shield Samba haben
+eine.
+
+**Damit scheint der Fall gelöst:** Bei zwei Treffern in Folge deckt eine Ladung den ersten, die
+zweite den zweiten — beide voll, ohne Raten. **Diese Lösung wird nicht genommen, und der Grund ist
+eine dokumentierte Entscheidung des Auftraggebers.**
+
+A9 (`6704335d`) hat den ungegateten Radiant-Aegis-Zweig auf seine Meldung hin entfernt, der Schild
+gehe ohne Gefahr hinaus. Die dort festgehaltene Begründung ist genau diese: **„`usedUp: true` gab
+dabei auch die zweite Ladung frei — bei echter Gefahr war keine mehr da.“** Er hat es bei der Arbeit
+an dieser Regel wiederholt: die Doppelzündung von Schimmerschild war neben Addle einer der ersten
+Fehler, die der Fork behoben hat.
+
+**Der Unterschied ist real und wird ihm vorgelegt, nicht selbst entschieden:** In A9 ging es um
+**keine** Gefahr, hier um **zwei** angekündigte Treffer, die beide Gefahr sind. Ob die zweite Ladung
+dafür freigegeben wird, ist seine Entscheidung. Bis dahin gilt die Zurückhaltung unabhängig von den
+Ladungen; der Helfer führt die Aktion bereits mit, damit die Entscheidung ohne weiteren Umbau
+umsetzbar ist.
+
 #### Die genaue Frage laesst sich nicht stellen, und das ist gemessen
 
 **Naheliegender waere:** erheben, auf **welches Ereignis** die Vorhersage anspielt, dessen Bewertung

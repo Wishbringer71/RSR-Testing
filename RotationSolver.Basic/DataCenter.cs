@@ -3556,6 +3556,32 @@ internal static class DataCenter
 	public static PredictedDamageType BMRNextDamageType { get; set; } = PredictedDamageType.None;
 
 	/// <summary>
+	/// Who the next predicted damage event hits, as BossModReborn's party bitmask. 0 when nothing is
+	/// predicted.
+	/// </summary>
+	/// <remarks>
+	/// Reads the same entry as <see cref="BMRNextDamageIn"/> and <see cref="BMRNextDamageType"/> -
+	/// BossMod sorts its prediction list by activation time and all three endpoints take the first
+	/// element, so the three describe one event. The type-specific endpoints behind
+	/// <see cref="BMRNextRaidwideIn"/> and <see cref="BMRNextTankbusterIn"/> search for the first
+	/// entry of THEIR type instead, which can be a different one - this mask does not belong to
+	/// those and must not be read alongside them.
+	/// </remarks>
+	public static ulong BMRNextDamagePlayers { get; set; }
+
+	/// <summary>
+	/// Whether the next predicted damage event includes the player.
+	/// </summary>
+	/// <remarks>
+	/// Bit 0, and that position is fixed rather than a guess: BossModReborn's <c>PartyState</c>
+	/// declares <c>PlayerSlot = 0</c>, so the player is always the first slot of its party list and
+	/// does not move with party order. The remaining bits - 1..7 party, 8..23 alliance, 24..63 other
+	/// allies - would need a mapping from BossMod's slot order to this tree's party list, which is
+	/// another unverified contract across the IPC boundary and is deliberately not made.
+	/// </remarks>
+	public static bool BMRNextDamageHitsPlayer { get; set; }
+
+	/// <summary>
 	/// BMR predicts a tankbuster inside the user's single-target mitigation window.
 	/// </summary>
 	public static bool BMRTankbusterImminent =>

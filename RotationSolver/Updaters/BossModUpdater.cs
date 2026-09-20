@@ -52,6 +52,12 @@ internal static class BossModUpdater
 			var damageType = BMRTimeline_IPCSubscriber.NextDamageType?.Invoke() ?? 0;
 			DataCenter.BMRNextDamageIn = damageIn;
 			DataCenter.BMRNextDamageType = (PredictedDamageType)damageType;
+
+			// Same entry as the two above - PredictedDamage[0] - so the three describe one event.
+			// Bit 0 is the player (BossMod PartyState.PlayerSlot = 0).
+			var predictedPlayers = BMRTimeline_IPCSubscriber.PredictedDamagePlayers?.Invoke() ?? 0ul;
+			DataCenter.BMRNextDamagePlayers = predictedPlayers;
+			DataCenter.BMRNextDamageHitsPlayer = (predictedPlayers & 1ul) != 0ul;
 			DataCenter.BMRDebugGenericDamageIn = damageIn;
 			DataCenter.BMRDebugGenericDamageType = damageType;
 

@@ -1563,7 +1563,14 @@ public partial class CustomRotation
 	/// a self status or the enemy for a debuff. The 0.6s floor matches StateUpdater's own guards.
 	/// Always false when BMR is inactive or UseBmrTimeline is off.
 	/// </summary>
-	public static bool BMRShouldRefreshBefore(float predictedIn, float statusDuration, bool statusFromSelf, IBattleChara? target, params StatusID[] statusIDs)
+	/// <param name="action">
+	/// The action this refresh would spend, when the caller can name it. Carried for the open
+	/// decision described at the hold below - whether an action with a charge to spare should skip
+	/// the hold, since it could cover both hits of a pair. Radiant Aegis is the case ("Enhanced
+	/// Radiant Aegis [480]: Maximum Charges: 2") while Troubadour, Tactician and Shield Samba have
+	/// one. Not acted on: spending the second charge is what A9 removed, on the owner's report.
+	/// </param>
+	public static bool BMRShouldRefreshBefore(float predictedIn, float statusDuration, bool statusFromSelf, IBattleChara? target, IBaseAction? action, params StatusID[] statusIDs)
 	{
 		if (!Service.Config.UseBmrTimeline || !BMRActive || predictedIn is not (> 0.6f and < float.MaxValue) || predictedIn > statusDuration)
 		{
@@ -1585,6 +1592,19 @@ public partial class CustomRotation
 		//
 		// This is the hole that the size rating left open: the reactive path has asked "is this hit
 		// worth a cooldown" since A108, the proactive path never did.
+		// A spare charge looks like the answer - with two, both hits of a pair could be covered in
+		// full - and it is NOT taken, because the owner decided the opposite and said why.
+		//
+		// A9 (6704335d) removed the ungated Radiant Aegis branch on his report that the shield went
+		// out with no danger present. The reason recorded there is exactly this one: "usedUp: true
+		// gave away the second charge as well - when real danger came there was none left." He
+		// restated it when this was built: the fork's first fixes, beside Addle, were about Radiant
+		// Aegis being cast twice and spending a charge for nothing.
+		//
+		// The case here is not identical - two announced hits are both real danger, where the A9
+		// case was no danger at all - and that difference is put to him as a decision rather than
+		// taken unilaterally. Until then the hold applies whatever the charges, and `action` is
+		// carried for that decision, not used to weaken it.
 		if (Service.Config.HoldProactiveMitigationForSmallCast && DataCenter.AnnouncedHitIsSmall)
 		{
 			var held = DataCenter.AnnouncedAreaAction;
@@ -1597,6 +1617,14 @@ public partial class CustomRotation
 
 		var chara = statusFromSelf ? Player : target;
 		return chara != null && chara.WillStatusEnd(predictedIn, statusFromSelf, statusIDs);
+	}
+
+	/// <summary>
+	/// As above, for callers that do not name the action they would spend.
+	/// </summary>
+	public static bool BMRShouldRefreshBefore(float predictedIn, float statusDuration, bool statusFromSelf, IBattleChara? target, params StatusID[] statusIDs)
+	{
+		return BMRShouldRefreshBefore(predictedIn, statusDuration, statusFromSelf, target, null, statusIDs);
 	}
 
 	/// <summary>
