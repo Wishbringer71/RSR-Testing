@@ -43,7 +43,7 @@ public partial class RotationConfigWindow : Window
 
 	private List<IncompatiblePlugin> _crashPlugins = [];
 	private List<IncompatiblePlugin> _enabledIncompatiblePlugins = [];
-	private DiagInfo? _cachedDiagInfo;
+	private static DiagInfo? _cachedDiagInfo;
 	private RotationAttribute _curRotationAttribute = new("Unknown", CombatType.PvE);
 	private ICustomRotation? _currentRotation;
 	private Dictionary<RotationConfigWindowTab, (bool, uint)> _configWindowTabProperties = [];
@@ -58,7 +58,7 @@ public partial class RotationConfigWindow : Window
 	private bool _rsrIconTriggered = false;
 	private const double RsrIconHoldSeconds = 1.2;
 
-	public bool CNLanguageClient => _cachedDiagInfo?.Language.ToString() is "Chinese" or "ChineseSimplified";
+	public static bool CNLanguageClient => _cachedDiagInfo?.Language.ToString() is "Chinese" or "ChineseSimplified";
 
 	private static readonly string[] _supporters =
 	[
@@ -140,6 +140,48 @@ public partial class RotationConfigWindow : Window
 		"Be kind",
 		"You can remove some self-buffs with “/statusoff <Name>” (e.g., Peloton) when needed.",
 		"RSR works best with Legacy Type movement settings."
+	];
+	private static readonly string[] _baseUsageHintsCN =
+	[
+		"右键点击任意动作、设置或开关，可查看/复制其宏聊天命令。",
+		"使用 /rsr 作为 /rotation 的简短别名。",
+		"使用 /rotation Auto、/rotation Manual 或 /rotation Off 快速切换模式。",
+		"使用搜索框（左上角）直接跳转到设置。",
+		"点击搜索结果中的外链图标，可跳转到该菜单。",
+		"右键点击设置标签，可复制一条可直接使用的 /rotation Settings 命令。",
+		"技能 标签页：点击动作图标可配置、启用/禁用或设置热键。",
+		"技能：切换 '在冷却窗口中显示'，将某个动作加入冷却覆盖层。",
+		"技能：启用 'Intercepted'，让 RSR 施放你排队的动作（仅 PvE）。",
+		"界面 > 信息：启用 DTR 状态、通知、原始冷却显示以及这些提示。",
+		"界面 > 窗口：启用 Next Action、Control、Cooldown 和 Timeline 窗口。",
+		"Next Action：'No Inputs' 和 'No Move' 选项会改变覆盖层行为。",
+		"仅在副本中或附近有敌人时显示窗口：UI > Windows > Only show with hostile or in duty。",
+		"列表 标签页：管理驱散、优先级状态、击退、无敌和禁止施法列表。",
+		"列表 标签页：使用 'Reset and Update' 快速恢复精选列表。",
+		"状态列表：点击 '+' 可按名称或 ID 搜索；支持模糊搜索。",
+		"状态列表：右键点击图标可移除；在弹出窗口中也可用 Delete 键。",
+		"目标 标签页：调整目标选择、视野锥、接敌行为以及木桩/Boss 处理。",
+		"目标 标签页：设置 /rotation Cycle 行为和目标选择延迟。",
+		"通过聊天管理 TargetingTypes：/rotation Settings TargetingTypes add|remove <Type>。",
+		"自动 > 动作使用与控制：允许/禁止 oGCD，设置 AoE 风格、爆发药、打断和 True North。",
+		"自动 > 治疗用与控制：调整阈值和非治疗职业的治疗行为。",
+		"治疗职业：在 自动 > 治疗用与控制 中自定义 复活/即刻咏唱 和优先级。",
+		"地面 AoE：自动 > 治疗用与控制 中有选项可智能放置有益地面技能。",
+		"基础 > 计时器：调整 Action Ahead 和 Min Updating Time，以平衡性能与插入技能。",
+		"基础 > 自动切换：根据倒计时、死亡、区域切换等自动开启/关闭。",
+		"教学模式 会高亮目标；颜色在 界面 > 信息 中设置。",
+		"职业 标签页：在对应职业时编辑 DNC 舞伴、SGE 心关 坦克和 AST 卡片优先级。",
+		"关于 > 宏 列出了可用的聊天/宏命令和实用语法。",
+		"关于 > 链接：打开配置文件夹、GitHub、Ko-fi 和 Discord。",
+		"额外 > 内部：安全地备份/恢复配置。",
+		"额外：可选调整，例如移除动画/冷却延迟。",
+		"点击侧边栏左下角的立方体图标，将诊断信息复制到剪贴板。",
+		"时间线 窗口可可视化最近动作（界面 > 窗口）。",
+		"打出伤害，别死",
+		"治疗：唯一重要的 HP 就是最后一点",
+		"友善待人",
+		"需要时可以用“/statusoff <Name>”移除某些自身增益（例如 速行）。",
+		"RSR在 Legacy Type 移动设置下效果最佳。"
 	];
 	private int _hintIndex = 0;
 	private float _lastHintSwitch = 0f;
@@ -436,7 +478,69 @@ public partial class RotationConfigWindow : Window
 		public ClientLanguage Language { get; } = startInfo.Language;
 	}
 
+	private string _diagInfoText = string.Empty;
+	private bool _diagInfoAnyCrash;
+	private long _diagInfoTick = long.MinValue;
+	private const long DiagInfoRefreshMs = 1000;
+
 	private void DrawDiagnosticInfoCube()
+	{
+		var tick = Environment.TickCount64;
+		if (_diagInfoTick == long.MinValue || tick - _diagInfoTick >= DiagInfoRefreshMs)
+		{
+			_diagInfoText = BuildDiagnosticInfo(out _diagInfoAnyCrash);
+			_diagInfoTick = tick;
+		}
+
+		// Pulse red if any crash-flagged plugin is enabled, otherwise yellow for general incompatibles
+		Vector4 diagColor;
+		if (_diagInfoAnyCrash)
+		{
+			// Alpha pulses between ~0.25 and ~0.70 at a comfortable speed
+			var t = (float)ImGui.GetTime();
+			var pulse = (MathF.Sin(t * 4f) + 1f) * 0.5f; // 0..1
+			var alpha = 0.25f + (0.45f * pulse);
+			diagColor = new Vector4(1f, 0f, 0f, alpha);
+		}
+		else
+		{
+			diagColor = new Vector4(1f, 1f, .4f, .3f);
+		}
+
+		ImGui.SetCursorPosY(ImGui.GetWindowSize().Y - 20);
+		ImGui.SetCursorPosX(0);
+
+		// Create an invisible button over the area where the InfoMarker will be drawn
+		var markerSize = ImGui.CalcTextSize(FontAwesomeIcon.Cube.ToIconString());
+		markerSize.Y = Math.Max(markerSize.Y, ImGui.GetTextLineHeight()); // Ensure height is at least one line
+
+		ImGui.InvisibleButton("##DiagInfoMarkerBtn", new Vector2(ImGui.GetWindowWidth(), markerSize.Y));
+		var clicked = ImGui.IsItemClicked();
+
+		ImGui.SetCursorPosY(ImGui.GetWindowSize().Y - 20);
+		ImGui.SetCursorPosX(0);
+		ImGuiEx.InfoMarker(_diagInfoText, diagColor, FontAwesomeIcon.Cube.ToIconString(), false);
+
+		// Gold star if Tic-tac-toe win achieved
+		if (OtherConfiguration.RotationSolverRecord.TicTacToeWinStar == true)
+		{
+			ImGui.SameLine();
+			using (var starCol = ImRaii.PushColor(ImGuiCol.Text, ImGuiColors.ParsedGold))
+			{
+				ImGuiEx.Icon(FontAwesomeIcon.Star);
+			}
+			ImguiTooltips.HoveredTooltip("Tic-tac-toe winner!");
+		}
+
+		if (clicked)
+		{
+			// Copy freshly built info rather than the periodically cached text.
+			ImGui.SetClipboardText(BuildDiagnosticInfo(out _));
+			Svc.Toasts.ShowQuest($"Diagnostic info copied to clipboard");
+		}
+	}
+
+	private string BuildDiagnosticInfo(out bool anyCrash)
 	{
 		StringBuilder diagInfo = new();
 
@@ -482,12 +586,9 @@ public partial class RotationConfigWindow : Window
 			_ = diagInfo.Append(lastFrame);
 		}
 
-		// Ensure that IncompatiblePlugins is not null
-		var incompatiblePlugins = PluginCompatibility.IncompatiblePlugins;
-
-		var anyCrash = false;
+		anyCrash = false;
 		_ = diagInfo.AppendLine("\nPlugins:");
-		foreach (var item in incompatiblePlugins)
+		foreach (var item in PluginCompatibility.IncompatiblePlugins)
 		{
 			if (item.IsEnabled)
 			{
@@ -509,51 +610,7 @@ public partial class RotationConfigWindow : Window
 			}
 		}
 
-		// Pulse red if any crash-flagged plugin is enabled, otherwise yellow for general incompatibles
-		Vector4 diagColor;
-		if (anyCrash)
-		{
-			// Alpha pulses between ~0.25 and ~0.70 at a comfortable speed
-			var t = (float)ImGui.GetTime();
-			var pulse = (MathF.Sin(t * 4f) + 1f) * 0.5f; // 0..1
-			var alpha = 0.25f + (0.45f * pulse);
-			diagColor = new Vector4(1f, 0f, 0f, alpha);
-		}
-		else
-		{
-			diagColor = new Vector4(1f, 1f, .4f, .3f);
-		}
-
-		ImGui.SetCursorPosY(ImGui.GetWindowSize().Y - 20);
-		ImGui.SetCursorPosX(0);
-
-		// Create an invisible button over the area where the InfoMarker will be drawn
-		var markerSize = ImGui.CalcTextSize(FontAwesomeIcon.Cube.ToIconString());
-		markerSize.Y = Math.Max(markerSize.Y, ImGui.GetTextLineHeight()); // Ensure height is at least one line
-
-		ImGui.InvisibleButton("##DiagInfoMarkerBtn", new Vector2(ImGui.GetWindowWidth(), markerSize.Y));
-		var clicked = ImGui.IsItemClicked();
-
-		ImGui.SetCursorPosY(ImGui.GetWindowSize().Y - 20);
-		ImGui.SetCursorPosX(0);
-		ImGuiEx.InfoMarker(diagInfo.ToString(), diagColor, FontAwesomeIcon.Cube.ToIconString(), false);
-
-		// Gold star if Tic-tac-toe win achieved
-		if (OtherConfiguration.RotationSolverRecord.TicTacToeWinStar == true)
-		{
-			ImGui.SameLine();
-			using (var starCol = ImRaii.PushColor(ImGuiCol.Text, ImGuiColors.ParsedGold))
-			{
-				ImGuiEx.Icon(FontAwesomeIcon.Star);
-			}
-			ImguiTooltips.HoveredTooltip("Tic-tac-toe winner!");
-		}
-
-		if (clicked)
-		{
-			ImGui.SetClipboardText(diagInfo.ToString());
-			Svc.Toasts.ShowQuest($"Diagnostic info copied to clipboard");
-		}
+		return diagInfo.ToString();
 	}
 
 	private void DrawSideBar()
@@ -983,9 +1040,19 @@ public partial class RotationConfigWindow : Window
 			return $"Special thanks to supporter: {supporter}!";
 		}
 		// Defensive: fallback to base hints if index is valid, else a default message.
-		if (_baseUsageHints != null && _baseUsageHints.Length > 0 && index >= 0 && index < _baseUsageHints.Length)
+		if(CNLanguageClient)
 		{
-			return _baseUsageHints[index];
+			if (_baseUsageHintsCN != null && _baseUsageHintsCN.Length > 0 && index >= 0 && index < _baseUsageHintsCN.Length)
+			{
+				return _baseUsageHintsCN[index];
+			}
+		}
+		else
+		{
+			if (_baseUsageHints != null && _baseUsageHints.Length > 0 && index >= 0 && index < _baseUsageHints.Length)
+			{
+				return _baseUsageHints[index];
+			}
 		}
 		return "Thank you for using Rotation Solver Reborn!";
 	}
@@ -1079,9 +1146,18 @@ public partial class RotationConfigWindow : Window
 		{
 			return;
 		}
-		if (_baseUsageHints == null || _baseUsageHints.Length == 0)
+		if (CNLanguageClient)
 		{
-			return;
+			if (_baseUsageHintsCN == null || _baseUsageHintsCN.Length == 0)
+			{
+				return;
+			}
+		}
+		else {
+			if (_baseUsageHints == null || _baseUsageHints.Length == 0)
+			{
+				return;
+			}
 		}
 
 		// Advance hint periodically when no errors are present (so warnings don't rapidly cycle tips).
@@ -1093,7 +1169,7 @@ public partial class RotationConfigWindow : Window
 			{
 				_lastHintSwitch = now;
 				_hintIndex++;
-				if (_hintIndex >= _baseUsageHints.Length)
+				if (_hintIndex >= (CNLanguageClient? _baseUsageHintsCN.Length: _baseUsageHints.Length))
 				{
 					_hintIndex = 0;
 				}
@@ -1124,7 +1200,7 @@ public partial class RotationConfigWindow : Window
 			ImGui.TextWrapped(_cachedTipText);
 			if (ImGui.IsItemHovered())
 			{
-				ImguiTooltips.HoveredTooltip("Right-click to copy this tip.");
+				ImguiTooltips.HoveredTooltip(CNLanguageClient ? "右键复制该提示。" : "Right-click to copy this tip.");
 				if (ImGui.IsMouseReleased(ImGuiMouseButton.Right))
 				{
 					try
@@ -1294,15 +1370,19 @@ public partial class RotationConfigWindow : Window
 			Configs.BasicAutoSwitch => $"Auto > {UiString.ConfigWindow_Basic_AutoSwitch.GetDescription()}",
 			Configs.AutoActionUsage => $"Auto > {UiString.ConfigWindow_Auto_ActionUsage.GetDescription()}",
 			Configs.HealingActionCondition => $"Auto > {UiString.ConfigWindow_Auto_HealingCondition.GetDescription()}",
-			Configs.DutySpecificUltimate => $"Auto > {UiString.ConfigWindow_Duty_Ultimate.GetDescription()}",
-			Configs.DutySpecificSavage => $"Auto > {UiString.ConfigWindow_Duty_Savage.GetDescription()}",
-			Configs.DutySpecificExtreme => $"Auto > {UiString.ConfigWindow_Duty_Extreme.GetDescription()}",
-			Configs.DutySpecificAlliance => $"Auto > {UiString.ConfigWindow_Duty_Alliance.GetDescription()}",
-			Configs.DutySpecificDungeon => $"Auto > {UiString.ConfigWindow_Duty_Dungeon.GetDescription()}",
-			Configs.DutySpecificFieldOps => $"Auto > {UiString.ConfigWindow_Duty_FieldOps.GetDescription()}",
-			Configs.DutySpecificPvP => $"Auto > {UiString.ConfigWindow_Duty_PvP.GetDescription()}",
-			Configs.DutySpecificTreasureDungeon => $"Auto > {UiString.ConfigWindow_Duty_TreasureDungeon.GetDescription()}",
-			Configs.DutySpecificTheMaskedCarnivale => $"Auto > {UiString.ConfigWindow_Duty_TheMaskedCarnivale.GetDescription()}",
+			Configs.DutySpecificUltimate => $"Duty > {UiString.ConfigWindow_Duty_Ultimate.GetDescription()}",
+			Configs.DutySpecificSavage => $"Duty > {UiString.ConfigWindow_Duty_Savage.GetDescription()}",
+			Configs.DutySpecificExtreme => $"Duty > {UiString.ConfigWindow_Duty_Extreme.GetDescription()}",
+			Configs.DutySpecificChaoticAlliance => $"Duty > {UiString.ConfigWindow_Duty_ChaoticAlliance.GetDescription()}",
+			Configs.DutySpecificAlliance => $"Duty > {UiString.ConfigWindow_Duty_Alliance.GetDescription()}",
+			Configs.DutySpecificDungeon => $"Duty > {UiString.ConfigWindow_Duty_Dungeon.GetDescription()}",
+			Configs.DutySpecificDeepDungeon => $"Duty > {UiString.ConfigWindow_Duty_DeepDungeon.GetDescription()}",
+			Configs.DutySpecificVariantDungeon => $"Duty > {UiString.ConfigWindow_Duty_VariantDungeon.GetDescription()}",
+			Configs.DutySpecificTreasureDungeon => $"Duty > {UiString.ConfigWindow_Duty_TreasureDungeon.GetDescription()}",
+			Configs.DutySpecificFieldOps => $"Duty > {UiString.ConfigWindow_Duty_FieldOps.GetDescription()}",
+			Configs.DutySpecificPvP => $"Duty > {UiString.ConfigWindow_Duty_PvP.GetDescription()}",
+			Configs.DutySpecificTheMaskedCarnivale => $"Duty > {UiString.ConfigWindow_Duty_TheMaskedCarnivale.GetDescription()}",
+			Configs.DutySpecificCrucibleOfTheUnbroken => $"Duty > {UiString.ConfigWindow_Duty_CrucibleOfTheUnbroken.GetDescription()}",
 
 			Configs.TargetConfig => $"Target > {UiString.ConfigWindow_Target_Config.GetDescription()}",
 
@@ -1314,6 +1394,27 @@ public partial class RotationConfigWindow : Window
 
 			Configs.Debug => $"Debug",
 
+			_ => string.Empty,
+		};
+	}
+
+	private static string GetDutySpecificHeaderTitle(string filter)
+	{
+		return filter switch
+		{
+			Configs.DutySpecificUltimate => UiString.ConfigWindow_Duty_Ultimate.GetDescription(),
+			Configs.DutySpecificSavage => UiString.ConfigWindow_Duty_Savage.GetDescription(),
+			Configs.DutySpecificExtreme => UiString.ConfigWindow_Duty_Extreme.GetDescription(),
+			Configs.DutySpecificChaoticAlliance => UiString.ConfigWindow_Duty_ChaoticAlliance.GetDescription(),
+			Configs.DutySpecificAlliance => UiString.ConfigWindow_Duty_Alliance.GetDescription(),
+			Configs.DutySpecificDungeon => UiString.ConfigWindow_Duty_Dungeon.GetDescription(),
+			Configs.DutySpecificDeepDungeon => UiString.ConfigWindow_Duty_DeepDungeon.GetDescription(),
+			Configs.DutySpecificVariantDungeon => UiString.ConfigWindow_Duty_VariantDungeon.GetDescription(),
+			Configs.DutySpecificTreasureDungeon => UiString.ConfigWindow_Duty_TreasureDungeon.GetDescription(),
+			Configs.DutySpecificFieldOps => UiString.ConfigWindow_Duty_FieldOps.GetDescription(),
+			Configs.DutySpecificPvP => UiString.ConfigWindow_Duty_PvP.GetDescription(),
+			Configs.DutySpecificTheMaskedCarnivale => UiString.ConfigWindow_Duty_TheMaskedCarnivale.GetDescription(),
+			Configs.DutySpecificCrucibleOfTheUnbroken => UiString.ConfigWindow_Duty_CrucibleOfTheUnbroken.GetDescription(),
 			_ => string.Empty,
 		};
 	}
@@ -1353,40 +1454,21 @@ public partial class RotationConfigWindow : Window
 				_autoHeader.OpenHeaderByTitle(UiString.ConfigWindow_Auto_HealingCondition.GetDescription());
 				break;
 			case Configs.DutySpecificUltimate:
-				_activeTab = RotationConfigWindowTab.Duty;
-				_autoHeader.OpenHeaderByTitle(UiString.ConfigWindow_Duty_Ultimate.GetDescription());
-				break;
 			case Configs.DutySpecificSavage:
-				_activeTab = RotationConfigWindowTab.Duty;
-				_autoHeader.OpenHeaderByTitle(UiString.ConfigWindow_Duty_Savage.GetDescription());
-				break;
 			case Configs.DutySpecificExtreme:
-				_activeTab = RotationConfigWindowTab.Duty;
-				_autoHeader.OpenHeaderByTitle(UiString.ConfigWindow_Duty_Extreme.GetDescription());
-				break;
+			case Configs.DutySpecificChaoticAlliance:
 			case Configs.DutySpecificAlliance:
-				_activeTab = RotationConfigWindowTab.Duty;
-				_autoHeader.OpenHeaderByTitle(UiString.ConfigWindow_Duty_Alliance.GetDescription());
-				break;
 			case Configs.DutySpecificDungeon:
-				_activeTab = RotationConfigWindowTab.Duty;
-				_autoHeader.OpenHeaderByTitle(UiString.ConfigWindow_Duty_Dungeon.GetDescription());
-				break;
-			case Configs.DutySpecificFieldOps:
-				_activeTab = RotationConfigWindowTab.Duty;
-				_autoHeader.OpenHeaderByTitle(UiString.ConfigWindow_Duty_FieldOps.GetDescription());
-				break;
-			case Configs.DutySpecificPvP:
-				_activeTab = RotationConfigWindowTab.Duty;
-				_autoHeader.OpenHeaderByTitle(UiString.ConfigWindow_Duty_PvP.GetDescription());
-				break;
+			case Configs.DutySpecificDeepDungeon:
+			case Configs.DutySpecificVariantDungeon:
 			case Configs.DutySpecificTreasureDungeon:
-				_activeTab = RotationConfigWindowTab.Duty;
-				_autoHeader.OpenHeaderByTitle(UiString.ConfigWindow_Duty_TreasureDungeon.GetDescription());
-				break;
+			case Configs.DutySpecificFieldOps:
+			case Configs.DutySpecificPvP:
 			case Configs.DutySpecificTheMaskedCarnivale:
+			case Configs.DutySpecificCrucibleOfTheUnbroken:
 				_activeTab = RotationConfigWindowTab.Duty;
-				_autoHeader.OpenHeaderByTitle(UiString.ConfigWindow_Duty_TheMaskedCarnivale.GetDescription());
+				// These live under the Duty tab's own header group, not the Auto tab's.
+				_dutySpecificHeader.OpenHeaderByTitle(GetDutySpecificHeaderTitle(filter));
 				break;
 
 			case Configs.TargetConfig:
@@ -1428,7 +1510,7 @@ public partial class RotationConfigWindow : Window
 	{
 		{ GetDutyRotationStatusHead,  DrawDutyRotationStatus },
 
-		{ UiString.ConfigWindow_DutyRotation_Configuration.GetDescription, DrawDutyRotationConfiguration }
+		{ () => UiString.ConfigWindow_DutyRotation_Configuration.GetDescription(), DrawDutyRotationConfiguration }
 	});
 
 	private static string GetDutyRotationStatusHead()
@@ -1627,19 +1709,19 @@ public partial class RotationConfigWindow : Window
 
 	private static readonly CollapsingHeaderGroup _dutySpecificHeader = new(new Dictionary<Func<string>, Action>
 	{
-		{ UiString.ConfigWindow_Duty_Ultimate.GetDescription, DrawDutySpecificUltimate },
-		{ UiString.ConfigWindow_Duty_Savage.GetDescription, DrawDutySpecificSavage },
-		{ UiString.ConfigWindow_Duty_Extreme.GetDescription, DrawDutySpecificExtreme },
-		{ UiString.ConfigWindow_Duty_ChaoticAlliance.GetDescription, DrawDutySpecificChaoticAlliance },
-		{ UiString.ConfigWindow_Duty_Alliance.GetDescription, DrawDutySpecificAlliance },
-		{ UiString.ConfigWindow_Duty_Dungeon.GetDescription, DrawDutySpecificDungeon },
-		{ UiString.ConfigWindow_Duty_DeepDungeon.GetDescription, DrawDutySpecificDeepDungeon },
-		{ UiString.ConfigWindow_Duty_VariantDungeon.GetDescription, DrawDutySpecificVariantDungeon },
-		{ UiString.ConfigWindow_Duty_TreasureDungeon.GetDescription, DrawDutySpecificTreasureDungeon },
-		{ UiString.ConfigWindow_Duty_FieldOps.GetDescription, DrawDutySpecificFieldOps },
-		{ UiString.ConfigWindow_Duty_PvP.GetDescription, DrawDutySpecificPvP },
-		{ UiString.ConfigWindow_Duty_TheMaskedCarnivale.GetDescription, DrawDutySpecificTheMaskedCarnivale },
-		{ UiString.ConfigWindow_Duty_CrucibleOfTheUnbroken.GetDescription, DrawDutySpecificCrucibleOfTheUnbroken },
+		{ () => UiString.ConfigWindow_Duty_Ultimate.GetDescription(), DrawDutySpecificUltimate },
+		{ () => UiString.ConfigWindow_Duty_Savage.GetDescription(), DrawDutySpecificSavage },
+		{ () => UiString.ConfigWindow_Duty_Extreme.GetDescription(), DrawDutySpecificExtreme },
+		{ () => UiString.ConfigWindow_Duty_ChaoticAlliance.GetDescription(), DrawDutySpecificChaoticAlliance },
+		{ () => UiString.ConfigWindow_Duty_Alliance.GetDescription(), DrawDutySpecificAlliance },
+		{ () => UiString.ConfigWindow_Duty_Dungeon.GetDescription(), DrawDutySpecificDungeon },
+		{ () => UiString.ConfigWindow_Duty_DeepDungeon.GetDescription(), DrawDutySpecificDeepDungeon },
+		{ () => UiString.ConfigWindow_Duty_VariantDungeon.GetDescription(), DrawDutySpecificVariantDungeon },
+		{ () => UiString.ConfigWindow_Duty_TreasureDungeon.GetDescription(), DrawDutySpecificTreasureDungeon },
+		{ () => UiString.ConfigWindow_Duty_FieldOps.GetDescription(), DrawDutySpecificFieldOps },
+		{ () => UiString.ConfigWindow_Duty_PvP.GetDescription(), DrawDutySpecificPvP },
+		{ () => UiString.ConfigWindow_Duty_TheMaskedCarnivale.GetDescription(), DrawDutySpecificTheMaskedCarnivale },
+		{ () => UiString.ConfigWindow_Duty_CrucibleOfTheUnbroken.GetDescription(), DrawDutySpecificCrucibleOfTheUnbroken },
 	})
 	{
 		HeaderSize = HeaderSize,
@@ -1724,7 +1806,7 @@ public partial class RotationConfigWindow : Window
 		}
 
 		ImGui.Spacing();
-		if (ImGui.Button("Open First Start Tutorial"))
+		if (ImGui.Button(CNLanguageClient ? "打开初次启动向导" : "Open First Start Tutorial"))
 		{
 			Service.Config.TutorialDone = false;
 		}
@@ -1766,11 +1848,11 @@ public partial class RotationConfigWindow : Window
 
 	private static readonly CollapsingHeaderGroup _aboutHeaders = new(new()
 	{
-		{ UiString.ConfigWindow_About_ThanksToSupporters.GetDescription, DrawThanksToSupporters },
-		{ UiString.ConfigWindow_About_Macros.GetDescription, DrawAboutMacros },
-		{ UiString.ConfigWindow_About_SettingMacros.GetDescription, DrawAboutSettingsCommands },
-		{ UiString.ConfigWindow_About_Compatibility.GetDescription, DrawAboutCompatibility },
-		{ UiString.ConfigWindow_About_Links.GetDescription, DrawAboutLinks },
+		{ () => UiString.ConfigWindow_About_ThanksToSupporters.GetDescription(), DrawThanksToSupporters },
+		{ () => UiString.ConfigWindow_About_Macros.GetDescription(), DrawAboutMacros },
+		{ () => UiString.ConfigWindow_About_SettingMacros.GetDescription(), DrawAboutSettingsCommands },
+		{ () => UiString.ConfigWindow_About_Compatibility.GetDescription(), DrawAboutCompatibility },
+		{ () => UiString.ConfigWindow_About_Links.GetDescription(), DrawAboutLinks },
 	});
 
 	private static void DrawThanksToSupporters()
@@ -2171,26 +2253,16 @@ public partial class RotationConfigWindow : Window
 			ImGuiEx.TextWrappedCopy(desc);
 		}
 
-		_ = ImGui.GetWindowWidth();
-		_ = rotation.GetType();
-
 		_rotationHeader.Draw();
-	}
-
-	private static uint ChangeAlpha(uint color)
-	{
-		var c = ImGui.ColorConvertU32ToFloat4(color);
-		c.W = 0.55f;
-		return ImGui.ColorConvertFloat4ToU32(c);
 	}
 
 	private static readonly CollapsingHeaderGroup _rotationHeader = new(new()
 	{
-		{ UiString.ConfigWindow_Rotation_Description.GetDescription, DrawRotationDescription },
+		{ () => UiString.ConfigWindow_Rotation_Description.GetDescription(), DrawRotationDescription },
 
 		{ GetRotationStatusHead,  DrawRotationStatus },
 
-		{ UiString.ConfigWindow_Rotation_Configuration.GetDescription, DrawRotationConfiguration },
+		{ () => UiString.ConfigWindow_Rotation_Configuration.GetDescription(), DrawRotationConfiguration },
 	});
 
 	private const float DESC_SIZE = 24;
@@ -2202,29 +2274,15 @@ public partial class RotationConfigWindow : Window
 			return;
 		}
 
-		_ = ImGui.GetWindowWidth();
-		var type = rotation.GetType();
-
-		List<RotationDescAttribute?> attrs = [RotationDescAttribute.MergeToOne(type.GetCustomAttributes<RotationDescAttribute>())];
-
-		foreach (var m in type.GetAllMethodInfo())
-		{
-			attrs.Add(RotationDescAttribute.MergeToOne(m.GetCustomAttributes<RotationDescAttribute>()));
-		}
+		var descriptions = GetRotationDescriptions(rotation.GetType());
 
 		using var table = ImRaii.Table("Rotation Description", 2, ImGuiTableFlags.Borders
 			| ImGuiTableFlags.Resizable
 			| ImGuiTableFlags.SizingStretchProp);
 		if (table)
 		{
-			foreach (var a in RotationDescAttribute.Merge(attrs))
+			foreach (var attr in descriptions)
 			{
-				var attr = RotationDescAttribute.MergeToOne(a);
-				if (attr == null)
-				{
-					continue;
-				}
-
 				List<IBaseAction> allActions = [];
 				foreach (var actionId in attr.Actions)
 				{
@@ -2307,6 +2365,39 @@ public partial class RotationConfigWindow : Window
 		}
 	}
 
+	private static readonly Dictionary<Type, List<RotationDescAttribute>> _rotationDescriptions = [];
+
+	/// <summary>
+	/// Merges the rotation's class and method description attributes. This reflects over every method of
+	/// the rotation, and the result only depends on the type, so it is computed once per type.
+	/// </summary>
+	private static List<RotationDescAttribute> GetRotationDescriptions(Type type)
+	{
+		if (_rotationDescriptions.TryGetValue(type, out var descriptions))
+		{
+			return descriptions;
+		}
+
+		List<RotationDescAttribute?> attrs = [RotationDescAttribute.MergeToOne(type.GetCustomAttributes<RotationDescAttribute>())];
+		foreach (var m in type.GetAllMethodInfo())
+		{
+			attrs.Add(RotationDescAttribute.MergeToOne(m.GetCustomAttributes<RotationDescAttribute>()));
+		}
+
+		descriptions = [];
+		foreach (var group in RotationDescAttribute.Merge(attrs))
+		{
+			var attr = RotationDescAttribute.MergeToOne(group);
+			if (attr != null)
+			{
+				descriptions.Add(attr);
+			}
+		}
+
+		_rotationDescriptions[type] = descriptions;
+		return descriptions;
+	}
+
 	private static string GetRotationStatusHead()
 	{
 		var rotation = DataCenter.CurrentRotation;
@@ -2339,8 +2430,47 @@ public partial class RotationConfigWindow : Window
 	/// <returns>True if the config should be shown, false otherwise.</returns>
 	private static bool ShouldShowRotationConfig(IRotationConfig config, IRotationConfigSet configSet)
 	{
-		return ShouldShowRotationConfigInternal(config, configSet, new HashSet<string>(StringComparer.Ordinal));
+		// Top-level configs are the common case; skip allocating the cycle guard for them.
+		if (string.IsNullOrEmpty(config.Parent))
+		{
+			return true;
+		}
+
+		_visitingConfigs.Clear();
+		return ShouldShowRotationConfigInternal(config, configSet, _visitingConfigs);
 	}
+
+	// Reflection results used while drawing rotation configs every frame.
+	private static readonly Dictionary<(Type RotationType, string ConfigName), string?> _attributeTooltips = [];
+	private static readonly Dictionary<Type, PropertyInfo?> _tooltipProperties = [];
+
+	private static string? GetRotationConfigTooltip(ICustomRotation rotation, IRotationConfig config)
+	{
+		var attributeKey = (rotation.GetType(), config.Name);
+		if (!_attributeTooltips.TryGetValue(attributeKey, out var tooltip))
+		{
+			tooltip = attributeKey.Item1.GetProperty(config.Name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+				?.GetCustomAttribute<RotationConfigAttribute>()?.Tooltip;
+			_attributeTooltips[attributeKey] = tooltip;
+		}
+
+		if (!string.IsNullOrEmpty(tooltip))
+		{
+			return tooltip;
+		}
+
+		var configType = config.GetType();
+		if (!_tooltipProperties.TryGetValue(configType, out var tooltipProperty))
+		{
+			tooltipProperty = configType.GetProperty("Tooltip", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+			_tooltipProperties[configType] = tooltipProperty;
+		}
+
+		return tooltipProperty?.GetValue(config) as string;
+	}
+
+	private static readonly HashSet<string> _visitingConfigs = new(StringComparer.Ordinal);
+	private static readonly Dictionary<Type, PropertyInfo?> _parentValueProperties = [];
 
 	private static bool ShouldShowRotationConfigInternal(
 		IRotationConfig config,
@@ -2374,16 +2504,30 @@ public partial class RotationConfigWindow : Window
 			return true;
 		}
 
+		// If the parent itself is hidden (because of its own parent), this child must be hidden too.
+		if (!ShouldShowRotationConfigInternal(parentConfig, configSet, visiting))
+		{
+			visiting.Remove(config.Name);
+			return false;
+		}
+
 		if (parentConfig is RotationConfigBoolean parentBool)
 		{
 			if (!bool.TryParse(parentBool.Value, out var isEnabled) || !isEnabled)
 			{
+				visiting.Remove(config.Name);
 				return false;
 			}
 		}
 		else
 		{
-			var parentValueProperty = config.GetType().GetProperty("ParentValue");
+			var configType = config.GetType();
+			if (!_parentValueProperties.TryGetValue(configType, out var parentValueProperty))
+			{
+				parentValueProperty = configType.GetProperty("ParentValue");
+				_parentValueProperties[configType] = parentValueProperty;
+			}
+
 			if (parentValueProperty != null)
 			{
 				var parentValue = parentValueProperty.GetValue(config);
@@ -2575,25 +2719,7 @@ public partial class RotationConfigWindow : Window
 			ImGui.SameLine();
 			ImGui.TextWrapped($"{config.DisplayName}");
 
-			string? tooltip = null;
-			{
-				var prop = rotation.GetType().GetProperty(config.Name,
-					BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-				if (prop != null)
-				{
-					var rotAttr = prop.GetCustomAttribute<RotationConfigAttribute>();
-					tooltip = rotAttr?.Tooltip;
-				}
-			}
-
-			if (string.IsNullOrEmpty(tooltip))
-			{
-				var tProp = config.GetType().GetProperty("Tooltip", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-				if (tProp != null)
-				{
-					tooltip = tProp.GetValue(config) as string;
-				}
-			}
+			var tooltip = GetRotationConfigTooltip(rotation, config);
 
 			// Only render the small help marker and ImGui tooltip when we have a non-empty tooltip
 			if (!string.IsNullOrEmpty(tooltip))
@@ -2856,11 +2982,12 @@ public partial class RotationConfigWindow : Window
 			{
 				_actionsList.ClearCollapsingHeader();
 
-				if (DataCenter.CurrentRotation != null && RotationUpdater.AllGroupedActions != null)
+				var allGroupedActions = RotationUpdater.AllGroupedActions;
+				if (DataCenter.CurrentRotation != null && allGroupedActions != null)
 				{
 					var size = 30 * Scale;
 					var count = Math.Max(1, (int)MathF.Floor(ImGui.GetColumnWidth() / ((size * 1.1f) + ImGui.GetStyle().ItemSpacing.X)));
-					foreach (var pair in RotationUpdater.AllGroupedActions)
+					foreach (var pair in allGroupedActions)
 					{
 						_actionsList.AddCollapsingHeader(() => pair.Key, () =>
 						{
@@ -3462,9 +3589,9 @@ public partial class RotationConfigWindow : Window
 
 	private static readonly CollapsingHeaderGroup _idsHeader = new(new()
 	{
-		{ UiString.ConfigWindow_List_Statuses.GetDescription, DrawListStatuses},
+		{ () => UiString.ConfigWindow_List_Statuses.GetDescription(), DrawListStatuses},
 		{ () => Service.Config.UseDefenseAbility ? UiString.ConfigWindow_List_Actions.GetDescription() : string.Empty, DrawListActions},
-		{ UiString.ConfigWindow_List_Territories.GetDescription, DrawListTerritories},
+		{ () => UiString.ConfigWindow_List_Territories.GetDescription(), DrawListTerritories},
 	});
 
 	private static void DrawListStatuses()
@@ -3607,10 +3734,11 @@ public partial class RotationConfigWindow : Window
 		}
 		ImguiTooltips.HoveredTooltip(UiString.ConfigWindow_List_AddStatus.GetDescription());
 
+		var statusSheet = Service.GetSheet<Status>();
 		foreach (var statusId in statuses)
 		{
-			var status = Service.GetSheet<Status>().GetRow(statusId);
-			if (status.RowId == 0)
+			// Ids can come from pasted clipboard data; GetRow throws for rows that don't exist.
+			if (!statusSheet.TryGetRow(statusId, out var status) || status.RowId == 0)
 			{
 				continue;
 			}
@@ -3645,6 +3773,10 @@ public partial class RotationConfigWindow : Window
 		ImGui.PopID();
 	}
 
+	private static Status[]? _statusPopupSource;
+	private static string? _statusPopupSearch;
+	private static readonly List<(Status status, float score)> _statusPopupResults = [];
+
 	internal static void StatusPopUp(string popupId, Status[] allStatus, ref string searching, Action<Status> clicked, uint notLoadId = 0, float size = 32)
 	{
 		const float InputWidth = 200f;
@@ -3670,32 +3802,28 @@ public partial class RotationConfigWindow : Window
 					return;
 				}
 
-				var searchingKey = searching;
-
-				// Manual filtering and sorting instead of LINQ
-				List<(Status status, double score)> filtered = [];
-				for (var i = 0; i < allStatus.Length; i++)
+				// Scoring every status in the sheet is expensive, so only redo it when the query or source list changes.
+				if (!ReferenceEquals(allStatus, _statusPopupSource) || !string.Equals(searching, _statusPopupSearch, StringComparison.Ordinal))
 				{
-					var s = allStatus[i];
-					double sim = SearchableCollection.Similarity($"{s.Name} {s.RowId}", searchingKey);
-					if (sim > 0)
-					{
-						filtered.Add((s, sim));
-					}
-				}
+					_statusPopupSource = allStatus;
+					_statusPopupSearch = searching;
+					_statusPopupResults.Clear();
 
-				// Sort descending by similarity
-				for (var i = 0; i < filtered.Count - 1; i++)
-				{
-					for (var j = i + 1; j < filtered.Count; j++)
+					for (var i = 0; i < allStatus.Length; i++)
 					{
-						if (filtered[j].score > filtered[i].score)
+						var s = allStatus[i];
+						var sim = SearchableCollection.Similarity($"{s.Name} {s.RowId}", searching);
+						if (sim > 0)
 						{
-							(filtered[j], filtered[i]) = (filtered[i], filtered[j]);
+							_statusPopupResults.Add((s, sim));
 						}
 					}
+
+					// Sort descending by similarity
+					_statusPopupResults.Sort((a, b) => b.score.CompareTo(a.score));
 				}
 
+				var filtered = _statusPopupResults;
 				if (filtered.Count == 0)
 				{
 					ImGui.TextColored(ImGuiColors.DalamudRed, "No matching statuses found.");
@@ -3877,14 +4005,15 @@ public partial class RotationConfigWindow : Window
 
 		ImGui.Spacing();
 
-		// Build a list of GAction objects from the action IDs
+		// Build a list of GAction objects from the action IDs (ids can come from pasted clipboard data,
+		// and GetRow throws for rows that don't exist)
 		List<GAction> actionList = [];
+		var actionSheet = Service.GetSheet<GAction>();
 		foreach (var a in actions)
 		{
-			GAction? act = Service.GetSheet<GAction>().GetRow(a);
-			if (act != null)
+			if (actionSheet.TryGetRow(a, out var act))
 			{
-				actionList.Add(act.Value);
+				actionList.Add(act);
 			}
 		}
 
@@ -3987,16 +4116,7 @@ public partial class RotationConfigWindow : Window
 							var a = AllActions[i];
 
 							// Skip actions already in the list
-							var found = false;
-							foreach (var id in actions)
-							{
-								if (id == a.RowId)
-								{
-									found = true;
-									break;
-								}
-							}
-							if (found)
+							if (actions.Contains(a.RowId))
 							{
 								continue;
 							}
@@ -4053,7 +4173,6 @@ public partial class RotationConfigWindow : Window
 		}
 	}
 
-	public static Vector3 HoveredPosition { get; private set; } = Vector3.Zero;
 	private static void DrawListTerritories()
 	{
 		if (Svc.ClientState == null)
@@ -4242,7 +4361,6 @@ public partial class RotationConfigWindow : Window
 				}
 			}
 
-			HoveredPosition = Vector3.Zero;
 			var removePosIndex = -1;
 			for (var i = 0; i < pts.Length; i++)
 			{
@@ -4251,10 +4369,6 @@ public partial class RotationConfigWindow : Window
 				ImGuiHelper.DrawHotKeysPopup(key, string.Empty,
 					(UiString.ConfigWindow_List_Remove.GetDescription(), Reset, ["Delete"]));
 				_ = ImGui.Selectable(pts[i].ToString());
-				if (ImGui.IsItemHovered())
-				{
-					HoveredPosition = pts[i];
-				}
 
 				ImGuiHelper.ExecuteHotKeysPopup(key, string.Empty, string.Empty, false,
 					(Reset, [VirtualKey.DELETE]));
@@ -4274,23 +4388,6 @@ public partial class RotationConfigWindow : Window
 				OtherConfiguration.BeneficialPositions[territoryId] = [.. list];
 				_ = OtherConfiguration.SaveBeneficialPositions();
 			}
-		}
-	}
-
-	internal static void DrawContentFinder(uint imageId)
-	{
-		const float MaxWidth = 480f;
-		var badge = imageId;
-		if (badge != 0
-			&& IconSet.GetTexture(badge, out var badgeTexture) && badgeTexture?.Handle != null)
-		{
-			var wholeWidth = ImGui.GetWindowWidth();
-			var size = new Vector2(badgeTexture.Width, badgeTexture.Height) * MathF.Min(1, MathF.Min(MaxWidth, wholeWidth) / badgeTexture.Width);
-
-			ImGuiHelper.DrawItemMiddle(() =>
-			{
-				ImGui.Image(badgeTexture.Handle, size);
-			}, wholeWidth, size.X);
 		}
 	}
 
@@ -5231,65 +5328,65 @@ public partial class RotationConfigWindow : Window
 		ImGui.SameLine();
 		if (ImGui.Button("Test Function"))
 		{
-			IPCProvider ipcProvider = new();
+			var ipcProvider = RotationSolverPlugin.IPCProvider;
 			ipcProvider.Test(_ipcTestText);
 		}
 
 		if (ImGui.Button("Test ChangeOperatingMode to Manual IPC"))
 		{
-			IPCProvider ipcProvider = new();
+			var ipcProvider = RotationSolverPlugin.IPCProvider;
 			ipcProvider.ChangeOperatingMode(StateCommandType.Manual);
 		}
 
 		if (ImGui.Button("Test ChangeOperatingMode to Off IPC"))
 		{
-			IPCProvider ipcProvider = new();
+			var ipcProvider = RotationSolverPlugin.IPCProvider;
 			ipcProvider.ChangeOperatingMode(StateCommandType.Off);
 		}
 
 		if (ImGui.Button("Test TriggerSpecialState DefenseArea IPC"))
 		{
-			IPCProvider ipcProvider = new();
+			var ipcProvider = RotationSolverPlugin.IPCProvider;
 			ipcProvider.TriggerSpecialState(SpecialCommandType.DefenseArea);
 		}
 
 		if (ImGui.Button("Test TriggerSpecialState AntiKnockback IPC"))
 		{
-			IPCProvider ipcProvider = new();
+			var ipcProvider = RotationSolverPlugin.IPCProvider;
 			ipcProvider.TriggerSpecialState(SpecialCommandType.AntiKnockback);
 		}
 
 		if (ImGui.Button("Test Setting IPC (Changing engage setting to All Target)"))
 		{
-			IPCProvider ipcProvider = new();
+			var ipcProvider = RotationSolverPlugin.IPCProvider;
 			ipcProvider.OtherCommand(OtherCommandType.Settings, "HostileType AllTargetsCanAttack");
 		}
 
 		if (ImGui.Button("Test OtherCommand DoAction IPC (Magick Barrier on RDM)"))
 		{
-			IPCProvider ipcProvider = new();
+			var ipcProvider = RotationSolverPlugin.IPCProvider;
 			ipcProvider.OtherCommand(OtherCommandType.DoActions, "Magick Barrier-5");
 		}
 
 		if (ImGui.Button("Test ToggleAction IPC (Magick Barrier on RDM)"))
 		{
-			IPCProvider ipcProvider = new();
+			var ipcProvider = RotationSolverPlugin.IPCProvider;
 			ipcProvider.OtherCommand(OtherCommandType.ToggleActions, "Magick Barrier");
 		}
 
 		if (ImGui.Button("Test ActionCommand IPC (Magick Barrier on RDM)"))
 		{
-			IPCProvider ipcProvider = new();
+			var ipcProvider = RotationSolverPlugin.IPCProvider;
 			ipcProvider.ActionCommand("Magick Barrier", 7);
 		}
 		if (ImGui.Button("Test AutodutyChangeOperatingMode IPC (AutoDuty, HighHPPercent)"))
 		{
-			IPCProvider ipcProvider = new();
+			var ipcProvider = RotationSolverPlugin.IPCProvider;
 			ipcProvider.AutodutyChangeOperatingMode(StateCommandType.AutoDuty, TargetingType.HighHPPercent);
 		}
 		if (ImGui.Button("Test Henchman IPC support"))
 		{
-			IPCProvider ipcProvider = new();
+			var ipcProvider = RotationSolverPlugin.IPCProvider;
 			ipcProvider.ChangeOperatingMode(StateCommandType.Henched);
 		}
 	}

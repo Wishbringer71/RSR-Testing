@@ -25,7 +25,6 @@ public static class Watcher
 	}
 
 	public static string ShowStrSelf { get; private set; } = string.Empty;
-	public static string ShowStrEnemy { get; private set; } = string.Empty;
 
 	private static void ActionFromEnemy(ActionEffectSet set)
 	{
@@ -62,7 +61,6 @@ public static class Watcher
 			}
 
 			DataCenter.AddDamageRec(damageRatio);
-			ShowStrEnemy = $"Damage Ratio: {damageRatio}\n{set}";
 
 			foreach (var effect in set.TargetEffects)
 			{
@@ -82,16 +80,15 @@ public static class Watcher
 							DataCenter.KnockbackFinished = DateTime.Now + TimeSpan.FromSeconds(knock.Value.Distance / (float)knock.Value.Speed);
 						}
 
-						if (set.Action.HasValue && Service.Config.RecordKnockbackies)
+						if (set.Action.HasValue && Service.Config.RecordKnockbackies
+							&& OtherConfiguration.HostileCastingKnockback.Add(set.Action.Value.RowId))
 						{
-							// Add reports whether it actually added, so the membership test and the
-							// insertion are one lookup instead of a walk over the set followed by an
-							// insertion. Seventh site of the same defect class as the four in
-							// DataCenter - the survey behind those had stopped at that file.
-							if (OtherConfiguration.HostileCastingKnockback.Add(set.Action.Value.RowId))
-							{
-								_ = OtherConfiguration.Save();
-							}
+							// The Add sits in the condition above: it reports whether it actually added,
+							// so the membership test and the insertion are one lookup instead of a walk
+							// over the set followed by an insertion. Upstream now carries that form too,
+							// so the second Add this fork used to have here would always report false
+							// - the id having just been inserted - and the store would never be saved.
+							_ = OtherConfiguration.Save();
 						}
 					}
 					break;
@@ -101,7 +98,7 @@ public static class Watcher
 			var partyMembers = DataCenter.PartyMembers;
 			var partyMemberCount = partyMembers.Count;
 
-			if (set.Header.ActionType == ActionType.Action && partyMemberCount >= 4 && set.Action?.Cast100ms > 0)
+			if (Service.Config.RecordCastingArea && set.Header.ActionType == ActionType.Action && partyMemberCount >= 4 && set.Action?.Cast100ms > 0)
 			{
 				var type = set.Action?.GetActionCate();
 				if (type is ActionCate.Spell or ActionCate.Weaponskill or ActionCate.Ability)
@@ -157,9 +154,10 @@ public static class Watcher
 						}
 					}
 
-					if (damageEffectCount == partyMemberCount && Service.Config.RecordCastingArea)
+					// Only write the file when this is a newly recorded action, not on every raidwide cast.
+					if (damageEffectCount == partyMemberCount
+						&& OtherConfiguration.HostileCastingArea.Add(set.Action!.Value.RowId))
 					{
-						_ = OtherConfiguration.HostileCastingArea.Add(set.Action!.Value.RowId);
 						_ = OtherConfiguration.SaveHostileCastingArea();
 					}
 
@@ -229,7 +227,7 @@ public static class Watcher
 				return;
 			}
 
-			if (set.Action?.ActionCategory.Value.RowId == (uint)ActionCate.Autoattack)
+			if (set.Action.Value.ActionCategory.RowId == (uint)ActionCate.Autoattack)
 			{
 				//PluginLog.Debug("ActionFromSelf: ActionCategory is Autoattack. Exiting.");
 				return;
@@ -247,7 +245,12 @@ public static class Watcher
 			// Record
 			//PluginLog.Debug($"ActionFromSelf: ActionType is {set.Header.ActionType}.");
 			DataCenter.AddActionRec(action!.Value);
-			ShowStrSelf = set.ToString();
+
+			// Only shown on the Debug tab; formatting the whole effect set for every action is wasted otherwise.
+			if (Service.Config.InDebug)
+			{
+				ShowStrSelf = set.ToString();
+			}
 
 			DataCenter.HealHP = set.GetSpecificTypeEffect(ActionEffectType.Heal);
 
@@ -324,7 +327,9 @@ public static class Watcher
 			}
 
 			// Macro
-			var regexOptions = RegexOptions.Compiled | RegexOptions.IgnoreCase;
+			// Not Compiled: the static Regex cache holds only a few entries, so compiled patterns would be
+			// recompiled (slowly, on the game thread) whenever more events than that are configured.
+			var regexOptions = RegexOptions.IgnoreCase;
 			var eventsList = Service.Config.Events ?? [];
 			var actionName = action.Value.Name.ExtractText() ?? string.Empty;
 			if (!string.IsNullOrEmpty(actionName))
