@@ -3092,6 +3092,24 @@ Allgemeine Form, in `CLAUDE.md` aufgenommen: Wo ein fremder Schutzmechanismus al
 
 **Erreichter Prüfgrad:** statischer Vergleich jeder Stelle der Kette gegen `upstream/main`, Prüfskripte grün. Keine Laufzeitbeobachtung — die liefert die neue Anzeige.
 
+### A124 · Der Heiltrank hing an der Heilflagge und erbte deren Gründe (21.09.2026)
+
+**Sein Einwand, und er widerlegt meine Antwort aus A123:** „Dann müssten ja der heilaoe von Solar bahamut und der Single hot von Phoenix auch an dem flag hängen. Tun sie glücklicherweise aber nicht. Das flag ist im lowlevel für physick interessant oder für einen redmage mit seinem heal. Aber für potions? Warum gibt es da dann eigene Schalter?"
+
+**Beides trifft zu, am Code geprüft.** Lux Solaris und Rekindle werden in `SMN_Reborn.GeneralAbility` angeboten, und dieser Zweig steht im Ablauf **hinter** dem Trank, ohne jede Flaggenbedingung — die beiden Heilungen des Jobs umgehen die Flagge also bereits, und zwar aus genau dem Grund, den er nennt. Der Trank tat es nicht.
+
+**Was er dadurch erbte.** `AutoStatus.HealSingleAbility` beantwortet, ob dieser Job gerade eine Heil**aktion** wirken soll. Hinter dieser Antwort stehen `CanUseHealAction` (`AutoHeal`, `UseHealWhenNotAHealer`, die Restzeitschranke, `HealOutOfCombat`), `DataCenter.HPNotFull`, `NonHealerHealLogic` und die Schwelle `HealthSingleAbility` über `ShouldHealSingle`. Jede davon kann falsch sein, während der Spieler bei 10 % steht und einen freigeschalteten Trank im Beutel hat.
+
+**Die entscheidende ist `OnlyHealAsNonHealIfNoHealers`, und sie ist der Regelfall, nicht die Ecke:** Ist sie an, bekommt ein Nicht-Heiler in einer Gruppe mit lebendem Heiler **gar keine** Heilflagge. Für seinen Beschwörer heißt das: kein Trank, auch nicht bei einem Gesundheitspunkt — genau das gemeldete Bild „jetzt passiert gar nichts mehr". Der Trank prüfte dabei seine eigene Schwelle (`UseHpPotionsPercent`) ordnungsgemäß; gefragt wurde er nur nie.
+
+**Warum A123 daran vorbeilief.** Die Erhebung dort verglich jede Stelle der Kette gegen `upstream/main` und fand keine Fork-Verengung — richtig gemessen, falsch gerahmt. Die Frage war „was hat der Fork verengt", und die Antwort darauf ist „nichts". Die Frage, die zum Ziel führte, war seine: **warum hängt eine Regel mit drei eigenen Schaltern überhaupt an einer fremden Freigabe.** Ein Vergleich gegen Upstream kann eine geerbte Fehlkonstruktion nicht finden, weil sie auf beiden Seiten gleich falsch ist.
+
+**Umgesetzt:** Die Bedingung am Einhängepunkt ist `DataCenter.InCombat` statt der Flagge. Der Trank trägt seine Entscheidung selbst — globale Option, Gegenstandsschalter, Gesundheitsschwelle, Mindestfehlmenge, Bestand —, und die Kampfbedingung ist seine eigene und keine geliehene: Außerhalb des Kampfes kehrt Gesundheit von allein zurück. Der Tankbuster-Zweig innerhalb von `UseHpPotion` bleibt und senkt dort weiterhin die Schwelle.
+
+**Betroffenenkreis:** alle Endnutzer, die `UseHpPotions` und einen Gegenstand freigeschaltet haben — für sie fällt der Trank künftig dann, wenn ihre eigene Schwelle es sagt. Wer die Option aus hat, merkt nichts. Die Upstream-Pflege trägt eine weitere Abweichung an einer Zeile.
+
+**Erreichter Prüfgrad:** statische Erhebung der Flaggenkette bis zu ihren Vorbedingungen, Gegenprobe an den beiden Heilzweigen desselben Jobs, Prüfskripte grün. Keine Laufzeitbeobachtung — die Anzeige im Gegenstandsfenster nennt jetzt Grund und Kampfbedingung.
+
 ---
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)

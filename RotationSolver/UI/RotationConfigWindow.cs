@@ -3343,14 +3343,14 @@ public partial class RotationConfigWindow : Window
 						// from the source.
 						ImGui.Text("Potion: " + healPotionItem.DescribeBlock());
 
-						// The two conditions the item cannot see: the potion is only offered from a
-						// heal flag or a confirmed tankbuster, so a ready potion still waits for one
-						// of them.
-						var gate = DataCenter.MergedStatus.HasFlag(AutoStatus.HealSingleAbility)
-							? "heal flag up"
+						// The condition the item itself cannot see: potions are only offered in
+						// combat. A tankbuster additionally drops the HP threshold, so it is worth
+						// showing which of the two readings applies.
+						var gate = !DataCenter.InCombat
+							? "out of combat - potions are not offered"
 							: DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterImminent
-								? "tankbuster"
-								: "no heal flag and no tankbuster - nothing asks for a potion right now";
+								? "in combat, tankbuster: the HP threshold is dropped"
+								: "in combat: the HP threshold applies";
 						ImGui.Text("Trigger: " + gate);
 					}
 				}

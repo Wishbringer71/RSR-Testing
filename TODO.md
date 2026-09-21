@@ -14,7 +14,9 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 **Behoben wurde dabei ein eigener Fund**, der zu „der starke Trank wird nicht genutzt" passt: Die Auswahl nahm bei Gleichstand den **schwächsten** Trank (`>=` über eine absteigend sortierte Liste). Gleichstand ist der Regelfall, sobald der Prozentanteil bindet statt der Obergrenze.
 
-**Offen bleibt die Ursachenbestimmung, und sie ist von hier aus nicht zu leisten:** Welche der sechs Bedingungen bei ihm zuschlägt, hängt an seiner Konfiguration und seinem Inventar. Dafür nennt die Gegenstandsanzeige jetzt den ersten blockierenden Punkt im Klartext (`HpPotionItem.DescribeBlock`) und dazu, ob überhaupt etwas nach einem Trank fragt. Der nächste Schritt ist seine Ablesung, nicht eine weitere statische Runde.
+**Die Ursache ist benannt, und sie kam von ihm:** Der Trank hing an `AutoStatus.HealSingleAbility` und erbte damit jede Bedingung hinter dieser Flagge — darunter `OnlyHealAsNonHealIfNoHealers`, die einem Nicht-Heiler in einer Gruppe mit lebendem Heiler **jede** Heilflagge nimmt. Ein Beschwörer bei 1 Gesundheitspunkt kam so an keinen Trank, obwohl alle drei eigenen Schalter des Tranks erfüllt waren. Behoben: Der Trank trägt seine Entscheidung selbst und ist nur noch an den Kampf gebunden.
+
+**Offen bleibt die Bestätigung im Spiel.** Dass die Kette jetzt ohne Flagge durchläuft, ist am Code belegt; ob damit auch sein gemeldetes Bild verschwindet, zeigt der nächste Kampf. Die Gegenstandsanzeige nennt dafür den ersten blockierenden Punkt im Klartext (`HpPotionItem.DescribeBlock`) und die Kampfbedingung dazu.
 
 ### Zielbasierte Bewegungsaktionen über den Move-Pfad gelten immer als unsicher · N, U
 

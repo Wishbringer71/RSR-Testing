@@ -20,6 +20,20 @@ The run-up itself is unchanged: `Use damaging gap closer abilites if the distanc
 is less than this` still gates it at 3 yalms by default, and as soon as any distance remains the
 path is measured exactly as before.
 
+## HP potions answer to their own settings, not to the heal flag
+
+A potion was only offered while `AutoStatus.HealSingleAbility` stood — the flag that says whether
+this job should be casting a healing *action* right now. It therefore inherited every condition
+behind that flag, and one of them is the common case rather than a corner: with `Only heal as a
+non-healer if there are no healers` on, a damage dealer or tank in a party with a living healer
+never gets the flag at all. A Summoner cut to 1 HP by a mechanic could not reach a potion, however
+its own three switches were set.
+
+The potion now carries its own decision: the global setting, the per-item enable, its own HP
+percentage, the missing-health guard and having one in the bag — plus being in combat, since out
+of combat health comes back by itself. A confirmed or predicted tankbuster still drops the
+percentage as before.
+
 ## The strongest HP potion is the one that gets used
 
 The choice between enabled potions took the last one examined on a tie, and the list runs from
