@@ -233,16 +233,26 @@ public partial class CustomRotation
 		HpPotionItem? best = null;
 		foreach (var a in HpPotions)
 		{
-			// Strictly greater, so a tie keeps the one seen first. HpPotions is ordered strongest
-			// first, and a tie is the normal case rather than an edge: MaxHp is the smaller of the
-			// potion's own percentage and its own cap, so wherever the percentage binds - a synced
-			// health pool, or any pool small enough that the cap is out of reach - every usable
-			// grade answers the same figure. With ">=" the last one examined won, and that is the
-			// WEAKEST grade in the bag: the strong potion the player deliberately enabled sat
-			// unused while a low-grade one was spent on the same emergency.
+			// More healing wins; at EQUAL healing the lower grade wins, and both halves are stated
+			// rather than left to the order of HpPotions.
+			//
+			// MaxHp is what this potion restores HERE AND NOW: the smaller of its own percentage of
+			// Player.MaxHp and its own cap, and Player.MaxHp is already the synced pool. So the
+			// comparison needs no knowledge about item levels or sync rules - it reads the effect.
+			//
+			// The tie is the case the owner named: a level 100 character in a level 50 instance may
+			// still drink a level 100 potion, but the percentage is what binds there, and if two
+			// grades state the same percentage they restore the same amount. Spending the expensive
+			// one then buys nothing. Where the grades differ in percentage they differ in MaxHp too,
+			// and the first half of the comparison picks the stronger one on its merits.
+			//
+			// Comparing ids rather than relying on the list running strongest-first: that order is
+			// a property of GetHpPotions and would silently invert this rule if it ever changed.
+			// The content-specific branches below deliberately keep ">=", so the potion meant for
+			// that duty wins a tie against an ordinary one.
 			if (a.ID != 47102 && a.ID != 22306 && a.ID != 20309 && a.CanUse(out _, true))
 			{
-				if (best == null || a.MaxHp > best.MaxHp)
+				if (best == null || a.MaxHp > best.MaxHp || (a.MaxHp == best.MaxHp && a.ID < best.ID))
 				{
 					best = a;
 				}
@@ -254,7 +264,7 @@ public partial class CustomRotation
 			// missing-HP guard against wasting the potion via overheal.
 			if ((DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterImminent) && a.ID != 47102 && a.ID != 22306 && a.ID != 20309 && a.CanUseEmergency(out _))
 			{
-				if (best == null || a.MaxHp > best.MaxHp)
+				if (best == null || a.MaxHp > best.MaxHp || (a.MaxHp == best.MaxHp && a.ID < best.ID))
 				{
 					best = a;
 				}

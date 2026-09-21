@@ -34,13 +34,19 @@ percentage, the missing-health guard and having one in the bag — plus being in
 of combat health comes back by itself. A confirmed or predicted tankbuster still drops the
 percentage as before.
 
-## The strongest HP potion is the one that gets used
+## The HP potion that gets used is the one that actually restores more
 
-The choice between enabled potions took the last one examined on a tie, and the list runs from
-strongest to weakest — so the weak grade won. Ties are the normal case, not an edge: a potion
-heals a percentage up to its own cap, and wherever the percentage is what binds, every usable
-grade answers the same figure. The potion you deliberately enabled sat in the bag while a
-low-grade one was spent.
+More healing wins, and at equal healing the lower grade wins. Both halves are now stated in the
+comparison instead of following from the order the potion list happens to have.
+
+The tie is a real case, not an edge. What a potion restores is the smaller of its own percentage
+of your maximum health and its own cap — and under a level sync the percentage is what binds. Two
+grades that state the same percentage then restore exactly the same amount, and drinking the
+expensive one buys nothing. Where the grades differ, they differ in the figure too, and the
+stronger one is picked on its merits.
+
+The item's debug panel shows `MaxHP` per potion, which is that figure for your character as it
+stands right now — so in a synced duty you can see whether two grades really are equal.
 
 The item's debug panel now also says in words why no potion goes out — the setting, this item's
 own enable switch, the health threshold, the missing-health guard, the bag, the game's own
