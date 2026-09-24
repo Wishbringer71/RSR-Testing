@@ -162,7 +162,19 @@ internal class OtherConfiguration
 		() => InitOne(ref NoProvokeNames, nameof(NoProvokeNames)),
 		() => InitOne(ref HostileCastingArea, nameof(HostileCastingArea)),
 		// No download: this one is learned in play and has no shipped counterpart to fetch.
-		() => InitOne(ref HostileCastingAreaPotential, nameof(HostileCastingAreaPotential), false),
+		// The outcome is recorded for the list window: "loaded 0" and "file unreadable" and "no file
+		// yet" all leave an empty table behind, and only the first of them is harmless.
+		() =>
+		{
+			var path = GetFilePath(nameof(HostileCastingAreaPotential));
+			var existed = File.Exists(path);
+			InitOne(ref HostileCastingAreaPotential, nameof(HostileCastingAreaPotential), false);
+			AreaPotentialStoreState = !existed
+				? $"loaded {DateTime.Now:HH:mm:ss}: no file yet, started empty"
+				: !File.Exists(path)
+					? $"LOAD FAILED {DateTime.Now:HH:mm:ss}: file unreadable, set aside as .corrupt, started empty"
+					: $"loaded {DateTime.Now:HH:mm:ss}: {HostileCastingAreaPotential.Count} rated action(s) from file";
+		},
 		() => InitOne(ref HostileCastingTank, nameof(HostileCastingTank)),
 		() => InitOne(ref BeneficialPositions, nameof(BeneficialPositions)),
 		() => InitOne(ref RotationSolverRecord, nameof(RotationSolverRecord), false),
@@ -288,7 +300,67 @@ internal class OtherConfiguration
 
 	public static Task SaveHostileCastingAreaPotential()
 	{
-		return Task.Run(() => Save(HostileCastingAreaPotential, nameof(HostileCastingAreaPotential)));
+		// The snapshot is taken HERE, on the caller's thread, and only the copy goes to the pool.
+		//
+		// The caller is the effect handler on the game thread, which is also the only writer of
+		// this table. Handing the live dictionary to Task.Run serialised it on a pool thread while
+		// the game thread could be adding the next reading: a Dictionary does not survive being
+		// enumerated during a write, the serializer throws "Collection was modified", SavePath's
+		// general catch logs a warning and returns - and that save is gone without a retry. The
+		// reading stayed in memory, so it looked recorded, and reached the file only if a later
+		// save came along. The last reading of a session had no later save.
+		var snapshot = new Dictionary<uint, float>(HostileCastingAreaPotential);
+		return Task.Run(() => SaveTracked(snapshot, nameof(HostileCastingAreaPotential)));
+	}
+
+	/// <summary>
+	/// What the last save and the last load of the learned damage table did, in words. Read by the
+	/// list window, so a store that silently fails can be told apart from one that simply has not
+	/// measured anything yet.
+	/// </summary>
+	public static string AreaPotentialStoreState { get; private set; } = "not loaded yet";
+
+	private static readonly object _areaPotentialSaveLock = new();
+
+	private static void SaveTracked(Dictionary<uint, float> snapshot, string name)
+	{
+		// One writer at a time. Every save of a store uses the same "<name>.json.tmp", and two pool
+		// tasks writing it at once made the second one fail on the locked file - retried twice, and
+		// on the third failure dropped. Serialising them costs nothing here: a save is a few
+		// hundred entries, and the order they land in is the order the readings were taken.
+		lock (_areaPotentialSaveLock)
+		{
+			var ok = SavePath(snapshot, GetFilePath(name));
+
+			// Read back what is on disk rather than trusting the call. A save that "succeeded" but
+			// left a file the loader cannot read, or one with fewer entries than were written, is
+			// exactly the failure this store cannot afford, and only the file itself can say so.
+			var onDisk = CountEntriesOnDisk(name);
+			AreaPotentialStoreState = ok && onDisk == snapshot.Count
+				? $"saved {DateTime.Now:HH:mm:ss}: {snapshot.Count} rated action(s) written and read back"
+				: !ok
+					? $"SAVE FAILED {DateTime.Now:HH:mm:ss}: {snapshot.Count} in memory, file unchanged - see the log"
+					: $"SAVE MISMATCH {DateTime.Now:HH:mm:ss}: {snapshot.Count} written, {onDisk} read back";
+		}
+	}
+
+	private static int CountEntriesOnDisk(string name)
+	{
+		try
+		{
+			var path = GetFilePath(name);
+			if (!File.Exists(path))
+			{
+				return -1;
+			}
+
+			var read = JsonConvert.DeserializeObject<Dictionary<uint, float>>(File.ReadAllText(path));
+			return read?.Count ?? -1;
+		}
+		catch
+		{
+			return -1;
+		}
 	}
 
 	public static Task SaveHostileCastingTank()
@@ -494,10 +566,10 @@ internal class OtherConfiguration
 
 	private static void Save<T>(T value, string name)
 	{
-		SavePath(value, GetFilePath(name));
+		_ = SavePath(value, GetFilePath(name));
 	}
 
-	private static void SavePath<T>(T value, string path)
+	private static bool SavePath<T>(T value, string path)
 	{
 		var retryCount = 3;
 		var delay = 1000; // 1 second delay
@@ -522,7 +594,7 @@ internal class OtherConfiguration
 					TypeNameHandling = TypeNameHandling.None,
 				}));
 				File.Move(temp, path, true);
-				return; // Exit the method if successful
+				return true; // Exit the method if successful
 			}
 			catch (IOException ex) when (i < retryCount - 1)
 			{
@@ -532,9 +604,11 @@ internal class OtherConfiguration
 			catch (Exception ex)
 			{
 				PluginLog.Warning($"Failed to save the file to {path}: {ex.Message}");
-				return; // Exit the method if an unexpected exception occurs
+				return false; // Exit the method if an unexpected exception occurs
 			}
 		}
+
+		return false;
 	}
 
 	private static void InitOne<T>(ref T value, string name, bool download = true, bool forceDownload = false) where T : new()
@@ -595,13 +669,13 @@ internal class OtherConfiguration
 				PluginLog.Warning($"Failed to download {name} from GitHub. Reinitializing to default. Exception: {ex.Message}");
 				_ = BasicWarningHelper.AddSystemWarning($"Github download failed.");
 				value = new T(); // Reinitialize to default
-				SavePath(value, path); // Save the default value
+				_ = SavePath(value, path); // Save the default value
 			}
 		}
 		else
 		{
 			value = new T(); // Reinitialize to default
-			SavePath(value, path); // Save the default value
+			_ = SavePath(value, path); // Save the default value
 		}
 	}
 }

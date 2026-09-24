@@ -3929,6 +3929,16 @@ public partial class RotationConfigWindow : Window
 			// signature, and leaving it alone is what makes this store free to introduce.
 			var rated = OtherConfiguration.HostileCastingAreaPotential;
 			ImGui.Text($"Damage potential recorded: {rated.Count} of {OtherConfiguration.HostileCastingArea.Count}");
+
+			// What the store itself last did with the file. The count above is the table in memory,
+			// which looks the same whether the readings reached the disk or not - and whether a login
+			// found a file, found none, or found one it could not read. This line is written by the
+			// load and by every save, and a save reads the file back before it reports success.
+			ImGui.TextColored(
+				OtherConfiguration.AreaPotentialStoreState.Contains("FAILED") || OtherConfiguration.AreaPotentialStoreState.Contains("MISMATCH")
+					? ImGuiColors.DalamudRed
+					: ImGuiColors.DalamudGrey,
+				"Store: " + OtherConfiguration.AreaPotentialStoreState);
 			if (rated.Count > 0)
 			{
 				var highest = 0f;

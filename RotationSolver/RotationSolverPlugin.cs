@@ -384,12 +384,17 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 	{
 		ActionTracer.Shutdown();
 
+		// The effect handler goes first, then the stores are written. Watcher is what adds readings
+		// to the learned damage table; saving while it is still hooked let a reading arrive between
+		// the snapshot and the unhook, and that reading existed nowhere afterwards - not in the file,
+		// and not in memory once the plugin was gone.
+		Watcher.Disable();
+
 		Service.Config.Save();
 		await OtherConfiguration.Save();
 
 		AutoAttackUpdater.Disable();
 		RSCommands.Disable();
-		Watcher.Disable();
 		ActionQueueManager.Disable();
 		BMRPlanUpdater.Disable();
 		ActionContextMenu.Dispose();

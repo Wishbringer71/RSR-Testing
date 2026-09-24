@@ -52,3 +52,14 @@ The item's debug panel now also says in words why no potion goes out — the set
 own enable switch, the health threshold, the missing-health guard, the bag, the game's own
 refusal — and whether anything is asking for one at all. `CanUse: False` was one bit for six
 separate conditions.
+
+## The learned damage table no longer loses readings on the way to disk
+
+Three ways a reading could stay in memory, look recorded, and never reach the file: the table was
+written from a background thread while the next reading was being added, two saves at once fought
+over the same temporary file, and on unload the last save ran while new readings could still arrive.
+All three are closed.
+
+The AoE list window now says what the store actually did, under `Store:` — whether the login found a
+file, found none, or found one it could not read, and after every save how many entries were read
+back from disk. A save only reports success when the file holds what was written.

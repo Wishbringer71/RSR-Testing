@@ -3110,6 +3110,24 @@ Allgemeine Form, in `CLAUDE.md` aufgenommen: Wo ein fremder Schutzmechanismus al
 
 **Erreichter Prüfgrad:** statische Erhebung der Flaggenkette bis zu ihren Vorbedingungen, Gegenprobe an den beiden Heilzweigen desselben Jobs, Prüfskripte grün. Keine Laufzeitbeobachtung — die Anzeige im Gegenstandsfenster nennt jetzt Grund und Kampfbedingung.
 
+### A125 · Die Schadenstabelle: drei stille Verlustwege beim Speichern, und eine Anzeige, die es zeigt (24.09.2026)
+
+**Gemeldet:** „das abspeichern der schadenstabelle funtioniert nicht, kritisch im loop prüfen."
+
+**Die Kette ist vollständig gelesen:** Messen (`Watcher.ActionFromEnemy`), Schreiben (`SaveHostileCastingAreaPotential` → `SavePath`), Laden (`LoadSteps` → `InitOne`), Entladen (`DisposeAsync`). **Einen Mechanismus, der das Speichern immer verhindert, gibt sie statisch nicht her.** Das Laden läuft vor dem Einhängen des Effekt-Handlers (`await OtherConfiguration.InitAsync` vor `Watcher.Enable`), ein Rennen beim Start scheidet also aus; `RecordCastingArea` steht ab Werk auf an; der Knopf „Forget recorded damage potential" feuert nur auf Klick.
+
+**Gefunden wurden drei Wege, auf denen ein Speichervorgang still verloren geht:**
+
+1. **Serialisiert wurde die lebende Tabelle auf einem Pool-Thread**, während der Spiel-Thread die nächste Messung eintragen konnte. Ein `Dictionary` übersteht keine Aufzählung während eines Schreibvorgangs; der Serialisierer wirft, `SavePath` fängt es im allgemeinen Zweig, protokolliert eine Warnung und kehrt **ohne Wiederholung** zurück. Die Messung blieb im Speicher und sah damit erfasst aus — auf die Platte kam sie nur, wenn später noch ein Speichern folgte. Die letzte Messung einer Sitzung hatte keines.
+2. **Alle Speichervorgänge teilten sich dieselbe `.tmp`-Datei**, und jeder lief als eigener Pool-Task. Zwei zugleich ließen den zweiten an der gesperrten Datei scheitern; nach drei Versuchen wurde er verworfen.
+3. **Beim Entladen wurde gespeichert, solange der Effekt-Handler noch eingehängt war.** Eine Messung zwischen Schnappschuss und Aushängen existierte danach nirgends mehr.
+
+**Behoben:** Der Schnappschuss wird auf dem aufrufenden Thread genommen und nur die Kopie geschrieben; ein Schreiber zur Zeit; der Effekt-Handler wird vor dem letzten Speichern abgehängt.
+
+**Und das Messmittel, weil die Ursache von hier nicht belegbar ist.** Ob einer dieser drei Wege sein Fehlerbild erklärt, sagt die statische Prüfung nicht; sie erklären gelegentlich fehlende Einträge, nicht zwingend ein „funktioniert nicht". Offen bleiben mindestens zwei andere Erklärungen: ein lokaler Bau von **vor** dem Ladefix (`87a7eb283`) — der dokumentierte Bau vom 20.09. 10:15 war es —, und dass gar nicht gemessen wird, weil eine der Messbedingungen nicht greift (mindestens vier Gruppenmitglieder, Aktion mit Wirkzeit, Id in der Flächenliste). Deshalb meldet das Listenfenster jetzt unter „Store:", was Laden und Speichern tatsächlich getan haben, und jedes Speichern liest die Datei zurück, bevor es Erfolg meldet. Fehlt die Zeile ganz, läuft ein Bau ohne diesen Stand.
+
+**Erreichter Prüfgrad:** statische Erhebung der gesamten Kette, Prüfskripte grün. Keine Laufzeitbeobachtung; die Anzeige liefert sie.
+
 ---
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)

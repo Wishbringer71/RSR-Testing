@@ -296,6 +296,10 @@ verschwinden kann.
 | Unlesbare Datei beim Start | Werte bleiben, die Datei wird als `.corrupt` beiseitegelegt und gemeldet |
 | Kampfende, Zustandswechsel, Laden und Entladen (`DataCenter.ResetAllRecords`) | Werte bleiben — die Methode räumt das Laufzeitgedächtnis eines Kampfes ab und fasst keinen Speicher an |
 | **Speicher wird beim Start nicht geladen** | **Totalverlust**, still — behoben, s. u. |
+| Speichern während einer neuen Messung | Der Vorgang ging verloren, still; behoben — gespeichert wird ein Schnappschuss, und nur ein Schreiber zur Zeit |
+| Messung zwischen letztem Speichern und Entladen | Verlust dieser einen Messung; behoben — der Effekt-Handler wird vor dem letzten Speichern abgehängt |
+
+**Ablesbar ist das jetzt im Listenfenster unter „Store:".** Das Laden meldet, ob es eine Datei fand, keine fand oder eine unlesbare beiseitelegte; jedes Speichern liest die Datei zurück und meldet Erfolg nur, wenn dort so viele Einträge stehen wie geschrieben wurden. Die Zahl „Damage potential recorded" darüber ist die Tabelle im Speicher — sie sieht gleich aus, ob die Werte die Platte erreicht haben oder nicht.
 
 **Das Zurücksetzen der Liste lässt die Werte stehen** — Vorgabe des Auftraggebers: „es wäre schade,
 wenn dann auch die Erfahrungswerte weg wären." Die kuratierte Liste neu zu laden ist ein Download, die
