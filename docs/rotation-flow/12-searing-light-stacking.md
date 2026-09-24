@@ -51,20 +51,25 @@ Regel, die nur ihn behandelt, behandelt den seltensten Fall.
 
 ## Sachstand
 
-**Bei einem Beschwörer fällt Searing Light vor der großen Beschwörung, sonst direkt dahinter. Die
-Beschwörung wartet nie auf den Buff, nur auf einen fälligen Schimmerschild.** Stand in `SMN_Reborn`:
+**Bei einem Beschwörer fällt Searing Light vor der großen Beschwörung, und die Beschwörung wartet
+dafür, wenn nötig.** Stand in `SMN_Reborn`:
 
 1. **Zündung.** Im Einschiebeplatz **vor** der Burst-Beschwörung — Solar Bahamut, unterhalb seiner
    Stufe Demi-Bahamut —, sobald deren Abklingzeit bis zum nächsten GCD abläuft (`burstAboutToStart`,
    A114, A126, A129); mit einem zweiten Beschwörer vor jeder großen Beschwörung. Sonst in der Phase
-   (`burstInSolar`), also im ersten freien Platz **hinter** der Beschwörung.
-2. **Die Beschwörung** geht, sobald sie bereit ist. Sie wartet allein auf Schimmerschild, wenn er fällig
-   ist (unten), weil er in der Demi nicht mehr wirkbar ist.
+   (`burstInSolar`).
+2. **Warten der Beschwörung** (`searingSettled`, A115, A127, A132). Sie wartet, wenn der Buff bereit ist
+   oder so früh zurückkehrt, dass er noch in den Einschiebeplatz des GCDs passt, den das Warten kostet.
+   Sie wartet nicht bei laufendem Buff gleich welcher Herkunft, bei ausgeschaltetem Burst oder Searing
+   Light, vor einer Beschwörung, die nicht die Burst-Demi ist, unterhalb von Stufe 66, und mit einem
+   zweiten Beschwörer in der Gruppe nur auf einen bereits bereiten Buff.
+3. **Schimmerschild** hält jede Beschwörung, solange er fällig ist (unten).
 
-Im Kampf: Solar und jede folgende Demi kommen auf ihrer Abklingzeit, also im Takt des Zwei-Minuten-
-Bursts der Gruppe. Searing Light steht vor dem ersten Umbral Impulse — vor der Beschwörung, wenn dort
-Platz ist, sonst direkt dahinter. Wo es einmal danach fällt, zeigt der Rotationsstatus
-„Searing Light vs big summon" im Diagnosefenster.
+Im Kampf: Searing Light steht vor dem ersten Umbral Impulse jeder Solar-Phase. Kann es vor der
+Beschwörung nicht fallen — etwa weil davor Ruby Rite gewirkt wird —, kommt Solar einen GCD später, und
+Searing Light geht in den Platz dieses GCDs. Solar und der Buff verschieben sich dabei gemeinsam; der
+Burst bleibt geschlossen, weil der einzige Beschwörer ihn selbst setzt. Was wartet und wie lange, und wo
+Searing Light gegenüber der Beschwörung lag, zeigt der Rotationsstatus im Diagnosefenster.
 
 **Vorgabe des Auftraggebers (A115):** „Somit muss ja searing light aktiv sein, bevor der erste
 burstschaden entsteht."
@@ -96,41 +101,25 @@ attacked by you after summoning.“ Der Beschwörungs-GCD richtet also nichts au
 **eigenen** Angriffen. Der erste Schaden der Phase ist damit der erste GCD danach — Umbral Impulse (640)
 samt automatischem Luxwave, zusammen 800 Potenz.
 
-**Warum die Beschwörung nicht wartet — die gemeldete Drift.** Die Abklingzeiten der Beschwörung und
-des Buffs laufen ab ihrer **Nutzung**. Jeder GCD, den die Beschwörung wartet, verschiebt deshalb die
-Solar-Phase, jede folgende Demi-Phase und den nächsten Buff um denselben Betrag — nicht gegeneinander,
-sondern gemeinsam gegen das Zwei-Minuten-Fenster der übrigen Gruppenbuffs. Genau das hat der
-Auftraggeber als einziger Beschwörer gemeldet: Searing Light rutschte „immer mehr, je länger der kampf
-lief" nach hinten, und „cooldown von searing light ist später nicht fertig, wenn burst phase läuft. das
-ist die konsequenz." Zwei Wege im Code führten zu einem Warte-GCD je Solar-Phase:
+**Warum die Beschwörung wartet — die gemeldete Drift.** Gemeldet: „cooldown von searing light ist
+später nicht fertig, wenn burst phase läuft." Searing Light lief der Solar-Phase davon. Die Abklingzeiten
+der Beschwörung und des Buffs laufen ab ihrer **Nutzung**; fällt der Buff einmal hinter die Beschwörung,
+ist er in der nächsten Solar-Phase um denselben Betrag zu spät bereit, und in jeder weiteren.
 
-- **Die Freigabe kam zu spät** — erst bei abgelaufener Abklingzeit der Beschwörung, wenn der Platz
-  davor schon vorbei war. Behoben (A126): freigegeben wird „bis zum nächsten GCD bereit".
-- **Vor der Beschwörung fehlte der Einschiebeplatz.** Läuft davor ein Zauber mit Wirkzeit ohne Platz
-  dahinter — nach seiner Angabe „meist ifrit", also Ruby Rite —, konnte der Buff nicht vor der
-  Beschwörung fallen, und sie wartete; war auch der Warte-GCD ein solcher Zauber, noch einmal.
-  Beseitigt, indem die Beschwörung nicht mehr wartet (A131). *Dass hinter Ruby Rite kein Platz bleibt,
-  ist ein Schluss aus Code und Wirktext; die Längen von Wirk- und Wiederholzeit sind Fremdquelle.*
+- **Ohne Warten bleibt ein Rückstand für immer.** Der Platz hinter der Beschwörung liegt zwar ebenfalls
+  vor dem ersten Burstschaden — die Beschwörung macht keinen Schaden —, aber er ist umkämpft: Ihr
+  Wirktext gewährt Refulgent Lux, damit wird Lux Solaris dort wirkbar, und der Heilzweig kommt vor dem
+  Angriffszweig; dazu Addle und ein Trank. Sind beide Plätze belegt, fällt der Buff hinter den ersten
+  Umbral Impulse, und weil nichts ihn zurückholt, bleibt er dort in jeder folgenden Solar-Phase: 15 bis
+  23 Potenz eigener Schaden je Zwei-Minuten-Zyklus, mehr mit jedem weiteren solchen Fall.
+- **Mit Warten wird der Rückstand jede Solar-Phase eingeholt.** Die Beschwörung kommt einen GCD später,
+  Searing Light geht in den Platz dieses GCDs. Der einzige Beschwörer setzt den Burst selbst: Solar und
+  der Buff verschieben sich gemeinsam, und im Kampf ändert sich dadurch nur der Zeitplan der späteren
+  Demis — spürbar erst am Kampfende, wo die letzte Demi-Phase knapper ausfallen kann.
 
-**Der Platz hinter der Beschwörung leistet, was das Warten sollte.** Die Beschwörung ist ein GCD ohne
-Schaden. Ihr Einschiebefenster liegt deshalb vor dem ersten Burstschaden, und es ist dasselbe Fenster,
-das ein sofort wirkender Warte-GCD anböte; ein Warte-GCD mit Wirkzeit trägt den Buff gar nicht. Was
-das Warten allein gekauft hätte, ist Schutz vor Konkurrenz im Platz **hinter** der Beschwörung: Ihr
-Wirktext gewährt Refulgent Lux, damit wird Lux Solaris dort wirkbar, und der Heilzweig kommt vor dem
-Angriffszweig. Schimmerschild ist dort kein Konkurrent — er ist in der Demi nicht wirkbar und geht
-vorher —, wohl aber Addle und ein Trank. Hinter einem sofort wirkenden GCD passen in der Regel zwei
-Fähigkeiten, Lux Solaris nimmt höchstens eine.
-
-**Der Restfall, am Kampf bewertet:** Sind beide Plätze belegt, fällt der Buff einen GCD später, nach
-dem ersten Umbral Impulse. Dessen 5 % (40 Potenz) gehen verloren, dafür trägt der Buff hinten einen
-Primal-GCD mehr (Titan zuerst: Topaz Rite 340, mit Mountain Buster 500): netto 15 bis 23 Potenz
-eigener Schaden, einmal, und für die Gruppe ein um einen GCD verschobenes Fenster. Das Warten kostete
-dagegen in jeder Solar-Phase mit Ruby Rite davor einen GCD, der sich über den Kampf aufaddierte, und
-schob Solar samt Searing Light aus dem Burst der Gruppe. Die Vorgabe aus A115 — Searing Light vor dem
-ersten Burstschaden — ist damit in allen Fällen erfüllt, die das Warten erfüllte, bis auf diesen einen,
-in dem die Sicherheitsaktionen den Platz haben. *Die Werte für Topaz Rite und Mountain Buster sind
-Fremdquelle. Dass die Beschwörung sofort wirkt, steht in keinem Artefakt; dafür spricht, dass hinter ihr
-gewoben wird — die Meldungen, Searing Light falle „irgendwo in der Phase", setzen das voraus.*
+Die Freigabe vor der Beschwörung kam zudem zu spät, erst bei abgelaufener Abklingzeit, wenn der Platz
+davor schon vorbei war; behoben (A126). *Dass hinter Ruby Rite kein Platz bleibt, ist ein Schluss aus
+Code und Wirktext; die Längen von Wirk- und Wiederholzeit sind Fremdquelle.*
 
 **Auch das Warten innerhalb der Demi ist teurer als sein Ertrag.** Hält man statt der Beschwörung den
 ersten GCD der Phase an, bis die offenen Fähigkeiten gewoben sind, verschiebt sich keine Demi — die
@@ -149,15 +138,16 @@ Fähigkeiten der Phase — Energy Drain, zweimal Necrotize, Exodus, Sunflare, Se
 Solaris — brauchen kein Warten: rund acht auf zwölf Einschiebeplätze. *Clipdauer aus Ausführungssperre
 und Latenz, beide nicht im Repository, der Code liest sie erst zur Laufzeit.*
 
-**Mehrere Beschwörer — sein Prüfvorschlag ist mit erfüllt:** „die prüfung der abklingzeit darf aber
-nicht dazu führen, dass alle demis verzögert werden (siehe mehrere Beschwörer in gruppe)". Da die
-Beschwörung nicht mehr auf Searing Light wartet, verzögert keine Abklingzeitprüfung eine Demi, mit
-einem Beschwörer so wenig wie mit fünf. Die Ladung geht in das erste Fenster, das die Zündregel öffnet
-— jede große Beschwörung, und sind alle belegt, der Primal-Block nach Standort. Mit dem Warten
-entfielen auch die drei Fälle, in denen die Beschwörung ohne Ende festhing (A127).
+**Mehrere Beschwörer — sein Prüfvorschlag, geprüft und so umgesetzt:** „die prüfung der abklingzeit
+darf aber nicht dazu führen, dass alle demis verzögert werden (siehe mehrere Beschwörer in gruppe), da
+erfolgt ein ausweichen auf den nächsten demi bzw. im negativfall auf den stärksten primal." Mit einem
+zweiten Beschwörer wartet die Beschwörung auf keinen abkühlenden Buff, und auf keinen, solange ein
+fremder läuft; die Ladung geht in das erste Fenster, das die Zündregel öffnet — jede große
+Beschwörung, und sind alle belegt, der Primal-Block nach Standort.
 
-**Gelesen wird die Bereitschaft der Beschwörung, nicht der nächste GCD**, damit die Zündung nicht davon
-abhängt, welchen GCD der Pfad im selben Augenblick gewählt hat.
+**Gelesen wird die Bereitschaft der Beschwörung, nicht der nächste GCD.** Andernfalls entstünde dasselbe
+Henne-Ei-Problem wie bei der Wiederbelebung (Konzept 11): Der Buff wartete darauf, angekündigt zu
+werden, und die Ankündigung auf den Buff.
 
 **Das verbleibende Risiko ist benannt, nicht beseitigt — und für diesen Job ist es kleiner, als die
 allgemeine Zweigliste vermuten lässt.** „Heilung oder Verteidigung“ heißt beim Beschwörer konkret
@@ -1007,7 +997,7 @@ läuft".
 | `SMN_Reborn.cs` | Zündung zusätzlich im Platz **vor** der großen Beschwörung: `burstAboutToStart` = Burst an, Beschwörung bis zum nächsten GCD bereit, und sie ist die Burst-Demi oder ein zweiter Beschwörer ist da (A114, A126) | umgesetzt |
 | `SMN_Reborn.cs` | Schimmerschild vor jeder Demi, wenn fällig (`RadiantAegisDueBeforeDemi`) — vor Searing Light im Platz davor, und die Beschwörung wartet auf ihn; Horizont ist seine Wirkdauer aus dem Wirktext | umgesetzt |
 | `SMN_Reborn.cs` | Rotationsstatus: nächste Beschwörung, zweiter Beschwörer, Phasenbuch, worauf die Beschwörung wartet und wie lange im Kampf, und wo Searing Light gegenüber der Beschwörung lag; sichtbar im Kampf über das Diagnosefenster (`Show Diagnostics Window`) | umgesetzt |
-| `SMN_Reborn.cs` | Die Beschwörung wartet nicht auf den Buff (A131); das frühere Warten aus A115 und A127 ist entfernt | umgesetzt |
+| `SMN_Reborn.cs` | Die Beschwörung wartet auf den Buff (`searingSettled`), Bedingungen im Abschnitt „Sachstand" (A115, A127, A132) | umgesetzt |
 
 **V8 hat V7 ersetzt und nicht ergänzt.** V7 zündet blind, sobald der Buff aus ist; V8 entscheidet
 dasselbe aus der Lage. Beides nebeneinander hieße, dass die blinde Bedingung die überlegte jedes Mal
@@ -1063,8 +1053,8 @@ Abstimmung — erfasst, nicht bearbeitet.
 gesperrt.** Wer außerhalb des Solar-Fensters zündet, setzt Searing Light zu einem anderen Zeitpunkt auf
 Abklingzeit. Wartete die Solar-Beschwörung dann auf den Buff, verschöbe die Ausweichregel die
 teuerste Phase des Zyklus — eine Verschiebung um ein Fenster kostete 1600 Potenz, mehr als der
-gesamte Zugewinn an Buffzeit. Die Beschwörung wartet deshalb auf keinen Buff (A131), und die
-Ausweichregel kann keine Demi verschieben.
+gesamte Zugewinn an Buffzeit. Deshalb wartet die Beschwörung mit einem zweiten Beschwörer in der
+Gruppe auf keinen abkühlenden Buff, und bei einem laufenden fremden Buff auf gar keinen.
 
 **Offen und nicht aus dem Repository zu entscheiden:** ob Summon Solar Bahamut seine Abklingzeit mit
 Bahamut und Phoenix teilt. Die Wirktexte aller drei sagen „does not share a recast timer with any

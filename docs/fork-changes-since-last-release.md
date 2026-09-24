@@ -72,14 +72,12 @@ summon's cooldown had already run out — and that happens on a GCD, so the weav
 passed and the summon waited a GCD. And a buff a second or two short of ready counted as done, so the
 summon went without it, the buff followed inside the phase, and its next cooldown ended later still.
 
-The buff is now released as soon as the summon will be ready by the next GCD, and **the big summon
-no longer waits for Searing Light at all**. It used to, whenever the buff could not go out ahead of it
-— typically because Ruby Rite was being cast right before — and every wait pushed Solar and every demi
-after it further behind your party's two-minute burst. Now Solar comes on its cooldown, and Searing
-Light goes into the weave slot ahead of the summon when there is room, otherwise the first free one
-behind it — still before the first Umbral Impulse, because the summon itself deals no damage. Only if
-both slots behind the summon are taken (Lux Solaris plus Addle or a potion) does the buff land one GCD
-later. The only thing the summon still waits for is a due Radiant Aegis (below).
+The buff is now released as soon as the summon will be ready by the next GCD. When it still cannot
+go out ahead of the summon — a second or two short, or Ruby Rite being cast right before with no room
+for it — the summon waits for it; that GCD goes to your current primal, no attunement is finished on
+purpose. Solar and Searing Light move together, so your burst stays whole, and a buff that fell behind
+once is pulled back instead of trailing every later Solar phase. With another Summoner in the party the
+summon never waits for a buff that is still cooling down or blocked by his.
 
 ## Summoner: Radiant Aegis goes out before a demi, not never
 

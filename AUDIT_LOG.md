@@ -3244,6 +3244,22 @@ Allgemeine Form, in `CLAUDE.md` aufgenommen: Wo ein fremder Schutzmechanismus al
 
 **Erreichter Prüfgrad:** statische Erhebung, Modellmessung, Prüfskripte, Compile in der CI. Das Diagnosefenster zeigt die beiden Restfälle im Kampf.
 
+### A132 · Die Beschwörung wartet wieder: die Begründung für „nie warten" stand auf einer falschen Prämisse (24.09.2026)
+
+**Einwand des Auftraggebers:** „die begründung war falsch, fällt nicht hinter burst der gruppe zurück. wie denn, wenn einziger beschwörer? man regelt selbst den boost durch rota."
+
+**Die Prämisse, und warum sie nicht trug:** A131 Punkt 1 rechnete dem Warten zu, es schiebe Solar samt Searing Light hinter den Zwei-Minuten-Burst der Gruppe. Das setzte voraus, dass die übrigen Spieler ihre Buffs auf festem Zwei-Minuten-Raster setzen — eine Annahme über fremdes Verhalten, weder belegt noch von hier messbar. Für den einzigen Beschwörer gilt das Gegenteil: Er setzt den Burst selbst, Solar und Searing Light verschieben sich gemeinsam, der Burst bleibt geschlossen.
+
+**Neu bewertet, im Kampf:**
+- *Warten:* kostet nur den Zeitplan der späteren Demis; spürbar am Kampfende, wo die letzte Demi-Phase knapper ausfallen kann. Searing Light steht vor dem ersten Umbral Impulse jeder Solar-Phase.
+- *Nicht warten:* Sind beide Plätze hinter der Beschwörung belegt, fällt Searing Light hinter den ersten Umbral Impulse und **bleibt** dort in jeder folgenden Solar-Phase, weil beide Abklingzeiten ab Nutzung laufen und nichts den Rückstand einholt: 15 bis 23 Potenz je Zwei-Minuten-Zyklus, mit jedem weiteren solchen Fall mehr. Das ist die Form seiner ursprünglichen Meldung („cooldown von searing light ist später nicht fertig, wenn burst phase läuft"). A131 hatte den Restfall als einmalig bewertet (C87).
+
+**Entscheidung im Loop:** Warten, wie in A127 mit der Grenze aus A128 und den Armen aus A129 — also sein Prüfvorschlag, den ich in A128 verworfen hatte. *Falsifikation:* Kein Defekt ohne Warten? — widerlegt: Der Rückstand ist an den Abklingzeiten belegt und holt sich nicht ein. Warten falsch? — seine Kosten fallen für den einzigen Beschwörer auf den Zeitplan, nicht auf den Burst; mit mehreren Beschwörern wartet die Beschwörung auf keinen abkühlenden oder gesperrten Buff, seine Bedingung aus A127. Ausgeliefert und es ändert sich nichts? — das Diagnosefenster zeigt „Big summon held for: Searing Light" samt Dauer und „Searing Light vs big summon".
+
+**Bleibt aus A131:** Ifrit-Standort aus dem Spiel, Phasenbuch ohne Zahl, die Diagnosezeilen. Der Schimmerschild hält die Beschwörung weiterhin, wenn er fällig ist.
+
+**Erreichter Prüfgrad:** statische Erhebung, Prüfskripte, Compile in der CI.
+
 ---
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
@@ -3511,3 +3527,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C84 | A115: „Garantiert wird es erst, wenn die Beschwörung selbst auf den Buff wartet“ | Der Platz hinter der Beschwörung liegt ebenfalls vor dem ersten Burstschaden, weil die Beschwörung keinen Schaden macht — derselbe Befund steht im selben Konzept. Das Warten garantiert nichts, was dieser Platz nicht auch leistet, bis auf den Schutz vor Lux Solaris, und es erzeugt Drift | Entscheidung vorgelegt (`TODO.md`, A128) |
 | C85 | Konzept 12: V7 „umsetzen“ (Vorschläge im Einzelnen), „Richtlinien nach Lage — geprüft und nicht nötig“, „Was damit entfällt: kein Zustand über Frames hinweg“, und V8 mit 56 % statt 48 % | Nach der Entscheidung für V8 standen die V7-Abschnitte unverändert daneben und widersprachen ihr. Die V8-Zahl maß das Modellbuch, nicht das Buch des Plugins; dieses erreichte 49,0 %. Das Modell selbst lief mit falscher Primal-Reihenfolge und falschem Primal-Aufbau | Konzept eingearbeitet, Modell korrigiert und in die CI genommen, Plugin-Buch nachgemessen und verbessert (A129) |
 | C86 | Konzept 12 und `SMN_Reborn`: Sein Satz zu Schimmerschild und Addle sei „Vorgabe des Auftraggebers“ / „Owner's rule“ | Es war ein Hinweis auf eine Tatsache, die ich übersehen hatte: „es sind keine vorgaben, sondern hinweise, was du anscheinend nicht bedacht hast“. Dieselbe Fehlerform wie C82, Minuten nach der Regel dagegen | Als Hinweis geführt, Beleg ist der Wirktext; CLAUDE.md um den Hinweis erweitert |
+| C87 | A131 Punkt 1: Das Warten der Beschwörung schiebe Solar und Searing Light hinter den Burst der Gruppe; der Restfall ohne Warten sei einmalig | Der einzige Beschwörer setzt den Burst selbst, Solar und Buff verschieben sich gemeinsam — der Gruppenburst war eine unbelegte Annahme über fremde Spieler. Und der Restfall ist nicht einmalig: Ein Rückstand des Buffs hinter der Beschwörung bleibt in jeder folgenden Solar-Phase, weil beide Abklingzeiten ab Nutzung laufen | Warten wiederhergestellt (A132) |
