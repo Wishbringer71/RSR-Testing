@@ -759,6 +759,14 @@ Schritt 3 aus `docs/rotation-flow/08-mitigation-synergy.md`. Die Schritte 1 und 
 
 **Vorschlag:** das aktuelle feindliche Ziel der Rotation lesen statt des Aktionsziels; vorher erheben, welches Ziel RSR für Crimson Cyclone tatsächlich wählt.
 
+### Feste Werte im Fork: jeder offene Wert braucht seinen Loop · N, R
+
+**Vorgabe des Auftraggebers:** keine festen Werte im Code, alles im Spiel ableitbar, eine Ausnahme erst nach einem vollständigen Loop zu genau diesem Wert (CLAUDE.md). Die Liste führt `.github/scripts/audit/fixed_values.json`, und `check_fixed_values.py` beziffert die offenen Werte bei jedem Lauf.
+
+**Was im Kampf daran hängt:** Jede dieser Zahlen ist eine Annahme über das Spiel, die niemand nachprüft. Dazu gehören die Vorlaufzeiten der vorausschauenden Abwehr bei Barde, Tänzer, Maschinist und den Tanks (15 und 20 Sekunden statt der Wirkdauer der jeweiligen Aktion), die Stufe, ab der Addle, Feint und Reprisal länger wirken, die Gruppengröße, ab der die Schadenstabelle misst, und die GCD-Zahlen, ab denen Lux Solaris und Tempera Grassa vor dem Ablauf ihres Status fallen. Ändert ein Patch die Größe, bleibt der Code bei der alten Zahl, und nichts schlägt fehl.
+
+**Reihenfolge nach seinem Nutzungsprofil:** zuerst die Werte in den Jobs, die er spielt (Beschwörer, Weißmagier, Tanks, die zentrale Abwehr in `CustomRotation_OtherInfo`), dann der Rest. Die Vorlaufzeiten der Abwehr sind vermutlich über `DefensiveValues.DurationOf` ableitbar; wo ein Merkmal die Dauer im Wirktext leer lässt, braucht es einen eigenen Weg.
+
 ### Das Abwehrmittel nach der Größe des Treffers wählen — Stufe 1 widerlegt, Stufe 2 gebaut, Stufe 3 offen · N, R
 
 **Freigegeben vom Auftraggeber** („Abwehrmittel-kaskade soll nach erneuter Prüfung im Loop umgesetzt werden"), im Loop erneut geprüft, und das Ergebnis ist dreigeteilt. **Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`

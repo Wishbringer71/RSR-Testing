@@ -75,8 +75,9 @@ ist." Beides sind Tatsachen des Spiels, keine Festlegungen; geprüft und so eing
 
 - **Schimmerschild (Radiant Aegis) geht vor jeder Demi, wenn er fällig ist.** Der Wirktext begründet
   es: „Can only be executed while Carbuncle is summoned" — die Demi ersetzt Carbuncle für 15 Sekunden.
-  Fällig heißt, was die Rotation ohnehin fragt: ein von BossModReborn angekündigter Raidwide oder die
-  stehende Verteidigungsflagge ohne eigenen Schild. Umgesetzt (`RadiantAegisDueBeforeDemi`): Der Schild
+  Fällig heißt, was die Rotation ohnehin fragt: ein von BossModReborn angekündigter Raidwide innerhalb
+  der Wirkdauer des Schilds (aus seinem Wirktext, `DefensiveValues.DurationOf`) oder die stehende
+  Verteidigungsflagge ohne eigenen Schild. Umgesetzt (`RadiantAegisDueBeforeDemi`): Der Schild
   nimmt den Platz vor der Beschwörung **vor** Searing Light, und die Beschwörung wartet, solange er
   fällig und wirkbar ist. Der angekündigte Schild stand zuvor in `GeneralAbility`, das die Kette erst
   **nach** dem Angriffszweig fragt — Searing Light nahm den einzigen Platz vor der Demi, und der Schild

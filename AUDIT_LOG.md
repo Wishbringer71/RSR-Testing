@@ -3207,6 +3207,26 @@ Allgemeine Form, in `CLAUDE.md` aufgenommen: Wo ein fremder Schutzmechanismus al
 
 **Erreichter Prüfgrad:** statische Erhebung, Modellmessung mit Selbsttest, Prüfskripte, Compile in der CI. Keine Laufzeitbeobachtung; das Diagnosefenster ist das Mittel dafür.
 
+### A130 · Keine festen Werte: was im Beschwörer-Code jetzt aus dem Spiel kommt, und ein Riegel für jede weitere Zahl (24.09.2026)
+
+**Vorgabe des Auftraggebers:** „ich will generell keine festen werte im code haben. alles muss ingame ableitbar sein. bevor eine ausnahme entsteht muss vorab ein vollständiger loop zum jeweiligen wert entstehen mit recherce, ob man ihn nicht doch ingame ableiten kann." Dazu: „deine fragestellungen sind falsch, da sie das problem im spielerlebnis nicht angehen" und „deine beurteilungen sind ebenfalls ans spielgeschehen anzupassen". Alle drei in CLAUDE.md.
+
+**Im Kampf ändert sich durch diesen Eintrag nichts:** Jeder ersetzte Wert ergibt auf Stufe 100 dieselbe Zahl wie zuvor. Anders wird es erst, wenn das Spiel die Größe ändert — ein Patch, der die Dauer des Schilds ändert, oder eine Stufe, auf der es kein Solar gibt. Dann folgt der Code dem Spiel, statt die alte Zahl zu behalten.
+
+**Abgeleitet statt gesetzt, je Wert:**
+- *Vorlauf des angekündigten Schimmerschilds, bisher `30f`:* Recherche: Weder das Status- noch das Aktionsblatt führt eine Wirkdauer, aber der Wirktext nennt sie („Duration: 30s"). `generate_defensive_values.py` liest sie jetzt mit aus (`DefensiveValues.DurationOf`); leer gelassene Zahlen eines Merkmals ergeben 0 statt einer geratenen. Falsifikation, dritte Hypothese: Leert ein Patch die Zahl im Text, fällt der vorausschauende Schild still aus. Die CI erzeugt die Tabelle dann neu, und der Eintrag fehlt sichtbar im Diff. Eine feste Ersatzzahl wäre genau die verbotene Zahl.
+- *`inSolarUnique`, bisher `PlayerSyncedLevel() == 100`:* ersetzt durch `SummonSolarBahamutPvE.EnoughLevel`; gleichwertig bis Stufe 100, und es folgt der Aktion statt einer Zahl.
+- *Größe des Phasenbuchs, bisher `new int[4]`:* ersetzt durch die Anzahl der Einträge von `SearingPhase`.
+- *Kappung der Wartezeit in der Anzeige, bisher `0.25`:* entfallen. Gemessen wird je Wartevorgang vom ersten bis zum letzten Augenblick, damit ist kein Schritt zwischen zwei Aufrufen zu beurteilen.
+
+**Ausnahmen nach Loop:**
+- *`SearingPhaseHeldAfter = 2`:* Recherche: keine Spielgröße, sondern die Regel des Auftraggebers („erst … erneut dort steht"), also die zweite Sichtung. Aus dem Spiel nicht ableitbar, weil es eine Entscheidung ist.
+- *Ordinalzahlen in `BossModEnums` (vier Zeilen):* Der Wert kommt als nackte Zahl ohne Namen über die Schnittstelle von BossModReborn. Zur Laufzeit ist nichts abzuleiten; die Zuordnung ist an der BMR-Quelle belegt (A119).
+
+**Der Riegel:** `check_fixed_values.py` erhebt jede Zahl auf einer vom Fork hinzugefügten C#-Zeile gegenüber `upstream/main`, ohne generierte Dateien, ohne 0 und 1, ohne Texte und Kommentare. Jede muss in `fixed_values.json` stehen: als Ausnahme mit Loop-Verweis oder als offener Loop. Eine neue, nirgends geführte Zahl lässt die CI fehlschlagen, ein geführter, verschwundener Eintrag ebenso. Der Selbsttest läuft gegen konstruierte Zeilen. Erster Lauf: 80 Zeilen, davon 5 Ausnahmen und 75 offen. Die offenen stehen in `TODO.md`.
+
+**Erreichter Prüfgrad:** statische Erhebung, Prüfskripte, Compile in der CI.
+
 ---
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
