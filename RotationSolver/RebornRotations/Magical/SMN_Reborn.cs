@@ -83,16 +83,16 @@ public sealed class SMN_Reborn : SummonerRotation
 			+ $" / Bahamut {SearingPhaseHeldCount(SearingPhase.Bahamut)} / Phoenix {SearingPhaseHeldCount(SearingPhase.Phoenix)}{pair}"
 			+ $" - all held: {AllSearingPhasesHeld}");
 		ImGui.Text($"Big summon held for: {(_summonHeldFor.Length == 0 ? "nothing" : _summonHeldFor)}"
-			+ $" - {_summonHeldSeconds:F1} s this fight");
+			+ $" - {SummonHeldSecondsNow:F1} s this fight");
 	}
 
 	private string _summonHeldFor = string.Empty;
 	private double _summonHeldSeconds;
-	private DateTime _summonHoldTick = DateTime.MinValue;
+	private DateTime _summonHeldSince = DateTime.MinValue;
 
 	// Counted only while the summon is actually due, so a hold reason that stands between demis does
-	// not add up. The step is capped because this runs with the GCD evaluation, which pauses while a
-	// cast is in progress; a gap there is not a hold.
+	// not add up. Counted per hold, from its first moment to its last, so no step between two calls
+	// has to be judged - a pause in the GCD evaluation neither adds nor loses time.
 	private void NoteSummonHold(string reason)
 	{
 		var now = DateTime.Now;
@@ -105,14 +105,24 @@ public sealed class SMN_Reborn : SummonerRotation
 		if (!InCombat)
 		{
 			_summonHeldSeconds = 0;
-		}
-		else if (_summonHeldFor.Length > 0 && _summonHoldTick != DateTime.MinValue)
-		{
-			_summonHeldSeconds += Math.Min(0.25, (now - _summonHoldTick).TotalSeconds);
+			_summonHeldSince = DateTime.MinValue;
+			return;
 		}
 
-		_summonHoldTick = now;
+		if (_summonHeldFor.Length > 0 && _summonHeldSince == DateTime.MinValue)
+		{
+			_summonHeldSince = now;
+		}
+		else if (_summonHeldFor.Length == 0 && _summonHeldSince != DateTime.MinValue)
+		{
+			_summonHeldSeconds += (now - _summonHeldSince).TotalSeconds;
+			_summonHeldSince = DateTime.MinValue;
+		}
 	}
+
+	// The time held this fight, including a hold that is still running.
+	private double SummonHeldSecondsNow => _summonHeldSeconds
+		+ (_summonHeldSince == DateTime.MinValue ? 0 : (DateTime.Now - _summonHeldSince).TotalSeconds);
 	#endregion
 
 	#region Countdown Logic
@@ -261,9 +271,12 @@ public sealed class SMN_Reborn : SummonerRotation
 
 	// BMRRaidwideIn is already the earliest of BMR's timeline/hints/generic raidwide predictions,
 	// so unlike the raw BMRDamageIn/BMRDamageType pair this can't fire on a tankbuster meant for someone else.
+	// The horizon is the shield's own duration, as its effect text states it: a shield cast further
+	// ahead than that is gone before the hit.
 	private bool RadiantAegisAheadOfRaidwide =>
 		InCombat && !IsLastAction(false, RadiantAegisPvE)
-		&& BMRShouldRefreshBefore(BMRRaidwideIn, 30f, true, null, StatusID.RadiantAegis);
+		&& BMRShouldRefreshBefore(BMRRaidwideIn, DefensiveValues.DurationOf((uint)ActionID.RadiantAegisPvE),
+			true, null, StatusID.RadiantAegis);
 
 	// Radiant Aegis "can only be executed while Carbuncle is summoned" (effect text), and a demi
 	// replaces Carbuncle for its 15 s. A shield that is due and not out before the summon is gone for
@@ -290,7 +303,7 @@ public sealed class SMN_Reborn : SummonerRotation
 	protected override bool AttackAbility(IAction nextGCD, out IAction? act)
 	{
 		var inBigInvocation = !SummonBahamutPvE.EnoughLevel || InBahamut || InPhoenix || InSolarBahamut;
-		var inSolarUnique = DataCenter.PlayerSyncedLevel() == 100 ? !InBahamut && !InPhoenix && InSolarBahamut : InBahamut && !InPhoenix;
+		var inSolarUnique = SummonSolarBahamutPvE.EnoughLevel ? !InBahamut && !InPhoenix && InSolarBahamut : InBahamut && !InPhoenix;
 		var burstInSolar = (SummonSolarBahamutPvE.EnoughLevel && InSolarBahamut) || (!SummonSolarBahamutPvE.EnoughLevel && InBahamut) || !SummonBahamutPvE.EnoughLevel;
 
 		// Searing Light overwrites, it does not stack, and it comes back exactly as often as the

@@ -108,4 +108,63 @@ public static class DefensiveValues
 	/// regenerated from the effect texts and checked against them in CI.
 	/// </remarks>
 	public const float LargestStatedBarrierShare = 0.25f;
+
+	/// <summary>
+	/// How long each defensive action's effect stands, in seconds, as its effect text states
+	/// it. Missing where the text states no number - a trait that changes the duration leaves
+	/// the text blank - so a caller never reads a figure the game did not give.
+	/// </summary>
+	public static readonly Dictionary<uint, float> DurationByActionId = new()
+	{
+		[17] = 15f, // SentinelPvE
+		[44] = 15f, // VengeancePvE
+		[2887] = 10f, // DismantlePvE
+		[3551] = 6f, // RawIntuitionPvE
+		[3613] = 18f, // CollectiveUnconsciousPvE
+		[3636] = 15f, // ShadowWallPvE
+		[7388] = 30f, // ShakeItOffPvE
+		[7393] = 7f, // TheBlackestNightPvE
+		[7394] = 10f, // RiddleOfEarthPvE
+		[7433] = 10f, // PlenaryIndulgencePvE
+		[7531] = 20f, // RampartPvE
+		[11424] = 10f, // DiamondbackPvE
+		[12991] = 30f, // StoneskinLPvE
+		[16140] = 20f, // CamouflagePvE
+		[16148] = 15f, // NebulaPvE
+		[20703] = 6f, // LostManawallPvE
+		[20712] = 60f, // LostStoneskinPvE
+		[20722] = 30f, // BannerOfTirelessConvictionPvE
+		[20723] = 30f, // BannerOfFirmResolvePvE
+		[21611] = 18f, // FixedSignPvE
+		[22354] = 15f, // LostSeraphStrikePvE
+		[23273] = 10f, // ChelonianGatePvE
+		[23280] = 15f, // DragonForcePvE
+		[23908] = 30f, // LostStoneskinIiPvE
+		[23921] = 18f, // LostBloodRagePvE
+		[25746] = 8f, // HolySheltronPvE
+		[25751] = 8f, // BloodwhettingPvE
+		[25758] = 8f, // HeartOfCorundumPvE
+		[25799] = 30f, // RadiantAegisPvE
+		[25868] = 10f, // ExpedientPvE
+		[29733] = 60f, // VariantRampartPvE
+		[34685] = 10f, // TemperaCoatPvE
+		[34686] = 10f, // TemperaGrassaPvE
+		[36920] = 15f, // GuardianPvE
+		[36923] = 15f, // DamnationPvE
+		[36927] = 15f, // ShadowedVigilPvE
+		[36935] = 15f, // GreatNebulaPvE
+		[36962] = 4f, // TengentsuPvE
+		[41610] = 20f, // HerosRimePvE
+		[44899] = 60f, // SeedsowerPvE
+		[46412] = 4f, // ThickSkinPvE
+		[46595] = 5f, // DefendPvE
+		[46605] = 4f, // MesmerizePvE
+		[49075] = 20f, // OccultToadPvE
+	};
+
+	/// <summary>The stated duration in seconds, or 0 when the effect text states none.</summary>
+	public static float DurationOf(uint actionId)
+	{
+		return DurationByActionId.TryGetValue(actionId, out var seconds) ? seconds : 0f;
+	}
 }

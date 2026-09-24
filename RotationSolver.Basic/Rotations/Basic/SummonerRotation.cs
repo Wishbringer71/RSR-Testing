@@ -311,7 +311,7 @@ public partial class SummonerRotation
 	/// </summary>
 	private const int SearingPhaseHeldAfter = 2;
 
-	private readonly int[] _searingPhaseHeld = new int[4];
+	private readonly int[] _searingPhaseHeld = new int[Enum.GetValues<SearingPhase>().Length];
 	private SearingPhase _lastSearingPhase = SearingPhase.None;
 	private bool _searingPhaseBooked;
 
