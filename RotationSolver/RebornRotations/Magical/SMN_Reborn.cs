@@ -92,7 +92,7 @@ public sealed class SMN_Reborn : SummonerRotation
 
 	// Where the last Searing Light landed against the last big summon, from the actions the server
 	// confirmed. "Before the first demi GCD" is what the rule is for; after it, the first Umbral
-	// Impulse went out unbuffed - the rare case where both weave slots behind the summon were taken.
+	// Impulse went out unbuffed - a buff too far behind for the summon to wait for.
 	private static string SearingLightAgainstSummon()
 	{
 		// Newest first, so the first match of each is the latest.
@@ -412,10 +412,13 @@ public sealed class SMN_Reborn : SummonerRotation
 		// summon GCD - and if that slot is taken, the charge falls somewhere inside the phase instead
 		// of at its start. Reported from play twice. Searing Light runs 20s against a 15s demi, so
 		// firing it in the slot BEFORE the summon covers the whole phase and keeps the overhang the
-		// rotation already plans for; the summon itself is never delayed for it.
+		// rotation already plans for; the summon itself is not delayed, because its condition accepts
+		// a running buff as readiness.
 		//
-		// Read from the summon's own readiness, not from nextGCD, so the decision does not depend on
-		// which GCD the path happens to have picked in that frame.
+		// Read from the summon's own readiness, NOT from nextGCD. The summon waits for the buff (see
+		// UseSummonsAndTrances), so asking "is the summon the next GCD" would be the chicken-and-egg
+		// that kept raising broken for a year: the buff waits to be announced, the announcement waits
+		// for the buff, and neither happens. Concept 11 has that case written out.
 		//
 		// No probe and no later analysis either: cooldown and burst flag are both readable here and
 		// now, so the decision stays in the code where it falls.
@@ -430,16 +433,17 @@ public sealed class SMN_Reborn : SummonerRotation
 		// the summon's cooldown ends lets the buff go first and the summon land on time.
 		//
 		// If the buff cannot fire there - still cooling down itself, or no weave room because the GCD
-		// before the summon is a cast - the summon goes anyway, and burstInSolar fires the buff in the
-		// first free slot behind it, which still lies before the first damaging GCD of the phase
-		// (UseSummonsAndTrances). With a second Summoner the charge takes the next window that opens.
+		// before the summon is a cast - the summon may wait for it (searingSettled in
+		// UseSummonsAndTrances), and this branch fires it in the first weave slot of the GCD spent
+		// waiting. Further out, or with a second Summoner in the party, the summon goes without it and
+		// the charge takes the next window that opens.
 		var bigSummonReady = SummonSolarBahamutPvE.EnoughLevel
 			? SummonSolarBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain)
 			: SummonBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain);
 		// Only ahead of the summon that opens the burst - Solar Bahamut, or Demi-Bahamut below its
 		// level - unless another Summoner widens the window to every big summon. Without that, a lone
-		// Summoner whose charge had come loose from Solar fired it ahead of Bahamut or Phoenix, the
-		// weaker phases: concept 12 ties him to Solar.
+		// Summoner whose charge had come loose from Solar fired it ahead of Bahamut or Phoenix, and the
+		// summon waited for it there: concept 12 ties him to Solar.
 		var burstAboutToStart = IsBurst && bigSummonReady
 			&& (NextBigSummonIsBurst || AnotherSummonerInParty);
 
@@ -759,30 +763,101 @@ public sealed class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
-		// The big summon does not wait for Searing Light. It used to, so that the buff stood before the
-		// first damage of the phase, and in play that wait was the drift the owner reported: whenever
-		// the GCD ahead of the summon was a cast with no weave room behind it - Ruby Rite, and Ifrit is
-		// what usually runs there - the buff could not go out first, the summon waited a GCD or more,
-		// and because the demi cooldown starts on use, Solar and every demi after it moved that much
-		// further behind the party's two-minute burst, cycle after cycle.
+		// The big summon waits for Searing Light, because the buff has to be up BEFORE the burst deals
+		// its first damage. Read from the effect texts (ActionId.resx): the summon itself states no
+		// potency at all - it enters Lightwyrm Trance and Solar Bahamut then "executes Luxwave
+		// automatically on the targets attacked by you". So the first damage of the phase is the first
+		// GCD after the summon, Umbral Impulse at 640 plus its automatic Luxwave at 160.
 		//
-		// The wait bought nothing the slot behind the summon does not give. By its effect text the
-		// summon deals no damage ("summons Solar Bahamut to fight your target"); the first damage is the
-		// GCD after it. So Searing Light woven right behind the summon still stands before the first
-		// Umbral Impulse - the same window a waiting GCD would have offered, without moving any demi.
-		// What remains is the slot contest behind the summon: Refulgent Lux makes Lux Solaris castable
-		// there, and the heal branch comes first. Two weaves fit behind an instant GCD, so only a second
-		// competitor (Addle, a potion) pushes the buff past the first Umbral Impulse - one GCD later,
-		// 15 to 23 potency of own damage in that case (concept 12). The status window shows it when it
-		// happens: "Searing Light vs big summon".
+		// That is why a short wait is the cheaper error. For a lone Summoner the wait moves Solar and
+		// the buff together - he sets his own burst, so nothing is lost but the schedule of the later
+		// demis, which only shows at the end of a fight. Going without the wait is dearer than it
+		// looks: the weave slots behind the summon also lie before the first damage, but if both are
+		// taken (Lux Solaris, Addle, a potion) the buff lands behind the first Umbral Impulse - and
+		// since both cooldowns run from use, it then stays behind in every later Solar phase, the
+		// first Umbral Impulse unbuffed each time. That is the drift the owner reported ("cooldown von
+		// searing light ist später nicht fertig, wenn burst phase läuft"). The wait pulls it back each
+		// cycle. The trance runs 15s inside a 20s buff, so the phase still fits whole.
 		//
-		// A due shield holds every demi: once the demi stands, Radiant Aegis cannot be cast for 15 s
-		// (RadiantAegisDueBeforeDemi). That wait protects the party, not damage, and it ends as soon as
-		// the shield is out or no longer due. Dreadwyrm Trance below keeps Carbuncle out and is not held.
-		var aegisFirst = RadiantAegisDueBeforeDemi;
-		NoteSummonHold(aegisFirst ? "Radiant Aegis" : string.Empty);
+		// Three arms, and the last two are what keep the wait from costing the phase itself: a charge
+		// that is already spent is not coming back inside this window, and below level 66 there is no
+		// Searing Light at all. Waiting in either case would trade a 5% buff for the whole burst.
+		//
+		// This also settles a defect recorded in TODO.md: the same summon was asked twice, once with
+		// no condition and once with this one, so the conditional call could never be reached and the
+		// coupling it expressed never applied. One call, one condition.
+		//
+		// Waiting is also the smaller risk here, and naming the branches of THIS job rather than the
+		// generic categories is what shows it. Ahead of the summon the Summoner's own heal branches
+		// cannot fire at all: Lux Solaris requires the Refulgent Lux status and Rekindle checks
+		// InPhoenix, and both of those come FROM a demi phase that has not started yet. What is left
+		// ahead of the summon is Radiant Aegis and Addle, and only while a defence flag stands.
+		//
+		// After the summon it reverses, and that is the more likely reason the buff kept landing inside
+		// the phase rather than at its head: the summon's own effect text grants Refulgent Lux, so the
+		// moment it resolves Lux Solaris becomes castable, and HealAreaAbility - which the dispatch asks
+		// ahead of AttackAbility - can take the very weave slot Searing Light needed, as soon as the
+		// heal-area flag stands. The summon creates its own competitor for the slot behind it; the slot
+		// ahead of it has no such competitor. (Inference from the dispatch order and the effect text,
+		// not observed in play.)
+		//
+		// The residual risk of waiting is therefore a defence flag standing while the charge is up.
+		// Guarding against it with a CanUse probe would be the "CanUse as a question, with targeting as
+		// a side effect" pattern recorded as a defect class in TODO.md, so it is not done.
+		// Settled means: the summon has nothing left to wait for. Four ways to get there.
+		//
+		// The buff is up. Or it does not exist at this level. Or the player has switched it off -
+		// without that arm a disabled Searing Light never goes on cooldown, never counts as settled,
+		// and the summon waits for ever.
+		//
+		// Or it will not be back in time for a single waiting GCD to carry it. A buff a second or two
+		// short of ready used to count as settled: the summon went without it, the buff followed inside
+		// the phase, and its next cooldown ended later still.
+		//
+		// The bound follows a suggestion of the owner, put forward for checking, not as a rule: "es
+		// geht einfach um ein bis zwei sekunden am anfang ... den demi so zu verschieben, dass er erst
+		// startet, wenn searing light verfügbar ist ... die primal rota muss nicht beendet werden." The
+		// summon waits only for a buff that can still be woven into the GCD spent waiting - back
+		// before that GCD's weave window closes, which is one GCD from now less the action-ahead
+		// margin that ends every weave window. A buff back any later would miss that window too and
+		// cost a second waiting GCD. What the waiting GCD is, is not chosen here: the primal branches
+		// decide, and a cast without weave room behind it (Ruby Rite) cannot carry the buff, so the
+		// summon then waits one more GCD. Every GCD waited shifts every later demi with it.
+		//
+		// With another Summoner in the party - the second half of the same suggestion - the charge is
+		// not tied to this summon: the firing window above widens to every big summon and, when all of
+		// them are held, to the strongest primal block. So the summon does not wait for a cooling buff
+		// there at all; the charge goes out in the first window that rule opens once it is back.
+		//
+		// Two arms close waits that never end, and both are the same question: will the buff this
+		// summon waits for actually be cast ahead of it?
+		// - Any Searing Light, not only our own. The buff does not stack and ours cannot be cast over a
+		//   running one (StatusProvide with StatusFromSelf = false). With a second Summoner's buff up,
+		//   ours was ready, could not go out, and the summon waited for his buff to run out - every
+		//   demi of the fight, the delay the owner named.
+		// - Burst switched off. The slot ahead of the summon is opened by burstAboutToStart, which reads
+		//   IsBurst; with burst off the buff never goes there, and a ready buff held the summon for good.
+		// - A summon that is not the burst one, for a lone Summoner. burstAboutToStart does not open the
+		//   slot ahead of it, so the buff would never come.
+		var searingBackSoon = AnotherSummonerInParty
+			? SearingLightPvE.Cooldown.WillHaveOneCharge(WeaponRemain)
+			: SearingLightPvE.Cooldown.WillHaveOneCharge(
+				WeaponRemain + WeaponTotal - DataCenter.CalculatedActionAhead);
+		var searingSettled = !SearingLightPvE.EnoughLevel
+			|| !SearingLightPvE.IsEnabled
+			|| !IsBurst
+			|| (!NextBigSummonIsBurst && !AnotherSummonerInParty)
+			|| HasAnySearingLight
+			|| !searingBackSoon;
 
-		if (!aegisFirst && SummonBahamutPvE.CanUse(out act))
+		// A due shield holds every demi, whatever Searing Light does: once the demi stands, Radiant
+		// Aegis cannot be cast for 15 s (RadiantAegisDueBeforeDemi). This is the one wait that is not
+		// about damage, and it ends as soon as the shield is out or no longer due. Dreadwyrm Trance
+		// below keeps Carbuncle out and is not held.
+		var aegisFirst = RadiantAegisDueBeforeDemi;
+		NoteSummonHold(aegisFirst ? "Radiant Aegis" : !searingSettled ? "Searing Light" : string.Empty);
+
+		if (!aegisFirst && searingSettled && SummonBahamutPvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -791,7 +866,7 @@ public sealed class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
-		if (!aegisFirst && IsBurst && SummonSolarBahamutPvE.CanUse(out act))
+		if (!aegisFirst && IsBurst && searingSettled && SummonSolarBahamutPvE.CanUse(out act))
 		{
 			return true;
 		}
