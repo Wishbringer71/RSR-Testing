@@ -164,7 +164,7 @@ Spielbeobachtung.** Der Wirktext der Beschwörung gewährt selbst Refulgent Lux 
 Grants Refulgent Lux Duration: 30s“). In dem Augenblick, in dem die Beschwörung aufgeht, wird Lux
 Solaris also wirkbar — und `HealAreaAbility` fragt die Kette **vor** `AttackAbility`
 (`CustomRotation_Ability.cs:169` und `:188` gegen den Angriffszweig weiter unten), kann den
-Einschiebeplatz hinter der Beschwörung also nehmen, sobald die Flächenheilungsflagge steht. **Die
+Einschiebeplatz hinter der Beschwörung also nehmen, sobald die Flächenheilungsflagge steht und die Zielwahl der Heilung ein Ziel findet. Diese Zielwahl verlangt nach statischer Prüfung ein Gruppenmitglied innerhalb von 0 Yalm, meist den Beschwörer selbst, unter der Heilschwelle der Aktion (A136; im Spiel nicht beobachtet). **Die
 Beschwörung erzeugt ihren eigenen Konkurrenten um den Platz dahinter; der Platz davor hat diesen
 Konkurrenten nicht.** Das ist ein zweites, vom Zeitpunktargument unabhängiges Argument für die
 Zündung vor der Beschwörung — und ein Schluss aus Wirktext und Zweigreihenfolge, keine

@@ -3361,6 +3361,35 @@ Ein vierter Agent bewertete blind gegen den Maßstab und prüfte Behauptungen am
 
 **Prüfgrad:** drei unabhängige Läufe und eine blinde Bewertung mit Stichproben am Code; einmalig je Fassung.
 
+### A136 · Zusammengeführte CLAUDE.md-Fassung an einem neuen Fall getestet: kein Vorteil, bleibt verworfen (25.09.2026)
+
+**Auftrag:** Die CLAUDE.md so verbessern, dass die Vorteile aller Fassungen zusammenkommen. Im Loop prüfen, danach an einem anderen Beispiel testen, damit nebenbei weitere Fehler auffallen.
+
+**Die Kandidatenfassung.** Sie ergänzt die geltende um fünf Punkte, jeder abgeleitet aus einer Schwäche im Test A135:
+- Einheit vor jedem Vergleich.
+- Wirkungsmenge vor dem Bau; eine Option ersetzt diesen Nachweis nicht.
+- Ein Tausch von Ressourcen gegen Schutz wird vorgelegt.
+- Bei „alle/keine/das Größte" eine Gegensuche.
+- Die drei Falsifikationshypothesen stehen einzeln im Bericht.
+
+**Test an einem neuen Fall:** A117 (Flächenheilung der Solar-Phase, Rekindle-Ziel) auf `28f205a4e`. Zwei Bearbeiter arbeiteten, einer mit der geltenden, einer mit der Kandidatenfassung; ein dritter bewertete blind und prüfte am Code.
+
+| | Punkte | im Spiel bei Befolgung |
+|---|---|---|
+| geltende Fassung | 27 | besser (knapp) |
+| Kandidatenfassung | 22 | schlechter (knapp) |
+
+Die Kandidatenfassung war nur bei der ausgeschriebenen Falsifikation besser. Die eigene Zündregel für Lux Solaris legte sie bloß als Entscheidung vor, statt sie auszuarbeiten. Das ist vermutlich die Kehrseite der neuen Regel „Wirkungsmenge vor dem Bau": Sie macht zurückhaltend, auch wo Bauen richtig ist. Zusammen mit A135 ergibt sich kein belegter Vorteil. **Die Kandidatenfassung wird nicht übernommen; die CLAUDE.md bleibt, wie sie ist.** Zwei Durchgänge ohne Verbesserung: Plateau nach Loop-Stufe 10. Grenze: je Fassung ein Lauf.
+
+**Nebenertrag, am Code bestätigt und in `TODO.md` erfasst:**
+- Flächenheilungen ohne Reichweite hängen an der Gesundheit des Heilenden. Das betrifft alle Heiler.
+- Der Rekindle-Rückfall liest den Status 3229, der im PvE vermutlich nicht gesetzt wird.
+- Die Regenerationen der Phoenix-Phase fehlen in den HoT-Listen.
+- Die Punkte-Zielwahl bei Rekindle stammt aus Upstream `e3b57004d`, der `LowestHealthPartyMember` (Prozent) durch `TargetType.LowHP` (absolut) ersetzte.
+- Außerdem widerlegt: meine Aussage aus A117 zum Verfallsrückfall (C93).
+
+**Prüfgrad:** zwei Läufe und eine blinde Bewertung mit Prüfung am Code; statisch.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -3633,3 +3662,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C90 | `38aba83df` und sein Kommentar: Die Ausnahme „bereits im Ring" decke seinen Fall „0 yalm", und der Anlauf bleibe durch `DistanceForMoving2` begrenzt | 0 Yalm misst von Trefferfläche zu Trefferfläche, die Ausnahme vom Mittelpunkt aus; das Band dazwischen läuft weiter über die alte Prüfung. `DistanceForMoving2` gilt für Crimson Cyclone nicht, dort gelten `AddCrimsonCyclone` und `CrimsonCycloneDistance` | TODO, A133 |
 | C91 | A131, Konzept 12, `SMN_Reborn`: „Am Ziel steht, wer innerhalb der Reichweite von Crimson Strike steht" | Seine Grenze ist 0 Yalm. Bei drei Yalm zieht Crimson Cyclone den Spieler heran, also genau der Anlauf, den seine Sicherheitsentscheidung ausschließt | TODO, Konzept 12 als offen gekennzeichnet, A133 |
 | C92 | Kommentar in `SMN_Reborn.AttackAbility`: 60 Sekunden seien eine ganze Zahl von GCDs, die Abklingzeit der Beschwörung ende also auf dem GCD-Raster | Gilt nur bei 2,50 Sekunden GCD. Die Regel „bereit bis zum nächsten GCD" hängt nicht daran | Kommentar bei der nächsten Änderung an der Stelle; A133 |
+| C93 | A117: Die Verfallsklausel für Lux Solaris in `GeneralAbility` bekomme keinen Einschiebeplatz, weil der Angriffszweig in einer Demi-Phase immer etwas habe | Refulgent Lux läuft 30 s, die Demi-Phase 15 s. Die Klausel greift in den letzten drei GCDs, also in der Primal-Phase danach, und dort ist der Angriffszweig fast leer. Lux Solaris zündet dann spät und ohne Gesundheitsprüfung; blind am Code bestätigt (A136) | A136; der Fall ist durch die gemessene Zündregel im Angriffszweig ohnehin überholt |
