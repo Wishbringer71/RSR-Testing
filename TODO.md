@@ -4,13 +4,11 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 ## Defekte
 
-### Heiltrank: der Weg wirkt, zwei Aussagen dazu sind unbelegt · N
+### Heiltrank: welche Sorte bei gleicher Heilung fällt · N
 
 **Stand im Kampf:** Seit der Trank nicht mehr an der Heilflagge hängt, geht er bei ihm wieder heraus (seine Beobachtung, A133). Ob der Weg der richtige war, hat er ausdrücklich offengelassen.
 
-**Unbelegt 1 — warum Upstream bei ihm ging.** Upstream hängt den Trank an dieselbe Flagge, und jede Abweichung des Forks auf dieser Kette lockert (A123, A133). Eine Erklärung für „nur in diesem Fork" gibt der Code nicht her. Was sie liefern würde: in welcher Lage der Trank im Upstream-Bau fiel — mit oder ohne lebenden Heiler in der Gruppe, und bei welchen Einstellungen unter „Healing".
-
-**Unbelegt 2 — welche Sorte bei gleicher Heilung fällt.** Die Regel nimmt die niedrigere Gegenstands-Id und unterstellt, das sei die niedrigere Sorte (C89). *Konzept:* Die Gegenstandsstufe aus dem Blatt `Item` statt der Id — aus dem Spiel abgeleitet, und sie beantwortet die Frage, die er gestellt hat: bei gleicher Wirkung die billigere Sorte. Vorher zu prüfen: ob die Stufe unter den Heiltränken die Sortenreihenfolge trägt, an den Spieldaten und nicht an der Erinnerung.
+**Unbelegt: welche Sorte bei gleicher Heilung fällt.** Die Regel nimmt die niedrigere Gegenstands-Id und unterstellt, das sei die niedrigere Sorte (C89). *Konzept:* Die Gegenstandsstufe aus dem Blatt `Item` statt der Id — aus dem Spiel abgeleitet, und sie beantwortet die Frage, die er gestellt hat: bei gleicher Wirkung die billigere Sorte. Vorher zu prüfen: ob die Stufe unter den Heiltränken die Sortenreihenfolge trägt, an den Spieldaten und nicht an der Erinnerung.
 
 **Kommentar am Einhängepunkt:** nennt `OnlyHealAsNonHealIfNoHealers` als Regelfall (C88); bei der nächsten Änderung dort richtigstellen.
 
