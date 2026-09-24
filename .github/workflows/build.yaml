@@ -57,6 +57,7 @@ jobs:
         run: |
           git remote add upstream https://github.com/FFXIV-CombatReborn/RotationSolverReborn.git || true
           git fetch --tags --no-recurse-submodules upstream
+          git fetch --no-recurse-submodules upstream main
 
       # Second line behind .githooks/pre-commit, for a clone that has no core.hooksPath set. Six
       # commits went out carrying the owner's real name and his private address in this public
@@ -186,6 +187,13 @@ jobs:
         run: python3 .github/scripts/audit/smn_phase_potency.py
       - name: Check the Searing Light coverage model
         run: python3 .github/scripts/audit/searing_light_coverage.py
+
+      # The owner's rule: no fixed values in the code, everything derived from the game, and an
+      # exception only after a loop that asked whether the game can supply the value after all.
+      # Every number on a line the fork added has to be listed - as an exception with its loop in
+      # AUDIT_LOG.md, or as a loop still open. A new number listed nowhere fails here.
+      - name: Check no fixed value entered without a loop
+        run: python3 .github/scripts/audit/check_fixed_values.py
 
   Build:
     runs-on: windows-latest

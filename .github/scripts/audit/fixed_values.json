@@ -1,0 +1,667 @@
+{
+ "comment": "Every numeric literal on a C# line the fork added against upstream/main. 'exception': a loop found it cannot be derived from the game, recorded in AUDIT_LOG.md under 'loop'. 'open': no loop yet - the owner's rule says derive it or run the loop. Checked by check_fixed_values.py.",
+ "entries": [
+  {
+   "file": "RotationSolver.Basic/Actions/ActionTargetInfo.cs",
+   "code": ": 2;",
+   "values": [
+    "2"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Actions/ActionTargetInfo.cs",
+   "code": "|| r.Obj.GetForecastEffectiveHpPercent() > Service.Config.HealthForDyingTanks * 100f)",
+   "values": [
+    "100"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Actions/PheonixDownItem.cs",
+   "code": "return manager->GetActionStatus(ActionType.Item, hq ? ID + 1000000 : ID, target.GameObjectId) == 0;",
+   "values": [
+    "1000000"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Configuration/Configs.cs",
+   "code": "[Range(0, 1, ConfigUnitType.Percent, 0.02f)]",
+   "values": [
+    "0.02"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Configuration/Configs.cs",
+   "code": "[Range(1, 8, ConfigUnitType.None, 1)]",
+   "values": [
+    "8"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Configuration/Configs.cs",
+   "code": "public float HealthProtectedRatio { get; set; } = 0.15f;",
+   "values": [
+    "0.15"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Configuration/Configs.cs",
+   "code": "public int MitigationSustainHostileCount { get; set; } = 4;",
+   "values": [
+    "4"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Data/BossModEnums.cs",
+   "code": "Freezing = 3,",
+   "values": [
+    "3"
+   ],
+   "status": "exception",
+   "loop": "A130",
+   "reason": "IPC ordinal contract with BossModReborn: the value arrives as a bare int without a name, so it cannot be derived at runtime; mapping verified against BMR's source in A119"
+  },
+  {
+   "file": "RotationSolver.Basic/Data/BossModEnums.cs",
+   "code": "Misdirection = 4,",
+   "values": [
+    "4"
+   ],
+   "status": "exception",
+   "loop": "A130",
+   "reason": "IPC ordinal contract with BossModReborn: the value arrives as a bare int without a name, so it cannot be derived at runtime; mapping verified against BMR's source in A119"
+  },
+  {
+   "file": "RotationSolver.Basic/Data/BossModEnums.cs",
+   "code": "Raidwide = 2,",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A130",
+   "reason": "IPC ordinal contract with BossModReborn: the value arrives as a bare int without a name, so it cannot be derived at runtime; mapping verified against BMR's source in A119"
+  },
+  {
+   "file": "RotationSolver.Basic/Data/BossModEnums.cs",
+   "code": "Shared = 3",
+   "values": [
+    "3"
+   ],
+   "status": "exception",
+   "loop": "A130",
+   "reason": "IPC ordinal contract with BossModReborn: the value arrives as a bare int without a name, so it cannot be derived at runtime; mapping verified against BMR's source in A119"
+  },
+  {
+   "file": "RotationSolver.Basic/DataCenter.cs",
+   "code": "? (known + perTarget) / 2f",
+   "values": [
+    "2"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/DataCenter.cs",
+   "code": "Service.Config.UseBmrTimeline && BMRNextTankbusterIn > 0.6f && BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow;",
+   "values": [
+    "0.6"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/DataCenter.cs",
+   "code": "private const byte RaiseLevel = 12;",
+   "values": [
+    "12"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/DataCenter.cs",
+   "code": "private const byte VerraiseLevel = 64;",
+   "values": [
+    "64"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/DataCenter.cs",
+   "code": "private static readonly TimeSpan AnnouncedAreaShareLifetime = TimeSpan.FromSeconds(2.5);",
+   "values": [
+    "2.5"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Helpers/ObjectHelper.cs",
+   "code": "&& (Vector3.Distance(target.Position, Player.Object?.Position ?? Vector3.Zero) > 5))",
+   "values": [
+    "5"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Helpers/ObjectHelper.cs",
+   "code": "&& targetObject.GetEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f)",
+   "values": [
+    "100"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Helpers/ObjectHelper.cs",
+   "code": "_ttkBias[id] = Math.Clamp(smoothed, 0.25f, 4f);",
+   "values": [
+    "0.25",
+    "4"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Helpers/ObjectHelper.cs",
+   "code": "if (_ttkForecast.Count <= 24)",
+   "values": [
+    "24"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Helpers/ObjectHelper.cs",
+   "code": "private const long HealLeadTtlMs = 15;",
+   "values": [
+    "15"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Helpers/ObjectHelper.cs",
+   "code": "private static readonly TimeSpan ForecastFreshness = TimeSpan.FromSeconds(3);",
+   "values": [
+    "3"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Helpers/ObjectHelper.cs",
+   "code": "var smoothed = (previous * 3f + sample) / 4f;",
+   "values": [
+    "3",
+    "4"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Helpers/StatusHelper.cs",
+   "code": "private const uint DeathTriggerLeadGCDs = 2;",
+   "values": [
+    "2"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Rotations/Basic/SummonerRotation.cs",
+   "code": "private const int SearingPhaseHeldAfter = 2;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A130",
+   "reason": "the owner's rule 'held only on repetition' - the second sighting; a decision, not a game quantity"
+  },
+  {
+   "file": "RotationSolver.Basic/Rotations/CustomRotation_Items.cs",
+   "code": "if ((DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterImminent) && a.ID != 47102 && a.ID != 22306 && a.ID != 20309 && a.CanUseEmergency(out _))",
+   "values": [
+    "47102",
+    "22306",
+    "20309"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
+   "code": "&& (HostileTarget?.WillStatusEndGCD(2, 0, false, statusIDs) ?? false));",
+   "values": [
+    "2"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
+   "code": "DataCenter.PlayerSyncedLevel() >= EnhancedMitigationDebuffLevel ? 15f : 10f;",
+   "values": [
+    "15",
+    "10"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
+   "code": "factor *= 0.90f;",
+   "values": [
+    "0.90"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
+   "code": "factor *= 0.95f;",
+   "values": [
+    "0.95"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
+   "code": "if (!Service.Config.UseBmrTimeline || !BMRActive || predictedIn is not (> 0.6f and < float.MaxValue) || predictedIn > statusDuration)",
+   "values": [
+    "0.6"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
+   "code": "private const float SlowDelayIncrease = 0.20f;",
+   "values": [
+    "0.20"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
+   "code": "private const float TankGapCloserRangeYalms = 20f;",
+   "values": [
+    "20"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
+   "code": "private const int EnhancedMitigationDebuffLevel = 98;",
+   "values": [
+    "98"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
+   "code": "return (int)Math.Round(factor * 100f);",
+   "values": [
+    "100"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Duty/PhantomDefault.cs",
+   "code": "if (Player?.GetEffectiveHpPercent() <= DrainTouchEmergencyOnlyThreshold * 100f)",
+   "values": [
+    "100"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Duty/PhantomDefault.cs",
+   "code": "if (Player?.GetEffectiveHpPercent() <= DrainTouchHealyOnlyThreshold * 100f)",
+   "values": [
+    "100"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Healer/AST_Reborn.cs",
+   "code": "[Range(1, 12, ConfigUnitType.None, 1)]",
+   "values": [
+    "12"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Healer/AST_Reborn.cs",
+   "code": "[Range(1, 8, ConfigUnitType.None, 1)]",
+   "values": [
+    "8"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Healer/AST_Reborn.cs",
+   "code": "public int PreAspectedBeneficMinHostiles { get; set; } = 2;",
+   "values": [
+    "2"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Healer/AST_Reborn.cs",
+   "code": "public int PreAspectedBeneficMinWallToWallHostiles { get; set; } = 3;",
+   "values": [
+    "3"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "code": "[Range(0, 1200, ConfigUnitType.None, 100)]",
+   "values": [
+    "1200",
+    "100"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "code": "[Range(1, 12, ConfigUnitType.None, 1)]",
+   "values": [
+    "12"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "code": "[Range(1, 8, ConfigUnitType.None, 1)]",
+   "values": [
+    "8"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "code": "[Range(2, 8, ConfigUnitType.None, 1)]",
+   "values": [
+    "2",
+    "8"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "code": "if (slowed * 2 <= inRange)",
+   "values": [
+    "2"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "code": "public int HoldHolyMinSlowedHostiles { get; set; } = 3;",
+   "values": [
+    "3"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "code": "public int PreRegenMinHostiles { get; set; } = 2;",
+   "values": [
+    "2"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "code": "public int PreRegenMinWallToWallHostiles { get; set; } = 3;",
+   "values": [
+    "3"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "code": "public int StretchHolyMinHostiles { get; set; } = 3;",
+   "values": [
+    "3"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Limited Jobs/BLU_Reborn.cs",
+   "code": "if (DevourPvE.CanUse(out act, skipStatusProvideCheck: Player?.GetEffectiveHpPercent() <= DevourHealThreshold * 100f || IsTank))",
+   "values": [
+    "100"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Limited Jobs/BLU_Reborn.cs",
+   "code": "if (MissilePvE.Target.Target != null && MissilePvE.Target.Target.GetEffectiveHpPercent() >= TheMissileKnowsWhereItIs * 100f)",
+   "values": [
+    "100"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Magical/PCT_Reborn.cs",
+   "code": "&& (MergedStatus.HasFlag(AutoStatus.DefenseArea) || StatusHelper.PlayerWillStatusEndGCD(2, 0, true, StatusID.TemperaCoat)) && TemperaGrassaPvE.CanUse(out act))",
+   "values": [
+    "2"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
+   "code": "&& StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux);",
+   "values": [
+    "3"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Melee/SAM_Reborn.cs",
+   "code": "[Range(0, 15, ConfigUnitType.Seconds)]",
+   "values": [
+    "15"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Ranged/BRD_Reborn.cs",
+   "code": "&& BMRShouldRefreshBefore(BMRRaidwideIn, 15f, true, null, StatusID.Troubadour)",
+   "values": [
+    "15"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Ranged/BRD_Reborn.cs",
+   "code": "&& BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, StatusID.Troubadour)",
+   "values": [
+    "15"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Ranged/DNC_Reborn.cs",
+   "code": "&& BMRShouldRefreshBefore(BMRRaidwideIn, 15f, true, null, StatusID.ShieldSamba)",
+   "values": [
+    "15"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Ranged/DNC_Reborn.cs",
+   "code": "&& BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, StatusID.ShieldSamba)",
+   "values": [
+    "15"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Ranged/MCH_Reborn.cs",
+   "code": "&& !BMRDowntimeWithin(10f) && (Heat >= 50 || HasHypercharged) && WeaponRemain < (GCDTime(1) / 2))",
+   "values": [
+    "10",
+    "50",
+    "2"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Ranged/MCH_Reborn.cs",
+   "code": "&& BMRShouldRefreshBefore(BMRRaidwideIn, 15f, true, null, StatusID.Tactician_1951, StatusID.Tactician_2177)",
+   "values": [
+    "15"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Ranged/MCH_Reborn.cs",
+   "code": "&& BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, StatusID.Tactician_1951, StatusID.Tactician_2177)",
+   "values": [
+    "15"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Ranged/MCH_Reborn.cs",
+   "code": "|| (IsBurst && BarrelStabilizerPvE.EnoughLevel && !BMRDowntimeWithin(GCDTime(2)) && BarrelStabilizerPvE.CanUse(out _));",
+   "values": [
+    "2"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "code": "[Range(1, 8, ConfigUnitType.None, 1)]",
+   "values": [
+    "8"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "code": "if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, ShadowedVigilPvE.EnoughLevel ? StatusID.ShadowedVigil : StatusID.ShadowWall)",
+   "values": [
+    "15"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "code": "if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))",
+   "values": [
+    "20"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "code": "if (stunned >= 2 && stunned * 2 >= inRange)",
+   "values": [
+    "2",
+    "2"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "code": "private const float StunChainGrace = 3f;",
+   "values": [
+    "3"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "code": "private float BlackestNightHealthRatio { get; set; } = 0.6f;",
+   "values": [
+    "0.6"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "code": "private int BlackestNightMinHostiles { get; set; } = 4;",
+   "values": [
+    "4"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "code": "return inRange > 0 && slowed >= 2 && slowed * 2 >= inRange;",
+   "values": [
+    "2",
+    "2"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.cs",
+   "code": "if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, GreatNebulaPvE.EnoughLevel ? StatusID.GreatNebula : StatusID.Nebula)",
+   "values": [
+    "15"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.cs",
+   "code": "if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))",
+   "values": [
+    "20"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Tank/PLD_Reborn.cs",
+   "code": "if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, GuardianPvE.EnoughLevel ? StatusID.Guardian : StatusID.Sentinel)",
+   "values": [
+    "15"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Tank/PLD_Reborn.cs",
+   "code": "if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))",
+   "values": [
+    "20"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.cs",
+   "code": "if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, DamnationPvE.EnoughLevel ? StatusID.Damnation : StatusID.Vengeance)",
+   "values": [
+    "15"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.cs",
+   "code": "if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))",
+   "values": [
+    "20"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/Updaters/StateUpdater.cs",
+   "code": "var h = doomed ? 0.2f : ObjectHelper.GetForecastPlayerHealthRatio();",
+   "values": [
+    "0.2"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/Watcher.cs",
+   "code": ": partyMemberCount < 4",
+   "values": [
+    "4"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver/Watcher.cs",
+   "code": "if (landed || (damageEffect.param0 & 6) == 6)",
+   "values": [
+    "6",
+    "6"
+   ],
+   "status": "open"
+  }
+ ]
+}
