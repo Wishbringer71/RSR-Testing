@@ -70,9 +70,48 @@ public sealed class SMN_Reborn : SummonerRotation
 	#endregion
 
 	#region Tracking Properties
+	// What the Searing Light rules decide from, and what they cost, for the owner to read during a
+	// fight - not for anybody to evaluate afterwards. The held time is the drift: every second the
+	// big summon waits moves it, and every demi after it, out of the party's two-minute window.
 	public override void DisplayRotationStatus()
 	{
 		ImGui.Text($"EnergyDrainPvE: Is Cooling Down: {EnergyDrainPvE.Cooldown.IsCoolingDown}");
+		ImGui.Text($"Next big summon opens the burst: {NextBigSummonIsBurst}");
+		ImGui.Text($"Another Summoner in party: {AnotherSummonerInParty}");
+		var pair = SummonSolarBahamutPvE.EnoughLevel ? " (Bahamut and Phoenix booked as one)" : string.Empty;
+		ImGui.Text($"Searing Light phases held (at {SearingPhaseHeldThreshold}): Solar {SearingPhaseHeldCount(SearingPhase.Solar)}"
+			+ $" / Bahamut {SearingPhaseHeldCount(SearingPhase.Bahamut)} / Phoenix {SearingPhaseHeldCount(SearingPhase.Phoenix)}{pair}"
+			+ $" - all held: {AllSearingPhasesHeld}");
+		ImGui.Text($"Big summon held for: {(_summonHeldFor.Length == 0 ? "nothing" : _summonHeldFor)}"
+			+ $" - {_summonHeldSeconds:F1} s this fight");
+	}
+
+	private string _summonHeldFor = string.Empty;
+	private double _summonHeldSeconds;
+	private DateTime _summonHoldTick = DateTime.MinValue;
+
+	// Counted only while the summon is actually due, so a hold reason that stands between demis does
+	// not add up. The step is capped because this runs with the GCD evaluation, which pauses while a
+	// cast is in progress; a gap there is not a hold.
+	private void NoteSummonHold(string reason)
+	{
+		var now = DateTime.Now;
+		var summonDue = SummonBahamutPvE.EnoughLevel
+			&& !InBahamut && !InPhoenix && !InSolarBahamut
+			&& SummonTime <= WeaponRemain
+			&& SummonBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain);
+		_summonHeldFor = summonDue ? reason : string.Empty;
+
+		if (!InCombat)
+		{
+			_summonHeldSeconds = 0;
+		}
+		else if (_summonHeldFor.Length > 0 && _summonHoldTick != DateTime.MinValue)
+		{
+			_summonHeldSeconds += Math.Min(0.25, (now - _summonHoldTick).TotalSeconds);
+		}
+
+		_summonHoldTick = now;
 	}
 	#endregion
 
@@ -211,10 +250,7 @@ public sealed class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
-		// BMRRaidwideIn is already the earliest of BMR's timeline/hints/generic raidwide predictions,
-		// so unlike the raw BMRDamageIn/BMRDamageType pair this can't fire on a tankbuster meant for someone else.
-		if (InCombat && !IsLastAction(false, RadiantAegisPvE)
-			&& BMRShouldRefreshBefore(BMRRaidwideIn, 30f, true, null, StatusID.RadiantAegis)
+		if (RadiantAegisAheadOfRaidwide
 			&& RadiantAegisPvE.CanUse(out act, usedUp: true, skipStatusProvideCheck: true))
 		{
 			return true;
@@ -222,6 +258,34 @@ public sealed class SMN_Reborn : SummonerRotation
 
 		return base.GeneralAbility(nextGCD, out act);
 	}
+
+	// BMRRaidwideIn is already the earliest of BMR's timeline/hints/generic raidwide predictions,
+	// so unlike the raw BMRDamageIn/BMRDamageType pair this can't fire on a tankbuster meant for someone else.
+	private bool RadiantAegisAheadOfRaidwide =>
+		InCombat && !IsLastAction(false, RadiantAegisPvE)
+		&& BMRShouldRefreshBefore(BMRRaidwideIn, 30f, true, null, StatusID.RadiantAegis);
+
+	// Radiant Aegis "can only be executed while Carbuncle is summoned" (effect text), and a demi
+	// replaces Carbuncle for its 15 s. A shield that is due and not out before the summon is gone for
+	// the whole phase, so it cannot be pushed into the burst behind Searing Light the way a weave
+	// usually can. Pointed out by the owner as something the slot analysis had missed; the effect text
+	// is the evidence.
+	//
+	// Due means the two ways the rotation asks for it anyway, read the way those branches read them:
+	// a raidwide BMR announces (GeneralAbility, above), or the defence flag standing (DefenseArea- and
+	// DefenseSingleAbility, which the dispatch reaches under the area flag) with no shield of ours up.
+	// Castable means level, the option, Carbuncle and a charge - so a disabled, spent or impossible
+	// shield never holds a summon back. Without a BMR module the first way is silent, and only a cast
+	// already on screen raises the flag; that is the limit of the reactive path, not covered here.
+	private bool RadiantAegisDueBeforeDemi =>
+		RadiantAegisPvE.EnoughLevel
+		&& RadiantAegisPvE.IsEnabled
+		&& DataCenter.HasPet()
+		&& RadiantAegisPvE.Cooldown.CurrentCharges > 0
+		&& (RadiantAegisAheadOfRaidwide
+			|| (MergedStatus.HasFlag(AutoStatus.DefenseArea)
+				&& !IsLastAction(false, RadiantAegisPvE)
+				&& !StatusHelper.PlayerHasStatus(true, StatusID.RadiantAegis)));
 
 	protected override bool AttackAbility(IAction nextGCD, out IAction? act)
 	{
@@ -264,6 +328,12 @@ public sealed class SMN_Reborn : SummonerRotation
 		//
 		// Waiting for Titan rather than firing into a distant Ifrit costs nothing: the charge stays
 		// up and its recast only starts when it is spent.
+		//
+		// Outside a demi only onto an expired buff, not into the last seconds of a running one. The
+		// guard lets a charge refresh a buff that is about to end, which pays inside a burst phase and
+		// wastes the rest of somebody else's buff outside one - the reason concept 12 gives for V7's
+		// second condition. Measured with the plugin's own book: without it the fallback gives away
+		// 1.4 points of damage under a buff at three Summoners (searing_light_coverage.py, "guard").
 		var standingAtTheTarget =
 			CrimsonCyclonePvE.Target.Target?.DistanceToPlayer() <= CrimsonCycloneDistance;
 		var fallbackBlockIsWorthIt = TitanActive || (IfritActive && standingAtTheTarget);
@@ -301,12 +371,32 @@ public sealed class SMN_Reborn : SummonerRotation
 		var bigSummonReady = SummonSolarBahamutPvE.EnoughLevel
 			? SummonSolarBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain)
 			: SummonBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain);
-		var burstAboutToStart = IsBurst && bigSummonReady;
+		// Only ahead of the summon that opens the burst - Solar Bahamut, or Demi-Bahamut below its
+		// level - unless another Summoner widens the window to every big summon. Without that, a lone
+		// Summoner whose charge had come loose from Solar fired it ahead of Bahamut or Phoenix, and the
+		// summon waited for it there: concept 12 ties him to Solar.
+		var burstAboutToStart = IsBurst && bigSummonReady
+			&& (NextBigSummonIsBurst || AnotherSummonerInParty);
 
 		var mayFireSearingLight = burstInSolar
 			|| burstAboutToStart
 			|| (AnotherSummonerInParty
-				&& (inBigInvocation || (AllSearingPhasesHeld && fallbackBlockIsWorthIt)));
+				&& (inBigInvocation || (AllSearingPhasesHeld && fallbackBlockIsWorthIt && !HasAnySearingLight)));
+
+		// The shield first, in the slot ahead of the summon. The flag-driven shield already comes before
+		// this branch in the dispatch; the one BMR announces sits in GeneralAbility, after it, so without
+		// this Searing Light took the only slot before the demi and the shield was locked out for the
+		// phase (RadiantAegisDueBeforeDemi). Any demi, not only the burst one, and with burst switched
+		// off as well: every demi replaces Carbuncle.
+		var demiAboutToStart = !inBigInvocation
+			&& (SummonBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain)
+				|| (SummonSolarBahamutPvE.EnoughLevel
+					&& SummonSolarBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain)));
+		if (demiAboutToStart && RadiantAegisAheadOfRaidwide
+			&& RadiantAegisPvE.CanUse(out act, usedUp: true, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
 
 		if (mayFireSearingLight)
 		{
@@ -681,6 +771,8 @@ public sealed class SMN_Reborn : SummonerRotation
 		//   demi of the fight, the delay the owner named.
 		// - Burst switched off. The slot ahead of the summon is opened by burstAboutToStart, which reads
 		//   IsBurst; with burst off the buff never goes there, and a ready buff held the summon for good.
+		// - A summon that is not the burst one, for a lone Summoner. burstAboutToStart does not open the
+		//   slot ahead of it, so the buff would never come.
 		var searingBackSoon = AnotherSummonerInParty
 			? SearingLightPvE.Cooldown.WillHaveOneCharge(WeaponRemain)
 			: SearingLightPvE.Cooldown.WillHaveOneCharge(
@@ -688,10 +780,18 @@ public sealed class SMN_Reborn : SummonerRotation
 		var searingSettled = !SearingLightPvE.EnoughLevel
 			|| !SearingLightPvE.IsEnabled
 			|| !IsBurst
+			|| (!NextBigSummonIsBurst && !AnotherSummonerInParty)
 			|| HasAnySearingLight
 			|| !searingBackSoon;
 
-		if (searingSettled && SummonBahamutPvE.CanUse(out act))
+		// A due shield holds every demi, whatever Searing Light does: once the demi stands, Radiant
+		// Aegis cannot be cast for 15 s (RadiantAegisDueBeforeDemi). This is the one wait that is not
+		// about damage, and it ends as soon as the shield is out or no longer due. Dreadwyrm Trance
+		// below keeps Carbuncle out and is not held.
+		var aegisFirst = RadiantAegisDueBeforeDemi;
+		NoteSummonHold(aegisFirst ? "Radiant Aegis" : !searingSettled ? "Searing Light" : string.Empty);
+
+		if (!aegisFirst && searingSettled && SummonBahamutPvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -700,7 +800,7 @@ public sealed class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
-		if (IsBurst && searingSettled && SummonSolarBahamutPvE.CanUse(out act))
+		if (!aegisFirst && IsBurst && searingSettled && SummonSolarBahamutPvE.CanUse(out act))
 		{
 			return true;
 		}

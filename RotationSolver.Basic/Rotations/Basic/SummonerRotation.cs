@@ -322,11 +322,58 @@ public partial class SummonerRotation
 	/// which phase to aim at. Holding back applies to the phase at hand, not as a matter of
 	/// principle - so every free burst phase is fair game whenever no buff is running, and only
 	/// when all three are spoken for is there a reason to look outside them at all.
+	///
+	/// Only the phases this level has are asked. Solar Bahamut does not exist below its level and
+	/// Phoenix not below its own, so requiring them made the answer "no" in every level-synced duty,
+	/// and the fallback into a primal block could never be reached there.
 	/// </summary>
-	protected bool AllSearingPhasesHeld =>
-		_searingPhaseHeld[(int)SearingPhase.Solar] >= SearingPhaseHeldAfter
-		&& _searingPhaseHeld[(int)SearingPhase.Bahamut] >= SearingPhaseHeldAfter
-		&& _searingPhaseHeld[(int)SearingPhase.Phoenix] >= SearingPhaseHeldAfter;
+	protected bool AllSearingPhasesHeld
+	{
+		get
+		{
+			if (!SummonBahamutPvE.EnoughLevel)
+			{
+				return false;
+			}
+
+			if (_searingPhaseHeld[(int)BookSlot(SearingPhase.Bahamut)] < SearingPhaseHeldAfter)
+			{
+				return false;
+			}
+
+			if (SummonSolarBahamutPvE.EnoughLevel)
+			{
+				return _searingPhaseHeld[(int)SearingPhase.Solar] >= SearingPhaseHeldAfter;
+			}
+
+			return !SummonPhoenixPvE.EnoughLevel
+				|| _searingPhaseHeld[(int)SearingPhase.Phoenix] >= SearingPhaseHeldAfter;
+		}
+	}
+
+	/// <summary>
+	/// The book's count for one phase, as <see cref="AllSearingPhasesHeld"/> reads it - for the
+	/// rotation status, so the tester can see what the rule decides from.
+	/// </summary>
+	protected int SearingPhaseHeldCount(SearingPhase phase) => _searingPhaseHeld[(int)BookSlot(phase)];
+
+	/// <summary>
+	/// How many sightings in a row make a phase held.
+	/// </summary>
+	protected static int SearingPhaseHeldThreshold => SearingPhaseHeldAfter;
+
+	/// <summary>
+	/// Where a phase is booked. With Solar Bahamut in the cycle, Demi-Bahamut and Demi-Phoenix take
+	/// the windows between two Solars in turn, and Searing Light's 120 s recast is two windows - so a
+	/// Summoner seen in one of them returns in the other, and both are spoken for (concept 12,
+	/// "Die Buchführung"). Booking them apart needed two sightings of each, every 240 s, before
+	/// either counted as held. Below Solar's level the two alternate every window and a caster
+	/// returns to the same one, so they are booked apart.
+	/// </summary>
+	private SearingPhase BookSlot(SearingPhase phase) =>
+		phase == SearingPhase.Phoenix && SummonSolarBahamutPvE.EnoughLevel
+			? SearingPhase.Bahamut
+			: phase;
 
 	/// <summary>
 	/// Keeps the phase book, once per window entered rather than once per frame.
@@ -343,6 +390,7 @@ public partial class SummonerRotation
 		{
 			Array.Clear(_searingPhaseHeld, 0, _searingPhaseHeld.Length);
 			_lastSearingPhase = SearingPhase.None;
+			_lastBigSummon = SearingPhase.None;
 			_searingPhaseBooked = false;
 			return;
 		}
@@ -352,6 +400,10 @@ public partial class SummonerRotation
 		{
 			_lastSearingPhase = phase;
 			_searingPhaseBooked = false;
+			if (phase != SearingPhase.None)
+			{
+				_lastBigSummon = phase;
+			}
 		}
 
 		if (phase == SearingPhase.None || _searingPhaseBooked)
@@ -369,13 +421,14 @@ public partial class SummonerRotation
 		}
 
 		_searingPhaseBooked = true;
+		var slot = (int)BookSlot(phase);
 		if (HasAnySearingLight)
 		{
-			_searingPhaseHeld[(int)phase]++;
+			_searingPhaseHeld[slot]++;
 		}
 		else
 		{
-			_searingPhaseHeld[(int)phase] = 0;
+			_searingPhaseHeld[slot] = 0;
 		}
 	}
 
@@ -440,6 +493,39 @@ public partial class SummonerRotation
 	/// 
 	/// </summary>
 	public static bool SummonPhoenixPvEReady => Service.GetAdjustedActionId(ActionID.SummonBahamutPvE) == ActionID.SummonPhoenixPvE;
+	/// <summary>
+	/// Is the next big summon the burst one - Solar Bahamut where it exists, Demi-Bahamut below?
+	/// Read from the summon button itself, which the game turns into the summon that comes next
+	/// ("Summon Bahamut changes to Summon Solar Bahamut when requirements for execution are met").
+	/// A cooldown cannot answer this: every big summon comes round on the same 60 s beat.
+	///
+	/// Two readings, either is enough. The button is the game's own answer, but whether it turns
+	/// before the summon's cooldown has run out is not stated anywhere - and the slot ahead of the
+	/// summon is exactly that moment. So the order is read as well: the burst summon follows every
+	/// other one (Solar, Bahamut, Solar, Phoenix; below Solar, Bahamut and Phoenix in turn), and a
+	/// fight starts with it. A wrong "yes" only lets Searing Light go ahead of a weaker demi, as it did
+	/// before this was asked at all; a wrong "no" would hold the summon for a buff that never comes.
+	/// </summary>
+	protected bool NextBigSummonIsBurst
+	{
+		get
+		{
+			var next = Service.GetAdjustedActionId(ActionID.SummonBahamutPvE);
+			if (SummonSolarBahamutPvE.EnoughLevel)
+			{
+				return next == ActionID.SummonSolarBahamutPvE || _lastBigSummon != SearingPhase.Solar;
+			}
+
+			if (SummonPhoenixPvE.EnoughLevel)
+			{
+				return next == ActionID.SummonBahamutPvE || _lastBigSummon != SearingPhase.Bahamut;
+			}
+
+			return true;
+		}
+	}
+
+	private SearingPhase _lastBigSummon = SearingPhase.None;
 	/// <summary>
 	/// 
 	/// </summary>
