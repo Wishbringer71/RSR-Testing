@@ -3,7 +3,7 @@
 
 A concept that says "default off" about a setting the code ships as on is worse than one that says
 nothing: the next pass reads it, recommends switching the setting on, and the owner has had it on
-all along. That has happened here (`StretchHolyStun`, see CLAUDE.md), and nothing fails when it
+all along. That has happened here (`StretchHolyStun`, see AUDIT_LOG.md), and nothing fails when it
 does - the sentence stays readable and wrong.
 
 Two sources, and the second one is why a naive check misses most of it: the global options live in

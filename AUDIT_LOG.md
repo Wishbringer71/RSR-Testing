@@ -3301,6 +3301,33 @@ Allgemeine Form, in `CLAUDE.md` aufgenommen: Wo ein fremder Schutzmechanismus al
 
 **Erreichter Prüfgrad:** statische Prüfung aller Einheiten gegen Code, Aktionsdaten und `upstream/main`; Prüfskripte grün; eine Laufzeitbeobachtung des Auftraggebers (Trank). Kein Code geändert — die Korrekturen stehen als Konzept im TODO.
 
+### A134 · CLAUDE.md als Ganzes überarbeitet: Widersprüche aufgelöst, Ballast ins Archiv (24.09.2026)
+
+**Auftrag:** CLAUDE.md kritisch im vollständigen Loop und als Ganzes bearbeiten statt Stückwerk anzufügen; prüfen, was die inhaltliche Arbeit verbessert und was nur den Kontext aufbläht. Maßstab des Auftraggebers: Zitate bringen inhaltlich nichts, gemessen wird jede Stelle daran, ob sie die Arbeit verbessert.
+
+**Befunde am alten Stand (70 KB):**
+- *Widersprüche und Drift durch Anfügen:* Der Loop sprach von drei Querschnittsanforderungen, der Abschnitt darunter führte vier (Möglichkeitssinn war später hinzugekommen). „Eine bereits getroffene Entscheidung …" verwies mit „die Regel darunter", die Vorschlagsregel mit „nach der Regel oben" auf die Revisionsregel, die an ganz anderer Stelle stand. Eine Einfügung hatte „Eine Erkennung darf keine Entscheidung enthalten" von ihrem Beleg getrennt. Die Definition of Done („Wirkkette im Code") und „Begründet wird am Spielgeschehen" („Wirkkette sagt nicht, ob es im Spiel richtig ist") widersprachen einander, ohne sich zu nennen. „CLAUDE.md nimmt jede Vorgabe auf" stand gegen „Fachliche Vorgaben gehören ins Konzept". „Destruktive Operationen freigabepflichtig" stand gegen „Reste der Arbeitsumgebung räume ich selbst auf" ohne Abgrenzung.
+- *Falscher Ort:* Commit-Identität und Datenschutz unter „Analyse und Prüfung"; Release-Regeln unter „Sprache"; job-spezifische Einzelheiten (0 Yalm, Konzept 12, Titan) in allgemeinen Regeln, teils veraltet.
+- *Doppelt:* „Systemweite Konsistenzprüfung" und „Einzelfall und Muster"; „Trigger an ihrer Wirkung" und Kausalität vorwärts; „Change Size" und „Maß statt Surrogat"; Blameless Postmortem zweimal; Upstream-Sync und Zustandsmessung in vier Absätzen.
+- *Ballast:* Wörtliche Zitate, ausführliche Fehlererzählungen, Literaturangaben mit Jahreszahl, Umgebungsdetails (Fehlermeldungstexte, Befehlsvarianten, der Installationspfad des Spiels), Zeichenzahlen einer abgelösten Formulargrenze. Nichts davon ändert eine Entscheidung beim Arbeiten.
+
+**Neuer Stand (rund 26 KB):** gegliedert nach dem Zeitpunkt der Anwendung; jede Regel einmal, ohne Zitate, Beispiele nur, wo die Regel sonst falsch angewandt würde; Verweise über Titel. Form nach seinem Maßstab, dass ich damit gut arbeiten kann: eine Anweisung je Punkt, der Grund im Halbsatz, Ich-Form statt Passiv. Die REGEL ist unverändert; die „Kalibrierungs-Belege zur REGEL" entfallen als Ballast (beide Fälle stehen im Archiv). Aufgelöst: vier Querschnittsanforderungen; Definition of Done = Wirkkette im Code **und** Richtigkeit im Spiel **und** selbstbewertendes Messmittel; Arbeitsweise in CLAUDE.md, Fachliches ins Konzept; eigene Umgebungsreste mit `git branch -d` als ausdrückliche Ausnahme der Freigabepflicht. Neu als Regel: die Datei wird eingearbeitet, nicht angehängt, und jede Änderung prüft die ganze Datei.
+
+**Belege, die nur in CLAUDE.md standen und hierher übertragen sind:**
+- Sonde: Zur zweiten Ladung von Schimmerschild „erst beobachten, was die Sonde zeigt" empfohlen; er verwies auf die schon getroffene Regel, Entscheidung im Spiel statt rückblickender Auswertung.
+- Konzept fortschreiben: Konzept 12 empfahl weiter V7, während seine Beschlüsse (adaptive Regel, Gruppengrößen, hybrides Modell, Maß Schaden statt Sekunden) nur in Commits und Chat standen; er benannte das als Ursache verlorener Vorgaben.
+- Release: seine Vorgabe, nur noch Unterschiede in die Beschreibung zu nehmen; die Formulargrenze schnitt früher alles ab Abschnitt 7 ab (Abbruch zwischen Zeichen 12.347 und 18.611).
+- Heiltrank: seine Frage, warum ein Trank mit eigenen Schaltern an der Heilflagge hängt (A124).
+- Definition of Ready: seine Beanstandung von Stückwerk und Schnellschüssen, die er gegenprüfen muss.
+- Beurteilungen am Spielgeschehen: seine Vorgabe, auch Beurteilungen an den Kampf anzupassen.
+- Namen: „Ex Machina" als fehlend gemeldet, es ist Thin Air.
+- Quellen: PDF-Erzeugung für die Anlagen eines Schreibens nach drei gescheiterten Werkzeugen, während Drucken als PDF bei ihm ein Handgriff war.
+- Umgebung: der Zweig `claude/repo-privacy-settings-f06dqh`, als „nicht aus dieser Arbeit" beiseitegestellt, obwohl er aus der Sitzungsumgebung stammte.
+- Zuschreibung: „Living Dead drückt die Heilschwelle zehn Sekunden lang" als seine Regel ausgegeben, war meine Behauptung.
+- Spielpfad: Der Generator `RotationSolver.GameData` sucht die Spieldateien über Programmargument, `FFXIV_GAME_PATH`, übliche Installationsorte, zuletzt die Upstream-Konstante (`Program.ResolveSqpackPath`).
+
+**Prüfung:** Maschinell verglichen, welche Bezeichner und Nummern aus dem alten Stand fehlen — alle fehlenden sind Beispiele aus Belegen, die hier oder unter ihrer Nummer im Archiv stehen. Alle 74 fett gesetzten Regelanfänge des alten Stands sind von Hand einer Regel des neuen zugeordnet. Auf seinen Hinweis, die Datei müsse so formuliert sein, dass ich damit gut arbeiten kann, steht vorn eine Liste der Prüfpunkte nach Auslöser — Sitzungsbeginn, eine Angabe von ihm, eine Behauptung, Code, eine Frage, „fertig“, Commit —, die auf die zuständige Regel verweist. Prüfskripte grün. Prüfgrad: statische Selbstprüfung.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
