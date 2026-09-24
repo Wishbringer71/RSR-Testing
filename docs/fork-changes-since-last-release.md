@@ -73,9 +73,9 @@ passed and the summon waited a GCD. And a buff a second or two short of ready co
 summon went without it, the buff followed inside the phase, and its next cooldown ended later still.
 
 The buff is now released as soon as the summon will be ready by the next GCD. When the buff is a
-second or two short at that point, the summon waits until it is back — at most one more GCD — and the
-GCDs in between go to your current primal; no attunement is finished on purpose. Checked before every
-summon, the gap can no longer build up.
+second or two short at that point, the summon waits for it if it can still be woven into the GCD spent
+waiting; that GCD goes to your current primal, no attunement is finished on purpose. If that GCD is a
+cast with no room for an ability behind it — typically Ruby Rite — the summon waits one more.
 
 With another Summoner in the party the summon does not wait for a cooling buff: your charge goes into
 the next window the multi-Summoner rule opens (any big summon, or the strongest primal block when all

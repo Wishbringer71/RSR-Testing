@@ -725,6 +725,29 @@ Schritt 3 aus `docs/rotation-flow/08-mitigation-synergy.md`. Die Schritte 1 und 
 
 ## Offene Arbeit
 
+### Beschwörer: Soll die große Beschwörung überhaupt auf Searing Light warten? · N — Entscheidung des Auftraggebers
+
+**Konzept:** `docs/rotation-flow/12-searing-light-stacking.md`, Abschnitt „Sachstand"
+
+**Kontext.** Gemeldet: Searing Light rutscht als einziger Beschwörer im Kampfverlauf immer weiter nach hinten. Die Form entsteht, wenn die Beschwörung je Solar-Phase einen GCD auf den Buff wartet: Beschwörung, alle folgenden Demi-Phasen und der Buff verschieben sich gemeinsam gegen das Zwei-Minuten-Fenster der Gruppe. Ein Weg dorthin ist behoben (Freigabe zu spät, A126). **Der zweite ist offen:** Ist der GCD vor der Beschwörung ein Zauber mit Wirkzeit ohne Platz dahinter — nach seiner Angabe „meist ifrit", also Ruby Rite —, kann der Buff nicht vor der Beschwörung fallen, und sie wartet; ist der Warte-GCD wieder ein solcher Zauber, noch einmal. Die heutige Grenze (sein Prüfvorschlag, A127) ändert daran nichts. Upstream lässt die Beschwörung nie warten; das Warten ist Fork-Bestand seit A115.
+
+**Der Befund, der die Frage trägt.** Die Beschwörung ist ein GCD ohne Schaden (Wirktext 36992). Ihr Einschiebefenster liegt vor dem ersten Burstschaden und ist dasselbe, das ein sofort wirkender Warte-GCD böte. Ein Warte-GCD trägt also keinen Buff, den nicht auch der Platz hinter der Beschwörung trüge — er verschiebt nur die Demi. Einziger Unterschied: Hinter der Beschwörung wird Lux Solaris wirkbar, und der Heilzweig kommt vor dem Angriffszweig.
+
+**Betroffene Stellen:** `SMN_Reborn.UseSummonsAndTrances` (`searingSettled`), sonst nichts — Zündung vor der Beschwörung (`burstAboutToStart`) und in der Phase (`burstInSolar`) bestehen bereits.
+
+| | Mechanismus | Im Kampf | Preis |
+|---|---|---|---|
+| **A — empfohlen** | Die Beschwörung wartet nie. Searing Light fällt im Platz vor ihr, wenn es bereit ist und Platz da ist, sonst im ersten freien Platz dahinter. | Solar und jede folgende Demi auf ihrer Abklingzeit; aus dieser Regel entsteht keine Drift mehr. Buff vor Umbral Impulse in allen Fällen, die ein Warte-GCD abdeckte. Mit mehreren Beschwörern kein Demi-Verzug, per Bauart. Die drei Dauerwarte-Fälle aus A127 entfallen samt ihrer Arme. | Sind **beide** Plätze hinter der Beschwörung belegt (Lux Solaris und Schimmerschild/Addle/Trank), fällt der Buff nach dem ersten Umbral Impulse: 5 % von 800 Potenz, 40 Potenz, dazu der Anteil der Gruppe, je solchem Fall. Deine Vorgabe aus A115 ist dann verfehlt; deine Regel „Sicherheit vor Schaden" geht vor. |
+| B — heutiger Stand | Warten, wenn der Buff bereit ist oder noch in den Warte-GCD passt (dein Prüfvorschlag, A127). | Buff garantiert vor dem ersten Burstschaden. | Ein Warte-GCD je Solar-Phase, wenn davor ein Zauber mit Wirkzeit läuft; bei Ruby Rite als Warte-GCD mehrere. Das ist die gemeldete Drift, und sie bleibt. |
+| C — verworfen | Warten nur, wenn der Warte-GCD sofort wirkt. | wie A, mit Schutz vor der Lux-Konkurrenz | Setzt voraus, dass die Beschwörungsprüfung den nächsten GCD kennt — Henne-Ei wie in A115, oder `CanUse` als Frage (Defektklasse weiter oben). |
+| Rückbau auf Upstream | Kein Warten und keine Zündung vor der Beschwörung. | wie A | verliert die erste Gelegenheit vor der Beschwörung ohne Gegenwert |
+
+**Unbelegt, für A tragend:** dass die Beschwörung sofort wirkt, und dass hinter einem sofort wirkenden GCD bei deiner Vorlaufeinstellung zwei Fähigkeiten passen. Beides liest der Code zur Laufzeit selbst (`Info.CastTime`, `EnoughWeaveTime`).
+
+**Ablesbar machen, mit A zusammen:** eine Zeile in der Rotationsanzeige — Solar-Beschwörung „x s nach Bereitschaft", Searing Light „y s vor/nach der Beschwörung". Sie zeigt dir im Kampf, ob die Drift weg ist, ohne dass ich etwas auswerten muss. Möglich als Erweiterung: dieselbe Zeile gegen die Gruppenbuffs, die der Client schon kennt (`PartyBuffDuration`), also ob Solar im Fenster der Gruppe startet.
+
+**Empfehlung: A mit Anzeige.** Es beseitigt den offenen Driftweg an seiner Ursache statt über eine Grenze, erfüllt deine Vorgabe in denselben Fällen wie das Warten, und der verbleibende Fall entsteht nur dort, wo deine Sicherheitsregel ohnehin vorgeht.
+
 ### Das Abwehrmittel nach der Größe des Treffers wählen — Stufe 1 widerlegt, Stufe 2 gebaut, Stufe 3 offen · N, R
 
 **Freigegeben vom Auftraggeber** („Abwehrmittel-kaskade soll nach erneuter Prüfung im Loop umgesetzt werden"), im Loop erneut geprüft, und das Ergebnis ist dreigeteilt. **Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
