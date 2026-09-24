@@ -51,19 +51,20 @@ Regel, die nur ihn behandelt, behandelt den seltensten Fall.
 
 ## Sachstand
 
-**Bei einem Beschwörer fällt Searing Light vor der großen Beschwörung, und die Beschwörung wartet
-unter Bedingungen auf den Buff. Ob sie überhaupt warten soll, ist offen und als Entscheidung in
-`TODO.md` vorgelegt.** Stand in `SMN_Reborn`:
+**Bei einem Beschwörer fällt Searing Light vor der großen Beschwörung, sonst direkt dahinter. Die
+Beschwörung wartet nie auf den Buff, nur auf einen fälligen Schimmerschild.** Stand in `SMN_Reborn`:
 
-1. **Zündung.** Im Einschiebeplatz **vor** der großen Beschwörung, sobald deren Abklingzeit bis zum
-   nächsten GCD abläuft (`burstAboutToStart`, A114); sonst in der Phase selbst (`burstInSolar`).
-   Freigegeben wird „bis zum nächsten GCD bereit", nicht „abgelaufen" (A126).
-2. **Warten der Beschwörung** (`searingSettled`, A115, A127). Sie wartet, wenn der Buff bereit ist oder
-   so früh zurückkehrt, dass er noch in den Einschiebeplatz des GCDs passt, den das Warten kostet —
-   einen GCD ab jetzt, abzüglich des Vorlaufs, mit dem jedes Einschiebefenster schließt. Sie wartet
-   nicht bei laufendem Buff gleich welcher Herkunft, bei ausgeschaltetem Burst oder ausgeschaltetem
-   Searing Light, unterhalb von Stufe 66, und mit einem zweiten Beschwörer in der Gruppe nur auf einen
-   bereits bereiten Buff.
+1. **Zündung.** Im Einschiebeplatz **vor** der Burst-Beschwörung — Solar Bahamut, unterhalb seiner
+   Stufe Demi-Bahamut —, sobald deren Abklingzeit bis zum nächsten GCD abläuft (`burstAboutToStart`,
+   A114, A126, A129); mit einem zweiten Beschwörer vor jeder großen Beschwörung. Sonst in der Phase
+   (`burstInSolar`), also im ersten freien Platz **hinter** der Beschwörung.
+2. **Die Beschwörung** geht, sobald sie bereit ist. Sie wartet allein auf Schimmerschild, wenn er fällig
+   ist (unten), weil er in der Demi nicht mehr wirkbar ist.
+
+Im Kampf: Solar und jede folgende Demi kommen auf ihrer Abklingzeit, also im Takt des Zwei-Minuten-
+Bursts der Gruppe. Searing Light steht vor dem ersten Umbral Impulse — vor der Beschwörung, wenn dort
+Platz ist, sonst direkt dahinter. Wo es einmal danach fällt, zeigt der Rotationsstatus
+„Searing Light vs big summon" im Diagnosefenster.
 
 **Vorgabe des Auftraggebers (A115):** „Somit muss ja searing light aktiv sein, bevor der erste
 burstschaden entsteht."
@@ -95,38 +96,41 @@ attacked by you after summoning.“ Der Beschwörungs-GCD richtet also nichts au
 **eigenen** Angriffen. Der erste Schaden der Phase ist damit der erste GCD danach — Umbral Impulse (640)
 samt automatischem Luxwave, zusammen 800 Potenz.
 
-**Jedes Warten der Beschwörung wirkt über den ganzen Kampf.** Die Abklingzeiten der Beschwörung und
-des Buffs laufen ab ihrer **Nutzung**. Ein Warte-GCD verschiebt deshalb die Solar-Phase, jede folgende
-Demi-Phase und den nächsten Buff um denselben Betrag — nicht gegeneinander, sondern gemeinsam gegen
-das Zwei-Minuten-Fenster der übrigen Gruppenbuffs. Wartet sie in jeder Solar-Phase, summiert sich das.
-Genau diese Form hat der Auftraggeber als einziger Beschwörer gemeldet: Searing Light rutschte „immer
-mehr, je länger der kampf lief" nach hinten, und „cooldown von searing light ist später nicht fertig,
-wenn burst phase läuft. das ist die konsequenz."
+**Warum die Beschwörung nicht wartet — die gemeldete Drift.** Die Abklingzeiten der Beschwörung und
+des Buffs laufen ab ihrer **Nutzung**. Jeder GCD, den die Beschwörung wartet, verschiebt deshalb die
+Solar-Phase, jede folgende Demi-Phase und den nächsten Buff um denselben Betrag — nicht gegeneinander,
+sondern gemeinsam gegen das Zwei-Minuten-Fenster der übrigen Gruppenbuffs. Genau das hat der
+Auftraggeber als einziger Beschwörer gemeldet: Searing Light rutschte „immer mehr, je länger der kampf
+lief" nach hinten, und „cooldown von searing light ist später nicht fertig, wenn burst phase läuft. das
+ist die konsequenz." Zwei Wege im Code führten zu einem Warte-GCD je Solar-Phase:
 
-**Zwei Wege im Code führen zu einem Warte-GCD je Solar-Phase:**
+- **Die Freigabe kam zu spät** — erst bei abgelaufener Abklingzeit der Beschwörung, wenn der Platz
+  davor schon vorbei war. Behoben (A126): freigegeben wird „bis zum nächsten GCD bereit".
+- **Vor der Beschwörung fehlte der Einschiebeplatz.** Läuft davor ein Zauber mit Wirkzeit ohne Platz
+  dahinter — nach seiner Angabe „meist ifrit", also Ruby Rite —, konnte der Buff nicht vor der
+  Beschwörung fallen, und sie wartete; war auch der Warte-GCD ein solcher Zauber, noch einmal.
+  Beseitigt, indem die Beschwörung nicht mehr wartet (A131). *Dass hinter Ruby Rite kein Platz bleibt,
+  ist ein Schluss aus Code und Wirktext; die Längen von Wirk- und Wiederholzeit sind Fremdquelle.*
 
-- **Die Freigabe kam zu spät — behoben (A126).** Freigegeben wurde erst bei **abgelaufener**
-  Abklingzeit der Beschwörung. Die läuft auf einem GCD-Zeitpunkt ab, wenn sechzig Sekunden eine ganze
-  Zahl von GCDs sind; der Platz davor war dann vorbei, und die Beschwörung wartete einen GCD.
-- **Vor der Beschwörung fehlt der Einschiebeplatz — offen.** Ist der GCD davor ein Zauber mit
-  Wirkzeit, dessen Wiederholzeit kaum darüber liegt, bleibt dahinter kein Platz für eine Fähigkeit:
-  `EnoughWeaveTime` verlangt mehr Restzeit als den Vorlauf. Der Buff kann dann nicht vor der
-  Beschwörung fallen, sie wartet auf ihn, und ist auch der Warte-GCD ein solcher Zauber, noch einen.
-  Der Auftraggeber nennt genau diese Lage: vor der Beschwörung läuft „meist ifrit", also Ruby Rite.
-  *Schluss aus Code und Wirktext; die Längen von Wirk- und Wiederholzeit sind Fremdquelle —
-  `ModifyRubyRitePvE` liest die Wirkzeit erst zur Laufzeit (`GetCastTime()`).*
+**Der Platz hinter der Beschwörung leistet, was das Warten sollte.** Die Beschwörung ist ein GCD ohne
+Schaden. Ihr Einschiebefenster liegt deshalb vor dem ersten Burstschaden, und es ist dasselbe Fenster,
+das ein sofort wirkender Warte-GCD anböte; ein Warte-GCD mit Wirkzeit trägt den Buff gar nicht. Was
+das Warten allein gekauft hätte, ist Schutz vor Konkurrenz im Platz **hinter** der Beschwörung: Ihr
+Wirktext gewährt Refulgent Lux, damit wird Lux Solaris dort wirkbar, und der Heilzweig kommt vor dem
+Angriffszweig. Schimmerschild ist dort kein Konkurrent — er ist in der Demi nicht wirkbar und geht
+vorher —, wohl aber Addle und ein Trank. Hinter einem sofort wirkenden GCD passen in der Regel zwei
+Fähigkeiten, Lux Solaris nimmt höchstens eine.
 
-**Warten ist nie besser als der Platz hinter der Beschwörung — bis auf einen Fall.** Die Beschwörung
-ist ein GCD ohne Schaden. Ihr Einschiebefenster liegt deshalb vor dem ersten Burstschaden, und es ist
-dasselbe Fenster, das ein sofort wirkender Warte-GCD anböte. Jeder Buff, den ein Warte-GCD noch
-trägt, fällt ebenso in den Platz hinter der Beschwörung — ohne dass eine Demi-Phase sich verschiebt;
-ein Warte-GCD mit Wirkzeit trägt ihn gar nicht. Die Vorgabe aus A115 ist damit auch ohne Warten
-erfüllt. Was das Warten allein kauft, ist Schutz vor Konkurrenz im Platz **hinter** der Beschwörung:
-Ihr Wirktext gewährt Refulgent Lux, damit wird Lux Solaris dort wirkbar, und der Heilzweig kommt vor
-dem Angriffszweig. Schimmerschild ist dort kein Konkurrent — er ist in der Demi nicht wirkbar und
-geht vorher —, wohl aber Addle und ein Trank. Hinter einem sofort wirkenden GCD passen in der Regel
-zwei Fähigkeiten; Lux Solaris nimmt höchstens eine. *Unbelegt: dass die Beschwörung sofort wirkt, und die Zahl der Plätze bei der
-jeweiligen Vorlaufeinstellung.* Die Vorlage in `TODO.md` rechnet die Wege durch.
+**Der Restfall, am Kampf bewertet:** Sind beide Plätze belegt, fällt der Buff einen GCD später, nach
+dem ersten Umbral Impulse. Dessen 5 % (40 Potenz) gehen verloren, dafür trägt der Buff hinten einen
+Primal-GCD mehr (Titan zuerst: Topaz Rite 340, mit Mountain Buster 500): netto 15 bis 23 Potenz
+eigener Schaden, einmal, und für die Gruppe ein um einen GCD verschobenes Fenster. Das Warten kostete
+dagegen in jeder Solar-Phase mit Ruby Rite davor einen GCD, der sich über den Kampf aufaddierte, und
+schob Solar samt Searing Light aus dem Burst der Gruppe. Die Vorgabe aus A115 — Searing Light vor dem
+ersten Burstschaden — ist damit in allen Fällen erfüllt, die das Warten erfüllte, bis auf diesen einen,
+in dem die Sicherheitsaktionen den Platz haben. *Die Werte für Topaz Rite und Mountain Buster sind
+Fremdquelle. Dass die Beschwörung sofort wirkt, steht in keinem Artefakt; dafür spricht, dass hinter ihr
+gewoben wird — die Meldungen, Searing Light falle „irgendwo in der Phase", setzen das voraus.*
 
 **Auch das Warten innerhalb der Demi ist teurer als sein Ertrag.** Hält man statt der Beschwörung den
 ersten GCD der Phase an, bis die offenen Fähigkeiten gewoben sind, verschiebt sich keine Demi — die
@@ -145,27 +149,15 @@ Fähigkeiten der Phase — Energy Drain, zweimal Necrotize, Exodus, Sunflare, Se
 Solaris — brauchen kein Warten: rund acht auf zwölf Einschiebeplätze. *Clipdauer aus Ausführungssperre
 und Latenz, beide nicht im Repository, der Code liest sie erst zur Laufzeit.*
 
-**Mehrere Beschwörer — Prüfvorschlag des Auftraggebers, geprüft und so umgesetzt:** „die prüfung der
-abklingzeit darf aber nicht dazu führen, dass alle demis verzögert werden (siehe mehrere Beschwörer in
-gruppe), da erfolgt ein ausweichen auf den nächsten demi bzw. im negativfall auf den stärksten
-primal." Mit einem zweiten Beschwörer wartet die Beschwörung auf keinen abkühlenden Buff; die Ladung
-geht, sobald sie zurück ist, in das erste Fenster, das die Zündregel oben öffnet — jede große
-Beschwörung, und sind alle belegt, der stärkste Primal-Block nach Standort.
+**Mehrere Beschwörer — sein Prüfvorschlag ist mit erfüllt:** „die prüfung der abklingzeit darf aber
+nicht dazu führen, dass alle demis verzögert werden (siehe mehrere Beschwörer in gruppe)". Da die
+Beschwörung nicht mehr auf Searing Light wartet, verzögert keine Abklingzeitprüfung eine Demi, mit
+einem Beschwörer so wenig wie mit fünf. Die Ladung geht in das erste Fenster, das die Zündregel öffnet
+— jede große Beschwörung, und sind alle belegt, der Primal-Block nach Standort. Mit dem Warten
+entfielen auch die drei Fälle, in denen die Beschwörung ohne Ende festhing (A127).
 
-**Gewartet wird nur auf einen Buff, der vor der Beschwörung auch fallen kann.** Drei Fälle hielten die
-Beschwörung ohne Ende fest und sind geschlossen:
-
-- **Ein fremdes Searing Light läuft.** Der Buff stapelt nicht, und der eigene lässt sich über einen
-  laufenden nicht wirken (`StatusProvide` ohne Eigenbindung). Gefragt wurde nur nach dem **eigenen**:
-  Der war bereit, konnte nicht gehen, und die Beschwörung wartete, bis der fremde auslief — in jeder
-  Demi-Phase. Jetzt genügt ein laufender Buff gleich welcher Herkunft.
-- **Burst ausgeschaltet.** Den Platz vor der Beschwörung öffnet nur der Burstzweig; bei ausgeschaltetem
-  Burst fiel der Buff dort nie.
-- **Searing Light ausgeschaltet.** Ein nie gezündeter Buff geht nie auf Abklingzeit.
-
-**Gelesen wird die Bereitschaft der Beschwörung, nicht der nächste GCD.** Andernfalls entstünde dasselbe
-Henne-Ei-Problem wie bei der Wiederbelebung (Konzept 11): Der Buff wartete darauf, angekündigt zu
-werden, und die Ankündigung auf den Buff.
+**Gelesen wird die Bereitschaft der Beschwörung, nicht der nächste GCD**, damit die Zündung nicht davon
+abhängt, welchen GCD der Pfad im selben Augenblick gewählt hat.
 
 **Das verbleibende Risiko ist benannt, nicht beseitigt — und für diesen Job ist es kleiner, als die
 allgemeine Zweigliste vermuten lässt.** „Heilung oder Verteidigung“ heißt beim Beschwörer konkret
@@ -781,7 +773,7 @@ sicher, erlaubt Bewegung und kostet 60 Potenz — drei Potenz Schaden je Zyklus.
 Sind alle drei Hauptphasen — Solar, Bahamut, Phoenix — dauerhaft von anderen Beschwörern belegt, wird in den
 Primalblock ausgewichen: **Titan**, oder **Ifrit genau dann, wenn der Spieler ohnehin am Ziel steht**.
 Dann entfällt der Anlauf, seine Voraussetzung ist erfüllt, und die höhere Zahl gilt ohne Positionsrisiko.
-Gemessen wird an derselben Schwelle, die die Rotation für genau diese Frage schon führt — `CrimsonCycloneDistance`.
+Am Ziel steht, wer innerhalb der Reichweite von Crimson Strike zum aktuellen feindlichen Ziel steht, gemessen von Trefferfläche zu Trefferfläche — Reichweite und Trefferflächen liefert das Spiel (A131). `CrimsonCycloneDistance` bleibt die eigene Grenze des Spielers für den Anlauf selbst.
 
 **Zwei Einstellungen stützen diese Wahl, beide am Code belegt.** `PreferTitanWhileMoving`
 zieht in `SummonPrimals` Titan bei Bewegung vor, unabhängig von der eingestellten Reihenfolge;
@@ -839,9 +831,9 @@ Abdeckung durch V8, desto öfter greift V1.
 sind Endnutzer als Beschwörer und, über die neuen geschützten Eigenschaften der Basisklasse,
 Autoren abgeleiteter Beschwörer-Rotationen — additiv, ohne geänderte Signatur.
 
-**Der einzelne Beschwörer hängt an derselben Stelle.** Zündung vor der Beschwörung, Warten der
-Beschwörung und der Vorrang des Schimmerschilds stehen im Abschnitt „Sachstand"; sie wirken nur,
-wenn die nächste Beschwörung die Burst-Demi ist, oder mit einem zweiten Beschwörer vor jeder.
+**Der einzelne Beschwörer hängt an derselben Stelle.** Zündung vor der Beschwörung und der Vorrang
+des Schimmerschilds stehen im Abschnitt „Sachstand"; die Zündung vor der Beschwörung gilt nur vor
+der Burst-Demi, mit einem zweiten Beschwörer vor jeder.
 
 ## Die Vorschläge im Einzelnen
 
@@ -879,7 +871,8 @@ Voraussetzung tatsächlich vorliegt.
 **Mechanismus:** V2, dazu Punkt 6 der Vorgabe — außerhalb einer Burstphase zünden, wenn **alle**
 Phasenarten dauerhaft belegt sind, und dann in den Titan-Block, in den Ifrit-Block nur am Ziel
 stehend. Ob belegt, sagt das Phasenbuch: beim Betreten einer Phase ein fremder Buff zählt hoch, keiner
-setzt zurück, der eigene lässt das Fenster ungewertet; belegt ab zwei Sichtungen in Folge.
+setzt zurück, der eigene lässt das Fenster ungewertet; belegt, wenn sie beim letzten und beim
+jetzigen Betreten fremd belegt war.
 
 **Konsequenzen, gemessen:** oben, Abschnitt „Was im Kampf ankommt". Nirgends unter V2, sechs Punkte
 darüber, wo alle Phasen belegt sind.
@@ -959,13 +952,13 @@ dauerhaft belegt sind. Wer V8 baut, baut V2 mit.
 | | Gewinn im maßgeblichen Bereich | Preis |
 |---|---|---|
 | **V1** | Aetherflow-Ausgaben liegen ab zwei Beschwörern im laufenden Fenster statt daneben | eine zusätzliche Eigenschaft, keine Zustandshaltung |
-| **V8** | beim synchronen Pull 46 % des eigenen Schadens unter Buff statt 26 %, und 54 % statt 48 %, sobald fremde Beschwörer alle Phasenarten belegen; bei versetzten Rotationen unverändert | Zustand über den Kampf: je Phase ein Zähler, wie oft sie beim Betreten fremd belegt war |
+| **V8** | beim synchronen Pull 46 % des eigenen Schadens unter Buff statt 26 %, und 54 % statt 48 %, sobald fremde Beschwörer alle Phasenarten belegen; bei versetzten Rotationen unverändert | Zustand über den Kampf: je Phase, ob sie beim letzten und beim jetzigen Betreten fremd belegt war |
 | ~~V7~~ | im synchronen Pull gegen belegte Phasen vorn | verliert gegen Gegenspieler auf Solar und bei zwei Beschwörern mit vollem Versatz, dort unter V2 |
 
 **V8 verlangt Zustand, und das ist der bewusst gezahlte Preis.** Ohne Beobachtung lässt sich nicht
 erkennen, ob alle Phasenarten belegt sind, und ohne diese Erkennung bleibt nur die Wahl zwischen
 „nie ausweichen" (V2, verschenkt den belegten Fall) und „blind ausweichen" (V7, verschenkt zwei
-andere). Der Zustand ist klein und selbstheilend: ein Zähler je Phase, der zurückfällt, sobald die
+andere). Der Zustand ist klein und selbstheilend: zwei Merker je Phase, die zurückfallen, sobald die
 Phase einmal frei angetroffen wird; außerhalb des Kampfes wird er geleert.
 
 **Die Buchführung beantwortet genau eine Frage, und das ist ihre Aufgabenteilung:** Sind **alle**
@@ -1012,9 +1005,9 @@ läuft".
 | `SummonerRotation.cs` | `NextBigSummonIsBurst` — die nächste große Beschwörung ist die Burst-Demi, aus der Beschwörungstaste und der Reihenfolge | umgesetzt |
 | `SMN_Reborn.cs` | Zündfenster `burstInSolar \|\| burstAboutToStart \|\| (AnotherSummonerInParty && (inBigInvocation \|\| (AllSearingPhasesHeld && (TitanActive \|\| (IfritActive && am Ziel stehend)) && !HasAnySearingLight)))` — V7 ersetzt | umgesetzt |
 | `SMN_Reborn.cs` | Zündung zusätzlich im Platz **vor** der großen Beschwörung: `burstAboutToStart` = Burst an, Beschwörung bis zum nächsten GCD bereit, und sie ist die Burst-Demi oder ein zweiter Beschwörer ist da (A114, A126) | umgesetzt |
-| `SMN_Reborn.cs` | Schimmerschild vor jeder Demi, wenn fällig (`RadiantAegisDueBeforeDemi`) — vor Searing Light im Platz davor, und die Beschwörung wartet auf ihn | umgesetzt |
-| `SMN_Reborn.cs` | Rotationsstatus: nächste Beschwörung, zweiter Beschwörer, Phasenbuch, worauf die Beschwörung wartet und wie lange im Kampf; sichtbar im Kampf über das Diagnosefenster (`Show Diagnostics Window`) | umgesetzt |
-| `SMN_Reborn.cs` | Die Beschwörung wartet auf den Buff (`searingSettled`), Bedingungen im Abschnitt „Sachstand" (A115, A127) | umgesetzt; ob sie warten soll, ist offen (`TODO.md`) |
+| `SMN_Reborn.cs` | Schimmerschild vor jeder Demi, wenn fällig (`RadiantAegisDueBeforeDemi`) — vor Searing Light im Platz davor, und die Beschwörung wartet auf ihn; Horizont ist seine Wirkdauer aus dem Wirktext | umgesetzt |
+| `SMN_Reborn.cs` | Rotationsstatus: nächste Beschwörung, zweiter Beschwörer, Phasenbuch, worauf die Beschwörung wartet und wie lange im Kampf, und wo Searing Light gegenüber der Beschwörung lag; sichtbar im Kampf über das Diagnosefenster (`Show Diagnostics Window`) | umgesetzt |
+| `SMN_Reborn.cs` | Die Beschwörung wartet nicht auf den Buff (A131); das frühere Warten aus A115 und A127 ist entfernt | umgesetzt |
 
 **V8 hat V7 ersetzt und nicht ergänzt.** V7 zündet blind, sobald der Buff aus ist; V8 entscheidet
 dasselbe aus der Lage. Beides nebeneinander hieße, dass die blinde Bedingung die überlegte jedes Mal
@@ -1022,9 +1015,9 @@ dasselbe aus der Lage. Beides nebeneinander hieße, dass die blinde Bedingung di
 
 **Das Buch im Plugin weicht vom Modellbuch ab, und der Preis ist gemessen.** Das Modell führt je
 Phasenart den zuletzt beobachteten fremden Zünder samt Zeitstempel und lässt den Eintrag nach
-Wiederholzeit plus Nachfrist verfallen. Das Plugin führt je Phase einen Zähler: Beim Betreten steigt
-er, wenn ein fremdes Searing Light läuft, und fällt auf null, wenn keines läuft; läuft das eigene,
-bleibt das Fenster ungewertet. Wo Solar existiert, buchen Bahamut und Phoenix gemeinsam — ein fremder
+Wiederholzeit plus Nachfrist verfallen. Das Plugin merkt sich je Phase, ob sie beim Betreten fremd
+belegt war, und hält sie für belegt, wenn das beim letzten und beim jetzigen Betreten zutraf; ein
+Betreten ohne fremden Buff löscht beides, läuft das eigene, bleibt das Fenster ungewertet. Wo Solar existiert, buchen Bahamut und Phoenix gemeinsam — ein fremder
 Zünder in einem der beiden kehrt nach seiner Wiederholzeit im anderen wieder. Zusammen liegt das
 Plugin 3,5 Punkte unter dem Modellbuch; die Zerlegung steht im Abschnitt „Was im Kampf ankommt".
 Beibehalten, weil drei Eigenschaften mehr wiegen:
@@ -1033,7 +1026,7 @@ Beibehalten, weil drei Eigenschaften mehr wiegen:
   Beobachtung selbst — wer aufhört zu zünden, wird beim nächsten Durchgang nicht mehr angetroffen.
 - **Wechselnde Zünder werden richtig behandelt.** Teilen sich zwei fremde Beschwörer eine Phase,
   erreicht im Modell keiner von beiden die zweite Beobachtung und die Phase gilt als frei; für den
-  eigenen Beschwörer ist sie gleichwohl verloren. Der Zähler ohne Urheber beantwortet die Frage, die
+  eigenen Beschwörer ist sie gleichwohl verloren. Der Merker ohne Urheber beantwortet die Frage, die
   zählt: Ist diese Phase für mich zu haben?
 - **Der eigene Buff urteilt nicht.** Läuft die eigene Ladung, wird das Fenster übergangen statt
   gebucht oder gelöscht, sonst löschte eine in Solar gesetzte Ladung beim Betreten von Bahamut
@@ -1070,10 +1063,8 @@ Abstimmung — erfasst, nicht bearbeitet.
 gesperrt.** Wer außerhalb des Solar-Fensters zündet, setzt Searing Light zu einem anderen Zeitpunkt auf
 Abklingzeit. Wartete die Solar-Beschwörung dann auf den Buff, verschöbe die Ausweichregel die
 teuerste Phase des Zyklus — eine Verschiebung um ein Fenster kostete 1600 Potenz, mehr als der
-gesamte Zugewinn an Buffzeit. Deshalb wartet die Beschwörung mit einem zweiten Beschwörer in der
-Gruppe auf keinen abkühlenden Buff, und bei einem laufenden fremden Buff auf gar keinen (Abschnitt
-„Sachstand"). Es gibt genau **einen** Aufruf der großen Beschwörung mit dieser Bedingung; der frühere
-Doppelaufruf, dessen zweiter Zweig unerreichbar war, ist seit A115 zusammengeführt.
+gesamte Zugewinn an Buffzeit. Die Beschwörung wartet deshalb auf keinen Buff (A131), und die
+Ausweichregel kann keine Demi verschieben.
 
 **Offen und nicht aus dem Repository zu entscheiden:** ob Summon Solar Bahamut seine Abklingzeit mit
 Bahamut und Phoenix teilt. Die Wirktexte aller drei sagen „does not share a recast timer with any

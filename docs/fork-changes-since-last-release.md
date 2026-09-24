@@ -72,16 +72,14 @@ summon's cooldown had already run out — and that happens on a GCD, so the weav
 passed and the summon waited a GCD. And a buff a second or two short of ready counted as done, so the
 summon went without it, the buff followed inside the phase, and its next cooldown ended later still.
 
-The buff is now released as soon as the summon will be ready by the next GCD. When the buff is a
-second or two short at that point, the summon waits for it if it can still be woven into the GCD spent
-waiting; that GCD goes to your current primal, no attunement is finished on purpose. If that GCD is a
-cast with no room for an ability behind it — typically Ruby Rite — the summon waits one more.
-
-With another Summoner in the party the summon does not wait for a cooling buff: your charge goes into
-the next window the multi-Summoner rule opens (any big summon, or the strongest primal block when all
-of them are taken). Two cases that could hold the summon back indefinitely are closed as well: another
-Summoner's Searing Light already running (yours cannot be cast over it — any running buff now counts),
-and burst switched off. A Searing Light you have switched off no longer holds the summon back either.
+The buff is now released as soon as the summon will be ready by the next GCD, and **the big summon
+no longer waits for Searing Light at all**. It used to, whenever the buff could not go out ahead of it
+— typically because Ruby Rite was being cast right before — and every wait pushed Solar and every demi
+after it further behind your party's two-minute burst. Now Solar comes on its cooldown, and Searing
+Light goes into the weave slot ahead of the summon when there is room, otherwise the first free one
+behind it — still before the first Umbral Impulse, because the summon itself deals no damage. Only if
+both slots behind the summon are taken (Lux Solaris plus Addle or a potion) does the buff land one GCD
+later. The only thing the summon still waits for is a due Radiant Aegis (below).
 
 ## Summoner: Radiant Aegis goes out before a demi, not never
 
@@ -99,17 +97,21 @@ longer goes ahead of Bahamut or Phoenix, and those summons no longer wait for it
 
 ## Summoner: several Summoners — the fallback into a primal block works as intended
 
-With every burst phase taken by other Summoners, your charge falls back into the Titan block. Three
-fixes to how the rotation decides that: Bahamut and Phoenix now count as one pair at level 100 (a
+With every burst phase taken by other Summoners, your charge falls back into the Titan block — or
+the Ifrit block when you already stand within Crimson Strike's reach of your current target. Fixes to
+how the rotation decides that: Bahamut and Phoenix now count as one pair at level 100 (a
 Summoner seen in one returns in the other), in level-synced duties it no longer asks for a Solar
-phase that does not exist there, and it only falls back once no Searing Light is running at all.
+phase that does not exist there, it only falls back once no Searing Light is running at all, and
+"standing at the target" is now measured to your current target with the game's own melee reach
+instead of a setting and whatever target Crimson Cyclone had last.
 
 ## New: Diagnostics window
 
 Settings → UI → Windows → **Show Diagnostics Window** (off by default). A small window that stays open
 in combat and shows, while you fight, what the fork's rules decide from: the current rotation's
 status (for the Summoner: whether the next summon opens the burst, whether another Summoner is
-recognised, the phase book, and what the big summon is waiting for and for how long this fight),
+recognised, which phases other Summoners hold, what the big summon is waiting for and for how long
+this fight, and where your last Searing Light landed against the big summon),
 the AoE damage table's store state and last rated hit, and for every enabled HP potion why it is or
 is not used.
 

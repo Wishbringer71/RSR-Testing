@@ -3227,6 +3227,23 @@ Allgemeine Form, in `CLAUDE.md` aufgenommen: Wo ein fremder Schutzmechanismus al
 
 **Erreichter Prüfgrad:** statische Erhebung, Prüfskripte, Compile in der CI.
 
+### A131 · Die offenen Fragen selbst entschieden: Solar kommt pünktlich, Ifrit nach echtem Standort, das Phasenbuch ohne Zahl (24.09.2026)
+
+**Auftrag:** „prüfe mögliche antworten auf offene fragen selbst im loop. bewerte die auswirkungen ingame gesamtheitlich"
+
+**1 · Soll die große Beschwörung auf Searing Light warten? — Nein.**
+*Im Kampf:* Mit Warten rutschen Solar, jede folgende Demi und Searing Light bei jeder Solar-Phase mit Ruby Rite davor um einen GCD oder mehr nach hinten, und der Versatz summiert sich über den Kampf; Solar verlässt den Zwei-Minuten-Burst der Gruppe, Searing Light mit ihm — beides trifft den eigenen stärksten Abschnitt und den Burst der übrigen Gruppe. Ohne Warten kommen Solar und alle Demis auf ihrer Abklingzeit; Searing Light liegt vor dem ersten Umbral Impulse, vor oder direkt hinter der Beschwörung. Nur wenn Lux Solaris und Addle oder ein Trank beide Plätze hinter der Beschwörung nehmen, fällt es einen GCD später: 15 bis 23 Potenz eigener Schaden in diesem Fall und ein um einen GCD verschobenes Fenster für die Gruppe. *Optionen:* weiter warten (Nullvariante), nie warten, nur warten wenn der Warte-GCD Platz bietet (verlangt Wissen über den nächsten GCD — Henne-Ei wie in A115), Warten in der Demi durch Clipping (32 bis 112 Potenz je Fall, bei GCD unter 2,5 s rund 400), Rückbau auf Upstream (verliert den Platz vor der Beschwörung). *Falsifikation:* Kein Defekt? — die gemeldete Drift hat genau diese Form, und der Warteweg bei Ruby Rite ist am Code geschlossen. Nie-Warten falsch? — der Restfall ist klein und einmalig, das Warten wiederkehrend und kumulativ; Lux Solaris zurückzustellen hätte den Restfall fast beseitigt, verschiebt aber eine Heilung, und Sicherheit geht vor. Ausgeliefert und es ändert sich nichts? — wartet die Beschwörung weiter, zeigt das Diagnosefenster den Grund („held for Radiant Aegis"); fällt Searing Light hinter den ersten Demi-GCD, zeigt es das ebenfalls („Searing Light vs big summon"). Damit entfallen das Warten aus A115 und A127 samt ihren drei Dauerwarte-Armen; die Wartegrenze aus A127 ist gegenstandslos. Seine Aussage aus A115 — Searing Light vor dem ersten Burstschaden — bleibt erfüllt bis auf den Restfall, in dem seine Sicherheitsregel vorgeht.
+
+**2 · Wann darf Searing Light einen fremden überschreiben (`StatusRefreshGcdCount`, zwei GCDs)? — bleibt.** *Im Kampf:* Gemessen mit dem Buch des Plugins ändert es nichts, ob im Fenster in die letzten Sekunden eines fremden Buffs aufgefrischt wird oder erst nach dessen Ablauf (53,6 % in beiden Fällen); außerhalb der Fenster verlangt die Ausweichregel inzwischen einen abgelaufenen Buff (A129). Der Wert ist Upstreams Vorgabe je Aktion und in der Aktionsliste einstellbar; für Searing Light ohne Wirkung im Kampf. Nicht geändert, als offener Upstream-Wert erfasst.
+
+**3 · Wann steht der Spieler „am Ziel" für den Ifrit-Ausweichblock? — aus dem Spiel.** *Im Kampf:* Im seltenen Fall, dass alle Phasen belegt sind, fällt Searing Light in den Ifrit-Block, wenn der Spieler innerhalb der Reichweite von Crimson Strike zu seinem aktuellen Ziel steht, sonst in Titan. Zuvor entschied die Einstellung `CrimsonCycloneDistance` (3 Yalm) gegen das Ziel, das Crimson Cyclone zuletzt gewählt hatte — nach einem Zielwechsel ein fremdes Objekt. Jetzt: `HostileTarget`, Abstand von Trefferfläche zu Trefferfläche (`DistanceToPlayer`), Reichweite aus dem Spiel (`ActionManager.GetActionRange`). Die Einstellung bleibt die Grenze des Spielers für den Anlauf selbst. Der TODO-Eintrag zum veralteten Ziel ist damit erledigt.
+
+**4 · Phasenbuch ohne Zahl.** *Im Kampf:* unverändert — eine Phase gilt als von anderen belegt, wenn sie beim letzten und beim jetzigen Betreten fremd belegt war. Statt eines Zählers mit Schwelle zwei führt das Buch je Phase zwei Merker; die Schwelle war die wörtliche Übersetzung von „erneut" und ist jetzt die Logik selbst. Die Ausnahme in `fixed_values.json` entfällt. Anzeige: „free", „seen once", „held".
+
+**5 · Addle hinter Searing Light zurückstellen — nicht umgesetzt.** *Im Kampf:* Es gewönne im Restfall aus Punkt 1 den Platz für Searing Light (15 bis 23 Potenz), verlangt aber eine Regel, die das Castende des Gegners sicher kennt; eine Fehleinschätzung kostet die Minderung vor dem Treffer. Sicherheit vor Schaden.
+
+**Erreichter Prüfgrad:** statische Erhebung, Modellmessung, Prüfskripte, Compile in der CI. Das Diagnosefenster zeigt die beiden Restfälle im Kampf.
+
 ---
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
