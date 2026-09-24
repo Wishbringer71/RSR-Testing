@@ -83,6 +83,36 @@ of them are taken). Two cases that could hold the summon back indefinitely are c
 Summoner's Searing Light already running (yours cannot be cast over it — any running buff now counts),
 and burst switched off. A Searing Light you have switched off no longer holds the summon back either.
 
+## Summoner: Radiant Aegis goes out before a demi, not never
+
+Radiant Aegis can only be cast while Carbuncle is out, and every demi replaces Carbuncle for 15
+seconds. When a raidwide was announced, Searing Light used to take the last weave slot before the
+summon and the shield was locked out for the whole phase. Now a due shield goes first, and the big
+summon waits for it if there is no slot. "Due" means a raidwide BossModReborn announces, or the
+defense flag with no shield of yours up.
+
+## Summoner: Searing Light stays with Solar Bahamut when you are the only Summoner
+
+The slot ahead of the summon now only opens for the burst demi (Solar Bahamut; Demi-Bahamut below
+level 100), unless another Summoner is in the party. A charge that had come loose from Solar no
+longer goes ahead of Bahamut or Phoenix, and those summons no longer wait for it.
+
+## Summoner: several Summoners — the fallback into a primal block works as intended
+
+With every burst phase taken by other Summoners, your charge falls back into the Titan block. Three
+fixes to how the rotation decides that: Bahamut and Phoenix now count as one pair at level 100 (a
+Summoner seen in one returns in the other), in level-synced duties it no longer asks for a Solar
+phase that does not exist there, and it only falls back once no Searing Light is running at all.
+
+## New: Diagnostics window
+
+Settings → UI → Windows → **Show Diagnostics Window** (off by default). A small window that stays open
+in combat and shows, while you fight, what the fork's rules decide from: the current rotation's
+status (for the Summoner: whether the next summon opens the burst, whether another Summoner is
+recognised, the phase book, and what the big summon is waiting for and for how long this fight),
+the AoE damage table's store state and last rated hit, and for every enabled HP potion why it is or
+is not used.
+
 ## The AoE list says why the last hit was not rated
 
 `Last hit:` names the reason the last enemy action that damaged you was or was not measured — the
