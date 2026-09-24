@@ -22,6 +22,21 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 **Wirkung, wenn umgesetzt:** Mit einem zweiten Beschwörer und belegten Phasen fällt der Ausweichblock nur noch auf Ifrit, wenn er wirklich am Boss steht, sonst auf Titan. Crimson Cyclone bei 0 Yalm wird nicht mehr von einer Gefahrenzone am Boss blockiert, in der er ohnehin steht.
 
+### Der Generator übersieht Barrieren mit „nullifies damage totaling" · N
+
+`generate_defensive_values.py` erkennt Barrieren nur an „absorbs damage totaling X % of maximum HP". Manaward schreibt „nullifies damage totaling up to 30% of maximum HP" (`ActionId.resx`) und fehlt deshalb. `LargestStatedBarrierShare` steht auf 0,25 statt 0,30. **Im Kampf:** Der Weg „großer Flächencast auch bei unterbrechbarem Cast mindern" setzt seine Schwelle bei 25 % der Maximalgesundheit statt bei der tatsächlich größten Barriere. Er mindert also Treffer zwischen 25 und 30 %, die nach seiner eigenen Begründung nicht als groß gelten. Gefunden im Regeltest (A135). **Vor der Behebung ins Konzept:** Ist „größte Barriere irgendeines Jobs" das richtige Maß, wenn diese Barriere nur die Schwarzmagierin selbst schützt? Die Behebung des Musters ist mein Werkzeug; die Folge für die Schwelle ist Verhalten im Kampf.
+
+### Vorausheilung über die Fähigkeiten-Flagge kann die Minderungs-oGCDs verdrängen · N
+
+`Heal ahead of an announced area cast` setzt auch `HealAreaAbility`. Der Dispatch fragt Heil-Fähigkeiten vor `DefenseArea` (`CustomRotation_Ability`). Vor einem angekündigten Raidwide kann damit eine Heil-oGCD den Platz belegen, den Temperance oder Plenary Indulgence gebraucht hätten, und der Treffer käme ohne Minderung. Schluss aus der Zweigreihenfolge, im Spiel nicht beobachtet; im Regeltest (A135) von einem Bearbeiter vermieden, weil er nur die Zauber-Flaggen setzte. Zu klären im Konzept 13 bzw. 08.
+
+### Befunde aus dem Regeltest, noch ungeprüft oder außerhalb des Auftrags · N, U
+
+- `Watcher` liest Treffer- und Heilbeträge aus `damageEffect.value`. Ist das ein 16-Bit-Wert mit Übertrag in einem weiteren Feld, werden Treffer ab 65.536 Punkten zu klein gemessen. Belegen am ECommons-Quelltext der eingebundenen Version.
+- `GetCurrentMitigationPercent` zählt Status mit festen Faktoren auf: Confession fehlt, und Troubadour, Tactician und Shield Samba stehen mit 10 %, obwohl ihr Wirktext keinen Wert nennt.
+- Weißmagier (Upstream-Code): Die ganze Flächenabwehr entfällt, solange Temperance mehr als 100 s oder Liturgy of the Bell mehr als 160 s Restabklingzeit hat.
+- Dunkelritter: `InTwoMIsBurst` sperrt im Zwei-Minuten-Burst die ganze Flächenabwehr, auch vor einem großen Treffer.
+
 ### Zielbasierte Bewegungsaktionen über den Move-Pfad gelten immer als unsicher · N, U
 
 `FindTargetAreaMove` ruft `CheckMovementSafety(target.Position)` **ohne** das Ziel (`ActionTargetInfo.cs`), während der Hauptpfad es mitgibt. Im Zweig für `HostileMovingForward`, `FriendlyMovingForward`, `HostileFriendlyMovingForward` und `HostileMovingAttack` ist `target` dann `null`, und die Methode antwortet `false` — unsicher, ohne etwas gemessen zu haben. Die Aktion wird damit nie angeboten, solange `BmrSafetyCheckAuto` eingeschaltet ist.

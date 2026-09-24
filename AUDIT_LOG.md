@@ -3328,6 +3328,39 @@ Allgemeine Form, in `CLAUDE.md` aufgenommen: Wo ein fremder Schutzmechanismus al
 
 **Prüfung:** Maschinell verglichen, welche Bezeichner und Nummern aus dem alten Stand fehlen — alle fehlenden sind Beispiele aus Belegen, die hier oder unter ihrer Nummer im Archiv stehen. Alle 74 fett gesetzten Regelanfänge des alten Stands sind von Hand einer Regel des neuen zugeordnet. Auf seinen Hinweis, die Datei müsse so formuliert sein, dass ich damit gut arbeiten kann, steht vorn eine Liste der Prüfpunkte nach Auslöser — Sitzungsbeginn, eine Angabe von ihm, eine Behauptung, Code, eine Frage, „fertig“, Commit —, die auf die zuständige Regel verweist. Prüfskripte grün. Prüfgrad: statische Selbstprüfung.
 
+### A135 · Regeltest: alte und neue CLAUDE.md, alte und angepasste REGEL, an einem gelösten Fall (24.09.2026)
+
+**Auftrag:** Prüfen, ob die REGEL mit den Zusätzen anzupassen ist. Maßstab: Arbeite ich damit sorgfältiger und korrekter? Alte und neue Fassung im Agenten an einem größeren, bereits gelösten Fall vergleichen.
+
+**Aufbau.** Testfall A118 (Abwehrmittel-Kaskade). Das richtige Ergebnis ist bekannt und nicht naheliegend: Stufe 1 greift bei keinem Job und wird nicht gebaut, gebaut wird die Vorausheilung (Stufe 2). Es steht in keiner CLAUDE.md-Fassung als Beispiel. Drei Agenten bearbeiteten den Fall auf dem damaligen Stand (`58a265ad7`), jeder mit einer Fassung:
+- R: alte CLAUDE.md (70 KB).
+- P: neue CLAUDE.md mit unveränderter REGEL.
+- Q: neue CLAUDE.md mit angepasster REGEL (Verhältnis zum Loop; Spielgeschehen als Kriterium; Konzept vor Code; drei zusätzliche Fehlerformen; Rückfrage nur nach eigener Klärung; Messmittel ohne Zähler).
+
+Ein vierter Agent bewertete blind gegen den Maßstab und prüfte Behauptungen am Code.
+
+**Ergebnis.**
+
+| | Punkte | Kern (Stufe 1 nicht bauen) | Stufe 2 | Fehler | im Spiel bei Befolgung |
+|---|---|---|---|---|---|
+| P (neu, alte REGEL) | 22 | ja, klar begründet | ja | eine unmarkierte Vereinfachung | gut |
+| Q (neu, neue REGEL) | 17 | teilweise, empfiehlt eine Variante hinter Option | ja, sicherste Fassung | Barrierenobergrenze 25 % falsch (Manaward 30 %) | am besten (knapp) |
+| R (alt) | 16 | nein, baut Stufe 1 beim Dunkelritter | nein, aufgeschoben | keiner | am schlechtesten |
+
+**Auswertung.**
+- **Neue gegen alte Datei:** Beide Läufe mit der neuen Datei trafen den Kern, der Lauf mit der alten nicht. Das stützt die Überarbeitung aus A134.
+- **Angepasste gegen unveränderte REGEL:** kein belegter Vorteil. Nach Punkten liegt die unveränderte vorn, nach Spielergebnis die angepasste knapp. Der Abstand entsteht an Stellen, die die Änderungen nicht adressieren (K1–K3).
+- **Grenzen:**
+  - Je Fassung ein Lauf; ein Unterschied dieser Größe liegt im Bereich der Streuung einzelner Läufe.
+  - Alle drei bekamen ihre Fassung als Datei mit Vorrang, während im Kontext die neue CLAUDE.md stand.
+  - Ein Agent erhält die CLAUDE.md aus dem Kontext des Aufrufers, nicht von der Platte; ein Tausch der Datei wirkt nicht (gemessen).
+
+**Entscheidung:** Die REGEL bleibt unverändert. Eine Änderung am Text mit Priorität 1 braucht einen belegten Vorteil, und der Test liefert keinen. Die beiden Spannungen zwischen REGEL und Loop sind im Rest der Datei bereits durch Auslegung aufgelöst: „Aufwand normal → Plan+Antwort“ gegen „Loop für jede nicht-triviale Aufgabe“, und „Zähler“ gegen „Entscheidung zur Laufzeit“.
+
+**Nebenertrag:** Die Bearbeiter fanden am damaligen Stand Defekte, die heute noch bestehen. Erfasst in `TODO.md`: der Generator übersieht Barrieren mit „nullifies“; die Vorausheilung über die Fähigkeiten-Flagge kann Minderungs-oGCDs verdrängen; dazu vier weitere, noch ungeprüfte Befunde.
+
+**Prüfgrad:** drei unabhängige Läufe und eine blinde Bewertung mit Stichproben am Code; einmalig je Fassung.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
