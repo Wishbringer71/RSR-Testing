@@ -114,7 +114,12 @@ billigsten GCD anteilig: 0,2 bis 0,7 Sekunden kosten 32 bis 112 Potenz, gerechne
 (400 je 2,5 s). Bei einem GCD unter 2,5 Sekunden kommt ein zweiter Verlust hinzu:
 `smn_phase_potency.py` zählt dann sieben statt sechs Würfe in der Phase, der letzte Umbral Impulse
 liegt nur 0,12 bis 0,6 Sekunden vor dem Ende der 15 Sekunden, und ein Clip darüber kostet ihn, rund
-400 Potenz. Der Ertrag ist höchstens der Buff auf dem ersten Umbral Impulse, 40 Potenz. Die übrigen
+400 Potenz. Der Ertrag ist, was ein verpasster erster Platz überhaupt kostet: Der Buff fällt dann einen GCD
+später, der erste Umbral Impulse (800 Potenz samt Luxwave) läuft ohne die 5 %, und das Buffende
+rückt um denselben GCD nach hinten und trägt einen Primal-GCD mehr — mit Titan zuerst Topaz Rite 340,
+mit Mountain Buster 500. Netto sind das 15 bis 23 Potenz eigener Schaden, 0,05 bis 0,08 Prozent des
+Zwei-Minuten-Zyklus; die Aetherflow-Ausgaben der Phase warten ohnehin auf den Buff und verlieren
+nichts. Für die Gruppe verschiebt sich das Fenster um denselben GCD; das ist nicht beziffert. Die übrigen
 Fähigkeiten der Phase — Energy Drain, zweimal Necrotize, Exodus, Sunflare, Searing Flash, Lux
 Solaris — brauchen kein Warten: rund acht auf zwölf Einschiebeplätze. *Clipdauer aus Ausführungssperre
 und Latenz, beide nicht im Repository, der Code liest sie erst zur Laufzeit.*
