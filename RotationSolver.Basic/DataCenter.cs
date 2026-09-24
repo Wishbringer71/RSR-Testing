@@ -3261,6 +3261,12 @@ internal static class DataCenter
 	}
 
 	/// <summary>
+	/// Why the last enemy action that damaged the player was or was not rated for the learned damage
+	/// table, with its time and action id. Written by the effect handler; shown in the AoE list.
+	/// </summary>
+	public static string AreaMeasurementLastOutcome { get; set; } = "no enemy action has hit the player yet";
+
+	/// <summary>
 	/// The action id the currently recorded area share belongs to, or 0 when none is recorded.
 	/// </summary>
 	public static uint AnnouncedAreaAction =>

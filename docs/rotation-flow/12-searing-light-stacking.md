@@ -80,11 +80,39 @@ attacked by you after summoning.“ Der Beschwörungs-GCD richtet also nichts au
 **eigenen** Angriffen. Der erste Schaden der Phase ist damit der erste GCD danach — Umbral Impulse (640)
 samt automatischem Luxwave, zusammen 800 Potenz.
 
-**Daraus folgt, welcher Fehler der billigere ist.** Der Buff verfehlt — 5 % auf jeden GCD, den er nicht
-mehr deckt: 40 Potenz allein auf den ersten, und dasselbe noch einmal für jedes nahe Gruppenmitglied.
-Die Beschwörung wartet — sie fällt einen GCD später, die Trance läuft 15 s innerhalb eines 20-s-Buffs,
-die Phase passt also weiterhin vollständig hinein, und der warte-GCD ist ein Füller, kein Verlust.
-Deshalb wartet die Beschwörung.
+**Daraus folgt, welcher Fehler der billigere ist — und das Warten ist nur im Einzelfall billig.** Der
+Buff verfehlt — 5 % auf jeden GCD, den er nicht mehr deckt: 40 Potenz allein auf den ersten, und
+dasselbe noch einmal für jedes nahe Gruppenmitglied. Die Beschwörung wartet — sie fällt einen GCD
+später, und innerhalb **dieser** Phase passt alles weiterhin. Deshalb darf sie warten.
+
+**Was ein einzelner Warte-GCD nicht zeigt, ist seine Fortpflanzung.** Die Abklingzeit der Beschwörung
+läuft ab ihrer **Nutzung**, und die des Buffs ebenso. Ein Warte-GCD verschiebt damit jede folgende
+Demi-Phase und den nächsten Buff um denselben Betrag. Wartet sie in **jedem** Zyklus, summiert sich das
+— Spielbeobachtung des Auftraggebers, als einziger Beschwörer: Searing Light rutschte „immer mehr, je
+länger der kampf lief" nach hinten, und mit ihm aus dem gemeinsamen Zwei-Minuten-Fenster der übrigen
+Gruppenbuffs heraus.
+
+**Dass sie in jedem Zyklus wartete, lag an der Zündbedingung, nicht am Warten.** Freigegeben wurde der
+Buff erst, wenn die Abklingzeit der Beschwörung **abgelaufen** war. Die läuft aber genau auf einem
+GCD-Zeitpunkt ab — die vorige Beschwörung war selbst ein GCD, und sechzig Sekunden sind eine ganze Zahl
+von GCDs. Der Einschiebeplatz davor war dann schon vorbei, der Buff kam in den Platz dahinter, und die
+Beschwörung einen GCD später. **Freigegeben wird jetzt, sobald die Beschwörung bis zum nächsten GCD
+bereit ist** — der Buff fällt in den Platz davor, die Beschwörung pünktlich.
+
+**Die Gegenrichtung ist die eigentliche Folge, und der Auftraggeber hat sie benannt:** „cooldown von
+searing light ist später nicht fertig, wenn burst phase läuft. das ist die konsequenz." `searingSettled`
+las einen **abkühlenden** Buff als erledigt. War er bei Bereitschaft der Beschwörung ein, zwei Sekunden
+von fertig entfernt, fiel die Beschwörung ohne ihn, der Buff folgte in der Phase — und seine nächste
+Abklingzeit endete noch später. So lief der Buff der Phase Zyklus um Zyklus davon, auch ohne dass die
+Beschwörung je wartete. **Jetzt wartet die Beschwörung, wenn der Buff bis zum nächsten GCD fertig wird**
+— genau die Größe, um die der Abstand je Zyklus wächst. Das Warten zieht beide wieder in Takt, statt den
+Buff zurückfallen zu lassen, und es dauert nie länger als einen GCD. Ein ausgeschalteter Buff gilt
+außerdem als erledigt; zuvor hätte die Beschwörung auf einen nie gezündeten Buff ewig gewartet.
+
+**Offen bleibt der große Abstand.** Liegt der Buff einmal mehr als einen GCD zurück, wartet die
+Beschwörung nicht, und dieser Abstand holt sich nicht von selbst auf. Wie lange die Beschwörung warten
+darf, ist eine Abwägung zwischen einmaligem Verschieben aller folgenden Demi-Phasen und wiederkehrendem
+Buffverlust in jeder Solar-Phase — und damit eine Entscheidung des Auftraggebers, in `TODO.md` vorgelegt.
 
 **Die Beschwörung wartet auf den Buff, statt ihn nur zuzulassen** — Vorgabe des Auftraggebers: Searing
 Light muss aktiv sein, **bevor** der erste Burstschaden entsteht. Umgesetzt an der Stelle, die

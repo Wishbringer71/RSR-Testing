@@ -104,6 +104,25 @@ public static class Watcher
 			var partyMembers = DataCenter.PartyMembers;
 			var partyMemberCount = partyMembers.Count;
 
+			// Why the last enemy action that hurt the player was or was not measured. The table can
+			// stay empty for five different reasons, and the file ("{}") looks the same for all of
+			// them - so the decision states its reason where it is taken. Only actions that actually
+			// damaged the player count here, so auto-attacks from trash do not overwrite a raidwide.
+			if (damageRatio > 0f && set.Action.HasValue)
+			{
+				var actionId = set.Action.Value.RowId;
+				DataCenter.AreaMeasurementLastOutcome =
+					!Service.Config.RecordCastingArea
+						? $"{DateTime.Now:HH:mm:ss} #{actionId}: not measured - Record AOE actions is off"
+					: partyMemberCount < 4
+						? $"{DateTime.Now:HH:mm:ss} #{actionId}: not measured - party counted as {partyMemberCount}, 4 needed (NPC companions only count with the NPC party-member setting)"
+					: !(set.Action?.Cast100ms > 0)
+						? $"{DateTime.Now:HH:mm:ss} #{actionId}: not measured - instant, only cast actions are rated"
+					: !OtherConfiguration.HostileCastingArea.Contains(actionId)
+						? $"{DateTime.Now:HH:mm:ss} #{actionId}: not measured - not in the AoE list (added only once it hits every member)"
+						: $"{DateTime.Now:HH:mm:ss} #{actionId}: in the AoE list, measured";
+			}
+
 			if (Service.Config.RecordCastingArea && set.Header.ActionType == ActionType.Action && partyMemberCount >= 4 && set.Action?.Cast100ms > 0)
 			{
 				var type = set.Action?.GetActionCate();

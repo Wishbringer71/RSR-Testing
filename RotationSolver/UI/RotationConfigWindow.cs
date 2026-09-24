@@ -3939,6 +3939,7 @@ public partial class RotationConfigWindow : Window
 					? ImGuiColors.DalamudRed
 					: ImGuiColors.DalamudGrey,
 				"Store: " + OtherConfiguration.AreaPotentialStoreState);
+			ImGui.TextColored(ImGuiColors.DalamudGrey, "Last hit: " + DataCenter.AreaMeasurementLastOutcome);
 			if (rated.Count > 0)
 			{
 				var highest = 0f;

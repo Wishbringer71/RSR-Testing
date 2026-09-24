@@ -63,3 +63,22 @@ All three are closed.
 The AoE list window now says what the store actually did, under `Store:` — whether the login found a
 file, found none, or found one it could not read, and after every save how many entries were read
 back from disk. A save only reports success when the file holds what was written.
+
+## Summoner: Searing Light no longer drifts away from the burst phase
+
+Reported from play as the only Summoner in the party: Searing Light slipped further back the longer
+the fight ran. Two conditions produced that between them. The buff was only released once the big
+summon's cooldown had already run out — and that happens on a GCD, so the weave slot ahead of it had
+passed and the summon waited a GCD. And a buff a second or two short of ready counted as done, so the
+summon went without it, the buff followed inside the phase, and its next cooldown ended later still.
+
+The buff is now released as soon as the summon will be ready by the next GCD, and the summon waits
+when the buff will be ready by the next GCD. Each wait is at most one GCD and is filled with the
+current primal's GCDs, not an idle slot. A Searing Light you have switched off no longer holds the
+summon back.
+
+## The AoE list says why the last hit was not rated
+
+`Last hit:` names the reason the last enemy action that damaged you was or was not measured — the
+recording switch, a party counted below four (NPC companions only count with the NPC party-member
+setting), an instant action, or an action not yet in the AoE list.

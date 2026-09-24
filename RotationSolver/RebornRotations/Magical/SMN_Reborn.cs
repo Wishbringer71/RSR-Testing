@@ -283,9 +283,22 @@ public sealed class SMN_Reborn : SummonerRotation
 		//
 		// No probe and no later analysis either: cooldown and burst flag are both readable here and
 		// now, so the decision stays in the code where it falls.
+		//
+		// "Ready by the next GCD", not "ready now". Asking for a finished cooldown opened the window
+		// only once the summon was already available - and its cooldown runs out ON the GCD grid,
+		// because the previous summon was itself a GCD and 60 s is a whole number of GCDs. The weave
+		// slot ahead of that GCD had passed by then, so the summon waited one GCD for the buff, then
+		// fired late, and its next cooldown - and the buff's - started late with it. One GCD per
+		// cycle, every cycle: reported from play as Searing Light slipping further back the longer
+		// the fight ran, with no second Summoner in the party. Opening the window in the slot before
+		// the summon's cooldown ends lets the buff go first and the summon land on time.
+		//
+		// If the buff cannot fire there - still cooling down itself - the summon does not wait:
+		// searingSettled reads a cooling buff as settled. So the drift cannot build up through this
+		// branch either way.
 		var bigSummonReady = SummonSolarBahamutPvE.EnoughLevel
-			? !SummonSolarBahamutPvE.Cooldown.IsCoolingDown
-			: !SummonBahamutPvE.Cooldown.IsCoolingDown;
+			? SummonSolarBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain)
+			: SummonBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain);
 		var burstAboutToStart = IsBurst && bigSummonReady;
 
 		var mayFireSearingLight = burstInSolar
@@ -626,9 +639,24 @@ public sealed class SMN_Reborn : SummonerRotation
 		// The residual risk of waiting is therefore a defence flag standing while the charge is up.
 		// Guarding against it with a CanUse probe would be the "CanUse as a question, with targeting as
 		// a side effect" pattern recorded as a defect class in TODO.md, so it is not done.
+		// Settled means: the summon has nothing left to wait for. Four ways to get there.
+		//
+		// The buff is up. Or it does not exist at this level. Or the player has switched it off -
+		// without that arm a disabled Searing Light never goes on cooldown, never counts as settled,
+		// and the summon waits for ever.
+		//
+		// Or it will NOT be ready by the next GCD. This arm used to read "is cooling down", and that
+		// was the drift the owner reported: "cooldown von searing light ist später nicht fertig, wenn
+		// burst phase läuft. das ist die konsequenz." A buff a second or two short of ready counted as
+		// settled, the summon went without it, the buff followed inside the phase - and its next
+		// cooldown ended later still, so the gap grew every cycle. Now the summon waits when the buff
+		// will be ready within one GCD, which is exactly the size the gap grows by per cycle; the wait
+		// pulls buff and summon back into step instead of letting the buff fall behind. A buff further
+		// out than that is not waited for, so the wait is never longer than a GCD.
 		var searingSettled = !SearingLightPvE.EnoughLevel
+			|| !SearingLightPvE.IsEnabled
 			|| HasSearingLight
-			|| SearingLightPvE.Cooldown.IsCoolingDown;
+			|| !SearingLightPvE.Cooldown.WillHaveOneCharge(WeaponRemain);
 
 		if (searingSettled && SummonBahamutPvE.CanUse(out act))
 		{

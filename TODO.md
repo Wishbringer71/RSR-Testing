@@ -725,6 +725,20 @@ Schritt 3 aus `docs/rotation-flow/08-mitigation-synergy.md`. Die Schritte 1 und 
 
 ## Offene Arbeit
 
+### Beschwörer: Wie lange die Beschwörung auf Searing Light warten darf · N — Entscheidung des Auftraggebers
+
+**Stand:** Die Beschwörung wartet, wenn Searing Light bis zum nächsten GCD fertig wird, und nicht länger. Das hält den Abstand zwischen Buff und Demi-Phase im Regelfall bei null (A126). Liegt der Buff einmal **mehr** als einen GCD zurück — Sonderlagen, etwa ein mehrfach belegter Einschiebeplatz —, wartet sie nicht, und der Abstand bleibt dauerhaft bestehen.
+
+**Sein Vorschlag:** „vielleicht bei bestehenden cooldown noch von der alten rota (meist ifrit) noch ein gcd mehr machen? oder unnötig?"
+
+**Was schon so ist, belegt:** Jeder Warte-GCD ist bereits ein GCD der alten Rota. `GeneralGCD` fragt erst die Beschwörung, dann `UsePrimalFollowUps` (die laufende Primal-Phase), dann neue Primals, zuletzt Füller. Für den Regelfall ist der Vorschlag also umgesetzt.
+
+**Was er für den großen Abstand bedeutet, und die Rechnung dazu:** Warten verschiebt alle folgenden Demi-Phasen **einmalig** um den Abstand; nicht warten kostet den Abstand an gebuffter Demi-Zeit in **jeder** folgenden Solar-Phase (Wirktexte: Buff 20 s, Solar-Phase 15 s). Warten ist damit billiger, sobald noch eine weitere Solar-Phase folgt — und die Warte-GCDs sind mit alter Rota gefüllt, kein Leerlauf.
+
+**Empfehlung:** Die Grenze an die alte Rota koppeln statt an einen GCD — die Beschwörung wartet auf den Buff, solange noch Primal-Ladungen offen sind, und höchstens einen GCD darüber hinaus. Das ist seine Formulierung als Bedingung, braucht keine gesetzte Zahl und begrenzt das Warten auf die Zeit, in der es nichts kostet. Umzusetzen über die Ladungszahl der Primal-Phase, **nicht** über `UsePrimalFollowUps(out _)` als Prüfung (Defektklasse `CanUse` als Prüfung, s. o.).
+
+**Unbelegt, und für die Empfehlung ohne Belang:** ob eine Demi-Beschwörung offene Primal-Ladungen beendet. Die Wirktexte nennen 30 s Laufzeit, kein Ende durch die Beschwörung.
+
 ### Das Abwehrmittel nach der Größe des Treffers wählen — Stufe 1 widerlegt, Stufe 2 gebaut, Stufe 3 offen · N, R
 
 **Freigegeben vom Auftraggeber** („Abwehrmittel-kaskade soll nach erneuter Prüfung im Loop umgesetzt werden"), im Loop erneut geprüft, und das Ergebnis ist dreigeteilt. **Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
