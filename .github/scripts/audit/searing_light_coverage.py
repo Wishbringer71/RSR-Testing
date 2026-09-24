@@ -73,27 +73,47 @@ PHASE_POTENCY = {
     2: 1217.0,   # Solar Bahamut again
     3: 947.0,    # Phoenix
 }
-# Between the demis the primal block runs. The rotation's order is Ifrit, Titan, Garuda, and their
-# per-GCD potencies differ enough to matter for where a charge lands: this is the "intermediate
-# phase with the most damage" the user's rule aims at once the burst phases are taken.
-PRIMAL_POTENCY = (632.0, 464.0, 407.0)
+# Between two demis all three primals run, one block each, in the rotation's summon order. The
+# default in SMN_Reborn is SummonOrderType.TopazEmeraldRuby: Titan, Garuda, Ifrit. An earlier version
+# of this model filled the whole 45 s gap with a single primal and rotated it once per cycle, in the
+# order Ifrit, Titan, Garuda - neither the structure nor the order of the rotation it claims to model.
+# Per-GCD potency from smn_phase_potency.py.
+PRIMAL_POTENCY = {'titan': 464.0, 'garuda': 407.0, 'ifrit': 632.0}
+PRIMAL_ORDER = ('titan', 'garuda', 'ifrit')
+PRIMAL_BLOCK = (DEMI_EVERY - DEMI_STAND) / len(PRIMAL_ORDER)
+
+
+def primal_block(t, offset):
+    """Which primal block this Summoner stands in at time t, or None inside a demi."""
+    local = t - offset
+    if local < 0:
+        return PRIMAL_ORDER[0]
+    since = local % DEMI_EVERY
+    if since < DEMI_STAND:
+        return None
+    return PRIMAL_ORDER[min(len(PRIMAL_ORDER) - 1, int((since - DEMI_STAND) // PRIMAL_BLOCK))]
+
+
+# The block a charge falls back into once every burst phase is held. SMN_Reborn takes Titan, and
+# Ifrit only where the player already stands at the target (concept 12, the owner's decision on the
+# Crimson Cyclone approach). The model cannot see position, so it takes Titan.
+FALLBACK_BLOCK = 'titan'
+# The block the rejected variants aimed at: simply the strongest.
+STRONGEST_BLOCK = max(PRIMAL_POTENCY, key=PRIMAL_POTENCY.get)
 
 
 def own_potency(t, offset):
     """Potency per GCD this Summoner is producing at time t.
 
-    A demi contributes its own figure; between demis the primal block runs, and which of the three
-    it is follows the rotation's order. This is what makes a buffed second worth what it is worth,
-    and it is deliberately the *own* rotation: Searing Light raises the whole party's damage, but
-    the decision the rule makes is where to spend a charge of one's own.
+    A demi contributes its own figure; between demis the primal blocks run in the rotation's order.
+    This is what makes a buffed second worth what it is worth, and it is deliberately the *own*
+    rotation: Searing Light raises the whole party's damage, but the decision the rule makes is
+    where to spend a charge of one's own.
     """
     local = t - offset
-    if local < 0:
-        return PRIMAL_POTENCY[0]
-    cycle = int(local // DEMI_EVERY)
-    if local % DEMI_EVERY < DEMI_STAND:
-        return PHASE_POTENCY[cycle % 4]
-    return PRIMAL_POTENCY[cycle % len(PRIMAL_POTENCY)]
+    if local >= 0 and local % DEMI_EVERY < DEMI_STAND:
+        return PHASE_POTENCY[int(local // DEMI_EVERY) % 4]
+    return PRIMAL_POTENCY[primal_block(t, offset)]
 
 
 def time_to_kind(t, offset, kind):
@@ -177,6 +197,39 @@ def best_possible(n, burst_share):
             + (1.0 - burst_share) * covered_rest / rest_span)
 
 
+PLUGIN_MODES = ('plugin', 'plugin_kinds', 'plugin_expired')
+# SummonerRotation.SearingPhaseHeldAfter
+PLUGIN_HELD_AFTER = 2
+
+
+def plugin_slot(idx, mode):
+    """Where the plugin books the demi at cycle position idx (0 Solar, 1 Bahamut, 2 Solar, 3 Phoenix)."""
+    if idx in (0, 2):
+        return 'solar'
+    if mode == 'plugin_kinds':
+        return 'bahamut' if idx == 1 else 'phoenix'
+    return 'odd'
+
+
+def plugin_all_held(counts, mode):
+    """SummonerRotation.AllSearingPhasesHeld at level 100."""
+    slots = ('solar', 'bahamut', 'phoenix') if mode == 'plugin_kinds' else ('solar', 'odd')
+    return all(counts.get(k, 0) >= PLUGIN_HELD_AFTER for k in slots)
+
+
+def averaged(n, mine_mode, opponents, drift, fight=None):
+    """Damage-weighted own coverage of Summoner 0, averaged over who wins a simultaneous chance.
+
+    The party that occurs: one Summoner on the rule under test, the others on their own. Who takes a
+    window both could take is a fraction of a second in the fight, so every starting order counts.
+    """
+    total = 0.0
+    for first in range(n):
+        total += simulate(n, None, drift, fight, modes=[mine_mode] + [opponents] * (n - 1),
+                          mine=0, by_potency=True, first=first)
+    return total / n
+
+
 def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=None,
              burst_only=False, modes=None, mine=None, by_potency=False, first=0):
     """Return the fraction of the fight covered by a Searing Light.
@@ -222,6 +275,14 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
     # everybody else finds it held in the books and moves to the next. The direction is set by the
     # first cast, which is what every client sees anyway.
 
+
+    # The book as SummonerRotation keeps it, for the 'plugin' modes: one counter per slot, judged once
+    # per window on entering it - a foreign buff running raises it, none clears it, one's own running
+    # buff leaves the window unjudged. 'plugin' books Bahamut and Phoenix as one slot, as the plugin
+    # does where Solar exists; 'plugin_kinds' books the three kinds apart, as it did before.
+    plugin_counts = [dict() for _ in range(n)]
+    plugin_instance = [None] * n
+    plugin_booked = [False] * n
 
     last_seen = [None] * n     # when each Summoner was last observed casting
     # What the party has observed: earliest possible return per Summoner, or None if never seen.
@@ -388,12 +449,7 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
                             # block instead - the rule's point 6, and the same choice `booked`
                             # makes: Ifrit ahead of Titan ahead of Garuda.
                             if idx is None:
-                                local = t - offsets[i]
-                                block = (int(local // DEMI_EVERY) % len(PRIMAL_POTENCY)
-                                         if local >= 0 else 0)
-                                best = max(range(len(PRIMAL_POTENCY)),
-                                           key=lambda k: PRIMAL_POTENCY[k])
-                                allowed = block == best
+                                allowed = primal_block(t, offsets[i]) == FALLBACK_BLOCK
                 elif mine_mode == 'booked':
                     # The user's rule with books. Rather than only stepping forward, pick the
                     # strongest phase position nobody else is holding - and a holder is somebody
@@ -413,10 +469,7 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
                     if idx is not None and buff_until <= t:
                         allowed = idx in free
                     elif idx is None and not free and buff_until <= t:
-                        local = t - offsets[i]
-                        block = int(local // DEMI_EVERY) % len(PRIMAL_POTENCY) if local >= 0 else 0
-                        best = max(range(len(PRIMAL_POTENCY)), key=lambda k: PRIMAL_POTENCY[k])
-                        allowed = block == best
+                        allowed = primal_block(t, offsets[i]) == STRONGEST_BLOCK
                 elif mine_mode == 'phased':
                     # The user's rule. Aim at one burst phase at a time, and only move on when
                     # somebody else got there first - a second cast onto a running buff is the one
@@ -438,11 +491,20 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
                         # block, not merely "outside a demi". Ifrit carries 632 potency per GCD
                         # against Titan's 464 and Garuda's 407, so aiming at the strongest one is
                         # the difference between spending the charge well and spending it anywhere.
-                        # It waits at most two primal blocks, and the recast is longer than that.
-                        local = t - offsets[i]
-                        block = int(local // DEMI_EVERY) % len(PRIMAL_POTENCY) if local >= 0 else 0
-                        best = max(range(len(PRIMAL_POTENCY)), key=lambda k: PRIMAL_POTENCY[k])
-                        allowed = block == best
+                        allowed = primal_block(t, offsets[i]) == STRONGEST_BLOCK
+                elif mine_mode in PLUGIN_MODES:
+                    # SMN_Reborn's firing window. With another Summoner in the party every big summon
+                    # opens it (V2); alone, only Solar. Outside a demi only when every slot is held,
+                    # and then only in the fallback block. The guard decides refreshes, exactly as
+                    # ActionBasicInfo.IsStatusProvided does in the plugin - no "fully expired" test,
+                    # except in 'plugin_expired', which adds one to the fallback clause.
+                    idx = demi_index(t, offsets[i])
+                    another = n > 1
+                    if idx is not None:
+                        allowed = another or idx in (0, 2)
+                    elif another and plugin_all_held(plugin_counts[i], mine_mode):
+                        allowed = (primal_block(t, offsets[i]) == FALLBACK_BLOCK
+                                   and (mine_mode != 'plugin_expired' or buff_until <= t))
                 elif mine_mode == 'simple':
                     allowed = in_window(t, offsets[i], 'demi') or buff_until <= t
                 elif mine_mode in ('informed', 'adaptive'):
@@ -478,6 +540,27 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
                     seen_ready[i] = t + RECAST   # every client sees the source of the status
                     last_seen[i] = t
                     break
+
+        # The plugin judges a window on entering it, after its own summon, so a charge cast in the
+        # slot ahead of that summon - anybody's - is already running when it looks.
+        for i in range(n):
+            if per[i] not in PLUGIN_MODES:
+                continue
+            idx = demi_index(t, offsets[i])
+            instance = int((t - offsets[i]) // DEMI_EVERY) if idx is not None else None
+            if instance != plugin_instance[i]:
+                plugin_instance[i] = instance
+                plugin_booked[i] = False
+            if idx is None or plugin_booked[i]:
+                continue
+            if buff_until > t and buff_owner == i:
+                continue
+            plugin_booked[i] = True
+            slot = plugin_slot(idx, per[i])
+            if buff_until > t:
+                plugin_counts[i][slot] = plugin_counts[i].get(slot, 0) + 1
+            else:
+                plugin_counts[i][slot] = 0
 
         t += STEP
 
@@ -556,7 +639,7 @@ def self_test():
     for n in range(1, 6):
         for drift in (0, 30, 60):
             base = simulate(n, 'solar', drift, burst_only=True)
-            for mode in ('demi', 'simple'):
+            for mode in ('demi', 'simple', 'plugin_expired'):
                 got = simulate(n, mode, drift, burst_only=True)
                 if got < base - burst_tol:
                     raise AssertionError('%s lowered burst coverage at n=%d drift=%d: %.3f < %.3f'
@@ -692,6 +775,27 @@ def self_test():
                     raise AssertionError('n=%d exceeded its charge ceiling: %.3f > %.3f'
                                          % (n, got, ceiling))
 
+    # The plugin's rule must never fall below the plain widening it contains, against either kind of
+    # opponent - the concept's own condition for an adaptation. And a lone Summoner on it is today's
+    # rule exactly: Solar only.
+    for opponents in ('solar', 'demi'):
+        for drift in (0, 30, 60):
+            for n in range(2, 6):
+                got = averaged(n, 'plugin_expired', opponents, drift)
+                wide = averaged(n, 'demi', opponents, drift)
+                if got < wide - TOL:
+                    raise AssertionError('the plugin rule fell below the widening vs %s at n=%d '
+                                         'drift=%d: %.3f < %.3f' % (opponents, n, drift, got, wide))
+    if abs(simulate(1, 'plugin', 0) - simulate(1, 'solar', 0)) > TOL:
+        raise AssertionError('a lone Summoner on the plugin rule must behave like Solar only')
+    # Booking Bahamut and Phoenix as one slot has to reach "all held" where the kinds apart do not
+    # within the same fight - otherwise the pairing buys nothing and the reasoning behind it is wrong.
+    paired = averaged(3, 'plugin_expired', 'demi', 0)
+    apart = averaged(3, 'plugin_kinds', 'demi', 0)
+    if paired < apart - TOL:
+        raise AssertionError('pairing Bahamut and Phoenix lowered coverage: %.3f < %.3f'
+                             % (paired, apart))
+
     print('self-test ok: single Summoner near 20/120, each widening step never lowers coverage, '
           'charge ceiling respected, bookkeeping buys nothing,\n'
           '  a windowed measurement stays a share of its window, and under dropout the simple '
@@ -792,6 +896,24 @@ def main():
         v7 = simulate(n, 'simple', 0, fight, window=(300.0, 480.0), dropout=out)
         print('  %-11d %-16s %-16s %s'
               % (n, '%.0f%%' % (v5 * 100), '%.0f%%' % (v6 * 100), '%.0f%%' % (v7 * 100)))
+
+    print()
+    print('V8 - share of the own DAMAGE under a buff, one Summoner on the rule, the others on theirs,')
+    print('averaged over who wins a simultaneous chance. "model" is the book the concept describes,')
+    print('"plugin" the book SummonerRotation keeps; "kinds" books Bahamut and Phoenix apart,')
+    print('"guard" lets the fallback refresh into the last seconds of a foreign buff.')
+    for opponents, label in (('solar', 'opponents cast in Solar only'),
+                             ('demi', 'opponents cast in every demi')):
+        print('  %s' % label)
+        print('    %-7s %-10s %-9s %-9s %-11s %-9s %-9s %s'
+              % ('Summ.', 'drift', 'today', 'V2', 'V8 model', 'V8 plugin', 'kinds', 'guard'))
+        for drift in (0, 30, 60):
+            for n in range(2, upto):
+                row = [averaged(n, m, opponents, drift, fight)
+                       for m in ('solar', 'demi', 'hybrid', 'plugin_expired', 'plugin_kinds',
+                                 'plugin')]
+                print('    %-7d %-10d %s' % (n, drift, ' '.join('%-9s' % ('%.1f%%' % (v * 100))
+                                                              for v in row)))
 
     print()
     print('Ceiling: n x 20s per 120s. A regular eight-man party holds four to five damage jobs, so')

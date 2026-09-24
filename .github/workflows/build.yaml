@@ -178,6 +178,15 @@ jobs:
       - name: Check every user setting has a reader
         run: python3 .github/scripts/audit/scan18.py
 
+      # The figures concept 12 stands on come from these two models, and both carry self-tests
+      # against constructed defects. They ran only by hand, so a change to the model - or a model
+      # that had drifted from the plugin it describes, which is how the V8 figures came to measure a
+      # book the plugin never kept - went unnoticed.
+      - name: Check the Summoner phase potency model
+        run: python3 .github/scripts/audit/smn_phase_potency.py
+      - name: Check the Searing Light coverage model
+        run: python3 .github/scripts/audit/searing_light_coverage.py
+
   Build:
     runs-on: windows-latest
     steps:
