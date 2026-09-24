@@ -4,19 +4,25 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 ## Defekte
 
-### Heiltränke gehen trotz freigeschaltetem Gegenstand nicht heraus · N
+### Heiltrank: der Weg wirkt, zwei Aussagen dazu sind unbelegt · N
 
-**Gemeldet aus dem Spiel, mit Eingrenzung:** „ich habe da z.b. aktuell den ultratrank enabled. und er wird dennoch nicht genutzt. und das ist nur in diesem fork so. im upstream geht es. früher hat mein beschwörer öfters bei aoes heiltränke benutzt, oder wenn eine mechanik ihn auf 1hp gesetzt hat. jetzt passiert gar nichts mehr."
+**Stand im Kampf:** Seit der Trank nicht mehr an der Heilflagge hängt, geht er bei ihm wieder heraus (seine Beobachtung, A133). Ob der Weg der richtige war, hat er ausdrücklich offengelassen.
 
-**Entschieden (seine Vorgabe):** Die Freischaltung bleibt **je Gegenstand über die Oberfläche**, keine generelle Vorgabe. Der Vorschlag, Heiltränke ab Werk freizuschalten, ist damit erledigt und wird nicht erneut vorgelegt.
+**Unbelegt 1 — warum Upstream bei ihm ging.** Upstream hängt den Trank an dieselbe Flagge, und jede Abweichung des Forks auf dieser Kette lockert (A123, A133). Eine Erklärung für „nur in diesem Fork" gibt der Code nicht her. Was sie liefern würde: in welcher Lage der Trank im Upstream-Bau fiel — mit oder ohne lebenden Heiler in der Gruppe, und bei welchen Einstellungen unter „Healing".
 
-**Die Kette ist vollständig gegen `upstream/main` geprüft, und der Befund ist ein Nullbefund:** An `HpPotionItem` (nur `CanUseEmergency` ergänzt), an der Auswahl in `UseHpPotion` (nur der Tankbuster-Zweig ergänzt), am Einhängepunkt in `CustomRotation_Ability` (Bedingung **erweitert** um Tankbuster), an `BaseItem`, `ItemConfig`, `ConfigurationHelper.BadStatus`, `GetPlayerHealthRatio`, `DefaultGCDRemain`, `CanUseHealAction`, `NonHealerHealLogic`, `AnyLivingHealerInParty` und den `HealSingleAbility`-Zweigen weicht der Fork entweder gar nicht ab oder nur lockernd. Auch `Configs.CurrentVersion` ist auf beiden Seiten 12, ein Zurücksetzen beim Wechsel zwischen den Bauten also nicht erklärbar. **Eine Fork-Verengung auf diesem Pfad ist statisch nicht nachweisbar** — was den gemeldeten Unterschied nicht widerlegt, sondern heißt, dass die Ursache außerhalb der geprüften Stellen liegt.
+**Unbelegt 2 — welche Sorte bei gleicher Heilung fällt.** Die Regel nimmt die niedrigere Gegenstands-Id und unterstellt, das sei die niedrigere Sorte (C89). *Konzept:* Die Gegenstandsstufe aus dem Blatt `Item` statt der Id — aus dem Spiel abgeleitet, und sie beantwortet die Frage, die er gestellt hat: bei gleicher Wirkung die billigere Sorte. Vorher zu prüfen: ob die Stufe unter den Heiltränken die Sortenreihenfolge trägt, an den Spieldaten und nicht an der Erinnerung.
 
-**Behoben wurde dabei ein eigener Fund**, der zu „der starke Trank wird nicht genutzt" passt: Die Auswahl nahm bei Gleichstand den **schwächsten** Trank (`>=` über eine absteigend sortierte Liste). Gleichstand ist der Regelfall, sobald der Prozentanteil bindet statt der Obergrenze.
+**Kommentar am Einhängepunkt:** nennt `OnlyHealAsNonHealIfNoHealers` als Regelfall (C88); bei der nächsten Änderung dort richtigstellen.
 
-**Die Ursache ist benannt, und sie kam von ihm:** Der Trank hing an `AutoStatus.HealSingleAbility` und erbte damit jede Bedingung hinter dieser Flagge — darunter `OnlyHealAsNonHealIfNoHealers`, die einem Nicht-Heiler in einer Gruppe mit lebendem Heiler **jede** Heilflagge nimmt. Ein Beschwörer bei 1 Gesundheitspunkt kam so an keinen Trank, obwohl alle drei eigenen Schalter des Tranks erfüllt waren. Behoben: Der Trank trägt seine Entscheidung selbst und ist nur noch an den Kampf gebunden.
+### Gapcloser: „steht am Ziel" hat im Zweig zwei Bedeutungen, und keine ist seine · N
 
-**Offen bleibt die Bestätigung im Spiel.** Dass die Kette jetzt ohne Flagge durchläuft, ist am Code belegt; ob damit auch sein gemeldetes Bild verschwindet, zeigt der nächste Kampf. Die Gegenstandsanzeige nennt dafür den ersten blockierenden Punkt im Klartext (`HpPotionItem.DescribeBlock`) und die Kampfbedingung dazu.
+**Im Kampf:** Seine Grenze für Crimson Cyclone ist 0 Yalm — dann bewegt die Aktion ihn nicht, und sie ist nur Schaden. Der Zweig misst das an zwei Stellen verschieden:
+- Die Sicherheitsprüfung des Gapclosers (`ActionTargetInfo.CheckMovementSafety`) nimmt nur den Mittelpunkt **im** Zielring aus. Steht er am Ringrand mit 0 Yalm Abstand, prüft sie weiter einen Weg, der kürzer ist als seine eigene Trefferfläche, und kann die Aktion bei einer Gefahrenzone am Boss verweigern (C90).
+- Der Ausweichblock (`SMN_Reborn.AttackAbility`, `standingAtTheTarget`) wählt Ifrit schon bis drei Yalm Abstand; Crimson Cyclone zieht ihn diese drei Yalm heran (C91).
+
+**Konzept (vor Code):** Eine Frage, ein Maß. „Die Aktion bewegt ihn nicht" heißt: Abstand von Trefferfläche zu Trefferfläche ist 0 (`DistanceToPlayer`), das Ziel liegt also innerhalb seiner eigenen Trefferfläche. Beide Stellen lesen dieselbe Prüfung. Zu belegen vor der Umsetzung: wo das Spiel den Sprung von Crimson Cyclone beendet (Ringrand oder Berührung der Trefferflächen) — davon hängt ab, ob bei 0 Yalm noch eine Bewegung von höchstens der eigenen Trefferfläche bleibt. Zu klären ist außerdem die Anzeige: Ob die Sicherheitsprüfung eine Aktion verweigert hat, ist im Kampf heute nicht sichtbar, und ohne das ist die Korrektur nicht prüfbar. Der Kommentar dort nennt zudem die falsche Grenze (`DistanceForMoving2`).
+
+**Wirkung, wenn umgesetzt:** Mit einem zweiten Beschwörer und belegten Phasen fällt der Ausweichblock nur noch auf Ifrit, wenn er wirklich am Boss steht, sonst auf Titan. Crimson Cyclone bei 0 Yalm wird nicht mehr von einer Gefahrenzone am Boss blockiert, in der er ohnehin steht.
 
 ### Zielbasierte Bewegungsaktionen über den Move-Pfad gelten immer als unsicher · N, U
 
@@ -76,6 +82,24 @@ Erfasst, nicht bearbeitet (A93). `HealthAreaAbility`/`HealthAreaSpell` werden ge
 
 **Auflösungsbedingung:** aufzugreifen, sobald die Einzelheilung im Spiel beurteilt ist. Dann ist der Zuschnitt zu wählen, der die fremden Leser nicht trifft — eine eigene, vorausberechnete Kenngröße neben den bestehenden, gelesen allein von den beiden Flächenschwellen.
 
+
+### Searing Light fällt vor einer Beschwörung, die dann ein vorrangiger GCD verdrängt · N
+
+**Im Kampf, Schluss aus der Zweigreihenfolge, nicht beobachtet:** Searing Light geht im Platz vor der Beschwörung heraus, sobald deren Abklingzeit bis zum nächsten GCD endet. Nimmt dann ein vorrangiger GCD den Platz — eine hart gewirkte Wiederbelebung —, läuft der Buff schon, und Solar kommt erst nach der Wirkzeit. Die letzten GCDs der Solar-Phase liegen dann außerhalb der 20 Sekunden. Die Wiederbelebung hat nach seiner Sicherheitsregel Vorrang; offen ist nur, ob der Buff in dieser Lage warten sollte, bis die Beschwörung tatsächlich der nächste GCD ist.
+
+**Zu erheben vor einem Konzept:** alle GCD-Zweige, die im Beschwörer vor `UseSummonsAndTrances` stehen (Wiederbelebung, `GCDHeal`, Notfall), und wie oft sie in einem Kampf vor einer Solar-Phase fallen.
+
+### `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen · N
+
+Die Eigenschaft antwortet „ja", wenn das Spiel Solar als nächste Demi anzeigt **oder** die letzte Demi nicht Solar war. Zeigt das Spiel Bahamut an, während die eigene Geschichte etwas anderes sagt — etwa nach einem Tod, wenn das Spiel die Reihenfolge zurücksetzt —, gewinnt die Geschichte. Im Kampf hieße das: Searing Light fiele vor Bahamut statt vor Solar. Nicht belegt ist, wann das Spiel die Demi-Reihenfolge zurücksetzt und wann die umgestellte Id nicht lesbar ist; beides entscheidet, ob die Geschichte nur Rückfall sein darf.
+
+### `searing_light_coverage.py`: der Kopftext beschreibt eine alte Zündregel · —
+
+Er nennt das Zündfenster „today only while Solar stands" mit einem Zeilenverweis in `SMN_Reborn`, der auf eine leere Zeile zeigt. Beides ist überholt. Das Modell beantwortet die Abdeckung bei mehreren Beschwörern; die Frage des Einzelbeschwörers — rutscht der Buff hinter die eigene Phase — bildet es nicht ab, weil es weder GCD-Raster noch Warten kennt. Kopftext richtigstellen und diese Grenze dort nennen.
+
+### Die Anzeige „Last hit" meldet „measured" auch ohne Messung · N
+
+`Watcher` schreibt „in the AoE list, measured", sobald die Aktion in der Flächenliste steht. Gemessen wird aber nur für Zauber, Waffenfertigkeiten und Fähigkeiten mit `ActionType.Action`; für alles andere stimmt die Zeile nicht. Die Bedingungen der Anzeige an die der Messung angleichen.
 
 ### `searing_light_coverage.py` misst über das Fenster hinaus, das es zu messen vorgibt · —
 

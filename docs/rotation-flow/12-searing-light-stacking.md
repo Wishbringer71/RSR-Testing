@@ -755,7 +755,7 @@ Beschwörungsfensters, füllen ihn acht GCDs Primalblock: Ifrit zuerst 4800 Pote
 0,17 Prozent des Zyklus. Auch das bleibt klein.
 
 **Die Voreinstellung bleibt, und das ist die Entscheidung des Auftraggebers.** Ifrit zuerst lohnt nur,
-wenn man ohnehin in Nahkampfreichweite des Ziels steht; der Anlauf von Crimson Cyclone in eine
+wenn man ohnehin am Ziel steht (0 Yalm, seine Präzisierung); der Anlauf von Crimson Cyclone in eine
 Burstphase hinein ist ein Positionsrisiko, das 0,01 Prozent Schaden nicht rechtfertigen. Titan ist
 sicher, erlaubt Bewegung und kostet 60 Potenz — drei Potenz Schaden je Zyklus.
 
@@ -763,7 +763,7 @@ sicher, erlaubt Bewegung und kostet 60 Potenz — drei Potenz Schaden je Zyklus.
 Sind alle drei Hauptphasen — Solar, Bahamut, Phoenix — dauerhaft von anderen Beschwörern belegt, wird in den
 Primalblock ausgewichen: **Titan**, oder **Ifrit genau dann, wenn der Spieler ohnehin am Ziel steht**.
 Dann entfällt der Anlauf, seine Voraussetzung ist erfüllt, und die höhere Zahl gilt ohne Positionsrisiko.
-Am Ziel steht, wer innerhalb der Reichweite von Crimson Strike zum aktuellen feindlichen Ziel steht, gemessen von Trefferfläche zu Trefferfläche — Reichweite und Trefferflächen liefert das Spiel (A131). `CrimsonCycloneDistance` bleibt die eigene Grenze des Spielers für den Anlauf selbst.
+**Am Ziel steht, wer 0 Yalm Abstand hat** — seine Präzisierung: „wenn der beschwörer bereits beim boss steht (0 yalm), dann wäre der gapcloser nur noch damage und kein risiko." **Der Code misst das derzeit falsch (offener Defekt, TODO „Gapcloser: ‚steht am Ziel‘ hat im Zweig zwei Bedeutungen").** Er wählt Ifrit schon innerhalb der Reichweite von Crimson Strike, also bis drei Yalm, und Crimson Cyclone zieht den Spieler diese Strecke heran (C91). `CrimsonCycloneDistance` bleibt die eigene Grenze des Spielers für den Anlauf selbst.
 
 **Zwei Einstellungen stützen diese Wahl, beide am Code belegt.** `PreferTitanWhileMoving`
 zieht in `SummonPrimals` Titan bei Bewegung vor, unabhängig von der eingestellten Reihenfolge;
