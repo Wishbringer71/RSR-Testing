@@ -204,16 +204,6 @@
    "status": "open"
   },
   {
-   "file": "RotationSolver.Basic/Rotations/Basic/SummonerRotation.cs",
-   "code": "private const int SearingPhaseHeldAfter = 2;",
-   "values": [
-    "2"
-   ],
-   "status": "exception",
-   "loop": "A130",
-   "reason": "the owner's rule 'held only on repetition' - the second sighting; a decision, not a game quantity"
-  },
-  {
    "file": "RotationSolver.Basic/Rotations/CustomRotation_Items.cs",
    "code": "if ((DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterImminent) && a.ID != 47102 && a.ID != 22306 && a.ID != 20309 && a.CanUseEmergency(out _))",
    "values": [

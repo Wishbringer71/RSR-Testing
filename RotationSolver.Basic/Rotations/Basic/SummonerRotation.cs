@@ -305,13 +305,13 @@ public partial class SummonerRotation
 		: InSolarBahamut ? SearingPhase.Solar
 		: SearingPhase.None;
 
-	/// <summary>
-	/// How often a phase has to be found occupied before it counts as held. One Summoner getting
-	/// there first is chance and must not cost a phase; the same one twice running is a pattern.
-	/// </summary>
-	private const int SearingPhaseHeldAfter = 2;
-
-	private readonly int[] _searingPhaseHeld = new int[Enum.GetValues<SearingPhase>().Length];
+	// Per phase, two answers from the last two entries: was it found occupied by a foreign Searing
+	// Light last time, and is it held - occupied last time AND this time. The owner's rule: one
+	// Summoner getting there first is chance and must not cost a phase; "erst wenn derselbe
+	// Beschwörer nach seiner Wiederholzeit erneut dort steht" is a pattern. "Again" is the whole
+	// threshold, so no count is kept.
+	private readonly bool[] _searingPhaseSeen = new bool[Enum.GetValues<SearingPhase>().Length];
+	private readonly bool[] _searingPhaseHeld = new bool[Enum.GetValues<SearingPhase>().Length];
 	private SearingPhase _lastSearingPhase = SearingPhase.None;
 	private bool _searingPhaseBooked;
 
@@ -336,31 +336,30 @@ public partial class SummonerRotation
 				return false;
 			}
 
-			if (_searingPhaseHeld[(int)BookSlot(SearingPhase.Bahamut)] < SearingPhaseHeldAfter)
+			if (!SearingPhaseHeld(SearingPhase.Bahamut))
 			{
 				return false;
 			}
 
 			if (SummonSolarBahamutPvE.EnoughLevel)
 			{
-				return _searingPhaseHeld[(int)SearingPhase.Solar] >= SearingPhaseHeldAfter;
+				return SearingPhaseHeld(SearingPhase.Solar);
 			}
 
-			return !SummonPhoenixPvE.EnoughLevel
-				|| _searingPhaseHeld[(int)SearingPhase.Phoenix] >= SearingPhaseHeldAfter;
+			return !SummonPhoenixPvE.EnoughLevel || SearingPhaseHeld(SearingPhase.Phoenix);
 		}
 	}
 
 	/// <summary>
-	/// The book's count for one phase, as <see cref="AllSearingPhasesHeld"/> reads it - for the
-	/// rotation status, so the tester can see what the rule decides from.
+	/// Was this phase found occupied by a foreign Searing Light on the last two entries?
 	/// </summary>
-	protected int SearingPhaseHeldCount(SearingPhase phase) => _searingPhaseHeld[(int)BookSlot(phase)];
+	protected bool SearingPhaseHeld(SearingPhase phase) => _searingPhaseHeld[(int)BookSlot(phase)];
 
 	/// <summary>
-	/// How many sightings in a row make a phase held.
+	/// Was this phase found occupied on the last entry - one sighting, not yet a pattern? For the
+	/// rotation status, so the tester can see what the rule decides from.
 	/// </summary>
-	protected static int SearingPhaseHeldThreshold => SearingPhaseHeldAfter;
+	protected bool SearingPhaseSeen(SearingPhase phase) => _searingPhaseSeen[(int)BookSlot(phase)];
 
 	/// <summary>
 	/// Where a phase is booked. With Solar Bahamut in the cycle, Demi-Bahamut and Demi-Phoenix take
@@ -378,8 +377,8 @@ public partial class SummonerRotation
 	/// <summary>
 	/// Keeps the phase book, once per window entered rather than once per frame.
 	///
-	/// Entering a burst phase while somebody else's Searing Light is running books that phase kind
-	/// one step further; entering it and finding no foreign buff clears the entry outright. That is
+	/// Entering a burst phase while somebody else's Searing Light is running marks it seen, and held
+	/// if it was seen the time before as well; entering it and finding no foreign buff clears both. That is
 	/// what makes the book self-healing without a clock: a Summoner who stops casting - died,
 	/// left, switched job - stops being found there, and his phase comes back on the next pass. No
 	/// grace period has to be guessed, and no reset point beyond leaving combat is needed.
@@ -388,6 +387,7 @@ public partial class SummonerRotation
 	{
 		if (!DataCenter.InCombat)
 		{
+			Array.Clear(_searingPhaseSeen, 0, _searingPhaseSeen.Length);
 			Array.Clear(_searingPhaseHeld, 0, _searingPhaseHeld.Length);
 			_lastSearingPhase = SearingPhase.None;
 			_lastBigSummon = SearingPhase.None;
@@ -422,14 +422,9 @@ public partial class SummonerRotation
 
 		_searingPhaseBooked = true;
 		var slot = (int)BookSlot(phase);
-		if (HasAnySearingLight)
-		{
-			_searingPhaseHeld[slot]++;
-		}
-		else
-		{
-			_searingPhaseHeld[slot] = 0;
-		}
+		var occupied = HasAnySearingLight;
+		_searingPhaseHeld[slot] = occupied && _searingPhaseSeen[slot];
+		_searingPhaseSeen[slot] = occupied;
 	}
 
 	/// <inheritdoc/>
