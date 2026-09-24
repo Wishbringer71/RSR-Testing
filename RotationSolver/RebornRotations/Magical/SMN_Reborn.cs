@@ -293,9 +293,10 @@ public sealed class SMN_Reborn : SummonerRotation
 		// the fight ran, with no second Summoner in the party. Opening the window in the slot before
 		// the summon's cooldown ends lets the buff go first and the summon land on time.
 		//
-		// If the buff cannot fire there - still cooling down itself - the summon does not wait:
-		// searingSettled reads a cooling buff as settled. So the drift cannot build up through this
-		// branch either way.
+		// If the buff cannot fire there - still cooling down itself - the summon waits for it as long
+		// as it is back within one more GCD, and this branch fires it in the first weave slot after
+		// that (searingSettled in UseSummonsAndTrances). Further out, or with a second Summoner in the
+		// party, the summon goes without it and the charge takes the next window that opens.
 		var bigSummonReady = SummonSolarBahamutPvE.EnoughLevel
 			? SummonSolarBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain)
 			: SummonBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain);
@@ -608,11 +609,12 @@ public sealed class SMN_Reborn : SummonerRotation
 		// automatically on the targets attacked by you". So the first damage of the phase is the first
 		// GCD after the summon, Umbral Impulse at 640 plus its automatic Luxwave at 160.
 		//
-		// That is why waiting is the cheaper error. Missing the buff costs 5% of every GCD it misses,
-		// 40 potency on the first one alone and again on each that follows, plus the same share for
-		// every nearby party member. Waiting costs a summon one GCD later: the trance runs 15s inside
-		// a 20s buff, so the phase still fits whole, and the GCD spent waiting is a filler rather than
-		// a loss.
+		// That is why a short wait is the cheaper error. Missing the buff costs 5% of every GCD it
+		// misses, 40 potency on the first one alone and again on each that follows, plus the same share
+		// for every nearby party member. Waiting costs the summon a GCD or two, and every later demi
+		// shifts with it, because the demi cooldown starts on use - which is why the wait is bounded
+		// below and not open-ended. The trance runs 15s inside a 20s buff, so the phase still fits
+		// whole.
 		//
 		// Three arms, and the last two are what keep the wait from costing the phase itself: a charge
 		// that is already spent is not coming back inside this window, and below level 66 there is no
@@ -645,18 +647,46 @@ public sealed class SMN_Reborn : SummonerRotation
 		// without that arm a disabled Searing Light never goes on cooldown, never counts as settled,
 		// and the summon waits for ever.
 		//
-		// Or it will NOT be ready by the next GCD. This arm used to read "is cooling down", and that
-		// was the drift the owner reported: "cooldown von searing light ist später nicht fertig, wenn
-		// burst phase läuft. das ist die konsequenz." A buff a second or two short of ready counted as
-		// settled, the summon went without it, the buff followed inside the phase - and its next
-		// cooldown ended later still, so the gap grew every cycle. Now the summon waits when the buff
-		// will be ready within one GCD, which is exactly the size the gap grows by per cycle; the wait
-		// pulls buff and summon back into step instead of letting the buff fall behind. A buff further
-		// out than that is not waited for, so the wait is never longer than a GCD.
+		// Or it will not be ready soon enough to be worth the wait. This arm used to read "is cooling
+		// down", and that was the drift the owner reported: "cooldown von searing light ist später
+		// nicht fertig, wenn burst phase läuft. das ist die konsequenz." A buff a second or two short of
+		// ready counted as settled, the summon went without it, the buff followed inside the phase -
+		// and its next cooldown ended later still, so the gap grew every cycle.
+		//
+		// Owner's rule: "es geht einfach um ein bis zwei sekunden am anfang, die sich im lauf der zeit
+		// verschieben, vergrößern. das am anfang zu prüfen und den demi so zu verschieben, dass er erst
+		// startet, wenn searing light verfügbar ist, reicht. die primal rota muss nicht beendet
+		// werden." So the summon waits for a buff that comes back within one more GCD, and the GCDs in
+		// between go to whatever the primal branches offer - no attunement is finished on purpose. The
+		// bound is read at the moment the summon would fire, where WeaponRemain is close to zero; the
+		// "next GCD" alone was therefore "ready now" in practice and let exactly those one to two
+		// seconds through. Checked on every summon, the gap cannot build up beyond one cycle's growth,
+		// so a larger bound would only ever buy waits the owner did not ask for - each second waited
+		// shifts every later demi with it.
+		//
+		// "die prüfung der abklingzeit darf aber nicht dazu führen, dass alle demis verzögert werden
+		// (siehe mehrere Beschwörer in gruppe), da erfolgt ein ausweichen auf den nächsten demi bzw. im
+		// negativfall auf den stärksten primal." With another Summoner in the party the charge is not
+		// tied to this summon: the firing window above widens to every big summon and, when all of them
+		// are held, to the strongest primal block. So the summon does not wait for a cooling buff there
+		// at all; the charge goes out in the first window that rule opens once it is back.
+		//
+		// Two arms close waits that never end, and both are the same question: will the buff this
+		// summon waits for actually be cast ahead of it?
+		// - Any Searing Light, not only our own. The buff does not stack and ours cannot be cast over a
+		//   running one (StatusProvide with StatusFromSelf = false). With a second Summoner's buff up,
+		//   ours was ready, could not go out, and the summon waited for his buff to run out - every
+		//   demi of the fight, the delay the owner named.
+		// - Burst switched off. The slot ahead of the summon is opened by burstAboutToStart, which reads
+		//   IsBurst; with burst off the buff never goes there, and a ready buff held the summon for good.
+		var searingBackSoon = AnotherSummonerInParty
+			? SearingLightPvE.Cooldown.WillHaveOneCharge(WeaponRemain)
+			: SearingLightPvE.Cooldown.WillHaveOneCharge(WeaponRemain + WeaponTotal);
 		var searingSettled = !SearingLightPvE.EnoughLevel
 			|| !SearingLightPvE.IsEnabled
-			|| HasSearingLight
-			|| !SearingLightPvE.Cooldown.WillHaveOneCharge(WeaponRemain);
+			|| !IsBurst
+			|| HasAnySearingLight
+			|| !searingBackSoon;
 
 		if (searingSettled && SummonBahamutPvE.CanUse(out act))
 		{

@@ -72,10 +72,16 @@ summon's cooldown had already run out — and that happens on a GCD, so the weav
 passed and the summon waited a GCD. And a buff a second or two short of ready counted as done, so the
 summon went without it, the buff followed inside the phase, and its next cooldown ended later still.
 
-The buff is now released as soon as the summon will be ready by the next GCD, and the summon waits
-when the buff will be ready by the next GCD. Each wait is at most one GCD and is filled with the
-current primal's GCDs, not an idle slot. A Searing Light you have switched off no longer holds the
-summon back.
+The buff is now released as soon as the summon will be ready by the next GCD. When the buff is a
+second or two short at that point, the summon waits until it is back — at most one more GCD — and the
+GCDs in between go to your current primal; no attunement is finished on purpose. Checked before every
+summon, the gap can no longer build up.
+
+With another Summoner in the party the summon does not wait for a cooling buff: your charge goes into
+the next window the multi-Summoner rule opens (any big summon, or the strongest primal block when all
+of them are taken). Two cases that could hold the summon back indefinitely are closed as well: another
+Summoner's Searing Light already running (yours cannot be cast over it — any running buff now counts),
+and burst switched off. A Searing Light you have switched off no longer holds the summon back either.
 
 ## The AoE list says why the last hit was not rated
 

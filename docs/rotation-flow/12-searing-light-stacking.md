@@ -82,8 +82,8 @@ samt automatischem Luxwave, zusammen 800 Potenz.
 
 **Daraus folgt, welcher Fehler der billigere ist — und das Warten ist nur im Einzelfall billig.** Der
 Buff verfehlt — 5 % auf jeden GCD, den er nicht mehr deckt: 40 Potenz allein auf den ersten, und
-dasselbe noch einmal für jedes nahe Gruppenmitglied. Die Beschwörung wartet — sie fällt einen GCD
-später, und innerhalb **dieser** Phase passt alles weiterhin. Deshalb darf sie warten.
+dasselbe noch einmal für jedes nahe Gruppenmitglied. Die Beschwörung wartet — sie fällt ein, zwei GCDs
+später, und innerhalb **dieser** Phase passt alles weiterhin. Deshalb darf sie kurz warten.
 
 **Was ein einzelner Warte-GCD nicht zeigt, ist seine Fortpflanzung.** Die Abklingzeit der Beschwörung
 läuft ab ihrer **Nutzung**, und die des Buffs ebenso. Ein Warte-GCD verschiebt damit jede folgende
@@ -100,27 +100,52 @@ Beschwörung einen GCD später. **Freigegeben wird jetzt, sobald die Beschwörun
 bereit ist** — der Buff fällt in den Platz davor, die Beschwörung pünktlich.
 
 **Die Gegenrichtung ist die eigentliche Folge, und der Auftraggeber hat sie benannt:** „cooldown von
-searing light ist später nicht fertig, wenn burst phase läuft. das ist die konsequenz." `searingSettled`
-las einen **abkühlenden** Buff als erledigt. War er bei Bereitschaft der Beschwörung ein, zwei Sekunden
-von fertig entfernt, fiel die Beschwörung ohne ihn, der Buff folgte in der Phase — und seine nächste
-Abklingzeit endete noch später. So lief der Buff der Phase Zyklus um Zyklus davon, auch ohne dass die
-Beschwörung je wartete. **Jetzt wartet die Beschwörung, wenn der Buff bis zum nächsten GCD fertig wird**
-— genau die Größe, um die der Abstand je Zyklus wächst. Das Warten zieht beide wieder in Takt, statt den
-Buff zurückfallen zu lassen, und es dauert nie länger als einen GCD. Ein ausgeschalteter Buff gilt
-außerdem als erledigt; zuvor hätte die Beschwörung auf einen nie gezündeten Buff ewig gewartet.
+searing light ist später nicht fertig, wenn burst phase läuft. das ist die konsequenz." Ein Buff, der bei
+Bereitschaft der Beschwörung ein, zwei Sekunden von fertig entfernt ist, darf nicht als erledigt gelten:
+Die Beschwörung fiele ohne ihn, der Buff folgte in der Phase, seine nächste Abklingzeit endete noch
+später, und der Buff liefe der Phase Zyklus um Zyklus davon.
 
-**Offen bleibt der große Abstand.** Liegt der Buff einmal mehr als einen GCD zurück, wartet die
-Beschwörung nicht, und dieser Abstand holt sich nicht von selbst auf. Wie lange die Beschwörung warten
-darf, ist eine Abwägung zwischen einmaligem Verschieben aller folgenden Demi-Phasen und wiederkehrendem
-Buffverlust in jeder Solar-Phase — und damit eine Entscheidung des Auftraggebers, in `TODO.md` vorgelegt.
+**Wie lange die Beschwörung wartet — Vorgabe des Auftraggebers:** „es geht einfach um ein bis zwei
+sekunden am anfang, die sich im lauf der zeit verschieben, vergrößern. das am anfang zu prüfen und den
+demi so zu verschieben, dass er erst startet, wenn searing light verfügbar ist, reicht. die primal rota
+muss nicht beendet werden." Umgesetzt als: **Die Beschwörung wartet, wenn Searing Light innerhalb eines
+weiteren GCDs zurück ist.** Die Warte-GCDs nimmt, was die Primal-Zweige anbieten; keine Ladung wird
+eigens aufgebraucht. Weil die Prüfung vor **jeder** Beschwörung läuft, kann der Abstand nie über das
+Wachstum eines Zyklus hinauskommen; eine weitere Grenze kauft nur Wartezeit, die jede folgende
+Demi-Phase mitverschiebt. Primal-Ladungen sind kein Maß dafür — sie tragen weniger Potenz als die
+Demi-Phase, ein Warten auf ihr Ende wäre ein Verlust (sein Einwand gegen die Kopplung an die Ladungen).
+
+Die Grenze „bis zum nächsten GCD" allein hatte das nicht geleistet: Gelesen wird sie in dem Moment, in
+dem die Beschwörung fallen würde, und dort ist die Restzeit des GCDs nahe null — „bis zum nächsten GCD"
+hieß also „jetzt", und genau die ein, zwei Sekunden liefen durch.
+
+**Mehrere Beschwörer — ebenfalls seine Vorgabe:** „die prüfung der abklingzeit darf aber nicht dazu
+führen, dass alle demis verzögert werden (siehe mehrere Beschwörer in gruppe), da erfolgt ein ausweichen
+auf den nächsten demi bzw. im negativfall auf den stärksten primal." Mit einem zweiten Beschwörer wartet
+die Beschwörung auf keinen abkühlenden Buff; die Ladung geht, sobald sie zurück ist, in das erste
+Fenster, das die Zündregel oben öffnet — jede große Beschwörung, und sind alle belegt, der stärkste
+Primal-Block nach Standort.
+
+**Gewartet wird nur auf einen Buff, der vor der Beschwörung auch fällt.** Zwei Fälle hielten die
+Beschwörung bisher ohne Ende fest und sind geschlossen:
+
+- **Ein fremdes Searing Light läuft.** Der Buff stapelt nicht, und der eigene lässt sich über einen
+  laufenden nicht wirken (`StatusProvide` ohne Eigenbindung). Gefragt wurde aber nur nach dem **eigenen**:
+  Der war bereit, konnte nicht gehen, und die Beschwörung wartete, bis der fremde auslief — in jeder
+  Demi-Phase. Jetzt genügt ein laufender Buff gleich welcher Herkunft.
+- **Burst ausgeschaltet.** Den Platz vor der Beschwörung öffnet nur der Burstzweig; bei ausgeschaltetem
+  Burst fiel der Buff dort nie, und ein bereiter Buff hielt die Beschwörung dauerhaft zurück.
+
+Ein ausgeschalteter Buff gilt ebenfalls als erledigt; sonst wartete die Beschwörung auf einen nie
+gezündeten.
 
 **Die Beschwörung wartet auf den Buff, statt ihn nur zuzulassen** — Vorgabe des Auftraggebers: Searing
 Light muss aktiv sein, **bevor** der erste Burstschaden entsteht. Umgesetzt an der Stelle, die
 tatsächlich feuert: Der Bahamut-Aufruf stand zweimal da, einmal ohne Bedingung und einmal mit genau
 dieser — der bedingte war damit unerreichbar, die Kopplung wirkungslos. Jetzt ein Aufruf, eine
-Bedingung. Sie hält drei Arme, und die letzten beiden verhindern, dass das Warten die Phase kostet:
-Eine bereits verbrauchte Ladung kommt in diesem Fenster nicht zurück, und unterhalb von Stufe 66 gibt
-es Searing Light gar nicht.
+Bedingung, deren Arme oben aufgeführt sind; zwei davon verhindern, dass das Warten die Phase kostet:
+Eine Ladung, die nicht bald zurück ist, kommt in diesem Fenster nicht mehr, und unterhalb von Stufe 66
+gibt es Searing Light gar nicht.
 
 **Gelesen wird die Bereitschaft der Beschwörung, nicht der nächste GCD.** Andernfalls entstünde dasselbe
 Henne-Ei-Problem wie bei der Wiederbelebung (Konzept 11): Der Buff wartete darauf, angekündigt zu
