@@ -642,6 +642,11 @@ internal partial class Configs : IPluginConfiguration
 	[ConditionBool, UI("Show Intercepted Action Window", Filter = UiWindows)]
 	private static readonly bool _showInterceptedActionWindow = false;
 
+	[ConditionBool, UI("Show Diagnostics Window",
+		Description = "A small window that stays open in combat and shows why RSR does what it does: the current rotation's status lines, the AoE damage table's store and last rated hit, and why an enabled HP potion is or is not used.\nIn a fight: nothing RSR does changes. You can see during the pull whether a rule fired or what held it back, instead of opening the settings afterwards.",
+		Filter = UiWindows)]
+	private static readonly bool _showDiagnosticsWindow = false;
+
 	[ConditionBool, UI("No Inputs", Parent = nameof(ShowNextActionWindow))]
 	private static readonly bool _isInfoWindowNoInputs = false;
 
