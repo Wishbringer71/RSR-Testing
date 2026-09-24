@@ -107,6 +107,18 @@ dem Angriffszweig. Hinter einem sofort wirkenden GCD passen in der Regel zwei F�
 nimmt höchstens eine. *Unbelegt: dass die Beschwörung sofort wirkt, und die Zahl der Plätze bei der
 jeweiligen Vorlaufeinstellung.* Die Vorlage in `TODO.md` rechnet die Wege durch.
 
+**Auch das Warten innerhalb der Demi ist teurer als sein Ertrag.** Hält man statt der Beschwörung den
+ersten GCD der Phase an, bis die offenen Fähigkeiten gewoben sind, verschiebt sich keine Demi — die
+Abklingzeit läuft ab der Beschwörung —, aber jeder folgende GCD. Der Zyklus verliert dadurch den
+billigsten GCD anteilig: 0,2 bis 0,7 Sekunden kosten 32 bis 112 Potenz, gerechnet mit Ruin III
+(400 je 2,5 s). Bei einem GCD unter 2,5 Sekunden kommt ein zweiter Verlust hinzu:
+`smn_phase_potency.py` zählt dann sieben statt sechs Würfe in der Phase, der letzte Umbral Impulse
+liegt nur 0,12 bis 0,6 Sekunden vor dem Ende der 15 Sekunden, und ein Clip darüber kostet ihn, rund
+400 Potenz. Der Ertrag ist höchstens der Buff auf dem ersten Umbral Impulse, 40 Potenz. Die übrigen
+Fähigkeiten der Phase — Energy Drain, zweimal Necrotize, Exodus, Sunflare, Searing Flash, Lux
+Solaris — brauchen kein Warten: rund acht auf zwölf Einschiebeplätze. *Clipdauer aus Ausführungssperre
+und Latenz, beide nicht im Repository, der Code liest sie erst zur Laufzeit.*
+
 **Mehrere Beschwörer — Prüfvorschlag des Auftraggebers, geprüft und so umgesetzt:** „die prüfung der
 abklingzeit darf aber nicht dazu führen, dass alle demis verzögert werden (siehe mehrere Beschwörer in
 gruppe), da erfolgt ein ausweichen auf den nächsten demi bzw. im negativfall auf den stärksten
