@@ -93,6 +93,10 @@ Upstream hat dieselbe Klasse in 7.5.6.3 an vier Stellen aufgelöst (`ObjectHelpe
 
 **Empfehlung:** dasselbe Muster nachziehen, nicht die Fänge entfernen — ein `catch`, der nie feuert, ist harmlos, der fehlende Vorab-Test ist es nicht. Vorher zu klären: ob `PartyMembers` und die Feindlisten überhaupt freigegebene Objekte führen können oder ob sie je Rahmen neu erhoben werden; trifft Letzteres zu, ist die Klasse hier gegenstandslos und die Fänge sind der eigentliche Befund.
 
+### `H2` dreht auch Tanks und Heiler um, der Optionstext nennt nur Nicht-Heiler · N
+
+`TargetUpdater.GetPriorityDeathTarget` kehrt bei `H2` alle vier Listen um; der Optionstext lautet „Raise non-Healers from bottom of party list to the top (Light Party 2 Healer Behavior)". Im Kampf wirkt es nur bei mehreren gleichzeitig toten Tanks oder Heilern. Zu klären ist die Absicht: Optionstext oder Code. Konzept 11, A141.
+
 ### Wiederbelebung: vier Eingriffe des Zweigs sind weiter ungemessen · N, R
 
 **Konzept:** `docs/rotation-flow/11-raise-dispatch.md`
@@ -117,20 +121,6 @@ Phönixfeder zusätzlich eine Gruppe ohne lebenden Rezzer, weil die Bedingung so
 
 **Bewertung:** kein Defektverdacht, sondern offener Nachweis. Die Wirkketten sind im Code
 nachvollzogen; was fehlt, ist die Bestätigung im Spiel.
-
-### `H2` bleibt im Modus `PartyAndAllianceHealers` wirkungslos · N
-
-**Konzept:** `docs/rotation-flow/07-heal-target-priority.md`, `docs/rotation-flow/11-raise-dispatch.md`
-`TargetUpdater.GetPriorityDeathTarget`. Der Sonderfall `if (raiseType == RaiseType.PartyAndAllianceHealers && deathHealers.Count > 0) return deathHealers[0];` steht **vor** der Umkehrung der vier Listen durch `Service.Config.H2`. In allen anderen Modi dreht diese Einstellung die Reihenfolge, in diesem einen nicht.
-
-Ohne Wirkung auf die Frage, *ob* wiederbelebt wird — nur darauf, *welcher* von mehreren toten Heilern zuerst drankommt. **Auflösung:** den Sonderfall hinter die Umkehrung ziehen. **Nicht im laufenden Vorgang behoben,** weil der Zweig bereits mehrere ungemessene Eingriffe am Wiederbelebungspfad trägt (Punkt oben); ein weiterer verschlechtert die Auswertbarkeit des Spieltests, ohne dass diesem Punkt Dringlichkeit zukäme.
-
-### Die Aufzählung der Wiederbelebungsaktionen im Einschiebezweig veraltet · N, R
-
-**Konzept:** `docs/rotation-flow/11-raise-dispatch.md`
-`CustomRotation_Ability.cs` prüft `nextGCD.IsTheSameTo(true, RaisePvE, EgeiroPvE, ResurrectionPvE, AscendPvE)`. Verraise des Rotmagiers und Angel Whisper des Blaumagiers fehlen, obwohl beide Rotationen `Raise` setzen — dieselbe Alterungsursache wie die Hauptursache des Wiederbelebungsdefekts: eine handgepflegte Liste statt der vorhandenen Fähigkeitsprüfung.
-
-**Derzeit folgenlos,** weil der zweite Zweig derselben Bedingung (`RaisePendingAndCastable`) die Liste nicht braucht und über `Raise` geht. Der Punkt bleibt, weil die Liste beim nächsten Rezzer-Job erneut still falsch wird. **Auflösung:** den Vergleich gegen `Raise` führen statt gegen die Aufzählung.
 
 ### `SwiftcastBuffer` hat keinen Leser, und ihre Absicht ist überholt · N
 
@@ -255,38 +245,6 @@ Die Regel steht in `docs/rotation-flow/09-tank-selfprotection.md`, Abschnitt „
 **Fall 4a braucht eine Prognose, und die besteht seit A91 bis A93** — die frühere Begründung „der Messbaustein ist begründet verworfen" ist damit überholt. Vollständig zu heilen ist nur richtig, wenn der Kurs nicht trägt; der Gesundheitsstand ist dafür kein Ersatz, weil Angriffe den Träger wieder auf 1 drücken, ohne die aufgenommene Heilung zu mindern. **Die vorhandene Prognose beantwortet allerdings die Nachbarfrage, nicht diese:** `GetCorrectedTTK` misst den Weg zur Null, Walking Dead fragt nach dem Weg zur **aufgenommenen Heilmenge in Höhe der Maximalgesundheit**. Die Datenquelle taugt für beides — der Gesundheitsverlauf steigt, wenn geheilt wird —, die Auswertung ist eine andere und noch nicht gebaut.
 
 **Empfehlung: die HoT-Sperre aufheben, den Benediction-Vorrang offen lassen.** Der erste Teil ist eine belegte Behebung mit einer Bedingung; für den zweiten ist jetzt die Auswertung zu entwerfen, nicht mehr die Messgrundlage. Gekoppelt an `WithholdHealingForLivingDead`, weil wer Phase eins einschaltet den Tod als Auslöser will — das hält das heutige Verhalten für alle anderen unverändert.
-
-### Living Dead: der Hebel ist die Option, nicht der HP-Grenzwert · N
-
-**Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
-`StateUpdater.ShouldHealSingle`: `threshold = target.NoNeedHealingInvuln() ? normal : Math.Min(normal, Service.Config.HealthProtectedRatio)`. `NoNeedHealingInvuln` ist `WillStatusEndGCD(2, …)` über `NoNeedHealingStatus`, und `LivingDead` steht in dieser Liste.
-
-**Wirkung, in zwei Abschnitten — und genau so, wie der Auftraggeber die Regel gefasst hat:** Solange Living Dead noch **mehr als zwei GCDs** Restzeit hat, liegt die Schwelle bei `HealthProtectedRatio` 0,15; der Todeseffekt kann also eintreten. Läuft der Status in zwei GCDs oder weniger ab, liefert `NoNeedHealingInvuln` wahr und die **normale** Schwelle kehrt zurück — kurz vor Ablauf wird geheilt. Die Vorlaufzeit ist bis zur **Entscheidung** gemessen, nicht bis zum Landen der Heilung, weshalb zwei GCDs und nicht weniger.
-
-**Der Vorlauf setzt aus, solange der Tod noch erreichbar ist** (`StatusHelper.DeathStillLikely`, A88, auf ausdrückliche Vorgabe des Auftraggebers): Steht der Träger auf oder unter `HealthForDyingTanks`, greift die Freigabe nicht, weil die Null vor dem Fensterende ankommt. Ohne das hätte der Vorlauf den Tod verhindert, für den die Regel da ist.
-
-Die Dauer ist belegt, nicht erinnert: `ActionId.resx`, Aktion 3638, „Living Dead Duration: 10s". Bei rund 2,5 s Gießzeit sind zwei GCDs damit etwa die halbe Restzeit.
-
-**`WithholdHealingForLivingDead` verschärft nur den ersten Abschnitt** — aus 0,15 wird „gar nicht", der zweite Abschnitt bleibt unverändert. Voreingestellt aus.
-
-**Kein Fork-Rückschritt, im Gegenteil:** Upstream gibt einem Ziel unter Invulnerabilität überhaupt keine Heilung (`if (h == 0 || !target.NoNeedHealingInvuln()) return false;`). Die Absenkung auf einen Grenzwert ist die mildere Fassung.
-
-**Der Fall, der sie trotzdem zum Problem macht,** ist der falsch gesetzte Invulnerabilitätsschub: Living Dead bei 70 % im Wall-to-Wall gezündet, wie vom Auftraggeber beobachtet. Die Konstruktion unterstellt, dass die Invulnerabilität gegen einen tödlichen Schlag gesetzt wird; wird sie zu früh gesetzt, kostet sie zehn Sekunden automatische Heilung, ohne dass der Anlass je eintritt.
-
-**Der richtige Stellhebel ist die Option, nicht der Grenzwert.** `HealthProtectedRatio` anzuheben würde beide Abschnitte verschieben und damit gerade den Tod verhindern, auf den die Regel wartet — ein höherer Wert heilt **früher** im Fenster. Wer den Todeseffekt will, schaltet `WithholdHealingForLivingDead` ein; wer ihn nicht will, lässt beides, wie es ist. Der Grenzwert ist nur für die **anderen** Invulnerabilitäten der Liste maßgeblich (Holmgang, Superbolide, Hallowed Ground), bei denen kein Tod gewollt ist.
-
-**Vollständige Erhebung der Defensivfähigkeiten des Dunkelritters gegen die Heilentscheidung** — nur zwei greifen ein:
-
-| Fähigkeit | Pfad | Wirkung auf die Heilschwelle |
-|---|---|---|
-| The Blackest Night | `ShieldStatus` → Schildanrechnung | effektiv −25 Prozentpunkte |
-| Living Dead | `NoNeedHealingStatus` → `HealthProtectedRatio` | 0,15 statt 0,65 |
-| Walking Dead | in `NoNeedHealingStatus` **auskommentiert** | keine — richtig, dort ist Heilung überlebensnotwendig |
-| Shadow Wall, Rampart | `RampartStatus` | **keine**: gelesen nur als `StatusProvide` der Tank-Rotationen und von `HasMajorMitigation`, und das fragt `PlayerHasStatus(true, …)`, also allein den eigenen Charakter |
-| Dark Mind, Oblation, Dark Missionary | in keiner heilrelevanten Liste | keine |
-| Reprisal | `ReprisalStatus` | keine — Debuff am Gegner |
-
-Schadensreduktion wirkt also in keinem Fall auf die Heilentscheidung; nur Barriere und Invulnerabilität tun es.
 
 ### Die Zielwahl der Heilung misst nicht die Sterbegefährdung · N, U
 

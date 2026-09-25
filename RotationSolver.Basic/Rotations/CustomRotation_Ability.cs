@@ -749,8 +749,11 @@ public partial class CustomRotation
 		// ahead of healing and damage, and it rewrites nextGCD for every branch that reads it -
 		// 447 occurrences in this tree, among them Radiant Aegis on Summoner, which stopped coming
 		// out. This condition leaves the GCD path untouched and only adds one weave.
+		//
+		// The raise is the job's own Raise, not a list of four ids: the list had no Verraise and no
+		// Angel Whisper, the same ageing as the hand-kept raise list behind the original defect.
 		if (Service.Config.RaisePlayerBySwift && DataCenter.CanRaise() && IActionHelper.IsLastActionGCD()
-			&& (nextGCD.IsTheSameTo(true, ActionID.RaisePvE, ActionID.EgeiroPvE, ActionID.ResurrectionPvE, ActionID.AscendPvE)
+			&& ((Raise != null && nextGCD.IsTheSameTo(true, Raise))
 				|| RaisePendingAndCastable()))
 		{
 			if (SwiftcastPvE.CanUse(out act))

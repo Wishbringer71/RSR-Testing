@@ -314,9 +314,20 @@ oder Verweigerungsstatus, Entfernung über 30 Yalm, fehlende Sichtlinie, Gruppen
 Allianzzugehörigkeit. Der Auftraggeber hat bestätigt, dass Leichen ruhig liegen und anvisierbar sind,
 womit `IsTargetMoving` und `IsTargetable` als Ursache ausscheiden.
 
-Eine Unstimmigkeit ist erfasst, nicht behoben: Der Sonderfall für `PartyAndAllianceHealers` greift
-**vor** der Umkehrung durch die Einstellung `H2`, die in allen anderen Modi die Reihenfolge dreht. In
-diesem einen Modus bleibt sie damit wirkungslos.
+**`H2` und der Sonderfall für `PartyAndAllianceHealers` (A141).** Der Optionstext von `H2` lautet
+„Raise **non-Healers** from bottom of party list to the top (Light Party 2 Healer Behavior)". Der
+Code dreht aber alle vier Listen um, auch Tanks und Heiler. Dass der Sonderfall für
+`PartyAndAllianceHealers` vor der Umkehrung steht und die Heiler in Listenreihenfolge nimmt, passt
+also zum Optionstext; abweichend ist die Umkehrung der Tank- und Heilerliste in den übrigen Modi.
+Im Kampf wirkt das nur, wenn mehrere Tanks oder mehrere Heiler zugleich tot sind. Die frühere Lesart,
+der Sonderfall sei die Unstimmigkeit, ist widerrufen (C94). Erfasst, nicht behoben: Welche Lesart
+gemeint ist, sagt nur der Optionstext, und der spricht gegen den Code, nicht gegen den Sonderfall.
+
+**Der Einschiebezweig für Swiftcast erkennt die Wiederbelebung an `Raise` (A141).** Früher verglich er
+den nächsten GCD mit vier Ids; Verraise und Angel Whisper fehlten, dieselbe Alterungsursache wie die
+Hauptursache des Wiederbelebungsdefekts. Im Kampf ändert sich heute nichts, weil der zweite Zweig
+(`RaisePendingAndCastable`) diese Jobs schon über `Raise` erreichte; ein künftiger Rezzer-Job fällt
+nicht mehr still heraus.
 
 ### Was aus dem Quelltext nicht zu entscheiden ist
 
@@ -377,14 +388,7 @@ nicht messbar. Wer sie an hat, konnte ohne Swiftcast niemanden hochholen.
   um das bisherige Verhalten zu erhalten, ist ohne Feldmigration nicht durchführbar. Daran ist die
   Verdrahtung von `InterruptDelay` und `ProvokeDelay` gescheitert.
 - **`TargetColor` hat keinen Leser.**
-- **Die Aufzählung der Wiederbelebungsaktionen im Einschiebezweig veraltet.**
-  `CustomRotation_Ability.cs` prüft `nextGCD.IsTheSameTo(true, RaisePvE, EgeiroPvE, ResurrectionPvE,
-  AscendPvE)`. Verraise des Rotmagiers und Angel Whisper des Blaumagiers fehlen, obwohl beide
-  Rotationen `Raise` setzen. Dieselbe Alterungsursache wie die Hauptursache: eine handgepflegte Liste
-  statt der vorhandenen Fähigkeitsprüfung über `Raise`. Folgenlos, solange der zweite Zweig
-  (`RaisePendingAndCastable`) greift, der die Liste nicht braucht.
-- **`H2` wirkt im Modus `PartyAndAllianceHealers` nicht**, weil dessen Sonderfall vor der Umkehrung
-  steht.
+- **`H2` dreht auch Tanks und Heiler um**, obwohl der Optionstext nur Nicht-Heiler nennt (siehe oben).
 
 ## Grenzen des Nachweises
 

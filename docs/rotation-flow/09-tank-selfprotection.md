@@ -411,6 +411,30 @@ Die Option ist nötig, weil RSR Living Dead selbst als Notrettung bei
 `HealthForDyingTanks` zündet. Dort ist der Tod die Katastrophe, und Walking Dead
 verlangt danach eine volle Maximalgesundheit an Heilung in zehn Sekunden.
 
+
+**Der Hebel ist die Option, nicht der Grenzwert.** `StateUpdater.ShouldHealSingle` senkt die
+Schwelle unter einem Schutzstatus auf `HealthProtectedRatio` (0,15), solange Living Dead mehr als
+zwei GCDs Restzeit hat; danach kehrt die normale Schwelle zurück, außer der Träger steht auf oder
+unter `HealthForDyingTanks` (`DeathStillLikely`, A88). `HealthProtectedRatio` anzuheben verschöbe
+beide Abschnitte und heilte **früher** im Fenster, also gerade den Tod weg, auf den die Regel wartet.
+Wer den Todeseffekt will, schaltet `WithholdHealingForLivingDead` ein; der Grenzwert ist nur für die
+übrigen Invulnerabilitäten der Liste maßgeblich (Holmgang, Superbolide, Hallowed Ground), bei denen
+kein Tod gewollt ist. Upstream heilt ein Ziel unter Invulnerabilität gar nicht; die Absenkung ist die
+mildere Fassung. Ein zu früh gesetzter Living Dead (vom Auftraggeber bei 70 % im Wall-to-Wall
+beobachtet) kostet damit zehn Sekunden automatischer Heilung ohne Anlass.
+
+**Welche Abwehr des Dunkelritters die Heilentscheidung berührt** (erhoben A141):
+
+| Fähigkeit | Pfad | Wirkung auf die Heilschwelle |
+|---|---|---|
+| Living Dead | `NoNeedHealingStatus` → `HealthProtectedRatio` | 0,15 statt der normalen Schwelle, wie oben |
+| Walking Dead | in `NoNeedHealingStatus` auskommentiert | keine — richtig, dort ist Heilung überlebensnotwendig |
+| The Blackest Night | Schildanteil des Spiels (`ShieldPercentage`) im effektiven Puffer | keine auf die Schwelle, seit die Schildanrechnung entfernt ist (A85); der Schild zählt im Puffer der Vorausschau und der Sterbegefährdung (`GetEffectiveHp`) |
+| Shadow Wall, Rampart | `RampartStatus` | keine: gelesen als `StatusProvide` und von `HasMajorMitigation` für den eigenen Charakter |
+| Dark Mind, Oblation, Dark Missionary, Reprisal | in keiner heilrelevanten Liste bzw. am Gegner | keine |
+
+Schadensreduktion und Barriere wirken auf keine Heilschwelle; nur die Invulnerabilität tut es. Die Rate, die aus
+Minderung folgt, geht über die Vorausschau ein (`GetForecastSurvivingShare`), nicht über Listen.
 ### Die Barriere senkt den Heilbedarf nicht
 
 **Ein Schild verhindert Schaden, er stellt keine Gesundheit her.** Ein vollgeheilter Tank **mit**

@@ -3452,6 +3452,14 @@ Die Kandidatenfassung war nur bei der ausgeschriebenen Falsifikation besser. Die
 
 **Prüfgrad:** statisch; ECommons-Quelltext; Prüfskripte grün; Compile über die CI.
 
+### A141 · Wiederbelebung: Swiftcast-Zweig liest `Raise`; die `H2`-Unstimmigkeit war falsch gelesen (25.09.2026)
+
+**Einschiebezweig.** `nextGCD.IsTheSameTo(true, Raise)` statt der vier Ids. Heute folgenlos, weil `RaisePendingAndCastable` Rotmagier und Blaumagier schon über `Raise` erreichte. Behoben ist die Bauform.
+
+**`H2`.** Der TODO-Eintrag wollte den Sonderfall für `PartyAndAllianceHealers` hinter die Umkehrung ziehen. Der Optionstext nennt aber nur Nicht-Heiler („Raise non-Healers from bottom of party list to the top"). Der Sonderfall für Heiler passt also zum Text; abweichend ist die Umkehrung der Tank- und Heilerliste in den übrigen Modi. Der schon gebaute Eingriff ist vor dem Commit zurückgenommen, die Lesart widerrufen (C94) und die richtige Unstimmigkeit erfasst.
+
+**Prüfgrad:** statisch.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -3725,3 +3733,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C91 | A131, Konzept 12, `SMN_Reborn`: „Am Ziel steht, wer innerhalb der Reichweite von Crimson Strike steht" | Seine Grenze ist 0 Yalm. Bei drei Yalm zieht Crimson Cyclone den Spieler heran, also genau der Anlauf, den seine Sicherheitsentscheidung ausschließt | behoben: Ifrit nur bei 0 Yalm (A138); A133 |
 | C92 | Kommentar in `SMN_Reborn.AttackAbility`: 60 Sekunden seien eine ganze Zahl von GCDs, die Abklingzeit der Beschwörung ende also auf dem GCD-Raster | Gilt nur bei 2,50 Sekunden GCD. Die Regel „bereit bis zum nächsten GCD" hängt nicht daran | Kommentar bei der nächsten Änderung an der Stelle; A133 |
 | C93 | A117: Die Verfallsklausel für Lux Solaris in `GeneralAbility` bekomme keinen Einschiebeplatz, weil der Angriffszweig in einer Demi-Phase immer etwas habe | Refulgent Lux läuft 30 s, die Demi-Phase 15 s. Die Klausel greift in den letzten drei GCDs, also in der Primal-Phase danach, und dort ist der Angriffszweig fast leer. Lux Solaris zündet dann spät und ohne Gesundheitsprüfung; blind am Code bestätigt (A136) | A136; der Fall ist durch die gemessene Zündregel im Angriffszweig ohnehin überholt |
+| C94 | TODO und Konzept 11: Der Sonderfall für `PartyAndAllianceHealers` stehe fälschlich vor der `H2`-Umkehrung | Der Optionstext von `H2` nennt nur Nicht-Heiler; der Sonderfall für Heiler folgt dem Text, die Umkehrung der Heilerliste in den übrigen Modi nicht | Konzept 11 und TODO berichtigt, A141 |
