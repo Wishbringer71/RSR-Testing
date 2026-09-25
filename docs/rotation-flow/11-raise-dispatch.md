@@ -309,6 +309,13 @@ getrennt behandelt, die Allianz-Varianten fügen ohne Doppelzählung hinzu (`dea
 tote Tanks ist eine begründete Fallunterscheidung und kein Tippfehler (C36). Die Reihenfolge
 entspricht der Vorgabe des Auftraggebers, wonach eine Feder zuerst einen Heiler aufheben soll.
 
+**Vorgabe des Auftraggebers (25.09.2026):** „der nebenheiler soll den hauptheiler vor dem tank
+rezzen." Der Code erfüllt das in jeder Lage bis auf eine: Sind **beide** Tanks tot, wird zuerst ein
+Tank aufgehoben (`deathTanks.Count > 1`, Upstream; Begründung C36: dann hält niemand den Gegner).
+Ob diese Ausnahme gegen seine Vorgabe bestehen bleibt, ist ihm vorgelegt; ebenso, wen er mit
+„Nebenheiler" meint (zweiter Heiler der Gruppe oder Rezzer ohne Heilerrolle wie Beschwörer und
+Rotmagier) — der Code staffelt für jeden Wiederbelebenden gleich.
+
 Die Filter in `GetDeath` sind vollständig und schließen jeweils sinnvoll aus: kein Wiederbelebungs-
 oder Verweigerungsstatus, Entfernung über 30 Yalm, fehlende Sichtlinie, Gruppen- oder
 Allianzzugehörigkeit. Der Auftraggeber hat bestätigt, dass Leichen ruhig liegen und anvisierbar sind,
