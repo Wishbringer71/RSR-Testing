@@ -770,7 +770,7 @@ public struct ActionTargetInfo(IBaseAction action)
 			&& type == TargetType.Heal)
 		{
 			var inRadius = GetCanAffects(skipStatusProvideCheck, skipTargetStatusNeedCheck, type, targetOverride);
-			var required = skipAoeCheck ? 1 : Math.Max(1, action.Config.AoeCount);
+			var required = skipAoeCheck ? 1 : Math.Max(1, (int)action.Config.AoeCount);
 			var cleaveBlocked = !skipAoeCheck && action.Config.AoeCount > 1
 				&& (Service.Config.AoEType == AoEType.Cleave || (DataCenter.IsInM9S && Service.Config.M9SCleaveOnly));
 			if (cleaveBlocked || inRadius.Count < required)
