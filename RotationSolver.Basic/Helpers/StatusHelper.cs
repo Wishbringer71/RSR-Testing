@@ -347,7 +347,11 @@ public static class StatusHelper
 		StatusID.Asylum_1911,
 		StatusID.DivineAura,
 		StatusID.MedicaIii_3986,
-		StatusID.MedicaIii
+		StatusID.MedicaIii,
+
+		// Summoner's Phoenix phase: Summon Phoenix grants the party regen Everlasting Flight. Without
+		// it here the area thresholds healed under a running regen as if nothing were ticking.
+		StatusID.EverlastingFlight,
 	];
 
 	/// <summary>
@@ -360,6 +364,9 @@ public static class StatusHelper
 		StatusID.Regen_897,
 		StatusID.Regen_1330,
 		StatusID.TheEwer_3891,
+
+		// Rekindle's follow-up regen, triggered below 75% or on expiry (effect text of Rekindle).
+		StatusID.UndyingFlame,
 	];
 
 	/// <summary>

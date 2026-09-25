@@ -3390,6 +3390,23 @@ Die Kandidatenfassung war nur bei der ausgeschriebenen Falsifikation besser. Die
 
 **Prüfgrad:** zwei Läufe und eine blinde Bewertung mit Prüfung am Code; statisch.
 
+### A137 · Drei Nebenerträge aus A136 behoben: Anker der Flächenheilungen, Rekindle-Phase, Phoenix-Regenerationen (25.09.2026)
+
+**Auftrag:** die offenen TODOs im Loop beurteilen, in die Konzepte einarbeiten, umsetzen, auditieren. Diese drei zuerst, weil sie am Code belegt sind und keine Entscheidung von ihm brauchen.
+
+**Flächenheilung um den Wirkenden** (`ActionTargetInfo.FindTarget`, Konzept 07). Eigener Zweig für freundliche Aktionen mit Reichweite 0, Wirkradius und Zielart Heilung. Der Anker ist der Wirkende, der Bedarf wird an den Verletzten im Radius gemessen (`AoeCount`, eines unter `AutoHealRatio`, vorausberechnet).
+- Falsifikation, kein Defekt: Liefert das Spiel eine andere Reichweite als 0, greift der Zweig nicht, und das Verhalten bleibt das alte. Die Behebung ist also an ihre eigene Prämisse gebunden.
+- Falsifikation, Option falsch: Die lokale Variante (`TargetType.Self` nur im Beschwörer) ist verworfen, weil sie auch zündet, wenn die Verletzten außerhalb des Radius stehen, und weil sie die Klasse nicht behebt.
+- Falsifikation, ausgeliefert und nichts ändert sich: wenn die Flagge nicht steht oder „Cleave" sperrt. Beides zeigt jetzt die Diagnosezeile „Area heal around you".
+- Beim Abgleich mit dem alten Pfad gefunden: „Cleave" sperrte Gruppenheilungen mit `AoeCount` über 1. Die Sperre ist übernommen, die Frage nach ihrer Absicht steht als eigener TODO-Eintrag.
+- Die Statusprüfung (`StatusProvide`) liegt weiter je Getroffenem in `GetCanAffects`. Weggefallen sind nur die Prüfungen am Anker selbst; für keine freundliche Heilung mit Reichweite 0 ist ein `CanTarget`-Prädikat gesetzt (erhoben).
+
+**Rekindle-Rückfall** (`SMN_Reborn.GeneralAbility`, Konzept 07). `InPhoenix && SummonTimeEndAfterGCD(3)` statt Firebird Trance (3229). Richtig in beiden Fällen, ob das Spiel den Status im PvE setzt oder nicht. Die 3 GCDs sind als offener fester Wert erfasst.
+
+**HoT-Listen** (`StatusHelper`). Everlasting Flight in `AreaHots`, Undying Flame in `SingleHots`. Die Flächen- und Einzelschwellen senken sich jetzt unter einer laufenden Phoenix-Regeneration wie unter jeder anderen.
+
+**Prüfgrad:** statisch; Prüfskripte grün. Kein Compile in dieser Umgebung (kein `dotnet`), die CI baut. Im Kampf ablesbar: die Diagnosezeile für Flächenheilungen und in der Beschwörer-Anzeige die gemeldete Reichweite von Lux Solaris.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

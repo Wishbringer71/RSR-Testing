@@ -77,6 +77,7 @@ public sealed class SMN_Reborn : SummonerRotation
 	{
 		ImGui.Text($"EnergyDrainPvE: Is Cooling Down: {EnergyDrainPvE.Cooldown.IsCoolingDown}");
 		ImGui.Text($"Next big summon opens the burst: {NextBigSummonIsBurst}");
+		ImGui.Text($"Lux Solaris: range reported {LuxSolarisPvE.TargetInfo.Range:F1} y, radius {LuxSolarisPvE.TargetInfo.EffectRange:F1} y (range 0 = heal anchored on you, need read in the radius)");
 		ImGui.Text($"Another Summoner in party: {AnotherSummonerInParty}");
 		var pair = SummonSolarBahamutPvE.EnoughLevel ? " (Bahamut and Phoenix booked as one)" : string.Empty;
 		ImGui.Text($"Searing Light phases taken by others: Solar {PhaseBookText(SearingPhase.Solar)}"
@@ -300,7 +301,13 @@ public sealed class SMN_Reborn : SummonerRotation
 		// longer and stood FIRST, so from two GCDs onwards the unaimed call always answered first.
 		// The intent was plainly the other way round, an aimed cast with a last-resort behind it, and
 		// that is what TryRekindle does: lowest share, else the caster himself.
-		if (StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.FirebirdTrance))
+		//
+		// The phase is read from the job gauge, not from Firebird Trance (3229). That status makes
+		// Fountain of Fire and Brand of Purgatory castable and is read nowhere else in the tree but
+		// the PvP actions; a status that is missing counts as "ending now", so wherever PvE does not
+		// set it this branch fired in the first free weave slot of the Phoenix phase instead of near
+		// its end. InPhoenix and the summon timer answer the same question in either case.
+		if (InPhoenix && SummonTimeEndAfterGCD(3))
 		{
 			if (TryRekindle(out act))
 			{

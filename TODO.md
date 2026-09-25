@@ -37,21 +37,9 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 - Weißmagier (Upstream-Code): Die ganze Flächenabwehr entfällt, solange Temperance mehr als 100 s oder Liturgy of the Bell mehr als 160 s Restabklingzeit hat.
 - Dunkelritter: `InTwoMIsBurst` sperrt im Zwei-Minuten-Burst die ganze Flächenabwehr, auch vor einem großen Treffer.
 
-### Flächenheilungen ohne Reichweite hängen an der Gesundheit des Heilenden · N, R, U
+### Die Einstellung „Cleave" sperrt auch Gruppenheilungen · N, U
 
-**Im Kampf:** Eine Flächenheilung um den eigenen Charakter (Reichweite 0: Lux Solaris, Medica, Helios, Succor und rund 30 weitere) geht über den Heilpfad nur raus, wenn ein Mitglied innerhalb von 0 Yalm unter der Heilschwelle der Aktion liegt (`AutoHealRatio`, Vorgabe 0,8). Das ist meist der Heilende selbst. Steht er voll und hat Abstand zur Gruppe, bleibt die Heilung aus, obwohl die Flagge steht.
-
-**Mechanismus:** `ActionTargetInfo.GetCanTargets` wirft volle Ziele hinaus; `FindTarget` sucht in `Range` = 0; `FindHealTarget` verlangt das Ziel unter `AutoHealRatio`. Ein eigener Zweig für Selbst-Flächen existiert nur für feindliche Aktionen (`FindTarget`, `!action.Setting.IsFriendly`).
-
-**Beleg:** statisch, von zwei Bearbeitern und einer blinden Prüfung unabhängig am Code gefunden (A136); die Struktur ist in HEAD unverändert. Unbelegt ist die Reichweite, die das Spiel für diese Aktionen meldet: Liefert es nicht 0, trifft der Befund nicht zu. Die Behebung (Anker ist der Wirkende, Bedarf an den Getroffenen im Radius gemessen) trifft alle Heiler und die Paket-Autoren; vorher im Kampf zeigen, welche Reichweite gemeldet wird und ob die Heilung mit „kein Ziel" abgelehnt wird.
-
-### Rekindle: der Rückfall liest einen Status, den das Spiel im PvE vermutlich nicht setzt · N
-
-`SMN_Reborn.GeneralAbility` fragt `StatusID.FirebirdTrance` (3229) ab. Laut Wirktext macht dieser Status Fountain of Fire und Brand of Purgatory wirkbar; im Baum lesen ihn sonst nur PvP-Stellen (`ModifyBrandOfPurgatoryPvP`). Fehlt ein Status, liefert `PlayerWillStatusEndGCD` wahr. **Im Kampf** (wenn der Status im PvE fehlt): Rekindle geht im ersten freien Einschiebeplatz der Phoenix-Phase raus statt kurz vor ihrem Ende. **Konzept:** die Phase über `InPhoenix` und die Beschwörungszeit der Jobleiste messen; ob 3229 im PvE je auftritt, zeigt eine Diagnosezeile. Dieselbe Abfrage steht in `ChurinSMN` (fremd, nur erfasst).
-
-### Die Regenerationen der Phoenix-Phase fehlen in den HoT-Listen · N
-
-Everlasting Flight (1868) und Undying Flame (2705) stehen weder in `StatusHelper.AreaHots` noch in `SingleHots`. Die Heilschwellen rechnen eine laufende Regeneration aus der Phoenix-Phase deshalb nicht ein und heilen unter ihr, als liefe nichts.
+`GetMostCanTargetObjects` gibt bei `AoEType.Cleave` (und `M9SCleaveOnly` in M9S) nichts zurück, sobald `AoeCount` über 1 liegt — ohne Ausnahme für freundliche Aktionen, während die Einstellung „Off" freundliche Aktionen ausdrücklich ausnimmt (seit Upstream `e1145f452`). **Im Kampf:** Wer „Cleave" wählt, um Gegnergruppen nicht mit Flächenangriffen zu ziehen, bekommt auch Medica, Helios, Succor und Lux Solaris mit Vorgabe-`AoeCount` 3 nie über den Heilpfad. Ob das gewollt ist, belegt weder Kommentar noch Commit-Nachricht. Der Zweig für Flächenheilungen um den Wirkenden (A137) übernimmt die Sperre unverändert, damit die Behebung dort nur den Anker ändert. **Vor einer Änderung:** Absicht von „Cleave" klären (Beschreibung „Only single-target AoE" spricht für Angriffe) und ob er die Einstellung nutzt.
 
 ### Zielbasierte Bewegungsaktionen über den Move-Pfad gelten immer als unsicher · N, U
 

@@ -749,6 +749,55 @@ public struct ActionTargetInfo(IBaseAction action)
 			return new TargetResult(Player.Object, [.. selfAffects], Player.Object.Position);
 		}
 
+		// The friendly counterpart: an area heal centred on the caster (Medica, Helios, Succor, Lux
+		// Solaris and the rest - Range 0, an effect radius, no ground target). The general path below
+		// looks for a heal *target* within Range, and with Range 0 that is the caster plus whoever's
+		// hitbox touches theirs; the candidate then has to be under the action's own heal ratio. So a
+		// healer standing full and a few yalms from the party never cast it, however hurt the party
+		// was - the need was measured on the anchor instead of on the people the heal lands on.
+		//
+		// Here the anchor is the caster, always, and the need is read where the heal lands: the hurt
+		// members inside the effect radius, at least AoeCount of them, and at least one of those under
+		// the heal ratio when the auto-heal check is on - the same two tests the general path applies,
+		// moved from the anchor to the affected. A member held for a death trigger is healed if he
+		// stands in the radius - an area heal cannot skip him - but he never counts as the reason.
+		//
+		// Only for the heal target type. A friendly Range-0 action asked for anything else keeps the
+		// general path, because only the heal question depends on who needs it. The Cleave block of
+		// GetMostCanTargetObjects is kept as it stands there: it holds friendly area actions too, and
+		// whether it should is a separate question from where the need is measured.
+		if (Range == 0 && EffectRange > 0 && !IsSingleTarget && !IsTargetArea && action.Setting.IsFriendly
+			&& type == TargetType.Heal)
+		{
+			var inRadius = GetCanAffects(skipStatusProvideCheck, skipTargetStatusNeedCheck, type, targetOverride);
+			var required = skipAoeCheck ? 1 : Math.Max(1, action.Config.AoeCount);
+			var cleaveBlocked = !skipAoeCheck && action.Config.AoeCount > 1
+				&& (Service.Config.AoEType == AoEType.Cleave || (DataCenter.IsInM9S && Service.Config.M9SCleaveOnly));
+			if (cleaveBlocked || inRadius.Count < required)
+			{
+				DataCenter.LastSelfCentredHeal = new(action.Name, inRadius.Count, required, false, cleaveBlocked, DateTime.Now);
+				return null;
+			}
+
+			var anyInNeed = false;
+			foreach (var member in inRadius)
+			{
+				if (member.IsHeldForDeathTrigger())
+				{
+					continue;
+				}
+
+				if (!IBaseAction.AutoHealCheck || member.GetForecastHealthRatio() < action.Config.AutoHealRatio)
+				{
+					anyInNeed = true;
+					break;
+				}
+			}
+
+			DataCenter.LastSelfCentredHeal = new(action.Name, inRadius.Count, required, anyInNeed, false, DateTime.Now);
+			return anyInNeed ? new TargetResult(Player.Object, [.. inRadius], Player.Object.Position) : null;
+		}
+
 		IEnumerable<IBattleChara> canTargets = GetCanTargets(skipStatusProvideCheck, skipTargetStatusNeedCheck, type, targetOverride);
 		var canAffects = GetCanAffects(skipStatusProvideCheck, skipTargetStatusNeedCheck, type, targetOverride);
 

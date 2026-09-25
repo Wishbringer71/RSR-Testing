@@ -67,6 +67,23 @@ internal class DiagnosticsWindow : Window
 		ImGui.TextColored(ImGuiColors.DalamudGrey, "Last hit: " + DataCenter.AreaMeasurementLastOutcome);
 		ImGui.Separator();
 
+		ImGui.TextColored(ImGuiColors.DalamudViolet, "Area heal around you");
+		if (DataCenter.LastSelfCentredHeal is { } heal)
+		{
+			var verdict = heal.CleaveBlocked
+				? "held by the Cleave setting"
+				: heal.HurtInRadius < heal.Required
+					? "too few hurt in the radius"
+					: heal.InNeed ? "someone in the radius is under its heal ratio - it may go" : "nobody in the radius under its heal ratio";
+			ImGui.Text($"{heal.Action}: {heal.HurtInRadius} hurt in the radius, {heal.Required} asked for - {verdict}"
+				+ $" ({(DateTime.Now - heal.At).TotalSeconds:F0} s ago)");
+		}
+		else
+		{
+			ImGui.TextColored(ImGuiColors.DalamudGrey, "No area heal around you has been weighed for healing yet.");
+		}
+		ImGui.Separator();
+
 		ImGui.TextColored(ImGuiColors.DalamudViolet, "HP potions");
 		var gate = !DataCenter.InCombat
 			? "out of combat - potions are not offered"

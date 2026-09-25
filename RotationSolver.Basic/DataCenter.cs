@@ -3267,6 +3267,18 @@ internal static class DataCenter
 	public static string AreaMeasurementLastOutcome { get; set; } = "no enemy action has hit the player yet";
 
 	/// <summary>
+	/// The last time an area heal centred on the caster was weighed on the heal path: which action,
+	/// how many hurt members stood in its radius against how many it asks for, whether one of them
+	/// was under its heal ratio, and whether the Cleave setting held it. Written by the targeting,
+	/// shown in the diagnostics window, so a group heal that stays out can be told apart from one
+	/// that was never asked.
+	/// </summary>
+	internal static SelfCentredHealWeighing? LastSelfCentredHeal { get; set; }
+
+	/// <summary>One weighing of an area heal centred on the caster.</summary>
+	internal readonly record struct SelfCentredHealWeighing(string Action, int HurtInRadius, int Required, bool InNeed, bool CleaveBlocked, DateTime At);
+
+	/// <summary>
 	/// The action id the currently recorded area share belongs to, or 0 when none is recorded.
 	/// </summary>
 	public static uint AnnouncedAreaAction =>

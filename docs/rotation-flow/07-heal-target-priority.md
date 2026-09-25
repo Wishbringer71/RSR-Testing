@@ -111,6 +111,43 @@ ohne; und ein Schadensausteiler mit kleinem Lebenspool wie einer mit großem.
 Eine dieser Rollenschwellen zu heben erzeugt deshalb keine zusätzliche Heilung und keine
 Überheilung — es verschiebt die Reihenfolge.
 
+### Flächenheilungen um den Wirkenden messen den Bedarf an den Getroffenen
+
+**Sachstand (A137):** Eine Flächenheilung, die um den Wirkenden herum wirkt — Reichweite 0, ein
+Wirkradius, kein Bodenziel: Medica, Helios, Succor, Lux Solaris und rund dreißig weitere —, hat den
+Wirkenden als Anker, und ihr Bedarf wird an den Mitgliedern **im Wirkradius** gemessen: mindestens
+`AoeCount` verletzte darin, und bei eingeschalteter Heilprüfung mindestens eines davon mit
+vorausberechneter Gesundheit unter der Heilschwelle der Aktion (`AutoHealRatio`). Ein Mitglied, das
+für einen Todesauslöser zurückgehalten wird, wird mitgeheilt, wenn es im Radius steht, zählt aber nie
+als Grund.
+
+**Im Kampf:** Der Heiler steht voll und einige Yalm neben der Gruppe, ein Cleave hat die Nahkämpfer
+getroffen, die Flächenheilflagge steht. Vorher fiel die Heilung nicht, weil der allgemeine Pfad ein
+Heil**ziel** in Reichweite 0 suchte — also den Heiler selbst und wer ihn berührt — und dieses Ziel unter
+der Heilschwelle verlangte. Jetzt fällt sie, sobald im Radius genug Verletzte stehen.
+
+**Grenzen und Bedingungen:**
+- Gilt nur, wenn das Spiel für die Aktion Reichweite 0 meldet (`ActionManager.GetActionRange`). Meldet es
+  etwas anderes, greift der Zweig nicht, und alles bleibt wie vorher. Die Beschwörer-Anzeige nennt die
+  gemeldete Reichweite von Lux Solaris.
+- Gilt nur für die Zielart Heilung. Andere freundliche Aktionen mit Reichweite 0 bleiben auf dem
+  allgemeinen Pfad.
+- Die Einstellung „Cleave" (`AoEType.Cleave`, ebenso `M9SCleaveOnly` in M9S) sperrt eine Flächenheilung
+  mit `AoeCount` über 1 weiterhin, wie sie es auf dem allgemeinen Pfad tut. Ob sie Heilungen überhaupt
+  sperren soll, ist eine eigene Frage (TODO „Cleave sperrt Gruppenheilungen").
+- **Im Kampf ablesbar:** Das Diagnosefenster zeigt unter „Area heal around you" die zuletzt gewogene
+  Heilung dieser Art — Verletzte im Radius gegen die verlangte Anzahl, ob jemand darunter unter der
+  Heilschwelle liegt, ob „Cleave" sie hält. Taucht eine Heilung dort nie auf, meldet das Spiel für sie
+  keine Reichweite 0, oder die Flagge stand nicht.
+- Ob überhaupt geheilt wird, entscheidet weiter die Flagge. Deren Streuungsbedingung hält die Flagge
+  unten, wenn ein einzelner Spieler getroffen ist — das ist eine eigene Frage (TODO „Flächenheilung nach
+  Pegel statt Rate").
+
+**Betroffene:** alle Heiler dieses Baums einschließlich der fremden Rotationen, die dieselben Aktionen
+über den Heilpfad rufen; die Autoren abgeleiteter Rotationen, weil `CanUse` dieser Aktionen jetzt
+anders antwortet; die Upstream-Pflege durch eine weitere Abweichung in `ActionTargetInfo.FindTarget`.
+Ein belegter Defekt, keine Verbesserung auf Verdacht — deshalb ohne eigene Option.
+
 ### Befund: ein Rollen-Kurzschluss überholt den, der tatsächlich stirbt
 
 **Die Rollenabkürzungen kehren sofort zurück, sobald ihre Schwelle erfüllt ist, und sehen dabei
@@ -317,9 +354,18 @@ Punktemaß steht im Wirktext der Aktion selbst: Rekindle bewaffnet seine Nachhei
 below 75%“ — **das Spiel misst diese Aktion in Anteilen.** Ein nach Punkten gewähltes Ziel kann
 damit eines sein, bei dem die Nachwirkung nie auslöst.
 
-**Der Rückfall auf den Wirkenden ist keine Förmlichkeit.** Rekindle besteht nur, solange Firebird
-Trance läuft; ein Aufruf ohne Ziel ist mit der Phase verloren, und 400 Potenz auf sich selbst sind
+**Der Rückfall auf den Wirkenden ist keine Förmlichkeit.** Rekindle besteht nur während der
+Phönix-Phase; ein Aufruf ohne Ziel ist mit der Phase verloren, und 400 Potenz auf sich selbst sind
 mehr als nichts.
+
+**Der Rückfall fällt kurz vor Phasenende, gemessen an der Jobleiste (A137).** Die Phase liest
+`SMN_Reborn` aus `InPhoenix` und der Beschwörungszeit (`SummonTimeEndAfterGCD`), nicht aus dem Status
+Firebird Trance (3229). Dieser Status macht nach seinem Wirktext Fountain of Fire und Brand of
+Purgatory wirkbar und wird im Baum sonst nur von PvP-Stellen gelesen; fehlt ein Status, gilt er als
+„endet jetzt", und der Rückfall fiel dann im ersten freien Einschiebeplatz der Phase statt an ihrem
+Ende — Rekindle war ausgegeben, bevor jemand es brauchte. Die Jobleiste beantwortet die Frage in beiden
+Fällen richtig, ob der Status im PvE gesetzt wird oder nicht. Der Vorlauf von drei GCDs ist ein
+fester Wert ohne eigenen Loop (`fixed_values.json`, offen).
 
 **Geprüft wird das jetzt maschinell, nicht erinnert:**
 `.github/scripts/audit/check_heal_target_measure.py` erhebt aus `ActionId.resx` jede Aktion, deren
