@@ -79,6 +79,9 @@ public sealed class SMN_Reborn : SummonerRotation
 		ImGui.Text($"Next big summon opens the burst: {NextBigSummonIsBurst}");
 		ImGui.Text($"Lux Solaris: range reported {LuxSolarisPvE.TargetInfo.Range:F1} y, radius {LuxSolarisPvE.TargetInfo.EffectRange:F1} y (range 0 = heal anchored on you, need read in the radius)");
 		ImGui.Text($"Another Summoner in party: {AnotherSummonerInParty}");
+		ImGui.Text(HostileTarget == null
+			? "Fallback block: no hostile target - Titan only"
+			: $"Fallback block: {HostileTarget.DistanceToPlayer():F1} y to the target - Ifrit only at 0 y, else Titan");
 		var pair = SummonSolarBahamutPvE.EnoughLevel ? " (Bahamut and Phoenix booked as one)" : string.Empty;
 		ImGui.Text($"Searing Light phases taken by others: Solar {PhaseBookText(SearingPhase.Solar)}"
 			+ $" / Bahamut {PhaseBookText(SearingPhase.Bahamut)} / Phoenix {PhaseBookText(SearingPhase.Phoenix)}{pair}"
@@ -395,12 +398,13 @@ public sealed class SMN_Reborn : SummonerRotation
 		//
 		// So Ifrit takes precedence only where its premise already holds - the player stands at the
 		// target anyway, so there is nothing to run into and the full block is free. Standing at the
-		// target means within reach of Crimson Strike, the melee follow-up, measured edge to edge
-		// against the current hostile target: action range and hitboxes both come from the game. It
-		// used to read a player setting (CrimsonCycloneDistance, 3 yalms by default) against whatever
-		// Crimson Cyclone had last targeted, which can be a stale object once the favour is spent.
-		// That setting stays the player's limit for the gap closer itself. Otherwise Titan, the only
-		// block whose value depends on neither position nor an open cast.
+		// target means 0 yalms, hitbox to hitbox, the distance the game shows - the owner's own limit:
+		// "wenn der beschwörer bereits beim boss steht (0 yalm), dann wäre der gapcloser nur noch
+		// damage und kein risiko". Crimson Strike's reach (3 yalms) was used here before, and Crimson
+		// Cyclone pulls the player across exactly that distance. The movement safety check reads the
+		// same measure (ActionTargetInfo.StandsAtTarget), so both places answer "does the gap closer
+		// move him" alike. CrimsonCycloneDistance stays the player's limit for the gap closer itself.
+		// Otherwise Titan, the only block whose value depends on neither position nor an open cast.
 		//
 		// Waiting for Titan rather than firing into a distant Ifrit costs nothing: the charge stays
 		// up and its recast only starts when it is spent.
@@ -410,8 +414,7 @@ public sealed class SMN_Reborn : SummonerRotation
 		// wastes the rest of somebody else's buff outside one - the reason concept 12 gives for V7's
 		// second condition. Measured with the plugin's own book: without it the fallback gives away
 		// 1.4 points of damage under a buff at three Summoners (searing_light_coverage.py, "guard").
-		var standingAtTheTarget = HostileTarget != null
-			&& HostileTarget.DistanceToPlayer() <= CrimsonStrikePvE.TargetInfo.Range;
+		var standingAtTheTarget = HostileTarget != null && ActionTargetInfo.StandsAtTarget(HostileTarget);
 		var fallbackBlockIsWorthIt = TitanActive || (IfritActive && standingAtTheTarget);
 
 		// The phase is entered with the buff already up, not a weave slot later. `burstInSolar` only

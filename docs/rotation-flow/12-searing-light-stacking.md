@@ -164,7 +164,7 @@ Spielbeobachtung.** Der Wirktext der Beschwörung gewährt selbst Refulgent Lux 
 Grants Refulgent Lux Duration: 30s“). In dem Augenblick, in dem die Beschwörung aufgeht, wird Lux
 Solaris also wirkbar — und `HealAreaAbility` fragt die Kette **vor** `AttackAbility`
 (`CustomRotation_Ability.cs:169` und `:188` gegen den Angriffszweig weiter unten), kann den
-Einschiebeplatz hinter der Beschwörung also nehmen, sobald die Flächenheilungsflagge steht und die Zielwahl der Heilung ein Ziel findet. Diese Zielwahl verlangt nach statischer Prüfung ein Gruppenmitglied innerhalb von 0 Yalm, meist den Beschwörer selbst, unter der Heilschwelle der Aktion (A136; im Spiel nicht beobachtet). **Die
+Einschiebeplatz hinter der Beschwörung also nehmen, sobald die Flächenheilungsflagge steht und im Wirkradius um den Beschwörer genug Verletzte stehen, einer davon unter der Heilschwelle der Aktion (Konzept 07, „Flächenheilungen um den Wirkenden“, A137). **Die
 Beschwörung erzeugt ihren eigenen Konkurrenten um den Platz dahinter; der Platz davor hat diesen
 Konkurrenten nicht.** Das ist ein zweites, vom Zeitpunktargument unabhängiges Argument für die
 Zündung vor der Beschwörung — und ein Schluss aus Wirktext und Zweigreihenfolge, keine
@@ -763,7 +763,9 @@ sicher, erlaubt Bewegung und kostet 60 Potenz — drei Potenz Schaden je Zyklus.
 Sind alle drei Hauptphasen — Solar, Bahamut, Phoenix — dauerhaft von anderen Beschwörern belegt, wird in den
 Primalblock ausgewichen: **Titan**, oder **Ifrit genau dann, wenn der Spieler ohnehin am Ziel steht**.
 Dann entfällt der Anlauf, seine Voraussetzung ist erfüllt, und die höhere Zahl gilt ohne Positionsrisiko.
-**Am Ziel steht, wer 0 Yalm Abstand hat** — seine Präzisierung: „wenn der beschwörer bereits beim boss steht (0 yalm), dann wäre der gapcloser nur noch damage und kein risiko." **Der Code misst das derzeit falsch (offener Defekt, TODO „Gapcloser: ‚steht am Ziel‘ hat im Zweig zwei Bedeutungen").** Er wählt Ifrit schon innerhalb der Reichweite von Crimson Strike, also bis drei Yalm, und Crimson Cyclone zieht den Spieler diese Strecke heran (C91). `CrimsonCycloneDistance` bleibt die eigene Grenze des Spielers für den Anlauf selbst.
+**Am Ziel steht, wer 0 Yalm Abstand hat** — seine Präzisierung: „wenn der beschwörer bereits beim boss steht (0 yalm), dann wäre der gapcloser nur noch damage und kein risiko." Gemessen wird von Trefferfläche zu Trefferfläche, also der Abstand, den das Spiel anzeigt (`ActionTargetInfo.StandsAtTarget`, A138). Dasselbe Maß liest die Sicherheitsprüfung der Gapcloser: Bei 0 Yalm verweigert sie Crimson Cyclone nicht, auch wenn am Boss eine Gefahrenzone liegt, in der er ohnehin steht. Bis A138 wählte der Ausweichblock Ifrit schon in der Reichweite von Crimson Strike, also bis drei Yalm, und Crimson Cyclone zog den Spieler diese Strecke heran (C91); die Sicherheitsprüfung nahm nur den Fall aus, dass sein Mittelpunkt im Zielring stand (C90). `CrimsonCycloneDistance` bleibt die eigene Grenze des Spielers für den Anlauf selbst.
+
+**Im Kampf ablesbar:** Die Beschwörer-Anzeige nennt den Abstand zum Ziel und ob Ifrit als Ausweichblock gerade zulässig ist; das Diagnosefenster zeigt unter „Movement safety" die letzte verweigerte Bewegungsaktion mit Grund. Wo das Spiel den Sprung beendet (Ringrand oder Berührung), ist unbelegt; bei 0 Yalm bleibt in beiden Fällen höchstens die eigene Trefferfläche, und die fällt unter seine Grenze.
 
 **Zwei Einstellungen stützen diese Wahl, beide am Code belegt.** `PreferTitanWhileMoving`
 zieht in `SummonPrimals` Titan bei Bewegung vor, unabhängig von der eingestellten Reihenfolge;

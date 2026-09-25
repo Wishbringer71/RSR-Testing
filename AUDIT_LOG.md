@@ -3407,6 +3407,21 @@ Die Kandidatenfassung war nur bei der ausgeschriebenen Falsifikation besser. Die
 
 **Prüfgrad:** statisch; Prüfskripte grün. Kein Compile in dieser Umgebung (kein `dotnet`), die CI baut. Im Kampf ablesbar: die Diagnosezeile für Flächenheilungen und in der Beschwörer-Anzeige die gemeldete Reichweite von Lux Solaris.
 
+### A138 · „Steht am Ziel" misst an beiden Stellen 0 Yalm von Trefferfläche zu Trefferfläche (25.09.2026)
+
+**Befund (C90, C91):** Die Sicherheitsprüfung der Gapcloser nahm nur den Mittelpunkt im Zielring aus. Der Ausweichblock des Beschwörers wählte Ifrit bis zur Reichweite von Crimson Strike, also bis drei Yalm. Seine Grenze ist 0 Yalm.
+
+**Umsetzung:** `ActionTargetInfo.StandsAtTarget` (`DistanceToPlayer() <= 0`, intern) lesen beide Stellen. Jede Verweigerung der Sicherheitsprüfung wird mit Grund festgehalten und im Diagnosefenster gezeigt; die Beschwörer-Anzeige nennt den Abstand zum Ziel. Der Kommentar nennt jetzt die tatsächliche Grenze des Anlaufs (Einstellungen des Jobs), nicht mehr `DistanceForMoving2`.
+
+**Falsifikation:**
+- Kein Defekt: Wo das Spiel den Sprung beendet, ist unbelegt. Bei 0 Yalm bleibt in beiden Fällen höchstens die eigene Trefferfläche als Weg, und die liegt innerhalb seiner Grenze. Der Befund hängt also nicht an dieser Frage.
+- Option falsch: Ein Grenzwert in Yalm als Einstellung wäre eine neue feste Zahl gegen seine ausdrückliche Grenze.
+- Ausgeliefert, nichts ändert sich: ohne BossMod-Modul mit Gefahrenzone, ohne zweiten Beschwörer oder mit ausgeschalteter Prüfung. Die Anzeigen machen alle drei Lagen sichtbar.
+
+**Betroffene:** jeder Job mit zielbasiertem Gapcloser, wenn `BmrSafetyCheckAuto` an ist; die Ausnahme wird dort breiter, nie enger.
+
+**Prüfgrad:** statisch; Prüfskripte grün; kein Compile in dieser Umgebung.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

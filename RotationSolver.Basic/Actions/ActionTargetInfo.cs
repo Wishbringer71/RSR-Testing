@@ -1078,54 +1078,68 @@ public struct ActionTargetInfo(IBaseAction action)
 			case SpecialActionType.FixedDistanceMoveForward:
 			case SpecialActionType.FixedDistanceMoveBackward:
 				// Fixed-distance moves: use IsFixedDashSafe
-				return DataCenter.IsFixedDashSafe(playerPos, destination);
+				return DataCenter.IsFixedDashSafe(playerPos, destination)
+					|| Refused("the landing point is in a danger zone");
 
 			case SpecialActionType.HostileMovingForward:
 			case SpecialActionType.FriendlyMovingForward:
 			case SpecialActionType.HostileFriendlyMovingForward:
 			case SpecialActionType.HostileMovingAttack:
 				// Target-based dash: use IsDashSafe with calculated destination (stopped at target hitbox)
-				if (target != null)
+				if (target == null)
 				{
-					// Calculate the line from player to target and stop at target hitbox
-					var toTarget = target.Position - playerPos;
-					var distance = toTarget.Length();
-					if (distance > target.HitboxRadius)
-					{
-						// Stop at target hitbox edge
-						var direction = toTarget / distance;
-						var finalDestination = target.Position - direction * target.HitboxRadius;
-						return DataCenter.IsDashSafe(playerPos, finalDestination);
-					}
+					return Refused("no target to measure the dash against");
+				}
 
-					// Already inside the hitbox: the dash ends at the hitbox edge, which is behind
-					// the player, so the character does not travel. Asking whether the line to the
-					// target's CENTRE is safe - which is what this used to do - measures a path that
-					// is never taken, and on a large boss that line runs several yalms through the
-					// boss's own footprint. An area under the boss therefore withheld the ability
-					// from a player already standing in it.
-					//
-					// Owner's report, Summoner: "wenn der beschwörer bereits beim boss steht
-					// (0 yalm), dann wäre der gapcloser nur noch damage und kein risiko". That is
-					// what this check exists to decide - whether the movement takes the player
-					// somewhere dangerous - and with no movement there is nothing to decide. Where
-					// the player is standing is a different question, and refusing the action does
-					// not answer it: he is already there.
-					//
-					// Only the no-movement case is exempt. As soon as any distance remains the
-					// branch above measures it, and the run-up stays gated by DistanceForMoving2
-					// (3 yalms by default) as before.
+				// Standing at the target, the dash does not move the player, and there is nothing
+				// for this check to decide. Owner's report, Summoner: "wenn der beschwörer bereits
+				// beim boss steht (0 yalm), dann wäre der gapcloser nur noch damage und kein risiko".
+				// Asking whether the line to the target is safe measured a path that is never taken,
+				// and an area under the boss withheld the ability from a player already standing in
+				// it. Where he stands is a different question, and refusing the action does not
+				// answer it: he is already there.
+				//
+				// 0 yalms means hitbox to hitbox, the distance the game shows (StandsAtTarget). This
+				// used to exempt only a player whose centre was inside the target's ring, and kept
+				// measuring a path shorter than his own hitbox when the rings merely touched. The
+				// Summoner's fallback block reads the same measure. As soon as any distance remains,
+				// the path to the hitbox edge is measured; how far a player may run up at all is the
+				// rotation's own setting (for the Summoner AddCrimsonCyclone and CrimsonCycloneDistance).
+				if (StandsAtTarget(target))
+				{
 					return true;
 				}
-				return false;
+
+				var toTarget = target.Position - playerPos;
+				var direction = toTarget / toTarget.Length();
+				var finalDestination = target.Position - direction * target.HitboxRadius;
+				return DataCenter.IsDashSafe(playerPos, finalDestination)
+					|| Refused($"the dash to {target.Name} crosses a danger zone ({target.DistanceToPlayer():F1} y)");
 
 			case SpecialActionType.ObjectBasedMovement:
 				// Object-based movement: use IsDashSafe from player to object
-				return DataCenter.IsDashSafe(playerPos, destination);
+				return DataCenter.IsDashSafe(playerPos, destination)
+					|| Refused("the way to the placed object crosses a danger zone");
 
 			default:
 				return true;
 		}
+	}
+
+	/// <summary>
+	/// Whether the player stands at <paramref name="target"/>: 0 yalms hitbox to hitbox, the distance
+	/// the game shows. A gap closer onto such a target does not move the player.
+	/// </summary>
+	internal static bool StandsAtTarget(IBattleChara target) => target.DistanceToPlayer() <= 0;
+
+	/// <summary>
+	/// Records why the movement safety check withheld this action, for the diagnostics window, and
+	/// answers <c>false</c>.
+	/// </summary>
+	private readonly bool Refused(string why)
+	{
+		DataCenter.LastMoveSafetyRefusal = new(action.Name, why, DateTime.Now);
+		return false;
 	}
 
 	/// <summary>

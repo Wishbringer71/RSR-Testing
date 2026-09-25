@@ -16,11 +16,11 @@ On Summoner that costs two GCDs of the rotation rather than one: Crimson Strike 
 Crimson Cyclone grants, so when the dash is refused the follow-up never becomes available either,
 and every Ifrit phase falls back to filler.
 
-Only the player's centre inside the target's hitbox is covered. Standing at the edge of the target
-ring with 0 yalms between the hitboxes still goes through the old check; that case is open. The
-run-up itself is unchanged and is gated by the job's own settings - on Summoner `Use Crimson
-Cyclone at any range…` (on by default) and `Max distance you can be from the target for Crimson
-Cyclone use`.
+"Standing at the target" means 0 yalms between the hitboxes, the distance the game shows, not only
+your centre inside the target ring. The run-up itself is unchanged and is gated by the job's own
+settings - on Summoner `Use Crimson Cyclone at any range…` (on by default) and `Max distance you
+can be from the target for Crimson Cyclone use`. The Diagnostics window shows the last movement
+action the check withheld, and why.
 
 ## HP potions answer to their own settings, not to the heal flag
 
@@ -99,13 +99,29 @@ longer goes ahead of Bahamut or Phoenix, and those summons no longer wait for it
 ## Summoner: several Summoners — how the fallback into a primal block decides
 
 With every burst phase taken by other Summoners, your charge falls back into the Titan block — or
-the Ifrit block when you stand within Crimson Strike's reach of your current target. That reach is
-up to 3 yalms, and Crimson Cyclone dashes you across it; tying Ifrit to 0 yalms is open. Fixes to
-how the rotation decides that: Bahamut and Phoenix now count as one pair at level 100 (a
-Summoner seen in one returns in the other), in level-synced duties it no longer asks for a Solar
-phase that does not exist there, it only falls back once no Searing Light is running at all, and
-"standing at the target" is now measured to your current target with the game's own melee reach
-instead of a setting and whatever target Crimson Cyclone had last.
+the Ifrit block when you stand at your current target, 0 yalms hitbox to hitbox, so Crimson
+Cyclone does not move you. Fixes to how the rotation decides that: Bahamut and Phoenix now count
+as one pair at level 100 (a Summoner seen in one returns in the other), in level-synced duties it
+no longer asks for a Solar phase that does not exist there, it only falls back once no Searing
+Light is running at all, and "standing at the target" is measured to your current target, the
+same way the movement check measures it, instead of a setting and whatever target Crimson Cyclone
+had last. The rotation status shows your distance and which block is allowed.
+
+## Area heals centred on you read the need where they land
+
+Medica, Helios, Succor, Lux Solaris and the other area heals around the caster only went out on
+the heal path when someone within 0 yalms - usually the caster - was under the action's heal
+threshold. A healer standing full a few yalms from a hurt party never cast them. The need is now
+read on the hurt party members inside the heal's radius. `Cleave` in the AoE setting still holds
+these heals back when they ask for more than one target, as before. The Diagnostics window shows
+the last such heal that was weighed.
+
+## Summoner: Rekindle's fallback waits for the end of the Phoenix phase
+
+The last-resort Rekindle read Firebird Trance, a status only PvP code reads; with the status
+missing it fired in the first weave slot of the phase instead of near its end. It now reads the
+phase from the job gauge. Everlasting Flight and Undying Flame now count as running HoTs, so the
+heal thresholds lower under them as under any other regen.
 
 ## New: Diagnostics window
 

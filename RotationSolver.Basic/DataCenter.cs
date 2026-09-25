@@ -3279,6 +3279,16 @@ internal static class DataCenter
 	internal readonly record struct SelfCentredHealWeighing(string Action, int HurtInRadius, int Required, bool InNeed, bool CleaveBlocked, DateTime At);
 
 	/// <summary>
+	/// The last time the movement safety check withheld an action that moves the player, and why.
+	/// Without it a gap closer that stays out cannot be told apart in the fight from one that was
+	/// never asked for.
+	/// </summary>
+	internal static MoveSafetyRefusal? LastMoveSafetyRefusal { get; set; }
+
+	/// <summary>One refusal of the movement safety check.</summary>
+	internal readonly record struct MoveSafetyRefusal(string Action, string Why, DateTime At);
+
+	/// <summary>
 	/// The action id the currently recorded area share belongs to, or 0 when none is recorded.
 	/// </summary>
 	public static uint AnnouncedAreaAction =>

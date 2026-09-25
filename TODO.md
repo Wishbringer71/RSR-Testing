@@ -12,16 +12,6 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 **Kommentar am Einhängepunkt:** nennt `OnlyHealAsNonHealIfNoHealers` als Regelfall (C88); bei der nächsten Änderung dort richtigstellen.
 
-### Gapcloser: „steht am Ziel" hat im Zweig zwei Bedeutungen, und keine ist seine · N
-
-**Im Kampf:** Seine Grenze für Crimson Cyclone ist 0 Yalm — dann bewegt die Aktion ihn nicht, und sie ist nur Schaden. Der Zweig misst das an zwei Stellen verschieden:
-- Die Sicherheitsprüfung des Gapclosers (`ActionTargetInfo.CheckMovementSafety`) nimmt nur den Mittelpunkt **im** Zielring aus. Steht er am Ringrand mit 0 Yalm Abstand, prüft sie weiter einen Weg, der kürzer ist als seine eigene Trefferfläche, und kann die Aktion bei einer Gefahrenzone am Boss verweigern (C90).
-- Der Ausweichblock (`SMN_Reborn.AttackAbility`, `standingAtTheTarget`) wählt Ifrit schon bis drei Yalm Abstand; Crimson Cyclone zieht ihn diese drei Yalm heran (C91).
-
-**Konzept (vor Code):** Eine Frage, ein Maß. „Die Aktion bewegt ihn nicht" heißt: Abstand von Trefferfläche zu Trefferfläche ist 0 (`DistanceToPlayer`), das Ziel liegt also innerhalb seiner eigenen Trefferfläche. Beide Stellen lesen dieselbe Prüfung. Zu belegen vor der Umsetzung: wo das Spiel den Sprung von Crimson Cyclone beendet (Ringrand oder Berührung der Trefferflächen) — davon hängt ab, ob bei 0 Yalm noch eine Bewegung von höchstens der eigenen Trefferfläche bleibt. Zu klären ist außerdem die Anzeige: Ob die Sicherheitsprüfung eine Aktion verweigert hat, ist im Kampf heute nicht sichtbar, und ohne das ist die Korrektur nicht prüfbar. Der Kommentar dort nennt zudem die falsche Grenze (`DistanceForMoving2`).
-
-**Wirkung, wenn umgesetzt:** Mit einem zweiten Beschwörer und belegten Phasen fällt der Ausweichblock nur noch auf Ifrit, wenn er wirklich am Boss steht, sonst auf Titan. Crimson Cyclone bei 0 Yalm wird nicht mehr von einer Gefahrenzone am Boss blockiert, in der er ohnehin steht.
-
 ### Der Generator übersieht Barrieren mit „nullifies damage totaling" · N
 
 `generate_defensive_values.py` erkennt Barrieren nur an „absorbs damage totaling X % of maximum HP". Manaward schreibt „nullifies damage totaling up to 30% of maximum HP" (`ActionId.resx`) und fehlt deshalb. `LargestStatedBarrierShare` steht auf 0,25 statt 0,30. **Im Kampf:** Der Weg „großer Flächencast auch bei unterbrechbarem Cast mindern" setzt seine Schwelle bei 25 % der Maximalgesundheit statt bei der tatsächlich größten Barriere. Er mindert also Treffer zwischen 25 und 30 %, die nach seiner eigenen Begründung nicht als groß gelten. Gefunden im Regeltest (A135). **Vor der Behebung ins Konzept:** Ist „größte Barriere irgendeines Jobs" das richtige Maß, wenn diese Barriere nur die Schwarzmagierin selbst schützt? Die Behebung des Musters ist mein Werkzeug; die Folge für die Schwelle ist Verhalten im Kampf.
@@ -43,7 +33,7 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 ### Zielbasierte Bewegungsaktionen über den Move-Pfad gelten immer als unsicher · N, U
 
-`FindTargetAreaMove` ruft `CheckMovementSafety(target.Position)` **ohne** das Ziel (`ActionTargetInfo.cs`), während der Hauptpfad es mitgibt. Im Zweig für `HostileMovingForward`, `FriendlyMovingForward`, `HostileFriendlyMovingForward` und `HostileMovingAttack` ist `target` dann `null`, und die Methode antwortet `false` — unsicher, ohne etwas gemessen zu haben. Die Aktion wird damit nie angeboten, solange `BmrSafetyCheckAuto` eingeschaltet ist.
+`FindTargetAreaMove` ruft `CheckMovementSafety(target.Position)` **ohne** das Ziel (`ActionTargetInfo.cs`), während der Hauptpfad es mitgibt. Im Zweig für `HostileMovingForward`, `FriendlyMovingForward`, `HostileFriendlyMovingForward` und `HostileMovingAttack` ist `target` dann `null`, und die Methode antwortet `false` — unsicher, ohne etwas gemessen zu haben. Die Aktion wird damit nie angeboten, solange `BmrSafetyCheckAuto` eingeschaltet ist. Seit A138 steht jede solche Verweigerung im Diagnosefenster („Movement safety", Grund „no target to measure the dash against"); taucht sie dort nie auf, ist der Pfad unerreicht.
 
 **Nicht behoben, weil der Betroffenenkreis noch nicht erhoben ist:** Es fehlt die Liste der Aktionen, die einen zielbasierten `SpecialType` **und** einen Flächen-/Bewegungs-Zieltyp führen, also tatsächlich über diesen Pfad laufen. Möglicherweise ist sie leer; dann ist der Zweig unerreichbar und die Behebung wäre eine Aussage über etwas, das nicht vorkommt. Crimson Cyclone läuft über den Hauptpfad und ist nicht betroffen.
 

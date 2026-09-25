@@ -84,6 +84,19 @@ internal class DiagnosticsWindow : Window
 		}
 		ImGui.Separator();
 
+		ImGui.TextColored(ImGuiColors.DalamudViolet, "Movement safety");
+		if (DataCenter.LastMoveSafetyRefusal is { } refusal)
+		{
+			ImGui.Text($"Last withheld: {refusal.Action} - {refusal.Why} ({(DateTime.Now - refusal.At).TotalSeconds:F0} s ago)");
+		}
+		else
+		{
+			ImGui.TextColored(ImGuiColors.DalamudGrey, Service.Config.BmrSafetyCheckAuto
+				? "Nothing withheld yet. A gap closer at 0 y to its target is never withheld."
+				: "The check is off: nothing is withheld.");
+		}
+		ImGui.Separator();
+
 		ImGui.TextColored(ImGuiColors.DalamudViolet, "HP potions");
 		var gate = !DataCenter.InCombat
 			? "out of combat - potions are not offered"
