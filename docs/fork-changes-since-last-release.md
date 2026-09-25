@@ -135,6 +135,13 @@ the AoE damage table's store state and last rated hit, the last area heal around
 weighed, the last movement action the safety check withheld, and for every enabled HP potion why
 it is or is not used.
 
+## Hits and heals above 65,535 points are read in full
+
+The effect handler read the low 16 bits of every damage and heal amount. A raidwide that hit a
+tank for more than 65,535 points was measured far too small and could be rated a small area cast,
+which is not mitigated. Amounts are now read in full; a reading stored too small corrects itself on
+the next hit, because the store only ever raises a value.
+
 ## The AoE list says why the last hit was not rated
 
 `Last hit:` names the reason the last enemy action that damaged you was or was not measured — the

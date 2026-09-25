@@ -3372,9 +3372,11 @@ internal static class DataCenter
 	/// </summary>
 	/// <remarks>
 	/// Not an invented number, and no longer a written-down one either: it is read from the effect
-	/// texts. The largest barrier in the tree that states its size as a share is The Blackest Night -
-	/// "absorbs damage totaling 25% of target's maximum HP" - and DefensiveValues.g.cs carries that
-	/// figure along with every other, generated from the same sheets and checked against them in CI.
+	/// texts. The largest barrier in the tree that states its size as a share and can be put on
+	/// another party member is The Blackest Night - "absorbs damage totaling 25% of target's maximum
+	/// HP" - and DefensiveValues.g.cs carries that figure along with every other, generated from the
+	/// same sheets and checked against them in CI. Manaward states 30%, but only its caster carries
+	/// it: it says nothing about what a shield on the member being hit would absorb.
 	///
 	/// It used to be a literal 0.25f with the source named in prose. That is the ageing form this
 	/// file has been caught by twice already: an earlier version of this remark said "five barriers"

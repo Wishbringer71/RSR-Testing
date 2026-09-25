@@ -3436,6 +3436,22 @@ Die Kandidatenfassung war nur bei der ausgeschriebenen Falsifikation besser. Die
 
 **Prüfgrad:** statisch; Spieldaten aus der Community-Tabelle; Prüfskripte grün; kein Compile in dieser Umgebung.
 
+### A140 · Heil- und Minderungsgruppe: volle Trefferbeträge, Barrieren-Generator, Einordnung der übrigen Befunde (25.09.2026)
+
+**Trefferbeträge über 65.535 (Defekt, behoben).** `EffectEntry.value` ist in ECommons 3.2.1.20 ein 16-Bit-Wert; der volle Betrag ist `Damage` = `value` + 65.536 × `mult` (ECommons-Quelltext, `EffectEntry.cs`, unverändert seit 2024-01; die Version 3.2.1.20 ist vom 19.09.2026). Auch `ActionEffectSet.GetSpecificTypeEffect` liefert `value`. Betroffen waren der Schadensanteil am Spieler, die Messung des Flächenpotentials und die gemessenen Heilbeträge. **Im Kampf:** Ein Raidwide, der einen Tank mit mehr als 65.535 Punkten trifft, wurde um ein Vielfaches von 65.536 zu klein gemessen und konnte als kleine Fläche gelten, die nicht gemindert wird. Gespeicherte zu kleine Anteile korrigieren sich beim nächsten Treffer, weil die Ablage nur Erhöhungen schreibt. Unbelegt ist, ob das Spiel `mult` außerhalb großer Beträge anders belegt; ECommons verwendet es ohne Bedingung.
+
+**Barrieren-Generator.** Er erkennt jetzt auch „nullifies damage totaling (up to) X %". Manaward (30 %) und Arcane Crest (10 %) stehen damit in der Tabelle. Die Obergrenze „großer Schild" bleibt 0,25: Sie zählt nur Barrieren, die laut Wirktext auf ein anderes Gruppenmitglied gelegt werden können („party member"). Grund ist seine Vorgabe „oberhalb eines großen Schildes", bezogen auf den Getroffenen; ein Schild, den nur sein Wirkender trägt, beantwortet das für niemanden sonst. **Im Kampf ändert sich nichts.**
+
+**Vorausheilung gegen Minderung.** Kein Defekt: Die Heil-oGCD nimmt den ersten Platz, die Minderung den nächsten, und das ist die Reihenfolge seiner Vorgabe 2. Die Grenze (Ankündigung kürzer als ein GCD) steht in Konzept 08.
+
+**Einordnung der übrigen Befunde:**
+- Die Weißmagier-„Sperre" ist die Wirkdauer von Temperance und Liturgy (je 20 s) als Stapelschutz. Die Dunkelritter-Burstsperre ist eine Upstream-Konvention, bei der Revolverklinge ebenso vorhanden.
+- Stufe 3 der Kaskade ändert genau an diesen Sperren etwas und sonst nichts; beides zur Entscheidung vorgelegt.
+- Walking Dead: Die HoT-Freigabe ist nicht einfach die Behebung, als die der TODO-Eintrag sie empfahl. Bei 1 HP nähme Regen den GCD vor Cure II, und in zehn Sekunden liefert Regen weniger Heilmenge als Cure II, während Walking Dead gerade die Menge verlangt. Zur Entscheidung vorgelegt.
+- `GetCurrentMitigationPercent` (Confession fehlt, Werte ohne Wirktext) speist nur eine Debug-Anzeige und ist in den Eintrag „Minderungsbilanz" aufgenommen.
+
+**Prüfgrad:** statisch; ECommons-Quelltext; Prüfskripte grün; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

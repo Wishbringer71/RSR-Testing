@@ -4,20 +4,11 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 ## Defekte
 
-### Der Generator übersieht Barrieren mit „nullifies damage totaling" · N
+### Flächenabwehr im Zeitfenster eigener Wirkungen gesperrt: Weißmagier und Dunkelritter · N
 
-`generate_defensive_values.py` erkennt Barrieren nur an „absorbs damage totaling X % of maximum HP". Manaward schreibt „nullifies damage totaling up to 30% of maximum HP" (`ActionId.resx`) und fehlt deshalb. `LargestStatedBarrierShare` steht auf 0,25 statt 0,30. **Im Kampf:** Der Weg „großer Flächencast auch bei unterbrechbarem Cast mindern" setzt seine Schwelle bei 25 % der Maximalgesundheit statt bei der tatsächlich größten Barriere. Er mindert also Treffer zwischen 25 und 30 %, die nach seiner eigenen Begründung nicht als groß gelten. Gefunden im Regeltest (A135). **Vor der Behebung ins Konzept:** Ist „größte Barriere irgendeines Jobs" das richtige Maß, wenn diese Barriere nur die Schwarzmagierin selbst schützt? Die Behebung des Musters ist mein Werkzeug; die Folge für die Schwelle ist Verhalten im Kampf.
-
-### Vorausheilung über die Fähigkeiten-Flagge kann die Minderungs-oGCDs verdrängen · N
-
-`Heal ahead of an announced area cast` setzt auch `HealAreaAbility`. Der Dispatch fragt Heil-Fähigkeiten vor `DefenseArea` (`CustomRotation_Ability`). Vor einem angekündigten Raidwide kann damit eine Heil-oGCD den Platz belegen, den Temperance oder Plenary Indulgence gebraucht hätten, und der Treffer käme ohne Minderung. Schluss aus der Zweigreihenfolge, im Spiel nicht beobachtet; im Regeltest (A135) von einem Bearbeiter vermieden, weil er nur die Zauber-Flaggen setzte. Zu klären im Konzept 13 bzw. 08.
-
-### Befunde aus dem Regeltest, noch ungeprüft oder außerhalb des Auftrags · N, U
-
-- `Watcher` liest Treffer- und Heilbeträge aus `damageEffect.value`. Ist das ein 16-Bit-Wert mit Übertrag in einem weiteren Feld, werden Treffer ab 65.536 Punkten zu klein gemessen. Belegen am ECommons-Quelltext der eingebundenen Version.
-- `GetCurrentMitigationPercent` zählt Status mit festen Faktoren auf: Confession fehlt, und Troubadour, Tactician und Shield Samba stehen mit 10 %, obwohl ihr Wirktext keinen Wert nennt.
-- Weißmagier (Upstream-Code): Die ganze Flächenabwehr entfällt, solange Temperance mehr als 100 s oder Liturgy of the Bell mehr als 160 s Restabklingzeit hat.
-- Dunkelritter: `InTwoMIsBurst` sperrt im Zwei-Minuten-Burst die ganze Flächenabwehr, auch vor einem großen Treffer.
+Beide sind Upstream-Konventionen und ändern Verhalten im Kampf; zur Entscheidung vorgelegt (A140).
+- **Weißmagier** (`WHM_Reborn.DefenseAreaAbility`): Die ganze Flächenabwehr entfällt, solange Temperance weniger als 20 s oder Liturgy of the Bell weniger als 20 s zurückliegt (120 − 100 und 180 − 160 s, die Wirkdauer beider). Gemeint ist offenbar „nicht stapeln, solange die letzte noch wirkt". Im Kampf: Ein zweiter Raidwide in diesen 20 s bekommt weder Plenary Indulgence noch Divine Caress noch Liturgy.
+- **Dunkelritter** (`DRK_Reborn.DefenseAreaAbility`): `InTwoMIsBurst` sperrt in den ersten 15 s nach Living Shadow The Blackest Night auf andere, Oblation, Dark Missionary und Reprisal, auch vor einem großen Treffer. Dieselbe Bauform hat die Revolverklinge mit `!HasNoMercy`. Seine Vorgabe „Sicherheit der Gruppe geht vor Schaden" spricht dagegen.
 
 ### Die Einstellung „Cleave" sperrt auch Gruppenheilungen · N, U
 
@@ -371,6 +362,8 @@ Genau dort steht das Muster, sechsmal im Heilerbestand:
 ### Die Minderungsbilanz kennt zwei Schadensarten, die Datenquelle drei · N, R
 
 **Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
+Dazu, gefunden im Regeltest (A135): Confession fehlt in der Aufzählung, und Troubadour, Tactician und Shield Samba stehen mit 10 %, obwohl ihr Wirktext keinen Wert nennt.
+
 `GetCurrentMitigationPercent` gewichtet sechs Faktoren binär nach `incomingMagical ? 0.90f : 0.95f` — Addle, Feint, Fey Illumination, Magick Barrier und zwei weitere. Der Wert kommt aus `DataCenter.IsMagicalDamageIncoming()`, das `AttackType.RowId == 5` prüft. Das Blatt kennt aber mehr Werte als 5 und 7; und wenn gerade **niemand** wirkt, ist `CastActionId` überall 0 und die Antwort ebenfalls `false`. Beide Fälle rechnet die Bilanz als **physisch** — mit vertauschten Vorzeichen: Addle zählt dann −5 % statt −10 %, Feint −10 % statt −5 %.
 
 **Der Baustein, der das trennen würde, ist vorhanden und nicht verdrahtet.** `IsPhysicalDamageIncoming()` (`AttackType.RowId == 7`) hat im ganzen Baum **keinen Leser** — kein Kampfpfad, nicht einmal die Diagnoseanzeige, die ihr magisches Gegenstück zeigt. Das ist die Bauform, die `CLAUDE.md` als fehlende Verdrahtung statt tote Stelle führt (Beleg `ResetAvailabilityCheck`): Mit beiden Prädikaten ließe sich „unbekannt" von „physisch" unterscheiden, statt es stillschweigend zusammenzulegen.
@@ -746,7 +739,7 @@ Schritt 3 aus `docs/rotation-flow/08-mitigation-synergy.md`. Die Schritte 1 und 
 
 **Stufe 2 — vor dem angekündigten Treffer heilen: gebaut**, hinter `Heal ahead of an announced area cast`, **Vorgabewert aus**. Das ist der Teil, der wirkt, und er schließt zugleich die in Konzept 07 und 08 geführte Lücke „die Zielwahl/die Schwellen lesen die gemessene Treffergröße nicht".
 
-**Stufe 3 — bei Treffern über der Maximalgesundheit Barriere und Minderung zusätzlich: offen.** Heute gibt die Kette ohnehin alles aus, was bereit ist, sobald sie offen ist; ob eine ausdrückliche Regel dafür überhaupt etwas ändert, ist nicht erhoben. Das ist die nächste Frage an diesem Punkt.
+**Stufe 3 — bei Treffern über der Maximalgesundheit Barriere und Minderung zusätzlich: offen**, eigener Eintrag unten.
 
 **Erhalten aus dem Durchgang:** `RotationSolver.Basic/Data/DefensiveValues.g.cs` — je Abwehraktion der im eigenen Wirktext genannte Wert, erzeugt aus den Ressourcen und in der CI gegen sie geprüft. Sie hat Stufe 1 widerlegt, sie trägt die übrigen offenen Punkte der Familie, und sie hat die handgeführte 35-Namen-Liste in `mitscan.py` ersetzt, die unter anderem Seedsower und Plenary Indulgence nicht kannte.
 
@@ -756,7 +749,7 @@ Schritt 3 aus `docs/rotation-flow/08-mitigation-synergy.md`. Die Schritte 1 und 
 
 **Vorgabe des Auftraggebers, der noch offene Teil:** „wenn dann die hp unter dem schadenswert liegt, sollte zusätzlich geschildet werden. bzw. der schadensoutput reduziert." Übersteigt der Treffer auch die Maximalgesundheit des schwächsten Mitglieds, reicht Heilung nicht — dann sind Barriere **und** Minderung zusätzlich zu setzen, bis der Rest darunter liegt.
 
-**Was zu erheben ist, bevor gebaut wird:** ob das überhaupt etwas ändert. Die Kette gibt heute alles aus, was bereit ist, sobald sie offen ist; eine ausdrückliche Regel „beides zusammen" könnte folgenlos sein. Das ist dieselbe Frage, an der Stufe 1 gescheitert ist (A118), und sie ist vor der Umsetzung zu beantworten, nicht danach.
+**Erhoben (A140): Wo sie etwas ändert, sind es die Stapelsperren.** Ist die Kette offen, gibt sie in jedem Einschiebeplatz das nächste bereite Mittel aus, und die Statusprüfungen verhindern nur Doppelungen desselben Effekts. Eine allgemeine Regel „beides zusammen" wäre dort folgenlos — dieselbe Lage wie bei Stufe 1 (A118). Folgen hat sie nur an den Stellen, die das Stapeln ausdrücklich sperren: beim Weißmagier die 20 s nach Temperance oder Liturgy, beim Dunkelritter der Zwei-Minuten-Burst, bei der Revolverklinge No Mercy (Eintrag „Flächenabwehr im Zeitfenster eigener Wirkungen gesperrt"). Stufe 3 heißt damit konkret: diese Sperren fallen, wenn der angekündigte Treffer groß ist. Das ist seine Entscheidung und ihm mit Empfehlung vorgelegt.
 
 **Vorhanden dafür:** `DefensiveValues.g.cs` mit dem Wert je Abwehraktion, `HostileCastingAreaPotential` mit der Treffergröße, `GetCurrentMitigationPercent` mit der bereits laufenden Minderung.
 

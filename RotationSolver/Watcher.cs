@@ -26,6 +26,26 @@ public static class Watcher
 
 	public static string ShowStrSelf { get; private set; } = string.Empty;
 
+	// Amounts of damage and healing are read from EffectEntry.Damage, never from .value. The entry
+	// stores an amount as a 16-bit value plus a multiplier of 65,536 (ECommons 3.2.1.20,
+	// EffectEntry.Damage), so .value alone wraps every hit or heal above 65,535 points - a level 100
+	// raidwide on a tank, a Benediction on one. The shares measured from it came out too small, and
+	// a big area hit could be rated small. ActionEffectSet.GetSpecificTypeEffect returns .value too
+	// ("Is this value or Damage? IDK about it." in its source), so heals are collected here instead.
+	private static Dictionary<ulong, uint> AmountsByTarget(ActionEffectSet set, ActionEffectType type)
+	{
+		var result = new Dictionary<ulong, uint>();
+		foreach (var effect in set.TargetEffects)
+		{
+			if (effect.GetSpecificTypeEffect(type, out var entry))
+			{
+				result[effect.TargetID] = entry.Damage;
+			}
+		}
+
+		return result;
+	}
+
 	private static void ActionFromEnemy(ActionEffectSet set)
 	{
 		try
@@ -54,7 +74,7 @@ public static class Watcher
 					{
 						if (entry.type == ActionEffectType.Damage)
 						{
-							damageRatio += (float)entry.value / denom;
+							damageRatio += (float)entry.Damage / denom;
 						}
 					});
 				}
@@ -162,7 +182,7 @@ public static class Watcher
 							continue;
 						}
 
-						var landed = damageEffect.value > 0;
+						var landed = damageEffect.Damage > 0;
 						if (landed || (damageEffect.param0 & 6) == 6)
 						{
 							damageEffectCount++;
@@ -175,7 +195,7 @@ public static class Watcher
 						// raidwide does not fall out of the list just because the party was shielded.
 						if (landed && memberMaxHp > 0)
 						{
-							var share = (float)damageEffect.value / memberMaxHp;
+							var share = (float)damageEffect.Damage / memberMaxHp;
 							if (share > highestShare)
 							{
 								highestShare = share;
@@ -290,7 +310,7 @@ public static class Watcher
 				ShowStrSelf = set.ToString();
 			}
 
-			DataCenter.HealHP = set.GetSpecificTypeEffect(ActionEffectType.Heal);
+			DataCenter.HealHP = AmountsByTarget(set, ActionEffectType.Heal);
 
 			// Record what this heal was actually worth in health points. HealHP above is consumed and
 			// cleared as soon as the server's own health update catches up, so it answers "do not heal

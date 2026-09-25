@@ -46,8 +46,16 @@ ENEMY_MITIGATION = re.compile(r"(?:[Rr]educes|[Ll]owers)[^.]{0,60}?damage dealt[
 SPLIT_MITIGATION = re.compile(
     r"physical damage dealt by (\d{1,2})\s*%[^.]{0,20}?and magic(?:al)? damage dealt by (\d{1,2})\s*%"
 )
-# "absorbs damage totaling 20% of your maximum HP"
-BARRIER_SHARE = re.compile(r"absorb(?:s|ing) damage totaling (\d{1,3})\s*% of [^.]{0,30}?maximum HP")
+# "absorbs damage totaling 20% of your maximum HP", and the other phrasing the game uses for the
+# same thing, "nullifies damage totaling up to 30% of maximum HP" (Manaward). Matching only the
+# first left Manaward out of the table without a trace.
+BARRIER_SHARE = re.compile(
+    r"(?:absorb(?:s|ing)|nullif(?:ies|ying)) damage totaling (?:up to )?(\d{1,3})\s*% of [^.]{0,30}?maximum HP"
+)
+# Whether the barrier can be put on somebody else: "a barrier around self or target party member",
+# "around self and all nearby party members". Manaward's "Creates a barrier that nullifies..." and
+# Radiant Aegis's "a barrier around self" cannot.
+BARRIER_REACHES_PARTY = re.compile(r"barrier around[^.]{0,40}?party member")
 
 # "Duration: 30s" - how long the effect stands. A trait that changes the figure leaves the text
 # with an empty number ("Duration: s"), and then nothing is stated and nothing is carried.
@@ -124,6 +132,8 @@ def extract(text):
     barrier = BARRIER_SHARE.search(text)
     if barrier:
         values["Barrier"] = int(barrier.group(1)) / 100
+        if BARRIER_REACHES_PARTY.search(text):
+            values["BarrierReachesParty"] = True
 
     return values
 
@@ -197,7 +207,11 @@ def render(table, durations):
             for key in ("Self", "EnemyPhysical", "EnemyMagical", "Barrier")
         )
         lines.append(f"\t\t[{row}] = new({figures}), // {identifier}")
-        largest_barrier = max(largest_barrier, values.get("Barrier", 0.0))
+        # The owner's measure for a big area hit is "above a large shield": more than a large
+        # shield on the member being hit would absorb. A barrier only its caster can carry
+        # (Manaward, 30%) answers that for nobody else, so it does not set the measure.
+        if values.get("BarrierReachesParty"):
+            largest_barrier = max(largest_barrier, values["Barrier"])
 
     lines.extend(
         [
@@ -210,9 +224,10 @@ def render(table, durations):
             "\t}",
             "",
             "\t/// <summary>",
-            "\t/// The largest barrier share any action in the game states in its own effect text.",
-            "\t/// This is the measure of \"a big hit\": an area action that costs at least this much of",
-            "\t/// maximum health is more than the strongest single barrier can absorb.",
+            "\t/// The largest barrier share an action states in its own effect text, among barriers",
+            "\t/// that can be put on another party member. This is the measure of \"a big hit\": an",
+            "\t/// area action that costs at least this much of maximum health is more than a large",
+            "\t/// shield on the member hit can absorb. A barrier only its caster carries is left out.",
             "\t/// </summary>",
             "\t/// <remarks>",
             "\t/// Computed from the table rather than written down, so a patch that restates a barrier",
@@ -274,6 +289,16 @@ def self_test():
             "Reduces damage taken by 20%. Additional Effect: Creates a barrier around self that "
             "absorbs damage totaling 10% of target's maximum HP",
             {"Self": 0.2, "Barrier": 0.1},
+        ),
+        (
+            "Creates a barrier around self or target party member that absorbs damage totaling 25% "
+            "of target's maximum HP.",
+            {"Barrier": 0.25, "BarrierReachesParty": True},
+        ),
+        # The second phrasing, and a barrier only its caster carries.
+        (
+            "Creates a barrier that nullifies damage totaling up to 30% of maximum HP. Duration: 20s",
+            {"Barrier": 0.3},
         ),
         # A barrier stated as potency carries no share, and must not be mistaken for one.
         ("absorbs damage equivalent to a heal of 21,000 potency", {}),

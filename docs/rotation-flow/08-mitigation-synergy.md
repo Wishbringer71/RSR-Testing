@@ -157,6 +157,17 @@ still nie gefeuert haette.
 eines angekuendigten Treffers, ist Lux Solaris der Zweig, der sie bedient — und der Wurf faellt
 **vor** dem Einschlag statt danach.
 
+**Die Heil-oGCD nimmt den ersten Einschiebeplatz, die Minderung den naechsten (A140).** Die Regel setzt
+auch `HealAreaAbility`, und der Dispatch fragt Heil-Faehigkeiten vor `DefenseArea`. Das ist Vorgabe 2
+in der Reihenfolge, die sie verlangt: Die Vorausheilung faellt nur, wenn der Treffer jemanden unter
+die Schwelle druecken wuerde — genau der Fall, in dem zuerst zu heilen ist. Die Minderung eines
+grossen Treffers verliert dabei keinen Weg, nur einen Platz: Ein angekuendigter Cast laeuft in der
+Regel ueber mehrere GCDs, also ueber mehrere Einschiebeplaetze. **Verdraengt** wird sie nur, wenn die
+Ankuendigung kuerzer ist als ein GCD; fuer diese Lage steht die BossModReborn-Vorhersage bereit, die
+vor dem Cast mindert. Schluss aus Zweigreihenfolge und Castdauer, im Spiel nicht beobachtet. Ob ein
+Treffer je ohne Minderung einschlug, weil der letzte Platz an eine Heilung ging, zeigt keine Anzeige;
+das ist eine benannte Grenze dieses Abschnitts, kein geaendertes Verhalten.
+
 ## Die proaktive Schicht haengt fast vollstaendig an BossModReborn
 
 **Vorgabe des Auftraggebers:** „bossmod liefert nicht für jeden boss werte, sondern nur für

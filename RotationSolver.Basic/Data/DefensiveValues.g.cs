@@ -36,6 +36,7 @@ public static class DefensiveValues
 	{
 		[17] = new(0.3f, 0f, 0f, 0f), // SentinelPvE
 		[44] = new(0.3f, 0f, 0f, 0f), // VengeancePvE
+		[157] = new(0f, 0f, 0f, 0.3f), // ManawardPvE
 		[2887] = new(0f, 0.1f, 0.1f, 0f), // DismantlePvE
 		[3542] = new(0.15f, 0f, 0f, 0f), // SheltronPvE
 		[3551] = new(0.1f, 0f, 0f, 0f), // RawIntuitionPvE
@@ -69,6 +70,7 @@ public static class DefensiveValues
 		[23280] = new(0.2f, 0f, 0f, 0f), // DragonForcePvE
 		[23908] = new(0f, 0f, 0f, 0.1f), // LostStoneskinIiPvE
 		[23921] = new(0.05f, 0f, 0f, 0f), // LostBloodRagePvE
+		[24404] = new(0f, 0f, 0f, 0.1f), // ArcaneCrestPvE
 		[25746] = new(0.15f, 0f, 0f, 0f), // HolySheltronPvE
 		[25751] = new(0.1f, 0f, 0f, 0f), // BloodwhettingPvE
 		[25758] = new(0.15f, 0f, 0f, 0f), // HeartOfCorundumPvE
@@ -98,9 +100,10 @@ public static class DefensiveValues
 	}
 
 	/// <summary>
-	/// The largest barrier share any action in the game states in its own effect text.
-	/// This is the measure of "a big hit": an area action that costs at least this much of
-	/// maximum health is more than the strongest single barrier can absorb.
+	/// The largest barrier share an action states in its own effect text, among barriers
+	/// that can be put on another party member. This is the measure of "a big hit": an
+	/// area action that costs at least this much of maximum health is more than a large
+	/// shield on the member hit can absorb. A barrier only its caster carries is left out.
 	/// </summary>
 	/// <remarks>
 	/// Computed from the table rather than written down, so a patch that restates a barrier
@@ -118,6 +121,7 @@ public static class DefensiveValues
 	{
 		[17] = 15f, // SentinelPvE
 		[44] = 15f, // VengeancePvE
+		[157] = 20f, // ManawardPvE
 		[2887] = 10f, // DismantlePvE
 		[3551] = 6f, // RawIntuitionPvE
 		[3613] = 18f, // CollectiveUnconsciousPvE
@@ -141,6 +145,7 @@ public static class DefensiveValues
 		[23280] = 15f, // DragonForcePvE
 		[23908] = 30f, // LostStoneskinIiPvE
 		[23921] = 18f, // LostBloodRagePvE
+		[24404] = 5f, // ArcaneCrestPvE
 		[25746] = 8f, // HolySheltronPvE
 		[25751] = 8f, // BloodwhettingPvE
 		[25758] = 8f, // HeartOfCorundumPvE
