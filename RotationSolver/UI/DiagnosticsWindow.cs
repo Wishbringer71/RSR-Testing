@@ -84,6 +84,16 @@ internal class DiagnosticsWindow : Window
 		}
 		ImGui.Separator();
 
+		// The same verdict the AoE list shows, here because that list is closed during a fight.
+		if (Service.Config.HoldProactiveMitigationForSmallCast)
+		{
+			var (vindicated, wasted) = DataCenter.ProactiveHoldRecord;
+			ImGui.Text("Predicted mitigation held for a small cast, this fight: "
+				+ $"{DataCenter.ProactiveMitigationHeld.Count} action(s), {vindicated} followed by a big hit, {wasted} not"
+				+ (vindicated + wasted > 0 && !DataCenter.ProactiveHoldIsEarningItsKeep ? " - stood down, wrong more often than right" : string.Empty));
+			ImGui.Separator();
+		}
+
 		ImGui.TextColored(ImGuiColors.DalamudViolet, "Movement safety");
 		if (DataCenter.LastMoveSafetyRefusal is { } refusal)
 		{

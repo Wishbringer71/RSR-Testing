@@ -3485,7 +3485,7 @@ Die Kandidatenfassung war nur bei der ausgeschriebenen Falsifikation besser. Die
 - `AttackType`-Zuordnung der Minderungsbilanz.
 - `HasSurvivingShield`: Aufteilung des Schildwerts.
 - Geschwister-Ids: welche Id das Spiel je Stufe setzt.
-- Die drei Einträge „im Spiel zu bestätigen" sind in diesem Durchgang nicht darauf geprüft, ob ihr Messmittel im Kampf sichtbar ist; das steht als nächster Schritt an ihnen.
+- Die drei Einträge „im Spiel zu bestätigen" auf ihr Messmittel im Kampf geprüft: Searing Light bei mehreren Beschwörern zeigt die Phasenbücher in der Beschwörer-Anzeige; der gemessene Heilwert von Lux Solaris korrigiert sich je Wurf selbst; die zurückgehaltene BMR-Minderung bewertete sich selbst, ihr Urteil stand aber nur im Einstellungsfenster und steht jetzt auch im Diagnosefenster.
 
 **Technische Schuld mit Auflösungsbedingung, unverändert gültig:** Zustandsabfragen, `Configs.Migrate`, `CanEarlyWeave`, doppelte Zustandswahl, Leser-lose Einstellungen (`SwiftcastBuffer`, `InterruptDelay`/`ProvokeDelay`, `TargetColor`, `IgnoreClipping` — gesperrt durch die fehlende Feldmigration), Release-Ballast, entfernte öffentliche Member.
 

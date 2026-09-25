@@ -466,7 +466,7 @@ Bei der Prüfung, ob BossModReborn die **Aktion** einer Vorhersage nennt (Ergebn
 
 **Spielbeobachtung des Auftraggebers, Ewige Königin, Anfangsphase:** erst ein kleiner Flächenangriff, dann ein großer. Die BMR-Vorhersage feuert auf den ersten, Schimmerschild oder Tactician geht dafür hinaus, und beim zweiten ist die Barriere aufgebraucht oder die Minderung abgelaufen.
 
-**Behoben, hinter `Hold a predicted mitigation while a small cast is running` (Vorgabewert aus):** Läuft gerade ein bewertet **kleiner** Flächencast, hält `BMRShouldRefreshBefore` die Auffrischung zurück und nimmt das nächste Ereignis. Sonde: `ProactiveMitigationHeld`, je Aktion und in der Listenanzeige.
+**Behoben, hinter `Hold a predicted mitigation while a small cast is running` (Vorgabewert aus):** Läuft gerade ein bewertet **kleiner** Flächencast, hält `BMRShouldRefreshBefore` die Auffrischung zurück und nimmt das nächste Ereignis. Sonde: `ProactiveMitigationHeld`, je Aktion und in der Listenanzeige; die Regel bewertet sich selbst (`ProactiveHoldRecord`) und setzt aus, wenn sie öfter falsch als richtig lag. Seit A142 steht das Urteil auch im Diagnosefenster, also im Kampf.
 
 **Zu beobachten:** ob Schimmerschild in dieser Anfangsphase jetzt den zweiten Angriff deckt statt des ersten — und ob die Regel in anderen Kämpfen eine Minderung zu lange zurückhält.
 
