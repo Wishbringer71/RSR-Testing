@@ -3552,6 +3552,38 @@ Die Kandidatenfassung war nur bei der ausgeschriebenen Falsifikation besser. Die
 
 **Prüfgrad:** statisch; Compile über die CI.
 
+### A146 · Alle offenen Empfehlungen gegen die Gegenthese „die Empfehlung ist falsch" geprüft (25.09.2026)
+
+**Auftrag:** jede Empfehlung in einem eigenen Loop kritisch prüfen, mit der Antithese, sie sei falsch, und stichhaltig widerlegen, oder die Empfehlung ändern.
+
+**E1 · Stapelsperren (WHM, DRK) nur für große Treffer lösen — hält.**
+- *Gegenthese:* Stapeln verschwendet Abklingzeit, die beim nächsten Raidwide fehlt. *Widerlegt* für große Treffer:
+  - Seine Vorgabe (Stufe 3 der Kaskade, „Sicherheit vor Schaden") verlangt dort zusätzlich Barriere und Minderung.
+  - Temperance (−10 %) und Confession aus Plenary Indulgence (−10 %) sind zwei Status und wirken nacheinander, der Treffer fällt um 19 % statt 10 %.
+  - Eine verbrauchte Abklingzeit ist ein späterer Preis, ein Tod ein sofortiger.
+  - Die Sperre selbst verschwendet: Divine Caress ist nur unter Divine Grace wirkbar (30 s, Trait-Text), über die Flächenabwehr aber in den ersten 20 davon gesperrt.
+- *Gegenthese:* Beim Dunkelritter kostet eine Minderung im Burst Schaden. *Widerlegt:* Dark Missionary und Reprisal sind Fähigkeiten. Sie verschieben die nächste Burst-Fähigkeit um einen Einschiebeplatz, sie streichen keine.
+- *Gegenthese:* Ungemessene Treffer könnten tödlich sein und blieben gesperrt. *Nicht widerlegt, bewusst belassen:* ohne Messung kein Urteil „groß"; dort bleibt das heutige Verhalten.
+- Revolverklinge liegt außerhalb seines Profils.
+
+**E2 · Walking Dead — Entwurf geändert.**
+- *Gegenthese:* Ein Gegner in Reichweite heißt nicht, dass er angreift (Bewegung, Mechanik, Spieler ohne RSR). Die Selbstheilung fiele dann aus, und das zeigte sich erst im Vorlauf von zwei GCDs. *Nicht widerlegt; deshalb ergänzt:* Der gemessene Netto-Kurs aus `RecordedHP` muss tragen. Netto unterschätzt die kumulierte Heilung, die Freigabe kommt also eher zu früh.
+- *Gegenthese:* Heilung zurückzuhalten ist bei 1 HP tödlich. *Widerlegt mit Rest:* Laut Wirktext senken die meisten Angriffe ihn nicht unter 1. Welche es doch tun, ist unbelegt, und gegen die hilft auch eine Heilung nur, wenn sie vorher kommt.
+- *Gegenthese:* Heiler ohne große Sofortheilung schaffen den Rest im Vorlauf nicht. *Durch den Kurs entschärft:* Die Freigabe fällt, sobald der Kurs nicht mehr trägt, nicht erst im Vorlauf.
+
+**E3 · Heilungen von der AoE-Einstellung ausnehmen — hält.**
+- *Gegenthese:* Wer „Cleave" oder „Off" wählt, will auch weniger Flächenheilung. *Widerlegt:*
+  - Upstream nimmt freundliche Aktionen bei „Off" an zwei Stellen ausdrücklich aus (`!action.Setting.IsFriendly`); das ist die Absicht der Einstellung.
+  - Die Zahl der Verletzten, ab der eine Flächenheilung fällt, hat eine eigene Einstellung je Aktion (`AoeCount`).
+  - Der Wortlaut bleibt mehrdeutig; deshalb entscheidet er.
+
+**E4 · Rezz-Reihenfolge: die Ausnahme „zwei tote Tanks" streichen — zurückgenommen.**
+- *Gegenthese:* Sind beide Tanks tot, hält niemand den Gegner; ein zuerst aufgehobener Tank hält ihn wieder.
+- *Nicht stichhaltig widerlegt.* Für den Heiler zuerst spricht, dass er sofort ein zweiter Wiederbelebender ist und beide Tanks schneller zurückkommen. Für den Tank zuerst spricht, dass der Gegner gehalten wird. Welches im Kampf mehr rettet, hängt an Wirkzeiten, Schaden ohne Tank und der Lage der übrigen Gruppe, und nichts davon ist hier belegt.
+- Die Wahl liegt bei ihm; seine Vorgabe „Heiler vor Tank" nennt keine Ausnahme.
+
+**Prüfgrad:** statisch; Wirktexte aus `ActionId.resx` und `Rotation.resx`.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
