@@ -3540,6 +3540,16 @@ Die Kandidatenfassung war nur bei der ausgeschriebenen Falsifikation besser. Die
 
 **Prüfgrad:** Audit statisch; Behebungen statisch, Prüfskripte, Compile über die CI.
 
+### A145 · Trankform, `H2` nach Optionstext (25.09.2026)
+
+**Trank NQ/HQ.** Seine Frage: „erkennt rsr nicht, welche trankform vorhanden ist?" Beim Benutzen doch: `BaseItem` nimmt HQ, wenn vorhanden, sonst NQ. Nur die Heilmenge las `HpPotionItem` immer aus `DataHQ`. Jetzt liest sie die Form, die benutzt wird. Im Kampf: Ein NQ-Trank geht hinaus, sobald die fehlende Gesundheit seine tatsächliche Heilmenge erreicht, nicht erst bei der HQ-Menge.
+
+**`H2`.** Seine Vorgabe: „die regeln durch die ui-settings sind einzuhalten" (in CLAUDE.md eingearbeitet). Der Optionstext nennt Nicht-Heiler; der Code dreht die Heilerliste nicht mehr um. Im Kampf wirkt das nur bei mehreren gleichzeitig toten Heilern mit `H2` an.
+
+**Walking Dead** (seine Präzisierung zu E2): in Arbeit, noch nicht umgesetzt.
+
+**Prüfgrad:** statisch; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

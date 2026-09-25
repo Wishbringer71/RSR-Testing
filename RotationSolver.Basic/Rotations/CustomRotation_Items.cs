@@ -249,8 +249,8 @@ public partial class CustomRotation
 			// The grade is the item level from the Item sheet, not the id: the ids happen to run in
 			// grade order today, but nothing in the game ties them to it. Datamining table, checked
 			// 25.09.2026: Potion 10, Hi- 25, Mega- 45, X- 70, Max- 150, Super- 290, Hyper- 560,
-			// Ultra-Potion 690 - and the last three all restore 25 %, so they tie wherever the
-			// percentage binds. Not relying on the list running strongest-first either: that order
+			// Ultra-Potion 690 - and the last three all restore 25 % in HQ (20 % in NQ), so they tie
+			// wherever the percentage binds. Not relying on the list running strongest-first either: that order
 			// is a property of GetHpPotions and would silently invert this rule if it ever changed.
 			// The content-specific branches below deliberately keep ">=", so the potion meant for
 			// that duty wins a tie against an ordinary one.

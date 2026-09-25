@@ -97,14 +97,6 @@ Upstream hat dieselbe Klasse in 7.5.6.3 an vier Stellen aufgelöst (`ObjectHelpe
 
 `ExtraRotations/Magical/ChurinSMN.cs` fragt im PvE den Status Firebird Trance (3229) ab, wie der Rückfall in `SMN_Reborn` bis A137. Setzt das Spiel ihn im PvE nicht, zündet ChurinSMN Rekindle im ersten freien Einschiebeplatz der Phönix-Phase. Fremde Rotation, nur erfasst (A144).
 
-### Heiltränke: die Heilmenge wird immer aus der HQ-Fassung gelesen · N
-
-`HpPotionItem` liest `ItemAction.DataHQ`. Super-, Hyper- und Ultra-Potion heilen in HQ 25 %, in NQ 20 % (Datamining-Tabelle, A139). Bei einem NQ-Trank überschätzt die Regel die Heilmenge; die Sperre „fehlende Gesundheit mindestens die Heilmenge" verlangt dann mehr fehlende Gesundheit, als der Trank heilt, und der Trank geht später hinaus als nötig. Upstream-Code. Zu klären: ob der Trank im Inventar als HQ oder NQ vorliegt, ist über das Inventar lesbar. Gefunden im Audit (A144).
-
-### `H2` dreht auch Tanks und Heiler um, der Optionstext nennt nur Nicht-Heiler · N
-
-`TargetUpdater.GetPriorityDeathTarget` kehrt bei `H2` alle vier Listen um; der Optionstext lautet „Raise non-Healers from bottom of party list to the top (Light Party 2 Healer Behavior)". Im Kampf wirkt es nur bei mehreren gleichzeitig toten Tanks oder Heilern. Zu klären ist die Absicht: Optionstext oder Code. Konzept 11, A141.
-
 ### Wiederbelebung: vier Eingriffe des Zweigs sind weiter ungemessen · N, R
 
 **Konzept:** `docs/rotation-flow/11-raise-dispatch.md`

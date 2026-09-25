@@ -1,4 +1,5 @@
 ﻿using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using Lumina.Excel.Sheets;
 
 namespace RotationSolver.Basic.Actions;
@@ -7,8 +8,31 @@ internal class HpPotionItem : BaseItem
 {
 	private readonly float _percent;
 	private readonly uint _maxHp;
+	private readonly float _percentNq;
+	private readonly uint _maxHpNq;
 
-	public uint MaxHp => !Player.Available || Player.Object == null ? 0 : Math.Min((uint)(Player.Object.MaxHp * _percent), _maxHp);
+	/// <summary>
+	/// What this potion restores here and now, for the form that will actually be drunk: UseItem takes
+	/// the HQ one whenever the bag holds one, else the NQ one, and the two state different figures
+	/// (Super-Potion 25 % against 20 %). Reading the HQ figure for an NQ potion overrated the heal, so
+	/// the missing-health guard held the potion back longer than it restores.
+	/// </summary>
+	public uint MaxHp
+	{
+		get
+		{
+			if (!Player.Available || Player.Object == null)
+			{
+				return 0;
+			}
+
+			var hq = HasHq;
+			return Math.Min((uint)(Player.Object.MaxHp * (hq ? _percent : _percentNq)), hq ? _maxHp : _maxHpNq);
+		}
+	}
+
+	/// <summary>Whether the bag holds the HQ form, which UseItem prefers.</summary>
+	private unsafe bool HasHq => InventoryManager.Instance()->GetInventoryItemCount(ID, true) > 0;
 
 	/// <summary>
 	/// The potion's item level from the Item sheet - its grade. Decides between two potions that
@@ -23,6 +47,9 @@ internal class HpPotionItem : BaseItem
 		var data = _item.ItemAction.Value!.DataHQ;
 		_percent = data[0] / 100f;
 		_maxHp = data[1];
+		var dataNq = _item.ItemAction.Value!.Data;
+		_percentNq = dataNq[0] / 100f;
+		_maxHpNq = dataNq[1];
 	}
 
 	public override bool CanUse(out IAction item, bool clippingCheck)

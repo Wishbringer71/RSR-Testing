@@ -314,14 +314,11 @@ oder Verweigerungsstatus, Entfernung über 30 Yalm, fehlende Sichtlinie, Gruppen
 Allianzzugehörigkeit. Der Auftraggeber hat bestätigt, dass Leichen ruhig liegen und anvisierbar sind,
 womit `IsTargetMoving` und `IsTargetable` als Ursache ausscheiden.
 
-**`H2` und der Sonderfall für `PartyAndAllianceHealers` (A141).** Der Optionstext von `H2` lautet
-„Raise **non-Healers** from bottom of party list to the top (Light Party 2 Healer Behavior)". Der
-Code dreht aber alle vier Listen um, auch Tanks und Heiler. Dass der Sonderfall für
-`PartyAndAllianceHealers` vor der Umkehrung steht und die Heiler in Listenreihenfolge nimmt, passt
-also zum Optionstext; abweichend ist die Umkehrung der Tank- und Heilerliste in den übrigen Modi.
-Im Kampf wirkt das nur, wenn mehrere Tanks oder mehrere Heiler zugleich tot sind. Die frühere Lesart,
-der Sonderfall sei die Unstimmigkeit, ist widerrufen (C94). Erfasst, nicht behoben: Welche Lesart
-gemeint ist, sagt nur der Optionstext, und der spricht gegen den Code, nicht gegen den Sonderfall.
+**`H2` folgt seinem Optionstext (A145).** „Raise non-Healers from bottom of party list to the top
+(Light Party 2 Healer Behavior)": Bei `H2` werden die Listen der toten Tanks, der Nebenheiler und der
+übrigen umgedreht, die der Heiler nicht. Bis A145 drehte der Code auch die Heilerliste; der
+Sonderfall für `PartyAndAllianceHealers` stand also schon im Einklang mit dem Text. Vorgabe des
+Auftraggebers: Die Regeln der Einstellungstexte sind einzuhalten.
 
 **Der Einschiebezweig für Swiftcast erkennt die Wiederbelebung an `Raise` (A141).** Früher verglich er
 den nächsten GCD mit vier Ids; Verraise und Angel Whisper fehlten, dieselbe Alterungsursache wie die
@@ -388,7 +385,6 @@ nicht messbar. Wer sie an hat, konnte ohne Swiftcast niemanden hochholen.
   um das bisherige Verhalten zu erhalten, ist ohne Feldmigration nicht durchführbar. Daran ist die
   Verdrahtung von `InterruptDelay` und `ProvokeDelay` gescheitert.
 - **`TargetColor` hat keinen Leser.**
-- **`H2` dreht auch Tanks und Heiler um**, obwohl der Optionstext nur Nicht-Heiler nennt (siehe oben).
 
 ## Grenzen des Nachweises
 

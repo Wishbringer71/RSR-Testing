@@ -112,6 +112,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - War die Stelle richtig und ist durch eine Erweiterung anderswo veraltet: die Konstruktion ersetzen (Aufzählung → Fähigkeitsprüfung), nicht den Einzelfall.
 - Kennzeichen einer Änderung ohne Verständnis: Klon ohne Anpassung, entfernte Verdrahtung bei stehender Definition, Kommentar widerspricht Code.
 - Kommentare und Optionstexte belegen die Absicht. Einen Widerspruch zum Code nie durch Anpassen des Kommentars auflösen — das tilgt den Befund.
+- Der Text einer Einstellung in der Oberfläche bindet (seine Vorgabe): Weicht der Code ab, wird der Code angepasst, nicht der Text, und nicht zur Wahl gestellt.
 - Jeder Defekt gilt als Klasse, bis das Gegenteil belegt ist: alle gleichen Stellen erheben, dann begründet einschränken; die Behebung zielt auf die Wiederholbarkeit.
 
 **Möglichkeitssinn**

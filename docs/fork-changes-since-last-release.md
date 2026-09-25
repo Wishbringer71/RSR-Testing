@@ -41,7 +41,9 @@ percentage as before.
 More healing wins, and at equal healing the lower grade wins - read from the item level, not
 the id. Both halves are now stated in the comparison instead of following from the order the
 potion list happens to have. Super-, Hyper- and Ultra-Potion all restore 25 %, so wherever the
-percentage binds they tie and the Super-Potion goes first.
+percentage binds they tie and the Super-Potion goes first. The amount is now read for the form
+that will actually be drunk - HQ when the bag holds one, else NQ (20 % instead of 25 % for those
+three) - so an NQ potion is no longer held back as if it healed more than it does.
 
 The tie is a real case, not an edge. What a potion restores is the smaller of its own percentage
 of your maximum health and its own cap — and under a level sync the percentage is what binds. Two
