@@ -3546,6 +3546,8 @@ Die Kandidatenfassung war nur bei der ausgeschriebenen Falsifikation besser. Die
 
 **`H2`.** Seine Vorgabe: „die regeln durch die ui-settings sind einzuhalten" (in CLAUDE.md eingearbeitet). Der Optionstext nennt Nicht-Heiler; der Code dreht die Heilerliste nicht mehr um. Im Kampf wirkt das nur bei mehreren gleichzeitig toten Heilern mit `H2` an.
 
+**Fester Wert `100` in der NQ-Zeile — Loop:** Das ist eine Umrechnung von Prozent in einen Anteil, kein Spielwert. Das Blatt `ItemAction` nennt den Anteil in Prozent, die HQ-Zeile daneben (Upstream) rechnet ebenso; als Ausnahme gelistet. Die CI hatte die Zahl gemeldet, `check_fixed_values.py` vor dem Commit nicht: Das Skript verglich mit `HEAD` und sah damit nichts, was erst committet werden sollte. **Defekt im Prüfmittel, behoben:** Es vergleicht jetzt mit dem Arbeitsstand.
+
 **Walking Dead** (seine Präzisierung zu E2): in Arbeit, noch nicht umgesetzt.
 
 **Prüfgrad:** statisch; Compile über die CI.

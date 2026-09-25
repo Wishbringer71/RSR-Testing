@@ -59,8 +59,13 @@ def literals(code):
 
 
 def added_lines(base):
-    """(file, stripped line) for every C# line the fork added since `base`."""
-    diff = run("git", "diff", "-U0", f"{base}...HEAD", "--", "*.cs")
+    """(file, stripped line) for every C# line the fork added since `base`.
+
+    Measured against the working tree, not HEAD: run before a commit, a diff to HEAD sees none of
+    the lines about to be committed, and the check reported a clean tree while a new number sat in
+    the change. In CI the working tree is HEAD, so nothing changes there. A new file counts once it
+    is added to the index."""
+    diff = run("git", "diff", "-U0", base, "--", "*.cs")
     if diff is None:
         return None
     result = []

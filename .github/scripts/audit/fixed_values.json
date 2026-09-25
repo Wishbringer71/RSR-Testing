@@ -670,6 +670,16 @@
    "status": "exception",
    "loop": "A144",
    "reason": "Protocol bit of the action effect: marks an amount whose third byte is carried separately (cactbot LogGuide, Ability Damage). Stated in no game sheet, so it cannot be derived at runtime."
+  },
+  {
+   "file": "RotationSolver.Basic/Actions/HpPotionItem.cs",
+   "code": "_percentNq = dataNq[0] / 100f;",
+   "values": [
+    "100"
+   ],
+   "status": "exception",
+   "loop": "A145",
+   "reason": "Unit conversion, not a game value: the ItemAction sheet states the potion's share of maximum HP in percent, and the HQ line beside it (upstream) divides the same way."
   }
  ]
 }
