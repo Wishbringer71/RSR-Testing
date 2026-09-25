@@ -3618,6 +3618,8 @@ Umgesetzt: `GetMostCanTargetObjects` sperrt unter „Cleave" nur feindliche Akti
 - *Gegenthese:* Das gibt zu oft frei. Widerlegt: Eine Heilung, die sich als unnötig erweist, zählt auf die Summe, die Walking Dead verlangt; verschwendet ist sie nicht.
 - *Gegenthese:* Ohne BossMod greift es zu spät. Teilweise: Die Zauberleiste kommt vor dem Einschlag. Nur Angriffe ohne Zauberleiste bleiben unvorhergesehen, benannt in Konzept 09.
 
+**Nachgeschärft auf seinen Hinweis** („das sind aber nur sehr wenige raidweite attacken", Beispiele Alexander, Krieger des Lichts): Die Freigabe bei jedem Flächenangriff hob das Vertrauen bei jedem gewöhnlichen Raidwide auf und widersprach damit seiner Regel. Jetzt gibt erst ein Tank-Limitbruch auf der Gruppe frei (Status 196, 863, 864, 1931). Der Limitbruch wird für genau diese Treffer gezogen und ist ohne BossModReborn lesbar. Grenze: ein solcher Treffer ohne Limitbruch, oder ein Limitbruch unmittelbar vor dem Einschlag.
+
 **Prüfgrad:** statisch; Compile über die CI.
 
 ---

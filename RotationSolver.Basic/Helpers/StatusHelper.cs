@@ -680,8 +680,8 @@ public static class StatusHelper
 	/// <item>Reach is the game's range for Hard Slash, his basic weaponskill, hitbox to hitbox.</item>
 	/// <item>The event is BossModReborn's next downtime. Without a module it reads as none, and an
 	/// untargetable phase is seen only once it has begun, through the reach check.</item>
-	/// <item>An area attack before the timer ends - a cast bar now, or BossModReborn's next raidwide -
-	/// releases too: "most attacks" leaves room for hits that do take him below 1 HP.</item>
+	/// <item>A tank limit break on the party releases too: "most attacks" leaves room for hits that
+	/// do take him below 1 HP, and by the owner's reading those are the rare raidwides that need one.</item>
 	/// <item>The course is his health since the window was first seen, carried forward over the
 	/// time left. Health is net of the damage he takes, so it understates what he has restored and
 	/// the release comes early rather than late. For the first GCD there is nothing to measure yet,
@@ -739,16 +739,20 @@ public static class StatusHelper
 			return false;
 		}
 
-		// "Most attacks" will not lower him below 1 HP - not all. The owner's reading: raidwides that
-		// the party only survives with a tank's limit break are the exception the text means. Which
-		// ones they are is not known here, so any area attack that lands before the timer ends
-		// releases the hold: at 1 HP he stands in front of it unprotected, and a heal that turns out
-		// unneeded is not lost - it counts towards the total Walking Dead asks for. The cast bar is
-		// the path without BossModReborn; the prediction reaches further ahead.
-		if (DataCenter.IsHostileCastingAOE || DataCenter.BMRNextRaidwideIn < remaining)
+		// "Most attacks" will not lower him below 1 HP - not all. The owner's reading: the exception
+		// is the rare raidwide the party only survives with a tank's limit break (his examples: the
+		// Alexander raids, the Warrior of Light trial). Those are few, so an ordinary raidwide must
+		// not release the hold - that would undo the trust the rule asks for at every one of them.
+		// The mark of the rare one is the limit break itself: once a tank's limit break status is up
+		// on the party, the hit it was used for is coming, and at 1 HP he would stand in front of it
+		// unprotected. Read from the party's statuses, so it needs no BossModReborn.
+		foreach (var member in DataCenter.PartyMembers)
 		{
-			why = "an area attack lands before the timer ends - full support";
-			return false;
+			if (member != null && member.HasStatus(false, TankLimitBreakStatus))
+			{
+				why = "a tank limit break is up - full support before the hit it was used for";
+				return false;
+			}
 		}
 
 		var span = (float)(now - seen.At).TotalSeconds;
@@ -768,6 +772,15 @@ public static class StatusHelper
 		why = $"carried by his own attacks, course {projected:P0} - HoT only";
 		return true;
 	}
+
+	/// <summary>The four tanks' level 3 limit breaks (Status.resx: "Damage taken is reduced").</summary>
+	private static readonly StatusID[] TankLimitBreakStatus =
+	[
+		StatusID.LastBastion,
+		StatusID.LandWaker,
+		StatusID.DarkForce,
+		StatusID.GunmetalSoul,
+	];
 
 	/// <summary>When each bearer's Walking Dead was first seen, with his health and the time left then.</summary>
 	private static readonly Dictionary<ulong, (DateTime At, float Ratio, float Remaining)> WalkingDeadSeen = [];

@@ -277,7 +277,7 @@ Flächenheilung um den Wirkenden. Regen des Weißmagiers ist unter Walking Dead 
 | Timer läuft aus | derselbe Vorlauf wie bei der Living-Dead-Sperre (zwei GCDs bis zur Entscheidung) |
 | kein Gegner in Reichweite | Spielreichweite von Hard Slash, Trefferfläche zu Trefferfläche |
 | angekündigtes Ereignis | BossModReborn-Auszeit vor Ablauf; ohne Modul erst reaktiv über die Reichweite |
-| Flächenangriff vor Ablauf | Zauberleiste eines Flächenangriffs (`IsHostileCastingAOE`) oder BossModReborn-Raidwide vor Ablauf |
+| Tank-Limitbruch auf der Gruppe | Status Last Bastion, Land Waker, Dark Force oder Gunmetal Soul |
 | er schafft es nicht | Gesundheit seit Beginn des Fensters, auf die Restzeit hochgerechnet, bleibt unter 100 % |
 
 Der Kurs ist netto: Schaden zieht ab, er unterschätzt also die kumulierte Heilung, und die Freigabe
@@ -285,14 +285,15 @@ kommt eher zu früh als zu spät. Im ersten GCD gibt es noch nichts zu messen; d
 
 **Hinweis des Auftraggebers zu „most attacks":** Es gibt Raidwides, die alle nur mit dem Limitbruch
 eines Tanks überleben; das ist wahrscheinlich die Ausnahme, die der Wirktext meint (seine Deutung).
-Welche Angriffe es sind, ist nicht belegt. Deshalb gibt jeder Flächenangriff vor Ablauf die volle
-Unterstützung frei: Bei 1 HP stünde der Träger schutzlos davor, und eine Heilung, die sich als unnötig
-erweist, geht nicht verloren, sie zählt auf die geforderte Summe.
+Es sind sehr wenige, seine Beispiele: die Alexander-Raids, die Prüfung gegen den Krieger des Lichts.
+Deshalb gibt nicht jeder Raidwide die volle Unterstützung frei — das höbe das Vertrauen am Anfang bei
+jedem Raidwide auf —, sondern erst der Tank-Limitbruch auf der Gruppe: Er wird für genau diesen
+Treffer gezogen, und bei 1 HP stünde der Träger schutzlos davor.
 
 **Grenzen:** Rotationen, die ihr Heilziel selbst wählen statt über `FindTarget` (fremde Rotationen,
 direkte Aufrufe von `FindTargetByType`), sehen die Sperre nicht. Die Flächenheilflagge rechnet den
-Träger bei 1 HP weiter in ihre Mittelwerte ein. Ein Einzeltreffer, der ihn trotz Walking Dead unter
-1 HP drückt, wird nicht vorhergesehen.
+Träger bei 1 HP weiter in ihre Mittelwerte ein. Ein solcher Treffer ohne Tank-Limitbruch, oder ein
+Limitbruch, der erst unmittelbar vor dem Einschlag fällt, wird nicht rechtzeitig erkannt.
 
 **Im Kampf ablesbar:** Das Diagnosefenster zeigt, solange jemand unter Walking Dead steht, ob er
 getragen wird oder welcher Auslöser die volle Unterstützung freigegeben hat, mit dem hochgerechneten

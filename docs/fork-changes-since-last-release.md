@@ -148,8 +148,8 @@ it. The same holds for the Control and Cooldown windows.
 Under Walking Dead the dark knight heals himself by attacking and does not drop below 1 HP from most
 attacks. Healers no longer answer the 1 HP with Benediction or Cure II: at first he only gets a HoT
 (Regen goes out despite its health threshold). Full healing starts once the timer is running out,
-no enemy is in reach of his weaponskills, BossMod announces a downtime before the end, an area
-attack is being cast or predicted before the end, or his own course measured since the window began
+no enemy is in reach of his weaponskills, BossMod announces a downtime before the end, a tank
+limit break is up on the party, or his own course measured since the window began
 will not reach full health in time. The Diagnostics window
 shows which of these holds.
 
