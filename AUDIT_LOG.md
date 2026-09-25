@@ -3460,6 +3460,41 @@ Die Kandidatenfassung war nur bei der ausgeschriebenen Falsifikation besser. Die
 
 **Prüfgrad:** statisch.
 
+### A142 · Triage aller offenen TODO-Einträge (25.09.2026)
+
+**Auftrag:** jeden offenen Eintrag erneut im Loop beurteilen, einarbeiten, umsetzen. Eingeteilt nach dem, was die Umsetzung braucht. Bearbeitet wurde nur, was im Nutzungsprofil liegt (PvE, Beschwörer, Weißmagier, Dunkelritter).
+
+**Umgesetzt oder erledigt in diesem Durchgang (A137–A141):**
+- Flächenheilungen um den Wirkenden, Rekindle-Phase, Phoenix-Regenerationen.
+- „Steht am Ziel" an beiden Stellen, samt Anzeige verweigerter Bewegungsaktionen.
+- Trank-Gleichstand nach Gegenstandsstufe; „Last hit"; Kopftext und (bereits behobenes) Fenster des Abdeckungsmodells.
+- Volle Treffer- und Heilbeträge; Barrieren-Generator.
+- Vorausheilung gegen Minderung (kein Defekt, Konzept 08).
+- Swiftcast-Zweig über `Raise`; Living-Dead-Notizen ins Konzept 09.
+- Widerrufen: die `H2`-Lesart (C94).
+
+**Braucht seine Entscheidung** (Verhalten im Kampf; vorgelegt mit Empfehlung):
+- Stapelsperren des Weißmagiers und des Dunkelritters, zusammen mit Stufe 3 der Kaskade.
+- Walking Dead: HoT bei 1 HP.
+- „Cleave" sperrt Gruppenheilungen; `H2` Optionstext gegen Code.
+- Schon vorher vorgelegt, unverändert offen: Zielüberschreibungen nach Punkten (DRK/GNB), Holy-Vorbehalte, Nachprüfung der 73 Commits (Freigabe nur für die Code-Gruppe erteilt), Plugin-Identität.
+
+**Hängt an unbelegter Mechanik oder an Daten, die hier nicht vorliegen:**
+- `NextBigSummonIsBurst`: Rücksetzen der Demi-Reihenfolge.
+- Searing Light vor verdrängter Beschwörung: Häufigkeit vorrangiger GCDs vor Solar.
+- `AttackType`-Zuordnung der Minderungsbilanz.
+- `HasSurvivingShield`: Aufteilung des Schildwerts.
+- Geschwister-Ids: welche Id das Spiel je Stufe setzt.
+- Die drei Einträge „im Spiel zu bestätigen" sind in diesem Durchgang nicht darauf geprüft, ob ihr Messmittel im Kampf sichtbar ist; das steht als nächster Schritt an ihnen.
+
+**Technische Schuld mit Auflösungsbedingung, unverändert gültig:** Zustandsabfragen, `Configs.Migrate`, `CanEarlyWeave`, doppelte Zustandswahl, Leser-lose Einstellungen (`SwiftcastBuffer`, `InterruptDelay`/`ProvokeDelay`, `TargetColor`, `IgnoreClipping` — gesperrt durch die fehlende Feldmigration), Release-Ballast, entfernte öffentliche Member.
+
+**Außerhalb seines Profils, erfasst und nicht bearbeitet:** ChurinDNC, NIN, Aquapolis, VPR, Notfallheilungen von SGE/SCH/AST, Rückstoß der übrigen Tanks, Sanctus-Betäubung (PLD), Status-Einstellungen fremder Jobs.
+
+**Feste Werte:** 76 Zeilen ohne Loop (`check_fixed_values.py`, Stand 25.09.2026). Nicht in diesem Durchgang bearbeitet. Jeder Wert braucht einen eigenen Loop, und keiner ist von einer gemeldeten Fehlwirkung betroffen. Die eine neue Zahl dieses Durchgangs (Rekindle-Vorlauf, von Upstream übernommen) ist als offen gelistet.
+
+**Prüfgrad:** statisch, je Eintrag am Code; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
