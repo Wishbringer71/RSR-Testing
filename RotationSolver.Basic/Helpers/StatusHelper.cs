@@ -680,6 +680,8 @@ public static class StatusHelper
 	/// <item>Reach is the game's range for Hard Slash, his basic weaponskill, hitbox to hitbox.</item>
 	/// <item>The event is BossModReborn's next downtime. Without a module it reads as none, and an
 	/// untargetable phase is seen only once it has begun, through the reach check.</item>
+	/// <item>An area attack before the timer ends - a cast bar now, or BossModReborn's next raidwide -
+	/// releases too: "most attacks" leaves room for hits that do take him below 1 HP.</item>
 	/// <item>The course is his health since the window was first seen, carried forward over the
 	/// time left. Health is net of the damage he takes, so it understates what he has restored and
 	/// the release comes early rather than late. For the first GCD there is nothing to measure yet,
@@ -734,6 +736,18 @@ public static class StatusHelper
 		if (DataCenter.BMRNextDowntimeIn < remaining)
 		{
 			why = "a downtime is announced before the timer ends - full support";
+			return false;
+		}
+
+		// "Most attacks" will not lower him below 1 HP - not all. The owner's reading: raidwides that
+		// the party only survives with a tank's limit break are the exception the text means. Which
+		// ones they are is not known here, so any area attack that lands before the timer ends
+		// releases the hold: at 1 HP he stands in front of it unprotected, and a heal that turns out
+		// unneeded is not lost - it counts towards the total Walking Dead asks for. The cast bar is
+		// the path without BossModReborn; the prediction reaches further ahead.
+		if (DataCenter.IsHostileCastingAOE || DataCenter.BMRNextRaidwideIn < remaining)
+		{
+			why = "an area attack lands before the timer ends - full support";
 			return false;
 		}
 

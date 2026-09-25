@@ -3610,6 +3610,16 @@ Umgesetzt: `GetMostCanTargetObjects` sperrt unter „Cleave" nur feindliche Akti
 
 **Prüfgrad:** statisch; Prüfskripte grün; Compile über die CI.
 
+### A148 · Zwei Hinweise: Heilungen erzeugen Feindschaft; „most attacks" meint Raidwides, die einen Tank-Limitbruch verlangen (25.09.2026)
+
+**Heilungsfeindschaft.** Als Hinweis in Konzept 07 geführt, Umfang unbelegt. Die frühere Formulierung „ob eine Heilung Gegner ziehen kann, ist nicht belegt" stellte das Gegenteil seines Hinweises offen und ist ersetzt. Die Cleave-Entscheidung (A147) ruht auf seiner Lesart der Einstellung, nicht auf einer Annahme über Heilungsfeindschaft; sie bleibt.
+
+**„Most attacks" (Walking Dead).** Seine Deutung: gemeint sind Raidwides, die alle nur mit dem Limitbruch eines Tanks überleben. Vorher stand das als offene Einschränkung ohne Folge da. Die Folge: Bei 1 HP stünde der Träger davor schutzlos. Jetzt gibt jeder angekündigte Flächenangriff vor Ablauf die volle Unterstützung frei, ob über die Zauberleiste oder über die BossModReborn-Vorhersage.
+- *Gegenthese:* Das gibt zu oft frei. Widerlegt: Eine Heilung, die sich als unnötig erweist, zählt auf die Summe, die Walking Dead verlangt; verschwendet ist sie nicht.
+- *Gegenthese:* Ohne BossMod greift es zu spät. Teilweise: Die Zauberleiste kommt vor dem Einschlag. Nur Angriffe ohne Zauberleiste bleiben unvorhergesehen, benannt in Konzept 09.
+
+**Prüfgrad:** statisch; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
