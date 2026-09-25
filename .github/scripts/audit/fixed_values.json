@@ -652,6 +652,14 @@
     "6"
    ],
    "status": "open"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
+   "code": "if (InPhoenix && SummonTimeEndAfterGCD(3))",
+   "values": [
+    "3"
+   ],
+   "status": "open"
   }
  ]
 }
