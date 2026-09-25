@@ -38,9 +38,10 @@ percentage as before.
 
 ## The HP potion that gets used is the one that actually restores more
 
-More healing wins, and at equal healing the lower item id wins. Both halves are now stated in the
-comparison instead of following from the order the potion list happens to have. That the lower id
-is the lower grade is assumed, not yet checked against the game data.
+More healing wins, and at equal healing the lower grade wins - read from the item level, not
+the id. Both halves are now stated in the comparison instead of following from the order the
+potion list happens to have. Super-, Hyper- and Ultra-Potion all restore 25 %, so wherever the
+percentage binds they tie and the Super-Potion goes first.
 
 The tie is a real case, not an edge. What a potion restores is the smaller of its own percentage
 of your maximum health and its own cap — and under a level sync the percentage is what binds. Two
@@ -130,11 +131,14 @@ in combat and shows, while you fight, what the fork's rules decide from: the cur
 status (for the Summoner: whether the next summon opens the burst, whether another Summoner is
 recognised, which phases other Summoners hold, what the big summon is waiting for and for how long
 this fight, and where your last Searing Light landed against the big summon),
-the AoE damage table's store state and last rated hit, and for every enabled HP potion why it is or
-is not used.
+the AoE damage table's store state and last rated hit, the last area heal around you that was
+weighed, the last movement action the safety check withheld, and for every enabled HP potion why
+it is or is not used.
 
 ## The AoE list says why the last hit was not rated
 
 `Last hit:` names the reason the last enemy action that damaged you was or was not measured — the
 recording switch, a party counted below four (NPC companions only count with the NPC party-member
-setting), an instant action, or an action not yet in the AoE list.
+setting), an instant action, an action type or category that is not rated, or an action not yet
+in the AoE list - and for a listed action the share of maximum HP it was measured at, or that
+every hit arrived at zero.

@@ -246,13 +246,17 @@ public partial class CustomRotation
 			// one then buys nothing. Where the grades differ in percentage they differ in MaxHp too,
 			// and the first half of the comparison picks the stronger one on its merits.
 			//
-			// Comparing ids rather than relying on the list running strongest-first: that order is
-			// a property of GetHpPotions and would silently invert this rule if it ever changed.
+			// The grade is the item level from the Item sheet, not the id: the ids happen to run in
+			// grade order today, but nothing in the game ties them to it. Datamining table, checked
+			// 25.09.2026: Potion 10, Hi- 25, Mega- 45, X- 70, Max- 150, Super- 290, Hyper- 560,
+			// Ultra-Potion 690 - and the last three all restore 25 %, so they tie wherever the
+			// percentage binds. Not relying on the list running strongest-first either: that order
+			// is a property of GetHpPotions and would silently invert this rule if it ever changed.
 			// The content-specific branches below deliberately keep ">=", so the potion meant for
 			// that duty wins a tie against an ordinary one.
 			if (a.ID != 47102 && a.ID != 22306 && a.ID != 20309 && a.CanUse(out _, true))
 			{
-				if (best == null || a.MaxHp > best.MaxHp || (a.MaxHp == best.MaxHp && a.ID < best.ID))
+				if (best == null || a.MaxHp > best.MaxHp || (a.MaxHp == best.MaxHp && a.ItemLevel < best.ItemLevel))
 				{
 					best = a;
 				}
@@ -264,7 +268,7 @@ public partial class CustomRotation
 			// missing-HP guard against wasting the potion via overheal.
 			if ((DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterImminent) && a.ID != 47102 && a.ID != 22306 && a.ID != 20309 && a.CanUseEmergency(out _))
 			{
-				if (best == null || a.MaxHp > best.MaxHp || (a.MaxHp == best.MaxHp && a.ID < best.ID))
+				if (best == null || a.MaxHp > best.MaxHp || (a.MaxHp == best.MaxHp && a.ItemLevel < best.ItemLevel))
 				{
 					best = a;
 				}

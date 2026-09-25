@@ -118,6 +118,10 @@ public static class Watcher
 						? $"{DateTime.Now:HH:mm:ss} #{actionId}: not measured - party counted as {partyMemberCount}, 4 needed (NPC companions only count with the NPC party-member setting)"
 					: !(set.Action?.Cast100ms > 0)
 						? $"{DateTime.Now:HH:mm:ss} #{actionId}: not measured - instant, only cast actions are rated"
+					: set.Header.ActionType != ActionType.Action
+						? $"{DateTime.Now:HH:mm:ss} #{actionId}: not measured - action type {set.Header.ActionType}, only regular actions are rated"
+					: set.Action?.GetActionCate() is not (ActionCate.Spell or ActionCate.Weaponskill or ActionCate.Ability)
+						? $"{DateTime.Now:HH:mm:ss} #{actionId}: not measured - category {set.Action?.GetActionCate()}, only spells, weaponskills and abilities are rated"
 					: !OtherConfiguration.HostileCastingArea.Contains(actionId)
 						? $"{DateTime.Now:HH:mm:ss} #{actionId}: not measured - not in the AoE list (added only once it hits every member)"
 						: $"{DateTime.Now:HH:mm:ss} #{actionId}: in the AoE list, measured";
@@ -199,6 +203,15 @@ public static class Watcher
 					// an increase is written. The highest value ever seen is the one that survives a
 					// well-mitigated pull, and an underrated action corrects itself: the mitigation
 					// is skipped, so the next hit arrives unmitigated and measures itself.
+					// The line above said "measured" before the amount was known; say what the reading
+					// was, or that there was none. A hit that arrived at zero everywhere leaves nothing.
+					if (damageRatio > 0f && OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
+					{
+						DataCenter.AreaMeasurementLastOutcome = highestShare > 0f
+							? $"{DateTime.Now:HH:mm:ss} #{set.Action!.Value.RowId}: in the AoE list, measured at {highestShare:P0} of max HP"
+							: $"{DateTime.Now:HH:mm:ss} #{set.Action!.Value.RowId}: in the AoE list, not measured - every hit arrived at zero (barrier or block)";
+					}
+
 					if (highestShare > 0f && Service.Config.RecordCastingArea
 						&& OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
 					{

@@ -365,14 +365,12 @@ public partial class CustomRotation
 		// HPNotFull, and OnlyHealAsNonHealIfNoHealers - and each of them can be false while the
 		// player sits at 10 % with a potion in the bag.
 		//
-		// The last one is the common case rather than a corner: a non-healer in a party with a
-		// living healer never gets the flag, so a Summoner reduced to 1 HP by a mechanic had no way
-		// to reach a potion at all. Owner's report, and his own argument: "das flag ist im lowlevel
-		// für physick interessant oder für einen redmage mit seinem heal. aber für potions?"
-		//
-		// The same reasoning is already built into this job's own heals: Lux Solaris and Rekindle
-		// are offered from GeneralAbility, outside the flag, precisely because the flag would
-		// withhold them for reasons that have nothing to do with them.
+		// Owner's report: a Summoner reduced to 1 HP by a mechanic had no way to reach a potion at
+		// all, and it came back once the potion stopped reading the flag. Which of the five held him
+		// is not measurable from here; OnlyHealAsNonHealIfNoHealers is off by default, and with it
+		// on a non-healer in a party with a living healer never gets the flag. His own argument:
+		// "das flag ist im lowlevel für physick interessant oder für einen redmage mit seinem heal.
+		// aber für potions?"
 		//
 		// InCombat stays, and it is this rule's own condition rather than a borrowed one: a potion
 		// is an emergency consumable, and out of combat health returns on its own.

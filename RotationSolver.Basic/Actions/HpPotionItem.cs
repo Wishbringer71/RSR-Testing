@@ -10,6 +10,12 @@ internal class HpPotionItem : BaseItem
 
 	public uint MaxHp => !Player.Available || Player.Object == null ? 0 : Math.Min((uint)(Player.Object.MaxHp * _percent), _maxHp);
 
+	/// <summary>
+	/// The potion's item level from the Item sheet - its grade. Decides between two potions that
+	/// restore the same amount here: the lower grade goes first.
+	/// </summary>
+	public uint ItemLevel => _item.LevelItem.RowId;
+
 	protected override bool CanUseThis => Service.Config.UseHpPotions;
 
 	public HpPotionItem(Item item) : base(item)

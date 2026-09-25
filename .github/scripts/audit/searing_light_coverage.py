@@ -12,7 +12,10 @@ What it models, all of it taken from the code or from the sources the concept ci
 - Searing Light: 20s effect, 120s recast, does not stack - a second cast replaces the first.
 - Demi summons: 15s standing, one every 60s, in the order Solar, Bahamut, Solar, Phoenix. Solar
   therefore comes around every 120s.
-- Cast window: today only while Solar stands (SMN_Reborn.cs:203); widened, any demi.
+- Cast window, one mode per rule (see in_window): Solar only, any demi, any time, and the book
+  rules ('informed', 'adaptive', 'simple', 'plugin') that decide which demi a charge aims at when
+  other Summoners take phases. The plugin fires in the weave slot ahead of the burst summon when
+  alone; with another Summoner in the party its phase book decides (SMN_Reborn, concept 12).
 - The guard: a cast is refused while a Searing Light is running and more than `guard_lead` seconds
   remain on it - ActionBasicInfo.IsStatusProvided with StatusRefreshGcdCount = 2, about 5s at a
   2.5s GCD.
@@ -21,7 +24,10 @@ What it models, all of it taken from the code or from the sources the concept ci
   rotations fully apart.
 
 What it does not model: that a buff landing outside the two-minute burst window is worth less than
-one inside it. Coverage is not damage. The concept says so; this script only counts seconds.
+one inside it - coverage is not damage, and the concept says so; this script counts seconds. Nor
+the single Summoner's own question, whether the buff slips behind his own phase: the model has no
+GCD grid and no waiting, so it answers how several Summoners share the buff, not when one of them
+lands it.
 
 Usage: python3 .github/scripts/audit/searing_light_coverage.py [--csv]
 """

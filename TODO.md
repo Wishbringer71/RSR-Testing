@@ -4,14 +4,6 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 ## Defekte
 
-### Heiltrank: welche Sorte bei gleicher Heilung fällt · N
-
-**Stand im Kampf:** Seit der Trank nicht mehr an der Heilflagge hängt, geht er bei ihm wieder heraus (seine Beobachtung, A133). Ob der Weg der richtige war, hat er ausdrücklich offengelassen.
-
-**Unbelegt: welche Sorte bei gleicher Heilung fällt.** Die Regel nimmt die niedrigere Gegenstands-Id und unterstellt, das sei die niedrigere Sorte (C89). *Konzept:* Die Gegenstandsstufe aus dem Blatt `Item` statt der Id — aus dem Spiel abgeleitet, und sie beantwortet die Frage, die er gestellt hat: bei gleicher Wirkung die billigere Sorte. Vorher zu prüfen: ob die Stufe unter den Heiltränken die Sortenreihenfolge trägt, an den Spieldaten und nicht an der Erinnerung.
-
-**Kommentar am Einhängepunkt:** nennt `OnlyHealAsNonHealIfNoHealers` als Regelfall (C88); bei der nächsten Änderung dort richtigstellen.
-
 ### Der Generator übersieht Barrieren mit „nullifies damage totaling" · N
 
 `generate_defensive_values.py` erkennt Barrieren nur an „absorbs damage totaling X % of maximum HP". Manaward schreibt „nullifies damage totaling up to 30% of maximum HP" (`ActionId.resx`) und fehlt deshalb. `LargestStatedBarrierShare` steht auf 0,25 statt 0,30. **Im Kampf:** Der Weg „großer Flächencast auch bei unterbrechbarem Cast mindern" setzt seine Schwelle bei 25 % der Maximalgesundheit statt bei der tatsächlich größten Barriere. Er mindert also Treffer zwischen 25 und 30 %, die nach seiner eigenen Begründung nicht als groß gelten. Gefunden im Regeltest (A135). **Vor der Behebung ins Konzept:** Ist „größte Barriere irgendeines Jobs" das richtige Maß, wenn diese Barriere nur die Schwarzmagierin selbst schützt? Die Behebung des Musters ist mein Werkzeug; die Folge für die Schwelle ist Verhalten im Kampf.
@@ -99,24 +91,6 @@ Erfasst, nicht bearbeitet (A93). `HealthAreaAbility`/`HealthAreaSpell` werden ge
 ### `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen · N
 
 Die Eigenschaft antwortet „ja", wenn das Spiel Solar als nächste Demi anzeigt **oder** die letzte Demi nicht Solar war. Zeigt das Spiel Bahamut an, während die eigene Geschichte etwas anderes sagt — etwa nach einem Tod, wenn das Spiel die Reihenfolge zurücksetzt —, gewinnt die Geschichte. Im Kampf hieße das: Searing Light fiele vor Bahamut statt vor Solar. Nicht belegt ist, wann das Spiel die Demi-Reihenfolge zurücksetzt und wann die umgestellte Id nicht lesbar ist; beides entscheidet, ob die Geschichte nur Rückfall sein darf.
-
-### `searing_light_coverage.py`: der Kopftext beschreibt eine alte Zündregel · —
-
-Er nennt das Zündfenster „today only while Solar stands" mit einem Zeilenverweis in `SMN_Reborn`, der auf eine leere Zeile zeigt. Beides ist überholt. Das Modell beantwortet die Abdeckung bei mehreren Beschwörern; die Frage des Einzelbeschwörers — rutscht der Buff hinter die eigene Phase — bildet es nicht ab, weil es weder GCD-Raster noch Warten kennt. Kopftext richtigstellen und diese Grenze dort nennen.
-
-### Die Anzeige „Last hit" meldet „measured" auch ohne Messung · N
-
-`Watcher` schreibt „in the AoE list, measured", sobald die Aktion in der Flächenliste steht. Gemessen wird aber nur für Zauber, Waffenfertigkeiten und Fähigkeiten mit `ActionType.Action`; für alles andere stimmt die Zeile nicht. Die Bedingungen der Anzeige an die der Messung angleichen.
-
-### `searing_light_coverage.py` misst über das Fenster hinaus, das es zu messen vorgibt · —
-
-`simulate(…, window=(lo, hi))` soll die Abdeckung **innerhalb** eines Zeitfensters messen. Der Zähler wird aber auch außerhalb hochgezählt — der `elif buff_until > t: covered += STEP` neben dem Fensterzweig —, geteilt wird dagegen durch die Fensterlänge `(hi - lo)`. Das Ergebnis ist die Gesamtabdeckung des Kampfes, gestreckt um das Verhältnis Kampflänge zu Fensterlänge. Sichtbar an der Ausgabe selbst: Die Einschwingtabelle meldet 332 %, die Ausfalltabelle 210 bis 542 % — Abdeckungsanteile über 100 % sind nicht deutbar.
-
-**Betroffen sind drei Auswertungen, alle mit `window=`:** die Einschwingtabelle (Anfang gegen Ende des Kampfes), die Ausfalltabelle (ein Beschwörer fällt drei Minuten aus) und der Selbsttest, der prüft, dass die abschreibende Fassung unter Ausfall nie schlechter ist als die buchführende. Der Selbsttest bleibt gültig, weil beide Seiten gleich verzerrt sind — aber er prüft nicht, was sein Kommentar sagt: verglichen wird die Abdeckung über den ganzen Kampf, nicht die im Ausfallfenster. Genau die Bauform „Test misst ein Surrogat statt der gemeinten Eigenschaft".
-
-**Nicht betroffen ist jede Zahl, die in einem Dokument steht.** Alle Tabellen in `docs/rotation-flow/12-searing-light-stacking.md` stammen aus Aufrufen ohne `window`; dort ist `lo, hi = 0, fight`, und der fehlerhafte Zweig kann nicht greifen. Nachgerechnet: Die zwanzig Werte der beiden Abdeckungstabellen des Konzepts sind heute Ziffer für Ziffer reproduzierbar, einschließlich der V4-Spalte, die der Bericht nicht mehr druckt (Modus `anytime`). Die Einschwingzahlen sind in keinem Dokument verwendet.
-
-**Behebung:** den `elif`-Zweig streichen, damit außerhalb des Fensters nicht gezählt wird; der Selbsttest ist danach auf das Ausfallfenster zu schärfen, sonst deckt er die Rückkehr des Fehlers nicht ab. **Empfehlung: beheben** — es ist ein Prüfmittel, und ein Prüfmittel, das eine undeutbare Zahl druckt, entwertet auch seine richtigen.
 
 ### Fänge von `AccessViolationException`, die im gemeinten Fall nicht greifen · N, U
 
