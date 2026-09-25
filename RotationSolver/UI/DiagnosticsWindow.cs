@@ -45,6 +45,7 @@ internal class DiagnosticsWindow : Window
 	{
 		ImGui.PopStyleColor();
 		base.PostDraw();
+		WindowCloseButton.TurnOffIfClosedByPlayer(this, Service.Config.ShowDiagnosticsWindow);
 	}
 
 	public override void Draw()

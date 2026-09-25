@@ -135,6 +135,10 @@ the AoE damage table's store state and last rated hit, the last area heal around
 weighed, the last movement action the safety check withheld, and for every enabled HP potion why
 it is or is not used.
 
+
+The close button in the title bar now turns the window off - as do Escape and the gamepad back
+button while it is focused. Before, the next frame opened it again and only the setting could close
+it. The same holds for the Control and Cooldown windows.
 ## Hits and heals above 65,535 points are read in full
 
 The effect handler read the low 16 bits of every damage and heal amount. A raidwide that hit a

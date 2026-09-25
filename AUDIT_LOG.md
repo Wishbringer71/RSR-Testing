@@ -3495,6 +3495,21 @@ Die Kandidatenfassung war nur bei der ausgeschriebenen Falsifikation besser. Die
 
 **Prüfgrad:** statisch, je Eintrag am Code; Compile über die CI.
 
+### A143 · Das X im Fensterrahmen schloss das Diagnosefenster nicht (25.09.2026)
+
+**Seine Beobachtung:** Das Diagnosefenster lässt sich nur über die Optionen schließen, nicht über das X im Fensterrahmen.
+
+**Ursache, am Code und am Dalamud-Quelltext belegt:** `RotationSolverPlugin.UpdateDisplayWindow` setzt `IsOpen` bei jedem Framework-Update aus der Einstellung. Das X setzte `IsOpen` für ein Bild auf falsch, das nächste Update öffnete das Fenster wieder. Dieselbe Bauform haben Steuer- und Abklingzeitfenster (Upstream); die übrigen Fenster haben keine Titelleiste.
+
+**Behebung:** Dalamud setzt `IsOpen` für X, Escape und Gamepad während des Zeichnens und ruft danach im selben Bild `PostDraw` (`WindowHost.Draw`, Dalamud master vom 24.09.2026). Das Plugin schließt Fenster außerhalb des Zeichnens, und ein geschlossenes Fenster wird nicht gezeichnet. Ein Fenster, das in seinem eigenen `PostDraw` geschlossen ist, hat also der Spieler geschlossen, und die Einstellung wird ausgeschaltet und gespeichert (`WindowCloseButton`). Gilt für Diagnose-, Steuer- und Abklingzeitfenster.
+
+**Falsifikation:**
+- Das Plugin könnte das Fenster während des Zeichnens schließen und so die Einstellung löschen. Widerlegt: Es setzt `IsOpen` nur im Framework-Update.
+- Die Dalamud-Version im Build (SDK 15.0.0) könnte eine andere Reihenfolge haben. Nicht geprüft; dann bliebe das alte Verhalten, und die Einstellung wird nie fälschlich gelöscht, weil die Prüfung „geschlossen und Einstellung an" im eigenen `PostDraw` sonst nicht eintritt.
+- Escape schließt das fokussierte Fenster jetzt ebenfalls dauerhaft. Gewollt: Es ist dieselbe Geste wie das X.
+
+**Prüfgrad:** statisch; Dalamud-Quelltext; Compile über die CI. Im Spiel sichtbar: Das Fenster bleibt nach dem X zu, und die Option ist aus.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
