@@ -36,6 +36,9 @@ ROOT = Path(__file__).resolve().parents[3]
 LIST = Path(__file__).with_name("fixed_values.json")
 
 NUMBER = re.compile(r"(?<![\w.])(\d+(?:\.\d+)?)[fFdDmMuUlL]?(?![\w.])")
+# Hexadecimal literals: NUMBER stops at the "0" of "0x40", which is followed by a letter, so a bit
+# mask passed unseen until it was checked for by hand.
+HEX = re.compile(r"(?<![\w.])(0[xX][0-9a-fA-F]+)[uUlL]*(?![\w.])")
 STRING = re.compile(r'\$?@?"(?:[^"\\]|\\.)*"|\'(?:[^\'\\]|\\.)\'')
 TRIVIAL = {"0", "1", "0.0", "1.0"}
 
@@ -52,7 +55,7 @@ def literals(code):
         return []
     code = STRING.sub('""', code)
     code = code.split("//")[0]
-    return [n for n in NUMBER.findall(code) if n not in TRIVIAL]
+    return [n for n in NUMBER.findall(code) + HEX.findall(code) if n not in TRIVIAL]
 
 
 def added_lines(base):
@@ -92,6 +95,7 @@ def self_test():
         ("var id = SummonBahamutPvE2;", []),
         ("new int[Enum.GetValues<SearingPhase>().Length]", []),
         ("BMRShouldRefreshBefore(BMRRaidwideIn, 30f, true)", ["30"]),
+        ("=> (entry.flags & 0x40) != 0 ? entry.Damage : entry.value;", ["0x40"]),
     ]
     for code, expected in cases:
         got = literals(code)

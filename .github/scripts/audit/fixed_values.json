@@ -660,6 +660,16 @@
     "3"
    ],
    "status": "open"
+  },
+  {
+   "file": "RotationSolver/Watcher.cs",
+   "code": "=> (entry.flags & 0x40) != 0 ? entry.Damage : entry.value;",
+   "values": [
+    "0x40"
+   ],
+   "status": "exception",
+   "loop": "A144",
+   "reason": "Protocol bit of the action effect: marks an amount whose third byte is carried separately (cactbot LogGuide, Ability Damage). Stated in no game sheet, so it cannot be derived at runtime."
   }
  ]
 }

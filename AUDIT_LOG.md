@@ -3534,6 +3534,8 @@ Die Kandidatenfassung war nur bei der ausgeschriebenen Falsifikation besser. Die
 
 **Neu erfasst:** ChurinSMN-Rekindle (fremd); Heiltränke lesen immer die HQ-Werte (Upstream).
 
+**Defekt im Prüfmittel, behoben:** `check_fixed_values.py` fand keine Hexadezimal-Literale; das neue `0x40` lief ungemeldet durch. Das Skript erkennt sie jetzt, und der Selbsttest enthält den Fall. Im übrigen Fork-Code gab es keine weiteren.
+
 **Vom Prüfer bestätigt:** Prüfskripte grün; keine ungelisteten festen Werte; Gleichwertigkeit bei `AoeCount`, Cleave, `skipAoeCheck`, Todesauslöser und Statusprüfung; nur die Heilblöcke erreichen den Zweig, und kein Verbraucher liest dort Ziel oder Getroffene; Gapcloser-Ausnahme deckt die alte ab; Swiftcast-Überladung; ECommons-Formel; Trankstufen.
 
 **Prüfgrad:** Audit statisch; Behebungen statisch, Prüfskripte, Compile über die CI.
