@@ -759,15 +759,15 @@ public struct ActionTargetInfo(IBaseAction action)
 		// Here the anchor is the caster, always, and the need is read where the heal lands: the hurt
 		// members inside the effect radius, at least AoeCount of them, and at least one of those under
 		// the heal ratio when the auto-heal check is on - the same two tests the general path applies,
-		// moved from the anchor to the affected. A member held for a death trigger is healed if he
-		// stands in the radius - an area heal cannot skip him - but he never counts as the reason.
+		// moved from the anchor to the affected. A member held for a death trigger, or carried through
+		// Walking Dead by his own attacks, is healed if he stands in the radius - an area heal cannot
+		// skip him - but he never counts as the reason.
 		//
 		// Only for the heal target type, and not when a caller names the caster outright
 		// (targetOverride Self), which the general path answers with the caster unconditionally. A
 		// friendly Range-0 action asked for anything else keeps the general path, because only the
-		// heal question depends on who needs it. The Cleave block of
-		// GetMostCanTargetObjects is kept as it stands there: it holds friendly area actions too, and
-		// whether it should is a separate question from where the need is measured.
+		// heal question depends on who needs it. The AoE setting does not apply: it is about attacks
+		// (see GetMostCanTargetObjects).
 		if (Range == 0 && EffectRange > 0 && !IsSingleTarget && !IsTargetArea && action.Setting.IsFriendly
 			&& type == TargetType.Heal && targetOverride != TargetType.Self)
 		{
@@ -777,18 +777,16 @@ public struct ActionTargetInfo(IBaseAction action)
 			var inRadius = GetCanAffects(skipStatusProvideCheck, skipTargetStatusNeedCheck, type, targetOverride);
 			inRadius.RemoveAll(member => member.IsDead || member.HasStatus(false, StatusHelper.HealingIneffectiveStatus));
 			var required = skipAoeCheck ? 1 : Math.Max(1, (int)action.Config.AoeCount);
-			var cleaveBlocked = !skipAoeCheck && action.Config.AoeCount > 1
-				&& (Service.Config.AoEType == AoEType.Cleave || (DataCenter.IsInM9S && Service.Config.M9SCleaveOnly));
-			if (cleaveBlocked || inRadius.Count < required)
+			if (inRadius.Count < required)
 			{
-				DataCenter.LastSelfCentredHeal = new(action.Name, inRadius.Count, required, false, cleaveBlocked, DateTime.Now);
+				DataCenter.LastSelfCentredHeal = new(action.Name, inRadius.Count, required, false, DateTime.Now);
 				return null;
 			}
 
 			var anyInNeed = false;
 			foreach (var member in inRadius)
 			{
-				if (member.IsHeldForDeathTrigger())
+				if (member.IsHeldForDeathTrigger() || member.WalkingDeadCarriedBySelfHeal(out _))
 				{
 					continue;
 				}
@@ -800,12 +798,22 @@ public struct ActionTargetInfo(IBaseAction action)
 				}
 			}
 
-			DataCenter.LastSelfCentredHeal = new(action.Name, inRadius.Count, required, anyInNeed, false, DateTime.Now);
+			DataCenter.LastSelfCentredHeal = new(action.Name, inRadius.Count, required, anyInNeed, DateTime.Now);
 			return anyInNeed ? new TargetResult(Player.Object, [.. inRadius], Player.Object.Position) : null;
 		}
 
 		IEnumerable<IBattleChara> canTargets = GetCanTargets(skipStatusProvideCheck, skipTargetStatusNeedCheck, type, targetOverride);
 		var canAffects = GetCanAffects(skipStatusProvideCheck, skipTargetStatusNeedCheck, type, targetOverride);
+
+		// A Walking Dead bearer who is carried by his own attacks is supported with a HoT only, the
+		// owner's rule (concept 09): a heal action that grants no HoT does not take him as its target
+		// until StatusHelper.WalkingDeadCarriedBySelfHeal releases him. Here rather than in
+		// FindHealTarget, because only this layer knows which action is asking, and FindTargetByType
+		// is public and has no action to ask.
+		if (type == TargetType.Heal && canTargets is List<IBattleChara> healCandidates && !GrantsSingleHot())
+		{
+			_ = healCandidates.RemoveAll(member => member.WalkingDeadCarriedBySelfHeal(out _));
+		}
 
 		if (canTargets == null || canAffects == null)
 		{
@@ -1130,6 +1138,26 @@ public struct ActionTargetInfo(IBaseAction action)
 			default:
 				return true;
 		}
+	}
+
+	/// <summary>Whether this action grants one of the single-target HoTs in <see cref="StatusHelper.SingleHots"/>.</summary>
+	private readonly bool GrantsSingleHot()
+	{
+		var provides = action.Setting.TargetStatusProvide;
+		if (provides == null)
+		{
+			return false;
+		}
+
+		foreach (var status in provides)
+		{
+			if (Array.IndexOf(StatusHelper.SingleHots, status) >= 0)
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/// <summary>
@@ -1594,8 +1622,11 @@ public struct ActionTargetInfo(IBaseAction action)
 			yield break;
 		}
 
-		// Cleave mode
-		if (aoeCount > 1 && (Service.Config.AoEType == AoEType.Cleave || (DataCenter.IsInM9S && Service.Config.M9SCleaveOnly)))
+		// Cleave mode. Attacks only, as Off already is: the setting is about AoE attacks, and a heal or
+		// a party mitigation that wants several members in reach is not one (owner's reading, A147).
+		// Without the IsFriendly test a healer on Cleave never cast Medica, Helios or Succor.
+		if (!action.Setting.IsFriendly && aoeCount > 1
+			&& (Service.Config.AoEType == AoEType.Cleave || (DataCenter.IsInM9S && Service.Config.M9SCleaveOnly)))
 		{
 			yield break;
 		}

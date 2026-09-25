@@ -71,11 +71,9 @@ internal class DiagnosticsWindow : Window
 		ImGui.TextColored(ImGuiColors.DalamudViolet, "Area heal around you");
 		if (DataCenter.LastSelfCentredHeal is { } heal)
 		{
-			var verdict = heal.CleaveBlocked
-				? "held by the Cleave setting"
-				: heal.HurtInRadius < heal.Required
-					? "too few in the radius who can take it"
-					: heal.InNeed ? "someone in the radius is under its heal ratio - it may go" : "nobody in the radius under its heal ratio";
+			var verdict = heal.HurtInRadius < heal.Required
+				? "too few in the radius who can take it"
+				: heal.InNeed ? "someone in the radius is under its heal ratio - it may go" : "nobody in the radius under its heal ratio";
 			ImGui.Text($"{heal.Action}: {heal.HurtInRadius} in the radius who can take it (hurt, alive, without its effect), {heal.Required} asked for - {verdict}"
 				+ $" ({(DateTime.Now - heal.At).TotalSeconds:F0} s ago)");
 		}
@@ -93,6 +91,19 @@ internal class DiagnosticsWindow : Window
 				+ $"{DataCenter.ProactiveMitigationHeld.Count} action(s), {vindicated} followed by a big hit, {wasted} not"
 				+ (vindicated + wasted > 0 && !DataCenter.ProactiveHoldIsEarningItsKeep ? " - stood down, wrong more often than right" : string.Empty));
 			ImGui.Separator();
+		}
+
+		// Shown only while someone is under Walking Dead: whether the heal hold still trusts his own
+		// attacks, and if not, which condition released it.
+		foreach (var member in DataCenter.PartyMembers)
+		{
+			if (member != null && member.HasStatus(false, StatusID.WalkingDead))
+			{
+				member.WalkingDeadCarriedBySelfHeal(out var why);
+				ImGui.TextColored(ImGuiColors.DalamudViolet, "Walking Dead");
+				ImGui.Text($"{member.Name}: {why}");
+				ImGui.Separator();
+			}
 		}
 
 		ImGui.TextColored(ImGuiColors.DalamudViolet, "Movement safety");

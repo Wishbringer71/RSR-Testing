@@ -388,9 +388,11 @@ internal partial class Configs : IPluginConfiguration
 	/// - Full: Use all available AoE actions.
 	/// - Cleave: Use only single-target AoE actions.
 	/// - Off: Do not use any AoE actions.
+	///
+	/// Attacks only: heals and other actions on the party are not affected.
 	/// </markdown>
 	[UI("What kind of AoE moves to use.",
-	Description = "Full: Use all available AoE actions.\nCleave: Use only single-target AoE actions.\nOff: Do not use any AoE actions.",
+	Description = "Full: Use all available AoE actions.\nCleave: Use only single-target AoE actions.\nOff: Do not use any AoE actions.\nAttacks only: heals and other actions on the party are not affected.",
 	Filter = AutoActionUsage, Section = 3)]
 	public AoEType AoEType { get; set; } = AoEType.Full;
 

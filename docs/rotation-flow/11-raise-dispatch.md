@@ -310,13 +310,10 @@ tote Tanks ist eine begründete Fallunterscheidung und kein Tippfehler (C36). Di
 entspricht der Vorgabe des Auftraggebers, wonach eine Feder zuerst einen Heiler aufheben soll.
 
 **Vorgabe des Auftraggebers (25.09.2026):** „der nebenheiler soll den hauptheiler vor dem tank
-rezzen." Der Code erfüllt das in jeder Lage bis auf eine: Sind **beide** Tanks tot, wird zuerst ein
-Tank aufgehoben (`deathTanks.Count > 1`, Upstream; Begründung C36: dann hält niemand den Gegner).
-Ob diese Ausnahme gegen seine Vorgabe bestehen bleibt, ist ihm vorgelegt, ohne Empfehlung: Beide
-Seiten haben einen Grund (A146) — der aufgehobene Heiler ist sofort ein zweiter Wiederbelebender, der
-aufgehobene Tank hält den Gegner —, und welcher im Kampf mehr rettet, ist nicht belegt; ebenso, wen er mit
-„Nebenheiler" meint (zweiter Heiler der Gruppe oder Rezzer ohne Heilerrolle wie Beschwörer und
-Rotmagier) — der Code staffelt für jeden Wiederbelebenden gleich.
+rezzen", präzisiert: „ein tank sollte aggro halten. heiler rezzen ist wichtig, aber wenn man in der
+zeit selbst totgeschlagen wird, bringt das nichts." **Der Code erfüllt beides:** Lebt noch ein Tank,
+kommt der Heiler vor dem toten Tank; sind beide Tanks tot, zuerst ein Tank
+(`deathTanks.Count > 1`, Upstream, C36), weil sonst niemand den Gegner hält.
 
 Die Filter in `GetDeath` sind vollständig und schließen jeweils sinnvoll aus: kein Wiederbelebungs-
 oder Verweigerungsstatus, Entfernung über 30 Yalm, fehlende Sichtlinie, Gruppen- oder

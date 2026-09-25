@@ -81,7 +81,7 @@ Eine Lesart bleibt bewusst ausgeklammert: „Überleben des Tanks" gilt hier als
 Vorrang *innerhalb* der Frage, ob eine Tank-Schutzmechanik respektiert wird — nicht
 als genereller Vorrang des Tanks vor der Gruppe. Für diesen anderen Fall führt RSR
 bereits eine eigene Rangfolge (Selbst → Heiler → Tank → niedrigste Gesundheit,
-`ActionTargetInfo.cs:3180-3205`). Sie hier ebenfalls umzustellen wäre eine zweite,
+`ActionTargetInfo.cs:3211-3236`). Sie hier ebenfalls umzustellen wäre eine zweite,
 größere Änderung.
 
 ## Taxonomie nach Auslöser
@@ -255,6 +255,41 @@ folgt ein gestaffeltes Verhalten statt eines Schalters:
 | Mitte | Kurs prüfen, weiter leicht unterstützen | Solange der Kurs trägt, ist ein großer Zauber vergeudet |
 | Kurs reicht nicht | **eingreifen, in voller Höhe** | Die Alternative ist der Tod am Phasenende |
 | Kurs trägt bis zum Ende | nichts weiter | Der Rest ist Überheilung |
+
+### Umsetzung für Phase 2 (A147)
+
+**Vorgabe des Auftraggebers (25.09.2026):** „walking dead läßt solange es läuft den darkknight sich
+selbst durch angriffe heilen. […] also vertraut man am anfang (bei eben den 1hp) darauf, dass der tank
+sich selbst heilt, indem er bei gegnern schaden verursacht. das soll nur leicht mit einem hot
+unterstützt werden. erst wenn der timer des effektes ausläuft bzw. klar ist, dass der darkknight sich
+in der verbleibenden zeit nicht selbst durch angriff (vollständig) heilen kann, soll unterstützt werden.
+das kann z.b. durch fehlende gegnerzahlen oder durch ein anstehendes event passieren, wo der darkknight
+nicht mehr angreifen kann." Der Wirktext bestätigt die Mechanik (Living Dead, `ActionId.resx` 3638).
+
+**Sachstand:** `StatusHelper.WalkingDeadCarriedBySelfHeal` sagt, ob der Träger noch von seinen eigenen
+Angriffen getragen wird. Solange das gilt, nimmt ihn keine Heilaktion als Ziel, die keinen HoT aus
+`SingleHots` verleiht (`ActionTargetInfo.FindTarget`), und er zählt nicht als Grund für eine
+Flächenheilung um den Wirkenden. Regen des Weißmagiers ist unter Walking Dead von der
+`RegenHeal`-Sperre ausgenommen. Die volle Unterstützung setzt ein, sobald einer dieser Fälle eintritt:
+
+| Auslöser | Maß, aus dem Spiel |
+|---|---|
+| Timer läuft aus | derselbe Vorlauf wie bei der Living-Dead-Sperre (zwei GCDs bis zur Entscheidung) |
+| kein Gegner in Reichweite | Spielreichweite von Hard Slash, Trefferfläche zu Trefferfläche |
+| angekündigtes Ereignis | BossModReborn-Auszeit vor Ablauf; ohne Modul erst reaktiv über die Reichweite |
+| er schafft es nicht | Gesundheit seit Beginn des Fensters, auf die Restzeit hochgerechnet, bleibt unter 100 % |
+
+Der Kurs ist netto: Schaden zieht ab, er unterschätzt also die kumulierte Heilung, und die Freigabe
+kommt eher zu früh als zu spät. Im ersten GCD gibt es noch nichts zu messen; dann wird ihm vertraut.
+
+**Grenzen:** Rotationen, die ihr Heilziel selbst wählen statt über `FindTarget` (fremde Rotationen,
+direkte Aufrufe von `FindTargetByType`), sehen die Sperre nicht. Die Flächenheilflagge rechnet den
+Träger bei 1 HP weiter in ihre Mittelwerte ein. Welche Angriffe ihn trotz Walking Dead unter 1 HP
+drücken („most attacks"), ist unbelegt.
+
+**Im Kampf ablesbar:** Das Diagnosefenster zeigt, solange jemand unter Walking Dead steht, ob er
+getragen wird oder welcher Auslöser die volle Unterstützung freigegeben hat, mit dem hochgerechneten
+Kurs.
 
 ### Die Aufhebungen kehren sich für Living Dead um
 

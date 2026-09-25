@@ -115,8 +115,9 @@ had last. The rotation status shows your distance and which block is allowed.
 Medica, Helios, Succor, Lux Solaris and the other area heals around the caster only went out on
 the heal path when someone within 0 yalms - usually the caster - was under the action's heal
 threshold. A healer standing full a few yalms from a hurt party never cast them. The need is now
-read on the hurt, living party members inside the heal's radius. `Cleave` in the AoE setting still holds
-these heals back when they ask for more than one target, as before. The Diagnostics window shows
+read on the hurt, living party members inside the heal's radius. The AoE setting is about attacks
+only: on `Cleave` a healer now casts group heals and party mitigations again (`Off` already let them
+through). The Diagnostics window shows
 the last such heal that was weighed.
 
 ## Summoner: Rekindle's fallback waits for the end of the Phoenix phase
@@ -142,6 +143,15 @@ it is or is not used.
 The close button in the title bar now turns the window off - as do Escape and the gamepad back
 button while it is focused. Before, the next frame opened it again and only the setting could close
 it. The same holds for the Control and Cooldown windows.
+## Dark Knight: Walking Dead is trusted to his own attacks first
+
+Under Walking Dead the dark knight heals himself by attacking and does not drop below 1 HP from most
+attacks. Healers no longer answer the 1 HP with Benediction or Cure II: at first he only gets a HoT
+(Regen goes out despite its health threshold). Full healing starts once the timer is running out,
+no enemy is in reach of his weaponskills, BossMod announces a downtime before the end, or his own
+course measured since the window began will not reach full health in time. The Diagnostics window
+shows which of these holds.
+
 ## Hits and heals above 65,535 points are read in full
 
 The effect handler read the low 16 bits of every damage and heal amount. A raidwide that hit a

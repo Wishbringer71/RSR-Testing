@@ -3584,6 +3584,32 @@ Die Kandidatenfassung war nur bei der ausgeschriebenen Falsifikation besser. Die
 
 **Prüfgrad:** statisch; Wirktexte aus `ActionId.resx` und `Rotation.resx`.
 
+### A147 · Walking Dead nach seiner Vorgabe; „Cleave" nur für Angriffe; Rezz-Reihenfolge bestätigt (25.09.2026)
+
+**Walking Dead (E2), Loop über den Entwurf aus A146:**
+- *Research:* Mechanik am Wirktext belegt (Living Dead, 3638). Heute zündete Benediction bei 1 HP sofort, und Regen war gesperrt.
+- *Optionen:* nichts tun; Sperre nur für Benediction; zentrale Sperre aller Heilaktionen ohne HoT (gewählt).
+- *Abgleich:* gegen seinen Wortlaut — HoT am Anfang, volle Hilfe bei auslaufendem Timer oder wenn klar ist, dass er es nicht schafft; Gegnerzahl und Ereignis nennt er als Beispiele.
+- *Falsifikation:*
+  - Kein Defekt? Widerlegt: Benediction am Anfang widerspricht der Vorgabe.
+  - Option falsch? Eine Sperre allein für Benediction ließe Cure II den GCD nehmen, statt ihm zu vertrauen.
+  - Ausgeliefert, nichts ändert sich? Rotationen mit eigener Zielwahl sehen die Sperre nicht (benannt). Ohne Heilflagge greift auch das Regen nicht, aber bei 1 HP steht die Flagge.
+- *Feinschliff gegenüber A146:* Der Kurs wird nicht aus dem letzten Tiefpunkt in `RecordedHP` gerechnet, sondern aus der Gesundheit beim ersten Sehen des Fensters. Wiederholte Stürze auf 1 HP starten die Messung so nicht immer neu und verlängern das Vertrauen nicht. Ein späteres Fenster erkennt die Erkennung an der größeren Restzeit.
+- Kein neuer fester Wert: Vorlauf wie Living Dead, Reichweite aus dem Spiel, Messbeginn nach einem GCD aus `DefaultGCDTotal`.
+- Anzeige: Diagnosefenster, solange jemand unter Walking Dead steht.
+
+**„Cleave" (E3):** Seine These „Cleave macht nur für Angriffe Sinn" hielt der Gegenthese stand.
+- Upstream nimmt freundliche Aktionen bei „Off" an zwei Stellen aus.
+- Freundliche Aktionen mit Schaden (Holy, Phlegma) sind feindlich gezielt und bleiben gesperrt.
+- Gruppenminderungen ohne Bodenziel gehen jetzt auch unter „Cleave".
+- Dass Heilungen keine neuen Gegner ziehen, ist Erinnerung, nicht Beleg, und ist deshalb kein Grund.
+
+Umgesetzt: `GetMostCanTargetObjects` sperrt unter „Cleave" nur feindliche Aktionen; der Flächenheil-Zweig übernimmt die Sperre nicht mehr. Der Einstellungstext sagt jetzt „Attacks only: heals and other actions on the party are not affected".
+
+**Rezz-Reihenfolge (E4):** Seine Präzisierung („ein tank sollte aggro halten …") deckt sich mit dem Code. Solange ein Tank lebt, kommt der Heiler zuerst; sind beide Tanks tot, zuerst ein Tank. Keine Änderung.
+
+**Prüfgrad:** statisch; Prüfskripte grün; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

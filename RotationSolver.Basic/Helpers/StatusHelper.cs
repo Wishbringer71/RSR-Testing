@@ -662,6 +662,111 @@ public static class StatusHelper
 	private const uint DeathTriggerLeadGCDs = 2;
 
 	/// <summary>
+	/// Whether a Walking Dead bearer is still carried by his own attacks, and if not, why.
+	/// <para>
+	/// Owner's rule (concept 09): under Walking Dead the dark knight does not fall below 1 HP from
+	/// most attacks, every weaponskill or spell he lands restores HP, and only if the restored total
+	/// has not reached his maximum HP when the timer runs out is he KO'd (Living Dead's effect text,
+	/// ActionId.resx 3638). So at first the party trusts him to heal himself by fighting and supports
+	/// him only lightly, with a HoT. Full support comes once the timer is running out, or once it is
+	/// clear he will not make it in the time left - no enemy in reach, or an event ahead during which
+	/// he cannot attack.
+	/// </para>
+	/// <para>
+	/// Every condition comes from the game or from the fight, none from a number of its own:
+	/// <list type="bullet">
+	/// <item>The lead time is the Living Dead hold's, for the same reason: a full heal decided now
+	/// must still land before the window closes.</item>
+	/// <item>Reach is the game's range for Hard Slash, his basic weaponskill, hitbox to hitbox.</item>
+	/// <item>The event is BossModReborn's next downtime. Without a module it reads as none, and an
+	/// untargetable phase is seen only once it has begun, through the reach check.</item>
+	/// <item>The course is his health since the window was first seen, carried forward over the
+	/// time left. Health is net of the damage he takes, so it understates what he has restored and
+	/// the release comes early rather than late. For the first GCD there is nothing to measure yet,
+	/// and he is trusted, as the rule says.</item>
+	/// </list>
+	/// </para>
+	/// </summary>
+	internal static bool WalkingDeadCarriedBySelfHeal(this IBattleChara battleChara, out string why)
+	{
+		var id = battleChara.GameObjectId;
+		if (!battleChara.HasStatus(false, StatusID.WalkingDead))
+		{
+			_ = WalkingDeadSeen.Remove(id);
+			why = "not under Walking Dead";
+			return false;
+		}
+
+		var now = DateTime.Now;
+		var remaining = battleChara.StatusTime(false, StatusID.WalkingDead);
+		var ratio = battleChara.GetHealthRatio();
+
+		// A later window reads more time left than the one on record: start over.
+		if (!WalkingDeadSeen.TryGetValue(id, out var seen) || remaining > seen.Remaining)
+		{
+			seen = (now, ratio, remaining);
+			WalkingDeadSeen[id] = seen;
+		}
+
+		if (battleChara.WillStatusEndGCD(DeathTriggerLeadGCDs, 0, false, StatusID.WalkingDead))
+		{
+			why = "the timer is running out - full support";
+			return false;
+		}
+
+		var reach = FFXIVClientStructs.FFXIV.Client.Game.ActionManager.GetActionRange((uint)ActionID.HardSlashPvE);
+		var enemyInReach = false;
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile != null && EdgeDistance(battleChara, hostile) <= reach)
+			{
+				enemyInReach = true;
+				break;
+			}
+		}
+
+		if (!enemyInReach)
+		{
+			why = "no enemy in reach of his weaponskills - full support";
+			return false;
+		}
+
+		if (DataCenter.BMRNextDowntimeIn < remaining)
+		{
+			why = "a downtime is announced before the timer ends - full support";
+			return false;
+		}
+
+		var span = (float)(now - seen.At).TotalSeconds;
+		if (span < DataCenter.DefaultGCDTotal)
+		{
+			why = "just started, nothing to measure yet - HoT only";
+			return true;
+		}
+
+		var projected = ratio + ((ratio - seen.Ratio) / span * remaining);
+		if (projected < 1f)
+		{
+			why = $"his own course reaches {projected:P0} by the end - full support";
+			return false;
+		}
+
+		why = $"carried by his own attacks, course {projected:P0} - HoT only";
+		return true;
+	}
+
+	/// <summary>When each bearer's Walking Dead was first seen, with his health and the time left then.</summary>
+	private static readonly Dictionary<ulong, (DateTime At, float Ratio, float Remaining)> WalkingDeadSeen = [];
+
+	/// <summary>Hitbox-to-hitbox distance on the ground plane, as the game measures action range.</summary>
+	private static float EdgeDistance(IBattleChara a, IBattleChara b)
+	{
+		var dx = a.Position.X - b.Position.X;
+		var dz = a.Position.Z - b.Position.Z;
+		return MathF.Max(0f, MathF.Sqrt((dx * dx) + (dz * dz)) - a.HitboxRadius - b.HitboxRadius);
+	}
+
+	/// <summary>
 	/// Is the fall to zero still the likely continuation for a bearer at this health?
 	///
 	/// The lead time above buys the heal enough runway to land, and it pays for that with the one

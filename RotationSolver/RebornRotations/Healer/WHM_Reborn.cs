@@ -570,7 +570,12 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			return true;
 		}
 
-		if (RegenPvE.CanUse(out act) && (RegenPvE.Target.Target.GetHealthRatio() > RegenHeal))
+		// Below RegenHeal the emergency belongs to Cure II and Benediction - except under Walking
+		// Dead, where the dark knight heals himself by attacking and the owner's rule asks for a HoT
+		// as the light support (concept 09).
+		if (RegenPvE.CanUse(out act)
+			&& (RegenPvE.Target.Target.GetHealthRatio() > RegenHeal
+				|| RegenPvE.Target.Target.HasStatus(false, StatusID.WalkingDead)))
 		{
 			return true;
 		}

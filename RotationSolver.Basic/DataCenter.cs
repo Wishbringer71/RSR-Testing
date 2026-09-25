@@ -3269,14 +3269,14 @@ internal static class DataCenter
 	/// <summary>
 	/// The last time an area heal centred on the caster was weighed on the heal path: which action,
 	/// how many hurt members stood in its radius against how many it asks for, whether one of them
-	/// was under its heal ratio, and whether the Cleave setting held it. Written by the targeting,
+	/// was under its heal ratio. Written by the targeting,
 	/// shown in the diagnostics window, so a group heal that stays out can be told apart from one
 	/// that was never asked.
 	/// </summary>
 	internal static SelfCentredHealWeighing? LastSelfCentredHeal { get; set; }
 
 	/// <summary>One weighing of an area heal centred on the caster.</summary>
-	internal readonly record struct SelfCentredHealWeighing(string Action, int HurtInRadius, int Required, bool InNeed, bool CleaveBlocked, DateTime At);
+	internal readonly record struct SelfCentredHealWeighing(string Action, int HurtInRadius, int Required, bool InNeed, DateTime At);
 
 	/// <summary>
 	/// The last time the movement safety check withheld an action that moves the player, and why.

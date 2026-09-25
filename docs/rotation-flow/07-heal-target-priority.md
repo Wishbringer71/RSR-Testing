@@ -137,14 +137,13 @@ der Heilschwelle verlangte. Jetzt fällt sie, sobald im Radius genug Verletzte s
 - Am Anker entfallen die Prüfungen, die der allgemeine Pfad am Heilziel stellte: `CanTarget`,
   `CanUseTo` (Abfrage beim Spiel), `MinHPFeature` der Aktion. Für keine freundliche Heilung mit
   Reichweite 0 ist ein `CanTarget` gesetzt (erhoben A137). `NoNewHostiles`, das im allgemeinen Pfad
-  die Trefferzahl auch für freundliche Mitglieder ohne Ziel auf 0 setzte, wirkt hier nicht — eine
-  Gruppenheilung zieht keine Gegner.
-- Die Einstellung „Cleave" (`AoEType.Cleave`, ebenso `M9SCleaveOnly` in M9S) sperrt eine Flächenheilung
-  mit `AoeCount` über 1 weiterhin, wie sie es auf dem allgemeinen Pfad tut. Ob sie Heilungen überhaupt
-  sperren soll, ist eine eigene Frage (TODO „Cleave sperrt Gruppenheilungen").
+  die Trefferzahl auch für freundliche Mitglieder ohne Ziel auf 0 setzte, wirkt hier nicht; die
+  Einstellung gilt dem Anziehen neuer Gegner, und ob eine Heilung das kann, ist hier nicht belegt.
+- Die AoE-Einstellung (Full/Cleave/Off) gilt nur Angriffen, seine Lesart (A147): Unter „Cleave" und
+  „Off" gehen Gruppenheilungen und Gruppenminderungen wie unter „Full".
 - **Im Kampf ablesbar:** Das Diagnosefenster zeigt unter „Area heal around you" die zuletzt gewogene
   Heilung dieser Art — Aufnahmefähige im Radius gegen die verlangte Anzahl, ob jemand darunter unter
-  der Heilschwelle liegt, ob „Cleave" sie hält. Taucht eine Heilung dort nie auf, meldet das Spiel für
+  der Heilschwelle liegt. Taucht eine Heilung dort nie auf, meldet das Spiel für
   sie keine Reichweite 0, die Flagge stand nicht, oder die Aktion wurde vorher abgelehnt
   (Abklingzeit, Stufe, benötigter Status wie Refulgent Lux). Den Stand der Flagge zeigt die Zeile
   nicht.
