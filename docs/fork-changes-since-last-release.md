@@ -113,14 +113,15 @@ had last. The rotation status shows your distance and which block is allowed.
 Medica, Helios, Succor, Lux Solaris and the other area heals around the caster only went out on
 the heal path when someone within 0 yalms - usually the caster - was under the action's heal
 threshold. A healer standing full a few yalms from a hurt party never cast them. The need is now
-read on the hurt party members inside the heal's radius. `Cleave` in the AoE setting still holds
+read on the hurt, living party members inside the heal's radius. `Cleave` in the AoE setting still holds
 these heals back when they ask for more than one target, as before. The Diagnostics window shows
 the last such heal that was weighed.
 
 ## Summoner: Rekindle's fallback waits for the end of the Phoenix phase
 
-The last-resort Rekindle read Firebird Trance, a status only PvP code reads; with the status
-missing it fired in the first weave slot of the phase instead of near its end. It now reads the
+The last-resort Rekindle read Firebird Trance, a status otherwise read only for a PvP action; if
+the game does not set it in PvE, the fallback fired in the first weave slot of the phase instead of
+near its end. It now reads the
 phase from the job gauge. Everlasting Flight and Undying Flame now count as running HoTs, so the
 heal thresholds lower under them as under any other regen.
 

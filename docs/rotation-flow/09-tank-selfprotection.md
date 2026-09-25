@@ -412,12 +412,18 @@ Die Option ist nötig, weil RSR Living Dead selbst als Notrettung bei
 verlangt danach eine volle Maximalgesundheit an Heilung in zehn Sekunden.
 
 
-**Der Hebel ist die Option, nicht der Grenzwert.** `StateUpdater.ShouldHealSingle` senkt die
-Schwelle unter einem Schutzstatus auf `HealthProtectedRatio` (0,15), solange Living Dead mehr als
-zwei GCDs Restzeit hat; danach kehrt die normale Schwelle zurück, außer der Träger steht auf oder
-unter `HealthForDyingTanks` (`DeathStillLikely`, A88). `HealthProtectedRatio` anzuheben verschöbe
-beide Abschnitte und heilte **früher** im Fenster, also gerade den Tod weg, auf den die Regel wartet.
-Wer den Todeseffekt will, schaltet `WithholdHealingForLivingDead` ein; der Grenzwert ist nur für die
+**Der Hebel ist die Option, nicht der Grenzwert.** Zwei Mechanismen, je nach Stellung von
+`WithholdHealingForLivingDead`:
+- **Option aus:** `StateUpdater.ShouldHealSingle` senkt die Schwelle unter einem Schutzstatus auf
+  `HealthProtectedRatio` (0,15), solange Living Dead mehr als zwei GCDs Restzeit hat; danach kehrt die
+  normale Schwelle zurück, unabhängig von der Gesundheit.
+- **Option an:** Der Träger wird gar nicht geheilt, solange das Todesfenster läuft
+  (`IsHeldForDeathTrigger`). Das Fenster endet zwei GCDs vor Ablauf, außer der Träger steht auf oder
+  unter `HealthForDyingTanks` (`DeathStillLikely`, A88) — dann läuft es bis zum Ablauf.
+
+`HealthProtectedRatio` anzuheben verschöbe den ersten Mechanismus und heilte **früher** im Fenster,
+also gerade den Tod weg, auf den die Regel wartet. Wer den Todeseffekt will, schaltet
+`WithholdHealingForLivingDead` ein; der Grenzwert ist nur für die
 übrigen Invulnerabilitäten der Liste maßgeblich (Holmgang, Superbolide, Hallowed Ground), bei denen
 kein Tod gewollt ist. Upstream heilt ein Ziel unter Invulnerabilität gar nicht; die Absenkung ist die
 mildere Fassung. Ein zu früh gesetzter Living Dead (vom Auftraggeber bei 70 % im Wall-to-Wall
@@ -502,7 +508,7 @@ Schleife neben der bestehenden, kein Ringpuffer und kein dritter Effekt-Handler.
 | Zeit bis zum Tod eines Gruppenmitglieds | **ja** | `ObjectHelper.GetCorrectedTTK`, gegen den eigenen Vorhersagefehler kalibriert |
 | Abtastrate der Historie | **1 Hz** | `TimeToKillUpdateInterval` |
 | Eingehende Heilung auf ein Party-Mitglied | **nicht gesondert ausgewertet, und nicht nötig** | Der Gesundheitsverlauf ist bereits netto: Eine fremde Heilung zeigt sich als steigender Anteil, `GetTTK` antwortet dann `NaN` |
-| Schadensbetrag eines Gegnertreffers | **verfügbar und gelesen** | `Watcher.cs:137` wertet `damageEffect.value` aus, prüft aber nur `> 0` |
+| Schadensbetrag eines Gegnertreffers | **verfügbar und gelesen** | `Watcher.FullAmount`, voller Betrag auch über 65.535 Punkte (A140, A144) |
 
 Zwei Genauigkeitsgrenzen bestehen fort: Die 1-Hz-Abtastung ist für ein
 Zehn-Sekunden-Fenster grob, und ein Gesundheitsdelta ist ein Surrogat für kumulierte

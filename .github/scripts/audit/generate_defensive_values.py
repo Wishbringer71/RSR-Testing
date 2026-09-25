@@ -49,13 +49,20 @@ SPLIT_MITIGATION = re.compile(
 # "absorbs damage totaling 20% of your maximum HP", and the other phrasing the game uses for the
 # same thing, "nullifies damage totaling up to 30% of maximum HP" (Manaward). Matching only the
 # first left Manaward out of the table without a trace.
+# "absorbs damage equivalent to 10% of your maximum HP" (Divine Veil) and "equal to" state the same
+# shape; "equivalent to a heal of N potency" and "equaling % of the amount of HP restored" do not
+# name a share of maximum HP and stay out.
 BARRIER_SHARE = re.compile(
-    r"(?:absorb(?:s|ing)|nullif(?:ies|ying)) damage totaling (?:up to )?(\d{1,3})\s*% of [^.]{0,30}?maximum HP"
+    r"(?:absorb(?:s|ing)|nullif(?:ies|ying)) damage (?:totaling|equivalent to|equal to) (?:up to )?"
+    r"(\d{1,3})\s*% of [^.]{0,30}?maximum HP"
 )
 # Whether the barrier can be put on somebody else: "a barrier around self or target party member",
-# "around self and all nearby party members". Manaward's "Creates a barrier that nullifies..." and
-# Radiant Aegis's "a barrier around self" cannot.
-BARRIER_REACHES_PARTY = re.compile(r"barrier around[^.]{0,40}?party member")
+# "around self and all nearby party members", "around target", "a barrier to self or target player"
+# (Lost Stoneskin). Manaward's "Creates a barrier that nullifies..." and Radiant Aegis's "a barrier
+# around self that..." cannot.
+BARRIER_REACHES_PARTY = re.compile(
+    r"barrier (?:around|to) (?:self (?:or|and) )?(?:all )?(?:target|nearby party|party)"
+)
 
 # "Duration: 30s" - how long the effect stands. A trait that changes the figure leaves the text
 # with an empty number ("Duration: s"), and then nothing is stated and nothing is carried.
@@ -294,6 +301,21 @@ def self_test():
             "Creates a barrier around self or target party member that absorbs damage totaling 25% "
             "of target's maximum HP.",
             {"Barrier": 0.25, "BarrierReachesParty": True},
+        ),
+        (
+            "Creates a barrier around self and all nearby party members that absorbs damage "
+            "equivalent to 10% of your maximum HP.",
+            {"Barrier": 0.1, "BarrierReachesParty": True},
+        ),
+        (
+            "Applies a barrier to self or target player that absorbs damage totaling 15% of target's "
+            "maximum HP",
+            {"Barrier": 0.15, "BarrierReachesParty": True},
+        ),
+        (
+            "Creates a barrier around self that absorbs damage totaling 20% of maximum HP. Can only "
+            "be executed on a target party member",
+            {"Barrier": 0.2},
         ),
         # The second phrasing, and a barrier only its caster carries.
         (

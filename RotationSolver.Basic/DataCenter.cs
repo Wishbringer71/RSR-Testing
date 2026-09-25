@@ -3285,6 +3285,12 @@ internal static class DataCenter
 	/// </summary>
 	internal static MoveSafetyRefusal? LastMoveSafetyRefusal { get; set; }
 
+	/// <summary>
+	/// The last refusal the safety check gave without measuring anything, because the movement had no
+	/// target to measure against.
+	/// </summary>
+	internal static MoveSafetyRefusal? LastMoveSafetyUnmeasured { get; set; }
+
 	/// <summary>One refusal of the movement safety check.</summary>
 	internal readonly record struct MoveSafetyRefusal(string Action, string Why, DateTime At);
 

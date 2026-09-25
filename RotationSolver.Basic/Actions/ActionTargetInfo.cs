@@ -762,14 +762,20 @@ public struct ActionTargetInfo(IBaseAction action)
 		// moved from the anchor to the affected. A member held for a death trigger is healed if he
 		// stands in the radius - an area heal cannot skip him - but he never counts as the reason.
 		//
-		// Only for the heal target type. A friendly Range-0 action asked for anything else keeps the
-		// general path, because only the heal question depends on who needs it. The Cleave block of
+		// Only for the heal target type, and not when a caller names the caster outright
+		// (targetOverride Self), which the general path answers with the caster unconditionally. A
+		// friendly Range-0 action asked for anything else keeps the general path, because only the
+		// heal question depends on who needs it. The Cleave block of
 		// GetMostCanTargetObjects is kept as it stands there: it holds friendly area actions too, and
 		// whether it should is a separate question from where the need is measured.
 		if (Range == 0 && EffectRange > 0 && !IsSingleTarget && !IsTargetArea && action.Setting.IsFriendly
-			&& type == TargetType.Heal)
+			&& type == TargetType.Heal && targetOverride != TargetType.Self)
 		{
+			// The dead and those who cannot be healed stay out, as GeneralHealTarget keeps them out:
+			// a corpse reads 0 health, so it would count towards AoeCount and pass the heal ratio on
+			// its own, and the cast would go to whoever stands next to it.
 			var inRadius = GetCanAffects(skipStatusProvideCheck, skipTargetStatusNeedCheck, type, targetOverride);
+			inRadius.RemoveAll(member => member.IsDead || member.HasStatus(false, StatusHelper.HealingIneffectiveStatus));
 			var required = skipAoeCheck ? 1 : Math.Max(1, (int)action.Config.AoeCount);
 			var cleaveBlocked = !skipAoeCheck && action.Config.AoeCount > 1
 				&& (Service.Config.AoEType == AoEType.Cleave || (DataCenter.IsInM9S && Service.Config.M9SCleaveOnly));
@@ -1088,7 +1094,7 @@ public struct ActionTargetInfo(IBaseAction action)
 				// Target-based dash: use IsDashSafe with calculated destination (stopped at target hitbox)
 				if (target == null)
 				{
-					return Refused("no target to measure the dash against");
+					return Refused("no target to measure the dash against", measured: false);
 				}
 
 				// Standing at the target, the dash does not move the player, and there is nothing
@@ -1136,9 +1142,20 @@ public struct ActionTargetInfo(IBaseAction action)
 	/// Records why the movement safety check withheld this action, for the diagnostics window, and
 	/// answers <c>false</c>.
 	/// </summary>
-	private readonly bool Refused(string why)
+	private readonly bool Refused(string why, bool measured = true)
 	{
-		DataCenter.LastMoveSafetyRefusal = new(action.Name, why, DateTime.Now);
+		// Kept apart: a refusal without a target can repeat every frame (FindTargetAreaMove, TODO) and
+		// would otherwise hide the refusal of a dash that was actually measured.
+		var refusal = new DataCenter.MoveSafetyRefusal(action.Name, why, DateTime.Now);
+		if (measured)
+		{
+			DataCenter.LastMoveSafetyRefusal = refusal;
+		}
+		else
+		{
+			DataCenter.LastMoveSafetyUnmeasured = refusal;
+		}
+
 		return false;
 	}
 

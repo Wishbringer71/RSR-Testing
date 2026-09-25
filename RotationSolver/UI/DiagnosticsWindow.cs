@@ -74,9 +74,9 @@ internal class DiagnosticsWindow : Window
 			var verdict = heal.CleaveBlocked
 				? "held by the Cleave setting"
 				: heal.HurtInRadius < heal.Required
-					? "too few hurt in the radius"
+					? "too few in the radius who can take it"
 					: heal.InNeed ? "someone in the radius is under its heal ratio - it may go" : "nobody in the radius under its heal ratio";
-			ImGui.Text($"{heal.Action}: {heal.HurtInRadius} hurt in the radius, {heal.Required} asked for - {verdict}"
+			ImGui.Text($"{heal.Action}: {heal.HurtInRadius} in the radius who can take it (hurt, alive, without its effect), {heal.Required} asked for - {verdict}"
 				+ $" ({(DateTime.Now - heal.At).TotalSeconds:F0} s ago)");
 		}
 		else
@@ -89,7 +89,7 @@ internal class DiagnosticsWindow : Window
 		if (Service.Config.HoldProactiveMitigationForSmallCast)
 		{
 			var (vindicated, wasted) = DataCenter.ProactiveHoldRecord;
-			ImGui.Text("Predicted mitigation held for a small cast, this fight: "
+			ImGui.Text("Predicted mitigation held for a small cast, since the list was last cleared: "
 				+ $"{DataCenter.ProactiveMitigationHeld.Count} action(s), {vindicated} followed by a big hit, {wasted} not"
 				+ (vindicated + wasted > 0 && !DataCenter.ProactiveHoldIsEarningItsKeep ? " - stood down, wrong more often than right" : string.Empty));
 			ImGui.Separator();
@@ -105,6 +105,11 @@ internal class DiagnosticsWindow : Window
 			ImGui.TextColored(ImGuiColors.DalamudGrey, Service.Config.BmrSafetyCheckAuto
 				? "Nothing withheld yet. A gap closer at 0 y to its target is never withheld."
 				: "The check is off: nothing is withheld.");
+		}
+
+		if (DataCenter.LastMoveSafetyUnmeasured is { } unmeasured)
+		{
+			ImGui.Text($"Withheld without a target to measure: {unmeasured.Action} ({(DateTime.Now - unmeasured.At).TotalSeconds:F0} s ago)");
 		}
 		ImGui.Separator();
 

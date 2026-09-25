@@ -3510,6 +3510,34 @@ Die Kandidatenfassung war nur bei der ausgeschriebenen Falsifikation besser. Die
 
 **Prüfgrad:** statisch; Dalamud-Quelltext; Compile über die CI. Im Spiel sichtbar: Das Fenster bleibt nach dem X zu, und die Option ist aus.
 
+### A144 · Unabhängiges Audit von A137–A143: Befunde und Behebung (25.09.2026)
+
+**Verfahren:** ein eigener Prüfer ohne Schreibrechte, Auftrag: jede Änderung und jede Aussage als falsch annehmen und am Code widerlegen. Er hat alle Prüfskripte ausgeführt und ECommons, die Datamining-Tabellen und die CI-Läufe gelesen.
+
+**Behoben:**
+- **Tote und Heilungsunfähige zählten im neuen Flächenheil-Zweig als Bedarf.** Eine Leiche liest die Gesundheit 0, zählte zu `AoeCount` und erfüllte die Heilschwelle. Im Kampf: Medica oder Afflatus Rapture auf Umstehende mit wenig Bedarf, weil neben dem Heiler jemand tot lag. Jetzt ausgeschlossen wie in `GeneralHealTarget`.
+- **`targetOverride: Self`** nimmt den Zweig nicht mehr. Der allgemeine Pfad gibt dort den Wirkenden ohne Bedarfsprüfung zurück, und so bleibt es.
+- **Übertragsbyte.** Nur noch mit Flag 0x40 gelesen: cactbot LogGuide, „Ability Damage", Bytes ABCD mit C = 0x40, Summe = D A B. `EffectEntry.Damage` rechnet `mult` ohne diese Bedingung ein. Wäre das Byte bei kleinen Treffern anders belegt, bliebe ein zu groß gemessener Anteil für immer stehen, weil die Ablage nur Erhöhungen schreibt. **Loop zum festen Wert 0x40:** ein Protokollbit des Spiels. Es steht in keinem Datenblatt, aus dem es abzuleiten wäre, und ist durch die Fremddokumentation belegt; als Ausnahme gelistet.
+- **Barrieren-Generator, Klasse geschlossen.** Er erkennt auch „equivalent to X %" und „equal to X %" (Divine Veil, Magic Shell, Steadfast Stance). „Auf ein anderes Mitglied legbar" erkennt er auch an „around target" und „to self or target player" (Lost Stoneskin). Die Obergrenze bleibt 0,25.
+- **Anzeigen.**
+  - Die Flächenheilzeile zählt „die sie aufnehmen können".
+  - Die Zeile zur zurückgehaltenen Minderung sagt „seit dem letzten Leeren" statt „dieser Kampf".
+  - Eine Verweigerung ohne Ziel wird getrennt geführt und verdeckt eine gemessene nicht mehr.
+  - Die Lux-Solaris-Zeile gilt ausdrücklich nur für den Heilpfad.
+  - Der Text „every hit arrived at zero" ist ersetzt.
+- **Dokumente.**
+  - Firebird Trance: Konzept 07, Code-Kommentar und Release-Text behaupteten, nur PvP-Stellen läsen den Status; `ChurinSMN` liest ihn im PvE (C95). Ob das Spiel ihn im PvE setzt, bleibt unbelegt, denn der Wirktext von Summon Phoenix sagt „Enters Firebird Trance". Der neue Code ist in beiden Fällen richtig.
+  - Konzept 07: warum eine Heilung in der Diagnosezeile fehlen kann; welche Ankerprüfungen entfallen.
+  - Konzept 09: veralteter `Watcher`-Verweis; die zwei Mechanismen von Living Dead getrennt.
+  - Konzept 12: „der Abstand, den das Spiel anzeigt" als unbelegt gekennzeichnet.
+  - Die Cleave-Vorlage nannte Lux Solaris zu Unrecht (`AoeCount` 1).
+
+**Neu erfasst:** ChurinSMN-Rekindle (fremd); Heiltränke lesen immer die HQ-Werte (Upstream).
+
+**Vom Prüfer bestätigt:** Prüfskripte grün; keine ungelisteten festen Werte; Gleichwertigkeit bei `AoeCount`, Cleave, `skipAoeCheck`, Todesauslöser und Statusprüfung; nur die Heilblöcke erreichen den Zweig, und kein Verbraucher liest dort Ziel oder Getroffene; Gapcloser-Ausnahme deckt die alte ab; Swiftcast-Überladung; ECommons-Formel; Trankstufen.
+
+**Prüfgrad:** Audit statisch; Behebungen statisch, Prüfskripte, Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -3784,3 +3812,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C92 | Kommentar in `SMN_Reborn.AttackAbility`: 60 Sekunden seien eine ganze Zahl von GCDs, die Abklingzeit der Beschwörung ende also auf dem GCD-Raster | Gilt nur bei 2,50 Sekunden GCD. Die Regel „bereit bis zum nächsten GCD" hängt nicht daran | Kommentar bei der nächsten Änderung an der Stelle; A133 |
 | C93 | A117: Die Verfallsklausel für Lux Solaris in `GeneralAbility` bekomme keinen Einschiebeplatz, weil der Angriffszweig in einer Demi-Phase immer etwas habe | Refulgent Lux läuft 30 s, die Demi-Phase 15 s. Die Klausel greift in den letzten drei GCDs, also in der Primal-Phase danach, und dort ist der Angriffszweig fast leer. Lux Solaris zündet dann spät und ohne Gesundheitsprüfung; blind am Code bestätigt (A136) | A136; der Fall ist durch die gemessene Zündregel im Angriffszweig ohnehin überholt |
 | C94 | TODO und Konzept 11: Der Sonderfall für `PartyAndAllianceHealers` stehe fälschlich vor der `H2`-Umkehrung | Der Optionstext von `H2` nennt nur Nicht-Heiler; der Sonderfall für Heiler folgt dem Text, die Umkehrung der Heilerliste in den übrigen Modi nicht | Konzept 11 und TODO berichtigt, A141 |
+| C95 | A137, Code-Kommentar in `SMN_Reborn`, Konzept 07, Release-Text: Firebird Trance werde im Baum nur von PvP-Stellen gelesen | `ChurinSMN` liest ihn im PvE mit derselben Bauform; zudem nennt der Wirktext von Summon Phoenix „Enters Firebird Trance", ob der Status im PvE gesetzt wird, ist offen | Kommentar, Konzept und Release-Text berichtigt, ChurinSMN erfasst; A144 |

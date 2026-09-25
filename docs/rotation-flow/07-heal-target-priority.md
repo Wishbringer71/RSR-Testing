@@ -116,7 +116,8 @@ Eine dieser Rollenschwellen zu heben erzeugt deshalb keine zusätzliche Heilung 
 **Sachstand (A137):** Eine Flächenheilung, die um den Wirkenden herum wirkt — Reichweite 0, ein
 Wirkradius, kein Bodenziel: Medica, Helios, Succor, Lux Solaris und rund dreißig weitere —, hat den
 Wirkenden als Anker, und ihr Bedarf wird an den Mitgliedern **im Wirkradius** gemessen: mindestens
-`AoeCount` verletzte darin, und bei eingeschalteter Heilprüfung mindestens eines davon mit
+`AoeCount` darin, die sie aufnehmen können (verletzt, lebend, nicht heilungsunfähig, ohne ihren
+bereitgestellten Status), und bei eingeschalteter Heilprüfung mindestens eines davon mit
 vorausberechneter Gesundheit unter der Heilschwelle der Aktion (`AutoHealRatio`). Ein Mitglied, das
 für einen Todesauslöser zurückgehalten wird, wird mitgeheilt, wenn es im Radius steht, zählt aber nie
 als Grund.
@@ -130,15 +131,23 @@ der Heilschwelle verlangte. Jetzt fällt sie, sobald im Radius genug Verletzte s
 - Gilt nur, wenn das Spiel für die Aktion Reichweite 0 meldet (`ActionManager.GetActionRange`). Meldet es
   etwas anderes, greift der Zweig nicht, und alles bleibt wie vorher. Die Beschwörer-Anzeige nennt die
   gemeldete Reichweite von Lux Solaris.
-- Gilt nur für die Zielart Heilung. Andere freundliche Aktionen mit Reichweite 0 bleiben auf dem
-  allgemeinen Pfad.
+- Gilt nur für die Zielart Heilung und nicht, wenn ein Aufrufer den Wirkenden ausdrücklich als Ziel
+  nennt (`TargetType.Self`); dort gibt der allgemeine Pfad den Wirkenden ohne Bedarfsprüfung zurück.
+  Andere freundliche Aktionen mit Reichweite 0 bleiben auf dem allgemeinen Pfad.
+- Am Anker entfallen die Prüfungen, die der allgemeine Pfad am Heilziel stellte: `CanTarget`,
+  `CanUseTo` (Abfrage beim Spiel), `MinHPFeature` der Aktion. Für keine freundliche Heilung mit
+  Reichweite 0 ist ein `CanTarget` gesetzt (erhoben A137). `NoNewHostiles`, das im allgemeinen Pfad
+  die Trefferzahl auch für freundliche Mitglieder ohne Ziel auf 0 setzte, wirkt hier nicht — eine
+  Gruppenheilung zieht keine Gegner.
 - Die Einstellung „Cleave" (`AoEType.Cleave`, ebenso `M9SCleaveOnly` in M9S) sperrt eine Flächenheilung
   mit `AoeCount` über 1 weiterhin, wie sie es auf dem allgemeinen Pfad tut. Ob sie Heilungen überhaupt
   sperren soll, ist eine eigene Frage (TODO „Cleave sperrt Gruppenheilungen").
 - **Im Kampf ablesbar:** Das Diagnosefenster zeigt unter „Area heal around you" die zuletzt gewogene
-  Heilung dieser Art — Verletzte im Radius gegen die verlangte Anzahl, ob jemand darunter unter der
-  Heilschwelle liegt, ob „Cleave" sie hält. Taucht eine Heilung dort nie auf, meldet das Spiel für sie
-  keine Reichweite 0, oder die Flagge stand nicht.
+  Heilung dieser Art — Aufnahmefähige im Radius gegen die verlangte Anzahl, ob jemand darunter unter
+  der Heilschwelle liegt, ob „Cleave" sie hält. Taucht eine Heilung dort nie auf, meldet das Spiel für
+  sie keine Reichweite 0, die Flagge stand nicht, oder die Aktion wurde vorher abgelehnt
+  (Abklingzeit, Stufe, benötigter Status wie Refulgent Lux). Den Stand der Flagge zeigt die Zeile
+  nicht.
 - Ob überhaupt geheilt wird, entscheidet weiter die Flagge. Deren Streuungsbedingung hält die Flagge
   unten, wenn ein einzelner Spieler getroffen ist — das ist eine eigene Frage (TODO „Flächenheilung nach
   Pegel statt Rate").
@@ -361,10 +370,11 @@ mehr als nichts.
 **Der Rückfall fällt kurz vor Phasenende, gemessen an der Jobleiste (A137).** Die Phase liest
 `SMN_Reborn` aus `InPhoenix` und der Beschwörungszeit (`SummonTimeEndAfterGCD`), nicht aus dem Status
 Firebird Trance (3229). Dieser Status macht nach seinem Wirktext Fountain of Fire und Brand of
-Purgatory wirkbar und wird im Baum sonst nur von PvP-Stellen gelesen; fehlt ein Status, gilt er als
-„endet jetzt", und der Rückfall fiel dann im ersten freien Einschiebeplatz der Phase statt an ihrem
-Ende — Rekindle war ausgegeben, bevor jemand es brauchte. Die Jobleiste beantwortet die Frage in beiden
-Fällen richtig, ob der Status im PvE gesetzt wird oder nicht. Der Vorlauf von drei GCDs ist ein
+Purgatory wirkbar und wird in den Basisrotationen sonst nur von `ModifyBrandOfPurgatoryPvP` gelesen;
+`ChurinSMN` liest ihn wie der alte Rückfall. Ob das Spiel ihn im PvE setzt, ist unbelegt — der
+Wirktext von Summon Phoenix sagt „Enters Firebird Trance". Fehlt er, gilt er als „endet jetzt", und der
+Rückfall fiel im ersten freien Einschiebeplatz der Phase statt an ihrem Ende — Rekindle war
+ausgegeben, bevor jemand es brauchte. Die Jobleiste beantwortet die Frage in beiden Fällen richtig. Der Vorlauf von drei GCDs ist ein
 fester Wert ohne eigenen Loop (`fixed_values.json`, offen).
 
 **Geprüft wird das jetzt maschinell, nicht erinnert:**

@@ -26,12 +26,19 @@ public static class Watcher
 
 	public static string ShowStrSelf { get; private set; } = string.Empty;
 
-	// Amounts of damage and healing are read from EffectEntry.Damage, never from .value. The entry
-	// stores an amount as a 16-bit value plus a multiplier of 65,536 (ECommons 3.2.1.20,
-	// EffectEntry.Damage), so .value alone wraps every hit or heal above 65,535 points - a level 100
-	// raidwide on a tank, a Benediction on one. The shares measured from it came out too small, and
-	// a big area hit could be rated small. ActionEffectSet.GetSpecificTypeEffect returns .value too
-	// ("Is this value or Damage? IDK about it." in its source), so heals are collected here instead.
+	// Amounts of damage and healing are read through FullAmount, never from .value alone. The entry
+	// stores an amount as a 16-bit value; a larger one carries its third byte in the byte ECommons
+	// calls mult, and only then is bit 0x40 of the byte it calls flags set ("a lot of damage":
+	// cactbot's LogGuide, "Ability Damage" - bytes ABCD, C = 0x40, total = D A B). So .value alone
+	// wrapped every hit or heal above 65,535 points - a level 100 raidwide on a tank, a Benediction
+	// on one - and the measured shares came out too small, so a big area hit could be rated small.
+	// EffectEntry.Damage adds mult without looking at the flag; where the byte means something else
+	// that would inflate a small hit for good, because the store only ever raises a value.
+	// ActionEffectSet.GetSpecificTypeEffect returns .value too ("Is this value or Damage? IDK about
+	// it." in its source), so heals are collected here instead.
+	private static uint FullAmount(EffectEntry entry)
+		=> (entry.flags & 0x40) != 0 ? entry.Damage : entry.value;
+
 	private static Dictionary<ulong, uint> AmountsByTarget(ActionEffectSet set, ActionEffectType type)
 	{
 		var result = new Dictionary<ulong, uint>();
@@ -39,7 +46,7 @@ public static class Watcher
 		{
 			if (effect.GetSpecificTypeEffect(type, out var entry))
 			{
-				result[effect.TargetID] = entry.Damage;
+				result[effect.TargetID] = FullAmount(entry);
 			}
 		}
 
@@ -74,7 +81,7 @@ public static class Watcher
 					{
 						if (entry.type == ActionEffectType.Damage)
 						{
-							damageRatio += (float)entry.Damage / denom;
+							damageRatio += (float)FullAmount(entry) / denom;
 						}
 					});
 				}
@@ -182,7 +189,7 @@ public static class Watcher
 							continue;
 						}
 
-						var landed = damageEffect.Damage > 0;
+						var landed = FullAmount(damageEffect) > 0;
 						if (landed || (damageEffect.param0 & 6) == 6)
 						{
 							damageEffectCount++;
@@ -195,7 +202,7 @@ public static class Watcher
 						// raidwide does not fall out of the list just because the party was shielded.
 						if (landed && memberMaxHp > 0)
 						{
-							var share = (float)damageEffect.Damage / memberMaxHp;
+							var share = (float)FullAmount(damageEffect) / memberMaxHp;
 							if (share > highestShare)
 							{
 								highestShare = share;
@@ -224,12 +231,12 @@ public static class Watcher
 					// well-mitigated pull, and an underrated action corrects itself: the mitigation
 					// is skipped, so the next hit arrives unmitigated and measures itself.
 					// The line above said "measured" before the amount was known; say what the reading
-					// was, or that there was none. A hit that arrived at zero everywhere leaves nothing.
+					// was, or that there was none.
 					if (damageRatio > 0f && OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
 					{
 						DataCenter.AreaMeasurementLastOutcome = highestShare > 0f
 							? $"{DateTime.Now:HH:mm:ss} #{set.Action!.Value.RowId}: in the AoE list, measured at {highestShare:P0} of max HP"
-							: $"{DateTime.Now:HH:mm:ss} #{set.Action!.Value.RowId}: in the AoE list, not measured - every hit arrived at zero (barrier or block)";
+							: $"{DateTime.Now:HH:mm:ss} #{set.Action!.Value.RowId}: in the AoE list, not measured - no amount was read from a party member";
 					}
 
 					if (highestShare > 0f && Service.Config.RecordCastingArea

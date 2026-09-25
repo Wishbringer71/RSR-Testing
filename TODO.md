@@ -12,7 +12,7 @@ Beide sind Upstream-Konventionen und ändern Verhalten im Kampf; zur Entscheidun
 
 ### Die Einstellung „Cleave" sperrt auch Gruppenheilungen · N, U
 
-`GetMostCanTargetObjects` gibt bei `AoEType.Cleave` (und `M9SCleaveOnly` in M9S) nichts zurück, sobald `AoeCount` über 1 liegt — ohne Ausnahme für freundliche Aktionen, während die Einstellung „Off" freundliche Aktionen ausdrücklich ausnimmt (seit Upstream `e1145f452`). **Im Kampf:** Wer „Cleave" wählt, um Gegnergruppen nicht mit Flächenangriffen zu ziehen, bekommt auch Medica, Helios, Succor und Lux Solaris mit Vorgabe-`AoeCount` 3 nie über den Heilpfad. Ob das gewollt ist, belegt weder Kommentar noch Commit-Nachricht. Der Zweig für Flächenheilungen um den Wirkenden (A137) übernimmt die Sperre unverändert, damit die Behebung dort nur den Anker ändert. **Vor einer Änderung:** Absicht von „Cleave" klären (Beschreibung „Only single-target AoE" spricht für Angriffe) und ob er die Einstellung nutzt.
+`GetMostCanTargetObjects` gibt bei `AoEType.Cleave` (und `M9SCleaveOnly` in M9S) nichts zurück, sobald `AoeCount` über 1 liegt — ohne Ausnahme für freundliche Aktionen, während die Einstellung „Off" freundliche Aktionen ausdrücklich ausnimmt (seit Upstream `e1145f452`). **Im Kampf:** Wer „Cleave" wählt, um Gegnergruppen nicht mit Flächenangriffen zu ziehen, bekommt auch Medica, Helios und Succor mit Vorgabe-`AoeCount` 3 nie über den Heilpfad. Lux Solaris ist nicht betroffen (`AoeCount` 1, `SummonerRotation`). Ob das gewollt ist, belegt weder Kommentar noch Commit-Nachricht. Der Zweig für Flächenheilungen um den Wirkenden (A137) übernimmt die Sperre unverändert, damit die Behebung dort nur den Anker ändert. **Vor einer Änderung:** Absicht von „Cleave" klären (Beschreibung „Only single-target AoE" spricht für Angriffe) und ob er die Einstellung nutzt.
 
 ### Zielbasierte Bewegungsaktionen über den Move-Pfad gelten immer als unsicher · N, U
 
@@ -92,6 +92,14 @@ Die Eigenschaft antwortet „ja", wenn das Spiel Solar als nächste Demi anzeigt
 Upstream hat dieselbe Klasse in 7.5.6.3 an vier Stellen aufgelöst (`ObjectHelper.IsEnemy`, `FindEnemyPositional`, `GetFaceVector`, dazu `RSCommands_Actions` und `StateUpdater`) und dort `IsValid()` sowie `Address != nint.Zero` **vor** den nativen Zugriff gesetzt. Die Stellen in `DataCenter.cs` sind dabei nicht mitgegangen.
 
 **Empfehlung:** dasselbe Muster nachziehen, nicht die Fänge entfernen — ein `catch`, der nie feuert, ist harmlos, der fehlende Vorab-Test ist es nicht. Vorher zu klären: ob `PartyMembers` und die Feindlisten überhaupt freigegebene Objekte führen können oder ob sie je Rahmen neu erhoben werden; trifft Letzteres zu, ist die Klasse hier gegenstandslos und die Fänge sind der eigentliche Befund.
+
+### ChurinSMN: Rekindle-Rückfall liest Firebird Trance · N, U
+
+`ExtraRotations/Magical/ChurinSMN.cs` fragt im PvE den Status Firebird Trance (3229) ab, wie der Rückfall in `SMN_Reborn` bis A137. Setzt das Spiel ihn im PvE nicht, zündet ChurinSMN Rekindle im ersten freien Einschiebeplatz der Phönix-Phase. Fremde Rotation, nur erfasst (A144).
+
+### Heiltränke: die Heilmenge wird immer aus der HQ-Fassung gelesen · N
+
+`HpPotionItem` liest `ItemAction.DataHQ`. Super-, Hyper- und Ultra-Potion heilen in HQ 25 %, in NQ 20 % (Datamining-Tabelle, A139). Bei einem NQ-Trank überschätzt die Regel die Heilmenge; die Sperre „fehlende Gesundheit mindestens die Heilmenge" verlangt dann mehr fehlende Gesundheit, als der Trank heilt, und der Trank geht später hinaus als nötig. Upstream-Code. Zu klären: ob der Trank im Inventar als HQ oder NQ vorliegt, ist über das Inventar lesbar. Gefunden im Audit (A144).
 
 ### `H2` dreht auch Tanks und Heiler um, der Optionstext nennt nur Nicht-Heiler · N
 

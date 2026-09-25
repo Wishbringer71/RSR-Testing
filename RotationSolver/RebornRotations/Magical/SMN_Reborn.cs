@@ -77,7 +77,7 @@ public sealed class SMN_Reborn : SummonerRotation
 	{
 		ImGui.Text($"EnergyDrainPvE: Is Cooling Down: {EnergyDrainPvE.Cooldown.IsCoolingDown}");
 		ImGui.Text($"Next big summon opens the burst: {NextBigSummonIsBurst}");
-		ImGui.Text($"Lux Solaris: range reported {LuxSolarisPvE.TargetInfo.Range:F1} y, radius {LuxSolarisPvE.TargetInfo.EffectRange:F1} y (range 0 = heal anchored on you, need read in the radius)");
+		ImGui.Text($"Lux Solaris: range reported {LuxSolarisPvE.TargetInfo.Range:F1} y, radius {LuxSolarisPvE.TargetInfo.EffectRange:F1} y (range 0: on the heal path the heal is anchored on you and the need read in the radius)");
 		ImGui.Text($"Another Summoner in party: {AnotherSummonerInParty}");
 		ImGui.Text(HostileTarget == null
 			? "Fallback block: no hostile target - Titan only"
@@ -306,10 +306,12 @@ public sealed class SMN_Reborn : SummonerRotation
 		// that is what TryRekindle does: lowest share, else the caster himself.
 		//
 		// The phase is read from the job gauge, not from Firebird Trance (3229). That status makes
-		// Fountain of Fire and Brand of Purgatory castable and is read nowhere else in the tree but
-		// the PvP actions; a status that is missing counts as "ending now", so wherever PvE does not
-		// set it this branch fired in the first free weave slot of the Phoenix phase instead of near
-		// its end. InPhoenix and the summon timer answer the same question in either case.
+		// Fountain of Fire and Brand of Purgatory castable - PvP actions - and in the basic rotations
+		// only ModifyBrandOfPurgatoryPvP reads it (ChurinSMN reads it the way this branch did). Whether
+		// PvE sets it is not established: Summon Phoenix's text says "Enters Firebird Trance". A status
+		// that is missing counts as "ending now", so if PvE does not set it this branch fired in the
+		// first free weave slot of the Phoenix phase instead of near its end. InPhoenix and the summon
+		// timer answer the same question in either case.
 		if (InPhoenix && SummonTimeEndAfterGCD(3))
 		{
 			if (TryRekindle(out act))

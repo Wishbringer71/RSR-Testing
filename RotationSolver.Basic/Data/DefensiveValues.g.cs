@@ -38,6 +38,7 @@ public static class DefensiveValues
 		[44] = new(0.3f, 0f, 0f, 0f), // VengeancePvE
 		[157] = new(0f, 0f, 0f, 0.3f), // ManawardPvE
 		[2887] = new(0f, 0.1f, 0.1f, 0f), // DismantlePvE
+		[3540] = new(0f, 0f, 0f, 0.1f), // DivineVeilPvE
 		[3542] = new(0.15f, 0f, 0f, 0f), // SheltronPvE
 		[3551] = new(0.1f, 0f, 0f, 0f), // RawIntuitionPvE
 		[3613] = new(0.1f, 0f, 0f, 0f), // CollectiveUnconsciousPvE
@@ -87,7 +88,9 @@ public static class DefensiveValues
 		[41610] = new(0.1f, 0f, 0f, 0f), // HerosRimePvE
 		[44899] = new(0f, 0.1f, 0.1f, 0f), // SeedsowerPvE
 		[46412] = new(0.6f, 0f, 0f, 0f), // ThickSkinPvE
+		[46590] = new(0f, 0f, 0f, 0.2f), // MagicShellPvE
 		[46595] = new(0.5f, 0f, 0f, 0f), // DefendPvE
+		[46604] = new(0f, 0f, 0f, 0.1f), // SteadfastStancePvE
 		[46605] = new(0f, 0.1f, 0.1f, 0f), // MesmerizePvE
 		[46606] = new(0.1f, 0f, 0f, 0f), // InquiringMindPvE
 		[49075] = new(0f, 0.99f, 0.99f, 0f), // OccultToadPvE
@@ -123,6 +126,7 @@ public static class DefensiveValues
 		[44] = 15f, // VengeancePvE
 		[157] = 20f, // ManawardPvE
 		[2887] = 10f, // DismantlePvE
+		[3540] = 30f, // DivineVeilPvE
 		[3551] = 6f, // RawIntuitionPvE
 		[3613] = 18f, // CollectiveUnconsciousPvE
 		[3636] = 15f, // ShadowWallPvE
@@ -162,7 +166,9 @@ public static class DefensiveValues
 		[41610] = 20f, // HerosRimePvE
 		[44899] = 60f, // SeedsowerPvE
 		[46412] = 4f, // ThickSkinPvE
+		[46590] = 60f, // MagicShellPvE
 		[46595] = 5f, // DefendPvE
+		[46604] = 30f, // SteadfastStancePvE
 		[46605] = 4f, // MesmerizePvE
 		[49075] = 20f, // OccultToadPvE
 	};
