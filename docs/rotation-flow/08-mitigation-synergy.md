@@ -324,9 +324,17 @@ Einschiebeplatz, und sie ist eine Beigabe — ungenutzt verfaellt sie mit Refulg
      Heilung wirkt nicht;
    - solange ein Dunkelritter im **Living-Dead-Fenster** gehalten wird und im Radius steht (Vorgabe 5:
      „bei living death ist es aber im wahrsten sinne toedlich") — die Heilung naehme ihm den Ausloeser.
-     Offen und ihm vorgelegt: ob ein anderes Mitglied in Gefaehrdungsklasse 1 diese Sperre aufhebt.
-     Konzept 09 laesst Flaechenheilungen eines Heilers den Traeger als Nebenwirkung treffen, weil die
-     Gruppe vorgeht; fuer die Beigabe Lux Solaris hat er strenger entschieden.
+     **Auch dann, wenn ein anderes Mitglied in Gefaehrdungsklasse 1 steht, und auch vor dem Verfall**
+     (seine Entscheidung vom 26.09.2026): In Savage und Extreme ist Living Dead die Antwort auf einen
+     Tankbuster, ein toter Tank ist meist der Wipe, und die Mechanik hat Vorrang vor der Heilung eines
+     anderen Mitglieds — zumal ein Tankbuster selten mit einem Flaechenangriff zusammenfaellt und die
+     Aggro beim Tank liegt. Lux Solaris wird aufgehoben, bis Walking Dead eintritt, und heilt dann mehrere
+     einschliesslich des Tanks (Punkt 2). Verfaellt Refulgent Lux waehrend der Sperre, ist das der
+     hingenommene Preis. Fuer die Heilaktionen der Heiler bleibt Konzept 09: Dort trifft eine
+     Flaechenheilung den Traeger als Nebenwirkung, weil die Gruppe vorgeht; Lux ist eine Beigabe.
+     **Beide Stellungen des Schalters:** Die Sperre folgt `IsHeldForDeathTrigger`, also
+     `WithholdHealingForLivingDead`. Ist der Schalter aus, will der Spieler den Tod als Ausloeser nicht —
+     RSR zuendet Living Dead dann auch als letzte Rettung (Konzept 09) —, und Lux sperrt nicht.
 2. **Nur im Radius** (Vorgabe 4: „eine umkreispruefung ist immer sinnvoll"). Jeder Bedarf wird an den
    lebenden, heilbaren Mitgliedern **im Wirkradius um den Beschwoerer** gemessen, nie an der ganzen Gruppe.
    Den Radius liefert das Spiel (`EffectRange`). Ist im Radius niemand verletzt, faellt nichts.
@@ -351,6 +359,23 @@ Einschiebeplatz, und sie ist eine Beigabe — ungenutzt verfaellt sie mit Refulg
    welche durch einen Platz Aufschub verlieren (Abklingzeit laeuft spaeter an, Burstfenster endet,
    Gunst verfaellt), ist vor der Umsetzung am Code und an den Wirktexten zu erheben; Schutzaktionen
    stehen im Dispatch ohnehin davor.
+
+**Eine Entscheidung fuer alle Wege.** Heilflagge (`HealAreaAbility`), `AttackAbility` und
+`GeneralAbility` fragen dieselbe Entscheidung; heute folgt jeder Weg einer eigenen Bedingung, und genau
+daraus entstanden die Befunde in A150. Ausgenommen ist nur der **manuelle Heilbefehl**: Er ist sein
+ausdruecklicher Wunsch und prueft allein die Verbote aus Punkt 1.
+
+**Folgen der Regel, bewusst hingenommen:**
+- Vor der ersten beobachteten Landung einer Sitzung ist die Heilmenge unbekannt; dann greifen nur die
+  Punkte 4 und 5.
+- Die Vorausheilung vor einem angekuendigten Treffer („Heal ahead of an announced area cast") bedient
+  Lux nicht mehr, ausser ueber Punkt 4 oder wenn jedem im Radius eine volle Heilung fehlt — Lux ist
+  reaktiv, die Vorausheilung bleibt Sache der Heiler.
+- Ein Dunkelritter unter Walking Dead steht bei 1 HP in Gefaehrdungsklasse 1; Lux faellt dann sofort.
+  Das ist gewollt (Punkt 1, seine Entscheidung): die aufgehobene Heilung fuer mehrere, einschliesslich
+  des Tanks.
+- Ob der Radius von Mitte oder Trefferflaeche gemessen wird, ist unbelegt; verwendet wird das Mass der
+  Zielwahl (`GetCanAffects`, Trefferflaeche zu Trefferflaeche).
 
 **Heute im Code (A150), und wo er davon abweicht:**
 - Zwei Wege ausserhalb des Heilpfads (`SMN_Reborn.AttackAbility`, `GeneralAbility`) pruefen weder Shackled

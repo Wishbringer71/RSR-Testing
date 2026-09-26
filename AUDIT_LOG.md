@@ -3705,6 +3705,26 @@ Außerdem: Churin ist uninteressant (CLAUDE.md, TODO bereinigt).
 
 **Stand:** nur Konzept, keine Codeänderung. Die Umsetzung wartet auf seine Freigabe und auf die Antwort zur Living-Dead-Frage.
 
+### A152 · Lux Solaris: Living Dead geht vor; das Gesamtkonzept erneut im Loop geprüft (26.09.2026)
+
+**Seine Entscheidung** zur offenen Frage aus A151: Die Living-Dead-Sperre hält auch dann, wenn ein anderes Mitglied in Gefährdungsklasse 1 steht. Begründung: In Savage und Extreme ist ein toter Tank meist der Wipe; ein Tankbuster fällt selten mit einem Flächenangriff zusammen; die Aggro liegt beim Tank. Lux wird aufgehoben, bis Walking Dead eintritt, und heilt dann mehrere, den Tank eingeschlossen. In Konzept 08 eingetragen.
+
+**Gesamtkonzept erneut geprüft, dabei ergänzt:**
+- *Schalterstellungen:* Die Sperre folgt `WithholdHealingForLivingDead`. Mit dem Schalter aus will der Spieler den Tod als Auslöser nicht, dann sperrt Lux nicht; das ist konsistent mit Konzept 09.
+- *Verfall während der Sperre:* hingenommen, ausdrücklich eingetragen.
+- *Eine Entscheidung für alle drei Wege.* Die Befunde aus A150 entstanden aus getrennten Bedingungen je Weg. Der manuelle Heilbefehl prüft nur die Verbote.
+- *Folgen, benannt:*
+  - Vor der ersten Landung einer Sitzung greifen nur Ausnahme und Verfall.
+  - Die Vorausheilungs-Option bedient Lux nicht mehr, außer über Klasse 1 oder wenn allen im Radius eine volle Heilung fehlt.
+  - Ein Dunkelritter unter Walking Dead steht bei 1 HP in Klasse 1, Lux fällt dann sofort (gewollt).
+  - Das Radiusmaß ist unbelegt.
+- *Falsifikation:*
+  - Die Sperre könnte Lux in jedem Tankbuster-Fenster verfallen lassen. Hingenommen: Living Dead dauert 10 s, Refulgent Lux 30 s, und nach Walking Dead ist die Heilung wieder frei.
+  - Walking Dead als Grund könnte der Walking-Dead-Regel der Heiler widersprechen. Kein Widerspruch: Lux ist eine Beigabe und verfällt sonst; die HoT-Regel betrifft die Heilaktionen der Heiler.
+  - Ausgeliefert, nichts ändert sich: wenn der Schalter aus ist. Dann gilt bewusst das alte Verhalten, und die Diagnosezeile zeigt, dass keine Sperre gilt.
+
+**Stand:** nur Konzept. Umsetzung wartet auf seine Freigabe; vorher ist die Gewichtung im Verfallsfenster am Code zu erheben (Punkt 5).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
