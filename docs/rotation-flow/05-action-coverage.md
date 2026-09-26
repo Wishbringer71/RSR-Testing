@@ -123,6 +123,7 @@ Rotationsentscheidung, keine Lückenschließung, und gehört ins Spiel geprüft.
 
 Nach Abzug von Limit Breaks, Pet-Aktionen, Stance-Abbrüchen,
 Morph-Platzhaltern und Upgrade-Griffen bleiben Aktionen, für die keiner dieser
-Gründe greift. Sie sind in `TODO.md` #69 einzeln geführt und **nicht**
-ungeprüft nachgerüstet — jede braucht eine Rotationsentscheidung, keine
-Codeentscheidung.
+Gründe greift. Ihre Einzelprüfung steht im Archiv (#69, abgearbeitet); die heutige
+Einordnung je Job, erzeugt statt gezählt, steht in `14-action-dependency-matrix.md`
+und `docs/action-matrix/`. Keine davon ist ungeprüft nachgerüstet — jede braucht
+eine Rotationsentscheidung, keine Codeentscheidung.
