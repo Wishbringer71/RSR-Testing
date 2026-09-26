@@ -100,10 +100,6 @@ Upstream hat dieselbe Klasse in 7.5.6.3 an vier Stellen aufgelöst (`ObjectHelpe
 
 **Empfehlung:** dasselbe Muster nachziehen, nicht die Fänge entfernen — ein `catch`, der nie feuert, ist harmlos, der fehlende Vorab-Test ist es nicht. Vorher zu klären: ob `PartyMembers` und die Feindlisten überhaupt freigegebene Objekte führen können oder ob sie je Rahmen neu erhoben werden; trifft Letzteres zu, ist die Klasse hier gegenstandslos und die Fänge sind der eigentliche Befund.
 
-### ChurinSMN: Rekindle-Rückfall liest Firebird Trance · N, U
-
-`ExtraRotations/Magical/ChurinSMN.cs` fragt im PvE den Status Firebird Trance (3229) ab, wie der Rückfall in `SMN_Reborn` bis A137. Setzt das Spiel ihn im PvE nicht, zündet ChurinSMN Rekindle im ersten freien Einschiebeplatz der Phönix-Phase. Fremde Rotation, nur erfasst (A144).
-
 ### Wiederbelebung: vier Eingriffe des Zweigs sind weiter ungemessen · N, R
 
 **Konzept:** `docs/rotation-flow/11-raise-dispatch.md`
@@ -177,16 +173,7 @@ Umgesetzt und in `AUDIT_LOG.md` A78 und A89 nachgewiesen, soweit statisch mögli
 
 **Zünden mehrere Beschwörer beim Buffende gleichzeitig?** Das Modell schreibt sequenziell zu und bildet das nicht ab. Der Fall besteht heute schon und sollte seltener werden, nicht häufiger; belegt ist das nicht.
 
-**Erfasst, nicht bearbeitet:** `ChurinSMN.cs:1015` trägt denselben V1-Befund; beim Zündfenster ist die fremde Rotation bereits weiter (`:948` nutzt `BahamutBurst`), allerdings ohne Gruppenprüfung.
 
-
-### ChurinDNC wertet die BMR-Downtime ohne Vorzeichenprüfung aus · N, U
-
-`ChurinDNC.cs:777-843` (Upstream) liest `BMRNextDowntimeIn`/`-EndIn` ohne Vorzeichenprüfung. BossModReborn liefert diese Werte als `(Aktivierung − jetzt)`, sie sind während einer laufenden Downtime also negativ, und die Rotation kann „Downtime läuft" nicht von „Downtime kommt gleich" unterscheiden: `if (BMRNextDowntimeIn >= 15f) return;` kehrt dann nicht zurück, und die folgende `<`-Bedingung ist immer erfüllt. Die Normalisierung der Schadensvorhersagen ist erledigt (AUDIT_LOG A11); hier wäre ein Filter falsch, weil das Vorzeichen die Information trägt.
-
-Nicht behoben, weil die Absicht dieser fremden Rotation ohne ihren Autor nicht belegbar ist und eine Änderung ohne Spieltest nicht abzusichern wäre. Auflösung: Rückfrage an den Upstream-Autor oder Laufzeitbeobachtung.
-
-**Empfehlung: nicht bearbeiten.** Fremde Rotationsdatei, und die Behebung verlangt genau die Richtungsentscheidung, die ohne den Autor nicht zu treffen ist. Der Punkt bleibt erfasst; Adressat ist der Upstream.
 
 ### Status-Einstellungen auf der falschen Seite der Aktion · N, U
 

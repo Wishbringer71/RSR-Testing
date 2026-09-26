@@ -153,9 +153,11 @@ abgelegten Wert zu lesen: Sonst haenge sie daran, ob der Verteidigungszweig im s
 lief — und der steht hinter `UseAoeDefense`, sodass die Regel bei abgeschalteter Flaechenabwehr
 still nie gefeuert haette.
 
-**Beim Beschwoerer trifft das auf die Zuendregel unten.** Steht die Flaechenheilungsflagge wegen
-eines angekuendigten Treffers, ist Lux Solaris der Zweig, der sie bedient — und der Wurf faellt
-**vor** dem Einschlag statt danach.
+**Beim Beschwoerer gilt fuer Lux Solaris die eigene Regel** („Wann Lux Solaris zuendet"). Sie ist
+reaktiv; vor einem angekuendigten Treffer faellt sie nur, wenn ein Mitglied im Radius schon in
+Gefaehrdungsklasse 1 steht, jedem im Radius eine volle Heilung fehlt oder das Fenster verfaellt. Heute
+bedient der Heilpfad die Flagge noch ohne diese Regel: Mit der Option an und einem Mitglied im Radius
+unter `AutoHealRatio` faellt der Wurf vor dem Einschlag (A150).
 
 **Die Heil-oGCD nimmt den ersten Einschiebeplatz, die Minderung den naechsten (A140).** Die Regel setzt
 auch `HealAreaAbility`, und der Dispatch fragt Heil-Faehigkeiten vor `DefenseArea`. Das ist Vorgabe 2
@@ -299,63 +301,86 @@ ist der grosse" ist ueber die Schnittstelle nicht lesbar.
 Groesseninformation, die in diesem Moment vorliegt. Die Regel ist deshalb so gut, wie diese Zuordnung
 trifft — und nicht besser.
 
-## Wann eine verfallende Heilung zuendet
+## Wann Lux Solaris zuendet
 
-**Die Heilschwellen sind fuer die teure Heilung eines Heilers gebaut, und fuer eine verfallende
-Nebenheilung sind sie das falsche Mass.** `AutoStatus.HealAreaAbility` verlangt zweierlei zugleich:
-die Streuung der Gruppengesundheit unter `HealthDifference` (0,25 im Code) **und** ihren Durchschnitt
-unter `HealthAreaAbility` (0,75 im Code; beides je Job einstellbar, seine eigenen Werte sind von hier
-nicht messbar). Die Streuungsbedingung ist der Grund, warum eine Flaechenheilung ausbleibt, wenn
-**einer** getroffen wurde: Genau dann ist die Streuung gross. Das ist fuer einen Heilzauber richtig —
-eine teure Flaechenheilung fuer einen einzelnen Verletzten ist der falsche Tausch.
+**Sachstand der Regel, aus seinen Vorgaben vom 26.09.2026 (A151).** Der Code folgt ihr noch nicht;
+was er heute tut und wo er abweicht, steht am Ende dieses Abschnitts und in A150. Umsetzung erst nach
+seiner Freigabe.
 
-**Fuer eine Aktion, die ohnehin verfaellt, ist es der falsche Tausch in die andere Richtung.** Lux
-Solaris kostet kein MP und keinen GCD; ihr einziger Preis ist der Einschiebeplatz, und sie erlischt
-mit Refulgent Lux. Die Frage lautet dort nicht „lohnt Flaechenheilung“, sondern **„ist dieser Wurf
-verschwendet“**.
+**Was Lux Solaris ist.** Eine reaktive Flaechenheilung um den Beschwoerer (Wirktext 36997: „Restores
+own HP and the HP of all nearby party members", Heilpotenz 500), wirkbar nur unter Refulgent Lux, das
+Summon Solar Bahamut fuer 30 s gewaehrt (36992). Kein Schild, keine Minderung: Was sie vor einem Treffer
+tut, zaehlt nach dem Treffer nicht mehr. Sie kostet kein MP und keinen GCD, nur einen
+Einschiebeplatz, und sie ist eine Beigabe — ungenutzt verfaellt sie mit Refulgent Lux.
 
-**Vorgabe des Auftraggebers, woertlich:** „Hier besteht aber nur eine gewisse Zeit die Möglichkeit zu
-heilen. Am besten, wenn die bestehe Gesundheit gerade so hoch ist, dass die Heilung auf 100 % der Hp
-kommt.“
+**Die Regel, in der Reihenfolge der Pruefung:**
 
-| Lage | Antwort |
-|---|---|
-| Fehlbetrag kleiner als die Heilung | warten — der Ueberschuss verpufft, und das Fenster laeuft noch |
-| Fehlbetrag erreicht die Heilung | zuenden — sie kommt vollstaendig an |
-| Fenster laeuft aus, irgendjemand ist verletzt | zuenden — ungenutzt ist sie ganz verloren |
-| Fenster laeuft aus, niemand ist verletzt | **nicht** zuenden — auf eine volle Gruppe heilt sie niemanden (A149) |
+1. **Verbote zuerst** (Vorgabe 2: „negativvorgaben wie nicht casten, weil sonst schaden eingeht,
+   muessen beachtet werden"). Lux Solaris faellt auf keinem Weg:
+   - unter **Shackled Healing** (Status 4564: „Use of HP-restoring actions will inflict Shackles of
+     Penitence on those nearby"), solange ein anderes Gruppenmitglied in der Naehe steht — die Strafe
+     traefe die Umstehenden;
+   - unter **Scalebound** (1495: „unable to heal wounds via any method save mega potions") — die
+     Heilung wirkt nicht;
+   - solange ein Dunkelritter im **Living-Dead-Fenster** gehalten wird und im Radius steht (Vorgabe 5:
+     „bei living death ist es aber im wahrsten sinne toedlich") — die Heilung naehme ihm den Ausloeser.
+     Offen und ihm vorgelegt: ob ein anderes Mitglied in Gefaehrdungsklasse 1 diese Sperre aufhebt.
+     Konzept 09 laesst Flaechenheilungen eines Heilers den Traeger als Nebenwirkung treffen, weil die
+     Gruppe vorgeht; fuer die Beigabe Lux Solaris hat er strenger entschieden.
+2. **Nur im Radius** (Vorgabe 4: „eine umkreispruefung ist immer sinnvoll"). Jeder Bedarf wird an den
+   lebenden, heilbaren Mitgliedern **im Wirkradius um den Beschwoerer** gemessen, nie an der ganzen Gruppe.
+   Den Radius liefert das Spiel (`EffectRange`). Ist im Radius niemand verletzt, faellt nichts.
+   Ein Dunkelritter unter **Walking Dead** zaehlt dabei als Verletzter (Vorgabe 5: „lieber casten, bevor
+   lux solaris ungenutzt verfaellt, vor allem, wenn auch noch andere gruppenmitglieder davon geheilt
+   werden") — anders als bei den Heilaktionen der Heiler (Konzept 09), weil Lux sonst verfaellt.
+3. **Normalfall: ohne Ueberheilung** (Vorgabe 6). Lux Solaris faellt,
+   - wenn **dem Beschwoerer selbst** mindestens eine volle Heilung fehlt („wenn ich schaden erleide und lux
+     solaris mich damit nicht ueberheilt, ist lux solaris korrekt angewendet"), oder
+   - wenn **jedem** Mitglied im Radius mindestens eine volle Heilung fehlt („erst lux solaris anwenden,
+     wenn es auch bei allen anderen gruppenmitgliedern im radius nicht ueberheilt").
+   Die Heilmenge ist die gemessene (unten), nicht die Potenz.
+4. **Ausnahme: bedrohlich geringe Gesundheit** (Vorgabe 6). Steht ein Mitglied im Radius in
+   Gefaehrdungsklasse 1 (Konzept 07: effektive Gesundheit auf oder unter `HealthForDyingTanks`), faellt
+   Lux sofort, ohne Ruecksicht auf Ueberheilung. Das Mass ist das vorhandene der Heilkette, keine neue
+   Zahl.
+5. **Ausnahme: kurz vor dem Verfall** (Vorgaben 1 und 6). Vor Ablauf von Refulgent Lux zaehlt nur, ob die
+   Heilung ueberhaupt etwas bewirkt: Ist im Radius irgendjemand verletzt, **auch wenig**, faellt sie.
+   Dabei wird gewichtet (Vorgabe 1: „minor heilung oder andere aktion"): Eine solche Kleinheilung nimmt
+   keinen Platz, den eine Aktion braucht, die durch Aufschub an Wert verliert. Faellt Lux dadurch
+   ungenutzt weg, ist das der geringere Verlust. Welche Aktionen im Verfallsfenster konkurrieren und
+   welche durch einen Platz Aufschub verlieren (Abklingzeit laeuft spaeter an, Burstfenster endet,
+   Gunst verfaellt), ist vor der Umsetzung am Code und an den Wirktexten zu erheben; Schutzaktionen
+   stehen im Dispatch ohnehin davor.
 
-**Lux Solaris ist reaktives Heilen** (seine Lesart, A149): kein Schild, keine Minderung — was sie vor
-einem Treffer tut, zaehlt nach dem Treffer nicht mehr. Sie faellt deshalb nur, wenn jemand verletzt
-ist, auf jedem Weg. Die Verfallsklausel in `GeneralAbility` (Upstream, `1c850931f`) zuendete in den
-letzten drei GCDs von Refulgent Lux ohne Gesundheitspruefung; seine Beobachtung — volle Gruppe,
-angekuendigter Flaechenangriff, Lux Solaris vor dem Einschlag — war genau dieser Weg. Sie verlangt jetzt
-wie die Klausel in `AttackAbility` einen Fehlbetrag. Eine Vorhersage des Treffers braucht es dafuer
-nicht: Bei voller Gruppe faellt nichts, nach dem Treffer sind Mitglieder verletzt, und die reaktiven
-Wege antworten. Verworfen ist die kurz gebaute Vorhersage (`AnnouncedAreaHitIn`), weil sie auf
-AoE-Liste und BossMod angewiesen war und nur einen Randfall mehr traf: Ist jemand schon leicht verletzt,
-wenn kurz vor dem Ende ein grosser Treffer kommt, faellt der Wurf vor dem Treffer und heilt nur den
-vorhandenen Fehlbetrag.
+**Heute im Code (A150), und wo er davon abweicht:**
+- Zwei Wege ausserhalb des Heilpfads (`SMN_Reborn.AttackAbility`, `GeneralAbility`) pruefen weder Shackled
+  Healing noch Scalebound und messen den Bedarf in der ganzen Gruppe (`LargestMissingHp`), nicht im Radius.
+- Der Verfall zuendet, sobald irgendein Mitglied irgendwo etwas verloren hat, ohne Gewichtung gegen
+  andere Aktionen; seine Beobachtung (A149) war dieser Weg.
+- Die volle Landung wird am **groessten Einzelfehlbetrag** gemessen, nicht an „der Beschwoerer selbst
+  oder alle im Radius".
+- Der Living-Dead-Traeger zaehlt als Grund, statt Lux zu sperren.
+- Der Heilpfad (Heilflagge) misst im Radius, verlangt aber ein Mitglied unter `AutoHealRatio` und liest
+  die gemessene Heilmenge nicht; fuer ihn gelten die Punkte 3 bis 5 heute nicht.
+- Im Kampf ist nicht zu sehen, warum Lux fiel oder nicht.
 
-**Die Groesse dafuer ist der gemessene Heilwert, nicht die Potenz.** 500 Potenz sind von hier aus
-nicht in Lebenspunkte umzurechnen: Heilkraft, Ausruestung und Verstaerkungen entscheiden darueber,
-und sie aendern sich. Gemessen wird sie stattdessen — der Effekt-Handler sieht jede eigene Heilung
-mit ihrem tatsaechlichen Wert (`Watcher.ActionFromSelf`, `ActionEffectType.Heal`), und
-`DataCenter.GetObservedHealPerCast` gibt ihn geglaettet zurueck. **Das ist die selbstkorrigierende
-Sonde, die dieses Konzept von jeder Regelaenderung verlangt:** Sie erhebt und bewertet im selben
-Zug, korrigiert sich mit jedem Wurf, folgt einem Ausruestungswechsel innerhalb weniger Einsaetze und
-verlangt vom Auftraggeber kein Ablesen.
+**Die Heilmenge ist gemessen, nicht aus der Potenz gerechnet.** 500 Potenz sind von hier nicht in
+Lebenspunkte umzurechnen; der Effekt-Handler sieht jede eigene Heilung mit ihrem Wert
+(`Watcher.ActionFromSelf`), `DataCenter.GetObservedHealPerCast` gibt ihn geglaettet zurueck. Vor der ersten
+Landung ist der Wert 0 = unbekannt; dann gilt nur der Verfall (Punkt 5). **Maengel, vor der Umsetzung zu
+beheben (A150):** Ob das Spiel Ueberheilung mitmeldet, ist unbelegt — der Code kann es selbst messen,
+indem er den gemeldeten Betrag gegen den Fehlbetrag vor dem Wurf haelt. Ein einzelner kritischer Treffer
+verschiebt den Mittelwert um die Haelfte seines Ueberschusses. Der Wert gilt je Plugin-Sitzung und wird
+bei Stufensynchronisation nicht zurueckgesetzt.
 
-**Der Anlauf ist benannt:** Vor der ersten beobachteten Landung ist der Wert 0, und 0 heisst
-*unbekannt*, nicht *heilt nichts*. Dann gilt das bisherige Verhalten — Heilflagge plus
-Verfallsklausel —, statt eine Zahl anzunehmen. Ebenfalls benannt: Der Wert ist ein **absoluter**
-Betrag und trifft jedes Mitglied mit einem anderen Anteil; verglichen wird er deshalb mit dem
-groessten Fehlbetrag der Gruppe (`DataCenter.LargestMissingHp`), nicht mit einem Durchschnittsanteil.
-Kritische Heilungen streuen den Messwert, weshalb er geglaettet und nicht ueberschrieben wird.
+**Im Kampf ablesbar, Bestandteil der Umsetzung:** eine Diagnosezeile mit der gemessenen Heilmenge, dem
+Stand im Radius (wem wie viel fehlt), dem greifenden Punkt der Regel oder dem Verbot, das haelt, und nach
+jedem Wurf dem Anteil, der ankam.
 
-**Die Verfallsklausel kostet hier fast nichts, und das ist am Wirktext belegt:** Refulgent Lux laeuft
-30 s, die Demi-Phase 15 s. Die letzten GCDs des Status liegen also **hinter** der Burstphase, wo der
-Angriffszweig duenn ist — der Einschiebeplatz, den die Klausel dort nimmt, ist kein Burstplatz.
+**Verfallsfenster:** Heute die letzten drei GCDs von Refulgent Lux, ein fester Wert ohne Loop
+(`fixed_values.json`, offen). Mit der Gewichtung aus Punkt 5 ist er neu zu bestimmen: so spaet wie
+moeglich, damit die Heilung noch etwas trifft, und frueh genug, dass nach allen vorrangigen Aktionen ein
+Platz bleibt.
 
 ## Was ein Baustein mehrfach traegt
 

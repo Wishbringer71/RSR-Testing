@@ -3681,6 +3681,30 @@ Umgesetzt: `GetMostCanTargetObjects` sperrt unter „Cleave" nur feindliche Akti
 
 **Stand:** Keine Codeänderung. Behebungsvorschläge bei ihm zur Freigabe.
 
+### A151 · Lux Solaris: seine Vorgaben vom 26.09.2026 im Loop bewertet und ins Konzept 08 eingearbeitet (26.09.2026)
+
+**Eingang, eingeordnet:**
+1. Vorgabe: Vor dem Verfall zählt nur, ob die Heilung etwas bewirkt; kleine Mengen reichen; gewichtet gegen eine wichtigere Aktion im selben Platz.
+2. Vorgabe: Verbote gelten, etwa „nicht wirken, weil sonst Schaden eingeht".
+3. Frage (im Chat beantwortet).
+4. Vorgabe: Immer den Umkreis prüfen; niemand im Umkreis verletzt heißt keine Aktion.
+5. Vorgabe: Walking Dead ist kein Hindernis, Living Dead sperrt.
+6. Vorgabe: Normalfall ohne Überheilung, wenn der Beschwörer selbst oder alle im Radius eine volle Heilung aufnehmen; Ausnahmen sind bedrohlich geringe Gesundheit und Verfall.
+7. Auftrag: kritisch bewerten und im Loop einarbeiten.
+
+Außerdem: Churin ist uninteressant (CLAUDE.md, TODO bereinigt).
+
+**Bewertung (Loop):**
+- *Punkt 6, Gegenthese:* „Alle im Radius ohne Überheilung" tritt selten ein, dann verfällt Lux. Widerlegt: Nach einem Raidwide sind alle getroffen, und der Verfall (Punkt 1) fängt den Rest auf. Verloren ist nur Heilung, die ohnehin überheilt hätte.
+- *Punkt 6, Maß für „bedrohlich":* Gefährdungsklasse 1 aus Konzept 07. Das Maß ist vorhanden, keine neue Zahl.
+- *Punkt 5, Konflikt:* Living-Dead-Sperre gegen ein anderes Mitglied in Klasse 1. Konzept 09 lässt für die Flächenheilung der Heiler die Gruppe vorgehen; für die Beigabe Lux hat er strenger entschieden. Welche Seite bei gleichzeitigem Eintreten gilt, ist ihm vorgelegt, Empfehlung Klasse 1.
+- *Punkt 5, Walking Dead:* Für Lux zählt der Träger als Verletzter, für die Heilaktionen der Heiler bleibt Konzept 09. Kein Widerspruch: Lux verfällt sonst, eine Heileraktion nicht.
+- *Punkt 1, Gewichtung:* Welche Aktionen im Verfallsfenster durch einen Platz Aufschub an Wert verlieren, ist nicht erhoben und wird vor der Umsetzung erhoben. Das Verfallsfenster „3 GCDs" ist damit neu zu bestimmen.
+- *Punkt 2:* Wirktexte von Shackled Healing (4564) und Scalebound (1495) belegt. Der vorhandene Dispatch prüft beide, die Wege außerhalb nicht (A150). In welchem Kampf Shackled Healing vorkommt, steht nicht im Repository. Scalebound gehört laut Text zum Rathalos-Kampf.
+- *Heilpfad:* Konzept 08 hielt „der Wurf fällt vor dem Einschlag" als Regel. Nach Punkt 6 gilt für Lux auf allen Wegen dieselbe Regel; der Satz ist berichtigt.
+
+**Stand:** nur Konzept, keine Codeänderung. Die Umsetzung wartet auf seine Freigabe und auf die Antwort zur Living-Dead-Frage.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

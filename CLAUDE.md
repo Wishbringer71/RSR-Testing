@@ -145,6 +145,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 **Nutzungsprofil**
 - Priorität folgt seinem Profil: PvE, deutscher Client, seine Jobs und Rotationen.
 - Erheben immer vollständig; bearbeiten nur, was in seinem Profil liegt. PvP, Blaumagier und andere begrenzte Jobs, Bozja und ähnliche Sonderinhalte, fremde Rotationen, die er nicht nutzt: erfassen, bis er sie nennt oder freigibt.
+- Churin-Rotationen (`ExtraRotations/*/Churin*`) sind für ihn uninteressant: keine Befunde dazu erfassen.
 - Er ist Tester und nutzt selten die Voreinstellungen. Eine Aussage über einen Vorgabewert ist keine über seine Konfiguration, und die kann ich nicht messen. Jede Regel hinter einem Schalter denke ich für beide Stellungen.
 
 **Als was seine Angaben gelten**
