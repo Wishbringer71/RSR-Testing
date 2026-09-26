@@ -41,7 +41,7 @@ direkt: 38 · ungenutzt: 4 · über andere Aktion: 6
 | Job | Fountain (`FountainPvE`) | 15990 | Weaponskill | direkt |
 | Job | Fountainfall (`FountainfallPvE`) | 15992 | Weaponskill | direkt |
 | Job | Improvisation (`ImprovisationPvE`) | 16014 | Ability | direkt |
-| Job | Improvised Finish (`ImprovisedFinishPvE`) | 25789 | Ability | ungenutzt — Knopfwechsel über Improvisation gesperrt: deren StatusProvide enthält Improvisation |
+| Job | Improvised Finish (`ImprovisedFinishPvE`) | 25789 | Ability | ungenutzt — Knopfwechsel über Improvisation gesperrt: deren StatusProvide enthält Improvisation (außer in den letzten StatusRefreshGcdCount GCDs des Status oder mit ShouldCheckStatus aus) |
 | Job | Jete (`JetePvE`) | 16001 | Weaponskill | direkt |
 | Job | Last Dance (`LastDancePvE`) | 36983 | Weaponskill | direkt |
 | Job | Pirouette (`PirouettePvE`) | 16002 | Weaponskill | direkt |
@@ -171,8 +171,7 @@ Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wi
 
 | Aktion | Art | Befund | Gegenseite |
 |---|---|---|---|
-| Finishing Move | Angriff | gemeinsame Abklingzeit (Angriff / sonstige) | Standard Step |
-| Improvisation | Heilung | endet bei jeder weiteren Aktion oder Bewegung (Kanal); RSR-Sperre: PosImprovisation (aus) hält Bewegung | jede Aktion |
+| Improvisation | Heilung | endet bei jeder weiteren Aktion oder Bewegung (Kanal); keine Aktionssperre: RSRs nächste Aktion beendet ihn; Bewegungssperre: PosImprovisation (aus; wirkt nur mit PoslockCasting) | jede Aktion |
 
 ### Verlängerung, Aufbau, Umschalten
 
@@ -202,5 +201,5 @@ Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 
 - Ending (`EndingPvE`, Ability): ungenutzt
 - Foot Graze (`FootGrazePvE`, Ability): ungenutzt
-- Improvised Finish (`ImprovisedFinishPvE`, Ability): ungenutzt — Knopfwechsel über Improvisation gesperrt: deren StatusProvide enthält Improvisation
+- Improvised Finish (`ImprovisedFinishPvE`, Ability): ungenutzt — Knopfwechsel über Improvisation gesperrt: deren StatusProvide enthält Improvisation (außer in den letzten StatusRefreshGcdCount GCDs des Status oder mit ShouldCheckStatus aus)
 - Leg Graze (`LegGrazePvE`, Ability): ungenutzt

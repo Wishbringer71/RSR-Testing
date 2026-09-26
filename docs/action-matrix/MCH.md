@@ -30,7 +30,7 @@ direkt: 36 · ungenutzt: 9 · über andere Aktion: 1
 | Job | Checkmate (`CheckmatePvE`) | 36980 | Ability | direkt |
 | Job | Clean Shot (`CleanShotPvE`) | 2873 | Weaponskill | direkt |
 | Job | Crowned Collider (`CrownedColliderPvE`) | 25787 | Ability | ungenutzt — nicht zuweisbar: Begleiter oder Automatik |
-| Job | Detonator (`DetonatorPvE`) | 16766 | Ability | ungenutzt — Knopfwechsel über Wildfire gesperrt: deren StatusProvide enthält Wildfire |
+| Job | Detonator (`DetonatorPvE`) | 16766 | Ability | ungenutzt — Knopfwechsel über Wildfire gesperrt: deren StatusProvide enthält Wildfire (außer in den letzten StatusRefreshGcdCount GCDs des Status oder mit ShouldCheckStatus aus) |
 | Job | Dismantle (`DismantlePvE`) | 2887 | Ability | direkt |
 | Job | Double Check (`DoubleCheckPvE`) | 36979 | Ability | direkt |
 | Job | Drill (`DrillPvE`) | 16498 | Weaponskill | direkt |
@@ -225,9 +225,7 @@ Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wi
 | Aktion | Art | Befund | Gegenseite |
 |---|---|---|---|
 | Detonator | sonstige | hebt Wildfire auf | Wildfire |
-| Flamethrower | Angriff | endet bei jeder weiteren Aktion oder Bewegung (Kanal); RSR-Sperre: PosFlameThrower (aus) hält Bewegung | jede Aktion |
-| Rook Autoturret | Angriff | gemeinsame Abklingzeit (Angriff / sonstige) | Rook Overdrive |
-| Rook Overdrive | sonstige | gemeinsame Abklingzeit (sonstige / Angriff) | Rook Autoturret |
+| Flamethrower | Angriff | endet bei jeder weiteren Aktion oder Bewegung (Kanal); keine Aktionssperre: RSRs nächste Aktion beendet ihn; Bewegungssperre: PosFlameThrower (aus; wirkt nur mit PoslockCasting) | jede Aktion |
 
 ### Verlängerung, Aufbau, Umschalten
 
@@ -258,7 +256,7 @@ Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 
 - Arm Punch (`ArmPunchPvE`, Weaponskill): ungenutzt — nicht zuweisbar: Begleiter oder Automatik
 - Crowned Collider (`CrownedColliderPvE`, Ability): ungenutzt — nicht zuweisbar: Begleiter oder Automatik
-- Detonator (`DetonatorPvE`, Ability): ungenutzt — Knopfwechsel über Wildfire gesperrt: deren StatusProvide enthält Wildfire
+- Detonator (`DetonatorPvE`, Ability): ungenutzt — Knopfwechsel über Wildfire gesperrt: deren StatusProvide enthält Wildfire (außer in den letzten StatusRefreshGcdCount GCDs des Status oder mit ShouldCheckStatus aus)
 - Flamethrower (`FlamethrowerPvE`, Ability): ungenutzt
 - Foot Graze (`FootGrazePvE`, Ability): ungenutzt
 - Leg Graze (`LegGrazePvE`, Ability): ungenutzt

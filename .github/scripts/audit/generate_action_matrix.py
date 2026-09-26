@@ -26,6 +26,7 @@ Usage:
 """
 
 import csv
+import functools
 import html
 import io
 import re
@@ -184,11 +185,12 @@ EXTENDS = re.compile(r"Extends (?:duration of )?(" + NAME + r"?)(?: duration)? b
 STACKS = re.compile(r"(\d+) stacks? of (" + NAME + ")")
 REMOVES = re.compile(r"(?:Dispels|Removes|Ends the effect of) (" + NAME + ")")
 MP_GAIN = re.compile(r"Restores (?:\d+% of maximum |an amount of )?MP")
-GAUGE_GAIN = re.compile(r"(?:Increases|Adds)(?: both)? ([A-Z][\w'’]*(?: [A-Z][\w'’]*)*?) (?:Gauge )?by (\d+)")
+GAUGE_GAIN = re.compile(r"(?:[Ii]ncreas(?:es|ing)|[Aa]dds)(?: both| the)? ([A-Z][\w'’]*(?: [A-Z][\w'’]*)*?) (?:Gauge )?by (\d+)")
 CARTRIDGE_GAIN = re.compile(r"Adds (?:a|\d+) Cartridges? to your Powder Gauge")
 # A value the text leaves out because a trait or the level sets it: "potency of .", "potency of for",
 # "Potency: Duration", "Duration: s", and a status name left out: "Grants 2 stacks of Duration: 30s".
-BLANK = re.compile(r"(?:[Pp]otency of|Potency:|Cure Potency:) (?=\.|for |[A-Z])|Duration: s\b|\b(?:of|Grants) (?=Duration:)")
+BLANK = re.compile(r"(?:[Pp]otency of|Potency:|Cure Potency:) (?=\.|for |[A-Z])|Duration: s\b|\b(?:of|Grants) (?=Duration:)"
+                   r"|\bDispels (?:[A-Z][\w'’]* (?:of |the )?)+and (?=[a-z]+ing\b)")
 # An enemy's damage lowered is defense; "Increases damage dealt" is a party buff and is not.
 DEFENSIVE = re.compile(r"barrier|[Rr]educ\w* damage taken|impervious|cannot be reduced|preventing most attacks|"
                        r"(?:[Rr]educ|[Ll]ower)\w*[^.]{0,40}damage dealt|block rate|only suffer \d+%")
@@ -219,6 +221,37 @@ def blocked_by_provide(text, provided_ids):
         if k == "needs" and re.sub(r"[^a-z]", "", v.lower()) in provided:
             return v
     return None
+
+
+def find_loops(parsed, facts, produce, consume, names):
+    """Self-sustaining candidates: an action that needs a status and grants or extends that same
+    status, one that costs a resource it also produces, two actions each spending what the other
+    makes, and two actions each granting the status the other needs. A null result is only as good
+    as the texts: a gain the text leaves out cannot close a cycle."""
+    loops = []
+    grants_of, needs_of = {}, {}
+    for i, found in parsed.items():
+        needs_of[i] = {v.lower() for k, v in found if k == "needs"}
+        grants_of[i] = {v.lower() for k, v in found if k == "grants"}
+        extended = grants_of[i] | {v[0].lower() for k, v in facts.get(i, []) if k == "extends"}
+        for status in sorted(needs_of[i] & extended):
+            loops.append((i, f"braucht und erneuert {status}"))
+    for resource in sorted(set(produce) & set(consume)):
+        for i in sorted(produce[resource] & consume[resource]):
+            loops.append((i, f"kostet und erzeugt {resource}"))
+    for r1 in sorted(consume):
+        for r2 in sorted(consume):
+            if r1 >= r2:
+                continue
+            for a in sorted(consume[r1] & produce.get(r2, set())):
+                for b in sorted(consume[r2] & produce.get(r1, set())):
+                    if a != b:
+                        loops.append((a, f"Kreislauf {r1} → {r2} mit {names.get(b, b)}"))
+    for a in sorted(parsed):
+        for b in sorted(parsed):
+            if a < b and (grants_of[a] & needs_of[b]) and (grants_of[b] & needs_of[a]):
+                loops.append((a, f"Status-Kreislauf mit {names.get(b, b)}"))
+    return loops
 
 
 def interplay_of(text):
@@ -275,6 +308,13 @@ MOVE_LOCK = re.compile(r"Action = ActionID\.(\w+PvE), Parent = nameof\(PoslockCa
                        r"public bool (\w+) \{ get; set; \} = (true|false);")
 
 
+@functools.lru_cache(maxsize=None)
+def central_channel_locks():
+    return channel_locks((CENTRAL / "CustomRotation_GCD.cs").read_text(encoding="utf-8"),
+                         (CENTRAL / "CustomRotation_Ability.cs").read_text(encoding="utf-8"),
+                         (ROOT / "RotationSolver.Basic" / "Configuration" / "Configs.cs").read_text(encoding="utf-8"))
+
+
 def channel_locks(gcd_code, ability_code, configs_code):
     """What holds a channel open in RSR: {action: [(option, default, path, only while an area hit is
     announced)]} from the action locks at the top of the GCD and ability choice, plus the movement
@@ -292,6 +332,7 @@ def channel_locks(gcd_code, ability_code, configs_code):
     return locks
 
 
+@functools.lru_cache(maxsize=None)
 def rated_ids():
     """Action ids DefensiveValues rates - the same table the defense rules read."""
     path = ROOT / "RotationSolver.Basic" / "Data" / "DefensiveValues.g.cs"
@@ -718,7 +759,8 @@ def analyse(job, actions, job_actions, traits, general_actions, central, central
             usage[ident] = "direkt"
         elif blocked:
             usage[ident] = (f"ungenutzt — Knopfwechsel über {actions[via[ident]]['name']} gesperrt: "
-                            f"deren StatusProvide enthält {blocked}")
+                            f"deren StatusProvide enthält {blocked} (außer in den letzten "
+                            f"StatusRefreshGcdCount GCDs des Status oder mit ShouldCheckStatus aus)")
         elif ident in via:
             usage[ident] = f"über {actions[via[ident]]['name']}"
         elif siblings:
@@ -753,12 +795,11 @@ def analyse(job, actions, job_actions, traits, general_actions, central, central
             unchecked.append((ident, needs))
     # Interplay and time (concept 14, "Wechselwirkungen und Zeit").
     rated = rated_ids()
-    locks = channel_locks((CENTRAL / "CustomRotation_GCD.cs").read_text(encoding="utf-8"),
-                          (CENTRAL / "CustomRotation_Ability.cs").read_text(encoding="utf-8"),
-                          (ROOT / "RotationSolver.Basic" / "Configuration" / "Configs.cs").read_text(encoding="utf-8"))
+    locks = central_channel_locks()
     kinds = {i: kind_of(actions[i]["text"], actions[i]["id"] in rated) for i in nodes}
     blanks = {i: len(BLANK.findall(actions[i]["text"])) for i in nodes}
     facts = {i: interplay_of(actions[i]["text"]) for i in nodes}
+    parsed = {i: parse_texts(actions[i]["text"]) for i in nodes}
     trait_facts = [(name, interplay_of(text)) for name, text in traits.get(job, [])]
 
     def producers_of(status):
@@ -772,10 +813,13 @@ def analyse(job, actions, job_actions, traits, general_actions, central, central
         if "channel" in f:
             held = [f"{opt} ({'an' if on else 'aus'}) hält {path}"
                     + (" nur bei angekündigtem Flächenschaden" if area else "")
-                    for opt, on, path, area in locks.get(i, [])]
+                    for opt, on, path, area in locks.get(i, []) if path != "Bewegung"]
+            moving = [f"{opt} ({'an' if on else 'aus'}; wirkt nur mit PoslockCasting)"
+                      for opt, on, path, _area in locks.get(i, []) if path == "Bewegung"]
             interplay.append((i, "endet bei jeder weiteren Aktion oder Bewegung (Kanal); "
-                              + ("RSR-Sperre: " + ", ".join(held) if held
-                                 else "keine RSR-Sperre: RSRs nächste Aktion beendet ihn"), "jede Aktion"))
+                              + ("Aktionssperre: " + ", ".join(held) if held
+                                 else "keine Aktionssperre: RSRs nächste Aktion beendet ihn")
+                              + ("; Bewegungssperre: " + ", ".join(moving) if moving else ""), "jede Aktion"))
         # Only a defense or a heal that takes the GCD takes it from an attack; a mudra or a dance step
         # that takes it is part of the attack.
         if "gcd" in f and kinds[i] in ("Abwehr", "Heilung"):
@@ -789,7 +833,8 @@ def analyse(job, actions, job_actions, traits, general_actions, central, central
             for p in producers_of(status) or [status]:
                 interplay.append((i, f"hebt {status} auf", p))
     for a, b, k, _l in edges:
-        if k == "gemeinsame Abklingzeit" and a in kinds and b in kinds and kinds[a] != kinds[b]:
+        if k == "gemeinsame Abklingzeit" and a in kinds and b in kinds and kinds[a] != kinds[b] \
+                and {kinds[a], kinds[b]} & {"Abwehr", "Heilung"}:
             interplay.append((a, f"gemeinsame Abklingzeit ({kinds[a]} / {kinds[b]})", b))
 
     extensions, stack_list, toggles = [], [], []
@@ -804,40 +849,15 @@ def analyse(job, actions, job_actions, traits, general_actions, central, central
                 toggles.append(i)
             elif k == "produces":
                 produce.setdefault(v, set()).add(i)
-        for k, v in parse_texts(actions[i]["text"]):
+        for k, v in parsed[i]:
             if k == "costs":
                 consume.setdefault(v, set()).add(i)
     for name, tf in trait_facts:
         for k, v in tf:
             if k == "produces":
                 produce.setdefault(v, set()).add(f"Eigenschaft {name}")
-    # A self-sustaining candidate: an action that needs a status and grants or extends that same
-    # status, or one that costs a resource it also produces. Either keeps its own enabler alive.
-    loops = []
-    for i in nodes:
-        needs = {v.lower() for k, v in parse_texts(actions[i]["text"]) if k == "needs"}
-        grants = {v.lower() for k, v in parse_texts(actions[i]["text"]) if k == "grants"}
-        grants |= {v[0].lower() for k, v in facts[i] if k == "extends"}
-        for status in needs & grants:
-            loops.append((i, f"braucht und erneuert {status}"))
-    for resource in sorted(set(produce) & set(consume)):
-        for i in sorted(produce[resource] & consume[resource]):
-            loops.append((i, f"kostet und erzeugt {resource}"))
-    # Over two actions: A spends what B makes and makes what B spends.
-    for r1 in sorted(consume):
-        for r2 in sorted(consume):
-            if r1 >= r2:
-                continue
-            for a in sorted(consume[r1] & produce.get(r2, set())):
-                for b in sorted(consume[r2] & produce.get(r1, set())):
-                    if a != b:
-                        loops.append((a, f"Kreislauf {r1} → {r2} mit {actions[b]['name'] if b in actions else b}"))
-    grants_of = {i: {v.lower() for k, v in parse_texts(actions[i]["text"]) if k == "grants"} for i in nodes}
-    needs_of = {i: {v.lower() for k, v in parse_texts(actions[i]["text"]) if k == "needs"} for i in nodes}
-    for a in nodes:
-        for b in nodes:
-            if a < b and (grants_of[a] & needs_of[b]) and (grants_of[b] & needs_of[a]):
-                loops.append((a, f"Status-Kreislauf mit {actions[b]['name']}"))
+    loops = find_loops({i: parsed[i] for i in nodes}, facts, produce, consume,
+                       {i: actions[i]["name"] for i in nodes})
 
     return {
         "class": class_name, "files": [str(p.relative_to(ROOT)) for p in files if p.exists()],
@@ -1081,6 +1101,24 @@ def self_test():
                                        ("PldlockCasting", False, "Fähigkeit", True),
                                        ("PosPassageOfArms", False, "Bewegung", False)]:
         return f"channel locks misread: {got}"
+    loops = find_loops(
+        {"a": [("needs", "Enhanced Gallows"), ("grants", "Enhanced Gibbet")],
+         "b": [("needs", "Enhanced Gibbet"), ("grants", "Enhanced Gallows")],
+         "c": [("needs", "Darkside")], "d": []},
+        {"c": [("extends", ("Darkside", 30, 60))]},
+        {"Soul": {"d", "e"}, "Shroud": {"d"}}, {"Soul": {"d"}, "Shroud": {"e"}, "Kenki": {"f"}},
+        {"b": "Gibbet", "e": "E"})
+    for expected in (("a", "Status-Kreislauf mit Gibbet"), ("c", "braucht und erneuert darkside"),
+                     ("d", "kostet und erzeugt Soul"), ("e", "Kreislauf Shroud → Soul mit d")):
+        if expected not in loops:
+            return f"loop {expected} not found: {loops}"
+    if len(loops) != 4:
+        return f"loops found where none are: {loops}"
+    if ("produces", "Ninki") not in interplay_of("Dispels Shadow Walker increasing the Ninki Gauge by 50."):
+        return "a gauge gain in the participle form was not read"
+    if len(BLANK.findall("Dispels Thrill of Battle and increasing damage absorbed by 2%")) != 1 \
+            or BLANK.findall("Dispels Shadow Walker increasing the Ninki Gauge by 50"):
+        return "a status name left out of a dispel list was not counted, or a full one was"
     if trim_name("Fire Attunement Fire Attunement") != "Fire Attunement":
         return "a repeated heading of two words stayed in a name"
     blank_name = "Additional Effect: Grants 2 stacks of Duration: 30s"

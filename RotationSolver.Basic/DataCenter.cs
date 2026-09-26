@@ -3816,6 +3816,16 @@ internal static class DataCenter
 	public static bool BMRHasActiveModule { get; set; }
 	public static string? BMRActiveModuleName { get; set; }
 	public static float BMRNextRaidwideIn { get; set; } = float.MaxValue;
+
+	/// <summary>
+	/// An announced area hit that has not landed yet: the area-defense signal, or a BossMod raidwide
+	/// still ahead inside the mitigation window - including the last moment before it, where the
+	/// signal already lets go. What the channel locks of Passage of Arms and Collective Unconscious
+	/// hold for ("during AOE mitigations").
+	/// </summary>
+	public static bool AreaHitPending => MergedStatus.HasFlag(AutoStatus.DefenseArea)
+		|| (InCombat && Service.Config.UseBmrTimeline && BMRNextRaidwideIn > 0f
+			&& BMRNextRaidwideIn <= Service.Config.BMRRaidwideMitWindow);
 	public static float BMRNextTankbusterIn { get; set; } = float.MaxValue;
 	public static float BMRNextKnockbackIn { get; set; } = float.MaxValue;
 	public static float BMRNextDowntimeIn { get; set; } = float.MaxValue;

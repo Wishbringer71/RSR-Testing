@@ -251,10 +251,13 @@ wahrscheinlich ist. Die Regeln dieses Konzepts messen das so:
 
 | Regel | Maß der Wahrscheinlichkeit |
 |---|---|
-| Flächenabwehr (`AutoStatus.DefenseArea`) | ein laufender Flächenzauber oder ein BossMod-Raidwide im Fenster |
+| Flächenabwehr (`AutoStatus.DefenseArea`) | ein laufender Flächenzauber; mit `MitigateBigAreaCastsEvenIfInterruptible` auch ein unterbrechbarer, dessen gemessener Anteil die größte Barriere übersteigt; ein BossMod-Raidwide im Fenster; der Befehl „Defense Area" von Hand |
+| Einzelabwehr (`AutoStatus.DefenseSingle`) | ein Zauber auf einen Tank (Tankbuster) oder ein BossMod-Tankbuster im Fenster; beim Heiler zusätzlich, wie viele Gegner den Tank angreifen |
+| Heilung vor dem angekündigten Treffer | die vorausberechnete Gesundheit nach dem laufenden Cast — der Treffer ist angekündigt |
 | Schranke der Rückhaltungen | Gefährdungsklasse 1 jetzt, oder ein angekündigter, gemessener Treffer brächte ein ungeschütztes Mitglied dorthin |
+| Burst-Rückhaltungen (Jobtabelle oben) | keine eigene: Sie halten ohne Blick auf die Wahrscheinlichkeit und weichen nur der Schranke |
 | Streckung | eine eigene Minderung liegt noch; der nächste Treffer wird von ihr getragen, bis sie ausläuft |
-| Kanalsperre (Paladin, Astrologe) | Fähigkeiten: nur bei angekündigtem Flächenschaden. GCD: gar nicht — sie hält, solange der Kanal läuft (Konzept 14, „Wechselwirkungen und Zeit") |
+| Kanalsperre (Paladin, Astrologe) | der angekündigte Treffer steht noch aus (`DataCenter.AreaHitPending`); danach löst sie (Konzept 14, „Wechselwirkungen und Zeit") |
 
 **Im Kampf ablesbar:** Unter „Defense hold" im Diagnosefenster steht je Regel, ob sie zuletzt hielt
 oder warum sie wich, seit Kampfbeginn — nur zur Kontrolle, weil eine wartende Abwehr sonst nicht von

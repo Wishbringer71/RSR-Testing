@@ -146,7 +146,7 @@ Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wi
 
 | Aktion | Art | Befund | Gegenseite |
 |---|---|---|---|
-| Meditate | sonstige | endet bei jeder weiteren Aktion oder Bewegung (Kanal); keine RSR-Sperre: RSRs nächste Aktion beendet ihn | jede Aktion |
+| Meditate | sonstige | endet bei jeder weiteren Aktion oder Bewegung (Kanal); keine Aktionssperre: RSRs nächste Aktion beendet ihn | jede Aktion |
 
 ### Verlängerung, Aufbau, Umschalten
 
@@ -156,7 +156,7 @@ keine
 
 | Ressource | erzeugt von | verbraucht von |
 |---|---|---|
-| Kenki | Fuko, Gyofu, Ikishoten | Hissatsu: Guren, Hissatsu: Gyoten, Hissatsu: Kyuten, Hissatsu: Senei, Hissatsu: Shinten, Hissatsu: Yaten, Zanshin |
+| Kenki | Fuko, Gyofu, Ikishoten, Tengentsu | Hissatsu: Guren, Hissatsu: Gyoten, Hissatsu: Kyuten, Hissatsu: Senei, Hissatsu: Shinten, Hissatsu: Yaten, Zanshin |
 
 ### Kandidaten für Selbsterhaltung
 

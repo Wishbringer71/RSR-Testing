@@ -37,12 +37,15 @@ public partial class CustomRotation
 			return null;
 		}
 
-		if (Service.Config.PldlockCasting && DataCenter.Job == Job.PLD && IsLastAction(ActionID.PassageOfArmsPvE) && StatusHelper.PlayerHasStatus(true, StatusID.PassageOfArms))
+		// The channel locks hold "during AOE mitigations" (their setting text), as the ability path
+		// does: while the announced hit has not landed. Without that the GCD stayed held after the hit
+		// until some ability broke the channel - up to its full 18 s.
+		if (Service.Config.PldlockCasting && DataCenter.Job == Job.PLD && IsLastAction(ActionID.PassageOfArmsPvE) && StatusHelper.PlayerHasStatus(true, StatusID.PassageOfArms) && DataCenter.AreaHitPending)
 		{
 			return null;
 		}
 
-		if (Service.Config.AstlockCasting && DataCenter.Job == Job.AST && IsLastAction(ActionID.CollectiveUnconsciousPvE) && StatusHelper.PlayerHasStatus(true, StatusID.CollectiveUnconscious_848))
+		if (Service.Config.AstlockCasting && DataCenter.Job == Job.AST && IsLastAction(ActionID.CollectiveUnconsciousPvE) && StatusHelper.PlayerHasStatus(true, StatusID.CollectiveUnconscious_848) && DataCenter.AreaHitPending)
 		{
 			return null;
 		}

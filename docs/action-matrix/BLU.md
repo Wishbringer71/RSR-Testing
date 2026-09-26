@@ -298,21 +298,19 @@ Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wi
 |---|---|---|---|
 | Angel's Snack | Heilung | gemeinsame Abklingzeit (Heilung / Abwehr) | Dragon Force |
 | Angel's Snack | Heilung | gemeinsame Abklingzeit (Heilung / Angriff) | Matra Magic |
-| Apokalypsis | Angriff | endet bei jeder weiteren Aktion oder Bewegung (Kanal); keine RSR-Sperre: RSRs nächste Aktion beendet ihn | jede Aktion |
-| Chelonian Gate | Abwehr | endet bei jeder weiteren Aktion oder Bewegung (Kanal); keine RSR-Sperre: RSRs nächste Aktion beendet ihn | jede Aktion |
+| Apokalypsis | Angriff | endet bei jeder weiteren Aktion oder Bewegung (Kanal); keine Aktionssperre: RSRs nächste Aktion beendet ihn | jede Aktion |
+| Chelonian Gate | Abwehr | endet bei jeder weiteren Aktion oder Bewegung (Kanal); keine Aktionssperre: RSRs nächste Aktion beendet ihn | jede Aktion |
 | Chelonian Gate | Abwehr | gemeinsame Abklingzeit (Abwehr / Angriff) | Ruby Dynamics |
 | Chelonian Gate | Abwehr | gemeinsame Abklingzeit (Abwehr / Angriff) | The Rose of Destruction |
 | Dragon Force | Abwehr | gemeinsame Abklingzeit (Abwehr / Angriff) | Matra Magic |
 | Dragon Force | Abwehr | gemeinsame Abklingzeit (Abwehr / Heilung) | Angel's Snack |
 | Final Sting | Angriff | nicht nutzbar unter Brush | Brush |
-| Glass Dance | Angriff | gemeinsame Abklingzeit (Angriff / sonstige) | Veil of the Whorl |
 | Matra Magic | Angriff | gemeinsame Abklingzeit (Angriff / Abwehr) | Dragon Force |
 | Matra Magic | Angriff | gemeinsame Abklingzeit (Angriff / Heilung) | Angel's Snack |
 | Ruby Dynamics | Angriff | gemeinsame Abklingzeit (Angriff / Abwehr) | Chelonian Gate |
 | Self-destruct | Angriff | nicht nutzbar unter Brush | Brush |
 | The Rose of Destruction | Angriff | gemeinsame Abklingzeit (Angriff / Abwehr) | Chelonian Gate |
 | Transfusion | sonstige | nicht nutzbar unter Brush | Brush |
-| Veil of the Whorl | sonstige | gemeinsame Abklingzeit (sonstige / Angriff) | Glass Dance |
 
 ### Verlängerung, Aufbau, Umschalten
 

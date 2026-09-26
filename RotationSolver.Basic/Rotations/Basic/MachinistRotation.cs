@@ -243,6 +243,11 @@ public partial class MachinistRotation
 		setting.TargetStatusProvide = [StatusID.Wildfire];
 		setting.StatusProvide = [StatusID.Wildfire_1946];
 		setting.ActionCheck = () => Heat >= 50 || HasHypercharged || OverheatedStacks == 5;
+		// While Wildfire runs the button is Detonator, and StatusProvide lets the cast through in the
+		// status's last refresh GCDs - the cast would go out as Detonator and cut the stacks still to
+		// come. Detonator has its own action; Wildfire is only Wildfire.
+		var heatCheck = setting.ActionCheck;
+		setting.ActionCheck = () => !DetonatorPvEReady && heatCheck?.Invoke() == true;
 		setting.CreateConfig = () => new ActionConfig()
 		{
 			TimeToKill = 10,

@@ -4016,6 +4016,24 @@ Als Hinweis in Konzept 07 und 08 geführt. Die Wirktexte stützen ihn gleichlaut
 
 **Prüfgrad:** statisch; Generator mit Selbsttest; Prüfskripte.
 
+### A164 · Review von A163: zehn Befunde, drei Code-Behebungen (26.09.2026)
+
+Unabhängiges Review (Code-Review-Werkzeug) der Commits b1ce95756 und 296778976. Alle zehn Befunde am Artefakt geprüft und bestätigt:
+1. **Shake It Off hebt mehr auf als Thrill of Battle.** Der Wirktext hat eine Namenslücke („Dispels Thrill of Battle and increasing"). Vollständig laut Suchauszug: Thrill of Battle, Damnation, Bloodwhetting. Job-Guide, consolegameswiki, gamerescape und icy-veins sperrt der Egress; Status der Angabe: Suchauszug, nicht die Seite. Konzept 14 und TODO berichtigt; der Generator zählt eine solche Lücke jetzt als leeren Wert.
+2. **Gesperrter Knopfwechsel ist nicht dauerhaft gesperrt.** `IsStatusProvided` lässt den Wurf in den letzten `StatusRefreshGcdCount` GCDs des Status durch. Folge für `WildfirePvE`: Wurf als Detonator möglich, Stapel abgeschnitten. Dieselbe Klasse erhoben über alle Knopfwechsel mit `StatusProvide` der Basisaktion: Hell's Ingress/Egress → Regress (Rückteleport zum Tor statt Sprung). Behoben: `ActionCheck` schließt den gewechselten Knopf aus (`!DetonatorPvEReady`, `!RegressPvEIngressReady`, `!RegressPvEEgressReady`). Improvisation → Improvised Finish bleibt: dort wäre der Wurf erwünscht. Die Zeile mit den Heat-Werten ist unberührt; die Bedingung wird verkettet.
+3. **Die GCD-Kanalsperre wich vom Einstellungstext ab** („during AOE mitigations"), der Fähigkeitspfad nicht. Der Text bindet. Behoben: beide Pfade fragen `DataCenter.AreaHitPending` — das Flächensignal oder ein BossMod-Raidwide im Fenster, auch in dessen letzten 0,6 s, in denen `DefenseArea` schon losgelassen hat. Keine neue Zahl: die Grenze ist `BMRRaidwideMitWindow`.
+4. **Bewegungssperren als RSR-Sperre gezählt, Elternoption übersehen** (`PoslockCasting`, `DataCenter.NoPoslock`). Generator trennt Aktions- und Bewegungssperre.
+5. **Nullbefund der Kreisläufe unkalibriert.** `GAUGE_GAIN` las „increasing the Ninki Gauge" nicht; Kreislauf-Finder ohne Selbsttest. Beides behoben; der Nullbefund ist im Konzept als schwach benannt.
+6. **Meditate:** auch Heilung und Abwehr vor `GeneralAbility` beenden ihn. Konzept berichtigt.
+7. **Meisui:** drei Auslöser, nicht einer. Konzept berichtigt; Ten Chi Jin endet mit Suiton, das Shadow Walker neu gibt (Wirktext).
+8. **Tabelle „Woran jede Sicherheitsregel die Wahrscheinlichkeit misst" unvollständig.** Ergänzt um Einzelabwehr, Heilung vor dem Treffer, Burst-Rückhaltungen, Handbefehl und unterbrechbare große Casts.
+9. **Gemeinsame Abklingzeit „sonstige/Angriff" als Wechselwirkung gezählt.** Jetzt nur, wo Abwehr oder Heilung beteiligt ist.
+10. **Zitat-Mismatch Schnitter-Kreislauf** (Gallows ↔ Unveiled Gibbet, nicht Gallows ↔ Gibbet). Berichtigt; Dateilesen im Generator einmal statt je Job.
+
+*Nebenbefund:* Die Kommentarzeilen in `CustomRotation_GCD` verschoben die Zeilenverweise in Konzept 11; nachgezogen (`check_doc_references.py`).
+
+**Prüfgrad:** statisch; Prüfskripte; Generator-Selbsttest; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

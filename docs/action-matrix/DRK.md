@@ -145,7 +145,7 @@ keine
 
 | Ressource | erzeugt von | verbraucht von |
 |---|---|---|
-| Blood | — (nicht im Wirktext) | Bloodspiller, Quietus |
+| Blood | Delirium | Bloodspiller, Quietus |
 | MP | Abyssal Drain, Carve and Spit, Comeuppance, Impalement, Scarlet Delirium, Stalwart Soul, Syphon Strike, Torcleaver | — |
 
 ### Kandidaten für Selbsterhaltung

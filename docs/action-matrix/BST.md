@@ -211,7 +211,8 @@ keine
 
 | Ressource | erzeugt von | verbraucht von |
 |---|---|---|
-| TP | Quelling Wave, Scaleskin, Shieldsplitter, Vileskin | Avalanche Axe, Brutal Rage, Calamity, Gale Axe, Hawkish Talons, Mistral Axe, Risen Fall, Spinning Axe, Trick |
+| Familiar TP | Rallying Cheer | — |
+| TP | Quelling Wave, Rally, Scaleskin, Scouring Ash, Shieldsplitter, Vileskin | Avalanche Axe, Brutal Rage, Calamity, Gale Axe, Hawkish Talons, Mistral Axe, Risen Fall, Spinning Axe, Trick |
 
 ### Kandidaten für Selbsterhaltung
 

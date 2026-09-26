@@ -167,7 +167,7 @@ Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wi
 
 | Aktion | Art | Befund | Gegenseite |
 |---|---|---|---|
-| Passage of Arms | Abwehr | endet bei jeder weiteren Aktion oder Bewegung (Kanal); RSR-Sperre: PldlockCasting (aus) hält GCD, PldlockCasting (aus) hält Fähigkeit nur bei angekündigtem Flächenschaden, PosPassageOfArms (aus) hält Bewegung | jede Aktion |
+| Passage of Arms | Abwehr | endet bei jeder weiteren Aktion oder Bewegung (Kanal); Aktionssperre: PldlockCasting (aus) hält GCD, PldlockCasting (aus) hält Fähigkeit; Bewegungssperre: PosPassageOfArms (aus; wirkt nur mit PoslockCasting) | jede Aktion |
 
 ### Verlängerung, Aufbau, Umschalten
 

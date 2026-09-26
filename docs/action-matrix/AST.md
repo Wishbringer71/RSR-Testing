@@ -159,7 +159,7 @@ Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wi
 
 | Aktion | Art | Befund | Gegenseite |
 |---|---|---|---|
-| Collective Unconscious | Abwehr | endet bei jeder weiteren Aktion oder Bewegung (Kanal); RSR-Sperre: AstlockCasting (aus) hält GCD, AstlockCasting (aus) hält Fähigkeit nur bei angekündigtem Flächenschaden | jede Aktion |
+| Collective Unconscious | Abwehr | endet bei jeder weiteren Aktion oder Bewegung (Kanal); Aktionssperre: AstlockCasting (aus) hält GCD, AstlockCasting (aus) hält Fähigkeit | jede Aktion |
 
 ### Verlängerung, Aufbau, Umschalten
 

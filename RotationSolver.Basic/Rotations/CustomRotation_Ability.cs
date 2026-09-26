@@ -35,12 +35,12 @@ public partial class CustomRotation
 			return false;
 		}
 
-		if (Service.Config.PldlockCasting && DataCenter.Job == Job.PLD && !DataCenter.IsMoving && IsLastAction(ActionID.PassageOfArmsPvE) && StatusHelper.PlayerHasStatus(true, StatusID.PassageOfArms) && DataCenter.MergedStatus.HasFlag(AutoStatus.DefenseArea))
+		if (Service.Config.PldlockCasting && DataCenter.Job == Job.PLD && !DataCenter.IsMoving && IsLastAction(ActionID.PassageOfArmsPvE) && StatusHelper.PlayerHasStatus(true, StatusID.PassageOfArms) && DataCenter.AreaHitPending)
 		{
 			return false;
 		}
 
-		if (Service.Config.AstlockCasting && DataCenter.Job == Job.AST && !DataCenter.IsMoving && IsLastAction(ActionID.CollectiveUnconsciousPvE) && StatusHelper.PlayerHasStatus(true, StatusID.CollectiveUnconscious_848) && DataCenter.MergedStatus.HasFlag(AutoStatus.DefenseArea))
+		if (Service.Config.AstlockCasting && DataCenter.Job == Job.AST && !DataCenter.IsMoving && IsLastAction(ActionID.CollectiveUnconsciousPvE) && StatusHelper.PlayerHasStatus(true, StatusID.CollectiveUnconscious_848) && DataCenter.AreaHitPending)
 		{
 			return false;
 		}

@@ -28,7 +28,7 @@ maschinell als „ungenutzt" erscheint, zerfällt in sechs Klassen (Stand 26.09.
 | Begleiter und Automatik | Akh Morn, Revelation, Exodus, Wyrmwave, Scarlet Flame, Luxwave, Everlasting Flight (SMN) · Embrace, Seraphic Veil (SCH) · Arm Punch, Roller Dash, Pile Bunker, Crowned Collider, Rook Overload (MCH) · Hollow Nozuchi (NIN) | Wirktext: „cannot be assigned to a hotbar"; der Begleiter oder ein Auslöser führt sie aus |
 | Limit Breaks | je Job drei | ohne Wirktext im Datensatz; RSR castet keine PvE-Limit-Breaks (Konzept 05) |
 | Hilfsaktionen | Sleep, Repose, Rescue, Leg Graze, Foot Graze, das Ablegen der Tankhaltung (Release …), Dissolve Union, Ending | Sie wirken auf Mitspieler oder die Gruppenlage (Rescue zieht einen Spieler, das Ablegen der Haltung gibt die Feindseligkeit ab, Schlaf bricht beim ersten Treffer). Nicht automatisiert — Schluss aus der Wirkung, kein Beleg für eine Absicht |
-| **Knopfwechsel gesperrt** | Improvised Finish (DNC) · Detonator (MCH) | Die Basisaktion führt den Status, den die Zielaktion braucht, als `StatusProvide` und verweigert sich genau dann, wenn der Knopf gewechselt hat. Detonator: richtig so, Wildfire zündet von selbst mit allen Stapeln. Improvised Finish: Defekt, siehe „Wechselwirkungen und Zeit" |
+| **Knopfwechsel gesperrt** | Improvised Finish (DNC) · Detonator (MCH) | Die Basisaktion führt den Status, den die Zielaktion braucht, als `StatusProvide` und verweigert sich, solange der Knopf gewechselt hat — außer in den letzten `StatusRefreshGcdCount` GCDs des Status (ab Werk 2) oder mit ausgeschaltetem `ShouldCheckStatus`. Detonator: seit A164 schließt `WildfirePvE` den gewechselten Knopf auch dort aus; Wildfire zündet mit allen Stapeln von selbst. Improvised Finish: Defekt, siehe „Wechselwirkungen und Zeit" |
 | **Ohne belegten Nutzen** | Six-sided Star (MNK) · Flamethrower (MCH) | Der Vorteil ist aus den Wirktexten nicht rechenbar — siehe „Pausen und Phasenenden". Meditate (SAM) und Rook/Queen Overdrive (MCH) wirkt die Rotation seit A162 in der Pause |
 
 ## Die Stufen (seine Vorgabe „universell zuerst")
@@ -79,7 +79,8 @@ Baums, sondern quer dazu. Die Matrix zeigt es; eine Entscheidung verlangt es nic
   gleichnamige Variante mit anderer Id wird gewirkt (die Mudras des Ninja, `JinPvE_18807`). Nicht, wenn
   die Basisaktion per `StatusProvide` genau den Status ausschließt, den die Zielaktion braucht: Dann
   verweigert sie sich, solange der Knopf gewechselt ist, und die Zielaktion ist *ungenutzt* mit diesem
-  Grund.
+  Grund. Die Sperre gilt nicht in den letzten `StatusRefreshGcdCount` GCDs des Status und nicht bei
+  ausgeschaltetem `ShouldCheckStatus`; dort geht der Wurf der Basisaktion als Zielaktion hinaus.
 - *nur geprüft*: nur als `CanUse(out _)` gefragt, eine Bedingung, kein Wirken.
 - *nur gelesen*: kommt in anderen Bedingungen vor, wird aber nie gewirkt.
 - *ungenutzt*: keines davon.
@@ -136,40 +137,43 @@ beendet es seinen eigenen Kanal also mit dem nächsten GCD oder der nächsten F�
 
 | Aktion | Was der Kanal trägt (Wirktext) | Was nach dem Abbruch bleibt | RSR-Sperre (Voreinstellung) |
 |---|---|---|---|
-| Passage of Arms (Paladin) | Blockrate 100 %, Gruppe im Kegel hinter ihm nimmt 85 % Schaden, 18 s | nichts | `PldlockCasting` (aus): hält den GCD, solange der Kanal läuft; hält Fähigkeiten nur bei angekündigtem Flächenschaden. `PosPassageOfArms` (aus) sperrt Bewegung |
+| Passage of Arms (Paladin) | Blockrate 100 %, Gruppe im Kegel hinter ihm nimmt 85 % Schaden, 18 s | nichts | `PldlockCasting` (aus): hält GCD und Fähigkeiten, solange der angekündigte Treffer aussteht (`DataCenter.AreaHitPending`). `PosPassageOfArms` (aus) sperrt Bewegung, nur mit `PoslockCasting` (aus) |
 | Collective Unconscious (Astrologe) | Ring 18 s, darin Wheel of Fortune (Regen) fortlaufend | Minderung −10 % für 10 s, als Zusatzeffekt beim Wirken vergeben (Schluss aus dem Textaufbau, Status 849 ist eigener Status) | `AstlockCasting` (aus), gebaut wie beim Paladin |
-| Improvisation (Tänzer) | Stapel Rising Rhythm alle 3 s bis 4; Regen 15 s | Regen (Schluss aus dem Textaufbau) | nur Bewegungssperre `PosImprovisation` (aus) |
+| Improvisation (Tänzer) | Stapel Rising Rhythm alle 3 s bis 4; Regen 15 s | Regen (Schluss aus dem Textaufbau) | keine Aktionssperre; Bewegungssperre `PosImprovisation` (aus), nur mit `PoslockCasting` (aus) |
 
 **Im Kampf, mit Voreinstellung:**
 - **Paladin:** RSR wirkt Passage of Arms nur, wenn ein Flächentreffer angekündigt ist (Zauberleiste
   oder BossMod-Raidwide im Fenster). Landet der Treffer nach RSRs nächster Aktion — spätestens nach
   einem GCD —, schützt die Aktion niemanden, und ihre Abklingzeit ist verbraucht.
 - **Mit Sperre:** Der Treffer ist angekündigt, die Wahrscheinlichkeit also hoch; die Sperre kostet
-  GCDs bis zum Treffer. Das trägt seine Präzisierung. Aber: Die GCD-Sperre fragt nicht, ob der Treffer
-  noch aussteht. Nach dem Treffer läuft der nächste GCD erst, wenn eine Fähigkeit den Kanal beendet
-  hat; hat der Paladin keine bereit, steht er bis zu 18 s ohne GCD — der Fall seines Extrembeispiels,
-  begrenzt auf die Kanaldauer. Beim BossMod-Signal endet die Ankündigung 0,6 s vor dem Treffer
-  (`BMRNextRaidwideIn > 0.6f`); eine Fähigkeit in diesem Rest beendet den Kanal vor dem Treffer.
+  GCDs bis zum Treffer. Das trägt seine Präzisierung. Beide Pfade halten, solange der Treffer aussteht
+  (`DataCenter.AreaHitPending`: das Flächensignal oder ein BossMod-Raidwide im Fenster, auch in den
+  letzten 0,6 s, in denen das Signal schon losgelassen hat); danach beendet die nächste Aktion den
+  Kanal. So verlangt es der Einstellungstext („during AOE mitigations"). Bis A164 hielt der GCD-Pfad
+  ohne diese Frage, bis eine Fähigkeit den Kanal beendete — bis zu 18 s ohne GCD, der Fall seines
+  Extrembeispiels.
 - **Astrologe:** Die Minderung bleibt nach dem Abbruch; der Kanal verlängert nur das Regen. Die Sperre
-  hält dafür auch die GCD-Heilungen des Astrologen zurück. Ohne Sperre verliert er wenig.
+  hält dafür bis zum Treffer auch die GCD-Heilungen des Astrologen zurück. Ohne Sperre verliert er
+  wenig.
 - **Tänzer:** Improvised Finish — die Barriere, 5 % bei 0 bis 10 % bei 4 Stapeln — wirkt RSR nie:
   `ImprovisationPvE` führt `Improvisation` als `StatusProvide` und verweigert sich deshalb, solange der
   Knopf Improvised Finish ist; ein eigener Aufruf fehlt. Die nächste Aktion beendet den Tanz, und die
   Barriere verfällt. Im Kampf: Der Tänzer gibt für seine Zwei-Minuten-Gruppenaktion nur das Regen.
 
 **Umgekehrt, Abwehr beendet Angriff:** Flamethrower (Machinist) ist ebenfalls ein Kanal; RSR wirkt ihn
-nicht. Meditate (Samurai) wirkt RSR nur in der Pause, wo ihm nur eine Notabwehr bei eigener niedriger
-Gesundheit dazwischenkommt (Tengentsu, Feint, Third Eye in `GeneralAbility`). Die Rückhaltung von
-Abwehr im Burst steht in Konzept 08, „Die Abwehrsperren".
+nicht. Meditate (Samurai) wirkt RSR nur in der Pause. Dort beendet ihn jede Abwehr oder Heilung, die
+ohne Gegner in Reichweite fällt: die eigene Heilung (Second Wind, Bloodbath), Tengentsu und Third Eye
+bei angekündigtem Treffer oder eigener niedriger Gesundheit. Sicherheit vor Kenki — so gewollt. Die
+Rückhaltung von Abwehr im Burst steht in Konzept 08, „Die Abwehrsperren".
 
 ### Wo eine Aktion einen Status aufhebt
 
 | Aktion | hebt auf | Bewertung |
 |---|---|---|
-| Shake It Off (Krieger) | Thrill of Battle | **Befund.** Der Wirktext: +2 % Barriere je aufgehobenem Effekt. Thrill of Battle trägt +20 % Maximalgesundheit und mit Enhanced Thrill of Battle +20 % erhaltene Heilung (Eigenschaftstext). RSR wirkt Thrill of Battle unter der Schwelle `ThrillOfBattleHeal` (ab Werk 60 %, `GeneralAbility`), Shake It Off als Einzelheilung und als Flächenabwehr, ohne den Status zu prüfen. Kommt Thrill of Battle zuerst — der Einzelheil-Auslöser liegt unter einer eigenen Schwelle —, tauscht der Krieger in niedriger Gesundheit 20 % mehr Heilung gegen 2 % Barriere. Kommen beide im selben Fenster, fällt Shake It Off zuerst (Heilung vor allgemeinen Fähigkeiten) und hebt nichts auf |
+| Shake It Off (Krieger) | Thrill of Battle, Damnation, Bloodwhetting | **Befund.** Der Wirktext im Repository lautet „Dispels Thrill of Battle and increasing…" — ein stufenabhängiger Name ist ausgeblendet. Vollständig, nach dem Suchauszug der Wikis (die Seiten selbst sperrt der Egress): „Dispels Thrill of Battle, Damnation, and Bloodwhetting, increasing damage absorbed by 2% for each effect removed". Unter Stufe 92 und 82 stehen dafür vermutlich Vengeance und Raw Intuition (Schluss aus den Ausbauketten). Was verloren geht: Damnation −40 % Schaden für 15 s, Bloodwhetting −10 % mit Heilung je Waffenfertigkeit, Thrill of Battle +20 % Maximalgesundheit und +20 % erhaltene Heilung (Enhanced Thrill of Battle) — gegen +2 % Barriere je Effekt. RSR wirkt Shake It Off als Flächenabwehr und als Einzelheilung, ohne einen dieser Status zu prüfen. Im Kampf: Ein angekündigter Raidwide, während Damnation für einen Tankbuster liegt, nimmt dem Krieger 40 % Minderung vor dem Tankbuster |
 | Tempera Grassa (Maler) | Tempera Coat | Zweck der Aktion; RSR wandelt nur bei angekündigtem Flächentreffer oder kurz vor Ablauf |
-| Meisui (Ninja) | Shadow Walker | Zweck der Aktion; RSR nur, wenn Trick Attack (Kunai's Bane) nicht bald bereit ist |
-| Detonator (Machinist) | Wildfire | RSR wirkt ihn nie; Wildfire zündet mit allen Stapeln von selbst. Nicht gebaut: Detonator vor dem Tod des Ziels — ob die Ladung dann verfällt, steht in keiner Quelle |
+| Meisui (Ninja) | Shadow Walker | Zweck der Aktion. RSR wirkt es, während Trick Attack (Kunai's Bane) abkühlt, und zusätzlich (a) wenn Ten Chi Jin bereit ist — dessen Abfolge endet mit Suiton, das Shadow Walker neu gibt (Wirktext) —, (b) wenn Shadow Walker in zwei GCDs endet, oder (c) wenn Trick Attack nicht in 19 s bereit ist |
+| Detonator (Machinist) | Wildfire | RSR wirkt ihn nie; Wildfire zündet mit allen Stapeln von selbst. Bis A164 konnte `WildfirePvE` in den letzten zwei GCDs von Wildfire als Detonator hinausgehen (gesperrter Knopfwechsel, siehe oben) und die übrigen Stapel abschneiden. Nicht gebaut: Detonator vor dem Tod des Ziels — ob die Ladung dann verfällt, steht in keiner Quelle |
 
 **Nicht nutzbar unter einem Status** (Hammer Motif unter Hammer Time, Fire in Red unter Subtractive
 Palette, Ten Chi Jin unter Kassatsu, Plentiful Harvest unter Bloodsown Circle u. a.) sind
@@ -179,10 +183,14 @@ Angriffsabfolgen innerhalb eines Jobs; keine berührt Abwehr.
 
 - **Jede Verlängerung hat eine Obergrenze von 60 s:** Darkside (Dunkelritter), Surging Tempest
   (Krieger), Death's Design (Schnitter). RSR frischt alle drei vor Ablauf auf.
-- **Kein Kreislauf trägt sich selbst.** Der einzige Status-Kreislauf aus den Texten, Gallows und
-  Gibbet (Schnitter), ist ein Wechsel, der Soul Reaver braucht — und das kostet Soul Gauge.
-  Ressourcenkreisläufe (A kostet, was B erzeugt, und umgekehrt) findet der Generator keine. Grenze:
-  MP-Kosten stehen nicht in den Wirktexten.
+- **Kein Kreislauf aus den Texten trägt sich selbst.** Die einzigen Status-Kreisläufe (Schnitter):
+  Gallows braucht Soul Reaver und gibt Enhanced Gibbet; Unveiled Gibbet braucht Enhanced Gibbet und gibt
+  Soul Reaver — für 50 Soul Gauge (Wirktext). Ebenso Gibbet und Unveiled Gallows. Jede Runde kostet also
+  Soul Gauge. Ressourcenkreisläufe (A kostet, was B erzeugt, und umgekehrt) findet der Generator keine.
+- **Dieser Nullbefund ist schwach:** Die meisten Gauge-Gewinne stehen nicht in den Texten — die
+  Combo-Aktionen blenden sie mit der Potenz aus (Slice, Hakaze, Gibbet), MP-Kosten fehlen ganz. Ein
+  Kreislauf über eine solche Aktion ist hier nicht erkennbar. Der Kreislauf-Finder ist gegen
+  konstruierte Kreisläufe selbstgetestet; er findet, was die Texte hergeben, nicht mehr.
 - **Erstattungen, die an Wahrscheinlichkeit hängen:** Tempera Coat (−60 s eigene Abklingzeit) und
   Tempera Grassa (−30 s) erstatten, wenn die Barriere ganz aufgezehrt wird; The Blackest Night gibt
   dann Dark Arts; Haima und Panhaima legen eine neue Barriere. Der Ertrag fällt nur, wenn Schaden
@@ -196,8 +204,10 @@ Angriffsabfolgen innerhalb eines Jobs; keine berührt Abwehr.
 ### Unvollständige Beschreibungen
 
 Viele Wirktexte lassen einen Wert leer, den eine Eigenschaft oder die Stufe setzt: Potenzen,
-Dauern (Reflexion, Addle, Feint, Sheltron, Nascent Flash), einmal ein Statusname (Gluttony: „Grants 2
-stacks of Duration"). Die Matrix zählt sie je Aktion. Wirkung auf RSR: Eine leere Dauer ergibt in
+Dauern (Reflexion, Addle, Feint, Sheltron, Nascent Flash), Statusnamen (Gluttony: „Grants 2 stacks of
+Duration"; Shake It Off: „Dispels Thrill of Battle and increasing"). Die Matrix zählt sie je Aktion.
+Eine Lücke in einer Aufzählung aufgehobener Status verfälscht die Wechselwirkungen: Der Generator sieht
+dort nur den ersten Namen. Wirkung auf RSR: Eine leere Dauer ergibt in
 `DefensiveValues` 0 s. Keine dieser Aktionen ist heute Auslöser einer Streckung; wäre sie es, würde
 sie nie strecken — der Generator erfindet keinen Wert.
 

@@ -199,6 +199,17 @@ own heals right after Stardiver.
   as it reads.
 - The Diagnostics window shows, per rule, whether it last held or gave way.
 
+## Channels and changed buttons
+
+- **Paladin and Astrologian channel locks** (`Lock actions when casting Passage Of Arms/Collective
+  Unconscious during AOE mitigations`, off by default): with the lock on, weaponskills and spells are now
+  held only until the announced hit lands, as abilities already were. Before, the GCD stayed held after
+  the hit until some ability broke the channel, up to 18 s.
+- **Machinist:** Wildfire can no longer go out as Detonator in its last seconds, cutting the stacks
+  still to come.
+- **Reaper:** Hell's Ingress and Hell's Egress can no longer go out as Regress, which jumped back to
+  the gate instead of dashing.
+
 ## Samurai and Machinist use a pause in the fight
 
 - **Samurai:** When no enemy is within 25 yalms in combat, the Samurai casts Meditate while standing

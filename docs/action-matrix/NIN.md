@@ -251,7 +251,7 @@ Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wi
 
 | Ressource | erzeugt von | verbraucht von |
 |---|---|---|
-| Ninki | Dokumori, Eigenschaft Shukiho, Eigenschaft Shukiho II, Eigenschaft Shukiho III, Fleeting Raiju, Forked Raiju, Phantom Kamaitachi | Bhavacakra, Bunshin, Deathfrog Medium, Hellfrog Medium, Zesho Meppo |
+| Ninki | Dokumori, Eigenschaft Shukiho, Eigenschaft Shukiho II, Eigenschaft Shukiho III, Fleeting Raiju, Forked Raiju, Meisui, Phantom Kamaitachi | Bhavacakra, Bunshin, Deathfrog Medium, Hellfrog Medium, Zesho Meppo |
 
 ### Kandidaten für Selbsterhaltung
 

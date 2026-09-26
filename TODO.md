@@ -12,13 +12,13 @@ Barde, Maler und Tänzer führen „Prevent the use of defense abilties during b
 
 `ImprovisationPvE` führt `Improvisation` als `StatusProvide` und verweigert sich, solange der Knopf Improvised Finish ist; einen eigenen Aufruf von `ImprovisedFinishPvE` gibt es nicht (seit 4727b6f7a, Upstream). Die nächste Aktion beendet den Tanz. Im Kampf: Die Gruppe bekommt das Regen, nie die Barriere (5 % bei 0 bis 10 % bei 4 Stapeln). Zur Entscheidung vorgelegt: sofort abschließen (5 %) oder bei angekündigtem Treffer Stapel aufbauen. Konzept 14, „Wechselwirkungen und Zeit".
 
-### Kanal-Abwehr: RSRs nächste Aktion beendet sie, die Sperre hält den GCD über den Treffer hinaus · N, U
+### Paladin: Passage of Arms endet ab Werk mit RSRs nächster Aktion · N, U
 
-Passage of Arms (Paladin) und Collective Unconscious (Astrologe) enden mit jeder weiteren Aktion. Ohne `PldlockCasting`/`AstlockCasting` (ab Werk aus) beendet RSR Passage of Arms mit seiner nächsten Aktion, meist bevor der angekündigte Treffer fällt. Mit Sperre hält der GCD-Pfad (`CustomRotation_GCD`) ohne Frage nach dem Treffer, bis eine Fähigkeit den Kanal beendet — bis zu 18 s ohne GCD; beim Astrologen auch ohne GCD-Heilung. Der Fähigkeitspfad lässt beim BossMod-Signal 0,6 s vor dem Treffer los. Zur Entscheidung vorgelegt. Konzept 14, „Wechselwirkungen und Zeit".
+Passage of Arms endet mit jeder weiteren Aktion. Ohne `PldlockCasting` (ab Werk aus) beendet RSR es mit seiner nächsten Aktion, meist bevor der angekündigte Treffer fällt; die Abklingzeit ist dann ohne Schutz verbraucht. Die Sperre hält seit A164 genau bis zum Treffer. Zur Entscheidung vorgelegt: Voreinstellung der Sperre. Konzept 14, „Wechselwirkungen und Zeit".
 
-### Krieger: Shake It Off hebt Thrill of Battle auf · N
+### Krieger: Shake It Off hebt Damnation, Bloodwhetting und Thrill of Battle auf · N
 
-Thrill of Battle (unter `ThrillOfBattleHeal`, ab Werk 60 %, `GeneralAbility`) trägt +20 % Maximalgesundheit und +20 % erhaltene Heilung (Enhanced Thrill of Battle). Shake It Off hebt es auf, für +2 % Barriere, und wird ohne Blick auf den Status gewirkt (Einzelheilung, Flächenabwehr). Im Kampf: In niedriger Gesundheit tauscht der Krieger mehr Heilung gegen eine kleine Barriere. Zur Entscheidung vorgelegt: Shake It Off als Einzelheilung wartet, solange Thrill of Battle liegt, außer bei Gefährdungsklasse 1 (`HoldSelfHeal`). Konzept 14.
+Shake It Off hebt die eigenen Status Thrill of Battle, Damnation und Bloodwhetting auf, für +2 % Barriere je Effekt (Suchauszug des vollständigen Texts; im Repository ist der Name ausgeblendet). RSR wirkt es als Flächenabwehr und als Einzelheilung, ohne diese Status zu prüfen. Im Kampf: Ein Raidwide, während Damnation für einen Tankbuster liegt, kostet den Krieger 40 % Minderung. Zur Entscheidung vorgelegt. Konzept 14, „Wechselwirkungen und Zeit".
 
 ### Die Minderungssumme kennt Confession nicht · R
 

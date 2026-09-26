@@ -122,8 +122,8 @@ Der Wiederbelebungsblock existiert **zweimal**, und eine Einstellung entscheidet
 
 | `RaisePlayerFirst` | Ort | Was davor gewinnt |
 |---|---|---|
-| an | `CustomRotation_GCD.cs:124` | Notfall, Unterbrechung, Reinigung, Provokation |
-| **aus (Vorgabe)** | `:312` | zusätzlich **die gesamte Heilung** (`:241`) und die Einzelziel-Verteidigung (`:299`) |
+| an | `CustomRotation_GCD.cs:127` | Notfall, Unterbrechung, Reinigung, Provokation |
+| **aus (Vorgabe)** | `:315` | zusätzlich **die gesamte Heilung** (`:244`) und die Einzelziel-Verteidigung (`:302`) |
 
 Mit der Vorgabe steht die Wiederbelebung hinter jeder Heilung. Das ist die dokumentierte Bedeutung
 der Einstellung und kein Defekt — es erklärt aber, warum ihre Wahl das beobachtete Verhalten stark
