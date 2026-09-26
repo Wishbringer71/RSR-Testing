@@ -388,9 +388,11 @@ internal partial class Configs : IPluginConfiguration
 	/// - Full: Use all available AoE actions.
 	/// - Cleave: Use only single-target AoE actions.
 	/// - Off: Do not use any AoE actions.
+	///
+	/// Attacks only: heals and other actions on the party are not affected.
 	/// </markdown>
 	[UI("What kind of AoE moves to use.",
-	Description = "Full: Use all available AoE actions.\nCleave: Use only single-target AoE actions.\nOff: Do not use any AoE actions.",
+	Description = "Full: Use all available AoE actions.\nCleave: Use only single-target AoE actions.\nOff: Do not use any AoE actions.\nAttacks only: heals and other actions on the party are not affected.",
 	Filter = AutoActionUsage, Section = 3)]
 	public AoEType AoEType { get; set; } = AoEType.Full;
 
@@ -641,6 +643,11 @@ internal partial class Configs : IPluginConfiguration
 
 	[ConditionBool, UI("Show Intercepted Action Window", Filter = UiWindows)]
 	private static readonly bool _showInterceptedActionWindow = false;
+
+	[ConditionBool, UI("Show Diagnostics Window",
+		Description = "A small window that stays open in combat and shows why RSR does what it does: the current rotation's status lines, the AoE damage table's store and last rated hit, and why an enabled HP potion is or is not used.\nIn a fight: nothing RSR does changes. You can see during the pull whether a rule fired or what held it back, instead of opening the settings afterwards.",
+		Filter = UiWindows)]
+	private static readonly bool _showDiagnosticsWindow = false;
 
 	[ConditionBool, UI("No Inputs", Parent = nameof(ShowNextActionWindow))]
 	private static readonly bool _isInfoWindowNoInputs = false;

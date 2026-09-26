@@ -21,6 +21,7 @@ stünde hier ein zweites Mal und würde altern.
 | [`11-raise-dispatch.md`](11-raise-dispatch.md) | Wann und auf welchem Weg fällt die Wiederbelebung? |
 | [`12-searing-light-stacking.md`](12-searing-light-stacking.md) | Wann zündet der Beschwörerbuff, wenn mehrere Beschwörer in der Gruppe stehen? |
 | [`13-aoe-damage-classification.md`](13-aoe-damage-classification.md) | Wie hart schlägt eine angekündigte Flächenaktion, und woher weiß der Baum das? |
+| [`14-action-dependency-matrix.md`](14-action-dependency-matrix.md) | Wie hängen die Aktionen eines Jobs voneinander ab, und welche wirkt der Baum nie? |
 
 **Der Knoten der Kampffamilie ist `08`.** Heilung, Barriere und Minderung sind drei Antworten auf
 dieselbe Frage; die Ordnung zwischen ihnen steht dort, die Messung der Treffergröße in `13`, die

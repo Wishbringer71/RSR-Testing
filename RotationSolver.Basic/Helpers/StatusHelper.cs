@@ -347,7 +347,11 @@ public static class StatusHelper
 		StatusID.Asylum_1911,
 		StatusID.DivineAura,
 		StatusID.MedicaIii_3986,
-		StatusID.MedicaIii
+		StatusID.MedicaIii,
+
+		// Summoner's Phoenix phase: Summon Phoenix grants the party regen Everlasting Flight. Without
+		// it here the area thresholds healed under a running regen as if nothing were ticking.
+		StatusID.EverlastingFlight,
 	];
 
 	/// <summary>
@@ -360,6 +364,9 @@ public static class StatusHelper
 		StatusID.Regen_897,
 		StatusID.Regen_1330,
 		StatusID.TheEwer_3891,
+
+		// Rekindle's follow-up regen, triggered below 75% or on expiry (effect text of Rekindle).
+		StatusID.UndyingFlame,
 	];
 
 	/// <summary>
@@ -651,8 +658,154 @@ public static class StatusHelper
 				|| !PlayerWillStatusEndGCD(DeathTriggerLeadGCDs, 0, false, DeathTriggeredStatus));
 	}
 
+	/// <summary>
+	/// Whether a heal from the player would be punished or wasted right now: Scalebound (1495:
+	/// "unable to heal wounds via any method save mega potions"), or Shackled Healing (4564: "Use of
+	/// HP-restoring actions will inflict Shackles of Penitence on those nearby") while anyone else is
+	/// near. The same test the heal dispatch in CustomRotation_Ability and CustomRotation_GCD applies,
+	/// including its 21 yalms; here so that a heal asked from outside that dispatch - Lux Solaris,
+	/// Rekindle - obeys it too.
+	/// </summary>
+	internal static bool PlayerHealingPunished()
+	{
+		return PlayerHasStatus(false, StatusID.Scalebound)
+			|| (PlayerHasStatus(false, StatusID.ShackledHealing) && DataCenter.NumberOfPartyMembersInRangeOf(21) != 1);
+	}
+
 	/// <summary>How early the death-trigger hold releases; see <see cref="InDeathTriggerWindow"/>.</summary>
 	private const uint DeathTriggerLeadGCDs = 2;
+
+	/// <summary>
+	/// Whether a Walking Dead bearer is still carried by his own attacks, and if not, why.
+	/// <para>
+	/// Owner's rule (concept 09): under Walking Dead the dark knight does not fall below 1 HP from
+	/// most attacks, every weaponskill or spell he lands restores HP, and only if the restored total
+	/// has not reached his maximum HP when the timer runs out is he KO'd (Living Dead's effect text,
+	/// ActionId.resx 3638). So at first the party trusts him to heal himself by fighting and supports
+	/// him only lightly, with a HoT. Full support comes once the timer is running out, or once it is
+	/// clear he will not make it in the time left - no enemy in reach, or an event ahead during which
+	/// he cannot attack.
+	/// </para>
+	/// <para>
+	/// Every condition comes from the game or from the fight, none from a number of its own:
+	/// <list type="bullet">
+	/// <item>The lead time is the Living Dead hold's, for the same reason: a full heal decided now
+	/// must still land before the window closes.</item>
+	/// <item>Reach is the game's range for Hard Slash, his basic weaponskill, hitbox to hitbox.</item>
+	/// <item>The event is BossModReborn's next downtime. Without a module it reads as none, and an
+	/// untargetable phase is seen only once it has begun, through the reach check.</item>
+	/// <item>A tank limit break on the party releases too: "most attacks" leaves room for hits that
+	/// do take him below 1 HP, and by the owner's reading those are the rare raidwides that need one.</item>
+	/// <item>The course is his health since the window was first seen, carried forward over the
+	/// time left. Health is net of the damage he takes, so it understates what he has restored and
+	/// the release comes early rather than late. For the first GCD there is nothing to measure yet,
+	/// and he is trusted, as the rule says.</item>
+	/// </list>
+	/// </para>
+	/// </summary>
+	internal static bool WalkingDeadCarriedBySelfHeal(this IBattleChara battleChara, out string why)
+	{
+		var id = battleChara.GameObjectId;
+		if (!battleChara.HasStatus(false, StatusID.WalkingDead))
+		{
+			_ = WalkingDeadSeen.Remove(id);
+			why = "not under Walking Dead";
+			return false;
+		}
+
+		var now = DateTime.Now;
+		var remaining = battleChara.StatusTime(false, StatusID.WalkingDead);
+		var ratio = battleChara.GetHealthRatio();
+
+		// A later window reads more time left than the one on record: start over.
+		if (!WalkingDeadSeen.TryGetValue(id, out var seen) || remaining > seen.Remaining)
+		{
+			seen = (now, ratio, remaining);
+			WalkingDeadSeen[id] = seen;
+		}
+
+		if (battleChara.WillStatusEndGCD(DeathTriggerLeadGCDs, 0, false, StatusID.WalkingDead))
+		{
+			why = "the timer is running out - full support";
+			return false;
+		}
+
+		var reach = FFXIVClientStructs.FFXIV.Client.Game.ActionManager.GetActionRange((uint)ActionID.HardSlashPvE);
+		var enemyInReach = false;
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile != null && EdgeDistance(battleChara, hostile) <= reach)
+			{
+				enemyInReach = true;
+				break;
+			}
+		}
+
+		if (!enemyInReach)
+		{
+			why = "no enemy in reach of his weaponskills - full support";
+			return false;
+		}
+
+		if (DataCenter.BMRNextDowntimeIn < remaining)
+		{
+			why = "a downtime is announced before the timer ends - full support";
+			return false;
+		}
+
+		// "Most attacks" will not lower him below 1 HP - not all. The owner's reading: the exception
+		// is the rare raidwide the party only survives with a tank's limit break (his examples: the
+		// Alexander raids, the Warrior of Light trial). Those are few, so an ordinary raidwide must
+		// not release the hold - that would undo the trust the rule asks for at every one of them.
+		// The mark of the rare one is the limit break itself: once a tank's limit break status is up
+		// on the party, the hit it was used for is coming, and at 1 HP he would stand in front of it
+		// unprotected. Read from the party's statuses, so it needs no BossModReborn.
+		foreach (var member in DataCenter.PartyMembers)
+		{
+			if (member != null && member.HasStatus(false, TankLimitBreakStatus))
+			{
+				why = "a tank limit break is up - full support before the hit it was used for";
+				return false;
+			}
+		}
+
+		var span = (float)(now - seen.At).TotalSeconds;
+		if (span < DataCenter.DefaultGCDTotal)
+		{
+			why = "just started, nothing to measure yet - HoT only";
+			return true;
+		}
+
+		var projected = ratio + ((ratio - seen.Ratio) / span * remaining);
+		if (projected < 1f)
+		{
+			why = $"his own course reaches {projected:P0} by the end - full support";
+			return false;
+		}
+
+		why = $"carried by his own attacks, course {projected:P0} - HoT only";
+		return true;
+	}
+
+	/// <summary>The four tanks' level 3 limit breaks (Status.resx: "Damage taken is reduced").</summary>
+	private static readonly StatusID[] TankLimitBreakStatus =
+	[
+		StatusID.LastBastion,
+		StatusID.LandWaker,
+		StatusID.DarkForce,
+		StatusID.GunmetalSoul,
+	];
+
+	/// <summary>When each bearer's Walking Dead was first seen, with his health and the time left then.</summary>
+	private static readonly Dictionary<ulong, (DateTime At, float Ratio, float Remaining)> WalkingDeadSeen = [];
+
+	/// <summary>Hitbox-to-hitbox distance on the ground plane, as the game measures action range.</summary>
+	private static float EdgeDistance(IBattleChara a, IBattleChara b)
+	{
+		var dx = a.Position.X - b.Position.X;
+		var dz = a.Position.Z - b.Position.Z;
+		return MathF.Max(0f, MathF.Sqrt((dx * dx) + (dz * dz)) - a.HitboxRadius - b.HitboxRadius);
+	}
 
 	/// <summary>
 	/// Is the fall to zero still the likely continuation for a bearer at this health?

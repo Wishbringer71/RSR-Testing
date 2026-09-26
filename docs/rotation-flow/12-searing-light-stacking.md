@@ -30,7 +30,7 @@ sobald die Beobachtung ihnen widerspricht:
 **Die Bauform ist ein hybrides, dynamisches Modell:** eine Regel, die sich an die Lage anpasst und
 bei Bedarf zwischen Strategien **wechselt**, statt einer festen Wahl zu folgen. Die Messung stützt
 das — keine der geprüften Einzelregeln gewinnt überall: Bei auseinandergelaufenen Rotationen ist die
-heutige, enge Regel bereits optimal, weil jeder Beschwörer seinen Buff in seiner stärksten Phase
+reine Solar-Regel bereits optimal, weil jeder Beschwörer seinen Buff in seiner stärksten Phase
 setzt und die Streuung die Lücken von selbst schließt; bei synchronem Pull mit fremden Beschwörern
 gewinnt die Buchführung; folgen alle derselben Regel, gewinnt das reine Lückenfüllen. Eine feste
 Regel muss daher in mindestens einer dieser Lagen unterlegen sein.
@@ -51,27 +51,48 @@ Regel, die nur ihn behandelt, behandelt den seltensten Fall.
 
 ## Sachstand
 
-**Auch bei einem Beschwörer ist der Ablauf nicht richtig, und das ist eine Spielbeobachtung des
-Auftraggebers:** Searing Light fiel nicht zu Beginn der Solar-Bahamut-Phase, sondern irgendwann
-darin, obwohl er der einzige Beschwörer war. Die Regel ist daran unschuldig im Wortsinn — sie sagt
-nur **ob**, nicht **wann**. `mayFireSearingLight` ist während der **gesamten** Phase wahr, und nichts
-im Baum zieht die Zündung an den Phasenanfang. Verpasst die Aktion den ersten Einschiebeplatz — weil
-er belegt ist, weil gerade kein Ziel in Reichweite steht, weil die Ausführungssperre kurz vor dem
-nächsten GCD greift —, fällt sie einfach beim nächsten freien Platz, und niemand holt das nach.
+**Bei einem Beschwörer fällt Searing Light vor der großen Beschwörung, und die Beschwörung wartet
+dafür, wenn nötig.** Stand in `SMN_Reborn`:
 
-**Das Messmittel dafür ist keine Neuentwicklung.** `DataCenter.AreaMitigationSkipped` vermerkt je
-Aktions-Id, wo eine Regel etwas hat ausfallen lassen, und die Diagnoseanzeige liest es — dieselbe
-Bauform beantwortet hier „wie viele Sekunden nach Phasenbeginn fiel Searing Light“. Was daran zu
-beachten ist, steht dort ebenfalls schon: **Aktionen zählen, nicht Aufrufe**, sonst misst der
-Zähler die Bildrate statt der Sache.
+1. **Zündung.** Im Einschiebeplatz **vor** der Burst-Beschwörung — Solar Bahamut, unterhalb seiner
+   Stufe Demi-Bahamut —, sobald deren Abklingzeit bis zum nächsten GCD abläuft (`burstAboutToStart`,
+   A114, A126, A129); mit einem zweiten Beschwörer vor jeder großen Beschwörung. Sonst in der Phase
+   (`burstInSolar`).
+2. **Warten der Beschwörung** (`searingSettled`, A115, A127, A132). Sie wartet, wenn der Buff bereit ist
+   oder so früh zurückkehrt, dass er noch in den Einschiebeplatz des GCDs passt, den das Warten kostet.
+   Sie wartet nicht bei laufendem Buff gleich welcher Herkunft, bei ausgeschaltetem Burst oder Searing
+   Light, vor einer Beschwörung, die nicht die Burst-Demi ist, unterhalb von Stufe 66, und mit einem
+   zweiten Beschwörer in der Gruppe nur auf einen bereits bereiten Buff.
+3. **Schimmerschild** hält jede Beschwörung, solange er fällig ist (unten).
 
-**Behoben ist der Teil, der ohne Laufzeitmessung zu beheben war** (A114): Die Zündung wird jetzt schon
-im Einschiebeplatz **vor** der großen Beschwörung angeboten. `burstInSolar` wird erst wahr, wenn die
-Demi steht — der früheste Platz, den diese Bedingung anbieten konnte, lag also **hinter** dem
-Beschwörungs-GCD. Zwanzig Sekunden Buff gegen fünfzehn Sekunden Demi decken die Phase auch von davor
-vollständig ab, und der eingeplante Überhang bleibt erhalten. Damit die Beschwörung dadurch nicht
-ausfällt, nimmt ihre Bedingung einen **laufenden** Buff als Bereitschaft an — der Bahamut-Zweig las sie
-schon immer so, der Solar-Zweig nicht.
+Im Kampf: Searing Light steht vor dem ersten Umbral Impulse jeder Solar-Phase. Kann es vor der
+Beschwörung nicht fallen — etwa weil davor Ruby Rite gewirkt wird —, kommt Solar einen GCD später, und
+Searing Light geht in den Platz dieses GCDs. Solar und der Buff verschieben sich dabei gemeinsam; der
+Burst bleibt geschlossen, weil der einzige Beschwörer ihn selbst setzt. Was wartet und wie lange, und wo
+Searing Light gegenüber der Beschwörung lag, zeigt der Rotationsstatus im Diagnosefenster.
+
+**Vorgabe des Auftraggebers (A115):** „Somit muss ja searing light aktiv sein, bevor der erste
+burstschaden entsteht."
+
+**Hinweis des Auftraggebers auf das, was die Platzanalyse übersehen hatte:** „schimmerschild kann man
+nicht im burst um einen gcd nach hinten verschieben, muss vor demi bei bedarf gecasted werden. addle
+könnte verschoben werden, solange sicher ist, dass er rechtzeitig vor castende des gegners draussen
+ist." Beides sind Tatsachen des Spiels, keine Festlegungen; geprüft und so eingearbeitet:
+
+- **Schimmerschild (Radiant Aegis) geht vor jeder Demi, wenn er fällig ist.** Der Wirktext begründet
+  es: „Can only be executed while Carbuncle is summoned" — die Demi ersetzt Carbuncle für 15 Sekunden.
+  Fällig heißt, was die Rotation ohnehin fragt: ein von BossModReborn angekündigter Raidwide innerhalb
+  der Wirkdauer des Schilds (aus seinem Wirktext, `DefensiveValues.DurationOf`) oder die stehende
+  Verteidigungsflagge ohne eigenen Schild. Umgesetzt (`RadiantAegisDueBeforeDemi`): Der Schild
+  nimmt den Platz vor der Beschwörung **vor** Searing Light, und die Beschwörung wartet, solange er
+  fällig und wirkbar ist. Der angekündigte Schild stand zuvor in `GeneralAbility`, das die Kette erst
+  **nach** dem Angriffszweig fragt — Searing Light nahm den einzigen Platz vor der Demi, und der Schild
+  blieb die ganze Phase aus. Ohne BossModReborn-Modul bleibt nur die Flagge, also ein Cast, der schon
+  läuft; das ist die Grenze des reaktiven Wegs.
+- **Addle kann hinter Searing Light zurücktreten, solange er vor dem Castende des Gegners liegt** —
+  sein Wert hängt nur daran, dass er vor dem Treffer steht. Nicht umgesetzt: Sie beträfe nur den seltenen Fall, dass beide
+  Plätze hinter der Beschwörung belegt sind, und gewönne dort 15 bis 23 Potenz; dafür bräuchte die
+  Verteidigungsregel das Castende als Bedingung.
 
 **Wann der erste Burstschaden entsteht, ist am Wirktext belegt — und es ist nicht die Beschwörung.**
 `Summon Solar Bahamut` (`ActionId.resx`, 36992) nennt **keine Potenz**: „Enters Lightwyrm Trance and summons
@@ -80,19 +101,49 @@ attacked by you after summoning.“ Der Beschwörungs-GCD richtet also nichts au
 **eigenen** Angriffen. Der erste Schaden der Phase ist damit der erste GCD danach — Umbral Impulse (640)
 samt automatischem Luxwave, zusammen 800 Potenz.
 
-**Daraus folgt, welcher Fehler der billigere ist.** Der Buff verfehlt — 5 % auf jeden GCD, den er nicht
-mehr deckt: 40 Potenz allein auf den ersten, und dasselbe noch einmal für jedes nahe Gruppenmitglied.
-Die Beschwörung wartet — sie fällt einen GCD später, die Trance läuft 15 s innerhalb eines 20-s-Buffs,
-die Phase passt also weiterhin vollständig hinein, und der warte-GCD ist ein Füller, kein Verlust.
-Deshalb wartet die Beschwörung.
+**Warum die Beschwörung wartet — die gemeldete Drift.** Gemeldet: „cooldown von searing light ist
+später nicht fertig, wenn burst phase läuft." Searing Light lief der Solar-Phase davon. Die Abklingzeiten
+der Beschwörung und des Buffs laufen ab ihrer **Nutzung**; fällt der Buff einmal hinter die Beschwörung,
+ist er in der nächsten Solar-Phase um denselben Betrag zu spät bereit, und in jeder weiteren.
 
-**Die Beschwörung wartet auf den Buff, statt ihn nur zuzulassen** — Vorgabe des Auftraggebers: Searing
-Light muss aktiv sein, **bevor** der erste Burstschaden entsteht. Umgesetzt an der Stelle, die
-tatsächlich feuert: Der Bahamut-Aufruf stand zweimal da, einmal ohne Bedingung und einmal mit genau
-dieser — der bedingte war damit unerreichbar, die Kopplung wirkungslos. Jetzt ein Aufruf, eine
-Bedingung. Sie hält drei Arme, und die letzten beiden verhindern, dass das Warten die Phase kostet:
-Eine bereits verbrauchte Ladung kommt in diesem Fenster nicht zurück, und unterhalb von Stufe 66 gibt
-es Searing Light gar nicht.
+- **Ohne Warten bleibt ein Rückstand für immer.** Der Platz hinter der Beschwörung liegt zwar ebenfalls
+  vor dem ersten Burstschaden — die Beschwörung macht keinen Schaden —, aber er ist umkämpft: Ihr
+  Wirktext gewährt Refulgent Lux, damit wird Lux Solaris dort wirkbar, und der Heilzweig kommt vor dem
+  Angriffszweig; dazu Addle und ein Trank. Sind beide Plätze belegt, fällt der Buff hinter den ersten
+  Umbral Impulse, und weil nichts ihn zurückholt, bleibt er dort in jeder folgenden Solar-Phase: 15 bis
+  23 Potenz eigener Schaden je Zwei-Minuten-Zyklus, mehr mit jedem weiteren solchen Fall.
+- **Mit Warten wird der Rückstand jede Solar-Phase eingeholt.** Die Beschwörung kommt einen GCD später,
+  Searing Light geht in den Platz dieses GCDs. Der einzige Beschwörer setzt den Burst selbst: Solar und
+  der Buff verschieben sich gemeinsam, und im Kampf ändert sich dadurch nur der Zeitplan der späteren
+  Demis — spürbar erst am Kampfende, wo die letzte Demi-Phase knapper ausfallen kann.
+
+Die Freigabe vor der Beschwörung kam zudem zu spät, erst bei abgelaufener Abklingzeit, wenn der Platz
+davor schon vorbei war; behoben (A126). *Dass hinter Ruby Rite kein Platz bleibt, ist ein Schluss aus
+Code und Wirktext; die Längen von Wirk- und Wiederholzeit sind Fremdquelle.*
+
+**Auch das Warten innerhalb der Demi ist teurer als sein Ertrag.** Hält man statt der Beschwörung den
+ersten GCD der Phase an, bis die offenen Fähigkeiten gewoben sind, verschiebt sich keine Demi — die
+Abklingzeit läuft ab der Beschwörung —, aber jeder folgende GCD. Der Zyklus verliert dadurch den
+billigsten GCD anteilig: 0,2 bis 0,7 Sekunden kosten 32 bis 112 Potenz, gerechnet mit Ruin III
+(400 je 2,5 s). Bei einem GCD unter 2,5 Sekunden kommt ein zweiter Verlust hinzu:
+`smn_phase_potency.py` zählt dann sieben statt sechs Würfe in der Phase, der letzte Umbral Impulse
+liegt nur 0,12 bis 0,6 Sekunden vor dem Ende der 15 Sekunden, und ein Clip darüber kostet ihn, rund
+400 Potenz. Der Ertrag ist, was ein verpasster erster Platz überhaupt kostet: Der Buff fällt dann einen GCD
+später, der erste Umbral Impulse (800 Potenz samt Luxwave) läuft ohne die 5 %, und das Buffende
+rückt um denselben GCD nach hinten und trägt einen Primal-GCD mehr — mit Titan zuerst Topaz Rite 340,
+mit Mountain Buster 500. Netto sind das 15 bis 23 Potenz eigener Schaden, 0,05 bis 0,08 Prozent des
+Zwei-Minuten-Zyklus; die Aetherflow-Ausgaben der Phase warten ohnehin auf den Buff und verlieren
+nichts. Für die Gruppe verschiebt sich das Fenster um denselben GCD; das ist nicht beziffert. Die übrigen
+Fähigkeiten der Phase — Energy Drain, zweimal Necrotize, Exodus, Sunflare, Searing Flash, Lux
+Solaris — brauchen kein Warten: rund acht auf zwölf Einschiebeplätze. *Clipdauer aus Ausführungssperre
+und Latenz, beide nicht im Repository, der Code liest sie erst zur Laufzeit.*
+
+**Mehrere Beschwörer — sein Prüfvorschlag, geprüft und so umgesetzt:** „die prüfung der abklingzeit
+darf aber nicht dazu führen, dass alle demis verzögert werden (siehe mehrere Beschwörer in gruppe), da
+erfolgt ein ausweichen auf den nächsten demi bzw. im negativfall auf den stärksten primal." Mit einem
+zweiten Beschwörer wartet die Beschwörung auf keinen abkühlenden Buff, und auf keinen, solange ein
+fremder läuft; die Ladung geht in das erste Fenster, das die Zündregel öffnet — jede große
+Beschwörung, und sind alle belegt, der Primal-Block nach Standort.
 
 **Gelesen wird die Bereitschaft der Beschwörung, nicht der nächste GCD.** Andernfalls entstünde dasselbe
 Henne-Ei-Problem wie bei der Wiederbelebung (Konzept 11): Der Buff wartete darauf, angekündigt zu
@@ -104,8 +155,8 @@ Schimmerschild und Addle; seine einzige nennenswerte Heilung ist die Flächenhei
 laufenden Demi. Und genau die kann **vor** der Beschwörung gar nicht feuern: `ModifyLuxSolarisPvE`
 setzt `StatusNeed = [StatusID.RefulgentLux]`, `ModifyRekindlePvE` prüft `InPhoenix` — beide
 Bedingungen entstehen **aus** der Phase, die noch nicht begonnen hat. Vor der Beschwörung bleiben
-damit Schimmerschild (`ModifyRadiantAegisPvE`, `ActionCheck = () => DataCenter.HasPet()`) und Addle,
-und die nur bei gesetzter Verteidigungsflagge. Eine Absicherung über `CanUse` als Prüfung scheidet
+damit Schimmerschild und Addle — Addle bei gesetzter Verteidigungsflagge, der Schild zusätzlich bei
+einem angekündigten Raidwide, und der Schild geht dort absichtlich vor (Hinweis oben). Eine Absicherung über `CanUse` als Prüfung scheidet
 aus; das ist die Defektklasse aus `TODO.md`.
 
 **Hinter der Beschwörung kehrt sich das um, und das ist der wahrscheinlichere Grund für die
@@ -113,7 +164,7 @@ Spielbeobachtung.** Der Wirktext der Beschwörung gewährt selbst Refulgent Lux 
 Grants Refulgent Lux Duration: 30s“). In dem Augenblick, in dem die Beschwörung aufgeht, wird Lux
 Solaris also wirkbar — und `HealAreaAbility` fragt die Kette **vor** `AttackAbility`
 (`CustomRotation_Ability.cs:169` und `:188` gegen den Angriffszweig weiter unten), kann den
-Einschiebeplatz hinter der Beschwörung also nehmen, sobald die Flächenheilungsflagge steht. **Die
+Einschiebeplatz hinter der Beschwörung also nehmen, sobald die Flächenheilungsflagge steht und im Wirkradius um den Beschwörer genug Verletzte stehen, einer davon unter der Heilschwelle der Aktion (Konzept 07, „Flächenheilungen um den Wirkenden“, A137). **Die
 Beschwörung erzeugt ihren eigenen Konkurrenten um den Platz dahinter; der Platz davor hat diesen
 Konkurrenten nicht.** Das ist ein zweites, vom Zeitpunktargument unabhängiges Argument für die
 Zündung vor der Beschwörung — und ein Schluss aus Wirktext und Zweigreihenfolge, keine
@@ -121,8 +172,10 @@ Spielbeobachtung.
 
 **Keine Sonde, und das ist die Vorgabe des Auftraggebers:** Eine Messung, deren Auswertung über das
 Modell läuft, kostet je Wert einen Kampf, ein Ablesen, einen Bericht und eine Runde. Diese
-Entscheidung fällt stattdessen im Code, aus dem, was der GCD-Pfad ohnehin schon als nächste Aktion
-gewählt hat.
+Entscheidung fällt stattdessen im Code, aus der Bereitschaft der Beschwörung und des Buffs. Was sie
+entscheidet und worauf die Beschwörung wartet, zeigt der Rotationsstatus im Diagnosefenster
+(`Show Diagnostics Window`) während des Kampfes — zu seiner Kontrolle, nicht zur späteren
+Auswertung.
 
 **Wer den Platz nehmen kann, ist sehr wohl bestimmbar — nur nicht, wer es im Einzelfall tut.**
 `03-universal.md` führt die Zweigkette des Fähigkeitenpfads: Notfall, Unterbrechung, Reinigung,
@@ -132,7 +185,8 @@ Angriffszweig, in dem Searing Light an erster Stelle steht. Die offene Frage ist
 zuvor beschrieben: Sie lautet nicht „welcher Zweig“, sondern „wie oft greift einer von ihnen in
 genau diesem Fenster“ — und das ist eine Messfrage, keine Lesefrage. Für den Beschwörer schrumpft
 sie nach dem Abschnitt oben weiter zusammen: Vor der Beschwörung kommen von dieser ganzen Kette nur
-Schimmerschild und Addle überhaupt in Betracht, und auch die nur bei gesetzter Verteidigungsflagge.
+Schimmerschild und Addle überhaupt in Betracht, Addle nur bei gesetzter Verteidigungsflagge, der
+Schild auch bei angekündigtem Raidwide.
 
 **Warum das Schaden kostet, in Zahlen aus dem Wirktext** (`ActionId.resx`, beides dort wörtlich):
 Searing Light wirkt **20 Sekunden**, Summon Solar Bahamut dauert **15 Sekunden**. Zu Beginn gezündet
@@ -143,10 +197,10 @@ Phase gegen eine **danach**: Die Demi-GCDs tragen 947 bis 1217 Potenz, die Zwisc
 GCDs verschiebt damit rund 30 Potenz je GCD von der starken in die schwache Phase. Der Verlust
 trifft zudem nicht ihn allein: Der Buff gilt für die nahen Gruppenmitglieder mit.
 
-Ab **zwei** Beschwörern reicht zusätzlich das genutzte Zündfenster nicht
-mehr aus: Jeder Beschwörer darf Searing Light nur während seiner Solar-Bahamut-Beschwörung zünden,
-und dieses Fenster kommt nur alle 120 Sekunden — genau so oft wie die Aktion selbst. Treffen zwei
-Beschwörer im selben Fenster aufeinander, verfällt eine Ladung.
+**Ab zwei Beschwörern reicht das Solar-Fenster allein nicht.** Es kommt nur alle 120 Sekunden —
+genau so oft wie die Aktion selbst —, und treffen zwei Beschwörer darin aufeinander, verfällt eine
+Ladung. Deshalb öffnet ein zweiter Beschwörer in der Gruppe jede große Beschwörung (V2), und V8
+weicht in einen Primal-Block aus, wenn alle Phasen dauerhaft belegt sind.
 
 **Wie oft das eintritt, hängt an der Lage und nicht an der Beschwörerzahl.** Spielstile und
 RSR-Einstellungen unterscheiden sich, und schon der Zeitpunkt des Kampfeintritts streut die Zyklen;
@@ -155,11 +209,11 @@ sondern eine, die die Lage erkennt und zwischen Strategien wechselt.
 
 | | Inhalt | Bewertung |
 |---|---|---|
-| **V1** | Den Searing Light eines anderen Beschwörers als Buff-Fenster für die eigenen Aetherflow-Ausgaben werten | umsetzen |
-| **V2** | Das Zündfenster auf alle großen Beschwörungen erweitern, sobald ein zweiter Beschwörer in der Gruppe ist | umsetzen, mit Gruppenprüfung als Schalter |
-| **V8** | Die hybride Regel des Auftraggebers: in jeder freien Burstphase zünden, und erst wenn **alle** Phasenarten dauerhaft belegt sind, in die stärkste Zwischenphase ausweichen | **umsetzen** |
+| **V1** | Den Searing Light eines anderen Beschwörers als Buff-Fenster für die eigenen Aetherflow-Ausgaben werten | umgesetzt |
+| **V2** | Das Zündfenster auf alle großen Beschwörungen erweitern, sobald ein zweiter Beschwörer in der Gruppe ist | umgesetzt, mit Gruppenprüfung als Schalter |
+| **V8** | Die hybride Regel des Auftraggebers: in jeder freien Burstphase zünden, und erst wenn **alle** Phasenarten dauerhaft belegt sind, in den Titan-Block ausweichen, am Ziel stehend in den Ifrit-Block | **umgesetzt** |
 | V4 | Die Bindung an die Beschwörung ganz lösen, Zündung bei Kampf und vorhandenem Ziel | gemessen, nie die beste Wahl — nicht umsetzen |
-| V7 | Außerhalb eines Fensters zünden, sobald der Buff abgelaufen ist, ohne jede Buchführung | **zurückbauen** — blind: gewinnt eine Lage, verliert zwei andere |
+| V7 | Außerhalb eines Fensters zünden, sobald der Buff abgelaufen ist, ohne jede Buchführung | verworfen, durch V8 ersetzt — blind: gewinnt eine Lage, verliert zwei andere |
 | V5 / V6 | Buch über die **Wiederholzeiten** der anderen führen | die Frage war falsch gestellt, s. unten — in V8 aufgegangen |
 
 **Der maßgebliche Bereich ist eins bis fünf.** Eine reguläre Achtergruppe trägt vier bis fünf
@@ -223,60 +277,68 @@ richtig. Aus dem Zusammentreffen beider entsteht der Befund von V1.
 
 **Das Maß ist der Anteil des eigenen Schadens, der unter einem Buff fällt** — nicht die Zahl der
 Sekunden mit Buff. Searing Light hebt den Schaden um 5 %, eine Sekunde ist also wert, was sie
-produziert, und eine Solar-Sekunde trägt 1217 Potenz je GCD gegen 495 in einem Primal-Block, Faktor
-2,46 (`smn_phase_potency.py`). Sekunden zu zählen beantwortet deshalb eine andere Frage als „wo zahlt
+produziert, und eine Solar-Sekunde trägt 1217 Potenz je GCD gegen 407 bis 632 in einem Primal-Block
+(`smn_phase_potency.py`). Sekunden zu zählen beantwortet deshalb eine andere Frage als „wo zahlt
 sich die Ladung aus"; die Abdeckungstabellen weiter unten bleiben als Zwischengröße stehen und sind
 als solche zu lesen.
 
 **Die Gruppe, die tatsächlich vorkommt, ist die gemischte:** Ein Beschwörer folgt dieser Regel, die
-anderen sind fremde Spieler mit eigener Rotation. Lauf vom 13.09.2026, über alle Reihenfolgen
-gemittelt, wer bei gleichzeitiger Gelegenheit zuerst zündet:
+anderen sind fremde Spieler mit eigener Rotation. Gemessen mit `searing_light_coverage.py`
+(Abschnitt „V8"), drei Beschwörer, über alle Reihenfolgen gemittelt, wer bei gleichzeitiger
+Gelegenheit zuerst zündet. Zwischen den Demis laufen die drei Primals in der voreingestellten
+Reihenfolge Titan, Garuda, Ifrit; ausgewichen wird in den Titan-Block.
 
 **V8 ist V2 plus eine einzige weitere Klausel** — Punkt 6 der Vorgabe: außerhalb einer Burstphase
 zünden, sobald **alle** Phasenarten dauerhaft belegt sind. Solange irgendeine frei ist, verhält sich
-V8 wie V2. Daraus folgt, womit gemessen werden muss: nicht gegen die heutige Regel, sondern gegen V2,
-und gegen Gegenspieler, die die Phasen tatsächlich belegen.
+V8 wie V2. Gemessen wird deshalb gegen V2, und gegen Gegenspieler, die die Phasen tatsächlich
+belegen. „V8 (Plugin)" ist das Buch, das `SummonerRotation` führt; „V8 (Modellbuch)" das Buch, aus
+dem die Regel hergeleitet ist.
 
 **Gegenspieler, die nur Solar nutzen** — Bahamut und Phoenix bleiben frei, die Klausel greift nie:
 
-| Lage | heute | V2 | V7 (gebaut) | V8 |
+| Lage | nur Solar | V2 | V8 (Plugin) | V8 (Modellbuch) |
 |---|---|---|---|---|
-| synchroner Pull | 26,6 % | 46,4 % | 38,8 % | 46,4 % |
-| halb versetzt | 46,3 % | 46,3 % | 46,3 % | 46,3 % |
-| voll versetzt | 60,8 % | 60,8 % | 60,8 % | 60,8 % |
+| synchroner Pull | 26,4 % | 46,1 % | 46,1 % | 46,1 % |
+| halb versetzt | 44,4 % | 44,4 % | 44,4 % | 44,4 % |
+| voll versetzt | 59,4 % | 59,4 % | 59,4 % | 59,4 % |
 
 **Gegenspieler, die jede Phasenart belegen** — die Lage, für die Punkt 6 gemacht ist:
 
-| Lage | heute | V2 | V7 (gebaut) | **V8** |
+| Lage | nur Solar | V2 | **V8 (Plugin)** | V8 (Modellbuch) |
 |---|---|---|---|---|
-| synchroner Pull | 47,9 % | 47,9 % | 60,0 % | **56,4 %** |
-| halb versetzt | 46,3 % | 46,3 % | 46,3 % | 46,3 % |
-| voll versetzt | 60,8 % | 60,8 % | 60,8 % | 60,8 % |
+| synchroner Pull | 47,6 % | 47,6 % | **53,6 %** | 57,1 % |
+| halb versetzt | 44,4 % | 44,4 % | 44,4 % | 44,4 % |
+| voll versetzt | 59,4 % | 59,4 % | 59,4 % | 59,4 % |
 
-(drei Beschwörer; über alle Reihenfolgen gemittelt, wer bei gleichzeitiger Gelegenheit zuerst zündet.
-Zwei bis fünf Beschwörer liegen innerhalb eines Prozentpunkts, außer bei zwei Beschwörern, wo die
-Klausel mangels Belegung nicht greift.)
+(Bei vier und fünf Beschwörern liegt V8 im Plugin bei 56,3 und 56,6 %, das Modellbuch bei 57,7 und
+57,9 %; bei zwei greift die Klausel mangels Belegung nicht.)
 
 **Damit steht die Bewertung:** V8 ist nirgends schlechter als V2 und in der einen Lage, für die seine
-zusätzliche Klausel gebaut ist, um achteinhalb Prozentpunkte besser. Das ist die Bedingung, die eine
-Anpassung erfüllen muss — sie darf keine Lage verschlechtern, um eine andere zu gewinnen.
+Klausel gebaut ist, um sechs Prozentpunkte besser. Das ist die Bedingung, die eine Anpassung
+erfüllen muss — sie darf keine Lage verschlechtern, um eine andere zu gewinnen; der Selbsttest des
+Modells hält sie für das Buch des Plugins fest.
 
-**Sobald die Rotationen auseinanderlaufen, ist die heutige enge Regel bereits optimal** — jeder
+**Der Abstand zwischen Plugin und Modellbuch ist gemessen und zerlegt:**
+
+| Unterschied | Wirkung bei drei Beschwörern | Stand |
+|---|---|---|
+| Bahamut und Phoenix als ein Paar buchen (Parität, Abschnitt „Die Buchführung") | +3,2 Punkte | umgesetzt |
+| Ausweichen nur auf einen vollständig abgelaufenen Buff | +1,4 Punkte | umgesetzt |
+| Beim Betreten der Phase buchen statt während des ganzen Fensters | Beobachtung über das ganze Fenster **kostet** 2,7 Punkte | Plugin bleibt beim Betreten |
+| Keine Rücksetzung, wenn eine Phase ohne fremden Buff betreten wird | +2,1 Punkte | nicht übernommen: Die Rücksetzung ist die Selbstheilung ohne Uhr — wer ausfällt, gibt seine Phase beim nächsten Durchgang frei |
+
+Ohne die beiden umgesetzten Punkte erreichte das Plugin 49,0 % — anderthalb Punkte über V2 statt der
+im Modell ausgewiesenen neun.
+
+**Sobald die Rotationen auseinanderlaufen, ist schon die reine Solar-Regel optimal** — jeder
 Beschwörer setzt seinen Buff in seine stärkste Phase, und die Streuung schließt die Lücken von
 selbst. Alle Unterschiede entstehen im synchronen Fall.
 
-**V7 ist der Ausreißer und deshalb zurückzubauen.** Es liegt im synchronen Pull gegen belegte Phasen
-vorn (60,0 % gegen 56,4 %), weil blindes Füllen dort zufällig trifft — und es verliert in zwei
-anderen Lagen: gegen Gegenspieler auf Solar fällt es auf 38,8 % gegen 46,4 %, und bei zwei
-Beschwörern auf derselben Regel mit voll versetzten Rotationen auf 39,6 % gegen 47,7 % der heutigen
-Regel. Es gibt die eigene Burstphase auf, ohne dass eine Kollision vorliegt. Genau das unterscheidet
-eine blinde Regel von einer, die die Lage liest.
-
 **Warum die Klausel nicht früher greifen darf, ist die Potenzdichte.** Solar trägt 1217 je GCD,
-Bahamut 950, Phoenix 947; eine Zwischenphase im besten Fall 632 und im Mittel 495. Eine ausgelassene
-Gelegenheit kostet dabei nichts: Die Ladung bleibt liegen, ihre Wiederholzeit beginnt erst mit der
-Zündung, und die nächste Burstphase kommt in höchstens 60 Sekunden. Erst wenn **keine** Burstphase
-mehr zu bekommen ist, ist die Zwischenphase besser als gar nichts — und dann ist sie es deutlich.
+Bahamut 950, Phoenix 947; ein Primal-Block 407 bis 632. Eine ausgelassene Gelegenheit kostet dabei
+wenig: Die Ladung bleibt liegen, ihre Wiederholzeit beginnt erst mit der Zündung, und die nächste
+Burstphase kommt in höchstens 60 Sekunden. Erst wenn **keine** Burstphase mehr zu bekommen ist, ist
+der Primal-Block besser als gar nichts — und dann ist er es deutlich.
 
 ## Die Fälle von einem bis fünf Beschwörern, Abdeckung in Sekunden
 
@@ -291,7 +353,7 @@ das, was die Ladungen überhaupt hergeben: *n* × 20 s je 120 s.
 
 **Synchrone Rotationen — der saubere Pull:**
 
-| Beschwörer | heute | V2 | V4 | **V7** | Obergrenze |
+| Beschwörer | nur Solar | V2 | V4 | **V7** | Obergrenze |
 |---|---|---|---|---|---|
 | 1 | 17 % | 17 % | 17 % | 17 % | 17 % |
 | 2 | 17 % | 33 % | 29 % | **33 %** | 33 % |
@@ -301,7 +363,7 @@ das, was die Ladungen überhaupt hergeben: *n* × 20 s je 120 s.
 
 **Voll auseinandergelaufene Rotationen:**
 
-| Beschwörer | heute | V2 | V4 | V7 | Obergrenze |
+| Beschwörer | nur Solar | V2 | V4 | V7 | Obergrenze |
 |---|---|---|---|---|---|
 | 1 | 17 % | 17 % | 17 % | 17 % | 17 % |
 | 2 | 33 % | 33 % | 33 % | 33 % | 33 % |
@@ -313,10 +375,10 @@ das, was die Ladungen überhaupt hergeben: *n* × 20 s je 120 s.
 Bei einem bis fünf Beschwörern holt die Regel aus den vorhandenen Ladungen heraus, was überhaupt
 darin steckt. Mehr ist nicht möglich, ohne dass jemand zusätzliche Ladungen bekäme.
 
-**Und das zweitauffälligste: Versatz hilft nur dem heutigen Code.** In der zweiten Tabelle liegen
+**Und das zweitauffälligste: Versatz hilft nur der reinen Solar-Regel.** In der zweiten Tabelle liegen
 alle vier Regeln gleichauf. Wo die Beschwörungsfenster ohnehin gestreut sind, trifft schon die enge
 Regel die Lücken; die Erweiterungen finden nichts mehr vor. Umgekehrt heißt das: **V7 ist genau dort
-stark, wo der heutige Code schwach ist** — beim sauberen, synchronen Pull, also dem Regelfall zu
+stark, wo die reine Solar-Regel schwach ist** — beim sauberen, synchronen Pull, also dem Regelfall zu
 Beginn eines Kampfes.
 
 ### Was die Zahlen sagen
@@ -330,7 +392,7 @@ richtig und wird von der Messung bestätigt, allerdings nur unter Bedingungen, d
 stehen.
 
 **Der Versatz ist der stärkste einzelne Hebel, stärker als jede der drei Zündregeln.** Bei acht
-Beschwörern und heutigem Code steigt die Abdeckung allein durch auseinandergelaufene Rotationen von
+Beschwörern und reiner Solar-Regel steigt die Abdeckung allein durch auseinandergelaufene Rotationen von
 17 % auf 67 %. Der Grund: Gestreute Beschwörungsfenster treffen die Lücken zwischen den Buffs, die
 bei synchronem Pull sämtlich unbesetzt bleiben.
 
@@ -344,33 +406,25 @@ keine Monotonie zwischen Beschwörerzahl und Abdeckung verlangen, weil sie nicht
 
 ## Ausweichen statt Lockern
 
-Der Auftraggeber hat die Erweiterung eng gefasst: Nicht „zünde in
-jedem Beschwörungsfenster", sondern „**weiche auf Bahamut oder Phoenix aus, falls Solar Bahamut
-bereits durch einen anderen abgedeckt war**". Das ist nicht dasselbe, und der Unterschied ist zu
-benennen.
+**Umgesetzt ist die weite Fassung, unter der Gruppenprüfung als Schalter.** Der Auftraggeber hatte
+die Erweiterung eng gefasst: nicht „zünde in jedem Beschwörungsfenster", sondern „**weiche auf
+Bahamut oder Phoenix aus, falls Solar Bahamut bereits durch einen anderen abgedeckt war**". Der Code
+öffnet mit einem zweiten Beschwörer in der Gruppe jede große Beschwörung (`AnotherSummonerInParty
+&& inBigInvocation`), ohne Blockade vorauszusetzen.
 
-**Im Code gibt es weder das eine noch das andere.** `SMN_Reborn.cs:240` ist die einzige Zündstelle,
-und `burstInSolar` (`:203`) lässt ab Stufe 100 ausschließlich Solar zu. Es gibt keinen Zweig, der
-ausweicht, und keinen Zustand, der eine Blockade festhält.
-
-**Wo beide Fassungen dasselbe tun:** Wenn das Solar-Fenster durch einen fremden Buff gesperrt war,
-zündet die pauschale Fassung im nächsten Demi — genau das, was die Ausweichfassung beabsichtigt. Für
-den Kollisionsfall, um den es geht, sind sie deckungsgleich.
+**Wo beide Fassungen dasselbe tun:** War das Solar-Fenster durch einen fremden Buff gesperrt, zündet
+die weite Fassung im nächsten Demi — genau das, was die Ausweichfassung beabsichtigt. Für den
+Kollisionsfall, um den es geht, sind sie deckungsgleich.
 
 **Wo sie auseinandergehen:** Wird die eigene Wiederholzeit frei, während Bahamut oder Phoenix steht,
 und lag gar keine Kollision vor — etwa weil der zweite Beschwörer tot ist, von Hand spielt oder die
-Aktion abgeschaltet hat —, dann zündet die pauschale Fassung dort und verliert die Bündelung mit dem
+Aktion abgeschaltet hat —, dann zündet die weite Fassung dort und verliert die Bündelung mit dem
 stärksten eigenen Fenster. Die Ausweichfassung täte das nicht.
 
-**Der Preis der genaueren Fassung ist Zustand.** „Ich wurde blockiert" lässt sich im Moment der
-Blockade feststellen, aber nicht mehr, wenn der fremde Buff abgelaufen und das Solar-Fenster vorbei
-ist. Es braucht einen Vermerk über Frames hinweg — dieselbe Art Gedächtnis, die V5 ohnehin mitbringt.
-
-**Daraus folgt die Aufteilung der beiden Stufen:** In Stufe 1 ist die Gruppenprüfung die robuste
-Näherung — sie schaltet die Erweiterung nur, wenn überhaupt ein zweiter Beschwörer da ist, und nimmt
-den seltenen Fall in Kauf, dass dieser gerade nichts beiträgt. In Stufe 2, wo der Zustand für V5
-ohnehin geführt wird, kann die Bedingung auf die genaue Fassung verschärft werden: ausweichen nur
-nach tatsächlicher Blockade.
+**Die genaue Fassung braucht Zustand, und den gibt es inzwischen.** „Ich wurde blockiert" lässt sich
+nach dem Ende des Solar-Fensters nicht mehr feststellen; das Phasenbuch hält aber fest, ob Solar
+beim Betreten fremd belegt war. Die Verschärfung — ausweichen nur nach tatsächlicher Blockade — ist
+damit baubar und nicht gebaut.
 
 **Nicht gemessen, und der Grund ist zu nennen:** Der Unterschied zeigt sich nur bei ungünstig
 liegender Wiederholzeit, und das Modell startet alle Beschwörer mit freier Wiederholzeit. Es kann
@@ -445,20 +499,7 @@ und einer Zündregel, samt der Trennung „Abdeckung ist nicht Schaden“. Eine 
 also, Quellenliste und Stapelverhalten zu Parametern zu machen — kein Zufallstreffer, aber auch
 kein bloßes Aufrufen.
 
-## Die Lücke füllen, ohne Buch zu führen
-
-Zwischen zwei Beschwörungsfenstern liegen bei synchronem Pull vierzig Sekunden, in denen kein Buff
-läuft und niemand zünden darf. V7 schließt sie mit einer einzigen zusätzlichen Erlaubnis: **Zünde
-außerhalb eines Fensters, sobald der laufende Buff vollständig abgelaufen ist** — die eigene
-Wiederholzeit vorausgesetzt, die ohnehin geprüft wird.
-
-**Zwei Bedingungen, und die zweite stammt aus der Messung, nicht aus der Überlegung.** Die Erlaubnis
-verlangt einen **vollständig** abgelaufenen Buff, nicht bloß einen, dessen Sperre sich gelöst hat.
-Die Sperre öffnet fünf Sekunden vor Ablauf, damit eine Auffrischung im Fenster möglich ist; außerhalb
-eines Fensters ist dasselbe Verschwendung — eine ganze Ladung für wenige Sekunden Nettogewinn. Eine
-Fassung ohne diese Bedingung wurde gemessen und fiel bei zwei Beschwörern **unter** V2.
-
-### Die Buchführung: die Frage war falsch gestellt
+## Die Buchführung: welche Frage sie beantwortet
 
 Der naheliegende Zusatz wäre, die Wiederholzeiten der anderen mitzuschreiben. Die Information ist
 verfügbar: `IStatus.SourceId` benennt den Urheber, `StatusHelper.PlayerHasStatus` (`:1164`) liest ihn
@@ -508,31 +549,6 @@ Ladung zurück, weil der Ausgefallene rechnerisch „dran" wäre — und der zü
 gerade ein Buff läuft, zündet und deckt die Lücke. Damit ist die einfache Regel der aufwendigen nicht
 bloß ebenbürtig, sondern im ungünstigen Fall überlegen; der Selbsttest des Modells hält das fest.
 
-### Was damit entfällt
-
-Kein Zustand über Frames hinweg, keine Beobachtung fremder Statusquellen, keine Rücksetzpunkte bei
-Kampf-, Gruppen- oder Zonenwechsel, kein Verfallsdatum. V7 ist zwei Bedingungen in derselben
-Methode, in der heute `burstInSolar` steht. Damit entfällt auch der Einwand aus der Reichweite: Es
-wird nichts beobachtet, was ausbleiben könnte.
-
-## Richtlinien nach Lage — geprüft und nicht nötig
-
-Der Auftraggeber hat gefragt, ob das Konzept dynamischer zu bauen wäre, mit unterschiedlichen
-Richtlinien bei Abweichungen im Verlauf. Die Antwort fällt nach der Messung anders aus, als sie
-zunächst ausfiel: **Die Dynamik ist bereits da, und zwar an der richtigen Stelle.**
-
-Der laufende Buff ist selbst die Rückmeldung. Ob er steht, sagt alles, was für die eigene
-Entscheidung zählt — ob jemand anders gerade gedeckt hat, ob eine Lücke offen ist, ob die eigene
-Ladung gebraucht wird. Eine Regelung, die diesen einen beobachteten Wert auswertet, braucht kein
-Modell der anderen Teilnehmer. Genau das tut V7, und deshalb schlägt es die Fassungen, die sich ein
-solches Modell aufbauen.
-
-**Weitergehende Richtlinien nach Lage sind deshalb nicht vorgeschlagen.** Ein Umschalten nach
-gemessener Abdeckung oder erkanntem Versatz wäre ein Zustandsautomat — und die Projektregel warnt zu
-Recht vor Automaten, die sich statisch nicht absichern lassen; der Eintrag zur doppelten
-Zustandswahl in `TODO.md` ist genau daran hängengeblieben. Der Fall hier zeigt zusätzlich, dass mehr
-Zustand nicht mehr Wirkung bedeutet: Die aufwendigste der geprüften Fassungen war die schlechteste.
-
 ## Abdeckung ist nicht Schaden — die Gegenprobe
 
 Alle Zahlen bis hierher zählen Sekunden mit Buff. Das Ziel ist aber Schaden, und der fällt im
@@ -541,7 +557,9 @@ auf das Burst-Fenster gebündelt, sodass dort ein Anteil des Schadens liegt, der
 an der Zeit liegt. Eine Regel, die viel Abdeckung an den falschen Stellen erzeugt, wäre deshalb
 möglicherweise schlechter als eine, die wenig Abdeckung genau im Burst liefert.
 
-**Gemessen ist sie es nicht.** Das Modell gewichtet jede Sekunde mit der Schadensdichte und zeigt den
+**Gemessen ist sie es nicht.** Geprüft ist das an V7, der verworfenen Regel mit der meisten
+Buffzeit außerhalb des Bursts, also am strengsten Fall; für V8 in der Fassung des Plugins hält der
+Selbsttest dieselbe Invariante fest. Das Modell gewichtet jede Sekunde mit der Schadensdichte und zeigt den
 Anteil des **Schadens**, der unter einem Buff fällt. Wie hoch der Burst-Anteil tatsächlich ist, hängt
 von der Gruppenzusammensetzung ab und ist aus diesem Repository nicht zu klären — deshalb steht er
 als Parameter, und die Tabelle zeigt drei Werte. Die Spalte „bestmöglich" ist die optimale
@@ -549,7 +567,7 @@ Platzierung derselben Ladungen: erst das Burst-Fenster, dann der Rest.
 
 **Burst-Anteil 30 % (die mittlere der geprüften Annahmen):**
 
-| Beschwörer | heute | V2 | **V7** | bestmöglich |
+| Beschwörer | nur Solar | V2 | **V7** | bestmöglich |
 |---|---|---|---|---|
 | 1 | 30 % | 30 % | 30 % | 30 % |
 | 2 | 30 % | 44 % | **44 %** | 44 % |
@@ -558,9 +576,9 @@ Platzierung derselben Ladungen: erst das Burst-Fenster, dann der Rest.
 | 5 | 30 % | 44 % | **85 %** | 86 % |
 
 **Burst-Anteil 45 % — die für V7 ungünstigste der geprüften Annahmen**, weil sie den einen gut
-platzierten Buff des heutigen Codes am stärksten aufwertet:
+platzierten Buff der reinen Solar-Regel am stärksten aufwertet:
 
-| Beschwörer | heute | V2 | **V7** | bestmöglich |
+| Beschwörer | nur Solar | V2 | **V7** | bestmöglich |
 |---|---|---|---|---|
 | 1 | 45 % | 45 % | 45 % | 45 % |
 | 2 | 45 % | 55 % | **55 %** | 56 % |
@@ -575,7 +593,7 @@ erste Zünder steht in seinem Solar-Fenster, das mit dem Burst der Gruppe zusamm
 füllen nur die Zeit danach. Und wer den Burst gedeckt hat, ist genau 120 Sekunden später — zum
 nächsten Burst — wieder bereit.
 
-**Der heutige Code verschenkt umso mehr, je stärker gebündelt wird.** Bei 45 % Burst-Anteil und fünf
+**Die reine Solar-Regel verschenkt umso mehr, je stärker gebündelt wird.** Bei 45 % Burst-Anteil und fünf
 Beschwörern deckt er 45 % des Schadens ab, möglich wären 89 %. Die Hälfte des Erreichbaren bleibt
 liegen.
 
@@ -730,13 +748,14 @@ Zyklusleistung — 0,09 Prozent. Zwischen Ifrit und der heutigen Voreinstellung 
 Potenz, drei Potenz Schaden, 0,01 Prozent. **Die Voreinstellung ist damit bereits nahezu optimal, und
 die einzige Reihenfolge, die wirklich etwas kostet, ist Garuda zuerst — die sie ohnehin vermeidet.**
 
-**Bedeutung bekommt die Reihenfolge erst dort, wo V7 zündet.** Liegt der Buff vollständig außerhalb
-eines Beschwörungsfensters, füllen ihn acht GCDs Primalblock: Ifrit zuerst 4800 Potenz, Titan zuerst
+**Bedeutung bekommt die Reihenfolge erst dort, wo der Buff ganz außerhalb eines
+Beschwörungsfensters liegt — im Ausweichblock.** Liegt er vollständig außerhalb eines
+Beschwörungsfensters, füllen ihn acht GCDs Primalblock: Ifrit zuerst 4800 Potenz, Titan zuerst
 3920, Garuda zuerst 3740. Zwischen bester und schlechtester Reihenfolge liegen dann 1060 Potenz,
 0,17 Prozent des Zyklus. Auch das bleibt klein.
 
 **Die Voreinstellung bleibt, und das ist die Entscheidung des Auftraggebers.** Ifrit zuerst lohnt nur,
-wenn man ohnehin in Nahkampfreichweite des Ziels steht; der Anlauf von Crimson Cyclone in eine
+wenn man ohnehin am Ziel steht (0 Yalm, seine Präzisierung); der Anlauf von Crimson Cyclone in eine
 Burstphase hinein ist ein Positionsrisiko, das 0,01 Prozent Schaden nicht rechtfertigen. Titan ist
 sicher, erlaubt Bewegung und kostet 60 Potenz — drei Potenz Schaden je Zyklus.
 
@@ -744,7 +763,9 @@ sicher, erlaubt Bewegung und kostet 60 Potenz — drei Potenz Schaden je Zyklus.
 Sind alle drei Hauptphasen — Solar, Bahamut, Phoenix — dauerhaft von anderen Beschwörern belegt, wird in den
 Primalblock ausgewichen: **Titan**, oder **Ifrit genau dann, wenn der Spieler ohnehin am Ziel steht**.
 Dann entfällt der Anlauf, seine Voraussetzung ist erfüllt, und die höhere Zahl gilt ohne Positionsrisiko.
-Gemessen wird an derselben Schwelle, die die Rotation für genau diese Frage schon führt — `CrimsonCycloneDistance`.
+**Am Ziel steht, wer 0 Yalm Abstand hat** — seine Präzisierung: „wenn der beschwörer bereits beim boss steht (0 yalm), dann wäre der gapcloser nur noch damage und kein risiko." Gemessen wird von Trefferfläche zu Trefferfläche (`ActionTargetInfo.StandsAtTarget`, A138): Die Trefferflächen berühren sich. Ob das Spiel diesen Abstand ebenso misst und ganze Yalm abrundet — dann zeigte es „0" schon bis unter 1 Yalm —, ist unbelegt; die Beschwörer-Anzeige nennt den gemessenen Abstand auf eine Nachkommastelle. Dasselbe Maß liest die Sicherheitsprüfung der Gapcloser: Bei 0 Yalm verweigert sie Crimson Cyclone nicht, auch wenn am Boss eine Gefahrenzone liegt, in der er ohnehin steht. Bis A138 wählte der Ausweichblock Ifrit schon in der Reichweite von Crimson Strike, also bis drei Yalm, und Crimson Cyclone zog den Spieler diese Strecke heran (C91); die Sicherheitsprüfung nahm nur den Fall aus, dass sein Mittelpunkt im Zielring stand (C90). `CrimsonCycloneDistance` bleibt die eigene Grenze des Spielers für den Anlauf selbst.
+
+**Im Kampf ablesbar:** Die Beschwörer-Anzeige nennt den Abstand zum Ziel und ob Ifrit als Ausweichblock gerade zulässig ist; das Diagnosefenster zeigt unter „Movement safety" die letzte verweigerte Bewegungsaktion mit Grund. Wo das Spiel den Sprung beendet (Ringrand oder Berührung), ist unbelegt; bei 0 Yalm bleibt in beiden Fällen höchstens die eigene Trefferfläche, und die fällt unter seine Grenze.
 
 **Zwei Einstellungen stützen diese Wahl, beide am Code belegt.** `PreferTitanWhileMoving`
 zieht in `SummonPrimals` Titan bei Bewegung vor, unabhängig von der eingestellten Reihenfolge;
@@ -785,43 +806,32 @@ Blast sind mit 800 gleich angesetzt und heben sich im Vergleich der Reihenfolgen
 
 ## Gesamtbetrachtung
 
-Die drei Fragen greifen ineinander, und die Reihenfolge ihrer Behandlung ist nicht beliebig.
-
 **Der Sperrmechanismus ist die Grundlage und bleibt.** Er ist das einzige Abstimmungsmittel zwischen
 Clients, die einander nicht kennen. Jede Erweiterung des Zündfensters ist nur deshalb ungefährlich,
 weil er dahinter steht: Mehr Gelegenheiten führen nicht zu mehr Überschreibungen, sondern zu mehr
 genutzten Lücken.
 
-**V1 und V2 wirken in verschiedene Richtungen und stören einander nicht.** V1 verbessert, was der
-**gesperrte** Beschwörer während eines fremden Buffs tut; V2 verbessert, **wann** er selbst zünden
-darf. V1 wirkt auch dann, wenn V2 nicht greift — etwa bei einem Beschwörer, der von Hand spielt und
-seinen Buff zu einem beliebigen Zeitpunkt setzt.
+**V1 und V8 wirken in verschiedene Richtungen und stören einander nicht.** V1 verbessert, was der
+**gesperrte** Beschwörer während eines fremden Buffs tut; V8 verbessert, **wann** er selbst zünden
+darf, und enthält V2 vollständig. V1 wirkt auch dann, wenn V8 nicht greift — etwa bei einem
+Beschwörer, der von Hand spielt und seinen Buff zu einem beliebigen Zeitpunkt setzt. Je höher die
+Abdeckung durch V8, desto öfter greift V1.
 
-**Die Wirkungsbereiche sind getrennt.** V1 berührt drei Bedingungen in `SMN_Reborn.AttackAbility`,
-die ausschließlich Aetherflow-Ausgaben steuern. V2 berührt eine lokale Variable derselben Methode.
-Keine der beiden Änderungen verlässt die Beschwörer-Rotation; die Basisklasse, die
-Aktionseinstellungen und der Sperrmechanismus bleiben unberührt. Betroffen ist allein der Endnutzer,
-und nur als Beschwörer.
+**Die Wirkungsbereiche sind getrennt.** V1 berührt drei Bedingungen der Aetherflow-Ausgaben in
+`SMN_Reborn.AttackAbility`; V8 den Zündausdruck derselben Methode und das Phasenbuch in
+`SummonerRotation`. Die Aktionseinstellungen und der Sperrmechanismus bleiben unberührt. Betroffen
+sind Endnutzer als Beschwörer und, über die neuen geschützten Eigenschaften der Basisklasse,
+Autoren abgeleiteter Beschwörer-Rotationen — additiv, ohne geänderte Signatur.
 
-**Eine Wechselwirkung ist zu benennen:** Mit V2 zündet ein zweiter Beschwörer bei Sekunde 60. Damit
-liegt ab dann häufiger ein fremder Buff — was V1 häufiger wirksam macht. Die beiden verstärken
-einander, ohne sich zu widersprechen. Für V7 gilt dasselbe in stärkerem Maß: Je höher die Abdeckung,
-desto öfter greift V1.
-
-**V7 enthält V2.** Es ist als „V2 plus eine zusätzliche Erlaubnis" gebaut und im Modell auch so
-gemessen. Beide sind deshalb nacheinander umsetzbar und einzeln prüfbar — oder in einem Schritt,
-weil V7 ohne Zustandshaltung auskommt und damit nicht aufwendiger ist als V2 allein.
-
-**Was V2 allein nicht löst.** Der synchrone Pull bleibt mit V2 bei 33 % gedeckelt, weil es dort nur
-zwei Beschwörungsfenster je 120 Sekunden gibt. Ab drei Beschwörern liegt diese Decke unter der
-Obergrenze der Ladungen — bei fünf Beschwörern 33 % gegenüber möglichen 83 %. Diese Lücke schließt
-im maßgeblichen Bereich allein V7, und zwar vollständig.
+**Der einzelne Beschwörer hängt an derselben Stelle.** Zündung vor der Beschwörung und der Vorrang
+des Schimmerschilds stehen im Abschnitt „Sachstand"; die Zündung vor der Beschwörung gilt nur vor
+der Burst-Demi, mit einem zweiten Beschwörer vor jeder.
 
 ## Die Vorschläge im Einzelnen
 
 ### V1 — Den fremden Buff als Buff-Fenster werten
 
-**Kontext:** `SMN_Reborn.cs:320`, `:332`, `:348` bevorzugen Painflare, Necrotize und Fester unter
+**Kontext:** `SMN_Reborn.AttackAbility` bevorzugt Painflare, Necrotize und Fester unter
 `inSolarUnique && HasSearingLight`, und `HasSearingLight` zählt nur den eigenen Buff. Ein gesperrter
 Beschwörer hält seine Aetherflow-Ausgaben also zurück, während ein 5-%-Fenster auf ihm liegt.
 
@@ -848,6 +858,19 @@ Projektregel für eine nicht nachweisbare Verhaltensänderung verlangt — nur i
 nicht der Nutzer, sondern die Lage, und das ist die bessere Lösung: Sie schaltet genau dann, wenn die
 Voraussetzung tatsächlich vorliegt.
 
+### V8 — Die hybride Regel des Auftraggebers
+
+**Mechanismus:** V2, dazu Punkt 6 der Vorgabe — außerhalb einer Burstphase zünden, wenn **alle**
+Phasenarten dauerhaft belegt sind, und dann in den Titan-Block, in den Ifrit-Block nur am Ziel
+stehend. Ob belegt, sagt das Phasenbuch: beim Betreten einer Phase ein fremder Buff zählt hoch, keiner
+setzt zurück, der eigene lässt das Fenster ungewertet; belegt, wenn sie beim letzten und beim
+jetzigen Betreten fremd belegt war.
+
+**Konsequenzen, gemessen:** oben, Abschnitt „Was im Kampf ankommt". Nirgends unter V2, sechs Punkte
+darüber, wo alle Phasen belegt sind.
+
+**Bewertung: umgesetzt.**
+
 ### V4 — Zündung ganz von der Beschwörung lösen
 
 Der Vorschlag, nach dem der Auftraggeber ausdrücklich gefragt hat: ein Ansatz jenseits der
@@ -873,17 +896,21 @@ sechs — Gruppen, die es im Spiel praktisch nicht gibt. Bezahlt würde das mit 
 genau dort, wo Gruppen tatsächlich stehen. Sollte der Auftraggeber je in einer Gruppe mit sechs oder
 mehr Beschwörern spielen, ist der Eintrag hier und die Zahlen liegen vor.
 
-### V7 — Außerhalb eines Fensters zünden, wenn der Buff abgelaufen ist
+### V7 — Außerhalb eines Fensters zünden, sobald der Buff abgelaufen ist
 
-**Kontext und Mechanismus:** oben, Abschnitt „Die Lücke füllen, ohne Buch zu führen". Zwei
-Bedingungen zusätzlich zu V2: vollständig abgelaufener Buff, eigene Wiederholzeit frei.
+**Mechanismus:** V2, dazu die Erlaubnis, außerhalb eines Fensters zu zünden, sobald kein Buff mehr
+läuft — ohne jede Buchführung. Zwei Bedingungen: vollständig abgelaufener Buff (sonst verbrennt eine
+Ladung für wenige Sekunden Nettogewinn; eine Fassung ohne sie fiel bei zwei Beschwörern unter V2) und
+eigene Wiederholzeit frei.
 
-**Konsequenzen, gemessen:** Bei einem Beschwörer unverändert. Bei drei bis fünf 50, 66 und 83 Prozent
-statt 33 — die Obergrenze dessen, was die Ladungen hergeben. Bei einem dreiminütigen Ausfall eines
-Beschwörers dieselben Werte wie die aufwendigste geprüfte Fassung.
+**Konsequenzen, gemessen:** In Sekunden trifft V7 bei synchronem Pull die Obergrenze der Ladungen.
+Im eigenen Schaden gewinnt es eine Lage und verliert zwei: gegen Gegenspieler, die jede Phase
+belegen, liegt es vorn, gegen Gegenspieler auf Solar und bei zwei Beschwörern auf derselben Regel mit
+vollem Versatz unter V2 — es gibt die eigene Burstphase auf, ohne dass eine Kollision vorliegt.
 
-**Bewertung: umsetzen, zusammen mit V2 und unter derselben Gruppenprüfung.** Zustandsfrei, damit
-ohne Rücksetzpunkte und ohne die Reichweitenabhängigkeit, die jede Beobachtungsfassung mitbringt.
+**Bewertung: verworfen, durch V8 ersetzt.** V8 entscheidet dasselbe Ausweichen aus der Lage statt
+blind. Übernommen ist aus V7 die Bedingung „vollständig abgelaufen" für das Zünden außerhalb eines
+Fensters.
 
 ### V5 und V6 — verworfen, obwohl sie richtig gedacht waren
 
@@ -903,12 +930,13 @@ ableitbar; sie beantwortet nur keine Frage, die für die eigene Entscheidung zä
 
 ### Nullvariante
 
-Für einen Beschwörer richtig und die Empfehlung. Ab zwei nicht mehr tragfähig, weil beide Verluste
-dann vollständig greifen und zwei Beschwörer in einer Gruppe gewöhnlich sind.
+Für einen Beschwörer richtig und umgesetzt: Die Gruppenprüfung lässt ihn bei Solar. Ab zwei nicht
+tragfähig, weil beide Verluste dann vollständig greifen und zwei Beschwörer in einer Gruppe
+gewöhnlich sind.
 
-## Empfehlung
+## Entscheidung
 
-**V1 und V8 umsetzen, V7 zurückbauen. V4, V5, V6 nicht.**
+**V1 und V8, beide umgesetzt; V7 ist durch V8 ersetzt. V4, V5, V6 nicht.**
 
 V8 enthält V2 vollständig und ergänzt es um eine Klausel, die nur greift, wenn alle Burstphasen
 dauerhaft belegt sind. Wer V8 baut, baut V2 mit.
@@ -916,15 +944,14 @@ dauerhaft belegt sind. Wer V8 baut, baut V2 mit.
 | | Gewinn im maßgeblichen Bereich | Preis |
 |---|---|---|
 | **V1** | Aetherflow-Ausgaben liegen ab zwei Beschwörern im laufenden Fenster statt daneben | eine zusätzliche Eigenschaft, keine Zustandshaltung |
-| **V8** | beim synchronen Pull 46 % des eigenen Schadens unter Buff statt 27 %, und 56 % statt 48 %, sobald fremde Beschwörer alle Phasenarten belegen; bei versetzten Rotationen unverändert | Zustand über den Kampf: je Phasenart der zuletzt beobachtete fremde Zünder und wie oft er wiederkam |
-| ~~V7~~ | im synchronen Pull gegen belegte Phasen vorn | verliert gegen Gegenspieler auf Solar und bei zwei Beschwörern mit vollem Versatz, dort unter die heutige Regel |
+| **V8** | beim synchronen Pull 46 % des eigenen Schadens unter Buff statt 26 %, und 54 % statt 48 %, sobald fremde Beschwörer alle Phasenarten belegen; bei versetzten Rotationen unverändert | Zustand über den Kampf: je Phase, ob sie beim letzten und beim jetzigen Betreten fremd belegt war |
+| ~~V7~~ | im synchronen Pull gegen belegte Phasen vorn | verliert gegen Gegenspieler auf Solar und bei zwei Beschwörern mit vollem Versatz, dort unter V2 |
 
 **V8 verlangt Zustand, und das ist der bewusst gezahlte Preis.** Ohne Beobachtung lässt sich nicht
 erkennen, ob alle Phasenarten belegt sind, und ohne diese Erkennung bleibt nur die Wahl zwischen
 „nie ausweichen" (V2, verschenkt den belegten Fall) und „blind ausweichen" (V7, verschenkt zwei
-andere). Der Zustand ist klein und selbstheilend: drei Einträge, jeder verfällt, wenn der Zünder nach
-seiner Wiederholzeit plus Nachfrist ausbleibt. Rücksetzpunkte bei Kampf-, Gruppen- und Zonenwechsel
-sind damit nicht nötig — ein neuer Kampf beginnt ohne gültige Einträge, weil alle verfallen sind.
+andere). Der Zustand ist klein und selbstheilend: zwei Merker je Phase, die zurückfallen, sobald die
+Phase einmal frei angetroffen wird; außerhalb des Kampfes wird er geleert.
 
 **Die Buchführung beantwortet genau eine Frage, und das ist ihre Aufgabenteilung:** Sind **alle**
 Phasenarten dauerhaft belegt? Sie sagt **nicht**, welche Phase anzustreben ist — angestrebt wird
@@ -956,41 +983,54 @@ kann. Wer falsch rät, verschenkt die beste Phase umsonst.
 
 ## Die Umsetzung
 
-**Umgesetzt sind V1, V2 und V7.** V7 ist zurückzubauen — die Teilbedingung `!HasAnySearingLight` im
-Zündausdruck —, und an seine Stelle tritt die Klausel aus Punkt 6, die dasselbe Ausweichen aus der
-Lage heraus entscheidet statt blind.
+**Umgesetzt sind V1, V2 und V8; V8 hat V7 ersetzt.** Die blinde Erlaubnis, außerhalb eines Fensters
+zu zünden, sobald kein Buff läuft, ist entfernt; an ihrer Stelle entscheidet die Klausel aus Punkt 6
+dasselbe Ausweichen aus der Lage heraus, und von V7 bleibt dort allein die Bedingung „kein Buff
+läuft".
 
 | Ort | Eingriff | Stand |
 |---|---|---|
 | `SummonerRotation.cs` | `HasAnySearingLight` — `PlayerHasStatus(false, …)` statt `true`, also der Buff gleich welcher Herkunft | umgesetzt |
 | `SummonerRotation.cs` | `AnotherSummonerInParty` — lebender Beschwörer in der Gruppe, Stufe aus `SearingLightPvE.Level` | umgesetzt |
 | `SMN_Reborn.cs` (dreimal) | V1: Painflare, Necrotize und Fester fragen nach `HasAnySearingLight` | umgesetzt |
-| `SMN_Reborn.cs` | Zündfenster `burstInSolar \|\| (AnotherSummonerInParty && (inBigInvocation \|\| !HasAnySearingLight))` | umgesetzt, entspricht V7 |
-| `SummonerRotation.cs` | **V8**: Phasenbuch je Phasenart (`UpdateSearingPhaseBook`, `AllSearingPhasesHeld`), fortgeschrieben in `UpdateInfo` | umgesetzt |
-| `SMN_Reborn.cs` | Zündfenster `burstInSolar \|\| (AnotherSummonerInParty && (inBigInvocation \|\| (AllSearingPhasesHeld && (TitanActive \|\| (IfritActive && am Ziel stehend)))))` — V7 ersetzt | umgesetzt |
+| `SummonerRotation.cs` | **V8**: Phasenbuch (`UpdateSearingPhaseBook`, `AllSearingPhasesHeld`), fortgeschrieben in `UpdateInfo`; Bahamut und Phoenix als ein Paar, wo Solar existiert (`BookSlot`); „alle belegt" fragt nur die Phasen, die die Stufe hat | umgesetzt |
+| `SummonerRotation.cs` | `NextBigSummonIsBurst` — die nächste große Beschwörung ist die Burst-Demi, aus der Beschwörungstaste und der Reihenfolge | umgesetzt |
+| `SMN_Reborn.cs` | Zündfenster `burstInSolar \|\| burstAboutToStart \|\| (AnotherSummonerInParty && (inBigInvocation \|\| (AllSearingPhasesHeld && (TitanActive \|\| (IfritActive && am Ziel stehend)) && !HasAnySearingLight)))` — V7 ersetzt | umgesetzt |
+| `SMN_Reborn.cs` | Zündung zusätzlich im Platz **vor** der großen Beschwörung: `burstAboutToStart` = Burst an, Beschwörung bis zum nächsten GCD bereit, und sie ist die Burst-Demi oder ein zweiter Beschwörer ist da (A114, A126) | umgesetzt |
+| `SMN_Reborn.cs` | Schimmerschild vor jeder Demi, wenn fällig (`RadiantAegisDueBeforeDemi`) — vor Searing Light im Platz davor, und die Beschwörung wartet auf ihn; Horizont ist seine Wirkdauer aus dem Wirktext | umgesetzt |
+| `SMN_Reborn.cs` | Rotationsstatus: nächste Beschwörung, zweiter Beschwörer, Phasenbuch, worauf die Beschwörung wartet und wie lange im Kampf, und wo Searing Light gegenüber der Beschwörung lag; sichtbar im Kampf über das Diagnosefenster (`Show Diagnostics Window`) | umgesetzt |
+| `SMN_Reborn.cs` | Die Beschwörung wartet auf den Buff (`searingSettled`), Bedingungen im Abschnitt „Sachstand" (A115, A127, A132) | umgesetzt |
 
 **V8 hat V7 ersetzt und nicht ergänzt.** V7 zündet blind, sobald der Buff aus ist; V8 entscheidet
 dasselbe aus der Lage. Beides nebeneinander hieße, dass die blinde Bedingung die überlegte jedes Mal
 überholt.
 
-**Das Buch im Plugin ist einfacher gebaut als im Modell, und zwar bewusst.** Das Modell führt je
+**Das Buch im Plugin weicht vom Modellbuch ab, und der Preis ist gemessen.** Das Modell führt je
 Phasenart den zuletzt beobachteten fremden Zünder samt Zeitstempel und lässt den Eintrag nach
-Wiederholzeit plus Nachfrist verfallen. Die Umsetzung führt je Phasenart nur einen Zähler: Beim
-Betreten einer Burstphase steigt er, wenn ein fremdes Searing Light läuft, und wird auf null gesetzt,
-wenn keines läuft. Drei Folgen, alle geprüft:
+Wiederholzeit plus Nachfrist verfallen. Das Plugin merkt sich je Phase, ob sie beim Betreten fremd
+belegt war, und hält sie für belegt, wenn das beim letzten und beim jetzigen Betreten zutraf; ein
+Betreten ohne fremden Buff löscht beides, läuft das eigene, bleibt das Fenster ungewertet. Wo Solar existiert, buchen Bahamut und Phoenix gemeinsam — ein fremder
+Zünder in einem der beiden kehrt nach seiner Wiederholzeit im anderen wieder. Zusammen liegt das
+Plugin 3,5 Punkte unter dem Modellbuch; die Zerlegung steht im Abschnitt „Was im Kampf ankommt".
+Beibehalten, weil drei Eigenschaften mehr wiegen:
 
 - **Kein Zeitwert wird gebraucht und keiner erfunden.** Die Rücksetzung geschieht durch die
   Beobachtung selbst — wer aufhört zu zünden, wird beim nächsten Durchgang nicht mehr angetroffen.
-- **Wechselnde Zünder werden richtiger behandelt als im Modell.** Teilen sich zwei fremde Beschwörer
-  eine Phase, erreicht im Modell keiner von beiden die zweite Beobachtung und die Phase gilt als
-  frei; für den eigenen Beschwörer ist sie gleichwohl verloren. Der Zähler ohne Urheber beantwortet
-  die Frage, die zählt: Ist diese Phase für mich zu haben?
+- **Wechselnde Zünder werden richtig behandelt.** Teilen sich zwei fremde Beschwörer eine Phase,
+  erreicht im Modell keiner von beiden die zweite Beobachtung und die Phase gilt als frei; für den
+  eigenen Beschwörer ist sie gleichwohl verloren. Der Merker ohne Urheber beantwortet die Frage, die
+  zählt: Ist diese Phase für mich zu haben?
 - **Der eigene Buff urteilt nicht.** Läuft die eigene Ladung, wird das Fenster übergangen statt
   gebucht oder gelöscht, sonst löschte eine in Solar gesetzte Ladung beim Betreten von Bahamut
   dessen Eintrag auf die Kraft eines selbst gewirkten Buffs hin.
 
 Außerhalb des Kampfes wird das Buch geleert; ein neuer Kampf beginnt also bei V2-Verhalten und
-erreicht die Punkt-6-Klausel erst, wenn jede Phasenart zweimal belegt angetroffen wurde.
+erreicht die Punkt-6-Klausel erst, wenn jede Phase zweimal belegt angetroffen wurde — auf Stufe 100
+frühestens nach vier Minuten.
+
+**Unterhalb von Stufe 100 gibt es kein Solar, und „alle belegt" fragt nur, was es gibt.** Zuvor
+verlangte die Prüfung auch Solar, und in jedem stufensynchronisierten Inhalt war die Klausel damit
+unerreichbar.
 
 **Die Stufenschwelle kommt aus den Spieldaten, nicht aus einer Zahl im Code.** `SearingLightPvE.Level`
 liest `ClassJobLevel` der Aktion; ein Beschwörer unterhalb dieser Stufe hat kein Searing Light zu
@@ -1011,33 +1051,24 @@ Abstimmung — erfasst, nicht bearbeitet.
 
 ### Die Kopplung zwischen Zündung und Beschwörungswahl
 
-**Der stärkste Einwand gegen diese Umsetzung ist eine Rückwirkung auf die Beschwörungswahl, und er
-hält nur zur Hälfte.** `UseSummonsAndTrances` entscheidet in `:491` über die Solar-Beschwörung unter
-der Bedingung `IsBurst && !SearingLightPvE.Cooldown.IsCoolingDown`. Wer außerhalb des Solar-Fensters
-zündet, setzt Searing Light zu einem anderen Zeitpunkt auf Abklingzeit — und könnte damit die
-Beschwörung verschieben, die das teuerste Fenster des Zyklus ist. Eine Verschiebung um ein Fenster
-kostete 1600 Potenz und wäre teurer als der gesamte Zugewinn an Buffzeit.
+**Die Zündregel für mehrere Beschwörer wirkt auf die Beschwörung zurück, und diese Rückwirkung ist
+gesperrt.** Wer außerhalb des Solar-Fensters zündet, setzt Searing Light zu einem anderen Zeitpunkt auf
+Abklingzeit. Wartete die Solar-Beschwörung dann auf den Buff, verschöbe die Ausweichregel die
+teuerste Phase des Zyklus — eine Verschiebung um ein Fenster kostete 1600 Potenz, mehr als der
+gesamte Zugewinn an Buffzeit. Deshalb wartet die Beschwörung mit einem zweiten Beschwörer in der
+Gruppe auf keinen abkühlenden Buff, und bei einem laufenden fremden Buff auf gar keinen.
 
-**Der Einwand ist entkräftet, weil die koppelnde Stelle nicht erreicht wird.** Unmittelbar davor
-steht in `:478` derselbe Aufruf `SummonBahamutPvE.CanUse(out act)` **ohne jede Vorbedingung**. Die
-Zeile `:487` prüft denselben Aufruf mit einer zusätzlichen Bedingung davor und ist damit eine strikte
-Teilmenge — sie kann nie erreicht werden. `:491` ist nur erreichbar, wenn `SummonBahamutPvE.CanUse`
-in derselben Lage falsch liefert.
-
-**Was offen bleibt, ist welche der beiden Zeilen tot ist.** RSR ruft jede Aktion über ihre
-umgewandelte Kennung (`ActionBasicInfo.AdjustedID`), und ob Summon Bahamut auf Stufe 100 spielseitig
-zu Summon Solar Bahamut umgewandelt wird, ist aus diesem Repository nicht zu entscheiden. Wird es
-umgewandelt, castet `:478` alle großen Beschwörungen und `:491` ist ebenfalls tot; wird es nicht
-umgewandelt, ist `:491` der wirksame Pfad und die Kopplung real. **Beobachtungspunkt für den
-Spieltest: Kommt Solar Bahamut weiterhin alle 120 Sekunden, oder rutscht der Takt?** Fällt die
-Beobachtung gegen die Umsetzung aus, ist der Eingriff eine Zeile — die V7-Bedingung entfällt, V2
-bleibt.
+**Offen und nicht aus dem Repository zu entscheiden:** ob Summon Solar Bahamut seine Abklingzeit mit
+Bahamut und Phoenix teilt. Die Wirktexte aller drei sagen „does not share a recast timer with any
+other actions"; `burstAboutToStart` liest auf Stufe 100 die Abklingzeit von Solar. Teilt sie sie nicht,
+steht diese Freigabe von Ablauf der eigenen Abklingzeit bis zur nächsten Solar-Phase offen, und ein
+früh bereiter Buff fiele dann sofort statt vor der Beschwörung. Im Regelfall — der Buff kehrt mit der
+Solar-Phase zurück — ist das ohne Wirkung.
 
 **Ein zweiter Einwand, der bleibt, aber nicht neu ist:** Läuft der Buff aus, sind mehrere Beschwörer
 gleichzeitig frei und können im selben Augenblick zünden; einer verschwendet. Das Modell schreibt
-sequenziell zu und bildet das nicht ab. Der Fall besteht heute schon — heute fallen sogar **alle**
-Gelegenheiten zusammen, weil jeder nur im Solar-Fenster zünden darf. V7 verteilt die Gelegenheiten
-und macht die Kollision seltener, nicht häufiger.
+sequenziell zu und bildet das nicht ab. Die erweiterten Fenster verteilen die Gelegenheiten und machen
+die Kollision seltener, nicht häufiger.
 
 ## Erfasst, nicht bearbeitet
 
@@ -1060,10 +1091,12 @@ stammt. Dass ein zweiter Searing Light überschreibt statt zu stapeln, ist die A
 Auftraggebers.
 
 Die Abdeckungszahlen stammen aus `.github/scripts/audit/searing_light_coverage.py`, das die oben
-genannten Regeln durchrechnet. Das ist eine Messung am Modell, keine am Spiel — und das Modell hat
-benannte Grenzen:
+genannten Regeln durchrechnet und in der CI mit seinem Selbsttest läuft. Das ist eine Messung am
+Modell, keine am Spiel — und das Modell hat benannte Grenzen:
 
-- Es zählt **Sekunden mit Buff, nicht Schaden**. Ein Buff außerhalb des Zwei-Minuten-Takts buffft
+- Es kennt keinen Standort: Der Ausweichblock ist immer Titan, der Ifrit-Block am Ziel ist nicht
+  abgebildet.
+- Es zählt **Sekunden mit Buff, nicht Schaden**, außer in den potenzgewichteten Tabellen. Ein Buff außerhalb des Zwei-Minuten-Takts buffft
   weniger Schaden als einer darin; das fällt in diesen Zahlen nicht auf und ist der Hauptgrund, V4
   nicht allein nach der Abdeckung zu beurteilen.
 - Es teilt Fenster **gierig** zu: Wer zuerst darf, zündet. Real entscheidet der Zufall des

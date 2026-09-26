@@ -70,10 +70,130 @@ public sealed class SMN_Reborn : SummonerRotation
 	#endregion
 
 	#region Tracking Properties
+	// What the Searing Light rules decide from, and what they cost, for the owner to read during a
+	// fight - not for anybody to evaluate afterwards. The held time is the drift: every second the
+	// big summon waits moves it, and every demi after it, out of the party's two-minute window.
 	public override void DisplayRotationStatus()
 	{
 		ImGui.Text($"EnergyDrainPvE: Is Cooling Down: {EnergyDrainPvE.Cooldown.IsCoolingDown}");
+		ImGui.Text($"Next big summon opens the burst: {NextBigSummonIsBurst}");
+		ImGui.Text($"Lux Solaris now: {_luxWhy}");
+		ImGui.Text($"  last chosen: {_luxLastChoice}");
+		var luxHeal = DataCenter.GetObservedHealPerCast((uint)ActionID.LuxSolarisPvE);
+		// The smallest full heal since the last zone change, from targets whose health rise confirmed
+		// it - see DataCenter.RecordHealEffect. The landing line is the cast that actually went out.
+		var landing = DataCenter.GetLastHealLanding((uint)ActionID.LuxSolarisPvE);
+		ImGui.Text((luxHeal > 0 ? $"  heals {luxHeal:N0} per target" : "  heal not measured since the last zone change")
+			+ $", radius {LuxSolarisPvE.TargetInfo.EffectRange:F1} y");
+		if (landing is { } l)
+		{
+			ImGui.Text($"  last landed ({l.At:HH:mm:ss}): {l.Confirmed} target(s) confirmed by their health rise, {l.Unconfirmed} not"
+				+ (l.Confirmed > 0
+					? $"; {l.EffectiveShare:P0} met missing health, overheal {(l.GrossReported ? "is" : "not seen")} reported"
+					: " - not measured"));
+		}
+		ImGui.Text($"Another Summoner in party: {AnotherSummonerInParty}");
+		ImGui.Text(HostileTarget == null
+			? "Fallback block: no hostile target - Titan only"
+			: $"Fallback block: {HostileTarget.DistanceToPlayer():F1} y to the target - Ifrit only at 0 y, else Titan");
+		var pair = SummonSolarBahamutPvE.EnoughLevel ? " (Bahamut and Phoenix booked as one)" : string.Empty;
+		ImGui.Text($"Searing Light phases taken by others: Solar {PhaseBookText(SearingPhase.Solar)}"
+			+ $" / Bahamut {PhaseBookText(SearingPhase.Bahamut)} / Phoenix {PhaseBookText(SearingPhase.Phoenix)}{pair}"
+			+ $" - all held: {AllSearingPhasesHeld}");
+		ImGui.Text("Searing Light vs big summon: " + SearingLightAgainstSummon());
+		ImGui.Text($"Big summon held for: {(_summonHeldFor.Length == 0 ? "nothing" : _summonHeldFor)}"
+			+ $" - {SummonHeldSecondsNow:F1} s this fight");
 	}
+
+	private string PhaseBookText(SearingPhase phase) =>
+		SearingPhaseHeld(phase) ? "held" : SearingPhaseSeen(phase) ? "seen once" : "free";
+
+	// Where the last Searing Light landed against the last big summon, from the actions the server
+	// confirmed. "Before the first demi GCD" is what the rule is for; after it, the first Umbral
+	// Impulse went out unbuffed - a buff too far behind for the summon to wait for.
+	private static string SearingLightAgainstSummon()
+	{
+		// Newest first, so the first match of each is the latest.
+		ActionRec? summon = null;
+		ActionRec? searing = null;
+		var records = DataCenter.RecordActions;
+		foreach (var rec in records)
+		{
+			var id = (ActionID)rec.Action.RowId;
+			if (summon == null
+				&& id is ActionID.SummonSolarBahamutPvE or ActionID.SummonBahamutPvE or ActionID.SummonPhoenixPvE)
+			{
+				summon = rec;
+			}
+			else if (searing == null && id == ActionID.SearingLightPvE)
+			{
+				searing = rec;
+			}
+		}
+
+		if (summon == null || searing == null)
+		{
+			return "not seen yet";
+		}
+
+		var offset = (searing.UsedTime - summon.UsedTime).TotalSeconds;
+		if (offset < 0)
+		{
+			return $"{-offset:F1} s before the summon";
+		}
+
+		var gcdBetween = false;
+		foreach (var rec in records)
+		{
+			if (rec.UsedTime > summon.UsedTime && rec.UsedTime < searing.UsedTime
+				&& rec.Action.GetActionCate() is ActionCate.Spell or ActionCate.Weaponskill)
+			{
+				gcdBetween = true;
+				break;
+			}
+		}
+
+		return $"{offset:F1} s after the summon, "
+			+ (gcdBetween ? "AFTER the first demi GCD" : "before the first demi GCD");
+	}
+
+	private string _summonHeldFor = string.Empty;
+	private double _summonHeldSeconds;
+	private DateTime _summonHeldSince = DateTime.MinValue;
+
+	// Counted only while the summon is actually due, so a hold reason that stands between demis does
+	// not add up. Counted per hold, from its first moment to its last, so no step between two calls
+	// has to be judged - a pause in the GCD evaluation neither adds nor loses time.
+	private void NoteSummonHold(string reason)
+	{
+		var now = DateTime.Now;
+		var summonDue = SummonBahamutPvE.EnoughLevel
+			&& !InBahamut && !InPhoenix && !InSolarBahamut
+			&& SummonTime <= WeaponRemain
+			&& SummonBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain);
+		_summonHeldFor = summonDue ? reason : string.Empty;
+
+		if (!InCombat)
+		{
+			_summonHeldSeconds = 0;
+			_summonHeldSince = DateTime.MinValue;
+			return;
+		}
+
+		if (_summonHeldFor.Length > 0 && _summonHeldSince == DateTime.MinValue)
+		{
+			_summonHeldSince = now;
+		}
+		else if (_summonHeldFor.Length == 0 && _summonHeldSince != DateTime.MinValue)
+		{
+			_summonHeldSeconds += (now - _summonHeldSince).TotalSeconds;
+			_summonHeldSince = DateTime.MinValue;
+		}
+	}
+
+	// The time held this fight, including a hold that is still running.
+	private double SummonHeldSecondsNow => _summonHeldSeconds
+		+ (_summonHeldSince == DateTime.MinValue ? 0 : (DateTime.Now - _summonHeldSince).TotalSeconds);
 	#endregion
 
 	#region Countdown Logic
@@ -97,7 +217,9 @@ public sealed class SMN_Reborn : SummonerRotation
 	[RotationDesc(ActionID.LuxSolarisPvE)]
 	protected override bool HealAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		if (LuxSolarisPvE.CanUse(out act))
+		// The heal flag's path asks the same decision as the other two (LuxSolarisDecision); a manual
+		// heal command is his explicit wish and is held back only by the prohibitions.
+		if (TryLuxSolaris(DataCenter.CommandStatus.HasFlag(AutoStatus.HealAreaAbility), out act))
 		{
 			return true;
 		}
@@ -125,16 +247,210 @@ public sealed class SMN_Reborn : SummonerRotation
 	// Rekindle effect text arms its heal-over-time "when HP falls below 75%". A target picked by
 	// points can therefore be one the follow-up effect will never trigger on.
 	//
-	// The self fallback is not a formality. Rekindle only exists while Firebird Trance runs, so a
+	// The self fallback is not a formality. Rekindle only exists during the Phoenix phase, so a
 	// cast that finds no target is lost with the phase, and 400 potency on oneself beats nothing.
 	private bool TryRekindle(out IAction? act)
 	{
+		// Asked from GeneralAbility, outside the heal dispatch that checks Scalebound and Shackled
+		// Healing - so it checks them itself.
+		if (StatusHelper.PlayerHealingPunished())
+		{
+			act = null;
+			return false;
+		}
+
 		if (RekindlePvE.CanUse(out act, targetOverride: TargetType.LowHPPercent))
 		{
 			return true;
 		}
 
 		return RekindlePvE.CanUse(out act, targetOverride: TargetType.Self);
+	}
+
+	// What the Lux Solaris decision says right now, and why and when it last chose to cast - kept
+	// apart, because casting spends Refulgent Lux and the current line turns to "no Refulgent Lux"
+	// in the next frame. A choice is not yet a cast (the dispatch can still pick another action in
+	// the slot); whether it went out is the landing line, from the effect itself.
+	private string _luxWhy = "not asked yet";
+	private string _luxLastChoice = "none yet";
+
+	private bool TryLuxSolaris(bool manual, out IAction? act)
+	{
+		act = null;
+		if (!LuxSolarisDecision(manual, out _luxWhy))
+		{
+			return false;
+		}
+
+		// Aimed at the caster: Lux Solaris is point-blank, and the decision has already measured the
+		// need in its radius. Aimed as a heal, the targeting would ask its own heal ratio again and
+		// turn down the small heal the expiry rule allows.
+		if (!LuxSolarisPvE.CanUse(out act, targetOverride: TargetType.Self))
+		{
+			_luxWhy += " - but the action itself is not usable (disabled, level, cooldown)";
+			return false;
+		}
+
+		_luxLastChoice = $"{_luxWhy} ({DateTime.Now:HH:mm:ss})";
+		return true;
+	}
+
+	/// <summary>
+	/// Whether Lux Solaris should go out now - the owner's rule, concept 08 "Wann Lux Solaris
+	/// zuendet", asked in its order: prohibitions, the radius, the heal landing in full, a member in
+	/// danger, and the expiry of Refulgent Lux.
+	/// </summary>
+	private bool LuxSolarisDecision(bool manual, out string why)
+	{
+		if (!StatusHelper.PlayerHasStatus(true, StatusID.RefulgentLux))
+		{
+			why = "no Refulgent Lux";
+			return false;
+		}
+
+		// 1. Prohibitions. A heal that punishes the people around, or cannot heal at all.
+		if (StatusHelper.PlayerHealingPunished())
+		{
+			why = "held: Scalebound, or Shackled Healing with others nearby";
+			return false;
+		}
+
+		// 2. The radius. Point-blank around the caster; the game gives the radius.
+		var radius = LuxSolarisPvE.TargetInfo.EffectRange;
+		List<IBattleChara> inRadius = [];
+		foreach (var member in PartyMembers)
+		{
+			if (member != null && !member.IsDead && member.DistanceToPlayer() <= radius
+				&& !member.HasStatus(false, StatusHelper.HealingIneffectiveStatus))
+			{
+				inRadius.Add(member);
+			}
+		}
+
+		// Living Dead waiting for its trigger comes before everything, even a member in danger and
+		// the expiry: in Savage and Extreme it answers a tankbuster, and a dead tank is the wipe.
+		// Lux Solaris waits for Walking Dead and then heals several at once, the tank among them.
+		foreach (var member in inRadius)
+		{
+			if (member.IsHeldForDeathTrigger())
+			{
+				why = $"held: {member.Name} waits for Living Dead to trigger";
+				return false;
+			}
+		}
+
+		// The action's own AoE count, "Number of targets needed to use this action". The setting text
+		// binds (owner's rule), and for a heal a target is a hurt member: the self-centred heal path in
+		// ActionTargetInfo counts them so (GetCanAffects drops the full ones), for every use, the heal
+		// command included. By default it is 1 - "somebody in the radius is hurt".
+		var hurt = 0;
+		foreach (var member in inRadius)
+		{
+			if (member.CurrentHp < member.MaxHp)
+			{
+				hurt++;
+			}
+		}
+
+		var asked = Math.Max(1, (int)LuxSolarisPvE.Config.AoeCount);
+		if (hurt < asked)
+		{
+			why = hurt == 0
+				? "nobody in the radius is hurt"
+				: $"waiting: {hurt} hurt in the radius, its AoE count asks for {asked}";
+			return false;
+		}
+
+		if (manual)
+		{
+			why = "manual heal command";
+			return true;
+		}
+
+		// 3. The heal lands in full: on the caster, or on everyone else in the radius. The amount is
+		// measured, not derived from the potency; 0 means not measured since the last zone change.
+		var heal = DataCenter.GetObservedHealPerCast((uint)ActionID.LuxSolarisPvE);
+		if (heal > 0)
+		{
+			if (Player != null && Missing(Player) >= heal)
+			{
+				why = "your own missing health takes a full heal";
+				return true;
+			}
+
+			// "Bei allen anderen gruppenmitgliedern im radius": the others, not the caster - the
+			// caster's own case is the line above, and counting him here made this test a copy of it. With nobody
+			// else in the radius there is nobody to measure, and the test does not hold.
+			var others = 0;
+			var everyoneTakesItAll = true;
+			foreach (var member in inRadius)
+			{
+				if (member.GameObjectId == Player?.GameObjectId)
+				{
+					continue;
+				}
+
+				others++;
+				if (Missing(member) < heal)
+				{
+					everyoneTakesItAll = false;
+					break;
+				}
+			}
+
+			if (others > 0 && everyoneTakesItAll)
+			{
+				why = "everyone else in the radius takes a full heal";
+				return true;
+			}
+		}
+
+		// 4. A member in danger: the heal chain's own critical class (concept 07), unprotected and at
+		// or below HealthForDyingTanks in effective health. A Walking Dead bearer at 1 HP counts.
+		foreach (var member in inRadius)
+		{
+			if (member.IsInCriticalClass())
+			{
+				why = $"{member.Name} is in danger";
+				return true;
+			}
+		}
+
+		// 5. Refulgent Lux about to run out: any heal beats none. It gives way only to a damage
+		// ability whose enabling status ends before the next weave window - that one loses its value
+		// by waiting, a small heal does not lose much. In this window (after the demi phase) that is
+		// Mountain Buster under Titan's Favor, and only while there is an enemy to hit and the action
+		// is enabled and learnt - otherwise nothing would take the slot. Not CanUse: that would also
+		// write Mountain Buster's target into the target state. Searing Flash
+		// is left out: outside a demi this rotation casts it only on a dying boss, so giving way to it
+		// would hold Lux for an ability that does not come.
+		if (StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux))
+		{
+			var nextWindow = DataCenter.DefaultGCDRemain + DataCenter.DefaultGCDTotal;
+			if (HasHostilesInRange && MountainBusterPvE.IsEnabled && MountainBusterPvE.EnoughLevel
+				&& StatusEndsBefore(StatusID.TitansFavor, nextWindow))
+			{
+				why = "Refulgent Lux runs out - one slot for Mountain Buster first, its Titan's Favor ends sooner";
+				return false;
+			}
+
+			why = "Refulgent Lux runs out and someone in the radius is hurt";
+			return true;
+		}
+
+		why = heal > 0
+			? "waiting: a full heal would still overheal someone in the radius"
+			: "waiting: heal not measured since the last zone change";
+		return false;
+	}
+
+	private static uint Missing(IBattleChara member) =>
+		member.MaxHp > member.CurrentHp ? member.MaxHp - member.CurrentHp : 0;
+
+	private static bool StatusEndsBefore(StatusID status, float seconds)
+	{
+		var left = StatusHelper.PlayerStatusTime(true, status);
+		return left > 0 && left < seconds;
 	}
 
 	[RotationDesc(ActionID.RadiantAegisPvE, ActionID.AddlePvE)]
@@ -185,12 +501,11 @@ public sealed class SMN_Reborn : SummonerRotation
 	[RotationDesc(ActionID.LuxSolarisPvE)]
 	protected override bool GeneralAbility(IAction nextGCD, out IAction? act)
 	{
-		if (StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux))
+		// The same decision as in AttackAbility. It is reached here only where AttackAbility is not
+		// - with no enemy in reach, for instance - and a heal does not need one.
+		if (TryLuxSolaris(false, out act))
 		{
-			if (LuxSolarisPvE.CanUse(out act))
-			{
-				return true;
-			}
+			return true;
 		}
 
 		// One branch, not two. There were two: three GCDs before Firebird Trance ends with a target
@@ -198,7 +513,15 @@ public sealed class SMN_Reborn : SummonerRotation
 		// longer and stood FIRST, so from two GCDs onwards the unaimed call always answered first.
 		// The intent was plainly the other way round, an aimed cast with a last-resort behind it, and
 		// that is what TryRekindle does: lowest share, else the caster himself.
-		if (StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.FirebirdTrance))
+		//
+		// The phase is read from the job gauge, not from Firebird Trance (3229). That status makes
+		// Fountain of Fire and Brand of Purgatory castable - PvP actions - and in the basic rotations
+		// only ModifyBrandOfPurgatoryPvP reads it (ChurinSMN reads it the way this branch did). Whether
+		// PvE sets it is not established: Summon Phoenix's text says "Enters Firebird Trance". A status
+		// that is missing counts as "ending now", so if PvE does not set it this branch fired in the
+		// first free weave slot of the Phoenix phase instead of near its end. InPhoenix and the summon
+		// timer answer the same question in either case.
+		if (InPhoenix && SummonTimeEndAfterGCD(3))
 		{
 			if (TryRekindle(out act))
 			{
@@ -211,10 +534,7 @@ public sealed class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
-		// BMRRaidwideIn is already the earliest of BMR's timeline/hints/generic raidwide predictions,
-		// so unlike the raw BMRDamageIn/BMRDamageType pair this can't fire on a tankbuster meant for someone else.
-		if (InCombat && !IsLastAction(false, RadiantAegisPvE)
-			&& BMRShouldRefreshBefore(BMRRaidwideIn, 30f, true, null, StatusID.RadiantAegis)
+		if (RadiantAegisAheadOfRaidwide
 			&& RadiantAegisPvE.CanUse(out act, usedUp: true, skipStatusProvideCheck: true))
 		{
 			return true;
@@ -223,10 +543,41 @@ public sealed class SMN_Reborn : SummonerRotation
 		return base.GeneralAbility(nextGCD, out act);
 	}
 
+	// BMRRaidwideIn is already the earliest of BMR's timeline/hints/generic raidwide predictions,
+	// so unlike the raw BMRDamageIn/BMRDamageType pair this can't fire on a tankbuster meant for someone else.
+	// The horizon is the shield's own duration, as its effect text states it: a shield cast further
+	// ahead than that is gone before the hit.
+	private bool RadiantAegisAheadOfRaidwide =>
+		InCombat && !IsLastAction(false, RadiantAegisPvE)
+		&& BMRShouldRefreshBefore(BMRRaidwideIn, DefensiveValues.DurationOf((uint)ActionID.RadiantAegisPvE),
+			true, null, StatusID.RadiantAegis);
+
+	// Radiant Aegis "can only be executed while Carbuncle is summoned" (effect text), and a demi
+	// replaces Carbuncle for its 15 s. A shield that is due and not out before the summon is gone for
+	// the whole phase, so it cannot be pushed into the burst behind Searing Light the way a weave
+	// usually can. Pointed out by the owner as something the slot analysis had missed; the effect text
+	// is the evidence.
+	//
+	// Due means the two ways the rotation asks for it anyway, read the way those branches read them:
+	// a raidwide BMR announces (GeneralAbility, above), or the defence flag standing (DefenseArea- and
+	// DefenseSingleAbility, which the dispatch reaches under the area flag) with no shield of ours up.
+	// Castable means level, the option, Carbuncle and a charge - so a disabled, spent or impossible
+	// shield never holds a summon back. Without a BMR module the first way is silent, and only a cast
+	// already on screen raises the flag; that is the limit of the reactive path, not covered here.
+	private bool RadiantAegisDueBeforeDemi =>
+		RadiantAegisPvE.EnoughLevel
+		&& RadiantAegisPvE.IsEnabled
+		&& DataCenter.HasPet()
+		&& RadiantAegisPvE.Cooldown.CurrentCharges > 0
+		&& (RadiantAegisAheadOfRaidwide
+			|| (MergedStatus.HasFlag(AutoStatus.DefenseArea)
+				&& !IsLastAction(false, RadiantAegisPvE)
+				&& !StatusHelper.PlayerHasStatus(true, StatusID.RadiantAegis)));
+
 	protected override bool AttackAbility(IAction nextGCD, out IAction? act)
 	{
 		var inBigInvocation = !SummonBahamutPvE.EnoughLevel || InBahamut || InPhoenix || InSolarBahamut;
-		var inSolarUnique = DataCenter.PlayerSyncedLevel() == 100 ? !InBahamut && !InPhoenix && InSolarBahamut : InBahamut && !InPhoenix;
+		var inSolarUnique = SummonSolarBahamutPvE.EnoughLevel ? !InBahamut && !InPhoenix && InSolarBahamut : InBahamut && !InPhoenix;
 		var burstInSolar = (SummonSolarBahamutPvE.EnoughLevel && InSolarBahamut) || (!SummonSolarBahamutPvE.EnoughLevel && InBahamut) || !SummonBahamutPvE.EnoughLevel;
 
 		// Searing Light overwrites, it does not stack, and it comes back exactly as often as the
@@ -257,15 +608,24 @@ public sealed class SMN_Reborn : SummonerRotation
 		// slot waits on Ruby Rite's cast time (concept 12).
 		//
 		// So Ifrit takes precedence only where its premise already holds - the player stands at the
-		// target anyway, so there is nothing to run into and the full block is free. The distance is
-		// the one the rotation already uses for exactly this question, the threshold below which
-		// Crimson Cyclone needs no approach. Otherwise Titan, the only block whose value depends on
-		// neither position nor an open cast.
+		// target anyway, so there is nothing to run into and the full block is free. Standing at the
+		// target means 0 yalms, hitbox to hitbox, the distance the game shows - the owner's own limit:
+		// "wenn der beschwörer bereits beim boss steht (0 yalm), dann wäre der gapcloser nur noch
+		// damage und kein risiko". Crimson Strike's reach (3 yalms) was used here before, and Crimson
+		// Cyclone pulls the player across exactly that distance. The movement safety check reads the
+		// same measure (ActionTargetInfo.StandsAtTarget), so both places answer "does the gap closer
+		// move him" alike. CrimsonCycloneDistance stays the player's limit for the gap closer itself.
+		// Otherwise Titan, the only block whose value depends on neither position nor an open cast.
 		//
 		// Waiting for Titan rather than firing into a distant Ifrit costs nothing: the charge stays
 		// up and its recast only starts when it is spent.
-		var standingAtTheTarget =
-			CrimsonCyclonePvE.Target.Target?.DistanceToPlayer() <= CrimsonCycloneDistance;
+		//
+		// Outside a demi only onto an expired buff, not into the last seconds of a running one. The
+		// guard lets a charge refresh a buff that is about to end, which pays inside a burst phase and
+		// wastes the rest of somebody else's buff outside one - the reason concept 12 gives for V7's
+		// second condition. Measured with the plugin's own book: without it the fallback gives away
+		// 1.4 points of damage under a buff at three Summoners (searing_light_coverage.py, "guard").
+		var standingAtTheTarget = HostileTarget != null && ActionTargetInfo.StandsAtTarget(HostileTarget);
 		var fallbackBlockIsWorthIt = TitanActive || (IfritActive && standingAtTheTarget);
 
 		// The phase is entered with the buff already up, not a weave slot later. `burstInSolar` only
@@ -283,15 +643,50 @@ public sealed class SMN_Reborn : SummonerRotation
 		//
 		// No probe and no later analysis either: cooldown and burst flag are both readable here and
 		// now, so the decision stays in the code where it falls.
+		//
+		// "Ready by the next GCD", not "ready now". Asking for a finished cooldown opened the window
+		// only once the summon was already available - and its cooldown runs out ON the GCD grid,
+		// because the previous summon was itself a GCD and 60 s is a whole number of GCDs. The weave
+		// slot ahead of that GCD had passed by then, so the summon waited one GCD for the buff, then
+		// fired late, and its next cooldown - and the buff's - started late with it. One GCD per
+		// cycle, every cycle: reported from play as Searing Light slipping further back the longer
+		// the fight ran, with no second Summoner in the party. Opening the window in the slot before
+		// the summon's cooldown ends lets the buff go first and the summon land on time.
+		//
+		// If the buff cannot fire there - still cooling down itself, or no weave room because the GCD
+		// before the summon is a cast - the summon may wait for it (searingSettled in
+		// UseSummonsAndTrances), and this branch fires it in the first weave slot of the GCD spent
+		// waiting. Further out, or with a second Summoner in the party, the summon goes without it and
+		// the charge takes the next window that opens.
 		var bigSummonReady = SummonSolarBahamutPvE.EnoughLevel
-			? !SummonSolarBahamutPvE.Cooldown.IsCoolingDown
-			: !SummonBahamutPvE.Cooldown.IsCoolingDown;
-		var burstAboutToStart = IsBurst && bigSummonReady;
+			? SummonSolarBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain)
+			: SummonBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain);
+		// Only ahead of the summon that opens the burst - Solar Bahamut, or Demi-Bahamut below its
+		// level - unless another Summoner widens the window to every big summon. Without that, a lone
+		// Summoner whose charge had come loose from Solar fired it ahead of Bahamut or Phoenix, and the
+		// summon waited for it there: concept 12 ties him to Solar.
+		var burstAboutToStart = IsBurst && bigSummonReady
+			&& (NextBigSummonIsBurst || AnotherSummonerInParty);
 
 		var mayFireSearingLight = burstInSolar
 			|| burstAboutToStart
 			|| (AnotherSummonerInParty
-				&& (inBigInvocation || (AllSearingPhasesHeld && fallbackBlockIsWorthIt)));
+				&& (inBigInvocation || (AllSearingPhasesHeld && fallbackBlockIsWorthIt && !HasAnySearingLight)));
+
+		// The shield first, in the slot ahead of the summon. The flag-driven shield already comes before
+		// this branch in the dispatch; the one BMR announces sits in GeneralAbility, after it, so without
+		// this Searing Light took the only slot before the demi and the shield was locked out for the
+		// phase (RadiantAegisDueBeforeDemi). Any demi, not only the burst one, and with burst switched
+		// off as well: every demi replaces Carbuncle.
+		var demiAboutToStart = !inBigInvocation
+			&& (SummonBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain)
+				|| (SummonSolarBahamutPvE.EnoughLevel
+					&& SummonSolarBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain)));
+		if (demiAboutToStart && RadiantAegisAheadOfRaidwide
+			&& RadiantAegisPvE.CanUse(out act, usedUp: true, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
 
 		if (mayFireSearingLight)
 		{
@@ -301,48 +696,13 @@ public sealed class SMN_Reborn : SummonerRotation
 			}
 		}
 
-		// Lux Solaris is asked here, after Searing Light and ahead of the Aetherflow spenders, because
-		// the two branches that could otherwise carry it both fail in this phase:
-		//
-		// - HealAreaAbility is only reached while AutoStatus.HealAreaAbility stands, and that flag
-		//   wants the party's spread below HealthDifference AND its average below HealthAreaAbility.
-		//   One member taking a mechanic raises the spread, so the flag stays down exactly when a
-		//   single player is the one who is hurt.
-		// - GeneralAbility carries an expiry clause already, but the dispatch asks AttackAbility
-		//   first, and in a demi phase that branch always has something - Energy Siphon, Energy Drain,
-		//   Enkindle. The clause therefore does not get a slot while the phase runs.
-		//
-		// Neither is a defect of those branches: the flag is built for a healer's expensive area cast,
-		// where healing one hurt player with it is the wrong trade. Lux Solaris is not that. It costs
-		// no MP and no GCD, its only cost is the weave slot, and it expires unspent with Refulgent Lux.
-		// The question is therefore not "is area healing worth it" but "is this cast wasted".
-		//
-		// Owner's rule, and it is the answer to that question: fire when the missing health is just
-		// large enough for the heal to land in full. That needs the heal in points, which cannot be
-		// derived from the 500 potency in the effect text - healing power and gear decide it. So it is
-		// measured instead: the effect handler sees what every one of our heals actually restored, and
-		// GetObservedHealPerCast hands back the smoothed figure. Nothing is read later and nothing is
-		// asked of the player; the rule corrects itself on every cast.
-		//
-		// Until the first landing has been seen the figure is 0, which means unknown. Then this branch
-		// stays out of the way and the old behaviour applies - the heal flag decides, plus the expiry
-		// clause below.
-		//
-		// The expiry clause pays for itself here. Refulgent Lux runs 30s against a 15s demi, so its
-		// last GCDs fall AFTER the phase, where the attack branch is thin - the slot it takes there is
-		// not a burst slot.
-		var healPerCast = DataCenter.GetObservedHealPerCast((uint)ActionID.LuxSolarisPvE);
-		var largestMissing = DataCenter.LargestMissingHp;
-		var luxLandsInFull = healPerCast > 0 && largestMissing >= healPerCast;
-		var luxAboutToExpire = largestMissing > 0
-			&& StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux);
-
-		if (luxLandsInFull || luxAboutToExpire)
+		// Lux Solaris is asked here, after Searing Light and ahead of the damage abilities: the heal
+		// flag's path alone would miss it whenever the flag stays down - it wants the party's spread
+		// low as well as its average, so one hurt member keeps it off - and GeneralAbility comes
+		// after this branch. What decides is LuxSolarisDecision, the same on every path.
+		if (TryLuxSolaris(false, out act))
 		{
-			if (LuxSolarisPvE.CanUse(out act))
-			{
-				return true;
-			}
+			return true;
 		}
 
 		if (inBigInvocation)
@@ -595,11 +955,15 @@ public sealed class SMN_Reborn : SummonerRotation
 		// automatically on the targets attacked by you". So the first damage of the phase is the first
 		// GCD after the summon, Umbral Impulse at 640 plus its automatic Luxwave at 160.
 		//
-		// That is why waiting is the cheaper error. Missing the buff costs 5% of every GCD it misses,
-		// 40 potency on the first one alone and again on each that follows, plus the same share for
-		// every nearby party member. Waiting costs a summon one GCD later: the trance runs 15s inside
-		// a 20s buff, so the phase still fits whole, and the GCD spent waiting is a filler rather than
-		// a loss.
+		// That is why a short wait is the cheaper error. For a lone Summoner the wait moves Solar and
+		// the buff together - he sets his own burst, so nothing is lost but the schedule of the later
+		// demis, which only shows at the end of a fight. Going without the wait is dearer than it
+		// looks: the weave slots behind the summon also lie before the first damage, but if both are
+		// taken (Lux Solaris, Addle, a potion) the buff lands behind the first Umbral Impulse - and
+		// since both cooldowns run from use, it then stays behind in every later Solar phase, the
+		// first Umbral Impulse unbuffed each time. That is the drift the owner reported ("cooldown von
+		// searing light ist später nicht fertig, wenn burst phase läuft"). The wait pulls it back each
+		// cycle. The trance runs 15s inside a 20s buff, so the phase still fits whole.
 		//
 		// Three arms, and the last two are what keep the wait from costing the phase itself: a charge
 		// that is already spent is not coming back inside this window, and below level 66 there is no
@@ -626,11 +990,60 @@ public sealed class SMN_Reborn : SummonerRotation
 		// The residual risk of waiting is therefore a defence flag standing while the charge is up.
 		// Guarding against it with a CanUse probe would be the "CanUse as a question, with targeting as
 		// a side effect" pattern recorded as a defect class in TODO.md, so it is not done.
+		// Settled means: the summon has nothing left to wait for. Four ways to get there.
+		//
+		// The buff is up. Or it does not exist at this level. Or the player has switched it off -
+		// without that arm a disabled Searing Light never goes on cooldown, never counts as settled,
+		// and the summon waits for ever.
+		//
+		// Or it will not be back in time for a single waiting GCD to carry it. A buff a second or two
+		// short of ready used to count as settled: the summon went without it, the buff followed inside
+		// the phase, and its next cooldown ended later still.
+		//
+		// The bound follows a suggestion of the owner, put forward for checking, not as a rule: "es
+		// geht einfach um ein bis zwei sekunden am anfang ... den demi so zu verschieben, dass er erst
+		// startet, wenn searing light verfügbar ist ... die primal rota muss nicht beendet werden." The
+		// summon waits only for a buff that can still be woven into the GCD spent waiting - back
+		// before that GCD's weave window closes, which is one GCD from now less the action-ahead
+		// margin that ends every weave window. A buff back any later would miss that window too and
+		// cost a second waiting GCD. What the waiting GCD is, is not chosen here: the primal branches
+		// decide, and a cast without weave room behind it (Ruby Rite) cannot carry the buff, so the
+		// summon then waits one more GCD. Every GCD waited shifts every later demi with it.
+		//
+		// With another Summoner in the party - the second half of the same suggestion - the charge is
+		// not tied to this summon: the firing window above widens to every big summon and, when all of
+		// them are held, to the strongest primal block. So the summon does not wait for a cooling buff
+		// there at all; the charge goes out in the first window that rule opens once it is back.
+		//
+		// Two arms close waits that never end, and both are the same question: will the buff this
+		// summon waits for actually be cast ahead of it?
+		// - Any Searing Light, not only our own. The buff does not stack and ours cannot be cast over a
+		//   running one (StatusProvide with StatusFromSelf = false). With a second Summoner's buff up,
+		//   ours was ready, could not go out, and the summon waited for his buff to run out - every
+		//   demi of the fight, the delay the owner named.
+		// - Burst switched off. The slot ahead of the summon is opened by burstAboutToStart, which reads
+		//   IsBurst; with burst off the buff never goes there, and a ready buff held the summon for good.
+		// - A summon that is not the burst one, for a lone Summoner. burstAboutToStart does not open the
+		//   slot ahead of it, so the buff would never come.
+		var searingBackSoon = AnotherSummonerInParty
+			? SearingLightPvE.Cooldown.WillHaveOneCharge(WeaponRemain)
+			: SearingLightPvE.Cooldown.WillHaveOneCharge(
+				WeaponRemain + WeaponTotal - DataCenter.CalculatedActionAhead);
 		var searingSettled = !SearingLightPvE.EnoughLevel
-			|| HasSearingLight
-			|| SearingLightPvE.Cooldown.IsCoolingDown;
+			|| !SearingLightPvE.IsEnabled
+			|| !IsBurst
+			|| (!NextBigSummonIsBurst && !AnotherSummonerInParty)
+			|| HasAnySearingLight
+			|| !searingBackSoon;
 
-		if (searingSettled && SummonBahamutPvE.CanUse(out act))
+		// A due shield holds every demi, whatever Searing Light does: once the demi stands, Radiant
+		// Aegis cannot be cast for 15 s (RadiantAegisDueBeforeDemi). This is the one wait that is not
+		// about damage, and it ends as soon as the shield is out or no longer due. Dreadwyrm Trance
+		// below keeps Carbuncle out and is not held.
+		var aegisFirst = RadiantAegisDueBeforeDemi;
+		NoteSummonHold(aegisFirst ? "Radiant Aegis" : !searingSettled ? "Searing Light" : string.Empty);
+
+		if (!aegisFirst && searingSettled && SummonBahamutPvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -639,7 +1052,7 @@ public sealed class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
-		if (IsBurst && searingSettled && SummonSolarBahamutPvE.CanUse(out act))
+		if (!aegisFirst && IsBurst && searingSettled && SummonSolarBahamutPvE.CanUse(out act))
 		{
 			return true;
 		}

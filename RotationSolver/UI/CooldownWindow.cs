@@ -5,6 +5,12 @@ namespace RotationSolver.UI;
 
 internal class CooldownWindow() : CtrlWindow(nameof(CooldownWindow))
 {
+	public override void PostDraw()
+	{
+		base.PostDraw();
+		WindowCloseButton.TurnOffIfClosedByPlayer(this, Service.Config.ShowCooldownWindow);
+	}
+
 	public override void Draw()
 	{
 		if (DataCenter.CurrentRotation == null)

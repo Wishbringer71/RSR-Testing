@@ -401,10 +401,12 @@ internal static partial class TargetUpdater
 			return deathHealers[0];
 		}
 
+		// H2 as its option text states it: "Raise non-Healers from bottom of party list to the top".
+		// Healers keep the list order; the tank, off-healer and remaining lists turn. It used to
+		// turn the healer list too, against the text - the owner's rule: the UI settings bind.
 		if (Service.Config.H2)
 		{
 			deathTanks.Reverse();
-			deathHealers.Reverse();
 			deathOffHealers.Reverse();
 			deathOthers.Reverse();
 		}

@@ -390,83 +390,188 @@ internal static class DataCenter
 	internal static bool InEffectTime => DateTime.Now >= EffectTime && DateTime.Now <= EffectEndTime;
 	internal static Dictionary<ulong, uint> HealHP { get; set; } = [];
 
-	// How much health one of our own healing actions actually restored, in points, per action id.
-	// Healing is an absolute figure just like damage, so it is stored as points and divided by the
-	// member's own maximum where it is read - the same member carries a different share of it.
+	// How much health one of our own healing actions restores to one target, in points, per action id.
+	// Healing is an absolute figure just like damage, so it is stored as points; a caller compares it
+	// with points (a member's missing health), never with a share.
 	//
 	// This exists because the potency in an effect text cannot be converted into points from here:
 	// the result depends on healing power, on the job gauge and on buffs, and it changes with every
 	// piece of gear. Asking the fight instead costs nothing - the effect handler already sees every
 	// heal we land, with the real number.
 	//
-	// Smoothed rather than overwritten, because a critical heal restores markedly more than an
-	// ordinary one and a single one of those must not move the estimate to where the next decision
-	// is wrong. The weight is even: the most recent landing counts as much as everything before it,
-	// so a gear change is followed within a few casts instead of being averaged away.
+	// The SMALLEST amount seen is kept, not a mean. Owner's rule: a heal can land as a critical hit
+	// and be much larger, and a need is judged against the least the heal will surely restore, never
+	// the most. Only amounts that measure the whole heal count: one that met more missing health than
+	// it restored (nothing was lost to overheal), or any amount once the packet is seen to report
+	// overheal at all - then every amount is the full heal. It is cleared on a territory change only
+	// (ResetHealMeasurements): item level sync is set per duty, so a figure from outside would be
+	// wrong inside; a gear change is followed from the next zone on.
 	private static readonly Dictionary<uint, float> _observedHealPerCast = [];
+	private static readonly Dictionary<uint, HealLanding> _lastHealLanding = [];
 
-	internal static void RecordHealEffect(uint actionId, IEnumerable<uint> healedAmounts)
+	/// <summary>
+	/// How the last measured cast of a healing action landed: the share of what it restored that met
+	/// missing health, whether any target was reported a larger amount than it was missing (the packet
+	/// reports the gross heal), how many targets were confirmed and how many were not.
+	/// </summary>
+	internal readonly record struct HealLanding(float EffectiveShare, bool GrossReported, int Confirmed, int Unconfirmed, DateTime At);
+
+	// One cast waiting for its confirmation. The effect packet arrives with the amounts; whether the
+	// health seen at that moment was still the health from before the heal is not known then - the
+	// server's health update can come before or after the effect, and the heal-hp projection below
+	// (GetPartyMemberHPRatio) is built for both orders. So the cast is held, and each target is
+	// confirmed only when its health actually rises by what the heal can have added after the
+	// effect was seen. A target whose health had already risen, or that took damage in between, is
+	// never confirmed and never measured - the safe direction.
+	private sealed record PendingHealTarget(ulong Id, uint Amount, uint HpAtEffect, uint MaxHp)
 	{
-		float sum = 0;
-		var count = 0;
-		foreach (var amount in healedAmounts)
+		public bool Confirmed { get; set; }
+		public uint MissingBefore => MaxHp > HpAtEffect ? MaxHp - HpAtEffect : 0;
+		public uint Expected => Math.Min(Amount, MissingBefore);
+	}
+
+	private static (uint ActionId, DateTime Deadline, List<PendingHealTarget> Targets)? _pendingHeal;
+
+	/// <summary>
+	/// Holds one cast of an own healing action until its health changes confirm it; see
+	/// <see cref="HealLanding"/>. <paramref name="landed"/> holds, per party member hit, the amount
+	/// the effect reported and the member's health and maximum at that moment. The cast waits until
+	/// the end of the effect window (EffectEndTime) - as long as the heal projection waits for the
+	/// server's health update.
+	/// </summary>
+	internal static void RecordHealEffect(uint actionId, IReadOnlyList<(ulong Id, uint Amount, uint Hp, uint MaxHp)> landed)
+	{
+		ResolvePendingHeal(force: true);
+
+		List<PendingHealTarget> targets = [];
+		foreach (var (id, amount, hp, maxHp) in landed)
 		{
-			// A heal that landed on a full target reports the overheal as 0 in the effect packet,
-			// which would drag the estimate towards zero and never recover. Only landings that
-			// actually restored something say what the action is worth.
-			if (amount == 0)
+			if (amount > 0 && maxHp > 0)
 			{
-				continue;
+				targets.Add(new PendingHealTarget(id, amount, hp, maxHp));
 			}
-			sum += amount;
-			count++;
 		}
 
-		if (count == 0)
+		_pendingHeal = null;
+		if (targets.Count > 0)
+		{
+			_pendingHeal = (actionId, EffectEndTime, targets);
+		}
+	}
+
+	// Called for every party member whenever the refined health is read, and before any reader of
+	// the measurement. Confirms targets whose health has risen by what the heal adds; once every
+	// target that could rise has, or the effect window is over, the cast is measured from its
+	// confirmed targets alone.
+	private static void ConfirmPendingHeal(IBattleChara member)
+	{
+		if (_pendingHeal is not { } pending)
 		{
 			return;
 		}
 
-		var perTarget = sum / count;
-		_observedHealPerCast[actionId] = _observedHealPerCast.TryGetValue(actionId, out var known) && known > 0
-			? (known + perTarget) / 2f
-			: perTarget;
+		foreach (var target in pending.Targets)
+		{
+			if (!target.Confirmed && target.Id == member.GameObjectId && target.Expected > 0
+				&& member.CurrentHp >= target.HpAtEffect + target.Expected)
+			{
+				target.Confirmed = true;
+			}
+		}
+
+		ResolvePendingHeal(force: false);
+	}
+
+	private static void ResolvePendingHeal(bool force)
+	{
+		if (_pendingHeal is not { } pending)
+		{
+			return;
+		}
+
+		var open = false;
+		foreach (var target in pending.Targets)
+		{
+			open |= !target.Confirmed && target.Expected > 0;
+		}
+
+		if (open && !force && DateTime.Now <= pending.Deadline)
+		{
+			return;
+		}
+
+		_pendingHeal = null;
+
+		var confirmed = 0;
+		var unconfirmed = 0;
+		double restored = 0;
+		double met = 0;
+		var gross = false;
+		foreach (var target in pending.Targets)
+		{
+			if (!target.Confirmed)
+			{
+				unconfirmed++;
+				continue;
+			}
+
+			confirmed++;
+			restored += target.Amount;
+			met += target.Expected;
+			gross |= target.Amount > target.MissingBefore;
+		}
+
+		if (confirmed > 0)
+		{
+			var smallest = float.MaxValue;
+			foreach (var target in pending.Targets)
+			{
+				if (target.Confirmed && (gross || target.Amount < target.MissingBefore))
+				{
+					smallest = Math.Min(smallest, target.Amount);
+				}
+			}
+
+			if (smallest < float.MaxValue)
+			{
+				_observedHealPerCast[pending.ActionId] = _observedHealPerCast.TryGetValue(pending.ActionId, out var known) && known > 0
+					? Math.Min(known, smallest)
+					: smallest;
+			}
+		}
+
+		_lastHealLanding[pending.ActionId] = new HealLanding(
+			restored > 0 ? (float)(met / restored) : 0f, gross, confirmed, unconfirmed, DateTime.Now);
 	}
 
 	/// <summary>
-	/// The healing one cast of this action was last seen to restore, in health points, or 0 when it
-	/// has not been observed yet. 0 means "unknown", never "heals nothing" - a caller that cannot
-	/// act on an unknown value keeps its previous behaviour instead of assuming one.
+	/// What one cast of this action restores to one target, in health points, or 0 when it has not
+	/// been observed since the last territory change. 0 means "unknown", never "heals nothing" - a
+	/// caller that cannot act on an unknown value keeps its previous behaviour instead of assuming one.
 	/// </summary>
 	public static float GetObservedHealPerCast(uint actionId)
 	{
+		ResolvePendingHeal(force: false);
 		return _observedHealPerCast.TryGetValue(actionId, out var known) ? known : 0f;
 	}
 
 	/// <summary>
-	/// The largest amount of health missing from any living party member, in points. This is the
-	/// figure a heal has to reach for none of it to be wasted on that member.
+	/// Clears the measured heals. Called on a territory change only, not with ResetAllRecords - that
+	/// one runs after every fight, and a heal measured in the last pull is the right figure for the
+	/// next. Item level sync is set per duty, so a figure from outside is wrong inside.
 	/// </summary>
-	public static float LargestMissingHp
+	internal static void ResetHealMeasurements()
 	{
-		get
-		{
-			float largest = 0;
-			foreach (var member in PartyMembers)
-			{
-				if (member.IsDead || member.MaxHp == 0 || member.CurrentHp >= member.MaxHp)
-				{
-					continue;
-				}
+		_observedHealPerCast.Clear();
+		_lastHealLanding.Clear();
+		_pendingHeal = null;
+	}
 
-				var missing = (float)(member.MaxHp - member.CurrentHp);
-				if (missing > largest)
-				{
-					largest = missing;
-				}
-			}
-			return largest;
-		}
+	/// <summary>How the last cast of this action landed, or null when none has been seen.</summary>
+	internal static HealLanding? GetLastHealLanding(uint actionId)
+	{
+		ResolvePendingHeal(force: false);
+		return _lastHealLanding.TryGetValue(actionId, out var landing) ? landing : null;
 	}
 
 	internal static Dictionary<ulong, uint> ApplyStatus { get; set; } = [];
@@ -1509,6 +1614,8 @@ internal static class DataCenter
 			return 0f;
 		}
 
+		ConfirmPendingHeal(member);
+
 		var id = member.GameObjectId;
 
 		if (!InEffectTime || !HealHP.TryGetValue(id, out var healedHp))
@@ -1534,6 +1641,9 @@ internal static class DataCenter
 
 		return (float)currentHp / member.MaxHp;
 	}
+
+	/// <summary>How long a party-wide reading counts as the same frame's, in milliseconds.</summary>
+	internal static long FrameCacheMs => PartyHpStatsTtlMs;
 
 	private static readonly float[] _hpBuffer = new float[8];
 	private static long _partyHpStatsCacheTick = long.MinValue;
@@ -1823,6 +1933,7 @@ internal static class DataCenter
 		_partyHpStatsCacheTick = long.MinValue;
 		_timeLastActionUsed = DateTime.Now;
 		_actions.Clear();
+		DefenseHolds.Clear();
 
 		AttackedTargets.Clear();
 
@@ -3261,6 +3372,51 @@ internal static class DataCenter
 	}
 
 	/// <summary>
+	/// Why the last enemy action that damaged the player was or was not rated for the learned damage
+	/// table, with its time and action id. Written by the effect handler; shown in the AoE list.
+	/// </summary>
+	public static string AreaMeasurementLastOutcome { get; set; } = "no enemy action has hit the player yet";
+
+	/// <summary>
+	/// The last time an area heal centred on the caster was weighed on the heal path: which action,
+	/// how many hurt members stood in its radius against how many it asks for, whether one of them
+	/// was under its heal ratio. Written by the targeting,
+	/// shown in the diagnostics window, so a group heal that stays out can be told apart from one
+	/// that was never asked.
+	/// </summary>
+	internal static SelfCentredHealWeighing? LastSelfCentredHeal { get; set; }
+
+	/// <summary>
+	/// Every strategic hold of a defense that was asked (CustomRotation_DefenseHold), by rule: whether
+	/// it last held or yielded to a member in danger, why, and when. One entry per rule, so a rule
+	/// asked after another in the same frame does not hide it. Shown in the diagnostics window,
+	/// because a defense that waits cannot otherwise be told apart from one that was never asked.
+	/// </summary>
+	internal static readonly ConcurrentDictionary<string, DefenseHoldDecision> DefenseHolds = new();
+
+	/// <summary>One decision of a defense hold.</summary>
+	internal readonly record struct DefenseHoldDecision(string Rule, bool Held, string Why, DateTime At);
+
+	/// <summary>One weighing of an area heal centred on the caster.</summary>
+	internal readonly record struct SelfCentredHealWeighing(string Action, int HurtInRadius, int Required, bool InNeed, DateTime At);
+
+	/// <summary>
+	/// The last time the movement safety check withheld an action that moves the player, and why.
+	/// Without it a gap closer that stays out cannot be told apart in the fight from one that was
+	/// never asked for.
+	/// </summary>
+	internal static MoveSafetyRefusal? LastMoveSafetyRefusal { get; set; }
+
+	/// <summary>
+	/// The last refusal the safety check gave without measuring anything, because the movement had no
+	/// target to measure against.
+	/// </summary>
+	internal static MoveSafetyRefusal? LastMoveSafetyUnmeasured { get; set; }
+
+	/// <summary>One refusal of the movement safety check.</summary>
+	internal readonly record struct MoveSafetyRefusal(string Action, string Why, DateTime At);
+
+	/// <summary>
 	/// The action id the currently recorded area share belongs to, or 0 when none is recorded.
 	/// </summary>
 	public static uint AnnouncedAreaAction =>
@@ -3287,6 +3443,22 @@ internal static class DataCenter
 	/// </remarks>
 	public static bool AnnouncedHitDropsAnyoneBelow(float threshold)
 	{
+		return AnnouncedHitDropsBelow(threshold, false, out _);
+	}
+
+	/// <summary>
+	/// <see cref="AnnouncedHitDropsAnyoneBelow"/> for the members the hit can actually take down: an
+	/// invulnerable tank sits low on purpose and is not in danger from it (Hallowed Ground,
+	/// Superbolide). <paramref name="who"/> names the first member found.
+	/// </summary>
+	internal static bool AnnouncedHitDropsUnprotectedBelow(float threshold, out string who)
+	{
+		return AnnouncedHitDropsBelow(threshold, true, out who);
+	}
+
+	private static bool AnnouncedHitDropsBelow(float threshold, bool unprotectedOnly, out string who)
+	{
+		who = string.Empty;
 		var share = AnnouncedAreaShare;
 		if (share <= 0f)
 		{
@@ -3297,14 +3469,20 @@ internal static class DataCenter
 		for (var i = 0; i < party.Count; i++)
 		{
 			var member = party[i];
-			if (member == null || member.IsDead || member.MaxHp == 0)
+			if (member == null || member.IsDead || member.MaxHp == 0
+				|| (unprotectedOnly && !member.NoNeedHealingInvuln()))
 			{
 				continue;
 			}
 
-			var buffer = member.GetEffectiveHp() / (float)member.MaxHp;
-			if (buffer - share < threshold)
+			// The unprotected reading is the critical class's own footing (IsInCriticalClass): the
+			// forecast effective health, at or below the threshold. The other keeps its original form
+			// for its original readers.
+			if (unprotectedOnly
+				? member.GetForecastEffectiveHp() / (float)member.MaxHp - share <= threshold
+				: member.GetEffectiveHp() / (float)member.MaxHp - share < threshold)
 			{
+				who = member.Name.TextValue;
 				return true;
 			}
 		}
@@ -3344,9 +3522,11 @@ internal static class DataCenter
 	/// </summary>
 	/// <remarks>
 	/// Not an invented number, and no longer a written-down one either: it is read from the effect
-	/// texts. The largest barrier in the tree that states its size as a share is The Blackest Night -
-	/// "absorbs damage totaling 25% of target's maximum HP" - and DefensiveValues.g.cs carries that
-	/// figure along with every other, generated from the same sheets and checked against them in CI.
+	/// texts. The largest barrier in the tree that states its size as a share and can be put on
+	/// another party member is The Blackest Night - "absorbs damage totaling 25% of target's maximum
+	/// HP" - and DefensiveValues.g.cs carries that figure along with every other, generated from the
+	/// same sheets and checked against them in CI. Manaward states 30%, but only its caster carries
+	/// it: it says nothing about what a shield on the member being hit would absorb.
 	///
 	/// It used to be a literal 0.25f with the source named in prose. That is the ageing form this
 	/// file has been caught by twice already: an earlier version of this remark said "five barriers"
@@ -3636,6 +3816,16 @@ internal static class DataCenter
 	public static bool BMRHasActiveModule { get; set; }
 	public static string? BMRActiveModuleName { get; set; }
 	public static float BMRNextRaidwideIn { get; set; } = float.MaxValue;
+
+	/// <summary>
+	/// An announced area hit that has not landed yet: the area-defense signal, or a BossMod raidwide
+	/// still ahead inside the mitigation window - including the last moment before it, where the
+	/// signal already lets go. What the channel locks of Passage of Arms and Collective Unconscious
+	/// hold for ("during AOE mitigations").
+	/// </summary>
+	public static bool AreaHitPending => MergedStatus.HasFlag(AutoStatus.DefenseArea)
+		|| (InCombat && Service.Config.UseBmrTimeline && BMRNextRaidwideIn > 0f
+			&& BMRNextRaidwideIn <= Service.Config.BMRRaidwideMitWindow);
 	public static float BMRNextTankbusterIn { get; set; } = float.MaxValue;
 	public static float BMRNextKnockbackIn { get; set; } = float.MaxValue;
 	public static float BMRNextDowntimeIn { get; set; } = float.MaxValue;

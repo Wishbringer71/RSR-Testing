@@ -62,8 +62,9 @@ public sealed class DRG_Reborn : DragoonRotation
 		// Every other ability-dispatch method in this file (Move*Ability, Defense*Ability,
 		// AttackAbility) skips its own logic right after Stardiver to avoid clipping the dive's
 		// landing - this method was missing that same guard, the one inconsistency with DRG's own
-		// established convention.
-		if (IsLastAction(false, StardiverPvE))
+		// established convention. On the universal layer, like the defense holds of this file: the
+		// dragoon heals itself after all when it is in the critical class (concept 08).
+		if (HoldSelfHeal(IsLastAction(false, StardiverPvE), "Dragoon: right after Stardiver"))
 		{
 			return base.HealSingleAbility(nextGCD, out act);
 		}
@@ -84,7 +85,9 @@ public sealed class DRG_Reborn : DragoonRotation
 	[RotationDesc(ActionID.FeintPvE)]
 	protected sealed override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		if (IsLastAction(false, StardiverPvE))
+		// Dragoon special rule: no weave straight after Stardiver. On the universal layer, so it
+		// yields when the party is in danger (concept 08, "Die Abwehrsperren").
+		if (HoldAreaDefense(IsLastAction(false, StardiverPvE), "Dragoon: right after Stardiver"))
 		{
 			return base.DefenseAreaAbility(nextGCD, out act);
 		}
@@ -105,7 +108,7 @@ public sealed class DRG_Reborn : DragoonRotation
 	[RotationDesc(ActionID.FeintPvE)]
 	protected sealed override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		if (IsLastAction(false, StardiverPvE))
+		if (HoldSingleDefense(IsLastAction(false, StardiverPvE), "Dragoon: right after Stardiver"))
 		{
 			return base.DefenseSingleAbility(nextGCD, out act);
 		}

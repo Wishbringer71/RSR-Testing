@@ -31,6 +31,12 @@ internal class ControlWindow : CtrlWindow
 		base.OnClose();
 	}
 
+	public override void PostDraw()
+	{
+		base.PostDraw();
+		WindowCloseButton.TurnOffIfClosedByPlayer(this, Service.Config.ShowControlWindow);
+	}
+
 	public override unsafe void Draw()
 	{
 		using var selectableAlign = ImRaii.PushStyle(ImGuiStyleVar.SelectableTextAlign, new Vector2(0.5f, 0.5f));

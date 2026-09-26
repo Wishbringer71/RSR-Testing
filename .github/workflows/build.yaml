@@ -49,6 +49,12 @@ jobs:
       - name: Check the generated defensive values still match the effect texts
         run: python3 .github/scripts/audit/generate_defensive_values.py --check
 
+      # The per-job action dependency matrix (concept 14) is generated from the same sheets and from
+      # the rotations. A rotation change or an upstream sync that is not followed by a regeneration
+      # would leave a matrix that says what the code no longer does.
+      - name: Check the action dependency matrix is up to date
+        run: python3 .github/scripts/audit/generate_action_matrix.py --check
+
       # Depth alone is not enough: this fork's own remote carries no upstream tags at all, only
       # 7.5.5.41+wsh1 and 7.5.6.1+wsh1, and this environment cannot push tags to fix that. So the
       # release tags have to come from upstream directly, or `git describe` finds nothing to
@@ -57,6 +63,7 @@ jobs:
         run: |
           git remote add upstream https://github.com/FFXIV-CombatReborn/RotationSolverReborn.git || true
           git fetch --tags --no-recurse-submodules upstream
+          git fetch --no-recurse-submodules upstream main
 
       # Second line behind .githooks/pre-commit, for a clone that has no core.hooksPath set. Six
       # commits went out carrying the owner's real name and his private address in this public
@@ -156,12 +163,13 @@ jobs:
       - name: Check the stated defaults still match the code
         run: python3 .github/scripts/audit/check_concept_defaults.py
 
-      # The release description is pasted into a field that counts characters and stops accepting
-      # them. The 18611-character version ran the counter to "0 remaining" inside section 7, and
-      # everything after that was dropped without a word - the release carried a text ending
-      # mid-sentence. The document grows with every pass, the field does not.
-      - name: Check the release description still fits the release form
-        run: python3 .github/scripts/audit/check_release_note_size.py
+      # A release describes what changed, so its text has to start over after every release. It
+      # does not do that by itself: the file still parses and still publishes, and the next
+      # release would carry the previous one's text with the new part appended - the cumulative
+      # document the rule replaced. The heading's base tag is measured against the newest tag on
+      # origin, which is the one thing that says whether the text has aged out of its purpose.
+      - name: Check the release description describes the next release
+        run: python3 .github/scripts/audit/check_release_note.py
 
       # The sibling of the check below: that one asks whether a setting is read at all, this one
       # whether the user can tell what it does. A fork setting with no explanation leaves them
@@ -176,6 +184,22 @@ jobs:
       # alone, so this guards against the next one rather than against those two.
       - name: Check every user setting has a reader
         run: python3 .github/scripts/audit/scan18.py
+
+      # The figures concept 12 stands on come from these two models, and both carry self-tests
+      # against constructed defects. They ran only by hand, so a change to the model - or a model
+      # that had drifted from the plugin it describes, which is how the V8 figures came to measure a
+      # book the plugin never kept - went unnoticed.
+      - name: Check the Summoner phase potency model
+        run: python3 .github/scripts/audit/smn_phase_potency.py
+      - name: Check the Searing Light coverage model
+        run: python3 .github/scripts/audit/searing_light_coverage.py
+
+      # The owner's rule: no fixed values in the code, everything derived from the game, and an
+      # exception only after a loop that asked whether the game can supply the value after all.
+      # Every number on a line the fork added has to be listed - as an exception with its loop in
+      # AUDIT_LOG.md, or as a loop still open. A new number listed nowhere fails here.
+      - name: Check no fixed value entered without a loop
+        run: python3 .github/scripts/audit/check_fixed_values.py
 
   Build:
     runs-on: windows-latest

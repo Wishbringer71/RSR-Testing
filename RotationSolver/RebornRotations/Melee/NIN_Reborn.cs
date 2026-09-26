@@ -1027,6 +1027,14 @@ public sealed class NIN_Reborn : NinjaRotation
 
 	protected override bool GeneralGCD(out IAction? act)
 	{
+		// Phantom Kamaitachi waits for the Trick Attack or Mug window. Bunshin runs on its own cooldown;
+		// should no window open before Phantom Kamaitachi Ready runs out, its last GCD goes to it.
+		if (!IsExecutingMudra && NoNinjutsu && StatusHelper.PlayerWillStatusEndGCD(1, 0, true, StatusID.PhantomKamaitachiReady)
+			&& PhantomKamaitachiPvE.CanUse(out act))
+		{
+			return true;
+		}
+
 		if (!IsExecutingMudra && (InTrickAttack || InMug) && NoNinjutsu && !HasRaijuReady
 			&& Player != null && !StatusHelper.PlayerHasStatus(true, StatusID.TenChiJin)
 			&& PhantomKamaitachiPvE.CanUse(out act))

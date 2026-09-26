@@ -1035,6 +1035,15 @@ public partial class CustomRotation
 	public static bool HasHostilesInRange => DataCenter.HasHostilesInRange;
 
 	/// <summary>
+	/// A pause in the fight: in combat, and no hostile within 25 yalms - nothing to strike, the boss
+	/// untargetable or gone. Read now, without BossModReborn; the predicted pause is
+	/// <see cref="BMRDowntimeWithin"/>. The universal half of the pause rule (concept 14); what a job
+	/// does in the pause is its own rule.
+	/// </summary>
+	[Description("In combat without a hostile in 25 yalms")]
+	public static bool InCombatPause => InCombat && !HasHostilesInMaxRange;
+
+	/// <summary>
 	/// Is there any hostile target in 25 yalms?
 	/// </summary>
 	[Description("Has hostiles in 25 yalms")]

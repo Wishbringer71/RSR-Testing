@@ -111,6 +111,56 @@ ohne; und ein Schadensausteiler mit kleinem Lebenspool wie einer mit großem.
 Eine dieser Rollenschwellen zu heben erzeugt deshalb keine zusätzliche Heilung und keine
 Überheilung — es verschiebt die Reihenfolge.
 
+### Flächenheilungen um den Wirkenden messen den Bedarf an den Getroffenen
+
+**Sachstand (A137):** Eine Flächenheilung, die um den Wirkenden herum wirkt — Reichweite 0, ein
+Wirkradius, kein Bodenziel: Medica, Helios, Succor, Lux Solaris und rund dreißig weitere —, hat den
+Wirkenden als Anker, und ihr Bedarf wird an den Mitgliedern **im Wirkradius** gemessen: mindestens
+`AoeCount` darin, die sie aufnehmen können (verletzt, lebend, nicht heilungsunfähig, ohne ihren
+bereitgestellten Status), und bei eingeschalteter Heilprüfung mindestens eines davon mit
+vorausberechneter Gesundheit unter der Heilschwelle der Aktion (`AutoHealRatio`). Ein Mitglied, das
+für einen Todesauslöser zurückgehalten wird, wird mitgeheilt, wenn es im Radius steht, zählt aber nie
+als Grund.
+
+**Im Kampf:** Der Heiler steht voll und einige Yalm neben der Gruppe, ein Cleave hat die Nahkämpfer
+getroffen, die Flächenheilflagge steht. Vorher fiel die Heilung nicht, weil der allgemeine Pfad ein
+Heil**ziel** in Reichweite 0 suchte — also den Heiler selbst und wer ihn berührt — und dieses Ziel unter
+der Heilschwelle verlangte. Jetzt fällt sie, sobald im Radius genug Verletzte stehen.
+
+**Grenzen und Bedingungen:**
+- Gilt nur, wenn das Spiel für die Aktion Reichweite 0 meldet (`ActionManager.GetActionRange`). Meldet es
+  etwas anderes, greift der Zweig nicht, und alles bleibt wie vorher.
+  **Hinweis des Auftraggebers:** Lux Solaris ist eine Point-Blank-Fläche vom Wirkenden aus, wie Holy beim
+  Weißmagier — die Prämisse Reichweite 0 trägt. Lux Solaris selbst läuft seit A154 nicht mehr durch
+  diesen Zweig, sondern folgt ihrer eigenen Regel (Konzept 08) und fehlt deshalb in der Anzeige unten.
+- Gilt nur für die Zielart Heilung und nicht, wenn ein Aufrufer den Wirkenden ausdrücklich als Ziel
+  nennt (`TargetType.Self`); dort gibt der allgemeine Pfad den Wirkenden ohne Bedarfsprüfung zurück.
+  Andere freundliche Aktionen mit Reichweite 0 bleiben auf dem allgemeinen Pfad.
+- Am Anker entfallen die Prüfungen, die der allgemeine Pfad am Heilziel stellte: `CanTarget`,
+  `CanUseTo` (Abfrage beim Spiel), `MinHPFeature` der Aktion. Für keine freundliche Heilung mit
+  Reichweite 0 ist ein `CanTarget` gesetzt (erhoben A137). `NoNewHostiles`, das im allgemeinen Pfad
+  die Trefferzahl auch für freundliche Mitglieder ohne Ziel auf 0 setzte, wirkt hier nicht. **Hinweis
+  des Auftraggebers:** Heilungen erzeugen Feindschaft, wie Schaden auch; der Umfang ist nicht belegt.
+  Ob eine Gruppenheilung dabei mehr oder andere Gegner erreicht als eine Einzelheilung, ist ebenfalls
+  nicht belegt — `NoNewHostiles` bleibt deshalb eine Regel für Angriffe, und das ist eine offene
+  Annahme, keine belegte Tatsache.
+- Die AoE-Einstellung (Full/Cleave/Off) gilt nur Angriffen, seine Lesart (A147): Unter „Cleave" und
+  „Off" gehen Gruppenheilungen und Gruppenminderungen wie unter „Full".
+- **Im Kampf ablesbar:** Das Diagnosefenster zeigt unter „Area heal around you" die zuletzt gewogene
+  Heilung dieser Art — Aufnahmefähige im Radius gegen die verlangte Anzahl, ob jemand darunter unter
+  der Heilschwelle liegt. Taucht eine Heilung dort nie auf, meldet das Spiel für
+  sie keine Reichweite 0, die Flagge stand nicht, oder die Aktion wurde vorher abgelehnt
+  (Abklingzeit, Stufe, benötigter Status wie Refulgent Lux). Den Stand der Flagge zeigt die Zeile
+  nicht.
+- Ob überhaupt geheilt wird, entscheidet weiter die Flagge. Deren Streuungsbedingung hält die Flagge
+  unten, wenn ein einzelner Spieler getroffen ist — das ist eine eigene Frage (TODO „Flächenheilung nach
+  Pegel statt Rate").
+
+**Betroffene:** alle Heiler dieses Baums einschließlich der fremden Rotationen, die dieselben Aktionen
+über den Heilpfad rufen; die Autoren abgeleiteter Rotationen, weil `CanUse` dieser Aktionen jetzt
+anders antwortet; die Upstream-Pflege durch eine weitere Abweichung in `ActionTargetInfo.FindTarget`.
+Ein belegter Defekt, keine Verbesserung auf Verdacht — deshalb ohne eigene Option.
+
 ### Befund: ein Rollen-Kurzschluss überholt den, der tatsächlich stirbt
 
 **Die Rollenabkürzungen kehren sofort zurück, sobald ihre Schwelle erfüllt ist, und sehen dabei
@@ -317,9 +367,19 @@ Punktemaß steht im Wirktext der Aktion selbst: Rekindle bewaffnet seine Nachhei
 below 75%“ — **das Spiel misst diese Aktion in Anteilen.** Ein nach Punkten gewähltes Ziel kann
 damit eines sein, bei dem die Nachwirkung nie auslöst.
 
-**Der Rückfall auf den Wirkenden ist keine Förmlichkeit.** Rekindle besteht nur, solange Firebird
-Trance läuft; ein Aufruf ohne Ziel ist mit der Phase verloren, und 400 Potenz auf sich selbst sind
+**Der Rückfall auf den Wirkenden ist keine Förmlichkeit.** Rekindle besteht nur während der
+Phönix-Phase; ein Aufruf ohne Ziel ist mit der Phase verloren, und 400 Potenz auf sich selbst sind
 mehr als nichts.
+
+**Der Rückfall fällt kurz vor Phasenende, gemessen an der Jobleiste (A137).** Die Phase liest
+`SMN_Reborn` aus `InPhoenix` und der Beschwörungszeit (`SummonTimeEndAfterGCD`), nicht aus dem Status
+Firebird Trance (3229). Dieser Status macht nach seinem Wirktext Fountain of Fire und Brand of
+Purgatory wirkbar und wird in den Basisrotationen sonst nur von `ModifyBrandOfPurgatoryPvP` gelesen;
+`ChurinSMN` liest ihn wie der alte Rückfall. Ob das Spiel ihn im PvE setzt, ist unbelegt — der
+Wirktext von Summon Phoenix sagt „Enters Firebird Trance". Fehlt er, gilt er als „endet jetzt", und der
+Rückfall fiel im ersten freien Einschiebeplatz der Phase statt an ihrem Ende — Rekindle war
+ausgegeben, bevor jemand es brauchte. Die Jobleiste beantwortet die Frage in beiden Fällen richtig. Der Vorlauf von drei GCDs ist ein
+fester Wert ohne eigenen Loop (`fixed_values.json`, offen).
 
 **Geprüft wird das jetzt maschinell, nicht erinnert:**
 `.github/scripts/audit/check_heal_target_measure.py` erhebt aus `ActionId.resx` jede Aktion, deren

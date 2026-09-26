@@ -35,12 +35,12 @@ public partial class CustomRotation
 			return false;
 		}
 
-		if (Service.Config.PldlockCasting && DataCenter.Job == Job.PLD && !DataCenter.IsMoving && IsLastAction(ActionID.PassageOfArmsPvE) && StatusHelper.PlayerHasStatus(true, StatusID.PassageOfArms) && DataCenter.MergedStatus.HasFlag(AutoStatus.DefenseArea))
+		if (Service.Config.PldlockCasting && DataCenter.Job == Job.PLD && !DataCenter.IsMoving && IsLastAction(ActionID.PassageOfArmsPvE) && StatusHelper.PlayerHasStatus(true, StatusID.PassageOfArms) && DataCenter.AreaHitPending)
 		{
 			return false;
 		}
 
-		if (Service.Config.AstlockCasting && DataCenter.Job == Job.AST && !DataCenter.IsMoving && IsLastAction(ActionID.CollectiveUnconsciousPvE) && StatusHelper.PlayerHasStatus(true, StatusID.CollectiveUnconscious_848) && DataCenter.MergedStatus.HasFlag(AutoStatus.DefenseArea))
+		if (Service.Config.AstlockCasting && DataCenter.Job == Job.AST && !DataCenter.IsMoving && IsLastAction(ActionID.CollectiveUnconsciousPvE) && StatusHelper.PlayerHasStatus(true, StatusID.CollectiveUnconscious_848) && DataCenter.AreaHitPending)
 		{
 			return false;
 		}
@@ -355,10 +355,26 @@ public partial class CustomRotation
 		{
 			IBaseAction.ShouldEndSpecial = true;
 		}
-		// Evaluated regardless of AutoStatus.HealSingleAbility: for non-healers that flag depends on
-		// UseHealWhenNotAHealer, so without this a tank or DPS about to eat a tankbuster would never
-		// even attempt a potion.
-		if ((DataCenter.MergedStatus.HasFlag(AutoStatus.HealSingleAbility) || DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterImminent) && UseHpPotion(nextGCD, out act))
+		// A potion carries its own decision and does not borrow the heal flag's.
+		//
+		// It has three switches of its own - the global setting, a per-item enable, and its own HP
+		// percentage - and each of them says outright when a potion should go out. AutoStatus
+		// .HealSingleAbility answers a different question, about healing ACTIONS: whether this job
+		// should be casting Physick or Vercure right now. Gating the potion on it inherited every
+		// condition behind that answer - AutoHeal, UseHealWhenNotAHealer, the time-to-kill cut-off,
+		// HPNotFull, and OnlyHealAsNonHealIfNoHealers - and each of them can be false while the
+		// player sits at 10 % with a potion in the bag.
+		//
+		// Owner's report: a Summoner reduced to 1 HP by a mechanic had no way to reach a potion at
+		// all, and it came back once the potion stopped reading the flag. Which of the five held him
+		// is not measurable from here; OnlyHealAsNonHealIfNoHealers is off by default, and with it
+		// on a non-healer in a party with a living healer never gets the flag. His own argument:
+		// "das flag ist im lowlevel für physick interessant oder für einen redmage mit seinem heal.
+		// aber für potions?"
+		//
+		// InCombat stays, and it is this rule's own condition rather than a borrowed one: a potion
+		// is an emergency consumable, and out of combat health returns on its own.
+		if (DataCenter.InCombat && UseHpPotion(nextGCD, out act))
 		{
 			return true;
 		}
@@ -733,8 +749,11 @@ public partial class CustomRotation
 		// ahead of healing and damage, and it rewrites nextGCD for every branch that reads it -
 		// 447 occurrences in this tree, among them Radiant Aegis on Summoner, which stopped coming
 		// out. This condition leaves the GCD path untouched and only adds one weave.
+		//
+		// The raise is the job's own Raise, not a list of four ids: the list had no Verraise and no
+		// Angel Whisper, the same ageing as the hand-kept raise list behind the original defect.
 		if (Service.Config.RaisePlayerBySwift && DataCenter.CanRaise() && IActionHelper.IsLastActionGCD()
-			&& (nextGCD.IsTheSameTo(true, ActionID.RaisePvE, ActionID.EgeiroPvE, ActionID.ResurrectionPvE, ActionID.AscendPvE)
+			&& ((Raise != null && nextGCD.IsTheSameTo(true, Raise))
 				|| RaisePendingAndCastable()))
 		{
 			if (SwiftcastPvE.CanUse(out act))

@@ -122,8 +122,8 @@ Der Wiederbelebungsblock existiert **zweimal**, und eine Einstellung entscheidet
 
 | `RaisePlayerFirst` | Ort | Was davor gewinnt |
 |---|---|---|
-| an | `CustomRotation_GCD.cs:124` | Notfall, Unterbrechung, Reinigung, Provokation |
-| **aus (Vorgabe)** | `:312` | zusätzlich **die gesamte Heilung** (`:241`) und die Einzelziel-Verteidigung (`:299`) |
+| an | `CustomRotation_GCD.cs:127` | Notfall, Unterbrechung, Reinigung, Provokation |
+| **aus (Vorgabe)** | `:315` | zusätzlich **die gesamte Heilung** (`:244`) und die Einzelziel-Verteidigung (`:302`) |
 
 Mit der Vorgabe steht die Wiederbelebung hinter jeder Heilung. Das ist die dokumentierte Bedeutung
 der Einstellung und kein Defekt — es erklärt aber, warum ihre Wahl das beobachtete Verhalten stark
@@ -309,14 +309,28 @@ getrennt behandelt, die Allianz-Varianten fügen ohne Doppelzählung hinzu (`dea
 tote Tanks ist eine begründete Fallunterscheidung und kein Tippfehler (C36). Die Reihenfolge
 entspricht der Vorgabe des Auftraggebers, wonach eine Feder zuerst einen Heiler aufheben soll.
 
+**Vorgabe des Auftraggebers (25.09.2026):** „der nebenheiler soll den hauptheiler vor dem tank
+rezzen", präzisiert: „ein tank sollte aggro halten. heiler rezzen ist wichtig, aber wenn man in der
+zeit selbst totgeschlagen wird, bringt das nichts." **Der Code erfüllt beides:** Lebt noch ein Tank,
+kommt der Heiler vor dem toten Tank; sind beide Tanks tot, zuerst ein Tank
+(`deathTanks.Count > 1`, Upstream, C36), weil sonst niemand den Gegner hält.
+
 Die Filter in `GetDeath` sind vollständig und schließen jeweils sinnvoll aus: kein Wiederbelebungs-
 oder Verweigerungsstatus, Entfernung über 30 Yalm, fehlende Sichtlinie, Gruppen- oder
 Allianzzugehörigkeit. Der Auftraggeber hat bestätigt, dass Leichen ruhig liegen und anvisierbar sind,
 womit `IsTargetMoving` und `IsTargetable` als Ursache ausscheiden.
 
-Eine Unstimmigkeit ist erfasst, nicht behoben: Der Sonderfall für `PartyAndAllianceHealers` greift
-**vor** der Umkehrung durch die Einstellung `H2`, die in allen anderen Modi die Reihenfolge dreht. In
-diesem einen Modus bleibt sie damit wirkungslos.
+**`H2` folgt seinem Optionstext (A145).** „Raise non-Healers from bottom of party list to the top
+(Light Party 2 Healer Behavior)": Bei `H2` werden die Listen der toten Tanks, der Nebenheiler und der
+übrigen umgedreht, die der Heiler nicht. Bis A145 drehte der Code auch die Heilerliste; der
+Sonderfall für `PartyAndAllianceHealers` stand also schon im Einklang mit dem Text. Vorgabe des
+Auftraggebers: Die Regeln der Einstellungstexte sind einzuhalten.
+
+**Der Einschiebezweig für Swiftcast erkennt die Wiederbelebung an `Raise` (A141).** Früher verglich er
+den nächsten GCD mit vier Ids; Verraise und Angel Whisper fehlten, dieselbe Alterungsursache wie die
+Hauptursache des Wiederbelebungsdefekts. Im Kampf ändert sich heute nichts, weil der zweite Zweig
+(`RaisePendingAndCastable`) diese Jobs schon über `Raise` erreichte; ein künftiger Rezzer-Job fällt
+nicht mehr still heraus.
 
 ### Was aus dem Quelltext nicht zu entscheiden ist
 
@@ -377,14 +391,6 @@ nicht messbar. Wer sie an hat, konnte ohne Swiftcast niemanden hochholen.
   um das bisherige Verhalten zu erhalten, ist ohne Feldmigration nicht durchführbar. Daran ist die
   Verdrahtung von `InterruptDelay` und `ProvokeDelay` gescheitert.
 - **`TargetColor` hat keinen Leser.**
-- **Die Aufzählung der Wiederbelebungsaktionen im Einschiebezweig veraltet.**
-  `CustomRotation_Ability.cs` prüft `nextGCD.IsTheSameTo(true, RaisePvE, EgeiroPvE, ResurrectionPvE,
-  AscendPvE)`. Verraise des Rotmagiers und Angel Whisper des Blaumagiers fehlen, obwohl beide
-  Rotationen `Raise` setzen. Dieselbe Alterungsursache wie die Hauptursache: eine handgepflegte Liste
-  statt der vorhandenen Fähigkeitsprüfung über `Raise`. Folgenlos, solange der zweite Zweig
-  (`RaisePendingAndCastable`) greift, der die Liste nicht braucht.
-- **`H2` wirkt im Modus `PartyAndAllianceHealers` nicht**, weil dessen Sonderfall vor der Umkehrung
-  steht.
 
 ## Grenzen des Nachweises
 

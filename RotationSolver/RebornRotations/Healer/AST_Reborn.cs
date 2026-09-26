@@ -263,8 +263,11 @@ public sealed class AST_Reborn : AstrologianRotation
 			return true;
 		}
 
-		if ((MacrocosmosPvE.Cooldown.IsCoolingDown && !MacrocosmosPvE.Cooldown.WillHaveOneCharge(150))
-			|| (CollectiveUnconsciousPvE.Cooldown.IsCoolingDown && !CollectiveUnconsciousPvE.Cooldown.WillHaveOneCharge(40)))
+		// Astrologian special rule on the universal stretch (concept 08, "Die Abwehrsperren"): after
+		// Macrocosmos or Collective Unconscious the rest waits until that effect runs out, unless the
+		// party is in danger. Formerly the recast less a written-in 30 and 20 s, which matched no
+		// effect; the durations now come from the effect texts (15 and 10 s).
+		if (AreaDefenseStretched("Astrologian: Macrocosmos or Collective Unconscious still in effect", MacrocosmosPvE, CollectiveUnconsciousPvE))
 		{
 			return base.DefenseAreaAbility(nextGCD, out act);
 		}
@@ -525,8 +528,9 @@ public sealed class AST_Reborn : AstrologianRotation
 
 	protected override bool DefenseSingleGCD(out IAction? act)
 	{
-		if ((MacrocosmosPvE.Cooldown.IsCoolingDown && !MacrocosmosPvE.Cooldown.WillHaveOneCharge(150))
-			|| (CollectiveUnconsciousPvE.Cooldown.IsCoolingDown && !CollectiveUnconsciousPvE.Cooldown.WillHaveOneCharge(40)))
+		// The same triggers hold the single-target barrier too (an Astrologian special rule); it
+		// yields when the player or a tank is in the critical class.
+		if (SingleDefenseStretched("Astrologian: Macrocosmos or Collective Unconscious still in effect", MacrocosmosPvE, CollectiveUnconsciousPvE))
 		{
 			return base.DefenseSingleGCD(out act);
 		}
@@ -542,8 +546,11 @@ public sealed class AST_Reborn : AstrologianRotation
 	[RotationDesc(ActionID.MacrocosmosPvE)]
 	protected override bool DefenseAreaGCD(out IAction? act)
 	{
-		if ((MacrocosmosPvE.Cooldown.IsCoolingDown && !MacrocosmosPvE.Cooldown.WillHaveOneCharge(150))
-			|| (CollectiveUnconsciousPvE.Cooldown.IsCoolingDown && !CollectiveUnconsciousPvE.Cooldown.WillHaveOneCharge(40)))
+		// Astrologian special rule on the universal stretch (concept 08, "Die Abwehrsperren"): after
+		// Macrocosmos or Collective Unconscious the rest waits until that effect runs out, unless the
+		// party is in danger. Formerly the recast less a written-in 30 and 20 s, which matched no
+		// effect; the durations now come from the effect texts (15 and 10 s).
+		if (AreaDefenseStretched("Astrologian: Macrocosmos or Collective Unconscious still in effect", MacrocosmosPvE, CollectiveUnconsciousPvE))
 		{
 			return base.DefenseAreaGCD(out act);
 		}

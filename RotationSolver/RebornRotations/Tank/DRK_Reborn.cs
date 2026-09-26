@@ -193,41 +193,48 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		// branch ran regardless of the switch - and the UI hides the threshold while the switch is
 		// off, leaving the only adjustment invisible. The Oblation line below checks its own option,
 		// and ChurinDRK checks this one on the same branch.
-		if (BlackLantern && !InTwoMIsBurst && TheBlackestNightPvE.CanUse(out act, targetOverride: TargetType.LowHP) && !TheBlackestNightPvE.Target.Target.HasStatus(false, StatusID.Transcendent) && TheBlackestNightPvE.Target.Target.GetHealthRatio() <= BlackLanternRatio)
+		// No burst hold on this line or the Oblation one below: their setting text ("Use ... on lowest
+		// HP party member", with its own health threshold) names no exception for the burst, and the
+		// setting text binds (A157).
+		if (BlackLantern && TheBlackestNightPvE.CanUse(out act, targetOverride: TargetType.LowHP) && !TheBlackestNightPvE.Target.Target.HasStatus(false, StatusID.Transcendent) && TheBlackestNightPvE.Target.Target.GetHealthRatio() <= BlackLanternRatio)
 		{
 			return true;
 		}
 
 		if (!IsLastAbility(false, OblationPvE))
 		{
-			if (!InTwoMIsBurst && OblationLantern && OblationPvE.CanUse(out act, usedUp: OblationLanternStack, targetOverride: TargetType.LowHP) && !OblationPvE.Target.Target.HasStatus(false, StatusID.Transcendent) && OblationPvE.Target.Target.GetHealthRatio() <= OblationLanternRatio)
+			if (OblationLantern && OblationPvE.CanUse(out act, usedUp: OblationLanternStack, targetOverride: TargetType.LowHP) && !OblationPvE.Target.Target.HasStatus(false, StatusID.Transcendent) && OblationPvE.Target.Target.GetHealthRatio() <= OblationLanternRatio)
 			{
 				return true;
 			}
 		}
 
-		if (!InTwoMIsBurst && DarkMissionaryPvE.CanUse(out act))
+		// Dark knight special rule: the burst window keeps its weave slots and MP for damage. On the
+		// universal layer, so it yields when the party is in danger (concept 08, "Die Abwehrsperren").
+		var burstHold = HoldAreaDefense(InTwoMIsBurst, "Dark Knight: burst window");
+
+		if (!burstHold && DarkMissionaryPvE.CanUse(out act))
 		{
 			return true;
 		}
 
 		// Held while a barrier waits to be spent - see HoldMitigationForBarrier. Reprisal takes 10%
 		// off the stream that has to break The Blackest Night within its seven seconds.
-		if (!InTwoMIsBurst && !HoldMitigationForBarrier()
+		if (!burstHold && !HoldMitigationForBarrier(true)
 			&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
 
-		if (!InTwoMIsBurst && !HoldMitigationForBarrier() && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
+		if (!burstHold && !HoldMitigationForBarrier(true) && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}
 
 		if (!IsLastAbility(false, OblationPvE))
 		{
-			if (!InTwoMIsBurst && OblationPvE.CanUse(out act, skipStatusProvideCheck: false, targetOverride: TargetType.Self))
+			if (!burstHold && OblationPvE.CanUse(out act, skipStatusProvideCheck: false, targetOverride: TargetType.Self))
 			{
 				return true;
 			}
@@ -352,8 +359,20 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	/// as real as this one's. The one-GCD lead releases the hold before the barrier lapses, so a
 	/// mitigation that can no longer affect the outcome is not held back for nothing.
 	/// </para>
+	///
+	/// <para>
+	/// The hold is a Dark Arts question, rung two of concept 09, and yields on the universal layer
+	/// when a member is in danger (<see cref="CustomRotation.HoldAreaDefense"/>).
+	/// </para>
 	/// </remarks>
-	private bool HoldMitigationForBarrier()
+	private bool HoldMitigationForBarrier(bool area)
+	{
+		return area
+			? HoldAreaDefense(BarrierWaitsToBeSpent(), "Dark Knight: a barrier waits to be spent")
+			: HoldSingleDefense(BarrierWaitsToBeSpent(), "Dark Knight: a barrier waits to be spent");
+	}
+
+	private bool BarrierWaitsToBeSpent()
 	{
 		if (NumberOfHostilesInRange < BlackestNightMinHostiles)
 		{
@@ -406,7 +425,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			// be spent cannot afford. Only this branch is held: the central anti-knockback uses of
 			// Arm's Length stay untouched, because being thrown off a platform is not a damage
 			// question.
-			&& !HoldMitigationForBarrier();
+			&& !HoldMitigationForBarrier(false);
 
 	private bool ShouldUseBlackestNightOnSelf()
 	{
@@ -532,14 +551,14 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		// Same hold as in the area path, and for the same reason: on a group pull the barrier's
 		// reward depends on the stream that Reprisal would thin. In a boss fight the condition is
 		// false by the hostile count, so a tankbuster keeps its mitigation.
-		if (!HoldMitigationForBarrier()
+		if (!HoldMitigationForBarrier(false)
 			&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
 
-		if (!HoldMitigationForBarrier() && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
+		if (!HoldMitigationForBarrier(false) && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}

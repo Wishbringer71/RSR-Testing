@@ -124,6 +124,145 @@ ergeben hat (A118). Sie haette im ganzen Baum nie gegriffen.
 **Was stattdessen wirkt, ist Stufe 2 — und sie schliesst eine Luecke, die dieses Konzept ohnehin
 fuehrt.** Siehe „Heilung vor dem angekuendigten Treffer" weiter unten.
 
+## Die Abwehrsperren (E1): allgemeine Schranke, Sonderregeln je Job
+
+**Sachstand (A159), nach seiner Vorgabe „universell zuerst": Jede strategische Rückhaltung einer
+Abwehraktion weicht, sobald die Gruppe in Gefahr ist. Das ist eine Regel für alle Jobs; welche
+Rückhaltung ein Job überhaupt kennt, bleibt seine Sonderregel.** Gebaut in
+`CustomRotation_DefenseHold` (`HoldAreaDefense`, `HoldSingleDefense`, `AreaDefenseStretched`,
+`SingleDefenseStretched`).
+
+### Die Stufen
+
+| Stufe | Regel | Warum hier |
+|---|---|---|
+| alle | **Schranke:** Eine Rückhaltung weicht bei Gefährdungsklasse 1 (`ObjectHelper.IsInCriticalClass`: ungeschützt, vorausgerechnete effektive Gesundheit auf oder unter `HealthForDyingTanks`, Konzept 07). Flächenabwehr: irgendein lebendes Mitglied dort, oder der angekündigte, gemessene Flächentreffer brächte ein ungeschütztes dorthin. Einzelabwehr: der Spieler selbst oder ein Tank dort | Konzept 09 verlangt es für den Tank („jede Rückhaltung erst, wenn Stufe 1 gesichert ist"); der Grund gilt für jede Rolle |
+| alle | **Streckungsbaustein:** Nach einer Auslöseraktion ruht die übrige eigene Abwehr, bis die Wirkung laut Wirktext ausläuft (die Dauer, die zur Minderung gehört), gezählt ab dem Einsatz laut Aktionsprotokoll. Hält der Auslöser noch eine Ladung (gelesen an seiner Wiederaufladegruppe, nicht am Knopf), streckt er nicht | derselbe Mechanismus stand zweimal mit festen Zahlen im Code (Weißmagier, Astrologe) |
+| Heiler | leer | Nur Weißmagier und Astrologe strecken; Gelehrter und Weiser nicht. Eine Heilerregel änderte zwei Jobs ohne belegten Nutzen |
+| Tanks | leer | Burst-Rückhaltung nur bei Dunkelritter und Revolverklinge, bei beiden an ein eigenes Burstfenster gebunden; Krieger und Paladin halten nichts zurück |
+| Damage Dealer | leer, eine Frage an ihn | Barde, Maler und Tänzer führen dieselbe Einstellung „Prevent the use of defense abilties during burst" (ab Werk an), Maschinist, Dragoon und Viper feste Rückhaltungen. Eine gemeinsame Regel wäre möglich; ihr Einstellungstext bindet, siehe unten |
+| Job | die Auslöser und Rückhaltungen selbst | siehe nächste Tabelle |
+
+### Die Sonderregeln je Job
+
+| Job | Rückhaltung | Umfang |
+|---|---|---|
+| Weißmagier | Streckung nach Temperance oder Liturgy of the Bell (je 20 s laut Wirktext); Einzelabwehr nach Divine Benison (15 s) oder Aquaveil (8 s) | Flächen- und Einzelabwehr |
+| Astrologe | Streckung nach Macrocosmos (15 s) oder Collective Unconscious (10 s, die Dauer der Minderung; der Ring steht 18 s); dieselben Auslöser halten die Einzelbarriere | Flächenfähigkeit, Flächen-GCD, Einzel-GCD |
+| Dunkelritter | Burstfenster (`InTwoMIsBurst`): Dark Missionary, Reflexion, Oblation auf sich; Barriere wartet auf Bruch (`HoldMitigationForBarrier`) | Fläche; die Barrierenrückhaltung auch in der Einzelabwehr |
+| Revolverklinge | Einschub vor dem No-Mercy-Auftakt; No-Mercy-Fenster: Heart of Light, Reflexion | Fläche; Auftakt auch Einzel und Heilung auf sich oder einen Tank (Heart of Corundum, Aurora) |
+| Maschinist | Überhitzung, Wildfire, Full Metal Field; umkämpfter Burst-Einschub | Fläche und Einzel |
+| Dragoon | unmittelbar nach Stardiver | Fläche und Einzel; die eigene Heilung (Second Wind, Bloodbath) weicht, wenn er selbst in Klasse 1 steht (`HoldSelfHeal`) |
+| Viper | Einschub für Serpent's Ire im Burst | Fläche und Einzel |
+
+**Heilungen sind eingeschlossen,** wo die Rückhaltung strategisch ist. Erhoben sind alle frühen
+Rücksprünge der Heil- und Notfallmethoden der Standardrotationen (A161); strategisch ohne eigene
+Einstellung sind nur die zwei in der Tabelle (Revolverklinge, Dragoon).
+
+**Nicht über die Schranke:**
+- *Eigene Sicherheitsvorgaben:* Swiftcast für eine anstehende Wiederbelebung (vier Heiler); das
+  Living-Dead-Fenster, Walking Dead und die Heilverbote — seine Entscheidungen (Konzepte 08 und 09).
+- *Technik:* Aussperrungen durch das Spiel (Phantom-Job), Mudra in Ausführung (Ninja), Tanzschritte
+  (Tänzer), die Doppeldrucksperren von Radiant Aegis und Benediction, die Reihenfolge Recitation →
+  Excogitation.
+- *Einstellungen, deren Text die Rückhaltung ohne Ausnahme anordnet:* „Prioritize Microcosmos over all
+  other healing when available" und die Strategie für Essential Dignity (Astrologe), dazu die
+  Burst-Einstellung von Barde, Maler und Tänzer (unten). Der Text bindet.
+
+**Barde, Maler, Tänzer:** Deren Einstellung „Prevent the use of defense abilties during burst" sagt
+ohne Ausnahme „verhindern". Ihr Text bindet; die Schranke greift dort deshalb nicht. Ob sie weichen
+soll, ist seine Entscheidung (Einstellungstext und Vorgabe).
+
+### Was die Sperren im Spiel bewirken
+
+- **Weißmagier:** Plenary Indulgence und Temperance fallen auf denselben Treffer (je −10 %,
+  nacheinander −19 %), weil erst Temperance die Streckung auslöst. Danach warten Divine Caress und
+  Liturgy auf den nächsten Treffer.
+  - **Kein Stapelschutz im Sinn der Spielmechanik:** Verschiedene Status wirken zusammen. Nur
+    derselbe Status aus zwei Quellen (Reflexion zweier Tanks, Addle, Feint; Kerachole und Taurochole)
+    wirkt nicht doppelt, und das regelt RSR getrennt davon (`StatusFromSelf = false`).
+  - **Vorteil:** Zwei Raidwides im Abstand von 20 bis 60 s bekommen beide etwas. Ohne Streckung ginge
+    alles auf den ersten, und Plenary käme erst nach 60 s zurück. Das ist sein Prinzip aus „Wozu die
+    Aussetzbedingungen da sind": strecken statt verdoppeln, solange die Gruppe hält.
+  - **Preis:** Divine Caress verfällt mit Divine Grace (30 s ab Temperance) und bleibt in den letzten
+    10 s nutzbar. Kommt dort kein Treffer, ist es verloren. Ohne Streckung fiele es auf denselben
+    Treffer wie Temperance; welches von beiden mehr wert ist, hängt am Abstand der Treffer. Die
+    Schranke deckt den Fall, in dem es auf den ersten Treffer ankommt.
+- **Dunkelritter:** Herkunft ist die Balance-Rotation 6.38 (c97be9ec5).
+  - Damals hieß Burst „mindestens die Hälfte der Gruppe im Zwei-Minuten-Burst"
+    (`RatioOfMembersIn2minsBurst`). Heute zählen nur die eigenen Abklingzeiten: Delirium kühlt ab
+    (Blood Weapon ist durch Blood Weapon Mastery Delirium, gelesen über die angepasste Id), und Living
+    Shadow liegt unter 15 s zurück.
+  - Der Zweck ist Schaden in den 20 s der Gruppenbuffs. Größenordnung (Überschlag, nicht gemessen):
+    rund 0,3 % des Dunkelritter-Schadens je zwei Minuten, falls ein Edge of Shadow dadurch aus den
+    Buffs fällt.
+- **Zusammenspiel mit anderen Klassen:**
+  - Keine Sonderregel liest eine andere Klasse.
+  - Mit Dunkelritter und Revolverklinge, beide mit RSR, gibt im gemeinsamen Burst keiner der beiden
+    Tanks Gruppenminderung, außer die Schranke greift.
+  - Zwei Heiler mit RSR antworten auf dasselbe Signal im selben Moment. Die Streckung verteilt nur die
+    eigenen Mittel über die Zeit.
+
+### Warum die Schranke so misst
+
+- **Der gemessene Anteil wird nicht um die liegende Minderung gekürzt.** `Watcher.ActionFromEnemy`
+  speichert den höchsten je gelandeten Anteil, nach der damals liegenden Minderung, und hebt ihn nur
+  an. Die jetzt liegende Minderung abzuziehen zählte sie doppelt. Die Schätzung irrt also Richtung
+  „gefährlich" — die Rückhaltung weicht eher zu oft als zu spät.
+- **Klasse 1 schon jetzt zählt mit,** auch ohne gemessenen Treffer: Wer dort steht, stirbt am nächsten
+  Treffer (Konzept 07). Damit weicht die Rückhaltung auch vor ungemessenen Zaubern und im
+  Dauerstrom eines Gruppenpulls.
+- **Einzelabwehr nur für Spieler und Tanks:** Sie wird für einen Tankbuster oder die eigene Gefahr
+  geöffnet, und das meiste, was sie zurückhält, wirkt nur auf den Wirkenden (Camouflage, Rampart,
+  Heart of Corundum). Ein Damage Dealer in Gefahr am anderen Ende der Arena gewönne nichts; für ihn
+  antwortet die Heilkette.
+- **Ein angekündigter Tankbuster allein ist kein Grund.** Er ist genau das Signal, das die Einzelabwehr
+  öffnet; wiche die Rückhaltung ihm, wäre sie in dem Moment aufgelöst, in dem sie gefragt ist — zwei
+  Tankbuster in Folge verlören beide die Streckung. Einen gemessenen Anteil wie beim Flächentreffer
+  gibt es für Tankbuster nicht; es bleibt Klasse 1.
+- **Unverwundbare zählen nicht:** Ein Tank unter Hallowed Ground oder Superbolide steht absichtlich
+  niedrig und ist durch den Treffer nicht gefährdet.
+- **Einsatzzeit aus dem Aktionsprotokoll, Ladung aus der Wiederaufladegruppe, nie vom Knopf:** Manche
+  Knöpfe werden während der Wirkung zu einer anderen Aktion (Liturgy of the Bell zur zweiten
+  Auslösung, Macrocosmos zu Microcosmos), deren Abklingzeit nicht die des Auslösers ist. Die frühere
+  Jobregel las den Knopf; ob sie deshalb während der Wirkung nie hielt, ist ohne Laufzeit nicht
+  belegt, die neue Lesart ist in beiden Fällen richtig. Bei geladenen Aktionen (Divine Benison) misst
+  die Wiederaufladung nicht die Zeit seit dem Einsatz; deshalb das Protokoll.
+- **Die Dauer ist die, die zur Minderung gehört:** der erste Wert, den der Wirktext nach der Minderung
+  nennt. Collective Unconscious gibt dem Ring 18 s und der Minderung 10 s; es zählt die Minderung.
+- **Keine neue Zahl:** `HealthForDyingTanks` ist seine Einstellung der Gefährdungsklasse, die Dauern
+  stehen in den Wirktexten.
+- **Ersetzt A146** („frei bei großem Treffer"). Das hätte im Fall zweier großer, einzeln tragbarer
+  Raidwides im Abstand von 25 s alles auf den ersten gelegt und für den zweiten nichts gelassen.
+
+### Folgen, bewusst hingenommen
+
+- **Astrologe:** Die Streckung dauert jetzt so lange wie die Wirkung laut Wirktext: 15 s nach
+  Macrocosmos und 10 s nach Collective Unconscious, statt der früheren festen 30 und 20 s, die zu
+  keiner Wirkung passten.
+- **Ein Treffer ohne Zauberleiste** wird nur über Klasse 1 erkannt. Die Schranke kann ihn sonst
+  nicht vorhersehen.
+- **Ein Tankbuster auf einen gesunden Tank** löst keine Rückhaltung; erst Klasse 1.
+
+### Woran jede Sicherheitsregel die Wahrscheinlichkeit misst
+
+Seine Präzisierung: Eine Schutzmaßnahme, die Schaden kostet, lohnt, wo ein Treffer angekündigt oder
+wahrscheinlich ist. Die Regeln dieses Konzepts messen das so:
+
+| Regel | Maß der Wahrscheinlichkeit |
+|---|---|
+| Flächenabwehr (`AutoStatus.DefenseArea`) | ein laufender Flächenzauber; mit `MitigateBigAreaCastsEvenIfInterruptible` auch ein unterbrechbarer, dessen gemessener Anteil die größte Barriere übersteigt; ein BossMod-Raidwide im Fenster; der Befehl „Defense Area" von Hand |
+| Einzelabwehr (`AutoStatus.DefenseSingle`) | ein Zauber auf einen Tank (Tankbuster) oder ein BossMod-Tankbuster im Fenster; beim Heiler zusätzlich, wie viele Gegner den Tank angreifen |
+| Heilung vor dem angekündigten Treffer | die vorausberechnete Gesundheit nach dem laufenden Cast — der Treffer ist angekündigt |
+| Schranke der Rückhaltungen | Gefährdungsklasse 1 jetzt, oder ein angekündigter, gemessener Treffer brächte ein ungeschütztes Mitglied dorthin |
+| Burst-Rückhaltungen (Jobtabelle oben) | keine eigene: Sie halten ohne Blick auf die Wahrscheinlichkeit und weichen nur der Schranke |
+| Streckung | eine eigene Minderung liegt noch; der nächste Treffer wird von ihr getragen, bis sie ausläuft |
+| Kanalsperre (Paladin, Astrologe) | der angekündigte Treffer steht noch aus (`DataCenter.AreaHitPending`); danach löst sie (Konzept 14, „Wechselwirkungen und Zeit") |
+
+**Im Kampf ablesbar:** Unter „Defense hold" im Diagnosefenster steht je Regel, ob sie zuletzt hielt
+oder warum sie wich, seit Kampfbeginn — nur zur Kontrolle, weil eine wartende Abwehr sonst nicht von
+einer nie gefragten zu unterscheiden ist.
+
 ## Heilung vor dem angekuendigten Treffer
 
 **Jede Heilschwelle im Baum liest die Gesundheit, die ein Mitglied **hat**. Keine liest die, die es
@@ -153,9 +292,21 @@ abgelegten Wert zu lesen: Sonst haenge sie daran, ob der Verteidigungszweig im s
 lief — und der steht hinter `UseAoeDefense`, sodass die Regel bei abgeschalteter Flaechenabwehr
 still nie gefeuert haette.
 
-**Beim Beschwoerer trifft das auf die Zuendregel unten.** Steht die Flaechenheilungsflagge wegen
-eines angekuendigten Treffers, ist Lux Solaris der Zweig, der sie bedient — und der Wurf faellt
-**vor** dem Einschlag statt danach.
+**Beim Beschwoerer gilt fuer Lux Solaris die eigene Regel** („Wann Lux Solaris zuendet"), auch auf dem
+Heilpfad. Sie ist reaktiv; vor einem angekuendigten Treffer faellt sie nur, wenn ein Mitglied im Radius
+schon in Gefaehrdungsklasse 1 steht, dem Wirkenden oder jedem anderen im Radius eine volle Heilung fehlt
+oder das Fenster verfaellt.
+
+**Die Heil-oGCD nimmt den ersten Einschiebeplatz, die Minderung den naechsten (A140).** Die Regel setzt
+auch `HealAreaAbility`, und der Dispatch fragt Heil-Faehigkeiten vor `DefenseArea`. Das ist Vorgabe 2
+in der Reihenfolge, die sie verlangt: Die Vorausheilung faellt nur, wenn der Treffer jemanden unter
+die Schwelle druecken wuerde — genau der Fall, in dem zuerst zu heilen ist. Die Minderung eines
+grossen Treffers verliert dabei keinen Weg, nur einen Platz: Ein angekuendigter Cast laeuft in der
+Regel ueber mehrere GCDs, also ueber mehrere Einschiebeplaetze. **Verdraengt** wird sie nur, wenn die
+Ankuendigung kuerzer ist als ein GCD; fuer diese Lage steht die BossModReborn-Vorhersage bereit, die
+vor dem Cast mindert. Schluss aus Zweigreihenfolge und Castdauer, im Spiel nicht beobachtet. Ob ein
+Treffer je ohne Minderung einschlug, weil der letzte Platz an eine Heilung ging, zeigt keine Anzeige;
+das ist eine benannte Grenze dieses Abschnitts, kein geaendertes Verhalten.
 
 ## Die proaktive Schicht haengt fast vollstaendig an BossModReborn
 
@@ -288,50 +439,160 @@ ist der grosse" ist ueber die Schnittstelle nicht lesbar.
 Groesseninformation, die in diesem Moment vorliegt. Die Regel ist deshalb so gut, wie diese Zuordnung
 trifft — und nicht besser.
 
-## Wann eine verfallende Heilung zuendet
+## Wann Lux Solaris zuendet
 
-**Die Heilschwellen sind fuer die teure Heilung eines Heilers gebaut, und fuer eine verfallende
-Nebenheilung sind sie das falsche Mass.** `AutoStatus.HealAreaAbility` verlangt zweierlei zugleich:
-die Streuung der Gruppengesundheit unter `HealthDifference` (0,25 im Code) **und** ihren Durchschnitt
-unter `HealthAreaAbility` (0,75 im Code; beides je Job einstellbar, seine eigenen Werte sind von hier
-nicht messbar). Die Streuungsbedingung ist der Grund, warum eine Flaechenheilung ausbleibt, wenn
-**einer** getroffen wurde: Genau dann ist die Streuung gross. Das ist fuer einen Heilzauber richtig —
-eine teure Flaechenheilung fuer einen einzelnen Verletzten ist der falsche Tausch.
+**Sachstand der Regel, aus seinen Vorgaben vom 26.09.2026 (A151 bis A153), umgesetzt in A154 bis A156**
+(`SMN_Reborn.LuxSolarisDecision`, gefragt von allen drei Wegen).
 
-**Fuer eine Aktion, die ohnehin verfaellt, ist es der falsche Tausch in die andere Richtung.** Lux
-Solaris kostet kein MP und keinen GCD; ihr einziger Preis ist der Einschiebeplatz, und sie erlischt
-mit Refulgent Lux. Die Frage lautet dort nicht „lohnt Flaechenheilung“, sondern **„ist dieser Wurf
-verschwendet“**.
+**Was Lux Solaris ist.** **Hinweis des Auftraggebers:** Lux Solaris ist eine Point-Blank-Flaeche vom
+Wirkenden aus, wie Holy beim Weissmagier. Die Wirktexte stuetzen das gleich: Holy trifft „all nearby
+enemies", Lux Solaris heilt „own HP and the HP of all nearby party members". Im Baum gehoeren beide
+damit in die Zweige fuer Flaechen mit Reichweite 0 — Holy in den feindlichen, Lux Solaris in das
+freundliche Gegenstueck (`ActionTargetInfo.FindTarget`); welche Reichweite das Spiel zur Laufzeit meldet,
+zeigt die Beschwoerer-Anzeige. Eine
+reaktive Flaechenheilung um den Beschwoerer (Wirktext 36997: „Restores
+own HP and the HP of all nearby party members", Heilpotenz 500), wirkbar nur unter Refulgent Lux, das
+Summon Solar Bahamut fuer 30 s gewaehrt (36992). Kein Schild, keine Minderung: Was sie vor einem Treffer
+tut, zaehlt nach dem Treffer nicht mehr. Sie kostet kein MP und keinen GCD, nur einen
+Einschiebeplatz, und sie ist eine Beigabe — ungenutzt verfaellt sie mit Refulgent Lux.
 
-**Vorgabe des Auftraggebers, woertlich:** „Hier besteht aber nur eine gewisse Zeit die Möglichkeit zu
-heilen. Am besten, wenn die bestehe Gesundheit gerade so hoch ist, dass die Heilung auf 100 % der Hp
-kommt.“
+**Die Regel, in der Reihenfolge der Pruefung:**
 
-| Lage | Antwort |
-|---|---|
-| Fehlbetrag kleiner als die Heilung | warten — der Ueberschuss verpufft, und das Fenster laeuft noch |
-| Fehlbetrag erreicht die Heilung | zuenden — sie kommt vollstaendig an |
-| Fenster laeuft aus, irgendjemand ist verletzt | zuenden — ungenutzt ist sie ganz verloren |
+1. **Verbote zuerst** (Vorgabe 2: „negativvorgaben wie nicht casten, weil sonst schaden eingeht,
+   muessen beachtet werden"). Lux Solaris faellt auf keinem Weg:
+   - unter **Shackled Healing** (Status 4564: „Use of HP-restoring actions will inflict Shackles of
+     Penitence on those nearby"), solange ein anderes Gruppenmitglied in der Naehe steht — die Strafe
+     traefe die Umstehenden;
+   - unter **Scalebound** (1495: „unable to heal wounds via any method save mega potions") — die
+     Heilung wirkt nicht;
+   - solange ein Dunkelritter im **Living-Dead-Fenster** gehalten wird und im Radius steht (Vorgabe 5:
+     „bei living death ist es aber im wahrsten sinne toedlich") — die Heilung naehme ihm den Ausloeser.
+     **Auch dann, wenn ein anderes Mitglied in Gefaehrdungsklasse 1 steht, und auch vor dem Verfall**
+     (seine Entscheidung vom 26.09.2026): In Savage und Extreme ist Living Dead die Antwort auf einen
+     Tankbuster, ein toter Tank ist meist der Wipe, und die Mechanik hat Vorrang vor der Heilung eines
+     anderen Mitglieds — zumal ein Tankbuster selten mit einem Flaechenangriff zusammenfaellt und die
+     Aggro beim Tank liegt. Lux Solaris wird aufgehoben, bis Walking Dead eintritt, und heilt dann mehrere
+     einschliesslich des Tanks (Punkt 2). Verfaellt Refulgent Lux waehrend der Sperre, ist das der
+     hingenommene Preis. Fuer die Heilaktionen der Heiler bleibt Konzept 09: Dort trifft eine
+     Flaechenheilung den Traeger als Nebenwirkung, weil die Gruppe vorgeht; Lux ist eine Beigabe.
+     **Beide Stellungen des Schalters:** Die Sperre folgt `IsHeldForDeathTrigger`, also
+     `WithholdHealingForLivingDead`. Ist der Schalter aus, will der Spieler den Tod als Ausloeser nicht —
+     RSR zuendet Living Dead dann auch als letzte Rettung (Konzept 09) —, und Lux sperrt nicht.
+2. **Nur im Radius** (Vorgabe 4: „eine umkreispruefung ist immer sinnvoll"). Jeder Bedarf wird an den
+   lebenden, heilbaren Mitgliedern **im Wirkradius um den Beschwoerer** gemessen, nie an der ganzen Gruppe.
+   Den Radius liefert das Spiel (`EffectRange`). Ist im Radius niemand verletzt, faellt nichts.
+   **Die eigene AoE-Anzahl der Aktion gilt fuer jeden Wurf**, den Heilbefehl eingeschlossen: Ihr
+   Einstellungstext „Number of targets needed to use this action" bindet, und ein Ziel einer Heilung ist
+   ein Verletzter — so zaehlt der allgemeine Flaechenheil-Zweig (`GetCanAffects` laesst bei einer Heilung
+   die Vollen weg) und wendet die Zahl auf jede Verwendung an. Ab Werk 1: „jemand im Radius ist verletzt".
+   Ein Dunkelritter unter **Walking Dead** zaehlt dabei als Verletzter (Vorgabe 5: „lieber casten, bevor
+   lux solaris ungenutzt verfaellt, vor allem, wenn auch noch andere gruppenmitglieder davon geheilt
+   werden") — anders als bei den Heilaktionen der Heiler (Konzept 09), weil Lux sonst verfaellt.
+3. **Normalfall: ohne Ueberheilung** (Vorgabe 6). Lux Solaris faellt,
+   - wenn **dem Beschwoerer selbst** mindestens eine volle Heilung fehlt („wenn ich schaden erleide und lux
+     solaris mich damit nicht ueberheilt, ist lux solaris korrekt angewendet"), oder
+   - wenn **jedem anderen** Mitglied im Radius mindestens eine volle Heilung fehlt („erst lux solaris
+     anwenden, wenn es auch bei allen anderen gruppenmitgliedern im radius nicht ueberheilt"); steht
+     niemand anderes im Radius, gilt dieser Fall nicht.
+   Die Heilmenge ist die gemessene (unten), nicht die Potenz.
+4. **Ausnahme: bedrohlich geringe Gesundheit** (Vorgabe 6). Steht ein Mitglied im Radius in
+   Gefaehrdungsklasse 1 (Konzept 07: effektive Gesundheit auf oder unter `HealthForDyingTanks`), faellt
+   Lux sofort, ohne Ruecksicht auf Ueberheilung. Das Mass ist das vorhandene der Heilkette, keine neue
+   Zahl.
+5. **Ausnahme: kurz vor dem Verfall** (Vorgaben 1 und 6). Vor Ablauf von Refulgent Lux zaehlt nur, ob die
+   Heilung ueberhaupt etwas bewirkt: Ist im Radius irgendjemand verletzt, **auch wenig**, faellt sie.
+   Dabei wird gewichtet (Vorgabe 1: „minor heilung oder andere aktion"): Eine solche Kleinheilung nimmt
+   keinen Platz, den eine Aktion braucht, die durch Aufschub an Wert verliert. Faellt Lux dadurch
+   ungenutzt weg, ist das der geringere Verlust.
+   **Erhoben (A152):** Das Verfallsfenster liegt 15 bis 30 s nach der Beschwoerung, also hinter der
+   Demi-Phase; die Zweige der Demi (Energy Siphon, Enkindle, Sunflare, Deathflare) greifen dort nicht.
+   Schutzaktionen, Heiltrank und Heilflaggen stehen im Dispatch vor `AttackAbility`, sie verdraengt Lux
+   nie. Es konkurrieren die Schadens-Faehigkeiten der Primalphase:
+   - **Fester / Necrotize** (Aetherflow): verlieren durch einen Platz Aufschub nichts; ein Ueberlauf
+     droht erst, wenn Energy Drain wieder bereitsteht, und dessen Abklingzeit laeuft seit der
+     Solar-Phase.
+   - **Mountain Buster** (nur unter Titan's Favor): haengt an einem Status. Wie lange der liegt und ob der
+     naechste Topaz Rite eine unverbrauchte Gunst ueberschreibt, steht nicht im Repository (unbelegt). Zur
+     Laufzeit ist es lesbar: Endet der Status vor dem naechsten Einschiebefenster, ist ein Gegner in
+     Reichweite und ist Mountain Buster eingeschaltet und erlernt, verliert die Aktion durch Aufschub
+     ihren Wert und geht vor. Ohne die letzte Bedingung nahme niemand den Platz, und Lux verfiele.
+   - **Searing Flash** (unter Ruby's Glimmer) konkurriert nicht: Ausserhalb einer Demi wirkt die Rotation
+     es nur auf einen sterbenden Boss; ihm vorzugehen hielte Lux fuer eine Aktion, die nicht kommt (A155).
+   Die Gewichtung lautet damit, ohne neue Zahl: Die Kleinheilung am Verfall geht vor jede
+   Schadens-Faehigkeit, deren Wert durch einen Platz Aufschub nicht verfaellt, und hinter jede, deren
+   ermoeglichender Status bis zum naechsten Fenster endet. In drei GCDs liegen rund sechs Plaetze; dass
+   Lux dabei leer ausgeht, ist die Ausnahme (Schluss aus der Platzzahl, nicht gemessen).
 
-**Die Groesse dafuer ist der gemessene Heilwert, nicht die Potenz.** 500 Potenz sind von hier aus
-nicht in Lebenspunkte umzurechnen: Heilkraft, Ausruestung und Verstaerkungen entscheiden darueber,
-und sie aendern sich. Gemessen wird sie stattdessen — der Effekt-Handler sieht jede eigene Heilung
-mit ihrem tatsaechlichen Wert (`Watcher.ActionFromSelf`, `ActionEffectType.Heal`), und
-`DataCenter.GetObservedHealPerCast` gibt ihn geglaettet zurueck. **Das ist die selbstkorrigierende
-Sonde, die dieses Konzept von jeder Regelaenderung verlangt:** Sie erhebt und bewertet im selben
-Zug, korrigiert sich mit jedem Wurf, folgt einem Ausruestungswechsel innerhalb weniger Einsaetze und
-verlangt vom Auftraggeber kein Ablesen.
+**Eine Entscheidung fuer alle Wege.** Heilflagge (`HealAreaAbility`), `AttackAbility` und
+`GeneralAbility` fragen dieselbe Entscheidung; heute folgt jeder Weg einer eigenen Bedingung, und genau
+daraus entstanden die Befunde in A150. Ausgenommen ist nur der **manuelle Heilbefehl**: Er ist sein
+ausdruecklicher Wunsch und prueft allein die Verbote aus Punkt 1 und die AoE-Anzahl aus Punkt 2 —
+diese, weil ihr Einstellungstext jede Verwendung bindet.
 
-**Der Anlauf ist benannt:** Vor der ersten beobachteten Landung ist der Wert 0, und 0 heisst
-*unbekannt*, nicht *heilt nichts*. Dann gilt das bisherige Verhalten — Heilflagge plus
-Verfallsklausel —, statt eine Zahl anzunehmen. Ebenfalls benannt: Der Wert ist ein **absoluter**
-Betrag und trifft jedes Mitglied mit einem anderen Anteil; verglichen wird er deshalb mit dem
-groessten Fehlbetrag der Gruppe (`DataCenter.LargestMissingHp`), nicht mit einem Durchschnittsanteil.
-Kritische Heilungen streuen den Messwert, weshalb er geglaettet und nicht ueberschrieben wird.
+**Folgen der Regel, bewusst hingenommen:**
+- Vor der ersten bestaetigten Landung seit dem Gebietswechsel ist die Heilmenge unbekannt; dann greifen
+  nur die Punkte 4 und 5.
+- Die Vorausheilung vor einem angekuendigten Treffer („Heal ahead of an announced area cast") bedient
+  Lux nicht mehr, ausser ueber Punkt 4 oder wenn dem Beschwoerer oder jedem anderen im Radius eine volle
+  Heilung fehlt — Lux ist
+  reaktiv, die Vorausheilung bleibt Sache der Heiler.
+- Ein Dunkelritter unter Walking Dead steht bei 1 HP in Gefaehrdungsklasse 1; Lux faellt dann sofort.
+  Das ist gewollt (Punkt 1, seine Entscheidung): die aufgehobene Heilung fuer mehrere, einschliesslich
+  des Tanks.
+- Ob der Radius von Mitte oder Trefferflaeche gemessen wird, ist unbelegt; verwendet wird das Mass der
+  Zielwahl (`GetCanAffects`, Trefferflaeche zu Trefferflaeche).
 
-**Die Verfallsklausel kostet hier fast nichts, und das ist am Wirktext belegt:** Refulgent Lux laeuft
-30 s, die Demi-Phase 15 s. Die letzten GCDs des Status liegen also **hinter** der Burstphase, wo der
-Angriffszweig duenn ist — der Einschiebeplatz, den die Klausel dort nimmt, ist kein Burstplatz.
+**Die Heilmenge ist gemessen, nicht aus der Potenz gerechnet, und es zaehlt die kleinste.** 500 Potenz
+sind von hier nicht in Lebenspunkte umzurechnen; der Effekt-Handler sieht jede eigene Heilung mit ihrem
+Wert (`Watcher.ActionFromSelf`, `DataCenter.RecordHealEffect`). **Vorgabe des Auftraggebers:** Eine
+Heilung kann kritisch und damit besonders gross ausfallen, ein Schild ebenso; fuer die Prognose der
+Notwendigkeit zaehlt immer das **minimale** Heilpotential, nie das maximale. Gespeichert wird deshalb die
+kleinste Heilung, die das ganze Potential zeigt — eine, die weniger heilte, als dem Ziel fehlte, oder jede,
+sobald das Spiel nachweislich Ueberheilung mitmeldet. Der Wert gilt bis zum naechsten Gebietswechsel (die
+Gegenstandsstufensynchronisation wird je Inhalt gesetzt), nicht nur bis zum Kampfende. Vorher ist er
+unbekannt, und nur die Punkte 4 und 5 greifen. Ziele ausserhalb der Gruppenliste (Chocobo, NPC ohne
+die NPC-Einstellung) werden nicht gemessen. **Grenze, bewusst behalten:** Ein Ziel mit gesenkter Heilwirkung drueckt das
+Minimum fuer den Rest des Gebiets (Schluss, A155). Die Folge im Kampf: Lux haelt die Heilung fuer
+kleiner, als sie ist, und faellt eher — mit mehr Ueberheilung, nie spaeter. Das ist die Richtung seiner
+Vorgabe (minimales Potential); ein Ausreisserfilter wuerde sie umkehren und braeuchte eine neue Zahl
+(A156).
+
+**Selbstpruefung der Messung: gemessen wird nur, was der Gesundheitsanstieg bestaetigt.** Seine Frage
+dazu: „nicht bei denen messen, die damit vollgeheilt sind, weil sonst eine ueberheilung nicht
+festgestellt werden kann — oder kann sie festgestellt werden?" Sie kann, wenn die Gesundheit beim Effekt
+bekannt ist: Meldet das Spiel einem Ziel mehr, als ihm fehlte, meldet es die Bruttoheilung, und dann
+zeigt jeder Betrag das ganze Potential. Ob die Gesundheit beim Effekt noch die vor der Heilung ist, ist
+nicht belegt — der vorhandene Code (`GetPartyMemberHPRatio`) rechnet mit beiden Reihenfolgen. Deshalb
+haelt `DataCenter.RecordHealEffect` jeden Wurf mit Betrag und Gesundheit je Ziel zurueck, und
+`GetPartyMemberHPRatio` bestaetigt ein Ziel erst, wenn seine Gesundheit um das steigt, was die Heilung
+von dort aus hinzufuegen kann (Betrag, hoechstens bis voll). Gemessen werden nur bestaetigte Ziele;
+was bis zum Ende des Effektfensters (`EffectEndTime`, dasselbe, das die Heilprojektion abwartet) nicht
+bestaetigt ist, faellt heraus. Kam die Aktualisierung vor dem Effekt, steigt nichts mehr, und das Ziel
+wird nicht gemessen; ein Treffer dazwischen verhindert die Bestaetigung ebenso — beides die sichere
+Richtung. **Grenzen:** Eine fremde Heilung im selben Fenster kann ein solches Ziel faelschlich
+bestaetigen; dann ist der Fehlbetrag zu klein angesetzt, und der Wurf gilt womoeglich als Bruttomeldung,
+was das Minimum senkt (Lux faellt dann eher). Ein zweiter eigener Heilwurf im selben Fenster schliesst
+den ersten vorzeitig ab. Beides zeigt die Anzeige als unbestaetigte Ziele.
+
+**Im Kampf ablesbar** (Beschwoerer-Anzeige): was die Entscheidung gerade sagt, und getrennt davon, warum
+und wann sie zuletzt zum Wurf riet („last chosen") — der Wurf verbraucht Refulgent Lux, die erste Zeile
+springt danach auf „no Refulgent Lux". Eine Wahl ist noch kein Wurf; ob er fiel, zeigt die Landezeile
+aus dem Effekt selbst: Zeitpunkt, wie viele Ziele der Gesundheitsanstieg bestaetigte und wie viele nicht,
+welcher Anteil fehlende Gesundheit traf und ob Ueberheilung gemeldet wird. Dazu die gemessene Heilmenge
+und der Radius. Lux erscheint **nicht** unter „Area heal
+around you": Sie wird auf den Wirkenden gezielt und laeuft nicht durch den Flaechenheil-Zweig.
+
+**Verworfen, mit Grund:** der groesste Einzelfehlbetrag der ganzen Gruppe als Ausloeser (A150: misst
+ausserhalb des Radius, zuendet bei einem Mitglied, uebergeht den Living-Dead-Traeger); die Vorhersage des
+Treffers (A149: fuer eine reaktive Heilung unnoetig); der geglaettete Mittelwert der Heilmenge (ein
+kritischer Treffer verschob ihn).
+
+**Verfallsfenster:** die letzten drei GCDs von Refulgent Lux, weiter ein offener fester Wert
+(`fixed_values.json`). Der Loop dazu (A154): Lux braucht einen Platz, hoechstens zwei Aktionen gehen nach
+Punkt 5 vor, also drei Plaetze; bei zwei Plaetzen je Fenster sind das zwei Fenster, dazu das laufende,
+dessen Plaetze schon verbraucht sein koennen — drei GCDs. Seit A155 geht nur noch Mountain Buster vor,
+womit zwei GCDs reichten; der Wert bleibt, bis der Loop neu gefuehrt ist. Die Praemisse „zwei Plaetze je Fenster" ist
+nicht aus dem Spiel abgeleitet, deshalb bleibt der Wert offen.
 
 ## Was ein Baustein mehrfach traegt
 
@@ -914,7 +1175,7 @@ Der Entwurf erfindet wenig; das meiste lag im Baum und war nur nicht verbunden.
 | Betäubung, Verlangsamung und **deren Resistenzen** als Statuseffekte | `StatusID.Stun`, `.StunResistance`, `.Slow`, `.SlowResistance`, `.ArmsLength` | In den Spieldaten vorhanden; die Resistenzstufe ist damit direkt lesbar, eine eigene Buchführung über den Ereignisstrom ist **nicht** nötig |
 | Statusabfragen mit Restzeit und Stapelzahl | `StatusHelper.HasStatus`, `.StatusTime`, `.StatusStack` | In Betrieb |
 | Vorhersagefenster aus der BossModReborn-Timeline | `Configs.cs:742`, `:747`, ausgewertet in `StateUpdater.cs:185` | In Betrieb |
-| Zentralisierte Nachzieh-Regel für Gegner-Debuffs | `CustomRotation_OtherInfo.cs:1327` | In Betrieb, 27 Aufrufstellen — Beleg, dass eine gemeinsame Regel über viele Jobs trägt |
+| Zentralisierte Nachzieh-Regel für Gegner-Debuffs | `CustomRotation.ShouldSustainMitigationDebuff` | In Betrieb, 25 Aufrufstellen in den Standardrotationen (Stand 26.09.2026) — Beleg, dass eine gemeinsame Regel über viele Jobs trägt |
 | Gegnerzahl-Schwelle als etabliertes Muster | `Configs.MitigationSustainHostileCount` gegen `NumberOfHostilesInRange` | In Betrieb |
 | Trennung von Mitigation und Schaden im Dispatch | `CustomRotation_GCD.cs`: HealArea 240, HealSingle 282, DefenseArea 322, DefenseSingle 337, GeneralGCD erst 449 | In Betrieb |
 

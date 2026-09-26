@@ -27,223 +27,278 @@ Form: Symbol nur wenn Bedeutung exakt der Absicht entspricht, sonst Wort/Stichwo
 Persistenz: Priorität 1, jede Eingabe, ausnahmslos. Kontextkomprimierung→Datei erneut lesen vor Weiterarbeit. Sitzungsstart→aktiv prüfen ob Regel im Kontext vorhanden. Zusammenfassung nur ausreichend wenn Regel vollständig enthalten, sonst = Verlust. Verlust/Abweichung erkannt→Nutzer informieren UND Reinjektion anfordern.
 ```
 
-Kalibrierungs-Belege zur REGEL: CountAllianceTanks unverifiziert als Fund präsentiert (kein Stress-Test Party vs. Allianz); #37-Config-Refactoring vor Gegenpositionsprüfung umgesetzt.
-
-# Loop (Arbeitsverfahren)
-
-Verbindlich für jede nicht-triviale Aufgabe, ohne gesonderte Anforderung. Die REGEL bleibt übergeordnet. Der Loop ist ein PDCA-/PDSA-Zyklus (Shewhart, Deming) mit vorgezogener Optionsanalyse und einer eigenen Falsifikationsstufe vor der Umsetzung.
-
-**Der Loop gilt als Ganzes.** Alle zehn Stufen und die drei Querschnittsanforderungen sind zwingend; keine Stufe ist optional, keine steht zur Wahl. Fällt beim Prüfen des eigenen Ergebnisses auf, dass eine Stufe fehlt, wird sie nachgeholt, bevor etwas vorgelegt wird — nicht angeboten. Eine Rückfrage, ob eine Stufe auszuführen sei, ist die Weigerung, den Auftrag auszuführen, und unzulässig. Ebenso unzulässig ist es, ein Ergebnis auf unvollständiger Grundlage zur Entscheidung zu stellen und die Vervollständigung als Alternative danebenzustellen. Beleg: Falsifikationsstufe und Nullvariante fehlten in der Entscheidungsvorlage; statt sie nachzuholen, wurde die Wahl zwischen Nachholen und Entscheiden auf unvollständiger Grundlage angeboten — die nachgeholte Stufe widerlegte anschließend zwei der vorgelegten Befunde.
-
-| # | Stufe | Etablierte Entsprechung | Inhalt |
-|---|---|---|---|
-| 1 | Research | Problem Investigation, Root Cause Analysis | Fehlerbild vom Fehler trennen, Ursache am Artefakt belegen: Quellcode, Versionsgeschichte, Laufzeitdaten, Fremddokumentation. Erinnerung ist keine Quelle. |
-| 2 | Optionen | Considered Options (ADR, Nygard) | Lösungsraum vollständig aufspannen, einschließlich Nullvariante und Rückbau. Noch keine Bewertung. |
-| 3 | Abwägung | Trade-off-Analyse, Severity/Priority-Triage | Je Option: technischer Schweregrad, Behebungsdringlichkeit, Aufwand, Blast Radius, Folgekosten. |
-| 4 | Abgleich | Scope- und Requirements-Review | Zwischenstand gegen die tatsächliche Anforderung prüfen, nicht gegen das Thema. Scope Creep und stille Verengung beide behandeln. |
-| 5 | Review | Design Review, Peer Review | Problemdefinition und gewählte Option gegen Annahmen, Randfälle und Wechselwirkungen prüfen. |
-| 6 | Falsifikation | Red Teaming, Devil's Advocacy, Premortem (prospektive Rückschau) | **Drei** Hypothesen bewusst vertreten: es liegt kein Defekt vor · die gewählte Option ist falsch · **die Umsetzung ist ausgeliefert und es ändert sich nichts — warum?** Die ersten beiden prüfen die Richtigkeit der Analyse, die dritte die Wirkung der Umsetzung; das ist eine andere Frage und fällt sonst durch. Erst wenn alle drei widerlegt sind, wird umgesetzt; hält eine stand, zurück zu Stufe 2. |
-| 7 | Umsetzung | Implementation | Nur der Anteil, der die Falsifikation überstanden hat. Kleinster wirksamer Eingriff. |
-| 8 | Nachweis | Verification & Validation (IEEE 1012), Definition of Done | Verifikation: erfüllt der Code die Spezifikation. Validierung: behebt er das gemeldete Verhalten. Erreichter Prüfgrad wird benannt, nicht überzeichnet. |
-| 9 | Dokumentation | ADR, Lessons Learned, Blameless Postmortem | Kontext, verworfene Optionen, Entscheidung, Konsequenzen. Fehlerursachen sachlich am System, nicht an Personen. |
-| 10 | Wirksamkeitsprüfung | Act-Phase des PDCA, Continuous Improvement | Ergebnisqualität bewerten und erneut ab Stufe 1 ansetzen. Abbruch bei Plateau, nicht nach fester Rundenzahl. |
-
-## Querschnittsanforderungen an jede Stufe
-
-Gesamtheitlichkeit, Kausalität, Inhaltlichkeit und Möglichkeitssinn sind keine eigene Stufe, sondern Bedingung jeder einzelnen. Eine Stufe gilt erst als durchlaufen, wenn alle vier erfüllt sind; eine Aussage, die eine davon verletzt, ist unbelegt, auch wenn der Ablauf eingehalten wurde.
-
-**Gesamtheitlichkeit — Change Impact Analysis statt Fundstellenbetrachtung** (Bohner/Arnold; Werkzeuge: Program Slicing nach Weiser, Aufruf- und Abhängigkeitsgraph). Vor jeder Aussage über eine Stelle ist ihr Wirkungsbereich zu erheben: Aufrufer, Aufgerufene, Datenflüsse, Konfigurationsschalter, die den Pfad öffnen oder schließen, und alle Nachbarstellen desselben Musters. Die Systemgrenze endet nicht am Repository — Werte, die über eine Schnittstelle hereinkommen, sind an ihrer Quelle zu prüfen, einschließlich der Typzuordnung über die Grenze hinweg. Ein Maß ist nur zulässig, wenn es den Wirkungsbereich selbst misst und nicht ein Surrogat davon. Belege: Konfliktrisiko über Dateiaktivität geschätzt (7 bzw. 12 Commits), regionsgenau gemessen 0 bzw. 2 — das Surrogat wies in die Gegenrichtung. `SpecialMode` gegen das fremde Enum verschoben, weil nur die eigene Seite gelesen wurde.
-
-**Ein Pfad, der nie genommen wird, ist kein Pfad**, und ob er genommen wird, ist zu messen, nicht zu sehen. Wo dieselbe Aufgabe an zwei Stellen geführt wird, ist vor dem Eintrag in eine von ihnen zu erheben, welche läuft — und danach die Doppelführung zu beseitigen, weil sie sonst erneut auseinanderläuft. Dasselbe gilt für das Prüfmittel: Ein Prüfer, der fragt, ob die Zeile **irgendwo** steht, misst ein Surrogat des Ladepfads und meldet den Defekt als sauber. Beleg: Die gelernte Schadenstabelle der Flächenaktionen wurde in `OtherConfiguration.Init()` eingetragen, das keinen Aufrufer hat; gerufen wird `InitAsync`. Sie wurde damit nie geladen, und weil ein Speichervorgang die ganze Tabelle schreibt, überschrieb die erste Messung jeder Sitzung den über Wochen aufgebauten Bestand — ohne Fehlschlag, ohne Protokolleintrag. Der erste Prüfer dagegen hielt den defekten Stand für sauber, weil die Ladezeile ja dastand.
-
-**Kausalität — in beide Richtungen, vorwärts auf die Wirkung und rückwärts auf die Entstehung.** Beide sind zu schließen, bevor ein Fund als belegt gilt.
-
-*Wirkungsrichtung:* Der Weg von der Ursache bis zur beobachtbaren Wirkung ist zu verfolgen — welcher Zustand ihn auslöst, welcher Code ihn weiterträgt, welche Bedingung ihn abfängt, welcher Verbraucher ihn sieht. Bei Zustandsautomaten und Bedienpfaden sind die Übergänge vollständig auszuschreiben und die Kosten je Zielzustand zu zählen, statt eine einzelne Kollision zu betrachten. Beleg: `applyToggle` vorgeschlagen, ohne die Zyklen als Zustandsfolge auszuwerten — der Vorschlag hätte den Nutzern einer Variante den einzigen Ausschaltweg genommen.
-
-*Entstehungsrichtung:* Zu jedem Fund ist zu erheben, warum die Stelle so gebaut wurde. Die Versionsgeschichte ist dafür Artefakt und Quelle: Einführungs-Commit über `git log -S` (ältester Treffer) ermitteln, dessen Diff und Nachricht lesen, Datum mit dem Datum der Änderung vergleichen, die die Prämisse gebrochen hat. Die Auswertung folgt Parnas' zwei Alterungsursachen („Software Aging", ICSE 1994):
-
-- **Lack of Movement** — die Stelle war bei ihrer Entstehung korrekt und wurde durch eine spätere Erweiterung anderswo unrichtig, ohne dass etwas fehlschlug. Dann behebt die Korrektur des Einzelfalls nichts Dauerhaftes: zu ersetzen ist die Konstruktion, die veraltet (eine Aufzählung durch eine Fähigkeitsprüfung), sonst tritt derselbe Fund nach der nächsten Erweiterung erneut auf. Beleg: die Duty-Heilbedingung zählte im Juli 2025 alle vorhandenen Heilquellen auf; die Bozja-Aktionen kamen zehn Monate später.
-- **Ignorant Surgery** — die Änderung wurde ohne Verständnis der Stelle vorgenommen, die Umsetzung wurde inkonsistent zur Entwurfsabsicht. Kennzeichen: Klon einer Nachbarstelle ohne Anpassung, entfernte Verdrahtung bei stehengebliebener Definition, und der Widerspruch zwischen Kommentar und Code. Belege: `CycleStateManualAuto` als Kopie von `CycleStateManual`; `AutodutyUpdateState` aus `UpdateState`.
-
-Kommentare, Bezeichner und Optionstexte sind Belege der Entwurfsabsicht und als solche zu lesen. Ein Widerspruch zwischen Kommentar und Code ist ein Befund; ihn durch Anpassen des Kommentars aufzulösen tilgt den Beleg und macht aus einem sichtbaren Defekt scheinbar gewolltes Verhalten. Beleg: `CycleStateManualAuto` trug „turn Off" über einem `Auto`-Aufruf, bis der Kommentar an den Code angeglichen wurde.
-
-Ein Ergebnis ist erst vollständig, wenn Einzelfall und Muster getrennt benannt sind: Wiederholt sich die Entstehungsursache an anderen Stellen, ist der Fund eine Defektklasse, und die Behebung hat die Wiederholbarkeit zu adressieren, nicht nur den Fundort.
-
-**Möglichkeitssinn — erhoben wird auch, was die Stelle könnte, nicht nur, was an ihr falsch ist** (SWOT-Zelle *Opportunities*, wirksam erst als TOWS-Kreuzung Stärke × Chance nach Weihrich 1982; Denkhilfe: Kano-Modell, Basis- gegen Begeisterungsmerkmal). Der Loop springt auf Defekte an und bewertet Optionen gegen Schweregrad, Aufwand, Blast Radius und Folgekosten — vier Maße für Kosten und Risiko, keines für Ertrag. Wo kein Defekt vorliegt, läuft er gar nicht erst. Deshalb ist zu jeder Stelle zusätzlich zu fragen: **Welche vorhandene Stärke des Systems trifft hier auf welche offene Frage?** Vorhandene Stärken sind Bestand und keine Vermutung: die Gesundheitshistorie über vier Minuten, der Effekt-Handler, der jeden Treffer sieht, die Vorhersage fremder Casts, die Diagnoseanzeige. Ein Baustein ist nicht schon deshalb Vorratsarbeit, weil heute keine Regel ihn liest — zu erheben ist, welche Fragen er beantwortbar macht. Belege, alle aus demselben Muster: Die Rate je Gruppenmitglied wurde als „Vorratsarbeit" verworfen, die Güteprüfung der Schätzung als „braucht einen externen Beobachter", das Schadenspotential der Flächenaktionen als Nullvariante aus Kostengründen, und die Grenze „bewältigbar" als Zahl gesetzt statt gemessen. **Alle vier hat der Auftraggeber eingebracht, keine der Loop.** Begründung und verworfene Werkzeuge: `docs/method/01-loop-evaluation-methods.md`.
-
-**Inhaltlichkeit — geprüft wird die Absicht, nicht die Form.** Zu jeder Fundstelle ist zuerst zu klären, was sie ausdrücken soll, und erst dann, ob sie es tut. Ungenutzter Code ist gegen die Gegenhypothese zu prüfen, dass er richtig ist und nur die Verdrahtung fehlt; die Entfernung rechtfertigt erst der Nachweis einer Ablösung. Ein Test, der ein Surrogat prüft statt der gemeinten Eigenschaft, ist auch dann zu benennen, wenn er im Regelfall dasselbe Ergebnis liefert. Was nicht verstanden ist, wird nicht entfernt: ein unverständlicher Rest ist ein Signal, und seine Beseitigung tilgt den Hinweis statt der Ursache. Belege: `ResetAvailabilityCheck` war fehlende Verdrahtung, kein toter Code; die VPR-Blöcke sind ein leerer Zweig, dessen Entfernung die Lücke verdeckt hätte; der leere `if`-Block im Field-Op-Zweig war die letzte Spur eines fehlenden Spielerausschlusses und wurde entfernt.
-
-# Analyse und Prüfung
-
-**Begründet wird am Spielgeschehen, nicht an der Formalie.** Eine Codeänderung geschieht, um das Verhalten im Kampf zu ändern, nicht um den Code zu ändern; also hat ihre Begründung zu sagen, was im Kampf anders wird — wer wann wie viel Schaden nimmt, welche Aktion früher oder später fällt, wer überlebt und wer nicht, und was der Auftraggeber am Bildschirm anders sieht. Aufrufketten, Zeilennummern, Prüfgrade, Merge- und Zweigzustände sind Belege für eine solche Aussage, nie ihr Ersatz. Das gilt für jeden Befund, jede Bewertung und jeden Bericht: „die Wirkkette ist am Code nachvollziehbar" sagt, **dass** etwas wirkt, nicht **ob es im Spiel richtig ist** — die zweite Frage ist die eigentliche und wird gesondert beantwortet. Wo eine Größe des Spiels im Code auftaucht, ist zu klären, was sie im Spiel bedeutet, bevor sie verrechnet wird: Ein Schild verhindert Schaden, er stellt keine Gesundheit her; eine Unverwundbarkeit verhindert den Tod, sie heilt nicht; ein Debuff drosselt den Schadensstrom, er beendet ihn nicht. Beleg: Die Schildanrechnung wurde als „absolut sicher richtig" berichtet, weil ihre Kette am Code belegt war. Die Frage, ob eine Barriere den Heilbedarf überhaupt senkt, war damit nicht gestellt — der Auftraggeber hat sie gestellt („der Schild läuft irgendwann ab, ist dann das Ziel geheilt?"), und die Antwort widerlegt den Eingriff.
-
-**Prozess ist Mittel, nicht Nachweis.** Ein eingehaltener Ablauf belegt keine Ergebnisqualität. Zweck der Struktur ist Redundanzaufdeckung und Vollständigkeitsprüfung.
-
-**Systemweite Konsistenzprüfung vor Einzelfalllösung.** Ein Defekt gilt als Defektklasse, bis das Gegenteil belegt ist: alle strukturell gleichen Stellen erheben, dann begründet einschränken. Ein nicht nachgewiesener Nichtbedarf ist ein unentdeckter Defekt, keine Ausnahme. Beleg: Aggro-Helfer B1 mit „nur zwei Verwender" verworfen, ohne die Lücke bei den DPS-Klassen zu erheben.
-
-**Priorität folgt dem Auftrag, nicht der Fundlage.** Die Klassenerhebung ist vollständig zu führen — die Bearbeitung ist es nicht. Maßgeblich ist das Nutzungsprofil des Auftraggebers: PvE, deutscher Client, die von ihm gespielten Jobs und Rotationen. Fundstellen außerhalb davon — PvP, Blaumagier und andere begrenzte Jobs, Bozja und vergleichbare Sonderinhalte, fremde Rotationen, die er nicht nutzt — werden **erfasst**, nicht bearbeitet, solange der Auftrag sie nicht nennt oder er die Bearbeitung nicht freigibt. Dass eine Erhebung dorthin führt, ist ihr Zweck, kein Arbeitsauftrag. Beleg: Aus einer Zwei-Zeilen-Fundstelle in der Rotmagier-PvP-Konfiguration wurde ein Durchgang über Blaumagier, PvP und Bozja, während die Punkte aus dem laufenden Auftrag warteten; der Auftraggeber hat das als fehlgeleitetes Investment beanstandet.
-
-**Spielweise des Auftraggebers: Sicherheit der Gruppe vor Schadensausstoß.** Swiftcast hält er für Wiederbelebungen zurück und setzt es nicht in der Rotation ein. Vorschläge, die es für einen Zauber der Rotation verbrauchen — `AddSwiftcastOnGaruda`, `AddSwiftcastOnRuby` und gleichartige —, scheiden damit aus, auch wenn sie rechnerisch Potenz bringen. Ebenso scheiden Empfehlungen aus, die ihn für Schaden aus einer sicheren Position holen; der Anlauf von Crimson Cyclone ist der belegte Fall. Ein Gewinn im Promillebereich ist kein Argument gegen eine Sicherheitsentscheidung, und er ist nicht als Abwägung vorzulegen, als stünde beides gleichrangig nebeneinander. Beleg: Umstellung der Beschwörungsreihenfolge auf Ifrit zuerst empfohlen, obwohl das Positionsrisiko in derselben Vorlage benannt war.
-
-**Der Auftraggeber nennt Bedingungen, keine festen Zeiten.** Eine Sekundenzahl in einer Vorgabe stammt nie von ihm; wo eine gebraucht wird, ist sie am Artefakt zu belegen — `ActionId.resx` nennt Dauer und Potenz im Wirktext der Aktion — und als Beleg zu kennzeichnen. Beleg: „Living Dead drückt die Heilschwelle zehn Sekunden lang" war meine Behauptung, sachlich falsch und ihm als seine Regel unterstellt.
-
-**Eine Aussage über den Voreinstellungswert im Code ist keine Aussage über seine Konfiguration.** Beides ist getrennt zu benennen, und seine Einstellung ist von hier aus nicht messbar. Belege, zweimal derselbe Fehler: `StretchHolyStun` als „steht weiterhin auf aus" geführt und ihm das Einschalten empfohlen — er hatte es längst an. Und `UseBmrTimeline` als „ab Werk aus, der Weg ist also tot" in eine Ursachenkette eingebaut und daraus eine Entscheidungsvorlage abgeleitet; es ist bei ihm eingeschaltet, und die Kette war damit für seinen Fall falsch aufgespannt.
-
-**Sein Nutzungsprofil ist das des Testers, nicht des Endnutzers** (seine Vorgabe): „ich will ja die codeänderungen testen, daher nutze ich selten die alten defaulteinstellungen, nur wenn sichergestellt ist, dass dann der neue code testbar ist." Daraus folgt zweierlei, und das Zweite wiegt schwerer:
-
-- **Die Annahme „bei ihm gilt der Vorgabewert" ist die unwahrscheinlichere.** Wo eine Regel hinter einem Schalter steht, ist für **beide** Stellungen zu denken; „Vorgabewert aus, also ändert sich nichts" beschreibt nicht seinen Rechner.
-- **Eine eingeschaltete Option muss beobachtbar sein, sonst ist sie nicht testbar.** Die Feature-Toggle-Regel verlangt den Schalter; seine Vorgabe verlangt zusätzlich, dass sichtbar wird, **ob die Regel gegriffen hat**. Eine Verhaltensänderung, deren Wirken man im Kampf nicht von ihrem Ausbleiben unterscheiden kann, ist unvollständig ausgeliefert — der Schalter allein macht sie nicht prüfbar. Beleg: `Heal ahead of an announced area cast` und `Mitigate a big area cast even when it is interruptible` wurden mit Schalter und Vorgabewert aus geliefert, aber ohne jede Anzeige darüber, ob sie je ausgelöst haben; die Sonde ist erst auf seine Angabe hin nachgereicht worden.
-
-**Fachliche Vorgaben des Auftraggebers gehören ins zugehörige Konzept, nicht hierher.** Diese Datei ist die Grundlage der gesamten Arbeit, kein Ablageort für Einzelaufgaben. Was hierher gehört, ist die Regel über die Arbeitsweise; was eine Rotation, einen Job oder eine Mechanik betrifft, gehört nach `docs/rotation-flow/` — und zwar als **seine** Vorgabe gekennzeichnet, nicht als Befund des Audits. Beleg: Seine dreiteilige Regel zur Totenerweckung wurde hier eingetragen, obwohl sie samt Staffelungstabelle und der Selbstheilung des Trägers längst in `09-tank-selfprotection.md` stand — sie war also nicht unvermerkt, sondern ungelesen, und wurde als eigener Fund vorgetragen. **Vor jeder Aussage zu einem Thema ist dessen Konzept zu lesen**, nicht nur `TODO.md` und `AUDIT_LOG.md`.
-
-**Fremde Rotationsdateien werden nicht bearbeitet, wenn daraus Folgedefekte mit eigenem Entscheidungsbedarf entstehen.** Churin, Beiruta und die übrigen `ExtraRotations` sind fremdes Werk mit eigener Abstimmung. Ein Eingriff **in diese Dateien** ist zu unterlassen, sobald er eine Kette auslöst: ein Folgedefekt, der wieder eine Richtungsentscheidung verlangt, die ohne den fremden Autor oder ohne Laufzeitbeobachtung nicht zu treffen ist.
-
-*Abgrenzung:* Die Einschränkung gilt der **direkten** Bearbeitung. Allgemeine Änderungen an zentralen Aktionen, Helfern und Listen sind erlaubt, auch wenn sie mittelbar auf fremde Rotationen wirken — sonst wäre jede zentrale Verbesserung durch die Existenz fremder Verwender blockiert. Die mittelbare Wirkung ist gleichwohl zu erheben und als Betroffenenkreis zu benennen, nicht zu übergehen.
-
-**Change Size ist kein Risikoproxy.** Prüftiefe richtet sich nach Wirkungsbereich und Fehlerklasse, nicht nach Zeilenzahl. Beleg: CountAllianceTanks, Provoke-Distanz, RPR/VPR-Gate — je eine Zeile, je schwerwiegend.
-
-**Eine Erkennung darf keine Entscheidung enthalten.** Wo eine Größe beantwortet, *was der Fall ist*, gehört das Urteil darüber, *was zu tun ist*, in den Verbraucher — sonst erbt jeder weitere Leser eine fremde Entscheidung samt fremder Schwelle, und zwar unsichtbar. Kennzeichen: eine Erkennung, die eine Konfigurationsoption prüft; eine, die einen Schwellenvergleich schon durchgeführt hat; eine, deren Wert nur geschrieben wird, wenn eine bestimmte Regel eingeschaltet ist.
-
-Beleg, drei Fälle in **einer** Sitzung und damit eine Klasse: Der gemessene Flächenanteil wurde hinter `SkipMitigationForSmallAreaCasts` abgelegt, sodass ein zweiter Leser ihn nie gesehen hätte; `IsHostileCastingLargeArea` prüfte die Minderungsoption selbst, sodass die Heilregel von einer Minderungseinstellung abgeschaltet worden wäre; und die Vorausheilung las `IsHostileCastingAOE`, das den Minderungsvergleich gegen `HealthAreaSpell` bereits enthält — die Heilung hätte damit das Band zwischen 0,65 und ihrer eigenen Schwelle 0,75 verloren. Alle drei waren im selben Durchgang gebaut und wurden erst bei der kritischen Nachprüfung gefunden.
-
-**Trigger werden an ihrer Wirkung gemessen, nicht an ihrem Geltungsbereich.** Bei einem Zustandsflag ist zu erheben, welche Codepfade es öffnet, nicht nur, für wen es gesetzt wird. Beleg: `HasHostileCountAoeMitigation` wurde als „richtig eingegrenzt" freigegeben, während das gesetzte Flag die gesamte Defensivkette öffnete.
-
-**Persistenz- und Schnittstellenverträge sind bindend.** Alles, was den Prozess überdauert oder von Dritten benutzt wird, ist Vertrag und nicht frei änderbar: serialisierte Typen, die Ordinalwerte ihrer Enums, Feld- und Eigenschaftsnamen in gespeicherter Konfiguration, sowie jede öffentliche Signatur einer Bibliothek, die als Paket veröffentlicht wird. **Dritte Vertragsart neben Ablage und Paket: ein Enum, dessen Wert als Zahl über eine Schnittstelle hereinkommt.** Wo ein `int` eines fremden Plugins direkt in ein eigenes Enum gecastet wird, sind dessen Ordinalwerte an die fremde Reihenfolge gebunden, ohne dass der Compiler etwas prüft — und die Frage „wird der Typ persistiert" geht daran vorbei. Vor einer Änderung daran ist zu erheben, ob der Typ persistiert, exportiert **oder über eine Grenze gecastet** wird, und im Zweifel ein Migrationspfad vorzusehen (Semantic Versioning für die Signatur, Schema-Migration für die Ablage, ausgeschriebene Ordinalwerte samt Vertragskommentar für die Grenze).
-
-Belege: `Configs` ist eine `IPluginConfiguration` und wird ohne `StringEnumConverter` geschrieben, `DTRType`, `CycleType` und der `HostileType`-Wörterbuchwert liegen also als Ordinalzahlen in der Nutzerkonfiguration — ein Umsortieren dieser Enums deutet gespeicherte Einstellungen still um. Bei `SpecialMode` wurde umsortiert und die Folgenlosigkeit mit der fehlenden Persistenz begründet; das war die falsche Frage. Der Typ wird als `(SpecialMode)` aus einem IPC-`int` gefüllt, seine Ordinale sind Vertrag mit BossModReborn, und die Angleichung (`8dc2bd658`) fand dort eine **tatsächliche** Fehlzuordnung — unser `Freezing` traf ihr `Misdirection`. Folgenlos war es allein deshalb, weil alle Leser nur gegen `Pyretic` vergleichen, und das liegt auf beiden Seiten auf 1. **`PredictedDamageType` stand in derselben Datei, überschreitet dieselbe Grenze und wurde damals nicht mitgeprüft** — die Klassenerhebung fehlte, nicht die Einsicht.
-
-**Betroffenenkreis vor Wirkungsbereich.** Zur Change Impact Analysis gehört, wer betroffen ist, nicht nur was. Für dieses Projekt sind das drei Gruppen mit verschiedenen Interessen: Endnutzer des Plugins, Autoren abgeleiteter Rotationen, die `RotationSolver.Basic` als Paket beziehen, und die Upstream-Pflege, für die jede Abweichung Merge-Aufwand bedeutet. Eine Änderung, die eine dieser Gruppen trifft, ist als solche zu benennen. Beleg: `GeneratePackageOnBuild` wurde zunächst als Verpackungsfehler bewertet, bevor auffiel, dass es die zweite Gruppe bedient.
-
-**Auf BossModReborn ist kein Verlass, und eine Regel, die es als einzige Quelle hat, ist fahrlässig gebaut** (Vorgabe des Auftraggebers): „bossmod liefert nicht für jeden boss werte, sondern nur für unterstützte module. und da ist der abdeckungsgrad in bossmod auch unterschiedlich." Zwei Ausfallarten, und beide sind **still**: kein Modul für diesen Kampf, oder ein Modul, das diese Ereignisart nicht führt. Beide erreichen den Baum als `float.MaxValue`, und das liest sich wie „es kommt nichts". Eine ausbleibende Minderung ist dadurch nicht von einem ruhigen Kampf zu unterscheiden.
-
-Daraus zweierlei: **Jede Regel, die eine BMR-Vorhersage liest, braucht einen Weg ohne sie** — und wo es ihn nur reaktiv gibt, ist das als Einschränkung zu benennen, nicht als Deckung auszugeben. Und die Lage muss **ablesbar** sein: ob ein Modul läuft und ob es die gelesene Ereignisart überhaupt vorhersagt. Beleg: „Bei einem Boss ist Radiant Aegis über den BMR-Weg gedeckt" — zu stark, weil ein aktives Modul nichts darüber sagt, ob es Raidwides führt; die Diagnoseseite zeigte weder das eine noch das andere.
-
-**Verhaltensänderungen ohne Nachweismöglichkeit gehören hinter eine Option** (Feature Toggle nach Fowler). Lässt sich die Wirkung eines Eingriffs mit den verfügbaren Mitteln nicht belegen — statische Prüfung und Kompilierung reichen dafür nicht —, wird das bisherige Standardverhalten beibehalten und das neue über eine abschaltbare Einstellung angeboten, statt es allen aufzuzwingen. Das gilt nicht für belegte Defektbehebungen, sondern für Verbesserungen, deren Nutzen eine Annahme bleibt.
-
-**Audit bezeichnet unabhängige Prüfung.** Erneutes Lesen des eigenen Diffs ist Selbstkontrolle und erfüllt das Vier-Augen-Prinzip nicht. Der erreichte Prüfgrad wird benannt: statische Selbstprüfung, Prüfskript, Compile, Laufzeitbeobachtung. Formulierungsstärke folgt der Beleglage.
-
-**Verfügbare Erkenntnisquellen ausschöpfen, bevor eine Grenze behauptet wird.** Fehlende lokale Toolchain begrenzt nicht die Recherche externer Fakten. Beleg: Troubadour/Tactician als „nur gegen magischen Schaden" angenommen, per Websuche in Sekunden widerlegbar.
-
-**Eine unauffindbare Fundstelle ist keine unerreichbare Quelle.** Dass ein Pfad nicht bekannt ist, heißt nicht, dass er nicht zu finden wäre: Vier geratene Kandidaten kosten vier Sekunden, und der Nullbefund der ersten drei ist kein Beleg gegen den vierten. Beleg: Die Ordinalzuordnung von `PredictedDamageType` galt monatelang als ungeprüft, weil „das Enum in `AIHints` liegt und dessen Pfad ohne Code-Suche nicht auffindbar ist" — `BossMod/BossModule/AIHints.cs` war der vierte Versuch und hat beide Enums als richtig belegt.
-
-**Der Umkehrfall: ein Mittel wird erst zugesagt, wenn seine Verfügbarkeit gemessen ist.** Die Regel darüber verbietet, eine Grenze ungeprüft zu behaupten; sie erlaubt nicht, eine Fähigkeit ungeprüft in Aussicht zu stellen. Wo ein Arbeitsergebnis ein Werkzeug voraussetzt, das hier vorhanden sein muss — ein Satzprogramm, ein Übersetzer, ein Paket —, ist dessen Vorhandensein **vor** dem Vorschlag an einer Probe zu belegen, nicht danach an drei nacheinander scheiternden Versuchen. Zur Vorlage gehört außerdem der Preis des Wegs: Was der Auftraggeber an seinem Rechner mit einem Befehl erledigt, ist keine Aufgabe für diese Umgebung, und die Kosten des Umwegs trägt er mit. Beleg: PDF-Erzeugung für die Anlagen des LDI-Schreibens zugesagt, dann LibreOffice, `pip install` und ein selbstgeschriebener Protokollclient nacheinander erprobt, während „als PDF drucken" bei ihm ein Handgriff gewesen wäre; erst der vierte Versuch trug.
-
-**Eine Sonde erhebt nicht nur, sie bewertet sofort — und die Entscheidung fällt im Code zur Laufzeit** (Vorgabe des Auftraggebers). Ein Messmittel, das Daten sammelt, damit ich sie später ansehe, verschiebt die Entscheidung aus dem Kampf heraus, in dem sie fällt. Die Sonde gehört deshalb an die Stelle, an der die Regel entscheidet, und gibt dort ihr Urteil ab; die Anzeige ist die Zweitverwertung, nicht der Zweck.
-
-**Zweiter Beleg, gleiche Form:** Zur Frage, ob die zweite Ladung von Schimmerschild bei zwei angekündigten Treffern freizugeben ist, habe ich eine Entscheidungsvorlage gestellt und als Empfehlung „erst beobachten, was die Sonde zeigt“ gegeben. Seine Antwort: „kommst du mir wieder mit sonde und analyse hier durch dich oder mich? das hatten wir auch schon. entscheidung immer im spiel, nicht retroperspektive auswertung.“ Richtig war: Die Frage ist zur Laufzeit zu beantworten. Seine A9-Entscheidung verbietet nicht das Ausgeben der Ladung, sie nennt die Folge — „bei echter Gefahr war keine mehr da“ —, und Verfügbarkeit ist ausrechenbar. **Aus dem Buchstaben einer Entscheidung ist ihr Grund zu lesen; wo der Grund prüfbar ist, wird er geprüft statt abgefragt.**
-
-**Der Grund ist die Schleife, nicht die Messung** — seine Präzisierung: „Eine Sonde zur späteren Auswertung durch dieses Modell ist suboptimal, da es zu viele Interaktionen des Nutzers voraussetzt.“ Jede Erkenntnis aus einer solchen Sonde kostet einen Kampf, sein Ablesen, seinen Bericht, meine Auswertung und eine weitere Runde — und das für **jeden** Messwert. Das Modell ist damit Teil des Regelkreises, und der Regelkreis läuft im Takt seiner Freizeit. **Zulässig ist deshalb nur, was sich selbst nachsteuert:** die Regel hält ihre eigene Vorhersage gegen den beobachteten Verlauf und rechnet den Fehler heraus, so wie `ScoreTtkForecast` und `GetCorrectedTTK` es für die Restzeit tun. Die Anzeige dient dann seiner Kontrolle, nicht meiner Auswertung. Wo eine Selbstkorrektur nicht zu bauen ist, ist das zu **sagen** — nicht durch eine Datensammlung zu ersetzen, die auf meine Mitwirkung wartet. Beleg: Zur Frage, warum Searing Light mitten in der Burstphase fällt, habe ich „erst messen, dann entscheiden“ als Weg vorgelegt.
-
-**Eine bereits getroffene Entscheidung wird nachgelesen, nicht erneut zur Wahl gestellt.** Die Regel darunter verbietet, sie ohne ihn zu revidieren; ebenso unzulässig ist es, sie ihm als offene Option zurückzugeben. Beleg: Als Weg für Searing Light habe ich „Zündfenster verengen“ angeboten, obwohl das Fenster in Konzept 12 samt Begründung entschieden ist — volle Abdeckung der großen Beschwörung, Ausweichen nur bei mehreren Beschwörern, und dort auf **Titan**, weil Ifrits höhere Zahl den Anlauf von Crimson Cyclone voraussetzt. Er musste mich darauf hinweisen; die Entscheidung stand seit dem Durchgang zu mehreren Beschwörern fest.
-
-**Definition of Done liegt beim Nachweis der Wirkkette im Code**, nicht bei einer Prüfaufgabe an den Nutzer. Beleg: #54 mit offener Spielbestätigung übergeben, obwohl Flag, Dispatch, `CanUse` und Zielwahl im Code nachvollziehbar waren.
-
-**Definition of Ready als Gegenstück.** Vor Arbeitsbeginn muss feststehen, was der gemeldete Fehler ist, woran seine Behebung erkennbar wäre und welche Quellen dafür auszuschöpfen sind. Fehlt eines davon, ist das zu klären, bevor Code entsteht — nicht danach. Die Definition of Ready ist im Unterschied zur Definition of Done kein Bestandteil des Scrum-Rahmens, sondern eine verbreitete Ergänzung; sie wird hier verwendet, weil der wiederkehrende Fehler dieses Projekts das verfrühte Umsetzen war. Beleg: #37-Config-Refactoring vor der Gegenpositionsprüfung umgesetzt.
-
-**Die Commit-Identität ist gesetzt und wird nicht überschrieben.** Das Repository führt `user.name = Claude`, `user.email = noreply@anthropic.com`; ein `git -c user.name=… -c user.email=…` vor dem Commit ist unzulässig. Ein Commit ist öffentlich und dauerhaft: Autorname und Adresse stehen in `git log` jedes Klons und auf der Webseite eines öffentlichen Repositories, und sie sind auch nach einem Umschreiben der Historie über die Pull-Request-Ansicht weiter abrufbar. **Der Klarname des Auftraggebers und seine private Adresse gehören dort nicht hinein** — seine eigenen Commits benutzen die GitHub-Noreply-Adresse, also ist auch seine Praxis eindeutig. Beleg: Sechs Commits am 18./19.09. tragen den Klarnamen des Auftraggebers und seine private Mailadresse, weil ich die vorhandene, richtige Konfiguration ohne Anlass je Aufruf überschrieben habe; der Name war zudem aus der Mailadresse abgeleitet, also selbst gebildet — dieselbe Fehlerform wie bei einem erfundenen deutschen Aktionsnamen.
-
-**Die Regel allein genügt hier nicht, und deshalb steht ein Riegel davor.** `.githooks/pre-commit` weist jeden Commit ab, dessen Autor- oder Committer-Adresse keine der veröffentlichten Identitäten ist; `core.hooksPath` zeigt darauf, und `check_commit_identity.py` prüft dasselbe in der CI für einen Klon ohne diese Einstellung. Der Grund für die doppelte Sicherung ist gemessen: **Die GitHub-Einstellung des Auftraggebers war die ganze Zeit aktiv und hat nicht gegriffen.** „Block command line pushes that expose my email" prüft nur, ob die Adresse **auf seinem Konto** als privat geführt wird; seine private Adresse ist dort nicht hinterlegt (belegt: GitHub ordnet den Commits kein Konto zu), also galt sie als fremde Adresse und lief durch — während das Token dieser Umgebung **als er** authentifiziert (`get_me` → `Wishbringer71`), die Pushes also seine eigenen waren. Ein Schutz, der nur die dem Konto bekannten Adressen deckt, kann eine von außen eingesetzte Adresse nicht decken. Daraus folgt allgemein: **Wo ein fremder Schutzmechanismus als Begründung dient, ist vorher zu prüfen, was er tatsächlich abdeckt.** Ich hatte ihm die Einstellung empfohlen, ohne zu prüfen, ob sie den Fall trifft — sie war längst an.
-
-**Ein eigener Schaden an seinen Daten wird behoben, nicht zur Wahl gestellt.** Die Entscheidungsvorlage ist das Mittel fuer das, was ihn betrifft und wo er waehlt — Verhalten im Kampf, Voreinstellungen, Umfang und Reihenfolge der Arbeit, Freigabe und Veroeffentlichung. Sie ist das falsche Mittel, sobald ich selbst den Schaden verursacht habe und es um seine personenbezogenen Daten geht: Dann ist die Beseitigung meine Pflicht und laeuft sofort, samt der ausgeschriebenen Grenze dessen, was sie nicht erreicht. Beleg: Zur Bereinigung der sechs Commits habe ich zwei Wege mit Empfehlung vorgelegt und auf seine Zustimmung gewartet; seine Antwort war „da brauch ich nicht zusagen, du hast meine privacy nach dsgvo gefaehrdet". Dieselbe Verschiebung der Zustaendigkeit wie beim Defekt im eigenen Pruefskript, nur mit groesserem Gewicht.
-
-**Blameless Postmortem.** Eigene Fehler werden sachlich am System dokumentiert und behoben. Fehlerhistorie gehört in AUDIT_LOG.md und Commit-Messages, nicht als Ergebnisdarstellung in den Bericht.
-
-# Sprache
-
-Chat durchgehend Deutsch, vor jeder Antwort verifiziert (Beleg: englische Antwort als deutsch deklariert). Commits, Code-Kommentare und Bezeichner Englisch. Projektdokumentation in etablierter Fachterminologie der Software- und Projektmanagement-Disziplin, nicht in ad hoc gebildeten Begriffen; unbekannte Standardbegriffe werden vor Verwendung recherchiert.
-
-**Release-Beschreibungen sind englisch** (Vorgabe des Auftraggebers), und mit ihnen jedes Dokument, das als Release-Text dient. Maßgeblich ist der Adressat, nicht der Ablageort: Ein Release richtet sich an die Nutzer des Plugins und an die Autoren abgeleiteter Rotationen, also an dieselbe Leserschaft wie Upstream. Die Konzepte in `docs/rotation-flow/` bleiben deutsch, weil sie die Arbeitsgrundlage zwischen ihm und mir sind. Beleg: `docs/fork-changes-in-play.md` wurde zunächst deutsch angelegt, obwohl es die Release-Beschreibung ist.
-
-**Der Adressat bestimmt nicht nur die Sprache, sondern auch Umfang, Form und Inhalt.** Zwei Folgerungen, beide am selben Dokument belegt:
-
-*Die Grenze des Zielorts ist Spezifikation.* Ein Text, der in ein Feld eingefügt wird, hat dessen Fassungsvermögen als Anforderung, nicht als Nebenbedingung. Die Release-Beschreibung wird in das Formular auf GitHub kopiert, und dessen Zähler lief beim Einfügen auf „0 remaining" — alles ab Abschnitt 7 fiel weg, ohne Fehlermeldung, ohne fehlgeschlagenen Lauf. Gemessen: Abbruch zwischen Zeichen 12.347 und 18.611. Ein Dokument, das mit jedem Durchgang wächst, während die Grenze steht, ist dieselbe Alterungsform wie ein handgeführter Zeilenverweis — deshalb hält `check_release_note_size.py` sie in der CI fest.
-
-*Rechenschaft ist kein Releaseinhalt.* Was der Fork von eigenen Fehlern zurückgebaut hat, was nichts im Spiel bewirkt und was offen ist, steht für **mich** dort, nicht für den Leser: Er will wissen, was sein nächster Kampf anders macht und welchen Schalter er dafür braucht. Dasselbe gilt für die Begründung, warum der Fork existiert — die gehört in die README. Der Beleg für das Entfernte bleibt geführt (`AUDIT_LOG.md`, `TODO.md`), er wandert nur an den Ort, an dem er hingehört. Beleg: Die Abschnitte 8 bis 10 der Release-Beschreibung waren genau das, und der Auftraggeber hat sie als dort nicht zugehörig beanstandet.
-
-**Der Auftraggeber spielt mit deutschem Client.** Aktions-, Status- und Inhaltsnamen aus seinen Angaben sind deutsche Spielnamen; die Bezeichner im Code und in den generierten Ressourcen (`RotationSolver.SourceGenerators/Properties/*.resx`) sind englisch. Bei jeder Namensnennung ist deshalb beides zu prüfen und die Zuordnung zu belegen, bevor eine Fundstelle gesucht oder ihr Fehlen behauptet wird. Ein Nullbefund über den englischen Namen allein ist kein Beleg. Beleg: „Ex Machina" wurde als im Baum nicht vorhanden gemeldet — es ist der deutsche Name von Thin Air.
-
-**Die Zuordnung wird nachgeschlagen, nicht recherchiert.** Die vollständige Zuordnung erzeugt `RotationSolver.GameData` aus den Spieldateien selbst — dasselbe Programm, das die englischen Ressourcen schreibt, liest die Blätter ein zweites Mal unter `Language.German` und legt alle Aktionen, Status und Gegenstände aller Klassen als `.github/scripts/audit/action_names_game.json` ab. Das ist die dritte zulässige Quelle neben Job-Guide und Angabe des Auftraggebers, und die einzige, die von hier aus erreichbar ist: Job-Guide und XIVAPI sind vom Egress gesperrt (gemessen: 403 auf CONNECT), `api.github.com` ist auf die freigegebenen Repositories beschränkt, und ein Datamining-Spiegel wäre ohnehin keine der drei zulässigen Quellen. Der Zugang ist dabei **pfadweise** zu messen, nicht pauschal: `api.nuget.org` und `raw.githubusercontent.com` antworten mit 200 — eine pauschale Aussage „alle externen Quellen gesperrt" ist deshalb unbelegt und war schon einmal falsch. Erzeugen kann die Datei nur, wer das Spiel installiert hat.
-
-**Der Pfad zu den Spieldateien ist eine Tatsache über den Rechner, nicht über das Repository.** `Program.ResolveSqpackPath` fragt in dieser Reihenfolge: erstes Programmargument, Umgebungsvariable `FFXIV_GAME_PATH`, übliche Installationsorte, zuletzt die Upstream-Konstante. Jeder Kandidat darf den `game`-Ordner **oder** `sqpack` selbst nennen. Ein geratener oder geerbter Pfad ist kein Beleg; beim Auftraggeber liegt das Spiel unter `C:\Spiele\SquareEnix\FINAL FANTASY XIV - A Realm Reborn\game`, und auf anderen Rechnern abweichend. Daneben führt `.github/scripts/audit/action_names_de.json` die Paare, die der Auftraggeber tatsächlich benutzt hat, samt Quelle; `check_action_names.py` prüft in der CI, dass jeder Eintrag auf einen existierenden Bezeichner zeigt und keine Quelle fehlt, und stellt die handgeführten Einträge gegen den erzeugten Index, sobald dieser vorliegt — ein Widerspruch zwischen beiden wird benannt, nicht stillschweigend aufgelöst. **Vor jeder Namensfrage zuerst dort nachsehen.** Nennt der Auftraggeber einen Namen, der fehlt, wird er im selben Zug eingetragen — nicht am Aufgabenende. Ein Name, der dort steht, wird nicht erneut erfragt und nicht erneut recherchiert. Beleg: „Abtausch" stand achtmal im Baum und wurde gleichwohl als nicht zuordenbar gemeldet, weil nur `ActionId.resx` und die Lokalisierungsdateien durchsucht wurden.
-
-**Ein deutscher Name wird nie selbst gebildet.** Weder übersetzt noch aus dem englischen Namen abgeleitet noch aus einer Suchmaschinenzusammenfassung übernommen. Zulässig sind zwei Quellen: der Job-Guide von Square Enix, englisch und deutsch nebeneinander (`https://de.finalfantasyxiv.com/jobguide/<job>/` gegen `https://na.finalfantasyxiv.com/jobguide/<job>/`), und die Angabe des Auftraggebers. Ist der Job-Guide vom Egress gesperrt — er ist es derzeit —, gilt seine Angabe, und zwar ohne erneute Rückfrage: Bereits Gesagtes wird nicht ein zweites Mal erfragt. Steht kein belegter deutscher Name zur Verfügung, wird der **englische Bezeichner** benutzt.
-
-Belege, beide aus demselben Vorgang: Die Rollenaktion Arm's Length wurde erst mit Shirk verwechselt (C30) und der Widerspruch trotz eigener richtiger Wirkbeschreibung erneut zur Rückfrage gestellt statt aufgelöst (C33); anschließend wurde für dieselbe Aktion der Name „Armlänge" erfunden — ihr deutscher Name ist nach Angabe des Auftraggebers **Rückstoß**.
-
-# Entscheidungen und Eskalation
-
-**Entscheidungsbedarf wird gebündelt am Ende vorgelegt**, mit Entscheidungsgrundlage, Optionen samt Konsequenzen und begründeter Empfehlung. Eine Vorlage ohne Empfehlung ist unvollständig. Alles ohne Entscheidungsabhängigkeit wird vorher fertiggestellt; keine Zwischenrückfragen im laufenden Ablauf.
-
-**Über die eigenen Hilfsmittel wird nicht abgestimmt.** Prüfskripte, ihre Einengungen, ihre Selbsttests, das Format der Berichte und die Art der Erhebung sind Arbeitsmittel und damit meine Entscheidung samt Verantwortung; sie sind nie Gegenstand einer Entscheidungsvorlage. Der Auftraggeber entscheidet über das, was ihn trifft: Verhalten im Kampf, Voreinstellungen, Optionen, Umfang und Reihenfolge der Arbeit, Freigabe und Veröffentlichung. Ihm einen Defekt in meinem eigenen Werkzeug zur Wahl zu stellen, verschiebt die Verantwortung dafür auf ihn und ist unzulässig — gemeldet wird der Fund samt der bereits getroffenen Entscheidung, nicht die Frage. Beleg: Vier von fünf Punkten einer Entscheidungsvorlage betrafen meine eigenen Skripte, darunter ein von mir selbst gefundener Defekt; der Auftraggeber hat die Vorlage als Zuständigkeitsverschiebung zurückgewiesen.
-
-**Lösungsvorschläge nach ADR-Struktur:** Kontext, betroffene Stellen, Mechanismus, Konsequenzen. Eine Optionsliste ohne durchgerechnete Konsequenzen ist keine Vorlage. Beleg: #72 als Zweifachwahl abgeliefert, obwohl die Antwort je Job unterschiedlich ausfiel.
-
-**Release-Freigabe liegt ausschließlich beim Auftraggeber.** Merge-Zeitpunkt, Tagging und Veröffentlichung werden nicht empfohlen und nicht vorweggenommen; berichtet wird der Status. Keine selbst gesetzten Wiedervorlagen und keine unbeauftragte PR-Überwachung. Beleg: Merge-Empfehlung samt Wiedervorlage-Timer ohne Auftrag geliefert.
-
-# Artefakte und Nachvollziehbarkeit
-
-**CLAUDE.md** nimmt jede Vorgabe unmittelbar auf, nicht am Aufgabenende.
-
-**Das Konzept wird mit der Erkenntnis fortgeschrieben, nicht am Aufgabenende.** Eine Vorgabe des Auftraggebers, ein Messergebnis, eine widerlegte Annahme — jedes davon geht **im selben Zug** in das zuständige Konzept, so wie CLAUDE.md jede Regel unmittelbar aufnimmt. Der Grund ist nicht Ordnung, sondern Überleben des Wissens: Chatverlauf und Commit-Nachricht sind nach einer Kontextkomprimierung weg, das Konzept ist die Quelle, aus der dann gelesen wird. Steht dort noch der alte Stand, ist die Erkenntnis nicht bloß unvermerkt, sondern **widerlegt durch das eigene Dokument** — und die nächste Runde beginnt mit der überholten Empfehlung. Wer eine Messung durchführt, ohne das Ergebnis einzuarbeiten, hat die Messung für diese Sitzung gemacht und für keine weitere.
-
-Beleg: Die adaptive Regel des Auftraggebers, seine Gruppengrößen, der Anspruch auf ein hybrides Modell und die Umstellung des Maßes von Sekunden auf Schaden lagen als Commit-Nachrichten und Chatantworten vor, während `12-searing-light-stacking.md` unverändert V7 empfahl und die Buchführung als „bringt nichts" führte — das Gegenteil des Beschlossenen. Der Auftraggeber hat daraus die allgemeine Ursache benannt: „bei dieser arbeitsweise ist klar, warum immer wieder vorgaben und wissen verloren gehen."
-
-**Eine begruendete Entscheidung des Auftraggebers wird nicht ohne ihn revidiert.** Nennt ein Konzept oder ein Archiveintrag die Gruende, aus denen eine Stelle so gebaut wurde, wie sie gebaut ist, so ist jede Aenderung daran zuerst **ihm vorzulegen**: was dort steht, was dagegen spricht, und die ausdrueckliche Frage, ob er seine Meinung geaendert hat. Eine neue Angabe von ihm ist nicht ohne Weiteres die Aufhebung der alten - sie kann eine Praezisierung sein, eine Ausnahme, oder auf einer anderen Lage beruhen, und welches davon zutrifft, weiss allein er. Eine Beobachtung aus dem Spiel belegt, **dass** etwas nicht wirkt; sie sagt nicht, **welche** der dokumentierten Entscheidungen fallen soll.
-
-Das gilt auch dann, wenn die neue Angabe die alte zu ersetzen scheint, und gerade dann, wenn beide von ihm stammen: Die eigene Lesart darf nicht die Stelle des Beschlusses einnehmen. Zulaessig ohne Rueckfrage bleibt allein, was seine dokumentierte Begruendung **nicht** beruehrt.
-
-Beleg: Die Leistungsmessung der Sanctus-Aussetzbedingung stand mit ihrer Begruendung als C52 im Archiv - seine eigene Korrektur, dass ein verlangsamter Gegner nicht verschwindet, sondern weniger zaehlt. Auf seine Meldung, Sanctus falle trotz Verlangsamung weiter, wurde sie unmittelbar durch eine Anteilsregel ersetzt; die Frage, ob damit C52 aufgegeben ist, wurde nicht gestellt. Zusaetzlich wurde die Messgroesse dabei faelschlich als eigene Konstruktion berichtet, ohne den Eintrag zu lesen, der sie ihm zuschreibt.
-
-**Prüfmittel sind Artefakte, keine Wegwerfware.** Ein Skript, das eine Defektklasse gefunden hat, ist der Regressionsschutz für diese Klasse und gehört versioniert ins Repository, nicht in ein Sitzungsverzeichnis. Beim zweiten Durchgang wird es erneut ausgeführt, statt neu geschrieben; jedes Skript trägt seinen Selbsttest gegen konstruierte Defekte bei sich, weil ein stiller Nullbefund sonst nicht von einem sauberen Baum zu unterscheiden ist. Beleg: `check_base_calls.py` liegt im Repository und läuft in der CI, die Skripte der Audit-Phasen 1 bis 4 lagen nur im Sitzungsverzeichnis und wären mit der Sitzung verloren gewesen.
-
-**Technische Schuld wird von Defekten getrennt geführt.** Ein bewusst eingegangener Kompromiss ist keine Fehlfunktion: er wird mit seiner Begründung, seinen Kosten und der Bedingung erfasst, unter der er aufzulösen ist. Ein Defekt dagegen ist eine Abweichung vom beabsichtigten Verhalten. Beide stehen in `TODO.md`, aber nicht ununterscheidbar nebeneinander — sonst wird ein Kompromiss irgendwann als Fehler behandelt oder ein Fehler als Kompromiss geduldet.
-
-**TODO.md führt ausschließlich offene Arbeit.** Kein abgeschlossener Vorgang, keine Statushistorie, kein Kopftext über das Archiv. Ohne offene Punkte: „Derzeit keine." Neu erkannte Defekte werden sofort erfasst, auch außerhalb des laufenden Auftrags; abgeschlossene werden nach AUDIT_LOG.md überführt, eine Statusänderung im Text genügt nicht. Beleg: Roadmap, Nummernliste und Archivkopf dreimal in Folge belassen.
-
-**Eine gemessene Zahl gehört in den Lauf, nicht in eine Gegenwartsaussage.** Wo ein Prüfmittel eine Zahl ermittelt, darf ein Dokument sie nicht als geltenden Stand führen — sie altert mit der nächsten Änderung, und niemand merkt es, weil nichts fehlschlägt. Zulässig sind zwei Formen: die auf den Prüfzeitpunkt datierte Angabe („erster Lauf: 187") als Historie des Gegenstands, und die Aussage ohne Zahl („der größte Teil ist Rauschen aus zwei bewusst unvollständigen Listen"), die das Skript jederzeit bezifferte. Steigt eine solche Zahl, ist zuerst zu prüfen, ob das Fortschritt ist: Bei den Geschwister-Ids macht jede ergänzte Id weitere Gruppen überhaupt sichtbar, die Zahl wächst also durch die Behebung. Beleg: `scan14.py` meldete 201 fehlende Geschwister über 18 Listen, während README und TODO 186 über 16 als aktuellen Stand auswiesen; dieselbe Alterung wie bei einem Zeilenverweis, nur ohne Prüfmittel dagegen.
-
-**AUDIT_LOG.md** ist das Nachweisarchiv abgeschlossener Prüfungen und die Traceability-Quelle: vor jeder Neuprüfung eines Commits oder Bereichs dort nachsehen. Beide Dateien werden bei Sitzungsbeginn und nach Kontextkomprimierung gelesen. Fehlt eine, wird das gemeldet.
-
-**Konzeptdokumente stehen im Urteilsstil, nicht im Gutachtenstil.** Ein Konzept stellt den geltenden Sachstand als Ganzes voran und begründet ihn danach; es bildet nicht den Weg dorthin nach. Die Entsprechungen der Disziplin sind BLUF (Bottom Line Up Front) und das Pyramid Principle (Minto): Aussage zuerst, Stützung danach. Was ausgeschlossen wurde, gehört mit seiner Begründung ins Ergebnis — das ist ADR-Bestandteil und entfällt nicht. Was entfällt, ist die Chronik der eigenen Fassungen: keine nummerierten Auditrunden, keine „Verbesserung nach dem zweiten Audit", keine Nachträge, keine Tabelle „Aussage weiter oben / Stand". Änderungen werden **eingearbeitet**, nicht angehängt.
-
-*Prüfkriterium:* Wer einen einzelnen Abschnitt liest, darf keinen überholten Stand erhalten. Ein Dokument, dessen Anfang nur im Licht seines Endes richtig ist, hat einen Fehlerpfad, den der Urteilsstil nicht hat — und die eigene Umsetzung liest diese Dokumente nach jeder Kontextkomprimierung erneut.
-
-*Abgrenzung:* Die Historie des **Gegenstands** ist Inhalt, die Historie des **Dokuments** ist es nicht. Wo die Entwicklung des beschriebenen Codes selbst der Gegenstand ist — wie in `06-fork-audit.md`, das jede Abweichung samt der Frage beantwortet, wo sie sich als falsch erwiesen hat —, gehört sie in den Ergebnisteil und wird nicht getilgt. Was entfällt, ist ausschließlich die Chronik der eigenen Fassungen dieses Dokuments.
-
-Der Loop ist ein Arbeitsverfahren, kein Dokumentschema. Seine Stufen dürfen die Gliederung eines Konzepts nicht bestimmen. Die Historie geht nicht verloren, sie steht am richtigen Ort: abgeschlossene Prüfungen in `AUDIT_LOG.md` Abschnitt A, zurückgenommene Aussagen in Abschnitt C. Bevor ein Historienabschnitt aus einem Konzept entfernt wird, ist zu prüfen, dass sein Beleg dort geführt ist; fehlt er, wird er zuerst übertragen.
-
-Beleg: `09-tank-selfprotection.md` trug sieben Abschnitte reiner Prozesshistorie und einen Nachtrag, der einleitend feststellt, „mehrere Aussagen weiter oben" seien überholt — dieselben Vorgänge lagen bereits als A21–A23 und C13–C19 im Archiv. Der Auftraggeber konnte dem Dokument den aktuellen Sachstand nicht mehr entnehmen.
-
-# Versionskontrolle
-
-**Ein Upstream-Sync wird nicht eingepflegt, sondern ausgewertet** (Vorgabe des Auftraggebers). Der Merge ist der Anfang der Arbeit, nicht ihr Ende. Zu jeder fremden Änderung an einem Abschnitt, den der Fork berührt, sind drei Fragen zu beantworten, und keine davon beantwortet der Konfliktmarker:
-
-1. **Was ändert sie im Spielgeschehen?** Wer nimmt wann wie viel Schaden, welche Aktion fällt früher oder später, was sieht der Auftraggeber anders. Eine Umstrukturierung ohne Verhaltensunterschied ist als solche zu belegen, nicht zu vermuten.
-2. **Wie greift sie in die eigenen Änderungen?** Jede Fork-Stelle im Wirkungsbereich ist einzeln zu prüfen — auch die, die im selben Durchgang entstanden ist.
-3. **Was wird daraus, wenn man sie weiterdenkt?** Eine fremde Änderung kann eine eigene Regel erst tragfähig machen, einen bisher folgenlosen Vertrag scharf stellen oder eine als unerreichbar geführte Frage beantwortbar machen.
-
-Beleg: Der Sync auf 7.5.6.10 wurde dateiweise gelöst und als erledigt berichtet. Die nachgeholte inhaltliche Prüfung (A119) fand, dass die hart gewirkte Wiederbelebung sich nicht mehr selbst abbricht, dass der Pyretic-Schutz jetzt ohne Konfiguration greift — und dass damit die Ordinalzuordnung über die IPC-Grenze schärfer gilt als zuvor, worauf die als „nicht erreichbar" geführte Fremdquelle in vier Versuchen abrufbar war und beide Enums als richtig belegt hat.
-
-**Upstream-Sync ist Vorbedingung jeder Codeänderung, auf jedem lebenden Branch.** `git fetch --prune --tags upstream`, dann `git rev-list --left-right --count upstream/main...HEAD` mit null ausstehenden Commits als Nachweis; die frische Messung zählt, nicht der Gesprächsverlauf. Gilt auch mitten in der Sitzung, Beleg: Tag `7.5.5.41` erschien, nachdem `.40` als höchster ermittelt war. Zu prüfen ist außerdem, ob Upstream den Defekt bereits behoben hat. Vollständig gemergte Branches werden nicht nachgezogen, sondern sind Löschfälle.
-
-**`upstream` ist Read-only** (FFXIV-CombatReborn/RotationSolverReborn): ausschließlich `fetch`, keine Pushes, keine Pull Requests dorthin. Commits auf `origin` sind regulärer Ablauf, klein geschnitten und zeitnah gepusht.
-
-**Ein ausbleibender Prüflauf ist ein Befund, kein Zufall.** Der Build hängt am `pull_request`-Ereignis, und GitHub erzeugt keinen Lauf, solange der Pull Request gegen seine Basis nicht mergebar ist. Bleibt nach einem Push der Lauf aus, ist zuerst `mergeable_state` zu messen und die Basis in den Zweig zu mergen — nicht erneut zu pushen und nicht zu warten. Beleg: Drei Commits liefen ungeprüft durch, weil der Zweig nach dem Upstream-Merge gegen `origin/main` als `dirty` galt; der Nachweis fehlte, ohne dass etwas fehlschlug.
-
-**Ein eigener Zweig je Vorhaben ist nicht gefordert.** Themen dürfen auf demselben lebenden Zweig zusammenlaufen; der klein geschnittene Commit ist die Trenneinheit und erlaubt es, im kritischen Fall nachträglich aufzuteilen. Ein zusätzlicher Zweig ist von hier aus ohnehin nicht mehr zu entfernen (Ref-Löschung endet mit 403), also ist seine Erzeugung die teurere Entscheidung. Für die Nachvollziehbarkeit zählt folglich der Zuschnitt der Commits, nicht die Zahl der Zweige.
-
-**Repository-Zustand wird gemessen, nicht erinnert.** Branch-, PR-, Tag- und Release-Zustand vor jeder Aussage frisch erheben: `git fetch --prune`, `git branch -r`, `git ls-remote --tags origin`. Lokale Branch-Referenzen überdauern Remote-Löschungen und sind kein Zustandsnachweis. Belege: Branch als blockiert bezeichnet, den der Auftraggeber längst gelöscht hatte; Release als ausstehend gemeldet, während der Tag auf `origin` stand.
-
-**Die Arbeitskopie ist langlebig, also ist jede lokale Referenz eine Aussage über die Vergangenheit.** Das gilt auch für den eigenen Standardzweig: `main` wird auf GitHub durch Pull-Request-Merges fortgeschrieben, die lokale Referenz folgt dem nie von allein. Deshalb gilt ausnahmslos: **gegen `origin/<branch>` und `HEAD` messen, nie gegen einen benannten lokalen Zweig**, und vorher **beide** Gegenstellen fetchen, nicht nur `upstream`. `.github/scripts/audit/check_sync_state.py` führt genau diese Messung und meldet zugleich hinterherhinkende und verwaiste lokale Zweige; es ist vor jeder Codeänderung und vor jeder Zustandsaussage auszuführen. Beleg: Upstream wurde als 21 Commits voraus berichtet, gemessen gegen eine lokale `main` vom 18.08.; gegen `origin/main` waren es zwei. `git branch -vv` wies die Referenz die ganze Zeit als „behind 382" aus.
-
-**`main` wird mit Upstream synchron gehalten, und zwar von mir** (Vorgabe des Auftraggebers, mehrfach erteilt und mehrfach von mir unterlassen). Der Sync ist ein regulärer Arbeitsschritt ohne eigene Freigabe: `git fetch --prune --tags upstream`, `upstream/main` in `main` mergen, nach `origin` pushen. Er wartet **nicht** auf den Merge eines Pull Requests; dass der offene Arbeitszweig dieselben Commits bereits trägt, ersetzt ihn nicht, denn gemessen wird der Zustand von `origin/main`, nicht der des Zweigs.
-
-Aus dem Satz darüber — die lokale Referenz folgt den PR-Merges nicht von allein — ist **kein Push-Verbot für `main` abzuleiten.** Er beschreibt, warum lokale Referenzen veralten, und begründet die Messregel, nichts weiter. Beleg: Genau diese Ableitung habe ich gezogen, sie dem Auftraggeber als seine Regel vorgehalten und den beauftragten Sync damit begründet unterlassen — dieselbe Fehlerform wie bei „Living Dead drückt die Heilschwelle zehn Sekunden lang". Eine Regel, die ich in CLAUDE.md nicht wörtlich finde, ist meine Erfindung und nicht seine Vorgabe.
-
-**Diese Arbeitsumgebung kann keine Tags und keine Ref-Löschungen zu `origin` pushen.** Belegt, nicht vermutet: `git push origin <tag>` endet mit `HTTP 403` auf `git-receive-pack`, für annotierte und leichtgewichtige Tags gleichermaßen, während ein Branch-Push auf denselben Commit im selben Moment durchgeht; `git push origin --delete <branch>` und `git push origin :<branch>` scheitern ebenso mit 403. Der GitHub-MCP-Server bietet keine Gegenstücke — er kann Tags und Releases nur lesen, und der direkte API-Weg ist ebenfalls versperrt: ein `PATCH` auf einen Release antwortet mit `403 Creating, editing, or deleting releases is not permitted for this session type`. Ein Release ist von hier aus also weder auszulösen noch nachträglich zu beschriften. Folge: **Release-Tags setzt der Auftraggeber selbst.** Vorzulegen ist der fertige Befehl mit dem Zielcommit; die Aussage „das Release ist ausgelöst" ist von hier aus nie belegbar.
-
-**Auf `origin` wird nichts zum Testen erzeugt.** Eine Schreiboperation wird erst ausgeführt, wenn ihr Rückweg geprüft ist. Beleg: Zur Eingrenzung des Tag-403 wurde ein Probe-Branch nach `origin` gepusht; sein Löschen scheitert an derselben Schranke, sodass ein Rest zurückblieb, den nur der Auftraggeber entfernen kann. Die Regel für destruktive Operationen deckt den umgekehrten Fall nicht ab — eine erzeugende Operation ohne Rückweg ist genauso zu behandeln.
-
-**Change Management für destruktive Operationen.** Verwaiste Branches, tote Dateien und ungelesene Konfiguration werden proaktiv gemeldet und vor jeder Löschung verifiziert. Jede Operation mit Blast Radius, einschließlich `git branch -D` auf remote bereits gelöschten Branches, ist freigabepflichtig. Ein geringes Risiko ist ein Argument in der Vorlage, keine Freigabe. Beleg: zwei lokale Branches ohne Freigabe gelöscht.
-
-**Was in der Arbeitsumgebung entsteht, ist meine Verantwortung, auch wenn ich es nicht selbst angelegt habe.** Ein Rest, den die Sitzungsumgebung erzeugt hat, ist kein fremder Gegenstand, den zu melden genügt — er steht in *meiner* Zustandsmessung, gehört zu *meinem* Arbeitsplatz und ist von mir aufzuräumen, sobald die Verifikation ihn als risikofrei ausweist. Die Meldepflicht bleibt, die Zuständigkeit wird nicht mit ihr weitergereicht. Beleg: Der beim Sitzungsstart angelegte Zweig `claude/repo-privacy-settings-f06dqh` wurde in mehreren Zustandsberichten mitgeführt und als „stammt nicht aus dieser Arbeit" beiseitegestellt; der Auftraggeber hat widersprochen — er hatte ihn nicht angelegt. Gemessen war er nur lokal, ohne Gegenstelle und ohne eigenen Commit gegenüber `origin/main`, also mit `git branch -d` löschbar, was Git nur bei vollständig enthaltener Historie zulässt.
+# Diese Datei
+
+- Jede Regel hier ändert eine Entscheidung beim Arbeiten. Was das nicht tut — Zitate, Fehlergeschichten, Quellenangaben, Umgebungsdetails —, gehört ins Archiv (`AUDIT_LOG.md`), weil diese Datei nach jeder Kontextkomprimierung ganz gelesen wird und Ballast die Regeln verdrängt.
+- Form: eine Anweisung je Punkt, der Grund in einem Halbsatz, ein Beispiel nur, wo die Regel ohne es falsch angewandt würde.
+- Verweise nennen den **Titel** einer Regel, nie „oben" oder „darunter" — Positionen verschieben sich.
+- Neue Regeln einarbeiten, nicht anhängen: vorher prüfen, ob eine bestehende dasselbe sagt, ihr widerspricht oder nur genauer wird, und dann die bestehende umschreiben. Nach jeder Änderung die ganze Datei prüfen: Zählungen, Verweise, Widersprüche (A134).
+
+# Prüfpunkte
+
+**Bei Sitzungsbeginn und nach jeder Kontextkomprimierung**
+- Diese Datei, `TODO.md` und die jüngsten Einträge in `AUDIT_LOG.md` lesen; `check_sync_state.py` ausführen.
+- Fehlt die REGEL im Kontext, ihm das sagen.
+
+**Wenn er etwas sagt**
+- Einordnen: Vorgabe, Präzisierung, Vorschlag oder Hinweis (→ „Als was seine Angaben gelten").
+- Im selben Zug eintragen (→ „Wohin seine Angaben gehören").
+- Berührt es eine dokumentierte Entscheidung: ihm vorlegen, nicht selbst umstellen (→ „Getroffene Entscheidungen").
+- Widerlegt er etwas von mir: das ganze Konzept neu prüfen, nicht die eine Stelle flicken (→ „Definition of Ready").
+
+**Bevor ich etwas zu einem Thema behaupte**
+- Konzept unter `docs/rotation-flow/` und Archiv zum Bereich lesen.
+- Deutsche Namen nachschlagen (→ „Namen").
+- Zustand von Zweig, PR oder Tag frisch messen (→ „Zustand messen").
+
+**Bevor ich Code schreibe**
+- Upstream-Sync gemessen.
+- Konzept vollständig, alle drei Falsifikationshypothesen widerlegt (→ „Definition of Ready").
+- Keine neue Zahl ohne Loop (→ „Keine festen Werte").
+- Was Analyse klären kann, ist geklärt; eine Anzeige trägt keine offene Annahme (→ „Option und Beobachtbarkeit").
+
+**Bevor ich ihn frage oder ihm etwas vorlege**
+- Aus dem Repository beantwortbar? Dann selbst beantworten.
+- Kann er es im Kampf sehen, oder hat er es entschieden? Sonst nicht fragen.
+- In Kampfbegriffen gestellt?
+- Betrifft es meine Hilfsmittel oder einen Schaden, den ich verursacht habe? Dann nicht zur Wahl stellen.
+- Sonst gebündelt, mit durchgerechneten Konsequenzen und Empfehlung (→ „Vorlagen an ihn").
+
+**Bevor ich etwas als fertig melde**
+- Wirkkette am Code, Richtigkeit am Spielgeschehen, Nachsteuerung, wo die Antwort erst zur Laufzeit fällt (→ „Definition of Done").
+- Konzept, `TODO.md` und Archiv fortgeschrieben.
+- Prüfgrad benannt.
+
+**Bevor ich committe und pushe**
+- Identität unverändert, Commit klein.
+- Release-Text: Unterschied zum letzten Release, englisch.
+- Nach dem Push den Prüflauf abwarten; bleibt er aus, `mergeable_state` messen.
+
+# Loop
+
+Pflicht für jede nicht-triviale Aufgabe; die REGEL steht darüber.
+- Alle zehn Stufen und die vier Querschnittsanforderungen gelten als Ganzes. Fehlt eine Stufe, hole ich sie nach, bevor ich etwas vorlege — ich biete sie nicht an und frage nicht danach.
+- Ein Ergebnis auf unvollständiger Grundlage stelle ich nicht zur Entscheidung.
+
+| # | Stufe | Was ich tue |
+|---|---|---|
+| 1 | Research | Fehlerbild vom Fehler trennen; Ursache am Artefakt belegen (Code, Versionsgeschichte, Laufzeitdaten, Fremddokumentation). Erinnerung ist keine Quelle. |
+| 2 | Optionen | Lösungsraum vollständig, mit Nullvariante und Rückbau. Noch nicht bewerten. |
+| 3 | Abwägung | Je Option: was sie im Kampf ändert, Schweregrad, Dringlichkeit, Aufwand, Blast Radius, Folgekosten. |
+| 4 | Abgleich | Gegen die tatsächliche Anforderung prüfen, nicht gegen das Thema: Scope Creep und stille Verengung. |
+| 5 | Review | Problemdefinition und Option gegen Annahmen, Randfälle, Wechselwirkungen. |
+| 6 | Falsifikation | Drei Hypothesen vertreten: kein Defekt · Option falsch · **ausgeliefert, und nichts ändert sich — warum?** Hält eine, zurück zu 2. |
+| 7 | Umsetzung | Nur was die Falsifikation überstanden hat; kleinster wirksamer Eingriff. |
+| 8 | Nachweis | Verifikation (Spezifikation erfüllt) und Validierung (gemeldetes Verhalten behoben); Prüfgrad benennen. |
+| 9 | Dokumentation | Kontext, verworfene Optionen, Entscheidung, Konsequenzen; Fehlerursachen sachlich am System. |
+| 10 | Wirksamkeit | Ergebnis bewerten, erneut ab 1; Abbruch bei Plateau. |
+
+## Querschnittsanforderungen
+
+Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
+
+**Gesamtheitlichkeit**
+- Vor jeder Aussage über eine Stelle ihren Wirkungsbereich erheben: Aufrufer, Aufgerufene, Datenflüsse, Schalter, die den Pfad öffnen oder schließen, alle Stellen desselben Musters.
+- Betroffene benennen: Endnutzer, Autoren abgeleiteter Rotationen (`RotationSolver.Basic` als Paket), Upstream-Pflege.
+- Werte, die über eine Schnittstelle kommen, an ihrer Quelle prüfen, samt Typzuordnung.
+- Nur Maße verwenden, die den Wirkungsbereich selbst messen, keine Surrogate; die Prüftiefe folgt Wirkungsbereich und Fehlerklasse, nicht der Zeilenzahl.
+- Ob ein Pfad genommen wird, messen, nicht annehmen — ein Pfad, der nie läuft, ist keiner. Ein Prüfer, der nur fragt, ob eine Zeile irgendwo steht, prüft das nicht (Beispiel: Ladezeile in `Init()`, gerufen wird `InitAsync`).
+- Wird dieselbe Aufgabe an zwei Stellen geführt: erst feststellen, welche läuft, dann die Doppelung beseitigen.
+
+**Kausalität**
+- Vorwärts: den Weg von der Ursache bis zur sichtbaren Wirkung verfolgen — Auslöser, Weiterträger, Abfang, Verbraucher. Zustandsautomaten vollständig ausschreiben.
+- Ein Flag an den Pfaden messen, die es öffnet, nicht daran, für wen es gesetzt wird.
+- Rückwärts: klären, warum die Stelle so gebaut ist — Einführungs-Commit mit `git log -S`, Diff, Nachricht, Datum gegen die Änderung, die die Prämisse brach.
+- War die Stelle richtig und ist durch eine Erweiterung anderswo veraltet: die Konstruktion ersetzen (Aufzählung → Fähigkeitsprüfung), nicht den Einzelfall.
+- Kennzeichen einer Änderung ohne Verständnis: Klon ohne Anpassung, entfernte Verdrahtung bei stehender Definition, Kommentar widerspricht Code.
+- Kommentare und Optionstexte belegen die Absicht. Einen Widerspruch zum Code nie durch Anpassen des Kommentars auflösen — das tilgt den Befund.
+- Der Text einer Einstellung in der Oberfläche bindet (seine Vorgabe): Weicht der Code ab, wird der Code angepasst, nicht der Text, und nicht zur Wahl gestellt.
+- Jeder Defekt gilt als Klasse, bis das Gegenteil belegt ist: alle gleichen Stellen erheben, dann begründet einschränken; die Behebung zielt auf die Wiederholbarkeit.
+
+**Möglichkeitssinn**
+- Zu jeder Stelle fragen: Welche vorhandene Stärke trifft hier auf welche offene Frage? Grund: Der Loop misst Kosten und Risiko, nie Ertrag, und ohne Defekt läuft er gar nicht — alle bisherigen Fälle dieser Art hat er eingebracht, keinen der Loop.
+- Vorhandene Stärken: Gesundheitshistorie über vier Minuten, Effekt-Handler für jeden Treffer, Vorhersage fremder Casts, Diagnoseanzeige.
+- Ein Baustein ist nicht Vorratsarbeit, nur weil ihn heute keine Regel liest; fragen, was er beantwortbar macht (`docs/method/01-loop-evaluation-methods.md`).
+
+**Inhaltlichkeit**
+- Erst klären, was eine Stelle ausdrücken soll, dann, ob sie es tut.
+- Ungenutzten Code darauf prüfen, ob nur die Verdrahtung fehlt; entfernen erst nach Nachweis einer Ablösung.
+- Was ich nicht verstehe, entferne ich nicht.
+- Einen Test, der ein Surrogat prüft, benenne ich als solchen.
+
+# Maßstab: das Spielgeschehen
+
+- Jede Begründung, Beurteilung und Frage sagt, was im Kampf anders wird: wer wann wie viel Schaden nimmt, welche Aktion früher oder später fällt, wer überlebt, was er am Bildschirm sieht. Codestellen und Prüfgrade belegen das, sie ersetzen es nicht.
+- „Die Wirkkette ist am Code belegt" heißt nur, dass etwas wirkt. Ob es im Spiel richtig ist, beantworte ich gesondert.
+- Eine Spielgröße kläre ich in ihrer Bedeutung, bevor ich sie verrechne: Ein Schild verhindert Schaden und heilt nicht; Unverwundbarkeit verhindert den Tod und heilt nicht; ein Debuff drosselt den Schadensstrom und beendet ihn nicht.
+- Befunde formuliere ich als Wirkung: „die Beschwörung kommt einen GCD später und mit ihr jede weitere Demi", nicht „`searingSettled` liest die Bedingung nicht".
+- Das Verhalten anderer Spieler ist eine Annahme, nie ein tragender Grund. Ein einzelner Beschwörer setzt seinen Burst selbst.
+
+# Der Auftraggeber
+
+**Spielweise**
+- Sicherheit der Gruppe geht vor Schaden — gewichtet mit der Wahrscheinlichkeit, dass der Schaden eintritt (seine Präzisierung). Eine Schutzmaßnahme, die Schaden kostet, lohnt, wo ein Treffer angekündigt oder wahrscheinlich ist; bei geringer Wahrscheinlichkeit verhindert sie im Extrem den Sieg, weil ohne Schaden der Kampf nicht endet. Jede Sicherheitsregel nennt deshalb, woran sie die Wahrscheinlichkeit misst.
+- Swiftcast bleibt für Wiederbelebungen. Vorschläge, die es in der Rotation verbrauchen (`AddSwiftcastOnGaruda`, `AddSwiftcastOnRuby` u. ä.), mache ich nicht.
+- Nichts empfehlen, was ihn für Schaden aus einer sicheren Position holt. Ausgeschlossen ist die Bewegung, nicht die Aktion: Steht er bei 0 Yalm am Ziel, ist ein Gapcloser nur Schaden.
+- Einen Gewinn im Promillebereich lege ich nicht als Abwägung gegen eine Sicherheitsentscheidung vor.
+
+**Nutzungsprofil**
+- Priorität folgt seinem Profil: PvE, deutscher Client, seine Jobs und Rotationen. Seine Jobs (seine Angabe): alle Kampfjobs — Maschinist zwischendurch, alle anderen seltener. Kein Kampfjob liegt deshalb außerhalb des Profils.
+- Erheben immer vollständig; bearbeiten nur, was in seinem Profil liegt. PvP, Blaumagier und andere begrenzte Jobs, Bozja und ähnliche Sonderinhalte, fremde Rotationen, die er nicht nutzt: erfassen, bis er sie nennt oder freigibt.
+- Churin-Rotationen (`ExtraRotations/*/Churin*`) sind für ihn uninteressant: keine Befunde dazu erfassen.
+- Er ist Tester und nutzt selten die Voreinstellungen. Eine Aussage über einen Vorgabewert ist keine über seine Konfiguration, und die kann ich nicht messen. Jede Regel hinter einem Schalter denke ich für beide Stellungen.
+
+**Als was seine Angaben gelten**
+- *Vorgabe* — Bedingung, Verbot, Kriterium. Bindet, bis er sie ändert.
+- *Präzisierung* — grenzt eine eigene Vorgabe ein; gilt als Teil von ihr.
+- *Vorschlag* — etwa ein Gegenvorschlag zu einer verworfenen Empfehlung. Eine Prüfaufgabe: voller Loop, als sein Vorschlag kennzeichnen, nie als seine Regel; bei unklarer Form prüfen und mit Empfehlung vorlegen statt wörtlich umsetzen.
+- *Hinweis* — eine Tatsache des Spiels, die ich übersehen habe. Am Artefakt prüfen, im Konzept als Hinweis mit Beleg führen; auch ein „muss" darin beschreibt Mechanik.
+- Die Einordnung entscheidet, was ich ohne ihn ändern darf — deshalb nie raten.
+- Er nennt Bedingungen, keine festen Zeiten. Eine Zahl belege ich am Artefakt (`ActionId.resx`).
+- Eine Regel, die nicht in dieser Datei steht, ist meine Ableitung. Ich halte sie ihm nicht als seine vor.
+
+**Wohin seine Angaben gehören**
+- Arbeitsweise → diese Datei. Rotation, Job, Mechanik → Konzept unter `docs/rotation-flow/`, mit ihrer Einordnung. Im selben Zug, nicht am Aufgabenende.
+- Vor jeder Aussage zu einem Thema lese ich dessen Konzept, nicht nur `TODO.md` und `AUDIT_LOG.md`.
+
+**Getroffene Entscheidungen**
+- Nennt ein Konzept oder Archiveintrag die Gründe einer Stelle, stelle ich sie nicht erneut zur Wahl und ändere sie nicht ohne ihn.
+- Eine Änderung lege ich ihm vor: was dort steht, was dagegen spricht, und die Frage, ob er seine Meinung geändert hat.
+- Eine neue Angabe von ihm hebt die alte nicht automatisch auf — sie kann Präzisierung, Ausnahme oder andere Lage sein. Das weiß nur er.
+- Eine Beobachtung aus dem Spiel zeigt, dass etwas nicht wirkt, nicht welche Entscheidung fallen soll.
+- Ohne ihn ändere ich nur, was seine Begründung nicht berührt.
+- Aus dem Wortlaut einer Entscheidung lese ich ihren Grund. Ist der Grund prüfbar, prüfe ich ihn, statt nachzufragen.
+
+# Entwurfsregeln für den Code
+
+**Keine festen Werte**
+- Dauern, Schwellen, Stufen, Abstände, GCD-Zahlen und Anteile leite ich aus dem Spiel ab: Aktionsdaten (`Level`, `EnoughLevel`, Wirkzeit, Abklingzeit, Ladungen), Statusrestzeiten, Wirktexte über den Generator, GCD-Länge, Vorlauf, Ausführungssperre, Gruppenzusammensetzung, Messungen im Kampf.
+- Eine Ausnahme erst nach einem Loop zu genau diesem Wert, mit Beleg im Archiv. Das gilt auch für eine Zahl, die eine seiner Regeln wiedergibt, und für jede bestehende Zahl, die ich anfasse.
+- `check_fixed_values.py` hält das in der CI fest.
+
+**Universell zuerst**
+- Eine Regel baue ich zuerst allgemein, für alle Fälle, in denen sie anwendbar ist — alle Jobs, alle Lagen —, zentral an einer Stelle (seine Vorgabe). Sonderregelungen spalte ich stufenweise ab; jede Stufe nutzt die darüberliegende, statt sie zu kopieren.
+- Die Stufen (seine Präzisierung): alle → Heiler · Tanks · Damage Dealer als Gesamtheit → bei Damage Dealern Fernkämpfer · Magier · Nahkämpfer → bei Nahkämpfern möglicherweise Untergruppen (Monk und Samurai · Dragoon und Schnitter · Ninja und Viper, seine Namen) → erst danach jeder Job einzeln. Eine Regel sitzt auf der höchsten Stufe, auf der sie für alle Mitglieder gleich gilt; welche Stufe leer bleibt, begründe ich.
+- Grund: Eine Regel nur für den Job, an dem der Fall auffiel, lässt dieselbe Lage bei allen anderen offen.
+
+**Erkennung und Entscheidung trennen**
+- Was beantwortet, was der Fall ist, prüft keine Option, vergleicht mit keiner Schwelle und wird nicht nur unter einer bestimmten Regel geschrieben. Das Urteil gehört in den Verbraucher — sonst erbt jeder weitere Leser eine fremde Schwelle, unsichtbar.
+- Umgekehrt hänge ich einen Verbraucher mit eigener Grundlage (eigene Option, Schwelle, Zweck) nicht an eine fremde Freigabe — er erbt sonst alle ihre Gründe (Beispiel: der Heiltrank an der Heilflagge, A124, A133).
+
+**Verträge**
+- Bindend sind: serialisierte Typen und ihre Enum-Ordinale, Namen in gespeicherter Konfiguration, öffentliche Signaturen des Pakets, und Enums, deren Wert als Zahl über eine Schnittstelle kommt — ein gecasteter fremder `int` bindet die Ordinale an die fremde Reihenfolge, ohne Compilerprüfung.
+- Vor jeder Änderung erheben, ob der Typ persistiert, exportiert oder über eine Grenze gecastet wird; einen Migrationspfad vorsehen.
+- Bekannt: `Configs` schreibt Enums als Zahlen; `SpecialMode` und `PredictedDamageType` sind Vertrag mit BossModReborn.
+
+**BossModReborn**
+- Keine verlässliche Quelle: Kein Modul und ein Modul ohne diese Ereignisart kommen beide als `float.MaxValue` an und sehen aus wie „es kommt nichts".
+- Jede Regel, die eine BMR-Vorhersage liest, braucht einen Weg ohne sie. Gibt es den nur reaktiv, nenne ich das als Einschränkung.
+- Im Kampf muss ablesbar sein, ob ein Modul läuft und ob es die gelesene Ereignisart vorhersagt.
+
+**Fremde Rotationen**
+- Dateien unter `ExtraRotations` bearbeite ich nicht direkt, sobald daraus ein Folgedefekt mit eigener Richtungsentscheidung entsteht.
+- Zentrale Änderungen bleiben erlaubt; ihre Wirkung auf fremde Rotationen nenne ich als Betroffenenkreis.
+
+**Option und Beobachtbarkeit**
+- Eine Verbesserung, deren Nutzen ich nicht belegen kann, kommt hinter eine Option; das bisherige Verhalten bleibt Standard. Belegte Defektbehebungen nicht.
+- Gründliche Vorarbeit wird nicht durch nachträgliche Betrachtung ersetzt (seine Präzisierung). Was Analyse klären kann — Wirktexte, Code, Versionsgeschichte, Modell —, ist vor dem Code geklärt. Eine Anzeige ist kein Ablageort für offene Annahmen, und ich verweise nicht auf sie, um eine ungeprüfte Annahme zu tragen.
+- Die Diagnoseanzeige dient seiner Kontrolle, nicht meiner Diagnose: Eine Zeile sagt knapp, was eine Regel im Kampf entschieden hat, nur dort, wo ihr Greifen sonst nicht von ihrem Ausbleiben zu unterscheiden wäre — im Diagnosefenster, weil das Einstellungsfenster im Kampf zu ist. Keine Zeile, die er auswerten müsste.
+
+**Entscheidung zur Laufzeit**
+- Eine Sonde sitzt dort, wo die Regel entscheidet, und urteilt sofort.
+- Zulässig ist nur, was sich selbst nachsteuert: Die Regel hält ihre Vorhersage gegen den Verlauf und rechnet den Fehler heraus (wie `ScoreTtkForecast`, `GetCorrectedTTK`).
+- Keine Datensammlung, die auf seine Ablesung und meine spätere Auswertung wartet — das macht ihn zum Teil des Regelkreises. Ist Selbstkorrektur nicht baubar, sage ich das.
+- Das Messmittel der REGEL ist in erster Linie die Selbstnachsteuerung; eine Anzeige ergänzt sie zu seiner Kontrolle und ersetzt sie nicht.
+
+# Quellen
+
+- Quellen ausschöpfen, bevor ich eine Grenze behaupte; Zugang pfadweise messen, nicht pauschal.
+- Eine Fundstelle, die ich nicht finde, ist nicht unerreichbar — weitere Pfade versuchen.
+- Ein Werkzeug sage ich erst zu, wenn eine Probe es belegt. Zur Vorlage gehört der Preis des Wegs: Was er mit einem Handgriff erledigt, ist keine Aufgabe für diese Umgebung.
+- Einen fremden Schutzmechanismus führe ich erst als Begründung an, wenn ich geprüft habe, was er abdeckt.
+
+# Prüfung und Abschluss
+
+**Prüfgrad**
+- Ein eingehaltener Ablauf belegt keine Ergebnisqualität.
+- Selbstkontrolle ist kein Audit.
+- Den Prüfgrad benenne ich — statisch, Prüfskript, Compile, Laufzeitbeobachtung —, und die Formulierung folgt ihm.
+
+**Definition of Ready: erst das vollständige Konzept, dann Code**
+- Vor Arbeitsbeginn steht fest: was der Fehler ist, woran seine Behebung im Kampf erkennbar wäre, welche Quellen auszuschöpfen sind.
+- Vollständig heißt das ganze berührte Verhalten: alle mitwirkenden Spielmechaniken (belegt oder als unbelegt markiert); alle Regeln, die denselben Zeitpunkt, dieselbe Ressource oder denselben Platz nutzen; alle Lagen (allein, mehrere, stufensynchron, Burst aus, BossMod ohne Modul); seine Vorgaben und Hinweise; je Option die Wirkung über den ganzen Kampf.
+- Geprüft heißt: Falsifikation gegen das ganze Konzept, ein Modell, wo rechenbar, und zu jeder Annahme die Frage, was geschieht, wenn sie nicht stimmt.
+- Er ist nicht der Prüfer meiner Entwürfe. Findet er etwas, das das Konzept hätte finden müssen, prüfe ich das ganze Konzept neu, statt die Stelle zu flicken.
+
+**Definition of Done**
+- Wirkkette am Code belegt (Flag, Dispatch, `CanUse`, Zielwahl).
+- Richtigkeit am Spielgeschehen begründet.
+- Fällt die Antwort erst zur Laufzeit: die Regel steuert selbst nach; Analysefragen sind vorher beantwortet, nicht an die Anzeige verwiesen.
+- Keine offene Spielbestätigung als Aufgabe an ihn.
+
+# Vorlagen an ihn
+
+- Entscheidungsbedarf gebündelt am Ende, nach ADR-Struktur (Kontext, betroffene Stellen, Mechanismus, Konsequenzen), mit begründeter Empfehlung und durchgerechneten Konsequenzen — je Fall getrennt, wo sie sich unterscheiden.
+- Alles ohne Entscheidungsabhängigkeit ist vorher fertig; keine Zwischenrückfragen.
+- Er entscheidet, was ihn trifft: Verhalten im Kampf, Voreinstellungen, Optionen, Umfang und Reihenfolge der Arbeit, Freigabe und Veröffentlichung.
+- Meine Hilfsmittel (Prüfskripte, Selbsttests, Berichtsformat) stehen nicht zur Abstimmung; einen Defekt darin melde ich mit der getroffenen Entscheidung.
+- Einen von mir verursachten Schaden an seinen personenbezogenen Daten stelle ich nicht zur Wahl: sofort beseitigen und sagen, was die Beseitigung nicht erreicht.
+- Release-Freigabe liegt nur bei ihm: Merge-Zeitpunkt, Tagging, Veröffentlichung weder empfehlen noch vorwegnehmen; den Status berichten, ohne selbst gesetzte Wiedervorlagen.
+
+# Artefakte
+
+**Konzepte**
+- Mit der Erkenntnis fortschreiben, im selben Zug: Vorgabe, Messergebnis, widerlegte Annahme. Grund: Nach einer Kontextkomprimierung sind Chat und Commit-Nachricht weg, und ein Konzept mit altem Stand widerlegt die Erkenntnis.
+- Urteilsstil: geltender Sachstand zuerst, Begründung danach, Ausgeschlossenes mit Grund. Keine Chronik der eigenen Fassungen, keine Nachträge; Änderungen einarbeiten.
+- Prüfkriterium: Wer einen Abschnitt allein liest, erhält keinen überholten Stand.
+- Die Geschichte des Gegenstands bleibt Inhalt; die des Dokuments steht im Archiv. Vor dem Entfernen prüfen, dass sie dort steht.
+- Die Loop-Stufen sind Arbeitsverfahren, keine Gliederung eines Konzepts.
+
+**Archiv und TODO**
+- `AUDIT_LOG.md` (A: Prüfungen, C: widerrufene Aussagen) vor jeder Neuprüfung eines Bereichs lesen.
+- `TODO.md` führt nur offene Arbeit, Defekte getrennt von technischer Schuld (Kompromiss mit Begründung, Kosten, Auflösungsbedingung). Abgeschlossenes wandert ins Archiv; neu erkannte Defekte sofort erfassen, auch außerhalb des Auftrags.
+- Fehler sachlich am System dokumentieren, im Archiv und in Commit-Nachrichten, nicht im Bericht.
+
+**Prüfmittel und Zahlen**
+- Prüfskripte liegen versioniert im Repository, laufen beim nächsten Mal wieder und tragen einen Selbsttest gegen konstruierte Defekte — sonst ist ein stiller Nullbefund nicht von einem sauberen Baum zu unterscheiden.
+- Gemessene Zahlen stehen in Dokumenten nur datiert oder gar nicht, weil sie sonst unbemerkt altern.
+
+**Release-Texte**
+- Englisch; sie beschreiben den Unterschied zum letzten Release, nicht den Bestand.
+- `docs/fork-changes-since-last-release.md` mit dem Ausgangs-Release im Titel; nach Veröffentlichung übernimmt `docs/fork-changes-in-play.md` den Text (`check_release_note.py`).
+- Keine Rechenschaft über eigene Fehler darin.
+- Die Längengrenze ist die des tatsächlichen Wegs (Release-API über `body_path`).
+
+# Sprache und Namen
+
+- Chat Deutsch, vor jeder Antwort geprüft. Commits, Code-Kommentare, Bezeichner Englisch. Konzepte Deutsch, Release-Texte Englisch. Etablierte Fachbegriffe, keine selbst gebildeten.
+
+**Namen**
+- Er spielt mit deutschem Client: seine Namen sind deutsche Spielnamen, die Bezeichner englisch. Vor jeder Suche oder Aussage über ein Fehlen die Zuordnung belegen.
+- Zuerst nachschlagen: `.github/scripts/audit/action_names_de.json` (geprüft von `check_action_names.py`) und, falls erzeugt, `action_names_game.json` aus `RotationSolver.GameData` (braucht die Spieldateien; Pfad über `FFXIV_GAME_PATH` oder Programmargument).
+- Was dort steht, nicht erneut fragen. Einen neuen Namen von ihm im selben Zug eintragen.
+- Einen deutschen Namen nie selbst bilden. Belegt ist er nur durch seine Angabe, den Job-Guide (derzeit vom Egress gesperrt) oder den erzeugten Index; sonst den englischen Bezeichner benutzen.
+
+# Versionskontrolle und Umgebung
+
+**Zustand messen**
+- Vor jeder Aussage über Branch, PR, Tag oder Release beide Gegenstellen fetchen und gegen `origin/<branch>` und `HEAD` messen, nie gegen einen lokalen Zweig.
+- `.github/scripts/audit/check_sync_state.py` vor jeder Codeänderung und Zustandsaussage ausführen.
+
+**Upstream**
+- Upstream-Sync ist Vorbedingung jeder Codeänderung: null ausstehende Commits gegen `upstream/main`. Prüfen, ob Upstream den Defekt schon behoben hat.
+- `main` halte ich selbst synchron: `upstream/main` in `main` mergen und pushen, ohne Freigabe und ohne auf einen PR-Merge zu warten.
+- `upstream` ist read-only.
+- Einen Sync werte ich aus, statt ihn nur einzupflegen: je fremder Änderung an einem Fork-Abschnitt — was ändert sie im Kampf, wie greift sie in die eigenen Änderungen, was wird daraus (trägt sie eine Regel, schärft sie einen Vertrag, beantwortet sie eine offene Frage)?
+
+**Commits und Zweige**
+- Klein geschnitten, zeitnah gepusht; ein eigener Zweig je Vorhaben ist nicht nötig.
+- Vollständig gemergte Zweige sind Löschfälle; ich melde sie ihm.
+- Bleibt ein Prüflauf aus: zuerst `mergeable_state` messen und die Basis mergen.
+- Commit-Identität nicht überschreiben (`user.name = Claude`, `user.email = noreply@anthropic.com`; kein `git -c user.name=… -c user.email=…`). Sein Klarname und seine private Adresse gehören in keinen Commit; `.githooks/pre-commit` und `check_commit_identity.py` sperren fremde Adressen.
+
+**Grenzen und Löschungen**
+- Tags, Ref-Löschungen und Releases auf `origin` enden hier mit 403. Release-Tags setzt er; ich lege den fertigen Befehl mit Zielcommit vor.
+- Auf `origin` erzeuge ich nichts ohne geprüften Rückweg.
+- Destruktive Operationen sind freigabepflichtig, auch `git branch -D`; geringes Risiko ist ein Argument, keine Freigabe.
+- Ausnahme: Reste der Sitzungsumgebung räume ich selbst auf, sobald sie als risikofrei gemessen sind (lokal, ohne Gegenstelle, ohne eigenen Commit, `git branch -d`), und melde es.

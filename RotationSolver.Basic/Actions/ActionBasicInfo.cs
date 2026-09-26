@@ -685,7 +685,11 @@ public readonly struct ActionBasicInfo
 			return false;
 		}
 
-		return Player.Object.StatusList != null && !skipStatusNeed && _action.Setting.StatusNeed != null && Player.Object.WillStatusEndGCD(_action.Config.StatusRefreshGcdCount, 0, _action.Setting.StatusFromSelf, _action.Setting.StatusNeed);
+		// A needed status has to be there when the action goes off - for a cast, until the cast ends.
+		// StatusRefreshGcdCount is the horizon for reapplying a status the action provides ("Number of
+		// GCDs before the DOT/Status effect is reapplied"); read here it locked every consumer out of
+		// the last GCDs of its own window, and any "use it before it runs out" rule with it.
+		return Player.Object.StatusList != null && !skipStatusNeed && _action.Setting.StatusNeed != null && Player.Object.WillStatusEnd(CastTime, _action.Setting.StatusFromSelf, _action.Setting.StatusNeed);
 	}
 
 	private bool IsStatusProvided(bool skipStatusProvideCheck)

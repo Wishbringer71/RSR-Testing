@@ -26,6 +26,33 @@ public static class Watcher
 
 	public static string ShowStrSelf { get; private set; } = string.Empty;
 
+	// Amounts of damage and healing are read through FullAmount, never from .value alone. The entry
+	// stores an amount as a 16-bit value; a larger one carries its third byte in the byte ECommons
+	// calls mult, and only then is bit 0x40 of the byte it calls flags set ("a lot of damage":
+	// cactbot's LogGuide, "Ability Damage" - bytes ABCD, C = 0x40, total = D A B). So .value alone
+	// wrapped every hit or heal above 65,535 points - a level 100 raidwide on a tank, a Benediction
+	// on one - and the measured shares came out too small, so a big area hit could be rated small.
+	// EffectEntry.Damage adds mult without looking at the flag; where the byte means something else
+	// that would inflate a small hit for good, because the store only ever raises a value.
+	// ActionEffectSet.GetSpecificTypeEffect returns .value too ("Is this value or Damage? IDK about
+	// it." in its source), so heals are collected here instead.
+	private static uint FullAmount(EffectEntry entry)
+		=> (entry.flags & 0x40) != 0 ? entry.Damage : entry.value;
+
+	private static Dictionary<ulong, uint> AmountsByTarget(ActionEffectSet set, ActionEffectType type)
+	{
+		var result = new Dictionary<ulong, uint>();
+		foreach (var effect in set.TargetEffects)
+		{
+			if (effect.GetSpecificTypeEffect(type, out var entry))
+			{
+				result[effect.TargetID] = FullAmount(entry);
+			}
+		}
+
+		return result;
+	}
+
 	private static void ActionFromEnemy(ActionEffectSet set)
 	{
 		try
@@ -54,7 +81,7 @@ public static class Watcher
 					{
 						if (entry.type == ActionEffectType.Damage)
 						{
-							damageRatio += (float)entry.value / denom;
+							damageRatio += (float)FullAmount(entry) / denom;
 						}
 					});
 				}
@@ -104,6 +131,29 @@ public static class Watcher
 			var partyMembers = DataCenter.PartyMembers;
 			var partyMemberCount = partyMembers.Count;
 
+			// Why the last enemy action that hurt the player was or was not measured. The table can
+			// stay empty for five different reasons, and the file ("{}") looks the same for all of
+			// them - so the decision states its reason where it is taken. Only actions that actually
+			// damaged the player count here, so auto-attacks from trash do not overwrite a raidwide.
+			if (damageRatio > 0f && set.Action.HasValue)
+			{
+				var actionId = set.Action.Value.RowId;
+				DataCenter.AreaMeasurementLastOutcome =
+					!Service.Config.RecordCastingArea
+						? $"{DateTime.Now:HH:mm:ss} #{actionId}: not measured - Record AOE actions is off"
+					: partyMemberCount < 4
+						? $"{DateTime.Now:HH:mm:ss} #{actionId}: not measured - party counted as {partyMemberCount}, 4 needed (NPC companions only count with the NPC party-member setting)"
+					: !(set.Action?.Cast100ms > 0)
+						? $"{DateTime.Now:HH:mm:ss} #{actionId}: not measured - instant, only cast actions are rated"
+					: set.Header.ActionType != ActionType.Action
+						? $"{DateTime.Now:HH:mm:ss} #{actionId}: not measured - action type {set.Header.ActionType}, only regular actions are rated"
+					: set.Action?.GetActionCate() is not (ActionCate.Spell or ActionCate.Weaponskill or ActionCate.Ability)
+						? $"{DateTime.Now:HH:mm:ss} #{actionId}: not measured - category {set.Action?.GetActionCate()}, only spells, weaponskills and abilities are rated"
+					: !OtherConfiguration.HostileCastingArea.Contains(actionId)
+						? $"{DateTime.Now:HH:mm:ss} #{actionId}: not measured - not in the AoE list (added only once it hits every member)"
+						: $"{DateTime.Now:HH:mm:ss} #{actionId}: in the AoE list, measured";
+			}
+
 			if (Service.Config.RecordCastingArea && set.Header.ActionType == ActionType.Action && partyMemberCount >= 4 && set.Action?.Cast100ms > 0)
 			{
 				var type = set.Action?.GetActionCate();
@@ -139,7 +189,7 @@ public static class Watcher
 							continue;
 						}
 
-						var landed = damageEffect.value > 0;
+						var landed = FullAmount(damageEffect) > 0;
 						if (landed || (damageEffect.param0 & 6) == 6)
 						{
 							damageEffectCount++;
@@ -152,7 +202,7 @@ public static class Watcher
 						// raidwide does not fall out of the list just because the party was shielded.
 						if (landed && memberMaxHp > 0)
 						{
-							var share = (float)damageEffect.value / memberMaxHp;
+							var share = (float)FullAmount(damageEffect) / memberMaxHp;
 							if (share > highestShare)
 							{
 								highestShare = share;
@@ -180,6 +230,15 @@ public static class Watcher
 					// an increase is written. The highest value ever seen is the one that survives a
 					// well-mitigated pull, and an underrated action corrects itself: the mitigation
 					// is skipped, so the next hit arrives unmitigated and measures itself.
+					// The line above said "measured" before the amount was known; say what the reading
+					// was, or that there was none.
+					if (damageRatio > 0f && OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
+					{
+						DataCenter.AreaMeasurementLastOutcome = highestShare > 0f
+							? $"{DateTime.Now:HH:mm:ss} #{set.Action!.Value.RowId}: in the AoE list, measured at {highestShare:P0} of max HP"
+							: $"{DateTime.Now:HH:mm:ss} #{set.Action!.Value.RowId}: in the AoE list, not measured - no amount was read from a party member";
+					}
+
 					if (highestShare > 0f && Service.Config.RecordCastingArea
 						&& OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
 					{
@@ -258,15 +317,32 @@ public static class Watcher
 				ShowStrSelf = set.ToString();
 			}
 
-			DataCenter.HealHP = set.GetSpecificTypeEffect(ActionEffectType.Heal);
+			DataCenter.HealHP = AmountsByTarget(set, ActionEffectType.Heal);
 
 			// Record what this heal was actually worth in health points. HealHP above is consumed and
 			// cleared as soon as the server's own health update catches up, so it answers "do not heal
 			// this target twice" and nothing beyond the next few frames; a rule that wants to know how
 			// far one cast reaches needs the figure to survive the cast.
+			//
+			// With each amount goes the target's health when the effect arrived. Whether that is still
+			// the health from before the heal is not known here - the server's health update can come
+			// first - so DataCenter holds the cast until the health rise confirms it
+			// (DataCenter.RecordHealEffect). A target outside the party list (a chocobo, an NPC without
+			// the NPC setting) has no health to measure against and is left out.
+			List<(ulong Id, uint Amount, uint Hp, uint MaxHp)> healLanded = [];
 			if (DataCenter.HealHP is { Count: > 0 })
 			{
-				DataCenter.RecordHealEffect(action!.Value.RowId, DataCenter.HealHP.Values);
+				foreach (var (targetId, amount) in DataCenter.HealHP)
+				{
+					foreach (var member in DataCenter.PartyMembers)
+					{
+						if (member != null && member.GameObjectId == targetId)
+						{
+							healLanded.Add((targetId, amount, member.CurrentHp, member.MaxHp));
+							break;
+						}
+					}
+				}
 			}
 
 			// Ensure ApplyStatus dictionary is non-null, then merge source-applied effects
@@ -296,6 +372,13 @@ public static class Watcher
 
 			DataCenter.EffectTime = DateTime.Now;
 			DataCenter.EffectEndTime = DateTime.Now.AddSeconds(set.Header.AnimationLockTime + 1);
+
+			// After the effect window is set: the cast waits for its confirmation as long as the heal
+			// projection waits for the server's health update, and no longer.
+			if (DataCenter.HealHP is { Count: > 0 })
+			{
+				DataCenter.RecordHealEffect(action!.Value.RowId, healLanded);
+			}
 
 			var attackedTargets = DataCenter.AttackedTargets;
 			var attackedTargetsCount = DataCenter.AttackedTargetsCount;

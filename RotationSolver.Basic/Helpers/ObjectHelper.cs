@@ -3828,6 +3828,28 @@ public static class ObjectHelper
 	}
 
 	/// <summary>
+	/// Whether this member stands in the heal chain's critical class (concept 07): unprotected by an
+	/// invulnerability, and at or below <c>HealthForDyingTanks</c> in effective health carried forward
+	/// to the moment a heal begun now would land. One definition for every reader - the heal target
+	/// order, the defense holds and Lux Solaris - so they cannot disagree about who is in danger.
+	/// </summary>
+	internal static bool IsInCriticalClass(this IBattleChara battleChara)
+	{
+		return battleChara.IsInCriticalClass(battleChara.NoNeedHealingInvuln());
+	}
+
+	/// <summary>
+	/// <see cref="IsInCriticalClass(IBattleChara)"/> for a caller that has already read whether the
+	/// member is protected, so the status list is not walked twice and the answer cannot change
+	/// between the two reads.
+	/// </summary>
+	internal static bool IsInCriticalClass(this IBattleChara battleChara, bool unprotected)
+	{
+		return unprotected
+			&& battleChara.GetForecastEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f;
+	}
+
+	/// <summary>
 	/// <see cref="GetEffectiveHpPercent"/> carried forward to the moment a heal begun now would land.
 	/// </summary>
 	internal static int GetForecastEffectiveHpPercent(this IBattleChara battleChara)

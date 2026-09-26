@@ -70,6 +70,18 @@ public sealed class MCH_Reborn : MachinistRotation
 
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
 	{
+		// The automaton's finisher before a pause. Its effect text: "If this action is not used manually
+		// while the Automaton Queen is active it will be triggered automatically immediately before
+		// shutting down." When the boss turns untargetable before that shutdown, the automatic
+		// finisher hits nothing. Ordered by hand in the last GCD before the predicted pause, it lands.
+		// BossModReborn only: without a prediction the pause is known when it has begun, which is too
+		// late. Rook Overdrive is the button; it becomes Queen Overdrive with the trait.
+		if (InCombat && IsRobotActive && BMRDowntimeWithin(DataCenter.DefaultGCDTotal) && BMRDowntimeIn < SummonTime
+			&& RookOverdrivePvE.CanUse(out act))
+		{
+			return true;
+		}
+
 		if (InCombat)
 		{
 			UpdateQueenStep();
@@ -98,6 +110,16 @@ public sealed class MCH_Reborn : MachinistRotation
 				{
 					return true;
 				}
+			}
+
+			// Hypercharged from Barrel Stabilizer is a Hypercharge without Heat. Every path above waits for
+			// Wildfire; when Wildfire is held (only on bosses, or before a pause) it would run out unused.
+			// Spent in its last GCD rather than lost - also over a Reassemble, which then lands on a
+			// Blazing Shot: five free Overheated shots outweigh it.
+			if (HasHypercharged && StatusHelper.PlayerWillStatusEndGCD(1, 0, true, StatusID.Hypercharged)
+				&& HyperchargePvE.CanUse(out act, skipTTKCheck: true))
+			{
+				return true;
 			}
 
 			// === BMR: Dump Heat before downtime ===
@@ -133,14 +155,18 @@ public sealed class MCH_Reborn : MachinistRotation
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
 		if ((!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
-			&& !IsOverheated && !BurstWeaveSlotContested
+			&& !HoldAreaDefense(IsOverheated || BurstWeaveSlotContested, "Machinist: Overheat or burst weave slot")
 			&& BMRShouldRefreshBefore(BMRRaidwideIn, 15f, true, null, StatusID.Tactician_1951, StatusID.Tactician_2177)
 			&& TacticianPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
 
-		if (IsOverheated || HasWildfire || HasFullMetalMachinist || (WildfirePvE.EnoughLevel && WildfirePvE.Cooldown.HasOneCharge))
+		// Machinist special rule: Overheat, Wildfire and Full Metal Field keep their weave slots for
+		// damage. On the universal layer, so it yields when the party is in danger (concept 08,
+		// "Die Abwehrsperren").
+		if (HoldAreaDefense(IsOverheated || HasWildfire || HasFullMetalMachinist || (WildfirePvE.EnoughLevel && WildfirePvE.Cooldown.HasOneCharge),
+			"Machinist: Overheat or Wildfire window"))
 		{
 			return base.DefenseAreaAbility(nextGCD, out act);
 		}
@@ -168,7 +194,7 @@ public sealed class MCH_Reborn : MachinistRotation
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		if ((!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
-			&& !IsOverheated && !BurstWeaveSlotContested
+			&& !HoldSingleDefense(IsOverheated || BurstWeaveSlotContested, "Machinist: Overheat or burst weave slot")
 			&& BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, StatusID.Tactician_1951, StatusID.Tactician_2177)
 			&& TacticianPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
@@ -177,7 +203,8 @@ public sealed class MCH_Reborn : MachinistRotation
 
 		// A tankbuster actually cast at us, with no BMR to time it: the 10% is the only lever there is.
 		if ((!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
-			&& !IsOverheated && !BurstWeaveSlotContested && TacticianPvE.CanUse(out act))
+			&& !HoldSingleDefense(IsOverheated || BurstWeaveSlotContested, "Machinist: Overheat or burst weave slot")
+			&& TacticianPvE.CanUse(out act))
 		{
 			return true;
 		}

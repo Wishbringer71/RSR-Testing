@@ -19,12 +19,17 @@ import sys
 from pathlib import Path
 
 TARGET = Path('RotationSolver.Basic/Actions/ActionTargetInfo.cs')
+# The critical class is one definition shared by every reader (A159). GeneralHealTarget may call it
+# instead of spelling the threshold out, and then the definition is where the look-ahead is checked.
+HELPER = Path('RotationSolver.Basic/Helpers/ObjectHelper.cs')
+HELPER_METHOD = re.compile(r'static bool IsInCriticalClass\s*\(')
+CLASS_CALL = re.compile(r'IsInCriticalClass\([^)]*\)')
 
 # The marks, in the order they have to appear inside GeneralHealTarget. The short-cut patterns
 # tolerate either spelling of the health getter, because what they establish here is a position -
 # that the critical rank runs first - and a rename must not make that check silently vanish. That
 # the forecast spelling is the one in use is a separate question, asked by check_forecast below.
-CRITICAL = re.compile(r'HealthForDyingTanks')
+CRITICAL = re.compile(r'HealthForDyingTanks|IsInCriticalClass\([^)]*\)')
 SELF_CUT = re.compile(r'Get(?:Forecast)?Player(?:Forecast)?HealthRatio\(\)\s*<=\s*'
                       r'Service\.Config\.HealthSelfRatio')
 HEALER_CUT = re.compile(r'Get(?:Forecast)?HealthRatio\(\)\s*<=\s*Service\.Config\.HealthHealerRatio')
@@ -108,6 +113,10 @@ def check_forecast(text):
 
     problems = []
     for name, pattern in FORECAST_READS:
+        # The shared definition stands in for the spelled-out threshold; check_helper asks whether
+        # it reads the forecast.
+        if name == 'the critical rank threshold' and CLASS_CALL.search(body):
+            continue
         if pattern.search(body) is None:
             problems.append('%s no longer reads the forecast health: whoever is falling fastest is '
                             'judged by the health they still have' % name)
@@ -122,6 +131,28 @@ def check_forecast(text):
     elif PREFILTER_PLAIN.search(outer) is not None:
         problems.append('the AutoHealRatio prefilter has a second, plain-health comparison beside '
                         'the forecast one - one of them decides, and which is not evident here')
+    return problems
+
+
+def check_helper(text):
+    """The shared critical-class definition has to read the forecast effective health, the
+    threshold and the invulnerability test, for the same reason every read in GeneralHealTarget
+    does."""
+    # Every overload, read together: one may only delegate to the other.
+    bodies = []
+    for start in HELPER_METHOD.finditer(text):
+        bodies.append(body_of(text[start.start():], HELPER_METHOD) or '')
+    body = '\n'.join(bodies)
+    if not body.strip():
+        return ['IsInCriticalClass not found - renamed or removed']
+    problems = []
+    if re.search(r'GetForecastEffectiveHpPercent\(\)', body) is None:
+        problems.append('IsInCriticalClass no longer reads the forecast health: whoever is falling '
+                        'fastest is judged by the health they still have')
+    if re.search(r'HealthForDyingTanks', body) is None:
+        problems.append('IsInCriticalClass no longer reads HealthForDyingTanks')
+    if re.search(r'NoNeedHealingInvuln\(\)', body) is None:
+        problems.append('IsInCriticalClass no longer leaves invulnerable members out')
     return problems
 
 
@@ -263,11 +294,34 @@ def self_test():
     if not check_time_to_kill(swapped_ttk):
         raise AssertionError('GetTTK asked before the friendly exemption went unnoticed')
 
+    # The shared definition in place of the spelled-out threshold.
+    shared = good.replace(critical_line, 'if (!r.Obj.IsInCriticalClass(r.Unprotected)) { }')
+    if check(shared) or check_forecast(shared):
+        raise AssertionError('the shared critical class was rejected: %s'
+                             % (check(shared) + check_forecast(shared)))
+    helper_good = '''
+        internal static bool IsInCriticalClass(this IBattleChara b)
+        {
+            return b.NoNeedHealingInvuln()
+                && b.GetForecastEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f;
+        }
+    '''
+    if check_helper(helper_good):
+        raise AssertionError('the intact critical class was rejected: %s' % check_helper(helper_good))
+    for broken, expected in (
+        (helper_good.replace('GetForecastEffectiveHpPercent', 'GetEffectiveHpPercent'), 'forecast'),
+        (helper_good.replace('Service.Config.HealthForDyingTanks', 'Threshold'), 'HealthForDyingTanks'),
+        (helper_good.replace('b.NoNeedHealingInvuln()', 'true'), 'invulnerable'),
+    ):
+        if not any(expected in p for p in check_helper(broken)):
+            raise AssertionError('a critical class without %s went unnoticed' % expected)
+
     print('self-test ok: the intact order is accepted, a short-cut moved ahead of the critical rank '
           'is caught,\n  a candidate list keeping the dead is caught, a match outside the method '
           'does not count,\n  each of the four forward-looking reads is caught when reverted to the '
           'current health,\n  the AutoHealRatio gate is caught both reverted and left doubled, '
-          '\n  and CheckTimeToKill is checked for its friendly exemption')
+          '\n  CheckTimeToKill is checked for its friendly exemption, and the shared critical class'
+          '\n  is checked for the forecast, the threshold and the invulnerable')
 
 
 def main():
@@ -277,6 +331,8 @@ def main():
         return 1
     text = TARGET.read_text(encoding='utf-8')
     problems = check(text) + check_forecast(text) + check_time_to_kill(text)
+    if CLASS_CALL.search(body_of(text, METHOD) or ''):
+        problems += check_helper(HELPER.read_text(encoding='utf-8'))
     if problems:
         print('heal target order is broken:')
         for p in problems:
