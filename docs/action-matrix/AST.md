@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-26; nic
 
 ## Nutzung
 
-direkt: 48 · ungenutzt: 6
+direkt: 49 · ungenutzt: 6
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -41,6 +41,7 @@ direkt: 48 · ungenutzt: 6
 | Job | Helios (`HeliosPvE`) | 3600 | Spell | direkt |
 | Job | Helios Conjunction (`HeliosConjunctionPvE`) | 37030 | Spell | direkt |
 | Job | Horoscope (`HoroscopePvE`) | 16557 | Ability | direkt |
+| Job | Horoscope (`HoroscopePvE_16558`) | 16558 | Ability | direkt |
 | Job | Lady of Crowns (`LadyOfCrownsPvE`) | 7445 | Ability | direkt |
 | Job | Lightspeed (`LightspeedPvE`) | 3606 | Ability | direkt |
 | Job | Lord of Crowns (`LordOfCrownsPvE`) | 7444 | Ability | direkt |
@@ -103,7 +104,6 @@ direkt: 48 · ungenutzt: 6
 | Aspected Benefic | Regel sperrt vorher | Macrocosmos |
 | Aspected Benefic | Regel prüft | Neutral Sect |
 | Aspected Helios | Regel prüft | Helios Conjunction |
-| Astral Draw | Regel sperrt vorher | Malefic |
 | Benefic II | Regel sperrt vorher | Aspected Benefic |
 | Benefic | Regel sperrt vorher | Aspected Benefic |
 | Celestial Intersection | Regel sperrt vorher | Essential Dignity |
@@ -114,13 +114,14 @@ direkt: 48 · ungenutzt: 6
 | Divination | Regel sperrt vorher | Benefic II |
 | Divination | Regel sperrt vorher | Benefic |
 | Divination | Regel sperrt vorher | Synastry |
-| Earthly Star | Regel sperrt vorher | Malefic |
 | Gravity | Regel prüft | Gravity II |
 | Helios Conjunction | Regel sperrt vorher | Collective Unconscious |
 | Helios Conjunction | Regel sperrt vorher | Macrocosmos |
 | Helios Conjunction | Regel prüft | Neutral Sect |
 | Horoscope | Regel prüft | Helios Conjunction |
 | Horoscope | Regel prüft | Helios |
+| Horoscope | StatusNeed Horoscope | Horoscope |
+| Horoscope | StatusNeed HoroscopeHelios | Status HoroscopeHelios |
 | Lady of Crowns | Regel prüft | Astral Draw |
 | Lightspeed | Regel prüft | Divination |
 | Lord of Crowns | Regel prüft | Divination |
@@ -140,7 +141,6 @@ direkt: 48 · ungenutzt: 6
 | Stellar Detonation | Regel sperrt vorher | Aspected Benefic |
 | Stellar Detonation | Regel sperrt vorher | Benefic II |
 | Stellar Detonation | Regel sperrt vorher | Benefic |
-| Stellar Detonation | Regel sperrt vorher | Divination |
 | Stellar Detonation | StatusNeed GiantDominance | Earthly Star |
 | Stellar Detonation | Regel sperrt vorher | Synastry |
 | Sun Sign | StatusNeed Suntouched | Neutral Sect |

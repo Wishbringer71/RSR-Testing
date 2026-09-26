@@ -3892,6 +3892,46 @@ Als Hinweis in Konzept 07 und 08 geführt. Die Wirktexte stützen ihn gleichlaut
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A160 · Abhängigkeitsmatrix je Job erzeugt und kritisch geprüft (26.09.2026)
+
+**Auftrag (seine Vorgabe):** Abhängigkeitsmatrix aller Aktionen je Job, ungenutzte Fähigkeiten finden, Konzept und Matrix kritisch auf Fehler bei der Erstellung und in den Wechselwirkungen prüfen. Ergebnis: Konzept 14, `generate_action_matrix.py`, `docs/action-matrix/`.
+
+**Vorarbeit:**
+- Konzept 05 und das Archiv (#69) gelesen.
+- Konzept 14 erweitert 05 um die Beziehungen und die Stufen und verweist für die Nutzung darauf.
+- Der veraltete Verweis in 05 auf „TODO #69" ist berichtigt.
+
+**Fehler bei der Erstellung, gefunden und behoben (eigene Durchsicht, dann Code-Review):**
+1. **Allgemeine Systemaktionen zählten als Jobaktionen** (Teleport, Return, Insel und Feld). Jetzt nur solche, die der zentrale Dispatch wirkt (Sprint).
+2. **Tankhaltung und Wiederbelebung erschienen ungenutzt,** weil sie über Stellvertreter-Eigenschaften gewirkt werden (`TankStance => GritPvE`). Diese werden jetzt verfolgt.
+3. **Ausbau-Eigenschaften in drei Satzformen:**
+   - „A and B to C and D respectively",
+   - „A and B to C and D" ohne „respectively" — ein erster Versuch paarte hier Blizzard II mit High Fire II,
+   - „A to B C to D and E to F" ohne Trenner.
+   Jetzt gilt: ein „to" bedeutet zwei Listen, mehrere bedeuten eine Kette bekannter Namen.
+4. **Status, der nach einer Aktion gewährt wird** („Grants the effect of Scorn after executing Living Shadow"): Die Aktion ist jetzt der Erzeuger.
+5. **Behälter und Begleiteraktionen erschienen als Lücke.** Sie werden jetzt am Wirktext gekennzeichnet, der Behälter nur in Richtung „wird zu".
+6. **Die Regelkanten sahen nur die Bedingung derselben Abfrage.** Danach waren sie zu weit: Vorrangwürfe (`if (X.CanUse(out act)) return true;`, auch `out var act`) galten als Sperre — beim Weißmagier 195 statt 14 Kanten.
+7. **Parser der Eigenschaften lief über Aktionseinträge hinweg** (`<strong>(.*?)` mit `re.S`) und spülte Rohtext in die Tabellen. Behoben.
+8. **Statusnamen mit Doppelpunkt und Folgefeld** („confiteor ready duration:") trafen keinen Erzeuger. Daraus entstanden Selbstschleifen (Paradox braucht Paradox). Behoben; Selbstschleifen sind ausgeschlossen.
+9. **Bedingungen:** Verneinte Bedingungen („not under the effect of Subtractive Palette") und Bedingungen ohne Status („less than five chakra") galten als Statusbedarf. Sie werden jetzt getrennt geführt.
+10. **Ressourcennamen enthielten das vorige Feld** („MP Addersgall", „Enchanted Moulinet Balance"). Behoben mit einer Liste der zweiwortigen Ressourcen und den Manafarben der Balance.
+11. **Modify-Rümpfe wurden per Textersatz entfernt.** Leere Rümpfe zerstörten spätere. Jetzt geschieht das über die Position.
+12. **`CanUse(out _)` zählte als Wirken.** Jetzt heißt das „nur geprüft"; gewirkt ist auch `return X;` und `act = X`.
+13. **Nummerierte Aktionsvarianten fehlten ganz** (`JinPvE_18807`, `LiturgyOfTheBellPvE_28509`), weil jedes Muster auf `PvE` endete. Gleichnamige Varianten zählen jetzt als Nutzung.
+14. **Limit Breaks fielen still heraus** (kein Eintrag in `ActionId.resx`). Jetzt werden sie ausgewiesen. Jede andere fehlende Aktion bricht den Lauf ab.
+15. **Leere Combo-Namen** (vom Spiel ausgeblendet) lasen das Folgefeld als Namen. Namen mit „and" (Fang and Claw, Carve and Spit) wurden zerlegt. Jetzt werden bekannte Namen im Satz gesucht.
+16. **Konzept:** Es verwies auf A160 und einen TODO-Eintrag, die fehlten; beide sind nachgetragen. Der Eukrasia-Grund war unvollständig, der Blaumagier fehlte im Abgleich.
+- Jeder Fehler hat einen Selbsttest. `--check` läuft in der CI.
+
+**Wechselwirkungen:**
+- Die Matrix zeigt die Abwehrsperre aus A159: Divine Caress wird durch Temperance und Liturgy vorher gesperrt.
+- Die Stufenordnung des Spiels folgt seinem Baum nicht überall. Arm's Length teilen Tanks, Nah- und Fernkämpfer; Swiftcast, Lucid Dreaming und Surecast teilen Heiler und Magier. Die Stufe „Damage Dealer" und die Nahkampf-Paare haben keine gemeinsame Aktion.
+
+**Ergebnis:** Keine spielerseitig auslösbare Kampfaktion ohne Sonderlage ist ungenutzt. Offen sind die Werkzeuge für Pausen (TODO), sofern er die Jobs nennt.
+
+**Prüfgrad:** statisch; Selbsttest des Skripts; Stichproben am Code (Dunkelritter, Weißmagier, Ninja, Schwarzmagier, Weiser); Code-Review.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

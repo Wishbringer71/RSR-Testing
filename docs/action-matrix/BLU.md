@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-26; nic
 
 ## Nutzung
 
-direkt: 112 · ungenutzt: 20
+direkt: 114 · ungenutzt: 23
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -19,6 +19,9 @@ direkt: 112 · ungenutzt: 20
 | Job | Addle (`AddlePvE`) | 7560 | Ability | ungenutzt |
 | Job | Aetherial Spark (`AetherialSparkPvE`) | 23281 | Spell | direkt |
 | Job | Aetheric Mimicry (`AethericMimicryPvE`) | 18322 | Spell | ungenutzt |
+| Job | Aetheric Mimicry (`AethericMimicryPvE_19238`) | 19238 | Spell | ungenutzt |
+| Job | Aetheric Mimicry (`AethericMimicryPvE_19239`) | 19239 | Spell | ungenutzt |
+| Job | Aetheric Mimicry (`AethericMimicryPvE_19240`) | 19240 | Spell | ungenutzt |
 | Job | Alpine Draft (`AlpineDraftPvE`) | 18295 | Spell | direkt |
 | Job | Angel Whisper (`AngelWhisperPvE`) | 18317 | Spell | direkt |
 | Job | Angel's Snack (`AngelsSnackPvE`) | 23272 | Spell | direkt |
@@ -100,6 +103,7 @@ direkt: 112 · ungenutzt: 20
 | Job | Peripheral Synthesis (`PeripheralSynthesisPvE`) | 23286 | Spell | direkt |
 | Job | Perpetual Ray (`PerpetualRayPvE`) | 18314 | Spell | direkt |
 | Job | Phantom Flurry (`PhantomFlurryPvE`) | 23288 | Ability | direkt |
+| Job | Phantom Flurry (`PhantomFlurryPvE_23289`) | 23289 | Ability | direkt |
 | Job | Plaincracker (`PlaincrackerPvE`) | 11391 | Spell | direkt |
 | Job | Pom Cure (`PomCurePvE`) | 18303 | Spell | direkt |
 | Job | Protean Wave (`ProteanWavePvE`) | 18296 | Spell | direkt |
@@ -122,6 +126,7 @@ direkt: 112 · ungenutzt: 20
 | Job | Sprint (`SprintPvE`) | 3 | System | direkt |
 | Job | Sticky Tongue (`StickyTonguePvE`) | 11412 | Spell | direkt |
 | Job | Stotram (`StotramPvE`) | 23269 | Spell | direkt |
+| Job | Stotram (`StotramPvE_23416`) | 23416 | Spell | direkt |
 | Job | Surecast (`SurecastPvE`) | 7559 | Ability | direkt |
 | Job | Surpanakha (`SurpanakhaPvE`) | 18323 | Ability | direkt |
 | Job | Swiftcast (`SwiftcastPvE`) | 7561 | Ability | direkt |
@@ -154,14 +159,14 @@ direkt: 112 · ungenutzt: 20
 | Angel's Snack | gemeinsame Abklingzeit | Dragon Force |
 | Angel's Snack | gemeinsame Abklingzeit | Matra Magic |
 | Apokalypsis | gemeinsame Abklingzeit | Being Mortal |
-| Avail | braucht (Erzeuger nicht im Text) | member is within 10 yalms |
+| Avail | Bedingung (kein Status) | member is within 10 yalms |
 | Being Mortal | gemeinsame Abklingzeit | Apokalypsis |
 | Both Ends | gemeinsame Abklingzeit | Nightbloom |
 | Candy Cane | gemeinsame Abklingzeit | Magic Hammer |
-| Chelonian Gate | braucht Auspicious Trance | Chelonian Gate |
+| Chelonian Gate | braucht Auspicious Trance (Erzeuger nicht im Text) | Auspicious Trance |
 | Chelonian Gate | gemeinsame Abklingzeit | Ruby Dynamics |
 | Chelonian Gate | gemeinsame Abklingzeit | The Rose of Destruction |
-| Cold Fog | braucht (Erzeuger nicht im Text) | Touch of Frost |
+| Cold Fog | braucht Touch of Frost (Erzeuger nicht im Text) | Touch of Frost |
 | Divine Cataract | braucht Auspicious Trance | Chelonian Gate |
 | Dragon Force | gemeinsame Abklingzeit | Angel's Snack |
 | Dragon Force | gemeinsame Abklingzeit | Matra Magic |
@@ -183,7 +188,7 @@ direkt: 112 · ungenutzt: 20
 | The Rose of Destruction | gemeinsame Abklingzeit | Ruby Dynamics |
 | Ultravibration | gemeinsame Abklingzeit | Level 5 Death |
 | Veil of the Whorl | gemeinsame Abklingzeit | Glass Dance |
-| White Death | braucht (Erzeuger nicht im Text) | Touch of Frost |
+| White Death | braucht Touch of Frost (Erzeuger nicht im Text) | Touch of Frost |
 
 ### Aus dem Code (RSR)
 
@@ -229,6 +234,7 @@ direkt: 112 · ungenutzt: 20
 | Ink Jet | Regel sperrt vorher | Ultravibration |
 | Malediction of Water | Regel sperrt vorher | Ultravibration |
 | Northerlies | StatusNeed Dropsy_1736 | Aqua Breath |
+| Phantom Flurry | StatusNeed PhantomFlurry | Phantom Flurry |
 | Revenge Blast | Regel sperrt vorher | Missile |
 | Revenge Blast | Regel sperrt vorher | 1000 Needles |
 | Saintly Beam | Regel sperrt vorher | Missile |
@@ -289,6 +295,9 @@ Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 - Acorn Bomb (`AcornBombPvE`, Spell): ungenutzt
 - Addle (`AddlePvE`, Ability): ungenutzt
 - Aetheric Mimicry (`AethericMimicryPvE`, Spell): ungenutzt
+- Aetheric Mimicry (`AethericMimicryPvE_19238`, Spell): ungenutzt
+- Aetheric Mimicry (`AethericMimicryPvE_19239`, Spell): ungenutzt
+- Aetheric Mimicry (`AethericMimicryPvE_19240`, Spell): ungenutzt
 - Apokalypsis (`ApokalypsisPvE`, Ability): ungenutzt
 - Avail (`AvailPvE`, Spell): ungenutzt
 - Conviction Marcato (`ConvictionMarcatoPvE`, Spell): ungenutzt

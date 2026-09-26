@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-26; nic
 
 ## Nutzung
 
-direkt: 41 · ungenutzt: 1 · über anderen Knopf: 1
+direkt: 41 · ungenutzt: 1 · über andere Aktion: 1
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|

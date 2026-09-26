@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-26; nic
 
 ## Nutzung
 
-direkt: 45 · nur gelesen: 1 · ungenutzt: 1 · über anderen Knopf: 1
+direkt: 45 · nur gelesen: 1 · ungenutzt: 1 · über andere Aktion: 1
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -69,25 +69,23 @@ direkt: 45 · nur gelesen: 1 · ungenutzt: 1 · über anderen Knopf: 1
 |---|---|---|
 | Arm of the Destroyer | Ausbau (Arm of the Destroyer Mastery) | Shadow of the Destroyer |
 | Bootshine | Ausbau (Beast Chakra Mastery) | Leaping Opo |
-| Celestial Revolution | braucht (Erzeuger nicht im Text) | three Beast Chakra |
-| Demolish | braucht (Erzeuger nicht im Text) | coeurl form |
-| Earth's Reply | braucht (Erzeuger nicht im Text) | Earth's Rumination |
-| Elixir Burst | braucht (Erzeuger nicht im Text) | three of the same Beast Chakra |
+| Celestial Revolution | Bedingung (kein Status) | three Beast Chakra |
+| Demolish | Bedingung (kein Status) | coeurl form |
+| Earth's Reply | braucht Earth's Rumination | Riddle of Earth |
+| Elixir Burst | Bedingung (kein Status) | three of the same Beast Chakra |
 | Elixir Field | Ausbau (Beast Chakra Mastery) | Elixir Burst |
-| Elixir Field | braucht (Erzeuger nicht im Text) | three of the same Beast Chakra |
-| Enlightened Meditation | braucht (Erzeuger nicht im Text) | less than five chakra are open |
-| Enlightenment | braucht (Erzeuger nicht im Text) | combat |
-| Enlightenment | braucht (Erzeuger nicht im Text) | under the effect of five Chakra |
+| Elixir Field | Bedingung (kein Status) | three of the same Beast Chakra |
+| Enlightened Meditation | Bedingung (kein Status) | less than five chakra are open |
+| Enlightenment | Bedingung (kein Status) | combat and under the effect of five Chakra |
 | Fire's Reply | braucht Fire's Rumination | Eigenschaft Enhanced Riddle of Fire |
 | Flint Strike | Ausbau (Flint Strike Mastery) | Rising Phoenix |
-| Flint Strike | braucht (Erzeuger nicht im Text) | three distinct Beast Chakra |
-| Forbidden Meditation | braucht (Erzeuger nicht im Text) | less than five chakra are open |
-| Four-point Fury | braucht (Erzeuger nicht im Text) | raptor form |
+| Flint Strike | Bedingung (kein Status) | three distinct Beast Chakra |
+| Forbidden Meditation | Bedingung (kein Status) | less than five chakra are open |
+| Four-point Fury | Bedingung (kein Status) | raptor form |
 | Howling Fist | Ausbau (Howling Fist Mastery) | Enlightenment |
-| Howling Fist | braucht (Erzeuger nicht im Text) | combat |
-| Howling Fist | braucht (Erzeuger nicht im Text) | under the effect of five Chakra |
+| Howling Fist | Bedingung (kein Status) | combat and under the effect of five Chakra |
 | Inspirited Meditation | Ausbau (Howling Fist Mastery) | Enlightened Meditation |
-| Inspirited Meditation | braucht (Erzeuger nicht im Text) | less than five chakra are open |
+| Inspirited Meditation | Bedingung (kein Status) | less than five chakra are open |
 | Masterful Blitz | Knopf wird zu | Celestial Revolution |
 | Masterful Blitz | Knopf wird zu | Elixir Burst |
 | Masterful Blitz | Knopf wird zu | Elixir Field |
@@ -95,27 +93,23 @@ direkt: 45 · nur gelesen: 1 · ungenutzt: 1 · über anderen Knopf: 1
 | Masterful Blitz | Knopf wird zu | Phantom Rush |
 | Masterful Blitz | Knopf wird zu | Rising Phoenix |
 | Masterful Blitz | Knopf wird zu | Tornado Kick |
-| Phantom Rush | braucht (Erzeuger nicht im Text) | Lunar Nadi |
-| Phantom Rush | braucht (Erzeuger nicht im Text) | Solar Nadi as well as three Beast Chakra |
-| Pouncing Coeurl | braucht (Erzeuger nicht im Text) | coeurl form |
-| Rising Phoenix | braucht (Erzeuger nicht im Text) | three distinct Beast Chakra |
-| Rising Raptor | braucht (Erzeuger nicht im Text) | raptor form |
-| Rockbreaker | braucht (Erzeuger nicht im Text) | coeurl form |
+| Phantom Rush | braucht Lunar Nadi and Solar Nadi as well as three Beast Chakra (Erzeuger nicht im Text) | Lunar Nadi and Solar Nadi as well as three Beast Chakra |
+| Pouncing Coeurl | Bedingung (kein Status) | coeurl form |
+| Rising Phoenix | Bedingung (kein Status) | three distinct Beast Chakra |
+| Rising Raptor | Bedingung (kein Status) | raptor form |
+| Rockbreaker | Bedingung (kein Status) | coeurl form |
 | Snap Punch | Ausbau (Beast Chakra Mastery) | Pouncing Coeurl |
-| Snap Punch | braucht (Erzeuger nicht im Text) | coeurl form |
+| Snap Punch | Bedingung (kein Status) | coeurl form |
 | Steel Peak | Ausbau (Steel Peak Mastery) | the Forbidden Chakra |
-| Steel Peak | braucht (Erzeuger nicht im Text) | combat |
-| Steel Peak | braucht (Erzeuger nicht im Text) | under the effect of five Chakra |
+| Steel Peak | Bedingung (kein Status) | combat and under the effect of five Chakra |
 | Steeled Meditation | Ausbau (Steel Peak Mastery) | Forbidden Meditation |
-| Steeled Meditation | braucht (Erzeuger nicht im Text) | less than five chakra are open |
-| the Forbidden Chakra | braucht (Erzeuger nicht im Text) | combat |
-| the Forbidden Chakra | braucht (Erzeuger nicht im Text) | under the effect of five Chakra |
-| Tornado Kick | braucht (Erzeuger nicht im Text) | Lunar Nadi |
+| Steeled Meditation | Bedingung (kein Status) | less than five chakra are open |
+| the Forbidden Chakra | Bedingung (kein Status) | combat and under the effect of five Chakra |
+| Tornado Kick | braucht Lunar Nadi and Solar Nadi as well as three Beast Chakra (Erzeuger nicht im Text) | Lunar Nadi and Solar Nadi as well as three Beast Chakra |
 | Tornado Kick | Ausbau (Tornado Kick Mastery) | Phantom Rush |
-| Tornado Kick | braucht (Erzeuger nicht im Text) | Solar Nadi as well as three Beast Chakra |
 | True Strike | Ausbau (Beast Chakra Mastery) | Rising Raptor |
-| True Strike | braucht (Erzeuger nicht im Text) | raptor form |
-| Twin Snakes | braucht (Erzeuger nicht im Text) | raptor form |
+| True Strike | Bedingung (kein Status) | raptor form |
+| Twin Snakes | Bedingung (kein Status) | raptor form |
 | Wind's Reply | braucht Wind's Rumination | Eigenschaft Enhanced Riddle of Wind |
 
 ### Aus dem Code (RSR)
@@ -128,17 +122,13 @@ direkt: 45 · nur gelesen: 1 · ungenutzt: 1 · über anderen Knopf: 1
 | Elixir Burst | Regel prüft | Riddle of Fire |
 | Elixir Field | Regel prüft | Riddle of Fire |
 | Enlightened Meditation | Regel sperrt vorher | Perfect Balance |
-| Enlightened Meditation | Regel sperrt vorher | Thunderclap |
 | Fire's Reply | Regel prüft | Bootshine |
 | Fire's Reply | Regel prüft | Dragon Kick |
 | Fire's Reply | Regel prüft | Leaping Opo |
 | Fire's Reply | StatusNeed FiresRumination | Riddle of Fire |
 | Flint Strike | Regel prüft | Riddle of Fire |
 | Forbidden Meditation | Regel sperrt vorher | Perfect Balance |
-| Forbidden Meditation | Regel sperrt vorher | Thunderclap |
-| Form Shift | Regel sperrt vorher | Thunderclap |
 | Inspirited Meditation | Regel sperrt vorher | Perfect Balance |
-| Inspirited Meditation | Regel sperrt vorher | Thunderclap |
 | Perfect Balance | Regel prüft | Bootshine |
 | Perfect Balance | Regel prüft | Brotherhood |
 | Perfect Balance | Regel prüft | Dragon Kick |
@@ -152,10 +142,8 @@ direkt: 45 · nur gelesen: 1 · ungenutzt: 1 · über anderen Knopf: 1
 | Steel Peak | Regel prüft | the Forbidden Chakra |
 | Steeled Meditation | Regel prüft | Forbidden Meditation |
 | Steeled Meditation | Regel sperrt vorher | Perfect Balance |
-| Steeled Meditation | Regel sperrt vorher | Thunderclap |
 | the Forbidden Chakra | Regel prüft | Brotherhood |
 | Tornado Kick | Regel prüft | Riddle of Fire |
-| True North | Regel sperrt vorher | Thunderclap |
 | Wind's Reply | StatusNeed WindsRumination | Riddle of Wind |
 
 ## Nicht in der Matrix: Limit Breaks

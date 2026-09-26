@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-26; nic
 
 ## Nutzung
 
-direkt: 30 · ungenutzt: 5
+direkt: 31 · ungenutzt: 9 · über andere Aktion: 8
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -17,11 +17,23 @@ direkt: 30 · ungenutzt: 5
 | Job | Beast Mode (`BeastModePvE`) | 44886 | Ability | ungenutzt — Behälter: der Knopf wird zu anderen Aktionen |
 | Job | Beastskin (`BeastskinPvE`) | 44896 | Ability | direkt |
 | Job | Borrow (`BorrowPvE`) | 44895 | Ability | direkt |
+| Job | Borrow (`BorrowPvE_47238`) | 47238 | Ability | über gleichnamige Aktion `BorrowPvE` |
+| Job | Borrow (`BorrowPvE_47239`) | 47239 | Ability | über gleichnamige Aktion `BorrowPvE` |
+| Job | Borrow (`BorrowPvE_47240`) | 47240 | Ability | über gleichnamige Aktion `BorrowPvE` |
+| Job | Borrow (`BorrowPvE_47241`) | 47241 | Ability | über gleichnamige Aktion `BorrowPvE` |
+| Job | Borrow (`BorrowPvE_47242`) | 47242 | Ability | über gleichnamige Aktion `BorrowPvE` |
+| Job | Borrow (`BorrowPvE_47243`) | 47243 | Ability | über gleichnamige Aktion `BorrowPvE` |
+| Job | Borrow (`BorrowPvE_47244`) | 47244 | Ability | über gleichnamige Aktion `BorrowPvE` |
+| Job | Borrow (`BorrowPvE_47245`) | 47245 | Ability | über gleichnamige Aktion `BorrowPvE` |
 | Job | Brutal Rage (`BrutalRagePvE`) | 44930 | Weaponskill | direkt |
 | Job | Calamity (`CalamityPvE`) | 44933 | Weaponskill | direkt |
 | Job | Capture (`CapturePvE`) | 44880 | Ability | ungenutzt |
 | Job | Challenge (`ChallengePvE`) | 46750 | Ability | ungenutzt |
-| Job | Cloud Skim (`CloudSkimPvE`) | 44898 | Ability | ungenutzt — Behälter: der Knopf wird zu anderen Aktionen |
+| Job | Cloud Skim (`CloudSkimPvE`) | 44898 | Ability | ungenutzt — nicht zuweisbar: Begleiter oder Automatik |
+| Job | Cloud Skim (`CloudSkimPvE_45038`) | 45038 | Ability | ungenutzt |
+| Job | Cloud Skim (`CloudSkimPvE_45039`) | 45039 | Ability | ungenutzt |
+| Job | Cloud Skim (`CloudSkimPvE_45040`) | 45040 | Ability | ungenutzt |
+| Job | Cloud Skim (`CloudSkimPvE_45041`) | 45041 | Ability | ungenutzt |
 | Job | First Battlehorn (`FirstBattlehornPvE`) | 44881 | Ability | direkt |
 | Job | Gale Axe (`GaleAxePvE`) | 44889 | Weaponskill | direkt |
 | Job | Gauge (`GaugePvE`) | 44882 | Ability | ungenutzt |
@@ -44,6 +56,7 @@ direkt: 30 · ungenutzt: 5
 | Job | Spinning Axe (`SpinningAxePvE`) | 44888 | Weaponskill | direkt |
 | Job | Sprint (`SprintPvE`) | 3 | System | direkt |
 | Job | Tempered Release (`TemperedReleasePvE`) | 44890 | Ability | direkt |
+| Job | Tempered Release (`TemperedReleasePvE_47092`) | 47092 | Ability | direkt |
 | Job | Third Battlehorn (`ThirdBattlehornPvE`) | 44894 | Ability | direkt |
 | Job | Trick (`TrickPvE`) | 47093 | Ability | direkt |
 | Job | Vileskin (`VileskinPvE`) | 44897 | Ability | direkt |
@@ -56,9 +69,13 @@ direkt: 30 · ungenutzt: 5
 |---|---|---|
 | Avalanche Axe | Ausbau (Instinctual Mastery) | Brutal Rage |
 | Avalanche Axe | Knopf wird zu | Brutal Rage |
-| Avalanche Axe | kostet | Minimum TP |
+| Avalanche Axe | kostet | TP |
 | Axeblade Bite | Combo nach | Smash Axe |
 | Beast Mode | Knopf wird zu | Beastskin |
+| Beast Mode | Knopf wird zu | Cloud Skim |
+| Beast Mode | Knopf wird zu | Cloud Skim |
+| Beast Mode | Knopf wird zu | Cloud Skim |
+| Beast Mode | Knopf wird zu | Cloud Skim |
 | Beast Mode | Knopf wird zu | Cloud Skim |
 | Beast Mode | Knopf wird zu | Quelling Wave |
 | Beast Mode | Knopf wird zu | Scaleskin |
@@ -66,35 +83,43 @@ direkt: 30 · ungenutzt: 5
 | Beast Mode | Knopf wird zu | Seedsower |
 | Beast Mode | Knopf wird zu | Soul Crush |
 | Beast Mode | Knopf wird zu | Vileskin |
-| Beastskin | braucht (Erzeuger nicht im Text) | Beast Kinship |
-| Borrow | braucht (Erzeuger nicht im Text) | One with Nature |
+| Beastskin | braucht Beast Kinship (Erzeuger nicht im Text) | Beast Kinship |
+| Borrow | braucht One with Nature (Erzeuger nicht im Text) | One with Nature |
+| Borrow | braucht One with Nature (Erzeuger nicht im Text) | One with Nature |
+| Borrow | braucht One with Nature (Erzeuger nicht im Text) | One with Nature |
+| Borrow | braucht One with Nature (Erzeuger nicht im Text) | One with Nature |
+| Borrow | braucht One with Nature (Erzeuger nicht im Text) | One with Nature |
+| Borrow | braucht One with Nature (Erzeuger nicht im Text) | One with Nature |
+| Borrow | braucht One with Nature (Erzeuger nicht im Text) | One with Nature |
+| Borrow | braucht One with Nature (Erzeuger nicht im Text) | One with Nature |
+| Borrow | braucht One with Nature (Erzeuger nicht im Text) | One with Nature |
 | Brutal Rage | kostet | TP |
 | Calamity | kostet | TP |
-| Cloud Skim | braucht (Erzeuger nicht im Text) | Cloud Kinship |
+| Cloud Skim | braucht Cloud Kinship (Erzeuger nicht im Text) | Cloud Kinship |
 | Gale Axe | Ausbau (Instinctual Mastery) | Calamity |
 | Gale Axe | Knopf wird zu | Calamity |
-| Gale Axe | kostet | Minimum TP |
+| Gale Axe | kostet | TP |
 | Hawkish Talons | kostet | TP |
 | Mistral Axe | Ausbau (Instinctual Mastery) | Hawkish Talons |
 | Mistral Axe | Knopf wird zu | Hawkish Talons |
-| Mistral Axe | kostet | Minimum TP |
-| Parting Blow | braucht (Erzeuger nicht im Text) | combat |
-| Quelling Wave | braucht (Erzeuger nicht im Text) | Wave Kinship |
-| Rally | braucht (Erzeuger nicht im Text) | combat |
-| Rallying Cheer | braucht (Erzeuger nicht im Text) | combat |
+| Mistral Axe | kostet | TP |
+| Parting Blow | Bedingung (kein Status) | combat |
+| Quelling Wave | braucht Wave Kinship (Erzeuger nicht im Text) | Wave Kinship |
+| Rally | Bedingung (kein Status) | combat |
+| Rallying Cheer | Bedingung (kein Status) | combat |
 | Risen Fall | kostet | TP |
-| Scaleskin | braucht (Erzeuger nicht im Text) | Scale Kinship |
-| Scouring Ash | braucht (Erzeuger nicht im Text) | Ash Kinship |
-| Seedsower | braucht (Erzeuger nicht im Text) | Seed Kinship |
+| Scaleskin | braucht Scale Kinship (Erzeuger nicht im Text) | Scale Kinship |
+| Scouring Ash | braucht Ash Kinship (Erzeuger nicht im Text) | Ash Kinship |
+| Seedsower | braucht Seed Kinship (Erzeuger nicht im Text) | Seed Kinship |
 | Shieldsplitter | Combo nach | Axeblade Bite |
-| Soul Crush | braucht (Erzeuger nicht im Text) | Soul Kinship |
-| Spinning Axe | kostet | Minimum TP |
+| Soul Crush | braucht Soul Kinship (Erzeuger nicht im Text) | Soul Kinship |
 | Spinning Axe | Ausbau (Instinctual Mastery) | Risen Fall |
 | Spinning Axe | Knopf wird zu | Risen Fall |
-| Tempered Release | braucht (Erzeuger nicht im Text) | combat |
-| Tempered Release | braucht (Erzeuger nicht im Text) | under the effect of One with Nature |
-| Trick | kostet | Minimum TP |
-| Vileskin | braucht (Erzeuger nicht im Text) | Vile Kinship |
+| Spinning Axe | kostet | TP |
+| Tempered Release | Bedingung (kein Status) | combat and under the effect of One with Nature |
+| Tempered Release | Bedingung (kein Status) | combat and under the effect of One with Nature |
+| Trick | kostet | TP |
+| Vileskin | braucht Vile Kinship (Erzeuger nicht im Text) | Vile Kinship |
 
 ### Aus dem Code (RSR)
 
@@ -104,13 +129,26 @@ direkt: 30 · ungenutzt: 5
 | Beastskin | StatusNeed BeastKinship | Status BeastKinship |
 | Beastskin | StatusNeed BeastKinship_4644 | Status BeastKinship_4644 |
 | Borrow | StatusNeed OneWithNature | Status OneWithNature |
-| Borrow | Regel sperrt vorher | Tempered Release |
+| Borrow | StatusNeed OneWithNature | Status OneWithNature |
+| Borrow | StatusNeed OneWithNature | Status OneWithNature |
+| Borrow | StatusNeed OneWithNature | Status OneWithNature |
+| Borrow | StatusNeed OneWithNature | Status OneWithNature |
+| Borrow | StatusNeed OneWithNature | Status OneWithNature |
+| Borrow | StatusNeed OneWithNature | Status OneWithNature |
+| Borrow | StatusNeed OneWithNature | Status OneWithNature |
+| Borrow | StatusNeed OneWithNature | Status OneWithNature |
 | Brutal Rage | StatusNeed Moonstalker | Calamity |
 | Brutal Rage | StatusNeed Moonstalker | Hawkish Talons |
-| Brutal Rage | Regel sperrt vorher | Tempered Release |
 | Calamity | StatusNeed Sunstrider | Brutal Rage |
 | Calamity | StatusNeed Sunstrider | Risen Fall |
-| Calamity | Regel sperrt vorher | Tempered Release |
+| Cloud Skim | StatusNeed CloudKinship | Status CloudKinship |
+| Cloud Skim | StatusNeed CloudKinship_4646 | Status CloudKinship_4646 |
+| Cloud Skim | StatusNeed CloudKinship | Status CloudKinship |
+| Cloud Skim | StatusNeed CloudKinship_4646 | Status CloudKinship_4646 |
+| Cloud Skim | StatusNeed CloudKinship | Status CloudKinship |
+| Cloud Skim | StatusNeed CloudKinship_4646 | Status CloudKinship_4646 |
+| Cloud Skim | StatusNeed CloudKinship | Status CloudKinship |
+| Cloud Skim | StatusNeed CloudKinship_4646 | Status CloudKinship_4646 |
 | Cloud Skim | StatusNeed CloudKinship | Status CloudKinship |
 | Cloud Skim | StatusNeed CloudKinship_4646 | Status CloudKinship_4646 |
 | First Battlehorn | Regel prüft | Second Battlehorn |
@@ -118,9 +156,7 @@ direkt: 30 · ungenutzt: 5
 | Gale Axe | StatusNeed EldritchHeart | Spinning Axe |
 | Hawkish Talons | StatusNeed Sunstrider | Brutal Rage |
 | Hawkish Talons | StatusNeed Sunstrider | Risen Fall |
-| Hawkish Talons | Regel sperrt vorher | Tempered Release |
 | Mistral Axe | StatusNeed RampantHeart | Avalanche Axe |
-| Parting Blow | Regel sperrt vorher | Tempered Release |
 | Quelling Wave | StatusNeed BlazeSpikes_5465 | Status BlazeSpikes_5465 |
 | Quelling Wave | StatusNeed DamageUp_1225 | Status DamageUp_1225 |
 | Quelling Wave | StatusNeed DamageUp_2550 | Status DamageUp_2550 |
@@ -131,7 +167,6 @@ direkt: 30 · ungenutzt: 5
 | Quelling Wave | StatusNeed WaveKinship_4648 | Status WaveKinship_4648 |
 | Risen Fall | StatusNeed Moonstalker | Calamity |
 | Risen Fall | StatusNeed Moonstalker | Hawkish Talons |
-| Risen Fall | Regel sperrt vorher | Tempered Release |
 | Scaleskin | StatusNeed ScaleKinship | Status ScaleKinship |
 | Scaleskin | StatusNeed ScaleKinship_4649 | Status ScaleKinship_4649 |
 | Scouring Ash | StatusNeed AshKinship | Status AshKinship |
@@ -140,14 +175,14 @@ direkt: 30 · ungenutzt: 5
 | Second Battlehorn | Regel prüft | Third Battlehorn |
 | Seedsower | StatusNeed SeedKinship | Status SeedKinship |
 | Seedsower | StatusNeed SeedKinship_4647 | Status SeedKinship_4647 |
-| Seedsower | Regel sperrt vorher | Tempered Release |
-| Shield Charge | Regel sperrt vorher | Tempered Release |
 | Snarl | StatusNeed UnnamedStatus_2552 | Status UnnamedStatus_2552 |
 | Soul Crush | StatusNeed SoulKinship | Status SoulKinship |
 | Soul Crush | StatusNeed SoulKinship_4650 | Status SoulKinship_4650 |
-| Soul Crush | Regel sperrt vorher | Tempered Release |
 | Spinning Axe | StatusNeed DurantHeart | Mistral Axe |
 | Tempered Release | StatusNeed OneWithNature | Status OneWithNature |
+| Tempered Release | StatusNeed OneWithNature | Status OneWithNature |
+| Tempered Release | ActionCheck liest | Tempered Release |
+| Tempered Release | Regel prüft | Tempered Release |
 | Third Battlehorn | Regel prüft | First Battlehorn |
 | Third Battlehorn | Regel prüft | Second Battlehorn |
 | Trick | StatusNeed RampantHeart | Avalanche Axe |
@@ -165,5 +200,9 @@ Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 - Beast Mode (`BeastModePvE`, Ability): ungenutzt — Behälter: der Knopf wird zu anderen Aktionen
 - Capture (`CapturePvE`, Ability): ungenutzt
 - Challenge (`ChallengePvE`, Ability): ungenutzt
-- Cloud Skim (`CloudSkimPvE`, Ability): ungenutzt — Behälter: der Knopf wird zu anderen Aktionen
+- Cloud Skim (`CloudSkimPvE`, Ability): ungenutzt — nicht zuweisbar: Begleiter oder Automatik
+- Cloud Skim (`CloudSkimPvE_45038`, Ability): ungenutzt
+- Cloud Skim (`CloudSkimPvE_45039`, Ability): ungenutzt
+- Cloud Skim (`CloudSkimPvE_45040`, Ability): ungenutzt
+- Cloud Skim (`CloudSkimPvE_45041`, Ability): ungenutzt
 - Gauge (`GaugePvE`, Ability): ungenutzt

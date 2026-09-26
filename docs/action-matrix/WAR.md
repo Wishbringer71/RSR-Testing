@@ -68,7 +68,7 @@ direkt: 40 · ungenutzt: 1
 | Decimate | Knopf wird zu | Chaotic Cyclone |
 | Fell Cleave | kostet | Beast |
 | Fell Cleave | Knopf wird zu | Inner Chaos |
-| Infuriate | braucht (Erzeuger nicht im Text) | combat |
+| Infuriate | Bedingung (kein Status) | combat |
 | Inner Beast | kostet | Beast |
 | Inner Beast | Ausbau (Inner Beast Mastery) | Fell Cleave |
 | Inner Chaos | kostet | Beast |
@@ -78,10 +78,9 @@ direkt: 40 · ungenutzt: 1
 | Mythril Tempest | Combo nach | Overpower |
 | Orogeny | gemeinsame Abklingzeit | Upheaval |
 | Primal Rend | braucht Primal Rend Ready granted by Inner Release | Inner Release |
-| Primal Rend | braucht Primal Rend Ready granted by Inner Release | Primal Rend |
 | Primal Rend | Knopf wird zu | Primal Ruination |
 | Primal Ruination | braucht Primal Ruination Ready | Primal Rend |
-| Primal Wrath | braucht (Erzeuger nicht im Text) | Wrathful |
+| Primal Wrath | braucht Wrathful (Erzeuger nicht im Text) | Wrathful |
 | Raw Intuition | Ausbau (Raw Intuition Mastery) | Bloodwhetting |
 | Steel Cyclone | kostet | Beast |
 | Steel Cyclone | Ausbau (Steel Cyclone Mastery) | Decimate |

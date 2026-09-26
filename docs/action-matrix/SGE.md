@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-26; nic
 
 ## Nutzung
 
-direkt: 40 · ungenutzt: 2 · über anderen Knopf: 5
+direkt: 40 · ungenutzt: 2 · über andere Aktion: 5
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -72,7 +72,7 @@ direkt: 40 · ungenutzt: 2 · über anderen Knopf: 5
 | Dosis III | Knopf wird zu | Eukrasian Dosis III |
 | Dosis | Ausbau (Offensive Magic Mastery) | Dosis II |
 | Dosis | Knopf wird zu | Eukrasian Dosis |
-| Druochole | kostet | MP Addersgall |
+| Druochole | kostet | Addersgall |
 | Dyskrasia II | Knopf wird zu | Eukrasian Dyskrasia |
 | Dyskrasia | Ausbau (Offensive Magic Mastery II) | Dyskrasia II |
 | Eukrasian Diagnosis | braucht Eukrasia | Eukrasia |
@@ -85,14 +85,14 @@ direkt: 40 · ungenutzt: 2 · über anderen Knopf: 5
 | Eukrasian Prognosis II | braucht Eukrasia | Eukrasia |
 | Eukrasian Prognosis | braucht Eukrasia | Eukrasia |
 | Eukrasian Prognosis | Ausbau (Eukrasian Prognosis Mastery) | Eukrasian Prognosis II |
-| Ixochole | kostet | MP Addersgall |
-| Kerachole | kostet | MP Addersgall |
+| Ixochole | kostet | Addersgall |
+| Kerachole | kostet | Addersgall |
 | Phlegma II | Ausbau (Offensive Magic Mastery II) | Phlegma III |
 | Phlegma | Ausbau (Offensive Magic Mastery) | Phlegma II |
 | Physis | Ausbau (Physis Mastery) | Physis II |
 | Prognosis | Knopf wird zu | Eukrasian Prognosis II |
 | Prognosis | Knopf wird zu | Eukrasian Prognosis |
-| Taurochole | kostet | MP Addersgall |
+| Taurochole | kostet | Addersgall |
 | Toxikon II | kostet | Addersting |
 | Toxikon | kostet | Addersting |
 | Toxikon | Ausbau (Offensive Magic Mastery II) | Toxikon II |
@@ -113,7 +113,6 @@ direkt: 40 · ungenutzt: 2 · über anderen Knopf: 5
 | Eukrasia | Regel prüft | Eukrasian Dyskrasia |
 | Eukrasia | Regel prüft | Eukrasian Prognosis II |
 | Eukrasia | Regel prüft | Eukrasian Prognosis |
-| Eukrasia | Regel sperrt vorher | Pneuma |
 | Eukrasian Dosis II | Regel prüft | Dyskrasia |
 | Eukrasian Dosis II | Regel prüft | Eukrasian Dosis III |
 | Eukrasian Dosis II | Regel prüft | Eukrasian Dyskrasia |
@@ -143,7 +142,6 @@ direkt: 40 · ungenutzt: 2 · über anderen Knopf: 5
 | Physis II | Regel prüft | Panhaima |
 | Physis | Regel prüft | Physis II |
 | Pneuma | Regel prüft | Dyskrasia |
-| Toxikon II | Regel sperrt vorher | Pneuma |
 | Zoe | Regel prüft | Eukrasia |
 | Zoe | Regel prüft | Eukrasian Diagnosis |
 | Zoe | Regel prüft | Eukrasian Prognosis II |

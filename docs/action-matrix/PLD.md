@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-26; nic
 
 ## Nutzung
 
-direkt: 43 · ungenutzt: 1 · über anderen Knopf: 3
+direkt: 43 · ungenutzt: 1 · über andere Aktion: 3
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -70,12 +70,13 @@ direkt: 43 · ungenutzt: 1 · über anderen Knopf: 3
 | Atonement | Knopf wird zu | Supplication |
 | Blade of Faith | Knopf wird zu | Blade of Truth |
 | Blade of Faith | Combo nach | Confiteor |
-| Blade of Honor | braucht Blade of Honor Ready | Blade of Honor |
+| Blade of Honor | braucht Blade of Honor Ready (Erzeuger nicht im Text) | Blade of Honor Ready |
 | Blade of Truth | Combo nach | Blade of Faith |
 | Blade of Truth | Knopf wird zu | Blade of Valor |
 | Blade of Valor | Combo nach | Blade of Truth |
 | Confiteor | Knopf wird zu | Blade of Faith |
 | Confiteor | braucht Confiteor Ready | Eigenschaft Enhanced Requiescat |
+| Confiteor | braucht Confiteor Ready | Imperator |
 | Cover | kostet | Oath |
 | Goring Blade | braucht Goring Blade Ready | Eigenschaft Enhanced Fight or Flight |
 | Holy Sheltron | kostet | Oath |
@@ -88,12 +89,12 @@ direkt: 43 · ungenutzt: 1 · über anderen Knopf: 3
 | Riot Blade | Combo nach | Fast Blade |
 | Royal Authority | Combo nach | Riot Blade |
 | Sentinel | Ausbau (Sentinel Mastery) | Guardian |
-| Sepulchre | braucht Sepulchre Ready | Sepulchre |
+| Sepulchre | braucht Sepulchre Ready | Supplication |
 | Sheltron | Ausbau (Sheltron Mastery) | Holy Sheltron |
 | Sheltron | kostet | Oath |
 | Spirits Within | Ausbau (Spirits Within Mastery) | Expiacion |
+| Supplication | braucht Supplication Ready | Atonement |
 | Supplication | Knopf wird zu | Sepulchre |
-| Supplication | braucht Supplication Ready | Supplication |
 
 ### Aus dem Code (RSR)
 
@@ -105,7 +106,6 @@ direkt: 43 · ungenutzt: 1 · über anderen Knopf: 3
 | Confiteor | ActionCheck liest | Imperator |
 | Confiteor | ActionCheck liest | Requiescat |
 | Cover | Regel sperrt vorher | Intervention |
-| Divine Veil | Regel sperrt vorher | Holy Spirit |
 | Expiacion | Regel prüft | Fight or Flight |
 | Expiacion | Regel prüft | Imperator |
 | Fast Blade | Regel prüft | Rage of Halone |

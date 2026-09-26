@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-26; nic
 
 ## Nutzung
 
-direkt: 38 · ungenutzt: 3 · über anderen Knopf: 7
+direkt: 38 · ungenutzt: 3 · über andere Aktion: 7
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -70,46 +70,47 @@ direkt: 38 · ungenutzt: 3 · über anderen Knopf: 7
 | Bladeshower | Knopf wird zu | Entrechat |
 | Bladeshower | Combo nach | Windmill |
 | Bloodshower | Knopf wird zu | Pirouette |
-| Bloodshower | braucht (Erzeuger nicht im Text) | Silken Flow |
+| Bloodshower | braucht Silken Flow (Erzeuger nicht im Text) | Silken Flow |
 | Cascade | Knopf wird zu | Emboite |
-| Dance of the Dawn | braucht Dance of the Dawn Ready | Dance of the Dawn |
+| Dance of the Dawn | braucht Dance of the Dawn Ready (Erzeuger nicht im Text) | Dance of the Dawn Ready |
 | Dance of the Dawn | kostet | Esprit |
-| Double Standard Finish | braucht (Erzeuger nicht im Text) | dancing |
-| Double Technical Finish | braucht (Erzeuger nicht im Text) | dancing |
-| Emboite | braucht (Erzeuger nicht im Text) | Dancing |
-| Entrechat | braucht (Erzeuger nicht im Text) | Dancing |
-| Fan Dance II | braucht (Erzeuger nicht im Text) | possession of Fourfold Feathers |
+| Double Standard Finish | Bedingung (kein Status) | dancing |
+| Double Technical Finish | Bedingung (kein Status) | dancing |
+| Emboite | braucht Dancing (Erzeuger nicht im Text) | Dancing |
+| Entrechat | braucht Dancing (Erzeuger nicht im Text) | Dancing |
+| Fan Dance II | Bedingung (kein Status) | possession of Fourfold Feathers |
 | Fan Dance III | braucht Threefold Fan Dance | Fan Dance |
 | Fan Dance IV | braucht Fourfold Fan Dance | Eigenschaft Enhanced Flourish |
-| Fan Dance | braucht (Erzeuger nicht im Text) | possession of Fourfold Feathers |
+| Fan Dance | Bedingung (kein Status) | possession of Fourfold Feathers |
 | Finishing Move | braucht Finishing Move Ready | Eigenschaft Enhanced Flourish II |
 | Finishing Move | gemeinsame Abklingzeit | Standard Step |
-| Flourish | braucht (Erzeuger nicht im Text) | combat |
+| Flourish | Bedingung (kein Status) | combat |
 | Fountain | Combo nach | Cascade |
 | Fountain | Knopf wird zu | Entrechat |
 | Fountainfall | Knopf wird zu | Pirouette |
-| Fountainfall | braucht (Erzeuger nicht im Text) | Silken Flow |
+| Fountainfall | braucht Silken Flow (Erzeuger nicht im Text) | Silken Flow |
 | Improvisation | Knopf wird zu | Improvised Finish |
 | Improvised Finish | braucht Improvisation | Improvisation |
-| Jete | braucht (Erzeuger nicht im Text) | Dancing |
+| Jete | braucht Dancing (Erzeuger nicht im Text) | Dancing |
 | Last Dance | braucht Last Dance Ready | Eigenschaft Enhanced Standard Finish |
-| Pirouette | braucht (Erzeuger nicht im Text) | Dancing |
-| Quadruple Technical Finish | braucht (Erzeuger nicht im Text) | dancing |
+| Last Dance | braucht Last Dance Ready | Finishing Move |
+| Pirouette | braucht Dancing (Erzeuger nicht im Text) | Dancing |
+| Quadruple Technical Finish | Bedingung (kein Status) | dancing |
 | Reverse Cascade | Knopf wird zu | Jete |
-| Reverse Cascade | braucht (Erzeuger nicht im Text) | Silken Symmetry |
+| Reverse Cascade | braucht Silken Symmetry (Erzeuger nicht im Text) | Silken Symmetry |
 | Rising Windmill | Knopf wird zu | Jete |
-| Rising Windmill | braucht (Erzeuger nicht im Text) | Silken Symmetry |
+| Rising Windmill | braucht Silken Symmetry (Erzeuger nicht im Text) | Silken Symmetry |
 | Saber Dance | Knopf wird zu | Dance of the Dawn |
 | Saber Dance | kostet | Esprit |
-| Single Standard Finish | braucht (Erzeuger nicht im Text) | dancing |
-| Single Technical Finish | braucht (Erzeuger nicht im Text) | dancing |
-| Standard Finish | braucht (Erzeuger nicht im Text) | Dancing |
+| Single Standard Finish | Bedingung (kein Status) | dancing |
+| Single Technical Finish | Bedingung (kein Status) | dancing |
+| Standard Finish | braucht Dancing (Erzeuger nicht im Text) | Dancing |
 | Standard Step | Knopf wird zu | Double Standard Finish |
 | Standard Step | Knopf wird zu | Finishing Move |
 | Standard Step | Knopf wird zu | Single Standard Finish |
 | Standard Step | Knopf wird zu | Standard Finish |
 | Starfall Dance | braucht Flourishing Starfall | Eigenschaft Enhanced Devilment |
-| Technical Finish | braucht (Erzeuger nicht im Text) | Dancing |
+| Technical Finish | braucht Dancing (Erzeuger nicht im Text) | Dancing |
 | Technical Finish | Knopf wird zu | Tillana |
 | Technical Step | Knopf wird zu | Double Technical Finish |
 | Technical Step | Knopf wird zu | Quadruple Technical Finish |
@@ -117,7 +118,7 @@ direkt: 38 · ungenutzt: 3 · über anderen Knopf: 7
 | Technical Step | Knopf wird zu | Technical Finish |
 | Technical Step | Knopf wird zu | Triple Technical Finish |
 | Tillana | braucht Flourishing Finish | Eigenschaft Enhanced Technical Finish |
-| Triple Technical Finish | braucht (Erzeuger nicht im Text) | dancing |
+| Triple Technical Finish | Bedingung (kein Status) | dancing |
 | Windmill | Knopf wird zu | Emboite |
 
 ### Aus dem Code (RSR)

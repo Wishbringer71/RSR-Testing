@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-26; nic
 
 ## Nutzung
 
-direkt: 42 · nur gelesen: 2 · ungenutzt: 1 · über anderen Knopf: 1
+direkt: 42 · nur gelesen: 2 · ungenutzt: 1 · über andere Aktion: 1
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -80,20 +80,20 @@ direkt: 42 · nur gelesen: 2 · ungenutzt: 1 · über anderen Knopf: 1
 | Iaijutsu | Knopf wird zu | Tendo Goken |
 | Iaijutsu | Knopf wird zu | Tendo Setsugekka |
 | Iaijutsu | Knopf wird zu | Tenka Goken |
-| Ikishoten | braucht (Erzeuger nicht im Text) | combat |
+| Ikishoten | Bedingung (kein Status) | combat |
 | Kasha | Combo nach | Shifu |
 | Ogi Namikiri | braucht Ogi Namikiri Ready | Eigenschaft Enhanced Ikishoten |
 | Ogi Namikiri | Knopf wird zu | Kaeshi: Namikiri |
-| Tendo Goken | braucht Tendo | Eigenschaft Enhanced Meikyo Shisui II |
-| Tendo Goken | braucht (Erzeuger nicht im Text) | after accumulating 2 Sen |
-| Tendo Setsugekka | braucht Tendo | Eigenschaft Enhanced Meikyo Shisui II |
-| Tendo Setsugekka | braucht (Erzeuger nicht im Text) | after accumulating 3 Sen |
+| Tendo Goken | braucht Tendo and after accumulating 2 Sen (Erzeuger nicht im Text) | Tendo and after accumulating 2 Sen |
+| Tendo Setsugekka | braucht Tendo and after accumulating 3 Sen (Erzeuger nicht im Text) | Tendo and after accumulating 3 Sen |
 | Third Eye | Ausbau (Third Eye Mastery) | Tengentsu |
 | Tsubame-gaeshi | braucht Tsubame-gaeshi Ready | Eigenschaft Enhanced Iaijutsu |
 | Tsubame-gaeshi | Knopf wird zu | Kaeshi: Goken |
 | Tsubame-gaeshi | Knopf wird zu | Kaeshi: Setsugekka |
+| Tsubame-gaeshi | braucht Tsubame-gaeshi Ready | Tendo Goken |
 | Tsubame-gaeshi | Knopf wird zu | Tendo Kaeshi Goken |
 | Tsubame-gaeshi | Knopf wird zu | Tendo Kaeshi Setsugekka |
+| Tsubame-gaeshi | braucht Tsubame-gaeshi Ready | Tendo Setsugekka |
 | Zanshin | braucht Zanshin Ready | Eigenschaft Enhanced Ikishoten II |
 | Zanshin | kostet | Kenki |
 
@@ -133,7 +133,6 @@ direkt: 42 · nur gelesen: 2 · ungenutzt: 1 · über anderen Knopf: 1
 | Tendo Kaeshi Goken | StatusNeed Tsubamegaeshi_4217 | Status Tsubamegaeshi_4217 |
 | Tendo Kaeshi Setsugekka | StatusNeed Tsubamegaeshi_4218 | Status Tsubamegaeshi_4218 |
 | Tendo Setsugekka | StatusNeed Tendo | Meikyo Shisui |
-| True North | Regel sperrt vorher | Meikyo Shisui |
 | Yukikaze | ComboIds | Gyofu |
 | Yukikaze | ComboIds | Hakaze |
 | Zanshin | StatusNeed ZanshinReady_3855 | Status ZanshinReady_3855 |

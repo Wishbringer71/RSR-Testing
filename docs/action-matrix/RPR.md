@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-26; nic
 
 ## Nutzung
 
-direkt: 42 · über anderen Knopf: 3
+direkt: 42 · über andere Aktion: 3
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -70,7 +70,7 @@ direkt: 42 · über anderen Knopf: 3
 | Blood Stalk | Knopf wird zu | Unveiled Gallows |
 | Blood Stalk | Knopf wird zu | Unveiled Gibbet |
 | Communio | Knopf wird zu | Perfectio |
-| Cross Reaping | braucht (Erzeuger nicht im Text) | Lemure Shroud |
+| Cross Reaping | braucht Lemure Shroud (Erzeuger nicht im Text) | Lemure Shroud |
 | Cross Reaping | kostet | Lemure Shroud |
 | Enshroud | kostet | Shroud |
 | Executioner's Gallows | braucht Executioner | Eigenschaft Enhanced Gluttony |
@@ -79,12 +79,16 @@ direkt: 42 · über anderen Knopf: 3
 | Gallows | Knopf wird zu | Cross Reaping |
 | Gallows | braucht Soul Reaver | Eigenschaft Enhanced Avatar |
 | Gallows | Knopf wird zu | Executioner's Gallows |
+| Gallows | braucht Soul Reaver | Unveiled Gallows |
+| Gallows | braucht Soul Reaver | Unveiled Gibbet |
 | Gibbet | braucht Soul Reaver | Eigenschaft Enhanced Avatar |
 | Gibbet | Knopf wird zu | Executioner's Gibbet |
+| Gibbet | braucht Soul Reaver | Unveiled Gallows |
+| Gibbet | braucht Soul Reaver | Unveiled Gibbet |
 | Gibbet | Knopf wird zu | Void Reaping |
 | Gluttony | Knopf wird zu | Sacrificium |
 | Gluttony | kostet | Soul |
-| Grim Reaping | braucht (Erzeuger nicht im Text) | Enshrouded |
+| Grim Reaping | braucht Enshrouded (Erzeuger nicht im Text) | Enshrouded |
 | Grim Reaping | kostet | Lemure Shroud |
 | Grim Swathe | gemeinsame Abklingzeit | Gluttony |
 | Grim Swathe | Knopf wird zu | Lemure's Scythe |
@@ -92,6 +96,8 @@ direkt: 42 · über anderen Knopf: 3
 | Guillotine | braucht Soul Reaver | Eigenschaft Enhanced Avatar |
 | Guillotine | Knopf wird zu | Executioner's Guillotine |
 | Guillotine | Knopf wird zu | Grim Reaping |
+| Guillotine | braucht Soul Reaver | Unveiled Gallows |
+| Guillotine | braucht Soul Reaver | Unveiled Gibbet |
 | Harvest Moon | braucht Soulsow | Soulsow |
 | Hell's Egress | gemeinsame Abklingzeit | Hell's Ingress |
 | Hell's Egress | Knopf wird zu | Regress |
@@ -103,21 +109,22 @@ direkt: 42 · über anderen Knopf: 3
 | Lemure's Slice | gemeinsame Abklingzeit | Lemure's Scythe |
 | Lemure's Slice | kostet | Void Shroud |
 | Nightmare Scythe | Combo nach | Spinning Scythe |
-| Perfectio | braucht Perfectio Parata | Perfectio |
+| Perfectio | braucht Perfectio Parata (Erzeuger nicht im Text) | Perfectio Parata |
 | Plentiful Harvest | kostet | Immortal Sacrifice |
-| Regress | braucht (Erzeuger nicht im Text) | Threshold |
-| Sacrificium | braucht Oblatio | Eigenschaft Enhanced Enshroud |
-| Sacrificium | braucht (Erzeuger nicht im Text) | Enshrouded |
+| Regress | braucht Threshold (Erzeuger nicht im Text) | Threshold |
+| Sacrificium | braucht Enshrouded and Oblatio (Erzeuger nicht im Text) | Enshrouded and Oblatio |
 | Soul Scythe | gemeinsame Abklingzeit | Soul Slice |
 | Soul Slice | gemeinsame Abklingzeit | Soul Scythe |
 | Soulsow | Knopf wird zu | Harvest Moon |
-| Unveiled Gallows | braucht Enhanced Gallows | Gallows |
+| Unveiled Gallows | braucht Enhanced Gallows | Executioner's Gibbet |
+| Unveiled Gallows | braucht Enhanced Gallows | Gibbet |
 | Unveiled Gallows | gemeinsame Abklingzeit | Gluttony |
 | Unveiled Gallows | kostet | Soul |
-| Unveiled Gibbet | braucht Enhanced Gibbet | Gibbet |
+| Unveiled Gibbet | braucht Enhanced Gibbet | Executioner's Gallows |
+| Unveiled Gibbet | braucht Enhanced Gibbet | Gallows |
 | Unveiled Gibbet | gemeinsame Abklingzeit | Gluttony |
 | Unveiled Gibbet | kostet | Soul |
-| Void Reaping | braucht (Erzeuger nicht im Text) | Enshrouded |
+| Void Reaping | braucht Enshrouded (Erzeuger nicht im Text) | Enshrouded |
 | Void Reaping | kostet | Lemure Shroud |
 | Waxing Slice | Combo nach | Slice |
 
@@ -145,7 +152,6 @@ direkt: 42 · über anderen Knopf: 3
 | Shadow of Death | Regel prüft | Arcane Circle |
 | Shadow of Death | Regel prüft | Communio |
 | Shadow of Death | Regel prüft | Plentiful Harvest |
-| Soulsow | Regel sperrt vorher | Harpe |
 | Waxing Slice | Regel prüft | Slice |
 
 ## Nicht in der Matrix: Limit Breaks

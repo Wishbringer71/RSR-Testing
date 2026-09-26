@@ -16,6 +16,12 @@ Barde, Maler und Tänzer führen „Prevent the use of defense abilties during b
 
 Die Schranke aus Konzept 08 („Die Abwehrsperren") gilt für jede strategische Rückhaltung einer **Abwehr**. Heilrückhaltungen mit demselben Muster stehen außerhalb, etwa die Stardiver-Sperre vor Second Wind und Bloodbath (`DRG_Reborn.HealSingleAbility`). Im Kampf: Der Dragoon webt Feint nach Stardiver, wenn jemand in Gefahr ist, heilt sich aber selbst nicht. Die Stufe „alle" sollte auch hier greifen; dazu sind die Heilrückhaltungen zu erheben wie in A159 die Abwehrrückhaltungen.
 
+### Werkzeuge für Pausen und Phasenenden ungenutzt: Monk, Samurai, Machinist · N
+
+Die Standardrotationen wirken nie Six-sided Star (Monk: vor einer Pause oder am Kampfende), Meditate (Samurai: Kenki und Meditation in der Pause), Queen Overdrive und Rook Overdrive (Machinist: Abschluss der Königin vor einer Pause) und Flamethrower (Machinist: Flächenkanal; Positionssperre in `Configs`/`MovingUpdater` schon vorgesehen). Im Archiv (#69) als „Features ohne Trigger" geführt; mit `BMRDowntimeWithin` gibt es den Auslöser, allerdings nur mit Modul. Die Jobs hat er bisher nicht genannt; erst bearbeiten, wenn er sie nennt.
+
+**Konzept:** `docs/rotation-flow/14-action-dependency-matrix.md`
+
 ### Die Heilverbots-Prüfung steht achtmal im Dispatch · U
 
 Die Prüfung auf Scalebound und Shackled Healing steht als Kopie an acht Stellen, je vier in `CustomRotation_Ability` und `CustomRotation_GCD` (Upstream), dazu jetzt in `StatusHelper.PlayerHealingPunished` (A154, A155). Die Kopien sollten die Hilfsmethode rufen; bei leerer Gruppenliste antworten heute alle gleich. Nicht angefasst, weil es Upstream-Zeilen ohne Verhaltensänderung sind.

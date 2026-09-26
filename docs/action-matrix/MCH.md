@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-26; nic
 
 ## Nutzung
 
-direkt: 35 · ungenutzt: 10 · über anderen Knopf: 1
+direkt: 35 · ungenutzt: 10 · über andere Aktion: 1
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -65,12 +65,12 @@ direkt: 35 · ungenutzt: 10 · über anderen Knopf: 1
 
 | Aktion | Beziehung | zu |
 |---|---|---|
-| Auto Crossbow | braucht (Erzeuger nicht im Text) | firearm is Overheated |
+| Auto Crossbow | Bedingung (kein Status) | firearm is Overheated |
 | Automaton Queen | kostet | Battery |
 | Automaton Queen | gemeinsame Abklingzeit | Queen Overdrive |
-| Barrel Stabilizer | braucht (Erzeuger nicht im Text) | combat |
+| Barrel Stabilizer | Bedingung (kein Status) | combat |
 | Bioblaster | gemeinsame Abklingzeit | Drill |
-| Blazing Shot | braucht (Erzeuger nicht im Text) | firearm is Overheated |
+| Blazing Shot | Bedingung (kein Status) | firearm is Overheated |
 | Chain Saw | Knopf wird zu | Excavator |
 | Clean Shot | Ausbau (Clean Shot Mastery) | Heated Clean Shot |
 | Clean Shot | Combo nach | Heated Slug Shot |
@@ -80,7 +80,7 @@ direkt: 35 · ungenutzt: 10 · über anderen Knopf: 1
 | Full Metal Field | braucht Full Metal Machinist | Eigenschaft Enhanced Barrel Stabilizer |
 | Gauss Round | Ausbau (Double-barrel Mastery) | Double Check |
 | Heat Blast | Ausbau (Heat Blast Mastery) | Blazing Shot |
-| Heat Blast | braucht (Erzeuger nicht im Text) | firearm is Overheated |
+| Heat Blast | Bedingung (kein Status) | firearm is Overheated |
 | Heated Clean Shot | Combo nach | Heated Slug Shot |
 | Heated Slug Shot | Combo nach | Heated Split Shot |
 | Hot Shot | Ausbau (Hot Shot Mastery) | Air Anchor |
@@ -115,7 +115,6 @@ direkt: 35 · ungenutzt: 10 · über anderen Knopf: 1
 | Automaton Queen | Regel prüft | Excavator |
 | Automaton Queen | Regel prüft | Heated Clean Shot |
 | Automaton Queen | Regel prüft | Hot Shot |
-| Barrel Stabilizer | Regel sperrt vorher | Air Anchor |
 | Barrel Stabilizer | Regel sperrt vorher | Full Metal Field |
 | Barrel Stabilizer | Regel sperrt vorher | Wildfire |
 | Bioblaster | Regel sperrt vorher | Heat Blast |
@@ -180,7 +179,6 @@ direkt: 35 · ungenutzt: 10 · über anderen Knopf: 1
 | Hypercharge | Regel sperrt vorher | Hot Shot |
 | Hypercharge | Regel sperrt vorher | Spread Shot |
 | Hypercharge | Regel prüft | Wildfire |
-| Reassemble | Regel sperrt vorher | Air Anchor |
 | Reassemble | Regel sperrt vorher | Full Metal Field |
 | Reassemble | Regel sperrt vorher | Wildfire |
 | Ricochet | Regel prüft | Checkmate |

@@ -68,71 +68,61 @@ direkt: 42 · nur gelesen: 6 · ungenutzt: 1
 
 | Aktion | Beziehung | zu |
 |---|---|---|
-| Aero II in Green | braucht (Erzeuger nicht im Text) | Aetherhues |
-| Aero II in Green | braucht not under the effect of Subtractive Palette | Subtractive Palette |
+| Aero II in Green | braucht Aetherhues and not under the effect of Subtractive Palette | Subtractive Palette |
 | Aero II in Green | Knopf wird zu | Water II in Blue |
-| Aero in Green | braucht (Erzeuger nicht im Text) | Aetherhues |
-| Aero in Green | braucht not under the effect of Subtractive Palette | Subtractive Palette |
+| Aero in Green | braucht Aetherhues and not under the effect of Subtractive Palette | Subtractive Palette |
 | Aero in Green | Knopf wird zu | Water in Blue |
 | Blizzard II in Cyan | Knopf wird zu | Stone II in Yellow |
 | Blizzard II in Cyan | braucht Subtractive Palette | Subtractive Palette |
 | Blizzard in Cyan | Knopf wird zu | Stone in Yellow |
 | Blizzard in Cyan | braucht Subtractive Palette | Subtractive Palette |
-| Clawed Muse | braucht (Erzeuger nicht im Text) | a claw is painted on the Creature Canvas |
-| Comet in Black | braucht (Erzeuger nicht im Text) | Black Paint |
-| Comet in Black | kostet | Black Paint |
-| Comet in Black | braucht Monochrome Tones | Eigenschaft Enhanced Palette |
+| Clawed Muse | Bedingung (kein Status) | a claw is painted on the Creature Canvas |
+| Comet in Black | braucht Black Paint and Monochrome Tones (Erzeuger nicht im Text) | Black Paint and Monochrome Tones |
+| Comet in Black | kostet | Paint |
 | Creature Motif | Knopf wird zu | Claw Motif |
 | Creature Motif | Knopf wird zu | Maw Motif |
 | Creature Motif | Knopf wird zu | Pom Motif |
 | Creature Motif | Knopf wird zu | Wing Motif |
-| Fanged Muse | braucht (Erzeuger nicht im Text) | fangs are painted on the Creature Canvas |
+| Fanged Muse | Bedingung (kein Status) | fangs are painted on the Creature Canvas |
 | Fire II in Red | Knopf wird zu | Aero II in Green |
 | Fire in Red | Knopf wird zu | Aero in Green |
-| Hammer Brush | braucht (Erzeuger nicht im Text) | Hammer Time |
+| Hammer Brush | braucht Hammer Time (Erzeuger nicht im Text) | Hammer Time |
 | Hammer Brush | Combo nach | Hammer Stamp |
 | Hammer Brush | Knopf wird zu | Polishing Hammer |
-| Hammer Stamp | braucht (Erzeuger nicht im Text) | Hammer Time |
+| Hammer Stamp | braucht Hammer Time (Erzeuger nicht im Text) | Hammer Time |
 | Hammer Stamp | Knopf wird zu | Hammer Brush |
 | Holy in White | braucht White Paint | Eigenschaft Enhanced Artistry |
+| Holy in White | braucht White Paint | Rainbow Drip |
 | Holy in White | kostet | White Paint |
 | Landscape Motif | Knopf wird zu | Starry Sky Motif |
 | Living Muse | Knopf wird zu | Clawed Muse |
-| Living Muse | braucht a Creature Motif is depicted on the Creature Canvas | Creature Motif |
 | Living Muse | Knopf wird zu | Fanged Muse |
 | Living Muse | Knopf wird zu | Pom Muse |
 | Living Muse | Knopf wird zu | Winged Muse |
-| Mog of the Ages | braucht (Erzeuger nicht im Text) | Moogle Portrait |
+| Living Muse | Bedingung (kein Status) | a Creature Motif is depicted on the Creature Canvas |
+| Mog of the Ages | braucht Moogle Portrait (Erzeuger nicht im Text) | Moogle Portrait |
 | Mog of the Ages | Knopf wird zu | Retribution of the Madeen |
-| Polishing Hammer | braucht (Erzeuger nicht im Text) | Hammer Time |
+| Polishing Hammer | braucht Hammer Time (Erzeuger nicht im Text) | Hammer Time |
 | Polishing Hammer | Combo nach | Hammer Brush |
-| Pom Muse | braucht (Erzeuger nicht im Text) | a pom is painted on the Creature Canvas |
-| Retribution of the Madeen | braucht (Erzeuger nicht im Text) | Madeen Portrait |
+| Pom Muse | Bedingung (kein Status) | a pom is painted on the Creature Canvas |
+| Retribution of the Madeen | braucht Madeen Portrait (Erzeuger nicht im Text) | Madeen Portrait |
 | Scenic Muse | Knopf wird zu | Starry Muse |
 | Star Prism | braucht Starstruck | Eigenschaft Enhanced Pictomancy V |
-| Starry Muse | braucht (Erzeuger nicht im Text) | combat |
-| Starry Muse | braucht (Erzeuger nicht im Text) | when a starry sky is painted on the Landscape Canvas |
+| Starry Muse | Bedingung (kein Status) | combat and when a starry sky is painted on the Landscape Canvas |
 | Steel Muse | Knopf wird zu | Striking Muse |
-| Stone II in Yellow | braucht (Erzeuger nicht im Text) | Aetherhues |
-| Stone II in Yellow | braucht Subtractive Palette | Subtractive Palette |
+| Stone II in Yellow | braucht Aetherhues and Subtractive Palette | Subtractive Palette |
 | Stone II in Yellow | Knopf wird zu | Thunder II in Magenta |
-| Stone in Yellow | braucht (Erzeuger nicht im Text) | Aetherhues |
-| Stone in Yellow | braucht Subtractive Palette | Subtractive Palette |
+| Stone in Yellow | braucht Aetherhues and Subtractive Palette | Subtractive Palette |
 | Stone in Yellow | Knopf wird zu | Thunder in Magenta |
-| Striking Muse | braucht (Erzeuger nicht im Text) | combat |
-| Striking Muse | braucht (Erzeuger nicht im Text) | when a hammer is painted on the Weapon Canvas |
+| Striking Muse | Bedingung (kein Status) | combat and when a hammer is painted on the Weapon Canvas |
 | Subtractive Palette | kostet | Palette |
 | Tempera Grassa | braucht Tempera Coat | Tempera Coat |
-| Thunder II in Magenta | braucht (Erzeuger nicht im Text) | Aetherhues II |
-| Thunder II in Magenta | braucht Subtractive Palette | Subtractive Palette |
-| Thunder in Magenta | braucht (Erzeuger nicht im Text) | Aetherhues II |
-| Thunder in Magenta | braucht Subtractive Palette | Subtractive Palette |
-| Water II in Blue | braucht (Erzeuger nicht im Text) | Aetherhues II |
-| Water II in Blue | braucht not under the effect of Subtractive Palette | Subtractive Palette |
-| Water in Blue | braucht (Erzeuger nicht im Text) | Aetherhues II |
-| Water in Blue | braucht not under the effect of Subtractive Palette | Subtractive Palette |
+| Thunder II in Magenta | braucht Aetherhues II and Subtractive Palette | Subtractive Palette |
+| Thunder in Magenta | braucht Aetherhues II and Subtractive Palette | Subtractive Palette |
+| Water II in Blue | braucht Aetherhues II and not under the effect of Subtractive Palette | Subtractive Palette |
+| Water in Blue | braucht Aetherhues II and not under the effect of Subtractive Palette | Subtractive Palette |
 | Weapon Motif | Knopf wird zu | Hammer Motif |
-| Winged Muse | braucht (Erzeuger nicht im Text) | a pair of wings is painted on the Creature Canvas |
+| Winged Muse | Bedingung (kein Status) | a pair of wings is painted on the Creature Canvas |
 
 ### Aus dem Code (RSR)
 

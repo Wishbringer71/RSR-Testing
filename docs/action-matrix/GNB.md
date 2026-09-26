@@ -65,7 +65,7 @@ direkt: 44 · nur gelesen: 1 · ungenutzt: 1
 
 | Aktion | Beziehung | zu |
 |---|---|---|
-| Abdomen Tear | braucht (Erzeuger nicht im Text) | Ready to Tear |
+| Abdomen Tear | braucht Ready to Tear (Erzeuger nicht im Text) | Ready to Tear |
 | Brutal Shell | Combo nach | Keen Edge |
 | Burst Strike | kostet | Cartridge |
 | Continuation | Knopf wird zu | Abdomen Tear |
@@ -76,14 +76,14 @@ direkt: 44 · nur gelesen: 1 · ungenutzt: 1
 | Danger Zone | Ausbau (Danger Zone Mastery) | Blasting Zone |
 | Demon Slaughter | Combo nach | Demon Slice |
 | Double Down | kostet | Cartridge |
-| Eye Gouge | braucht (Erzeuger nicht im Text) | Ready to Gouge |
-| Fated Brand | braucht (Erzeuger nicht im Text) | Ready to Raze |
+| Eye Gouge | braucht Ready to Gouge (Erzeuger nicht im Text) | Ready to Gouge |
+| Fated Brand | braucht Ready to Raze (Erzeuger nicht im Text) | Ready to Raze |
 | Fated Circle | kostet | Cartridge |
 | Gnashing Fang | kostet | Cartridge |
 | Gnashing Fang | Knopf wird zu | Savage Claw |
 | Heart of Stone | Ausbau (Heart of Stone Mastery) | Heart of Corundum |
-| Hypervelocity | braucht (Erzeuger nicht im Text) | Ready to Blast |
-| Jugular Rip | braucht (Erzeuger nicht im Text) | Ready to Rip |
+| Hypervelocity | braucht Ready to Blast (Erzeuger nicht im Text) | Ready to Blast |
+| Jugular Rip | braucht Ready to Rip (Erzeuger nicht im Text) | Ready to Rip |
 | Lion Heart | Combo nach | Noble Blood |
 | Nebula | Ausbau (Nebula Mastery) | Great Nebula |
 | Noble Blood | Knopf wird zu | Lion Heart |
@@ -93,7 +93,7 @@ direkt: 44 · nur gelesen: 1 · ungenutzt: 1
 | Savage Claw | Combo nach | Gnashing Fang |
 | Savage Claw | Knopf wird zu | Wicked Talon |
 | Solid Barrel | Combo nach | Brutal Shell |
-| Sonic Break | braucht (Erzeuger nicht im Text) | Ready to Break |
+| Sonic Break | braucht Ready to Break (Erzeuger nicht im Text) | Ready to Break |
 | Wicked Talon | Combo nach | Savage Claw |
 
 ### Aus dem Code (RSR)

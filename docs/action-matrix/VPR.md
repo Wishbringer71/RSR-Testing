@@ -82,10 +82,10 @@ direkt: 49 · ungenutzt: 3
 | Reaving Fangs | Knopf wird zu | Swiftskin's Sting |
 | Reaving Maw | Knopf wird zu | Second Generation |
 | Reaving Maw | Knopf wird zu | Swiftskin's Bite |
+| Reawaken | kostet | Offerings |
 | Reawaken | Knopf wird zu | Ouroboros |
-| Reawaken | kostet | Serpent Offerings |
 | Second Generation | kostet | Anguine Tribute |
-| Serpent's Ire | braucht (Erzeuger nicht im Text) | combat |
+| Serpent's Ire | Bedingung (kein Status) | combat |
 | Serpent's Tail | Knopf wird zu | Death Rattle |
 | Serpent's Tail | Knopf wird zu | First Legacy |
 | Serpent's Tail | Knopf wird zu | Fourth Legacy |

@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-26; nic
 
 ## Nutzung
 
-direkt: 46 · nur gelesen: 1 · ungenutzt: 1 · über anderen Knopf: 2
+direkt: 54 · nur gelesen: 1 · ungenutzt: 1 · über andere Aktion: 6
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -25,14 +25,19 @@ direkt: 46 · nur gelesen: 1 · ungenutzt: 1 · über anderen Knopf: 2
 | Job | Bhavacakra (`BhavacakraPvE`) | 7402 | Ability | direkt |
 | Job | Bunshin (`BunshinPvE`) | 16493 | Ability | direkt |
 | Job | Chi (`ChiPvE`) | 2261 | Ability | direkt |
+| Job | Chi (`ChiPvE_18806`) | 18806 | Ability | direkt |
 | Job | Death Blossom (`DeathBlossomPvE`) | 2254 | Weaponskill | direkt |
 | Job | Deathfrog Medium (`DeathfrogMediumPvE`) | 36959 | Ability | über Hellfrog Medium |
 | Job | Dokumori (`DokumoriPvE`) | 36957 | Ability | direkt |
 | Job | Doton (`DotonPvE`) | 2270 | Ability | direkt |
+| Job | Doton (`DotonPvE_18880`) | 18880 | Ability | direkt |
 | Job | Dream Within a Dream (`DreamWithinADreamPvE`) | 3566 | Ability | direkt |
 | Job | Fleeting Raiju (`FleetingRaijuPvE`) | 25778 | Weaponskill | direkt |
 | Job | Forked Raiju (`ForkedRaijuPvE`) | 25777 | Weaponskill | direkt |
 | Job | Fuma Shuriken (`FumaShurikenPvE`) | 2265 | Ability | direkt |
+| Job | Fuma Shuriken (`FumaShurikenPvE_18873`) | 18873 | Ability | direkt |
+| Job | Fuma Shuriken (`FumaShurikenPvE_18874`) | 18874 | Ability | über gleichnamige Aktion `FumaShurikenPvE` |
+| Job | Fuma Shuriken (`FumaShurikenPvE_18875`) | 18875 | Ability | direkt |
 | Job | Goka Mekkyaku (`GokaMekkyakuPvE`) | 16491 | Ability | direkt |
 | Job | Gust Slash (`GustSlashPvE`) | 2242 | Weaponskill | direkt |
 | Job | Hakke Mujinsatsu (`HakkeMujinsatsuPvE`) | 16488 | Weaponskill | direkt |
@@ -40,11 +45,15 @@ direkt: 46 · nur gelesen: 1 · ungenutzt: 1 · über anderen Knopf: 2
 | Job | Hide (`HidePvE`) | 2245 | Ability | direkt |
 | Job | Hollow Nozuchi (`HollowNozuchiPvE`) | 25776 | Ability | ungenutzt — nicht zuweisbar: Begleiter oder Automatik |
 | Job | Huton (`HutonPvE`) | 2269 | Ability | direkt |
+| Job | Huton (`HutonPvE_18879`) | 18879 | Ability | über gleichnamige Aktion `HutonPvE` |
 | Job | Hyosho Ranryu (`HyoshoRanryuPvE`) | 16492 | Ability | direkt |
 | Job | Hyoton (`HyotonPvE`) | 2268 | Ability | direkt |
-| Job | Jin (`JinPvE`) | 2263 | Ability | direkt |
+| Job | Hyoton (`HyotonPvE_18878`) | 18878 | Ability | über gleichnamige Aktion `HyotonPvE` |
+| Job | Jin (`JinPvE`) | 2263 | Ability | über gleichnamige Aktion `JinPvE_18807` |
+| Job | Jin (`JinPvE_18807`) | 18807 | Ability | direkt |
 | Job | Kassatsu (`KassatsuPvE`) | 2264 | Ability | direkt |
 | Job | Katon (`KatonPvE`) | 2266 | Ability | direkt |
+| Job | Katon (`KatonPvE_18876`) | 18876 | Ability | direkt |
 | Job | Kunai's Bane (`KunaisBanePvE`) | 36958 | Ability | direkt |
 | Job | Meisui (`MeisuiPvE`) | 16489 | Ability | direkt |
 | Job | Mug (`MugPvE`) | 2248 | Ability | direkt |
@@ -52,11 +61,14 @@ direkt: 46 · nur gelesen: 1 · ungenutzt: 1 · über anderen Knopf: 2
 | Job | Phantom Kamaitachi (`PhantomKamaitachiPvE`) | 25774 | Weaponskill | direkt |
 | Job | Rabbit Medium (`RabbitMediumPvE`) | 2272 | Ability | direkt |
 | Job | Raiton (`RaitonPvE`) | 2267 | Ability | direkt |
+| Job | Raiton (`RaitonPvE_18877`) | 18877 | Ability | direkt |
 | Job | Shade Shift (`ShadeShiftPvE`) | 2241 | Ability | direkt |
 | Job | Shukuchi (`ShukuchiPvE`) | 2262 | Ability | direkt |
 | Job | Spinning Edge (`SpinningEdgePvE`) | 2240 | Weaponskill | direkt |
 | Job | Suiton (`SuitonPvE`) | 2271 | Ability | direkt |
+| Job | Suiton (`SuitonPvE_18881`) | 18881 | Ability | direkt |
 | Job | Ten (`TenPvE`) | 2259 | Ability | direkt |
+| Job | Ten (`TenPvE_18805`) | 18805 | Ability | direkt |
 | Job | Ten Chi Jin (`TenChiJinPvE`) | 7403 | Ability | direkt |
 | Job | Tenri Jindo (`TenriJindoPvE`) | 36961 | Ability | direkt |
 | Job | Throwing Dagger (`ThrowingDaggerPvE`) | 2247 | Weaponskill | direkt |
@@ -79,8 +91,8 @@ direkt: 46 · nur gelesen: 1 · ungenutzt: 1 · über anderen Knopf: 2
 | Deathfrog Medium | gemeinsame Abklingzeit | Bhavacakra |
 | Deathfrog Medium | braucht Higi | Eigenschaft Enhanced Dokumori |
 | Deathfrog Medium | kostet | Ninki |
-| Fleeting Raiju | braucht (Erzeuger nicht im Text) | Raiju Ready |
-| Forked Raiju | braucht (Erzeuger nicht im Text) | Raiju Ready |
+| Fleeting Raiju | braucht Raiju Ready (Erzeuger nicht im Text) | Raiju Ready |
+| Forked Raiju | braucht Raiju Ready (Erzeuger nicht im Text) | Raiju Ready |
 | Goka Mekkyaku | braucht Kassatsu | Kassatsu |
 | Gust Slash | Combo nach | Spinning Edge |
 | Hakke Mujinsatsu | Combo nach | Death Blossom |
@@ -90,24 +102,35 @@ direkt: 46 · nur gelesen: 1 · ungenutzt: 1 · über anderen Knopf: 2
 | Hyosho Ranryu | braucht Kassatsu | Kassatsu |
 | Hyoton | Ausbau (Enhanced Kassatsu) | Hyosho Ranryu |
 | Hyoton | Ausbau (Enhanced Kassatsu) | Kassatsu |
+| Hyoton | Ausbau (Enhanced Kassatsu) | Hyosho Ranryu |
+| Hyoton | Ausbau (Enhanced Kassatsu) | Kassatsu |
 | Katon | Ausbau (Enhanced Kassatsu) | Goka Mekkyaku |
-| Kunai's Bane | braucht (Erzeuger nicht im Text) | Hidden |
-| Meisui | braucht (Erzeuger nicht im Text) | combat |
-| Meisui | braucht (Erzeuger nicht im Text) | under the effect of Shadow Walker |
+| Katon | Ausbau (Enhanced Kassatsu) | Goka Mekkyaku |
+| Kunai's Bane | braucht Hidden (Erzeuger nicht im Text) | Hidden |
+| Meisui | Bedingung (kein Status) | combat and under the effect of Shadow Walker |
 | Mug | Ausbau (Mug Mastery) | Dokumori |
 | Ninjutsu | Knopf wird zu | Doton |
+| Ninjutsu | Knopf wird zu | Doton |
+| Ninjutsu | Knopf wird zu | Fuma Shuriken |
+| Ninjutsu | Knopf wird zu | Fuma Shuriken |
+| Ninjutsu | Knopf wird zu | Fuma Shuriken |
 | Ninjutsu | Knopf wird zu | Fuma Shuriken |
 | Ninjutsu | Knopf wird zu | Goka Mekkyaku |
 | Ninjutsu | Knopf wird zu | Huton |
+| Ninjutsu | Knopf wird zu | Huton |
 | Ninjutsu | Knopf wird zu | Hyosho Ranryu |
 | Ninjutsu | Knopf wird zu | Hyoton |
+| Ninjutsu | Knopf wird zu | Hyoton |
+| Ninjutsu | Knopf wird zu | Katon |
 | Ninjutsu | Knopf wird zu | Katon |
 | Ninjutsu | Knopf wird zu | Raiton |
+| Ninjutsu | Knopf wird zu | Raiton |
 | Ninjutsu | Knopf wird zu | Suiton |
-| Phantom Kamaitachi | braucht Phantom Kamaitachi Ready | Phantom Kamaitachi |
+| Ninjutsu | Knopf wird zu | Suiton |
+| Phantom Kamaitachi | braucht Phantom Kamaitachi Ready (Erzeuger nicht im Text) | Phantom Kamaitachi Ready |
 | Ten Chi Jin | Knopf wird zu | Tenri Jindo |
 | Tenri Jindo | braucht Tenri Jindo Ready | Eigenschaft Enhanced Ten Chi Jin |
-| Trick Attack | braucht (Erzeuger nicht im Text) | Hidden |
+| Trick Attack | braucht Hidden (Erzeuger nicht im Text) | Hidden |
 | Trick Attack | Ausbau (Trick Attack Mastery) | Kunai's Bane |
 | Zesho Meppo | braucht Higi | Eigenschaft Enhanced Dokumori |
 | Zesho Meppo | gemeinsame Abklingzeit | Hellfrog Medium |
@@ -123,10 +146,20 @@ direkt: 46 · nur gelesen: 1 · ungenutzt: 1 · über anderen Knopf: 2
 | Assassinate | Regel prüft | Dream Within a Dream |
 | Bhavacakra | Regel prüft | Bunshin |
 | Bhavacakra | Regel prüft | Mug |
+| Chi | ActionCheck liest | Chi |
 | Chi | Regel prüft | Huton |
 | Chi | Regel prüft | Hyoton |
 | Chi | Regel prüft | Katon |
+| Chi | ActionCheck liest | Chi |
+| Chi | Regel prüft | Doton |
+| Chi | Regel prüft | Goka Mekkyaku |
+| Chi | Regel prüft | Hyosho Ranryu |
+| Chi | Regel prüft | Raiton |
+| Chi | Regel prüft | Suiton |
+| Chi | Regel sperrt vorher | Trick Attack |
 | Death Blossom | Regel prüft | Chi |
+| Death Blossom | Regel prüft | Fuma Shuriken |
+| Death Blossom | Regel prüft | Fuma Shuriken |
 | Death Blossom | Regel prüft | Hakke Mujinsatsu |
 | Death Blossom | Regel prüft | Huton |
 | Death Blossom | Regel prüft | Hyosho Ranryu |
@@ -138,6 +171,9 @@ direkt: 46 · nur gelesen: 1 · ungenutzt: 1 · über anderen Knopf: 2
 | Death Blossom | Regel prüft | Suiton |
 | Death Blossom | Regel prüft | Ten |
 | Death Blossom | Regel prüft | Trick Attack |
+| Fuma Shuriken | Regel prüft | Fuma Shuriken |
+| Fuma Shuriken | Regel prüft | Death Blossom |
+| Fuma Shuriken | Regel prüft | Fuma Shuriken |
 | Goka Mekkyaku | Regel sperrt vorher | Trick Attack |
 | Gust Slash | ComboIds | Spinning Edge |
 | Hakke Mujinsatsu | Regel prüft | Chi |
@@ -157,12 +193,20 @@ direkt: 46 · nur gelesen: 1 · ungenutzt: 1 · über anderen Knopf: 2
 | Jin | Regel prüft | Doton |
 | Jin | Regel prüft | Hakke Mujinsatsu |
 | Jin | Regel prüft | Huton |
+| Jin | ActionCheck liest | Jin |
 | Jin | Regel prüft | Kunai's Bane |
 | Jin | Regel prüft | Meisui |
 | Jin | Regel prüft | Suiton |
 | Jin | Regel prüft | Ten Chi Jin |
 | Jin | Regel prüft | Ten |
 | Jin | Regel prüft | Trick Attack |
+| Jin | Regel prüft | Doton |
+| Jin | Regel prüft | Huton |
+| Jin | Regel prüft | Hyosho Ranryu |
+| Jin | Regel prüft | Hyoton |
+| Jin | ActionCheck liest | Jin |
+| Jin | Regel prüft | Suiton |
+| Jin | Regel sperrt vorher | Trick Attack |
 | Kassatsu | Regel prüft | Chi |
 | Kassatsu | Regel prüft | Jin |
 | Kassatsu | Regel prüft | Ten |
@@ -175,6 +219,12 @@ direkt: 46 · nur gelesen: 1 · ungenutzt: 1 · über anderen Knopf: 2
 | Ten | Regel prüft | Fuma Shuriken |
 | Ten | Regel prüft | Raiton |
 | Ten | Regel prüft | Suiton |
+| Ten | ActionCheck liest | Ten |
+| Ten | Regel prüft | Goka Mekkyaku |
+| Ten | Regel prüft | Huton |
+| Ten | Regel prüft | Katon |
+| Ten | ActionCheck liest | Ten |
+| Ten | Regel sperrt vorher | Trick Attack |
 | Tenri Jindo | Regel prüft | Bunshin |
 | Tenri Jindo | Regel prüft | Mug |
 | Trick Attack | StatusNeed Hidden | Hide |

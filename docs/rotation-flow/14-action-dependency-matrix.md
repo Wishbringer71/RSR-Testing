@@ -14,7 +14,8 @@ wechselwirkungen."
 schreibt je Job `docs/action-matrix/<JOB>.md` (Aktionen, Stufe, Nutzung, Beziehungen) und
 `<JOB>.csv` (die Matrix selbst: Zeile = Aktion, Spalte = worauf sie sich bezieht, Zelle = Art der
 Beziehung). `docs/action-matrix/README.md` fasst die Nutzung je Job zusammen. Das Skript trägt einen
-Selbsttest gegen konstruierte Texte und konstruierten Code; `--check` meldet veraltete Dateien.
+Selbsttest gegen konstruierte Texte und konstruierten Code; `--check` meldet veraltete Dateien und
+läuft in der CI.
 
 **Ungenutzt ist in den Standardrotationen keine Kampfaktion, die ein Spieler auslösen kann und die
 eine Schadens-, Heil- oder Schutzfunktion ohne Sonderlage hat.** Was maschinell als „ungenutzt"
@@ -63,24 +64,29 @@ Baums, sondern quer dazu. Die Matrix zeigt es; eine Entscheidung verlangt es nic
 
 | Ebene | Quelle | Beziehungen |
 |---|---|---|
-| Spiel | Wirktexte in `ActionId.resx`, Eigenschaften in `Rotation.resx` | Combo nach · Knopf wird zu · gemeinsame Abklingzeit · braucht Status · kostet Ressource · Ausbau durch Eigenschaft |
+| Spiel | Wirktexte in `ActionId.resx`, Eigenschaften in `Rotation.resx` | Combo nach · Knopf wird zu · gemeinsame Abklingzeit · braucht Status · darf Status nicht haben · Bedingung ohne Status · kostet Ressource · Ausbau durch Eigenschaft |
 | RSR | Basisrotation (`Modify…`: `StatusNeed`, `StatusProvide`, `ComboIds`, `ActionCheck`) und Standardrotation | StatusNeed · ComboIds · ActionCheck liest · Regel prüft (Bedingung derselben oder einer umschließenden Abfrage) · Regel sperrt vorher (frühere Abfrage derselben Methode, die ohne Wirken zurückkehrt) |
 
 **Nutzung je Aktion:**
-- *direkt*: ein `CanUse`-Aufruf in der Standardrotation, in der Basisrotation außerhalb der
-  `Modify`-Rümpfe, im zentralen Dispatch, oder über eine Stellvertreter-Eigenschaft (`TankStance`,
-  `Raise`).
-- *über anderen Knopf*: Eine direkt genutzte Aktion wird laut Wirktext oder Eigenschaft zu ihr.
-- *nur gelesen*: kommt in Bedingungen vor, wird aber nie gewirkt.
+- *direkt*: gewirkt — `CanUse` mit echtem Ausgabeziel (`out act`, `out var act`) oder als die
+  auszuführende Aktion zurückgegeben (`return X;`, `act = X`) — in der Standardrotation, in der
+  Basisrotation außerhalb der `Modify`-Rümpfe, im zentralen Dispatch, oder über eine
+  Stellvertreter-Eigenschaft (`TankStance`, `Raise`).
+- *über andere Aktion*: Eine gewirkte Aktion wird laut Wirktext oder Eigenschaft zu ihr, oder eine
+  gleichnamige Variante mit anderer Id wird gewirkt (die Mudras des Ninja, `JinPvE_18807`).
+- *nur geprüft*: nur als `CanUse(out _)` gefragt, eine Bedingung, kein Wirken.
+- *nur gelesen*: kommt in anderen Bedingungen vor, wird aber nie gewirkt.
 - *ungenutzt*: keines davon.
 
-**Abgleich Wirktext ↔ Code:** Nennt der Wirktext eine Bedingung und führt die Basisrotation dafür
-weder `StatusNeed` noch `ActionCheck`, steht die Aktion in der Liste. Übrig bleiben Manafont (BLM) und
-die Eukrasia-Aktionen (SGE). Beides ist kein Befund, aus demselben Grund: Die Bedingung steht in einer
-Eigenschaft, die der Abgleich nicht verfolgt.
+**Abgleich Wirktext ↔ Code:** Nennt der Wirktext eine Statusbedingung und führt die Basisrotation
+dafür weder `StatusNeed` noch `ActionCheck`, steht die Aktion in der Liste. Unter den bewerteten Jobs
+bleiben Manafont (BLM) und die Eukrasia-Aktionen (SGE); der Blaumagier führt weitere, unbewertet.
+Beides ist kein Befund, aus demselben Grund: Die Bedingung steht in einer Eigenschaft, die der
+Abgleich nicht verfolgt.
 - Manafont wird in `BLM_Default` und `BLM_RP` nur innerhalb von `if (InAstralFire)` gewirkt.
-- Die Eukrasia-Aktionen wirkt `SGE_Reborn` erst hinter `if (!HasEukrasia) { … return … }`. Sie sind
-  der Knopf, zu dem Dosis, Diagnosis und Prognosis unter Eukrasia werden.
+- Die Eukrasia-Aktionen wirkt `SGE_Reborn` nur unter Eukrasia: hinter `if (!HasEukrasia) { … return … }`
+  oder mit `HasEukrasia &&` in der Bedingung. Sie sind der Knopf, zu dem Dosis, Diagnosis und
+  Prognosis unter Eukrasia werden.
 
 ## Grenzen, bewusst hingenommen
 
@@ -93,7 +99,10 @@ Eigenschaft, die der Abgleich nicht verfolgt.
 - **Begleiter und Behälter** werden am Wirktext erkannt („cannot be assigned to a hotbar", „changes
   to"), nicht an Spieldaten.
 - **Ressourcenerzeuger** stehen in den Wirktexten selten; die Kante „kostet" zeigt den Verbraucher,
-  selten den Erzeuger.
+  selten den Erzeuger. Ressourcennamen aus zwei Wörtern kennt das Skript als Liste (Soul Voice, Lemure
+  Shroud, …), weil die Texte das vorige Feld in den Namen laufen lassen.
+- **Vom Spiel ausgeblendete Namen:** Hängt ein Combo-Vorgänger von einer Eigenschaft ab, lässt der
+  Wirktext ihn leer (wie eine Potenz); dann fehlt die Combo-Kante.
 - **Nicht erfasst:** Zusatzrotationen (`ExtraRotations`, darunter Churin), PvP. Blaumagier und
   Beastmaster werden erzeugt, aber nicht bewertet (begrenzte Jobs, außerhalb seines Profils).
 - **Die Zahlen altern** mit jeder Rotationsänderung; die erzeugten Dateien tragen ihr Datum,

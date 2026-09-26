@@ -49,6 +49,12 @@ jobs:
       - name: Check the generated defensive values still match the effect texts
         run: python3 .github/scripts/audit/generate_defensive_values.py --check
 
+      # The per-job action dependency matrix (concept 14) is generated from the same sheets and from
+      # the rotations. A rotation change or an upstream sync that is not followed by a regeneration
+      # would leave a matrix that says what the code no longer does.
+      - name: Check the action dependency matrix is up to date
+        run: python3 .github/scripts/audit/generate_action_matrix.py --check
+
       # Depth alone is not enough: this fork's own remote carries no upstream tags at all, only
       # 7.5.5.41+wsh1 and 7.5.6.1+wsh1, and this environment cannot push tags to fix that. So the
       # release tags have to come from upstream directly, or `git describe` finds nothing to

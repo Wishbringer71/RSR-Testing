@@ -79,9 +79,9 @@ ENTRY = re.compile(
     re.S,
 )
 JOB_CLASS = re.compile(r"\[Jobs\((.*?)\)\]\s*public abstract partial class (\w+)")
-PROPERTY = re.compile(r"public IBaseAction (\w+PvE) =>")
+PROPERTY = re.compile(r"public IBaseAction (\w+PvE(?:_\d+)?) =>")
 TRAIT = re.compile(
-    r"<strong>(.*?)</strong></see> \((\w+)\) \[\d+\]\s*\n\s*/// <para>(.*?)</para>\s*\n\s*/// </summary>\s*\n"
+    r"<strong>([^<]*)</strong></see> \((\w+)\) \[\d+\]\s*\n\s*/// <para>([^\n]*?)</para>\s*\n\s*/// </summary>\s*\n"
     r"\s*public static IBaseTrait (\w+)",
     re.S,
 )
@@ -98,22 +98,29 @@ NEEDS = re.compile(
 )
 NEEDS_ACTIVE = re.compile(r"Can only be executed while ([A-Z][^.※]+?) is active")
 GRANTS = re.compile(
-    r"[Gg]rants (?:the effect of |\d+ stacks? of |an? )?([A-Z][\w'’:-]*(?: [A-Z][\w'’:-]*)*)"
+    r"[Gg]rants (?:the effect of |\d+ stacks? of |an? )?([A-Z][\w'’-]*(?: [A-Z][\w'’-]*)*)"
 )
+# Words that open the next field of an effect text, never part of a status name.
+FIELD_WORDS = {"Duration", "Additional", "Effect", "Can", "Cure", "Potency", "Maximum", "Combo",
+               "Shares", "This", "Increases", "Reduces", "Restores", "Deals", "Grants", "Stack",
+               "Stacks"}
 # A trait that grants a status when an action is executed: the action is the producer.
 GRANTS_AFTER = re.compile(r"[Gg]rants the effect of ([A-Z][\w'’ -]*?) after executing ([A-Z][\w'’ -]*?)(?:\.| Duration)")
-COST = re.compile(r"([A-Z][\w']*(?: [A-Z][\w']*)*?) (?:Gauge )?Cost: \d+")
 UPGRADE = re.compile(r"[Uu]pgrades (.+?) to (.+?)(?: respectively| when|\.|$)")
 # A property of the base rotation that names one action, cast by the central dispatch through the
 # property: TankStance => GritPvE, Raise => AscendPvE.
-PROPERTY_ALIAS = re.compile(r"IBaseAction\??\s+(\w+)\s*=>\s*(\w+PvE)\s*;")
+PROPERTY_ALIAS = re.compile(r"IBaseAction\??\s+(\w+)\s*=>\s*(\w+PvE(?:_\d+)?)\s*;")
 ALIAS_CANUSE = re.compile(r"\b(\w+)\??\s*\.\s*CanUse\s*\(")
 
 CODE_COMMENT = re.compile(r"//.*?$|/\*.*?\*/", re.S | re.M)
 CODE_STRING = re.compile(r'\$?@?"(?:[^"\\]|\\.)*"')
-CANUSE = re.compile(r"\b(\w+PvE)\s*\.\s*CanUse\s*\(")
-IDENT = re.compile(r"\b(\w+PvE)\b")
-MODIFY = re.compile(r"static partial void Modify(\w+PvE)\s*\(\s*ref ActionSetting setting\s*\)\s*\{")
+CANUSE = re.compile(r"\b(\w+PvE(?:_\d+)?)\s*\.\s*CanUse\s*\(")
+# A cast: CanUse with a real out target (out act, out var act, out IAction? x), or the action
+# returned or assigned as the one to perform. CanUse(out _) is a probe - a condition, not a use.
+CAST = re.compile(r"\b(\w+PvE(?:_\d+)?)\s*\.\s*CanUse\s*\(\s*out\s+(?!_\s*[,)])")
+RETURNED = re.compile(r"(?:\breturn|\bact\s*=)\s+(\w+PvE(?:_\d+)?)\s*;")
+IDENT = re.compile(r"\b(\w+PvE(?:_\d+)?)\b")
+MODIFY = re.compile(r"static partial void Modify(\w+PvE(?:_\d+)?)\s*\(\s*ref ActionSetting setting\s*\)\s*\{")
 STATUS_ID = re.compile(r"StatusID\.(\w+)")
 
 
@@ -139,17 +146,50 @@ def parse_texts(text):
     for m in SHARES.finditer(text):
         found.append(("shares", m.group(1).strip()))
     for m in NEEDS_ACTIVE.finditer(text):
-        for name in split_names(m.group(1)):
-            found.append(("needs", name))
+        found.append(("needs", m.group(1).strip()))
     for m in NEEDS.finditer(text):
-        if " is active" in m.group(1):
+        phrase = m.group(1).strip()
+        if " is active" in phrase:
             continue
-        for name in split_names(m.group(1)):
-            found.append(("needs", name))
+        if phrase.startswith("not "):
+            found.append(("needs_not", re.sub(r"^not (?:under the effect of )?", "", phrase)))
+        elif phrase[:1].islower():
+            found.append(("condition", phrase))
+        else:
+            found.append(("needs", phrase))
     for m in GRANTS.finditer(text):
-        found.append(("grants", m.group(1)))
-    for m in COST.finditer(text):
-        found.append(("costs", m.group(1)))
+        words = []
+        for word in m.group(1).split():
+            if word in FIELD_WORDS:
+                break
+            words.append(word)
+        if words:
+            found.append(("grants", " ".join(words)))
+    for resource in costs_of(text):
+        found.append(("costs", resource))
+    return found
+
+
+# Resources whose name has two words; every other resource is the one word before "Gauge Cost"
+# or "Cost". The effect texts run the previous field into the name ("...of maximum MP Addersgall
+# Cost"), so only these known pairs are taken as two words.
+TWO_WORD_RESOURCES = {"Soul Voice", "Lemure Shroud", "Void Shroud", "Rattling Coil", "White Paint",
+                      "Anguine Tribute", "Immortal Sacrifice", "Mana Stack", "Beast Chakra"}
+
+
+def costs_of(text):
+    """The resources an effect text states a cost in."""
+    found = []
+    for m in re.finditer(r"Balance Gauge Cost: \d+ (Black|White) Mana", text):
+        found.append(f"{m.group(1)} Mana")
+    for m in re.finditer(r"Cost: \d+", text):
+        words = text[:m.start()].split()
+        if words and words[-1] == "Gauge":
+            words = words[:-1]
+        if not words or words[-1] == "Balance" or not words[-1][:1].isupper():
+            continue
+        pair = " ".join(words[-2:])
+        found.append(pair if pair in TWO_WORD_RESOURCES else words[-1])
     return found
 
 
@@ -257,9 +297,10 @@ def rule_edges(code):
         cond_end = open_at + len(cond) + 2
         body_end = block_end(code, cond_end)
         body = code[cond_end:body_end]
-        # A guard returns without casting: an if that casts in its own condition and returns true is
-        # the priority order, not a guard over what follows.
-        casts = re.search(r"CanUse\s*\(\s*out\s+act\b", cond) is not None
+        # A guard returns without casting: an if that casts in its own condition - CanUse(out act),
+        # CanUse(out var act), a helper filling `out act` - and returns is the priority order, not a
+        # guard over what follows.
+        casts = re.search(r"\(\s*out\s+(?:var\s+|IAction\??\s+)?act\b", cond) is not None
         ifs.append((open_at, cond_end, body_end, set(IDENT.findall(cond)),
                     "return" in body and not CANUSE.search(body) and not casts))
     spans = method_spans(code)
@@ -274,6 +315,14 @@ def rule_edges(code):
                 for r in reads - {user}:
                     edges.add((user, r, "Regel sperrt vorher"))
     return edges
+
+
+def modify_spans(code):
+    """(start, end) of every Modify method, header to closing brace."""
+    spans = []
+    for m in MODIFY.finditer(code):
+        spans.append((m.start(), block_end(code, m.end() - 1)))
+    return spans
 
 
 def modify_bodies(code):
@@ -302,7 +351,7 @@ def settings_of(body):
             key = "StatusNeed" if "Need" in field else "StatusProvide"
             result[key] += STATUS_ID.findall(m.group(1))
     for m in re.finditer(r"setting\.ComboIds\s*=\s*(.*?);", body, re.S):
-        result["ComboIds"] += re.findall(r"ActionID\.(\w+PvE)", m.group(1))
+        result["ComboIds"] += re.findall(r"ActionID\.(\w+PvE(?:_\d+)?)", m.group(1))
     for m in re.finditer(r"setting\.ActionCheck\s*=\s*(.*?);\s*(?:setting\.|$)", body, re.S):
         result["reads"] += IDENT.findall(m.group(1))
     return result
@@ -334,7 +383,7 @@ def load():
         # The PvE limit breaks have no entry in ActionId.resx; they are named by the rotation's
         # LimitBreak1..3 properties. Anything else missing is a change in the sheets and stops the run,
         # instead of dropping the action from the matrix without a word.
-        lbs = set(re.findall(r"IBaseAction LimitBreak[123] => (\w+PvE);", body))
+        lbs = set(re.findall(r"IBaseAction LimitBreak[123] => (\w+PvE(?:_\d+)?);", body))
         missing = [p for p in props if p not in actions and p not in lbs]
         if missing:
             raise SystemExit(f"{job}: actions without an effect text entry: {', '.join(missing)}")
@@ -362,7 +411,7 @@ def central_code():
 
 def central_uses(code):
     """Actions the central dispatch casts for every job (role actions, Sprint, ...)."""
-    return set(CANUSE.findall(code))
+    return set(CAST.findall(code)) | set(RETURNED.findall(code))
 
 
 def analyse(job, actions, job_actions, traits, general_actions, central, central_src, limit_breaks=None):
@@ -409,13 +458,15 @@ def analyse(job, actions, job_actions, traits, general_actions, central, central
     # What the base rotation casts outside its Modify methods. A CanUse inside a Modify body is part
     # of another action's ActionCheck - a condition, not a use - and is read as such below.
     base_outside = base_code
-    for body in bodies.values():
-        base_outside = base_outside.replace(body, "")
+    for start, end in reversed(modify_spans(base_code)):
+        base_outside = base_outside[:start] + base_outside[end:]
 
     files = [REBORN / f for f in ROTATION_FILES.get(job, [])]
     rotation_code = "\n".join(strip_code(p.read_text(encoding="utf-8")) for p in files if p.exists())
 
-    direct = set(CANUSE.findall(rotation_code)) | set(CANUSE.findall(base_outside))
+    direct = set(CAST.findall(rotation_code)) | set(CAST.findall(base_outside))
+    direct |= set(RETURNED.findall(rotation_code)) | set(RETURNED.findall(base_outside))
+    probed = (set(CANUSE.findall(rotation_code)) | set(CANUSE.findall(base_outside))) - direct
     direct |= {a for a in central if a in nodes}
     # Through a property the base rotation points at one action and the dispatch casts.
     alias_calls = set(ALIAS_CANUSE.findall(central_src)) | set(ALIAS_CANUSE.findall(rotation_code))
@@ -470,18 +521,22 @@ def analyse(job, actions, job_actions, traits, general_actions, central, central
                 status_grants.setdefault(m.group(1).lower(), set()).add(f"Eigenschaft {trait_name}")
     for ident in nodes:
         for kind, value in parse_texts(actions[ident]["text"]):
-            if kind != "needs":
+            if kind == "condition":
+                edges.append((ident, value, "Bedingung (kein Status)", "Spiel"))
                 continue
-            producers = status_grants.get(value.lower(), set())
-            targets = resolve(value)
+            if kind not in ("needs", "needs_not"):
+                continue
+            label = "braucht" if kind == "needs" else "darf nicht haben"
+            producers = {p for p in status_grants.get(value.lower(), set()) if p != ident}
+            targets = [t for t in resolve(value) if t != ident]
             if producers:
                 for p in sorted(producers):
-                    edges.append((ident, p, f"braucht {value}", "Spiel"))
+                    edges.append((ident, p, f"{label} {value}", "Spiel"))
             elif targets:
                 for t in targets:
-                    edges.append((ident, t, f"braucht {value}", "Spiel"))
+                    edges.append((ident, t, f"{label} {value}", "Spiel"))
             else:
-                edges.append((ident, value, "braucht (Erzeuger nicht im Text)", "Spiel"))
+                edges.append((ident, value, f"{label} {value} (Erzeuger nicht im Text)", "Spiel"))
 
     provides = {}
     code_settings = {}
@@ -521,18 +576,27 @@ def analyse(job, actions, job_actions, traits, general_actions, central, central
 
     usage = {}
     for ident in nodes:
+        siblings = [other for other in by_name.get(actions[ident]["name"].lower(), [])
+                    if other != ident and other in direct]
         if ident in direct:
             usage[ident] = "direkt"
         elif ident in via:
             usage[ident] = f"über {actions[via[ident]]['name']}"
+        elif siblings:
+            usage[ident] = f"über gleichnamige Aktion `{siblings[0]}`"
+        elif ident in probed:
+            usage[ident] = "nur geprüft (CanUse(out _))"
         elif ident in referenced:
             usage[ident] = "nur gelesen"
         else:
             usage[ident] = "ungenutzt"
-        if usage[ident] in ("nur gelesen", "ungenutzt"):
+        if usage[ident].startswith(("nur ", "ungenutzt")):
             text = actions[ident]["text"]
+            # A container is the button that turns into others: the source of a "changes to" edge,
+            # or a text that says so of itself. "※X changes to <this>" names this action as the
+            # target and makes it no container.
             if any(s == ident and k == "Knopf wird zu" for s, _t, k, _l in edges) \
-                    or re.search(r"[Cc]hanges to|is determined by|may be followed by", text):
+                    or re.search(r"(?:^|: |\. )(?:Action )?[Cc]hanges to|is determined by|may be followed by", text):
                 usage[ident] += " — Behälter: der Knopf wird zu anderen Aktionen"
             elif "cannot be assigned to a hotbar" in text:
                 usage[ident] += " — nicht zuweisbar: Begleiter oder Automatik"
@@ -542,7 +606,8 @@ def analyse(job, actions, job_actions, traits, general_actions, central, central
     # not findings - whether that list covers the condition is not visible here.
     unchecked = []
     for ident in nodes:
-        needs = [v for k, v in parse_texts(actions[ident]["text"]) if k == "needs"]
+        needs = [("nicht " if k == "needs_not" else "") + v
+                 for k, v in parse_texts(actions[ident]["text"]) if k in ("needs", "needs_not")]
         settings = code_settings.get(ident, {})
         if needs and not settings.get("StatusNeed") and not settings.get("ActionCheck") \
                 and usage[ident] == "direkt":
@@ -568,7 +633,7 @@ def render_markdown(job, result, actions, stamp):
 
     counts = {}
     for u in usage.values():
-        key = "über anderen Knopf" if u.startswith("über") else u.split(" — ")[0]
+        key = "über andere Aktion" if u.startswith("über") else u.split(" — ")[0].split(" (")[0]
         counts[key] = counts.get(key, 0) + 1
     w("## Nutzung\n\n")
     w(" · ".join(f"{k}: {v}" for k, v in sorted(counts.items())) + "\n\n")
@@ -597,7 +662,7 @@ def render_markdown(job, result, actions, stamp):
         w("Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Breaks "
           "(Konzept 05). " + ", ".join(f"`{x}`" for x in result["limit_breaks"]) + "\n\n")
 
-    not_used = [i for i in result["nodes"] if usage[i].startswith(("ungenutzt", "nur gelesen"))]
+    not_used = [i for i in result["nodes"] if usage[i].startswith(("ungenutzt", "nur "))]
     w("## Nicht direkt genutzt\n\n")
     if not not_used:
         w("keine\n")
@@ -629,7 +694,7 @@ def render_csv(result, actions):
                 "Combo nach": "C", "Knopf wird zu": "K", "gemeinsame Abklingzeit": "A", "ComboIds": "c",
                 "ActionCheck liest": "a", "Regel prüft": "r", "Regel sperrt vorher": "g",
             }.get(k, "U" if k.startswith("Ausbau") else "S" if k.startswith("braucht") else
-                  "s" if k.startswith("StatusNeed") else "?")
+                  "N" if k.startswith("darf nicht") else "s" if k.startswith("StatusNeed") else "?")
             cell.setdefault((s, t), set()).add(code)
     buf = io.StringIO()
     writer = csv.writer(buf, lineterminator="\n")
@@ -671,6 +736,42 @@ def self_test():
     if ("combo", "Enchanted Moulinet") not in parse_texts(
             "Combo Action: Enchanted Moulinet Balance Gauge Cost: 15 Black Mana"):
         return "a combo name ran into the cost field"
+    for text_, expected in (
+            ("Grants Confiteor Ready Duration: 30s", ("grants", "Confiteor Ready")),
+            ("Can only be executed while not under the effect of Subtractive Palette.",
+             ("needs_not", "Subtractive Palette")),
+            ("Can only be executed while less than five chakra are open.",
+             ("condition", "less than five chakra are open")),
+            ("Balance Gauge Cost: 15 Black Mana Balance Gauge Cost: 15 White Mana", ("costs", "Black Mana")),
+            ("Restores 7% of maximum MP Addersgall Cost: 1", ("costs", "Addersgall")),
+            ("Soul Voice Gauge Cost: 20", ("costs", "Soul Voice"))):
+        if expected not in parse_texts(text_):
+            return f"{text_!r} read as {parse_texts(text_)}, expected {expected}"
+    if any(k == "costs" and v == "Balance" for k, v in parse_texts("Balance Gauge Cost: 15 Black Mana")):
+        return "the balance gauge was read as a resource"
+    trait = ("/// <see href=\"x\"><strong>Fire</strong></see> <i>PvE</i> (BLM) [141] [Spell]\n"
+             "/// <para>Deals fire damage.</para>\n/// </summary>\npublic IBaseAction FirePvE => x;\n"
+             "    /// <see href=\"y\"><strong>Aspect Mastery</strong></see> (BLM) [459]\n"
+             "    /// <para>Upgrades Fire to Fire III.</para>\n    /// </summary>\n"
+             "    public static IBaseTrait AspectMasteryTrait { get; } = new BaseTrait(459);\n")
+    if [(n, t) for n, _j, t, _i in TRAIT.findall(trait)] != [("Aspect Mastery", "Upgrades Fire to Fire III.")]:
+        return f"a trait ran across an action entry: {TRAIT.findall(trait)}"
+    if set(CAST.findall("A1PvE.CanUse(out act) B1PvE.CanUse(out _) C1PvE.CanUse(out var act) "
+                        "D1PvE.CanUse(out _, skipAoeCheck: true)")) != {"A1PvE", "C1PvE"}:
+        return f"casts and probes not told apart: {CAST.findall('A1PvE.CanUse(out act) B1PvE.CanUse(out _)')}"
+    guard = strip_code('''
+        protected override bool CountDown(out IAction act)
+        {
+            if (CarbunclePvE.CanUse(out var act)) return act;
+            if (RuinPvE.CanUse(out act)) return true;
+        }
+    ''')
+    if any(k == "Regel sperrt vorher" for _u, _r, k in rule_edges(guard)):
+        return "a priority cast with `out var act` was read as a guard"
+    # Numbered variants of an action (JinPvE_18807, LiturgyOfTheBellPvE_28509) are actions too.
+    if PROPERTY.findall("public IBaseAction JinPvE_18807 => x;") != ["JinPvE_18807"] \
+            or CAST.findall("JinPvE_18807.CanUse(out act, usedUp: true)") != ["JinPvE_18807"]:
+        return "a numbered action variant was not read"
     if parse_texts("Can only be executed while Scorn is active.") != [("needs", "Scorn")]:
         return f"'while X is active' read as {parse_texts('Can only be executed while Scorn is active.')}"
 
@@ -733,18 +834,19 @@ def generate():
         files[f"{job}.csv"] = render_csv(result, actions)
         counts = {}
         for u in result["usage"].values():
-            key = "über anderen Knopf" if u.startswith("über") else u.split(" — ")[0]
+            key = "über andere Aktion" if u.startswith("über") else u.split(" — ")[0].split(" (")[0]
             counts[key] = counts.get(key, 0) + 1
         summary.append((job, len(result["nodes"]), counts))
     index = io.StringIO()
     index.write("# Abhängigkeitsmatrix je Job\n\n")
     index.write(f"Erzeugt am {stamp} von `.github/scripts/audit/generate_action_matrix.py`. Methode, "
                 "Grenzen und Bewertung: `docs/rotation-flow/14-action-dependency-matrix.md`.\n\n")
-    index.write("| Job | Aktionen | direkt | über anderen Knopf | nur gelesen | ungenutzt |\n|---|---|---|---|---|---|\n")
+    index.write("| Job | Aktionen | direkt | über andere Aktion | nur geprüft | nur gelesen | ungenutzt |\n"
+                "|---|---|---|---|---|---|---|\n")
     for job, n, c in summary:
         mark = " (begrenzter Job)" if job in LIMITED else ""
-        index.write(f"| [{job}]({job}.md){mark} | {n} | {c.get('direkt', 0)} | {c.get('über anderen Knopf', 0)} | "
-                    f"{c.get('nur gelesen', 0)} | {c.get('ungenutzt', 0)} |\n")
+        index.write(f"| [{job}]({job}.md){mark} | {n} | {c.get('direkt', 0)} | {c.get('über andere Aktion', 0)} | "
+                    f"{c.get('nur geprüft', 0)} | {c.get('nur gelesen', 0)} | {c.get('ungenutzt', 0)} |\n")
     files["README.md"] = index.getvalue()
     return files
 
