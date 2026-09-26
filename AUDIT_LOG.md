@@ -3814,6 +3814,19 @@ Als Hinweis in Konzept 07 und 08 geführt. Die Wirktexte stützen ihn gleichlaut
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A157 · E1 ohne Vorlage gemeldet; Nachtrag der Vorlage (26.09.2026)
+
+- **Befund am Verfahren:** Der Abschlussbericht zu A156 nannte E1 nur als „offen, deine Entscheidung", ohne Kontext, Mechanismus, Konsequenzen und Empfehlung. Das verletzt „Vorlagen an ihn". Die Vorlage wurde im Chat nachgeholt.
+- **Neuer Befund beim Erstellen der Vorlage:** Beim Dunkelritter sperrt `InTwoMIsBurst` auch The Blackest Night und Oblation auf ein Mitglied unter der eingestellten Schwelle (`BlackLantern`, `OblationLantern`). Ihr Einstellungstext nennt keine Burst-Ausnahme. Nach der Regel „UI-Texte binden" ist das keine Wahlfrage. Im TODO erfasst, Umsetzung zusammen mit E1.
+- **Belegt am Wirktext (`ActionId.resx`):**
+  - Plenary Indulgence: Confession, −10 %, 10 s.
+  - Temperance: −10 %, 20 s.
+  - Divine Caress: Barriere 400, nur unter Divine Grace.
+  - Liturgy of the Bell: 20 s.
+  - Dark Missionary: −5 % physisch, −10 % magisch, 15 s.
+
+**Prüfgrad:** statisch.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
