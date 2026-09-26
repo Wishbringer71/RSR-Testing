@@ -136,8 +136,8 @@ Rückhaltung ein Job überhaupt kennt, bleibt seine Sonderregel.** Gebaut in
 
 | Stufe | Regel | Warum hier |
 |---|---|---|
-| alle | **Schranke:** Eine Rückhaltung weicht, wenn ein lebendes, ungeschütztes Mitglied in Gefährdungsklasse 1 steht (effektive Gesundheit auf oder unter `HealthForDyingTanks`, Konzept 07) oder der angekündigte, gemessene Flächentreffer eines dorthin brächte. Bei Einzelabwehr zusätzlich: ein angekündigter Tankbuster (Zauber oder BossModReborn) | Konzept 09 verlangt es für den Tank („jede Rückhaltung erst, wenn Stufe 1 gesichert ist"); der Grund gilt für jede Rolle |
-| alle | **Streckungsbaustein:** Nach einer Auslöseraktion ruht die übrige eigene Abwehr, bis deren Wirkung laut Wirktext ausläuft; hält der Auslöser noch eine Ladung, streckt er nicht | derselbe Mechanismus stand zweimal mit festen Zahlen im Code (Weißmagier, Astrologe) |
+| alle | **Schranke:** Eine Rückhaltung weicht, wenn ein lebendes Mitglied in Gefährdungsklasse 1 steht (`ObjectHelper.IsInCriticalClass`: ungeschützt, effektive Gesundheit auf oder unter `HealthForDyingTanks`, Konzept 07). Bei Flächenabwehr auch, wenn der angekündigte, gemessene Flächentreffer ein ungeschütztes Mitglied dorthin brächte | Konzept 09 verlangt es für den Tank („jede Rückhaltung erst, wenn Stufe 1 gesichert ist"); der Grund gilt für jede Rolle |
+| alle | **Streckungsbaustein:** Nach einer Auslöseraktion ruht die übrige eigene Abwehr, bis die Wirkung laut Wirktext ausläuft (die Dauer, die zur Minderung gehört). Gelesen an der Wiederaufladegruppe der Aktion, nicht am Knopf. Hält der Auslöser noch eine Ladung, streckt er nicht | derselbe Mechanismus stand zweimal mit festen Zahlen im Code (Weißmagier, Astrologe) |
 | Heiler | leer | Nur Weißmagier und Astrologe strecken; Gelehrter und Weiser nicht. Eine Heilerregel änderte zwei Jobs ohne belegten Nutzen |
 | Tanks | leer | Burst-Rückhaltung nur bei Dunkelritter und Revolverklinge, bei beiden an ein eigenes Burstfenster gebunden; Krieger und Paladin halten nichts zurück |
 | Damage Dealer | leer, eine Frage an ihn | Barde, Maler und Tänzer führen dieselbe Einstellung „Prevent the use of defense abilties during burst" (ab Werk an), Maschinist, Dragoon und Viper feste Rückhaltungen. Eine gemeinsame Regel wäre möglich; ihr Einstellungstext bindet, siehe unten |
@@ -148,7 +148,7 @@ Rückhaltung ein Job überhaupt kennt, bleibt seine Sonderregel.** Gebaut in
 | Job | Rückhaltung | Umfang |
 |---|---|---|
 | Weißmagier | Streckung nach Temperance oder Liturgy of the Bell (je 20 s laut Wirktext); Einzelabwehr nach Divine Benison (15 s) oder Aquaveil (8 s) | Flächen- und Einzelabwehr |
-| Astrologe | Streckung nach Macrocosmos (15 s) oder Collective Unconscious (18 s); dieselben Auslöser halten die Einzelbarriere | Flächenfähigkeit, Flächen-GCD, Einzel-GCD |
+| Astrologe | Streckung nach Macrocosmos (15 s) oder Collective Unconscious (10 s, die Dauer der Minderung; der Ring steht 18 s); dieselben Auslöser halten die Einzelbarriere | Flächenfähigkeit, Flächen-GCD, Einzel-GCD |
 | Dunkelritter | Burstfenster (`InTwoMIsBurst`): Dark Missionary, Reflexion, Oblation auf sich; Barriere wartet auf Bruch (`HoldMitigationForBarrier`) | Fläche; die Barrierenrückhaltung auch in der Einzelabwehr |
 | Revolverklinge | Einschub vor dem No-Mercy-Auftakt; No-Mercy-Fenster: Heart of Light, Reflexion | Fläche; Auftakt auch Einzel |
 | Maschinist | Überhitzung, Wildfire, Full Metal Field; umkämpfter Burst-Einschub | Fläche und Einzel |
@@ -204,6 +204,18 @@ soll, ist seine Entscheidung (Einstellungstext und Vorgabe).
 - **Klasse 1 schon jetzt zählt mit,** auch ohne gemessenen Treffer: Wer dort steht, stirbt am nächsten
   Treffer (Konzept 07). Damit weicht die Rückhaltung auch vor ungemessenen Zaubern und im
   Dauerstrom eines Gruppenpulls.
+- **Ein angekündigter Tankbuster allein ist kein Grund.** Er ist genau das Signal, das die Einzelabwehr
+  öffnet; wiche die Rückhaltung ihm, wäre sie in dem Moment aufgelöst, in dem sie gefragt ist — zwei
+  Tankbuster in Folge verlören beide die Streckung. Einen gemessenen Anteil wie beim Flächentreffer
+  gibt es für Tankbuster nicht; es bleibt Klasse 1.
+- **Unverwundbare zählen nicht:** Ein Tank unter Hallowed Ground oder Superbolide steht absichtlich
+  niedrig und ist durch den Treffer nicht gefährdet.
+- **Gelesen an der Wiederaufladegruppe, nicht am Knopf:** Manche Knöpfe werden während der Wirkung zu
+  einer anderen Aktion (Liturgy of the Bell zur zweiten Auslösung, Macrocosmos zu Microcosmos). Deren
+  Abklingzeit ist nicht die des Auslösers. Die frühere Jobregel las den Knopf; ob sie deshalb während
+  der Wirkung nie hielt, ist ohne Laufzeit nicht belegt, die neue Lesart ist in beiden Fällen richtig.
+- **Die Dauer ist die, die zur Minderung gehört:** der erste Wert, den der Wirktext nach der Minderung
+  nennt. Collective Unconscious gibt dem Ring 18 s und der Minderung 10 s; es zählt die Minderung.
 - **Keine neue Zahl:** `HealthForDyingTanks` ist seine Einstellung der Gefährdungsklasse, die Dauern
   stehen in den Wirktexten.
 - **Ersetzt A146** („frei bei großem Treffer"). Das hätte im Fall zweier großer, einzeln tragbarer
@@ -212,15 +224,14 @@ soll, ist seine Entscheidung (Einstellungstext und Vorgabe).
 ### Folgen, bewusst hingenommen
 
 - **Astrologe:** Die Streckung dauert jetzt so lange wie die Wirkung laut Wirktext: 15 s nach
-  Macrocosmos und 18 s nach Collective Unconscious, statt der früheren festen 30 und 20 s, die zu
+  Macrocosmos und 10 s nach Collective Unconscious, statt der früheren festen 30 und 20 s, die zu
   keiner Wirkung passten.
 - **Ein Treffer ohne Zauberleiste** wird nur über Klasse 1 erkannt. Die Schranke kann ihn sonst
   nicht vorhersehen.
-- **Die Rückhaltungen der Tank-Barriere und der Damage-Dealer-Jobs** weichen jetzt auch beim
-  angekündigten Tankbuster (Einzelabwehr).
+- **Ein Tankbuster auf einen gesunden Tank** löst keine Rückhaltung; erst Klasse 1.
 
-**Im Kampf ablesbar:** Die Zeile „Defense hold" im Diagnosefenster sagt, welche Regel zuletzt
-zurückhielt oder warum sie wich — nur zur Kontrolle, weil eine wartende Abwehr sonst nicht von
+**Im Kampf ablesbar:** Unter „Defense hold" im Diagnosefenster steht je Regel, ob sie zuletzt hielt
+oder warum sie wich, seit Kampfbeginn — nur zur Kontrolle, weil eine wartende Abwehr sonst nicht von
 einer nie gefragten zu unterscheiden ist.
 
 ## Heilung vor dem angekuendigten Treffer

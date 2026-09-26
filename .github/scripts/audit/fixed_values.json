@@ -10,14 +10,6 @@
    "status": "open"
   },
   {
-   "file": "RotationSolver.Basic/Actions/ActionTargetInfo.cs",
-   "code": "|| r.Obj.GetForecastEffectiveHpPercent() > Service.Config.HealthForDyingTanks * 100f)",
-   "values": [
-    "100"
-   ],
-   "status": "open"
-  },
-  {
    "file": "RotationSolver.Basic/Actions/PheonixDownItem.cs",
    "code": "return manager->GetActionStatus(ActionType.Item, hq ? ID + 1000000 : ID, target.GameObjectId) == 0;",
    "values": [
@@ -675,21 +667,21 @@
   },
   {
    "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
-   "code": "&& member.GetForecastEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f)",
-   "values": [
-    "100"
-   ],
-   "status": "exception",
-   "loop": "A154",
-   "reason": "Unit conversion, not a game value: GetForecastEffectiveHpPercent answers in percent and HealthForDyingTanks is a share; the heal chain's critical rank compares the same way."
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
    "code": "if (StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux))",
    "values": [
     "3"
    ],
    "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/Helpers/ObjectHelper.cs",
+   "code": "&& battleChara.GetForecastEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f;",
+   "values": [
+    "100"
+   ],
+   "status": "exception",
+   "loop": "A154",
+   "reason": "Unit conversion, not a game value: GetForecastEffectiveHpPercent answers in percent and HealthForDyingTanks is a share. The one shared definition of the critical class (A159), read by the heal target order, the defense holds and Lux Solaris."
   }
  ]
 }

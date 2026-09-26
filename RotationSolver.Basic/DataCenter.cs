@@ -1930,6 +1930,7 @@ internal static class DataCenter
 		_partyHpStatsCacheTick = long.MinValue;
 		_timeLastActionUsed = DateTime.Now;
 		_actions.Clear();
+		DefenseHolds.Clear();
 
 		AttackedTargets.Clear();
 
@@ -3383,11 +3384,12 @@ internal static class DataCenter
 	internal static SelfCentredHealWeighing? LastSelfCentredHeal { get; set; }
 
 	/// <summary>
-	/// The last strategic hold of a defense that was asked (CustomRotation_DefenseHold): which rule,
-	/// whether it held or yielded to a member in danger, and why. Shown in the diagnostics window,
+	/// Every strategic hold of a defense that was asked (CustomRotation_DefenseHold), by rule: whether
+	/// it last held or yielded to a member in danger, why, and when. One entry per rule, so a rule
+	/// asked after another in the same frame does not hide it. Shown in the diagnostics window,
 	/// because a defense that waits cannot otherwise be told apart from one that was never asked.
 	/// </summary>
-	internal static DefenseHoldDecision? LastDefenseHold { get; set; }
+	internal static readonly ConcurrentDictionary<string, DefenseHoldDecision> DefenseHolds = new();
 
 	/// <summary>One decision of a defense hold.</summary>
 	internal readonly record struct DefenseHoldDecision(string Rule, bool Held, string Why, DateTime At);
@@ -3438,6 +3440,22 @@ internal static class DataCenter
 	/// </remarks>
 	public static bool AnnouncedHitDropsAnyoneBelow(float threshold)
 	{
+		return AnnouncedHitDropsBelow(threshold, false, out _);
+	}
+
+	/// <summary>
+	/// <see cref="AnnouncedHitDropsAnyoneBelow"/> for the members the hit can actually take down: an
+	/// invulnerable tank sits low on purpose and is not in danger from it (Hallowed Ground,
+	/// Superbolide). <paramref name="who"/> names the first member found.
+	/// </summary>
+	internal static bool AnnouncedHitDropsUnprotectedBelow(float threshold, out string who)
+	{
+		return AnnouncedHitDropsBelow(threshold, true, out who);
+	}
+
+	private static bool AnnouncedHitDropsBelow(float threshold, bool unprotectedOnly, out string who)
+	{
+		who = string.Empty;
 		var share = AnnouncedAreaShare;
 		if (share <= 0f)
 		{
@@ -3448,7 +3466,8 @@ internal static class DataCenter
 		for (var i = 0; i < party.Count; i++)
 		{
 			var member = party[i];
-			if (member == null || member.IsDead || member.MaxHp == 0)
+			if (member == null || member.IsDead || member.MaxHp == 0
+				|| (unprotectedOnly && !member.NoNeedHealingInvuln()))
 			{
 				continue;
 			}
@@ -3456,6 +3475,7 @@ internal static class DataCenter
 			var buffer = member.GetEffectiveHp() / (float)member.MaxHp;
 			if (buffer - share < threshold)
 			{
+				who = member.Name.TextValue;
 				return true;
 			}
 		}

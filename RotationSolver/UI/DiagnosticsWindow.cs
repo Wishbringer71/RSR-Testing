@@ -83,12 +83,15 @@ internal class DiagnosticsWindow : Window
 		}
 		ImGui.Separator();
 
-		// A defense that waits looks exactly like one that was never asked; this says which job rule
-		// held it last, or that it gave way because a member was in danger.
-		if (DataCenter.LastDefenseHold is { } hold)
+		// A defense that waits looks exactly like one that was never asked; this says, per job rule,
+		// whether it last held or gave way because a member was in danger. Cleared with the fight.
+		if (!DataCenter.DefenseHolds.IsEmpty)
 		{
 			ImGui.TextColored(ImGuiColors.DalamudViolet, "Defense hold");
-			ImGui.Text($"{hold.Rule}: {(hold.Held ? "held" : "gave way - " + hold.Why)} ({(DateTime.Now - hold.At).TotalSeconds:F0} s ago)");
+			foreach (var hold in DataCenter.DefenseHolds.Values)
+			{
+				ImGui.Text($"{hold.Rule}: {(hold.Held ? "held" : "gave way - " + hold.Why)} ({(DateTime.Now - hold.At).TotalSeconds:F0} s ago)");
+			}
 			ImGui.Separator();
 		}
 

@@ -23,19 +23,29 @@ public partial class CustomRotation
 	/// <returns>True while the hold stands.</returns>
 	protected static bool HoldAreaDefense(bool wanted, string rule)
 	{
-		return Decide(wanted, rule, AreaDefenseDanger(out var why), why);
+		if (!wanted)
+		{
+			return false;
+		}
+
+		return Record(rule, !AreaDefenseDanger(out var why), why);
 	}
 
 	/// <summary>
 	/// Whether a strategic hold of a single-target defense stands; it yields when a member is in
-	/// danger or a tankbuster is announced (<see cref="SingleDefenseDanger"/>).
+	/// danger (<see cref="SingleDefenseDanger"/>).
 	/// </summary>
 	/// <param name="wanted">The job rule's own verdict that the defense should wait.</param>
 	/// <param name="rule">What the hold is, in a few words, for the diagnostics window.</param>
 	/// <returns>True while the hold stands.</returns>
 	protected static bool HoldSingleDefense(bool wanted, string rule)
 	{
-		return Decide(wanted, rule, SingleDefenseDanger(out var why), why);
+		if (!wanted)
+		{
+			return false;
+		}
+
+		return Record(rule, !SingleDefenseDanger(out var why), why);
 	}
 
 	/// <summary>
@@ -63,10 +73,12 @@ public partial class CustomRotation
 		return HoldSingleDefense(AnyTriggerInEffect(triggers), rule);
 	}
 
-	// A trigger is in effect from its use until the duration its own effect text states. Read off the
-	// cooldown as the job rules read it before: out of charges, and no charge back within the recast
-	// less that duration. A trigger that still holds a charge does not stretch, as before; one whose
-	// text states no duration never does - a figure the game did not give is not invented here.
+	// A trigger is in effect from its use until the duration its own effect text states, and only
+	// while it has no charge back - a trigger that still holds a charge does not stretch, as the job
+	// rules had it before. Read off the recast group of the action itself, not off the button: some
+	// buttons turn into another action while the effect runs (Liturgy of the Bell's second press,
+	// Macrocosmos and Microcosmos), and what that other action's cooldown says is not the trigger's.
+	// A text that states no duration never stretches - a figure the game did not give is not invented.
 	private static bool AnyTriggerInEffect(IBaseAction[] triggers)
 	{
 		foreach (var trigger in triggers)
@@ -77,8 +89,23 @@ public partial class CustomRotation
 				continue;
 			}
 
-			if (trigger.Cooldown.IsCoolingDown
-				&& !trigger.Cooldown.WillHaveOneCharge(trigger.Cooldown.RecastTimeOneChargeRaw - duration))
+			var cooldown = trigger.Cooldown;
+			if (!ActionIdHelper.IsCoolingDownGroup(cooldown.CoolDownGroup))
+			{
+				continue;
+			}
+
+			// The recast of a charged action runs over all its charges, and the elapsed time counts the
+			// charges already back: one charge is the total over the maximum, and an elapsed time of at
+			// least one charge means a charge is ready.
+			var oneCharge = cooldown.RecastTime / cooldown.MaxCharges;
+			var elapsed = cooldown.RecastTimeElapsedRaw;
+			if (oneCharge <= 0f || elapsed >= oneCharge)
+			{
+				continue;
+			}
+
+			if (elapsed < duration)
 			{
 				return true;
 			}
@@ -87,21 +114,16 @@ public partial class CustomRotation
 		return false;
 	}
 
-	private static bool Decide(bool wanted, string rule, bool danger, string why)
+	private static bool Record(string rule, bool held, string why)
 	{
-		if (!wanted)
-		{
-			return false;
-		}
-
-		DataCenter.LastDefenseHold = new(rule, !danger, danger ? why : string.Empty, DateTime.Now);
-		return !danger;
+		DataCenter.DefenseHolds[rule] = new(rule, held, held ? string.Empty : why, DateTime.Now);
+		return held;
 	}
 
 	/// <summary>
-	/// Whether an area defense must not wait: a living, unprotected member already stands in the
-	/// heal chain's critical class (effective health at or below <see cref="HealthForDyingTanks"/>,
-	/// concept 07), or the announced area cast, as measured, would put one there.
+	/// Whether an area defense must not wait: a living member already stands in the heal chain's
+	/// critical class (<see cref="ObjectHelper.IsInCriticalClass"/>, concept 07), or the announced area
+	/// cast, as measured, would put an unprotected living member there.
 	/// </summary>
 	/// <remarks>
 	/// The measured share is the hardest the cast has been seen to land, after whatever mitigation
@@ -113,14 +135,14 @@ public partial class CustomRotation
 	/// <returns>True when a hold of an area defense must yield.</returns>
 	internal static bool AreaDefenseDanger(out string why)
 	{
-		if (MemberInCriticalClass(out why))
+		if (SingleDefenseDanger(out why))
 		{
 			return true;
 		}
 
-		if (DataCenter.AnnouncedHitDropsAnyoneBelow(HealthForDyingTanks))
+		if (DataCenter.AnnouncedHitDropsUnprotectedBelow(HealthForDyingTanks, out var who))
 		{
-			why = $"the announced cast ({DataCenter.AnnouncedAreaShare:P0} of max HP as measured) would put a member into the critical class";
+			why = $"the announced cast ({DataCenter.AnnouncedAreaShare:P0} of max HP as measured) would put {who} into the critical class";
 			return true;
 		}
 
@@ -129,39 +151,21 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
-	/// Whether a single-target defense must not wait: a member in the critical class, or a
-	/// tankbuster announced - by its cast or by BossModReborn.
+	/// Whether a single-target defense must not wait: a living member stands in the critical class.
 	/// </summary>
-	/// <param name="why">What the danger is, or empty.</param>
+	/// <remarks>
+	/// An announced tankbuster is deliberately not a reason by itself. It is the very signal that
+	/// opens the single-target defense, so yielding to it would dissolve every hold at the moment it
+	/// is asked - two busters in a row would both lose the stretch. A buster has no measured size to
+	/// weigh as the area cast does; the test left is the one that needs none.
+	/// </remarks>
+	/// <param name="why">Who is in danger, or empty.</param>
 	/// <returns>True when a hold of a single-target defense must yield.</returns>
 	internal static bool SingleDefenseDanger(out string why)
 	{
-		if (MemberInCriticalClass(out why))
-		{
-			return true;
-		}
-
-		if (DataCenter.IsHostileCastingToTank || DataCenter.BMRTankbusterImminent)
-		{
-			why = "a tankbuster is announced";
-			return true;
-		}
-
-		why = string.Empty;
-		return false;
-	}
-
-	private static bool MemberInCriticalClass(out string why)
-	{
 		foreach (var member in PartyMembers)
 		{
-			if (member == null || member.IsDead || member.MaxHp == 0)
-			{
-				continue;
-			}
-
-			if (member.NoNeedHealingInvuln()
-				&& member.GetForecastEffectiveHpPercent() <= HealthForDyingTanks * 100f)
+			if (member != null && !member.IsDead && member.MaxHp > 0 && member.IsInCriticalClass())
 			{
 				why = $"{member.Name} is in the critical class";
 				return true;

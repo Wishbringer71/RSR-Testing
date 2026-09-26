@@ -3867,6 +3867,17 @@ Als Hinweis in Konzept 07 und 08 geführt. Die Wirktexte stützen ihn gleichlaut
 - *Klasse:* Die Generatorlücke „damage taken by <Träger> by N %" ist behoben. Temperance, Aquaveil, Kerachole, Holos, Oblation, Heart of Stone, Exaltation, The Bole, Sun Sign und zwei Sonderaktionen sind jetzt bewertet. Die Dauertabelle führt jede Aktion mit angegebener Dauer.
 - *Nebenbefund (TODO):* `GetCurrentMitigationPercent` kennt Confession aus Plenary Indulgence (−10 %) nicht.
 
+**Code-Review (8533c0809), alle Befunde am Code nachgeprüft und behoben:**
+- **Tankbuster als Gefahr** (schwer): Er ist dasselbe Signal, das die Einzelabwehr öffnet. Die Einzelstreckung wäre bei jedem Tankbuster aufgelöst worden. `IsHostileCastingToTank` meldet zudem jeden Zauber eines Gegners auf seinen Tank (C10). Entfernt; es bleibt Klasse 1.
+- **Knopf statt Aktion:** `IsCoolingDown` und `RecastTimeOneChargeRaw` lesen die angepasste Id, und Liturgy of the Bell und Macrocosmos haben während der Wirkung eine eigene Folgeaktion. Jetzt wird die Wiederaufladegruppe der Aktion gelesen.
+- **Unverwundbare** lösten die Schranke über den gemessenen Treffer aus. Jetzt nur Ungeschützte (`AnnouncedHitDropsUnprotectedBelow`).
+- **Erste Dauer statt Dauer der Minderung:** Der Generator nimmt jetzt die erste Dauer nach der Minderung. Sechs Werte haben sich dadurch berichtigt; Collective Unconscious hat jetzt 10 statt 18 s, Holos, Expedient, Tengentsu und zwei Sonderaktionen passen jetzt zu ihrer Minderung.
+- **Gefahrenprüfung auch ohne Rückhaltungswunsch:** Jetzt nur, wenn eine Regel zurückhalten will.
+- **Anzeige, letzter Schreiber gewinnt:** Jetzt ein Eintrag je Regel.
+- **BossModReborn und Zauber in einer Meldung:** entfällt mit dem Tankbuster.
+- **Klasse 1 dreifach definiert:** jetzt eine Definition, `ObjectHelper.IsInCriticalClass`, gelesen von Heilzielwahl, Abwehrsperren und Lux Solaris.
+- Die Barrierenrückhaltung des Dunkelritters prüft in der Einzelabwehr die Flächengefahr. Sie ist eine Obermenge der Einzelgefahr; die Konzeptaussage zum Tankbuster ist entfallen.
+
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
 ---

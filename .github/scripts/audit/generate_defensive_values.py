@@ -111,12 +111,29 @@ def parse(path):
         if not text:
             continue
 
-        yield identifier, row, extract(text), duration_of(text)
+        yield identifier, row, extract(text), duration_of(text, figure_end(text))
 
 
-def duration_of(text):
-    """The first duration the effect text states, in seconds, or None when it states none."""
-    match = DURATION.search(text)
+def figure_end(text):
+    """Where the first defensive figure in the text ends, or 0 when it states none."""
+    ends = [
+        match.end()
+        for pattern in (SPLIT_MITIGATION, ENEMY_MITIGATION, SELF_MITIGATION, BARRIER_SHARE)
+        for match in [pattern.search(text)]
+        if match
+    ]
+    return min(ends) if ends else 0
+
+
+def duration_of(text, start=0):
+    """The duration the effect text states for its figure, in seconds, or None when none is stated.
+
+    A text with several effects states several durations - Collective Unconscious gives its ring 18s
+    and the mitigation it applies 10s. The duration that belongs to the defensive figure is the first
+    one stated after it; a text without a figure, or with no duration after it, falls back to the
+    first duration anywhere.
+    """
+    match = DURATION.search(text, start) or DURATION.search(text)
     return int(match.group(1)) if match else None
 
 
@@ -350,6 +367,17 @@ def self_test():
         got = extract(text)
         if got != expected:
             return f"{text!r} produced {got}, expected {expected}"
+
+    # The duration that belongs to the figure, not the first one in the text.
+    ring = (
+        "Creates a celestial ring 8 yalms around the caster. Duration: 18s Additional Effect: Reduces "
+        "damage taken by 10% for self and any party members within 30 yalms Duration: 10s"
+    )
+    if duration_of(ring, figure_end(ring)) != 10:
+        return f"duration of the figure in {ring!r} read as {duration_of(ring, figure_end(ring))}, expected 10"
+    blossom = "Places a healing blossom at the designated location. Duration: 20s"
+    if duration_of(blossom, figure_end(blossom)) != 20:
+        return f"duration of {blossom!r} without a figure read wrong, expected 20"
 
     # A blank number is a trait override and must read as "not stated", not as a duration.
     for text, expected in (

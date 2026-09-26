@@ -215,7 +215,7 @@ public static class DefensiveValues
 		[3606] = 15f, // LightspeedPvE
 		[3608] = 30f, // CombustIiPvE
 		[3612] = 20f, // SynastryPvE
-		[3613] = 18f, // CollectiveUnconsciousPvE
+		[3613] = 10f, // CollectiveUnconsciousPvE
 		[3625] = 15f, // BloodWeaponPvE
 		[3634] = 10f, // DarkMindPvE
 		[3636] = 15f, // ShadowWallPvE
@@ -423,7 +423,7 @@ public static class DefensiveValues
 		[20717] = 30f, // LostFontOfPowerPvE
 		[20720] = 15f, // BannerOfNobleEndsPvE
 		[20721] = 15f, // BannerOfHonoredSacrificePvE
-		[20722] = 30f, // BannerOfTirelessConvictionPvE
+		[20722] = 180f, // BannerOfTirelessConvictionPvE
 		[20723] = 30f, // BannerOfFirmResolvePvE
 		[20724] = 30f, // BannerOfSolemnClarityPvE
 		[20725] = 120f, // BannerOfHonedAcuityPvE
@@ -474,7 +474,7 @@ public static class DefensiveValues
 		[24303] = 15f, // TaurocholePvE
 		[24305] = 15f, // HaimaPvE
 		[24308] = 30f, // EukrasianDosisIiPvE
-		[24310] = 30f, // HolosPvE
+		[24310] = 20f, // HolosPvE
 		[24311] = 15f, // PanhaimaPvE
 		[24314] = 30f, // EukrasianDosisIiiPvE
 		[24317] = 10f, // KrasisPvE
@@ -528,7 +528,7 @@ public static class DefensiveValues
 		[25861] = 8f, // AquaveilPvE
 		[25862] = 20f, // LiturgyOfTheBellPvE
 		[25867] = 10f, // ProtractionPvE
-		[25868] = 10f, // ExpedientPvE
+		[25868] = 20f, // ExpedientPvE
 		[25873] = 8f, // ExaltationPvE
 		[25874] = 15f, // MacrocosmosPvE
 		[25880] = 30f, // SleepPvE
@@ -602,7 +602,7 @@ public static class DefensiveValues
 		[36955] = 30f, // SpiralBlowPvE
 		[36957] = 20f, // DokumoriPvE
 		[36958] = 15f, // KunaisBanePvE
-		[36962] = 4f, // TengentsuPvE
+		[36962] = 9f, // TengentsuPvE
 		[36965] = 30f, // TendoGokenPvE
 		[36966] = 30f, // TendoSetsugekkaPvE
 		[36970] = 60f, // ExecutionersGibbetPvE
@@ -693,7 +693,7 @@ public static class DefensiveValues
 		[46602] = 30f, // MysteryWaltzPvE
 		[46603] = 90f, // QuickstepPvE
 		[46604] = 30f, // SteadfastStancePvE
-		[46605] = 4f, // MesmerizePvE
+		[46605] = 100f, // MesmerizePvE
 		[46750] = 30f, // ChallengePvE
 		[46751] = 15f, // SnarlPvE
 		[47093] = 7f, // TrickPvE

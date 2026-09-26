@@ -182,18 +182,20 @@ Several rotations hold a defensive action back on purpose: the White Mage and th
 spread their party mitigation over time instead of spending it all on one hit, and the Dark Knight,
 Gunbreaker, Machinist, Dragoon and Viper keep weave slots free in their burst. Every one of these
 holds now gives way when a party member is already at the critical health level
-(`HealthForDyingTanks`) or the announced area cast, as measured, would put someone there; a hold of
-a single-target defense also gives way to an announced tankbuster. The Dark Knight's own barrier
-hold follows the same rule.
+(`HealthForDyingTanks`) or the announced area cast, as measured, would put someone there. An
+invulnerable tank does not count, and a tankbuster on a healthy tank is no reason by itself - it is
+what opens the single-target defense in the first place. The Dark Knight's own barrier hold follows
+the same rule.
 
 - White Mage and Astrologian wait for as long as the effect that started the wait lasts, taken from
-  the effect text. For the Astrologian that is 15 s after Macrocosmos and 18 s after Collective
-  Unconscious (formerly 30 and 20 s).
+  the effect text, read from the action's own recast rather than from its button. For the
+  Astrologian that is 15 s after Macrocosmos and 10 s after Collective Unconscious (formerly 30 and
+  20 s).
 - The Dark Knight's The Blackest Night and Oblation on a low party member are no longer held in the
   burst window; their settings name no such exception.
 - The Bard, Painter and Dancer setting "Prevent the use of defense abilties during burst" is left
   as it reads.
-- The Diagnostics window shows the last hold and whether it held or gave way.
+- The Diagnostics window shows, per rule, whether it last held or gave way.
 
 ## Hits and heals above 65,535 points are read in full
 

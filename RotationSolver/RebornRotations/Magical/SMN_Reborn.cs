@@ -409,8 +409,7 @@ public sealed class SMN_Reborn : SummonerRotation
 		// or below HealthForDyingTanks in effective health. A Walking Dead bearer at 1 HP counts.
 		foreach (var member in inRadius)
 		{
-			if (member.NoNeedHealingInvuln()
-				&& member.GetForecastEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f)
+			if (member.IsInCriticalClass())
 			{
 				why = $"{member.Name} is in danger";
 				return true;

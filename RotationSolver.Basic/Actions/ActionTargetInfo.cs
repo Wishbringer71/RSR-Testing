@@ -3360,8 +3360,7 @@ public struct ActionTargetInfo(IBaseAction action)
 				var criticalRole = int.MaxValue;
 				foreach (var r in ranked)
 				{
-					if (!r.Unprotected
-						|| r.Obj.GetForecastEffectiveHpPercent() > Service.Config.HealthForDyingTanks * 100f)
+					if (!r.Obj.IsInCriticalClass())
 					{
 						continue;
 					}
