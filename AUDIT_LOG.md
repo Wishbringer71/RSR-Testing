@@ -3887,6 +3887,7 @@ Als Hinweis in Konzept 07 und 08 geführt. Die Wirktexte stützen ihn gleichlaut
 - **Gefahrenprüfung mehrfach je Frame:** Die Flächengefahr ist jetzt für einen Frame zwischengespeichert, mit derselben Frist wie die Gruppenstatistik.
 - **Heilzielwahl:** Sie las den Schutz doppelt. Jetzt reicht sie ihren schon gelesenen Wert an `IsInCriticalClass(bool)` weiter.
 - **Geladener Auslöser (Divine Benison):** Die Wiederaufladung misst nicht die Zeit seit dem Einsatz. Die Einsatzzeit kommt jetzt aus dem Aktionsprotokoll.
+- **Prüfmittel:** `check_fixed_values.py` sah neue, noch nicht versionierte Dateien nicht, weil `git diff` sie nicht zeigt. Der Lauf zu 8533c0809 fiel deshalb erst in der CI auf (`* 100f` in der neuen Datei). Jetzt zählt jede Zeile unversionierter Dateien, mit Selbsttest.
 - **Nicht übernommen:** die Stardiver-Rückhaltung des Dragoons als Zeitsperre auszunehmen. Sie verhindert einen verzögerten GCD, also Schaden, und weicht deshalb der Gefahr. Seine Selbstheilung hat dieselbe Sperre ohne Schranke; das steht im TODO, weil Heilrückhaltungen nicht zu diesem Auftrag gehören.
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.

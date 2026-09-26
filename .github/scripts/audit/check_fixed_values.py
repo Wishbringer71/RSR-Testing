@@ -63,11 +63,26 @@ def added_lines(base):
 
     Measured against the working tree, not HEAD: run before a commit, a diff to HEAD sees none of
     the lines about to be committed, and the check reported a clean tree while a new number sat in
-    the change. In CI the working tree is HEAD, so nothing changes there. A new file counts once it
-    is added to the index."""
+    the change. In CI the working tree is HEAD, so nothing changes there. A file not yet known to
+    git counts with every line: git diff does not show it at all, and a new file with a new number
+    passed here and failed in CI (A159)."""
     diff = run("git", "diff", "-U0", base, "--", "*.cs")
     if diff is None:
         return None
+    untracked = run("git", "ls-files", "--others", "--exclude-standard", "--", "*.cs")
+    if untracked is None:
+        return None
+    files = {}
+    for path in untracked.splitlines():
+        try:
+            files[path] = (ROOT / path).read_text(encoding="utf-8").splitlines()
+        except OSError:
+            files[path] = []
+    return collect(diff, files)
+
+
+def collect(diff, untracked_files):
+    """The added lines from a unified diff plus every line of the untracked files."""
     result = []
     current = None
     for line in diff.splitlines():
@@ -77,6 +92,10 @@ def added_lines(base):
             continue
         if current and line.startswith("+") and not line.startswith("+++"):
             result.append((current, line[1:].strip()))
+    for path, lines in untracked_files.items():
+        if path.endswith(".g.cs"):
+            continue
+        result.extend((path, line.strip()) for line in lines)
     return result
 
 
@@ -106,6 +125,12 @@ def self_test():
         got = literals(code)
         if got != expected:
             return f"{code!r} read as {got}, expected {expected}"
+
+    # A file git does not know yet has no diff; its lines must still be seen.
+    lines = collect("+++ b/A.cs\n+var a = 2.5f;\n", {"B.cs": ["var b = 30f;"], "C.g.cs": ["var c = 7;"]})
+    if ("B.cs", "var b = 30f;") not in lines or any(p == "C.g.cs" for p, _ in lines) \
+            or ("A.cs", "var a = 2.5f;") not in lines:
+        return f"untracked files were not collected as added lines: {lines}"
     return None
 
 
