@@ -256,7 +256,10 @@ public sealed class GNB_Reborn : GunbreakerRotation
 	[RotationDesc(ActionID.AuroraPvE)]
 	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		if (nextGCD.IsTheSameTo(false, (ActionID)GnashingFangPvE.ID) && !NoMercyPvE.Cooldown.IsCoolingDown)
+		// The opener hold again, for the heals on self or a tank (Heart of Corundum, Aurora); it
+		// yields when the player or a tank is in the critical class (concept 08).
+		if (HoldSingleDefense(nextGCD.IsTheSameTo(false, (ActionID)GnashingFangPvE.ID) && !NoMercyPvE.Cooldown.IsCoolingDown,
+			"Gunbreaker: No Mercy opener next"))
 		{
 			return base.HealSingleAbility(nextGCD, out act);
 		}

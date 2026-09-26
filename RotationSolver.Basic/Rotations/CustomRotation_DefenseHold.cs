@@ -11,8 +11,13 @@ public partial class CustomRotation
 	// ist"), and a rule that sits on one job would leave the same situation open on every other.
 	//
 	// Not every early return is a hold of this kind. A hold that protects another safety rule of the
-	// owner's (Swiftcast kept for a raise) or one the game imposes (no action possible at all) is not
-	// a strategic choice and does not come through here.
+	// owner's (Swiftcast kept for a raise, the Living Dead window, a heal ban) or one the game imposes
+	// (no action possible at all) is not a strategic choice and does not come through here; nor is a
+	// hold a setting's own text orders without exception (Prioritize Microcosmos, Prevent the use of
+	// defense abilities during burst), because the setting text binds.
+	//
+	// Heals are held by the same layer where the hold is strategic. The single-target scope covers a
+	// heal or defense on the player or a tank; HoldSelfHeal covers a heal only the player receives.
 
 	/// <summary>
 	/// Whether a strategic hold of an area defense stands. <paramref name="wanted"/> is the job's own
@@ -46,6 +51,25 @@ public partial class CustomRotation
 		}
 
 		return Record("single", rule, !SingleDefenseDanger(out var why), why);
+	}
+
+	/// <summary>
+	/// Whether a strategic hold of a heal the player casts on itself stands; it yields when the
+	/// player is in the critical class. The same universal layer as the defense holds, for the one
+	/// member such a heal can reach.
+	/// </summary>
+	/// <param name="wanted">The job rule's own verdict that the heal should wait.</param>
+	/// <param name="rule">What the hold is, in a few words, for the diagnostics window.</param>
+	/// <returns>True while the hold stands.</returns>
+	protected static bool HoldSelfHeal(bool wanted, string rule)
+	{
+		if (!wanted)
+		{
+			return false;
+		}
+
+		var danger = Player != null && !Player.IsDead && Player.IsInCriticalClass();
+		return Record("self heal", rule, !danger, danger ? $"{Player!.Name} is in the critical class" : string.Empty);
 	}
 
 	/// <summary>

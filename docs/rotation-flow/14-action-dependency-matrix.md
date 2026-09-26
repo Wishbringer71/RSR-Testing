@@ -17,9 +17,11 @@ Beziehung). `docs/action-matrix/README.md` fasst die Nutzung je Job zusammen. Da
 Selbsttest gegen konstruierte Texte und konstruierten Code; `--check` meldet veraltete Dateien und
 läuft in der CI.
 
-**Ungenutzt ist in den Standardrotationen keine Kampfaktion, die ein Spieler auslösen kann und die
-eine Schadens-, Heil- oder Schutzfunktion ohne Sonderlage hat.** Was maschinell als „ungenutzt"
-erscheint, zerfällt in fünf Klassen; nur die letzte ist eine Frage an ihn (Stand 26.09.2026):
+**Jede Kampfaktion, die ein Spieler auslösen kann und die ohne Sonderlage Schaden, Heilung oder
+Schutz bringt, hat in den Standardrotationen einen Aufruf.** Ob dieser Aufruf erreicht wird — hinter
+welcher Einstellung, auf welcher Stufe, in welcher Lage —, sagt die Matrix nicht (Grenzen). Was
+maschinell als „ungenutzt" erscheint, zerfällt in fünf Klassen; nur die letzte ist offene Arbeit
+(Stand 26.09.2026):
 
 | Klasse | Aktionen | Warum nicht genutzt |
 |---|---|---|
@@ -27,7 +29,7 @@ erscheint, zerfällt in fünf Klassen; nur die letzte ist eine Frage an ihn (Sta
 | Begleiter und Automatik | Akh Morn, Revelation, Exodus, Wyrmwave, Scarlet Flame, Luxwave, Everlasting Flight (SMN) · Embrace, Seraphic Veil (SCH) · Arm Punch, Roller Dash, Pile Bunker, Crowned Collider, Rook Overload (MCH) · Hollow Nozuchi (NIN) | Wirktext: „cannot be assigned to a hotbar"; der Begleiter oder ein Auslöser führt sie aus |
 | Limit Breaks | je Job drei | ohne Wirktext im Datensatz; RSR castet keine PvE-Limit-Breaks (Konzept 05) |
 | Hilfsaktionen | Sleep, Repose, Rescue, Leg Graze, Foot Graze, das Ablegen der Tankhaltung (Release …), Dissolve Union, Ending | Sie wirken auf Mitspieler oder die Gruppenlage (Rescue zieht einen Spieler, das Ablegen der Haltung gibt die Feindseligkeit ab, Schlaf bricht beim ersten Treffer). Nicht automatisiert — Schluss aus der Wirkung, kein Beleg für eine Absicht |
-| **Werkzeuge für Pausen und Phasenenden** | Meditate (SAM) · Six-sided Star (MNK) · Queen Overdrive, Rook Overdrive, Flamethrower (MCH) | Kein Auslöser im Code. Im Archiv als „Features ohne Trigger, kein Fehler" geführt (#69); **mit `BMRDowntimeWithin` gibt es den Auslöser heute** — siehe „Offen" |
+| **Werkzeuge für Pausen und Phasenenden** | Meditate (SAM) · Six-sided Star (MNK) · Queen Overdrive, Rook Overdrive, Flamethrower (MCH) | Kein Auslöser im Code; Schadensoptimierung, kein Defekt. Pausenverhalten steht heute verstreut je Job (Monk, Machinist, Schnitter) — siehe „Offen" |
 
 ## Die Stufen (seine Vorgabe „universell zuerst")
 
@@ -110,14 +112,16 @@ Abgleich nicht verfolgt.
 
 ## Offen
 
-**Werkzeuge für Pausen und Phasenenden (Monk, Samurai, Machinist):** Im Kampf fehlt heute
+**Pausen und Phasenenden (Monk, Samurai, Machinist).** Im Kampf fehlt heute
 - Six-sided Star vor einer Pause oder am Kampfende (Monk),
 - Meditate in der Pause (Samurai: Kenki und Meditation ohne Ziel),
 - Queen/Rook Overdrive vor einer Pause, damit die Königin ihren Abschluss nicht verliert
-  (Machinist).
+  (Machinist),
+- Flamethrower als Flächenkanal (Machinist; die Positionssperre steht zentral schon bereit).
 
-Flamethrower ist ein Flächenkanal; in der zentralen Steuerung ist er schon vorgesehen
-(Positionssperre beim Kanal, `Configs` und `MovingUpdater`), keine Rotation ruft ihn. Ob einer
-davon sich lohnt, hängt an der Pausenvorhersage (`BMRDowntimeWithin`, nur mit Modul) und am Job.
-Diese Jobs liegen außerhalb dessen, was er bisher genannt hat; nach seiner Regel erst bearbeiten,
-wenn er sie nennt (TODO).
+Pausenverhalten gibt es verstreut: Der Monk lädt ohne Gegner in Reichweite Chakra, der Machinist
+verschießt Heat vor einer vorhergesagten Pause, der Schnitter wirkt Soulsow. Nach „universell zuerst"
+gehört die Erkennung der Pause auf die Stufe „alle" — im Kampf ohne erreichbaren Gegner, ohne Modul;
+vorhergesagt nur mit Modul —, die Pausenaktion zum Job. Die Größe des Gewinns ist unbelegt (Potenzen im
+Wirktext teils ausgeblendet). Diese Jobs liegen außerhalb dessen, was er bisher genannt hat; nach
+seiner Regel erst bearbeiten, wenn er sie nennt (TODO).

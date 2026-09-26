@@ -150,16 +150,24 @@ Rückhaltung ein Job überhaupt kennt, bleibt seine Sonderregel.** Gebaut in
 | Weißmagier | Streckung nach Temperance oder Liturgy of the Bell (je 20 s laut Wirktext); Einzelabwehr nach Divine Benison (15 s) oder Aquaveil (8 s) | Flächen- und Einzelabwehr |
 | Astrologe | Streckung nach Macrocosmos (15 s) oder Collective Unconscious (10 s, die Dauer der Minderung; der Ring steht 18 s); dieselben Auslöser halten die Einzelbarriere | Flächenfähigkeit, Flächen-GCD, Einzel-GCD |
 | Dunkelritter | Burstfenster (`InTwoMIsBurst`): Dark Missionary, Reflexion, Oblation auf sich; Barriere wartet auf Bruch (`HoldMitigationForBarrier`) | Fläche; die Barrierenrückhaltung auch in der Einzelabwehr |
-| Revolverklinge | Einschub vor dem No-Mercy-Auftakt; No-Mercy-Fenster: Heart of Light, Reflexion | Fläche; Auftakt auch Einzel |
+| Revolverklinge | Einschub vor dem No-Mercy-Auftakt; No-Mercy-Fenster: Heart of Light, Reflexion | Fläche; Auftakt auch Einzel und Heilung auf sich oder einen Tank (Heart of Corundum, Aurora) |
 | Maschinist | Überhitzung, Wildfire, Full Metal Field; umkämpfter Burst-Einschub | Fläche und Einzel |
-| Dragoon | unmittelbar nach Stardiver | Fläche und Einzel |
+| Dragoon | unmittelbar nach Stardiver | Fläche und Einzel; die eigene Heilung (Second Wind, Bloodbath) weicht, wenn er selbst in Klasse 1 steht (`HoldSelfHeal`) |
 | Viper | Einschub für Serpent's Ire im Burst | Fläche und Einzel |
 
-**Nicht über die Schranke,** weil sie keine strategische Wahl sind:
-- Swiftcast für eine anstehende Wiederbelebung (Gelehrter): seine eigene Sicherheitsvorgabe.
-- Aussperrungen durch das Spiel (Phantom-Job).
-- Die Doppeldrucksperre von Radiant Aegis.
-- Die Reihenfolge Recitation → Excogitation.
+**Heilungen sind eingeschlossen,** wo die Rückhaltung strategisch ist. Erhoben sind alle frühen
+Rücksprünge der Heil- und Notfallmethoden der Standardrotationen (A161); strategisch ohne eigene
+Einstellung sind nur die zwei in der Tabelle (Revolverklinge, Dragoon).
+
+**Nicht über die Schranke:**
+- *Eigene Sicherheitsvorgaben:* Swiftcast für eine anstehende Wiederbelebung (vier Heiler); das
+  Living-Dead-Fenster, Walking Dead und die Heilverbote — seine Entscheidungen (Konzepte 08 und 09).
+- *Technik:* Aussperrungen durch das Spiel (Phantom-Job), Mudra in Ausführung (Ninja), Tanzschritte
+  (Tänzer), die Doppeldrucksperren von Radiant Aegis und Benediction, die Reihenfolge Recitation →
+  Excogitation.
+- *Einstellungen, deren Text die Rückhaltung ohne Ausnahme anordnet:* „Prioritize Microcosmos over all
+  other healing when available" und die Strategie für Essential Dignity (Astrologe), dazu die
+  Burst-Einstellung von Barde, Maler und Tänzer (unten). Der Text bindet.
 
 **Barde, Maler, Tänzer:** Deren Einstellung „Prevent the use of defense abilties during burst" sagt
 ohne Ausnahme „verhindern". Ihr Text bindet; die Schranke greift dort deshalb nicht. Ob sie weichen

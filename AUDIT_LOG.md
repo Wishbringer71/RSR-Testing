@@ -3932,6 +3932,51 @@ Als Hinweis in Konzept 07 und 08 geführt. Die Wirktexte stützen ihn gleichlaut
 
 **Prüfgrad:** statisch; Selbsttest des Skripts; Stichproben am Code (Dunkelritter, Weißmagier, Ninja, Schwarzmagier, Weiser); Code-Review.
 
+### A161 · Offene Punkte und Entscheidungen gegen die Gegenthese geprüft (26.09.2026)
+
+**Auftrag:** offene Punkte und Entscheidungen im vollständigen Loop kritisch hinterfragen, Gründe untermauern, Antithese aufbauen und zu widerlegen versuchen.
+
+**E1-Umsetzung (B′), meine Lesart seiner Freigabe.**
+- *Gegenthese:* „wenn dann" heißt „falls überhaupt"; er hat B′ nicht freigegeben.
+- *Widerlegt:* Im selben Satz steht „die bestehenden konzepte dahingehend erweitern und umsetzen".
+- *Gegenthese zur Bauart:* Klasse 1 schon jetzt löst die Streckung wegen eines einzelnen Niedrigen auf.
+- *Widerlegt:* Die Sperre wirkt nur bei gehobener Flächenabwehr, also nur, wenn ein Treffer kommt. Dann ist Minderung für den Niedrigen das richtige Mittel.
+
+**Entscheidung 1 · Burst-Einstellung von Barde, Maler und Tänzer.**
+- *Herkunft:* Upstream, 6c5d99c9a (April 2025). Burst heißt je 20 s (Raging Strikes, Battle Voice und Radiant Finale; Devilment; Starry Muse), auch für Troubadour bei einem Tankbuster.
+- *Gegenthese A:* Die Einstellung ist die bewusste Wahl des Spielers für Schaden. *Nicht widerlegbar,* deshalb bleibt es seine Entscheidung. Für eine Textänderung spricht seine Vorgabe „Sicherheit vor Schaden".
+- *Gegenthese B:* Die Schranke würde im Burst laufend auslösen. *Widerlegt:* Sie greift nur bei Klasse 1 (Vorgabe 15 %) oder wenn ein gemessener Treffer dorthin führt. Ein 80-%-Raidwide bei voller Gesundheit löst sie nicht aus, ein 85-%-Treffer schon — genau wenn nötig.
+- *Gegenthese C:* Eine Textänderung bricht gespeicherte Einstellungen. *Widerlegt:* Der Eigenschaftsname bleibt, der gespeicherte Wert gilt weiter.
+- *Empfehlung bleibt:* Text um „außer bei Gefahr" ergänzen und die drei Stellen über die allgemeine Schicht führen.
+
+**Entscheidung 2 · Pausenwerkzeuge.**
+- *Gegenthese:* Das ist kein Defekt, sondern Optimierung ohne belegten Gewinn. *Trifft zu.*
+  - Der Eintrag stand unter „Defekte" und ist nach „Offene Arbeit" verschoben.
+- *Befund:* Pausenverhalten steht verstreut je Job.
+  - Der Monk lädt ohne Gegner Chakra, reaktiv und ohne Modul.
+  - Der Machinist verschießt Heat vor einer Modul-Pause.
+  - Der Schnitter wirkt Soulsow.
+- *Folgerung nach „universell zuerst":* Pausenerkennung auf der Stufe „alle", die Aktion beim Job.
+- Die Frage an ihn bleibt, welche Jobs er spielt.
+
+**Entscheidung 3 · Heilrückhaltungen.**
+- *Gegenthese:* Eine Schranke für Heilrückhaltungen hebelt das Living-Dead-Fenster aus. Dort steht der Tank absichtlich bei 1 HP in Klasse 1, und er hat entschieden, dass es hält. *Trifft für eine Schranke über alle Heilrückhaltungen zu.*
+- *Widerlegt für die gebaute Form:* Nur strategische Rückhaltungen weichen. Sicherheitsvorgaben, Technik und textgebundene Einstellungen sind ausgenommen, wie bei der Abwehr.
+- *Erhebung aller frühen Rücksprünge der Heil- und Notfallmethoden:*
+  - strategisch ohne Einstellung nur Revolverklinge (Auftakt) und Dragoon (Stardiver);
+  - Astrologe (Microcosmos, Essential Dignity) folgt seinen Einstellungen;
+  - Swiftcast für Wiederbelebung, Benediction-Doppeldruck, Mudra und Tanz sind ausgenommen.
+- Umgesetzt, keine Entscheidung nötig, weil es aus seinen Regeln folgt: `HoldSelfHeal` für die Selbstheilung, die Einzelstufe für die Revolverklinge.
+
+**Offener Punkt · Confession in der Minderungssumme.**
+- *Gegenthese:* Im Kampf ändert sich nichts. *Trifft zu:* Die Summe liest im Fork nur die Debug-Anzeige.
+- Der Eintrag ist auf **R** berichtigt (abgeleitete Rotationen).
+
+**Konzept 14 · „keine ungenutzte Kampfaktion".**
+- *Gegenthese:* „direkt" heißt nur, dass es einen Aufruf gibt. *Trifft zu.* Die Aussage ist auf „hat einen Aufruf" zurückgenommen; die Erreichbarkeit zeigt die Matrix nicht.
+
+**Prüfgrad:** statisch; Code und Versionsgeschichte; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

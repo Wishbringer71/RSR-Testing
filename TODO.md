@@ -8,19 +8,9 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 Barde, Maler und Tänzer führen „Prevent the use of defense abilties during burst" (ab Werk an). Die allgemeine Schranke (Konzept 08, „Die Abwehrsperren") greift dort nicht, weil der Einstellungstext ohne Ausnahme „verhindern" sagt und bindet. Im Kampf: Ein tödlicher Raidwide im Burst bekommt von diesen drei Jobs keine Minderung. Zur Entscheidung vorzulegen: Text ändern (seine Entscheidung) oder so lassen. Dieselbe Einstellung als Damage-Dealer-Regel zu führen, wäre die Stufe „Damage Dealer".
 
-### Die Minderungssumme kennt Confession nicht · N
+### Die Minderungssumme kennt Confession nicht · R
 
-`CustomRotation.GetCurrentMitigationPercent` rechnet Temperance, Sacred Soil, Kerachole und weitere Gruppenminderungen, aber nicht Confession aus Plenary Indulgence (Wirktext 7433: „reducing damage taken by 10%"). Im Kampf: Wer diese Summe liest, hält einen Treffer unter Plenary Indulgence für 10 % härter, als er ist. Offen, weil die Zeile eine neue feste Zahl bräuchte; der Wert liegt jetzt erzeugt in `DefensiveValues` (A159), und die Summe sollte ihn von dort lesen.
-
-### Die allgemeine Schranke gilt noch nicht für Heilrückhaltungen · N
-
-Die Schranke aus Konzept 08 („Die Abwehrsperren") gilt für jede strategische Rückhaltung einer **Abwehr**. Heilrückhaltungen mit demselben Muster stehen außerhalb, etwa die Stardiver-Sperre vor Second Wind und Bloodbath (`DRG_Reborn.HealSingleAbility`). Im Kampf: Der Dragoon webt Feint nach Stardiver, wenn jemand in Gefahr ist, heilt sich aber selbst nicht. Die Stufe „alle" sollte auch hier greifen; dazu sind die Heilrückhaltungen zu erheben wie in A159 die Abwehrrückhaltungen.
-
-### Werkzeuge für Pausen und Phasenenden ungenutzt: Monk, Samurai, Machinist · N
-
-Die Standardrotationen wirken nie Six-sided Star (Monk: vor einer Pause oder am Kampfende), Meditate (Samurai: Kenki und Meditation in der Pause), Queen Overdrive und Rook Overdrive (Machinist: Abschluss der Königin vor einer Pause) und Flamethrower (Machinist: Flächenkanal; Positionssperre in `Configs`/`MovingUpdater` schon vorgesehen). Im Archiv (#69) als „Features ohne Trigger" geführt; mit `BMRDowntimeWithin` gibt es den Auslöser, allerdings nur mit Modul. Die Jobs hat er bisher nicht genannt; erst bearbeiten, wenn er sie nennt.
-
-**Konzept:** `docs/rotation-flow/14-action-dependency-matrix.md`
+`CustomRotation.GetCurrentMitigationPercent` rechnet Temperance, Sacred Soil, Kerachole und weitere Gruppenminderungen, aber nicht Confession aus Plenary Indulgence (Wirktext 7433: „reducing damage taken by 10%"). Gelesen wird die öffentliche Summe im Fork nur von der Debug-Anzeige im Einstellungsfenster (`RotationConfigWindow`) — im Kampf entscheidet keine Standardregel danach (A161). Betroffen sind abgeleitete Rotationen, die sie lesen: Sie halten einen Treffer unter Plenary Indulgence für 10 % härter, als er ist. Offen, weil die Zeile eine neue feste Zahl bräuchte; der Wert liegt erzeugt in `DefensiveValues` (A159), und die Summe sollte ihn von dort lesen.
 
 ### Die Heilverbots-Prüfung steht achtmal im Dispatch · U
 
@@ -656,6 +646,27 @@ Schritt 3 aus `docs/rotation-flow/08-mitigation-synergy.md`. Die Schritte 1 und 
 **Empfehlung: warten.** Schritt 3 überträgt eine Regel, deren Nutzen in den Schritten 1 und 2 noch nicht beobachtet ist; eine Übertragung vor dem Nachweis vervielfacht einen möglichen Fehler, statt einen Nutzen zu vervielfachen.
 
 ## Offene Arbeit
+
+### Pausen und Phasenenden: eine allgemeine Pausenregel statt Einzelfällen · N
+
+**Keine Lücke im Sinn eines Defekts** (A161): Die Standardrotationen versprechen kein Pausenverhalten, und keine Sicherheitsfrage hängt daran. Es ist Schadensoptimierung.
+
+- **Heute:** Pausenverhalten steht verstreut je Job.
+  - Monk: lädt ohne Gegner in Reichweite Chakra (`MNK_Reborn`, `!HasHostilesInRange`).
+  - Machinist: verschießt Heat vor einer vorhergesagten Pause (`BmrDumpBeforeDowntime`, nur mit Modul).
+  - Schnitter: wirkt Soulsow.
+- **Nie gewirkt:**
+  - Meditate (Samurai), obwohl derselbe reaktive Auslöser wie beim Monk genügte.
+  - Six-sided Star (Monk: vor einer Pause oder am Kampfende).
+  - Queen Overdrive und Rook Overdrive (Machinist: Abschluss der Königin vor einer Pause).
+  - Flamethrower (Machinist: Flächenkanal; die Positionssperre steht in `Configs`/`MovingUpdater` schon bereit).
+- **Nach „universell zuerst":**
+  - Auf der Stufe „alle" steht die Erkennung der Pause: im Kampf ohne erreichbaren Gegner, oder eine vorhergesagte Pause mit Modul.
+  - Die Pausenaktion ist Sache des Jobs.
+- **Größe des Gewinns:** Die Potenzen sind im Wirktext teils ausgeblendet; der Gewinn ist unbelegt.
+- **Vorbedingung:** Erst bearbeiten, wenn er die Jobs nennt (Nutzungsprofil).
+
+**Konzept:** `docs/rotation-flow/14-action-dependency-matrix.md`
 
 ### Feste Werte im Fork: jeder offene Wert braucht seinen Loop · N, R
 

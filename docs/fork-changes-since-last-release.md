@@ -186,7 +186,8 @@ holds now gives way when a party member is already at the critical health level
 of a single-target defense gives way when you or a tank is at that level. An invulnerable tank does
 not count, and a tankbuster on a healthy tank is no reason by itself - it is what opens the
 single-target defense in the first place. The Dark Knight's own barrier hold follows
-the same rule.
+the same rule, and so do the Gunbreaker's heals before its No Mercy opener and the Dragoon's
+own heals right after Stardiver.
 
 - White Mage and Astrologian wait for as long as the effect that started the wait lasts, taken from
   the effect text, read from the action's own recast rather than from its button. For the
