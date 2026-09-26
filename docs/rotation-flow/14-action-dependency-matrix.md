@@ -20,8 +20,7 @@ läuft in der CI.
 **Jede Kampfaktion, die ein Spieler auslösen kann und die ohne Sonderlage Schaden, Heilung oder
 Schutz bringt, hat in den Standardrotationen einen Aufruf.** Ob dieser Aufruf erreicht wird — hinter
 welcher Einstellung, auf welcher Stufe, in welcher Lage —, sagt die Matrix nicht (Grenzen). Was
-maschinell als „ungenutzt" erscheint, zerfällt in fünf Klassen; nur die letzte ist offene Arbeit
-(Stand 26.09.2026):
+maschinell als „ungenutzt" erscheint, zerfällt in fünf Klassen (Stand 26.09.2026):
 
 | Klasse | Aktionen | Warum nicht genutzt |
 |---|---|---|
@@ -29,7 +28,7 @@ maschinell als „ungenutzt" erscheint, zerfällt in fünf Klassen; nur die letz
 | Begleiter und Automatik | Akh Morn, Revelation, Exodus, Wyrmwave, Scarlet Flame, Luxwave, Everlasting Flight (SMN) · Embrace, Seraphic Veil (SCH) · Arm Punch, Roller Dash, Pile Bunker, Crowned Collider, Rook Overload (MCH) · Hollow Nozuchi (NIN) | Wirktext: „cannot be assigned to a hotbar"; der Begleiter oder ein Auslöser führt sie aus |
 | Limit Breaks | je Job drei | ohne Wirktext im Datensatz; RSR castet keine PvE-Limit-Breaks (Konzept 05) |
 | Hilfsaktionen | Sleep, Repose, Rescue, Leg Graze, Foot Graze, das Ablegen der Tankhaltung (Release …), Dissolve Union, Ending | Sie wirken auf Mitspieler oder die Gruppenlage (Rescue zieht einen Spieler, das Ablegen der Haltung gibt die Feindseligkeit ab, Schlaf bricht beim ersten Treffer). Nicht automatisiert — Schluss aus der Wirkung, kein Beleg für eine Absicht |
-| **Werkzeuge für Pausen und Phasenenden** | Meditate (SAM) · Six-sided Star (MNK) · Queen Overdrive, Rook Overdrive, Flamethrower (MCH) | Kein Auslöser im Code; Schadensoptimierung, kein Defekt. Pausenverhalten steht heute verstreut je Job (Monk, Machinist, Schnitter) — siehe „Offen" |
+| **Ohne belegten Nutzen** | Six-sided Star (MNK) · Flamethrower (MCH) | Der Vorteil ist aus den Wirktexten nicht rechenbar — siehe „Pausen und Phasenenden". Meditate (SAM) und Rook/Queen Overdrive (MCH) wirkt die Rotation seit A162 in der Pause |
 
 ## Die Stufen (seine Vorgabe „universell zuerst")
 
@@ -110,18 +109,34 @@ Abgleich nicht verfolgt.
 - **Die Zahlen altern** mit jeder Rotationsänderung; die erzeugten Dateien tragen ihr Datum,
   `--check` zeigt, ob sie noch stimmen.
 
-## Offen
+## Pausen und Phasenenden
 
-**Pausen und Phasenenden (Monk, Samurai, Machinist).** Im Kampf fehlt heute
-- Six-sided Star vor einer Pause oder am Kampfende (Monk),
-- Meditate in der Pause (Samurai: Kenki und Meditation ohne Ziel),
-- Queen/Rook Overdrive vor einer Pause, damit die Königin ihren Abschluss nicht verliert
-  (Machinist),
-- Flamethrower als Flächenkanal (Machinist; die Positionssperre steht zentral schon bereit).
+**Sachstand (A162):** Seine Angabe zum Profil — Machinist zwischendurch, alle anderen Kampfjobs
+seltener — holt diese Jobs in die Bearbeitung.
 
-Pausenverhalten gibt es verstreut: Der Monk lädt ohne Gegner in Reichweite Chakra, der Machinist
-verschießt Heat vor einer vorhergesagten Pause, der Schnitter wirkt Soulsow. Nach „universell zuerst"
-gehört die Erkennung der Pause auf die Stufe „alle" — im Kampf ohne erreichbaren Gegner, ohne Modul;
-vorhergesagt nur mit Modul —, die Pausenaktion zum Job. Die Größe des Gewinns ist unbelegt (Potenzen im
-Wirktext teils ausgeblendet). Diese Jobs liegen außerhalb dessen, was er bisher genannt hat; nach
-seiner Regel erst bearbeiten, wenn er sie nennt (TODO).
+**Die Pause selbst ist eine Regel für alle, was darin fällt, eine Regel des Jobs.**
+- **Stufe „alle":** `CustomRotation.InCombatPause` — im Kampf, kein Gegner in 25 Yalm; nichts zu
+  schlagen. Ohne BossModReborn lesbar. Die vorhergesagte Pause ist `BMRDowntimeWithin` (nur mit Modul).
+- **Samurai:** Meditate in der Pause („Gradually increases your Kenki Gauge", nur im Kampf). Die
+  Basiseinstellung verweigert es in Bewegung; es endet bei Bewegung.
+- **Machinist:** Rook/Queen Overdrive im letzten GCD vor einer vorhergesagten Pause, wenn die Königin
+  sonst erst in der Pause endet. Ihr Wirktext: Ungewirkt fällt der Abschluss „automatically immediately
+  before shutting down" — in der Pause trifft er nichts. Nur mit Modul; ohne Vorhersage ist die Pause
+  erst bekannt, wenn sie begonnen hat.
+
+**Bestehendes Pausenverhalten bleibt, wie es ist,** weil es eine andere Frage beantwortet: Der Monk lädt
+schon Chakra, wenn kein Gegner in **seiner** Reichweite steht (3 Yalm, auch wenn er nur für eine Mechanik
+herausläuft); der Machinist verschießt Heat vor einer vorhergesagten Pause (`BmrDumpBeforeDowntime`); der
+Schnitter wirkt Soulsow.
+
+**Nicht gebaut, mit Grund:**
+- *Six-sided Star (Monk):* Die Grundpotenz blendet der Wirktext aus. Ob Chakra über eine Pause
+  verfällt, steht in keiner Quelle im Repository. Ein Vorteil gegenüber dem Aufsparen ist nicht belegt.
+- *Flamethrower (Machinist):* keine Pausenaktion, sondern ein Flächenkanal. Wie oft er tickt, steht
+  nicht im Wirktext; ein Vergleich mit dem Flächenfüller ist deshalb nicht rechenbar.
+
+**Folgen, bewusst hingenommen:**
+- Läuft der Samurai im Kampf aus 25 Yalm heraus, ohne dass eine Pause ist, fällt Meditate, sobald er
+  steht. Es bricht bei der ersten Bewegung und kostet dann einen GCD-Takt.
+- Liegt die vorhergesagte Pause später als gemeldet, verliert die Königin ihre letzten Angriffe
+  zugunsten des Abschlusses.

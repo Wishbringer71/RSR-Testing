@@ -157,6 +157,10 @@ es schon sind:
 
 ---
 
+**Pause im Kampf** (`CustomRotation.InCombatPause`): im Kampf, kein Gegner in 25 Yalm. Die allgemeine
+Hälfte der Pausenregel; was ein Job in der Pause wirkt, ist seine Regel (Konzept 14, „Pausen und
+Phasenenden"). Die vorhergesagte Pause liest `BMRDowntimeWithin`, nur mit Modul.
+
 ## E · Universelle Strukturschwächen
 
 | # | Schwäche | Beleg | Stand |

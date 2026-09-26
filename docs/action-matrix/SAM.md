@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-26; nic
 
 ## Nutzung
 
-direkt: 42 · nur gelesen: 2 · ungenutzt: 1 · über andere Aktion: 1
+direkt: 43 · nur gelesen: 2 · über andere Aktion: 1
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -41,7 +41,7 @@ direkt: 42 · nur gelesen: 2 · ungenutzt: 1 · über andere Aktion: 1
 | Job | Kaeshi: Setsugekka (`KaeshiSetsugekkaPvE`) | 16486 | Weaponskill | direkt |
 | Job | Kasha (`KashaPvE`) | 7482 | Weaponskill | direkt |
 | Job | Mangetsu (`MangetsuPvE`) | 7484 | Weaponskill | direkt |
-| Job | Meditate (`MeditatePvE`) | 7497 | Ability | ungenutzt |
+| Job | Meditate (`MeditatePvE`) | 7497 | Ability | direkt |
 | Job | Meikyo Shisui (`MeikyoShisuiPvE`) | 7499 | Ability | direkt |
 | Job | Midare Setsugekka (`MidareSetsugekkaPvE`) | 7487 | Weaponskill | direkt |
 | Job | Ogi Namikiri (`OgiNamikiriPvE`) | 25781 | Weaponskill | direkt |
@@ -147,5 +147,4 @@ Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Br
 Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 
 - Iaijutsu (`IaijutsuPvE`, Weaponskill): nur gelesen — Behälter: der Knopf wird zu anderen Aktionen
-- Meditate (`MeditatePvE`, Ability): ungenutzt
 - Tsubame-gaeshi (`TsubamegaeshiPvE`, Weaponskill): nur gelesen — Behälter: der Knopf wird zu anderen Aktionen

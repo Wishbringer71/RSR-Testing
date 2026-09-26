@@ -143,7 +143,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Einen Gewinn im Promillebereich lege ich nicht als Abwägung gegen eine Sicherheitsentscheidung vor.
 
 **Nutzungsprofil**
-- Priorität folgt seinem Profil: PvE, deutscher Client, seine Jobs und Rotationen.
+- Priorität folgt seinem Profil: PvE, deutscher Client, seine Jobs und Rotationen. Seine Jobs (seine Angabe): alle Kampfjobs — Maschinist zwischendurch, alle anderen seltener. Kein Kampfjob liegt deshalb außerhalb des Profils.
 - Erheben immer vollständig; bearbeiten nur, was in seinem Profil liegt. PvP, Blaumagier und andere begrenzte Jobs, Bozja und ähnliche Sonderinhalte, fremde Rotationen, die er nicht nutzt: erfassen, bis er sie nennt oder freigibt.
 - Churin-Rotationen (`ExtraRotations/*/Churin*`) sind für ihn uninteressant: keine Befunde dazu erfassen.
 - Er ist Tester und nutzt selten die Voreinstellungen. Eine Aussage über einen Vorgabewert ist keine über seine Konfiguration, und die kann ich nicht messen. Jede Regel hinter einem Schalter denke ich für beide Stellungen.

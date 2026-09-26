@@ -1160,7 +1160,7 @@ Der Entwurf erfindet wenig; das meiste lag im Baum und war nur nicht verbunden.
 | Betäubung, Verlangsamung und **deren Resistenzen** als Statuseffekte | `StatusID.Stun`, `.StunResistance`, `.Slow`, `.SlowResistance`, `.ArmsLength` | In den Spieldaten vorhanden; die Resistenzstufe ist damit direkt lesbar, eine eigene Buchführung über den Ereignisstrom ist **nicht** nötig |
 | Statusabfragen mit Restzeit und Stapelzahl | `StatusHelper.HasStatus`, `.StatusTime`, `.StatusStack` | In Betrieb |
 | Vorhersagefenster aus der BossModReborn-Timeline | `Configs.cs:742`, `:747`, ausgewertet in `StateUpdater.cs:185` | In Betrieb |
-| Zentralisierte Nachzieh-Regel für Gegner-Debuffs | `CustomRotation_OtherInfo.cs:1327` | In Betrieb, 27 Aufrufstellen — Beleg, dass eine gemeinsame Regel über viele Jobs trägt |
+| Zentralisierte Nachzieh-Regel für Gegner-Debuffs | `CustomRotation.ShouldSustainMitigationDebuff` | In Betrieb, 25 Aufrufstellen in den Standardrotationen (Stand 26.09.2026) — Beleg, dass eine gemeinsame Regel über viele Jobs trägt |
 | Gegnerzahl-Schwelle als etabliertes Muster | `Configs.MitigationSustainHostileCount` gegen `NumberOfHostilesInRange` | In Betrieb |
 | Trennung von Mitigation und Schaden im Dispatch | `CustomRotation_GCD.cs`: HealArea 240, HealSingle 282, DefenseArea 322, DefenseSingle 337, GeneralGCD erst 449 | In Betrieb |
 

@@ -647,24 +647,13 @@ Schritt 3 aus `docs/rotation-flow/08-mitigation-synergy.md`. Die Schritte 1 und 
 
 ## Offene Arbeit
 
-### Pausen und Phasenenden: eine allgemeine Pausenregel statt Einzelfällen · N
+### Six-sided Star und Flamethrower: Nutzen nicht belegt · N
 
-**Keine Lücke im Sinn eines Defekts** (A161): Die Standardrotationen versprechen kein Pausenverhalten, und keine Sicherheitsfrage hängt daran. Es ist Schadensoptimierung.
+Die Pausenregel ist gebaut (Konzept 14, A162): Meditate (Samurai) und Rook/Queen Overdrive (Machinist). Offen bleiben zwei Aktionen, deren Vorteil aus den Wirktexten nicht rechenbar ist.
+- Six-sided Star (Monk): Die Grundpotenz ist ausgeblendet, und ob Chakra über eine Pause verfällt, ist unbelegt.
+- Flamethrower (Machinist): Die Tickrate steht nicht im Wirktext.
 
-- **Heute:** Pausenverhalten steht verstreut je Job.
-  - Monk: lädt ohne Gegner in Reichweite Chakra (`MNK_Reborn`, `!HasHostilesInRange`).
-  - Machinist: verschießt Heat vor einer vorhergesagten Pause (`BmrDumpBeforeDowntime`, nur mit Modul).
-  - Schnitter: wirkt Soulsow.
-- **Nie gewirkt:**
-  - Meditate (Samurai), obwohl derselbe reaktive Auslöser wie beim Monk genügte.
-  - Six-sided Star (Monk: vor einer Pause oder am Kampfende).
-  - Queen Overdrive und Rook Overdrive (Machinist: Abschluss der Königin vor einer Pause).
-  - Flamethrower (Machinist: Flächenkanal; die Positionssperre steht in `Configs`/`MovingUpdater` schon bereit).
-- **Nach „universell zuerst":**
-  - Auf der Stufe „alle" steht die Erkennung der Pause: im Kampf ohne erreichbaren Gegner, oder eine vorhergesagte Pause mit Modul.
-  - Die Pausenaktion ist Sache des Jobs.
-- **Größe des Gewinns:** Die Potenzen sind im Wirktext teils ausgeblendet; der Gewinn ist unbelegt.
-- **Vorbedingung:** Erst bearbeiten, wenn er die Jobs nennt (Nutzungsprofil).
+Auflösung: eine Quelle für diese Werte (erzeugter Index aus `RotationSolver.GameData` oder eine Messung im Kampf) — dann rechnen, bauen oder verwerfen.
 
 **Konzept:** `docs/rotation-flow/14-action-dependency-matrix.md`
 

@@ -3977,6 +3977,23 @@ Als Hinweis in Konzept 07 und 08 geführt. Die Wirktexte stützen ihn gleichlaut
 
 **Prüfgrad:** statisch; Code und Versionsgeschichte; Prüfskripte; Compile über die CI.
 
+### A162 · Pausenregel: allgemeine Erkennung, Samurai und Machinist (26.09.2026)
+
+**Seine Angabe (Profil, in CLAUDE.md):** „ich spiele maschinist zwischendurch mal. alle anderen klassen auch, aber seltener". Alle Kampfjobs liegen damit im Profil.
+
+- *Research:*
+  - Vorhandenes Pausenverhalten: Monk (`!HasHostilesInRange`, Chakra), Machinist (`BmrDumpBeforeDowntime`), Schnitter (Soulsow).
+  - Der GCD-Zweig ist nicht an Gegner gebunden, `AttackAbility` schon (`HasHostilesInRange`). Eine Pausenaktion fällt also über `GeneralGCD` oder `EmergencyAbility`.
+  - Wirktexte: Meditate (Kenki, nur im Kampf, endet bei Bewegung); Queen/Rook Overdrive (ungewirkt automatisch „immediately before shutting down"); Six-sided Star (Grundpotenz ausgeblendet); Flamethrower (Tickrate nicht angegeben).
+- *Optionen:* nichts tun · eine Pausenregel je Job · allgemeine Erkennung plus Jobaktion (gewählt, nach „universell zuerst").
+- *Falsifikation:*
+  - **Kein Nutzen?** Widerlegt für Meditate (Kenki statt nichts) und Overdrive (Abschluss statt Leerlauf). Nicht widerlegbar für Six-sided Star und Flamethrower: nicht gebaut, im TODO.
+  - **Option falsch?** Die Pause als „kein Gegner in 25 Yalm" trifft auch einen Samurai, der weit hinausläuft. Meditate fällt dann nur im Stehen und bricht bei Bewegung; der Preis ist ein GCD-Takt.
+  - **Ausgeliefert, nichts ändert sich?** Overdrive greift nur mit Modul. Ohne Vorhersage ist die Pause erst bekannt, wenn sie begonnen hat — genannt als Einschränkung.
+- *Nebenbefund:* Der Zeilenverweis in Konzept 08 auf die Nachzieh-Regel für Gegner-Debuffs zeigte schon vorher ins Leere (Zeile 1327). Ersetzt durch den Methodennamen; die Zahl der Aufrufstellen ist jetzt datiert.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

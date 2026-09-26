@@ -259,7 +259,17 @@ public sealed class SAM_Reborn : SamuraiRotation
 			|| UseSingleTargetFinishers(out act)
 			|| UseSingleTargetBuffs(out act)
 			|| UseComboStarters(out act)
+			|| UseMeditateInPause(out act)
 			|| base.GeneralGCD(out act);
+	}
+
+	// A pause in the fight (no hostile within 25 yalms) is a GCD with nothing to strike. Meditate fills
+	// it: "Gradually increases your Kenki Gauge", and only in battle. It ends on moving, and its base
+	// setting already refuses it while moving, so it is asked only when the samurai stands.
+	private bool UseMeditateInPause(out IAction? act)
+	{
+		act = null;
+		return InCombatPause && MeditatePvE.CanUse(out act);
 	}
 
 	private bool UseOgiAndHiganbana(out IAction? act)

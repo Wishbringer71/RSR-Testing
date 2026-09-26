@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-26; nic
 
 ## Nutzung
 
-direkt: 35 · ungenutzt: 10 · über andere Aktion: 1
+direkt: 36 · ungenutzt: 8 · über andere Aktion: 2
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -45,12 +45,12 @@ direkt: 35 · ungenutzt: 10 · über andere Aktion: 1
 | Job | Hot Shot (`HotShotPvE`) | 2872 | Weaponskill | direkt |
 | Job | Hypercharge (`HyperchargePvE`) | 17209 | Ability | direkt |
 | Job | Pile Bunker (`PileBunkerPvE`) | 16503 | Ability | ungenutzt — nicht zuweisbar: Begleiter oder Automatik |
-| Job | Queen Overdrive (`QueenOverdrivePvE`) | 16502 | Ability | ungenutzt |
+| Job | Queen Overdrive (`QueenOverdrivePvE`) | 16502 | Ability | über Rook Overdrive |
 | Job | Reassemble (`ReassemblePvE`) | 2876 | Ability | direkt |
 | Job | Ricochet (`RicochetPvE`) | 2890 | Ability | direkt |
 | Job | Roller Dash (`RollerDashPvE`) | 17206 | Weaponskill | ungenutzt — nicht zuweisbar: Begleiter oder Automatik |
 | Job | Rook Autoturret (`RookAutoturretPvE`) | 2864 | Ability | direkt |
-| Job | Rook Overdrive (`RookOverdrivePvE`) | 7415 | Ability | ungenutzt |
+| Job | Rook Overdrive (`RookOverdrivePvE`) | 7415 | Ability | direkt |
 | Job | Rook Overload (`RookOverloadPvE`) | 7416 | Ability | ungenutzt — nicht zuweisbar: Begleiter oder Automatik |
 | Job | Scattergun (`ScattergunPvE`) | 25786 | Weaponskill | direkt |
 | Job | Slug Shot (`SlugShotPvE`) | 2868 | Weaponskill | direkt |
@@ -230,7 +230,5 @@ Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 - Foot Graze (`FootGrazePvE`, Ability): ungenutzt
 - Leg Graze (`LegGrazePvE`, Ability): ungenutzt
 - Pile Bunker (`PileBunkerPvE`, Ability): ungenutzt — nicht zuweisbar: Begleiter oder Automatik
-- Queen Overdrive (`QueenOverdrivePvE`, Ability): ungenutzt
 - Roller Dash (`RollerDashPvE`, Weaponskill): ungenutzt — nicht zuweisbar: Begleiter oder Automatik
-- Rook Overdrive (`RookOverdrivePvE`, Ability): ungenutzt
 - Rook Overload (`RookOverloadPvE`, Ability): ungenutzt — nicht zuweisbar: Begleiter oder Automatik

@@ -199,6 +199,14 @@ own heals right after Stardiver.
   as it reads.
 - The Diagnostics window shows, per rule, whether it last held or gave way.
 
+## Samurai and Machinist use a pause in the fight
+
+- **Samurai:** When no enemy is within 25 yalms in combat, the Samurai casts Meditate while standing
+  still, gaining Kenki instead of nothing.
+- **Machinist:** With a BossMod module that predicts the boss going untargetable, the Machinist orders
+  Queen (or Rook) Overdrive in the last GCD before the pause, if the Queen would otherwise only shut down
+  during it. Its finisher then lands instead of hitting nothing.
+
 ## Hits and heals above 65,535 points are read in full
 
 The effect handler read the low 16 bits of every damage and heal amount. A raidwide that hit a

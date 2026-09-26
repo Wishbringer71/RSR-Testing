@@ -70,6 +70,18 @@ public sealed class MCH_Reborn : MachinistRotation
 
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
 	{
+		// The automaton's finisher before a pause. Its effect text: "If this action is not used manually
+		// while the Automaton Queen is active it will be triggered automatically immediately before
+		// shutting down." When the boss turns untargetable before that shutdown, the automatic
+		// finisher hits nothing. Ordered by hand in the last GCD before the predicted pause, it lands.
+		// BossModReborn only: without a prediction the pause is known when it has begun, which is too
+		// late. Rook Overdrive is the button; it becomes Queen Overdrive with the trait.
+		if (InCombat && IsRobotActive && BMRDowntimeWithin(DataCenter.DefaultGCDTotal) && BMRDowntimeIn < SummonTime
+			&& RookOverdrivePvE.CanUse(out act))
+		{
+			return true;
+		}
+
 		if (InCombat)
 		{
 			UpdateQueenStep();
