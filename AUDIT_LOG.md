@@ -3644,6 +3644,43 @@ Umgesetzt: `GetMostCanTargetObjects` sperrt unter „Cleave" nur feindliche Akti
 
 **Prüfgrad:** statisch; Compile über die CI.
 
+### A150 · Audit: Lux Solaris seit Forkbeginn, Konzept und alle Codeänderungen (26.09.2026)
+
+**Auftrag:** vollständige Prüfung des Konzepts und aller Codeänderungen zu Lux Solaris seit Forkbeginn; Audit, Code-Review, Fehlerbeschreibung. **Keine Codeänderung vor seiner Freigabe.** Unabhängiger Prüfer ohne Schreibrechte; die tragenden Befunde danach selbst am Code nachgeprüft (markiert „nachgeprüft").
+
+**Befunde:**
+1. **A149 wirkt nur bei exakt voller Gruppe** (nachgeprüft: `LargestMissingHp` zählt jedes Mitglied mit `CurrentHp < MaxHp`). Ein Tank unter Autoangriffen reicht, und beide Verfallsklauseln zünden wieder vor einem Treffer. Die Aussage in A149 „vollständig behoben" und die Überschrift im Release-Text sind falsch.
+2. **Lux umgeht Heilsperren und Heilschalter** (nachgeprüft).
+   - Die Wege über `AttackAbility` und `GeneralAbility` prüfen weder Scalebound noch Shackled Healing. Das tut nur der Heil-Dispatch in `CustomRotation_Ability`.
+   - Auch die Vorbedingungen der Heilflagge greifen dort nicht: `AutoHeal`, Heilen als Nicht-Heiler, Restlebenszeit, „nur ohne Heiler", Tyrant-Indikator.
+   - Unter Shackled Healing trifft die Strafe die Umstehenden. Dieselbe Klasse betrifft `TryRekindle`.
+3. **Bedarf in der ganzen Gruppe, Heilung nur im Radius** (nachgeprüft).
+   - Außerhalb des Heilpfads ist `TargetOverride` null. Der Zweig für Reichweite 0 greift nicht, der allgemeine Pfad nimmt den Wirkenden ohne Bedarfsprüfung.
+   - Der Auslöser `LargestMissingHp` zählt auch Mitglieder außerhalb des Radius. Ein verletzter Tank weit weg löst einen Wurf aus, der nur Volle trifft.
+4. **Todesauslöser, Walking Dead, Heilunfähige** zählen in `LargestMissingHp` als Grund (nachgeprüft). Das hebelt die Living-Dead-Sperre aus, wenn der Dunkelritter im Radius steht, und ebenso die Walking-Dead-Zurückhaltung.
+5. **„Größter Einzelfehlbetrag" statt Gruppe:** Das ist Ableitung, nicht seine Regel, und bleibt seine Entscheidung. `luxLandsInFull` zündet, sobald ein Mitglied die Heilung ganz aufnimmt.
+6. **Im Kampf unsichtbar:** Nicht angezeigt werden der gemessene Heilwert, der Auslöser, der gewählte Weg, warum nicht gezündet wurde, und ob die Heilung voll ankam. Das verstößt gegen die Definition of Done.
+7. **Gemessener Heilwert** (nachgeprüft am Code).
+   - Die Aussage „Überheilung kommt als 0" ist unbelegt.
+   - Die Glättung (halbes Gewicht) bewegt den Wert bei einem Kritischen stark.
+   - Der Wert wird nie zurückgesetzt, er gilt je Plugin-Sitzung und nicht je Kampf; `TODO.md` sagt „je Kampf".
+   - Der Kommentar „wird beim Lesen durch die Maximalgesundheit geteilt" stimmt nicht.
+8. **Konzept 08, Abschnitt „Heilung vor dem angekündigten Treffer":** „der Wurf fällt vor dem Einschlag" gilt nur mit der Option und bei Bedarf im Radius. Zudem gilt die Tabelle zur verfallenden Heilung nicht für den Heilpfad.
+9. **Veraltete Kommentare in `SMN_Reborn`:** „die Klausel in `GeneralAbility` bekommt keinen Platz" (sie ist jetzt eine Doppelung der Klausel in `AttackAbility`); „hält sich bis zur Messung heraus" (der Verfallsteil tut es nicht); „der Angriffszweig ist nach der Phase dünn".
+10. **Fester Wert „3 GCDs":** Die Kopie in `AttackAbility` hat der Fork eingeführt (`58a265ad7`); die Zeile in `GeneralAbility` ist ohne Loop angefasst. Beide stehen offen.
+11. **`ChurinSMN`:** dieselbe Verfallsklausel ohne Gesundheitsprüfung, nicht erfasst.
+
+**Bestätigt:**
+- Wirktexte: 30 s gegen 15 s, Cure Potency 500.
+- Heilpfad: nimmt den Zweig für Reichweite 0; Tote, Heilunfähige, Todesauslöser und Walking Dead zählen dort nicht als Grund; bei voller Gruppe fällt nichts.
+- Dispatch-Reihenfolge: Lux steht in `AttackAbility` vor den Angriffs-Fähigkeiten und wird nicht ausgehungert.
+- `256fed498` baut `7af32723f` vollständig zurück.
+- Beträge über 65.535 werden richtig gelesen.
+
+**Eigene Arbeitsfehler dieses Bereichs, sachlich:** A149 prüfte nur den gemeldeten Fall (volle Gruppe), nicht den Bereich „irgendjemand leicht verletzt", und nannte ihn geringfügig, ohne die Häufigkeit zu erheben. Die Befunde 2 bis 4 bestehen seit `58a265ad7` (20.09.2026), und kein späterer Loop dieses Bereichs hat sie gefunden (A114, A115, A117, A136, A137, A144, A149). Jeder dieser Loops prüfte die Änderung des Tages, nicht alle Wege, auf denen die Aktion fällt.
+
+**Stand:** Keine Codeänderung. Behebungsvorschläge bei ihm zur Freigabe.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
