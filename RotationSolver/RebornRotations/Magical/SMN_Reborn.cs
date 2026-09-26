@@ -78,17 +78,20 @@ public sealed class SMN_Reborn : SummonerRotation
 		ImGui.Text($"EnergyDrainPvE: Is Cooling Down: {EnergyDrainPvE.Cooldown.IsCoolingDown}");
 		ImGui.Text($"Next big summon opens the burst: {NextBigSummonIsBurst}");
 		ImGui.Text($"Lux Solaris now: {_luxWhy}");
-		ImGui.Text($"  last cast: {_luxLastCast}");
+		ImGui.Text($"  last chosen: {_luxLastChoice}");
 		var luxHeal = DataCenter.GetObservedHealPerCast((uint)ActionID.LuxSolarisPvE);
-		// The smallest full heal since the last zone change - see DataCenter.RecordHealEffect.
+		// The smallest full heal since the last zone change, from targets whose health rise confirmed
+		// it - see DataCenter.RecordHealEffect. The landing line is the cast that actually went out.
 		var landing = DataCenter.GetLastHealLanding((uint)ActionID.LuxSolarisPvE);
 		ImGui.Text((luxHeal > 0 ? $"  heals {luxHeal:N0} per target" : "  heal not measured since the last zone change")
-			+ $", radius {LuxSolarisPvE.TargetInfo.EffectRange:F1} y"
-			+ (landing is { } l
-				? l.HealthAlreadyUpdated
-					? "; last cast not measured: health was already updated when the heal arrived"
-					: $"; last cast: {l.EffectiveShare:P0} met missing health on {l.Targets} target(s), overheal {(l.GrossReported ? "is" : "not seen")} reported"
-				: string.Empty));
+			+ $", radius {LuxSolarisPvE.TargetInfo.EffectRange:F1} y");
+		if (landing is { } l)
+		{
+			ImGui.Text($"  last landed ({l.At:HH:mm:ss}): {l.Confirmed} target(s) confirmed by their health rise, {l.Unconfirmed} not"
+				+ (l.Confirmed > 0
+					? $"; {l.EffectiveShare:P0} met missing health, overheal {(l.GrossReported ? "is" : "not seen")} reported"
+					: " - not measured"));
+		}
 		ImGui.Text($"Another Summoner in party: {AnotherSummonerInParty}");
 		ImGui.Text(HostileTarget == null
 			? "Fallback block: no hostile target - Titan only"
@@ -264,11 +267,12 @@ public sealed class SMN_Reborn : SummonerRotation
 		return RekindlePvE.CanUse(out act, targetOverride: TargetType.Self);
 	}
 
-	// What the Lux Solaris decision says right now, and why the last cast went out and when - kept
+	// What the Lux Solaris decision says right now, and why and when it last chose to cast - kept
 	// apart, because casting spends Refulgent Lux and the current line turns to "no Refulgent Lux"
-	// in the next frame. The rotation status shows both.
+	// in the next frame. A choice is not yet a cast (the dispatch can still pick another action in
+	// the slot); whether it went out is the landing line, from the effect itself.
 	private string _luxWhy = "not asked yet";
-	private string _luxLastCast = "none yet";
+	private string _luxLastChoice = "none yet";
 
 	private bool TryLuxSolaris(bool manual, out IAction? act)
 	{
@@ -287,7 +291,7 @@ public sealed class SMN_Reborn : SummonerRotation
 			return false;
 		}
 
-		_luxLastCast = $"{_luxWhy} ({DateTime.Now:HH:mm:ss})";
+		_luxLastChoice = $"{_luxWhy} ({DateTime.Now:HH:mm:ss})";
 		return true;
 	}
 
@@ -335,12 +339,10 @@ public sealed class SMN_Reborn : SummonerRotation
 			}
 		}
 
-		if (manual)
-		{
-			why = "manual heal command";
-			return true;
-		}
-
+		// The action's own AoE count, "Number of targets needed to use this action". The setting text
+		// binds (owner's rule), and for a heal a target is a hurt member: the self-centred heal path in
+		// ActionTargetInfo counts them so (GetCanAffects drops the full ones), for every use, the heal
+		// command included. By default it is 1 - "somebody in the radius is hurt".
 		var hurt = 0;
 		foreach (var member in inRadius)
 		{
@@ -350,23 +352,23 @@ public sealed class SMN_Reborn : SummonerRotation
 			}
 		}
 
-		if (hurt == 0)
-		{
-			why = "nobody in the radius is hurt";
-			return false;
-		}
-
-		// The action's own AoE count, set in its settings: how many hurt members it asks for. The
-		// setting text binds (owner's rule); by default it is 1 and changes nothing.
 		var asked = Math.Max(1, (int)LuxSolarisPvE.Config.AoeCount);
 		if (hurt < asked)
 		{
-			why = $"waiting: {hurt} hurt in the radius, its AoE count asks for {asked}";
+			why = hurt == 0
+				? "nobody in the radius is hurt"
+				: $"waiting: {hurt} hurt in the radius, its AoE count asks for {asked}";
 			return false;
 		}
 
-		// 3. The heal lands in full: on the caster himself, or on everyone in the radius. The amount
-		// is measured, not derived from the potency; 0 means not measured since the last zone change.
+		if (manual)
+		{
+			why = "manual heal command";
+			return true;
+		}
+
+		// 3. The heal lands in full: on the caster, or on everyone else in the radius. The amount is
+		// measured, not derived from the potency; 0 means not measured since the last zone change.
 		var heal = DataCenter.GetObservedHealPerCast((uint)ActionID.LuxSolarisPvE);
 		if (heal > 0)
 		{
@@ -376,8 +378,8 @@ public sealed class SMN_Reborn : SummonerRotation
 				return true;
 			}
 
-			// "Bei allen anderen gruppenmitgliedern im radius": the others, not the caster - his own
-			// case is the line above, and counting him here made this test a copy of it. With nobody
+			// "Bei allen anderen gruppenmitgliedern im radius": the others, not the caster - the
+			// caster's own case is the line above, and counting him here made this test a copy of it. With nobody
 			// else in the radius there is nobody to measure, and the test does not hold.
 			var others = 0;
 			var everyoneTakesItAll = true;
@@ -418,13 +420,16 @@ public sealed class SMN_Reborn : SummonerRotation
 		// 5. Refulgent Lux about to run out: any heal beats none. It gives way only to a damage
 		// ability whose enabling status ends before the next weave window - that one loses its value
 		// by waiting, a small heal does not lose much. In this window (after the demi phase) that is
-		// Mountain Buster under Titan's Favor, and only while there is an enemy to hit. Searing Flash
+		// Mountain Buster under Titan's Favor, and only while there is an enemy to hit and the action
+		// is enabled and learnt - otherwise nothing would take the slot. Not CanUse: that would also
+		// write Mountain Buster's target into the target state. Searing Flash
 		// is left out: outside a demi this rotation casts it only on a dying boss, so giving way to it
 		// would hold Lux for an ability that does not come.
 		if (StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux))
 		{
 			var nextWindow = DataCenter.DefaultGCDRemain + DataCenter.DefaultGCDTotal;
-			if (HasHostilesInRange && StatusEndsBefore(StatusID.TitansFavor, nextWindow))
+			if (HasHostilesInRange && MountainBusterPvE.IsEnabled && MountainBusterPvE.EnoughLevel
+				&& StatusEndsBefore(StatusID.TitansFavor, nextWindow))
 			{
 				why = "Refulgent Lux runs out - one slot for Mountain Buster first, its Titan's Favor ends sooner";
 				return false;

@@ -302,7 +302,7 @@ trifft — und nicht besser.
 
 ## Wann Lux Solaris zuendet
 
-**Sachstand der Regel, aus seinen Vorgaben vom 26.09.2026 (A151 bis A153), umgesetzt in A154**
+**Sachstand der Regel, aus seinen Vorgaben vom 26.09.2026 (A151 bis A153), umgesetzt in A154 bis A156**
 (`SMN_Reborn.LuxSolarisDecision`, gefragt von allen drei Wegen).
 
 **Was Lux Solaris ist.** **Hinweis des Auftraggebers:** Lux Solaris ist eine Point-Blank-Flaeche vom
@@ -342,6 +342,10 @@ Einschiebeplatz, und sie ist eine Beigabe — ungenutzt verfaellt sie mit Refulg
 2. **Nur im Radius** (Vorgabe 4: „eine umkreispruefung ist immer sinnvoll"). Jeder Bedarf wird an den
    lebenden, heilbaren Mitgliedern **im Wirkradius um den Beschwoerer** gemessen, nie an der ganzen Gruppe.
    Den Radius liefert das Spiel (`EffectRange`). Ist im Radius niemand verletzt, faellt nichts.
+   **Die eigene AoE-Anzahl der Aktion gilt fuer jeden Wurf**, den Heilbefehl eingeschlossen: Ihr
+   Einstellungstext „Number of targets needed to use this action" bindet, und ein Ziel einer Heilung ist
+   ein Verletzter — so zaehlt der allgemeine Flaechenheil-Zweig (`GetCanAffects` laesst bei einer Heilung
+   die Vollen weg) und wendet die Zahl auf jede Verwendung an. Ab Werk 1: „jemand im Radius ist verletzt".
    Ein Dunkelritter unter **Walking Dead** zaehlt dabei als Verletzter (Vorgabe 5: „lieber casten, bevor
    lux solaris ungenutzt verfaellt, vor allem, wenn auch noch andere gruppenmitglieder davon geheilt
    werden") — anders als bei den Heilaktionen der Heiler (Konzept 09), weil Lux sonst verfaellt.
@@ -351,8 +355,6 @@ Einschiebeplatz, und sie ist eine Beigabe — ungenutzt verfaellt sie mit Refulg
    - wenn **jedem anderen** Mitglied im Radius mindestens eine volle Heilung fehlt („erst lux solaris
      anwenden, wenn es auch bei allen anderen gruppenmitgliedern im radius nicht ueberheilt"); steht
      niemand anderes im Radius, gilt dieser Fall nicht.
-   Vorher gilt die eigene AoE-Anzahl der Aktion aus ihren Einstellungen: so viele Verletzte im Radius
-   verlangt sie mindestens (der Einstellungstext bindet; ab Werk 1).
    Die Heilmenge ist die gemessene (unten), nicht die Potenz.
 4. **Ausnahme: bedrohlich geringe Gesundheit** (Vorgabe 6). Steht ein Mitglied im Radius in
    Gefaehrdungsklasse 1 (Konzept 07: effektive Gesundheit auf oder unter `HealthForDyingTanks`), faellt
@@ -372,8 +374,9 @@ Einschiebeplatz, und sie ist eine Beigabe — ungenutzt verfaellt sie mit Refulg
      Solar-Phase.
    - **Mountain Buster** (nur unter Titan's Favor): haengt an einem Status. Wie lange der liegt und ob der
      naechste Topaz Rite eine unverbrauchte Gunst ueberschreibt, steht nicht im Repository (unbelegt). Zur
-     Laufzeit ist es lesbar: Endet der Status vor dem naechsten Einschiebefenster und ist ein Gegner in
-     Reichweite, verliert die Aktion durch Aufschub ihren Wert und geht vor.
+     Laufzeit ist es lesbar: Endet der Status vor dem naechsten Einschiebefenster, ist ein Gegner in
+     Reichweite und ist Mountain Buster eingeschaltet und erlernt, verliert die Aktion durch Aufschub
+     ihren Wert und geht vor. Ohne die letzte Bedingung nahme niemand den Platz, und Lux verfiele.
    - **Searing Flash** (unter Ruby's Glimmer) konkurriert nicht: Ausserhalb einer Demi wirkt die Rotation
      es nur auf einen sterbenden Boss; ihm vorzugehen hielte Lux fuer eine Aktion, die nicht kommt (A155).
    Die Gewichtung lautet damit, ohne neue Zahl: Die Kleinheilung am Verfall geht vor jede
@@ -384,13 +387,15 @@ Einschiebeplatz, und sie ist eine Beigabe — ungenutzt verfaellt sie mit Refulg
 **Eine Entscheidung fuer alle Wege.** Heilflagge (`HealAreaAbility`), `AttackAbility` und
 `GeneralAbility` fragen dieselbe Entscheidung; heute folgt jeder Weg einer eigenen Bedingung, und genau
 daraus entstanden die Befunde in A150. Ausgenommen ist nur der **manuelle Heilbefehl**: Er ist sein
-ausdruecklicher Wunsch und prueft allein die Verbote aus Punkt 1.
+ausdruecklicher Wunsch und prueft allein die Verbote aus Punkt 1 und die AoE-Anzahl aus Punkt 2 —
+diese, weil ihr Einstellungstext jede Verwendung bindet.
 
 **Folgen der Regel, bewusst hingenommen:**
-- Vor der ersten beobachteten Landung einer Sitzung ist die Heilmenge unbekannt; dann greifen nur die
-  Punkte 4 und 5.
+- Vor der ersten bestaetigten Landung seit dem Gebietswechsel ist die Heilmenge unbekannt; dann greifen
+  nur die Punkte 4 und 5.
 - Die Vorausheilung vor einem angekuendigten Treffer („Heal ahead of an announced area cast") bedient
-  Lux nicht mehr, ausser ueber Punkt 4 oder wenn jedem im Radius eine volle Heilung fehlt — Lux ist
+  Lux nicht mehr, ausser ueber Punkt 4 oder wenn dem Beschwoerer oder jedem anderen im Radius eine volle
+  Heilung fehlt — Lux ist
   reaktiv, die Vorausheilung bleibt Sache der Heiler.
 - Ein Dunkelritter unter Walking Dead steht bei 1 HP in Gefaehrdungsklasse 1; Lux faellt dann sofort.
   Das ist gewollt (Punkt 1, seine Entscheidung): die aufgehobene Heilung fuer mehrere, einschliesslich
@@ -407,21 +412,35 @@ kleinste Heilung, die das ganze Potential zeigt — eine, die weniger heilte, al
 sobald das Spiel nachweislich Ueberheilung mitmeldet. Der Wert gilt bis zum naechsten Gebietswechsel (die
 Gegenstandsstufensynchronisation wird je Inhalt gesetzt), nicht nur bis zum Kampfende. Vorher ist er
 unbekannt, und nur die Punkte 4 und 5 greifen. Ziele ausserhalb der Gruppenliste (Chocobo, NPC ohne
-die NPC-Einstellung) werden nicht gemessen. **Grenze:** Ein Ziel mit gesenkter Heilwirkung druecke das
-Minimum fuer den Rest des Gebiets; das ist nicht ausgeschlossen (Schluss, A155).
+die NPC-Einstellung) werden nicht gemessen. **Grenze, bewusst behalten:** Ein Ziel mit gesenkter Heilwirkung drueckt das
+Minimum fuer den Rest des Gebiets (Schluss, A155). Die Folge im Kampf: Lux haelt die Heilung fuer
+kleiner, als sie ist, und faellt eher — mit mehr Ueberheilung, nie spaeter. Das ist die Richtung seiner
+Vorgabe (minimales Potential); ein Ausreisserfilter wuerde sie umkehren und braeuchte eine neue Zahl
+(A156).
 
-**Selbstpruefung der Messung:** Der Effekt-Handler haelt jeden Betrag gegen den Fehlbetrag des Ziels.
-Daraus ergeben sich der Anteil, der auf fehlende Gesundheit traf, und ob Ueberheilung mitgemeldet wird.
-Das setzt voraus, dass die Gesundheit beim Effekt noch die vor der Heilung ist; belegt ist das nicht,
-der vorhandene Code (`GetPartyMemberHPRatio`) rechnet mit beiden Reihenfolgen. Deshalb prueft jeder Wurf
-es selbst: Liegt die Gesundheit eines Ziels beim Effekt schon ueber dem zuletzt gelesenen Stand, ist die
-Aktualisierung vorher gekommen; dann wird der Wurf nicht gemessen, und die Anzeige sagt es. Eine
-Regeneration im selben Augenblick kann diesen Befund faelschlich ausloesen (Grenze).
+**Selbstpruefung der Messung: gemessen wird nur, was der Gesundheitsanstieg bestaetigt.** Seine Frage
+dazu: „nicht bei denen messen, die damit vollgeheilt sind, weil sonst eine ueberheilung nicht
+festgestellt werden kann — oder kann sie festgestellt werden?" Sie kann, wenn die Gesundheit beim Effekt
+bekannt ist: Meldet das Spiel einem Ziel mehr, als ihm fehlte, meldet es die Bruttoheilung, und dann
+zeigt jeder Betrag das ganze Potential. Ob die Gesundheit beim Effekt noch die vor der Heilung ist, ist
+nicht belegt — der vorhandene Code (`GetPartyMemberHPRatio`) rechnet mit beiden Reihenfolgen. Deshalb
+haelt `DataCenter.RecordHealEffect` jeden Wurf mit Betrag und Gesundheit je Ziel zurueck, und
+`GetPartyMemberHPRatio` bestaetigt ein Ziel erst, wenn seine Gesundheit um das steigt, was die Heilung
+von dort aus hinzufuegen kann (Betrag, hoechstens bis voll). Gemessen werden nur bestaetigte Ziele;
+was bis zum Ende des Effektfensters (`EffectEndTime`, dasselbe, das die Heilprojektion abwartet) nicht
+bestaetigt ist, faellt heraus. Kam die Aktualisierung vor dem Effekt, steigt nichts mehr, und das Ziel
+wird nicht gemessen; ein Treffer dazwischen verhindert die Bestaetigung ebenso — beides die sichere
+Richtung. **Grenzen:** Eine fremde Heilung im selben Fenster kann ein solches Ziel faelschlich
+bestaetigen; dann ist der Fehlbetrag zu klein angesetzt, und der Wurf gilt womoeglich als Bruttomeldung,
+was das Minimum senkt (Lux faellt dann eher). Ein zweiter eigener Heilwurf im selben Fenster schliesst
+den ersten vorzeitig ab. Beides zeigt die Anzeige als unbestaetigte Ziele.
 
 **Im Kampf ablesbar** (Beschwoerer-Anzeige): was die Entscheidung gerade sagt, und getrennt davon, warum
-und wann der letzte Wurf fiel — der Wurf verbraucht Refulgent Lux, die erste Zeile springt danach auf
-„no Refulgent Lux". Dazu die gemessene Heilmenge, der Radius und zum letzten Wurf, welcher Anteil
-fehlende Gesundheit traf und ob Ueberheilung gemeldet wird. Lux erscheint **nicht** unter „Area heal
+und wann sie zuletzt zum Wurf riet („last chosen") — der Wurf verbraucht Refulgent Lux, die erste Zeile
+springt danach auf „no Refulgent Lux". Eine Wahl ist noch kein Wurf; ob er fiel, zeigt die Landezeile
+aus dem Effekt selbst: Zeitpunkt, wie viele Ziele der Gesundheitsanstieg bestaetigte und wie viele nicht,
+welcher Anteil fehlende Gesundheit traf und ob Ueberheilung gemeldet wird. Dazu die gemessene Heilmenge
+und der Radius. Lux erscheint **nicht** unter „Area heal
 around you": Sie wird auf den Wirkenden gezielt und laeuft nicht durch den Flaechenheil-Zweig.
 
 **Verworfen, mit Grund:** der groesste Einzelfehlbetrag der ganzen Gruppe als Ausloeser (A150: misst

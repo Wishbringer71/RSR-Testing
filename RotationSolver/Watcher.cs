@@ -324,33 +324,25 @@ public static class Watcher
 			// this target twice" and nothing beyond the next few frames; a rule that wants to know how
 			// far one cast reaches needs the figure to survive the cast.
 			//
-			// With each amount goes what that target was missing when it arrived: the effect is seen
-			// before the server's health update applies it, so the object still carries the health
-			// from before the heal. That lets the record say how much of the cast met missing health,
-			// and whether the packet reports overheal at all - which nobody had checked.
+			// With each amount goes the target's health when the effect arrived. Whether that is still
+			// the health from before the heal is not known here - the server's health update can come
+			// first - so DataCenter holds the cast until the health rise confirms it
+			// (DataCenter.RecordHealEffect). A target outside the party list (a chocobo, an NPC without
+			// the NPC setting) has no health to measure against and is left out.
+			List<(ulong Id, uint Amount, uint Hp, uint MaxHp)> healLanded = [];
 			if (DataCenter.HealHP is { Count: > 0 })
 			{
-				// A target outside the party list (a chocobo, an NPC without the NPC setting) has no
-				// health to measure against and is left out: counted as missing nothing, it would
-				// read as "overheal reported" and let a capped amount into the minimum.
-				List<(uint Amount, uint MissingBefore)> landed = [];
-				var healthAlreadyUpdated = false;
 				foreach (var (targetId, amount) in DataCenter.HealHP)
 				{
 					foreach (var member in DataCenter.PartyMembers)
 					{
-						if (member == null || member.GameObjectId != targetId)
+						if (member != null && member.GameObjectId == targetId)
 						{
-							continue;
+							healLanded.Add((targetId, amount, member.CurrentHp, member.MaxHp));
+							break;
 						}
-
-						landed.Add((amount, member.MaxHp > member.CurrentHp ? member.MaxHp - member.CurrentHp : 0));
-						healthAlreadyUpdated |= DataCenter.LastKnownHp(targetId) is { } last && member.CurrentHp > last;
-						break;
 					}
 				}
-
-				DataCenter.RecordHealEffect(action!.Value.RowId, landed, healthAlreadyUpdated);
 			}
 
 			// Ensure ApplyStatus dictionary is non-null, then merge source-applied effects
@@ -380,6 +372,13 @@ public static class Watcher
 
 			DataCenter.EffectTime = DateTime.Now;
 			DataCenter.EffectEndTime = DateTime.Now.AddSeconds(set.Header.AnimationLockTime + 1);
+
+			// After the effect window is set: the cast waits for its confirmation as long as the heal
+			// projection waits for the server's health update, and no longer.
+			if (DataCenter.HealHP is { Count: > 0 })
+			{
+				DataCenter.RecordHealEffect(action!.Value.RowId, healLanded);
+			}
 
 			var attackedTargets = DataCenter.AttackedTargets;
 			var attackedTargetsCount = DataCenter.AttackedTargetsCount;

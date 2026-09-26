@@ -3772,7 +3772,7 @@ Als Hinweis in Konzept 07 und 08 geführt. Die Wirktexte stützen ihn gleichlaut
   - der TODO-Eintrag zur Heilmessung (erledigt, entfernt);
   - Konzept 07 und 08 zur Anzeige und zum Heilpfad;
   - der Rekindle-Kommentar stand nach dem Umbau vor der Lux-Entscheidung.
-- **L4:** Die Hilfsmethode antwortet jetzt wie der Dispatch (`!= 1`). Die fünf Kopien im Dispatch sind als technische Schuld im TODO.
+- **L4:** Die Hilfsmethode antwortet jetzt wie der Dispatch (`!= 1`). Die Kopien im Dispatch sind als technische Schuld im TODO (acht, nicht fünf; berichtigt in A156).
 - **L6:** Der Unterlauf ist mit `Missing()` abgesichert.
 
 **Belassen, benannt:**
@@ -3787,6 +3787,30 @@ Als Hinweis in Konzept 07 und 08 geführt. Die Wirktexte stützen ihn gleichlaut
 - Mountain Buster steht im selben Durchlauf nach Lux.
 - Compile-Punkte.
 - Feste Werte.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A156 · Zweites Review der Lux-Umsetzung (A155), Befunde behoben (26.09.2026)
+
+**Verfahren:** zweiter unabhängiger Prüfer auf c88b0a3; Befunde am Code nachgeprüft. H1, H2, M1, M3 und L4 bis L6 aus A155 halten.
+
+**Behoben:**
+- **M2 war nur halb behoben.** Die Prüfung „Gesundheit beim Effekt über dem zuletzt gelesenen Stand" las `_lastHp`, das die Heilprojektion innerhalb des Effektfensters nicht fortschreibt, und fing nur die eine Reihenfolge. Ersetzt durch eine echte Bestätigung: `RecordHealEffect` hält den Wurf mit Betrag und Gesundheit je Ziel zurück, `GetPartyMemberHPRatio` bestätigt ein Ziel erst beim tatsächlichen Anstieg um das, was die Heilung hinzufügen kann; gemessen werden nur bestätigte Ziele, der Rest verfällt am Ende des Effektfensters. `LastKnownHp` und `healthAlreadyUpdated` entfernt. Beantwortet zugleich seine Frage, ob sich Überheilung feststellen lässt: ja, an bestätigten Zielen.
+- **Die AoE-Anzahl stand an der falschen Stelle.** Sie galt nur vor Punkt 3 laut Konzept, im Code aber auch vor Gefahr und Verfall und nicht für den Heilbefehl. Nachgemessen, wie der allgemeine Flächenheil-Zweig zählt: `GetCanAffects` lässt bei einer Heilung die Vollen weg, gezählt werden Verletzte, für jede Verwendung. Da der Einstellungstext bindet („Number of targets needed to use this action"), gilt die Zahl jetzt für jeden Wurf einschließlich des Heilbefehls. Ab Werk 1 ändert das nur eines: Der Heilbefehl wirft nicht mehr, wenn niemand im Radius verletzt ist, wie jede andere Flächenheilung.
+- **„last cast" zeigte die Wahl, nicht den Wurf.** Die Wahl kann im selben Platz noch einer anderen Aktion weichen. Jetzt heißt die Zeile „last chosen", und der Wurf steht mit Uhrzeit in der Landezeile aus dem Effekt.
+- **Mountain Buster ging am Verfall auch vor, wenn er abgeschaltet oder nicht erlernt ist.** Dann nahm niemand den Platz, und Lux verfiel. Jetzt nur, wenn er eingeschaltet und erlernt ist. `CanUse` wird dafür nicht gefragt, weil es den Zielzustand schriebe.
+- **Texte:**
+  - TODO nennt acht Kopien der Heilverbots-Prüfung, nicht fünf.
+  - Konzept 08: „seit dem Gebietswechsel" statt „einer Sitzung", „jedem anderen" statt „jedem".
+  - Kommentar zu Punkt 3 im Code.
+  - Kommentar im Flächenheil-Zweig: Die globale AoE-Art gilt dort nicht, die eigene AoE-Anzahl schon.
+
+**Belassen, begründet:** Ein Ausreißer nach unten (gesenkte Heilwirkung) hält das Minimum bis zum Gebietswechsel. Die Folge im Kampf: Lux fällt eher, nie später. Das ist die Richtung seiner Vorgabe „minimales Heilpotential"; ein Filter würde sie umkehren und bräuchte eine neue Zahl.
+
+**Grenzen der Bestätigung (Konzept 08):**
+- Eine fremde Heilung im selben Fenster kann ein Ziel fälschlich bestätigen.
+- Ein zweiter eigener Heilwurf im Fenster schließt den ersten vorzeitig ab.
+- Beides zeigt die Anzeige als unbestätigte Ziele.
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 

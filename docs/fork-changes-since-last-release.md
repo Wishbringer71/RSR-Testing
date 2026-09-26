@@ -162,16 +162,18 @@ damage branch or the expiry asks for it:
 - never under Scalebound, under Shackled Healing with others near, or while a Dark Knight in its
   radius is waiting for Living Dead to trigger (it waits for Walking Dead and then heals everyone,
   the tank included);
-- when your own missing health takes a full heal, or everyone else in the radius does (and at least
-  as many are hurt as the action's own AoE count asks for);
+- only when at least as many in the radius are hurt as the action's own AoE count asks for (default
+  1), on every path including the heal command;
+- when your own missing health takes a full heal, or everyone else in the radius does;
 - at once when someone in the radius is in danger;
 - before Refulgent Lux runs out, whenever anyone in the radius is hurt at all - giving way only to
-  Mountain Buster when Titan's Favor would end first.
+  Mountain Buster when Titan's Favor would end first and Mountain Buster is enabled.
 
 The heal amount is the smallest full heal seen since the last zone change, so a critical heal never
-makes it look bigger than it surely is; each cast checks that its measurement is sound. The rotation
-status shows what the rule says right now, why and when the last cast went out, the measured amount,
-and how much of the last cast met missing health. Rekindle obeys Scalebound
+makes it look bigger than it surely is. A target counts only once its health actually rises by the
+heal, so a reading taken after the game had already applied it never enters the figure. The rotation
+status shows what the rule says right now, why and when it last chose to cast, the measured amount,
+and for the last cast that landed how many targets were confirmed and how much met missing health. Rekindle obeys Scalebound
 and Shackled Healing as well.
 
 ## Hits and heals above 65,535 points are read in full

@@ -410,62 +410,138 @@ internal static class DataCenter
 	private static readonly Dictionary<uint, HealLanding> _lastHealLanding = [];
 
 	/// <summary>
-	/// How the last cast of a healing action landed: the share of what it restored that met missing
-	/// health, and whether any target was reported a larger amount than it was missing - which says
-	/// the effect packet reports the gross heal, overheal included.
+	/// How the last measured cast of a healing action landed: the share of what it restored that met
+	/// missing health, whether any target was reported a larger amount than it was missing (the packet
+	/// reports the gross heal), how many targets were confirmed and how many were not.
 	/// </summary>
-	internal readonly record struct HealLanding(float EffectiveShare, bool GrossReported, int Targets, bool HealthAlreadyUpdated, DateTime At);
+	internal readonly record struct HealLanding(float EffectiveShare, bool GrossReported, int Confirmed, int Unconfirmed, DateTime At);
+
+	// One cast waiting for its confirmation. The effect packet arrives with the amounts; whether the
+	// health seen at that moment was still the health from before the heal is not known then - the
+	// server's health update can come before or after the effect, and the heal-hp projection below
+	// (GetPartyMemberHPRatio) is built for both orders. So the cast is held, and each target is
+	// confirmed only when its health actually rises by what the heal can have added after the
+	// effect was seen. A target whose health had already risen, or that took damage in between, is
+	// never confirmed and never measured - the safe direction.
+	private sealed record PendingHealTarget(ulong Id, uint Amount, uint HpAtEffect, uint MaxHp)
+	{
+		public bool Confirmed { get; set; }
+		public uint MissingBefore => MaxHp > HpAtEffect ? MaxHp - HpAtEffect : 0;
+		public uint Expected => Math.Min(Amount, MissingBefore);
+	}
+
+	private static (uint ActionId, DateTime Deadline, List<PendingHealTarget> Targets)? _pendingHeal;
 
 	/// <summary>
-	/// Records one cast of an own healing action. <paramref name="landed"/> holds, per target, the
-	/// amount the effect reported and the health that target was missing when it arrived - read
-	/// before the server's health update applies it.
+	/// Holds one cast of an own healing action until its health changes confirm it; see
+	/// <see cref="HealLanding"/>. <paramref name="landed"/> holds, per party member hit, the amount
+	/// the effect reported and the member's health and maximum at that moment. The cast waits until
+	/// the end of the effect window (EffectEndTime) - as long as the heal projection waits for the
+	/// server's health update.
 	/// </summary>
-	internal static void RecordHealEffect(uint actionId, IReadOnlyList<(uint Amount, uint MissingBefore)> landed, bool healthAlreadyUpdated)
+	internal static void RecordHealEffect(uint actionId, IReadOnlyList<(ulong Id, uint Amount, uint Hp, uint MaxHp)> landed)
 	{
-		var targets = 0;
-		double restored = 0;
-		double met = 0;
-		var gross = false;
-		foreach (var (amount, missingBefore) in landed)
-		{
-			if (amount == 0)
-			{
-				continue;
-			}
+		ResolvePendingHeal(force: true);
 
-			targets++;
-			restored += amount;
-			met += Math.Min(amount, missingBefore);
-			gross |= amount > missingBefore;
+		List<PendingHealTarget> targets = [];
+		foreach (var (id, amount, hp, maxHp) in landed)
+		{
+			if (amount > 0 && maxHp > 0)
+			{
+				targets.Add(new PendingHealTarget(id, amount, hp, maxHp));
+			}
 		}
 
-		if (targets == 0)
+		_pendingHeal = null;
+		if (targets.Count > 0)
+		{
+			_pendingHeal = (actionId, EffectEndTime, targets);
+		}
+	}
+
+	// Called for every party member whenever the refined health is read, and before any reader of
+	// the measurement. Confirms targets whose health has risen by what the heal adds; once every
+	// target that could rise has, or the effect window is over, the cast is measured from its
+	// confirmed targets alone.
+	private static void ConfirmPendingHeal(IBattleChara member)
+	{
+		if (_pendingHeal is not { } pending)
 		{
 			return;
 		}
 
-		var smallest = float.MaxValue;
-		foreach (var (amount, missingBefore) in landed)
+		foreach (var target in pending.Targets)
 		{
-			if (amount > 0 && (gross || amount < missingBefore))
+			if (!target.Confirmed && target.Id == member.GameObjectId && target.Expected > 0
+				&& member.CurrentHp >= target.HpAtEffect + target.Expected)
 			{
-				smallest = Math.Min(smallest, amount);
+				target.Confirmed = true;
 			}
 		}
 
-		// Only while the health seen at the effect is still the health from before it: otherwise
-		// "missing before" is the health left after the heal, and neither the full-heal test nor the
-		// overheal test means anything. The landing is still recorded, with the flag, so the display
-		// says why the figure did not move.
-		if (smallest < float.MaxValue && !healthAlreadyUpdated)
+		ResolvePendingHeal(force: false);
+	}
+
+	private static void ResolvePendingHeal(bool force)
+	{
+		if (_pendingHeal is not { } pending)
 		{
-			_observedHealPerCast[actionId] = _observedHealPerCast.TryGetValue(actionId, out var known) && known > 0
-				? Math.Min(known, smallest)
-				: smallest;
+			return;
 		}
 
-		_lastHealLanding[actionId] = new HealLanding((float)(met / restored), gross, targets, healthAlreadyUpdated, DateTime.Now);
+		var open = false;
+		foreach (var target in pending.Targets)
+		{
+			open |= !target.Confirmed && target.Expected > 0;
+		}
+
+		if (open && !force && DateTime.Now <= pending.Deadline)
+		{
+			return;
+		}
+
+		_pendingHeal = null;
+
+		var confirmed = 0;
+		var unconfirmed = 0;
+		double restored = 0;
+		double met = 0;
+		var gross = false;
+		foreach (var target in pending.Targets)
+		{
+			if (!target.Confirmed)
+			{
+				unconfirmed++;
+				continue;
+			}
+
+			confirmed++;
+			restored += target.Amount;
+			met += target.Expected;
+			gross |= target.Amount > target.MissingBefore;
+		}
+
+		if (confirmed > 0)
+		{
+			var smallest = float.MaxValue;
+			foreach (var target in pending.Targets)
+			{
+				if (target.Confirmed && (gross || target.Amount < target.MissingBefore))
+				{
+					smallest = Math.Min(smallest, target.Amount);
+				}
+			}
+
+			if (smallest < float.MaxValue)
+			{
+				_observedHealPerCast[pending.ActionId] = _observedHealPerCast.TryGetValue(pending.ActionId, out var known) && known > 0
+					? Math.Min(known, smallest)
+					: smallest;
+			}
+		}
+
+		_lastHealLanding[pending.ActionId] = new HealLanding(
+			restored > 0 ? (float)(met / restored) : 0f, gross, confirmed, unconfirmed, DateTime.Now);
 	}
 
 	/// <summary>
@@ -475,6 +551,7 @@ internal static class DataCenter
 	/// </summary>
 	public static float GetObservedHealPerCast(uint actionId)
 	{
+		ResolvePendingHeal(force: false);
 		return _observedHealPerCast.TryGetValue(actionId, out var known) ? known : 0f;
 	}
 
@@ -487,21 +564,13 @@ internal static class DataCenter
 	{
 		_observedHealPerCast.Clear();
 		_lastHealLanding.Clear();
-	}
-
-	/// <summary>
-	/// The health this member had when it was last read outside an effect window, or null. Read
-	/// against the current health when an own heal arrives, it tells whether the server's health
-	/// update came before the effect - in which case the current health is already the healed one.
-	/// </summary>
-	internal static uint? LastKnownHp(ulong id)
-	{
-		return _lastHp.TryGetValue(id, out var hp) ? hp : null;
+		_pendingHeal = null;
 	}
 
 	/// <summary>How the last cast of this action landed, or null when none has been seen.</summary>
 	internal static HealLanding? GetLastHealLanding(uint actionId)
 	{
+		ResolvePendingHeal(force: false);
 		return _lastHealLanding.TryGetValue(actionId, out var landing) ? landing : null;
 	}
 
@@ -1544,6 +1613,8 @@ internal static class DataCenter
 		{
 			return 0f;
 		}
+
+		ConfirmPendingHeal(member);
 
 		var id = member.GameObjectId;
 

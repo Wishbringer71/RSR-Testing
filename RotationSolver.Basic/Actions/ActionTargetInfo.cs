@@ -756,8 +756,9 @@ public struct ActionTargetInfo(IBaseAction action)
 		// healer standing full and a few yalms from the party never cast it, however hurt the party
 		// was - the need was measured on the anchor instead of on the people the heal lands on.
 		//
-		// Here the anchor is the caster, always, and the need is read where the heal lands: the hurt
-		// members inside the effect radius, at least AoeCount of them, and at least one of those under
+		// Here the anchor is the caster, always, and the need is read where the heal lands: the
+		// hurt members inside the effect radius (GetCanAffects drops the full ones for a heal, as it
+		// does for the general path), at least AoeCount of them, and at least one of those under
 		// the heal ratio when the auto-heal check is on - the same two tests the general path applies,
 		// moved from the anchor to the affected. A member held for a death trigger, or carried through
 		// Walking Dead by his own attacks, is healed if he stands in the radius - an area heal cannot
@@ -766,8 +767,8 @@ public struct ActionTargetInfo(IBaseAction action)
 		// Only for the heal target type, and not when a caller names the caster outright
 		// (targetOverride Self), which the general path answers with the caster unconditionally. A
 		// friendly Range-0 action asked for anything else keeps the general path, because only the
-		// heal question depends on who needs it. The AoE setting does not apply: it is about attacks
-		// (see GetMostCanTargetObjects).
+		// heal question depends on who needs it. The global AoE type (Off, Cleave, Full) does not
+		// apply: it is about attacks (see GetMostCanTargetObjects). The action's own AoeCount does.
 		if (Range == 0 && EffectRange > 0 && !IsSingleTarget && !IsTargetArea && action.Setting.IsFriendly
 			&& type == TargetType.Heal && targetOverride != TargetType.Self)
 		{

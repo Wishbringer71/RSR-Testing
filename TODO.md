@@ -10,9 +10,9 @@ Beide sind Upstream-Konventionen und ändern Verhalten im Kampf; zur Entscheidun
 - **Weißmagier** (`WHM_Reborn.DefenseAreaAbility`): Die ganze Flächenabwehr entfällt, solange Temperance weniger als 20 s oder Liturgy of the Bell weniger als 20 s zurückliegt (120 − 100 und 180 − 160 s, die Wirkdauer beider). Gemeint ist offenbar „nicht stapeln, solange die letzte noch wirkt". Im Kampf: Ein zweiter Raidwide in diesen 20 s bekommt weder Plenary Indulgence noch Divine Caress noch Liturgy.
 - **Dunkelritter** (`DRK_Reborn.DefenseAreaAbility`): `InTwoMIsBurst` sperrt in den ersten 15 s nach Living Shadow The Blackest Night auf andere, Oblation, Dark Missionary und Reprisal, auch vor einem großen Treffer. Dieselbe Bauform hat die Revolverklinge mit `!HasNoMercy`. Seine Vorgabe „Sicherheit der Gruppe geht vor Schaden" spricht dagegen.
 
-### Die Heilverbots-Prüfung steht fünfmal im Dispatch · U
+### Die Heilverbots-Prüfung steht achtmal im Dispatch · U
 
-Die Prüfung auf Scalebound und Shackled Healing steht als Kopie an fünf Stellen in `CustomRotation_Ability` und `CustomRotation_GCD` (Upstream), dazu jetzt in `StatusHelper.PlayerHealingPunished` (A154, A155). Die Kopien sollten die Hilfsmethode rufen; bei leerer Gruppenliste antworten heute alle gleich. Nicht angefasst, weil es Upstream-Zeilen ohne Verhaltensänderung sind.
+Die Prüfung auf Scalebound und Shackled Healing steht als Kopie an acht Stellen, je vier in `CustomRotation_Ability` und `CustomRotation_GCD` (Upstream), dazu jetzt in `StatusHelper.PlayerHealingPunished` (A154, A155). Die Kopien sollten die Hilfsmethode rufen; bei leerer Gruppenliste antworten heute alle gleich. Nicht angefasst, weil es Upstream-Zeilen ohne Verhaltensänderung sind.
 
 ### Zielbasierte Bewegungsaktionen über den Move-Pfad gelten immer als unsicher · N, U
 
