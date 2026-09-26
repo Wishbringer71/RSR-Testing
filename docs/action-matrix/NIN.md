@@ -261,7 +261,12 @@ keine im Wirktext
 
 Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
 
+- Fleeting Raiju: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Goka Mekkyaku: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Hyosho Ranryu: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Meisui: 2 Aufruf(e), mit Rückfall vor Ablauf
+- Phantom Kamaitachi: 2 Aufruf(e), mit Rückfall vor Ablauf
+- Trick Attack: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 
 ### Unvollständige Beschreibungen
 

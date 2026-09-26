@@ -220,7 +220,18 @@ keine im Wirktext
 
 ### Fenster, deren Verbraucher an Bedingungen hängt
 
-keine
+Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
+
+- Avalanche Axe: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Beastskin: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Borrow: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Gale Axe: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Mistral Axe: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Scaleskin: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Spinning Axe: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Tempered Release: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Tempered Release: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Trick: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
 
 ### Unvollständige Beschreibungen
 

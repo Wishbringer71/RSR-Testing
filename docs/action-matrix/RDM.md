@@ -248,7 +248,11 @@ keine im Wirktext
 
 Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
 
+- Enchanted Riposte: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Grand Impact: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Prefulgence: 1 Aufruf(e), mit Rückfall vor Ablauf
+- Verfire: 6 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Verstone: 5 Aufruf(e), **ohne Rückfall vor Ablauf**
 
 ### Unvollständige Beschreibungen
 

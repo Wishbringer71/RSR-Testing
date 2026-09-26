@@ -186,7 +186,18 @@ Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wi
 
 ### Fenster, deren Verbraucher an Bedingungen hängt
 
-keine
+Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
+
+- Communio: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Executioner's Gallows: 5 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Executioner's Gibbet: 5 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Executioner's Guillotine: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Gallows: 5 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Gibbet: 5 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Guillotine: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Harvest Moon: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Perfectio: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Plentiful Harvest: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 
 ### Unvollständige Beschreibungen
 

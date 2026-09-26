@@ -207,7 +207,17 @@ keine im Wirktext
 
 Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
 
+- First Legacy: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Fourth Legacy: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Reawaken: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Second Legacy: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Third Legacy: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Twinblood Bite: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Twinblood Thresh: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Twinfang Bite: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Twinfang Thresh: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Uncoiled Twinblood: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Uncoiled Twinfang: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
 
 ### Unvollständige Beschreibungen
 

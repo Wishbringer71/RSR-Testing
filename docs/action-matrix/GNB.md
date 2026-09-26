@@ -243,7 +243,8 @@ keine im Wirktext
 
 Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
 
-- Sonic Break: 1 Aufruf(e), mit Rückfall vor Ablauf
+- Reign of Beasts: 2 Aufruf(e), mit Rückfall vor Ablauf
+- Sonic Break: 2 Aufruf(e), mit Rückfall vor Ablauf
 
 ### Unvollständige Beschreibungen
 

@@ -187,7 +187,9 @@ keine im Wirktext
 
 Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
 
+- Comet in Black: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Star Prism: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Subtractive Palette: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Tempera Grassa: 2 Aufruf(e), mit Rückfall vor Ablauf
 
 ### Unvollständige Beschreibungen

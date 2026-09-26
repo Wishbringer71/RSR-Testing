@@ -257,28 +257,58 @@ def find_loops(parsed, facts, produce, consume, names):
 def gated_windows(code, windows):
     """Actions whose window can run out: every cast of the action in the rotation code carries a
     condition of its own - none is a plain "if (X.CanUse(out act…)) { return true;" - so a lasting
-    condition lets the window pass unused. For each: the conditioned casts and whether any of them
-    also fires on the window running out (WillStatusEnd on the same line). Candidates, read by hand:
-    a condition can be the point (burst alignment) or a safety choice (a gap closer at range)."""
+    condition lets the window pass unused. `windows` maps each action to the names of its window
+    (statuses, "…Ready"). For each: the number of casts and whether one of them also fires on the
+    window running out - a WillStatusEnd in the same if (condition or body) that names the window.
+    Candidates, read by hand: a condition can be the point (burst alignment) or a safety choice."""
     found = []
+    spans = method_spans(code)
+
+    def top_level(pos):
+        """True when `pos` sits directly in a method body, inside no other block."""
+        for start, end in spans:
+            if start < pos < end:
+                depth = 0
+                for ch in code[start:pos]:
+                    depth += ch == "{"
+                    depth -= ch == "}"
+                return depth == 1
+        return False
+
     for ident in sorted(windows):
-        casts = [m for m in re.finditer(r"\b" + ident + r"\s*\.\s*CanUse\s*\(\s*out\s+(?:var\s+)?act\b", code)]
+        casts = list(re.finditer(r"\b" + ident + r"\s*\.\s*CanUse\s*\(\s*out\s+(?:var\s+)?act\b", code))
         if not casts:
             continue
-        plain = re.search(r"if\s*\(\s*" + ident + r"\s*\.\s*CanUse\s*\(\s*out\s+act[^()]*\)\s*\)\s*\{\s*return\s+true;", code)
-        if plain:
-            continue
+        plain = False
         scopes = []
         for m in casts:
-            # The whole if around the cast: its condition and its body, where the fallback can sit.
-            head = code.rfind("if", 0, m.start())
-            paren = code.find("(", head)
-            if head < 0 or paren < 0 or paren > m.start():
-                scopes.append(code[code.rfind("\n", 0, m.start()) + 1:code.find("\n", m.end())])
-                continue
-            cond_end = paren + len(balanced(code, paren)) + 2
-            scopes.append(code[head:block_end(code, cond_end)])
-        fallback = any("WillStatusEnd" in scope for scope in scopes)
+            scope = None
+            for head in reversed(list(re.finditer(r"\bif\s*\(", code[:m.start()]))):
+                paren = head.end() - 1
+                cond = balanced(code, paren)
+                cond_end = paren + len(cond) + 2
+                body_end = block_end(code, cond_end)
+                if not head.start() < m.start() < body_end:
+                    continue  # an if that closed before the cast
+                if scope is None:
+                    # The innermost if: its condition and body, where the fallback can sit.
+                    scope = code[head.start():body_end]
+                    call = re.match(r"\s*" + ident + r"\s*\.\s*CanUse\s*", cond)
+                    if call and len(balanced(cond, call.end())) + 2 + call.end() == len(cond.rstrip()) \
+                            and re.match(r"\s*(?:\{\s*)?return\s+true\s*;", code[cond_end:body_end]) \
+                            and top_level(head.start()):
+                        plain = True
+                else:
+                    # An enclosing if: its condition can be the fallback (if (ending) { if (X.CanUse…) }).
+                    scope += "\n" + cond
+            if scope is None:
+                line_start = code.rfind("\n", 0, m.start()) + 1
+                scope = code[line_start:code.find(";", m.end()) + 1]
+            scopes.append(scope)
+        if plain:
+            continue
+        names = windows[ident]
+        fallback = any("WillStatusEnd" in sc and any(n in sc for n in names) for sc in scopes)
         found.append((ident, len(casts), fallback))
     return found
 
@@ -545,7 +575,7 @@ def modify_bodies(code):
 def settings_of(body):
     """What one Modify body says about needs, provides, combo and checks."""
     result = {"StatusNeed": [], "StatusProvide": [], "ComboIds": [], "reads": [],
-              "ActionCheck": "setting.ActionCheck" in body, "window": []}
+              "ActionCheck": "setting.ActionCheck" in body, "window": [], "has_reads": []}
     # A window: an own status the action needs (StatusNeed, not TargetStatusNeed), or a "…Ready"
     # the ActionCheck reads - something granted for a time and lost when it runs out.
     for m in re.finditer(r"setting\.StatusNeed\s*=\s*(.*?);", body, re.S):
@@ -555,6 +585,7 @@ def settings_of(body):
         # are no window.
         result["window"] += [re.sub(r"^Has", "", n) for n in re.findall(r"(?<![!\w])(\w*Ready\w*)\b", m.group(1))
                              if not n.startswith("Is") and not n.endswith("PvEReady")]
+        result["has_reads"] = re.findall(r"(?<![!\w])(Has\w+)\b", m.group(1))
     for field in ("StatusNeed", "StatusProvide", "TargetStatusProvide", "TargetStatusNeed"):
         for m in re.finditer(r"setting\." + field + r"\s*=\s*(.*?);", body, re.S):
             key = "StatusNeed" if "Need" in field else "StatusProvide"
@@ -834,7 +865,19 @@ def analyse(job, actions, job_actions, traits, general_actions, central, central
     # Interplay and time (concept 14, "Wechselwirkungen und Zeit").
     rated = rated_ids()
     locks = central_channel_locks()
-    windows = {i for i in nodes if code_settings.get(i, {}).get("window")}
+    # A window read through a Has<X> property of the base rotation (HasHypercharged) is the status it
+    # tests.
+    prop_status = dict(re.findall(r"public static bool (Has\w+)\s*=>\s*StatusHelper\.PlayerHasStatus\(true,\s*StatusID\.(\w+)\)",
+                                  base_code))
+    windows = {}
+    for i in nodes:
+        settings = code_settings.get(i, {})
+        names = set(settings.get("window", []))
+        for prop in settings.get("has_reads", []):
+            if prop in prop_status:
+                names.add(prop_status[prop])
+        if names:
+            windows[i] = names
     gated = gated_windows(rotation_code, windows)
     kinds = {i: kind_of(actions[i]["text"], actions[i]["id"] in rated) for i in nodes}
     blanks = {i: len(BLANK.findall(actions[i]["text"])) for i in nodes}
@@ -1169,15 +1212,24 @@ def self_test():
             or BLANK.findall("Dispels Shadow Walker increasing the Ninki Gauge by 50"):
         return "a status name left out of a dispel list was not counted, or a full one was"
     got = gated_windows(
+        "protected override bool GeneralGCD(out IAction? act)\n{\n"
+        "if (Outer)\n{\n if (LPvE.CanUse(out act)) { return true; }\n}\n"
+        "if (StatusHelper.PlayerWillStatusEnd(3, true, StatusID.MReady))\n{\n if (MPvE.CanUse(out act)) { return true; }\n}\n"
         "if (APvE.CanUse(out act)) { return true; }\n"
         "if (HasNoMercy && BPvE.CanUse(out act)) { return true; }\n"
         "if ((HasBuff || StatusHelper.PlayerWillStatusEndGCD(1, 0, true, StatusID.CReady)) && CPvE.CanUse(out act)) { return true; }\n"
         "if (DPvE.CanUse(out act, skipAoeCheck: true))\n{\n if (IsBoss) { return true; }\n}\n"
         "if (FPvE.CanUse(out act) && Target != null)\n{\n if (IsBoss) { return true; }\n"
         " if (StatusHelper.PlayerWillStatusEndGCD(1, 0, true, StatusID.FReady)) { return true; }\n}\n"
-        "if (EPvE.CanUse(out act, skipAoeCheck: true)) { return true; }",
-        {"APvE", "BPvE", "CPvE", "DPvE", "EPvE", "FPvE"})
-    if got != [("BPvE", 1, False), ("CPvE", 1, True), ("DPvE", 1, False), ("FPvE", 1, True)]:
+        "if (EPvE.CanUse(out act, skipCastingCheck: A && ((B) || HasSwift))) { return true; }\n"
+        "if (!HasSwift && GPvE.CanUse(out act)) { return true; }\n"
+        "if (IsBoss && HPvE.CanUse(out act) || StatusHelper.PlayerWillStatusEndGCD(9, 0, true, StatusID.Other)) { return true; }\n"
+        "if (Foo) { StatusHelper.PlayerWillStatusEnd(1, true, StatusID.KReady); }\nreturn IsBoss && KPvE.CanUse(out act);\n}\n",
+        {"APvE": {"AReady"}, "BPvE": {"BReady"}, "CPvE": {"CReady"}, "DPvE": {"DReady"}, "EPvE": {"EReady"},
+         "FPvE": {"FReady"}, "GPvE": {"GReady"}, "HPvE": {"HReady"}, "KPvE": {"KReady"}, "LPvE": {"LReady"},
+         "MPvE": {"MReady"}})
+    if got != [("BPvE", 1, False), ("CPvE", 1, True), ("DPvE", 1, False), ("FPvE", 1, True),
+               ("GPvE", 1, False), ("HPvE", 1, False), ("KPvE", 1, False), ("LPvE", 1, False), ("MPvE", 1, True)]:
         return f"gated windows misread: {got}"
     if settings_of("setting.StatusNeed = [StatusID.ReadyToBreak]; setting.ActionCheck = () => HasReadyToReign "
                    "&& !DetonatorPvEReady && IsGarudaReady && StarryMusePvEReady;")["window"] != ["ReadyToBreak", "ReadyToReign"]:

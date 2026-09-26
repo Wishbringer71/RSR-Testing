@@ -244,7 +244,10 @@ keine im Wirktext
 
 ### Fenster, deren Verbraucher an Bedingungen hängt
 
-keine
+Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
+
+- Full Metal Field: 2 Aufruf(e), mit Rückfall vor Ablauf
+- Hypercharge: 6 Aufruf(e), mit Rückfall vor Ablauf
 
 ### Unvollständige Beschreibungen
 

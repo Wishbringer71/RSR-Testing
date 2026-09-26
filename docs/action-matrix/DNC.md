@@ -189,7 +189,18 @@ keine im Wirktext
 
 ### Fenster, deren Verbraucher an Bedingungen hängt
 
-keine
+Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
+
+- Bloodshower: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Double Standard Finish: 1 Aufruf(e), mit Rückfall vor Ablauf
+- Flourish: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Fountainfall: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Last Dance: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Quadruple Technical Finish: 1 Aufruf(e), mit Rückfall vor Ablauf
+- Reverse Cascade: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Rising Windmill: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Starfall Dance: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Technical Step: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
 
 ### Unvollständige Beschreibungen
 

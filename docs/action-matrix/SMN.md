@@ -340,7 +340,6 @@ Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt da
 - Lux Solaris: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Ruin IV: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Searing Flash: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
-- Slipstream: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 
 ### Unvollständige Beschreibungen
 

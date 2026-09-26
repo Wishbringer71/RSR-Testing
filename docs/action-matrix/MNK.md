@@ -172,6 +172,9 @@ keine im Wirktext
 Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
 
 - Fire's Reply: 1 Aufruf(e), mit Rückfall vor Ablauf
+- Leaping Opo: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Pouncing Coeurl: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Rising Raptor: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Wind's Reply: 1 Aufruf(e), mit Rückfall vor Ablauf
 
 ### Unvollständige Beschreibungen
