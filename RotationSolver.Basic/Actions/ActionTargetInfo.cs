@@ -378,7 +378,9 @@ public struct ActionTargetInfo(IBaseAction action)
 				}
 			}
 
-			if (battleChara.WillStatusEndGCD(action.Config.StatusRefreshGcdCount, 0, action.Setting.StatusFromSelf, action.Setting.TargetStatusNeed))
+			// As on the player side (ActionBasicInfo.IsStatusNeeded): the needed status has to outlast the
+			// cast, not the refresh horizon of a provided one.
+			if (battleChara.WillStatusEnd(action.Info.CastTime, action.Setting.StatusFromSelf, action.Setting.TargetStatusNeed))
 			{
 				return false;
 			}

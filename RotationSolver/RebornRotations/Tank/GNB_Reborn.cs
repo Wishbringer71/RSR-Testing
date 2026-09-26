@@ -419,6 +419,21 @@ public sealed class GNB_Reborn : GunbreakerRotation
 	#region GCD Logic
 	protected override bool GeneralGCD(out IAction? act)
 	{
+		// Sonic Break and Reign of Beasts wait for No Mercy below. Should No Mercy pass without room for
+		// them (a window without a GCD, downtime), Ready to Break or Ready to Reign would run out unused;
+		// its last GCD goes to them, ahead of everything else, since every other GCD here can still come
+		// a GCD later.
+		if (StatusHelper.PlayerWillStatusEndGCD(1, 0, true, StatusID.ReadyToBreak) && SonicBreakPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		if (!InReignCombo && StatusHelper.PlayerWillStatusEndGCD(1, 0, true, StatusID.ReadyToReign)
+			&& ReignOfBeastsPvE.CanUse(out act, skipComboCheck: true))
+		{
+			return true;
+		}
+
 		if (BurstStrikePvE.CanUse(out act))
 		{
 			if (IsAmmoCapped && BloodfestPvE.EnoughLevel && NoMercyPvE.Cooldown.WillHaveOneChargeGCD(1))
@@ -470,9 +485,7 @@ public sealed class GNB_Reborn : GunbreakerRotation
 				return true;
 			}
 
-			// Should No Mercy pass without room for Sonic Break (a window without a GCD, downtime), Ready
-			// to Break would run out unused; it is spent in its last GCD instead.
-			if ((HasNoMercy || StatusHelper.PlayerWillStatusEndGCD(1, 0, true, StatusID.ReadyToBreak)) && SonicBreakPvE.CanUse(out act))
+			if (HasNoMercy && SonicBreakPvE.CanUse(out act))
 			{
 				return true;
 			}

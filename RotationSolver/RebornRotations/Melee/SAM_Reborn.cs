@@ -285,7 +285,8 @@ public sealed class SAM_Reborn : SamuraiRotation
 
 			// On a boss Ogi waits for Higanbana and the buffs. When Higanbana never comes (switched off,
 			// or its conditions never meet), Ogi Namikiri Ready would run out and take Kaeshi with it.
-			if (StatusHelper.PlayerWillStatusEndGCD(1, 0, true, StatusID.OgiNamikiriReady))
+			// Cast in the last GCD in which its cast still ends inside the window.
+			if (StatusHelper.PlayerWillStatusEndGCD(1, OgiNamikiriPvE.Info.CastTime, true, StatusID.OgiNamikiriReady))
 			{
 				return true;
 			}
