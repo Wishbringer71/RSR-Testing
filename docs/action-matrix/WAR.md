@@ -159,6 +159,12 @@ Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wi
 
 keine im Wirktext
 
+### Fenster, deren Verbraucher an Bedingungen hängt
+
+Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
+
+- Primal Rend: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+
 ### Unvollständige Beschreibungen
 
 Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Fell Cleave (1), Heavy Swing (1), Maim (1), Nascent Flash (1), Reprisal (1), Shake It Off (1), Storm's Eye (2), Storm's Path (2), Upheaval (1)

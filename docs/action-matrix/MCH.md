@@ -242,6 +242,10 @@ Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wi
 
 keine im Wirktext
 
+### Fenster, deren Verbraucher an Bedingungen hängt
+
+keine
+
 ### Unvollständige Beschreibungen
 
 Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Air Anchor (1), Automaton Queen (1), Blazing Shot (1), Chain Saw (1), Drill (1), Heated Clean Shot (1), Heated Slug Shot (1), Heated Split Shot (1)

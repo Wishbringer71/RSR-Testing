@@ -333,6 +333,15 @@ keine
 
 keine im Wirktext
 
+### Fenster, deren Verbraucher an Bedingungen hängt
+
+Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
+
+- Lux Solaris: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Ruin IV: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Searing Flash: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Slipstream: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+
 ### Unvollständige Beschreibungen
 
 Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Addle (1), Aethercharge (1), Astral Impulse (1), Crimson Cyclone (1), Crimson Strike (1), Emerald Rite (1), Fountain of Fire (1), Ruby Rite (1), Ruin III (1), Ruin IV (1), Slipstream (1), Summon Garuda II (1), Summon Ifrit II (1), Summon Titan II (1), Topaz Rite (1)

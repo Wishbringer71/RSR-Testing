@@ -232,6 +232,13 @@ keine
 
 keine im Wirktext
 
+### Fenster, deren Verbraucher an Bedingungen hängt
+
+Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
+
+- Radiant Encore: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Straight Shot: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+
 ### Unvollständige Beschreibungen
 
 Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Burst Shot (1), Empyreal Arrow (1), Refulgent Arrow (1), Sidewinder (1)

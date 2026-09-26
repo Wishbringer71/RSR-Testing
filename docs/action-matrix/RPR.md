@@ -184,6 +184,10 @@ Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wi
 - Gallows: Status-Kreislauf mit Unveiled Gibbet
 - Gibbet: Status-Kreislauf mit Unveiled Gallows
 
+### Fenster, deren Verbraucher an Bedingungen hängt
+
+keine
+
 ### Unvollständige Beschreibungen
 
 Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Cross Reaping (2), Feint (1), Gallows (3), Gibbet (3), Gluttony (1), Harpe (1), Harvest Moon (1), Infernal Slice (1), Lemure's Slice (1), Shadow of Death (1), Slice (1), Soul Slice (1), Unveiled Gallows (1), Unveiled Gibbet (1), Void Reaping (2), Waxing Slice (1)

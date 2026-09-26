@@ -187,6 +187,10 @@ Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wi
 
 keine im Wirktext
 
+### Fenster, deren Verbraucher an Bedingungen hängt
+
+keine
+
 ### Unvollständige Beschreibungen
 
 Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Cascade (1), Emboite (1), Entrechat (1), Fan Dance (1), Fan Dance III (1), Fan Dance IV (1), Fountain (1), Fountainfall (1), Jete (1), Pirouette (1), Reverse Cascade (1), Saber Dance (1)

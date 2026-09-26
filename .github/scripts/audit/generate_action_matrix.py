@@ -254,6 +254,35 @@ def find_loops(parsed, facts, produce, consume, names):
     return loops
 
 
+def gated_windows(code, windows):
+    """Actions whose window can run out: every cast of the action in the rotation code carries a
+    condition of its own - none is a plain "if (X.CanUse(out act…)) { return true;" - so a lasting
+    condition lets the window pass unused. For each: the conditioned casts and whether any of them
+    also fires on the window running out (WillStatusEnd on the same line). Candidates, read by hand:
+    a condition can be the point (burst alignment) or a safety choice (a gap closer at range)."""
+    found = []
+    for ident in sorted(windows):
+        casts = [m for m in re.finditer(r"\b" + ident + r"\s*\.\s*CanUse\s*\(\s*out\s+(?:var\s+)?act\b", code)]
+        if not casts:
+            continue
+        plain = re.search(r"if\s*\(\s*" + ident + r"\s*\.\s*CanUse\s*\(\s*out\s+act[^()]*\)\s*\)\s*\{\s*return\s+true;", code)
+        if plain:
+            continue
+        scopes = []
+        for m in casts:
+            # The whole if around the cast: its condition and its body, where the fallback can sit.
+            head = code.rfind("if", 0, m.start())
+            paren = code.find("(", head)
+            if head < 0 or paren < 0 or paren > m.start():
+                scopes.append(code[code.rfind("\n", 0, m.start()) + 1:code.find("\n", m.end())])
+                continue
+            cond_end = paren + len(balanced(code, paren)) + 2
+            scopes.append(code[head:block_end(code, cond_end)])
+        fallback = any("WillStatusEnd" in scope for scope in scopes)
+        found.append((ident, len(casts), fallback))
+    return found
+
+
 def interplay_of(text):
     """What one text says about time and interplay, as (kind, value) pairs."""
     found = []
@@ -516,7 +545,16 @@ def modify_bodies(code):
 def settings_of(body):
     """What one Modify body says about needs, provides, combo and checks."""
     result = {"StatusNeed": [], "StatusProvide": [], "ComboIds": [], "reads": [],
-              "ActionCheck": "setting.ActionCheck" in body}
+              "ActionCheck": "setting.ActionCheck" in body, "window": []}
+    # A window: an own status the action needs (StatusNeed, not TargetStatusNeed), or a "…Ready"
+    # the ActionCheck reads - something granted for a time and lost when it runs out.
+    for m in re.finditer(r"setting\.StatusNeed\s*=\s*(.*?);", body, re.S):
+        result["window"] += STATUS_ID.findall(m.group(1))
+    for m in re.finditer(r"setting\.ActionCheck\s*=\s*(.*?);", body, re.S):
+        # Negated reads and button states ("!DetonatorPvEReady", "IsGarudaReady", "StarryMusePvEReady")
+        # are no window.
+        result["window"] += [re.sub(r"^Has", "", n) for n in re.findall(r"(?<![!\w])(\w*Ready\w*)\b", m.group(1))
+                             if not n.startswith("Is") and not n.endswith("PvEReady")]
     for field in ("StatusNeed", "StatusProvide", "TargetStatusProvide", "TargetStatusNeed"):
         for m in re.finditer(r"setting\." + field + r"\s*=\s*(.*?);", body, re.S):
             key = "StatusNeed" if "Need" in field else "StatusProvide"
@@ -796,6 +834,8 @@ def analyse(job, actions, job_actions, traits, general_actions, central, central
     # Interplay and time (concept 14, "Wechselwirkungen und Zeit").
     rated = rated_ids()
     locks = central_channel_locks()
+    windows = {i for i in nodes if code_settings.get(i, {}).get("window")}
+    gated = gated_windows(rotation_code, windows)
     kinds = {i: kind_of(actions[i]["text"], actions[i]["id"] in rated) for i in nodes}
     blanks = {i: len(BLANK.findall(actions[i]["text"])) for i in nodes}
     facts = {i: interplay_of(actions[i]["text"]) for i in nodes}
@@ -863,6 +903,7 @@ def analyse(job, actions, job_actions, traits, general_actions, central, central
         "class": class_name, "files": [str(p.relative_to(ROOT)) for p in files if p.exists()],
         "kinds": kinds, "blanks": blanks, "interplay": interplay, "extensions": extensions,
         "stacks": stack_list, "toggles": toggles, "produce": produce, "consume": consume, "loops": loops,
+        "gated": gated,
         "nodes": nodes, "edges": edges, "usage": usage, "unresolved": unresolved, "unchecked": unchecked,
         "limit_breaks": (limit_breaks or {}).get(job, []),
         "levels": {ident: level_of(ident, actions, job) for ident in nodes},
@@ -948,6 +989,14 @@ def render_markdown(job, result, actions, stamp):
             w(f"- {name(a)}: {why}\n")
     else:
         w("keine im Wirktext\n")
+    w("\n### Fenster, deren Verbraucher an Bedingungen hängt\n\n")
+    if result["gated"]:
+        w("Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster "
+          "(Konzept 14, „Werden die Fenster genutzt\"). Kandidaten, von Hand bewertet.\n\n")
+        for a, n, fallback in result["gated"]:
+            w(f"- {name(a)}: {n} Aufruf(e), " + ("mit Rückfall vor Ablauf" if fallback else "**ohne Rückfall vor Ablauf**") + "\n")
+    else:
+        w("keine\n")
     incomplete = sorted((a for a, n in result["blanks"].items() if n), key=name)
     w("\n### Unvollständige Beschreibungen\n\n")
     if incomplete:
@@ -1119,6 +1168,20 @@ def self_test():
     if len(BLANK.findall("Dispels Thrill of Battle and increasing damage absorbed by 2%")) != 1 \
             or BLANK.findall("Dispels Shadow Walker increasing the Ninki Gauge by 50"):
         return "a status name left out of a dispel list was not counted, or a full one was"
+    got = gated_windows(
+        "if (APvE.CanUse(out act)) { return true; }\n"
+        "if (HasNoMercy && BPvE.CanUse(out act)) { return true; }\n"
+        "if ((HasBuff || StatusHelper.PlayerWillStatusEndGCD(1, 0, true, StatusID.CReady)) && CPvE.CanUse(out act)) { return true; }\n"
+        "if (DPvE.CanUse(out act, skipAoeCheck: true))\n{\n if (IsBoss) { return true; }\n}\n"
+        "if (FPvE.CanUse(out act) && Target != null)\n{\n if (IsBoss) { return true; }\n"
+        " if (StatusHelper.PlayerWillStatusEndGCD(1, 0, true, StatusID.FReady)) { return true; }\n}\n"
+        "if (EPvE.CanUse(out act, skipAoeCheck: true)) { return true; }",
+        {"APvE", "BPvE", "CPvE", "DPvE", "EPvE", "FPvE"})
+    if got != [("BPvE", 1, False), ("CPvE", 1, True), ("DPvE", 1, False), ("FPvE", 1, True)]:
+        return f"gated windows misread: {got}"
+    if settings_of("setting.StatusNeed = [StatusID.ReadyToBreak]; setting.ActionCheck = () => HasReadyToReign "
+                   "&& !DetonatorPvEReady && IsGarudaReady && StarryMusePvEReady;")["window"] != ["ReadyToBreak", "ReadyToReign"]:
+        return "window statuses of a base setting misread"
     if trim_name("Fire Attunement Fire Attunement") != "Fire Attunement":
         return "a repeated heading of two words stayed in a name"
     blank_name = "Additional Effect: Grants 2 stacks of Duration: 30s"

@@ -137,6 +137,10 @@ keine
 
 keine im Wirktext
 
+### Fenster, deren Verbraucher an Bedingungen hängt
+
+keine
+
 ### Unvollständige Beschreibungen
 
 Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Afflatus Misery (1), Afflatus Rapture (1), Afflatus Solace (1), Dia (2), Glare III (1), Medica II (2), Regen (1)

@@ -257,6 +257,12 @@ Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wi
 
 keine im Wirktext
 
+### Fenster, deren Verbraucher an Bedingungen hängt
+
+Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
+
+- Meisui: 2 Aufruf(e), mit Rückfall vor Ablauf
+
 ### Unvollständige Beschreibungen
 
 Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Aeolian Edge (2), Armor Crush (4), Bhavacakra (1), Feint (1), Fleeting Raiju (1), Forked Raiju (1), Fuma Shuriken (1), Fuma Shuriken (1), Fuma Shuriken (1), Fuma Shuriken (1), Gust Slash (1), Raiton (1), Raiton (1), Spinning Edge (1), Suiton (1), Suiton (1), Throwing Dagger (1)

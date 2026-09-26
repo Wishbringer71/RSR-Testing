@@ -326,6 +326,12 @@ Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wi
 
 - Chelonian Gate: braucht und erneuert auspicious trance
 
+### Fenster, deren Verbraucher an Bedingungen hängt
+
+Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
+
+- Phantom Flurry: 1 Aufruf(e), mit Rückfall vor Ablauf
+
 ### Unvollständige Beschreibungen
 
 Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Addle (1), Surpanakha (1), Winged Reprobation (1)

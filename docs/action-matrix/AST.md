@@ -175,6 +175,12 @@ keine
 
 keine im Wirktext
 
+### Fenster, deren Verbraucher an Bedingungen hängt
+
+Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
+
+- Horoscope: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+
 ### Unvollständige Beschreibungen
 
 Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Aspected Benefic (2), Aspected Helios (2), Combust III (1), Fall Malefic (1), Macrocosmos (1)

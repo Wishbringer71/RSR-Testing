@@ -152,6 +152,10 @@ keine
 
 keine im Wirktext
 
+### Fenster, deren Verbraucher an Bedingungen hängt
+
+keine
+
 ### Unvollständige Beschreibungen
 
 Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Bloodspiller (1), Carve and Spit (1), Hard Slash (1), Reprisal (1), Souleater (2), Stalwart Soul (1), Syphon Strike (2)

@@ -186,6 +186,14 @@ Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wi
 
 keine im Wirktext
 
+### Fenster, deren Verbraucher an Bedingungen hängt
+
+Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
+
+- Atonement: 1 Aufruf(e), mit Rückfall vor Ablauf
+- Sepulchre: 1 Aufruf(e), mit Rückfall vor Ablauf
+- Supplication: 1 Aufruf(e), mit Rückfall vor Ablauf
+
 ### Unvollständige Beschreibungen
 
 Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Atonement (1), Blade of Faith (2), Blade of Truth (2), Blade of Valor (2), Confiteor (2), Fast Blade (1), Holy Spirit (1), Imperator (1), Intervention (1), Reprisal (1), Riot Blade (1), Royal Authority (1), Sepulchre (1), Sheltron (1), Supplication (1)

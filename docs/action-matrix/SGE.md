@@ -175,6 +175,12 @@ keine
 
 keine im Wirktext
 
+### Fenster, deren Verbraucher an Bedingungen hängt
+
+Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
+
+- Pepsis: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+
 ### Unvollständige Beschreibungen
 
 Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Dosis (1), Dosis III (1), Eukrasian Dosis (2), Eukrasian Dosis II (1), Eukrasian Dosis III (2), Eukrasian Dyskrasia (1), Phlegma (2), Phlegma II (1), Phlegma III (1), Physis II (1), Pneuma (2), Soteria (1), Toxikon (2), Toxikon II (2)

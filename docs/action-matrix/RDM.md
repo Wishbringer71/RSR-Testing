@@ -244,6 +244,12 @@ keine
 
 keine im Wirktext
 
+### Fenster, deren Verbraucher an Bedingungen hängt
+
+Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
+
+- Prefulgence: 1 Aufruf(e), mit Rückfall vor Ablauf
+
 ### Unvollständige Beschreibungen
 
 Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Addle (1), Displacement (1), Enchanted Redoublement (2), Enchanted Redoublement (2), Enchanted Reprise (1), Enchanted Riposte (1), Enchanted Riposte (1), Enchanted Zwerchhau (2), Enchanted Zwerchhau (2), Engagement (1), Fleche (1), Impact (1), Resolution (1), Scorch (1), Veraero (1), Veraero III (1), Verfire (1), Verflare (1), Verholy (1), Verstone (1), Verthunder (1), Verthunder III (1)

@@ -239,6 +239,12 @@ keine
 
 keine im Wirktext
 
+### Fenster, deren Verbraucher an Bedingungen hängt
+
+Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
+
+- Sonic Break: 1 Aufruf(e), mit Rückfall vor Ablauf
+
 ### Unvollständige Beschreibungen
 
 Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Abdomen Tear (1), Blasting Zone (1), Brutal Shell (2), Burst Strike (1), Eye Gouge (1), Gnashing Fang (1), Hypervelocity (1), Jugular Rip (1), Keen Edge (1), Reprisal (1), Savage Claw (1), Solid Barrel (1), Wicked Talon (1)

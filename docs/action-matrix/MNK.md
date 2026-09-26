@@ -167,6 +167,13 @@ keine
 
 keine im Wirktext
 
+### Fenster, deren Verbraucher an Bedingungen hängt
+
+Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
+
+- Fire's Reply: 1 Aufruf(e), mit Rückfall vor Ablauf
+- Wind's Reply: 1 Aufruf(e), mit Rückfall vor Ablauf
+
 ### Unvollständige Beschreibungen
 
 Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Bootshine (1), Demolish (1), Dragon Kick (1), Feint (1), Phantom Rush (1), Six-sided Star (1), Snap Punch (1), True Strike (1), Twin Snakes (1), the Forbidden Chakra (1)

@@ -188,6 +188,10 @@ keine
 
 keine im Wirktext
 
+### Fenster, deren Verbraucher an Bedingungen hängt
+
+keine
+
 ### Unvollständige Beschreibungen
 
 Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Chaotic Spring (3), Disembowel (2), Drakesbane (1), Fang and Claw (2), Feint (1), Geirskogul (1), Heavens' Thrust (1), Jump (1), Nastrond (1), Piercing Talon (1), Raiden Thrust (1), Stardiver (1), True Thrust (1), Vorpal Thrust (1), Wheeling Thrust (2), Wyrmwind Thrust (1)

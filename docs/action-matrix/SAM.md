@@ -162,6 +162,12 @@ keine
 
 keine im Wirktext
 
+### Fenster, deren Verbraucher an Bedingungen hängt
+
+Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
+
+- Ogi Namikiri: 2 Aufruf(e), mit Rückfall vor Ablauf
+
 ### Unvollständige Beschreibungen
 
 Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Feint (1), Gekko (3), Hakaze (1), Higanbana (1), Jinpu (2), Kaeshi: Namikiri (1), Kaeshi: Setsugekka (1), Kasha (3), Midare Setsugekka (1), Ogi Namikiri (1), Shifu (2), Shoha (1), Yukikaze (1)

@@ -183,6 +183,13 @@ Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wi
 
 keine im Wirktext
 
+### Fenster, deren Verbraucher an Bedingungen hängt
+
+Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
+
+- Star Prism: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Tempera Grassa: 2 Aufruf(e), mit Rückfall vor Ablauf
+
 ### Unvollständige Beschreibungen
 
 Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Addle (1), Aero in Green (1), Blizzard in Cyan (1), Comet in Black (1), Fire in Red (1), Hammer Brush (1), Hammer Stamp (1), Holy in White (1), Mog of the Ages (1), Polishing Hammer (1), Pom Muse (1), Stone in Yellow (1), Thunder in Magenta (1), Water in Blue (1), Winged Muse (1)
