@@ -77,13 +77,17 @@ public sealed class SMN_Reborn : SummonerRotation
 	{
 		ImGui.Text($"EnergyDrainPvE: Is Cooling Down: {EnergyDrainPvE.Cooldown.IsCoolingDown}");
 		ImGui.Text($"Next big summon opens the burst: {NextBigSummonIsBurst}");
-		ImGui.Text($"Lux Solaris: {_luxWhy}");
+		ImGui.Text($"Lux Solaris now: {_luxWhy}");
+		ImGui.Text($"  last cast: {_luxLastCast}");
 		var luxHeal = DataCenter.GetObservedHealPerCast((uint)ActionID.LuxSolarisPvE);
+		// The smallest full heal since the last zone change - see DataCenter.RecordHealEffect.
 		var landing = DataCenter.GetLastHealLanding((uint)ActionID.LuxSolarisPvE);
 		ImGui.Text((luxHeal > 0 ? $"  heals {luxHeal:N0} per target" : "  heal not measured since the last zone change")
 			+ $", radius {LuxSolarisPvE.TargetInfo.EffectRange:F1} y"
 			+ (landing is { } l
-				? $"; last cast: {l.EffectiveShare:P0} met missing health on {l.Targets} target(s), overheal {(l.GrossReported ? "is" : "not seen")} reported"
+				? l.HealthAlreadyUpdated
+					? "; last cast not measured: health was already updated when the heal arrived"
+					: $"; last cast: {l.EffectiveShare:P0} met missing health on {l.Targets} target(s), overheal {(l.GrossReported ? "is" : "not seen")} reported"
 				: string.Empty));
 		ImGui.Text($"Another Summoner in party: {AnotherSummonerInParty}");
 		ImGui.Text(HostileTarget == null
@@ -240,10 +244,31 @@ public sealed class SMN_Reborn : SummonerRotation
 	// Rekindle effect text arms its heal-over-time "when HP falls below 75%". A target picked by
 	// points can therefore be one the follow-up effect will never trigger on.
 	//
-	// The self fallback is not a formality. Rekindle only exists while Firebird Trance runs, so a
+	// The self fallback is not a formality. Rekindle only exists during the Phoenix phase, so a
 	// cast that finds no target is lost with the phase, and 400 potency on oneself beats nothing.
-	// Why Lux Solaris last went out or did not - the rotation status shows it.
+	private bool TryRekindle(out IAction? act)
+	{
+		// Asked from GeneralAbility, outside the heal dispatch that checks Scalebound and Shackled
+		// Healing - so it checks them itself.
+		if (StatusHelper.PlayerHealingPunished())
+		{
+			act = null;
+			return false;
+		}
+
+		if (RekindlePvE.CanUse(out act, targetOverride: TargetType.LowHPPercent))
+		{
+			return true;
+		}
+
+		return RekindlePvE.CanUse(out act, targetOverride: TargetType.Self);
+	}
+
+	// What the Lux Solaris decision says right now, and why the last cast went out and when - kept
+	// apart, because casting spends Refulgent Lux and the current line turns to "no Refulgent Lux"
+	// in the next frame. The rotation status shows both.
 	private string _luxWhy = "not asked yet";
+	private string _luxLastCast = "none yet";
 
 	private bool TryLuxSolaris(bool manual, out IAction? act)
 	{
@@ -256,7 +281,14 @@ public sealed class SMN_Reborn : SummonerRotation
 		// Aimed at the caster: Lux Solaris is point-blank, and the decision has already measured the
 		// need in its radius. Aimed as a heal, the targeting would ask its own heal ratio again and
 		// turn down the small heal the expiry rule allows.
-		return LuxSolarisPvE.CanUse(out act, targetOverride: TargetType.Self);
+		if (!LuxSolarisPvE.CanUse(out act, targetOverride: TargetType.Self))
+		{
+			_luxWhy += " - but the action itself is not usable (disabled, level, cooldown)";
+			return false;
+		}
+
+		_luxLastCast = $"{_luxWhy} ({DateTime.Now:HH:mm:ss})";
+		return true;
 	}
 
 	/// <summary>
@@ -324,30 +356,49 @@ public sealed class SMN_Reborn : SummonerRotation
 			return false;
 		}
 
+		// The action's own AoE count, set in its settings: how many hurt members it asks for. The
+		// setting text binds (owner's rule); by default it is 1 and changes nothing.
+		var asked = Math.Max(1, (int)LuxSolarisPvE.Config.AoeCount);
+		if (hurt < asked)
+		{
+			why = $"waiting: {hurt} hurt in the radius, its AoE count asks for {asked}";
+			return false;
+		}
+
 		// 3. The heal lands in full: on the caster himself, or on everyone in the radius. The amount
 		// is measured, not derived from the potency; 0 means not measured since the last zone change.
 		var heal = DataCenter.GetObservedHealPerCast((uint)ActionID.LuxSolarisPvE);
 		if (heal > 0)
 		{
-			if (Player != null && Player.MaxHp - Player.CurrentHp >= heal)
+			if (Player != null && Missing(Player) >= heal)
 			{
 				why = "your own missing health takes a full heal";
 				return true;
 			}
 
+			// "Bei allen anderen gruppenmitgliedern im radius": the others, not the caster - his own
+			// case is the line above, and counting him here made this test a copy of it. With nobody
+			// else in the radius there is nobody to measure, and the test does not hold.
+			var others = 0;
 			var everyoneTakesItAll = true;
 			foreach (var member in inRadius)
 			{
-				if (member.MaxHp - member.CurrentHp < heal)
+				if (member.GameObjectId == Player?.GameObjectId)
+				{
+					continue;
+				}
+
+				others++;
+				if (Missing(member) < heal)
 				{
 					everyoneTakesItAll = false;
 					break;
 				}
 			}
 
-			if (everyoneTakesItAll)
+			if (others > 0 && everyoneTakesItAll)
 			{
-				why = "everyone in the radius takes a full heal";
+				why = "everyone else in the radius takes a full heal";
 				return true;
 			}
 		}
@@ -366,13 +417,16 @@ public sealed class SMN_Reborn : SummonerRotation
 
 		// 5. Refulgent Lux about to run out: any heal beats none. It gives way only to a damage
 		// ability whose enabling status ends before the next weave window - that one loses its value
-		// by waiting, a small heal does not lose much.
+		// by waiting, a small heal does not lose much. In this window (after the demi phase) that is
+		// Mountain Buster under Titan's Favor, and only while there is an enemy to hit. Searing Flash
+		// is left out: outside a demi this rotation casts it only on a dying boss, so giving way to it
+		// would hold Lux for an ability that does not come.
 		if (StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux))
 		{
 			var nextWindow = DataCenter.DefaultGCDRemain + DataCenter.DefaultGCDTotal;
-			if (StatusEndsBefore(StatusID.TitansFavor, nextWindow) || StatusEndsBefore(StatusID.RubysGlimmer, nextWindow))
+			if (HasHostilesInRange && StatusEndsBefore(StatusID.TitansFavor, nextWindow))
 			{
-				why = "Refulgent Lux runs out - one slot for Mountain Buster or Searing Flash first";
+				why = "Refulgent Lux runs out - one slot for Mountain Buster first, its Titan's Favor ends sooner";
 				return false;
 			}
 
@@ -386,28 +440,13 @@ public sealed class SMN_Reborn : SummonerRotation
 		return false;
 	}
 
+	private static uint Missing(IBattleChara member) =>
+		member.MaxHp > member.CurrentHp ? member.MaxHp - member.CurrentHp : 0;
+
 	private static bool StatusEndsBefore(StatusID status, float seconds)
 	{
 		var left = StatusHelper.PlayerStatusTime(true, status);
 		return left > 0 && left < seconds;
-	}
-
-	private bool TryRekindle(out IAction? act)
-	{
-		// Asked from GeneralAbility, outside the heal dispatch that checks Scalebound and Shackled
-		// Healing - so it checks them itself.
-		if (StatusHelper.PlayerHealingPunished())
-		{
-			act = null;
-			return false;
-		}
-
-		if (RekindlePvE.CanUse(out act, targetOverride: TargetType.LowHPPercent))
-		{
-			return true;
-		}
-
-		return RekindlePvE.CanUse(out act, targetOverride: TargetType.Self);
 	}
 
 	[RotationDesc(ActionID.RadiantAegisPvE, ActionID.AddlePvE)]

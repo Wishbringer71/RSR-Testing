@@ -667,7 +667,7 @@
   },
   {
    "file": "RotationSolver.Basic/Helpers/StatusHelper.cs",
-   "code": "|| (PlayerHasStatus(false, StatusID.ShackledHealing) && DataCenter.NumberOfPartyMembersInRangeOf(21) > 1);",
+   "code": "|| (PlayerHasStatus(false, StatusID.ShackledHealing) && DataCenter.NumberOfPartyMembersInRangeOf(21) != 1);",
    "values": [
     "21"
    ],

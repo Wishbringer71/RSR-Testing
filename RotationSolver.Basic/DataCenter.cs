@@ -403,9 +403,9 @@ internal static class DataCenter
 	// and be much larger, and a need is judged against the least the heal will surely restore, never
 	// the most. Only amounts that measure the whole heal count: one that met more missing health than
 	// it restored (nothing was lost to overheal), or any amount once the packet is seen to report
-	// overheal at all - then every amount is the full heal. It is cleared with the other records on a
-	// territory change: item level sync is set per duty, and a figure from the open world would be
-	// wrong inside it, and a gear change is followed from the next zone on.
+	// overheal at all - then every amount is the full heal. It is cleared on a territory change only
+	// (ResetHealMeasurements): item level sync is set per duty, so a figure from outside would be
+	// wrong inside; a gear change is followed from the next zone on.
 	private static readonly Dictionary<uint, float> _observedHealPerCast = [];
 	private static readonly Dictionary<uint, HealLanding> _lastHealLanding = [];
 
@@ -414,14 +414,14 @@ internal static class DataCenter
 	/// health, and whether any target was reported a larger amount than it was missing - which says
 	/// the effect packet reports the gross heal, overheal included.
 	/// </summary>
-	internal readonly record struct HealLanding(float EffectiveShare, bool GrossReported, int Targets, DateTime At);
+	internal readonly record struct HealLanding(float EffectiveShare, bool GrossReported, int Targets, bool HealthAlreadyUpdated, DateTime At);
 
 	/// <summary>
 	/// Records one cast of an own healing action. <paramref name="landed"/> holds, per target, the
 	/// amount the effect reported and the health that target was missing when it arrived - read
 	/// before the server's health update applies it.
 	/// </summary>
-	internal static void RecordHealEffect(uint actionId, IReadOnlyList<(uint Amount, uint MissingBefore)> landed)
+	internal static void RecordHealEffect(uint actionId, IReadOnlyList<(uint Amount, uint MissingBefore)> landed, bool healthAlreadyUpdated)
 	{
 		var targets = 0;
 		double restored = 0;
@@ -454,14 +454,18 @@ internal static class DataCenter
 			}
 		}
 
-		if (smallest < float.MaxValue)
+		// Only while the health seen at the effect is still the health from before it: otherwise
+		// "missing before" is the health left after the heal, and neither the full-heal test nor the
+		// overheal test means anything. The landing is still recorded, with the flag, so the display
+		// says why the figure did not move.
+		if (smallest < float.MaxValue && !healthAlreadyUpdated)
 		{
 			_observedHealPerCast[actionId] = _observedHealPerCast.TryGetValue(actionId, out var known) && known > 0
 				? Math.Min(known, smallest)
 				: smallest;
 		}
 
-		_lastHealLanding[actionId] = new HealLanding((float)(met / restored), gross, targets, DateTime.Now);
+		_lastHealLanding[actionId] = new HealLanding((float)(met / restored), gross, targets, healthAlreadyUpdated, DateTime.Now);
 	}
 
 	/// <summary>
@@ -472,6 +476,27 @@ internal static class DataCenter
 	public static float GetObservedHealPerCast(uint actionId)
 	{
 		return _observedHealPerCast.TryGetValue(actionId, out var known) ? known : 0f;
+	}
+
+	/// <summary>
+	/// Clears the measured heals. Called on a territory change only, not with ResetAllRecords - that
+	/// one runs after every fight, and a heal measured in the last pull is the right figure for the
+	/// next. Item level sync is set per duty, so a figure from outside is wrong inside.
+	/// </summary>
+	internal static void ResetHealMeasurements()
+	{
+		_observedHealPerCast.Clear();
+		_lastHealLanding.Clear();
+	}
+
+	/// <summary>
+	/// The health this member had when it was last read outside an effect window, or null. Read
+	/// against the current health when an own heal arrives, it tells whether the server's health
+	/// update came before the effect - in which case the current health is already the healed one.
+	/// </summary>
+	internal static uint? LastKnownHp(ulong id)
+	{
+		return _lastHp.TryGetValue(id, out var hp) ? hp : null;
 	}
 
 	/// <summary>How the last cast of this action landed, or null when none has been seen.</summary>
@@ -1843,10 +1868,6 @@ internal static class DataCenter
 		_holdExpectsHitUntil = DateTime.MinValue;
 		_holdsVindicated = 0;
 		_holdsWasted = 0;
-
-		// Item level sync is set per duty: a heal measured outside is the wrong figure inside.
-		_observedHealPerCast.Clear();
-		_lastHealLanding.Clear();
 
 		while (VfxDataQueue.TryDequeue(out _))
 		{ }

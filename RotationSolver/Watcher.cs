@@ -330,23 +330,27 @@ public static class Watcher
 			// and whether the packet reports overheal at all - which nobody had checked.
 			if (DataCenter.HealHP is { Count: > 0 })
 			{
+				// A target outside the party list (a chocobo, an NPC without the NPC setting) has no
+				// health to measure against and is left out: counted as missing nothing, it would
+				// read as "overheal reported" and let a capped amount into the minimum.
 				List<(uint Amount, uint MissingBefore)> landed = [];
+				var healthAlreadyUpdated = false;
 				foreach (var (targetId, amount) in DataCenter.HealHP)
 				{
-					uint missing = 0;
 					foreach (var member in DataCenter.PartyMembers)
 					{
-						if (member != null && member.GameObjectId == targetId)
+						if (member == null || member.GameObjectId != targetId)
 						{
-							missing = member.MaxHp > member.CurrentHp ? member.MaxHp - member.CurrentHp : 0;
-							break;
+							continue;
 						}
-					}
 
-					landed.Add((amount, missing));
+						landed.Add((amount, member.MaxHp > member.CurrentHp ? member.MaxHp - member.CurrentHp : 0));
+						healthAlreadyUpdated |= DataCenter.LastKnownHp(targetId) is { } last && member.CurrentHp > last;
+						break;
+					}
 				}
 
-				DataCenter.RecordHealEffect(action!.Value.RowId, landed);
+				DataCenter.RecordHealEffect(action!.Value.RowId, landed, healthAlreadyUpdated);
 			}
 
 			// Ensure ApplyStatus dictionary is non-null, then merge source-applied effects

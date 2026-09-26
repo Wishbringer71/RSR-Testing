@@ -3756,6 +3756,40 @@ Als Hinweis in Konzept 07 und 08 geführt. Die Wirktexte stützen ihn gleichlaut
 
 **Prüfgrad:** statisch, Prüfskripte; Compile über die CI; Audit und Code-Review folgen.
 
+### A155 · Audit und Code-Review der Lux-Umsetzung (A154), Befunde behoben (26.09.2026)
+
+**Verfahren:** unabhängiger Prüfer ohne Schreibrechte, alle Prüfskripte; die Befunde danach selbst am Code nachgeprüft.
+
+**Behoben:**
+- **H1 · Die Heilmessung wurde nach jedem Kampf gelöscht:** `ResetAllRecords` läuft auch bei Kampfende, Wipe und State Off. Im Kampf fehlte damit jedem ersten Lux eines Pulls die volle Landung (Punkt 3). Jetzt löscht nur der Gebietswechsel (`ResetHealMeasurements`).
+- **H2 · Punkt 3 „jeder im Radius" schloss den Wirkenden ein** und war damit eine Kopie des Selbst-Falls. Ein Raidwide, der alle außer dem geschildeten Beschwörer trifft, hätte Lux bis zu Gefahr oder Verfall liegen lassen. Jetzt zählen die anderen, und mindestens einer muss im Radius stehen (sein Wortlaut „allen anderen").
+- **M1 · Ziele außerhalb der Gruppenliste** zählten als „fehlt 0" und setzten fälschlich „Überheilung gemeldet". Jetzt werden sie nicht gemessen.
+- **M2 · Die Selbstprüfung konnte ihre Annahme nicht widerlegen;** die Konzeptaussage „dauerhaft 0 %" war falsch. Jetzt prüft jeder Wurf, ob die Gesundheit beim Effekt schon über dem zuletzt gelesenen Stand liegt. Dann wird nicht gemessen, und die Anzeige sagt es.
+- **M3 · Vorlassen für Searing Flash war wirkungslos,** weil die Rotation es außerhalb einer Demi nur auf einen sterbenden Boss wirkt. Entfernt. Mountain Buster geht nur noch vor, wenn ein Gegner in Reichweite ist.
+- **M4 · Die Anzeige verlor den Grund des Wurfs,** weil der Wurf Refulgent Lux verbraucht. Jetzt steht der letzte Wurf mit Grund und Uhrzeit getrennt. Lehnt die Aktion selbst ab, sagt die Zeile das.
+- **L1 · Die AoE-Anzahl der Aktion** wirkte nicht mehr, obwohl die Oberfläche sie anbietet. Nach seiner Regel „Einstellungstexte binden" ist sie wieder eine Bedingung (ab Werk 1).
+- **L3 · Veraltete Texte berichtigt:**
+  - der TODO-Eintrag zur Heilmessung (erledigt, entfernt);
+  - Konzept 07 und 08 zur Anzeige und zum Heilpfad;
+  - der Rekindle-Kommentar stand nach dem Umbau vor der Lux-Entscheidung.
+- **L4:** Die Hilfsmethode antwortet jetzt wie der Dispatch (`!= 1`). Die fünf Kopien im Dispatch sind als technische Schuld im TODO.
+- **L6:** Der Unterlauf ist mit `Missing()` abgesichert.
+
+**Belassen, benannt:**
+- **L2:** Ein Ziel mit gesenkter Heilwirkung kann das Minimum drücken (Konzept 08, Grenze).
+- **L5:** Das Radiusmaß bleibt unbelegt.
+
+**Vom Prüfer bestätigt:**
+- Reihenfolge der Entscheidung.
+- Erkennung des manuellen Befehls.
+- `Self` umgeht den Flächenheil-Zweig, während Grundprüfung und Abklingzeit bleiben.
+- Gefährdungsklasse und Walking Dead.
+- Mountain Buster steht im selben Durchlauf nach Lux.
+- Compile-Punkte.
+- Feste Werte.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

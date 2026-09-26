@@ -669,7 +669,7 @@ public static class StatusHelper
 	internal static bool PlayerHealingPunished()
 	{
 		return PlayerHasStatus(false, StatusID.Scalebound)
-			|| (PlayerHasStatus(false, StatusID.ShackledHealing) && DataCenter.NumberOfPartyMembersInRangeOf(21) > 1);
+			|| (PlayerHasStatus(false, StatusID.ShackledHealing) && DataCenter.NumberOfPartyMembersInRangeOf(21) != 1);
 	}
 
 	/// <summary>How early the death-trigger hold releases; see <see cref="InDeathTriggerWindow"/>.</summary>

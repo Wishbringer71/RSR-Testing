@@ -153,11 +153,10 @@ abgelegten Wert zu lesen: Sonst haenge sie daran, ob der Verteidigungszweig im s
 lief — und der steht hinter `UseAoeDefense`, sodass die Regel bei abgeschalteter Flaechenabwehr
 still nie gefeuert haette.
 
-**Beim Beschwoerer gilt fuer Lux Solaris die eigene Regel** („Wann Lux Solaris zuendet"). Sie ist
-reaktiv; vor einem angekuendigten Treffer faellt sie nur, wenn ein Mitglied im Radius schon in
-Gefaehrdungsklasse 1 steht, jedem im Radius eine volle Heilung fehlt oder das Fenster verfaellt. Heute
-bedient der Heilpfad die Flagge noch ohne diese Regel: Mit der Option an und einem Mitglied im Radius
-unter `AutoHealRatio` faellt der Wurf vor dem Einschlag (A150).
+**Beim Beschwoerer gilt fuer Lux Solaris die eigene Regel** („Wann Lux Solaris zuendet"), auch auf dem
+Heilpfad. Sie ist reaktiv; vor einem angekuendigten Treffer faellt sie nur, wenn ein Mitglied im Radius
+schon in Gefaehrdungsklasse 1 steht, dem Wirkenden oder jedem anderen im Radius eine volle Heilung fehlt
+oder das Fenster verfaellt.
 
 **Die Heil-oGCD nimmt den ersten Einschiebeplatz, die Minderung den naechsten (A140).** Die Regel setzt
 auch `HealAreaAbility`, und der Dispatch fragt Heil-Faehigkeiten vor `DefenseArea`. Das ist Vorgabe 2
@@ -349,8 +348,11 @@ Einschiebeplatz, und sie ist eine Beigabe — ungenutzt verfaellt sie mit Refulg
 3. **Normalfall: ohne Ueberheilung** (Vorgabe 6). Lux Solaris faellt,
    - wenn **dem Beschwoerer selbst** mindestens eine volle Heilung fehlt („wenn ich schaden erleide und lux
      solaris mich damit nicht ueberheilt, ist lux solaris korrekt angewendet"), oder
-   - wenn **jedem** Mitglied im Radius mindestens eine volle Heilung fehlt („erst lux solaris anwenden,
-     wenn es auch bei allen anderen gruppenmitgliedern im radius nicht ueberheilt").
+   - wenn **jedem anderen** Mitglied im Radius mindestens eine volle Heilung fehlt („erst lux solaris
+     anwenden, wenn es auch bei allen anderen gruppenmitgliedern im radius nicht ueberheilt"); steht
+     niemand anderes im Radius, gilt dieser Fall nicht.
+   Vorher gilt die eigene AoE-Anzahl der Aktion aus ihren Einstellungen: so viele Verletzte im Radius
+   verlangt sie mindestens (der Einstellungstext bindet; ab Werk 1).
    Die Heilmenge ist die gemessene (unten), nicht die Potenz.
 4. **Ausnahme: bedrohlich geringe Gesundheit** (Vorgabe 6). Steht ein Mitglied im Radius in
    Gefaehrdungsklasse 1 (Konzept 07: effektive Gesundheit auf oder unter `HealthForDyingTanks`), faellt
@@ -368,11 +370,12 @@ Einschiebeplatz, und sie ist eine Beigabe — ungenutzt verfaellt sie mit Refulg
    - **Fester / Necrotize** (Aetherflow): verlieren durch einen Platz Aufschub nichts; ein Ueberlauf
      droht erst, wenn Energy Drain wieder bereitsteht, und dessen Abklingzeit laeuft seit der
      Solar-Phase.
-   - **Mountain Buster** (nur unter Titan's Favor) und **Searing Flash** (nur unter Ruby's Glimmer):
-     haengen an einem Status. Wie lange der liegt und ob der naechste Topaz Rite eine unverbrauchte Gunst
-     ueberschreibt, steht nicht im Repository (unbelegt). Zur Laufzeit ist es lesbar: Endet der
-     ermoeglichende Status vor dem naechsten Einschiebefenster, verliert die Aktion durch Aufschub ihren
-     Wert und geht vor.
+   - **Mountain Buster** (nur unter Titan's Favor): haengt an einem Status. Wie lange der liegt und ob der
+     naechste Topaz Rite eine unverbrauchte Gunst ueberschreibt, steht nicht im Repository (unbelegt). Zur
+     Laufzeit ist es lesbar: Endet der Status vor dem naechsten Einschiebefenster und ist ein Gegner in
+     Reichweite, verliert die Aktion durch Aufschub ihren Wert und geht vor.
+   - **Searing Flash** (unter Ruby's Glimmer) konkurriert nicht: Ausserhalb einer Demi wirkt die Rotation
+     es nur auf einen sterbenden Boss; ihm vorzugehen hielte Lux fuer eine Aktion, die nicht kommt (A155).
    Die Gewichtung lautet damit, ohne neue Zahl: Die Kleinheilung am Verfall geht vor jede
    Schadens-Faehigkeit, deren Wert durch einen Platz Aufschub nicht verfaellt, und hinter jede, deren
    ermoeglichender Status bis zum naechsten Fenster endet. In drei GCDs liegen rund sechs Plaetze; dass
@@ -402,19 +405,24 @@ Heilung kann kritisch und damit besonders gross ausfallen, ein Schild ebenso; fu
 Notwendigkeit zaehlt immer das **minimale** Heilpotential, nie das maximale. Gespeichert wird deshalb die
 kleinste Heilung, die das ganze Potential zeigt — eine, die weniger heilte, als dem Ziel fehlte, oder jede,
 sobald das Spiel nachweislich Ueberheilung mitmeldet. Der Wert gilt bis zum naechsten Gebietswechsel (die
-Gegenstandsstufensynchronisation wird je Inhalt gesetzt). Vorher ist er unbekannt, und nur die Punkte 4
-und 5 greifen.
+Gegenstandsstufensynchronisation wird je Inhalt gesetzt), nicht nur bis zum Kampfende. Vorher ist er
+unbekannt, und nur die Punkte 4 und 5 greifen. Ziele ausserhalb der Gruppenliste (Chocobo, NPC ohne
+die NPC-Einstellung) werden nicht gemessen. **Grenze:** Ein Ziel mit gesenkter Heilwirkung druecke das
+Minimum fuer den Rest des Gebiets; das ist nicht ausgeschlossen (Schluss, A155).
 
-**Selbstpruefung der Messung:** Der Effekt-Handler sieht die Heilung, bevor das Spiel die Gesundheit
-aktualisiert, und haelt jeden Betrag gegen den Fehlbetrag des Ziels. Daraus ergeben sich der Anteil, der
-auf fehlende Gesundheit traf, und ob Ueberheilung mitgemeldet wird. **Annahme:** Die Gesundheit ist beim
-Effekt noch die vor der Heilung — der vorhandene Code stuetzt sich darauf (`HealHP` wird geleert, sobald
-die Gesundheitsaktualisierung nachzieht). Stimmt sie nicht, zeigt die Anzeige dauerhaft 0 % getroffenen
-Anteil, und die Annahme ist widerlegt.
+**Selbstpruefung der Messung:** Der Effekt-Handler haelt jeden Betrag gegen den Fehlbetrag des Ziels.
+Daraus ergeben sich der Anteil, der auf fehlende Gesundheit traf, und ob Ueberheilung mitgemeldet wird.
+Das setzt voraus, dass die Gesundheit beim Effekt noch die vor der Heilung ist; belegt ist das nicht,
+der vorhandene Code (`GetPartyMemberHPRatio`) rechnet mit beiden Reihenfolgen. Deshalb prueft jeder Wurf
+es selbst: Liegt die Gesundheit eines Ziels beim Effekt schon ueber dem zuletzt gelesenen Stand, ist die
+Aktualisierung vorher gekommen; dann wird der Wurf nicht gemessen, und die Anzeige sagt es. Eine
+Regeneration im selben Augenblick kann diesen Befund faelschlich ausloesen (Grenze).
 
-**Im Kampf ablesbar** (Beschwoerer-Anzeige): warum Lux zuletzt fiel oder nicht — Verbot, Radius,
-volle Landung, Gefahr, Verfall oder Warten —, die gemessene Heilmenge, der Radius und zum letzten Wurf,
-welcher Anteil fehlende Gesundheit traf und ob Ueberheilung gemeldet wird.
+**Im Kampf ablesbar** (Beschwoerer-Anzeige): was die Entscheidung gerade sagt, und getrennt davon, warum
+und wann der letzte Wurf fiel — der Wurf verbraucht Refulgent Lux, die erste Zeile springt danach auf
+„no Refulgent Lux". Dazu die gemessene Heilmenge, der Radius und zum letzten Wurf, welcher Anteil
+fehlende Gesundheit traf und ob Ueberheilung gemeldet wird. Lux erscheint **nicht** unter „Area heal
+around you": Sie wird auf den Wirkenden gezielt und laeuft nicht durch den Flaechenheil-Zweig.
 
 **Verworfen, mit Grund:** der groesste Einzelfehlbetrag der ganzen Gruppe als Ausloeser (A150: misst
 ausserhalb des Radius, zuendet bei einem Mitglied, uebergeht den Living-Dead-Traeger); die Vorhersage des
@@ -424,7 +432,8 @@ kritischer Treffer verschob ihn).
 **Verfallsfenster:** die letzten drei GCDs von Refulgent Lux, weiter ein offener fester Wert
 (`fixed_values.json`). Der Loop dazu (A154): Lux braucht einen Platz, hoechstens zwei Aktionen gehen nach
 Punkt 5 vor, also drei Plaetze; bei zwei Plaetzen je Fenster sind das zwei Fenster, dazu das laufende,
-dessen Plaetze schon verbraucht sein koennen — drei GCDs. Die Praemisse „zwei Plaetze je Fenster" ist
+dessen Plaetze schon verbraucht sein koennen — drei GCDs. Seit A155 geht nur noch Mountain Buster vor,
+womit zwei GCDs reichten; der Wert bleibt, bis der Loop neu gefuehrt ist. Die Praemisse „zwei Plaetze je Fenster" ist
 nicht aus dem Spiel abgeleitet, deshalb bleibt der Wert offen.
 
 ## Was ein Baustein mehrfach traegt

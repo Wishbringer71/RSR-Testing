@@ -215,6 +215,7 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 	private static void ClientState_TerritoryChanged(uint id)
 	{
 		DataCenter.ResetAllRecords();
+		DataCenter.ResetHealMeasurements();
 
 		if (id == 0)
 		{
