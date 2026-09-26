@@ -124,6 +124,76 @@ ergeben hat (A118). Sie haette im ganzen Baum nie gegriffen.
 **Was stattdessen wirkt, ist Stufe 2 — und sie schliesst eine Luecke, die dieses Konzept ohnehin
 fuehrt.** Siehe „Heilung vor dem angekuendigten Treffer" weiter unten.
 
+## Die Abwehrsperren von Weißmagier und Dunkelritter (E1)
+
+**Sachstand (A158):** Beide Sperren sind Upstream-Code ohne überlieferte Begründung. Was sie im Kampf
+bewirken, ist am Code und an den Wirktexten erhoben; wozu sie gedacht waren, ist aus Herkunft, Zahlen und
+Reihenfolge **erschlossen, nicht belegt**. Entscheidung steht aus.
+
+**Weißmagier — eine Streckung der eigenen Abwehr über die Zeit.**
+- Nach Temperance oder Liturgy of the Bell entfällt die ganze Flächenabwehr, bis deren Wirkung ausläuft
+  (je 20 s laut Wirktext; im Code 120 − 100 und 180 − 160). Dieselbe Bauform sperrt die Einzelabwehr:
+  Divine Benison 30 − 15 = 15 s, Aquaveil 60 − 52 = 8 s — jede Zahl ist die Wirkdauer. Gemeint ist: eine
+  eigene Abwehrschicht zur Zeit, die nächste erst, wenn die letzte ausläuft.
+- Im Kampf, in der Reihenfolge des Zweigs: Plenary Indulgence, dann Temperance — beide fallen auf denselben
+  Treffer (je −10 %, nacheinander −19 %), weil erst Temperance die Sperre auslöst. Danach warten Divine
+  Caress und Liturgy auf den nächsten Treffer.
+- **Kein Stapelschutz im Sinn der Spielmechanik:** Temperance, Confession, Sacred Soil, Kerachole und Dark
+  Missionary sind verschiedene Status und wirken zusammen. Nicht doppelt wirkt nur derselbe Status aus zwei
+  Quellen (Reflexion zweier Tanks, Addle, Feint; Kerachole und Taurochole schließen sich aus). Das regelt
+  RSR davon getrennt (`StatusFromSelf = false` bei Reflexion, Addle, Feint).
+- **Vorteil:** Zwei Raidwides im Abstand von 20 bis 60 s bekommen beide etwas. Ohne Sperre gingen Plenary,
+  Temperance, Divine Caress und Liturgy auf den ersten, und der zweite bekäme vom Weißmagier nichts, weil
+  Plenary erst nach 60 s zurückkommt. Das ist sein Prinzip aus „Wozu die Aussetzbedingungen da sind":
+  strecken statt verdoppeln.
+- **Nachteile:** Ein einzelner Treffer, den −19 % nicht tragbar machen, bekommt Divine Caress und Liturgy
+  nicht dazu. Und Divine Caress verfällt mit Divine Grace (30 s ab Temperance); die Sperre lässt ihm nur die
+  letzten 10 s. Kommt dort kein Treffer, ist es verloren. Divine Caress stand schon mit der ersten
+  eingebrachten Fassung hinter der Sperre (141f9b27a, 7.05), direkt nach Temperance eingereiht — das deutet
+  auf eine Erweiterung, die die Sperre nicht mitbedacht hat (Schluss).
+- Der Astrologe hat dieselbe Bauform (Macrocosmos und Collective Unconscious, 30 und 20 s).
+
+**Dunkelritter — eine Schadensregel.**
+- Herkunft: Balance-Rotation 6.38 (c97be9ec5). `InTwoMIsBurst` hieß damals: mindestens die Hälfte der Gruppe
+  steht im Zwei-Minuten-Burst (`RatioOfMembersIn2minsBurst`), nur ohne diese Angabe die eigenen
+  Abklingzeiten. Heute nur die eigenen: Delirium kühlt ab (Blood Weapon ist seit Blood Weapon Mastery
+  Delirium; die Abklingzeit wird über die angepasste Id gelesen, die Sperre greift also auf Stufe 100), und
+  Living Shadow liegt unter 15 s zurück (Simulakrum 22 s). 15 s von je 120.
+- Zweck (erschlossen): In den 20 s der Gruppenbuffs (Searing Light, Divination, Battle Litany) keinen
+  Einschiebeplatz und kein MP an Gruppenminderung abgeben.
+- Größenordnung (Überschlag, nicht gemessen): Verlöre ein Edge of Shadow (460 Potenz) durch einen belegten
+  Platz die Gruppenbuffs, wären das rund 0,3 % des Dunkelritter-Schadens je zwei Minuten, und nur, wenn die
+  Plätze im Burst tatsächlich voll sind. The Blackest Night auf andere kostet 3000 MP, also ein Edge of
+  Shadow, außer die Barriere bricht (dann gibt Dark Arts es zurück). Promillebereich; nach seiner Regel geht
+  Sicherheit vor Schaden, und ein solcher Gewinn wird nicht dagegen abgewogen.
+
+**Zusammenspiel mit anderen Klassen.**
+- Keine der Sperren liest eine andere Klasse. Die einzige Rücksicht im Code ist, dass Reflexion, Addle und
+  Feint nicht über die eines anderen gelegt werden.
+- Die Revolverklinge sperrt Heart of Light und Reflexion unter No Mercy (dieselbe Bauform). Dunkelritter und
+  Revolverklinge zusammen, beide mit RSR und beide auf zwei Minuten: Im gemeinsamen Burst gibt keiner der
+  beiden Tanks Gruppenminderung. Krieger und Paladin sperren nicht.
+- Zwei Heiler mit RSR antworten auf dasselbe Signal im selben Moment; die Sperre verteilt nur die eigenen
+  Mittel über die Zeit, nicht die des anderen.
+- Die frühere Kopplung des Dunkelritters an den Burst der Gruppe ist entfallen. Bei ausgerichteten zwei
+  Minuten ist das gleichwertig, bei verschobenen nicht (Schluss).
+
+**Folgerung für die Empfehlung, ersetzt die aus A146.** Beim Weißmagier ist die Sperre eine Streckung und
+passt zu seinem Prinzip. Ihr fehlt die Schranke, die er für jede Aussetzregel verlangt: ausgesetzt wird nur,
+solange die Gruppe hält. Die Freigabe richtet sich deshalb nicht nach „großer Treffer" (A146), sondern
+danach, ob der angekündigte, gemessene Treffer **nach der schon liegenden Minderung** — auch der anderer
+Klassen (`GetCurrentMitigationPercent`) — ein Mitglied in Gefährdungsklasse 1 brächte (effektive Gesundheit
+auf oder unter `HealthForDyingTanks`, Konzept 07). Keine neue Zahl.
+- Widerlegt ist damit A146 im Fall zweier großer, einzeln tragbarer Raidwides im Abstand von 25 s: Nach A146
+  ginge alles auf den ersten und der zweite bekäme nichts; mit der Schranke bleibt es beim heutigen Ablauf.
+- Beim Dunkelritter dieselbe Schranke. Die Alternative, die Burst-Sperre ganz zu streichen, kostet nur
+  Promille und ist vertretbar.
+- Ungemessene Treffer: unverändert.
+- Messmittel: Diagnosezeile je Sperre (hält / gibt frei, mit Treffer, Anteil nach Minderung und dem
+  gefährdeten Mitglied) und ein Zähler, ob gehaltene Mittel später auf einen Treffer fielen oder
+  verfielen. Verfallen sie öfter, als sie treffen, tritt die Streckung selbst zurück (wie
+  `ProactiveHoldIsEarningItsKeep`).
+
 ## Heilung vor dem angekuendigten Treffer
 
 **Jede Heilschwelle im Baum liest die Gesundheit, die ein Mitglied **hat**. Keine liest die, die es

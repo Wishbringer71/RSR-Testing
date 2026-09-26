@@ -3827,6 +3827,23 @@ Als Hinweis in Konzept 07 und 08 geführt. Die Wirktexte stützen ihn gleichlaut
 
 **Prüfgrad:** statisch.
 
+### A158 · Zweck der Abwehrsperren (E1) im Loop erhoben; Empfehlung aus A146 widerlegt (26.09.2026)
+
+**Auftrag:** herausfinden, was die Upstream-Sperren im Spiel bewirken sollen und welchen strategischen Vorteil sie haben könnten, auch im Zusammenspiel mit anderen Klassen.
+
+- **Research:**
+  - Herkunft per `git log -S`: Dunkelritter c97be9ec5 (Balance 6.38, Burst an `RatioOfMembersIn2minsBurst` der Gruppe gekoppelt), Weißmagier 141f9b27a (7.05, schon mit Divine Caress hinter der Sperre); `d566eda86` ist nur die Umlagerung.
+  - Zahlen gegen die Wirktexte: 20/20/15/8 s sind die Wirkdauern von Temperance, Liturgy, Divine Benison und Aquaveil.
+  - Blood Weapon Mastery macht Blood Weapon zu Delirium; `IsCoolingDown` liest die angepasste Id, die Sperre greift also auf Stufe 100.
+  - Zusammenspiel: Die Revolverklinge sperrt mit No Mercy auf dieselbe Weise; Krieger und Paladin sperren nicht. Die Sperren lesen keine andere Klasse; `StatusFromSelf = false` bei Reflexion, Addle und Feint ist die einzige Rücksicht.
+- **Optionen:** A nichts ändern · B frei bei großem Treffer (A146) · B′ frei, wenn der Treffer nach liegender Minderung jemanden in Gefährdungsklasse 1 brächte · C Sperre streichen · Zähler zur Selbstbewertung als Zusatz.
+- **Falsifikation von B:** Zwei große, einzeln tragbare Raidwides im Abstand von 25 s. Unter B verbraucht der erste Treffer Plenary, Temperance, Divine Caress und Liturgy, und der zweite bekommt vom Weißmagier nichts. Heute bekommt der zweite Divine Caress und Liturgy. B ist dort schlechter; die These „B hält" aus A146 fällt. Übersehen wurde, dass die Sperre eine Streckung ist, kein Stapelschutz.
+- **B′** folgt seinem Prinzip „strecken, solange die Gruppe hält" (Konzept 08, „Wozu die Aussetzbedingungen da sind") und seiner Treffertabelle (Treffer über maximaler Gesundheit: Barriere und Minderung zusätzlich).
+  - Offene Annahme: Ob der gespeicherte Anteil vor oder nach Minderung gemessen ist, ist nicht belegt. Der Speicher hebt nur an, also liegt der Wert eher bei der geringsten Minderung (Schluss).
+- **Dunkelritter:** Der Schadensvorteil liegt im Promillebereich (Überschlag, nicht gemessen) und wird nach seiner Regel nicht gegen Sicherheit abgewogen.
+
+**Prüfgrad:** statisch; Versionsgeschichte; Wirktexte aus `ActionId.resx` und `Rotation.resx`. Die Größenordnung beim Dunkelritter ist nicht gemessen.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
