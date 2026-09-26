@@ -307,7 +307,13 @@ trifft — und nicht besser.
 was er heute tut und wo er abweicht, steht am Ende dieses Abschnitts und in A150. Umsetzung erst nach
 seiner Freigabe.
 
-**Was Lux Solaris ist.** Eine reaktive Flaechenheilung um den Beschwoerer (Wirktext 36997: „Restores
+**Was Lux Solaris ist.** **Hinweis des Auftraggebers:** Lux Solaris ist eine Point-Blank-Flaeche vom
+Wirkenden aus, wie Holy beim Weissmagier. Die Wirktexte stuetzen das gleich: Holy trifft „all nearby
+enemies", Lux Solaris heilt „own HP and the HP of all nearby party members". Im Baum gehoeren beide
+damit in die Zweige fuer Flaechen mit Reichweite 0 — Holy in den feindlichen, Lux Solaris in das
+freundliche Gegenstueck (`ActionTargetInfo.FindTarget`); welche Reichweite das Spiel zur Laufzeit meldet,
+zeigt die Beschwoerer-Anzeige. Eine
+reaktive Flaechenheilung um den Beschwoerer (Wirktext 36997: „Restores
 own HP and the HP of all nearby party members", Heilpotenz 500), wirkbar nur unter Refulgent Lux, das
 Summon Solar Bahamut fuer 30 s gewaehrt (36992). Kein Schild, keine Minderung: Was sie vor einem Treffer
 tut, zaehlt nach dem Treffer nicht mehr. Sie kostet kein MP und keinen GCD, nur einen

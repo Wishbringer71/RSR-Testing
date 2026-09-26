@@ -130,7 +130,8 @@ der Heilschwelle verlangte. Jetzt fällt sie, sobald im Radius genug Verletzte s
 **Grenzen und Bedingungen:**
 - Gilt nur, wenn das Spiel für die Aktion Reichweite 0 meldet (`ActionManager.GetActionRange`). Meldet es
   etwas anderes, greift der Zweig nicht, und alles bleibt wie vorher. Die Beschwörer-Anzeige nennt die
-  gemeldete Reichweite von Lux Solaris.
+  gemeldete Reichweite von Lux Solaris. **Hinweis des Auftraggebers:** Lux Solaris ist eine
+  Point-Blank-Fläche vom Wirkenden aus, wie Holy beim Weißmagier — die Prämisse Reichweite 0 trägt.
 - Gilt nur für die Zielart Heilung und nicht, wenn ein Aufrufer den Wirkenden ausdrücklich als Ziel
   nennt (`TargetType.Self`); dort gibt der allgemeine Pfad den Wirkenden ohne Bedarfsprüfung zurück.
   Andere freundliche Aktionen mit Reichweite 0 bleiben auf dem allgemeinen Pfad.

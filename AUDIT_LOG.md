@@ -3725,6 +3725,10 @@ Außerdem: Churin ist uninteressant (CLAUDE.md, TODO bereinigt).
 
 **Stand:** nur Konzept. Umsetzung wartet auf seine Freigabe; vorher ist die Gewichtung im Verfallsfenster am Code zu erheben (Punkt 5).
 
+### A153 · Hinweis: Lux Solaris ist Point-Blank vom Wirkenden aus, wie Holy (26.09.2026)
+
+Als Hinweis in Konzept 07 und 08 geführt. Die Wirktexte stützen ihn gleichlautend: Holy trifft „all nearby enemies", Lux Solaris heilt „own HP and the HP of all nearby party members". Damit trägt die Prämisse von A137 (Reichweite 0, Anker der Wirkende), die bis dahin allein an der Laufzeitanzeige hing. Offen bleibt, ob der Radius vom Mittelpunkt oder von der Trefferfläche zählt; das klärt der Hinweis nicht.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
