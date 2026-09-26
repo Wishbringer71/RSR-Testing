@@ -323,6 +323,21 @@ kommt.“
 | Fehlbetrag kleiner als die Heilung | warten — der Ueberschuss verpufft, und das Fenster laeuft noch |
 | Fehlbetrag erreicht die Heilung | zuenden — sie kommt vollstaendig an |
 | Fenster laeuft aus, irgendjemand ist verletzt | zuenden — ungenutzt ist sie ganz verloren |
+| Fenster laeuft aus, ein Flaechentreffer ist angekuendigt und landet mit mindestens einem GCD Rest vor dem Ende | **warten**, nach dem Treffer zuenden (A149) |
+
+**Vor einem angekuendigten Treffer wartet die Verfallsklausel (A149).** Seine Beobachtung: volle
+Gruppe, ein Flaechenangriff angekuendigt, Lux Solaris fiel vor dem Einschlag. Am Code ist nur ein Weg
+dafuer moeglich: die Verfallsklausel in `GeneralAbility` (Upstream, `1c850931f`), die in den letzten drei
+GCDs von Refulgent Lux **ohne** Gesundheitspruefung zuendet. Heilpfad und `AttackAbility` verlangen
+fehlende Gesundheit, die Vorausschau liest den angekuendigten Treffer nicht. Vor dem Treffer landet die
+Heilung auf einer vollen Gruppe und verpufft; nach ihm trifft sie den Schaden. Deshalb halten beide
+Verfallsklauseln, solange der Treffer (Zauberleiste oder BossMod-Raidwide, `DataCenter.AnnouncedAreaHitIn`)
+vor dem Ende von Refulgent Lux landet und danach noch mindestens ein GCD bleibt — Einschiebeplaetze
+fuer den Wurf. Landet er spaeter, feuert die Klausel wie bisher. Ohne BossMod sieht die Regel den
+Treffer ab seiner Zauberleiste. **Im Kampf ablesbar:** Die Beschwoerer-Anzeige meldet
+„Lux Solaris expiry held: an area hit lands in … s". **Grenze:** Nimmt nach dem Treffer eine
+vorrangige Faehigkeit jeden Platz bis zum Ende, verfaellt Lux Solaris; mit einem GCD Rest sind das
+mindestens zwei Plaetze.
 
 **Die Groesse dafuer ist der gemessene Heilwert, nicht die Potenz.** 500 Potenz sind von hier aus
 nicht in Lebenspunkte umzurechnen: Heilkraft, Ausruestung und Verstaerkungen entscheiden darueber,

@@ -3622,6 +3622,28 @@ Umgesetzt: `GetMostCanTargetObjects` sperrt unter „Cleave" nur feindliche Akti
 
 **Prüfgrad:** statisch; Compile über die CI.
 
+### A149 · Lux Solaris vor einem angekündigten Treffer bei voller Gruppe (26.09.2026)
+
+**Seine Beobachtung:** alle voll, Flächenangriff angekündigt, Lux Solaris vor dem Einschlag. Ob es der letzte mögliche Augenblick war, hat er nicht gesehen.
+
+**Wirkkette am Code:**
+- Bei voller Gruppe verwirft der Heilpfad jedes Ziel: `GetCanAffects` lässt volle Mitglieder aus, und `FindHealTarget` verlangt fehlende Gesundheit.
+- Beide Zweige in `AttackAbility` verlangen einen Fehlbetrag (`LargestMissingHp`).
+- Die Vorausschau (`GetForecastHealthRatio`) liest den angekündigten Treffer nicht.
+- Übrig bleibt die Verfallsklausel in `GeneralAbility` (Upstream `1c850931f`). Sie zündet in den letzten drei GCDs von Refulgent Lux ohne Gesundheitsprüfung.
+- Es war also das Verfallsfenster, aber nicht der letzte Augenblick: Die Klausel nimmt den ersten freien Platz in diesen drei GCDs. Landete der Treffer danach noch vor dem Ende, war der Wurf zu früh.
+
+**Behebung:** Beide Verfallsklauseln warten, solange ein angekündigter Flächentreffer vor dem Ende von Refulgent Lux landet und danach noch mindestens ein GCD bleibt. Neue Erkennung `DataCenter.AnnouncedAreaHitIn` (Zauberleiste eines Flächenangriffs, der den Spieler erreicht, sonst BossMod-Raidwide); sie enthält kein Urteil. Keine neue Zahl. Die bestehende „3 GCDs" steht in zwei berührten Zeilen und bleibt offen gelistet.
+
+**Falsifikation:**
+- Kein Defekt, denn Lux Solaris wäre sonst verfallen? Widerlegt: Nach dem Treffer bleibt nach Bauart mindestens ein GCD für den Wurf.
+- Option falsch, besser die Klausel ganz an Verletzte binden? Verworfen: Ohne Verletzte und ohne Treffer ist der Wurf folgenlos, er kostet nur einen Platz nach der Burstphase.
+- Ausgeliefert und nichts ändert sich? Wenn der Treffer weder auf der AoE-Liste steht noch von BossMod gemeldet wird. Die Anzeige zeigt, ob gehalten wird.
+
+**Nebenbefund, auf seine Frage „wieso ist das zu spät?":** Konzept 09 sagte, ein Limitbruch unmittelbar vor dem Einschlag werde „nicht rechtzeitig erkannt". Erkannt wird er sofort; zu spät kann nur die Heilung ankommen. Berichtigt.
+
+**Prüfgrad:** statisch; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

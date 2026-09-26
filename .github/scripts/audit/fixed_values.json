@@ -434,7 +434,7 @@
   },
   {
    "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
-   "code": "&& StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux);",
+   "code": "&& StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux)",
    "values": [
     "3"
    ],
@@ -680,6 +680,14 @@
    "status": "exception",
    "loop": "A145",
    "reason": "Unit conversion, not a game value: the ItemAction sheet states the potion's share of maximum HP in percent, and the HQ line beside it (upstream) divides the same way."
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
+   "code": "if (StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux) && !LuxHeldForAreaHit())",
+   "values": [
+    "3"
+   ],
+   "status": "open"
   }
  ]
 }

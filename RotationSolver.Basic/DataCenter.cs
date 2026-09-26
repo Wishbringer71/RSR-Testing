@@ -2486,6 +2486,58 @@ internal static class DataCenter
 
 	private static readonly StringComparison PathCmp = StringComparison.OrdinalIgnoreCase;
 
+	/// <summary>
+	/// Seconds until the soonest announced area hit lands that can reach the player: an enemy casting
+	/// an action on the AoE list, or BossModReborn's next raidwide. <see cref="float.MaxValue"/> when
+	/// neither is known. A recognition only - it holds no verdict on whether the hit matters.
+	/// </summary>
+	/// <remarks>
+	/// <see cref="IsHostileCastingAOE"/> answers only inside the last GCD before a cast lands, for the
+	/// mitigation window. A heal that is being held for after the hit needs to see the hit coming
+	/// from the moment its cast bar starts. Interruptible casts are included: if the cast is
+	/// interrupted it drops out of this figure at once, and whatever was held for it is released.
+	/// </remarks>
+	public static float AnnouncedAreaHitIn
+	{
+		get
+		{
+			var soonest = BMRNextRaidwideIn;
+			var targets = AllHostileTargets;
+			var actionSheet = Service.GetSheet<Action>();
+			if (!InCombat || targets == null || actionSheet == null)
+			{
+				return soonest;
+			}
+
+			for (var i = 0; i < targets.Count; i++)
+			{
+				var h = targets[i];
+				try
+				{
+					if (h == null || !h.IsCasting || h.CastActionId == 0
+						|| !OtherConfiguration.HostileCastingArea.Contains(h.CastActionId))
+					{
+						continue;
+					}
+
+					var action = actionSheet.GetRow(h.CastActionId);
+					if (action.RowId == 0 || !AreaCastCanReachPlayer(h, action))
+					{
+						continue;
+					}
+
+					soonest = MathF.Min(soonest, MathF.Max(0f, h.TotalCastTime - h.CurrentCastTime));
+				}
+				catch (AccessViolationException ex)
+				{
+					PluginLog.Warning($"AccessViolation in AnnouncedAreaHitIn: {ex.Message}");
+				}
+			}
+
+			return soonest;
+		}
+	}
+
 	public static bool IsHostileCastingAOE =>
 		InCombat && (IsCastingAreaVfx() || (AllHostileTargets != null && IsAnyHostileCastingArea()));
 

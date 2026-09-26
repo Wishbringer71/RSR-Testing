@@ -292,8 +292,11 @@ Treffer gezogen, und bei 1 HP stünde der Träger schutzlos davor.
 
 **Grenzen:** Rotationen, die ihr Heilziel selbst wählen statt über `FindTarget` (fremde Rotationen,
 direkte Aufrufe von `FindTargetByType`), sehen die Sperre nicht. Die Flächenheilflagge rechnet den
-Träger bei 1 HP weiter in ihre Mittelwerte ein. Ein solcher Treffer ohne Tank-Limitbruch, oder ein
-Limitbruch, der erst unmittelbar vor dem Einschlag fällt, wird nicht rechtzeitig erkannt.
+Träger bei 1 HP weiter in ihre Mittelwerte ein. Ein solcher Treffer ohne Tank-Limitbruch wird nicht
+erkannt. Der Limitbruch selbst wird im selben Bild erkannt, in dem sein Status erscheint; die Heilung
+kommt aber nur vor dem Einschlag an, wenn dazwischen noch ein Einschiebeplatz (Benediction) oder ein
+GCD mit Wirkzeit (Cure II) liegt. Wie viel Zeit zwischen Limitbruch und Einschlag liegt, entscheidet der
+Tank, der ihn zieht.
 
 **Im Kampf ablesbar:** Das Diagnosefenster zeigt, solange jemand unter Walking Dead steht, ob er
 getragen wird oder welcher Auslöser die volle Unterstützung freigegeben hat, mit dem hochgerechneten
