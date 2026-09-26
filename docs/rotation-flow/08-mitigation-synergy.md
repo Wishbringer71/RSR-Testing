@@ -355,10 +355,23 @@ Einschiebeplatz, und sie ist eine Beigabe — ungenutzt verfaellt sie mit Refulg
    Heilung ueberhaupt etwas bewirkt: Ist im Radius irgendjemand verletzt, **auch wenig**, faellt sie.
    Dabei wird gewichtet (Vorgabe 1: „minor heilung oder andere aktion"): Eine solche Kleinheilung nimmt
    keinen Platz, den eine Aktion braucht, die durch Aufschub an Wert verliert. Faellt Lux dadurch
-   ungenutzt weg, ist das der geringere Verlust. Welche Aktionen im Verfallsfenster konkurrieren und
-   welche durch einen Platz Aufschub verlieren (Abklingzeit laeuft spaeter an, Burstfenster endet,
-   Gunst verfaellt), ist vor der Umsetzung am Code und an den Wirktexten zu erheben; Schutzaktionen
-   stehen im Dispatch ohnehin davor.
+   ungenutzt weg, ist das der geringere Verlust.
+   **Erhoben (A152):** Das Verfallsfenster liegt 15 bis 30 s nach der Beschwoerung, also hinter der
+   Demi-Phase; die Zweige der Demi (Energy Siphon, Enkindle, Sunflare, Deathflare) greifen dort nicht.
+   Schutzaktionen, Heiltrank und Heilflaggen stehen im Dispatch vor `AttackAbility`, sie verdraengt Lux
+   nie. Es konkurrieren die Schadens-Faehigkeiten der Primalphase:
+   - **Fester / Necrotize** (Aetherflow): verlieren durch einen Platz Aufschub nichts; ein Ueberlauf
+     droht erst, wenn Energy Drain wieder bereitsteht, und dessen Abklingzeit laeuft seit der
+     Solar-Phase.
+   - **Mountain Buster** (nur unter Titan's Favor) und **Searing Flash** (nur unter Ruby's Glimmer):
+     haengen an einem Status. Wie lange der liegt und ob der naechste Topaz Rite eine unverbrauchte Gunst
+     ueberschreibt, steht nicht im Repository (unbelegt). Zur Laufzeit ist es lesbar: Endet der
+     ermoeglichende Status vor dem naechsten Einschiebefenster, verliert die Aktion durch Aufschub ihren
+     Wert und geht vor.
+   Die Gewichtung lautet damit, ohne neue Zahl: Die Kleinheilung am Verfall geht vor jede
+   Schadens-Faehigkeit, deren Wert durch einen Platz Aufschub nicht verfaellt, und hinter jede, deren
+   ermoeglichender Status bis zum naechsten Fenster endet. In drei GCDs liegen rund sechs Plaetze; dass
+   Lux dabei leer ausgeht, ist die Ausnahme (Schluss aus der Platzzahl, nicht gemessen).
 
 **Eine Entscheidung fuer alle Wege.** Heilflagge (`HealAreaAbility`), `AttackAbility` und
 `GeneralAbility` fragen dieselbe Entscheidung; heute folgt jeder Weg einer eigenen Bedingung, und genau
