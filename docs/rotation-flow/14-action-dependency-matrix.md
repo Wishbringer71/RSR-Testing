@@ -211,6 +211,65 @@ dort nur den ersten Namen. Wirkung auf RSR: Eine leere Dauer ergibt in
 `DefensiveValues` 0 s. Keine dieser Aktionen ist heute Auslöser einer Streckung; wäre sie es, würde
 sie nie strecken — der Generator erfindet keinen Wert.
 
+## Werden die Fenster genutzt?
+
+**Auftrag (seine Vorgabe, 26.09.2026):** prüfen, ob die optimalen Kombinationen in den Rotationen
+tatsächlich genutzt werden — „für alle im Loop".
+
+**Sachstand (A165):** Geprüft ist, ob ein gewährtes Fenster — ein Status, der eine Aktion für eine
+Zeit freigibt (Proc, „Ready", Stapel), oder eine Ressource mit Obergrenze — verbraucht wird, bevor es
+verfällt oder überläuft. Ob eine Abfolge die beste ist, ist nicht geprüft: Die Referenz dafür (Job-Guides
+wie The Balance, das Rotations-Repository) sperrt der Egress, und die Wirktexte nennen die Dauer der
+meisten „Ready"-Status nicht. Der Code braucht sie nicht: Er liest die Restzeit zur Laufzeit.
+
+**Methode:** je Job die Verbraucher von Stapeln, Procs und begrenzten Ressourcen im Code nachgeschlagen
+und gegen Ablauf und Überschreiben geprüft — ganz gelesen: Maschinist, Krieger, Paladin, Dunkelritter,
+Revolverklinge; bei den übrigen die Stellen dieser Verbraucher; dazu die Liste des Generators „Fenster, deren Verbraucher an Bedingungen hängt":
+Verbraucher mit eigener Statusbedingung, deren jeder Aufruf eine Zusatzbedingung trägt, und ob einer
+davon vor Ablauf trotzdem feuert.
+
+**Behoben (A165), weil das Fenster sonst ungenutzt verfällt:**
+- **Maschinist:** Hypercharged (Barrel Stabilizer, eine Überhitzung ohne Heat) wartete auf Wildfire.
+  Wird Wildfire zurückgehalten — „Only use Wildfire on Boss targets" gegen Trash, oder vor einer Pause —,
+  verfiel es. Jetzt fällt Hypercharge im letzten GCD des Status.
+- **Samurai:** Ogi Namikiri wartete auf einem Boss auf Higanbana. Kommt Higanbana nicht — abgeschaltet,
+  oder „Prevent Higanbana use if theres more than one target" (ab Werk an) sperrt es, weil zwei
+  angreifbare Gegner in Nahkampfreichweite stehen (`NumberOfAllHostilesInRange`), während der
+  Flächenpfad von Ogi den gefilterten Zähler (`NumberOfHostilesInRange`) unter zwei sieht —, verfiel Ogi
+  Namikiri samt Kaeshi. Jetzt fällt es im letzten GCD von Ogi Namikiri Ready.
+- **Revolverklinge:** Sonic Break fiel nur unter No Mercy. Vergeht No Mercy ohne Platz dafür (Pause),
+  verfiel Ready to Break. Jetzt fällt es im letzten GCD des Status.
+
+**Zur Entscheidung (Weiser):** Addersgall läuft bei drei Stapeln über; einen Verbrauch vor dem
+Überlauf gibt es nicht (der Weißmagier hat dafür „Use Lily at max stacks/about to overcap", ab Werk an).
+Druochole gäbe je Stapel 7 % MP und eine Heilung (Wirktext).
+
+**Geprüft, ohne Befund:**
+- *Tanks:* Paladin (Atonement-Kette, Divine Might, Requiescat, Goring Blade, Blade of Honor mit Rückfall
+  oder vorn), Krieger (Infuriate überschreibt Nascent Chaos nicht, Beast Gauge läuft nicht über),
+  Dunkelritter (Delirium-Kombo, Disesteem vorn), Revolverklinge (Fortsetzungen vorn, Munition ohne
+  Überlauf).
+- *Heiler:* Weißmagier (Lilien-Überlauf per Option, Sacred Sight, Divine Caress mit Rückfall),
+  Gelehrter (Energy Drain leert Aetherflow vor dessen Abklingzeit, Baneful Impaction mit Rückfall),
+  Astrologe (Karten vor dem nächsten Ziehen).
+- *Nahkampf:* Monk (Fire's/Wind's Reply mit Rückfall), Dragoon (Wyrmwind Thrust vor dem Überlauf,
+  Procs vorn), Schnitter, Ninja, Viper.
+- *Fernkampf und Magie:* Barde, Tänzer, Maler, Rotmagier (Prefulgence mit Rückfall), Schwarzmagier
+  (Polyglot vor dem Überlauf, beide Rotationen), Beschwörer (Konzept 12).
+
+**Bewusst so, mit Grund:**
+- *Barde:* Soul Voice bleibt bis zu 25 s bei 100, wenn Battle Voice kommt — Apex Arrow im Burst ist mehr
+  wert als der Überlauf (Schluss aus dem Regelaufbau).
+- *Krieger:* Primal Rend fällt auf Distanz nur mit den Sprung-Optionen; ohne sie verfällt Primal Rend
+  Ready eher, als dass der Krieger springt — seine Vorgabe zu Bewegung.
+- *Übrige Kandidaten der Generatorliste* (Horoscope, Retrace, Pepsis, Radiant Encore, Reawaken, Lux
+  Solaris, Searing Flash, Ruin IV): Die Bedingung ist der Zweck (Heilbedarf, Option, Burst) oder im
+  jeweiligen Konzept begründet.
+
+**Nebenbefund, technische Schuld:** `UseBlood` im Dunkelritter hat keinen Leser (Blut für den Burst
+aufsparen). Laut heutigem Wirktext kostet Living Shadow kein Blut mehr; ob Aufsparen für Delirium noch
+etwas bringt, ist ohne Referenz nicht rechenbar.
+
 ## Pausen und Phasenenden
 
 **Sachstand (A162):** Seine Angabe zum Profil — Machinist zwischendurch, alle anderen Kampfjobs

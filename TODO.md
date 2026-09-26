@@ -20,6 +20,10 @@ Passage of Arms endet mit jeder weiteren Aktion. Ohne `PldlockCasting` (ab Werk 
 
 Shake It Off hebt die eigenen Status Thrill of Battle, Damnation und Bloodwhetting auf, für +2 % Barriere je Effekt (Suchauszug des vollständigen Texts; im Repository ist der Name ausgeblendet). RSR wirkt es als Flächenabwehr und als Einzelheilung, ohne diese Status zu prüfen. Im Kampf: Ein Raidwide, während Damnation für einen Tankbuster liegt, kostet den Krieger 40 % Minderung. Zur Entscheidung vorgelegt. Konzept 14, „Wechselwirkungen und Zeit".
 
+### Weiser: Addersgall läuft über · N
+
+Bei drei Stapeln Addersgall geht jeder weitere Gewinn verloren; `SGE_Reborn` verbraucht vor dem Überlauf nichts (`AddersgallEndAfter` steht seit 2022 in der Basisrotation, ohne Leser). Im Kampf: Druochole gäbe je Stapel 7 % MP und eine Heilung. Zur Entscheidung vorgelegt: ein Verbrauch vor dem Überlauf wie beim Weißmagier („Use Lily at max stacks/about to overcap"). Konzept 14, „Werden die Fenster genutzt?".
+
 ### Die Minderungssumme kennt Confession nicht · R
 
 `CustomRotation.GetCurrentMitigationPercent` rechnet Temperance, Sacred Soil, Kerachole und weitere Gruppenminderungen, aber nicht Confession aus Plenary Indulgence (Wirktext 7433: „reducing damage taken by 10%"). Gelesen wird die öffentliche Summe im Fork nur von der Debug-Anzeige im Einstellungsfenster (`RotationConfigWindow`) — im Kampf entscheidet keine Standardregel danach (A161). Betroffen sind abgeleitete Rotationen, die sie lesen: Sie halten einen Treffer unter Plenary Indulgence für 10 % härter, als er ist. Offen, weil die Zeile eine neue feste Zahl bräuchte; der Wert liegt erzeugt in `DefensiveValues` (A159), und die Summe sollte ihn von dort lesen.
@@ -365,6 +369,10 @@ und `GCDTime(uint gcdCount = 0, float offset = 0)` liefert `(DefaultGCDTotal * 0
 **Empfehlung: erfassen, nicht bearbeiten.** Keiner der vier Jobs steht im Nutzungsprofil des Auftraggebers, und die Entscheidung „Vorrang gemeint oder nicht" gehört zum Autor der Rotation; Adressat ist der Upstream.
 
 ## Technische Schuld
+
+### Dunkelritter: `UseBlood` ohne Leser · N
+
+Die Eigenschaft sollte Blut für den Burst aufsparen; seit einem Umbau liest sie niemand, und Bloodspiller fällt bei 50 Blut. Laut heutigem Wirktext kostet Living Shadow kein Blut mehr, ihr ursprünglicher Zweck ist damit überholt. Nicht entfernt, weil offen ist, ob Aufsparen für Delirium etwas bringt (keine Referenz erreichbar). Auflösung: Referenz für die Dunkelritter-Rotation, dann verdrahten oder entfernen. Konzept 14, „Werden die Fenster genutzt?".
 
 ### Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen · N, R
 

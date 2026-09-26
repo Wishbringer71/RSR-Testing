@@ -210,6 +210,15 @@ own heals right after Stardiver.
 - **Reaper:** Hell's Ingress and Hell's Egress can no longer go out as Regress, which jumped back to
   the gate instead of dashing.
 
+## Granted windows no longer run out unused
+
+- **Machinist:** Hypercharged from Barrel Stabilizer is spent before it runs out, also when Wildfire is
+  held (for example with `Only use Wildfire on Boss targets` against trash).
+- **Samurai:** Ogi Namikiri is used before Ogi Namikiri Ready runs out, also on a boss without Higanbana
+  (for example when Higanbana is switched off, or kept off by adds).
+- **Gunbreaker:** Sonic Break is used before Ready to Break runs out, also when No Mercy passed without
+  room for it.
+
 ## Samurai and Machinist use a pause in the fight
 
 - **Samurai:** When no enemy is within 25 yalms in combat, the Samurai casts Meditate while standing

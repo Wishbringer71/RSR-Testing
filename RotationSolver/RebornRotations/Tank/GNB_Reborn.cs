@@ -470,7 +470,9 @@ public sealed class GNB_Reborn : GunbreakerRotation
 				return true;
 			}
 
-			if (HasNoMercy && SonicBreakPvE.CanUse(out act))
+			// Should No Mercy pass without room for Sonic Break (a window without a GCD, downtime), Ready
+			// to Break would run out unused; it is spent in its last GCD instead.
+			if ((HasNoMercy || StatusHelper.PlayerWillStatusEndGCD(1, 0, true, StatusID.ReadyToBreak)) && SonicBreakPvE.CanUse(out act))
 			{
 				return true;
 			}

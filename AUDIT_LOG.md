@@ -4034,6 +4034,21 @@ Unabhängiges Review (Code-Review-Werkzeug) der Commits b1ce95756 und 296778976.
 
 **Prüfgrad:** statisch; Prüfskripte; Generator-Selbsttest; Compile über die CI.
 
+### A165 · Werden die Fenster genutzt? Alle Standardrotationen geprüft (26.09.2026)
+
+**Seine Frage:** „Hast du im Loop geprüft, ob die optimalen Kombinationen in den rotas auch tatsächlich genutzt werden?" — Nein; A163/A164 hatten nur geprüft, ob eine Aktion überhaupt gerufen wird. **Sein Auftrag:** „Für alle im Loop".
+
+- *Research:* Die Standardrotationen aller 21 Kampfjobs auf die Verbraucher von Stapeln, Procs und begrenzten Ressourcen geprüft; ganz gelesen Maschinist, Krieger, Paladin, Dunkelritter, Revolverklinge, bei den übrigen die Stellen dieser Verbraucher. Referenz für „optimal" gesucht: The Balance und das GitHub-Repository der Rotationen sperrt der Egress (Probe 26.09.2026). Die Textverknüpfung Gewährer → Verbraucher allein trägt nicht: 133 Fenster ohne Verbraucher im Wirktext.
+- *Werkzeug:* Der Generator führt je Job „Fenster, deren Verbraucher an Bedingungen hängt" (eigene `StatusNeed` oder ein „…Ready" im `ActionCheck`; jeder Aufruf mit Zusatzbedingung; Rückfall vor Ablauf ja/nein), mit Selbsttest.
+- *Befunde:* Maschinist Hypercharged, Samurai Ogi Namikiri, Revolverklinge Sonic Break — behoben mit einem Rückfall im letzten GCD des Status. Weiser Addersgall-Überlauf — zur Entscheidung. Dunkelritter `UseBlood` ohne Leser — technische Schuld.
+- *Falsifikation:*
+  - **Kein Defekt?** Maschinist: Mit „Only use Wildfire on Boss targets" gegen Trash hängt jeder Hypercharge-Pfad an Wildfire oder Heat 100; widerlegt. Samurai: Ist Higanbana abgeschaltet, oder sperrt es die Voreinstellung „Prevent Higanbana use if theres more than one target" über `NumberOfAllHostilesInRange`, während der Flächenpfad von Ogi `NumberOfHostilesInRange` unter zwei sieht, fällt keines; widerlegt. Revolverklinge: nur, wenn No Mercy ohne GCD vergeht (Pause) — selten, der Rückfall kostet nichts.
+  - **Option falsch?** Der Rückfall feuert nur im letzten GCD; vorher bleibt jede bestehende Ausrichtung (Burst, Higanbana, No Mercy) unberührt.
+  - **Ausgeliefert, nichts ändert sich?** Mit den Voreinstellungen ändert sich beim Maschinisten nichts (Wildfire verbraucht Hypercharged); beim Samurai greift es in Kämpfen mit Adds.
+- *Grenze:* Ob eine Abfolge optimal ist, bleibt ungeprüft (keine Referenz).
+
+**Prüfgrad:** statisch; Generator-Selbsttest; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
