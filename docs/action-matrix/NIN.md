@@ -231,6 +231,36 @@ direkt: 54 · nur gelesen: 1 · ungenutzt: 1 · über andere Aktion: 6
 | Trick Attack | Regel prüft | Kunai's Bane |
 | Trick Attack | StatusNeed ShadowWalker | Suiton |
 
+## Wechselwirkungen und Zeit
+
+Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wirktext), Heilung, Angriff, sonstige. Bewertung im Konzept 14.
+
+### Abwehr, Angriff und Heilung beenden oder sperren einander
+
+| Aktion | Art | Befund | Gegenseite |
+|---|---|---|---|
+| Meisui | sonstige | hebt Shadow Walker auf | Shadow Walker |
+| Ten Chi Jin | sonstige | nicht nutzbar unter Kassatsu | Kassatsu |
+
+### Verlängerung, Aufbau, Umschalten
+
+- Armor Crush: 2 Stapel Kazematoi
+- Bunshin: 5 Stapel Bunshin
+
+### Ressourcen: wer erzeugt, wer verbraucht
+
+| Ressource | erzeugt von | verbraucht von |
+|---|---|---|
+| Ninki | Dokumori, Eigenschaft Shukiho, Eigenschaft Shukiho II, Eigenschaft Shukiho III, Fleeting Raiju, Forked Raiju, Phantom Kamaitachi | Bhavacakra, Bunshin, Deathfrog Medium, Hellfrog Medium, Zesho Meppo |
+
+### Kandidaten für Selbsterhaltung
+
+keine im Wirktext
+
+### Unvollständige Beschreibungen
+
+Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Aeolian Edge (2), Armor Crush (4), Bhavacakra (1), Feint (1), Fleeting Raiju (1), Forked Raiju (1), Fuma Shuriken (1), Fuma Shuriken (1), Fuma Shuriken (1), Fuma Shuriken (1), Gust Slash (1), Raiton (1), Raiton (1), Spinning Edge (1), Suiton (1), Suiton (1), Throwing Dagger (1)
+
 ## Nicht in der Matrix: Limit Breaks
 
 Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Breaks (Konzept 05). `BladedancePvE`, `BraverPvE`, `ChimatsuriPvE`

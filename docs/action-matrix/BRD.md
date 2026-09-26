@@ -210,6 +210,32 @@ direkt: 39 · ungenutzt: 2
 | Windbite | Regel prüft | Stormbite |
 | Windbite | Regel sperrt vorher | Stormbite |
 
+## Wechselwirkungen und Zeit
+
+Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wirktext), Heilung, Angriff, sonstige. Bewertung im Konzept 14.
+
+### Abwehr, Angriff und Heilung beenden oder sperren einander
+
+keine
+
+### Verlängerung, Aufbau, Umschalten
+
+keine
+
+### Ressourcen: wer erzeugt, wer verbraucht
+
+| Ressource | erzeugt von | verbraucht von |
+|---|---|---|
+| Soul Voice | Eigenschaft Soul Voice | Apex Arrow |
+
+### Kandidaten für Selbsterhaltung
+
+keine im Wirktext
+
+### Unvollständige Beschreibungen
+
+Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Burst Shot (1), Empyreal Arrow (1), Refulgent Arrow (1), Sidewinder (1)
+
 ## Nicht in der Matrix: Limit Breaks
 
 Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Breaks (Konzept 05). `BigShotPvE`, `DesperadoPvE`, `SagittariusArrowPvE`

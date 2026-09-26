@@ -113,6 +113,34 @@ direkt: 41 · ungenutzt: 2 · über andere Aktion: 1
 | Tetragrammaton | Regel sperrt vorher | Benediction |
 | Thin Air | Regel prüft | Raise |
 
+## Wechselwirkungen und Zeit
+
+Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wirktext), Heilung, Angriff, sonstige. Bewertung im Konzept 14.
+
+### Abwehr, Angriff und Heilung beenden oder sperren einander
+
+keine
+
+### Verlängerung, Aufbau, Umschalten
+
+- Liturgy of the Bell: 1 Stapel Liturgy
+- Liturgy of the Bell: 5 Stapel Liturgy
+
+### Ressourcen: wer erzeugt, wer verbraucht
+
+| Ressource | erzeugt von | verbraucht von |
+|---|---|---|
+| Healing | — (nicht im Wirktext) | Afflatus Rapture, Afflatus Solace |
+| MP | Assize | — |
+
+### Kandidaten für Selbsterhaltung
+
+keine im Wirktext
+
+### Unvollständige Beschreibungen
+
+Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Afflatus Misery (1), Afflatus Rapture (1), Afflatus Solace (1), Dia (2), Glare III (1), Medica II (2), Regen (1)
+
 ## Nicht in der Matrix: Limit Breaks
 
 Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Breaks (Konzept 05). `BreathOfTheEarthPvE`, `HealingWindPvE`, `PulseOfLifePvE`

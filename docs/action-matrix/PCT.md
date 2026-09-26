@@ -152,6 +152,41 @@ direkt: 42 · nur gelesen: 6 · ungenutzt: 1
 | Wing Motif | Regel prüft | Creature Motif |
 | Wing Motif | Regel prüft | Living Muse |
 
+## Wechselwirkungen und Zeit
+
+Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wirktext), Heilung, Angriff, sonstige. Bewertung im Konzept 14.
+
+### Abwehr, Angriff und Heilung beenden oder sperren einander
+
+| Aktion | Art | Befund | Gegenseite |
+|---|---|---|---|
+| Fire II in Red | Angriff | nicht nutzbar unter Subtractive Palette | Subtractive Palette |
+| Fire in Red | Angriff | nicht nutzbar unter Subtractive Palette | Subtractive Palette |
+| Hammer Motif | sonstige | nicht nutzbar unter Hammer Time | Hammer Time |
+| Holy in White | Angriff | nicht nutzbar unter Monochrome Tones | Monochrome Tones |
+| Starry Sky Motif | sonstige | nicht nutzbar unter Starry Muse | Starry Muse |
+| Tempera Grassa | Abwehr | hebt Tempera Coat auf | Tempera Coat |
+
+### Verlängerung, Aufbau, Umschalten
+
+- Subtractive Palette: 3 Stapel Subtractive Palette
+
+### Ressourcen: wer erzeugt, wer verbraucht
+
+| Ressource | erzeugt von | verbraucht von |
+|---|---|---|
+| Paint | — (nicht im Wirktext) | Comet in Black |
+| Palette | — (nicht im Wirktext) | Subtractive Palette |
+| White Paint | — (nicht im Wirktext) | Holy in White |
+
+### Kandidaten für Selbsterhaltung
+
+keine im Wirktext
+
+### Unvollständige Beschreibungen
+
+Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Addle (1), Aero in Green (1), Blizzard in Cyan (1), Comet in Black (1), Fire in Red (1), Hammer Brush (1), Hammer Stamp (1), Holy in White (1), Mog of the Ages (1), Polishing Hammer (1), Pom Muse (1), Stone in Yellow (1), Thunder in Magenta (1), Water in Blue (1), Winged Muse (1)
+
 ## Nicht in der Matrix: Limit Breaks
 
 Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Breaks (Konzept 05). `ChromaticFantasyPvE`, `SkyshardPvE`, `StarstormPvE`

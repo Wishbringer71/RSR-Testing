@@ -114,6 +114,33 @@ direkt: 37 · ungenutzt: 1 · über andere Aktion: 2
 | Triplecast | Regel sperrt vorher | Swiftcast |
 | Xenoglossy | Regel prüft | Amplifier |
 
+## Wechselwirkungen und Zeit
+
+Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wirktext), Heilung, Angriff, sonstige. Bewertung im Konzept 14.
+
+### Abwehr, Angriff und Heilung beenden oder sperren einander
+
+keine
+
+### Verlängerung, Aufbau, Umschalten
+
+keine
+
+### Ressourcen: wer erzeugt, wer verbraucht
+
+| Ressource | erzeugt von | verbraucht von |
+|---|---|---|
+| MP | Umbral Soul | — |
+| Polyglot | — (nicht im Wirktext) | Foul, Xenoglossy |
+
+### Kandidaten für Selbsterhaltung
+
+keine im Wirktext
+
+### Unvollständige Beschreibungen
+
+Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Addle (1)
+
 ## Nicht in der Matrix: Limit Breaks
 
 Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Breaks (Konzept 05). `MeteorPvE`, `SkyshardPvE`, `StarstormPvE`

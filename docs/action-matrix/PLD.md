@@ -159,6 +159,37 @@ direkt: 43 · ungenutzt: 1 · über andere Aktion: 3
 | Total Eclipse | Regel prüft | Rage of Halone |
 | Total Eclipse | Regel prüft | Riot Blade |
 
+## Wechselwirkungen und Zeit
+
+Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wirktext), Heilung, Angriff, sonstige. Bewertung im Konzept 14.
+
+### Abwehr, Angriff und Heilung beenden oder sperren einander
+
+| Aktion | Art | Befund | Gegenseite |
+|---|---|---|---|
+| Passage of Arms | Abwehr | endet bei jeder weiteren Aktion oder Bewegung (Kanal); RSR-Sperre: PldlockCasting (aus) hält GCD, PldlockCasting (aus) hält Fähigkeit nur bei angekündigtem Flächenschaden, PosPassageOfArms (aus) hält Bewegung | jede Aktion |
+
+### Verlängerung, Aufbau, Umschalten
+
+- Imperator: 4 Stapel Requiescat
+- Requiescat: 4 Stapel Requiescat
+- Umschalten (endet bei erneutem Einsatz): Iron Will
+
+### Ressourcen: wer erzeugt, wer verbraucht
+
+| Ressource | erzeugt von | verbraucht von |
+|---|---|---|
+| MP | Atonement, Eigenschaft Chivalry, Eigenschaft Enhanced Prominence, Expiacion, Sepulchre, Supplication | — |
+| Oath | Eigenschaft Oath Mastery | Cover, Holy Sheltron, Intervention, Sheltron |
+
+### Kandidaten für Selbsterhaltung
+
+keine im Wirktext
+
+### Unvollständige Beschreibungen
+
+Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Atonement (1), Blade of Faith (2), Blade of Truth (2), Blade of Valor (2), Confiteor (2), Fast Blade (1), Holy Spirit (1), Imperator (1), Intervention (1), Reprisal (1), Riot Blade (1), Royal Authority (1), Sepulchre (1), Sheltron (1), Supplication (1)
+
 ## Nicht in der Matrix: Limit Breaks
 
 Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Breaks (Konzept 05). `LastBastionPvE`, `ShieldWallPvE`, `StrongholdPvE`

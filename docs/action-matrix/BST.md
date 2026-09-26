@@ -193,6 +193,34 @@ direkt: 31 · ungenutzt: 9 · über andere Aktion: 8
 | Vileskin | StatusNeed VileKinship | Status VileKinship |
 | Vileskin | StatusNeed VileKinship_4645 | Status VileKinship_4645 |
 
+## Wechselwirkungen und Zeit
+
+Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wirktext), Heilung, Angriff, sonstige. Bewertung im Konzept 14.
+
+### Abwehr, Angriff und Heilung beenden oder sperren einander
+
+| Aktion | Art | Befund | Gegenseite |
+|---|---|---|---|
+| Snarl | sonstige | hebt Enmity Up auf | Enmity Up |
+
+### Verlängerung, Aufbau, Umschalten
+
+keine
+
+### Ressourcen: wer erzeugt, wer verbraucht
+
+| Ressource | erzeugt von | verbraucht von |
+|---|---|---|
+| TP | Quelling Wave, Scaleskin, Shieldsplitter, Vileskin | Avalanche Axe, Brutal Rage, Calamity, Gale Axe, Hawkish Talons, Mistral Axe, Risen Fall, Spinning Axe, Trick |
+
+### Kandidaten für Selbsterhaltung
+
+keine im Wirktext
+
+### Unvollständige Beschreibungen
+
+Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Shield Charge (1), Smash Axe (1)
+
 ## Nicht direkt genutzt
 
 Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.

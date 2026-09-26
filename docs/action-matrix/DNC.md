@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-26; nic
 
 ## Nutzung
 
-direkt: 38 · ungenutzt: 3 · über andere Aktion: 7
+direkt: 38 · ungenutzt: 4 · über andere Aktion: 6
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -41,7 +41,7 @@ direkt: 38 · ungenutzt: 3 · über andere Aktion: 7
 | Job | Fountain (`FountainPvE`) | 15990 | Weaponskill | direkt |
 | Job | Fountainfall (`FountainfallPvE`) | 15992 | Weaponskill | direkt |
 | Job | Improvisation (`ImprovisationPvE`) | 16014 | Ability | direkt |
-| Job | Improvised Finish (`ImprovisedFinishPvE`) | 25789 | Ability | über Improvisation |
+| Job | Improvised Finish (`ImprovisedFinishPvE`) | 25789 | Ability | ungenutzt — Knopfwechsel über Improvisation gesperrt: deren StatusProvide enthält Improvisation |
 | Job | Jete (`JetePvE`) | 16001 | Weaponskill | direkt |
 | Job | Last Dance (`LastDancePvE`) | 36983 | Weaponskill | direkt |
 | Job | Pirouette (`PirouettePvE`) | 16002 | Weaponskill | direkt |
@@ -163,6 +163,35 @@ direkt: 38 · ungenutzt: 3 · über andere Aktion: 7
 | Triple Technical Finish | ActionCheck liest | Technical Step |
 | Windmill | Regel prüft | Last Dance |
 
+## Wechselwirkungen und Zeit
+
+Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wirktext), Heilung, Angriff, sonstige. Bewertung im Konzept 14.
+
+### Abwehr, Angriff und Heilung beenden oder sperren einander
+
+| Aktion | Art | Befund | Gegenseite |
+|---|---|---|---|
+| Finishing Move | Angriff | gemeinsame Abklingzeit (Angriff / sonstige) | Standard Step |
+| Improvisation | Heilung | endet bei jeder weiteren Aktion oder Bewegung (Kanal); RSR-Sperre: PosImprovisation (aus) hält Bewegung | jede Aktion |
+
+### Verlängerung, Aufbau, Umschalten
+
+- Umschalten (endet bei erneutem Einsatz): Closed Position
+
+### Ressourcen: wer erzeugt, wer verbraucht
+
+| Ressource | erzeugt von | verbraucht von |
+|---|---|---|
+| Esprit | Eigenschaft Enhanced Esprit, Eigenschaft Esprit, Tillana | Dance of the Dawn, Saber Dance |
+
+### Kandidaten für Selbsterhaltung
+
+keine im Wirktext
+
+### Unvollständige Beschreibungen
+
+Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Cascade (1), Emboite (1), Entrechat (1), Fan Dance (1), Fan Dance III (1), Fan Dance IV (1), Fountain (1), Fountainfall (1), Jete (1), Pirouette (1), Reverse Cascade (1), Saber Dance (1)
+
 ## Nicht in der Matrix: Limit Breaks
 
 Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Breaks (Konzept 05). `BigShotPvE`, `CrimsonLotusPvE`, `DesperadoPvE`
@@ -173,4 +202,5 @@ Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 
 - Ending (`EndingPvE`, Ability): ungenutzt
 - Foot Graze (`FootGrazePvE`, Ability): ungenutzt
+- Improvised Finish (`ImprovisedFinishPvE`, Ability): ungenutzt — Knopfwechsel über Improvisation gesperrt: deren StatusProvide enthält Improvisation
 - Leg Graze (`LegGrazePvE`, Ability): ungenutzt

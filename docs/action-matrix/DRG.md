@@ -166,6 +166,32 @@ direkt: 40
 | Wyrmwind Thrust | Regel prüft | Raiden Thrust |
 | Wyrmwind Thrust | Regel sperrt vorher | Stardiver |
 
+## Wechselwirkungen und Zeit
+
+Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wirktext), Heilung, Angriff, sonstige. Bewertung im Konzept 14.
+
+### Abwehr, Angriff und Heilung beenden oder sperren einander
+
+keine
+
+### Verlängerung, Aufbau, Umschalten
+
+keine
+
+### Ressourcen: wer erzeugt, wer verbraucht
+
+| Ressource | erzeugt von | verbraucht von |
+|---|---|---|
+| Focus | — (nicht im Wirktext) | Wyrmwind Thrust |
+
+### Kandidaten für Selbsterhaltung
+
+keine im Wirktext
+
+### Unvollständige Beschreibungen
+
+Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Chaotic Spring (3), Disembowel (2), Drakesbane (1), Fang and Claw (2), Feint (1), Geirskogul (1), Heavens' Thrust (1), Jump (1), Nastrond (1), Piercing Talon (1), Raiden Thrust (1), Stardiver (1), True Thrust (1), Vorpal Thrust (1), Wheeling Thrust (2), Wyrmwind Thrust (1)
+
 ## Nicht in der Matrix: Limit Breaks
 
 Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Breaks (Konzept 05). `BladedancePvE`, `BraverPvE`, `DragonsongDivePvE`

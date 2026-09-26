@@ -151,6 +151,34 @@ direkt: 49 · ungenutzt: 6
 | the Spear | Regel prüft | Divination |
 | the Spire | Regel prüft | Umbral Draw |
 
+## Wechselwirkungen und Zeit
+
+Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wirktext), Heilung, Angriff, sonstige. Bewertung im Konzept 14.
+
+### Abwehr, Angriff und Heilung beenden oder sperren einander
+
+| Aktion | Art | Befund | Gegenseite |
+|---|---|---|---|
+| Collective Unconscious | Abwehr | endet bei jeder weiteren Aktion oder Bewegung (Kanal); RSR-Sperre: AstlockCasting (aus) hält GCD, AstlockCasting (aus) hält Fähigkeit nur bei angekündigtem Flächenschaden | jede Aktion |
+
+### Verlängerung, Aufbau, Umschalten
+
+keine
+
+### Ressourcen: wer erzeugt, wer verbraucht
+
+| Ressource | erzeugt von | verbraucht von |
+|---|---|---|
+| MP | Astral Draw, Umbral Draw | — |
+
+### Kandidaten für Selbsterhaltung
+
+keine im Wirktext
+
+### Unvollständige Beschreibungen
+
+Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Aspected Benefic (2), Aspected Helios (2), Combust III (1), Fall Malefic (1), Macrocosmos (1)
+
 ## Nicht in der Matrix: Limit Breaks
 
 Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Breaks (Konzept 05). `AstralStasisPvE`, `BreathOfTheEarthPvE`, `HealingWindPvE`

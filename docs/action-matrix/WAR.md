@@ -130,6 +130,39 @@ direkt: 40 · ungenutzt: 1
 | Vengeance | Regel prüft | Damnation |
 | Vengeance | Regel prüft | Rampart |
 
+## Wechselwirkungen und Zeit
+
+Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wirktext), Heilung, Angriff, sonstige. Bewertung im Konzept 14.
+
+### Abwehr, Angriff und Heilung beenden oder sperren einander
+
+| Aktion | Art | Befund | Gegenseite |
+|---|---|---|---|
+| Shake It Off | Abwehr | hebt Thrill of Battle auf | Thrill of Battle |
+
+### Verlängerung, Aufbau, Umschalten
+
+- Inner Release verlängert Surging Tempest um 10 s, höchstens auf 60 s
+- Mythril Tempest verlängert Surging Tempest um 30 s, höchstens auf 60 s
+- Storm's Eye verlängert Surging Tempest um 30 s, höchstens auf 60 s
+- Berserk: 3 Stapel Berserk
+- Inner Release: 3 Stapel Inner Release
+- Umschalten (endet bei erneutem Einsatz): Defiance
+
+### Ressourcen: wer erzeugt, wer verbraucht
+
+| Ressource | erzeugt von | verbraucht von |
+|---|---|---|
+| Beast | Infuriate | Chaotic Cyclone, Decimate, Fell Cleave, Inner Beast, Inner Chaos, Steel Cyclone |
+
+### Kandidaten für Selbsterhaltung
+
+keine im Wirktext
+
+### Unvollständige Beschreibungen
+
+Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Fell Cleave (1), Heavy Swing (1), Maim (1), Nascent Flash (1), Reprisal (1), Storm's Eye (2), Storm's Path (2), Upheaval (1)
+
 ## Nicht in der Matrix: Limit Breaks
 
 Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Breaks (Konzept 05). `LandWakerPvE`, `ShieldWallPvE`, `StrongholdPvE`

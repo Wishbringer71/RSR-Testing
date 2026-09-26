@@ -170,6 +170,136 @@ def parse_texts(text):
     return found
 
 
+# A name in an effect text: capitalised words, joined by "of" or "the" (Thrill of Battle, Wheel of
+# Fortune), never by "and" - "Delirium and Blood Weapon" are two.
+NAME = r"[A-Z][\w'’]*(?: (?:of |the )?[A-Z][\w'’]*)*"
+# Interplay and time. What a text says about an effect being ended, blocking the GCD, being barred,
+# extended, stacked, removed, or producing a resource.
+CHANNEL = re.compile(r"[Ee]ffect ends upon using another action or moving")
+TOGGLE = re.compile(r"[Ee]ffect ends upon reuse")
+GCD_BLOCK = re.compile(r"Triggers the cooldown of weaponskills(?: mudra and Ninjutsu)? upon execution")
+CANCELS_AUTO = re.compile(r"Cancels auto-attack")
+CANNOT_WHILE = re.compile(r"Cannot be executed while under the effect of (" + NAME + ")")
+EXTENDS = re.compile(r"Extends (?:duration of )?(" + NAME + r"?)(?: duration)? by (\d+)s to a maximum of (\d+)s")
+STACKS = re.compile(r"(\d+) stacks? of (" + NAME + ")")
+REMOVES = re.compile(r"(?:Dispels|Removes|Ends the effect of) (" + NAME + ")")
+MP_GAIN = re.compile(r"Restores (?:\d+% of maximum |an amount of )?MP")
+GAUGE_GAIN = re.compile(r"(?:Increases|Adds)(?: both)? ([A-Z][\w'’]*(?: [A-Z][\w'’]*)*?) (?:Gauge )?by (\d+)")
+CARTRIDGE_GAIN = re.compile(r"Adds (?:a|\d+) Cartridges? to your Powder Gauge")
+# A value the text leaves out because a trait or the level sets it: "potency of .", "potency of for",
+# "Potency: Duration", "Duration: s", and a status name left out: "Grants 2 stacks of Duration: 30s".
+BLANK = re.compile(r"(?:[Pp]otency of|Potency:|Cure Potency:) (?=\.|for |[A-Z])|Duration: s\b|\b(?:of|Grants) (?=Duration:)")
+# An enemy's damage lowered is defense; "Increases damage dealt" is a party buff and is not.
+DEFENSIVE = re.compile(r"barrier|[Rr]educ\w* damage taken|impervious|cannot be reduced|preventing most attacks|"
+                       r"(?:[Rr]educ|[Ll]ower)\w*[^.]{0,40}damage dealt|block rate|only suffer \d+%")
+HEALING = re.compile(r"Restores (?:own |target's |the |an amount of )?HP|Cure Potency|[Hh]ealing over time|Regen")
+OFFENSIVE = re.compile(r"Deals |Delivers (?:an attack|damage)|damage with a potency|[Ii]ncreases damage dealt|"
+                       r"critical hit rate|direct hit rate")
+
+
+def trim_name(name):
+    """A captured name without the field words that follow it in the text ("Requiescat Duration")."""
+    words = []
+    for word in name.split():
+        if word in FIELD_WORDS or word == "Effect":
+            break
+        words.append(word)
+    # "Kazematoi Kazematoi", "Fire Attunement Fire Attunement": the name repeated as the heading of
+    # its own effect.
+    half = len(words) // 2
+    if half and len(words) % 2 == 0 and words[:half] == words[half:]:
+        words = words[:half]
+    return " ".join(words)
+
+
+def blocked_by_provide(text, provided_ids):
+    """The status a changed action needs that its base action already provides, or None."""
+    provided = {re.sub(r"_\d+$", "", sid).lower() for sid in provided_ids}
+    for k, v in parse_texts(text):
+        if k == "needs" and re.sub(r"[^a-z]", "", v.lower()) in provided:
+            return v
+    return None
+
+
+def interplay_of(text):
+    """What one text says about time and interplay, as (kind, value) pairs."""
+    found = []
+    if CHANNEL.search(text):
+        found.append(("channel", None))
+    if TOGGLE.search(text):
+        found.append(("toggle", None))
+    if GCD_BLOCK.search(text):
+        found.append(("gcd", None))
+    if CANCELS_AUTO.search(text):
+        found.append(("auto", None))
+    for m in CANNOT_WHILE.finditer(text):
+        found.append(("barred_by", trim_name(m.group(1))))
+    for m in EXTENDS.finditer(text):
+        found.append(("extends", (trim_name(m.group(1)), int(m.group(2)), int(m.group(3)))))
+    for m in STACKS.finditer(text):
+        # An empty name is a blank in the text ("2 stacks of Duration"), counted there.
+        if trim_name(m.group(2)):
+            found.append(("stacks", (int(m.group(1)), trim_name(m.group(2)))))
+    for m in REMOVES.finditer(text):
+        found.append(("removes", trim_name(m.group(1))))
+    if MP_GAIN.search(text):
+        found.append(("produces", "MP"))
+    for m in GAUGE_GAIN.finditer(text):
+        name = m.group(1)
+        if name.startswith("both "):
+            name = name[5:]
+        found.append(("produces", name.replace(" Gauge", "")))
+    if CARTRIDGE_GAIN.search(text):
+        found.append(("produces", "Cartridge"))
+    return found
+
+
+def kind_of(text, rated):
+    """Defensive, heal, offensive or other - the first that fits, in that order. An attack whose heal
+    is an additional effect (Souleater, Dosis) is an attack: the text opens with the damage."""
+    if rated or DEFENSIVE.search(text):
+        return "Abwehr"
+    if re.match(r"(?:Deals|Delivers) ", text):
+        return "Angriff"
+    if HEALING.search(text):
+        return "Heilung"
+    if OFFENSIVE.search(text):
+        return "Angriff"
+    return "sonstige"
+
+
+LOCK_LINE = re.compile(r"if \(Service\.Config\.(\w+) && DataCenter\.Job == (?:[\w.]+\.)?Job\.\w+(.*?)\)\s*$", re.M)
+LAST_ACTION = re.compile(r"IsLastAction\(ActionID\.(\w+PvE)\)")
+OPTION_DEFAULT = re.compile(r"private static readonly bool _(\w+) = (true|false);")
+MOVE_LOCK = re.compile(r"Action = ActionID\.(\w+PvE), Parent = nameof\(PoslockCasting\)\)\]\s*"
+                       r"public bool (\w+) \{ get; set; \} = (true|false);")
+
+
+def channel_locks(gcd_code, ability_code, configs_code):
+    """What holds a channel open in RSR: {action: [(option, default, path, only while an area hit is
+    announced)]} from the action locks at the top of the GCD and ability choice, plus the movement
+    locks. A channel without an entry is ended by RSR's next action."""
+    defaults = {m.group(1)[:1].upper() + m.group(1)[1:]: m.group(2) == "true"
+                for m in OPTION_DEFAULT.finditer(configs_code)}
+    locks = {}
+    for code, path in ((gcd_code, "GCD"), (ability_code, "Fähigkeit")):
+        for m in LOCK_LINE.finditer(code):
+            for action in LAST_ACTION.findall(m.group(2)):
+                locks.setdefault(action, []).append(
+                    (m.group(1), defaults.get(m.group(1)), path, "AutoStatus.DefenseArea" in m.group(2)))
+    for m in MOVE_LOCK.finditer(configs_code):
+        locks.setdefault(m.group(1), []).append((m.group(2), m.group(3) == "true", "Bewegung", False))
+    return locks
+
+
+def rated_ids():
+    """Action ids DefensiveValues rates - the same table the defense rules read."""
+    path = ROOT / "RotationSolver.Basic" / "Data" / "DefensiveValues.g.cs"
+    text = path.read_text(encoding="utf-8")
+    head = text.split("DurationByActionId", 1)[0]
+    return {int(x) for x in re.findall(r"\[(\d+)\] = new\(", head)}
+
+
 # Resources whose name has two words; every other resource is the one word before "Gauge Cost"
 # or "Cost". The effect texts run the previous field into the name ("...of maximum MP Addersgall
 # Cost"), so only these known pairs are taken as two words.
@@ -574,12 +704,21 @@ def analyse(job, actions, job_actions, traits, general_actions, central, central
                 via[t] = s
                 changed = True
 
+    # The button change is reached only while the base action's CanUse passes. A base whose
+    # StatusProvide holds the very status the changed action needs refuses exactly while the button
+    # is changed (Improvisation -> Improvised Finish, Wildfire -> Detonator): the change is never cast.
     usage = {}
     for ident in nodes:
         siblings = [other for other in by_name.get(actions[ident]["name"].lower(), [])
                     if other != ident and other in direct]
+        blocked = blocked_by_provide(actions[ident]["text"],
+                                     code_settings.get(via[ident], {}).get("StatusProvide", [])) \
+            if ident in via else None
         if ident in direct:
             usage[ident] = "direkt"
+        elif blocked:
+            usage[ident] = (f"ungenutzt — Knopfwechsel über {actions[via[ident]]['name']} gesperrt: "
+                            f"deren StatusProvide enthält {blocked}")
         elif ident in via:
             usage[ident] = f"über {actions[via[ident]]['name']}"
         elif siblings:
@@ -590,7 +729,7 @@ def analyse(job, actions, job_actions, traits, general_actions, central, central
             usage[ident] = "nur gelesen"
         else:
             usage[ident] = "ungenutzt"
-        if usage[ident].startswith(("nur ", "ungenutzt")):
+        if usage[ident].startswith(("nur ", "ungenutzt")) and not blocked:
             text = actions[ident]["text"]
             # A container is the button that turns into others: the source of a "changes to" edge,
             # or a text that says so of itself. "※X changes to <this>" names this action as the
@@ -612,8 +751,98 @@ def analyse(job, actions, job_actions, traits, general_actions, central, central
         if needs and not settings.get("StatusNeed") and not settings.get("ActionCheck") \
                 and usage[ident] == "direkt":
             unchecked.append((ident, needs))
+    # Interplay and time (concept 14, "Wechselwirkungen und Zeit").
+    rated = rated_ids()
+    locks = channel_locks((CENTRAL / "CustomRotation_GCD.cs").read_text(encoding="utf-8"),
+                          (CENTRAL / "CustomRotation_Ability.cs").read_text(encoding="utf-8"),
+                          (ROOT / "RotationSolver.Basic" / "Configuration" / "Configs.cs").read_text(encoding="utf-8"))
+    kinds = {i: kind_of(actions[i]["text"], actions[i]["id"] in rated) for i in nodes}
+    blanks = {i: len(BLANK.findall(actions[i]["text"])) for i in nodes}
+    facts = {i: interplay_of(actions[i]["text"]) for i in nodes}
+    trait_facts = [(name, interplay_of(text)) for name, text in traits.get(job, [])]
+
+    def producers_of(status):
+        return sorted(p for p in status_grants.get(status.lower(), set()) if p in actions) or resolve(status)
+
+    interplay = []  # (action, finding, other side)
+    for i in nodes:
+        f = dict()
+        for k, v in facts[i]:
+            f.setdefault(k, []).append(v)
+        if "channel" in f:
+            held = [f"{opt} ({'an' if on else 'aus'}) hält {path}"
+                    + (" nur bei angekündigtem Flächenschaden" if area else "")
+                    for opt, on, path, area in locks.get(i, [])]
+            interplay.append((i, "endet bei jeder weiteren Aktion oder Bewegung (Kanal); "
+                              + ("RSR-Sperre: " + ", ".join(held) if held
+                                 else "keine RSR-Sperre: RSRs nächste Aktion beendet ihn"), "jede Aktion"))
+        # Only a defense or a heal that takes the GCD takes it from an attack; a mudra or a dance step
+        # that takes it is part of the attack.
+        if "gcd" in f and kinds[i] in ("Abwehr", "Heilung"):
+            interplay.append((i, "belegt den GCD", "GCD-Angriffe"))
+        # Barred by its own effect (Ley Lines under Ley Lines) is no reuse while active, not interplay.
+        for status in f.get("barred_by", []):
+            for p in producers_of(status) or [status]:
+                if p != i:
+                    interplay.append((i, f"nicht nutzbar unter {status}", p))
+        for status in f.get("removes", []):
+            for p in producers_of(status) or [status]:
+                interplay.append((i, f"hebt {status} auf", p))
+    for a, b, k, _l in edges:
+        if k == "gemeinsame Abklingzeit" and a in kinds and b in kinds and kinds[a] != kinds[b]:
+            interplay.append((a, f"gemeinsame Abklingzeit ({kinds[a]} / {kinds[b]})", b))
+
+    extensions, stack_list, toggles = [], [], []
+    produce, consume = {}, {}
+    for i in nodes:
+        for k, v in facts[i]:
+            if k == "extends":
+                extensions.append((i, *v))
+            elif k == "stacks":
+                stack_list.append((i, *v))
+            elif k == "toggle":
+                toggles.append(i)
+            elif k == "produces":
+                produce.setdefault(v, set()).add(i)
+        for k, v in parse_texts(actions[i]["text"]):
+            if k == "costs":
+                consume.setdefault(v, set()).add(i)
+    for name, tf in trait_facts:
+        for k, v in tf:
+            if k == "produces":
+                produce.setdefault(v, set()).add(f"Eigenschaft {name}")
+    # A self-sustaining candidate: an action that needs a status and grants or extends that same
+    # status, or one that costs a resource it also produces. Either keeps its own enabler alive.
+    loops = []
+    for i in nodes:
+        needs = {v.lower() for k, v in parse_texts(actions[i]["text"]) if k == "needs"}
+        grants = {v.lower() for k, v in parse_texts(actions[i]["text"]) if k == "grants"}
+        grants |= {v[0].lower() for k, v in facts[i] if k == "extends"}
+        for status in needs & grants:
+            loops.append((i, f"braucht und erneuert {status}"))
+    for resource in sorted(set(produce) & set(consume)):
+        for i in sorted(produce[resource] & consume[resource]):
+            loops.append((i, f"kostet und erzeugt {resource}"))
+    # Over two actions: A spends what B makes and makes what B spends.
+    for r1 in sorted(consume):
+        for r2 in sorted(consume):
+            if r1 >= r2:
+                continue
+            for a in sorted(consume[r1] & produce.get(r2, set())):
+                for b in sorted(consume[r2] & produce.get(r1, set())):
+                    if a != b:
+                        loops.append((a, f"Kreislauf {r1} → {r2} mit {actions[b]['name'] if b in actions else b}"))
+    grants_of = {i: {v.lower() for k, v in parse_texts(actions[i]["text"]) if k == "grants"} for i in nodes}
+    needs_of = {i: {v.lower() for k, v in parse_texts(actions[i]["text"]) if k == "needs"} for i in nodes}
+    for a in nodes:
+        for b in nodes:
+            if a < b and (grants_of[a] & needs_of[b]) and (grants_of[b] & needs_of[a]):
+                loops.append((a, f"Status-Kreislauf mit {actions[b]['name']}"))
+
     return {
         "class": class_name, "files": [str(p.relative_to(ROOT)) for p in files if p.exists()],
+        "kinds": kinds, "blanks": blanks, "interplay": interplay, "extensions": extensions,
+        "stacks": stack_list, "toggles": toggles, "produce": produce, "consume": consume, "loops": loops,
         "nodes": nodes, "edges": edges, "usage": usage, "unresolved": unresolved, "unchecked": unchecked,
         "limit_breaks": (limit_breaks or {}).get(job, []),
         "levels": {ident: level_of(ident, actions, job) for ident in nodes},
@@ -656,6 +885,56 @@ def render_markdown(job, result, actions, stamp):
             tn = actions[t]["name"] if t in actions else t
             w(f"| {sn} | {k} | {tn} |\n")
         w("\n")
+
+    def name(x):
+        return actions[x]["name"] if x in actions else x
+
+    w("## Wechselwirkungen und Zeit\n\n")
+    w("Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wirktext), Heilung, "
+      "Angriff, sonstige. Bewertung im Konzept 14.\n\n")
+    w("### Abwehr, Angriff und Heilung beenden oder sperren einander\n\n")
+    if result["interplay"]:
+        w("| Aktion | Art | Befund | Gegenseite |\n|---|---|---|---|\n")
+        rows = sorted({(name(a), result["kinds"].get(a, ""), finding, name(other))
+                       for a, finding, other in result["interplay"]})
+        for row in rows:
+            w("| " + " | ".join(row) + " |\n")
+    else:
+        w("keine\n")
+    w("\n### Verlängerung, Aufbau, Umschalten\n\n")
+    if result["extensions"]:
+        for row in sorted({(name(a), status, plus, cap) for a, status, plus, cap in result["extensions"]}):
+            w(f"- {row[0]} verlängert {row[1]} um {row[2]} s, höchstens auf {row[3]} s\n")
+    if result["stacks"]:
+        for row in sorted({(name(a), n, status) for a, n, status in result["stacks"]}):
+            w(f"- {row[0]}: {row[1]} Stapel {row[2]}\n")
+    if result["toggles"]:
+        w("- Umschalten (endet bei erneutem Einsatz): " + ", ".join(sorted(name(t) for t in result["toggles"])) + "\n")
+    if not (result["extensions"] or result["stacks"] or result["toggles"]):
+        w("keine\n")
+    w("\n### Ressourcen: wer erzeugt, wer verbraucht\n\n")
+    resources = sorted(set(result["produce"]) | set(result["consume"]))
+    if resources:
+        w("| Ressource | erzeugt von | verbraucht von |\n|---|---|---|\n")
+        for r in resources:
+            prod = ", ".join(sorted(name(x) for x in result["produce"].get(r, []))) or "— (nicht im Wirktext)"
+            cons = ", ".join(sorted(name(x) for x in result["consume"].get(r, []))) or "—"
+            w(f"| {r} | {prod} | {cons} |\n")
+    else:
+        w("keine\n")
+    w("\n### Kandidaten für Selbsterhaltung\n\n")
+    if result["loops"]:
+        for a, why in sorted(set(result["loops"])):
+            w(f"- {name(a)}: {why}\n")
+    else:
+        w("keine im Wirktext\n")
+    incomplete = sorted((a for a, n in result["blanks"].items() if n), key=name)
+    w("\n### Unvollständige Beschreibungen\n\n")
+    if incomplete:
+        w("Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): "
+          + ", ".join(f"{name(a)} ({result['blanks'][a]})" for a in incomplete) + "\n\n")
+    else:
+        w("keine\n\n")
 
     if result["limit_breaks"]:
         w("## Nicht in der Matrix: Limit Breaks\n\n")
@@ -768,6 +1047,53 @@ def self_test():
     ''')
     if any(k == "Regel sperrt vorher" for _u, _r, k in rule_edges(guard)):
         return "a priority cast with `out var act` was read as a guard"
+    got = interplay_of(
+        "Increases block rate to 100%. Duration: 18s Effect ends upon using another action or moving "
+        "(including facing a different direction). Cancels auto-attack upon execution. Extends Darkside "
+        "duration by 30s to a maximum of 60s. Grants 3 stacks of Delirium and Blood Weapon. Dispels Thrill "
+        "of Battle and increasing damage absorbed. Cannot be executed while under the effect of Hammer Time. "
+        "Restores 7% of maximum MP. Increases Soul Gauge by 50. Adds a Cartridge to your Powder Gauge.")
+    for expected in (("channel", None), ("auto", None), ("extends", ("Darkside", 30, 60)),
+                     ("stacks", (3, "Delirium")), ("removes", "Thrill of Battle"), ("barred_by", "Hammer Time"),
+                     ("produces", "MP"), ("produces", "Soul"), ("produces", "Cartridge")):
+        if expected not in got:
+            return f"{expected} not read by interplay_of: {got}"
+    if ("extends", ("Death's Design", 30, 60)) not in interplay_of(
+            "Extends duration of Death's Design by 30s to a maximum of 60s."):
+        return "an extension named after 'duration of' was not read"
+    if len(BLANK.findall("Delivers an attack with a potency of . Cure Potency: Duration: s")) != 3:
+        return f"blank values miscounted: {BLANK.findall('Delivers an attack with a potency of . Cure Potency: Duration: s')}"
+    if trim_name("Requiescat Duration") != "Requiescat" or trim_name("Kazematoi Kazematoi") != "Kazematoi":
+        return "field words or a repeated heading stayed in a name"
+    if blocked_by_provide("Can only be executed while Improvisation is active.",
+                          ["Improvisation", "RisingRhythm"]) != "Improvisation" \
+            or blocked_by_provide("Can only be executed while under the effect of Wildfire.", ["Wildfire_1946"]) \
+            != "Wildfire" or blocked_by_provide("Can only be executed while Improvisation is active.", ["Bind"]):
+        return "a button change its base action blocks by StatusProvide was misread"
+    got = channel_locks(
+        "\t\tif (Service.Config.PldlockCasting && DataCenter.Job == Job.PLD && IsLastAction(ActionID.PassageOfArmsPvE))\n",
+        "\t\tif (Service.Config.PldlockCasting && DataCenter.Job == Job.PLD && IsLastAction(ActionID.PassageOfArmsPvE)"
+        " && DataCenter.MergedStatus.HasFlag(AutoStatus.DefenseArea))\n",
+        "private static readonly bool _pldlockCasting = false;\n"
+        "[UI(\"\", Action = ActionID.PassageOfArmsPvE, Parent = nameof(PoslockCasting))]\n"
+        "\tpublic bool PosPassageOfArms { get; set; } = false;")
+    if got.get("PassageOfArmsPvE") != [("PldlockCasting", False, "GCD", False),
+                                       ("PldlockCasting", False, "Fähigkeit", True),
+                                       ("PosPassageOfArms", False, "Bewegung", False)]:
+        return f"channel locks misread: {got}"
+    if trim_name("Fire Attunement Fire Attunement") != "Fire Attunement":
+        return "a repeated heading of two words stayed in a name"
+    blank_name = "Additional Effect: Grants 2 stacks of Duration: 30s"
+    if len(BLANK.findall(blank_name)) != 1 or any(k == "stacks" for k, _ in interplay_of(blank_name)):
+        return "a status name left out of the text was not counted as a blank"
+    if kind_of("Delivers an attack with a potency of 300. Additional Effect: Restores own HP", False) != "Angriff":
+        return "an attack with a heal as additional effect was read as a heal"
+    if kind_of("Delivers an attack. Increases damage dealt by 5%", False) != "Angriff":
+        return "a party damage buff was read as a defense"
+    if kind_of("Creates a barrier around self", False) != "Abwehr" \
+            or kind_of("Deals unaspected damage with a potency of 300", False) != "Angriff" \
+            or kind_of("Restores target's HP. Cure Potency: 400", False) != "Heilung":
+        return "action kinds are not told apart"
     # Numbered variants of an action (JinPvE_18807, LiturgyOfTheBellPvE_28509) are actions too.
     if PROPERTY.findall("public IBaseAction JinPvE_18807 => x;") != ["JinPvE_18807"] \
             or CAST.findall("JinPvE_18807.CanUse(out act, usedUp: true)") != ["JinPvE_18807"]:
@@ -836,17 +1162,21 @@ def generate():
         for u in result["usage"].values():
             key = "über andere Aktion" if u.startswith("über") else u.split(" — ")[0].split(" (")[0]
             counts[key] = counts.get(key, 0) + 1
-        summary.append((job, len(result["nodes"]), counts))
+        summary.append((job, len(result["nodes"]), counts,
+                        sum(1 for n in result["blanks"].values() if n),
+                        len(set(result["interplay"])), len(set(result["extensions"])), len(set(result["loops"]))))
     index = io.StringIO()
     index.write("# Abhängigkeitsmatrix je Job\n\n")
     index.write(f"Erzeugt am {stamp} von `.github/scripts/audit/generate_action_matrix.py`. Methode, "
                 "Grenzen und Bewertung: `docs/rotation-flow/14-action-dependency-matrix.md`.\n\n")
-    index.write("| Job | Aktionen | direkt | über andere Aktion | nur geprüft | nur gelesen | ungenutzt |\n"
-                "|---|---|---|---|---|---|---|\n")
-    for job, n, c in summary:
+    index.write("| Job | Aktionen | direkt | über andere Aktion | nur geprüft | nur gelesen | ungenutzt | "
+                "unvollständig beschrieben | Wechselwirkungen | Verlängerungen | Selbsterhaltung |\n"
+                "|---|---|---|---|---|---|---|---|---|---|---|\n")
+    for job, n, c, blank, inter, ext, loop in summary:
         mark = " (begrenzter Job)" if job in LIMITED else ""
         index.write(f"| [{job}]({job}.md){mark} | {n} | {c.get('direkt', 0)} | {c.get('über andere Aktion', 0)} | "
-                    f"{c.get('nur geprüft', 0)} | {c.get('nur gelesen', 0)} | {c.get('ungenutzt', 0)} |\n")
+                    f"{c.get('nur geprüft', 0)} | {c.get('nur gelesen', 0)} | {c.get('ungenutzt', 0)} | "
+                    f"{blank} | {inter} | {ext} | {loop} |\n")
     files["README.md"] = index.getvalue()
     return files
 

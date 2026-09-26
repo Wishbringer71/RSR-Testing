@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-26; nic
 
 ## Nutzung
 
-direkt: 36 · ungenutzt: 8 · über andere Aktion: 2
+direkt: 36 · ungenutzt: 9 · über andere Aktion: 1
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -30,7 +30,7 @@ direkt: 36 · ungenutzt: 8 · über andere Aktion: 2
 | Job | Checkmate (`CheckmatePvE`) | 36980 | Ability | direkt |
 | Job | Clean Shot (`CleanShotPvE`) | 2873 | Weaponskill | direkt |
 | Job | Crowned Collider (`CrownedColliderPvE`) | 25787 | Ability | ungenutzt — nicht zuweisbar: Begleiter oder Automatik |
-| Job | Detonator (`DetonatorPvE`) | 16766 | Ability | über Wildfire |
+| Job | Detonator (`DetonatorPvE`) | 16766 | Ability | ungenutzt — Knopfwechsel über Wildfire gesperrt: deren StatusProvide enthält Wildfire |
 | Job | Dismantle (`DismantlePvE`) | 2887 | Ability | direkt |
 | Job | Double Check (`DoubleCheckPvE`) | 36979 | Ability | direkt |
 | Job | Drill (`DrillPvE`) | 16498 | Weaponskill | direkt |
@@ -216,6 +216,38 @@ direkt: 36 · ungenutzt: 8 · über andere Aktion: 2
 | Wildfire | Regel prüft | Full Metal Field |
 | Wildfire | Regel sperrt vorher | Full Metal Field |
 
+## Wechselwirkungen und Zeit
+
+Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wirktext), Heilung, Angriff, sonstige. Bewertung im Konzept 14.
+
+### Abwehr, Angriff und Heilung beenden oder sperren einander
+
+| Aktion | Art | Befund | Gegenseite |
+|---|---|---|---|
+| Detonator | sonstige | hebt Wildfire auf | Wildfire |
+| Flamethrower | Angriff | endet bei jeder weiteren Aktion oder Bewegung (Kanal); RSR-Sperre: PosFlameThrower (aus) hält Bewegung | jede Aktion |
+| Rook Autoturret | Angriff | gemeinsame Abklingzeit (Angriff / sonstige) | Rook Overdrive |
+| Rook Overdrive | sonstige | gemeinsame Abklingzeit (sonstige / Angriff) | Rook Autoturret |
+
+### Verlängerung, Aufbau, Umschalten
+
+- Hypercharge: 5 Stapel Overheated
+
+### Ressourcen: wer erzeugt, wer verbraucht
+
+| Ressource | erzeugt von | verbraucht von |
+|---|---|---|
+| Battery | Air Anchor, Chain Saw, Excavator | Automaton Queen, Rook Autoturret |
+| Heat | Scattergun | Hypercharge |
+
+### Kandidaten für Selbsterhaltung
+
+keine im Wirktext
+
+### Unvollständige Beschreibungen
+
+Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Air Anchor (1), Automaton Queen (1), Blazing Shot (1), Chain Saw (1), Drill (1), Heated Clean Shot (1), Heated Slug Shot (1), Heated Split Shot (1)
+
 ## Nicht in der Matrix: Limit Breaks
 
 Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Breaks (Konzept 05). `BigShotPvE`, `DesperadoPvE`, `SatelliteBeamPvE`
@@ -226,6 +258,7 @@ Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 
 - Arm Punch (`ArmPunchPvE`, Weaponskill): ungenutzt — nicht zuweisbar: Begleiter oder Automatik
 - Crowned Collider (`CrownedColliderPvE`, Ability): ungenutzt — nicht zuweisbar: Begleiter oder Automatik
+- Detonator (`DetonatorPvE`, Ability): ungenutzt — Knopfwechsel über Wildfire gesperrt: deren StatusProvide enthält Wildfire
 - Flamethrower (`FlamethrowerPvE`, Ability): ungenutzt
 - Foot Graze (`FootGrazePvE`, Ability): ungenutzt
 - Leg Graze (`LegGrazePvE`, Ability): ungenutzt

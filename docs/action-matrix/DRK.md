@@ -123,6 +123,39 @@ direkt: 41 · ungenutzt: 1 · über andere Aktion: 1
 | Torcleaver | ComboIds | Comeuppance |
 | Unmend | Regel sperrt vorher | Provoke |
 
+## Wechselwirkungen und Zeit
+
+Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wirktext), Heilung, Angriff, sonstige. Bewertung im Konzept 14.
+
+### Abwehr, Angriff und Heilung beenden oder sperren einander
+
+keine
+
+### Verlängerung, Aufbau, Umschalten
+
+- Edge of Darkness verlängert Darkside um 30 s, höchstens auf 60 s
+- Edge of Shadow verlängert Darkside um 30 s, höchstens auf 60 s
+- Flood of Darkness verlängert Darkside um 30 s, höchstens auf 60 s
+- Flood of Shadow verlängert Darkside um 30 s, höchstens auf 60 s
+- Blood Weapon: 3 Stapel Blood Weapon
+- Delirium: 3 Stapel Delirium
+- Umschalten (endet bei erneutem Einsatz): Grit
+
+### Ressourcen: wer erzeugt, wer verbraucht
+
+| Ressource | erzeugt von | verbraucht von |
+|---|---|---|
+| Blood | — (nicht im Wirktext) | Bloodspiller, Quietus |
+| MP | Abyssal Drain, Carve and Spit, Comeuppance, Impalement, Scarlet Delirium, Stalwart Soul, Syphon Strike, Torcleaver | — |
+
+### Kandidaten für Selbsterhaltung
+
+keine im Wirktext
+
+### Unvollständige Beschreibungen
+
+Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Bloodspiller (1), Carve and Spit (1), Hard Slash (1), Reprisal (1), Souleater (2), Stalwart Soul (1), Syphon Strike (2)
+
 ## Nicht in der Matrix: Limit Breaks
 
 Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Breaks (Konzept 05). `DarkForcePvE`, `ShieldWallPvE`, `StrongholdPvE`

@@ -179,6 +179,34 @@ direkt: 49 · ungenutzt: 3
 | Writhing Snap | Regel sperrt vorher | Hunter's Coil |
 | Writhing Snap | Regel sperrt vorher | Swiftskin's Coil |
 
+## Wechselwirkungen und Zeit
+
+Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wirktext), Heilung, Angriff, sonstige. Bewertung im Konzept 14.
+
+### Abwehr, Angriff und Heilung beenden oder sperren einander
+
+keine
+
+### Verlängerung, Aufbau, Umschalten
+
+keine
+
+### Ressourcen: wer erzeugt, wer verbraucht
+
+| Ressource | erzeugt von | verbraucht von |
+|---|---|---|
+| Anguine Tribute | — (nicht im Wirktext) | First Generation, Fourth Generation, Second Generation, Third Generation |
+| Offerings | — (nicht im Wirktext) | Reawaken |
+| Rattling Coil | — (nicht im Wirktext) | Uncoiled Fury |
+
+### Kandidaten für Selbsterhaltung
+
+keine im Wirktext
+
+### Unvollständige Beschreibungen
+
+Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Bloodied Maw (1), Feint (1), Flanksbane Fang (2), Flanksting Strike (2), Hindsbane Fang (2), Hindsting Strike (2), Hunter's Sting (1), Jagged Maw (1), Reaving Fangs (3), Reaving Maw (1), Steel Fangs (3), Steel Maw (1), Swiftskin's Sting (1), Uncoiled Twinfang (1)
+
 ## Nicht in der Matrix: Limit Breaks
 
 Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Breaks (Konzept 05). `BladedancePvE`, `BraverPvE`, `WorldswallowerPvE`

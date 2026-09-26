@@ -154,6 +154,40 @@ direkt: 42 · über andere Aktion: 3
 | Shadow of Death | Regel prüft | Plentiful Harvest |
 | Waxing Slice | Regel prüft | Slice |
 
+## Wechselwirkungen und Zeit
+
+Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wirktext), Heilung, Angriff, sonstige. Bewertung im Konzept 14.
+
+### Abwehr, Angriff und Heilung beenden oder sperren einander
+
+| Aktion | Art | Befund | Gegenseite |
+|---|---|---|---|
+| Plentiful Harvest | Angriff | nicht nutzbar unter Bloodsown Circle | Bloodsown Circle |
+
+### Verlängerung, Aufbau, Umschalten
+
+- Shadow of Death verlängert Death's Design um 30 s, höchstens auf 60 s
+- Whorl of Death verlängert Death's Design um 30 s, höchstens auf 60 s
+
+### Ressourcen: wer erzeugt, wer verbraucht
+
+| Ressource | erzeugt von | verbraucht von |
+|---|---|---|
+| Immortal Sacrifice | — (nicht im Wirktext) | Plentiful Harvest |
+| Lemure Shroud | — (nicht im Wirktext) | Cross Reaping, Grim Reaping, Void Reaping |
+| Shroud | — (nicht im Wirktext) | Enshroud |
+| Soul | Harvest Moon, Soul Scythe, Soul Slice | Blood Stalk, Gluttony, Grim Swathe, Unveiled Gallows, Unveiled Gibbet |
+| Void Shroud | — (nicht im Wirktext) | Lemure's Scythe, Lemure's Slice |
+
+### Kandidaten für Selbsterhaltung
+
+- Gallows: Status-Kreislauf mit Unveiled Gibbet
+- Gibbet: Status-Kreislauf mit Unveiled Gallows
+
+### Unvollständige Beschreibungen
+
+Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Cross Reaping (2), Feint (1), Gallows (3), Gibbet (3), Gluttony (1), Harpe (1), Harvest Moon (1), Infernal Slice (1), Lemure's Slice (1), Shadow of Death (1), Slice (1), Soul Slice (1), Unveiled Gallows (1), Unveiled Gibbet (1), Void Reaping (2), Waxing Slice (1)
+
 ## Nicht in der Matrix: Limit Breaks
 
 Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Breaks (Konzept 05). `BladedancePvE`, `BraverPvE`, `TheEndPvE`

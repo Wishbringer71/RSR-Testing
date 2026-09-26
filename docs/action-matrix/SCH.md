@@ -127,6 +127,34 @@ direkt: 44 · ungenutzt: 5 · über andere Aktion: 2
 | Summon Seraph | Regel prüft | Whispering Dawn |
 | Whispering Dawn | Regel sperrt vorher | Excogitation |
 
+## Wechselwirkungen und Zeit
+
+Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wirktext), Heilung, Angriff, sonstige. Bewertung im Konzept 14.
+
+### Abwehr, Angriff und Heilung beenden oder sperren einander
+
+keine
+
+### Verlängerung, Aufbau, Umschalten
+
+- Umschalten (endet bei erneutem Einsatz): Aetherpact
+
+### Ressourcen: wer erzeugt, wer verbraucht
+
+| Ressource | erzeugt von | verbraucht von |
+|---|---|---|
+| Aetherflow | — (nicht im Wirktext) | Energy Drain, Excogitation, Indomitability, Lustrate, Sacred Soil |
+| Faerie | — (nicht im Wirktext) | Aetherpact |
+| MP | Aetherflow | — |
+
+### Kandidaten für Selbsterhaltung
+
+keine im Wirktext
+
+### Unvollständige Beschreibungen
+
+Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Biolysis (1), Broil IV (1), Seraphic Veil (1)
+
 ## Nicht in der Matrix: Limit Breaks
 
 Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Breaks (Konzept 05). `AngelFeathersPvE`, `BreathOfTheEarthPvE`, `HealingWindPvE`

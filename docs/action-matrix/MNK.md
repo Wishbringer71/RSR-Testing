@@ -146,6 +146,31 @@ direkt: 45 · nur gelesen: 1 · ungenutzt: 1 · über andere Aktion: 1
 | Tornado Kick | Regel prüft | Riddle of Fire |
 | Wind's Reply | StatusNeed WindsRumination | Riddle of Wind |
 
+## Wechselwirkungen und Zeit
+
+Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wirktext), Heilung, Angriff, sonstige. Bewertung im Konzept 14.
+
+### Abwehr, Angriff und Heilung beenden oder sperren einander
+
+keine
+
+### Verlängerung, Aufbau, Umschalten
+
+- Demolish: 2 Stapel Coeurl's Fury
+- Perfect Balance: 3 Stapel Perfect Balance
+
+### Ressourcen: wer erzeugt, wer verbraucht
+
+keine
+
+### Kandidaten für Selbsterhaltung
+
+keine im Wirktext
+
+### Unvollständige Beschreibungen
+
+Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Bootshine (1), Demolish (1), Dragon Kick (1), Feint (1), Phantom Rush (1), Six-sided Star (1), Snap Punch (1), True Strike (1), Twin Snakes (1), the Forbidden Chakra (1)
+
 ## Nicht in der Matrix: Limit Breaks
 
 Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Breaks (Konzept 05). `BladedancePvE`, `BraverPvE`, `FinalHeavenPvE`

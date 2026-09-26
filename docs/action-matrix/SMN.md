@@ -302,6 +302,41 @@ direkt: 72 · nur gelesen: 1 · ungenutzt: 10 · über andere Aktion: 3
 | Sunflare | Regel sperrt vorher | Summon Bahamut |
 | Topaz Ruin | Regel prüft | Summon Titan |
 
+## Wechselwirkungen und Zeit
+
+Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wirktext), Heilung, Angriff, sonstige. Bewertung im Konzept 14.
+
+### Abwehr, Angriff und Heilung beenden oder sperren einander
+
+keine
+
+### Verlängerung, Aufbau, Umschalten
+
+- Summon Emerald: 4 Stapel Wind Attunement
+- Summon Garuda: 4 Stapel Wind Attunement
+- Summon Garuda II: 4 Stapel Wind Attunement
+- Summon Ifrit: 2 Stapel Fire Attunement
+- Summon Ifrit II: 2 Stapel Fire Attunement
+- Summon Ruby: 2 Stapel Fire Attunement
+- Summon Titan: 4 Stapel Earth Attunement
+- Summon Titan II: 4 Stapel Earth Attunement
+- Summon Topaz: 4 Stapel Earth Attunement
+
+### Ressourcen: wer erzeugt, wer verbraucht
+
+| Ressource | erzeugt von | verbraucht von |
+|---|---|---|
+| Aetherflow | — (nicht im Wirktext) | Energy Drain, Fester, Necrotize, Painflare |
+| Attunement | — (nicht im Wirktext) | Emerald Catastrophe, Emerald Disaster, Emerald Outburst, Emerald Rite, Emerald Ruin, Emerald Ruin II, Emerald Ruin III, Ruby Catastrophe, Ruby Disaster, Ruby Outburst, Ruby Rite, Ruby Ruin, Ruby Ruin II, Ruby Ruin III, Topaz Catastrophe, Topaz Disaster, Topaz Outburst, Topaz Rite, Topaz Ruin, Topaz Ruin II, Topaz Ruin III |
+
+### Kandidaten für Selbsterhaltung
+
+keine im Wirktext
+
+### Unvollständige Beschreibungen
+
+Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Addle (1), Aethercharge (1), Astral Impulse (1), Crimson Cyclone (1), Crimson Strike (1), Emerald Rite (1), Fountain of Fire (1), Ruby Rite (1), Ruin III (1), Ruin IV (1), Slipstream (1), Summon Garuda II (1), Summon Ifrit II (1), Summon Titan II (1), Topaz Rite (1)
+
 ## Nicht in der Matrix: Limit Breaks
 
 Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Breaks (Konzept 05). `SkyshardPvE`, `StarstormPvE`, `TeraflarePvE`

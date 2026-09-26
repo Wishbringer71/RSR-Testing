@@ -217,6 +217,32 @@ direkt: 44 · nur gelesen: 1 · ungenutzt: 1
 | Wicked Talon | Regel sperrt vorher | Bloodfest |
 | Wicked Talon | Regel sperrt vorher | No Mercy |
 
+## Wechselwirkungen und Zeit
+
+Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wirktext), Heilung, Angriff, sonstige. Bewertung im Konzept 14.
+
+### Abwehr, Angriff und Heilung beenden oder sperren einander
+
+keine
+
+### Verlängerung, Aufbau, Umschalten
+
+- Umschalten (endet bei erneutem Einsatz): Royal Guard
+
+### Ressourcen: wer erzeugt, wer verbraucht
+
+| Ressource | erzeugt von | verbraucht von |
+|---|---|---|
+| Cartridge | Demon Slaughter | Burst Strike, Double Down, Fated Circle, Gnashing Fang |
+
+### Kandidaten für Selbsterhaltung
+
+keine im Wirktext
+
+### Unvollständige Beschreibungen
+
+Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Abdomen Tear (1), Blasting Zone (1), Brutal Shell (2), Burst Strike (1), Eye Gouge (1), Gnashing Fang (1), Hypervelocity (1), Jugular Rip (1), Keen Edge (1), Reprisal (1), Savage Claw (1), Solid Barrel (1), Wicked Talon (1)
+
 ## Nicht in der Matrix: Limit Breaks
 
 Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Breaks (Konzept 05). `GunmetalSoulPvE`, `ShieldWallPvE`, `StrongholdPvE`

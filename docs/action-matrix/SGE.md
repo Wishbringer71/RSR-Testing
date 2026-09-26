@@ -148,6 +148,37 @@ direkt: 40 · ungenutzt: 2 · über andere Aktion: 5
 | Zoe | Regel prüft | Eukrasian Prognosis |
 | Zoe | Regel prüft | Pneuma |
 
+## Wechselwirkungen und Zeit
+
+Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wirktext), Heilung, Angriff, sonstige. Bewertung im Konzept 14.
+
+### Abwehr, Angriff und Heilung beenden oder sperren einander
+
+keine
+
+### Verlängerung, Aufbau, Umschalten
+
+- Haima: 5 Stapel Haimatinon
+- Panhaima: 5 Stapel Panhaimatinon
+- Rhizomata: 1 Stapel Addersgall
+- Soteria: 4 Stapel Soteria
+
+### Ressourcen: wer erzeugt, wer verbraucht
+
+| Ressource | erzeugt von | verbraucht von |
+|---|---|---|
+| Addersgall | — (nicht im Wirktext) | Druochole, Ixochole, Kerachole, Taurochole |
+| Addersting | — (nicht im Wirktext) | Toxikon, Toxikon II |
+| MP | Druochole, Ixochole, Kerachole, Taurochole | — |
+
+### Kandidaten für Selbsterhaltung
+
+keine im Wirktext
+
+### Unvollständige Beschreibungen
+
+Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Dosis (1), Dosis III (1), Eukrasian Dosis (2), Eukrasian Dosis II (1), Eukrasian Dosis III (2), Eukrasian Dyskrasia (1), Phlegma (2), Phlegma II (1), Phlegma III (1), Physis II (1), Pneuma (2), Soteria (1), Toxikon (2), Toxikon II (2)
+
 ## Nicht in der Matrix: Limit Breaks
 
 Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Breaks (Konzept 05). `BreathOfTheEarthPvE`, `HealingWindPvE`, `TechneMakrePvE`

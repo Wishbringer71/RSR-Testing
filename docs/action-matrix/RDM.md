@@ -220,6 +220,34 @@ direkt: 44 · nur gelesen: 5 · ungenutzt: 1 · über andere Aktion: 2
 | Vice of Thorns | StatusNeed ThornedFlourish | Status ThornedFlourish |
 | Zwerchhau | ComboIds | Riposte |
 
+## Wechselwirkungen und Zeit
+
+Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wirktext), Heilung, Angriff, sonstige. Bewertung im Konzept 14.
+
+### Abwehr, Angriff und Heilung beenden oder sperren einander
+
+keine
+
+### Verlängerung, Aufbau, Umschalten
+
+- Manafication: 3 Stapel Magicked Swordplay
+
+### Ressourcen: wer erzeugt, wer verbraucht
+
+| Ressource | erzeugt von | verbraucht von |
+|---|---|---|
+| Black Mana | Verfire, Verflare, Verthunder, Verthunder II, Verthunder III | Enchanted Moulinet, Enchanted Moulinet Deux, Enchanted Moulinet Trois, Enchanted Redoublement, Enchanted Redoublement, Enchanted Reprise, Enchanted Riposte, Enchanted Riposte, Enchanted Zwerchhau, Enchanted Zwerchhau |
+| Mana Stack | — (nicht im Wirktext) | Verflare, Verholy |
+| White Mana | Veraero, Veraero II, Veraero III, Verholy, Verstone | Enchanted Moulinet, Enchanted Moulinet Deux, Enchanted Moulinet Trois, Enchanted Redoublement, Enchanted Redoublement, Enchanted Reprise, Enchanted Riposte, Enchanted Riposte, Enchanted Zwerchhau, Enchanted Zwerchhau |
+
+### Kandidaten für Selbsterhaltung
+
+keine im Wirktext
+
+### Unvollständige Beschreibungen
+
+Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Addle (1), Displacement (1), Enchanted Redoublement (2), Enchanted Redoublement (2), Enchanted Reprise (1), Enchanted Riposte (1), Enchanted Riposte (1), Enchanted Zwerchhau (2), Enchanted Zwerchhau (2), Engagement (1), Fleche (1), Impact (1), Resolution (1), Scorch (1), Veraero (1), Veraero III (1), Verfire (1), Verflare (1), Verholy (1), Verstone (1), Verthunder (1), Verthunder III (1)
+
 ## Nicht in der Matrix: Limit Breaks
 
 Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Breaks (Konzept 05). `SkyshardPvE`, `StarstormPvE`, `VermilionScourgePvE`

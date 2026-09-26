@@ -288,6 +288,50 @@ direkt: 114 · ungenutzt: 23
 | 1000 Needles | Regel sperrt vorher | Missile |
 | 4-tonze Weight | Regel sperrt vorher | Ultravibration |
 
+## Wechselwirkungen und Zeit
+
+Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wirktext), Heilung, Angriff, sonstige. Bewertung im Konzept 14.
+
+### Abwehr, Angriff und Heilung beenden oder sperren einander
+
+| Aktion | Art | Befund | Gegenseite |
+|---|---|---|---|
+| Angel's Snack | Heilung | gemeinsame Abklingzeit (Heilung / Abwehr) | Dragon Force |
+| Angel's Snack | Heilung | gemeinsame Abklingzeit (Heilung / Angriff) | Matra Magic |
+| Apokalypsis | Angriff | endet bei jeder weiteren Aktion oder Bewegung (Kanal); keine RSR-Sperre: RSRs nächste Aktion beendet ihn | jede Aktion |
+| Chelonian Gate | Abwehr | endet bei jeder weiteren Aktion oder Bewegung (Kanal); keine RSR-Sperre: RSRs nächste Aktion beendet ihn | jede Aktion |
+| Chelonian Gate | Abwehr | gemeinsame Abklingzeit (Abwehr / Angriff) | Ruby Dynamics |
+| Chelonian Gate | Abwehr | gemeinsame Abklingzeit (Abwehr / Angriff) | The Rose of Destruction |
+| Dragon Force | Abwehr | gemeinsame Abklingzeit (Abwehr / Angriff) | Matra Magic |
+| Dragon Force | Abwehr | gemeinsame Abklingzeit (Abwehr / Heilung) | Angel's Snack |
+| Final Sting | Angriff | nicht nutzbar unter Brush | Brush |
+| Glass Dance | Angriff | gemeinsame Abklingzeit (Angriff / sonstige) | Veil of the Whorl |
+| Matra Magic | Angriff | gemeinsame Abklingzeit (Angriff / Abwehr) | Dragon Force |
+| Matra Magic | Angriff | gemeinsame Abklingzeit (Angriff / Heilung) | Angel's Snack |
+| Ruby Dynamics | Angriff | gemeinsame Abklingzeit (Angriff / Abwehr) | Chelonian Gate |
+| Self-destruct | Angriff | nicht nutzbar unter Brush | Brush |
+| The Rose of Destruction | Angriff | gemeinsame Abklingzeit (Angriff / Abwehr) | Chelonian Gate |
+| Transfusion | sonstige | nicht nutzbar unter Brush | Brush |
+| Veil of the Whorl | sonstige | gemeinsame Abklingzeit (sonstige / Angriff) | Glass Dance |
+
+### Verlängerung, Aufbau, Umschalten
+
+- Umschalten (endet bei erneutem Einsatz): Aetheric Mimicry, Aetheric Mimicry, Aetheric Mimicry, Aetheric Mimicry, Mighty Guard
+
+### Ressourcen: wer erzeugt, wer verbraucht
+
+| Ressource | erzeugt von | verbraucht von |
+|---|---|---|
+| MP | Blood Drain, Candy Cane, Divination Rune, Magic Hammer | — |
+
+### Kandidaten für Selbsterhaltung
+
+- Chelonian Gate: braucht und erneuert auspicious trance
+
+### Unvollständige Beschreibungen
+
+Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz, Dauer): Addle (1), Surpanakha (1), Winged Reprobation (1)
+
 ## Nicht direkt genutzt
 
 Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
