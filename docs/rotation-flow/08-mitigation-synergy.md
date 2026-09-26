@@ -244,6 +244,18 @@ soll, ist seine Entscheidung (Einstellungstext und Vorgabe).
   nicht vorhersehen.
 - **Ein Tankbuster auf einen gesunden Tank** löst keine Rückhaltung; erst Klasse 1.
 
+### Woran jede Sicherheitsregel die Wahrscheinlichkeit misst
+
+Seine Präzisierung: Eine Schutzmaßnahme, die Schaden kostet, lohnt, wo ein Treffer angekündigt oder
+wahrscheinlich ist. Die Regeln dieses Konzepts messen das so:
+
+| Regel | Maß der Wahrscheinlichkeit |
+|---|---|
+| Flächenabwehr (`AutoStatus.DefenseArea`) | ein laufender Flächenzauber oder ein BossMod-Raidwide im Fenster |
+| Schranke der Rückhaltungen | Gefährdungsklasse 1 jetzt, oder ein angekündigter, gemessener Treffer brächte ein ungeschütztes Mitglied dorthin |
+| Streckung | eine eigene Minderung liegt noch; der nächste Treffer wird von ihr getragen, bis sie ausläuft |
+| Kanalsperre (Paladin, Astrologe) | Fähigkeiten: nur bei angekündigtem Flächenschaden. GCD: gar nicht — sie hält, solange der Kanal läuft (Konzept 14, „Wechselwirkungen und Zeit") |
+
 **Im Kampf ablesbar:** Unter „Defense hold" im Diagnosefenster steht je Regel, ob sie zuletzt hielt
 oder warum sie wich, seit Kampfbeginn — nur zur Kontrolle, weil eine wartende Abwehr sonst nicht von
 einer nie gefragten zu unterscheiden ist.

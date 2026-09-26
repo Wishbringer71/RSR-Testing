@@ -3994,6 +3994,28 @@ Als Hinweis in Konzept 07 und 08 geführt. Die Wirktexte stützen ihn gleichlaut
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A163 · Wechselwirkungen, Zeit und Vollständigkeit der Aktionen (26.09.2026)
+
+**Auftrag:** alle erfassten Fähigkeiten auf Vollständigkeit der Beschreibung prüfen, Wechselwirkungen, ob Abwehr Angriff einschränkt oder umgekehrt, Aufbau und Verlängerung, Selbsterhaltung („quasi-perpetuum-mobile"); Konzepte erweitern, später im Audit prüfen. **Seine Präzisierung** (in CLAUDE.md): Sicherheitsbewertungen brauchen eine Wahrscheinlichkeit.
+
+- *Research:*
+  - Generator erweitert um Art, Kanal, Aufhebung, Sperre unter Status, Verlängerung, Stapel, Umschalten, Erzeugung/Verbrauch, Kreisläufe, leere Werte, die RSR-Kanalsperren samt Voreinstellung, und den gesperrten Knopfwechsel (`StatusProvide` der Basisaktion schließt den Status der Zielaktion aus).
+  - Statustexte (`Status.resx`): Collective Unconscious 848 ist der Ring, 849 die Minderung. Eigenschaftstext Enhanced Thrill of Battle: +20 % erhaltene Heilung.
+  - Code: Kanalsperren seit 67b11fb58 (Upstream, Mai 2026), Paladin und Astrologe ab Werk aus. Die GCD-Sperre fragt nicht nach `DefenseArea`. `DefenseArea` endet beim BossMod-Signal 0,6 s vor dem Treffer. Improvised Finish: `ImprovisedFinishPvEReady` nur in der Debug-Anzeige.
+  - Reihenfolge der Fähigkeiten: Heilung und Abwehr vor `GeneralAbility` (`CustomRotation_Ability`).
+- *Befunde:*
+  - Tänzer: Improvised Finish nie gewirkt (Defekt).
+  - Paladin: Passage of Arms endet ohne Sperre meist vor dem Treffer; mit Sperre hält der GCD über den Treffer hinaus (Defekt, Entscheidung).
+  - Astrologe: Die Sperre hält auch GCD-Heilungen; die Minderung bleibt nach dem Abbruch (Schluss aus dem Textaufbau).
+  - Krieger: Shake It Off hebt Thrill of Battle auf (Defekt, Entscheidung).
+  - Kein Perpetuum mobile aus den Texten: Verlängerungen auf 60 s gedeckelt, der einzige Status-Kreislauf (Schnitter) kostet Soul Gauge, keine Ressourcenkreisläufe; MP-Kosten nicht in den Texten.
+- *Falsifikation:*
+  - **Kein Defekt?** Tänzer: widerlegt, der Aufruf fehlt und die Basisaktion sperrt. Krieger: Die Gegenthese „der Verlust der Maximalgesundheit kostet in niedriger Gesundheit nichts" (Schluss) trägt nicht, weil die +20 % Heilung belegt verloren gehen. Paladin: widerlegt für die Voreinstellung.
+  - **Befund falsch erhoben?** Generatorfehler berichtigt: Namen mit „of"/„the", wiederholte Überschriften, leerer Statusname als Stapel, Angriffe mit Heilung als Zusatzeffekt als „Heilung", Selbstsperre (Ley Lines unter Ley Lines) als Wechselwirkung, „über andere Aktion" für gesperrte Knopfwechsel.
+  - **Ausgeliefert, nichts ändert sich?** Nur Werkzeug und Konzept ausgeliefert; die drei Defekte sind im TODO und zur Entscheidung vorgelegt.
+
+**Prüfgrad:** statisch; Generator mit Selbsttest; Prüfskripte.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

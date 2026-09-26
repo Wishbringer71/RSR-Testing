@@ -137,7 +137,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 # Der Auftraggeber
 
 **Spielweise**
-- Sicherheit der Gruppe geht vor Schaden.
+- Sicherheit der Gruppe geht vor Schaden — gewichtet mit der Wahrscheinlichkeit, dass der Schaden eintritt (seine Präzisierung). Eine Schutzmaßnahme, die Schaden kostet, lohnt, wo ein Treffer angekündigt oder wahrscheinlich ist; bei geringer Wahrscheinlichkeit verhindert sie im Extrem den Sieg, weil ohne Schaden der Kampf nicht endet. Jede Sicherheitsregel nennt deshalb, woran sie die Wahrscheinlichkeit misst.
 - Swiftcast bleibt für Wiederbelebungen. Vorschläge, die es in der Rotation verbrauchen (`AddSwiftcastOnGaruda`, `AddSwiftcastOnRuby` u. ä.), mache ich nicht.
 - Nichts empfehlen, was ihn für Schaden aus einer sicheren Position holt. Ausgeschlossen ist die Bewegung, nicht die Aktion: Steht er bei 0 Yalm am Ziel, ist ein Gapcloser nur Schaden.
 - Einen Gewinn im Promillebereich lege ich nicht als Abwägung gegen eine Sicherheitsentscheidung vor.

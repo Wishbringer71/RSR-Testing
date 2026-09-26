@@ -8,6 +8,18 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 Barde, Maler und Tänzer führen „Prevent the use of defense abilties during burst" (ab Werk an). Die allgemeine Schranke (Konzept 08, „Die Abwehrsperren") greift dort nicht, weil der Einstellungstext ohne Ausnahme „verhindern" sagt und bindet. Im Kampf: Ein tödlicher Raidwide im Burst bekommt von diesen drei Jobs keine Minderung. Zur Entscheidung vorzulegen: Text ändern (seine Entscheidung) oder so lassen. Dieselbe Einstellung als Damage-Dealer-Regel zu führen, wäre die Stufe „Damage Dealer".
 
+### Tänzer: Improvised Finish wird nie gewirkt, die Barriere von Improvisation verfällt · N
+
+`ImprovisationPvE` führt `Improvisation` als `StatusProvide` und verweigert sich, solange der Knopf Improvised Finish ist; einen eigenen Aufruf von `ImprovisedFinishPvE` gibt es nicht (seit 4727b6f7a, Upstream). Die nächste Aktion beendet den Tanz. Im Kampf: Die Gruppe bekommt das Regen, nie die Barriere (5 % bei 0 bis 10 % bei 4 Stapeln). Zur Entscheidung vorgelegt: sofort abschließen (5 %) oder bei angekündigtem Treffer Stapel aufbauen. Konzept 14, „Wechselwirkungen und Zeit".
+
+### Kanal-Abwehr: RSRs nächste Aktion beendet sie, die Sperre hält den GCD über den Treffer hinaus · N, U
+
+Passage of Arms (Paladin) und Collective Unconscious (Astrologe) enden mit jeder weiteren Aktion. Ohne `PldlockCasting`/`AstlockCasting` (ab Werk aus) beendet RSR Passage of Arms mit seiner nächsten Aktion, meist bevor der angekündigte Treffer fällt. Mit Sperre hält der GCD-Pfad (`CustomRotation_GCD`) ohne Frage nach dem Treffer, bis eine Fähigkeit den Kanal beendet — bis zu 18 s ohne GCD; beim Astrologen auch ohne GCD-Heilung. Der Fähigkeitspfad lässt beim BossMod-Signal 0,6 s vor dem Treffer los. Zur Entscheidung vorgelegt. Konzept 14, „Wechselwirkungen und Zeit".
+
+### Krieger: Shake It Off hebt Thrill of Battle auf · N
+
+Thrill of Battle (unter `ThrillOfBattleHeal`, ab Werk 60 %, `GeneralAbility`) trägt +20 % Maximalgesundheit und +20 % erhaltene Heilung (Enhanced Thrill of Battle). Shake It Off hebt es auf, für +2 % Barriere, und wird ohne Blick auf den Status gewirkt (Einzelheilung, Flächenabwehr). Im Kampf: In niedriger Gesundheit tauscht der Krieger mehr Heilung gegen eine kleine Barriere. Zur Entscheidung vorgelegt: Shake It Off als Einzelheilung wartet, solange Thrill of Battle liegt, außer bei Gefährdungsklasse 1 (`HoldSelfHeal`). Konzept 14.
+
 ### Die Minderungssumme kennt Confession nicht · R
 
 `CustomRotation.GetCurrentMitigationPercent` rechnet Temperance, Sacred Soil, Kerachole und weitere Gruppenminderungen, aber nicht Confession aus Plenary Indulgence (Wirktext 7433: „reducing damage taken by 10%"). Gelesen wird die öffentliche Summe im Fork nur von der Debug-Anzeige im Einstellungsfenster (`RotationConfigWindow`) — im Kampf entscheidet keine Standardregel danach (A161). Betroffen sind abgeleitete Rotationen, die sie lesen: Sie halten einen Treffer unter Plenary Indulgence für 10 % härter, als er ist. Offen, weil die Zeile eine neue feste Zahl bräuchte; der Wert liegt erzeugt in `DefensiveValues` (A159), und die Summe sollte ihn von dort lesen.
