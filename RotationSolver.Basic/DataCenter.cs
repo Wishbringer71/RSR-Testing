@@ -3382,6 +3382,16 @@ internal static class DataCenter
 	/// </summary>
 	internal static SelfCentredHealWeighing? LastSelfCentredHeal { get; set; }
 
+	/// <summary>
+	/// The last strategic hold of a defense that was asked (CustomRotation_DefenseHold): which rule,
+	/// whether it held or yielded to a member in danger, and why. Shown in the diagnostics window,
+	/// because a defense that waits cannot otherwise be told apart from one that was never asked.
+	/// </summary>
+	internal static DefenseHoldDecision? LastDefenseHold { get; set; }
+
+	/// <summary>One decision of a defense hold.</summary>
+	internal readonly record struct DefenseHoldDecision(string Rule, bool Held, string Why, DateTime At);
+
 	/// <summary>One weighing of an area heal centred on the caster.</summary>
 	internal readonly record struct SelfCentredHealWeighing(string Action, int HurtInRadius, int Required, bool InNeed, DateTime At);
 

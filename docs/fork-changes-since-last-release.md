@@ -176,6 +176,25 @@ status shows what the rule says right now, why and when it last chose to cast, t
 and for the last cast that landed how many targets were confirmed and how much met missing health. Rekindle obeys Scalebound
 and Shackled Healing as well.
 
+## Defensive holds give way when the party is in danger
+
+Several rotations hold a defensive action back on purpose: the White Mage and the Astrologian
+spread their party mitigation over time instead of spending it all on one hit, and the Dark Knight,
+Gunbreaker, Machinist, Dragoon and Viper keep weave slots free in their burst. Every one of these
+holds now gives way when a party member is already at the critical health level
+(`HealthForDyingTanks`) or the announced area cast, as measured, would put someone there; a hold of
+a single-target defense also gives way to an announced tankbuster. The Dark Knight's own barrier
+hold follows the same rule.
+
+- White Mage and Astrologian wait for as long as the effect that started the wait lasts, taken from
+  the effect text. For the Astrologian that is 15 s after Macrocosmos and 18 s after Collective
+  Unconscious (formerly 30 and 20 s).
+- The Dark Knight's The Blackest Night and Oblation on a low party member are no longer held in the
+  burst window; their settings name no such exception.
+- The Bard, Painter and Dancer setting "Prevent the use of defense abilties during burst" is left
+  as it reads.
+- The Diagnostics window shows the last hold and whether it held or gave way.
+
 ## Hits and heals above 65,535 points are read in full
 
 The effect handler read the low 16 bits of every damage and heal amount. A raidwide that hit a

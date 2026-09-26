@@ -83,6 +83,15 @@ internal class DiagnosticsWindow : Window
 		}
 		ImGui.Separator();
 
+		// A defense that waits looks exactly like one that was never asked; this says which job rule
+		// held it last, or that it gave way because a member was in danger.
+		if (DataCenter.LastDefenseHold is { } hold)
+		{
+			ImGui.TextColored(ImGuiColors.DalamudViolet, "Defense hold");
+			ImGui.Text($"{hold.Rule}: {(hold.Held ? "held" : "gave way - " + hold.Why)} ({(DateTime.Now - hold.At).TotalSeconds:F0} s ago)");
+			ImGui.Separator();
+		}
+
 		// The same verdict the AoE list shows, here because that list is closed during a fight.
 		if (Service.Config.HoldProactiveMitigationForSmallCast)
 		{

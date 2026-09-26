@@ -84,7 +84,9 @@ public sealed class DRG_Reborn : DragoonRotation
 	[RotationDesc(ActionID.FeintPvE)]
 	protected sealed override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		if (IsLastAction(false, StardiverPvE))
+		// Dragoon special rule: no weave straight after Stardiver. On the universal layer, so it
+		// yields when the party is in danger (concept 08, "Die Abwehrsperren").
+		if (HoldAreaDefense(IsLastAction(false, StardiverPvE), "Dragoon: right after Stardiver"))
 		{
 			return base.DefenseAreaAbility(nextGCD, out act);
 		}
@@ -105,7 +107,7 @@ public sealed class DRG_Reborn : DragoonRotation
 	[RotationDesc(ActionID.FeintPvE)]
 	protected sealed override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		if (IsLastAction(false, StardiverPvE))
+		if (HoldSingleDefense(IsLastAction(false, StardiverPvE), "Dragoon: right after Stardiver"))
 		{
 			return base.DefenseSingleAbility(nextGCD, out act);
 		}

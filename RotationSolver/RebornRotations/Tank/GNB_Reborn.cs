@@ -102,24 +102,30 @@ public sealed class GNB_Reborn : GunbreakerRotation
 	[RotationDesc(ActionID.HeartOfLightPvE, ActionID.ReprisalPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		if (nextGCD.IsTheSameTo(false, (ActionID)GnashingFangPvE.ID) && !NoMercyPvE.Cooldown.IsCoolingDown)
+		// Gunbreaker special rules: the weave before the No Mercy opener and the No Mercy window keep
+		// their slots for damage. On the universal layer, so both yield when the party is in danger
+		// (concept 08, "Die Abwehrsperren").
+		if (HoldAreaDefense(nextGCD.IsTheSameTo(false, (ActionID)GnashingFangPvE.ID) && !NoMercyPvE.Cooldown.IsCoolingDown,
+			"Gunbreaker: No Mercy opener next"))
 		{
 			return base.DefenseAreaAbility(nextGCD, out act);
 		}
 
-		if (!HasNoMercy && HeartOfLightPvE.CanUse(out act, skipAoeCheck: true))
+		var noMercyHold = HoldAreaDefense(HasNoMercy, "Gunbreaker: No Mercy window");
+
+		if (!noMercyHold && HeartOfLightPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}
 
-		if (!HasNoMercy
+		if (!noMercyHold
 			&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
 
-		if (!HasNoMercy && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
+		if (!noMercyHold && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}
@@ -130,7 +136,10 @@ public sealed class GNB_Reborn : GunbreakerRotation
 	[RotationDesc(ActionID.HeartOfStonePvE, ActionID.NebulaPvE, ActionID.RampartPvE, ActionID.CamouflagePvE, ActionID.ReprisalPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		if (nextGCD.IsTheSameTo(false, (ActionID)GnashingFangPvE.ID) && !NoMercyPvE.Cooldown.IsCoolingDown)
+		// The same opener hold for the tank's own defence; it yields to danger or an announced
+		// tankbuster on the universal layer.
+		if (HoldSingleDefense(nextGCD.IsTheSameTo(false, (ActionID)GnashingFangPvE.ID) && !NoMercyPvE.Cooldown.IsCoolingDown,
+			"Gunbreaker: No Mercy opener next"))
 		{
 			return base.DefenseSingleAbility(nextGCD, out act);
 		}

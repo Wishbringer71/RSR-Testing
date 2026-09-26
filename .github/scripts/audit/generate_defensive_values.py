@@ -38,8 +38,12 @@ PROPERTIES = ROOT / "RotationSolver.SourceGenerators" / "Properties"
 SOURCES = [PROPERTIES / "ActionId.resx", PROPERTIES / "DutyAction.resx"]
 OUTPUT = ROOT / "RotationSolver.Basic" / "Data" / "DefensiveValues.g.cs"
 
-# "Reduces damage taken by 20%" - the bearer takes less.
-SELF_MITIGATION = re.compile(r"[Rr]educ(?:es|ing) damage taken by (\d{1,2})\s*%")
+# "Reduces damage taken by 20%" - the bearer takes less. The game also names the bearers between
+# "taken" and the figure: "reducing damage taken by self and all party members within a radius of
+# 50 yalms by 10%" (Temperance), "Reduces damage taken by a party member or self by 15%" (Aquaveil),
+# "by self and nearby party members by 10%" (Kerachole). Matching only the short form left every
+# party mitigation of that shape out of the table.
+SELF_MITIGATION = re.compile(r"[Rr]educ(?:es|ing) damage taken by (?:[^%.]{0,80}? by )?(\d{1,2})\s*%")
 # "Reduces damage dealt by nearby enemies by 10%", "Lowers target's damage dealt by 10%"
 ENEMY_MITIGATION = re.compile(r"(?:[Rr]educes|[Ll]owers)[^.]{0,60}?damage dealt[^.]{0,40}? by (\d{1,2})\s*%")
 # Addle's split form, physical and magical named separately in one sentence.
@@ -83,7 +87,11 @@ def unescape(text):
 
 
 def parse(path):
-    """Yield (identifier, row id, values) for every action whose effect text names a figure."""
+    """Yield (identifier, row id, values, duration) for every action with an effect text.
+
+    values is empty when the text names no defensive figure; the duration is still carried, because
+    a rule that waits for an effect to run out needs it whatever the effect is.
+    """
     if not path.exists():
         return
 
@@ -103,9 +111,7 @@ def parse(path):
         if not text:
             continue
 
-        values = extract(text)
-        if values:
-            yield identifier, row, values, duration_of(text)
+        yield identifier, row, extract(text), duration_of(text)
 
 
 def duration_of(text):
@@ -151,7 +157,9 @@ def collect():
     for path in SOURCES:
         for identifier, row, values, duration in parse(path):
             if duration is not None and row not in durations:
-                durations[row] = duration
+                durations[row] = (identifier, duration)
+            if not values:
+                continue
             # An id can appear in more than one sheet; the first sheet wins and the second is only
             # allowed to agree, so a silent disagreement cannot pass unnoticed.
             if row in found and found[row][1] != values:
@@ -161,7 +169,7 @@ def collect():
                 )
                 continue
             found[row] = (identifier, values)
-    return dict(sorted(found.items())), durations
+    return dict(sorted(found.items())), dict(sorted(durations.items()))
 
 
 def render(table, durations):
@@ -244,17 +252,18 @@ def render(table, durations):
             f"\tpublic const float LargestStatedBarrierShare = {largest_barrier:g}f;",
             "",
             "\t/// <summary>",
-            "\t/// How long each defensive action's effect stands, in seconds, as its effect text states",
-            "\t/// it. Missing where the text states no number - a trait that changes the duration leaves",
-            "\t/// the text blank - so a caller never reads a figure the game did not give.",
+            "\t/// How long each action's effect stands, in seconds - the first duration its effect text",
+            "\t/// states. Every action with a stated duration, not only the rated ones: a rule that waits",
+            "\t/// for an effect to run out needs the figure whatever the effect is. Missing where the text",
+            "\t/// states no number - a trait that changes the duration leaves the text blank - so a",
+            "\t/// caller never reads a figure the game did not give.",
             "\t/// </summary>",
             "\tpublic static readonly Dictionary<uint, float> DurationByActionId = new()",
             "\t{",
         ]
     )
-    for row, (identifier, _values) in table.items():
-        if row in durations:
-            lines.append(f"\t\t[{row}] = {durations[row]}f, // {identifier}")
+    for row, (identifier, seconds) in durations.items():
+        lines.append(f"\t\t[{row}] = {seconds}f, // {identifier}")
     lines.extend(
         [
             "\t};",
@@ -279,6 +288,15 @@ def self_test():
     """
     cases = [
         ("Reduces damage taken by 20%. Duration: 20s", {"Self": 0.2}),
+        # The bearers named between "taken" and the figure.
+        (
+            "Increases healing magic potency by 20% while reducing damage taken by self and all party "
+            "members within a radius of 50 yalms by 10%. Duration: 20s",
+            {"Self": 0.1},
+        ),
+        ("Reduces damage taken by a party member or self by 15%. Duration: 8s", {"Self": 0.15}),
+        # A figure in the next sentence is not this one's.
+        ("Reduces damage taken by the target. Heals by 10% of maximum HP.", {}),
         (
             "Lowers target's physical damage dealt by 5% and magic damage dealt by 10%.",
             {"EnemyPhysical": 0.05, "EnemyMagical": 0.1},

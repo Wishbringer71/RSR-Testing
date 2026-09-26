@@ -239,9 +239,10 @@ public sealed class VPR_Reborn : ViperRotation
 	{
 		// Uses EnoughWeaveTime as the clip-risk check rather than NoAbilityReady, which blocks whenever
 		// anything else is queued even when a safe weave window exists. Still yields to Serpent's Ire
-		// during burst only, since that one weave slot carries real burst-alignment cost.
+		// during burst only, since that one weave slot carries real burst-alignment cost - a Viper
+		// special rule on the universal layer, so it gives way when the party is in danger.
 		if (EnoughWeaveTime
-			&& !(IsBurst && SerpentsIrePvE.CanUse(out _))
+			&& !HoldAreaDefense(IsBurst && SerpentsIrePvE.CanUse(out _), "Viper: Serpent's Ire slot in burst")
 			&& ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
@@ -259,9 +260,10 @@ public sealed class VPR_Reborn : ViperRotation
 	[RotationDesc]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		// EnoughWeaveTime and the Serpent's Ire slot-guard are safety checks, not preference gates.
+		// EnoughWeaveTime is a clip-risk check; the Serpent's Ire slot-guard is a burst hold on the
+		// universal layer and gives way to danger or an announced tankbuster.
 		if (EnoughWeaveTime
-			&& !(IsBurst && SerpentsIrePvE.CanUse(out _))
+			&& !HoldSingleDefense(IsBurst && SerpentsIrePvE.CanUse(out _), "Viper: Serpent's Ire slot in burst")
 			&& ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{

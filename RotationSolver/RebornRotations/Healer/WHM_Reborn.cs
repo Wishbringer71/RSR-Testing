@@ -332,8 +332,11 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationDesc(ActionID.TemperancePvE, ActionID.LiturgyOfTheBellPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		if ((TemperancePvE.Cooldown.IsCoolingDown && !TemperancePvE.Cooldown.WillHaveOneCharge(100))
-			|| (LiturgyOfTheBellPvE.Cooldown.IsCoolingDown && !LiturgyOfTheBellPvE.Cooldown.WillHaveOneCharge(160)))
+		// White mage special rule on the universal stretch (concept 08, "Die Abwehrsperren"): after
+		// Temperance or Liturgy of the Bell the rest waits until that effect runs out, unless the
+		// party is in danger. Formerly the recast less a written-in 20 s; the duration now comes from
+		// the effect texts.
+		if (AreaDefenseStretched("White Mage: Temperance or Liturgy still in effect", TemperancePvE, LiturgyOfTheBellPvE))
 		{
 			return base.DefenseAreaAbility(nextGCD, out act);
 		}
@@ -375,8 +378,9 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationDesc(ActionID.DivineBenisonPvE, ActionID.AquaveilPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		if ((DivineBenisonPvE.Cooldown.IsCoolingDown && !DivineBenisonPvE.Cooldown.WillHaveOneCharge(15))
-			|| (AquaveilPvE.Cooldown.IsCoolingDown && !AquaveilPvE.Cooldown.WillHaveOneCharge(52)))
+		// The same stretch for the single-target defence: Divine Benison and Aquaveil, each held
+		// while the other's effect stands, unless a member is in danger or a tankbuster is announced.
+		if (SingleDefenseStretched("White Mage: Divine Benison or Aquaveil still in effect", DivineBenisonPvE, AquaveilPvE))
 		{
 			return base.DefenseSingleAbility(nextGCD, out act);
 		}

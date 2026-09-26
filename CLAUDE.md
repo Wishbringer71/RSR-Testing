@@ -55,7 +55,7 @@ Persistenz: Priorität 1, jede Eingabe, ausnahmslos. Kontextkomprimierung→Date
 - Upstream-Sync gemessen.
 - Konzept vollständig, alle drei Falsifikationshypothesen widerlegt (→ „Definition of Ready").
 - Keine neue Zahl ohne Loop (→ „Keine festen Werte").
-- Die Wirkung wird im Kampf sichtbar sein (→ „Option und Beobachtbarkeit").
+- Was Analyse klären kann, ist geklärt; eine Anzeige trägt keine offene Annahme (→ „Option und Beobachtbarkeit").
 
 **Bevor ich ihn frage oder ihm etwas vorlege**
 - Aus dem Repository beantwortbar? Dann selbst beantworten.
@@ -65,7 +65,7 @@ Persistenz: Priorität 1, jede Eingabe, ausnahmslos. Kontextkomprimierung→Date
 - Sonst gebündelt, mit durchgerechneten Konsequenzen und Empfehlung (→ „Vorlagen an ihn").
 
 **Bevor ich etwas als fertig melde**
-- Wirkkette am Code, Richtigkeit am Spielgeschehen, Messmittel im Kampf (→ „Definition of Done").
+- Wirkkette am Code, Richtigkeit am Spielgeschehen, Nachsteuerung, wo die Antwort erst zur Laufzeit fällt (→ „Definition of Done").
 - Konzept, `TODO.md` und Archiv fortgeschrieben.
 - Prüfgrad benannt.
 
@@ -176,6 +176,11 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Eine Ausnahme erst nach einem Loop zu genau diesem Wert, mit Beleg im Archiv. Das gilt auch für eine Zahl, die eine seiner Regeln wiedergibt, und für jede bestehende Zahl, die ich anfasse.
 - `check_fixed_values.py` hält das in der CI fest.
 
+**Universell zuerst**
+- Eine Regel baue ich zuerst allgemein, für alle Fälle, in denen sie anwendbar ist — alle Jobs, alle Lagen —, zentral an einer Stelle (seine Vorgabe). Sonderregelungen spalte ich stufenweise ab; jede Stufe nutzt die darüberliegende, statt sie zu kopieren.
+- Die Stufen (seine Präzisierung): alle → Heiler · Tanks · Damage Dealer als Gesamtheit → bei Damage Dealern Fernkämpfer · Magier · Nahkämpfer → bei Nahkämpfern möglicherweise Untergruppen (Monk und Samurai · Dragoon und Schnitter · Ninja und Viper, seine Namen) → erst danach jeder Job einzeln. Eine Regel sitzt auf der höchsten Stufe, auf der sie für alle Mitglieder gleich gilt; welche Stufe leer bleibt, begründe ich.
+- Grund: Eine Regel nur für den Job, an dem der Fall auffiel, lässt dieselbe Lage bei allen anderen offen.
+
 **Erkennung und Entscheidung trennen**
 - Was beantwortet, was der Fall ist, prüft keine Option, vergleicht mit keiner Schwelle und wird nicht nur unter einer bestimmten Regel geschrieben. Das Urteil gehört in den Verbraucher — sonst erbt jeder weitere Leser eine fremde Schwelle, unsichtbar.
 - Umgekehrt hänge ich einen Verbraucher mit eigener Grundlage (eigene Option, Schwelle, Zweck) nicht an eine fremde Freigabe — er erbt sonst alle ihre Gründe (Beispiel: der Heiltrank an der Heilflagge, A124, A133).
@@ -196,14 +201,14 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 
 **Option und Beobachtbarkeit**
 - Eine Verbesserung, deren Nutzen ich nicht belegen kann, kommt hinter eine Option; das bisherige Verhalten bleibt Standard. Belegte Defektbehebungen nicht.
-- Jede Verhaltensänderung zeigt **im Kampf**, ob sie gegriffen hat — im Diagnosefenster, nicht im Einstellungsfenster, das im Kampf zu ist.
-- Was man im Kampf nicht von seinem Ausbleiben unterscheiden kann, ist nicht fertig.
+- Gründliche Vorarbeit wird nicht durch nachträgliche Betrachtung ersetzt (seine Präzisierung). Was Analyse klären kann — Wirktexte, Code, Versionsgeschichte, Modell —, ist vor dem Code geklärt. Eine Anzeige ist kein Ablageort für offene Annahmen, und ich verweise nicht auf sie, um eine ungeprüfte Annahme zu tragen.
+- Die Diagnoseanzeige dient seiner Kontrolle, nicht meiner Diagnose: Eine Zeile sagt knapp, was eine Regel im Kampf entschieden hat, nur dort, wo ihr Greifen sonst nicht von ihrem Ausbleiben zu unterscheiden wäre — im Diagnosefenster, weil das Einstellungsfenster im Kampf zu ist. Keine Zeile, die er auswerten müsste.
 
 **Entscheidung zur Laufzeit**
 - Eine Sonde sitzt dort, wo die Regel entscheidet, und urteilt sofort.
 - Zulässig ist nur, was sich selbst nachsteuert: Die Regel hält ihre Vorhersage gegen den Verlauf und rechnet den Fehler heraus (wie `ScoreTtkForecast`, `GetCorrectedTTK`).
 - Keine Datensammlung, die auf seine Ablesung und meine spätere Auswertung wartet — das macht ihn zum Teil des Regelkreises. Ist Selbstkorrektur nicht baubar, sage ich das.
-- Die Anzeige dient seiner Kontrolle. So ist auch das Messmittel der REGEL zu verstehen.
+- Das Messmittel der REGEL ist in erster Linie die Selbstnachsteuerung; eine Anzeige ergänzt sie zu seiner Kontrolle und ersetzt sie nicht.
 
 # Quellen
 
@@ -228,7 +233,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 **Definition of Done**
 - Wirkkette am Code belegt (Flag, Dispatch, `CanUse`, Zielwahl).
 - Richtigkeit am Spielgeschehen begründet.
-- Fällt die Antwort erst zur Laufzeit: das selbstbewertende Messmittel mitgeliefert.
+- Fällt die Antwort erst zur Laufzeit: die Regel steuert selbst nach; Analysefragen sind vorher beantwortet, nicht an die Anzeige verwiesen.
 - Keine offene Spielbestätigung als Aufgabe an ihn.
 
 # Vorlagen an ihn

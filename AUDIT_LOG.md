@@ -3844,6 +3844,31 @@ Als Hinweis in Konzept 07 und 08 geführt. Die Wirktexte stützen ihn gleichlaut
 
 **Prüfgrad:** statisch; Versionsgeschichte; Wirktexte aus `ActionId.resx` und `Rotation.resx`. Die Größenordnung beim Dunkelritter ist nicht gemessen.
 
+### A159 · Abwehrsperren: allgemeine Schranke, Sonderregeln je Job (26.09.2026)
+
+**Seine Vorgaben in diesem Zug** (in CLAUDE.md eingetragen):
+- Regeln zuerst universell, dann stufenweise abgespalten: alle → Heiler · Tanks · Damage Dealer → Fernkämpfer · Magier · Nahkämpfer → Nahkampf-Untergruppen → erst danach jeder Job.
+- Gründliche Vorarbeit wird nicht durch nachträgliche Betrachtung ersetzt; das Diagnosefenster ist kein Ablageort für offene Annahmen.
+
+**Loop:**
+- *Research:*
+  - Alle Rückhaltungen von Abwehraktionen in `RebornRotations` erhoben: frühe Rücksprünge und Bedingungen in den Zeilen der `Defense*`-Methoden.
+  - Strategische Rückhaltungen: Weißmagier, Astrologe, Dunkelritter (Burst und Barriere), Revolverklinge, Maschinist, Dragoon, Viper, dazu Barde, Maler und Tänzer über ihre Einstellung.
+  - Keine strategische Wahl: Swiftcast für eine Wiederbelebung, Spielaussperrung, Doppeldrucksperre, Recitation-Reihenfolge.
+- *Offene Annahme aus A158 am Code geklärt:* `Watcher.ActionFromEnemy` speichert den höchsten gelandeten Anteil, also nach damaliger Minderung, und hebt nur an. Die liegende Minderung wird deshalb nicht abgezogen, weil sie sonst doppelt zählte; der Fehler geht Richtung „gefährlich".
+- *Optionen:*
+  - Schranke nur für Weißmagier und Dunkelritter: verworfen, nicht universell.
+  - Schranke für jede strategische Rückhaltung: gewählt.
+  - Streckung für alle Heiler: verworfen, weil unbelegter Nutzen bei zwei Jobs; die Heilerstufe bleibt leer.
+- *Falsifikation:*
+  - **Kein Defekt?** Widerlegt: Ein tödlicher Treffer während einer Sperre bekam keine weitere Abwehr.
+  - **Option falsch?** Die Schranke überschätzt eher und weicht zu oft. Der Preis ist die Streckung auf diesem Treffer, nie ein Leben.
+  - **Ausgeliefert, nichts ändert sich?** Ohne Zauberleiste greift nur Klasse 1. Barde, Maler und Tänzer bleiben wegen ihres bindenden Einstellungstexts ausgenommen; zur Entscheidung im TODO.
+- *Klasse:* Die Generatorlücke „damage taken by <Träger> by N %" ist behoben. Temperance, Aquaveil, Kerachole, Holos, Oblation, Heart of Stone, Exaltation, The Bole, Sun Sign und zwei Sonderaktionen sind jetzt bewertet. Die Dauertabelle führt jede Aktion mit angegebener Dauer.
+- *Nebenbefund (TODO):* `GetCurrentMitigationPercent` kennt Confession aus Plenary Indulgence (−10 %) nicht.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

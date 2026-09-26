@@ -4,12 +4,13 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 ## Defekte
 
-### Flächenabwehr im Zeitfenster eigener Wirkungen gesperrt: Weißmagier und Dunkelritter · N
+### Burst-Einstellung der Fernkämpfer und Maler weicht keiner Gefahr · N
 
-Upstream-Konventionen, die Verhalten im Kampf ändern; zur Entscheidung vorgelegt. Zweck, Zusammenspiel mit anderen Klassen und die geänderte Empfehlung stehen in Konzept 08, „Die Abwehrsperren von Weißmagier und Dunkelritter (E1)" (A158). **Empfehlung:** Sperre behalten, aber freigeben, wenn der gemessene Treffer nach bereits liegender Minderung ein Mitglied in Gefährdungsklasse 1 brächte; Diagnosezeile und selbstbewertender Zähler dazu. Die Empfehlung aus A146 („frei bei großem Treffer") ist widerlegt.
-- **Weißmagier** (`WHM_Reborn.DefenseAreaAbility`, dieselbe Bauform in `DefenseSingleAbility`): Nach Temperance oder Liturgy of the Bell entfällt die Flächenabwehr für deren Wirkdauer (20 s). Divine Caress bleibt dadurch nur in den letzten 10 s von Divine Grace nutzbar.
-- **Dunkelritter** (`DRK_Reborn.DefenseAreaAbility`): `InTwoMIsBurst` sperrt in den ersten 15 s nach Living Shadow Dark Missionary, Reflexion und Oblation. **Nicht zur Wahl (Regel „UI-Texte binden", A157):** The Blackest Night und Oblation auf ein Mitglied unter seiner eingestellten Schwelle (`BlackLantern`, `OblationLantern`, ab Werk aus) nennen im Einstellungstext keine Burst-Ausnahme; dort fällt die Sperre unabhängig vom Treffer.
-- **Erfasst, außerhalb des bisherigen Auftrags:** Astrologe (`AST_Reborn`, Macrocosmos und Collective Unconscious) und Revolverklinge (`GNB_Reborn`, No Mercy) haben dieselbe Bauform.
+Barde, Maler und Tänzer führen „Prevent the use of defense abilties during burst" (ab Werk an). Die allgemeine Schranke (Konzept 08, „Die Abwehrsperren") greift dort nicht, weil der Einstellungstext ohne Ausnahme „verhindern" sagt und bindet. Im Kampf: Ein tödlicher Raidwide im Burst bekommt von diesen drei Jobs keine Minderung. Zur Entscheidung vorzulegen: Text ändern (seine Entscheidung) oder so lassen. Dieselbe Einstellung als Damage-Dealer-Regel zu führen, wäre die Stufe „Damage Dealer".
+
+### Die Minderungssumme kennt Confession nicht · N
+
+`CustomRotation.GetCurrentMitigationPercent` rechnet Temperance, Sacred Soil, Kerachole und weitere Gruppenminderungen, aber nicht Confession aus Plenary Indulgence (Wirktext 7433: „reducing damage taken by 10%"). Im Kampf: Wer diese Summe liest, hält einen Treffer unter Plenary Indulgence für 10 % härter, als er ist. Offen, weil die Zeile eine neue feste Zahl bräuchte; der Wert liegt jetzt erzeugt in `DefensiveValues` (A159), und die Summe sollte ihn von dort lesen.
 
 ### Die Heilverbots-Prüfung steht achtmal im Dispatch · U
 

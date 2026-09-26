@@ -124,75 +124,104 @@ ergeben hat (A118). Sie haette im ganzen Baum nie gegriffen.
 **Was stattdessen wirkt, ist Stufe 2 — und sie schliesst eine Luecke, die dieses Konzept ohnehin
 fuehrt.** Siehe „Heilung vor dem angekuendigten Treffer" weiter unten.
 
-## Die Abwehrsperren von Weißmagier und Dunkelritter (E1)
+## Die Abwehrsperren (E1): allgemeine Schranke, Sonderregeln je Job
 
-**Sachstand (A158):** Beide Sperren sind Upstream-Code ohne überlieferte Begründung. Was sie im Kampf
-bewirken, ist am Code und an den Wirktexten erhoben; wozu sie gedacht waren, ist aus Herkunft, Zahlen und
-Reihenfolge **erschlossen, nicht belegt**. Entscheidung steht aus.
+**Sachstand (A159), nach seiner Vorgabe „universell zuerst": Jede strategische Rückhaltung einer
+Abwehraktion weicht, sobald die Gruppe in Gefahr ist. Das ist eine Regel für alle Jobs; welche
+Rückhaltung ein Job überhaupt kennt, bleibt seine Sonderregel.** Gebaut in
+`CustomRotation_DefenseHold` (`HoldAreaDefense`, `HoldSingleDefense`, `AreaDefenseStretched`,
+`SingleDefenseStretched`).
 
-**Weißmagier — eine Streckung der eigenen Abwehr über die Zeit.**
-- Nach Temperance oder Liturgy of the Bell entfällt die ganze Flächenabwehr, bis deren Wirkung ausläuft
-  (je 20 s laut Wirktext; im Code 120 − 100 und 180 − 160). Dieselbe Bauform sperrt die Einzelabwehr:
-  Divine Benison 30 − 15 = 15 s, Aquaveil 60 − 52 = 8 s — jede Zahl ist die Wirkdauer. Gemeint ist: eine
-  eigene Abwehrschicht zur Zeit, die nächste erst, wenn die letzte ausläuft.
-- Im Kampf, in der Reihenfolge des Zweigs: Plenary Indulgence, dann Temperance — beide fallen auf denselben
-  Treffer (je −10 %, nacheinander −19 %), weil erst Temperance die Sperre auslöst. Danach warten Divine
-  Caress und Liturgy auf den nächsten Treffer.
-- **Kein Stapelschutz im Sinn der Spielmechanik:** Temperance, Confession, Sacred Soil, Kerachole und Dark
-  Missionary sind verschiedene Status und wirken zusammen. Nicht doppelt wirkt nur derselbe Status aus zwei
-  Quellen (Reflexion zweier Tanks, Addle, Feint; Kerachole und Taurochole schließen sich aus). Das regelt
-  RSR davon getrennt (`StatusFromSelf = false` bei Reflexion, Addle, Feint).
-- **Vorteil:** Zwei Raidwides im Abstand von 20 bis 60 s bekommen beide etwas. Ohne Sperre gingen Plenary,
-  Temperance, Divine Caress und Liturgy auf den ersten, und der zweite bekäme vom Weißmagier nichts, weil
-  Plenary erst nach 60 s zurückkommt. Das ist sein Prinzip aus „Wozu die Aussetzbedingungen da sind":
-  strecken statt verdoppeln.
-- **Nachteile:** Ein einzelner Treffer, den −19 % nicht tragbar machen, bekommt Divine Caress und Liturgy
-  nicht dazu. Und Divine Caress verfällt mit Divine Grace (30 s ab Temperance); die Sperre lässt ihm nur die
-  letzten 10 s. Kommt dort kein Treffer, ist es verloren. Divine Caress stand schon mit der ersten
-  eingebrachten Fassung hinter der Sperre (141f9b27a, 7.05), direkt nach Temperance eingereiht — das deutet
-  auf eine Erweiterung, die die Sperre nicht mitbedacht hat (Schluss).
-- Der Astrologe hat dieselbe Bauform (Macrocosmos und Collective Unconscious, 30 und 20 s).
+### Die Stufen
 
-**Dunkelritter — eine Schadensregel.**
-- Herkunft: Balance-Rotation 6.38 (c97be9ec5). `InTwoMIsBurst` hieß damals: mindestens die Hälfte der Gruppe
-  steht im Zwei-Minuten-Burst (`RatioOfMembersIn2minsBurst`), nur ohne diese Angabe die eigenen
-  Abklingzeiten. Heute nur die eigenen: Delirium kühlt ab (Blood Weapon ist seit Blood Weapon Mastery
-  Delirium; die Abklingzeit wird über die angepasste Id gelesen, die Sperre greift also auf Stufe 100), und
-  Living Shadow liegt unter 15 s zurück (Simulakrum 22 s). 15 s von je 120.
-- Zweck (erschlossen): In den 20 s der Gruppenbuffs (Searing Light, Divination, Battle Litany) keinen
-  Einschiebeplatz und kein MP an Gruppenminderung abgeben.
-- Größenordnung (Überschlag, nicht gemessen): Verlöre ein Edge of Shadow (460 Potenz) durch einen belegten
-  Platz die Gruppenbuffs, wären das rund 0,3 % des Dunkelritter-Schadens je zwei Minuten, und nur, wenn die
-  Plätze im Burst tatsächlich voll sind. The Blackest Night auf andere kostet 3000 MP, also ein Edge of
-  Shadow, außer die Barriere bricht (dann gibt Dark Arts es zurück). Promillebereich; nach seiner Regel geht
-  Sicherheit vor Schaden, und ein solcher Gewinn wird nicht dagegen abgewogen.
+| Stufe | Regel | Warum hier |
+|---|---|---|
+| alle | **Schranke:** Eine Rückhaltung weicht, wenn ein lebendes, ungeschütztes Mitglied in Gefährdungsklasse 1 steht (effektive Gesundheit auf oder unter `HealthForDyingTanks`, Konzept 07) oder der angekündigte, gemessene Flächentreffer eines dorthin brächte. Bei Einzelabwehr zusätzlich: ein angekündigter Tankbuster (Zauber oder BossModReborn) | Konzept 09 verlangt es für den Tank („jede Rückhaltung erst, wenn Stufe 1 gesichert ist"); der Grund gilt für jede Rolle |
+| alle | **Streckungsbaustein:** Nach einer Auslöseraktion ruht die übrige eigene Abwehr, bis deren Wirkung laut Wirktext ausläuft; hält der Auslöser noch eine Ladung, streckt er nicht | derselbe Mechanismus stand zweimal mit festen Zahlen im Code (Weißmagier, Astrologe) |
+| Heiler | leer | Nur Weißmagier und Astrologe strecken; Gelehrter und Weiser nicht. Eine Heilerregel änderte zwei Jobs ohne belegten Nutzen |
+| Tanks | leer | Burst-Rückhaltung nur bei Dunkelritter und Revolverklinge, bei beiden an ein eigenes Burstfenster gebunden; Krieger und Paladin halten nichts zurück |
+| Damage Dealer | leer, eine Frage an ihn | Barde, Maler und Tänzer führen dieselbe Einstellung „Prevent the use of defense abilties during burst" (ab Werk an), Maschinist, Dragoon und Viper feste Rückhaltungen. Eine gemeinsame Regel wäre möglich; ihr Einstellungstext bindet, siehe unten |
+| Job | die Auslöser und Rückhaltungen selbst | siehe nächste Tabelle |
 
-**Zusammenspiel mit anderen Klassen.**
-- Keine der Sperren liest eine andere Klasse. Die einzige Rücksicht im Code ist, dass Reflexion, Addle und
-  Feint nicht über die eines anderen gelegt werden.
-- Die Revolverklinge sperrt Heart of Light und Reflexion unter No Mercy (dieselbe Bauform). Dunkelritter und
-  Revolverklinge zusammen, beide mit RSR und beide auf zwei Minuten: Im gemeinsamen Burst gibt keiner der
-  beiden Tanks Gruppenminderung. Krieger und Paladin sperren nicht.
-- Zwei Heiler mit RSR antworten auf dasselbe Signal im selben Moment; die Sperre verteilt nur die eigenen
-  Mittel über die Zeit, nicht die des anderen.
-- Die frühere Kopplung des Dunkelritters an den Burst der Gruppe ist entfallen. Bei ausgerichteten zwei
-  Minuten ist das gleichwertig, bei verschobenen nicht (Schluss).
+### Die Sonderregeln je Job
 
-**Folgerung für die Empfehlung, ersetzt die aus A146.** Beim Weißmagier ist die Sperre eine Streckung und
-passt zu seinem Prinzip. Ihr fehlt die Schranke, die er für jede Aussetzregel verlangt: ausgesetzt wird nur,
-solange die Gruppe hält. Die Freigabe richtet sich deshalb nicht nach „großer Treffer" (A146), sondern
-danach, ob der angekündigte, gemessene Treffer **nach der schon liegenden Minderung** — auch der anderer
-Klassen (`GetCurrentMitigationPercent`) — ein Mitglied in Gefährdungsklasse 1 brächte (effektive Gesundheit
-auf oder unter `HealthForDyingTanks`, Konzept 07). Keine neue Zahl.
-- Widerlegt ist damit A146 im Fall zweier großer, einzeln tragbarer Raidwides im Abstand von 25 s: Nach A146
-  ginge alles auf den ersten und der zweite bekäme nichts; mit der Schranke bleibt es beim heutigen Ablauf.
-- Beim Dunkelritter dieselbe Schranke. Die Alternative, die Burst-Sperre ganz zu streichen, kostet nur
-  Promille und ist vertretbar.
-- Ungemessene Treffer: unverändert.
-- Messmittel: Diagnosezeile je Sperre (hält / gibt frei, mit Treffer, Anteil nach Minderung und dem
-  gefährdeten Mitglied) und ein Zähler, ob gehaltene Mittel später auf einen Treffer fielen oder
-  verfielen. Verfallen sie öfter, als sie treffen, tritt die Streckung selbst zurück (wie
-  `ProactiveHoldIsEarningItsKeep`).
+| Job | Rückhaltung | Umfang |
+|---|---|---|
+| Weißmagier | Streckung nach Temperance oder Liturgy of the Bell (je 20 s laut Wirktext); Einzelabwehr nach Divine Benison (15 s) oder Aquaveil (8 s) | Flächen- und Einzelabwehr |
+| Astrologe | Streckung nach Macrocosmos (15 s) oder Collective Unconscious (18 s); dieselben Auslöser halten die Einzelbarriere | Flächenfähigkeit, Flächen-GCD, Einzel-GCD |
+| Dunkelritter | Burstfenster (`InTwoMIsBurst`): Dark Missionary, Reflexion, Oblation auf sich; Barriere wartet auf Bruch (`HoldMitigationForBarrier`) | Fläche; die Barrierenrückhaltung auch in der Einzelabwehr |
+| Revolverklinge | Einschub vor dem No-Mercy-Auftakt; No-Mercy-Fenster: Heart of Light, Reflexion | Fläche; Auftakt auch Einzel |
+| Maschinist | Überhitzung, Wildfire, Full Metal Field; umkämpfter Burst-Einschub | Fläche und Einzel |
+| Dragoon | unmittelbar nach Stardiver | Fläche und Einzel |
+| Viper | Einschub für Serpent's Ire im Burst | Fläche und Einzel |
+
+**Nicht über die Schranke,** weil sie keine strategische Wahl sind:
+- Swiftcast für eine anstehende Wiederbelebung (Gelehrter): seine eigene Sicherheitsvorgabe.
+- Aussperrungen durch das Spiel (Phantom-Job).
+- Die Doppeldrucksperre von Radiant Aegis.
+- Die Reihenfolge Recitation → Excogitation.
+
+**Barde, Maler, Tänzer:** Deren Einstellung „Prevent the use of defense abilties during burst" sagt
+ohne Ausnahme „verhindern". Ihr Text bindet; die Schranke greift dort deshalb nicht. Ob sie weichen
+soll, ist seine Entscheidung (Einstellungstext und Vorgabe).
+
+### Was die Sperren im Spiel bewirken
+
+- **Weißmagier:** Plenary Indulgence und Temperance fallen auf denselben Treffer (je −10 %,
+  nacheinander −19 %), weil erst Temperance die Streckung auslöst. Danach warten Divine Caress und
+  Liturgy auf den nächsten Treffer.
+  - **Kein Stapelschutz im Sinn der Spielmechanik:** Verschiedene Status wirken zusammen. Nur
+    derselbe Status aus zwei Quellen (Reflexion zweier Tanks, Addle, Feint; Kerachole und Taurochole)
+    wirkt nicht doppelt, und das regelt RSR getrennt davon (`StatusFromSelf = false`).
+  - **Vorteil:** Zwei Raidwides im Abstand von 20 bis 60 s bekommen beide etwas. Ohne Streckung ginge
+    alles auf den ersten, und Plenary käme erst nach 60 s zurück. Das ist sein Prinzip aus „Wozu die
+    Aussetzbedingungen da sind": strecken statt verdoppeln, solange die Gruppe hält.
+  - **Preis:** Divine Caress verfällt mit Divine Grace (30 s ab Temperance) und bleibt in den letzten
+    10 s nutzbar. Kommt dort kein Treffer, ist es verloren. Ohne Streckung fiele es auf denselben
+    Treffer wie Temperance; welches von beiden mehr wert ist, hängt am Abstand der Treffer. Die
+    Schranke deckt den Fall, in dem es auf den ersten Treffer ankommt.
+- **Dunkelritter:** Herkunft ist die Balance-Rotation 6.38 (c97be9ec5).
+  - Damals hieß Burst „mindestens die Hälfte der Gruppe im Zwei-Minuten-Burst"
+    (`RatioOfMembersIn2minsBurst`). Heute zählen nur die eigenen Abklingzeiten: Delirium kühlt ab
+    (Blood Weapon ist durch Blood Weapon Mastery Delirium, gelesen über die angepasste Id), und Living
+    Shadow liegt unter 15 s zurück.
+  - Der Zweck ist Schaden in den 20 s der Gruppenbuffs. Größenordnung (Überschlag, nicht gemessen):
+    rund 0,3 % des Dunkelritter-Schadens je zwei Minuten, falls ein Edge of Shadow dadurch aus den
+    Buffs fällt.
+- **Zusammenspiel mit anderen Klassen:**
+  - Keine Sonderregel liest eine andere Klasse.
+  - Mit Dunkelritter und Revolverklinge, beide mit RSR, gibt im gemeinsamen Burst keiner der beiden
+    Tanks Gruppenminderung, außer die Schranke greift.
+  - Zwei Heiler mit RSR antworten auf dasselbe Signal im selben Moment. Die Streckung verteilt nur die
+    eigenen Mittel über die Zeit.
+
+### Warum die Schranke so misst
+
+- **Der gemessene Anteil wird nicht um die liegende Minderung gekürzt.** `Watcher.ActionFromEnemy`
+  speichert den höchsten je gelandeten Anteil, nach der damals liegenden Minderung, und hebt ihn nur
+  an. Die jetzt liegende Minderung abzuziehen zählte sie doppelt. Die Schätzung irrt also Richtung
+  „gefährlich" — die Rückhaltung weicht eher zu oft als zu spät.
+- **Klasse 1 schon jetzt zählt mit,** auch ohne gemessenen Treffer: Wer dort steht, stirbt am nächsten
+  Treffer (Konzept 07). Damit weicht die Rückhaltung auch vor ungemessenen Zaubern und im
+  Dauerstrom eines Gruppenpulls.
+- **Keine neue Zahl:** `HealthForDyingTanks` ist seine Einstellung der Gefährdungsklasse, die Dauern
+  stehen in den Wirktexten.
+- **Ersetzt A146** („frei bei großem Treffer"). Das hätte im Fall zweier großer, einzeln tragbarer
+  Raidwides im Abstand von 25 s alles auf den ersten gelegt und für den zweiten nichts gelassen.
+
+### Folgen, bewusst hingenommen
+
+- **Astrologe:** Die Streckung dauert jetzt so lange wie die Wirkung laut Wirktext: 15 s nach
+  Macrocosmos und 18 s nach Collective Unconscious, statt der früheren festen 30 und 20 s, die zu
+  keiner Wirkung passten.
+- **Ein Treffer ohne Zauberleiste** wird nur über Klasse 1 erkannt. Die Schranke kann ihn sonst
+  nicht vorhersehen.
+- **Die Rückhaltungen der Tank-Barriere und der Damage-Dealer-Jobs** weichen jetzt auch beim
+  angekündigten Tankbuster (Einzelabwehr).
+
+**Im Kampf ablesbar:** Die Zeile „Defense hold" im Diagnosefenster sagt, welche Regel zuletzt
+zurückhielt oder warum sie wich — nur zur Kontrolle, weil eine wartende Abwehr sonst nicht von
+einer nie gefragten zu unterscheiden ist.
 
 ## Heilung vor dem angekuendigten Treffer
 
