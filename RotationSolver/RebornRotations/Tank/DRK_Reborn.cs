@@ -220,14 +220,14 @@ public sealed class DRK_Reborn : DarkKnightRotation
 
 		// Held while a barrier waits to be spent - see HoldMitigationForBarrier. Reprisal takes 10%
 		// off the stream that has to break The Blackest Night within its seven seconds.
-		if (!burstHold && !HoldMitigationForBarrier()
+		if (!burstHold && !HoldMitigationForBarrier(true)
 			&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
 
-		if (!burstHold && !HoldMitigationForBarrier() && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
+		if (!burstHold && !HoldMitigationForBarrier(true) && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}
@@ -365,7 +365,14 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	/// when a member is in danger (<see cref="CustomRotation.HoldAreaDefense"/>).
 	/// </para>
 	/// </remarks>
-	private bool HoldMitigationForBarrier()
+	private bool HoldMitigationForBarrier(bool area)
+	{
+		return area
+			? HoldAreaDefense(BarrierWaitsToBeSpent(), "Dark Knight: a barrier waits to be spent")
+			: HoldSingleDefense(BarrierWaitsToBeSpent(), "Dark Knight: a barrier waits to be spent");
+	}
+
+	private bool BarrierWaitsToBeSpent()
 	{
 		if (NumberOfHostilesInRange < BlackestNightMinHostiles)
 		{
@@ -388,7 +395,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			if (member.HasStatus(false, StatusHelper.FullAbsorbRewardStatus)
 				&& !member.WillStatusEndGCD(1, 0, false, StatusHelper.FullAbsorbRewardStatus))
 			{
-				return HoldAreaDefense(true, "Dark Knight: a barrier waits to be spent");
+				return true;
 			}
 		}
 
@@ -418,7 +425,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			// be spent cannot afford. Only this branch is held: the central anti-knockback uses of
 			// Arm's Length stay untouched, because being thrown off a platform is not a damage
 			// question.
-			&& !HoldMitigationForBarrier();
+			&& !HoldMitigationForBarrier(false);
 
 	private bool ShouldUseBlackestNightOnSelf()
 	{
@@ -544,14 +551,14 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		// Same hold as in the area path, and for the same reason: on a group pull the barrier's
 		// reward depends on the stream that Reprisal would thin. In a boss fight the condition is
 		// false by the hostile count, so a tankbuster keeps its mitigation.
-		if (!HoldMitigationForBarrier()
+		if (!HoldMitigationForBarrier(false)
 			&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
 
-		if (!HoldMitigationForBarrier() && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
+		if (!HoldMitigationForBarrier(false) && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}

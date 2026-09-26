@@ -1642,6 +1642,9 @@ internal static class DataCenter
 		return (float)currentHp / member.MaxHp;
 	}
 
+	/// <summary>How long a party-wide reading counts as the same frame's, in milliseconds.</summary>
+	internal static long FrameCacheMs => PartyHpStatsTtlMs;
+
 	private static readonly float[] _hpBuffer = new float[8];
 	private static long _partyHpStatsCacheTick = long.MinValue;
 	private static float _minHpCache, _avgHpCache, _stdDevHpCache, _lowestAvgHpCache, _lowestStdDevHpCache;
@@ -3472,8 +3475,12 @@ internal static class DataCenter
 				continue;
 			}
 
-			var buffer = member.GetEffectiveHp() / (float)member.MaxHp;
-			if (buffer - share < threshold)
+			// The unprotected reading is the critical class's own footing (IsInCriticalClass): the
+			// forecast effective health, at or below the threshold. The other keeps its original form
+			// for its original readers.
+			if (unprotectedOnly
+				? member.GetForecastEffectiveHp() / (float)member.MaxHp - share <= threshold
+				: member.GetEffectiveHp() / (float)member.MaxHp - share < threshold)
 			{
 				who = member.Name.TextValue;
 				return true;

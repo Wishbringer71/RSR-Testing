@@ -3876,7 +3876,18 @@ Als Hinweis in Konzept 07 und 08 geführt. Die Wirktexte stützen ihn gleichlaut
 - **Anzeige, letzter Schreiber gewinnt:** Jetzt ein Eintrag je Regel.
 - **BossModReborn und Zauber in einer Meldung:** entfällt mit dem Tankbuster.
 - **Klasse 1 dreifach definiert:** jetzt eine Definition, `ObjectHelper.IsInCriticalClass`, gelesen von Heilzielwahl, Abwehrsperren und Lux Solaris.
-- Die Barrierenrückhaltung des Dunkelritters prüft in der Einzelabwehr die Flächengefahr. Sie ist eine Obermenge der Einzelgefahr; die Konzeptaussage zum Tankbuster ist entfallen.
+- Die Konzeptaussage zum Tankbuster ist entfallen.
+
+**Zweites Code-Review (c01439bb9), nachgeprüft und behoben:**
+- **Einzelgefahr für jedes Mitglied:** Ein Damage Dealer in Klasse 1 löste Selbstabwehr der Revolverklinge aus, die ihm nichts nützt. Jetzt nur Spieler und Tanks.
+- **Gleicher Regelname für Fläche und Einzel:** Die beiden überschrieben sich gegenseitig in der Anzeige. Der Schlüssel enthält jetzt den Umfang.
+- Veraltete Kommentare zum Tankbuster (Weißmagier, Astrologe, Revolverklinge, Viper) und zu 18 s (Astrologe) berichtigt.
+- **Dunkelritter:** Die Barrierenrückhaltung prüfte in der Einzelabwehr und bei Arm's Length die Flächengefahr. Jetzt wählt der Aufrufer den Umfang.
+- **Gemessener Treffer:** Er stand auf aktueller statt vorausgerechneter Gesundheit und mit `<` statt `<=`. Jetzt gilt dieselbe Grundlage wie für Klasse 1.
+- **Gefahrenprüfung mehrfach je Frame:** Die Flächengefahr ist jetzt für einen Frame zwischengespeichert, mit derselben Frist wie die Gruppenstatistik.
+- **Heilzielwahl:** Sie las den Schutz doppelt. Jetzt reicht sie ihren schon gelesenen Wert an `IsInCriticalClass(bool)` weiter.
+- **Geladener Auslöser (Divine Benison):** Die Wiederaufladung misst nicht die Zeit seit dem Einsatz. Die Einsatzzeit kommt jetzt aus dem Aktionsprotokoll.
+- **Nicht übernommen:** die Stardiver-Rückhaltung des Dragoons als Zeitsperre auszunehmen. Sie verhindert einen verzögerten GCD, also Schaden, und weicht deshalb der Gefahr. Seine Selbstheilung hat dieselbe Sperre ohne Schranke; das steht im TODO, weil Heilrückhaltungen nicht zu diesem Auftrag gehören.
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 

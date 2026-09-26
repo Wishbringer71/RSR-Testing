@@ -23,13 +23,13 @@ TARGET = Path('RotationSolver.Basic/Actions/ActionTargetInfo.cs')
 # instead of spelling the threshold out, and then the definition is where the look-ahead is checked.
 HELPER = Path('RotationSolver.Basic/Helpers/ObjectHelper.cs')
 HELPER_METHOD = re.compile(r'static bool IsInCriticalClass\s*\(')
-CLASS_CALL = re.compile(r'IsInCriticalClass\(\)')
+CLASS_CALL = re.compile(r'IsInCriticalClass\([^)]*\)')
 
 # The marks, in the order they have to appear inside GeneralHealTarget. The short-cut patterns
 # tolerate either spelling of the health getter, because what they establish here is a position -
 # that the critical rank runs first - and a rename must not make that check silently vanish. That
 # the forecast spelling is the one in use is a separate question, asked by check_forecast below.
-CRITICAL = re.compile(r'HealthForDyingTanks|IsInCriticalClass\(\)')
+CRITICAL = re.compile(r'HealthForDyingTanks|IsInCriticalClass\([^)]*\)')
 SELF_CUT = re.compile(r'Get(?:Forecast)?Player(?:Forecast)?HealthRatio\(\)\s*<=\s*'
                       r'Service\.Config\.HealthSelfRatio')
 HEALER_CUT = re.compile(r'Get(?:Forecast)?HealthRatio\(\)\s*<=\s*Service\.Config\.HealthHealerRatio')
@@ -138,8 +138,12 @@ def check_helper(text):
     """The shared critical-class definition has to read the forecast effective health, the
     threshold and the invulnerability test, for the same reason every read in GeneralHealTarget
     does."""
-    body = body_of(text, HELPER_METHOD)
-    if body is None:
+    # Every overload, read together: one may only delegate to the other.
+    bodies = []
+    for start in HELPER_METHOD.finditer(text):
+        bodies.append(body_of(text[start.start():], HELPER_METHOD) or '')
+    body = '\n'.join(bodies)
+    if not body.strip():
         return ['IsInCriticalClass not found - renamed or removed']
     problems = []
     if re.search(r'GetForecastEffectiveHpPercent\(\)', body) is None:
@@ -291,7 +295,7 @@ def self_test():
         raise AssertionError('GetTTK asked before the friendly exemption went unnoticed')
 
     # The shared definition in place of the spelled-out threshold.
-    shared = good.replace(critical_line, 'if (!r.Obj.IsInCriticalClass()) { }')
+    shared = good.replace(critical_line, 'if (!r.Obj.IsInCriticalClass(r.Unprotected)) { }')
     if check(shared) or check_forecast(shared):
         raise AssertionError('the shared critical class was rejected: %s'
                              % (check(shared) + check_forecast(shared)))

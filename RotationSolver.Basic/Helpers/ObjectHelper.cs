@@ -3835,7 +3835,17 @@ public static class ObjectHelper
 	/// </summary>
 	internal static bool IsInCriticalClass(this IBattleChara battleChara)
 	{
-		return battleChara.NoNeedHealingInvuln()
+		return battleChara.IsInCriticalClass(battleChara.NoNeedHealingInvuln());
+	}
+
+	/// <summary>
+	/// <see cref="IsInCriticalClass(IBattleChara)"/> for a caller that has already read whether the
+	/// member is protected, so the status list is not walked twice and the answer cannot change
+	/// between the two reads.
+	/// </summary>
+	internal static bool IsInCriticalClass(this IBattleChara battleChara, bool unprotected)
+	{
+		return unprotected
 			&& battleChara.GetForecastEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f;
 	}
 

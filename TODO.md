@@ -12,6 +12,10 @@ Barde, Maler und Tänzer führen „Prevent the use of defense abilties during b
 
 `CustomRotation.GetCurrentMitigationPercent` rechnet Temperance, Sacred Soil, Kerachole und weitere Gruppenminderungen, aber nicht Confession aus Plenary Indulgence (Wirktext 7433: „reducing damage taken by 10%"). Im Kampf: Wer diese Summe liest, hält einen Treffer unter Plenary Indulgence für 10 % härter, als er ist. Offen, weil die Zeile eine neue feste Zahl bräuchte; der Wert liegt jetzt erzeugt in `DefensiveValues` (A159), und die Summe sollte ihn von dort lesen.
 
+### Die allgemeine Schranke gilt noch nicht für Heilrückhaltungen · N
+
+Die Schranke aus Konzept 08 („Die Abwehrsperren") gilt für jede strategische Rückhaltung einer **Abwehr**. Heilrückhaltungen mit demselben Muster stehen außerhalb, etwa die Stardiver-Sperre vor Second Wind und Bloodbath (`DRG_Reborn.HealSingleAbility`). Im Kampf: Der Dragoon webt Feint nach Stardiver, wenn jemand in Gefahr ist, heilt sich aber selbst nicht. Die Stufe „alle" sollte auch hier greifen; dazu sind die Heilrückhaltungen zu erheben wie in A159 die Abwehrrückhaltungen.
+
 ### Die Heilverbots-Prüfung steht achtmal im Dispatch · U
 
 Die Prüfung auf Scalebound und Shackled Healing steht als Kopie an acht Stellen, je vier in `CustomRotation_Ability` und `CustomRotation_GCD` (Upstream), dazu jetzt in `StatusHelper.PlayerHealingPunished` (A154, A155). Die Kopien sollten die Hilfsmethode rufen; bei leerer Gruppenliste antworten heute alle gleich. Nicht angefasst, weil es Upstream-Zeilen ohne Verhaltensänderung sind.

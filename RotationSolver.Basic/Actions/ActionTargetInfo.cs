@@ -3360,7 +3360,7 @@ public struct ActionTargetInfo(IBaseAction action)
 				var criticalRole = int.MaxValue;
 				foreach (var r in ranked)
 				{
-					if (!r.Obj.IsInCriticalClass())
+					if (!r.Obj.IsInCriticalClass(r.Unprotected))
 					{
 						continue;
 					}

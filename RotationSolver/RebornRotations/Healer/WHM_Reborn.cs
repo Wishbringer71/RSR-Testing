@@ -379,7 +379,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		// The same stretch for the single-target defence: Divine Benison and Aquaveil, each held
-		// while the other's effect stands, unless a member is in danger or a tankbuster is announced.
+		// while the other's effect stands, unless the player or a tank is in the critical class.
 		if (SingleDefenseStretched("White Mage: Divine Benison or Aquaveil still in effect", DivineBenisonPvE, AquaveilPvE))
 		{
 			return base.DefenseSingleAbility(nextGCD, out act);

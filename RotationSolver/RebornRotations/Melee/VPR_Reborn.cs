@@ -261,7 +261,7 @@ public sealed class VPR_Reborn : ViperRotation
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		// EnoughWeaveTime is a clip-risk check; the Serpent's Ire slot-guard is a burst hold on the
-		// universal layer and gives way to danger or an announced tankbuster.
+		// universal layer and gives way when the player or a tank is in the critical class.
 		if (EnoughWeaveTime
 			&& !HoldSingleDefense(IsBurst && SerpentsIrePvE.CanUse(out _), "Viper: Serpent's Ire slot in burst")
 			&& ShouldSustainMitigationDebuff(StatusID.Feint)

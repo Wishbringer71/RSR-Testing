@@ -136,8 +136,8 @@ public sealed class GNB_Reborn : GunbreakerRotation
 	[RotationDesc(ActionID.HeartOfStonePvE, ActionID.NebulaPvE, ActionID.RampartPvE, ActionID.CamouflagePvE, ActionID.ReprisalPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		// The same opener hold for the tank's own defence; it yields to danger or an announced
-		// tankbuster on the universal layer.
+		// The same opener hold for the tank's own defence; on the universal layer it yields when the
+		// tank itself, the player or another tank is in the critical class.
 		if (HoldSingleDefense(nextGCD.IsTheSameTo(false, (ActionID)GnashingFangPvE.ID) && !NoMercyPvE.Cooldown.IsCoolingDown,
 			"Gunbreaker: No Mercy opener next"))
 		{

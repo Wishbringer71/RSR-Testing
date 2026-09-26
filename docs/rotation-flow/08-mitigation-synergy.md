@@ -136,8 +136,8 @@ Rückhaltung ein Job überhaupt kennt, bleibt seine Sonderregel.** Gebaut in
 
 | Stufe | Regel | Warum hier |
 |---|---|---|
-| alle | **Schranke:** Eine Rückhaltung weicht, wenn ein lebendes Mitglied in Gefährdungsklasse 1 steht (`ObjectHelper.IsInCriticalClass`: ungeschützt, effektive Gesundheit auf oder unter `HealthForDyingTanks`, Konzept 07). Bei Flächenabwehr auch, wenn der angekündigte, gemessene Flächentreffer ein ungeschütztes Mitglied dorthin brächte | Konzept 09 verlangt es für den Tank („jede Rückhaltung erst, wenn Stufe 1 gesichert ist"); der Grund gilt für jede Rolle |
-| alle | **Streckungsbaustein:** Nach einer Auslöseraktion ruht die übrige eigene Abwehr, bis die Wirkung laut Wirktext ausläuft (die Dauer, die zur Minderung gehört). Gelesen an der Wiederaufladegruppe der Aktion, nicht am Knopf. Hält der Auslöser noch eine Ladung, streckt er nicht | derselbe Mechanismus stand zweimal mit festen Zahlen im Code (Weißmagier, Astrologe) |
+| alle | **Schranke:** Eine Rückhaltung weicht bei Gefährdungsklasse 1 (`ObjectHelper.IsInCriticalClass`: ungeschützt, vorausgerechnete effektive Gesundheit auf oder unter `HealthForDyingTanks`, Konzept 07). Flächenabwehr: irgendein lebendes Mitglied dort, oder der angekündigte, gemessene Flächentreffer brächte ein ungeschütztes dorthin. Einzelabwehr: der Spieler selbst oder ein Tank dort | Konzept 09 verlangt es für den Tank („jede Rückhaltung erst, wenn Stufe 1 gesichert ist"); der Grund gilt für jede Rolle |
+| alle | **Streckungsbaustein:** Nach einer Auslöseraktion ruht die übrige eigene Abwehr, bis die Wirkung laut Wirktext ausläuft (die Dauer, die zur Minderung gehört), gezählt ab dem Einsatz laut Aktionsprotokoll. Hält der Auslöser noch eine Ladung (gelesen an seiner Wiederaufladegruppe, nicht am Knopf), streckt er nicht | derselbe Mechanismus stand zweimal mit festen Zahlen im Code (Weißmagier, Astrologe) |
 | Heiler | leer | Nur Weißmagier und Astrologe strecken; Gelehrter und Weiser nicht. Eine Heilerregel änderte zwei Jobs ohne belegten Nutzen |
 | Tanks | leer | Burst-Rückhaltung nur bei Dunkelritter und Revolverklinge, bei beiden an ein eigenes Burstfenster gebunden; Krieger und Paladin halten nichts zurück |
 | Damage Dealer | leer, eine Frage an ihn | Barde, Maler und Tänzer führen dieselbe Einstellung „Prevent the use of defense abilties during burst" (ab Werk an), Maschinist, Dragoon und Viper feste Rückhaltungen. Eine gemeinsame Regel wäre möglich; ihr Einstellungstext bindet, siehe unten |
@@ -204,16 +204,22 @@ soll, ist seine Entscheidung (Einstellungstext und Vorgabe).
 - **Klasse 1 schon jetzt zählt mit,** auch ohne gemessenen Treffer: Wer dort steht, stirbt am nächsten
   Treffer (Konzept 07). Damit weicht die Rückhaltung auch vor ungemessenen Zaubern und im
   Dauerstrom eines Gruppenpulls.
+- **Einzelabwehr nur für Spieler und Tanks:** Sie wird für einen Tankbuster oder die eigene Gefahr
+  geöffnet, und das meiste, was sie zurückhält, wirkt nur auf den Wirkenden (Camouflage, Rampart,
+  Heart of Corundum). Ein Damage Dealer in Gefahr am anderen Ende der Arena gewönne nichts; für ihn
+  antwortet die Heilkette.
 - **Ein angekündigter Tankbuster allein ist kein Grund.** Er ist genau das Signal, das die Einzelabwehr
   öffnet; wiche die Rückhaltung ihm, wäre sie in dem Moment aufgelöst, in dem sie gefragt ist — zwei
   Tankbuster in Folge verlören beide die Streckung. Einen gemessenen Anteil wie beim Flächentreffer
   gibt es für Tankbuster nicht; es bleibt Klasse 1.
 - **Unverwundbare zählen nicht:** Ein Tank unter Hallowed Ground oder Superbolide steht absichtlich
   niedrig und ist durch den Treffer nicht gefährdet.
-- **Gelesen an der Wiederaufladegruppe, nicht am Knopf:** Manche Knöpfe werden während der Wirkung zu
-  einer anderen Aktion (Liturgy of the Bell zur zweiten Auslösung, Macrocosmos zu Microcosmos). Deren
-  Abklingzeit ist nicht die des Auslösers. Die frühere Jobregel las den Knopf; ob sie deshalb während
-  der Wirkung nie hielt, ist ohne Laufzeit nicht belegt, die neue Lesart ist in beiden Fällen richtig.
+- **Einsatzzeit aus dem Aktionsprotokoll, Ladung aus der Wiederaufladegruppe, nie vom Knopf:** Manche
+  Knöpfe werden während der Wirkung zu einer anderen Aktion (Liturgy of the Bell zur zweiten
+  Auslösung, Macrocosmos zu Microcosmos), deren Abklingzeit nicht die des Auslösers ist. Die frühere
+  Jobregel las den Knopf; ob sie deshalb während der Wirkung nie hielt, ist ohne Laufzeit nicht
+  belegt, die neue Lesart ist in beiden Fällen richtig. Bei geladenen Aktionen (Divine Benison) misst
+  die Wiederaufladung nicht die Zeit seit dem Einsatz; deshalb das Protokoll.
 - **Die Dauer ist die, die zur Minderung gehört:** der erste Wert, den der Wirktext nach der Minderung
   nennt. Collective Unconscious gibt dem Ring 18 s und der Minderung 10 s; es zählt die Minderung.
 - **Keine neue Zahl:** `HealthForDyingTanks` ist seine Einstellung der Gefährdungsklasse, die Dauern

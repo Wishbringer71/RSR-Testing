@@ -182,9 +182,10 @@ Several rotations hold a defensive action back on purpose: the White Mage and th
 spread their party mitigation over time instead of spending it all on one hit, and the Dark Knight,
 Gunbreaker, Machinist, Dragoon and Viper keep weave slots free in their burst. Every one of these
 holds now gives way when a party member is already at the critical health level
-(`HealthForDyingTanks`) or the announced area cast, as measured, would put someone there. An
-invulnerable tank does not count, and a tankbuster on a healthy tank is no reason by itself - it is
-what opens the single-target defense in the first place. The Dark Knight's own barrier hold follows
+(`HealthForDyingTanks`) or the announced area cast, as measured, would put someone there; a hold
+of a single-target defense gives way when you or a tank is at that level. An invulnerable tank does
+not count, and a tankbuster on a healthy tank is no reason by itself - it is what opens the
+single-target defense in the first place. The Dark Knight's own barrier hold follows
 the same rule.
 
 - White Mage and Astrologian wait for as long as the effect that started the wait lasts, taken from
