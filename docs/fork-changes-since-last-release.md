@@ -153,12 +153,11 @@ limit break is up on the party, or his own course measured since the window bega
 will not reach full health in time. The Diagnostics window
 shows which of these holds.
 
-## Summoner: Lux Solaris waits for an announced area hit before it expires
+## Summoner: Lux Solaris is no longer cast on a full party
 
-Near the end of Refulgent Lux, Lux Solaris went out in the first free slot whether anyone was hurt
-or not. With an area attack announced to land before Refulgent Lux ends, that put the heal on a
-full party just before the damage. It now waits for the hit whenever at least one GCD of Refulgent
-Lux remains after it, and the rotation status says when it is holding.
+Near the end of Refulgent Lux, Lux Solaris went out whether anyone was hurt or not - with a full
+party and an area attack announced, it healed nobody just before the damage. It is a reactive heal,
+so it now waits until someone is actually hurt, on every path.
 
 ## Hits and heals above 65,535 points are read in full
 

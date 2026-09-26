@@ -78,13 +78,6 @@ public sealed class SMN_Reborn : SummonerRotation
 		ImGui.Text($"EnergyDrainPvE: Is Cooling Down: {EnergyDrainPvE.Cooldown.IsCoolingDown}");
 		ImGui.Text($"Next big summon opens the burst: {NextBigSummonIsBurst}");
 		ImGui.Text($"Lux Solaris: range reported {LuxSolarisPvE.TargetInfo.Range:F1} y, radius {LuxSolarisPvE.TargetInfo.EffectRange:F1} y (range 0: on the heal path the heal is anchored on you and the need read in the radius)");
-		if (StatusHelper.PlayerHasStatus(true, StatusID.RefulgentLux))
-		{
-			var hitIn = DataCenter.AnnouncedAreaHitIn;
-			ImGui.Text(LuxHeldForAreaHit()
-				? $"Lux Solaris expiry held: an area hit lands in {hitIn:F1} s, before Refulgent Lux ends - cast after it"
-				: "Lux Solaris expiry: nothing held");
-		}
 		ImGui.Text($"Another Summoner in party: {AnotherSummonerInParty}");
 		ImGui.Text(HostileTarget == null
 			? "Fallback block: no hostile target - Titan only"
@@ -96,24 +89,6 @@ public sealed class SMN_Reborn : SummonerRotation
 		ImGui.Text("Searing Light vs big summon: " + SearingLightAgainstSummon());
 		ImGui.Text($"Big summon held for: {(_summonHeldFor.Length == 0 ? "nothing" : _summonHeldFor)}"
 			+ $" - {SummonHeldSecondsNow:F1} s this fight");
-	}
-
-	// The expiry clauses fire Lux Solaris so that Refulgent Lux is not lost unspent - with no
-	// question of health, since a heal that lands on nobody hurt costs only the weave slot. That
-	// changes when an area hit is announced and lands while Refulgent Lux still runs: cast before it,
-	// the heal lands on a party about to be hit and is mostly overheal; cast after it, the same heal
-	// meets the damage. Owner's observation: a full party, an announced area attack, Lux Solaris
-	// before the hit - "zu früh und kontraproduktiv" unless it was the last moment it could go.
-	//
-	// So the clause waits while the hit lands with at least one GCD of Refulgent Lux left after it,
-	// which leaves weave slots for the cast. Every figure is read, none set: the hit's cast bar or
-	// BossModReborn's raidwide prediction, the status time, the GCD. When the hit would land too
-	// late for a slot after it, nothing is held and the clause fires as before.
-	private static bool LuxHeldForAreaHit()
-	{
-		var landsIn = DataCenter.AnnouncedAreaHitIn;
-		var luxLeft = StatusHelper.PlayerStatusTime(true, StatusID.RefulgentLux);
-		return landsIn < luxLeft - DataCenter.DefaultGCDTotal;
 	}
 
 	private string PhaseBookText(SearingPhase phase) =>
@@ -316,7 +291,15 @@ public sealed class SMN_Reborn : SummonerRotation
 	[RotationDesc(ActionID.LuxSolarisPvE)]
 	protected override bool GeneralAbility(IAction nextGCD, out IAction? act)
 	{
-		if (StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux) && !LuxHeldForAreaHit())
+		// Lux Solaris is a reactive heal: no barrier, no mitigation, nothing it does before a hit
+		// counts once the hit lands. This clause used to fire in the last GCDs of Refulgent Lux with
+		// no question of health, so with a full party it healed nobody - and just ahead of an
+		// announced area attack it spent the heal before the damage it could have answered. Owner's
+		// observation and his reading: it is cast after the hit. So it fires only while somebody is
+		// hurt, as the clause in AttackAbility already does; a full party loses nothing when Refulgent
+		// Lux runs out unspent.
+		if (DataCenter.LargestMissingHp > 0
+			&& StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux))
 		{
 			if (LuxSolarisPvE.CanUse(out act))
 			{
@@ -546,8 +529,7 @@ public sealed class SMN_Reborn : SummonerRotation
 		var largestMissing = DataCenter.LargestMissingHp;
 		var luxLandsInFull = healPerCast > 0 && largestMissing >= healPerCast;
 		var luxAboutToExpire = largestMissing > 0
-			&& StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux)
-			&& !LuxHeldForAreaHit();
+			&& StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux);
 
 		if (luxLandsInFull || luxAboutToExpire)
 		{

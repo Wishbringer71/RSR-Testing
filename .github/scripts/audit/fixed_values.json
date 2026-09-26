@@ -434,7 +434,7 @@
   },
   {
    "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
-   "code": "&& StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux)",
+   "code": "&& StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux);",
    "values": [
     "3"
    ],
@@ -683,7 +683,7 @@
   },
   {
    "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
-   "code": "if (StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux) && !LuxHeldForAreaHit())",
+   "code": "&& StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux))",
    "values": [
     "3"
    ],
