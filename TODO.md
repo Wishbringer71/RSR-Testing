@@ -10,17 +10,6 @@ Beide sind Upstream-Konventionen und ändern Verhalten im Kampf; zur Entscheidun
 - **Weißmagier** (`WHM_Reborn.DefenseAreaAbility`): Die ganze Flächenabwehr entfällt, solange Temperance weniger als 20 s oder Liturgy of the Bell weniger als 20 s zurückliegt (120 − 100 und 180 − 160 s, die Wirkdauer beider). Gemeint ist offenbar „nicht stapeln, solange die letzte noch wirkt". Im Kampf: Ein zweiter Raidwide in diesen 20 s bekommt weder Plenary Indulgence noch Divine Caress noch Liturgy.
 - **Dunkelritter** (`DRK_Reborn.DefenseAreaAbility`): `InTwoMIsBurst` sperrt in den ersten 15 s nach Living Shadow The Blackest Night auf andere, Oblation, Dark Missionary und Reprisal, auch vor einem großen Treffer. Dieselbe Bauform hat die Revolverklinge mit `!HasNoMercy`. Seine Vorgabe „Sicherheit der Gruppe geht vor Schaden" spricht dagegen.
 
-### Lux Solaris: Auslöser, Radius und Sperren außerhalb des Heilpfads · N
-
-**Audit A150, Befunde 1 bis 4, 6, 7, 9 bis 11, freigabepflichtig vor jeder Codeänderung.** Kurz, im Kampf:
-- Ein leicht verletzter Tank genügt, und Lux Solaris fällt in den letzten drei GCDs von Refulgent Lux vor einem angekündigten Treffer.
-- Ein verletztes Mitglied außerhalb des Radius löst einen Wurf auf volle Umstehende aus.
-- Unter Shackled Healing oder Scalebound fällt Lux trotzdem.
-- Ein Dunkelritter im Living-Dead-Fenster oder unter Walking Dead zählt als Grund.
-- Im Kampf ist nicht zu sehen, warum Lux fiel oder nicht.
-
-Details, Belege und Vorschläge in A150.
-
 ### Zielbasierte Bewegungsaktionen über den Move-Pfad gelten immer als unsicher · N, U
 
 `FindTargetAreaMove` ruft `CheckMovementSafety(target.Position)` **ohne** das Ziel (`ActionTargetInfo.cs`), während der Hauptpfad es mitgibt. Im Zweig für `HostileMovingForward`, `FriendlyMovingForward`, `HostileFriendlyMovingForward` und `HostileMovingAttack` ist `target` dann `null`, und die Methode antwortet `false` — unsicher, ohne etwas gemessen zu haben. Die Aktion wird damit nie angeboten, solange `BmrSafetyCheckAuto` eingeschaltet ist. Seit A138 steht jede solche Verweigerung im Diagnosefenster („Movement safety", Grund „no target to measure the dash against"); taucht sie dort nie auf, ist der Pfad unerreicht.

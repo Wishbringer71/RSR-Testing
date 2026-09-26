@@ -658,6 +658,20 @@ public static class StatusHelper
 				|| !PlayerWillStatusEndGCD(DeathTriggerLeadGCDs, 0, false, DeathTriggeredStatus));
 	}
 
+	/// <summary>
+	/// Whether a heal from the player would be punished or wasted right now: Scalebound (1495:
+	/// "unable to heal wounds via any method save mega potions"), or Shackled Healing (4564: "Use of
+	/// HP-restoring actions will inflict Shackles of Penitence on those nearby") while anyone else is
+	/// near. The same test the heal dispatch in CustomRotation_Ability and CustomRotation_GCD applies,
+	/// including its 21 yalms; here so that a heal asked from outside that dispatch - Lux Solaris,
+	/// Rekindle - obeys it too.
+	/// </summary>
+	internal static bool PlayerHealingPunished()
+	{
+		return PlayerHasStatus(false, StatusID.Scalebound)
+			|| (PlayerHasStatus(false, StatusID.ShackledHealing) && DataCenter.NumberOfPartyMembersInRangeOf(21) > 1);
+	}
+
 	/// <summary>How early the death-trigger hold releases; see <see cref="InDeathTriggerWindow"/>.</summary>
 	private const uint DeathTriggerLeadGCDs = 2;
 

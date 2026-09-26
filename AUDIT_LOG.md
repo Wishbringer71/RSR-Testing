@@ -3729,6 +3729,33 @@ Außerdem: Churin ist uninteressant (CLAUDE.md, TODO bereinigt).
 
 Als Hinweis in Konzept 07 und 08 geführt. Die Wirktexte stützen ihn gleichlautend: Holy trifft „all nearby enemies", Lux Solaris heilt „own HP and the HP of all nearby party members". Damit trägt die Prämisse von A137 (Reichweite 0, Anker der Wirkende), die bis dahin allein an der Laufzeitanzeige hing. Offen bleibt, ob der Radius vom Mittelpunkt oder von der Trefferfläche zählt; das klärt der Hinweis nicht.
 
+### A154 · Lux Solaris umgesetzt nach Konzept 08, im vollständigen Loop (26.09.2026)
+
+**Freigabe:** „im vollständigen loop umsetzen". Während der Umsetzung kam seine Vorgabe: Maßgeblich ist das minimale Heilpotential, nie das maximale, weil Heilung und Schild kritisch ausfallen können. Eingearbeitet.
+
+**Umsetzung:**
+- `SMN_Reborn.LuxSolarisDecision` wird von allen drei Wegen gefragt (Heilflagge, `AttackAbility`, `GeneralAbility`) und prüft in dieser Reihenfolge: Verbote, Radius, volle Landung, Gefahr, Verfall. Der manuelle Heilbefehl prüft nur die Verbote.
+- Gewirkt wird mit `targetOverride: Self`: Die Entscheidung hat den Bedarf im Radius schon gemessen.
+- `StatusHelper.PlayerHealingPunished` enthält dieselbe Prüfung wie der Heil-Dispatch; auch `TryRekindle` fragt sie.
+- `DataCenter.RecordHealEffect` behält die kleinste volle Heilung und hält jeden Betrag gegen den Fehlbetrag des Ziels; daraus entstehen Treffanteil und die Feststellung „Überheilung gemeldet". Beim Gebietswechsel wird zurückgesetzt.
+- `LargestMissingHp` ist ohne Leser und entfernt.
+- Anzeige in der Beschwörer-Statuszeile.
+
+**Falsifikation:**
+- *Kein Defekt?* Widerlegt durch A149 und A150.
+- *Option falsch, zum Beispiel über den Flächenheil-Zweig mit `AutoHealRatio`?* Verworfen: Die Heilschwelle hätte die Kleinheilung am Verfall abgelehnt, die er ausdrücklich will.
+- *Ausgeliefert, und nichts ändert sich?*
+  - Solange die Heilmenge unbekannt ist, greifen nur Gefahr und Verfall; die Anzeige sagt „not measured".
+  - Ist die Annahme „Gesundheit beim Effekt noch vor der Heilung" falsch, zeigt die Anzeige dauerhaft 0 % Treffanteil.
+  - Mit `WithholdHealingForLivingDead` aus gibt es keine Living-Dead-Sperre, bewusst.
+
+**Feste Werte:**
+- `21` ist aus dem Upstream-Dispatch übernommen und offen gelistet.
+- `100` ist eine Einheitenumrechnung und als Ausnahme gelistet.
+- `3` (Verfallsfenster): Der Loop ist im Konzept geführt. Er bleibt offen, weil die Prämisse „zwei Plätze je Fenster" nicht aus dem Spiel abgeleitet ist.
+
+**Prüfgrad:** statisch, Prüfskripte; Compile über die CI; Audit und Code-Review folgen.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

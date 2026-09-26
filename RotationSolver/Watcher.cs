@@ -323,9 +323,30 @@ public static class Watcher
 			// cleared as soon as the server's own health update catches up, so it answers "do not heal
 			// this target twice" and nothing beyond the next few frames; a rule that wants to know how
 			// far one cast reaches needs the figure to survive the cast.
+			//
+			// With each amount goes what that target was missing when it arrived: the effect is seen
+			// before the server's health update applies it, so the object still carries the health
+			// from before the heal. That lets the record say how much of the cast met missing health,
+			// and whether the packet reports overheal at all - which nobody had checked.
 			if (DataCenter.HealHP is { Count: > 0 })
 			{
-				DataCenter.RecordHealEffect(action!.Value.RowId, DataCenter.HealHP.Values);
+				List<(uint Amount, uint MissingBefore)> landed = [];
+				foreach (var (targetId, amount) in DataCenter.HealHP)
+				{
+					uint missing = 0;
+					foreach (var member in DataCenter.PartyMembers)
+					{
+						if (member != null && member.GameObjectId == targetId)
+						{
+							missing = member.MaxHp > member.CurrentHp ? member.MaxHp - member.CurrentHp : 0;
+							break;
+						}
+					}
+
+					landed.Add((amount, missing));
+				}
+
+				DataCenter.RecordHealEffect(action!.Value.RowId, landed);
 			}
 
 			// Ensure ApplyStatus dictionary is non-null, then merge source-applied effects

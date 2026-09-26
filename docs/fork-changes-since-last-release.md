@@ -153,11 +153,24 @@ limit break is up on the party, or his own course measured since the window bega
 will not reach full health in time. The Diagnostics window
 shows which of these holds.
 
-## Summoner: Lux Solaris is no longer cast on a full party
+## Summoner: Lux Solaris follows one rule on every path
 
-Near the end of Refulgent Lux, Lux Solaris went out whether anyone was hurt or not - with a full
-party and an area attack announced, it healed nobody just before the damage. It is a reactive heal,
-so it now waits until someone is actually hurt, on every path.
+Lux Solaris is a point-blank heal around you that expires unused with Refulgent Lux. It now goes out
+only when it does some good, measured inside its radius, and the same way whether the heal flag, the
+damage branch or the expiry asks for it:
+
+- never under Scalebound, under Shackled Healing with others near, or while a Dark Knight in its
+  radius is waiting for Living Dead to trigger (it waits for Walking Dead and then heals everyone,
+  the tank included);
+- when your own missing health takes a full heal, or everyone in the radius does;
+- at once when someone in the radius is in danger;
+- before Refulgent Lux runs out, whenever anyone in the radius is hurt at all - giving way only to
+  Mountain Buster or Searing Flash when their status would end first.
+
+The heal amount is the smallest full heal seen since the last zone change, so a critical heal never
+makes it look bigger than it surely is. The rotation status shows why Lux Solaris last went out or
+not, the measured amount, and how much of the last cast met missing health. Rekindle obeys Scalebound
+and Shackled Healing as well.
 
 ## Hits and heals above 65,535 points are read in full
 

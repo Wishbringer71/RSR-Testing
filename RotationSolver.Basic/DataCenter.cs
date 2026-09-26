@@ -390,83 +390,94 @@ internal static class DataCenter
 	internal static bool InEffectTime => DateTime.Now >= EffectTime && DateTime.Now <= EffectEndTime;
 	internal static Dictionary<ulong, uint> HealHP { get; set; } = [];
 
-	// How much health one of our own healing actions actually restored, in points, per action id.
-	// Healing is an absolute figure just like damage, so it is stored as points and divided by the
-	// member's own maximum where it is read - the same member carries a different share of it.
+	// How much health one of our own healing actions restores to one target, in points, per action id.
+	// Healing is an absolute figure just like damage, so it is stored as points; a caller compares it
+	// with points (a member's missing health), never with a share.
 	//
 	// This exists because the potency in an effect text cannot be converted into points from here:
 	// the result depends on healing power, on the job gauge and on buffs, and it changes with every
 	// piece of gear. Asking the fight instead costs nothing - the effect handler already sees every
 	// heal we land, with the real number.
 	//
-	// Smoothed rather than overwritten, because a critical heal restores markedly more than an
-	// ordinary one and a single one of those must not move the estimate to where the next decision
-	// is wrong. The weight is even: the most recent landing counts as much as everything before it,
-	// so a gear change is followed within a few casts instead of being averaged away.
+	// The SMALLEST amount seen is kept, not a mean. Owner's rule: a heal can land as a critical hit
+	// and be much larger, and a need is judged against the least the heal will surely restore, never
+	// the most. Only amounts that measure the whole heal count: one that met more missing health than
+	// it restored (nothing was lost to overheal), or any amount once the packet is seen to report
+	// overheal at all - then every amount is the full heal. It is cleared with the other records on a
+	// territory change: item level sync is set per duty, and a figure from the open world would be
+	// wrong inside it, and a gear change is followed from the next zone on.
 	private static readonly Dictionary<uint, float> _observedHealPerCast = [];
+	private static readonly Dictionary<uint, HealLanding> _lastHealLanding = [];
 
-	internal static void RecordHealEffect(uint actionId, IEnumerable<uint> healedAmounts)
+	/// <summary>
+	/// How the last cast of a healing action landed: the share of what it restored that met missing
+	/// health, and whether any target was reported a larger amount than it was missing - which says
+	/// the effect packet reports the gross heal, overheal included.
+	/// </summary>
+	internal readonly record struct HealLanding(float EffectiveShare, bool GrossReported, int Targets, DateTime At);
+
+	/// <summary>
+	/// Records one cast of an own healing action. <paramref name="landed"/> holds, per target, the
+	/// amount the effect reported and the health that target was missing when it arrived - read
+	/// before the server's health update applies it.
+	/// </summary>
+	internal static void RecordHealEffect(uint actionId, IReadOnlyList<(uint Amount, uint MissingBefore)> landed)
 	{
-		float sum = 0;
-		var count = 0;
-		foreach (var amount in healedAmounts)
+		var targets = 0;
+		double restored = 0;
+		double met = 0;
+		var gross = false;
+		foreach (var (amount, missingBefore) in landed)
 		{
-			// A heal that landed on a full target reports the overheal as 0 in the effect packet,
-			// which would drag the estimate towards zero and never recover. Only landings that
-			// actually restored something say what the action is worth.
 			if (amount == 0)
 			{
 				continue;
 			}
-			sum += amount;
-			count++;
+
+			targets++;
+			restored += amount;
+			met += Math.Min(amount, missingBefore);
+			gross |= amount > missingBefore;
 		}
 
-		if (count == 0)
+		if (targets == 0)
 		{
 			return;
 		}
 
-		var perTarget = sum / count;
-		_observedHealPerCast[actionId] = _observedHealPerCast.TryGetValue(actionId, out var known) && known > 0
-			? (known + perTarget) / 2f
-			: perTarget;
+		var smallest = float.MaxValue;
+		foreach (var (amount, missingBefore) in landed)
+		{
+			if (amount > 0 && (gross || amount < missingBefore))
+			{
+				smallest = Math.Min(smallest, amount);
+			}
+		}
+
+		if (smallest < float.MaxValue)
+		{
+			_observedHealPerCast[actionId] = _observedHealPerCast.TryGetValue(actionId, out var known) && known > 0
+				? Math.Min(known, smallest)
+				: smallest;
+		}
+
+		_lastHealLanding[actionId] = new HealLanding((float)(met / restored), gross, targets, DateTime.Now);
 	}
 
 	/// <summary>
-	/// The healing one cast of this action was last seen to restore, in health points, or 0 when it
-	/// has not been observed yet. 0 means "unknown", never "heals nothing" - a caller that cannot
-	/// act on an unknown value keeps its previous behaviour instead of assuming one.
+	/// What one cast of this action restores to one target, in health points, or 0 when it has not
+	/// been observed since the last territory change. 0 means "unknown", never "heals nothing" - a
+	/// caller that cannot act on an unknown value keeps its previous behaviour instead of assuming one.
 	/// </summary>
 	public static float GetObservedHealPerCast(uint actionId)
 	{
 		return _observedHealPerCast.TryGetValue(actionId, out var known) ? known : 0f;
 	}
 
-	/// <summary>
-	/// The largest amount of health missing from any living party member, in points. This is the
-	/// figure a heal has to reach for none of it to be wasted on that member.
-	/// </summary>
-	public static float LargestMissingHp
+	/// <summary>How the last cast of this action landed, or null when none has been seen.</summary>
+	internal static HealLanding? GetLastHealLanding(uint actionId)
 	{
-		get
-		{
-			float largest = 0;
-			foreach (var member in PartyMembers)
-			{
-				if (member.IsDead || member.MaxHp == 0 || member.CurrentHp >= member.MaxHp)
-				{
-					continue;
-				}
-
-				var missing = (float)(member.MaxHp - member.CurrentHp);
-				if (missing > largest)
-				{
-					largest = missing;
-				}
-			}
-			return largest;
-		}
+		return _lastHealLanding.TryGetValue(actionId, out var landing) ? landing : null;
 	}
 
 	internal static Dictionary<ulong, uint> ApplyStatus { get; set; } = [];
@@ -1832,6 +1843,10 @@ internal static class DataCenter
 		_holdExpectsHitUntil = DateTime.MinValue;
 		_holdsVindicated = 0;
 		_holdsWasted = 0;
+
+		// Item level sync is set per duty: a heal measured outside is the wrong figure inside.
+		_observedHealPerCast.Clear();
+		_lastHealLanding.Clear();
 
 		while (VfxDataQueue.TryDequeue(out _))
 		{ }

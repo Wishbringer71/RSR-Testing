@@ -77,7 +77,14 @@ public sealed class SMN_Reborn : SummonerRotation
 	{
 		ImGui.Text($"EnergyDrainPvE: Is Cooling Down: {EnergyDrainPvE.Cooldown.IsCoolingDown}");
 		ImGui.Text($"Next big summon opens the burst: {NextBigSummonIsBurst}");
-		ImGui.Text($"Lux Solaris: range reported {LuxSolarisPvE.TargetInfo.Range:F1} y, radius {LuxSolarisPvE.TargetInfo.EffectRange:F1} y (range 0: on the heal path the heal is anchored on you and the need read in the radius)");
+		ImGui.Text($"Lux Solaris: {_luxWhy}");
+		var luxHeal = DataCenter.GetObservedHealPerCast((uint)ActionID.LuxSolarisPvE);
+		var landing = DataCenter.GetLastHealLanding((uint)ActionID.LuxSolarisPvE);
+		ImGui.Text((luxHeal > 0 ? $"  heals {luxHeal:N0} per target" : "  heal not measured since the last zone change")
+			+ $", radius {LuxSolarisPvE.TargetInfo.EffectRange:F1} y"
+			+ (landing is { } l
+				? $"; last cast: {l.EffectiveShare:P0} met missing health on {l.Targets} target(s), overheal {(l.GrossReported ? "is" : "not seen")} reported"
+				: string.Empty));
 		ImGui.Text($"Another Summoner in party: {AnotherSummonerInParty}");
 		ImGui.Text(HostileTarget == null
 			? "Fallback block: no hostile target - Titan only"
@@ -203,7 +210,9 @@ public sealed class SMN_Reborn : SummonerRotation
 	[RotationDesc(ActionID.LuxSolarisPvE)]
 	protected override bool HealAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		if (LuxSolarisPvE.CanUse(out act))
+		// The heal flag's path asks the same decision as the other two (LuxSolarisDecision); a manual
+		// heal command is his explicit wish and is held back only by the prohibitions.
+		if (TryLuxSolaris(DataCenter.CommandStatus.HasFlag(AutoStatus.HealAreaAbility), out act))
 		{
 			return true;
 		}
@@ -233,8 +242,166 @@ public sealed class SMN_Reborn : SummonerRotation
 	//
 	// The self fallback is not a formality. Rekindle only exists while Firebird Trance runs, so a
 	// cast that finds no target is lost with the phase, and 400 potency on oneself beats nothing.
+	// Why Lux Solaris last went out or did not - the rotation status shows it.
+	private string _luxWhy = "not asked yet";
+
+	private bool TryLuxSolaris(bool manual, out IAction? act)
+	{
+		act = null;
+		if (!LuxSolarisDecision(manual, out _luxWhy))
+		{
+			return false;
+		}
+
+		// Aimed at the caster: Lux Solaris is point-blank, and the decision has already measured the
+		// need in its radius. Aimed as a heal, the targeting would ask its own heal ratio again and
+		// turn down the small heal the expiry rule allows.
+		return LuxSolarisPvE.CanUse(out act, targetOverride: TargetType.Self);
+	}
+
+	/// <summary>
+	/// Whether Lux Solaris should go out now - the owner's rule, concept 08 "Wann Lux Solaris
+	/// zuendet", asked in its order: prohibitions, the radius, the heal landing in full, a member in
+	/// danger, and the expiry of Refulgent Lux.
+	/// </summary>
+	private bool LuxSolarisDecision(bool manual, out string why)
+	{
+		if (!StatusHelper.PlayerHasStatus(true, StatusID.RefulgentLux))
+		{
+			why = "no Refulgent Lux";
+			return false;
+		}
+
+		// 1. Prohibitions. A heal that punishes the people around, or cannot heal at all.
+		if (StatusHelper.PlayerHealingPunished())
+		{
+			why = "held: Scalebound, or Shackled Healing with others nearby";
+			return false;
+		}
+
+		// 2. The radius. Point-blank around the caster; the game gives the radius.
+		var radius = LuxSolarisPvE.TargetInfo.EffectRange;
+		List<IBattleChara> inRadius = [];
+		foreach (var member in PartyMembers)
+		{
+			if (member != null && !member.IsDead && member.DistanceToPlayer() <= radius
+				&& !member.HasStatus(false, StatusHelper.HealingIneffectiveStatus))
+			{
+				inRadius.Add(member);
+			}
+		}
+
+		// Living Dead waiting for its trigger comes before everything, even a member in danger and
+		// the expiry: in Savage and Extreme it answers a tankbuster, and a dead tank is the wipe.
+		// Lux Solaris waits for Walking Dead and then heals several at once, the tank among them.
+		foreach (var member in inRadius)
+		{
+			if (member.IsHeldForDeathTrigger())
+			{
+				why = $"held: {member.Name} waits for Living Dead to trigger";
+				return false;
+			}
+		}
+
+		if (manual)
+		{
+			why = "manual heal command";
+			return true;
+		}
+
+		var hurt = 0;
+		foreach (var member in inRadius)
+		{
+			if (member.CurrentHp < member.MaxHp)
+			{
+				hurt++;
+			}
+		}
+
+		if (hurt == 0)
+		{
+			why = "nobody in the radius is hurt";
+			return false;
+		}
+
+		// 3. The heal lands in full: on the caster himself, or on everyone in the radius. The amount
+		// is measured, not derived from the potency; 0 means not measured since the last zone change.
+		var heal = DataCenter.GetObservedHealPerCast((uint)ActionID.LuxSolarisPvE);
+		if (heal > 0)
+		{
+			if (Player != null && Player.MaxHp - Player.CurrentHp >= heal)
+			{
+				why = "your own missing health takes a full heal";
+				return true;
+			}
+
+			var everyoneTakesItAll = true;
+			foreach (var member in inRadius)
+			{
+				if (member.MaxHp - member.CurrentHp < heal)
+				{
+					everyoneTakesItAll = false;
+					break;
+				}
+			}
+
+			if (everyoneTakesItAll)
+			{
+				why = "everyone in the radius takes a full heal";
+				return true;
+			}
+		}
+
+		// 4. A member in danger: the heal chain's own critical class (concept 07), unprotected and at
+		// or below HealthForDyingTanks in effective health. A Walking Dead bearer at 1 HP counts.
+		foreach (var member in inRadius)
+		{
+			if (member.NoNeedHealingInvuln()
+				&& member.GetForecastEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f)
+			{
+				why = $"{member.Name} is in danger";
+				return true;
+			}
+		}
+
+		// 5. Refulgent Lux about to run out: any heal beats none. It gives way only to a damage
+		// ability whose enabling status ends before the next weave window - that one loses its value
+		// by waiting, a small heal does not lose much.
+		if (StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux))
+		{
+			var nextWindow = DataCenter.DefaultGCDRemain + DataCenter.DefaultGCDTotal;
+			if (StatusEndsBefore(StatusID.TitansFavor, nextWindow) || StatusEndsBefore(StatusID.RubysGlimmer, nextWindow))
+			{
+				why = "Refulgent Lux runs out - one slot for Mountain Buster or Searing Flash first";
+				return false;
+			}
+
+			why = "Refulgent Lux runs out and someone in the radius is hurt";
+			return true;
+		}
+
+		why = heal > 0
+			? "waiting: a full heal would still overheal someone in the radius"
+			: "waiting: heal not measured since the last zone change";
+		return false;
+	}
+
+	private static bool StatusEndsBefore(StatusID status, float seconds)
+	{
+		var left = StatusHelper.PlayerStatusTime(true, status);
+		return left > 0 && left < seconds;
+	}
+
 	private bool TryRekindle(out IAction? act)
 	{
+		// Asked from GeneralAbility, outside the heal dispatch that checks Scalebound and Shackled
+		// Healing - so it checks them itself.
+		if (StatusHelper.PlayerHealingPunished())
+		{
+			act = null;
+			return false;
+		}
+
 		if (RekindlePvE.CanUse(out act, targetOverride: TargetType.LowHPPercent))
 		{
 			return true;
@@ -291,20 +458,11 @@ public sealed class SMN_Reborn : SummonerRotation
 	[RotationDesc(ActionID.LuxSolarisPvE)]
 	protected override bool GeneralAbility(IAction nextGCD, out IAction? act)
 	{
-		// Lux Solaris is a reactive heal: no barrier, no mitigation, nothing it does before a hit
-		// counts once the hit lands. This clause used to fire in the last GCDs of Refulgent Lux with
-		// no question of health, so with a full party it healed nobody - and just ahead of an
-		// announced area attack it spent the heal before the damage it could have answered. Owner's
-		// observation and his reading: it is cast after the hit. So it fires only while somebody is
-		// hurt, as the clause in AttackAbility already does; a full party loses nothing when Refulgent
-		// Lux runs out unspent.
-		if (DataCenter.LargestMissingHp > 0
-			&& StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux))
+		// The same decision as in AttackAbility. It is reached here only where AttackAbility is not
+		// - with no enemy in reach, for instance - and a heal does not need one.
+		if (TryLuxSolaris(false, out act))
 		{
-			if (LuxSolarisPvE.CanUse(out act))
-			{
-				return true;
-			}
+			return true;
 		}
 
 		// One branch, not two. There were two: three GCDs before Firebird Trance ends with a target
@@ -495,48 +653,13 @@ public sealed class SMN_Reborn : SummonerRotation
 			}
 		}
 
-		// Lux Solaris is asked here, after Searing Light and ahead of the Aetherflow spenders, because
-		// the two branches that could otherwise carry it both fail in this phase:
-		//
-		// - HealAreaAbility is only reached while AutoStatus.HealAreaAbility stands, and that flag
-		//   wants the party's spread below HealthDifference AND its average below HealthAreaAbility.
-		//   One member taking a mechanic raises the spread, so the flag stays down exactly when a
-		//   single player is the one who is hurt.
-		// - GeneralAbility carries an expiry clause already, but the dispatch asks AttackAbility
-		//   first, and in a demi phase that branch always has something - Energy Siphon, Energy Drain,
-		//   Enkindle. The clause therefore does not get a slot while the phase runs.
-		//
-		// Neither is a defect of those branches: the flag is built for a healer's expensive area cast,
-		// where healing one hurt player with it is the wrong trade. Lux Solaris is not that. It costs
-		// no MP and no GCD, its only cost is the weave slot, and it expires unspent with Refulgent Lux.
-		// The question is therefore not "is area healing worth it" but "is this cast wasted".
-		//
-		// Owner's rule, and it is the answer to that question: fire when the missing health is just
-		// large enough for the heal to land in full. That needs the heal in points, which cannot be
-		// derived from the 500 potency in the effect text - healing power and gear decide it. So it is
-		// measured instead: the effect handler sees what every one of our heals actually restored, and
-		// GetObservedHealPerCast hands back the smoothed figure. Nothing is read later and nothing is
-		// asked of the player; the rule corrects itself on every cast.
-		//
-		// Until the first landing has been seen the figure is 0, which means unknown. Then this branch
-		// stays out of the way and the old behaviour applies - the heal flag decides, plus the expiry
-		// clause below.
-		//
-		// The expiry clause pays for itself here. Refulgent Lux runs 30s against a 15s demi, so its
-		// last GCDs fall AFTER the phase, where the attack branch is thin - the slot it takes there is
-		// not a burst slot.
-		var healPerCast = DataCenter.GetObservedHealPerCast((uint)ActionID.LuxSolarisPvE);
-		var largestMissing = DataCenter.LargestMissingHp;
-		var luxLandsInFull = healPerCast > 0 && largestMissing >= healPerCast;
-		var luxAboutToExpire = largestMissing > 0
-			&& StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux);
-
-		if (luxLandsInFull || luxAboutToExpire)
+		// Lux Solaris is asked here, after Searing Light and ahead of the damage abilities: the heal
+		// flag's path alone would miss it whenever the flag stays down - it wants the party's spread
+		// low as well as its average, so one hurt member keeps it off - and GeneralAbility comes
+		// after this branch. What decides is LuxSolarisDecision, the same on every path.
+		if (TryLuxSolaris(false, out act))
 		{
-			if (LuxSolarisPvE.CanUse(out act))
-			{
-				return true;
-			}
+			return true;
 		}
 
 		if (inBigInvocation)

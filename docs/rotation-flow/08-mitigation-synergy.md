@@ -303,9 +303,8 @@ trifft — und nicht besser.
 
 ## Wann Lux Solaris zuendet
 
-**Sachstand der Regel, aus seinen Vorgaben vom 26.09.2026 (A151).** Der Code folgt ihr noch nicht;
-was er heute tut und wo er abweicht, steht am Ende dieses Abschnitts und in A150. Umsetzung erst nach
-seiner Freigabe.
+**Sachstand der Regel, aus seinen Vorgaben vom 26.09.2026 (A151 bis A153), umgesetzt in A154**
+(`SMN_Reborn.LuxSolarisDecision`, gefragt von allen drei Wegen).
 
 **Was Lux Solaris ist.** **Hinweis des Auftraggebers:** Lux Solaris ist eine Point-Blank-Flaeche vom
 Wirkenden aus, wie Holy beim Weissmagier. Die Wirktexte stuetzen das gleich: Holy trifft „all nearby
@@ -396,35 +395,37 @@ ausdruecklicher Wunsch und prueft allein die Verbote aus Punkt 1.
 - Ob der Radius von Mitte oder Trefferflaeche gemessen wird, ist unbelegt; verwendet wird das Mass der
   Zielwahl (`GetCanAffects`, Trefferflaeche zu Trefferflaeche).
 
-**Heute im Code (A150), und wo er davon abweicht:**
-- Zwei Wege ausserhalb des Heilpfads (`SMN_Reborn.AttackAbility`, `GeneralAbility`) pruefen weder Shackled
-  Healing noch Scalebound und messen den Bedarf in der ganzen Gruppe (`LargestMissingHp`), nicht im Radius.
-- Der Verfall zuendet, sobald irgendein Mitglied irgendwo etwas verloren hat, ohne Gewichtung gegen
-  andere Aktionen; seine Beobachtung (A149) war dieser Weg.
-- Die volle Landung wird am **groessten Einzelfehlbetrag** gemessen, nicht an „der Beschwoerer selbst
-  oder alle im Radius".
-- Der Living-Dead-Traeger zaehlt als Grund, statt Lux zu sperren.
-- Der Heilpfad (Heilflagge) misst im Radius, verlangt aber ein Mitglied unter `AutoHealRatio` und liest
-  die gemessene Heilmenge nicht; fuer ihn gelten die Punkte 3 bis 5 heute nicht.
-- Im Kampf ist nicht zu sehen, warum Lux fiel oder nicht.
+**Die Heilmenge ist gemessen, nicht aus der Potenz gerechnet, und es zaehlt die kleinste.** 500 Potenz
+sind von hier nicht in Lebenspunkte umzurechnen; der Effekt-Handler sieht jede eigene Heilung mit ihrem
+Wert (`Watcher.ActionFromSelf`, `DataCenter.RecordHealEffect`). **Vorgabe des Auftraggebers:** Eine
+Heilung kann kritisch und damit besonders gross ausfallen, ein Schild ebenso; fuer die Prognose der
+Notwendigkeit zaehlt immer das **minimale** Heilpotential, nie das maximale. Gespeichert wird deshalb die
+kleinste Heilung, die das ganze Potential zeigt — eine, die weniger heilte, als dem Ziel fehlte, oder jede,
+sobald das Spiel nachweislich Ueberheilung mitmeldet. Der Wert gilt bis zum naechsten Gebietswechsel (die
+Gegenstandsstufensynchronisation wird je Inhalt gesetzt). Vorher ist er unbekannt, und nur die Punkte 4
+und 5 greifen.
 
-**Die Heilmenge ist gemessen, nicht aus der Potenz gerechnet.** 500 Potenz sind von hier nicht in
-Lebenspunkte umzurechnen; der Effekt-Handler sieht jede eigene Heilung mit ihrem Wert
-(`Watcher.ActionFromSelf`), `DataCenter.GetObservedHealPerCast` gibt ihn geglaettet zurueck. Vor der ersten
-Landung ist der Wert 0 = unbekannt; dann gilt nur der Verfall (Punkt 5). **Maengel, vor der Umsetzung zu
-beheben (A150):** Ob das Spiel Ueberheilung mitmeldet, ist unbelegt — der Code kann es selbst messen,
-indem er den gemeldeten Betrag gegen den Fehlbetrag vor dem Wurf haelt. Ein einzelner kritischer Treffer
-verschiebt den Mittelwert um die Haelfte seines Ueberschusses. Der Wert gilt je Plugin-Sitzung und wird
-bei Stufensynchronisation nicht zurueckgesetzt.
+**Selbstpruefung der Messung:** Der Effekt-Handler sieht die Heilung, bevor das Spiel die Gesundheit
+aktualisiert, und haelt jeden Betrag gegen den Fehlbetrag des Ziels. Daraus ergeben sich der Anteil, der
+auf fehlende Gesundheit traf, und ob Ueberheilung mitgemeldet wird. **Annahme:** Die Gesundheit ist beim
+Effekt noch die vor der Heilung — der vorhandene Code stuetzt sich darauf (`HealHP` wird geleert, sobald
+die Gesundheitsaktualisierung nachzieht). Stimmt sie nicht, zeigt die Anzeige dauerhaft 0 % getroffenen
+Anteil, und die Annahme ist widerlegt.
 
-**Im Kampf ablesbar, Bestandteil der Umsetzung:** eine Diagnosezeile mit der gemessenen Heilmenge, dem
-Stand im Radius (wem wie viel fehlt), dem greifenden Punkt der Regel oder dem Verbot, das haelt, und nach
-jedem Wurf dem Anteil, der ankam.
+**Im Kampf ablesbar** (Beschwoerer-Anzeige): warum Lux zuletzt fiel oder nicht — Verbot, Radius,
+volle Landung, Gefahr, Verfall oder Warten —, die gemessene Heilmenge, der Radius und zum letzten Wurf,
+welcher Anteil fehlende Gesundheit traf und ob Ueberheilung gemeldet wird.
 
-**Verfallsfenster:** Heute die letzten drei GCDs von Refulgent Lux, ein fester Wert ohne Loop
-(`fixed_values.json`, offen). Mit der Gewichtung aus Punkt 5 ist er neu zu bestimmen: so spaet wie
-moeglich, damit die Heilung noch etwas trifft, und frueh genug, dass nach allen vorrangigen Aktionen ein
-Platz bleibt.
+**Verworfen, mit Grund:** der groesste Einzelfehlbetrag der ganzen Gruppe als Ausloeser (A150: misst
+ausserhalb des Radius, zuendet bei einem Mitglied, uebergeht den Living-Dead-Traeger); die Vorhersage des
+Treffers (A149: fuer eine reaktive Heilung unnoetig); der geglaettete Mittelwert der Heilmenge (ein
+kritischer Treffer verschob ihn).
+
+**Verfallsfenster:** die letzten drei GCDs von Refulgent Lux, weiter ein offener fester Wert
+(`fixed_values.json`). Der Loop dazu (A154): Lux braucht einen Platz, hoechstens zwei Aktionen gehen nach
+Punkt 5 vor, also drei Plaetze; bei zwei Plaetzen je Fenster sind das zwei Fenster, dazu das laufende,
+dessen Plaetze schon verbraucht sein koennen — drei GCDs. Die Praemisse „zwei Plaetze je Fenster" ist
+nicht aus dem Spiel abgeleitet, deshalb bleibt der Wert offen.
 
 ## Was ein Baustein mehrfach traegt
 

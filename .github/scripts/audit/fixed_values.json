@@ -99,14 +99,6 @@
   },
   {
    "file": "RotationSolver.Basic/DataCenter.cs",
-   "code": "? (known + perTarget) / 2f",
-   "values": [
-    "2"
-   ],
-   "status": "open"
-  },
-  {
-   "file": "RotationSolver.Basic/DataCenter.cs",
    "code": "Service.Config.UseBmrTimeline && BMRNextTankbusterIn > 0.6f && BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow;",
    "values": [
     "0.6"
@@ -433,14 +425,6 @@
    "status": "open"
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
-   "code": "&& StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux);",
-   "values": [
-    "3"
-   ],
-   "status": "open"
-  },
-  {
    "file": "RotationSolver/RebornRotations/Melee/SAM_Reborn.cs",
    "code": "[Range(0, 15, ConfigUnitType.Seconds)]",
    "values": [
@@ -682,8 +666,26 @@
    "reason": "Unit conversion, not a game value: the ItemAction sheet states the potion's share of maximum HP in percent, and the HQ line beside it (upstream) divides the same way."
   },
   {
+   "file": "RotationSolver.Basic/Helpers/StatusHelper.cs",
+   "code": "|| (PlayerHasStatus(false, StatusID.ShackledHealing) && DataCenter.NumberOfPartyMembersInRangeOf(21) > 1);",
+   "values": [
+    "21"
+   ],
+   "status": "open"
+  },
+  {
    "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
-   "code": "&& StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux))",
+   "code": "&& member.GetForecastEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f)",
+   "values": [
+    "100"
+   ],
+   "status": "exception",
+   "loop": "A154",
+   "reason": "Unit conversion, not a game value: GetForecastEffectiveHpPercent answers in percent and HealthForDyingTanks is a share; the heal chain's critical rank compares the same way."
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
+   "code": "if (StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.RefulgentLux))",
    "values": [
     "3"
    ],
