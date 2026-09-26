@@ -216,55 +216,93 @@ sie nie strecken — der Generator erfindet keinen Wert.
 **Auftrag (seine Vorgabe, 26.09.2026):** prüfen, ob die optimalen Kombinationen in den Rotationen
 tatsächlich genutzt werden — „für alle im Loop".
 
-**Sachstand (A165):** Geprüft ist, ob ein gewährtes Fenster — ein Status, der eine Aktion für eine
+**Sachstand (A165, A166):** Geprüft ist, ob ein gewährtes Fenster — ein Status, der eine Aktion für eine
 Zeit freigibt (Proc, „Ready", Stapel), oder eine Ressource mit Obergrenze — verbraucht wird, bevor es
 verfällt oder überläuft. Ob eine Abfolge die beste ist, ist nicht geprüft: Die Referenz dafür (Job-Guides
 wie The Balance, das Rotations-Repository) sperrt der Egress, und die Wirktexte nennen die Dauer der
 meisten „Ready"-Status nicht. Der Code braucht sie nicht: Er liest die Restzeit zur Laufzeit.
 
-**Methode:** je Job die Verbraucher von Stapeln, Procs und begrenzten Ressourcen im Code nachgeschlagen
-und gegen Ablauf und Überschreiben geprüft — ganz gelesen: Maschinist, Krieger, Paladin, Dunkelritter,
-Revolverklinge; bei den übrigen die Stellen dieser Verbraucher; dazu die Liste des Generators „Fenster, deren Verbraucher an Bedingungen hängt":
-Verbraucher mit eigener Statusbedingung, deren jeder Aufruf eine Zusatzbedingung trägt, und ob einer
-davon vor Ablauf trotzdem feuert.
+### Die gemeinsame Ursache: die Statusbedingung sperrte das Ende jedes Fensters
 
-**Behoben (A165), weil das Fenster sonst ungenutzt verfällt:**
+**Stufe „alle", behoben (A166).** Eine Aktion mit Statusbedingung (`StatusNeed`, auf der Zielseite
+`TargetStatusNeed`) war gesperrt, sobald ihr Status in `StatusRefreshGcdCount` GCDs (ab Werk 2, rund 5 s)
+endete. Die Einstellung heißt in der Oberfläche „Number of GCDs before the DOT/Status effect is
+reapplied" und erscheint nur bei Aktionen, die einen Status vergeben; ihr Text bindet. Eingeführt hat
+die Verwendung auf der Bedarfsseite Upstream-Commit `dc067e0d3` (April 2025, „for better status
+determination"); vorher lag die Grenze bei 0.
+
+- **Im Kampf:** Jeder Proc-Verbraucher aller Jobs war in den letzten ~5 s seines Fensters gesperrt. Wer
+  ihn bis dahin nicht verbraucht hatte, verlor ihn. Jede Regel „vor Ablauf nutzen" mit kleinerem Horizont
+  war wirkungslos (Rotmagier Prefulgence, Weißmagier Divine Caress, Gelehrter Baneful Impaction, Ninja
+  Meisui, Maler Tempera Grassa).
+- **Jetzt:** Der benötigte Status muss liegen, solange die Aktion wirkt — bei einem Zauber mit Wirkzeit
+  bis zu deren Ende (`ActionBasicInfo.CastTime`, aus dem Spiel). Ein Soforteinsatz braucht nur den Status.
+- **Betroffen:** alle Jobs (Endnutzer), jede abgeleitete Rotation mit `StatusNeed` (Paketnutzer),
+  Upstream-Pflege.
+
+### Rückfälle vor Ablauf, je Job (A165, A166)
+
+Wartet ein Verbraucher auf eine Ausrichtung (Burst, Debuff), verfällt sein Fenster, wenn die Ausrichtung
+nicht kommt. Behoben mit einem Rückfall im letzten GCD des Status; vorher bleibt jede Ausrichtung
+unberührt.
 - **Maschinist:** Hypercharged (Barrel Stabilizer, eine Überhitzung ohne Heat) wartete auf Wildfire.
   Wird Wildfire zurückgehalten — „Only use Wildfire on Boss targets" gegen Trash, oder vor einer Pause —,
-  verfiel es. Jetzt fällt Hypercharge im letzten GCD des Status.
+  verfiel es. Der Rückfall fällt auch über einem Reassemble; das landet dann auf einem Blazing Shot, fünf
+  freie Überhitzungs-Schüsse wiegen mehr. Gesperrt bleibt er während einer laufenden Überhitzung (die Basisrotation
+  lässt Hypercharge dort nicht zu, `!IsOverheated`).
 - **Samurai:** Ogi Namikiri wartete auf einem Boss auf Higanbana. Kommt Higanbana nicht — abgeschaltet,
-  oder „Prevent Higanbana use if theres more than one target" (ab Werk an) sperrt es, weil zwei
-  angreifbare Gegner in Nahkampfreichweite stehen (`NumberOfAllHostilesInRange`), während der
-  Flächenpfad von Ogi den gefilterten Zähler (`NumberOfHostilesInRange`) unter zwei sieht —, verfiel Ogi
-  Namikiri samt Kaeshi. Jetzt fällt es im letzten GCD von Ogi Namikiri Ready.
-- **Revolverklinge:** Sonic Break fiel nur unter No Mercy. Vergeht No Mercy ohne Platz dafür (Pause),
-  verfiel Ready to Break. Jetzt fällt es im letzten GCD des Status.
+  oder „Prevent Higanbana use if theres more than one target" (ab Werk an) sperrt es über
+  `NumberOfAllHostilesInRange`, während der Flächenpfad von Ogi `NumberOfHostilesInRange` unter zwei
+  sieht —, verfiel Ogi samt Kaeshi. Der Rückfall rechnet die Wirkzeit von Ogi mit ein.
+- **Revolverklinge:** Sonic Break und Reign of Beasts fielen nur unter No Mercy. Vergeht No Mercy ohne
+  Platz dafür (Pause), verfielen Ready to Break und Ready to Reign. Der Rückfall steht vor allen anderen
+  GCDs, weil jeder andere einen GCD später noch kommen kann.
+- **Ninja:** Phantom Kamaitachi wartete auf das Trick-Attack- oder Mug-Fenster; Bunshin läuft auf eigener
+  Abklingzeit. Öffnet sich kein Fenster vor Ablauf, fällt es jetzt im letzten GCD.
 
 **Zur Entscheidung (Weiser):** Addersgall läuft bei drei Stapeln über; einen Verbrauch vor dem
 Überlauf gibt es nicht (der Weißmagier hat dafür „Use Lily at max stacks/about to overcap", ab Werk an).
 Druochole gäbe je Stapel 7 % MP und eine Heilung (Wirktext).
 
-**Geprüft, ohne Befund:**
-- *Tanks:* Paladin (Atonement-Kette, Divine Might, Requiescat, Goring Blade, Blade of Honor mit Rückfall
-  oder vorn), Krieger (Infuriate überschreibt Nascent Chaos nicht, Beast Gauge läuft nicht über),
-  Dunkelritter (Delirium-Kombo, Disesteem vorn), Revolverklinge (Fortsetzungen vorn, Munition ohne
-  Überlauf).
-- *Heiler:* Weißmagier (Lilien-Überlauf per Option, Sacred Sight, Divine Caress mit Rückfall),
-  Gelehrter (Energy Drain leert Aetherflow vor dessen Abklingzeit, Baneful Impaction mit Rückfall),
-  Astrologe (Karten vor dem nächsten Ziehen).
-- *Nahkampf:* Monk (Fire's/Wind's Reply mit Rückfall), Dragoon (Wyrmwind Thrust vor dem Überlauf,
-  Procs vorn), Schnitter, Ninja, Viper.
-- *Fernkampf und Magie:* Barde, Tänzer, Maler, Rotmagier (Prefulgence mit Rückfall), Schwarzmagier
-  (Polyglot vor dem Überlauf, beide Rotationen), Beschwörer (Konzept 12).
+### Methode und Werkzeug
 
-**Bewusst so, mit Grund:**
-- *Barde:* Soul Voice bleibt bis zu 25 s bei 100, wenn Battle Voice kommt — Apex Arrow im Burst ist mehr
-  wert als der Überlauf (Schluss aus dem Regelaufbau).
-- *Krieger:* Primal Rend fällt auf Distanz nur mit den Sprung-Optionen; ohne sie verfällt Primal Rend
-  Ready eher, als dass der Krieger springt — seine Vorgabe zu Bewegung.
-- *Übrige Kandidaten der Generatorliste* (Horoscope, Retrace, Pepsis, Radiant Encore, Reawaken, Lux
-  Solaris, Searing Flash, Ruin IV): Die Bedingung ist der Zweck (Heilbedarf, Option, Burst) oder im
-  jeweiligen Konzept begründet.
+Je Job die Verbraucher von Stapeln, Procs und begrenzten Ressourcen im Code nachgeschlagen und gegen
+Ablauf und Überschreiben geprüft — ganz gelesen: Maschinist, Krieger, Paladin, Dunkelritter,
+Revolverklinge; bei den übrigen die Stellen dieser Verbraucher. Dazu die Generatorliste „Fenster, deren
+Verbraucher an Bedingungen hängt": Verbraucher mit eigener Statusbedingung, einem „…Ready" oder einer
+`Has…`-Statuseigenschaft im `ActionCheck`, deren kein Aufruf ein schlichtes
+`if (X.CanUse(out act)) { return true; }` direkt im Methodenrumpf ist, und ob ein Aufruf in seinem `if`
+oder einem umschließenden `if` vor Ablauf feuert (`WillStatusEnd` mit dem eigenen Status). Ob der
+Rückfall-Horizont die Wirkzeit deckt, prüft die Liste nicht; das steht je Fall oben.
+
+### Die übrigen Kandidaten, bewertet
+
+- *Die Bedingung ist das Fenster selbst oder Struktur:* Schnitter (Gallows, Gibbet und Executioner's
+  unter Soul Reaver bzw. Executioner, Communio unter Enshroud, Perfectio), Viper (Legacies unter
+  Reawakened, die Twinfang-/Twinblood-Folgen), Monk (Stufenprüfungen), Ninja (Mudra-Ausführung, Ninjutsu-
+  Ziel), Rotmagier (Verfire/Verstone nach Manabalance, Grand Impact, Enchanted Riposte nach Mana), Maler
+  (Comet in Black, Star Prism, Subtractive Palette).
+- *Die Bedingung ist der Zweck:* Heilbedarf (Horoscope, Pepsis), Option (Retrace), Burst (Radiant
+  Encore, Reawaken, Starfall Dance, Technical Step, Flourish), Tanzschritte vor den Procs (Tänzer: Reverse
+  Cascade, Fountainfall, Rising Windmill, Bloodshower warten, solange ein Schritt bereit ist; dass die
+  Procs einen Tanz überdauern, ist ein Schluss — ihre Dauer blendet der Wirktext aus), Konzept 12 (Lux
+  Solaris, Searing Flash, Ruin IV).
+- *Sicherheit:* Krieger Primal Rend auf Distanz nur mit den Sprung-Optionen — seine Vorgabe zu Bewegung.
+- *Niedrige Stufe:* Straight Shot, Trick Attack.
+
+**Geprüft, ohne Befund:**
+- *Tanks:* Paladin (Atonement-Kette, Divine Might, Requiescat, Goring Blade, Blade of Honor), Krieger
+  (Infuriate überschreibt Nascent Chaos nicht, Beast Gauge läuft nicht über), Dunkelritter (Delirium-Kombo,
+  Disesteem vorn), Revolverklinge (Fortsetzungen vorn, Munition ohne Überlauf).
+- *Heiler:* Weißmagier (Lilien-Überlauf per Option, Sacred Sight), Gelehrter (Energy Drain leert
+  Aetherflow vor dessen Abklingzeit), Astrologe (Karten vor dem nächsten Ziehen).
+- *Nahkampf:* Monk (Fire's/Wind's Reply mit Rückfall), Dragoon (Wyrmwind Thrust vor dem Überlauf),
+  Schnitter, Viper.
+- *Fernkampf und Magie:* Barde, Tänzer, Maler, Rotmagier, Schwarzmagier (Polyglot vor dem Überlauf, beide
+  Rotationen), Beschwörer (Konzept 12).
+
+**Bewusst so, mit Grund:** *Barde:* Soul Voice bleibt bis zu 25 s bei 100, wenn Battle Voice kommt —
+Apex Arrow im Burst ist mehr wert als der Überlauf (Schluss aus dem Regelaufbau).
 
 **Nebenbefund, technische Schuld:** `UseBlood` im Dunkelritter hat keinen Leser (Blut für den Burst
 aufsparen). Laut heutigem Wirktext kostet Living Shadow kein Blut mehr; ob Aufsparen für Delirium noch

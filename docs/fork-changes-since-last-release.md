@@ -212,12 +212,19 @@ own heals right after Stardiver.
 
 ## Granted windows no longer run out unused
 
+- **All jobs:** An action that needs a status of yours (a proc, a "Ready") was locked out during the last
+  two GCDs of that status, because the check read the per-action setting `Number of GCDs before the
+  DOT/Status effect is reapplied`. It is usable now until the status ends, or for a spell with a cast
+  time, until the cast would outlast it. Procs no longer run out in their last seconds, and the existing
+  "use it before it runs out" rules of Red Mage, White Mage, Scholar, Ninja and Pictomancer take effect.
 - **Machinist:** Hypercharged from Barrel Stabilizer is spent before it runs out, also when Wildfire is
   held (for example with `Only use Wildfire on Boss targets` against trash).
 - **Samurai:** Ogi Namikiri is used before Ogi Namikiri Ready runs out, also on a boss without Higanbana
   (for example when Higanbana is switched off, or kept off by adds).
-- **Gunbreaker:** Sonic Break is used before Ready to Break runs out, also when No Mercy passed without
-  room for it.
+- **Gunbreaker:** Sonic Break and Reign of Beasts are used before Ready to Break and Ready to Reign run
+  out, also when No Mercy passed without room for them.
+- **Ninja:** Phantom Kamaitachi is used before Phantom Kamaitachi Ready runs out, also when no Trick
+  Attack or Mug window opens in time.
 
 ## Samurai and Machinist use a pause in the fight
 

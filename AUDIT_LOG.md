@@ -4049,6 +4049,29 @@ Unabhängiges Review (Code-Review-Werkzeug) der Commits b1ce95756 und 296778976.
 
 **Prüfgrad:** statisch; Generator-Selbsttest; Prüfskripte; Compile über die CI.
 
+### A166 · Review von A165: die Statusbedingung sperrte das Ende jedes Fensters (26.09.2026)
+
+Unabhängiges Review (Code-Review-Werkzeug) der Commits 16e60b716 und 2a07817bb; alle zehn Befunde am Code geprüft und bestätigt.
+1. **Grundursache, Stufe „alle":** `ActionBasicInfo.IsStatusNeeded` sperrte eine Aktion, sobald ihr benötigter Status in `StatusRefreshGcdCount` GCDs (ab Werk 2) endete; ebenso `TargetStatusNeed` in `ActionTargetInfo.CheckStatus`. Der Oberflächentext der Einstellung — „Number of GCDs before the DOT/Status effect is reapplied", nur bei Aktionen mit `StatusProvide` gezeigt — bindet; der Code wich ab. Eingeführt mit Upstream-Commit `dc067e0d3` (08.04.2025, „Refine Eukrasia logic and enhance Black Mage rotation"; vorher Grenze 0). Behoben: Der Status muss nur die Wirkzeit der Aktion überdauern (`CastTime`). Damit wirken auch die bestehenden Rückfälle von Rotmagier, Weißmagier, Gelehrtem, Ninja und Maler, die vorher nie greifen konnten.
+2. **Samurai-Rückfall unerreichbar** (Folge von 1) — mit 1 behoben; der Horizont rechnet jetzt die Wirkzeit von Ogi Namikiri ein.
+3. **Konzept meldete die fünf toten Rückfälle als „ohne Befund".** Berichtigt.
+4. **Generator: Rückfall nur als Zeichenkette erkannt**, ohne eigenen Status. Jetzt muss `WillStatusEnd` mit einem Namen des Fensters im selben oder einem umschließenden `if` stehen.
+5. **Generator: `if` in Bezeichnern** (`HasSwift`) und Aufrufe außerhalb eines `if` falsch zugeordnet. Jetzt `\bif\s*\(` und nur `if`, die den Aufruf umschließen.
+6. **Generator: Klammern in den Argumenten** machten einen schlichten Aufruf zum bedingten; zudem galt ein schlichter Aufruf in einem äußeren Block als unbedingt. Jetzt balancierte Klammern, und schlicht heißt direkt im Methodenrumpf.
+7. **Generator: Fenster über `Has…`-Eigenschaften fehlten** (Hypercharged). Jetzt aus den Statuseigenschaften der Basisrotation.
+8. **Revolverklinge: Rückfall hinter höheren GCDs.** Jetzt vor allen GCDs; dieselbe Klasse bei Reign of Beasts (Ready to Reign) behoben.
+9. **Maschinist: Rückfall durch `!HasReassembled` blockiert.** Entfernt — fünf freie Überhitzungs-Schüsse wiegen mehr als ein Reassemble auf einem Blazing Shot. A165 hieß es „Wildfire verbraucht Hypercharged"; verbraucht wird es von der Hypercharge nach Full Metal Field.
+10. **Feste Zahl `1` und Einzelflicken statt Stufe „alle".** Die `1` ist der nächste GCD, keine Spielgröße (`check_fixed_values` zählt 0 und 1 nicht); die Wirkzeit kommt aus dem Spiel. Die Einzelflicken bleiben, weil die Ausrichtung (worauf ein Verbraucher wartet) Sache des Jobs ist; die Stufe „alle" ist die Statusbedingung (1).
+
+*Klassenerhebung nach der Behebung:* Die erweiterte Generatorliste ergab einen weiteren Fall derselben Art — Ninja Phantom Kamaitachi wartete auf Trick Attack oder Mug ohne Rückfall; behoben. Alle übrigen Kandidaten bewertet (Konzept 14).
+
+*Falsifikation der zentralen Behebung:*
+- **Kein Defekt?** Ein Grund für die Sperre auf der Bedarfsseite wäre ein Zauber, dessen Wirkzeit den Status überdauert. Das deckt die neue Grenze (Wirkzeit); für Soforteinsätze gibt es keinen.
+- **Option falsch?** `CastTime` ist die Grundwirkzeit; unter Swiftcast oder Dualcast ist die Grenze zu vorsichtig, nie zu knapp.
+- **Ausgeliefert, nichts ändert sich?** Es ändert sich überall dort, wo ein Verbraucher bisher in den letzten ~5 s seines Fensters gewählt worden wäre.
+
+**Prüfgrad:** statisch; Generator-Selbsttest; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
