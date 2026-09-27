@@ -329,6 +329,16 @@ public sealed class MCH_Reborn : MachinistRotation
 			return true;
 		}
 
+		// Heat is held for Wildfire (below) only where Wildfire will be cast: with "Only use Wildfire on
+		// Boss targets" it never comes on anything else, and holding for it there only lets Heat run
+		// over. The combo must still outlast the Overheat (Hypercharge's duration, from its effect text).
+		if (WildfireBoss && !(CurrentTarget?.IsBossFromIcon() ?? false) && !LowLevelHyperCheck && !HasReassembled
+			&& !(LiveComboTime > 0f && LiveComboTime <= DefensiveValues.DurationOf(HyperchargePvE.ID))
+			&& ToolChargeSoon(out act))
+		{
+			return true;
+		}
+
 		// Use Hypercharge if wildfire will not be up in 30 seconds or if you hit 100 heat
 		if (!LowLevelHyperCheck && !HasReassembled && (!WildfirePvE.Cooldown.WillHaveOneCharge(30) || (Heat == 100)))
 		{
