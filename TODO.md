@@ -4,6 +4,11 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 ## Defekte
 
+### ECommons liest die Aktionsart eines Effektsatzes vier Bytes breit · N, U
+
+`EffectHeader.ActionType` (ECommons) nutzt das `uint`-Enum der ClientStructs für ein Ein-Byte-Feld und liest `Flags` und `NumTargets` mit (A177). RSR liest in `Watcher` jetzt das niedrige Byte. Offen: ECommons' eigenes `ActionEffectSet` wählt mit diesem Feld, ob die Id eine Aktion, ein Gegenstand oder ein Reittier ist; sobald der Satz Ziele hat, fällt jeder Gegenstand in den Zweig „Aktion" — `set.Action`, Name und Symbol eines Heiltranks sind dann die einer Aktion gleicher Nummer. Adressat ist ECommons; im Fork betroffen, was `set.Action` für Gegenstände liest (`Watcher.ActionFromSelf`, Aktions-Zeitleiste).
+
+
 ### Burst-Einstellung der Fernkämpfer und Pictomancer weicht keiner Gefahr · N
 
 Barde, Pictomancer und Tänzer führen „Prevent the use of defense abilties during burst" (ab Werk an). Die allgemeine Schranke (Konzept 08, „Die Abwehrsperren") greift dort nicht, weil der Einstellungstext ohne Ausnahme „verhindern" sagt und bindet. Im Kampf: Ein tödlicher Raidwide im Burst bekommt von diesen drei Jobs keine Minderung. Zur Entscheidung vorzulegen: Text ändern (seine Entscheidung) oder so lassen. Dieselbe Einstellung als Damage-Dealer-Regel zu führen, wäre die Stufe „Damage Dealer".

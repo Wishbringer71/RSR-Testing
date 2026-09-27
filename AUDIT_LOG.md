@@ -4175,7 +4175,7 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 ### A175 · Schadenstabelle nach vier Instanzen weiter leer: Zählung am Eingang des Handlers (27.09.2026)
 
-**Gemeldet:** frisch kompiliert, vier Instanzen mit Flächenschaden, Datei `{}`; geschrieben um 12:04 (vor den Instanzen) und beim Beenden um 13:00, beide Male leer. Meine Vermutung einer veralteten lokalen Flächenliste hat er als falsch zurückgewiesen; seine hochgeladene Liste bestätigt ihn (850 Einträge, identisch mit der gelieferten). Die Offsets des Effektkopfs in ECommons 3.2.1.20 stimmen mit den aktuellen ClientStructs überein (aus beiden Assemblys gelesen).
+**Gemeldet:** frisch kompiliert, vier Instanzen mit Flächenschaden, Datei `{}`; geschrieben um 12:04 (vor den Instanzen) und beim Beenden um 13:00, beide Male leer. Meine Vermutung einer veralteten lokalen Flächenliste hat er als falsch zurückgewiesen; seine hochgeladene Liste bestätigt ihn (850 Einträge, identisch mit der gelieferten). Die Offsets des Effektkopfs in ECommons 3.2.1.20 stimmen mit den aktuellen ClientStructs überein (aus beiden Assemblys gelesen) — die Breite des Feldes wurde dabei nicht geprüft; widerrufen in C97.
 
 - *Research:* Die Raidwides der Dawntrail-Dungeons (Punutiy Press 36492, High Wind 36341, Electrowave 36571, Strident Shriek 36519, Disruption 36765) castet laut BossModReborn-Modulen der Boss selbst mit 5 s Wirkzeit; laut `v2.xivapi.com` sind sie Waffenfertigkeit oder Zauber mit `Cast100ms` 50; alle stehen in der gelieferten Liste. Einige lösen Helfer aus (Frosting Fracas, Ashlayer) — die bleiben ungemessen, erklären aber keine völlig leere Tabelle. Die Ziel-Id im Effektsatz ist die `GameObjectId` (ECommons `TargetEffect`, `SearchById`), der Abgleich mit der Gruppe also richtig. Die Schreibvorgänge passen zu Entladen beim Neuladen nach dem Kompilieren und beim Beenden; im Speicher stand nichts.
 - *Nicht bestimmbar von hier:* ob der Hook liefert und ob der Handler vor der Messung abbricht. Die Zählung „Casts this session" beginnt erst mit einem Gegnercast am Spieler und kann beides nicht unterscheiden.
@@ -4192,6 +4192,18 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 - *Grenze:* Liefert der Hook gar nichts, steht nach dem Kopf nur „effect handler hooked" und am Ende „0 sets" — auch das ist eine Antwort.
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A177 · Ursache der leeren Schadenstabelle: Die Aktionsart wurde vier Bytes breit gelesen (27.09.2026)
+
+**Belegt an seinem Protokoll** (`AreaMeasurementTrace.log`, 18:49–20:05, Version `7.5.6.11+wsh1`, Liste 850, 15 804 Sätze, 1 583 von Gegnern, 0 Fehler): 237 Zeilen „STOP 2: not a regular action with a cast time" bei Casts mit Wirkzeit und Kategorie Zauber oder Waffenfertigkeit, Aktionsart angezeigt als 65537, 131073, 262145 … Zerlegt: in allen 422 Zeilen niedriges Byte 1 (`Action`), drittes Byte gleich der Zahl der getroffenen Ziele; Zeilen mit „Action" hatten null Ziele.
+
+- *Mechanismus:* ECommons `EffectHeader` führt `[FieldOffset(31)] public ActionType ActionType` mit dem ClientStructs-Enum; dessen `value__` ist `uint` (Signatur `06 09`, aus `FFXIVClientStructs.dll` gelesen). ClientStructs' eigenes `ActionEffectHandler.Header` hat an 31 ein Byte, an 32 `Flags`, an 33 `NumTargets`. Gelesen wurden vier Bytes.
+- *Wirkung im Kampf:* Kein Raidwide wurde je bewertet; „unbewertet" heißt Verhalten wie vor der Messung. Ebenso nahm die Aufnahme nie eine neue Id auf — auch bei Upstream, dessen Code denselben Vergleich führt.
+- *Behebung:* `Watcher.ActionTypeOf` liest das niedrige Byte; alle Vergleiche und Anzeigen im Handler laufen darüber. `ActionTimelineManager` reicht das Feld an eine Methode weiter, die es nicht liest — nicht betroffen.
+- *Gegenprobe am Protokoll:* Mit der Korrektur passieren die gelisteten Casts Sinnesberaubung (43797), Medizinstreuung (43798), Frustration (25672), Schlag des Tartarus (25685), Rückbesinnung (43825), Neuroschuppen (5573), Blitzga Forte (25690), Entracte (25701), Vitaka (5600).
+- *Falsifikation:* **Kein Defekt?** Widerlegt durch die Zerlegung, 422 von 422 Zeilen. **Option falsch?** Die Aktionsart passt in ein Byte (Spielfeld ein Byte); der Cast auf `byte` schneidet genau die Nachbarfelder ab. **Ausgeliefert, nichts ändert sich?** Möglich, wenn eine weitere Stufe hält; das Protokoll bleibt dafür bis zum ersten STORED.
+
+**Prüfgrad:** Laufzeitdaten (sein Protokoll), statisch, Prüfskripte; Compile über die CI.
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
@@ -4469,3 +4481,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C94 | TODO und Konzept 11: Der Sonderfall für `PartyAndAllianceHealers` stehe fälschlich vor der `H2`-Umkehrung | Der Optionstext von `H2` nennt nur Nicht-Heiler; der Sonderfall für Heiler folgt dem Text, die Umkehrung der Heilerliste in den übrigen Modi nicht | Konzept 11 und TODO berichtigt, A141 |
 | C95 | A137, Code-Kommentar in `SMN_Reborn`, Konzept 07, Release-Text: Firebird Trance werde im Baum nur von PvP-Stellen gelesen | `ChurinSMN` liest ihn im PvE mit derselben Bauform; zudem nennt der Wirktext von Summon Phoenix „Enters Firebird Trance", ob der Status im PvE gesetzt wird, ist offen | Kommentar, Konzept und Release-Text berichtigt, ChurinSMN erfasst; A144 |
 | C96 | Bericht an ihn zu A170 und A170 selbst: Er spiele womöglich das Release `7.5.6.10+wsh1`, darum sehe er weder Speicherfixes noch Anzeigen | Er kompiliert vor dem Spielen den aktuellen Zweig. Die Annahme war unmarkiert und trug den Schluss „nichts, was er spielt, hat sich geändert" | A170 berichtigt; CLAUDE.md, Nutzungsprofil |
+| C97 | A175, A176, Konzept 13, Bericht an ihn: Der Effektkopf werde richtig gelesen, weil die Offsets in ECommons und ClientStructs übereinstimmen | Verglichen waren nur die Offsets, nicht die Breite: Das Enum ist `uint`, das Feld ein Byte, gelesen wurden vier Bytes. Genau daran scheiterte die Messung | A177; Konzept 13 berichtigt |

@@ -43,7 +43,7 @@ public static class Watcher
 	private static string TraceHead(ActionEffectSet set, int partyHits, int partyCount)
 		=> $"#{set.Action?.RowId ?? set.Header.ActionID} {set.Action?.Name.ExtractText() ?? "?"}"
 			+ $" from {set.Source?.Name.TextValue ?? "?"} | cast {set.Action?.Cast100ms ?? 0}"
-			+ $" | type {set.Header.ActionType} | category {set.Action?.GetActionCate()}"
+			+ $" | type {ActionTypeOf(set)} | category {set.Action?.GetActionCate()}"
 			+ $" | party hit {partyHits}/{partyCount}";
 
 	private static int CountPartyHits(ActionEffectSet set, List<IBattleChara> party)
@@ -95,6 +95,17 @@ public static class Watcher
 
 		return result;
 	}
+
+	// The kind of action behind an effect set, read from the one byte the game gives it.
+	//
+	// ECommons declares EffectHeader.ActionType at offset 0x1F with FFXIVClientStructs' ActionType,
+	// and that enum's underlying type is uint. The game's field is a single byte: ClientStructs'
+	// own ActionEffectHandler.Header puts Flags at 0x20 and NumTargets at 0x21. So the field read
+	// four bytes, and every set that hit anyone came out as 0x00NN0001 - "Action" in the low byte,
+	// the number of targets in the third. Measured in the owner's trace (A177): the low byte was 1
+	// in every line, the third byte matched the targets hit. A comparison with ActionType.Action
+	// therefore failed exactly for the sets that damaged someone, and no area action was ever rated.
+	private static ActionType ActionTypeOf(ActionEffectSet set) => (ActionType)(byte)set.Header.ActionType;
 
 	private static float DamageShareOn(ActionEffectSet set, ulong targetId, uint denom)
 	{
@@ -223,7 +234,7 @@ public static class Watcher
 			var partyHits = CountPartyHits(set, partyMembers);
 			var traced = set.Action?.Cast100ms > 0 || partyHits > 1;
 			var traceHead = traced ? TraceHead(set, partyHits, partyMemberCount) : string.Empty;
-			if (traced && !(set.Header.ActionType == ActionType.Action && set.Action?.Cast100ms > 0))
+			if (traced && !(ActionTypeOf(set) == ActionType.Action && set.Action?.Cast100ms > 0))
 			{
 				AreaMeasurementTrace.Line(traceHead + " | STOP 2: not a regular action with a cast time");
 			}
@@ -237,10 +248,10 @@ public static class Watcher
 			if (damageRatio > 0f && set.Action is { Cast100ms: > 0 } castAction)
 			{
 				var actionId = castAction.RowId;
-				if (set.Header.ActionType != ActionType.Action)
+				if (ActionTypeOf(set) != ActionType.Action)
 				{
 					DataCenter.RecordAreaMeasurementOutcome(actionId, "not measured - not a regular action",
-						$" ({set.Header.ActionType})");
+						$" ({ActionTypeOf(set)})");
 				}
 				else if (castAction.GetActionCate() is not (ActionCate.Spell or ActionCate.Weaponskill or ActionCate.Ability))
 				{
@@ -265,7 +276,7 @@ public static class Watcher
 			// large one, releasing a defensive hold - decide for themselves. Hung on this switch, the
 			// measurement went dark for anyone who only wanted the list left alone, and with it all
 			// three of them. The same holds for the party size: it qualifies the intake, not a reading.
-			if (set.Header.ActionType == ActionType.Action && set.Action?.Cast100ms > 0)
+			if (ActionTypeOf(set) == ActionType.Action && set.Action?.Cast100ms > 0)
 			{
 				var type = set.Action?.GetActionCate();
 				if (traced && type is not (ActionCate.Spell or ActionCate.Weaponskill or ActionCate.Ability))

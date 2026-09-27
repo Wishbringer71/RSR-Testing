@@ -59,6 +59,13 @@ own enable switch, the health threshold, the missing-health guard, the bag, the 
 refusal — and whether anything is asking for one at all. `CanUse: False` was one bit for six
 separate conditions.
 
+## The learned damage table measures at all
+
+The effect handler read the action type of every hit four bytes wide: the type sits in one byte, and
+the next ones hold the number of targets. Every hit that struck anyone therefore looked like something
+other than an action, and no area action was ever rated - the table stayed empty, and new area actions
+were never added to the list. Only the type's own byte is read now.
+
 ## The learned damage table no longer loses readings on the way to disk
 
 Three ways a reading could stay in memory, look recorded, and never reach the file: the table was
