@@ -3941,6 +3941,13 @@ public partial class RotationConfigWindow : Window
 				"Store: " + OtherConfiguration.AreaPotentialStoreState);
 			ImGui.TextColored(ImGuiColors.DalamudGrey, "Last hit: " + DataCenter.AreaMeasurementLastOutcome);
 			ImGui.TextColored(ImGuiColors.DalamudGrey, "Casts this session: " + DataCenter.AreaMeasurementTallyText);
+			ImGui.TextColored(DataCenter.EffectHandlerErrors > 0 ? ImGuiColors.DalamudRed : ImGuiColors.DalamudGrey,
+				"Effect handler: " + $"{DataCenter.EffectSetsReceived} sets, {DataCenter.EnemyEffectSets} from enemies, "
+				+ $"{DataCenter.EnemyHitsOnPlayer} hit you, {DataCenter.EffectHandlerErrors} errors");
+			if (DataCenter.EffectHandlerFirstError.Length > 0)
+			{
+				ImGui.TextColored(ImGuiColors.DalamudRed, "First error: " + DataCenter.EffectHandlerFirstError);
+			}
 			if (OtherConfiguration.HostileCastingArea.Count == 0)
 			{
 				// Only listed actions are measured, so an empty list measures nothing, whatever the

@@ -4173,6 +4173,16 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch, Job-Guide, Prüfskripte; Compile über die CI.
 
+### A175 · Schadenstabelle nach vier Instanzen weiter leer: Zählung am Eingang des Handlers (27.09.2026)
+
+**Gemeldet:** frisch kompiliert, vier Instanzen mit Flächenschaden, Datei `{}`; geschrieben um 12:04 (vor den Instanzen) und beim Beenden um 13:00, beide Male leer. Meine Vermutung einer veralteten lokalen Flächenliste hat er als falsch zurückgewiesen.
+
+- *Research:* Die Raidwides der Dawntrail-Dungeons (Punutiy Press 36492, High Wind 36341, Electrowave 36571, Strident Shriek 36519, Disruption 36765) castet laut BossModReborn-Modulen der Boss selbst mit 5 s Wirkzeit; laut `v2.xivapi.com` sind sie Waffenfertigkeit oder Zauber mit `Cast100ms` 50; alle stehen in der gelieferten Liste. Einige lösen Helfer aus (Frosting Fracas, Ashlayer) — die bleiben ungemessen, erklären aber keine völlig leere Tabelle. Die Ziel-Id im Effektsatz ist die `GameObjectId` (ECommons `TargetEffect`, `SearchById`), der Abgleich mit der Gruppe also richtig. Die Schreibvorgänge passen zu Entladen beim Neuladen nach dem Kompilieren und beim Beenden; im Speicher stand nichts.
+- *Nicht bestimmbar von hier:* ob der Hook liefert und ob der Handler vor der Messung abbricht. Die Zählung „Casts this session" beginnt erst mit einem Gegnercast am Spieler und kann beides nicht unterscheiden.
+- *Umgesetzt:* „Effect handler" im Diagnose- und Listenfenster: empfangene Sätze, davon von Gegnern, davon mit Schaden am Spieler, Fehler samt erstem Fehlertext; Fehler rot.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

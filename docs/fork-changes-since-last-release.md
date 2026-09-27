@@ -73,7 +73,8 @@ back from disk. A save only reports success when the file holds what was written
 Below it, `Casts this session` counts every enemy cast that hit you since loading, by what decided it:
 measured, not in the AoE list, cast by an untargetable enemy, and so on. The
 `Last hit` line now only reports casts; before, the next auto-attack replaced a raidwide's reason
-within a second. An empty AoE list, which measures nothing, is shown in red.
+within a second. An empty AoE list, which measures nothing, is shown in red. Above it, `Effect handler` counts what the effect hook delivered since loading - all sets, those from
+enemies, those that hit you - and any error the handler raised, with the first error's text.
 
 Measuring no longer depends on `Record AOE actions` or on the party size. That setting decides whether
 new actions are added to the AoE list; with it off, or in a party counted below four, the damage of

@@ -77,6 +77,8 @@ public static class Watcher
 	{
 		try
 		{
+			DataCenter.EffectSetsReceived++;
+
 			var playerObject = Player.Object;
 			if (playerObject == null)
 			{
@@ -108,6 +110,12 @@ public static class Watcher
 			}
 
 			damageRatio = DamageShareOn(set, playerId, denom);
+
+			DataCenter.EnemyEffectSets++;
+			if (damageRatio > 0f)
+			{
+				DataCenter.EnemyHitsOnPlayer++;
+			}
 
 			DataCenter.AddDamageRec(damageRatio);
 
@@ -302,6 +310,15 @@ public static class Watcher
 		}
 		catch (Exception ex)
 		{
+			// Counted and kept, not only logged: an exception here ends the handler before the
+			// measurement, and if it happens on every set the damage table stays empty with nothing
+			// to show for it but the log.
+			DataCenter.EffectHandlerErrors++;
+			if (DataCenter.EffectHandlerFirstError.Length == 0)
+			{
+				DataCenter.EffectHandlerFirstError = $"{ex.GetType().Name}: {ex.Message}";
+			}
+
 			PluginLog.Error($"Error in ActionFromEnemy: {ex}");
 		}
 	}

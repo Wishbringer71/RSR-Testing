@@ -3385,6 +3385,30 @@ internal static class DataCenter
 	private static readonly Dictionary<string, int> _areaMeasurementTally = [];
 
 	/// <summary>
+	/// What the effect handler received since loading: every effect set, those from enemies, those
+	/// that damaged the player, and the ones it failed on.
+	/// </summary>
+	/// <remarks>
+	/// The tally below starts only once an enemy cast has hurt the player, so on its own it cannot
+	/// tell a handler that receives nothing from casts that never reached it. Zero sets means the
+	/// hook delivers nothing; sets without enemy hits mean the filter before the measurement drops
+	/// them; errors mean the handler stops before it measures.
+	/// </remarks>
+	public static int EffectSetsReceived { get; internal set; }
+
+	/// <inheritdoc cref="EffectSetsReceived"/>
+	public static int EnemyEffectSets { get; internal set; }
+
+	/// <inheritdoc cref="EffectSetsReceived"/>
+	public static int EnemyHitsOnPlayer { get; internal set; }
+
+	/// <inheritdoc cref="EffectSetsReceived"/>
+	public static int EffectHandlerErrors { get; internal set; }
+
+	/// <summary>The first error the enemy effect handler raised since loading, for the windows.</summary>
+	public static string EffectHandlerFirstError { get; internal set; } = string.Empty;
+
+	/// <summary>
 	/// How often each reason decided an enemy cast that hit the player, since the plugin was loaded.
 	/// </summary>
 	/// <remarks>
