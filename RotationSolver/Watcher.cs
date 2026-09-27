@@ -96,7 +96,7 @@ public static class Watcher
 				// says how often that happened, so an empty table can be told apart from casts that
 				// never reached the measurement at all.
 				if (set.Source is IBattleChara hidden && hidden.IsValid()
-					&& hidden.GetBattleNPCSubKind() == Dalamud.Game.ClientState.Objects.Enums.BattleNpcSubKind.Enemy
+					&& hidden.GetBattleNPCSubKind() == Dalamud.Game.ClientState.Objects.Enums.BattleNpcSubKind.Combatant
 					&& set.Action is { Cast100ms: > 0 } hiddenAction
 					&& DamageShareOn(set, playerId, denom) > 0f)
 				{
