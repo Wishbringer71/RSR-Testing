@@ -4125,6 +4125,19 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI. Keine Laufzeitbeobachtung.
 
+### A171 · Die Messung hing an der Aufnahme-Option und an der Gruppengröße (27.09.2026)
+
+**Seine Frage:** „wieso ist das eine option? Record AOE actions ist aus."
+
+- *Research:* `Record AOE actions` stammt von Upstream (`51ad02c6d`, 2023) und schaltete dort nur die Aufnahme neuer Ids in die Flächenliste. Die Messung (`9ce853ef5`, 17.09.2026) wurde in denselben Block gesetzt und zusätzlich an die Option gebunden — ohne dokumentierten Grund; der eigene Kommentar dort sagte „deliberately not the intake's" und widersprach damit dem Code. Ebenso die Mindestgröße der Gruppe.
+- *Optionen:* Nullvariante; Messung von beiden Bedingungen lösen; eigene Option „Record damage potential".
+- *Abwägung:* Eine eigene Option hätte keinen Grund: Die Messung entscheidet nichts, die Leser (kleine Casts auslassen, vor großem heilen, Zurückhaltung aufheben) entscheiden. Der Optionstext „Record AOE actions" deckt die Messung nicht.
+- *Umgesetzt:* Aufnahme unter `intakeOpen` (Option an, mindestens vier Gezählte); die Messung einer gelisteten Id ohne beide. Die Vier ist belegt als kleinste Gruppenzusammensetzung (`ContentMemberType` Zeile 2, über `v2.xivapi.com` gelesen) und als Ausnahme mit diesem Loop geführt.
+- *Falsifikation:* **Kein Defekt?** Wer die Option ausschaltet, um die Liste zu schützen, verlor ohne Hinweis die Messung und drei Regeln — widerlegt. **Option falsch?** Ein Lauf ohne Stufensynchronisation misst zu klein; die Höchstwert-Regel senkt keinen Stand, eine Erstmessung zu klein korrigiert sich beim nächsten ungemilderten Treffer, wie jede Unterschätzung. **Ausgeliefert, nichts ändert sich?** Bei eingeschalteter Option und voller Gruppe ändert sich nichts; bei ihm unbekannt, welche Bedingung griff — die Zählung nennt es.
+- *Wirkung auf Nutzer mit ausgeschalteter Option:* Die drei Leser arbeiten jetzt mit Messwerten statt als „unbewertet". Das ist ihr vorgesehenes Verhalten.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -153,6 +153,11 @@ public static class Watcher
 			var partyMembers = DataCenter.PartyMembers;
 			var partyMemberCount = partyMembers.Count;
 
+			// New ids enter the AoE list only under "Record AOE actions" and only from a party of at
+			// least a light party, where hitting every member marks a party-wide hit. Neither condition
+			// concerns measuring an id that is already listed.
+			var intakeOpen = Service.Config.RecordCastingArea && partyMemberCount >= 4;
+
 			// Why an enemy cast that hurt the player was or was not measured. The table can stay empty
 			// for several different reasons, and the file ("{}") looks the same for all of them - so
 			// the decision states its reason where it is taken, and the tally counts it. Casts only:
@@ -162,16 +167,7 @@ public static class Watcher
 			if (damageRatio > 0f && set.Action is { Cast100ms: > 0 } castAction)
 			{
 				var actionId = castAction.RowId;
-				if (!Service.Config.RecordCastingArea)
-				{
-					DataCenter.RecordAreaMeasurementOutcome(actionId, "not measured - Record AOE actions is off");
-				}
-				else if (partyMemberCount < 4)
-				{
-					DataCenter.RecordAreaMeasurementOutcome(actionId, "not measured - party counted below 4",
-						$" ({partyMemberCount}; NPC companions only count with the NPC party-member setting)");
-				}
-				else if (set.Header.ActionType != ActionType.Action)
+				if (set.Header.ActionType != ActionType.Action)
 				{
 					DataCenter.RecordAreaMeasurementOutcome(actionId, "not measured - not a regular action",
 						$" ({set.Header.ActionType})");
@@ -184,11 +180,22 @@ public static class Watcher
 				else if (!OtherConfiguration.HostileCastingArea.Contains(actionId))
 				{
 					DataCenter.RecordAreaMeasurementOutcome(actionId, "not measured - not in the AoE list",
-						" (added only once it hits every member)");
+						!Service.Config.RecordCastingArea
+							? " (Record AOE actions is off, so it is not added either)"
+							: intakeOpen
+								? " (added once it hits every member)"
+								: $" (party counted as {partyMemberCount}, too small to add it)");
 				}
 			}
 
-			if (Service.Config.RecordCastingArea && set.Header.ActionType == ActionType.Action && partyMemberCount >= 4 && set.Action?.Cast100ms > 0)
+			// "Record AOE actions" decides whether new ids enter the list - its text and its origin
+			// upstream say that, and a user may switch it off to keep the curated list as shipped. It
+			// does not decide whether listed actions are measured: measuring answers how hard a listed
+			// cast hits, and the rules that read the answer - skipping small casts, healing ahead of a
+			// large one, releasing a defensive hold - decide for themselves. Hung on this switch, the
+			// measurement went dark for anyone who only wanted the list left alone, and with it all
+			// three of them. The same holds for the party size: it qualifies the intake, not a reading.
+			if (set.Header.ActionType == ActionType.Action && set.Action?.Cast100ms > 0)
 			{
 				var type = set.Action?.GetActionCate();
 				if (type is ActionCate.Spell or ActionCate.Weaponskill or ActionCate.Ability)
@@ -245,7 +252,7 @@ public static class Watcher
 					}
 
 					// Only write the file when this is a newly recorded action, not on every raidwide cast.
-					if (damageEffectCount == partyMemberCount
+					if (intakeOpen && damageEffectCount == partyMemberCount
 						&& OtherConfiguration.HostileCastingArea.Add(set.Action!.Value.RowId))
 					{
 						_ = OtherConfiguration.SaveHostileCastingArea();
@@ -280,8 +287,7 @@ public static class Watcher
 						}
 					}
 
-					if (highestShare > 0f && Service.Config.RecordCastingArea
-						&& OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
+					if (highestShare > 0f && OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
 					{
 						var id = set.Action!.Value.RowId;
 						if (!OtherConfiguration.HostileCastingAreaPotential.TryGetValue(id, out var known)

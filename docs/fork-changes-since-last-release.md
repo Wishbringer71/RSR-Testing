@@ -71,9 +71,14 @@ file, found none, or found one it could not read, and after every save how many 
 back from disk. A save only reports success when the file holds what was written.
 
 Below it, `Casts this session` counts every enemy cast that hit you since loading, by what decided it:
-measured, not in the AoE list, party counted below four, cast by an untargetable enemy, and so on. The
+measured, not in the AoE list, cast by an untargetable enemy, and so on. The
 `Last hit` line now only reports casts; before, the next auto-attack replaced a raidwide's reason
 within a second. An empty AoE list, which measures nothing, is shown in red.
+
+Measuring no longer depends on `Record AOE actions` or on the party size. That setting decides whether
+new actions are added to the AoE list; with it off, or in a party counted below four, the damage of
+actions already on the list was not measured either, and the rules that read it treated every cast as
+unrated.
 
 Before any save that would leave fewer readings on disk than are there, the previous file is kept as
 `HostileCastingAreaPotential.json.bak`. `Forget recorded damage potential` now needs Ctrl+click.

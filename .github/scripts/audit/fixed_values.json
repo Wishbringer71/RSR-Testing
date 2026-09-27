@@ -614,14 +614,6 @@
   },
   {
    "file": "RotationSolver/Watcher.cs",
-   "code": "else if (partyMemberCount < 4)",
-   "values": [
-    "4"
-   ],
-   "status": "open"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
    "code": "if (landed || (damageEffect.param0 & 6) == 6)",
    "values": [
     "6",
@@ -682,6 +674,16 @@
    "status": "exception",
    "loop": "A154",
    "reason": "Unit conversion, not a game value: GetForecastEffectiveHpPercent answers in percent and HealthForDyingTanks is a share. The one shared definition of the critical class (A159), read by the heal target order, the defense holds and Lux Solaris."
+  },
+  {
+   "file": "RotationSolver/Watcher.cs",
+   "code": "var intakeOpen = Service.Config.RecordCastingArea && partyMemberCount >= 4;",
+   "values": [
+    "4"
+   ],
+   "status": "exception",
+   "loop": "A171",
+   "reason": "Upstream's intake criterion: a set that hits every counted member marks a party-wide hit only in a party of at least a light party; the smallest party composition in the game is 4 (ContentMemberType row 2: one tank, one healer, one melee, one ranged). Below it a cleave or a small circle can hit everyone. Deriving it from the current duty's composition would only raise the minimum where every member must be hit anyway"
   }
  ]
 }
