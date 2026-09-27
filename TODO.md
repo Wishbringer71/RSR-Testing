@@ -24,17 +24,15 @@ Shake It Off hebt die eigenen Status Thrill of Battle, Damnation und Bloodwhetti
 
 `InterventionPvE` verlangt am Ziel eine Tankhaltung (`TargetStatusNeed`: Grit, Royal Guard, Iron Will, Defiance) mit `StatusFromSelf` ab Werk wahr. Die Haltung des anderen Tanks stammt von ihm, nicht vom Paladin; `MinStatusRemainingTime` überspringt sie, und die Bedingung schlägt für jedes Ziel fehl. `PLD_Reborn` ruft Intervention an zwei Stellen ohne `skipTargetStatusNeedCheck` (die Tank-Option und die allgemeine Einzelabwehr); dort fällt es nie. Nur der Pfad mit Rampart/Sentinel und niedriger Gesundheit des Ziels überspringt die Bedingung. Im Kampf: Der Paladin schützt den anderen Tank nicht mit Intervention, außer im Notfallpfad. Behebung braucht eine Richtungsentscheidung (Herkunft der Bedarfsstatus je Aktion, oder die Haltung als Zielwahl statt Bedingung); erhoben im Review zu A166, nicht angefasst.
 
-### Ein gescheiterter Erst-Download legt eine leere Liste für immer fest · N, U
-
-`InitOne` schreibt bei gescheitertem Download die leere Vorgabe als Datei; weil die Datei existiert, lädt kein späterer Start neu. Für die Flächenliste heißt das: keine Gruppenminderung per Liste und keine Schadensmessung, bis „Reset and Update AOE List" gelingt. Die Fenster melden eine leere Flächenliste rot (A170). Nicht behoben, weil beide Wege Kosten haben: nicht festschreiben lässt jeden Start bis zu 100 s auf `HttpClient` warten und wird beim Entladen von `Save()` ohnehin überschrieben; leere Liste neu laden kann eine bewusst geleerte zurückholen. Auflösung: Download mit kurzer Zeitgrenze und Merker „nie geladen" statt leerer Datei.
-
-**Konzept:** `docs/rotation-flow/13-aoe-damage-classification.md`
-
 ### Vorschläge aus dem WrathCombo-Vergleich · N, U
 
 Sechs Ideen zur Entscheidung (Konzept 15, Tabelle „Vorschläge"): vorbeugendes Regen/Schild auf den Tank ohne Countdown (V1), allgemeinere Zielmarkierungs-Pfade (V2), kuratierte Raidwide-Listen (V3), Meditate erst nach Stillstand (V4), Tanzpartner-Wechsel nach dessen Tod — erst zu prüfen (V5), Kerachole nicht über Sacred Soil (V6, Eingabe für Konzept 08).
 
 **Konzept:** `docs/rotation-flow/15-wrathcombo-comparison.md`
+
+### Rückwärtssprünge mit Angriff haben keinen Sprungtyp: Displacement und Hissatsu: Yaten · N, U
+
+„Use BMR integration to verify safety of movement actions/actions that cause movement for automatic usage" nennt jede Bewegung. Displacement (15 Yalm zurück) und Hissatsu: Yaten (10 Yalm zurück) greifen ein Ziel an und springen rückwärts; kein `SpecialActionType` passt: `FixedDistanceMoveBackward` zielt auf den Spieler selbst, `HostileMovingAttack` misst den Weg zum Ziel. Automatisch genutzt wird nur Displacement, und nur unter „Use Displacement after Engagement (use at own risk)" (ab Werk aus); Yaten nur auf den Befehl „Move Back". Behebung: ein Typ „Angriff mit Rücksprung", der den Landepunkt hinter dem Spieler misst — eine Erweiterung des öffentlichen Enums am Ende, also ohne Bruch des Vertrags. Dazu die reinen Bewegungsaktionen auf Befehl (En Avant, Aetherial Shift, Smudge, Elusive Jump, Shukuchi): Die Enum-Dokumentation nennt einige davon als Beispiele eines Sprungtyps, gesetzt ist keiner; der Optionstext deckt sie nicht, weil sie nur auf Befehl laufen (A174).
 
 ### Rotationen gegen The Balance abgleichen · N
 
@@ -51,12 +49,6 @@ Bei drei Stapeln Addersgall geht jeder weitere Gewinn verloren; `SGE_Reborn` ver
 ### Die Heilverbots-Prüfung steht achtmal im Dispatch · U
 
 Die Prüfung auf Scalebound und Shackled Healing steht als Kopie an acht Stellen, je vier in `CustomRotation_Ability` und `CustomRotation_GCD` (Upstream), dazu jetzt in `StatusHelper.PlayerHealingPunished` (A154, A155). Die Kopien sollten die Hilfsmethode rufen; bei leerer Gruppenliste antworten heute alle gleich. Nicht angefasst, weil es Upstream-Zeilen ohne Verhaltensänderung sind.
-
-### Zielbasierte Bewegungsaktionen über den Move-Pfad gelten immer als unsicher · N, U
-
-`FindTargetAreaMove` ruft `CheckMovementSafety(target.Position)` **ohne** das Ziel (`ActionTargetInfo.cs`), während der Hauptpfad es mitgibt. Im Zweig für `HostileMovingForward`, `FriendlyMovingForward`, `HostileFriendlyMovingForward` und `HostileMovingAttack` ist `target` dann `null`, und die Methode antwortet `false` — unsicher, ohne etwas gemessen zu haben. Die Aktion wird damit nie angeboten, solange `BmrSafetyCheckAuto` eingeschaltet ist. Seit A138 steht jede solche Verweigerung im Diagnosefenster („Movement safety", Grund „no target to measure the dash against"); taucht sie dort nie auf, ist der Pfad unerreicht.
-
-**Nicht behoben, weil der Betroffenenkreis noch nicht erhoben ist:** Es fehlt die Liste der Aktionen, die einen zielbasierten `SpecialType` **und** einen Flächen-/Bewegungs-Zieltyp führen, also tatsächlich über diesen Pfad laufen. Möglicherweise ist sie leer; dann ist der Zweig unerreichbar und die Behebung wäre eine Aussage über etwas, das nicht vorkommt. Crimson Cyclone läuft über den Hauptpfad und ist nicht betroffen.
 
 ### Der Schadenseingang wird rechnerisch nur auf der Gegnerseite erfasst · N
 
@@ -346,22 +338,6 @@ Dazu, gefunden im Regeltest (A135): Confession fehlt in der Aufzählung, und Tro
 
 **Empfehlung: erfassen.** Solange nur eine Anzeige betroffen ist, wäre eine Umstellung auf geratener Zuordnung teurer als der Fehler. Wird die Bilanz zur Entscheidungsgrundlage, ist sie vorher aufzulösen — dann gehört auch der dritte Fall benannt, statt ihn als physisch zu führen.
 
-### NIN: Der GCD-Vorbehalt vor der Ninjutsu-Ausführung ist konstant wahr · N, U
-
-`NIN_Reborn.cs:977` und `BeirutaNIN.cs:1003` tragen beide
-
-```
-if (_ninActionAim != null && GCDTime() == 0f)
-```
-
-und `GCDTime(uint gcdCount = 0, float offset = 0)` liefert `(DefaultGCDTotal * 0) + 0`, also **konstant 0**. Der Vergleich ist damit zur Übersetzungszeit entschieden, und die Bedingung reduziert sich auf `_ninActionAim != null`. Der Block dahinter führt die Ninjutsu-Aktionen aus (`DoGokaMekkyaku`, `DoHuton`, `DoDoton`).
-
-**Die Absicht ist erkennbar und nicht umgesetzt:** Ein Aufruf von `GCDTime()` an dieser Stelle kann nur einen Zeitvergleich gemeint haben — vermutlich „der GCD ist frei", also `DefaultGCDRemain == 0f`, oder ein Fenster von einem GCD. Welcher der beiden, sagt der Code nicht; beides zu raten hieße, die Rotation auf Verdacht zu ändern.
-
-**Klasse und Abgrenzung:** `scan9.py` erfasst das Muster jetzt. Von 14 Methoden im Baum, deren argumentloser Aufruf durch die Standardwerte konstant ist, sind genau diese zwei Stellen Treffer — der konstante Wert allein ist **kein** Befund: `SongEndAfterGCD()` heißt „endet der Status jetzt" und gibt seine 0 sinnvoll an eine weitere Prüfung weiter. Zum Defekt wird es erst, wenn der konstante Wert **selbst** die Antwort ist und gegen ein Literal verglichen wird.
-
-**Empfehlung: erfassen, nicht bearbeiten.** Ninja steht nicht im Nutzungsprofil, und die zweite Fundstelle liegt in einer fremden Rotation. **Auflösungsbedingung:** eine Angabe, welcher Zeitvergleich gemeint war — oder eine Beobachtung, ob das Ninjutsu-Timing im Spiel auffällt.
-
 ### Die Aquapolis fehlt in der Zielpriorisierung der Schatzkarten-Dungeons · N, U
 
 `ObjectHelper.TreasureDungeonPrio` zählt neun Schatzkarten-Dungeons auf und nennt zu jedem die NPCs, die Vorrang haben — Namazu Stickywhisker in den Lost Canals, Alpaca of Fortune in Cenote Ja Ja Gural, Vaultkeeper in Vault Oneiron. `DataCenter.IsInTheAquapolis` ist der zehnte und **einzige** ohne Zweig; von den elf Flags der Region `Treasure Hunt` ist es das einzige ohne jeden Leser im Baum.
@@ -372,23 +348,14 @@ und `GCDTime(uint gcdCount = 0, float offset = 0)` liefert `(DefaultGCDTotal * 0
 
 **Auflösungsbedingung:** eine Angabe des Auftraggebers oder eine Spielbeobachtung, welche Gegner in der Aquapolis Vorrang haben sollen. **Empfehlung: erfassen, nicht bearbeiten** — Schatzkarten stehen nicht im benannten Nutzungsprofil, und ohne die Namen wäre jeder Zweig geraten.
 
-### Vier Vorrangregeln, die nichts entscheiden, weil derselbe Aufruf unbedingt folgt · N, U
-
-**Konzept:** `docs/rotation-flow/03-universal.md`
-`scan.py`, Prüfung (f). Vier Stellen wickeln einen Aktionsaufruf in eine Bedingung und wiederholen denselben Aufruf unmittelbar danach **ohne** Bedingung. Da der innere Zweig zurückkehrt, ist die Bedingung wirkungslos: Sie trifft keine Wahl, die der unbedingte Aufruf nicht ohnehin träfe.
-
-- `VPR_Reborn.cs:518` — `VicepitPvE` unter „letzte Ladung und Wiederholzeit unter 10 s", direkt gefolgt vom unbedingten Aufruf.
-- `VPR_Reborn.cs:835` — dasselbe für `VicewinderPvE`.
-- `PCT_Reborn.cs:199` — dasselbe für `RetributionOfTheMadeenPvE`.
-- `RDM_Reborn.cs:140` — hier ohne erkennbare Absicht: dieselbe Bedingung steht wortgleich in sich selbst geschachtelt (`InCombat && HasHostilesInMaxRange && ManaficationPvE.CanUse(out act)`).
-
-**Warum das ein Defekt und nicht nur Stil ist:** Die Bedingung ist ein Beleg der Entwurfsabsicht — bei den drei Ladungsfällen „gib der Aktion Vorrang, bevor eine Ladung überläuft". Diese Absicht ist nicht umgesetzt. Die Entstehungsform ist bei VPR belegbar an der Versionsgeschichte: Der äußere Zweig wurde in `acebc4537` („fix for VPR weirdness") nachgeschärft, der innere blieb stehen — *Ignorant Surgery* in Parnas' Sinn, kein Altern einer Prämisse.
-
-**Bewusst nicht gelöscht**, aus demselben Grund wie beim leeren VPR-Zweig (A11): Die Entfernung wäre verhaltensneutral, würde aber die einzige Spur der nicht umgesetzten Vorrangregel tilgen. Zu entscheiden ist, ob die Regel gemeint war — dann muss der unbedingte Aufruf nach hinten oder unter eine Gegenbedingung — oder ob sie fallen soll.
-
-**Empfehlung: erfassen, nicht bearbeiten.** Keiner der vier Jobs steht im Nutzungsprofil des Auftraggebers, und die Entscheidung „Vorrang gemeint oder nicht" gehört zum Autor der Rotation; Adressat ist der Upstream.
-
 ## Technische Schuld
+
+### Ein gescheiterter Erst-Download legt eine leere Liste für immer fest · N, U
+
+`InitOne` schreibt bei gescheitertem Download die leere Vorgabe als Datei; weil die Datei existiert, lädt kein späterer Start neu. Für die Flächenliste heißt das: keine Gruppenminderung per Liste und keine Schadensmessung, bis „Reset and Update AOE List" gelingt. Die Fenster melden eine leere Flächenliste rot (A170). Nicht behoben, weil beide Wege Kosten haben: nicht festschreiben lässt jeden Start bis zu 100 s auf `HttpClient` warten und wird beim Entladen von `Save()` ohnehin überschrieben; leere Liste neu laden kann eine bewusst geleerte zurückholen. Auflösung: Download mit kurzer Zeitgrenze und Merker „nie geladen" statt leerer Datei.
+
+**Konzept:** `docs/rotation-flow/13-aoe-damage-classification.md`
+
 
 ### Dunkelritter: `UseBlood` ohne Leser · N
 

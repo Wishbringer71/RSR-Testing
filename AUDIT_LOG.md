@@ -4160,6 +4160,19 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A174 · Erneute Prüfung kleiner Defekte: Ninja, Vorrangregeln, Bewegungspfad, Erst-Download (27.09.2026)
+
+**Sein Auftrag:** die Konzepte der offenen Punkte erneut prüfen, umsetzen, Audit, Code-Review. Das Nutzungsprofil umfasst inzwischen alle Kampfjobs; frühere Empfehlungen „nicht im Profil" sind damit überholt und wurden neu bewertet.
+
+- **Ninja, `GCDTime() == 0f` (`NIN_Reborn`):** Die Bedingung ist seit ihrer Einführung (`224e82811`, 27.06.2025) konstant wahr — `GCDTime()` lieferte schon damals `DefaultGCDTotal * 0 + 0`. Sie steht in `EmergencyGCD`, also im GCD-Pfad, der nur bei freiem GCD läuft; die erkennbare Absicht „GCD frei" ist dort schon erfüllt. **Im Kampf keine Wirkung, kein Defekt.** Upstream-Zeile nicht angefasst; `BeirutaNIN` (fremde Rotation) ebenso.
+- **Vier wirkungslose Vorrangregeln (Viper zweimal, Maler, Rotmagier):** Im Kampf wird die Aktion bei jeder Ladung gewirkt, die Bedingung davor wählt nichts. Das entspricht dem Gebrauch „bei Bereitschaft"; eine gemeinte Zurückhaltung ist nicht belegt. **Kein Kampfdefekt nachweisbar**; die Stellen sind Upstream-Code.
+- **Zielloser Zweig in `FindTargetAreaMove`:** unerreichbar. Den Bewegungs-Zieltyp tragen nur En Avant, Aetherial Shift und Occult Featherfoot, alle ohne zielbasierten Sprungtyp. **Dabei gefunden, als Klasse:** automatisch genutzte Angriffe mit Sprung zum Ziel ohne Sprungtyp, deren BMR-Prüfung damit entfiel, obwohl der Optionstext jede Bewegung nennt. Belegt am Job-Guide: Forked Raiju „Rushes target"; Dragonfire Dive und Stardiver sind Sprungangriffe ohne die Rückkehr, die Jump und High Jump nennen (Schluss aus dem Wirktext; WrathCombo führt beide als Bewegung, Status: anderes Werkzeug; die Enum-Dokumentation nennt Dragonfire Dive als Beispiel). **Umgesetzt:** `HostileMovingAttack` für diese drei. Fleeting Raiju bewegt nicht (3 Yalm). Wirkung nur mit eingeschalteter Option (ab Werk aus): Der Sprung unterbleibt, wenn sein Weg eine BMR-Gefahrenzone kreuzt; bei 0 Yalm am Ziel wie jeder Gapcloser frei. Rückwärtssprünge mit Angriff offen in `TODO.md`.
+- **Aquapolis:** Schatzkarten-Dungeons gehören zu den Sonderinhalten; erfasst, bis er sie nennt.
+- **Erst-Download:** unverändert technische Schuld; die Wartezeit bei blockiertem GitHub (bis 100 s je Start) wiegt schwerer, seit eine leere Flächenliste rot angezeigt wird.
+- **Heilverbots-Prüfung achtfach:** Upstream-Kopien ohne Verhaltensunterschied, bleibt.
+
+**Prüfgrad:** statisch, Job-Guide, Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

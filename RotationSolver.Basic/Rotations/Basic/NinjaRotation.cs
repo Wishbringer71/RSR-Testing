@@ -462,6 +462,8 @@ public partial class NinjaRotation
 
 	static partial void ModifyForkedRaijuPvE(ref ActionSetting setting)
 	{
+		// "Rushes target": the gap-closing form of Fleeting Raiju.
+		setting.SpecialType = SpecialActionType.HostileMovingAttack;
 		setting.ActionCheck = () => HasRaijuReady;
 	}
 

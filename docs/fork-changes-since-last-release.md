@@ -273,3 +273,9 @@ recording switch, a party counted below four (NPC companions only count with the
 setting), an instant action, an action type or category that is not rated, or an action not yet
 in the AoE list - and for a listed action the share of maximum HP it was measured at, or that
 every hit arrived at zero.
+
+## Leaps count as movement for the BMR safety check
+
+With `Use BMR intergration to verify safety of movement actions` on, Dragonfire Dive, Stardiver and
+Forked Raiju are now checked like every other gap closer: they are held when the way to the target
+crosses a danger zone, and go out freely when you already stand at the target.

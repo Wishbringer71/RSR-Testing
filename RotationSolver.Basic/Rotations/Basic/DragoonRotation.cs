@@ -202,6 +202,9 @@ public partial class DragoonRotation
 
 	static partial void ModifyDragonfireDivePvE(ref ActionSetting setting)
 	{
+		// A leap onto the target without the return that Jump and High Jump state: the player lands
+		// there, so the BMR movement check applies like on every other gap closer.
+		setting.SpecialType = SpecialActionType.HostileMovingAttack;
 		setting.UnlockedByQuestID = 66608;
 		setting.StatusProvide = [StatusID.DragonsFlight];
 		setting.CreateConfig = () => new ActionConfig()
@@ -300,6 +303,8 @@ public partial class DragoonRotation
 
 	static partial void ModifyStardiverPvE(ref ActionSetting setting)
 	{
+		// A leap onto the target like Dragonfire Dive, without a return.
+		setting.SpecialType = SpecialActionType.HostileMovingAttack;
 		setting.ActionCheck = () => JobGauge.IsLOTDActive;
 		setting.StatusProvide = [StatusID.StarcrossReady];
 		setting.CreateConfig = () => new ActionConfig()
