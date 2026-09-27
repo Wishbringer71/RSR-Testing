@@ -80,7 +80,13 @@ new actions are added to the AoE list; with it off, or in a party counted below 
 actions already on the list was not measured either, and the rules that read it treated every cast as
 unrated.
 
-Before any save that would leave fewer readings on disk than are there, the previous file is kept as
+A save can no longer lose what the file holds. The table only ever grows by itself, so every save now
+merges memory and file, keeping the higher reading for each action. A file that exists but cannot be
+read at that moment is left alone (`Store:` shows `NOT SAVED` in red). And a list whose load did not
+finish in this session - a cancelled or failed start - is not written on unload, so a failed start
+can no longer empty any of the lists.
+
+Before `Forget recorded damage potential` empties the table, the previous file is kept as
 `HostileCastingAreaPotential.json.bak`. `Forget recorded damage potential` now needs Ctrl+click.
 `Reset and Update AOE List` keeps the current list when the download fails, instead of replacing it
 with an empty one.

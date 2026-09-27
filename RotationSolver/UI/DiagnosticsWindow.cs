@@ -63,7 +63,7 @@ internal class DiagnosticsWindow : Window
 			+ $" of {OtherConfiguration.HostileCastingArea.Count}");
 		var store = OtherConfiguration.AreaPotentialStoreState;
 		ImGui.TextColored(
-			store.Contains("FAILED") || store.Contains("MISMATCH") ? ImGuiColors.DalamudRed : ImGuiColors.DalamudGrey,
+			store.Contains("FAILED") || store.Contains("MISMATCH") || store.Contains("NOT SAVED") ? ImGuiColors.DalamudRed : ImGuiColors.DalamudGrey,
 			"Store: " + store);
 		ImGui.TextColored(ImGuiColors.DalamudGrey, "Last hit: " + DataCenter.AreaMeasurementLastOutcome);
 		ImGui.TextColored(ImGuiColors.DalamudGrey, "Casts this session: " + DataCenter.AreaMeasurementTallyText);

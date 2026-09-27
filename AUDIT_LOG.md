@@ -4138,6 +4138,18 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A172 · Ein leerer Speicher konnte eine volle Datei überschreiben (27.09.2026)
+
+**Seine Frage:** „und wieso kann ein leerer speicher eine volle tabelle überschreiben?"
+
+- *Research:* Jedes Speichern schrieb den Speicherstand als Ganzes. War der Speicher leer oder unvollständig, ersetzte ein Speichern die Datei — der Mechanismus hinter A121, nur dort ausgelöst durch das fehlende Laden. Weitere Auslöser bestehen: `InitAsync` startet die Ladeschritte mit dem Abbruch-Token von Dalamud; ein abgebrochener oder gescheiterter Start lässt Speicher ungeladen, und `DisposeAsync` ruft `OtherConfiguration.Save()` für **alle** Listen — jede ungeladene würde leer geschrieben.
+- *Optionen:* Nullvariante (Kopie `.bak` aus A170); Schreiben verweigern, wenn weniger als auf der Platte; mit der Datei zusammenführen; nicht geladene Speicher nicht schreiben.
+- *Abwägung:* Verweigern allein verliert neue Messwerte, wenn der Speicher andere Ids hält als die Datei (Anzahl ist kein Maß für Inhalt). Zusammenführen folgt der Höchstwert-Regel und verliert nichts. Die Ladesperre ist die allgemeine Stufe: Sie gilt für jede Liste.
+- *Umgesetzt:* `SaveTracked` führt Speicher und Datei je Aktion zum höheren Wert zusammen; nur „Forget" (`discard`) schreibt weniger, mit `.bak`. Ist die Datei vorhanden, aber nicht lesbar, unterbleibt das Speichern („NOT SAVED", rot). `Save<T>` und `SaveTracked` schreiben keinen Speicher, dessen `InitOne` in dieser Sitzung nicht zu Ende lief.
+- *Falsifikation:* **Kein Defekt?** Der Weg ist am Code belegt und war mit A121 bereits einmal eingetreten. **Option falsch?** Zusammenführen hebt „Forget" nicht auf: Das Verwerfen schreibt ausdrücklich, spätere Speichervorgänge führen mit der dann leeren Datei zusammen. Eine aus der Liste entfernte Id behält ihren Wert, wie bisher; er wird nicht gelesen. Eine dauerhaft gesperrte Datei ließe jedes Speichern ausbleiben — sichtbar rot, die Werte bleiben im Speicher bis zum nächsten Versuch. **Ausgeliefert, nichts ändert sich?** Ist seine Ursache die ausbleibende Messung, füllt diese Änderung die Tabelle nicht; sie verhindert, dass Gemessenes verloren geht.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

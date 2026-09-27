@@ -3935,7 +3935,7 @@ public partial class RotationConfigWindow : Window
 			// found a file, found none, or found one it could not read. This line is written by the
 			// load and by every save, and a save reads the file back before it reports success.
 			ImGui.TextColored(
-				OtherConfiguration.AreaPotentialStoreState.Contains("FAILED") || OtherConfiguration.AreaPotentialStoreState.Contains("MISMATCH")
+				OtherConfiguration.AreaPotentialStoreState.Contains("FAILED") || OtherConfiguration.AreaPotentialStoreState.Contains("MISMATCH") || OtherConfiguration.AreaPotentialStoreState.Contains("NOT SAVED")
 					? ImGuiColors.DalamudRed
 					: ImGuiColors.DalamudGrey,
 				"Store: " + OtherConfiguration.AreaPotentialStoreState);

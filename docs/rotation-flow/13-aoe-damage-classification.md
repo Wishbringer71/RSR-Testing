@@ -297,7 +297,9 @@ verschwinden kann.
 | „Reset and Update AOE List" (lädt die kuratierte Liste vom Server) | Werte bleiben |
 | „Reset RSR Plugin Settings" (globaler Knopf) | Werte bleiben — setzt nur `Service.Config` zurück |
 | „Forget recorded damage potential" | löscht sie, und das ist sein Zweck — nur mit gehaltener Strg-Taste; der vorige Stand bleibt als `HostileCastingAreaPotential.json.bak` |
-| Jedes Speichern, das weniger Einträge hinterließe, als auf der Platte stehen | vorher Kopie als `.json.bak` — die Tabelle wächst von selbst nur, ein schrumpfendes Speichern ist also „Forget" oder ein Defekt |
+| Speichern, während der Speicher weniger hält als die Datei (Laden gescheitert, Tabelle aus irgendeinem Grund leer begonnen) | Werte bleiben — jedes Speichern führt Speicher und Datei zusammen und nimmt je Aktion den höheren Wert; nur „Forget" schreibt weniger, und dann bleibt der vorige Stand als `.json.bak` |
+| Datei vorhanden, aber beim Speichern nicht lesbar (gesperrt, beschädigt) | Werte bleiben — das Speichern unterbleibt, „Store:" meldet es rot, der Messwert geht mit dem nächsten Speichern hinaus |
+| Laden beim Start abgebrochen oder gescheitert, danach Entladen des Plugins | Werte bleiben — ein Speicher, dessen Laden nicht zu Ende lief, wird nicht geschrieben; das gilt für alle Listen, nicht nur für diese Tabelle |
 | „Reset and Update AOE List", wenn der Download scheitert | die bisherige Liste bleibt; vorher wurde sie durch eine leere ersetzt, und ohne Liste wird nichts gemessen |
 | Unlesbare Datei beim Start | Werte bleiben, die Datei wird als `.corrupt` beiseitegelegt und gemeldet |
 | Kampfende, Zustandswechsel, Laden und Entladen (`DataCenter.ResetAllRecords`) | Werte bleiben — die Methode räumt das Laufzeitgedächtnis eines Kampfes ab und fasst keinen Speicher an |
@@ -329,6 +331,8 @@ Treffer kommt ungemildert an und misst sich. Eine **abgeschwächte** Aktion beh�
 dagegen für immer; die Folge ist Minderung, wo sie nicht mehr nötig wäre, also sicher, aber falsch.
 Der Ausweg ist das gezielte Verwerfen durch den Nutzer und kein automatischer Verfall — Verfall würde
 genau die Eigenschaft aufheben, die eine einzelne ungemilderte Beobachtung wertvoll macht.
+
+**Seit A172 kann kein Speichern mehr verlieren, was die Datei hält.** Die Tabelle wächst von selbst nur; also ist jeder Stand der Datei eine Untergrenze, und ein Speichern nimmt je Aktion das Höhere aus Speicher und Datei. Damit ist die Fehlerklasse geschlossen, nicht der Einzelfall: Gleich aus welchem Grund der Speicher leer oder unvollständig ist — Laden gescheitert, abgebrochen, ein künftiger Defekt —, die Datei behält ihren Stand. Dazu wird ein Speicher, dessen Laden in dieser Sitzung nicht zu Ende lief, gar nicht geschrieben: Das Entladen schreibt alle Listen, und ein abgebrochener Start hätte sie sonst alle geleert.
 
 **Der schwerste Weg war keiner der erhobenen, sondern das Ausbleiben des Ladens** (A121). Der Speicher
 stand nur in `OtherConfiguration.Init()`, und die ruft niemand; gerufen wird `InitAsync`. Die Tabelle

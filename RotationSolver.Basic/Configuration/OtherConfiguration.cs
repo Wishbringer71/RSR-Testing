@@ -272,7 +272,7 @@ internal class OtherConfiguration
 	public static void ResetHostileCastingAreaPotential()
 	{
 		HostileCastingAreaPotential.Clear();
-		SaveHostileCastingAreaPotential().Wait();
+		SaveHostileCastingAreaPotential(true).Wait();
 	}
 
 	public static void ResetHostileCastingTank()
@@ -298,7 +298,12 @@ internal class OtherConfiguration
 		return Task.Run(() => Save(HostileCastingArea, nameof(HostileCastingArea)));
 	}
 
-	public static Task SaveHostileCastingAreaPotential()
+	public static Task SaveHostileCastingAreaPotential() => SaveHostileCastingAreaPotential(false);
+
+	/// <param name="discard">
+	/// True only where the user asked to throw readings away. Every other save merges with the file.
+	/// </param>
+	private static Task SaveHostileCastingAreaPotential(bool discard)
 	{
 		// The snapshot is taken HERE, on the caller's thread, and only the copy goes to the pool.
 		//
@@ -310,7 +315,7 @@ internal class OtherConfiguration
 		// reading stayed in memory, so it looked recorded, and reached the file only if a later
 		// save came along. The last reading of a session had no later save.
 		var snapshot = new Dictionary<uint, float>(HostileCastingAreaPotential);
-		return Task.Run(() => SaveTracked(snapshot, nameof(HostileCastingAreaPotential)));
+		return Task.Run(() => SaveTracked(snapshot, nameof(HostileCastingAreaPotential), discard));
 	}
 
 	/// <summary>
@@ -322,21 +327,51 @@ internal class OtherConfiguration
 
 	private static readonly object _areaPotentialSaveLock = new();
 
-	private static void SaveTracked(Dictionary<uint, float> snapshot, string name)
+	private static void SaveTracked(Dictionary<uint, float> snapshot, string name, bool discard)
 	{
+		if (!WasLoaded(name))
+		{
+			AreaPotentialStoreState = $"NOT SAVED {DateTime.Now:HH:mm:ss}: the table was never loaded this session, file left as it is";
+			return;
+		}
+
 		// One writer at a time. Every save of a store uses the same "<name>.json.tmp", and two pool
 		// tasks writing it at once made the second one fail on the locked file - retried twice, and
 		// on the third failure dropped. Serialising them costs nothing here: a save is a few
 		// hundred entries, and the order they land in is the order the readings were taken.
 		lock (_areaPotentialSaveLock)
 		{
-			// A copy before any save that would leave fewer entries on disk than are there now. The
-			// table only ever grows by itself, so a shrinking save is either the Forget button or a
-			// defect - and in both cases the readings behind it cost evenings of play, not a
-			// download. One copy, kept until the next shrinking save: a second Forget on an already
-			// empty table does not shrink anything and leaves it alone.
+			// The table only ever grows by itself, so what is on disk is never less than true: a save
+			// takes the higher value of memory and file for every action and drops nothing the file
+			// holds. Memory can hold less than the file - a load that failed, a table that started
+			// empty for any reason - and before this a single save then replaced weeks of readings
+			// with the few taken since. Only the user's own discard writes less than the file.
+			if (!TryReadEntriesOnDisk(name, out var onDiskBefore) && !discard)
+			{
+				// A file that is there but cannot be read now - locked by another program, or broken -
+				// is not overwritten by a save that could not merge with it. The reading stays in
+				// memory and goes out with the next save.
+				AreaPotentialStoreState = $"NOT SAVED {DateTime.Now:HH:mm:ss}: the file could not be read to merge with, left as it is - see the log";
+				return;
+			}
+
+			if (!discard && onDiskBefore != null)
+			{
+				foreach (var (id, share) in onDiskBefore)
+				{
+					if (!snapshot.TryGetValue(id, out var inMemory) || inMemory < share)
+					{
+						snapshot[id] = share;
+					}
+				}
+			}
+
+			// A copy before any save that leaves fewer entries on disk than are there now - after the
+			// merge above that is only the user's own discard. The readings behind it cost evenings
+			// of play, not a download. One copy, kept until the next shrinking save: a second discard
+			// on an already empty table does not shrink anything and leaves it alone.
 			var backup = string.Empty;
-			var before = CountEntriesOnDisk(name);
+			var before = onDiskBefore?.Count ?? -1;
 			if (before > snapshot.Count)
 			{
 				try
@@ -362,6 +397,28 @@ internal class OtherConfiguration
 				: !ok
 					? $"SAVE FAILED {DateTime.Now:HH:mm:ss}: {snapshot.Count} in memory, file unchanged - see the log"
 					: $"SAVE MISMATCH {DateTime.Now:HH:mm:ss}: {snapshot.Count} written, {onDisk} read back";
+		}
+	}
+
+	/// <returns>False when the file exists but could not be read; true with null when there is none.</returns>
+	private static bool TryReadEntriesOnDisk(string name, out Dictionary<uint, float>? entries)
+	{
+		entries = null;
+		try
+		{
+			var path = GetFilePath(name);
+			if (!File.Exists(path))
+			{
+				return true;
+			}
+
+			entries = JsonConvert.DeserializeObject<Dictionary<uint, float>>(File.ReadAllText(path));
+			return entries != null;
+		}
+		catch (Exception ex)
+		{
+			PluginLog.Warning($"Could not read {name} before saving: {ex.Message}");
+			return false;
 		}
 	}
 
@@ -585,8 +642,33 @@ internal class OtherConfiguration
 		return directory + $"\\{name}.json";
 	}
 
+	/// <summary>
+	/// Stores whose load step has run to an end in this session. A store that was never loaded holds
+	/// its empty default, and writing that default would replace the file with nothing.
+	/// </summary>
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, bool> _loadedStores = new();
+
+	private static bool WasLoaded(string name)
+	{
+		if (_loadedStores.ContainsKey(name))
+		{
+			return true;
+		}
+
+		// The load did not finish - cancelled by the plugin's load timeout, or it threw - and the
+		// unload writes every store. Without this every list and the learned table were emptied on
+		// disk by a load that merely failed.
+		PluginLog.Warning($"Not saving {name}: it was not loaded in this session, and its file is left as it is.");
+		return false;
+	}
+
 	private static void Save<T>(T value, string name)
 	{
+		if (!WasLoaded(name))
+		{
+			return;
+		}
+
 		_ = SavePath(value, GetFilePath(name));
 	}
 
@@ -696,6 +778,7 @@ internal class OtherConfiguration
 				if (forceDownload && File.Exists(path))
 				{
 					PluginLog.Warning($"Failed to download {name} from GitHub. Keeping the current list. Exception: {ex.Message}");
+					_loadedStores[name] = true;
 					return;
 				}
 
@@ -709,5 +792,7 @@ internal class OtherConfiguration
 			value = new T(); // Reinitialize to default
 			_ = SavePath(value, path); // Save the default value
 		}
+
+		_loadedStores[name] = true;
 	}
 }
