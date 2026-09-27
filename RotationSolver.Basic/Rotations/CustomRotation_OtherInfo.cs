@@ -1044,6 +1044,19 @@ public partial class CustomRotation
 	public static bool InCombatPause => InCombat && !HasHostilesInMaxRange;
 
 	/// <summary>
+	/// True in the last decision in which <paramref name="action"/> still goes off inside the window of
+	/// <paramref name="statusIDs"/>. Chosen now, it goes off when the GCD rolls; the next chance comes a
+	/// GCD after that, and by then the window would end before the action and its cast. For a rule that
+	/// holds a window back for an alignment (burst, a debuff) and must not lose it: the universal half
+	/// of "use it before it runs out" (concept 14, "Werden die Fenster genutzt?"); what the window waits
+	/// for is the job's rule.
+	/// </summary>
+	protected static bool IsLastChanceBeforeStatusEnds(IBaseAction action, params StatusID[] statusIDs)
+	{
+		return StatusHelper.PlayerWillStatusEnd(DataCenter.DefaultGCDRemain + DataCenter.DefaultGCDTotal + action.Info.CastTime, true, statusIDs);
+	}
+
+	/// <summary>
 	/// Is there any hostile target in 25 yalms?
 	/// </summary>
 	[Description("Has hostiles in 25 yalms")]

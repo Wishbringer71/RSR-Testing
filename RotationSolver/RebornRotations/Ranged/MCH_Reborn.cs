@@ -114,9 +114,11 @@ public sealed class MCH_Reborn : MachinistRotation
 
 			// Hypercharged from Barrel Stabilizer is a Hypercharge without Heat. Every path above waits for
 			// Wildfire; when Wildfire is held (only on bosses, or before a pause) it would run out unused.
-			// Spent in its last GCD rather than lost - also over a Reassemble, which then lands on a
-			// Blazing Shot: five free Overheated shots outweigh it.
-			if (HasHypercharged && StatusHelper.PlayerWillStatusEndGCD(1, 0, true, StatusID.Hypercharged)
+			// Spent in its last chance rather than lost. A Reassemble waits for its tool when Hypercharged
+			// still lasts to the weave after that GCD; otherwise Hypercharge goes first and Reassemble
+			// lands on a Blazing Shot - five free Overheated shots outweigh it.
+			if (HasHypercharged && IsLastChanceBeforeStatusEnds(HyperchargePvE, StatusID.Hypercharged)
+				&& (!HasReassembled || StatusHelper.PlayerWillStatusEnd(WeaponRemain + Math.Max(DataCenter.CalculatedActionAhead, AnimationLock), true, StatusID.Hypercharged))
 				&& HyperchargePvE.CanUse(out act, skipTTKCheck: true))
 			{
 				return true;

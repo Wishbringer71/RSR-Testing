@@ -378,9 +378,9 @@ public struct ActionTargetInfo(IBaseAction action)
 				}
 			}
 
-			// As on the player side (ActionBasicInfo.IsStatusNeeded): the needed status has to outlast the
-			// cast, not the refresh horizon of a provided one.
-			if (battleChara.WillStatusEnd(action.Info.CastTime, action.Setting.StatusFromSelf, action.Setting.TargetStatusNeed))
+			// As on the player side (ActionBasicInfo.IsStatusNeeded): the needed status has to last until the
+			// action goes off and its cast ends, not the refresh horizon of a provided one.
+			if (battleChara.WillStatusEnd(action.Info.NeededStatusMargin, action.Setting.StatusFromSelf, action.Setting.TargetStatusNeed))
 			{
 				return false;
 			}

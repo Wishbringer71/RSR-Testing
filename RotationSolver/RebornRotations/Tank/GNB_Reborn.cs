@@ -423,12 +423,14 @@ public sealed class GNB_Reborn : GunbreakerRotation
 		// them (a window without a GCD, downtime), Ready to Break or Ready to Reign would run out unused;
 		// its last GCD goes to them, ahead of everything else, since every other GCD here can still come
 		// a GCD later.
-		if (StatusHelper.PlayerWillStatusEndGCD(1, 0, true, StatusID.ReadyToBreak) && SonicBreakPvE.CanUse(out act))
+		if (IsLastChanceBeforeStatusEnds(SonicBreakPvE, StatusID.ReadyToBreak) && SonicBreakPvE.CanUse(out act))
 		{
 			return true;
 		}
 
-		if (!InReignCombo && StatusHelper.PlayerWillStatusEndGCD(1, 0, true, StatusID.ReadyToReign)
+		// Not inside a cartridge or Reign combo: Reign of Beasts would take over the combo step and cost
+		// Savage Claw and Wicked Talon with their continuations.
+		if (!InReignCombo && !InGnashingFang && IsLastChanceBeforeStatusEnds(ReignOfBeastsPvE, StatusID.ReadyToReign)
 			&& ReignOfBeastsPvE.CanUse(out act, skipComboCheck: true))
 		{
 			return true;
