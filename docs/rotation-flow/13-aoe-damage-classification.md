@@ -336,6 +336,15 @@ Speicher die Werte, und das nächste Speichern führt sie mit der dann fehlenden
 schreibt es sie zurück. Kein automatischer Verfall — er würde genau die Eigenschaft aufheben, die eine
 einzelne ungemilderte Beobachtung wertvoll macht.
 
+**Selbstkorrektur nach einem Patch: nicht gebaut.** Eine Historie über Tage bräuchte sie nicht.
+Denkbar wären zwei Formen: je Eintrag die Spielversion der Messung (nach einem Patch ersetzt die erste
+neue Messung den alten Wert), oder ein gleitendes Maximum über die letzten Messungen je Aktion. Beide
+tragen dasselbe Risiko: Ist die erste oder sind die letzten Messungen gemildert, sinkt der Wert zu
+tief, und der nächste Treffer dieser Aktion kommt ungemildert an — ein Sicherheitsverlust, um einen
+Fall zu lösen, der selten ist (ein Patch, der eine alte Aktion abschwächt) und dessen Folge nur
+überflüssige Minderung ist. Dazu braucht die zweite Form eine neue feste Zahl. Das Löschen von Hand
+deckt den Fall ohne dieses Risiko.
+
 **Seit A172 kann kein Speichern mehr verlieren, was die Datei hält.** Die Tabelle wächst von selbst nur; also ist jeder Stand der Datei eine Untergrenze, und ein Speichern nimmt je Aktion das Höhere aus Speicher und Datei. Damit ist die Fehlerklasse geschlossen, nicht der Einzelfall: Gleich aus welchem Grund der Speicher leer oder unvollständig ist — Laden gescheitert, abgebrochen, ein künftiger Defekt —, die Datei behält ihren Stand. Dazu wird ein Speicher, dessen Laden in dieser Sitzung nicht zu Ende lief, gar nicht geschrieben: Das Entladen schreibt alle Listen, und ein abgebrochener Start hätte sie sonst alle geleert.
 
 **Der schwerste Weg war keiner der erhobenen, sondern das Ausbleiben des Ladens** (A121). Der Speicher
