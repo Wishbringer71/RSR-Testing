@@ -244,7 +244,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 
 # Vorlagen an ihn
 
-- Meine Arbeitsweise kündige ich ihm nicht an und erkläre sie nicht („erst Konzept, dann Code“, „voller Loop“): Er hat sie vorgegeben und kennt sie (seine Vorgabe).
+- Keine Hinweise auf Grundlagen, die er kennt (seine Vorgabe): weder meine Arbeitsweise („erst Konzept, dann Code“, „voller Loop“) noch den Umgang mit seinem System (eine Plugin-Datei nur bei geschlossenem Spiel löschen).
 - Entscheidungsbedarf gebündelt am Ende, nach ADR-Struktur (Kontext, betroffene Stellen, Mechanismus, Konsequenzen), mit begründeter Empfehlung und durchgerechneten Konsequenzen — je Fall getrennt, wo sie sich unterscheiden.
 - Alles ohne Entscheidungsabhängigkeit ist vorher fertig; keine Zwischenrückfragen.
 - Er entscheidet, was ihn trifft: Verhalten im Kampf, Voreinstellungen, Optionen, Umfang und Reihenfolge der Arbeit, Freigabe und Veröffentlichung.
