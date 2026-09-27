@@ -3,7 +3,7 @@
     "German game names the user has stated, paired with the English identifier used in the code.",
     "Rules for this file, from CLAUDE.md: a German name is never formed here - not translated, not",
     "derived from the English name, not taken from a search-engine summary. Only two sources count:",
-    "the Square Enix job guide (currently blocked by the egress) and the user's own statement.",
+    "the Square Enix job guide and the user's own statement.",
     "Anything else belongs in 'note', not in 'de'.",
     "Validated by check_action_names.py, which resolves every 'en' against the generated resources."
   ],
@@ -91,6 +91,154 @@
       "kind": "action",
       "source": "user, 2026-09-12",
       "note": "The upgraded form Enhanced Rampart grants at level 94 is status Rampart_1978, scoped to PLD WAR DRK GNB, whose effect text adds 'while HP recovered via healing actions is increased' - the plain form (71, 1191) does not. The user gives that increase as 15%; the game data states no figure, as with every trait-modified value."
+    },
+    {
+      "de": "Paladin",
+      "en": "Paladin",
+      "identifier": "PLD",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Krieger",
+      "en": "Warrior",
+      "identifier": "WAR",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Dunkelritter",
+      "en": "Dark Knight",
+      "identifier": "DRK",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Revolverklinge",
+      "en": "Gunbreaker",
+      "identifier": "GNB",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Weißmagier",
+      "en": "White Mage",
+      "identifier": "WHM",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Gelehrter",
+      "en": "Scholar",
+      "identifier": "SCH",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Astrologe",
+      "en": "Astrologian",
+      "identifier": "AST",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Weiser",
+      "en": "Sage",
+      "identifier": "SGE",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Mönch",
+      "en": "Monk",
+      "identifier": "MNK",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Dragoon",
+      "en": "Dragoon",
+      "identifier": "DRG",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Ninja",
+      "en": "Ninja",
+      "identifier": "NIN",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Samurai",
+      "en": "Samurai",
+      "identifier": "SAM",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Schnitter",
+      "en": "Reaper",
+      "identifier": "RPR",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Viper",
+      "en": "Viper",
+      "identifier": "VPR",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Barde",
+      "en": "Bard",
+      "identifier": "BRD",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Maschinist",
+      "en": "Machinist",
+      "identifier": "MCH",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Tänzer",
+      "en": "Dancer",
+      "identifier": "DNC",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Schwarzmagier",
+      "en": "Black Mage",
+      "identifier": "BLM",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Beschwörer",
+      "en": "Summoner",
+      "identifier": "SMN",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Rotmagier",
+      "en": "Red Mage",
+      "identifier": "RDM",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Piktomant",
+      "en": "Pictomancer",
+      "identifier": "PCT",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27",
+      "note": "The user says the job is called Pictomancer in German as well (2026-09-27), correcting a self-formed 'Maler'. The German job guide titles it 'Piktomant'. Use 'Pictomancer' in text for him until he says which his client shows."
     }
   ]
 }

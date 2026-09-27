@@ -4,9 +4,9 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 ## Defekte
 
-### Burst-Einstellung der Fernkämpfer und Maler weicht keiner Gefahr · N
+### Burst-Einstellung der Fernkämpfer und Pictomancer weicht keiner Gefahr · N
 
-Barde, Maler und Tänzer führen „Prevent the use of defense abilties during burst" (ab Werk an). Die allgemeine Schranke (Konzept 08, „Die Abwehrsperren") greift dort nicht, weil der Einstellungstext ohne Ausnahme „verhindern" sagt und bindet. Im Kampf: Ein tödlicher Raidwide im Burst bekommt von diesen drei Jobs keine Minderung. Zur Entscheidung vorzulegen: Text ändern (seine Entscheidung) oder so lassen. Dieselbe Einstellung als Damage-Dealer-Regel zu führen, wäre die Stufe „Damage Dealer".
+Barde, Pictomancer und Tänzer führen „Prevent the use of defense abilties during burst" (ab Werk an). Die allgemeine Schranke (Konzept 08, „Die Abwehrsperren") greift dort nicht, weil der Einstellungstext ohne Ausnahme „verhindern" sagt und bindet. Im Kampf: Ein tödlicher Raidwide im Burst bekommt von diesen drei Jobs keine Minderung. Zur Entscheidung vorzulegen: Text ändern (seine Entscheidung) oder so lassen. Dieselbe Einstellung als Damage-Dealer-Regel zu führen, wäre die Stufe „Damage Dealer".
 
 ### Tänzer: Improvised Finish wird nie gewirkt, die Barriere von Improvisation verfällt · N
 
@@ -676,7 +676,7 @@ Auflösung: eine Quelle für diese Werte (erzeugter Index aus `RotationSolver.Ga
 
 **Freigegeben vom Auftraggeber** („Abwehrmittel-kaskade soll nach erneuter Prüfung im Loop umgesetzt werden"), im Loop erneut geprüft, und das Ergebnis ist dreigeteilt. **Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
 
-**Stufe 1 — Deckung nach Treffergröße: widerlegt, nicht umgesetzt.** Die Auswahlregel war gebaut und ist zurückgebaut, weil die Falsifikationsstufe ergab, dass sie im ganzen Baum nie greift: Minderungen kennen kein „zu groß" (sie skalieren mit dem Treffer), und kein Job hält zwei Anteilsbarrieren zur Wahl — beim Maler **entfernt** Tempera Grassa das Tempera Coat. Beleg und Hergang: A118.
+**Stufe 1 — Deckung nach Treffergröße: widerlegt, nicht umgesetzt.** Die Auswahlregel war gebaut und ist zurückgebaut, weil die Falsifikationsstufe ergab, dass sie im ganzen Baum nie greift: Minderungen kennen kein „zu groß" (sie skalieren mit dem Treffer), und kein Job hält zwei Anteilsbarrieren zur Wahl — beim Pictomancer **entfernt** Tempera Grassa das Tempera Coat. Beleg und Hergang: A118.
 
 **Stufe 2 — vor dem angekündigten Treffer heilen: gebaut**, hinter `Heal ahead of an announced area cast`, **Vorgabewert aus**. Das ist der Teil, der wirkt, und er schließt zugleich die in Konzept 07 und 08 geführte Lücke „die Zielwahl/die Schwellen lesen die gemessene Treffergröße nicht".
 

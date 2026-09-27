@@ -171,7 +171,7 @@ Rückhaltung von Abwehr im Burst steht in Konzept 08, „Die Abwehrsperren".
 | Aktion | hebt auf | Bewertung |
 |---|---|---|
 | Shake It Off (Krieger) | Thrill of Battle, Damnation, Bloodwhetting | **Befund.** Der Wirktext im Repository lautet „Dispels Thrill of Battle and increasing…" — ein stufenabhängiger Name ist ausgeblendet. Vollständig laut offiziellem Job-Guide (27.09.2026): „Dispels Thrill of Battle, Damnation, and Bloodwhetting, increasing damage absorbed by 2% for each effect removed". Auf niedrigerer Stufe Vengeance statt Damnation — so prüft es WrathCombo; Raw Intuition vor Bloodwhetting ist ein Schluss aus den Ausbauketten. Was verloren geht: Damnation −40 % Schaden für 15 s, Bloodwhetting −10 % mit Heilung je Waffenfertigkeit, Thrill of Battle +20 % Maximalgesundheit und +20 % erhaltene Heilung (Enhanced Thrill of Battle) — gegen +2 % Barriere je Effekt. RSR wirkt Shake It Off als Flächenabwehr und als Einzelheilung, ohne einen dieser Status zu prüfen. Im Kampf: Ein angekündigter Raidwide, während Damnation für einen Tankbuster liegt, nimmt dem Krieger 40 % Minderung vor dem Tankbuster |
-| Tempera Grassa (Maler) | Tempera Coat | Zweck der Aktion; RSR wandelt nur bei angekündigtem Flächentreffer oder kurz vor Ablauf |
+| Tempera Grassa (Pictomancer) | Tempera Coat | Zweck der Aktion; RSR wandelt nur bei angekündigtem Flächentreffer oder kurz vor Ablauf |
 | Meisui (Ninja) | Shadow Walker | Zweck der Aktion. RSR wirkt es, während Trick Attack (Kunai's Bane) abkühlt, und zusätzlich (a) wenn Ten Chi Jin bereit ist — dessen Abfolge endet mit Suiton, das Shadow Walker neu gibt (Wirktext) —, (b) wenn Shadow Walker in zwei GCDs endet, oder (c) wenn Trick Attack nicht in 19 s bereit ist |
 | Detonator (Machinist) | Wildfire | RSR wirkt ihn nie; Wildfire zündet mit allen Stapeln von selbst. Bis A164 konnte `WildfirePvE` in den letzten zwei GCDs von Wildfire als Detonator hinausgehen (gesperrter Knopfwechsel, siehe oben) und die übrigen Stapel abschneiden. Nicht gebaut: Detonator vor dem Tod des Ziels — ob die Ladung dann verfällt, steht in keiner Quelle |
 
@@ -249,7 +249,7 @@ determination"); vorher lag die Grenze bei 0.
 - **Im Kampf:** Jeder Proc-Verbraucher aller Jobs war in den letzten ~5 s seines Fensters gesperrt. Wer
   ihn bis dahin nicht verbraucht hatte, verlor ihn. Jede Regel „vor Ablauf nutzen" mit kleinerem Horizont
   war wirkungslos (Rotmagier Prefulgence, Weißmagier Divine Caress, Gelehrter Baneful Impaction, Ninja
-  Meisui, Maler Tempera Grassa).
+  Meisui, Pictomancer Tempera Grassa).
 - **Jetzt:** Der benötigte Status muss liegen, bis die Aktion losgeht und ihr Wirken endet
   (`ActionBasicInfo.NeededStatusMargin`). Ein GCD wird vor dem Ablauf des GCD gewählt
   (`CalculatedActionAhead`) und geht los, wenn er abläuft; die Restzeit zählt deshalb mit. Die Wirkzeit ist
@@ -272,7 +272,7 @@ unberührt.
   (GCD-Restzeit + GCD-Länge + Wirkzeit, alle aus dem Spiel). Worauf ein Verbraucher wartet, bleibt die
   Regel des Jobs.
 - **Ältere Rückfälle mit eigenem Horizont** (Paladin Atonement-Kette, Rotmagier Prefulgence, Weißmagier
-  Divine Caress, Gelehrter Baneful Impaction, Ninja Meisui, Maler Tempera Grassa, Monk Fire's/Wind's
+  Divine Caress, Gelehrter Baneful Impaction, Ninja Meisui, Pictomancer Tempera Grassa, Monk Fire's/Wind's
   Reply): Fähigkeiten ohne Wirkzeit oder mit großzügigem Horizont; sie greifen seit A166. Nicht auf den
   gemeinsamen Baustein umgestellt, weil es sie nicht ändert.
 - **Maschinist:** Hypercharged (Barrel Stabilizer, eine Überhitzung ohne Heat) wartete auf Wildfire.
@@ -313,7 +313,7 @@ Rückfall-Horizont die Wirkzeit deckt, prüft die Liste nicht; das steht je Fall
 - *Die Bedingung ist das Fenster selbst oder Struktur:* Schnitter (Gallows, Gibbet und Executioner's
   unter Soul Reaver bzw. Executioner, Communio unter Enshroud, Perfectio), Viper (Legacies unter
   Reawakened, die Twinfang-/Twinblood-Folgen), Monk (Stufenprüfungen), Ninja (Mudra-Ausführung, Ninjutsu-
-  Ziel), Rotmagier (Verfire/Verstone nach Manabalance, Grand Impact, Enchanted Riposte nach Mana), Maler
+  Ziel), Rotmagier (Verfire/Verstone nach Manabalance, Grand Impact, Enchanted Riposte nach Mana), Pictomancer
   (Comet in Black, Star Prism, Subtractive Palette).
 - *Die Bedingung ist der Zweck:* Heilbedarf (Horoscope, Pepsis), Option (Retrace), Burst (Radiant
   Encore, Reawaken, Starfall Dance, Technical Step, Flourish), Tanzschritte vor den Procs (Tänzer: Reverse
@@ -330,7 +330,7 @@ Rückfall-Horizont die Wirkzeit deckt, prüft die Liste nicht; das steht je Fall
   Aetherflow vor dessen Abklingzeit), Astrologe (Karten vor dem nächsten Ziehen).
 - *Nahkampf:* Monk (Fire's/Wind's Reply mit Rückfall), Dragoon (Wyrmwind Thrust vor dem Überlauf),
   Schnitter, Viper.
-- *Fernkampf und Magie:* Barde, Tänzer, Maler, Rotmagier, Schwarzmagier (Polyglot vor dem Überlauf, beide
+- *Fernkampf und Magie:* Barde, Tänzer, Pictomancer, Rotmagier, Schwarzmagier (Polyglot vor dem Überlauf, beide
   Rotationen), Beschwörer (Konzept 12).
 
 **Bewusst so, mit Grund:** *Barde:* Soul Voice bleibt bis zu 25 s bei 100, wenn Battle Voice kommt —

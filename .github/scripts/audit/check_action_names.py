@@ -27,7 +27,7 @@ ROOT = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
 DICT_PATH = os.path.join(HERE, 'action_names_de.json')
 RESX = os.path.join(ROOT, 'RotationSolver.SourceGenerators', 'Properties', 'ActionId.resx')
 
-VALID_KINDS = ('action', 'status', 'item')
+VALID_KINDS = ('action', 'status', 'item', 'job')
 
 
 def load_identifiers(text):

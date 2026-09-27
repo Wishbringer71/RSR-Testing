@@ -114,7 +114,7 @@ Mittel derselben Art zur Wahl hat. Gemessen an der erzeugten Tabelle trifft das 
   uebrig, und 30 % eines kleinen Treffers sind klein. Die Vorgabe „ein Schild, das 10 % blockiert"
   ist eine Aussage ueber **Barrieren**.
 - **Barrieren mit ausgeschriebenem Anteil gibt es wenige**, und kein Job haelt zwei davon zur Wahl:
-  Krieger eine, Dunkelritter eine, Beschwoerer eine. Der Maler haelt zwei, aber Tempera Grassa
+  Krieger eine, Dunkelritter eine, Beschwoerer eine. Der Pictomancer haelt zwei, aber Tempera Grassa
   **entfernt** Tempera Coat („Removes Tempera Coat to create a barrier…") — eine Umwandlung, keine
   Alternative. Die uebrigen sind Bozja-Aktionen ausserhalb des Nutzungsprofils.
 
@@ -140,7 +140,7 @@ Rückhaltung ein Job überhaupt kennt, bleibt seine Sonderregel.** Gebaut in
 | alle | **Streckungsbaustein:** Nach einer Auslöseraktion ruht die übrige eigene Abwehr, bis die Wirkung laut Wirktext ausläuft (die Dauer, die zur Minderung gehört), gezählt ab dem Einsatz laut Aktionsprotokoll. Hält der Auslöser noch eine Ladung (gelesen an seiner Wiederaufladegruppe, nicht am Knopf), streckt er nicht | derselbe Mechanismus stand zweimal mit festen Zahlen im Code (Weißmagier, Astrologe) |
 | Heiler | leer | Nur Weißmagier und Astrologe strecken; Gelehrter und Weiser nicht. Eine Heilerregel änderte zwei Jobs ohne belegten Nutzen |
 | Tanks | leer | Burst-Rückhaltung nur bei Dunkelritter und Revolverklinge, bei beiden an ein eigenes Burstfenster gebunden; Krieger und Paladin halten nichts zurück |
-| Damage Dealer | leer, eine Frage an ihn | Barde, Maler und Tänzer führen dieselbe Einstellung „Prevent the use of defense abilties during burst" (ab Werk an), Maschinist, Dragoon und Viper feste Rückhaltungen. Eine gemeinsame Regel wäre möglich; ihr Einstellungstext bindet, siehe unten |
+| Damage Dealer | leer, eine Frage an ihn | Barde, Pictomancer und Tänzer führen dieselbe Einstellung „Prevent the use of defense abilties during burst" (ab Werk an), Maschinist, Dragoon und Viper feste Rückhaltungen. Eine gemeinsame Regel wäre möglich; ihr Einstellungstext bindet, siehe unten |
 | Job | die Auslöser und Rückhaltungen selbst | siehe nächste Tabelle |
 
 ### Die Sonderregeln je Job
@@ -167,9 +167,9 @@ Einstellung sind nur die zwei in der Tabelle (Revolverklinge, Dragoon).
   Excogitation.
 - *Einstellungen, deren Text die Rückhaltung ohne Ausnahme anordnet:* „Prioritize Microcosmos over all
   other healing when available" und die Strategie für Essential Dignity (Astrologe), dazu die
-  Burst-Einstellung von Barde, Maler und Tänzer (unten). Der Text bindet.
+  Burst-Einstellung von Barde, Pictomancer und Tänzer (unten). Der Text bindet.
 
-**Barde, Maler, Tänzer:** Deren Einstellung „Prevent the use of defense abilties during burst" sagt
+**Barde, Pictomancer, Tänzer:** Deren Einstellung „Prevent the use of defense abilties during burst" sagt
 ohne Ausnahme „verhindern". Ihr Text bindet; die Schranke greift dort deshalb nicht. Ob sie weichen
 soll, ist seine Entscheidung (Einstellungstext und Vorgabe).
 
