@@ -175,6 +175,19 @@ Rückhaltung von Abwehr im Burst steht in Konzept 08, „Die Abwehrsperren".
 | Meisui (Ninja) | Shadow Walker | Zweck der Aktion. RSR wirkt es, während Trick Attack (Kunai's Bane) abkühlt, und zusätzlich (a) wenn Ten Chi Jin bereit ist — dessen Abfolge endet mit Suiton, das Shadow Walker neu gibt (Wirktext) —, (b) wenn Shadow Walker in zwei GCDs endet, oder (c) wenn Trick Attack nicht in 19 s bereit ist |
 | Detonator (Machinist) | Wildfire | RSR wirkt ihn nie; Wildfire zündet mit allen Stapeln von selbst. Bis A164 konnte `WildfirePvE` in den letzten zwei GCDs von Wildfire als Detonator hinausgehen (gesperrter Knopfwechsel, siehe oben) und die übrigen Stapel abschneiden. Nicht gebaut: Detonator vor dem Tod des Ziels — ob die Ladung dann verfällt, steht in keiner Quelle |
 
+**Vergleich mit WrathCombo** (Community-Plugin, Stand 25.09.2026; keine Spielquelle — es zeigt, wie ein
+anderes Werkzeug entscheidet):
+- *Shake It Off:* Im Selbstheilungspfad nur, wenn weder Thrill of Battle noch Damnation, Vengeance oder
+  Bloodwhetting liegt (`safeToShakeItOff`); im Pfad für angekündigten Gruppenschaden ohne diese Prüfung.
+  Bestätigt die Aufhebung auch von Vengeance auf niedriger Stufe.
+- *Passage of Arms:* Option „Block Combos for Passage of Arms" hält alle Kombos, solange der Kanal liegt —
+  ohne Frage nach dem Treffer; beenden muss der Spieler.
+- *Improvisation:* als Füller außerhalb von Technical Finish, wenn mehr als zwei Verbündete in 8 Yalm
+  stehen; Improvised Finish nutzt WrathCombo nirgends. Es behandelt Improvisation also wie RSR heute als
+  kurzes Regen.
+- *Addersgall (Weiser):* „Addersgall Protect" wirkt Druochole auf das Mitglied mit der niedrigsten
+  Gesundheit (sonst auf sich), sobald die Stapel eine Schwelle erreichen (ab Werk 3).
+
 **Nicht nutzbar unter einem Status** (Hammer Motif unter Hammer Time, Fire in Red unter Subtractive
 Palette, Ten Chi Jin unter Kassatsu, Plentiful Harvest unter Bloodsown Circle u. a.) sind
 Angriffsabfolgen innerhalb eines Jobs; keine berührt Abwehr.
