@@ -4183,6 +4183,16 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A176 · Protokolldatei für die Schadensmessung, auf seine Vorgabe (27.09.2026)
+
+**Seine Vorgabe:** „schreib debug-kommentare in die ausgabedatei, die ich dir nach einer session hochladen kann" — „mit den unterschiedlichen stellen, bis wo die routinen kommen". Anlass: Er stellte fest, dass die Messung falsch ist; sie liefert in seinem Spiel keinen Wert, und der Code ist von mir.
+
+- *Erneut geprüft, ohne Befund:* ECommons 3.2.1.20 (`55b7f52`) — Hook, Signatur und Weiterreichen identisch mit dem gepflegten Stand; Effektkopf-Offsets identisch mit den aktuellen ClientStructs; Spieler steht in der Gruppenliste (Objekttabelle); Aufbau des Handlers wie Upstream.
+- *Umgesetzt:* `AreaMeasurementTrace` schreibt `AreaMeasurementTrace.log`, je Sitzung neu: Kopf mit Version und Zuständen; je Gegneraktion mit Wirkzeit oder Mehrfachtreffer die Stufe, an der sie hielt (STOP 1–5) oder STORED; jedes Speichern; jeder Fehler mit Stack; Zählerstände beim Entladen; Abschluss nach dem letzten Speichern.
+- *Grenze:* Liefert der Hook gar nichts, steht nach dem Kopf nur „effect handler hooked" und am Ende „0 sets" — auch das ist eine Antwort.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

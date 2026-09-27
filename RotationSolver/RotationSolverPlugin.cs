@@ -397,6 +397,7 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 
 		Service.Config.Save();
 		await OtherConfiguration.Save();
+		AreaMeasurementTrace.Stop("stores saved at unload");
 
 		AutoAttackUpdater.Disable();
 		RSCommands.Disable();

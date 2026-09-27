@@ -14,14 +14,57 @@ public static class Watcher
 {
 	public static void Enable()
 	{
+		var assembly = typeof(Watcher).Assembly;
+		var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+			?? assembly.GetName().Version?.ToString() ?? "?";
+		AreaMeasurementTrace.Start($"version {version} | AoE list {OtherConfiguration.HostileCastingArea.Count}"
+			+ $" | rated {OtherConfiguration.HostileCastingAreaPotential.Count}"
+			+ $" | store: {OtherConfiguration.AreaPotentialStoreState}"
+			+ $" | Record AOE actions {Service.Config.RecordCastingArea}"
+			+ $" | NPC party members {Service.Config.FriendlyPartyNpcHealRaise3}");
+
 		ActionEffect.ActionEffectEvent += ActionFromEnemy;
 		ActionEffect.ActionEffectEvent += ActionFromSelf;
+		AreaMeasurementTrace.Line("effect handler hooked");
 	}
 
 	public static void Disable()
 	{
 		ActionEffect.ActionEffectEvent -= ActionFromEnemy;
 		ActionEffect.ActionEffectEvent -= ActionFromSelf;
+		AreaMeasurementTrace.Line($"effect handler unhooked | {DataCenter.EffectSetsReceived} sets, "
+			+ $"{DataCenter.EnemyEffectSets} from enemies, {DataCenter.EnemyHitsOnPlayer} hit you, "
+			+ $"{DataCenter.EffectHandlerErrors} errors | casts: {DataCenter.AreaMeasurementTallyText}"
+			+ $" | rated {OtherConfiguration.HostileCastingAreaPotential.Count} | store: {OtherConfiguration.AreaPotentialStoreState}");
+	}
+
+	// One line per enemy action worth tracing: a cast, or anything that damaged two or more party
+	// members. Auto-attacks and single-target instants would bury the rest.
+	private static string TraceHead(ActionEffectSet set, int partyHits, int partyCount)
+		=> $"#{set.Action?.RowId ?? set.Header.ActionID} {set.Action?.Name.ExtractText() ?? "?"}"
+			+ $" from {set.Source?.Name.TextValue ?? "?"} | cast {set.Action?.Cast100ms ?? 0}"
+			+ $" | type {set.Header.ActionType} | category {set.Action?.GetActionCate()}"
+			+ $" | party hit {partyHits}/{partyCount}";
+
+	private static int CountPartyHits(ActionEffectSet set, List<IBattleChara> party)
+	{
+		var hits = 0;
+		foreach (var effect in set.TargetEffects)
+		{
+			foreach (var member in party)
+			{
+				if (member != null && member.GameObjectId == effect.TargetID)
+				{
+					if (effect.GetSpecificTypeEffect(ActionEffectType.Damage, out _))
+					{
+						hits++;
+					}
+					break;
+				}
+			}
+		}
+
+		return hits;
 	}
 
 	public static string ShowStrSelf { get; private set; } = string.Empty;
@@ -106,6 +149,17 @@ public static class Watcher
 						"not measured - cast by an untargetable enemy");
 				}
 
+				if (set.Source is IBattleChara other && other.IsValid()
+					&& other.GetBattleNPCSubKind() == Dalamud.Game.ClientState.Objects.Enums.BattleNpcSubKind.Combatant)
+				{
+					var hiddenHits = CountPartyHits(set, DataCenter.PartyMembers);
+					if (set.Action?.Cast100ms > 0 || hiddenHits > 1)
+					{
+						AreaMeasurementTrace.Line(TraceHead(set, hiddenHits, DataCenter.PartyMembers.Count)
+							+ $" | STOP 1: source is not a targetable enemy (targetable {other.IsTargetable})");
+					}
+				}
+
 				return;
 			}
 
@@ -166,6 +220,14 @@ public static class Watcher
 			// concerns measuring an id that is already listed.
 			var intakeOpen = Service.Config.RecordCastingArea && partyMemberCount >= 4;
 
+			var partyHits = CountPartyHits(set, partyMembers);
+			var traced = set.Action?.Cast100ms > 0 || partyHits > 1;
+			var traceHead = traced ? TraceHead(set, partyHits, partyMemberCount) : string.Empty;
+			if (traced && !(set.Header.ActionType == ActionType.Action && set.Action?.Cast100ms > 0))
+			{
+				AreaMeasurementTrace.Line(traceHead + " | STOP 2: not a regular action with a cast time");
+			}
+
 			// Why an enemy cast that hurt the player was or was not measured. The table can stay empty
 			// for several different reasons, and the file ("{}") looks the same for all of them - so
 			// the decision states its reason where it is taken, and the tally counts it. Casts only:
@@ -206,6 +268,11 @@ public static class Watcher
 			if (set.Header.ActionType == ActionType.Action && set.Action?.Cast100ms > 0)
 			{
 				var type = set.Action?.GetActionCate();
+				if (traced && type is not (ActionCate.Spell or ActionCate.Weaponskill or ActionCate.Ability))
+				{
+					AreaMeasurementTrace.Line(traceHead + " | STOP 3: category is not spell, weaponskill or ability");
+				}
+
 				if (type is ActionCate.Spell or ActionCate.Weaponskill or ActionCate.Ability)
 				{
 					var damageEffectCount = 0;
@@ -295,14 +362,29 @@ public static class Watcher
 						}
 					}
 
-					if (highestShare > 0f && OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
+					var listed = OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId);
+					if (traced && !listed)
+					{
+						AreaMeasurementTrace.Line(traceHead + $" | STOP 4: not in the AoE list (damaged {damageEffectCount} of {partyMemberCount}, intake {(intakeOpen ? "open" : "closed")})");
+					}
+					else if (traced && highestShare <= 0f)
+					{
+						AreaMeasurementTrace.Line(traceHead + $" | STOP 5: listed, but no amount read from a party member (damage entries {damageEffectCount})");
+					}
+
+					if (highestShare > 0f && listed)
 					{
 						var id = set.Action!.Value.RowId;
 						if (!OtherConfiguration.HostileCastingAreaPotential.TryGetValue(id, out var known)
 							|| highestShare > known)
 						{
 							OtherConfiguration.HostileCastingAreaPotential[id] = highestShare;
+							AreaMeasurementTrace.Line(traceHead + $" | STORED {highestShare:P1} (was {known:P1}), saving");
 							_ = OtherConfiguration.SaveHostileCastingAreaPotential();
+						}
+						else if (traced)
+						{
+							AreaMeasurementTrace.Line(traceHead + $" | measured {highestShare:P1}, not above the stored {known:P1}");
 						}
 					}
 				}
@@ -318,6 +400,8 @@ public static class Watcher
 			{
 				DataCenter.EffectHandlerFirstError = $"{ex.GetType().Name}: {ex.Message}";
 			}
+
+			AreaMeasurementTrace.Line($"ERROR in the enemy effect handler (#{set.Action?.RowId ?? set.Header.ActionID}): {ex}");
 
 			PluginLog.Error($"Error in ActionFromEnemy: {ex}");
 		}
