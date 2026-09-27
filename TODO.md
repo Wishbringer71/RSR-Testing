@@ -24,6 +24,10 @@ Shake It Off hebt die eigenen Status Thrill of Battle, Damnation und Bloodwhetti
 
 `InterventionPvE` verlangt am Ziel eine Tankhaltung (`TargetStatusNeed`: Grit, Royal Guard, Iron Will, Defiance) mit `StatusFromSelf` ab Werk wahr. Die Haltung des anderen Tanks stammt von ihm, nicht vom Paladin; `MinStatusRemainingTime` überspringt sie, und die Bedingung schlägt für jedes Ziel fehl. `PLD_Reborn` ruft Intervention an zwei Stellen ohne `skipTargetStatusNeedCheck` (die Tank-Option und die allgemeine Einzelabwehr); dort fällt es nie. Nur der Pfad mit Rampart/Sentinel und niedriger Gesundheit des Ziels überspringt die Bedingung. Im Kampf: Der Paladin schützt den anderen Tank nicht mit Intervention, außer im Notfallpfad. Behebung braucht eine Richtungsentscheidung (Herkunft der Bedarfsstatus je Aktion, oder die Haltung als Zielwahl statt Bedingung); erhoben im Review zu A166, nicht angefasst.
 
+### Rotationen gegen The Balance abgleichen · N
+
+Seit 27.09.2026 ist die Referenz erreichbar. Offen: je Job die Standardrotation (Opener, Burstausrichtung, Prioritäten) gegen den Guide prüfen — „werden die optimalen Kombinationen genutzt" über die Fensterprüfung hinaus (Konzept 14). Dazu: die von `ActionId.resx` ausgeblendeten Werte (Dauern, Potenzen, Statusnamen) aus dem Job-Guide in den Generator übernehmen, und die deutschen Namen aus dem deutschen Job-Guide in `action_names_de.json`.
+
 ### Weiser: Addersgall läuft über · N
 
 Bei drei Stapeln Addersgall geht jeder weitere Gewinn verloren; `SGE_Reborn` verbraucht vor dem Überlauf nichts (`AddersgallEndAfter` steht seit 2022 in der Basisrotation, ohne Leser). Im Kampf: Druochole gäbe je Stapel 7 % MP und eine Heilung. Zur Entscheidung vorgelegt: ein Verbrauch vor dem Überlauf wie beim Weißmagier („Use Lily at max stacks/about to overcap"). Konzept 14, „Werden die Fenster genutzt?".
@@ -376,7 +380,7 @@ und `GCDTime(uint gcdCount = 0, float offset = 0)` liefert `(DefaultGCDTotal * 0
 
 ### Dunkelritter: `UseBlood` ohne Leser · N
 
-Die Eigenschaft sollte Blut für den Burst aufsparen; seit einem Umbau liest sie niemand, und Bloodspiller fällt bei 50 Blut. Laut heutigem Wirktext kostet Living Shadow kein Blut mehr, ihr ursprünglicher Zweck ist damit überholt. Nicht entfernt, weil offen ist, ob Aufsparen für Delirium etwas bringt (keine Referenz erreichbar). Auflösung: Referenz für die Dunkelritter-Rotation, dann verdrahten oder entfernen. Konzept 14, „Werden die Fenster genutzt?".
+Die Eigenschaft sollte Blut für den Burst aufsparen; seit einem Umbau liest sie niemand, und Bloodspiller fällt bei 50 Blut. Laut heutigem Wirktext kostet Living Shadow kein Blut mehr, ihr ursprünglicher Zweck ist damit überholt. Nicht entfernt, weil offen ist, ob Aufsparen für Delirium etwas bringt. Auflösung: Abgleich mit The Balance (seit 27.09.2026 erreichbar), dann verdrahten oder entfernen. Konzept 14, „Werden die Fenster genutzt?".
 
 ### Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen · N, R
 

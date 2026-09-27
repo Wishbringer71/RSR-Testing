@@ -4090,6 +4090,16 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Generator-Selbsttest; Compile über die CI.
 
+### A168 · Netzzugang unbegrenzt: Quellen gemessen, Schlüsse belegt (27.09.2026)
+
+**Seine Angabe:** Netzzugang auf unbegrenzt gestellt. Gemessen (HTTP-Status): The Balance, `na.`/`de.finalfantasyxiv.com/jobguide`, consolegameswiki, garlandtools, v2.xivapi 200; gamerescape und icy-veins 403 mit `cf-mitigated: challenge` — Cloudflare-Prüfung der Seite, der Proxy verbindet (`200 Connection Established`).
+
+**Am offiziellen Job-Guide belegt (vorher Schluss oder Suchauszug):** Shake It Off hebt „Thrill of Battle, Damnation, and Bloodwhetting" auf. Dauern: Ready to Break, Ready to Reign, Ogi Namikiri Ready, Hypercharged, Full Metal Machinist 30 s; Phantom Kamaitachi Ready 45 s; Silken Symmetry/Flow 30 s. Living Shadow kostet kein Blut. Flourish gewährt Flourishing Symmetry, Flourishing Flow, Threefold/Fourfold Fan Dance, Finishing Move Ready. Passage of Arms: 120 s Abklingzeit.
+
+**Offen, weil der Text es offen lässt:** ob die Minderung von Collective Unconscious den Abbruch des Kanals überdauert — der Job-Guide hat denselben Wortlaut wie `ActionId.resx`.
+
+**Folge:** Quellenregel in CLAUDE.md fortgeschrieben; Konzept 14 und TODO auf die Belege umgestellt; Abgleich mit The Balance als offene Arbeit erfasst.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

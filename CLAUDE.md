@@ -216,7 +216,8 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Eine Fundstelle, die ich nicht finde, ist nicht unerreichbar — weitere Pfade versuchen.
 - Ein Werkzeug sage ich erst zu, wenn eine Probe es belegt. Zur Vorlage gehört der Preis des Wegs: Was er mit einem Handgriff erledigt, ist keine Aufgabe für diese Umgebung.
 - Einen fremden Schutzmechanismus führe ich erst als Begründung an, wenn ich geprüft habe, was er abdeckt.
-- Öffentliche Git-Repositories sind über den Git-Proxy klonbar, auch wo Web-Seiten gesperrt sind. `PunishXIV/WrathCombo` (Klon unter `/home/user/punishxiv/wrathcombo`) belegt, wie ein anderes Rotationswerkzeug eine Mechanik behandelt und was die Spiel-API liefert — keine Spielquelle, Status so benennen; Code nur lesen, nicht übernehmen.
+- Der Netzzugang ist seit 27.09.2026 unbegrenzt (seine Einstellung). Offizielle Quelle für Wirktexte samt der Werte, die `ActionId.resx` ausblendet (Dauern, Potenzen, Statusnamen): der Job-Guide (`na.`/`de.finalfantasyxiv.com/jobguide/`). Referenz für Rotationen: The Balance (`thebalanceffxiv.com`). Spieldaten: `garlandtools.org`, `v2.xivapi.com`. gamerescape und icy-veins weisen Skripte per Cloudflare-Prüfung ab — das ist die Seite, nicht die Umgebung.
+- Öffentliche Git-Repositories sind über den Git-Proxy klonbar. `PunishXIV/WrathCombo` (Klon unter `/home/user/punishxiv/wrathcombo`) belegt, wie ein anderes Rotationswerkzeug eine Mechanik behandelt und was die Spiel-API liefert — keine Spielquelle, Status so benennen; Code nur lesen, nicht übernehmen.
 
 # Prüfung und Abschluss
 
@@ -278,7 +279,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Er spielt mit deutschem Client: seine Namen sind deutsche Spielnamen, die Bezeichner englisch. Vor jeder Suche oder Aussage über ein Fehlen die Zuordnung belegen.
 - Zuerst nachschlagen: `.github/scripts/audit/action_names_de.json` (geprüft von `check_action_names.py`) und, falls erzeugt, `action_names_game.json` aus `RotationSolver.GameData` (braucht die Spieldateien; Pfad über `FFXIV_GAME_PATH` oder Programmargument).
 - Was dort steht, nicht erneut fragen. Einen neuen Namen von ihm im selben Zug eintragen.
-- Einen deutschen Namen nie selbst bilden. Belegt ist er nur durch seine Angabe, den Job-Guide (derzeit vom Egress gesperrt) oder den erzeugten Index; sonst den englischen Bezeichner benutzen.
+- Einen deutschen Namen nie selbst bilden. Belegt ist er nur durch seine Angabe, den deutschen Job-Guide (`de.finalfantasyxiv.com/jobguide/`) oder den erzeugten Index; sonst den englischen Bezeichner benutzen.
 
 # Versionskontrolle und Umgebung
 

@@ -170,7 +170,7 @@ Rückhaltung von Abwehr im Burst steht in Konzept 08, „Die Abwehrsperren".
 
 | Aktion | hebt auf | Bewertung |
 |---|---|---|
-| Shake It Off (Krieger) | Thrill of Battle, Damnation, Bloodwhetting | **Befund.** Der Wirktext im Repository lautet „Dispels Thrill of Battle and increasing…" — ein stufenabhängiger Name ist ausgeblendet. Vollständig, nach dem Suchauszug der Wikis (die Seiten selbst sperrt der Egress): „Dispels Thrill of Battle, Damnation, and Bloodwhetting, increasing damage absorbed by 2% for each effect removed". Unter Stufe 92 und 82 stehen dafür vermutlich Vengeance und Raw Intuition (Schluss aus den Ausbauketten). Was verloren geht: Damnation −40 % Schaden für 15 s, Bloodwhetting −10 % mit Heilung je Waffenfertigkeit, Thrill of Battle +20 % Maximalgesundheit und +20 % erhaltene Heilung (Enhanced Thrill of Battle) — gegen +2 % Barriere je Effekt. RSR wirkt Shake It Off als Flächenabwehr und als Einzelheilung, ohne einen dieser Status zu prüfen. Im Kampf: Ein angekündigter Raidwide, während Damnation für einen Tankbuster liegt, nimmt dem Krieger 40 % Minderung vor dem Tankbuster |
+| Shake It Off (Krieger) | Thrill of Battle, Damnation, Bloodwhetting | **Befund.** Der Wirktext im Repository lautet „Dispels Thrill of Battle and increasing…" — ein stufenabhängiger Name ist ausgeblendet. Vollständig laut offiziellem Job-Guide (27.09.2026): „Dispels Thrill of Battle, Damnation, and Bloodwhetting, increasing damage absorbed by 2% for each effect removed". Auf niedrigerer Stufe Vengeance statt Damnation — so prüft es WrathCombo; Raw Intuition vor Bloodwhetting ist ein Schluss aus den Ausbauketten. Was verloren geht: Damnation −40 % Schaden für 15 s, Bloodwhetting −10 % mit Heilung je Waffenfertigkeit, Thrill of Battle +20 % Maximalgesundheit und +20 % erhaltene Heilung (Enhanced Thrill of Battle) — gegen +2 % Barriere je Effekt. RSR wirkt Shake It Off als Flächenabwehr und als Einzelheilung, ohne einen dieser Status zu prüfen. Im Kampf: Ein angekündigter Raidwide, während Damnation für einen Tankbuster liegt, nimmt dem Krieger 40 % Minderung vor dem Tankbuster |
 | Tempera Grassa (Maler) | Tempera Coat | Zweck der Aktion; RSR wandelt nur bei angekündigtem Flächentreffer oder kurz vor Ablauf |
 | Meisui (Ninja) | Shadow Walker | Zweck der Aktion. RSR wirkt es, während Trick Attack (Kunai's Bane) abkühlt, und zusätzlich (a) wenn Ten Chi Jin bereit ist — dessen Abfolge endet mit Suiton, das Shadow Walker neu gibt (Wirktext) —, (b) wenn Shadow Walker in zwei GCDs endet, oder (c) wenn Trick Attack nicht in 19 s bereit ist |
 | Detonator (Machinist) | Wildfire | RSR wirkt ihn nie; Wildfire zündet mit allen Stapeln von selbst. Bis A164 konnte `WildfirePvE` in den letzten zwei GCDs von Wildfire als Detonator hinausgehen (gesperrter Knopfwechsel, siehe oben) und die übrigen Stapel abschneiden. Nicht gebaut: Detonator vor dem Tod des Ziels — ob die Ladung dann verfällt, steht in keiner Quelle |
@@ -231,9 +231,11 @@ tatsächlich genutzt werden — „für alle im Loop".
 
 **Sachstand (A165–A167):** Geprüft ist, ob ein gewährtes Fenster — ein Status, der eine Aktion für eine
 Zeit freigibt (Proc, „Ready", Stapel), oder eine Ressource mit Obergrenze — verbraucht wird, bevor es
-verfällt oder überläuft. Ob eine Abfolge die beste ist, ist nicht geprüft: Die Referenz dafür (Job-Guides
-wie The Balance, das Rotations-Repository) sperrt der Egress, und die Wirktexte nennen die Dauer der
-meisten „Ready"-Status nicht. Der Code braucht sie nicht: Er liest die Restzeit zur Laufzeit.
+verfällt oder überläuft. Ob eine Abfolge die beste ist, ist noch nicht geprüft: Die Referenz dafür (The
+Balance) ist seit 27.09.2026 erreichbar; der Abgleich ist offene Arbeit (TODO). Die Dauern der Fenster,
+die `ActionId.resx` ausblendet, belegt der offizielle Job-Guide: Ready to Break, Ready to Reign, Ogi
+Namikiri Ready, Hypercharged, Full Metal Machinist je 30 s, Phantom Kamaitachi Ready 45 s, Silken Symmetry
+und Silken Flow 30 s. Der Code braucht sie nicht: Er liest die Restzeit zur Laufzeit.
 
 ### Die gemeinsame Ursache: die Statusbedingung sperrte das Ende jedes Fensters
 
@@ -315,9 +317,8 @@ Rückfall-Horizont die Wirkzeit deckt, prüft die Liste nicht; das steht je Fall
   (Comet in Black, Star Prism, Subtractive Palette).
 - *Die Bedingung ist der Zweck:* Heilbedarf (Horoscope, Pepsis), Option (Retrace), Burst (Radiant
   Encore, Reawaken, Starfall Dance, Technical Step, Flourish), Tanzschritte vor den Procs (Tänzer: Reverse
-  Cascade, Fountainfall, Rising Windmill, Bloodshower warten, solange ein Schritt bereit ist; dass die
-  Procs einen Tanz überdauern, ist ein Schluss — ihre Dauer blendet der Wirktext aus), Konzept 12 (Lux
-  Solaris, Searing Flash, Ruin IV).
+  Cascade, Fountainfall, Rising Windmill, Bloodshower warten, solange ein Schritt bereit ist; die Procs
+  gelten 30 s laut Job-Guide, ein Tanz ist kürzer), Konzept 12 (Lux Solaris, Searing Flash, Ruin IV).
 - *Sicherheit:* Krieger Primal Rend auf Distanz nur mit den Sprung-Optionen — seine Vorgabe zu Bewegung.
 - *Niedrige Stufe:* Straight Shot, Trick Attack.
 
@@ -336,8 +337,8 @@ Rückfall-Horizont die Wirkzeit deckt, prüft die Liste nicht; das steht je Fall
 Apex Arrow im Burst ist mehr wert als der Überlauf (Schluss aus dem Regelaufbau).
 
 **Nebenbefund, technische Schuld:** `UseBlood` im Dunkelritter hat keinen Leser (Blut für den Burst
-aufsparen). Laut heutigem Wirktext kostet Living Shadow kein Blut mehr; ob Aufsparen für Delirium noch
-etwas bringt, ist ohne Referenz nicht rechenbar.
+aufsparen). Living Shadow kostet kein Blut mehr (Job-Guide: keine Kosten, gewährt Scorn); ob Aufsparen für
+Delirium etwas bringt, klärt der Abgleich mit The Balance (TODO).
 
 ## Pausen und Phasenenden
 
