@@ -296,8 +296,7 @@ verschwinden kann.
 |---|---|
 | „Reset and Update AOE List" (lädt die kuratierte Liste vom Server) | Werte bleiben |
 | „Reset RSR Plugin Settings" (globaler Knopf) | Werte bleiben — setzt nur `Service.Config` zurück |
-| „Forget recorded damage potential" | löscht sie, und das ist sein Zweck — nur mit gehaltener Strg-Taste; der vorige Stand bleibt als `HostileCastingAreaPotential.json.bak` |
-| Speichern, während der Speicher weniger hält als die Datei (Laden gescheitert, Tabelle aus irgendeinem Grund leer begonnen) | Werte bleiben — jedes Speichern führt Speicher und Datei zusammen und nimmt je Aktion den höheren Wert; nur „Forget" schreibt weniger, und dann bleibt der vorige Stand als `.json.bak` |
+| Speichern, während der Speicher weniger hält als die Datei (Laden gescheitert, Tabelle aus irgendeinem Grund leer begonnen) | Werte bleiben — jedes Speichern führt Speicher und Datei zusammen und nimmt je Aktion den höheren Wert |
 | Datei vorhanden, aber beim Speichern nicht lesbar (gesperrt, beschädigt) | Werte bleiben — das Speichern unterbleibt, „Store:" meldet es rot, der Messwert geht mit dem nächsten Speichern hinaus |
 | Laden beim Start abgebrochen oder gescheitert, danach Entladen des Plugins | Werte bleiben — ein Speicher, dessen Laden nicht zu Ende lief, wird nicht geschrieben; das gilt für alle Listen, nicht nur für diese Tabelle |
 | „Reset and Update AOE List", wenn der Download scheitert | die bisherige Liste bleibt; vorher wurde sie durch eine leere ersetzt, und ohne Liste wird nichts gemessen |
@@ -309,7 +308,7 @@ verschwinden kann.
 
 **Ablesbar ist das jetzt im Listenfenster unter „Store:".** Das Laden meldet, ob es eine Datei fand, keine fand oder eine unlesbare beiseitelegte; jedes Speichern liest die Datei zurück und meldet Erfolg nur, wenn dort so viele Einträge stehen wie geschrieben wurden. Die Zahl „Damage potential recorded" darüber ist die Tabelle im Speicher — sie sieht gleich aus, ob die Werte die Platte erreicht haben oder nicht.
 
-**Was eine Datei mit `{}` sagt, und was nicht.** Sie entsteht auf genau drei Wegen: beim ersten Start ohne Datei (das Laden legt die leere Tabelle an), durch „Forget", oder in der Sitzung nach einer unlesbaren Datei (die liegt dann als `.corrupt` daneben). Jedes andere Speichern schreibt mindestens einen Eintrag, weil die Tabelle von selbst nur wächst. Seit dem Ladefix heißt `{}` also: **in keiner Sitzung seither wurde ein Wert gemessen**, oder er wurde verworfen. Die Datei sagt nicht, warum — das sagt nur die Messstelle.
+**Was eine Datei mit `{}` sagt, und was nicht.** Sie entsteht auf genau zwei Wegen: beim ersten Start ohne Datei (das Laden legt die leere Tabelle an) oder in der Sitzung nach einer unlesbaren Datei (die liegt dann als `.corrupt` daneben). Jedes andere Speichern schreibt mindestens einen Eintrag, weil die Tabelle von selbst nur wächst. Seit dem Ladefix heißt `{}` also: **in keiner Sitzung seither wurde ein Wert gemessen.** Die Datei sagt nicht, warum — das sagt nur die Messstelle.
 
 **Die Messung hat sechs Tore**, jedes einzeln hinreichend, um sie zu verhindern: der Effekt-Hook liefert überhaupt Treffer; die Quelle ist ein anvisierbarer Gegner; eine Aktion mit Wirkzeit; eine reguläre Aktion der Kategorie Zauber, Waffenfertigkeit oder Fähigkeit; ihre Id in der Flächenliste; ein Betrag über null bei einem Gruppenmitglied.
 
@@ -325,12 +324,17 @@ Messungen kosten Spielzeit; sie mit dem Listen-Reset zu verwerfen hieße, nach j
 anzufangen, wegen der wenigen Aktionen, die sich tatsächlich geändert haben. Ein Wert, der zu einer
 nicht mehr gelisteten Id stehenbleibt, kostet nichts: Jede Leseroute geht zuerst über die Liste.
 
-**Einen eigenen Knopf braucht es trotzdem, weil die Höchstwert-Regel einseitig ist.** Sie hebt nur.
-Eine zu niedrig bewertete Aktion korrigiert sich selbst — die Minderung unterbleibt, der nächste
-Treffer kommt ungemildert an und misst sich. Eine **abgeschwächte** Aktion behält ihren zu hohen Wert
-dagegen für immer; die Folge ist Minderung, wo sie nicht mehr nötig wäre, also sicher, aber falsch.
-Der Ausweg ist das gezielte Verwerfen durch den Nutzer und kein automatischer Verfall — Verfall würde
-genau die Eigenschaft aufheben, die eine einzelne ungemilderte Beobachtung wertvoll macht.
+**Verworfen wird die Tabelle von Hand, nicht im Spiel** — seine Vorgabe: „wenn ich aufgrund eines
+gamepatches merke, dass die alte tabelle nicht mehr funktioniert, kann ich datei auch händisch
+löschen. dazu brauch ich keinen ingame-button. unnötige funktionen erzeugen auch unnötige
+fehlerursachen." Der Anlass bleibt, dass die Höchstwert-Regel einseitig ist: Eine zu niedrig
+bewertete Aktion korrigiert sich selbst — die Minderung unterbleibt, der nächste Treffer kommt
+ungemildert an und misst sich. Eine **abgeschwächte** Aktion behält ihren zu hohen Wert dagegen für
+immer; die Folge ist Minderung, wo sie nicht mehr nötig wäre, also sicher, aber falsch. Gelöscht wird
+`HostileCastingAreaPotential.json` **bei geschlossenem Spiel**: Solange das Plugin läuft, hält der
+Speicher die Werte, und das nächste Speichern führt sie mit der dann fehlenden Datei zusammen, also
+schreibt es sie zurück. Kein automatischer Verfall — er würde genau die Eigenschaft aufheben, die eine
+einzelne ungemilderte Beobachtung wertvoll macht.
 
 **Seit A172 kann kein Speichern mehr verlieren, was die Datei hält.** Die Tabelle wächst von selbst nur; also ist jeder Stand der Datei eine Untergrenze, und ein Speichern nimmt je Aktion das Höhere aus Speicher und Datei. Damit ist die Fehlerklasse geschlossen, nicht der Einzelfall: Gleich aus welchem Grund der Speicher leer oder unvollständig ist — Laden gescheitert, abgebrochen, ein künftiger Defekt —, die Datei behält ihren Stand. Dazu wird ein Speicher, dessen Laden in dieser Sitzung nicht zu Ende lief, gar nicht geschrieben: Das Entladen schreibt alle Listen, und ein abgebrochener Start hätte sie sonst alle geleert.
 

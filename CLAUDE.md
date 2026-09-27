@@ -182,6 +182,9 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Die Stufen (seine Präzisierung): alle → Heiler · Tanks · Damage Dealer als Gesamtheit → bei Damage Dealern Fernkämpfer · Magier · Nahkämpfer → bei Nahkämpfern möglicherweise Untergruppen (Monk und Samurai · Dragoon und Schnitter · Ninja und Viper, seine Namen) → erst danach jeder Job einzeln. Eine Regel sitzt auf der höchsten Stufe, auf der sie für alle Mitglieder gleich gilt; welche Stufe leer bleibt, begründe ich.
 - Grund: Eine Regel nur für den Job, an dem der Fall auffiel, lässt dieselbe Lage bei allen anderen offen.
 
+**Keine Funktion ohne Bedarf**
+- Was er mit einem Handgriff außerhalb des Spiels erledigt (eine Datei löschen, eine Kopie ziehen), bekommt keinen Knopf und keine Option — jede Funktion ist eine weitere Fehlerquelle (seine Vorgabe, A173).
+
 **Erkennung und Entscheidung trennen**
 - Was beantwortet, was der Fall ist, prüft keine Option, vergleicht mit keiner Schwelle und wird nicht nur unter einer bestimmten Regel geschrieben. Das Urteil gehört in den Verbraucher — sonst erbt jeder weitere Leser eine fremde Schwelle, unsichtbar.
 - Umgekehrt hänge ich einen Verbraucher mit eigener Grundlage (eigene Option, Schwelle, Zweck) nicht an eine fremde Freigabe — er erbt sonst alle ihre Gründe (Beispiel: der Heiltrank an der Heilflagge, A124, A133).

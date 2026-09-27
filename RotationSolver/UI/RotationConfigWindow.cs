@@ -4030,26 +4030,6 @@ public partial class RotationConfigWindow : Window
 					ImGui.Text("Mitigated although interruptible, this session: "
 						+ $"{DataCenter.MitigatedInterruptibleCast.Count} action(s)");
 				}
-
-				// Ctrl-click only: the readings cost evenings of play, and one stray click next to
-				// the list buttons threw them all away. The store also keeps a .bak copy of what a
-				// Forget replaces.
-				if (ImGui.Button("Forget recorded damage potential (Ctrl+click)") && ImGui.GetIO().KeyCtrl)
-				{
-					OtherConfiguration.ResetHostileCastingAreaPotential();
-					// The record of withheld mitigations refers to those measurements, so it goes with
-					// them: left standing it would name an action at "--" and count against a store
-					// of zero.
-					DataCenter.AreaMitigationSkipped.Clear();
-					DataCenter.HealedAheadOfAreaCast.Clear();
-					DataCenter.MitigatedInterruptibleCast.Clear();
-					DataCenter.ProactiveMitigationHeld.Clear();
-				}
-				ImguiTooltips.HoveredTooltip("Kept when the list itself is reset, because these values "
-					+ "cost runs in the game rather than a download. Clear them when a patch has "
-					+ "changed how hard these actions hit - a rating can only ever rise on its own. "
-					+ "Hold Ctrl while clicking; the previous table is kept as "
-					+ "HostileCastingAreaPotential.json.bak in the plugin's config folder.");
 			}
 
 			_ = ImGui.TableNextColumn();

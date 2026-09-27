@@ -128,8 +128,10 @@ internal class OtherConfiguration
 	/// and this file is the only thing that carries a reading past the end of a session. Without it
 	/// every login would start from nothing and "rated after one clear" would hold only until the
 	/// player logs out, which for a fight progged over several evenings means never. That is why the
-	/// list reset leaves it alone, why discarding it has its own button, and why it is written
-	/// through a temporary file rather than in place.
+	/// list reset leaves it alone, why a save merges with the file instead of replacing it, and why
+	/// it is written through a temporary file rather than in place. There is no button to discard
+	/// it: after a patch that changes how hard these actions hit, the file is deleted by hand with
+	/// the game closed (owner's decision - a function that is not needed is one more way to fail).
 	/// </remarks>
 	public static Dictionary<uint, float> HostileCastingAreaPotential = [];
 
@@ -249,32 +251,6 @@ internal class OtherConfiguration
 		SaveHostileCastingArea().Wait();
 	}
 
-	/// <summary>
-	/// Discards everything learned about how hard the listed area actions hit.
-	/// </summary>
-	/// <remarks>
-	/// Deliberately separate from <see cref="ResetHostileCastingArea"/>, which is the button users
-	/// are told to press after every patch. Reloading the curated list is cheap - it is a download.
-	/// The measurements are not: they cost runs in the game, and throwing them away with the list
-	/// would mean starting from nothing every patch for the sake of the few actions that actually
-	/// changed.
-	///
-	/// A rating left behind for an id the list no longer holds costs nothing, because every route
-	/// that reads a rating goes through the list first.
-	///
-	/// What this button is for is the one case the highest-value rule cannot fix by itself. That rule
-	/// only ever raises: an action rated too low corrects itself, since the mitigation is skipped and
-	/// the next hit arrives unmitigated. An action that was *nerfed* keeps its old, too-high rating
-	/// for good, and the only cost of that is mitigation spent where it is no longer needed - safe,
-	/// but wrong. Clearing is the way out, and it is the user's call rather than an automatic decay:
-	/// decay would undo the very property that makes one unmitigated observation worth keeping.
-	/// </remarks>
-	public static void ResetHostileCastingAreaPotential()
-	{
-		HostileCastingAreaPotential.Clear();
-		SaveHostileCastingAreaPotential(true).Wait();
-	}
-
 	public static void ResetHostileCastingTank()
 	{
 		InitOne(ref HostileCastingTank, nameof(HostileCastingTank), true, true);
@@ -298,12 +274,7 @@ internal class OtherConfiguration
 		return Task.Run(() => Save(HostileCastingArea, nameof(HostileCastingArea)));
 	}
 
-	public static Task SaveHostileCastingAreaPotential() => SaveHostileCastingAreaPotential(false);
-
-	/// <param name="discard">
-	/// True only where the user asked to throw readings away. Every other save merges with the file.
-	/// </param>
-	private static Task SaveHostileCastingAreaPotential(bool discard)
+	public static Task SaveHostileCastingAreaPotential()
 	{
 		// The snapshot is taken HERE, on the caller's thread, and only the copy goes to the pool.
 		//
@@ -315,7 +286,7 @@ internal class OtherConfiguration
 		// reading stayed in memory, so it looked recorded, and reached the file only if a later
 		// save came along. The last reading of a session had no later save.
 		var snapshot = new Dictionary<uint, float>(HostileCastingAreaPotential);
-		return Task.Run(() => SaveTracked(snapshot, nameof(HostileCastingAreaPotential), discard));
+		return Task.Run(() => SaveTracked(snapshot, nameof(HostileCastingAreaPotential)));
 	}
 
 	/// <summary>
@@ -327,7 +298,7 @@ internal class OtherConfiguration
 
 	private static readonly object _areaPotentialSaveLock = new();
 
-	private static void SaveTracked(Dictionary<uint, float> snapshot, string name, bool discard)
+	private static void SaveTracked(Dictionary<uint, float> snapshot, string name)
 	{
 		if (!WasLoaded(name))
 		{
@@ -345,8 +316,9 @@ internal class OtherConfiguration
 			// takes the higher value of memory and file for every action and drops nothing the file
 			// holds. Memory can hold less than the file - a load that failed, a table that started
 			// empty for any reason - and before this a single save then replaced weeks of readings
-			// with the few taken since. Only the user's own discard writes less than the file.
-			if (!TryReadEntriesOnDisk(name, out var onDiskBefore) && !discard)
+			// with the few taken since. To start over after a patch, the file is deleted by hand
+			// while the game is closed - there is deliberately no button for it (owner's decision).
+			if (!TryReadEntriesOnDisk(name, out var onDiskBefore))
 			{
 				// A file that is there but cannot be read now - locked by another program, or broken -
 				// is not overwritten by a save that could not merge with it. The reading stays in
@@ -355,7 +327,7 @@ internal class OtherConfiguration
 				return;
 			}
 
-			if (!discard && onDiskBefore != null)
+			if (onDiskBefore != null)
 			{
 				foreach (var (id, share) in onDiskBefore)
 				{
@@ -366,26 +338,6 @@ internal class OtherConfiguration
 				}
 			}
 
-			// A copy before any save that leaves fewer entries on disk than are there now - after the
-			// merge above that is only the user's own discard. The readings behind it cost evenings
-			// of play, not a download. One copy, kept until the next shrinking save: a second discard
-			// on an already empty table does not shrink anything and leaves it alone.
-			var backup = string.Empty;
-			var before = onDiskBefore?.Count ?? -1;
-			if (before > snapshot.Count)
-			{
-				try
-				{
-					File.Copy(GetFilePath(name), GetFilePath(name) + ".bak", true);
-					backup = $", {before} previous kept as .json.bak";
-				}
-				catch (Exception ex)
-				{
-					PluginLog.Warning($"Could not back up {name} before shrinking it: {ex.Message}");
-					backup = ", BACKUP FAILED - see the log";
-				}
-			}
-
 			var ok = SavePath(snapshot, GetFilePath(name));
 
 			// Read back what is on disk rather than trusting the call. A save that "succeeded" but
@@ -393,7 +345,7 @@ internal class OtherConfiguration
 			// exactly the failure this store cannot afford, and only the file itself can say so.
 			var onDisk = CountEntriesOnDisk(name);
 			AreaPotentialStoreState = ok && onDisk == snapshot.Count
-				? $"saved {DateTime.Now:HH:mm:ss}: {snapshot.Count} rated action(s) written and read back{backup}"
+				? $"saved {DateTime.Now:HH:mm:ss}: {snapshot.Count} rated action(s) written and read back"
 				: !ok
 					? $"SAVE FAILED {DateTime.Now:HH:mm:ss}: {snapshot.Count} in memory, file unchanged - see the log"
 					: $"SAVE MISMATCH {DateTime.Now:HH:mm:ss}: {snapshot.Count} written, {onDisk} read back";

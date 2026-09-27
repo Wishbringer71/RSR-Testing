@@ -86,8 +86,9 @@ read at that moment is left alone (`Store:` shows `NOT SAVED` in red). And a lis
 finish in this session - a cancelled or failed start - is not written on unload, so a failed start
 can no longer empty any of the lists.
 
-Before `Forget recorded damage potential` empties the table, the previous file is kept as
-`HostileCastingAreaPotential.json.bak`. `Forget recorded damage potential` now needs Ctrl+click.
+The button `Forget recorded damage potential` is gone. To start over after a patch has changed how
+hard these actions hit, delete `HostileCastingAreaPotential.json` in the plugin's config folder while
+the game is closed; with the game running, the next save would write the readings back.
 `Reset and Update AOE List` keeps the current list when the download fails, instead of replacing it
 with an empty one.
 

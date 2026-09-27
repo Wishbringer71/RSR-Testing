@@ -4150,6 +4150,16 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A173 · „Forget recorded damage potential" entfernt (27.09.2026)
+
+**Seine Vorgabe:** „wenn ich aufgrund eines gamepatches merke, dass die alte tabelle nicht mehr funktioniert, kann ich datei auch händisch löschen. dazu brauch ich keinen ingame-button. unnötige funktionen erzeugen auch unnötige fehlerursachen."
+
+- Der Knopf war meine Ableitung (Konzept 13, 17.09.), keine Vorgabe von ihm. Entfernt mit ihm: `ResetHostileCastingAreaPotential`, der Verwerfen-Pfad in `SaveTracked` und die Kopie `.json.bak` aus A170, die nur ihm diente — nach A172 schrumpft kein anderes Speichern die Datei.
+- Folge für das Löschen von Hand: nur bei geschlossenem Spiel. Läuft das Plugin, schreibt das nächste Speichern die Werte aus dem Speicher zurück (Zusammenführung aus A172). So in Konzept 13 und im Release-Text.
+- Die allgemeine Regel dahinter steht in `CLAUDE.md` unter „Keine Funktion ohne Bedarf".
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
