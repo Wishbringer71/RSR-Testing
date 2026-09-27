@@ -217,6 +217,8 @@ own heals right after Stardiver.
   DOT/Status effect is reapplied`. It is usable now as long as the status lasts until the action goes
   off and its cast ends. Procs no longer run out in their last seconds, and the existing
   "use it before it runs out" rules of Red Mage, White Mage, Scholar, Ninja and Pictomancer take effect.
+- **Machinist:** With `Only use Wildfire on Boss targets`, Heat is no longer held for Wildfire on
+  enemies that are not bosses; Hypercharge comes as soon as the tools allow instead of at 100 Heat.
 - **Machinist:** Hypercharged from Barrel Stabilizer is spent before it runs out, also when Wildfire is
   held (for example with `Only use Wildfire on Boss targets` against trash).
 - **Samurai:** Ogi Namikiri is used before Ogi Namikiri Ready runs out, also on a boss without Higanbana

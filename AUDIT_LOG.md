@@ -4100,6 +4100,18 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Folge:** Quellenregel in CLAUDE.md fortgeschrieben; Konzept 14 und TODO auf die Belege umgestellt; Abgleich mit The Balance als offene Arbeit erfasst.
 
+### A169 · Vergleich mit WrathCombo: Ideen für Rotationen und Fork-Patches (27.09.2026)
+
+**Sein Auftrag:** Ideen aus WrathCombo zu Rotationen und den bisherigen Patches prüfen, im Loop.
+
+- *Research:* Gemeinsame Bausteine (Burst-Erkennung, Gruppenschaden per Cast und Zielmarkierung, Autorotation mit Heil-, Wiederbelebungs- und Tankbuster-Logik, `BattleData`) und die Einstellungslisten aller Kampfjobs gelesen; Maschinist, Weiser, Krieger, Paladin, Tänzer, Samurai im Code verglichen. WrathCombo nur gelesen, keine Änderung dort (gemessen).
+- *Befund, umgesetzt:* Maschinist hielt Heat mit „Only use Wildfire on Boss targets" auf Nicht-Bossen für ein Wildfire zurück, das nie fällt. Behoben als eigener Block vor der Upstream-Zeile (die Zeile mit 30 s und Heat 100 bleibt unberührt); die Kombo-Grenze ist Hypercharges Dauer aus `DefensiveValues` (10 s, Wirktext).
+- *Falsifikation:* **Kein Defekt?** Gegen Trash mit der Option an fällt Wildfire nie; jede Hypercharge wartete auf Heat 100 — widerlegt. **Option falsch?** Die Freigabe gilt nur für dieses Ziel; auf einem Boss bleibt die Ausrichtung. `IsBurst` aus ist bewusst nicht einbezogen: Wer Burst zurückhält, will Heat für später. **Ausgeliefert, nichts ändert sich?** Mit der Voreinstellung (Option aus) ändert sich nichts.
+- *Vorschläge:* sechs, in Konzept 15 zur Entscheidung; vier Ideen verworfen mit Grund.
+- *Beinahe-Fehler, am System:* Der erste Umsetzungsversuch änderte die Upstream-Zeile selbst; `check_fixed_values.py` meldete die berührten Zahlen, die Änderung wurde zurückgenommen und neu gebaut.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

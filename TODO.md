@@ -24,6 +24,12 @@ Shake It Off hebt die eigenen Status Thrill of Battle, Damnation und Bloodwhetti
 
 `InterventionPvE` verlangt am Ziel eine Tankhaltung (`TargetStatusNeed`: Grit, Royal Guard, Iron Will, Defiance) mit `StatusFromSelf` ab Werk wahr. Die Haltung des anderen Tanks stammt von ihm, nicht vom Paladin; `MinStatusRemainingTime` überspringt sie, und die Bedingung schlägt für jedes Ziel fehl. `PLD_Reborn` ruft Intervention an zwei Stellen ohne `skipTargetStatusNeedCheck` (die Tank-Option und die allgemeine Einzelabwehr); dort fällt es nie. Nur der Pfad mit Rampart/Sentinel und niedriger Gesundheit des Ziels überspringt die Bedingung. Im Kampf: Der Paladin schützt den anderen Tank nicht mit Intervention, außer im Notfallpfad. Behebung braucht eine Richtungsentscheidung (Herkunft der Bedarfsstatus je Aktion, oder die Haltung als Zielwahl statt Bedingung); erhoben im Review zu A166, nicht angefasst.
 
+### Vorschläge aus dem WrathCombo-Vergleich · N, U
+
+Sechs Ideen zur Entscheidung (Konzept 15, Tabelle „Vorschläge"): vorbeugendes Regen/Schild auf den Tank ohne Countdown (V1), allgemeinere Zielmarkierungs-Pfade (V2), kuratierte Raidwide-Listen (V3), Meditate erst nach Stillstand (V4), Tanzpartner-Wechsel nach dessen Tod — erst zu prüfen (V5), Kerachole nicht über Sacred Soil (V6, Eingabe für Konzept 08).
+
+**Konzept:** `docs/rotation-flow/15-wrathcombo-comparison.md`
+
 ### Rotationen gegen The Balance abgleichen · N
 
 Seit 27.09.2026 ist die Referenz erreichbar. Offen: je Job die Standardrotation (Opener, Burstausrichtung, Prioritäten) gegen den Guide prüfen — „werden die optimalen Kombinationen genutzt" über die Fensterprüfung hinaus (Konzept 14). Dazu: die von `ActionId.resx` ausgeblendeten Werte (Dauern, Potenzen, Statusnamen) aus dem Job-Guide in den Generator übernehmen, und die deutschen Namen aus dem deutschen Job-Guide in `action_names_de.json`.
