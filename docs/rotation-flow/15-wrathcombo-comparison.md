@@ -55,6 +55,20 @@ Kanal-Sperre, Improvisation als kurzes Regen.
 | V1 | „beim konzept zum preschild und prehot: der whm kann während des laufens den hot erneuern. das laufen ist also wichtig, ebenso die zeitverlustfreie erneuerung. weiterhin kann der whm während des laufens auch einen dot wirken. wenn man also das auf schildheiler und astro ausweiten will: ist der hot des astros instawirkbar? hat der astro einen insta-schadensspell? haben die schildheiler instaschilde? da während des laufens MP regenerieren, können es sogar vorzugsweise MP-verbrauchende schilde sein, solange sie insta sind. haben die schildheiler insta-schadensspells? stehenbleiben ist erst am ende des wall-to-walls, da wo der whm dann holy casted. wenn die anderen heiler ebenfalls stuns haben, diese so wie beim whm nutzen. das alles ebenfalls im vollständigen kritischen loop bearbeiten." | Hinweis (der Weißmagier erneuert Regen und wirkt einen DoT im Laufen, am Code zu prüfen); Präzisierung seiner V1-Vorgabe: Kriterium ist das Wirken **im Laufen** ohne Zeitverlust, also nur Sofortaktionen; MP-verbrauchende Sofortschilde ausdrücklich zulässig; Stehenbleiben erst am Ende des Wall-to-Wall (wo der Weißmagier Holy wirkt); Betäubungen der anderen Heiler wie beim Weißmagier nutzen; dazu vier Fragen nach Sofort-HoT und Sofort-Schadenszauber (Astrologe) sowie Sofortschild und Sofort-Schadenszauber (Schildheiler); voller kritischer Loop |
 | V1 | „beim gelehrten könnte evtl. die fee helfen? deren fähigkeiten mit prüfen im konzept" | Prüfauftrag: die Feen- und Seraph-Fähigkeiten des Gelehrten in das V1-Konzept aufnehmen |
 
+## V1: Sofortaktionen der Heiler im Laufen (Job-Guide, abgerufen 27.09.2026)
+
+Grundlage für das V1-Konzept; Kriterium seiner Präzisierung ist das Wirken im Laufen, also „Instant".
+
+| Heiler | HoT oder Schild sofort | Schaden sofort | Betäubung |
+|---|---|---|---|
+| Weißmagier | Regen: sofort, 400 MP, 18 s | Dia (DoT), Afflatus Misery, Glare IV | Holy, Holy III: 1,5 s Wirkzeit, Betäubung 4 s |
+| Astrologe | Aspected Benefic: sofort, 400 MP, Regen 15 s; Schild nur unter Neutral Sect | Combust III (DoT, 400 MP); Macrocosmos (180 s); Gravity II hat 1,5 s Wirkzeit | keine |
+| Weiser | Eukrasia (sofort, Wiederaufnahme 1 s), dann Eukrasian Diagnosis: sofort, 800 MP, Schild 180 % der Heilung, nicht stapelbar mit Galvanize; Haima (oGCD, 120 s) | Eukrasian Dosis III (DoT, über Eukrasia), Toxikon II (Addersting), Phlegma III (Ladungen), Dyskrasia II (Fläche) | keine |
+| Gelehrter | kein Sofortschild ohne Seraphism: Adloquium hat 2 s Wirkzeit, Manifestation nur unter Seraphism; Excogitation (oGCD, 45 s, greift bei 50 % HP) | Ruin II, Biolysis (DoT), Art of War II (Fläche) | keine |
+| Fee/Seraph (Gelehrter) | Whispering Dawn (oGCD, Gruppen-HoT 21 s, 60 s); Aetherpact/Fey Union (oGCD, HoT auf ein Ziel gegen Feenanzeige, endet, wenn das Ziel mehr als 30 y von der Fee entfernt ist); Embrace automatisch, nur Heilung; Seraph: Seraphic Veil automatisch mit Schild | — | — |
+
+Die Rollenaktionen der Heiler (Repose, Esuna, Lucid Dreaming, Swiftcast, Surecast, Rescue) enthalten keine Betäubung; Repose ist Schlaf mit 2,5 s Wirkzeit. Swiftcast bleibt nach seiner Vorgabe für Wiederbelebungen.
+
 ## Nicht übernommen, mit Grund
 
 - **Heilziel-Wahl nach Rangfolge von Zielarten** (Mouseover, Fokus, niedrigste Gesundheit): RSRs Wahl
