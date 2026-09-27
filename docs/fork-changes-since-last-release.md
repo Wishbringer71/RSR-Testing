@@ -70,6 +70,16 @@ The AoE list window now says what the store actually did, under `Store:` — whe
 file, found none, or found one it could not read, and after every save how many entries were read
 back from disk. A save only reports success when the file holds what was written.
 
+Below it, `Casts this session` counts every enemy cast that hit you since loading, by what decided it:
+measured, not in the AoE list, party counted below four, cast by an untargetable enemy, and so on. The
+`Last hit` line now only reports casts; before, the next auto-attack replaced a raidwide's reason
+within a second. An empty AoE list, which measures nothing, is shown in red.
+
+Before any save that would leave fewer readings on disk than are there, the previous file is kept as
+`HostileCastingAreaPotential.json.bak`. `Forget recorded damage potential` now needs Ctrl+click.
+`Reset and Update AOE List` keeps the current list when the download fails, instead of replacing it
+with an empty one.
+
 ## Summoner: Searing Light no longer drifts away from the burst phase
 
 Reported from play as the only Summoner in the party: Searing Light slipped further back the longer

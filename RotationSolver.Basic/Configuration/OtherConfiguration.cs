@@ -330,6 +330,27 @@ internal class OtherConfiguration
 		// hundred entries, and the order they land in is the order the readings were taken.
 		lock (_areaPotentialSaveLock)
 		{
+			// A copy before any save that would leave fewer entries on disk than are there now. The
+			// table only ever grows by itself, so a shrinking save is either the Forget button or a
+			// defect - and in both cases the readings behind it cost evenings of play, not a
+			// download. One copy, kept until the next shrinking save: a second Forget on an already
+			// empty table does not shrink anything and leaves it alone.
+			var backup = string.Empty;
+			var before = CountEntriesOnDisk(name);
+			if (before > snapshot.Count)
+			{
+				try
+				{
+					File.Copy(GetFilePath(name), GetFilePath(name) + ".bak", true);
+					backup = $", {before} previous kept as .json.bak";
+				}
+				catch (Exception ex)
+				{
+					PluginLog.Warning($"Could not back up {name} before shrinking it: {ex.Message}");
+					backup = ", BACKUP FAILED - see the log";
+				}
+			}
+
 			var ok = SavePath(snapshot, GetFilePath(name));
 
 			// Read back what is on disk rather than trusting the call. A save that "succeeded" but
@@ -337,7 +358,7 @@ internal class OtherConfiguration
 			// exactly the failure this store cannot afford, and only the file itself can say so.
 			var onDisk = CountEntriesOnDisk(name);
 			AreaPotentialStoreState = ok && onDisk == snapshot.Count
-				? $"saved {DateTime.Now:HH:mm:ss}: {snapshot.Count} rated action(s) written and read back"
+				? $"saved {DateTime.Now:HH:mm:ss}: {snapshot.Count} rated action(s) written and read back{backup}"
 				: !ok
 					? $"SAVE FAILED {DateTime.Now:HH:mm:ss}: {snapshot.Count} in memory, file unchanged - see the log"
 					: $"SAVE MISMATCH {DateTime.Now:HH:mm:ss}: {snapshot.Count} written, {onDisk} read back";
@@ -666,8 +687,19 @@ internal class OtherConfiguration
 			}
 			catch (Exception ex)
 			{
-				PluginLog.Warning($"Failed to download {name} from GitHub. Reinitializing to default. Exception: {ex.Message}");
 				_ = BasicWarningHelper.AddSystemWarning($"Github download failed.");
+
+				// A reset asked to replace a working list with a fresh one. When the fresh one cannot
+				// be had, the working one stays: emptying it here wrote an empty list over the file,
+				// which switched off every rule reading it - and the damage measurement with it,
+				// since only listed actions are measured - until a later reset happened to succeed.
+				if (forceDownload && File.Exists(path))
+				{
+					PluginLog.Warning($"Failed to download {name} from GitHub. Keeping the current list. Exception: {ex.Message}");
+					return;
+				}
+
+				PluginLog.Warning($"Failed to download {name} from GitHub. Reinitializing to default. Exception: {ex.Message}");
 				value = new T(); // Reinitialize to default
 				_ = SavePath(value, path); // Save the default value
 			}

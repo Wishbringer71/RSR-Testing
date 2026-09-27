@@ -3372,10 +3372,58 @@ internal static class DataCenter
 	}
 
 	/// <summary>
-	/// Why the last enemy action that damaged the player was or was not rated for the learned damage
+	/// Why the last enemy cast that damaged the player was or was not rated for the learned damage
 	/// table, with its time and action id. Written by the effect handler; shown in the AoE list.
 	/// </summary>
-	public static string AreaMeasurementLastOutcome { get; set; } = "no enemy action has hit the player yet";
+	/// <remarks>
+	/// Casts only. Instant hits - auto-attacks above all - are never rated, and while they were
+	/// reported here the next swing replaced a raidwide's reason within a second, so the line could
+	/// only ever show why an auto-attack was not measured.
+	/// </remarks>
+	public static string AreaMeasurementLastOutcome { get; private set; } = "no enemy cast has hit the player yet";
+
+	private static readonly Dictionary<string, int> _areaMeasurementTally = [];
+
+	/// <summary>
+	/// How often each reason decided an enemy cast that hit the player, since the plugin was loaded.
+	/// </summary>
+	/// <remarks>
+	/// The last outcome alone cannot say why a table stays empty over a whole evening: one line shows
+	/// one hit. The tally shows whether casts arrive at all and which gate stops them.
+	/// </remarks>
+	public static IReadOnlyDictionary<string, int> AreaMeasurementTally => _areaMeasurementTally;
+
+	/// <summary>
+	/// The tally as one line for the windows.
+	/// </summary>
+	public static string AreaMeasurementTallyText
+	{
+		get
+		{
+			if (_areaMeasurementTally.Count == 0)
+			{
+				return "no enemy cast has hit the player since loading";
+			}
+
+			var parts = new List<string>(_areaMeasurementTally.Count);
+			foreach (var (reason, count) in _areaMeasurementTally)
+			{
+				parts.Add($"{reason}: {count}");
+			}
+
+			return string.Join(" | ", parts);
+		}
+	}
+
+	/// <summary>
+	/// Records the outcome of one enemy cast for the damage table: <paramref name="reason"/> is the
+	/// tallied category, <paramref name="detail"/> what the last-outcome line adds to it.
+	/// </summary>
+	public static void RecordAreaMeasurementOutcome(uint actionId, string reason, string detail = "")
+	{
+		AreaMeasurementLastOutcome = $"{DateTime.Now:HH:mm:ss} #{actionId}: {reason}{detail}";
+		_areaMeasurementTally[reason] = _areaMeasurementTally.TryGetValue(reason, out var count) ? count + 1 : 1;
+	}
 
 	/// <summary>
 	/// The last time an area heal centred on the caster was weighed on the heal path: which action,

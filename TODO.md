@@ -24,6 +24,12 @@ Shake It Off hebt die eigenen Status Thrill of Battle, Damnation und Bloodwhetti
 
 `InterventionPvE` verlangt am Ziel eine Tankhaltung (`TargetStatusNeed`: Grit, Royal Guard, Iron Will, Defiance) mit `StatusFromSelf` ab Werk wahr. Die Haltung des anderen Tanks stammt von ihm, nicht vom Paladin; `MinStatusRemainingTime` überspringt sie, und die Bedingung schlägt für jedes Ziel fehl. `PLD_Reborn` ruft Intervention an zwei Stellen ohne `skipTargetStatusNeedCheck` (die Tank-Option und die allgemeine Einzelabwehr); dort fällt es nie. Nur der Pfad mit Rampart/Sentinel und niedriger Gesundheit des Ziels überspringt die Bedingung. Im Kampf: Der Paladin schützt den anderen Tank nicht mit Intervention, außer im Notfallpfad. Behebung braucht eine Richtungsentscheidung (Herkunft der Bedarfsstatus je Aktion, oder die Haltung als Zielwahl statt Bedingung); erhoben im Review zu A166, nicht angefasst.
 
+### Ein gescheiterter Erst-Download legt eine leere Liste für immer fest · N, U
+
+`InitOne` schreibt bei gescheitertem Download die leere Vorgabe als Datei; weil die Datei existiert, lädt kein späterer Start neu. Für die Flächenliste heißt das: keine Gruppenminderung per Liste und keine Schadensmessung, bis „Reset and Update AOE List" gelingt. Die Fenster melden eine leere Flächenliste rot (A170). Nicht behoben, weil beide Wege Kosten haben: nicht festschreiben lässt jeden Start bis zu 100 s auf `HttpClient` warten und wird beim Entladen von `Save()` ohnehin überschrieben; leere Liste neu laden kann eine bewusst geleerte zurückholen. Auflösung: Download mit kurzer Zeitgrenze und Merker „nie geladen" statt leerer Datei.
+
+**Konzept:** `docs/rotation-flow/13-aoe-damage-classification.md`
+
 ### Vorschläge aus dem WrathCombo-Vergleich · N, U
 
 Sechs Ideen zur Entscheidung (Konzept 15, Tabelle „Vorschläge"): vorbeugendes Regen/Schild auf den Tank ohne Countdown (V1), allgemeinere Zielmarkierungs-Pfade (V2), kuratierte Raidwide-Listen (V3), Meditate erst nach Stillstand (V4), Tanzpartner-Wechsel nach dessen Tod — erst zu prüfen (V5), Kerachole nicht über Sacred Soil (V6, Eingabe für Konzept 08).

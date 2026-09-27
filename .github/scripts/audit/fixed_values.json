@@ -614,7 +614,7 @@
   },
   {
    "file": "RotationSolver/Watcher.cs",
-   "code": ": partyMemberCount < 4",
+   "code": "else if (partyMemberCount < 4)",
    "values": [
     "4"
    ],

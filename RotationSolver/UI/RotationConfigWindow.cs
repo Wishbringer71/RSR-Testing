@@ -3940,6 +3940,14 @@ public partial class RotationConfigWindow : Window
 					: ImGuiColors.DalamudGrey,
 				"Store: " + OtherConfiguration.AreaPotentialStoreState);
 			ImGui.TextColored(ImGuiColors.DalamudGrey, "Last hit: " + DataCenter.AreaMeasurementLastOutcome);
+			ImGui.TextColored(ImGuiColors.DalamudGrey, "Casts this session: " + DataCenter.AreaMeasurementTallyText);
+			if (OtherConfiguration.HostileCastingArea.Count == 0)
+			{
+				// Only listed actions are measured, so an empty list measures nothing, whatever the
+				// fight. A failed download at first start leaves exactly that behind.
+				ImGui.TextColored(ImGuiColors.DalamudRed,
+					"The AoE list is empty, so nothing can be measured - press \"Reset and Update AOE List\".");
+			}
 			if (rated.Count > 0)
 			{
 				var highest = 0f;
@@ -4023,7 +4031,10 @@ public partial class RotationConfigWindow : Window
 						+ $"{DataCenter.MitigatedInterruptibleCast.Count} action(s)");
 				}
 
-				if (ImGui.Button("Forget recorded damage potential"))
+				// Ctrl-click only: the readings cost evenings of play, and one stray click next to
+				// the list buttons threw them all away. The store also keeps a .bak copy of what a
+				// Forget replaces.
+				if (ImGui.Button("Forget recorded damage potential (Ctrl+click)") && ImGui.GetIO().KeyCtrl)
 				{
 					OtherConfiguration.ResetHostileCastingAreaPotential();
 					// The record of withheld mitigations refers to those measurements, so it goes with
@@ -4036,7 +4047,9 @@ public partial class RotationConfigWindow : Window
 				}
 				ImguiTooltips.HoveredTooltip("Kept when the list itself is reset, because these values "
 					+ "cost runs in the game rather than a download. Clear them when a patch has "
-					+ "changed how hard these actions hit - a rating can only ever rise on its own.");
+					+ "changed how hard these actions hit - a rating can only ever rise on its own. "
+					+ "Hold Ctrl while clicking; the previous table is kept as "
+					+ "HostileCastingAreaPotential.json.bak in the plugin's config folder.");
 			}
 
 			_ = ImGui.TableNextColumn();

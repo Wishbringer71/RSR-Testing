@@ -53,15 +53,30 @@ public static class Watcher
 		return result;
 	}
 
+	private static float DamageShareOn(ActionEffectSet set, ulong targetId, uint denom)
+	{
+		float share = 0;
+		foreach (var effect in set.TargetEffects)
+		{
+			if (effect.TargetID == targetId)
+			{
+				effect.ForEach(entry =>
+				{
+					if (entry.type == ActionEffectType.Damage)
+					{
+						share += (float)FullAmount(entry) / denom;
+					}
+				});
+			}
+		}
+
+		return share;
+	}
+
 	private static void ActionFromEnemy(ActionEffectSet set)
 	{
 		try
 		{
-			if (set.Source is not IBattleChara battle || !set.Source.IsEnemy())
-			{
-				return;
-			}
-
 			var playerObject = Player.Object;
 			if (playerObject == null)
 			{
@@ -73,19 +88,26 @@ public static class Watcher
 			var maxHp = playerObject.MaxHp;
 			var denom = Math.Max(1u, maxHp); // avoid division by zero
 
-			foreach (var effect in set.TargetEffects)
+			if (set.Source is not IBattleChara battle || !set.Source.IsEnemy())
 			{
-				if (effect.TargetID == playerId)
+				// An enemy nobody can target - the invisible helpers that resolve many raidwides, or a
+				// boss while it is off the field - is left out of everything below, the damage table
+				// included, because the consumers only ever read casts of targetable enemies. The tally
+				// says how often that happened, so an empty table can be told apart from casts that
+				// never reached the measurement at all.
+				if (set.Source is IBattleChara hidden && hidden.IsValid()
+					&& hidden.GetBattleNPCSubKind() == Dalamud.Game.ClientState.Objects.Enums.BattleNpcSubKind.Enemy
+					&& set.Action is { Cast100ms: > 0 } hiddenAction
+					&& DamageShareOn(set, playerId, denom) > 0f)
 				{
-					effect.ForEach(entry =>
-					{
-						if (entry.type == ActionEffectType.Damage)
-						{
-							damageRatio += (float)FullAmount(entry) / denom;
-						}
-					});
+					DataCenter.RecordAreaMeasurementOutcome(hiddenAction.RowId,
+						"not measured - cast by an untargetable enemy");
 				}
+
+				return;
 			}
+
+			damageRatio = DamageShareOn(set, playerId, denom);
 
 			DataCenter.AddDamageRec(damageRatio);
 
@@ -131,27 +153,39 @@ public static class Watcher
 			var partyMembers = DataCenter.PartyMembers;
 			var partyMemberCount = partyMembers.Count;
 
-			// Why the last enemy action that hurt the player was or was not measured. The table can
-			// stay empty for five different reasons, and the file ("{}") looks the same for all of
-			// them - so the decision states its reason where it is taken. Only actions that actually
-			// damaged the player count here, so auto-attacks from trash do not overwrite a raidwide.
-			if (damageRatio > 0f && set.Action.HasValue)
+			// Why an enemy cast that hurt the player was or was not measured. The table can stay empty
+			// for several different reasons, and the file ("{}") looks the same for all of them - so
+			// the decision states its reason where it is taken, and the tally counts it. Casts only:
+			// instant hits are never rated, and reporting them let every auto-attack overwrite the
+			// reason for the raidwide before it. A cast in the AoE list is recorded further down, once
+			// its reading is known.
+			if (damageRatio > 0f && set.Action is { Cast100ms: > 0 } castAction)
 			{
-				var actionId = set.Action.Value.RowId;
-				DataCenter.AreaMeasurementLastOutcome =
-					!Service.Config.RecordCastingArea
-						? $"{DateTime.Now:HH:mm:ss} #{actionId}: not measured - Record AOE actions is off"
-					: partyMemberCount < 4
-						? $"{DateTime.Now:HH:mm:ss} #{actionId}: not measured - party counted as {partyMemberCount}, 4 needed (NPC companions only count with the NPC party-member setting)"
-					: !(set.Action?.Cast100ms > 0)
-						? $"{DateTime.Now:HH:mm:ss} #{actionId}: not measured - instant, only cast actions are rated"
-					: set.Header.ActionType != ActionType.Action
-						? $"{DateTime.Now:HH:mm:ss} #{actionId}: not measured - action type {set.Header.ActionType}, only regular actions are rated"
-					: set.Action?.GetActionCate() is not (ActionCate.Spell or ActionCate.Weaponskill or ActionCate.Ability)
-						? $"{DateTime.Now:HH:mm:ss} #{actionId}: not measured - category {set.Action?.GetActionCate()}, only spells, weaponskills and abilities are rated"
-					: !OtherConfiguration.HostileCastingArea.Contains(actionId)
-						? $"{DateTime.Now:HH:mm:ss} #{actionId}: not measured - not in the AoE list (added only once it hits every member)"
-						: $"{DateTime.Now:HH:mm:ss} #{actionId}: in the AoE list, measured";
+				var actionId = castAction.RowId;
+				if (!Service.Config.RecordCastingArea)
+				{
+					DataCenter.RecordAreaMeasurementOutcome(actionId, "not measured - Record AOE actions is off");
+				}
+				else if (partyMemberCount < 4)
+				{
+					DataCenter.RecordAreaMeasurementOutcome(actionId, "not measured - party counted below 4",
+						$" ({partyMemberCount}; NPC companions only count with the NPC party-member setting)");
+				}
+				else if (set.Header.ActionType != ActionType.Action)
+				{
+					DataCenter.RecordAreaMeasurementOutcome(actionId, "not measured - not a regular action",
+						$" ({set.Header.ActionType})");
+				}
+				else if (castAction.GetActionCate() is not (ActionCate.Spell or ActionCate.Weaponskill or ActionCate.Ability))
+				{
+					DataCenter.RecordAreaMeasurementOutcome(actionId, "not measured - not a spell, weaponskill or ability",
+						$" ({castAction.GetActionCate()})");
+				}
+				else if (!OtherConfiguration.HostileCastingArea.Contains(actionId))
+				{
+					DataCenter.RecordAreaMeasurementOutcome(actionId, "not measured - not in the AoE list",
+						" (added only once it hits every member)");
+				}
 			}
 
 			if (Service.Config.RecordCastingArea && set.Header.ActionType == ActionType.Action && partyMemberCount >= 4 && set.Action?.Cast100ms > 0)
@@ -234,9 +268,16 @@ public static class Watcher
 					// was, or that there was none.
 					if (damageRatio > 0f && OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
 					{
-						DataCenter.AreaMeasurementLastOutcome = highestShare > 0f
-							? $"{DateTime.Now:HH:mm:ss} #{set.Action!.Value.RowId}: in the AoE list, measured at {highestShare:P0} of max HP"
-							: $"{DateTime.Now:HH:mm:ss} #{set.Action!.Value.RowId}: in the AoE list, not measured - no amount was read from a party member";
+						if (highestShare > 0f)
+						{
+							DataCenter.RecordAreaMeasurementOutcome(set.Action!.Value.RowId, "measured",
+								$" at {highestShare:P0} of max HP");
+						}
+						else
+						{
+							DataCenter.RecordAreaMeasurementOutcome(set.Action!.Value.RowId,
+								"not measured - no amount read from a party member");
+						}
 					}
 
 					if (highestShare > 0f && Service.Config.RecordCastingArea

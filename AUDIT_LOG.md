@@ -4112,6 +4112,19 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A170 · Schadenstabelle weiter `{}`: was die Datei sagt, Schutz vor Verlust, eine Zählung statt einer Zeile (27.09.2026)
+
+**Gemeldet:** Datei hochgeladen, Inhalt `{}` — „und damit ist das abspeichern IMMER NOCH fehlerhaft".
+
+- *Research:* Ganze Kette erneut gelesen (Hook in ECommons 3.2.1.20, Signatur identisch mit dem gepflegten Stand; `ActionFromEnemy`; `LoadSteps`/`InitOne`; `SaveTracked`; Knöpfe). `{}` entsteht nur beim ersten Start ohne Datei, durch „Forget" oder nach einer unlesbaren Datei (`.corrupt` daneben); jedes andere Speichern schreibt mindestens einen Eintrag. Die Messlogik ist im Release `7.5.6.10+wsh1` gleichwertig mit dem Zweig; Ladefix dort enthalten, Speicherfixes (A125) und Anzeigen (A125, A126) nicht. **Die Ursache seines Falls ist statisch nicht bestimmbar** — die Datei trägt sie nicht.
+- *Befunde:* (1) „Last hit" wurde von jedem Treffer mit Schaden überschrieben, auch von Auto-Attacks: Die Sonde aus A126 zeigte im Kampf fast nur „instant". (2) Treffer unsichtbarer Gegner verließen den Handler vor jeder Meldung. (3) „Reset and Update AOE List" ersetzte bei gescheitertem Download die Liste durch eine leere; ohne Liste wird nichts gemessen. (4) Ein gescheiterter Erst-Download wird als leere Datei festgeschrieben und nie wiederholt. (5) „Forget" löschte auf einen Klick, ohne Kopie.
+- *Optionen:* Nullvariante; Zählung je Grund; Kopie vor schrumpfendem Speichern; Strg-Klick oder Modaldialog für „Forget"; Reset behält die Liste bei Fehlschlag; Erst-Download nicht festschreiben; leere Liste beim Laden erneut laden.
+- *Umgesetzt:* Zählung je Grund nur für Casts („Casts this session", beide Fenster), Meldung für unsichtbare Gegner, rote Zeile bei leerer Flächenliste, `.json.bak` vor jedem schrumpfenden Speichern, „Forget" nur mit Strg, Reset behält bei Fehlschlag die Liste.
+- *Nicht umgesetzt, mit Grund:* Erst-Download nicht festschreiben — ohne Datei versucht jeder Start den Download erneut, und `HttpClient` wartet bis zu 100 s, bevor der Ladevorgang weiterläuft; beim Entladen schriebe `Save()` die leere Liste ohnehin. Leere Liste neu laden — kann eine vom Nutzer geleerte Liste zurückholen. Beides in `TODO.md`. Modaldialog statt Strg — Popup-Kennungen hängen am ImGui-ID-Stapel der Tabelle; Strg ist ohne diese Abhängigkeit.
+- *Falsifikation:* **Kein Defekt?** Für seinen Fall offen: Hat er nie gemessen (weniger als vier Gezählte, Option aus, keine Liste), ist keine der Änderungen die Ursache — sie machen sie ablesbar. Die Befunde 1, 3 und 5 sind dagegen am Code belegt. **Option falsch?** Die Kopie überschreibt sich nur beim nächsten schrumpfenden Speichern; ein zweites „Forget" auf leerer Tabelle schrumpft nichts und lässt sie stehen. Nach `.corrupt` fehlt die Datei, dann gibt es nichts zu kopieren — die Daten liegen in `.corrupt`. **Ausgeliefert, nichts ändert sich?** Solange er ein Release ohne diesen Stand spielt, sieht er weder Zählung noch Kopie; die Anzeige nennt dann keinen Grund.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI. Keine Laufzeitbeobachtung.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

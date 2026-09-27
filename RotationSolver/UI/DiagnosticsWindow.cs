@@ -66,6 +66,11 @@ internal class DiagnosticsWindow : Window
 			store.Contains("FAILED") || store.Contains("MISMATCH") ? ImGuiColors.DalamudRed : ImGuiColors.DalamudGrey,
 			"Store: " + store);
 		ImGui.TextColored(ImGuiColors.DalamudGrey, "Last hit: " + DataCenter.AreaMeasurementLastOutcome);
+		ImGui.TextColored(ImGuiColors.DalamudGrey, "Casts this session: " + DataCenter.AreaMeasurementTallyText);
+		if (OtherConfiguration.HostileCastingArea.Count == 0)
+		{
+			ImGui.TextColored(ImGuiColors.DalamudRed, "AoE list empty - nothing can be measured");
+		}
 		ImGui.Separator();
 
 		ImGui.TextColored(ImGuiColors.DalamudViolet, "Area heal around you");

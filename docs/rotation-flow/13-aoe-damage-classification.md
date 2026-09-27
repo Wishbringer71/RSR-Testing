@@ -296,7 +296,9 @@ verschwinden kann.
 |---|---|
 | „Reset and Update AOE List" (lädt die kuratierte Liste vom Server) | Werte bleiben |
 | „Reset RSR Plugin Settings" (globaler Knopf) | Werte bleiben — setzt nur `Service.Config` zurück |
-| „Forget recorded damage potential" | löscht sie, und das ist sein Zweck |
+| „Forget recorded damage potential" | löscht sie, und das ist sein Zweck — nur mit gehaltener Strg-Taste; der vorige Stand bleibt als `HostileCastingAreaPotential.json.bak` |
+| Jedes Speichern, das weniger Einträge hinterließe, als auf der Platte stehen | vorher Kopie als `.json.bak` — die Tabelle wächst von selbst nur, ein schrumpfendes Speichern ist also „Forget" oder ein Defekt |
+| „Reset and Update AOE List", wenn der Download scheitert | die bisherige Liste bleibt; vorher wurde sie durch eine leere ersetzt, und ohne Liste wird nichts gemessen |
 | Unlesbare Datei beim Start | Werte bleiben, die Datei wird als `.corrupt` beiseitegelegt und gemeldet |
 | Kampfende, Zustandswechsel, Laden und Entladen (`DataCenter.ResetAllRecords`) | Werte bleiben — die Methode räumt das Laufzeitgedächtnis eines Kampfes ab und fasst keinen Speicher an |
 | **Speicher wird beim Start nicht geladen** | **Totalverlust**, still — behoben, s. u. |
@@ -304,6 +306,14 @@ verschwinden kann.
 | Messung zwischen letztem Speichern und Entladen | Verlust dieser einen Messung; behoben — der Effekt-Handler wird vor dem letzten Speichern abgehängt |
 
 **Ablesbar ist das jetzt im Listenfenster unter „Store:".** Das Laden meldet, ob es eine Datei fand, keine fand oder eine unlesbare beiseitelegte; jedes Speichern liest die Datei zurück und meldet Erfolg nur, wenn dort so viele Einträge stehen wie geschrieben wurden. Die Zahl „Damage potential recorded" darüber ist die Tabelle im Speicher — sie sieht gleich aus, ob die Werte die Platte erreicht haben oder nicht.
+
+**Was eine Datei mit `{}` sagt, und was nicht.** Sie entsteht auf genau drei Wegen: beim ersten Start ohne Datei (das Laden legt die leere Tabelle an), durch „Forget", oder in der Sitzung nach einer unlesbaren Datei (die liegt dann als `.corrupt` daneben). Jedes andere Speichern schreibt mindestens einen Eintrag, weil die Tabelle von selbst nur wächst. Seit dem Ladefix heißt `{}` also: **in keiner Sitzung seither wurde ein Wert gemessen**, oder er wurde verworfen. Die Datei sagt nicht, warum — das sagt nur die Messstelle.
+
+**Die Messung hat acht Tore**, jedes einzeln hinreichend, um sie zu verhindern: der Effekt-Hook liefert überhaupt Treffer; die Quelle ist ein anvisierbarer Gegner; `Record AOE actions` an; mindestens vier gezählte Gruppenmitglieder; eine Aktion mit Wirkzeit; eine reguläre Aktion der Kategorie Zauber, Waffenfertigkeit oder Fähigkeit; ihre Id in der Flächenliste; ein Betrag über null bei einem Gruppenmitglied. Das Listenfenster und die Diagnoseanzeige zählen seit dem Laden **je Grund**, wie oft ein gegnerischer Cast den Spieler traf und woran er hängenblieb („Casts this session"). Steht dort nach einem Abend mit Raidwides kein einziger Eintrag, traf ihn kein Cast eines anvisierbaren oder unsichtbaren Gegners, oder der Hook liefert nichts; stehen dort nur Gründe ohne „measured", nennt die Zeile das Tor. Sofortaktionen zählen nicht mit: Sie werden nie bewertet, und als sie in „Last hit" standen, überschrieb der nächste Auto-Attack den Grund des Raidwides binnen einer Sekunde — die Zeile zeigte praktisch nur Auto-Attacks.
+
+**Eine leere Flächenliste misst nichts**, gleich wie der Kampf verläuft; beide Fenster melden sie rot. Sie entsteht, wenn der Download beim ersten Start scheitert: `InitOne` schreibt dann die leere Liste als Datei, und weil die Datei existiert, wird nie wieder geladen (offen in `TODO.md`).
+
+**Grenze, keine Ursache:** Viele Raidwides löst ein unsichtbarer Helfer aus, oft mit einer anderen Id als der sichtbare Cast des Bosses. Solche Treffer kommen nicht an: Die Messung nimmt nur anvisierbare Quellen, und die Verbraucher lesen ohnehin nur deren Casts. Der sichtbare Cast bleibt dann unbewertet, also beim Verhalten ohne Tabelle. Wie häufig das ist, ist nicht belegt; die Zählung weist es als „cast by an untargetable enemy" aus.
 
 **Das Zurücksetzen der Liste lässt die Werte stehen** — Vorgabe des Auftraggebers: „es wäre schade,
 wenn dann auch die Erfahrungswerte weg wären." Die kuratierte Liste neu zu laden ist ein Download, die
