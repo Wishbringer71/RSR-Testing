@@ -4072,6 +4072,24 @@ Unabhängiges Review (Code-Review-Werkzeug) der Commits 16e60b716 und 2a07817bb;
 
 **Prüfgrad:** statisch; Generator-Selbsttest; Prüfskripte; Compile über die CI.
 
+### A167 · Zweites Review der zentralen Behebung (A166); WrathCombo als Quelle (26.–27.09.2026)
+
+Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebrochen, nachgeholt). Befunde am Code geprüft:
+1. **Vorlauf fehlte in der Grenze.** Ein GCD wird bei `DefaultGCDRemain <= CalculatedActionAhead` gewählt (`ActionHelper.CanUseGCD`) und geht los, wenn der GCD abläuft. Behoben: `NeededStatusMargin` = Wirkzeit + GCD-Restzeit für echte GCDs; auch auf der Zielseite.
+2. **Falsche Aussage in A166:** „`CastTime` ist die Grundwirkzeit". `GetCastTime` liest `ActionManager.GetAdjustedCastTime`; die ist unter Swiftcast null — belegt an WrathCombo (`AutoRotationController`: „AutoRezRequireSwift && GetAdjustedCastTime(resSpell) == 0"). Berichtigt im Konzept; A166 bleibt als Stand seiner Zeit.
+3. **Revolverklinge:** Der Reign-Rückfall konnte mitten in Gnashing Fang feuern und den Kombo-Schritt übernehmen. Jetzt `!InGnashingFang`.
+4. **Rückfall-Horizonte ohne Vorlauf**, je Job einzeln. Behoben mit dem gemeinsamen Baustein `IsLastChanceBeforeStatusEnds` (GCD-Restzeit + GCD-Länge + Wirkzeit), genutzt von Revolverklinge, Samurai, Ninja, Maschinist.
+5. **„Nur unter dem Buff"-Bedingungen:** Retrace (Schwarzmagier) verlor mit der alten Sperre seinen Schutz vor einem fast abgelaufenen Ley-Lines-Kreis. Eigene Grenze im `ActionCheck` (Kreis überdauert den nächsten GCD). Upheaval geprüft: geht sofort los, keine Grenze nötig.
+6. **Maschinist:** Hypercharge vor einem vorbereiteten Reassemble, obwohl Hypercharged den Einschub nach dem Werkzeug noch erreicht hätte. Jetzt wartet er in diesem Fall.
+7. **Paladin Intervention** (vorbestehend, in der berührten Zeile): Zielbedingung „Tankhaltung" mit `StatusFromSelf = true` schlägt für die Haltung des anderen Tanks immer fehl. Im TODO, Richtungsentscheidung nötig.
+8. **Laufzeit:** `CastTime` je Ziel und Bild in `CheckStatus`. Hingenommen: nur Aktionen mit `TargetStatusNeed` (Paladin Intervention, PvP-Reinigung, Blaumagier).
+9. **Ninja:** doppelte Bedingung `NoNinjutsu` im neuen Rückfall entfernt.
+10. **„Universell zuerst":** siehe 4.
+
+**WrathCombo als Quelle (seine Frage):** Das Repository `PunishXIV/WrathCombo` ist über den Git-Proxy lesbar (Klon 27.09.2026, Stand 25.09.2026, BSD-3-Lizenz). Status: Community-Plugin, keine Spielquelle; es belegt, wie ein anderes Rotationswerkzeug eine Mechanik behandelt, und wo es die Spiel-API nutzt, was die API liefert. Code wird nicht übernommen, nur als Beleg gelesen.
+
+**Prüfgrad:** statisch; Prüfskripte; Generator-Selbsttest; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

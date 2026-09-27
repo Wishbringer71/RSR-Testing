@@ -216,7 +216,7 @@ sie nie strecken — der Generator erfindet keinen Wert.
 **Auftrag (seine Vorgabe, 26.09.2026):** prüfen, ob die optimalen Kombinationen in den Rotationen
 tatsächlich genutzt werden — „für alle im Loop".
 
-**Sachstand (A165, A166):** Geprüft ist, ob ein gewährtes Fenster — ein Status, der eine Aktion für eine
+**Sachstand (A165–A167):** Geprüft ist, ob ein gewährtes Fenster — ein Status, der eine Aktion für eine
 Zeit freigibt (Proc, „Ready", Stapel), oder eine Ressource mit Obergrenze — verbraucht wird, bevor es
 verfällt oder überläuft. Ob eine Abfolge die beste ist, ist nicht geprüft: Die Referenz dafür (Job-Guides
 wie The Balance, das Rotations-Repository) sperrt der Egress, und die Wirktexte nennen die Dauer der
@@ -235,20 +235,36 @@ determination"); vorher lag die Grenze bei 0.
   ihn bis dahin nicht verbraucht hatte, verlor ihn. Jede Regel „vor Ablauf nutzen" mit kleinerem Horizont
   war wirkungslos (Rotmagier Prefulgence, Weißmagier Divine Caress, Gelehrter Baneful Impaction, Ninja
   Meisui, Maler Tempera Grassa).
-- **Jetzt:** Der benötigte Status muss liegen, solange die Aktion wirkt — bei einem Zauber mit Wirkzeit
-  bis zu deren Ende (`ActionBasicInfo.CastTime`, aus dem Spiel). Ein Soforteinsatz braucht nur den Status.
+- **Jetzt:** Der benötigte Status muss liegen, bis die Aktion losgeht und ihr Wirken endet
+  (`ActionBasicInfo.NeededStatusMargin`). Ein GCD wird vor dem Ablauf des GCD gewählt
+  (`CalculatedActionAhead`) und geht los, wenn er abläuft; die Restzeit zählt deshalb mit. Die Wirkzeit ist
+  die angepasste des Spiels — unter Swiftcast oder Dualcast null (belegt an WrathCombo, das „Wiederbelebung
+  nur mit Swiftcast" über `GetAdjustedCastTime == 0` prüft).
+- **Wo die alte Sperre einen Zweck hatte:** Einige Statusbedingungen sind keine Proc-Verbraucher, sondern
+  „nur unter dem Buff". Retrace (Schwarzmagier) versetzt Ley Lines und lohnt nur, wenn der Kreis den
+  nächsten GCD überdauert; diese Grenze steht jetzt in seinem `ActionCheck`. Upheaval (Krieger, braucht
+  Surging Tempest) geht sofort los und trifft unter dem Buff, solange er liegt; keine Grenze nötig.
 - **Betroffen:** alle Jobs (Endnutzer), jede abgeleitete Rotation mit `StatusNeed` (Paketnutzer),
   Upstream-Pflege.
 
 ### Rückfälle vor Ablauf, je Job (A165, A166)
 
 Wartet ein Verbraucher auf eine Ausrichtung (Burst, Debuff), verfällt sein Fenster, wenn die Ausrichtung
-nicht kommt. Behoben mit einem Rückfall im letzten GCD des Status; vorher bleibt jede Ausrichtung
+nicht kommt. Behoben mit einem Rückfall in der letzten Gelegenheit; vorher bleibt jede Ausrichtung
 unberührt.
+- **Stufe „alle":** `CustomRotation.IsLastChanceBeforeStatusEnds(action, status)` — wahr, wenn die nächste
+  Gelegenheit einen GCD nach dieser käme und das Fenster dann vor Losgehen und Wirken der Aktion endete
+  (GCD-Restzeit + GCD-Länge + Wirkzeit, alle aus dem Spiel). Worauf ein Verbraucher wartet, bleibt die
+  Regel des Jobs.
+- **Ältere Rückfälle mit eigenem Horizont** (Paladin Atonement-Kette, Rotmagier Prefulgence, Weißmagier
+  Divine Caress, Gelehrter Baneful Impaction, Ninja Meisui, Maler Tempera Grassa, Monk Fire's/Wind's
+  Reply): Fähigkeiten ohne Wirkzeit oder mit großzügigem Horizont; sie greifen seit A166. Nicht auf den
+  gemeinsamen Baustein umgestellt, weil es sie nicht ändert.
 - **Maschinist:** Hypercharged (Barrel Stabilizer, eine Überhitzung ohne Heat) wartete auf Wildfire.
   Wird Wildfire zurückgehalten — „Only use Wildfire on Boss targets" gegen Trash, oder vor einer Pause —,
-  verfiel es. Der Rückfall fällt auch über einem Reassemble; das landet dann auf einem Blazing Shot, fünf
-  freie Überhitzungs-Schüsse wiegen mehr. Gesperrt bleibt er während einer laufenden Überhitzung (die Basisrotation
+  verfiel es. Liegt Reassemble für ein Werkzeug bereit, wartet der Rückfall bis nach dessen GCD, sofern
+  Hypercharged bis zum Einschub danach hält; sonst geht Hypercharge vor, und Reassemble landet auf einem
+  Blazing Shot — fünf freie Überhitzungs-Schüsse wiegen mehr. Gesperrt bleibt er während einer laufenden Überhitzung (die Basisrotation
   lässt Hypercharge dort nicht zu, `!IsOverheated`).
 - **Samurai:** Ogi Namikiri wartete auf einem Boss auf Higanbana. Kommt Higanbana nicht — abgeschaltet,
   oder „Prevent Higanbana use if theres more than one target" (ab Werk an) sperrt es über
@@ -256,7 +272,9 @@ unberührt.
   sieht —, verfiel Ogi samt Kaeshi. Der Rückfall rechnet die Wirkzeit von Ogi mit ein.
 - **Revolverklinge:** Sonic Break und Reign of Beasts fielen nur unter No Mercy. Vergeht No Mercy ohne
   Platz dafür (Pause), verfielen Ready to Break und Ready to Reign. Der Rückfall steht vor allen anderen
-  GCDs, weil jeder andere einen GCD später noch kommen kann.
+  GCDs, weil jeder andere einen GCD später noch kommen kann — Reign of Beasts aber nicht mitten in einer
+  Gnashing-Fang- oder Reign-Kombo: Es übernähme den Kombo-Schritt und kostete Savage Claw und Wicked Talon
+  samt Fortsetzungen.
 - **Ninja:** Phantom Kamaitachi wartete auf das Trick-Attack- oder Mug-Fenster; Bunshin läuft auf eigener
   Abklingzeit. Öffnet sich kein Fenster vor Ablauf, fällt es jetzt im letzten GCD.
 

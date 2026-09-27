@@ -20,6 +20,10 @@ Passage of Arms endet mit jeder weiteren Aktion. Ohne `PldlockCasting` (ab Werk 
 
 Shake It Off hebt die eigenen Status Thrill of Battle, Damnation und Bloodwhetting auf, für +2 % Barriere je Effekt (Suchauszug des vollständigen Texts; im Repository ist der Name ausgeblendet). RSR wirkt es als Flächenabwehr und als Einzelheilung, ohne diese Status zu prüfen. Im Kampf: Ein Raidwide, während Damnation für einen Tankbuster liegt, kostet den Krieger 40 % Minderung. Zur Entscheidung vorgelegt. Konzept 14, „Wechselwirkungen und Zeit".
 
+### Paladin: Intervention über zwei Pfade nie gewirkt · N
+
+`InterventionPvE` verlangt am Ziel eine Tankhaltung (`TargetStatusNeed`: Grit, Royal Guard, Iron Will, Defiance) mit `StatusFromSelf` ab Werk wahr. Die Haltung des anderen Tanks stammt von ihm, nicht vom Paladin; `MinStatusRemainingTime` überspringt sie, und die Bedingung schlägt für jedes Ziel fehl. `PLD_Reborn` ruft Intervention an zwei Stellen ohne `skipTargetStatusNeedCheck` (die Tank-Option und die allgemeine Einzelabwehr); dort fällt es nie. Nur der Pfad mit Rampart/Sentinel und niedriger Gesundheit des Ziels überspringt die Bedingung. Im Kampf: Der Paladin schützt den anderen Tank nicht mit Intervention, außer im Notfallpfad. Behebung braucht eine Richtungsentscheidung (Herkunft der Bedarfsstatus je Aktion, oder die Haltung als Zielwahl statt Bedingung); erhoben im Review zu A166, nicht angefasst.
+
 ### Weiser: Addersgall läuft über · N
 
 Bei drei Stapeln Addersgall geht jeder weitere Gewinn verloren; `SGE_Reborn` verbraucht vor dem Überlauf nichts (`AddersgallEndAfter` steht seit 2022 in der Basisrotation, ohne Leser). Im Kampf: Druochole gäbe je Stapel 7 % MP und eine Heilung. Zur Entscheidung vorgelegt: ein Verbrauch vor dem Überlauf wie beim Weißmagier („Use Lily at max stacks/about to overcap"). Konzept 14, „Werden die Fenster genutzt?".

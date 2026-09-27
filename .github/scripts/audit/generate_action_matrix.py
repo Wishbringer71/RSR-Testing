@@ -308,7 +308,8 @@ def gated_windows(code, windows):
         if plain:
             continue
         names = windows[ident]
-        fallback = any("WillStatusEnd" in sc and any(n in sc for n in names) for sc in scopes)
+        fallback = any(("WillStatusEnd" in sc or "IsLastChanceBeforeStatusEnds" in sc) and any(n in sc for n in names)
+                       for sc in scopes)
         found.append((ident, len(casts), fallback))
     return found
 
@@ -1215,6 +1216,8 @@ def self_test():
         "protected override bool GeneralGCD(out IAction? act)\n{\n"
         "if (Outer)\n{\n if (LPvE.CanUse(out act)) { return true; }\n}\n"
         "if (StatusHelper.PlayerWillStatusEnd(3, true, StatusID.MReady))\n{\n if (MPvE.CanUse(out act)) { return true; }\n}\n"
+        "if (IsLastChanceBeforeStatusEnds(NPvE, StatusID.NReady) && NPvE.CanUse(out act)) { return true; }\n"
+        "if (IsBurst && NPvE.CanUse(out act)) { return true; }\n"
         "if (APvE.CanUse(out act)) { return true; }\n"
         "if (HasNoMercy && BPvE.CanUse(out act)) { return true; }\n"
         "if ((HasBuff || StatusHelper.PlayerWillStatusEndGCD(1, 0, true, StatusID.CReady)) && CPvE.CanUse(out act)) { return true; }\n"
@@ -1227,9 +1230,9 @@ def self_test():
         "if (Foo) { StatusHelper.PlayerWillStatusEnd(1, true, StatusID.KReady); }\nreturn IsBoss && KPvE.CanUse(out act);\n}\n",
         {"APvE": {"AReady"}, "BPvE": {"BReady"}, "CPvE": {"CReady"}, "DPvE": {"DReady"}, "EPvE": {"EReady"},
          "FPvE": {"FReady"}, "GPvE": {"GReady"}, "HPvE": {"HReady"}, "KPvE": {"KReady"}, "LPvE": {"LReady"},
-         "MPvE": {"MReady"}})
+         "MPvE": {"MReady"}, "NPvE": {"NReady"}})
     if got != [("BPvE", 1, False), ("CPvE", 1, True), ("DPvE", 1, False), ("FPvE", 1, True),
-               ("GPvE", 1, False), ("HPvE", 1, False), ("KPvE", 1, False), ("LPvE", 1, False), ("MPvE", 1, True)]:
+               ("GPvE", 1, False), ("HPvE", 1, False), ("KPvE", 1, False), ("LPvE", 1, False), ("MPvE", 1, True), ("NPvE", 2, True)]:
         return f"gated windows misread: {got}"
     if settings_of("setting.StatusNeed = [StatusID.ReadyToBreak]; setting.ActionCheck = () => HasReadyToReign "
                    "&& !DetonatorPvEReady && IsGarudaReady && StarryMusePvEReady;")["window"] != ["ReadyToBreak", "ReadyToReign"]:
