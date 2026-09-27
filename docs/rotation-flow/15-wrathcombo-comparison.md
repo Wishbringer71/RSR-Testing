@@ -42,6 +42,19 @@ Kanal-Sperre, Improvisation als kurzes Regen.
 | V5 | Tanzpartner neu wählen, wenn der Partner tot ist | Standard Finish und Devilment gehen nicht auf einen Toten | — | **Zu prüfen:** RSR wählt nur, solange kein Partner besteht; ob der Status beim Tod des Partners endet, sagt der Job-Guide nicht („Effect ends upon reuse") |
 | V6 | Kerachole nicht über eine liegende Sacred Soil legen (`SGE_OverProtect`) | Gruppenminderung zweier Heiler verteilt sich auf zwei Treffer statt einen | — | Eingabe für die offene Frage „Streckung auch für Weiser/Gelehrter" (Konzept 08); laut Job-Guide stapeln beide (nur Kerachole/Taurochole nicht) |
 
+## Seine Angaben zu den Vorschlägen (27.09.2026)
+
+| # | Wortlaut | Einordnung |
+|---|---|---|
+| V1 | „hatten wir doch schon mit dem hot des whm als standard vorhanden. schild bei schildheilern ist ebenso sinnvoll mit regelmäßiger erneuerung bei ablauf/verfall solange walltowall läuft. gleiche bedingungen wie bei whm hot. gibt es denn geringere instaschilde, die ohne aufwand erneuerbar sind, und die nicht overschilden?" | Hinweis (Weißmagier-Regen, am Code zu prüfen) und Vorgabe (Schildheiler: Schild mit Erneuerung bei Ablauf oder Verbrauch während Wall-to-Wall, Bedingungen wie beim Weißmagier-Regen), dazu eine Frage |
+| V2 | „negativliste ingame aufbauen, wenn ein vfx nachträglich als tankbuster falsifiziert wurde. (sicher speichern, nicht das gleiche debakel wie mit schadenstabelle bei aoe)" | Vorgabe |
+| V3 | „schauen, ob die infos aus wrath auch ingame verfügbar wären (ohne wrath, nur aus den normal vorhandenen daten)" | Prüfauftrag |
+| V4 | „im vollen loop antithese aufstellen und versuchen zu widerlegen. ebenso den zeitraum bewerten (ab wann es sich überhaupt lohnt). dabei notwendige bewegungen für positionals mit berücksichtigen. aber auch true north, um eben die positionswechsel zu reduzieren. oder ist das ein anderes problem (meditate nur ausserhalb kampf?)" | Prüfauftrag mit Frage |
+| V5 | „tanzpartner wärend todes aufheben und während des rezzdebuffs neu bewerten, wer am meisten schaden verurschachen würde. wenn rezzdebuff dann nach ablauf weg ist, erneut neu bewerten." | Vorgabe |
+| V6 | „im konzept klären: im vollen loop antithese aufstellen und versuchen zu widerlegen." | Prüfauftrag |
+| V1 | „beim konzept zum preschild und prehot: der whm kann während des laufens den hot erneuern. das laufen ist also wichtig, ebenso die zeitverlustfreie erneuerung. weiterhin kann der whm während des laufens auch einen dot wirken. wenn man also das auf schildheiler und astro ausweiten will: ist der hot des astros instawirkbar? hat der astro einen insta-schadensspell? haben die schildheiler instaschilde? da während des laufens MP regenerieren, können es sogar vorzugsweise MP-verbrauchende schilde sein, solange sie insta sind. haben die schildheiler insta-schadensspells? stehenbleiben ist erst am ende des wall-to-walls, da wo der whm dann holy casted. wenn die anderen heiler ebenfalls stuns haben, diese so wie beim whm nutzen. das alles ebenfalls im vollständigen kritischen loop bearbeiten." | Hinweis (der Weißmagier erneuert Regen und wirkt einen DoT im Laufen, am Code zu prüfen); Präzisierung seiner V1-Vorgabe: Kriterium ist das Wirken **im Laufen** ohne Zeitverlust, also nur Sofortaktionen; MP-verbrauchende Sofortschilde ausdrücklich zulässig; Stehenbleiben erst am Ende des Wall-to-Wall (wo der Weißmagier Holy wirkt); Betäubungen der anderen Heiler wie beim Weißmagier nutzen; dazu vier Fragen nach Sofort-HoT und Sofort-Schadenszauber (Astrologe) sowie Sofortschild und Sofort-Schadenszauber (Schildheiler); voller kritischer Loop |
+| V1 | „beim gelehrten könnte evtl. die fee helfen? deren fähigkeiten mit prüfen im konzept" | Prüfauftrag: die Feen- und Seraph-Fähigkeiten des Gelehrten in das V1-Konzept aufnehmen |
+
 ## Nicht übernommen, mit Grund
 
 - **Heilziel-Wahl nach Rangfolge von Zielarten** (Mouseover, Fokus, niedrigste Gesundheit): RSRs Wahl
