@@ -290,3 +290,10 @@ every hit arrived at zero.
 With `Use BMR intergration to verify safety of movement actions` on, Dragonfire Dive, Stardiver and
 Forked Raiju are now checked like every other gap closer: they are held when the way to the target
 crosses a danger zone, and go out freely when you already stand at the target.
+
+## White Mage: Holy stays held while the pack is slowed
+
+With `HoldHolyWhilePackSlowed` on, Holy was held after an Arm's Length only until every enemy had a DoT
+and then went out into a pack that was still slowed. It now stays held for as long as more than half
+the enemies in its radius are slowed; the held GCDs go to DoTs and then Glare. The Diagnostics window
+shows, under the rotation, whether the rule last held Holy and why not.

@@ -700,15 +700,18 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	/// instead of what this cast would hit; the next asked for a bare majority with no floor; the
 	/// next counted the enemies the slow had not reached.
 	///
-	/// The replacement guarantee is the stun branch's and bounds the cost the same way: Holy is this
-	/// job's only area spell, so a held GCD falls through to single-target damage. Without a DoT
-	/// worth placing, Holy goes out no matter how slowed the pack is - which is also why a 15s slow
-	/// does not translate into 15s without Holy.
+	/// Held for as long as the condition stands, and no longer - the user's rule. A held GCD falls
+	/// through to the DoTs while any enemy lacks one and to Glare after that. This rule used to carry
+	/// the stun-stretch rule's replacement guarantee as well, releasing Holy as soon as no DoT was
+	/// left to place. That guarantee belongs to the stretch, which needs exactly one inserted GCD; a
+	/// slow lasts many. Carried over, it ended every hold after one DoT per enemy while the pack was
+	/// still slowed - observed by the user: held after Arm's Length, then Holy again (A178).
 	/// </remarks>
 	private bool ShouldHoldHolyWhilePackSlowed()
 	{
 		if (!HoldHolyWhilePackSlowed)
 		{
+			_holySlowHold = "off";
 			return false;
 		}
 
@@ -726,6 +729,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		SurveyStuns(radius, out _, out var headroom);
 		if (!headroom)
 		{
+			_holySlowHold = "released - nothing in radius can be stunned any more";
 			return false;
 		}
 
@@ -734,6 +738,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		// Nothing in radius says nothing at all - not "no slow".
 		if (inRange == 0 || slowed < HoldHolyMinSlowedHostiles)
 		{
+			_holySlowHold = "not held - too few slowed in radius";
 			return false;
 		}
 
@@ -741,6 +746,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		// 3 of 6 does not, 4 of 6 does.
 		if (slowed * 2 <= inRange)
 		{
+			_holySlowHold = "not held - half or fewer slowed in radius";
 			return false;
 		}
 
@@ -760,6 +766,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		// party being held steady never trips this however large the pack.
 		if (ObjectHelper.AnyPartyMemberFallingWithinHealWindow())
 		{
+			_holySlowHold = "released - a party member is falling";
 			return false;
 		}
 
@@ -771,11 +778,24 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			_ = SurveyHostileOutput(radius, out var output);
 			if (output > HoldHolyMaxHostileOutput)
 			{
+				_holySlowHold = "released - enemy output above the set ceiling";
 				return false;
 			}
 		}
 
-		return DiaPvE.CanUse(out _) || AeroIiPvE.CanUse(out _) || AeroPvE.CanUse(out _);
+		_holySlowHold = "held - pack slowed";
+		return true;
+	}
+
+	// What the slowed-pack hold last decided, for the diagnostics window. Holding and not holding
+	// look alike from outside - the Holy that does not go out is invisible - so the reason is kept
+	// where the decision falls.
+	private string _holySlowHold = "no decision yet";
+
+	/// <inheritdoc/>
+	public override void DisplayRotationStatus()
+	{
+		ImGui.Text("Holy while the pack is slowed: " + _holySlowHold);
 	}
 
 	/// <summary>

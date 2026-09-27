@@ -933,6 +933,20 @@ Nachzügler; die **Mindestzahl** verhindert, dass ein Rest von zwei Gegnern den 
 erfüllt. Aufgeschoben heißt aufgeschoben, nicht aufgegeben — sobald die Bedingung nicht mehr
 zutrifft, fällt Sanctus wieder.
 
+**Gehalten wird, solange die Bedingung gilt, ohne Ersatzvorbehalt** (A178). Seine Beobachtung vom
+27.09.2026: „nach abtausch wird holy wie gewünscht ausgesetzt, bis alle gegner gemach haben. dann setzt
+holy aber wieder ein" (Gemach ist der deutsche Name des Slow-Status 9). Die Regel trug bis dahin die
+Ersatzgarantie der Streckung: ausgesetzt nur, solange Dia oder Aero noch ein Ziel ohne DoT hat. Während
+des Aussetzens legt der Weißmagier aber genau diese DoTs, einen je GCD; nach einem DoT je Gegner war
+der Vorbehalt verbraucht, und Sanctus fiel in die noch laufende Verlangsamung. Die Garantie gehört zur
+Streckung, die genau einen eingeschobenen GCD braucht; eine Verlangsamung dauert viele. Jetzt fällt
+der gehaltene GCD auf die DoTs, solange einer fehlt, danach auf Glare. **Preis, im Kampf:** Ab drei
+Gegnern trifft Sanctus in Summe mehr als Glare; jeder gehaltene GCD nach dem letzten DoT kostet diese
+Differenz an Schaden, und der Pull dauert entsprechend länger. Dafür steht die Betäubung zur
+Verfügung, wenn die Verlangsamung abläuft — das ist der Zweck seiner Regel. Die Schranke (ein
+Gruppenmitglied fällt) und der abschaltbare Deckel bleiben; das Diagnosefenster nennt unter der
+Rotation, ob und warum zuletzt gehalten wurde.
+
 Umgesetzt als `WHM_Reborn.ShouldHoldHolyWhilePackSlowed` über `SurveyHostileStatus` im Wirkbereich
 von Sanctus; die Mindestzahl steht als `HoldHolyMinSlowedHostiles` (Vorgabewert 3) hinter derselben
 Einstellung. Streng mehr als die Hälfte: 3 von 5 hält, 3 von 6 hält nicht, 4 von 6 hält.

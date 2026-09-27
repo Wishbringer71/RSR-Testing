@@ -4205,6 +4205,17 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** Laufzeitdaten (sein Protokoll), statisch, Prüfskripte; Compile über die CI.
 
+### A178 · Sanctus kam zurück, während die Gegner noch verlangsamt waren (27.09.2026)
+
+**Gemeldet:** „nach abtausch wird holy wie gewünscht ausgesetzt, bis alle gegner gemach haben. dann setzt holy aber wieder ein. das bitte gegen meine aussagen und dem konzept prüfen, im loop." Gemach = Slow (Status 9, deutscher Name aus `v2.xivapi.com`).
+
+- *Research:* `ShouldHoldHolyWhilePackSlowed` hält nur, solange `DiaPvE`, `AeroIiPvE` oder `AeroPvE` ein Ziel haben (letzte Zeile). Eingeführt mit der Regel (`2ebd54728`, 12.09.), übernommen aus der Streckung (A19/A20), wo genau ein Einschub genügt. Begründet nur im Code-Kommentar („a 15s slow does not translate into 15s without Holy"), weder von ihm noch im Konzeptabschnitt der Regel, der „solange" sagt. Die übrigen Freigaben — keine Betäubung mehr möglich, zu wenige verlangsamt, jemand fällt, Deckel — hängen nicht an der Verlangsamung aller Gegner; der Ersatzvorbehalt ist die einzige, die mit der Zeit des Haltens von selbst eintritt: Er verbraucht sich durch die DoTs, die das Halten selbst legt.
+- *Optionen:* Nullvariante; Vorbehalt streichen (DoTs, dann Glare); Vorbehalt behalten und nur für die Streckung gelten lassen (identisch mit Streichen, da die Streckung ihren eigenen führt).
+- *Abwägung und Falsifikation:* **Kein Defekt?** Der Code gibt Sanctus frei, während seine Bedingung gilt — Widerspruch zu Regel und Konzept. **Option falsch?** Glare statt Sanctus kostet ab drei Gegnern Schaden je GCD; das ist der Preis seiner Regel, nicht eine neue Abwägung. **Ausgeliefert, nichts ändert sich?** Liegt die Freigabe an einer anderen Schranke, bleibt es; deshalb nennt das Diagnosefenster jetzt den Grund der letzten Entscheidung. Grenze der Anzeige: Greift zuvor die Streckung oder der Barrierenhalt, wird diese Regel im selben GCD nicht ausgewertet, die Zeile zeigt dann den vorigen Stand.
+- *Umgesetzt:* Vorbehalt entfernt; `DisplayRotationStatus` im Weißmagier mit dem Grund.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI. Keine Laufzeitbeobachtung.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -4482,3 +4493,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C95 | A137, Code-Kommentar in `SMN_Reborn`, Konzept 07, Release-Text: Firebird Trance werde im Baum nur von PvP-Stellen gelesen | `ChurinSMN` liest ihn im PvE mit derselben Bauform; zudem nennt der Wirktext von Summon Phoenix „Enters Firebird Trance", ob der Status im PvE gesetzt wird, ist offen | Kommentar, Konzept und Release-Text berichtigt, ChurinSMN erfasst; A144 |
 | C96 | Bericht an ihn zu A170 und A170 selbst: Er spiele womöglich das Release `7.5.6.10+wsh1`, darum sehe er weder Speicherfixes noch Anzeigen | Er kompiliert vor dem Spielen den aktuellen Zweig. Die Annahme war unmarkiert und trug den Schluss „nichts, was er spielt, hat sich geändert" | A170 berichtigt; CLAUDE.md, Nutzungsprofil |
 | C97 | A175, A176, Konzept 13, Bericht an ihn: Der Effektkopf werde richtig gelesen, weil die Offsets in ECommons und ClientStructs übereinstimmen | Verglichen waren nur die Offsets, nicht die Breite: Das Enum ist `uint`, das Feld ein Byte, gelesen wurden vier Bytes. Genau daran scheiterte die Messung | A177; Konzept 13 berichtigt |
+| C98 | Code-Kommentar in `WHM_Reborn.ShouldHoldHolyWhilePackSlowed` (seit `2ebd54728`): Ohne DoT-Ziel falle Sanctus, gleich wie verlangsamt der Pulk ist — deshalb werde eine Verlangsamung nicht zur Zeit ohne Sanctus | Übernommen aus der Streckung, wo ein Einschub genügt; die Regel sagt „solange". Im Spiel beobachtet: Sanctus kam nach dem letzten DoT zurück | A178 |
