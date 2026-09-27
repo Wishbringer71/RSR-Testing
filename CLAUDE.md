@@ -117,7 +117,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 
 **Möglichkeitssinn**
 - Zu jeder Stelle fragen: Welche vorhandene Stärke trifft hier auf welche offene Frage? Grund: Der Loop misst Kosten und Risiko, nie Ertrag, und ohne Defekt läuft er gar nicht — alle bisherigen Fälle dieser Art hat er eingebracht, keinen der Loop.
-- Vorhandene Stärken: Gesundheitshistorie über vier Minuten, Effekt-Handler für jeden Treffer, Vorhersage fremder Casts, Diagnoseanzeige.
+- Vorhandene Stärken: Gesundheitshistorie über vier Minuten, Effekt-Handler für jeden Treffer, Vorhersage fremder Casts.
 - Ein Baustein ist nicht Vorratsarbeit, nur weil ihn heute keine Regel liest; fragen, was er beantwortbar macht (`docs/method/01-loop-evaluation-methods.md`).
 
 **Inhaltlichkeit**
@@ -206,13 +206,13 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 **Option und Beobachtbarkeit**
 - Eine Verbesserung, deren Nutzen ich nicht belegen kann, kommt hinter eine Option; das bisherige Verhalten bleibt Standard. Belegte Defektbehebungen nicht.
 - Gründliche Vorarbeit wird nicht durch nachträgliche Betrachtung ersetzt (seine Präzisierung). Was Analyse klären kann — Wirktexte, Code, Versionsgeschichte, Modell —, ist vor dem Code geklärt. Eine Anzeige ist kein Ablageort für offene Annahmen, und ich verweise nicht auf sie, um eine ungeprüfte Annahme zu tragen.
-- Die Diagnoseanzeige dient seiner Kontrolle, nicht meiner Diagnose: Eine Zeile sagt knapp, was eine Regel im Kampf entschieden hat, nur dort, wo ihr Greifen sonst nicht von ihrem Ausbleiben zu unterscheiden wäre — im Diagnosefenster, weil das Einstellungsfenster im Kampf zu ist. Keine Zeile, die er auswerten müsste.
+- Er nutzt das Diagnosefenster nicht (seine Vorgabe): Ich baue dort keine neuen Zeilen als Messmittel und verweise ihn nicht darauf. Wo die Antwort erst zur Laufzeit fällt, steuert die Regel selbst nach; reicht das nicht, schreibt der Code eine Protokolldatei, die er nach einer Sitzung hochlädt (Beispiel `AreaMeasurementTrace.log`, A176).
 
 **Entscheidung zur Laufzeit**
 - Eine Sonde sitzt dort, wo die Regel entscheidet, und urteilt sofort.
 - Zulässig ist nur, was sich selbst nachsteuert: Die Regel hält ihre Vorhersage gegen den Verlauf und rechnet den Fehler heraus (wie `ScoreTtkForecast`, `GetCorrectedTTK`).
 - Keine Datensammlung, die auf seine Ablesung und meine spätere Auswertung wartet — das macht ihn zum Teil des Regelkreises. Ist Selbstkorrektur nicht baubar, sage ich das.
-- Das Messmittel der REGEL ist in erster Linie die Selbstnachsteuerung; eine Anzeige ergänzt sie zu seiner Kontrolle und ersetzt sie nicht.
+- Das Messmittel der REGEL ist in erster Linie die Selbstnachsteuerung; eine Protokolldatei ergänzt sie, wo ein Defekt nur zur Laufzeit zu finden ist, und ersetzt sie nicht.
 
 # Quellen
 
@@ -239,7 +239,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 **Definition of Done**
 - Wirkkette am Code belegt (Flag, Dispatch, `CanUse`, Zielwahl).
 - Richtigkeit am Spielgeschehen begründet.
-- Fällt die Antwort erst zur Laufzeit: die Regel steuert selbst nach; Analysefragen sind vorher beantwortet, nicht an die Anzeige verwiesen.
+- Fällt die Antwort erst zur Laufzeit: die Regel steuert selbst nach; Analysefragen sind vorher beantwortet, nicht auf später verwiesen.
 - Keine offene Spielbestätigung als Aufgabe an ihn.
 
 # Vorlagen an ihn
