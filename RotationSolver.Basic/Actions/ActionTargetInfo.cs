@@ -3424,17 +3424,26 @@ public struct ActionTargetInfo(IBaseAction action)
 					}
 				}
 
-				// The self short-cut bypasses the candidate list, so it repeats the two checks that
+				// The self short-cut bypasses the ranking below, so it repeats the two checks that
 				// keep a target out of it: a heal on a target that nullifies HP recovery is a wasted
 				// cast, and a dark knight inside its Living Dead window is being held on purpose.
 				// Without the second check, any other member raising the heal flag would let the
-				// bearer heal itself out of the trigger through this path.
-				if (Player.Object != null
-					&& !Player.Object.HasStatus(false, StatusHelper.HealingIneffectiveStatus)
+				// bearer heal itself out of the trigger through this path. It also asks whether the
+				// action can reach the player at all (upstream, c3fac720b): an action that only targets
+				// others, Nascent Flash for one, returned the player here and so was never cast.
+				var player = Player.Object;
+				if (player != null
+					&& !player.HasStatus(false, StatusHelper.HealingIneffectiveStatus)
 					&& !ObjectHelper.PlayerIsHeldForDeathTrigger()
 					&& ObjectHelper.GetForecastPlayerHealthRatio() <= Service.Config.HealthSelfRatio)
 				{
-					return Player.Object;
+					foreach (var o in objs)
+					{
+						if (o.GameObjectId == player.GameObjectId)
+						{
+							return player;
+						}
+					}
 				}
 
 				if (Service.Config.HealTargetByDanger)
