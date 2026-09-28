@@ -3812,9 +3812,11 @@ public static class ObjectHelper
 	}
 
 	/// <summary>
-	/// <see cref="GetHealthRatio"/> carried forward to the moment a heal begun now would land.
+	/// <see cref="GetHealthRatio"/> carried forward to the moment a heal begun now would land. With
+	/// "Heal ahead of incoming damage" off it is exactly <see cref="GetHealthRatio"/>. Every healing
+	/// threshold reads this, as that setting's text promises.
 	/// </summary>
-	internal static float GetForecastHealthRatio(this IBattleChara battleChara)
+	public static float GetForecastHealthRatio(this IBattleChara battleChara)
 	{
 		return battleChara.GetHealthRatio() * battleChara.GetForecastSurvivingShare();
 	}

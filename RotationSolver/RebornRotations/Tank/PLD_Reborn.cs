@@ -363,12 +363,12 @@ public sealed class PLD_Reborn : PaladinRotation
 	[RotationDesc(ActionID.ClemencyPvE)]
 	protected override bool HealSingleGCD(out IAction? act)
 	{
-		if (RequiescatHealBot && RequiescatStacks > 0 && ClemencyPvE.CanUse(out act, skipCastingCheck: true) && ClemencyPvE.Target.Target?.GetHealthRatio() < ClemencyRequi)
+		if (RequiescatHealBot && RequiescatStacks > 0 && ClemencyPvE.CanUse(out act, skipCastingCheck: true) && ClemencyPvE.Target.Target?.GetForecastHealthRatio() < ClemencyRequi)
 		{
 			return true;
 		}
 
-		if (HealBot && ClemencyPvE.CanUse(out act) && ClemencyPvE.Target.Target?.GetHealthRatio() < ClemencyNoRequi)
+		if (HealBot && ClemencyPvE.CanUse(out act) && ClemencyPvE.Target.Target?.GetForecastHealthRatio() < ClemencyNoRequi)
 		{
 			return true;
 		}

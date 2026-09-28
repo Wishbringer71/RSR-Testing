@@ -345,3 +345,11 @@ member, its path goes on a list, `TankbusterMarkerFalsified.json`, and is no lon
 tankbuster; a later hit after the same marker takes it off again. The list is learned in play and
 saved with the same safeguards as the damage table; delete the file to start over.
 
+## Heal ahead of incoming damage: the jobs' own thresholds too
+
+With `Heal ahead of incoming damage` on, the healing thresholds inside the job rotations now read the
+health a member is heading for, as the setting's text says every healing threshold does: Regen,
+Essential Dignity, Taurochole, Excogitation, Clemency, Nascent Flash, Second Wind and the others.
+Mitigation thresholds are unchanged. With the setting off nothing changes. For rotation authors,
+`ObjectHelper.GetForecastHealthRatio` is now public.
+

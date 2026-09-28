@@ -57,6 +57,12 @@ wird also nicht übergangen, nur die teuerste Antwort darauf.
 
 **Gilt für jeden Heiler, nicht nur den Weißmagier** (A180, sein Profil umfasst alle Kampfjobs). Dieselbe Prüfung (`ObjectHelper.IsUnderThreat`) steht vor der teuersten Einzelheilung jedes Heilers, jeweils hinter einer eigenen Einstellung, ab Werk an: Benediction (Weißmagier), Excogitation als Heilung (Gelehrter, auch unter Recitation), Taurochole als Heilung (Weiser) und die **letzte** Ladung Essential Dignity (Astrologe). Bei Essential Dignity nur die letzte: Die ersten Ladungen laden hintereinander nach, eine davon auszugeben lässt den Tank nicht ohne Antwort; die letzte schon. Die Verteidigungspfade (Excogitation, Taurochole, Haima) bleiben unberührt — sie laufen nur, wenn eine Abwehr angefordert ist, also bei Gefahr.
 
+**Auch die Heilschwellen der Jobs lesen die Vorausschau** (A191): Regen, Essential Dignity, Synastry,
+Aspected Benefic, Taurochole, Krasis, Soteria, Pneuma, Kardia, Benediction, Excogitation, Emergency Tactics,
+Aetherpact, Clemency, Bloodwhetting, Thrill of Battle, Equilibrium, Nascent Flash, Second Wind, Bloodbath und
+die Untergrenze der Pull-Pflege. Abwehrschwellen (sterbender Tank, Intervention, Cover, The Blackest Night)
+sind keine Heilschwellen und bleiben am Stand. `check_heal_threshold_forecast.py` hält das in der CI fest.
+
 **Auch die Flächenschwellen lesen die Vorausschau** (A182). Der Text von „Heal ahead of incoming damage" sagt: „Every healing threshold and the heal target choice read the health a member is heading for". Die Flächenschwellen (`HealthAreaAbility`, `HealthAreaSpell`) lasen bis dahin den Stand. Jetzt lesen sie eigene, vorausberechnete Gruppenwerte (`DataCenter.ComputeForecastAreaStats`: Mittel und Streuung, bei mehr als vier Mitgliedern über die vier niedrigsten). Die bisherigen Gruppenwerte bleiben unverändert, weil sie viele Leser außerhalb der Heilkette haben, fremde Rotationen darunter. Mit ausgeschalteter Einstellung ist die Vorausschau 1 und die Werte gleich den bisherigen. Im Kampf: Fällt die Gruppe schnell, kommt die Flächenheilung etwa einen GCD früher.
 
 ## Was Gefährdung heißt

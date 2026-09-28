@@ -170,7 +170,7 @@ public sealed class WAR_Reborn : WarriorRotation
 			_partyCount++;
 		}
 
-		if ((InCombat && Player?.GetHealthRatio() < HealIntuition && NumberOfHostilesInRange > 0) || (InCombat && _partyCount == 1 && NumberOfHostilesInRange > 0))
+		if ((InCombat && Player?.GetForecastHealthRatio() < HealIntuition && NumberOfHostilesInRange > 0) || (InCombat && _partyCount == 1 && NumberOfHostilesInRange > 0))
 		{
 			if (BloodwhettingPvE.CanUse(out act))
 			{
@@ -182,7 +182,7 @@ public sealed class WAR_Reborn : WarriorRotation
 			}
 		}
 
-		if (Player?.GetHealthRatio() < ThrillOfBattleHeal)
+		if (Player?.GetForecastHealthRatio() < ThrillOfBattleHeal)
 		{
 			if (ThrillOfBattlePvE.CanUse(out act))
 			{
@@ -192,7 +192,7 @@ public sealed class WAR_Reborn : WarriorRotation
 
 		if (!StatusHelper.PlayerHasStatus(true, StatusID.Holmgang_409))
 		{
-			if (Player?.GetHealthRatio() < EquilibriumHeal)
+			if (Player?.GetForecastHealthRatio() < EquilibriumHeal)
 			{
 				if (EquilibriumPvE.CanUse(out act))
 				{
@@ -472,7 +472,7 @@ public sealed class WAR_Reborn : WarriorRotation
 		var healRatio = Math.Min(FlashHeal, NascentFlashPvE.Config.AutoHealRatio);
 
 		setting.CanTarget = t => canTarget(t)
-			&& t.GetHealthRatio() < healRatio
+			&& t.GetForecastHealthRatio() < healRatio
 			&& !t.NoNeedHealingInvuln()
 			&& (!healersOnly || t.IsJobCategory(JobRole.Healer));
 

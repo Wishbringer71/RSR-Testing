@@ -34,6 +34,12 @@ jobs:
       - name: Check the heal target order
         run: python3 .github/scripts/audit/check_heal_target_order.py
 
+      # "Heal ahead of incoming damage" promises that every healing threshold reads the forecast
+      # health. A job threshold on the plain value compiles the same and behaves the same with the
+      # setting off, so only this keeps a new one from slipping back (A191).
+      - name: Check the healing thresholds read the forecast
+        run: python3 .github/scripts/audit/check_heal_threshold_forecast.py
+
       # A target override replaces that whole ranking with one sort, and the two sorts answer
       # different questions: points say who does not survive the next hit, shares say who is furthest
       # from safe. Where the action's own effect text names a percentage threshold, the game works in

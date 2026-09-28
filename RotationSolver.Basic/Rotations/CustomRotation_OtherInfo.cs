@@ -1191,7 +1191,7 @@ public partial class CustomRotation
 		}
 
 		var tank = action.Target.Target;
-		if (tank != null && tank.GetHealthRatio() > floorHealthRatio
+		if (tank != null && tank.GetForecastHealthRatio() > floorHealthRatio
 			&& tank.WillStatusEndGCD(action.Config.StatusRefreshGcdCount, 0, action.Setting.StatusFromSelf, heldBy ?? action.Setting.TargetStatusProvide ?? []))
 		{
 			return true;

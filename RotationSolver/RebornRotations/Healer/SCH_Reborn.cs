@@ -176,7 +176,7 @@ public sealed class SCH_Reborn : ScholarRotation
 			{
 				if (member.DistanceToPlayer() <= 15)
 				{
-					if (member.DoomNeedHealing() || member.GetHealthRatio() < EmergencyTacticsHeal)
+					if (member.DoomNeedHealing() || member.GetForecastHealthRatio() < EmergencyTacticsHeal)
 					{
 						count++;
 						if (count > 1)
@@ -200,7 +200,7 @@ public sealed class SCH_Reborn : ScholarRotation
 				continue;
 			}
 
-			if (item.GetHealthRatio() >= AetherpactRemove)
+			if (item.GetForecastHealthRatio() >= AetherpactRemove)
 			{
 				act = AetherpactPvE;
 				return true;
@@ -311,7 +311,7 @@ public sealed class SCH_Reborn : ScholarRotation
 					break;
 				}
 			}
-			if (HasRecitation && tankHasExcogTarget && ExcogitationPvE.Target.Target.GetHealthRatio() < ExcogHeal
+			if (HasRecitation && tankHasExcogTarget && ExcogitationPvE.Target.Target.GetForecastHealthRatio() < ExcogHeal
 				&& (!ExcogitationNeedsThreat || ExcogitationPvE.Target.Target.IsUnderThreat()))
 			{
 				return true;
@@ -332,13 +332,13 @@ public sealed class SCH_Reborn : ScholarRotation
 		if (AetherpactPvE.CanUse(out act) &&
 			FairyGauge >= LinkFairyGauge &&
 			!haveLink &&
-			AetherpactPvE.Target.Target.GetHealthRatio() <= AetherpactMinimum)
+			AetherpactPvE.Target.Target.GetForecastHealthRatio() <= AetherpactMinimum)
 		{
 			return true;
 		}
 
 		// Otherwise we'll spend aether charges; we didn't burn it on the tank above so use excog based on oGCD heal toggle
-		if (!HasRecitation && !IsLastAbility(false, RecitationPvE) && ExcogitationPvE.CanUse(out act) && ExcogitationPvE.Target.Target.GetHealthRatio() < ExcogHeal
+		if (!HasRecitation && !IsLastAbility(false, RecitationPvE) && ExcogitationPvE.CanUse(out act) && ExcogitationPvE.Target.Target.GetForecastHealthRatio() < ExcogHeal
 			&& (!ExcogitationNeedsThreat || ExcogitationPvE.Target.Target.IsUnderThreat()))
 		{
 			return true;
@@ -850,7 +850,7 @@ public sealed class SCH_Reborn : ScholarRotation
 				// and spend Recitation on an Excogitation that cannot land. The inverted form
 				// happened to mask that. The tank searches in ActionTargetInfo carry the same
 				// guard at the same place.
-				if (!member.IsDead && member.GetHealthRatio() <= ExcogHeal && member.NoNeedHealingInvuln())
+				if (!member.IsDead && member.GetForecastHealthRatio() <= ExcogHeal && member.NoNeedHealingInvuln())
 				{
 					tankNeedsExcog = true;
 					break;

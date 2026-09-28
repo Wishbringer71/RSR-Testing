@@ -280,7 +280,7 @@ public sealed class SGE_Reborn : SageRotation
 			}
 		}
 
-		if (TaurocholePvE.CanUse(out act) && TaurocholePvE.Target.Target.GetHealthRatio() < TaurocholeHeal)
+		if (TaurocholePvE.CanUse(out act) && TaurocholePvE.Target.Target.GetForecastHealthRatio() < TaurocholeHeal)
 		{
 			return true;
 		}
@@ -353,7 +353,7 @@ public sealed class SGE_Reborn : SageRotation
 			for (var i = 0; i < tank.Count; i++)
 			{
 				var t = tank[i];
-				if (t.GetHealthRatio() < KrasisTankHeal)
+				if (t.GetForecastHealthRatio() < KrasisTankHeal)
 				{
 					if (KrasisPvE.CanUse(out act))
 					{
@@ -364,7 +364,7 @@ public sealed class SGE_Reborn : SageRotation
 
 			foreach (var member in PartyMembers)
 			{
-				if (member.GetHealthRatio() < KrasisHeal)
+				if (member.GetForecastHealthRatio() < KrasisHeal)
 				{
 					if (KrasisPvE.CanUse(out act))
 					{
@@ -394,7 +394,7 @@ public sealed class SGE_Reborn : SageRotation
 
 		foreach (var member in PartyMembers)
 		{
-			if (SoteriaPvE.CanUse(out act) && member.HasStatus(true, StatusID.Kardion) && member.GetHealthRatio() < SoteriaHeal)
+			if (SoteriaPvE.CanUse(out act) && member.HasStatus(true, StatusID.Kardion) && member.GetForecastHealthRatio() < SoteriaHeal)
 			{
 				return true;
 			}
@@ -403,7 +403,7 @@ public sealed class SGE_Reborn : SageRotation
 		for (var i = 0; i < tank.Count; i++)
 		{
 			var t = tank[i];
-			if (Addersgall < 1 && t.GetHealthRatio() < OGCDTankHeal)
+			if (Addersgall < 1 && t.GetForecastHealthRatio() < OGCDTankHeal)
 			{
 				if (HaimaPvE.CanUse(out act))
 				{
@@ -459,7 +459,7 @@ public sealed class SGE_Reborn : SageRotation
 		var found = false;
 		foreach (var b in PartyMembers)
 		{
-			if (b.HasStatus(true, StatusID.Kardion) && b.GetHealthRatio() < HealthSingleAbility)
+			if (b.HasStatus(true, StatusID.Kardion) && b.GetForecastHealthRatio() < HealthSingleAbility)
 			{
 				found = true;
 				break;
@@ -774,7 +774,7 @@ public sealed class SGE_Reborn : SageRotation
 		var tanks = PartyMembers.GetJobCategory(JobRole.Tank);
 		foreach (var t in tanks)
 		{
-			if (t.GetHealthRatio() < PneumaAOETankHeal)
+			if (t.GetForecastHealthRatio() < PneumaAOETankHeal)
 			{
 				tankBelowThreshold = true;
 				break;
@@ -874,7 +874,7 @@ public sealed class SGE_Reborn : SageRotation
 
 		foreach (var member in PartyMembers)
 		{
-			if (member.GetHealthRatio() < PneumaSTPartyHeal && !member.IsDead)
+			if (member.GetForecastHealthRatio() < PneumaSTPartyHeal && !member.IsDead)
 			{
 				if (PneumaPvE.CanUse(out act))
 				{
@@ -886,7 +886,7 @@ public sealed class SGE_Reborn : SageRotation
 		var tanks = PartyMembers.GetJobCategory(JobRole.Tank);
 		foreach (var tank in tanks)
 		{
-			if (tank.GetHealthRatio() < PneumaSTTankHeal && !tank.IsDead)
+			if (tank.GetForecastHealthRatio() < PneumaSTTankHeal && !tank.IsDead)
 			{
 				if (PneumaPvE.CanUse(out act))
 				{

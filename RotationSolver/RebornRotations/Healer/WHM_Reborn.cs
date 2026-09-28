@@ -412,7 +412,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		if (BenedictionPvE.CanUse(out act) &&
-			BenedictionPvE.Target.Target.GetHealthRatio() < BenedictionHeal &&
+			BenedictionPvE.Target.Target.GetForecastHealthRatio() < BenedictionHeal &&
 			(!BenedictionNeedsThreat || BenedictionPvE.Target.Target.IsUnderThreat()))
 		{
 			return true;
@@ -559,7 +559,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		// Dead, where the dark knight heals himself by attacking and the owner's rule asks for a HoT
 		// as the light support (concept 09).
 		if (RegenPvE.CanUse(out act)
-			&& (RegenPvE.Target.Target.GetHealthRatio() > RegenHeal
+			&& (RegenPvE.Target.Target.GetForecastHealthRatio() > RegenHeal
 				|| RegenPvE.Target.Target.HasStatus(false, StatusID.WalkingDead)))
 		{
 			return true;

@@ -233,7 +233,7 @@ public sealed class AST_Reborn : AstrologianRotation
 		static bool CanCastSynastry(IBaseAction actionCheck, IBaseAction synastry, float synastryHp, IAction next)
 			=> next.IsTheSameTo(false, actionCheck) &&
 			   synastry.Target.Target == actionCheck.Target.Target &&
-			   synastry.Target.Target.GetHealthRatio() < synastryHp;
+			   synastry.Target.Target.GetForecastHealthRatio() < synastryHp;
 	}
 
 	[RotationDesc(ActionID.ExaltationPvE, ActionID.TheSpirePvE, ActionID.TheBolePvE, ActionID.CelestialIntersectionPvE)]
@@ -312,7 +312,7 @@ public sealed class AST_Reborn : AstrologianRotation
 
 		if (EssentialDignityPvE.Cooldown.CurrentCharges == 3 && EssentialDignityPvE.CanUse(out act, usedUp: true))
 		{
-			if (EssentialDignityPvE.Target.Target.GetHealthRatio() < EssentialDignityThird)
+			if (EssentialDignityPvE.Target.Target.GetForecastHealthRatio() < EssentialDignityThird)
 			{
 				return true;
 			}
@@ -320,7 +320,7 @@ public sealed class AST_Reborn : AstrologianRotation
 
 		if (EssentialDignityPvE.Cooldown.CurrentCharges == 2 && EssentialDignityPvE.CanUse(out act, usedUp: true))
 		{
-			if (EssentialDignityPvE.Target.Target.GetHealthRatio() < EssentialDignitySecond)
+			if (EssentialDignityPvE.Target.Target.GetForecastHealthRatio() < EssentialDignitySecond)
 			{
 				return true;
 			}
@@ -330,7 +330,7 @@ public sealed class AST_Reborn : AstrologianRotation
 		// answer; the last one does, and only it waits for danger.
 		if (EssentialDignityPvE.Cooldown.CurrentCharges == 1 && EssentialDignityPvE.CanUse(out act, usedUp: true))
 		{
-			if (EssentialDignityPvE.Target.Target.GetHealthRatio() < EssentialDignityLast
+			if (EssentialDignityPvE.Target.Target.GetForecastHealthRatio() < EssentialDignityLast
 				&& (!EssentialDignityNeedsThreat || EssentialDignityPvE.Target.Target.IsUnderThreat()))
 			{
 				return true;
@@ -593,7 +593,7 @@ public sealed class AST_Reborn : AstrologianRotation
 
 		if (AspectedBeneficPvE.CanUse(out act))
 		{
-			if (IsMoving || AspectedBeneficPvE.Target.Target.GetHealthRatio() < AspectedBeneficHeal)
+			if (IsMoving || AspectedBeneficPvE.Target.Target.GetForecastHealthRatio() < AspectedBeneficHeal)
 			{
 				return true;
 			}

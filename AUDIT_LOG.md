@@ -4327,6 +4327,17 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch (Code beider Projekte, Listenabgleich).
 
+### A191 · Upstream-Sync 28.09.2026 ausgewertet; Heilschwellen der Jobs auf die Vorausschau (28.09.2026)
+
+- *Sync:* fünf Upstream-Commits in `main` und den Zweig gemergt. `c3fac720b`: (a) der Selbst-Kurzschluss der Heilzielwahl gibt den Spieler nur zurück, wenn die Aktion ihn überhaupt treffen kann; (b) Krieger: Nascent Flash aus der GCD- in die Fähigkeitsheilung verlegt, mit Zielstrategie (niedrigste Gesundheit, Heiler zuerst, nur Heiler). Drei Statuslisten-Einträge (`InvincibleStatus` 5145, 5434; `NoCastingStatus` 5546).
+- *Konflikt:* der Selbst-Kurzschluss in `GeneralHealTarget`, im Zweig und in `main`. Aufgelöst als Vereinigung: die zwei Fork-Prüfungen (heilungsunwirksamer Status, Living-Dead-Rückhaltung) und die Vorausschau bleiben, die Upstream-Prüfung „kann die Aktion den Spieler treffen" kommt dazu.
+- *Wirkung im Kampf:* (a) Heilungen, die nur andere treffen, fielen bei niedriger eigener Gesundheit nie — jetzt schon. (b) Der Krieger heilt mit Nascent Flash andere Gruppenmitglieder. **Wechselwirkung mit Fork-Regeln:** Nascent Flash teilt die Abklingzeit mit Bloodwhetting (Job-Guide, 28.09.2026), und die Heilfähigkeiten laufen im Dispatch vor der Einzelabwehr. Ein angekündigter Tankbuster auf den Krieger kann so ohne Bloodwhetting eintreffen, weil ein Mitglied unter 60 % die Abklingzeit bekommen hat. Richtungsentscheidung (eigene Stufe 1 gegen fremde Heilung, Konzept 09 gegen Konzept 07), erfasst in `TODO.md`.
+- *Befund aus der Auswertung, eine Klasse:* Upstreams neue Schwelle las `GetHealthRatio()`; der Text von „Heal ahead of incoming damage" bindet „Every healing threshold". Erhebung aller Standardrotationen: 31 Heilschwellen lasen den Stand. Alle auf `GetForecastHealthRatio()` umgestellt (öffentlich gemacht, damit Rotationsautoren sie nutzen können); mit ausgeschalteter Einstellung identisch. Abwehrschwellen bleiben. Duty- und PvP-Rotationen sowie `ExtraRotations` nicht angefasst (außerhalb des Profils bzw. fremd).
+- *Prüfmittel:* `check_heal_threshold_forecast.py` mit Selbsttest; gegen den Stand vor der Umstellung gemessen: 31 Funde, danach 0. In der CI.
+- *Falsifikation:* **Kein Defekt?** Der Einstellungstext sagt „every". **Option falsch?** Ausgeschaltet exakt gleich; eingeschaltet fällt eine Jobheilung bei schnell fallender Gesundheit etwa einen GCD früher — wie die zentralen Schwellen seit A93. **Ausgeliefert, nichts ändert sich?** Mit der Einstellung aus (ab Werk) gewollt.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
