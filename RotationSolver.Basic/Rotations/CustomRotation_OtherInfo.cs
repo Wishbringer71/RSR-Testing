@@ -1149,6 +1149,59 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
+	/// A healer's pull upkeep: an instant HoT or barrier kept on the tank through a dungeon pull and
+	/// renewed as soon as it runs out or is used up. One rule for every healer (the white mage's Regen,
+	/// the astrologian's Aspected Benefic, the sage's Eukrasian Diagnosis); only the action differs.
+	/// </summary>
+	/// <param name="action">The instant HoT or barrier.</param>
+	/// <param name="prePullMinimumHostileCount">See <see cref="TankApproachingMobGroup"/>.</param>
+	/// <param name="wallToWallMinimumHostileCount">See <see cref="TankApproachingMobGroup"/>.</param>
+	/// <param name="floorHealthRatio">At or below this the tank is left to the job's emergency heals;
+	/// 0 where the upkeep action is itself the better emergency GCD.</param>
+	/// <param name="raise">The job's raise. The upkeep never spends the MP a raise needs: a pull runs
+	/// for minutes and renews on every broken barrier, and a healer who cannot raise the one who dies
+	/// has traded the party's safety for a tank who was never in danger.</param>
+	/// <param name="heldBy">Statuses that already do the upkeep's job on the tank, where the action's
+	/// own list is narrower (a barrier that cannot stack with a sibling). Null: the action's own list.</param>
+	/// <param name="act">The action aimed at the tank, when due.</param>
+	/// <remarks>
+	/// The target override bypasses the candidate status check (FindTankTarget does not call
+	/// CheckStatus), so the remaining duration is checked here. A barrier is removed by the game when
+	/// it is used up, so the same check renews it on breaking as on running out.
+	/// </remarks>
+	protected static bool TryPullUpkeepOnTank(IBaseAction action, int prePullMinimumHostileCount, int wallToWallMinimumHostileCount,
+		float floorHealthRatio, IBaseAction? raise, StatusID[]? heldBy, out IAction? act)
+	{
+		act = null;
+
+		if (!TankApproachingMobGroup(prePullMinimumHostileCount, wallToWallMinimumHostileCount))
+		{
+			return false;
+		}
+
+		if (raise != null && raise.EnoughLevel && CurrentMp < action.Info.MPNeed + raise.Info.MPNeed)
+		{
+			return false;
+		}
+
+		if (!action.CanUse(out act, targetOverride: TargetType.Tank))
+		{
+			act = null;
+			return false;
+		}
+
+		var tank = action.Target.Target;
+		if (tank != null && tank.GetHealthRatio() > floorHealthRatio
+			&& tank.WillStatusEndGCD(action.Config.StatusRefreshGcdCount, 0, action.Setting.StatusFromSelf, heldBy ?? action.Setting.TargetStatusProvide ?? []))
+		{
+			return true;
+		}
+
+		act = null;
+		return false;
+	}
+
+	/// <summary>
 	/// All targets. This includes both hostile and friendly targets.
 	/// </summary>
 	protected static IEnumerable<IBattleChara> AllTargets => DataCenter.AllTargets;

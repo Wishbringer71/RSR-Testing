@@ -45,6 +45,42 @@ public sealed class SGE_Reborn : SageRotation
 			+ "Off: the health threshold alone decides.")]
 	public bool TaurocholeNeedsThreat { get; set; } = true;
 
+	// The owner's rule for shield healers (concept 15, V1): the same pull upkeep as the white mage's
+	// Regen, with a barrier, renewed when it runs out or is used up, instant so it costs nothing while
+	// running.
+	[RotationConfig(CombatType.PvE, Name = "Keep Eukrasian Diagnosis on the tank through a pull",
+		Tooltip = "Eukrasian Diagnosis goes on the tank as they close in on a group and is renewed for as long "
+			+ "as the pull lasts - whenever the barrier runs out or has been used up.\n"
+			+ "In a fight: the tank takes the first hits behind a barrier, and every broken barrier is replaced "
+			+ "with the next GCD. Eukrasia and Eukrasian Diagnosis are both instant, so nothing is lost while "
+			+ "running. Each renewal costs a GCD that would otherwise be Dosis, and its MP; it stops while the MP "
+			+ "left would no longer cover Egeiro. Not placed while the tank already carries a barrier it cannot "
+			+ "stack with (Galvanize, Eukrasian Prognosis).\n"
+			+ "Dungeons only: in Trials and Raids the rule does not apply, because there the damage is scripted "
+			+ "rather than a stream.")]
+	public bool UsePreEukrasianDiagnosis { get; set; } = true;
+
+	[Range(1, 8, ConfigUnitType.None, 1)]
+	[RotationConfig(CombatType.PvE, Name = "Enemies near the tank before the pull", Parent = nameof(UsePreEukrasianDiagnosis),
+		Tooltip = "How many enemies have to stand within gap-closer range of the tank, before combat "
+			+ "starts, for the barrier above to go out.\n"
+			+ "Lower: it also goes up for a single stray enemy, which costs a GCD you would rather "
+			+ "spend on damage. Higher: the tank pulls a small group without it and the first hits land "
+			+ "on a tank without a barrier.")]
+	public int PreEukrasianDiagnosisMinHostiles { get; set; } = 2;
+
+	[Range(1, 12, ConfigUnitType.None, 1)]
+	[RotationConfig(CombatType.PvE, Name = "Enemies still around the tank during the pull", Parent = nameof(UsePreEukrasianDiagnosis),
+		Tooltip = "The same count, but during combat: how many enemies have to remain around the tank "
+			+ "for the barrier to keep being renewed. Once the pull thins out below this number, "
+			+ "healing falls back to reacting to health thresholds.\n"
+			+ "Lower: the upkeep runs to the end of the pull, so GCDs keep going to the barrier while "
+			+ "the last two enemies are dying and the damage no longer warrants it.\n"
+			+ "Higher: the upkeep stops early and the tail of the pull is healed reactively, which "
+			+ "frees those GCDs for damage but leaves the tank without a barrier if the pull is "
+			+ "re-engaged.")]
+	public int PreEukrasianDiagnosisMinWallToWallHostiles { get; set; } = 3;
+
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Health threshold party member needs to be to use Taurochole")]
 	public float TaurocholeHeal { get; set; } = 0.8f;
@@ -447,6 +483,20 @@ public sealed class SGE_Reborn : SageRotation
 	#region Eukrasia Logic
 	private IBaseAction? _EukrasiaActionAim = null;
 
+	// Set while the aim is the pull upkeep: the barrier then goes on the tank rather than on whoever the
+	// action's own targeting picks.
+	private bool _eukrasiaDiagnosisForTank;
+
+	// Eukrasian Diagnosis's own list, widened by the barrier its effect text says it cannot stack with.
+	private static readonly StatusID[] TankBarrierHeld = [StatusID.EukrasianDiagnosis, StatusID.Galvanize, StatusID.EukrasianPrognosis];
+
+	// Out of combat ClearEukrasia takes Eukrasia off again while no enemy is in reach of the sage, so the
+	// pre-pull barrier waits until one is - otherwise Eukrasia would be pressed and removed in turn.
+	private bool PullBarrierDue() =>
+		UsePreEukrasianDiagnosis && (InCombat || HasHostilesInMaxRange)
+		&& TryPullUpkeepOnTank(EukrasianDiagnosisPvE, PreEukrasianDiagnosisMinHostiles, PreEukrasianDiagnosisMinWallToWallHostiles,
+			0f, EgeiroPvE, TankBarrierHeld, out _);
+
 	// Sets the target Eukrasia action to be performed next.
 	// If the action is null, it exits early.
 	// If the current action aim is not null and the last action matches certain conditions, it exits early.
@@ -468,6 +518,7 @@ public sealed class SGE_Reborn : SageRotation
 		{
 			_lastEukrasiaActionAim = _EukrasiaActionAim;
 			_EukrasiaActionAim = null;
+			_eukrasiaDiagnosisForTank = false;
 			if (HasEukrasia && ((InCombat && HasHostilesInMaxRange && nextGCD == null && SecondsSinceLastNextGCDChange >= 2f) || (!InCombat && !HasHostilesInMaxRange)))
 			{
 				StatusHelper.StatusOff(StatusID.Eukrasia);
@@ -495,6 +546,16 @@ public sealed class SGE_Reborn : SageRotation
 			&& EukrasianDiagnosisPvE.CanUse(out _))
 		{
 			SetEukrasia(EukrasianDiagnosisPvE);
+			_eukrasiaDiagnosisForTank = false;
+		}
+		// After the defence shields, ahead of the damage-over-time: in a pull the tank's damage is certain.
+		else if (EukrasianDiagnosisPvE.EnoughLevel && EukrasianDiagnosisPvE.IsEnabled && PullBarrierDue())
+		{
+			if (_EukrasiaActionAim != EukrasianDiagnosisPvE)
+			{
+				SetEukrasia(EukrasianDiagnosisPvE);
+				_eukrasiaDiagnosisForTank = _EukrasiaActionAim == EukrasianDiagnosisPvE;
+			}
 		}
 		else if (EukrasianDyskrasiaPvE.EnoughLevel && EukrasianDyskrasiaPvE.IsEnabled && (!MergedStatus.HasFlag(AutoStatus.DefenseSingle) && !MergedStatus.HasFlag(AutoStatus.DefenseArea))
 			&& EukrasianDyskrasiaPvE.CanUse(out _))
@@ -594,7 +655,7 @@ public sealed class SGE_Reborn : SageRotation
 				return false;
 			}
 
-			if (EukrasianDiagnosisPvE.CanUse(out act))
+			if (EukrasianDiagnosisPvE.CanUse(out act, targetOverride: _eukrasiaDiagnosisForTank ? TargetType.Tank : default))
 			{
 				return true;
 			}

@@ -473,33 +473,14 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	/// GeneralGCD, HealSingleGCD and HealAreaGCD alike - the outer dispatch reaches the two heal methods
 	/// first, so a raised heal-need flag would otherwise starve the check in GeneralGCD for a whole
 	/// pull. Never fires at or below <see cref="RegenHeal"/>, leaving a genuine emergency to Cure II /
-	/// Cure. targetOverride bypasses the candidate status check (FindTankTarget doesn't call
-	/// CheckStatus), so the remaining duration is verified explicitly here.
+	/// Cure. The rule itself is the healers' shared one, TryPullUpkeepOnTank.
 	/// </summary>
 	private bool TrySustainRegenOnTank(out IAction? act)
 	{
 		act = null;
-
-		if (!UsePreRegen || !TankApproachingMobGroup(PreRegenMinHostiles, PreRegenMinWallToWallHostiles))
-		{
-			return false;
-		}
-
-		if (!RegenPvE.CanUse(out act, targetOverride: TargetType.Tank))
-		{
-			act = null;
-			return false;
-		}
-
-		var tank = RegenPvE.Target.Target;
-		if (tank != null && tank.GetHealthRatio() > RegenHeal
-			&& tank.WillStatusEndGCD(RegenPvE.Config.StatusRefreshGcdCount, 0, RegenPvE.Setting.StatusFromSelf, RegenPvE.Setting.TargetStatusProvide ?? []))
-		{
-			return true;
-		}
-
-		act = null;
-		return false;
+		return UsePreRegen
+			&& TryPullUpkeepOnTank(RegenPvE, PreRegenMinHostiles, PreRegenMinWallToWallHostiles,
+				RegenHeal, RaisePvE, null, out act);
 	}
 
 	[RotationDesc(ActionID.AfflatusRapturePvE, ActionID.MedicaIiPvE, ActionID.CureIiiPvE, ActionID.MedicaPvE)]

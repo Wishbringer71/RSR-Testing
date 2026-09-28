@@ -324,3 +324,12 @@ Off by default. On, it replaces the role short-cuts in the heal target choice, b
 fall: a healer or tank under their role threshold who is being attacked comes first, lowest health
 first and a healer before a tank at equal health; then everyone else - by fewest hit points while an
 area cast is announced, otherwise by lowest percentage.
+
+## Sage: a barrier on the tank through a dungeon pull
+
+New setting `Keep Eukrasian Diagnosis on the tank through a pull`, on by default like the White
+Mage's Regen upkeep. As the tank closes in on a group, Eukrasian Diagnosis goes on them and is renewed
+whenever the barrier runs out or breaks, for as long as the pull lasts. Both steps are instant, so it
+works while running. Not placed over Galvanize or Eukrasian Prognosis. White Mage, Astrologian and
+Sage now share one rule for this upkeep, and none of them spends the MP their raise needs on it.
+

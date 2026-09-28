@@ -31,7 +31,7 @@ Shake It Off hebt die eigenen Status Thrill of Battle, Damnation und Bloodwhetti
 
 ### Vorschläge aus dem WrathCombo-Vergleich · N, U
 
-Sechs Ideen zur Entscheidung (Konzept 15, Tabelle „Vorschläge"): vorbeugendes Regen/Schild auf den Tank ohne Countdown (V1), allgemeinere Zielmarkierungs-Pfade (V2), kuratierte Raidwide-Listen (V3), Meditate erst nach Stillstand (V4), Tanzpartner-Wechsel nach dessen Tod — erst zu prüfen (V5), Kerachole nicht über Sacred Soil (V6, Eingabe für Konzept 08).
+V1 gebaut für Weißmagier, Astrologe und Weiser (A184); offen dazu: seine Lesart von „Verfall" (Verbrauch oder nur Ablauf) und Aetherpact als Vorab-HoT des Gelehrten — beides gebündelt vorgelegt. Offen: allgemeinere Zielmarkierungs-Pfade (V2), kuratierte Raidwide-Listen (V3), Meditate erst nach Stillstand (V4), Tanzpartner-Wechsel nach dessen Tod — erst zu prüfen (V5), Kerachole nicht über Sacred Soil (V6, Eingabe für Konzept 08).
 
 **Konzept:** `docs/rotation-flow/15-wrathcombo-comparison.md`
 

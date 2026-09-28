@@ -4262,6 +4262,16 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A184 · V1: Vorab-Barriere und Vorab-HoT als eine Heiler-Regel; Weiser neu (28.09.2026)
+
+- *Research:* Weißmagier (`TrySustainRegenOnTank`) und Astrologe (`TrySustainAspectedBeneficOnTank`) trugen dieselbe Regel als Klon. Weiser: Eukrasian Diagnosis nur unter der Einzelabwehr-Flagge, nie für den Pull. Gelehrter: kein Sofortschild. Wirktexte (Job-Guide, abgerufen 28.09.2026): Eukrasia sofort, setzt 1 s auf alle GCDs; Eukrasian Diagnosis sofort, 800 MP, Barriere 180 % der Heilung, 30 s, nicht stapelbar mit Eukrasian Prognosis und Galvanize; Fey Union endet bei jeder anderen Feenaktion und außerhalb 30 y der Fee.
+- *Optionen:* Klon für den Weisen; gemeinsame Regel auf Stufe „Heiler"; Nullvariante.
+- *Umgesetzt:* `TryPullUpkeepOnTank` (gemeinsam), Weißmagier und Astrologe darauf umgestellt (Verhalten gleich, dazu die MP-Reserve für die Wiederbelebung), Weiser `UsePreEukrasianDiagnosis`. Die Zählvorgaben 2/3 und die Bereiche als Ausnahme: „gleiche Bedingungen wie beim Weißmagier-Regen" ist seine Vorgabe, und wie viele Gegner einen Pull ausmachen, steht in keinem Blatt.
+- *Falsifikation:* **Kein Defekt?** Seine Vorgabe verlangt die Barriere; der Weise hatte keine. **Option falsch?** Die gemeinsame Regel ändert Weißmagier und Astrologe nur unterhalb von Wiederbelebungs- plus Aktionskosten an MP. **Ausgeliefert, nichts ändert sich — oder zu viel?** Bricht die Barriere jeden GCD, verdrängt sie jede Dosis bis zur MP-Reserve; das ist die gebaute Lesart von „Ablauf/Verfall" und zur Entscheidung vorgelegt. Eukrasia außerhalb des Kampfs ohne Gegner in Reichweite hätte sich mit der bestehenden Bereinigung abgewechselt — ausgeschlossen.
+- *Betroffene:* Autoren abgeleiteter Rotationen erhalten `TryPullUpkeepOnTank` als geschützte Methode (Erweiterung, kein Bruch).
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI (in dieser Umgebung kein .NET).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

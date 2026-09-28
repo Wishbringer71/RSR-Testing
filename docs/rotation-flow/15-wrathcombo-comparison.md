@@ -70,6 +70,32 @@ Grundlage für das V1-Konzept; Kriterium seiner Präzisierung ist das Wirken im 
 
 Die Rollenaktionen der Heiler (Repose, Esuna, Lucid Dreaming, Swiftcast, Surecast, Rescue) enthalten keine Betäubung; Repose ist Schlaf mit 2,5 s Wirkzeit. Swiftcast bleibt nach seiner Vorgabe für Wiederbelebungen.
 
+## V1: Stand der Umsetzung (A184)
+
+**Eine Regel für alle Heiler** („Universell zuerst", Stufe „Heiler"): `TryPullUpkeepOnTank` in
+`CustomRotation_OtherInfo.cs`. Sie hält eine Sofort-Regen- oder Sofort-Barriereaktion auf dem Tank, solange
+er sich einer Gruppe nähert oder sie bindet (`TankApproachingMobGroup`, nur Dungeons), und erneuert sie,
+sobald der Status fehlt oder innerhalb der Auffrischfrist endet. Eine verbrauchte Barriere nimmt das Spiel
+vom Ziel; dieselbe Prüfung erneuert deshalb bei Ablauf wie bei Verbrauch. Nur die Aktion ist je Job
+verschieden. Die Regel gibt nie das MP aus, das die eigene Wiederbelebung braucht (Wirkkosten beider Aktionen
+aus den Aktionsdaten) — meine Ableitung aus seiner Vorgabe, Swiftcast für Wiederbelebungen zu halten: Ein
+Heiler, der den Toten nicht aufheben kann, hat die Sicherheit der Gruppe für einen Tank ausgegeben, der nicht
+in Gefahr war.
+
+| Heiler | Aktion | Stand |
+|---|---|---|
+| Weißmagier | Regen, auch im Countdown | vorhanden (`UsePreRegen`), jetzt über die gemeinsame Regel |
+| Astrologe | Aspected Benefic | vorhanden (`UsePreAspectedBenefic`), jetzt über die gemeinsame Regel |
+| Weiser | Eukrasia + Eukrasian Diagnosis, beide sofort | **neu** (`UsePreEukrasianDiagnosis`, ab Werk an wie beim Weißmagier). Rang in der Eukrasia-Wahl: nach Flächen- und Einzelabwehr, vor den DoTs. Nicht gelegt, solange der Tank Galvanize oder Eukrasian Prognosis trägt (laut Wirktext nicht stapelbar). Keine Gesundheitsuntergrenze: Anders als Regen ist Eukrasian Diagnosis selbst der beste Sofort-GCD im Notfall. Außerhalb des Kampfs erst, wenn ein Gegner in Reichweite des Weisen ist — sonst nimmt die bestehende Eukrasia-Bereinigung den Status wieder ab. |
+| Gelehrter | kein Sofortschild (Adloquium 2 s Wirkzeit) | nicht gebaut: Stehenbleiben erst am Ende des Wall-to-Wall (seine Präzisierung). Sein Vorschlag Aetherpact/Fey Union als Vorab-HoT kollidiert mit zwei bestehenden Einstellungstexten („Remove Aetherpact if … above 90 %", „Do not start Aetherpact if … above 80 %"); zur Entscheidung vorgelegt. |
+
+**Konsequenz, die er kennen muss (Schlussfolgerung, am Spiel nicht gemessen):** Bei Regen fällt die
+Erneuerung alle 18 s. Eine Barriere bricht in einem großen Pull, sobald der Tank ihren Wert an Schaden
+nimmt. Bricht sie jeden GCD, gehen alle GCDs des Weisen an sie statt an Dosis, und 800 MP je Erneuerung
+leeren den Vorrat bis zur Wiederbelebungsreserve. Wie oft sie bricht, hängt vom Pull ab und ist von hier
+nicht messbar. Ob „Verfall" in seiner Vorgabe den Verbrauch meint oder nur den Ablauf, entscheidet er
+(gebündelte Vorlage).
+
 ## Nicht übernommen, mit Grund
 
 - **Heilziel-Wahl nach Rangfolge von Zielarten** (Mouseover, Fokus, niedrigste Gesundheit): RSRs Wahl

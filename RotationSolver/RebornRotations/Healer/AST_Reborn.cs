@@ -512,33 +512,14 @@ public sealed class AST_Reborn : AstrologianRotation
 	/// Called from GeneralGCD, HealSingleGCD and HealAreaGCD alike - the outer dispatch reaches the two
 	/// heal methods first, so a raised heal-need flag would otherwise starve the check in GeneralGCD
 	/// for a whole pull. Never fires at or below <see cref="AspectedBeneficHeal"/>, leaving a genuine
-	/// emergency to Benefic II / Benefic. targetOverride bypasses the candidate status check
-	/// (FindTankTarget doesn't call CheckStatus), so the remaining duration is verified explicitly here.
+	/// emergency to Benefic II / Benefic. The rule itself is the healers' shared one, TryPullUpkeepOnTank.
 	/// </summary>
 	private bool TrySustainAspectedBeneficOnTank(out IAction? act)
 	{
 		act = null;
-
-		if (!UsePreAspectedBenefic || !TankApproachingMobGroup(PreAspectedBeneficMinHostiles, PreAspectedBeneficMinWallToWallHostiles))
-		{
-			return false;
-		}
-
-		if (!AspectedBeneficPvE.CanUse(out act, targetOverride: TargetType.Tank))
-		{
-			act = null;
-			return false;
-		}
-
-		var tank = AspectedBeneficPvE.Target.Target;
-		if (tank != null && tank.GetHealthRatio() > AspectedBeneficHeal
-			&& tank.WillStatusEndGCD(AspectedBeneficPvE.Config.StatusRefreshGcdCount, 0, AspectedBeneficPvE.Setting.StatusFromSelf, AspectedBeneficPvE.Setting.TargetStatusProvide ?? []))
-		{
-			return true;
-		}
-
-		act = null;
-		return false;
+		return UsePreAspectedBenefic
+			&& TryPullUpkeepOnTank(AspectedBeneficPvE, PreAspectedBeneficMinHostiles, PreAspectedBeneficMinWallToWallHostiles,
+				AspectedBeneficHeal, AscendPvE, null, out act);
 	}
 
 	protected override bool DefenseSingleGCD(out IAction? act)

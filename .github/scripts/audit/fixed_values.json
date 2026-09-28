@@ -714,6 +714,46 @@
    "status": "exception",
    "loop": "A182",
    "reason": "The smallest party composition in the game (ContentMemberType row 2: one tank, one healer, one melee, one ranged), read through v2.xivapi.com in A171; the area-heal statistics weigh the lowest this many members of a larger party, as the level statistics beside them always have"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
+   "code": "[Range(1, 8, ConfigUnitType.None, 1)]",
+   "values": [
+    "8"
+   ],
+   "status": "exception",
+   "loop": "A184",
+   "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting; the owner's rule for shield healers is 'the same conditions as the white mage's Regen' (concept 15, V1), so the default and range are those of PreRegenMin*/PreAspectedBeneficMin*. Not derivable from game data: no sheet says how many enemies make a pull"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
+   "code": "public int PreEukrasianDiagnosisMinHostiles { get; set; } = 2;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A184",
+   "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting; the owner's rule for shield healers is 'the same conditions as the white mage's Regen' (concept 15, V1), so the default and range are those of PreRegenMin*/PreAspectedBeneficMin*. Not derivable from game data: no sheet says how many enemies make a pull"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
+   "code": "[Range(1, 12, ConfigUnitType.None, 1)]",
+   "values": [
+    "12"
+   ],
+   "status": "exception",
+   "loop": "A184",
+   "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting; the owner's rule for shield healers is 'the same conditions as the white mage's Regen' (concept 15, V1), so the default and range are those of PreRegenMin*/PreAspectedBeneficMin*. Not derivable from game data: no sheet says how many enemies make a pull"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
+   "code": "public int PreEukrasianDiagnosisMinWallToWallHostiles { get; set; } = 3;",
+   "values": [
+    "3"
+   ],
+   "status": "exception",
+   "loop": "A184",
+   "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting; the owner's rule for shield healers is 'the same conditions as the white mage's Regen' (concept 15, V1), so the default and range are those of PreRegenMin*/PreAspectedBeneficMin*. Not derivable from game data: no sheet says how many enemies make a pull"
   }
  ]
 }
