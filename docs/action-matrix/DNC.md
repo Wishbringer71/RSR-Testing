@@ -1,6 +1,6 @@
 # DNC — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-27; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-28; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `DancerRotation`
 - Rotation: `RotationSolver/RebornRotations/Ranged/DNC_Reborn.cs`
@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-27; nic
 
 ## Nutzung
 
-direkt: 38 · ungenutzt: 4 · über andere Aktion: 6
+direkt: 39 · ungenutzt: 3 · über andere Aktion: 6
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -30,7 +30,7 @@ direkt: 38 · ungenutzt: 4 · über andere Aktion: 6
 | Job | Double Technical Finish (`DoubleTechnicalFinishPvE`) | 16194 | Weaponskill | über Technical Step |
 | Job | Emboite (`EmboitePvE`) | 15999 | Weaponskill | direkt |
 | Job | En Avant (`EnAvantPvE`) | 16010 | Ability | direkt |
-| Job | Ending (`EndingPvE`) | 18073 | Ability | ungenutzt |
+| Job | Ending (`EndingPvE`) | 18073 | Ability | direkt |
 | Job | Entrechat (`EntrechatPvE`) | 16000 | Weaponskill | direkt |
 | Job | Fan Dance (`FanDancePvE`) | 16007 | Ability | direkt |
 | Job | Fan Dance II (`FanDanceIiPvE`) | 16008 | Ability | direkt |
@@ -214,7 +214,6 @@ Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Br
 
 Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 
-- Ending (`EndingPvE`, Ability): ungenutzt
 - Foot Graze (`FootGrazePvE`, Ability): ungenutzt
 - Improvised Finish (`ImprovisedFinishPvE`, Ability): ungenutzt — Knopfwechsel über Improvisation gesperrt: deren StatusProvide enthält Improvisation (außer in den letzten StatusRefreshGcdCount GCDs des Status oder mit ShouldCheckStatus aus)
 - Leg Graze (`LegGrazePvE`, Ability): ungenutzt

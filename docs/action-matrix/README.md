@@ -1,6 +1,6 @@
 # Abhängigkeitsmatrix je Job
 
-Erzeugt am 2026-09-27 von `.github/scripts/audit/generate_action_matrix.py`. Methode, Grenzen und Bewertung: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt am 2026-09-28 von `.github/scripts/audit/generate_action_matrix.py`. Methode, Grenzen und Bewertung: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 | Job | Aktionen | direkt | über andere Aktion | nur geprüft | nur gelesen | ungenutzt | unvollständig beschrieben | Wechselwirkungen | Verlängerungen | Selbsterhaltung |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -9,7 +9,7 @@ Erzeugt am 2026-09-27 von `.github/scripts/audit/generate_action_matrix.py`. Met
 | [BLU](BLU.md) (begrenzter Job) | 137 | 114 | 0 | 0 | 0 | 23 | 3 | 15 | 0 | 1 |
 | [BRD](BRD.md) | 41 | 39 | 0 | 0 | 0 | 2 | 4 | 0 | 0 | 0 |
 | [BST](BST.md) (begrenzter Job) | 48 | 31 | 8 | 0 | 0 | 9 | 2 | 1 | 0 | 0 |
-| [DNC](DNC.md) | 48 | 38 | 6 | 0 | 0 | 4 | 12 | 1 | 0 | 0 |
+| [DNC](DNC.md) | 48 | 39 | 6 | 0 | 0 | 3 | 12 | 1 | 0 | 0 |
 | [DRG](DRG.md) | 40 | 40 | 0 | 0 | 0 | 0 | 16 | 0 | 0 | 0 |
 | [DRK](DRK.md) | 43 | 41 | 1 | 0 | 0 | 1 | 7 | 0 | 4 | 0 |
 | [GNB](GNB.md) | 46 | 44 | 0 | 0 | 1 | 1 | 13 | 0 | 0 | 0 |
