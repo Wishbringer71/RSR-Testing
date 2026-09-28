@@ -55,6 +55,8 @@ kleineren Heilungen — und die kommen von selbst, weil der Zweig ohne die Vollh
 Divine Benison und Tetragrammaton weiterläuft und der GCD-Pfad Regen und Cure II behält. Das Ziel
 wird also nicht übergangen, nur die teuerste Antwort darauf.
 
+**Gilt für jeden Heiler, nicht nur den Weißmagier** (A180, sein Profil umfasst alle Kampfjobs). Dieselbe Prüfung (`ObjectHelper.IsUnderThreat`) steht vor der teuersten Einzelheilung jedes Heilers, jeweils hinter einer eigenen Einstellung, ab Werk an: Benediction (Weißmagier), Excogitation als Heilung (Gelehrter, auch unter Recitation), Taurochole als Heilung (Weiser) und die **letzte** Ladung Essential Dignity (Astrologe). Bei Essential Dignity nur die letzte: Die ersten Ladungen laden hintereinander nach, eine davon auszugeben lässt den Tank nicht ohne Antwort; die letzte schon. Die Verteidigungspfade (Excogitation, Taurochole, Haima) bleiben unberührt — sie laufen nur, wenn eine Abwehr angefordert ist, also bei Gefahr.
+
 ## Was Gefährdung heißt
 
 **Aggro sagt nicht, ob jemand Schaden bekommt — nur, ob er *gerichteten* Schaden bekommt.** Eine

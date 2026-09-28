@@ -101,6 +101,18 @@ public sealed class AST_Reborn : AstrologianRotation
 	[RotationConfig(CombatType.PvE, Name = "Minimum HP threshold party member needs to be to use Essential Dignity last charge")]
 	public float EssentialDignityLast { get; set; } = 0.6f;
 
+	// The owner's rule, first built for Benediction (BenedictionNeedsThreat): an emergency measure only
+	// where there is danger, otherwise a HoT and the smaller heals are enough. Every healer carries one,
+	// so the rule reads the same shared check (ObjectHelper.IsUnderThreat) on each.
+	[RotationConfig(CombatType.PvE, Name = "Last charge of Essential Dignity only on a target in danger",
+		Tooltip = "The last charge of Essential Dignity needs a reason beyond low health: the target is being attacked or cast at, an area cast is announced, "
+			+ "or their health is measurably falling.\n"
+			+ "In a fight: a player who was just raised holds a few percent and is taking no damage - without this "
+			+ "he reads as the most urgent member while nothing is happening to him, and the last charge is gone when the tank "
+			+ "needs it. With this on he gets the smaller heals instead.\n"
+			+ "Off: the health threshold alone decides.")]
+	public bool EssentialDignityNeedsThreat { get; set; } = true;
+
 	[RotationConfig(CombatType.PvE, Name = "Prioritize Essential Dignity over single target GCD heals when available")]
 	public EssentialPrioStrategy EssentialPrio2 { get; set; } = EssentialPrioStrategy.UseGCDs;
 
@@ -314,9 +326,12 @@ public sealed class AST_Reborn : AstrologianRotation
 			}
 		}
 
+		// The first charges recharge behind each other, so spending one does not leave the tank without an
+		// answer; the last one does, and only it waits for danger.
 		if (EssentialDignityPvE.Cooldown.CurrentCharges == 1 && EssentialDignityPvE.CanUse(out act, usedUp: true))
 		{
-			if (EssentialDignityPvE.Target.Target.GetHealthRatio() < EssentialDignityLast)
+			if (EssentialDignityPvE.Target.Target.GetHealthRatio() < EssentialDignityLast
+				&& (!EssentialDignityNeedsThreat || EssentialDignityPvE.Target.Target.IsUnderThreat()))
 			{
 				return true;
 			}

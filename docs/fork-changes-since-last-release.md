@@ -303,3 +303,10 @@ shows, under the rotation, whether the rule last held Holy and why not.
 `GetCurrentMitigationPercent` now counts Troubadour, Tactician and Shield Samba at the 15% their effect
 text states (it used 10%) and includes Confession from Plenary Indulgence. `IsPhysicalDamageIncoming`
 now tests the physical attack types (slashing, piercing, blunt, shot); it used to test sound.
+
+## Healers: the big single-target heals wait for danger
+
+What Benediction already did now applies to every healer: the last charge of Essential Dignity,
+Excogitation as a heal and Taurochole as a heal go only to a target in danger - being attacked or cast
+at, an area cast announced, or health measurably falling. A player who was just raised and is taking no
+damage gets the smaller heals instead. Each has its own setting, on by default.

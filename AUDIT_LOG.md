@@ -4224,6 +4224,16 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** Job-Guide und Spieldaten, statisch, Prüfskripte; Compile über die CI.
 
+### A180 · Notfallheilung nur bei Gefahr: auf alle Heiler übertragen (28.09.2026)
+
+**Seine Vorgabe (Konzept 07):** „falls gefahr bevorsteht, z.b. goßer heftiger aoe ist diese notfallmaßnahme gerechtfertigt. wenn der spieler aber keine aggro hat, kein aoe ansteht, oder kein sonstiger schaden ansteht, würde doch hot oder kleinere heals bzw. beides reichen". Bisher nur am Weißmagier umgesetzt (A94), die übrigen Heiler waren „nicht im Profil" — überholt, sein Profil umfasst alle Kampfjobs.
+
+- *Research:* Heilpfade ohne Gefahrenprüfung: Astrologe Essential Dignity (drei Ladungsstufen, `HealSingleAbility`), Gelehrter Excogitation (`HealSingleAbility`, mit und ohne Recitation), Weiser Taurochole (`HealSingleAbility`). Die Verteidigungspfade derselben Aktionen laufen nur bei angeforderter Abwehr.
+- *Umgesetzt:* `IsUnderThreat` vor jeder dieser Heilungen, je Heiler eine Einstellung wie `BenedictionNeedsThreat`, ab Werk an. Essential Dignity nur für die letzte Ladung.
+- *Falsifikation:* **Kein Defekt?** Die Vorgabe spricht von der Notfallmaßnahme, nicht von Benediction; der Grund (die teuerste Antwort fehlt beim nächsten Tankschaden) gilt für jede dieser Aktionen. **Option falsch?** Ein Ziel ohne Gefahr bekommt die kleineren Heilungen; übergangen wird es nicht. Ein Tank mit Aggro ist immer „in Gefahr", also unverändert versorgt. **Ausgeliefert, nichts ändert sich?** Mit ausgeschalteter Einstellung das alte Verhalten.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

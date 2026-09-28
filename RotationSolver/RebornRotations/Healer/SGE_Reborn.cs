@@ -33,6 +33,18 @@ public sealed class SGE_Reborn : SageRotation
 	private bool SwiftRaisePending =>
 		(HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise);
 
+	// The owner's rule, first built for Benediction (BenedictionNeedsThreat): an emergency measure only
+	// where there is danger, otherwise a HoT and the smaller heals are enough. Every healer carries one,
+	// so the rule reads the same shared check (ObjectHelper.IsUnderThreat) on each.
+	[RotationConfig(CombatType.PvE, Name = "Taurochole as a heal only on a target in danger",
+		Tooltip = "Taurochole needs a reason beyond low health: the target is being attacked or cast at, an area cast is announced, "
+			+ "or their health is measurably falling.\n"
+			+ "In a fight: a player who was just raised holds a few percent and is taking no damage - without this "
+			+ "he reads as the most urgent member while nothing is happening to him, and Taurochole is gone when the tank "
+			+ "needs it. With this on he gets the smaller heals instead.\n"
+			+ "Off: the health threshold alone decides.")]
+	public bool TaurocholeNeedsThreat { get; set; } = true;
+
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Health threshold party member needs to be to use Taurochole")]
 	public float TaurocholeHeal { get; set; } = 0.8f;
@@ -334,7 +346,7 @@ public sealed class SGE_Reborn : SageRotation
 			}
 		}
 
-		if (TaurocholePvE.CanUse(out act))
+		if (TaurocholePvE.CanUse(out act) && (!TaurocholeNeedsThreat || TaurocholePvE.Target.Target.IsUnderThreat()))
 		{
 			return true;
 		}
