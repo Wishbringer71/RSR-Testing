@@ -31,7 +31,7 @@ Shake It Off hebt die eigenen Status Thrill of Battle, Damnation und Bloodwhetti
 
 ### Vorschläge aus dem WrathCombo-Vergleich · N, U
 
-V1 gebaut für Weißmagier, Astrologe und Weiser (A184); offen dazu: seine Lesart von „Verfall" (Verbrauch oder nur Ablauf) und Aetherpact als Vorab-HoT des Gelehrten — beides gebündelt vorgelegt. Offen: allgemeinere Zielmarkierungs-Pfade (V2), kuratierte Raidwide-Listen (V3), Meditate erst nach Stillstand (V4); V6 geprüft, nicht gebaut (A187).
+V1 gebaut für Weißmagier, Astrologe und Weiser (A184); offen dazu: seine Lesart von „Verfall" (Verbrauch oder nur Ablauf) und Aetherpact als Vorab-HoT des Gelehrten — beides gebündelt vorgelegt. Offen: allgemeinere Zielmarkierungs-Pfade (V2), kuratierte Raidwide-Listen (V3). V5 gebaut (A186); V4 und V6 geprüft, nicht gebaut (A188, A187).
 
 **Konzept:** `docs/rotation-flow/15-wrathcombo-comparison.md`
 

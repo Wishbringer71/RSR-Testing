@@ -4299,6 +4299,15 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch (Wirktexte, Code).
 
+### A188 · V4: Meditate erst nach Stillstand — geprüft, nicht gebaut (28.09.2026)
+
+- *Auftrag:* seine Angabe zu V4: Antithese aufstellen und widerlegen, den Zeitraum bewerten, ab dem es lohnt, Positionals und True North berücksichtigen, oder „meditate nur ausserhalb kampf?".
+- *Research:* Wirktext Meditate (Job-Guide, 28.09.2026); `SAM_Reborn.UseMeditateInPause` (nur `InCombatPause`), Basiseinstellung `!IsMoving`. Kenki je Takt: weder Wirktext noch Status 1231 (xivapi) — unbelegt.
+- *Falsifikation der These:* In der Pause kostet die GCD-Sperre nichts; jeder Takt ist Gewinn; eine Wartezeit verschiebt ihn und wäre eine Zahl ohne Grundlage. Positionals und True North fallen nie in eine Pause.
+- *Ergebnis:* Nullvariante, begründet in Konzept 15, „V4: Ergebnis".
+
+**Prüfgrad:** statisch (Wirktext, Code).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
