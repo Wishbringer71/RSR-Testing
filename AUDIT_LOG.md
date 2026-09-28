@@ -4319,6 +4319,14 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A190 · V3: Kampfdaten aus WrathCombo — was im Spiel ableitbar ist (28.09.2026)
+
+- *Auftrag:* „schauen, ob die infos aus wrath auch ingame verfügbar wären (ohne wrath, nur aus den normal vorhandenen daten)".
+- *Research:* WrathCombo `Data/BattleData/*.cs` (nur gelesen): je Gebiet Tankbuster-, Raidwide- und Ignorier-Ids, Pausen- und Unverwundbarkeitsregeln. Abgleich mit `Resources/HostileCastingArea.json` (850) und `HostileCastingTank.json` (31).
+- *Ergebnis:* Raidwides leitet RSR schon aus dem Treffer ab; Tankbuster und Ignorierfälle sind teilweise ableitbar und hängen an der offenen Unterscheidung „Raidwide oder ausweichbare Fläche"; Pausen und Unverwundbarkeit je Begegnung sind Skripte, nicht ableitbar. Keine Übernahme. Konzept 15, „V3: Ergebnis".
+
+**Prüfgrad:** statisch (Code beider Projekte, Listenabgleich).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

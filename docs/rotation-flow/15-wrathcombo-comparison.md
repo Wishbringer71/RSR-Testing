@@ -37,7 +37,7 @@ Kanal-Sperre, Improvisation als kurzes Regen.
 |---|---|---|---|---|
 | V1 | Vorbeugendes Regen oder Schild auf den Tank **ohne Countdown**, sobald er außerhalb des Kampfs nahe an Gegner kommt (`PreEmptiveHot`, `PreEmptiveShield`: Weißmagier Regen, Astrologe Aspected Benefic, Weiser Eukrasian Diagnosis, Gelehrter Adloquium) | Dungeon-Pulls: Der Tank hat Regen oder Schild, bevor der erste Treffer fällt. RSR tut das heute nur im Countdown (Weißmagier „UsePreRegen") | Tank außerhalb des Kampfs in Reichweite eines Gegners — der Pull ist nah | Stufe „Heiler"; neue Option, ab Werk aus bis zu seiner Entscheidung |
 | V2 | Zielmarkierungen: allgemeiner Präfix `vfx/lockon/eff/tank` statt einzelner Tank-Marker, dazu die bei RSR fehlenden Einträge (`sharelaser2tank`, `share_1`, zwei Dungeon-Sammelmarker) | Mehr Tankbuster und Sammeltreffer werden erkannt, bevor sie fallen; Einzel- und Flächenabwehr öffnen öfter rechtzeitig | Marker über dem Ziel — der Treffer ist angekündigt | **Gebaut (A189)** mit der Negativliste aus seiner Vorgabe, siehe „V2: Stand der Umsetzung" |
-| V3 | Kuratierte Raidwide-, Tankbuster- und Ignorier-Listen je Begegnung (`BattleData`, etwa Blicke, die wie Raidwides aussehen) | Weniger Fehlalarme bei Blickmechaniken, Raidwides ohne Flächen-Wurftyp werden erkannt | angekündigter Cast mit bekannter Wirkung | Datenübernahme aus fremdem Projekt (Lizenzhinweis nötig); Pflegeaufwand |
+| V3 | Kuratierte Raidwide-, Tankbuster- und Ignorier-Listen je Begegnung (`BattleData`, etwa Blicke, die wie Raidwides aussehen) | Weniger Fehlalarme bei Blickmechaniken, Raidwides ohne Flächen-Wurftyp werden erkannt | angekündigter Cast mit bekannter Wirkung | **Geprüft (A190):** siehe „V3: Ergebnis" |
 | V4 | Samurai Meditate erst nach kurzem Stillstand | Weniger abgebrochenes Meditate beim kurzen Anhalten zwischen zwei Bewegungen | — | **Geprüft (A188):** nicht bauen, siehe „V4: Ergebnis" |
 | V5 | Tanzpartner neu wählen, wenn der Partner tot ist | Standard Finish und Devilment gehen nicht auf einen Toten | — | **Gebaut (A186)**, siehe „V5: Stand der Umsetzung" |
 | V6 | Kerachole nicht über eine liegende Sacred Soil legen (`SGE_OverProtect`) | Gruppenminderung zweier Heiler verteilt sich auf zwei Treffer statt einen | — | **Geprüft (A187):** nicht bauen, siehe „V6: Ergebnis" |
@@ -152,6 +152,23 @@ Pfade sind Spieldaten (Asset-Namen), kein übernommener Code.
 **Grenze:** Die Warteschlange hält einen Marker ohne bekannte Dauer fünf Sekunden (bestehender Wert in
 `MajorUpdater`). Ein Tankbuster, der später als fünf Sekunden plus ein GCD nach dem Marker fällt und keinen
 laufenden Zauber hat, würde fälschlich widerlegt — und beim nächsten Treffer nach demselben Marker korrigiert.
+
+## V3: Ergebnis (A190)
+
+**Sein Auftrag:** „schauen, ob die infos aus wrath auch ingame verfügbar wären (ohne wrath, nur aus den normal
+vorhandenen daten)". WrathCombos `BattleData` führt je Gebiet (Stand 25.09.2026, sechs Erweiterungen) fünf
+Arten von Daten. Ergebnis je Art:
+
+| Art | Ableitbar im Spiel? | RSR heute | Folge |
+|---|---|---|---|
+| Raidwide-Ids | **ja**, aus dem Treffer: trifft eine Aktion jedes Gruppenmitglied, ist sie eine Gruppenaktion | die Flächenliste lernt so (unter „Record AOE actions"), die Schadenstabelle misst die Größe (A177, A185) | keine Übernahme nötig. Beleg: zwei Ids aus WrathCombos Liste für The Clyteum (48896, 48920) stehen in RSRs Liste und in seiner Schadenstabelle |
+| Tankbuster-Ids | **teilweise**: ein Zauber mit Wirkzeit auf ein Gruppenmitglied, der nur dieses trifft | kuratierte Liste (31 Einträge), dazu für Tanks die Regel „Zauber auf das aktuelle Ziel"; Marker (V2) | Lernen im Spiel wäre möglich, braucht aber eine Größenschwelle für „Tankbuster" — dieselbe offene Frage wie „Raidwide oder ausweichbare Fläche" (`TODO.md`); nicht gebaut |
+| zu ignorierende Raidwides (Blicke) | **teilweise**: eine gelistete Flächenaktion, die landet und niemandem Schaden zufügt | bleibt unbewertet und gilt damit als „lohnt Minderung" | Ableitbar über „landet ohne Schadenseintrag". Gegenrisiko: Eine ausweichbare Fläche, der alle ausgewichen sind, sähe genauso aus; hängt an derselben offenen Frage wie oben |
+| Pausen (Blicke, Scanner) | **nein**: begegnungsspezifische Skripte (Blickrichtung, Position eines Helfers) | keine; BossModReborn deckt das im eigenen Modul | nicht übertragbar |
+| Unverwundbarkeit je Begegnung | **nein** allgemein: Plattform- oder Farbzuordnung je Kampf | Statusliste `InvincibleStatus` | nicht übertragbar |
+
+**Folge:** Keine Datenübernahme — damit entfällt auch der Lizenzhinweis. Was ableitbar ist, leitet RSR schon ab
+oder hängt an der offenen Unterscheidung „Raidwide oder ausweichbare Fläche".
 
 ## V4: Ergebnis (A188)
 
