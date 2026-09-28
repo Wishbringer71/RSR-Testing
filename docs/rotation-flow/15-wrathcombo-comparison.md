@@ -40,7 +40,7 @@ Kanal-Sperre, Improvisation als kurzes Regen.
 | V3 | Kuratierte Raidwide-, Tankbuster- und Ignorier-Listen je Begegnung (`BattleData`, etwa Blicke, die wie Raidwides aussehen) | Weniger Fehlalarme bei Blickmechaniken, Raidwides ohne Flächen-Wurftyp werden erkannt | angekündigter Cast mit bekannter Wirkung | Datenübernahme aus fremdem Projekt (Lizenzhinweis nötig); Pflegeaufwand |
 | V4 | Samurai Meditate erst nach kurzem Stillstand | Weniger abgebrochenes Meditate beim kurzen Anhalten zwischen zwei Bewegungen | — | kleine Option; die Wartezeit wäre eine neue Zahl |
 | V5 | Tanzpartner neu wählen, wenn der Partner tot ist | Standard Finish und Devilment gehen nicht auf einen Toten | — | **Gebaut (A186)**, siehe „V5: Stand der Umsetzung" |
-| V6 | Kerachole nicht über eine liegende Sacred Soil legen (`SGE_OverProtect`) | Gruppenminderung zweier Heiler verteilt sich auf zwei Treffer statt einen | — | Eingabe für die offene Frage „Streckung auch für Weiser/Gelehrter" (Konzept 08); laut Job-Guide stapeln beide (nur Kerachole/Taurochole nicht) |
+| V6 | Kerachole nicht über eine liegende Sacred Soil legen (`SGE_OverProtect`) | Gruppenminderung zweier Heiler verteilt sich auf zwei Treffer statt einen | — | **Geprüft (A187):** nicht bauen, siehe „V6: Ergebnis" |
 
 ## Seine Angaben zu den Vorschlägen (27.09.2026)
 
@@ -120,6 +120,32 @@ wählt über die bestehende Partnerwahl neu.
 **Folge im Kampf:** Nach der Wiederbelebung des Partners gehen Standard Finish und Devilment an ein anderes
 Gruppenmitglied, bis die Schwäche endet; danach zurück an den ersten. Ein neuer Partner erhält Standard Finish
 erst mit dem nächsten Standard Finish.
+
+## V6: Ergebnis (A187)
+
+**These (WrathCombo):** Der Weise legt Kerachole nicht, solange Sacred Soil eines Gelehrten liegt; die
+Gruppenminderung zweier Heiler verteilt sich so auf zwei Treffer. **Ergebnis: nicht bauen.** Das bisherige
+Verhalten bleibt — Kerachole fällt, wenn die Abwehr- oder Heilregel es verlangt.
+
+Wirktexte (Job-Guide, 28.09.2026): Kerachole 30 s Abklingzeit, −10 % für den Weisen und alle in 30 y, 15 s, dazu
+Regen 100 Potenz und 7 % MP, kostet 1 Addersgall; nicht stapelbar nur mit Taurochole. Sacred Soil 30 s, eine
+Fläche mit 15 y Radius, in der Gruppenmitglieder 90 % des Schadens erleiden, 15 s, dazu Regen. Addersgall: ein
+Stapel alle 20 s, höchstens 3. Beide sind verschiedene Status und stapeln: zusammen −19 %.
+
+Warum die These nicht trägt:
+- **Die Fläche deckt nicht dieselben Mitglieder.** Sacred Soil wirkt nur auf den, der darin steht; Kerachole auf
+  alle in 30 y um den Weisen. Eine liegende Fläche heißt nicht, dass die Gruppe gemindert ist.
+- **Das Zurückhalten kostet Belegtes.** Bis zu 15 s Warten lässt Addersgall bei vollem Vorrat überlaufen (ein Stapel
+  je 20 s) und verschiebt Regen und MP-Rückgabe von Kerachole.
+- **Der Nutzen hängt am Verhalten eines anderen Spielers.** Ob der nächste Treffer ohne Minderung käme, hängt davon
+  ab, wann der Gelehrte Sacred Soil wieder legt — beide haben 30 s Abklingzeit. Das ist eine Annahme, kein
+  tragender Grund.
+- **Die eigene Streckung des Weisen** ist auf Stufe „Heiler" als leer begründet (Konzept 08); die These würde sie
+  nur für einen fremden Auslöser einführen.
+
+Was die These richtig sieht: Zwei volle Gruppenminderungen auf einen Treffer, der auch mit einer gehalten würde, sind
+ein verschenkter zweiter Treffer. Das beantwortet schon die Schranke der Minderung (Konzept 13): Ein als klein
+gemessener Treffer löst die Abwehr nicht aus, und seit die Schadenstabelle misst (A185), greift sie.
 
 ## Nicht übernommen, mit Grund
 

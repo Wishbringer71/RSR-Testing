@@ -4289,6 +4289,16 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A187 · V6: Kerachole über Sacred Soil — geprüft, nicht gebaut (28.09.2026)
+
+- *Auftrag:* seine Angabe zu V6: „im konzept klären: im vollen loop antithese aufstellen und versuchen zu widerlegen."
+- *Research:* Wirktexte Kerachole, Sacred Soil, Addersgall (Job-Guide, 28.09.2026); `SGE_Reborn` legt Kerachole in Flächenabwehr, Einzelabwehr und Flächenheilung, ohne fremde Minderung zu lesen.
+- *Optionen:* Rückhaltung, solange Sacred Soil liegt; Rückhaltung nur, wenn jedes Mitglied in Reichweite den Sacred-Soil-Status trägt; Nullvariante.
+- *Falsifikation der These:* Die Fläche deckt andere Mitglieder als Kerachole; das Warten kostet Addersgall-Überlauf, Regen und MP; der Nutzen hängt am Zeitpunkt des anderen Heilers. Die zweite Option heilt den ersten Einwand, nicht die beiden anderen. Was die These richtig sieht, beantwortet schon die Größenschranke (Konzept 13).
+- *Ergebnis:* Nullvariante, begründet in Konzept 15, „V6: Ergebnis".
+
+**Prüfgrad:** statisch (Wirktexte, Code).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
