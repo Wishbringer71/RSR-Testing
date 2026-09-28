@@ -992,6 +992,23 @@ internal partial class Configs : IPluginConfiguration
 		Filter = HealingActionCondition, Section = 1)]
 	public bool HealAheadOfDamage { get; set; } = false;
 
+	// The owner's triage (concept 07): whoever is closest to dying first, and at equal danger healer
+	// before tank before damage dealer. Class 1 - about to fall - is built and always on. This adds
+	// classes 2 and 3 in place of the role short-cuts, which pick a role outright once it is under its
+	// ratio and look at nobody else. Off by default: whether it keeps more people alive than the
+	// short-cuts is not shown without playing it.
+	[UI("Choose the heal target by danger",
+		Description = "Below a member who is about to fall, heal first a healer or tank who is under their "
+			+ "role threshold AND being attacked - lowest health first, a healer before a tank at equal "
+			+ "health. Everyone else after that: while an area cast is announced, the one with the fewest "
+			+ "hit points left first, because the hit takes the same number from everybody; otherwise the "
+			+ "lowest percentage.\n"
+			+ "In a fight: when the healer holds aggro and the tank does not, the healer comes first; a tank "
+			+ "under his threshold but not being hit no longer jumps ahead of a damage dealer who is lower.\n"
+			+ "Off: the role thresholds decide outright, as before.",
+		Filter = HealingActionCondition, Section = 1)]
+	public bool HealTargetByDanger { get; set; } = false;
+
 	// The learned area list holds everything that once hit the whole party, from a raidwide taking
 	// sixty percent to a trash tick taking two, and every entry raised the same party mitigation.
 	// What that spends is the cooldown: a Reprisal laid on a trivial tick is missing at the next

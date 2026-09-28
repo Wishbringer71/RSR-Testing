@@ -317,3 +317,10 @@ With `Heal ahead of incoming damage` on, the area-heal thresholds now read the h
 heading for, as the setting says every healing threshold does; they used to read the health shown.
 When the party drops fast, the area heal comes about a GCD earlier. With the setting off nothing
 changes.
+
+## New setting: Choose the heal target by danger
+
+Off by default. On, it replaces the role short-cuts in the heal target choice, below anyone about to
+fall: a healer or tank under their role threshold who is being attacked comes first, lowest health
+first and a healer before a tank at equal health; then everyone else - by fewest hit points while an
+area cast is announced, otherwise by lowest percentage.

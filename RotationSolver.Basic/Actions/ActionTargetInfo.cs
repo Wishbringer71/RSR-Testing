@@ -3437,6 +3437,11 @@ public struct ActionTargetInfo(IBaseAction action)
 					return Player.Object;
 				}
 
+				if (Service.Config.HealTargetByDanger)
+				{
+					return DangerClassTarget(ranked);
+				}
+
 				var healerTar = healerTars.Count > 0 ? healerTars[0] : null;
 				if (healerTar != null && healerTar.GetForecastHealthRatio() <= Service.Config.HealthHealerRatio)
 				{
@@ -3455,6 +3460,83 @@ public struct ActionTargetInfo(IBaseAction action)
 				var tar = healingNeededObjs.Count > 0 ? healingNeededObjs[0] : null;
 				return tar != null && tar.GetHealthRatio() < 1 ? tar : null;
 			}
+		}
+
+		// Classes 2 and 3 of the owner's triage (concept 07), below class 1 and the self short-cut.
+		//
+		// Class 2: a healer or tank under their role threshold who is also being attacked. The
+		// threshold says "low enough", the aggro "and actually taking damage" - without it a tank would
+		// sit in this class for good, since he always wears his stance. Lowest health first, a healer
+		// before a tank at equal health.
+		//
+		// Class 3: everyone else unprotected. While an area cast is announced, fewest effective hit
+		// points first, because a raidwide takes the same number from everybody and a small pool dies
+		// to it first; otherwise lowest health first. Role decides a tie.
+		//
+		// Protected members come last, as everywhere in this method; the last pick keeps the plain
+		// "is anyone hurt at all" check.
+		static IBattleChara? DangerClassTarget(List<(IBattleChara Obj, bool Unprotected, float Health)> ranked)
+		{
+			IBattleChara? pressed = null;
+			var pressedHealth = float.MaxValue;
+			var pressedRole = int.MaxValue;
+			foreach (var r in ranked)
+			{
+				if (!r.Unprotected || !DataCenter.TargetedPartyMembers.Contains(r.Obj.GameObjectId))
+				{
+					continue;
+				}
+
+				var isHealer = r.Obj.IsJobCategory(JobRole.Healer);
+				if (!isHealer && !r.Obj.IsJobCategory(JobRole.Tank))
+				{
+					continue;
+				}
+
+				if (r.Health > (isHealer ? Service.Config.HealthHealerRatio : Service.Config.HealthTankRatio))
+				{
+					continue;
+				}
+
+				var role = isHealer ? 0 : 1;
+				if (pressed == null || r.Health < pressedHealth || (r.Health == pressedHealth && role < pressedRole))
+				{
+					pressed = r.Obj;
+					pressedHealth = r.Health;
+					pressedRole = role;
+				}
+			}
+
+			if (pressed != null)
+			{
+				return pressed;
+			}
+
+			var byPoints = DataCenter.IsHostileCastingAOE;
+			IBattleChara? rest = null;
+			var restKey = float.MaxValue;
+			var restRole = int.MaxValue;
+			foreach (var r in ranked)
+			{
+				if (!r.Unprotected)
+				{
+					continue;
+				}
+
+				var key = byPoints ? r.Obj.GetForecastEffectiveHp() : r.Health;
+				var role = r.Obj.IsJobCategory(JobRole.Healer) ? 0
+					: r.Obj.IsJobCategory(JobRole.Tank) ? 1
+					: 2;
+				if (rest == null || key < restKey || (key == restKey && role < restRole))
+				{
+					rest = r.Obj;
+					restKey = key;
+					restRole = role;
+				}
+			}
+
+			rest ??= ranked.Count > 0 ? ranked[0].Obj : null;
+			return rest != null && rest.GetHealthRatio() < 1 ? rest : null;
 		}
 
 		IBattleChara? FindInterruptTarget()

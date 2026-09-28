@@ -4254,6 +4254,14 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A183 · Heilzielwahl: Gefährdungsklassen 2 und 3 gebaut (28.09.2026)
+
+- *Grundlage:* seine Triage (Konzept 07): wer am ehesten stirbt zuerst, bei gleicher Gefährdung Heiler vor Tank vor Schadensausteiler. Klasse 1 seit A89. Der Entwurf der Klassen 2 und 3 stand vollständig im Konzept; die dort festgehaltene Entscheidung „hinter eine Einstellung mit beibehaltener Voreinstellung" gilt weiter.
+- *Umgesetzt:* `HealTargetByDanger` (aus). Eingeschaltet ersetzt `DangerClassTarget` die beiden Rollen-Kurzschlüsse und die letzte Wahl: Klasse 2 = Heiler oder Tank unter seiner Rollenschwelle **und** in `TargetedPartyMembers`, niedrigste vorausberechnete Gesundheit, Heiler vor Tank bei Gleichstand; Klasse 3 = übrige Ungeschützte, bei angekündigtem Flächenschaden nach `GetForecastEffectiveHp`, sonst nach Prozentsatz, Rolle bei Gleichstand; danach die Geschützten; die Schlussprüfung „überhaupt verletzt" bleibt.
+- *Falsifikation:* **Kein Defekt?** Heute überholt der Tank bei 44 % einen Schadensausteiler bei 20 %, auch wenn der Tank gar nicht angegriffen wird — gegen die Vorgabe. **Option falsch?** Ein Tank ohne Aggro fällt in Klasse 3 und wird nach Prozentsatz eingereiht, verliert also nur den Vorrang, nicht die Heilung. **Ausgeliefert, nichts ändert sich?** Ab Werk aus.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
