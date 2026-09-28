@@ -4272,6 +4272,14 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI (in dieser Umgebung kein .NET).
 
+### A185 · Schadenstabelle im Spiel belegt; Protokolldatei entfernt (28.09.2026)
+
+- *Beleg:* seine Dateien vom 28.09.2026. `HostileCastingAreaPotential.json` hält sechs Werte (48896 Augen auf 53 %, 48920 Müllentsorger 48 %, 36739 Immersion 32 %, 36727 Störender Schweif 22 %, 36448 Blitzender Boden 32 %, 48100 Fluchstimme 64 %; Namen über xivapi), alle in der Flächenliste. Das Protokoll derselben Sitzung (12:07–13:02, Version `7.5.6.11+wsh1`): Kopf „rated 6 … loaded from file", am Ende „6 rated action(s) written and read back", 0 Fehler. Messung, Speichern und Laden sind damit Ende zu Ende belegt — die sechs Werte entstehen nur über die Messstelle.
+- *Die Sitzung selbst:* Gruppe mit acht Mitgliedern, 445 Protokollzeilen, 267 × STOP 1 (unsichtbare Quelle, höchstens 3 von 8 getroffen), 178 × STOP 4 (nicht in der Liste, höchstens 3 von 8), kein gelisteter Cast. Kein Gruppentreffer, also nichts zu messen; keine der gestoppten Ids steht in der Liste. Richtig verworfen.
+- *Umgesetzt:* Auflösungsbedingung der technischen Schuld erfüllt; `AreaMeasurementTrace`, alle Aufrufe, `TraceHead`, `CountPartyHits` und der Absatz in Konzept 13 entfernt. Die Zählung je Grund bleibt (Bestand, keine neue Zeile).
+
+**Prüfgrad:** Laufzeitbeobachtung an seinen Dateien; Rückbau statisch, Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

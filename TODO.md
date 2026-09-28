@@ -306,13 +306,6 @@ Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A17
 
 ## Technische Schuld
 
-### Diagnose-Protokoll der Schadensmessung wieder entfernen · N
-
-`AreaMeasurementTrace` (A176) schreibt je Sitzung `AreaMeasurementTrace.log`. Es ist Diagnose für den Defekt „Schadenstabelle bleibt leer" und kein Dauerbestand — nach seiner Vorgabe „Keine Funktion ohne Bedarf". **Auflösungsbedingung:** Ursache aus seinem hochgeladenen Protokoll bestimmt und behoben; dann Klasse, Aufrufe und Absatz in Konzept 13 entfernen.
-
-**Konzept:** `docs/rotation-flow/13-aoe-damage-classification.md`
-
-
 ### Ein gescheiterter Erst-Download legt eine leere Liste für immer fest · N, U
 
 `InitOne` schreibt bei gescheitertem Download die leere Vorgabe als Datei; weil die Datei existiert, lädt kein späterer Start neu. Für die Flächenliste heißt das: keine Gruppenminderung per Liste und keine Schadensmessung, bis „Reset and Update AOE List" gelingt. Die Fenster melden eine leere Flächenliste rot (A170). Nicht behoben, weil beide Wege Kosten haben: nicht festschreiben lässt jeden Start bis zu 100 s auf `HttpClient` warten und wird beim Entladen von `Save()` ohnehin überschrieben; leere Liste neu laden kann eine bewusst geleerte zurückholen. Auflösung: Download mit kurzer Zeitgrenze und Merker „nie geladen" statt leerer Datei.

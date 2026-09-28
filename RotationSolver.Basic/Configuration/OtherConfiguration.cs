@@ -303,7 +303,6 @@ internal class OtherConfiguration
 		if (!WasLoaded(name))
 		{
 			AreaPotentialStoreState = $"NOT SAVED {DateTime.Now:HH:mm:ss}: the table was never loaded this session, file left as it is";
-			AreaMeasurementTrace.Line("store: " + AreaPotentialStoreState);
 			return;
 		}
 
@@ -325,7 +324,6 @@ internal class OtherConfiguration
 				// is not overwritten by a save that could not merge with it. The reading stays in
 				// memory and goes out with the next save.
 				AreaPotentialStoreState = $"NOT SAVED {DateTime.Now:HH:mm:ss}: the file could not be read to merge with, left as it is - see the log";
-				AreaMeasurementTrace.Line("store: " + AreaPotentialStoreState);
 				return;
 			}
 
@@ -351,7 +349,6 @@ internal class OtherConfiguration
 				: !ok
 					? $"SAVE FAILED {DateTime.Now:HH:mm:ss}: {snapshot.Count} in memory, file unchanged - see the log"
 					: $"SAVE MISMATCH {DateTime.Now:HH:mm:ss}: {snapshot.Count} written, {onDisk} read back";
-			AreaMeasurementTrace.Line("store: " + AreaPotentialStoreState);
 		}
 	}
 

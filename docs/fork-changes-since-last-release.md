@@ -82,9 +82,6 @@ measured, not in the AoE list, cast by an untargetable enemy, and so on. The
 `Last hit` line now only reports casts; before, the next auto-attack replaced a raidwide's reason
 within a second. An empty AoE list, which measures nothing, is shown in red. Above it, `Effect handler` counts what the effect hook delivered since loading - all sets, those from
 enemies, those that hit you - and any error the handler raised, with the first error's text.
-Each session also writes `AreaMeasurementTrace.log` to the plugin's config folder: one line per enemy
-cast or multi-target hit, saying which check it stopped at or that it was stored, every save with its
-result, and every handler error in full.
 
 Measuring no longer depends on `Record AOE actions` or on the party size. That setting decides whether
 new actions are added to the AoE list; with it off, or in a party counted below four, the damage of
