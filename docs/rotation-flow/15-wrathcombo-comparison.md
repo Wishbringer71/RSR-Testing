@@ -38,7 +38,7 @@ Kanal-Sperre, Improvisation als kurzes Regen.
 | V1 | Vorbeugendes Regen oder Schild auf den Tank **ohne Countdown**, sobald er außerhalb des Kampfs nahe an Gegner kommt (`PreEmptiveHot`, `PreEmptiveShield`: Weißmagier Regen, Astrologe Aspected Benefic, Weiser Eukrasian Diagnosis, Gelehrter Adloquium) | Dungeon-Pulls: Der Tank hat Regen oder Schild, bevor der erste Treffer fällt. RSR tut das heute nur im Countdown (Weißmagier „UsePreRegen") | Tank außerhalb des Kampfs in Reichweite eines Gegners — der Pull ist nah | Stufe „Heiler"; neue Option, ab Werk aus bis zu seiner Entscheidung |
 | V2 | Zielmarkierungen: allgemeiner Präfix `vfx/lockon/eff/tank` statt einzelner Tank-Marker, dazu die bei RSR fehlenden Einträge (`sharelaser2tank`, `share_1`, zwei Dungeon-Sammelmarker) | Mehr Tankbuster und Sammeltreffer werden erkannt, bevor sie fallen; Einzel- und Flächenabwehr öffnen öfter rechtzeitig | Marker über dem Ziel — der Treffer ist angekündigt | Daten in Upstream-Code; Gegenrisiko: der Präfix kann andere Marker treffen |
 | V3 | Kuratierte Raidwide-, Tankbuster- und Ignorier-Listen je Begegnung (`BattleData`, etwa Blicke, die wie Raidwides aussehen) | Weniger Fehlalarme bei Blickmechaniken, Raidwides ohne Flächen-Wurftyp werden erkannt | angekündigter Cast mit bekannter Wirkung | Datenübernahme aus fremdem Projekt (Lizenzhinweis nötig); Pflegeaufwand |
-| V4 | Samurai Meditate erst nach kurzem Stillstand | Weniger abgebrochenes Meditate beim kurzen Anhalten zwischen zwei Bewegungen | — | kleine Option; die Wartezeit wäre eine neue Zahl |
+| V4 | Samurai Meditate erst nach kurzem Stillstand | Weniger abgebrochenes Meditate beim kurzen Anhalten zwischen zwei Bewegungen | — | **Geprüft (A188):** nicht bauen, siehe „V4: Ergebnis" |
 | V5 | Tanzpartner neu wählen, wenn der Partner tot ist | Standard Finish und Devilment gehen nicht auf einen Toten | — | **Gebaut (A186)**, siehe „V5: Stand der Umsetzung" |
 | V6 | Kerachole nicht über eine liegende Sacred Soil legen (`SGE_OverProtect`) | Gruppenminderung zweier Heiler verteilt sich auf zwei Treffer statt einen | — | **Geprüft (A187):** nicht bauen, siehe „V6: Ergebnis" |
 
@@ -120,6 +120,31 @@ wählt über die bestehende Partnerwahl neu.
 **Folge im Kampf:** Nach der Wiederbelebung des Partners gehen Standard Finish und Devilment an ein anderes
 Gruppenmitglied, bis die Schwäche endet; danach zurück an den ersten. Ein neuer Partner erhält Standard Finish
 erst mit dem nächsten Standard Finish.
+
+## V4: Ergebnis (A188)
+
+**These (WrathCombo):** Meditate erst nach einigen Sekunden Stillstand, damit es beim kurzen Anhalten zwischen zwei
+Bewegungen nicht abbricht. **Ergebnis: nicht bauen;** das Pausenverhalten aus A162 bleibt.
+
+Wirktext (Job-Guide, 28.09.2026): Meditate, 60 s Abklingzeit, „Gradually increases your Kenki Gauge", 15 s, im
+Kampf dazu bis zu 3 Stapel Meditation; endet bei jeder anderen Aktion und bei Bewegung, auch beim Drehen; löst
+die Abklingzeit der Waffenfertigkeiten aus und ist während ihr nicht nutzbar. Wie viel Kenki je Takt und wie oft,
+nennt der Text nicht, und die Spieldaten (Status 1231 „Storing Kenki.") auch nicht — unbelegt.
+
+- **Wo RSR Meditate wirkt:** nur in der Pause (`InCombatPause`: im Kampf, kein Gegner in 25 y) und nicht in
+  Bewegung. Deine Frage „oder ist das ein anderes Problem (Meditate nur außerhalb Kampf?)" beantwortet das: Es
+  fällt nie, solange ein Gegner in Reichweite steht. **Positionals und True North berühren es deshalb nicht** —
+  Stellungswechsel für Positionals gibt es nur mit einem Gegner in Nahkampfreichweite, und dann ist keine Pause.
+- **Ab wann es sich lohnt:** ab dem ersten Takt. In der Pause gibt es nichts zu schlagen; die GCD-Sperre, die
+  Meditate auslöst, kostet dort nichts. Jeder Takt Kenki und jeder Stapel Meditation (für Shoha) ist Gewinn
+  gegenüber null. Eine Wartezeit schöbe diesen Gewinn in jeder Pause um ihre Länge nach hinten und ließe kurze
+  Pausen ganz aus — und wäre eine neue feste Zahl ohne Grundlage.
+- **Was ein Abbruch kostet:** die 60 s Abklingzeit, also Meditate in einer weiteren Pause innerhalb dieser Zeit;
+  endet die Pause genau beim Einsatz, verschiebt die GCD-Sperre die erste Waffenfertigkeit um höchstens einen GCD.
+  Beides ist klein gegen den Takt-Gewinn in jeder Pause, in der er stehen bleibt; rechnen lässt es sich ohne die
+  Taktwerte nicht.
+- **Läuft er im Kampf aus 25 y heraus,** ohne dass eine Pause ist, fällt Meditate beim ersten Stillstand und bricht
+  beim Zurücklaufen (Konzept 14, „Folgen, bewusst hingenommen").
 
 ## V6: Ergebnis (A187)
 
