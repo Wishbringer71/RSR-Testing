@@ -4245,6 +4245,15 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch, Job-Guide; keine Laufzeitbeobachtung.
 
+### A182 · Flächenheilung nach Vorausschau, wie der Einstellungstext es sagt (28.09.2026)
+
+- *Research:* `StateUpdater.ShouldHealArea` verglich `PartyMembersAverHP`/`LowestPartyMembersAverHP` (Stand) mit den Flächenschwellen. Der Text von „Heal ahead of incoming damage" bindet: „Every healing threshold and the heal target choice read the health a member is heading for". Offen seit A93 mit der Bedingung „nach Beurteilung der Einzelheilung im Spiel" — die Textbindung macht es zum Defekt, nicht zur Abwägung.
+- *Optionen:* die bestehenden Werte umstellen (trifft 83 Leser, fremde Rotationen darunter); eigene Vorausschau-Werte nur für die Flächenschwellen.
+- *Umgesetzt:* `DataCenter.ComputeForecastAreaStats` (je Mitglied Stand × `GetForecastSurvivingShare`, Mittel und Streuung, über die vier niedrigsten bei größerer Gruppe; eigener Frame-Cache), gelesen allein von `ShouldHealArea`. Die Vier als `LightPartySize` mit dem Beleg aus A171.
+- *Falsifikation:* **Kein Defekt?** Der Text sagt „every healing threshold". **Option falsch?** Mit der Einstellung aus ist die Vorausschau 1 — Werte identisch mit den bisherigen, also kein Verhaltenswechsel für wer sie nicht nutzt. Die Streuungsbedingung (`HealthDifference`) liest ebenfalls die vorausberechneten Werte, damit beide Hälften derselben Frage dieselbe Zeit meinen. **Ausgeliefert, nichts ändert sich?** Bei stabiler Gruppe kein Unterschied — gewollt.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

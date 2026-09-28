@@ -77,16 +77,6 @@ Die Prüfung auf Scalebound und Shackled Healing steht als Kopie an acht Stellen
 
 **Der Verbraucher besteht (A93):** Alle Heilentscheidungen lesen die **vorausberechnete** Gesundheit — `GetForecastSurvivingShare` und die drei davon abgeleiteten Getter, hinter `HealAheadOfDamage`, Standard aus. Offen bleibt allein die Beobachtung im Spiel: ob der Fehlerfaktor überhaupt von 1 abweicht und ob der Vorab-Eingriff den Tank hält. Beides steht in der Diagnoseanzeige (Gesundheit jetzt → prognostiziert, Rohzeit, korrigierte Zeit, Faktor).
 
-### Die Flächenheilung entscheidet weiter nach Pegel statt nach Rate · N
-
-**Konzept:** `docs/rotation-flow/07-heal-target-priority.md`, `docs/rotation-flow/08-mitigation-synergy.md`
-Erfasst, nicht bearbeitet (A93). `HealthAreaAbility`/`HealthAreaSpell` werden gegen `DataCenter.PartyMembersAverHP` und `LowestPartyMembersAverHP` verglichen — dieselbe Verwechslung von Stand und Zufluss, die für die Einzelheilung mit der Vorausschau behoben ist. Die Flächenheilung fällt daher weiterhin zu spät, wenn die Gruppe schnell fällt.
-
-**Warum nicht mitbehoben:** Die Größen stammen aus `DataCenter.ComputePartyHpStats` und speisen fünf öffentliche Eigenschaften mit **83 Lesern außerhalb der Heilkette**, darunter Schwellen in fremden `ExtraRotations` (Beiruta, Churin), die auf den heutigen Wert eingestellt sind. Eine Vorausschau dort hinein zu legen änderte still das Verhalten aller 83 Stellen und wäre nicht mehr der kleinste wirksame Eingriff.
-
-**Auflösungsbedingung:** aufzugreifen, sobald die Einzelheilung im Spiel beurteilt ist. Dann ist der Zuschnitt zu wählen, der die fremden Leser nicht trifft — eine eigene, vorausberechnete Kenngröße neben den bestehenden, gelesen allein von den beiden Flächenschwellen.
-
-
 ### Searing Light fällt vor einer Beschwörung, die dann ein vorrangiger GCD verdrängt · N
 
 **Im Kampf, Schluss aus der Zweigreihenfolge, nicht beobachtet:** Searing Light geht im Platz vor der Beschwörung heraus, sobald deren Abklingzeit bis zum nächsten GCD endet. Nimmt dann ein vorrangiger GCD den Platz — eine hart gewirkte Wiederbelebung —, läuft der Buff schon, und Solar kommt erst nach der Wirkzeit. Die letzten GCDs der Solar-Phase liegen dann außerhalb der 20 Sekunden. Die Wiederbelebung hat nach seiner Sicherheitsregel Vorrang; offen ist nur, ob der Buff in dieser Lage warten sollte, bis die Beschwörung tatsächlich der nächste GCD ist.

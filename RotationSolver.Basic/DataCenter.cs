@@ -1746,6 +1746,97 @@ internal static class DataCenter
 		_partyHpStatsCacheTick = now;
 	}
 
+	/// <summary>
+	/// The smallest party composition in the game: one tank, one healer, one melee, one ranged
+	/// (ContentMemberType row 2). The area-heal statistics weigh the lowest this many members of a
+	/// larger party, so a full party is judged on the four who need it most.
+	/// </summary>
+	internal const int LightPartySize = 4;
+
+	private static readonly float[] _forecastHpBuffer = new float[_hpBuffer.Length];
+	private static long _forecastStatsCacheTick = long.MinValue;
+	private static float _forecastAvgCache, _forecastStdDevCache, _forecastLowestAvgCache, _forecastLowestStdDevCache;
+
+	/// <summary>
+	/// The area-heal statistics on forecast health: each member's health carried forward to the moment
+	/// a heal begun now would land (<see cref="ObjectHelper.GetForecastSurvivingShare"/>).
+	/// </summary>
+	/// <remarks>
+	/// "Heal ahead of incoming damage" states that every healing threshold reads the health a member is
+	/// heading for; the area thresholds read the level only. Kept apart from the statistics above
+	/// because those have many readers outside the heal chain, foreign rotations among them, tuned to
+	/// the level - only the two area thresholds read this. With the setting off the forecast share is
+	/// 1 and the figures equal the level ones.
+	/// </remarks>
+	internal static void ComputeForecastAreaStats(out float avgHp, out float stdDevHp, out float lowestAvgHp, out float lowestStdDevHp)
+	{
+		var now = Environment.TickCount64;
+		if (_forecastStatsCacheTick != long.MinValue && now - _forecastStatsCacheTick < PartyHpStatsTtlMs)
+		{
+			avgHp = _forecastAvgCache;
+			stdDevHp = _forecastStdDevCache;
+			lowestAvgHp = _forecastLowestAvgCache;
+			lowestStdDevHp = _forecastLowestStdDevCache;
+			return;
+		}
+
+		var count = 0;
+		foreach (var member in PartyMembers)
+		{
+			if (member.GameObjectId == 0 || count >= _forecastHpBuffer.Length)
+			{
+				continue;
+			}
+
+			var hp = GetPartyMemberHPRatio(member);
+			if (hp > 0)
+			{
+				_forecastHpBuffer[count++] = hp * member.GetForecastSurvivingShare();
+			}
+		}
+
+		avgHp = stdDevHp = lowestAvgHp = lowestStdDevHp = 0;
+		if (count > 0)
+		{
+			Array.Sort(_forecastHpBuffer, 0, count);
+			var lowestCount = Math.Min(count, LightPartySize);
+
+			float sum = 0, lowestSum = 0;
+			for (var i = 0; i < count; i++)
+			{
+				sum += _forecastHpBuffer[i];
+				if (i < lowestCount)
+				{
+					lowestSum += _forecastHpBuffer[i];
+				}
+			}
+
+			avgHp = sum / count;
+			lowestAvgHp = lowestSum / lowestCount;
+
+			float variance = 0, lowestVariance = 0;
+			for (var i = 0; i < count; i++)
+			{
+				var diff = _forecastHpBuffer[i] - avgHp;
+				variance += diff * diff;
+				if (i < lowestCount)
+				{
+					var lowestDiff = _forecastHpBuffer[i] - lowestAvgHp;
+					lowestVariance += lowestDiff * lowestDiff;
+				}
+			}
+
+			stdDevHp = (float)Math.Sqrt(variance / count);
+			lowestStdDevHp = (float)Math.Sqrt(lowestVariance / lowestCount);
+		}
+
+		_forecastAvgCache = avgHp;
+		_forecastStdDevCache = stdDevHp;
+		_forecastLowestAvgCache = lowestAvgHp;
+		_forecastLowestStdDevCache = lowestStdDevHp;
+		_forecastStatsCacheTick = now;
+	}
+
 	public static float PartyMembersMinHP
 	{
 		get

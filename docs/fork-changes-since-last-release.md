@@ -310,3 +310,10 @@ What Benediction already did now applies to every healer: the last charge of Ess
 Excogitation as a heal and Taurochole as a heal go only to a target in danger - being attacked or cast
 at, an area cast announced, or health measurably falling. A player who was just raised and is taking no
 damage gets the smaller heals instead. Each has its own setting, on by default.
+
+## Heal ahead of incoming damage: area heals too
+
+With `Heal ahead of incoming damage` on, the area-heal thresholds now read the health the party is
+heading for, as the setting says every healing threshold does; they used to read the health shown.
+When the party drops fast, the area heal comes about a GCD earlier. With the setting off nothing
+changes.

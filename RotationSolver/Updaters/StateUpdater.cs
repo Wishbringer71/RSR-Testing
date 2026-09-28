@@ -496,11 +496,17 @@ internal static class StateUpdater
 
 		// If party is larger than 4 people, we select the 4 lowest HP players
 		// in the party, and then calculate the thresholds on them instead.
-		return partyCount > 4
-			? DataCenter.LowestPartyMembersDifferHP < Service.Config.HealthDifference
-				&& DataCenter.LowestPartyMembersAverHP < Lerp(healArea, healAreaHot, ratio)
-			: DataCenter.PartyMembersDifferHP < Service.Config.HealthDifference
-				&& DataCenter.PartyMembersAverHP < Lerp(healArea, healAreaHot, ratio);
+		//
+		// "Heal ahead of incoming damage" says every healing threshold reads the health a member is
+		// heading for; these two read the level unless they take the forecast figures. Those are
+		// computed apart from the level ones, which have many other readers, and equal them with the
+		// setting off.
+		DataCenter.ComputeForecastAreaStats(out var average, out var difference, out var lowestAverage, out var lowestDifference);
+		return partyCount > DataCenter.LightPartySize
+			? lowestDifference < Service.Config.HealthDifference
+				&& lowestAverage < Lerp(healArea, healAreaHot, ratio)
+			: difference < Service.Config.HealthDifference
+				&& average < Lerp(healArea, healAreaHot, ratio);
 	}
 
 	private static bool ShouldAddAntiKnockback()
