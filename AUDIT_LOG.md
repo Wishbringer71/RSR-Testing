@@ -4234,6 +4234,17 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A181 · Beschwörer: Addle nur zusammen mit Radiant Aegis (28.09.2026)
+
+**Gemeldet:** „es scheint, als ob addle immer zusammen mit schimmerschild gecasted wird beim beschwörer. ich habe addle alleine bislang nicht gesehen, wenn schimmerschild nicht verfügbar war beim aoe. per loop nachprüfen und ggfls. korrigieren".
+
+- *Research:* `SMN_Reborn.DefenseAreaAbility`/`DefenseSingleAbility`: Radiant Aegis, dann `TryAddleBeforeDamage || AddlePvE.CanUse` (Addle dort seit dem Fork, `8edd696`; Upstream nur Radiant Aegis). Keine allgemeine Zurückhaltung auf Addle beim Beschwörer; das Ziel-Override `BeAttacked` fällt im Flächenpfad auf alle Gegner zurück; die Verteidigung steht im Dispatch vor den Angriffseinschüben. Die Flagge kommt für gelistete Casts über `AreaCastIsWorthMitigating` — unbewertet heißt „lohnt". Job-Guide: Radiant Aegis zwei Ladungen, 60 s, Barriere 20 % der eigenen Maximalgesundheit, nur für sich; Addle 90 s, 10 % magisch, 5 % physisch, am Gegner.
+- *Mechanismus:* Mit leerer Tabelle (A177) war jeder gelistete Flächencast Anlass für beide. Nach dem ersten Paar lädt Radiant Aegis nach, Addle nicht; ist Radiant Aegis leer, ist Addle meist noch gesperrt. Das deckt seine Beobachtung vollständig.
+- *Falsifikation:* **Kein Defekt?** Die Paarung selbst ist richtig — die beiden schützen verschiedene Personen. **Option „Addle nur ohne Radiant Aegis"?** Verworfen: Radiant Aegis schützt nur den Beschwörer, die Gruppe verlöre ihren Schutz. **Ausgeliefert, nichts ändert sich?** Die Behebung ist A177; ab laufender Messung fallen klein bewertete Casts heraus. Mit ausgeschaltetem `SkipMitigationForSmallAreaCasts` bleibt es beim heutigen Verhalten — das ist dann seine Einstellung.
+- *Umgesetzt:* keine Codeänderung; Konzept 13 fortgeschrieben.
+
+**Prüfgrad:** statisch, Job-Guide; keine Laufzeitbeobachtung.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
