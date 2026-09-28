@@ -36,7 +36,7 @@ Kanal-Sperre, Improvisation als kurzes Regen.
 | # | Idee (WrathCombo) | Was sich im Kampf ändert | Woran die Wahrscheinlichkeit gemessen wird | Einordnung |
 |---|---|---|---|---|
 | V1 | Vorbeugendes Regen oder Schild auf den Tank **ohne Countdown**, sobald er außerhalb des Kampfs nahe an Gegner kommt (`PreEmptiveHot`, `PreEmptiveShield`: Weißmagier Regen, Astrologe Aspected Benefic, Weiser Eukrasian Diagnosis, Gelehrter Adloquium) | Dungeon-Pulls: Der Tank hat Regen oder Schild, bevor der erste Treffer fällt. RSR tut das heute nur im Countdown (Weißmagier „UsePreRegen") | Tank außerhalb des Kampfs in Reichweite eines Gegners — der Pull ist nah | Stufe „Heiler"; neue Option, ab Werk aus bis zu seiner Entscheidung |
-| V2 | Zielmarkierungen: allgemeiner Präfix `vfx/lockon/eff/tank` statt einzelner Tank-Marker, dazu die bei RSR fehlenden Einträge (`sharelaser2tank`, `share_1`, zwei Dungeon-Sammelmarker) | Mehr Tankbuster und Sammeltreffer werden erkannt, bevor sie fallen; Einzel- und Flächenabwehr öffnen öfter rechtzeitig | Marker über dem Ziel — der Treffer ist angekündigt | Daten in Upstream-Code; Gegenrisiko: der Präfix kann andere Marker treffen |
+| V2 | Zielmarkierungen: allgemeiner Präfix `vfx/lockon/eff/tank` statt einzelner Tank-Marker, dazu die bei RSR fehlenden Einträge (`sharelaser2tank`, `share_1`, zwei Dungeon-Sammelmarker) | Mehr Tankbuster und Sammeltreffer werden erkannt, bevor sie fallen; Einzel- und Flächenabwehr öffnen öfter rechtzeitig | Marker über dem Ziel — der Treffer ist angekündigt | **Gebaut (A189)** mit der Negativliste aus seiner Vorgabe, siehe „V2: Stand der Umsetzung" |
 | V3 | Kuratierte Raidwide-, Tankbuster- und Ignorier-Listen je Begegnung (`BattleData`, etwa Blicke, die wie Raidwides aussehen) | Weniger Fehlalarme bei Blickmechaniken, Raidwides ohne Flächen-Wurftyp werden erkannt | angekündigter Cast mit bekannter Wirkung | Datenübernahme aus fremdem Projekt (Lizenzhinweis nötig); Pflegeaufwand |
 | V4 | Samurai Meditate erst nach kurzem Stillstand | Weniger abgebrochenes Meditate beim kurzen Anhalten zwischen zwei Bewegungen | — | **Geprüft (A188):** nicht bauen, siehe „V4: Ergebnis" |
 | V5 | Tanzpartner neu wählen, wenn der Partner tot ist | Standard Finish und Devilment gehen nicht auf einen Toten | — | **Gebaut (A186)**, siehe „V5: Stand der Umsetzung" |
@@ -120,6 +120,38 @@ wählt über die bestehende Partnerwahl neu.
 **Folge im Kampf:** Nach der Wiederbelebung des Partners gehen Standard Finish und Devilment an ein anderes
 Gruppenmitglied, bis die Schwäche endet; danach zurück an den ersten. Ein neuer Partner erhält Standard Finish
 erst mit dem nächsten Standard Finish.
+
+## V2: Stand der Umsetzung (A189)
+
+**Erkennung breiter:** Die Tankbuster-Pfade sind Präfixe: `vfx/lockon/eff/tank` (jeder Tank-Marker) und
+`vfx/lockon/eff/sharelaser2tank` (jeder geteilte Tank-Laser) statt der vier Einzelpfade. Bei den Sammeltreffern
+kommen `share_1` und der Sammelmarker aus San d'Oria: The Second Walk dazu. `target_ae_s5f` aus WrathCombos
+Liste bleibt draußen: Dort gilt es nur für ein Gebiet und trifft laut deren Kommentar auch Verteilmarker. Die
+Pfade sind Spieldaten (Asset-Namen), kein übernommener Code.
+
+**Negativliste (seine Vorgabe: im Spiel aufbauen, sicher speichern):** `TankbusterMarkerWatch`.
+- **Beobachtung:** Jeder erkannte Marker auf einem Gruppenmitglied öffnet eine Beobachtung. Beschädigt eine
+  gegnerische Aktion das markierte Mitglied — jede Höhe, auch ein von einer Barriere geschluckter Treffer,
+  Auto-Attacken ausgenommen, Quelle anvisierbar oder unsichtbarer Helfer —, ist der Marker bestätigt. Endet die
+  Beobachtung ohne solchen Treffer, ist der Pfad widerlegt und kommt auf die Liste. Die Entscheidung
+  (`IsCastingTankVfx`, `IsTankbusterVfxOnPlayer`) überspringt Pfade auf der Liste.
+- **Selbstkorrektur statt Zählschwelle:** Die Beobachtung läuft für gelistete Pfade weiter; ein späterer Treffer
+  nach demselben Marker nimmt den Pfad wieder heraus. Ein falscher Eintrag kostet eine ausgelassene Abwehr beim
+  nächsten Auftreten und korrigiert sich dann. Deshalb genügt eine Beobachtung, und es gibt keine feste Zahl.
+- **Wann eine Beobachtung endet:** wenn der Marker die VFX-Warteschlange verlassen hat — dieselbe Warteschlange,
+  aus der die Entscheidung liest — und jeder gegnerische Zauber, der beim Erscheinen des Markers lief, geendet
+  hat, plus ein GCD für das Eintreffen. Beide Fehler neigen zur sicheren Seite: Ein zu langes Fenster lässt
+  anderen Schaden den Marker bestätigen, er bleibt Tankbuster wie bisher.
+- **Ohne Urteil verworfen:** Das markierte Mitglied ist beim Ende tot oder nicht mehr in der Gruppe; der Kampf
+  endet vorher.
+- **Speicherung:** `TankbusterMarkerFalsified.json` im Konfigurationsordner, kein Download. Es gelten die Schutzwege
+  aller Listen: nie geschrieben, wenn nicht geladen; atomar über eine Temporärdatei; eine unlesbare Datei wird
+  beiseitegelegt statt überschrieben. Geändert wird die Liste nur im Spielthread, geschrieben wird eine dort
+  gezogene Kopie. Zurücksetzen: Datei löschen („Keine Funktion ohne Bedarf").
+
+**Grenze:** Die Warteschlange hält einen Marker ohne bekannte Dauer fünf Sekunden (bestehender Wert in
+`MajorUpdater`). Ein Tankbuster, der später als fünf Sekunden plus ein GCD nach dem Marker fällt und keinen
+laufenden Zauber hat, würde fälschlich widerlegt — und beim nächsten Treffer nach demselben Marker korrigiert.
 
 ## V4: Ergebnis (A188)
 

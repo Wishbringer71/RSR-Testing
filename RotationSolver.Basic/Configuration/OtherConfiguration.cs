@@ -45,6 +45,13 @@ internal class OtherConfiguration
 	/// </markdown>
 	public static HashSet<uint> HostileCastingKnockback = [];
 
+	/// <summary>
+	/// Tankbuster marker paths the fight has shown not to be followed by a hit on the marked member
+	/// (concept 15, V2). Learned in play, never downloaded; a later hit after the same marker takes the
+	/// path out again. Paths are kept in lower case.
+	/// </summary>
+	public static HashSet<string> TankbusterMarkerFalsified = [];
+
 	/// <markdown file="List" name="Gaze/Stop" section="Actions">
 	/// **`It is recommended to click on the reset button after every patch.`**
 	/// 
@@ -182,6 +189,8 @@ internal class OtherConfiguration
 		() => InitOne(ref RotationSolverRecord, nameof(RotationSolverRecord), false),
 		() => InitOne(ref NoCastingStatus, nameof(NoCastingStatus)),
 		() => InitOne(ref HostileCastingKnockback, nameof(HostileCastingKnockback)),
+		// No download: learned in play, like the damage table.
+		() => InitOne(ref TankbusterMarkerFalsified, nameof(TankbusterMarkerFalsified), false),
 		() => InitOne(ref HostileCastingStop, nameof(HostileCastingStop)),
 		() => InitOne(ref NorthHornWeaknessRecords, nameof(NorthHornWeaknessRecords), false),
 		() => InitOne(ref SouthHornWeaknessRecords, nameof(SouthHornWeaknessRecords), false),
@@ -239,6 +248,7 @@ internal class OtherConfiguration
 			await SaveNoProvokeNames();
 			await SaveNoCastingStatus();
 			await SaveHostileCastingKnockback();
+			await SaveTankbusterMarkerFalsified();
 			await SaveHostileCastingStop();
 			await SaveNorthHornWeaknessRecords();
 			await SaveSouthHornWeaknessRecords();
@@ -401,6 +411,16 @@ internal class OtherConfiguration
 	private static Task SaveHostileCastingKnockback()
 	{
 		return Task.Run(() => Save(HostileCastingKnockback, nameof(HostileCastingKnockback)));
+	}
+
+	/// <summary>
+	/// Saves the falsified tankbuster markers. The set is changed on the game thread; the copy is taken
+	/// there, before the write moves to a pool thread, so the write never walks a set being changed.
+	/// </summary>
+	public static Task SaveTankbusterMarkerFalsified()
+	{
+		var snapshot = new HashSet<string>(TankbusterMarkerFalsified);
+		return Task.Run(() => Save(snapshot, nameof(TankbusterMarkerFalsified)));
 	}
 
 	private static Task SaveHostileCastingStop()

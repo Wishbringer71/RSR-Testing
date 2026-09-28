@@ -4308,6 +4308,17 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch (Wirktext, Code).
 
+### A189 · V2: Tankbuster-Marker breiter erkannt, Negativliste im Spiel gelernt (28.09.2026)
+
+- *Vorgabe:* „negativliste ingame aufbauen, wenn ein vfx nachträglich als tankbuster falsifiziert wurde. (sicher speichern, nicht das gleiche debakel wie mit schadenstabelle bei aoe)".
+- *Research:* `DataCenter.TankbusterPaths` (Präfixvergleich, `StartsWith`), Leser `IsCastingTankVfx`, `IsTankbusterVfxOnPlayer`; VFX-Warteschlange mit Lebensdauer aus `MajorUpdater.RSRCleanupUpdate`; Schutzwege der Speicher (A170–A177). WrathCombo-Liste (`VFX.cs`) nur gelesen.
+- *Optionen:* Negativliste mit Zählschwelle; mit Selbstkorrektur ohne Schwelle; Präfix ohne Liste; Nullvariante. Gewählt: Selbstkorrektur — eine Schwelle wäre eine Zahl ohne Grundlage, und die Korrektur in beide Richtungen macht sie unnötig.
+- *Umgesetzt:* Präfixe, zwei Sammelmarker, `TankbusterMarkerWatch` (Beobachtung, Urteil, Speichern), Treffermeldung im Effekt-Handler vor dem Quellenfilter, Überspringen in beiden Lesern; Prüfskript `check_config_store_roundtrip.py` erkennt jetzt auch eine gespeicherte Kopie (der `nameof` benennt die Datei).
+- *Falsifikation:* **Kein Defekt?** Seine Vorgabe verlangt die Liste; ohne sie macht der Präfix jeden falschen Tank-Marker zum Dauerauslöser. **Option falsch?** Ein Tank nimmt im Kampf ständig Fähigkeitstreffer; das Fenster ist kurz (Markerdauer oder laufender Zauber plus ein GCD), und auch dort irrt es nur zur sicheren Seite. **Ausgeliefert, nichts ändert sich?** Ohne falsche Marker bleibt die Liste leer, und die breitere Erkennung wirkt allein. **Was geschieht, wenn der Treffer nach dem Fenster fällt?** Ein falscher Eintrag, beim nächsten Mal korrigiert — genannt als Grenze im Konzept.
+- *Betroffene:* alle Rollen, deren Abwehr auf Tankbuster-Marker reagiert; fremde Rotationen lesen dieselben Flaggen.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

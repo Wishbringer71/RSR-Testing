@@ -337,3 +337,11 @@ carries the weakness of a raise, someone else gets the partner buffs if anyone i
 has worn off, the higher-priority member is taken back. A partner chosen by name is replaced only for
 death or weakness. A swap waits until Closed Position is ready and never interrupts a dance.
 
+## Tankbuster markers: more are recognised, and false ones are learned away
+
+Every tank lock-on marker and every shared tank laser is now recognised, not only four named ones,
+plus two more party-stack markers. When a marker turns out not to be followed by any hit on the marked
+member, its path goes on a list, `TankbusterMarkerFalsified.json`, and is no longer treated as a
+tankbuster; a later hit after the same marker takes it off again. The list is learned in play and
+saved with the same safeguards as the damage table; delete the file to start over.
+

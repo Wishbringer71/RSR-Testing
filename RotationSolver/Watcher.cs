@@ -96,6 +96,23 @@ public static class Watcher
 				return;
 			}
 
+			// A tankbuster marker is confirmed by any enemy action that damages the marked member, from a
+			// targetable enemy or from one of the invisible helpers that resolve many of them - so this
+			// comes before the source filter below. Auto-attacks do not count: the tank takes them
+			// anyway, and they would confirm every marker on him.
+			if (set.Source is IBattleChara source
+				&& (source.IsEnemy() || source.GetBattleNPCSubKind() == Dalamud.Game.ClientState.Objects.Enums.BattleNpcSubKind.Combatant)
+				&& set.Action is { } marked && marked.GetActionCate() != ActionCate.Autoattack)
+			{
+				foreach (var effect in set.TargetEffects)
+				{
+					if (effect.GetSpecificTypeEffect(ActionEffectType.Damage, out _))
+					{
+						TankbusterMarkerWatch.RecordHit(effect.TargetID);
+					}
+				}
+			}
+
 			float damageRatio = 0;
 			var playerId = playerObject.GameObjectId;
 			var maxHp = playerObject.MaxHp;

@@ -2632,10 +2632,11 @@ internal static class DataCenter
 	// Cached, case-insensitive path sets modeled after WrathCombo VFX.cs
 	private static readonly FrozenSet<string> TankbusterPaths = FrozenSet.ToFrozenSet(
 	[
-		"vfx/lockon/eff/tank_lockon",
-		"vfx/lockon/eff/tank_laser",
-		"vfx/lockon/eff/sharelaser2tank5sec_c0k1",
-		"vfx/lockon/eff/sharelaser2tank8sec_c0p",
+		// Prefixes, matched with StartsWith: every tank marker ("tank_lockon", "tank_laser", ...) and
+		// every shared tank laser. A marker the prefix catches wrongly is learned away by
+		// TankbusterMarkerWatch (concept 15, V2).
+		"vfx/lockon/eff/tank",
+		"vfx/lockon/eff/sharelaser2tank",
 		"vfx/lockon/eff/x6fe_fan100_50_0t1",     // Necron Blue Shockwave - Cone Tankbuster
 		//"vfx/common/eff/mon_eisyo03t",           // M10 Deep Impact AoE TB need different path for this, this is the generic target vfx part
 		"vfx/lockon/eff/m0676trg_tw_d0t1p",      // M10 Hot Impact shared TB
@@ -2663,6 +2664,8 @@ internal static class DataCenter
 		"vfx/lockon/eff/coshare",
 		"vfx/lockon/eff/share_laser",
 		"vfx/lockon/eff/com_share",
+		"vfx/lockon/eff/share_1",
+		"vfx/lockon/eff/d1084_share_24m_s6_0k2", // San d'Oria: The Second Walk
 		"vfx/lockon/eff/share_10s_6m_0w",
 		"vfx/lockon/eff/share_12s_6m_t1",
 		"vfx/lockon/eff/share_14s_6m_t1",
@@ -2690,6 +2693,24 @@ internal static class DataCenter
 	], StringComparer.OrdinalIgnoreCase);
 
 	private static readonly StringComparison PathCmp = StringComparison.OrdinalIgnoreCase;
+
+	/// <summary>Whether a VFX path is one of the tankbuster markers, before the learned exclusions.</summary>
+	internal static bool IsTankbusterMarkerPath(string path)
+	{
+		foreach (var p in TankbusterPaths)
+		{
+			if (path.StartsWith(p, PathCmp))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>Whether the fight has shown this marker path not to be followed by a hit.</summary>
+	internal static bool IsFalsifiedTankbusterMarker(string path)
+		=> OtherConfiguration.TankbusterMarkerFalsified.Contains(path.ToLowerInvariant());
 
 	public static bool IsHostileCastingAOE =>
 		InCombat && (IsCastingAreaVfx() || (AllHostileTargets != null && IsAnyHostileCastingArea()));
@@ -2972,12 +2993,9 @@ internal static class DataCenter
 					continue;
 				}
 
-				foreach (var p in TankbusterPaths)
+				if (IsTankbusterMarkerPath(s.Path) && !IsFalsifiedTankbusterMarker(s.Path))
 				{
-					if (s.Path.StartsWith(p, PathCmp))
-					{
-						return true;
-					}
+					return true;
 				}
 			}
 			catch (AccessViolationException ex)
@@ -3146,7 +3164,7 @@ internal static class DataCenter
 			{
 				try
 				{
-					if (string.IsNullOrEmpty(s.Path))
+					if (string.IsNullOrEmpty(s.Path) || IsFalsifiedTankbusterMarker(s.Path))
 					{
 						continue;
 					}
