@@ -61,6 +61,13 @@ public sealed class DNC_Reborn : DancerRotation
 	// Override the method for handling emergency abilities
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
 	{
+		// The partner is dead, weakened by a raise, or no longer the best choice (concept 15, V5):
+		// end the partnership so Closed Position below picks again.
+		if (DancePartnerNeedsChange(DancePartnerName) && EndingPvE.CanUse(out act))
+		{
+			return true;
+		}
+
 		if (UseClosedPosition(out act))
 		{
 			return true;

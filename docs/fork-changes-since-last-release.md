@@ -330,3 +330,10 @@ whenever the barrier runs out or breaks, for as long as the pull lasts. Both ste
 works while running. Not placed over Galvanize or Eukrasian Prognosis. White Mage, Astrologian and
 Sage now share one rule for this upkeep, and none of them spends the MP their raise needs on it.
 
+## Dancer: a new dance partner after a death
+
+When the dance partner dies, the partnership ends and Closed Position picks again. While the partner
+carries the weakness of a raise, someone else gets the partner buffs if anyone is available; once it
+has worn off, the higher-priority member is taken back. A partner chosen by name is replaced only for
+death or weakness. A swap waits until Closed Position is ready and never interrupts a dance.
+

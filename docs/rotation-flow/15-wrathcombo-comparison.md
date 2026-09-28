@@ -39,7 +39,7 @@ Kanal-Sperre, Improvisation als kurzes Regen.
 | V2 | Zielmarkierungen: allgemeiner Präfix `vfx/lockon/eff/tank` statt einzelner Tank-Marker, dazu die bei RSR fehlenden Einträge (`sharelaser2tank`, `share_1`, zwei Dungeon-Sammelmarker) | Mehr Tankbuster und Sammeltreffer werden erkannt, bevor sie fallen; Einzel- und Flächenabwehr öffnen öfter rechtzeitig | Marker über dem Ziel — der Treffer ist angekündigt | Daten in Upstream-Code; Gegenrisiko: der Präfix kann andere Marker treffen |
 | V3 | Kuratierte Raidwide-, Tankbuster- und Ignorier-Listen je Begegnung (`BattleData`, etwa Blicke, die wie Raidwides aussehen) | Weniger Fehlalarme bei Blickmechaniken, Raidwides ohne Flächen-Wurftyp werden erkannt | angekündigter Cast mit bekannter Wirkung | Datenübernahme aus fremdem Projekt (Lizenzhinweis nötig); Pflegeaufwand |
 | V4 | Samurai Meditate erst nach kurzem Stillstand | Weniger abgebrochenes Meditate beim kurzen Anhalten zwischen zwei Bewegungen | — | kleine Option; die Wartezeit wäre eine neue Zahl |
-| V5 | Tanzpartner neu wählen, wenn der Partner tot ist | Standard Finish und Devilment gehen nicht auf einen Toten | — | **Zu prüfen:** RSR wählt nur, solange kein Partner besteht; ob der Status beim Tod des Partners endet, sagt der Job-Guide nicht („Effect ends upon reuse") |
+| V5 | Tanzpartner neu wählen, wenn der Partner tot ist | Standard Finish und Devilment gehen nicht auf einen Toten | — | **Gebaut (A186)**, siehe „V5: Stand der Umsetzung" |
 | V6 | Kerachole nicht über eine liegende Sacred Soil legen (`SGE_OverProtect`) | Gruppenminderung zweier Heiler verteilt sich auf zwei Treffer statt einen | — | Eingabe für die offene Frage „Streckung auch für Weiser/Gelehrter" (Konzept 08); laut Job-Guide stapeln beide (nur Kerachole/Taurochole nicht) |
 
 ## Seine Angaben zu den Vorschlägen (27.09.2026)
@@ -96,6 +96,30 @@ nimmt. Bricht sie jeden GCD, gehen alle GCDs des Weisen an sie statt an Dosis, u
 leeren den Vorrat bis zur Wiederbelebungsreserve. Wie oft sie bricht, hängt vom Pull ab und ist von hier
 nicht messbar. Ob „Verfall" in seiner Vorgabe den Verbrauch meint oder nur den Ablauf, entscheidet er
 (gebündelte Vorlage).
+
+## V5: Stand der Umsetzung (A186)
+
+Seine Vorgabe: Partnerschaft während des Todes aufheben, während der Schwäche nach einer Wiederbelebung neu
+wählen, nach ihrem Ende erneut. Gebaut als `DancerRotation.DancePartnerNeedsChange` (Stufe „Tänzer": nur er hat
+einen Partner), gelesen von `DNC_Reborn` vor Closed Position: trifft sie zu, fällt Ending, und Closed Position
+wählt über die bestehende Partnerwahl neu.
+
+- **Tod:** Ist der Partner tot oder trägt niemand mehr den Partnerstatus des Tänzers, endet die Partnerschaft
+  sofort. Ob das Spiel den Partnerstatus beim Tod entfernt, sagt der Job-Guide nicht; die Regel greift in beiden
+  Fällen.
+- **Schwäche:** Trägt der Partner Weakness, Brink of Death oder Damage Down — dieselbe Menge, die die
+  Partnerwahl ausschließt —, wird gewechselt, sobald ein anderes Gruppenmitglied ohne sie verfügbar ist. Ohne
+  Alternative bleibt er Partner: geschwächt teilt er die Buffs noch.
+- **Nach der Schwäche:** Steht ein Mitglied mit höherem Rang in der Partnerpriorität verfügbar, wird gewechselt.
+  „Wer am meisten Schaden verursacht" ist diese Priorität, dieselbe Ordnung wie bei der ersten Wahl. Ein in den
+  Einstellungen namentlich gewählter Partner wird nur für Tod oder Schwäche ersetzt.
+- **Zeitpunkt:** Für einen Wechsel erst, wenn Closed Position bereit ist (30 s Abklingzeit, Job-Guide) — sonst
+  hätte der Tänzer bis dahin keinen Partner. Nie während eines Tanzes, damit das Finish den Partner noch
+  erreicht. Ending hat 1 s Abklingzeit.
+
+**Folge im Kampf:** Nach der Wiederbelebung des Partners gehen Standard Finish und Devilment an ein anderes
+Gruppenmitglied, bis die Schwäche endet; danach zurück an den ersten. Ein neuer Partner erhält Standard Finish
+erst mit dem nächsten Standard Finish.
 
 ## Nicht übernommen, mit Grund
 

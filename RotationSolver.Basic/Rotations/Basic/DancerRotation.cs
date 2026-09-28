@@ -1,4 +1,5 @@
 ﻿using Dalamud.Interface.Colors;
+using RotationSolver.Basic.Configuration;
 
 namespace RotationSolver.Basic.Rotations.Basic;
 
@@ -137,6 +138,80 @@ public partial class DancerRotation
 	/// Has Closed Position status.
 	/// </summary>
 	public static bool HasHoningDance => StatusHelper.PlayerHasStatus(true, StatusID.HoningDance);
+
+	// The statuses that make a member a poor partner - the same set the partner choice skips
+	// (ActionTargetInfo.FindDancePartner): Weakness and Brink of Death after a raise, and Damage Down.
+	private static bool IsHamperedPartner(IBattleChara member)
+		=> member.HasStatus(false, StatusID.DamageDown_2911, StatusID.DamageDown, StatusID.Weakness, StatusID.BrinkOfDeath);
+
+	private static bool IsAvailablePartner(IBattleChara member)
+		=> member != Player && !member.IsDead && !IsHamperedPartner(member) && !member.IsConditionCannotTarget();
+
+	// A member's place in the dance partner priority: the index of the first job of theirs in the list.
+	private static int DancePartnerRank(IBattleChara member)
+	{
+		var priority = OtherConfiguration.DancePartnerPriority;
+		for (var i = 0; i < priority.Count; i++)
+		{
+			if (member.IsJobs(priority[i]))
+			{
+				return i;
+			}
+		}
+
+		return int.MaxValue;
+	}
+
+	/// <summary>
+	/// Whether the current dance partnership should be ended so Closed Position can pick again. The
+	/// owner's rule (concept 15, V5): while the partner is dead the partnership is lifted; while they
+	/// carry the weakness of a raise, whoever would deal the most damage is chosen again; and once it
+	/// has run out, the choice is made again.
+	/// </summary>
+	/// <param name="namedPartner">The partner named in the rotation's settings. A partner by that name is
+	/// only replaced for death or weakness, never for a higher place in the priority list.</param>
+	/// <remarks>
+	/// "Who deals the most damage" is the dance partner priority list, the same order the first choice
+	/// reads. Ending for a replacement waits until Closed Position is ready again (30 s recast): ended
+	/// earlier, the buffs would go to nobody until then. Death ends it at once - the buffs are lost on a
+	/// dead partner anyway. Never while dancing, so the finish still reaches the partner.
+	/// </remarks>
+	protected bool DancePartnerNeedsChange(string namedPartner)
+	{
+		if (!HasClosedPosition || IsDancing || !EndingPvE.EnoughLevel)
+		{
+			return false;
+		}
+
+		var partner = CurrentDancePartner;
+		if (partner == null || partner.IsDead)
+		{
+			return true;
+		}
+
+		if (ClosedPositionPvE.Cooldown.IsCoolingDown)
+		{
+			return false;
+		}
+
+		var hampered = IsHamperedPartner(partner);
+		var isNamed = namedPartner.Length > 0 && partner.Name.ToString() == namedPartner;
+		var partnerRank = DancePartnerRank(partner);
+		foreach (var member in PartyMembers)
+		{
+			if (member == partner || !IsAvailablePartner(member))
+			{
+				continue;
+			}
+
+			if (hampered || (!isNamed && DancePartnerRank(member) < partnerRank))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
 	#endregion
 
 	#region PvE Actions Unassignable

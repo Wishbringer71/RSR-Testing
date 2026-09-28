@@ -4280,6 +4280,15 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** Laufzeitbeobachtung an seinen Dateien; Rückbau statisch, Compile über die CI.
 
+### A186 · V5: Tanzpartner bei Tod und Schwäche neu wählen (28.09.2026)
+
+- *Research:* `DNC_Reborn.UseClosedPosition` wählte nur ohne Closed Position; ein toter oder geschwächter Partner blieb für den Rest des Kampfs. `FindDancePartner` schließt Tote, Weakness, Brink of Death und Damage Down schon aus. Wirktexte (Job-Guide, 28.09.2026): Closed Position 30 s, „Effect ends upon reuse"; Ending 1 s, „Ends dance with your partner".
+- *Umgesetzt:* `DancerRotation.DancePartnerNeedsChange(namedPartner)` und Ending vor Closed Position in `DNC_Reborn.EmergencyAbility`. Regeln siehe Konzept 15, „V5: Stand der Umsetzung".
+- *Falsifikation:* **Kein Defekt?** Seine Vorgabe verlangt es; heute bleibt der tote Partner. **Option falsch?** Ein Wechsel ohne bereites Closed Position ließe den Tänzer bis zu 30 s ohne Partner — ausgeschlossen, außer beim Tod, wo die Buffs ohnehin verloren sind. Gleichrangige Mitglieder lösen keinen Wechsel aus (strenger Vergleich), also kein Hin und Her. **Ausgeliefert, nichts ändert sich?** Entfernt das Spiel den Partnerstatus beim Tod, greift der Zweig „kein Partner gefunden"; bleibt er, der Zweig „tot". Ohne gepflegte Priorität greifen nur Tod und Schwäche.
+- *Betroffene:* Autoren abgeleiteter Tänzer-Rotationen erhalten die geschützte Methode; fremde Rotationen ändern sich nicht.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
