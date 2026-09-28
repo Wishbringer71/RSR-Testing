@@ -335,7 +335,7 @@ Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A17
 
 **Zwei weitere Klon-Reste an derselben Stelle**, ohne eigene Wirkung: Die beiden Methoden sind Kopien mit geänderter Konstante, und die `<remarks>` der physischen Fassung sagt „Returns early on the first confirmed **magical** cast". Der Kommentar bleibt stehen, bis die Stelle bearbeitet wird — ihn allein anzugleichen würde den Beleg der Entstehung tilgen.
 
-**Zuordnung belegt (A179, `v2.xivapi.com`):** 1 Hieb, 2 Stich, 3 Schlag, 4 Schuss, 5 Magie, 6 Odem, 7 Schall, 8 Limitrausch. Offen bleibt die Bilanz selbst: Sie rechnet „kein Cast" und Odem, Schall als physisch. **Auflösungsbedingung:** ein Verbraucher im Kampf; dann die Fälle „unbekannt" und „weder noch" eigens führen.
+**Zuordnung belegt (A179, `v2.xivapi.com`):** 1 斬 slashing, 2 突 piercing, 3 打 blunt, 4 射 shot, 5 魔法 magic, 6 ブレス breath, 7 音波 sound, 8 limit break (das Blatt führt nur japanische Namen). Offen bleibt die Bilanz selbst: Sie rechnet „kein Cast", breath und sound als physisch. **Auflösungsbedingung:** ein Verbraucher im Kampf; dann die Fälle „unbekannt" und „weder noch" eigens führen.
 
 **Empfehlung: erfassen.** Solange nur eine Anzeige betroffen ist, wäre eine Umstellung auf geratener Zuordnung teurer als der Fehler. Wird die Bilanz zur Entscheidungsgrundlage, ist sie vorher aufzulösen — dann gehört auch der dritte Fall benannt, statt ihn als physisch zu führen.
 
