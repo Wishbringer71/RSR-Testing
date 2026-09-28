@@ -3796,16 +3796,29 @@ internal static class DataCenter
 	/// raised <see cref="AutoStatus.DefenseArea"/>, which opens the job's entire area-defense chain.
 	/// Two cases pass regardless of distance: an effect range of 0, which covers both "not filled in"
 	/// and the party-wide hits that carry no radius of their own, and a cast aimed at the player,
-	/// since a ground-placed effect follows its target rather than its caster.
+	/// since a ground-placed effect follows its target rather than its caster. One case is decided
+	/// before both: a single-target action with a cast range reaches only the one it is cast at.
 	/// </summary>
 	private static bool AreaCastCanReachPlayer(IBattleChara h, Action act)
 	{
+		var player = Player.Object;
+
+		// A single-target action with a cast range hits the one it is cast at and nobody else - the
+		// game data says so, whatever the area list says. It has no radius, so the pass for an effect
+		// range of 0 below let it through for everyone: a tankbuster on the tank that had found its way
+		// into the list opened every player's area defence, Radiant Aegis and Addle on a Summoner
+		// included (A192, the owner's observation). Holy Bladedance (35285) is such an entry. A
+		// self-targeted action (cast range 0) is the scripted party-wide kind and keeps the pass.
+		if ((CastType)act.CastType == CastType.Targeted && act.Range > 0)
+		{
+			return player != null && h.CastTargetObjectId == player.GameObjectId;
+		}
+
 		if (act.EffectRange == 0)
 		{
 			return true;
 		}
 
-		var player = Player.Object;
 		if (player != null && h.CastTargetObjectId == player.GameObjectId)
 		{
 			return true;

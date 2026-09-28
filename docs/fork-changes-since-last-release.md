@@ -353,3 +353,9 @@ Essential Dignity, Taurochole, Excogitation, Clemency, Nascent Flash, Second Win
 Mitigation thresholds are unchanged. With the setting off nothing changes. For rotation authors,
 `ObjectHelper.GetForecastHealthRatio` is now public.
 
+## A single-target cast in the AoE list no longer opens everyone's area defence
+
+A listed action that the game data marks as single-target with a cast range now counts only for the
+player it is cast at. One such entry, Holy Bladedance, opened every player's area defence when it was
+aimed at the tank - a Summoner's Radiant Aegis and Addle included.
+

@@ -96,6 +96,26 @@ Neustart lautet die ehrliche Antwort „in dieser Sitzung noch nicht gesehen".
 Aktion der bisher gespielten Inhalte ihre Minderung wert. Ohne diese Unterscheidung hätte die Sonde
 einen abgeschalteten Baustein als unwirksamen gemeldet.
 
+## Wen ein gelisteter Flächencast erreicht
+
+`AreaCastCanReachPlayer` entscheidet, ob ein gelisteter Cast den Spieler überhaupt treffen kann, bevor er die
+Flächenabwehr öffnet. **Zuerst die Spieldaten:** Eine Einzelzielaktion mit Reichweite (`CastType` 1, `Range` > 0)
+trifft nur den, auf den sie gewirkt wird — die Flächenabwehr öffnet sie nur, wenn das der Spieler ist (A192).
+Danach wie bisher: Effektreichweite 0 (die gruppenweiten Treffer ohne eigenen Radius, darunter die
+selbstgezielten mit Reichweite 0) und ein auf den Spieler gewirkter Cast gehen durch; sonst entscheidet der
+Abstand zum Wirkenden.
+
+**Anlass, seine Beobachtung (28.09.2026):** „ich habe das gefühl, dass schimmerschild bei tankbuster fällt. aber
+eben nicht bei einem tankbuster auf mich, sondern auf den tank." Die Einzelabwehr eines Schadensausteilers
+öffnet nur ein Tankbuster auf ihn selbst (`IsHostileCastingTankBusterAtMe`), dieser Weg war richtig. Die
+Flächenabwehr aber öffnete jeder gelistete Cast mit Effektreichweite 0 — auch eine Einzelzielaktion, die in
+die Liste geraten ist. Erhoben an der ausgelieferten Liste (850 Einträge, Spieldaten über xivapi): genau eine,
+Holy Bladedance (35285, Einzelziel, Reichweite 100). Dass sie ein Tankbuster ist, folgt aus den Spieldaten
+(ein Ziel), nicht aus einer Beobachtung. **Nicht ausgeschlossen, von hier nicht messbar:** eine
+Tankbuster-Fläche um den Tank, die einmal die ganze Gruppe traf und so gelistet wurde, und ein BossModReborn-
+Modul, das einen Tankbuster als Raidwide meldet. Beide hängen an der offenen Unterscheidung „Raidwide oder
+ausweichbare Fläche" (`TODO.md`).
+
 ## Wen die Unterdrückung erreicht
 
 Erhoben, nicht geschätzt (Lauf vom 20.09.2026): `AreaCastIsWorthMitigating` sitzt in

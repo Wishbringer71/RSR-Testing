@@ -4338,6 +4338,16 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A192 · Flächenabwehr durch eine Einzelzielaktion in der Flächenliste (28.09.2026)
+
+- *Anlass:* seine Beobachtung: „ich habe das gefühl, dass schimmerschild bei tankbuster fällt. aber eben nicht bei einem tankbuster auf mich, sondern auf den tank. das wäre nutzlos".
+- *Research:* Alle Wege zu Radiant Aegis (`SMN_Reborn`: Einzel- und Flächenabwehr, BossModReborn-Raidwide, vor der Beschwörung). Einzelabwehr eines Schadensausteilers nur bei `IsHostileCastingTankBusterAtMe` — richtig. Flächenabwehr über `IsHostileCastingArea` → `AreaCastCanReachPlayer`: Effektreichweite 0 geht für jeden durch. Spieldaten der 850 Listeneinträge (xivapi, `CastType`, `Range`, `EffectRange`): eine Einzelzielaktion mit Reichweite, Holy Bladedance (35285).
+- *Optionen:* Eintrag aus der Liste nehmen (die Liste lädt Upstream nach, beim nächsten Zurücksetzen käme er wieder); die Klasse an der Reichweitenprüfung schließen; Nullvariante. Gewählt: die Klasse — eine Einzelzielaktion mit Reichweite erreicht laut Spieldaten nur ihr Ziel, gleich wie sie in die Liste kam.
+- *Umgesetzt:* `AreaCastCanReachPlayer`: `CastType.Targeted` mit `Range > 0` gilt nur, wenn auf den Spieler gewirkt. Alle drei Leser (Flächenabwehr, großer unterbrechbarer Cast, Vorab-Heilung) erben es.
+- *Falsifikation:* **Kein Defekt?** Die Spieldaten sagen ein Ziel. **Option falsch?** Selbstgezielte Einträge (Reichweite 0, etwa Telomania) sind die gruppenweiten Treffer ohne Radius und bleiben unberührt. **Ausgeliefert, nichts ändert sich?** Möglich — wenn seine Beobachtung aus einem der zwei anderen Wege kommt (gelistete Tankbuster-Fläche, BossModReborn-Meldung), die von hier nicht messbar sind; im Konzept 13 genannt.
+
+**Prüfgrad:** statisch (Code, Spieldaten); Compile über die CI. Seine Beobachtung selbst ist nicht nachgemessen.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
