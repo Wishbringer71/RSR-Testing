@@ -926,11 +926,22 @@ public partial class CustomRotation
 			damageFactor *= 0.90f;
 		}
 
+		// 15% for all three, as the job guide states for Troubadour, Tactician and Shield Samba alike
+		// ("Reduces damage taken by self and nearby party members by 15%", read 27.09.2026). The effect
+		// texts in the generated resources leave the figure blank, so DefensiveValues cannot carry it;
+		// the 10% this line used to hold had no source.
 		if (HasPartyStatus(StatusID.Troubadour)
 			|| HasPartyStatus(StatusID.ShieldSamba)
 			|| HasPartyStatus(StatusID.Tactician_1951))
 		{
-			damageFactor *= 0.90f;
+			damageFactor *= 0.85f;
+		}
+
+		// Confession from Plenary Indulgence, missing here before. Its figure comes from its own effect
+		// text through the generated values rather than a number of its own.
+		if (HasPartyStatus(StatusID.Confession))
+		{
+			damageFactor *= 1f - DefensiveValues.For((uint)ActionID.PlenaryIndulgencePvE).Self;
 		}
 
 		if (HasPartyStatus(StatusID.DarkMissionary))

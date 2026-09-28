@@ -297,3 +297,9 @@ With `HoldHolyWhilePackSlowed` on, Holy was held after an Arm's Length only unti
 and then went out into a pack that was still slowed. It now stays held for as long as more than half
 the enemies in its radius are slowed; the held GCDs go to DoTs and then Glare. The Diagnostics window
 shows, under the rotation, whether the rule last held Holy and why not.
+
+## For rotation authors: party mitigation sum and physical damage check
+
+`GetCurrentMitigationPercent` now counts Troubadour, Tactician and Shield Samba at the 15% their effect
+text states (it used 10%) and includes Confession from Plenary Indulgence. `IsPhysicalDamageIncoming`
+now tests the physical attack types (slashing, piercing, blunt, shot); it used to test sound.

@@ -684,6 +684,26 @@
    "status": "exception",
    "loop": "A171",
    "reason": "Upstream's intake criterion: a set that hits every counted member marks a party-wide hit only in a party of at least a light party; the smallest party composition in the game is 4 (ContentMemberType row 2: one tank, one healer, one melee, one ranged). Below it a cleave or a small circle can hit everyone. Deriving it from the current duty's composition would only raise the minimum where every member must be hit anyway"
+  },
+  {
+   "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
+   "code": "damageFactor *= 0.85f;",
+   "values": [
+    "0.85f"
+   ],
+   "status": "exception",
+   "loop": "A179",
+   "reason": "Troubadour, Tactician and Shield Samba: the job guide states 15% for each (read 2026-09-27); the effect texts in ActionId.resx leave the figure blank, so the generated DefensiveValues cannot carry it"
+  },
+  {
+   "file": "RotationSolver.Basic/DataCenter.cs",
+   "code": "if (action.AttackType.RowId is >= 1 and <= 4)",
+   "values": [
+    "4"
+   ],
+   "status": "exception",
+   "loop": "A179",
+   "reason": "AttackType sheet rows 1-4 are slashing, piercing, blunt and shot (read through v2.xivapi.com, 2026-09-27); row ids of a game sheet, not a tunable value"
   }
  ]
 }

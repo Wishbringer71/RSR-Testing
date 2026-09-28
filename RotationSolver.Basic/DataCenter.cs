@@ -2101,12 +2101,15 @@ internal static class DataCenter
 	/// Determines whether any currently casting hostile action is classified as physical.
 	/// </summary>
 	/// <returns>
-	/// True if at least one hostile target is casting an action whose <c>AttackType.RowId == 7</c> (interpreted as physical); otherwise false.
+	/// True if at least one hostile target is casting an action whose attack type is slashing,
+	/// piercing, blunt or shot (<c>AttackType</c> rows 1 to 4); otherwise false.
 	/// </returns>
 	/// <remarks>
 	/// Scans all hostile entities with a non-zero <c>CastActionId</c>, looks up the action row, and inspects the attack type.
 	/// Returns early on the first confirmed magical cast.
 	/// If the action sheet cannot be loaded or no valid casts exist, returns false.
+	/// The sheet's rows, read 27.09.2026 through v2.xivapi.com: 1 slashing, 2 piercing, 3 blunt, 4 shot,
+	/// 5 magic, 6 breath, 7 sound, 8 limit break. This used to test row 7 as physical, which is sound.
 	/// </remarks>
 	public static bool IsPhysicalDamageIncoming()
 	{
@@ -2143,8 +2146,8 @@ internal static class DataCenter
 					continue;
 				}
 
-				// AttackType row id 7 interpreted as physical.
-				if (action.AttackType.RowId == 7)
+				// Slashing, piercing, blunt and shot are the physical rows of the AttackType sheet.
+				if (action.AttackType.RowId is >= 1 and <= 4)
 				{
 					return true;
 				}

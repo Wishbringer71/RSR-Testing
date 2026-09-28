@@ -47,10 +47,6 @@ Seit 27.09.2026 ist die Referenz erreichbar. Offen: je Job die Standardrotation 
 
 Bei drei Stapeln Addersgall geht jeder weitere Gewinn verloren; `SGE_Reborn` verbraucht vor dem Überlauf nichts (`AddersgallEndAfter` steht seit 2022 in der Basisrotation, ohne Leser). Im Kampf: Druochole gäbe je Stapel 7 % MP und eine Heilung. Zur Entscheidung vorgelegt: ein Verbrauch vor dem Überlauf wie beim Weißmagier („Use Lily at max stacks/about to overcap"). Konzept 14, „Werden die Fenster genutzt?".
 
-### Die Minderungssumme kennt Confession nicht · R
-
-`CustomRotation.GetCurrentMitigationPercent` rechnet Temperance, Sacred Soil, Kerachole und weitere Gruppenminderungen, aber nicht Confession aus Plenary Indulgence (Wirktext 7433: „reducing damage taken by 10%"). Gelesen wird die öffentliche Summe im Fork nur von der Debug-Anzeige im Einstellungsfenster (`RotationConfigWindow`) — im Kampf entscheidet keine Standardregel danach (A161). Betroffen sind abgeleitete Rotationen, die sie lesen: Sie halten einen Treffer unter Plenary Indulgence für 10 % härter, als er ist. Offen, weil die Zeile eine neue feste Zahl bräuchte; der Wert liegt erzeugt in `DefensiveValues` (A159), und die Summe sollte ihn von dort lesen.
-
 ### Die Heilverbots-Prüfung steht achtmal im Dispatch · U
 
 Die Prüfung auf Scalebound und Shackled Healing steht als Kopie an acht Stellen, je vier in `CustomRotation_Ability` und `CustomRotation_GCD` (Upstream), dazu jetzt in `StatusHelper.PlayerHealingPunished` (A154, A155). Die Kopien sollten die Hilfsmethode rufen; bei leerer Gruppenliste antworten heute alle gleich. Nicht angefasst, weil es Upstream-Zeilen ohne Verhaltensänderung sind.
@@ -329,7 +325,7 @@ Genau dort steht das Muster, sechsmal im Heilerbestand:
 ### Die Minderungsbilanz kennt zwei Schadensarten, die Datenquelle drei · N, R
 
 **Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
-Dazu, gefunden im Regeltest (A135): Confession fehlt in der Aufzählung, und Troubadour, Tactician und Shield Samba stehen mit 10 %, obwohl ihr Wirktext keinen Wert nennt.
+Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A179 eingerechnet; `IsPhysicalDamageIncoming` prüft seit A179 die physischen Zeilen 1–4.
 
 `GetCurrentMitigationPercent` gewichtet sechs Faktoren binär nach `incomingMagical ? 0.90f : 0.95f` — Addle, Feint, Fey Illumination, Magick Barrier und zwei weitere. Der Wert kommt aus `DataCenter.IsMagicalDamageIncoming()`, das `AttackType.RowId == 5` prüft. Das Blatt kennt aber mehr Werte als 5 und 7; und wenn gerade **niemand** wirkt, ist `CastActionId` überall 0 und die Antwort ebenfalls `false`. Beide Fälle rechnet die Bilanz als **physisch** — mit vertauschten Vorzeichen: Addle zählt dann −5 % statt −10 %, Feint −10 % statt −5 %.
 
@@ -339,7 +335,7 @@ Dazu, gefunden im Regeltest (A135): Confession fehlt in der Aufzählung, und Tro
 
 **Zwei weitere Klon-Reste an derselben Stelle**, ohne eigene Wirkung: Die beiden Methoden sind Kopien mit geänderter Konstante, und die `<remarks>` der physischen Fassung sagt „Returns early on the first confirmed **magical** cast". Der Kommentar bleibt stehen, bis die Stelle bearbeitet wird — ihn allein anzugleichen würde den Beleg der Entstehung tilgen.
 
-**Auflösungsbedingung:** die Zuordnung der `AttackType`-Zeilen. Dass 5 magisch und 7 physisch ist, steht im Code ausdrücklich als Deutung („interpreted as"), nicht als Beleg; welche weiteren Zeilen vorkommen und wie häufig, ist ohne die Spieldaten nicht zu entscheiden — `RotationSolver.GameData` könnte das Blatt ausgeben, läuft aber nur beim Auftraggeber.
+**Zuordnung belegt (A179, `v2.xivapi.com`):** 1 Hieb, 2 Stich, 3 Schlag, 4 Schuss, 5 Magie, 6 Odem, 7 Schall, 8 Limitrausch. Offen bleibt die Bilanz selbst: Sie rechnet „kein Cast" und Odem, Schall als physisch. **Auflösungsbedingung:** ein Verbraucher im Kampf; dann die Fälle „unbekannt" und „weder noch" eigens führen.
 
 **Empfehlung: erfassen.** Solange nur eine Anzeige betroffen ist, wäre eine Umstellung auf geratener Zuordnung teurer als der Fehler. Wird die Bilanz zur Entscheidungsgrundlage, ist sie vorher aufzulösen — dann gehört auch der dritte Fall benannt, statt ihn als physisch zu führen.
 

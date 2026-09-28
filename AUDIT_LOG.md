@@ -4216,6 +4216,14 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI. Keine Laufzeitbeobachtung.
 
+### A179 · Minderungssumme: Werte am Job-Guide, Confession ergänzt, Schadensart „physisch" berichtigt (28.09.2026)
+
+- *Research:* Job-Guide (27.09.): Troubadour, Tactician, Shield Samba „Reduces damage taken … by 15%"; Confession „reducing damage taken by 10%"; Temperance, Kerachole, Holos, Collective Unconscious, Desperate Measures 10 %; Dark Missionary und Heart of Light 5 % physisch / 10 % magisch; Magick Barrier 10 % magisch; Fey Illumination 5 % magisch; Passage of Arms 85 %; Sacred Soil 90 %. Im Code stimmten alle bis auf die drei 15-%-Aktionen (dort 10 %, ohne Quelle); Confession fehlte. `AttackType`-Blatt über `v2.xivapi.com`: 1 Hieb, 2 Stich, 3 Schlag, 4 Schuss, 5 Magie, 6 Odem, 7 Schall, 8 Limitrausch — `IsPhysicalDamageIncoming` prüfte Zeile 7 (Schall) als physisch.
+- *Wirkung im Kampf:* keine in den Standardrotationen — die Summe liest nur eine Anzeige, `IsPhysicalDamageIncoming` hat keinen Leser. Betroffen sind abgeleitete Rotationen (R), die beide öffentlich lesen: Sie hielten einen Treffer unter Troubadour für 5 Punkte härter, unter Confession für 10 Punkte härter, und einen Schall-Angriff für physisch.
+- *Umgesetzt:* 15 % für die drei (feste Zahl mit Beleg, Ausnahme A179); Confession über `DefensiveValues` (Wirktext 7433, keine eigene Zahl); physisch = Zeilen 1–4 (Ausnahme A179, Zeilen eines Spielblatts).
+
+**Prüfgrad:** Job-Guide und Spieldaten, statisch, Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
