@@ -180,7 +180,7 @@ Oblation bleibt zusätzlich aus einem zweiten Grund außen vor: Sie steht im sel
 Barriere, die sonst hinter ihrer eigenen Vorgängerin hängen bliebe.
 
 **Keine Gruppenbetäubung.** Eine Betäubung ist der Grenzfall der Minderung: Für ihre Dauer kommt
-nicht weniger Schaden, sondern gar keiner. Sanctus — Holy, ab Stufe 82 Holy III — hält alles im
+nicht weniger Schaden, sondern gar keiner. Sanctus (Holy), ab Stufe 82 Sanctga (Holy III), hält alles im
 Umkreis von acht Yalm 4 Sekunden lang an (`ActionId.resx` 139, 25860). Der Weißmagier kann das im
 Trash absichtlich aufrechterhalten: `WHM_Reborn.ShouldStretchHolyStun` streckt die Betäubung über
 `SurveyStuns`, solange die Gegner betäubbar sind — **hinter einer Option mit Standard aus**, weil
@@ -191,7 +191,7 @@ Wer betäuben kann, entscheidet über die Reichweite der Regel:
 
 | Rolle | Aktion | Wirkung | Dauer |
 |---|---|---|---|
-| Heiler | Sanctus, Sanctus III — **nur Weißmagier** | Fläche, 8 Yalm | 4 s |
+| Heiler | Sanctus, Sanctga — **nur Weißmagier** | Fläche, 8 Yalm | 4 s |
 | Tank | Schildhieb — nur Paladin | Einzelziel | 6 s |
 | Tank | **Tiefschlag — alle Tanks, auch der Dunkelritter** | Einzelziel | 5 s |
 | Nahkampf | Fußfeger | Einzelziel | 3 s |
@@ -210,15 +210,43 @@ mindestens die Hälfte der Gegner in Reichweite. Gemessen wird über die Jobreic
 (`DataCenter.JobRange`, für Tanks drei Yalm) — dieselbe Menge, über die auch die Gegnerzahl zählt,
 denn beide Bedingungen beantworten dieselbe Frage.
 
-Zwischen zwei Anwendungen von Sanctus läuft die Betäubung kurz aus; der Halt trägt über diese Lücke,
-aber nur solange die Gegner überhaupt betäubbar sind. **Wie lange, steuert die Regel selbst nach**
-(A195): anfangs einen globalen Cooldown des Dunkelritters, dann die zuletzt gemessene Lücke zwischen
-zwei Gruppenbetäubungen desselben Rudels (mindestens die Hälfte der jetzt Betäubten war es schon beim
-letzten Mal). Nicht die längste: Die längste wuchs nur. Eine einzige lange Pause, etwa eine
-Wiederbelebung des Weißmagiers, hätte die Barriere für den Rest des Pulls nach jeder endenden Kette so
-lange zurückgehalten, während der Tank den Strom ungemindert nahm (A212). Eine Lücke zu einem neuen Pull zählt nicht, sonst hielte eine Pause die
-Barriere für ihre ganze Länge. Mit dem Kampf wird der Messwert verworfen. Mit ihrer Immunität endet er von selbst — „zurückhalten, bis die Betäubungen nicht
-mehr wirken" braucht keinen eigenen Zähler.
+**Über die Lücke zwischen zwei Sanctus trägt der Halt, solange die nächste Betäubung sichtbar kommt**
+(A215), und nur solange die Gegner noch betäubbar sind. Zwei Fälle, beide aus dem Spielzustand gelesen:
+
+- **Der Weißmagier wirkt gerade Sanctus**, und das Rudel steht in dessen Radius um ihn (Radius aus den
+  Aktionsdaten, dieselbe Anteilsregel wie bei der Betäubung selbst: mindestens zwei und mindestens die Hälfte
+  der Gegner in Reichweite). Dann landet die nächste Betäubung mit dem Ende des Wirkens. Sanctus und ab
+  Stufe 82 Sanctga (Holy III) wirken 1,5 s, Wiederaufnahme 2,5 s, Radius 8 y, Betäubung 4 s (deutscher und
+  englischer Job-Guide, abgerufen 29.09.2026).
+- **Höchstens einen globalen Cooldown nach dem Ende der Betäubung** — die Zeit, die der Weißmagier braucht,
+  um mit seinem nächsten GCD das nächste Sanctus zu beginnen. Beginnt er es, trägt der erste Fall weiter.
+
+Beginnt in dieser Frist kein Sanctus, ist die Kette zu Ende oder unterbrochen, und die Barriere ist frei.
+Mit der Immunität endet der Halt von selbst — „zurückhalten, bis die Betäubungen nicht mehr wirken" braucht
+keinen eigenen Zähler.
+
+**Durchgerechnet** (GCD 2,5 s; die abnehmende Betäubungsdauer 4 s, 2 s, 1 s, dann Immunität steht als
+Kommentar in `WHM_Reborn` und ist an keiner Spielquelle belegt):
+
+| Lage | Lücke zwischen zwei Betäubungen | Getragen durch |
+|---|---|---|
+| Weißmagier wirkt Sanctus in Folge | höchstens rund 1,5 s | die GCD-Frist |
+| Weißmagier streckt die Betäubung (`StretchHolyStun`): Sanctus erst nach ihrem Ende | bis zu einem GCD Entscheidung, dann 1,5 s Wirken | GCD-Frist, dann das sichtbare Wirken |
+| Weißmagier hört auf (Heilung, Wiederbelebung, Tod) | — | Freigabe nach höchstens einem GCD |
+
+**Ausgeschlossen, mit Grund:**
+- *Eine feste Frist* (bis 29.09.2026 drei Sekunden): zu lang, wo die Kette endet, zu kurz, wo der Weißmagier
+  streckt; eine feste Zahl ohne Ableitung.
+- *Die längste gemessene Lücke* (A195): Sie wuchs nur. Eine Pause für eine Wiederbelebung hielt die
+  Barriere danach für den Rest des Pulls nach jeder endenden Kette so lange zurück.
+- *Die zuletzt gemessene Lücke* (A212): Derselbe Fehler, bis die nächste Lücke gemessen ist. Beide schätzen aus
+  der Vergangenheit, was das Wirken des Weißmagiers jetzt zeigt.
+
+**Grenzen:** Ein Sanctus unter Swiftcast ist nicht sichtbar, bevor es landet; kommt es nach der GCD-Frist,
+fällt die Barriere mit der Betäubung zusammen. Ein langsamerer GCD des Weißmagiers kann eine kurze Lücke
+zwischen Frist und Wirken lassen. Beides kostet höchstens eine Barriere ohne Dark Arts, also MP, kein Leben.
+Andere Flächenbetäuber als der Weißmagier liegen außerhalb seines Profils (Occult Crescent); für sie gilt
+nur die GCD-Frist.
 
 **Reprisal zuerst.** Der Pfad gibt je Gelegenheit **eine** Aktion zurück und arbeitet von oben nach
 unten: Oblation (10) · The Blackest Night (20) · Dark Mind · Shadowed Vigil/Shadow Wall · Rampart ·

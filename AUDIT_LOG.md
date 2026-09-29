@@ -4549,6 +4549,23 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch (Code, Job-Guide abgerufen 29.09.2026); Prüfskripte.
 
+### A215 · Dunkelritter: Halt über die Betäubungslücke nach dem sichtbaren nächsten Sanctus statt nach geschätzter Lücke (29.09.2026)
+
+Voller Loop zu A195 und A212, die beide ohne ihn gebaut wurden (seine Rückfrage „wo waren das denn bitte vollständige loops?").
+
+- *1 Research:* `GroupStunRunning` hat einen Leser, die Pull-Bedingung für The Blackest Night (`staggeredHeavyPull`). Rückwärts (`git log -S StunChainGrace`): bd249de72 (10.09.2026) setzte 3 s, „roughly one global cooldown", damit die Lücke zwischen zwei Sanctus kein Fenster öffnet. A195 ersetzte das durch die längste gemessene Lücke, A212 durch die zuletzt gemessene. Gegenseite: `WHM_Reborn.ShouldHoldHolyForBarrier` hält Sanctus, solange ein Tank die Barriere trägt; `ShouldStretchHolyStun` wirkt Sanctus erst nach dem Ende der Betäubung. Job-Guide (de/en, 29.09.2026): Sanctus und Sanctga wirken 1,5 s, Wiederaufnahme 2,5 s, Radius 8 y, Betäubung 4 s. Deutscher Name von Holy III ist Sanctga; der Namensindex führte es fälschlich unter Sanctus und ist berichtigt.
+- *2 Optionen:* (0) Nullvariante: A212 belassen. (R) Rückbau auf A195 oder auf die festen 3 s. (a) Frist null. (b) Frist ein GCD. (c) Geschätzte Lücke mit Obergrenze. (d) GCD-Frist plus sichtbares Wirken eines Flächenbetäubers, dessen Radius das Rudel erreicht (Möglichkeitssinn: die Vorhersage fremder Casts ist eine vorhandene Stärke).
+- *3 Abwägung:* (0) und A195 halten nach einer langen Pause die Barriere so lange zurück, wie die Pause dauerte, während der Tank ungemindert nimmt (Sicherheit, Schwere hoch, bei jedem Kettenende). Feste 3 s: eine Zahl ohne Ableitung. (a) Die Barriere fällt in jede Lücke zwischen zwei Sanctus: Überschneidung mit der Betäubung, Barriere nicht aufgezehrt, 3000 MP ohne Dark Arts (nur Ressource). (b) Deckt das Wirken in Folge, nicht das Strecken, weil der Weißmagier erst nach dem Ende entscheidet und dann 1,5 s wirkt. (c) Braucht eine Zahl für die Obergrenze. (d) Deckt beide Lagen und gibt nach höchstens einem GCD frei, wenn nichts kommt; Aufwand gering, nur der Dunkelritter betroffen.
+- *4 Abgleich:* Konzept 10 und seine Spielweise verlangen, dass die Barriere nicht in eine laufende Betäubung fällt und der Tank nicht ungeschützt bleibt, wenn der Strom läuft. (d) erfüllt beides ohne neue Zahl.
+- *5 Review:* Sanctus unter Swiftcast ist ohne Wirken; landet es nach der Frist, überschneiden sich Barriere und Betäubung (nur MP). Ein langsamerer GCD des Weißmagiers kann eine kurze Lücke zwischen Frist und Wirken lassen (nur MP). Ein Weißmagier, der Sanctus auf ein anderes Rudel wirkt, zählt nicht, weil der Radius das eigene Rudel erreichen muss. Zwei Weißmagier: jeder wird geprüft.
+- *6 Falsifikation:* **Kein Defekt?** Mit A212 hält eine gemessene Pause von acht Sekunden die Barriere beim nächsten Kettenende acht Sekunden zurück, obwohl der Strom läuft (Schluss aus dem Code, am Spiel nicht beobachtet). **Option falsch?** Die Grenzen aus 5 kosten nur MP; die Freigabe erfolgt immer nach höchstens einem GCD ohne sichtbares Wirken. **Ausgeliefert, nichts ändert sich?** Bei durchgehender Kette halten beide Fassungen gleich, und der Unterschied zeigt sich erst am Kettenende. Deshalb bleibt es im Kampf unsichtbar, solange die Ketten nicht enden, während Barriere und Pull-Bedingung erfüllt sind.
+- *7 Umsetzung:* `DRK_Reborn.GroupStunRunning`: Frist `DataCenter.DefaultGCDTotal` nach dem letzten Betäubungsbild, oder `AreaStunBeingCastOnPack` (Gruppenmitglied wirkt `HolyPvE`/`HolyIiiPvE`, Radius aus den Aktionsdaten, Anteilsregel wie die Betäubung). Der gelernte Zustand (`_lastStunGap`, `_lastStunnedPack` samt Hilfsmethoden) ist entfernt.
+- *8 Nachweis:* Prüfskripte; Compile über die CI. Dass die Kette im Spiel so läuft wie im Modell, ist nicht beobachtet. Die Rechnung steht in Konzept 10; die abnehmende Betäubungsdauer darin ist nicht belegt.
+- *9 Dokumentation:* Konzept 10 (Halt, Rechnung, Ausgeschlossenes, Grenzen), Namensindex (Sanctga).
+- *10 Wirksamkeit:* Der Halt hat jetzt keinen Zustand über den Frame hinaus. Offen bleibt nur, was keine Analyse klären kann: wie oft ein Weißmagier im Spiel die Kette abbricht.
+
+**Prüfgrad:** statisch (Code, Versionsgeschichte, Job-Guide); Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

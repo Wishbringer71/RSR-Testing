@@ -69,6 +69,10 @@ Persistenz: Priorität 1, jede Eingabe, ausnahmslos. Kontextkomprimierung→Date
 - Konzept, `TODO.md` und Archiv fortgeschrieben.
 - Prüfgrad benannt.
 
+**Bevor ich einen Zug beende**
+- Beenden darf ich einen Zug nur mit einem Ergebnis, einem Blocker oder einer Frage, die nur er beantworten kann (seine Vorgabe, zweimal gerügt). Grund: Eine Ankündigung ohne Ausführung lässt ihn warten, und es passiert nichts.
+- Kündige ich Arbeit an, beginne ich sie im selben Zug und arbeite sie ab. Zum Weitermachen braucht es keine Zustimmung von ihm.
+
 **Bevor ich committe und pushe**
 - Identität unverändert, Commit klein.
 - Release-Text: Unterschied zum letzten Release, englisch.

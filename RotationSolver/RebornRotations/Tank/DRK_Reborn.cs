@@ -259,20 +259,9 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	/// </summary>
 	private static DateTime _lastGroupStunSeen = DateTime.MinValue;
 
-	// The chain's own rhythm, measured in this fight (A195). A fixed three seconds stood here, "roughly
-	// one global cooldown": too long where the chain ends, too short where the stunner waits longer
-	// between casts - and which of the two happens was left to an observation in play. Now the hold
-	// starts at one global cooldown and follows the last gap seen between two group stuns on the same
-	// pack. The last, not the longest: the longest only ever grew, so one long pause - the white mage
-	// raising someone - held the barrier that long after every later chain for the rest of the pull,
-	// while the tank took the stream unmitigated (re-audit of A195).
-	private static bool _groupStunWasRunning;
-	private static DateTime _groupStunEnded = DateTime.MinValue;
-	private static readonly HashSet<ulong> _lastStunnedPack = [];
-	private static float _lastStunGap;
-
 	/// <summary>
-	/// Whether an <b>area</b> stun is currently keeping the damage stream down.
+	/// Whether an <b>area</b> stun is currently keeping the damage stream down, or the next one of a
+	/// chain is visibly on its way.
 	/// <para>
 	/// Neither "any enemy is stunned" nor "every enemy is stunned" answers that. The first counts
 	/// Low Blow - which this job carries itself and the interrupt path uses - where one enemy stops
@@ -287,22 +276,17 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	/// look at the same enemies; a wider radius would count enemies that are not hitting anyone.
 	/// </para>
 	/// <para>
-	/// Between two casts of Sanctus the stun lapses for a moment, so the hold continues through that
-	/// gap - one global cooldown at first, then the last gap measured on this pack - while the
-	/// enemies can still be stunned. Once they carry stun
-	/// resistance there is no headroom left and the hold ends by itself - "wait until the stuns stop
-	/// working" needs no counter of its own.
+	/// Between two casts of Holy the stun lapses for a moment. The hold carries across that gap
+	/// only while the next stun can be seen coming (concept 10, A215): for one global cooldown after
+	/// the stun ended - the time the white mage needs to begin the next Holy with his next GCD - and
+	/// for as long as a party member is casting Holy or Holy III with this pack in its radius. A gap
+	/// estimated from earlier gaps (A195, A212) held the barrier after a chain had ended, as long as
+	/// the longest or the last pause - a raise, say - while the tank took the stream. Once the enemies
+	/// carry stun resistance there is no headroom left and the hold ends by itself.
 	/// </para>
 	/// </summary>
 	private bool GroupStunRunning()
 	{
-		if (!InCombat)
-		{
-			_lastStunGap = 0f;
-			_groupStunWasRunning = false;
-			_lastStunnedPack.Clear();
-		}
-
 		var inRange = SurveyStuns(DataCenter.JobRange, out var stunned, out _, out var headroom);
 		if (inRange == 0)
 		{
@@ -312,67 +296,55 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		var now = DateTime.Now;
 		if (stunned >= 2 && stunned * 2 >= inRange)
 		{
-			if (!_groupStunWasRunning && SamePackStunnedAgain())
-			{
-				_lastStunGap = (float)(now - _groupStunEnded).TotalSeconds;
-			}
-
-			RememberStunnedPack();
-			_groupStunWasRunning = true;
 			_lastGroupStunSeen = now;
 			return true;
 		}
 
-		if (_groupStunWasRunning)
-		{
-			_groupStunWasRunning = false;
-			_groupStunEnded = now;
-		}
-
-		var grace = Math.Max(DataCenter.DefaultGCDTotal, _lastStunGap);
-		return headroom && (now - _lastGroupStunSeen).TotalSeconds < grace;
-	}
-
-	// A gap counts only between two stuns of the same pack - at least half of the enemies stunned now
-	// were stunned last time. A new pull after a pause is not a gap in a chain, and learning the pause
-	// would hold the barrier for its whole length.
-	private static bool SamePackStunnedAgain()
-	{
-		if (_lastStunnedPack.Count == 0)
+		if (!headroom)
 		{
 			return false;
 		}
 
-		int now = 0, again = 0;
-		foreach (var hostile in DataCenter.AllHostileTargets)
+		return (now - _lastGroupStunSeen).TotalSeconds < DataCenter.DefaultGCDTotal
+			|| AreaStunBeingCastOnPack(inRange);
+	}
+
+	// A party member casting Holy or Holy III whose radius around them holds this pack by the same
+	// share the stun itself is counted with. The radius is the action's own, from the game data.
+	private static bool AreaStunBeingCastOnPack(int inRange)
+	{
+		var sheet = Service.GetSheet<Lumina.Excel.Sheets.Action>();
+		foreach (var member in DataCenter.PartyMembers)
 		{
-			if (hostile == null || hostile.DistanceToPlayer() > DataCenter.JobRange
-				|| !hostile.HasStatus(false, StatusHelper.StunStatus))
+			if (member == null || !member.IsCasting)
 			{
 				continue;
 			}
 
-			now++;
-			if (_lastStunnedPack.Contains(hostile.GameObjectId))
+			var cast = (ActionID)member.CastActionId;
+			if (cast is not (ActionID.HolyPvE or ActionID.HolyIiiPvE))
 			{
-				again++;
+				continue;
+			}
+
+			var radius = sheet.GetRow(member.CastActionId).EffectRange;
+			var reached = 0;
+			foreach (var hostile in DataCenter.AllHostileTargets)
+			{
+				if (hostile != null && hostile.DistanceToPlayer() <= DataCenter.JobRange
+					&& System.Numerics.Vector3.Distance(member.Position, hostile.Position) - hostile.HitboxRadius <= radius)
+				{
+					reached++;
+				}
+			}
+
+			if (reached >= 2 && reached * 2 >= inRange)
+			{
+				return true;
 			}
 		}
 
-		return now > 0 && again * 2 >= now;
-	}
-
-	private static void RememberStunnedPack()
-	{
-		_lastStunnedPack.Clear();
-		foreach (var hostile in DataCenter.AllHostileTargets)
-		{
-			if (hostile != null && hostile.DistanceToPlayer() <= DataCenter.JobRange
-				&& hostile.HasStatus(false, StatusHelper.StunStatus))
-			{
-				_ = _lastStunnedPack.Add(hostile.GameObjectId);
-			}
-		}
+		return false;
 	}
 
 	/// <summary>

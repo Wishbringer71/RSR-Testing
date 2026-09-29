@@ -410,6 +410,13 @@ Bloodspiller and Quietus now go out under Delirium, in the two-minute window, or
 is above 70; otherwise the Blood is kept for the burst, entering Delirium with as much as fits (The
 Balance). Before, they went out at 50 Blood whenever they could.
 
+## Dark Knight: The Blackest Night after a stun chain
+
+On a pull, The Blackest Night waits while a White Mage's Holy keeps the pack stunned. Across the gap
+between two Holys it waited a fixed three seconds. Now it waits one GCD after the stun ends, and
+longer only while a party member is visibly casting Holy or Holy III with the pack in its radius. When
+the chain stops, the barrier goes up after at most one GCD.
+
 ## Paladin: Intervention on the other tank works
 
 "Use Intervention on CoTank during tankbusters" and the Intervention health threshold never fired:

@@ -22,7 +22,15 @@
       "identifier": "HolyPvE",
       "kind": "action",
       "source": "user, used throughout concept 08",
-      "note": "Also covers Holy III (HolyIiiPvE), the level-82 upgrade the rotation casts in its place."
+      "note": "Holy only. Its level-82 upgrade Holy III has its own German name, Sanctga (entry below); the earlier note that this entry covered Holy III was wrong (German job guide, 2026-09-29)."
+    },
+    {
+      "de": "Sanctga",
+      "en": "Holy III",
+      "identifier": "HolyIiiPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/whitemage/), 2026-09-29",
+      "note": "\"Verbessert Sanctus zu Sanctga\" (trait at level 82)."
     },
     {
       "de": "Reflexion",

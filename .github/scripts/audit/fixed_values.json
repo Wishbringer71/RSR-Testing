@@ -769,16 +769,6 @@
   },
   {
    "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
-   "code": "return now > 0 && again * 2 >= now;",
-   "values": [
-    "2"
-   ],
-   "status": "exception",
-   "loop": "A195",
-   "reason": "'At least half' - the share rule the pack test uses for stuns and slows (A48), applied to recognise the same pack; not a tunable value but the definition of a majority"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
    "code": "private const byte BloodPoolLimit = 70;",
    "values": [
     "70"
@@ -827,6 +817,15 @@
    "status": "exception",
    "loop": "A208",
    "reason": "A value of the Action sheet's CastType column that the CastType enum does not name; the listed type-12 actions carry a length and a width (Diffuse Laser 60 by 60, the line stacks 60 by 8, xivapi 29.09.2026). An identifier of a game data category, not a tunable"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "code": "if (reached >= 2 && reached * 2 >= inRange)",
+   "values": [
+    "2",
+    "2"
+   ],
+   "status": "open"
   }
  ]
 }
