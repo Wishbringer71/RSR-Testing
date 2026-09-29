@@ -129,7 +129,9 @@ in den nativen Castdaten; Kegel (2 Einträge) — der Öffnungswinkel steht in k
 
 **Selbst gemessen, ob ein gelisteter Cast den Spieler erreicht (A205, Option „Skip area defence for casts that
 missed you", ab Werk aus):** Der Effekt-Handler hält je gelisteter Aktion fest, ob ihre letzte Landung dem
-lebenden Spieler einen Schadenseintrag gab (auch null, von einer Barriere geschluckt). Mit der Option zählt ein
+lebenden Spieler einen Treffer brachte: Schaden jeder Höhe, auch geblockt, pariert oder von einer Barriere
+geschluckt, oder einen Treffer, den Unverwundbarkeit, Ausweichen oder Widerstand abwies (Effektarten 1–3, 5–7 und
+teilweise Unverwundbarkeit; bis A211 nur Art 3). Mit der Option zählt ein
 Cast, der ihn zuletzt verfehlte, nicht für seine Flächenabwehr — ausgewichen oder auf jemand anderen zentriert —,
 bis er ihn wieder trifft; ein auf ihn gewirkter Cast zählt immer. Nur die Abwehrflagge liest es
 (`IsHostileCastingAOEForMyDefense`); Vorab-Heilung und Gefährdungsprüfung behalten die Sicht der Gruppe. Der

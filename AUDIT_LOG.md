@@ -4514,6 +4514,15 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A211 · Nachprüfung A186, A189, A205: geblockte Treffer, Fensterende, zweiter Tänzer (29.09.2026)
+
+- *A189/A205, Antithese „ein Treffer wird nicht als Treffer erkannt":* belegt, eine Klasse. Der Effekt-Handler zählte nur die Effektart `Damage` (3). Geblockter und parierter Schaden kommt als Art 5 und 6, ein von Unverwundbarkeit abgewiesener Treffer als 7 bzw. teilweise Unverwundbarkeit, Ausweichen als 1 (ECommons `ActionEffectType`, Quelle abgerufen 29.09.2026). **Im Kampf:** Ein unter Sheltron geblockter oder unter Hallowed Ground/Holmgang genommener Tankbuster widerlegte seinen Marker. Beim nächsten Mal bekam derselbe Tankbuster von niemandem eine Abwehr. Ein geblockter Flächentreffer galt für A205 als verfehlt. Der geblockte Betrag fehlte in der Schadensmessung und im Schadenseingang. Alle Leser im gegnerischen Zweig des Handlers: `DamageShareOn`, Marker-Bestätigung, Protokollzeile, Messung der Flächenaktion, A205. **Behoben:** `IsDamageEntry` (3, 5, 6) für Beträge, `ReachedTarget` (dazu 1, 2, 7, teilweise Unverwundbarkeit) für „erreicht". Ausgenommen der Zweig eigener Angriffe auf Gegner: Gegner blocken nicht, er zählt nur getroffene Ziele.
+- *Folge für seine Daten:* Die Negativliste der ersten Fassung kann echte Tankbuster enthalten. Sie wird nicht mehr gelesen; die Liste heißt jetzt `TankbusterMarkerWithoutHit`. Ein zu Unrecht gestrichener Eintrag kostet eine überflüssige Abwehr, ein belassener falscher eine fehlende.
+- *A189, Antithese „das Fenster schließt vor dem Treffer":* belegt für Marker, deren Zauber erst nach dem Marker beginnt (8-s-Lock-ons). Das Fenster verlängert sich jetzt um jeden Zauber, der läuft, solange der Marker steht.
+- *A186, Antithese „Rückkopplung":* belegt bei zwei Tänzern. `IsAvailablePartner` zählte den Partner des anderen Tänzers (und ihn selbst) als verfügbar, `FindDancePartner` überspringt beide im ersten Durchgang. Stand der Partner des anderen höher, endete unsere Partnerschaft alle 30 s, und Closed Position wählte denselben Partner wieder. Behoben mit demselben Filter. Übriges geprüft: Die Abklingzeit sperrt das Beenden außer bei Tod, wie im Konzept.
+
+**Prüfgrad:** statisch (ECommons-Quelle, WrathCombo-Enum zum Abgleich); Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

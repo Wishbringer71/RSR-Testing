@@ -341,9 +341,10 @@ death or weakness. A swap waits until Closed Position is ready and never interru
 ## Tankbuster markers: more are recognised, and false ones are learned away
 
 Every tank lock-on marker and every shared tank laser is now recognised, not only four named ones,
-plus two more party-stack markers. When a marker turns out not to be followed by any hit on the marked
-member, its path goes on a list, `TankbusterMarkerFalsified.json`, and is no longer treated as a
-tankbuster; a later hit after the same marker takes it off again. The list is learned in play and
+plus two more party-stack markers. When no enemy action reaches the marked member after a marker,
+its path goes on a list, `TankbusterMarkerWithoutHit.json`, and is no longer treated as a tankbuster.
+A hit that is blocked, parried, absorbed by a barrier or turned away by invulnerability still counts
+as reaching them. A later hit after the same marker takes the path off again. The list is learned in play and
 saved with the same safeguards as the damage table; delete the file to start over.
 
 ## Heal ahead of incoming damage: the jobs' own thresholds too

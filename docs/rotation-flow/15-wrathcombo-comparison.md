@@ -131,28 +131,32 @@ Liste bleibt draußen: Dort gilt es nur für ein Gebiet und trifft laut deren Ko
 Pfade sind Spieldaten (Asset-Namen), kein übernommener Code.
 
 **Negativliste (seine Vorgabe: im Spiel aufbauen, sicher speichern):** `TankbusterMarkerWatch`.
-- **Beobachtung:** Jeder erkannte Marker auf einem Gruppenmitglied öffnet eine Beobachtung. Beschädigt eine
-  gegnerische Aktion das markierte Mitglied — jede Höhe, auch ein von einer Barriere geschluckter Treffer,
-  Auto-Attacken ausgenommen, Quelle anvisierbar oder unsichtbarer Helfer —, ist der Marker bestätigt. Endet die
+- **Beobachtung:** Jeder erkannte Marker auf einem Gruppenmitglied öffnet eine Beobachtung. Erreicht eine
+  gegnerische Aktion das markierte Mitglied — Schaden jeder Höhe, auch geblockt, pariert oder von einer Barriere
+  geschluckt, oder ein Treffer, den Unverwundbarkeit oder Ausweichen abwies; Auto-Attacken ausgenommen, Quelle
+  anvisierbar oder unsichtbarer Helfer —, ist der Marker bestätigt. Bis A211 zählte nur die Effektart „Damage":
+  Ein unter Sheltron geblockter oder unter Hallowed Ground abgewiesener Tankbuster widerlegte seinen Marker. Endet die
   Beobachtung ohne solchen Treffer, ist der Pfad widerlegt und kommt auf die Liste. Die Entscheidung
   (`IsCastingTankVfx`, `IsTankbusterVfxOnPlayer`) überspringt Pfade auf der Liste.
 - **Selbstkorrektur statt Zählschwelle:** Die Beobachtung läuft für gelistete Pfade weiter; ein späterer Treffer
   nach demselben Marker nimmt den Pfad wieder heraus. Ein falscher Eintrag kostet eine ausgelassene Abwehr beim
   nächsten Auftreten und korrigiert sich dann. Deshalb genügt eine Beobachtung, und es gibt keine feste Zahl.
 - **Wann eine Beobachtung endet:** wenn der Marker die VFX-Warteschlange verlassen hat — dieselbe Warteschlange,
-  aus der die Entscheidung liest — und jeder gegnerische Zauber, der beim Erscheinen des Markers lief, geendet
-  hat, plus ein GCD für das Eintreffen. Beide Fehler neigen zur sicheren Seite: Ein zu langes Fenster lässt
+  aus der die Entscheidung liest — und jeder gegnerische Zauber, der lief, solange der Marker stand, geendet
+  hat, plus ein GCD für das Eintreffen. Bis A211 zählten nur Zauber, die schon beim Erscheinen liefen; ein
+  Zauber, der erst nach dem Marker begann, lag außerhalb des Fensters. Beide Fehler neigen zur sicheren Seite: Ein zu langes Fenster lässt
   anderen Schaden den Marker bestätigen, er bleibt Tankbuster wie bisher.
 - **Ohne Urteil verworfen:** Das markierte Mitglied ist beim Ende tot oder nicht mehr in der Gruppe; der Kampf
   endet vorher.
-- **Speicherung:** `TankbusterMarkerFalsified.json` im Konfigurationsordner, kein Download. Es gelten die Schutzwege
+- **Speicherung:** `TankbusterMarkerWithoutHit.json` im Konfigurationsordner, kein Download. Die Datei der ersten Fassung, `TankbusterMarkerFalsified.json`, wird nicht mehr gelesen: Ihre Einträge entstanden unter dem fehlerhaften Kriterium (geblockt, pariert oder abgewiesen galt als kein Treffer, A211). Ein zu Unrecht gelisteter echter Tankbuster hätte einmal keine Abwehr bekommen. Ein zu Unrecht gestrichener Eintrag kostet dagegen nur eine überflüssige Abwehr, bis er neu gelernt ist. Es gelten die Schutzwege
   aller Listen: nie geschrieben, wenn nicht geladen; atomar über eine Temporärdatei; eine unlesbare Datei wird
   beiseitegelegt statt überschrieben. Geändert wird die Liste nur im Spielthread, geschrieben wird eine dort
   gezogene Kopie. Zurücksetzen: Datei löschen („Keine Funktion ohne Bedarf").
 
 **Grenze:** Die Warteschlange hält einen Marker ohne bekannte Dauer fünf Sekunden (bestehender Wert in
-`MajorUpdater`). Ein Tankbuster, der später als fünf Sekunden plus ein GCD nach dem Marker fällt und keinen
-laufenden Zauber hat, würde fälschlich widerlegt — und beim nächsten Treffer nach demselben Marker korrigiert.
+`MajorUpdater`). Ein Tankbuster, der später als fünf Sekunden plus ein GCD nach dem Marker fällt und dessen Zauber
+nicht beginnt, solange der Marker steht, würde fälschlich widerlegt — und beim nächsten Treffer nach demselben
+Marker korrigiert. Das kostet einmal eine ausgelassene Abwehr gegen einen Tankbuster.
 
 ## V3: Ergebnis (A190)
 

@@ -33,7 +33,7 @@ TARGET = Path('RotationSolver.Basic/Configuration/OtherConfiguration.cs')
 
 # Save(value, nameof(Field)) - the store is named by the nameof, which is the file written. The value is
 # usually the field itself; a store changed on the game thread passes a copy taken there
-# (TankbusterMarkerFalsified), and keying on the first argument would miss it.
+# (TankbusterMarkerWithoutHit), and keying on the first argument would miss it.
 SAVED = re.compile(r'\bSave\(\s*\w+\s*,\s*nameof\(\s*(\w+)\s*\)\s*\)')
 # InitOne(ref Field, nameof(Field) - trailing arguments (download flags) vary and do not matter here.
 LOADED = re.compile(r'\bInitOne\(\s*ref\s+(\w+)\s*,\s*nameof\(\s*\1\s*\)')

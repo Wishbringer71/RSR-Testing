@@ -144,8 +144,13 @@ public partial class DancerRotation
 	private static bool IsHamperedPartner(IBattleChara member)
 		=> member.HasStatus(false, StatusID.DamageDown_2911, StatusID.DamageDown, StatusID.Weakness, StatusID.BrinkOfDeath);
 
+	// Also not another dancer, nor another dancer's partner - the first choice skips both
+	// (ActionTargetInfo.FindDancePartner). Counted as available, with a second dancer in the party a
+	// partner of the other ranked above ours ended our partnership every 30 s, and Closed Position then
+	// picked the same partner again (review of A186).
 	private static bool IsAvailablePartner(IBattleChara member)
-		=> member != Player && !member.IsDead && !IsHamperedPartner(member) && !member.IsConditionCannotTarget();
+		=> member != Player && !member.IsDead && !IsHamperedPartner(member) && !member.IsConditionCannotTarget()
+			&& !member.HasStatus(false, StatusID.DancePartner, StatusID.ClosedPosition);
 
 	// A member's place in the dance partner priority: the index of the first job of theirs in the list.
 	private static int DancePartnerRank(IBattleChara member)

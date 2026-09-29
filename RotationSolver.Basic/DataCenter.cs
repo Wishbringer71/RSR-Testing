@@ -2719,7 +2719,7 @@ internal static class DataCenter
 
 	/// <summary>Whether the fight has shown this marker path not to be followed by a hit.</summary>
 	internal static bool IsFalsifiedTankbusterMarker(string path)
-		=> OtherConfiguration.TankbusterMarkerFalsified.Contains(path.ToLowerInvariant());
+		=> OtherConfiguration.TankbusterMarkerWithoutHit.Contains(path.ToLowerInvariant());
 
 	public static bool IsHostileCastingAOE =>
 		InCombat && (IsCastingAreaVfx() || (AllHostileTargets != null && IsAnyHostileCastingArea()));

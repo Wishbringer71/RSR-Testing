@@ -71,6 +71,42 @@ public static class Watcher
 	// therefore failed exactly for the sets that damaged someone, and no area action was ever rated.
 	private static ActionType ActionTypeOf(ActionEffectSet set) => (ActionType)(byte)set.Header.ActionType;
 
+	// Damage the game reports as blocked or parried is damage taken all the same, at a reduced amount:
+	// effect types 5 and 6 beside 3 (ECommons ActionEffectType). Read as Damage only, a tankbuster a
+	// paladin blocked - under Sheltron every one is blocked - counted as no hit: its marker was learned
+	// away as "not a tankbuster", a listed area cast as having missed him, and the amount went missing
+	// from his damage intake (re-audit of A189 and A205, 29.09.2026).
+	private static bool IsDamageEntry(ActionEffectType type)
+		=> type is ActionEffectType.Damage or ActionEffectType.BlockedDamage or ActionEffectType.ParriedDamage;
+
+	private static bool TryGetDamageEntry(TargetEffect effect, out EffectEntry entry)
+	{
+		var found = false;
+		EffectEntry first = default;
+		effect.ForEach(e =>
+		{
+			if (!found && IsDamageEntry(e.type))
+			{
+				found = true;
+				first = e;
+			}
+		});
+		entry = first;
+		return found;
+	}
+
+	// Whether the action reached this target at all: damage of any kind, or a hit that an
+	// invulnerability, an evasion or a resistance turned away. Each of these says the action was aimed
+	// at the member and connected; only the absence of all of them says it did not. A tankbuster taken
+	// under Hallowed Ground or Holmgang is still a tankbuster.
+	private static bool ReachedTarget(TargetEffect effect)
+	{
+		var reached = false;
+		effect.ForEach(e => reached |= IsDamageEntry(e.type) || e.type is ActionEffectType.Invulnerable
+			or ActionEffectType.PartialInvulnerable or ActionEffectType.Miss or ActionEffectType.FullResist);
+		return reached;
+	}
+
 	private static float DamageShareOn(ActionEffectSet set, ulong targetId, uint denom)
 	{
 		float share = 0;
@@ -80,7 +116,7 @@ public static class Watcher
 			{
 				effect.ForEach(entry =>
 				{
-					if (entry.type == ActionEffectType.Damage)
+					if (IsDamageEntry(entry.type))
 					{
 						share += (float)FullAmount(entry) / denom;
 					}
@@ -113,7 +149,7 @@ public static class Watcher
 			{
 				foreach (var effect in set.TargetEffects)
 				{
-					if (effect.GetSpecificTypeEffect(ActionEffectType.Damage, out _))
+					if (ReachedTarget(effect))
 					{
 						TankbusterMarkerWatch.RecordHit(effect.TargetID);
 					}
@@ -125,7 +161,7 @@ public static class Watcher
 				var hitPlayer = false;
 				foreach (var effect in set.TargetEffects)
 				{
-					if (effect.TargetID == playerObject.GameObjectId && effect.GetSpecificTypeEffect(ActionEffectType.Damage, out _))
+					if (effect.TargetID == playerObject.GameObjectId && ReachedTarget(effect))
 					{
 						hitPlayer = true;
 						break;
@@ -286,7 +322,7 @@ public static class Watcher
 							continue;
 						}
 
-						if (!effect.GetSpecificTypeEffect(ActionEffectType.Damage, out var damageEffect))
+						if (!TryGetDamageEntry(effect, out var damageEffect))
 						{
 							continue;
 						}
@@ -350,14 +386,15 @@ public static class Watcher
 
 					// Whether this landing reached the player (A205). Recorded apart from the setting that
 					// reads it, so the record is there when the setting is switched on. A dead player
-					// proves nothing; a damage entry of any size, a hit swallowed by a barrier included,
-					// counts as reached.
+					// proves nothing; a damage entry of any size - blocked, parried or swallowed by a
+					// barrier included - and a hit turned away by invulnerability or evasion count as
+					// reached.
 					if (!playerObject.IsDead && OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
 					{
 						var reachedPlayer = false;
 						foreach (var effect in set.TargetEffects)
 						{
-							if (effect.TargetID == playerId && effect.GetSpecificTypeEffect(ActionEffectType.Damage, out _))
+							if (effect.TargetID == playerId && ReachedTarget(effect))
 							{
 								reachedPlayer = true;
 								break;

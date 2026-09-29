@@ -9,8 +9,8 @@ namespace RotationSolver.Basic.Helpers;
 /// </summary>
 /// <remarks>
 /// <para>Every marker that the tankbuster paths catch on a party member opens a watch. An enemy action
-/// that damages the marked member - any amount, a hit swallowed by a barrier included, auto-attacks
-/// excluded - confirms it. A watch that closes without such a hit falsifies the path, and it goes on
+/// that reaches the marked member - damage of any amount, blocked, parried or swallowed by a barrier,
+/// or a hit turned away by invulnerability or evasion; auto-attacks excluded - confirms it. A watch that closes without such a hit falsifies the path, and it goes on
 /// the list; the decision (DataCenter.IsCastingTankVfx, IsTankbusterVfxOnPlayer) then ignores it.</para>
 ///
 /// <para>The watch keeps running for listed paths: a later hit after the same marker takes the path off
@@ -18,8 +18,8 @@ namespace RotationSolver.Basic.Helpers;
 /// then corrects itself. That is the reason a single observation is enough and no count is needed.</para>
 ///
 /// <para>When a watch closes: once the marker has left the VFX queue - the queue decides how long a
-/// marker counts as announcing a hit, and the decision reads the same queue - and any enemy cast that
-/// was running when the marker appeared has ended, plus one GCD for the hit to arrive. Both errors lean
+/// marker counts as announcing a hit, and the decision reads the same queue - and every enemy cast that
+/// ran while the marker stood has ended, plus one GCD for the hit to arrive. Both errors lean
 /// the safe way: a window that is too long lets other damage confirm a marker, so it stays a
 /// tankbuster, as before.</para>
 ///
@@ -36,7 +36,7 @@ internal static class TankbusterMarkerWatch
 		public required ulong Target { get; init; }
 		public required string Path { get; init; }
 		public required DateTime Seen { get; init; }
-		public required DateTime CastEnds { get; init; }
+		public required DateTime CastEnds { get; set; }
 		public DateTime? LeftQueue { get; set; }
 		public bool Hit { get; set; }
 	}
@@ -87,14 +87,26 @@ internal static class TankbusterMarkerWatch
 
 			if (watch.Hit)
 			{
-				changed |= OtherConfiguration.TankbusterMarkerFalsified.Remove(watch.Path);
+				changed |= OtherConfiguration.TankbusterMarkerWithoutHit.Remove(watch.Path);
 				_open.RemoveAt(i);
 				continue;
 			}
 
-			if (watch.LeftQueue == null && !InQueue(queue, watch))
+			// A cast that begins while the marker still stands belongs to it as much as one already
+			// running when it appeared - an eight-second lock-on is often followed by its cast, and a
+			// window fixed at the marker's first frame closed before that hit (re-audit of A189).
+			if (watch.LeftQueue == null)
 			{
-				watch.LeftQueue = now;
+				var castEnds = now + TimeSpan.FromSeconds(LongestEnemyCastRemaining());
+				if (castEnds > watch.CastEnds)
+				{
+					watch.CastEnds = castEnds;
+				}
+
+				if (!InQueue(queue, watch))
+				{
+					watch.LeftQueue = now;
+				}
 			}
 
 			if (watch.LeftQueue is not { } left)
@@ -111,13 +123,13 @@ internal static class TankbusterMarkerWatch
 			_open.RemoveAt(i);
 			if (Svc.Objects.SearchById(watch.Target) is IBattleChara target && !target.IsDead && target.IsParty())
 			{
-				changed |= OtherConfiguration.TankbusterMarkerFalsified.Add(watch.Path);
+				changed |= OtherConfiguration.TankbusterMarkerWithoutHit.Add(watch.Path);
 			}
 		}
 
 		if (changed)
 		{
-			_ = OtherConfiguration.SaveTankbusterMarkerFalsified();
+			_ = OtherConfiguration.SaveTankbusterMarkerWithoutHit();
 		}
 	}
 
