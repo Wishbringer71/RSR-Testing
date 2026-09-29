@@ -264,6 +264,7 @@ public partial class ScholarRotation
 		setting.StatusProvide = [StatusID.EmergencyTactics];
 		setting.UnlockedByQuestID = 67211;
 		setting.IsFriendly = true;
+		setting.HealsWithNextGcd = true;
 	}
 
 	static partial void ModifyDissipationPvE(ref ActionSetting setting)

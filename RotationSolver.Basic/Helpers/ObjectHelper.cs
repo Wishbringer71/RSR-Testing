@@ -3677,7 +3677,8 @@ public static class ObjectHelper
 	/// lock and any cast in progress let it go out; false for a GCD heal, which needs the rest of this GCD and its cast. The
 	/// setting's text promises the health "by the time a heal started now would land", and for an
 	/// instant heal that is now: read with the GCD lead, Benediction or Essential Dignity went out up
-	/// to a GCD before they were needed (A213).</param>
+	/// to a GCD before they were needed (A213). An off-GCD action that heals only with the next GCD
+	/// (Synastry, Krasis, Soteria, Emergency Tactics) passes false (A221).</param>
 	internal static float GetForecastSurvivingShare(this IBattleChara battleChara, bool instant)
 	{
 		if (battleChara == null || !Service.Config.HealAheadOfDamage)

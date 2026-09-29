@@ -200,6 +200,13 @@ public class ActionSetting
 	public bool IsFriendly { get; set; }
 
 	/// <summary>
+	/// An off-GCD action whose healing lands only with the next GCD (Synastry, Krasis, Soteria,
+	/// Emergency Tactics). Its heal target looks ahead like a GCD heal's, not as far as the animation
+	/// lock - otherwise it picks a different member than the heal it lands with.
+	/// </summary>
+	public bool HealsWithNextGcd { get; set; }
+
+	/// <summary>
 	/// Is this action a Single Target Healing GCD.
 	/// </summary>
 	public bool GCDSingleHeal { get; set; }

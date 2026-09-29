@@ -233,7 +233,7 @@ public sealed class AST_Reborn : AstrologianRotation
 		static bool CanCastSynastry(IBaseAction actionCheck, IBaseAction synastry, float synastryHp, IAction next)
 			=> next.IsTheSameTo(false, actionCheck) &&
 			   synastry.Target.Target == actionCheck.Target.Target &&
-			   synastry.Target.Target.GetForecastHealthRatio(true) < synastryHp;
+			   synastry.Target.Target.GetForecastHealthRatio() < synastryHp;
 	}
 
 	[RotationDesc(ActionID.ExaltationPvE, ActionID.TheSpirePvE, ActionID.TheBolePvE, ActionID.CelestialIntersectionPvE)]

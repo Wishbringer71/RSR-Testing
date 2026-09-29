@@ -850,6 +850,28 @@ wird an allen Lesern: Heilflaggen (Faehigkeit gegen Zauber), Heilzielwahl (`IsRe
 die Schwellen der Jobrotationen. Die kritische Klasse behaelt den GCD-Vorlauf, weil sie fuer
 Heilung, Abwehr-Halt und Lux Solaris dieselbe Definition ist.
 
+**Heilart heisst, wann die Heilung landet — nicht, ob die Aktion ein oGCD ist** (A221). Vier oGCDs
+heilen erst mit dem naechsten GCD und blicken deshalb wie eine GCD-Heilung voraus, bei der Schwelle wie
+bei der Zielwahl (`ActionSetting.HealsWithNextGcd`, gesetzt in den Basisrotationen):
+
+| Aktion | Wirktext (Job-Guide) | Womit die Heilung landet |
+|---|---|---|
+| Synastry | „the bond will also recover HP equaling 40% of the original spell" | mit der naechsten Einzelheilung (Benefic, Benefic II, Aspected Benefic) |
+| Krasis | „Increases HP recovery via healing actions … by 20%" | mit der Heilung danach; der Weise wirkt es nur vor einer Heil-GCD |
+| Soteria | „increasing the cure potency of Kardion effects … by 70%" | mit Kardion, das beim naechsten Schadenszauber heilt |
+| Emergency Tactics | wandelt den Schild der naechsten Succor/Adloquium in Heilung | mit dieser GCD |
+
+Mit dem kurzen Vorlauf las Synastry den Stand bei Ende der Ausfuehrungssperre, die Einzelheilung,
+mit der sie landet, den Stand einen GCD spaeter. Bei steilem Verlauf waehlten beide verschiedene Ziele,
+`CanCastSynastry` verlangt aber dasselbe — Synastry fiel genau dann aus, wenn sie gebraucht wurde. Beim
+kurzen Vorlauf bleiben die oGCDs, die sofort wirken: Benediction, Essential Dignity, Taurochole,
+Druochole, Haima, Excogitation (liegt bereit und loest selbst aus), Aetherpact, Second Wind, Equilibrium,
+Thrill of Battle; ebenso Raw Intuition/Bloodwhetting und Nascent Flash, deren Minderung und Barriere
+sofort wirken und deren Heilung mit jedem Waffenskill folgt. Bloodbath („Converts a portion of physical
+damage dealt into HP") heilt mit dem naechsten physischen Treffer; zaehlen Autoangriffe dazu
+(Schluss, nicht belegt), liegt der kurze Vorlauf naeher als ein voller GCD, sonst um hoechstens den GCD-Rest
+daneben.
+
 **Verworfen: ein zweiter Ausloeser samt eigener Rangstufe.** Er waere der naheliegende Weg gewesen
 und ist der schlechtere: Zwei Mechanismen, die dieselbe Frage entscheiden, laufen auseinander, sobald
 einer von beiden angefasst wird. Ausserdem haette er zwei Haelften gebraucht, die einzeln wirkungslos

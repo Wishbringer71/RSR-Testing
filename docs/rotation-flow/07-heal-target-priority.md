@@ -63,8 +63,10 @@ Aetherpact, Clemency, Bloodwhetting, Thrill of Battle, Equilibrium, Nascent Flas
 die Untergrenze der Pull-Pflege. Abwehrschwellen (sterbender Tank, Intervention, Cover, The Blackest Night)
 sind keine Heilschwellen und bleiben am Stand. `check_heal_threshold_forecast.py` hält das in der CI fest.
 Wie weit voraus, hängt von der Heilart ab (A213, Konzept 08): Eine oGCD-Heilung blickt nur so weit voraus, wie die
-laufende Ausführungssperre reicht, eine GCD-Heilung um den Rest des GCD und ihren Wirkvorgang. Emergency Tactics,
-die Untergrenze der Pull-Pflege und die GCD-Heilungen lesen den GCD-Vorlauf, die übrigen oGCD-Schwellen den kurzen.
+laufende Ausführungssperre reicht, eine GCD-Heilung um den Rest des GCD und ihren Wirkvorgang. Maßgeblich ist, wann
+die Heilung landet: Synastry, Krasis, Soteria und Emergency Tactics heilen erst mit dem nächsten GCD und lesen wie
+die GCD-Heilungen und die Untergrenze der Pull-Pflege den GCD-Vorlauf, bei Schwelle und Zielwahl (A221); die übrigen
+oGCD-Schwellen den kurzen.
 
 **Auch die Flächenschwellen lesen die Vorausschau** (A182). Der Text von „Heal ahead of incoming damage" sagt: „Every healing threshold and the heal target choice read the health a member is heading for". Die Flächenschwellen (`HealthAreaAbility`, `HealthAreaSpell`) lasen bis dahin den Stand. Jetzt lesen sie eigene, vorausberechnete Gruppenwerte (`DataCenter.ComputeForecastAreaStats`: Mittel und Streuung, bei mehr als vier Mitgliedern über die vier niedrigsten). Die bisherigen Gruppenwerte bleiben unverändert, weil sie viele Leser außerhalb der Heilkette haben, fremde Rotationen darunter. Mit ausgeschalteter Einstellung ist die Vorausschau 1 und die Werte gleich den bisherigen. Gezählt werden dieselben Mitglieder wie bei den bisherigen Werten (gültig, mit Id, lebend; A210). Im Kampf: Fällt die Gruppe schnell, kommt eine Flächenheilung per GCD etwa einen GCD früher. Die oGCD-Schwelle blickt nur bis zum Ende der Ausführungssperre voraus (A213).
 

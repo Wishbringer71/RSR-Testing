@@ -358,10 +358,13 @@ Mitigation thresholds are unchanged. With the setting off nothing changes.
 How far ahead depends on the heal. A GCD heal looks ahead by the rest of the GCD and its cast. An
 off-GCD heal lands as soon as the current animation lock lets it go out, so it looks no further than
 that. Before, Benediction, Essential Dignity and the other off-GCD heals went out up to a GCD before
-they were needed. The heal flags and the heal target choice make the same distinction.
+they were needed. The heal flags and the heal target choice make the same distinction. What counts is
+when the healing lands: Synastry, Krasis, Soteria and Emergency Tactics heal only with the next GCD
+and look ahead like a GCD heal, so Synastry picks the member the heal it rides on goes to.
 
 For rotation authors, `ObjectHelper.GetForecastHealthRatio` is now public, with an overload taking
-`instant` for off-GCD heals.
+`instant` for off-GCD heals, and `ActionSetting.HealsWithNextGcd` marks an off-GCD action whose
+healing lands with the next GCD.
 
 ## Area defence asks whether the party is hit; self-shields ask whether you are
 

@@ -1055,7 +1055,8 @@ public struct ActionTargetInfo(IBaseAction action)
 
 	// An off-GCD heal lands as soon as the animation lock lets it go out, so its heal-ahead reading
 	// looks no further than that; a GCD heal looks ahead by the rest of the GCD and its cast (A213).
-	private readonly bool InstantHeal => !action.Info.IsRealGCD;
+	// An off-GCD heal that lands with the next GCD looks ahead like the GCD (A221).
+	private readonly bool InstantHeal => !action.Info.IsRealGCD && !action.Setting.HealsWithNextGcd;
 
 	/// <summary>
 	/// Determines whether the movement safety check should be performed for the current action.

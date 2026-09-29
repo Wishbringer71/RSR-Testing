@@ -198,6 +198,7 @@ public partial class SageRotation
 		setting.StatusProvide = [StatusID.Soteria];
 		setting.TargetType = TargetType.Self;
 		setting.IsFriendly = true;
+		setting.HealsWithNextGcd = true;
 		setting.ActionCheck = () =>
 		{
 			foreach (var m in DataCenter.PartyMembers)
@@ -431,6 +432,7 @@ public partial class SageRotation
 	{
 		setting.StatusProvide = [StatusID.Krasis];
 		setting.IsFriendly = true;
+		setting.HealsWithNextGcd = true;
 		setting.TargetType = TargetType.Self;
 	}
 

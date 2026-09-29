@@ -299,7 +299,13 @@ unberührt.
 **Weiser, Addersgall (A203):** Bei drei Stapeln und dem nächsten innerhalb eines GCD fällt Druochole (7 % MP
 und eine Heilung, Wirktext) — kein Zielkonflikt, weil der Stapel sonst verloren ginge und nach dem Nachwachsen
 wieder drei für Notfälle stehen. Die Uhr des Weisen zählt die verstrichene Zeit (Dalamud); sie wurde als
-Restzeit gelesen und ist berichtigt.
+Restzeit gelesen und ist berichtigt. Prämisse: Die Uhr läuft bei drei Stapeln weiter. Der Job-Guide sagt
+dazu nichts („alle zwanzig Sekunden, höchstens 3, lädt auch außerhalb des Kampfes"); belegt ist sie nur
+mittelbar durch The Balance („be sure to not let it overcap" — ein Überlaufen setzt die laufende Uhr
+voraus). Stimmt sie nicht, steht die Uhr bei vollem Vorrat, `AddersgallEndAfterGCD(1)` wird nie wahr, und
+Druochole fällt wie vor A203 nur nach Heilbedarf — kein Schaden, nur kein Gewinn. Gleiche Klasse: Die Lilien
+des Weißmagiers haben ihren eigenen Überlaufschutz (`LilyAfterGCD`); die übrigen Heiler haben keine
+selbst nachwachsenden Stapel.
 
 ### Methode und Werkzeug
 
