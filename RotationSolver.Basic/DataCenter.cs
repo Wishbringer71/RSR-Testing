@@ -1581,7 +1581,7 @@ internal static class DataCenter
 			{
 				try
 				{
-					if (member == null || member.GameObjectId == 0)
+					if (member == null || !member.IsValid() || member.GameObjectId == 0)
 					{
 						continue; // Skip invalid or null members
 					}
@@ -1669,7 +1669,7 @@ internal static class DataCenter
 		var hpCount = 0;
 		foreach (var member in PartyMembers)
 		{
-			if (member.GameObjectId != 0 && hpCount < _hpBuffer.Length)
+			if (member.IsValid() && member.GameObjectId != 0 && hpCount < _hpBuffer.Length)
 			{
 				try
 				{
@@ -1891,7 +1891,7 @@ internal static class DataCenter
 			{
 				try
 				{
-					if (member == null || member.GameObjectId == 0)
+					if (member == null || !member.IsValid() || member.GameObjectId == 0)
 					{
 						continue;
 					}
@@ -2156,7 +2156,7 @@ internal static class DataCenter
 		for (int i = 0, n = hostileEnum.Count; i < n; i++)
 		{
 			var hostile = hostileEnum[i];
-			if (hostile == null)
+			if (hostile == null || !hostile.IsValid())
 			{
 				continue;
 			}
@@ -2219,7 +2219,7 @@ internal static class DataCenter
 		for (int i = 0, n = hostileEnum.Count; i < n; i++)
 		{
 			var hostile = hostileEnum[i];
-			if (hostile == null)
+			if (hostile == null || !hostile.IsValid())
 			{
 				continue;
 			}
@@ -2267,7 +2267,7 @@ internal static class DataCenter
 			for (int i = 0, n = hostileEnum.Count; i < n; i++)
 			{
 				var hostile = hostileEnum[i];
-				if (hostile == null)
+				if (hostile == null || !hostile.IsValid())
 				{
 					continue;
 				}
@@ -2305,7 +2305,7 @@ internal static class DataCenter
 			for (int i = 0, n = hostileEnum.Count; i < n; i++)
 			{
 				var hostile = hostileEnum[i];
-				if (hostile == null)
+				if (hostile == null || !hostile.IsValid())
 				{
 					continue;
 				}
@@ -2363,7 +2363,7 @@ internal static class DataCenter
 		for (int i = 0, n = hostileEnum.Count; i < n; i++)
 		{
 			var hostile = hostileEnum[i];
-			if (hostile == null)
+			if (hostile == null || !hostile.IsValid())
 			{
 				continue;
 			}
@@ -2437,7 +2437,7 @@ internal static class DataCenter
 		for (int i = 0, n = hostileEnum.Count; i < n; i++)
 		{
 			var hostile = hostileEnum[i];
-			if (hostile == null)
+			if (hostile == null || !hostile.IsValid())
 			{
 				continue;
 			}
@@ -2498,7 +2498,7 @@ internal static class DataCenter
 		for (int i = 0, n = hostileEnum.Count; i < n; i++)
 		{
 			var hostile = hostileEnum[i];
-			if (hostile == null)
+			if (hostile == null || !hostile.IsValid())
 			{
 				continue;
 			}
@@ -2557,7 +2557,7 @@ internal static class DataCenter
 		for (int i = 0, n = hostileEnum.Count; i < n; i++)
 		{
 			var hostile = hostileEnum[i];
-			if (hostile == null)
+			if (hostile == null || !hostile.IsValid())
 			{
 				continue;
 			}
@@ -2776,7 +2776,7 @@ internal static class DataCenter
 				var h = targets[i];
 				try
 				{
-					if (h == null || h.GameObjectId == 0 || !h.IsCasting || !h.IsEnemy())
+					if (h == null || !h.IsValid() || h.GameObjectId == 0 || !h.IsCasting || !h.IsEnemy())
 					{
 						continue;
 					}
@@ -3042,7 +3042,7 @@ internal static class DataCenter
 
 	public static bool IsHostileCastingStopBase(IBattleChara h, Func<Action, bool> check)
 	{
-		if (h == null || check == null)
+		if (h == null || !h.IsValid() || check == null)
 		{
 			return false;
 		}

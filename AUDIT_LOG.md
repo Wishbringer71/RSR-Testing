@@ -4403,6 +4403,15 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch (Umformung), Prüfskripte; Compile über die CI.
 
+### A199 · `DataCenter`: `IsValid()` vor dem nativen Zugriff, wo nur ein `AccessViolationException`-Fang stand (29.09.2026)
+
+- *Befund (TODO):* 17 Fänge von `AccessViolationException` in `DataCenter.cs`. Unter .NET Core erreicht eine Zugriffsverletzung auf freigegebenen Speicher keinen verwalteten Handler; der Fang greift genau im gemeinten Fall nicht. Upstream hat in 7.5.6.3 an anderen Stellen `IsValid()` vor den Zugriff gesetzt.
+- *Offene Vorfrage des Eintrags, geklärt:* Werden die Listen je Rahmen neu erhoben, wäre die Klasse gegenstandslos. Sie werden es nicht zwingend: `MajorUpdater.RSRGateUpdate` überspringt Zyklen, solange `MinUpdatingTime` nicht verstrichen ist, und `PartyMembers` sowie `AllHostileTargets` bleiben dann stehen, während Fenster und Effekt-Hooks weiterlesen. Ein Gegner, der dazwischen verschwindet, liegt noch in der Liste.
+- *Umgesetzt:* an 13 Stellen die Nullprüfung um `IsValid()` ergänzt (Gruppen- und Feindschleifen, `IsHostileCastingBase`); die übrigen Fänge lesen nur Werte der VFX-Warteschlange oder laufen über eine der ergänzten Prüfungen. Die Fänge bleiben — harmlos.
+- *Wirkung im Kampf:* keine, solange nichts verschwindet; sonst wird das Objekt übersprungen statt gelesen.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
