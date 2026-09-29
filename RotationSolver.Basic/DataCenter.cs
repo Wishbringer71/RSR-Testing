@@ -3859,12 +3859,171 @@ internal static class DataCenter
 			return true;
 		}
 
-		if (player != null && h.CastTargetObjectId == player.GameObjectId)
+		if (player == null)
+		{
+			return false;
+		}
+
+		if (h.CastTargetObjectId == player.GameObjectId)
 		{
 			return true;
 		}
 
+		// The shape decides where the effect range is measured from, as the game data states it. The
+		// caster's distance is right only for a shape around or in front of the caster; a circle cast
+		// at someone else is centred on them, and a line reaches only what lies in its width. Measured
+		// from the caster, with the boss's hitbox taken off, a stack or a tankbuster circle on the tank
+		// reached a player standing on the far side of a large boss (the owner's report of 29.09.2026:
+		// Radiant Aegis on tankbusters on the tank while standing far away).
+		var aimedAt = h.CastTargetObjectId != h.GameObjectId
+			? Svc.Objects.SearchById(h.CastTargetObjectId) as IBattleChara
+			: null;
+		if (aimedAt != null && !aimedAt.IsValid())
+		{
+			aimedAt = null;
+		}
+
+		if ((CastType)act.CastType == CastType.Circle && act.Range > 0 && !act.CanTargetSelf && !act.TargetArea && aimedAt != null)
+		{
+			return HorizontalDistance(player.Position, aimedAt.Position) - player.HitboxRadius - aimedAt.HitboxRadius <= act.EffectRange;
+		}
+
+		if (act.CastType is (byte)CastType.StraightLine or LineFromCasterCastType && act.XAxisModifier > 0)
+		{
+			var direction = aimedAt != null ? aimedAt.Position - h.Position : h.GetFaceVector();
+			direction.Y = 0;
+			if (direction.LengthSquared() > 0f)
+			{
+				direction = Vector3.Normalize(direction);
+				var toPlayer = player.Position - h.Position;
+				toPlayer.Y = 0;
+				var along = Vector3.Dot(direction, toPlayer);
+				var across = Vector3.Cross(direction, toPlayer).Length();
+				return along >= -player.HitboxRadius
+					&& along <= act.EffectRange + h.HitboxRadius + player.HitboxRadius
+					&& across <= (act.XAxisModifier / 2f) + player.HitboxRadius;
+			}
+		}
+
 		return h.DistanceToPlayer() <= act.EffectRange;
+	}
+
+	// Cast type 12 is a rectangle from the caster like type 4 (StraightLine), which the enum does not
+	// name: the area list's type-12 entries carry a length and a width (Diffuse Laser 60 by 60, the
+	// line stacks 60 by 8).
+	private const byte LineFromCasterCastType = 12;
+
+	private static float HorizontalDistance(Vector3 a, Vector3 b)
+	{
+		var dx = a.X - b.X;
+		var dz = a.Z - b.Z;
+		return MathF.Sqrt((dx * dx) + (dz * dz));
+	}
+
+	/// <summary>
+	/// Every source that can open the player's defence, as it stands now, for the defence trace.
+	/// Reads the same predicates the flags are built from; decides nothing.
+	/// </summary>
+	internal static string DescribeDefenseSources()
+	{
+		var parts = new List<string> { $"flags {MergedStatus & (AutoStatus.DefenseArea | AutoStatus.DefenseSingle)}" };
+		var player = Player.Object;
+		try
+		{
+			foreach (var vfx in VfxDataQueue)
+			{
+				if (string.IsNullOrEmpty(vfx.Path))
+				{
+					continue;
+				}
+
+				var kind = IsTankbusterMarkerPath(vfx.Path)
+					? IsFalsifiedTankbusterMarker(vfx.Path) ? "tankbuster marker (falsified)" : "tankbuster marker"
+					: StartsWithAny(vfx.Path, MultiHitSharedPaths) || StartsWithAny(vfx.Path, SharedDamagePaths) ? "stack marker"
+					: StartsWithAny(vfx.Path, SpreadDamagePaths) ? "spread marker"
+					: null;
+				if (kind == null)
+				{
+					continue;
+				}
+
+				var marked = Svc.Objects.SearchById(vfx.ObjectId) as IBattleChara;
+				var onPlayer = player != null && vfx.ObjectId == player.GameObjectId;
+				parts.Add($"{kind} {vfx.Path} on {(onPlayer ? "you" : marked?.Name.TextValue ?? "?")}"
+					+ (onPlayer || marked == null || player == null ? string.Empty : $" {HorizontalDistance(player.Position, marked.Position):F1} y from you"));
+			}
+
+			var sheet = Service.GetSheet<Action>();
+			foreach (var h in AllHostileTargets)
+			{
+				if (h == null || !h.IsValid() || !h.IsCasting)
+				{
+					continue;
+				}
+
+				var id = h.CastActionId;
+				var listedArea = OtherConfiguration.HostileCastingArea.Contains(id);
+				var listedTank = OtherConfiguration.HostileCastingTank.Contains(id);
+				if (!listedArea && !listedTank)
+				{
+					continue;
+				}
+
+				var act = sheet?.GetRow(id);
+				var target = Svc.Objects.SearchById(h.CastTargetObjectId);
+				var text = $"cast {act?.Name.ExtractText() ?? "?"} #{id} by {h.Name.TextValue} at {target?.Name.TextValue ?? "?"}"
+					+ $" ({(listedArea ? "area list" : string.Empty)}{(listedArea && listedTank ? ", " : string.Empty)}{(listedTank ? "tankbuster list" : string.Empty)})"
+					+ $" {h.TotalCastTime - h.CurrentCastTime:F1} s left";
+				if (act is { } a)
+				{
+					text += $", type {a.CastType} range {a.Range} effect {a.EffectRange} width {a.XAxisModifier}"
+						+ $", caster {h.DistanceToPlayer():F1} y from you";
+					// Only side-effect-free reads here: the worth check and the large-cast check record
+					// what they decide, and the trace must not make decisions the flags did not make.
+					if (listedArea)
+					{
+						text += $", reaches you {AreaCastCanReachPlayer(h, a)}, interruptible {h.IsCastInterruptible}"
+							+ $", rated {(OtherConfiguration.HostileCastingAreaPotential.TryGetValue(id, out var share) ? share.ToString("P0") : "no")}";
+					}
+				}
+
+				parts.Add(text);
+			}
+		}
+		catch (Exception ex)
+		{
+			parts.Add($"scan failed: {ex.Message}");
+		}
+
+		if (BMRNextRaidwideIn is > 0f and < float.MaxValue)
+		{
+			parts.Add($"BMR raidwide in {BMRNextRaidwideIn:F1} s (window {Service.Config.BMRRaidwideMitWindow:F1})");
+		}
+
+		if (BMRNextTankbusterIn is > 0f and < float.MaxValue)
+		{
+			parts.Add($"BMR tankbuster in {BMRNextTankbusterIn:F1} s (window {Service.Config.BMRTankbusterMitWindow:F1}), party tank {PartyTank?.Name.TextValue ?? "none"}");
+		}
+
+		if (IsTankbusterVfxOnPlayer())
+		{
+			parts.Add("tankbuster marker on you");
+		}
+
+		return string.Join(" | ", parts);
+	}
+
+	private static bool StartsWithAny(string path, FrozenSet<string> prefixes)
+	{
+		foreach (var p in prefixes)
+		{
+			if (path.StartsWith(p, PathCmp))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public static bool AreHostilesCastingKnockback

@@ -82,16 +82,44 @@ def added_lines(base):
 
 
 def collect(diff, untracked_files):
-    """The added lines from a unified diff plus every line of the untracked files."""
+    """The added lines from a unified diff plus every line of the untracked files.
+
+    A line the diff shows as removed and added again within one hunk is not the fork's: git aligns
+    a hunk differently after an edit nearby, and an unchanged upstream line then appears as - and +.
+    Counted as added, it failed the check for a number the fork never wrote (29.09.2026, the
+    upstream casting-stop line in DataCenter.cs). Within a hunk, each removed line cancels one
+    identical added line. Across hunks nothing cancels: an upstream line the fork moved into its own
+    logic elsewhere stays counted, and so does its open loop.
+    """
     result = []
     current = None
+    hunk_added = []
+    hunk_removed = {}
+
+    def close_hunk():
+        for key in hunk_added:
+            if hunk_removed.get(key, 0) > 0:
+                hunk_removed[key] -= 1
+                continue
+            result.append(key)
+        hunk_added.clear()
+        hunk_removed.clear()
+
     for line in diff.splitlines():
-        if line.startswith("+++ "):
-            path = line[6:].strip() if line.startswith("+++ b/") else None
-            current = path if path and not path.endswith(".g.cs") else None
+        if line.startswith("--- "):
             continue
-        if current and line.startswith("+") and not line.startswith("+++"):
-            result.append((current, line[1:].strip()))
+        if line.startswith("+++ ") or line.startswith("@@") or line.startswith("diff "):
+            close_hunk()
+            if line.startswith("+++ "):
+                path = line[6:].strip() if line.startswith("+++ b/") else None
+                current = path if path and not path.endswith(".g.cs") else None
+            continue
+        if current and line.startswith("+"):
+            hunk_added.append((current, line[1:].strip()))
+        elif current and line.startswith("-"):
+            key = (current, line[1:].strip())
+            hunk_removed[key] = hunk_removed.get(key, 0) + 1
+    close_hunk()
     for path, lines in untracked_files.items():
         if path.endswith(".g.cs"):
             continue
@@ -131,6 +159,14 @@ def self_test():
     if ("B.cs", "var b = 30f;") not in lines or any(p == "C.g.cs" for p, _ in lines) \
             or ("A.cs", "var a = 2.5f;") not in lines:
         return f"untracked files were not collected as added lines: {lines}"
+    # An unchanged line that git shows as removed and added again in one hunk is not an added line;
+    # the same line moved to another hunk still is.
+    lines = collect("+++ b/A.cs\n@@ -1 +1,2 @@\n-var a = 100;\n+var b = 2;\n+var a = 100;\n", {})
+    if ("A.cs", "var a = 100;") in lines or ("A.cs", "var b = 2;") not in lines:
+        return f"a realigned unchanged line was counted as added, or a new one was lost: {lines}"
+    lines = collect("+++ b/A.cs\n@@ -1 +0,0 @@\n-var a = 100;\n@@ -9,0 +9 @@\n+var a = 100;\n", {})
+    if ("A.cs", "var a = 100;") not in lines:
+        return f"a line moved to another hunk was not counted as added: {lines}"
     return None
 
 

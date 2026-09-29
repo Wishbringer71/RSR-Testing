@@ -1,0 +1,115 @@
+using ECommons.DalamudServices;
+using ECommons.Logging;
+
+namespace RotationSolver.Basic.Helpers;
+
+/// <summary>
+/// A plain-text record of why the defensive chain fired, written to <c>DefenseTrace.log</c> in the
+/// plugin's config folder.
+/// </summary>
+/// <remarks>
+/// The owner's report of 29.09.2026: Radiant Aegis is still spent on tankbusters aimed at the tank
+/// while he stands far away. Five sources can open a player's defence - an area marker, a listed area
+/// cast, a large interruptible one, a BossModReborn raidwide or tankbuster, a tankbuster aimed at him -
+/// and which of them fired in his fights cannot be read from the code. Each line names the action the
+/// chain chose and every source standing at that moment; each enemy hit on the player is listed
+/// beside it, so the file shows whether the hit the defence was spent on arrived.
+///
+/// The file is replaced at every load, so it holds exactly one session. Written through one open
+/// writer under a lock: the dispatch writes from the framework thread, the effect handler from the
+/// game thread.
+/// </remarks>
+internal static class DefenseTrace
+{
+	private static readonly object _lock = new();
+	private static StreamWriter? _writer;
+	private static uint _lastDecision;
+	private static DateTime _lastDecisionWritten = DateTime.MinValue;
+
+	/// <summary>The trace file's full path.</summary>
+	public static string FilePath => Path.Combine(Svc.PluginInterface.ConfigDirectory.FullName, "DefenseTrace.log");
+
+	/// <summary>Starts a new trace for this session, replacing the last one.</summary>
+	public static void Start(string header)
+	{
+		lock (_lock)
+		{
+			try
+			{
+				_writer?.Dispose();
+				_writer = new StreamWriter(FilePath, false) { AutoFlush = true };
+				_writer.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} trace started");
+				_writer.WriteLine(header);
+			}
+			catch (Exception ex)
+			{
+				_writer = null;
+				PluginLog.Warning($"Could not start the defence trace: {ex.Message}");
+			}
+		}
+	}
+
+	/// <summary>
+	/// The defensive chain chose <paramref name="act"/> on the way named by <paramref name="path"/>.
+	/// </summary>
+	/// <remarks>
+	/// The chain returns the same choice every frame until the action goes out, so a choice is
+	/// written again only when it changes or once a GCD has passed - enough to follow it, not a line
+	/// per frame.
+	/// </remarks>
+	public static void Decision(string path, IAction? act)
+	{
+		if (act == null || _writer == null)
+		{
+			return;
+		}
+
+		var now = DateTime.Now;
+		if (act.ID == _lastDecision && (now - _lastDecisionWritten).TotalSeconds < DataCenter.DefaultGCDTotal)
+		{
+			return;
+		}
+
+		_lastDecision = act.ID;
+		_lastDecisionWritten = now;
+		Line($"{path} -> {act.Name} #{act.ID} | {DataCenter.DescribeDefenseSources()}");
+	}
+
+	/// <summary>Adds one line with the time of day in front.</summary>
+	public static void Line(string text)
+	{
+		lock (_lock)
+		{
+			try
+			{
+				_writer?.WriteLine($"{DateTime.Now:HH:mm:ss.fff} {text}");
+			}
+			catch (Exception ex)
+			{
+				PluginLog.Warning($"Could not write the defence trace: {ex.Message}");
+			}
+		}
+	}
+
+	/// <summary>Writes a last line and closes the file.</summary>
+	public static void Stop(string footer)
+	{
+		lock (_lock)
+		{
+			try
+			{
+				_writer?.WriteLine($"{DateTime.Now:HH:mm:ss.fff} {footer}");
+				_writer?.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} trace ended");
+			}
+			catch (Exception ex)
+			{
+				PluginLog.Warning($"Could not finish the defence trace: {ex.Message}");
+			}
+			finally
+			{
+				_writer?.Dispose();
+				_writer = null;
+			}
+		}
+	}
+}

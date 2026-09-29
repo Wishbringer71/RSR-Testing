@@ -286,10 +286,12 @@ public partial class CustomRotation
 		{
 			if (DataCenter.CurrentDutyRotation?.DefenseAreaAbility(nextGCD, out act) == true)
 			{
+				DefenseTrace.Decision("area defence (duty)", act);
 				return true;
 			}
 			if (DefenseAreaAbility(nextGCD, out act) || (role is JobRole.Melee or JobRole.RangedPhysical or JobRole.RangedMagical && DefenseSingleAbility(nextGCD, out act)))
 			{
+				DefenseTrace.Decision("area defence", act);
 				return true;
 			}
 		}
@@ -303,11 +305,13 @@ public partial class CustomRotation
 		{
 			if (DataCenter.CurrentDutyRotation?.DefenseSingleAbility(nextGCD, out act) == true)
 			{
+				DefenseTrace.Decision("single defence (duty)", act);
 				return true;
 			}
 			if (DefenseSingleAbility(nextGCD, out act)
 				|| (!DataCenter.IsHostileCastingToTank && !StatusHelper.PlayerHasStatus(true, StatusID.Vengeance) && !StatusHelper.PlayerHasStatus(true, StatusID.Damnation) && ArmsLengthPvE.CanUse(out act)))
 			{
+				DefenseTrace.Decision("single defence", act);
 				return true;
 			}
 		}

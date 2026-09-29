@@ -353,11 +353,23 @@ Essential Dignity, Taurochole, Excogitation, Clemency, Nascent Flash, Second Win
 Mitigation thresholds are unchanged. With the setting off nothing changes. For rotation authors,
 `ObjectHelper.GetForecastHealthRatio` is now public.
 
-## A single-target cast in the AoE list no longer opens everyone's area defence
+## Area casts aimed at someone else reach only those near them
 
-A listed action that the game data marks as single-target with a cast range now counts only for the
-player it is cast at. One such entry, Holy Bladedance, opened every player's area defence when it was
-aimed at the tank - a Summoner's Radiant Aegis and Addle included.
+Whether a cast from the AoE list can hit you is now measured from where the game data puts it. A
+single-target action with a cast range counts only for the player it is cast at; one such entry,
+Holy Bladedance, opened every player's area defence when it was aimed at the tank. A circle cast at
+a player - stacks, tankbuster circles on the tank - is measured around that player, not around the
+caster, and a line only reaches what lies inside its width. Measured from the caster with the boss's
+hitbox taken off, a 6-yalm circle on the tank reached a player on the far side of a large boss and
+spent a Summoner's Radiant Aegis and Addle on it. Area defence and healing ahead of the hit both
+read the same check, for every job.
+
+Ground-targeted circles, cones and charges are still measured from the caster: the game data does
+not state where they land or how wide they open.
+
+`DefenseTrace.log` in the plugin's config folder records, for one session, every action the
+defensive chain chose with every source standing at that moment - markers, listed casts with their
+shape and distances, BossModReborn predictions - and every enemy hit on you beside it.
 
 ## Displacement and Hissatsu: Yaten: the backstep is checked for safety
 

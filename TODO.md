@@ -253,6 +253,14 @@ Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A17
 
 **Auflösungsbedingung:** eine Angabe des Auftraggebers oder eine Spielbeobachtung, welche Gegner in der Aquapolis Vorrang haben sollen. **Empfehlung: erfassen, nicht bearbeiten** — Schatzkarten stehen nicht im benannten Nutzungsprofil, und ohne die Namen wäre jeder Zweig geraten.
 
+### Radiant Aegis bei Tankbustern auf den Tank — Quelle in seinen Kämpfen offen · N
+
+**Seine Meldung (28.09.2026, nach A192 erneut 29.09.2026):** „tankbuster, auch wenn ich nicht betroffen bin und weit weg stehe, sorgen immer noch beim beschwörer dass schimmerschild unnötig verbraucht wird".
+
+**Stand:** A192 (Einzelzielaktion in der Flächenliste) und A208 (Kreise um ihr Ziel, Linien in ihrer Breite) beheben die zwei Fehler, die der Code zeigt. Ob einer davon sein Fall war, zeigt der Code nicht. Weitere mögliche Quellen: Stack- und Spread-Marker, die ohne Abstand gelesen werden, ein BossModReborn-Modul, das einen Tankbuster als Raidwide meldet, und ein von ihm gelernter Tankbuster, der als Bodenkreis geführt wird. Die Prüfung aller Wege steht in A208.
+
+**Messmittel:** `DefenseTrace.log` schreibt je Sitzung jede Wahl der Abwehrkette mit den Quellen, die dabei standen, und jeden Treffer auf ihn. **Erledigt, wenn** eine Datei aus seinen Kämpfen die Quelle zeigt und sie behoben ist. Danach wird das Protokoll wieder entfernt.
+
 ## Technische Schuld
 
 ### Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen · N, R
@@ -597,6 +605,12 @@ Wie viele Commits in jeder Gruppe noch auf ZWEIFELHAFT stehen, zählt die Tabell
 **Behandelt, aber nicht behoben:** Der Pull-Zweig der Option `BlackestNightUsage` verlangt jetzt, dass Reprisal zuerst liegt (A46). Das wirkt nur für den, der die Option umstellt.
 
 **Kosten des Kompromisses:** In der Voreinstellung bleibt die Rangfolge, wie sie ist. **Zur Entscheidung vorgelegt (A195), statt auf eine Beobachtung von ihm zu warten:** die Reprisal-Zeilen im Pfad vor The Blackest Night ziehen. Das trifft alle Lagen, berührt aber seine Vorgabe „Reprisal und Abtausch zurückhalten, solange die Barriere steht" (Konzept 10): Liegt Reprisal zuerst, steht die Barriere noch nicht, und die Vorgabe greift in diesem Pfad nicht mehr.
+
+### Nachprüfung aller Änderungen seit 28.09.2026 mittags · N, R, U
+
+**Sein Auftrag (29.09.2026):** „Vollständiger kritischer Loop mit audit und codereview vor weiteren Arbeiten. Ebenfalls alle geänderten Konzepte im Loop kritisch prüfen. … Für alles antithesen aufstellen und versuchen das Gegenteil zu beweisen", und zwar für alle Code-Änderungen, nicht nur für ausgeschaltete Einstellungen. Konzepte werden nicht kompiliert. Ihr Inhalt wird Aussage für Aussage am Code und an den Quellen geprüft; der Stand der CI zählt dafür nicht.
+
+**Umfang:** 21 Code-Commits (A182–A206) und die geänderten Konzepte 05, 06, 07, 08, 10, 13, 14, 15, `TODO.md`, das Archiv und der Release-Text. **Erledigt:** A192/A205 (→ A208). **Befund offen:** A184 legt für den Weisen eine Barriere, die im Wall-to-Wall bei jedem Bruch erneuert wird. Konzept 06 §2.1 führt genau diese Erneuerung als entfernten Fehler; das Konzept wurde dabei nicht gelesen und widerspricht jetzt dem Code.
 
 ### Audit + Code-Review der gesamten Codebasis
 

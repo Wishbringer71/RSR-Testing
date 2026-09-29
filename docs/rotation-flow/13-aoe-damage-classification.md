@@ -99,22 +99,33 @@ einen abgeschalteten Baustein als unwirksamen gemeldet.
 ## Wen ein gelisteter Flächencast erreicht
 
 `AreaCastCanReachPlayer` entscheidet, ob ein gelisteter Cast den Spieler überhaupt treffen kann, bevor er die
-Flächenabwehr öffnet. **Zuerst die Spieldaten:** Eine Einzelzielaktion mit Reichweite (`CastType` 1, `Range` > 0)
-trifft nur den, auf den sie gewirkt wird — die Flächenabwehr öffnet sie nur, wenn das der Spieler ist (A192).
-Danach wie bisher: Effektreichweite 0 (die gruppenweiten Treffer ohne eigenen Radius, darunter die
-selbstgezielten mit Reichweite 0) und ein auf den Spieler gewirkter Cast gehen durch; sonst entscheidet der
-Abstand zum Wirkenden.
+Flächenabwehr öffnet. Alle drei Leser erben es: Flächenabwehr, großer unterbrechbarer Cast, Vorab-Heilung.
+**Die Form des Casts laut Spieldaten entscheidet, von wo gemessen wird** (A192, A208):
 
-**Anlass, seine Beobachtung (28.09.2026):** „ich habe das gefühl, dass schimmerschild bei tankbuster fällt. aber
-eben nicht bei einem tankbuster auf mich, sondern auf den tank." Die Einzelabwehr eines Schadensausteilers
-öffnet nur ein Tankbuster auf ihn selbst (`IsHostileCastingTankBusterAtMe`), dieser Weg war richtig. Die
-Flächenabwehr aber öffnete jeder gelistete Cast mit Effektreichweite 0 — auch eine Einzelzielaktion, die in
-die Liste geraten ist. Erhoben an der ausgelieferten Liste (850 Einträge, Spieldaten über xivapi): genau eine,
-Holy Bladedance (35285, Einzelziel, Reichweite 100). Dass sie ein Tankbuster ist, folgt aus den Spieldaten
-(ein Ziel), nicht aus einer Beobachtung. **Nicht ausgeschlossen, von hier nicht messbar:** eine
-Tankbuster-Fläche um den Tank, die einmal die ganze Gruppe traf und so gelistet wurde, und ein BossModReborn-
-Modul, das einen Tankbuster als Raidwide meldet. Beide hängen an der offenen Unterscheidung „Raidwide oder
-ausweichbare Fläche" (`TODO.md`).
+- Einzelzielaktion mit Reichweite (`CastType` 1, `Range` > 0): trifft nur den, auf den sie gewirkt wird.
+- Effektreichweite 0 (die gruppenweiten Treffer ohne eigenen Radius, darunter die selbstgezielten mit
+  Reichweite 0) und ein auf den Spieler gewirkter Cast: erreichen ihn.
+- Kreis auf ein Ziel (`CastType` 2, `Range` > 0, nicht auf sich selbst, nicht auf den Boden): um das Ziel
+  gemessen, nicht um den Wirkenden. So wirken Stack-Marker und Tankbuster-Kreise; BossModReborn beschreibt
+  dieselben Aktionen als „Boss->players, range 6 circle, stack" (Pyric Blast 25742, Clawful 37693).
+- Linie (`CastType` 4 und 12, mit Breite): Rechteck vom Wirkenden zum Ziel, ohne Ziel in Blickrichtung des
+  Wirkenden; `XAxisModifier` ist die volle Breite (Heavy Blast Cannon 37345: Spieldaten Breite 8, BossModReborn
+  „width 8 rect").
+- Alles andere wie bisher: Abstand zum Wirkenden, beide Trefferkreise abgezogen.
+
+Hitboxen zählen überall zugunsten des Treffers — ein Fehler lässt eine Abwehr zu viel zu, keine zu wenig.
+
+**Anlass, seine Beobachtung (28.09.2026, erneut 29.09.2026):** Radiant Aegis fällt bei Tankbustern auf den Tank,
+auch wenn er weit weg steht. Erhoben an der ausgelieferten Liste (850 Einträge, Spieldaten über xivapi,
+29.09.2026): 152 Kreise auf ein Ziel, davon 70 auf einen Spieler, und 5 Linien auf ein Ziel wurden vom Wirkenden
+aus gemessen. Bei einem Boss mit großem Trefferkreis erreichte damit ein Kreis von 6 y um den Tank einen Spieler auf
+der anderen Seite des Bosses. Ob das sein Fall war, zeigt der Code nicht: Offen sind außerdem Marker (Stack und
+Spread werden ohne Abstand gelesen) und BossModReborn (ein Modul, das einen Tankbuster als Raidwide meldet).
+Welche Quelle in seinen Kämpfen die Abwehr öffnet, schreibt `DefenseTrace.log` (unten).
+
+**Noch vom Wirkenden gemessen, mit Grund:** Bodenkreise (`TargetArea`, 54 Einträge) — ihr Mittelpunkt steht nur
+in den nativen Castdaten; Kegel (2 Einträge) — der Öffnungswinkel steht in keinem Blatt; Ansturm (`CastType` 8,
+1 Eintrag, Effektreichweite 0) erreicht jeden.
 
 **Selbst gemessen, ob ein gelisteter Cast den Spieler erreicht (A205, Option „Skip area defence for casts that
 missed you", ab Werk aus):** Der Effekt-Handler hält je gelisteter Aktion fest, ob ihre letzte Landung dem
@@ -123,6 +134,13 @@ Cast, der ihn zuletzt verfehlte, nicht für seine Flächenabwehr — ausgewichen
 bis er ihn wieder trifft; ein auf ihn gewirkter Cast zählt immer. Nur die Abwehrflagge liest es
 (`IsHostileCastingAOEForMyDefense`); Vorab-Heilung und Gefährdungsprüfung behalten die Sicht der Gruppe. Der
 Messwert gilt je Sitzung.
+
+**Protokoll der Abwehrentscheidungen (`DefenseTrace.log` im Konfigurationsordner, je Sitzung neu, A208):** Jede
+Wahl der Abwehrkette — Flächen- und Einzelabwehr im Dispatch für alle Jobs, beim Beschwörer auch Radiant Aegis vor
+einem BossModReborn-Raidwide — mit allen Quellen, die in diesem Moment stehen: Marker mit Pfad, Träger und Abstand,
+gelistete Casts mit Form, Abständen und „reaches you", BossModReborn-Raidwide und -Tankbuster samt erkanntem Tank.
+Daneben jeder gegnerische Treffer auf ihn (ohne Auto-Attacken). So steht in der Datei, ob der Treffer, für den die
+Abwehr fiel, ankam. Aufgelöst wird das Protokoll, sobald eine Datei seiner Kämpfe die Quelle zeigt und sie behoben ist.
 
 ## Wen die Unterdrückung erreicht
 

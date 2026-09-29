@@ -14,6 +14,12 @@ public static class Watcher
 {
 	public static void Enable()
 	{
+		var config = Service.Config;
+		DefenseTrace.Start($"version {typeof(Watcher).Assembly.GetName().Version} | area defence {config.UseAoeDefense}"
+			+ $" | single defence {config.UseStDefense} | skip casts that missed you {config.SkipAreaCastsThatMissedMe}"
+			+ $" | big interruptible casts {config.MitigateBigAreaCastsEvenIfInterruptible} | BMR timeline {config.UseBmrTimeline}"
+			+ $" | AoE list {OtherConfiguration.HostileCastingArea.Count} | tankbuster list {OtherConfiguration.HostileCastingTank.Count}");
+
 		ActionEffect.ActionEffectEvent += ActionFromEnemy;
 		ActionEffect.ActionEffectEvent += ActionFromSelf;
 	}
@@ -22,6 +28,7 @@ public static class Watcher
 	{
 		ActionEffect.ActionEffectEvent -= ActionFromEnemy;
 		ActionEffect.ActionEffectEvent -= ActionFromSelf;
+		DefenseTrace.Stop("effect handler unhooked");
 	}
 
 	public static string ShowStrSelf { get; private set; } = string.Empty;
@@ -110,6 +117,25 @@ public static class Watcher
 					{
 						TankbusterMarkerWatch.RecordHit(effect.TargetID);
 					}
+				}
+
+				// The other half of the defence trace: which hits reached the player, so a defence in
+				// the trace can be read against whether its hit arrived.
+				var hitShare = DamageShareOn(set, playerObject.GameObjectId, Math.Max(1u, playerObject.MaxHp));
+				var hitPlayer = false;
+				foreach (var effect in set.TargetEffects)
+				{
+					if (effect.TargetID == playerObject.GameObjectId && effect.GetSpecificTypeEffect(ActionEffectType.Damage, out _))
+					{
+						hitPlayer = true;
+						break;
+					}
+				}
+
+				if (hitPlayer)
+				{
+					DefenseTrace.Line($"hit you: {marked.Name.ExtractText()} #{marked.RowId} from {source.Name.TextValue}"
+						+ $" for {hitShare:P0} of max HP, {set.TargetEffects.Length} targets");
 				}
 			}
 

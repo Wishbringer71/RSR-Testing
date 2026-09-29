@@ -807,6 +807,26 @@
    "status": "exception",
    "loop": "A203",
    "reason": "Addersgall's maximum of three stacks (job guide, 'Maximum Stacks: 3'; The Balance). The gauge does not expose its maximum"
+  },
+  {
+   "file": "RotationSolver.Basic/DataCenter.cs",
+   "code": "&& across <= (act.XAxisModifier / 2f) + player.HitboxRadius;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A208",
+   "reason": "XAxisModifier is a line's full width (the player-side line check in ActionTargetInfo reads it the same way); half of it is the distance to either edge, geometry rather than a claim about the game"
+  },
+  {
+   "file": "RotationSolver.Basic/DataCenter.cs",
+   "code": "private const byte LineFromCasterCastType = 12;",
+   "values": [
+    "12"
+   ],
+   "status": "exception",
+   "loop": "A208",
+   "reason": "A value of the Action sheet's CastType column that the CastType enum does not name; the listed type-12 actions carry a length and a width (Diffuse Laser 60 by 60, the line stacks 60 by 8, xivapi 29.09.2026). An identifier of a game data category, not a tunable"
   }
  ]
 }

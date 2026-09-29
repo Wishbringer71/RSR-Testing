@@ -537,6 +537,7 @@ public sealed class SMN_Reborn : SummonerRotation
 		if (RadiantAegisAheadOfRaidwide
 			&& RadiantAegisPvE.CanUse(out act, usedUp: true, skipStatusProvideCheck: true))
 		{
+			DefenseTrace.Decision("BMR raidwide", act);
 			return true;
 		}
 
@@ -685,6 +686,7 @@ public sealed class SMN_Reborn : SummonerRotation
 		if (demiAboutToStart && RadiantAegisAheadOfRaidwide
 			&& RadiantAegisPvE.CanUse(out act, usedUp: true, skipStatusProvideCheck: true))
 		{
+			DefenseTrace.Decision("BMR raidwide before a demi", act);
 			return true;
 		}
 
