@@ -312,7 +312,7 @@ public sealed class AST_Reborn : AstrologianRotation
 
 		if (EssentialDignityPvE.Cooldown.CurrentCharges == 3 && EssentialDignityPvE.CanUse(out act, usedUp: true))
 		{
-			if (EssentialDignityPvE.Target.Target.GetForecastHealthRatio() < EssentialDignityThird)
+			if (EssentialDignityPvE.Target.Target?.GetForecastHealthRatio() < EssentialDignityThird)
 			{
 				return true;
 			}
@@ -320,7 +320,7 @@ public sealed class AST_Reborn : AstrologianRotation
 
 		if (EssentialDignityPvE.Cooldown.CurrentCharges == 2 && EssentialDignityPvE.CanUse(out act, usedUp: true))
 		{
-			if (EssentialDignityPvE.Target.Target.GetForecastHealthRatio() < EssentialDignitySecond)
+			if (EssentialDignityPvE.Target.Target?.GetForecastHealthRatio() < EssentialDignitySecond)
 			{
 				return true;
 			}
@@ -330,8 +330,8 @@ public sealed class AST_Reborn : AstrologianRotation
 		// answer; the last one does, and only it waits for danger.
 		if (EssentialDignityPvE.Cooldown.CurrentCharges == 1 && EssentialDignityPvE.CanUse(out act, usedUp: true))
 		{
-			if (EssentialDignityPvE.Target.Target.GetForecastHealthRatio() < EssentialDignityLast
-				&& (!EssentialDignityNeedsThreat || EssentialDignityPvE.Target.Target.IsUnderThreat()))
+			if (EssentialDignityPvE.Target.Target?.GetForecastHealthRatio() < EssentialDignityLast
+				&& (!EssentialDignityNeedsThreat || (EssentialDignityPvE.Target.Target?.IsUnderThreat() ?? false)))
 			{
 				return true;
 			}
@@ -593,7 +593,7 @@ public sealed class AST_Reborn : AstrologianRotation
 
 		if (AspectedBeneficPvE.CanUse(out act))
 		{
-			if (IsMoving || AspectedBeneficPvE.Target.Target.GetForecastHealthRatio() < AspectedBeneficHeal)
+			if (IsMoving || AspectedBeneficPvE.Target.Target?.GetForecastHealthRatio() < AspectedBeneficHeal)
 			{
 				return true;
 			}

@@ -311,8 +311,8 @@ public sealed class SCH_Reborn : ScholarRotation
 					break;
 				}
 			}
-			if (HasRecitation && tankHasExcogTarget && ExcogitationPvE.Target.Target.GetForecastHealthRatio() < ExcogHeal
-				&& (!ExcogitationNeedsThreat || ExcogitationPvE.Target.Target.IsUnderThreat()))
+			if (HasRecitation && tankHasExcogTarget && ExcogitationPvE.Target.Target?.GetForecastHealthRatio() < ExcogHeal
+				&& (!ExcogitationNeedsThreat || (ExcogitationPvE.Target.Target?.IsUnderThreat() ?? false)))
 			{
 				return true;
 			}
@@ -338,8 +338,8 @@ public sealed class SCH_Reborn : ScholarRotation
 		}
 
 		// Otherwise we'll spend aether charges; we didn't burn it on the tank above so use excog based on oGCD heal toggle
-		if (!HasRecitation && !IsLastAbility(false, RecitationPvE) && ExcogitationPvE.CanUse(out act) && ExcogitationPvE.Target.Target.GetForecastHealthRatio() < ExcogHeal
-			&& (!ExcogitationNeedsThreat || ExcogitationPvE.Target.Target.IsUnderThreat()))
+		if (!HasRecitation && !IsLastAbility(false, RecitationPvE) && ExcogitationPvE.CanUse(out act) && ExcogitationPvE.Target.Target?.GetForecastHealthRatio() < ExcogHeal
+			&& (!ExcogitationNeedsThreat || (ExcogitationPvE.Target.Target?.IsUnderThreat() ?? false)))
 		{
 			return true;
 		}

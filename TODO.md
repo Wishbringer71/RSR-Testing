@@ -233,27 +233,10 @@ Das Spiel führt jede Wirkung unter mehreren Status-Ids desselben Anzeigenamens 
 
 **Empfehlung: erfassen, nicht bearbeiten.** Behoben ist, was eine Wirkkette im Code liest und wo der Beleg trägt. Der Rest ist eine Klasse ohne Schranke: Ein Rückgabewert, den nur Wegsehen grün hält, wäre schlechter als keiner, und `scan14.py` hält die Liste jederzeit wieder abrufbar.
 
-### Im Vorschaulauf liefert `CanUse` wahr, ohne ein Ziel zu setzen · N, R
+### Im Vorschaulauf liefert `CanUse` wahr, ohne ein Ziel zu setzen · R
 
 **Konzept:** `docs/rotation-flow/03-universal.md`
-`BaseAction.CanUse` schreibt das gefundene Ziel nur außerhalb der Vorschau: `Target = PreviewTarget.Value` steht unter `if (!IBaseAction.ActionPreview)` (`BaseAction.cs:264`). Zurückgegeben wird trotzdem `true`. Wer also im Vorschaulauf nach einem erfolgreichen `CanUse` auf `X.Target.Target` zugreift, liest entweder ein **veraltetes** Ziel aus einem früheren echten Lauf oder — solange die Aktion noch nie erfolgreich gewählt wurde — `default(TargetResult)`, dessen `Target` trotz nicht-nullbarer Deklaration **null** ist (ein Struct umgeht die Nullability-Garantie).
-
-**Die Wirkkette ist geschlossen**, nicht vermutet: `CustomRotation_Invoke.TryInvoke` setzt `ActionPreview = true` (nur bei `DataCenter.DrawingActions`), ruft darunter `UpdateActions`, und das ruft die echten Dispatch-Methoden der Heilung und Verteidigung — Fläche und Einzelziel, GCD und Fähigkeit — samt Dispel-, Wiederbelebungs-, Positional- und Bewegungspfad.
-
-Genau dort steht das Muster, sechsmal im Heilerbestand:
-
-- `AST_Reborn`, Essential Dignity in der Einzelheilung (drei Schwellenstufen)
-- `AST_Reborn`, Aspected Benefic
-- `SCH_Reborn`, Excogitation
-- `ScholarRotation`, Excogitation — die Basisrotation, also Paketoberfläche
-
-**Kein Kampffehler.** Der eigentliche `Invoke` läuft nach `ActionPreview = false`, dort wird das Ziel gesetzt. Die Folge trifft die Anzeige: `UpdateHealingActions` fängt jede `Exception`, setzt die vier Heilanzeigen auf `null` und schreibt in den PluginLog — die Vorschau zeigt dann keine Heilaktion, obwohl eine anstünde. `UpdateDefenseActions` fängt nur `MissingMethodException`, eine Nullreferenz propagiert von dort also weiter nach `TryInvoke`.
-
-**Die Angriffspfade sind nicht betroffen**, weil `UpdateActions` sie nicht aufruft: die 58 Stellen in `SMN_Reborn`, `BRD_Reborn`, `MCH_Reborn`, `DRG_Reborn` und `PhantomDefault` liegen in `AttackAbility` und `GeneralGCD`. Von den 87 Fundstellen des Musters im eigenen Baum sind damit sechs erreichbar.
-
-**Zu entscheiden ist die Richtung**, deshalb nicht behoben: Dass die Vorschau `Target` nicht überschreibt, ist eine ausdrückliche Entscheidung im Code — sie soll den echten Zustand nicht verändern. Falsch ist folglich nicht die Nicht-Zuweisung, sondern der Zugriff auf `Target` im Vorschaulauf. Drei Wege, alle mit Wirkungsbereich über sämtliche Rotationen und damit auch über die Paketnutzer: die Rotationen auf `PreviewTarget ?? Target` umstellen (viele Stellen, dauerhaft), `Target` in der Vorschau in ein Schattenfeld schreiben und die Leser dorthin lenken (eine Stelle, aber neue Zustandshaltung), oder `CanUse` in der Vorschau `false` liefern lassen, sobald ein Ziel nötig ist (kleinster Eingriff, verändert aber, was die Vorschau anzeigt).
-
-**Empfehlung: erfassen, entscheiden, dann bauen.** Der Schweregrad ist gering — Anzeige und Lograuschen, kein Kampfeffekt —, der Wirkungsbereich jeder Behebung dagegen groß, und keiner der sechs erreichbaren Punkte liegt in einem Job des Nutzungsprofils.
+`BaseAction.CanUse` schreibt das Ziel nur außerhalb der Vorschau und liefert trotzdem `true`. Ein Leser von `X.Target.Target` im Vorschaulauf sieht ein veraltetes Ziel oder `null`. **Die Ausnahme ist behoben (A204):** Die sechs erreichbaren Stellen (Essential Dignity dreifach, Aspected Benefic, Excogitation zweifach, dazu die Excogitation-Anzeige der Basisrotation) prüfen jetzt auf `null`; die Vorschau verliert dort keine Heilanzeige mehr. **Neu geprüft, ob Entscheidung (A204): nein** — was bleibt, ist ein veraltetes Ziel in der Vorschauanzeige, kein Kampfeffekt. Die Bauform (Rotationen auf `PreviewTarget` umstellen, oder `CanUse` in der Vorschau ohne Ziel `false`) ist technische Schuld mit Wirkungsbereich über die Paketnutzer; auflösen, sobald ein Leser außerhalb der Heilpfade betroffen ist.
 
 ### Die Minderungsbilanz kennt zwei Schadensarten, die Datenquelle drei · N, R
 

@@ -4446,6 +4446,13 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch (Dalamud-, ClientStructs-, WrathCombo-Quelle, Job-Guide); Compile über die CI.
 
+### A204 · Vorschaulauf: Nullprüfungen an den sechs erreichbaren Zielzugriffen (29.09.2026)
+
+- *Neu geprüft, ob Entscheidung:* Vorgelegt war die Richtung der Behebung. Die spürbare Folge — eine Nullreferenz, die `UpdateHealingActions` fängt und die vier Heilanzeigen leert, oder die aus `UpdateDefenseActions` weiterläuft — lässt sich ohne Richtungswahl verhindern. Was bleibt (ein veraltetes Ziel in der Vorschau), ist Anzeige und technische Schuld, keine Entscheidung über das Verhalten im Kampf.
+- *Umgesetzt:* `AST_Reborn` (Essential Dignity ×3, Aspected Benefic), `SCH_Reborn` (Excogitation ×2), `ScholarRotation.DisplayBaseStatus`: `Target.Target?.` bzw. `?? false`; ohne Ziel ist die Bedingung falsch. Im echten Lauf ist das Ziel gesetzt, das Verhalten im Kampf unverändert.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
