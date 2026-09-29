@@ -47,7 +47,7 @@ zurückgebaut — nicht verteidigt.
 
 `EukrasianDiagnosisPvE.Setting.TargetStatusProvide` ist
 `[EukrasianDiagnosis, Galvanize]` — der **Schildstatus selbst**
-(`SageRotation.cs:156`). Ein Schild wird durch Schaden aufgebraucht. Im
+(`SageRotation.cs:159`). Ein Schild wird durch Schaden aufgebraucht. Im
 Wall-to-Wall, wofür die Funktion geschrieben war, platzt die Barriere in
 Sekunden, `WillStatusEndGCD` meldet „abgelaufen", und der Zweig — der in
 `GeneralGCD` **vor** Phlegma und allem Schaden stand — legte sie neu. Zwei
