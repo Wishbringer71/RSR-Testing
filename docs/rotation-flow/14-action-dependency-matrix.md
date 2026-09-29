@@ -336,9 +336,12 @@ Rückfall-Horizont die Wirkzeit deckt, prüft die Liste nicht; das steht je Fall
 **Bewusst so, mit Grund:** *Barde:* Soul Voice bleibt bis zu 25 s bei 100, wenn Battle Voice kommt —
 Apex Arrow im Burst ist mehr wert als der Überlauf (Schluss aus dem Regelaufbau).
 
-**Nebenbefund, technische Schuld:** `UseBlood` im Dunkelritter hat keinen Leser (Blut für den Burst
-aufsparen). Living Shadow kostet kein Blut mehr (Job-Guide: keine Kosten, gewährt Scorn); ob Aufsparen für
-Delirium etwas bringt, klärt der Abgleich mit The Balance (TODO).
+**Dunkelritter, Blut für den Burst (A197):** `UseBlood` war unverdrahtet und rechnete mit Blutkosten von
+Living Shadow, die es nicht mehr gibt; Bloodspiller fiel bei 50 Blut, wann immer möglich. The Balance (7.5,
+Leitfaden, keine Spielquelle): Bloodspiller unter Gruppenbuffs oder gegen Überlauf, mit möglichst viel Blut
+bis 70 in Delirium — Delirium gibt drei Stapel Blood Weapon zu je +10 (Job-Guide). Jetzt: Bloodspiller und
+Quietus unter Delirium, im Zwei-Minuten-Fenster (`InTwoMIsBurst`) oder über 70 Blut; sonst wird Blut
+aufgespart. Im Kampf: Mehr Bloodspiller fallen in die Gruppenbuffs statt davor.
 
 ## Pausen und Phasenenden
 

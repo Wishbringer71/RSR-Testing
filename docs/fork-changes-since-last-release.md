@@ -379,3 +379,9 @@ list was written to disk and never fetched again. Now nothing is written, and th
 again. An unreadable list file is set aside and downloaded afresh. Downloads during loading give up
 with the plugin's load timeout instead of waiting 100 seconds each.
 
+## Dark Knight: Blood is pooled for the burst
+
+Bloodspiller and Quietus now go out under Delirium, in the two-minute window, or when the Blood Gauge
+is above 70; otherwise the Blood is kept for the burst, entering Delirium with as much as fits (The
+Balance). Before, they went out at 50 Blood whenever they could.
+

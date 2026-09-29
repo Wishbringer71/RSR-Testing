@@ -306,10 +306,6 @@ Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A17
 
 ## Technische Schuld
 
-### Dunkelritter: `UseBlood` ohne Leser · N
-
-Die Eigenschaft sollte Blut für den Burst aufsparen; seit einem Umbau liest sie niemand, und Bloodspiller fällt bei 50 Blut. Laut heutigem Wirktext kostet Living Shadow kein Blut mehr, ihr ursprünglicher Zweck ist damit überholt. Nicht entfernt, weil offen ist, ob Aufsparen für Delirium etwas bringt. Auflösung: Abgleich mit The Balance (seit 27.09.2026 erreichbar), dann verdrahten oder entfernen. Konzept 14, „Werden die Fenster genutzt?".
-
 ### Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen · N, R
 
 **Konzept:** `docs/rotation-flow/03-universal.md`

@@ -4385,6 +4385,16 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A197 · Dunkelritter: Blut für den Burst aufsparen, nach The Balance (29.09.2026)
+
+- *Befund (TODO):* `UseBlood` ohne Leser seit dem Rotationsumbau (`d566eda86`); ihr Inhalt rechnete mit Blutkosten von Living Shadow, die der heutige Wirktext nicht mehr nennt. Bloodspiller und Quietus fielen bei 50 Blut, wann immer möglich. Auflösungsweg des Eintrags: Abgleich mit The Balance, dann verdrahten oder entfernen.
+- *Quellen:* The Balance, Dark Knight Basic Guide (7.5, abgerufen 29.09.2026, Leitfaden): „Use Bloodspiller under raid buffs, or to prevent overcapping on blood"; „entering buffs (when Delirium is pressed) with 70 or less Blood Gauge will ensure that you do not overcap … as high as possible (up to 70)". Job-Guide: Souleater und Stalwart Soul +20 Blut, Delirium gewährt drei Stapel Blood Weapon zu je +10, Bloodspiller und Quietus kosten 50.
+- *Umgesetzt:* `UseBlood` neu: frei ohne Delirium-Stufe, unter Delirium, im Delirium-Status oder im Zwei-Minuten-Fenster; sonst nur über 70 Blut (`BloodPoolLimit`, Ausnahme mit Quelle). Verdrahtet an Quietus und Bloodspiller.
+- *Falsifikation:* **Kein Defekt?** Name und Kommentar belegen die Absicht „Blut für den Burst"; die Verdrahtung fehlte. **Option falsch?** Überlauf: außerhalb des Fensters wird ab 71 ausgegeben, und die höchste Blutgabe je GCD ist +20 — also nie über 90 vor einer Ausgabe; in Delirium mit höchstens 70 plus 30. **Ausgeliefert, nichts ändert sich?** Unterhalb der Delirium-Stufe unverändert.
+- *Nutzen belegt am Leitfaden*, nicht gemessen; keine Option, weil der Leitfaden die Referenz für Rotationen ist (CLAUDE.md, „Quellen").
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

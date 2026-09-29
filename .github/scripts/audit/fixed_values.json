@@ -776,6 +776,16 @@
    "status": "exception",
    "loop": "A195",
    "reason": "'At least half' - the share rule the pack test uses for stuns and slows (A48), applied to recognise the same pack; not a tunable value but the definition of a majority"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "code": "private const byte BloodPoolLimit = 70;",
+   "values": [
+    "70"
+   ],
+   "status": "exception",
+   "loop": "A197",
+   "reason": "The Balance 7.5 Dark Knight guide: enter Delirium with 70 or less Blood so the three Blood Weapon stacks it grants (+10 each, job guide) do not overcap. The gauge's maximum is not in any sheet, so the limit cannot be computed at runtime"
   }
  ]
 }

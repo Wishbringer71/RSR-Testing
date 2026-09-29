@@ -731,7 +731,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			return true;
 		}
 
-		if (QuietusPvE.CanUse(out act))
+		if (UseBlood && QuietusPvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -752,7 +752,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			return true;
 		}
 
-		if (BloodspillerPvE.CanUse(out act, skipComboCheck: true))
+		if (UseBlood && BloodspillerPvE.CanUse(out act, skipComboCheck: true))
 		{
 			return true;
 		}
@@ -797,28 +797,38 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	// Indicates whether the Dark Knight can heal using a single ability.
 	public override bool CanHealSingleAbility => false;
 
-	// Logic to determine when to use blood-based abilities.
+	// How much Blood to carry into Delirium. The Balance (7.5): "entering buffs (when Delirium is
+	// pressed) with 70 or less Blood Gauge will ensure that you do not overcap ... it is best to have
+	// the Blood Gauge as high as possible (up to 70) when entering Delirium". The job guide gives the
+	// reason: Delirium grants three stacks of Blood Weapon, each adding 10 Blood (A197).
+	private const byte BloodPoolLimit = 70;
+
+	/// <summary>
+	/// Whether Bloodspiller or Quietus may spend Blood now: inside the burst, or where the Blood
+	/// would not fit into the next Delirium. Outside it the Blood is pooled for the burst.
+	/// </summary>
+	/// <remarks>
+	/// The Balance: "Use Bloodspiller under raid buffs, or to prevent overcapping on blood", and
+	/// Bloodspiller "can be delayed without loss, as long as ... Blood Gauge do[es] not overcap". The
+	/// property stood here unread since the rotation rework, built around a Blood cost of Living
+	/// Shadow the action no longer has; Bloodspiller went out at 50 Blood whenever it could (A197).
+	/// Under Delirium the two actions cost nothing (their own check lets them through then).
+	/// </remarks>
 	private bool UseBlood
 	{
 		get
 		{
-			// Conditions based on player statuses and ability cooldowns.
-			if (!DeliriumPvE.EnoughLevel || !LivingShadowPvE.EnoughLevel)
+			if (!DeliriumPvE.EnoughLevel || DeliriumStacks > 0 || LowDeliriumStacks > 0)
 			{
 				return true;
 			}
 
-			if (StatusHelper.PlayerHasStatus(true, StatusID.Delirium_3836))
+			if (StatusHelper.PlayerHasStatus(true, StatusID.Delirium_1972, StatusID.Delirium_3836) || InTwoMIsBurst)
 			{
 				return true;
 			}
 
-			if ((StatusHelper.PlayerHasStatus(true, StatusID.Delirium_1972) || StatusHelper.PlayerHasStatus(true, StatusID.Delirium_3836)) && LivingShadowPvE.Cooldown.IsCoolingDown)
-			{
-				return true;
-			}
-
-			return (DeliriumPvE.Cooldown.WillHaveOneChargeGCD(1) && !LivingShadowPvE.Cooldown.WillHaveOneChargeGCD(3)) || (Blood >= 90 && !LivingShadowPvE.Cooldown.WillHaveOneChargeGCD(1));
+			return Blood > BloodPoolLimit;
 		}
 	}
 	// Determines if currently in a burst phase based on cooldowns of key abilities.
