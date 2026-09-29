@@ -4532,6 +4532,15 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A213 · Vorausschau: oGCD-Heilungen blicken nur so weit voraus, wie die Ausführungssperre reicht (29.09.2026)
+
+- *Befund (A210):* Der Vorlauf war für jede Schwelle Rest-GCD plus ein GCD. Der Text der Einstellung bindet: „by the time a heal started now would land". Eine oGCD-Heilung landet, sobald die laufende Ausführungssperre sie freigibt.
+- *Umgesetzt:* `GetForecastSurvivingShare`, `GetForecastHealthRatio`, `GetForecastEffectiveHp`, `GetForecastPlayerHealthRatio` nehmen die Heilart (Überladung, die bestehende Signatur bleibt: Vertrag des Pakets). Vorlauf einer oGCD-Heilung: `DataCenter.AnimationLock`. Leser: Heilflaggen (`ShouldHealSingle`/`ShouldHealSelf`/`ShouldHealArea` für Fähigkeit mit `true`, für Zauber mit `false`; die Flächenstatistik mit je einem Zwischenspeicher), Heilzielwahl (`FindTargetByType` als Überladung mit `instantHeal`, aus `!IsRealGCD` der Aktion), 22 oGCD-Schwellen der Jobrotationen (Weißmagier Benediction; Astrologe Synastry, Essential Dignity ×3; Weiser Taurochole, Krasis ×2, Soteria, oGCD-Tankheilung, Kardia; Gelehrter Aetherpact ×2, Excogitation ×3; Krieger Raw Intuition, Thrill of Battle, Equilibrium, Nascent Flash; Rollen Second Wind, Bloodbath). Geblieben beim GCD-Vorlauf: Clemency, Aspected Benefic, Pneuma, Regen, Emergency Tactics (wirkt auf die nächste GCD-Heilung), die Untergrenze der Pull-Pflege und die kritische Klasse (eine Definition für Heilung, Abwehr-Halt und Lux Solaris).
+- *Prüfmittel:* `check_heal_target_order.py` erwartete leere Argumentlisten; die Muster lesen jetzt den Methodennamen, der Selbsttest ist auf die neue Form umgestellt, alle konstruierten Defekte werden weiter gefunden.
+- *Falsifikation:* **Mit ausgeschalteter Einstellung?** Anteil 1, unverändert. **Zu kurz für oGCDs?** Das Eintreffen einer oGCD-Heilung braucht nach dem Drücken die Antwort des Servers (Bruchteile einer Sekunde); die Sperre deckt das Warten bis zum Drücken. **Ausgeliefert, nichts ändert sich?** Nur bei eingeschalteter Einstellung und fallendem Trend; dann fallen oGCD-Heilungen später als bisher, und zwar so spät, wie der Text verspricht.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

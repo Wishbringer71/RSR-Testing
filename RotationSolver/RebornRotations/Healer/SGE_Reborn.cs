@@ -283,7 +283,7 @@ public sealed class SGE_Reborn : SageRotation
 			}
 		}
 
-		if (TaurocholePvE.CanUse(out act) && TaurocholePvE.Target.Target.GetForecastHealthRatio() < TaurocholeHeal)
+		if (TaurocholePvE.CanUse(out act) && TaurocholePvE.Target.Target.GetForecastHealthRatio(true) < TaurocholeHeal)
 		{
 			return true;
 		}
@@ -356,7 +356,7 @@ public sealed class SGE_Reborn : SageRotation
 			for (var i = 0; i < tank.Count; i++)
 			{
 				var t = tank[i];
-				if (t.GetForecastHealthRatio() < KrasisTankHeal)
+				if (t.GetForecastHealthRatio(true) < KrasisTankHeal)
 				{
 					if (KrasisPvE.CanUse(out act))
 					{
@@ -367,7 +367,7 @@ public sealed class SGE_Reborn : SageRotation
 
 			foreach (var member in PartyMembers)
 			{
-				if (member.GetForecastHealthRatio() < KrasisHeal)
+				if (member.GetForecastHealthRatio(true) < KrasisHeal)
 				{
 					if (KrasisPvE.CanUse(out act))
 					{
@@ -397,7 +397,7 @@ public sealed class SGE_Reborn : SageRotation
 
 		foreach (var member in PartyMembers)
 		{
-			if (SoteriaPvE.CanUse(out act) && member.HasStatus(true, StatusID.Kardion) && member.GetForecastHealthRatio() < SoteriaHeal)
+			if (SoteriaPvE.CanUse(out act) && member.HasStatus(true, StatusID.Kardion) && member.GetForecastHealthRatio(true) < SoteriaHeal)
 			{
 				return true;
 			}
@@ -406,7 +406,7 @@ public sealed class SGE_Reborn : SageRotation
 		for (var i = 0; i < tank.Count; i++)
 		{
 			var t = tank[i];
-			if (Addersgall < 1 && t.GetForecastHealthRatio() < OGCDTankHeal)
+			if (Addersgall < 1 && t.GetForecastHealthRatio(true) < OGCDTankHeal)
 			{
 				if (HaimaPvE.CanUse(out act))
 				{
@@ -472,7 +472,7 @@ public sealed class SGE_Reborn : SageRotation
 		var found = false;
 		foreach (var b in PartyMembers)
 		{
-			if (b.HasStatus(true, StatusID.Kardion) && b.GetForecastHealthRatio() < HealthSingleAbility)
+			if (b.HasStatus(true, StatusID.Kardion) && b.GetForecastHealthRatio(true) < HealthSingleAbility)
 			{
 				found = true;
 				break;

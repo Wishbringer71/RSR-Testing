@@ -598,7 +598,7 @@
   },
   {
    "file": "RotationSolver/Updaters/StateUpdater.cs",
-   "code": "var h = doomed ? 0.2f : ObjectHelper.GetForecastPlayerHealthRatio();",
+   "code": "var h = doomed ? 0.2f : ObjectHelper.GetForecastPlayerHealthRatio(instant);",
    "values": [
     "0.2"
    ],

@@ -352,8 +352,15 @@ saved with the same safeguards as the damage table; delete the file to start ove
 With `Heal ahead of incoming damage` on, the healing thresholds inside the job rotations now read the
 health a member is heading for, as the setting's text says every healing threshold does: Regen,
 Essential Dignity, Taurochole, Excogitation, Clemency, Nascent Flash, Second Wind and the others.
-Mitigation thresholds are unchanged. With the setting off nothing changes. For rotation authors,
-`ObjectHelper.GetForecastHealthRatio` is now public.
+Mitigation thresholds are unchanged. With the setting off nothing changes.
+
+How far ahead depends on the heal. A GCD heal looks ahead by the rest of the GCD and its cast. An
+off-GCD heal lands as soon as the current animation lock lets it go out, so it looks no further than
+that. Before, Benediction, Essential Dignity and the other off-GCD heals went out up to a GCD before
+they were needed. The heal flags and the heal target choice make the same distinction.
+
+For rotation authors, `ObjectHelper.GetForecastHealthRatio` is now public, with an overload taking
+`instant` for off-GCD heals.
 
 ## Area casts aimed at someone else reach only those near them
 

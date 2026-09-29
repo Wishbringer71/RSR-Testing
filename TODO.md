@@ -253,10 +253,6 @@ Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A17
 
 **Auflösungsbedingung:** eine Angabe des Auftraggebers oder eine Spielbeobachtung, welche Gegner in der Aquapolis Vorrang haben sollen. **Empfehlung: erfassen, nicht bearbeiten** — Schatzkarten stehen nicht im benannten Nutzungsprofil, und ohne die Namen wäre jeder Zweig geraten.
 
-### Vorausschau: oGCD-Heilungen rechnen mit dem Vorlauf eines GCD · N
-
-**Befund (A210):** „Heal ahead of incoming damage" verspricht die Gesundheit „by the time a heal started now would land". `GetHealLeadTime` ist für jede Schwelle Rest-GCD plus ein GCD, auch für oGCD-Heilungen, die sofort landen, und für die Fähigkeitsflagge in `ShouldHealSingle`. **Im Kampf, bei eingeschalteter Einstellung:** Benediction, Tetragrammaton, Essential Dignity, Druochole und die übrigen oGCD-Schwellen fallen bei steilem Verlauf bis zu einen GCD früher als nötig und fehlen danach einem echten Notfall. Ausgeschaltet: keine Wirkung. **Behebung:** den Vorlauf nach Aktionsart unterscheiden, also die Zeit bis zum nächsten Einwebfenster für oGCDs und Rest-GCD plus Wirkzeit für GCDs, an allen Lesern der Vorausschau.
-
 ### Radiant Aegis bei Tankbustern auf den Tank — Quelle in seinen Kämpfen offen · N
 
 **Seine Meldung (28.09.2026, nach A192 erneut 29.09.2026):** „tankbuster, auch wenn ich nicht betroffen bin und weit weg stehe, sorgen immer noch beim beschwörer dass schimmerschild unnötig verbraucht wird".
@@ -618,7 +614,7 @@ Wie viele Commits in jeder Gruppe noch auf ZWEIFELHAFT stehen, zählt die Tabell
 
 **Sein Auftrag (29.09.2026):** „Vollständiger kritischer Loop mit audit und codereview vor weiteren Arbeiten. Ebenfalls alle geänderten Konzepte im Loop kritisch prüfen. … Für alles antithesen aufstellen und versuchen das Gegenteil zu beweisen", und zwar für alle Code-Änderungen, nicht nur für ausgeschaltete Einstellungen. Konzepte werden nicht kompiliert. Ihr Inhalt wird Aussage für Aussage am Code und an den Quellen geprüft; der Stand der CI zählt dafür nicht.
 
-**Umfang:** 21 Code-Commits (A182–A206) und die geänderten Konzepte 05, 06, 07, 08, 10, 13, 14, 15, `TODO.md`, das Archiv und der Release-Text. **Erledigt:** alle 21 Code-Commits (A208–A212). Offen aus der Nachprüfung: der Vorlauf der Vorausschau für oGCD-Heilungen (eigener Eintrag) und die Inhaltsprüfung der geänderten Konzepte.
+**Umfang:** 21 Code-Commits (A182–A206) und die geänderten Konzepte 05, 06, 07, 08, 10, 13, 14, 15, `TODO.md`, das Archiv und der Release-Text. **Erledigt:** alle 21 Code-Commits (A208–A212). Der Vorlauf der Vorausschau für oGCD-Heilungen ist behoben (A213). Offen aus der Nachprüfung: die Inhaltsprüfung der geänderten Konzepte.
 
 ### Audit + Code-Review der gesamten Codebasis
 

@@ -1754,8 +1754,13 @@ internal static class DataCenter
 	internal const int LightPartySize = 4;
 
 	private static readonly float[] _forecastHpBuffer = new float[_hpBuffer.Length];
-	private static long _forecastStatsCacheTick = long.MinValue;
-	private static float _forecastAvgCache, _forecastStdDevCache, _forecastLowestAvgCache, _forecastLowestStdDevCache;
+
+	// One cache per kind of heal - off-GCD and GCD look ahead by different leads (A213).
+	private static readonly long[] _forecastStatsCacheTick = [long.MinValue, long.MinValue];
+	private static readonly float[] _forecastAvgCache = new float[_forecastStatsCacheTick.Length];
+	private static readonly float[] _forecastStdDevCache = new float[_forecastStatsCacheTick.Length];
+	private static readonly float[] _forecastLowestAvgCache = new float[_forecastStatsCacheTick.Length];
+	private static readonly float[] _forecastLowestStdDevCache = new float[_forecastStatsCacheTick.Length];
 
 	/// <summary>
 	/// The area-heal statistics on forecast health: each member's health carried forward to the moment
@@ -1768,15 +1773,16 @@ internal static class DataCenter
 	/// the level - only the two area thresholds read this. With the setting off the forecast share is
 	/// 1 and the figures equal the level ones.
 	/// </remarks>
-	internal static void ComputeForecastAreaStats(out float avgHp, out float stdDevHp, out float lowestAvgHp, out float lowestStdDevHp)
+	internal static void ComputeForecastAreaStats(bool instant, out float avgHp, out float stdDevHp, out float lowestAvgHp, out float lowestStdDevHp)
 	{
+		var kind = instant ? 1 : 0;
 		var now = Environment.TickCount64;
-		if (_forecastStatsCacheTick != long.MinValue && now - _forecastStatsCacheTick < PartyHpStatsTtlMs)
+		if (_forecastStatsCacheTick[kind] != long.MinValue && now - _forecastStatsCacheTick[kind] < PartyHpStatsTtlMs)
 		{
-			avgHp = _forecastAvgCache;
-			stdDevHp = _forecastStdDevCache;
-			lowestAvgHp = _forecastLowestAvgCache;
-			lowestStdDevHp = _forecastLowestStdDevCache;
+			avgHp = _forecastAvgCache[kind];
+			stdDevHp = _forecastStdDevCache[kind];
+			lowestAvgHp = _forecastLowestAvgCache[kind];
+			lowestStdDevHp = _forecastLowestStdDevCache[kind];
 			return;
 		}
 
@@ -1795,7 +1801,7 @@ internal static class DataCenter
 				var hp = GetPartyMemberHPRatio(member);
 				if (hp > 0)
 				{
-					_forecastHpBuffer[count++] = hp * member.GetForecastSurvivingShare();
+					_forecastHpBuffer[count++] = hp * member.GetForecastSurvivingShare(instant);
 				}
 			}
 			catch (AccessViolationException ex)
@@ -1839,11 +1845,11 @@ internal static class DataCenter
 			lowestStdDevHp = (float)Math.Sqrt(lowestVariance / lowestCount);
 		}
 
-		_forecastAvgCache = avgHp;
-		_forecastStdDevCache = stdDevHp;
-		_forecastLowestAvgCache = lowestAvgHp;
-		_forecastLowestStdDevCache = lowestStdDevHp;
-		_forecastStatsCacheTick = now;
+		_forecastAvgCache[kind] = avgHp;
+		_forecastStdDevCache[kind] = stdDevHp;
+		_forecastLowestAvgCache[kind] = lowestAvgHp;
+		_forecastLowestStdDevCache[kind] = lowestStdDevHp;
+		_forecastStatsCacheTick[kind] = now;
 	}
 
 	public static float PartyMembersMinHP

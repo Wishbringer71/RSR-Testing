@@ -412,7 +412,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		if (BenedictionPvE.CanUse(out act) &&
-			BenedictionPvE.Target.Target.GetForecastHealthRatio() < BenedictionHeal &&
+			BenedictionPvE.Target.Target.GetForecastHealthRatio(true) < BenedictionHeal &&
 			(!BenedictionNeedsThreat || BenedictionPvE.Target.Target.IsUnderThreat()))
 		{
 			return true;

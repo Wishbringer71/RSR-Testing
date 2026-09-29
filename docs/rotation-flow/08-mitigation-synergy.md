@@ -832,11 +832,18 @@ jemanden zu gehen, der ihn nicht braucht, und wer beim Landen bei 34 % steht, br
 
 ```
 Anteil = max(0, 1 − Vorlaufzeit / korrigierte Restzeit)
-Vorlaufzeit = GCD-Rest + ein voller GCD
+Vorlaufzeit (GCD-Heilung)  = GCD-Rest + ein voller GCD
+Vorlaufzeit (oGCD-Heilung) = verbleibende Ausfuehrungssperre
 ```
 
 Beides aus dem Spielzustand, keine gesetzte Zahl. Ein Heiler unter Presence of Mind blickt kuerzer
-voraus — richtig, er kann frueher handeln.
+voraus — richtig, er kann frueher handeln. Eine oGCD-Heilung landet, sobald die laufende
+Ausfuehrungssperre sie freigibt; mit dem GCD-Vorlauf fielen Benediction, Essential Dignity oder
+Druochole bis zu einen GCD zu frueh und fehlten danach einem echten Notfall. Der Text der Einstellung
+verspricht „the health … by the time a heal started now would land" und bindet (A213). Unterschieden
+wird an allen Lesern: Heilflaggen (Faehigkeit gegen Zauber), Heilzielwahl (`IsRealGCD` der Aktion) und
+die Schwellen der Jobrotationen. Die kritische Klasse behaelt den GCD-Vorlauf, weil sie fuer
+Heilung, Abwehr-Halt und Lux Solaris dieselbe Definition ist.
 
 **Verworfen: ein zweiter Ausloeser samt eigener Rangstufe.** Er waere der naheliegende Weg gewesen
 und ist der schlechtere: Zwei Mechanismen, die dieselbe Frage entscheiden, laufen auseinander, sobald

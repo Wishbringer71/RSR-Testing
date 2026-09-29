@@ -3667,6 +3667,18 @@ public static class ObjectHelper
 	/// default and this is offered as a setting.
 	/// </remarks>
 	internal static float GetForecastSurvivingShare(this IBattleChara battleChara)
+		=> battleChara.GetForecastSurvivingShare(false);
+
+	/// <summary>
+	/// <see cref="GetForecastSurvivingShare(IBattleChara)"/> for a heal of the given kind.
+	/// </summary>
+	/// <param name="battleChara">The member.</param>
+	/// <param name="instant">True for an off-GCD heal, which lands as soon as the current animation
+	/// lock lets it go out; false for a GCD heal, which needs the rest of this GCD and its cast. The
+	/// setting's text promises the health "by the time a heal started now would land", and for an
+	/// instant heal that is now: read with the GCD lead, Benediction or Essential Dignity went out up
+	/// to a GCD before they were needed (A213).</param>
+	internal static float GetForecastSurvivingShare(this IBattleChara battleChara, bool instant)
 	{
 		if (battleChara == null || !Service.Config.HealAheadOfDamage)
 		{
@@ -3679,7 +3691,7 @@ public static class ObjectHelper
 			return 1f;
 		}
 
-		var lead = GetHealLeadTime();
+		var lead = instant ? Math.Max(0f, DataCenter.AnimationLock) : GetHealLeadTime();
 		return lead <= 0f ? 1f : Math.Clamp(1f - (lead / ttk), 0f, 1f);
 	}
 
@@ -3822,11 +3834,20 @@ public static class ObjectHelper
 	}
 
 	/// <summary>
+	/// <see cref="GetForecastHealthRatio(IBattleChara)"/> for a heal of the given kind: an off-GCD heal
+	/// (<paramref name="instant"/>) looks ahead only as far as the current animation lock.
+	/// </summary>
+	public static float GetForecastHealthRatio(this IBattleChara battleChara, bool instant)
+	{
+		return battleChara.GetHealthRatio() * battleChara.GetForecastSurvivingShare(instant);
+	}
+
+	/// <summary>
 	/// <see cref="GetEffectiveHp"/> carried forward to the moment a heal begun now would land.
 	/// </summary>
-	internal static uint GetForecastEffectiveHp(this IBattleChara battleChara)
+	internal static uint GetForecastEffectiveHp(this IBattleChara battleChara, bool instant = false)
 	{
-		return (uint)(battleChara.GetEffectiveHp() * battleChara.GetForecastSurvivingShare());
+		return (uint)(battleChara.GetEffectiveHp() * battleChara.GetForecastSurvivingShare(instant));
 	}
 
 	/// <summary>
@@ -3863,11 +3884,11 @@ public static class ObjectHelper
 	/// <see cref="GetPlayerHealthRatio"/> carried forward the same way, for the paths that ask about
 	/// the player without holding an object reference.
 	/// </summary>
-	internal static float GetForecastPlayerHealthRatio()
+	internal static float GetForecastPlayerHealthRatio(bool instant = false)
 	{
 		return Player.Object == null
 			? GetPlayerHealthRatio()
-			: GetPlayerHealthRatio() * Player.Object.GetForecastSurvivingShare();
+			: GetPlayerHealthRatio() * Player.Object.GetForecastSurvivingShare(instant);
 	}
 
 	/// <summary>

@@ -233,7 +233,7 @@ public sealed class AST_Reborn : AstrologianRotation
 		static bool CanCastSynastry(IBaseAction actionCheck, IBaseAction synastry, float synastryHp, IAction next)
 			=> next.IsTheSameTo(false, actionCheck) &&
 			   synastry.Target.Target == actionCheck.Target.Target &&
-			   synastry.Target.Target.GetForecastHealthRatio() < synastryHp;
+			   synastry.Target.Target.GetForecastHealthRatio(true) < synastryHp;
 	}
 
 	[RotationDesc(ActionID.ExaltationPvE, ActionID.TheSpirePvE, ActionID.TheBolePvE, ActionID.CelestialIntersectionPvE)]
@@ -312,7 +312,7 @@ public sealed class AST_Reborn : AstrologianRotation
 
 		if (EssentialDignityPvE.Cooldown.CurrentCharges == 3 && EssentialDignityPvE.CanUse(out act, usedUp: true))
 		{
-			if (EssentialDignityPvE.Target.Target?.GetForecastHealthRatio() < EssentialDignityThird)
+			if (EssentialDignityPvE.Target.Target?.GetForecastHealthRatio(true) < EssentialDignityThird)
 			{
 				return true;
 			}
@@ -320,7 +320,7 @@ public sealed class AST_Reborn : AstrologianRotation
 
 		if (EssentialDignityPvE.Cooldown.CurrentCharges == 2 && EssentialDignityPvE.CanUse(out act, usedUp: true))
 		{
-			if (EssentialDignityPvE.Target.Target?.GetForecastHealthRatio() < EssentialDignitySecond)
+			if (EssentialDignityPvE.Target.Target?.GetForecastHealthRatio(true) < EssentialDignitySecond)
 			{
 				return true;
 			}
@@ -330,7 +330,7 @@ public sealed class AST_Reborn : AstrologianRotation
 		// answer; the last one does, and only it waits for danger.
 		if (EssentialDignityPvE.Cooldown.CurrentCharges == 1 && EssentialDignityPvE.CanUse(out act, usedUp: true))
 		{
-			if (EssentialDignityPvE.Target.Target?.GetForecastHealthRatio() < EssentialDignityLast
+			if (EssentialDignityPvE.Target.Target?.GetForecastHealthRatio(true) < EssentialDignityLast
 				&& (!EssentialDignityNeedsThreat || (EssentialDignityPvE.Target.Target?.IsUnderThreat() ?? false)))
 			{
 				return true;

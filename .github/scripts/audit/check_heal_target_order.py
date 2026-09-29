@@ -30,10 +30,10 @@ CLASS_CALL = re.compile(r'IsInCriticalClass\([^)]*\)')
 # that the critical rank runs first - and a rename must not make that check silently vanish. That
 # the forecast spelling is the one in use is a separate question, asked by check_forecast below.
 CRITICAL = re.compile(r'HealthForDyingTanks|IsInCriticalClass\([^)]*\)')
-SELF_CUT = re.compile(r'Get(?:Forecast)?Player(?:Forecast)?HealthRatio\(\)\s*<=\s*'
+SELF_CUT = re.compile(r'Get(?:Forecast)?Player(?:Forecast)?HealthRatio\([^)]*\)\s*<=\s*'
                       r'Service\.Config\.HealthSelfRatio')
-HEALER_CUT = re.compile(r'Get(?:Forecast)?HealthRatio\(\)\s*<=\s*Service\.Config\.HealthHealerRatio')
-TANK_CUT = re.compile(r'Get(?:Forecast)?HealthRatio\(\)\s*<=\s*Service\.Config\.HealthTankRatio')
+HEALER_CUT = re.compile(r'Get(?:Forecast)?HealthRatio\([^)]*\)\s*<=\s*Service\.Config\.HealthHealerRatio')
+TANK_CUT = re.compile(r'Get(?:Forecast)?HealthRatio\([^)]*\)\s*<=\s*Service\.Config\.HealthTankRatio')
 DEAD_FILTER = re.compile(r'o\.IsDead\s*\|\|')
 
 # The forward-looking reads. Each of these decides who gets the heal, and each has a plain
@@ -41,10 +41,12 @@ DEAD_FILTER = re.compile(r'o\.IsDead\s*\|\|')
 # now" - which is the whole of what this change is not. HealAheadOfDamage being off makes the two
 # identical at runtime; it does not make them identical in the source, which is where this looks.
 FORECAST_READS = (
-    ('the candidate ordering', re.compile(r'GetForecastHealthRatio\(o\)')),
+    # The reads take the heal's kind as an argument since A213 (an off-GCD heal looks ahead only as
+    # far as the animation lock), so the argument list is not fixed; the method name is what counts.
+    ('the candidate ordering', re.compile(r'ranked\.Add\(\(o,[^;]*GetForecastHealthRatio\(')),
     ('the critical rank threshold', re.compile(r'GetForecastEffectiveHpPercent\(\)')),
-    ('the critical rank ordering', re.compile(r'GetForecastEffectiveHp\(\)')),
-    ('the self short-cut', re.compile(r'GetForecastPlayerHealthRatio\(\)')),
+    ('the critical rank ordering', re.compile(r'GetForecastEffectiveHp\(')),
+    ('the self short-cut', re.compile(r'GetForecastPlayerHealthRatio\(')),
 )
 
 # The gate ahead of all of them, in the enclosing method rather than in GeneralHealTarget: nothing
@@ -52,7 +54,7 @@ FORECAST_READS = (
 # 0.8, so on the plain getter a tank at 90% heading for 34% never becomes a candidate at all, and
 # every check above would still pass while the behaviour is gone.
 PREFILTER_METHOD = re.compile(r'IBattleChara\?\s+FindHealTarget\s*\(')
-PREFILTER_READ = re.compile(r'o\.GetForecastHealthRatio\(\)\s*<\s*healRatio')
+PREFILTER_READ = re.compile(r'o\.GetForecastHealthRatio\([^)]*\)\s*<\s*healRatio')
 PREFILTER_PLAIN = re.compile(r'o\.GetHealthRatio\(\)\s*<\s*healRatio')
 METHOD = re.compile(r'static IBattleChara\?\s+GeneralHealTarget\s*\(')
 TTK_METHOD = re.compile(r'bool\s+CheckTimeToKill\s*\(')
@@ -191,21 +193,21 @@ def self_test():
         {
             foreach (var o in battleChara)
             {
-                if (!IBaseAction.AutoHealCheck || o.GetForecastHealthRatio() < healRatio)
+                if (!IBaseAction.AutoHealCheck || o.GetForecastHealthRatio(instantHeal) < healRatio)
                 {
                     filteredGameObjects.Add(o);
                 }
             }
 
-            static IBattleChara? GeneralHealTarget(List<IBattleChara> objs)
+            static IBattleChara? GeneralHealTarget(List<IBattleChara> objs, bool instant)
             {
                 foreach (var o in objs) { if (o.IsDead || o.HasStatus()) { continue; } }
-                ranked.Add((o, o.NoNeedHealingInvuln(), ObjectHelper.GetForecastHealthRatio(o)));
+                ranked.Add((o, o.NoNeedHealingInvuln(), o.GetForecastHealthRatio(instant)));
                 if (x.GetForecastEffectiveHpPercent() > Service.Config.HealthForDyingTanks * 100f) { }
-                var hp = r.Obj.GetForecastEffectiveHp();
-                if (ObjectHelper.GetForecastPlayerHealthRatio() <= Service.Config.HealthSelfRatio) { }
-                if (healerTar.GetForecastHealthRatio() <= Service.Config.HealthHealerRatio) { }
-                if (tankTar.GetForecastHealthRatio() <= Service.Config.HealthTankRatio) { }
+                var hp = r.Obj.GetForecastEffectiveHp(instant);
+                if (ObjectHelper.GetForecastPlayerHealthRatio(instant) <= Service.Config.HealthSelfRatio) { }
+                if (healerTar.GetForecastHealthRatio(instant) <= Service.Config.HealthHealerRatio) { }
+                if (tankTar.GetForecastHealthRatio(instant) <= Service.Config.HealthTankRatio) { }
             }
         }
     '''
@@ -214,7 +216,7 @@ def self_test():
 
     critical_line = ('if (x.GetForecastEffectiveHpPercent() > '
                      'Service.Config.HealthForDyingTanks * 100f) { }')
-    tank_line = 'if (tankTar.GetForecastHealthRatio() <= Service.Config.HealthTankRatio) { }'
+    tank_line = 'if (tankTar.GetForecastHealthRatio(instant) <= Service.Config.HealthTankRatio) { }'
 
     swapped = good.replace(critical_line + '\n', '')
     swapped = swapped.replace(tank_line, tank_line + '\n                ' + critical_line)
@@ -240,13 +242,13 @@ def self_test():
 
     reverts = (
         ('the candidate ordering',
-         'ObjectHelper.GetForecastHealthRatio(o)', 'ObjectHelper.GetHealthRatio(o)'),
+         'o.GetForecastHealthRatio(instant)', 'o.GetHealthRatio()'),
         ('the critical rank threshold',
          'x.GetForecastEffectiveHpPercent()', 'x.GetEffectiveHpPercent()'),
         ('the critical rank ordering',
-         'r.Obj.GetForecastEffectiveHp()', 'r.Obj.GetEffectiveHp()'),
+         'r.Obj.GetForecastEffectiveHp(instant)', 'r.Obj.GetEffectiveHp()'),
         ('the self short-cut',
-         'ObjectHelper.GetForecastPlayerHealthRatio()', 'ObjectHelper.GetPlayerHealthRatio()'),
+         'ObjectHelper.GetForecastPlayerHealthRatio(instant)', 'ObjectHelper.GetPlayerHealthRatio()'),
     )
     for name, forecast, plain in reverts:
         reverted = good.replace(forecast, plain)
@@ -260,7 +262,7 @@ def self_test():
 
     # The gate. Reverting it leaves every other forward-looking read in place, so it is the one
     # defect that a check over GeneralHealTarget alone cannot see.
-    gate_reverted = good.replace('o.GetForecastHealthRatio() < healRatio',
+    gate_reverted = good.replace('o.GetForecastHealthRatio(instantHeal) < healRatio',
                                  'o.GetHealthRatio() < healRatio')
     if not any('prefilter no longer reads the forecast' in p
                for p in check_forecast(gate_reverted)):
@@ -271,8 +273,8 @@ def self_test():
                              % check(gate_reverted))
 
     both_forms = good.replace(
-        'o.GetForecastHealthRatio() < healRatio',
-        'o.GetForecastHealthRatio() < healRatio || o.GetHealthRatio() < healRatio')
+        'o.GetForecastHealthRatio(instantHeal) < healRatio',
+        'o.GetForecastHealthRatio(instantHeal) < healRatio || o.GetHealthRatio() < healRatio')
     if not any('second, plain-health comparison' in p for p in check_forecast(both_forms)):
         raise AssertionError('a plain comparison left beside the forecast one went unnoticed')
 

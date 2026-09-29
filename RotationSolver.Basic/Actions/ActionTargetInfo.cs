@@ -794,7 +794,7 @@ public struct ActionTargetInfo(IBaseAction action)
 					continue;
 				}
 
-				if (!IBaseAction.AutoHealCheck || member.GetForecastHealthRatio() < action.Config.AutoHealRatio)
+				if (!IBaseAction.AutoHealCheck || member.GetForecastHealthRatio(InstantHeal) < action.Config.AutoHealRatio)
 				{
 					anyInNeed = true;
 					break;
@@ -837,8 +837,8 @@ public struct ActionTargetInfo(IBaseAction action)
 		List<IBattleChara> targetsList = [.. GetMostCanTargetObjects(canTargets, canAffects, skipAoeCheck ? 0 : action.Config.AoeCount)];
 
 		var target = targetsList.Count > 0
-			? FindTargetByType(targetsList, type, action.Config.AutoHealRatio, action.Setting.SpecialType, targetOverride, action.Setting.IsFriendly)
-			: FindTargetByType([], type, action.Config.AutoHealRatio, action.Setting.SpecialType, targetOverride, action.Setting.IsFriendly);
+			? FindTargetByType(targetsList, type, action.Config.AutoHealRatio, action.Setting.SpecialType, targetOverride, action.Setting.IsFriendly, InstantHeal)
+			: FindTargetByType([], type, action.Config.AutoHealRatio, action.Setting.SpecialType, targetOverride, action.Setting.IsFriendly, InstantHeal);
 
 		IBattleChara[] affectedTargets;
 		if (target != null)
@@ -1052,6 +1052,10 @@ public struct ActionTargetInfo(IBaseAction action)
 			return new TargetResult(target, [], target.Position);
 		}
 	}
+
+	// An off-GCD heal lands as soon as the animation lock lets it go out, so its heal-ahead reading
+	// looks no further than that; a GCD heal looks ahead by the rest of the GCD and its cast (A213).
+	private readonly bool InstantHeal => !action.Info.IsRealGCD;
 
 	/// <summary>
 	/// Determines whether the movement safety check should be performed for the current action.
@@ -1414,7 +1418,7 @@ public struct ActionTargetInfo(IBaseAction action)
 				}
 			}
 			var attackT = FindTargetByType(partyMembersInRadius,
-				TargetType.BeAttacked, action.Config.AutoHealRatio, action.Setting.SpecialType, targetOverride, true);
+				TargetType.BeAttacked, action.Config.AutoHealRatio, action.Setting.SpecialType, targetOverride, true, InstantHeal);
 
 			if (attackT == null)
 			{
@@ -1869,6 +1873,14 @@ public struct ActionTargetInfo(IBaseAction action)
 	/// <param name="isFriendly">Indicates whether the target is friendly.</param>
 	/// <returns></returns>
 	public static IBattleChara? FindTargetByType(IEnumerable<IBattleChara> battleChara, TargetType type, float healRatio, SpecialActionType actionType, TargetType targetOverride, bool isFriendly)
+		=> FindTargetByType(battleChara, type, healRatio, actionType, targetOverride, isFriendly, false);
+
+	/// <summary>
+	/// <see cref="FindTargetByType(IEnumerable{IBattleChara}, TargetType, float, SpecialActionType, TargetType, bool)"/>
+	/// for a heal of the given kind: <paramref name="instantHeal"/> is true for an off-GCD action, whose
+	/// heal-ahead reading looks no further than the animation lock (A213).
+	/// </summary>
+	public static IBattleChara? FindTargetByType(IEnumerable<IBattleChara> battleChara, TargetType type, float healRatio, SpecialActionType actionType, TargetType targetOverride, bool isFriendly, bool instantHeal)
 	{
 		if (battleChara == null)
 		{
@@ -3251,7 +3263,7 @@ public struct ActionTargetInfo(IBaseAction action)
 				//
 				// This is not overhealing: the cut exists to keep a cast from being spent on somebody
 				// who does not need it, and somebody who will be at 34% when the cast lands does.
-				if (!IBaseAction.AutoHealCheck || o.GetForecastHealthRatio() < healRatio)
+				if (!IBaseAction.AutoHealCheck || o.GetForecastHealthRatio(instantHeal) < healRatio)
 				{
 					filteredGameObjects.Add(o);
 				}
@@ -3266,13 +3278,13 @@ public struct ActionTargetInfo(IBaseAction action)
 				}
 			}
 
-			var result = GeneralHealTarget(partyMembers);
+			var result = GeneralHealTarget(partyMembers, instantHeal);
 			if (result != null)
 			{
 				return result;
 			}
 
-			result = GeneralHealTarget(filteredGameObjects);
+			result = GeneralHealTarget(filteredGameObjects, instantHeal);
 			if (result != null)
 			{
 				return result;
@@ -3306,7 +3318,7 @@ public struct ActionTargetInfo(IBaseAction action)
 
 			return null;
 
-			static IBattleChara? GeneralHealTarget(List<IBattleChara> objs)
+			static IBattleChara? GeneralHealTarget(List<IBattleChara> objs, bool instant)
 			{
 				// Everyone healable is a candidate. Only a status that nullifies healing outright
 				// takes a target out; a protective status merely moves it back in the queue.
@@ -3349,7 +3361,7 @@ public struct ActionTargetInfo(IBaseAction action)
 					// Forecast health rather than current, so the ordering below answers "who will be
 					// worst off when a heal lands" instead of "who is worst off now". With the
 					// setting off the two are the same number.
-					ranked.Add((o, o.NoNeedHealingInvuln(), ObjectHelper.GetForecastHealthRatio(o)));
+					ranked.Add((o, o.NoNeedHealingInvuln(), o.GetForecastHealthRatio(instant)));
 				}
 
 				// Unprotected before protected, then lowest health first inside each group.
@@ -3392,7 +3404,7 @@ public struct ActionTargetInfo(IBaseAction action)
 						continue;
 					}
 
-					var hp = r.Obj.GetForecastEffectiveHp();
+					var hp = r.Obj.GetForecastEffectiveHp(instant);
 					var role = r.Obj.IsJobCategory(JobRole.Healer) ? 0
 						: r.Obj.IsJobCategory(JobRole.Tank) ? 1
 						: 2;
@@ -3460,7 +3472,7 @@ public struct ActionTargetInfo(IBaseAction action)
 				if (player != null
 					&& !player.HasStatus(false, StatusHelper.HealingIneffectiveStatus)
 					&& !ObjectHelper.PlayerIsHeldForDeathTrigger()
-					&& ObjectHelper.GetForecastPlayerHealthRatio() <= Service.Config.HealthSelfRatio)
+					&& ObjectHelper.GetForecastPlayerHealthRatio(instant) <= Service.Config.HealthSelfRatio)
 				{
 					foreach (var o in objs)
 					{
@@ -3473,17 +3485,17 @@ public struct ActionTargetInfo(IBaseAction action)
 
 				if (Service.Config.HealTargetByDanger)
 				{
-					return DangerClassTarget(ranked);
+					return DangerClassTarget(ranked, instant);
 				}
 
 				var healerTar = healerTars.Count > 0 ? healerTars[0] : null;
-				if (healerTar != null && healerTar.GetForecastHealthRatio() <= Service.Config.HealthHealerRatio)
+				if (healerTar != null && healerTar.GetForecastHealthRatio(instant) <= Service.Config.HealthHealerRatio)
 				{
 					return healerTar;
 				}
 
 				var tankTar = tankTars.Count > 0 ? tankTars[0] : null;
-				if (tankTar != null && tankTar.GetForecastHealthRatio() <= Service.Config.HealthTankRatio)
+				if (tankTar != null && tankTar.GetForecastHealthRatio(instant) <= Service.Config.HealthTankRatio)
 				{
 					return tankTar;
 				}
@@ -3509,7 +3521,7 @@ public struct ActionTargetInfo(IBaseAction action)
 		//
 		// Protected members come last, as everywhere in this method; the last pick keeps the plain
 		// "is anyone hurt at all" check.
-		static IBattleChara? DangerClassTarget(List<(IBattleChara Obj, bool Unprotected, float Health)> ranked)
+		static IBattleChara? DangerClassTarget(List<(IBattleChara Obj, bool Unprotected, float Health)> ranked, bool instant)
 		{
 			IBattleChara? pressed = null;
 			var pressedHealth = float.MaxValue;
@@ -3559,7 +3571,7 @@ public struct ActionTargetInfo(IBaseAction action)
 					continue;
 				}
 
-				var key = byPoints ? r.Obj.GetForecastEffectiveHp() : r.Health;
+				var key = byPoints ? r.Obj.GetForecastEffectiveHp(instant) : r.Health;
 				var role = r.Obj.IsJobCategory(JobRole.Healer) ? 0
 					: r.Obj.IsJobCategory(JobRole.Tank) ? 1
 					: 2;

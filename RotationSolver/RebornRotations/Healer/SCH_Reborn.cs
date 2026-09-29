@@ -200,7 +200,7 @@ public sealed class SCH_Reborn : ScholarRotation
 				continue;
 			}
 
-			if (item.GetForecastHealthRatio() >= AetherpactRemove)
+			if (item.GetForecastHealthRatio(true) >= AetherpactRemove)
 			{
 				act = AetherpactPvE;
 				return true;
@@ -311,7 +311,7 @@ public sealed class SCH_Reborn : ScholarRotation
 					break;
 				}
 			}
-			if (HasRecitation && tankHasExcogTarget && ExcogitationPvE.Target.Target?.GetForecastHealthRatio() < ExcogHeal
+			if (HasRecitation && tankHasExcogTarget && ExcogitationPvE.Target.Target?.GetForecastHealthRatio(true) < ExcogHeal
 				&& (!ExcogitationNeedsThreat || (ExcogitationPvE.Target.Target?.IsUnderThreat() ?? false)))
 			{
 				return true;
@@ -332,13 +332,13 @@ public sealed class SCH_Reborn : ScholarRotation
 		if (AetherpactPvE.CanUse(out act) &&
 			FairyGauge >= LinkFairyGauge &&
 			!haveLink &&
-			AetherpactPvE.Target.Target.GetForecastHealthRatio() <= AetherpactMinimum)
+			AetherpactPvE.Target.Target.GetForecastHealthRatio(true) <= AetherpactMinimum)
 		{
 			return true;
 		}
 
 		// Otherwise we'll spend aether charges; we didn't burn it on the tank above so use excog based on oGCD heal toggle
-		if (!HasRecitation && !IsLastAbility(false, RecitationPvE) && ExcogitationPvE.CanUse(out act) && ExcogitationPvE.Target.Target?.GetForecastHealthRatio() < ExcogHeal
+		if (!HasRecitation && !IsLastAbility(false, RecitationPvE) && ExcogitationPvE.CanUse(out act) && ExcogitationPvE.Target.Target?.GetForecastHealthRatio(true) < ExcogHeal
 			&& (!ExcogitationNeedsThreat || (ExcogitationPvE.Target.Target?.IsUnderThreat() ?? false)))
 		{
 			return true;
@@ -850,7 +850,7 @@ public sealed class SCH_Reborn : ScholarRotation
 				// and spend Recitation on an Excogitation that cannot land. The inverted form
 				// happened to mask that. The tank searches in ActionTargetInfo carry the same
 				// guard at the same place.
-				if (!member.IsDead && member.GetForecastHealthRatio() <= ExcogHeal && member.NoNeedHealingInvuln())
+				if (!member.IsDead && member.GetForecastHealthRatio(true) <= ExcogHeal && member.NoNeedHealingInvuln())
 				{
 					tankNeedsExcog = true;
 					break;

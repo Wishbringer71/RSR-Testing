@@ -80,9 +80,10 @@ der Heiler die nicht aufbringen, tauscht der Verzicht sicheres gegen unsicheres
 Eine Lesart bleibt bewusst ausgeklammert: „Überleben des Tanks" gilt hier als
 Vorrang *innerhalb* der Frage, ob eine Tank-Schutzmechanik respektiert wird — nicht
 als genereller Vorrang des Tanks vor der Gruppe. Für diesen anderen Fall führt RSR
-bereits eine eigene Rangfolge (Selbst → Heiler → Tank → niedrigste Gesundheit,
-`ActionTargetInfo.cs:3211-3236`). Sie hier ebenfalls umzustellen wäre eine zweite,
-größere Änderung.
+bereits eine eigene Rangfolge in `ActionTargetInfo.GeneralHealTarget`: zuerst wer gleich fällt
+(kritische Klasse, Konzept 07), dann Selbst → Heiler → Tank → niedrigste Gesundheit; mit „Choose
+the heal target by danger" statt der Rollen-Kurzwege die Gefährdungsklassen 2 und 3 (Stand 29.09.2026).
+Sie hier ebenfalls umzustellen wäre eine zweite, größere Änderung.
 
 ## Taxonomie nach Auslöser
 
