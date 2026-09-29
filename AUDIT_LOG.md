@@ -4691,6 +4691,18 @@ Bereich F der Tiefenprüfung seit 357ffce09: `OtherConfiguration` (A196, V2-Spei
 
 **Prüfgrad:** statisch (Code, Aufrufer und Threads erhoben); Prüfskripte; Compile über die CI.
 
+### A225 · Einstellung für große Ziele ohne Leser (29.09.2026)
+
+Gefunden in der Wirksamkeitsprüfung zu A221, beim Verfolgen der Zielwahl von Synastry (`FindFriendly`, Fall `Big`).
+
+- *Research:* `Configs` führt zwei Einstellungen: `_smallHP` („Prioritize Low HP targets instead of High HP targets when using Small Target …") und `_bigHP` („… when using Big Target …"). Beide Zweige für große Ziele lesen `Service.Config.SmallHp`: freundlich (`FindFriendly`, `default` = `Big`) und feindlich (`TargetingType`, `default` = `Big`). `BigHp` hat keinen Leser. Eingeführt in Upstream b16412fbb (11.05.2025) mit dem Text; die Leser sind ein Klon des Falls `Small` ohne Anpassung.
+- *Optionen:* (0) belassen; (a) die Zweige lesen `BigHp`; (b) `_bigHP` entfernen. Der Oberflächentext bindet: (a).
+- *Im Kampf:* Unter gleich großen Zielen (Trash, Spieler) entscheidet bei „Big" die Gesundheit. Bisher folgte sie der Einstellung für kleine Ziele. Ab Werk stehen beide auf aus, dann ändert sich nichts. Wer nur eine der beiden umgestellt hat, bekommt jetzt, was ihr Text sagt.
+- *Falsifikation:* **Kein Defekt?** Der Text nennt „Big Target", gelesen wurde die Einstellung für kleine. **Option falsch?** Der Namensgenerator bildet `_bigHP` wie `_smallHP` (`Util.ConvertToPascalCase`), also `BigHp`. **Ausgeliefert, nichts ändert sich?** Bei gleicher Stellung beider Einstellungen richtig so.
+- *Betroffene:* Endnutzer mit „Big" als Zielart und abweichender Stellung; fremde Rotationen mit freundlichen Aktionen ohne eigenen `TargetType` (Vorgabe `Big`) außerhalb der Heil- und Abwehrpfade.
+
+**Prüfgrad:** statisch (Code, Generator, Versionsgeschichte); Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

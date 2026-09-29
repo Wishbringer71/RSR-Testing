@@ -453,6 +453,11 @@ At three stacks, just before the next one would be lost, the Sage now spends one
 whoever needs the heal, otherwise on itself) for its 7% MP. The Addersgall timer is now read as the
 time elapsed, as the game counts it; it was read the other way round.
 
+## "Prioritize Low HP … Big Target" takes effect
+
+Choosing among equally big targets read the setting for small targets; the one for big targets had
+no effect. It is read now. With both settings the same, as by default, nothing changes.
+
 ## New setting: Skip area defence for casts that missed you
 
 Off by default. On, an area cast from the AoE list that landed last time without reaching you - you

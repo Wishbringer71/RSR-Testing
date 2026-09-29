@@ -2288,7 +2288,8 @@ public struct ActionTargetInfo(IBaseAction action)
 							break;
 						}
 					default:
-						if (Service.Config.SmallHp)
+						// The Big case reads its own setting; it read SmallHp, and BigHp had no reader (A225).
+						if (Service.Config.BigHp)
 						{
 							filtered = [.. objects];
 							filtered.Sort((a, b) =>
@@ -3860,7 +3861,8 @@ public struct ActionTargetInfo(IBaseAction action)
 						break;
 					}
 				default:
-					if (Service.Config.SmallHp)
+					// The Big case reads its own setting; it read SmallHp, and BigHp had no reader (A225).
+					if (Service.Config.BigHp)
 					{
 						filtered = [.. objects];
 						filtered.Sort((a, b) =>
