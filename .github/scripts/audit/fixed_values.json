@@ -844,6 +844,16 @@
    "status": "exception",
    "loop": "A218",
    "reason": "More than one member reached is what separates an area hit from a single-target one - the definition the flag needs, not a tunable value; half of the party was rejected because a cleave on the tank and two melee is three of eight"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.cs",
+   "code": "private bool BloodwhettingForDefense => SoloIntuition || NumberOfHostilesInRange > 2;",
+   "values": [
+    "2"
+   ],
+   "status": "open",
+   "loop": "A226",
+   "reason": "Upstream's pull size for Raw Intuition/Bloodwhetting in the single-target defence (since d566eda86), moved unchanged into one property so the Nascent Flash hold reads the same condition. Derivable candidate: more than the global 'Number of hostiles' (AutoDefenseNumber, default 2) - equal at the default, different for anyone who changed it, so not switched without a decision."
   }
  ]
 }

@@ -24,7 +24,21 @@ public sealed class WAR_Reborn : WarriorRotation
 
 		[Description("Healers only")]
 		HealerOnly,
+
+		[Description("Most in danger of dying first, then healers, tanks, damage dealers (the heal target order)")]
+		ByDanger,
 	}
+
+	[RotationConfig(CombatType.PvE, Name = "Keep Bloodwhetting for yourself when you need it",
+		Tooltip = "Nascent Flash on someone else puts Bloodwhetting on its cooldown too. With this on, it "
+			+ "is not given away while you need Bloodwhetting yourself: a tankbuster on you comes before "
+			+ "the cooldown is back and Bloodwhetting would be used for it, or you are about to die.\n"
+			+ "In a fight: the member still gets it when they are about to die and win the triage - a "
+			+ "healer always, another tank unless you are about to die too; a damage dealer does not. "
+			+ "You heal yourself the same either way: Nascent Flash heals you with every weaponskill as "
+			+ "Bloodwhetting does. What you keep is its damage reduction and barrier.\n"
+			+ "Off by default until decided.")]
+	public bool HoldNascentFlashForOwnNeed { get; set; } = false;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Arm's Length on a pull for its Slow",
 		Tooltip = "Arm's Length is used on a group pull for its Slow, not only as knockback "
@@ -231,14 +245,24 @@ public sealed class WAR_Reborn : WarriorRotation
 
 		if (InCombat && (!NeverscentFlash || !StatusHelper.PlayerHasStatus(true, StatusID.Defiance)))
 		{
-			if (NascentFlashTarget != NascentFlashTargetStrategy.LowestHP && NascentFlashCanUse(out act, healersOnly: true))
+			if (NascentFlashTarget == NascentFlashTargetStrategy.ByDanger)
 			{
-				return true;
+				if (NascentFlashCanUse(out act, healersOnly: false, byDanger: true))
+				{
+					return true;
+				}
 			}
-
-			if (NascentFlashTarget != NascentFlashTargetStrategy.HealerOnly && NascentFlashCanUse(out act, healersOnly: false))
+			else
 			{
-				return true;
+				if (NascentFlashTarget != NascentFlashTargetStrategy.LowestHP && NascentFlashCanUse(out act, healersOnly: true))
+				{
+					return true;
+				}
+
+				if (NascentFlashTarget != NascentFlashTargetStrategy.HealerOnly && NascentFlashCanUse(out act, healersOnly: false))
+				{
+					return true;
+				}
 			}
 		}
 
@@ -248,7 +272,6 @@ public sealed class WAR_Reborn : WarriorRotation
 	[RotationDesc(ActionID.RawIntuitionPvE, ActionID.VengeancePvE, ActionID.RampartPvE, ActionID.RawIntuitionPvE, ActionID.ReprisalPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		var RawSingleTargets = SoloIntuition;
 		act = null;
 
 		if (StatusHelper.PlayerHasStatus(true, StatusID.Holmgang_409) && Player?.GetHealthRatio() < 0.3f)
@@ -262,7 +285,7 @@ public sealed class WAR_Reborn : WarriorRotation
 			return true;
 		}
 
-		if (RawIntuitionPvE.CanUse(out act) && (RawSingleTargets || NumberOfHostilesInRange > 2))
+		if (RawIntuitionPvE.CanUse(out act) && BloodwhettingForDefense)
 		{
 			return true;
 		}
@@ -480,24 +503,113 @@ public sealed class WAR_Reborn : WarriorRotation
 	#region Extra Methods
 	private static bool IsBurstStatus => !StatusHelper.PlayerWillStatusEndGCD(0, 0, false, StatusID.InnerStrength);
 
-	// Picks the lowest HP% party member under the Nascent Flash threshold, optionally limited to healers.
-	// The target filter is swapped in for this call only and restored afterwards.
+	// Whether the single-target defence casts Bloodwhetting (Raw Intuition before level 82): the one
+	// condition, read by that path and by the Nascent Flash hold, so the two cannot disagree (A226).
+	private bool BloodwhettingForDefense => SoloIntuition || NumberOfHostilesInRange > 2;
+
+	/// <summary>
+	/// Whether the warrior needs Bloodwhetting himself, which Nascent Flash on someone else would put on
+	/// its shared cooldown (concept 09, "Krieger: Nascent Flash für einen anderen oder Bloodwhetting für
+	/// sich"): he is about to die, or a tankbuster on him lands before the cooldown is back and the
+	/// single-target defence would cast Bloodwhetting for it.
+	/// </summary>
+	/// <remarks>
+	/// The healing is not what he keeps - Nascent Flash heals him with every weaponskill as Bloodwhetting
+	/// does (effect text) - but the damage reduction and the barrier. How hard the tankbuster hits is not
+	/// known (BossModReborn gives no amount, nothing measures it), so an announced one on him counts as
+	/// possibly lethal, unless an invulnerability covers him while it is cast. Beyond the window in which
+	/// BossModReborn names who is hit, it is taken to be his while his target has him targeted (an
+	/// inference: some hit the second in enmity).
+	/// </remarks>
+	private bool NeedsBloodwhettingHimself(out bool aboutToDie)
+	{
+		aboutToDie = false;
+		var player = Player;
+		if (player == null)
+		{
+			return false;
+		}
+
+		aboutToDie = player.IsInCriticalClass();
+		if (aboutToDie)
+		{
+			return true;
+		}
+
+		// Raw Intuition's own check: Bloodwhetting goes out only while his target has him targeted. An
+		// off-tank marked for a tankbuster does not get it from the defence path, so holding for it
+		// would keep Nascent Flash from the member for nothing.
+		if (!BloodwhettingForDefense || !ObjectHelper.PlayerIsTargetOnSelf())
+		{
+			return false;
+		}
+
+		if (DataCenter.IsHostileCastingTankBusterAtMe)
+		{
+			return player.NoNeedHealingInvuln();
+		}
+
+		if (!BMRTankbusterWithin(NascentFlashPvE.Cooldown.RecastTimeOneChargeRaw))
+		{
+			return false;
+		}
+
+		// BossModReborn names who is hit only inside its mitigation window; further ahead, the one who has
+		// the enemy's attention is taken to get it.
+		return DataCenter.BMRTankbusterHitsPlayer ?? true;
+	}
+
+	/// <summary>
+	/// The triage when the warrior and a member both need it (concept 09): the member must be about to
+	/// die, and then a healer wins, another tank wins unless the warrior is about to die too, and a
+	/// damage dealer - the one most easily given up - does not.
+	/// </summary>
+	private static bool WinsTriageOverWarrior(IBattleChara member, bool warriorAboutToDie)
+	{
+		if (!member.IsInCriticalClass())
+		{
+			return false;
+		}
+
+		if (member.IsJobCategory(JobRole.Healer))
+		{
+			return true;
+		}
+
+		return member.IsJobCategory(JobRole.Tank) && !warriorAboutToDie;
+	}
+
+	// Picks a party member under the Nascent Flash threshold: by the lowest HP%, optionally healers only,
+	// or by the heal target order (concept 07). The target filter is swapped in for this call only and
+	// restored afterwards.
 	// Wicked bodge but it works for now
 	// TODO: make a more generic "target filter swap" method in ActionSetting
-	private bool NascentFlashCanUse(out IAction? act, bool healersOnly)
+	private bool NascentFlashCanUse(out IAction? act, bool healersOnly, bool byDanger = false)
 	{
 		var setting = NascentFlashPvE.Setting;
 		var canTarget = setting.CanTarget;
 		var healRatio = Math.Min(FlashHeal, NascentFlashPvE.Config.AutoHealRatio);
 
+		var held = false;
+		var warriorAboutToDie = false;
+		if (HoldNascentFlashForOwnNeed)
+		{
+			held = NeedsBloodwhettingHimself(out warriorAboutToDie);
+		}
+
+		// NoNeedHealingInvuln is true while NO invulnerability is up: the candidate is unprotected. It
+		// read negated here, which let only the invulnerable through - Nascent Flash went to a tank under
+		// Holmgang, Superbolide, Hallowed Ground or Living Dead, and to nobody else (A226).
 		setting.CanTarget = t => canTarget(t)
 			&& t.GetForecastHealthRatio(true) < healRatio
-			&& !t.NoNeedHealingInvuln()
-			&& (!healersOnly || t.IsJobCategory(JobRole.Healer));
+			&& t.NoNeedHealingInvuln()
+			&& !t.HasStatus(false, StatusHelper.HealingIneffectiveStatus)
+			&& (!healersOnly || t.IsJobCategory(JobRole.Healer))
+			&& (!held || WinsTriageOverWarrior(t, warriorAboutToDie));
 
 		try
 		{
-			return NascentFlashPvE.CanUse(out act, targetOverride: TargetType.LowHPPercent);
+			return NascentFlashPvE.CanUse(out act, targetOverride: byDanger ? TargetType.Heal : TargetType.LowHPPercent);
 		}
 		finally
 		{

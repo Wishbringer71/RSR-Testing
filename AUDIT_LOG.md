@@ -4703,6 +4703,52 @@ Gefunden in der Wirksamkeitsprüfung zu A221, beim Verfolgen der Zielwahl von Sy
 
 **Prüfgrad:** statisch (Code, Generator, Versionsgeschichte); Prüfskripte; Compile über die CI.
 
+### A226 · Krieger: Nascent Flash nach seinen Kriterien — voller Loop (29.09.2026)
+
+Seine Vorgabe mit Kriterien (Wortlaut in Konzept 09): Ist der Tankbuster tödlich, braucht der Tank danach viel Heilung, ist er mit Bestehendem wegsteckbar, auf wen, was liegt beim Ziel, Debuffs bei Ziel und Tank, Triage.
+
+- *1 Research:*
+  - Wirktexte und Spieldaten (Job-Guide, xivapi 16464/25751/3551, abgerufen 29.09.2026): Nascent Flash und Bloodwhetting teilen Abklingzeitgruppe 7 (25 s). **Nascent Flash heilt auch den Krieger** mit 400 Potenz je Waffenfertigkeit. Er verliert beim Geben nur Minderung (−10 % 8 s, −10 % 4 s) und Barriere (400 Potenz).
+  - Code: Nascent Flash im Heilpfad der Fähigkeiten, vor Einzelabwehr und allgemeinem Pfad. Bloodwhetting fällt in der Einzelabwehr nur mit „single enemies" oder mehr als zwei Gegnern und nur, solange das Ziel den Krieger anvisiert; sonst reaktiv unter 0,7.
+  - **Defekt:** Der Zielfilter las `!t.NoNeedHealingInvuln()` und ließ nur Unverwundbare durch (`WillStatusEnd` ist bei fehlendem Status wahr). `scan8.py` hatte die Zeile gelistet, geprüft wurde die Liste nicht (C101).
+  - Die Höhe eines Tankbusters misst nichts im Baum, BossModReborn liefert keine. The Balance: „Nascent Flash goes on a friend", mehr nicht.
+- *2 Optionen:*
+  - (0) belassen;
+  - (a) nur den Polaritätsfehler beheben;
+  - (b) (a) plus Zurückhaltung für den Tankbuster;
+  - (c) (b) plus Zurückhaltung, wenn er selbst kritisch ist, mit Triage;
+  - (d) (c) plus Zielwahl nach Gefährdung;
+  - (e) Messung der Tankbuster-Höhe als Grundlage der Tödlichkeit;
+  - (f) Nascent Flash als Minderung für den anderen Tank vor dessen Tankbuster.
+- *3 Abwägung:*
+  - (a) ist ein belegter Defekt: Seit c3fac720b ging Nascent Flash an praktisch niemanden. Die Behebung macht den Konflikt erst wirksam, also gehören (b) bis (d) dazu.
+  - (b) wirkt nur, wo Bloodwhetting vor dem Tankbuster fällt. Sonst hält sie ohne Nutzen, daher an dieselbe Bedingung gebunden.
+  - (e) braucht unbelegte Annahmen (Barriere im Schadenswert, Schadensart, Prozentsätze je Status), die Richtung „zu niedrig" ist gefährlich. Eigenes Vorhaben.
+  - (f) ist neues Verhalten ohne Quelle, vorgeschlagen.
+  - Gewählt: (a) ohne Schalter; (b) bis (d) hinter Einstellungen, ab Werk wie bisher.
+- *4 Abgleich:* Seine Kriterien je Punkt in Konzept 09 beantwortet, samt der ehrlichen Lücke bei „tödlich". Nicht verengt: Debuffs bei Ziel und Tank einzeln erhoben. Keine Ausweitung: (f) nur vorgeschlagen.
+- *5 Review:*
+  - Der Tankbuster-Weg muss die eigene Prüfung von Raw Intuition lesen (`PlayerIsTargetOnSelf`). Sonst hält er für einen Off-Tank-Marker, für den Bloodwhetting nie fällt.
+  - Unverwundbarkeit beim Zauber auf ihn hebt den Bedarf auf.
+  - Die Heilzielwahl (`TargetType.Heal`) schließt Tote, Heilung-wirkungslos und Living-Dead-Träger aus und ordnet nach kritischer Klasse. Der Kandidatenfilter bleibt davor.
+  - Enum angehängt, Ordinale unverändert.
+- *6 Falsifikation:*
+  - **Kein Defekt?** Für die Polarität widerlegt, `check_invuln_polarity.py` meldet die alte Zeile. Für die Zurückhaltung: Ab Werk entsteht der Tankbuster-Konflikt nicht, und die Regel hält dort auch nicht.
+  - **Option falsch?** Die Triage kann einen Schadensausteiler kosten, wo Bloodwhetting nicht der Unterschied war. Nicht widerlegt, solange die Höhe fehlt; die Regel folgt seiner Ordnung. Die Näherung „wen sein Ziel anvisiert" kann bei Tankbustern auf den zweiten in der Feindseligkeit irren, in die vorsichtige Richtung.
+  - **Ausgeliefert, nichts ändert sich?** Mit beiden Einstellungen ab Werk ändert sich nur die Polarität. Die ändert viel: Nascent Flash heilt jetzt andere.
+- *7 Umsetzung:*
+  - Polarität und Heilung-wirkungslos-Ausschluss im Filter.
+  - `BloodwhettingForDefense` (eine Bedingung für Einzelabwehr und Zurückhaltung).
+  - `NeedsBloodwhettingHimself`, `WinsTriageOverWarrior`.
+  - Einstellung „Keep Bloodwhetting for yourself when you need it" (aus), Zielwahl „By danger" (angehängt).
+  - `check_invuln_polarity.py` mit Selbsttest in der CI.
+- *8 Nachweis:* Prüfskripte, Compile über die CI. Die neue Prüfung meldet den alten Stand und ist auf dem neuen still. Am Spiel nicht beobachtet.
+- *Fester Wert:* Die Zahl 2 in `BloodwhettingForDefense` ist Upstreams Gegnerzahl (seit d566eda86), unverändert in eine Eigenschaft verschoben. Ableitbar wäre „mehr als die globale ‚Number of hostiles‘“ (Vorgabe 2): gleich bei der Voreinstellung, anders für jeden, der sie geändert hat, deshalb ohne Entscheidung nicht umgestellt. `fixed_values.json`: offen, mit Verweis auf diesen Loop.
+- *9 Dokumentation:* Konzept 09 (Bewertung, Triage, Gegenposition, Antithesen), Konzept 07 (vierte Zielwahl), TODO (Voreinstellungen, Messung, Vorschlag, Upstream-Bauform), Release-Text.
+- *10 Wirksamkeit:* Plateau bis zur Messung der Tankbuster-Höhe; sie ist die einzige Größe, die die Gegenposition entscheiden würde.
+
+**Prüfgrad:** statisch (Wirktexte, Spieldaten, Code, Versionsgeschichte); Prüfskripte samt neuem; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -4983,3 +5029,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C98 | Code-Kommentar in `WHM_Reborn.ShouldHoldHolyWhilePackSlowed` (seit `2ebd54728`): Ohne DoT-Ziel falle Sanctus, gleich wie verlangsamt der Pulk ist — deshalb werde eine Verlangsamung nicht zur Zeit ohne Sanctus | Übernommen aus der Streckung, wo ein Einschub genügt; die Regel sagt „solange". Im Spiel beobachtet: Sanctus kam nach dem letzten DoT zurück | A178 |
 | C99 | A217 und Konzept 07/08: Die Heilart sei die Aktionsart, oGCD-Schwellen lesen den kurzen Vorlauf; Synastry, Krasis ×2, Soteria und Kardia unter den „22 oGCD-Schwellen" | Maßgeblich ist, wann die Heilung landet. Emergency Tactics war als Ausnahme erkannt, die gleichgebauten Synastry, Krasis und Soteria nicht; Synastry wählte dadurch bei steilem Verlauf ein anderes Ziel als die Heilung, mit der sie landet | A221: `ActionSetting.HealsWithNextGcd`, Schwellen und Zielwahl berichtigt, Konzepte 07/08 |
 | C100 | A221 in erster Fassung, Commit 79887dd36, Konzept 08, Release-Text: Synastry habe mit dem kurzen Vorlauf ein anderes Ziel gewählt als die Einzelheilung, mit der sie landet, und sei deshalb bei steilem Verlauf ausgefallen | Synastry läuft in `EmergencyAbility` vor jedem Target-Override und setzt keinen `TargetType`; gewählt wird nach `Big`, der Vorlauf kommt darin nicht vor. Behauptet ohne den Weg der Zielwahl am Code zu verfolgen — in der Wirksamkeitsprüfung desselben Bereichs gefunden | A221, Konzept 08 und Release-Text berichtigt; der Befund an den Schwellen und die Zielwahl für Krasis im Heilpfad bleiben |
+| C101 | A222: Nascent Flash aus dem Upstream-Merge sei geprüft ohne Befund („Der Filtertausch … stellt im `finally` zurück") | Der Filter selbst las `!t.NoNeedHealingInvuln()` und ließ nur Unverwundbare durch. `scan8.py` listete die Zeile unter „read negated"; ich habe die Liste nicht gegen den Code abgeglichen und nur den Rahmen des Filters geprüft, nicht seine Bedingungen | A226: Polarität behoben, `check_invuln_polarity.py` in der CI, damit die Klasse nicht mehr von einer Handprüfung abhängt |

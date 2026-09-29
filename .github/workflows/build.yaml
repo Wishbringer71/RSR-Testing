@@ -40,6 +40,12 @@ jobs:
       - name: Check the healing thresholds read the forecast
         run: python3 .github/scripts/audit/check_heal_threshold_forecast.py
 
+      # NoNeedHealingInvuln is true while NO invulnerability is up; its name reads the other way round.
+      # Three callers read it negated and chose only the protected, each silent in play - the last one
+      # sent the Warrior's Nascent Flash to invulnerable tanks alone (A226).
+      - name: Check NoNeedHealingInvuln is read with the right polarity
+        run: python3 .github/scripts/audit/check_invuln_polarity.py
+
       # A target override replaces that whole ranking with one sort, and the two sorts answer
       # different questions: points say who does not survive the next hit, shares say who is furthest
       # from safe. Where the action's own effect text names a percentage threshold, the game works in

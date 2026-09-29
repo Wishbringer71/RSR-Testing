@@ -453,6 +453,22 @@ At three stacks, just before the next one would be lost, the Sage now spends one
 whoever needs the heal, otherwise on itself) for its 7% MP. The Addersgall timer is now read as the
 time elapsed, as the game counts it; it was read the other way round.
 
+## Warrior: Nascent Flash reaches the party again
+
+Nascent Flash on others picked only invulnerable members - a tank under Holmgang, Superbolide, Hallowed
+Ground or Living Dead - because its target filter read the invulnerability check the wrong way round.
+It now goes to members who need it, and never to one whose healing is nullified.
+
+Two new settings:
+- `Nascent Flash target priority` gains `Most in danger of dying first…`: the heal target order - whoever
+  is about to die first, then healers, tanks and damage dealers - so a barrier or a steep fall counts, not
+  only the health shown.
+- `Keep Bloodwhetting for yourself when you need it` (off by default): Nascent Flash is not given away
+  while a tankbuster on you comes before the shared cooldown is back and Bloodwhetting would be used for
+  it, or while you are about to die - unless the member is about to die and is a healer, or another tank
+  while you are not. You heal yourself the same either way; what you keep is the damage reduction and
+  barrier.
+
 ## "Prioritize Low HP … Big Target" takes effect
 
 Choosing among equally big targets read the setting for small targets; the one for big targets had

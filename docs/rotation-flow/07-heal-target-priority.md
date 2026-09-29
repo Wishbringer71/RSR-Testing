@@ -404,6 +404,12 @@ Wirktext eine eigene Prozentschwelle nennt, und meldet jede Stelle, die genau ei
 nach Punkten sortiert. Es prüft das Maß, nicht die Zielwahl im Ganzen — eine Barriere nach Punkten
 zu wählen bleibt zulässig und wird nicht gemeldet.
 
+**Nascent Flash (Krieger) hat seit A226 eine vierte Zielwahl „By danger", die keine Sortierung ersetzt,
+sondern diese Rangfolge selbst anfordert** (`TargetType.Heal`): Nascent Flash ist Heilung, Minderung und Barriere
+zugleich, und seine Vorgabe dazu — Heiler vor Schadensausteiler, geprüft, was beim Ziel schon liegt — ist die
+Ordnung dieses Konzepts. Die drei Upstream-Einstellungen (niedrigster Prozentsatz, Heiler zuerst, nur Heiler)
+bleiben, weil ihr Text bindet. Konzept 09, Abschnitt zum Krieger.
+
 **Die übrigen Fundstellen derselben Bauform sind erhoben und bleiben unbearbeitet**, weil bei ihnen
 das Punktemaß nach der Tabelle oben das richtige sein kann: The Blackest Night und Oblation beim
 Dunkelritter, Heart of Corundum, Heart of Stone und Aurora beim Revolverklinge. Beim Dunkelritter
