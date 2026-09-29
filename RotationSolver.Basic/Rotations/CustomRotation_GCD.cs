@@ -207,7 +207,7 @@ public partial class CustomRotation
 					return act;
 				}
 
-				if (!StatusHelper.PlayerHasStatus(false, StatusID.Scalebound) && (!StatusHelper.PlayerHasStatus(false, StatusID.ShackledHealing) || StatusHelper.PlayerHasStatus(false, StatusID.ShackledHealing) && DataCenter.NumberOfPartyMembersInRangeOf(21) == 1))
+				if (!StatusHelper.PlayerHealingPunished())
 				{
 					if (HealAreaGCD(out var action))
 					{
@@ -229,7 +229,7 @@ public partial class CustomRotation
 
 				if (CanHealAreaSpell)
 				{
-					if (!StatusHelper.PlayerHasStatus(false, StatusID.Scalebound) && (!StatusHelper.PlayerHasStatus(false, StatusID.ShackledHealing) || StatusHelper.PlayerHasStatus(false, StatusID.ShackledHealing) && DataCenter.NumberOfPartyMembersInRangeOf(21) == 1))
+					if (!StatusHelper.PlayerHealingPunished())
 					{
 						if (HealAreaGCD(out var action))
 						{
@@ -249,7 +249,7 @@ public partial class CustomRotation
 					return act;
 				}
 
-				if (!StatusHelper.PlayerHasStatus(false, StatusID.Scalebound) && (!StatusHelper.PlayerHasStatus(false, StatusID.ShackledHealing) || StatusHelper.PlayerHasStatus(false, StatusID.ShackledHealing) && DataCenter.NumberOfPartyMembersInRangeOf(21) == 1))
+				if (!StatusHelper.PlayerHealingPunished())
 				{
 					if (HealSingleGCD(out var action))
 					{
@@ -268,7 +268,7 @@ public partial class CustomRotation
 
 				if (CanHealSingleSpell)
 				{
-					if (!StatusHelper.PlayerHasStatus(false, StatusID.Scalebound) && (!StatusHelper.PlayerHasStatus(false, StatusID.ShackledHealing) || StatusHelper.PlayerHasStatus(false, StatusID.ShackledHealing) && DataCenter.NumberOfPartyMembersInRangeOf(21) == 1))
+					if (!StatusHelper.PlayerHealingPunished())
 					{
 						if (HealSingleGCD(out var action))
 						{

@@ -4395,6 +4395,14 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A198 · Heilverbots-Prüfung: acht Kopien durch die Hilfsmethode ersetzt (29.09.2026)
+
+- *Befund (TODO):* Scalebound und Shackled Healing standen als wortgleiche Kopie an acht Stellen im Dispatch (Upstream), dazu `StatusHelper.PlayerHealingPunished` (A154, A155).
+- *Umgesetzt:* alle acht rufen `!StatusHelper.PlayerHealingPunished()`. Logisch gleich: `!S && (!H || H && n == 1)` ist `!S && (!H || n == 1)`, die Negation von `S || (H && n != 1)`.
+- *Wirkung im Kampf:* keine; eine künftige Änderung der Regel wirkt an allen neun Stellen zugleich.
+
+**Prüfgrad:** statisch (Umformung), Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
