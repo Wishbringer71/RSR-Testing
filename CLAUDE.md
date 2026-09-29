@@ -229,6 +229,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Ein eingehaltener Ablauf belegt keine Ergebnisqualität.
 - Selbstkontrolle ist kein Audit.
 - Den Prüfgrad benenne ich — statisch, Prüfskript, Compile, Laufzeitbeobachtung —, und die Formulierung folgt ihm.
+- Ein grüner Prüflauf belegt nur, was die Prüfungen erfassen. Konzepte werden nicht kompiliert (seine Vorgabe): Über ihren Inhalt sagt er nichts. Ihren Inhalt prüfe ich Aussage für Aussage am Code und an den Quellen. Eine Prüfung, die bei einem Konzept anschlägt, etwa auf eine verrutschte Zeilenangabe, zeigt, dass ich Code geändert habe, ohne die Konzeptstelle dazu neu zu lesen. Deshalb prüfe ich den Inhalt der Stelle, nicht nur die Angabe.
 
 **Definition of Ready: erst das vollständige Konzept, dann Code**
 - Vor Arbeitsbeginn steht fest: was der Fehler ist, woran seine Behebung im Kampf erkennbar wäre, welche Quellen auszuschöpfen sind.
