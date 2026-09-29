@@ -257,13 +257,17 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	/// each other through StatusProvide.
 	/// </para>
 	/// </summary>
-	/// <summary>
-	/// How long after an area stun the hold continues, so the gap between two casts of Sanctus does
-	/// not open a window. Roughly one global cooldown.
-	/// </summary>
-	private const float StunChainGrace = 3f;
-
 	private static DateTime _lastGroupStunSeen = DateTime.MinValue;
+
+	// The chain's own rhythm, measured in this fight (A195). A fixed three seconds stood here, "roughly
+	// one global cooldown": too long where the chain ends, too short where the stunner waits longer
+	// between casts - and which of the two happens was left to an observation in play. Now the hold
+	// starts at one global cooldown and widens to the longest gap seen between two group stuns on the
+	// same pack, so after the first longer gap the barrier no longer falls into the next one.
+	private static bool _groupStunWasRunning;
+	private static DateTime _groupStunEnded = DateTime.MinValue;
+	private static readonly HashSet<ulong> _lastStunnedPack = [];
+	private static float _longestStunGap;
 
 	/// <summary>
 	/// Whether an <b>area</b> stun is currently keeping the damage stream down.
@@ -281,27 +285,96 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	/// look at the same enemies; a wider radius would count enemies that are not hitting anyone.
 	/// </para>
 	/// <para>
-	/// Between two casts of Sanctus the stun lapses for about a global cooldown, so the hold
-	/// continues through that gap while the enemies can still be stunned. Once they carry stun
+	/// Between two casts of Sanctus the stun lapses for a moment, so the hold continues through that
+	/// gap - one global cooldown at first, then the longest gap measured on this pack - while the
+	/// enemies can still be stunned. Once they carry stun
 	/// resistance there is no headroom left and the hold ends by itself - "wait until the stuns stop
 	/// working" needs no counter of its own.
 	/// </para>
 	/// </summary>
 	private bool GroupStunRunning()
 	{
+		if (!InCombat)
+		{
+			_longestStunGap = 0f;
+			_groupStunWasRunning = false;
+			_lastStunnedPack.Clear();
+		}
+
 		var inRange = SurveyStuns(DataCenter.JobRange, out var stunned, out _, out var headroom);
 		if (inRange == 0)
 		{
 			return false;
 		}
 
+		var now = DateTime.Now;
 		if (stunned >= 2 && stunned * 2 >= inRange)
 		{
-			_lastGroupStunSeen = DateTime.Now;
+			if (!_groupStunWasRunning && SamePackStunnedAgain())
+			{
+				var gap = (float)(now - _groupStunEnded).TotalSeconds;
+				if (gap > _longestStunGap)
+				{
+					_longestStunGap = gap;
+				}
+			}
+
+			RememberStunnedPack();
+			_groupStunWasRunning = true;
+			_lastGroupStunSeen = now;
 			return true;
 		}
 
-		return headroom && (DateTime.Now - _lastGroupStunSeen).TotalSeconds < StunChainGrace;
+		if (_groupStunWasRunning)
+		{
+			_groupStunWasRunning = false;
+			_groupStunEnded = now;
+		}
+
+		var grace = Math.Max(DataCenter.DefaultGCDTotal, _longestStunGap);
+		return headroom && (now - _lastGroupStunSeen).TotalSeconds < grace;
+	}
+
+	// A gap counts only between two stuns of the same pack - at least half of the enemies stunned now
+	// were stunned last time. A new pull after a pause is not a gap in a chain, and learning the pause
+	// would hold the barrier for its whole length.
+	private static bool SamePackStunnedAgain()
+	{
+		if (_lastStunnedPack.Count == 0)
+		{
+			return false;
+		}
+
+		int now = 0, again = 0;
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile == null || hostile.DistanceToPlayer() > DataCenter.JobRange
+				|| !hostile.HasStatus(false, StatusHelper.StunStatus))
+			{
+				continue;
+			}
+
+			now++;
+			if (_lastStunnedPack.Contains(hostile.GameObjectId))
+			{
+				again++;
+			}
+		}
+
+		return now > 0 && again * 2 >= now;
+	}
+
+	private static void RememberStunnedPack()
+	{
+		_lastStunnedPack.Clear();
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile != null && hostile.DistanceToPlayer() <= DataCenter.JobRange
+				&& hostile.HasStatus(false, StatusHelper.StunStatus))
+			{
+				_ = _lastStunnedPack.Add(hostile.GameObjectId);
+			}
+		}
 	}
 
 	/// <summary>

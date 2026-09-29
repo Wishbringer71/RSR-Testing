@@ -525,14 +525,6 @@
   },
   {
    "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
-   "code": "private const float StunChainGrace = 3f;",
-   "values": [
-    "3"
-   ],
-   "status": "open"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
    "code": "private float BlackestNightHealthRatio { get; set; } = 0.6f;",
    "values": [
     "0.6"
@@ -774,6 +766,16 @@
    "status": "exception",
    "loop": "A193",
    "reason": "The backstep distance is stated only in the effect text (Hissatsu: Yaten: \"Additional Effect: 10-yalm backstep\", ActionId.resx and the job guide); no sheet carries it, so it cannot be read at runtime"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "code": "return now > 0 && again * 2 >= now;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A195",
+   "reason": "'At least half' - the share rule the pack test uses for stuns and slows (A48), applied to recognise the same pack; not a tunable value but the definition of a majority"
   }
  ]
 }

@@ -4366,6 +4366,15 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A195 · Dunkelritter: Nachlauf der Betäubungskette steuert sich selbst (29.09.2026)
+
+- *Befund (TODO):* `GroupStunRunning` hielt die Barriere drei Sekunden über die Lücke zwischen zwei Gruppenbetäubungen („roughly one global cooldown", eine feste Zahl). Zu lang, wo die Kette endet; zu kurz, wo der Betäubende länger wartet. Der Eintrag wartete auf eine Beobachtung im Spiel — gegen die Definition of Done.
+- *Umgesetzt:* anfangs ein GCD des Dunkelritters (`DefaultGCDTotal`), dann die längste im Kampf gemessene Lücke zwischen zwei Gruppenbetäubungen desselben Rudels (mindestens die Hälfte der jetzt Betäubten war es zuvor schon); Messwert je Kampf. Die feste Zahl ist aus Code und `fixed_values.json` entfernt; die Hälfte-Regel als Ausnahme (dieselbe Anteilsregel wie A48).
+- *Falsifikation:* **Kein Defekt?** Die feste Zahl traf beide Fälle nicht. **Option falsch?** Eine Pause zwischen zwei Pulls würde gelernt und hielte die Barriere lange — ausgeschlossen durch „dasselbe Rudel". **Ausgeliefert, nichts ändert sich?** Die erste längere Lücke eines Kampfs lässt die Barriere noch fallen; ab der zweiten nicht mehr. Die Grenze der Selbstkorrektur, genannt im Konzept.
+- *Zweiter Eintrag (Reihenfolge Reprisal vor The Blackest Night):* ebenfalls beobachtungsgebunden; er berührt seine Vorgabe zur Rückhaltung, daher zur Entscheidung vorgelegt statt umgestellt.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -670,15 +670,6 @@ Wie viele Commits in jeder Gruppe noch auf ZWEIFELHAFT stehen, zählt die Tabell
 
 **Die Fortsetzung beginnt auf Freigabe des Auftraggebers**, nicht aus eigenem Antrieb — er hat die Code-Gruppe ausdrücklich beauftragt, die übrigen drei nicht.
 
-### DRK: Die Betäubungsregel prüft die Tatsache, nicht die Prognose · N
-
-**Konzept:** `docs/rotation-flow/10-drk-blackest-night.md`
-Der Pull-Zweig unterbleibt, solange eine **Gruppenbetäubung** läuft: mindestens zwei betäubte Gegner und mindestens die Hälfte der Gegner in Jobreichweite, dazu ein Nachlauffenster von drei Sekunden, solange noch Betäubungsspielraum besteht (`GroupStunRunning`, A48). Was die Regel **nicht** prüft: ob der Heiler gleich betäuben wird. Der Auftraggeber hatte ursprünglich auf „solange der Weißmagier seine drei Betäubungen noch nicht abgearbeitet hat" gezielt — das wäre eine Aussage über den nächsten Zauber eines anderen Spielers.
-
-**Kosten des Kompromisses:** Das Nachlauffenster überbrückt die Lücke zwischen zwei Anwendungen nur pauschal. Ist der Abstand größer als drei Sekunden, kann die Barriere dazwischen fallen und wird von der nächsten Betäubung unterbrochen; ist er kleiner und die Kette endet dort, wartet die Barriere drei Sekunden zu lang.
-
-**Auflösungsbedingung:** eine Beobachtung, wie oft beides im Spiel vorkommt. Fällt der erste Fall auf, ist `headroom` aus `SurveyStuns` die vorhandene Größe für eine schärfere Fassung: Die Sperre gälte dann bis zur Betäubungsimmunität der Gegner (`StunResistance`) statt bis zum Ablauf des Fensters. Zu bedenken ist, dass die Streckung von Sanctus eine Regel **dieses** Plugins ist (`WHM_Reborn.ShouldStretchHolyStun`) — bei einem fremden Heiler greift sie nicht.
-
 ### Reihenfolge im Verteidigungspfad des Dunkelritters: teuer vor billig · N, U
 
 **Konzept:** `docs/rotation-flow/10-drk-blackest-night.md`
@@ -686,7 +677,7 @@ Der Pull-Zweig unterbleibt, solange eine **Gruppenbetäubung** läuft: mindesten
 
 **Behandelt, aber nicht behoben:** Der Pull-Zweig der Option `BlackestNightUsage` verlangt jetzt, dass Reprisal zuerst liegt (A46). Das wirkt nur für den, der die Option umstellt.
 
-**Kosten des Kompromisses:** In der Voreinstellung bleibt die Rangfolge, wie sie ist. **Auflösung:** die Reprisal-Zeilen im Pfad vor The Blackest Night ziehen. Das ist der direktere Weg und trifft alle Lagen — deshalb erst nach einer Beobachtung, ob die Bedingung im Zweig ausreicht.
+**Kosten des Kompromisses:** In der Voreinstellung bleibt die Rangfolge, wie sie ist. **Zur Entscheidung vorgelegt (A195), statt auf eine Beobachtung von ihm zu warten:** die Reprisal-Zeilen im Pfad vor The Blackest Night ziehen. Das trifft alle Lagen, berührt aber seine Vorgabe „Reprisal und Abtausch zurückhalten, solange die Barriere steht" (Konzept 10): Liegt Reprisal zuerst, steht die Barriere noch nicht, und die Vorgabe greift in diesem Pfad nicht mehr.
 
 ### Audit + Code-Review der gesamten Codebasis
 

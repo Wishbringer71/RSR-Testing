@@ -206,9 +206,12 @@ mindestens die Hälfte der Gegner in Reichweite. Gemessen wird über die Jobreic
 (`DataCenter.JobRange`, für Tanks drei Yalm) — dieselbe Menge, über die auch die Gegnerzahl zählt,
 denn beide Bedingungen beantworten dieselbe Frage.
 
-Zwischen zwei Anwendungen von Sanctus läuft die Betäubung etwa einen globalen Cooldown lang aus; der
-Halt trägt deshalb noch drei Sekunden über diese Lücke, aber nur solange die Gegner überhaupt
-betäubbar sind. Mit ihrer Immunität endet er von selbst — „zurückhalten, bis die Betäubungen nicht
+Zwischen zwei Anwendungen von Sanctus läuft die Betäubung kurz aus; der Halt trägt über diese Lücke,
+aber nur solange die Gegner überhaupt betäubbar sind. **Wie lange, steuert die Regel selbst nach**
+(A195): anfangs einen globalen Cooldown des Dunkelritters, dann die längste im Kampf gemessene Lücke
+zwischen zwei Gruppenbetäubungen desselben Rudels (mindestens die Hälfte der jetzt Betäubten war es
+schon beim letzten Mal). Eine Lücke zu einem neuen Pull zählt nicht, sonst hielte eine Pause die
+Barriere für ihre ganze Länge. Mit dem Kampf wird der Messwert verworfen. Mit ihrer Immunität endet er von selbst — „zurückhalten, bis die Betäubungen nicht
 mehr wirken" braucht keinen eigenen Zähler.
 
 **Reprisal zuerst.** Der Pfad gibt je Gelegenheit **eine** Aktion zurück und arbeitet von oben nach
