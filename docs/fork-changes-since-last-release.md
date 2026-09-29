@@ -402,3 +402,9 @@ At three stacks, just before the next one would be lost, the Sage now spends one
 whoever needs the heal, otherwise on itself) for its 7% MP. The Addersgall timer is now read as the
 time elapsed, as the game counts it; it was read the other way round.
 
+## New setting: Skip area defence for casts that missed you
+
+Off by default. On, an area cast from the AoE list that landed last time without damaging you - you
+dodged it, or it was centred on someone else - does not open your area defence the next time; once it
+damages you again, it counts again. Healing ahead and the party's threat check are unaffected.
+

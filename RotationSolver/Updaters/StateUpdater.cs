@@ -159,7 +159,7 @@ internal static class StateUpdater
 
 	private static bool ShouldAddDefenseArea()
 	{
-		if (DataCenter.InCombat && Service.Config.UseAoeDefense && DataCenter.IsHostileCastingAOE && !DataCenter.IsTyrantCastingSpecialIndicator())
+		if (DataCenter.InCombat && Service.Config.UseAoeDefense && DataCenter.IsHostileCastingAOEForMyDefense && !DataCenter.IsTyrantCastingSpecialIndicator())
 		{
 			return true;
 		}

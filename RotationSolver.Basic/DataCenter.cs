@@ -2716,6 +2716,39 @@ internal static class DataCenter
 		InCombat && (IsCastingAreaVfx() || (AllHostileTargets != null && IsAnyHostileCastingArea()));
 
 	/// <summary>
+	/// <see cref="IsHostileCastingAOE"/> for the player's own area defence: under "Skip area defence for
+	/// casts that missed you", a listed cast whose last landing left the living player untouched does
+	/// not count (A205). Only the defence flag reads this; healing ahead and the threat check keep the
+	/// party's view.
+	/// </summary>
+	public static bool IsHostileCastingAOEForMyDefense =>
+		!Service.Config.SkipAreaCastsThatMissedMe
+			? IsHostileCastingAOE
+			: InCombat && (IsCastingAreaVfx() || (AllHostileTargets != null && IsAnyHostileCastingAreaReachingMe()));
+
+	private static bool IsAnyHostileCastingAreaReachingMe()
+	{
+		var playerId = Player.Object?.GameObjectId ?? 0;
+		for (var i = 0; i < AllHostileTargets.Count; i++)
+		{
+			var h = AllHostileTargets[i];
+			if (!IsHostileCastingArea(h))
+			{
+				continue;
+			}
+
+			// A cast aimed at the player reaches him by definition, whatever happened last time.
+			if (h.CastTargetObjectId == playerId
+				|| !AreaCastReachedPlayer.TryGetValue(h.CastActionId, out var reached) || reached)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>
 	/// An enemy is casting an action whose measured area damage is large, that will reach the player,
 	/// and that lands within about one GCD.
 	/// </summary>
@@ -3799,6 +3832,13 @@ internal static class DataCenter
 	/// since a ground-placed effect follows its target rather than its caster. One case is decided
 	/// before both: a single-target action with a cast range reaches only the one it is cast at.
 	/// </summary>
+	/// <summary>
+	/// Whether the last landing of each listed area cast damaged the player, for this session. Written
+	/// by the effect handler, read by <see cref="AreaCastCanReachPlayer"/> under
+	/// "Skip area defence for casts that missed you" (A205).
+	/// </summary>
+	internal static readonly ConcurrentDictionary<uint, bool> AreaCastReachedPlayer = new();
+
 	private static bool AreaCastCanReachPlayer(IBattleChara h, Action act)
 	{
 		var player = Player.Object;

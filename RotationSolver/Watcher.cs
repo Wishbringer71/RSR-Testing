@@ -322,6 +322,25 @@ public static class Watcher
 						}
 					}
 
+					// Whether this landing reached the player (A205). Recorded apart from the setting that
+					// reads it, so the record is there when the setting is switched on. A dead player
+					// proves nothing; a damage entry of any size, a hit swallowed by a barrier included,
+					// counts as reached.
+					if (!playerObject.IsDead && OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
+					{
+						var reachedPlayer = false;
+						foreach (var effect in set.TargetEffects)
+						{
+							if (effect.TargetID == playerId && effect.GetSpecificTypeEffect(ActionEffectType.Damage, out _))
+							{
+								reachedPlayer = true;
+								break;
+							}
+						}
+
+						DataCenter.AreaCastReachedPlayer[set.Action!.Value.RowId] = reachedPlayer;
+					}
+
 					if (highestShare > 0f && OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
 					{
 						var id = set.Action!.Value.RowId;

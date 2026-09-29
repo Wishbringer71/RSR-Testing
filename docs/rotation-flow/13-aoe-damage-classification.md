@@ -116,6 +116,14 @@ Tankbuster-Fläche um den Tank, die einmal die ganze Gruppe traf und so gelistet
 Modul, das einen Tankbuster als Raidwide meldet. Beide hängen an der offenen Unterscheidung „Raidwide oder
 ausweichbare Fläche" (`TODO.md`).
 
+**Selbst gemessen, ob ein gelisteter Cast den Spieler erreicht (A205, Option „Skip area defence for casts that
+missed you", ab Werk aus):** Der Effekt-Handler hält je gelisteter Aktion fest, ob ihre letzte Landung dem
+lebenden Spieler einen Schadenseintrag gab (auch null, von einer Barriere geschluckt). Mit der Option zählt ein
+Cast, der ihn zuletzt verfehlte, nicht für seine Flächenabwehr — ausgewichen oder auf jemand anderen zentriert —,
+bis er ihn wieder trifft; ein auf ihn gewirkter Cast zählt immer. Nur die Abwehrflagge liest es
+(`IsHostileCastingAOEForMyDefense`); Vorab-Heilung und Gefährdungsprüfung behalten die Sicht der Gruppe. Der
+Messwert gilt je Sitzung.
+
 ## Wen die Unterdrückung erreicht
 
 Erhoben, nicht geschätzt (Lauf vom 20.09.2026): `AreaCastIsWorthMitigating` sitzt in

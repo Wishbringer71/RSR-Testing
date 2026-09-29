@@ -1065,6 +1065,23 @@ internal partial class Configs : IPluginConfiguration
 		Filter = HealingActionCondition, Section = 1)]
 	public bool HealAheadOfAnnouncedHit { get; set; } = false;
 
+	// The AoE list learns an action once it hit every party member, and cannot tell a raidwide from an
+	// area the party could have dodged, or from a hit centred on someone else that happened to catch
+	// everyone once. The resolution the TODO named was an observation in play; the fight can measure
+	// it instead (A205): when a listed cast lands and leaves no damage entry on the living player, it
+	// did not reach him, and the next cast of it opens no area defence for him - until one does reach
+	// him again. Off by default: that dodged areas cost cooldowns is not measured.
+	[UI("Skip area defence for casts that missed you",
+		Description = "An area cast from the AoE list that landed last time without damaging you - you "
+			+ "dodged it, or it was centred on someone else - does not open your area defence the next "
+			+ "time. As soon as it damages you once, it counts again.\n"
+			+ "In a fight: party mitigation and your own area defensives are kept for the casts that "
+			+ "actually reach you. The cost: the first cast of each action in a session still opens "
+			+ "them, and a cast you dodged last time and fail to dodge now is met without them.\n"
+			+ "Off: every listed cast that can reach you opens the area defence, as before.",
+		Filter = HealingActionCondition, Section = 1)]
+	public bool SkipAreaCastsThatMissedMe { get; set; } = false;
+
 	// Reported from a four-player dungeon: Addle and Radiant Aegis go out against some area casts and
 	// not others. Traced to the pre-filter every area question runs through - it drops any cast that
 	// is INTERRUPTIBLE, on the reasoning that an interruptible cast gets interrupted and mitigating it

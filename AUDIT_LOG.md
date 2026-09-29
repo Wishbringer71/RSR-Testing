@@ -4453,6 +4453,15 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A205 · Flächenabwehr: selbst gemessen, ob ein gelisteter Cast den Spieler erreicht (29.09.2026)
+
+- *Neu geprüft, ob Entscheidung:* Der Eintrag „Aufnahme unterscheidet Raidwide und ausweichbare Fläche nicht" wartete auf eine Spielbeobachtung von ihm — gegen die Definition of Done. Die Frage „erreicht dieser Cast mich?" beantwortet der Kampf selbst.
+- *Umgesetzt:* `DataCenter.AreaCastReachedPlayer` (je Aktion, je Sitzung), geschrieben im Effekt-Handler für gelistete Aktionen bei lebendem Spieler; `IsHostileCastingAOEForMyDefense`, gelesen nur von `StateUpdater.ShouldAddDefenseArea`. Option „Skip area defence for casts that missed you", ab Werk aus — der Nutzen (weniger verschwendete Abwehr) ist nicht gemessen.
+- *Falsifikation:* **Option falsch?** Ein Raidwide trifft jeden Lebenden, also nie „verfehlt"; eine Barriere, die den Treffer schluckt, hinterlässt trotzdem einen Schadenseintrag. Ein in mehrere Effektsätze geteilter Cast könnte einen Satz ohne den Spieler liefern — dann gälte er einmal als verfehlt, bis der nächste Treffer es korrigiert. Ein Cast auf den Spieler zählt immer. **Ausgeliefert, nichts ändert sich?** Mit der Option aus gewollt.
+- *Nebenwirkung vermieden:* Die erste Fassung saß in `AreaCastCanReachPlayer` und hätte auch die Vorab-Heilung der Gruppe verengt; verlegt an den einzigen Leser, den der Optionstext nennt.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
