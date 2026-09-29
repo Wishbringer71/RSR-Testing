@@ -3674,7 +3674,7 @@ public static class ObjectHelper
 	/// </summary>
 	/// <param name="battleChara">The member.</param>
 	/// <param name="instant">True for an off-GCD heal, which lands as soon as the current animation
-	/// lock lets it go out; false for a GCD heal, which needs the rest of this GCD and its cast. The
+	/// lock and any cast in progress let it go out; false for a GCD heal, which needs the rest of this GCD and its cast. The
 	/// setting's text promises the health "by the time a heal started now would land", and for an
 	/// instant heal that is now: read with the GCD lead, Benediction or Essential Dignity went out up
 	/// to a GCD before they were needed (A213).</param>
@@ -3691,8 +3691,21 @@ public static class ObjectHelper
 			return 1f;
 		}
 
-		var lead = instant ? Math.Max(0f, DataCenter.AnimationLock) : GetHealLeadTime();
+		var lead = instant ? GetInstantHealLeadTime() : GetHealLeadTime();
 		return lead <= 0f ? 1f : Math.Clamp(1f - (lead / ttk), 0f, 1f);
+	}
+
+	/// <summary>
+	/// How long an off-GCD heal decided on now takes to go out: until the current animation lock and
+	/// any cast in progress have ended - nothing is woven over a hard cast (concept 08, A217).
+	/// </summary>
+	internal static float GetInstantHealLeadTime()
+	{
+		var player = Player.Object;
+		var castLeft = player != null && player.IsCasting
+			? Math.Max(0f, player.TotalCastTime - player.CurrentCastTime)
+			: 0f;
+		return Math.Max(Math.Max(0f, DataCenter.AnimationLock), castLeft);
 	}
 
 	private static long _healLeadCacheTick = long.MinValue;

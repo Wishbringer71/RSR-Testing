@@ -4579,6 +4579,21 @@ Voller Loop zu A195 und A212, die beide ohne ihn gebaut wurden (seine Rückfrage
 
 **Prüfgrad:** statisch (BossModReborn-Quelle, ECommons-Quelle); Prüfskripte.
 
+### A217 · Vorausschau: voller Loop zum Vorlauf nach Heilart (29.09.2026)
+
+- *1 Research:* Der Vorlauf stammt aus 1026d5f37 (17.09.2026): „the heal that threshold triggers needs to arrive - the rest of the GCD, then the cast". Gebaut für GCD-Heilungen; oGCDs sind darin nicht betrachtet. Der Einstellungstext bindet: „by the time a heal started now would land". Leser: Heilflaggen (Fähigkeit und Zauber), Heilzielwahl, 31 Schwellen der Jobrotationen, kritische Klasse (Heilung, Abwehr-Halt, Lux Solaris).
+- *2 Optionen:* (0) GCD-Vorlauf für alle (Rückbau von A213). (a) oGCD-Vorlauf = Ausführungssperre (A213). (b) oGCD-Vorlauf null. (c) oGCD-Vorlauf = Maximum aus Ausführungssperre und Restwirkzeit eines laufenden Zaubers. (d) Die kritische Klasse ebenfalls nach Heilart.
+- *3 Abwägung:* Durchgerechnet mit korrigierter Restzeit 10 s und GCD 2,5 s zur Hälfte: Bei (0) liest ein Tank bei 48 % als 30 %, und Benediction fällt knapp vier Sekunden zu früh. Das hält die Aktion 180 s von einem echten Notfall fern (Schwere mittel, bei jedem steilen Verlauf mit eingeschalteter Einstellung). (a) übersieht einen laufenden Zauber: Während Glare 1 s Restwirkzeit hat, geht die oGCD-Heilung erst danach, gelesen wird aber der Stand jetzt. (b) wie (a), schlechter. (c) folgt dem Text. (d) Die kritische Klasse ist eine Definition für drei Leser, die keine Heilart haben; sie aufzuteilen, spaltet eine Definition.
+- *4 Abgleich:* Gefordert ist, was der Text verspricht, nicht mehr. Die Klasse bleibt, wie Konzept 07 sie festlegt.
+- *5 Review:* Emergency Tactics ist oGCD, wirkt aber auf die nächste GCD-Heilung; sie behält den GCD-Vorlauf. Die Untergrenze der Pull-Pflege gehört zu GCD-Aktionen. Die Heilzielwahl liest die Heilart an `IsRealGCD` der Aktion.
+- *6 Falsifikation:* **Kein Defekt?** Das Modell zeigt den zu frühen Einsatz. Das stärkste Gegenargument ist die Sicherheit: Früher heilen schützt vor einer Spitze in den vier Sekunden. Nicht tragend, weil der Text bindet und dieselbe Heilung danach einem echten Notfall fehlt. **Option falsch?** (a) war es, bei laufendem Zauber; behoben durch (c). **Ausgeliefert, nichts ändert sich?** Mit ausgeschalteter Einstellung oder nicht fallendem Verlauf ist der Anteil 1. Dann ist das Verhalten gleich und richtig so.
+- *7 Umsetzung:* `ObjectHelper.GetInstantHealLeadTime` (Maximum aus `DataCenter.AnimationLock` und der Restwirkzeit des Spielers), gelesen von `GetForecastSurvivingShare(instant: true)`. Die übrigen Leser stammen aus A213.
+- *8 Nachweis:* Prüfskripte; Compile über die CI. Am Spiel nicht beobachtet; die Einstellung ist ab Werk aus.
+- *9 Dokumentation:* Konzept 08 (Formel, Rechnung, Ursprung), Konzept 07 (Leser).
+- *10 Wirksamkeit:* Plateau: Eine weitere Verfeinerung, etwa die Serverlaufzeit einer oGCD-Heilung, liegt unter einer Zehntelsekunde.
+
+**Prüfgrad:** statisch (Versionsgeschichte, Code, Modell); Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

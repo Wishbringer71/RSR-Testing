@@ -833,13 +833,18 @@ jemanden zu gehen, der ihn nicht braucht, und wer beim Landen bei 34 % steht, br
 ```
 Anteil = max(0, 1 − Vorlaufzeit / korrigierte Restzeit)
 Vorlaufzeit (GCD-Heilung)  = GCD-Rest + ein voller GCD
-Vorlaufzeit (oGCD-Heilung) = verbleibende Ausfuehrungssperre
+Vorlaufzeit (oGCD-Heilung) = max(verbleibende Ausfuehrungssperre, Restwirkzeit eines laufenden Zaubers)
 ```
 
 Beides aus dem Spielzustand, keine gesetzte Zahl. Ein Heiler unter Presence of Mind blickt kuerzer
-voraus — richtig, er kann frueher handeln. Eine oGCD-Heilung landet, sobald die laufende
-Ausfuehrungssperre sie freigibt; mit dem GCD-Vorlauf fielen Benediction, Essential Dignity oder
-Druochole bis zu einen GCD zu frueh und fehlten danach einem echten Notfall. Der Text der Einstellung
+voraus — richtig, er kann frueher handeln. Eine oGCD-Heilung landet, sobald Ausfuehrungssperre und
+ein laufender Zauber sie freigeben — ueber einen Zauber hinweg laesst sich nichts einweben. Mit dem
+GCD-Vorlauf fielen Benediction, Essential Dignity oder Druochole bis zu einen GCD zu frueh und fehlten
+danach einem echten Notfall. Durchgerechnet: korrigierte Restzeit des Tanks 10 s, GCD 2,5 s zur Haelfte
+abgelaufen. GCD-Vorlauf 3,75 s, Anteil 0,625: Ein Tank bei 48 % liest sich als 30 %, und eine
+Benediction-Schwelle von 30 % fiele jetzt statt in knapp vier Sekunden. Vorlauf 0,5 s (Sperre): liest
+sich als 46 %, sie faellt, wenn er wirklich dort ankommt. Der Ursprung (1026d5f37, „the rest of the GCD,
+then the cast") war fuer GCD-Heilungen gebaut; oGCDs kamen darin nicht vor. Der Text der Einstellung
 verspricht „the health … by the time a heal started now would land" und bindet (A213). Unterschieden
 wird an allen Lesern: Heilflaggen (Faehigkeit gegen Zauber), Heilzielwahl (`IsRealGCD` der Aktion) und
 die Schwellen der Jobrotationen. Die kritische Klasse behaelt den GCD-Vorlauf, weil sie fuer
