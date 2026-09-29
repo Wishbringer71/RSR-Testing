@@ -98,34 +98,56 @@ einen abgeschalteten Baustein als unwirksamen gemeldet.
 
 ## Wen ein gelisteter Flächencast erreicht
 
-`AreaCastCanReachPlayer` entscheidet, ob ein gelisteter Cast den Spieler überhaupt treffen kann, bevor er die
-Flächenabwehr öffnet. Alle drei Leser erben es: Flächenabwehr, großer unterbrechbarer Cast, Vorab-Heilung.
-**Die Form des Casts laut Spieldaten entscheidet, von wo gemessen wird** (A192, A208):
+**Zwei Fragen, zwei Leser (A218).** Die Flächenabwehr-Flagge öffnet Gruppenminderungen — Reflexion,
+Divine Veil, Sacred Soil, Addle, Feint, Troubadour, Tactician, Shield Samba — und bei Schadensausteilern
+zusätzlich die ganze Einzelabwehr sowie wenige Selbstschilde im Flächenpfad (Radiant Aegis, Tempera Coat,
+Tengentsu, Third Eye). Gemessen wird ein Flag an den Pfaden, die es öffnet (CLAUDE.md, Kausalität):
 
-- Einzelzielaktion mit Reichweite (`CastType` 1, `Range` > 0): trifft nur den, auf den sie gewirkt wird.
-- Effektreichweite 0 (die gruppenweiten Treffer ohne eigenen Radius, darunter die selbstgezielten mit
-  Reichweite 0) und ein auf den Spieler gewirkter Cast: erreichen ihn.
-- Kreis auf ein Ziel (`CastType` 2, `Range` > 0, nicht auf sich selbst, nicht auf den Boden): um das Ziel
-  gemessen, nicht um den Wirkenden. So wirken Stack-Marker und Tankbuster-Kreise; BossModReborn beschreibt
-  dieselben Aktionen als „Boss->players, range 6 circle, stack" (Pyric Blast 25742, Clawful 37693).
-- Linie (`CastType` 4 und 12, mit Breite): Rechteck vom Wirkenden zum Ziel, ohne Ziel in Blickrichtung des
-  Wirkenden; `XAxisModifier` ist die volle Breite (Heavy Blast Cannon 37345: Spieldaten Breite 8, BossModReborn
-  „width 8 rect").
-- Alles andere wie bisher: Abstand zum Wirkenden, beide Trefferkreise abgezogen.
+- **Die Flagge fragt nach der Gruppe:** Sie steht, wenn der gelistete Cast den Spieler erreicht oder
+  mindestens zwei lebende Gruppenmitglieder — mehr als ein Einzelziel. Ein Stack auf einem Mitglied trifft
+  alle, ein Rundumschlag am Boss Tank und Nahkämpfer. Ein Tankbuster-Kreis auf dem Tank trifft nur einen und
+  öffnet sie nicht. „Die Hälfte der Gruppe" ist verworfen: Im Achterteam träfe ein Rundumschlag auf Tank und
+  zwei Nahkämpfer drei von acht und bekäme keine Gruppenminderung.
+- **Selbstschutz fragt nach dem Spieler** (`DataCenter.AreaHitReachesPlayer`, in den Rotationen
+  `AreaHitOnMe`): Radiant Aegis, Tempera Coat, Tengentsu und Third Eye im Flächenpfad, und der Aufruf der
+  Einzelabwehr eines Schadensausteilers unter der Flächenflagge (Dispatch) fallen nur, wenn der Treffer ihn
+  erreicht. Das ist die Antwort auf seine Meldung zu Radiant Aegis.
 
-Hitboxen zählen überall zugunsten des Treffers — ein Fehler lässt eine Abwehr zu viel zu, keine zu wenig.
+**Wen die Form erreicht, aus den Spieldaten** (`DataCenter.AreaCastReaches`, je Mitglied):
+
+- Einzelzielaktion mit Reichweite (`CastType` 1, `Range` > 0): nur das Ziel.
+- Effektreichweite 0 und ein auf das Mitglied gewirkter Cast: erreicht es.
+- Kreis auf ein Ziel (`CastType` 2, `Range` > 0, nicht auf sich selbst, nicht auf den Boden): um das Ziel.
+  BossModReborn beschreibt dieselben Aktionen als „Boss->players, range 6 circle, stack" (Pyric Blast 25742,
+  Clawful 37693).
+- Linie (`CastType` 4 und 12, mit Breite): Rechteck vom Wirkenden zum Ziel, ohne Ziel in Blickrichtung;
+  `XAxisModifier` ist die volle Breite (Heavy Blast Cannon 37345: Spieldaten Breite 8, BossModReborn „width 8
+  rect", halbe Breite 4).
+- Kreis und Kegel um den Wirkenden: Abstand vom **Mittelpunkt** des Wirkenden, ohne dessen Trefferkreis.
+  BossModReborn setzt keine seiner 3494 Kreisformen um den Trefferkreis des Wirkenden größer
+  (`AOEShapeCircle`, geprüft 29.09.2026); gemessen am Trefferkreis verlängerte ein großer Boss jeden
+  Rundumschlag um seinen Trefferkreis — 10 y reichten bei 8 y Trefferkreis bis 18 y. Der Kegel ohne Winkel
+  (steht in keinem Blatt) zählt wie ein Kreis.
+- Bodenkreise (`TargetArea`): Ihr Mittelpunkt steht nur in den nativen Castdaten; weiter Abstand zum Wirkenden
+  mit beiden Trefferkreisen, also eher zu weit.
+- Ansturm (`CastType` 8, Effektreichweite 0): erreicht jeden.
+
+Der Trefferkreis des Mitglieds zählt überall zugunsten des Treffers.
+
+**Durchgerechnet an der ausgelieferten Liste** (850 Einträge, Spieldaten über xivapi, 29.09.2026): 550 Kreise
+um den Wirkenden, davon 509 größer als 30 y — die erreichen im Kampf ohnehin jeden, der Trefferkreis ändert
+dort nichts; 41 bis 30 y, bei denen er entschied. 152 Kreise mit Reichweite (70 auf Spieler gerichtet,
+54 Bodenkreise, 26 um den Wirkenden) und 5 Linien auf ein Ziel.
 
 **Anlass, seine Beobachtung (28.09.2026, erneut 29.09.2026):** Radiant Aegis fällt bei Tankbustern auf den Tank,
-auch wenn er weit weg steht. Erhoben an der ausgelieferten Liste (850 Einträge, Spieldaten über xivapi,
-29.09.2026): 152 Kreise auf ein Ziel, davon 70 auf einen Spieler, und 5 Linien auf ein Ziel wurden vom Wirkenden
-aus gemessen. Bei einem Boss mit großem Trefferkreis erreichte damit ein Kreis von 6 y um den Tank einen Spieler auf
-der anderen Seite des Bosses. Ob das sein Fall war, zeigt der Code nicht: Offen sind außerdem Marker (Stack und
-Spread werden ohne Abstand gelesen) und BossModReborn (ein Modul, das einen Tankbuster als Raidwide meldet).
-Welche Quelle in seinen Kämpfen die Abwehr öffnet, schreibt `DefenseTrace.log` (unten).
+auch wenn er weit weg steht. Ob die Form oder eine andere Quelle sein Fall war, zeigt der Code nicht. Möglich
+sind außerdem Marker (Stack- und Spread-Marker ohne Abstand) und BossModReborn (ein Modul, das einen
+Tankbuster als Raidwide meldet). Welche Quelle in seinen Kämpfen die Abwehr öffnet, schreibt
+`DefenseTrace.log` (unten); die Zeilen nennen jetzt auch, ob der Treffer ihn erreicht.
 
-**Noch vom Wirkenden gemessen, mit Grund:** Bodenkreise (`TargetArea`, 54 Einträge) — ihr Mittelpunkt steht nur
-in den nativen Castdaten; Kegel (2 Einträge) — der Öffnungswinkel steht in keinem Blatt; Ansturm (`CastType` 8,
-1 Eintrag, Effektreichweite 0) erreicht jeden.
+**Marker und BossModReborn für den Selbstschutz:** Ein Stack-Marker betrifft jeden, der stackt, und zählt als
+„erreicht ihn". Ein Spread-Marker zählt nur auf ihm selbst. Ein angekündigter BossModReborn-Raidwide trifft
+jeden.
 
 **Selbst gemessen, ob ein gelisteter Cast den Spieler erreicht (A205, Option „Skip area defence for casts that
 missed you", ab Werk aus):** Der Effekt-Handler hält je gelisteter Aktion fest, ob ihre letzte Landung dem

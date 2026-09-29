@@ -83,7 +83,8 @@ ist." Beides sind Tatsachen des Spiels, keine Festlegungen; geprüft und so eing
   es: „Can only be executed while Carbuncle is summoned" — die Demi ersetzt Carbuncle für 15 Sekunden.
   Fällig heißt, was die Rotation ohnehin fragt: ein von BossModReborn angekündigter Raidwide innerhalb
   der Wirkdauer des Schilds (aus seinem Wirktext, `DefensiveValues.DurationOf`) oder die stehende
-  Verteidigungsflagge ohne eigenen Schild. Umgesetzt (`RadiantAegisDueBeforeDemi`): Der Schild
+  Verteidigungsflagge ohne eigenen Schild, wenn der Treffer den Beschwörer selbst erreicht (`AreaHitOnMe`,
+  Konzept 13: die Flagge fragt nach der Gruppe, der Schild schützt nur ihn). Umgesetzt (`RadiantAegisDueBeforeDemi`): Der Schild
   nimmt den Platz vor der Beschwörung **vor** Searing Light, und die Beschwörung wartet, solange er
   fällig und wirkbar ist. Der angekündigte Schild stand zuvor in `GeneralAbility`, das die Kette erst
   **nach** dem Angriffszweig fragt — Searing Light nahm den einzigen Platz vor der Demi, und der Schild
@@ -155,8 +156,8 @@ Schimmerschild und Addle; seine einzige nennenswerte Heilung ist die Flächenhei
 laufenden Demi. Und genau die kann **vor** der Beschwörung gar nicht feuern: `ModifyLuxSolarisPvE`
 setzt `StatusNeed = [StatusID.RefulgentLux]`, `ModifyRekindlePvE` prüft `InPhoenix` — beide
 Bedingungen entstehen **aus** der Phase, die noch nicht begonnen hat. Vor der Beschwörung bleiben
-damit Schimmerschild und Addle — Addle bei gesetzter Verteidigungsflagge, der Schild zusätzlich bei
-einem angekündigten Raidwide, und der Schild geht dort absichtlich vor (Hinweis oben). Eine Absicherung über `CanUse` als Prüfung scheidet
+damit Schimmerschild und Addle — Addle bei gesetzter Verteidigungsflagge, der Schild bei gesetzter Flagge
+nur, wenn der Treffer ihn erreicht, und zusätzlich bei einem angekündigten Raidwide, und der Schild geht dort absichtlich vor (Hinweis oben). Eine Absicherung über `CanUse` als Prüfung scheidet
 aus; das ist die Defektklasse aus `TODO.md`.
 
 **Hinter der Beschwörung kehrt sich das um, und das ist der wahrscheinlichere Grund für die
@@ -186,7 +187,7 @@ zuvor beschrieben: Sie lautet nicht „welcher Zweig“, sondern „wie oft grei
 genau diesem Fenster“ — und das ist eine Messfrage, keine Lesefrage. Für den Beschwörer schrumpft
 sie nach dem Abschnitt oben weiter zusammen: Vor der Beschwörung kommen von dieser ganzen Kette nur
 Schimmerschild und Addle überhaupt in Betracht, Addle nur bei gesetzter Verteidigungsflagge, der
-Schild auch bei angekündigtem Raidwide.
+Schild bei gesetzter Flagge nur, wenn der Treffer ihn erreicht, und bei angekündigtem Raidwide.
 
 **Warum das Schaden kostet, in Zahlen aus dem Wirktext** (`ActionId.resx`, beides dort wörtlich):
 Searing Light wirkt **20 Sekunden**, Summon Solar Bahamut dauert **15 Sekunden**. Zu Beginn gezündet

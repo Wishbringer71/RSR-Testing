@@ -800,7 +800,7 @@
   },
   {
    "file": "RotationSolver.Basic/DataCenter.cs",
-   "code": "&& across <= (act.XAxisModifier / 2f) + player.HitboxRadius;",
+   "code": "&& across <= (act.XAxisModifier / 2f) + member.HitboxRadius;",
    "values": [
     "2"
    ],
@@ -826,6 +826,24 @@
     "2"
    ],
    "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/DataCenter.cs",
+   "code": "if (Service.Config.UseBmrTimeline && BMRNextRaidwideIn > 0.6f && BMRNextRaidwideIn <= Service.Config.BMRRaidwideMitWindow)",
+   "values": [
+    "0.6"
+   ],
+   "status": "open"
+  },
+  {
+   "file": "RotationSolver.Basic/DataCenter.cs",
+   "code": "if (member != null && !member.IsDead && AreaCastReaches(h, act, member) && ++reached >= 2)",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A218",
+   "reason": "More than one member reached is what separates an area hit from a single-target one - the definition the flag needs, not a tunable value; half of the party was rejected because a cleave on the tank and two melee is three of eight"
   }
  ]
 }

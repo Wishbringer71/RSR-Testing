@@ -2731,6 +2731,115 @@ internal static class DataCenter
 		InCombat && (IsCastingAreaVfx() || (AllHostileTargets != null && IsAnyHostileCastingArea()));
 
 	/// <summary>
+	/// Whether the area hit that opens the area defence reaches the player himself - the question for
+	/// the actions that protect only him (concept 13, A218). The flag asks for the party; Radiant Aegis
+	/// spent on a tankbuster circle around the tank protected nobody it was hitting.
+	/// </summary>
+	/// <remarks>
+	/// Sources, read without side effects: a stack marker (a stack involves everyone who stacks), a
+	/// spread marker on the player, a listed area cast within its landing window that reaches him -
+	/// rated worth mitigating, or unrated - interruptible ones included under "mitigate big area casts
+	/// even if interruptible", and a BossModReborn raidwide inside the mitigation window.
+	/// </remarks>
+	public static bool AreaHitReachesPlayer
+	{
+		get
+		{
+			if (!InCombat || Player.Object == null)
+			{
+				return false;
+			}
+
+			if (IsAreaVfxReachingPlayer())
+			{
+				return true;
+			}
+
+			if (Service.Config.UseBmrTimeline && BMRNextRaidwideIn > 0.6f && BMRNextRaidwideIn <= Service.Config.BMRRaidwideMitWindow)
+			{
+				return true;
+			}
+
+			var targets = AllHostileTargets;
+			if (targets == null)
+			{
+				return false;
+			}
+
+			var actionSheet = Service.GetSheet<Action>();
+			for (var i = 0; i < targets.Count; i++)
+			{
+				var h = targets[i];
+				if (h == null || !h.IsValid() || !h.IsCasting)
+				{
+					continue;
+				}
+
+				// The same recognition the flag uses, asked of the player instead of the party.
+				if (IsHostileCastingBase(h, act => OtherConfiguration.HostileCastingArea.Contains(act.RowId)
+					&& AreaCastCanReachPlayer(h, act)
+					&& AreaCastIsWorthMitigating(act.RowId)))
+				{
+					return true;
+				}
+
+				// The large interruptible cast, as IsHostileCastingLargeArea recognises it, without its
+				// recording.
+				if (!h.IsCastInterruptible || !Service.Config.MitigateBigAreaCastsEvenIfInterruptible
+					|| !OtherConfiguration.HostileCastingArea.Contains(h.CastActionId)
+					|| !OtherConfiguration.HostileCastingAreaPotential.TryGetValue(h.CastActionId, out var share)
+					|| share < LargeShieldShare)
+				{
+					continue;
+				}
+
+				var remaining = h.TotalCastTime - h.CurrentCastTime;
+				if (remaining <= 0f || remaining > GCDTime(1))
+				{
+					continue;
+				}
+
+				var action = actionSheet.GetRow(h.CastActionId);
+				if (action.RowId != 0 && AreaCastCanReachPlayer(h, action))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+	}
+
+	private static bool IsAreaVfxReachingPlayer()
+	{
+		var player = Player.Object;
+		if (player == null || VfxDataQueue == null || VfxDataQueue.IsEmpty)
+		{
+			return false;
+		}
+
+		foreach (var vfx in VfxDataQueue)
+		{
+			if (string.IsNullOrEmpty(vfx.Path))
+			{
+				continue;
+			}
+
+			if (StartsWithAny(vfx.Path, MultiHitSharedPaths) || StartsWithAny(vfx.Path, SharedDamagePaths))
+			{
+				return true;
+			}
+
+			if (vfx.ObjectId == player.GameObjectId && StartsWithAny(vfx.Path, SpreadDamagePaths))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>
 	/// <see cref="IsHostileCastingAOE"/> for the player's own area defence: under "Skip area defence for
 	/// casts that missed you", a listed cast whose last landing left the living player untouched does
 	/// not count (A205). Only the defence flag reads this; healing ahead and the threat check keep the
@@ -2851,7 +2960,7 @@ internal static class DataCenter
 					}
 
 					var action = actionSheet.GetRow(h.CastActionId);
-					if (action.RowId == 0 || !AreaCastCanReachPlayer(h, action))
+					if (action.RowId == 0 || !AreaCastReachesParty(h, action))
 					{
 						continue;
 					}
@@ -2919,7 +3028,7 @@ internal static class DataCenter
 				if (IsHostileCastingBase(h, act =>
 				{
 					if (!OtherConfiguration.HostileCastingArea.Contains(act.RowId)
-						|| !AreaCastCanReachPlayer(h, act))
+						|| !AreaCastReachesParty(h, act))
 					{
 						return false;
 					}
@@ -3323,7 +3432,7 @@ internal static class DataCenter
 			// as built, and it is the reason the list cannot be allowed to grow freely - see
 			// docs/rotation-flow/13-aoe-damage-classification.md.
 			return OtherConfiguration.HostileCastingArea.Contains(act.RowId)
-				&& AreaCastCanReachPlayer(h, act)
+				&& AreaCastReachesParty(h, act)
 				&& AreaCastIsWorthMitigating(act.RowId);
 		});
 	}
@@ -3854,42 +3963,68 @@ internal static class DataCenter
 	/// </summary>
 	internal static readonly ConcurrentDictionary<uint, bool> AreaCastReachedPlayer = new();
 
+	/// <summary>Whether a listed area cast can reach the player (concept 13, A218).</summary>
 	private static bool AreaCastCanReachPlayer(IBattleChara h, Action act)
 	{
 		var player = Player.Object;
+		return player != null && AreaCastReaches(h, act, player);
+	}
 
-		// A single-target action with a cast range hits the one it is cast at and nobody else - the
-		// game data says so, whatever the area list says. It has no radius, so the pass for an effect
-		// range of 0 below let it through for everyone: a tankbuster on the tank that had found its way
-		// into the list opened every player's area defence, Radiant Aegis and Addle on a Summoner
-		// included (A192, the owner's observation). Holy Bladedance (35285) is such an entry. A
-		// self-targeted action (cast range 0) is the scripted party-wide kind and keeps the pass.
+	/// <summary>
+	/// Whether a listed area cast reaches the party in the sense the area-defence flag needs: the
+	/// player, or at least two living party members - more than a single target (concept 13, A218).
+	/// </summary>
+	/// <remarks>
+	/// The flag opens party mitigations - Reprisal, Divine Veil, Sacred Soil, Addle, Feint - and a flag
+	/// is measured by the paths it opens, not by whom it is set for. Measured by the player alone, a
+	/// healer standing clear of a cleave on the tank and the melee gave them no party mitigation. The
+	/// actions that protect only the player ask <see cref="AreaHitReachesPlayer"/> instead.
+	/// </remarks>
+	private static bool AreaCastReachesParty(IBattleChara h, Action act)
+	{
+		if (AreaCastCanReachPlayer(h, act))
+		{
+			return true;
+		}
+
+		var reached = 0;
+		foreach (var member in PartyMembers)
+		{
+			if (member != null && !member.IsDead && AreaCastReaches(h, act, member) && ++reached >= 2)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// Whether a listed area cast reaches <paramref name="member"/>, from the shape the game data gives it.
+	/// </summary>
+	/// <remarks>
+	/// <para>A single-target action with a cast range hits the one it is cast at and nobody else (A192);
+	/// a self-targeted action with no effect range is the scripted party-wide kind and reaches everyone.
+	/// A circle cast at someone is centred on them; a line reaches what lies in its width; a circle
+	/// around the caster is measured from the caster's centre. BossModReborn sizes none of its circle
+	/// shapes by the caster's hitbox; measured from the hitbox edge, a large boss stretched every
+	/// point-blank cast by its hitbox - ten yalms reached eighteen (A218). The member's own hitbox counts
+	/// in favour of the hit everywhere.</para>
+	/// <para>Ground-placed circles keep the old measure: their centre is only in the native cast data.
+	/// A cone counts as a circle; its angle is in no sheet.</para>
+	/// </remarks>
+	private static bool AreaCastReaches(IBattleChara h, Action act, IBattleChara member)
+	{
 		if ((CastType)act.CastType == CastType.Targeted && act.Range > 0)
 		{
-			return player != null && h.CastTargetObjectId == player.GameObjectId;
+			return h.CastTargetObjectId == member.GameObjectId;
 		}
 
-		if (act.EffectRange == 0)
+		if (act.EffectRange == 0 || h.CastTargetObjectId == member.GameObjectId)
 		{
 			return true;
 		}
 
-		if (player == null)
-		{
-			return false;
-		}
-
-		if (h.CastTargetObjectId == player.GameObjectId)
-		{
-			return true;
-		}
-
-		// The shape decides where the effect range is measured from, as the game data states it. The
-		// caster's distance is right only for a shape around or in front of the caster; a circle cast
-		// at someone else is centred on them, and a line reaches only what lies in its width. Measured
-		// from the caster, with the boss's hitbox taken off, a stack or a tankbuster circle on the tank
-		// reached a player standing on the far side of a large boss (the owner's report of 29.09.2026:
-		// Radiant Aegis on tankbusters on the tank while standing far away).
 		var aimedAt = h.CastTargetObjectId != h.GameObjectId
 			? Svc.Objects.SearchById(h.CastTargetObjectId) as IBattleChara
 			: null;
@@ -3900,7 +4035,7 @@ internal static class DataCenter
 
 		if ((CastType)act.CastType == CastType.Circle && act.Range > 0 && !act.CanTargetSelf && !act.TargetArea && aimedAt != null)
 		{
-			return HorizontalDistance(player.Position, aimedAt.Position) - player.HitboxRadius - aimedAt.HitboxRadius <= act.EffectRange;
+			return HorizontalDistance(member.Position, aimedAt.Position) - member.HitboxRadius - aimedAt.HitboxRadius <= act.EffectRange;
 		}
 
 		if (act.CastType is (byte)CastType.StraightLine or LineFromCasterCastType && act.XAxisModifier > 0)
@@ -3910,17 +4045,22 @@ internal static class DataCenter
 			if (direction.LengthSquared() > 0f)
 			{
 				direction = Vector3.Normalize(direction);
-				var toPlayer = player.Position - h.Position;
-				toPlayer.Y = 0;
-				var along = Vector3.Dot(direction, toPlayer);
-				var across = Vector3.Cross(direction, toPlayer).Length();
-				return along >= -player.HitboxRadius
-					&& along <= act.EffectRange + h.HitboxRadius + player.HitboxRadius
-					&& across <= (act.XAxisModifier / 2f) + player.HitboxRadius;
+				var toMember = member.Position - h.Position;
+				toMember.Y = 0;
+				var along = Vector3.Dot(direction, toMember);
+				var across = Vector3.Cross(direction, toMember).Length();
+				return along >= -member.HitboxRadius
+					&& along <= act.EffectRange + member.HitboxRadius
+					&& across <= (act.XAxisModifier / 2f) + member.HitboxRadius;
 			}
 		}
 
-		return h.DistanceToPlayer() <= act.EffectRange;
+		if (act.TargetArea)
+		{
+			return HorizontalDistance(member.Position, h.Position) - member.HitboxRadius - h.HitboxRadius <= act.EffectRange;
+		}
+
+		return HorizontalDistance(member.Position, h.Position) - member.HitboxRadius <= act.EffectRange;
 	}
 
 	// Cast type 12 is a rectangle from the caster like type 4 (StraightLine), which the enum does not
@@ -3997,7 +4137,7 @@ internal static class DataCenter
 					// what they decide, and the trace must not make decisions the flags did not make.
 					if (listedArea)
 					{
-						text += $", reaches you {AreaCastCanReachPlayer(h, a)}, interruptible {h.IsCastInterruptible}"
+						text += $", reaches you {AreaCastCanReachPlayer(h, a)}, reaches the party {AreaCastReachesParty(h, a)}, interruptible {h.IsCastInterruptible}"
 							+ $", rated {(OtherConfiguration.HostileCastingAreaPotential.TryGetValue(id, out var share) ? share.ToString("P0") : "no")}";
 					}
 				}
@@ -4009,6 +4149,8 @@ internal static class DataCenter
 		{
 			parts.Add($"scan failed: {ex.Message}");
 		}
+
+		parts.Add($"area hit reaches you {AreaHitReachesPlayer}");
 
 		if (BMRNextRaidwideIn is > 0f and < float.MaxValue)
 		{

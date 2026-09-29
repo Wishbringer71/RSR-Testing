@@ -1680,6 +1680,13 @@ public partial class CustomRotation
 		=> DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterImminent;
 
 	/// <summary>
+	/// Whether the area hit behind the area-defence flag reaches the player himself. The flag asks
+	/// whether the party is hit, for party mitigations; an action that protects only the player asks
+	/// this as well (concept 13).
+	/// </summary>
+	public static bool AreaHitOnMe => DataCenter.AreaHitReachesPlayer;
+
+	/// <summary>
 	/// True when BMR reports a tankbuster within the specified seconds.
 	/// Always false when BMR is inactive, or when the user has UseBmrTimeline disabled.
 	/// </summary>

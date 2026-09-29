@@ -127,6 +127,12 @@ def collect(diff, untracked_files):
     return result
 
 
+def drop_upstream_lines(lines, listed_keys, upstream_lines):
+    """Leaves out an added line that stands word for word in the upstream version of its file, unless
+    it is listed already: an upstream line the fork moved into its own logic keeps its open loop."""
+    return [(p, c) for p, c in lines if (p, c) in listed_keys or c not in upstream_lines(p)]
+
+
 def findings(lines):
     found = {}
     for path, code in lines:
@@ -167,6 +173,12 @@ def self_test():
     lines = collect("+++ b/A.cs\n@@ -1 +0,0 @@\n-var a = 100;\n@@ -9,0 +9 @@\n+var a = 100;\n", {})
     if ("A.cs", "var a = 100;") not in lines:
         return f"a line moved to another hunk was not counted as added: {lines}"
+    # A line upstream already has is upstream's, wherever git puts it - unless it is listed.
+    kept = drop_upstream_lines([("A.cs", "var a = 100;"), ("A.cs", "var b = 2;"), ("A.cs", "var c = 3;")],
+                               {("A.cs", "var c = 3;")},
+                               lambda path: {"var a = 100;", "var c = 3;"})
+    if kept != [("A.cs", "var b = 2;"), ("A.cs", "var c = 3;")]:
+        return f"upstream lines were not told apart from the fork's: {kept}"
     return None
 
 
@@ -190,6 +202,22 @@ def main(argv):
     if lines is None:
         print(f"git diff against {base} failed.")
         return 1
+
+    # A line that stands word for word in the upstream version of the same file is upstream's, however
+    # git aligns the diff after an edit nearby - unless it is already listed: an upstream line the fork
+    # moved into its own logic keeps its open loop (29.09.2026, the casting-stop line in DataCenter.cs,
+    # which a hunk realignment kept presenting as added).
+    listed_keys = {(e["file"], e["code"])
+                   for e in json.loads(LIST.read_text(encoding="utf-8"))["entries"]}
+    base_lines = {}
+
+    def upstream_lines(path):
+        if path not in base_lines:
+            text = run("git", "show", f"{base}:{path}")
+            base_lines[path] = {l.strip() for l in text.splitlines()} if text is not None else set()
+        return base_lines[path]
+
+    lines = drop_upstream_lines(lines, listed_keys, upstream_lines)
     found = findings(lines)
 
     if "--list" in argv:

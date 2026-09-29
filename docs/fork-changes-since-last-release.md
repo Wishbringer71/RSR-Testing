@@ -363,23 +363,27 @@ they were needed. The heal flags and the heal target choice make the same distin
 For rotation authors, `ObjectHelper.GetForecastHealthRatio` is now public, with an overload taking
 `instant` for off-GCD heals.
 
-## Area casts aimed at someone else reach only those near them
+## Area defence asks whether the party is hit; self-shields ask whether you are
 
-Whether a cast from the AoE list can hit you is now measured from where the game data puts it. A
-single-target action with a cast range counts only for the player it is cast at; one such entry,
-Holy Bladedance, opened every player's area defence when it was aimed at the tank. A circle cast at
-a player - stacks, tankbuster circles on the tank - is measured around that player, not around the
-caster, and a line only reaches what lies inside its width. Measured from the caster with the boss's
-hitbox taken off, a 6-yalm circle on the tank reached a player on the far side of a large boss and
-spent a Summoner's Radiant Aegis and Addle on it. Area defence and healing ahead of the hit both
-read the same check, for every job.
+Whether a cast from the AoE list opens the area defence now depends on whom it reaches, read from the
+game data's shape. A single-target action with a cast range reaches only its target. A circle cast at
+a player is measured around that player. A line reaches only what lies inside its width. A circle
+around the caster is measured from the caster's centre, as BossModReborn draws it; before, a large
+boss's hitbox was added, so a 10-yalm point-blank reached players 18 yalms away.
+
+The area defence opens party mitigations, so it stands when the hit reaches you or at least two party
+members. Actions that protect only you ask whether it reaches you: Radiant Aegis, Samurai's Tengentsu
+and Third Eye, and a damage dealer's single-target defence called under the area flag. A tankbuster
+circle on the tank no longer spends a Summoner's Radiant Aegis, but still lets a healer or tank answer
+a cleave on the tank and the melee. Tempera Coat is unchanged: it is what Tempera Grassa, the party
+barrier, needs first.
 
 Ground-targeted circles, cones and charges are still measured from the caster: the game data does
 not state where they land or how wide they open.
 
 `DefenseTrace.log` in the plugin's config folder records, for one session, every action the
-defensive chain chose with every source standing at that moment - markers, listed casts with their
-shape and distances, BossModReborn predictions - and every enemy hit on you beside it.
+defensive chain chose with every source standing at that moment, including whether the hit reaches
+you, and every enemy hit on you beside it.
 
 ## Displacement and Hissatsu: Yaten: the backstep is checked for safety
 

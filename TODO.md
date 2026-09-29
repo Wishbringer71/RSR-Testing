@@ -257,7 +257,7 @@ Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A17
 
 **Seine Meldung (28.09.2026, nach A192 erneut 29.09.2026):** „tankbuster, auch wenn ich nicht betroffen bin und weit weg stehe, sorgen immer noch beim beschwörer dass schimmerschild unnötig verbraucht wird".
 
-**Stand:** A192 (Einzelzielaktion in der Flächenliste) und A208 (Kreise um ihr Ziel, Linien in ihrer Breite) beheben die zwei Fehler, die der Code zeigt. Ob einer davon sein Fall war, zeigt der Code nicht. Weitere mögliche Quellen: Stack- und Spread-Marker, die ohne Abstand gelesen werden, ein BossModReborn-Modul, das einen Tankbuster als Raidwide meldet, und ein von ihm gelernter Tankbuster, der als Bodenkreis geführt wird. Die Prüfung aller Wege steht in A208.
+**Stand:** A192 (Einzelzielaktion in der Flächenliste), A208 (Kreise um ihr Ziel, Linien in ihrer Breite) und A218 (Kreise vom Mittelpunkt des Wirkenden; Selbstschutz nur, wenn der Treffer ihn erreicht) beheben die Fehler, die der Code zeigt. Ob einer davon sein Fall war, zeigt der Code nicht. Weitere mögliche Quellen: Stack- und Spread-Marker, die ohne Abstand gelesen werden, ein BossModReborn-Modul, das einen Tankbuster als Raidwide meldet, und ein von ihm gelernter Tankbuster, der als Bodenkreis geführt wird. Die Prüfung aller Wege steht in A208.
 
 **Messmittel:** `DefenseTrace.log` schreibt je Sitzung jede Wahl der Abwehrkette mit den Quellen, die dabei standen, und jeden Treffer auf ihn. **Erledigt, wenn** eine Datei aus seinen Kämpfen die Quelle zeigt und sie behoben ist. Danach wird das Protokoll wieder entfernt.
 

@@ -201,8 +201,10 @@ Gelehrter, Astrologe und Weiser haben keine. Eine Fallunterscheidung nach Gruppe
 braucht die Regel trotzdem nicht — sie misst den Status **auf den Gegnern**, ist ohne Betäubung
 also von selbst wirkungslos.
 
-Der Quantor folgt aus dieser Tabelle. Tiefschlag trägt der Dunkelritter selbst, und RSR wirkt es
-über den Unterbrechungspfad (`CustomRotation_Ability.cs:575`): „**irgendein** Gegner betäubt" hätte
+Der Quantor folgt aus dieser Tabelle. Tiefschlag trägt der Dunkelritter selbst, und RSR wirkt es als
+Unterbrechung: im allgemeinen Fähigkeitspfad der Tanks (`CustomRotation_Ability.GeneralUsingAbility`) auf
+jeden Nicht-Boss, der gerade wirkt, wenn der Cast nicht unterbrechbar ist oder Interject abklingt
+(`ModifyLowBlowPvE`, geprüft 29.09.2026): „**irgendein** Gegner betäubt" hätte
 die eigene Unterbrechung die eigene Barriere sperren lassen, während sieben von acht Gegnern weiter
 zuschlagen. „**Alle** Gegner betäubt" fällt um, sobald ein Nachzügler unbetäubt dazustößt, obwohl
 der Strom erkennbar steht. Maßgeblich ist der **Anteil**: mindestens zwei betäubte Gegner und

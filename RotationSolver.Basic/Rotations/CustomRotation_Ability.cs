@@ -289,7 +289,10 @@ public partial class CustomRotation
 				DefenseTrace.Decision("area defence (duty)", act);
 				return true;
 			}
-			if (DefenseAreaAbility(nextGCD, out act) || (role is JobRole.Melee or JobRole.RangedPhysical or JobRole.RangedMagical && DefenseSingleAbility(nextGCD, out act)))
+			// A damage dealer's single-target defence protects only himself, so under the area flag -
+			// which asks whether the party is hit - it runs only when the hit reaches him (A218).
+			if (DefenseAreaAbility(nextGCD, out act) || (role is JobRole.Melee or JobRole.RangedPhysical or JobRole.RangedMagical
+				&& DataCenter.AreaHitReachesPlayer && DefenseSingleAbility(nextGCD, out act)))
 			{
 				DefenseTrace.Decision("area defence", act);
 				return true;
