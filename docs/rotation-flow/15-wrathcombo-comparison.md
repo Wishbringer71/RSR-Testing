@@ -148,7 +148,10 @@ Pfade sind Spieldaten (Asset-Namen), kein übernommener Code.
   aus der die Entscheidung liest — und jeder gegnerische Zauber, der lief, solange der Marker stand, geendet
   hat, plus ein GCD für das Eintreffen. Ein zu langes Fenster lässt anderen Schaden den Marker bestätigen, er
   bleibt Tankbuster wie bisher — der Fehler liegt auf der sicheren Seite. Bis A211 zählten nur Zauber, die schon
-  beim Erscheinen liefen; ein Zauber, der erst nach dem Marker begann, lag außerhalb des Fensters.
+  beim Erscheinen liefen; ein Zauber, der erst nach dem Marker begann, lag außerhalb des Fensters. Belegter Fall
+  (BossModReborn, Kam'lanaut, Princely Blow): Marker, 0,3 s später beginnt der sichtbare Cast des Bosses (8,0 s),
+  der Treffer des unsichtbaren Helfers kommt 8,3 s nach dem Marker. Mit dem alten Fenster (Marker fünf Sekunden
+  in der Warteschlange plus ein GCD) schloss die Beobachtung vorher, und ein echter Tankbuster wurde widerlegt.
 - **Ohne Urteil verworfen:** Das markierte Mitglied ist beim Ende tot oder nicht mehr in der Gruppe; der Kampf
   endet vorher.
 - **Speicherung:** `TankbusterMarkerWithoutHit.json` im Konfigurationsordner, kein Download. Die Datei der ersten Fassung, `TankbusterMarkerFalsified.json`, wird nicht mehr gelesen: Ihre Einträge entstanden unter dem fehlerhaften Kriterium (geblockt, pariert oder abgewiesen galt als kein Treffer, A211). Ein zu Unrecht gelisteter echter Tankbuster hätte einmal keine Abwehr bekommen. Ein zu Unrecht gestrichener Eintrag kostet dagegen nur eine überflüssige Abwehr, bis er neu gelernt ist. Es gelten die Schutzwege

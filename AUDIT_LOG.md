@@ -4566,6 +4566,19 @@ Voller Loop zu A195 und A212, die beide ohne ihn gebaut wurden (seine Rückfrage
 
 **Prüfgrad:** statisch (Code, Versionsgeschichte, Job-Guide); Prüfskripte; Compile über die CI.
 
+### A216 · Markerliste: voller Loop zum Verwerfen der ersten Fassung und zum Beobachtungsfenster (29.09.2026)
+
+- *1 Research:* Die erste Fassung der Negativliste (A189) zählte nur die Effektart `Damage` als Treffer. Ein geblockter, parierter oder unter Unverwundbarkeit genommener Tankbuster widerlegte also seinen Marker (A211). Was seine Datei enthält, ist von hier nicht lesbar. Fenster: BossModReborn (Kam'lanaut, `PrincelyBlow.cs`, Enum) zeigt Marker, dann 0,3 s später einen sichtbaren Cast von 8,0 s und den Treffer eines Helfers 8,3 s nach dem Marker. Das alte Fenster (Warteschlange fünf Sekunden plus ein GCD, Zauber nur ab Erscheinen) schloss vorher.
+- *2 Optionen, Liste:* (0) die alte Liste weiterlesen, (a) verwerfen (gebaut), (b) die alten Einträge nur beobachten und nicht anwenden, bis sie unter dem neuen Kriterium bestätigt sind, (R) Rückbau auf den alten Dateinamen. *Fenster:* (0) fest ab Erscheinen, (a) jeder Zauber, der beginnt, solange der Marker steht (gebaut), (b) offen bis zum nächsten Treffer.
+- *3 Abwägung, Liste:* Bei (0) bekommt ein zu Unrecht gelisteter echter Tankbuster beim nächsten Mal von niemandem eine Abwehr (Sicherheit, schwer, wahrscheinlich bei jedem Paladin unter Sheltron). Bei (a) kostet ein zu Recht gelisteter Marker eine überflüssige Abwehr, bis er neu gelernt ist (nur Abklingzeit). (b) wirkt wie (a), braucht aber einen zweiten Zustand. *Fenster:* (0) widerlegt belegte Tankbuster. (b) lässt beliebigen späteren Schaden bestätigen, sodass die Liste nie lernt. (a) deckt den belegten Fall; ein zu langes Fenster lässt fremden Schaden bestätigen, und der Marker bleibt dann Tankbuster (sichere Seite).
+- *4 Abgleich:* Seine Vorgabe verlangt die Liste „sicher speichern". Die alte Liste ist ein von mir verursachter Schaden an seinen Daten und steht nicht zur Wahl (CLAUDE.md). Die alte Datei bleibt ungenutzt auf der Platte; sie zu löschen wäre destruktiv und bringt nichts.
+- *5 Review:* Nach dem Verwerfen stehen alle Marker wieder als Tankbuster da, also mehr Abwehr, bis das Lernen greift. Die Verlängerung läuft nur, solange der Marker steht. Danach ist der Zustand wie vorher.
+- *6 Falsifikation:* **Kein Defekt?** Belegt durch die Effektarten (ECommons) und den BossModReborn-Fall. **Option falsch?** Ein Marker, dessen Zauber erst nach dem Verlassen der Warteschlange beginnt, wird weiter fälschlich widerlegt (Grenze in Konzept 15). **Ausgeliefert, nichts ändert sich?** Wenn seine Liste leer war. Dann bleibt nur das neue Fenster wirksam.
+- *7–9:* Umgesetzt in A211 (`TankbusterMarkerWithoutHit`, Fensterverlängerung). Konzept 15 trägt den Beleg.
+- *10 Wirksamkeit:* Der belegte Fall ist gedeckt. Offen bleibt der Marker ohne Zauber während seiner Standzeit; ihn misst die Liste selbst, weil ein falscher Eintrag beim nächsten Treffer wieder herausfällt.
+
+**Prüfgrad:** statisch (BossModReborn-Quelle, ECommons-Quelle); Prüfskripte.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
