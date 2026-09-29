@@ -102,9 +102,10 @@ Konkrete Folge, nicht nur Kosmetik:
 
 Vollständige Erhebung aller Aktionen, deren Spielbeschreibung eine Ortsänderung
 nennt, gegen die Belegung von `MoveForwardAbility` / `MoveBackAbility` (beide
-laufen laut `CustomRotation_Ability.cs:325/342` **nur** bei gesetztem
+laufen laut `CustomRotation_Ability.cs:327/344` **nur** bei gesetztem
 `AutoStatus.MoveForward`/`MoveBack`, können die Schadensrotation also nicht
-stören):
+stören; die drei direkten Aufrufer in `NIN_Reborn`, `WAR_Reborn` und `BeirutaNIN`
+prüfen dieselbe Flagge, geprüft 29.09.2026):
 
 | Job | Aktion | Richtung | Vorher | Jetzt |
 |---|---|---|---|---|
