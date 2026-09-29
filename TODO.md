@@ -114,15 +114,9 @@ Nicht behoben, weil der Wirkungsbereich den Vorgang sprengt. Das Flag wird in `I
 
 **Auflösungsbedingung:** eine Erhebung, welche der sechs Setzstellen eine Ausnahme rechtfertigen, und eine Engführung des Flags auf diese.
 
-### Beschwörer: Searing Light bei mehreren Beschwörern — im Spiel zu bestätigen · N
+### Beschwörer: Searing Light bei mehreren Beschwörern — Grenzen, keine offene Bestätigung · N
 
-Umgesetzt und in `AUDIT_LOG.md` A78 und A89 nachgewiesen, soweit statisch möglich; Konzept in `docs/rotation-flow/12-searing-light-stacking.md`. Der Stand im Code ist V8: `mayFireSearingLight` in `SMN_Reborn.cs` fordert die Burstphase in Solar Bahamut, das unmittelbar bevorstehende Burstfenster, oder — bei einem zweiten Beschwörer — die große Beschwörung, und weicht bei **allen** belegten Phasen auf Titan aus, oder auf Ifrit, wenn der Spieler ohnehin beim Ziel steht (C69). V7 ist damit zurückgebaut; das frühere `|| !HasAnySearingLight` steht nicht mehr in der Zündbedingung. Offen sind zwei Beobachtungen, die nur im Spiel zu machen sind, beide mit einer Gruppe aus mindestens zwei Beschwörern:
-
-**Kommt Solar Bahamut weiterhin alle 120 Sekunden?** Das entscheidet die Kopplungsfrage aus dem Defekt zu `UseSummonsAndTrances` weiter oben. Rutscht der Takt, trägt `burstInSolar` nicht mehr, und die Zündbedingung fällt auf den Zweig für den zweiten Beschwörer zurück.
-
-**Zünden mehrere Beschwörer beim Buffende gleichzeitig?** Das Modell schreibt sequenziell zu und bildet das nicht ab. Der Fall besteht heute schon und sollte seltener werden, nicht häufiger; belegt ist das nicht.
-
-
+Stand V8 (A78, A89, C69; Konzept 12). **Neu geprüft (A207):** Der Eintrag wartete auf zwei Beobachtungen von ihm. Die Regel sagt nichts voraus, was ein Spielbefund korrigieren müsste — sie liest in jedem Zyklus die Bereitschaft von Solar, den eigenen und fremden Buff-Status, und weicht bei belegten Phasen aus. Rutscht der Solar-Takt, fällt die Zündbedingung auf den Zweig für den zweiten Beschwörer zurück, wie gebaut. **Benannte Grenze:** Zünden zwei Beschwörer im selben Rahmen, kann das Modell es nicht verhindern; ein Abgleich zwischen zwei Spielern wäre eine Annahme über den anderen, kein tragender Grund.
 
 ### Status-Einstellungen auf der falschen Seite der Aktion · N, U
 
@@ -333,17 +327,10 @@ Bei der Prüfung, ob BossModReborn die **Aktion** einer Vorhersage nennt (Ergebn
 
 **Vor dem Bau zu klären:** wie die Bitposition auf ein Gruppenmitglied abzubilden ist (BossModReborn nummeriert nach seiner eigenen Gruppenliste), und ob das über die IPC-Grenze ein weiterer ungeprüfter Vertrag wäre — dieselbe Klasse wie `SpecialMode` und `PredictedDamageType`.
 
-### Vorhergesagte Minderung bei zwei Treffern in Folge — im Spiel zu bestätigen · N
+### Vorhergesagte Minderung bei zwei Treffern in Folge — selbstbewertend, keine offene Bestätigung · N
 
 **Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
-
-**Spielbeobachtung des Auftraggebers, Ewige Königin, Anfangsphase:** erst ein kleiner Flächenangriff, dann ein großer. Die BMR-Vorhersage feuert auf den ersten, Schimmerschild oder Tactician geht dafür hinaus, und beim zweiten ist die Barriere aufgebraucht oder die Minderung abgelaufen.
-
-**Behoben, hinter `Hold a predicted mitigation while a small cast is running` (Vorgabewert aus):** Läuft gerade ein bewertet **kleiner** Flächencast, hält `BMRShouldRefreshBefore` die Auffrischung zurück und nimmt das nächste Ereignis. Sonde: `ProactiveMitigationHeld`, je Aktion und in der Listenanzeige; die Regel bewertet sich selbst (`ProactiveHoldRecord`) und setzt aus, wenn sie öfter falsch als richtig lag. Seit A142 steht das Urteil auch im Diagnosefenster, also im Kampf.
-
-**Zu beobachten:** ob Schimmerschild in dieser Anfangsphase jetzt den zweiten Angriff deckt statt des ersten — und ob die Regel in anderen Kämpfen eine Minderung zu lange zurückhält.
-
-**Als Heuristik gekennzeichnet:** Nichts belegt, dass die Vorhersage den Cast meint, der gerade läuft. BMR nennt den Zeitpunkt, nicht die Wucht; die Größe stammt aus der eigenen Messung des laufenden Casts. Läuft nichts oder ist der Cast nie gemessen worden, bleibt das Verhalten unverändert.
+Behoben hinter `Hold a predicted mitigation while a small cast is running` (ab Werk aus): Läuft ein bewertet kleiner Flächencast, hält `BMRShouldRefreshBefore` die Auffrischung für das nächste Ereignis zurück. **Neu geprüft (A207):** Die Regel bewertet sich selbst (`ProactiveHoldRecord`) und setzt aus, wenn sie öfter falsch als richtig lag — die Beobachtung, auf die der Eintrag wartete, macht sie selbst. Offen ist allein die Voreinstellung (seine Entscheidung). Als Heuristik gekennzeichnet: BMR nennt den Zeitpunkt, nicht die Wucht; die Größe stammt aus der Messung des laufenden Casts.
 
 ### Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle · N, R
 
@@ -448,14 +435,10 @@ Gefunden bei der Erhebung der Fork-Einstellungen (A103). Die beiden Tooltip-Wege
 
 **Auflösung:** entweder `ParentValue` auf mehrere zulässige Werte erweitern — Wirkungsbereich ist der gemeinsame Zeichenpfad aller Rotationen, Betroffenenkreis R und U — oder es beim Tooltip belassen, der jetzt sagt, für welche Option jeder Wert gilt. **Empfehlung: beim Tooltip belassen**, solange kein zweiter Fall dieser Art auftritt; der Nutzen ist eine Einrückung, die Kosten sind eine Signaturerweiterung im Upstream-Pfad.
 
-### Die Holy-Vorbehalte des Weißmagiers entscheiden ohne jede Sonde · N
+### Die Holy-Vorbehalte des Weißmagiers — neu geprüft (A207) · N
 
 **Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
-Gefunden bei der Erhebung der Defektklasse „Regel entscheidet im Kampf, niemand kann sehen, ob sie greift" (A102). Drei Vorbehalte halten Sanctus zurück — `ShouldStretchHolyStun`, `ShouldHoldHolyForBarrier`, `ShouldHoldHolyWhilePackSlowed` —, und keiner von ihnen hinterlässt eine Spur. Am Bildschirm ist ein zurückgehaltenes Sanctus nicht von einem unterscheidbar, das aus einem anderen Grund ausblieb.
-
-**Das ist dieselbe Klasse, die bei der Flächenbewertung behoben wurde**, und sie ist dort wie hier durch die Cynefin-Regel gefordert: In der komplexen Domäne liegt die Antwort im Handeln, also ist das Messmittel mitzuliefern. Der Bedarf ist hier belegt und nicht vermutet — für `StretchHolyStun` steht als offener Punkt genau die Beobachtung aus, ob die Streckung im Spiel eintritt, und ohne Sonde ist sie nicht zu machen.
-
-**Erfasst, nicht bearbeitet:** Der laufende Auftrag betraf die Flächenbewertung; ein Eingriff in den Sanctus-Pfad ist eine eigene Sache. **Auflösung:** je Vorbehalt die Aktions-Id und der Grund des Rückhalts in der Diagnoseanzeige, nach derselben Bauform wie `DataCenter.AreaMitigationSkipped` — Vermerk an der Entscheidungsstelle, Anzeige im Debug-Fenster.
+Die frühere Auflösung „Grund des Rückhalts in der Diagnoseanzeige" widerspricht seiner Vorgabe (er nutzt das Diagnosefenster nicht; keine neuen Zeilen dort). Zwei der drei Vorbehalte lesen Tatsachen im Moment der Entscheidung — `ShouldHoldHolyForBarrier` (eine Barriere liegt) und `ShouldHoldHolyWhilePackSlowed` (Anteil verlangsamter Gegner) — und sagen nichts voraus, was nachzusteuern wäre. Offen bleibt `ShouldStretchHolyStun`: seine Wirkung (Streckung von 5,5 auf 7,0 s) ist ein Modell; die Voreinstellung (aus) liegt bei ihm, eingeschaltet hat er sie zum Testen.
 
 ### `SpreadDamagePaths` enthält keinen Spread-Marker · N
 

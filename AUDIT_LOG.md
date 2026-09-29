@@ -4471,6 +4471,16 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A207 · Offene Spielbestätigungen neu geprüft (29.09.2026)
+
+- *Anlass:* sein Auftrag, alle offenen Entscheidungen erneut zu prüfen; CLAUDE.md: „Keine offene Spielbestätigung als Aufgabe an ihn".
+- *Searing Light bei mehreren Beschwörern:* keine Prognose im Spiel, die Regel liest den Zustand je Zyklus; Grenze (gleichzeitiges Zünden zweier Spieler) benannt. Keine Aufgabe an ihn.
+- *Vorhergesagte Minderung bei zwei Treffern:* selbstbewertend (`ProactiveHoldRecord`); offen nur die Voreinstellung.
+- *Holy-Vorbehalte:* Die vorgesehene Diagnosezeile widerspricht seiner Vorgabe; zwei Vorbehalte lesen Tatsachen, die Streckung ist ein Modell mit Voreinstellung bei ihm.
+- *Außerdem in diesem Durchgang als keine Entscheidung erkannt und gebaut:* Intervention (A201), Improvised Finish (A202), Addersgall (A203), Vorschau-Nullprüfungen (A204), Flächenabwehr nach eigener Messung (A205), Searing Light hinter Wiederbelebung (A206). Als Entscheidung bestätigt: Burst-Sperre von Barde/Pictomancer/Tänzer (Einstellungstext), Passage of Arms (Voreinstellung), Shake It Off und Nascent Flash (Zielkonflikt eigener gegen fremden Schutz), Zielwahl von The Blackest Night/Oblation (Lesart des Einstellungstexts), Reihenfolge Reprisal/The Blackest Night (berührt seine Rückhaltevorgabe), Voreinstellungen der Vorausschau und Heilzielwahl, V1 „Verfall" und Aetherpact, Improvised-Finish-Stapel (Option ja/nein), `SwiftcastBuffer` (Text verspricht, was einen behobenen Defekt neu bauen würde).
+
+**Prüfgrad:** statisch.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
