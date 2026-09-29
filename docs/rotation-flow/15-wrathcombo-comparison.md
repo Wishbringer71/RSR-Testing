@@ -117,6 +117,11 @@ wählt über die bestehende Partnerwahl neu.
 - **Verfügbar** ist, wen auch die erste Wahl nähme: nicht ein zweiter Tänzer und nicht dessen Partner. Mit zwei
   Tänzern in der Gruppe endete sonst die Partnerschaft alle 30 s zugunsten des Partners des anderen, und Closed
   Position wählte denselben Partner wieder (A211).
+  Und nur, wer in Reichweite von Closed Position steht (30 y, Spieldaten; `TargetInfo.Range`). Dieselbe Grenze
+  gilt seit A223 für die Partnerwahl selbst: Sie las die Gruppenliste ohne Reichweite, und nach ihr prüft nichts
+  mehr die Entfernung. Ein unerreichbarer Partner ging ans Spiel, wurde abgelehnt und im nächsten Frame erneut
+  gewählt, an der Spitze der oGCD-Reihenfolge des Tänzers (Schluss aus dem Code, nicht beobachtet). Ohne
+  Mitglied in Reichweite bleibt der Tänzer ohne Partner, bis eines hineinkommt.
 - **Zeitpunkt:** Für einen Wechsel erst, wenn Closed Position bereit ist (30 s Abklingzeit, Job-Guide) — sonst
   hätte der Tänzer bis dahin keinen Partner. Nie während eines Tanzes, damit das Finish den Partner noch
   erreicht. Ending hat 1 s Abklingzeit.

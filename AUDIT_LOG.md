@@ -4666,6 +4666,20 @@ Bereich D der Tiefenprüfung seit 357ffce09: DRK (3493abbd2, 4eeca9bad, b7b3f1b3
 
 **Prüfgrad:** statisch (Code, Wirktexte, xivapi, Versionsgeschichte); Prüfskripte; Compile über die CI.
 
+### A223 · Tiefenprüfung Schadensausteiler: Tanzpartner in Reichweite, Improvised Finish, Beschwörer, Rücksprung (29.09.2026)
+
+Bereich E der Tiefenprüfung seit 357ffce09: Tänzer (226911fe9, 1a1155863, 30aaf4cb3, A211), Beschwörer (d5e0703f7, A218/A220), Samurai (A218), Rücksprung von Displacement und Hissatsu: Yaten (A193).
+
+- *Befund, Tanzpartner ohne Reichweite:* `FindDancePartner` (Upstream) liest `DataCenter.PartyMembers` und übergeht die übergebene Kandidatenliste, die die Reichweite von Closed Position trägt (30 y, xivapi 16006). Nach der Zielwahl prüft nichts die Entfernung mehr (`ActionTargetInfo` ab der Wahl: Wirkungsbereich und Bewegungssicherheit, keine Reichweite). Seit V5 (A186) endet die Partnerschaft im Kampf bei Tod und für einen Besseren. Die Neuwahl konnte dann ein Mitglied außer Reichweite treffen. *Folge (Schluss aus dem Code, nicht beobachtet):* Closed Position geht ans Spiel und wird abgelehnt. Im nächsten Frame fällt dieselbe Wahl, an der Spitze von `EmergencyAbility` des Tänzers, also vor jedem anderen oGCD. `DancePartnerNeedsChange` prüfte die Reichweite ebenfalls nicht. Ein Besserer außer Reichweite beendete so eine erreichbare Partnerschaft.
+- *Optionen:* (0) belassen; (a) nur die Wechselprüfung; (b) nur die Partnerwahl; (c) beide. *Abwägung:* (a) lässt den Todesfall offen, (b) ließe die Wechselprüfung für einen Unerreichbaren beenden. Gewählt (c): Die Partnerwahl nimmt nur Gruppenmitglieder aus der Kandidatenliste (Abgleich über `GameObjectId`). Die Wechselprüfung verlangt `DistanceToPlayer() <= ClosedPositionPvE.TargetInfo.Range`, dieselbe Grenze.
+- *Falsifikation:* **Kein Defekt?** Vor V5 fiel die Neuwahl praktisch nur vor dem Pull, wenn alle beieinanderstehen. Mit V5 fällt sie im Kampf. **Option falsch?** Ist die Kandidatenliste leer, obwohl ein Mitglied in Reichweite steht, bliebe der Tänzer ohne Partner. Für freundliche Einzelziele ist die Liste die Menge in Reichweite ohne weitere Filter (`ModifyClosedPositionPvE` setzt keine Statusprüfung). **Ausgeliefert, nichts ändert sich?** Stehen alle in Reichweite, ist die Wahl gleich; das ist der Normalfall.
+- *Improvised Finish (A202):* Liegt in `EmergencyAbility` vor dem Partnerwechsel. Jede nächste Aktion beendet Improvisation, das Finish sofort gibt die Barriere mit 0 Stapeln. Die Aussage im Kommentar deckt sich mit dem Wirktext.
+- *Beschwörer:* Die Sperre `AreaHitOnMe` sitzt an beiden Radiant-Aegis-Wegen unter der Flächenflagge (Flächenpfad und `RadiantAegisDueBeforeDemi`). Der Raidwide-Weg über BossModReborn bleibt ungesperrt, er meint die ganze Gruppe samt Spieler. Searing Light wartet nur, solange die nächste GCD Resurrection oder Physick ist (A206).
+- *Samurai:* Die Sperre sitzt nur im Flächenpfad, die Einzelabwehr (Tankbuster auf ihn, Gesundheitsschwelle) ist ein getrennter Pfad. Die Schwelle `TengentsuHealth` ist eine Minderungsschwelle und liest den Stand.
+- *Rücksprung:* Displacement 15 y, Hissatsu: Yaten 10 y (Wirktexte). Die Klasse ist in A193 erhoben.
+
+**Prüfgrad:** statisch (Code, Spieldaten, Wirktexte); Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

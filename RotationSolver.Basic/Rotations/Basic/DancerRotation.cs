@@ -147,9 +147,11 @@ public partial class DancerRotation
 	// Also not another dancer, nor another dancer's partner - the first choice skips both
 	// (ActionTargetInfo.FindDancePartner). Counted as available, with a second dancer in the party a
 	// partner of the other ranked above ours ended our partnership every 30 s, and Closed Position then
-	// picked the same partner again (review of A186).
-	private static bool IsAvailablePartner(IBattleChara member)
+	// picked the same partner again (review of A186). And not out of Closed Position's range, for the
+	// same reason: the choice skips them too (A223).
+	private static bool IsAvailablePartner(IBattleChara member, float range)
 		=> member != Player && !member.IsDead && !IsHamperedPartner(member) && !member.IsConditionCannotTarget()
+			&& member.DistanceToPlayer() <= range
 			&& !member.HasStatus(false, StatusID.DancePartner, StatusID.ClosedPosition);
 
 	// A member's place in the dance partner priority: the index of the first job of theirs in the list.
@@ -221,7 +223,7 @@ public partial class DancerRotation
 		var partnerRank = DancePartnerRank(partner);
 		foreach (var member in PartyMembers)
 		{
-			if (member == partner || !IsAvailablePartner(member))
+			if (member == partner || !IsAvailablePartner(member, ClosedPositionPvE.TargetInfo.Range))
 			{
 				continue;
 			}

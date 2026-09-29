@@ -337,7 +337,8 @@ When the dance partner dies, the partnership ends and Closed Position picks agai
 carries the weakness of a raise, someone else gets the partner buffs if anyone is available; once it
 has worn off, the higher-priority member is taken back. A partner chosen by name is replaced only for
 death or weakness. Another dancer and their partner are never counted as available. A swap waits until
-Closed Position is ready and never interrupts a dance.
+Closed Position is ready and never interrupts a dance. Only members within Closed Position's range
+are chosen or counted, so a partner out of reach no longer stalls the Dancer's other off-GCDs.
 
 ## Tankbuster markers: more are recognised, and false ones are learned away
 

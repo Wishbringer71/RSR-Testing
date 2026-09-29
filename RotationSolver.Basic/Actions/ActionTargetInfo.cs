@@ -2484,11 +2484,23 @@ public struct ActionTargetInfo(IBaseAction action)
 				return null;
 			}
 
+			// Only members among the candidates, which are the ones in Closed Position's range: nothing
+			// checks the range after this choice, so a partner out of reach was sent to the game, refused,
+			// and chosen again on the next frame - at the head of the Dancer's off-GCD order (A223).
+			HashSet<ulong> inReach = [];
+			foreach (var candidate in battleChara)
+			{
+				if (candidate != null)
+				{
+					inReach.Add(candidate.GameObjectId);
+				}
+			}
+
 			foreach (var job in dancePartnerPriority)
 			{
 				foreach (var member in DataCenter.PartyMembers)
 				{
-					if (member == Player.Object)
+					if (member == Player.Object || !inReach.Contains(member.GameObjectId))
 					{
 						continue;
 					}
@@ -2513,7 +2525,7 @@ public struct ActionTargetInfo(IBaseAction action)
 			{
 				foreach (var member in DataCenter.PartyMembers)
 				{
-					if (member == Player.Object)
+					if (member == Player.Object || !inReach.Contains(member.GameObjectId))
 					{
 						continue;
 					}
