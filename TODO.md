@@ -13,9 +13,9 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 Barde, Pictomancer und Tänzer führen „Prevent the use of defense abilties during burst" (ab Werk an). Die allgemeine Schranke (Konzept 08, „Die Abwehrsperren") greift dort nicht, weil der Einstellungstext ohne Ausnahme „verhindern" sagt und bindet. Im Kampf: Ein tödlicher Raidwide im Burst bekommt von diesen drei Jobs keine Minderung. Zur Entscheidung vorzulegen: Text ändern (seine Entscheidung) oder so lassen. Dieselbe Einstellung als Damage-Dealer-Regel zu führen, wäre die Stufe „Damage Dealer".
 
-### Tänzer: Improvised Finish wird nie gewirkt, die Barriere von Improvisation verfällt · N
+### Tänzer: Improvised Finish — Stapel aufbauen bei angekündigtem Treffer · N
 
-`ImprovisationPvE` führt `Improvisation` als `StatusProvide` und verweigert sich, solange der Knopf Improvised Finish ist; einen eigenen Aufruf von `ImprovisedFinishPvE` gibt es nicht (seit 4727b6f7a, Upstream). Die nächste Aktion beendet den Tanz. Im Kampf: Die Gruppe bekommt das Regen, nie die Barriere (5 % bei 0 bis 10 % bei 4 Stapeln). Zur Entscheidung vorgelegt: sofort abschließen (5 %) oder bei angekündigtem Treffer Stapel aufbauen. Konzept 14, „Wechselwirkungen und Zeit".
+Seit A202 wird Improvised Finish sofort gewirkt (5 %). Offen als Verbesserung: bei angekündigtem Flächentreffer Rising Rhythm bis 4 Stapel (10 %) aufbauen, je Stapel drei Sekunden ohne Aktion. Nutzen nicht belegt, also eigene Option, ab Werk aus; zur Entscheidung, ob sie gebaut werden soll. Konzept 14, „Wechselwirkungen und Zeit".
 
 ### Paladin: Passage of Arms endet ab Werk mit RSRs nächster Aktion · N, U
 
@@ -28,10 +28,6 @@ Shake It Off hebt die eigenen Status Thrill of Battle, Damnation und Bloodwhetti
 ### Krieger: Nascent Flash auf andere nimmt Bloodwhetting vor einem Tankbuster · N, U
 
 Seit Upstream `c3fac720b` heilt der Krieger Gruppenmitglieder unter `Nascent Flash Heal Threshold` (0,6) mit Nascent Flash. Nascent Flash teilt die Abklingzeit (25 s) mit Bloodwhetting (Job-Guide: „Shares a recast timer with Bloodwhetting"), und im Dispatch laufen die Heilfähigkeiten vor der Einzelabwehr. Im Kampf: Ist ein Tankbuster auf den Krieger angekündigt (Zauber, Marker oder BossModReborn) und steht zugleich ein Mitglied unter 60 %, geht die gemeinsame Abklingzeit an das Mitglied; der Krieger nimmt den Tankbuster ohne Bloodwhetting (−10 % für 8 s, −10 % für 4 s, Barriere, Heilung je Waffenfertigkeit). Das Mitglied erhält dafür −10 %, dieselbe Barriere und Heilung. Richtungsentscheidung: eigene Stufe 1 (Konzept 09) gegen fremde Heilung (Konzept 07). Zur Entscheidung vorgelegt (A191).
-
-### Paladin: Intervention über zwei Pfade nie gewirkt · N
-
-`InterventionPvE` verlangt am Ziel eine Tankhaltung (`TargetStatusNeed`: Grit, Royal Guard, Iron Will, Defiance) mit `StatusFromSelf` ab Werk wahr. Die Haltung des anderen Tanks stammt von ihm, nicht vom Paladin; `MinStatusRemainingTime` überspringt sie, und die Bedingung schlägt für jedes Ziel fehl. `PLD_Reborn` ruft Intervention an zwei Stellen ohne `skipTargetStatusNeedCheck` (die Tank-Option und die allgemeine Einzelabwehr); dort fällt es nie. Nur der Pfad mit Rampart/Sentinel und niedriger Gesundheit des Ziels überspringt die Bedingung. Im Kampf: Der Paladin schützt den anderen Tank nicht mit Intervention, außer im Notfallpfad. Behebung braucht eine Richtungsentscheidung (Herkunft der Bedarfsstatus je Aktion, oder die Haltung als Zielwahl statt Bedingung); erhoben im Review zu A166, nicht angefasst.
 
 ### Vorschläge aus dem WrathCombo-Vergleich · N, U
 

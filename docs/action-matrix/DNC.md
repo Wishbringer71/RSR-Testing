@@ -1,6 +1,6 @@
 # DNC — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-28; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-29; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `DancerRotation`
 - Rotation: `RotationSolver/RebornRotations/Ranged/DNC_Reborn.cs`
@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-28; nic
 
 ## Nutzung
 
-direkt: 39 · ungenutzt: 3 · über andere Aktion: 6
+direkt: 40 · ungenutzt: 2 · über andere Aktion: 6
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -41,7 +41,7 @@ direkt: 39 · ungenutzt: 3 · über andere Aktion: 6
 | Job | Fountain (`FountainPvE`) | 15990 | Weaponskill | direkt |
 | Job | Fountainfall (`FountainfallPvE`) | 15992 | Weaponskill | direkt |
 | Job | Improvisation (`ImprovisationPvE`) | 16014 | Ability | direkt |
-| Job | Improvised Finish (`ImprovisedFinishPvE`) | 25789 | Ability | ungenutzt — Knopfwechsel über Improvisation gesperrt: deren StatusProvide enthält Improvisation (außer in den letzten StatusRefreshGcdCount GCDs des Status oder mit ShouldCheckStatus aus) |
+| Job | Improvised Finish (`ImprovisedFinishPvE`) | 25789 | Ability | direkt |
 | Job | Jete (`JetePvE`) | 16001 | Weaponskill | direkt |
 | Job | Last Dance (`LastDancePvE`) | 36983 | Weaponskill | direkt |
 | Job | Pirouette (`PirouettePvE`) | 16002 | Weaponskill | direkt |
@@ -215,5 +215,10 @@ Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Br
 Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 
 - Foot Graze (`FootGrazePvE`, Ability): ungenutzt
-- Improvised Finish (`ImprovisedFinishPvE`, Ability): ungenutzt — Knopfwechsel über Improvisation gesperrt: deren StatusProvide enthält Improvisation (außer in den letzten StatusRefreshGcdCount GCDs des Status oder mit ShouldCheckStatus aus)
 - Leg Graze (`LegGrazePvE`, Ability): ungenutzt
+
+## Abgleich Wirktext ↔ Code
+
+Der Wirktext nennt eine Bedingung, die Basisrotation führt dafür weder `StatusNeed` noch `ActionCheck`. RSR verlässt sich dann auf die Nutzbarkeitsauskunft des Spiels, die `BasicCheck` nur für eine feste Liste von Ablehnungscodes liest. Kandidaten, keine Befunde.
+
+- Improvised Finish (`ImprovisedFinishPvE`): Improvisation

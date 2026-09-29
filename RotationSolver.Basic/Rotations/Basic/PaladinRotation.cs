@@ -291,6 +291,12 @@ public partial class PaladinRotation
 		setting.ActionCheck = () => OathGauge >= 50;
 		setting.TargetStatusNeed = [StatusID.Grit, StatusID.RoyalGuard_1833, StatusID.IronWill, StatusID.Defiance];
 		setting.TargetStatusProvide = [StatusID.KnightsResolve, StatusID.KnightsBenediction, StatusID.Intervention];
+		// The stance it needs is the other tank's own; it never comes from the paladin. With the
+		// default "from self" the need failed for every target, and Intervention was only ever cast
+		// by the emergency path that skips it - "Use Intervention on CoTank during tankbusters" and
+		// the health threshold for it never fired (A201). Knight's Resolve and the rest come only
+		// from a paladin, so the provide check reads the same either way.
+		setting.StatusFromSelf = false;
 	}
 
 	static partial void ModifyHolySpiritPvE(ref ActionSetting setting)

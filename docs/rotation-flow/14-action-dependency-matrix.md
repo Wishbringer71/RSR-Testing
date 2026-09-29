@@ -28,7 +28,7 @@ maschinell als „ungenutzt" erscheint, zerfällt in sechs Klassen (Stand 26.09.
 | Begleiter und Automatik | Akh Morn, Revelation, Exodus, Wyrmwave, Scarlet Flame, Luxwave, Everlasting Flight (SMN) · Embrace, Seraphic Veil (SCH) · Arm Punch, Roller Dash, Pile Bunker, Crowned Collider, Rook Overload (MCH) · Hollow Nozuchi (NIN) | Wirktext: „cannot be assigned to a hotbar"; der Begleiter oder ein Auslöser führt sie aus |
 | Limit Breaks | je Job drei | ohne Wirktext im Datensatz; RSR castet keine PvE-Limit-Breaks (Konzept 05) |
 | Hilfsaktionen | Sleep, Repose, Rescue, Leg Graze, Foot Graze, das Ablegen der Tankhaltung (Release …), Dissolve Union, Ending | Sie wirken auf Mitspieler oder die Gruppenlage (Rescue zieht einen Spieler, das Ablegen der Haltung gibt die Feindseligkeit ab, Schlaf bricht beim ersten Treffer). Nicht automatisiert — Schluss aus der Wirkung, kein Beleg für eine Absicht |
-| **Knopfwechsel gesperrt** | Improvised Finish (DNC) · Detonator (MCH) | Die Basisaktion führt den Status, den die Zielaktion braucht, als `StatusProvide` und verweigert sich, solange der Knopf gewechselt hat — außer in den letzten `StatusRefreshGcdCount` GCDs des Status (ab Werk 2) oder mit ausgeschaltetem `ShouldCheckStatus`. Detonator: seit A164 schließt `WildfirePvE` den gewechselten Knopf auch dort aus; Wildfire zündet mit allen Stapeln von selbst. Improvised Finish: Defekt, siehe „Wechselwirkungen und Zeit" |
+| **Knopfwechsel gesperrt** | Improvised Finish (DNC) · Detonator (MCH) | Die Basisaktion führt den Status, den die Zielaktion braucht, als `StatusProvide` und verweigert sich, solange der Knopf gewechselt hat — außer in den letzten `StatusRefreshGcdCount` GCDs des Status (ab Werk 2) oder mit ausgeschaltetem `ShouldCheckStatus`. Detonator: seit A164 schließt `WildfirePvE` den gewechselten Knopf auch dort aus; Wildfire zündet mit allen Stapeln von selbst. Improvised Finish: seit A202 eigens gerufen, siehe „Wechselwirkungen und Zeit" |
 | **Ohne belegten Nutzen** | Six-sided Star (MNK) · Flamethrower (MCH) | Der Vorteil ist aus den Wirktexten nicht rechenbar — siehe „Pausen und Phasenenden". Meditate (SAM) und Rook/Queen Overdrive (MCH) wirkt die Rotation seit A162 in der Pause |
 
 ## Die Stufen (seine Vorgabe „universell zuerst")
@@ -155,10 +155,13 @@ beendet es seinen eigenen Kanal also mit dem nächsten GCD oder der nächsten F�
 - **Astrologe:** Die Minderung bleibt nach dem Abbruch; der Kanal verlängert nur das Regen. Die Sperre
   hält dafür bis zum Treffer auch die GCD-Heilungen des Astrologen zurück. Ohne Sperre verliert er
   wenig.
-- **Tänzer:** Improvised Finish — die Barriere, 5 % bei 0 bis 10 % bei 4 Stapeln — wirkt RSR nie:
-  `ImprovisationPvE` führt `Improvisation` als `StatusProvide` und verweigert sich deshalb, solange der
-  Knopf Improvised Finish ist; ein eigener Aufruf fehlt. Die nächste Aktion beendet den Tanz, und die
-  Barriere verfällt. Im Kampf: Der Tänzer gibt für seine Zwei-Minuten-Gruppenaktion nur das Regen.
+- **Tänzer:** Improvised Finish — die Barriere, 5 % bei 0 bis 10 % bei 4 Stapeln — wirkte RSR nie:
+  `ImprovisationPvE` führt `Improvisation` als `StatusProvide` und verweigert sich, solange der Knopf
+  Improvised Finish ist, und ein eigener Aufruf fehlte; die nächste Aktion beendete den Tanz. **Seit A202**
+  schließt `DNC_Reborn` den Tanz sofort mit Improvised Finish ab: 5 % Barriere für 30 s für die Gruppe in 8 y,
+  und verloren geht höchstens der Rest eines GCDs Regen, den die nächste Aktion ohnehin beendet hätte.
+  Offen, als Verbesserung mit eigener Option: bei angekündigtem Treffer Stapel bis 10 % aufbauen — kostet je
+  Stapel drei Sekunden ohne Aktion.
 
 **Umgekehrt, Abwehr beendet Angriff:** Flamethrower (Machinist) ist ebenfalls ein Kanal; RSR wirkt ihn
 nicht. Meditate (Samurai) wirkt RSR nur in der Pause. Dort beendet ihn jede Abwehr oder Heilung, die

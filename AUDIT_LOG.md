@@ -4422,6 +4422,21 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch (Lesen, Prüfskripte); Compile über die CI.
 
+### A201 · Paladin: Intervention auf den anderen Tank fällt wieder (29.09.2026)
+
+- *Neu geprüft, ob Entscheidung:* Der TODO-Eintrag verlangte eine „Richtungsentscheidung". Der Einstellungstext „Use Intervention on CoTank during tankbusters" und die Schwelle „Health threshold for Intervention" versprechen die Aktion; der Code wirkte sie nie. Der Text bindet (CLAUDE.md), also keine Wahl, sondern eine Bauform-Frage.
+- *Ursache:* `TargetStatusNeed` (Tankhaltungen) mit `StatusFromSelf` ab Werk wahr; die Haltung des anderen Tanks stammt nie vom Paladin.
+- *Umgesetzt:* `ModifyInterventionPvE`: `StatusFromSelf = false`. Die Bedarfsprüfung liest die Haltung jeder Herkunft; die Bereitstellungsprüfung (Knight's Resolve, Knight's Benediction, Intervention) liest dasselbe, weil nur Paladine sie vergeben. Einzige Aktion mit dieser Bedingung (erhoben).
+- *Im Kampf:* Mit „Use Intervention on CoTank during tankbusters" an schützt der Paladin den anderen Tank vor dessen Tankbuster; unter 60 % (Schwelle) auch sonst im Einzelabwehrpfad.
+
+### A202 · Tänzer: Improvised Finish wird gewirkt (29.09.2026)
+
+- *Neu geprüft, ob Entscheidung:* Vorgelegt war „sofort abschließen (5 %) oder Stapel aufbauen". Sofort abschließen kostet nichts, was nicht schon verloren war — die nächste Aktion beendete den Tanz — und bringt die Barriere, den Zweck der Aktion: eine Defektbehebung. Das Aufstapeln ist die Verbesserung mit Kosten (je Stapel drei Sekunden ohne Aktion) und bleibt zur Entscheidung.
+- *Umgesetzt:* `DNC_Reborn.EmergencyAbility`: Improvised Finish, sobald der Knopf gewechselt hat.
+- *Quelle:* Job-Guide (Tänzer, 28.09.2026): Barriere 5 % bei 0 Stapeln bis 10 % bei 4, 30 s, 8 y; Improvisation endet mit jeder anderen Aktion.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

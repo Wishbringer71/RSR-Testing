@@ -385,3 +385,14 @@ Bloodspiller and Quietus now go out under Delirium, in the two-minute window, or
 is above 70; otherwise the Blood is kept for the burst, entering Delirium with as much as fits (The
 Balance). Before, they went out at 50 Blood whenever they could.
 
+## Paladin: Intervention on the other tank works
+
+"Use Intervention on CoTank during tankbusters" and the Intervention health threshold never fired:
+the action required a tank stance on its target that came from the paladin himself, which the other
+tank's stance never does. It now accepts the stance from any source.
+
+## Dancer: Improvisation ends with its barrier
+
+Improvised Finish was never cast, so the dance ended with the next action and the party got the regen
+but not the barrier. The Dancer now finishes the dance at once, for the 5% barrier.
+
