@@ -4653,6 +4653,19 @@ Bereich C der Tiefenprüfung seit 357ffce09 (seine Forderung wie A220): Pull-Pfl
 
 **Prüfgrad:** statisch (Wirktexte, Code, Versionsgeschichte, Wiki und WrathCombo als Hinweis); Prüfskripte; Compile über die CI.
 
+### A222 · Tiefenprüfung Tanks: Betäubungshalt, Blutregel, Arm's Length, Intervention, Nascent Flash (29.09.2026)
+
+Bereich D der Tiefenprüfung seit 357ffce09: DRK (3493abbd2, 4eeca9bad, b7b3f1b3f, ecc3f85b1), Arm's Length für alle Tanks (64b3af436, A219), Paladin Intervention (30aaf4cb3), Krieger aus dem Upstream-Merge fd9600bc4 (c3fac720b) samt Vorausschau-Schwellen.
+
+- *Betäubungshalt (A215):* Die Frist ist ein GCD (`DataCenter.DefaultGCDTotal`), dazu das sichtbare Wirken von Holy/Holy III mit Radius aus den Spieldaten (8 y), gemessen vom Mittelpunkt des Wirkenden (wie A218). Gleiche Anteilsregel wie die Betäubung selbst. Kein gelernter Zustand mehr außer dem Zeitpunkt der letzten Gruppenbetäubung. *Grenze ergänzt:* Die Spieldaten führen viele Nicht-Spieler-Zeilen „Holy" (xivapi). Ob ein NPC der Gefährtenunterstützung eine davon wirkt und damit betäubt, ist nicht belegt; für ihn gilt nur die GCD-Frist (Konzept 10).
+- *Blutregel (A197):* `PlayerStatusStack` liefert `byte.MaxValue` nur für einen Status im Anflug, sonst 0 bei Fehlen; das Poolen greift also. Überlauf ausgeschlossen: Außerhalb von Delirium bringt ein GCD höchstens +20 Blut, 70 + 20 < 100. `InTwoMIsBurst` liest die Abklingzeit von Blood Weapon. Ab Stufe 68 ist sie durch Delirium ersetzt („Upgrades Blood Weapon to Delirium", Job-Guide), beide teilen aber die Abklingzeitgruppe 11 (xivapi, Zeilen 3625 und 7390). Der Ausdruck bleibt gültig.
+- *Arm's Length:* Alle vier Aufrufe liegen in `DefenseSingleAbility`, dieselbe Pfadfreigabe. *Befund, Text der Einstellung unvollständig:* Die Tooltips versprachen den Einsatz bei jedem Pull; seit A212/A219 hält ihn eine BossModReborn-Ankündigung eines Knockbacks nach Ablauf der Barriere und vor der Rückkehr der Abklingzeit zurück. Ein Satz dazu in allen vier Tooltips, ohne feste Zahl. Das Verhalten ist unverändert.
+- *Intervention (A201):* `StatusFromSelf = false` betrifft Bedarf (Haltung des anderen Tanks) und Angebot (Knight's Resolve u. a. nur von Paladinen). Die Aussage im Kommentar stimmt.
+- *Krieger, Upstream c3fac720b:* Nascent Flash liegt jetzt in `HealSingleAbility` statt im GCD-Heilpfad, in dem die oGCD-Aktion falsch saß. Die Heilflagge der Fähigkeiten setzt `StateUpdater` für jede Rolle, der Pfad läuft also. Die neue Enum-Einstellung `NascentFlashTargetStrategy` ist ein serialisierter Typ, neu und ohne Migration. Der Filtertausch in `NascentFlashCanUse` stellt im `finally` zurück. Die Schwelle liest den kurzen Vorlauf: Minderung und Barriere wirken sofort (A221).
+- *Falsifikation:* **Kein Defekt?** Beim Tooltip der Fall, dass jemand Arm's Length auf dem Pull erwartet und es nicht kommt — der Text bindet. **Option falsch?** Den Knockback-Halt zu entfernen hieße, eine Sicherheitsregel für den Text aufzugeben. **Ausgeliefert, nichts ändert sich?** Richtig so: Nur der Text ändert sich.
+
+**Prüfgrad:** statisch (Code, Wirktexte, xivapi, Versionsgeschichte); Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -79,6 +79,8 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			+ "In a fight: the Slow +20% lands on every enemy that strikes you and delays "
 			+ "auto-attacks as well as casts, so in a standing pack it throttles the whole incoming "
 			+ "stream for fifteen seconds. It costs nothing but its own cooldown.\n"
+			+ "Not while BossModReborn announces a knockback that lands after the barrier has run out "
+			+ "and before Arm's Length is ready again - the action is kept for it.\n"
 			+ "It also feeds the decision above: a pull already throttled by this Slow no longer counts "
 			+ "as unmitigated, so The Blackest Night is not spent into a stream that has been thinned. "
 			+ "Off by default, because it changes what the action is used for.")]

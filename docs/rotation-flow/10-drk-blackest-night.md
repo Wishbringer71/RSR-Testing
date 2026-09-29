@@ -249,7 +249,10 @@ Kommentar in `WHM_Reborn` und ist an keiner Spielquelle belegt):
 fällt die Barriere mit der Betäubung zusammen. Ein langsamerer GCD des Weißmagiers kann eine kurze Lücke
 zwischen Frist und Wirken lassen. Beides kostet höchstens eine Barriere ohne Dark Arts, also MP, kein Leben.
 Andere Flächenbetäuber als der Weißmagier liegen außerhalb seines Profils (Occult Crescent); für sie gilt
-nur die GCD-Frist.
+nur die GCD-Frist. Ebenso für einen Heiler der Gefährtenunterstützung: Erkannt werden nur die Spieleraktionen
+Holy (139) und Holy III (25860). Die Spieldaten führen dazu zahlreiche Nicht-Spieler-Zeilen gleichen Namens (etwa
+17614: 1,5 s, 8 y; 38085: 1,0 s, 8 y; xivapi, abgerufen 29.09.2026). Welche davon ein NPC der Gruppe wirkt und ob sie
+betäubt, ist nicht belegt; zudem steht ein NPC nur mit „Heal and raise Party NPCs" in der Gruppenliste.
 
 **Reprisal zuerst.** Der Pfad gibt je Gelegenheit **eine** Aktion zurück und arbeitet von oben nach
 unten: Oblation (10) · The Blackest Night (20) · Dark Mind · Shadowed Vigil/Shadow Wall · Rampart ·
