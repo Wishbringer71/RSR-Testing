@@ -770,11 +770,12 @@ Dann entfällt der Anlauf, seine Voraussetzung ist erfüllt, und die höhere Zah
 
 **Zwei Einstellungen stützen diese Wahl, beide am Code belegt.** `PreferTitanWhileMoving`
 zieht in `SummonPrimals` Titan bei Bewegung vor, unabhängig von der eingestellten Reihenfolge;
-voreingestellt aus. Und `AddCrimsonCyclone` ist voreingestellt **an** und bedeutet ausweislich seines
-Optionstexts und der Bedingung in `:483` — `AddCrimsonCyclone || DistanceToPlayer() <=
-CrimsonCycloneDistance` —, dass die Distanzprüfung übersprungen wird: RSR springt aus beliebiger
-Entfernung heran. Wer den Anlauf auf Nahkampfreichweite begrenzen will, schaltet die Option aus; dann
-greifen die drei Yalm aus `CrimsonCycloneDistance`.
+voreingestellt an (seit 29.09.2026, seine Regel für Voreinstellungen). Und `AddCrimsonCyclone`, jetzt voreingestellt
+**aus**, bedeutet ausweislich seines
+Optionstexts und der Bedingung vor Crimson Cyclone in `SMN_Reborn` — `AddCrimsonCyclone ||
+CrimsonCyclonePvE.Target.Target.DistanceToPlayer() <= CrimsonCycloneDistance` —, dass die Distanzprüfung übersprungen wird: RSR springt aus beliebiger
+Entfernung heran, sobald die Option an ist. Aus — die Voreinstellung — greifen die drei Yalm aus
+`CrimsonCycloneDistance`.
 
 Dass Slipstream eine Gießzeit hat, ist aus `AddSwiftcastOnGaruda` belegt, und dass die Topaz-GCDs
 sofort wirken, aus dem Optionstext von `PreferTitanWhileMoving`.
@@ -968,8 +969,8 @@ Abfrage fremder Abklingzeiten, die es nicht gibt.
 zuerst 0,01 Prozent gegenüber der Voreinstellung, 0,09 gegenüber der schlechtesten Reihenfolge und
 0,17 außerhalb eines Beschwörungsfensters. Dem steht der Anlauf von Crimson Cyclone in die Burstphase
 gegenüber; Titan ist sicher, erlaubt Bewegung und kostet drei Potenz Schaden je Zyklus. Was hier
-aussteht, ist deshalb keine Codeänderung, sondern die Empfehlung, `AddCrimsonCyclone` auszuschalten
-und `PreferTitanWhileMoving` einzuschalten.
+aussteht, ist deshalb keine Codeänderung mehr: `AddCrimsonCyclone` steht ab Werk aus und `PreferTitanWhileMoving`
+an (29.09.2026).
 
 **Die Gruppenprüfung bleibt der Schalter.** Bei einem einzelnen Beschwörer ändert sich nichts, und
 das ist gemessen und nicht bloß beabsichtigt: Das Modell weist für einen Beschwörer in jeder Variante

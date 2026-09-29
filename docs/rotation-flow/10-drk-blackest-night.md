@@ -55,7 +55,8 @@ Eingriffe in `DRK_Reborn.cs`, alle auf Upstream-Code:
 1. **Der Party-Zweig fragt seine Option ab** (`:155`). `BlackLantern` soll steuern, ob die Fähigkeit
    auf das Party-Mitglied mit den niedrigsten HP geht, wurde aber nie gelesen. Defektbehebung.
 2. **Der Selbstschutz-Zweig bekommt eine Zeitpunktwahl** (`BlackestNightUsage`, `:35`) mit drei
-   Stufen. Voreinstellung bleibt das heutige Verhalten.
+   Stufen. Voreinstellung ist die engste mit Notfall, `TankbusterHeavyPullOrLowHealth` (seine Regel für
+   Voreinstellungen, 29.09.2026: der im Kampf sinnvollere Wert).
 3. **Zwei Prüfgrößen liegen zentral** in `CustomRotation_OtherInfo`: `TankbusterOnMe` (`:1377`) und
    `HasMajorMitigation` (`:1365`); `SurveyStuns` hat eine Überladung mit der Trefferzahl bekommen
    (`:544`).
@@ -73,9 +74,9 @@ Größe ist die passende Antwort auf einen Treffer dieser Größe, nicht auf jed
 
 | Stufe | Bedingung |
 |---|---|
-| `WheneverDefensesOpen` (Voreinstellung) | keine zusätzliche Bedingung — Verhalten wie bisher |
+| `WheneverDefensesOpen` | keine zusätzliche Bedingung — Verhalten wie bisher |
 | `TankbusterOrHeavyPull` | `TankbusterOnMe` **oder** der gestaffelte Pull |
-| `TankbusterHeavyPullOrLowHealth` | zusätzlich Gesundheit ≤ `BlackestNightHealthRatio` (Vorgabe 60 %) |
+| `TankbusterHeavyPullOrLowHealth` (Voreinstellung) | zusätzlich Gesundheit ≤ `BlackestNightHealthRatio` (Vorgabe 60 %) |
 
 Der **gestaffelte Pull** verlangt fünf Dinge gleichzeitig:
 
@@ -184,8 +185,8 @@ Barriere, die sonst hinter ihrer eigenen Vorgängerin hängen bliebe.
 nicht weniger Schaden, sondern gar keiner. Sanctus (Holy), ab Stufe 82 Sanctga (Holy III), hält alles im
 Umkreis von acht Yalm 4 Sekunden lang an (`ActionId.resx` 139, 25860). Der Weißmagier kann das im
 Trash absichtlich aufrechterhalten: `WHM_Reborn.ShouldStretchHolyStun` streckt die Betäubung über
-`SurveyStuns`, solange die Gegner betäubbar sind — **hinter einer Option mit Standard aus**, weil
-die Wirkung ohne Laufzeitbeobachtung nicht zu belegen war. Erst wenn sie `StunResistance` tragen
+`SurveyStuns`, solange die Gegner betäubbar sind — **hinter einer Option, seit 29.09.2026 Standard an**; die
+Wirkung ist ohne Laufzeitbeobachtung nicht belegt. Erst wenn sie `StunResistance` tragen
 (39, „Immune to stun effects"), läuft der Strom wieder.
 
 Wer betäuben kann, entscheidet über die Reichweite der Regel:
@@ -424,8 +425,10 @@ Fall „Dark Arts liegt an, während die Barriere noch läuft" bereits selbst (`
 
 **Was das nicht leistet.** Ob vier Gegner die Verbrauchsrate im gespielten Inhalt erreichen, ob eine
 halb betäubte Gruppe den Strom weit genug drückt und ob die engeren Stufen insgesamt besser
-abschneiden — all das ist ohne Spielbeobachtung nicht zu belegen. Deshalb ist die Voreinstellung das
-alte Verhalten, sind Gegnerzahl und Gesundheitsschwelle einstellbar, und deshalb steht der offene
+abschneiden — all das ist ohne Spielbeobachtung nicht zu belegen. Voreinstellung ist trotzdem die engste
+Stufe mit Notfall, weil sie im Kampf die sinnvollere ist (seine Regel, 29.09.2026): Sie behält die 3000 MP für
+Treffer, die die Barriere füllen, und der Notfall unter der Gesundheitsschwelle bleibt. Gegnerzahl und
+Gesundheitsschwelle sind einstellbar, und deshalb steht der offene
 Rest in `TODO.md`.
 
 ## Offene Punkte zu diesem Konzept

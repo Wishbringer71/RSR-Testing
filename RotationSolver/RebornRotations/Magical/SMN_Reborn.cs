@@ -24,7 +24,7 @@ public sealed class SMN_Reborn : SummonerRotation
 	public bool GCDHeal { get; set; } = false;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Crimson Cyclone at any range, regardless of saftey use with caution (Enabling this ignores the below distance setting).")]
-	public bool AddCrimsonCyclone { get; set; } = true;
+	public bool AddCrimsonCyclone { get; set; } = false;
 
 	[Range(1, 20, ConfigUnitType.Yalms)]
 	[RotationConfig(CombatType.PvE, Name = "Max distance you can be from the target for Crimson Cyclone use")]
@@ -40,10 +40,10 @@ public sealed class SMN_Reborn : SummonerRotation
 	public bool SBRaise { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Swiftcast on Ruby Ruin when not enough level for Ruby Rite")]
-	public bool AddSwiftcastOnLowST { get; set; } = true;
+	public bool AddSwiftcastOnLowST { get; set; } = false;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Swiftcast on Ruby Outburst when not enough level for Ruby Rite")]
-	public bool AddSwiftcastOnLowAOE { get; set; } = true;
+	public bool AddSwiftcastOnLowAOE { get; set; } = false;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Swiftcast on Garuda")]
 	public bool AddSwiftcastOnGaruda { get; set; } = false;
@@ -60,9 +60,8 @@ public sealed class SMN_Reborn : SummonerRotation
 			+ "output while you are dodging. Garuda and Ifrit need you standing still - taken during "
 			+ "movement, their casts are interrupted or simply do not go out, and the phase loses GCDs.\n"
 			+ "Titan is only brought forward: whenever Titan is not available at that moment, your "
-			+ "configured summon order applies unchanged. Off by default, because it departs from the "
-			+ "order you set.")]
-	public bool PreferTitanWhileMoving { get; set; } = false;
+			+ "configured summon order applies unchanged.")]
+	public bool PreferTitanWhileMoving { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Physick above level 30")]
 	public bool Healbot { get; set; } = false;

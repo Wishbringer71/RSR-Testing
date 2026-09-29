@@ -720,9 +720,9 @@ aus „möglicherweise tödlich" eine Zahl.
 ### Umsetzung (A226)
 
 - `WAR_Reborn.BloodwhettingForDefense`: die Bedingung der Einzelabwehr, gelesen von ihr und von der Zurückhaltung.
-- Einstellung **„Keep Bloodwhetting for yourself when you need it"**, ab Werk **aus** bis zu seiner Entscheidung:
-  hält Nascent Flash nach (a)/(b) und der Triage zurück.
-- Vierte Zielwahl **„By danger"** (angehängt, Ordinale bleiben), ab Werk bleibt „Lowest HP party member".
+- Einstellung **„Keep Bloodwhetting for yourself when you need it"**, ab Werk **an** (seine Regel für Voreinstellungen,
+  29.09.2026): hält Nascent Flash nach (a)/(b) und der Triage zurück.
+- Vierte Zielwahl **„By danger"**, ab Werk gewählt (angehängt; Rotationseinstellungen speichern den Namen).
 - Heilung-wirkungslos-Ausschluss in allen vier Zielwahlen.
 - Der Zielfilter liest `NoNeedHealingInvuln()` mit der richtigen Polarität (belegter Defekt, ohne Schalter).
 - **Nicht gebaut:** Nascent Flash als Minderung für den **anderen Tank vor dessen Tankbuster** — der Anwendungsfall,

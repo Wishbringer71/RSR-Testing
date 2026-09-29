@@ -303,7 +303,7 @@ weil Klasse 1 und die Aggro davorstehen, aber sie beseitigt sie nicht. Ob die be
 vereinheitlicht werden, ist eine Wertentscheidung über eine Konfiguration und gehört dem
 Auftraggeber.
 
-**Umgesetzt (A183):** Klassen 2 und 3 hinter `HealTargetByDanger` („Choose the heal target by danger"), Vorgabewert aus, in `ActionTargetInfo.DangerClassTarget`. „Unter Beschuss" liest `DataCenter.TargetedPartyMembers` (je Bild aus den Zielen der Gegner). Klasse 1 und der Selbst-Kurzschluss stehen unverändert davor; die Geschützten bleiben zuletzt. Klasse 3 reiht nur Verletzte: Nach Punkten gereiht gewann sonst ein Unverletzter mit kleinem Pool, und niemand wurde geheilt (A210).
+**Umgesetzt (A183):** Klassen 2 und 3 hinter `HealTargetByDanger` („Choose the heal target by danger"), Vorgabewert an (seine Regel für Voreinstellungen, 29.09.2026), in `ActionTargetInfo.DangerClassTarget`. „Unter Beschuss" liest `DataCenter.TargetedPartyMembers` (je Bild aus den Zielen der Gegner). Klasse 1 und der Selbst-Kurzschluss stehen unverändert davor; die Geschützten bleiben zuletzt. Klasse 3 reiht nur Verletzte: Nach Punkten gereiht gewann sonst ein Unverletzter mit kleinem Pool, und niemand wurde geheilt (A210).
 
 **Die Rate steht.** `DataCenter.RecordedHP` führt die Gruppe seit A91 mit, `GetTTK` antwortet damit
 für jede Gruppen-Id, `ScoreTtkForecast` korrigiert die Schätzung gegen ihren eigenen Fehler (A92),
@@ -354,7 +354,7 @@ aufgebraucht ist, steht prognostiziert bei 3 % und fällt damit in Klasse 1 — 
 der ihn bei 44 % des Tanks heute überholt. Rechnung und Grenzfälle in Konzept 08, Abschnitt „Der
 Verbraucher".
 
-Hinter `HealAheadOfDamage`, Standard aus; ausgeschaltet liefern alle vier Getter die heutigen Werte.
+Hinter `HealAheadOfDamage`, Standard an (seine Regel für Voreinstellungen, 29.09.2026); ausgeschaltet liefern alle vier Getter die Werte ohne Vorausschau.
 Die Nachweislage ist damit unverändert die der Stufe 2: Der Nutzen bleibt eine Annahme, bis er im
 Spiel beobachtet ist.
 

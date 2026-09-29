@@ -25,10 +25,9 @@ Passage of Arms endet mit jeder weiteren Aktion. Ohne `PldlockCasting` (ab Werk 
 
 Shake It Off hebt die eigenen Status Thrill of Battle, Damnation und Bloodwhetting auf, für +2 % Barriere je Effekt (Suchauszug des vollständigen Texts; im Repository ist der Name ausgeblendet). RSR wirkt es als Flächenabwehr und als Einzelheilung, ohne diese Status zu prüfen. Im Kampf: Ein Raidwide, während Damnation für einen Tankbuster liegt, kostet den Krieger 40 % Minderung. Zur Entscheidung vorgelegt. Konzept 14, „Wechselwirkungen und Zeit".
 
-### Krieger: Nascent Flash — Voreinstellungen und offene Bausteine · N, U
+### Krieger: Nascent Flash — offene Bausteine · N, U
 
 Nach seinen Kriterien (29.09.2026) bewertet und gebaut (Konzept 09, „Krieger: Nascent Flash für einen anderen oder Bloodwhetting für sich"; A226). Offen:
-- *Voreinstellungen zur Entscheidung:* „Keep Bloodwhetting for yourself when you need it" steht ab Werk auf aus, „Nascent Flash target priority" auf „Lowest HP party member" statt „By danger".
 - *Die Höhe eines Tankbusters wird nicht gemessen.* Der Effekt-Handler sieht den Treffer, misst aber nach Minderung und Barriere, bei Tankbustern also systematisch zu niedrig, und zu niedrig ist dort die gefährliche Richtung. Zum Herausrechnen fehlen belegte Antworten: die Prozentsätze je wirkendem Status am Treffer, die Schadensart je Aktion (Feint, Addle) und ob der gemeldete Schadenswert eine aufgezehrte Barriere enthält. Erst damit wird aus „möglicherweise tödlich" eine Zahl. Konzept 13 („Dieselbe Frage stellt sich bei den Tankbustern").
 - *Vorschlag, nicht gebaut:* Nascent Flash als Minderung für den anderen Tank vor dessen Tankbuster, unabhängig von seiner Gesundheit. The Balance sagt nur „Nascent Flash goes on a friend"; dieser Einsatz ist ein Schluss.
 - *Upstream-Bauform:* Raw Intuition/Bloodwhetting fällt nur, solange das Ziel des Kriegers ihn anvisiert (`PlayerIsTargetOnSelf`). Ein Off-Tank mit Tankbuster-Marker bekommt es aus der Einzelabwehr nicht.
@@ -166,12 +165,12 @@ Belegt: `Status.resx` führt `Rampart_1978` — die Form, die ein Tank ab Stufe 
 
 **Vor einer Änderung zu klären:** ob RSR eine seiteneffektfreie Prüfung anbietet. Gibt es keine, ist die Frage, ob eine solche eingeführt werden soll — mit einem Wirkungsbereich über alle Rotationen, die `CanUse` als Prüfung benutzen, und damit auch über die abgeleiteten Rotationen als Paketnutzer.
 
-### Betäubungsstreckung von Sanctus: Voreinstellung aus, Wirkung unbeobachtet · N
+### Betäubungsstreckung von Sanctus: Wirkung unbeobachtet · N
 
 **Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
-`StretchHolyStun` ist voreingestellt aus, weil die Wirkung ohne Laufzeitbeobachtung nicht zu belegen war. Der **Mitigationsgrund** derselben Regel ist umgesetzt und voreingestellt an (`ShouldHoldHolyWhilePackSlowed`); ihre heutige Fassung ist die Anteilsregel des Auftraggebers — mehr als die Hälfte der Gegner im Wirkbereich verlangsamt **und** mindestens `HoldHolyMinSlowedHostiles` betroffen, dazu Betäubungsspielraum und eine Schranke für den Restausstoß (A90, C59; die frühere Leistungsrechnung aus A79 ist damit abgelöst). Der **Betäubungsgrund** — Sanctus einen GCD aussetzen, solange die eigene Betäubung noch läuft, statt sie zu überschreiben — wartet weiter auf die Beobachtung, ob die Streckung im Spiel eintritt.
+`StretchHolyStun` ist seit 29.09.2026 voreingestellt an (seine Regel: der im Kampf sinnvollere Wert); belegt ist die Wirkung ohne Laufzeitbeobachtung nicht. Der **Mitigationsgrund** derselben Regel ist umgesetzt und voreingestellt an (`ShouldHoldHolyWhilePackSlowed`); ihre heutige Fassung ist die Anteilsregel des Auftraggebers — mehr als die Hälfte der Gegner im Wirkbereich verlangsamt **und** mindestens `HoldHolyMinSlowedHostiles` betroffen, dazu Betäubungsspielraum und eine Schranke für den Restausstoß (A90, C59; die frühere Leistungsrechnung aus A79 ist damit abgelöst). Der **Betäubungsgrund** — Sanctus einen GCD aussetzen, solange die eigene Betäubung noch läuft, statt sie zu überschreiben — wartet weiter auf die Beobachtung, ob die Streckung im Spiel eintritt.
 
-**Auflösungsbedingung:** eine Beobachtung, ob Sanctus in eine laufende Betäubung hinein gewirkt wird und ob die Streckung die vom Modell gerechneten 5,5 auf 7,0 Sekunden bringt. Der Auftraggeber hat die Einstellung eingeschaltet, um überhaupt testen zu können; offen ist allein, ob die Streckung messbar eintritt — und danach, ob die **Voreinstellung** im Code folgen soll.
+**Auflösungsbedingung:** eine Beobachtung, ob Sanctus in eine laufende Betäubung hinein gewirkt wird und ob die Streckung die vom Modell gerechneten 5,5 auf 7,0 Sekunden bringt. Der Auftraggeber hat die Einstellung eingeschaltet, um überhaupt testen zu können; offen ist allein, ob die Streckung messbar eintritt.
 
 ### Die Zielwahl der Heilung misst nicht die Sterbegefährdung · N, U
 
@@ -189,7 +188,7 @@ Belegt: `Status.resx` führt `Rampart_1978` — die Form, die ein Tank ab Stufe 
 
 **Umgesetzt sind Stufe 1 und Stufe 3.** Stufe 1 (A89): Klasse 1 steht vor allen drei Kurzschlüssen. Stufe 3 (A93): die Rate je Mitglied — allerdings nicht als zusätzliches Ordnungsmerkmal innerhalb einer Klasse, wie ursprünglich entworfen, sondern als **Ersatz der gelesenen Gesundheit** durch die vorausberechnete, hinter `HealAheadOfDamage` mit Standard aus. Damit erben alle vier Entscheidungen der Methode die Vorausschau, Klasse 1 eingeschlossen; die Begründung der Entwurfsänderung steht in Konzept 07.
 
-**Stufe 2 gebaut (A183)**, hinter `Choose the heal target by danger`, Vorgabewert aus: Klasse 2 (Heiler/Tank unter Rollenschwelle **und** angegriffen, `DataCenter.TargetedPartyMembers`), Klasse 3 (übrige; bei angekündigtem Flächenschaden nach absoluten effektiven Punkten, sonst nach Prozentsatz), Rolle nur bei Gleichstand. Offen bleibt die Voreinstellung — zu entscheiden, wenn er die Einstellung gespielt hat.
+**Stufe 2 gebaut (A183)**, hinter `Choose the heal target by danger`, Vorgabewert an (seit 29.09.2026): Klasse 2 (Heiler/Tank unter Rollenschwelle **und** angegriffen, `DataCenter.TargetedPartyMembers`), Klasse 3 (übrige; bei angekündigtem Flächenschaden nach absoluten effektiven Punkten, sonst nach Prozentsatz), Rolle nur bei Gleichstand. Offen bleibt die Voreinstellung — zu entscheiden, wenn er die Einstellung gespielt hat.
 
 **Was der Entwurf nicht löst:** Die Schwellendifferenz 45/40 ist entweder wirksam — dann kehrt sie im Band die Rangfolge um — oder unwirksam, dann ist eine Nutzereinstellung stillgelegt. Die Klassenordnung entschärft sie, beseitigt sie nicht. Ob die Werte vereinheitlicht werden, ist eine Wertentscheidung über eine Konfiguration und liegt beim Auftraggeber.
 
@@ -341,7 +340,7 @@ Geprüfte Nicht-Fehlstellen: `DTRManualAuto` bildet den vom Enum-Text beschriebe
 ### Vorhergesagte Minderung bei zwei Treffern in Folge — selbstbewertend, keine offene Bestätigung · N
 
 **Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
-Behoben hinter `Hold a predicted mitigation while a small cast is running` (ab Werk aus): Läuft ein bewertet kleiner Flächencast, hält `BMRShouldRefreshBefore` die Auffrischung für das nächste Ereignis zurück. **Neu geprüft (A207):** Die Regel bewertet sich selbst (`ProactiveHoldRecord`) und setzt aus, wenn sie öfter falsch als richtig lag — die Beobachtung, auf die der Eintrag wartete, macht sie selbst. Offen ist allein die Voreinstellung (seine Entscheidung). Als Heuristik gekennzeichnet: BMR nennt den Zeitpunkt, nicht die Wucht; die Größe stammt aus der Messung des laufenden Casts.
+Behoben hinter `Hold a predicted mitigation while a small cast is running` (ab Werk an): Läuft ein bewertet kleiner Flächencast, hält `BMRShouldRefreshBefore` die Auffrischung für das nächste Ereignis zurück. **Neu geprüft (A207):** Die Regel bewertet sich selbst (`ProactiveHoldRecord`) und setzt aus, wenn sie öfter falsch als richtig lag — die Beobachtung, auf die der Eintrag wartete, macht sie selbst. Offen ist allein die Voreinstellung (seine Entscheidung). Als Heuristik gekennzeichnet: BMR nennt den Zeitpunkt, nicht die Wucht; die Größe stammt aus der Messung des laufenden Casts.
 
 ### Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle · N, R
 
@@ -375,7 +374,7 @@ Die Entscheidung berührt die dokumentierte Begründung in `10-drk-blackest-nigh
 
 **Spielbeobachtung des Auftraggebers, 4er-Instanz:** kein Addle und kein Radiant Aegis trotz Flächenschaden — mal ja, mal nein.
 
-**Zwei Ursachen, beide behoben.** Die erste war die Bewertung aus A101, die allein nach Heilbedarf fragte und bei gesunder Gruppe jeden Anteil unter 0,35 verwarf (behoben in A108: ab 0,25 der Maximalgesundheit ist die Fläche groß, unabhängig vom Zustand der Gruppe). Die zweite ist der Vorfilter davor: `IsHostileCastingBase` verwirft jeden **unterbrechbaren** Cast, und Dungeon-Trash castet überwiegend unterbrechbar. Der Beschwörer hat keinen Interrupt — wird nicht unterbrochen, schlägt der Cast ein und nichts hat geantwortet. Dafür steht jetzt `IsHostileCastingLargeArea` hinter `Mitigate a big area cast even when it is interruptible` (**Vorgabewert aus**, A120).
+**Zwei Ursachen, beide behoben.** Die erste war die Bewertung aus A101, die allein nach Heilbedarf fragte und bei gesunder Gruppe jeden Anteil unter 0,35 verwarf (behoben in A108: ab 0,25 der Maximalgesundheit ist die Fläche groß, unabhängig vom Zustand der Gruppe). Die zweite ist der Vorfilter davor: `IsHostileCastingBase` verwirft jeden **unterbrechbaren** Cast, und Dungeon-Trash castet überwiegend unterbrechbar. Der Beschwörer hat keinen Interrupt — wird nicht unterbrochen, schlägt der Cast ein und nichts hat geantwortet. Dafür steht jetzt `IsHostileCastingLargeArea` hinter `Mitigate a big area cast even when it is interruptible` (**Vorgabewert an** seit 29.09.2026, A120).
 
 **Die Lage ist nach seiner Angabe zu unterscheiden — Boss gegen Trash.** `UseBmrTimeline` ist bei ihm **eingeschaltet** (seine Angabe, 20.09.2026). Die BMR-Wege sind für ihn also nicht tot, sondern hängen an `BMRActive` = `BMRHasActiveModule`:
 
@@ -412,7 +411,7 @@ Die Entscheidung berührt die dokumentierte Begründung in `10-drk-blackest-nigh
 - **Der VFX-Zweig umgeht die Rechnung.** `IsCastingAreaVfx` erkennt Stack- und Spread-Marker über Effektpfade statt über Aktions-Ids; für die gibt es kein Potential, also greift die Bewertung dort nicht. Konsistent mit „unbewertet heißt mindern", aber diese Auslöser bleiben grob.
 - **Die Rückrechnung um die wirkende Minderung ist verworfen, nicht vergessen.** `GetCurrentMitigationPercent` ist eine Aufzählung bekannter Status, also im Zweifel unvollständig — und eine Näherung, die den Wert **erhöht**, ist gefährlicher als eine Beobachtung, die ihn zu niedrig ansetzt und sich beim nächsten ungeminderten Treffer selbst korrigiert (Begründung in Konzept 13, Abschnitt Falsifikation).
 
-**Statt auf eine Beobachtung von ihm zu warten, misst die Regel selbst (A205):** `AreaCastReachedPlayer` hält je gelisteter Aktion fest, ob ihre letzte Landung den lebenden Spieler traf; unter „Skip area defence for casts that missed you" (ab Werk aus, Nutzen nicht belegt) öffnet ein Cast, der ihn zuletzt verfehlte, seine Flächenabwehr nicht, bis ein Treffer das widerlegt. Offen bleibt die Voreinstellung (seine Entscheidung) und die Aufnahme selbst.
+**Statt auf eine Beobachtung von ihm zu warten, misst die Regel selbst (A205):** `AreaCastReachedPlayer` hält je gelisteter Aktion fest, ob ihre letzte Landung den lebenden Spieler traf; unter „Skip area defence for casts that missed you" (ab Werk an, Nutzen nicht belegt) öffnet ein Cast, der ihn zuletzt verfehlte, seine Flächenabwehr nicht, bis ein Treffer das widerlegt. Offen bleibt die Voreinstellung (seine Entscheidung) und die Aufnahme selbst.
 
 ### Dieselbe Frage steht bei Tankbustern, Rückstoß und Unterbrechung offen · N
 
@@ -568,7 +567,7 @@ Auflösung: eine Quelle für diese Werte (erzeugter Index aus `RotationSolver.Ga
 
 **Stufe 1 — Deckung nach Treffergröße: widerlegt, nicht umgesetzt.** Die Auswahlregel war gebaut und ist zurückgebaut, weil die Falsifikationsstufe ergab, dass sie im ganzen Baum nie greift: Minderungen kennen kein „zu groß" (sie skalieren mit dem Treffer), und kein Job hält zwei Anteilsbarrieren zur Wahl — beim Pictomancer **entfernt** Tempera Grassa das Tempera Coat. Beleg und Hergang: A118.
 
-**Stufe 2 — vor dem angekündigten Treffer heilen: gebaut**, hinter `Heal ahead of an announced area cast`, **Vorgabewert aus**. Das ist der Teil, der wirkt, und er schließt zugleich die in Konzept 07 und 08 geführte Lücke „die Zielwahl/die Schwellen lesen die gemessene Treffergröße nicht".
+**Stufe 2 — vor dem angekündigten Treffer heilen: gebaut**, hinter `Heal ahead of an announced area cast`, **Vorgabewert an** (seit 29.09.2026). Das ist der Teil, der wirkt, und er schließt zugleich die in Konzept 07 und 08 geführte Lücke „die Zielwahl/die Schwellen lesen die gemessene Treffergröße nicht".
 
 **Stufe 3 — bei Treffern über der Maximalgesundheit Barriere und Minderung zusätzlich: offen**, eigener Eintrag unten.
 

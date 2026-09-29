@@ -48,7 +48,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			+ "return for the hits that would otherwise land unabsorbed.\n"
 			+ "The two values below belong to this setting: the enemy count applies to both of the "
 			+ "narrower options, the health threshold only to the last one.")]
-	public BlackestNightStrategy BlackestNightUsage { get; set; } = BlackestNightStrategy.WheneverDefensesOpen;
+	public BlackestNightStrategy BlackestNightUsage { get; set; } = BlackestNightStrategy.TankbusterHeavyPullOrLowHealth;
 
 	public enum BlackestNightStrategy : byte
 	{
@@ -82,9 +82,8 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			+ "Not while BossModReborn announces a knockback that lands after the barrier has run out "
 			+ "and before Arm's Length is ready again - the action is kept for it.\n"
 			+ "It also feeds the decision above: a pull already throttled by this Slow no longer counts "
-			+ "as unmitigated, so The Blackest Night is not spent into a stream that has been thinned. "
-			+ "Off by default, because it changes what the action is used for.")]
-	private bool UseArmsLengthOnPull { get; set; } = false;
+			+ "as unmitigated, so The Blackest Night is not spent into a stream that has been thinned.")]
+	private bool UseArmsLengthOnPull { get; set; } = true;
 
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Health threshold for The Blackest Night",

@@ -18,7 +18,7 @@ and every Ifrit phase falls back to filler.
 
 "Standing at the target" means 0 yalms between the hitboxes, the distance the game shows, not only
 your centre inside the target ring. The run-up itself is unchanged and is gated by the job's own
-settings - on Summoner `Use Crimson Cyclone at any range…` (on by default) and `Max distance you
+settings - on Summoner `Use Crimson Cyclone at any range…` (now off by default) and `Max distance you
 can be from the target for Crimson Cyclone use`. The Diagnostics window shows the last movement
 action the check withheld, and why.
 
@@ -320,7 +320,7 @@ changes.
 
 ## New setting: Choose the heal target by danger
 
-Off by default. On, it replaces the role short-cuts in the heal target choice, below anyone about to
+On by default. It replaces the role short-cuts in the heal target choice, below anyone about to
 fall: a healer or tank under their role threshold who is being attacked comes first, lowest health
 first and a healer before a tank at equal health; then everyone else - by fewest hit points while an
 area cast is announced, otherwise by lowest percentage.
@@ -411,7 +411,7 @@ For rotation authors: `SpecialActionType.HostileAttackBackstep` with `ActionSett
 ## Paladin, Warrior, Gunbreaker: Arm's Length on a pull for its Slow
 
 The Dark Knight's option to use Arm's Length on a group pull for its Slow now exists for every tank,
-off by default. The Slow +20% on every enemy that strikes you delays auto-attacks as well as casts. A
+on by default. The Slow +20% on every enemy that strikes you delays auto-attacks as well as casts. A
 pull is as many enemies in reach as the global "Number of hostiles" for defensive abilities; a pack
 that is already slowed is left alone. While BossModReborn announces a knockback that lands after Arm's
 Length would have run out and before it is back, it is kept for the knockback.
@@ -453,6 +453,28 @@ At three stacks, just before the next one would be lost, the Sage now spends one
 whoever needs the heal, otherwise on itself) for its 7% MP. The Addersgall timer is now read as the
 time elapsed, as the game counts it; it was read the other way round.
 
+## Defaults: the new rules are on
+
+A setting now starts at the value that plays better, so the new rules are in use rather than waiting
+to be found. On by default now:
+- `Heal ahead of incoming damage`, `Choose the heal target by danger`, `Heal ahead of an announced
+  area cast`, `Skip area defence for casts that missed you`, `Mitigate a big area cast even when it is
+  interruptible`, `Hold a predicted mitigation while a small cast is running`;
+- Arm's Length on a pull for its Slow (all four tanks); Dark Knight `When to use The Blackest Night on
+  yourself`: tankbuster, a big pull with no other mitigation, or below the health threshold;
+- Summoner `Prefer Titan while moving`; White Mage `Thin Air only under MP pressure` and `Stretch the
+  Holy stun`; Warrior `Keep Bloodwhetting for yourself when you need it` and Nascent Flash by danger.
+
+Off by default now, because they spend what a raise needs or pull you out of a safe position: Summoner
+`Use Crimson Cyclone at any range…` (the distance setting applies again), and Swiftcast on Ruby Ruin
+and Ruby Outburst below Ruby Rite's level.
+
+Still off: `Withhold healing under Living Dead` (RSR also fires Living Dead as a last-ditch save, where
+the death is not wanted) and the Sage's pull barrier (an open decision).
+
+A job setting you never changed takes the new default. A general setting is stored with your
+configuration once saved, so there it keeps the value you had.
+
 ## Warrior: Nascent Flash reaches the party again
 
 Nascent Flash on others picked only invulnerable members - a tank under Holmgang, Superbolide, Hallowed
@@ -460,10 +482,10 @@ Ground or Living Dead - because its target filter read the invulnerability check
 It now goes to members who need it, and never to one whose healing is nullified.
 
 Two new settings:
-- `Nascent Flash target priority` gains `Most in danger of dying first…`: the heal target order - whoever
+- `Nascent Flash target priority` gains `Most in danger of dying first…`, now the default: the heal target order - whoever
   is about to die first, then healers, tanks and damage dealers - so a barrier or a steep fall counts, not
   only the health shown.
-- `Keep Bloodwhetting for yourself when you need it` (off by default): Nascent Flash is not given away
+- `Keep Bloodwhetting for yourself when you need it` (on by default): Nascent Flash is not given away
   while a tankbuster on you comes before the shared cooldown is back and Bloodwhetting would be used for
   it, or while you are about to die - unless the member is about to die and is a healer, or another tank
   while you are not. You heal yourself the same either way; what you keep is the damage reduction and
@@ -476,7 +498,7 @@ no effect. It is read now. With both settings the same, as by default, nothing c
 
 ## New setting: Skip area defence for casts that missed you
 
-Off by default. On, an area cast from the AoE list that landed last time without reaching you - you
+On by default. An area cast from the AoE list that landed last time without reaching you - you
 dodged it, or it was centred on someone else - does not open your area defence the next time; once it
 reaches you again, it counts again. A hit you blocked, parried, absorbed with a barrier or took under
 invulnerability counts as reaching you. Healing ahead and the party's threat check are unaffected.

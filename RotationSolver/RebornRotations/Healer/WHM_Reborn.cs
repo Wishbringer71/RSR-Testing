@@ -130,9 +130,9 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			+ "In a fight: without this, a charge goes to the next expensive spell whenever one comes "
 			+ "up, so both charges can be gone before MP is anywhere near a problem, and the free cast "
 			+ "is missing at the point where MP actually runs out during heavy healing.\n"
-			+ "Off by default, which is the old behaviour. It uses Lucid Dreaming's own MP threshold "
+			+ "It uses Lucid Dreaming's own MP threshold "
 			+ "rather than a second number, so both decisions read the same value.")]
-	public bool ThinAirOnMpPressureOnly { get; set; } = false;
+	public bool ThinAirOnMpPressureOnly { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Stretch the Holy stun",
 		Tooltip = "Holy (Sanctus) is skipped for one GCD while every enemy it would hit is already "
@@ -142,9 +142,8 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			+ "lets the running stun finish first, so the same number of casts holds the pack still for "
 			+ "longer and the damage stream to the tank stays thinner.\n"
 			+ "Costs one GCD of Holy damage each time it triggers, and only where a damage GCD is "
-			+ "guaranteed to replace it. Off by default because the stretch has not been confirmed in "
-			+ "play.")]
-	public bool StretchHolyStun { get; set; } = false;
+			+ "guaranteed to replace it.")]
+	public bool StretchHolyStun { get; set; } = true;
 
 	[Range(2, 8, ConfigUnitType.None, 1)]
 	[RotationConfig(CombatType.PvE, Name = "Enemies in Holy's radius before holding", Parent = nameof(StretchHolyStun),

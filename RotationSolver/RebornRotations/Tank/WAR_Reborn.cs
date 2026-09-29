@@ -12,7 +12,7 @@ public sealed class WAR_Reborn : WarriorRotation
 	public bool NeverscentFlash { get; set; } = false;
 
 	[RotationConfig(CombatType.PvE, Name = "Nascent Flash target priority")]
-	public NascentFlashTargetStrategy NascentFlashTarget { get; set; } = NascentFlashTargetStrategy.LowestHP;
+	public NascentFlashTargetStrategy NascentFlashTarget { get; set; } = NascentFlashTargetStrategy.ByDanger;
 
 	public enum NascentFlashTargetStrategy : byte
 	{
@@ -36,9 +36,8 @@ public sealed class WAR_Reborn : WarriorRotation
 			+ "In a fight: the member still gets it when they are about to die and win the triage - a "
 			+ "healer always, another tank unless you are about to die too; a damage dealer does not. "
 			+ "You heal yourself the same either way: Nascent Flash heals you with every weaponskill as "
-			+ "Bloodwhetting does. What you keep is its damage reduction and barrier.\n"
-			+ "Off by default until decided.")]
-	public bool HoldNascentFlashForOwnNeed { get; set; } = false;
+			+ "Bloodwhetting does. What you keep is its damage reduction and barrier.")]
+	public bool HoldNascentFlashForOwnNeed { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Arm's Length on a pull for its Slow",
 		Tooltip = "Arm's Length is used on a group pull for its Slow, not only as knockback "
@@ -49,9 +48,8 @@ public sealed class WAR_Reborn : WarriorRotation
 			+ "enemies in reach as the global \"Number of hostiles\" for defensive abilities; a pack "
 			+ "that is already slowed is left alone.\n"
 			+ "Not while BossModReborn announces a knockback that lands after the barrier has run out "
-			+ "and before Arm's Length is ready again - the action is kept for it.\n"
-			+ "Off by default, because it changes what the action is used for.")]
-	public bool UseArmsLengthOnPull { get; set; } = false;
+			+ "and before Arm's Length is ready again - the action is kept for it.")]
+	public bool UseArmsLengthOnPull { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Bloodwhetting/Raw intuition on single enemies")]
 	public bool SoloIntuition { get; set; } = false;

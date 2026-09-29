@@ -3662,9 +3662,8 @@ public static class ObjectHelper
 	/// GetTTK answers NaN and this returns 1, so a party held steady sees no change at all. The
 	/// look-ahead appears exactly when the net trend is downward, and grows as it steepens.
 	///
-	/// Off by default. The effect cannot be shown with the means available here - static analysis
-	/// and a compile say nothing about whether a tank lives - so the current behaviour stays the
-	/// default and this is offered as a setting.
+	/// On by default (the owner's rule for defaults, 29.09.2026). The effect is not shown in play -
+	/// static analysis and a compile say nothing about whether a tank lives.
 	/// </remarks>
 	internal static float GetForecastSurvivingShare(this IBattleChara battleChara)
 		=> battleChara.GetForecastSurvivingShare(false);

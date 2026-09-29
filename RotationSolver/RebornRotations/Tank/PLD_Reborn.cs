@@ -15,9 +15,8 @@ public sealed class PLD_Reborn : PaladinRotation
 			+ "enemies in reach as the global \"Number of hostiles\" for defensive abilities; a pack "
 			+ "that is already slowed is left alone.\n"
 			+ "Not while BossModReborn announces a knockback that lands after the barrier has run out "
-			+ "and before Arm's Length is ready again - the action is kept for it.\n"
-			+ "Off by default, because it changes what the action is used for.")]
-	public bool UseArmsLengthOnPull { get; set; } = false;
+			+ "and before Arm's Length is ready again - the action is kept for it.")]
+	public bool UseArmsLengthOnPull { get; set; } = true;
 
 
 	[RotationConfig(CombatType.PvE, Name = "Use GCDs to heal. (Ignored if there are no healers alive in party)")]

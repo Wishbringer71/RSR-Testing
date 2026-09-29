@@ -208,7 +208,8 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Zentrale Änderungen bleiben erlaubt; ihre Wirkung auf fremde Rotationen nenne ich als Betroffenenkreis.
 
 **Option und Beobachtbarkeit**
-- Eine Verbesserung, deren Nutzen ich nicht belegen kann, kommt hinter eine Option; das bisherige Verhalten bleibt Standard. Belegte Defektbehebungen nicht.
+- Eine Verbesserung, deren Nutzen ich nicht belegen kann, kommt hinter eine Option. Belegte Defektbehebungen nicht.
+- Voreinstellung einer Option ist der Wert, der im Spielgeschehen sinnvoller ist, nicht das bisherige Verhalten (seine Vorgabe, 29.09.2026): Neue Regeln sollen getestet werden. Ausnahme nur mit Grund aus dem Kampf, etwa eine dokumentierte Entscheidung von ihm; „noch nicht entschieden" ist keiner.
 - Gründliche Vorarbeit wird nicht durch nachträgliche Betrachtung ersetzt (seine Präzisierung). Was Analyse klären kann — Wirktexte, Code, Versionsgeschichte, Modell —, ist vor dem Code geklärt. Eine Anzeige ist kein Ablageort für offene Annahmen, und ich verweise nicht auf sie, um eine ungeprüfte Annahme zu tragen.
 - Er nutzt das Diagnosefenster nicht (seine Vorgabe): Ich baue dort keine neuen Zeilen als Messmittel und verweise ihn nicht darauf. Wo die Antwort erst zur Laufzeit fällt, steuert die Regel selbst nach; reicht das nicht, schreibt der Code eine Protokolldatei, die er nach einer Sitzung hochlädt (Beispiel `AreaMeasurementTrace.log`, A176).
 

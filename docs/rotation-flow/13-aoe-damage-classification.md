@@ -165,7 +165,7 @@ ihren `ClassJob` überhaupt als Tank erkennt, ist nicht belegt. WrathCombo liest
 Entscheidung daran nicht mehr.
 
 **Selbst gemessen, ob ein gelisteter Cast den Spieler erreicht (A205, Option „Skip area defence for casts that
-missed you", ab Werk aus):** Der Effekt-Handler hält je gelisteter Aktion fest, ob ihre letzte Landung dem
+missed you", ab Werk an):** Der Effekt-Handler hält je gelisteter Aktion fest, ob ihre letzte Landung dem
 lebenden Spieler einen Treffer brachte: Schaden jeder Höhe, auch geblockt, pariert oder von einer Barriere
 geschluckt, oder einen Treffer, den Unverwundbarkeit, Ausweichen oder Widerstand abwies (Effektarten 1–3, 5–7 und
 teilweise Unverwundbarkeit; bis A211 nur Art 3). Mit der Option zählt ein
@@ -244,7 +244,7 @@ aktive Modul und je Ereignisart, ob überhaupt eine Vorhersage vorliegt. Die vol
 welche Regeln des Baums so hängen, steht in `08-mitigation-synergy.md`.
 
 **Die Antwort ist ein zweiter, eigener Weg** (`DataCenter.IsHostileCastingLargeArea`, hinter
-`Mitigate a big area cast even when it is interruptible`, **Vorgabewert aus**): Er fragt nicht nach
+`Mitigate a big area cast even when it is interruptible`, **Vorgabewert an**): Er fragt nicht nach
 Unterbrechbarkeit und nicht nach Mindestlänge, sondern nach dem **gemessenen** Anteil — mindestens
 das, was die größte Barriere des Spiels absorbiert — und nach demselben Ein-GCD-Fenster vor dem
 Einschlag.

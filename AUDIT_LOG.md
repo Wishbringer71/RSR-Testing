@@ -4749,6 +4749,38 @@ Seine Vorgabe mit Kriterien (Wortlaut in Konzept 09): Ist der Tankbuster tödlic
 
 **Prüfgrad:** statisch (Wirktexte, Spieldaten, Code, Versionsgeschichte); Prüfskripte samt neuem; Compile über die CI.
 
+### A227 · Voreinstellungen: der im Kampf sinnvollere Wert (29.09.2026)
+
+Seine Vorgabe: „warum packst du die voreinstellungen auf "aus"? sie sollen doch getested werden. es ist der im spielgeschehen sinnvollere wert zu wählen", dazu die Frage „woher kommt die regel?".
+
+- *Herkunft der Regel:*
+  - „Eine Verbesserung, deren Nutzen ich nicht belegen kann, kommt hinter eine Option; das bisherige Verhalten bleibt Standard" steht seit 32a8abf80 (06.09.2026) in `CLAUDE.md`. Eingeführt habe ich sie als eine von sechs „standard practices" (Feature Toggle nach Fowler), mit der Begründung „so an assumed improvement does not become everyone's default".
+  - Sie war meine Ableitung, keine Vorgabe von ihm. 027ec2fe4 (24.09.2026) hat sie beim Neufassen verkürzt übernommen.
+  - Seine Vorgabe zum Testerprofil („ich will ja die codeänderungen testen, daher nutze ich selten die alten defaulteinstellungen") stand daneben, ohne dass ich den Widerspruch aufgelöst habe.
+- *Ersetzt:* `CLAUDE.md`, „Option und Beobachtbarkeit": Voreinstellung ist der Wert, der im Spielgeschehen sinnvoller ist. Ausnahme nur mit Grund aus dem Kampf; „noch nicht entschieden" ist keiner.
+- *Erhebung:* alle Einstellungen, die nach der alten Regel oder bis zu seiner Entscheidung aus standen, dazu Upstream-Einstellungen, die seinen dokumentierten Vorgaben widersprechen.
+- *Umgestellt auf an:*
+  - global: `HealAheadOfDamage`, `HealTargetByDanger`, `HealAheadOfAnnouncedHit`, `SkipAreaCastsThatMissedMe`, `MitigateBigAreaCastsEvenIfInterruptible`, `HoldProactiveMitigationForSmallCast`;
+  - Rotationen: `UseArmsLengthOnPull` (vier Tanks), `PreferTitanWhileMoving`, `ThinAirOnMpPressureOnly`, `StretchHolyStun`, `HoldNascentFlashForOwnNeed`;
+  - `NascentFlashTarget` auf `ByDanger`, `BlackestNightUsage` auf `TankbusterHeavyPullOrLowHealth` (die engste Stufe mit Notfall).
+- *Umgestellt auf aus (Upstream-Einstellungen gegen seine Vorgaben):*
+  - `AddCrimsonCyclone` (Sprung aus beliebiger Entfernung; seine Vorgabe: nichts, was ihn aus sicherer Position holt; Konzept 12 empfahl es bereits);
+  - `AddSwiftcastOnLowST`/`AddSwiftcastOnLowAOE` (Swiftcast bleibt für Wiederbelebungen).
+  - Die Swiftcast-Einstellungen des Piktomanten bleiben: Er hat keine Wiederbelebung.
+- *Aus geblieben, mit Grund aus dem Kampf:*
+  - `WithholdHealingForLivingDead`: RSR zündet Living Dead auch als Notrettung, dort ist der Tod nicht gewollt.
+  - `UsePreEukrasianDiagnosis`: Erneuern bei jedem Bruch gegen Konzept 06 §2.1, offene Entscheidung A209.
+  - `HoldHolyMaxHostileOutput` 0: eine von mir gesetzte Zahl, die gemessene Freigabe ersetzt sie.
+- *Wirkung auf seine Installation:* Rotationseinstellungen stehen nur in der Konfiguration, wenn er sie gesetzt hat (`RotationConfigBase.Value`); unberührte nehmen die neue Voreinstellung. Globale Einstellungen werden vollständig gespeichert (`Configs.Save`), dort behält eine bestehende Konfiguration ihren Wert.
+- *Nachgezogen:*
+  - Optionstexte ohne „Off by default";
+  - Konzepte 07, 08, 09, 10, 12, 13, 15;
+  - TODO;
+  - Release-Texte (auch `fork-changes-in-play.md`, das `check_concept_defaults.py` gegen den Code prüft).
+  - Zwei veraltete Zeilenangaben ersetzt: Konzept 05 (`PLD_Reborn.cs:103/108`, meine Tooltip-Änderung verschob sie) und Konzept 12 (`:483`). Statt Zeilen stehen dort jetzt Methodennamen, die Aussagen sind am Code geprüft.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -5030,3 +5062,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C99 | A217 und Konzept 07/08: Die Heilart sei die Aktionsart, oGCD-Schwellen lesen den kurzen Vorlauf; Synastry, Krasis ×2, Soteria und Kardia unter den „22 oGCD-Schwellen" | Maßgeblich ist, wann die Heilung landet. Emergency Tactics war als Ausnahme erkannt, die gleichgebauten Synastry, Krasis und Soteria nicht; Synastry wählte dadurch bei steilem Verlauf ein anderes Ziel als die Heilung, mit der sie landet | A221: `ActionSetting.HealsWithNextGcd`, Schwellen und Zielwahl berichtigt, Konzepte 07/08 |
 | C100 | A221 in erster Fassung, Commit 79887dd36, Konzept 08, Release-Text: Synastry habe mit dem kurzen Vorlauf ein anderes Ziel gewählt als die Einzelheilung, mit der sie landet, und sei deshalb bei steilem Verlauf ausgefallen | Synastry läuft in `EmergencyAbility` vor jedem Target-Override und setzt keinen `TargetType`; gewählt wird nach `Big`, der Vorlauf kommt darin nicht vor. Behauptet ohne den Weg der Zielwahl am Code zu verfolgen — in der Wirksamkeitsprüfung desselben Bereichs gefunden | A221, Konzept 08 und Release-Text berichtigt; der Befund an den Schwellen und die Zielwahl für Krasis im Heilpfad bleiben |
 | C101 | A222: Nascent Flash aus dem Upstream-Merge sei geprüft ohne Befund („Der Filtertausch … stellt im `finally` zurück") | Der Filter selbst las `!t.NoNeedHealingInvuln()` und ließ nur Unverwundbare durch. `scan8.py` listete die Zeile unter „read negated"; ich habe die Liste nicht gegen den Code abgeglichen und nur den Rahmen des Filters geprüft, nicht seine Bedingungen | A226: Polarität behoben, `check_invuln_polarity.py` in der CI, damit die Klasse nicht mehr von einer Handprüfung abhängt |
+| C102 | `CLAUDE.md` seit 32a8abf80 und die Optionstexte „Off by default because …": das bisherige Verhalten bleibe Standard, bis ein Nutzen belegt ist | Eine eigene Ableitung (Feature Toggle nach Fowler), als Regel geführt und nie gegen seine Vorgabe zum Testerprofil abgeglichen. Seine Vorgabe: Voreinstellung ist der im Kampf sinnvollere Wert, damit neue Regeln getestet werden | A227: Regel ersetzt, Voreinstellungen umgestellt |
