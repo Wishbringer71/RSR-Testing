@@ -139,7 +139,7 @@ Rückhaltung ein Job überhaupt kennt, bleibt seine Sonderregel.** Gebaut in
 | alle | **Schranke:** Eine Rückhaltung weicht bei Gefährdungsklasse 1 (`ObjectHelper.IsInCriticalClass`: ungeschützt, vorausgerechnete effektive Gesundheit auf oder unter `HealthForDyingTanks`, Konzept 07). Flächenabwehr: irgendein lebendes Mitglied dort, oder der angekündigte, gemessene Flächentreffer brächte ein ungeschütztes dorthin. Einzelabwehr: der Spieler selbst oder ein Tank dort | Konzept 09 verlangt es für den Tank („jede Rückhaltung erst, wenn Stufe 1 gesichert ist"); der Grund gilt für jede Rolle |
 | alle | **Streckungsbaustein:** Nach einer Auslöseraktion ruht die übrige eigene Abwehr, bis die Wirkung laut Wirktext ausläuft (die Dauer, die zur Minderung gehört), gezählt ab dem Einsatz laut Aktionsprotokoll. Hält der Auslöser noch eine Ladung (gelesen an seiner Wiederaufladegruppe, nicht am Knopf), streckt er nicht | derselbe Mechanismus stand zweimal mit festen Zahlen im Code (Weißmagier, Astrologe) |
 | Heiler | leer | Nur Weißmagier und Astrologe strecken; Gelehrter und Weiser nicht. Eine Heilerregel änderte zwei Jobs ohne belegten Nutzen |
-| Tanks | leer | Burst-Rückhaltung nur bei Dunkelritter und Revolverklinge, bei beiden an ein eigenes Burstfenster gebunden; Krieger und Paladin halten nichts zurück |
+| Tanks | **Abtausch (Arm’s Length) im Pull für seine Verlangsamung** (`ArmsLengthSlowsPull`, A194): jeder Tank mit eigener Option „Use Arm's Length on a pull for its Slow", ab Werk aus; ein Pull sind so viele Gegner in Reichweite wie die globale Zahl „Number of hostiles" der Abwehr (Dunkelritter: seine Barrierenzahl, dazu die Barrierenrückhaltung); nicht, solange die Gruppe schon verlangsamt ist. Eine Rückhaltung gibt es auf dieser Stufe nicht: Burst-Rückhaltung nur bei Dunkelritter und Revolverklinge, bei beiden an ein eigenes Burstfenster gebunden | kostet nur die eigene Abklingzeit und wirkt bei jedem Tank gleich; die Beobachtung, auf die der TODO-Eintrag wartete, wäre eine Spielbestätigung als Aufgabe an ihn gewesen |
 | Damage Dealer | leer, eine Frage an ihn | Barde, Pictomancer und Tänzer führen dieselbe Einstellung „Prevent the use of defense abilties during burst" (ab Werk an), Maschinist, Dragoon und Viper feste Rückhaltungen. Eine gemeinsame Regel wäre möglich; ihr Einstellungstext bindet, siehe unten |
 | Job | die Auslöser und Rückhaltungen selbst | siehe nächste Tabelle |
 
@@ -994,7 +994,7 @@ wieder** betäuben will. Beide Regeln stehen deshalb nebeneinander und nicht ine
 
 **Grenze der Zählung, benannt statt verschwiegen:** `SlowStatus` führt zwölf Ids einschließlich
 Slow+, und die Erhebung unterscheidet sie nicht. Für eine Anteilsregel ist das ohne Belang — gezählt
-wird, ob ein Gegner verlangsamt ist, nicht wie stark. Welche Id Rückstoß tatsächlich setzt, ist von
+wird, ob ein Gegner verlangsamt ist, nicht wie stark. Welche Id Abtausch tatsächlich setzt, ist von
 hier aus nicht zu bestimmen; bliebe die Regel im Spiel weiterhin wirkungslos, wäre das die nächste
 zu prüfende Ursache.
 
@@ -1093,7 +1093,7 @@ Die Erhebung dazu ist geführt und liegt als `scan16.py` im Repository: Sie nimm
 jede PvE-Aktion, deren Wirktext eine Kontroll- oder Minderungswirkung auf Gegner
 nennt, und fragt, ob der Baum den zugehörigen Status irgendwo liest. Im
 Tank- und Heilerprofil bleibt **eine** Aktion übrig, deren zweite Wirkung
-nirgends gelesen wurde: **Rückstoß (Arm’s Length)**. Sie ist als Rückstoßschutz eingeordnet
+nirgends gelesen wurde: **Abtausch (Arm’s Length)**. Sie ist als Rückstoßschutz eingeordnet
 (`CustomRotation_Ability.AntiKnockbackAbility`), legt aber zugleich
 Verlangsamung +20 % auf jeden physischen Angreifer für 15 Sekunden. Der Wirktext
 der Verlangsamung nennt ausdrücklich die Verzögerung der **Automatikangriffe**,

@@ -1149,6 +1149,44 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
+	/// Whether the pack in reach is slowed - at least two enemies and at least half of them.
+	/// </summary>
+	/// <remarks>
+	/// Slow is not only a caster debuff: its effect text names the auto-attack delay alongside cast
+	/// and recast time, and trash enemies deal most of their damage by auto-attack. A slowed pack
+	/// therefore throttles the incoming stream by about the size of the debuff - Arm's Length applies
+	/// Slow +20% to every physical attacker for 15s, the same order as Rampart. The Dark Knight's
+	/// barrier reads it (a thinned stream no longer breaks The Blackest Night), and every tank's
+	/// Arm's Length pull rule does (a slowed pack needs no second slow).
+	///
+	/// Same share rule as the stun condition, and for the same reason: one slowed enemy out of eight
+	/// says nothing about the stream. The difference is the timing - a stun stops the stream and
+	/// lapses in seconds, a slow thins it for fifteen, so this one has no grace window. It ends when
+	/// the debuff does.
+	/// </remarks>
+	protected static bool PackSlowed()
+	{
+		var inRange = SurveyHostileStatus(DataCenter.JobRange, StatusHelper.SlowStatus, out var slowed);
+		return inRange > 0 && slowed >= 2 && slowed * 2 >= inRange;
+	}
+
+	/// <summary>
+	/// Arm's Length for its Slow on a group pull - the rule for every tank, first built for the Dark
+	/// Knight (A53) and lifted to the tank level (A194): each tank carries the same option and passes
+	/// it in, with the hostile count that marks a pull for it.
+	/// </summary>
+	/// <remarks>
+	/// Arm's Length is a role action of tanks and melee; this rule is for tanks, because the Slow
+	/// throttles the stream of auto-attacks on whoever holds the pack. It costs nothing but the
+	/// cooldown. Not while the pack is already slowed - a second Slow does not stack onto the first.
+	/// </remarks>
+	protected bool ArmsLengthSlowsPull(bool enabled, int minimumHostiles)
+		=> enabled
+			&& DataCenter.Role == JobRole.Tank
+			&& NumberOfHostilesInRange >= minimumHostiles
+			&& !PackSlowed();
+
+	/// <summary>
 	/// A healer's pull upkeep: an instant HoT or barrier kept on the tank through a dungeon pull and
 	/// renewed as soon as it runs out or is used up. One rule for every healer (the white mage's Regen,
 	/// the astrologian's Aspected Benefic, the sage's Eukrasian Diagnosis); only the action differs.

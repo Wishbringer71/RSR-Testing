@@ -6,6 +6,17 @@
 public sealed class PLD_Reborn : PaladinRotation
 {
 	#region Config Options
+	[RotationConfig(CombatType.PvE, Name = "Use Arm's Length on a pull for its Slow",
+		Tooltip = "Arm's Length is used on a group pull for its Slow, not only as knockback "
+			+ "protection.\n"
+			+ "In a fight: the Slow +20% lands on every enemy that strikes you and delays "
+			+ "auto-attacks as well as casts, so in a standing pack it throttles the whole incoming "
+			+ "stream for fifteen seconds. It costs nothing but its own cooldown. A pull is as many "
+			+ "enemies in reach as the global \"Number of hostiles\" for defensive abilities; a pack "
+			+ "that is already slowed is left alone.\n"
+			+ "Off by default, because it changes what the action is used for.")]
+	public bool UseArmsLengthOnPull { get; set; } = false;
+
 
 	[RotationConfig(CombatType.PvE, Name = "Use GCDs to heal. (Ignored if there are no healers alive in party)")]
 	public bool GCDHeal { get; set; } = false;
@@ -225,6 +236,12 @@ public sealed class PLD_Reborn : PaladinRotation
 	[RotationDesc(ActionID.SentinelPvE, ActionID.RampartPvE, ActionID.BulwarkPvE, ActionID.SheltronPvE, ActionID.ReprisalPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
+		// Free of cost but its cooldown, so ahead of the paid mitigations (A194).
+		if (ArmsLengthSlowsPull(UseArmsLengthOnPull, Service.Config.AutoDefenseNumber) && ArmsLengthPvE.CanUse(out act))
+		{
+			return true;
+		}
+
 		if (InterventionTank && InterventionPvE.CanUse(out act))
 		{
 			return true;

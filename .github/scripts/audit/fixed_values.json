@@ -548,7 +548,7 @@
    "status": "open"
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
+   "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
    "code": "return inRange > 0 && slowed >= 2 && slowed * 2 >= inRange;",
    "values": [
     "2",

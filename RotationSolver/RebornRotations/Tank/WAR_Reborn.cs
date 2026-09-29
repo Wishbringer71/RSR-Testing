@@ -26,6 +26,17 @@ public sealed class WAR_Reborn : WarriorRotation
 		HealerOnly,
 	}
 
+	[RotationConfig(CombatType.PvE, Name = "Use Arm's Length on a pull for its Slow",
+		Tooltip = "Arm's Length is used on a group pull for its Slow, not only as knockback "
+			+ "protection.\n"
+			+ "In a fight: the Slow +20% lands on every enemy that strikes you and delays "
+			+ "auto-attacks as well as casts, so in a standing pack it throttles the whole incoming "
+			+ "stream for fifteen seconds. It costs nothing but its own cooldown. A pull is as many "
+			+ "enemies in reach as the global \"Number of hostiles\" for defensive abilities; a pack "
+			+ "that is already slowed is left alone.\n"
+			+ "Off by default, because it changes what the action is used for.")]
+	public bool UseArmsLengthOnPull { get; set; } = false;
+
 	[RotationConfig(CombatType.PvE, Name = "Use Bloodwhetting/Raw intuition on single enemies")]
 	public bool SoloIntuition { get; set; } = false;
 
@@ -241,6 +252,12 @@ public sealed class WAR_Reborn : WarriorRotation
 		if (StatusHelper.PlayerHasStatus(true, StatusID.Holmgang_409) && Player?.GetHealthRatio() < 0.3f)
 		{
 			return false;
+		}
+
+		// Free of cost but its cooldown, so ahead of the paid mitigations (A194).
+		if (ArmsLengthSlowsPull(UseArmsLengthOnPull, Service.Config.AutoDefenseNumber) && ArmsLengthPvE.CanUse(out act))
+		{
+			return true;
 		}
 
 		if (RawIntuitionPvE.CanUse(out act) && (RawSingleTargets || NumberOfHostilesInRange > 2))

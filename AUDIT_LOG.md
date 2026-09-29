@@ -4357,6 +4357,15 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A194 · Abtausch im Pull auf alle Tanks; deutscher Name geklärt (29.09.2026)
+
+- *Befund (TODO):* Arm's Length für seine Verlangsamung wirkte nur der Dunkelritter (A53). Der Eintrag wartete auf „eine Beobachtung beim Dunkelritter, dass die Regel trägt" — eine Spielbestätigung als Aufgabe an ihn, gegen die Definition of Done, und eine Regel an einem Job gegen „Universell zuerst".
+- *Umgesetzt:* `CustomRotation.ArmsLengthSlowsPull(enabled, minimumHostiles)` auf Stufe „Tanks" (Rolle Tank, Gegner in Reichweite, Gruppe nicht schon verlangsamt); `PackSlowed` dorthin verlegt. Dunkelritter nutzt sie mit seiner Barrierenzahl und seiner Barrierenrückhaltung; Paladin, Krieger, Revolverklinge je mit eigener Option (ab Werk aus, wie beim Dunkelritter) und der globalen „Number of hostiles" der Abwehr, jeweils vorn in der Einzelabwehr. Beim Revolverklingen hält die bestehende No-Mercy-Eröffnungsrückhaltung auch Abtausch zurück (Matrix).
+- *Falsifikation:* **Kein Defekt?** Dieselbe Lage bei jedem Tank, eine Regel nur beim Dunkelritter. **Option falsch?** Ab Werk aus, das bisherige Verhalten bleibt; der Nutzen ist belegt am Wirktext (Verlangsamung verzögert Auto-Attacken), nicht gemessen — daher die Option. **Ausgeliefert, nichts ändert sich?** Mit der Option aus gewollt.
+- *Nebenbefund, Namen:* Der deutsche Job-Guide (Paladin, 29.09.2026) nennt Arm's Length **Abtausch** (St. 32, „verhindert fast alle Rückstoß- und Heranzieheffekte") und Reprisal **Reflexion** (St. 22). „Rückstoß" ist das Wort des Spiels für den Effekt; der Eintrag, der es der Aktion zuordnete (C33), ist aus `action_names_de.json` entfernt, die drei Stellen in den Konzepten sind berichtigt.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

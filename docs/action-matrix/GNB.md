@@ -1,6 +1,6 @@
 # GNB — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-27; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-29; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `GunbreakerRotation`
 - Rotation: `RotationSolver/RebornRotations/Tank/GNB_Reborn.cs`
@@ -101,6 +101,8 @@ direkt: 44 · nur gelesen: 1 · ungenutzt: 1
 | Aktion | Beziehung | zu |
 |---|---|---|
 | Abdomen Tear | StatusNeed ReadyToTear | Status ReadyToTear |
+| Arm's Length | Regel sperrt vorher | Gnashing Fang |
+| Arm's Length | Regel sperrt vorher | No Mercy |
 | Aurora | Regel sperrt vorher | Gnashing Fang |
 | Aurora | Regel sperrt vorher | No Mercy |
 | Blasting Zone | Regel prüft | Bloodfest |

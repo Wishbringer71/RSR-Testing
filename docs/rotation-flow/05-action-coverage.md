@@ -92,7 +92,7 @@ Konkrete Folge, nicht nur Kosmetik:
 
 - **Invulnerability** ist bei DRK, GNB und WAR in der Basisschicht verdrahtet
   (`EmergencyAbility`, gegated auf `Service.Config.HealthForDyingTanks`), bei
-  **PLD** dagegen in `PLD_Reborn.cs:92/97` mit eigener Logik
+  **PLD** dagegen in `PLD_Reborn.cs:103/108` mit eigener Logik
   (`HallowedWithCover`). Vier Tanks, dieselbe Fähigkeitsklasse, zwei Orte und
   zwei Gates.
 - Beim Lesen einer `{Job}_Reborn.cs` ist nicht erkennbar, ob ein Slot leer ist

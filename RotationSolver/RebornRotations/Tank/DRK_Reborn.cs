@@ -305,27 +305,6 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	}
 
 	/// <summary>
-	/// Whether the pack is slowed hard enough that the barrier would not be spent.
-	/// </summary>
-	/// <remarks>
-	/// Slow is not only a caster debuff: its effect text names the auto-attack delay alongside cast
-	/// and recast time, and trash enemies deal most of their damage by auto-attack. A slowed pack
-	/// therefore throttles the incoming stream by about the size of the debuff - Arm's Length applies
-	/// Slow +20% to every physical attacker for 15s, which is the same order as Rampart and past the
-	/// line where the stream no longer spends 25% of maximum HP in seven seconds.
-	///
-	/// Same share rule as the stun condition, and for the same reason: one slowed enemy out of eight
-	/// says nothing about the stream. The difference is the timing - a stun stops the stream and
-	/// lapses in seconds, a slow thins it for fifteen, so this one has no grace window. It ends when
-	/// the debuff does.
-	/// </remarks>
-	private static bool PackSlowed()
-	{
-		var inRange = SurveyHostileStatus(DataCenter.JobRange, StatusHelper.SlowStatus, out var slowed);
-		return inRange > 0 && slowed >= 2 && slowed * 2 >= inRange;
-	}
-
-	/// <summary>
 	/// Hold a damage mitigation because a barrier is waiting to be spent - group pulls only.
 	/// </summary>
 	/// <remarks>
@@ -418,9 +397,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	/// than a second number that could drift away from it.
 	/// </remarks>
 	private bool ShouldUseArmsLengthOnPull()
-		=> UseArmsLengthOnPull
-			&& NumberOfHostilesInRange >= BlackestNightMinHostiles
-			&& !PackSlowed()
+		=> ArmsLengthSlowsPull(UseArmsLengthOnPull, BlackestNightMinHostiles)
 			// The slow is the point of casting it here, and it is exactly what a barrier waiting to
 			// be spent cannot afford. Only this branch is held: the central anti-knockback uses of
 			// Arm's Length stay untouched, because being thrown off a platform is not a damage

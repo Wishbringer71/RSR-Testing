@@ -365,3 +365,10 @@ With the BMR movement safety check on, Red Mage's Displacement and Samurai's His
 longer used when the spot they jump back to lies in a danger zone. Before, neither was checked at all.
 For rotation authors: `SpecialActionType.HostileAttackBackstep` with `ActionSetting.BackstepDistance`.
 
+## Paladin, Warrior, Gunbreaker: Arm's Length on a pull for its Slow
+
+The Dark Knight's option to use Arm's Length on a group pull for its Slow now exists for every tank,
+off by default. The Slow +20% on every enemy that strikes you delays auto-attacks as well as casts. A
+pull is as many enemies in reach as the global "Number of hostiles" for defensive abilities; a pack
+that is already slowed is left alone.
+

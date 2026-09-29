@@ -13,16 +13,8 @@
       "en": "Arm's Length",
       "identifier": "ArmsLengthPvE",
       "kind": "action",
-      "source": "user, 2026-09-12",
-      "note": "Answered directly when asked which action Abtausch is. Closes the question A-1646 left open. C30 had assigned the name to Shirk from a web search, which the naming rule does not admit as a source; that assignment is superseded. Conflicts with the Rückstoß entry below - both come from the user, at different times, for the same action."
-    },
-    {
-      "de": "Rückstoß",
-      "en": "Arm's Length",
-      "identifier": "ArmsLengthPvE",
-      "kind": "action",
-      "source": "user, recorded in C33",
-      "note": "Same action as the Abtausch entry. Which of the two the German client actually prints is not settled; the tree uses Rückstoß in 33 places. Until the user says otherwise, prefer the English identifier in new text."
+      "source": "user, 2026-09-12; German job guide (de.finalfantasyxiv.com/jobguide/paladin/), 2026-09-29",
+      "note": "Settled by the German job guide: role action at level 32, \"verhindert fast alle Rückstoß- und Heranzieheffekte\", 20 % Gemach on physical attackers. \"Rückstoß\" is the game's word for the knockback effect, not this action; the entry that paired it with Arm's Length (C33) is removed."
     },
     {
       "de": "Sanctus",
@@ -37,8 +29,8 @@
       "en": "Reprisal",
       "identifier": "ReprisalPvE",
       "kind": "action",
-      "source": "C30, via web search",
-      "note": "Not a source the naming rule admits. Kept because the user used the name in the same breath as Abtausch and has not corrected it, but it is the weakest entry in this file."
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/paladin/), 2026-09-29; first recorded in C30 via web search",
+      "note": "Confirmed by the German job guide: role action at level 22, reduces damage dealt by nearby enemies by 10 % for 15 s."
     },
     {
       "de": "Ex Machina",
