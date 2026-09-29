@@ -1780,18 +1780,27 @@ internal static class DataCenter
 			return;
 		}
 
+		// The same members as the level statistics count - valid, with an id, alive - so that with the
+		// setting off both give the same figures, as the setting's text promises.
 		var count = 0;
 		foreach (var member in PartyMembers)
 		{
-			if (member.GameObjectId == 0 || count >= _forecastHpBuffer.Length)
+			if (!member.IsValid() || member.GameObjectId == 0 || count >= _forecastHpBuffer.Length)
 			{
 				continue;
 			}
 
-			var hp = GetPartyMemberHPRatio(member);
-			if (hp > 0)
+			try
 			{
-				_forecastHpBuffer[count++] = hp * member.GetForecastSurvivingShare();
+				var hp = GetPartyMemberHPRatio(member);
+				if (hp > 0)
+				{
+					_forecastHpBuffer[count++] = hp * member.GetForecastSurvivingShare();
+				}
+			}
+			catch (AccessViolationException ex)
+			{
+				PluginLog.Error($"AccessViolationException in forecast party HP computation: {ex.Message}");
 			}
 		}
 

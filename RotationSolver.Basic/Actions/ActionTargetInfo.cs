@@ -3550,7 +3550,9 @@ public struct ActionTargetInfo(IBaseAction action)
 			var restRole = int.MaxValue;
 			foreach (var r in ranked)
 			{
-				if (!r.Unprotected)
+				// Only the hurt: ranked by points, a damage dealer at full health has the smallest pool,
+				// won the class, and the check below then healed nobody while the tank was at half.
+				if (!r.Unprotected || r.Obj.GetHealthRatio() >= 1)
 				{
 					continue;
 				}

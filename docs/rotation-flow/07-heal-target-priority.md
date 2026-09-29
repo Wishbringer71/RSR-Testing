@@ -298,7 +298,7 @@ weil Klasse 1 und die Aggro davorstehen, aber sie beseitigt sie nicht. Ob die be
 vereinheitlicht werden, ist eine Wertentscheidung über eine Konfiguration und gehört dem
 Auftraggeber.
 
-**Umgesetzt (A183):** Klassen 2 und 3 hinter `HealTargetByDanger` („Choose the heal target by danger"), Vorgabewert aus, in `ActionTargetInfo.DangerClassTarget`. „Unter Beschuss" liest `DataCenter.TargetedPartyMembers` (je Bild aus den Zielen der Gegner). Klasse 1 und der Selbst-Kurzschluss stehen unverändert davor; die Geschützten bleiben zuletzt.
+**Umgesetzt (A183):** Klassen 2 und 3 hinter `HealTargetByDanger` („Choose the heal target by danger"), Vorgabewert aus, in `ActionTargetInfo.DangerClassTarget`. „Unter Beschuss" liest `DataCenter.TargetedPartyMembers` (je Bild aus den Zielen der Gegner). Klasse 1 und der Selbst-Kurzschluss stehen unverändert davor; die Geschützten bleiben zuletzt. Klasse 3 reiht nur Verletzte: Nach Punkten gereiht gewann sonst ein Unverletzter mit kleinem Pool, und niemand wurde geheilt (A210).
 
 **Die Rate steht.** `DataCenter.RecordedHP` führt die Gruppe seit A91 mit, `GetTTK` antwortet damit
 für jede Gruppen-Id, `ScoreTtkForecast` korrigiert die Schätzung gegen ihren eigenen Fehler (A92),

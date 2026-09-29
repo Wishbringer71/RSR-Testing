@@ -4505,6 +4505,15 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A210 · Nachprüfung A182, A183, A191, A198 (29.09.2026)
+
+- *A182, Antithese „mit ausgeschalteter Vorausschau unverändert":* widerlegt für ungültige Gruppenmitglieder. Die Pegelstatistik (`ComputePartyHpStats`) zählt nur gültige Mitglieder und fängt `AccessViolationException`. `ComputeForecastAreaStats` las jedes Mitglied mit Id ohne `IsValid`: Ein Mitglied im Zonenwechsel ging mit veralteten Werten in Mittel und Streuung ein oder brach die Statusberechnung des Frames ab. Behoben mit demselben Filter und demselben Fang. A199 hatte dreizehn solche Stellen ergänzt und diese, einen Tag jünger, übersehen. Übrige Unterschiede (immer sortiert statt erst ab fünf) ändern Mittel und Streuung nicht.
+- *A183, Antithese „Option schädlich":* belegt für Klasse 3 bei angekündigtem Flächencast. Gereiht nach verbleibenden Punkten gewann ein Schadensausteiler bei voller Gesundheit, weil er den kleinsten Pool hat. Die Schlussprüfung „ist er verletzt" lieferte dann kein Ziel, obwohl der Tank bei der Hälfte stand. Behoben: Klasse 3 reiht nur Verletzte. Mit ausgeschalteter Option unverändert (der Zweig wird nicht betreten).
+- *A191, Antithese „der Text der Einstellung bindet":* Der Text sagt „the health a member is heading for by the time a heal started now would land". Die Vorlaufzeit ist für jede Schwelle Rest-GCD plus ein GCD, auch für oGCD-Heilungen, die sofort landen (Benediction, Tetragrammaton, Essential Dignity, Druochole …). Mit eingeschalteter Einstellung fällt eine oGCD-Heilung damit bis zu einen GCD zu früh. Das Modell stammt aus der Flaggenberechnung vor A191 (`ShouldHealSingle` für Fähigkeit und Zauber gleich); A191 hat es auf 31 Schwellen übertragen. Als Defekt erfasst (`TODO.md`), Behebung nach dieser Nachprüfung.
+- *A198:* Die Umformung stimmt (`!S && (!H || n == 1)` gleich `!(S || (H && n != 1))`). Kein Befund.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
