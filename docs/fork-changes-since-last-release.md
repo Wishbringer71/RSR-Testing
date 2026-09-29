@@ -378,6 +378,14 @@ circle on the tank no longer spends a Summoner's Radiant Aegis, but still lets a
 a cleave on the tank and the melee. Tempera Coat is unchanged: it is what Tempera Grassa, the party
 barrier, needs first.
 
+Markers count only on you or a member of your own party (Duty Support companions included). Before,
+a stack marker on someone in another alliance group opened your party's mitigations too.
+
+A damage dealer's single-target defence for a tankbuster announced by BossModReborn now follows
+BossModReborn's own list of who is hit, when that tankbuster is the next predicted hit. Before, it
+opened whenever RSR saw no tank in the party, which was the case in Duty Support with `Heal and
+raise Party NPCs` off.
+
 Ground-targeted circles, cones and charges are still measured from the caster: the game data does
 not state where they land or how wide they open.
 

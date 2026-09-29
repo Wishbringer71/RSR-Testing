@@ -145,9 +145,24 @@ sind außerdem Marker (Stack- und Spread-Marker ohne Abstand) und BossModReborn 
 Tankbuster als Raidwide meldet). Welche Quelle in seinen Kämpfen die Abwehr öffnet, schreibt
 `DefenseTrace.log` (unten); die Zeilen nennen jetzt auch, ob der Treffer ihn erreicht.
 
-**Marker und BossModReborn für den Selbstschutz:** Ein Stack-Marker betrifft jeden, der stackt, und zählt als
-„erreicht ihn". Ein Spread-Marker zählt nur auf ihm selbst. Ein angekündigter BossModReborn-Raidwide trifft
-jeden.
+**Marker:** Es zählen nur Marker auf ihm oder einem Mitglied seiner eigenen Gruppe, Duty-Support-Begleiter
+eingeschlossen, gleich wie „Heal and raise Party NPCs" steht (A220). Das gilt für die Flagge
+(`IsCastingAreaVfx`, eine Upstream-Erkennung, die bis dahin jeden Marker in Reichweite las) und für den
+Selbstschutz. Ein Stack auf einem Mitglied einer anderen Allianzgruppe traf keinen von ihnen und öffnete doch
+ihre Gruppenminderungen und seinen Selbstschutz. Für den Selbstschutz zählt ein Stack-Marker in der eigenen
+Gruppe als „erreicht ihn" (wer stackt, wird getroffen); ein Spread-Marker zählt nur auf ihm selbst. Ein
+angekündigter BossModReborn-Raidwide trifft jeden.
+
+**Tankbuster und die Einzelabwehr der Schadensausteiler (A220):** Ein angekündigter BossModReborn-Tankbuster
+öffnet sie, wenn er ihn trifft. Ist der nächste vorhergesagte Treffer dieser Tankbuster, sagt BossModReborn das
+selbst: Die Maske des Eintrags nennt die Getroffenen, Bit 0 ist immer der Spieler (`PartyState.PlayerSlot = 0`,
+IPC `Hints.PredictedDamagePlayers`; die Liste ist nach Zeitpunkt sortiert, BossModReborn-Quelle 29.09.2026).
+Gehört die Maske zu einem anderen Ereignis, gilt die bisherige Näherung: kein lebender Tank in der Gruppe. Allein
+diese Näherung öffnete Radiant Aegis für einen Tankbuster auf einem Tank, den RSR nicht als Gruppenmitglied
+zählte — ein Duty-Support-Tank bei ausgeschaltetem „Heal and raise Party NPCs". Ob RSR Duty-Support-Tanks über
+ihren `ClassJob` überhaupt als Tank erkennt, ist nicht belegt. WrathCombo liest den Job solcher NPCs aus
+`InfoProxyPartyMember` statt aus `ClassJob`; das ist ein Hinweis, keine Spielquelle. Mit der Maske hängt die
+Entscheidung daran nicht mehr.
 
 **Selbst gemessen, ob ein gelisteter Cast den Spieler erreicht (A205, Option „Skip area defence for casts that
 missed you", ab Werk aus):** Der Effekt-Handler hält je gelisteter Aktion fest, ob ihre letzte Landung dem

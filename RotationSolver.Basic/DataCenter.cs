@@ -2825,7 +2825,8 @@ internal static class DataCenter
 				continue;
 			}
 
-			if (StartsWithAny(vfx.Path, MultiHitSharedPaths) || StartsWithAny(vfx.Path, SharedDamagePaths))
+			if ((StartsWithAny(vfx.Path, MultiHitSharedPaths) || StartsWithAny(vfx.Path, SharedDamagePaths))
+				&& IsOwnPartyMarker(vfx.ObjectId))
 			{
 				return true;
 			}
@@ -3373,6 +3374,13 @@ internal static class DataCenter
 			}
 
 			if (string.IsNullOrEmpty(s.Path))
+			{
+				return false;
+			}
+
+			// A marker on someone outside the party - another alliance group's stack - hits none of us,
+			// and the flag this raises opens the party's mitigations (concept 13, A220).
+			if (!IsOwnPartyMarker(s.ObjectId))
 			{
 				return false;
 			}
@@ -3947,23 +3955,18 @@ internal static class DataCenter
 	}
 
 	/// <summary>
-	/// Whether an area cast could reach the player at all. Hostiles are collected out to 48 yalms and
-	/// the area list only records that an action once hit a whole party, never whether the player is
-	/// inside this instance of it - so without this check any listed cast anywhere in that radius
-	/// raised <see cref="AutoStatus.DefenseArea"/>, which opens the job's entire area-defense chain.
-	/// Two cases pass regardless of distance: an effect range of 0, which covers both "not filled in"
-	/// and the party-wide hits that carry no radius of their own, and a cast aimed at the player,
-	/// since a ground-placed effect follows its target rather than its caster. One case is decided
-	/// before both: a single-target action with a cast range reaches only the one it is cast at.
-	/// </summary>
-	/// <summary>
-	/// Whether the last landing of each listed area cast damaged the player, for this session. Written
-	/// by the effect handler, read by <see cref="AreaCastCanReachPlayer"/> under
+	/// Whether the last landing of each listed area cast reached the player, for this session. Written
+	/// by the effect handler, read by <see cref="IsAnyHostileCastingAreaReachingMe"/> under
 	/// "Skip area defence for casts that missed you" (A205).
 	/// </summary>
 	internal static readonly ConcurrentDictionary<uint, bool> AreaCastReachedPlayer = new();
 
 	/// <summary>Whether a listed area cast can reach the player (concept 13, A218).</summary>
+	/// <remarks>
+	/// Why reach is asked at all (6588832b9): hostiles are collected out to 48 yalms and the area list
+	/// only records that an action once hit a whole party, never whether anyone is inside this instance
+	/// of it - so without a reach check any listed cast anywhere in that radius opened the area defence.
+	/// </remarks>
 	private static bool AreaCastCanReachPlayer(IBattleChara h, Action act)
 	{
 		var player = Player.Object;
@@ -4159,7 +4162,8 @@ internal static class DataCenter
 
 		if (BMRNextTankbusterIn is > 0f and < float.MaxValue)
 		{
-			parts.Add($"BMR tankbuster in {BMRNextTankbusterIn:F1} s (window {Service.Config.BMRTankbusterMitWindow:F1}), party tank {PartyTank?.Name.TextValue ?? "none"}");
+			parts.Add($"BMR tankbuster in {BMRNextTankbusterIn:F1} s (window {Service.Config.BMRTankbusterMitWindow:F1}), party tank {PartyTank?.Name.TextValue ?? "none"}"
+				+ $", hits you {BMRTankbusterHitsPlayer?.ToString() ?? "unknown"}");
 		}
 
 		if (IsTankbusterVfxOnPlayer())
@@ -4168,6 +4172,20 @@ internal static class DataCenter
 		}
 
 		return string.Join(" | ", parts);
+	}
+
+	// Whether a marker sits on the player or a member of his own party, Duty Support companions
+	// included whatever the NPC party setting says: they share the stack as a player would.
+	private static bool IsOwnPartyMarker(ulong objectId)
+	{
+		var player = Player.Object;
+		if (player != null && objectId == player.GameObjectId)
+		{
+			return true;
+		}
+
+		return Svc.Objects.SearchById(objectId) is IBattleChara marked
+			&& (marked.IsParty() || marked.IsNpcPartyMember());
 	}
 
 	private static bool StartsWithAny(string path, FrozenSet<string> prefixes)
@@ -4413,6 +4431,18 @@ internal static class DataCenter
 	/// another unverified contract across the IPC boundary and is deliberately not made.
 	/// </remarks>
 	public static bool BMRNextDamageHitsPlayer { get; set; }
+
+	/// <summary>
+	/// Whether BossModReborn's imminent tankbuster hits the player: its answer when the next predicted
+	/// damage entry is that tankbuster - the entry's mask names who is hit, and bit 0 is always the
+	/// player (BossModReborn <c>PartyState.PlayerSlot = 0</c>) - and null when the mask belongs to
+	/// another event or nothing is predicted (A220).
+	/// </summary>
+	public static bool? BMRTankbusterHitsPlayer
+		=> BMRTankbusterImminent && BMRNextDamageType == PredictedDamageType.Tankbuster
+			&& BMRNextDamageIn > 0f && BMRNextDamageIn <= Service.Config.BMRTankbusterMitWindow
+			? BMRNextDamageHitsPlayer
+			: null;
 
 	/// <summary>
 	/// BMR predicts a tankbuster inside the user's single-target mitigation window.

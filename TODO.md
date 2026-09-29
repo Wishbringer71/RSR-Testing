@@ -257,7 +257,7 @@ Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A17
 
 **Seine Meldung (28.09.2026, nach A192 erneut 29.09.2026):** „tankbuster, auch wenn ich nicht betroffen bin und weit weg stehe, sorgen immer noch beim beschwörer dass schimmerschild unnötig verbraucht wird".
 
-**Stand:** A192 (Einzelzielaktion in der Flächenliste), A208 (Kreise um ihr Ziel, Linien in ihrer Breite) und A218 (Kreise vom Mittelpunkt des Wirkenden; Selbstschutz nur, wenn der Treffer ihn erreicht) beheben die Fehler, die der Code zeigt. Ob einer davon sein Fall war, zeigt der Code nicht. Weitere mögliche Quellen: Stack- und Spread-Marker, die ohne Abstand gelesen werden, ein BossModReborn-Modul, das einen Tankbuster als Raidwide meldet, und ein von ihm gelernter Tankbuster, der als Bodenkreis geführt wird. Die Prüfung aller Wege steht in A208.
+**Stand:** Behoben sind die Fehler, die der Code zeigt. A192 betrifft Einzelzielaktionen in der Flächenliste, A208 Kreise um ihr Ziel und Linien in ihrer Breite. A218 misst Kreise vom Mittelpunkt des Wirkenden und lässt Selbstschutz nur fallen, wenn der Treffer ihn erreicht. A220 zählt nur Marker der eigenen Gruppe und entscheidet einen angekündigten Tankbuster nach BossModReborns Zielmaske statt nach „kein Tank erkannt". Die letzte Lücke passt am besten zu seiner Beschreibung „nicht betroffen, weit weg": ein Tankbuster auf einem Duty-Support-Tank, den RSR nicht als Gruppenmitglied zählt. Das ist ein Schluss aus dem Code; ob er Duty Support spielte, ist nicht bekannt. Weitere mögliche Quellen: ein BossModReborn-Modul, das einen Tankbuster als Raidwide meldet, und ein gelernter Tankbuster, der als Bodenkreis geführt wird.
 
 **Messmittel:** `DefenseTrace.log` schreibt je Sitzung jede Wahl der Abwehrkette mit den Quellen, die dabei standen, und jeden Treffer auf ihn. **Erledigt, wenn** eine Datei aus seinen Kämpfen die Quelle zeigt und sie behoben ist. Danach wird das Protokoll wieder entfernt.
 
@@ -325,15 +325,11 @@ Geprüfte Nicht-Fehlstellen: `DTRManualAuto` bildet den vom Enum-Text beschriebe
 
 **Konzept:** `docs/rotation-flow/12-searing-light-stacking.md`
 
-### `Hints.PredictedDamagePlayers` wird nicht abonniert — erfasst, nicht gebaut · N, R
+### Tanks: ein angekündigter Tankbuster auf dem anderen Tank öffnet die eigene Einzelabwehr · N
 
-**Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
+**Konzept:** `docs/rotation-flow/13-aoe-damage-classification.md` (Tankbuster und Einzelabwehr)
 
-Bei der Prüfung, ob BossModReborn die **Aktion** einer Vorhersage nennt (Ergebnis: nein, siehe Konzept 08), ist ein Endpunkt aufgefallen, den der Fork nicht abonniert: `Hints.PredictedDamagePlayers` gibt die BitMask der **Betroffenen** des ersten Vorhersageeintrags zurück. Der Fork liest von `PredictedDamage` bisher nur Zeitpunkt und Art.
-
-**Was er beantworten könnte:** ob der vorhergesagte Schaden **den Spieler selbst** trifft. Bei Typ `Raidwide` ist das trivial, bei `Shared` und `None` nicht — und die Einzelverteidigung der Schadensausteiler hängt heute an `IsHostileCastingTankBusterAtMe` und `BMRTankbusterImminent`, also an Cast-Erkennung und Zeitpunkt, nicht an der Betroffenheit.
-
-**Vor dem Bau zu klären:** wie die Bitposition auf ein Gruppenmitglied abzubilden ist (BossModReborn nummeriert nach seiner eigenen Gruppenliste), und ob das über die IPC-Grenze ein weiterer ungeprüfter Vertrag wäre — dieselbe Klasse wie `SpecialMode` und `PredictedDamageType`.
+`StateUpdater.ShouldAddDefenseSingle` setzt für Tanks bei jedem `BMRTankbusterImminent` die Einzelabwehr-Flagge, auch wenn der Tankbuster dem anderen Tank gilt. Die Flagge öffnet bei Tanks beides: eigene Minderung (Rampart, Sentinel …) und Hilfe für den anderen (Intervention, The Blackest Night auf ihn). Die Maske von BossModReborn (`BMRTankbusterHitsPlayer`, A220) könnte die beiden trennen — wie A218 es für die Flächenabwehr tut. **Im Kampf:** Bei einem Tankbuster auf den Haupttank legt der zweite Tank eigene Minderung, die er nicht braucht. **Zu bauen:** eigene Minderung nur, wenn der Tankbuster ihn trifft; Hilfe für den anderen weiter an der Flagge. Der Endpunkt `Hints.PredictedDamagePlayers` ist abonniert (`BossModUpdater`); die frühere Aussage dieses Eintrags, er sei es nicht, war veraltet.
 
 ### Vorhergesagte Minderung bei zwei Treffern in Folge — selbstbewertend, keine offene Bestätigung · N
 

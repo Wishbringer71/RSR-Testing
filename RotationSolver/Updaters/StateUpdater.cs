@@ -292,11 +292,18 @@ internal static class StateUpdater
 				return true;
 			}
 
-			// BMR predicts timing, not who gets hit, so for this role it is only a reasonable proxy when
-			// no tank is alive to eat it. Otherwise the cast-verified branch above is the only trigger.
-			if (DataCenter.BMRTankbusterImminent && DataCenter.PartyTank == null)
+			// Who the tankbuster hits, BossModReborn states when it is the next predicted hit: its mask
+			// names the targets. Only when the mask belongs to another event does the old proxy stand -
+			// no tank alive to eat it. That proxy alone opened a Summoner's Radiant Aegis for a
+			// tankbuster on a tank RSR did not count as one (a Duty Support tank with "Heal and raise
+			// Party NPCs" off is not a party member here) (A220).
+			if (DataCenter.BMRTankbusterImminent)
 			{
-				return true;
+				var hitsMe = DataCenter.BMRTankbusterHitsPlayer;
+				if (hitsMe ?? DataCenter.PartyTank == null)
+				{
+					return true;
+				}
 			}
 		}
 
