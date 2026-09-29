@@ -4523,6 +4523,15 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch (ECommons-Quelle, WrathCombo-Enum zum Abgleich); Prüfskripte; Compile über die CI.
 
+### A212 · Nachprüfung A185, A193–A197, A199, A201–A204, A206 (29.09.2026)
+
+- *A193, Antithese „dieselbe Aufgabe an zwei Stellen":* belegt. Das Aktionsfenster führte eine eigene Liste der Bewegungsarten (zweimal) und eine eigene Sicherheitsberechnung. Der Rücksprung fehlte in beiden. Displacement und Hissatsu: Yaten bekamen deshalb nicht den Schalter „Skip position safety check" wie jede andere Bewegungsaktion, und die Anzeige nannte „Unknown movement type". Behoben: Das Fenster liest `ActionTargetInfo.IsMovingSpecialType`, die Anzeige rechnet den Landepunkt wie `CheckMovementSafety`. Die übrige Sicherheitsrechnung des Fensters bleibt eine Doppelung; sie ist als technische Schuld erfasst.
+- *A194, Antithese „schädlich":* belegt für einen Boss mit Adds. Die Regel zählt nur Gegner in Reichweite, und für den Slow verbraucht fehlt Abtausch 120 s lang dem Rückstoß, gegen den er die einzige Antwort des Tanks ist. Behoben: nicht, solange BossModReborn einen Rückstoß innerhalb der Abklingzeit ankündigt (Abklingzeit aus den Aktionsdaten). Ohne Modul bleibt es wie bisher; das ist als Grenze genannt.
+- *A195, Antithese „die Selbststeuerung steuert nur in eine Richtung":* belegt. Die Nachfrist wuchs auf die längste Lücke und schrumpfte nie. Eine einzige Pause, etwa eine Wiederbelebung des Weißmagiers, hielt die Barriere für den Rest des Pulls nach jeder endenden Kette so lange zurück, während der Tank den Strom ungemindert nahm. Das widerspricht seiner Vorgabe „Sicherheit vor Schaden". Behoben: Die Frist folgt der zuletzt gemessenen Lücke desselben Rudels, mindestens einem GCD.
+- *A185 (Protokoll entfernt), A196 (Listen), A197 (Blut), A199 (`IsValid`), A201 (Intervention), A202 (Improvised Finish), A203 (Addersgall), A204 (Nullprüfungen), A206 (Searing Light):* Antithesen geprüft, ohne Befund. A197: Die Grenze 70 hält bei einem Gewinn von höchstens 20 je GCD das Blut unter 100, weil der Verbrauch vor der Kombo steht. A201: Mit zwei Paladinen erfüllt die Intervention des anderen die Bereitstellung, gewollt. A206: `IsTheSameTo` ist nullsicher.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

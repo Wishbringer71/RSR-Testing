@@ -1179,12 +1179,18 @@ public partial class CustomRotation
 	/// Arm's Length is a role action of tanks and melee; this rule is for tanks, because the Slow
 	/// throttles the stream of auto-attacks on whoever holds the pack. It costs nothing but the
 	/// cooldown. Not while the pack is already slowed - a second Slow does not stack onto the first.
+	/// Not while BossModReborn announces a knockback before the cooldown would be back: the rule also
+	/// fires on a boss with adds, and spent on their Slow the action is gone for the knockback it is
+	/// the tank's only answer to (re-audit of A194). Without a module there is no announcement, and
+	/// the anti-knockback use stays reactive as before.
 	/// </remarks>
 	protected bool ArmsLengthSlowsPull(bool enabled, int minimumHostiles)
 		=> enabled
 			&& DataCenter.Role == JobRole.Tank
 			&& NumberOfHostilesInRange >= minimumHostiles
-			&& !PackSlowed();
+			&& !PackSlowed()
+			&& !(Service.Config.UseBmrTimeline && BMRKnockbackIn is > 0f and < float.MaxValue
+				&& BMRKnockbackIn <= ArmsLengthPvE.Cooldown.RecastTimeOneChargeRaw);
 
 	/// <summary>
 	/// A healer's pull upkeep: an instant HoT or barrier kept on the tank through a dungeon pull and

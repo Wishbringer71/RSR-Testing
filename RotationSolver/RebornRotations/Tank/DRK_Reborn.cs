@@ -262,12 +262,14 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	// The chain's own rhythm, measured in this fight (A195). A fixed three seconds stood here, "roughly
 	// one global cooldown": too long where the chain ends, too short where the stunner waits longer
 	// between casts - and which of the two happens was left to an observation in play. Now the hold
-	// starts at one global cooldown and widens to the longest gap seen between two group stuns on the
-	// same pack, so after the first longer gap the barrier no longer falls into the next one.
+	// starts at one global cooldown and follows the last gap seen between two group stuns on the same
+	// pack. The last, not the longest: the longest only ever grew, so one long pause - the white mage
+	// raising someone - held the barrier that long after every later chain for the rest of the pull,
+	// while the tank took the stream unmitigated (re-audit of A195).
 	private static bool _groupStunWasRunning;
 	private static DateTime _groupStunEnded = DateTime.MinValue;
 	private static readonly HashSet<ulong> _lastStunnedPack = [];
-	private static float _longestStunGap;
+	private static float _lastStunGap;
 
 	/// <summary>
 	/// Whether an <b>area</b> stun is currently keeping the damage stream down.
@@ -286,7 +288,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	/// </para>
 	/// <para>
 	/// Between two casts of Sanctus the stun lapses for a moment, so the hold continues through that
-	/// gap - one global cooldown at first, then the longest gap measured on this pack - while the
+	/// gap - one global cooldown at first, then the last gap measured on this pack - while the
 	/// enemies can still be stunned. Once they carry stun
 	/// resistance there is no headroom left and the hold ends by itself - "wait until the stuns stop
 	/// working" needs no counter of its own.
@@ -296,7 +298,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	{
 		if (!InCombat)
 		{
-			_longestStunGap = 0f;
+			_lastStunGap = 0f;
 			_groupStunWasRunning = false;
 			_lastStunnedPack.Clear();
 		}
@@ -312,11 +314,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		{
 			if (!_groupStunWasRunning && SamePackStunnedAgain())
 			{
-				var gap = (float)(now - _groupStunEnded).TotalSeconds;
-				if (gap > _longestStunGap)
-				{
-					_longestStunGap = gap;
-				}
+				_lastStunGap = (float)(now - _groupStunEnded).TotalSeconds;
 			}
 
 			RememberStunnedPack();
@@ -331,7 +329,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			_groupStunEnded = now;
 		}
 
-		var grace = Math.Max(DataCenter.DefaultGCDTotal, _longestStunGap);
+		var grace = Math.Max(DataCenter.DefaultGCDTotal, _lastStunGap);
 		return headroom && (now - _lastGroupStunSeen).TotalSeconds < grace;
 	}
 

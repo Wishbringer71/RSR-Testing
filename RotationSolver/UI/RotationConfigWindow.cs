@@ -3117,14 +3117,7 @@ public partial class RotationConfigWindow : Window
 				_activeAction.MinHPFeature = minHPFeatureSet;
 			}
 
-			if (_activeAction is IBaseAction movesAction &&
-			(movesAction.Setting.SpecialType == SpecialActionType.FixedDistanceMoveForward
-			|| movesAction.Setting.SpecialType == SpecialActionType.FixedDistanceMoveBackward
-			|| movesAction.Setting.SpecialType == SpecialActionType.HostileMovingForward
-			|| movesAction.Setting.SpecialType == SpecialActionType.FriendlyMovingForward
-			|| movesAction.Setting.SpecialType == SpecialActionType.HostileFriendlyMovingForward
-			|| movesAction.Setting.SpecialType == SpecialActionType.HostileMovingAttack
-			|| movesAction.Setting.SpecialType == SpecialActionType.ObjectBasedMovement))
+			if (_activeAction is IBaseAction movesAction && IsMovingSpecialType(movesAction.Setting.SpecialType))
 			{
 				var skipPosSafety = _activeAction.SkipPositionSafetyCheck;
 				if (ImGui.Checkbox($"{UiString.ConfigWindow_Actions_SkipPositionSafetyCheck.GetDescription()}##{_activeAction.Name}", ref skipPosSafety))
@@ -3374,15 +3367,7 @@ public partial class RotationConfigWindow : Window
 	/// Determines if the special action type is a movement type that requires safety checking.
 	/// </summary>
 	static bool IsMovingSpecialType(SpecialActionType specialType)
-	{
-		return specialType == SpecialActionType.FixedDistanceMoveForward
-			|| specialType == SpecialActionType.FixedDistanceMoveBackward
-			|| specialType == SpecialActionType.HostileMovingForward
-			|| specialType == SpecialActionType.FriendlyMovingForward
-			|| specialType == SpecialActionType.HostileFriendlyMovingForward
-			|| specialType == SpecialActionType.HostileMovingAttack
-			|| specialType == SpecialActionType.ObjectBasedMovement;
-	}
+		=> ActionTargetInfo.IsMovingSpecialType(specialType);
 
 	/// <summary>
 	/// Represents the safety status of a movement action.
@@ -3476,6 +3461,33 @@ public partial class RotationConfigWindow : Window
 						{
 							Status = isSafe ? MovementSafetyStatus.Safe : MovementSafetyStatus.NotSafe,
 							Reason = isSafe ? string.Empty : "Path to target unsafe (IsDashSafe)"
+						};
+					}
+
+				case SpecialActionType.HostileAttackBackstep:
+					{
+						// The landing point BackstepDistance behind the player, away from the target -
+						// the point ActionTargetInfo.CheckMovementSafety measures.
+						var target = action.Target.Target;
+						if (target == null)
+						{
+							return new MovementSafetyResult { Status = MovementSafetyStatus.NotApplicable, Reason = "No target" };
+						}
+
+						var away = playerPos - target.Position;
+						away.Y = 0;
+						var length = away.Length();
+						if (length <= 0f)
+						{
+							return new MovementSafetyResult { Status = MovementSafetyStatus.NotApplicable, Reason = "Standing on the target" };
+						}
+
+						var landing = playerPos + (away / length * action.Setting.BackstepDistance);
+						var isSafe = DataCenter.IsFixedDashSafe(playerPos, landing);
+						return new MovementSafetyResult
+						{
+							Status = isSafe ? MovementSafetyStatus.Safe : MovementSafetyStatus.NotSafe,
+							Reason = isSafe ? string.Empty : "Backstep landing unsafe (IsFixedDashSafe)"
 						};
 					}
 

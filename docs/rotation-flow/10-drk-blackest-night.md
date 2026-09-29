@@ -39,6 +39,10 @@ Heilerseite als `WHM_Reborn.ShouldHoldHolyForBarrier()`, Option `HoldHolyForBlac
 **voreingestellt an**. Den Gruppenpull erkennen beide Seiten an derselben Gegnerzahl, die ihre eigene
 Regel ohnehin verlangt, statt an einer zweiten Zahl daneben. Unberührt bleiben die zentralen
 Abtausch-Zweige gegen Rückstoß: Von einer Plattform geworfen zu werden ist keine Schadensfrage.
+Deshalb fällt Abtausch auf dem Pull nicht, solange BossModReborn einen Rückstoß ankündigt, bevor die
+Abklingzeit zurück wäre (`ArmsLengthSlowsPull`, alle Tanks, A212). Die Regel greift auch bei einem Boss
+mit Adds, und für seinen Slow verbraucht fehlte Abtausch dem Rückstoß. Ohne Modul gibt es keine
+Ankündigung; der Schutz gegen Rückstoß bleibt dann reaktiv wie bisher.
 
 ## Ergebnis
 
@@ -208,9 +212,11 @@ denn beide Bedingungen beantworten dieselbe Frage.
 
 Zwischen zwei Anwendungen von Sanctus läuft die Betäubung kurz aus; der Halt trägt über diese Lücke,
 aber nur solange die Gegner überhaupt betäubbar sind. **Wie lange, steuert die Regel selbst nach**
-(A195): anfangs einen globalen Cooldown des Dunkelritters, dann die längste im Kampf gemessene Lücke
-zwischen zwei Gruppenbetäubungen desselben Rudels (mindestens die Hälfte der jetzt Betäubten war es
-schon beim letzten Mal). Eine Lücke zu einem neuen Pull zählt nicht, sonst hielte eine Pause die
+(A195): anfangs einen globalen Cooldown des Dunkelritters, dann die zuletzt gemessene Lücke zwischen
+zwei Gruppenbetäubungen desselben Rudels (mindestens die Hälfte der jetzt Betäubten war es schon beim
+letzten Mal). Nicht die längste: Die längste wuchs nur. Eine einzige lange Pause, etwa eine
+Wiederbelebung des Weißmagiers, hätte die Barriere für den Rest des Pulls nach jeder endenden Kette so
+lange zurückgehalten, während der Tank den Strom ungemindert nahm (A212). Eine Lücke zu einem neuen Pull zählt nicht, sonst hielte eine Pause die
 Barriere für ihre ganze Länge. Mit dem Kampf wird der Messwert verworfen. Mit ihrer Immunität endet er von selbst — „zurückhalten, bis die Betäubungen nicht
 mehr wirken" braucht keinen eigenen Zähler.
 

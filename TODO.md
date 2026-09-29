@@ -503,6 +503,10 @@ Er fällt trotzdem kaum ins Gewicht, und der Grund liegt in der Wirkweise der Ak
 
 `RSCommands_StateSpecialCommand.cs`: rund 100 wortgleiche Zeilen, abweichend nur die Fälle `TargetOnly` und `AutoDuty` (`TargetingTypeOverride = targetingType` statt `null`) und der Zustandstext. **Kosten:** jede künftige Änderung am Zustandsautomaten muss an zwei Stellen erfolgen. **Auflösung:** über einen optionalen `TargetingType?`-Parameter zusammenführen, sobald an dieser Stelle ohnehin gearbeitet wird. **Empfehlung: nicht eigens angehen** — die Duplizierung kostet erst bei der nächsten Änderung am Zustandsautomaten etwas, und genau die ist nach dem Punkt oben ohne Laufzeitbeobachtung nicht zu empfehlen. Beide Punkte lösen sich gemeinsam oder gar nicht.
 
+### Das Aktionsfenster rechnet die Bewegungssicherheit ein zweites Mal · U
+
+**Befund (A212):** `RotationConfigWindow.GetMovementSafetyStatus` wiederholt `ActionTargetInfo.CheckMovementSafety` in eigener Form. Die beiden laufen schon auseinander: Die Regel „am Ziel stehend ist ein Sprint nur Schaden" fehlt im Fenster. **Kosten:** Das Fenster zeigt eine andere Antwort als die, nach der die Regel entscheidet; im Kampf ändert es nichts. **Auflösung:** `CheckMovementSafety` gibt Ergebnis und Grund heraus, das Fenster zeigt sie an.
+
 ### Zwei entfernte öffentliche Member seit dem letzten Release · R
 
 `scan7.py` misst die Paketoberfläche von `RotationSolver.Basic` gegen den Tag `7.5.5.41+wsh1`: `CustomRotation_BasicInfo.HasHostileCountAoeMitigation` (`public virtual`) und `ActionConfig.ShouldCheckTargetStatus` sind seither ersatzlos entfallen. Beide Entfernungen sind sachlich belegt — das Flag öffnete die gesamte Defensivkette, die Option las niemand —, aber sie waren im ausgelieferten Paket enthalten.
@@ -614,7 +618,7 @@ Wie viele Commits in jeder Gruppe noch auf ZWEIFELHAFT stehen, zählt die Tabell
 
 **Sein Auftrag (29.09.2026):** „Vollständiger kritischer Loop mit audit und codereview vor weiteren Arbeiten. Ebenfalls alle geänderten Konzepte im Loop kritisch prüfen. … Für alles antithesen aufstellen und versuchen das Gegenteil zu beweisen", und zwar für alle Code-Änderungen, nicht nur für ausgeschaltete Einstellungen. Konzepte werden nicht kompiliert. Ihr Inhalt wird Aussage für Aussage am Code und an den Quellen geprüft; der Stand der CI zählt dafür nicht.
 
-**Umfang:** 21 Code-Commits (A182–A206) und die geänderten Konzepte 05, 06, 07, 08, 10, 13, 14, 15, `TODO.md`, das Archiv und der Release-Text. **Erledigt:** A192/A205 (→ A208); A184, Barriere des Weisen (→ A209: ab Werk aus, Konzept 06 fortgeschrieben).
+**Umfang:** 21 Code-Commits (A182–A206) und die geänderten Konzepte 05, 06, 07, 08, 10, 13, 14, 15, `TODO.md`, das Archiv und der Release-Text. **Erledigt:** alle 21 Code-Commits (A208–A212). Offen aus der Nachprüfung: der Vorlauf der Vorausschau für oGCD-Heilungen (eigener Eintrag) und die Inhaltsprüfung der geänderten Konzepte.
 
 ### Audit + Code-Review der gesamten Codebasis
 

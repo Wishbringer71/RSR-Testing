@@ -377,6 +377,8 @@ shape and distances, BossModReborn predictions - and every enemy hit on you besi
 
 With the BMR movement safety check on, Red Mage's Displacement and Samurai's Hissatsu: Yaten are no
 longer used when the spot they jump back to lies in a danger zone. Before, neither was checked at all.
+Both actions also get the per-action "skip the safety check" switch that every other movement action
+has.
 For rotation authors: `SpecialActionType.HostileAttackBackstep` with `ActionSetting.BackstepDistance`.
 
 ## Paladin, Warrior, Gunbreaker: Arm's Length on a pull for its Slow
@@ -384,7 +386,8 @@ For rotation authors: `SpecialActionType.HostileAttackBackstep` with `ActionSett
 The Dark Knight's option to use Arm's Length on a group pull for its Slow now exists for every tank,
 off by default. The Slow +20% on every enemy that strikes you delays auto-attacks as well as casts. A
 pull is as many enemies in reach as the global "Number of hostiles" for defensive abilities; a pack
-that is already slowed is left alone.
+that is already slowed is left alone. While BossModReborn announces a knockback before Arm's Length
+would be back, it is kept for the knockback.
 
 ## A failed list download no longer leaves an empty list for good
 

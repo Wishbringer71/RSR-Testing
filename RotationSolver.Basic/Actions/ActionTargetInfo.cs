@@ -1064,8 +1064,10 @@ public struct ActionTargetInfo(IBaseAction action)
 	/// <summary>
 	/// Returns true for any <see cref="SpecialActionType"/> that physically moves the character,
 	/// regardless of whether the movement is a pure repositioning action or an attack with built-in movement.
+	/// The one list: the action settings window reads it too, so a new movement type cannot be checked
+	/// here and lack its "skip safety check" switch there (it did, for the backstep attacks of A193).
 	/// </summary>
-	private static bool IsMovingSpecialType(SpecialActionType type)
+	internal static bool IsMovingSpecialType(SpecialActionType type)
 		=> type is SpecialActionType.FixedDistanceMoveForward
 				or SpecialActionType.FixedDistanceMoveBackward
 				or SpecialActionType.HostileMovingForward
