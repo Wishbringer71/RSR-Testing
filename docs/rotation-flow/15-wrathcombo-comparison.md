@@ -114,6 +114,9 @@ wählt über die bestehende Partnerwahl neu.
 - **Nach der Schwäche:** Steht ein Mitglied mit höherem Rang in der Partnerpriorität verfügbar, wird gewechselt.
   „Wer am meisten Schaden verursacht" ist diese Priorität, dieselbe Ordnung wie bei der ersten Wahl. Ein in den
   Einstellungen namentlich gewählter Partner wird nur für Tod oder Schwäche ersetzt.
+- **Verfügbar** ist, wen auch die erste Wahl nähme: nicht ein zweiter Tänzer und nicht dessen Partner. Mit zwei
+  Tänzern in der Gruppe endete sonst die Partnerschaft alle 30 s zugunsten des Partners des anderen, und Closed
+  Position wählte denselben Partner wieder (A211).
 - **Zeitpunkt:** Für einen Wechsel erst, wenn Closed Position bereit ist (30 s Abklingzeit, Job-Guide) — sonst
   hätte der Tänzer bis dahin keinen Partner. Nie während eines Tanzes, damit das Finish den Partner noch
   erreicht. Ending hat 1 s Abklingzeit.
@@ -134,18 +137,18 @@ Pfade sind Spieldaten (Asset-Namen), kein übernommener Code.
 - **Beobachtung:** Jeder erkannte Marker auf einem Gruppenmitglied öffnet eine Beobachtung. Erreicht eine
   gegnerische Aktion das markierte Mitglied — Schaden jeder Höhe, auch geblockt, pariert oder von einer Barriere
   geschluckt, oder ein Treffer, den Unverwundbarkeit oder Ausweichen abwies; Auto-Attacken ausgenommen, Quelle
-  anvisierbar oder unsichtbarer Helfer —, ist der Marker bestätigt. Bis A211 zählte nur die Effektart „Damage":
-  Ein unter Sheltron geblockter oder unter Hallowed Ground abgewiesener Tankbuster widerlegte seinen Marker. Endet die
-  Beobachtung ohne solchen Treffer, ist der Pfad widerlegt und kommt auf die Liste. Die Entscheidung
-  (`IsCastingTankVfx`, `IsTankbusterVfxOnPlayer`) überspringt Pfade auf der Liste.
+  anvisierbar oder unsichtbarer Helfer —, ist der Marker bestätigt. Endet die Beobachtung ohne solchen Treffer,
+  ist der Pfad widerlegt und kommt auf die Liste. Die Entscheidung (`IsCastingTankVfx`, `IsTankbusterVfxOnPlayer`)
+  überspringt Pfade auf der Liste. Bis A211 zählte nur die Effektart „Damage": Ein unter Sheltron geblockter oder
+  unter Hallowed Ground abgewiesener Tankbuster widerlegte seinen Marker.
 - **Selbstkorrektur statt Zählschwelle:** Die Beobachtung läuft für gelistete Pfade weiter; ein späterer Treffer
   nach demselben Marker nimmt den Pfad wieder heraus. Ein falscher Eintrag kostet eine ausgelassene Abwehr beim
   nächsten Auftreten und korrigiert sich dann. Deshalb genügt eine Beobachtung, und es gibt keine feste Zahl.
 - **Wann eine Beobachtung endet:** wenn der Marker die VFX-Warteschlange verlassen hat — dieselbe Warteschlange,
   aus der die Entscheidung liest — und jeder gegnerische Zauber, der lief, solange der Marker stand, geendet
-  hat, plus ein GCD für das Eintreffen. Bis A211 zählten nur Zauber, die schon beim Erscheinen liefen; ein
-  Zauber, der erst nach dem Marker begann, lag außerhalb des Fensters. Beide Fehler neigen zur sicheren Seite: Ein zu langes Fenster lässt
-  anderen Schaden den Marker bestätigen, er bleibt Tankbuster wie bisher.
+  hat, plus ein GCD für das Eintreffen. Ein zu langes Fenster lässt anderen Schaden den Marker bestätigen, er
+  bleibt Tankbuster wie bisher — der Fehler liegt auf der sicheren Seite. Bis A211 zählten nur Zauber, die schon
+  beim Erscheinen liefen; ein Zauber, der erst nach dem Marker begann, lag außerhalb des Fensters.
 - **Ohne Urteil verworfen:** Das markierte Mitglied ist beim Ende tot oder nicht mehr in der Gruppe; der Kampf
   endet vorher.
 - **Speicherung:** `TankbusterMarkerWithoutHit.json` im Konfigurationsordner, kein Download. Die Datei der ersten Fassung, `TankbusterMarkerFalsified.json`, wird nicht mehr gelesen: Ihre Einträge entstanden unter dem fehlerhaften Kriterium (geblockt, pariert oder abgewiesen galt als kein Treffer, A211). Ein zu Unrecht gelisteter echter Tankbuster hätte einmal keine Abwehr bekommen. Ein zu Unrecht gestrichener Eintrag kostet dagegen nur eine überflüssige Abwehr, bis er neu gelernt ist. Es gelten die Schutzwege

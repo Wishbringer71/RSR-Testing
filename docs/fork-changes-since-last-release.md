@@ -336,7 +336,8 @@ rule for this upkeep, and none of them spends the MP their raise needs on it.
 When the dance partner dies, the partnership ends and Closed Position picks again. While the partner
 carries the weakness of a raise, someone else gets the partner buffs if anyone is available; once it
 has worn off, the higher-priority member is taken back. A partner chosen by name is replaced only for
-death or weakness. A swap waits until Closed Position is ready and never interrupts a dance.
+death or weakness. Another dancer and their partner are never counted as available. A swap waits until
+Closed Position is ready and never interrupts a dance.
 
 ## Tankbuster markers: more are recognised, and false ones are learned away
 
@@ -428,7 +429,8 @@ time elapsed, as the game counts it; it was read the other way round.
 
 ## New setting: Skip area defence for casts that missed you
 
-Off by default. On, an area cast from the AoE list that landed last time without damaging you - you
+Off by default. On, an area cast from the AoE list that landed last time without reaching you - you
 dodged it, or it was centred on someone else - does not open your area defence the next time; once it
-damages you again, it counts again. Healing ahead and the party's threat check are unaffected.
+reaches you again, it counts again. A hit you blocked, parried, absorbed with a barrier or took under
+invulnerability counts as reaching you. Healing ahead and the party's threat check are unaffected.
 

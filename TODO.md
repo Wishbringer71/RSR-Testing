@@ -610,12 +610,6 @@ Wie viele Commits in jeder Gruppe noch auf ZWEIFELHAFT stehen, zählt die Tabell
 
 **Kosten des Kompromisses:** In der Voreinstellung bleibt die Rangfolge, wie sie ist. **Zur Entscheidung vorgelegt (A195), statt auf eine Beobachtung von ihm zu warten:** die Reprisal-Zeilen im Pfad vor The Blackest Night ziehen. Das trifft alle Lagen, berührt aber seine Vorgabe „Reprisal und Abtausch zurückhalten, solange die Barriere steht" (Konzept 10): Liegt Reprisal zuerst, steht die Barriere noch nicht, und die Vorgabe greift in diesem Pfad nicht mehr.
 
-### Nachprüfung aller Änderungen seit 28.09.2026 mittags · N, R, U
-
-**Sein Auftrag (29.09.2026):** „Vollständiger kritischer Loop mit audit und codereview vor weiteren Arbeiten. Ebenfalls alle geänderten Konzepte im Loop kritisch prüfen. … Für alles antithesen aufstellen und versuchen das Gegenteil zu beweisen", und zwar für alle Code-Änderungen, nicht nur für ausgeschaltete Einstellungen. Konzepte werden nicht kompiliert. Ihr Inhalt wird Aussage für Aussage am Code und an den Quellen geprüft; der Stand der CI zählt dafür nicht.
-
-**Umfang:** 21 Code-Commits (A182–A206) und die geänderten Konzepte 05, 06, 07, 08, 10, 13, 14, 15, `TODO.md`, das Archiv und der Release-Text. **Erledigt:** alle 21 Code-Commits (A208–A212). Der Vorlauf der Vorausschau für oGCD-Heilungen ist behoben (A213). Offen aus der Nachprüfung: die Inhaltsprüfung der geänderten Konzepte.
-
 ### Audit + Code-Review der gesamten Codebasis
 
 Umfang: `RotationSolver.Basic` (48k Zeilen) · RebornRotations (21k) · ExtraRotations (15k) · Updaters (4k) · UI (11k) · Commands/IPC/Data (3k). Der ganze Baum, Upstream-Code eingeschlossen. Phasen 1 bis 4 sind abgeschlossen (AUDIT_LOG A8, A10).

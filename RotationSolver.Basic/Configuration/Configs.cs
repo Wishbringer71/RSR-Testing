@@ -1072,9 +1072,10 @@ internal partial class Configs : IPluginConfiguration
 	// did not reach him, and the next cast of it opens no area defence for him - until one does reach
 	// him again. Off by default: that dodged areas cost cooldowns is not measured.
 	[UI("Skip area defence for casts that missed you",
-		Description = "An area cast from the AoE list that landed last time without damaging you - you "
-			+ "dodged it, or it was centred on someone else - does not open your area defence the next "
-			+ "time. As soon as it damages you once, it counts again.\n"
+		Description = "An area cast from the AoE list that missed you last time - you dodged it, or it was "
+			+ "centred on someone else - does not open your area defence the next time. As soon as it "
+			+ "reaches you once, it counts again; a hit you blocked, parried, absorbed or took under "
+			+ "invulnerability has reached you.\n"
 			+ "In a fight: party mitigation and your own area defensives are kept for the casts that "
 			+ "actually reach you. The cost: the first cast of each action in a session still opens "
 			+ "them, and a cast you dodged last time and fail to dodge now is met without them.\n"
