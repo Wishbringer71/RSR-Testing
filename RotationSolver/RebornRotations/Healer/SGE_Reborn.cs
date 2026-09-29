@@ -46,19 +46,22 @@ public sealed class SGE_Reborn : SageRotation
 	public bool TaurocholeNeedsThreat { get; set; } = true;
 
 	// The owner's rule for shield healers (concept 15, V1): the same pull upkeep as the white mage's
-	// Regen, with a barrier, renewed when it runs out or is used up, instant so it costs nothing while
-	// running.
+	// Regen, with a barrier, renewed when it runs out or is used up, instant so it can be cast while
+	// running. Off by default: renewing a barrier each time it breaks is what concept 06 (section 2.1)
+	// records as removed on 05.09.2026 - two GCDs per break for the whole pull - and whether his rule
+	// meant that is his decision (A209).
 	[RotationConfig(CombatType.PvE, Name = "Keep Eukrasian Diagnosis on the tank through a pull",
 		Tooltip = "Eukrasian Diagnosis goes on the tank as they close in on a group and is renewed for as long "
 			+ "as the pull lasts - whenever the barrier runs out or has been used up.\n"
 			+ "In a fight: the tank takes the first hits behind a barrier, and every broken barrier is replaced "
-			+ "with the next GCD. Eukrasia and Eukrasian Diagnosis are both instant, so nothing is lost while "
-			+ "running. Each renewal costs a GCD that would otherwise be Dosis, and its MP; it stops while the MP "
-			+ "left would no longer cover Egeiro. Not placed while the tank already carries a barrier it cannot "
-			+ "stack with (Galvanize, Eukrasian Prognosis).\n"
+			+ "with the next GCDs. Eukrasia and Eukrasian Diagnosis are both instant, so they can be cast while "
+			+ "running. Each renewal costs Eukrasia's one second and a GCD that would otherwise be Dosis, and "
+			+ "Eukrasian Diagnosis's MP; in a large pull the barrier can break within a few hits, and then most of the "
+			+ "sage's GCDs go to it. It stops while the MP left would no longer cover Egeiro. Not placed while "
+			+ "the tank already carries a barrier it cannot stack with (Galvanize, Eukrasian Prognosis).\n"
 			+ "Dungeons only: in Trials and Raids the rule does not apply, because there the damage is scripted "
 			+ "rather than a stream.")]
-	public bool UsePreEukrasianDiagnosis { get; set; } = true;
+	public bool UsePreEukrasianDiagnosis { get; set; } = false;
 
 	[Range(1, 8, ConfigUnitType.None, 1)]
 	[RotationConfig(CombatType.PvE, Name = "Enemies near the tank before the pull", Parent = nameof(UsePreEukrasianDiagnosis),

@@ -324,11 +324,12 @@ area cast is announced, otherwise by lowest percentage.
 
 ## Sage: a barrier on the tank through a dungeon pull
 
-New setting `Keep Eukrasian Diagnosis on the tank through a pull`, on by default like the White
-Mage's Regen upkeep. As the tank closes in on a group, Eukrasian Diagnosis goes on them and is renewed
-whenever the barrier runs out or breaks, for as long as the pull lasts. Both steps are instant, so it
-works while running. Not placed over Galvanize or Eukrasian Prognosis. White Mage, Astrologian and
-Sage now share one rule for this upkeep, and none of them spends the MP their raise needs on it.
+New setting `Keep Eukrasian Diagnosis on the tank through a pull`, off by default. As the tank closes
+in on a group, Eukrasian Diagnosis goes on them and is renewed whenever the barrier runs out or breaks,
+for as long as the pull lasts. Both steps are instant, so it works while running. In a large pull a
+broken barrier is replaced again and again, and each renewal takes Eukrasia's second and a GCD from
+Dosis. Not placed over Galvanize or Eukrasian Prognosis. White Mage, Astrologian and Sage now share one
+rule for this upkeep, and none of them spends the MP their raise needs on it.
 
 ## Dancer: a new dance partner after a death
 

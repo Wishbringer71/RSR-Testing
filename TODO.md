@@ -31,7 +31,7 @@ Seit Upstream `c3fac720b` heilt der Krieger Gruppenmitglieder unter `Nascent Fla
 
 ### Vorschläge aus dem WrathCombo-Vergleich · N, U
 
-V1 gebaut für Weißmagier, Astrologe und Weiser (A184); offen dazu: seine Lesart von „Verfall" (Verbrauch oder nur Ablauf) und Aetherpact als Vorab-HoT des Gelehrten — beides gebündelt vorgelegt. V3 geprüft, keine Übernahme (A190). V2 gebaut (A189), V5 gebaut (A186); V4 und V6 geprüft, nicht gebaut (A188, A187).
+V1 gebaut für Weißmagier, Astrologe und Weiser (A184). Die Barriere des Weisen ist ab Werk aus (A209), weil die Erneuerung bei jedem Bruch das ist, was Konzept 06 §2.1 als entfernten Fehler führt. Offen dazu: seine Lesart von „Verfall" (Verbrauch oder nur Ablauf) und ob sie jene Entscheidung aufhebt; außerdem Aetherpact als Vorab-HoT des Gelehrten. Beides ist gebündelt vorgelegt. V3 geprüft, keine Übernahme (A190). V2 gebaut (A189), V5 gebaut (A186); V4 und V6 geprüft, nicht gebaut (A188, A187).
 
 **Konzept:** `docs/rotation-flow/15-wrathcombo-comparison.md`
 
@@ -610,7 +610,7 @@ Wie viele Commits in jeder Gruppe noch auf ZWEIFELHAFT stehen, zählt die Tabell
 
 **Sein Auftrag (29.09.2026):** „Vollständiger kritischer Loop mit audit und codereview vor weiteren Arbeiten. Ebenfalls alle geänderten Konzepte im Loop kritisch prüfen. … Für alles antithesen aufstellen und versuchen das Gegenteil zu beweisen", und zwar für alle Code-Änderungen, nicht nur für ausgeschaltete Einstellungen. Konzepte werden nicht kompiliert. Ihr Inhalt wird Aussage für Aussage am Code und an den Quellen geprüft; der Stand der CI zählt dafür nicht.
 
-**Umfang:** 21 Code-Commits (A182–A206) und die geänderten Konzepte 05, 06, 07, 08, 10, 13, 14, 15, `TODO.md`, das Archiv und der Release-Text. **Erledigt:** A192/A205 (→ A208). **Befund offen:** A184 legt für den Weisen eine Barriere, die im Wall-to-Wall bei jedem Bruch erneuert wird. Konzept 06 §2.1 führt genau diese Erneuerung als entfernten Fehler; das Konzept wurde dabei nicht gelesen und widerspricht jetzt dem Code.
+**Umfang:** 21 Code-Commits (A182–A206) und die geänderten Konzepte 05, 06, 07, 08, 10, 13, 14, 15, `TODO.md`, das Archiv und der Release-Text. **Erledigt:** A192/A205 (→ A208); A184, Barriere des Weisen (→ A209: ab Werk aus, Konzept 06 fortgeschrieben).
 
 ### Audit + Code-Review der gesamten Codebasis
 

@@ -4496,6 +4496,15 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch (Spieldaten über xivapi, BossModReborn-Quelle); Prüfskripte; Compile über die CI. Welche Quelle in seinen Kämpfen die Abwehr öffnet, ist von hier nicht messbar — dafür das Protokoll.
 
+### A209 · Nachprüfung A184: die Pull-Barriere des Weisen ist ab Werk aus (29.09.2026)
+
+- *Antithese „Änderung schädlich":* belegt. `TryPullUpkeepOnTank` erneuert, sobald der Status fehlt oder bald endet (`WillStatusEndGCD`). Eine gebrochene Barriere fehlt, also wird sie bei jedem Bruch neu gelegt: Eukrasia (1 s) und ein GCD statt Dosis, 800 MP. Genau das hat der Zweig am 05.09.2026 entfernt (5755ad5b8, Konzept 06 §2.1: „Zwei GCDs pro Platzer, den ganzen Pull"). A184 hat diesen Abschnitt nicht gelesen, die Option ab Werk eingeschaltet und im Optionstext „nothing is lost while running" behauptet.
+- *Getroffene Entscheidung:* Konzept 06 §2.1 nennt die Gründe der Entfernung. Seine V1-Vorgabe („regelmäßige erneuerung bei ablauf/verfall solange walltowall läuft") kann sie aufheben oder nur den Ablauf meinen; das weiß nur er. Ohne ihn ändere ich nur, was seine Begründung nicht berührt.
+- *Umgesetzt:* `UsePreEukrasianDiagnosis` ab Werk aus („Option und Beobachtbarkeit": das bisherige Verhalten bleibt Standard). Der Optionstext nennt jetzt die Kosten je Erneuerung. Konzept 06 §2.1 und Konzept 15 sind fortgeschrieben, ebenso Release-Text und `TODO.md`. Die Entscheidung liegt in der gebündelten Vorlage.
+- *Übriger Teil von A184 geprüft:* Weißmagier und Astrologe gleichen der früheren Form bis auf die MP-Reserve für die Wiederbelebung und die Vorausschau der Untergrenze (A191). **Antithese zur Reserve:** Unter Thin Air kostet Raise nichts, die Reserve wäre dann zu hoch. Die Folge ist höchstens ein ausgelassenes Regen, kein Risiko.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

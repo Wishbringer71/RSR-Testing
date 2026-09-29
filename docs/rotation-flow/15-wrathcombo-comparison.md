@@ -87,15 +87,16 @@ in Gefahr war.
 |---|---|---|
 | Weißmagier | Regen, auch im Countdown | vorhanden (`UsePreRegen`), jetzt über die gemeinsame Regel |
 | Astrologe | Aspected Benefic | vorhanden (`UsePreAspectedBenefic`), jetzt über die gemeinsame Regel |
-| Weiser | Eukrasia + Eukrasian Diagnosis, beide sofort | **neu** (`UsePreEukrasianDiagnosis`, ab Werk an wie beim Weißmagier). Rang in der Eukrasia-Wahl: nach Flächen- und Einzelabwehr, vor den DoTs. Nicht gelegt, solange der Tank Galvanize oder Eukrasian Prognosis trägt (laut Wirktext nicht stapelbar). Keine Gesundheitsuntergrenze: Anders als Regen ist Eukrasian Diagnosis selbst der beste Sofort-GCD im Notfall. Außerhalb des Kampfs erst, wenn ein Gegner in Reichweite des Weisen ist — sonst nimmt die bestehende Eukrasia-Bereinigung den Status wieder ab. |
+| Weiser | Eukrasia + Eukrasian Diagnosis, beide sofort | **neu** (`UsePreEukrasianDiagnosis`, ab Werk **aus** bis zu seiner Entscheidung, A209: Die Erneuerung bei jedem Bruch ist das Verhalten, das Konzept 06 §2.1 als entfernten Fehler führt). Rang in der Eukrasia-Wahl: nach Flächen- und Einzelabwehr, vor den DoTs. Nicht gelegt, solange der Tank Galvanize oder Eukrasian Prognosis trägt (laut Wirktext nicht stapelbar). Keine Gesundheitsuntergrenze: Anders als Regen ist Eukrasian Diagnosis selbst der beste Sofort-GCD im Notfall. Außerhalb des Kampfs erst, wenn ein Gegner in Reichweite des Weisen ist — sonst nimmt die bestehende Eukrasia-Bereinigung den Status wieder ab. |
 | Gelehrter | kein Sofortschild (Adloquium 2 s Wirkzeit) | nicht gebaut: Stehenbleiben erst am Ende des Wall-to-Wall (seine Präzisierung). Sein Vorschlag Aetherpact/Fey Union als Vorab-HoT bleibt offen; Gegenargumente: Jede andere Feenaktion (Whispering Dawn, Fey Illumination, Fey Blessing) beendet die Verbindung, und auf einem vollen Tank verbraucht Fey Union Feenanzeige ohne Heilung (Nachschub nur über Aetherflow-Aktionen, je +10). Die 30-y-Grenze zählt nicht, der Heiler folgt dem Tank (sein Hinweis). Ob die Fee während Fey Union Embrace aussetzt, ist nicht belegt. Er kollidiert zudem mit zwei bestehenden Einstellungstexten („Remove Aetherpact if … above 90 %", „Do not start Aetherpact if … above 80 %"); zur Entscheidung vorgelegt. |
 
 **Konsequenz, die er kennen muss (Schlussfolgerung, am Spiel nicht gemessen):** Bei Regen fällt die
 Erneuerung alle 18 s. Eine Barriere bricht in einem großen Pull, sobald der Tank ihren Wert an Schaden
-nimmt. Bricht sie jeden GCD, gehen alle GCDs des Weisen an sie statt an Dosis, und 800 MP je Erneuerung
-leeren den Vorrat bis zur Wiederbelebungsreserve. Wie oft sie bricht, hängt vom Pull ab und ist von hier
-nicht messbar. Ob „Verfall" in seiner Vorgabe den Verbrauch meint oder nur den Ablauf, entscheidet er
-(gebündelte Vorlage).
+nimmt. Bricht sie jeden GCD, gehen alle GCDs des Weisen an sie statt an Dosis — je Erneuerung Eukrasia (1 s)
+und ein GCD —, und 800 MP je Erneuerung leeren den Vorrat bis zur Wiederbelebungsreserve. Wie oft sie bricht,
+hängt vom Pull ab und ist von hier nicht messbar. Genau diese Erneuerung hat der Zweig am 05.09.2026 als Fehler
+entfernt (Konzept 06 §2.1: „Zwei GCDs pro Platzer, den ganzen Pull"). Seine V1-Vorgabe kann sie wieder meinen
+oder nur den Ablauf; das weiß nur er. Bis dahin ist die Option ab Werk aus (A209), gebündelte Vorlage.
 
 ## V5: Stand der Umsetzung (A186)
 
