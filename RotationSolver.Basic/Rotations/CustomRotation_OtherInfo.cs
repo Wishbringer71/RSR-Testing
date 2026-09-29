@@ -1179,9 +1179,11 @@ public partial class CustomRotation
 	/// Arm's Length is a role action of tanks and melee; this rule is for tanks, because the Slow
 	/// throttles the stream of auto-attacks on whoever holds the pack. It costs nothing but the
 	/// cooldown. Not while the pack is already slowed - a second Slow does not stack onto the first.
-	/// Not while BossModReborn announces a knockback before the cooldown would be back: the rule also
-	/// fires on a boss with adds, and spent on their Slow the action is gone for the knockback it is
-	/// the tank's only answer to (re-audit of A194). Without a module there is no announcement, and
+	/// Not while BossModReborn announces a knockback that lands after Arm's Length would have run out
+	/// and before its cooldown is back: the rule also fires on a boss with adds, and spent on their
+	/// Slow the action would be gone for the knockback it is the tank's only answer to. A knockback
+	/// inside the duration is no reason to wait - cast now, it is covered (A212, A219). Duration from
+	/// the effect text, cooldown from the action data. Without a module there is no announcement, and
 	/// the anti-knockback use stays reactive as before.
 	/// </remarks>
 	protected bool ArmsLengthSlowsPull(bool enabled, int minimumHostiles)
@@ -1190,6 +1192,7 @@ public partial class CustomRotation
 			&& NumberOfHostilesInRange >= minimumHostiles
 			&& !PackSlowed()
 			&& !(Service.Config.UseBmrTimeline && BMRKnockbackIn is > 0f and < float.MaxValue
+				&& BMRKnockbackIn > DefensiveValues.DurationOf((uint)ActionID.ArmsLengthPvE)
 				&& BMRKnockbackIn <= ArmsLengthPvE.Cooldown.RecastTimeOneChargeRaw);
 
 	/// <summary>

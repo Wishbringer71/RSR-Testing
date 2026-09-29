@@ -39,8 +39,9 @@ Heilerseite als `WHM_Reborn.ShouldHoldHolyForBarrier()`, Option `HoldHolyForBlac
 **voreingestellt an**. Den Gruppenpull erkennen beide Seiten an derselben Gegnerzahl, die ihre eigene
 Regel ohnehin verlangt, statt an einer zweiten Zahl daneben. Unberührt bleiben die zentralen
 Abtausch-Zweige gegen Rückstoß: Von einer Plattform geworfen zu werden ist keine Schadensfrage.
-Deshalb fällt Abtausch auf dem Pull nicht, solange BossModReborn einen Rückstoß ankündigt, bevor die
-Abklingzeit zurück wäre (`ArmsLengthSlowsPull`, alle Tanks, A212). Die Regel greift auch bei einem Boss
+Deshalb fällt Abtausch auf dem Pull nicht, solange BossModReborn einen Rückstoß ankündigt, der nach dem
+Ende seiner Wirkung (6 s, Wirktext) und vor dem Ende seiner Abklingzeit landet (`ArmsLengthSlowsPull`, alle
+Tanks, A212, A219); einen Rückstoß innerhalb der Wirkung deckt der Einsatz jetzt mit ab. Die Regel greift auch bei einem Boss
 mit Adds, und für seinen Slow verbraucht fehlte Abtausch dem Rückstoß. Ohne Modul gibt es keine
 Ankündigung; der Schutz gegen Rückstoß bleibt dann reaktiv wie bisher.
 

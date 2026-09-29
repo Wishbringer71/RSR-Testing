@@ -4612,6 +4612,18 @@ Voller Loop zu A208 (seine Rückfrage nach den Loops).
 
 **Prüfgrad:** statisch (Code, Versionsgeschichte, BossModReborn-Quelle, Spieldaten über xivapi); Prüfskripte; Compile über die CI.
 
+### A219 · Voller Loop zu den übrigen Korrekturen der Nachprüfung: A209, A210, A211, A212 (29.09.2026)
+
+**A212 Abtausch im Pull, Rückstoßsperre.** *Research:* `ShouldAddAntiKnockback` liest dieselbe BossModReborn-Vorhersage (`BMRNextKnockbackIn`). Abtausch wirkt 6 s (Wirktext, `DefensiveValues`) und klingt 120 s ab. *Optionen:* (0) keine Sperre; (a) Sperre bis zum Ende der Abklingzeit (A212); (b) Sperre nur für einen Rückstoß nach Wirkende und vor Ende der Abklingzeit; (c) nie im Bosskampf. *Abwägung:* (a) sperrt auch, wenn der Rückstoß in die 6 s fällt — gerade dann deckt der Einsatz ihn mit ab. (c) verliert den Slow auf Adds ohne jeden Rückstoß. (b) sperrt genau den schädlichen Fall. *Falsifikation:* **Kein Defekt?** Für den Slow verbraucht, fehlt Abtausch dem angekündigten Rückstoß 114 s lang. **Option falsch?** (a) war es im 6-s-Fall; (b) umgesetzt. **Nichts ändert sich?** Ohne Modul keine Ankündigung; als Grenze genannt. *Umgesetzt:* `ArmsLengthSlowsPull`. **Rücksprung-Schalter:** Die Doppelung der Bewegungsarten im Fenster ist beseitigt. Die zweite Sicherheitsrechnung steht als technische Schuld in `TODO.md`. Keine Richtungsfrage.
+
+**A211 Trefferkriterium.** *Optionen:* (0) nur `Damage`; (a) Beträge aus 3, 5, 6, „erreicht" dazu 1, 2, 7 und teilweise Unverwundbarkeit (gebaut); (b) jeder Eintrag des Ziels im Effektsatz. *Abwägung:* (b) zählt eine reine Statusvergabe als Treffer und bestätigte Marker durch Debuffs (sichere Seite, aber ungenau). (a) folgt den Effektarten. *Falsifikation:* Ein geblockter Betrag ist kleiner; die Flächenmessung nimmt das Maximum über die Gruppe, ein geblockter Paladin senkt sie nicht. Belegt an ECommons und WrathCombo (Enum). **Tänzer:** (0) der Partner des anderen zählt; (a) derselbe Filter wie die erste Wahl (gebaut). Ohne zweiten Tänzer ändert sich nichts.
+
+**A210 Flächenwerte, Klasse 3.** *Flächenwerte:* Die Pegelwerte filtern `IsValid` und fangen Zugriffsfehler; die Vorausschau-Werte versprechen Gleichheit bei ausgeschalteter Einstellung. Einzige Option: derselbe Filter. *Klasse 3:* (0) Unverletzte mitzählen; (a) nur Verletzte (gebaut); (b) nach fehlenden Punkten reihen. *Abwägung:* (b) widerspricht seiner Triage „wer zuerst stirbt": Bei einem angekündigten Raidwide stirbt zuerst, wer die wenigsten Punkte hat, nicht wem die meisten fehlen. *Falsifikation:* Ein Schadensausteiler bei 99 % mit 59 000 Punkten geht vor den Tank bei 50 % mit 60 000; bei einem Raidwide von 60 000 stirbt er zuerst, das entspricht der Triage.
+
+**A209 Barriere des Weisen.** *Optionen:* (0) ab Werk an (A184); (a) ab Werk aus (gebaut); (b) Erneuerung nur bei Ablauf; (c) Erneuerung bei Bruch höchstens einmal je Zeitraum. *Abwägung:* Durchgerechnet im Konzept 15. (c) bräuchte eine Zahl ohne Ableitung. (b) und (0) berühren die Entscheidung aus Konzept 06 §2.1 und seine V1-Vorgabe. Die Wahl liegt bei ihm; bis dahin (a), weil das bisherige Verhalten Standard bleibt („Option und Beobachtbarkeit").
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
