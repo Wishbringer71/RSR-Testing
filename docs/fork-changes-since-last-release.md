@@ -364,7 +364,7 @@ off-GCD heal lands as soon as the current animation lock lets it go out, so it l
 that. Before, Benediction, Essential Dignity and the other off-GCD heals went out up to a GCD before
 they were needed. The heal flags and the heal target choice make the same distinction. What counts is
 when the healing lands: Synastry, Krasis, Soteria and Emergency Tactics heal only with the next GCD
-and look ahead like a GCD heal, so Synastry picks the member the heal it rides on goes to.
+and look ahead like a GCD heal, so their thresholds read the health at the moment their healing lands.
 
 For rotation authors, `ObjectHelper.GetForecastHealthRatio` is now public, with an overload taking
 `instant` for off-GCD heals, and `ActionSetting.HealsWithNextGcd` marks an off-GCD action whose
