@@ -389,6 +389,7 @@ verschwinden kann.
 | Kampfende, Zustandswechsel, Laden und Entladen (`DataCenter.ResetAllRecords`) | Werte bleiben — die Methode räumt das Laufzeitgedächtnis eines Kampfes ab und fasst keinen Speicher an |
 | **Speicher wird beim Start nicht geladen** | **Totalverlust**, still — behoben, s. u. |
 | Speichern während einer neuen Messung | Der Vorgang ging verloren, still; behoben — gespeichert wird ein Schnappschuss, und nur ein Schreiber zur Zeit |
+| Gesamtspeichern (`OtherConfiguration.Save`, etwa nach einer neuen Knockback-Aktion im Kampf) während einer neuen Messung | Bis A224 zog es den Schnappschuss erst auf dem Pool-Thread; warf die Kopie, fielen **alle** folgenden Listen dieses Durchgangs aus, still. Behoben: Die vier im Spiel beschriebenen Speicher (Flächenliste, Schadenstabelle, Knockback-Liste, Marker-Negativliste) ziehen ihre Kopie auf dem aufrufenden Thread, auch im Gesamtspeichern |
 | Messung zwischen letztem Speichern und Entladen | Verlust dieser einen Messung; behoben — der Effekt-Handler wird vor dem letzten Speichern abgehängt |
 
 **Ablesbar ist das jetzt im Listenfenster unter „Store:".** Das Laden meldet, ob es eine Datei fand, keine fand oder eine unlesbare beiseitelegte; jedes Speichern liest die Datei zurück und meldet Erfolg nur, wenn dort so viele Einträge stehen wie geschrieben wurden. Die Zahl „Damage potential recorded" darüber ist die Tabelle im Speicher — sie sieht gleich aus, ob die Werte die Platte erreicht haben oder nicht.

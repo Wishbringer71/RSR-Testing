@@ -71,7 +71,10 @@ were never added to the list. Only the type's own byte is read now.
 Three ways a reading could stay in memory, look recorded, and never reach the file: the table was
 written from a background thread while the next reading was being added, two saves at once fought
 over the same temporary file, and on unload the last save ran while new readings could still arrive.
-All three are closed.
+All three are closed. The first is closed also where every list is saved at once, as after a new
+knockback action in a fight: there the copy was still taken in the background, and when it failed,
+every list after it in that save was skipped. The AoE list, the knockback list and the tankbuster
+marker list are copied the same way now.
 
 The AoE list window now says what the store actually did, under `Store:` — whether the login found a
 file, found none, or found one it could not read, and after every save how many entries were read

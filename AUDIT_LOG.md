@@ -4680,6 +4680,17 @@ Bereich E der Tiefenprüfung seit 357ffce09: Tänzer (226911fe9, 1a1155863, 30aa
 
 **Prüfgrad:** statisch (Code, Spieldaten, Wirktexte); Prüfskripte; Compile über die CI.
 
+### A224 · Tiefenprüfung Infrastruktur: Kopien im Gesamtspeichern, Laden der Listen, Heilsperre, Prüfskripte (29.09.2026)
+
+Bereich F der Tiefenprüfung seit 357ffce09: `OtherConfiguration` (A196, V2-Speicher), `MajorUpdater`/`TankbusterMarkerWatch`, Heilsperre-Helfer, Prüfskripte und Workflow, `CLAUDE.md`, Upstream-Ressourcen.
+
+- *Befund, Kopien auf dem Pool-Thread (Klasse):* `SaveHostileCastingAreaPotential` und `SaveTankbusterMarkerWithoutHit` versprechen eine Kopie auf dem Thread des Aufrufers. Das gilt für ihren direkten Aufruf. `OtherConfiguration.Save()` rief beide aber innerhalb seines `Task.Run` auf, und dort entstand die Kopie auf einem Pool-Thread. `Save()` wird im Kampf gerufen (`Watcher.cs`, neue Knockback-Aktion), während der Spielthread in denselben Speicher schreibt: die Schadenstabelle und die Flächenliste aus dem Effekt-Handler, die Negativliste aus `MajorUpdater`. Die Flächen- und die Knockback-Liste gab schon Upstream ohne Kopie in den Pool. *Folge:* Wirft die Kopie „Collection was modified", endet der ganze Durchgang von `Save()` an dieser Stelle. Alle folgenden Listen bleiben ungespeichert, und `_ = Save()` verschluckt die Ausnahme. Erhoben sind alle Schreiber im Spiel: Flächenliste, Knockback-Liste, Schadenstabelle, Negativliste. `RotationSolverRecord` zählt nur Ganzzahlfelder hoch, die übrigen Listen ändert nur die Oberfläche.
+- *Optionen:* (0) belassen; (a) Sperre um jede Liste; (b) Kopie auf dem Thread des Aufrufers, auch im Gesamtspeichern. *Abwägung:* (a) bräuchte jede Lesestelle im Spiel unter derselben Sperre, also einen großen Eingriff. (b) ist die bestehende Bauform der Schadenstabelle, konsequent angewandt. Gewählt (b): `Save()` startet die vier Speicher vor seinem `Task.Run` und wartet am Ende auf sie. `SaveHostileCastingArea` und `SaveHostileCastingKnockback` kopieren vor dem Pool.
+- *Falsifikation:* **Kein Defekt?** Das Fenster ist klein, aber nicht leer: Der Watcher ruft `Save()` im selben Frame, in dem er weitere Effekte verarbeitet. **Option falsch?** Ruft jemand `Save()` von einem fremden Thread, entsteht die Kopie dort; das Entladen ruft es nach dem Abhängen des Effekt-Handlers. **Ausgeliefert, nichts ändert sich?** Im Normalfall schreibt jede Datei dasselbe wie vorher.
+- *Geprüft ohne Befund:* `InitOne`. Lesbare Datei: geladen, fertig. Unlesbare: beiseitegelegt und bei kuratierten Listen neu geholt, bei gelernten leer begonnen. Fehlende: geholt, bei Fehlschlag leer und nicht als geladen markiert. Reset ohne Netz: die bisherige Liste bleibt. `_loadedStores` ist ein `ConcurrentDictionary`, die Ladeschritte laufen parallel. Das Ladetoken greift nur für Downloads ohne Zwang. Heilsperre: `PlayerHealingPunished` ist die logische Negation der ersetzten Bedingung. Prüfskripte: alle Selbsttests laufen. Ressourcen-Listen: Upstream-Ergänzungen. `CLAUDE.md`: keine Zählungen oder Verweise verschoben.
+
+**Prüfgrad:** statisch (Code, Aufrufer und Threads erhoben); Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -162,7 +162,7 @@ Pfade sind Spieldaten (Asset-Namen), kein übernommener Code.
 - **Speicherung:** `TankbusterMarkerWithoutHit.json` im Konfigurationsordner, kein Download. Die Datei der ersten Fassung, `TankbusterMarkerFalsified.json`, wird nicht mehr gelesen: Ihre Einträge entstanden unter dem fehlerhaften Kriterium (geblockt, pariert oder abgewiesen galt als kein Treffer, A211). Ein zu Unrecht gelisteter echter Tankbuster hätte einmal keine Abwehr bekommen. Ein zu Unrecht gestrichener Eintrag kostet dagegen nur eine überflüssige Abwehr, bis er neu gelernt ist. Es gelten die Schutzwege
   aller Listen: nie geschrieben, wenn nicht geladen; atomar über eine Temporärdatei; eine unlesbare Datei wird
   beiseitegelegt statt überschrieben. Geändert wird die Liste nur im Spielthread, geschrieben wird eine dort
-  gezogene Kopie. Zurücksetzen: Datei löschen („Keine Funktion ohne Bedarf").
+  gezogene Kopie — seit A224 auch im Gesamtspeichern, das sie vorher erst auf dem Pool-Thread zog. Zurücksetzen: Datei löschen („Keine Funktion ohne Bedarf").
 
 **Grenze:** Die Warteschlange hält einen Marker ohne bekannte Dauer fünf Sekunden (bestehender Wert in
 `MajorUpdater`). Ein Tankbuster, der später als fünf Sekunden plus ein GCD nach dem Marker fällt und dessen Zauber

@@ -231,6 +231,19 @@ internal class OtherConfiguration
 
 	public static Task Save()
 	{
+		// The stores the game thread writes during play are started here, on the caller's thread: each
+		// takes its copy before its write moves to the pool. Started inside the Task.Run below, the copy
+		// was taken on a pool thread while the game thread could be adding to the same set - "Collection
+		// was modified" thrown out of the copy, not caught by the write, and every save after it in this
+		// sequence skipped, silently, since callers discard the task (A224).
+		Task[] writtenInPlay =
+		[
+			SaveHostileCastingArea(),
+			SaveHostileCastingAreaPotential(),
+			SaveHostileCastingKnockback(),
+			SaveTankbusterMarkerWithoutHit(),
+		];
+
 		return Task.Run(async () =>
 		{
 			await SavePriorityStatus();
@@ -241,18 +254,15 @@ internal class OtherConfiguration
 			await SaveTheBalancePriority();
 			await SaveKardiaTankPriority();
 			await SaveNoHostileNames();
-			await SaveHostileCastingArea();
-			await SaveHostileCastingAreaPotential();
 			await SaveHostileCastingTank();
 			await SaveBeneficialPositions();
 			await SaveRotationSolverRecord();
 			await SaveNoProvokeNames();
 			await SaveNoCastingStatus();
-			await SaveHostileCastingKnockback();
-			await SaveTankbusterMarkerWithoutHit();
 			await SaveHostileCastingStop();
 			await SaveNorthHornWeaknessRecords();
 			await SaveSouthHornWeaknessRecords();
+			await Task.WhenAll(writtenInPlay);
 		});
 	}
 	#region Action Tab
@@ -282,7 +292,9 @@ internal class OtherConfiguration
 
 	public static Task SaveHostileCastingArea()
 	{
-		return Task.Run(() => Save(HostileCastingArea, nameof(HostileCastingArea)));
+		// Copied on the caller's thread: the effect handler adds to this list on the game thread (A224).
+		var snapshot = new HashSet<uint>(HostileCastingArea);
+		return Task.Run(() => Save(snapshot, nameof(HostileCastingArea)));
 	}
 
 	public static Task SaveHostileCastingAreaPotential()
@@ -411,7 +423,9 @@ internal class OtherConfiguration
 
 	private static Task SaveHostileCastingKnockback()
 	{
-		return Task.Run(() => Save(HostileCastingKnockback, nameof(HostileCastingKnockback)));
+		// Copied on the caller's thread: the effect handler adds to this list on the game thread (A224).
+		var snapshot = new HashSet<uint>(HostileCastingKnockback);
+		return Task.Run(() => Save(snapshot, nameof(HostileCastingKnockback)));
 	}
 
 	/// <summary>
