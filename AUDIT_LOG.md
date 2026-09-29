@@ -4375,6 +4375,16 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A196 · Kuratierte Listen: kein festgeschriebenes Leer nach gescheitertem Download, Neu-Download einer unlesbaren Datei (29.09.2026)
+
+- *Befunde (TODO, zwei Einträge):* (1) Scheiterte der Download beim ersten Start, schrieb `InitOne` die leere Vorgabe als Datei; weil die Datei existiert, lud kein späterer Start neu. Für die Flächenliste: keine Gruppenminderung per Liste, keine Schadensmessung. (2) Eine unlesbare kuratierte Datei wurde beiseitegelegt, dann mit leerer Liste weitergemacht — und die leere Liste beim nächsten Speichern geschrieben.
+- *Aufgelöst, was die Einträge offenließen:* Die Zeitgrenze ist keine neue Zahl, sondern das Ladezeitlimit des Plugins (`InitAsync` reicht es durch); der Reset-Knopf lädt ohne Grenze wie bisher. Der „Merker nie geladen" ist die bestehende Ladebuchführung (`_loadedStores`): Ein gescheiterter Download markiert die Liste nicht als geladen, also schreibt kein Speichern die leere Vorgabe.
+- *Umgesetzt:* lesbare Datei → laden wie bisher; unlesbare kuratierte Datei → beiseitelegen und herunterladen wie eine fehlende; Download gescheitert → leer für diese Sitzung, nichts geschrieben, nicht geladen, nächster Start versucht erneut; gelernte Speicher (ohne Download) unverändert.
+- *Falsifikation:* **Option falsch?** Kosten: Änderungen an einer so leer gestarteten Liste werden in dieser Sitzung nicht gespeichert (Warnung im Log) — gegenüber einer dauerhaft leeren Liste das kleinere Übel. **Ausgeliefert, nichts ändert sich?** Mit funktionierendem Netz gewollt.
+- *Betroffene:* Upstream-Verhalten; als Befund für Upstream geeignet.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

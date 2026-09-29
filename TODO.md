@@ -306,13 +306,6 @@ Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A17
 
 ## Technische Schuld
 
-### Ein gescheiterter Erst-Download legt eine leere Liste für immer fest · N, U
-
-`InitOne` schreibt bei gescheitertem Download die leere Vorgabe als Datei; weil die Datei existiert, lädt kein späterer Start neu. Für die Flächenliste heißt das: keine Gruppenminderung per Liste und keine Schadensmessung, bis „Reset and Update AOE List" gelingt. Die Fenster melden eine leere Flächenliste rot (A170). Nicht behoben, weil beide Wege Kosten haben: nicht festschreiben lässt jeden Start bis zu 100 s auf `HttpClient` warten und wird beim Entladen von `Save()` ohnehin überschrieben; leere Liste neu laden kann eine bewusst geleerte zurückholen. Auflösung: Download mit kurzer Zeitgrenze und Merker „nie geladen" statt leerer Datei.
-
-**Konzept:** `docs/rotation-flow/13-aoe-damage-classification.md`
-
-
 ### Dunkelritter: `UseBlood` ohne Leser · N
 
 Die Eigenschaft sollte Blut für den Burst aufsparen; seit einem Umbau liest sie niemand, und Bloodspiller fällt bei 50 Blut. Laut heutigem Wirktext kostet Living Shadow kein Blut mehr, ihr ursprünglicher Zweck ist damit überholt. Nicht entfernt, weil offen ist, ob Aufsparen für Delirium etwas bringt. Auflösung: Abgleich mit The Balance (seit 27.09.2026 erreichbar), dann verdrahten oder entfernen. Konzept 14, „Werden die Fenster genutzt?".
@@ -478,14 +471,6 @@ Die Entscheidung berührt die dokumentierte Begründung in `10-drk-blackest-nigh
 `HostileCastingTank` trägt sie wörtlich — wie hart schlägt dieser zu —, `HostileCastingKnockback` und `HostileCastingStop` dieselbe Struktur. Der Messpfad im Effekt-Handler ist derselbe; was fehlt, ist je Liste ein eigener Speicher und die passende Rechnung. Beim Tankbuster ist der Vergleichspartner nicht der Gruppendurchschnitt, sondern der Puffer **des Tanks**, und die Frage lautet „übersteht er ihn ohne Minderung".
 
 **Erfasst, nicht bearbeitet.** Die Übertragung verlangt je Liste eine eigene Entscheidung darüber, gegen wessen Puffer gerechnet wird; die Flächenfassung ist zuerst im Spiel zu beurteilen.
-
-### `InitOne` lädt eine unlesbare kuratierte Liste nicht erneut herunter · N, U
-
-Upstream-Verhalten, alle vier gelernten Listen betreffend. Der Ladepfad prüft auf **Existenz** der Datei, nicht auf Lesbarkeit: Ist sie vorhanden und unlesbar, wird mit einer leeren Liste begonnen, und der Download bleibt aus. Für eine kuratierte Liste kostet das einen Knopfdruck, für die gemessenen Potentiale kostete es die gesammelten Erfahrungswerte.
-
-**Die Ursache ist weitgehend entfernt** (A100): Geschrieben wird seit dem über eine temporäre Datei und einen Move, und eine unlesbare Datei wird als `.corrupt` beiseitegelegt und gemeldet, statt still verworfen. Was bleibt, ist der fehlende Neu-Download.
-
-**Nicht behoben, weil der Zweig eine eigene Frage aufwirft:** Was soll geschehen, wenn kein Netz da ist? Ein blockierender Versuch im Startpfad ist keine Option, ein stiller Fehlschlag wäre der heutige Zustand mit mehr Code. **Empfehlung: erfassen, Adressat ist der Upstream.**
 
 ### Die globalen Einstellungen zeigen kein Symbol für ihre Erklärung · N, U
 

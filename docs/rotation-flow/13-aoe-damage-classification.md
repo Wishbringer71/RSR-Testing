@@ -340,7 +340,7 @@ verschwinden kann.
 
 **Seine Angabe (27.09.2026):** Nach frischem Kompilieren und vier Instanzen mit Flächenschaden blieb die Tabelle leer; eine veraltete lokale Flächenliste schließt er aus, und seine hochgeladene `HostileCastingArea.json` belegt es: 850 Einträge, identisch mit der gelieferten Liste. Sofortaktionen zählen nicht mit: Sie werden nie bewertet, und als sie in „Last hit" standen, überschrieb der nächste Auto-Attack den Grund des Raidwides binnen einer Sekunde — die Zeile zeigte praktisch nur Auto-Attacks.
 
-**Eine leere Flächenliste misst nichts**, gleich wie der Kampf verläuft; beide Fenster melden sie rot. Sie entsteht, wenn der Download beim ersten Start scheitert: `InitOne` schreibt dann die leere Liste als Datei, und weil die Datei existiert, wird nie wieder geladen (offen in `TODO.md`).
+**Eine leere Flächenliste misst nichts**, gleich wie der Kampf verläuft; beide Fenster melden sie rot. Sie entsteht, wenn der Download beim ersten Start scheitert. Seit A196 bleibt sie auf diese Sitzung beschränkt: `InitOne` schreibt dann keine leere Datei mehr, die Liste gilt als nicht geladen (kein Speichern), und der nächste Start lädt erneut; eine unlesbare Liste wird beiseitegelegt und ebenfalls neu geladen. Downloads beim Laden sind an das Ladezeitlimit des Plugins gebunden.
 
 **Grenze, keine Ursache:** Viele Raidwides löst ein unsichtbarer Helfer aus, oft mit einer anderen Id als der sichtbare Cast des Bosses. Solche Treffer kommen nicht an: Die Messung nimmt nur anvisierbare Quellen, und die Verbraucher lesen ohnehin nur deren Casts. Der sichtbare Cast bleibt dann unbewertet, also beim Verhalten ohne Tabelle. Wie häufig das ist, ist nicht belegt; die Zählung weist es als „cast by an untargetable enemy" aus.
 

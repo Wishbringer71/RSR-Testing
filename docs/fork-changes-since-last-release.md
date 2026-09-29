@@ -372,3 +372,10 @@ off by default. The Slow +20% on every enemy that strikes you delays auto-attack
 pull is as many enemies in reach as the global "Number of hostiles" for defensive abilities; a pack
 that is already slowed is left alone.
 
+## A failed list download no longer leaves an empty list for good
+
+When a curated list (the AoE list among them) could not be downloaded on the first start, an empty
+list was written to disk and never fetched again. Now nothing is written, and the next start tries
+again. An unreadable list file is set aside and downloaded afresh. Downloads during loading give up
+with the plugin's load timeout instead of waiting 100 seconds each.
+

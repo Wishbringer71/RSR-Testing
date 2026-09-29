@@ -217,6 +217,7 @@ internal class OtherConfiguration
 	public static async Task InitAsync(CancellationToken cancellationToken = default)
 	{
 		EnsureConfigDirectory();
+		_loadToken = cancellationToken;
 
 		var steps = LoadSteps();
 		var running = new Task[steps.Length];
@@ -686,6 +687,13 @@ internal class OtherConfiguration
 		return false;
 	}
 
+	/// <summary>
+	/// The plugin's load timeout, handed in by <see cref="InitAsync"/>. A download at load is bounded
+	/// by it rather than by the client's own 100 s: without a network every list waited that long,
+	/// and the load gave up first anyway.
+	/// </summary>
+	private static CancellationToken _loadToken;
+
 	private static void InitOne<T>(ref T value, string name, bool download = true, bool forceDownload = false) where T : new()
 	{
 		var path = GetFilePath(name);
@@ -701,6 +709,8 @@ internal class OtherConfiguration
 					Converters = [new StringEnumConverter()] // Add this line
 				})! ?? throw new Exception("Deserialized value is null.");
 				PluginLog.Information($"Loaded {name} from local file.");
+				_loadedStores[name] = true;
+				return;
 			}
 			catch (Exception ex)
 			{
@@ -722,13 +732,18 @@ internal class OtherConfiguration
 					PluginLog.Warning($"Could not set aside the unreadable {name}: {moveEx.Message}");
 				}
 			}
+
+			// An unreadable curated list is fetched again below, the same as a missing one (A196). It
+			// used to start empty and stay so: the empty default was saved, and a file that exists is
+			// never downloaded. A learned store has nothing to fetch and starts empty, as before.
 		}
-		else if (download || forceDownload)
+
+		if (download || forceDownload)
 		{
 			try
 			{
 				var url = $"https://raw.githubusercontent.com/{Service.USERNAME}/{Service.REPO}/main/Resources/{name}.json";
-				var str = Http.GetStringAsync(url).Result;
+				var str = Http.GetStringAsync(url, forceDownload ? CancellationToken.None : _loadToken).Result;
 
 				File.WriteAllText(path, str);
 				value = JsonConvert.DeserializeObject<T>(str, new JsonSerializerSettings
@@ -754,9 +769,15 @@ internal class OtherConfiguration
 					return;
 				}
 
-				PluginLog.Warning($"Failed to download {name} from GitHub. Reinitializing to default. Exception: {ex.Message}");
-				value = new T(); // Reinitialize to default
-				_ = SavePath(value, path); // Save the default value
+				// No list could be had. Nothing is written and the store does not count as loaded, so
+				// no save writes the empty default either: an empty file would be read as the list on
+				// every later start and never be fetched again - for the AoE list that meant no party
+				// mitigation by list and no damage measurement until a reset happened to succeed
+				// (A196). The next start tries again. The cost: changes made to this list in this
+				// session are not saved; a warning in the log says so at every save.
+				PluginLog.Warning($"Failed to download {name} from GitHub. Starting empty for this session, and trying again at the next start. Exception: {ex.Message}");
+				value = new T();
+				return;
 			}
 		}
 		else
