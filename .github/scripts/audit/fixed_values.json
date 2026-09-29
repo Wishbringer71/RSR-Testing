@@ -786,6 +786,27 @@
    "status": "exception",
    "loop": "A197",
    "reason": "The Balance 7.5 Dark Knight guide: enter Delirium with 70 or less Blood so the three Blood Weapon stacks it grants (+10 each, job guide) do not overcap. The gauge's maximum is not in any sheet, so the limit cannot be computed at runtime"
+  },
+  {
+   "file": "RotationSolver.Basic/Rotations/Basic/SageRotation.cs",
+   "code": "private static float AddersgallTimerRaw => (20000f - JobGauge.AddersgallTimer) / 1000f;",
+   "values": [
+    "20000",
+    "1000"
+   ],
+   "status": "exception",
+   "loop": "A203",
+   "reason": "The gauge counts elapsed milliseconds from 0 to 20 000 (Dalamud SGEGauge documentation); one stack every twenty seconds (job guide, The Balance). 1000 converts milliseconds to seconds. No sheet carries the interval"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
+   "code": "if (InCombat && Addersgall >= 3 && AddersgallEndAfterGCD(1)",
+   "values": [
+    "3"
+   ],
+   "status": "exception",
+   "loop": "A203",
+   "reason": "Addersgall's maximum of three stacks (job guide, 'Maximum Stacks: 3'; The Balance). The gauge does not expose its maximum"
   }
  ]
 }

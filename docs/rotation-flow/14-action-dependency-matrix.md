@@ -296,9 +296,10 @@ unberührt.
 - **Ninja:** Phantom Kamaitachi wartete auf das Trick-Attack- oder Mug-Fenster; Bunshin läuft auf eigener
   Abklingzeit. Öffnet sich kein Fenster vor Ablauf, fällt es jetzt im letzten GCD.
 
-**Zur Entscheidung (Weiser):** Addersgall läuft bei drei Stapeln über; einen Verbrauch vor dem
-Überlauf gibt es nicht (der Weißmagier hat dafür „Use Lily at max stacks/about to overcap", ab Werk an).
-Druochole gäbe je Stapel 7 % MP und eine Heilung (Wirktext).
+**Weiser, Addersgall (A203):** Bei drei Stapeln und dem nächsten innerhalb eines GCD fällt Druochole (7 % MP
+und eine Heilung, Wirktext) — kein Zielkonflikt, weil der Stapel sonst verloren ginge und nach dem Nachwachsen
+wieder drei für Notfälle stehen. Die Uhr des Weisen zählt die verstrichene Zeit (Dalamud); sie wurde als
+Restzeit gelesen und ist berichtigt.
 
 ### Methode und Werkzeug
 

@@ -396,3 +396,9 @@ tank's stance never does. It now accepts the stance from any source.
 Improvised Finish was never cast, so the dance ended with the next action and the party got the regen
 but not the barrier. The Dancer now finishes the dance at once, for the 5% barrier.
 
+## Sage: Addersgall is spent before it overflows
+
+At three stacks, just before the next one would be lost, the Sage now spends one on Druochole (on
+whoever needs the heal, otherwise on itself) for its 7% MP. The Addersgall timer is now read as the
+time elapsed, as the game counts it; it was read the other way round.
+

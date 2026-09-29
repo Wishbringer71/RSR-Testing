@@ -4437,6 +4437,15 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A203 · Weiser: Addersgall vor dem Überlauf ausgeben; Uhr richtig gelesen (29.09.2026)
+
+- *Neu geprüft, ob Entscheidung:* Vorgelegt war „Verbrauch vor dem Überlauf". Ein Stapel, der bei drei verloren ginge, ist ohne Gegenwert weg; ihn kurz vorher für Druochole auszugeben lässt nach dem Nachwachsen wieder drei für Notfälle stehen und bringt 7 % MP. Kein Zielkonflikt, also keine Entscheidung. The Balance (Sage Basic Guide, 29.09.2026): „use them liberally even if not necessarily needed".
+- *Befund dabei, eine Klasse geprüft:* `SageRotation.AddersgallTime` las `AddersgallTimer` als Restzeit; Dalamud dokumentiert „counts from 0 to 20_000", also verstrichene Zeit. `AddersgallEndAfter` antwortete damit rückwärts (hatte aber keinen Leser). Übrige Gauge-Uhren gegen die Dalamud-Quelle geprüft: Weißmagier-Lilien rechnen bereits `20000 − Timer` (übereinstimmend mit WrathCombo); Barde, Schwarzmagier, Dragoon, Gelehrter lesen Restzeiten laut Dokumentation. Nur der Weise war betroffen.
+- *Umgesetzt:* `AddersgallTimerRaw = (20000 − Timer)/1000` (Ausnahme mit Quellen); `SGE_Reborn.GeneralAbility`: im Kampf bei drei Stapeln und nächstem Stapel innerhalb eines GCD Druochole, auf das Heilziel, sonst auf den Weisen.
+- *Falsifikation:* **Läuft die Uhr bei drei Stapeln weiter?** Keine Quelle sagt es. Läuft sie, fällt Druochole kurz vor dem Verlust; steht sie, wird „innerhalb eines GCD" nie wahr, und nichts wird ausgegeben — in beiden Fällen richtig.
+
+**Prüfgrad:** statisch (Dalamud-, ClientStructs-, WrathCombo-Quelle, Job-Guide); Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

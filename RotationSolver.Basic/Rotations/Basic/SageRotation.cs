@@ -21,11 +21,14 @@ public partial class SageRotation
 	/// </summary>
 	public static byte Addersting => AdderstingTrait.EnoughLevel ? JobGauge.Addersting : (byte)0;
 
-	private static float AddersgallTimerRaw => JobGauge.AddersgallTimer / 1000f;
+	// The gauge counts the time ELAPSED towards the next stack, from 0 to 20 000 ms (Dalamud's
+	// SGEGauge documentation; the job guide gives one stack every twenty seconds). It was read as the
+	// time remaining, so every question built on it answered backwards - "the next stack is due"
+	// right after one had arrived (A203). The White Mage's Lily timer is read the same corrected way.
+	private static float AddersgallTimerRaw => (20000f - JobGauge.AddersgallTimer) / 1000f;
 
 	/// <summary>
-	/// Gets the amount of milliseconds elapsed until the next Addersgall is available.
-	/// This counts from 0 to 20_000.
+	/// Gets the seconds until the next Addersgall stack, counted from the end of the current GCD.
 	/// </summary>
 	public static float AddersgallTime => AddersgallTrait.EnoughLevel ? AddersgallTimerRaw - DataCenter.DefaultGCDRemain : 0;
 

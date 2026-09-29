@@ -39,10 +39,6 @@ V1 gebaut für Weißmagier, Astrologe und Weiser (A184); offen dazu: seine Lesar
 
 Seit 27.09.2026 ist die Referenz erreichbar. Offen: je Job die Standardrotation (Opener, Burstausrichtung, Prioritäten) gegen den Guide prüfen — „werden die optimalen Kombinationen genutzt" über die Fensterprüfung hinaus (Konzept 14). Dazu: die von `ActionId.resx` ausgeblendeten Werte (Dauern, Potenzen, Statusnamen) aus dem Job-Guide in den Generator übernehmen, und die deutschen Namen aus dem deutschen Job-Guide in `action_names_de.json`.
 
-### Weiser: Addersgall läuft über · N
-
-Bei drei Stapeln Addersgall geht jeder weitere Gewinn verloren; `SGE_Reborn` verbraucht vor dem Überlauf nichts (`AddersgallEndAfter` steht seit 2022 in der Basisrotation, ohne Leser). Im Kampf: Druochole gäbe je Stapel 7 % MP und eine Heilung. Zur Entscheidung vorgelegt: ein Verbrauch vor dem Überlauf wie beim Weißmagier („Use Lily at max stacks/about to overcap"). Konzept 14, „Werden die Fenster genutzt?".
-
 ### Schadenseingang und Vorausschau: gebaut, die Voreinstellungen sind zu entscheiden · N
 
 **Vorgabe des Auftraggebers (Konzept 08):** Der Schadenseingang samt Minderung soll bestimmte Grenzwerte nicht überschreiten; Heilung vor Minderung. **Gebaut:** die Rate je Gruppenmitglied, netto nach allem (A91), ihre Selbstkorrektur gegen den eigenen Fehler (A92), die Vorausschau in Heilzielwahl und allen Heilschwellen (A93, Flächenschwellen A182) und für den ersten Treffer die gemessene Schadenstabelle mit „Heal ahead of an announced area cast" (Konzept 13, Stufe 2). **Offen ist allein die Voreinstellung** von `Heal ahead of incoming damage` und `Heal ahead of an announced area cast` (beide aus) — seine Entscheidung, gebündelt vorgelegt. Die Restlaufzeit einer Barriere liest die Vorausschau nicht mit (Eintrag `HasSurvivingShield`).

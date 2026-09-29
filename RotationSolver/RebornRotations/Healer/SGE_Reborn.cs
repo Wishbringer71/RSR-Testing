@@ -438,6 +438,16 @@ public sealed class SGE_Reborn : SageRotation
 	[RotationDesc(ActionID.KardiaPvE, ActionID.RhizomataPvE, ActionID.SoteriaPvE)]
 	protected override bool GeneralAbility(IAction nextGCD, out IAction? act)
 	{
+		// A fourth stack is lost at three. Spending one just before the next arrives keeps three for
+		// the emergencies once it has, and Druochole returns 7% MP whether or not anyone needs the
+		// heal - The Balance: "use them liberally even if not necessarily needed" (A203). On whoever
+		// the heal finds, else on the sage.
+		if (InCombat && Addersgall >= 3 && AddersgallEndAfterGCD(1)
+			&& (DruocholePvE.CanUse(out act) || DruocholePvE.CanUse(out act, targetOverride: TargetType.Self)))
+		{
+			return true;
+		}
+
 		if (InCombat || (!InCombat && !HasKardia))
 		{
 			if (KardiaPvE.CanUse(out act))
