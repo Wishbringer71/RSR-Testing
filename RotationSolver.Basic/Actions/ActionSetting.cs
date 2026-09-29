@@ -62,6 +62,15 @@ public enum SpecialActionType : byte
 	/// <summary>
 	/// </summary>
 	ObjectBasedMovement,
+
+	/// <summary>
+	/// An attack on a <b>hostile</b> target that also jumps the character backwards, away from it
+	/// (e.g. Displacement on RDM, Hissatsu: Yaten on SAM). Targeting uses the standard hostile
+	/// pipeline; the landing point lies <see cref="ActionSetting.BackstepDistance"/> behind the
+	/// player, on the line from the target, and is validated for safety. Appended last, so the
+	/// ordinals of the members above stay as they are.
+	/// </summary>
+	HostileAttackBackstep,
 }
 
 /// <summary>
@@ -117,6 +126,12 @@ public class ActionSetting
 	/// local player with this DataId and use its position as the movement destination.
 	/// </summary>
 	public uint ObjectBasedMovementObjectOID { get; set; } = 0;
+
+	/// <summary>
+	/// For <see cref="SpecialActionType.HostileAttackBackstep"/> actions: how far the character jumps
+	/// back, in yalms, as the action's effect text states it.
+	/// </summary>
+	public float BackstepDistance { get; set; } = 0;
 
 	/// <summary>
 	/// Is this status only ever added by the caster/player. 

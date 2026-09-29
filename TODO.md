@@ -39,10 +39,6 @@ V1 gebaut für Weißmagier, Astrologe und Weiser (A184); offen dazu: seine Lesar
 
 **Konzept:** `docs/rotation-flow/15-wrathcombo-comparison.md`
 
-### Rückwärtssprünge mit Angriff haben keinen Sprungtyp: Displacement und Hissatsu: Yaten · N, U
-
-„Use BMR integration to verify safety of movement actions/actions that cause movement for automatic usage" nennt jede Bewegung. Displacement (15 Yalm zurück) und Hissatsu: Yaten (10 Yalm zurück) greifen ein Ziel an und springen rückwärts; kein `SpecialActionType` passt: `FixedDistanceMoveBackward` zielt auf den Spieler selbst, `HostileMovingAttack` misst den Weg zum Ziel. Automatisch genutzt wird nur Displacement, und nur unter „Use Displacement after Engagement (use at own risk)" (ab Werk aus); Yaten nur auf den Befehl „Move Back". Behebung: ein Typ „Angriff mit Rücksprung", der den Landepunkt hinter dem Spieler misst — eine Erweiterung des öffentlichen Enums am Ende, also ohne Bruch des Vertrags. Dazu die reinen Bewegungsaktionen auf Befehl (En Avant, Aetherial Shift, Smudge, Elusive Jump, Shukuchi): Die Enum-Dokumentation nennt einige davon als Beispiele eines Sprungtyps, gesetzt ist keiner; der Optionstext deckt sie nicht, weil sie nur auf Befehl laufen (A174).
-
 ### Rotationen gegen The Balance abgleichen · N
 
 Seit 27.09.2026 ist die Referenz erreichbar. Offen: je Job die Standardrotation (Opener, Burstausrichtung, Prioritäten) gegen den Guide prüfen — „werden die optimalen Kombinationen genutzt" über die Fensterprüfung hinaus (Konzept 14). Dazu: die von `ActionId.resx` ausgeblendeten Werte (Dauern, Potenzen, Statusnamen) aus dem Job-Guide in den Generator übernehmen, und die deutschen Namen aus dem deutschen Job-Guide in `action_names_de.json`.

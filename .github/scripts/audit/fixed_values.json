@@ -754,6 +754,26 @@
    "status": "exception",
    "loop": "A184",
    "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting; the owner's rule for shield healers is 'the same conditions as the white mage's Regen' (concept 15, V1), so the default and range are those of PreRegenMin*/PreAspectedBeneficMin*. Not derivable from game data: no sheet says how many enemies make a pull"
+  },
+  {
+   "file": "RotationSolver.Basic/Rotations/Basic/RedMageRotation.cs",
+   "code": "setting.BackstepDistance = 15;",
+   "values": [
+    "15"
+   ],
+   "status": "exception",
+   "loop": "A193",
+   "reason": "The backstep distance is stated only in the effect text (Displacement: \"Additional Effect: 15-yalm backstep\", ActionId.resx and the job guide); no sheet carries it, so it cannot be read at runtime"
+  },
+  {
+   "file": "RotationSolver.Basic/Rotations/Basic/SamuraiRotation.cs",
+   "code": "setting.BackstepDistance = 10;",
+   "values": [
+    "10"
+   ],
+   "status": "exception",
+   "loop": "A193",
+   "reason": "The backstep distance is stated only in the effect text (Hissatsu: Yaten: \"Additional Effect: 10-yalm backstep\", ActionId.resx and the job guide); no sheet carries it, so it cannot be read at runtime"
   }
  ]
 }

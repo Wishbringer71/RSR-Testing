@@ -466,7 +466,9 @@ public partial class RedMageRotation
 
 	static partial void ModifyDisplacementPvE(ref ActionSetting setting)
 	{
-
+		// "Additional Effect: 15-yalm backstep" (effect text).
+		setting.SpecialType = SpecialActionType.HostileAttackBackstep;
+		setting.BackstepDistance = 15;
 	}
 
 	static partial void ModifyEngagementPvE(ref ActionSetting setting)

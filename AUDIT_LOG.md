@@ -4348,6 +4348,15 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch (Code, Spieldaten); Compile über die CI. Seine Beobachtung selbst ist nicht nachgemessen.
 
+### A193 · Angriff mit Rücksprung bekommt einen eigenen Bewegungstyp (29.09.2026)
+
+- *Befund (TODO seit A174):* „Use BMR integration to verify safety of movement actions/actions that cause movement for automatic usage" nennt jede Bewegung; Displacement (Rotmagier) und Hissatsu: Yaten (Samurai) greifen an und springen zurück, und kein Bewegungstyp passte — `FixedDistanceMoveBackward` zielt auf den Spieler selbst, `HostileMovingAttack` misst den Weg zum Ziel. Beide wurden nie geprüft.
+- *Umgesetzt:* `SpecialActionType.HostileAttackBackstep`, am Ende angehängt (die Ordinale darüber bleiben, das Enum wird nicht gespeichert). Zielwahl wie `HostileMovingAttack`; die Prüfung misst den Landepunkt `BackstepDistance` hinter dem Spieler, auf der Linie vom Ziel weg, mit `IsFixedDashSafe`. Distanzen aus dem Wirktext („15-yalm backstep", „10-yalm backstep"), als Ausnahme mit diesem Loop geführt: Kein Blatt trägt sie.
+- *Falsifikation:* **Kein Defekt?** Der Einstellungstext nennt jede Bewegung. **Option falsch?** Die Richtung „vom Ziel weg" gilt, weil der Angriff das Ziel ansieht; steht der Spieler auf dem Ziel, gibt es keine Richtung, und die Aktion wird nicht gemessen verweigert, wie die anderen Typen ohne messbares Ziel. **Ausgeliefert, nichts ändert sich?** Displacement fällt nur unter „Use Displacement after Engagement" (ab Werk aus), Yaten nur auf „Move Back"; mit ausgeschalteter Sicherheitsprüfung ändert sich nichts.
+- *Betroffene:* Autoren abgeleiteter Rotationen: neuer Enum-Wert und neue Eigenschaft `BackstepDistance`, beides Erweiterung.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

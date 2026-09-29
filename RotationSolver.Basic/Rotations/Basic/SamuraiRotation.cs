@@ -375,6 +375,9 @@ public partial class SamuraiRotation
 	static partial void ModifyHissatsuYatenPvE(ref ActionSetting setting)
 	{
 		setting.ActionCheck = () => Kenki >= 10;
+		// "Additional Effect: 10-yalm backstep" (effect text).
+		setting.SpecialType = SpecialActionType.HostileAttackBackstep;
+		setting.BackstepDistance = 10;
 	}
 
 	static partial void ModifyMeditatePvE(ref ActionSetting setting)

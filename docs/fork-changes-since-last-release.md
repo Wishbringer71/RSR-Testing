@@ -359,3 +359,9 @@ A listed action that the game data marks as single-target with a cast range now 
 player it is cast at. One such entry, Holy Bladedance, opened every player's area defence when it was
 aimed at the tank - a Summoner's Radiant Aegis and Addle included.
 
+## Displacement and Hissatsu: Yaten: the backstep is checked for safety
+
+With the BMR movement safety check on, Red Mage's Displacement and Samurai's Hissatsu: Yaten are no
+longer used when the spot they jump back to lies in a danger zone. Before, neither was checked at all.
+For rotation authors: `SpecialActionType.HostileAttackBackstep` with `ActionSetting.BackstepDistance`.
+

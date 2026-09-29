@@ -1072,7 +1072,8 @@ public struct ActionTargetInfo(IBaseAction action)
 				or SpecialActionType.FriendlyMovingForward
 				or SpecialActionType.HostileFriendlyMovingForward
 				or SpecialActionType.HostileMovingAttack
-				or SpecialActionType.ObjectBasedMovement;
+				or SpecialActionType.ObjectBasedMovement
+				or SpecialActionType.HostileAttackBackstep;
 
 	/// <summary>
 	/// Checks if a movement destination is safe using the appropriate BMR safety function for the movement type.
@@ -1137,6 +1138,27 @@ public struct ActionTargetInfo(IBaseAction action)
 				// Object-based movement: use IsDashSafe from player to object
 				return DataCenter.IsDashSafe(playerPos, destination)
 					|| Refused("the way to the placed object crosses a danger zone");
+
+			case SpecialActionType.HostileAttackBackstep:
+				// The attack itself does not move the player towards the target; the backstep carries
+				// him away from it, and that landing point is what can put him into an area. The
+				// target is the reference for the direction: facing it is how the attack is made.
+				if (target == null)
+				{
+					return Refused("no target to measure the backstep against", measured: false);
+				}
+
+				var away = playerPos - target.Position;
+				away.Y = 0;
+				var length = away.Length();
+				if (length <= 0f)
+				{
+					return Refused("standing on the target, the backstep has no direction", measured: false);
+				}
+
+				var landing = playerPos + (away / length * action.Setting.BackstepDistance);
+				return DataCenter.IsFixedDashSafe(playerPos, landing)
+					|| Refused($"the backstep from {target.Name} lands in a danger zone");
 
 			default:
 				return true;
@@ -1963,6 +1985,7 @@ public struct ActionTargetInfo(IBaseAction action)
 			// (stop marks, priority, TTK, resistance, CanTarget predicate).
 			// Fall through intentionally so the regular switch(type) path handles target selection.
 			case SpecialActionType.HostileMovingAttack:
+			case SpecialActionType.HostileAttackBackstep:
 				// Filter alive hostiles; then let the standard hostile-target logic below run.
 				{
 					var filtered = new List<IBattleChara>();
