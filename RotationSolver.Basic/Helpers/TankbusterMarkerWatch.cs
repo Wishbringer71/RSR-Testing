@@ -169,7 +169,7 @@ internal static class TankbusterMarkerWatch
 		var longest = 0f;
 		foreach (var hostile in DataCenter.AllHostileTargets)
 		{
-			if (hostile != null && hostile.IsCasting)
+			if (hostile != null && hostile.IsValid() && hostile.IsCasting)
 			{
 				var remaining = hostile.TotalCastTime - hostile.CurrentCastTime;
 				if (remaining > longest)

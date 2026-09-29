@@ -162,6 +162,23 @@ public partial class DancerRotation
 		return int.MaxValue;
 	}
 
+	// The partner is looked up among everyone targetable, not only the party list: a Duty Support
+	// partner is not in PartyMembers unless NPCs are counted as party members, and reading it from
+	// there took a living partner for a lost one - Ending, Closed Position on the same NPC, and again
+	// once the recast allowed (review of A186).
+	private static IBattleChara? OwnDancePartner()
+	{
+		foreach (var member in DataCenter.AllTargets)
+		{
+			if (member != null && member.HasStatus(true, StatusID.DancePartner))
+			{
+				return member;
+			}
+		}
+
+		return null;
+	}
+
 	/// <summary>
 	/// Whether the current dance partnership should be ended so Closed Position can pick again. The
 	/// owner's rule (concept 15, V5): while the partner is dead the partnership is lifted; while they
@@ -183,7 +200,7 @@ public partial class DancerRotation
 			return false;
 		}
 
-		var partner = CurrentDancePartner;
+		var partner = OwnDancePartner();
 		if (partner == null || partner.IsDead)
 		{
 			return true;

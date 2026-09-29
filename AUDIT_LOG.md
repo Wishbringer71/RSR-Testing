@@ -4412,6 +4412,16 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A200 · Code-Review der Änderungen A184–A199 (29.09.2026)
+
+- *Umfang:* alle C#-Änderungen seit `da4fa660a` (26 Dateien), gelesen gegen Aufrufer, Threads, Verträge und Randfälle.
+- *Befund 1, behoben (A186):* `DancePartnerNeedsChange` suchte den Partner über `CurrentDancePartner`, also nur in `PartyMembers`. Ein Duty-Support-Partner steht dort nur mit der NPC-Gruppenoption; ohne sie galt ein lebender Partner als verloren — Ending, Closed Position auf denselben NPC, wieder Ending, sobald die Abklingzeit es zuließ, im 30-Sekunden-Takt. Jetzt wird der Partner unter allen anvisierbaren Charakteren (`AllTargets`) gesucht; tot oder nicht auffindbar bleibt der Auslöser.
+- *Befund 2, behoben (A189):* `TankbusterMarkerWatch.LongestEnemyCastRemaining` las `IsCasting` ohne `IsValid()` — dieselbe Klasse wie A199.
+- *Geprüft ohne Befund:* Threads der Negativliste (Beobachtung, Treffer und Entscheidung auf dem Spielthread; geschrieben wird eine dort gezogene Kopie); Pull-Pflege (Ziel, MP-Reserve, Galvanize/Eukrasian Prognosis); Rücksprung (Richtung, Distanz, Zielwahl, Enum am Ende); `AreaCastCanReachPlayer` (Typen `CastType`/`Range` aus Lumina); `InitOne` (alle vier Pfade: lesbar, unlesbar kuratiert, unlesbar gelernt, Download gescheitert); Heilschwellen (31 Stellen, Abwehrschwellen unberührt); Abtausch-Regel (Rolle, Zahl, Reihenfolge); Blutregel (Überlauf nach oben begrenzt); Betäubungskette (Pause zwischen Pulls ausgeschlossen); `IsValid()`-Ergänzungen.
+- *Öffentliche Schnittstelle:* nur Erweiterungen (`SpecialActionType.HostileAttackBackstep` am Ende, `ActionSetting.BackstepDistance`, `ObjectHelper.GetForecastHealthRatio` öffentlich, geschützte Methoden `TryPullUpkeepOnTank`, `ArmsLengthSlowsPull`, `PackSlowed`, `DancePartnerNeedsChange`); kein Bruch.
+
+**Prüfgrad:** statisch (Lesen, Prüfskripte); Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
