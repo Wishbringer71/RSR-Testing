@@ -688,7 +688,15 @@ public sealed class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
-		if (mayFireSearingLight)
+		// Not while the next GCD is a raise or a heal. Both come ahead of the summon in the dispatch, and
+		// a hard-cast Resurrection takes eight seconds: the buff fired now would run while the summon
+		// waits, and the last GCDs of the Solar phase would fall outside its 20 s. This asks what the
+		// next GCD IS NOT, so it is not the chicken-and-egg above - the summon still does not have to be
+		// announced first. The raise keeps its priority (the owner's safety rule), and the buff stays
+		// with Solar (concept 12) (A206).
+		var higherGcdFirst = nextGCD.IsTheSameTo(false, ResurrectionPvE, PhysickPvE);
+
+		if (mayFireSearingLight && !higherGcdFirst)
 		{
 			if (SearingLightPvE.CanUse(out act))
 			{

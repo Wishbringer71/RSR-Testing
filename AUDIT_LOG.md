@@ -4462,6 +4462,15 @@ Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebroche
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A206 · Beschwörer: Searing Light wartet, wenn der nächste GCD eine Wiederbelebung oder Heilung ist (29.09.2026)
+
+- *Neu geprüft, ob Entscheidung:* Offen war „ob der Buff in dieser Lage warten sollte". Beide Regeln des Auftraggebers geben die Antwort: Die Wiederbelebung hat Vorrang (Sicherheit), und Searing Light gehört zu Solar (Konzept 12). Warten erfüllt beide; keine Wahl.
+- *Erhoben, was vor der Beschwörung liegt:* im Dispatch vor `GeneralGCD` die Wiederbelebung (`RaiseGCD`: Resurrection, 8 s Wirkzeit) und die Einzelheilung (`HealSingleGCD`: Physick).
+- *Umgesetzt:* `AttackAbility`: Searing Light nicht, solange `nextGCD` Resurrection oder Physick ist. Gefragt wird, was der nächste GCD **nicht** ist — die dokumentierte Henne-Ei-Falle („ist die Beschwörung der nächste GCD") entsteht damit nicht.
+- *Falsifikation:* **Ausgeliefert, nichts ändert sich?** Ohne Wiederbelebung oder Heilung vor der Beschwörung gewollt. **Option falsch?** Mit Swiftcast (seine Vorgabe: für Wiederbelebungen) ist Resurrection sofort und schiebt die Beschwörung nur um einen GCD; der Buff wartet dann ebenfalls genau einen Platz.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

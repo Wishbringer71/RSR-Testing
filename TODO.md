@@ -45,12 +45,6 @@ Seit 27.09.2026 ist die Referenz erreichbar. Offen: je Job die Standardrotation 
 
 **Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
 
-### Searing Light fällt vor einer Beschwörung, die dann ein vorrangiger GCD verdrängt · N
-
-**Im Kampf, Schluss aus der Zweigreihenfolge, nicht beobachtet:** Searing Light geht im Platz vor der Beschwörung heraus, sobald deren Abklingzeit bis zum nächsten GCD endet. Nimmt dann ein vorrangiger GCD den Platz — eine hart gewirkte Wiederbelebung —, läuft der Buff schon, und Solar kommt erst nach der Wirkzeit. Die letzten GCDs der Solar-Phase liegen dann außerhalb der 20 Sekunden. Die Wiederbelebung hat nach seiner Sicherheitsregel Vorrang; offen ist nur, ob der Buff in dieser Lage warten sollte, bis die Beschwörung tatsächlich der nächste GCD ist.
-
-**Zu erheben vor einem Konzept:** alle GCD-Zweige, die im Beschwörer vor `UseSummonsAndTrances` stehen (Wiederbelebung, `GCDHeal`, Notfall), und wie oft sie in einem Kampf vor einer Solar-Phase fallen.
-
 ### `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen · N
 
 Die Eigenschaft antwortet „ja", wenn das Spiel Solar als nächste Demi anzeigt **oder** die letzte Demi nicht Solar war. Zeigt das Spiel Bahamut an, während die eigene Geschichte etwas anderes sagt — etwa nach einem Tod, wenn das Spiel die Reihenfolge zurücksetzt —, gewinnt die Geschichte. Im Kampf hieße das: Searing Light fiele vor Bahamut statt vor Solar. Nicht belegt ist, wann das Spiel die Demi-Reihenfolge zurücksetzt und wann die umgestellte Id nicht lesbar ist; beides entscheidet, ob die Geschichte nur Rückfall sein darf.
