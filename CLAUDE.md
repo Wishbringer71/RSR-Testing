@@ -265,6 +265,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 
 **Konzepte**
 - Mit der Erkenntnis fortschreiben, im selben Zug: Vorgabe, Messergebnis, widerlegte Annahme. Grund: Nach einer Kontextkomprimierung sind Chat und Commit-Nachricht weg, und ein Konzept mit altem Stand widerlegt die Erkenntnis.
+- Ein Gegenstand gehört in das bestehende Konzept, das ihn trägt; ein neues Dokument nur, wenn keines ihn trägt (seine Vorgabe, 01.10.2026). Länge eines Konzepts und das Muster früherer Dokumente sind kein Grund — ein zweites Dokument verteilt den Gegenstand auf zwei Stellen, und eine davon veraltet.
 - Urteilsstil: geltender Sachstand zuerst, Begründung danach, Ausgeschlossenes mit Grund. Keine Chronik der eigenen Fassungen, keine Nachträge; Änderungen einarbeiten.
 - Prüfkriterium: Wer einen Abschnitt allein liest, erhält keinen überholten Stand.
 - Die Geschichte des Gegenstands bleibt Inhalt; die des Dokuments steht im Archiv. Vor dem Entfernen prüfen, dass sie dort steht.
