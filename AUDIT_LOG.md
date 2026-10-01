@@ -4802,6 +4802,25 @@ Seine Meldung: „du hast die pause zwischen den stuns des ersten und zweiten sa
 
 **Prüfgrad:** statisch (Versionsgeschichte, Code); Prüfskripte; Compile über die CI.
 
+### A229 · Upstream-Sync 01.10.2026: Job-Leisten nach dem Dalamud-Update, Blaze Spikes (01.10.2026)
+
+Drei Upstream-Commits (07f9f7daf, Merge 3acc5333a, e79608210), konfliktfrei gemergt.
+
+- *Was sie im Kampf ändern:*
+  - **Beschwörer:** `RubyAttunement`, `TopazAttunement`, `EmeraldAttunement` und `NoElementalSummon` lesen jetzt `AttunementType`/`AttunementCount` statt des Bytes `Attunement`. Dalamud (master, abgerufen 01.10.2026) markiert `Attunement` als `Obsolete`: „As of 7.01, this should be treated as a bit field". Die alte Zahlentabelle (5/9 Ruby, 6/10/14/18 Topaz, 7/11/15/19 Emerald) entspricht der Zerlegung Typ in den unteren zwei Bits, Anzahl darüber. Bei unverändertem Layout ist sie also gleichwertig. Ob das Dalamud-Update das Byte selbst verändert hat, sagt der Diff nicht; Upstream nennt es eine Korrektur „due to Dalamud update". Die neue Form ist von Dalamud empfohlen und von beiden Lesarten die sichere.
+  - **Mönch und Astrologe:** `BeastChakra1–3` und `Card1–3` statt der als `Obsolete` markierten Arrays. Die Prüfungen „alle gleich", „alle verschieden", „enthält" bzw. „eine der drei Karten ist X" sind inhaltlich gleich.
+  - **Bestienmeister:** Snarl und Challenge. Begrenzter Job, außerhalb seines Profils; nur erfasst.
+  - **ChurinMNK:** außerhalb seines Profils.
+  - **`InvincibleStatus.json`:** 5465 „Blaze Spikes" („Elemental spikes are dealing fire damage to attackers", xivapi), laut Upstream aus MB2. RSR greift ein Ziel mit diesem Status nicht an. Der Fork liefert die Liste aus seinem eigenen `main` aus.
+- *Wie es in die Fork-Änderungen greift:*
+  - Kein Fork-Code liest die entfernten Mitglieder. `SMN_Reborn` liest die Attunement-Eigenschaften nicht direkt; die Fork-Regeln des Beschwörers (Konzept 12) lesen Phasen und Abklingzeiten, nicht die Leiste der Primals.
+  - Die Fork-Zeile in `AstrologianRotation` (Synastry, `HealsWithNextGcd`) bleibt unberührt.
+- *Vertrag:* Entfernt sind das öffentliche `SummonerRotation.Attunement` sowie die geschützten `MonkRotation.BeastChakras` und `AstrologianRotation.DrawnCard`. Betroffen sind Autoren abgeleiteter Rotationen; die Entscheidung trifft Upstream, der Fork folgt.
+- *Build:* Warnungen gelten nicht als Fehler, weitere `Obsolete`-Felder brechen den Build nicht. Die CI lädt Dalamud „latest".
+- *Prüfmittel:* `check_fixed_values.py` verglich Upstream-Zeilen nur mit der Merge-Basis von `HEAD`. Vor dem Merge-Commit ist das die alte Basis, und Upstreams neue Zeilen (BST_Reborn, ChurinMNK) erschienen als Zahlen des Forks. Es liest jetzt zusätzlich `upstream/main`.
+
+**Prüfgrad:** statisch (Diffs, Dalamud-Quelle, xivapi); Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

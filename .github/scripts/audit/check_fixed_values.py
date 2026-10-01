@@ -211,10 +211,16 @@ def main(argv):
                    for e in json.loads(LIST.read_text(encoding="utf-8"))["entries"]}
     base_lines = {}
 
+    # The merge base and upstream/main both count: during an upstream merge that is not committed yet
+    # the base is still the old one, and upstream's new lines would read as the fork's (01.10.2026).
     def upstream_lines(path):
         if path not in base_lines:
-            text = run("git", "show", f"{base}:{path}")
-            base_lines[path] = {l.strip() for l in text.splitlines()} if text is not None else set()
+            known = set()
+            for ref in (base, "upstream/main"):
+                text = run("git", "show", f"{ref}:{path}")
+                if text is not None:
+                    known |= {l.strip() for l in text.splitlines()}
+            base_lines[path] = known
         return base_lines[path]
 
     lines = drop_upstream_lines(lines, listed_keys, upstream_lines)
