@@ -69,29 +69,25 @@ Königin vor einer vorhergesagten Pause beenden, Double Check und Checkmate nich
 abgedeckt. Reassemble: xivanalysis erlaubt Drill, Air Anchor, Chain Saw, Excavator; RSR nimmt Drill erst
 unterhalb von Chain Saw. Ob dadurch Ladungen von Reassemble verfallen, ist nicht gemessen.
 
-## Übrige Kampfjobs, Stichprobe
+## Übrige Kampfjobs
 
-Geprüft wurden die mechanisch prüfbaren Regeln „Proc verfällt", „Leiste läuft über", „Status überschrieben"
-— die Klasse, in der die Lücke beim Beschwörer lag. Bei allen Stichproben steht in der Rotation eine Regel
-„vor Ablauf" oder eine Leistengrenze:
+**Die Klasse „Proc verfällt, Leiste läuft über, Status überschrieben" ist für alle Jobs schon geprüft**
+(Konzept 14, „Werden die Fenster genutzt", A165–A167): Die Aktionsmatrix listet jeden Verbraucher eines
+Fensters, dessen Aufrufe alle an eine eigene Bedingung gebunden sind und keinen Rückfall vor Ablauf tragen;
+jeder Kandidat ist dort von Hand bewertet. Die xivanalysis-Regeln dieser Klasse decken sich mit dieser Liste.
+Eine Bewertung dort war unvollständig — Searing Flash, oben behoben; die Matrix führt es jetzt „mit Rückfall vor
+Ablauf". Die übrigen Kandidaten tragen eine Bedingung, die das Fenster selbst ist (Schnitter, Viper, Monk,
+Ninja-Mudras, Rotmagier, Pictomancer), deren Zweck sie ist (Heilbedarf, Burst, Tanzschritte) oder eine
+Sicherheitsregel (Primal Rend).
 
-- Astrologe: Karten vor dem nächsten Ziehen ausgespielt (`WillHaveOneCharge(3)`), Lightspeed mit Divination.
-- Schwarzmagier: Polyglot nicht überlaufen (`IsPolyglotStacksMaxed`), Flare Star.
-- Barde, Tänzer: Procs; Esprit ab 70 oder im Burst, Fan Dance bei vier Federn und Procs.
-- Dragoon: Wyrmwind Thrust, Starcross, Nastrond.
-- Dunkelritter: Blood gesammelt und ab 70 ausgegeben, Edge of Shadow ab 8500 MP, Salt and Darkness.
-- Revolverklinge: Munition und Bloodfest (`OvercappedAmmo`), Continuation zuerst.
-- Mönch: Fire's und Wind's Reply mit Ablaufregel.
-- Ninja: Tenri Jindo, Phantom Kamaitachi (Ablaufregel seit 7.5.6.13).
-- Piktomant: Star Prism unter Starstruck, Rainbow Drip.
-- Rotmagier: Prefulgence mit Ablaufregel, Vice of Thorns, Grand Impact.
-- Schnitter: Perfectio; Samurai: Zanshin, Tendo, Ogi Namikiri (Ablaufregel).
-- Gelehrter: Baneful Impaction mit Ablaufregel.
+Am Code nachgesehen, weil xivanalysis sie eigens nennt: Baneful Impaction, Fire's und Wind's Reply,
+Prefulgence, Tenri Jindo, Zanshin tragen eine Ablaufregel; Polyglot, Esprit, Federn, Munition, Blood, MP des
+Dunkelritters eine Leistengrenze; Karten des Astrologen werden vor dem nächsten Ziehen ausgespielt.
 
-Nicht einzeln geprüft sind die Fenstererwartungen (etwa acht GCDs je Lance Charge, zwölf je Heiltrank), die
-Reihenfolgeregeln (Viper, Schnitter, Paladin im Fight or Flight) und Paladin, Weiser, Viper im Einzelnen. Sie
-hängen an der Fensterplanung der Rotationen und lassen sich am Code nicht ohne Kampfverlauf beurteilen; ein
-FFLogs-Report, durch xivanalysis gelaufen, zeigt sie (er zeichnet mit ACT auf).
+Nicht einzeln geprüft sind die Fenstererwartungen (etwa acht GCDs je Lance Charge, zwölf je Heiltrank) und die
+Reihenfolgeregeln (Viper, Schnitter, Paladin im Fight or Flight). Sie hängen an der Fensterplanung der
+Rotationen und lassen sich am Code nicht ohne Kampfverlauf beurteilen; ein FFLogs-Report, durch xivanalysis
+gelaufen, zeigt sie (er zeichnet mit ACT auf).
 
 ## Was ausgeschlossen wurde und warum
 
@@ -110,5 +106,6 @@ FFLogs-Report, durch xivanalysis gelaufen, zeigt sie (er zeichnet mit ACT auf).
   nichts, was später noch ginge. Lux Solaris hat Vorrang bei ihrem eigenen Ablauf (Konzept 08).
 - **Ausgeliefert, und nichts ändert sich?** Als einziger Beschwörer: ja, beabsichtigt. Mit weiteren
   Beschwörern greift die Regel nur, wenn Searing Light außerhalb einer Demi fiel.
-- **Stichprobe zu klein?** Möglich: Geprüft ist die Klasse „Proc verfällt" an den naheliegenden Aktionen, nicht
-  jede Aktion jedes Jobs. Ein Report zeigt weitere Fälle.
+- **Klasse unvollständig erfasst?** Die Matrix findet nur Verbraucher mit eigener Bedingung in jedem Aufruf;
+  ein Fenster, das an anderer Stelle verfällt (etwa weil ein höherer Zweig den Platz nimmt), zeigt erst ein
+  Report.

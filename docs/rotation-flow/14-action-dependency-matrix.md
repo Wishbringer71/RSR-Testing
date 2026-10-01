@@ -328,7 +328,9 @@ Rückfall-Horizont die Wirkzeit deckt, prüft die Liste nicht; das steht je Fall
 - *Die Bedingung ist der Zweck:* Heilbedarf (Horoscope, Pepsis), Option (Retrace), Burst (Radiant
   Encore, Reawaken, Starfall Dance, Technical Step, Flourish), Tanzschritte vor den Procs (Tänzer: Reverse
   Cascade, Fountainfall, Rising Windmill, Bloodshower warten, solange ein Schritt bereit ist; die Procs
-  gelten 30 s laut Job-Guide, ein Tanz ist kürzer), Konzept 12 (Lux Solaris, Searing Flash, Ruin IV).
+  gelten 30 s laut Job-Guide, ein Tanz ist kürzer), Konzept 12 (Lux Solaris, Ruin IV). Searing Flash hat seit
+  A234 einen Rückfall vor dem Ende von Ruby's Glimmer: Mit weiteren Beschwörern fällt Searing Light auch in
+  einen Titan- oder Ifrit-Block, und die nächste Demi kommt nach dem Ende des Status (Konzept 16).
 - *Sicherheit:* Krieger Primal Rend auf Distanz nur mit den Sprung-Optionen — seine Vorgabe zu Bewegung.
 - *Niedrige Stufe:* Straight Shot, Trick Attack.
 
