@@ -89,7 +89,7 @@ Ladung da ist (`usedUp: true`), ohne Blick auf Gruppenbuffs. Drill einfach zuzul
 eine Ladung ginge nur früher weg. Wert bekommt Drill erst mit einer Regel, die eine Ladung für das Buff-Fenster
 aufhebt: Drill hat zwei Ladungen und steht dort fast immer bereit. Wie groß der Gewinn ist, hängt an Gruppe und
 Buff-Zeiten und ist von hier nicht bezifferbar. Mehrzielig bleibt Drill unterlegen: Chain Saw und Excavator
-treffen mehrere Gegner mit dem garantierten Treffer, Drill einen. Zur Entscheidung vorgelegt (TODO).
+treffen mehrere Gegner mit dem garantierten Treffer, Drill einen. Der volle Loop dazu steht in Konzept 17.
 
 ## Übrige Kampfjobs
 

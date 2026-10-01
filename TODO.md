@@ -260,10 +260,8 @@ Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A17
 
 ### Maschinist: Reassemble unter Gruppenbuffs statt beim nächsten Werkzeug · N
 
-**Konzept:** `docs/rotation-flow/16-xivanalysis-catalog.md` (Maschinist)
-RSR legt Reassemble auf das nächste geeignete Werkzeug (Air Anchor, Chain Saw, Excavator), sobald eine Ladung da ist. Gruppenbuffs vergrößern den Treffer; Krit- und Direkttrefferbuffs wirken unter Reassemble als Schaden (Wirktext). The Balance empfiehlt Reassemble unter den Gruppenbuffs und das Aufheben einer Ladung für das Zwei-Minuten-Fenster; dafür taugt Drill als zusätzliches Ziel (zwei Ladungen, Potenz 660 wie die übrigen). Vorschlag: eine Option, die eine der zwei Ladungen zurückhält, wenn das Zwei-Minuten-Fenster vor der nächsten Ladung kommt, und unter den Gruppenbuffs (`HasBuffs`) auch Drill zulässt; die zweite Ladung läuft weiter normal, damit nichts überläuft. Gewinn nicht bezifferbar (hängt an Gruppe und Buff-Zeiten). Zur Entscheidung: ob gebaut werden soll.
-
-## Technische Schuld
+**Konzept:** `docs/rotation-flow/17-machinist-reassemble-buffs.md`
+Voller Loop geführt (A235). Empfehlung O1: eine von zwei Ladungen für das nächste vorhergesagte Buff-Fenster halten, nur mit Buff-Jobs in der Gruppe; im Fenster auch Drill. Vorhersage je Buff aus dem zuletzt beobachteten Beginn plus Abklingzeit, selbstnachsteuernd; nicht halten bei Tod des Gegners vor dem Fenster (`GetCorrectedTTK`) oder vorhergesagter Pause. Wertvollste Buffs für einen Reassemble-Treffer: Battle Litany und Chain Stratagem, dann Divination; Battle Voice unbeziffert. Zur Entscheidung: ob gebaut werden soll.
 
 ### Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen · N, R
 

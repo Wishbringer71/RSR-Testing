@@ -4897,6 +4897,18 @@ Sein Auftrag: „generell schauen, welche regeln dort für gute rotationen gelte
 
 **Prüfgrad:** statisch (fremder Code, eigener Code, Spieldaten); Prüfskripte; Compile über die CI. Wirkung von Searing Flash nur mit weiteren Beschwörern beobachtbar.
 
+
+### A235 · Maschinist: Reassemble und Gruppenbuffs, voller Loop (01.10.2026)
+
+Sein Auftrag: Zusammensetzung der Gruppe, Häufigkeit und Abklingzeit der Gruppenbuffs, der wertvollste Buff, und Gewinn gegen Nachteile eines Zurückhaltens prüfen. Vorausgegangen: seine Nachfrage nach Nebeneffekten bei Reassemble auf Drill (Konzept 16).
+
+- *Quellen:* Wirktexte und Abklingzeiten aller Gruppenbuffs und von Reassemble über xivapi; Regel „Krit-Rate wird unter garantiertem Krit zum Multiplikator addiert" aus consolegameswiki und Allagan Studies (Gemeinschaftsquellen, Patch 6.2); für Direkttreffer keine Quelle gefunden. The Balance: Reassemble unter Gruppenbuffs, eine Ladung für das Zwei-Minuten-Fenster halten.
+- *Modell:* `.github/scripts/audit/reassemble_buff_model.py` mit Selbsttest (Formeln an Handrechnungen, Rangfolge über Krit-Multiplikator 1,5–1,7, Krit 20–30 %, Direkttreffer 30–50 % stabil). Spielerwerte sind Annahmen und als solche ausgewiesen.
+- *Ergebnis:* Konzept 17. Rangfolge für einen Reassemble-Treffer: Battle Litany und Chain Stratagem (je 3,0 %), Divination und Radiant Finale mit drei Coda (2,2 %), die 5-%-Buffs (1,8 %), Arcane Circle (1,1 %); Battle Voice unbeziffert. Halten kostet keine Ladung; Risiko nur die gehaltene Ladung beim Tod des Gegners, abfangbar über die selbstkorrigierte Zeit bis zum Tod. Empfehlung O1, zur Entscheidung vorgelegt.
+- *Befund nebenbei:* `HasBuffs` fragt „alle Gruppenbuffs liegen", nicht „welche liegen"; für einen Wert je Fenster ungeeignet. `JobBuffs` kennt Devilment nicht (wirkt nur auf den Partner, für die Gruppe richtig).
+
+**Prüfgrad:** statisch (Spieldaten, Gemeinschaftsquellen, Code); Modellrechnung mit Selbsttest. Kein Code geändert.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -24,6 +24,7 @@ stünde hier ein zweites Mal und würde altern.
 | [`14-action-dependency-matrix.md`](14-action-dependency-matrix.md) | Wie hängen die Aktionen eines Jobs voneinander ab, und welche wirkt der Baum nie? |
 | [`15-wrathcombo-comparison.md`](15-wrathcombo-comparison.md) | Welche Ideen aus WrathCombo verbessern RSR, und welche nicht? |
 | [`16-xivanalysis-catalog.md`](16-xivanalysis-catalog.md) | Welche Regeln für gute Rotationen kennt xivanalysis, und wo weicht RSR ab — mit welchem Grund? |
+| [`17-machinist-reassemble-buffs.md`](17-machinist-reassemble-buffs.md) | Soll der Maschinist eine Reassemble-Ladung für die Gruppenbuffs halten, und welcher Buff zählt am meisten? |
 
 **Der Knoten der Kampffamilie ist `08`.** Heilung, Barriere und Minderung sind drei Antworten auf
 dieselbe Frage; die Ordnung zwischen ihnen steht dort, die Messung der Treffergröße in `13`, die
