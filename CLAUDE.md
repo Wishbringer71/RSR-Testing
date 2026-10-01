@@ -142,6 +142,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 
 **Spielweise**
 - Sicherheit der Gruppe geht vor Schaden — gewichtet mit der Wahrscheinlichkeit, dass der Schaden eintritt (seine Präzisierung). Eine Schutzmaßnahme, die Schaden kostet, lohnt, wo ein Treffer angekündigt oder wahrscheinlich ist; bei geringer Wahrscheinlichkeit verhindert sie im Extrem den Sieg, weil ohne Schaden der Kampf nicht endet. Jede Sicherheitsregel nennt deshalb, woran sie die Wahrscheinlichkeit misst.
+- Weniger Schaden aus einer Sicherheitsregel ist gewollt (seine Präzisierung): Eine Rotation, die deshalb unter der Erwartung von FFLogs oder xivanalysis bleibt, ist nicht schlechter. Ein Abgleich mit solchen Maßstäben nennt die Abweichung und ihren Grund, er behebt sie nicht.
 - Swiftcast bleibt für Wiederbelebungen. Vorschläge, die es in der Rotation verbrauchen (`AddSwiftcastOnGaruda`, `AddSwiftcastOnRuby` u. ä.), mache ich nicht.
 - Nichts empfehlen, was ihn für Schaden aus einer sicheren Position holt. Ausgeschlossen ist die Bewegung, nicht die Aktion: Steht er bei 0 Yalm am Ziel, ist ein Gapcloser nur Schaden.
 - Einen Gewinn im Promillebereich lege ich nicht als Abwägung gegen eine Sicherheitsentscheidung vor.
@@ -151,6 +152,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Erheben immer vollständig; bearbeiten nur, was in seinem Profil liegt. PvP, Blaumagier und andere begrenzte Jobs, Bozja und ähnliche Sonderinhalte, fremde Rotationen, die er nicht nutzt: erfassen, bis er sie nennt oder freigibt.
 - Churin-Rotationen (`ExtraRotations/*/Churin*`) sind für ihn uninteressant: keine Befunde dazu erfassen.
 - Vor dem Spielen kompiliert er den aktuellen Zweig (seine Angabe). Sein Stand ist der Zweig zur Zeit seiner Beobachtung, nie ein Release; maßgeblich ist das Datum seiner Beobachtung oder Datei.
+- Er zeichnet seine Kämpfe mit ACT auf (seine Angabe); FFLogs-Reports sind also möglich.
 - Er ist Tester und nutzt selten die Voreinstellungen. Eine Aussage über einen Vorgabewert ist keine über seine Konfiguration, und die kann ich nicht messen. Jede Regel hinter einem Schalter denke ich für beide Stellungen.
 
 **Als was seine Angaben gelten**
@@ -227,6 +229,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Einen fremden Schutzmechanismus führe ich erst als Begründung an, wenn ich geprüft habe, was er abdeckt.
 - Der Netzzugang ist seit 27.09.2026 unbegrenzt (seine Einstellung). Offizielle Quelle für Wirktexte samt der Werte, die `ActionId.resx` ausblendet (Dauern, Potenzen, Statusnamen): der Job-Guide (`na.`/`de.finalfantasyxiv.com/jobguide/`). Referenz für Rotationen: The Balance (`thebalanceffxiv.com`). Spieldaten: `garlandtools.org`, `v2.xivapi.com`. gamerescape und icy-veins weisen Skripte per Cloudflare-Prüfung ab — das ist die Seite, nicht die Umgebung.
 - Öffentliche Git-Repositories sind über den Git-Proxy klonbar. `PunishXIV/WrathCombo` (Klon unter `/home/user/punishxiv/wrathcombo`) belegt, wie ein anderes Rotationswerkzeug eine Mechanik behandelt und was die Spiel-API liefert — keine Spielquelle, Status so benennen; Code nur lesen, nicht übernehmen.
+- `xivanalysis/xivanalysis` (über den Git-Proxy klonbar, MIT) bewertet FFLogs-Reports je Job nach Rotationsregeln — Community-Auswertung auf Schaden hin, keine Spielquelle; Regelkatalog für den Abgleich, gefiltert durch seine Vorgaben.
 
 # Prüfung und Abschluss
 
