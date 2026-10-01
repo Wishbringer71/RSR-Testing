@@ -157,6 +157,14 @@
       "source": "user, recorded in AUDIT_LOG A-146"
     },
     {
+      "de": "Zermürben",
+      "en": "Feint",
+      "identifier": "FeintPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/monk/), 2026-10-01",
+      "note": "Role action, level 22, 90 s: physical damage dealt -10 %, magical -5 %, 15 s."
+    },
+    {
       "de": "Phönixfeder",
       "en": "Phoenix Down",
       "identifier": "4570",

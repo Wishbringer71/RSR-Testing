@@ -837,28 +837,92 @@ eigentlichen Tankbuster noch abklingen (25 s).
 
 **4. Abtausch auf einem Boss-Tankbuster — behoben (A236).**
 
-**5. Schutzwall erst 30 s nach Verdammnis — zur Entscheidung.** Verdammnis wirkt 15 s; die Staffelung lässt
-Schutzwall erst 30 s nach ihr zu. Dazwischen liegen 15 s, in denen keine der beiden wirkt. Umgekehrt wartet Verdammnis bis
-60 s nach Schutzwall, der nur 20 s wirkt. Dieselbe Bauform tragen alle vier Tanks (Upstream abe6132d3, „Rampart usage
-consistency", ohne Begründung).
-- *Im Pull:* Gedeckt sind 0–15 s und 30–50 s; direkt aneinander wären es 0–35 s ohne Lücke, während das Rudel am
-  stärksten ist.
-- *Am Boss:* Über zwei Minuten ist die gedeckte Zeit gleich, nur verteilt; für Tankbuster gibt es die eigenen Pfade.
-- *Empfehlung:* Für alle vier Tanks im Pull (`TankPullOnPlayer`) die zweite große Minderung direkt nach Ablauf der
-  ersten; am Boss wie bisher.
+**5. Die zweite große Minderung wartet auf die erste — gerechnet, Empfehlung: belassen.** Bei allen vier Tanks fällt
+Schutzwall erst 30 s nach der großen Minderung (Verdammnis, Guardian, Shadowed Vigil, Great Nebula und ihre
+Vorstufen, je 15 s), die große erst, wenn Schutzwall bereit ist oder vor 60 s fiel; solange eine läuft, sperrt sie die
+andere (`RampartStatus`). Upstream abe6132d3, „Rampart usage consistency", ohne Begründung. Gerechnet mit
+`tank_mitigation_stagger_model.py` (Selbsttest; Werte aus den Wirktexten; der Strom eines Rudels fällt linear, weil es
+stirbt — Annahme, ein gleichbleibender Strom steht daneben):
 
-**6. Abschütteln hebt Kampfrausch, Verdammnis und Urimpuls auf — Entscheidung offen (TODO), mit neuer Grundlage.**
-The Balance wertet die Aufhebung von Kampfrausch als Gewinn: Die Barriere bemisst sich an der erhöhten
-Maximalgesundheit, dazu +2 %. Verdammnis aufzuheben kostet bis zu 40 % Minderung für den Rest ihrer 15 s, Urimpuls die
-Minderung und die Heilung je Treffer. Seit A237 und A239 liegt Kampfrausch öfter. *Empfehlung:* Abschütteln zurückhalten,
-solange Verdammnis/Rachsucht oder Urimpuls läuft, mit Kampfrausch dagegen frei. Die Rückhaltung weicht, wenn die
-Gruppe in Gefahr ist (`HoldAreaDefense`).
+| Fall | P0 heute | P1 direkt aneinander | P3 beide zugleich |
+|---|---|---|---|
+| ein Pull, 20 / 30 / 45 / 60 / 90 s, erlittener Anteil | 0,63 / 0,70 / 0,76 / 0,78 / 0,83 | 0,61 / 0,65 / 0,70 / 0,75 / 0,81 | 0,51 / 0,59 / 0,69 / 0,75 / 0,82 |
+| Wall-to-Wall 4 × 30 s, 10 s Pause: je Pull | 0,70 0,82 **1,00** 0,70 | 0,65 **1,00** 0,99 0,71 | 0,59 **1,00** 0,92 0,70 |
+| Wall-to-Wall 4 × 45 s: Mittel / schlechtester | 0,89 / 1,00 | 0,86 / 1,00 | 0,86 / 0,99 |
+| Wall-to-Wall 3 × 60 s: Mittel / schlechtester | 0,88 / 0,97 | 0,89 / 0,99 | 0,87 / 0,96 |
+| Boss ohne Vorhersage, Tankbuster alle 20–90 s: gedeckt | gleich | gleich | bei 40 und 60 s etwa halb so oft |
 
-**7. Reflexion auf einen Tankbuster kann dem Raidwide fehlen — zur Entscheidung, alle Tanks.** Die Einzelabwehr wirkt
-Reflexion bei jeder Öffnung, also auch für einen Tankbuster, der nur ihn trifft. Sagt BossModReborn einen Raidwide
-innerhalb ihrer Abklingzeit (60 s) voraus, fehlt sie dort der ganzen Gruppe. *Empfehlung:* In der Einzelabwehr
-zurückhalten, wenn ein Raidwide innerhalb ihrer Abklingzeit angekündigt ist. Die Rückhaltung weicht, wenn er in Gefahr
-ist (`HoldSingleDefense`). Ohne Modul gibt es keine Ankündigung; dann bleibt es wie heute.
+Was das im Kampf heißt:
+- *Einzelner Pull:* Direkt aneinander nimmt der Tank 2–7 % weniger, beide zugleich am Anfang bis zu 12 %.
+- *Wall-to-Wall:* Jede Variante lässt einen Pull ganz ohne beide, weil 35 s Minderung je 90–120 s nicht für Pull auf Pull
+  reichen. Die Reihenfolge verschiebt nur, *welcher* Pull ohne bleibt: heute meist der dritte, direkt aneinander der
+  zweite. Im Mittel liegt mal die eine, mal die andere vorn, der Abstand ist höchstens 3 Prozentpunkte.
+- *Boss:* Ohne Vorhersage öffnet die Abwehr erst beim Zauber; die Staffelung ändert dann nichts. Mit Vorhersage greifen
+  die eigenen Tankbuster-Pfade, die die Sperre übergehen. „Beide zugleich" ließe bei Tankbustern im 40- und 60-s-Takt
+  jeden zweiten ohne beide.
+- *Stufensynchron:* Unter Stufe 38 (Krieger) und den Gegenstücken fehlt die große; Schutzwall fällt dann allein, die
+  Staffelung greift nicht.
+
+**Empfehlung: belassen.** Meine frühere Empfehlung („im Pull direkt aneinander") hielt dem Modell nicht stand: Sie
+schützt den ersten Pull besser und den zweiten schlechter, ohne im Mittel zu gewinnen. Die Lücke liegt im Budget, nicht in
+der Reihenfolge. *Was sie schließen könnte, und weshalb nicht vorgeschlagen:* Die großen Minderungen nur dort zu
+geben, wo der gemessene Verlauf einen schweren Pull zeigt, spart sie bei leichten Pulls für die schweren. Den Nutzen
+bestimmt die Mischung aus leichten und schweren Pulls, die hier niemand misst. Und der Verlauf braucht einige Sekunden,
+bis er fällt, die Minderung käme also nach dem ersten Schlag. Das wäre eine Wette gegen sein „Sicherheit vor Schaden";
+ich lege sie nicht vor.
+
+**6. Abschütteln gegen die eigenen Status — alle Fälle, Empfehlung S2.** Abschütteln hat zwei Wege, und beide wirken es
+als Erstes, ohne einen eigenen Status zu prüfen:
+- *Einzelheilung* (`HealSingleAbility`): Sie öffnet, sobald **irgendein Mitglied** in der Vorausschau unter
+  „HealthSingleAbility" fällt (ab Werk 0,7; mit „Only heal self when not a Healer" nur er selbst, ab Werk aus).
+- *Flächenabwehr* (`DefenseAreaAbility`): Sie öffnet bei einem erkannten Flächenzauber oder einem Raidwide, den
+  BossModReborn innerhalb von „Seconds before raidwide to use area mitigation" ansagt (ab Werk 5 s).
+
+Wirkung (Job-Guide): Barriere 15 % der Maximalgesundheit je Mitglied für 30 s, +2 % je aufgehobenem Effekt; Heilung
+300 Potenz und Regeneration; Abklingzeit 90 s. Die Barriere des Kriegers bemisst sich an seiner Maximalgesundheit vor der
+Aufhebung (The Balance), unter Kampfrausch also an den 120 %.
+
+| Fall | Was Abschütteln gewinnt | Was es kostet |
+|---|---|---|
+| nichts läuft | Barriere und Heilung für alle | 90 s Abklingzeit — in der Einzelheilung für ein einziges Mitglied unter 70 %, und dann fehlt es dem nächsten Raidwide |
+| Kampfrausch läuft | seine eigene Barriere 20 % statt 15 % seiner Grundgesundheit, +2 % für alle | den Rest von Kampfrausch: Maximalgesundheit fällt zurück (kostet nur, wenn er oberhalb der alten Höchstgrenze stand), +20 % Heilung entfällt. Etwa ausgeglichen, auch vor einem Tankbuster: Die Barriere fängt dort ab, was die Zusatzgesundheit gepuffert hätte |
+| Urimpuls läuft | +2 % für alle | bis 8 s −10 % und die Heilung je Waffenfertigkeit (bis drei Treffer) |
+| Verdammnis/Rachsucht läuft, kein Tankbuster bis zu ihrem Ende | +2 % für alle | bis 15 s −40 % (−30 %) auf den Strom, der ihn trifft |
+| Verdammnis läuft **für einen Tankbuster**, der vor ihrem Ende landet | +2 % für alle; seine eigene Barriere 15–17 % fängt einen Teil | 40 % auf den Tankbuster. Bei einem Treffer von voller Gesundheit: 0,4 gegen 0,17 der Grundgesundheit — 0,23 mehr Schaden, wo der Treffer möglicherweise tödlich ist |
+
+Optionen und was sie je Weg ändern:
+- **S0, belassen:** alle Kosten der Tabelle bleiben; am schwersten der letzte Fall, wenn Raidwide und Tankbuster nahe
+  beieinander liegen.
+- **S1, wie WrathCombo:** In der Einzelheilung zurückhalten, solange Kampfrausch, Verdammnis/Rachsucht oder Urimpuls
+  läuft; die Flächenabwehr frei. Die Einzelheilung verliert damit auch den Fall Kampfrausch, der nach The Balance ein Gewinn
+  ist; der Tankbuster-Fall in der Flächenabwehr bleibt offen.
+- **S2, empfohlen:** In der Einzelheilung zurückhalten, solange Verdammnis/Rachsucht oder Urimpuls läuft; Kampfrausch
+  frei. In der Flächenabwehr nur im letzten Fall zurückhalten: Ein Tankbuster auf ihn landet, bevor Verdammnis
+  endet (`TankbusterOnMeWithin` mit ihrer Restzeit). Beide Rückhaltungen weichen der universellen Schicht, wenn ein
+  Mitglied in Gefahr ist (`HoldSingleDefense`/`HoldAreaDefense`).
+- **S4, meine frühere Empfehlung:** in beiden Wegen zurückhalten, solange Verdammnis oder Urimpuls läuft. *Verworfen:*
+  Bei einem Raidwide, der in die Laufzeit von Verdammnis fällt, nähme sie der ganzen Gruppe die Barriere von 15 %,
+  um dem Krieger den Rest seiner eigenen Minderung zu lassen. Die universelle Schicht weicht nur bei der kritischen
+  Klasse, nicht bei einem gewöhnlichen Raidwide. Das stellt seine Minderung über die Sicherheit der Gruppe.
+- **S3, zusätzlich zu S2, eigene Frage:** Abschütteln in der Einzelheilung zurückhalten, wenn BossModReborn einen
+  Raidwide innerhalb seiner Abklingzeit (90 s) ansagt. Das ist dieselbe Klasse wie Befund 7 (Reflexion): ein
+  Gruppenwerkzeug, auf eine Einzellage gegeben, fehlt dem angesagten Gruppentreffer. Dort mitentschieden.
+
+Was S2 im Kampf ändert:
+- *Pull:* Fällt ein Mitglied unter 70 %, während Verdammnis oder Urimpuls auf dem Krieger liegt, kommt Abschütteln erst
+  nach ihrem Ende, höchstens 15 s später. Die Gruppe bekommt Barriere und Heilung dann später; die Heiler decken die
+  Lage, und ist jemand kritisch, weicht die Rückhaltung.
+- *Boss:* Abschütteln kommt am Raidwide wie bisher; nur wenn kurz danach ein Tankbuster auf ihn folgt und Verdammnis
+  dafür liegt, wartet es, bis Verdammnis endet oder der Tankbuster gelandet ist.
+- *Ohne BossModReborn:* Der Tankbuster ist nur am Zauber oder Marker zu sehen, Sekunden vorher; der letzte Fall wird dann
+  seltener erkannt, und Abschütteln fällt wie bisher.
+
+**7. Reflexion auf einen Tankbuster kann dem Raidwide fehlen — eine Klasse über alle Rollen.** Reflexion, Zermürben
+und Stumpfsinn fallen in der Einzelabwehr jeder Rolle, auch wenn BossModReborn einen Raidwide innerhalb ihrer
+Abklingzeit ansagt. Fallmatrix, Rechnung und Optionen stehen in Konzept 08, „Ein Gegner-Debuff in der Einzelabwehr
+fehlt dem angesagten Raidwide", weil die Regel dort für alle Rollen sitzt. Empfehlung X2: zurückhalten, wenn ein
+Raidwide nach der Wirkdauer und vor Ende der Abklingzeit angesagt ist, mit Selbstbewertung; dieselbe Prüfung für
+Abschütteln in der Einzelheilung.
 
 **Ohne Befund:**
 - *Äquilibrium* (reaktiv, unter Kampfrausch), *Holmgang* (Notfall bei 15 %; vorbeugend nur bei bekannter Höhe des

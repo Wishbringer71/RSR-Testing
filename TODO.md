@@ -21,17 +21,28 @@ Seit A202 wird Improvised Finish sofort gewirkt (5 %). Offen als Verbesserung: b
 
 Passage of Arms endet mit jeder weiteren Aktion. Ohne `PldlockCasting` (ab Werk aus) beendet RSR es mit seiner nächsten Aktion, meist bevor der angekündigte Treffer fällt; die Abklingzeit ist dann ohne Schutz verbraucht. Die Sperre hält seit A164 genau bis zum Treffer. Zur Entscheidung vorgelegt: Voreinstellung der Sperre. Konzept 14, „Wechselwirkungen und Zeit".
 
-### Krieger: Shake It Off hebt Damnation, Bloodwhetting und Thrill of Battle auf · N
+### Krieger: Abschütteln hebt Verdammnis, Urimpuls und Kampfrausch auf · N
 
-Shake It Off hebt die eigenen Status Thrill of Battle, Damnation und Bloodwhetting auf, für +2 % Barriere je Effekt (am offiziellen Job-Guide belegt; im Repository ist der Name ausgeblendet). RSR wirkt es als Flächenabwehr und als Einzelheilung, ohne diese Status zu prüfen. Im Kampf: Ein Raidwide, während Damnation für einen Tankbuster liegt, kostet den Krieger 40 % Minderung. Seit A237 liegen Kampfrausch (Thrill of Battle) und Bloodwhetting vor jedem angekündigten Tankbuster auf ihm, der Fall tritt also häufiger ein. Neue Grundlage (The Balance): Die Aufhebung von Kampfrausch ist ein Gewinn, weil die Barriere an der erhöhten Maximalgesundheit bemessen wird; Verdammnis und Urimpuls aufzuheben kostet Minderung. Empfehlung: Abschütteln zurückhalten, solange Verdammnis/Rachsucht oder Urimpuls läuft, mit Kampfrausch frei; die Rückhaltung weicht bei Gefahr für die Gruppe. Konzept 09, „Krieger: die Abwehr im Ganzen", Befund 6. Zur Entscheidung vorgelegt. Konzept 14, „Wechselwirkungen und Zeit".
+Abschütteln (Shake It Off) fällt als Einzelheilung, sobald irgendein Mitglied unter 0,7 sinkt, und als Flächenabwehr, ohne einen eigenen Status zu prüfen. Es hebt Kampfrausch, Verdammnis und Urimpuls auf (+2 % Barriere je Effekt). Fallmatrix und Optionen S0–S4 in Konzept 09, „Krieger: die Abwehr im Ganzen", Befund 6.
+
+Empfehlung S2:
+- In der Einzelheilung zurückhalten, solange Verdammnis/Rachsucht oder Urimpuls läuft; Kampfrausch frei, weil die Barriere an der erhöhten Maximalgesundheit bemessen wird (The Balance).
+- In der Flächenabwehr nur zurückhalten, wenn ein Tankbuster auf ihn landet, bevor Verdammnis endet.
+- Beides weicht bei Gefahr für ein Mitglied.
+
+Meine frühere Empfehlung (in beiden Wegen zurückhalten) ist verworfen: Sie nähme der Gruppe die Barriere am Raidwide. Zur Entscheidung.
 
 ### Tanks: die zweite große Minderung erst 30 s nach der ersten · N
 
-Schutzwall fällt erst 30 s nach Verdammnis, Sentinel/Guardian, Shadow Wall/Shadowed Vigil oder Nebula/Great Nebula, die 15 s wirken; umgekehrt wartet die große erst 60 s nach Schutzwall (20 s). Dazwischen liegen 15 bzw. 40 s ohne beide (Upstream abe6132d3, ohne Begründung). Im Pull deckt das 0–15 s und 30–50 s statt 0–35 s am Stück, während das Rudel am stärksten ist; am Boss bleibt die gedeckte Zeit über zwei Minuten gleich. Empfehlung: im Pull (`TankPullOnPlayer`) direkt aneinander, am Boss wie bisher. Zur Entscheidung. Konzept 09, „Krieger: die Abwehr im Ganzen", Befund 5.
+Schutzwall fällt erst 30 s nach der großen Minderung (15 s), die große erst 60 s nach Schutzwall (Upstream abe6132d3). Durchgerechnet (`tank_mitigation_stagger_model.py`, Konzept 09, Befund 5):
+- Direkt aneinander schützt einen einzelnen Pull um 2–7 % besser. In einer Wall-to-Wall-Folge verschiebt es nur, welcher Pull ganz ohne beide bleibt; im Mittel liegen beide Varianten höchstens 3 Prozentpunkte auseinander, mal die eine, mal die andere vorn.
+- Am Boss ändert die Reihenfolge nichts.
 
-### Tanks: Reflexion am Tankbuster fehlt dem nächsten Raidwide · N
+Empfehlung: belassen. Zur Entscheidung, weil er die Fälle durchgerechnet haben wollte.
 
-Die Einzelabwehr wirkt Reflexion bei jeder Öffnung, auch für einen Tankbuster, der nur den Tank trifft. Ist ein Raidwide innerhalb ihrer Abklingzeit angekündigt, fehlt sie dort der Gruppe (The Balance: „very situational"). Empfehlung: in der Einzelabwehr zurückhalten, wenn BossModReborn einen Raidwide innerhalb von 60 s ansagt; weicht bei Gefahr (`HoldSingleDefense`). Zur Entscheidung. Konzept 09, Befund 7.
+### Alle Rollen: Gegner-Debuff in der Einzelabwehr fehlt dem angesagten Raidwide · N
+
+Reflexion, Zermürben und Stumpfsinn fallen in der Einzelabwehr (Tankbuster, bei Tanks auch jeder Zauber auf ihr Ziel), auch wenn BossModReborn einen Raidwide nach ihrer Wirkdauer und vor Ende ihrer Abklingzeit ansagt; dann fehlen sie der Gruppe. Dieselbe Bauform: Abschütteln in der Einzelheilung des Kriegers. Fallmatrix, Beispielrechnung und Optionen X0–X3 in Konzept 08, „Ein Gegner-Debuff in der Einzelabwehr fehlt dem angesagten Raidwide". Empfehlung X2: zentral zurückhalten in diesem Fenster, mit Selbstbewertung, weicht bei Gefahr; ohne Modul unverändert. Zur Entscheidung.
 
 ### Krieger: Nascent Flash — offene Bausteine · N, U
 
