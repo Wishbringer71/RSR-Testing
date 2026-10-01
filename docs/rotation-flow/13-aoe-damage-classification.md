@@ -96,6 +96,91 @@ Neustart lautet die ehrliche Antwort „in dieser Sitzung noch nicht gesehen".
 Aktion der bisher gespielten Inhalte ihre Minderung wert. Ohne diese Unterscheidung hätte die Sonde
 einen abgeschalteten Baustein als unwirksamen gemeldet.
 
+## Wen ein gelisteter Flächencast erreicht
+
+**Zwei Fragen, zwei Leser (A218).** Die Flächenabwehr-Flagge öffnet Gruppenminderungen — Reflexion,
+Divine Veil, Sacred Soil, Addle, Feint, Troubadour, Tactician, Shield Samba — und bei Schadensausteilern
+zusätzlich die ganze Einzelabwehr sowie wenige Selbstschilde im Flächenpfad (Radiant Aegis, Tempera Coat,
+Tengentsu, Third Eye). Gemessen wird ein Flag an den Pfaden, die es öffnet (CLAUDE.md, Kausalität):
+
+- **Die Flagge fragt nach der Gruppe:** Sie steht, wenn der gelistete Cast den Spieler erreicht oder
+  mindestens zwei lebende Gruppenmitglieder — mehr als ein Einzelziel. Ein Stack auf einem Mitglied trifft
+  alle, ein Rundumschlag am Boss Tank und Nahkämpfer. Ein Tankbuster-Kreis auf dem Tank trifft nur einen und
+  öffnet sie nicht. „Die Hälfte der Gruppe" ist verworfen: Im Achterteam träfe ein Rundumschlag auf Tank und
+  zwei Nahkämpfer drei von acht und bekäme keine Gruppenminderung.
+- **Selbstschutz fragt nach dem Spieler** (`DataCenter.AreaHitReachesPlayer`, in den Rotationen
+  `AreaHitOnMe`): Radiant Aegis, Tempera Coat, Tengentsu und Third Eye im Flächenpfad, und der Aufruf der
+  Einzelabwehr eines Schadensausteilers unter der Flächenflagge (Dispatch) fallen nur, wenn der Treffer ihn
+  erreicht. Das ist die Antwort auf seine Meldung zu Radiant Aegis.
+
+**Wen die Form erreicht, aus den Spieldaten** (`DataCenter.AreaCastReaches`, je Mitglied):
+
+- Einzelzielaktion mit Reichweite (`CastType` 1, `Range` > 0): nur das Ziel.
+- Effektreichweite 0 und ein auf das Mitglied gewirkter Cast: erreicht es.
+- Kreis auf ein Ziel (`CastType` 2, `Range` > 0, nicht auf sich selbst, nicht auf den Boden): um das Ziel.
+  BossModReborn beschreibt dieselben Aktionen als „Boss->players, range 6 circle, stack" (Pyric Blast 25742,
+  Clawful 37693).
+- Linie (`CastType` 4 und 12, mit Breite): Rechteck vom Wirkenden zum Ziel, ohne Ziel in Blickrichtung;
+  `XAxisModifier` ist die volle Breite (Heavy Blast Cannon 37345: Spieldaten Breite 8, BossModReborn „width 8
+  rect", halbe Breite 4).
+- Kreis und Kegel um den Wirkenden: Abstand vom **Mittelpunkt** des Wirkenden, ohne dessen Trefferkreis.
+  BossModReborn setzt keine seiner 3494 Kreisformen um den Trefferkreis des Wirkenden größer
+  (`AOEShapeCircle`, geprüft 29.09.2026); gemessen am Trefferkreis verlängerte ein großer Boss jeden
+  Rundumschlag um seinen Trefferkreis — 10 y reichten bei 8 y Trefferkreis bis 18 y. Der Kegel ohne Winkel
+  (steht in keinem Blatt) zählt wie ein Kreis.
+- Bodenkreise (`TargetArea`): Ihr Mittelpunkt steht nur in den nativen Castdaten; weiter Abstand zum Wirkenden
+  mit beiden Trefferkreisen, also eher zu weit.
+- Ansturm (`CastType` 8, Effektreichweite 0): erreicht jeden.
+
+Der Trefferkreis des Mitglieds zählt überall zugunsten des Treffers.
+
+**Durchgerechnet an der ausgelieferten Liste** (850 Einträge, Spieldaten über xivapi, 29.09.2026): 550 Kreise
+um den Wirkenden, davon 509 größer als 30 y — die erreichen im Kampf ohnehin jeden, der Trefferkreis ändert
+dort nichts; 41 bis 30 y, bei denen er entschied. 152 Kreise mit Reichweite (70 auf Spieler gerichtet,
+54 Bodenkreise, 26 um den Wirkenden) und 5 Linien auf ein Ziel.
+
+**Anlass, seine Beobachtung (28.09.2026, erneut 29.09.2026):** Radiant Aegis fällt bei Tankbustern auf den Tank,
+auch wenn er weit weg steht. Ob die Form oder eine andere Quelle sein Fall war, zeigt der Code nicht. Möglich
+sind außerdem Marker (Stack- und Spread-Marker ohne Abstand) und BossModReborn (ein Modul, das einen
+Tankbuster als Raidwide meldet). Welche Quelle in seinen Kämpfen die Abwehr öffnet, schreibt
+`DefenseTrace.log` (unten); die Zeilen nennen jetzt auch, ob der Treffer ihn erreicht.
+
+**Marker:** Es zählen nur Marker auf ihm oder einem Mitglied seiner eigenen Gruppe, Duty-Support-Begleiter
+eingeschlossen, gleich wie „Heal and raise Party NPCs" steht (A220). Das gilt für die Flagge
+(`IsCastingAreaVfx`, eine Upstream-Erkennung, die bis dahin jeden Marker in Reichweite las) und für den
+Selbstschutz. Ein Stack auf einem Mitglied einer anderen Allianzgruppe traf keinen von ihnen und öffnete doch
+ihre Gruppenminderungen und seinen Selbstschutz. Für den Selbstschutz zählt ein Stack-Marker in der eigenen
+Gruppe als „erreicht ihn" (wer stackt, wird getroffen); ein Spread-Marker zählt nur auf ihm selbst. Ein
+angekündigter BossModReborn-Raidwide trifft jeden.
+
+**Tankbuster und die Einzelabwehr der Schadensausteiler (A220):** Ein angekündigter BossModReborn-Tankbuster
+öffnet sie, wenn er ihn trifft. Ist der nächste vorhergesagte Treffer dieser Tankbuster, sagt BossModReborn das
+selbst: Die Maske des Eintrags nennt die Getroffenen, Bit 0 ist immer der Spieler (`PartyState.PlayerSlot = 0`,
+IPC `Hints.PredictedDamagePlayers`; die Liste ist nach Zeitpunkt sortiert, BossModReborn-Quelle 29.09.2026).
+Gehört die Maske zu einem anderen Ereignis, gilt die bisherige Näherung: kein lebender Tank in der Gruppe. Allein
+diese Näherung öffnete Radiant Aegis für einen Tankbuster auf einem Tank, den RSR nicht als Gruppenmitglied
+zählte — ein Duty-Support-Tank bei ausgeschaltetem „Heal and raise Party NPCs". Ob RSR Duty-Support-Tanks über
+ihren `ClassJob` überhaupt als Tank erkennt, ist nicht belegt. WrathCombo liest den Job solcher NPCs aus
+`InfoProxyPartyMember` statt aus `ClassJob`; das ist ein Hinweis, keine Spielquelle. Mit der Maske hängt die
+Entscheidung daran nicht mehr.
+
+**Selbst gemessen, ob ein gelisteter Cast den Spieler erreicht (A205, Option „Skip area defence for casts that
+missed you", ab Werk an):** Der Effekt-Handler hält je gelisteter Aktion fest, ob ihre letzte Landung dem
+lebenden Spieler einen Treffer brachte: Schaden jeder Höhe, auch geblockt, pariert oder von einer Barriere
+geschluckt, oder einen Treffer, den Unverwundbarkeit, Ausweichen oder Widerstand abwies (Effektarten 1–3, 5–7 und
+teilweise Unverwundbarkeit; bis A211 nur Art 3). Mit der Option zählt ein
+Cast, der ihn zuletzt verfehlte, nicht für seine Flächenabwehr — ausgewichen oder auf jemand anderen zentriert —,
+bis er ihn wieder trifft; ein auf ihn gewirkter Cast zählt immer. Nur die Abwehrflagge liest es
+(`IsHostileCastingAOEForMyDefense`); Vorab-Heilung und Gefährdungsprüfung behalten die Sicht der Gruppe. Der
+Messwert gilt je Sitzung.
+
+**Protokoll der Abwehrentscheidungen (`DefenseTrace.log` im Konfigurationsordner, je Sitzung neu, A208):** Jede
+Wahl der Abwehrkette — Flächen- und Einzelabwehr im Dispatch für alle Jobs, beim Beschwörer auch Radiant Aegis vor
+einem BossModReborn-Raidwide — mit allen Quellen, die in diesem Moment stehen: Marker mit Pfad, Träger und Abstand,
+gelistete Casts mit Form, Abständen und „reaches you", BossModReborn-Raidwide und -Tankbuster samt erkanntem Tank.
+Daneben jeder gegnerische Treffer auf ihn (ohne Auto-Attacken). So steht in der Datei, ob der Treffer, für den die
+Abwehr fiel, ankam. Aufgelöst wird das Protokoll, sobald eine Datei seiner Kämpfe die Quelle zeigt und sie behoben ist.
+
 ## Wen die Unterdrückung erreicht
 
 Erhoben, nicht geschätzt (Lauf vom 20.09.2026): `AreaCastIsWorthMitigating` sitzt in
@@ -159,7 +244,7 @@ aktive Modul und je Ereignisart, ob überhaupt eine Vorhersage vorliegt. Die vol
 welche Regeln des Baums so hängen, steht in `08-mitigation-synergy.md`.
 
 **Die Antwort ist ein zweiter, eigener Weg** (`DataCenter.IsHostileCastingLargeArea`, hinter
-`Mitigate a big area cast even when it is interruptible`, **Vorgabewert aus**): Er fragt nicht nach
+`Mitigate a big area cast even when it is interruptible`, **Vorgabewert an**): Er fragt nicht nach
 Unterbrechbarkeit und nicht nach Mindestlänge, sondern nach dem **gemessenen** Anteil — mindestens
 das, was die größte Barriere des Spiels absorbiert — und nach demselben Ein-GCD-Fenster vor dem
 Einschlag.
@@ -229,11 +314,15 @@ vorhandenen Einträge wirkungslos.
 **Ab einem Anteil von 0,25 der Maximalgesundheit ist die Fläche groß, unabhängig vom Zustand der
 Gruppe.** Darunter entscheidet der Vergleich mit dem Puffer. Damit ist die Zwei-Schwellen-Form der
 Vorgabe umgesetzt, und zwar ohne eine einzige gesetzte Zahl: Die Obergrenze ist der größte Schild,
-der seine Größe im eigenen Wirktext als Anteil nennt.
+der seine Größe im eigenen Wirktext als Anteil nennt **und auf ein anderes Gruppenmitglied gelegt werden
+kann** — laut Wirktext „barrier around self or target party member" oder „… all nearby party members".
+Seine Vorgabe fragt, ob ein Treffer über dem liegt, was ein großer Schild auf dem Getroffenen auffinge;
+ein Schild, den nur sein Wirkender trägt, beantwortet das für niemanden sonst (A140).
 
 | Barriere | Angabe im Wirktext | verwendbar? |
 |---|---|---|
 | The Blackest Night (`ActionId.resx` 1234) | „absorbs damage totaling **25 % of target's maximum HP**" | **ja** — der Maßstab für „großer Schild" |
+| Manaward (157) | „nullifies damage totaling **up to 30 % of maximum HP**" | im Generator erfasst, **nicht** für die Obergrenze — nur die Schwarzmagierin selbst trägt ihn |
 | Shake It Off (`ActionId.resx` 1209), drei Duty-Aktionen (`DutyAction.resx` 1908, 4484, 6715) | 15 %, 10 %, 15 %, 10 % der Maximalgesundheit | **ja** — das untere Ende, siehe unten |
 | Divine Benison (1404) | „absorbs damage equivalent to a heal of **500 potency**" | nein — Potenz, ohne Heilattribut nicht umrechenbar |
 | Adloquium, Succor, Eukrasian Diagnosis/Prognosis | „nullifies damage equaling **% of the amount of HP restored**" | nein — der Prozentsatz fehlt im Text, der geheilte Betrag hängt am Heilattribut |
@@ -292,10 +381,34 @@ verschwinden kann.
 |---|---|
 | „Reset and Update AOE List" (lädt die kuratierte Liste vom Server) | Werte bleiben |
 | „Reset RSR Plugin Settings" (globaler Knopf) | Werte bleiben — setzt nur `Service.Config` zurück |
-| „Forget recorded damage potential" | löscht sie, und das ist sein Zweck |
+| Speichern, während der Speicher weniger hält als die Datei (Laden gescheitert, Tabelle aus irgendeinem Grund leer begonnen) | Werte bleiben — jedes Speichern führt Speicher und Datei zusammen und nimmt je Aktion den höheren Wert |
+| Datei vorhanden, aber beim Speichern nicht lesbar (gesperrt, beschädigt) | Werte bleiben — das Speichern unterbleibt, „Store:" meldet es rot, der Messwert geht mit dem nächsten Speichern hinaus |
+| Laden beim Start abgebrochen oder gescheitert, danach Entladen des Plugins | Werte bleiben — ein Speicher, dessen Laden nicht zu Ende lief, wird nicht geschrieben; das gilt für alle Listen, nicht nur für diese Tabelle |
+| „Reset and Update AOE List", wenn der Download scheitert | die bisherige Liste bleibt; vorher wurde sie durch eine leere ersetzt, und ohne Liste wird nichts gemessen |
 | Unlesbare Datei beim Start | Werte bleiben, die Datei wird als `.corrupt` beiseitegelegt und gemeldet |
 | Kampfende, Zustandswechsel, Laden und Entladen (`DataCenter.ResetAllRecords`) | Werte bleiben — die Methode räumt das Laufzeitgedächtnis eines Kampfes ab und fasst keinen Speicher an |
 | **Speicher wird beim Start nicht geladen** | **Totalverlust**, still — behoben, s. u. |
+| Speichern während einer neuen Messung | Der Vorgang ging verloren, still; behoben — gespeichert wird ein Schnappschuss, und nur ein Schreiber zur Zeit |
+| Gesamtspeichern (`OtherConfiguration.Save`, etwa nach einer neuen Knockback-Aktion im Kampf) während einer neuen Messung | Bis A224 zog es den Schnappschuss erst auf dem Pool-Thread; warf die Kopie, fielen **alle** folgenden Listen dieses Durchgangs aus, still. Behoben: Die vier im Spiel beschriebenen Speicher (Flächenliste, Schadenstabelle, Knockback-Liste, Marker-Negativliste) ziehen ihre Kopie auf dem aufrufenden Thread, auch im Gesamtspeichern |
+| Messung zwischen letztem Speichern und Entladen | Verlust dieser einen Messung; behoben — der Effekt-Handler wird vor dem letzten Speichern abgehängt |
+
+**Ablesbar ist das jetzt im Listenfenster unter „Store:".** Das Laden meldet, ob es eine Datei fand, keine fand oder eine unlesbare beiseitelegte; jedes Speichern liest die Datei zurück und meldet Erfolg nur, wenn dort so viele Einträge stehen wie geschrieben wurden. Die Zahl „Damage potential recorded" darüber ist die Tabelle im Speicher — sie sieht gleich aus, ob die Werte die Platte erreicht haben oder nicht.
+
+**Was eine Datei mit `{}` sagt, und was nicht.** Sie entsteht auf genau zwei Wegen: beim ersten Start ohne Datei (das Laden legt die leere Tabelle an) oder in der Sitzung nach einer unlesbaren Datei (die liegt dann als `.corrupt` daneben). Jedes andere Speichern schreibt mindestens einen Eintrag, weil die Tabelle von selbst nur wächst. Seit dem Ladefix heißt `{}` also: **in keiner Sitzung seither wurde ein Wert gemessen.** Die Datei sagt nicht, warum — das sagt nur die Messstelle.
+
+**Die Messung hat sechs Tore**, jedes einzeln hinreichend, um sie zu verhindern: der Effekt-Hook liefert überhaupt Treffer; die Quelle ist ein anvisierbarer Gegner; eine Aktion mit Wirkzeit; eine reguläre Aktion der Kategorie Zauber, Waffenfertigkeit oder Fähigkeit; ihre Id in der Flächenliste; ein Betrag über null bei einem Gruppenmitglied.
+
+**`Record AOE actions` und die Gruppengröße gelten nur der Aufnahme in die Liste, nicht der Messung.** Die Option stammt von Upstream (2023) und entscheidet, ob neue Ids in die Liste kommen; wer sie ausschaltet, will die kuratierte Liste so behalten, wie sie geliefert wurde. Die Mindestgröße von vier ist die kleinste Gruppenzusammensetzung des Spiels (`ContentMemberType`, Zeile 2: je ein Tank, Heiler, Nahkämpfer, Fernkämpfer); darunter trifft auch ein Kegel oder ein kleiner Kreis alle, und „alle getroffen" belegt keinen Gruppentreffer mehr. Für eine bereits gelistete Id beantwortet die Messung nur, wie hart sie trifft — das hängt an keiner der beiden Bedingungen. Solange die Messung dahinter stand, fiel sie für jeden aus, der die Option abschaltete oder mit Duty Support ohne NPC-Gruppenoption spielte, und mit ihr alle drei Leser: das Auslassen kleiner Casts, das Heilen vor einem großen und das Aufheben einer Zurückhaltung. Ein Wert aus einem Lauf ohne Stufensynchronisation fällt zu klein aus; er korrigiert sich wie jede Unterschätzung beim nächsten ungemilderten Treffer, und die Höchstwert-Regel lässt ihn einen höheren Stand nie senken. Das Listenfenster und die Diagnoseanzeige zählen seit dem Laden **je Grund**, wie oft ein gegnerischer Cast den Spieler traf und woran er hängenblieb („Casts this session"). Steht dort nach einem Abend mit Raidwides kein einziger Eintrag, traf ihn kein Cast eines anvisierbaren oder unsichtbaren Gegners, oder der Hook liefert nichts; stehen dort nur Gründe ohne „measured", nennt die Zeile das Tor. Davor steht, was der Effekt-Handler überhaupt erhält („Effect handler": Effektsätze, davon von Gegnern, davon mit Schaden am Spieler, dazu Fehler und der erste Fehlertext). Null Sätze heißt: Der Hook liefert nichts. Sätze ohne Gegnertreffer heißen: Der Filter vor der Messung verwirft sie. Fehler heißen: Der Handler bricht vor der Messung ab. **Die Ursache der leeren Tabelle: die Aktionsart wurde vier Bytes breit gelesen** (A177, belegt an seinem Protokoll vom 27.09.2026). ECommons führt `EffectHeader.ActionType` an Offset 0x1F mit dem Enum `ActionType` der ClientStructs, und dessen zugrunde liegender Typ ist `uint` (aus der Assembly gelesen). Das Spielfeld ist ein Byte; ClientStructs legt `Flags` an 0x20 und `NumTargets` an 0x21. Gelesen wurde also `0x00NN0001`: im niedrigen Byte die Aktionsart, im dritten die Zahl der Ziele. In allen 422 Protokollzeilen war das niedrige Byte 1, das dritte die Zielzahl. Der Vergleich mit `ActionType.Action` schlug damit genau für jeden Satz fehl, der jemanden traf — die Messung konnte nie greifen, und ebenso wenig die Aufnahme neuer Ids, auch bei Upstream. Die Messstelle liest jetzt nur das eine Byte. Ob ECommons selbst betroffen ist: Sein `ActionEffectSet` wählt mit demselben Feld zwischen Aktion, Gegenstand und Reittier; mit Zielen fällt jeder Gegenstand in den Zweig „Aktion" (offen in `TODO.md`).
+
+**Folge der leeren Tabelle im Kampf, an seiner Beobachtung (A181):** „es scheint, als ob addle immer zusammen mit schimmerschild gecasted wird beim beschwörer. ich habe addle alleine bislang nicht gesehen, wenn schimmerschild nicht verfügbar war beim aoe." Beide stehen im selben Verteidigungspfad, erst Radiant Aegis, im nächsten Einschiebeplatz Addle; ausgelöst durch die Verteidigungsflagge, die für einen gelisteten Cast nur fällt, wenn er als „lohnt Minderung" gilt. Unbewertet heißt „lohnt", und solange nichts gemessen wurde, war jeder gelistete Flächencast unbewertet — also jeder ein Anlass für beide. Radiant Aegis trägt zwei Ladungen je 60 s, Addle 90 s Abklingzeit (Job-Guide): Nach dem ersten Paar lädt Radiant Aegis nach, Addle nicht; ist Radiant Aegis später leer, ist Addle fast immer noch in der Abklingzeit. Ein eigener Defekt der Paarung liegt nicht vor — die beiden schützen Verschiedenes (Radiant Aegis nur den Beschwörer, 20 % seiner Maximalgesundheit; Addle die ganze Gruppe gegen diesen Gegner, 10 % magisch, 5 % physisch), und bei einem großen Treffer sind beide richtig. Mit laufender Messung (A177) lösen als klein bewertete Casts die Flagge nicht mehr aus, und Addle bleibt für die großen. Grenze: Der Weg über erkannte Flächen-VFX liest die Tabelle nicht.
+
+**Messung und Speicherung sind belegt (A185):** Seine Datei vom 28.09.2026 enthält sechs bewertete Flächenaktionen (Augen auf, Müllentsorger, Immersion, Störender Schweif, Blitzender Boden, Fluchstimme; Namen über xivapi), beim Start geladen, beim Entladen geschrieben und zurückgelesen. Die Protokolldatei, die nach seiner Vorgabe die Ursache finden sollte, ist damit entfernt; die Zählung je Grund bleibt.
+
+**Seine Angabe (27.09.2026):** Nach frischem Kompilieren und vier Instanzen mit Flächenschaden blieb die Tabelle leer; eine veraltete lokale Flächenliste schließt er aus, und seine hochgeladene `HostileCastingArea.json` belegt es: 850 Einträge, identisch mit der gelieferten Liste. Sofortaktionen zählen nicht mit: Sie werden nie bewertet, und als sie in „Last hit" standen, überschrieb der nächste Auto-Attack den Grund des Raidwides binnen einer Sekunde — die Zeile zeigte praktisch nur Auto-Attacks.
+
+**Eine leere Flächenliste misst nichts**, gleich wie der Kampf verläuft; beide Fenster melden sie rot. Sie entsteht, wenn der Download beim ersten Start scheitert. Seit A196 bleibt sie auf diese Sitzung beschränkt: `InitOne` schreibt dann keine leere Datei mehr, die Liste gilt als nicht geladen (kein Speichern), und der nächste Start lädt erneut; eine unlesbare Liste wird beiseitegelegt und ebenfalls neu geladen. Downloads beim Laden sind an das Ladezeitlimit des Plugins gebunden.
+
+**Grenze, keine Ursache:** Viele Raidwides löst ein unsichtbarer Helfer aus, oft mit einer anderen Id als der sichtbare Cast des Bosses. Solche Treffer kommen nicht an: Die Messung nimmt nur anvisierbare Quellen, und die Verbraucher lesen ohnehin nur deren Casts. Der sichtbare Cast bleibt dann unbewertet, also beim Verhalten ohne Tabelle. Wie häufig das ist, ist nicht belegt; die Zählung weist es als „cast by an untargetable enemy" aus.
 
 **Das Zurücksetzen der Liste lässt die Werte stehen** — Vorgabe des Auftraggebers: „es wäre schade,
 wenn dann auch die Erfahrungswerte weg wären." Die kuratierte Liste neu zu laden ist ein Download, die
@@ -303,12 +416,28 @@ Messungen kosten Spielzeit; sie mit dem Listen-Reset zu verwerfen hieße, nach j
 anzufangen, wegen der wenigen Aktionen, die sich tatsächlich geändert haben. Ein Wert, der zu einer
 nicht mehr gelisteten Id stehenbleibt, kostet nichts: Jede Leseroute geht zuerst über die Liste.
 
-**Einen eigenen Knopf braucht es trotzdem, weil die Höchstwert-Regel einseitig ist.** Sie hebt nur.
-Eine zu niedrig bewertete Aktion korrigiert sich selbst — die Minderung unterbleibt, der nächste
-Treffer kommt ungemildert an und misst sich. Eine **abgeschwächte** Aktion behält ihren zu hohen Wert
-dagegen für immer; die Folge ist Minderung, wo sie nicht mehr nötig wäre, also sicher, aber falsch.
-Der Ausweg ist das gezielte Verwerfen durch den Nutzer und kein automatischer Verfall — Verfall würde
-genau die Eigenschaft aufheben, die eine einzelne ungemilderte Beobachtung wertvoll macht.
+**Verworfen wird die Tabelle von Hand, nicht im Spiel** — seine Vorgabe: „wenn ich aufgrund eines
+gamepatches merke, dass die alte tabelle nicht mehr funktioniert, kann ich datei auch händisch
+löschen. dazu brauch ich keinen ingame-button. unnötige funktionen erzeugen auch unnötige
+fehlerursachen." Der Anlass bleibt, dass die Höchstwert-Regel einseitig ist: Eine zu niedrig
+bewertete Aktion korrigiert sich selbst — die Minderung unterbleibt, der nächste Treffer kommt
+ungemildert an und misst sich. Eine **abgeschwächte** Aktion behält ihren zu hohen Wert dagegen für
+immer; die Folge ist Minderung, wo sie nicht mehr nötig wäre, also sicher, aber falsch. Gelöscht wird
+`HostileCastingAreaPotential.json` **bei geschlossenem Spiel**: Solange das Plugin läuft, hält der
+Speicher die Werte, und das nächste Speichern führt sie mit der dann fehlenden Datei zusammen, also
+schreibt es sie zurück. Kein automatischer Verfall — er würde genau die Eigenschaft aufheben, die eine
+einzelne ungemilderte Beobachtung wertvoll macht.
+
+**Selbstkorrektur nach einem Patch: nicht gebaut.** Eine Historie über Tage bräuchte sie nicht.
+Denkbar wären zwei Formen: je Eintrag die Spielversion der Messung (nach einem Patch ersetzt die erste
+neue Messung den alten Wert), oder ein gleitendes Maximum über die letzten Messungen je Aktion. Beide
+tragen dasselbe Risiko: Ist die erste oder sind die letzten Messungen gemildert, sinkt der Wert zu
+tief, und der nächste Treffer dieser Aktion kommt ungemildert an — ein Sicherheitsverlust, um einen
+Fall zu lösen, der selten ist (ein Patch, der eine alte Aktion abschwächt) und dessen Folge nur
+überflüssige Minderung ist. Dazu braucht die zweite Form eine neue feste Zahl. Das Löschen von Hand
+deckt den Fall ohne dieses Risiko.
+
+**Seit A172 kann kein Speichern mehr verlieren, was die Datei hält.** Die Tabelle wächst von selbst nur; also ist jeder Stand der Datei eine Untergrenze, und ein Speichern nimmt je Aktion das Höhere aus Speicher und Datei. Damit ist die Fehlerklasse geschlossen, nicht der Einzelfall: Gleich aus welchem Grund der Speicher leer oder unvollständig ist — Laden gescheitert, abgebrochen, ein künftiger Defekt —, die Datei behält ihren Stand. Dazu wird ein Speicher, dessen Laden in dieser Sitzung nicht zu Ende lief, gar nicht geschrieben: Das Entladen schreibt alle Listen, und ein abgebrochener Start hätte sie sonst alle geleert.
 
 **Der schwerste Weg war keiner der erhobenen, sondern das Ausbleiben des Ladens** (A121). Der Speicher
 stand nur in `OtherConfiguration.Init()`, und die ruft niemand; gerufen wird `InitAsync`. Die Tabelle

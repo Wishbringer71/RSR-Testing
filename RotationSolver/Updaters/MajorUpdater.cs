@@ -471,6 +471,9 @@ internal static class MajorUpdater
 					DataCenter.VfxDataQueue.Enqueue(item);
 				}
 			}
+
+			// After the cleanup, so a marker's watch sees it leave the queue in the cycle it does.
+			TankbusterMarkerWatch.Update();
 		}
 		catch (Exception ex)
 		{

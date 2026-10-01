@@ -61,6 +61,22 @@ public sealed class DNC_Reborn : DancerRotation
 	// Override the method for handling emergency abilities
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
 	{
+		// Improvisation's barrier comes only from Improvised Finish, and nothing called it: the next
+		// action ended the dance, and the party got the regen but never the barrier. Finishing at once
+		// gives the 5% barrier for 30 s (job guide, 0 stacks) and costs at most the rest of a GCD of
+		// regen, which the next action would have cut anyway (A202).
+		if (ImprovisedFinishPvEReady && ImprovisedFinishPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		// The partner is dead, weakened by a raise, or no longer the best choice (concept 15, V5):
+		// end the partnership so Closed Position below picks again.
+		if (DancePartnerNeedsChange(DancePartnerName) && EndingPvE.CanUse(out act))
+		{
+			return true;
+		}
+
 		if (UseClosedPosition(out act))
 		{
 			return true;

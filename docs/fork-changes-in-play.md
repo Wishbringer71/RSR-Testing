@@ -1,9 +1,14 @@
 # What this fork does differently in a fight
 
-Against upstream **7.5.6.10**. Settings are named as they appear in the configuration, and
-where a change sits behind a switch its default is given; without that note it takes effect
-immediately. Two changes are confirmed in play — the raise dispatch and the tank pre-pull HoT;
-everything else is established in the code and compiled, not yet measured at a dummy.
+The whole distance from upstream **7.5.6.10**, as of release `7.5.6.10+wsh1`. What a single
+release changed is in [`fork-changes-since-last-release.md`](fork-changes-since-last-release.md),
+which is the text of the release description; this document is the standing picture and takes
+each release's text over once it has shipped.
+
+Settings are named as they appear in the configuration, and where a change sits behind a switch
+its default is given; without that note it takes effect immediately. Two changes are confirmed
+in play — the raise dispatch and the tank pre-pull HoT; everything else is established in the
+code and compiled, not yet measured at a dummy.
 
 ## Party mitigation answers raidwides again
 
@@ -18,15 +23,15 @@ absorbs — not set by hand. Below it the buffer comparison still decides, so sm
 keep costing no cooldown while the party is healthy.
 
 - **An interruptible cast can be mitigated too** — `Mitigate a big area cast even when it is
-  interruptible`, **off by default**. Area questions drop interruptible casts, because those are
+  interruptible`, **on by default**. Area questions drop interruptible casts, because those are
   meant to be interrupted. In a dungeon where nobody does — and a Summoner has no interrupt — the
   hit lands unanswered. A cast measured at the large-barrier figure now raises the defence anyway,
   within a GCD of landing.
 - **A predicted mitigation is not spent on the small hit before the big one** — `Hold a predicted
-  mitigation while a small cast is running`, **off by default**. BossMod gives the timing of the
+  mitigation while a small cast is running`, **on by default**. BossMod gives the timing of the
   next event, not its size, so in an opening with a small cast ahead of a heavy one the barrier is
   eaten by the first. It now waits while a measured small cast runs.
-- **Healing ahead of an announced area cast** — `Heal ahead of an announced area cast`, **off by
+- **Healing ahead of an announced area cast** — `Heal ahead of an announced area cast`, **on by
   default**. Thresholds read the health a member has, not what he will have once the cast on screen
   lands: 60 % in front of a 45 % raidwide counts as healthy until it kills him. An existing barrier
   counts against the hit it absorbs.
@@ -128,7 +133,7 @@ keep costing no cooldown while the party is healthy.
   waits for it; 20 seconds of buff cover a 15-second demi either way. The window itself is the burst
   phase; with a second Summoner in the party it widens to any big summon, and once every phase is
   taken it falls back to Titan — or to Ifrit when you are standing at the target anyway, since its
-  higher figure assumes a gap closer you then do not need. `PreferTitanWhileMoving` (**off by
+  higher figure assumes a gap closer you then do not need. `PreferTitanWhileMoving` (**on by
   default**) brings Titan forward while you are moving, never skips it.
 - **Summoner: the phase heal goes out when it lands in full.** Lux Solaris hung on the area heal
   flag, which wants the party's health spread to be *small* — so one player taking a mechanic kept
@@ -141,7 +146,7 @@ keep costing no cooldown while the party is healthy.
   went to someone who needed nothing. The action works in shares itself — its follow-up arms at
   75 %. With no target it goes on the caster instead of being lost with the phase.
 - **White mage, Holy.** Three separately switchable rules: do not overwrite the stun while it
-  is still running (`StretchHolyStun`, **off by default**); hold Holy while the dark knight's
+  is still running (`StretchHolyStun`, **on by default**); hold Holy while the dark knight's
   barrier is meant to be filled; and hold Holy while more than half the enemies in radius are
   slowed, since the stun is worth more once the Slow has run out.
 - **Thin Air** is only spent on an expensive spell under real MP pressure that Lucid Dreaming

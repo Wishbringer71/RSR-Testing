@@ -130,9 +130,9 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			+ "In a fight: without this, a charge goes to the next expensive spell whenever one comes "
 			+ "up, so both charges can be gone before MP is anywhere near a problem, and the free cast "
 			+ "is missing at the point where MP actually runs out during heavy healing.\n"
-			+ "Off by default, which is the old behaviour. It uses Lucid Dreaming's own MP threshold "
+			+ "It uses Lucid Dreaming's own MP threshold "
 			+ "rather than a second number, so both decisions read the same value.")]
-	public bool ThinAirOnMpPressureOnly { get; set; } = false;
+	public bool ThinAirOnMpPressureOnly { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Stretch the Holy stun",
 		Tooltip = "Holy (Sanctus) is skipped for one GCD while every enemy it would hit is already "
@@ -142,9 +142,8 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			+ "lets the running stun finish first, so the same number of casts holds the pack still for "
 			+ "longer and the damage stream to the tank stays thinner.\n"
 			+ "Costs one GCD of Holy damage each time it triggers, and only where a damage GCD is "
-			+ "guaranteed to replace it. Off by default because the stretch has not been confirmed in "
-			+ "play.")]
-	public bool StretchHolyStun { get; set; } = false;
+			+ "guaranteed to replace it.")]
+	public bool StretchHolyStun { get; set; } = true;
 
 	[Range(2, 8, ConfigUnitType.None, 1)]
 	[RotationConfig(CombatType.PvE, Name = "Enemies in Holy's radius before holding", Parent = nameof(StretchHolyStun),
@@ -332,8 +331,11 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationDesc(ActionID.TemperancePvE, ActionID.LiturgyOfTheBellPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		if ((TemperancePvE.Cooldown.IsCoolingDown && !TemperancePvE.Cooldown.WillHaveOneCharge(100))
-			|| (LiturgyOfTheBellPvE.Cooldown.IsCoolingDown && !LiturgyOfTheBellPvE.Cooldown.WillHaveOneCharge(160)))
+		// White mage special rule on the universal stretch (concept 08, "Die Abwehrsperren"): after
+		// Temperance or Liturgy of the Bell the rest waits until that effect runs out, unless the
+		// party is in danger. Formerly the recast less a written-in 20 s; the duration now comes from
+		// the effect texts.
+		if (AreaDefenseStretched("White Mage: Temperance or Liturgy still in effect", TemperancePvE, LiturgyOfTheBellPvE))
 		{
 			return base.DefenseAreaAbility(nextGCD, out act);
 		}
@@ -375,8 +377,9 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationDesc(ActionID.DivineBenisonPvE, ActionID.AquaveilPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		if ((DivineBenisonPvE.Cooldown.IsCoolingDown && !DivineBenisonPvE.Cooldown.WillHaveOneCharge(15))
-			|| (AquaveilPvE.Cooldown.IsCoolingDown && !AquaveilPvE.Cooldown.WillHaveOneCharge(52)))
+		// The same stretch for the single-target defence: Divine Benison and Aquaveil, each held
+		// while the other's effect stands, unless the player or a tank is in the critical class.
+		if (SingleDefenseStretched("White Mage: Divine Benison or Aquaveil still in effect", DivineBenisonPvE, AquaveilPvE))
 		{
 			return base.DefenseSingleAbility(nextGCD, out act);
 		}
@@ -408,7 +411,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		if (BenedictionPvE.CanUse(out act) &&
-			BenedictionPvE.Target.Target.GetHealthRatio() < BenedictionHeal &&
+			BenedictionPvE.Target.Target.GetForecastHealthRatio(true) < BenedictionHeal &&
 			(!BenedictionNeedsThreat || BenedictionPvE.Target.Target.IsUnderThreat()))
 		{
 			return true;
@@ -469,33 +472,14 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	/// GeneralGCD, HealSingleGCD and HealAreaGCD alike - the outer dispatch reaches the two heal methods
 	/// first, so a raised heal-need flag would otherwise starve the check in GeneralGCD for a whole
 	/// pull. Never fires at or below <see cref="RegenHeal"/>, leaving a genuine emergency to Cure II /
-	/// Cure. targetOverride bypasses the candidate status check (FindTankTarget doesn't call
-	/// CheckStatus), so the remaining duration is verified explicitly here.
+	/// Cure. The rule itself is the healers' shared one, TryPullUpkeepOnTank.
 	/// </summary>
 	private bool TrySustainRegenOnTank(out IAction? act)
 	{
 		act = null;
-
-		if (!UsePreRegen || !TankApproachingMobGroup(PreRegenMinHostiles, PreRegenMinWallToWallHostiles))
-		{
-			return false;
-		}
-
-		if (!RegenPvE.CanUse(out act, targetOverride: TargetType.Tank))
-		{
-			act = null;
-			return false;
-		}
-
-		var tank = RegenPvE.Target.Target;
-		if (tank != null && tank.GetHealthRatio() > RegenHeal
-			&& tank.WillStatusEndGCD(RegenPvE.Config.StatusRefreshGcdCount, 0, RegenPvE.Setting.StatusFromSelf, RegenPvE.Setting.TargetStatusProvide ?? []))
-		{
-			return true;
-		}
-
-		act = null;
-		return false;
+		return UsePreRegen
+			&& TryPullUpkeepOnTank(RegenPvE, PreRegenMinHostiles, PreRegenMinWallToWallHostiles,
+				RegenHeal, RaisePvE, null, out act);
 	}
 
 	[RotationDesc(ActionID.AfflatusRapturePvE, ActionID.MedicaIiPvE, ActionID.CureIiiPvE, ActionID.MedicaPvE)]
@@ -570,7 +554,12 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			return true;
 		}
 
-		if (RegenPvE.CanUse(out act) && (RegenPvE.Target.Target.GetHealthRatio() > RegenHeal))
+		// Below RegenHeal the emergency belongs to Cure II and Benediction - except under Walking
+		// Dead, where the dark knight heals himself by attacking and the owner's rule asks for a HoT
+		// as the light support (concept 09).
+		if (RegenPvE.CanUse(out act)
+			&& (RegenPvE.Target.Target.GetForecastHealthRatio() > RegenHeal
+				|| RegenPvE.Target.Target.HasStatus(false, StatusID.WalkingDead)))
 		{
 			return true;
 		}
@@ -642,14 +631,54 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		// rest of the pull. Hence the explicit requirement that a stun is actually running.
 		var radius = HolyIiiPvE.EnoughLevel ? HolyIiiPvE.Info.EffectRange : HolyPvE.Info.EffectRange;
 		var inRange = SurveyStuns(radius, out var stunned, out var allStunned, out var headroom);
-		if (inRange < StretchHolyMinHostiles || stunned == 0 || (!allStunned && headroom))
+		if (stunned == 0)
 		{
+			return false;
+		}
+
+		// From here a stun is running in Holy's radius, so every outcome decides whether Holy lands
+		// inside it. Each is written to DefenseTrace.log with its reason: the owner reported the
+		// second Holy going out at once again (29.09.2026), and which condition let it through is
+		// not readable from the code.
+		if (inRange < StretchHolyMinHostiles)
+		{
+			TraceStretch($"not held: {inRange} enemies in Holy's radius, fewer than {StretchHolyMinHostiles}");
+			return false;
+		}
+
+		if (!allStunned && headroom)
+		{
+			TraceStretch($"not held: {stunned} of {inRange} in radius stunned, and one can still be stunned");
 			return false;
 		}
 
 		// Replacement guarantee: yield the GCD only when something with value of its own can take
 		// it. Without this the rotation would fall through to Glare, which is a plain loss.
-		return DiaPvE.CanUse(out _) || AeroIiPvE.CanUse(out _) || AeroPvE.CanUse(out _);
+		if (DiaPvE.CanUse(out _) || AeroIiPvE.CanUse(out _) || AeroPvE.CanUse(out _))
+		{
+			TraceStretch($"held: {stunned} of {inRange} in radius stunned, a damage-over-time takes the GCD");
+			return true;
+		}
+
+		TraceStretch($"not held: {stunned} of {inRange} in radius stunned, but no damage-over-time can take the GCD");
+		return false;
+	}
+
+	private string _lastStretchTrace = string.Empty;
+	private DateTime _lastStretchTraceAt = DateTime.MinValue;
+
+	// The GCD path asks every frame; a line is written when the outcome changes or once a GCD has passed.
+	private void TraceStretch(string outcome)
+	{
+		var now = DateTime.Now;
+		if (outcome == _lastStretchTrace && (now - _lastStretchTraceAt).TotalSeconds < DataCenter.DefaultGCDTotal)
+		{
+			return;
+		}
+
+		_lastStretchTrace = outcome;
+		_lastStretchTraceAt = now;
+		DefenseTrace.Line("White Mage, Holy stretch " + outcome);
 	}
 
 	/// <summary>
@@ -691,15 +720,18 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	/// instead of what this cast would hit; the next asked for a bare majority with no floor; the
 	/// next counted the enemies the slow had not reached.
 	///
-	/// The replacement guarantee is the stun branch's and bounds the cost the same way: Holy is this
-	/// job's only area spell, so a held GCD falls through to single-target damage. Without a DoT
-	/// worth placing, Holy goes out no matter how slowed the pack is - which is also why a 15s slow
-	/// does not translate into 15s without Holy.
+	/// Held for as long as the condition stands, and no longer - the user's rule. A held GCD falls
+	/// through to the DoTs while any enemy lacks one and to Glare after that. This rule used to carry
+	/// the stun-stretch rule's replacement guarantee as well, releasing Holy as soon as no DoT was
+	/// left to place. That guarantee belongs to the stretch, which needs exactly one inserted GCD; a
+	/// slow lasts many. Carried over, it ended every hold after one DoT per enemy while the pack was
+	/// still slowed - observed by the user: held after Arm's Length, then Holy again (A178).
 	/// </remarks>
 	private bool ShouldHoldHolyWhilePackSlowed()
 	{
 		if (!HoldHolyWhilePackSlowed)
 		{
+			_holySlowHold = "off";
 			return false;
 		}
 
@@ -717,6 +749,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		SurveyStuns(radius, out _, out var headroom);
 		if (!headroom)
 		{
+			_holySlowHold = "released - nothing in radius can be stunned any more";
 			return false;
 		}
 
@@ -725,6 +758,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		// Nothing in radius says nothing at all - not "no slow".
 		if (inRange == 0 || slowed < HoldHolyMinSlowedHostiles)
 		{
+			_holySlowHold = "not held - too few slowed in radius";
 			return false;
 		}
 
@@ -732,6 +766,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		// 3 of 6 does not, 4 of 6 does.
 		if (slowed * 2 <= inRange)
 		{
+			_holySlowHold = "not held - half or fewer slowed in radius";
 			return false;
 		}
 
@@ -751,6 +786,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		// party being held steady never trips this however large the pack.
 		if (ObjectHelper.AnyPartyMemberFallingWithinHealWindow())
 		{
+			_holySlowHold = "released - a party member is falling";
 			return false;
 		}
 
@@ -762,11 +798,24 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			_ = SurveyHostileOutput(radius, out var output);
 			if (output > HoldHolyMaxHostileOutput)
 			{
+				_holySlowHold = "released - enemy output above the set ceiling";
 				return false;
 			}
 		}
 
-		return DiaPvE.CanUse(out _) || AeroIiPvE.CanUse(out _) || AeroPvE.CanUse(out _);
+		_holySlowHold = "held - pack slowed";
+		return true;
+	}
+
+	// What the slowed-pack hold last decided, for the diagnostics window. Holding and not holding
+	// look alike from outside - the Holy that does not go out is invisible - so the reason is kept
+	// where the decision falls.
+	private string _holySlowHold = "no decision yet";
+
+	/// <inheritdoc/>
+	public override void DisplayRotationStatus()
+	{
+		ImGui.Text("Holy while the pack is slowed: " + _holySlowHold);
 	}
 
 	/// <summary>

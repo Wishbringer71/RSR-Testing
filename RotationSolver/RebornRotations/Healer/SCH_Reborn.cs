@@ -19,6 +19,18 @@ public sealed class SCH_Reborn : ScholarRotation
 	[RotationConfig(CombatType.PvE, Name = "Do not start Aetherpact if the target's HP is above this percentage (prevents toggling)")]
 	public float AetherpactMinimum { get; set; } = 0.8f;
 
+	// The owner's rule, first built for Benediction (BenedictionNeedsThreat): an emergency measure only
+	// where there is danger, otherwise a HoT and the smaller heals are enough. Every healer carries one,
+	// so the rule reads the same shared check (ObjectHelper.IsUnderThreat) on each.
+	[RotationConfig(CombatType.PvE, Name = "Excogitation as a heal only on a target in danger",
+		Tooltip = "Excogitation needs a reason beyond low health: the target is being attacked or cast at, an area cast is announced, "
+			+ "or their health is measurably falling.\n"
+			+ "In a fight: a player who was just raised holds a few percent and is taking no damage - without this "
+			+ "he reads as the most urgent member while nothing is happening to him, and Excogitation is gone when the tank "
+			+ "needs it. With this on he gets the smaller heals instead.\n"
+			+ "Off: the health threshold alone decides.")]
+	public bool ExcogitationNeedsThreat { get; set; } = true;
+
 	[Range(0, 0.5f, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Minimum HP percent to use Excogitation as a heal instead of a defensive buff")]
 	public float ExcogHeal { get; set; } = 0.5f;
@@ -164,7 +176,7 @@ public sealed class SCH_Reborn : ScholarRotation
 			{
 				if (member.DistanceToPlayer() <= 15)
 				{
-					if (member.DoomNeedHealing() || member.GetHealthRatio() < EmergencyTacticsHeal)
+					if (member.DoomNeedHealing() || member.GetForecastHealthRatio() < EmergencyTacticsHeal)
 					{
 						count++;
 						if (count > 1)
@@ -188,7 +200,7 @@ public sealed class SCH_Reborn : ScholarRotation
 				continue;
 			}
 
-			if (item.GetHealthRatio() >= AetherpactRemove)
+			if (item.GetForecastHealthRatio(true) >= AetherpactRemove)
 			{
 				act = AetherpactPvE;
 				return true;
@@ -299,7 +311,8 @@ public sealed class SCH_Reborn : ScholarRotation
 					break;
 				}
 			}
-			if (HasRecitation && tankHasExcogTarget && ExcogitationPvE.Target.Target.GetHealthRatio() < ExcogHeal)
+			if (HasRecitation && tankHasExcogTarget && ExcogitationPvE.Target.Target?.GetForecastHealthRatio(true) < ExcogHeal
+				&& (!ExcogitationNeedsThreat || (ExcogitationPvE.Target.Target?.IsUnderThreat() ?? false)))
 			{
 				return true;
 			}
@@ -319,13 +332,14 @@ public sealed class SCH_Reborn : ScholarRotation
 		if (AetherpactPvE.CanUse(out act) &&
 			FairyGauge >= LinkFairyGauge &&
 			!haveLink &&
-			AetherpactPvE.Target.Target.GetHealthRatio() <= AetherpactMinimum)
+			AetherpactPvE.Target.Target.GetForecastHealthRatio(true) <= AetherpactMinimum)
 		{
 			return true;
 		}
 
 		// Otherwise we'll spend aether charges; we didn't burn it on the tank above so use excog based on oGCD heal toggle
-		if (!HasRecitation && !IsLastAbility(false, RecitationPvE) && ExcogitationPvE.CanUse(out act) && ExcogitationPvE.Target.Target.GetHealthRatio() < ExcogHeal)
+		if (!HasRecitation && !IsLastAbility(false, RecitationPvE) && ExcogitationPvE.CanUse(out act) && ExcogitationPvE.Target.Target?.GetForecastHealthRatio(true) < ExcogHeal
+			&& (!ExcogitationNeedsThreat || (ExcogitationPvE.Target.Target?.IsUnderThreat() ?? false)))
 		{
 			return true;
 		}
@@ -836,7 +850,7 @@ public sealed class SCH_Reborn : ScholarRotation
 				// and spend Recitation on an Excogitation that cannot land. The inverted form
 				// happened to mask that. The tank searches in ActionTargetInfo carry the same
 				// guard at the same place.
-				if (!member.IsDead && member.GetHealthRatio() <= ExcogHeal && member.NoNeedHealingInvuln())
+				if (!member.IsDead && member.GetForecastHealthRatio(true) <= ExcogHeal && member.NoNeedHealingInvuln())
 				{
 					tankNeedsExcog = true;
 					break;

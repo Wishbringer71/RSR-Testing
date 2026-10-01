@@ -3117,14 +3117,7 @@ public partial class RotationConfigWindow : Window
 				_activeAction.MinHPFeature = minHPFeatureSet;
 			}
 
-			if (_activeAction is IBaseAction movesAction &&
-			(movesAction.Setting.SpecialType == SpecialActionType.FixedDistanceMoveForward
-			|| movesAction.Setting.SpecialType == SpecialActionType.FixedDistanceMoveBackward
-			|| movesAction.Setting.SpecialType == SpecialActionType.HostileMovingForward
-			|| movesAction.Setting.SpecialType == SpecialActionType.FriendlyMovingForward
-			|| movesAction.Setting.SpecialType == SpecialActionType.HostileFriendlyMovingForward
-			|| movesAction.Setting.SpecialType == SpecialActionType.HostileMovingAttack
-			|| movesAction.Setting.SpecialType == SpecialActionType.ObjectBasedMovement))
+			if (_activeAction is IBaseAction movesAction && IsMovingSpecialType(movesAction.Setting.SpecialType))
 			{
 				var skipPosSafety = _activeAction.SkipPositionSafetyCheck;
 				if (ImGui.Checkbox($"{UiString.ConfigWindow_Actions_SkipPositionSafetyCheck.GetDescription()}##{_activeAction.Name}", ref skipPosSafety))
@@ -3337,6 +3330,22 @@ public partial class RotationConfigWindow : Window
 					if (item is HpPotionItem healPotionItem)
 					{
 						ImGui.Text("MaxHP:" + healPotionItem.MaxHp.ToString());
+
+						// Why it is not going out, in words. "CanUse: False" above is one bit for
+						// six conditions, and which of them holds depends on this player's settings
+						// and bag - so the answer has to be readable here rather than reasoned out
+						// from the source.
+						ImGui.Text("Potion: " + healPotionItem.DescribeBlock());
+
+						// The condition the item itself cannot see: potions are only offered in
+						// combat. A tankbuster additionally drops the HP threshold, so it is worth
+						// showing which of the two readings applies.
+						var gate = !DataCenter.InCombat
+							? "out of combat - potions are not offered"
+							: DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterImminent
+								? "in combat, tankbuster: the HP threshold is dropped"
+								: "in combat: the HP threshold applies";
+						ImGui.Text("Trigger: " + gate);
 					}
 				}
 				catch (Exception ex)
@@ -3358,15 +3367,7 @@ public partial class RotationConfigWindow : Window
 	/// Determines if the special action type is a movement type that requires safety checking.
 	/// </summary>
 	static bool IsMovingSpecialType(SpecialActionType specialType)
-	{
-		return specialType == SpecialActionType.FixedDistanceMoveForward
-			|| specialType == SpecialActionType.FixedDistanceMoveBackward
-			|| specialType == SpecialActionType.HostileMovingForward
-			|| specialType == SpecialActionType.FriendlyMovingForward
-			|| specialType == SpecialActionType.HostileFriendlyMovingForward
-			|| specialType == SpecialActionType.HostileMovingAttack
-			|| specialType == SpecialActionType.ObjectBasedMovement;
-	}
+		=> ActionTargetInfo.IsMovingSpecialType(specialType);
 
 	/// <summary>
 	/// Represents the safety status of a movement action.
@@ -3460,6 +3461,33 @@ public partial class RotationConfigWindow : Window
 						{
 							Status = isSafe ? MovementSafetyStatus.Safe : MovementSafetyStatus.NotSafe,
 							Reason = isSafe ? string.Empty : "Path to target unsafe (IsDashSafe)"
+						};
+					}
+
+				case SpecialActionType.HostileAttackBackstep:
+					{
+						// The landing point BackstepDistance behind the player, away from the target -
+						// the point ActionTargetInfo.CheckMovementSafety measures.
+						var target = action.Target.Target;
+						if (target == null)
+						{
+							return new MovementSafetyResult { Status = MovementSafetyStatus.NotApplicable, Reason = "No target" };
+						}
+
+						var away = playerPos - target.Position;
+						away.Y = 0;
+						var length = away.Length();
+						if (length <= 0f)
+						{
+							return new MovementSafetyResult { Status = MovementSafetyStatus.NotApplicable, Reason = "Standing on the target" };
+						}
+
+						var landing = playerPos + (away / length * action.Setting.BackstepDistance);
+						var isSafe = DataCenter.IsFixedDashSafe(playerPos, landing);
+						return new MovementSafetyResult
+						{
+							Status = isSafe ? MovementSafetyStatus.Safe : MovementSafetyStatus.NotSafe,
+							Reason = isSafe ? string.Empty : "Backstep landing unsafe (IsFixedDashSafe)"
 						};
 					}
 
@@ -3913,6 +3941,32 @@ public partial class RotationConfigWindow : Window
 			// signature, and leaving it alone is what makes this store free to introduce.
 			var rated = OtherConfiguration.HostileCastingAreaPotential;
 			ImGui.Text($"Damage potential recorded: {rated.Count} of {OtherConfiguration.HostileCastingArea.Count}");
+
+			// What the store itself last did with the file. The count above is the table in memory,
+			// which looks the same whether the readings reached the disk or not - and whether a login
+			// found a file, found none, or found one it could not read. This line is written by the
+			// load and by every save, and a save reads the file back before it reports success.
+			ImGui.TextColored(
+				OtherConfiguration.AreaPotentialStoreState.Contains("FAILED") || OtherConfiguration.AreaPotentialStoreState.Contains("MISMATCH") || OtherConfiguration.AreaPotentialStoreState.Contains("NOT SAVED")
+					? ImGuiColors.DalamudRed
+					: ImGuiColors.DalamudGrey,
+				"Store: " + OtherConfiguration.AreaPotentialStoreState);
+			ImGui.TextColored(ImGuiColors.DalamudGrey, "Last hit: " + DataCenter.AreaMeasurementLastOutcome);
+			ImGui.TextColored(ImGuiColors.DalamudGrey, "Casts this session: " + DataCenter.AreaMeasurementTallyText);
+			ImGui.TextColored(DataCenter.EffectHandlerErrors > 0 ? ImGuiColors.DalamudRed : ImGuiColors.DalamudGrey,
+				"Effect handler: " + $"{DataCenter.EffectSetsReceived} sets, {DataCenter.EnemyEffectSets} from enemies, "
+				+ $"{DataCenter.EnemyHitsOnPlayer} hit you, {DataCenter.EffectHandlerErrors} errors");
+			if (DataCenter.EffectHandlerFirstError.Length > 0)
+			{
+				ImGui.TextColored(ImGuiColors.DalamudRed, "First error: " + DataCenter.EffectHandlerFirstError);
+			}
+			if (OtherConfiguration.HostileCastingArea.Count == 0)
+			{
+				// Only listed actions are measured, so an empty list measures nothing, whatever the
+				// fight. A failed download at first start leaves exactly that behind.
+				ImGui.TextColored(ImGuiColors.DalamudRed,
+					"The AoE list is empty, so nothing can be measured - press \"Reset and Update AOE List\".");
+			}
 			if (rated.Count > 0)
 			{
 				var highest = 0f;
@@ -3995,21 +4049,6 @@ public partial class RotationConfigWindow : Window
 					ImGui.Text("Mitigated although interruptible, this session: "
 						+ $"{DataCenter.MitigatedInterruptibleCast.Count} action(s)");
 				}
-
-				if (ImGui.Button("Forget recorded damage potential"))
-				{
-					OtherConfiguration.ResetHostileCastingAreaPotential();
-					// The record of withheld mitigations refers to those measurements, so it goes with
-					// them: left standing it would name an action at "--" and count against a store
-					// of zero.
-					DataCenter.AreaMitigationSkipped.Clear();
-					DataCenter.HealedAheadOfAreaCast.Clear();
-					DataCenter.MitigatedInterruptibleCast.Clear();
-					DataCenter.ProactiveMitigationHeld.Clear();
-				}
-				ImguiTooltips.HoveredTooltip("Kept when the list itself is reset, because these values "
-					+ "cost runs in the game rather than a download. Clear them when a patch has "
-					+ "changed how hard these actions hit - a rating can only ever rise on its own.");
 			}
 
 			_ = ImGui.TableNextColumn();

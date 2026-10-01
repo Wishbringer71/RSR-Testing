@@ -101,6 +101,18 @@ public sealed class AST_Reborn : AstrologianRotation
 	[RotationConfig(CombatType.PvE, Name = "Minimum HP threshold party member needs to be to use Essential Dignity last charge")]
 	public float EssentialDignityLast { get; set; } = 0.6f;
 
+	// The owner's rule, first built for Benediction (BenedictionNeedsThreat): an emergency measure only
+	// where there is danger, otherwise a HoT and the smaller heals are enough. Every healer carries one,
+	// so the rule reads the same shared check (ObjectHelper.IsUnderThreat) on each.
+	[RotationConfig(CombatType.PvE, Name = "Last charge of Essential Dignity only on a target in danger",
+		Tooltip = "The last charge of Essential Dignity needs a reason beyond low health: the target is being attacked or cast at, an area cast is announced, "
+			+ "or their health is measurably falling.\n"
+			+ "In a fight: a player who was just raised holds a few percent and is taking no damage - without this "
+			+ "he reads as the most urgent member while nothing is happening to him, and the last charge is gone when the tank "
+			+ "needs it. With this on he gets the smaller heals instead.\n"
+			+ "Off: the health threshold alone decides.")]
+	public bool EssentialDignityNeedsThreat { get; set; } = true;
+
 	[RotationConfig(CombatType.PvE, Name = "Prioritize Essential Dignity over single target GCD heals when available")]
 	public EssentialPrioStrategy EssentialPrio2 { get; set; } = EssentialPrioStrategy.UseGCDs;
 
@@ -221,7 +233,7 @@ public sealed class AST_Reborn : AstrologianRotation
 		static bool CanCastSynastry(IBaseAction actionCheck, IBaseAction synastry, float synastryHp, IAction next)
 			=> next.IsTheSameTo(false, actionCheck) &&
 			   synastry.Target.Target == actionCheck.Target.Target &&
-			   synastry.Target.Target.GetHealthRatio() < synastryHp;
+			   synastry.Target.Target.GetForecastHealthRatio() < synastryHp;
 	}
 
 	[RotationDesc(ActionID.ExaltationPvE, ActionID.TheSpirePvE, ActionID.TheBolePvE, ActionID.CelestialIntersectionPvE)]
@@ -263,8 +275,11 @@ public sealed class AST_Reborn : AstrologianRotation
 			return true;
 		}
 
-		if ((MacrocosmosPvE.Cooldown.IsCoolingDown && !MacrocosmosPvE.Cooldown.WillHaveOneCharge(150))
-			|| (CollectiveUnconsciousPvE.Cooldown.IsCoolingDown && !CollectiveUnconsciousPvE.Cooldown.WillHaveOneCharge(40)))
+		// Astrologian special rule on the universal stretch (concept 08, "Die Abwehrsperren"): after
+		// Macrocosmos or Collective Unconscious the rest waits until that effect runs out, unless the
+		// party is in danger. Formerly the recast less a written-in 30 and 20 s, which matched no
+		// effect; the durations now come from the effect texts (15 and 10 s).
+		if (AreaDefenseStretched("Astrologian: Macrocosmos or Collective Unconscious still in effect", MacrocosmosPvE, CollectiveUnconsciousPvE))
 		{
 			return base.DefenseAreaAbility(nextGCD, out act);
 		}
@@ -297,7 +312,7 @@ public sealed class AST_Reborn : AstrologianRotation
 
 		if (EssentialDignityPvE.Cooldown.CurrentCharges == 3 && EssentialDignityPvE.CanUse(out act, usedUp: true))
 		{
-			if (EssentialDignityPvE.Target.Target.GetHealthRatio() < EssentialDignityThird)
+			if (EssentialDignityPvE.Target.Target?.GetForecastHealthRatio(true) < EssentialDignityThird)
 			{
 				return true;
 			}
@@ -305,15 +320,18 @@ public sealed class AST_Reborn : AstrologianRotation
 
 		if (EssentialDignityPvE.Cooldown.CurrentCharges == 2 && EssentialDignityPvE.CanUse(out act, usedUp: true))
 		{
-			if (EssentialDignityPvE.Target.Target.GetHealthRatio() < EssentialDignitySecond)
+			if (EssentialDignityPvE.Target.Target?.GetForecastHealthRatio(true) < EssentialDignitySecond)
 			{
 				return true;
 			}
 		}
 
+		// The first charges recharge behind each other, so spending one does not leave the tank without an
+		// answer; the last one does, and only it waits for danger.
 		if (EssentialDignityPvE.Cooldown.CurrentCharges == 1 && EssentialDignityPvE.CanUse(out act, usedUp: true))
 		{
-			if (EssentialDignityPvE.Target.Target.GetHealthRatio() < EssentialDignityLast)
+			if (EssentialDignityPvE.Target.Target?.GetForecastHealthRatio(true) < EssentialDignityLast
+				&& (!EssentialDignityNeedsThreat || (EssentialDignityPvE.Target.Target?.IsUnderThreat() ?? false)))
 			{
 				return true;
 			}
@@ -494,39 +512,21 @@ public sealed class AST_Reborn : AstrologianRotation
 	/// Called from GeneralGCD, HealSingleGCD and HealAreaGCD alike - the outer dispatch reaches the two
 	/// heal methods first, so a raised heal-need flag would otherwise starve the check in GeneralGCD
 	/// for a whole pull. Never fires at or below <see cref="AspectedBeneficHeal"/>, leaving a genuine
-	/// emergency to Benefic II / Benefic. targetOverride bypasses the candidate status check
-	/// (FindTankTarget doesn't call CheckStatus), so the remaining duration is verified explicitly here.
+	/// emergency to Benefic II / Benefic. The rule itself is the healers' shared one, TryPullUpkeepOnTank.
 	/// </summary>
 	private bool TrySustainAspectedBeneficOnTank(out IAction? act)
 	{
 		act = null;
-
-		if (!UsePreAspectedBenefic || !TankApproachingMobGroup(PreAspectedBeneficMinHostiles, PreAspectedBeneficMinWallToWallHostiles))
-		{
-			return false;
-		}
-
-		if (!AspectedBeneficPvE.CanUse(out act, targetOverride: TargetType.Tank))
-		{
-			act = null;
-			return false;
-		}
-
-		var tank = AspectedBeneficPvE.Target.Target;
-		if (tank != null && tank.GetHealthRatio() > AspectedBeneficHeal
-			&& tank.WillStatusEndGCD(AspectedBeneficPvE.Config.StatusRefreshGcdCount, 0, AspectedBeneficPvE.Setting.StatusFromSelf, AspectedBeneficPvE.Setting.TargetStatusProvide ?? []))
-		{
-			return true;
-		}
-
-		act = null;
-		return false;
+		return UsePreAspectedBenefic
+			&& TryPullUpkeepOnTank(AspectedBeneficPvE, PreAspectedBeneficMinHostiles, PreAspectedBeneficMinWallToWallHostiles,
+				AspectedBeneficHeal, AscendPvE, null, out act);
 	}
 
 	protected override bool DefenseSingleGCD(out IAction? act)
 	{
-		if ((MacrocosmosPvE.Cooldown.IsCoolingDown && !MacrocosmosPvE.Cooldown.WillHaveOneCharge(150))
-			|| (CollectiveUnconsciousPvE.Cooldown.IsCoolingDown && !CollectiveUnconsciousPvE.Cooldown.WillHaveOneCharge(40)))
+		// The same triggers hold the single-target barrier too (an Astrologian special rule); it
+		// yields when the player or a tank is in the critical class.
+		if (SingleDefenseStretched("Astrologian: Macrocosmos or Collective Unconscious still in effect", MacrocosmosPvE, CollectiveUnconsciousPvE))
 		{
 			return base.DefenseSingleGCD(out act);
 		}
@@ -542,8 +542,11 @@ public sealed class AST_Reborn : AstrologianRotation
 	[RotationDesc(ActionID.MacrocosmosPvE)]
 	protected override bool DefenseAreaGCD(out IAction? act)
 	{
-		if ((MacrocosmosPvE.Cooldown.IsCoolingDown && !MacrocosmosPvE.Cooldown.WillHaveOneCharge(150))
-			|| (CollectiveUnconsciousPvE.Cooldown.IsCoolingDown && !CollectiveUnconsciousPvE.Cooldown.WillHaveOneCharge(40)))
+		// Astrologian special rule on the universal stretch (concept 08, "Die Abwehrsperren"): after
+		// Macrocosmos or Collective Unconscious the rest waits until that effect runs out, unless the
+		// party is in danger. Formerly the recast less a written-in 30 and 20 s, which matched no
+		// effect; the durations now come from the effect texts (15 and 10 s).
+		if (AreaDefenseStretched("Astrologian: Macrocosmos or Collective Unconscious still in effect", MacrocosmosPvE, CollectiveUnconsciousPvE))
 		{
 			return base.DefenseAreaGCD(out act);
 		}
@@ -590,7 +593,7 @@ public sealed class AST_Reborn : AstrologianRotation
 
 		if (AspectedBeneficPvE.CanUse(out act))
 		{
-			if (IsMoving || AspectedBeneficPvE.Target.Target.GetHealthRatio() < AspectedBeneficHeal)
+			if (IsMoving || AspectedBeneficPvE.Target.Target?.GetForecastHealthRatio() < AspectedBeneficHeal)
 			{
 				return true;
 			}

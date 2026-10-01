@@ -29,6 +29,7 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 	private static RotationConfigWindow? _rotationConfigWindow;
 	private static ControlWindow? _controlWindow;
 	private static NextActionWindow? _nextActionWindow;
+	private static DiagnosticsWindow? _diagnosticsWindow;
 	private static InterceptedActionWindow? _interceptedActionWindow;
 	private static CooldownWindow? _cooldownWindow;
 	private static ActionTimelineWindow? _actionTimelineWindow;
@@ -65,6 +66,7 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 		_rotationConfigWindow = new();
 		_controlWindow = new();
 		_nextActionWindow = new();
+		_diagnosticsWindow = new();
 		_interceptedActionWindow = new();
 		_cooldownWindow = new();
 		_actionTimelineWindow = new();
@@ -91,6 +93,7 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 		windowSystem.AddWindow(_rotationConfigWindow);
 		windowSystem.AddWindow(_controlWindow);
 		windowSystem.AddWindow(_nextActionWindow);
+		windowSystem.AddWindow(_diagnosticsWindow);
 		windowSystem.AddWindow(_interceptedActionWindow);
 		windowSystem.AddWindow(_cooldownWindow);
 		windowSystem.AddWindow(_actionTimelineWindow);
@@ -212,6 +215,7 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 	private static void ClientState_TerritoryChanged(uint id)
 	{
 		DataCenter.ResetAllRecords();
+		DataCenter.ResetHealMeasurements();
 
 		if (id == 0)
 		{
@@ -343,6 +347,7 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 		//}
 		_cooldownWindow!.IsOpen = isValid && Service.Config.ShowCooldownWindow;
 		_nextActionWindow!.IsOpen = isValid && Service.Config.ShowNextActionWindow;
+		_diagnosticsWindow!.IsOpen = isValid && Service.Config.ShowDiagnosticsWindow;
 		_interceptedActionWindow!.IsOpen = isValid && Service.Config.ShowInterceptedActionWindow;
 
 		// ActionTimeline window with additional checks
@@ -384,12 +389,17 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 	{
 		ActionTracer.Shutdown();
 
+		// The effect handler goes first, then the stores are written. Watcher is what adds readings
+		// to the learned damage table; saving while it is still hooked let a reading arrive between
+		// the snapshot and the unhook, and that reading existed nowhere afterwards - not in the file,
+		// and not in memory once the plugin was gone.
+		Watcher.Disable();
+
 		Service.Config.Save();
 		await OtherConfiguration.Save();
 
 		AutoAttackUpdater.Disable();
 		RSCommands.Disable();
-		Watcher.Disable();
 		ActionQueueManager.Disable();
 		BMRPlanUpdater.Disable();
 		ActionContextMenu.Dispose();

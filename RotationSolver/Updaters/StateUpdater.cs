@@ -159,7 +159,7 @@ internal static class StateUpdater
 
 	private static bool ShouldAddDefenseArea()
 	{
-		if (DataCenter.InCombat && Service.Config.UseAoeDefense && DataCenter.IsHostileCastingAOE && !DataCenter.IsTyrantCastingSpecialIndicator())
+		if (DataCenter.InCombat && Service.Config.UseAoeDefense && DataCenter.IsHostileCastingAOEForMyDefense && !DataCenter.IsTyrantCastingSpecialIndicator())
 		{
 			return true;
 		}
@@ -292,11 +292,18 @@ internal static class StateUpdater
 				return true;
 			}
 
-			// BMR predicts timing, not who gets hit, so for this role it is only a reasonable proxy when
-			// no tank is alive to eat it. Otherwise the cast-verified branch above is the only trigger.
-			if (DataCenter.BMRTankbusterImminent && DataCenter.PartyTank == null)
+			// Who the tankbuster hits, BossModReborn states when it is the next predicted hit: its mask
+			// names the targets. Only when the mask belongs to another event does the old proxy stand -
+			// no tank alive to eat it. That proxy alone opened a Summoner's Radiant Aegis for a
+			// tankbuster on a tank RSR did not count as one (a Duty Support tank with "Heal and raise
+			// Party NPCs" off is not a party member here) (A220).
+			if (DataCenter.BMRTankbusterImminent)
 			{
-				return true;
+				var hitsMe = DataCenter.BMRTankbusterHitsPlayer;
+				if (hitsMe ?? DataCenter.PartyTank == null)
+				{
+					return true;
+				}
 			}
 		}
 
@@ -402,14 +409,16 @@ internal static class StateUpdater
 		// Heal spells are held while the player is inside a Hell in a Cell in M9S.
 		var canUseHealSpell = !DataCenter.IsInM9S || !StatusHelper.PlayerHasStatus(false, HellInACellStatuses);
 
+		// The ability flags look ahead only as far as the animation lock, the spell flags by the rest
+		// of the GCD and a cast: an off-GCD heal decided now lands now (A213).
 		var singleAbilityCount = ShouldHealSingle(StatusHelper.SingleHots,
 			Service.Config.HealthSingleAbility,
-			Service.Config.HealthSingleAbilityHot);
+			Service.Config.HealthSingleAbilityHot, true);
 
 		var singleSpellCount = canUseHealSpell
 			? ShouldHealSingle(StatusHelper.SingleHots,
 				Service.Config.HealthSingleSpell,
-				Service.Config.HealthSingleSpellHot)
+				Service.Config.HealthSingleSpellHot, false)
 			: 0;
 
 		var partyCount = DataCenter.PartyMembers.Count;
@@ -440,14 +449,14 @@ internal static class StateUpdater
 		// Prioritize area healing if multiple members have DoomNeedHealing
 		if (doomNeedHealingCount > 1 || singleAbilityCount > 2
 			|| healAheadOfHit
-			|| ShouldHealArea(partyCount, Service.Config.HealthAreaAbility, Service.Config.HealthAreaAbilityHot, areaHotRatio))
+			|| ShouldHealArea(partyCount, Service.Config.HealthAreaAbility, Service.Config.HealthAreaAbilityHot, areaHotRatio, true))
 		{
 			status |= AutoStatus.HealAreaAbility;
 		}
 
 		if (canUseHealSpell && (doomNeedHealingCount > 1 || singleSpellCount > 2
 			|| healSpellAheadOfHit
-			|| ShouldHealArea(partyCount, Service.Config.HealthAreaSpell, Service.Config.HealthAreaSpellHot, areaHotRatio)))
+			|| ShouldHealArea(partyCount, Service.Config.HealthAreaSpell, Service.Config.HealthAreaSpellHot, areaHotRatio, false)))
 		{
 			status |= AutoStatus.HealAreaSpell;
 		}
@@ -460,12 +469,12 @@ internal static class StateUpdater
 			// Prioritize healing self if DoomNeedHealing is true
 			var selfDoomed = StatusHelper.PlayerDoomNeedHealing();
 
-			if (selfDoomed || ShouldHealSelf(StatusHelper.SingleHots, Service.Config.HealthSingleAbility, Service.Config.HealthSingleAbilityHot))
+			if (selfDoomed || ShouldHealSelf(StatusHelper.SingleHots, Service.Config.HealthSingleAbility, Service.Config.HealthSingleAbilityHot, true))
 			{
 				status |= AutoStatus.HealSingleAbility;
 			}
 
-			if (canUseHealSpell && (selfDoomed || ShouldHealSelf(StatusHelper.SingleHots, Service.Config.HealthSingleSpell, Service.Config.HealthSingleSpellHot)))
+			if (canUseHealSpell && (selfDoomed || ShouldHealSelf(StatusHelper.SingleHots, Service.Config.HealthSingleSpell, Service.Config.HealthSingleSpellHot, false)))
 			{
 				status |= AutoStatus.HealSingleSpell;
 			}
@@ -487,7 +496,7 @@ internal static class StateUpdater
 		return status;
 	}
 
-	private static bool ShouldHealArea(int partyCount, float healArea, float healAreaHot, float ratio)
+	private static bool ShouldHealArea(int partyCount, float healArea, float healAreaHot, float ratio, bool instant)
 	{
 		if (partyCount <= 2)
 		{
@@ -496,11 +505,17 @@ internal static class StateUpdater
 
 		// If party is larger than 4 people, we select the 4 lowest HP players
 		// in the party, and then calculate the thresholds on them instead.
-		return partyCount > 4
-			? DataCenter.LowestPartyMembersDifferHP < Service.Config.HealthDifference
-				&& DataCenter.LowestPartyMembersAverHP < Lerp(healArea, healAreaHot, ratio)
-			: DataCenter.PartyMembersDifferHP < Service.Config.HealthDifference
-				&& DataCenter.PartyMembersAverHP < Lerp(healArea, healAreaHot, ratio);
+		//
+		// "Heal ahead of incoming damage" says every healing threshold reads the health a member is
+		// heading for; these two read the level unless they take the forecast figures. Those are
+		// computed apart from the level ones, which have many other readers, and equal them with the
+		// setting off.
+		DataCenter.ComputeForecastAreaStats(instant, out var average, out var difference, out var lowestAverage, out var lowestDifference);
+		return partyCount > DataCenter.LightPartySize
+			? lowestDifference < Service.Config.HealthDifference
+				&& lowestAverage < Lerp(healArea, healAreaHot, ratio)
+			: difference < Service.Config.HealthDifference
+				&& average < Lerp(healArea, healAreaHot, ratio);
 	}
 
 	private static bool ShouldAddAntiKnockback()
@@ -597,12 +612,12 @@ internal static class StateUpdater
 		return Math.Min(1, buffTime / buffWholeTime);
 	}
 
-	private static int ShouldHealSingle(StatusID[] hotStatus, float healSingle, float healSingleHot)
+	private static int ShouldHealSingle(StatusID[] hotStatus, float healSingle, float healSingleHot, bool instant)
 	{
 		var count = 0;
 		foreach (var member in DataCenter.PartyMembers)
 		{
-			if (ShouldHealSingle(member, hotStatus, healSingle, healSingleHot))
+			if (ShouldHealSingle(member, hotStatus, healSingle, healSingleHot, instant))
 			{
 				count++;
 			}
@@ -610,7 +625,7 @@ internal static class StateUpdater
 		return count;
 	}
 
-	private static bool ShouldHealSelf(StatusID[] hotStatus, float healSingle, float healSingleHot)
+	private static bool ShouldHealSelf(StatusID[] hotStatus, float healSingle, float healSingleHot, bool instant)
 	{
 		if (Player.Object == null)
 		{
@@ -641,7 +656,7 @@ internal static class StateUpdater
 		// Outside the Doom case this is the health the player is heading for by the time a heal
 		// begun now would land - identical to the current ratio while HealAheadOfDamage is off, or
 		// while the trend is not downward.
-		var h = doomed ? 0.2f : ObjectHelper.GetForecastPlayerHealthRatio();
+		var h = doomed ? 0.2f : ObjectHelper.GetForecastPlayerHealthRatio(instant);
 
 		// "Zero" here means a corpse, and it has to be asked of the real health. The forecast
 		// reaches zero for somebody who is alive and about to die - the very case this exists for -
@@ -669,7 +684,7 @@ internal static class StateUpdater
 		return h < threshold;
 	}
 
-	private static bool ShouldHealSingle(IBattleChara target, StatusID[] hotStatus, float healSingle, float healSingleHot)
+	private static bool ShouldHealSingle(IBattleChara target, StatusID[] hotStatus, float healSingle, float healSingleHot, bool instant)
 	{
 		if (target == null)
 		{
@@ -698,7 +713,7 @@ internal static class StateUpdater
 		// Forecast rather than current: a level threshold crossed at a steep rate leaves less time
 		// than the heal it triggers needs to arrive. Identical to the current ratio while
 		// HealAheadOfDamage is off, or while the member's trend is not downward.
-		var h = target.GetForecastHealthRatio();
+		var h = target.GetForecastHealthRatio(instant);
 
 		// Healing that lands for nothing is still excluded outright - NoNeedHealingStatus mixes
 		// that case in with genuine invulnerabilities, and only the latter get the softer

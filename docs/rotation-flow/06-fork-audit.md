@@ -47,7 +47,7 @@ zurückgebaut — nicht verteidigt.
 
 `EukrasianDiagnosisPvE.Setting.TargetStatusProvide` ist
 `[EukrasianDiagnosis, Galvanize]` — der **Schildstatus selbst**
-(`SageRotation.cs:156`). Ein Schild wird durch Schaden aufgebraucht. Im
+(`SageRotation.cs:159`). Ein Schild wird durch Schaden aufgebraucht. Im
 Wall-to-Wall, wofür die Funktion geschrieben war, platzt die Barriere in
 Sekunden, `WillStatusEndGCD` meldet „abgelaufen", und der Zweig — der in
 `GeneralGCD` **vor** Phlegma und allem Schaden stand — legte sie neu. Zwei
@@ -56,6 +56,13 @@ GCDs pro Platzer, den ganzen Pull.
 WHMs Regen und ASTs Aspected Benefic sind HoTs und ticken ihre Dauer ab; für
 sie trägt derselbe Helfer und bleibt. **Nur SGE war betroffen, Feature
 entfernt.**
+
+**Stand 29.09.2026:** Seit A184 (28.09.2026) gibt es die Pull-Barriere des Weisen
+wieder, als Option `UsePreEukrasianDiagnosis`. Anlass ist seine V1-Vorgabe
+(Konzept 15): „schild bei schildheilern … mit regelmäßiger erneuerung bei
+ablauf/verfall solange walltowall läuft". Sie erneuert bei jedem Bruch, also
+genau wie oben beschrieben, und ist deshalb ab Werk aus (A209). Ob seine Vorgabe
+diese Entscheidung aufhebt, entscheidet er.
 
 ### 2.2 Weakness-Schwellenfaktor heilte praktisch immer
 

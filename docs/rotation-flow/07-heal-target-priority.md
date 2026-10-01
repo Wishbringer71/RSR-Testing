@@ -55,6 +55,21 @@ kleineren Heilungen — und die kommen von selbst, weil der Zweig ohne die Vollh
 Divine Benison und Tetragrammaton weiterläuft und der GCD-Pfad Regen und Cure II behält. Das Ziel
 wird also nicht übergangen, nur die teuerste Antwort darauf.
 
+**Gilt für jeden Heiler, nicht nur den Weißmagier** (A180, sein Profil umfasst alle Kampfjobs). Dieselbe Prüfung (`ObjectHelper.IsUnderThreat`) steht vor der teuersten Einzelheilung jedes Heilers, jeweils hinter einer eigenen Einstellung, ab Werk an: Benediction (Weißmagier), Excogitation als Heilung (Gelehrter, auch unter Recitation), Taurochole als Heilung (Weiser) und die **letzte** Ladung Essential Dignity (Astrologe). Bei Essential Dignity nur die letzte: Die ersten Ladungen laden hintereinander nach, eine davon auszugeben lässt den Tank nicht ohne Antwort; die letzte schon. Die Verteidigungspfade (Excogitation, Taurochole, Haima) bleiben unberührt — sie laufen nur, wenn eine Abwehr angefordert ist, also bei Gefahr.
+
+**Auch die Heilschwellen der Jobs lesen die Vorausschau** (A191): Regen, Essential Dignity, Synastry,
+Aspected Benefic, Taurochole, Krasis, Soteria, Pneuma, Kardia, Benediction, Excogitation, Emergency Tactics,
+Aetherpact, Clemency, Bloodwhetting, Thrill of Battle, Equilibrium, Nascent Flash, Second Wind, Bloodbath und
+die Untergrenze der Pull-Pflege. Abwehrschwellen (sterbender Tank, Intervention, Cover, The Blackest Night)
+sind keine Heilschwellen und bleiben am Stand. `check_heal_threshold_forecast.py` hält das in der CI fest.
+Wie weit voraus, hängt von der Heilart ab (A213, Konzept 08): Eine oGCD-Heilung blickt nur so weit voraus, wie die
+laufende Ausführungssperre reicht, eine GCD-Heilung um den Rest des GCD und ihren Wirkvorgang. Maßgeblich ist, wann
+die Heilung landet: Synastry, Krasis, Soteria und Emergency Tactics heilen erst mit dem nächsten GCD und lesen wie
+die GCD-Heilungen und die Untergrenze der Pull-Pflege den GCD-Vorlauf, bei Schwelle und Zielwahl (A221); die übrigen
+oGCD-Schwellen den kurzen.
+
+**Auch die Flächenschwellen lesen die Vorausschau** (A182). Der Text von „Heal ahead of incoming damage" sagt: „Every healing threshold and the heal target choice read the health a member is heading for". Die Flächenschwellen (`HealthAreaAbility`, `HealthAreaSpell`) lasen bis dahin den Stand. Jetzt lesen sie eigene, vorausberechnete Gruppenwerte (`DataCenter.ComputeForecastAreaStats`: Mittel und Streuung, bei mehr als vier Mitgliedern über die vier niedrigsten). Die bisherigen Gruppenwerte bleiben unverändert, weil sie viele Leser außerhalb der Heilkette haben, fremde Rotationen darunter. Mit ausgeschalteter Einstellung ist die Vorausschau 1 und die Werte gleich den bisherigen. Gezählt werden dieselben Mitglieder wie bei den bisherigen Werten (gültig, mit Id, lebend; A210). Im Kampf: Fällt die Gruppe schnell, kommt eine Flächenheilung per GCD etwa einen GCD früher. Die oGCD-Schwelle blickt nur bis zum Ende der Ausführungssperre voraus (A213).
+
 ## Was Gefährdung heißt
 
 **Aggro sagt nicht, ob jemand Schaden bekommt — nur, ob er *gerichteten* Schaden bekommt.** Eine
@@ -110,6 +125,56 @@ ohne; und ein Schadensausteiler mit kleinem Lebenspool wie einer mit großem.
 `healRatio` gefiltertes Feld und beantwortet nur noch, **wen** die ohnehin fallende Heilung trifft.
 Eine dieser Rollenschwellen zu heben erzeugt deshalb keine zusätzliche Heilung und keine
 Überheilung — es verschiebt die Reihenfolge.
+
+### Flächenheilungen um den Wirkenden messen den Bedarf an den Getroffenen
+
+**Sachstand (A137):** Eine Flächenheilung, die um den Wirkenden herum wirkt — Reichweite 0, ein
+Wirkradius, kein Bodenziel: Medica, Helios, Succor, Lux Solaris und rund dreißig weitere —, hat den
+Wirkenden als Anker, und ihr Bedarf wird an den Mitgliedern **im Wirkradius** gemessen: mindestens
+`AoeCount` darin, die sie aufnehmen können (verletzt, lebend, nicht heilungsunfähig, ohne ihren
+bereitgestellten Status), und bei eingeschalteter Heilprüfung mindestens eines davon mit
+vorausberechneter Gesundheit unter der Heilschwelle der Aktion (`AutoHealRatio`). Ein Mitglied, das
+für einen Todesauslöser zurückgehalten wird, wird mitgeheilt, wenn es im Radius steht, zählt aber nie
+als Grund.
+
+**Im Kampf:** Der Heiler steht voll und einige Yalm neben der Gruppe, ein Cleave hat die Nahkämpfer
+getroffen, die Flächenheilflagge steht. Vorher fiel die Heilung nicht, weil der allgemeine Pfad ein
+Heil**ziel** in Reichweite 0 suchte — also den Heiler selbst und wer ihn berührt — und dieses Ziel unter
+der Heilschwelle verlangte. Jetzt fällt sie, sobald im Radius genug Verletzte stehen.
+
+**Grenzen und Bedingungen:**
+- Gilt nur, wenn das Spiel für die Aktion Reichweite 0 meldet (`ActionManager.GetActionRange`). Meldet es
+  etwas anderes, greift der Zweig nicht, und alles bleibt wie vorher.
+  **Hinweis des Auftraggebers:** Lux Solaris ist eine Point-Blank-Fläche vom Wirkenden aus, wie Holy beim
+  Weißmagier — die Prämisse Reichweite 0 trägt. Lux Solaris selbst läuft seit A154 nicht mehr durch
+  diesen Zweig, sondern folgt ihrer eigenen Regel (Konzept 08) und fehlt deshalb in der Anzeige unten.
+- Gilt nur für die Zielart Heilung und nicht, wenn ein Aufrufer den Wirkenden ausdrücklich als Ziel
+  nennt (`TargetType.Self`); dort gibt der allgemeine Pfad den Wirkenden ohne Bedarfsprüfung zurück.
+  Andere freundliche Aktionen mit Reichweite 0 bleiben auf dem allgemeinen Pfad.
+- Am Anker entfallen die Prüfungen, die der allgemeine Pfad am Heilziel stellte: `CanTarget`,
+  `CanUseTo` (Abfrage beim Spiel), `MinHPFeature` der Aktion. Für keine freundliche Heilung mit
+  Reichweite 0 ist ein `CanTarget` gesetzt (erhoben A137). `NoNewHostiles`, das im allgemeinen Pfad
+  die Trefferzahl auch für freundliche Mitglieder ohne Ziel auf 0 setzte, wirkt hier nicht. **Hinweis
+  des Auftraggebers:** Heilungen erzeugen Feindschaft, wie Schaden auch; der Umfang ist nicht belegt.
+  Ob eine Gruppenheilung dabei mehr oder andere Gegner erreicht als eine Einzelheilung, ist ebenfalls
+  nicht belegt — `NoNewHostiles` bleibt deshalb eine Regel für Angriffe, und das ist eine offene
+  Annahme, keine belegte Tatsache.
+- Die AoE-Einstellung (Full/Cleave/Off) gilt nur Angriffen, seine Lesart (A147): Unter „Cleave" und
+  „Off" gehen Gruppenheilungen und Gruppenminderungen wie unter „Full".
+- **Im Kampf ablesbar:** Das Diagnosefenster zeigt unter „Area heal around you" die zuletzt gewogene
+  Heilung dieser Art — Aufnahmefähige im Radius gegen die verlangte Anzahl, ob jemand darunter unter
+  der Heilschwelle liegt. Taucht eine Heilung dort nie auf, meldet das Spiel für
+  sie keine Reichweite 0, die Flagge stand nicht, oder die Aktion wurde vorher abgelehnt
+  (Abklingzeit, Stufe, benötigter Status wie Refulgent Lux). Den Stand der Flagge zeigt die Zeile
+  nicht.
+- Ob überhaupt geheilt wird, entscheidet weiter die Flagge. Deren Streuungsbedingung hält die Flagge
+  unten, wenn ein einzelner Spieler getroffen ist — das ist eine eigene Frage (TODO „Flächenheilung nach
+  Pegel statt Rate").
+
+**Betroffene:** alle Heiler dieses Baums einschließlich der fremden Rotationen, die dieselben Aktionen
+über den Heilpfad rufen; die Autoren abgeleiteter Rotationen, weil `CanUse` dieser Aktionen jetzt
+anders antwortet; die Upstream-Pflege durch eine weitere Abweichung in `ActionTargetInfo.FindTarget`.
+Ein belegter Defekt, keine Verbesserung auf Verdacht — deshalb ohne eigene Option.
 
 ### Befund: ein Rollen-Kurzschluss überholt den, der tatsächlich stirbt
 
@@ -238,6 +303,8 @@ weil Klasse 1 und die Aggro davorstehen, aber sie beseitigt sie nicht. Ob die be
 vereinheitlicht werden, ist eine Wertentscheidung über eine Konfiguration und gehört dem
 Auftraggeber.
 
+**Umgesetzt (A183):** Klassen 2 und 3 hinter `HealTargetByDanger` („Choose the heal target by danger"), Vorgabewert an (seine Regel für Voreinstellungen, 29.09.2026), in `ActionTargetInfo.DangerClassTarget`. „Unter Beschuss" liest `DataCenter.TargetedPartyMembers` (je Bild aus den Zielen der Gegner). Klasse 1 und der Selbst-Kurzschluss stehen unverändert davor; die Geschützten bleiben zuletzt. Klasse 3 reiht nur Verletzte: Nach Punkten gereiht gewann sonst ein Unverletzter mit kleinem Pool, und niemand wurde geheilt (A210).
+
 **Die Rate steht.** `DataCenter.RecordedHP` führt die Gruppe seit A91 mit, `GetTTK` antwortet damit
 für jede Gruppen-Id, `ScoreTtkForecast` korrigiert die Schätzung gegen ihren eigenen Fehler (A92),
 und `GetForecastSurvivingShare` macht daraus die Größe, die alle Heilentscheidungen lesen (A93). Sie
@@ -287,7 +354,7 @@ aufgebraucht ist, steht prognostiziert bei 3 % und fällt damit in Klasse 1 — 
 der ihn bei 44 % des Tanks heute überholt. Rechnung und Grenzfälle in Konzept 08, Abschnitt „Der
 Verbraucher".
 
-Hinter `HealAheadOfDamage`, Standard aus; ausgeschaltet liefern alle vier Getter die heutigen Werte.
+Hinter `HealAheadOfDamage`, Standard an (seine Regel für Voreinstellungen, 29.09.2026); ausgeschaltet liefern alle vier Getter die Werte ohne Vorausschau.
 Die Nachweislage ist damit unverändert die der Stufe 2: Der Nutzen bleibt eine Annahme, bis er im
 Spiel beobachtet ist.
 
@@ -317,15 +384,31 @@ Punktemaß steht im Wirktext der Aktion selbst: Rekindle bewaffnet seine Nachhei
 below 75%“ — **das Spiel misst diese Aktion in Anteilen.** Ein nach Punkten gewähltes Ziel kann
 damit eines sein, bei dem die Nachwirkung nie auslöst.
 
-**Der Rückfall auf den Wirkenden ist keine Förmlichkeit.** Rekindle besteht nur, solange Firebird
-Trance läuft; ein Aufruf ohne Ziel ist mit der Phase verloren, und 400 Potenz auf sich selbst sind
+**Der Rückfall auf den Wirkenden ist keine Förmlichkeit.** Rekindle besteht nur während der
+Phönix-Phase; ein Aufruf ohne Ziel ist mit der Phase verloren, und 400 Potenz auf sich selbst sind
 mehr als nichts.
+
+**Der Rückfall fällt kurz vor Phasenende, gemessen an der Jobleiste (A137).** Die Phase liest
+`SMN_Reborn` aus `InPhoenix` und der Beschwörungszeit (`SummonTimeEndAfterGCD`), nicht aus dem Status
+Firebird Trance (3229). Dieser Status macht nach seinem Wirktext Fountain of Fire und Brand of
+Purgatory wirkbar und wird in den Basisrotationen sonst nur von `ModifyBrandOfPurgatoryPvP` gelesen;
+`ChurinSMN` liest ihn wie der alte Rückfall. Ob das Spiel ihn im PvE setzt, ist unbelegt — der
+Wirktext von Summon Phoenix sagt „Enters Firebird Trance". Fehlt er, gilt er als „endet jetzt", und der
+Rückfall fiel im ersten freien Einschiebeplatz der Phase statt an ihrem Ende — Rekindle war
+ausgegeben, bevor jemand es brauchte. Die Jobleiste beantwortet die Frage in beiden Fällen richtig. Der Vorlauf von drei GCDs ist ein
+fester Wert ohne eigenen Loop (`fixed_values.json`, offen).
 
 **Geprüft wird das jetzt maschinell, nicht erinnert:**
 `.github/scripts/audit/check_heal_target_measure.py` erhebt aus `ActionId.resx` jede Aktion, deren
 Wirktext eine eigene Prozentschwelle nennt, und meldet jede Stelle, die genau eine solche Aktion
 nach Punkten sortiert. Es prüft das Maß, nicht die Zielwahl im Ganzen — eine Barriere nach Punkten
 zu wählen bleibt zulässig und wird nicht gemeldet.
+
+**Nascent Flash (Krieger) hat seit A226 eine vierte Zielwahl „By danger", die keine Sortierung ersetzt,
+sondern diese Rangfolge selbst anfordert** (`TargetType.Heal`): Nascent Flash ist Heilung, Minderung und Barriere
+zugleich, und seine Vorgabe dazu — Heiler vor Schadensausteiler, geprüft, was beim Ziel schon liegt — ist die
+Ordnung dieses Konzepts. Die drei Upstream-Einstellungen (niedrigster Prozentsatz, Heiler zuerst, nur Heiler)
+bleiben, weil ihr Text bindet. Konzept 09, Abschnitt zum Krieger.
 
 **Die übrigen Fundstellen derselben Bauform sind erhoben und bleiben unbearbeitet**, weil bei ihnen
 das Punktemaß nach der Tabelle oben das richtige sein kann: The Blackest Night und Oblation beim

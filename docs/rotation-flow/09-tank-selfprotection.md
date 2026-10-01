@@ -80,9 +80,10 @@ der Heiler die nicht aufbringen, tauscht der Verzicht sicheres gegen unsicheres
 Eine Lesart bleibt bewusst ausgeklammert: „Überleben des Tanks" gilt hier als
 Vorrang *innerhalb* der Frage, ob eine Tank-Schutzmechanik respektiert wird — nicht
 als genereller Vorrang des Tanks vor der Gruppe. Für diesen anderen Fall führt RSR
-bereits eine eigene Rangfolge (Selbst → Heiler → Tank → niedrigste Gesundheit,
-`ActionTargetInfo.cs:3180-3205`). Sie hier ebenfalls umzustellen wäre eine zweite,
-größere Änderung.
+bereits eine eigene Rangfolge in `ActionTargetInfo.GeneralHealTarget`: zuerst wer gleich fällt
+(kritische Klasse, Konzept 07), dann Selbst → Heiler → Tank → niedrigste Gesundheit; mit „Choose
+the heal target by danger" statt der Rollen-Kurzwege die Gefährdungsklassen 2 und 3 (Stand 29.09.2026).
+Sie hier ebenfalls umzustellen wäre eine zweite, größere Änderung.
 
 ## Taxonomie nach Auslöser
 
@@ -256,6 +257,52 @@ folgt ein gestaffeltes Verhalten statt eines Schalters:
 | Kurs reicht nicht | **eingreifen, in voller Höhe** | Die Alternative ist der Tod am Phasenende |
 | Kurs trägt bis zum Ende | nichts weiter | Der Rest ist Überheilung |
 
+### Umsetzung für Phase 2 (A147)
+
+**Vorgabe des Auftraggebers (25.09.2026):** „walking dead läßt solange es läuft den darkknight sich
+selbst durch angriffe heilen. […] also vertraut man am anfang (bei eben den 1hp) darauf, dass der tank
+sich selbst heilt, indem er bei gegnern schaden verursacht. das soll nur leicht mit einem hot
+unterstützt werden. erst wenn der timer des effektes ausläuft bzw. klar ist, dass der darkknight sich
+in der verbleibenden zeit nicht selbst durch angriff (vollständig) heilen kann, soll unterstützt werden.
+das kann z.b. durch fehlende gegnerzahlen oder durch ein anstehendes event passieren, wo der darkknight
+nicht mehr angreifen kann." Der Wirktext bestätigt die Mechanik (Living Dead, `ActionId.resx` 3638).
+
+**Sachstand:** `StatusHelper.WalkingDeadCarriedBySelfHeal` sagt, ob der Träger noch von seinen eigenen
+Angriffen getragen wird. Solange das gilt, nimmt ihn keine Heilaktion als Ziel, die keinen HoT aus
+`SingleHots` verleiht (`ActionTargetInfo.FindTarget`), und er zählt nicht als Grund für eine
+Flächenheilung um den Wirkenden. Regen des Weißmagiers ist unter Walking Dead von der
+`RegenHeal`-Sperre ausgenommen. Die volle Unterstützung setzt ein, sobald einer dieser Fälle eintritt:
+
+| Auslöser | Maß, aus dem Spiel |
+|---|---|
+| Timer läuft aus | derselbe Vorlauf wie bei der Living-Dead-Sperre (zwei GCDs bis zur Entscheidung) |
+| kein Gegner in Reichweite | Spielreichweite von Hard Slash, Trefferfläche zu Trefferfläche |
+| angekündigtes Ereignis | BossModReborn-Auszeit vor Ablauf; ohne Modul erst reaktiv über die Reichweite |
+| Tank-Limitbruch auf der Gruppe | Status Last Bastion, Land Waker, Dark Force oder Gunmetal Soul |
+| er schafft es nicht | Gesundheit seit Beginn des Fensters, auf die Restzeit hochgerechnet, bleibt unter 100 % |
+
+Der Kurs ist netto: Schaden zieht ab, er unterschätzt also die kumulierte Heilung, und die Freigabe
+kommt eher zu früh als zu spät. Im ersten GCD gibt es noch nichts zu messen; dann wird ihm vertraut.
+
+**Hinweis des Auftraggebers zu „most attacks":** Es gibt Raidwides, die alle nur mit dem Limitbruch
+eines Tanks überleben; das ist wahrscheinlich die Ausnahme, die der Wirktext meint (seine Deutung).
+Es sind sehr wenige, seine Beispiele: die Alexander-Raids, die Prüfung gegen den Krieger des Lichts.
+Deshalb gibt nicht jeder Raidwide die volle Unterstützung frei — das höbe das Vertrauen am Anfang bei
+jedem Raidwide auf —, sondern erst der Tank-Limitbruch auf der Gruppe: Er wird für genau diesen
+Treffer gezogen, und bei 1 HP stünde der Träger schutzlos davor.
+
+**Grenzen:** Rotationen, die ihr Heilziel selbst wählen statt über `FindTarget` (fremde Rotationen,
+direkte Aufrufe von `FindTargetByType`), sehen die Sperre nicht. Die Flächenheilflagge rechnet den
+Träger bei 1 HP weiter in ihre Mittelwerte ein. Ein solcher Treffer ohne Tank-Limitbruch wird nicht
+erkannt. Der Limitbruch selbst wird im selben Bild erkannt, in dem sein Status erscheint; die Heilung
+kommt aber nur vor dem Einschlag an, wenn dazwischen noch ein Einschiebeplatz (Benediction) oder ein
+GCD mit Wirkzeit (Cure II) liegt. Wie viel Zeit zwischen Limitbruch und Einschlag liegt, entscheidet der
+Tank, der ihn zieht.
+
+**Im Kampf ablesbar:** Das Diagnosefenster zeigt, solange jemand unter Walking Dead steht, ob er
+getragen wird oder welcher Auslöser die volle Unterstützung freigegeben hat, mit dem hochgerechneten
+Kurs.
+
 ### Die Aufhebungen kehren sich für Living Dead um
 
 | Aufhebung | Bei A-nichttödlich | Bei Living Dead Phase 1 |
@@ -411,6 +458,36 @@ Die Option ist nötig, weil RSR Living Dead selbst als Notrettung bei
 `HealthForDyingTanks` zündet. Dort ist der Tod die Katastrophe, und Walking Dead
 verlangt danach eine volle Maximalgesundheit an Heilung in zehn Sekunden.
 
+
+**Der Hebel ist die Option, nicht der Grenzwert.** Zwei Mechanismen, je nach Stellung von
+`WithholdHealingForLivingDead`:
+- **Option aus:** `StateUpdater.ShouldHealSingle` senkt die Schwelle unter einem Schutzstatus auf
+  `HealthProtectedRatio` (0,15), solange Living Dead mehr als zwei GCDs Restzeit hat; danach kehrt die
+  normale Schwelle zurück, unabhängig von der Gesundheit.
+- **Option an:** Der Träger wird gar nicht geheilt, solange das Todesfenster läuft
+  (`IsHeldForDeathTrigger`). Das Fenster endet zwei GCDs vor Ablauf, außer der Träger steht auf oder
+  unter `HealthForDyingTanks` (`DeathStillLikely`, A88) — dann läuft es bis zum Ablauf.
+
+`HealthProtectedRatio` anzuheben verschöbe den ersten Mechanismus und heilte **früher** im Fenster,
+also gerade den Tod weg, auf den die Regel wartet. Wer den Todeseffekt will, schaltet
+`WithholdHealingForLivingDead` ein; der Grenzwert ist nur für die
+übrigen Invulnerabilitäten der Liste maßgeblich (Holmgang, Superbolide, Hallowed Ground), bei denen
+kein Tod gewollt ist. Upstream heilt ein Ziel unter Invulnerabilität gar nicht; die Absenkung ist die
+mildere Fassung. Ein zu früh gesetzter Living Dead (vom Auftraggeber bei 70 % im Wall-to-Wall
+beobachtet) kostet damit zehn Sekunden automatischer Heilung ohne Anlass.
+
+**Welche Abwehr des Dunkelritters die Heilentscheidung berührt** (erhoben A141):
+
+| Fähigkeit | Pfad | Wirkung auf die Heilschwelle |
+|---|---|---|
+| Living Dead | `NoNeedHealingStatus` → `HealthProtectedRatio` | 0,15 statt der normalen Schwelle, wie oben |
+| Walking Dead | in `NoNeedHealingStatus` auskommentiert | keine — richtig, dort ist Heilung überlebensnotwendig |
+| The Blackest Night | Schildanteil des Spiels (`ShieldPercentage`) im effektiven Puffer | keine auf die Schwelle, seit die Schildanrechnung entfernt ist (A85); der Schild zählt im Puffer der Vorausschau und der Sterbegefährdung (`GetEffectiveHp`) |
+| Shadow Wall, Rampart | `RampartStatus` | keine: gelesen als `StatusProvide` und von `HasMajorMitigation` für den eigenen Charakter |
+| Dark Mind, Oblation, Dark Missionary, Reprisal | in keiner heilrelevanten Liste bzw. am Gegner | keine |
+
+Schadensreduktion und Barriere wirken auf keine Heilschwelle; nur die Invulnerabilität tut es. Die Rate, die aus
+Minderung folgt, geht über die Vorausschau ein (`GetForecastSurvivingShare`), nicht über Listen.
 ### Die Barriere senkt den Heilbedarf nicht
 
 **Ein Schild verhindert Schaden, er stellt keine Gesundheit her.** Ein vollgeheilter Tank **mit**
@@ -478,7 +555,7 @@ Schleife neben der bestehenden, kein Ringpuffer und kein dritter Effekt-Handler.
 | Zeit bis zum Tod eines Gruppenmitglieds | **ja** | `ObjectHelper.GetCorrectedTTK`, gegen den eigenen Vorhersagefehler kalibriert |
 | Abtastrate der Historie | **1 Hz** | `TimeToKillUpdateInterval` |
 | Eingehende Heilung auf ein Party-Mitglied | **nicht gesondert ausgewertet, und nicht nötig** | Der Gesundheitsverlauf ist bereits netto: Eine fremde Heilung zeigt sich als steigender Anteil, `GetTTK` antwortet dann `NaN` |
-| Schadensbetrag eines Gegnertreffers | **verfügbar und gelesen** | `Watcher.cs:137` wertet `damageEffect.value` aus, prüft aber nur `> 0` |
+| Schadensbetrag eines Gegnertreffers | **verfügbar und gelesen** | `Watcher.FullAmount`, voller Betrag auch über 65.535 Punkte (A140, A144) |
 
 Zwei Genauigkeitsgrenzen bestehen fort: Die 1-Hz-Abtastung ist für ein
 Zehn-Sekunden-Fenster grob, und ein Gesundheitsdelta ist ein Surrogat für kumulierte
@@ -490,6 +567,167 @@ Fall 4a mit der vorhandenen Auswertung noch nicht beantwortet.
 **`HpRecoveryDown` und `Mounted` in der Schwellensenkung.** Ausgeschlossen: `Mounted`
 nullifiziert Heilung und gehört in einen Ausschluss, nicht in eine Herabstufung;
 `HpRecoveryDown` mindert Heilung nur und ist damit ein Grund, **härter** zu heilen.
+
+## Krieger: Nascent Flash für einen anderen oder Bloodwhetting für sich
+
+**Seine Vorgabe (29.09.2026), im Wortlaut:** „nascent flash dahingehend im vollständigen loop bewerten: ist der
+tankbuster tödlich? braucht der tank nach dem tankbuster viel heilung? ist der tankbuster mit bestehenden
+schilden, minderung und bestehenden hot oder sonstiger verfügbarer heilung so gut wegsteckbar, dass nascent flash
+auf andere gecasted werden kann. auf wen soll nascent flash denn gecasted werden? auf heiler? heiler haben eine
+höhere priorität als normale damagedealer. auch da dann prüfen: was ist beim ziel vorhanden? schilde, bestehender
+hot, bestehende minderung. haben die ziele debuffs, hat der tank debuffs? bewertungstriage = muss auf jemanden
+durch tod verzichtet werden und wer ist am ehestens entbehrlich?" Einordnung: Vorgabe mit Kriterien für die
+vorgelegte Entscheidung (TODO, A191). Der Satz „Heiler haben eine höhere Priorität als normale Damagedealer"
+bestätigt die Rollenordnung aus Konzept 07; dort gilt sie bei gleicher Gefährdung.
+
+### Die Mechanik (Wirktexte, Job-Guide und Spieldaten, abgerufen 29.09.2026)
+
+| | Bloodwhetting (82, auf sich) | Nascent Flash (76, auf ein Mitglied, nicht auf sich) |
+|---|---|---|
+| Minderung | −10 % für 8 s, dazu Stem the Flow −10 % für 4 s | dieselbe auf dem **Ziel** (Nascent Glint, Stem the Flow) |
+| Barriere | Stem the Tide, 400 Potenz, 20 s | dieselbe auf dem **Ziel** |
+| Heilung | 400 Potenz je Waffenfertigkeit, 8 s, auf den Krieger | 400 Potenz je Waffenfertigkeit auf den **Krieger** (Nascent Flash) **und** 100 % davon auf das Ziel |
+| Abklingzeit | 25 s, gemeinsam (Abklingzeitgruppe 7, auch Raw Intuition) | |
+
+**Daraus folgt die tragende Feststellung: Nascent Flash auf einen anderen kostet den Krieger keine Heilung.** Er
+heilt sich damit genauso wie mit Bloodwhetting. Er verliert Minderung und Barriere: in den ersten 4 s rund 19 %
+weniger Schaden (0,9 × 0,9, sofern Minderungen multiplizieren — Spielregel, hier nicht am Artefakt belegt), danach
+bis 8 s 10 %, und 400 Potenz Barriere. Die zweite seiner Fragen, ob der Tank nach dem Tankbuster viel Heilung
+braucht, trägt deshalb keinen Grund, Nascent Flash zurückzuhalten.
+
+### Sachstand im Code
+
+- **Defekt, behoben (A226): Nascent Flash ging nur an Unverwundbare.** Der Zielfilter las
+  `!t.NoNeedHealingInvuln()`. Die Funktion ist wahr, solange **keine** Unverwundbarkeit liegt; die Negation ließ
+  also nur Geschützte durch — einen Tank unter Holmgang, Superbolide, Hallowed Ground oder Living Dead, sonst
+  niemanden. Seit Upstream c3fac720b heilte der Krieger damit praktisch nie ein anderes Mitglied; der in A191
+  vorgelegte Konflikt am Tankbuster trat so gar nicht auf. Dieselbe Verwechslung ist die dritte ihrer Art im Baum
+  (Heilzielwahl, Excogitation); `check_invuln_polarity.py` hält sie jetzt in der CI.
+- Nascent Flash liegt im Heilpfad der Fähigkeiten (`HealSingleAbility`, Upstream c3fac720b). Dieser läuft im
+  Dispatch vor der Einzelabwehr und vor dem allgemeinen Pfad. Ziel ist ein Mitglied unter
+  `Nascent Flash Heal Threshold` (0,6, Vorausschau), nicht unverwundbar, sortiert nach Einstellung „Nascent Flash
+  target priority": niedrigster **Prozentsatz der aktuellen Gesundheit** (ohne Vorausschau, ohne Barriere),
+  Heiler zuerst oder nur Heiler.
+- Bloodwhetting fällt für sich
+  - in der Einzelabwehr (Tankbuster, Beschuss) nur mit „Use Bloodwhetting/Raw intuition on single enemies" oder
+    bei mehr als zwei Gegnern in Reichweite, und nur, solange der Gegner den Krieger anvisiert;
+  - im allgemeinen Pfad reaktiv unter „Bloodwhetting/Raw intuition heal threshold" (0,7).
+  **Vor einem Boss-Tankbuster fällt Bloodwhetting also ab Werk gar nicht** — erst danach, reaktiv.
+
+### Bewertung nach seinen Kriterien
+
+**Ist der Tankbuster tödlich?** Das weiß RSR nicht, und das ist kein Mangel der Regel, sondern der Datenlage.
+BossModReborn meldet Art, Zeitpunkt und Getroffene, **keine Höhe** (Konzept 07). Der Effekt-Handler könnte die Höhe
+messen: Der Messweg der Flächen (Konzept 13) sieht jeden Treffer. Er misst aber **nach** Minderung und Barriere,
+und ein Tank mindert Tankbuster fast immer — gemessen würde also systematisch zu niedrig, und „zu niedrig" ist
+hier die gefährliche Richtung (ein tödlicher Treffer läse sich als harmlos). Das Herausrechnen bräuchte je Treffer
+die wirkenden Minderungen mit ihren Prozentsätzen, die Schadensart der Aktion (Feint mindert physisch, Addle
+magisch) und die Antwort, ob der gemeldete Schadenswert eine aufgezehrte Barriere enthält — die letzte ist nicht
+belegt. Das ist ein eigenes Vorhaben (TODO). **Bis dahin gilt ein angekündigter Tankbuster auf den Krieger als
+möglicherweise tödlich**: Er ist angekündigt, also wahrscheinlich, und seine Höhe ist unbekannt — nach seiner
+Spielweise geht dann die Sicherheit vor.
+
+**Ist er mit Bestehendem wegsteckbar?** Ohne Höhe nur in einem Fall entscheidbar, und der ist vollständig: Liegt
+eine Unverwundbarkeit (Holmgang, oder jede andere aus `NoNeedHealingStatus`) auf dem Krieger, während der
+Tankbuster auf ihn gewirkt wird, kann er ihn nicht töten. Schilde, laufende Minderungen, HoTs und die Heiler senken
+den Treffer oder füllen nach; ob das genügt, hängt an der Höhe, die fehlt.
+
+**Wird Bloodwhetting für den Tankbuster überhaupt gewirkt?** Das ist die Frage, die der Code beantworten kann, und
+sie entscheidet, ob eine Zurückhaltung etwas bewirkt. Fällt Bloodwhetting nicht vor dem Tankbuster (ab Werk bei
+einem einzelnen Boss), hält eine Zurückhaltung Nascent Flash vom Mitglied fern, ohne dass der Krieger am Treffer
+etwas davon hat; seine reaktive Nutzung danach ersetzt Nascent Flash bis auf Minderung und Barriere, und die Heilung
+bekommt er ohnehin. Die Zurückhaltung für den Tankbuster gilt deshalb nur, wenn die Einzelabwehr Bloodwhetting
+wirken würde — dieselbe Bedingung an derselben Stelle (`BloodwhettingForDefense`), nicht kopiert.
+
+**Wann ein Tankbuster „auf ihn und vor der Abklingzeit" kommt:**
+- ein gelisteter Tankbuster-Zauber auf ihn oder ein Tankbuster-Marker auf ihm (`IsHostileCastingTankBusterAtMe`,
+  wenige Sekunden voraus);
+- BossModReborn sagt einen Tankbuster innerhalb der Abklingzeit von Nascent Flash voraus (25 s, aus den
+  Spieldaten). Wen er trifft, sagt BossModReborn nur, solange er der nächste vorhergesagte Treffer im
+  Minderungsfenster ist (`BMRTankbusterHitsPlayer`). Weiter voraus gilt als Näherung: auf ihn, solange sein
+  Ziel ihn anvisiert (Schluss, nicht belegt — Tankbuster auf den zweiten in der Feindseligkeit gibt es).
+- In allen drei Fällen nur, solange sein Ziel ihn anvisiert: Das ist die eigene Prüfung von Raw
+  Intuition/Bloodwhetting (`PlayerIsTargetOnSelf`). Ein Off-Tank mit Tankbuster-Marker bekommt Bloodwhetting aus
+  der Einzelabwehr nicht, die Zurückhaltung hielte dort umsonst. Dass Bloodwhetting dann fehlt, ist eine
+  Upstream-Bauform der Aktion, nicht dieser Regel (TODO).
+Ohne BossModReborn-Modul bleibt nur der sichtbare Zauber oder Marker; die Zurückhaltung greift dann nur Sekunden
+vorher. Das ist eine Grenze, kein stiller Ausfall: Die Regel hält dann seltener, nie falsch.
+
+**Auf wen?** Nascent Flash ist eine Heilung samt Minderung und Barriere. Für die Zielwahl der Heilung gilt seine
+Vorgabe aus Konzept 07: **wer am stärksten gefährdet ist zu sterben; bei gleicher Gefährdung Heiler vor Tank vor
+Schadensausteiler.** Genau das tut die Heilzielwahl des Baums (`FindHealTarget`): die kritische Klasse zuerst, nach
+absoluten effektiven Punkten; mit „Choose the heal target by danger" die Klassen 2 und 3; Gleichstand nach Rolle.
+Die drei vorhandenen Einstellungen tun es nicht: „Lowest HP party member" sortiert nach aktuellem Prozentsatz und
+übergeht Barriere und Verlauf; „Healers first" zieht jeden Heiler unter der Schwelle einem sterbenden
+Schadensausteiler vor, was die Rollenordnung über die Gefährdung stellt; „Healers only" lässt alle anderen aus.
+**Deshalb eine vierte Einstellung: „By danger" — die Heilzielwahl.** Die drei bestehenden behalten ihre Bedeutung,
+weil ihr Text bindet.
+
+**Was beim Ziel vorhanden ist:**
+- *Schilde* zählen in der kritischen Klasse (effektive Gesundheit). Wer hinter einer Barriere steht, fällt nicht in
+  sie. Für die Heilschwelle zählen sie nicht, nach seiner Entscheidung A85: Gesundheit und Schild ersetzen einander
+  nicht.
+- *HoTs und Minderungen* wirken über den gemessenen Verlauf: Er ist netto aller Heilung und Minderung, die
+  Vorausschau liest ihn (mit „Heal ahead of incoming damage" an).
+- *Ein Nascent Glint eines anderen Kriegers* sperrt das Ziel (`TargetStatusProvide`).
+- *Unverwundbare* sind ausgeschlossen (Filter), *Heilung wirkungslos* (`HealingIneffectiveStatus`, Mounted) jetzt
+  ebenfalls — die Heilzielwahl schloss sie schon aus, die Sortierung nach Prozentsatz nicht.
+
+**Debuffs:**
+- *Beim Ziel:* Doom zählt als 1 % Gesundheit und steht damit vorn — Nascent Flash heilt nicht voll, aber Minderung
+  und Heilung helfen, und die volle Heilung kommt aus dem Heilpfad der Heiler. `HpRecoveryDown` mindert nur die
+  Heilung; Minderung und Barriere wirken voll, das Ziel bleibt Kandidat. Eine Verwundbarkeit erhöht den Eingang;
+  der Verlauf zeigt ihn.
+- *Beim Krieger:* Eine Verwundbarkeit macht den nächsten Tankbuster härter. Ohne Höhe ändert das an der Regel
+  nichts, sie ist bereits vorsichtig. Heilstrafen (Scalebound, Shackled Healing) sperren den ganzen Heilpfad
+  schon (`PlayerHealingPunished`).
+
+### Die Triage: wer verzichtet, wenn beide es brauchen
+
+Sein Bedarf an Bloodwhetting besteht, wenn **(a)** ein Tankbuster auf ihn vor der Abklingzeit kommt und Bloodwhetting
+dafür gewirkt würde, oder **(b)** er selbst in der kritischen Klasse steht. Dann geht Nascent Flash nur an ein
+Mitglied, das die Triage gegen ihn gewinnt, und das folgt seiner Rollenordnung nach Ersetzbarkeit (Konzept 07) und
+dem Grundsatz „sicher vor möglich":
+
+| Mitglied | gewinnt gegen seinen Bedarf? | Grund |
+|---|---|---|
+| nicht kritisch, gleich welche Rolle | nein | es stirbt nicht am nächsten Treffer; die Heiler decken es |
+| **Heiler**, kritisch | **ja** | fällt der Heiler, fällt die Gruppe mit ihm (seine Begründung) |
+| **Tank**, kritisch | ja, solange der Krieger selbst nicht kritisch ist | gleiche Rolle; sein Tod ist sicher, der Tankbuster möglich |
+| **Schadensausteiler**, kritisch | **nein** | am ehesten entbehrlich: wiederbelebbar, während ein toter Tank meist den Kampf kostet (Konzept 08) |
+
+**Gegenposition, geprüft und nicht widerlegt:** Bloodwhetting ist am Tankbuster ein kleiner Anteil — rund 19 % in
+4 s und eine Barriere — und oft nicht der Unterschied zwischen Leben und Tod. Nascent Flash auf einen kritischen
+Schadensausteiler kann dagegen genau diesen Unterschied machen. Ohne die Höhe des Tankbusters opfert die Regel im
+Zweifel einen Schadensausteiler für einen Treffer, den der Krieger auch ohne Bloodwhetting überlebt hätte. Sie ist
+nicht widerlegbar, solange die Höhe fehlt; die Regel folgt seiner Ordnung, und mit der Messung aus dem TODO wird
+aus „möglicherweise tödlich" eine Zahl.
+
+### Antithesen
+
+- **Kein Defekt:** Ab Werk (einzelner Boss, „single enemies" aus) fällt Bloodwhetting nicht vor dem Tankbuster —
+  dann gibt es den Konflikt am Tankbuster nicht, und die Regel hält dort auch nicht (Bedingung (a)). Er besteht mit
+  der Einstellung an und bei mehr als zwei Gegnern, und Bedingung (b) besteht immer. Die Zielwahl nach Prozentsatz
+  wählt einen Schadensausteiler bei 10 % hinter Barriere vor einem bei 12 % ohne, der am nächsten Treffer stirbt.
+- **Option falsch:** Die Näherung „wen sein Ziel anvisiert, der bekommt den Tankbuster" kann irren; dann hält der Krieger
+  Nascent Flash für einen Treffer, der den anderen Tank trifft — und gerade der könnte es brauchen. Der Fehler geht
+  in die vorsichtige Richtung und endet, sobald der Tankbuster im Minderungsfenster steht und die Maske ihn richtig
+  zuordnet. Die Triage kann einen Schadensausteiler kosten (Gegenposition oben).
+- **Ausgeliefert, und nichts ändert sich:** Ohne Tankbuster-Signal greift nur (b). Ohne Bloodwhetting in der
+  Einzelabwehr greift nur (b) — richtig so, siehe oben. Mit „By danger" ändert sich die Wahl nur, wo kritische
+  Klasse, Barriere oder Verlauf vom Prozentsatz abweichen; sonst wählt sie denselben.
+
+### Umsetzung (A226)
+
+- `WAR_Reborn.BloodwhettingForDefense`: die Bedingung der Einzelabwehr, gelesen von ihr und von der Zurückhaltung.
+- Einstellung **„Keep Bloodwhetting for yourself when you need it"**, ab Werk **an** (seine Regel für Voreinstellungen,
+  29.09.2026): hält Nascent Flash nach (a)/(b) und der Triage zurück.
+- Vierte Zielwahl **„By danger"**, ab Werk gewählt (angehängt; Rotationseinstellungen speichern den Namen).
+- Heilung-wirkungslos-Ausschluss in allen vier Zielwahlen.
+- Der Zielfilter liest `NoNeedHealingInvuln()` mit der richtigen Polarität (belegter Defekt, ohne Schalter).
+- **Nicht gebaut:** Nascent Flash als Minderung für den **anderen Tank vor dessen Tankbuster** — der Anwendungsfall,
+  den The Balance mit „Nascent Flash goes on a friend" meint, ist hier ein Schluss, keine Quelle. Das ist neues
+  Verhalten und steht als Vorschlag im TODO. Ebenso die Messung der Tankbuster-Höhe.
 
 ## Was offen bleibt
 

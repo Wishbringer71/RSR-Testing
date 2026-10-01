@@ -3662,11 +3662,23 @@ public static class ObjectHelper
 	/// GetTTK answers NaN and this returns 1, so a party held steady sees no change at all. The
 	/// look-ahead appears exactly when the net trend is downward, and grows as it steepens.
 	///
-	/// Off by default. The effect cannot be shown with the means available here - static analysis
-	/// and a compile say nothing about whether a tank lives - so the current behaviour stays the
-	/// default and this is offered as a setting.
+	/// On by default (the owner's rule for defaults, 29.09.2026). The effect is not shown in play -
+	/// static analysis and a compile say nothing about whether a tank lives.
 	/// </remarks>
 	internal static float GetForecastSurvivingShare(this IBattleChara battleChara)
+		=> battleChara.GetForecastSurvivingShare(false);
+
+	/// <summary>
+	/// <see cref="GetForecastSurvivingShare(IBattleChara)"/> for a heal of the given kind.
+	/// </summary>
+	/// <param name="battleChara">The member.</param>
+	/// <param name="instant">True for an off-GCD heal, which lands as soon as the current animation
+	/// lock and any cast in progress let it go out; false for a GCD heal, which needs the rest of this GCD and its cast. The
+	/// setting's text promises the health "by the time a heal started now would land", and for an
+	/// instant heal that is now: read with the GCD lead, Benediction or Essential Dignity went out up
+	/// to a GCD before they were needed (A213). An off-GCD action that heals only with the next GCD
+	/// (Synastry, Krasis, Soteria, Emergency Tactics) passes false (A221).</param>
+	internal static float GetForecastSurvivingShare(this IBattleChara battleChara, bool instant)
 	{
 		if (battleChara == null || !Service.Config.HealAheadOfDamage)
 		{
@@ -3679,8 +3691,21 @@ public static class ObjectHelper
 			return 1f;
 		}
 
-		var lead = GetHealLeadTime();
+		var lead = instant ? GetInstantHealLeadTime() : GetHealLeadTime();
 		return lead <= 0f ? 1f : Math.Clamp(1f - (lead / ttk), 0f, 1f);
+	}
+
+	/// <summary>
+	/// How long an off-GCD heal decided on now takes to go out: until the current animation lock and
+	/// any cast in progress have ended - nothing is woven over a hard cast (concept 08, A217).
+	/// </summary>
+	internal static float GetInstantHealLeadTime()
+	{
+		var player = Player.Object;
+		var castLeft = player != null && player.IsCasting
+			? Math.Max(0f, player.TotalCastTime - player.CurrentCastTime)
+			: 0f;
+		return Math.Max(Math.Max(0f, DataCenter.AnimationLock), castLeft);
 	}
 
 	private static long _healLeadCacheTick = long.MinValue;
@@ -3812,19 +3837,52 @@ public static class ObjectHelper
 	}
 
 	/// <summary>
-	/// <see cref="GetHealthRatio"/> carried forward to the moment a heal begun now would land.
+	/// <see cref="GetHealthRatio"/> carried forward to the moment a heal begun now would land. With
+	/// "Heal ahead of incoming damage" off it is exactly <see cref="GetHealthRatio"/>. Every healing
+	/// threshold reads this, as that setting's text promises.
 	/// </summary>
-	internal static float GetForecastHealthRatio(this IBattleChara battleChara)
+	public static float GetForecastHealthRatio(this IBattleChara battleChara)
 	{
 		return battleChara.GetHealthRatio() * battleChara.GetForecastSurvivingShare();
 	}
 
 	/// <summary>
+	/// <see cref="GetForecastHealthRatio(IBattleChara)"/> for a heal of the given kind: an off-GCD heal
+	/// (<paramref name="instant"/>) looks ahead only as far as the current animation lock.
+	/// </summary>
+	public static float GetForecastHealthRatio(this IBattleChara battleChara, bool instant)
+	{
+		return battleChara.GetHealthRatio() * battleChara.GetForecastSurvivingShare(instant);
+	}
+
+	/// <summary>
 	/// <see cref="GetEffectiveHp"/> carried forward to the moment a heal begun now would land.
 	/// </summary>
-	internal static uint GetForecastEffectiveHp(this IBattleChara battleChara)
+	internal static uint GetForecastEffectiveHp(this IBattleChara battleChara, bool instant = false)
 	{
-		return (uint)(battleChara.GetEffectiveHp() * battleChara.GetForecastSurvivingShare());
+		return (uint)(battleChara.GetEffectiveHp() * battleChara.GetForecastSurvivingShare(instant));
+	}
+
+	/// <summary>
+	/// Whether this member stands in the heal chain's critical class (concept 07): unprotected by an
+	/// invulnerability, and at or below <c>HealthForDyingTanks</c> in effective health carried forward
+	/// to the moment a heal begun now would land. One definition for every reader - the heal target
+	/// order, the defense holds and Lux Solaris - so they cannot disagree about who is in danger.
+	/// </summary>
+	internal static bool IsInCriticalClass(this IBattleChara battleChara)
+	{
+		return battleChara.IsInCriticalClass(battleChara.NoNeedHealingInvuln());
+	}
+
+	/// <summary>
+	/// <see cref="IsInCriticalClass(IBattleChara)"/> for a caller that has already read whether the
+	/// member is protected, so the status list is not walked twice and the answer cannot change
+	/// between the two reads.
+	/// </summary>
+	internal static bool IsInCriticalClass(this IBattleChara battleChara, bool unprotected)
+	{
+		return unprotected
+			&& battleChara.GetForecastEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f;
 	}
 
 	/// <summary>
@@ -3839,11 +3897,11 @@ public static class ObjectHelper
 	/// <see cref="GetPlayerHealthRatio"/> carried forward the same way, for the paths that ask about
 	/// the player without holding an object reference.
 	/// </summary>
-	internal static float GetForecastPlayerHealthRatio()
+	internal static float GetForecastPlayerHealthRatio(bool instant = false)
 	{
 		return Player.Object == null
 			? GetPlayerHealthRatio()
-			: GetPlayerHealthRatio() * Player.Object.GetForecastSurvivingShare();
+			: GetPlayerHealthRatio() * Player.Object.GetForecastSurvivingShare(instant);
 	}
 
 	/// <summary>

@@ -390,83 +390,188 @@ internal static class DataCenter
 	internal static bool InEffectTime => DateTime.Now >= EffectTime && DateTime.Now <= EffectEndTime;
 	internal static Dictionary<ulong, uint> HealHP { get; set; } = [];
 
-	// How much health one of our own healing actions actually restored, in points, per action id.
-	// Healing is an absolute figure just like damage, so it is stored as points and divided by the
-	// member's own maximum where it is read - the same member carries a different share of it.
+	// How much health one of our own healing actions restores to one target, in points, per action id.
+	// Healing is an absolute figure just like damage, so it is stored as points; a caller compares it
+	// with points (a member's missing health), never with a share.
 	//
 	// This exists because the potency in an effect text cannot be converted into points from here:
 	// the result depends on healing power, on the job gauge and on buffs, and it changes with every
 	// piece of gear. Asking the fight instead costs nothing - the effect handler already sees every
 	// heal we land, with the real number.
 	//
-	// Smoothed rather than overwritten, because a critical heal restores markedly more than an
-	// ordinary one and a single one of those must not move the estimate to where the next decision
-	// is wrong. The weight is even: the most recent landing counts as much as everything before it,
-	// so a gear change is followed within a few casts instead of being averaged away.
+	// The SMALLEST amount seen is kept, not a mean. Owner's rule: a heal can land as a critical hit
+	// and be much larger, and a need is judged against the least the heal will surely restore, never
+	// the most. Only amounts that measure the whole heal count: one that met more missing health than
+	// it restored (nothing was lost to overheal), or any amount once the packet is seen to report
+	// overheal at all - then every amount is the full heal. It is cleared on a territory change only
+	// (ResetHealMeasurements): item level sync is set per duty, so a figure from outside would be
+	// wrong inside; a gear change is followed from the next zone on.
 	private static readonly Dictionary<uint, float> _observedHealPerCast = [];
+	private static readonly Dictionary<uint, HealLanding> _lastHealLanding = [];
 
-	internal static void RecordHealEffect(uint actionId, IEnumerable<uint> healedAmounts)
+	/// <summary>
+	/// How the last measured cast of a healing action landed: the share of what it restored that met
+	/// missing health, whether any target was reported a larger amount than it was missing (the packet
+	/// reports the gross heal), how many targets were confirmed and how many were not.
+	/// </summary>
+	internal readonly record struct HealLanding(float EffectiveShare, bool GrossReported, int Confirmed, int Unconfirmed, DateTime At);
+
+	// One cast waiting for its confirmation. The effect packet arrives with the amounts; whether the
+	// health seen at that moment was still the health from before the heal is not known then - the
+	// server's health update can come before or after the effect, and the heal-hp projection below
+	// (GetPartyMemberHPRatio) is built for both orders. So the cast is held, and each target is
+	// confirmed only when its health actually rises by what the heal can have added after the
+	// effect was seen. A target whose health had already risen, or that took damage in between, is
+	// never confirmed and never measured - the safe direction.
+	private sealed record PendingHealTarget(ulong Id, uint Amount, uint HpAtEffect, uint MaxHp)
 	{
-		float sum = 0;
-		var count = 0;
-		foreach (var amount in healedAmounts)
+		public bool Confirmed { get; set; }
+		public uint MissingBefore => MaxHp > HpAtEffect ? MaxHp - HpAtEffect : 0;
+		public uint Expected => Math.Min(Amount, MissingBefore);
+	}
+
+	private static (uint ActionId, DateTime Deadline, List<PendingHealTarget> Targets)? _pendingHeal;
+
+	/// <summary>
+	/// Holds one cast of an own healing action until its health changes confirm it; see
+	/// <see cref="HealLanding"/>. <paramref name="landed"/> holds, per party member hit, the amount
+	/// the effect reported and the member's health and maximum at that moment. The cast waits until
+	/// the end of the effect window (EffectEndTime) - as long as the heal projection waits for the
+	/// server's health update.
+	/// </summary>
+	internal static void RecordHealEffect(uint actionId, IReadOnlyList<(ulong Id, uint Amount, uint Hp, uint MaxHp)> landed)
+	{
+		ResolvePendingHeal(force: true);
+
+		List<PendingHealTarget> targets = [];
+		foreach (var (id, amount, hp, maxHp) in landed)
 		{
-			// A heal that landed on a full target reports the overheal as 0 in the effect packet,
-			// which would drag the estimate towards zero and never recover. Only landings that
-			// actually restored something say what the action is worth.
-			if (amount == 0)
+			if (amount > 0 && maxHp > 0)
 			{
-				continue;
+				targets.Add(new PendingHealTarget(id, amount, hp, maxHp));
 			}
-			sum += amount;
-			count++;
 		}
 
-		if (count == 0)
+		_pendingHeal = null;
+		if (targets.Count > 0)
+		{
+			_pendingHeal = (actionId, EffectEndTime, targets);
+		}
+	}
+
+	// Called for every party member whenever the refined health is read, and before any reader of
+	// the measurement. Confirms targets whose health has risen by what the heal adds; once every
+	// target that could rise has, or the effect window is over, the cast is measured from its
+	// confirmed targets alone.
+	private static void ConfirmPendingHeal(IBattleChara member)
+	{
+		if (_pendingHeal is not { } pending)
 		{
 			return;
 		}
 
-		var perTarget = sum / count;
-		_observedHealPerCast[actionId] = _observedHealPerCast.TryGetValue(actionId, out var known) && known > 0
-			? (known + perTarget) / 2f
-			: perTarget;
+		foreach (var target in pending.Targets)
+		{
+			if (!target.Confirmed && target.Id == member.GameObjectId && target.Expected > 0
+				&& member.CurrentHp >= target.HpAtEffect + target.Expected)
+			{
+				target.Confirmed = true;
+			}
+		}
+
+		ResolvePendingHeal(force: false);
+	}
+
+	private static void ResolvePendingHeal(bool force)
+	{
+		if (_pendingHeal is not { } pending)
+		{
+			return;
+		}
+
+		var open = false;
+		foreach (var target in pending.Targets)
+		{
+			open |= !target.Confirmed && target.Expected > 0;
+		}
+
+		if (open && !force && DateTime.Now <= pending.Deadline)
+		{
+			return;
+		}
+
+		_pendingHeal = null;
+
+		var confirmed = 0;
+		var unconfirmed = 0;
+		double restored = 0;
+		double met = 0;
+		var gross = false;
+		foreach (var target in pending.Targets)
+		{
+			if (!target.Confirmed)
+			{
+				unconfirmed++;
+				continue;
+			}
+
+			confirmed++;
+			restored += target.Amount;
+			met += target.Expected;
+			gross |= target.Amount > target.MissingBefore;
+		}
+
+		if (confirmed > 0)
+		{
+			var smallest = float.MaxValue;
+			foreach (var target in pending.Targets)
+			{
+				if (target.Confirmed && (gross || target.Amount < target.MissingBefore))
+				{
+					smallest = Math.Min(smallest, target.Amount);
+				}
+			}
+
+			if (smallest < float.MaxValue)
+			{
+				_observedHealPerCast[pending.ActionId] = _observedHealPerCast.TryGetValue(pending.ActionId, out var known) && known > 0
+					? Math.Min(known, smallest)
+					: smallest;
+			}
+		}
+
+		_lastHealLanding[pending.ActionId] = new HealLanding(
+			restored > 0 ? (float)(met / restored) : 0f, gross, confirmed, unconfirmed, DateTime.Now);
 	}
 
 	/// <summary>
-	/// The healing one cast of this action was last seen to restore, in health points, or 0 when it
-	/// has not been observed yet. 0 means "unknown", never "heals nothing" - a caller that cannot
-	/// act on an unknown value keeps its previous behaviour instead of assuming one.
+	/// What one cast of this action restores to one target, in health points, or 0 when it has not
+	/// been observed since the last territory change. 0 means "unknown", never "heals nothing" - a
+	/// caller that cannot act on an unknown value keeps its previous behaviour instead of assuming one.
 	/// </summary>
 	public static float GetObservedHealPerCast(uint actionId)
 	{
+		ResolvePendingHeal(force: false);
 		return _observedHealPerCast.TryGetValue(actionId, out var known) ? known : 0f;
 	}
 
 	/// <summary>
-	/// The largest amount of health missing from any living party member, in points. This is the
-	/// figure a heal has to reach for none of it to be wasted on that member.
+	/// Clears the measured heals. Called on a territory change only, not with ResetAllRecords - that
+	/// one runs after every fight, and a heal measured in the last pull is the right figure for the
+	/// next. Item level sync is set per duty, so a figure from outside is wrong inside.
 	/// </summary>
-	public static float LargestMissingHp
+	internal static void ResetHealMeasurements()
 	{
-		get
-		{
-			float largest = 0;
-			foreach (var member in PartyMembers)
-			{
-				if (member.IsDead || member.MaxHp == 0 || member.CurrentHp >= member.MaxHp)
-				{
-					continue;
-				}
+		_observedHealPerCast.Clear();
+		_lastHealLanding.Clear();
+		_pendingHeal = null;
+	}
 
-				var missing = (float)(member.MaxHp - member.CurrentHp);
-				if (missing > largest)
-				{
-					largest = missing;
-				}
-			}
-			return largest;
-		}
+	/// <summary>How the last cast of this action landed, or null when none has been seen.</summary>
+	internal static HealLanding? GetLastHealLanding(uint actionId)
+	{
+		ResolvePendingHeal(force: false);
+		return _lastHealLanding.TryGetValue(actionId, out var landing) ? landing : null;
 	}
 
 	internal static Dictionary<ulong, uint> ApplyStatus { get; set; } = [];
@@ -1476,7 +1581,7 @@ internal static class DataCenter
 			{
 				try
 				{
-					if (member == null || member.GameObjectId == 0)
+					if (member == null || !member.IsValid() || member.GameObjectId == 0)
 					{
 						continue; // Skip invalid or null members
 					}
@@ -1509,6 +1614,8 @@ internal static class DataCenter
 			return 0f;
 		}
 
+		ConfirmPendingHeal(member);
+
 		var id = member.GameObjectId;
 
 		if (!InEffectTime || !HealHP.TryGetValue(id, out var healedHp))
@@ -1535,6 +1642,9 @@ internal static class DataCenter
 		return (float)currentHp / member.MaxHp;
 	}
 
+	/// <summary>How long a party-wide reading counts as the same frame's, in milliseconds.</summary>
+	internal static long FrameCacheMs => PartyHpStatsTtlMs;
+
 	private static readonly float[] _hpBuffer = new float[8];
 	private static long _partyHpStatsCacheTick = long.MinValue;
 	private static float _minHpCache, _avgHpCache, _stdDevHpCache, _lowestAvgHpCache, _lowestStdDevHpCache;
@@ -1559,7 +1669,7 @@ internal static class DataCenter
 		var hpCount = 0;
 		foreach (var member in PartyMembers)
 		{
-			if (member.GameObjectId != 0 && hpCount < _hpBuffer.Length)
+			if (member.IsValid() && member.GameObjectId != 0 && hpCount < _hpBuffer.Length)
 			{
 				try
 				{
@@ -1636,6 +1746,112 @@ internal static class DataCenter
 		_partyHpStatsCacheTick = now;
 	}
 
+	/// <summary>
+	/// The smallest party composition in the game: one tank, one healer, one melee, one ranged
+	/// (ContentMemberType row 2). The area-heal statistics weigh the lowest this many members of a
+	/// larger party, so a full party is judged on the four who need it most.
+	/// </summary>
+	internal const int LightPartySize = 4;
+
+	private static readonly float[] _forecastHpBuffer = new float[_hpBuffer.Length];
+
+	// One cache per kind of heal - off-GCD and GCD look ahead by different leads (A213).
+	private static readonly long[] _forecastStatsCacheTick = [long.MinValue, long.MinValue];
+	private static readonly float[] _forecastAvgCache = new float[_forecastStatsCacheTick.Length];
+	private static readonly float[] _forecastStdDevCache = new float[_forecastStatsCacheTick.Length];
+	private static readonly float[] _forecastLowestAvgCache = new float[_forecastStatsCacheTick.Length];
+	private static readonly float[] _forecastLowestStdDevCache = new float[_forecastStatsCacheTick.Length];
+
+	/// <summary>
+	/// The area-heal statistics on forecast health: each member's health carried forward to the moment
+	/// a heal begun now would land (<see cref="ObjectHelper.GetForecastSurvivingShare"/>).
+	/// </summary>
+	/// <remarks>
+	/// "Heal ahead of incoming damage" states that every healing threshold reads the health a member is
+	/// heading for; the area thresholds read the level only. Kept apart from the statistics above
+	/// because those have many readers outside the heal chain, foreign rotations among them, tuned to
+	/// the level - only the two area thresholds read this. With the setting off the forecast share is
+	/// 1 and the figures equal the level ones.
+	/// </remarks>
+	internal static void ComputeForecastAreaStats(bool instant, out float avgHp, out float stdDevHp, out float lowestAvgHp, out float lowestStdDevHp)
+	{
+		var kind = instant ? 1 : 0;
+		var now = Environment.TickCount64;
+		if (_forecastStatsCacheTick[kind] != long.MinValue && now - _forecastStatsCacheTick[kind] < PartyHpStatsTtlMs)
+		{
+			avgHp = _forecastAvgCache[kind];
+			stdDevHp = _forecastStdDevCache[kind];
+			lowestAvgHp = _forecastLowestAvgCache[kind];
+			lowestStdDevHp = _forecastLowestStdDevCache[kind];
+			return;
+		}
+
+		// The same members as the level statistics count - valid, with an id, alive - so that with the
+		// setting off both give the same figures, as the setting's text promises.
+		var count = 0;
+		foreach (var member in PartyMembers)
+		{
+			if (!member.IsValid() || member.GameObjectId == 0 || count >= _forecastHpBuffer.Length)
+			{
+				continue;
+			}
+
+			try
+			{
+				var hp = GetPartyMemberHPRatio(member);
+				if (hp > 0)
+				{
+					_forecastHpBuffer[count++] = hp * member.GetForecastSurvivingShare(instant);
+				}
+			}
+			catch (AccessViolationException ex)
+			{
+				PluginLog.Error($"AccessViolationException in forecast party HP computation: {ex.Message}");
+			}
+		}
+
+		avgHp = stdDevHp = lowestAvgHp = lowestStdDevHp = 0;
+		if (count > 0)
+		{
+			Array.Sort(_forecastHpBuffer, 0, count);
+			var lowestCount = Math.Min(count, LightPartySize);
+
+			float sum = 0, lowestSum = 0;
+			for (var i = 0; i < count; i++)
+			{
+				sum += _forecastHpBuffer[i];
+				if (i < lowestCount)
+				{
+					lowestSum += _forecastHpBuffer[i];
+				}
+			}
+
+			avgHp = sum / count;
+			lowestAvgHp = lowestSum / lowestCount;
+
+			float variance = 0, lowestVariance = 0;
+			for (var i = 0; i < count; i++)
+			{
+				var diff = _forecastHpBuffer[i] - avgHp;
+				variance += diff * diff;
+				if (i < lowestCount)
+				{
+					var lowestDiff = _forecastHpBuffer[i] - lowestAvgHp;
+					lowestVariance += lowestDiff * lowestDiff;
+				}
+			}
+
+			stdDevHp = (float)Math.Sqrt(variance / count);
+			lowestStdDevHp = (float)Math.Sqrt(lowestVariance / lowestCount);
+		}
+
+		_forecastAvgCache[kind] = avgHp;
+		_forecastStdDevCache[kind] = stdDevHp;
+		_forecastLowestAvgCache[kind] = lowestAvgHp;
+		_forecastLowestStdDevCache[kind] = lowestStdDevHp;
+		_forecastStatsCacheTick[kind] = now;
+	}
+
 	public static float PartyMembersMinHP
 	{
 		get
@@ -1690,7 +1906,7 @@ internal static class DataCenter
 			{
 				try
 				{
-					if (member == null || member.GameObjectId == 0)
+					if (member == null || !member.IsValid() || member.GameObjectId == 0)
 					{
 						continue;
 					}
@@ -1823,6 +2039,7 @@ internal static class DataCenter
 		_partyHpStatsCacheTick = long.MinValue;
 		_timeLastActionUsed = DateTime.Now;
 		_actions.Clear();
+		DefenseHolds.Clear();
 
 		AttackedTargets.Clear();
 
@@ -1954,7 +2171,7 @@ internal static class DataCenter
 		for (int i = 0, n = hostileEnum.Count; i < n; i++)
 		{
 			var hostile = hostileEnum[i];
-			if (hostile == null)
+			if (hostile == null || !hostile.IsValid())
 			{
 				continue;
 			}
@@ -1990,12 +2207,15 @@ internal static class DataCenter
 	/// Determines whether any currently casting hostile action is classified as physical.
 	/// </summary>
 	/// <returns>
-	/// True if at least one hostile target is casting an action whose <c>AttackType.RowId == 7</c> (interpreted as physical); otherwise false.
+	/// True if at least one hostile target is casting an action whose attack type is slashing,
+	/// piercing, blunt or shot (<c>AttackType</c> rows 1 to 4); otherwise false.
 	/// </returns>
 	/// <remarks>
 	/// Scans all hostile entities with a non-zero <c>CastActionId</c>, looks up the action row, and inspects the attack type.
 	/// Returns early on the first confirmed magical cast.
 	/// If the action sheet cannot be loaded or no valid casts exist, returns false.
+	/// The sheet's rows, read 27.09.2026 through v2.xivapi.com: 1 slashing, 2 piercing, 3 blunt, 4 shot,
+	/// 5 magic, 6 breath, 7 sound, 8 limit break. This used to test row 7 as physical, which is sound.
 	/// </remarks>
 	public static bool IsPhysicalDamageIncoming()
 	{
@@ -2014,7 +2234,7 @@ internal static class DataCenter
 		for (int i = 0, n = hostileEnum.Count; i < n; i++)
 		{
 			var hostile = hostileEnum[i];
-			if (hostile == null)
+			if (hostile == null || !hostile.IsValid())
 			{
 				continue;
 			}
@@ -2032,8 +2252,8 @@ internal static class DataCenter
 					continue;
 				}
 
-				// AttackType row id 7 interpreted as physical.
-				if (action.AttackType.RowId == 7)
+				// Slashing, piercing, blunt and shot are the physical rows of the AttackType sheet.
+				if (action.AttackType.RowId is >= 1 and <= 4)
 				{
 					return true;
 				}
@@ -2062,7 +2282,7 @@ internal static class DataCenter
 			for (int i = 0, n = hostileEnum.Count; i < n; i++)
 			{
 				var hostile = hostileEnum[i];
-				if (hostile == null)
+				if (hostile == null || !hostile.IsValid())
 				{
 					continue;
 				}
@@ -2100,7 +2320,7 @@ internal static class DataCenter
 			for (int i = 0, n = hostileEnum.Count; i < n; i++)
 			{
 				var hostile = hostileEnum[i];
-				if (hostile == null)
+				if (hostile == null || !hostile.IsValid())
 				{
 					continue;
 				}
@@ -2158,7 +2378,7 @@ internal static class DataCenter
 		for (int i = 0, n = hostileEnum.Count; i < n; i++)
 		{
 			var hostile = hostileEnum[i];
-			if (hostile == null)
+			if (hostile == null || !hostile.IsValid())
 			{
 				continue;
 			}
@@ -2232,7 +2452,7 @@ internal static class DataCenter
 		for (int i = 0, n = hostileEnum.Count; i < n; i++)
 		{
 			var hostile = hostileEnum[i];
-			if (hostile == null)
+			if (hostile == null || !hostile.IsValid())
 			{
 				continue;
 			}
@@ -2293,7 +2513,7 @@ internal static class DataCenter
 		for (int i = 0, n = hostileEnum.Count; i < n; i++)
 		{
 			var hostile = hostileEnum[i];
-			if (hostile == null)
+			if (hostile == null || !hostile.IsValid())
 			{
 				continue;
 			}
@@ -2352,7 +2572,7 @@ internal static class DataCenter
 		for (int i = 0, n = hostileEnum.Count; i < n; i++)
 		{
 			var hostile = hostileEnum[i];
-			if (hostile == null)
+			if (hostile == null || !hostile.IsValid())
 			{
 				continue;
 			}
@@ -2427,10 +2647,11 @@ internal static class DataCenter
 	// Cached, case-insensitive path sets modeled after WrathCombo VFX.cs
 	private static readonly FrozenSet<string> TankbusterPaths = FrozenSet.ToFrozenSet(
 	[
-		"vfx/lockon/eff/tank_lockon",
-		"vfx/lockon/eff/tank_laser",
-		"vfx/lockon/eff/sharelaser2tank5sec_c0k1",
-		"vfx/lockon/eff/sharelaser2tank8sec_c0p",
+		// Prefixes, matched with StartsWith: every tank marker ("tank_lockon", "tank_laser", ...) and
+		// every shared tank laser. A marker the prefix catches wrongly is learned away by
+		// TankbusterMarkerWatch (concept 15, V2).
+		"vfx/lockon/eff/tank",
+		"vfx/lockon/eff/sharelaser2tank",
 		"vfx/lockon/eff/x6fe_fan100_50_0t1",     // Necron Blue Shockwave - Cone Tankbuster
 		//"vfx/common/eff/mon_eisyo03t",           // M10 Deep Impact AoE TB need different path for this, this is the generic target vfx part
 		"vfx/lockon/eff/m0676trg_tw_d0t1p",      // M10 Hot Impact shared TB
@@ -2458,6 +2679,8 @@ internal static class DataCenter
 		"vfx/lockon/eff/coshare",
 		"vfx/lockon/eff/share_laser",
 		"vfx/lockon/eff/com_share",
+		"vfx/lockon/eff/share_1",
+		"vfx/lockon/eff/d1084_share_24m_s6_0k2", // San d'Oria: The Second Walk
 		"vfx/lockon/eff/share_10s_6m_0w",
 		"vfx/lockon/eff/share_12s_6m_t1",
 		"vfx/lockon/eff/share_14s_6m_t1",
@@ -2486,8 +2709,169 @@ internal static class DataCenter
 
 	private static readonly StringComparison PathCmp = StringComparison.OrdinalIgnoreCase;
 
+	/// <summary>Whether a VFX path is one of the tankbuster markers, before the learned exclusions.</summary>
+	internal static bool IsTankbusterMarkerPath(string path)
+	{
+		foreach (var p in TankbusterPaths)
+		{
+			if (path.StartsWith(p, PathCmp))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>Whether the fight has shown this marker path not to be followed by a hit.</summary>
+	internal static bool IsFalsifiedTankbusterMarker(string path)
+		=> OtherConfiguration.TankbusterMarkerWithoutHit.Contains(path.ToLowerInvariant());
+
 	public static bool IsHostileCastingAOE =>
 		InCombat && (IsCastingAreaVfx() || (AllHostileTargets != null && IsAnyHostileCastingArea()));
+
+	/// <summary>
+	/// Whether the area hit that opens the area defence reaches the player himself - the question for
+	/// the actions that protect only him (concept 13, A218). The flag asks for the party; Radiant Aegis
+	/// spent on a tankbuster circle around the tank protected nobody it was hitting.
+	/// </summary>
+	/// <remarks>
+	/// Sources, read without side effects: a stack marker (a stack involves everyone who stacks), a
+	/// spread marker on the player, a listed area cast within its landing window that reaches him -
+	/// rated worth mitigating, or unrated - interruptible ones included under "mitigate big area casts
+	/// even if interruptible", and a BossModReborn raidwide inside the mitigation window.
+	/// </remarks>
+	public static bool AreaHitReachesPlayer
+	{
+		get
+		{
+			if (!InCombat || Player.Object == null)
+			{
+				return false;
+			}
+
+			if (IsAreaVfxReachingPlayer())
+			{
+				return true;
+			}
+
+			if (Service.Config.UseBmrTimeline && BMRNextRaidwideIn > 0.6f && BMRNextRaidwideIn <= Service.Config.BMRRaidwideMitWindow)
+			{
+				return true;
+			}
+
+			var targets = AllHostileTargets;
+			if (targets == null)
+			{
+				return false;
+			}
+
+			var actionSheet = Service.GetSheet<Action>();
+			for (var i = 0; i < targets.Count; i++)
+			{
+				var h = targets[i];
+				if (h == null || !h.IsValid() || !h.IsCasting)
+				{
+					continue;
+				}
+
+				// The same recognition the flag uses, asked of the player instead of the party.
+				if (IsHostileCastingBase(h, act => OtherConfiguration.HostileCastingArea.Contains(act.RowId)
+					&& AreaCastCanReachPlayer(h, act)
+					&& AreaCastIsWorthMitigating(act.RowId)))
+				{
+					return true;
+				}
+
+				// The large interruptible cast, as IsHostileCastingLargeArea recognises it, without its
+				// recording.
+				if (!h.IsCastInterruptible || !Service.Config.MitigateBigAreaCastsEvenIfInterruptible
+					|| !OtherConfiguration.HostileCastingArea.Contains(h.CastActionId)
+					|| !OtherConfiguration.HostileCastingAreaPotential.TryGetValue(h.CastActionId, out var share)
+					|| share < LargeShieldShare)
+				{
+					continue;
+				}
+
+				var remaining = h.TotalCastTime - h.CurrentCastTime;
+				if (remaining <= 0f || remaining > GCDTime(1))
+				{
+					continue;
+				}
+
+				var action = actionSheet.GetRow(h.CastActionId);
+				if (action.RowId != 0 && AreaCastCanReachPlayer(h, action))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+	}
+
+	private static bool IsAreaVfxReachingPlayer()
+	{
+		var player = Player.Object;
+		if (player == null || VfxDataQueue == null || VfxDataQueue.IsEmpty)
+		{
+			return false;
+		}
+
+		foreach (var vfx in VfxDataQueue)
+		{
+			if (string.IsNullOrEmpty(vfx.Path))
+			{
+				continue;
+			}
+
+			if ((StartsWithAny(vfx.Path, MultiHitSharedPaths) || StartsWithAny(vfx.Path, SharedDamagePaths))
+				&& IsOwnPartyMarker(vfx.ObjectId))
+			{
+				return true;
+			}
+
+			if (vfx.ObjectId == player.GameObjectId && StartsWithAny(vfx.Path, SpreadDamagePaths))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// <see cref="IsHostileCastingAOE"/> for the player's own area defence: under "Skip area defence for
+	/// casts that missed you", a listed cast whose last landing left the living player untouched does
+	/// not count (A205). Only the defence flag reads this; healing ahead and the threat check keep the
+	/// party's view.
+	/// </summary>
+	public static bool IsHostileCastingAOEForMyDefense =>
+		!Service.Config.SkipAreaCastsThatMissedMe
+			? IsHostileCastingAOE
+			: InCombat && (IsCastingAreaVfx() || (AllHostileTargets != null && IsAnyHostileCastingAreaReachingMe()));
+
+	private static bool IsAnyHostileCastingAreaReachingMe()
+	{
+		var playerId = Player.Object?.GameObjectId ?? 0;
+		for (var i = 0; i < AllHostileTargets.Count; i++)
+		{
+			var h = AllHostileTargets[i];
+			if (!IsHostileCastingArea(h))
+			{
+				continue;
+			}
+
+			// A cast aimed at the player reaches him by definition, whatever happened last time.
+			if (h.CastTargetObjectId == playerId
+				|| !AreaCastReachedPlayer.TryGetValue(h.CastActionId, out var reached) || reached)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 	/// <summary>
 	/// An enemy is casting an action whose measured area damage is large, that will reach the player,
@@ -2550,7 +2934,7 @@ internal static class DataCenter
 				var h = targets[i];
 				try
 				{
-					if (h == null || h.GameObjectId == 0 || !h.IsCasting || !h.IsEnemy())
+					if (h == null || !h.IsValid() || h.GameObjectId == 0 || !h.IsCasting || !h.IsEnemy())
 					{
 						continue;
 					}
@@ -2577,7 +2961,7 @@ internal static class DataCenter
 					}
 
 					var action = actionSheet.GetRow(h.CastActionId);
-					if (action.RowId == 0 || !AreaCastCanReachPlayer(h, action))
+					if (action.RowId == 0 || !AreaCastReachesParty(h, action))
 					{
 						continue;
 					}
@@ -2645,7 +3029,7 @@ internal static class DataCenter
 				if (IsHostileCastingBase(h, act =>
 				{
 					if (!OtherConfiguration.HostileCastingArea.Contains(act.RowId)
-						|| !AreaCastCanReachPlayer(h, act))
+						|| !AreaCastReachesParty(h, act))
 					{
 						return false;
 					}
@@ -2767,12 +3151,9 @@ internal static class DataCenter
 					continue;
 				}
 
-				foreach (var p in TankbusterPaths)
+				if (IsTankbusterMarkerPath(s.Path) && !IsFalsifiedTankbusterMarker(s.Path))
 				{
-					if (s.Path.StartsWith(p, PathCmp))
-					{
-						return true;
-					}
+					return true;
 				}
 			}
 			catch (AccessViolationException ex)
@@ -2819,7 +3200,7 @@ internal static class DataCenter
 
 	public static bool IsHostileCastingStopBase(IBattleChara h, Func<Action, bool> check)
 	{
-		if (h == null || check == null)
+		if (h == null || !h.IsValid() || check == null)
 		{
 			return false;
 		}
@@ -2941,7 +3322,7 @@ internal static class DataCenter
 			{
 				try
 				{
-					if (string.IsNullOrEmpty(s.Path))
+					if (string.IsNullOrEmpty(s.Path) || IsFalsifiedTankbusterMarker(s.Path))
 					{
 						continue;
 					}
@@ -2993,6 +3374,13 @@ internal static class DataCenter
 			}
 
 			if (string.IsNullOrEmpty(s.Path))
+			{
+				return false;
+			}
+
+			// A marker on someone outside the party - another alliance group's stack - hits none of us,
+			// and the flag this raises opens the party's mitigations (concept 13, A220).
+			if (!IsOwnPartyMarker(s.ObjectId))
 			{
 				return false;
 			}
@@ -3052,7 +3440,7 @@ internal static class DataCenter
 			// as built, and it is the reason the list cannot be allowed to grow freely - see
 			// docs/rotation-flow/13-aoe-damage-classification.md.
 			return OtherConfiguration.HostileCastingArea.Contains(act.RowId)
-				&& AreaCastCanReachPlayer(h, act)
+				&& AreaCastReachesParty(h, act)
 				&& AreaCastIsWorthMitigating(act.RowId);
 		});
 	}
@@ -3261,6 +3649,123 @@ internal static class DataCenter
 	}
 
 	/// <summary>
+	/// Why the last enemy cast that damaged the player was or was not rated for the learned damage
+	/// table, with its time and action id. Written by the effect handler; shown in the AoE list.
+	/// </summary>
+	/// <remarks>
+	/// Casts only. Instant hits - auto-attacks above all - are never rated, and while they were
+	/// reported here the next swing replaced a raidwide's reason within a second, so the line could
+	/// only ever show why an auto-attack was not measured.
+	/// </remarks>
+	public static string AreaMeasurementLastOutcome { get; private set; } = "no enemy cast has hit the player yet";
+
+	private static readonly Dictionary<string, int> _areaMeasurementTally = [];
+
+	/// <summary>
+	/// What the effect handler received since loading: every effect set, those from enemies, those
+	/// that damaged the player, and the ones it failed on.
+	/// </summary>
+	/// <remarks>
+	/// The tally below starts only once an enemy cast has hurt the player, so on its own it cannot
+	/// tell a handler that receives nothing from casts that never reached it. Zero sets means the
+	/// hook delivers nothing; sets without enemy hits mean the filter before the measurement drops
+	/// them; errors mean the handler stops before it measures.
+	/// </remarks>
+	public static int EffectSetsReceived { get; internal set; }
+
+	/// <inheritdoc cref="EffectSetsReceived"/>
+	public static int EnemyEffectSets { get; internal set; }
+
+	/// <inheritdoc cref="EffectSetsReceived"/>
+	public static int EnemyHitsOnPlayer { get; internal set; }
+
+	/// <inheritdoc cref="EffectSetsReceived"/>
+	public static int EffectHandlerErrors { get; internal set; }
+
+	/// <summary>The first error the enemy effect handler raised since loading, for the windows.</summary>
+	public static string EffectHandlerFirstError { get; internal set; } = string.Empty;
+
+	/// <summary>
+	/// How often each reason decided an enemy cast that hit the player, since the plugin was loaded.
+	/// </summary>
+	/// <remarks>
+	/// The last outcome alone cannot say why a table stays empty over a whole evening: one line shows
+	/// one hit. The tally shows whether casts arrive at all and which gate stops them.
+	/// </remarks>
+	public static IReadOnlyDictionary<string, int> AreaMeasurementTally => _areaMeasurementTally;
+
+	/// <summary>
+	/// The tally as one line for the windows.
+	/// </summary>
+	public static string AreaMeasurementTallyText
+	{
+		get
+		{
+			if (_areaMeasurementTally.Count == 0)
+			{
+				return "no enemy cast has hit the player since loading";
+			}
+
+			var parts = new List<string>(_areaMeasurementTally.Count);
+			foreach (var (reason, count) in _areaMeasurementTally)
+			{
+				parts.Add($"{reason}: {count}");
+			}
+
+			return string.Join(" | ", parts);
+		}
+	}
+
+	/// <summary>
+	/// Records the outcome of one enemy cast for the damage table: <paramref name="reason"/> is the
+	/// tallied category, <paramref name="detail"/> what the last-outcome line adds to it.
+	/// </summary>
+	public static void RecordAreaMeasurementOutcome(uint actionId, string reason, string detail = "")
+	{
+		AreaMeasurementLastOutcome = $"{DateTime.Now:HH:mm:ss} #{actionId}: {reason}{detail}";
+		_areaMeasurementTally[reason] = _areaMeasurementTally.TryGetValue(reason, out var count) ? count + 1 : 1;
+	}
+
+	/// <summary>
+	/// The last time an area heal centred on the caster was weighed on the heal path: which action,
+	/// how many hurt members stood in its radius against how many it asks for, whether one of them
+	/// was under its heal ratio. Written by the targeting,
+	/// shown in the diagnostics window, so a group heal that stays out can be told apart from one
+	/// that was never asked.
+	/// </summary>
+	internal static SelfCentredHealWeighing? LastSelfCentredHeal { get; set; }
+
+	/// <summary>
+	/// Every strategic hold of a defense that was asked (CustomRotation_DefenseHold), by rule: whether
+	/// it last held or yielded to a member in danger, why, and when. One entry per rule, so a rule
+	/// asked after another in the same frame does not hide it. Shown in the diagnostics window,
+	/// because a defense that waits cannot otherwise be told apart from one that was never asked.
+	/// </summary>
+	internal static readonly ConcurrentDictionary<string, DefenseHoldDecision> DefenseHolds = new();
+
+	/// <summary>One decision of a defense hold.</summary>
+	internal readonly record struct DefenseHoldDecision(string Rule, bool Held, string Why, DateTime At);
+
+	/// <summary>One weighing of an area heal centred on the caster.</summary>
+	internal readonly record struct SelfCentredHealWeighing(string Action, int HurtInRadius, int Required, bool InNeed, DateTime At);
+
+	/// <summary>
+	/// The last time the movement safety check withheld an action that moves the player, and why.
+	/// Without it a gap closer that stays out cannot be told apart in the fight from one that was
+	/// never asked for.
+	/// </summary>
+	internal static MoveSafetyRefusal? LastMoveSafetyRefusal { get; set; }
+
+	/// <summary>
+	/// The last refusal the safety check gave without measuring anything, because the movement had no
+	/// target to measure against.
+	/// </summary>
+	internal static MoveSafetyRefusal? LastMoveSafetyUnmeasured { get; set; }
+
+	/// <summary>One refusal of the movement safety check.</summary>
+	internal readonly record struct MoveSafetyRefusal(string Action, string Why, DateTime At);
+
+	/// <summary>
 	/// The action id the currently recorded area share belongs to, or 0 when none is recorded.
 	/// </summary>
 	public static uint AnnouncedAreaAction =>
@@ -3287,6 +3792,22 @@ internal static class DataCenter
 	/// </remarks>
 	public static bool AnnouncedHitDropsAnyoneBelow(float threshold)
 	{
+		return AnnouncedHitDropsBelow(threshold, false, out _);
+	}
+
+	/// <summary>
+	/// <see cref="AnnouncedHitDropsAnyoneBelow"/> for the members the hit can actually take down: an
+	/// invulnerable tank sits low on purpose and is not in danger from it (Hallowed Ground,
+	/// Superbolide). <paramref name="who"/> names the first member found.
+	/// </summary>
+	internal static bool AnnouncedHitDropsUnprotectedBelow(float threshold, out string who)
+	{
+		return AnnouncedHitDropsBelow(threshold, true, out who);
+	}
+
+	private static bool AnnouncedHitDropsBelow(float threshold, bool unprotectedOnly, out string who)
+	{
+		who = string.Empty;
 		var share = AnnouncedAreaShare;
 		if (share <= 0f)
 		{
@@ -3297,14 +3818,20 @@ internal static class DataCenter
 		for (var i = 0; i < party.Count; i++)
 		{
 			var member = party[i];
-			if (member == null || member.IsDead || member.MaxHp == 0)
+			if (member == null || member.IsDead || member.MaxHp == 0
+				|| (unprotectedOnly && !member.NoNeedHealingInvuln()))
 			{
 				continue;
 			}
 
-			var buffer = member.GetEffectiveHp() / (float)member.MaxHp;
-			if (buffer - share < threshold)
+			// The unprotected reading is the critical class's own footing (IsInCriticalClass): the
+			// forecast effective health, at or below the threshold. The other keeps its original form
+			// for its original readers.
+			if (unprotectedOnly
+				? member.GetForecastEffectiveHp() / (float)member.MaxHp - share <= threshold
+				: member.GetEffectiveHp() / (float)member.MaxHp - share < threshold)
 			{
+				who = member.Name.TextValue;
 				return true;
 			}
 		}
@@ -3344,9 +3871,11 @@ internal static class DataCenter
 	/// </summary>
 	/// <remarks>
 	/// Not an invented number, and no longer a written-down one either: it is read from the effect
-	/// texts. The largest barrier in the tree that states its size as a share is The Blackest Night -
-	/// "absorbs damage totaling 25% of target's maximum HP" - and DefensiveValues.g.cs carries that
-	/// figure along with every other, generated from the same sheets and checked against them in CI.
+	/// texts. The largest barrier in the tree that states its size as a share and can be put on
+	/// another party member is The Blackest Night - "absorbs damage totaling 25% of target's maximum
+	/// HP" - and DefensiveValues.g.cs carries that figure along with every other, generated from the
+	/// same sheets and checked against them in CI. Manaward states 30%, but only its caster carries
+	/// it: it says nothing about what a shield on the member being hit would absorb.
 	///
 	/// It used to be a literal 0.25f with the source named in prose. That is the ageing form this
 	/// file has been caught by twice already: an earlier version of this remark said "five barriers"
@@ -3426,28 +3955,250 @@ internal static class DataCenter
 	}
 
 	/// <summary>
-	/// Whether an area cast could reach the player at all. Hostiles are collected out to 48 yalms and
-	/// the area list only records that an action once hit a whole party, never whether the player is
-	/// inside this instance of it - so without this check any listed cast anywhere in that radius
-	/// raised <see cref="AutoStatus.DefenseArea"/>, which opens the job's entire area-defense chain.
-	/// Two cases pass regardless of distance: an effect range of 0, which covers both "not filled in"
-	/// and the party-wide hits that carry no radius of their own, and a cast aimed at the player,
-	/// since a ground-placed effect follows its target rather than its caster.
+	/// Whether the last landing of each listed area cast reached the player, for this session. Written
+	/// by the effect handler, read by <see cref="IsAnyHostileCastingAreaReachingMe"/> under
+	/// "Skip area defence for casts that missed you" (A205).
 	/// </summary>
+	internal static readonly ConcurrentDictionary<uint, bool> AreaCastReachedPlayer = new();
+
+	/// <summary>Whether a listed area cast can reach the player (concept 13, A218).</summary>
+	/// <remarks>
+	/// Why reach is asked at all (6588832b9): hostiles are collected out to 48 yalms and the area list
+	/// only records that an action once hit a whole party, never whether anyone is inside this instance
+	/// of it - so without a reach check any listed cast anywhere in that radius opened the area defence.
+	/// </remarks>
 	private static bool AreaCastCanReachPlayer(IBattleChara h, Action act)
 	{
-		if (act.EffectRange == 0)
-		{
-			return true;
-		}
-
 		var player = Player.Object;
-		if (player != null && h.CastTargetObjectId == player.GameObjectId)
+		return player != null && AreaCastReaches(h, act, player);
+	}
+
+	/// <summary>
+	/// Whether a listed area cast reaches the party in the sense the area-defence flag needs: the
+	/// player, or at least two living party members - more than a single target (concept 13, A218).
+	/// </summary>
+	/// <remarks>
+	/// The flag opens party mitigations - Reprisal, Divine Veil, Sacred Soil, Addle, Feint - and a flag
+	/// is measured by the paths it opens, not by whom it is set for. Measured by the player alone, a
+	/// healer standing clear of a cleave on the tank and the melee gave them no party mitigation. The
+	/// actions that protect only the player ask <see cref="AreaHitReachesPlayer"/> instead.
+	/// </remarks>
+	private static bool AreaCastReachesParty(IBattleChara h, Action act)
+	{
+		if (AreaCastCanReachPlayer(h, act))
 		{
 			return true;
 		}
 
-		return h.DistanceToPlayer() <= act.EffectRange;
+		var reached = 0;
+		foreach (var member in PartyMembers)
+		{
+			if (member != null && !member.IsDead && AreaCastReaches(h, act, member) && ++reached >= 2)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// Whether a listed area cast reaches <paramref name="member"/>, from the shape the game data gives it.
+	/// </summary>
+	/// <remarks>
+	/// <para>A single-target action with a cast range hits the one it is cast at and nobody else (A192);
+	/// a self-targeted action with no effect range is the scripted party-wide kind and reaches everyone.
+	/// A circle cast at someone is centred on them; a line reaches what lies in its width; a circle
+	/// around the caster is measured from the caster's centre. BossModReborn sizes none of its circle
+	/// shapes by the caster's hitbox; measured from the hitbox edge, a large boss stretched every
+	/// point-blank cast by its hitbox - ten yalms reached eighteen (A218). The member's own hitbox counts
+	/// in favour of the hit everywhere.</para>
+	/// <para>Ground-placed circles keep the old measure: their centre is only in the native cast data.
+	/// A cone counts as a circle; its angle is in no sheet.</para>
+	/// </remarks>
+	private static bool AreaCastReaches(IBattleChara h, Action act, IBattleChara member)
+	{
+		if ((CastType)act.CastType == CastType.Targeted && act.Range > 0)
+		{
+			return h.CastTargetObjectId == member.GameObjectId;
+		}
+
+		if (act.EffectRange == 0 || h.CastTargetObjectId == member.GameObjectId)
+		{
+			return true;
+		}
+
+		var aimedAt = h.CastTargetObjectId != h.GameObjectId
+			? Svc.Objects.SearchById(h.CastTargetObjectId) as IBattleChara
+			: null;
+		if (aimedAt != null && !aimedAt.IsValid())
+		{
+			aimedAt = null;
+		}
+
+		if ((CastType)act.CastType == CastType.Circle && act.Range > 0 && !act.CanTargetSelf && !act.TargetArea && aimedAt != null)
+		{
+			return HorizontalDistance(member.Position, aimedAt.Position) - member.HitboxRadius - aimedAt.HitboxRadius <= act.EffectRange;
+		}
+
+		if (act.CastType is (byte)CastType.StraightLine or LineFromCasterCastType && act.XAxisModifier > 0)
+		{
+			var direction = aimedAt != null ? aimedAt.Position - h.Position : h.GetFaceVector();
+			direction.Y = 0;
+			if (direction.LengthSquared() > 0f)
+			{
+				direction = Vector3.Normalize(direction);
+				var toMember = member.Position - h.Position;
+				toMember.Y = 0;
+				var along = Vector3.Dot(direction, toMember);
+				var across = Vector3.Cross(direction, toMember).Length();
+				return along >= -member.HitboxRadius
+					&& along <= act.EffectRange + member.HitboxRadius
+					&& across <= (act.XAxisModifier / 2f) + member.HitboxRadius;
+			}
+		}
+
+		if (act.TargetArea)
+		{
+			return HorizontalDistance(member.Position, h.Position) - member.HitboxRadius - h.HitboxRadius <= act.EffectRange;
+		}
+
+		return HorizontalDistance(member.Position, h.Position) - member.HitboxRadius <= act.EffectRange;
+	}
+
+	// Cast type 12 is a rectangle from the caster like type 4 (StraightLine), which the enum does not
+	// name: the area list's type-12 entries carry a length and a width (Diffuse Laser 60 by 60, the
+	// line stacks 60 by 8).
+	private const byte LineFromCasterCastType = 12;
+
+	private static float HorizontalDistance(Vector3 a, Vector3 b)
+	{
+		var dx = a.X - b.X;
+		var dz = a.Z - b.Z;
+		return MathF.Sqrt((dx * dx) + (dz * dz));
+	}
+
+	/// <summary>
+	/// Every source that can open the player's defence, as it stands now, for the defence trace.
+	/// Reads the same predicates the flags are built from; decides nothing.
+	/// </summary>
+	internal static string DescribeDefenseSources()
+	{
+		var parts = new List<string> { $"flags {MergedStatus & (AutoStatus.DefenseArea | AutoStatus.DefenseSingle)}" };
+		var player = Player.Object;
+		try
+		{
+			foreach (var vfx in VfxDataQueue)
+			{
+				if (string.IsNullOrEmpty(vfx.Path))
+				{
+					continue;
+				}
+
+				var kind = IsTankbusterMarkerPath(vfx.Path)
+					? IsFalsifiedTankbusterMarker(vfx.Path) ? "tankbuster marker (falsified)" : "tankbuster marker"
+					: StartsWithAny(vfx.Path, MultiHitSharedPaths) || StartsWithAny(vfx.Path, SharedDamagePaths) ? "stack marker"
+					: StartsWithAny(vfx.Path, SpreadDamagePaths) ? "spread marker"
+					: null;
+				if (kind == null)
+				{
+					continue;
+				}
+
+				var marked = Svc.Objects.SearchById(vfx.ObjectId) as IBattleChara;
+				var onPlayer = player != null && vfx.ObjectId == player.GameObjectId;
+				parts.Add($"{kind} {vfx.Path} on {(onPlayer ? "you" : marked?.Name.TextValue ?? "?")}"
+					+ (onPlayer || marked == null || player == null ? string.Empty : $" {HorizontalDistance(player.Position, marked.Position):F1} y from you"));
+			}
+
+			var sheet = Service.GetSheet<Action>();
+			foreach (var h in AllHostileTargets)
+			{
+				if (h == null || !h.IsValid() || !h.IsCasting)
+				{
+					continue;
+				}
+
+				var id = h.CastActionId;
+				var listedArea = OtherConfiguration.HostileCastingArea.Contains(id);
+				var listedTank = OtherConfiguration.HostileCastingTank.Contains(id);
+				if (!listedArea && !listedTank)
+				{
+					continue;
+				}
+
+				var act = sheet?.GetRow(id);
+				var target = Svc.Objects.SearchById(h.CastTargetObjectId);
+				var text = $"cast {act?.Name.ExtractText() ?? "?"} #{id} by {h.Name.TextValue} at {target?.Name.TextValue ?? "?"}"
+					+ $" ({(listedArea ? "area list" : string.Empty)}{(listedArea && listedTank ? ", " : string.Empty)}{(listedTank ? "tankbuster list" : string.Empty)})"
+					+ $" {h.TotalCastTime - h.CurrentCastTime:F1} s left";
+				if (act is { } a)
+				{
+					text += $", type {a.CastType} range {a.Range} effect {a.EffectRange} width {a.XAxisModifier}"
+						+ $", caster {h.DistanceToPlayer():F1} y from you";
+					// Only side-effect-free reads here: the worth check and the large-cast check record
+					// what they decide, and the trace must not make decisions the flags did not make.
+					if (listedArea)
+					{
+						text += $", reaches you {AreaCastCanReachPlayer(h, a)}, reaches the party {AreaCastReachesParty(h, a)}, interruptible {h.IsCastInterruptible}"
+							+ $", rated {(OtherConfiguration.HostileCastingAreaPotential.TryGetValue(id, out var share) ? share.ToString("P0") : "no")}";
+					}
+				}
+
+				parts.Add(text);
+			}
+		}
+		catch (Exception ex)
+		{
+			parts.Add($"scan failed: {ex.Message}");
+		}
+
+		parts.Add($"area hit reaches you {AreaHitReachesPlayer}");
+
+		if (BMRNextRaidwideIn is > 0f and < float.MaxValue)
+		{
+			parts.Add($"BMR raidwide in {BMRNextRaidwideIn:F1} s (window {Service.Config.BMRRaidwideMitWindow:F1})");
+		}
+
+		if (BMRNextTankbusterIn is > 0f and < float.MaxValue)
+		{
+			parts.Add($"BMR tankbuster in {BMRNextTankbusterIn:F1} s (window {Service.Config.BMRTankbusterMitWindow:F1}), party tank {PartyTank?.Name.TextValue ?? "none"}"
+				+ $", hits you {BMRTankbusterHitsPlayer?.ToString() ?? "unknown"}");
+		}
+
+		if (IsTankbusterVfxOnPlayer())
+		{
+			parts.Add("tankbuster marker on you");
+		}
+
+		return string.Join(" | ", parts);
+	}
+
+	// Whether a marker sits on the player or a member of his own party, Duty Support companions
+	// included whatever the NPC party setting says: they share the stack as a player would.
+	private static bool IsOwnPartyMarker(ulong objectId)
+	{
+		var player = Player.Object;
+		if (player != null && objectId == player.GameObjectId)
+		{
+			return true;
+		}
+
+		return Svc.Objects.SearchById(objectId) is IBattleChara marked
+			&& (marked.IsParty() || marked.IsNpcPartyMember());
+	}
+
+	private static bool StartsWithAny(string path, FrozenSet<string> prefixes)
+	{
+		foreach (var p in prefixes)
+		{
+			if (path.StartsWith(p, PathCmp))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public static bool AreHostilesCastingKnockback
@@ -3636,6 +4387,16 @@ internal static class DataCenter
 	public static bool BMRHasActiveModule { get; set; }
 	public static string? BMRActiveModuleName { get; set; }
 	public static float BMRNextRaidwideIn { get; set; } = float.MaxValue;
+
+	/// <summary>
+	/// An announced area hit that has not landed yet: the area-defense signal, or a BossMod raidwide
+	/// still ahead inside the mitigation window - including the last moment before it, where the
+	/// signal already lets go. What the channel locks of Passage of Arms and Collective Unconscious
+	/// hold for ("during AOE mitigations").
+	/// </summary>
+	public static bool AreaHitPending => MergedStatus.HasFlag(AutoStatus.DefenseArea)
+		|| (InCombat && Service.Config.UseBmrTimeline && BMRNextRaidwideIn > 0f
+			&& BMRNextRaidwideIn <= Service.Config.BMRRaidwideMitWindow);
 	public static float BMRNextTankbusterIn { get; set; } = float.MaxValue;
 	public static float BMRNextKnockbackIn { get; set; } = float.MaxValue;
 	public static float BMRNextDowntimeIn { get; set; } = float.MaxValue;
@@ -3670,6 +4431,18 @@ internal static class DataCenter
 	/// another unverified contract across the IPC boundary and is deliberately not made.
 	/// </remarks>
 	public static bool BMRNextDamageHitsPlayer { get; set; }
+
+	/// <summary>
+	/// Whether BossModReborn's imminent tankbuster hits the player: its answer when the next predicted
+	/// damage entry is that tankbuster - the entry's mask names who is hit, and bit 0 is always the
+	/// player (BossModReborn <c>PartyState.PlayerSlot = 0</c>) - and null when the mask belongs to
+	/// another event or nothing is predicted (A220).
+	/// </summary>
+	public static bool? BMRTankbusterHitsPlayer
+		=> BMRTankbusterImminent && BMRNextDamageType == PredictedDamageType.Tankbuster
+			&& BMRNextDamageIn > 0f && BMRNextDamageIn <= Service.Config.BMRTankbusterMitWindow
+			? BMRNextDamageHitsPlayer
+			: null;
 
 	/// <summary>
 	/// BMR predicts a tankbuster inside the user's single-target mitigation window.

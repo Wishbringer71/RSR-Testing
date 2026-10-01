@@ -926,11 +926,22 @@ public partial class CustomRotation
 			damageFactor *= 0.90f;
 		}
 
+		// 15% for all three, as the job guide states for Troubadour, Tactician and Shield Samba alike
+		// ("Reduces damage taken by self and nearby party members by 15%", read 27.09.2026). The effect
+		// texts in the generated resources leave the figure blank, so DefensiveValues cannot carry it;
+		// the 10% this line used to hold had no source.
 		if (HasPartyStatus(StatusID.Troubadour)
 			|| HasPartyStatus(StatusID.ShieldSamba)
 			|| HasPartyStatus(StatusID.Tactician_1951))
 		{
-			damageFactor *= 0.90f;
+			damageFactor *= 0.85f;
+		}
+
+		// Confession from Plenary Indulgence, missing here before. Its figure comes from its own effect
+		// text through the generated values rather than a number of its own.
+		if (HasPartyStatus(StatusID.Confession))
+		{
+			damageFactor *= 1f - DefensiveValues.For((uint)ActionID.PlenaryIndulgencePvE).Self;
 		}
 
 		if (HasPartyStatus(StatusID.DarkMissionary))
@@ -1035,6 +1046,28 @@ public partial class CustomRotation
 	public static bool HasHostilesInRange => DataCenter.HasHostilesInRange;
 
 	/// <summary>
+	/// A pause in the fight: in combat, and no hostile within 25 yalms - nothing to strike, the boss
+	/// untargetable or gone. Read now, without BossModReborn; the predicted pause is
+	/// <see cref="BMRDowntimeWithin"/>. The universal half of the pause rule (concept 14); what a job
+	/// does in the pause is its own rule.
+	/// </summary>
+	[Description("In combat without a hostile in 25 yalms")]
+	public static bool InCombatPause => InCombat && !HasHostilesInMaxRange;
+
+	/// <summary>
+	/// True in the last decision in which <paramref name="action"/> still goes off inside the window of
+	/// <paramref name="statusIDs"/>. Chosen now, it goes off when the GCD rolls; the next chance comes a
+	/// GCD after that, and by then the window would end before the action and its cast. For a rule that
+	/// holds a window back for an alignment (burst, a debuff) and must not lose it: the universal half
+	/// of "use it before it runs out" (concept 14, "Werden die Fenster genutzt?"); what the window waits
+	/// for is the job's rule.
+	/// </summary>
+	protected static bool IsLastChanceBeforeStatusEnds(IBaseAction action, params StatusID[] statusIDs)
+	{
+		return StatusHelper.PlayerWillStatusEnd(DataCenter.DefaultGCDRemain + DataCenter.DefaultGCDTotal + action.Info.CastTime, true, statusIDs);
+	}
+
+	/// <summary>
 	/// Is there any hostile target in 25 yalms?
 	/// </summary>
 	[Description("Has hostiles in 25 yalms")]
@@ -1113,6 +1146,106 @@ public partial class CustomRotation
 			}
 		}
 		return mobsInRange >= minimumHostileCount;
+	}
+
+	/// <summary>
+	/// Whether the pack in reach is slowed - at least two enemies and at least half of them.
+	/// </summary>
+	/// <remarks>
+	/// Slow is not only a caster debuff: its effect text names the auto-attack delay alongside cast
+	/// and recast time, and trash enemies deal most of their damage by auto-attack. A slowed pack
+	/// therefore throttles the incoming stream by about the size of the debuff - Arm's Length applies
+	/// Slow +20% to every physical attacker for 15s, the same order as Rampart. The Dark Knight's
+	/// barrier reads it (a thinned stream no longer breaks The Blackest Night), and every tank's
+	/// Arm's Length pull rule does (a slowed pack needs no second slow).
+	///
+	/// Same share rule as the stun condition, and for the same reason: one slowed enemy out of eight
+	/// says nothing about the stream. The difference is the timing - a stun stops the stream and
+	/// lapses in seconds, a slow thins it for fifteen, so this one has no grace window. It ends when
+	/// the debuff does.
+	/// </remarks>
+	protected static bool PackSlowed()
+	{
+		var inRange = SurveyHostileStatus(DataCenter.JobRange, StatusHelper.SlowStatus, out var slowed);
+		return inRange > 0 && slowed >= 2 && slowed * 2 >= inRange;
+	}
+
+	/// <summary>
+	/// Arm's Length for its Slow on a group pull - the rule for every tank, first built for the Dark
+	/// Knight (A53) and lifted to the tank level (A194): each tank carries the same option and passes
+	/// it in, with the hostile count that marks a pull for it.
+	/// </summary>
+	/// <remarks>
+	/// Arm's Length is a role action of tanks and melee; this rule is for tanks, because the Slow
+	/// throttles the stream of auto-attacks on whoever holds the pack. It costs nothing but the
+	/// cooldown. Not while the pack is already slowed - a second Slow does not stack onto the first.
+	/// Not while BossModReborn announces a knockback that lands after Arm's Length would have run out
+	/// and before its cooldown is back: the rule also fires on a boss with adds, and spent on their
+	/// Slow the action would be gone for the knockback it is the tank's only answer to. A knockback
+	/// inside the duration is no reason to wait - cast now, it is covered (A212, A219). Duration from
+	/// the effect text, cooldown from the action data. Without a module there is no announcement, and
+	/// the anti-knockback use stays reactive as before.
+	/// </remarks>
+	protected bool ArmsLengthSlowsPull(bool enabled, int minimumHostiles)
+		=> enabled
+			&& DataCenter.Role == JobRole.Tank
+			&& NumberOfHostilesInRange >= minimumHostiles
+			&& !PackSlowed()
+			&& !(Service.Config.UseBmrTimeline && BMRKnockbackIn is > 0f and < float.MaxValue
+				&& BMRKnockbackIn > DefensiveValues.DurationOf((uint)ActionID.ArmsLengthPvE)
+				&& BMRKnockbackIn <= ArmsLengthPvE.Cooldown.RecastTimeOneChargeRaw);
+
+	/// <summary>
+	/// A healer's pull upkeep: an instant HoT or barrier kept on the tank through a dungeon pull and
+	/// renewed as soon as it runs out or is used up. One rule for every healer (the white mage's Regen,
+	/// the astrologian's Aspected Benefic, the sage's Eukrasian Diagnosis); only the action differs.
+	/// </summary>
+	/// <param name="action">The instant HoT or barrier.</param>
+	/// <param name="prePullMinimumHostileCount">See <see cref="TankApproachingMobGroup"/>.</param>
+	/// <param name="wallToWallMinimumHostileCount">See <see cref="TankApproachingMobGroup"/>.</param>
+	/// <param name="floorHealthRatio">At or below this the tank is left to the job's emergency heals;
+	/// 0 where the upkeep action is itself the better emergency GCD.</param>
+	/// <param name="raise">The job's raise. The upkeep never spends the MP a raise needs: a pull runs
+	/// for minutes and renews on every broken barrier, and a healer who cannot raise the one who dies
+	/// has traded the party's safety for a tank who was never in danger.</param>
+	/// <param name="heldBy">Statuses that already do the upkeep's job on the tank, where the action's
+	/// own list is narrower (a barrier that cannot stack with a sibling). Null: the action's own list.</param>
+	/// <param name="act">The action aimed at the tank, when due.</param>
+	/// <remarks>
+	/// The target override bypasses the candidate status check (FindTankTarget does not call
+	/// CheckStatus), so the remaining duration is checked here. A barrier is removed by the game when
+	/// it is used up, so the same check renews it on breaking as on running out.
+	/// </remarks>
+	protected static bool TryPullUpkeepOnTank(IBaseAction action, int prePullMinimumHostileCount, int wallToWallMinimumHostileCount,
+		float floorHealthRatio, IBaseAction? raise, StatusID[]? heldBy, out IAction? act)
+	{
+		act = null;
+
+		if (!TankApproachingMobGroup(prePullMinimumHostileCount, wallToWallMinimumHostileCount))
+		{
+			return false;
+		}
+
+		if (raise != null && raise.EnoughLevel && CurrentMp < action.Info.MPNeed + raise.Info.MPNeed)
+		{
+			return false;
+		}
+
+		if (!action.CanUse(out act, targetOverride: TargetType.Tank))
+		{
+			act = null;
+			return false;
+		}
+
+		var tank = action.Target.Target;
+		if (tank != null && tank.GetForecastHealthRatio() > floorHealthRatio
+			&& tank.WillStatusEndGCD(action.Config.StatusRefreshGcdCount, 0, action.Setting.StatusFromSelf, heldBy ?? action.Setting.TargetStatusProvide ?? []))
+		{
+			return true;
+		}
+
+		act = null;
+		return false;
 	}
 
 	/// <summary>
@@ -1548,6 +1681,13 @@ public partial class CustomRotation
 	/// </summary>
 	public static bool TankbusterOnMe
 		=> DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterImminent;
+
+	/// <summary>
+	/// Whether the area hit behind the area-defence flag reaches the player himself. The flag asks
+	/// whether the party is hit, for party mitigations; an action that protects only the player asks
+	/// this as well (concept 13).
+	/// </summary>
+	public static bool AreaHitOnMe => DataCenter.AreaHitReachesPlayer;
 
 	/// <summary>
 	/// True when BMR reports a tankbuster within the specified seconds.

@@ -233,9 +233,30 @@ public partial class CustomRotation
 		HpPotionItem? best = null;
 		foreach (var a in HpPotions)
 		{
+			// More healing wins; at EQUAL healing the lower grade wins, and both halves are stated
+			// rather than left to the order of HpPotions.
+			//
+			// MaxHp is what this potion restores HERE AND NOW: the smaller of its own percentage of
+			// Player.MaxHp and its own cap, and Player.MaxHp is already the synced pool. So the
+			// comparison needs no knowledge about item levels or sync rules - it reads the effect.
+			//
+			// The tie is the case the owner named: a level 100 character in a level 50 instance may
+			// still drink a level 100 potion, but the percentage is what binds there, and if two
+			// grades state the same percentage they restore the same amount. Spending the expensive
+			// one then buys nothing. Where the grades differ in percentage they differ in MaxHp too,
+			// and the first half of the comparison picks the stronger one on its merits.
+			//
+			// The grade is the item level from the Item sheet, not the id: the ids happen to run in
+			// grade order today, but nothing in the game ties them to it. Datamining table, checked
+			// 25.09.2026: Potion 10, Hi- 25, Mega- 45, X- 70, Max- 150, Super- 290, Hyper- 560,
+			// Ultra-Potion 690 - and the last three all restore 25 % in HQ (20 % in NQ), so they tie
+			// wherever the percentage binds. Not relying on the list running strongest-first either: that order
+			// is a property of GetHpPotions and would silently invert this rule if it ever changed.
+			// The content-specific branches below deliberately keep ">=", so the potion meant for
+			// that duty wins a tie against an ordinary one.
 			if (a.ID != 47102 && a.ID != 22306 && a.ID != 20309 && a.CanUse(out _, true))
 			{
-				if (best == null || a.MaxHp >= best.MaxHp)
+				if (best == null || a.MaxHp > best.MaxHp || (a.MaxHp == best.MaxHp && a.ItemLevel < best.ItemLevel))
 				{
 					best = a;
 				}
@@ -247,7 +268,7 @@ public partial class CustomRotation
 			// missing-HP guard against wasting the potion via overheal.
 			if ((DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterImminent) && a.ID != 47102 && a.ID != 22306 && a.ID != 20309 && a.CanUseEmergency(out _))
 			{
-				if (best == null || a.MaxHp >= best.MaxHp)
+				if (best == null || a.MaxHp > best.MaxHp || (a.MaxHp == best.MaxHp && a.ItemLevel < best.ItemLevel))
 				{
 					best = a;
 				}

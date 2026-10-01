@@ -92,8 +92,8 @@ Konkrete Folge, nicht nur Kosmetik:
 
 - **Invulnerability** ist bei DRK, GNB und WAR in der Basisschicht verdrahtet
   (`EmergencyAbility`, gegated auf `Service.Config.HealthForDyingTanks`), bei
-  **PLD** dagegen in `PLD_Reborn.cs:92/97` mit eigener Logik
-  (`HallowedWithCover`). Vier Tanks, dieselbe Fähigkeitsklasse, zwei Orte und
+  **PLD** dagegen in `PLD_Reborn.EmergencyAbility` mit eigener Logik
+  (`HallowedWithCover`, daneben dieselbe Schwelle `HealthForDyingTanks`). Vier Tanks, dieselbe Fähigkeitsklasse, zwei Orte und
   zwei Gates.
 - Beim Lesen einer `{Job}_Reborn.cs` ist nicht erkennbar, ob ein Slot leer ist
   oder eine Ebene tiefer belegt. Genau daran ist die Messung oben gescheitert.
@@ -102,9 +102,10 @@ Konkrete Folge, nicht nur Kosmetik:
 
 Vollständige Erhebung aller Aktionen, deren Spielbeschreibung eine Ortsänderung
 nennt, gegen die Belegung von `MoveForwardAbility` / `MoveBackAbility` (beide
-laufen laut `CustomRotation_Ability.cs:325/342` **nur** bei gesetztem
+laufen laut `CustomRotation_Ability.cs:327/344` **nur** bei gesetztem
 `AutoStatus.MoveForward`/`MoveBack`, können die Schadensrotation also nicht
-stören):
+stören; die drei direkten Aufrufer in `NIN_Reborn`, `WAR_Reborn` und `BeirutaNIN`
+prüfen dieselbe Flagge, geprüft 29.09.2026):
 
 | Job | Aktion | Richtung | Vorher | Jetzt |
 |---|---|---|---|---|
@@ -123,6 +124,7 @@ Rotationsentscheidung, keine Lückenschließung, und gehört ins Spiel geprüft.
 
 Nach Abzug von Limit Breaks, Pet-Aktionen, Stance-Abbrüchen,
 Morph-Platzhaltern und Upgrade-Griffen bleiben Aktionen, für die keiner dieser
-Gründe greift. Sie sind in `TODO.md` #69 einzeln geführt und **nicht**
-ungeprüft nachgerüstet — jede braucht eine Rotationsentscheidung, keine
-Codeentscheidung.
+Gründe greift. Ihre Einzelprüfung steht im Archiv (#69, abgearbeitet); die heutige
+Einordnung je Job, erzeugt statt gezählt, steht in `14-action-dependency-matrix.md`
+und `docs/action-matrix/`. Keine davon ist ungeprüft nachgerüstet — jede braucht
+eine Rotationsentscheidung, keine Codeentscheidung.

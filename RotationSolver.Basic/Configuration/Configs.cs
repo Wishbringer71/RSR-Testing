@@ -388,9 +388,11 @@ internal partial class Configs : IPluginConfiguration
 	/// - Full: Use all available AoE actions.
 	/// - Cleave: Use only single-target AoE actions.
 	/// - Off: Do not use any AoE actions.
+	///
+	/// Attacks only: heals and other actions on the party are not affected.
 	/// </markdown>
 	[UI("What kind of AoE moves to use.",
-	Description = "Full: Use all available AoE actions.\nCleave: Use only single-target AoE actions.\nOff: Do not use any AoE actions.",
+	Description = "Full: Use all available AoE actions.\nCleave: Use only single-target AoE actions.\nOff: Do not use any AoE actions.\nAttacks only: heals and other actions on the party are not affected.",
 	Filter = AutoActionUsage, Section = 3)]
 	public AoEType AoEType { get; set; } = AoEType.Full;
 
@@ -641,6 +643,11 @@ internal partial class Configs : IPluginConfiguration
 
 	[ConditionBool, UI("Show Intercepted Action Window", Filter = UiWindows)]
 	private static readonly bool _showInterceptedActionWindow = false;
+
+	[ConditionBool, UI("Show Diagnostics Window",
+		Description = "A small window that stays open in combat and shows why RSR does what it does: the current rotation's status lines, the AoE damage table's store and last rated hit, and why an enabled HP potion is or is not used.\nIn a fight: nothing RSR does changes. You can see during the pull whether a rule fired or what held it back, instead of opening the settings afterwards.",
+		Filter = UiWindows)]
+	private static readonly bool _showDiagnosticsWindow = false;
 
 	[ConditionBool, UI("No Inputs", Parent = nameof(ShowNextActionWindow))]
 	private static readonly bool _isInfoWindowNoInputs = false;
@@ -968,8 +975,9 @@ internal partial class Configs : IPluginConfiguration
 	// mitigation, barrier and foreign heal, so health that is not falling on balance yields no
 	// look-ahead at all; it appears when the net trend turns downward and grows as it steepens.
 	//
-	// Off by default because the effect cannot be established with the means available here. A
-	// compile says nothing about whether the tank lives.
+	// On by default: the owner's rule is that a default is the value that plays better, so new rules
+	// get tested (29.09.2026). The effect is not proven in play; with the health held steady it is
+	// exactly the old behaviour.
 	[UI("Heal ahead of incoming damage",
 		Description = "Every healing threshold and the heal target choice read the health a member is "
 			+ "heading for by the time a heal started now would land, instead of the health shown right "
@@ -980,10 +988,26 @@ internal partial class Configs : IPluginConfiguration
 			+ "While a party is held steady it changes nothing. The trend is measured net of every "
 			+ "mitigation, barrier and outside heal, so health that is not falling on balance produces "
 			+ "no look-ahead at all; it appears when the net trend turns downward and grows as it "
-			+ "steepens.\n"
-			+ "Off by default because the effect cannot be proven without playing it.",
+			+ "steepens.",
 		Filter = HealingActionCondition, Section = 1)]
-	public bool HealAheadOfDamage { get; set; } = false;
+	public bool HealAheadOfDamage { get; set; } = true;
+
+	// The owner's triage (concept 07): whoever is closest to dying first, and at equal danger healer
+	// before tank before damage dealer. Class 1 - about to fall - is built and always on. This adds
+	// classes 2 and 3 in place of the role short-cuts, which pick a role outright once it is under its
+	// ratio and look at nobody else. On by default - the owner's rule for defaults (29.09.2026), and
+	// his own order of who is healed first; that it keeps more people alive is not shown in play.
+	[UI("Choose the heal target by danger",
+		Description = "Below a member who is about to fall, heal first a healer or tank who is under their "
+			+ "role threshold AND being attacked - lowest health first, a healer before a tank at equal "
+			+ "health. Everyone else after that: while an area cast is announced, the one with the fewest "
+			+ "hit points left first, because the hit takes the same number from everybody; otherwise the "
+			+ "lowest percentage.\n"
+			+ "In a fight: when the healer holds aggro and the tank does not, the healer comes first; a tank "
+			+ "under his threshold but not being hit no longer jumps ahead of a damage dealer who is lower.\n"
+			+ "Off: the role thresholds decide outright, as before.",
+		Filter = HealingActionCondition, Section = 1)]
+	public bool HealTargetByDanger { get; set; } = true;
 
 	// The learned area list holds everything that once hit the whole party, from a raidwide taking
 	// sixty percent to a trash tick taking two, and every entry raised the same party mitigation.
@@ -1026,8 +1050,7 @@ internal partial class Configs : IPluginConfiguration
 	// it cannot heal where the tree would not have healed anyway. Area casts only: a hit that
 	// reaches everybody is answered by area healing.
 	//
-	// Off by default because the effect cannot be established from the code. What can be
-	// established is that nothing changes while it is off, and nothing changes for an action whose
+	// On by default - the owner's rule for defaults (29.09.2026). Nothing changes for an action whose
 	// size has never been measured.
 	[UI("Heal ahead of an announced area cast",
 		Description = "Raises the area healing flag when the area cast currently being announced would "
@@ -1039,7 +1062,26 @@ internal partial class Configs : IPluginConfiguration
 			+ "the barrier absorbs this particular hit. An action whose size has never been measured "
 			+ "changes nothing - ratings arrive with play, one clear of the fight.",
 		Filter = HealingActionCondition, Section = 1)]
-	public bool HealAheadOfAnnouncedHit { get; set; } = false;
+	public bool HealAheadOfAnnouncedHit { get; set; } = true;
+
+	// The AoE list learns an action once it hit every party member, and cannot tell a raidwide from an
+	// area the party could have dodged, or from a hit centred on someone else that happened to catch
+	// everyone once. The resolution the TODO named was an observation in play; the fight can measure
+	// it instead (A205): when a listed cast lands and leaves no damage entry on the living player, it
+	// did not reach him, and the next cast of it opens no area defence for him - until one does reach
+	// him again. On by default - the owner's rule for defaults (29.09.2026); the risk is a cast dodged
+	// last time and not dodged now, met without the area defence.
+	[UI("Skip area defence for casts that missed you",
+		Description = "An area cast from the AoE list that missed you last time - you dodged it, or it was "
+			+ "centred on someone else - does not open your area defence the next time. As soon as it "
+			+ "reaches you once, it counts again; a hit you blocked, parried, absorbed or took under "
+			+ "invulnerability has reached you.\n"
+			+ "In a fight: party mitigation and your own area defensives are kept for the casts that "
+			+ "actually reach you. The cost: the first cast of each action in a session still opens "
+			+ "them, and a cast you dodged last time and fail to dodge now is met without them.\n"
+			+ "Off: every listed cast that can reach you opens the area defence, as before.",
+		Filter = HealingActionCondition, Section = 1)]
+	public bool SkipAreaCastsThatMissedMe { get; set; } = true;
 
 	// Reported from a four-player dungeon: Addle and Radiant Aegis go out against some area casts and
 	// not others. Traced to the pre-filter every area question runs through - it drops any cast that
@@ -1056,8 +1098,8 @@ internal partial class Configs : IPluginConfiguration
 	// It was not buildable then: the per-action damage share did not exist, so the pre-filter had to
 	// carry the coarseness alone.
 	//
-	// Off by default: whether the extra cover is worth the cooldown cannot be established from the
-	// code. What can be established is that nothing changes while it is off.
+	// On by default - the owner's rule for defaults (29.09.2026). Whether the extra cover is worth the
+	// cooldown is not established from the code.
 	[UI("Mitigate a big area cast even when it is interruptible",
 		Description = "Raises the area defence for an interruptible cast too, if its measured damage is "
 			+ "at or above what the largest barrier in the game absorbs and it lands within about one "
@@ -1068,7 +1110,7 @@ internal partial class Configs : IPluginConfiguration
 			+ "Leaves the healer's threat detection alone: it is a separate path, so the White Mage's "
 			+ "Benediction guard does not widen with it.",
 		Filter = HealingActionCondition, Section = 1)]
-	public bool MitigateBigAreaCastsEvenIfInterruptible { get; set; } = false;
+	public bool MitigateBigAreaCastsEvenIfInterruptible { get; set; } = true;
 
 	// BossModReborn answers WHEN the next damage lands, never HOW HARD. Every proactive mitigation in
 	// the tree reads that timing and nothing else, so two hits in a row are answered on the first
@@ -1087,8 +1129,8 @@ internal partial class Configs : IPluginConfiguration
 	// This closes the hole the size rating left: the reactive path has asked "is this hit worth a
 	// cooldown" since the large-barrier threshold went in, the proactive path never did.
 	//
-	// Off by default, and honestly a heuristic: nothing here proves the prediction refers to the
-	// cast that happens to be running.
+	// On by default - the owner's rule for defaults (29.09.2026) - and honestly a heuristic: nothing
+	// here proves the prediction refers to the cast that happens to be running.
 	[UI("Hold a predicted mitigation while a small cast is running",
 		Description = "Stops a mitigation that fires from a BossMod prediction from being spent on a "
 			+ "small area cast when a bigger one is coming right behind it.\n"
@@ -1099,7 +1141,7 @@ internal partial class Configs : IPluginConfiguration
 			+ "A judgement call, not a certainty: BossMod gives the timing of the next event, not "
 			+ "which cast it means.",
 		Filter = HealingActionCondition, Section = 1)]
-	public bool HoldProactiveMitigationForSmallCast { get; set; } = false;
+	public bool HoldProactiveMitigationForSmallCast { get; set; } = true;
 
 	#region
 	[JobConfig, UI("Prioritize raising dead players over Healing/Defense.",

@@ -278,6 +278,9 @@ public partial class ReaperRotation
 	static partial void ModifyHellsIngressPvE(ref ActionSetting setting)
 	{
 		setting.StatusProvide = [StatusID.EnhancedHarpe, StatusID.Bind];
+		// While the button is Regress the cast would go out as Regress and move back to the gate,
+		// not forward: StatusProvide lets it through in Enhanced Harpe's last refresh GCDs.
+		setting.ActionCheck = () => !RegressPvEIngressReady;
 		setting.IsFriendly = true;
 		setting.SpecialType = SpecialActionType.FixedDistanceMoveForward;
 	}
@@ -285,6 +288,8 @@ public partial class ReaperRotation
 	static partial void ModifyHellsEgressPvE(ref ActionSetting setting)
 	{
 		setting.StatusProvide = [StatusID.EnhancedHarpe, StatusID.Bind];
+		// Same as Hell's Ingress: never cast as Regress.
+		setting.ActionCheck = () => !RegressPvEEgressReady;
 		setting.IsFriendly = true;
 		setting.SpecialType = SpecialActionType.FixedDistanceMoveBackward;
 	}

@@ -48,7 +48,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			+ "return for the hits that would otherwise land unabsorbed.\n"
 			+ "The two values below belong to this setting: the enemy count applies to both of the "
 			+ "narrower options, the health threshold only to the last one.")]
-	public BlackestNightStrategy BlackestNightUsage { get; set; } = BlackestNightStrategy.WheneverDefensesOpen;
+	public BlackestNightStrategy BlackestNightUsage { get; set; } = BlackestNightStrategy.TankbusterHeavyPullOrLowHealth;
 
 	public enum BlackestNightStrategy : byte
 	{
@@ -79,10 +79,11 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			+ "In a fight: the Slow +20% lands on every enemy that strikes you and delays "
 			+ "auto-attacks as well as casts, so in a standing pack it throttles the whole incoming "
 			+ "stream for fifteen seconds. It costs nothing but its own cooldown.\n"
+			+ "Not while BossModReborn announces a knockback that lands after the barrier has run out "
+			+ "and before Arm's Length is ready again - the action is kept for it.\n"
 			+ "It also feeds the decision above: a pull already throttled by this Slow no longer counts "
-			+ "as unmitigated, so The Blackest Night is not spent into a stream that has been thinned. "
-			+ "Off by default, because it changes what the action is used for.")]
-	private bool UseArmsLengthOnPull { get; set; } = false;
+			+ "as unmitigated, so The Blackest Night is not spent into a stream that has been thinned.")]
+	private bool UseArmsLengthOnPull { get; set; } = true;
 
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Health threshold for The Blackest Night",
@@ -193,41 +194,48 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		// branch ran regardless of the switch - and the UI hides the threshold while the switch is
 		// off, leaving the only adjustment invisible. The Oblation line below checks its own option,
 		// and ChurinDRK checks this one on the same branch.
-		if (BlackLantern && !InTwoMIsBurst && TheBlackestNightPvE.CanUse(out act, targetOverride: TargetType.LowHP) && !TheBlackestNightPvE.Target.Target.HasStatus(false, StatusID.Transcendent) && TheBlackestNightPvE.Target.Target.GetHealthRatio() <= BlackLanternRatio)
+		// No burst hold on this line or the Oblation one below: their setting text ("Use ... on lowest
+		// HP party member", with its own health threshold) names no exception for the burst, and the
+		// setting text binds (A157).
+		if (BlackLantern && TheBlackestNightPvE.CanUse(out act, targetOverride: TargetType.LowHP) && !TheBlackestNightPvE.Target.Target.HasStatus(false, StatusID.Transcendent) && TheBlackestNightPvE.Target.Target.GetHealthRatio() <= BlackLanternRatio)
 		{
 			return true;
 		}
 
 		if (!IsLastAbility(false, OblationPvE))
 		{
-			if (!InTwoMIsBurst && OblationLantern && OblationPvE.CanUse(out act, usedUp: OblationLanternStack, targetOverride: TargetType.LowHP) && !OblationPvE.Target.Target.HasStatus(false, StatusID.Transcendent) && OblationPvE.Target.Target.GetHealthRatio() <= OblationLanternRatio)
+			if (OblationLantern && OblationPvE.CanUse(out act, usedUp: OblationLanternStack, targetOverride: TargetType.LowHP) && !OblationPvE.Target.Target.HasStatus(false, StatusID.Transcendent) && OblationPvE.Target.Target.GetHealthRatio() <= OblationLanternRatio)
 			{
 				return true;
 			}
 		}
 
-		if (!InTwoMIsBurst && DarkMissionaryPvE.CanUse(out act))
+		// Dark knight special rule: the burst window keeps its weave slots and MP for damage. On the
+		// universal layer, so it yields when the party is in danger (concept 08, "Die Abwehrsperren").
+		var burstHold = HoldAreaDefense(InTwoMIsBurst, "Dark Knight: burst window");
+
+		if (!burstHold && DarkMissionaryPvE.CanUse(out act))
 		{
 			return true;
 		}
 
 		// Held while a barrier waits to be spent - see HoldMitigationForBarrier. Reprisal takes 10%
 		// off the stream that has to break The Blackest Night within its seven seconds.
-		if (!InTwoMIsBurst && !HoldMitigationForBarrier()
+		if (!burstHold && !HoldMitigationForBarrier(true)
 			&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
 
-		if (!InTwoMIsBurst && !HoldMitigationForBarrier() && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
+		if (!burstHold && !HoldMitigationForBarrier(true) && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}
 
 		if (!IsLastAbility(false, OblationPvE))
 		{
-			if (!InTwoMIsBurst && OblationPvE.CanUse(out act, skipStatusProvideCheck: false, targetOverride: TargetType.Self))
+			if (!burstHold && OblationPvE.CanUse(out act, skipStatusProvideCheck: false, targetOverride: TargetType.Self))
 			{
 				return true;
 			}
@@ -250,16 +258,11 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	/// each other through StatusProvide.
 	/// </para>
 	/// </summary>
-	/// <summary>
-	/// How long after an area stun the hold continues, so the gap between two casts of Sanctus does
-	/// not open a window. Roughly one global cooldown.
-	/// </summary>
-	private const float StunChainGrace = 3f;
-
 	private static DateTime _lastGroupStunSeen = DateTime.MinValue;
 
 	/// <summary>
-	/// Whether an <b>area</b> stun is currently keeping the damage stream down.
+	/// Whether an <b>area</b> stun is currently keeping the damage stream down, or the next one of a
+	/// chain is visibly on its way.
 	/// <para>
 	/// Neither "any enemy is stunned" nor "every enemy is stunned" answers that. The first counts
 	/// Low Blow - which this job carries itself and the interrupt path uses - where one enemy stops
@@ -274,10 +277,13 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	/// look at the same enemies; a wider radius would count enemies that are not hitting anyone.
 	/// </para>
 	/// <para>
-	/// Between two casts of Sanctus the stun lapses for about a global cooldown, so the hold
-	/// continues through that gap while the enemies can still be stunned. Once they carry stun
-	/// resistance there is no headroom left and the hold ends by itself - "wait until the stuns stop
-	/// working" needs no counter of its own.
+	/// Between two casts of Holy the stun lapses for a moment. The hold carries across that gap
+	/// only while the next stun can be seen coming (concept 10, A215): for one global cooldown after
+	/// the stun ended - the time the white mage needs to begin the next Holy with his next GCD - and
+	/// for as long as a party member is casting Holy or Holy III with this pack in its radius. A gap
+	/// estimated from earlier gaps (A195, A212) held the barrier after a chain had ended, as long as
+	/// the longest or the last pause - a raise, say - while the tank took the stream. Once the enemies
+	/// carry stun resistance there is no headroom left and the hold ends by itself.
 	/// </para>
 	/// </summary>
 	private bool GroupStunRunning()
@@ -288,34 +294,58 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			return false;
 		}
 
+		var now = DateTime.Now;
 		if (stunned >= 2 && stunned * 2 >= inRange)
 		{
-			_lastGroupStunSeen = DateTime.Now;
+			_lastGroupStunSeen = now;
 			return true;
 		}
 
-		return headroom && (DateTime.Now - _lastGroupStunSeen).TotalSeconds < StunChainGrace;
+		if (!headroom)
+		{
+			return false;
+		}
+
+		return (now - _lastGroupStunSeen).TotalSeconds < DataCenter.DefaultGCDTotal
+			|| AreaStunBeingCastOnPack(inRange);
 	}
 
-	/// <summary>
-	/// Whether the pack is slowed hard enough that the barrier would not be spent.
-	/// </summary>
-	/// <remarks>
-	/// Slow is not only a caster debuff: its effect text names the auto-attack delay alongside cast
-	/// and recast time, and trash enemies deal most of their damage by auto-attack. A slowed pack
-	/// therefore throttles the incoming stream by about the size of the debuff - Arm's Length applies
-	/// Slow +20% to every physical attacker for 15s, which is the same order as Rampart and past the
-	/// line where the stream no longer spends 25% of maximum HP in seven seconds.
-	///
-	/// Same share rule as the stun condition, and for the same reason: one slowed enemy out of eight
-	/// says nothing about the stream. The difference is the timing - a stun stops the stream and
-	/// lapses in seconds, a slow thins it for fifteen, so this one has no grace window. It ends when
-	/// the debuff does.
-	/// </remarks>
-	private static bool PackSlowed()
+	// A party member casting Holy or Holy III whose radius around them holds this pack by the same
+	// share the stun itself is counted with. The radius is the action's own, from the game data.
+	private static bool AreaStunBeingCastOnPack(int inRange)
 	{
-		var inRange = SurveyHostileStatus(DataCenter.JobRange, StatusHelper.SlowStatus, out var slowed);
-		return inRange > 0 && slowed >= 2 && slowed * 2 >= inRange;
+		var sheet = Service.GetSheet<Lumina.Excel.Sheets.Action>();
+		foreach (var member in DataCenter.PartyMembers)
+		{
+			if (member == null || !member.IsCasting)
+			{
+				continue;
+			}
+
+			var cast = (ActionID)member.CastActionId;
+			if (cast is not (ActionID.HolyPvE or ActionID.HolyIiiPvE))
+			{
+				continue;
+			}
+
+			var radius = sheet.GetRow(member.CastActionId).EffectRange;
+			var reached = 0;
+			foreach (var hostile in DataCenter.AllHostileTargets)
+			{
+				if (hostile != null && hostile.DistanceToPlayer() <= DataCenter.JobRange
+					&& System.Numerics.Vector3.Distance(member.Position, hostile.Position) - hostile.HitboxRadius <= radius)
+				{
+					reached++;
+				}
+			}
+
+			if (reached >= 2 && reached * 2 >= inRange)
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/// <summary>
@@ -352,8 +382,20 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	/// as real as this one's. The one-GCD lead releases the hold before the barrier lapses, so a
 	/// mitigation that can no longer affect the outcome is not held back for nothing.
 	/// </para>
+	///
+	/// <para>
+	/// The hold is a Dark Arts question, rung two of concept 09, and yields on the universal layer
+	/// when a member is in danger (<see cref="CustomRotation.HoldAreaDefense"/>).
+	/// </para>
 	/// </remarks>
-	private bool HoldMitigationForBarrier()
+	private bool HoldMitigationForBarrier(bool area)
+	{
+		return area
+			? HoldAreaDefense(BarrierWaitsToBeSpent(), "Dark Knight: a barrier waits to be spent")
+			: HoldSingleDefense(BarrierWaitsToBeSpent(), "Dark Knight: a barrier waits to be spent");
+	}
+
+	private bool BarrierWaitsToBeSpent()
 	{
 		if (NumberOfHostilesInRange < BlackestNightMinHostiles)
 		{
@@ -399,14 +441,12 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	/// than a second number that could drift away from it.
 	/// </remarks>
 	private bool ShouldUseArmsLengthOnPull()
-		=> UseArmsLengthOnPull
-			&& NumberOfHostilesInRange >= BlackestNightMinHostiles
-			&& !PackSlowed()
+		=> ArmsLengthSlowsPull(UseArmsLengthOnPull, BlackestNightMinHostiles)
 			// The slow is the point of casting it here, and it is exactly what a barrier waiting to
 			// be spent cannot afford. Only this branch is held: the central anti-knockback uses of
 			// Arm's Length stay untouched, because being thrown off a platform is not a damage
 			// question.
-			&& !HoldMitigationForBarrier();
+			&& !HoldMitigationForBarrier(false);
 
 	private bool ShouldUseBlackestNightOnSelf()
 	{
@@ -532,14 +572,14 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		// Same hold as in the area path, and for the same reason: on a group pull the barrier's
 		// reward depends on the stream that Reprisal would thin. In a boss fight the condition is
 		// false by the hostile count, so a tankbuster keeps its mitigation.
-		if (!HoldMitigationForBarrier()
+		if (!HoldMitigationForBarrier(false)
 			&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
 
-		if (!HoldMitigationForBarrier() && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
+		if (!HoldMitigationForBarrier(false) && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}
@@ -662,7 +702,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			return true;
 		}
 
-		if (QuietusPvE.CanUse(out act))
+		if (UseBlood && QuietusPvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -683,7 +723,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			return true;
 		}
 
-		if (BloodspillerPvE.CanUse(out act, skipComboCheck: true))
+		if (UseBlood && BloodspillerPvE.CanUse(out act, skipComboCheck: true))
 		{
 			return true;
 		}
@@ -728,28 +768,38 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	// Indicates whether the Dark Knight can heal using a single ability.
 	public override bool CanHealSingleAbility => false;
 
-	// Logic to determine when to use blood-based abilities.
+	// How much Blood to carry into Delirium. The Balance (7.5): "entering buffs (when Delirium is
+	// pressed) with 70 or less Blood Gauge will ensure that you do not overcap ... it is best to have
+	// the Blood Gauge as high as possible (up to 70) when entering Delirium". The job guide gives the
+	// reason: Delirium grants three stacks of Blood Weapon, each adding 10 Blood (A197).
+	private const byte BloodPoolLimit = 70;
+
+	/// <summary>
+	/// Whether Bloodspiller or Quietus may spend Blood now: inside the burst, or where the Blood
+	/// would not fit into the next Delirium. Outside it the Blood is pooled for the burst.
+	/// </summary>
+	/// <remarks>
+	/// The Balance: "Use Bloodspiller under raid buffs, or to prevent overcapping on blood", and
+	/// Bloodspiller "can be delayed without loss, as long as ... Blood Gauge do[es] not overcap". The
+	/// property stood here unread since the rotation rework, built around a Blood cost of Living
+	/// Shadow the action no longer has; Bloodspiller went out at 50 Blood whenever it could (A197).
+	/// Under Delirium the two actions cost nothing (their own check lets them through then).
+	/// </remarks>
 	private bool UseBlood
 	{
 		get
 		{
-			// Conditions based on player statuses and ability cooldowns.
-			if (!DeliriumPvE.EnoughLevel || !LivingShadowPvE.EnoughLevel)
+			if (!DeliriumPvE.EnoughLevel || DeliriumStacks > 0 || LowDeliriumStacks > 0)
 			{
 				return true;
 			}
 
-			if (StatusHelper.PlayerHasStatus(true, StatusID.Delirium_3836))
+			if (StatusHelper.PlayerHasStatus(true, StatusID.Delirium_1972, StatusID.Delirium_3836) || InTwoMIsBurst)
 			{
 				return true;
 			}
 
-			if ((StatusHelper.PlayerHasStatus(true, StatusID.Delirium_1972) || StatusHelper.PlayerHasStatus(true, StatusID.Delirium_3836)) && LivingShadowPvE.Cooldown.IsCoolingDown)
-			{
-				return true;
-			}
-
-			return (DeliriumPvE.Cooldown.WillHaveOneChargeGCD(1) && !LivingShadowPvE.Cooldown.WillHaveOneChargeGCD(3)) || (Blood >= 90 && !LivingShadowPvE.Cooldown.WillHaveOneChargeGCD(1));
+			return Blood > BloodPoolLimit;
 		}
 	}
 	// Determines if currently in a burst phase based on cooldowns of key abilities.

@@ -378,7 +378,9 @@ public struct ActionTargetInfo(IBaseAction action)
 				}
 			}
 
-			if (battleChara.WillStatusEndGCD(action.Config.StatusRefreshGcdCount, 0, action.Setting.StatusFromSelf, action.Setting.TargetStatusNeed))
+			// As on the player side (ActionBasicInfo.IsStatusNeeded): the needed status has to last until the
+			// action goes off and its cast ends, not the refresh horizon of a provided one.
+			if (battleChara.WillStatusEnd(action.Info.NeededStatusMargin, action.Setting.StatusFromSelf, action.Setting.TargetStatusNeed))
 			{
 				return false;
 			}
@@ -749,8 +751,72 @@ public struct ActionTargetInfo(IBaseAction action)
 			return new TargetResult(Player.Object, [.. selfAffects], Player.Object.Position);
 		}
 
+		// The friendly counterpart: an area heal centred on the caster (Medica, Helios, Succor, Lux
+		// Solaris and the rest - Range 0, an effect radius, no ground target). The general path below
+		// looks for a heal *target* within Range, and with Range 0 that is the caster plus whoever's
+		// hitbox touches theirs; the candidate then has to be under the action's own heal ratio. So a
+		// healer standing full and a few yalms from the party never cast it, however hurt the party
+		// was - the need was measured on the anchor instead of on the people the heal lands on.
+		//
+		// Here the anchor is the caster, always, and the need is read where the heal lands: the
+		// hurt members inside the effect radius (GetCanAffects drops the full ones for a heal, as it
+		// does for the general path), at least AoeCount of them, and at least one of those under
+		// the heal ratio when the auto-heal check is on - the same two tests the general path applies,
+		// moved from the anchor to the affected. A member held for a death trigger, or carried through
+		// Walking Dead by his own attacks, is healed if he stands in the radius - an area heal cannot
+		// skip him - but he never counts as the reason.
+		//
+		// Only for the heal target type, and not when a caller names the caster outright
+		// (targetOverride Self), which the general path answers with the caster unconditionally. A
+		// friendly Range-0 action asked for anything else keeps the general path, because only the
+		// heal question depends on who needs it. The global AoE type (Off, Cleave, Full) does not
+		// apply: it is about attacks (see GetMostCanTargetObjects). The action's own AoeCount does.
+		if (Range == 0 && EffectRange > 0 && !IsSingleTarget && !IsTargetArea && action.Setting.IsFriendly
+			&& type == TargetType.Heal && targetOverride != TargetType.Self)
+		{
+			// The dead and those who cannot be healed stay out, as GeneralHealTarget keeps them out:
+			// a corpse reads 0 health, so it would count towards AoeCount and pass the heal ratio on
+			// its own, and the cast would go to whoever stands next to it.
+			var inRadius = GetCanAffects(skipStatusProvideCheck, skipTargetStatusNeedCheck, type, targetOverride);
+			inRadius.RemoveAll(member => member.IsDead || member.HasStatus(false, StatusHelper.HealingIneffectiveStatus));
+			var required = skipAoeCheck ? 1 : Math.Max(1, (int)action.Config.AoeCount);
+			if (inRadius.Count < required)
+			{
+				DataCenter.LastSelfCentredHeal = new(action.Name, inRadius.Count, required, false, DateTime.Now);
+				return null;
+			}
+
+			var anyInNeed = false;
+			foreach (var member in inRadius)
+			{
+				if (member.IsHeldForDeathTrigger() || member.WalkingDeadCarriedBySelfHeal(out _))
+				{
+					continue;
+				}
+
+				if (!IBaseAction.AutoHealCheck || member.GetForecastHealthRatio(InstantHeal) < action.Config.AutoHealRatio)
+				{
+					anyInNeed = true;
+					break;
+				}
+			}
+
+			DataCenter.LastSelfCentredHeal = new(action.Name, inRadius.Count, required, anyInNeed, DateTime.Now);
+			return anyInNeed ? new TargetResult(Player.Object, [.. inRadius], Player.Object.Position) : null;
+		}
+
 		IEnumerable<IBattleChara> canTargets = GetCanTargets(skipStatusProvideCheck, skipTargetStatusNeedCheck, type, targetOverride);
 		var canAffects = GetCanAffects(skipStatusProvideCheck, skipTargetStatusNeedCheck, type, targetOverride);
+
+		// A Walking Dead bearer who is carried by his own attacks is supported with a HoT only, the
+		// owner's rule (concept 09): a heal action that grants no HoT does not take him as its target
+		// until StatusHelper.WalkingDeadCarriedBySelfHeal releases him. Here rather than in
+		// FindHealTarget, because only this layer knows which action is asking, and FindTargetByType
+		// is public and has no action to ask.
+		if (type == TargetType.Heal && canTargets is List<IBattleChara> healCandidates && !GrantsSingleHot())
+		{
+			_ = healCandidates.RemoveAll(member => member.WalkingDeadCarriedBySelfHeal(out _));
+		}
 
 		if (canTargets == null || canAffects == null)
 		{
@@ -771,8 +837,8 @@ public struct ActionTargetInfo(IBaseAction action)
 		List<IBattleChara> targetsList = [.. GetMostCanTargetObjects(canTargets, canAffects, skipAoeCheck ? 0 : action.Config.AoeCount)];
 
 		var target = targetsList.Count > 0
-			? FindTargetByType(targetsList, type, action.Config.AutoHealRatio, action.Setting.SpecialType, targetOverride, action.Setting.IsFriendly)
-			: FindTargetByType([], type, action.Config.AutoHealRatio, action.Setting.SpecialType, targetOverride, action.Setting.IsFriendly);
+			? FindTargetByType(targetsList, type, action.Config.AutoHealRatio, action.Setting.SpecialType, targetOverride, action.Setting.IsFriendly, InstantHeal)
+			: FindTargetByType([], type, action.Config.AutoHealRatio, action.Setting.SpecialType, targetOverride, action.Setting.IsFriendly, InstantHeal);
 
 		IBattleChara[] affectedTargets;
 		if (target != null)
@@ -987,6 +1053,11 @@ public struct ActionTargetInfo(IBaseAction action)
 		}
 	}
 
+	// An off-GCD heal lands as soon as the animation lock lets it go out, so its heal-ahead reading
+	// looks no further than that; a GCD heal looks ahead by the rest of the GCD and its cast (A213).
+	// An off-GCD heal that lands with the next GCD looks ahead like the GCD (A221).
+	private readonly bool InstantHeal => !action.Info.IsRealGCD && !action.Setting.HealsWithNextGcd;
+
 	/// <summary>
 	/// Determines whether the movement safety check should be performed for the current action.
 	/// </summary>
@@ -998,15 +1069,18 @@ public struct ActionTargetInfo(IBaseAction action)
 	/// <summary>
 	/// Returns true for any <see cref="SpecialActionType"/> that physically moves the character,
 	/// regardless of whether the movement is a pure repositioning action or an attack with built-in movement.
+	/// The one list: the action settings window reads it too, so a new movement type cannot be checked
+	/// here and lack its "skip safety check" switch there (it did, for the backstep attacks of A193).
 	/// </summary>
-	private static bool IsMovingSpecialType(SpecialActionType type)
+	internal static bool IsMovingSpecialType(SpecialActionType type)
 		=> type is SpecialActionType.FixedDistanceMoveForward
 				or SpecialActionType.FixedDistanceMoveBackward
 				or SpecialActionType.HostileMovingForward
 				or SpecialActionType.FriendlyMovingForward
 				or SpecialActionType.HostileFriendlyMovingForward
 				or SpecialActionType.HostileMovingAttack
-				or SpecialActionType.ObjectBasedMovement;
+				or SpecialActionType.ObjectBasedMovement
+				or SpecialActionType.HostileAttackBackstep;
 
 	/// <summary>
 	/// Checks if a movement destination is safe using the appropriate BMR safety function for the movement type.
@@ -1029,37 +1103,120 @@ public struct ActionTargetInfo(IBaseAction action)
 			case SpecialActionType.FixedDistanceMoveForward:
 			case SpecialActionType.FixedDistanceMoveBackward:
 				// Fixed-distance moves: use IsFixedDashSafe
-				return DataCenter.IsFixedDashSafe(playerPos, destination);
+				return DataCenter.IsFixedDashSafe(playerPos, destination)
+					|| Refused("the landing point is in a danger zone");
 
 			case SpecialActionType.HostileMovingForward:
 			case SpecialActionType.FriendlyMovingForward:
 			case SpecialActionType.HostileFriendlyMovingForward:
 			case SpecialActionType.HostileMovingAttack:
 				// Target-based dash: use IsDashSafe with calculated destination (stopped at target hitbox)
-				if (target != null)
+				if (target == null)
 				{
-					// Calculate the line from player to target and stop at target hitbox
-					var toTarget = target.Position - playerPos;
-					var distance = toTarget.Length();
-					if (distance > target.HitboxRadius)
-					{
-						// Stop at target hitbox edge
-						var direction = toTarget / distance;
-						var finalDestination = target.Position - direction * target.HitboxRadius;
-						return DataCenter.IsDashSafe(playerPos, finalDestination);
-					}
-					// If already inside hitbox, destination is target position
-					return DataCenter.IsDashSafe(playerPos, target.Position);
+					return Refused("no target to measure the dash against", measured: false);
 				}
-				return false;
+
+				// Standing at the target, the dash does not move the player, and there is nothing
+				// for this check to decide. Owner's report, Summoner: "wenn der beschwörer bereits
+				// beim boss steht (0 yalm), dann wäre der gapcloser nur noch damage und kein risiko".
+				// Asking whether the line to the target is safe measured a path that is never taken,
+				// and an area under the boss withheld the ability from a player already standing in
+				// it. Where he stands is a different question, and refusing the action does not
+				// answer it: he is already there.
+				//
+				// 0 yalms means hitbox to hitbox, the distance the game shows (StandsAtTarget). This
+				// used to exempt only a player whose centre was inside the target's ring, and kept
+				// measuring a path shorter than his own hitbox when the rings merely touched. The
+				// Summoner's fallback block reads the same measure. As soon as any distance remains,
+				// the path to the hitbox edge is measured; how far a player may run up at all is the
+				// rotation's own setting (for the Summoner AddCrimsonCyclone and CrimsonCycloneDistance).
+				if (StandsAtTarget(target))
+				{
+					return true;
+				}
+
+				var toTarget = target.Position - playerPos;
+				var direction = toTarget / toTarget.Length();
+				var finalDestination = target.Position - direction * target.HitboxRadius;
+				return DataCenter.IsDashSafe(playerPos, finalDestination)
+					|| Refused($"the dash to {target.Name} crosses a danger zone ({target.DistanceToPlayer():F1} y)");
 
 			case SpecialActionType.ObjectBasedMovement:
 				// Object-based movement: use IsDashSafe from player to object
-				return DataCenter.IsDashSafe(playerPos, destination);
+				return DataCenter.IsDashSafe(playerPos, destination)
+					|| Refused("the way to the placed object crosses a danger zone");
+
+			case SpecialActionType.HostileAttackBackstep:
+				// The attack itself does not move the player towards the target; the backstep carries
+				// him away from it, and that landing point is what can put him into an area. The
+				// target is the reference for the direction: facing it is how the attack is made.
+				if (target == null)
+				{
+					return Refused("no target to measure the backstep against", measured: false);
+				}
+
+				var away = playerPos - target.Position;
+				away.Y = 0;
+				var length = away.Length();
+				if (length <= 0f)
+				{
+					return Refused("standing on the target, the backstep has no direction", measured: false);
+				}
+
+				var landing = playerPos + (away / length * action.Setting.BackstepDistance);
+				return DataCenter.IsFixedDashSafe(playerPos, landing)
+					|| Refused($"the backstep from {target.Name} lands in a danger zone");
 
 			default:
 				return true;
 		}
+	}
+
+	/// <summary>Whether this action grants one of the single-target HoTs in <see cref="StatusHelper.SingleHots"/>.</summary>
+	private readonly bool GrantsSingleHot()
+	{
+		var provides = action.Setting.TargetStatusProvide;
+		if (provides == null)
+		{
+			return false;
+		}
+
+		foreach (var status in provides)
+		{
+			if (Array.IndexOf(StatusHelper.SingleHots, status) >= 0)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// Whether the player stands at <paramref name="target"/>: 0 yalms hitbox to hitbox, the distance
+	/// the game shows. A gap closer onto such a target does not move the player.
+	/// </summary>
+	internal static bool StandsAtTarget(IBattleChara target) => target.DistanceToPlayer() <= 0;
+
+	/// <summary>
+	/// Records why the movement safety check withheld this action, for the diagnostics window, and
+	/// answers <c>false</c>.
+	/// </summary>
+	private readonly bool Refused(string why, bool measured = true)
+	{
+		// Kept apart: a refusal without a target can repeat every frame (FindTargetAreaMove, TODO) and
+		// would otherwise hide the refusal of a dash that was actually measured.
+		var refusal = new DataCenter.MoveSafetyRefusal(action.Name, why, DateTime.Now);
+		if (measured)
+		{
+			DataCenter.LastMoveSafetyRefusal = refusal;
+		}
+		else
+		{
+			DataCenter.LastMoveSafetyUnmeasured = refusal;
+		}
+
+		return false;
 	}
 
 	/// <summary>
@@ -1262,7 +1419,7 @@ public struct ActionTargetInfo(IBaseAction action)
 				}
 			}
 			var attackT = FindTargetByType(partyMembersInRadius,
-				TargetType.BeAttacked, action.Config.AutoHealRatio, action.Setting.SpecialType, targetOverride, true);
+				TargetType.BeAttacked, action.Config.AutoHealRatio, action.Setting.SpecialType, targetOverride, true, InstantHeal);
 
 			if (attackT == null)
 			{
@@ -1497,8 +1654,11 @@ public struct ActionTargetInfo(IBaseAction action)
 			yield break;
 		}
 
-		// Cleave mode
-		if (aoeCount > 1 && (Service.Config.AoEType == AoEType.Cleave || (DataCenter.IsInM9S && Service.Config.M9SCleaveOnly)))
+		// Cleave mode. Attacks only, as Off already is: the setting is about AoE attacks, and a heal or
+		// a party mitigation that wants several members in reach is not one (owner's reading, A147).
+		// Without the IsFriendly test a healer on Cleave never cast Medica, Helios or Succor.
+		if (!action.Setting.IsFriendly && aoeCount > 1
+			&& (Service.Config.AoEType == AoEType.Cleave || (DataCenter.IsInM9S && Service.Config.M9SCleaveOnly)))
 		{
 			yield break;
 		}
@@ -1714,6 +1874,14 @@ public struct ActionTargetInfo(IBaseAction action)
 	/// <param name="isFriendly">Indicates whether the target is friendly.</param>
 	/// <returns></returns>
 	public static IBattleChara? FindTargetByType(IEnumerable<IBattleChara> battleChara, TargetType type, float healRatio, SpecialActionType actionType, TargetType targetOverride, bool isFriendly)
+		=> FindTargetByType(battleChara, type, healRatio, actionType, targetOverride, isFriendly, false);
+
+	/// <summary>
+	/// <see cref="FindTargetByType(IEnumerable{IBattleChara}, TargetType, float, SpecialActionType, TargetType, bool)"/>
+	/// for a heal of the given kind: <paramref name="instantHeal"/> is true for an off-GCD action, whose
+	/// heal-ahead reading looks no further than the animation lock (A213).
+	/// </summary>
+	public static IBattleChara? FindTargetByType(IEnumerable<IBattleChara> battleChara, TargetType type, float healRatio, SpecialActionType actionType, TargetType targetOverride, bool isFriendly, bool instantHeal)
 	{
 		if (battleChara == null)
 		{
@@ -1832,6 +2000,7 @@ public struct ActionTargetInfo(IBaseAction action)
 			// (stop marks, priority, TTK, resistance, CanTarget predicate).
 			// Fall through intentionally so the regular switch(type) path handles target selection.
 			case SpecialActionType.HostileMovingAttack:
+			case SpecialActionType.HostileAttackBackstep:
 				// Filter alive hostiles; then let the standard hostile-target logic below run.
 				{
 					var filtered = new List<IBattleChara>();
@@ -2119,7 +2288,8 @@ public struct ActionTargetInfo(IBaseAction action)
 							break;
 						}
 					default:
-						if (Service.Config.SmallHp)
+						// The Big case reads its own setting; it read SmallHp, and BigHp had no reader (A225).
+						if (Service.Config.BigHp)
 						{
 							filtered = [.. objects];
 							filtered.Sort((a, b) =>
@@ -2315,11 +2485,23 @@ public struct ActionTargetInfo(IBaseAction action)
 				return null;
 			}
 
+			// Only members among the candidates, which are the ones in Closed Position's range: nothing
+			// checks the range after this choice, so a partner out of reach was sent to the game, refused,
+			// and chosen again on the next frame - at the head of the Dancer's off-GCD order (A223).
+			HashSet<ulong> inReach = [];
+			foreach (var candidate in battleChara)
+			{
+				if (candidate != null)
+				{
+					inReach.Add(candidate.GameObjectId);
+				}
+			}
+
 			foreach (var job in dancePartnerPriority)
 			{
 				foreach (var member in DataCenter.PartyMembers)
 				{
-					if (member == Player.Object)
+					if (member == Player.Object || !inReach.Contains(member.GameObjectId))
 					{
 						continue;
 					}
@@ -2344,7 +2526,7 @@ public struct ActionTargetInfo(IBaseAction action)
 			{
 				foreach (var member in DataCenter.PartyMembers)
 				{
-					if (member == Player.Object)
+					if (member == Player.Object || !inReach.Contains(member.GameObjectId))
 					{
 						continue;
 					}
@@ -3095,7 +3277,7 @@ public struct ActionTargetInfo(IBaseAction action)
 				//
 				// This is not overhealing: the cut exists to keep a cast from being spent on somebody
 				// who does not need it, and somebody who will be at 34% when the cast lands does.
-				if (!IBaseAction.AutoHealCheck || o.GetForecastHealthRatio() < healRatio)
+				if (!IBaseAction.AutoHealCheck || o.GetForecastHealthRatio(instantHeal) < healRatio)
 				{
 					filteredGameObjects.Add(o);
 				}
@@ -3110,13 +3292,13 @@ public struct ActionTargetInfo(IBaseAction action)
 				}
 			}
 
-			var result = GeneralHealTarget(partyMembers);
+			var result = GeneralHealTarget(partyMembers, instantHeal);
 			if (result != null)
 			{
 				return result;
 			}
 
-			result = GeneralHealTarget(filteredGameObjects);
+			result = GeneralHealTarget(filteredGameObjects, instantHeal);
 			if (result != null)
 			{
 				return result;
@@ -3150,7 +3332,7 @@ public struct ActionTargetInfo(IBaseAction action)
 
 			return null;
 
-			static IBattleChara? GeneralHealTarget(List<IBattleChara> objs)
+			static IBattleChara? GeneralHealTarget(List<IBattleChara> objs, bool instant)
 			{
 				// Everyone healable is a candidate. Only a status that nullifies healing outright
 				// takes a target out; a protective status merely moves it back in the queue.
@@ -3193,7 +3375,7 @@ public struct ActionTargetInfo(IBaseAction action)
 					// Forecast health rather than current, so the ordering below answers "who will be
 					// worst off when a heal lands" instead of "who is worst off now". With the
 					// setting off the two are the same number.
-					ranked.Add((o, o.NoNeedHealingInvuln(), ObjectHelper.GetForecastHealthRatio(o)));
+					ranked.Add((o, o.NoNeedHealingInvuln(), o.GetForecastHealthRatio(instant)));
 				}
 
 				// Unprotected before protected, then lowest health first inside each group.
@@ -3231,13 +3413,12 @@ public struct ActionTargetInfo(IBaseAction action)
 				var criticalRole = int.MaxValue;
 				foreach (var r in ranked)
 				{
-					if (!r.Unprotected
-						|| r.Obj.GetForecastEffectiveHpPercent() > Service.Config.HealthForDyingTanks * 100f)
+					if (!r.Obj.IsInCriticalClass(r.Unprotected))
 					{
 						continue;
 					}
 
-					var hp = r.Obj.GetForecastEffectiveHp();
+					var hp = r.Obj.GetForecastEffectiveHp(instant);
 					var role = r.Obj.IsJobCategory(JobRole.Healer) ? 0
 						: r.Obj.IsJobCategory(JobRole.Tank) ? 1
 						: 2;
@@ -3305,7 +3486,7 @@ public struct ActionTargetInfo(IBaseAction action)
 				if (player != null
 					&& !player.HasStatus(false, StatusHelper.HealingIneffectiveStatus)
 					&& !ObjectHelper.PlayerIsHeldForDeathTrigger()
-					&& ObjectHelper.GetForecastPlayerHealthRatio() <= Service.Config.HealthSelfRatio)
+					&& ObjectHelper.GetForecastPlayerHealthRatio(instant) <= Service.Config.HealthSelfRatio)
 				{
 					foreach (var o in objs)
 					{
@@ -3316,14 +3497,19 @@ public struct ActionTargetInfo(IBaseAction action)
 					}
 				}
 
+				if (Service.Config.HealTargetByDanger)
+				{
+					return DangerClassTarget(ranked, instant);
+				}
+
 				var healerTar = healerTars.Count > 0 ? healerTars[0] : null;
-				if (healerTar != null && healerTar.GetForecastHealthRatio() <= Service.Config.HealthHealerRatio)
+				if (healerTar != null && healerTar.GetForecastHealthRatio(instant) <= Service.Config.HealthHealerRatio)
 				{
 					return healerTar;
 				}
 
 				var tankTar = tankTars.Count > 0 ? tankTars[0] : null;
-				if (tankTar != null && tankTar.GetForecastHealthRatio() <= Service.Config.HealthTankRatio)
+				if (tankTar != null && tankTar.GetForecastHealthRatio(instant) <= Service.Config.HealthTankRatio)
 				{
 					return tankTar;
 				}
@@ -3334,6 +3520,85 @@ public struct ActionTargetInfo(IBaseAction action)
 				var tar = healingNeededObjs.Count > 0 ? healingNeededObjs[0] : null;
 				return tar != null && tar.GetHealthRatio() < 1 ? tar : null;
 			}
+		}
+
+		// Classes 2 and 3 of the owner's triage (concept 07), below class 1 and the self short-cut.
+		//
+		// Class 2: a healer or tank under their role threshold who is also being attacked. The
+		// threshold says "low enough", the aggro "and actually taking damage" - without it a tank would
+		// sit in this class for good, since he always wears his stance. Lowest health first, a healer
+		// before a tank at equal health.
+		//
+		// Class 3: everyone else unprotected. While an area cast is announced, fewest effective hit
+		// points first, because a raidwide takes the same number from everybody and a small pool dies
+		// to it first; otherwise lowest health first. Role decides a tie.
+		//
+		// Protected members come last, as everywhere in this method; the last pick keeps the plain
+		// "is anyone hurt at all" check.
+		static IBattleChara? DangerClassTarget(List<(IBattleChara Obj, bool Unprotected, float Health)> ranked, bool instant)
+		{
+			IBattleChara? pressed = null;
+			var pressedHealth = float.MaxValue;
+			var pressedRole = int.MaxValue;
+			foreach (var r in ranked)
+			{
+				if (!r.Unprotected || !DataCenter.TargetedPartyMembers.Contains(r.Obj.GameObjectId))
+				{
+					continue;
+				}
+
+				var isHealer = r.Obj.IsJobCategory(JobRole.Healer);
+				if (!isHealer && !r.Obj.IsJobCategory(JobRole.Tank))
+				{
+					continue;
+				}
+
+				if (r.Health > (isHealer ? Service.Config.HealthHealerRatio : Service.Config.HealthTankRatio))
+				{
+					continue;
+				}
+
+				var role = isHealer ? 0 : 1;
+				if (pressed == null || r.Health < pressedHealth || (r.Health == pressedHealth && role < pressedRole))
+				{
+					pressed = r.Obj;
+					pressedHealth = r.Health;
+					pressedRole = role;
+				}
+			}
+
+			if (pressed != null)
+			{
+				return pressed;
+			}
+
+			var byPoints = DataCenter.IsHostileCastingAOE;
+			IBattleChara? rest = null;
+			var restKey = float.MaxValue;
+			var restRole = int.MaxValue;
+			foreach (var r in ranked)
+			{
+				// Only the hurt: ranked by points, a damage dealer at full health has the smallest pool,
+				// won the class, and the check below then healed nobody while the tank was at half.
+				if (!r.Unprotected || r.Obj.GetHealthRatio() >= 1)
+				{
+					continue;
+				}
+
+				var key = byPoints ? r.Obj.GetForecastEffectiveHp(instant) : r.Health;
+				var role = r.Obj.IsJobCategory(JobRole.Healer) ? 0
+					: r.Obj.IsJobCategory(JobRole.Tank) ? 1
+					: 2;
+				if (rest == null || key < restKey || (key == restKey && role < restRole))
+				{
+					rest = r.Obj;
+					restKey = key;
+					restRole = role;
+				}
+			}
+
+			rest ??= ranked.Count > 0 ? ranked[0].Obj : null;
+			return rest != null && rest.GetHealthRatio() < 1 ? rest : null;
 		}
 
 		IBattleChara? FindInterruptTarget()
@@ -3596,7 +3861,8 @@ public struct ActionTargetInfo(IBaseAction action)
 						break;
 					}
 				default:
-					if (Service.Config.SmallHp)
+					// The Big case reads its own setting; it read SmallHp, and BigHp had no reader (A225).
+					if (Service.Config.BigHp)
 					{
 						filtered = [.. objects];
 						filtered.Sort((a, b) =>

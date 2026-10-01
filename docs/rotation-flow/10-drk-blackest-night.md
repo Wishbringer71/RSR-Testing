@@ -39,6 +39,11 @@ Heilerseite als `WHM_Reborn.ShouldHoldHolyForBarrier()`, Option `HoldHolyForBlac
 **voreingestellt an**. Den Gruppenpull erkennen beide Seiten an derselben Gegnerzahl, die ihre eigene
 Regel ohnehin verlangt, statt an einer zweiten Zahl daneben. Unberührt bleiben die zentralen
 Abtausch-Zweige gegen Rückstoß: Von einer Plattform geworfen zu werden ist keine Schadensfrage.
+Deshalb fällt Abtausch auf dem Pull nicht, solange BossModReborn einen Rückstoß ankündigt, der nach dem
+Ende seiner Wirkung (6 s, Wirktext) und vor dem Ende seiner Abklingzeit landet (`ArmsLengthSlowsPull`, alle
+Tanks, A212, A219); einen Rückstoß innerhalb der Wirkung deckt der Einsatz jetzt mit ab. Die Regel greift auch bei einem Boss
+mit Adds, und für seinen Slow verbraucht fehlte Abtausch dem Rückstoß. Ohne Modul gibt es keine
+Ankündigung; der Schutz gegen Rückstoß bleibt dann reaktiv wie bisher.
 
 ## Ergebnis
 
@@ -50,7 +55,8 @@ Eingriffe in `DRK_Reborn.cs`, alle auf Upstream-Code:
 1. **Der Party-Zweig fragt seine Option ab** (`:155`). `BlackLantern` soll steuern, ob die Fähigkeit
    auf das Party-Mitglied mit den niedrigsten HP geht, wurde aber nie gelesen. Defektbehebung.
 2. **Der Selbstschutz-Zweig bekommt eine Zeitpunktwahl** (`BlackestNightUsage`, `:35`) mit drei
-   Stufen. Voreinstellung bleibt das heutige Verhalten.
+   Stufen. Voreinstellung ist die engste mit Notfall, `TankbusterHeavyPullOrLowHealth` (seine Regel für
+   Voreinstellungen, 29.09.2026: der im Kampf sinnvollere Wert).
 3. **Zwei Prüfgrößen liegen zentral** in `CustomRotation_OtherInfo`: `TankbusterOnMe` (`:1377`) und
    `HasMajorMitigation` (`:1365`); `SurveyStuns` hat eine Überladung mit der Trefferzahl bekommen
    (`:544`).
@@ -68,9 +74,9 @@ Größe ist die passende Antwort auf einen Treffer dieser Größe, nicht auf jed
 
 | Stufe | Bedingung |
 |---|---|
-| `WheneverDefensesOpen` (Voreinstellung) | keine zusätzliche Bedingung — Verhalten wie bisher |
+| `WheneverDefensesOpen` | keine zusätzliche Bedingung — Verhalten wie bisher |
 | `TankbusterOrHeavyPull` | `TankbusterOnMe` **oder** der gestaffelte Pull |
-| `TankbusterHeavyPullOrLowHealth` | zusätzlich Gesundheit ≤ `BlackestNightHealthRatio` (Vorgabe 60 %) |
+| `TankbusterHeavyPullOrLowHealth` (Voreinstellung) | zusätzlich Gesundheit ≤ `BlackestNightHealthRatio` (Vorgabe 60 %) |
 
 Der **gestaffelte Pull** verlangt fünf Dinge gleichzeitig:
 
@@ -176,18 +182,18 @@ Oblation bleibt zusätzlich aus einem zweiten Grund außen vor: Sie steht im sel
 Barriere, die sonst hinter ihrer eigenen Vorgängerin hängen bliebe.
 
 **Keine Gruppenbetäubung.** Eine Betäubung ist der Grenzfall der Minderung: Für ihre Dauer kommt
-nicht weniger Schaden, sondern gar keiner. Sanctus — Holy, ab Stufe 82 Holy III — hält alles im
+nicht weniger Schaden, sondern gar keiner. Sanctus (Holy), ab Stufe 82 Sanctga (Holy III), hält alles im
 Umkreis von acht Yalm 4 Sekunden lang an (`ActionId.resx` 139, 25860). Der Weißmagier kann das im
 Trash absichtlich aufrechterhalten: `WHM_Reborn.ShouldStretchHolyStun` streckt die Betäubung über
-`SurveyStuns`, solange die Gegner betäubbar sind — **hinter einer Option mit Standard aus**, weil
-die Wirkung ohne Laufzeitbeobachtung nicht zu belegen war. Erst wenn sie `StunResistance` tragen
+`SurveyStuns`, solange die Gegner betäubbar sind — **hinter einer Option, seit 29.09.2026 Standard an**; die
+Wirkung ist ohne Laufzeitbeobachtung nicht belegt. Erst wenn sie `StunResistance` tragen
 (39, „Immune to stun effects"), läuft der Strom wieder.
 
 Wer betäuben kann, entscheidet über die Reichweite der Regel:
 
 | Rolle | Aktion | Wirkung | Dauer |
 |---|---|---|---|
-| Heiler | Sanctus, Sanctus III — **nur Weißmagier** | Fläche, 8 Yalm | 4 s |
+| Heiler | Sanctus, Sanctga — **nur Weißmagier** | Fläche, 8 Yalm | 4 s |
 | Tank | Schildhieb — nur Paladin | Einzelziel | 6 s |
 | Tank | **Tiefschlag — alle Tanks, auch der Dunkelritter** | Einzelziel | 5 s |
 | Nahkampf | Fußfeger | Einzelziel | 3 s |
@@ -197,8 +203,10 @@ Gelehrter, Astrologe und Weiser haben keine. Eine Fallunterscheidung nach Gruppe
 braucht die Regel trotzdem nicht — sie misst den Status **auf den Gegnern**, ist ohne Betäubung
 also von selbst wirkungslos.
 
-Der Quantor folgt aus dieser Tabelle. Tiefschlag trägt der Dunkelritter selbst, und RSR wirkt es
-über den Unterbrechungspfad (`CustomRotation_Ability.cs:575`): „**irgendein** Gegner betäubt" hätte
+Der Quantor folgt aus dieser Tabelle. Tiefschlag trägt der Dunkelritter selbst, und RSR wirkt es als
+Unterbrechung: im allgemeinen Fähigkeitspfad der Tanks (`CustomRotation_Ability.GeneralUsingAbility`) auf
+jeden Nicht-Boss, der gerade wirkt, wenn der Cast nicht unterbrechbar ist oder Interject abklingt
+(`ModifyLowBlowPvE`, geprüft 29.09.2026): „**irgendein** Gegner betäubt" hätte
 die eigene Unterbrechung die eigene Barriere sperren lassen, während sieben von acht Gegnern weiter
 zuschlagen. „**Alle** Gegner betäubt" fällt um, sobald ein Nachzügler unbetäubt dazustößt, obwohl
 der Strom erkennbar steht. Maßgeblich ist der **Anteil**: mindestens zwei betäubte Gegner und
@@ -206,10 +214,46 @@ mindestens die Hälfte der Gegner in Reichweite. Gemessen wird über die Jobreic
 (`DataCenter.JobRange`, für Tanks drei Yalm) — dieselbe Menge, über die auch die Gegnerzahl zählt,
 denn beide Bedingungen beantworten dieselbe Frage.
 
-Zwischen zwei Anwendungen von Sanctus läuft die Betäubung etwa einen globalen Cooldown lang aus; der
-Halt trägt deshalb noch drei Sekunden über diese Lücke, aber nur solange die Gegner überhaupt
-betäubbar sind. Mit ihrer Immunität endet er von selbst — „zurückhalten, bis die Betäubungen nicht
-mehr wirken" braucht keinen eigenen Zähler.
+**Über die Lücke zwischen zwei Sanctus trägt der Halt, solange die nächste Betäubung sichtbar kommt**
+(A215), und nur solange die Gegner noch betäubbar sind. Zwei Fälle, beide aus dem Spielzustand gelesen:
+
+- **Der Weißmagier wirkt gerade Sanctus**, und das Rudel steht in dessen Radius um ihn (Radius aus den
+  Aktionsdaten, dieselbe Anteilsregel wie bei der Betäubung selbst: mindestens zwei und mindestens die Hälfte
+  der Gegner in Reichweite). Dann landet die nächste Betäubung mit dem Ende des Wirkens. Sanctus und ab
+  Stufe 82 Sanctga (Holy III) wirken 1,5 s, Wiederaufnahme 2,5 s, Radius 8 y, Betäubung 4 s (deutscher und
+  englischer Job-Guide, abgerufen 29.09.2026).
+- **Höchstens einen globalen Cooldown nach dem Ende der Betäubung** — die Zeit, die der Weißmagier braucht,
+  um mit seinem nächsten GCD das nächste Sanctus zu beginnen. Beginnt er es, trägt der erste Fall weiter.
+
+Beginnt in dieser Frist kein Sanctus, ist die Kette zu Ende oder unterbrochen, und die Barriere ist frei.
+Mit der Immunität endet der Halt von selbst — „zurückhalten, bis die Betäubungen nicht mehr wirken" braucht
+keinen eigenen Zähler.
+
+**Durchgerechnet** (GCD 2,5 s; die abnehmende Betäubungsdauer 4 s, 2 s, 1 s, dann Immunität steht als
+Kommentar in `WHM_Reborn` und ist an keiner Spielquelle belegt):
+
+| Lage | Lücke zwischen zwei Betäubungen | Getragen durch |
+|---|---|---|
+| Weißmagier wirkt Sanctus in Folge | höchstens rund 1,5 s | die GCD-Frist |
+| Weißmagier streckt die Betäubung (`StretchHolyStun`): Sanctus erst nach ihrem Ende | bis zu einem GCD Entscheidung, dann 1,5 s Wirken | GCD-Frist, dann das sichtbare Wirken |
+| Weißmagier hört auf (Heilung, Wiederbelebung, Tod) | — | Freigabe nach höchstens einem GCD |
+
+**Ausgeschlossen, mit Grund:**
+- *Eine feste Frist* (bis 29.09.2026 drei Sekunden): zu lang, wo die Kette endet, zu kurz, wo der Weißmagier
+  streckt; eine feste Zahl ohne Ableitung.
+- *Die längste gemessene Lücke* (A195): Sie wuchs nur. Eine Pause für eine Wiederbelebung hielt die
+  Barriere danach für den Rest des Pulls nach jeder endenden Kette so lange zurück.
+- *Die zuletzt gemessene Lücke* (A212): Derselbe Fehler, bis die nächste Lücke gemessen ist. Beide schätzen aus
+  der Vergangenheit, was das Wirken des Weißmagiers jetzt zeigt.
+
+**Grenzen:** Ein Sanctus unter Swiftcast ist nicht sichtbar, bevor es landet; kommt es nach der GCD-Frist,
+fällt die Barriere mit der Betäubung zusammen. Ein langsamerer GCD des Weißmagiers kann eine kurze Lücke
+zwischen Frist und Wirken lassen. Beides kostet höchstens eine Barriere ohne Dark Arts, also MP, kein Leben.
+Andere Flächenbetäuber als der Weißmagier liegen außerhalb seines Profils (Occult Crescent); für sie gilt
+nur die GCD-Frist. Ebenso für einen Heiler der Gefährtenunterstützung: Erkannt werden nur die Spieleraktionen
+Holy (139) und Holy III (25860). Die Spieldaten führen dazu zahlreiche Nicht-Spieler-Zeilen gleichen Namens (etwa
+17614: 1,5 s, 8 y; 38085: 1,0 s, 8 y; xivapi, abgerufen 29.09.2026). Welche davon ein NPC der Gruppe wirkt und ob sie
+betäubt, ist nicht belegt; zudem steht ein NPC nur mit „Heal and raise Party NPCs" in der Gruppenliste.
 
 **Reprisal zuerst.** Der Pfad gibt je Gelegenheit **eine** Aktion zurück und arbeitet von oben nach
 unten: Oblation (10) · The Blackest Night (20) · Dark Mind · Shadowed Vigil/Shadow Wall · Rampart ·
@@ -230,7 +274,7 @@ entscheidet — deshalb gilt auch diese Bedingung nur im Pull-Zweig.
 **Keine verlangsamte Gruppe.** Verlangsamung ist nicht bloß ein Zauberer-Debuff: Ihr Wirktext nennt
 neben Wirk- und Wiederholzeit ausdrücklich die **Verzögerung der Automatikangriffe**, und Trash-Gegner
 liefern den Großteil ihres Schadens genau darüber. Eine verlangsamte Gruppe verdünnt den Strom
-deshalb etwa um die Stärke des Debuffs — Rückstoß (Arm’s Length) legt Verlangsamung +20 % auf jeden physischen
+deshalb etwa um die Stärke des Debuffs — Abtausch (Arm’s Length) legt Verlangsamung +20 % auf jeden physischen
 Angreifer für 15 s, dieselbe Größenordnung wie Rampart und damit jenseits der Linie, ab der die
 Barriere in sieben Sekunden nicht mehr aufgezehrt wird.
 
@@ -381,8 +425,10 @@ Fall „Dark Arts liegt an, während die Barriere noch läuft" bereits selbst (`
 
 **Was das nicht leistet.** Ob vier Gegner die Verbrauchsrate im gespielten Inhalt erreichen, ob eine
 halb betäubte Gruppe den Strom weit genug drückt und ob die engeren Stufen insgesamt besser
-abschneiden — all das ist ohne Spielbeobachtung nicht zu belegen. Deshalb ist die Voreinstellung das
-alte Verhalten, sind Gegnerzahl und Gesundheitsschwelle einstellbar, und deshalb steht der offene
+abschneiden — all das ist ohne Spielbeobachtung nicht zu belegen. Voreinstellung ist trotzdem die engste
+Stufe mit Notfall, weil sie im Kampf die sinnvollere ist (seine Regel, 29.09.2026): Sie behält die 3000 MP für
+Treffer, die die Barriere füllen, und der Notfall unter der Gesundheitsschwelle bleibt. Gegnerzahl und
+Gesundheitsschwelle sind einstellbar, und deshalb steht der offene
 Rest in `TODO.md`.
 
 ## Offene Punkte zu diesem Konzept

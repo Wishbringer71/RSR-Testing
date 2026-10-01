@@ -2969,7 +2969,7 @@ Allgemeine Form, in `CLAUDE.md` aufgenommen: Wo ein fremder Schutzmechanismus al
 1. *Verglichen wurde, was ankommt, statt was ausgegeben wird.* Die erste Fassung rechnete die tatsächlich absorbierte Menge. Unter dieser Lesart kann eine Barriere **nie** übergroß wirken — sie absorbiert höchstens den Treffer — und eine Minderung **nie** ausreichend, denn 20 % eines Treffers decken den Treffer nicht. Die Regel hätte nichts gefunden und das wäre als „greift selten" durchgegangen.
 2. *Minderung und Barriere wurden gleich behandelt.* Eine Minderung nimmt einen Anteil **des Treffers**, skaliert also mit ihm; es bleibt nichts übrig, und „zu groß" gibt es dort nicht. Nur die Barriere gibt feste Punkte aus und lässt bei einem kleinen Treffer den Rest verfallen. Die Vorgabe ist damit eine Aussage über **Barrieren**.
 
-**Die berichtigte Fassung hat sich dann selbst widerlegt.** Nach der Korrektur setzt die Regel voraus, dass ein Job zwei Anteilsbarrieren zur Wahl hält. Gemessen an der erzeugten Tabelle: Krieger eine (Shake It Off 15 %), Dunkelritter eine (The Blackest Night 25 %), Beschwörer eine (Schimmerschild 20 %), Maler zwei — aber Tempera Grassa **„Removes Tempera Coat to create a barrier…"**, also eine Umwandlung, keine Alternative. Die übrigen sind Bozja-Aktionen außerhalb des Nutzungsprofils. **Im ganzen Baum gibt es keinen Fall, in dem die Regel greifen würde.** Sperre, Sonde und Option sind zurückgebaut; toter Code wird nicht eingebaut, nur weil er fertig ist.
+**Die berichtigte Fassung hat sich dann selbst widerlegt.** Nach der Korrektur setzt die Regel voraus, dass ein Job zwei Anteilsbarrieren zur Wahl hält. Gemessen an der erzeugten Tabelle: Krieger eine (Shake It Off 15 %), Dunkelritter eine (The Blackest Night 25 %), Beschwörer eine (Schimmerschild 20 %), Pictomancer zwei — aber Tempera Grassa **„Removes Tempera Coat to create a barrier…"**, also eine Umwandlung, keine Alternative. Die übrigen sind Bozja-Aktionen außerhalb des Nutzungsprofils. **Im ganzen Baum gibt es keinen Fall, in dem die Regel greifen würde.** Sperre, Sonde und Option sind zurückgebaut; toter Code wird nicht eingebaut, nur weil er fertig ist.
 
 **Was an seine Stelle tritt, ist Stufe 2 seiner Vorgabe, und sie wirkt für jeden heilfähigen Job.** „Die aktuelle hp liegt unter dem schadenswert. dann wäre aber eine heilung sinnvoll bis max maxhp." Jede Heilschwelle im Baum liest die Gesundheit, die ein Mitglied **hat**; keine liest die, die es nach dem bereits laufenden Cast haben wird. Ein Mitglied bei 60 % vor einem 45-%-Raidwide steht über jeder Schwelle und stirbt daran. Die Größe dafür liegt seit A99–A102 gemessen vor und wurde bisher nur für die Minderungsfrage gelesen. `AnnouncedHitDropsAnyoneBelow` stellt die Frage jetzt einmal, `AreaCastIsWorthMitigating` und die Flächenheilflaggen lesen dieselbe Antwort. Hinter `Heal ahead of an announced area cast`, Vorgabewert **aus**.
 
@@ -3062,7 +3062,1765 @@ Allgemeine Form, in `CLAUDE.md` aufgenommen: Wo ein fremder Schutzmechanismus al
 
 **Erreichter Prüfgrad:** statische Erhebung von Definition, Aufrufern und Schreibpfaden; Gegenprobe des Prüfers gegen den defekten Stand aus der Versionsgeschichte; alle Prüfskripte grün. Keine Laufzeitbeobachtung — die liefert die Anzeige, wenn die Zahl nach dem nächsten Login den Stand der Vorsitzung trägt statt bei null zu beginnen.
 
----
+### A122 · Der Anlaufschutz sperrte den Gapcloser auch ohne Anlauf (20.09.2026)
+
+**Gemeldet aus dem Spiel:** „bossmod gibt in einigen gefährlichen situationen vor, keine gapcloser zu nutzen. rsr bietet sie da nicht an. aber wenn der beschwörer bereits beim boss steht (0 yalm), dann wäre der gapcloser nur noch damage und kein risiko" — und nachgereicht der Grund, warum es mehr als ein verpasster Schadensanteil ist: „vor allem, weil der gapcloser des beschwörers ja teil der rota ist".
+
+**Die Stelle.** `ActionTargetInfo.CheckMovementSafety` teilt den zielbasierten Sprung in zwei Fälle. Bleibt Abstand, wird die Strecke bis zum **Rand** der gegnerischen Hitbox geprüft — richtig. Steht der Spieler bereits **innerhalb** der Hitbox, fragte der Code `IsDashSafe(playerPos, target.Position)`, also die Linie bis zur **Mitte** des Gegners. Diese Linie wird nie zurückgelegt: Der Sprung endet am Hitbox-Rand, und der liegt hinter dem Spieler. Bei einem großen Boss sind das mehrere Yalm quer durch dessen eigene Standfläche, und eine dort liegende Zone verweigerte damit die Aktion einem Spieler, der ohnehin schon darin steht.
+
+**Wirkung im Kampf, und sie ist größer als ein verlorener Sprung.** Crimson Cyclone steht in `SMN_Reborn.UsePrimalFollowUps` unmittelbar vor Crimson Strike, und Strike verlangt den Status, den erst Cyclone vergibt (`CrimsonStrikeReady_4403`). Der ausgefallene Sprung nimmt der Ifrit-Phase deshalb **zwei** GCDs, nicht einen, und beide werden durch Füller ersetzt — bei jeder Ifrit-Beschwörung, nicht als Randfall.
+
+**Warum das keine Revision seiner Sicherheitsentscheidung ist.** Die dokumentierte Vorgabe lautet, ihn nicht für Schaden aus einer sicheren Position zu holen; der belegte Fall ist der **Anlauf** von Crimson Cyclone. Ohne Weg gibt es kein Positionsrisiko, und dieselbe Unterscheidung trägt Konzept 12 bereits für Ifrit („wenn du ohnehin am Ziel stehst"). Der Anlauf selbst bleibt unverändert begrenzt: `DistanceForMoving2` lässt Schadens-Gapcloser ab Werk nur unter drei Yalm zu, und sobald irgendein Abstand bleibt, misst der bestehende Zweig ihn wie zuvor.
+
+**Erhoben, nicht behoben:** `FindTargetAreaMove` ruft dieselbe Prüfung **ohne** Ziel auf; im zielbasierten Zweig ist `target` dann `null` und die Antwort pauschal „unsicher". Ob eine Aktion diesen Pfad überhaupt nimmt, hängt an der Kombination aus zielbasiertem `SpecialType` und Flächen-Zieltyp, und die ist nicht erhoben — steht in `TODO.md`. Crimson Cyclone läuft über den Hauptpfad und ist nicht betroffen.
+
+**Erreichter Prüfgrad:** statische Erhebung beider Aufrufstellen, des Zieltyps von Crimson Cyclone (`SpecialActionType.HostileMovingAttack`) und seiner Einbindung in die Rotation; Abgleich gegen `upstream/main`, wo der Zweig wortgleich steht — die Fehlbehandlung ist geerbt, nicht vom Fork eingeführt. Keine Laufzeitbeobachtung; sichtbar wird die Behebung daran, dass Crimson Cyclone und Crimson Strike in der Ifrit-Phase wieder fallen, während er am Boss steht.
+
+### A123 · Heiltränke: die Kette gegen Upstream geprüft, ein Auswahlfehler behoben (20.09.2026)
+
+**Gemeldet:** „werden heilpotions richtig genutzt? ich habe das gefühl, dass sie gar nicht mehr genutzt werden" — und nach der ersten Analyse die Eingrenzung, die die Richtung umdreht: „ich habe da z.b. aktuell den ultratrank enabled. und er wird dennoch nicht genutzt. und das ist nur in diesem fork so. im upstream geht es."
+
+**Damit war meine erste Antwort widerlegt, bevor sie wirkte.** Ich hatte den Gegenstandsschalter (`ItemConfig.IsEnabled`, ohne Initialisierer also `false`, gegen `ActionConfig` mit `= true`) als Ursache vorgelegt. Der Schalter ist echt und die Falle auch — aber bei ihm steht er auf an, und die Stelle ist Upstream-Code von 2023/2024, den der Fork nie angefasst hat. Seine Entscheidung dazu: Freischaltung bleibt je Gegenstand über die Oberfläche; der Vorschlag einer generellen Vorgabe ist erledigt.
+
+**Die Erhebung gegen `upstream/main`, vollständig und mit dem unbequemen Ergebnis.** Geprüft wurden `HpPotionItem`, `UseHpPotion`, der Einhängepunkt in `CustomRotation_Ability`, `BaseItem`, `ItemConfig`, `ConfigurationHelper.BadStatus`, `ObjectHelper.GetPlayerHealthRatio`, `DataCenter.RefinedHP`/`GetPartyMemberHPRatio`, `DefaultGCDRemain`, `CanUseHealAction`, `NonHealerHealLogic`, `AnyLivingHealerInParty`, die `HealSingleAbility`-Zweige und `ShouldHealSingle` samt `GetForecastSurvivingShare`. **Jede Fork-Abweichung auf diesem Pfad lockert; keine verengt.** Der Einhängepunkt etwa prüft im Fork zusätzlich auf Tankbuster, die Vorhersage in `ShouldHealSingle` ist auf [0,1] geklemmt und kann eine Gesundheit nur nach unten tragen. Auch `Configs.CurrentVersion` ist beidseits 12, ein Zurücksetzen beim Wechsel zwischen den Bauten also keine Erklärung.
+
+**Ein Nullbefund ist kein Freispruch.** Seine Beobachtung ist eine Messung, meine Erhebung ist eine über einen von mir gewählten Ausschnitt. Was daraus folgt, ist nicht „es liegt nicht am Fork", sondern „auf den geprüften Stellen nicht" — und dass die nächste Runde nicht wieder statisch sein darf.
+
+**Gefunden und behoben wurde dabei ein eigener Defekt, der zum Bild passt:** `UseHpPotion` verglich mit `a.MaxHp >= best.MaxHp` über eine absteigend sortierte Liste, sodass bei **Gleichstand der zuletzt geprüfte** gewann — und das ist die schwächste Sorte im Beutel. Gleichstand ist dabei der Regelfall und kein Randfall: `MaxHp` ist das Minimum aus Prozentanteil und eigener Obergrenze, und überall dort, wo der Prozentanteil bindet (synchronisierte Gesundheit, oder ein Vorrat, der die Obergrenze nicht erreicht), antworten alle nutzbaren Sorten dieselbe Zahl. Der starke Trank, den er bewusst freigeschaltet hat, blieb liegen, während ein schwacher verbraucht wurde. Damit ist zugleich sein Zusatzwunsch erfüllt — die passende Sorte zuerst.
+
+**Und das Messmittel, weil die Antwort hier nicht im Repository liegt.** Welche der sechs Bedingungen bei ihm zuschlägt, hängt an seiner Konfiguration und seinem Inventar; beides ist von hier nicht messbar, und `CanUse: False` ist ein Bit für sechs Fragen. `HpPotionItem.DescribeBlock` nennt jetzt den ersten blockierenden Punkt im Klartext, die Anzeige dazu, ob überhaupt etwas nach einem Trank fragt (Heilflagge oder Tankbuster). Das ist keine Sonde zur späteren Auswertung durch mich, sondern die Sichtbarmachung eines Zustands, den nur sein Rechner kennt.
+
+**Erreichter Prüfgrad:** statischer Vergleich jeder Stelle der Kette gegen `upstream/main`, Prüfskripte grün. Keine Laufzeitbeobachtung — die liefert die neue Anzeige.
+
+### A124 · Der Heiltrank hing an der Heilflagge und erbte deren Gründe (21.09.2026)
+
+**Sein Einwand, und er widerlegt meine Antwort aus A123:** „Dann müssten ja der heilaoe von Solar bahamut und der Single hot von Phoenix auch an dem flag hängen. Tun sie glücklicherweise aber nicht. Das flag ist im lowlevel für physick interessant oder für einen redmage mit seinem heal. Aber für potions? Warum gibt es da dann eigene Schalter?"
+
+**Beides trifft zu, am Code geprüft.** Lux Solaris und Rekindle werden in `SMN_Reborn.GeneralAbility` angeboten, und dieser Zweig steht im Ablauf **hinter** dem Trank, ohne jede Flaggenbedingung — die beiden Heilungen des Jobs umgehen die Flagge also bereits, und zwar aus genau dem Grund, den er nennt. Der Trank tat es nicht.
+
+**Was er dadurch erbte.** `AutoStatus.HealSingleAbility` beantwortet, ob dieser Job gerade eine Heil**aktion** wirken soll. Hinter dieser Antwort stehen `CanUseHealAction` (`AutoHeal`, `UseHealWhenNotAHealer`, die Restzeitschranke, `HealOutOfCombat`), `DataCenter.HPNotFull`, `NonHealerHealLogic` und die Schwelle `HealthSingleAbility` über `ShouldHealSingle`. Jede davon kann falsch sein, während der Spieler bei 10 % steht und einen freigeschalteten Trank im Beutel hat.
+
+**Die entscheidende ist `OnlyHealAsNonHealIfNoHealers`, und sie ist der Regelfall, nicht die Ecke:** Ist sie an, bekommt ein Nicht-Heiler in einer Gruppe mit lebendem Heiler **gar keine** Heilflagge. Für seinen Beschwörer heißt das: kein Trank, auch nicht bei einem Gesundheitspunkt — genau das gemeldete Bild „jetzt passiert gar nichts mehr". Der Trank prüfte dabei seine eigene Schwelle (`UseHpPotionsPercent`) ordnungsgemäß; gefragt wurde er nur nie.
+
+**Warum A123 daran vorbeilief.** Die Erhebung dort verglich jede Stelle der Kette gegen `upstream/main` und fand keine Fork-Verengung — richtig gemessen, falsch gerahmt. Die Frage war „was hat der Fork verengt", und die Antwort darauf ist „nichts". Die Frage, die zum Ziel führte, war seine: **warum hängt eine Regel mit drei eigenen Schaltern überhaupt an einer fremden Freigabe.** Ein Vergleich gegen Upstream kann eine geerbte Fehlkonstruktion nicht finden, weil sie auf beiden Seiten gleich falsch ist.
+
+**Umgesetzt:** Die Bedingung am Einhängepunkt ist `DataCenter.InCombat` statt der Flagge. Der Trank trägt seine Entscheidung selbst — globale Option, Gegenstandsschalter, Gesundheitsschwelle, Mindestfehlmenge, Bestand —, und die Kampfbedingung ist seine eigene und keine geliehene: Außerhalb des Kampfes kehrt Gesundheit von allein zurück. Der Tankbuster-Zweig innerhalb von `UseHpPotion` bleibt und senkt dort weiterhin die Schwelle.
+
+**Betroffenenkreis:** alle Endnutzer, die `UseHpPotions` und einen Gegenstand freigeschaltet haben — für sie fällt der Trank künftig dann, wenn ihre eigene Schwelle es sagt. Wer die Option aus hat, merkt nichts. Die Upstream-Pflege trägt eine weitere Abweichung an einer Zeile.
+
+**Erreichter Prüfgrad:** statische Erhebung der Flaggenkette bis zu ihren Vorbedingungen, Gegenprobe an den beiden Heilzweigen desselben Jobs, Prüfskripte grün. Keine Laufzeitbeobachtung — die Anzeige im Gegenstandsfenster nennt jetzt Grund und Kampfbedingung.
+
+### A125 · Die Schadenstabelle: drei stille Verlustwege beim Speichern, und eine Anzeige, die es zeigt (24.09.2026)
+
+**Gemeldet:** „das abspeichern der schadenstabelle funtioniert nicht, kritisch im loop prüfen."
+
+**Die Kette ist vollständig gelesen:** Messen (`Watcher.ActionFromEnemy`), Schreiben (`SaveHostileCastingAreaPotential` → `SavePath`), Laden (`LoadSteps` → `InitOne`), Entladen (`DisposeAsync`). **Einen Mechanismus, der das Speichern immer verhindert, gibt sie statisch nicht her.** Das Laden läuft vor dem Einhängen des Effekt-Handlers (`await OtherConfiguration.InitAsync` vor `Watcher.Enable`), ein Rennen beim Start scheidet also aus; `RecordCastingArea` steht ab Werk auf an; der Knopf „Forget recorded damage potential" feuert nur auf Klick.
+
+**Gefunden wurden drei Wege, auf denen ein Speichervorgang still verloren geht:**
+
+1. **Serialisiert wurde die lebende Tabelle auf einem Pool-Thread**, während der Spiel-Thread die nächste Messung eintragen konnte. Ein `Dictionary` übersteht keine Aufzählung während eines Schreibvorgangs; der Serialisierer wirft, `SavePath` fängt es im allgemeinen Zweig, protokolliert eine Warnung und kehrt **ohne Wiederholung** zurück. Die Messung blieb im Speicher und sah damit erfasst aus — auf die Platte kam sie nur, wenn später noch ein Speichern folgte. Die letzte Messung einer Sitzung hatte keines.
+2. **Alle Speichervorgänge teilten sich dieselbe `.tmp`-Datei**, und jeder lief als eigener Pool-Task. Zwei zugleich ließen den zweiten an der gesperrten Datei scheitern; nach drei Versuchen wurde er verworfen.
+3. **Beim Entladen wurde gespeichert, solange der Effekt-Handler noch eingehängt war.** Eine Messung zwischen Schnappschuss und Aushängen existierte danach nirgends mehr.
+
+**Behoben:** Der Schnappschuss wird auf dem aufrufenden Thread genommen und nur die Kopie geschrieben; ein Schreiber zur Zeit; der Effekt-Handler wird vor dem letzten Speichern abgehängt.
+
+**Und das Messmittel, weil die Ursache von hier nicht belegbar ist.** Ob einer dieser drei Wege sein Fehlerbild erklärt, sagt die statische Prüfung nicht; sie erklären gelegentlich fehlende Einträge, nicht zwingend ein „funktioniert nicht". Offen bleiben mindestens zwei andere Erklärungen: ein lokaler Bau von **vor** dem Ladefix (`87a7eb283`) — der dokumentierte Bau vom 20.09. 10:15 war es —, und dass gar nicht gemessen wird, weil eine der Messbedingungen nicht greift (mindestens vier Gruppenmitglieder, Aktion mit Wirkzeit, Id in der Flächenliste). Deshalb meldet das Listenfenster jetzt unter „Store:", was Laden und Speichern tatsächlich getan haben, und jedes Speichern liest die Datei zurück, bevor es Erfolg meldet. Fehlt die Zeile ganz, läuft ein Bau ohne diesen Stand.
+
+**Erreichter Prüfgrad:** statische Erhebung der gesamten Kette, Prüfskripte grün. Keine Laufzeitbeobachtung; die Anzeige liefert sie.
+
+### A126 · Searing Light lief der Burstphase davon, und die Schadenstabelle nennt jetzt ihren Grund (24.09.2026)
+
+**Gemeldet:** „ich bin der einzige beschwörer in der gruppe und trotzdem hat sich der start von searing light nach hinten verschoben. immer mehr, je länger der kampf lief." Nachgereicht, und das ist der Kern: „cooldown von searing light ist später nicht fertig, wenn burst phase läuft. das ist die konsequenz." Zur Schadenstabelle: aktueller Bau, Datei vorhanden, Inhalt `{}`.
+
+**Searing Light — zwei Stellen, eine Wirkung.** Beide sitzen in `SMN_Reborn`:
+
+1. **Die Freigabe kam einen GCD zu spät.** `bigSummonReady` verlangte die **abgelaufene** Abklingzeit der Beschwörung. Die läuft auf einem GCD-Zeitpunkt ab, weil die vorige Beschwörung selbst ein GCD war und sechzig Sekunden eine ganze Zahl von GCDs sind; der Einschiebeplatz davor war dann vorbei. Jetzt: `Cooldown.WillHaveOneCharge(WeaponRemain)` — bereit bis zum nächsten GCD.
+2. **Ein abkühlender Buff galt als erledigt.** `searingSettled` enthielt `SearingLightPvE.Cooldown.IsCoolingDown`. War der Buff bei Bereitschaft der Beschwörung knapp nicht fertig, fiel die Beschwörung ohne ihn, der Buff folgte in der Phase, und seine nächste Abklingzeit endete noch später — der Abstand wuchs je Zyklus um die Rundung auf den nächsten freien Einschiebeplatz. Das ist die Form der Meldung. Jetzt wartet die Beschwörung, wenn der Buff bis zum nächsten GCD fertig wird; das Warten bleibt damit auf einen GCD begrenzt und zieht beide in Takt.
+
+**Nebenbefund, im selben Zug behoben:** Ein vom Spieler ausgeschaltetes Searing Light ging nie auf Abklingzeit und galt damit nie als erledigt — die Beschwörung hätte ewig gewartet. `searingSettled` liest jetzt auch `!IsEnabled`.
+
+**Seine Vorgabe bleibt unberührt:** Der Buff steht, bevor der erste Burstschaden entsteht. Geändert sind Zeitpunkt der Freigabe und Umfang des Wartens, nicht das Ziel. Widerrufen ist allein meine eigene Begründung „der warte-GCD ist ein Füller, kein Verlust" (C80).
+
+**Offen, als Entscheidung vorgelegt:** Liegt der Buff einmal mehr als einen GCD zurück, holt sich der Abstand nicht auf. Die Wartedauer ist eine Abwägung zwischen einmaligem Verschieben aller folgenden Demi-Phasen und wiederkehrendem Buffverlust — `TODO.md`.
+
+**Schadenstabelle — was `{}` bedeutet.** Eine leere Datei nach Kämpfen mit Flächenschaden heißt, dass **kein einziger** Wert gemessen wurde; die Lücken aus A125 erklären Einzelverluste, keine leere Tabelle. Die Messung hat fünf Bedingungen, jede einzeln hinreichend, um sie zu verhindern: `Record AOE actions` an, mindestens vier gezählte Gruppenmitglieder, eine Aktion mit Wirkzeit, ihre Id in der Flächenliste, ein Treffer mit Schaden am Spieler. Ein belegter Kandidat ist die zweite: `IsParty` zählt NPC-Begleiter nur bei gesetzter NPC-Gruppenoption. Welche bei ihm greift, ist von hier nicht messbar; das Listenfenster nennt deshalb unter „Last hit" für den letzten gegnerischen Treffer am Spieler den Grund im Klartext.
+
+**Erreichter Prüfgrad:** statische Erhebung beider Ketten samt Zustandsfolge über mehrere Zyklen, Prüfskripte grün. Keine Laufzeitbeobachtung.
+
+### A127 · Beschwörung wartet ein, zwei Sekunden auf Searing Light — nach seinem Prüfvorschlag, ohne Mehrbeschwörer-Stau (24.09.2026)
+
+**Prüfvorschlag des Auftraggebers** (zunächst fälschlich als Vorgabe geführt, C82), zugleich Ablehnung meiner Empfehlung aus `TODO.md` (Kopplung an offene Primal-Ladungen): „dein vorschlag ist suboptimal, da primalladungen weniger potenz haben als demi. es geht einfach um ein bis zwei sekunden am anfang, die sich im lauf der zeit verschieben, vergrößern. das am anfang zu prüfen und den demi so zu verschieben, dass er erst startet, wenn searing light verfügbar ist, reicht. die primal rota muss nicht beendet werden. die prüfung der abklingzeit darf aber nicht dazu führen, dass alle demis verzögert werden (siehe mehrere Beschwörer in gruppe), da erfolgt ein ausweichen auf den nächsten demi bzw. im negativfall auf den stärksten primal"
+
+**Befund zu A126:** Die dortige Grenze „Buff bis zum nächsten GCD fertig" (`WillHaveOneCharge(WeaponRemain)`) wird in dem Moment gelesen, in dem die Beschwörung fiele; dort ist `WeaponRemain` nahe null. Sie hieß also „jetzt bereit" und ließ genau die ein, zwei Sekunden der Meldung durch — A126 hat den Einzelfall des gerade bereiten Buffs behoben, nicht die gemeldete Drift (C81).
+
+**Umgesetzt (`SMN_Reborn.UseSummonsAndTrances`, `searingSettled`):**
+- Einziger Beschwörer: Warten, solange der Buff innerhalb von `WeaponRemain + WeaponTotal` zurück ist. Die Warte-GCDs nimmt der Primal-Zweig.
+- Zweiter Beschwörer in der Gruppe: kein Warten auf einen abkühlenden Buff; die Ladung nimmt das erste Fenster der bestehenden Zündregel aus Konzept 12.
+- `HasAnySearingLight` statt `HasSearingLight`: Ein fremder laufender Buff sperrt den eigenen (`StatusProvide`, `StatusFromSelf = false`); zuvor wartete die Beschwörung dann, bis der fremde auslief — in jeder Demi-Phase, der vom Auftraggeber genannte Stau.
+- `!IsBurst`: Vor der Beschwörung zündet nur `burstAboutToStart`, das `IsBurst` liest; bei ausgeschaltetem Burst hielt ein bereiter Buff die Beschwörung dauerhaft fest.
+
+**Entstehung (Parnas):** Beide Dauerwarte-Fälle sind *Lack of Movement*: Die Wartebedingung wurde für den einzelnen Beschwörer mit Burst an gebaut; die spätere Erweiterung des Zündfensters für mehrere Beschwörer und der Burstschalter als Zündvoraussetzung brachen die Prämisse „ein bereiter Buff fällt vor der Beschwörung", ohne dass etwas fehlschlug. Muster: Eine Wartebedingung muss dieselben Voraussetzungen lesen wie die Aktion, auf die sie wartet.
+
+**Verhalten im Kampf:** Als einziger Beschwörer startet die Demi-Phase bis zu einem GCD später, dafür mit laufendem Buff, und der Abstand wächst nicht mehr. Mit zweitem Beschwörer oder fremdem Buff startet sie pünktlich.
+
+**Erreichter Prüfgrad:** statische Erhebung der Zustandsfolge, Prüfskripte, Compile in der CI. Keine Laufzeitbeobachtung. Rest: Fällt der Warte-GCD auf eine Wirkzeit-Aktion ohne Einschiebeplatz (Ruby Rite), wartet die Beschwörung einen weiteren GCD — begrenzt durch die Ladungen des Primals.
+
+### A128 · Kritischer Loop über Konzept 12 und die Warteregel: Warten ist nie besser als der Platz hinter der Beschwörung (24.09.2026)
+
+**Auftrag:** „kritischer vollständiger loop auf konzept und umsetzung, audit codereview, konzeptverbesserung. und meine entscheidung war keine entscheidung, sondern ein vorschlag zur prüfung, weil deine entscheidung schlecht war und das konzept nicht verstand. suche, ob du eine bessere gesamtheitliche lösung vorschlagen kannst"
+
+**Befund 1 — die Drift hat einen zweiten, offenen Weg.** Eine gemeinsame Verschiebung von Beschwörung und Buff gegen das Gruppenfenster entsteht aus jedem Warte-GCD je Solar-Phase. A126 hat den Weg „Freigabe zu spät" behoben. Offen ist der Weg „kein Einschiebeplatz vor der Beschwörung": Läuft davor ein Zauber mit Wirkzeit ohne Platz dahinter (`EnoughWeaveTime` verlangt Restzeit über dem Vorlauf), fällt der Buff nicht vor der Beschwörung, und sie wartet; nach seiner Angabe läuft dort „meist ifrit". Weder A126 noch A127 greifen daran. Schluss aus Code und Wirktext; die Längen der Wirk- und Wiederholzeit von Ruby Rite sind Fremdquelle.
+
+**Befund 2 — Warten ist dominiert.** Der Beschwörungs-GCD macht keinen Schaden (Wirktext 36992); sein Einschiebefenster liegt vor dem ersten Burstschaden und gleicht dem eines sofort wirkenden Warte-GCDs. Ein Warte-GCD trägt daher keinen Buff, den nicht auch der Platz hinter der Beschwörung trüge, und verschiebt zusätzlich jede folgende Demi. Einziger Gegenwert: Schutz vor Lux Solaris im Platz hinter der Beschwörung. Upstream wartet nie; das Warten ist Fork-Bestand seit A115, und dessen Satz „Garantiert wird es erst, wenn die Beschwörung selbst auf den Buff wartet" übersah das Fenster hinter der Beschwörung (C84).
+
+**Befund 3 — die Grenze aus A127 hielt ihre Zusage nicht.** „Höchstens ein weiterer GCD" galt nicht: Ein Buff, der nach dem Einschiebefenster des Warte-GCDs zurückkehrt, kostete einen zweiten. Die Grenze liest jetzt das Fenster selbst (`WeaponRemain + WeaponTotal - CalculatedActionAhead`); bleibt ein Warte-GCD mit Wirkzeit ohne Platz, wartet sie weiterhin noch einen — so steht es jetzt im Code, im Konzept und im Release-Text (C83).
+
+**Befund 4 — Konzept 12 widersprach sich und dem Code.** Der Sachstand beschrieb den Stand vor A114 („nichts im Baum zieht die Zündung an den Phasenanfang"), kündigte ein Messmittel an, das der eigene Abschnitt „Keine Sonde" ausschließt und das nie gebaut wurde, und der Abschnitt zur Kopplung führte den seit A115 zusammengeführten Doppelaufruf samt Zeilennummern als offene Frage. „Die Umsetzung" nannte V7 als umgesetzt und zugleich zurückzubauen. Alles eingearbeitet, im Urteilsstil. Neu erfasst: Ob Solar seine Abklingzeit mit Bahamut und Phoenix teilt, ist aus dem Repository nicht zu entscheiden (alle drei Wirktexte: „does not share"); `burstAboutToStart` liest sie.
+
+**Befund 5 — sein Vorschlag war als Vorgabe geführt** (C82), in Code-Kommentar, Konzept, A127 und der Nachricht von `870353424`. Korrigiert, außer der Commit-Nachricht: Die Historie wird nicht umgeschrieben.
+
+**Gesamtheitliche Lösung, vorgelegt, nicht umgesetzt:** Die Beschwörung wartet nie; Searing Light nimmt den Platz vor ihr oder den ersten dahinter; dazu eine Anzeigezeile für seine Kontrolle. `TODO.md`, mit Rechnung und Gegenoptionen. Nicht umgesetzt, weil sie in einem Restfall seine Vorgabe aus A115 verfehlt und damit seine Entscheidung ist.
+
+**Entstehung (Parnas):** *Ignorant Surgery* in A115 — die Warteregel wurde gebaut, ohne das Fenster hinter der Beschwörung zu prüfen, das der eigene Wirktextbefund desselben Konzepts bereits hergab. Muster: Ein Garant wird eingeführt, ohne zu prüfen, ob der ungesicherte Weg die Bedingung schon erfüllt.
+
+**Erreichter Prüfgrad:** statische Erhebung von Code, Wirktexten, Upstream-Stand und Versionsgeschichte; Prüfskripte; Compile in der CI. Keine Laufzeitbeobachtung.
+
+### A129 · Konzept 12 als Ganzes: das V8-Buch maß ein anderes Buch, der Schild verlor seinen Platz, und nichts war im Kampf sichtbar (24.09.2026)
+
+**Auftrag:** „kritischer vollständiger loop auf das gesamte konzept und umsetzung, audit codereview auch alles im loop, konzeptverbesserung." Dazu seine Hinweise im Lauf: „schimmerschild kann man nicht im burst um einen gcd nach hinten verschieben, muss vor demi bei bedarf gecasted werden. addle könnte verschoben werden …", „ich habe die hinweise ingame bislang nirgends gesehen", „und ingame hat man settigs auch immer auf?", „wo waren die vollständigen loops?", „du arbeitest schlampig".
+
+**Verfahrensbefund zuerst:** Die ersten vier Eingriffe dieses Durchgangs habe ich nach der Erhebung umgesetzt, ohne Nullvariante, Abwägung und Falsifikation; seine Hinweise standen zweimal als Vorgabe im Text (C86). Die Stufen sind nachgeholt, bevor etwas vorgelegt wurde; je Eingriff unten.
+
+**1 · Schimmerschild vor jeder Demi.** *Befund:* Wirktext „Can only be executed while Carbuncle is summoned"; der angekündigte Schild stand in `GeneralAbility`, das der Fähigkeitenpfad nach `AttackAbility` fragt — Searing Light nahm den einzigen Platz vor der Beschwörung, der Schild fiel für die Phase aus. *Optionen:* Nullvariante; nur Reihenfolge; Reihenfolge und Warten der Beschwörung; den angekündigten Schild allgemein in den Verteidigungszweig verlegen. *Gewählt:* Reihenfolge und Warten — nur beides deckt auch den Fall ohne Platz (Zauber mit Wirkzeit vor der Beschwörung); die Verlegung hätte die Reihenfolge außerhalb jeder Demi mitverändert. *Falsifikation:* Kein Defekt? — widerlegt durch die Zweigreihenfolge (`CustomRotation_Ability`). Warten falsch, wo es für Searing Light dominiert ist (A128)? — nein: Der Schild kann hinter der Beschwörung nicht fallen, das Argument trägt hier nicht. Ausgeliefert und wirkungslos? — ohne BossModReborn-Modul greift nur die Flagge, also ein laufender Cast; als Grenze benannt. Nebenwirkung der dreifach gefragten Vorausprüfung auf die Selbstbewertung der Zurückhaltung? — nein, `NoteProactiveHold` setzt nur eine Frist. *Klasse:* erhoben über alle Reborn-Rotationen, Suchmittel gegen den alten SMN-Stand selbst geprüft; alle übrigen vorausschauenden Abwehrregeln stehen in den Verteidigungszweigen. Die Klasse ist diese eine Stelle.
+
+**2 · Zündung vor der Beschwörung nur vor der Burst-Demi, beim einzelnen Beschwörer.** *Befund:* `burstAboutToStart` fragte nur die Abklingzeit der Beschwörung; eine vom Solar-Takt gelöste Ladung fiel vor Bahamut oder Phoenix, gegen die Festlegung in Konzept 12, und die Beschwörung wartete dort auf sie. *Optionen:* Nullvariante; Beschwörungstaste (`GetAdjustedActionId`, Wirktext „Summon Bahamut changes to Summon Solar Bahamut"); unbelegte Messleisten-Flags; Reihenfolge aus dem Phasenwechsel. *Gewählt:* Taste **oder** Reihenfolge. *Falsifikation:* Ausgeliefert und wirkungslos, weil die Taste erst mit abgelaufener Abklingzeit wechselt? — nicht auszuschließen, deshalb die Reihenfolge als zweite Lesart; ein falsches „ja" stellt nur das alte Verhalten her, ein falsches „nein" hielte die Beschwörung fest. Deadlock durch die Einengung? — geschlossen: `searingSettled` liest dieselbe Bedingung.
+
+**3 · Phasenbuch.** *Befund:* `AllSearingPhasesHeld` verlangte Solar auch unterhalb von Stufe 100 — in jedem stufensynchronisierten Inhalt unerreichbar; Bahamut und Phoenix wurden getrennt gebucht, gegen die Paritätsbegründung desselben Konzepts. *Messung* mit dem Buch des Plugins, drei Beschwörer, gegen Gegenspieler auf jeder Phase: 49,0 % wie gebaut; Paarbuchung 52,2 %; dazu Ausweichen nur auf abgelaufenen Buff 53,6 %; Modellbuch 57,1 %; V2 47,6 %. *Zerlegt statt vermutet:* Auffrischen im Fenster ohne Wirkung; Beobachtung über das ganze Fenster **schlechter** (50,9 %); keine Rücksetzung +2,1 Punkte, verworfen, weil die Rücksetzung die Selbstheilung ohne Uhr ist. *Umgesetzt:* Paarbuchung, stufengerechte Prüfung, Ausweichen nur auf abgelaufenen Buff.
+
+**4 · Diagnosefenster.** *Befund:* Alle Diagnosezeilen standen im Einstellungsfenster, die Trankgründe zusätzlich nur im Debug-Modus; im Kampf nie sichtbar. *Optionen:* Nullvariante; Chatausgabe (flutet); Zeilen in fremde Fenster hängen; eigenes Fenster wie das Next-Action-Fenster. *Gewählt:* eigenes Fenster hinter `Show Diagnostics Window`, Vorgabewert aus — es zeigt den Rotationsstatus jeder Rotation, Store und letzten Treffer der Schadenstabelle und je freigeschaltetem Trank den Grund. *Falsifikation:* ausgeliefert und nicht gesehen? — es öffnet unter denselben Bedingungen wie die übrigen Kampffenster (`OnlyShowWithHostileOrInDuty`).
+
+**5 · Modell.** Zwischen den Demis lief ein einziger Primal je Zyklus in der Reihenfolge Ifrit, Titan, Garuda; im Code laufen alle drei in jeder Lücke, voreingestellt Titan, Garuda, Ifrit. `main` gab die V8-Zahlen des Konzepts gar nicht aus, und beide Modelle liefen nicht in der CI. Korrigiert; Plugin-Buch als eigene Variante; V8-Tabelle in der Ausgabe; Selbsttests für das Plugin-Buch (nie unter V2, Burst-Invariante); beide Skripte in der CI.
+
+**6 · Konzept.** Abschnitte, die V7 „umsetzen" sagten, Buchführung für „nicht nötig" erklärten oder einen Code-Stand vor A114 beschrieben, sind eingearbeitet oder entfernt (C85); „heute" hieß in den Tabellen die reine Solar-Regel und heißt jetzt so.
+
+**Erfasst, nicht bearbeitet:** `standingAtTheTarget` liest das Ziel aus dem letzten erfolgreichen `CanUse` von Crimson Cyclone und kann veraltet sein (`TODO.md`). Die enge Ausweichfassung „nur nach tatsächlicher Blockade" ist mit dem Phasenbuch baubar, nicht gebaut. Addle hinter Searing Light zurückzustellen ist nicht umgesetzt (Gewinn 15–23 Potenz im seltenen Doppelfall).
+
+**Erreichter Prüfgrad:** statische Erhebung, Modellmessung mit Selbsttest, Prüfskripte, Compile in der CI. Keine Laufzeitbeobachtung; das Diagnosefenster ist das Mittel dafür.
+
+### A130 · Keine festen Werte: was im Beschwörer-Code jetzt aus dem Spiel kommt, und ein Riegel für jede weitere Zahl (24.09.2026)
+
+**Vorgabe des Auftraggebers:** „ich will generell keine festen werte im code haben. alles muss ingame ableitbar sein. bevor eine ausnahme entsteht muss vorab ein vollständiger loop zum jeweiligen wert entstehen mit recherce, ob man ihn nicht doch ingame ableiten kann." Dazu: „deine fragestellungen sind falsch, da sie das problem im spielerlebnis nicht angehen" und „deine beurteilungen sind ebenfalls ans spielgeschehen anzupassen". Alle drei in CLAUDE.md.
+
+**Im Kampf ändert sich durch diesen Eintrag nichts:** Jeder ersetzte Wert ergibt auf Stufe 100 dieselbe Zahl wie zuvor. Anders wird es erst, wenn das Spiel die Größe ändert — ein Patch, der die Dauer des Schilds ändert, oder eine Stufe, auf der es kein Solar gibt. Dann folgt der Code dem Spiel, statt die alte Zahl zu behalten.
+
+**Abgeleitet statt gesetzt, je Wert:**
+- *Vorlauf des angekündigten Schimmerschilds, bisher `30f`:* Recherche: Weder das Status- noch das Aktionsblatt führt eine Wirkdauer, aber der Wirktext nennt sie („Duration: 30s"). `generate_defensive_values.py` liest sie jetzt mit aus (`DefensiveValues.DurationOf`); leer gelassene Zahlen eines Merkmals ergeben 0 statt einer geratenen. Falsifikation, dritte Hypothese: Leert ein Patch die Zahl im Text, fällt der vorausschauende Schild still aus. Die CI erzeugt die Tabelle dann neu, und der Eintrag fehlt sichtbar im Diff. Eine feste Ersatzzahl wäre genau die verbotene Zahl.
+- *`inSolarUnique`, bisher `PlayerSyncedLevel() == 100`:* ersetzt durch `SummonSolarBahamutPvE.EnoughLevel`; gleichwertig bis Stufe 100, und es folgt der Aktion statt einer Zahl.
+- *Größe des Phasenbuchs, bisher `new int[4]`:* ersetzt durch die Anzahl der Einträge von `SearingPhase`.
+- *Kappung der Wartezeit in der Anzeige, bisher `0.25`:* entfallen. Gemessen wird je Wartevorgang vom ersten bis zum letzten Augenblick, damit ist kein Schritt zwischen zwei Aufrufen zu beurteilen.
+
+**Ausnahmen nach Loop:**
+- *`SearingPhaseHeldAfter = 2`:* Recherche: keine Spielgröße, sondern die Regel des Auftraggebers („erst … erneut dort steht"), also die zweite Sichtung. Aus dem Spiel nicht ableitbar, weil es eine Entscheidung ist.
+- *Ordinalzahlen in `BossModEnums` (vier Zeilen):* Der Wert kommt als nackte Zahl ohne Namen über die Schnittstelle von BossModReborn. Zur Laufzeit ist nichts abzuleiten; die Zuordnung ist an der BMR-Quelle belegt (A119).
+
+**Der Riegel:** `check_fixed_values.py` erhebt jede Zahl auf einer vom Fork hinzugefügten C#-Zeile gegenüber `upstream/main`, ohne generierte Dateien, ohne 0 und 1, ohne Texte und Kommentare. Jede muss in `fixed_values.json` stehen: als Ausnahme mit Loop-Verweis oder als offener Loop. Eine neue, nirgends geführte Zahl lässt die CI fehlschlagen, ein geführter, verschwundener Eintrag ebenso. Der Selbsttest läuft gegen konstruierte Zeilen. Erster Lauf: 80 Zeilen, davon 5 Ausnahmen und 75 offen. Die offenen stehen in `TODO.md`.
+
+**Erreichter Prüfgrad:** statische Erhebung, Prüfskripte, Compile in der CI.
+
+### A131 · Die offenen Fragen selbst entschieden: Solar kommt pünktlich, Ifrit nach echtem Standort, das Phasenbuch ohne Zahl (24.09.2026)
+
+**Auftrag:** „prüfe mögliche antworten auf offene fragen selbst im loop. bewerte die auswirkungen ingame gesamtheitlich"
+
+**1 · Soll die große Beschwörung auf Searing Light warten? — Nein.**
+*Im Kampf:* Mit Warten rutschen Solar, jede folgende Demi und Searing Light bei jeder Solar-Phase mit Ruby Rite davor um einen GCD oder mehr nach hinten, und der Versatz summiert sich über den Kampf; Solar verlässt den Zwei-Minuten-Burst der Gruppe, Searing Light mit ihm — beides trifft den eigenen stärksten Abschnitt und den Burst der übrigen Gruppe. Ohne Warten kommen Solar und alle Demis auf ihrer Abklingzeit; Searing Light liegt vor dem ersten Umbral Impulse, vor oder direkt hinter der Beschwörung. Nur wenn Lux Solaris und Addle oder ein Trank beide Plätze hinter der Beschwörung nehmen, fällt es einen GCD später: 15 bis 23 Potenz eigener Schaden in diesem Fall und ein um einen GCD verschobenes Fenster für die Gruppe. *Optionen:* weiter warten (Nullvariante), nie warten, nur warten wenn der Warte-GCD Platz bietet (verlangt Wissen über den nächsten GCD — Henne-Ei wie in A115), Warten in der Demi durch Clipping (32 bis 112 Potenz je Fall, bei GCD unter 2,5 s rund 400), Rückbau auf Upstream (verliert den Platz vor der Beschwörung). *Falsifikation:* Kein Defekt? — die gemeldete Drift hat genau diese Form, und der Warteweg bei Ruby Rite ist am Code geschlossen. Nie-Warten falsch? — der Restfall ist klein und einmalig, das Warten wiederkehrend und kumulativ; Lux Solaris zurückzustellen hätte den Restfall fast beseitigt, verschiebt aber eine Heilung, und Sicherheit geht vor. Ausgeliefert und es ändert sich nichts? — wartet die Beschwörung weiter, zeigt das Diagnosefenster den Grund („held for Radiant Aegis"); fällt Searing Light hinter den ersten Demi-GCD, zeigt es das ebenfalls („Searing Light vs big summon"). Damit entfallen das Warten aus A115 und A127 samt ihren drei Dauerwarte-Armen; die Wartegrenze aus A127 ist gegenstandslos. Seine Aussage aus A115 — Searing Light vor dem ersten Burstschaden — bleibt erfüllt bis auf den Restfall, in dem seine Sicherheitsregel vorgeht.
+
+**2 · Wann darf Searing Light einen fremden überschreiben (`StatusRefreshGcdCount`, zwei GCDs)? — bleibt.** *Im Kampf:* Gemessen mit dem Buch des Plugins ändert es nichts, ob im Fenster in die letzten Sekunden eines fremden Buffs aufgefrischt wird oder erst nach dessen Ablauf (53,6 % in beiden Fällen); außerhalb der Fenster verlangt die Ausweichregel inzwischen einen abgelaufenen Buff (A129). Der Wert ist Upstreams Vorgabe je Aktion und in der Aktionsliste einstellbar; für Searing Light ohne Wirkung im Kampf. Nicht geändert, als offener Upstream-Wert erfasst.
+
+**3 · Wann steht der Spieler „am Ziel" für den Ifrit-Ausweichblock? — aus dem Spiel.** *Im Kampf:* Im seltenen Fall, dass alle Phasen belegt sind, fällt Searing Light in den Ifrit-Block, wenn der Spieler innerhalb der Reichweite von Crimson Strike zu seinem aktuellen Ziel steht, sonst in Titan. Zuvor entschied die Einstellung `CrimsonCycloneDistance` (3 Yalm) gegen das Ziel, das Crimson Cyclone zuletzt gewählt hatte — nach einem Zielwechsel ein fremdes Objekt. Jetzt: `HostileTarget`, Abstand von Trefferfläche zu Trefferfläche (`DistanceToPlayer`), Reichweite aus dem Spiel (`ActionManager.GetActionRange`). Die Einstellung bleibt die Grenze des Spielers für den Anlauf selbst. Der TODO-Eintrag zum veralteten Ziel ist damit erledigt.
+
+**4 · Phasenbuch ohne Zahl.** *Im Kampf:* unverändert — eine Phase gilt als von anderen belegt, wenn sie beim letzten und beim jetzigen Betreten fremd belegt war. Statt eines Zählers mit Schwelle zwei führt das Buch je Phase zwei Merker; die Schwelle war die wörtliche Übersetzung von „erneut" und ist jetzt die Logik selbst. Die Ausnahme in `fixed_values.json` entfällt. Anzeige: „free", „seen once", „held".
+
+**5 · Addle hinter Searing Light zurückstellen — nicht umgesetzt.** *Im Kampf:* Es gewönne im Restfall aus Punkt 1 den Platz für Searing Light (15 bis 23 Potenz), verlangt aber eine Regel, die das Castende des Gegners sicher kennt; eine Fehleinschätzung kostet die Minderung vor dem Treffer. Sicherheit vor Schaden.
+
+**Erreichter Prüfgrad:** statische Erhebung, Modellmessung, Prüfskripte, Compile in der CI. Das Diagnosefenster zeigt die beiden Restfälle im Kampf.
+
+### A132 · Die Beschwörung wartet wieder: die Begründung für „nie warten" stand auf einer falschen Prämisse (24.09.2026)
+
+**Einwand des Auftraggebers:** „die begründung war falsch, fällt nicht hinter burst der gruppe zurück. wie denn, wenn einziger beschwörer? man regelt selbst den boost durch rota."
+
+**Die Prämisse, und warum sie nicht trug:** A131 Punkt 1 rechnete dem Warten zu, es schiebe Solar samt Searing Light hinter den Zwei-Minuten-Burst der Gruppe. Das setzte voraus, dass die übrigen Spieler ihre Buffs auf festem Zwei-Minuten-Raster setzen — eine Annahme über fremdes Verhalten, weder belegt noch von hier messbar. Für den einzigen Beschwörer gilt das Gegenteil: Er setzt den Burst selbst, Solar und Searing Light verschieben sich gemeinsam, der Burst bleibt geschlossen.
+
+**Neu bewertet, im Kampf:**
+- *Warten:* kostet nur den Zeitplan der späteren Demis; spürbar am Kampfende, wo die letzte Demi-Phase knapper ausfallen kann. Searing Light steht vor dem ersten Umbral Impulse jeder Solar-Phase.
+- *Nicht warten:* Sind beide Plätze hinter der Beschwörung belegt, fällt Searing Light hinter den ersten Umbral Impulse und **bleibt** dort in jeder folgenden Solar-Phase, weil beide Abklingzeiten ab Nutzung laufen und nichts den Rückstand einholt: 15 bis 23 Potenz je Zwei-Minuten-Zyklus, mit jedem weiteren solchen Fall mehr. Das ist die Form seiner ursprünglichen Meldung („cooldown von searing light ist später nicht fertig, wenn burst phase läuft"). A131 hatte den Restfall als einmalig bewertet (C87).
+
+**Entscheidung im Loop:** Warten, wie in A127 mit der Grenze aus A128 und den Armen aus A129 — also sein Prüfvorschlag, den ich in A128 verworfen hatte. *Falsifikation:* Kein Defekt ohne Warten? — widerlegt: Der Rückstand ist an den Abklingzeiten belegt und holt sich nicht ein. Warten falsch? — seine Kosten fallen für den einzigen Beschwörer auf den Zeitplan, nicht auf den Burst; mit mehreren Beschwörern wartet die Beschwörung auf keinen abkühlenden oder gesperrten Buff, seine Bedingung aus A127. Ausgeliefert und es ändert sich nichts? — das Diagnosefenster zeigt „Big summon held for: Searing Light" samt Dauer und „Searing Light vs big summon".
+
+**Bleibt aus A131:** Ifrit-Standort aus dem Spiel, Phasenbuch ohne Zahl, die Diagnosezeilen. Der Schimmerschild hält die Beschwörung weiterhin, wenn er fällig ist.
+
+**Erreichter Prüfgrad:** statische Erhebung, Prüfskripte, Compile in der CI.
+
+### A133 · Alle Änderungen des Zweigs unter der Annahme geprüft, dass jede bisherige Überlegung falsch war (24.09.2026)
+
+**Auftrag:** „vollständiger loop über alle gemachten änderungen in diesem branch: kritische annahme, dass deine bisherigen überlegungen alle falsch waren. beweise das gegenteil." Geprüft wurden die 23 Commits von `origin/main..HEAD` in neun Einheiten. Maßstab je Einheit: was im Kampf anders wird, und ob das am Artefakt belegt ist.
+
+**Heiltrank (A123, A124, `875aae889`, `be6f6c3e8`).**
+- *Hält:* Der Trank hängt nicht mehr an der Heilflagge. Seine Beobachtung nach dem Bau: „der branch [hat] den trank wieder nutzbar gemacht". Damit ist belegt, dass bei ihm eine der geerbten Bedingungen gesperrt hat. Die Lösung selbst prüft keine Flagge mehr, sondern nur noch die drei eigenen Schalter des Tranks, Bestand, Fehlmenge und Kampf.
+- *Fällt:* „`OnlyHealAsNonHealIfNoHealers` ist der Regelfall" (A124, Code-Kommentar, CLAUDE.md). Die Option steht ab Werk auf aus; welche der fünf geerbten Bedingungen bei ihm sperrte, ist von hier nicht messbar (C88).
+- *Offen:* „Nur in diesem Fork, im Upstream geht es." Upstream hängt den Trank an dieselbe Flagge, mit derselben Sperre für Nicht-Heiler und derselben Gleichstandsregel. Die Flaggenkette wurde erneut Stelle für Stelle verglichen: `CanUseHealAction`, `AverageTTK` (unbekannt heißt im Fork unendlich statt 0), `ShouldHealSingle` (Vorhersage kann die Gesundheit nur senken), der geschützte Schwellwert — **jede Abweichung lockert**. Der Unterschied zwischen beiden Bauten ist damit weiter nicht erklärt. Die Lösung wirkt unabhängig davon, weil sie die Flagge nicht mehr liest.
+- *Nicht weiter verfolgt, und die Rückfrage dazu war falsch gestellt:* Ich hatte ihn gefragt, ob beim Upstream-Test ein Heiler lebte und was unter „Healing" eingestellt war. Beides war im Kampf nirgends abzulesen — die Heilflagge wurde weder im Upstream- noch im alten Fork-Bau angezeigt, die Einstellungen sind im Kampf zu. Seine Antwort: „wo man das denn ablesen können soll? … die sind selten offen." Die eine Hälfte war von hier zu beantworten: Fork und Upstream führen denselben `InternalName` (`RotationSolver.json`), lesen also dieselbe Konfigurationsdatei; seine Einstellungen scheiden als Unterschied aus, solange er sie zwischen den Tests nicht geändert hat. Die andere Hälfte — die Gruppe im damaligen Kampf — ist nachträglich nicht messbar. Die Frage betrifft zudem nur die Vergangenheit: Der Trank liest die Flagge nicht mehr, und ob er jetzt richtig entscheidet, zeigt das Diagnosefenster im Kampf mit dem ersten blockierenden Grund je Trank.
+- *Fällt:* Die Gleichstandsregel „niedrigere Id = niedrigere Sorte" (C79) setzt voraus, dass die Id-Reihenfolge der Sortenreihenfolge folgt. Die Heiltränke stehen in keiner Ressource dieses Repositorys; die Annahme ist unbelegt (C89). Aus dem Spiel ableitbar wäre die Gegenstandsstufe im Blatt `Item`.
+
+**Gapcloser (`38aba83df`).**
+- *Fällt:* Die Korrektur nimmt nur den Fall aus, dass der Mittelpunkt des Spielers **innerhalb** des Zielrings steht. Seine Grenze ist „0 yalm"; `DistanceToPlayer` zieht beide Trefferflächen ab und zeigt 0 schon, wenn sich die Ringe berühren. Im Band dazwischen — bis zur eigenen Trefferfläche des Spielers außerhalb des Zielrings — läuft weiter die alte Prüfung eines Wegs, der kürzer ist als die eigene Trefferfläche. Sein Fall ist damit nicht sicher erreicht (C90).
+- *Fällt:* Der Code-Kommentar nennt `DistanceForMoving2` als Grenze des Anlaufs. Für Crimson Cyclone gilt sie nicht; dort entscheiden `AddCrimsonCyclone` (ab Werk an, also jede Entfernung) und `CrimsonCycloneDistance` im Job (C90).
+- *Nicht belegt:* Ein gemeldeter Fall, in dem Crimson Cyclone bei 0 Yalm ausblieb. Die Korrektur entstand aus seiner Präzisierung, nicht aus einer Beobachtung. Ob sie im Kampf etwas ändert, hängt an einem aktiven BossMod-Modul mit Gefahrenzone am Standort.
+
+**Ifrit als Ausweichblock (A131).**
+- *Fällt:* „Am Ziel steht, wer innerhalb der Reichweite von Crimson Strike steht." Das sind bis zu drei Yalm, und Crimson Cyclone zieht den Spieler diese drei Yalm heran. Genau das ist der Anlauf, den seine Sicherheitsentscheidung ausschließt; seine Grenze ist 0 Yalm. Im Kampf heißt das: Mit einem zweiten Beschwörer in der Gruppe und belegten Phasen konnte die Rotation Ifrit wählen, obwohl der Spieler zwei, drei Yalm vor dem Boss stand (C91).
+- *Klasse:* Zwei Stellen des Zweigs beantworten dieselbe Frage „bewegt die Aktion den Spieler?" mit zwei verschiedenen Maßen, und keines ist seins. Einzelfall und Muster: TODO „Gapcloser: ‚steht am Ziel' hat zwei Bedeutungen".
+
+**Searing Light und die Beschwörung (A126–A132).**
+- *Hält:* Die Freigabe von Searing Light, sobald die Beschwörung **bis zum nächsten GCD** bereit ist; das Warten der Beschwörung auf einen Buff, der im Einschiebefenster des Warte-GCDs zurückkehrt; die Arme gegen endloses Warten (Stufe, abgeschaltet, Burst aus, fremder Buff, andere Phase als Solar); Schimmerschild vor jeder Demi. Jede Bedingung wurde gegen die Aktionsdaten gelesen (`ModifySummonBahamutPvE`, `ModifySummonSolarBahamutPvE`, `ModifyRadiantAegisPvE`, `SummonTimerRemaining`).
+- *Hält, mit Grund:* Bei ausgeschaltetem Burst kommt Solar trotzdem. `SummonBahamutPvE` wird im Spiel auf die nächste Demi umgestellt und hat keine Burst-Bedingung; das war upstream schon so.
+- *Fällt:* Der Kommentar „60 s sind eine ganze Zahl von GCDs, also läuft die Abklingzeit auf dem GCD-Raster ab" gilt nur bei 2,50 s. Die Regel selbst hängt nicht daran (C92).
+- *Neu, Schluss aus der Zweigreihenfolge:* Searing Light fällt im Platz vor der Beschwörung, sobald deren Abklingzeit bis zum nächsten GCD endet. Kommt dann ein vorrangiger GCD dazwischen — eine hart gewirkte Wiederbelebung —, steht der Buff bereits, und die Beschwörung folgt erst nach der Wirkzeit. Die letzten GCDs der Solar-Phase liegen dann außerhalb der 20 Sekunden. Seine Sicherheitsregel gibt der Wiederbelebung den Vorrang; der Verlust ist also hinzunehmen, aber nicht bewertet (TODO).
+- *Nicht geprüft:* `NextBigSummonIsBurst` lässt die Beschwörungsgeschichte das Urteil des Spiels überstimmen (Oder-Verknüpfung). Wann das Spiel die Reihenfolge der Demis zurücksetzt, ist nicht belegt (TODO).
+
+**Schadenstabelle (A125).** Die drei Verlustwege und ihre Behebung halten am Code. Die Ladeanzeige unterscheidet „keine Datei", „unlesbar, beiseitegelegt" und „geladen" richtig; `InitOne` verschiebt eine unlesbare Datei tatsächlich nach `.corrupt`. *Ungenau:* Die Zeile „Last hit" meldet „measured", auch wenn die Aktionsart kein Zauber, keine Waffenfertigkeit und keine Fähigkeit ist. *Offen:* warum seine Datei `{}` enthielt — die Anzeige nennt es, seine Ablesung liegt nicht vor.
+
+**Diagnosefenster (`a5be97892`).** Die Zeilen stimmen mit den Bedingungen überein, die sie beschreiben; die Trankzeile folgt `HpPotionItem.CanUse` einschließlich des Umstands, dass diese Methode die Abklingprüfung nicht weiterreicht. Keine Verhaltensänderung im Kampf.
+
+**Feste Werte (`bb18fa586`, `99be425c2`).** Schimmerschild liest seine 30 Sekunden jetzt aus dem Wirktext; vorher stand dieselbe Zahl im Code, im Kampf ändert sich also nichts. Der Riegel prüft nur Zeilen, die der Fork hinzugefügt hat, und das sagt er selbst. 75 Werte stehen weiter offen.
+
+**Modelle.** `searing_light_coverage.py` beantwortet die Abdeckung bei mehreren Beschwörern. Die Frage des Einzelbeschwörers — rutscht der Buff hinter die eigene Phase — bildet es nicht ab: Es kennt weder GCD-Raster noch Warten. Sein Kopftext beschreibt noch das Zündfenster „nur während Solar" mit einem veralteten Zeilenverweis (TODO).
+
+**CLAUDE.md.** Die Ergänzungen dieser Sitzung trugen drei widerlegte Aussagen: die Problembeschreibung „hinter den Burst der Gruppe", A128 als gültiges Prüfergebnis, und „`OnlyHealAsNonHealIfNoHealers` ist der Regelfall". Dazu hatte eine Einfügung die Regel „Eine Erkennung darf keine Entscheidung enthalten" von ihrem Beleg getrennt, und die Präzisierung zum Anlauf hatte den Beleg der Sicherheitsregel mitgenommen und Konzept 12 eine Deckung zugeschrieben, die es nicht hat. Als Ganzes eingearbeitet: Präzisierung in die Sicherheitsregel, Kehrseite hinter den Beleg ihrer Vorderseite, Konzept-zuerst in die Definition of Ready.
+
+**Release-Text.** Er trug C90 und C91 weiter (Anlauf „bei 3 Yalm begrenzt", Ifrit „wirkt wie beabsichtigt") und die Gleichstandsregel als Sortenregel. Richtiggestellt; die offenen Punkte stehen dort als offen.
+
+**Erreichter Prüfgrad:** statische Prüfung aller Einheiten gegen Code, Aktionsdaten und `upstream/main`; Prüfskripte grün; eine Laufzeitbeobachtung des Auftraggebers (Trank). Kein Code geändert — die Korrekturen stehen als Konzept im TODO.
+
+### A134 · CLAUDE.md als Ganzes überarbeitet: Widersprüche aufgelöst, Ballast ins Archiv (24.09.2026)
+
+**Auftrag:** CLAUDE.md kritisch im vollständigen Loop und als Ganzes bearbeiten statt Stückwerk anzufügen; prüfen, was die inhaltliche Arbeit verbessert und was nur den Kontext aufbläht. Maßstab des Auftraggebers: Zitate bringen inhaltlich nichts, gemessen wird jede Stelle daran, ob sie die Arbeit verbessert.
+
+**Befunde am alten Stand (70 KB):**
+- *Widersprüche und Drift durch Anfügen:* Der Loop sprach von drei Querschnittsanforderungen, der Abschnitt darunter führte vier (Möglichkeitssinn war später hinzugekommen). „Eine bereits getroffene Entscheidung …" verwies mit „die Regel darunter", die Vorschlagsregel mit „nach der Regel oben" auf die Revisionsregel, die an ganz anderer Stelle stand. Eine Einfügung hatte „Eine Erkennung darf keine Entscheidung enthalten" von ihrem Beleg getrennt. Die Definition of Done („Wirkkette im Code") und „Begründet wird am Spielgeschehen" („Wirkkette sagt nicht, ob es im Spiel richtig ist") widersprachen einander, ohne sich zu nennen. „CLAUDE.md nimmt jede Vorgabe auf" stand gegen „Fachliche Vorgaben gehören ins Konzept". „Destruktive Operationen freigabepflichtig" stand gegen „Reste der Arbeitsumgebung räume ich selbst auf" ohne Abgrenzung.
+- *Falscher Ort:* Commit-Identität und Datenschutz unter „Analyse und Prüfung"; Release-Regeln unter „Sprache"; job-spezifische Einzelheiten (0 Yalm, Konzept 12, Titan) in allgemeinen Regeln, teils veraltet.
+- *Doppelt:* „Systemweite Konsistenzprüfung" und „Einzelfall und Muster"; „Trigger an ihrer Wirkung" und Kausalität vorwärts; „Change Size" und „Maß statt Surrogat"; Blameless Postmortem zweimal; Upstream-Sync und Zustandsmessung in vier Absätzen.
+- *Ballast:* Wörtliche Zitate, ausführliche Fehlererzählungen, Literaturangaben mit Jahreszahl, Umgebungsdetails (Fehlermeldungstexte, Befehlsvarianten, der Installationspfad des Spiels), Zeichenzahlen einer abgelösten Formulargrenze. Nichts davon ändert eine Entscheidung beim Arbeiten.
+
+**Neuer Stand (rund 26 KB):** gegliedert nach dem Zeitpunkt der Anwendung; jede Regel einmal, ohne Zitate, Beispiele nur, wo die Regel sonst falsch angewandt würde; Verweise über Titel. Form nach seinem Maßstab, dass ich damit gut arbeiten kann: eine Anweisung je Punkt, der Grund im Halbsatz, Ich-Form statt Passiv. Die REGEL ist unverändert; die „Kalibrierungs-Belege zur REGEL" entfallen als Ballast (beide Fälle stehen im Archiv). Aufgelöst: vier Querschnittsanforderungen; Definition of Done = Wirkkette im Code **und** Richtigkeit im Spiel **und** selbstbewertendes Messmittel; Arbeitsweise in CLAUDE.md, Fachliches ins Konzept; eigene Umgebungsreste mit `git branch -d` als ausdrückliche Ausnahme der Freigabepflicht. Neu als Regel: die Datei wird eingearbeitet, nicht angehängt, und jede Änderung prüft die ganze Datei.
+
+**Belege, die nur in CLAUDE.md standen und hierher übertragen sind:**
+- Sonde: Zur zweiten Ladung von Schimmerschild „erst beobachten, was die Sonde zeigt" empfohlen; er verwies auf die schon getroffene Regel, Entscheidung im Spiel statt rückblickender Auswertung.
+- Konzept fortschreiben: Konzept 12 empfahl weiter V7, während seine Beschlüsse (adaptive Regel, Gruppengrößen, hybrides Modell, Maß Schaden statt Sekunden) nur in Commits und Chat standen; er benannte das als Ursache verlorener Vorgaben.
+- Release: seine Vorgabe, nur noch Unterschiede in die Beschreibung zu nehmen; die Formulargrenze schnitt früher alles ab Abschnitt 7 ab (Abbruch zwischen Zeichen 12.347 und 18.611).
+- Heiltrank: seine Frage, warum ein Trank mit eigenen Schaltern an der Heilflagge hängt (A124).
+- Definition of Ready: seine Beanstandung von Stückwerk und Schnellschüssen, die er gegenprüfen muss.
+- Beurteilungen am Spielgeschehen: seine Vorgabe, auch Beurteilungen an den Kampf anzupassen.
+- Namen: „Ex Machina" als fehlend gemeldet, es ist Thin Air.
+- Quellen: PDF-Erzeugung für die Anlagen eines Schreibens nach drei gescheiterten Werkzeugen, während Drucken als PDF bei ihm ein Handgriff war.
+- Umgebung: der Zweig `claude/repo-privacy-settings-f06dqh`, als „nicht aus dieser Arbeit" beiseitegestellt, obwohl er aus der Sitzungsumgebung stammte.
+- Zuschreibung: „Living Dead drückt die Heilschwelle zehn Sekunden lang" als seine Regel ausgegeben, war meine Behauptung.
+- Spielpfad: Der Generator `RotationSolver.GameData` sucht die Spieldateien über Programmargument, `FFXIV_GAME_PATH`, übliche Installationsorte, zuletzt die Upstream-Konstante (`Program.ResolveSqpackPath`).
+
+**Prüfung:** Maschinell verglichen, welche Bezeichner und Nummern aus dem alten Stand fehlen — alle fehlenden sind Beispiele aus Belegen, die hier oder unter ihrer Nummer im Archiv stehen. Alle 74 fett gesetzten Regelanfänge des alten Stands sind von Hand einer Regel des neuen zugeordnet. Auf seinen Hinweis, die Datei müsse so formuliert sein, dass ich damit gut arbeiten kann, steht vorn eine Liste der Prüfpunkte nach Auslöser — Sitzungsbeginn, eine Angabe von ihm, eine Behauptung, Code, eine Frage, „fertig“, Commit —, die auf die zuständige Regel verweist. Prüfskripte grün. Prüfgrad: statische Selbstprüfung.
+
+### A135 · Regeltest: alte und neue CLAUDE.md, alte und angepasste REGEL, an einem gelösten Fall (24.09.2026)
+
+**Auftrag:** Prüfen, ob die REGEL mit den Zusätzen anzupassen ist. Maßstab: Arbeite ich damit sorgfältiger und korrekter? Alte und neue Fassung im Agenten an einem größeren, bereits gelösten Fall vergleichen.
+
+**Aufbau.** Testfall A118 (Abwehrmittel-Kaskade). Das richtige Ergebnis ist bekannt und nicht naheliegend: Stufe 1 greift bei keinem Job und wird nicht gebaut, gebaut wird die Vorausheilung (Stufe 2). Es steht in keiner CLAUDE.md-Fassung als Beispiel. Drei Agenten bearbeiteten den Fall auf dem damaligen Stand (`58a265ad7`), jeder mit einer Fassung:
+- R: alte CLAUDE.md (70 KB).
+- P: neue CLAUDE.md mit unveränderter REGEL.
+- Q: neue CLAUDE.md mit angepasster REGEL (Verhältnis zum Loop; Spielgeschehen als Kriterium; Konzept vor Code; drei zusätzliche Fehlerformen; Rückfrage nur nach eigener Klärung; Messmittel ohne Zähler).
+
+Ein vierter Agent bewertete blind gegen den Maßstab und prüfte Behauptungen am Code.
+
+**Ergebnis.**
+
+| | Punkte | Kern (Stufe 1 nicht bauen) | Stufe 2 | Fehler | im Spiel bei Befolgung |
+|---|---|---|---|---|---|
+| P (neu, alte REGEL) | 22 | ja, klar begründet | ja | eine unmarkierte Vereinfachung | gut |
+| Q (neu, neue REGEL) | 17 | teilweise, empfiehlt eine Variante hinter Option | ja, sicherste Fassung | Barrierenobergrenze 25 % falsch (Manaward 30 %) | am besten (knapp) |
+| R (alt) | 16 | nein, baut Stufe 1 beim Dunkelritter | nein, aufgeschoben | keiner | am schlechtesten |
+
+**Auswertung.**
+- **Neue gegen alte Datei:** Beide Läufe mit der neuen Datei trafen den Kern, der Lauf mit der alten nicht. Das stützt die Überarbeitung aus A134.
+- **Angepasste gegen unveränderte REGEL:** kein belegter Vorteil. Nach Punkten liegt die unveränderte vorn, nach Spielergebnis die angepasste knapp. Der Abstand entsteht an Stellen, die die Änderungen nicht adressieren (K1–K3).
+- **Grenzen:**
+  - Je Fassung ein Lauf; ein Unterschied dieser Größe liegt im Bereich der Streuung einzelner Läufe.
+  - Alle drei bekamen ihre Fassung als Datei mit Vorrang, während im Kontext die neue CLAUDE.md stand.
+  - Ein Agent erhält die CLAUDE.md aus dem Kontext des Aufrufers, nicht von der Platte; ein Tausch der Datei wirkt nicht (gemessen).
+
+**Entscheidung:** Die REGEL bleibt unverändert. Eine Änderung am Text mit Priorität 1 braucht einen belegten Vorteil, und der Test liefert keinen. Die beiden Spannungen zwischen REGEL und Loop sind im Rest der Datei bereits durch Auslegung aufgelöst: „Aufwand normal → Plan+Antwort“ gegen „Loop für jede nicht-triviale Aufgabe“, und „Zähler“ gegen „Entscheidung zur Laufzeit“.
+
+**Nebenertrag:** Die Bearbeiter fanden am damaligen Stand Defekte, die heute noch bestehen. Erfasst in `TODO.md`: der Generator übersieht Barrieren mit „nullifies“; die Vorausheilung über die Fähigkeiten-Flagge kann Minderungs-oGCDs verdrängen; dazu vier weitere, noch ungeprüfte Befunde.
+
+**Prüfgrad:** drei unabhängige Läufe und eine blinde Bewertung mit Stichproben am Code; einmalig je Fassung.
+
+### A136 · Zusammengeführte CLAUDE.md-Fassung an einem neuen Fall getestet: kein Vorteil, bleibt verworfen (25.09.2026)
+
+**Auftrag:** Die CLAUDE.md so verbessern, dass die Vorteile aller Fassungen zusammenkommen. Im Loop prüfen, danach an einem anderen Beispiel testen, damit nebenbei weitere Fehler auffallen.
+
+**Die Kandidatenfassung.** Sie ergänzt die geltende um fünf Punkte, jeder abgeleitet aus einer Schwäche im Test A135:
+- Einheit vor jedem Vergleich.
+- Wirkungsmenge vor dem Bau; eine Option ersetzt diesen Nachweis nicht.
+- Ein Tausch von Ressourcen gegen Schutz wird vorgelegt.
+- Bei „alle/keine/das Größte" eine Gegensuche.
+- Die drei Falsifikationshypothesen stehen einzeln im Bericht.
+
+**Test an einem neuen Fall:** A117 (Flächenheilung der Solar-Phase, Rekindle-Ziel) auf `28f205a4e`. Zwei Bearbeiter arbeiteten, einer mit der geltenden, einer mit der Kandidatenfassung; ein dritter bewertete blind und prüfte am Code.
+
+| | Punkte | im Spiel bei Befolgung |
+|---|---|---|
+| geltende Fassung | 27 | besser (knapp) |
+| Kandidatenfassung | 22 | schlechter (knapp) |
+
+Die Kandidatenfassung war nur bei der ausgeschriebenen Falsifikation besser. Die eigene Zündregel für Lux Solaris legte sie bloß als Entscheidung vor, statt sie auszuarbeiten. Das ist vermutlich die Kehrseite der neuen Regel „Wirkungsmenge vor dem Bau": Sie macht zurückhaltend, auch wo Bauen richtig ist. Zusammen mit A135 ergibt sich kein belegter Vorteil. **Die Kandidatenfassung wird nicht übernommen; die CLAUDE.md bleibt, wie sie ist.** Zwei Durchgänge ohne Verbesserung: Plateau nach Loop-Stufe 10. Grenze: je Fassung ein Lauf.
+
+**Nebenertrag, am Code bestätigt und in `TODO.md` erfasst:**
+- Flächenheilungen ohne Reichweite hängen an der Gesundheit des Heilenden. Das betrifft alle Heiler.
+- Der Rekindle-Rückfall liest den Status 3229, der im PvE vermutlich nicht gesetzt wird.
+- Die Regenerationen der Phoenix-Phase fehlen in den HoT-Listen.
+- Die Punkte-Zielwahl bei Rekindle stammt aus Upstream `e3b57004d`, der `LowestHealthPartyMember` (Prozent) durch `TargetType.LowHP` (absolut) ersetzte.
+- Außerdem widerlegt: meine Aussage aus A117 zum Verfallsrückfall (C93).
+
+**Prüfgrad:** zwei Läufe und eine blinde Bewertung mit Prüfung am Code; statisch.
+
+### A137 · Drei Nebenerträge aus A136 behoben: Anker der Flächenheilungen, Rekindle-Phase, Phoenix-Regenerationen (25.09.2026)
+
+**Auftrag:** die offenen TODOs im Loop beurteilen, in die Konzepte einarbeiten, umsetzen, auditieren. Diese drei zuerst, weil sie am Code belegt sind und keine Entscheidung von ihm brauchen.
+
+**Flächenheilung um den Wirkenden** (`ActionTargetInfo.FindTarget`, Konzept 07). Eigener Zweig für freundliche Aktionen mit Reichweite 0, Wirkradius und Zielart Heilung. Der Anker ist der Wirkende, der Bedarf wird an den Verletzten im Radius gemessen (`AoeCount`, eines unter `AutoHealRatio`, vorausberechnet).
+- Falsifikation, kein Defekt: Liefert das Spiel eine andere Reichweite als 0, greift der Zweig nicht, und das Verhalten bleibt das alte. Die Behebung ist also an ihre eigene Prämisse gebunden.
+- Falsifikation, Option falsch: Die lokale Variante (`TargetType.Self` nur im Beschwörer) ist verworfen, weil sie auch zündet, wenn die Verletzten außerhalb des Radius stehen, und weil sie die Klasse nicht behebt.
+- Falsifikation, ausgeliefert und nichts ändert sich: wenn die Flagge nicht steht oder „Cleave" sperrt. Beides zeigt jetzt die Diagnosezeile „Area heal around you".
+- Beim Abgleich mit dem alten Pfad gefunden: „Cleave" sperrte Gruppenheilungen mit `AoeCount` über 1. Die Sperre ist übernommen, die Frage nach ihrer Absicht steht als eigener TODO-Eintrag.
+- Die Statusprüfung (`StatusProvide`) liegt weiter je Getroffenem in `GetCanAffects`. Weggefallen sind nur die Prüfungen am Anker selbst; für keine freundliche Heilung mit Reichweite 0 ist ein `CanTarget`-Prädikat gesetzt (erhoben).
+
+**Rekindle-Rückfall** (`SMN_Reborn.GeneralAbility`, Konzept 07). `InPhoenix && SummonTimeEndAfterGCD(3)` statt Firebird Trance (3229). Richtig in beiden Fällen, ob das Spiel den Status im PvE setzt oder nicht. Die 3 GCDs sind als offener fester Wert erfasst.
+
+**HoT-Listen** (`StatusHelper`). Everlasting Flight in `AreaHots`, Undying Flame in `SingleHots`. Die Flächen- und Einzelschwellen senken sich jetzt unter einer laufenden Phoenix-Regeneration wie unter jeder anderen.
+
+**Prüfgrad:** statisch; Prüfskripte grün. Kein Compile in dieser Umgebung (kein `dotnet`), die CI baut. Im Kampf ablesbar: die Diagnosezeile für Flächenheilungen und in der Beschwörer-Anzeige die gemeldete Reichweite von Lux Solaris.
+
+### A138 · „Steht am Ziel" misst an beiden Stellen 0 Yalm von Trefferfläche zu Trefferfläche (25.09.2026)
+
+**Befund (C90, C91):** Die Sicherheitsprüfung der Gapcloser nahm nur den Mittelpunkt im Zielring aus. Der Ausweichblock des Beschwörers wählte Ifrit bis zur Reichweite von Crimson Strike, also bis drei Yalm. Seine Grenze ist 0 Yalm.
+
+**Umsetzung:** `ActionTargetInfo.StandsAtTarget` (`DistanceToPlayer() <= 0`, intern) lesen beide Stellen. Jede Verweigerung der Sicherheitsprüfung wird mit Grund festgehalten und im Diagnosefenster gezeigt; die Beschwörer-Anzeige nennt den Abstand zum Ziel. Der Kommentar nennt jetzt die tatsächliche Grenze des Anlaufs (Einstellungen des Jobs), nicht mehr `DistanceForMoving2`.
+
+**Falsifikation:**
+- Kein Defekt: Wo das Spiel den Sprung beendet, ist unbelegt. Bei 0 Yalm bleibt in beiden Fällen höchstens die eigene Trefferfläche als Weg, und die liegt innerhalb seiner Grenze. Der Befund hängt also nicht an dieser Frage.
+- Option falsch: Ein Grenzwert in Yalm als Einstellung wäre eine neue feste Zahl gegen seine ausdrückliche Grenze.
+- Ausgeliefert, nichts ändert sich: ohne BossMod-Modul mit Gefahrenzone, ohne zweiten Beschwörer oder mit ausgeschalteter Prüfung. Die Anzeigen machen alle drei Lagen sichtbar.
+
+**Betroffene:** jeder Job mit zielbasiertem Gapcloser, wenn `BmrSafetyCheckAuto` an ist; die Ausnahme wird dort breiter, nie enger.
+
+**Prüfgrad:** statisch; Prüfskripte grün; kein Compile in dieser Umgebung.
+
+### A139 · Kleine Befunde der Beschwörer-Gruppe erledigt: Trank-Gleichstand, „Last hit", Abdeckungsmodell (25.09.2026)
+
+**Trank bei gleicher Heilung (C89).** Die Gleichstandsregel liest jetzt die Gegenstandsstufe (`Item.LevelItem`) statt der Id. Beleg aus der Datamining-Tabelle (`xivapi/ffxiv-datamining`, `csv/en/Item.csv` und `ItemAction.csv`, abgerufen 25.09.2026, Spielstand der Tabelle nicht festgestellt): Stufe und Id laufen bei allen acht gewöhnlichen Heiltränken gleich, von Potion (10) bis Ultra-Potion (690). Super-, Hyper- und Ultra-Potion heilen je 25 %, und wo der Anteil bindet, fällt der Gleichstand auf die niedrigste Stufe. **Im Kampf ändert sich heute nichts**; die Regel hängt jetzt an der Größe, die sie meint. Der Kommentar am Einhängepunkt stellt C88 richtig.
+
+**Ob der Weg zum Trank richtig war** (seine offene Frage): Der Trank liest die Heilflagge nicht mehr, sondern nur seine drei eigenen Schalter und den Kampfstatus. Die Flagge beantwortet, ob der Job jetzt eine Heil**aktion** wirken soll; keine ihrer fünf Bedingungen betrifft einen Verbrauchsgegenstand. Das stärkste Gegenargument: Ein Heiler bekäme jetzt einen Trank, obwohl die Rotation selbst heilen würde. Es trägt nicht, weil der Trank auch vorher nicht an der Rolle hing, und die Schwelle `UseHpPotionsPercent` gilt wie zuvor. Messmittel ist das Diagnosefenster: je Trank der erste sperrende Grund.
+
+**„Last hit".** Die Zeile nennt jetzt auch die Aktionsart und die Kategorie als Grund, und nach der Messung den gemessenen Anteil oder „every hit arrived at zero". Vorher stand „measured" auch dort, wo nichts gemessen wurde.
+
+**Abdeckungsmodell.** Der Fensterfehler war bereits mit `b44e905d6` behoben, samt Selbsttest; der TODO-Eintrag war veraltet. Der Kopftext beschreibt jetzt die Modi und nennt die Grenze: kein GCD-Raster, also keine Aussage über den Einzelbeschwörer.
+
+**Verbleibend in der Beschwörer-Gruppe, mit Grund:** `NextBigSummonIsBurst` und „Searing Light vor einer verdrängten Beschwörung". Beide hängen an unbelegter Spielmechanik (Rücksetzen der Demi-Reihenfolge; wie oft ein vorrangiger GCD vor Solar fällt) und bleiben im TODO.
+
+**Prüfgrad:** statisch; Spieldaten aus der Community-Tabelle; Prüfskripte grün; kein Compile in dieser Umgebung.
+
+### A140 · Heil- und Minderungsgruppe: volle Trefferbeträge, Barrieren-Generator, Einordnung der übrigen Befunde (25.09.2026)
+
+**Trefferbeträge über 65.535 (Defekt, behoben).** `EffectEntry.value` ist in ECommons 3.2.1.20 ein 16-Bit-Wert; der volle Betrag ist `Damage` = `value` + 65.536 × `mult` (ECommons-Quelltext, `EffectEntry.cs`, unverändert seit 2024-01; die Version 3.2.1.20 ist vom 19.09.2026). Auch `ActionEffectSet.GetSpecificTypeEffect` liefert `value`. Betroffen waren der Schadensanteil am Spieler, die Messung des Flächenpotentials und die gemessenen Heilbeträge. **Im Kampf:** Ein Raidwide, der einen Tank mit mehr als 65.535 Punkten trifft, wurde um ein Vielfaches von 65.536 zu klein gemessen und konnte als kleine Fläche gelten, die nicht gemindert wird. Gespeicherte zu kleine Anteile korrigieren sich beim nächsten Treffer, weil die Ablage nur Erhöhungen schreibt. Unbelegt ist, ob das Spiel `mult` außerhalb großer Beträge anders belegt; ECommons verwendet es ohne Bedingung.
+
+**Barrieren-Generator.** Er erkennt jetzt auch „nullifies damage totaling (up to) X %". Manaward (30 %) und Arcane Crest (10 %) stehen damit in der Tabelle. Die Obergrenze „großer Schild" bleibt 0,25: Sie zählt nur Barrieren, die laut Wirktext auf ein anderes Gruppenmitglied gelegt werden können („party member"). Grund ist seine Vorgabe „oberhalb eines großen Schildes", bezogen auf den Getroffenen; ein Schild, den nur sein Wirkender trägt, beantwortet das für niemanden sonst. **Im Kampf ändert sich nichts.**
+
+**Vorausheilung gegen Minderung.** Kein Defekt: Die Heil-oGCD nimmt den ersten Platz, die Minderung den nächsten, und das ist die Reihenfolge seiner Vorgabe 2. Die Grenze (Ankündigung kürzer als ein GCD) steht in Konzept 08.
+
+**Einordnung der übrigen Befunde:**
+- Die Weißmagier-„Sperre" ist die Wirkdauer von Temperance und Liturgy (je 20 s) als Stapelschutz. Die Dunkelritter-Burstsperre ist eine Upstream-Konvention, bei der Revolverklinge ebenso vorhanden.
+- Stufe 3 der Kaskade ändert genau an diesen Sperren etwas und sonst nichts; beides zur Entscheidung vorgelegt.
+- Walking Dead: Die HoT-Freigabe ist nicht einfach die Behebung, als die der TODO-Eintrag sie empfahl. Bei 1 HP nähme Regen den GCD vor Cure II, und in zehn Sekunden liefert Regen weniger Heilmenge als Cure II, während Walking Dead gerade die Menge verlangt. Zur Entscheidung vorgelegt.
+- `GetCurrentMitigationPercent` (Confession fehlt, Werte ohne Wirktext) speist nur eine Debug-Anzeige und ist in den Eintrag „Minderungsbilanz" aufgenommen.
+
+**Prüfgrad:** statisch; ECommons-Quelltext; Prüfskripte grün; Compile über die CI.
+
+### A141 · Wiederbelebung: Swiftcast-Zweig liest `Raise`; die `H2`-Unstimmigkeit war falsch gelesen (25.09.2026)
+
+**Einschiebezweig.** `nextGCD.IsTheSameTo(true, Raise)` statt der vier Ids. Heute folgenlos, weil `RaisePendingAndCastable` Rotmagier und Blaumagier schon über `Raise` erreichte. Behoben ist die Bauform.
+
+**`H2`.** Der TODO-Eintrag wollte den Sonderfall für `PartyAndAllianceHealers` hinter die Umkehrung ziehen. Der Optionstext nennt aber nur Nicht-Heiler („Raise non-Healers from bottom of party list to the top"). Der Sonderfall für Heiler passt also zum Text; abweichend ist die Umkehrung der Tank- und Heilerliste in den übrigen Modi. Der schon gebaute Eingriff ist vor dem Commit zurückgenommen, die Lesart widerrufen (C94) und die richtige Unstimmigkeit erfasst.
+
+**Prüfgrad:** statisch.
+
+### A142 · Triage aller offenen TODO-Einträge (25.09.2026)
+
+**Auftrag:** jeden offenen Eintrag erneut im Loop beurteilen, einarbeiten, umsetzen. Eingeteilt nach dem, was die Umsetzung braucht. Bearbeitet wurde nur, was im Nutzungsprofil liegt (PvE, Beschwörer, Weißmagier, Dunkelritter).
+
+**Umgesetzt oder erledigt in diesem Durchgang (A137–A141):**
+- Flächenheilungen um den Wirkenden, Rekindle-Phase, Phoenix-Regenerationen.
+- „Steht am Ziel" an beiden Stellen, samt Anzeige verweigerter Bewegungsaktionen.
+- Trank-Gleichstand nach Gegenstandsstufe; „Last hit"; Kopftext und (bereits behobenes) Fenster des Abdeckungsmodells.
+- Volle Treffer- und Heilbeträge; Barrieren-Generator.
+- Vorausheilung gegen Minderung (kein Defekt, Konzept 08).
+- Swiftcast-Zweig über `Raise`; Living-Dead-Notizen ins Konzept 09.
+- Widerrufen: die `H2`-Lesart (C94).
+
+**Braucht seine Entscheidung** (Verhalten im Kampf; vorgelegt mit Empfehlung):
+- Stapelsperren des Weißmagiers und des Dunkelritters, zusammen mit Stufe 3 der Kaskade.
+- Walking Dead: HoT bei 1 HP.
+- „Cleave" sperrt Gruppenheilungen; `H2` Optionstext gegen Code.
+- Schon vorher vorgelegt, unverändert offen: Zielüberschreibungen nach Punkten (DRK/GNB), Holy-Vorbehalte, Nachprüfung der 73 Commits (Freigabe nur für die Code-Gruppe erteilt), Plugin-Identität.
+
+**Hängt an unbelegter Mechanik oder an Daten, die hier nicht vorliegen:**
+- `NextBigSummonIsBurst`: Rücksetzen der Demi-Reihenfolge.
+- Searing Light vor verdrängter Beschwörung: Häufigkeit vorrangiger GCDs vor Solar.
+- `AttackType`-Zuordnung der Minderungsbilanz.
+- `HasSurvivingShield`: Aufteilung des Schildwerts.
+- Geschwister-Ids: welche Id das Spiel je Stufe setzt.
+- Die drei Einträge „im Spiel zu bestätigen" auf ihr Messmittel im Kampf geprüft: Searing Light bei mehreren Beschwörern zeigt die Phasenbücher in der Beschwörer-Anzeige; der gemessene Heilwert von Lux Solaris korrigiert sich je Wurf selbst; die zurückgehaltene BMR-Minderung bewertete sich selbst, ihr Urteil stand aber nur im Einstellungsfenster und steht jetzt auch im Diagnosefenster.
+
+**Technische Schuld mit Auflösungsbedingung, unverändert gültig:** Zustandsabfragen, `Configs.Migrate`, `CanEarlyWeave`, doppelte Zustandswahl, Leser-lose Einstellungen (`SwiftcastBuffer`, `InterruptDelay`/`ProvokeDelay`, `TargetColor`, `IgnoreClipping` — gesperrt durch die fehlende Feldmigration), Release-Ballast, entfernte öffentliche Member.
+
+**Außerhalb seines Profils, erfasst und nicht bearbeitet:** ChurinDNC, NIN, Aquapolis, VPR, Notfallheilungen von SGE/SCH/AST, Rückstoß der übrigen Tanks, Sanctus-Betäubung (PLD), Status-Einstellungen fremder Jobs.
+
+**Feste Werte:** 76 Zeilen ohne Loop (`check_fixed_values.py`, Stand 25.09.2026). Nicht in diesem Durchgang bearbeitet. Jeder Wert braucht einen eigenen Loop, und keiner ist von einer gemeldeten Fehlwirkung betroffen. Die eine neue Zahl dieses Durchgangs (Rekindle-Vorlauf, von Upstream übernommen) ist als offen gelistet.
+
+**Prüfgrad:** statisch, je Eintrag am Code; Compile über die CI.
+
+### A143 · Das X im Fensterrahmen schloss das Diagnosefenster nicht (25.09.2026)
+
+**Seine Beobachtung:** Das Diagnosefenster lässt sich nur über die Optionen schließen, nicht über das X im Fensterrahmen.
+
+**Ursache, am Code und am Dalamud-Quelltext belegt:** `RotationSolverPlugin.UpdateDisplayWindow` setzt `IsOpen` bei jedem Framework-Update aus der Einstellung. Das X setzte `IsOpen` für ein Bild auf falsch, das nächste Update öffnete das Fenster wieder. Dieselbe Bauform haben Steuer- und Abklingzeitfenster (Upstream); die übrigen Fenster haben keine Titelleiste.
+
+**Behebung:** Dalamud setzt `IsOpen` für X, Escape und Gamepad während des Zeichnens und ruft danach im selben Bild `PostDraw` (`WindowHost.Draw`, Dalamud master vom 24.09.2026). Das Plugin schließt Fenster außerhalb des Zeichnens, und ein geschlossenes Fenster wird nicht gezeichnet. Ein Fenster, das in seinem eigenen `PostDraw` geschlossen ist, hat also der Spieler geschlossen, und die Einstellung wird ausgeschaltet und gespeichert (`WindowCloseButton`). Gilt für Diagnose-, Steuer- und Abklingzeitfenster.
+
+**Falsifikation:**
+- Das Plugin könnte das Fenster während des Zeichnens schließen und so die Einstellung löschen. Widerlegt: Es setzt `IsOpen` nur im Framework-Update.
+- Die Dalamud-Version im Build (SDK 15.0.0) könnte eine andere Reihenfolge haben. Nicht geprüft; dann bliebe das alte Verhalten, und die Einstellung wird nie fälschlich gelöscht, weil die Prüfung „geschlossen und Einstellung an" im eigenen `PostDraw` sonst nicht eintritt.
+- Escape schließt das fokussierte Fenster jetzt ebenfalls dauerhaft. Gewollt: Es ist dieselbe Geste wie das X.
+
+**Prüfgrad:** statisch; Dalamud-Quelltext; Compile über die CI. Im Spiel sichtbar: Das Fenster bleibt nach dem X zu, und die Option ist aus.
+
+### A144 · Unabhängiges Audit von A137–A143: Befunde und Behebung (25.09.2026)
+
+**Verfahren:** ein eigener Prüfer ohne Schreibrechte, Auftrag: jede Änderung und jede Aussage als falsch annehmen und am Code widerlegen. Er hat alle Prüfskripte ausgeführt und ECommons, die Datamining-Tabellen und die CI-Läufe gelesen.
+
+**Behoben:**
+- **Tote und Heilungsunfähige zählten im neuen Flächenheil-Zweig als Bedarf.** Eine Leiche liest die Gesundheit 0, zählte zu `AoeCount` und erfüllte die Heilschwelle. Im Kampf: Medica oder Afflatus Rapture auf Umstehende mit wenig Bedarf, weil neben dem Heiler jemand tot lag. Jetzt ausgeschlossen wie in `GeneralHealTarget`.
+- **`targetOverride: Self`** nimmt den Zweig nicht mehr. Der allgemeine Pfad gibt dort den Wirkenden ohne Bedarfsprüfung zurück, und so bleibt es.
+- **Übertragsbyte.** Nur noch mit Flag 0x40 gelesen: cactbot LogGuide, „Ability Damage", Bytes ABCD mit C = 0x40, Summe = D A B. `EffectEntry.Damage` rechnet `mult` ohne diese Bedingung ein. Wäre das Byte bei kleinen Treffern anders belegt, bliebe ein zu groß gemessener Anteil für immer stehen, weil die Ablage nur Erhöhungen schreibt. **Loop zum festen Wert 0x40:** ein Protokollbit des Spiels. Es steht in keinem Datenblatt, aus dem es abzuleiten wäre, und ist durch die Fremddokumentation belegt; als Ausnahme gelistet.
+- **Barrieren-Generator, Klasse geschlossen.** Er erkennt auch „equivalent to X %" und „equal to X %" (Divine Veil, Magic Shell, Steadfast Stance). „Auf ein anderes Mitglied legbar" erkennt er auch an „around target" und „to self or target player" (Lost Stoneskin). Die Obergrenze bleibt 0,25.
+- **Anzeigen.**
+  - Die Flächenheilzeile zählt „die sie aufnehmen können".
+  - Die Zeile zur zurückgehaltenen Minderung sagt „seit dem letzten Leeren" statt „dieser Kampf".
+  - Eine Verweigerung ohne Ziel wird getrennt geführt und verdeckt eine gemessene nicht mehr.
+  - Die Lux-Solaris-Zeile gilt ausdrücklich nur für den Heilpfad.
+  - Der Text „every hit arrived at zero" ist ersetzt.
+- **Dokumente.**
+  - Firebird Trance: Konzept 07, Code-Kommentar und Release-Text behaupteten, nur PvP-Stellen läsen den Status; `ChurinSMN` liest ihn im PvE (C95). Ob das Spiel ihn im PvE setzt, bleibt unbelegt, denn der Wirktext von Summon Phoenix sagt „Enters Firebird Trance". Der neue Code ist in beiden Fällen richtig.
+  - Konzept 07: warum eine Heilung in der Diagnosezeile fehlen kann; welche Ankerprüfungen entfallen.
+  - Konzept 09: veralteter `Watcher`-Verweis; die zwei Mechanismen von Living Dead getrennt.
+  - Konzept 12: „der Abstand, den das Spiel anzeigt" als unbelegt gekennzeichnet.
+  - Die Cleave-Vorlage nannte Lux Solaris zu Unrecht (`AoeCount` 1).
+
+**Neu erfasst:** ChurinSMN-Rekindle (fremd); Heiltränke lesen immer die HQ-Werte (Upstream).
+
+**Defekt im Prüfmittel, behoben:** `check_fixed_values.py` fand keine Hexadezimal-Literale; das neue `0x40` lief ungemeldet durch. Das Skript erkennt sie jetzt, und der Selbsttest enthält den Fall. Im übrigen Fork-Code gab es keine weiteren.
+
+**Vom Prüfer bestätigt:** Prüfskripte grün; keine ungelisteten festen Werte; Gleichwertigkeit bei `AoeCount`, Cleave, `skipAoeCheck`, Todesauslöser und Statusprüfung; nur die Heilblöcke erreichen den Zweig, und kein Verbraucher liest dort Ziel oder Getroffene; Gapcloser-Ausnahme deckt die alte ab; Swiftcast-Überladung; ECommons-Formel; Trankstufen.
+
+**Prüfgrad:** Audit statisch; Behebungen statisch, Prüfskripte, Compile über die CI.
+
+### A145 · Trankform, `H2` nach Optionstext (25.09.2026)
+
+**Trank NQ/HQ.** Seine Frage: „erkennt rsr nicht, welche trankform vorhanden ist?" Beim Benutzen doch: `BaseItem` nimmt HQ, wenn vorhanden, sonst NQ. Nur die Heilmenge las `HpPotionItem` immer aus `DataHQ`. Jetzt liest sie die Form, die benutzt wird. Im Kampf: Ein NQ-Trank geht hinaus, sobald die fehlende Gesundheit seine tatsächliche Heilmenge erreicht, nicht erst bei der HQ-Menge.
+
+**`H2`.** Seine Vorgabe: „die regeln durch die ui-settings sind einzuhalten" (in CLAUDE.md eingearbeitet). Der Optionstext nennt Nicht-Heiler; der Code dreht die Heilerliste nicht mehr um. Im Kampf wirkt das nur bei mehreren gleichzeitig toten Heilern mit `H2` an.
+
+**Fester Wert `100` in der NQ-Zeile — Loop:** Das ist eine Umrechnung von Prozent in einen Anteil, kein Spielwert. Das Blatt `ItemAction` nennt den Anteil in Prozent, die HQ-Zeile daneben (Upstream) rechnet ebenso; als Ausnahme gelistet. Die CI hatte die Zahl gemeldet, `check_fixed_values.py` vor dem Commit nicht: Das Skript verglich mit `HEAD` und sah damit nichts, was erst committet werden sollte. **Defekt im Prüfmittel, behoben:** Es vergleicht jetzt mit dem Arbeitsstand.
+
+**Walking Dead** (seine Präzisierung zu E2): in Arbeit, noch nicht umgesetzt.
+
+**Prüfgrad:** statisch; Compile über die CI.
+
+### A146 · Alle offenen Empfehlungen gegen die Gegenthese „die Empfehlung ist falsch" geprüft (25.09.2026)
+
+**Auftrag:** jede Empfehlung in einem eigenen Loop kritisch prüfen, mit der Antithese, sie sei falsch, und stichhaltig widerlegen, oder die Empfehlung ändern.
+
+**E1 · Stapelsperren (WHM, DRK) nur für große Treffer lösen — hält.**
+- *Gegenthese:* Stapeln verschwendet Abklingzeit, die beim nächsten Raidwide fehlt. *Widerlegt* für große Treffer:
+  - Seine Vorgabe (Stufe 3 der Kaskade, „Sicherheit vor Schaden") verlangt dort zusätzlich Barriere und Minderung.
+  - Temperance (−10 %) und Confession aus Plenary Indulgence (−10 %) sind zwei Status und wirken nacheinander, der Treffer fällt um 19 % statt 10 %.
+  - Eine verbrauchte Abklingzeit ist ein späterer Preis, ein Tod ein sofortiger.
+  - Die Sperre selbst verschwendet: Divine Caress ist nur unter Divine Grace wirkbar (30 s, Trait-Text), über die Flächenabwehr aber in den ersten 20 davon gesperrt.
+- *Gegenthese:* Beim Dunkelritter kostet eine Minderung im Burst Schaden. *Widerlegt:* Dark Missionary und Reprisal sind Fähigkeiten. Sie verschieben die nächste Burst-Fähigkeit um einen Einschiebeplatz, sie streichen keine.
+- *Gegenthese:* Ungemessene Treffer könnten tödlich sein und blieben gesperrt. *Nicht widerlegt, bewusst belassen:* ohne Messung kein Urteil „groß"; dort bleibt das heutige Verhalten.
+- Revolverklinge liegt außerhalb seines Profils.
+
+**E2 · Walking Dead — Entwurf geändert.**
+- *Gegenthese:* Ein Gegner in Reichweite heißt nicht, dass er angreift (Bewegung, Mechanik, Spieler ohne RSR). Die Selbstheilung fiele dann aus, und das zeigte sich erst im Vorlauf von zwei GCDs. *Nicht widerlegt; deshalb ergänzt:* Der gemessene Netto-Kurs aus `RecordedHP` muss tragen. Netto unterschätzt die kumulierte Heilung, die Freigabe kommt also eher zu früh.
+- *Gegenthese:* Heilung zurückzuhalten ist bei 1 HP tödlich. *Widerlegt mit Rest:* Laut Wirktext senken die meisten Angriffe ihn nicht unter 1. Welche es doch tun, ist unbelegt, und gegen die hilft auch eine Heilung nur, wenn sie vorher kommt.
+- *Gegenthese:* Heiler ohne große Sofortheilung schaffen den Rest im Vorlauf nicht. *Durch den Kurs entschärft:* Die Freigabe fällt, sobald der Kurs nicht mehr trägt, nicht erst im Vorlauf.
+
+**E3 · Heilungen von der AoE-Einstellung ausnehmen — hält.**
+- *Gegenthese:* Wer „Cleave" oder „Off" wählt, will auch weniger Flächenheilung. *Widerlegt:*
+  - Upstream nimmt freundliche Aktionen bei „Off" an zwei Stellen ausdrücklich aus (`!action.Setting.IsFriendly`); das ist die Absicht der Einstellung.
+  - Die Zahl der Verletzten, ab der eine Flächenheilung fällt, hat eine eigene Einstellung je Aktion (`AoeCount`).
+  - Der Wortlaut bleibt mehrdeutig; deshalb entscheidet er.
+
+**E4 · Rezz-Reihenfolge: die Ausnahme „zwei tote Tanks" streichen — zurückgenommen.**
+- *Gegenthese:* Sind beide Tanks tot, hält niemand den Gegner; ein zuerst aufgehobener Tank hält ihn wieder.
+- *Nicht stichhaltig widerlegt.* Für den Heiler zuerst spricht, dass er sofort ein zweiter Wiederbelebender ist und beide Tanks schneller zurückkommen. Für den Tank zuerst spricht, dass der Gegner gehalten wird. Welches im Kampf mehr rettet, hängt an Wirkzeiten, Schaden ohne Tank und der Lage der übrigen Gruppe, und nichts davon ist hier belegt.
+- Die Wahl liegt bei ihm; seine Vorgabe „Heiler vor Tank" nennt keine Ausnahme.
+
+**Prüfgrad:** statisch; Wirktexte aus `ActionId.resx` und `Rotation.resx`.
+
+### A147 · Walking Dead nach seiner Vorgabe; „Cleave" nur für Angriffe; Rezz-Reihenfolge bestätigt (25.09.2026)
+
+**Walking Dead (E2), Loop über den Entwurf aus A146:**
+- *Research:* Mechanik am Wirktext belegt (Living Dead, 3638). Heute zündete Benediction bei 1 HP sofort, und Regen war gesperrt.
+- *Optionen:* nichts tun; Sperre nur für Benediction; zentrale Sperre aller Heilaktionen ohne HoT (gewählt).
+- *Abgleich:* gegen seinen Wortlaut — HoT am Anfang, volle Hilfe bei auslaufendem Timer oder wenn klar ist, dass er es nicht schafft; Gegnerzahl und Ereignis nennt er als Beispiele.
+- *Falsifikation:*
+  - Kein Defekt? Widerlegt: Benediction am Anfang widerspricht der Vorgabe.
+  - Option falsch? Eine Sperre allein für Benediction ließe Cure II den GCD nehmen, statt ihm zu vertrauen.
+  - Ausgeliefert, nichts ändert sich? Rotationen mit eigener Zielwahl sehen die Sperre nicht (benannt). Ohne Heilflagge greift auch das Regen nicht, aber bei 1 HP steht die Flagge.
+- *Feinschliff gegenüber A146:* Der Kurs wird nicht aus dem letzten Tiefpunkt in `RecordedHP` gerechnet, sondern aus der Gesundheit beim ersten Sehen des Fensters. Wiederholte Stürze auf 1 HP starten die Messung so nicht immer neu und verlängern das Vertrauen nicht. Ein späteres Fenster erkennt die Erkennung an der größeren Restzeit.
+- Kein neuer fester Wert: Vorlauf wie Living Dead, Reichweite aus dem Spiel, Messbeginn nach einem GCD aus `DefaultGCDTotal`.
+- Anzeige: Diagnosefenster, solange jemand unter Walking Dead steht.
+
+**„Cleave" (E3):** Seine These „Cleave macht nur für Angriffe Sinn" hielt der Gegenthese stand.
+- Upstream nimmt freundliche Aktionen bei „Off" an zwei Stellen aus.
+- Freundliche Aktionen mit Schaden (Holy, Phlegma) sind feindlich gezielt und bleiben gesperrt.
+- Gruppenminderungen ohne Bodenziel gehen jetzt auch unter „Cleave".
+- Dass Heilungen keine neuen Gegner ziehen, ist Erinnerung, nicht Beleg, und ist deshalb kein Grund.
+
+Umgesetzt: `GetMostCanTargetObjects` sperrt unter „Cleave" nur feindliche Aktionen; der Flächenheil-Zweig übernimmt die Sperre nicht mehr. Der Einstellungstext sagt jetzt „Attacks only: heals and other actions on the party are not affected".
+
+**Rezz-Reihenfolge (E4):** Seine Präzisierung („ein tank sollte aggro halten …") deckt sich mit dem Code. Solange ein Tank lebt, kommt der Heiler zuerst; sind beide Tanks tot, zuerst ein Tank. Keine Änderung.
+
+**Prüfgrad:** statisch; Prüfskripte grün; Compile über die CI.
+
+### A148 · Zwei Hinweise: Heilungen erzeugen Feindschaft; „most attacks" meint Raidwides, die einen Tank-Limitbruch verlangen (25.09.2026)
+
+**Heilungsfeindschaft.** Als Hinweis in Konzept 07 geführt, Umfang unbelegt. Die frühere Formulierung „ob eine Heilung Gegner ziehen kann, ist nicht belegt" stellte das Gegenteil seines Hinweises offen und ist ersetzt. Die Cleave-Entscheidung (A147) ruht auf seiner Lesart der Einstellung, nicht auf einer Annahme über Heilungsfeindschaft; sie bleibt.
+
+**„Most attacks" (Walking Dead).** Seine Deutung: gemeint sind Raidwides, die alle nur mit dem Limitbruch eines Tanks überleben. Vorher stand das als offene Einschränkung ohne Folge da. Die Folge: Bei 1 HP stünde der Träger davor schutzlos. Jetzt gibt jeder angekündigte Flächenangriff vor Ablauf die volle Unterstützung frei, ob über die Zauberleiste oder über die BossModReborn-Vorhersage.
+- *Gegenthese:* Das gibt zu oft frei. Widerlegt: Eine Heilung, die sich als unnötig erweist, zählt auf die Summe, die Walking Dead verlangt; verschwendet ist sie nicht.
+- *Gegenthese:* Ohne BossMod greift es zu spät. Teilweise: Die Zauberleiste kommt vor dem Einschlag. Nur Angriffe ohne Zauberleiste bleiben unvorhergesehen, benannt in Konzept 09.
+
+**Nachgeschärft auf seinen Hinweis** („das sind aber nur sehr wenige raidweite attacken", Beispiele Alexander, Krieger des Lichts): Die Freigabe bei jedem Flächenangriff hob das Vertrauen bei jedem gewöhnlichen Raidwide auf und widersprach damit seiner Regel. Jetzt gibt erst ein Tank-Limitbruch auf der Gruppe frei (Status 196, 863, 864, 1931). Der Limitbruch wird für genau diese Treffer gezogen und ist ohne BossModReborn lesbar. Grenze: ein solcher Treffer ohne Limitbruch, oder ein Limitbruch unmittelbar vor dem Einschlag.
+
+**Prüfgrad:** statisch; Compile über die CI.
+
+### A149 · Lux Solaris vor einem angekündigten Treffer bei voller Gruppe (26.09.2026)
+
+**Seine Beobachtung:** alle voll, Flächenangriff angekündigt, Lux Solaris vor dem Einschlag. Ob es der letzte mögliche Augenblick war, hat er nicht gesehen.
+
+**Wirkkette am Code:**
+- Bei voller Gruppe verwirft der Heilpfad jedes Ziel (volle Mitglieder fallen aus `GetCanAffects`).
+- Beide Zweige in `AttackAbility` verlangen einen Fehlbetrag.
+- Die Vorausschau liest den angekündigten Treffer nicht.
+- Übrig bleibt die Verfallsklausel in `GeneralAbility` (Upstream `1c850931f`). Sie zündet in den letzten drei GCDs von Refulgent Lux ohne Gesundheitsprüfung. Es war das Verfallsfenster, aber nicht der letzte Augenblick: Die Klausel nimmt den ersten freien Platz in diesen drei GCDs.
+
+**Erster Entwurf, verworfen:** Die Verfallsklauseln hielten den Wurf für einen angekündigten Treffer zurück (Zauberleiste oder BossMod-Raidwide), solange danach noch ein GCD blieb. Sein Einwand, als Vorschlag geprüft: Lux Solaris ist reaktives Heilen, eine Vorhersage ist nicht nötig. Er hält der Gegenthese stand.
+- *Gegenthese:* Ist jemand schon leicht verletzt, kommt der Wurf vor einem großen Treffer. Zutreffend, aber gering: Der Wurf heilt dann den vorhandenen Fehlbetrag, und er fällt nur in den letzten drei GCDs.
+- *Dafür:* Sein Fall ist vollständig behoben, weil bei voller Gruppe nichts fällt. Es gibt keine Abhängigkeit von der lückenhaften AoE-Liste und von BossMod. Ein Wurf auf eine volle Gruppe nützt nie.
+
+**Ursache des verworfenen Entwurfs, am System:** Die erste Frage war „wann landet der Treffer", nicht „was ist Lux Solaris". Die Regel „Eine Spielgröße kläre ich in ihrer Bedeutung, bevor ich sie verrechne" hätte zuerst ergeben, dass eine reaktive Heilung vor dem Treffer nichts wert ist; eine fehlende Gesundheitsprüfung wäre dann die ganze Antwort gewesen. Auf der falschen Frage aufbauend war die Folgerung in sich stimmig: `IsHostileCastingBase` antwortet nur, solange die Restwirkzeit zwischen einem und zwei GCDs liegt (`t = Rest − GCD`, `0 < t < GCDTime(1)`). Die Verfallsklausel feuert aber irgendwo in den letzten drei GCDs; ein früher begonnener Cast war für sie unsichtbar, daher die eigene Erkennung. Der Code-Kommentar dazu nannte das Fenster ungenau „der letzte GCD vor dem Einschlag"; er ist mit dem Code entfernt.
+
+**Umgesetzt:** Die Klausel in `GeneralAbility` verlangt einen Fehlbetrag (`LargestMissingHp > 0`), wie die in `AttackAbility`. Die Vorhersage (`AnnouncedAreaHitIn`) ist wieder entfernt. Keine neue Zahl; die bestehende „3 GCDs" steht in einer berührten Zeile und bleibt offen gelistet.
+
+**Nebenbefund, auf seine Frage „wieso ist das zu spät?":** Konzept 09 sagte, ein Limitbruch unmittelbar vor dem Einschlag werde „nicht rechtzeitig erkannt". Erkannt wird er sofort; zu spät kann nur die Heilung ankommen. Berichtigt.
+
+**Prüfgrad:** statisch; Compile über die CI.
+
+### A150 · Audit: Lux Solaris seit Forkbeginn, Konzept und alle Codeänderungen (26.09.2026)
+
+**Auftrag:** vollständige Prüfung des Konzepts und aller Codeänderungen zu Lux Solaris seit Forkbeginn; Audit, Code-Review, Fehlerbeschreibung. **Keine Codeänderung vor seiner Freigabe.** Unabhängiger Prüfer ohne Schreibrechte; die tragenden Befunde danach selbst am Code nachgeprüft (markiert „nachgeprüft").
+
+**Befunde:**
+1. **A149 wirkt nur bei exakt voller Gruppe** (nachgeprüft: `LargestMissingHp` zählt jedes Mitglied mit `CurrentHp < MaxHp`). Ein Tank unter Autoangriffen reicht, und beide Verfallsklauseln zünden wieder vor einem Treffer. Die Aussage in A149 „vollständig behoben" und die Überschrift im Release-Text sind falsch.
+2. **Lux umgeht Heilsperren und Heilschalter** (nachgeprüft).
+   - Die Wege über `AttackAbility` und `GeneralAbility` prüfen weder Scalebound noch Shackled Healing. Das tut nur der Heil-Dispatch in `CustomRotation_Ability`.
+   - Auch die Vorbedingungen der Heilflagge greifen dort nicht: `AutoHeal`, Heilen als Nicht-Heiler, Restlebenszeit, „nur ohne Heiler", Tyrant-Indikator.
+   - Unter Shackled Healing trifft die Strafe die Umstehenden. Dieselbe Klasse betrifft `TryRekindle`.
+3. **Bedarf in der ganzen Gruppe, Heilung nur im Radius** (nachgeprüft).
+   - Außerhalb des Heilpfads ist `TargetOverride` null. Der Zweig für Reichweite 0 greift nicht, der allgemeine Pfad nimmt den Wirkenden ohne Bedarfsprüfung.
+   - Der Auslöser `LargestMissingHp` zählt auch Mitglieder außerhalb des Radius. Ein verletzter Tank weit weg löst einen Wurf aus, der nur Volle trifft.
+4. **Todesauslöser, Walking Dead, Heilunfähige** zählen in `LargestMissingHp` als Grund (nachgeprüft). Das hebelt die Living-Dead-Sperre aus, wenn der Dunkelritter im Radius steht, und ebenso die Walking-Dead-Zurückhaltung.
+5. **„Größter Einzelfehlbetrag" statt Gruppe:** Das ist Ableitung, nicht seine Regel, und bleibt seine Entscheidung. `luxLandsInFull` zündet, sobald ein Mitglied die Heilung ganz aufnimmt.
+6. **Im Kampf unsichtbar:** Nicht angezeigt werden der gemessene Heilwert, der Auslöser, der gewählte Weg, warum nicht gezündet wurde, und ob die Heilung voll ankam. Das verstößt gegen die Definition of Done.
+7. **Gemessener Heilwert** (nachgeprüft am Code).
+   - Die Aussage „Überheilung kommt als 0" ist unbelegt.
+   - Die Glättung (halbes Gewicht) bewegt den Wert bei einem Kritischen stark.
+   - Der Wert wird nie zurückgesetzt, er gilt je Plugin-Sitzung und nicht je Kampf; `TODO.md` sagt „je Kampf".
+   - Der Kommentar „wird beim Lesen durch die Maximalgesundheit geteilt" stimmt nicht.
+8. **Konzept 08, Abschnitt „Heilung vor dem angekündigten Treffer":** „der Wurf fällt vor dem Einschlag" gilt nur mit der Option und bei Bedarf im Radius. Zudem gilt die Tabelle zur verfallenden Heilung nicht für den Heilpfad.
+9. **Veraltete Kommentare in `SMN_Reborn`:** „die Klausel in `GeneralAbility` bekommt keinen Platz" (sie ist jetzt eine Doppelung der Klausel in `AttackAbility`); „hält sich bis zur Messung heraus" (der Verfallsteil tut es nicht); „der Angriffszweig ist nach der Phase dünn".
+10. **Fester Wert „3 GCDs":** Die Kopie in `AttackAbility` hat der Fork eingeführt (`58a265ad7`); die Zeile in `GeneralAbility` ist ohne Loop angefasst. Beide stehen offen.
+11. **`ChurinSMN`:** dieselbe Verfallsklausel ohne Gesundheitsprüfung, nicht erfasst.
+
+**Bestätigt:**
+- Wirktexte: 30 s gegen 15 s, Cure Potency 500.
+- Heilpfad: nimmt den Zweig für Reichweite 0; Tote, Heilunfähige, Todesauslöser und Walking Dead zählen dort nicht als Grund; bei voller Gruppe fällt nichts.
+- Dispatch-Reihenfolge: Lux steht in `AttackAbility` vor den Angriffs-Fähigkeiten und wird nicht ausgehungert.
+- `256fed498` baut `7af32723f` vollständig zurück.
+- Beträge über 65.535 werden richtig gelesen.
+
+**Eigene Arbeitsfehler dieses Bereichs, sachlich:** A149 prüfte nur den gemeldeten Fall (volle Gruppe), nicht den Bereich „irgendjemand leicht verletzt", und nannte ihn geringfügig, ohne die Häufigkeit zu erheben. Die Befunde 2 bis 4 bestehen seit `58a265ad7` (20.09.2026), und kein späterer Loop dieses Bereichs hat sie gefunden (A114, A115, A117, A136, A137, A144, A149). Jeder dieser Loops prüfte die Änderung des Tages, nicht alle Wege, auf denen die Aktion fällt.
+
+**Stand:** Keine Codeänderung. Behebungsvorschläge bei ihm zur Freigabe.
+
+### A151 · Lux Solaris: seine Vorgaben vom 26.09.2026 im Loop bewertet und ins Konzept 08 eingearbeitet (26.09.2026)
+
+**Eingang, eingeordnet:**
+1. Vorgabe: Vor dem Verfall zählt nur, ob die Heilung etwas bewirkt; kleine Mengen reichen; gewichtet gegen eine wichtigere Aktion im selben Platz.
+2. Vorgabe: Verbote gelten, etwa „nicht wirken, weil sonst Schaden eingeht".
+3. Frage (im Chat beantwortet).
+4. Vorgabe: Immer den Umkreis prüfen; niemand im Umkreis verletzt heißt keine Aktion.
+5. Vorgabe: Walking Dead ist kein Hindernis, Living Dead sperrt.
+6. Vorgabe: Normalfall ohne Überheilung, wenn der Beschwörer selbst oder alle im Radius eine volle Heilung aufnehmen; Ausnahmen sind bedrohlich geringe Gesundheit und Verfall.
+7. Auftrag: kritisch bewerten und im Loop einarbeiten.
+
+Außerdem: Churin ist uninteressant (CLAUDE.md, TODO bereinigt).
+
+**Bewertung (Loop):**
+- *Punkt 6, Gegenthese:* „Alle im Radius ohne Überheilung" tritt selten ein, dann verfällt Lux. Widerlegt: Nach einem Raidwide sind alle getroffen, und der Verfall (Punkt 1) fängt den Rest auf. Verloren ist nur Heilung, die ohnehin überheilt hätte.
+- *Punkt 6, Maß für „bedrohlich":* Gefährdungsklasse 1 aus Konzept 07. Das Maß ist vorhanden, keine neue Zahl.
+- *Punkt 5, Konflikt:* Living-Dead-Sperre gegen ein anderes Mitglied in Klasse 1. Konzept 09 lässt für die Flächenheilung der Heiler die Gruppe vorgehen; für die Beigabe Lux hat er strenger entschieden. Welche Seite bei gleichzeitigem Eintreten gilt, ist ihm vorgelegt, Empfehlung Klasse 1.
+- *Punkt 5, Walking Dead:* Für Lux zählt der Träger als Verletzter, für die Heilaktionen der Heiler bleibt Konzept 09. Kein Widerspruch: Lux verfällt sonst, eine Heileraktion nicht.
+- *Punkt 1, Gewichtung:* Welche Aktionen im Verfallsfenster durch einen Platz Aufschub an Wert verlieren, ist nicht erhoben und wird vor der Umsetzung erhoben. Das Verfallsfenster „3 GCDs" ist damit neu zu bestimmen.
+- *Punkt 2:* Wirktexte von Shackled Healing (4564) und Scalebound (1495) belegt. Der vorhandene Dispatch prüft beide, die Wege außerhalb nicht (A150). In welchem Kampf Shackled Healing vorkommt, steht nicht im Repository. Scalebound gehört laut Text zum Rathalos-Kampf.
+- *Heilpfad:* Konzept 08 hielt „der Wurf fällt vor dem Einschlag" als Regel. Nach Punkt 6 gilt für Lux auf allen Wegen dieselbe Regel; der Satz ist berichtigt.
+
+**Stand:** nur Konzept, keine Codeänderung. Die Umsetzung wartet auf seine Freigabe und auf die Antwort zur Living-Dead-Frage.
+
+### A152 · Lux Solaris: Living Dead geht vor; das Gesamtkonzept erneut im Loop geprüft (26.09.2026)
+
+**Seine Entscheidung** zur offenen Frage aus A151: Die Living-Dead-Sperre hält auch dann, wenn ein anderes Mitglied in Gefährdungsklasse 1 steht. Begründung: In Savage und Extreme ist ein toter Tank meist der Wipe; ein Tankbuster fällt selten mit einem Flächenangriff zusammen; die Aggro liegt beim Tank. Lux wird aufgehoben, bis Walking Dead eintritt, und heilt dann mehrere, den Tank eingeschlossen. In Konzept 08 eingetragen.
+
+**Gesamtkonzept erneut geprüft, dabei ergänzt:**
+- *Schalterstellungen:* Die Sperre folgt `WithholdHealingForLivingDead`. Mit dem Schalter aus will der Spieler den Tod als Auslöser nicht, dann sperrt Lux nicht; das ist konsistent mit Konzept 09.
+- *Verfall während der Sperre:* hingenommen, ausdrücklich eingetragen.
+- *Eine Entscheidung für alle drei Wege.* Die Befunde aus A150 entstanden aus getrennten Bedingungen je Weg. Der manuelle Heilbefehl prüft nur die Verbote.
+- *Folgen, benannt:*
+  - Vor der ersten Landung einer Sitzung greifen nur Ausnahme und Verfall.
+  - Die Vorausheilungs-Option bedient Lux nicht mehr, außer über Klasse 1 oder wenn allen im Radius eine volle Heilung fehlt.
+  - Ein Dunkelritter unter Walking Dead steht bei 1 HP in Klasse 1, Lux fällt dann sofort (gewollt).
+  - Das Radiusmaß ist unbelegt.
+- *Falsifikation:*
+  - Die Sperre könnte Lux in jedem Tankbuster-Fenster verfallen lassen. Hingenommen: Living Dead dauert 10 s, Refulgent Lux 30 s, und nach Walking Dead ist die Heilung wieder frei.
+  - Walking Dead als Grund könnte der Walking-Dead-Regel der Heiler widersprechen. Kein Widerspruch: Lux ist eine Beigabe und verfällt sonst; die HoT-Regel betrifft die Heilaktionen der Heiler.
+  - Ausgeliefert, nichts ändert sich: wenn der Schalter aus ist. Dann gilt bewusst das alte Verhalten, und die Diagnosezeile zeigt, dass keine Sperre gilt.
+
+**Stand:** nur Konzept. Umsetzung wartet auf seine Freigabe; vorher ist die Gewichtung im Verfallsfenster am Code zu erheben (Punkt 5).
+
+### A153 · Hinweis: Lux Solaris ist Point-Blank vom Wirkenden aus, wie Holy (26.09.2026)
+
+Als Hinweis in Konzept 07 und 08 geführt. Die Wirktexte stützen ihn gleichlautend: Holy trifft „all nearby enemies", Lux Solaris heilt „own HP and the HP of all nearby party members". Damit trägt die Prämisse von A137 (Reichweite 0, Anker der Wirkende), die bis dahin allein an der Laufzeitanzeige hing. Offen bleibt, ob der Radius vom Mittelpunkt oder von der Trefferfläche zählt; das klärt der Hinweis nicht.
+
+### A154 · Lux Solaris umgesetzt nach Konzept 08, im vollständigen Loop (26.09.2026)
+
+**Freigabe:** „im vollständigen loop umsetzen". Während der Umsetzung kam seine Vorgabe: Maßgeblich ist das minimale Heilpotential, nie das maximale, weil Heilung und Schild kritisch ausfallen können. Eingearbeitet.
+
+**Umsetzung:**
+- `SMN_Reborn.LuxSolarisDecision` wird von allen drei Wegen gefragt (Heilflagge, `AttackAbility`, `GeneralAbility`) und prüft in dieser Reihenfolge: Verbote, Radius, volle Landung, Gefahr, Verfall. Der manuelle Heilbefehl prüft nur die Verbote.
+- Gewirkt wird mit `targetOverride: Self`: Die Entscheidung hat den Bedarf im Radius schon gemessen.
+- `StatusHelper.PlayerHealingPunished` enthält dieselbe Prüfung wie der Heil-Dispatch; auch `TryRekindle` fragt sie.
+- `DataCenter.RecordHealEffect` behält die kleinste volle Heilung und hält jeden Betrag gegen den Fehlbetrag des Ziels; daraus entstehen Treffanteil und die Feststellung „Überheilung gemeldet". Beim Gebietswechsel wird zurückgesetzt.
+- `LargestMissingHp` ist ohne Leser und entfernt.
+- Anzeige in der Beschwörer-Statuszeile.
+
+**Falsifikation:**
+- *Kein Defekt?* Widerlegt durch A149 und A150.
+- *Option falsch, zum Beispiel über den Flächenheil-Zweig mit `AutoHealRatio`?* Verworfen: Die Heilschwelle hätte die Kleinheilung am Verfall abgelehnt, die er ausdrücklich will.
+- *Ausgeliefert, und nichts ändert sich?*
+  - Solange die Heilmenge unbekannt ist, greifen nur Gefahr und Verfall; die Anzeige sagt „not measured".
+  - Ist die Annahme „Gesundheit beim Effekt noch vor der Heilung" falsch, zeigt die Anzeige dauerhaft 0 % Treffanteil.
+  - Mit `WithholdHealingForLivingDead` aus gibt es keine Living-Dead-Sperre, bewusst.
+
+**Feste Werte:**
+- `21` ist aus dem Upstream-Dispatch übernommen und offen gelistet.
+- `100` ist eine Einheitenumrechnung und als Ausnahme gelistet.
+- `3` (Verfallsfenster): Der Loop ist im Konzept geführt. Er bleibt offen, weil die Prämisse „zwei Plätze je Fenster" nicht aus dem Spiel abgeleitet ist.
+
+**Prüfgrad:** statisch, Prüfskripte; Compile über die CI; Audit und Code-Review folgen.
+
+### A155 · Audit und Code-Review der Lux-Umsetzung (A154), Befunde behoben (26.09.2026)
+
+**Verfahren:** unabhängiger Prüfer ohne Schreibrechte, alle Prüfskripte; die Befunde danach selbst am Code nachgeprüft.
+
+**Behoben:**
+- **H1 · Die Heilmessung wurde nach jedem Kampf gelöscht:** `ResetAllRecords` läuft auch bei Kampfende, Wipe und State Off. Im Kampf fehlte damit jedem ersten Lux eines Pulls die volle Landung (Punkt 3). Jetzt löscht nur der Gebietswechsel (`ResetHealMeasurements`).
+- **H2 · Punkt 3 „jeder im Radius" schloss den Wirkenden ein** und war damit eine Kopie des Selbst-Falls. Ein Raidwide, der alle außer dem geschildeten Beschwörer trifft, hätte Lux bis zu Gefahr oder Verfall liegen lassen. Jetzt zählen die anderen, und mindestens einer muss im Radius stehen (sein Wortlaut „allen anderen").
+- **M1 · Ziele außerhalb der Gruppenliste** zählten als „fehlt 0" und setzten fälschlich „Überheilung gemeldet". Jetzt werden sie nicht gemessen.
+- **M2 · Die Selbstprüfung konnte ihre Annahme nicht widerlegen;** die Konzeptaussage „dauerhaft 0 %" war falsch. Jetzt prüft jeder Wurf, ob die Gesundheit beim Effekt schon über dem zuletzt gelesenen Stand liegt. Dann wird nicht gemessen, und die Anzeige sagt es.
+- **M3 · Vorlassen für Searing Flash war wirkungslos,** weil die Rotation es außerhalb einer Demi nur auf einen sterbenden Boss wirkt. Entfernt. Mountain Buster geht nur noch vor, wenn ein Gegner in Reichweite ist.
+- **M4 · Die Anzeige verlor den Grund des Wurfs,** weil der Wurf Refulgent Lux verbraucht. Jetzt steht der letzte Wurf mit Grund und Uhrzeit getrennt. Lehnt die Aktion selbst ab, sagt die Zeile das.
+- **L1 · Die AoE-Anzahl der Aktion** wirkte nicht mehr, obwohl die Oberfläche sie anbietet. Nach seiner Regel „Einstellungstexte binden" ist sie wieder eine Bedingung (ab Werk 1).
+- **L3 · Veraltete Texte berichtigt:**
+  - der TODO-Eintrag zur Heilmessung (erledigt, entfernt);
+  - Konzept 07 und 08 zur Anzeige und zum Heilpfad;
+  - der Rekindle-Kommentar stand nach dem Umbau vor der Lux-Entscheidung.
+- **L4:** Die Hilfsmethode antwortet jetzt wie der Dispatch (`!= 1`). Die Kopien im Dispatch sind als technische Schuld im TODO (acht, nicht fünf; berichtigt in A156).
+- **L6:** Der Unterlauf ist mit `Missing()` abgesichert.
+
+**Belassen, benannt:**
+- **L2:** Ein Ziel mit gesenkter Heilwirkung kann das Minimum drücken (Konzept 08, Grenze).
+- **L5:** Das Radiusmaß bleibt unbelegt.
+
+**Vom Prüfer bestätigt:**
+- Reihenfolge der Entscheidung.
+- Erkennung des manuellen Befehls.
+- `Self` umgeht den Flächenheil-Zweig, während Grundprüfung und Abklingzeit bleiben.
+- Gefährdungsklasse und Walking Dead.
+- Mountain Buster steht im selben Durchlauf nach Lux.
+- Compile-Punkte.
+- Feste Werte.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A156 · Zweites Review der Lux-Umsetzung (A155), Befunde behoben (26.09.2026)
+
+**Verfahren:** zweiter unabhängiger Prüfer auf c88b0a3; Befunde am Code nachgeprüft. H1, H2, M1, M3 und L4 bis L6 aus A155 halten.
+
+**Behoben:**
+- **M2 war nur halb behoben.** Die Prüfung „Gesundheit beim Effekt über dem zuletzt gelesenen Stand" las `_lastHp`, das die Heilprojektion innerhalb des Effektfensters nicht fortschreibt, und fing nur die eine Reihenfolge. Ersetzt durch eine echte Bestätigung: `RecordHealEffect` hält den Wurf mit Betrag und Gesundheit je Ziel zurück, `GetPartyMemberHPRatio` bestätigt ein Ziel erst beim tatsächlichen Anstieg um das, was die Heilung hinzufügen kann; gemessen werden nur bestätigte Ziele, der Rest verfällt am Ende des Effektfensters. `LastKnownHp` und `healthAlreadyUpdated` entfernt. Beantwortet zugleich seine Frage, ob sich Überheilung feststellen lässt: ja, an bestätigten Zielen.
+- **Die AoE-Anzahl stand an der falschen Stelle.** Sie galt nur vor Punkt 3 laut Konzept, im Code aber auch vor Gefahr und Verfall und nicht für den Heilbefehl. Nachgemessen, wie der allgemeine Flächenheil-Zweig zählt: `GetCanAffects` lässt bei einer Heilung die Vollen weg, gezählt werden Verletzte, für jede Verwendung. Da der Einstellungstext bindet („Number of targets needed to use this action"), gilt die Zahl jetzt für jeden Wurf einschließlich des Heilbefehls. Ab Werk 1 ändert das nur eines: Der Heilbefehl wirft nicht mehr, wenn niemand im Radius verletzt ist, wie jede andere Flächenheilung.
+- **„last cast" zeigte die Wahl, nicht den Wurf.** Die Wahl kann im selben Platz noch einer anderen Aktion weichen. Jetzt heißt die Zeile „last chosen", und der Wurf steht mit Uhrzeit in der Landezeile aus dem Effekt.
+- **Mountain Buster ging am Verfall auch vor, wenn er abgeschaltet oder nicht erlernt ist.** Dann nahm niemand den Platz, und Lux verfiel. Jetzt nur, wenn er eingeschaltet und erlernt ist. `CanUse` wird dafür nicht gefragt, weil es den Zielzustand schriebe.
+- **Texte:**
+  - TODO nennt acht Kopien der Heilverbots-Prüfung, nicht fünf.
+  - Konzept 08: „seit dem Gebietswechsel" statt „einer Sitzung", „jedem anderen" statt „jedem".
+  - Kommentar zu Punkt 3 im Code.
+  - Kommentar im Flächenheil-Zweig: Die globale AoE-Art gilt dort nicht, die eigene AoE-Anzahl schon.
+
+**Belassen, begründet:** Ein Ausreißer nach unten (gesenkte Heilwirkung) hält das Minimum bis zum Gebietswechsel. Die Folge im Kampf: Lux fällt eher, nie später. Das ist die Richtung seiner Vorgabe „minimales Heilpotential"; ein Filter würde sie umkehren und bräuchte eine neue Zahl.
+
+**Grenzen der Bestätigung (Konzept 08):**
+- Eine fremde Heilung im selben Fenster kann ein Ziel fälschlich bestätigen.
+- Ein zweiter eigener Heilwurf im Fenster schließt den ersten vorzeitig ab.
+- Beides zeigt die Anzeige als unbestätigte Ziele.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A157 · E1 ohne Vorlage gemeldet; Nachtrag der Vorlage (26.09.2026)
+
+- **Befund am Verfahren:** Der Abschlussbericht zu A156 nannte E1 nur als „offen, deine Entscheidung", ohne Kontext, Mechanismus, Konsequenzen und Empfehlung. Das verletzt „Vorlagen an ihn". Die Vorlage wurde im Chat nachgeholt.
+- **Neuer Befund beim Erstellen der Vorlage:** Beim Dunkelritter sperrt `InTwoMIsBurst` auch The Blackest Night und Oblation auf ein Mitglied unter der eingestellten Schwelle (`BlackLantern`, `OblationLantern`). Ihr Einstellungstext nennt keine Burst-Ausnahme. Nach der Regel „UI-Texte binden" ist das keine Wahlfrage. Im TODO erfasst, Umsetzung zusammen mit E1.
+- **Belegt am Wirktext (`ActionId.resx`):**
+  - Plenary Indulgence: Confession, −10 %, 10 s.
+  - Temperance: −10 %, 20 s.
+  - Divine Caress: Barriere 400, nur unter Divine Grace.
+  - Liturgy of the Bell: 20 s.
+  - Dark Missionary: −5 % physisch, −10 % magisch, 15 s.
+
+**Prüfgrad:** statisch.
+
+### A158 · Zweck der Abwehrsperren (E1) im Loop erhoben; Empfehlung aus A146 widerlegt (26.09.2026)
+
+**Auftrag:** herausfinden, was die Upstream-Sperren im Spiel bewirken sollen und welchen strategischen Vorteil sie haben könnten, auch im Zusammenspiel mit anderen Klassen.
+
+- **Research:**
+  - Herkunft per `git log -S`: Dunkelritter c97be9ec5 (Balance 6.38, Burst an `RatioOfMembersIn2minsBurst` der Gruppe gekoppelt), Weißmagier 141f9b27a (7.05, schon mit Divine Caress hinter der Sperre); `d566eda86` ist nur die Umlagerung.
+  - Zahlen gegen die Wirktexte: 20/20/15/8 s sind die Wirkdauern von Temperance, Liturgy, Divine Benison und Aquaveil.
+  - Blood Weapon Mastery macht Blood Weapon zu Delirium; `IsCoolingDown` liest die angepasste Id, die Sperre greift also auf Stufe 100.
+  - Zusammenspiel: Die Revolverklinge sperrt mit No Mercy auf dieselbe Weise; Krieger und Paladin sperren nicht. Die Sperren lesen keine andere Klasse; `StatusFromSelf = false` bei Reflexion, Addle und Feint ist die einzige Rücksicht.
+- **Optionen:** A nichts ändern · B frei bei großem Treffer (A146) · B′ frei, wenn der Treffer nach liegender Minderung jemanden in Gefährdungsklasse 1 brächte · C Sperre streichen · Zähler zur Selbstbewertung als Zusatz.
+- **Falsifikation von B:** Zwei große, einzeln tragbare Raidwides im Abstand von 25 s. Unter B verbraucht der erste Treffer Plenary, Temperance, Divine Caress und Liturgy, und der zweite bekommt vom Weißmagier nichts. Heute bekommt der zweite Divine Caress und Liturgy. B ist dort schlechter; die These „B hält" aus A146 fällt. Übersehen wurde, dass die Sperre eine Streckung ist, kein Stapelschutz.
+- **B′** folgt seinem Prinzip „strecken, solange die Gruppe hält" (Konzept 08, „Wozu die Aussetzbedingungen da sind") und seiner Treffertabelle (Treffer über maximaler Gesundheit: Barriere und Minderung zusätzlich).
+  - Offene Annahme: Ob der gespeicherte Anteil vor oder nach Minderung gemessen ist, ist nicht belegt. Der Speicher hebt nur an, also liegt der Wert eher bei der geringsten Minderung (Schluss).
+- **Dunkelritter:** Der Schadensvorteil liegt im Promillebereich (Überschlag, nicht gemessen) und wird nach seiner Regel nicht gegen Sicherheit abgewogen.
+
+**Prüfgrad:** statisch; Versionsgeschichte; Wirktexte aus `ActionId.resx` und `Rotation.resx`. Die Größenordnung beim Dunkelritter ist nicht gemessen.
+
+### A159 · Abwehrsperren: allgemeine Schranke, Sonderregeln je Job (26.09.2026)
+
+**Seine Vorgaben in diesem Zug** (in CLAUDE.md eingetragen):
+- Regeln zuerst universell, dann stufenweise abgespalten: alle → Heiler · Tanks · Damage Dealer → Fernkämpfer · Magier · Nahkämpfer → Nahkampf-Untergruppen → erst danach jeder Job.
+- Gründliche Vorarbeit wird nicht durch nachträgliche Betrachtung ersetzt; das Diagnosefenster ist kein Ablageort für offene Annahmen.
+
+**Loop:**
+- *Research:*
+  - Alle Rückhaltungen von Abwehraktionen in `RebornRotations` erhoben: frühe Rücksprünge und Bedingungen in den Zeilen der `Defense*`-Methoden.
+  - Strategische Rückhaltungen: Weißmagier, Astrologe, Dunkelritter (Burst und Barriere), Revolverklinge, Maschinist, Dragoon, Viper, dazu Barde, Pictomancer und Tänzer über ihre Einstellung.
+  - Keine strategische Wahl: Swiftcast für eine Wiederbelebung, Spielaussperrung, Doppeldrucksperre, Recitation-Reihenfolge.
+- *Offene Annahme aus A158 am Code geklärt:* `Watcher.ActionFromEnemy` speichert den höchsten gelandeten Anteil, also nach damaliger Minderung, und hebt nur an. Die liegende Minderung wird deshalb nicht abgezogen, weil sie sonst doppelt zählte; der Fehler geht Richtung „gefährlich".
+- *Optionen:*
+  - Schranke nur für Weißmagier und Dunkelritter: verworfen, nicht universell.
+  - Schranke für jede strategische Rückhaltung: gewählt.
+  - Streckung für alle Heiler: verworfen, weil unbelegter Nutzen bei zwei Jobs; die Heilerstufe bleibt leer.
+- *Falsifikation:*
+  - **Kein Defekt?** Widerlegt: Ein tödlicher Treffer während einer Sperre bekam keine weitere Abwehr.
+  - **Option falsch?** Die Schranke überschätzt eher und weicht zu oft. Der Preis ist die Streckung auf diesem Treffer, nie ein Leben.
+  - **Ausgeliefert, nichts ändert sich?** Ohne Zauberleiste greift nur Klasse 1. Barde, Pictomancer und Tänzer bleiben wegen ihres bindenden Einstellungstexts ausgenommen; zur Entscheidung im TODO.
+- *Klasse:* Die Generatorlücke „damage taken by <Träger> by N %" ist behoben. Temperance, Aquaveil, Kerachole, Holos, Oblation, Heart of Stone, Exaltation, The Bole, Sun Sign und zwei Sonderaktionen sind jetzt bewertet. Die Dauertabelle führt jede Aktion mit angegebener Dauer.
+- *Nebenbefund (TODO):* `GetCurrentMitigationPercent` kennt Confession aus Plenary Indulgence (−10 %) nicht.
+
+**Code-Review (8533c0809), alle Befunde am Code nachgeprüft und behoben:**
+- **Tankbuster als Gefahr** (schwer): Er ist dasselbe Signal, das die Einzelabwehr öffnet. Die Einzelstreckung wäre bei jedem Tankbuster aufgelöst worden. `IsHostileCastingToTank` meldet zudem jeden Zauber eines Gegners auf seinen Tank (C10). Entfernt; es bleibt Klasse 1.
+- **Knopf statt Aktion:** `IsCoolingDown` und `RecastTimeOneChargeRaw` lesen die angepasste Id, und Liturgy of the Bell und Macrocosmos haben während der Wirkung eine eigene Folgeaktion. Jetzt wird die Wiederaufladegruppe der Aktion gelesen.
+- **Unverwundbare** lösten die Schranke über den gemessenen Treffer aus. Jetzt nur Ungeschützte (`AnnouncedHitDropsUnprotectedBelow`).
+- **Erste Dauer statt Dauer der Minderung:** Der Generator nimmt jetzt die erste Dauer nach der Minderung. Sechs Werte haben sich dadurch berichtigt; Collective Unconscious hat jetzt 10 statt 18 s, Holos, Expedient, Tengentsu und zwei Sonderaktionen passen jetzt zu ihrer Minderung.
+- **Gefahrenprüfung auch ohne Rückhaltungswunsch:** Jetzt nur, wenn eine Regel zurückhalten will.
+- **Anzeige, letzter Schreiber gewinnt:** Jetzt ein Eintrag je Regel.
+- **BossModReborn und Zauber in einer Meldung:** entfällt mit dem Tankbuster.
+- **Klasse 1 dreifach definiert:** jetzt eine Definition, `ObjectHelper.IsInCriticalClass`, gelesen von Heilzielwahl, Abwehrsperren und Lux Solaris.
+- Die Konzeptaussage zum Tankbuster ist entfallen.
+
+**Zweites Code-Review (c01439bb9), nachgeprüft und behoben:**
+- **Einzelgefahr für jedes Mitglied:** Ein Damage Dealer in Klasse 1 löste Selbstabwehr der Revolverklinge aus, die ihm nichts nützt. Jetzt nur Spieler und Tanks.
+- **Gleicher Regelname für Fläche und Einzel:** Die beiden überschrieben sich gegenseitig in der Anzeige. Der Schlüssel enthält jetzt den Umfang.
+- Veraltete Kommentare zum Tankbuster (Weißmagier, Astrologe, Revolverklinge, Viper) und zu 18 s (Astrologe) berichtigt.
+- **Dunkelritter:** Die Barrierenrückhaltung prüfte in der Einzelabwehr und bei Arm's Length die Flächengefahr. Jetzt wählt der Aufrufer den Umfang.
+- **Gemessener Treffer:** Er stand auf aktueller statt vorausgerechneter Gesundheit und mit `<` statt `<=`. Jetzt gilt dieselbe Grundlage wie für Klasse 1.
+- **Gefahrenprüfung mehrfach je Frame:** Die Flächengefahr ist jetzt für einen Frame zwischengespeichert, mit derselben Frist wie die Gruppenstatistik.
+- **Heilzielwahl:** Sie las den Schutz doppelt. Jetzt reicht sie ihren schon gelesenen Wert an `IsInCriticalClass(bool)` weiter.
+- **Geladener Auslöser (Divine Benison):** Die Wiederaufladung misst nicht die Zeit seit dem Einsatz. Die Einsatzzeit kommt jetzt aus dem Aktionsprotokoll.
+- **Prüfmittel:** `check_fixed_values.py` sah neue, noch nicht versionierte Dateien nicht, weil `git diff` sie nicht zeigt. Der Lauf zu 8533c0809 fiel deshalb erst in der CI auf (`* 100f` in der neuen Datei). Jetzt zählt jede Zeile unversionierter Dateien, mit Selbsttest.
+- **Nicht übernommen:** die Stardiver-Rückhaltung des Dragoons als Zeitsperre auszunehmen. Sie verhindert einen verzögerten GCD, also Schaden, und weicht deshalb der Gefahr. Seine Selbstheilung hat dieselbe Sperre ohne Schranke; das steht im TODO, weil Heilrückhaltungen nicht zu diesem Auftrag gehören.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A160 · Abhängigkeitsmatrix je Job erzeugt und kritisch geprüft (26.09.2026)
+
+**Auftrag (seine Vorgabe):** Abhängigkeitsmatrix aller Aktionen je Job, ungenutzte Fähigkeiten finden, Konzept und Matrix kritisch auf Fehler bei der Erstellung und in den Wechselwirkungen prüfen. Ergebnis: Konzept 14, `generate_action_matrix.py`, `docs/action-matrix/`.
+
+**Vorarbeit:**
+- Konzept 05 und das Archiv (#69) gelesen.
+- Konzept 14 erweitert 05 um die Beziehungen und die Stufen und verweist für die Nutzung darauf.
+- Der veraltete Verweis in 05 auf „TODO #69" ist berichtigt.
+
+**Fehler bei der Erstellung, gefunden und behoben (eigene Durchsicht, dann Code-Review):**
+1. **Allgemeine Systemaktionen zählten als Jobaktionen** (Teleport, Return, Insel und Feld). Jetzt nur solche, die der zentrale Dispatch wirkt (Sprint).
+2. **Tankhaltung und Wiederbelebung erschienen ungenutzt,** weil sie über Stellvertreter-Eigenschaften gewirkt werden (`TankStance => GritPvE`). Diese werden jetzt verfolgt.
+3. **Ausbau-Eigenschaften in drei Satzformen:**
+   - „A and B to C and D respectively",
+   - „A and B to C and D" ohne „respectively" — ein erster Versuch paarte hier Blizzard II mit High Fire II,
+   - „A to B C to D and E to F" ohne Trenner.
+   Jetzt gilt: ein „to" bedeutet zwei Listen, mehrere bedeuten eine Kette bekannter Namen.
+4. **Status, der nach einer Aktion gewährt wird** („Grants the effect of Scorn after executing Living Shadow"): Die Aktion ist jetzt der Erzeuger.
+5. **Behälter und Begleiteraktionen erschienen als Lücke.** Sie werden jetzt am Wirktext gekennzeichnet, der Behälter nur in Richtung „wird zu".
+6. **Die Regelkanten sahen nur die Bedingung derselben Abfrage.** Danach waren sie zu weit: Vorrangwürfe (`if (X.CanUse(out act)) return true;`, auch `out var act`) galten als Sperre — beim Weißmagier 195 statt 14 Kanten.
+7. **Parser der Eigenschaften lief über Aktionseinträge hinweg** (`<strong>(.*?)` mit `re.S`) und spülte Rohtext in die Tabellen. Behoben.
+8. **Statusnamen mit Doppelpunkt und Folgefeld** („confiteor ready duration:") trafen keinen Erzeuger. Daraus entstanden Selbstschleifen (Paradox braucht Paradox). Behoben; Selbstschleifen sind ausgeschlossen.
+9. **Bedingungen:** Verneinte Bedingungen („not under the effect of Subtractive Palette") und Bedingungen ohne Status („less than five chakra") galten als Statusbedarf. Sie werden jetzt getrennt geführt.
+10. **Ressourcennamen enthielten das vorige Feld** („MP Addersgall", „Enchanted Moulinet Balance"). Behoben mit einer Liste der zweiwortigen Ressourcen und den Manafarben der Balance.
+11. **Modify-Rümpfe wurden per Textersatz entfernt.** Leere Rümpfe zerstörten spätere. Jetzt geschieht das über die Position.
+12. **`CanUse(out _)` zählte als Wirken.** Jetzt heißt das „nur geprüft"; gewirkt ist auch `return X;` und `act = X`.
+13. **Nummerierte Aktionsvarianten fehlten ganz** (`JinPvE_18807`, `LiturgyOfTheBellPvE_28509`), weil jedes Muster auf `PvE` endete. Gleichnamige Varianten zählen jetzt als Nutzung.
+14. **Limit Breaks fielen still heraus** (kein Eintrag in `ActionId.resx`). Jetzt werden sie ausgewiesen. Jede andere fehlende Aktion bricht den Lauf ab.
+15. **Leere Combo-Namen** (vom Spiel ausgeblendet) lasen das Folgefeld als Namen. Namen mit „and" (Fang and Claw, Carve and Spit) wurden zerlegt. Jetzt werden bekannte Namen im Satz gesucht.
+16. **Konzept:** Es verwies auf A160 und einen TODO-Eintrag, die fehlten; beide sind nachgetragen. Der Eukrasia-Grund war unvollständig, der Blaumagier fehlte im Abgleich.
+- Jeder Fehler hat einen Selbsttest. `--check` läuft in der CI.
+
+**Wechselwirkungen:**
+- Die Matrix zeigt die Abwehrsperre aus A159: Divine Caress wird durch Temperance und Liturgy vorher gesperrt.
+- Die Stufenordnung des Spiels folgt seinem Baum nicht überall. Arm's Length teilen Tanks, Nah- und Fernkämpfer; Swiftcast, Lucid Dreaming und Surecast teilen Heiler und Magier. Die Stufe „Damage Dealer" und die Nahkampf-Paare haben keine gemeinsame Aktion.
+
+**Ergebnis:** Keine spielerseitig auslösbare Kampfaktion ohne Sonderlage ist ungenutzt. Offen sind die Werkzeuge für Pausen (TODO), sofern er die Jobs nennt.
+
+**Prüfgrad:** statisch; Selbsttest des Skripts; Stichproben am Code (Dunkelritter, Weißmagier, Ninja, Schwarzmagier, Weiser); Code-Review.
+
+### A161 · Offene Punkte und Entscheidungen gegen die Gegenthese geprüft (26.09.2026)
+
+**Auftrag:** offene Punkte und Entscheidungen im vollständigen Loop kritisch hinterfragen, Gründe untermauern, Antithese aufbauen und zu widerlegen versuchen.
+
+**E1-Umsetzung (B′), meine Lesart seiner Freigabe.**
+- *Gegenthese:* „wenn dann" heißt „falls überhaupt"; er hat B′ nicht freigegeben.
+- *Widerlegt:* Im selben Satz steht „die bestehenden konzepte dahingehend erweitern und umsetzen".
+- *Gegenthese zur Bauart:* Klasse 1 schon jetzt löst die Streckung wegen eines einzelnen Niedrigen auf.
+- *Widerlegt:* Die Sperre wirkt nur bei gehobener Flächenabwehr, also nur, wenn ein Treffer kommt. Dann ist Minderung für den Niedrigen das richtige Mittel.
+
+**Entscheidung 1 · Burst-Einstellung von Barde, Pictomancer und Tänzer.**
+- *Herkunft:* Upstream, 6c5d99c9a (April 2025). Burst heißt je 20 s (Raging Strikes, Battle Voice und Radiant Finale; Devilment; Starry Muse), auch für Troubadour bei einem Tankbuster.
+- *Gegenthese A:* Die Einstellung ist die bewusste Wahl des Spielers für Schaden. *Nicht widerlegbar,* deshalb bleibt es seine Entscheidung. Für eine Textänderung spricht seine Vorgabe „Sicherheit vor Schaden".
+- *Gegenthese B:* Die Schranke würde im Burst laufend auslösen. *Widerlegt:* Sie greift nur bei Klasse 1 (Vorgabe 15 %) oder wenn ein gemessener Treffer dorthin führt. Ein 80-%-Raidwide bei voller Gesundheit löst sie nicht aus, ein 85-%-Treffer schon — genau wenn nötig.
+- *Gegenthese C:* Eine Textänderung bricht gespeicherte Einstellungen. *Widerlegt:* Der Eigenschaftsname bleibt, der gespeicherte Wert gilt weiter.
+- *Empfehlung bleibt:* Text um „außer bei Gefahr" ergänzen und die drei Stellen über die allgemeine Schicht führen.
+
+**Entscheidung 2 · Pausenwerkzeuge.**
+- *Gegenthese:* Das ist kein Defekt, sondern Optimierung ohne belegten Gewinn. *Trifft zu.*
+  - Der Eintrag stand unter „Defekte" und ist nach „Offene Arbeit" verschoben.
+- *Befund:* Pausenverhalten steht verstreut je Job.
+  - Der Monk lädt ohne Gegner Chakra, reaktiv und ohne Modul.
+  - Der Machinist verschießt Heat vor einer Modul-Pause.
+  - Der Schnitter wirkt Soulsow.
+- *Folgerung nach „universell zuerst":* Pausenerkennung auf der Stufe „alle", die Aktion beim Job.
+- Die Frage an ihn bleibt, welche Jobs er spielt.
+
+**Entscheidung 3 · Heilrückhaltungen.**
+- *Gegenthese:* Eine Schranke für Heilrückhaltungen hebelt das Living-Dead-Fenster aus. Dort steht der Tank absichtlich bei 1 HP in Klasse 1, und er hat entschieden, dass es hält. *Trifft für eine Schranke über alle Heilrückhaltungen zu.*
+- *Widerlegt für die gebaute Form:* Nur strategische Rückhaltungen weichen. Sicherheitsvorgaben, Technik und textgebundene Einstellungen sind ausgenommen, wie bei der Abwehr.
+- *Erhebung aller frühen Rücksprünge der Heil- und Notfallmethoden:*
+  - strategisch ohne Einstellung nur Revolverklinge (Auftakt) und Dragoon (Stardiver);
+  - Astrologe (Microcosmos, Essential Dignity) folgt seinen Einstellungen;
+  - Swiftcast für Wiederbelebung, Benediction-Doppeldruck, Mudra und Tanz sind ausgenommen.
+- Umgesetzt, keine Entscheidung nötig, weil es aus seinen Regeln folgt: `HoldSelfHeal` für die Selbstheilung, die Einzelstufe für die Revolverklinge.
+
+**Offener Punkt · Confession in der Minderungssumme.**
+- *Gegenthese:* Im Kampf ändert sich nichts. *Trifft zu:* Die Summe liest im Fork nur die Debug-Anzeige.
+- Der Eintrag ist auf **R** berichtigt (abgeleitete Rotationen).
+
+**Konzept 14 · „keine ungenutzte Kampfaktion".**
+- *Gegenthese:* „direkt" heißt nur, dass es einen Aufruf gibt. *Trifft zu.* Die Aussage ist auf „hat einen Aufruf" zurückgenommen; die Erreichbarkeit zeigt die Matrix nicht.
+
+**Prüfgrad:** statisch; Code und Versionsgeschichte; Prüfskripte; Compile über die CI.
+
+### A162 · Pausenregel: allgemeine Erkennung, Samurai und Machinist (26.09.2026)
+
+**Seine Angabe (Profil, in CLAUDE.md):** „ich spiele maschinist zwischendurch mal. alle anderen klassen auch, aber seltener". Alle Kampfjobs liegen damit im Profil.
+
+- *Research:*
+  - Vorhandenes Pausenverhalten: Monk (`!HasHostilesInRange`, Chakra), Machinist (`BmrDumpBeforeDowntime`), Schnitter (Soulsow).
+  - Der GCD-Zweig ist nicht an Gegner gebunden, `AttackAbility` schon (`HasHostilesInRange`). Eine Pausenaktion fällt also über `GeneralGCD` oder `EmergencyAbility`.
+  - Wirktexte: Meditate (Kenki, nur im Kampf, endet bei Bewegung); Queen/Rook Overdrive (ungewirkt automatisch „immediately before shutting down"); Six-sided Star (Grundpotenz ausgeblendet); Flamethrower (Tickrate nicht angegeben).
+- *Optionen:* nichts tun · eine Pausenregel je Job · allgemeine Erkennung plus Jobaktion (gewählt, nach „universell zuerst").
+- *Falsifikation:*
+  - **Kein Nutzen?** Widerlegt für Meditate (Kenki statt nichts) und Overdrive (Abschluss statt Leerlauf). Nicht widerlegbar für Six-sided Star und Flamethrower: nicht gebaut, im TODO.
+  - **Option falsch?** Die Pause als „kein Gegner in 25 Yalm" trifft auch einen Samurai, der weit hinausläuft. Meditate fällt dann nur im Stehen und bricht bei Bewegung; der Preis ist ein GCD-Takt.
+  - **Ausgeliefert, nichts ändert sich?** Overdrive greift nur mit Modul. Ohne Vorhersage ist die Pause erst bekannt, wenn sie begonnen hat — genannt als Einschränkung.
+- *Nebenbefund:* Der Zeilenverweis in Konzept 08 auf die Nachzieh-Regel für Gegner-Debuffs zeigte schon vorher ins Leere (Zeile 1327). Ersetzt durch den Methodennamen; die Zahl der Aufrufstellen ist jetzt datiert.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A163 · Wechselwirkungen, Zeit und Vollständigkeit der Aktionen (26.09.2026)
+
+**Auftrag:** alle erfassten Fähigkeiten auf Vollständigkeit der Beschreibung prüfen, Wechselwirkungen, ob Abwehr Angriff einschränkt oder umgekehrt, Aufbau und Verlängerung, Selbsterhaltung („quasi-perpetuum-mobile"); Konzepte erweitern, später im Audit prüfen. **Seine Präzisierung** (in CLAUDE.md): Sicherheitsbewertungen brauchen eine Wahrscheinlichkeit.
+
+- *Research:*
+  - Generator erweitert um Art, Kanal, Aufhebung, Sperre unter Status, Verlängerung, Stapel, Umschalten, Erzeugung/Verbrauch, Kreisläufe, leere Werte, die RSR-Kanalsperren samt Voreinstellung, und den gesperrten Knopfwechsel (`StatusProvide` der Basisaktion schließt den Status der Zielaktion aus).
+  - Statustexte (`Status.resx`): Collective Unconscious 848 ist der Ring, 849 die Minderung. Eigenschaftstext Enhanced Thrill of Battle: +20 % erhaltene Heilung.
+  - Code: Kanalsperren seit 67b11fb58 (Upstream, Mai 2026), Paladin und Astrologe ab Werk aus. Die GCD-Sperre fragt nicht nach `DefenseArea`. `DefenseArea` endet beim BossMod-Signal 0,6 s vor dem Treffer. Improvised Finish: `ImprovisedFinishPvEReady` nur in der Debug-Anzeige.
+  - Reihenfolge der Fähigkeiten: Heilung und Abwehr vor `GeneralAbility` (`CustomRotation_Ability`).
+- *Befunde:*
+  - Tänzer: Improvised Finish nie gewirkt (Defekt).
+  - Paladin: Passage of Arms endet ohne Sperre meist vor dem Treffer; mit Sperre hält der GCD über den Treffer hinaus (Defekt, Entscheidung).
+  - Astrologe: Die Sperre hält auch GCD-Heilungen; die Minderung bleibt nach dem Abbruch (Schluss aus dem Textaufbau).
+  - Krieger: Shake It Off hebt Thrill of Battle auf (Defekt, Entscheidung).
+  - Kein Perpetuum mobile aus den Texten: Verlängerungen auf 60 s gedeckelt, der einzige Status-Kreislauf (Schnitter) kostet Soul Gauge, keine Ressourcenkreisläufe; MP-Kosten nicht in den Texten.
+- *Falsifikation:*
+  - **Kein Defekt?** Tänzer: widerlegt, der Aufruf fehlt und die Basisaktion sperrt. Krieger: Die Gegenthese „der Verlust der Maximalgesundheit kostet in niedriger Gesundheit nichts" (Schluss) trägt nicht, weil die +20 % Heilung belegt verloren gehen. Paladin: widerlegt für die Voreinstellung.
+  - **Befund falsch erhoben?** Generatorfehler berichtigt: Namen mit „of"/„the", wiederholte Überschriften, leerer Statusname als Stapel, Angriffe mit Heilung als Zusatzeffekt als „Heilung", Selbstsperre (Ley Lines unter Ley Lines) als Wechselwirkung, „über andere Aktion" für gesperrte Knopfwechsel.
+  - **Ausgeliefert, nichts ändert sich?** Nur Werkzeug und Konzept ausgeliefert; die drei Defekte sind im TODO und zur Entscheidung vorgelegt.
+
+**Prüfgrad:** statisch; Generator mit Selbsttest; Prüfskripte.
+
+### A164 · Review von A163: zehn Befunde, drei Code-Behebungen (26.09.2026)
+
+Unabhängiges Review (Code-Review-Werkzeug) der Commits b1ce95756 und 296778976. Alle zehn Befunde am Artefakt geprüft und bestätigt:
+1. **Shake It Off hebt mehr auf als Thrill of Battle.** Der Wirktext hat eine Namenslücke („Dispels Thrill of Battle and increasing"). Vollständig laut Suchauszug: Thrill of Battle, Damnation, Bloodwhetting. Job-Guide, consolegameswiki, gamerescape und icy-veins sperrt der Egress; Status der Angabe: Suchauszug, nicht die Seite. Konzept 14 und TODO berichtigt; der Generator zählt eine solche Lücke jetzt als leeren Wert.
+2. **Gesperrter Knopfwechsel ist nicht dauerhaft gesperrt.** `IsStatusProvided` lässt den Wurf in den letzten `StatusRefreshGcdCount` GCDs des Status durch. Folge für `WildfirePvE`: Wurf als Detonator möglich, Stapel abgeschnitten. Dieselbe Klasse erhoben über alle Knopfwechsel mit `StatusProvide` der Basisaktion: Hell's Ingress/Egress → Regress (Rückteleport zum Tor statt Sprung). Behoben: `ActionCheck` schließt den gewechselten Knopf aus (`!DetonatorPvEReady`, `!RegressPvEIngressReady`, `!RegressPvEEgressReady`). Improvisation → Improvised Finish bleibt: dort wäre der Wurf erwünscht. Die Zeile mit den Heat-Werten ist unberührt; die Bedingung wird verkettet.
+3. **Die GCD-Kanalsperre wich vom Einstellungstext ab** („during AOE mitigations"), der Fähigkeitspfad nicht. Der Text bindet. Behoben: beide Pfade fragen `DataCenter.AreaHitPending` — das Flächensignal oder ein BossMod-Raidwide im Fenster, auch in dessen letzten 0,6 s, in denen `DefenseArea` schon losgelassen hat. Keine neue Zahl: die Grenze ist `BMRRaidwideMitWindow`.
+4. **Bewegungssperren als RSR-Sperre gezählt, Elternoption übersehen** (`PoslockCasting`, `DataCenter.NoPoslock`). Generator trennt Aktions- und Bewegungssperre.
+5. **Nullbefund der Kreisläufe unkalibriert.** `GAUGE_GAIN` las „increasing the Ninki Gauge" nicht; Kreislauf-Finder ohne Selbsttest. Beides behoben; der Nullbefund ist im Konzept als schwach benannt.
+6. **Meditate:** auch Heilung und Abwehr vor `GeneralAbility` beenden ihn. Konzept berichtigt.
+7. **Meisui:** drei Auslöser, nicht einer. Konzept berichtigt; Ten Chi Jin endet mit Suiton, das Shadow Walker neu gibt (Wirktext).
+8. **Tabelle „Woran jede Sicherheitsregel die Wahrscheinlichkeit misst" unvollständig.** Ergänzt um Einzelabwehr, Heilung vor dem Treffer, Burst-Rückhaltungen, Handbefehl und unterbrechbare große Casts.
+9. **Gemeinsame Abklingzeit „sonstige/Angriff" als Wechselwirkung gezählt.** Jetzt nur, wo Abwehr oder Heilung beteiligt ist.
+10. **Zitat-Mismatch Schnitter-Kreislauf** (Gallows ↔ Unveiled Gibbet, nicht Gallows ↔ Gibbet). Berichtigt; Dateilesen im Generator einmal statt je Job.
+
+*Nebenbefund:* Die Kommentarzeilen in `CustomRotation_GCD` verschoben die Zeilenverweise in Konzept 11; nachgezogen (`check_doc_references.py`).
+
+**Prüfgrad:** statisch; Prüfskripte; Generator-Selbsttest; Compile über die CI.
+
+### A165 · Werden die Fenster genutzt? Alle Standardrotationen geprüft (26.09.2026)
+
+**Seine Frage:** „Hast du im Loop geprüft, ob die optimalen Kombinationen in den rotas auch tatsächlich genutzt werden?" — Nein; A163/A164 hatten nur geprüft, ob eine Aktion überhaupt gerufen wird. **Sein Auftrag:** „Für alle im Loop".
+
+- *Research:* Die Standardrotationen aller 21 Kampfjobs auf die Verbraucher von Stapeln, Procs und begrenzten Ressourcen geprüft; ganz gelesen Maschinist, Krieger, Paladin, Dunkelritter, Revolverklinge, bei den übrigen die Stellen dieser Verbraucher. Referenz für „optimal" gesucht: The Balance und das GitHub-Repository der Rotationen sperrt der Egress (Probe 26.09.2026). Die Textverknüpfung Gewährer → Verbraucher allein trägt nicht: 133 Fenster ohne Verbraucher im Wirktext.
+- *Werkzeug:* Der Generator führt je Job „Fenster, deren Verbraucher an Bedingungen hängt" (eigene `StatusNeed` oder ein „…Ready" im `ActionCheck`; jeder Aufruf mit Zusatzbedingung; Rückfall vor Ablauf ja/nein), mit Selbsttest.
+- *Befunde:* Maschinist Hypercharged, Samurai Ogi Namikiri, Revolverklinge Sonic Break — behoben mit einem Rückfall im letzten GCD des Status. Weiser Addersgall-Überlauf — zur Entscheidung. Dunkelritter `UseBlood` ohne Leser — technische Schuld.
+- *Falsifikation:*
+  - **Kein Defekt?** Maschinist: Mit „Only use Wildfire on Boss targets" gegen Trash hängt jeder Hypercharge-Pfad an Wildfire oder Heat 100; widerlegt. Samurai: Ist Higanbana abgeschaltet, oder sperrt es die Voreinstellung „Prevent Higanbana use if theres more than one target" über `NumberOfAllHostilesInRange`, während der Flächenpfad von Ogi `NumberOfHostilesInRange` unter zwei sieht, fällt keines; widerlegt. Revolverklinge: nur, wenn No Mercy ohne GCD vergeht (Pause) — selten, der Rückfall kostet nichts.
+  - **Option falsch?** Der Rückfall feuert nur im letzten GCD; vorher bleibt jede bestehende Ausrichtung (Burst, Higanbana, No Mercy) unberührt.
+  - **Ausgeliefert, nichts ändert sich?** Mit den Voreinstellungen ändert sich beim Maschinisten nichts (Wildfire verbraucht Hypercharged); beim Samurai greift es in Kämpfen mit Adds.
+- *Grenze:* Ob eine Abfolge optimal ist, bleibt ungeprüft (keine Referenz).
+
+**Prüfgrad:** statisch; Generator-Selbsttest; Prüfskripte; Compile über die CI.
+
+### A166 · Review von A165: die Statusbedingung sperrte das Ende jedes Fensters (26.09.2026)
+
+Unabhängiges Review (Code-Review-Werkzeug) der Commits 16e60b716 und 2a07817bb; alle zehn Befunde am Code geprüft und bestätigt.
+1. **Grundursache, Stufe „alle":** `ActionBasicInfo.IsStatusNeeded` sperrte eine Aktion, sobald ihr benötigter Status in `StatusRefreshGcdCount` GCDs (ab Werk 2) endete; ebenso `TargetStatusNeed` in `ActionTargetInfo.CheckStatus`. Der Oberflächentext der Einstellung — „Number of GCDs before the DOT/Status effect is reapplied", nur bei Aktionen mit `StatusProvide` gezeigt — bindet; der Code wich ab. Eingeführt mit Upstream-Commit `dc067e0d3` (08.04.2025, „Refine Eukrasia logic and enhance Black Mage rotation"; vorher Grenze 0). Behoben: Der Status muss nur die Wirkzeit der Aktion überdauern (`CastTime`). Damit wirken auch die bestehenden Rückfälle von Rotmagier, Weißmagier, Gelehrtem, Ninja und Pictomancer, die vorher nie greifen konnten.
+2. **Samurai-Rückfall unerreichbar** (Folge von 1) — mit 1 behoben; der Horizont rechnet jetzt die Wirkzeit von Ogi Namikiri ein.
+3. **Konzept meldete die fünf toten Rückfälle als „ohne Befund".** Berichtigt.
+4. **Generator: Rückfall nur als Zeichenkette erkannt**, ohne eigenen Status. Jetzt muss `WillStatusEnd` mit einem Namen des Fensters im selben oder einem umschließenden `if` stehen.
+5. **Generator: `if` in Bezeichnern** (`HasSwift`) und Aufrufe außerhalb eines `if` falsch zugeordnet. Jetzt `\bif\s*\(` und nur `if`, die den Aufruf umschließen.
+6. **Generator: Klammern in den Argumenten** machten einen schlichten Aufruf zum bedingten; zudem galt ein schlichter Aufruf in einem äußeren Block als unbedingt. Jetzt balancierte Klammern, und schlicht heißt direkt im Methodenrumpf.
+7. **Generator: Fenster über `Has…`-Eigenschaften fehlten** (Hypercharged). Jetzt aus den Statuseigenschaften der Basisrotation.
+8. **Revolverklinge: Rückfall hinter höheren GCDs.** Jetzt vor allen GCDs; dieselbe Klasse bei Reign of Beasts (Ready to Reign) behoben.
+9. **Maschinist: Rückfall durch `!HasReassembled` blockiert.** Entfernt — fünf freie Überhitzungs-Schüsse wiegen mehr als ein Reassemble auf einem Blazing Shot. A165 hieß es „Wildfire verbraucht Hypercharged"; verbraucht wird es von der Hypercharge nach Full Metal Field.
+10. **Feste Zahl `1` und Einzelflicken statt Stufe „alle".** Die `1` ist der nächste GCD, keine Spielgröße (`check_fixed_values` zählt 0 und 1 nicht); die Wirkzeit kommt aus dem Spiel. Die Einzelflicken bleiben, weil die Ausrichtung (worauf ein Verbraucher wartet) Sache des Jobs ist; die Stufe „alle" ist die Statusbedingung (1).
+
+*Klassenerhebung nach der Behebung:* Die erweiterte Generatorliste ergab einen weiteren Fall derselben Art — Ninja Phantom Kamaitachi wartete auf Trick Attack oder Mug ohne Rückfall; behoben. Alle übrigen Kandidaten bewertet (Konzept 14).
+
+*Falsifikation der zentralen Behebung:*
+- **Kein Defekt?** Ein Grund für die Sperre auf der Bedarfsseite wäre ein Zauber, dessen Wirkzeit den Status überdauert. Das deckt die neue Grenze (Wirkzeit); für Soforteinsätze gibt es keinen.
+- **Option falsch?** `CastTime` ist die Grundwirkzeit; unter Swiftcast oder Dualcast ist die Grenze zu vorsichtig, nie zu knapp.
+- **Ausgeliefert, nichts ändert sich?** Es ändert sich überall dort, wo ein Verbraucher bisher in den letzten ~5 s seines Fensters gewählt worden wäre.
+
+**Prüfgrad:** statisch; Generator-Selbsttest; Prüfskripte; Compile über die CI.
+
+### A167 · Zweites Review der zentralen Behebung (A166); WrathCombo als Quelle (26.–27.09.2026)
+
+Unabhängiges Review von 214d3adb0 (im ersten Anlauf am Nutzungslimit abgebrochen, nachgeholt). Befunde am Code geprüft:
+1. **Vorlauf fehlte in der Grenze.** Ein GCD wird bei `DefaultGCDRemain <= CalculatedActionAhead` gewählt (`ActionHelper.CanUseGCD`) und geht los, wenn der GCD abläuft. Behoben: `NeededStatusMargin` = Wirkzeit + GCD-Restzeit für echte GCDs; auch auf der Zielseite.
+2. **Falsche Aussage in A166:** „`CastTime` ist die Grundwirkzeit". `GetCastTime` liest `ActionManager.GetAdjustedCastTime`; die ist unter Swiftcast null — belegt an WrathCombo (`AutoRotationController`: „AutoRezRequireSwift && GetAdjustedCastTime(resSpell) == 0"). Berichtigt im Konzept; A166 bleibt als Stand seiner Zeit.
+3. **Revolverklinge:** Der Reign-Rückfall konnte mitten in Gnashing Fang feuern und den Kombo-Schritt übernehmen. Jetzt `!InGnashingFang`.
+4. **Rückfall-Horizonte ohne Vorlauf**, je Job einzeln. Behoben mit dem gemeinsamen Baustein `IsLastChanceBeforeStatusEnds` (GCD-Restzeit + GCD-Länge + Wirkzeit), genutzt von Revolverklinge, Samurai, Ninja, Maschinist.
+5. **„Nur unter dem Buff"-Bedingungen:** Retrace (Schwarzmagier) verlor mit der alten Sperre seinen Schutz vor einem fast abgelaufenen Ley-Lines-Kreis. Eigene Grenze im `ActionCheck` (Kreis überdauert den nächsten GCD). Upheaval geprüft: geht sofort los, keine Grenze nötig.
+6. **Maschinist:** Hypercharge vor einem vorbereiteten Reassemble, obwohl Hypercharged den Einschub nach dem Werkzeug noch erreicht hätte. Jetzt wartet er in diesem Fall.
+7. **Paladin Intervention** (vorbestehend, in der berührten Zeile): Zielbedingung „Tankhaltung" mit `StatusFromSelf = true` schlägt für die Haltung des anderen Tanks immer fehl. Im TODO, Richtungsentscheidung nötig.
+8. **Laufzeit:** `CastTime` je Ziel und Bild in `CheckStatus`. Hingenommen: nur Aktionen mit `TargetStatusNeed` (Paladin Intervention, PvP-Reinigung, Blaumagier).
+9. **Ninja:** doppelte Bedingung `NoNinjutsu` im neuen Rückfall entfernt.
+10. **„Universell zuerst":** siehe 4.
+
+**WrathCombo als Quelle (seine Frage):** Das Repository `PunishXIV/WrathCombo` ist über den Git-Proxy lesbar (Klon 27.09.2026, Stand 25.09.2026, BSD-3-Lizenz). Status: Community-Plugin, keine Spielquelle; es belegt, wie ein anderes Rotationswerkzeug eine Mechanik behandelt, und wo es die Spiel-API nutzt, was die API liefert. Code wird nicht übernommen, nur als Beleg gelesen.
+
+**Prüfgrad:** statisch; Prüfskripte; Generator-Selbsttest; Compile über die CI.
+
+### A168 · Netzzugang unbegrenzt: Quellen gemessen, Schlüsse belegt (27.09.2026)
+
+**Seine Angabe:** Netzzugang auf unbegrenzt gestellt. Gemessen (HTTP-Status): The Balance, `na.`/`de.finalfantasyxiv.com/jobguide`, consolegameswiki, garlandtools, v2.xivapi 200; gamerescape und icy-veins 403 mit `cf-mitigated: challenge` — Cloudflare-Prüfung der Seite, der Proxy verbindet (`200 Connection Established`).
+
+**Am offiziellen Job-Guide belegt (vorher Schluss oder Suchauszug):** Shake It Off hebt „Thrill of Battle, Damnation, and Bloodwhetting" auf. Dauern: Ready to Break, Ready to Reign, Ogi Namikiri Ready, Hypercharged, Full Metal Machinist 30 s; Phantom Kamaitachi Ready 45 s; Silken Symmetry/Flow 30 s. Living Shadow kostet kein Blut. Flourish gewährt Flourishing Symmetry, Flourishing Flow, Threefold/Fourfold Fan Dance, Finishing Move Ready. Passage of Arms: 120 s Abklingzeit.
+
+**Offen, weil der Text es offen lässt:** ob die Minderung von Collective Unconscious den Abbruch des Kanals überdauert — der Job-Guide hat denselben Wortlaut wie `ActionId.resx`.
+
+**Folge:** Quellenregel in CLAUDE.md fortgeschrieben; Konzept 14 und TODO auf die Belege umgestellt; Abgleich mit The Balance als offene Arbeit erfasst.
+
+### A169 · Vergleich mit WrathCombo: Ideen für Rotationen und Fork-Patches (27.09.2026)
+
+**Sein Auftrag:** Ideen aus WrathCombo zu Rotationen und den bisherigen Patches prüfen, im Loop.
+
+- *Research:* Gemeinsame Bausteine (Burst-Erkennung, Gruppenschaden per Cast und Zielmarkierung, Autorotation mit Heil-, Wiederbelebungs- und Tankbuster-Logik, `BattleData`) und die Einstellungslisten aller Kampfjobs gelesen; Maschinist, Weiser, Krieger, Paladin, Tänzer, Samurai im Code verglichen. WrathCombo nur gelesen, keine Änderung dort (gemessen).
+- *Befund, umgesetzt:* Maschinist hielt Heat mit „Only use Wildfire on Boss targets" auf Nicht-Bossen für ein Wildfire zurück, das nie fällt. Behoben als eigener Block vor der Upstream-Zeile (die Zeile mit 30 s und Heat 100 bleibt unberührt); die Kombo-Grenze ist Hypercharges Dauer aus `DefensiveValues` (10 s, Wirktext).
+- *Falsifikation:* **Kein Defekt?** Gegen Trash mit der Option an fällt Wildfire nie; jede Hypercharge wartete auf Heat 100 — widerlegt. **Option falsch?** Die Freigabe gilt nur für dieses Ziel; auf einem Boss bleibt die Ausrichtung. `IsBurst` aus ist bewusst nicht einbezogen: Wer Burst zurückhält, will Heat für später. **Ausgeliefert, nichts ändert sich?** Mit der Voreinstellung (Option aus) ändert sich nichts.
+- *Vorschläge:* sechs, in Konzept 15 zur Entscheidung; vier Ideen verworfen mit Grund.
+- *Beinahe-Fehler, am System:* Der erste Umsetzungsversuch änderte die Upstream-Zeile selbst; `check_fixed_values.py` meldete die berührten Zahlen, die Änderung wurde zurückgenommen und neu gebaut.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A170 · Schadenstabelle weiter `{}`: was die Datei sagt, Schutz vor Verlust, eine Zählung statt einer Zeile (27.09.2026)
+
+**Gemeldet:** Datei hochgeladen, Inhalt `{}` — „und damit ist das abspeichern IMMER NOCH fehlerhaft".
+
+- *Research:* Ganze Kette erneut gelesen (Hook in ECommons 3.2.1.20, Signatur identisch mit dem gepflegten Stand; `ActionFromEnemy`; `LoadSteps`/`InitOne`; `SaveTracked`; Knöpfe). `{}` entsteht nur beim ersten Start ohne Datei, durch „Forget" oder nach einer unlesbaren Datei (`.corrupt` daneben); jedes andere Speichern schreibt mindestens einen Eintrag. Er kompiliert vor dem Spielen den aktuellen Zweig (seine Angabe); jeder Stand seit dem 20.09. lädt die Tabelle (Ladefix `87a7eb283`), jeder seit dem 24.09. trägt zudem die Speicherfixes (A125). Die Datei stammt vom 26.09., 13:07 Uhr (seine Angabe; das Hochladen überträgt das Datum nicht), der Zweig trug zu dieser Zeit Lade- und Speicherfixes. **Mit jedem dieser Stände ist `{}` kein Speicherfehler, sondern eine Tabelle, in die nie ein Wert kam** — oder „Forget", oder eine unlesbare Vorgängerdatei. **Welches Tor die Messung verhinderte, ist statisch nicht bestimmbar** — die Datei trägt es nicht.
+- *Befunde:* (1) „Last hit" wurde von jedem Treffer mit Schaden überschrieben, auch von Auto-Attacks: Die Sonde aus A126 zeigte im Kampf fast nur „instant". (2) Treffer unsichtbarer Gegner verließen den Handler vor jeder Meldung. (3) „Reset and Update AOE List" ersetzte bei gescheitertem Download die Liste durch eine leere; ohne Liste wird nichts gemessen. (4) Ein gescheiterter Erst-Download wird als leere Datei festgeschrieben und nie wiederholt. (5) „Forget" löschte auf einen Klick, ohne Kopie.
+- *Optionen:* Nullvariante; Zählung je Grund; Kopie vor schrumpfendem Speichern; Strg-Klick oder Modaldialog für „Forget"; Reset behält die Liste bei Fehlschlag; Erst-Download nicht festschreiben; leere Liste beim Laden erneut laden.
+- *Umgesetzt:* Zählung je Grund nur für Casts („Casts this session", beide Fenster), Meldung für unsichtbare Gegner, rote Zeile bei leerer Flächenliste, `.json.bak` vor jedem schrumpfenden Speichern, „Forget" nur mit Strg, Reset behält bei Fehlschlag die Liste.
+- *Nicht umgesetzt, mit Grund:* Erst-Download nicht festschreiben — ohne Datei versucht jeder Start den Download erneut, und `HttpClient` wartet bis zu 100 s, bevor der Ladevorgang weiterläuft; beim Entladen schriebe `Save()` die leere Liste ohnehin. Leere Liste neu laden — kann eine vom Nutzer geleerte Liste zurückholen. Beides in `TODO.md`. Modaldialog statt Strg — Popup-Kennungen hängen am ImGui-ID-Stapel der Tabelle; Strg ist ohne diese Abhängigkeit.
+- *Falsifikation:* **Kein Defekt?** Für seinen Fall offen: Hat er nie gemessen (weniger als vier Gezählte, Option aus, keine Liste), ist keine der Änderungen die Ursache — sie machen sie ablesbar. Die Befunde 1, 3 und 5 sind dagegen am Code belegt. **Option falsch?** Die Kopie überschreibt sich nur beim nächsten schrumpfenden Speichern; ein zweites „Forget" auf leerer Tabelle schrumpft nichts und lässt sie stehen. Nach `.corrupt` fehlt die Datei, dann gibt es nichts zu kopieren — die Daten liegen in `.corrupt`. **Ausgeliefert, nichts ändert sich?** Bleibt die Tabelle leer, nennt die Zählung jetzt das Tor; füllt sie sich nicht, weil kein Cast ihn trifft, steht dort nichts, und auch das ist eine Antwort. Die Messung selbst ändert diese Änderung nicht.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI. Keine Laufzeitbeobachtung.
+
+### A171 · Die Messung hing an der Aufnahme-Option und an der Gruppengröße (27.09.2026)
+
+**Seine Frage:** „wieso ist das eine option? Record AOE actions ist aus."
+
+- *Research:* `Record AOE actions` stammt von Upstream (`51ad02c6d`, 2023) und schaltete dort nur die Aufnahme neuer Ids in die Flächenliste. Die Messung (`9ce853ef5`, 17.09.2026) wurde in denselben Block gesetzt und zusätzlich an die Option gebunden — ohne dokumentierten Grund; der eigene Kommentar dort sagte „deliberately not the intake's" und widersprach damit dem Code. Ebenso die Mindestgröße der Gruppe.
+- *Optionen:* Nullvariante; Messung von beiden Bedingungen lösen; eigene Option „Record damage potential".
+- *Abwägung:* Eine eigene Option hätte keinen Grund: Die Messung entscheidet nichts, die Leser (kleine Casts auslassen, vor großem heilen, Zurückhaltung aufheben) entscheiden. Der Optionstext „Record AOE actions" deckt die Messung nicht.
+- *Umgesetzt:* Aufnahme unter `intakeOpen` (Option an, mindestens vier Gezählte); die Messung einer gelisteten Id ohne beide. Die Vier ist belegt als kleinste Gruppenzusammensetzung (`ContentMemberType` Zeile 2, über `v2.xivapi.com` gelesen) und als Ausnahme mit diesem Loop geführt.
+- *Falsifikation:* **Kein Defekt?** Wer die Option ausschaltet, um die Liste zu schützen, verlor ohne Hinweis die Messung und drei Regeln — widerlegt. **Option falsch?** Ein Lauf ohne Stufensynchronisation misst zu klein; die Höchstwert-Regel senkt keinen Stand, eine Erstmessung zu klein korrigiert sich beim nächsten ungemilderten Treffer, wie jede Unterschätzung. **Ausgeliefert, nichts ändert sich?** Bei eingeschalteter Option und voller Gruppe ändert sich nichts; bei ihm unbekannt, welche Bedingung griff — die Zählung nennt es.
+- *Wirkung auf Nutzer mit ausgeschalteter Option:* Die drei Leser arbeiten jetzt mit Messwerten statt als „unbewertet". Das ist ihr vorgesehenes Verhalten.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A172 · Ein leerer Speicher konnte eine volle Datei überschreiben (27.09.2026)
+
+**Seine Frage:** „und wieso kann ein leerer speicher eine volle tabelle überschreiben?"
+
+- *Research:* Jedes Speichern schrieb den Speicherstand als Ganzes. War der Speicher leer oder unvollständig, ersetzte ein Speichern die Datei — der Mechanismus hinter A121, nur dort ausgelöst durch das fehlende Laden. Weitere Auslöser bestehen: `InitAsync` startet die Ladeschritte mit dem Abbruch-Token von Dalamud; ein abgebrochener oder gescheiterter Start lässt Speicher ungeladen, und `DisposeAsync` ruft `OtherConfiguration.Save()` für **alle** Listen — jede ungeladene würde leer geschrieben.
+- *Optionen:* Nullvariante (Kopie `.bak` aus A170); Schreiben verweigern, wenn weniger als auf der Platte; mit der Datei zusammenführen; nicht geladene Speicher nicht schreiben.
+- *Abwägung:* Verweigern allein verliert neue Messwerte, wenn der Speicher andere Ids hält als die Datei (Anzahl ist kein Maß für Inhalt). Zusammenführen folgt der Höchstwert-Regel und verliert nichts. Die Ladesperre ist die allgemeine Stufe: Sie gilt für jede Liste.
+- *Umgesetzt:* `SaveTracked` führt Speicher und Datei je Aktion zum höheren Wert zusammen; nur „Forget" (`discard`) schreibt weniger, mit `.bak`. Ist die Datei vorhanden, aber nicht lesbar, unterbleibt das Speichern („NOT SAVED", rot). `Save<T>` und `SaveTracked` schreiben keinen Speicher, dessen `InitOne` in dieser Sitzung nicht zu Ende lief.
+- *Falsifikation:* **Kein Defekt?** Der Weg ist am Code belegt und war mit A121 bereits einmal eingetreten. **Option falsch?** Zusammenführen hebt „Forget" nicht auf: Das Verwerfen schreibt ausdrücklich, spätere Speichervorgänge führen mit der dann leeren Datei zusammen. Eine aus der Liste entfernte Id behält ihren Wert, wie bisher; er wird nicht gelesen. Eine dauerhaft gesperrte Datei ließe jedes Speichern ausbleiben — sichtbar rot, die Werte bleiben im Speicher bis zum nächsten Versuch. **Ausgeliefert, nichts ändert sich?** Ist seine Ursache die ausbleibende Messung, füllt diese Änderung die Tabelle nicht; sie verhindert, dass Gemessenes verloren geht.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A173 · „Forget recorded damage potential" entfernt (27.09.2026)
+
+**Seine Vorgabe:** „wenn ich aufgrund eines gamepatches merke, dass die alte tabelle nicht mehr funktioniert, kann ich datei auch händisch löschen. dazu brauch ich keinen ingame-button. unnötige funktionen erzeugen auch unnötige fehlerursachen."
+
+- Der Knopf war meine Ableitung (Konzept 13, 17.09.), keine Vorgabe von ihm. Entfernt mit ihm: `ResetHostileCastingAreaPotential`, der Verwerfen-Pfad in `SaveTracked` und die Kopie `.json.bak` aus A170, die nur ihm diente — nach A172 schrumpft kein anderes Speichern die Datei.
+- Folge für das Löschen von Hand: nur bei geschlossenem Spiel. Läuft das Plugin, schreibt das nächste Speichern die Werte aus dem Speicher zurück (Zusammenführung aus A172). So in Konzept 13 und im Release-Text.
+- Die allgemeine Regel dahinter steht in `CLAUDE.md` unter „Keine Funktion ohne Bedarf".
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A174 · Erneute Prüfung kleiner Defekte: Ninja, Vorrangregeln, Bewegungspfad, Erst-Download (27.09.2026)
+
+**Sein Auftrag:** die Konzepte der offenen Punkte erneut prüfen, umsetzen, Audit, Code-Review. Das Nutzungsprofil umfasst inzwischen alle Kampfjobs; frühere Empfehlungen „nicht im Profil" sind damit überholt und wurden neu bewertet.
+
+- **Ninja, `GCDTime() == 0f` (`NIN_Reborn`):** Die Bedingung ist seit ihrer Einführung (`224e82811`, 27.06.2025) konstant wahr — `GCDTime()` lieferte schon damals `DefaultGCDTotal * 0 + 0`. Sie steht in `EmergencyGCD`, also im GCD-Pfad, der nur bei freiem GCD läuft; die erkennbare Absicht „GCD frei" ist dort schon erfüllt. **Im Kampf keine Wirkung, kein Defekt.** Upstream-Zeile nicht angefasst; `BeirutaNIN` (fremde Rotation) ebenso.
+- **Vier wirkungslose Vorrangregeln (Viper zweimal, Pictomancer, Rotmagier):** Im Kampf wird die Aktion bei jeder Ladung gewirkt, die Bedingung davor wählt nichts. Das entspricht dem Gebrauch „bei Bereitschaft"; eine gemeinte Zurückhaltung ist nicht belegt. **Kein Kampfdefekt nachweisbar**; die Stellen sind Upstream-Code.
+- **Zielloser Zweig in `FindTargetAreaMove`:** unerreichbar. Den Bewegungs-Zieltyp tragen nur En Avant, Aetherial Shift und Occult Featherfoot, alle ohne zielbasierten Sprungtyp. **Dabei gefunden, als Klasse:** automatisch genutzte Angriffe mit Sprung zum Ziel ohne Sprungtyp, deren BMR-Prüfung damit entfiel, obwohl der Optionstext jede Bewegung nennt. Belegt am Job-Guide: Forked Raiju „Rushes target"; Dragonfire Dive und Stardiver sind Sprungangriffe ohne die Rückkehr, die Jump und High Jump nennen (Schluss aus dem Wirktext; WrathCombo führt beide als Bewegung, Status: anderes Werkzeug; die Enum-Dokumentation nennt Dragonfire Dive als Beispiel). **Umgesetzt:** `HostileMovingAttack` für diese drei. Fleeting Raiju bewegt nicht (3 Yalm). Wirkung nur mit eingeschalteter Option (ab Werk aus): Der Sprung unterbleibt, wenn sein Weg eine BMR-Gefahrenzone kreuzt; bei 0 Yalm am Ziel wie jeder Gapcloser frei. Rückwärtssprünge mit Angriff offen in `TODO.md`.
+- **Aquapolis:** Schatzkarten-Dungeons gehören zu den Sonderinhalten; erfasst, bis er sie nennt.
+- **Erst-Download:** unverändert technische Schuld; die Wartezeit bei blockiertem GitHub (bis 100 s je Start) wiegt schwerer, seit eine leere Flächenliste rot angezeigt wird.
+- **Heilverbots-Prüfung achtfach:** Upstream-Kopien ohne Verhaltensunterschied, bleibt.
+
+**Prüfgrad:** statisch, Job-Guide, Prüfskripte; Compile über die CI.
+
+### A175 · Schadenstabelle nach vier Instanzen weiter leer: Zählung am Eingang des Handlers (27.09.2026)
+
+**Gemeldet:** frisch kompiliert, vier Instanzen mit Flächenschaden, Datei `{}`; geschrieben um 12:04 (vor den Instanzen) und beim Beenden um 13:00, beide Male leer. Meine Vermutung einer veralteten lokalen Flächenliste hat er als falsch zurückgewiesen; seine hochgeladene Liste bestätigt ihn (850 Einträge, identisch mit der gelieferten). Die Offsets des Effektkopfs in ECommons 3.2.1.20 stimmen mit den aktuellen ClientStructs überein (aus beiden Assemblys gelesen) — die Breite des Feldes wurde dabei nicht geprüft; widerrufen in C97.
+
+- *Research:* Die Raidwides der Dawntrail-Dungeons (Punutiy Press 36492, High Wind 36341, Electrowave 36571, Strident Shriek 36519, Disruption 36765) castet laut BossModReborn-Modulen der Boss selbst mit 5 s Wirkzeit; laut `v2.xivapi.com` sind sie Waffenfertigkeit oder Zauber mit `Cast100ms` 50; alle stehen in der gelieferten Liste. Einige lösen Helfer aus (Frosting Fracas, Ashlayer) — die bleiben ungemessen, erklären aber keine völlig leere Tabelle. Die Ziel-Id im Effektsatz ist die `GameObjectId` (ECommons `TargetEffect`, `SearchById`), der Abgleich mit der Gruppe also richtig. Die Schreibvorgänge passen zu Entladen beim Neuladen nach dem Kompilieren und beim Beenden; im Speicher stand nichts.
+- *Nicht bestimmbar von hier:* ob der Hook liefert und ob der Handler vor der Messung abbricht. Die Zählung „Casts this session" beginnt erst mit einem Gegnercast am Spieler und kann beides nicht unterscheiden.
+- *Umgesetzt:* „Effect handler" im Diagnose- und Listenfenster: empfangene Sätze, davon von Gegnern, davon mit Schaden am Spieler, Fehler samt erstem Fehlertext; Fehler rot.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A176 · Protokolldatei für die Schadensmessung, auf seine Vorgabe (27.09.2026)
+
+**Seine Vorgabe:** „schreib debug-kommentare in die ausgabedatei, die ich dir nach einer session hochladen kann" — „mit den unterschiedlichen stellen, bis wo die routinen kommen". Anlass: Er stellte fest, dass die Messung falsch ist; sie liefert in seinem Spiel keinen Wert, und der Code ist von mir.
+
+- *Erneut geprüft, ohne Befund:* ECommons 3.2.1.20 (`55b7f52`) — Hook, Signatur und Weiterreichen identisch mit dem gepflegten Stand; Effektkopf-Offsets identisch mit den aktuellen ClientStructs; Spieler steht in der Gruppenliste (Objekttabelle); Aufbau des Handlers wie Upstream.
+- *Umgesetzt:* `AreaMeasurementTrace` schreibt `AreaMeasurementTrace.log`, je Sitzung neu: Kopf mit Version und Zuständen; je Gegneraktion mit Wirkzeit oder Mehrfachtreffer die Stufe, an der sie hielt (STOP 1–5) oder STORED; jedes Speichern; jeder Fehler mit Stack; Zählerstände beim Entladen; Abschluss nach dem letzten Speichern.
+- *Grenze:* Liefert der Hook gar nichts, steht nach dem Kopf nur „effect handler hooked" und am Ende „0 sets" — auch das ist eine Antwort.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A177 · Ursache der leeren Schadenstabelle: Die Aktionsart wurde vier Bytes breit gelesen (27.09.2026)
+
+**Belegt an seinem Protokoll** (`AreaMeasurementTrace.log`, 18:49–20:05, Version `7.5.6.11+wsh1`, Liste 850, 15 804 Sätze, 1 583 von Gegnern, 0 Fehler): 237 Zeilen „STOP 2: not a regular action with a cast time" bei Casts mit Wirkzeit und Kategorie Zauber oder Waffenfertigkeit, Aktionsart angezeigt als 65537, 131073, 262145 … Zerlegt: in allen 422 Zeilen niedriges Byte 1 (`Action`), drittes Byte gleich der Zahl der getroffenen Ziele; Zeilen mit „Action" hatten null Ziele.
+
+- *Mechanismus:* ECommons `EffectHeader` führt `[FieldOffset(31)] public ActionType ActionType` mit dem ClientStructs-Enum; dessen `value__` ist `uint` (Signatur `06 09`, aus `FFXIVClientStructs.dll` gelesen). ClientStructs' eigenes `ActionEffectHandler.Header` hat an 31 ein Byte, an 32 `Flags`, an 33 `NumTargets`. Gelesen wurden vier Bytes.
+- *Wirkung im Kampf:* Kein Raidwide wurde je bewertet; „unbewertet" heißt Verhalten wie vor der Messung. Ebenso nahm die Aufnahme nie eine neue Id auf — auch bei Upstream, dessen Code denselben Vergleich führt.
+- *Behebung:* `Watcher.ActionTypeOf` liest das niedrige Byte; alle Vergleiche und Anzeigen im Handler laufen darüber. `ActionTimelineManager` reicht das Feld an eine Methode weiter, die es nicht liest — nicht betroffen.
+- *Gegenprobe am Protokoll:* Mit der Korrektur passieren die gelisteten Casts Sinnesberaubung (43797), Medizinstreuung (43798), Frustration (25672), Schlag des Tartarus (25685), Rückbesinnung (43825), Neuroschuppen (5573), Blitzga Forte (25690), Entracte (25701), Vitaka (5600).
+- *Falsifikation:* **Kein Defekt?** Widerlegt durch die Zerlegung, 422 von 422 Zeilen. **Option falsch?** Die Aktionsart passt in ein Byte (Spielfeld ein Byte); der Cast auf `byte` schneidet genau die Nachbarfelder ab. **Ausgeliefert, nichts ändert sich?** Möglich, wenn eine weitere Stufe hält; das Protokoll bleibt dafür bis zum ersten STORED.
+
+**Prüfgrad:** Laufzeitdaten (sein Protokoll), statisch, Prüfskripte; Compile über die CI.
+
+### A178 · Sanctus kam zurück, während die Gegner noch verlangsamt waren (27.09.2026)
+
+**Gemeldet:** „nach abtausch wird holy wie gewünscht ausgesetzt, bis alle gegner gemach haben. dann setzt holy aber wieder ein. das bitte gegen meine aussagen und dem konzept prüfen, im loop." Gemach = Slow (Status 9, deutscher Name aus `v2.xivapi.com`).
+
+- *Research:* `ShouldHoldHolyWhilePackSlowed` hält nur, solange `DiaPvE`, `AeroIiPvE` oder `AeroPvE` ein Ziel haben (letzte Zeile). Eingeführt mit der Regel (`2ebd54728`, 12.09.), übernommen aus der Streckung (A19/A20), wo genau ein Einschub genügt. Begründet nur im Code-Kommentar („a 15s slow does not translate into 15s without Holy"), weder von ihm noch im Konzeptabschnitt der Regel, der „solange" sagt. Die übrigen Freigaben — keine Betäubung mehr möglich, zu wenige verlangsamt, jemand fällt, Deckel — hängen nicht an der Verlangsamung aller Gegner; der Ersatzvorbehalt ist die einzige, die mit der Zeit des Haltens von selbst eintritt: Er verbraucht sich durch die DoTs, die das Halten selbst legt.
+- *Optionen:* Nullvariante; Vorbehalt streichen (DoTs, dann Glare); Vorbehalt behalten und nur für die Streckung gelten lassen (identisch mit Streichen, da die Streckung ihren eigenen führt).
+- *Abwägung und Falsifikation:* **Kein Defekt?** Der Code gibt Sanctus frei, während seine Bedingung gilt — Widerspruch zu Regel und Konzept. **Option falsch?** Glare statt Sanctus kostet ab drei Gegnern Schaden je GCD; das ist der Preis seiner Regel, nicht eine neue Abwägung. **Ausgeliefert, nichts ändert sich?** Liegt die Freigabe an einer anderen Schranke, bleibt es; deshalb nennt das Diagnosefenster jetzt den Grund der letzten Entscheidung. Grenze der Anzeige: Greift zuvor die Streckung oder der Barrierenhalt, wird diese Regel im selben GCD nicht ausgewertet, die Zeile zeigt dann den vorigen Stand.
+- *Umgesetzt:* Vorbehalt entfernt; `DisplayRotationStatus` im Weißmagier mit dem Grund.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI. Keine Laufzeitbeobachtung.
+
+### A179 · Minderungssumme: Werte am Job-Guide, Confession ergänzt, Schadensart „physisch" berichtigt (28.09.2026)
+
+- *Research:* Job-Guide (27.09.): Troubadour, Tactician, Shield Samba „Reduces damage taken … by 15%"; Confession „reducing damage taken by 10%"; Temperance, Kerachole, Holos, Collective Unconscious, Desperate Measures 10 %; Dark Missionary und Heart of Light 5 % physisch / 10 % magisch; Magick Barrier 10 % magisch; Fey Illumination 5 % magisch; Passage of Arms 85 %; Sacred Soil 90 %. Im Code stimmten alle bis auf die drei 15-%-Aktionen (dort 10 %, ohne Quelle); Confession fehlte. `AttackType`-Blatt über `v2.xivapi.com`: 1 斬 slashing, 2 突 piercing, 3 打 blunt, 4 射 shot, 5 魔法 magic, 6 ブレス breath, 7 音波 sound, 8 limit break (nur japanische Namen im Blatt) — `IsPhysicalDamageIncoming` prüfte Zeile 7 (sound) als physisch.
+- *Wirkung im Kampf:* keine in den Standardrotationen — die Summe liest nur eine Anzeige, `IsPhysicalDamageIncoming` hat keinen Leser. Betroffen sind abgeleitete Rotationen (R), die beide öffentlich lesen: Sie hielten einen Treffer unter Troubadour für 5 Punkte härter, unter Confession für 10 Punkte härter, und einen Angriff der Art sound für physisch.
+- *Umgesetzt:* 15 % für die drei (feste Zahl mit Beleg, Ausnahme A179); Confession über `DefensiveValues` (Wirktext 7433, keine eigene Zahl); physisch = Zeilen 1–4 (Ausnahme A179, Zeilen eines Spielblatts).
+
+**Prüfgrad:** Job-Guide und Spieldaten, statisch, Prüfskripte; Compile über die CI.
+
+### A180 · Notfallheilung nur bei Gefahr: auf alle Heiler übertragen (28.09.2026)
+
+**Seine Vorgabe (Konzept 07):** „falls gefahr bevorsteht, z.b. goßer heftiger aoe ist diese notfallmaßnahme gerechtfertigt. wenn der spieler aber keine aggro hat, kein aoe ansteht, oder kein sonstiger schaden ansteht, würde doch hot oder kleinere heals bzw. beides reichen". Bisher nur am Weißmagier umgesetzt (A94), die übrigen Heiler waren „nicht im Profil" — überholt, sein Profil umfasst alle Kampfjobs.
+
+- *Research:* Heilpfade ohne Gefahrenprüfung: Astrologe Essential Dignity (drei Ladungsstufen, `HealSingleAbility`), Gelehrter Excogitation (`HealSingleAbility`, mit und ohne Recitation), Weiser Taurochole (`HealSingleAbility`). Die Verteidigungspfade derselben Aktionen laufen nur bei angeforderter Abwehr.
+- *Umgesetzt:* `IsUnderThreat` vor jeder dieser Heilungen, je Heiler eine Einstellung wie `BenedictionNeedsThreat`, ab Werk an. Essential Dignity nur für die letzte Ladung.
+- *Falsifikation:* **Kein Defekt?** Die Vorgabe spricht von der Notfallmaßnahme, nicht von Benediction; der Grund (die teuerste Antwort fehlt beim nächsten Tankschaden) gilt für jede dieser Aktionen. **Option falsch?** Ein Ziel ohne Gefahr bekommt die kleineren Heilungen; übergangen wird es nicht. Ein Tank mit Aggro ist immer „in Gefahr", also unverändert versorgt. **Ausgeliefert, nichts ändert sich?** Mit ausgeschalteter Einstellung das alte Verhalten.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A181 · Beschwörer: Addle nur zusammen mit Radiant Aegis (28.09.2026)
+
+**Gemeldet:** „es scheint, als ob addle immer zusammen mit schimmerschild gecasted wird beim beschwörer. ich habe addle alleine bislang nicht gesehen, wenn schimmerschild nicht verfügbar war beim aoe. per loop nachprüfen und ggfls. korrigieren".
+
+- *Research:* `SMN_Reborn.DefenseAreaAbility`/`DefenseSingleAbility`: Radiant Aegis, dann `TryAddleBeforeDamage || AddlePvE.CanUse` (Addle dort seit dem Fork, `8edd696`; Upstream nur Radiant Aegis). Keine allgemeine Zurückhaltung auf Addle beim Beschwörer; das Ziel-Override `BeAttacked` fällt im Flächenpfad auf alle Gegner zurück; die Verteidigung steht im Dispatch vor den Angriffseinschüben. Die Flagge kommt für gelistete Casts über `AreaCastIsWorthMitigating` — unbewertet heißt „lohnt". Job-Guide: Radiant Aegis zwei Ladungen, 60 s, Barriere 20 % der eigenen Maximalgesundheit, nur für sich; Addle 90 s, 10 % magisch, 5 % physisch, am Gegner.
+- *Mechanismus:* Mit leerer Tabelle (A177) war jeder gelistete Flächencast Anlass für beide. Nach dem ersten Paar lädt Radiant Aegis nach, Addle nicht; ist Radiant Aegis leer, ist Addle meist noch gesperrt. Das deckt seine Beobachtung vollständig.
+- *Falsifikation:* **Kein Defekt?** Die Paarung selbst ist richtig — die beiden schützen verschiedene Personen. **Option „Addle nur ohne Radiant Aegis"?** Verworfen: Radiant Aegis schützt nur den Beschwörer, die Gruppe verlöre ihren Schutz. **Ausgeliefert, nichts ändert sich?** Die Behebung ist A177; ab laufender Messung fallen klein bewertete Casts heraus. Mit ausgeschaltetem `SkipMitigationForSmallAreaCasts` bleibt es beim heutigen Verhalten — das ist dann seine Einstellung.
+- *Umgesetzt:* keine Codeänderung; Konzept 13 fortgeschrieben.
+
+**Prüfgrad:** statisch, Job-Guide; keine Laufzeitbeobachtung.
+
+### A182 · Flächenheilung nach Vorausschau, wie der Einstellungstext es sagt (28.09.2026)
+
+- *Research:* `StateUpdater.ShouldHealArea` verglich `PartyMembersAverHP`/`LowestPartyMembersAverHP` (Stand) mit den Flächenschwellen. Der Text von „Heal ahead of incoming damage" bindet: „Every healing threshold and the heal target choice read the health a member is heading for". Offen seit A93 mit der Bedingung „nach Beurteilung der Einzelheilung im Spiel" — die Textbindung macht es zum Defekt, nicht zur Abwägung.
+- *Optionen:* die bestehenden Werte umstellen (trifft 83 Leser, fremde Rotationen darunter); eigene Vorausschau-Werte nur für die Flächenschwellen.
+- *Umgesetzt:* `DataCenter.ComputeForecastAreaStats` (je Mitglied Stand × `GetForecastSurvivingShare`, Mittel und Streuung, über die vier niedrigsten bei größerer Gruppe; eigener Frame-Cache), gelesen allein von `ShouldHealArea`. Die Vier als `LightPartySize` mit dem Beleg aus A171.
+- *Falsifikation:* **Kein Defekt?** Der Text sagt „every healing threshold". **Option falsch?** Mit der Einstellung aus ist die Vorausschau 1 — Werte identisch mit den bisherigen, also kein Verhaltenswechsel für wer sie nicht nutzt. Die Streuungsbedingung (`HealthDifference`) liest ebenfalls die vorausberechneten Werte, damit beide Hälften derselben Frage dieselbe Zeit meinen. **Ausgeliefert, nichts ändert sich?** Bei stabiler Gruppe kein Unterschied — gewollt.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A183 · Heilzielwahl: Gefährdungsklassen 2 und 3 gebaut (28.09.2026)
+
+- *Grundlage:* seine Triage (Konzept 07): wer am ehesten stirbt zuerst, bei gleicher Gefährdung Heiler vor Tank vor Schadensausteiler. Klasse 1 seit A89. Der Entwurf der Klassen 2 und 3 stand vollständig im Konzept; die dort festgehaltene Entscheidung „hinter eine Einstellung mit beibehaltener Voreinstellung" gilt weiter.
+- *Umgesetzt:* `HealTargetByDanger` (aus). Eingeschaltet ersetzt `DangerClassTarget` die beiden Rollen-Kurzschlüsse und die letzte Wahl: Klasse 2 = Heiler oder Tank unter seiner Rollenschwelle **und** in `TargetedPartyMembers`, niedrigste vorausberechnete Gesundheit, Heiler vor Tank bei Gleichstand; Klasse 3 = übrige Ungeschützte, bei angekündigtem Flächenschaden nach `GetForecastEffectiveHp`, sonst nach Prozentsatz, Rolle bei Gleichstand; danach die Geschützten; die Schlussprüfung „überhaupt verletzt" bleibt.
+- *Falsifikation:* **Kein Defekt?** Heute überholt der Tank bei 44 % einen Schadensausteiler bei 20 %, auch wenn der Tank gar nicht angegriffen wird — gegen die Vorgabe. **Option falsch?** Ein Tank ohne Aggro fällt in Klasse 3 und wird nach Prozentsatz eingereiht, verliert also nur den Vorrang, nicht die Heilung. **Ausgeliefert, nichts ändert sich?** Ab Werk aus.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A184 · V1: Vorab-Barriere und Vorab-HoT als eine Heiler-Regel; Weiser neu (28.09.2026)
+
+- *Research:* Weißmagier (`TrySustainRegenOnTank`) und Astrologe (`TrySustainAspectedBeneficOnTank`) trugen dieselbe Regel als Klon. Weiser: Eukrasian Diagnosis nur unter der Einzelabwehr-Flagge, nie für den Pull. Gelehrter: kein Sofortschild. Wirktexte (Job-Guide, abgerufen 28.09.2026): Eukrasia sofort, setzt 1 s auf alle GCDs; Eukrasian Diagnosis sofort, 800 MP, Barriere 180 % der Heilung, 30 s, nicht stapelbar mit Eukrasian Prognosis und Galvanize; Fey Union endet bei jeder anderen Feenaktion und außerhalb 30 y der Fee.
+- *Optionen:* Klon für den Weisen; gemeinsame Regel auf Stufe „Heiler"; Nullvariante.
+- *Umgesetzt:* `TryPullUpkeepOnTank` (gemeinsam), Weißmagier und Astrologe darauf umgestellt (Verhalten gleich, dazu die MP-Reserve für die Wiederbelebung), Weiser `UsePreEukrasianDiagnosis`. Die Zählvorgaben 2/3 und die Bereiche als Ausnahme: „gleiche Bedingungen wie beim Weißmagier-Regen" ist seine Vorgabe, und wie viele Gegner einen Pull ausmachen, steht in keinem Blatt.
+- *Falsifikation:* **Kein Defekt?** Seine Vorgabe verlangt die Barriere; der Weise hatte keine. **Option falsch?** Die gemeinsame Regel ändert Weißmagier und Astrologe nur unterhalb von Wiederbelebungs- plus Aktionskosten an MP. **Ausgeliefert, nichts ändert sich — oder zu viel?** Bricht die Barriere jeden GCD, verdrängt sie jede Dosis bis zur MP-Reserve; das ist die gebaute Lesart von „Ablauf/Verfall" und zur Entscheidung vorgelegt. Eukrasia außerhalb des Kampfs ohne Gegner in Reichweite hätte sich mit der bestehenden Bereinigung abgewechselt — ausgeschlossen.
+- *Betroffene:* Autoren abgeleiteter Rotationen erhalten `TryPullUpkeepOnTank` als geschützte Methode (Erweiterung, kein Bruch).
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI (in dieser Umgebung kein .NET).
+
+### A185 · Schadenstabelle im Spiel belegt; Protokolldatei entfernt (28.09.2026)
+
+- *Beleg:* seine Dateien vom 28.09.2026. `HostileCastingAreaPotential.json` hält sechs Werte (48896 Augen auf 53 %, 48920 Müllentsorger 48 %, 36739 Immersion 32 %, 36727 Störender Schweif 22 %, 36448 Blitzender Boden 32 %, 48100 Fluchstimme 64 %; Namen über xivapi), alle in der Flächenliste. Das Protokoll derselben Sitzung (12:07–13:02, Version `7.5.6.11+wsh1`): Kopf „rated 6 … loaded from file", am Ende „6 rated action(s) written and read back", 0 Fehler. Messung, Speichern und Laden sind damit Ende zu Ende belegt — die sechs Werte entstehen nur über die Messstelle.
+- *Die Sitzung selbst:* Gruppe mit acht Mitgliedern, 445 Protokollzeilen, 267 × STOP 1 (unsichtbare Quelle, höchstens 3 von 8 getroffen), 178 × STOP 4 (nicht in der Liste, höchstens 3 von 8), kein gelisteter Cast. Kein Gruppentreffer, also nichts zu messen; keine der gestoppten Ids steht in der Liste. Richtig verworfen.
+- *Umgesetzt:* Auflösungsbedingung der technischen Schuld erfüllt; `AreaMeasurementTrace`, alle Aufrufe, `TraceHead`, `CountPartyHits` und der Absatz in Konzept 13 entfernt. Die Zählung je Grund bleibt (Bestand, keine neue Zeile).
+
+**Prüfgrad:** Laufzeitbeobachtung an seinen Dateien; Rückbau statisch, Compile über die CI.
+
+### A186 · V5: Tanzpartner bei Tod und Schwäche neu wählen (28.09.2026)
+
+- *Research:* `DNC_Reborn.UseClosedPosition` wählte nur ohne Closed Position; ein toter oder geschwächter Partner blieb für den Rest des Kampfs. `FindDancePartner` schließt Tote, Weakness, Brink of Death und Damage Down schon aus. Wirktexte (Job-Guide, 28.09.2026): Closed Position 30 s, „Effect ends upon reuse"; Ending 1 s, „Ends dance with your partner".
+- *Umgesetzt:* `DancerRotation.DancePartnerNeedsChange(namedPartner)` und Ending vor Closed Position in `DNC_Reborn.EmergencyAbility`. Regeln siehe Konzept 15, „V5: Stand der Umsetzung".
+- *Falsifikation:* **Kein Defekt?** Seine Vorgabe verlangt es; heute bleibt der tote Partner. **Option falsch?** Ein Wechsel ohne bereites Closed Position ließe den Tänzer bis zu 30 s ohne Partner — ausgeschlossen, außer beim Tod, wo die Buffs ohnehin verloren sind. Gleichrangige Mitglieder lösen keinen Wechsel aus (strenger Vergleich), also kein Hin und Her. **Ausgeliefert, nichts ändert sich?** Entfernt das Spiel den Partnerstatus beim Tod, greift der Zweig „kein Partner gefunden"; bleibt er, der Zweig „tot". Ohne gepflegte Priorität greifen nur Tod und Schwäche.
+- *Betroffene:* Autoren abgeleiteter Tänzer-Rotationen erhalten die geschützte Methode; fremde Rotationen ändern sich nicht.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A187 · V6: Kerachole über Sacred Soil — geprüft, nicht gebaut (28.09.2026)
+
+- *Auftrag:* seine Angabe zu V6: „im konzept klären: im vollen loop antithese aufstellen und versuchen zu widerlegen."
+- *Research:* Wirktexte Kerachole, Sacred Soil, Addersgall (Job-Guide, 28.09.2026); `SGE_Reborn` legt Kerachole in Flächenabwehr, Einzelabwehr und Flächenheilung, ohne fremde Minderung zu lesen.
+- *Optionen:* Rückhaltung, solange Sacred Soil liegt; Rückhaltung nur, wenn jedes Mitglied in Reichweite den Sacred-Soil-Status trägt; Nullvariante.
+- *Falsifikation der These:* Die Fläche deckt andere Mitglieder als Kerachole; das Warten kostet Addersgall-Überlauf, Regen und MP; der Nutzen hängt am Zeitpunkt des anderen Heilers. Die zweite Option heilt den ersten Einwand, nicht die beiden anderen. Was die These richtig sieht, beantwortet schon die Größenschranke (Konzept 13).
+- *Ergebnis:* Nullvariante, begründet in Konzept 15, „V6: Ergebnis".
+
+**Prüfgrad:** statisch (Wirktexte, Code).
+
+### A188 · V4: Meditate erst nach Stillstand — geprüft, nicht gebaut (28.09.2026)
+
+- *Auftrag:* seine Angabe zu V4: Antithese aufstellen und widerlegen, den Zeitraum bewerten, ab dem es lohnt, Positionals und True North berücksichtigen, oder „meditate nur ausserhalb kampf?".
+- *Research:* Wirktext Meditate (Job-Guide, 28.09.2026); `SAM_Reborn.UseMeditateInPause` (nur `InCombatPause`), Basiseinstellung `!IsMoving`. Kenki je Takt: weder Wirktext noch Status 1231 (xivapi) — unbelegt.
+- *Falsifikation der These:* In der Pause kostet die GCD-Sperre nichts; jeder Takt ist Gewinn; eine Wartezeit verschiebt ihn und wäre eine Zahl ohne Grundlage. Positionals und True North fallen nie in eine Pause.
+- *Ergebnis:* Nullvariante, begründet in Konzept 15, „V4: Ergebnis".
+
+**Prüfgrad:** statisch (Wirktext, Code).
+
+### A189 · V2: Tankbuster-Marker breiter erkannt, Negativliste im Spiel gelernt (28.09.2026)
+
+- *Vorgabe:* „negativliste ingame aufbauen, wenn ein vfx nachträglich als tankbuster falsifiziert wurde. (sicher speichern, nicht das gleiche debakel wie mit schadenstabelle bei aoe)".
+- *Research:* `DataCenter.TankbusterPaths` (Präfixvergleich, `StartsWith`), Leser `IsCastingTankVfx`, `IsTankbusterVfxOnPlayer`; VFX-Warteschlange mit Lebensdauer aus `MajorUpdater.RSRCleanupUpdate`; Schutzwege der Speicher (A170–A177). WrathCombo-Liste (`VFX.cs`) nur gelesen.
+- *Optionen:* Negativliste mit Zählschwelle; mit Selbstkorrektur ohne Schwelle; Präfix ohne Liste; Nullvariante. Gewählt: Selbstkorrektur — eine Schwelle wäre eine Zahl ohne Grundlage, und die Korrektur in beide Richtungen macht sie unnötig.
+- *Umgesetzt:* Präfixe, zwei Sammelmarker, `TankbusterMarkerWatch` (Beobachtung, Urteil, Speichern), Treffermeldung im Effekt-Handler vor dem Quellenfilter, Überspringen in beiden Lesern; Prüfskript `check_config_store_roundtrip.py` erkennt jetzt auch eine gespeicherte Kopie (der `nameof` benennt die Datei).
+- *Falsifikation:* **Kein Defekt?** Seine Vorgabe verlangt die Liste; ohne sie macht der Präfix jeden falschen Tank-Marker zum Dauerauslöser. **Option falsch?** Ein Tank nimmt im Kampf ständig Fähigkeitstreffer; das Fenster ist kurz (Markerdauer oder laufender Zauber plus ein GCD), und auch dort irrt es nur zur sicheren Seite. **Ausgeliefert, nichts ändert sich?** Ohne falsche Marker bleibt die Liste leer, und die breitere Erkennung wirkt allein. **Was geschieht, wenn der Treffer nach dem Fenster fällt?** Ein falscher Eintrag, beim nächsten Mal korrigiert — genannt als Grenze im Konzept.
+- *Betroffene:* alle Rollen, deren Abwehr auf Tankbuster-Marker reagiert; fremde Rotationen lesen dieselben Flaggen.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A190 · V3: Kampfdaten aus WrathCombo — was im Spiel ableitbar ist (28.09.2026)
+
+- *Auftrag:* „schauen, ob die infos aus wrath auch ingame verfügbar wären (ohne wrath, nur aus den normal vorhandenen daten)".
+- *Research:* WrathCombo `Data/BattleData/*.cs` (nur gelesen): je Gebiet Tankbuster-, Raidwide- und Ignorier-Ids, Pausen- und Unverwundbarkeitsregeln. Abgleich mit `Resources/HostileCastingArea.json` (850) und `HostileCastingTank.json` (31).
+- *Ergebnis:* Raidwides leitet RSR schon aus dem Treffer ab; Tankbuster und Ignorierfälle sind teilweise ableitbar und hängen an der offenen Unterscheidung „Raidwide oder ausweichbare Fläche"; Pausen und Unverwundbarkeit je Begegnung sind Skripte, nicht ableitbar. Keine Übernahme. Konzept 15, „V3: Ergebnis".
+
+**Prüfgrad:** statisch (Code beider Projekte, Listenabgleich).
+
+### A191 · Upstream-Sync 28.09.2026 ausgewertet; Heilschwellen der Jobs auf die Vorausschau (28.09.2026)
+
+- *Sync:* fünf Upstream-Commits in `main` und den Zweig gemergt. `c3fac720b`: (a) der Selbst-Kurzschluss der Heilzielwahl gibt den Spieler nur zurück, wenn die Aktion ihn überhaupt treffen kann; (b) Krieger: Nascent Flash aus der GCD- in die Fähigkeitsheilung verlegt, mit Zielstrategie (niedrigste Gesundheit, Heiler zuerst, nur Heiler). Drei Statuslisten-Einträge (`InvincibleStatus` 5145, 5434; `NoCastingStatus` 5546).
+- *Konflikt:* der Selbst-Kurzschluss in `GeneralHealTarget`, im Zweig und in `main`. Aufgelöst als Vereinigung: die zwei Fork-Prüfungen (heilungsunwirksamer Status, Living-Dead-Rückhaltung) und die Vorausschau bleiben, die Upstream-Prüfung „kann die Aktion den Spieler treffen" kommt dazu.
+- *Wirkung im Kampf:* (a) Heilungen, die nur andere treffen, fielen bei niedriger eigener Gesundheit nie — jetzt schon. (b) Der Krieger heilt mit Nascent Flash andere Gruppenmitglieder. **Wechselwirkung mit Fork-Regeln:** Nascent Flash teilt die Abklingzeit mit Bloodwhetting (Job-Guide, 28.09.2026), und die Heilfähigkeiten laufen im Dispatch vor der Einzelabwehr. Ein angekündigter Tankbuster auf den Krieger kann so ohne Bloodwhetting eintreffen, weil ein Mitglied unter 60 % die Abklingzeit bekommen hat. Richtungsentscheidung (eigene Stufe 1 gegen fremde Heilung, Konzept 09 gegen Konzept 07), erfasst in `TODO.md`.
+- *Befund aus der Auswertung, eine Klasse:* Upstreams neue Schwelle las `GetHealthRatio()`; der Text von „Heal ahead of incoming damage" bindet „Every healing threshold". Erhebung aller Standardrotationen: 31 Heilschwellen lasen den Stand. Alle auf `GetForecastHealthRatio()` umgestellt (öffentlich gemacht, damit Rotationsautoren sie nutzen können); mit ausgeschalteter Einstellung identisch. Abwehrschwellen bleiben. Duty- und PvP-Rotationen sowie `ExtraRotations` nicht angefasst (außerhalb des Profils bzw. fremd).
+- *Prüfmittel:* `check_heal_threshold_forecast.py` mit Selbsttest; gegen den Stand vor der Umstellung gemessen: 31 Funde, danach 0. In der CI.
+- *Falsifikation:* **Kein Defekt?** Der Einstellungstext sagt „every". **Option falsch?** Ausgeschaltet exakt gleich; eingeschaltet fällt eine Jobheilung bei schnell fallender Gesundheit etwa einen GCD früher — wie die zentralen Schwellen seit A93. **Ausgeliefert, nichts ändert sich?** Mit der Einstellung aus (ab Werk) gewollt.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A192 · Flächenabwehr durch eine Einzelzielaktion in der Flächenliste (28.09.2026)
+
+- *Anlass:* seine Beobachtung: „ich habe das gefühl, dass schimmerschild bei tankbuster fällt. aber eben nicht bei einem tankbuster auf mich, sondern auf den tank. das wäre nutzlos".
+- *Research:* Alle Wege zu Radiant Aegis (`SMN_Reborn`: Einzel- und Flächenabwehr, BossModReborn-Raidwide, vor der Beschwörung). Einzelabwehr eines Schadensausteilers nur bei `IsHostileCastingTankBusterAtMe` — richtig. Flächenabwehr über `IsHostileCastingArea` → `AreaCastCanReachPlayer`: Effektreichweite 0 geht für jeden durch. Spieldaten der 850 Listeneinträge (xivapi, `CastType`, `Range`, `EffectRange`): eine Einzelzielaktion mit Reichweite, Holy Bladedance (35285).
+- *Optionen:* Eintrag aus der Liste nehmen (die Liste lädt Upstream nach, beim nächsten Zurücksetzen käme er wieder); die Klasse an der Reichweitenprüfung schließen; Nullvariante. Gewählt: die Klasse — eine Einzelzielaktion mit Reichweite erreicht laut Spieldaten nur ihr Ziel, gleich wie sie in die Liste kam.
+- *Umgesetzt:* `AreaCastCanReachPlayer`: `CastType.Targeted` mit `Range > 0` gilt nur, wenn auf den Spieler gewirkt. Alle drei Leser (Flächenabwehr, großer unterbrechbarer Cast, Vorab-Heilung) erben es.
+- *Falsifikation:* **Kein Defekt?** Die Spieldaten sagen ein Ziel. **Option falsch?** Selbstgezielte Einträge (Reichweite 0, etwa Telomania) sind die gruppenweiten Treffer ohne Radius und bleiben unberührt. **Ausgeliefert, nichts ändert sich?** Möglich — wenn seine Beobachtung aus einem der zwei anderen Wege kommt (gelistete Tankbuster-Fläche, BossModReborn-Meldung), die von hier nicht messbar sind; im Konzept 13 genannt.
+
+**Prüfgrad:** statisch (Code, Spieldaten); Compile über die CI. Seine Beobachtung selbst ist nicht nachgemessen.
+
+### A193 · Angriff mit Rücksprung bekommt einen eigenen Bewegungstyp (29.09.2026)
+
+- *Befund (TODO seit A174):* „Use BMR integration to verify safety of movement actions/actions that cause movement for automatic usage" nennt jede Bewegung; Displacement (Rotmagier) und Hissatsu: Yaten (Samurai) greifen an und springen zurück, und kein Bewegungstyp passte — `FixedDistanceMoveBackward` zielt auf den Spieler selbst, `HostileMovingAttack` misst den Weg zum Ziel. Beide wurden nie geprüft.
+- *Umgesetzt:* `SpecialActionType.HostileAttackBackstep`, am Ende angehängt (die Ordinale darüber bleiben, das Enum wird nicht gespeichert). Zielwahl wie `HostileMovingAttack`; die Prüfung misst den Landepunkt `BackstepDistance` hinter dem Spieler, auf der Linie vom Ziel weg, mit `IsFixedDashSafe`. Distanzen aus dem Wirktext („15-yalm backstep", „10-yalm backstep"), als Ausnahme mit diesem Loop geführt: Kein Blatt trägt sie.
+- *Falsifikation:* **Kein Defekt?** Der Einstellungstext nennt jede Bewegung. **Option falsch?** Die Richtung „vom Ziel weg" gilt, weil der Angriff das Ziel ansieht; steht der Spieler auf dem Ziel, gibt es keine Richtung, und die Aktion wird nicht gemessen verweigert, wie die anderen Typen ohne messbares Ziel. **Ausgeliefert, nichts ändert sich?** Displacement fällt nur unter „Use Displacement after Engagement" (ab Werk aus), Yaten nur auf „Move Back"; mit ausgeschalteter Sicherheitsprüfung ändert sich nichts.
+- *Betroffene:* Autoren abgeleiteter Rotationen: neuer Enum-Wert und neue Eigenschaft `BackstepDistance`, beides Erweiterung.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A194 · Abtausch im Pull auf alle Tanks; deutscher Name geklärt (29.09.2026)
+
+- *Befund (TODO):* Arm's Length für seine Verlangsamung wirkte nur der Dunkelritter (A53). Der Eintrag wartete auf „eine Beobachtung beim Dunkelritter, dass die Regel trägt" — eine Spielbestätigung als Aufgabe an ihn, gegen die Definition of Done, und eine Regel an einem Job gegen „Universell zuerst".
+- *Umgesetzt:* `CustomRotation.ArmsLengthSlowsPull(enabled, minimumHostiles)` auf Stufe „Tanks" (Rolle Tank, Gegner in Reichweite, Gruppe nicht schon verlangsamt); `PackSlowed` dorthin verlegt. Dunkelritter nutzt sie mit seiner Barrierenzahl und seiner Barrierenrückhaltung; Paladin, Krieger, Revolverklinge je mit eigener Option (ab Werk aus, wie beim Dunkelritter) und der globalen „Number of hostiles" der Abwehr, jeweils vorn in der Einzelabwehr. Beim Revolverklingen hält die bestehende No-Mercy-Eröffnungsrückhaltung auch Abtausch zurück (Matrix).
+- *Falsifikation:* **Kein Defekt?** Dieselbe Lage bei jedem Tank, eine Regel nur beim Dunkelritter. **Option falsch?** Ab Werk aus, das bisherige Verhalten bleibt; der Nutzen ist belegt am Wirktext (Verlangsamung verzögert Auto-Attacken), nicht gemessen — daher die Option. **Ausgeliefert, nichts ändert sich?** Mit der Option aus gewollt.
+- *Nebenbefund, Namen:* Der deutsche Job-Guide (Paladin, 29.09.2026) nennt Arm's Length **Abtausch** (St. 32, „verhindert fast alle Rückstoß- und Heranzieheffekte") und Reprisal **Reflexion** (St. 22). „Rückstoß" ist das Wort des Spiels für den Effekt; der Eintrag, der es der Aktion zuordnete (C33), ist aus `action_names_de.json` entfernt, die drei Stellen in den Konzepten sind berichtigt.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A195 · Dunkelritter: Nachlauf der Betäubungskette steuert sich selbst (29.09.2026)
+
+- *Befund (TODO):* `GroupStunRunning` hielt die Barriere drei Sekunden über die Lücke zwischen zwei Gruppenbetäubungen („roughly one global cooldown", eine feste Zahl). Zu lang, wo die Kette endet; zu kurz, wo der Betäubende länger wartet. Der Eintrag wartete auf eine Beobachtung im Spiel — gegen die Definition of Done.
+- *Umgesetzt:* anfangs ein GCD des Dunkelritters (`DefaultGCDTotal`), dann die längste im Kampf gemessene Lücke zwischen zwei Gruppenbetäubungen desselben Rudels (mindestens die Hälfte der jetzt Betäubten war es zuvor schon); Messwert je Kampf. Die feste Zahl ist aus Code und `fixed_values.json` entfernt; die Hälfte-Regel als Ausnahme (dieselbe Anteilsregel wie A48).
+- *Falsifikation:* **Kein Defekt?** Die feste Zahl traf beide Fälle nicht. **Option falsch?** Eine Pause zwischen zwei Pulls würde gelernt und hielte die Barriere lange — ausgeschlossen durch „dasselbe Rudel". **Ausgeliefert, nichts ändert sich?** Die erste längere Lücke eines Kampfs lässt die Barriere noch fallen; ab der zweiten nicht mehr. Die Grenze der Selbstkorrektur, genannt im Konzept.
+- *Zweiter Eintrag (Reihenfolge Reprisal vor The Blackest Night):* ebenfalls beobachtungsgebunden; er berührt seine Vorgabe zur Rückhaltung, daher zur Entscheidung vorgelegt statt umgestellt.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A196 · Kuratierte Listen: kein festgeschriebenes Leer nach gescheitertem Download, Neu-Download einer unlesbaren Datei (29.09.2026)
+
+- *Befunde (TODO, zwei Einträge):* (1) Scheiterte der Download beim ersten Start, schrieb `InitOne` die leere Vorgabe als Datei; weil die Datei existiert, lud kein späterer Start neu. Für die Flächenliste: keine Gruppenminderung per Liste, keine Schadensmessung. (2) Eine unlesbare kuratierte Datei wurde beiseitegelegt, dann mit leerer Liste weitergemacht — und die leere Liste beim nächsten Speichern geschrieben.
+- *Aufgelöst, was die Einträge offenließen:* Die Zeitgrenze ist keine neue Zahl, sondern das Ladezeitlimit des Plugins (`InitAsync` reicht es durch); der Reset-Knopf lädt ohne Grenze wie bisher. Der „Merker nie geladen" ist die bestehende Ladebuchführung (`_loadedStores`): Ein gescheiterter Download markiert die Liste nicht als geladen, also schreibt kein Speichern die leere Vorgabe.
+- *Umgesetzt:* lesbare Datei → laden wie bisher; unlesbare kuratierte Datei → beiseitelegen und herunterladen wie eine fehlende; Download gescheitert → leer für diese Sitzung, nichts geschrieben, nicht geladen, nächster Start versucht erneut; gelernte Speicher (ohne Download) unverändert.
+- *Falsifikation:* **Option falsch?** Kosten: Änderungen an einer so leer gestarteten Liste werden in dieser Sitzung nicht gespeichert (Warnung im Log) — gegenüber einer dauerhaft leeren Liste das kleinere Übel. **Ausgeliefert, nichts ändert sich?** Mit funktionierendem Netz gewollt.
+- *Betroffene:* Upstream-Verhalten; als Befund für Upstream geeignet.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A197 · Dunkelritter: Blut für den Burst aufsparen, nach The Balance (29.09.2026)
+
+- *Befund (TODO):* `UseBlood` ohne Leser seit dem Rotationsumbau (`d566eda86`); ihr Inhalt rechnete mit Blutkosten von Living Shadow, die der heutige Wirktext nicht mehr nennt. Bloodspiller und Quietus fielen bei 50 Blut, wann immer möglich. Auflösungsweg des Eintrags: Abgleich mit The Balance, dann verdrahten oder entfernen.
+- *Quellen:* The Balance, Dark Knight Basic Guide (7.5, abgerufen 29.09.2026, Leitfaden): „Use Bloodspiller under raid buffs, or to prevent overcapping on blood"; „entering buffs (when Delirium is pressed) with 70 or less Blood Gauge will ensure that you do not overcap … as high as possible (up to 70)". Job-Guide: Souleater und Stalwart Soul +20 Blut, Delirium gewährt drei Stapel Blood Weapon zu je +10, Bloodspiller und Quietus kosten 50.
+- *Umgesetzt:* `UseBlood` neu: frei ohne Delirium-Stufe, unter Delirium, im Delirium-Status oder im Zwei-Minuten-Fenster; sonst nur über 70 Blut (`BloodPoolLimit`, Ausnahme mit Quelle). Verdrahtet an Quietus und Bloodspiller.
+- *Falsifikation:* **Kein Defekt?** Name und Kommentar belegen die Absicht „Blut für den Burst"; die Verdrahtung fehlte. **Option falsch?** Überlauf: außerhalb des Fensters wird ab 71 ausgegeben, und die höchste Blutgabe je GCD ist +20 — also nie über 90 vor einer Ausgabe; in Delirium mit höchstens 70 plus 30. **Ausgeliefert, nichts ändert sich?** Unterhalb der Delirium-Stufe unverändert.
+- *Nutzen belegt am Leitfaden*, nicht gemessen; keine Option, weil der Leitfaden die Referenz für Rotationen ist (CLAUDE.md, „Quellen").
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A198 · Heilverbots-Prüfung: acht Kopien durch die Hilfsmethode ersetzt (29.09.2026)
+
+- *Befund (TODO):* Scalebound und Shackled Healing standen als wortgleiche Kopie an acht Stellen im Dispatch (Upstream), dazu `StatusHelper.PlayerHealingPunished` (A154, A155).
+- *Umgesetzt:* alle acht rufen `!StatusHelper.PlayerHealingPunished()`. Logisch gleich: `!S && (!H || H && n == 1)` ist `!S && (!H || n == 1)`, die Negation von `S || (H && n != 1)`.
+- *Wirkung im Kampf:* keine; eine künftige Änderung der Regel wirkt an allen neun Stellen zugleich.
+
+**Prüfgrad:** statisch (Umformung), Prüfskripte; Compile über die CI.
+
+### A199 · `DataCenter`: `IsValid()` vor dem nativen Zugriff, wo nur ein `AccessViolationException`-Fang stand (29.09.2026)
+
+- *Befund (TODO):* 17 Fänge von `AccessViolationException` in `DataCenter.cs`. Unter .NET Core erreicht eine Zugriffsverletzung auf freigegebenen Speicher keinen verwalteten Handler; der Fang greift genau im gemeinten Fall nicht. Upstream hat in 7.5.6.3 an anderen Stellen `IsValid()` vor den Zugriff gesetzt.
+- *Offene Vorfrage des Eintrags, geklärt:* Werden die Listen je Rahmen neu erhoben, wäre die Klasse gegenstandslos. Sie werden es nicht zwingend: `MajorUpdater.RSRGateUpdate` überspringt Zyklen, solange `MinUpdatingTime` nicht verstrichen ist, und `PartyMembers` sowie `AllHostileTargets` bleiben dann stehen, während Fenster und Effekt-Hooks weiterlesen. Ein Gegner, der dazwischen verschwindet, liegt noch in der Liste.
+- *Umgesetzt:* an 13 Stellen die Nullprüfung um `IsValid()` ergänzt (Gruppen- und Feindschleifen, `IsHostileCastingBase`); die übrigen Fänge lesen nur Werte der VFX-Warteschlange oder laufen über eine der ergänzten Prüfungen. Die Fänge bleiben — harmlos.
+- *Wirkung im Kampf:* keine, solange nichts verschwindet; sonst wird das Objekt übersprungen statt gelesen.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A200 · Code-Review der Änderungen A184–A199 (29.09.2026)
+
+- *Umfang:* alle C#-Änderungen seit `da4fa660a` (26 Dateien), gelesen gegen Aufrufer, Threads, Verträge und Randfälle.
+- *Befund 1, behoben (A186):* `DancePartnerNeedsChange` suchte den Partner über `CurrentDancePartner`, also nur in `PartyMembers`. Ein Duty-Support-Partner steht dort nur mit der NPC-Gruppenoption; ohne sie galt ein lebender Partner als verloren — Ending, Closed Position auf denselben NPC, wieder Ending, sobald die Abklingzeit es zuließ, im 30-Sekunden-Takt. Jetzt wird der Partner unter allen anvisierbaren Charakteren (`AllTargets`) gesucht; tot oder nicht auffindbar bleibt der Auslöser.
+- *Befund 2, behoben (A189):* `TankbusterMarkerWatch.LongestEnemyCastRemaining` las `IsCasting` ohne `IsValid()` — dieselbe Klasse wie A199.
+- *Geprüft ohne Befund:* Threads der Negativliste (Beobachtung, Treffer und Entscheidung auf dem Spielthread; geschrieben wird eine dort gezogene Kopie); Pull-Pflege (Ziel, MP-Reserve, Galvanize/Eukrasian Prognosis); Rücksprung (Richtung, Distanz, Zielwahl, Enum am Ende); `AreaCastCanReachPlayer` (Typen `CastType`/`Range` aus Lumina); `InitOne` (alle vier Pfade: lesbar, unlesbar kuratiert, unlesbar gelernt, Download gescheitert); Heilschwellen (31 Stellen, Abwehrschwellen unberührt); Abtausch-Regel (Rolle, Zahl, Reihenfolge); Blutregel (Überlauf nach oben begrenzt); Betäubungskette (Pause zwischen Pulls ausgeschlossen); `IsValid()`-Ergänzungen.
+- *Öffentliche Schnittstelle:* nur Erweiterungen (`SpecialActionType.HostileAttackBackstep` am Ende, `ActionSetting.BackstepDistance`, `ObjectHelper.GetForecastHealthRatio` öffentlich, geschützte Methoden `TryPullUpkeepOnTank`, `ArmsLengthSlowsPull`, `PackSlowed`, `DancePartnerNeedsChange`); kein Bruch.
+
+**Prüfgrad:** statisch (Lesen, Prüfskripte); Compile über die CI.
+
+### A201 · Paladin: Intervention auf den anderen Tank fällt wieder (29.09.2026)
+
+- *Neu geprüft, ob Entscheidung:* Der TODO-Eintrag verlangte eine „Richtungsentscheidung". Der Einstellungstext „Use Intervention on CoTank during tankbusters" und die Schwelle „Health threshold for Intervention" versprechen die Aktion; der Code wirkte sie nie. Der Text bindet (CLAUDE.md), also keine Wahl, sondern eine Bauform-Frage.
+- *Ursache:* `TargetStatusNeed` (Tankhaltungen) mit `StatusFromSelf` ab Werk wahr; die Haltung des anderen Tanks stammt nie vom Paladin.
+- *Umgesetzt:* `ModifyInterventionPvE`: `StatusFromSelf = false`. Die Bedarfsprüfung liest die Haltung jeder Herkunft; die Bereitstellungsprüfung (Knight's Resolve, Knight's Benediction, Intervention) liest dasselbe, weil nur Paladine sie vergeben. Einzige Aktion mit dieser Bedingung (erhoben).
+- *Im Kampf:* Mit „Use Intervention on CoTank during tankbusters" an schützt der Paladin den anderen Tank vor dessen Tankbuster; unter 60 % (Schwelle) auch sonst im Einzelabwehrpfad.
+
+### A202 · Tänzer: Improvised Finish wird gewirkt (29.09.2026)
+
+- *Neu geprüft, ob Entscheidung:* Vorgelegt war „sofort abschließen (5 %) oder Stapel aufbauen". Sofort abschließen kostet nichts, was nicht schon verloren war — die nächste Aktion beendete den Tanz — und bringt die Barriere, den Zweck der Aktion: eine Defektbehebung. Das Aufstapeln ist die Verbesserung mit Kosten (je Stapel drei Sekunden ohne Aktion) und bleibt zur Entscheidung.
+- *Umgesetzt:* `DNC_Reborn.EmergencyAbility`: Improvised Finish, sobald der Knopf gewechselt hat.
+- *Quelle:* Job-Guide (Tänzer, 28.09.2026): Barriere 5 % bei 0 Stapeln bis 10 % bei 4, 30 s, 8 y; Improvisation endet mit jeder anderen Aktion.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A203 · Weiser: Addersgall vor dem Überlauf ausgeben; Uhr richtig gelesen (29.09.2026)
+
+- *Neu geprüft, ob Entscheidung:* Vorgelegt war „Verbrauch vor dem Überlauf". Ein Stapel, der bei drei verloren ginge, ist ohne Gegenwert weg; ihn kurz vorher für Druochole auszugeben lässt nach dem Nachwachsen wieder drei für Notfälle stehen und bringt 7 % MP. Kein Zielkonflikt, also keine Entscheidung. The Balance (Sage Basic Guide, 29.09.2026): „use them liberally even if not necessarily needed".
+- *Befund dabei, eine Klasse geprüft:* `SageRotation.AddersgallTime` las `AddersgallTimer` als Restzeit; Dalamud dokumentiert „counts from 0 to 20_000", also verstrichene Zeit. `AddersgallEndAfter` antwortete damit rückwärts (hatte aber keinen Leser). Übrige Gauge-Uhren gegen die Dalamud-Quelle geprüft: Weißmagier-Lilien rechnen bereits `20000 − Timer` (übereinstimmend mit WrathCombo); Barde, Schwarzmagier, Dragoon, Gelehrter lesen Restzeiten laut Dokumentation. Nur der Weise war betroffen.
+- *Umgesetzt:* `AddersgallTimerRaw = (20000 − Timer)/1000` (Ausnahme mit Quellen); `SGE_Reborn.GeneralAbility`: im Kampf bei drei Stapeln und nächstem Stapel innerhalb eines GCD Druochole, auf das Heilziel, sonst auf den Weisen.
+- *Falsifikation:* **Läuft die Uhr bei drei Stapeln weiter?** Keine Quelle sagt es. Läuft sie, fällt Druochole kurz vor dem Verlust; steht sie, wird „innerhalb eines GCD" nie wahr, und nichts wird ausgegeben — in beiden Fällen richtig.
+
+**Prüfgrad:** statisch (Dalamud-, ClientStructs-, WrathCombo-Quelle, Job-Guide); Compile über die CI.
+
+### A204 · Vorschaulauf: Nullprüfungen an den sechs erreichbaren Zielzugriffen (29.09.2026)
+
+- *Neu geprüft, ob Entscheidung:* Vorgelegt war die Richtung der Behebung. Die spürbare Folge — eine Nullreferenz, die `UpdateHealingActions` fängt und die vier Heilanzeigen leert, oder die aus `UpdateDefenseActions` weiterläuft — lässt sich ohne Richtungswahl verhindern. Was bleibt (ein veraltetes Ziel in der Vorschau), ist Anzeige und technische Schuld, keine Entscheidung über das Verhalten im Kampf.
+- *Umgesetzt:* `AST_Reborn` (Essential Dignity ×3, Aspected Benefic), `SCH_Reborn` (Excogitation ×2), `ScholarRotation.DisplayBaseStatus`: `Target.Target?.` bzw. `?? false`; ohne Ziel ist die Bedingung falsch. Im echten Lauf ist das Ziel gesetzt, das Verhalten im Kampf unverändert.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A205 · Flächenabwehr: selbst gemessen, ob ein gelisteter Cast den Spieler erreicht (29.09.2026)
+
+- *Neu geprüft, ob Entscheidung:* Der Eintrag „Aufnahme unterscheidet Raidwide und ausweichbare Fläche nicht" wartete auf eine Spielbeobachtung von ihm — gegen die Definition of Done. Die Frage „erreicht dieser Cast mich?" beantwortet der Kampf selbst.
+- *Umgesetzt:* `DataCenter.AreaCastReachedPlayer` (je Aktion, je Sitzung), geschrieben im Effekt-Handler für gelistete Aktionen bei lebendem Spieler; `IsHostileCastingAOEForMyDefense`, gelesen nur von `StateUpdater.ShouldAddDefenseArea`. Option „Skip area defence for casts that missed you", ab Werk aus — der Nutzen (weniger verschwendete Abwehr) ist nicht gemessen.
+- *Falsifikation:* **Option falsch?** Ein Raidwide trifft jeden Lebenden, also nie „verfehlt"; eine Barriere, die den Treffer schluckt, hinterlässt trotzdem einen Schadenseintrag. Ein in mehrere Effektsätze geteilter Cast könnte einen Satz ohne den Spieler liefern — dann gälte er einmal als verfehlt, bis der nächste Treffer es korrigiert. Ein Cast auf den Spieler zählt immer. **Ausgeliefert, nichts ändert sich?** Mit der Option aus gewollt.
+- *Nebenwirkung vermieden:* Die erste Fassung saß in `AreaCastCanReachPlayer` und hätte auch die Vorab-Heilung der Gruppe verengt; verlegt an den einzigen Leser, den der Optionstext nennt.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A206 · Beschwörer: Searing Light wartet, wenn der nächste GCD eine Wiederbelebung oder Heilung ist (29.09.2026)
+
+- *Neu geprüft, ob Entscheidung:* Offen war „ob der Buff in dieser Lage warten sollte". Beide Regeln des Auftraggebers geben die Antwort: Die Wiederbelebung hat Vorrang (Sicherheit), und Searing Light gehört zu Solar (Konzept 12). Warten erfüllt beide; keine Wahl.
+- *Erhoben, was vor der Beschwörung liegt:* im Dispatch vor `GeneralGCD` die Wiederbelebung (`RaiseGCD`: Resurrection, 8 s Wirkzeit) und die Einzelheilung (`HealSingleGCD`: Physick).
+- *Umgesetzt:* `AttackAbility`: Searing Light nicht, solange `nextGCD` Resurrection oder Physick ist. Gefragt wird, was der nächste GCD **nicht** ist — die dokumentierte Henne-Ei-Falle („ist die Beschwörung der nächste GCD") entsteht damit nicht.
+- *Falsifikation:* **Ausgeliefert, nichts ändert sich?** Ohne Wiederbelebung oder Heilung vor der Beschwörung gewollt. **Option falsch?** Mit Swiftcast (seine Vorgabe: für Wiederbelebungen) ist Resurrection sofort und schiebt die Beschwörung nur um einen GCD; der Buff wartet dann ebenfalls genau einen Platz.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A207 · Offene Spielbestätigungen neu geprüft (29.09.2026)
+
+- *Anlass:* sein Auftrag, alle offenen Entscheidungen erneut zu prüfen; CLAUDE.md: „Keine offene Spielbestätigung als Aufgabe an ihn".
+- *Searing Light bei mehreren Beschwörern:* keine Prognose im Spiel, die Regel liest den Zustand je Zyklus; Grenze (gleichzeitiges Zünden zweier Spieler) benannt. Keine Aufgabe an ihn.
+- *Vorhergesagte Minderung bei zwei Treffern:* selbstbewertend (`ProactiveHoldRecord`); offen nur die Voreinstellung.
+- *Holy-Vorbehalte:* Die vorgesehene Diagnosezeile widerspricht seiner Vorgabe; zwei Vorbehalte lesen Tatsachen, die Streckung ist ein Modell mit Voreinstellung bei ihm.
+- *Außerdem in diesem Durchgang als keine Entscheidung erkannt und gebaut:* Intervention (A201), Improvised Finish (A202), Addersgall (A203), Vorschau-Nullprüfungen (A204), Flächenabwehr nach eigener Messung (A205), Searing Light hinter Wiederbelebung (A206). Als Entscheidung bestätigt: Burst-Sperre von Barde/Pictomancer/Tänzer (Einstellungstext), Passage of Arms (Voreinstellung), Shake It Off und Nascent Flash (Zielkonflikt eigener gegen fremden Schutz), Zielwahl von The Blackest Night/Oblation (Lesart des Einstellungstexts), Reihenfolge Reprisal/The Blackest Night (berührt seine Rückhaltevorgabe), Voreinstellungen der Vorausschau und Heilzielwahl, V1 „Verfall" und Aetherpact, Improvised-Finish-Stapel (Option ja/nein), `SwiftcastBuffer` (Text verspricht, was einen behobenen Defekt neu bauen würde).
+
+**Prüfgrad:** statisch.
+
+### A208 · Flächenabwehr: Reichweite nach der Form des Casts; Protokoll der Abwehrentscheidungen (29.09.2026)
+
+- *Anlass:* seine Meldung nach A192: „tankbuster, auch wenn ich nicht betroffen bin und weit weg stehe, sorgen immer noch beim beschwörer dass schimmerschild unnötig verbraucht wird". A192 hat den Fall nicht geschlossen; A192 und A205 werden mit diesem Eintrag neu geprüft.
+- *Research, alle Wege zu Radiant Aegis:* Einzelabwehr eines Schadensausteilers (Tankbuster-Marker oder gelisteter Tankbuster auf ihn; BossModReborn-Tankbuster nur ohne lebenden Tank), Flächenabwehr (Stack-, Spread- und Mehrfachmarker ohne Abstandsprüfung; gelistete Flächencasts über `AreaCastCanReachPlayer`; großer unterbrechbarer Cast; BossModReborn-Raidwide), `GeneralAbility` und vor einer Beschwörung (BossModReborn-Raidwide). Die Tankbuster- und die Flächenliste überschneiden sich nicht (0 von 31).
+- *Befund, eine Klasse:* `AreaCastCanReachPlayer` maß jede Form vom Wirkenden aus, beide Trefferkreise abgezogen. Ein Kreis auf ein Ziel ist aber um das Ziel zentriert, eine Linie trifft nur in ihrer Breite. Erhoben an der ausgelieferten Liste (xivapi, 29.09.2026): 152 Kreise mit Reichweite, davon 70 auf Spieler gerichtet, 54 Bodenkreise, 26 um den Wirkenden; 5 Linien mit Ziel. Mit einem Boss-Trefferkreis von 10 y erreichte ein 6-y-Kreis um den Tank rechnerisch einen Spieler 16 y vom Bossmittelpunkt, auf der anderen Seite des Bosses.
+- *Belege der Formen:* BossModReborn beschreibt Pyric Blast (25742) als „Boss->players, range 6 circle, stack", Clawful (37693) als „Helper->players, range 5 circle, stack", Heavy Blast Cannon (37345, Spieldaten Breite 8) als „range 36 width 8 rect, line stack" mit halber Breite 4 in `AOEShapeRect` — `XAxisModifier` ist die volle Breite, wie die Linienprüfung des Spielers in `ActionTargetInfo` ihn liest. Blickrichtung `(sin, cos)` der Rotation wie `ObjectHelper.GetFaceVector`.
+- *Optionen:* Nullvariante; Geometrie je Form aus den Spieldaten; A205 ab Werk an; Radiant Aegis an eine eigene Trefferprüfung binden. Die Geometrie behebt einen belegten Defekt aller Leser und aller Jobs („Universell zuerst"), ohne Schalter. A205 ab Werk an wäre eine Voreinstellung (seine Entscheidung) und merkt sich je Aktion, nicht je Stellung: Ein Stack, dem er einmal fernblieb, bliebe beim nächsten Mal ohne Abwehr. Eine eigene Prüfung für Radiant Aegis wiederholte, was die Flagge schon fragt.
+- *Umgesetzt:* Kreis auf ein Ziel um das Ziel gemessen; Linien (`CastType` 4 und 12) als Rechteck zum Ziel oder in Blickrichtung. Bodenkreise, Kegel und Ansturm bleiben beim Abstand zum Wirkenden (Mittelpunkt nur nativ, Winkel in keinem Blatt, Ansturm ohne Effektreichweite). `DefenseTrace.log`: jede Wahl der Abwehrkette mit allen stehenden Quellen, jeder gegnerische Treffer auf ihn. Die Beschreibung liest nur seiteneffektfreie Prädikate: `AreaCastIsWorthMitigating` und `IsHostileCastingLargeArea` schreiben ihre Entscheidung mit und bleiben draußen.
+- *Falsifikation:* **Kein Defekt?** Die Spieldaten und BossModReborn zentrieren diese Kreise auf dem Ziel; vom Wirkenden gemessen ist geometrisch falsch. **Option falsch?** Ein Kreis, der beim Wirken auf das Ziel gelegt und nicht mitgeführt wird, wäre bei einem wegrennenden Ziel an der alten Stelle — solche Casts führt das Spiel als Bodenkreise, die unverändert bleiben. Hitboxen zählen zugunsten des Treffers. **Ausgeliefert, und nichts ändert sich — warum?** Weil seine Quelle eine andere ist: ein Marker, BossModReborn, oder ein Tankbuster, den er gelernt hat und der als Bodenkreis geführt wird. Das zeigt die nächste Protokolldatei; deshalb gehört sie zu dieser Änderung.
+- *Mitgeprüft, A205:* Die Messung merkt sich je Aktion, ob sie ihn zuletzt traf — unabhängig davon, wo er stand. Der Optionstext nennt die Folge („a cast you dodged last time and fail to dodge now is met without them"); ab Werk aus, also kein Eingriff ohne ihn.
+- *Prüfmittel:* `check_fixed_values.py` zählte eine unveränderte Upstream-Zeile als neu, weil git den Abschnitt nach der Änderung anders ausrichtete. Innerhalb eines Abschnitts hebt eine entfernte Zeile jetzt eine gleiche hinzugefügte auf. Das gilt nicht über Abschnitte hinweg, damit verschobene Upstream-Zeilen mit offenem Loop gezählt bleiben. Der Selbsttest deckt beide Fälle ab.
+- *Betroffene:* alle Jobs (Flächenabwehr, Vorab-Heilung); Autoren abgeleiteter Rotationen über `IsHostileCastingArea`.
+
+**Prüfgrad:** statisch (Spieldaten über xivapi, BossModReborn-Quelle); Prüfskripte; Compile über die CI. Welche Quelle in seinen Kämpfen die Abwehr öffnet, ist von hier nicht messbar — dafür das Protokoll.
+
+### A209 · Nachprüfung A184: die Pull-Barriere des Weisen ist ab Werk aus (29.09.2026)
+
+- *Antithese „Änderung schädlich":* belegt. `TryPullUpkeepOnTank` erneuert, sobald der Status fehlt oder bald endet (`WillStatusEndGCD`). Eine gebrochene Barriere fehlt, also wird sie bei jedem Bruch neu gelegt: Eukrasia (1 s) und ein GCD statt Dosis, 800 MP. Genau das hat der Zweig am 05.09.2026 entfernt (5755ad5b8, Konzept 06 §2.1: „Zwei GCDs pro Platzer, den ganzen Pull"). A184 hat diesen Abschnitt nicht gelesen, die Option ab Werk eingeschaltet und im Optionstext „nothing is lost while running" behauptet.
+- *Getroffene Entscheidung:* Konzept 06 §2.1 nennt die Gründe der Entfernung. Seine V1-Vorgabe („regelmäßige erneuerung bei ablauf/verfall solange walltowall läuft") kann sie aufheben oder nur den Ablauf meinen; das weiß nur er. Ohne ihn ändere ich nur, was seine Begründung nicht berührt.
+- *Umgesetzt:* `UsePreEukrasianDiagnosis` ab Werk aus („Option und Beobachtbarkeit": das bisherige Verhalten bleibt Standard). Der Optionstext nennt jetzt die Kosten je Erneuerung. Konzept 06 §2.1 und Konzept 15 sind fortgeschrieben, ebenso Release-Text und `TODO.md`. Die Entscheidung liegt in der gebündelten Vorlage.
+- *Übriger Teil von A184 geprüft:* Weißmagier und Astrologe gleichen der früheren Form bis auf die MP-Reserve für die Wiederbelebung und die Vorausschau der Untergrenze (A191). **Antithese zur Reserve:** Unter Thin Air kostet Raise nichts, die Reserve wäre dann zu hoch. Die Folge ist höchstens ein ausgelassenes Regen, kein Risiko.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A210 · Nachprüfung A182, A183, A191, A198 (29.09.2026)
+
+- *A182, Antithese „mit ausgeschalteter Vorausschau unverändert":* widerlegt für ungültige Gruppenmitglieder. Die Pegelstatistik (`ComputePartyHpStats`) zählt nur gültige Mitglieder und fängt `AccessViolationException`. `ComputeForecastAreaStats` las jedes Mitglied mit Id ohne `IsValid`: Ein Mitglied im Zonenwechsel ging mit veralteten Werten in Mittel und Streuung ein oder brach die Statusberechnung des Frames ab. Behoben mit demselben Filter und demselben Fang. A199 hatte dreizehn solche Stellen ergänzt und diese, einen Tag jünger, übersehen. Übrige Unterschiede (immer sortiert statt erst ab fünf) ändern Mittel und Streuung nicht.
+- *A183, Antithese „Option schädlich":* belegt für Klasse 3 bei angekündigtem Flächencast. Gereiht nach verbleibenden Punkten gewann ein Schadensausteiler bei voller Gesundheit, weil er den kleinsten Pool hat. Die Schlussprüfung „ist er verletzt" lieferte dann kein Ziel, obwohl der Tank bei der Hälfte stand. Behoben: Klasse 3 reiht nur Verletzte. Mit ausgeschalteter Option unverändert (der Zweig wird nicht betreten).
+- *A191, Antithese „der Text der Einstellung bindet":* Der Text sagt „the health a member is heading for by the time a heal started now would land". Die Vorlaufzeit ist für jede Schwelle Rest-GCD plus ein GCD, auch für oGCD-Heilungen, die sofort landen (Benediction, Tetragrammaton, Essential Dignity, Druochole …). Mit eingeschalteter Einstellung fällt eine oGCD-Heilung damit bis zu einen GCD zu früh. Das Modell stammt aus der Flaggenberechnung vor A191 (`ShouldHealSingle` für Fähigkeit und Zauber gleich); A191 hat es auf 31 Schwellen übertragen. Als Defekt erfasst (`TODO.md`), Behebung nach dieser Nachprüfung.
+- *A198:* Die Umformung stimmt (`!S && (!H || n == 1)` gleich `!(S || (H && n != 1))`). Kein Befund.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A211 · Nachprüfung A186, A189, A205: geblockte Treffer, Fensterende, zweiter Tänzer (29.09.2026)
+
+- *A189/A205, Antithese „ein Treffer wird nicht als Treffer erkannt":* belegt, eine Klasse. Der Effekt-Handler zählte nur die Effektart `Damage` (3). Geblockter und parierter Schaden kommt als Art 5 und 6, ein von Unverwundbarkeit abgewiesener Treffer als 7 bzw. teilweise Unverwundbarkeit, Ausweichen als 1 (ECommons `ActionEffectType`, Quelle abgerufen 29.09.2026). **Im Kampf:** Ein unter Sheltron geblockter oder unter Hallowed Ground/Holmgang genommener Tankbuster widerlegte seinen Marker. Beim nächsten Mal bekam derselbe Tankbuster von niemandem eine Abwehr. Ein geblockter Flächentreffer galt für A205 als verfehlt. Der geblockte Betrag fehlte in der Schadensmessung und im Schadenseingang. Alle Leser im gegnerischen Zweig des Handlers: `DamageShareOn`, Marker-Bestätigung, Protokollzeile, Messung der Flächenaktion, A205. **Behoben:** `IsDamageEntry` (3, 5, 6) für Beträge, `ReachedTarget` (dazu 1, 2, 7, teilweise Unverwundbarkeit) für „erreicht". Ausgenommen der Zweig eigener Angriffe auf Gegner: Gegner blocken nicht, er zählt nur getroffene Ziele. Der Beschreibungstext von „Skip area defence for casts that missed you" sagte „without damaging you"; der Name der Einstellung sagt „missed you", und ein abgewiesener Treffer hat nicht verfehlt. Beschreibung dem Namen angeglichen; der Text stammt aus A205 vom selben Tag und war noch nicht veröffentlicht.
+- *Folge für seine Daten:* Die Negativliste der ersten Fassung kann echte Tankbuster enthalten. Sie wird nicht mehr gelesen; die Liste heißt jetzt `TankbusterMarkerWithoutHit`. Ein zu Unrecht gestrichener Eintrag kostet eine überflüssige Abwehr, ein belassener falscher eine fehlende.
+- *A189, Antithese „das Fenster schließt vor dem Treffer":* belegt für Marker, deren Zauber erst nach dem Marker beginnt (8-s-Lock-ons). Das Fenster verlängert sich jetzt um jeden Zauber, der läuft, solange der Marker steht.
+- *A186, Antithese „Rückkopplung":* belegt bei zwei Tänzern. `IsAvailablePartner` zählte den Partner des anderen Tänzers (und ihn selbst) als verfügbar, `FindDancePartner` überspringt beide im ersten Durchgang. Stand der Partner des anderen höher, endete unsere Partnerschaft alle 30 s, und Closed Position wählte denselben Partner wieder. Behoben mit demselben Filter. Übriges geprüft: Die Abklingzeit sperrt das Beenden außer bei Tod, wie im Konzept.
+
+**Prüfgrad:** statisch (ECommons-Quelle, WrathCombo-Enum zum Abgleich); Prüfskripte; Compile über die CI.
+
+### A212 · Nachprüfung A185, A193–A197, A199, A201–A204, A206 (29.09.2026)
+
+- *A193, Antithese „dieselbe Aufgabe an zwei Stellen":* belegt. Das Aktionsfenster führte eine eigene Liste der Bewegungsarten (zweimal) und eine eigene Sicherheitsberechnung. Der Rücksprung fehlte in beiden. Displacement und Hissatsu: Yaten bekamen deshalb nicht den Schalter „Skip position safety check" wie jede andere Bewegungsaktion, und die Anzeige nannte „Unknown movement type". Behoben: Das Fenster liest `ActionTargetInfo.IsMovingSpecialType`, die Anzeige rechnet den Landepunkt wie `CheckMovementSafety`. Die übrige Sicherheitsrechnung des Fensters bleibt eine Doppelung; sie ist als technische Schuld erfasst.
+- *A194, Antithese „schädlich":* belegt für einen Boss mit Adds. Die Regel zählt nur Gegner in Reichweite, und für den Slow verbraucht fehlt Abtausch 120 s lang dem Rückstoß, gegen den er die einzige Antwort des Tanks ist. Behoben: nicht, solange BossModReborn einen Rückstoß innerhalb der Abklingzeit ankündigt (Abklingzeit aus den Aktionsdaten). Ohne Modul bleibt es wie bisher; das ist als Grenze genannt.
+- *A195, Antithese „die Selbststeuerung steuert nur in eine Richtung":* belegt. Die Nachfrist wuchs auf die längste Lücke und schrumpfte nie. Eine einzige Pause, etwa eine Wiederbelebung des Weißmagiers, hielt die Barriere für den Rest des Pulls nach jeder endenden Kette so lange zurück, während der Tank den Strom ungemindert nahm. Das widerspricht seiner Vorgabe „Sicherheit vor Schaden". Behoben: Die Frist folgt der zuletzt gemessenen Lücke desselben Rudels, mindestens einem GCD.
+- *A185 (Protokoll entfernt), A196 (Listen), A197 (Blut), A199 (`IsValid`), A201 (Intervention), A202 (Improvised Finish), A203 (Addersgall), A204 (Nullprüfungen), A206 (Searing Light):* Antithesen geprüft, ohne Befund. A197: Die Grenze 70 hält bei einem Gewinn von höchstens 20 je GCD das Blut unter 100, weil der Verbrauch vor der Kombo steht. A201: Mit zwei Paladinen erfüllt die Intervention des anderen die Bereitstellung, gewollt. A206: `IsTheSameTo` ist nullsicher.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A213 · Vorausschau: oGCD-Heilungen blicken nur so weit voraus, wie die Ausführungssperre reicht (29.09.2026)
+
+- *Befund (A210):* Der Vorlauf war für jede Schwelle Rest-GCD plus ein GCD. Der Text der Einstellung bindet: „by the time a heal started now would land". Eine oGCD-Heilung landet, sobald die laufende Ausführungssperre sie freigibt.
+- *Umgesetzt:* `GetForecastSurvivingShare`, `GetForecastHealthRatio`, `GetForecastEffectiveHp`, `GetForecastPlayerHealthRatio` nehmen die Heilart (Überladung, die bestehende Signatur bleibt: Vertrag des Pakets). Vorlauf einer oGCD-Heilung: `DataCenter.AnimationLock`. Leser: Heilflaggen (`ShouldHealSingle`/`ShouldHealSelf`/`ShouldHealArea` für Fähigkeit mit `true`, für Zauber mit `false`; die Flächenstatistik mit je einem Zwischenspeicher), Heilzielwahl (`FindTargetByType` als Überladung mit `instantHeal`, aus `!IsRealGCD` der Aktion), 22 oGCD-Schwellen der Jobrotationen (Weißmagier Benediction; Astrologe Synastry, Essential Dignity ×3; Weiser Taurochole, Krasis ×2, Soteria, oGCD-Tankheilung, Kardia; Gelehrter Aetherpact ×2, Excogitation ×3; Krieger Raw Intuition, Thrill of Battle, Equilibrium, Nascent Flash; Rollen Second Wind, Bloodbath). Geblieben beim GCD-Vorlauf: Clemency, Aspected Benefic, Pneuma, Regen, Emergency Tactics (wirkt auf die nächste GCD-Heilung), die Untergrenze der Pull-Pflege und die kritische Klasse (eine Definition für Heilung, Abwehr-Halt und Lux Solaris).
+- *Prüfmittel:* `check_heal_target_order.py` erwartete leere Argumentlisten; die Muster lesen jetzt den Methodennamen, der Selbsttest ist auf die neue Form umgestellt, alle konstruierten Defekte werden weiter gefunden.
+- *Falsifikation:* **Mit ausgeschalteter Einstellung?** Anteil 1, unverändert. **Zu kurz für oGCDs?** Das Eintreffen einer oGCD-Heilung braucht nach dem Drücken die Antwort des Servers (Bruchteile einer Sekunde); die Sperre deckt das Warten bis zum Drücken. **Ausgeliefert, nichts ändert sich?** Nur bei eingeschalteter Einstellung und fallendem Trend; dann fallen oGCD-Heilungen später als bisher, und zwar so spät, wie der Text verspricht.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A214 · Inhaltsprüfung der seit 28.09.2026 mittags geänderten Konzepte (29.09.2026)
+
+- *Maßstab (seine Vorgabe, CLAUDE.md „Prüfgrad"):* Konzepte werden nicht kompiliert; geprüft wird jede Aussage über geänderten Code am Code und an den Quellen, nicht die Zeilenangabe.
+- *Befunde und Behebung:* **05** Bewegungsfähigkeiten: Aussage stimmt; die drei direkten Aufrufer ergänzt. **06 §2.1** widersprach dem Code (Barriere des Weisen seit A184 wieder da), fortgeschrieben (A209). **07** Klasse 3 nur Verletzte (A210), Vorlauf nach Heilart (A213), Mitgliederauswahl der Flächenwerte. **08** Formel des Vorlaufs nach Heilart, Abtausch-Zeile um die Rückstoßankündigung ergänzt. **09** Die zitierte Heilzielordnung ließ die kritische Klasse aus; ersetzt durch Methodenname und aktuelle Ordnung. **10** Nachfrist der Betäubungskette (A212), Abtausch und Rückstoß. **13** Reichweite nach Form (A208), Trefferkriterium (A211), Protokoll. **14** Improvised Finish am Job-Guide geprüft (5 % bei 0 Stapeln, 30 s, 8 y); stimmt. **15** V1 (Voreinstellung aus), V2 (Trefferkriterium, Fenster, neue Speicherdatei), V5 (zweiter Tänzer). Release-Text entsprechend.
+- *Urteilsstil:* Die Prozessgeschichte („A184 hat diesen Abschnitt nicht gelesen") aus Konzept 06 entfernt; sie steht in A209.
+
+**Prüfgrad:** statisch (Code, Job-Guide abgerufen 29.09.2026); Prüfskripte.
+
+### A215 · Dunkelritter: Halt über die Betäubungslücke nach dem sichtbaren nächsten Sanctus statt nach geschätzter Lücke (29.09.2026)
+
+Voller Loop zu A195 und A212, die beide ohne ihn gebaut wurden (seine Rückfrage „wo waren das denn bitte vollständige loops?").
+
+- *1 Research:* `GroupStunRunning` hat einen Leser, die Pull-Bedingung für The Blackest Night (`staggeredHeavyPull`). Rückwärts (`git log -S StunChainGrace`): bd249de72 (10.09.2026) setzte 3 s, „roughly one global cooldown", damit die Lücke zwischen zwei Sanctus kein Fenster öffnet. A195 ersetzte das durch die längste gemessene Lücke, A212 durch die zuletzt gemessene. Gegenseite: `WHM_Reborn.ShouldHoldHolyForBarrier` hält Sanctus, solange ein Tank die Barriere trägt; `ShouldStretchHolyStun` wirkt Sanctus erst nach dem Ende der Betäubung. Job-Guide (de/en, 29.09.2026): Sanctus und Sanctga wirken 1,5 s, Wiederaufnahme 2,5 s, Radius 8 y, Betäubung 4 s. Deutscher Name von Holy III ist Sanctga; der Namensindex führte es fälschlich unter Sanctus und ist berichtigt.
+- *2 Optionen:* (0) Nullvariante: A212 belassen. (R) Rückbau auf A195 oder auf die festen 3 s. (a) Frist null. (b) Frist ein GCD. (c) Geschätzte Lücke mit Obergrenze. (d) GCD-Frist plus sichtbares Wirken eines Flächenbetäubers, dessen Radius das Rudel erreicht (Möglichkeitssinn: die Vorhersage fremder Casts ist eine vorhandene Stärke).
+- *3 Abwägung:* (0) und A195 halten nach einer langen Pause die Barriere so lange zurück, wie die Pause dauerte, während der Tank ungemindert nimmt (Sicherheit, Schwere hoch, bei jedem Kettenende). Feste 3 s: eine Zahl ohne Ableitung. (a) Die Barriere fällt in jede Lücke zwischen zwei Sanctus: Überschneidung mit der Betäubung, Barriere nicht aufgezehrt, 3000 MP ohne Dark Arts (nur Ressource). (b) Deckt das Wirken in Folge, nicht das Strecken, weil der Weißmagier erst nach dem Ende entscheidet und dann 1,5 s wirkt. (c) Braucht eine Zahl für die Obergrenze. (d) Deckt beide Lagen und gibt nach höchstens einem GCD frei, wenn nichts kommt; Aufwand gering, nur der Dunkelritter betroffen.
+- *4 Abgleich:* Konzept 10 und seine Spielweise verlangen, dass die Barriere nicht in eine laufende Betäubung fällt und der Tank nicht ungeschützt bleibt, wenn der Strom läuft. (d) erfüllt beides ohne neue Zahl.
+- *5 Review:* Sanctus unter Swiftcast ist ohne Wirken; landet es nach der Frist, überschneiden sich Barriere und Betäubung (nur MP). Ein langsamerer GCD des Weißmagiers kann eine kurze Lücke zwischen Frist und Wirken lassen (nur MP). Ein Weißmagier, der Sanctus auf ein anderes Rudel wirkt, zählt nicht, weil der Radius das eigene Rudel erreichen muss. Zwei Weißmagier: jeder wird geprüft.
+- *6 Falsifikation:* **Kein Defekt?** Mit A212 hält eine gemessene Pause von acht Sekunden die Barriere beim nächsten Kettenende acht Sekunden zurück, obwohl der Strom läuft (Schluss aus dem Code, am Spiel nicht beobachtet). **Option falsch?** Die Grenzen aus 5 kosten nur MP; die Freigabe erfolgt immer nach höchstens einem GCD ohne sichtbares Wirken. **Ausgeliefert, nichts ändert sich?** Bei durchgehender Kette halten beide Fassungen gleich, und der Unterschied zeigt sich erst am Kettenende. Deshalb bleibt es im Kampf unsichtbar, solange die Ketten nicht enden, während Barriere und Pull-Bedingung erfüllt sind.
+- *7 Umsetzung:* `DRK_Reborn.GroupStunRunning`: Frist `DataCenter.DefaultGCDTotal` nach dem letzten Betäubungsbild, oder `AreaStunBeingCastOnPack` (Gruppenmitglied wirkt `HolyPvE`/`HolyIiiPvE`, Radius aus den Aktionsdaten, Anteilsregel wie die Betäubung). Der gelernte Zustand (`_lastStunGap`, `_lastStunnedPack` samt Hilfsmethoden) ist entfernt.
+- *8 Nachweis:* Prüfskripte; Compile über die CI. Dass die Kette im Spiel so läuft wie im Modell, ist nicht beobachtet. Die Rechnung steht in Konzept 10; die abnehmende Betäubungsdauer darin ist nicht belegt.
+- *9 Dokumentation:* Konzept 10 (Halt, Rechnung, Ausgeschlossenes, Grenzen), Namensindex (Sanctga).
+- *10 Wirksamkeit:* Der Halt hat jetzt keinen Zustand über den Frame hinaus. Offen bleibt nur, was keine Analyse klären kann: wie oft ein Weißmagier im Spiel die Kette abbricht.
+
+**Prüfgrad:** statisch (Code, Versionsgeschichte, Job-Guide); Prüfskripte; Compile über die CI.
+
+### A216 · Markerliste: voller Loop zum Verwerfen der ersten Fassung und zum Beobachtungsfenster (29.09.2026)
+
+- *1 Research:* Die erste Fassung der Negativliste (A189) zählte nur die Effektart `Damage` als Treffer. Ein geblockter, parierter oder unter Unverwundbarkeit genommener Tankbuster widerlegte also seinen Marker (A211). Was seine Datei enthält, ist von hier nicht lesbar. Fenster: BossModReborn (Kam'lanaut, `PrincelyBlow.cs`, Enum) zeigt Marker, dann 0,3 s später einen sichtbaren Cast von 8,0 s und den Treffer eines Helfers 8,3 s nach dem Marker. Das alte Fenster (Warteschlange fünf Sekunden plus ein GCD, Zauber nur ab Erscheinen) schloss vorher.
+- *2 Optionen, Liste:* (0) die alte Liste weiterlesen, (a) verwerfen (gebaut), (b) die alten Einträge nur beobachten und nicht anwenden, bis sie unter dem neuen Kriterium bestätigt sind, (R) Rückbau auf den alten Dateinamen. *Fenster:* (0) fest ab Erscheinen, (a) jeder Zauber, der beginnt, solange der Marker steht (gebaut), (b) offen bis zum nächsten Treffer.
+- *3 Abwägung, Liste:* Bei (0) bekommt ein zu Unrecht gelisteter echter Tankbuster beim nächsten Mal von niemandem eine Abwehr (Sicherheit, schwer, wahrscheinlich bei jedem Paladin unter Sheltron). Bei (a) kostet ein zu Recht gelisteter Marker eine überflüssige Abwehr, bis er neu gelernt ist (nur Abklingzeit). (b) wirkt wie (a), braucht aber einen zweiten Zustand. *Fenster:* (0) widerlegt belegte Tankbuster. (b) lässt beliebigen späteren Schaden bestätigen, sodass die Liste nie lernt. (a) deckt den belegten Fall; ein zu langes Fenster lässt fremden Schaden bestätigen, und der Marker bleibt dann Tankbuster (sichere Seite).
+- *4 Abgleich:* Seine Vorgabe verlangt die Liste „sicher speichern". Die alte Liste ist ein von mir verursachter Schaden an seinen Daten und steht nicht zur Wahl (CLAUDE.md). Die alte Datei bleibt ungenutzt auf der Platte; sie zu löschen wäre destruktiv und bringt nichts.
+- *5 Review:* Nach dem Verwerfen stehen alle Marker wieder als Tankbuster da, also mehr Abwehr, bis das Lernen greift. Die Verlängerung läuft nur, solange der Marker steht. Danach ist der Zustand wie vorher.
+- *6 Falsifikation:* **Kein Defekt?** Belegt durch die Effektarten (ECommons) und den BossModReborn-Fall. **Option falsch?** Ein Marker, dessen Zauber erst nach dem Verlassen der Warteschlange beginnt, wird weiter fälschlich widerlegt (Grenze in Konzept 15). **Ausgeliefert, nichts ändert sich?** Wenn seine Liste leer war. Dann bleibt nur das neue Fenster wirksam.
+- *7–9:* Umgesetzt in A211 (`TankbusterMarkerWithoutHit`, Fensterverlängerung). Konzept 15 trägt den Beleg.
+- *10 Wirksamkeit:* Der belegte Fall ist gedeckt. Offen bleibt der Marker ohne Zauber während seiner Standzeit; ihn misst die Liste selbst, weil ein falscher Eintrag beim nächsten Treffer wieder herausfällt.
+
+**Prüfgrad:** statisch (BossModReborn-Quelle, ECommons-Quelle); Prüfskripte.
+
+### A217 · Vorausschau: voller Loop zum Vorlauf nach Heilart (29.09.2026)
+
+- *1 Research:* Der Vorlauf stammt aus 1026d5f37 (17.09.2026): „the heal that threshold triggers needs to arrive - the rest of the GCD, then the cast". Gebaut für GCD-Heilungen; oGCDs sind darin nicht betrachtet. Der Einstellungstext bindet: „by the time a heal started now would land". Leser: Heilflaggen (Fähigkeit und Zauber), Heilzielwahl, 31 Schwellen der Jobrotationen, kritische Klasse (Heilung, Abwehr-Halt, Lux Solaris).
+- *2 Optionen:* (0) GCD-Vorlauf für alle (Rückbau von A213). (a) oGCD-Vorlauf = Ausführungssperre (A213). (b) oGCD-Vorlauf null. (c) oGCD-Vorlauf = Maximum aus Ausführungssperre und Restwirkzeit eines laufenden Zaubers. (d) Die kritische Klasse ebenfalls nach Heilart.
+- *3 Abwägung:* Durchgerechnet mit korrigierter Restzeit 10 s und GCD 2,5 s zur Hälfte: Bei (0) liest ein Tank bei 48 % als 30 %, und Benediction fällt knapp vier Sekunden zu früh. Das hält die Aktion 180 s von einem echten Notfall fern (Schwere mittel, bei jedem steilen Verlauf mit eingeschalteter Einstellung). (a) übersieht einen laufenden Zauber: Während Glare 1 s Restwirkzeit hat, geht die oGCD-Heilung erst danach, gelesen wird aber der Stand jetzt. (b) wie (a), schlechter. (c) folgt dem Text. (d) Die kritische Klasse ist eine Definition für drei Leser, die keine Heilart haben; sie aufzuteilen, spaltet eine Definition.
+- *4 Abgleich:* Gefordert ist, was der Text verspricht, nicht mehr. Die Klasse bleibt, wie Konzept 07 sie festlegt.
+- *5 Review:* Emergency Tactics ist oGCD, wirkt aber auf die nächste GCD-Heilung; sie behält den GCD-Vorlauf. Die Untergrenze der Pull-Pflege gehört zu GCD-Aktionen. Die Heilzielwahl liest die Heilart an `IsRealGCD` der Aktion.
+- *6 Falsifikation:* **Kein Defekt?** Das Modell zeigt den zu frühen Einsatz. Das stärkste Gegenargument ist die Sicherheit: Früher heilen schützt vor einer Spitze in den vier Sekunden. Nicht tragend, weil der Text bindet und dieselbe Heilung danach einem echten Notfall fehlt. **Option falsch?** (a) war es, bei laufendem Zauber; behoben durch (c). **Ausgeliefert, nichts ändert sich?** Mit ausgeschalteter Einstellung oder nicht fallendem Verlauf ist der Anteil 1. Dann ist das Verhalten gleich und richtig so.
+- *7 Umsetzung:* `ObjectHelper.GetInstantHealLeadTime` (Maximum aus `DataCenter.AnimationLock` und der Restwirkzeit des Spielers), gelesen von `GetForecastSurvivingShare(instant: true)`. Die übrigen Leser stammen aus A213.
+- *8 Nachweis:* Prüfskripte; Compile über die CI. Am Spiel nicht beobachtet; die Einstellung ist ab Werk aus.
+- *9 Dokumentation:* Konzept 08 (Formel, Rechnung, Ursprung), Konzept 07 (Leser).
+- *10 Wirksamkeit:* Plateau: Eine weitere Verfeinerung, etwa die Serverlaufzeit einer oGCD-Heilung, liegt unter einer Zehntelsekunde.
+
+**Prüfgrad:** statisch (Versionsgeschichte, Code, Modell); Prüfskripte; Compile über die CI.
+
+### A218 · Flächenabwehr: Gruppe für die Flagge, Spieler für den Selbstschutz, Kreise vom Mittelpunkt (29.09.2026)
+
+Voller Loop zu A208 (seine Rückfrage nach den Loops).
+
+- *1 Research:* Die Flagge `DefenseArea` öffnet je Job die Pfade, die die Erhebung aller `DefenseAreaAbility` zeigt. Gruppenminderungen: Reflexion, Divine Veil, Passage of Arms, Heart of Light, Shake It Off, Dark Missionary, alle Heilerschilde, Addle, Feint, Troubadour, Tactician, Dismantle, Shield Samba, Magick Barrier, Tempera Grassa. Selbstschutz: Radiant Aegis, Tempera Coat, Tengentsu, Third Eye. Dazu ruft der Dispatch bei Schadensausteilern unter derselben Flagge die ganze Einzelabwehr (nur Selbstschutz). Gemessen wurde die Flagge seit 6588832b9 (05.09.2026) an „erreicht den Spieler". Der Grund damals: eine Bodenfläche am anderen Ende eines großen Pulls sollte nicht wie ein Raidwide gemindert werden. BossModReborn setzt keine seiner 3494 Kreisformen um den Trefferkreis des Wirkenden größer; unser Code zog den Trefferkreis des Bosses ab und verlängerte jeden Rundumschlag um ihn.
+- *2 Optionen:* (0) A208 belassen (Spielerreichweite, Trefferkreis des Bosses). (R) Rückbau auf die reine Entfernung zum Wirkenden. (a) Nur die Geometrie berichtigen, Flagge weiter nach Spieler. (b) Flagge nach Gruppe (Spieler oder die Hälfte der Gruppe), Selbstschutz nach Spieler. (c) wie (b), Gruppe = Spieler oder mindestens zwei Mitglieder. (d) eigene Flagge für Selbstschutz (neuer `AutoStatus`-Wert).
+- *3 Abwägung:* (0) und (R): Radiant Aegis und die Einzelabwehr fallen für Treffer, die ihn nicht erreichen; das ist seine Meldung. (a) behebt das für den Spieler, nimmt aber einem Heiler oder Tank abseits eines Rundumschlags auf Tank und Nahkämpfer die Gruppenminderung. Das kostet Sicherheit, weil der Treffer angekündigt und sicher ist. (b) Im Achterteam träfe ein Rundumschlag auf Tank und zwei Nahkämpfer drei von acht und bliebe ohne Gruppenminderung. (c) trennt Einzelziel von Fläche. (d) `AutoStatus` wird als Zahl gespeichert (Vertrag, Reihenfolge `AutoStatusOrder.json`); ein neuer Wert kostet Migration ohne Mehrwert gegenüber einer abgeleiteten Frage.
+- *4 Abgleich:* Kausalität verlangt, ein Flag an den Pfaden zu messen, die es öffnet (CLAUDE.md). Der Grund von 6588832b9 bleibt gewahrt: Eine ferne Bodenfläche erreicht weder ihn noch zwei Mitglieder.
+- *5 Review:* Tempera Coat bleibt ohne Sperre, denn Tempera Grassa (Gruppenschild) setzt Tempera Coat voraus. Die Vorab-Heilung liest dieselbe Gruppensicht, richtig für die Heilung der Gruppe. A205 (ab Werk aus) filtert weiter nach „hat mich zuletzt verfehlt". Seine Beschreibung nennt ausdrücklich, dass damit auch die Gruppenminderung entfällt. Marker: Ein Stack betrifft jeden, ein Spread nur seinen Träger. Ein BossModReborn-Raidwide trifft jeden.
+- *6 Falsifikation:* **Kein Defekt?** Radiant Aegis für einen Tankbuster-Kreis auf dem Tank war seine Meldung, und ein Heiler abseits eines Rundumschlags auf Tank und Nahkämpfer blieb ohne Gruppenminderung. Beides folgt aus dem Code. **Option falsch?** Zwei Mitglieder sind auch zwei nebeneinander stehende Nahkämpfer bei einem kleinen Kreis; dann öffnet ein kleiner Treffer die Gruppenminderung. Das dämpft die Bewertung „lohnt Minderung" (`AreaCastIsWorthMitigating`), nicht diese Regel. **Ausgeliefert, nichts ändert sich?** Wenn sein Fall ein BossModReborn-Raidwide oder ein Stack-Marker war; das zeigt `DefenseTrace.log`, dessen Zeilen jetzt „reaches you" und „reaches the party" nennen.
+- *7 Umsetzung:* `DataCenter.AreaCastReaches` (je Mitglied), `AreaCastReachesParty` (Flagge, großer unterbrechbarer Cast, unbewerteter Cast für die Heilung), `AreaHitReachesPlayer` (Selbstschutz; ohne Seiteneffekte bis auf die Bewertung, die dieselbe Entscheidung schon trifft), `CustomRotation.AreaHitOnMe`. Verbraucher: Dispatch (Einzelabwehr der Schadensausteiler unter der Flächenflagge), `SMN_Reborn` (Radiant Aegis im Flächenpfad und vor der Beschwörung), `SAM_Reborn` (Tengentsu, Third Eye im Flächenpfad).
+- *Prüfmittel:* `check_fixed_values.py` erkennt eine Upstream-Zeile jetzt am Inhalt der Upstream-Datei statt an der Ausrichtung des Diffs; bereits gelistete Zeilen bleiben gezählt. Selbsttest ergänzt.
+- *8 Nachweis:* Prüfskripte; Compile über die CI. Am Spiel nicht beobachtet; das Protokoll liefert die Laufzeitbeobachtung.
+- *9 Dokumentation:* Konzept 13 (Zwei Fragen, Formen, Rechnung), Konzept 12 (Schild vor der Beschwörung), Konzept 10 (Tiefschlag-Pfad berichtigt: allgemeiner Fähigkeitspfad, nicht der Unterbrechungspfad), Release-Text.
+- *10 Wirksamkeit:* Offen bleiben Bodenkreise (Mittelpunkt nur nativ) und Kegel (Winkel in keinem Blatt). Beide sind als Grenze benannt.
+
+**Prüfgrad:** statisch (Code, Versionsgeschichte, BossModReborn-Quelle, Spieldaten über xivapi); Prüfskripte; Compile über die CI.
+
+### A219 · Voller Loop zu den übrigen Korrekturen der Nachprüfung: A209, A210, A211, A212 (29.09.2026)
+
+**A212 Abtausch im Pull, Rückstoßsperre.** *Research:* `ShouldAddAntiKnockback` liest dieselbe BossModReborn-Vorhersage (`BMRNextKnockbackIn`). Abtausch wirkt 6 s (Wirktext, `DefensiveValues`) und klingt 120 s ab. *Optionen:* (0) keine Sperre; (a) Sperre bis zum Ende der Abklingzeit (A212); (b) Sperre nur für einen Rückstoß nach Wirkende und vor Ende der Abklingzeit; (c) nie im Bosskampf. *Abwägung:* (a) sperrt auch, wenn der Rückstoß in die 6 s fällt — gerade dann deckt der Einsatz ihn mit ab. (c) verliert den Slow auf Adds ohne jeden Rückstoß. (b) sperrt genau den schädlichen Fall. *Falsifikation:* **Kein Defekt?** Für den Slow verbraucht, fehlt Abtausch dem angekündigten Rückstoß 114 s lang. **Option falsch?** (a) war es im 6-s-Fall; (b) umgesetzt. **Nichts ändert sich?** Ohne Modul keine Ankündigung; als Grenze genannt. *Umgesetzt:* `ArmsLengthSlowsPull`. **Rücksprung-Schalter:** Die Doppelung der Bewegungsarten im Fenster ist beseitigt. Die zweite Sicherheitsrechnung steht als technische Schuld in `TODO.md`. Keine Richtungsfrage.
+
+**A211 Trefferkriterium.** *Optionen:* (0) nur `Damage`; (a) Beträge aus 3, 5, 6, „erreicht" dazu 1, 2, 7 und teilweise Unverwundbarkeit (gebaut); (b) jeder Eintrag des Ziels im Effektsatz. *Abwägung:* (b) zählt eine reine Statusvergabe als Treffer und bestätigte Marker durch Debuffs (sichere Seite, aber ungenau). (a) folgt den Effektarten. *Falsifikation:* Ein geblockter Betrag ist kleiner; die Flächenmessung nimmt das Maximum über die Gruppe, ein geblockter Paladin senkt sie nicht. Belegt an ECommons und WrathCombo (Enum). **Tänzer:** (0) der Partner des anderen zählt; (a) derselbe Filter wie die erste Wahl (gebaut). Ohne zweiten Tänzer ändert sich nichts.
+
+**A210 Flächenwerte, Klasse 3.** *Flächenwerte:* Die Pegelwerte filtern `IsValid` und fangen Zugriffsfehler; die Vorausschau-Werte versprechen Gleichheit bei ausgeschalteter Einstellung. Einzige Option: derselbe Filter. *Klasse 3:* (0) Unverletzte mitzählen; (a) nur Verletzte (gebaut); (b) nach fehlenden Punkten reihen. *Abwägung:* (b) widerspricht seiner Triage „wer zuerst stirbt": Bei einem angekündigten Raidwide stirbt zuerst, wer die wenigsten Punkte hat, nicht wem die meisten fehlen. *Falsifikation:* Ein Schadensausteiler bei 99 % mit 59 000 Punkten geht vor den Tank bei 50 % mit 60 000; bei einem Raidwide von 60 000 stirbt er zuerst, das entspricht der Triage.
+
+**A209 Barriere des Weisen.** *Optionen:* (0) ab Werk an (A184); (a) ab Werk aus (gebaut); (b) Erneuerung nur bei Ablauf; (c) Erneuerung bei Bruch höchstens einmal je Zeitraum. *Abwägung:* Durchgerechnet im Konzept 15. (c) bräuchte eine Zahl ohne Ableitung. (b) und (0) berühren die Entscheidung aus Konzept 06 §2.1 und seine V1-Vorgabe. Die Wahl liegt bei ihm; bis dahin (a), weil das bisherige Verhalten Standard bleibt („Option und Beobachtbarkeit").
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A220 · Tiefenprüfung Flächen- und Einzelabwehr: Marker nur der eigenen Gruppe, Tankbuster nach BossModReborns Zielmaske (29.09.2026)
+
+Seine Forderung: erneuter vollständiger Loop auf alle Änderungen seit 28.09.2026 mittags, mit inhaltlicher Tiefe, Kausalität und Gesamtbetrachtung. Diese Prüfung beginnt beim Netto-Diff seit 357ffce09, geordnet nach Wirkungsbereichen; das hier ist Bereich A.
+
+- *Wirkungskette erhoben:* Flächenflagge (`ShouldAddDefenseArea` → `IsHostileCastingAOEForMyDefense`/`IsHostileCastingAOE` → `IsCastingAreaVfx` ∨ `IsAnyHostileCastingArea` → `IsHostileCastingArea` → `AreaCastReachesParty`; großer unterbrechbarer Cast; BossModReborn-Raidwide) → Dispatch → Gruppenminderungen, Selbstschutz über `AreaHitReachesPlayer`. Einzelflagge der Schadensausteiler (`IsHostileCastingTankBusterAtMe`; `BMRTankbusterImminent` mit Näherung) → Dispatch → `DefenseSingleAbility` (bei ihnen reiner Selbstschutz).
+- *Befund 1, Marker ohne Gruppenbezug:* `IsCastingAreaVfx` (Upstream, 9c800e257) und das neue `IsAreaVfxReachingPlayer` lasen jeden Stack-Marker in Reichweite. In Allianz-Inhalten öffnete ein Stack auf einem Mitglied einer anderen Gruppe die eigenen Gruppenminderungen und den Selbstschutz. **Behoben:** Nur Marker auf dem Spieler, auf `IsParty()` oder auf NPC-Gruppenmitgliedern zählen (`IsOwnPartyMarker`). NPC-Mitglieder gelten unabhängig von „Heal and raise Party NPCs", weil ein Duty-Support-Begleiter den Stack teilt wie ein Spieler.
+- *Befund 2, Tankbuster über die Näherung „kein Tank":* `BMRTankbusterImminent && PartyTank == null`. `PartyTank` sucht in `PartyMembers`; NPC-Mitglieder stehen dort nur mit „Heal and raise Party NPCs" (ab Werk an; er ist Tester). Ist die Einstellung aus, gibt es im Duty Support keinen Tank, und jeder angekündigte Tankbuster öffnete die Einzelabwehr eines Schadensausteilers, also Radiant Aegis für einen Tankbuster auf dem NPC-Tank. Ob RSR NPC-Tanks über `ClassJob` erkennt, ist unbelegt. WrathCombo liest den Job solcher NPCs aus `InfoProxyPartyMember`; das ist ein Hinweis, keine Spielquelle. **Behoben:** BossModReborn stellt die Getroffenen des ersten Vorhersageeintrags bereit (`Hints.PredictedDamagePlayers`, sortiert nach Zeitpunkt, Bit 0 = `PlayerSlot` 0; Quelle geprüft). Ist dieser Eintrag der Tankbuster, entscheidet die Maske (`DataCenter.BMRTankbusterHitsPlayer`); sonst gilt die alte Näherung.
+- *Optionen zu Befund 2:* (0) belassen; (a) NPC-Mitglieder für `PartyTank` unabhängig von der Heileinstellung; (b) Maske, Näherung als Rückfall (gebaut); (c) Einzelabwehr der Schadensausteiler nur bei erkanntem Tankbuster auf ihn, ohne Näherung. *Abwägung:* (a) hängt an der unbelegten `ClassJob`-Frage und ändert die Pull-Pflege der Heiler, die NPC-Tanks nur mit erlaubter NPC-Heilung versorgen soll. (c) lässt einen Schadensausteiler ohne Tank ohne Schutz bei einem Tankbuster auf ihn. (b) nutzt die genaueste vorhandene Antwort.
+- *Falsifikation:* **Kein Defekt?** Beide Wege folgen aus dem Code. Ob sie sein Fall waren, zeigt `DefenseTrace.log`; die Zeile zum Tankbuster nennt jetzt „hits you". **Option falsch?** Kommt der Tankbuster nur aus BossModReborns Zeitleiste ohne Eintrag in den Hinweisen, gibt es keine Maske, und die Näherung gilt weiter. **Ausgeliefert, nichts ändert sich?** Wenn sein Fall ein als Raidwide gemeldeter Tankbuster war; dann steht in der Datei „BMR raidwide".
+- *Weitere Punkte dieses Bereichs, geprüft:* Doc-Kommentare über `AreaCastReachedPlayer` waren verwaist (die Begründung der alten Reichweitenfunktion stand über dem Wörterbuch, der genannte Leser war falsch). Berichtigt, die Begründung von 6588832b9 an `AreaCastCanReachPlayer` übertragen. Der TODO-Eintrag „`Hints.PredictedDamagePlayers` wird nicht abonniert" war veraltet und ist durch den offenen Tank-Fall ersetzt: Die Einzelflagge der Tanks öffnet eigene Minderung auch bei einem Tankbuster auf den anderen Tank.
+
+**Prüfgrad:** statisch (Code, Versionsgeschichte, BossModReborn-Quelle, WrathCombo als Hinweis); Prüfskripte; Compile über die CI steht aus.
+
+### A221 · Tiefenprüfung Heiler: Vorlauf nach dem Zeitpunkt der Heilung, Addersgall, Pull-Pflege (29.09.2026)
+
+Bereich C der Tiefenprüfung seit 357ffce09 (seine Forderung wie A220): Pull-Pflege aller Heiler (61e6e5b18, 9ac8a8f0e), Addersgall-Schutz (8b7dc8833), Null-Prüfungen im Vorschaulauf (6c5503a52), Heilschwellen nach Heilart (a5fb8ea35, 09bd3ab47).
+
+- *Befund, Vorlauf nach Aktionsart statt nach Landezeitpunkt (eigener Fehler aus A213/A217):* Der kurze Vorlauf wurde jedem oGCD gegeben (`InstantHeal => !IsRealGCD`, dazu die Schwellen). Emergency Tactics war als Ausnahme erkannt („wirkt auf die nächste GCD-Heilung"), dieselbe Eigenschaft bei Synastry, Krasis und Soteria nicht. Wirktexte (Job-Guide, abgerufen 29.09.2026): Synastry „recover HP equaling 40% of the original spell", Krasis „Increases HP recovery via healing actions … by 20%", Soteria „increasing the cure potency of Kardion effects … by 70%"; Kardion heilt mit jedem Schadenszauber. *Folge im Kampf (mit „Heal ahead" an, fallender Verlauf):* Synastry, Krasis und Soteria fielen zu spät, weil ihre Schwellen den Stand beim Landen ihrer Heilung unterschätzten. In der Zielwahl wirkt die Heilart nur, wo über das Heilziel gewählt wird: Krasis im Heilpfad (Override `Heal`) wählte mit anderem Vorlauf als die Heil-GCD, die es verstärkt. Synastry läuft in `EmergencyAbility` vor jedem Override (`CustomRotation_Ability.cs:85`) ohne eigenen `TargetType` (Vorgabe `Big`); ihre Zielwahl liest den Vorlauf nicht.
+- *Optionen:* (0) belassen; (a) nur die Schwellen umstellen; (b) Schwellen und Zielwahl über ein Aktionsmerkmal (`ActionSetting.HealsWithNextGcd`, in den Basisrotationen gesetzt); (c) Liste von Aktions-Ids in `ActionTargetInfo`. *Abwägung:* (a) lässt die Zielabweichung bei Krasis stehen. (c) legt Wissen über Jobaktionen in den Zielkern und ist für Autoren abgeleiteter Rotationen unsichtbar. (b) sitzt dort, wo die Aktion beschrieben wird, und ist eine reine Ergänzung der öffentlichen Klasse (kein Vertragsbruch). Gewählt (b).
+- *Review:* Beim kurzen Vorlauf bleiben die oGCDs mit sofortiger Wirkung. Nascent Flash und Raw Intuition/Bloodwhetting wirken mit Minderung und Barriere sofort (Wirktext Krieger). Bloodbath heilt mit dem nächsten physischen Treffer. Zählen Autoangriffe dazu (Schluss, nicht belegt), liegt der kurze Vorlauf näher; sonst weicht er um höchstens den GCD-Rest ab. Die Heilflaggen bleiben nach Pfad (Fähigkeit gegen Zauber). Krasis steht im Pfad der Fähigkeiten und verlangt zusätzlich eine Heil-GCD als nächste Aktion, deren Flagge ohnehin mit dem GCD-Vorlauf liest.
+- *Falsifikation:* **Kein Defekt?** Die Schwellen lasen den Stand vor dem Landen der Heilung (die Zielabweichung bei Synastry, hier zuerst behauptet, gibt es nicht, C100). **Option falsch?** Der GCD-Vorlauf (GCD-Rest + ein GCD) überschätzt den Landezeitpunkt eines Schadenszaubers mit 1,5 s Wirkzeit um rund eine Sekunde; der kurze Vorlauf unterschätzt ihn um GCD-Rest + Wirkzeit. Der längere liegt näher, und er ist derselbe, den die Einzelheilung liest. **Ausgeliefert, nichts ändert sich?** Mit „Heal ahead" aus oder ohne fallenden Verlauf ist der Anteil 1, beide Vorläufe geben denselben Wert. Das ist richtig so.
+- *Nebenbefund Krasis, kein Defekt:* `ModifyKrasisPvE` setzt `TargetType.Self` (Upstream b5a91d766), der Wirktext erlaubt „a party member or self". `ActionSetting.TargetType` liefert aber `IBaseAction.TargetOverride ?? _type`, und der Heilpfad setzt `TargetType.Heal`, der Pfad der Einzelabwehr `BeAttacked`. Krasis geht dort also an das Heilziel beziehungsweise an den Angegriffenen. `Self` greift nur außerhalb dieser Pfade.
+- *Nebenbefund Eukrasian Diagnosis, kein Defekt:* Ihre Statusliste nennt Galvanize, nicht Eukrasian Prognosis, obwohl der Wirktext beide als nicht stapelbar nennt. Laut Wiki (Community-Quelle) ersetzt die neuere Barriere des Weisen die ältere ganz, und die der Diagnose ist größer (300 × 180 % gegen 100 × 320–360 %). Vor einem Tankbuster ist das ein Zugewinn. Die Pull-Pflege sperrt beide, weil sie eine Barriere hält, nicht die größte. Konzept 15 berichtigt: Dort stand nur „nicht stapelbar mit Galvanize".
+- *Geprüft ohne Befund:* Addersgall. Beide Uhren (Addersgall, Lilien) zählen die verstrichene Zeit (Upstream 732703cbc, WrathCombo als Hinweis; Dalamuds Lilien-Doku sagt das Gegenteil und ist überholt). Dass die Uhr bei drei Stapeln weiterläuft, ist nur mittelbar belegt (The Balance: „be sure to not let it overcap"). Stimmt es nicht, fällt Druochole wie vor A203 nur nach Bedarf; das ist in Konzept 14 als Prämisse geführt. Pull-Pflege: Zielwahl (Tank mit Haltung), MP-Rückhalt für die Wiederbelebung, Untergrenze, Statuslisten, Eukrasia-Ablauf des Weisen (`CanUse` ohne aktives Eukrasia wie in den übrigen Zweigen). Null-Prüfungen: sechs Lesestellen, im echten Lauf unverändert.
+- *Umsetzung:* `ActionSetting.HealsWithNextGcd`, gesetzt bei Synastry, Krasis, Soteria, Emergency Tactics; `InstantHeal` liest es. Schwellen: Synastry, Krasis ×2, Soteria ×2 lesen den GCD-Vorlauf.
+- *Dokumentation:* Konzept 08 (Tabelle der vier Aktionen, verbleibende oGCDs), Konzept 07 (Leser), Konzept 14 (Addersgall-Prämisse), Konzept 15 (Stapelregel), Release-Text.
+
+**Prüfgrad:** statisch (Wirktexte, Code, Versionsgeschichte, Wiki und WrathCombo als Hinweis); Prüfskripte; Compile über die CI.
+
+### A222 · Tiefenprüfung Tanks: Betäubungshalt, Blutregel, Arm's Length, Intervention, Nascent Flash (29.09.2026)
+
+Bereich D der Tiefenprüfung seit 357ffce09: DRK (3493abbd2, 4eeca9bad, b7b3f1b3f, ecc3f85b1), Arm's Length für alle Tanks (64b3af436, A219), Paladin Intervention (30aaf4cb3), Krieger aus dem Upstream-Merge fd9600bc4 (c3fac720b) samt Vorausschau-Schwellen.
+
+- *Betäubungshalt (A215):* Die Frist ist ein GCD (`DataCenter.DefaultGCDTotal`), dazu das sichtbare Wirken von Holy/Holy III mit Radius aus den Spieldaten (8 y), gemessen vom Mittelpunkt des Wirkenden (wie A218). Gleiche Anteilsregel wie die Betäubung selbst. Kein gelernter Zustand mehr außer dem Zeitpunkt der letzten Gruppenbetäubung. *Grenze ergänzt:* Die Spieldaten führen viele Nicht-Spieler-Zeilen „Holy" (xivapi). Ob ein NPC der Gefährtenunterstützung eine davon wirkt und damit betäubt, ist nicht belegt; für ihn gilt nur die GCD-Frist (Konzept 10).
+- *Blutregel (A197):* `PlayerStatusStack` liefert `byte.MaxValue` nur für einen Status im Anflug, sonst 0 bei Fehlen; das Poolen greift also. Überlauf ausgeschlossen: Außerhalb von Delirium bringt ein GCD höchstens +20 Blut, 70 + 20 < 100. `InTwoMIsBurst` liest die Abklingzeit von Blood Weapon. Ab Stufe 68 ist sie durch Delirium ersetzt („Upgrades Blood Weapon to Delirium", Job-Guide), beide teilen aber die Abklingzeitgruppe 11 (xivapi, Zeilen 3625 und 7390). Der Ausdruck bleibt gültig.
+- *Arm's Length:* Alle vier Aufrufe liegen in `DefenseSingleAbility`, dieselbe Pfadfreigabe. *Befund, Text der Einstellung unvollständig:* Die Tooltips versprachen den Einsatz bei jedem Pull; seit A212/A219 hält ihn eine BossModReborn-Ankündigung eines Knockbacks nach Ablauf der Barriere und vor der Rückkehr der Abklingzeit zurück. Ein Satz dazu in allen vier Tooltips, ohne feste Zahl. Das Verhalten ist unverändert.
+- *Intervention (A201):* `StatusFromSelf = false` betrifft Bedarf (Haltung des anderen Tanks) und Angebot (Knight's Resolve u. a. nur von Paladinen). Die Aussage im Kommentar stimmt.
+- *Krieger, Upstream c3fac720b:* Nascent Flash liegt jetzt in `HealSingleAbility` statt im GCD-Heilpfad, in dem die oGCD-Aktion falsch saß. Die Heilflagge der Fähigkeiten setzt `StateUpdater` für jede Rolle, der Pfad läuft also. Die neue Enum-Einstellung `NascentFlashTargetStrategy` ist ein serialisierter Typ, neu und ohne Migration. Der Filtertausch in `NascentFlashCanUse` stellt im `finally` zurück. Die Schwelle liest den kurzen Vorlauf: Minderung und Barriere wirken sofort (A221).
+- *Falsifikation:* **Kein Defekt?** Beim Tooltip der Fall, dass jemand Arm's Length auf dem Pull erwartet und es nicht kommt — der Text bindet. **Option falsch?** Den Knockback-Halt zu entfernen hieße, eine Sicherheitsregel für den Text aufzugeben. **Ausgeliefert, nichts ändert sich?** Richtig so: Nur der Text ändert sich.
+
+**Prüfgrad:** statisch (Code, Wirktexte, xivapi, Versionsgeschichte); Prüfskripte; Compile über die CI.
+
+### A223 · Tiefenprüfung Schadensausteiler: Tanzpartner in Reichweite, Improvised Finish, Beschwörer, Rücksprung (29.09.2026)
+
+Bereich E der Tiefenprüfung seit 357ffce09: Tänzer (226911fe9, 1a1155863, 30aaf4cb3, A211), Beschwörer (d5e0703f7, A218/A220), Samurai (A218), Rücksprung von Displacement und Hissatsu: Yaten (A193).
+
+- *Befund, Tanzpartner ohne Reichweite:* `FindDancePartner` (Upstream) liest `DataCenter.PartyMembers` und übergeht die übergebene Kandidatenliste, die die Reichweite von Closed Position trägt (30 y, xivapi 16006). Nach der Zielwahl prüft nichts die Entfernung mehr (`ActionTargetInfo` ab der Wahl: Wirkungsbereich und Bewegungssicherheit, keine Reichweite). Seit V5 (A186) endet die Partnerschaft im Kampf bei Tod und für einen Besseren. Die Neuwahl konnte dann ein Mitglied außer Reichweite treffen. *Folge (Schluss aus dem Code, nicht beobachtet):* Closed Position geht ans Spiel und wird abgelehnt. Im nächsten Frame fällt dieselbe Wahl, an der Spitze von `EmergencyAbility` des Tänzers, also vor jedem anderen oGCD. `DancePartnerNeedsChange` prüfte die Reichweite ebenfalls nicht. Ein Besserer außer Reichweite beendete so eine erreichbare Partnerschaft.
+- *Optionen:* (0) belassen; (a) nur die Wechselprüfung; (b) nur die Partnerwahl; (c) beide. *Abwägung:* (a) lässt den Todesfall offen, (b) ließe die Wechselprüfung für einen Unerreichbaren beenden. Gewählt (c): Die Partnerwahl nimmt nur Gruppenmitglieder aus der Kandidatenliste (Abgleich über `GameObjectId`). Die Wechselprüfung verlangt `DistanceToPlayer() <= ClosedPositionPvE.TargetInfo.Range`, dieselbe Grenze.
+- *Falsifikation:* **Kein Defekt?** Vor V5 fiel die Neuwahl praktisch nur vor dem Pull, wenn alle beieinanderstehen. Mit V5 fällt sie im Kampf. **Option falsch?** Ist die Kandidatenliste leer, obwohl ein Mitglied in Reichweite steht, bliebe der Tänzer ohne Partner. Für freundliche Einzelziele ist die Liste die Menge in Reichweite ohne weitere Filter (`ModifyClosedPositionPvE` setzt keine Statusprüfung). **Ausgeliefert, nichts ändert sich?** Stehen alle in Reichweite, ist die Wahl gleich; das ist der Normalfall.
+- *Improvised Finish (A202):* Liegt in `EmergencyAbility` vor dem Partnerwechsel. Jede nächste Aktion beendet Improvisation, das Finish sofort gibt die Barriere mit 0 Stapeln. Die Aussage im Kommentar deckt sich mit dem Wirktext.
+- *Beschwörer:* Die Sperre `AreaHitOnMe` sitzt an beiden Radiant-Aegis-Wegen unter der Flächenflagge (Flächenpfad und `RadiantAegisDueBeforeDemi`). Der Raidwide-Weg über BossModReborn bleibt ungesperrt, er meint die ganze Gruppe samt Spieler. Searing Light wartet nur, solange die nächste GCD Resurrection oder Physick ist (A206).
+- *Samurai:* Die Sperre sitzt nur im Flächenpfad, die Einzelabwehr (Tankbuster auf ihn, Gesundheitsschwelle) ist ein getrennter Pfad. Die Schwelle `TengentsuHealth` ist eine Minderungsschwelle und liest den Stand.
+- *Rücksprung:* Displacement 15 y, Hissatsu: Yaten 10 y (Wirktexte). Die Klasse ist in A193 erhoben.
+
+**Prüfgrad:** statisch (Code, Spieldaten, Wirktexte); Prüfskripte; Compile über die CI.
+
+### A224 · Tiefenprüfung Infrastruktur: Kopien im Gesamtspeichern, Laden der Listen, Heilsperre, Prüfskripte (29.09.2026)
+
+Bereich F der Tiefenprüfung seit 357ffce09: `OtherConfiguration` (A196, V2-Speicher), `MajorUpdater`/`TankbusterMarkerWatch`, Heilsperre-Helfer, Prüfskripte und Workflow, `CLAUDE.md`, Upstream-Ressourcen.
+
+- *Befund, Kopien auf dem Pool-Thread (Klasse):* `SaveHostileCastingAreaPotential` und `SaveTankbusterMarkerWithoutHit` versprechen eine Kopie auf dem Thread des Aufrufers. Das gilt für ihren direkten Aufruf. `OtherConfiguration.Save()` rief beide aber innerhalb seines `Task.Run` auf, und dort entstand die Kopie auf einem Pool-Thread. `Save()` wird im Kampf gerufen (`Watcher.cs`, neue Knockback-Aktion), während der Spielthread in denselben Speicher schreibt: die Schadenstabelle und die Flächenliste aus dem Effekt-Handler, die Negativliste aus `MajorUpdater`. Die Flächen- und die Knockback-Liste gab schon Upstream ohne Kopie in den Pool. *Folge:* Wirft die Kopie „Collection was modified", endet der ganze Durchgang von `Save()` an dieser Stelle. Alle folgenden Listen bleiben ungespeichert, und `_ = Save()` verschluckt die Ausnahme. Erhoben sind alle Schreiber im Spiel: Flächenliste, Knockback-Liste, Schadenstabelle, Negativliste. `RotationSolverRecord` zählt nur Ganzzahlfelder hoch, die übrigen Listen ändert nur die Oberfläche.
+- *Optionen:* (0) belassen; (a) Sperre um jede Liste; (b) Kopie auf dem Thread des Aufrufers, auch im Gesamtspeichern. *Abwägung:* (a) bräuchte jede Lesestelle im Spiel unter derselben Sperre, also einen großen Eingriff. (b) ist die bestehende Bauform der Schadenstabelle, konsequent angewandt. Gewählt (b): `Save()` startet die vier Speicher vor seinem `Task.Run` und wartet am Ende auf sie. `SaveHostileCastingArea` und `SaveHostileCastingKnockback` kopieren vor dem Pool.
+- *Falsifikation:* **Kein Defekt?** Das Fenster ist klein, aber nicht leer: Der Watcher ruft `Save()` im selben Frame, in dem er weitere Effekte verarbeitet. **Option falsch?** Ruft jemand `Save()` von einem fremden Thread, entsteht die Kopie dort; das Entladen ruft es nach dem Abhängen des Effekt-Handlers. **Ausgeliefert, nichts ändert sich?** Im Normalfall schreibt jede Datei dasselbe wie vorher.
+- *Geprüft ohne Befund:* `InitOne`. Lesbare Datei: geladen, fertig. Unlesbare: beiseitegelegt und bei kuratierten Listen neu geholt, bei gelernten leer begonnen. Fehlende: geholt, bei Fehlschlag leer und nicht als geladen markiert. Reset ohne Netz: die bisherige Liste bleibt. `_loadedStores` ist ein `ConcurrentDictionary`, die Ladeschritte laufen parallel. Das Ladetoken greift nur für Downloads ohne Zwang. Heilsperre: `PlayerHealingPunished` ist die logische Negation der ersetzten Bedingung. Prüfskripte: alle Selbsttests laufen. Ressourcen-Listen: Upstream-Ergänzungen. `CLAUDE.md`: keine Zählungen oder Verweise verschoben.
+
+**Prüfgrad:** statisch (Code, Aufrufer und Threads erhoben); Prüfskripte; Compile über die CI.
+
+### A225 · Einstellung für große Ziele ohne Leser (29.09.2026)
+
+Gefunden in der Wirksamkeitsprüfung zu A221, beim Verfolgen der Zielwahl von Synastry (`FindFriendly`, Fall `Big`).
+
+- *Research:* `Configs` führt zwei Einstellungen: `_smallHP` („Prioritize Low HP targets instead of High HP targets when using Small Target …") und `_bigHP` („… when using Big Target …"). Beide Zweige für große Ziele lesen `Service.Config.SmallHp`: freundlich (`FindFriendly`, `default` = `Big`) und feindlich (`TargetingType`, `default` = `Big`). `BigHp` hat keinen Leser. Eingeführt in Upstream b16412fbb (11.05.2025) mit dem Text; die Leser sind ein Klon des Falls `Small` ohne Anpassung.
+- *Optionen:* (0) belassen; (a) die Zweige lesen `BigHp`; (b) `_bigHP` entfernen. Der Oberflächentext bindet: (a).
+- *Im Kampf:* Unter gleich großen Zielen (Trash, Spieler) entscheidet bei „Big" die Gesundheit. Bisher folgte sie der Einstellung für kleine Ziele. Ab Werk stehen beide auf aus, dann ändert sich nichts. Wer nur eine der beiden umgestellt hat, bekommt jetzt, was ihr Text sagt.
+- *Falsifikation:* **Kein Defekt?** Der Text nennt „Big Target", gelesen wurde die Einstellung für kleine. **Option falsch?** Der Namensgenerator bildet `_bigHP` wie `_smallHP` (`Util.ConvertToPascalCase`), also `BigHp`. **Ausgeliefert, nichts ändert sich?** Bei gleicher Stellung beider Einstellungen richtig so.
+- *Betroffene:* Endnutzer mit „Big" als Zielart und abweichender Stellung; fremde Rotationen mit freundlichen Aktionen ohne eigenen `TargetType` (Vorgabe `Big`) außerhalb der Heil- und Abwehrpfade.
+
+**Prüfgrad:** statisch (Code, Generator, Versionsgeschichte); Prüfskripte; Compile über die CI.
+
+### A226 · Krieger: Nascent Flash nach seinen Kriterien — voller Loop (29.09.2026)
+
+Seine Vorgabe mit Kriterien (Wortlaut in Konzept 09): Ist der Tankbuster tödlich, braucht der Tank danach viel Heilung, ist er mit Bestehendem wegsteckbar, auf wen, was liegt beim Ziel, Debuffs bei Ziel und Tank, Triage.
+
+- *1 Research:*
+  - Wirktexte und Spieldaten (Job-Guide, xivapi 16464/25751/3551, abgerufen 29.09.2026): Nascent Flash und Bloodwhetting teilen Abklingzeitgruppe 7 (25 s). **Nascent Flash heilt auch den Krieger** mit 400 Potenz je Waffenfertigkeit. Er verliert beim Geben nur Minderung (−10 % 8 s, −10 % 4 s) und Barriere (400 Potenz).
+  - Code: Nascent Flash im Heilpfad der Fähigkeiten, vor Einzelabwehr und allgemeinem Pfad. Bloodwhetting fällt in der Einzelabwehr nur mit „single enemies" oder mehr als zwei Gegnern und nur, solange das Ziel den Krieger anvisiert; sonst reaktiv unter 0,7.
+  - **Defekt:** Der Zielfilter las `!t.NoNeedHealingInvuln()` und ließ nur Unverwundbare durch (`WillStatusEnd` ist bei fehlendem Status wahr). `scan8.py` hatte die Zeile gelistet, geprüft wurde die Liste nicht (C101).
+  - Die Höhe eines Tankbusters misst nichts im Baum, BossModReborn liefert keine. The Balance: „Nascent Flash goes on a friend", mehr nicht.
+- *2 Optionen:*
+  - (0) belassen;
+  - (a) nur den Polaritätsfehler beheben;
+  - (b) (a) plus Zurückhaltung für den Tankbuster;
+  - (c) (b) plus Zurückhaltung, wenn er selbst kritisch ist, mit Triage;
+  - (d) (c) plus Zielwahl nach Gefährdung;
+  - (e) Messung der Tankbuster-Höhe als Grundlage der Tödlichkeit;
+  - (f) Nascent Flash als Minderung für den anderen Tank vor dessen Tankbuster.
+- *3 Abwägung:*
+  - (a) ist ein belegter Defekt: Seit c3fac720b ging Nascent Flash an praktisch niemanden. Die Behebung macht den Konflikt erst wirksam, also gehören (b) bis (d) dazu.
+  - (b) wirkt nur, wo Bloodwhetting vor dem Tankbuster fällt. Sonst hält sie ohne Nutzen, daher an dieselbe Bedingung gebunden.
+  - (e) braucht unbelegte Annahmen (Barriere im Schadenswert, Schadensart, Prozentsätze je Status), die Richtung „zu niedrig" ist gefährlich. Eigenes Vorhaben.
+  - (f) ist neues Verhalten ohne Quelle, vorgeschlagen.
+  - Gewählt: (a) ohne Schalter; (b) bis (d) hinter Einstellungen, ab Werk wie bisher.
+- *4 Abgleich:* Seine Kriterien je Punkt in Konzept 09 beantwortet, samt der ehrlichen Lücke bei „tödlich". Nicht verengt: Debuffs bei Ziel und Tank einzeln erhoben. Keine Ausweitung: (f) nur vorgeschlagen.
+- *5 Review:*
+  - Der Tankbuster-Weg muss die eigene Prüfung von Raw Intuition lesen (`PlayerIsTargetOnSelf`). Sonst hält er für einen Off-Tank-Marker, für den Bloodwhetting nie fällt.
+  - Unverwundbarkeit beim Zauber auf ihn hebt den Bedarf auf.
+  - Die Heilzielwahl (`TargetType.Heal`) schließt Tote, Heilung-wirkungslos und Living-Dead-Träger aus und ordnet nach kritischer Klasse. Der Kandidatenfilter bleibt davor.
+  - Enum angehängt, Ordinale unverändert.
+- *6 Falsifikation:*
+  - **Kein Defekt?** Für die Polarität widerlegt, `check_invuln_polarity.py` meldet die alte Zeile. Für die Zurückhaltung: Ab Werk entsteht der Tankbuster-Konflikt nicht, und die Regel hält dort auch nicht.
+  - **Option falsch?** Die Triage kann einen Schadensausteiler kosten, wo Bloodwhetting nicht der Unterschied war. Nicht widerlegt, solange die Höhe fehlt; die Regel folgt seiner Ordnung. Die Näherung „wen sein Ziel anvisiert" kann bei Tankbustern auf den zweiten in der Feindseligkeit irren, in die vorsichtige Richtung.
+  - **Ausgeliefert, nichts ändert sich?** Mit beiden Einstellungen ab Werk ändert sich nur die Polarität. Die ändert viel: Nascent Flash heilt jetzt andere.
+- *7 Umsetzung:*
+  - Polarität und Heilung-wirkungslos-Ausschluss im Filter.
+  - `BloodwhettingForDefense` (eine Bedingung für Einzelabwehr und Zurückhaltung).
+  - `NeedsBloodwhettingHimself`, `WinsTriageOverWarrior`.
+  - Einstellung „Keep Bloodwhetting for yourself when you need it" (aus), Zielwahl „By danger" (angehängt).
+  - `check_invuln_polarity.py` mit Selbsttest in der CI.
+- *8 Nachweis:* Prüfskripte, Compile über die CI. Die neue Prüfung meldet den alten Stand und ist auf dem neuen still. Am Spiel nicht beobachtet.
+- *Fester Wert:* Die Zahl 2 in `BloodwhettingForDefense` ist Upstreams Gegnerzahl (seit d566eda86), unverändert in eine Eigenschaft verschoben. Ableitbar wäre „mehr als die globale ‚Number of hostiles‘“ (Vorgabe 2): gleich bei der Voreinstellung, anders für jeden, der sie geändert hat, deshalb ohne Entscheidung nicht umgestellt. `fixed_values.json`: offen, mit Verweis auf diesen Loop.
+- *9 Dokumentation:* Konzept 09 (Bewertung, Triage, Gegenposition, Antithesen), Konzept 07 (vierte Zielwahl), TODO (Voreinstellungen, Messung, Vorschlag, Upstream-Bauform), Release-Text.
+- *10 Wirksamkeit:* Plateau bis zur Messung der Tankbuster-Höhe; sie ist die einzige Größe, die die Gegenposition entscheiden würde.
+
+**Prüfgrad:** statisch (Wirktexte, Spieldaten, Code, Versionsgeschichte); Prüfskripte samt neuem; Compile über die CI.
+
+### A227 · Voreinstellungen: der im Kampf sinnvollere Wert (29.09.2026)
+
+Seine Vorgabe: „warum packst du die voreinstellungen auf "aus"? sie sollen doch getested werden. es ist der im spielgeschehen sinnvollere wert zu wählen", dazu die Frage „woher kommt die regel?".
+
+- *Herkunft der Regel:*
+  - „Eine Verbesserung, deren Nutzen ich nicht belegen kann, kommt hinter eine Option; das bisherige Verhalten bleibt Standard" steht seit 32a8abf80 (06.09.2026) in `CLAUDE.md`. Eingeführt habe ich sie als eine von sechs „standard practices" (Feature Toggle nach Fowler), mit der Begründung „so an assumed improvement does not become everyone's default".
+  - Sie war meine Ableitung, keine Vorgabe von ihm. 027ec2fe4 (24.09.2026) hat sie beim Neufassen verkürzt übernommen.
+  - Seine Vorgabe zum Testerprofil („ich will ja die codeänderungen testen, daher nutze ich selten die alten defaulteinstellungen") stand daneben, ohne dass ich den Widerspruch aufgelöst habe.
+- *Ersetzt:* `CLAUDE.md`, „Option und Beobachtbarkeit": Voreinstellung ist der Wert, der im Spielgeschehen sinnvoller ist. Ausnahme nur mit Grund aus dem Kampf; „noch nicht entschieden" ist keiner.
+- *Erhebung:* alle Einstellungen, die nach der alten Regel oder bis zu seiner Entscheidung aus standen, dazu Upstream-Einstellungen, die seinen dokumentierten Vorgaben widersprechen.
+- *Umgestellt auf an:*
+  - global: `HealAheadOfDamage`, `HealTargetByDanger`, `HealAheadOfAnnouncedHit`, `SkipAreaCastsThatMissedMe`, `MitigateBigAreaCastsEvenIfInterruptible`, `HoldProactiveMitigationForSmallCast`;
+  - Rotationen: `UseArmsLengthOnPull` (vier Tanks), `PreferTitanWhileMoving`, `ThinAirOnMpPressureOnly`, `StretchHolyStun`, `HoldNascentFlashForOwnNeed`;
+  - `NascentFlashTarget` auf `ByDanger`, `BlackestNightUsage` auf `TankbusterHeavyPullOrLowHealth` (die engste Stufe mit Notfall).
+- *Umgestellt auf aus (Upstream-Einstellungen gegen seine Vorgaben):*
+  - `AddCrimsonCyclone` (Sprung aus beliebiger Entfernung; seine Vorgabe: nichts, was ihn aus sicherer Position holt; Konzept 12 empfahl es bereits);
+  - `AddSwiftcastOnLowST`/`AddSwiftcastOnLowAOE` (Swiftcast bleibt für Wiederbelebungen).
+  - Die Swiftcast-Einstellungen des Piktomanten bleiben: Er hat keine Wiederbelebung.
+- *Aus geblieben, mit Grund aus dem Kampf:*
+  - `WithholdHealingForLivingDead`: RSR zündet Living Dead auch als Notrettung, dort ist der Tod nicht gewollt.
+  - `UsePreEukrasianDiagnosis`: Erneuern bei jedem Bruch gegen Konzept 06 §2.1, offene Entscheidung A209.
+  - `HoldHolyMaxHostileOutput` 0: eine von mir gesetzte Zahl, die gemessene Freigabe ersetzt sie.
+- *Wirkung auf seine Installation:* Rotationseinstellungen stehen nur in der Konfiguration, wenn er sie gesetzt hat (`RotationConfigBase.Value`); unberührte nehmen die neue Voreinstellung. Globale Einstellungen werden vollständig gespeichert (`Configs.Save`), dort behält eine bestehende Konfiguration ihren Wert.
+- *Nachgezogen:*
+  - Optionstexte ohne „Off by default";
+  - Konzepte 07, 08, 09, 10, 12, 13, 15;
+  - TODO;
+  - Release-Texte (auch `fork-changes-in-play.md`, das `check_concept_defaults.py` gegen den Code prüft).
+  - Zwei veraltete Zeilenangaben ersetzt: Konzept 05 (`PLD_Reborn.cs:103/108`, meine Tooltip-Änderung verschob sie) und Konzept 12 (`:483`). Statt Zeilen stehen dort jetzt Methodennamen, die Aussagen sind am Code geprüft.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+### A228 · Weißmagier: zweites Sanctus sofort — Herkunft geprüft, Messmittel eingebaut (29.09.2026)
+
+Seine Meldung: „du hast die pause zwischen den stuns des ersten und zweiten sanctus verschlimmbessert. der whm wartet wieder nicht die ca. 1,5 sekunden, sondern casted sofort. warum hast du daran was verändert."
+
+- *Research, rückwärts:*
+  - Einziger Weg zu Sanctus ist `GeneralGCD` hinter `ShouldStretchHolyStun`, `ShouldHoldHolyForBarrier` und `ShouldHoldHolyWhilePackSlowed`.
+  - `git log -L`: `ShouldStretchHolyStun` zuletzt c75b19e5f (10.09.), `SurveyStuns` c10bbcd02 (13.09.), `StunStatus` a02ffaa44 (10.09.), `CheckTimeToKill` 5945ffae0 (16.09.), `ModifyDiaPvE` 25c5f342c (April).
+  - Änderungen am Weißmagier seit dem 27.09.: Voreinstellungen `StretchHolyStun` und Thin Air (ad73a6a5c), Regen-Pull-Erhaltung (61e6e5b18), zwei Heilschwellen (a5fb8ea35, 09bd3ab47). `SurveyHostileStatus` bekam am 28.09. nur einen Aufrufer (64b3af436).
+  - Keine davon berührt den Sanctus-Block oder seine Eingänge.
+  - Die Voreinstellung kann das Warten nicht verringern: Rotationseinstellungen stehen nur in der Konfiguration, wenn er sie gesetzt hat, und er hatte die Streckung eingeschaltet.
+- *Befund:* Kein Eingriff am Verhalten. Vier Wege lassen Sanctus sofort fallen, während im Radius eine Betäubung läuft:
+  - weniger als `StretchHolyMinHostiles` (3) Gegner im Radius;
+  - ein Gegner im Radius noch betäubbar und unbetäubt;
+  - kein DoT kann den GCD übernehmen;
+  - die Einstellung ist aus.
+  Welcher davon in seinem Pull griff, sagt der Code nicht.
+- *Messmittel:* `ShouldStretchHolyStun` schreibt jede Entscheidung bei laufender Betäubung mit Grund nach `DefenseTrace.log` („held"/„not held", Zahl der Betäubten und der Gegner im Radius), einmal je Änderung oder je GCD. Die Logik ist unverändert; nur die Reihenfolge der Abfragen ist anders, und alle Wege liefern dasselbe Ergebnis.
+- *Eigener Entwurfsfehler, zur Entscheidung:* Die Ersatzgarantie (A19) setzt Sanctus nur aus, wenn ein DoT den GCD übernimmt, begründet mit Schaden („Glare wäre ein reiner Verlust"). Das widerspricht seiner Spielweise „Sicherheit vor Schaden" und der eigenen Bemerkung im Code („The damage lost is not weighed against this").
+
+**Prüfgrad:** statisch (Versionsgeschichte, Code); Prüfskripte; Compile über die CI.
+
+### A229 · Upstream-Sync 01.10.2026: Job-Leisten nach dem Dalamud-Update, Blaze Spikes (01.10.2026)
+
+Drei Upstream-Commits (07f9f7daf, Merge 3acc5333a, e79608210), konfliktfrei gemergt.
+
+- *Was sie im Kampf ändern:*
+  - **Beschwörer:** `RubyAttunement`, `TopazAttunement`, `EmeraldAttunement` und `NoElementalSummon` lesen jetzt `AttunementType`/`AttunementCount` statt des Bytes `Attunement`. Dalamud (master, abgerufen 01.10.2026) markiert `Attunement` als `Obsolete`: „As of 7.01, this should be treated as a bit field". Die alte Zahlentabelle (5/9 Ruby, 6/10/14/18 Topaz, 7/11/15/19 Emerald) entspricht der Zerlegung Typ in den unteren zwei Bits, Anzahl darüber. Bei unverändertem Layout ist sie also gleichwertig. Ob das Dalamud-Update das Byte selbst verändert hat, sagt der Diff nicht; Upstream nennt es eine Korrektur „due to Dalamud update". Die neue Form ist von Dalamud empfohlen und von beiden Lesarten die sichere.
+  - **Mönch und Astrologe:** `BeastChakra1–3` und `Card1–3` statt der als `Obsolete` markierten Arrays. Die Prüfungen „alle gleich", „alle verschieden", „enthält" bzw. „eine der drei Karten ist X" sind inhaltlich gleich.
+  - **Bestienmeister:** Snarl und Challenge. Begrenzter Job, außerhalb seines Profils; nur erfasst.
+  - **ChurinMNK:** außerhalb seines Profils.
+  - **`InvincibleStatus.json`:** 5465 „Blaze Spikes" („Elemental spikes are dealing fire damage to attackers", xivapi), laut Upstream aus MB2. RSR greift ein Ziel mit diesem Status nicht an. Der Fork liefert die Liste aus seinem eigenen `main` aus.
+- *Wie es in die Fork-Änderungen greift:*
+  - Kein Fork-Code liest die entfernten Mitglieder. `SMN_Reborn` liest die Attunement-Eigenschaften nicht direkt; die Fork-Regeln des Beschwörers (Konzept 12) lesen Phasen und Abklingzeiten, nicht die Leiste der Primals.
+  - Die Fork-Zeile in `AstrologianRotation` (Synastry, `HealsWithNextGcd`) bleibt unberührt.
+- *Vertrag:* Entfernt sind das öffentliche `SummonerRotation.Attunement` sowie die geschützten `MonkRotation.BeastChakras` und `AstrologianRotation.DrawnCard`. Betroffen sind Autoren abgeleiteter Rotationen; die Entscheidung trifft Upstream, der Fork folgt.
+- *Build:* Warnungen gelten nicht als Fehler, weitere `Obsolete`-Felder brechen den Build nicht. Die CI lädt Dalamud „latest".
+- *Prüfmittel:* `check_fixed_values.py` verglich Upstream-Zeilen nur mit der Merge-Basis von `HEAD`. Vor dem Merge-Commit ist das die alte Basis, und Upstreams neue Zeilen (BST_Reborn, ChurinMNK) erschienen als Zahlen des Forks. Es liest jetzt zusätzlich `upstream/main`.
+
+**Prüfgrad:** statisch (Diffs, Dalamud-Quelle, xivapi); Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -3320,3 +5078,28 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C75 | A108 und Konzept 13: die Größenbewertung sei eingezogen, die Flächenminderung antworte wieder richtig | Nur die **reaktive** Hälfte. `BMRShouldRefreshBefore` — der gemeinsame Helfer jeder proaktiven Minderung, bei allen vier Tanks, bei Barde, Maschinist, Tänzer und Beschwörer — prüft allein die **Zeit** bis zum nächsten Ereignis. Eine Größe kommt darin nicht vor, und BMR liefert keine. Vom Auftraggeber im Spiel belegt (Ewige Königin, Anfangsphase: kleiner Flächenangriff, dann großer — Schimmerschild fällt auf den ersten und fehlt beim zweiten). Die Barriere ist dabei der klarere Fall, weil sie feste Punkte ausgibt und ein kleiner Treffer sie ganz auffrisst | `AnnouncedHitIsSmall` hält die Auffrischung zurück, solange ein bewertet kleiner Flächencast läuft; hinter `HoldProactiveMitigationForSmallCast`, Vorgabewert aus, mit `ProactiveMitigationHeld` als Sonde. Als Heuristik gekennzeichnet — nichts belegt, dass die Vorhersage den laufenden Cast meint |
 | C76 | Im selben Zug gebaut: eine Ausnahme von der neuen Zurückhaltung, wenn die Aktion eine zweite Ladung hat — mit der Begründung, Schimmerschild könne dann beide Treffer eines Paares voll decken | Das ist die Revision einer dokumentierten Entscheidung des Auftraggebers ohne ihn. A9 (`6704335d`) hat den ungegateten Radiant-Aegis-Zweig auf seine Meldung hin entfernt, und die dort festgehaltene Begründung ist wörtlich diese: „`usedUp: true` gab dabei auch die zweite Ladung frei — bei echter Gefahr war keine mehr da.“ Er hat es bei dieser Arbeit wiederholt: die Doppelzündung von Schimmerschild war neben Addle einer der ersten Fehler, die der Fork behoben hat. Der Unterschied zum A9-Fall ist real — dort **keine** Gefahr, hier **zwei** angekündigte Treffer — aber die Regel dazu ist eindeutig: vorlegen, nicht selbst entscheiden | Ausnahme zurückgenommen; die Zurückhaltung gilt unabhängig von den Ladungen. Der Aktionsparameter bleibt im Helfer, damit seine Entscheidung ohne Umbau umsetzbar ist; Konzept 08 führt den Fall samt Beleg und der offenen Frage. Zwei Ladungen sind dabei am Merkmalstext belegt (`Enhanced Radiant Aegis [480]`, Maximum Charges: 2) |
 | C77 | Zur Ladungsfrage eine Entscheidungsvorlage gestellt, mit der Empfehlung „so lassen, bis die Sonde zeigt, wie oft der Fall eintritt“ — und drei Zähler geliefert, die nur zählen | Beides verschiebt die Auswertung auf ihn. Seine Vorgabe steht seit C68 in `CLAUDE.md`: eine Sonde erhebt **und bewertet**, die Entscheidung fällt im Code zur Laufzeit. Zweiter Verstoß gegen dieselbe Regel. Und die Vorlage war zudem überflüssig: A9 verbietet nicht das Ausgeben der zweiten Ladung, sondern nennt die Folge — „bei echter Gefahr war keine mehr da“ —, und Verfügbarkeit ist zur Laufzeit ausrechenbar | Die Zurückhaltung rechnet jetzt selbst, ob die Reserve gefährdet ist (Ladung übrig, oder nächste vor dem vorhergesagten Ereignis zurück), und bewertet jede Zurückhaltung am tatsächlich eingetroffenen Treffer. Unterhalb des Gleichstands legt sie sich selbst still — der Gleichstand ist der Break-even des Tauschs, keine gesetzte Zahl. Bilanz je Kampf, mit `ResetAllRecords` verworfen. Die Anzeige meldet das Urteil, nicht die Rohzahl |
+| C78 | `check_release_note_size.py` erzwang 11.000 Zeichen für die Release-Beschreibung, und ich habe den Text für `7.5.6.10+wsh1` zweimal danach gekürzt | Die Grenze gehörte zum Release-**Formular**, in das der Text früher von Hand eingefügt wurde. Der Publish-Workflow übergibt ihn längst über `body_path` an die API, deren Grenze bei 125.000 liegt — das Formular liegt nicht mehr im Pfad. Gekürzt wurde also für eine Schranke, die es auf diesem Weg nicht gibt; verloren gingen Begründungssätze, keine Tatsachen. Derselbe Fehler wie beim Ladepfad: gemessen wurde eine Grenze, nicht der Weg, den der Text tatsächlich nimmt | Prüfer ersetzt durch `check_release_note.py`: Obergrenze auf die API-Grenze gesetzt, und statt der Größe wird gemessen, was wirklich altert — ob der im Titel genannte Ausgangs-Tag noch der neueste auf `origin` ist. `CLAUDE.md` trägt die Kehrseite der Zielort-Regel nach |
+| C79 | A123 und `ffbb2eb2f`: Die Trankauswahl nehme bei Gleichstand den schwaechsten, und das sei der Defekt („der starke Trank, den er bewusst freigeschaltet hat, blieb liegen, waehrend ein schwacher verbraucht wurde“) | Die Richtung war falsch bewertet. Gleichstand heisst, dass beide Sorten **dieselbe** Menge herstellen; dann leistet die teure nichts, was die billige nicht auch leistet. Der Auftraggeber hat den Fall benannt: ein Charakter auf Stufe 100 in einer Instanz mit Synchronisierung auf 50 darf den hochstufigen Trank weiter trinken, bekommt aber die verringerte Wirkung — „das waere doch Verschwendung“. Das urspruengliche `>=` traf damit im Gleichstand das Richtige, wenn auch nur mittelbar ueber die Sortierung der Liste; mein `>` kehrte es ins Falsche. Der Unterschied zwischen beiden Formen wirkt **ausschliesslich** im Gleichstand — bei echtem Unterschied waehlen beide den staerkeren | Regel ausgeschrieben statt aus der Reihenfolge abgeleitet: mehr Heilung gewinnt, bei gleicher Heilung die niedrigere Gegenstands-Id. `MaxHp` misst dabei, was der Trank **jetzt** herstellt — `Player.MaxHp` ist die synchronisierte Gesundheit —, also braucht die Regel kein Wissen ueber Stufen oder Synchronisierungsregeln. Ob zwei Sorten bei Synchronisierung tatsaechlich gleichziehen, haengt an ihren Prozentsaetzen und ist von hier nicht messbar; die Anzeige `MaxHP` je Trank zeigt es im Spiel |
+| C80 | Konzept 12 und A115: Wartet die Beschwörung einen GCD auf den Buff, sei „der warte-GCD ein Füller, kein Verlust“; und ein abkühlender Buff dürfe als erledigt gelten, damit die Beschwörung nicht warte | Beides nur für die einzelne Phase richtig. Die Abklingzeiten laufen ab der Nutzung, also pflanzt sich jeder Versatz in alle folgenden Zyklen fort. Die erste Aussage übersah, dass die Beschwörung in **jedem** Zyklus wartete; die zweite, dass ein knapp nicht fertiger Buff danach in die Phase fällt und seine nächste Abklingzeit noch später endet. Vom Auftraggeber im Spiel beobachtet als wachsender Versatz | Freigabe auf „bereit bis zum nächsten GCD“ vorgezogen, Warten auf „Buff bis zum nächsten GCD fertig“ begrenzt (A126); Konzept 12 führt Fortpflanzung, Ursache und den offenen großen Abstand |
+| C81 | A126 und Konzept 12: Die Beschwörung warte, wenn Searing Light „bis zum nächsten GCD“ fertig wird, und das ziehe Buff und Phase wieder in Takt | Gelesen wird die Grenze im Moment der Beschwörung, wo die GCD-Restzeit nahe null ist; sie hieß damit „jetzt bereit“ und ließ die ein, zwei Sekunden der Meldung durch. Ebenso widerrufen: meine Empfehlung, das Warten an offene Primal-Ladungen zu koppeln — Primal-Ladungen tragen weniger Potenz als die Demi-Phase (Einwand des Auftraggebers) | Grenze auf einen weiteren GCD, kein Warten mit zweitem Beschwörer, jeder laufende Buff und ausgeschalteter Burst gelten als erledigt (A127) |
+| C82 | A127, Konzept 12, Code-Kommentar in `SMN_Reborn` und die Nachricht von `870353424`: Sein Satz „das am anfang zu prüfen und den demi so zu verschieben … reicht“ sei seine **Vorgabe** („Owner's rule“) | Es war ein Vorschlag zur Prüfung, als Antwort auf meine abgelehnte Empfehlung: „meine entscheidung war keine entscheidung, sondern ein vorschlag zur prüfung“. Umgesetzt ohne Optionen, Falsifikation und Nullvariante | Als Prüfvorschlag gekennzeichnet; der Loop nachgeholt (A128); die Commit-Nachricht bleibt, weil die Historie nicht umgeschrieben wird |
+| C83 | A127, Konzept 12, Release-Text: Die Beschwörung warte „höchstens einen weiteren GCD“, und „geprüft vor jeder Beschwörung kann der Abstand nicht mehr wachsen“ | Ein Buff, der nach dem Einschiebefenster des Warte-GCDs zurückkehrt, kostete einen zweiten; ein Warte-GCD mit Wirkzeit ebenso. Und der Abstand wächst weiter, wo vor der Beschwörung kein Einschiebeplatz ist (A128, Befund 1) | Grenze auf das Einschiebefenster gelegt; die Restfälle stehen in Code, Konzept und Release-Text |
+| C84 | A115: „Garantiert wird es erst, wenn die Beschwörung selbst auf den Buff wartet“ | Der Platz hinter der Beschwörung liegt ebenfalls vor dem ersten Burstschaden, weil die Beschwörung keinen Schaden macht — derselbe Befund steht im selben Konzept. Das Warten garantiert nichts, was dieser Platz nicht auch leistet, bis auf den Schutz vor Lux Solaris, und es erzeugt Drift | Entscheidung vorgelegt (`TODO.md`, A128) |
+| C85 | Konzept 12: V7 „umsetzen“ (Vorschläge im Einzelnen), „Richtlinien nach Lage — geprüft und nicht nötig“, „Was damit entfällt: kein Zustand über Frames hinweg“, und V8 mit 56 % statt 48 % | Nach der Entscheidung für V8 standen die V7-Abschnitte unverändert daneben und widersprachen ihr. Die V8-Zahl maß das Modellbuch, nicht das Buch des Plugins; dieses erreichte 49,0 %. Das Modell selbst lief mit falscher Primal-Reihenfolge und falschem Primal-Aufbau | Konzept eingearbeitet, Modell korrigiert und in die CI genommen, Plugin-Buch nachgemessen und verbessert (A129) |
+| C86 | Konzept 12 und `SMN_Reborn`: Sein Satz zu Schimmerschild und Addle sei „Vorgabe des Auftraggebers“ / „Owner's rule“ | Es war ein Hinweis auf eine Tatsache, die ich übersehen hatte: „es sind keine vorgaben, sondern hinweise, was du anscheinend nicht bedacht hast“. Dieselbe Fehlerform wie C82, Minuten nach der Regel dagegen | Als Hinweis geführt, Beleg ist der Wirktext; CLAUDE.md um den Hinweis erweitert |
+| C87 | A131 Punkt 1: Das Warten der Beschwörung schiebe Solar und Searing Light hinter den Burst der Gruppe; der Restfall ohne Warten sei einmalig | Der einzige Beschwörer setzt den Burst selbst, Solar und Buff verschieben sich gemeinsam — der Gruppenburst war eine unbelegte Annahme über fremde Spieler. Und der Restfall ist nicht einmalig: Ein Rückstand des Buffs hinter der Beschwörung bleibt in jeder folgenden Solar-Phase, weil beide Abklingzeiten ab Nutzung laufen | Warten wiederhergestellt (A132) |
+| C88 | A124, Code-Kommentar in `CustomRotation_Ability`, CLAUDE.md: `OnlyHealAsNonHealIfNoHealers` sei „der Regelfall und keine Ecke", und deshalb sei ein Beschwörer bei 1 Gesundheitspunkt an keinen Trank gekommen | Die Option steht ab Werk auf aus (`Configs.cs`). Belegt ist durch seine Beobachtung nur, dass **eine** der fünf geerbten Bedingungen bei ihm sperrte, nicht welche. Offen bleibt zudem, warum Upstream mit derselben Flagge bei ihm funktionierte | CLAUDE.md eingearbeitet; Code-Kommentar richtiggestellt (A139); A133 |
+| C89 | C79 und Code-Kommentar in `UseHpPotion`: Bei gleicher Heilung sei die niedrigere Gegenstands-Id die niedrigere Sorte | Die Heiltränke stehen in keiner Ressource des Repositorys; ob die Id-Reihenfolge der Sortenreihenfolge folgt, ist unbelegt. Aus dem Spiel ableitbar ist die Gegenstandsstufe | Regel liest die Gegenstandsstufe (A139); A133 |
+| C90 | `38aba83df` und sein Kommentar: Die Ausnahme „bereits im Ring" decke seinen Fall „0 yalm", und der Anlauf bleibe durch `DistanceForMoving2` begrenzt | 0 Yalm misst von Trefferfläche zu Trefferfläche, die Ausnahme vom Mittelpunkt aus; das Band dazwischen läuft weiter über die alte Prüfung. `DistanceForMoving2` gilt für Crimson Cyclone nicht, dort gelten `AddCrimsonCyclone` und `CrimsonCycloneDistance` | behoben mit `StandsAtTarget`, Kommentar richtiggestellt (A138); A133 |
+| C91 | A131, Konzept 12, `SMN_Reborn`: „Am Ziel steht, wer innerhalb der Reichweite von Crimson Strike steht" | Seine Grenze ist 0 Yalm. Bei drei Yalm zieht Crimson Cyclone den Spieler heran, also genau der Anlauf, den seine Sicherheitsentscheidung ausschließt | behoben: Ifrit nur bei 0 Yalm (A138); A133 |
+| C92 | Kommentar in `SMN_Reborn.AttackAbility`: 60 Sekunden seien eine ganze Zahl von GCDs, die Abklingzeit der Beschwörung ende also auf dem GCD-Raster | Gilt nur bei 2,50 Sekunden GCD. Die Regel „bereit bis zum nächsten GCD" hängt nicht daran | Kommentar bei der nächsten Änderung an der Stelle; A133 |
+| C93 | A117: Die Verfallsklausel für Lux Solaris in `GeneralAbility` bekomme keinen Einschiebeplatz, weil der Angriffszweig in einer Demi-Phase immer etwas habe | Refulgent Lux läuft 30 s, die Demi-Phase 15 s. Die Klausel greift in den letzten drei GCDs, also in der Primal-Phase danach, und dort ist der Angriffszweig fast leer. Lux Solaris zündet dann spät und ohne Gesundheitsprüfung; blind am Code bestätigt (A136) | A136; der Fall ist durch die gemessene Zündregel im Angriffszweig ohnehin überholt |
+| C94 | TODO und Konzept 11: Der Sonderfall für `PartyAndAllianceHealers` stehe fälschlich vor der `H2`-Umkehrung | Der Optionstext von `H2` nennt nur Nicht-Heiler; der Sonderfall für Heiler folgt dem Text, die Umkehrung der Heilerliste in den übrigen Modi nicht | Konzept 11 und TODO berichtigt, A141 |
+| C95 | A137, Code-Kommentar in `SMN_Reborn`, Konzept 07, Release-Text: Firebird Trance werde im Baum nur von PvP-Stellen gelesen | `ChurinSMN` liest ihn im PvE mit derselben Bauform; zudem nennt der Wirktext von Summon Phoenix „Enters Firebird Trance", ob der Status im PvE gesetzt wird, ist offen | Kommentar, Konzept und Release-Text berichtigt, ChurinSMN erfasst; A144 |
+| C96 | Bericht an ihn zu A170 und A170 selbst: Er spiele womöglich das Release `7.5.6.10+wsh1`, darum sehe er weder Speicherfixes noch Anzeigen | Er kompiliert vor dem Spielen den aktuellen Zweig. Die Annahme war unmarkiert und trug den Schluss „nichts, was er spielt, hat sich geändert" | A170 berichtigt; CLAUDE.md, Nutzungsprofil |
+| C97 | A175, A176, Konzept 13, Bericht an ihn: Der Effektkopf werde richtig gelesen, weil die Offsets in ECommons und ClientStructs übereinstimmen | Verglichen waren nur die Offsets, nicht die Breite: Das Enum ist `uint`, das Feld ein Byte, gelesen wurden vier Bytes. Genau daran scheiterte die Messung | A177; Konzept 13 berichtigt |
+| C98 | Code-Kommentar in `WHM_Reborn.ShouldHoldHolyWhilePackSlowed` (seit `2ebd54728`): Ohne DoT-Ziel falle Sanctus, gleich wie verlangsamt der Pulk ist — deshalb werde eine Verlangsamung nicht zur Zeit ohne Sanctus | Übernommen aus der Streckung, wo ein Einschub genügt; die Regel sagt „solange". Im Spiel beobachtet: Sanctus kam nach dem letzten DoT zurück | A178 |
+| C99 | A217 und Konzept 07/08: Die Heilart sei die Aktionsart, oGCD-Schwellen lesen den kurzen Vorlauf; Synastry, Krasis ×2, Soteria und Kardia unter den „22 oGCD-Schwellen" | Maßgeblich ist, wann die Heilung landet. Emergency Tactics war als Ausnahme erkannt, die gleichgebauten Synastry, Krasis und Soteria nicht; Synastry wählte dadurch bei steilem Verlauf ein anderes Ziel als die Heilung, mit der sie landet | A221: `ActionSetting.HealsWithNextGcd`, Schwellen und Zielwahl berichtigt, Konzepte 07/08 |
+| C100 | A221 in erster Fassung, Commit 79887dd36, Konzept 08, Release-Text: Synastry habe mit dem kurzen Vorlauf ein anderes Ziel gewählt als die Einzelheilung, mit der sie landet, und sei deshalb bei steilem Verlauf ausgefallen | Synastry läuft in `EmergencyAbility` vor jedem Target-Override und setzt keinen `TargetType`; gewählt wird nach `Big`, der Vorlauf kommt darin nicht vor. Behauptet ohne den Weg der Zielwahl am Code zu verfolgen — in der Wirksamkeitsprüfung desselben Bereichs gefunden | A221, Konzept 08 und Release-Text berichtigt; der Befund an den Schwellen und die Zielwahl für Krasis im Heilpfad bleiben |
+| C101 | A222: Nascent Flash aus dem Upstream-Merge sei geprüft ohne Befund („Der Filtertausch … stellt im `finally` zurück") | Der Filter selbst las `!t.NoNeedHealingInvuln()` und ließ nur Unverwundbare durch. `scan8.py` listete die Zeile unter „read negated"; ich habe die Liste nicht gegen den Code abgeglichen und nur den Rahmen des Filters geprüft, nicht seine Bedingungen | A226: Polarität behoben, `check_invuln_polarity.py` in der CI, damit die Klasse nicht mehr von einer Handprüfung abhängt |
+| C102 | `CLAUDE.md` seit 32a8abf80 und die Optionstexte „Off by default because …": das bisherige Verhalten bleibe Standard, bis ein Nutzen belegt ist | Eine eigene Ableitung (Feature Toggle nach Fowler), als Regel geführt und nie gegen seine Vorgabe zum Testerprofil abgeglichen. Seine Vorgabe: Voreinstellung ist der im Kampf sinnvollere Wert, damit neue Regeln getestet werden | A227: Regel ersetzt, Voreinstellungen umgestellt |

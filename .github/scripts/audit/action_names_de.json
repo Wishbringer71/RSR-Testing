@@ -3,7 +3,7 @@
     "German game names the user has stated, paired with the English identifier used in the code.",
     "Rules for this file, from CLAUDE.md: a German name is never formed here - not translated, not",
     "derived from the English name, not taken from a search-engine summary. Only two sources count:",
-    "the Square Enix job guide (currently blocked by the egress) and the user's own statement.",
+    "the Square Enix job guide and the user's own statement.",
     "Anything else belongs in 'note', not in 'de'.",
     "Validated by check_action_names.py, which resolves every 'en' against the generated resources."
   ],
@@ -13,16 +13,8 @@
       "en": "Arm's Length",
       "identifier": "ArmsLengthPvE",
       "kind": "action",
-      "source": "user, 2026-09-12",
-      "note": "Answered directly when asked which action Abtausch is. Closes the question A-1646 left open. C30 had assigned the name to Shirk from a web search, which the naming rule does not admit as a source; that assignment is superseded. Conflicts with the Rückstoß entry below - both come from the user, at different times, for the same action."
-    },
-    {
-      "de": "Rückstoß",
-      "en": "Arm's Length",
-      "identifier": "ArmsLengthPvE",
-      "kind": "action",
-      "source": "user, recorded in C33",
-      "note": "Same action as the Abtausch entry. Which of the two the German client actually prints is not settled; the tree uses Rückstoß in 33 places. Until the user says otherwise, prefer the English identifier in new text."
+      "source": "user, 2026-09-12; German job guide (de.finalfantasyxiv.com/jobguide/paladin/), 2026-09-29",
+      "note": "Settled by the German job guide: role action at level 32, \"verhindert fast alle Rückstoß- und Heranzieheffekte\", 20 % Gemach on physical attackers. \"Rückstoß\" is the game's word for the knockback effect, not this action; the entry that paired it with Arm's Length (C33) is removed."
     },
     {
       "de": "Sanctus",
@@ -30,15 +22,23 @@
       "identifier": "HolyPvE",
       "kind": "action",
       "source": "user, used throughout concept 08",
-      "note": "Also covers Holy III (HolyIiiPvE), the level-82 upgrade the rotation casts in its place."
+      "note": "Holy only. Its level-82 upgrade Holy III has its own German name, Sanctga (entry below); the earlier note that this entry covered Holy III was wrong (German job guide, 2026-09-29)."
+    },
+    {
+      "de": "Sanctga",
+      "en": "Holy III",
+      "identifier": "HolyIiiPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/whitemage/), 2026-09-29",
+      "note": "\"Verbessert Sanctus zu Sanctga\" (trait at level 82)."
     },
     {
       "de": "Reflexion",
       "en": "Reprisal",
       "identifier": "ReprisalPvE",
       "kind": "action",
-      "source": "C30, via web search",
-      "note": "Not a source the naming rule admits. Kept because the user used the name in the same breath as Abtausch and has not corrected it, but it is the weakest entry in this file."
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/paladin/), 2026-09-29; first recorded in C30 via web search",
+      "note": "Confirmed by the German job guide: role action at level 22, reduces damage dealt by nearby enemies by 10 % for 15 s."
     },
     {
       "de": "Ex Machina",
@@ -91,6 +91,154 @@
       "kind": "action",
       "source": "user, 2026-09-12",
       "note": "The upgraded form Enhanced Rampart grants at level 94 is status Rampart_1978, scoped to PLD WAR DRK GNB, whose effect text adds 'while HP recovered via healing actions is increased' - the plain form (71, 1191) does not. The user gives that increase as 15%; the game data states no figure, as with every trait-modified value."
+    },
+    {
+      "de": "Paladin",
+      "en": "Paladin",
+      "identifier": "PLD",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Krieger",
+      "en": "Warrior",
+      "identifier": "WAR",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Dunkelritter",
+      "en": "Dark Knight",
+      "identifier": "DRK",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Revolverklinge",
+      "en": "Gunbreaker",
+      "identifier": "GNB",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Weißmagier",
+      "en": "White Mage",
+      "identifier": "WHM",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Gelehrter",
+      "en": "Scholar",
+      "identifier": "SCH",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Astrologe",
+      "en": "Astrologian",
+      "identifier": "AST",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Weiser",
+      "en": "Sage",
+      "identifier": "SGE",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Mönch",
+      "en": "Monk",
+      "identifier": "MNK",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Dragoon",
+      "en": "Dragoon",
+      "identifier": "DRG",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Ninja",
+      "en": "Ninja",
+      "identifier": "NIN",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Samurai",
+      "en": "Samurai",
+      "identifier": "SAM",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Schnitter",
+      "en": "Reaper",
+      "identifier": "RPR",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Viper",
+      "en": "Viper",
+      "identifier": "VPR",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Barde",
+      "en": "Bard",
+      "identifier": "BRD",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Maschinist",
+      "en": "Machinist",
+      "identifier": "MCH",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Tänzer",
+      "en": "Dancer",
+      "identifier": "DNC",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Schwarzmagier",
+      "en": "Black Mage",
+      "identifier": "BLM",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Beschwörer",
+      "en": "Summoner",
+      "identifier": "SMN",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Rotmagier",
+      "en": "Red Mage",
+      "identifier": "RDM",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27"
+    },
+    {
+      "de": "Piktomant",
+      "en": "Pictomancer",
+      "identifier": "PCT",
+      "kind": "job",
+      "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27",
+      "note": "The user says the job is called Pictomancer in German as well (2026-09-27), correcting a self-formed 'Maler'. The German job guide titles it 'Piktomant'. Use 'Pictomancer' in text for him until he says which his client shows."
     }
   ]
 }

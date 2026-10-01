@@ -472,7 +472,10 @@ public partial class BlackMageRotation
 
 	static partial void ModifyRetracePvE(ref ActionSetting setting)
 	{
-		setting.ActionCheck = () => !IsMoving && !StatusHelper.PlayerHasStatus(true, StatusID.CircleOfPower);
+		// Retrace moves Ley Lines under you: worth its cooldown only while the circle lasts beyond the
+		// next GCD. The need check alone would allow it down to the last moment.
+		setting.ActionCheck = () => !IsMoving && !StatusHelper.PlayerHasStatus(true, StatusID.CircleOfPower)
+			&& !StatusHelper.PlayerWillStatusEndGCD(1, 0, true, StatusID.LeyLines);
 		setting.StatusNeed = [StatusID.LeyLines];
 		setting.IsFriendly = true;
 		setting.CreateConfig = () => new ActionConfig()

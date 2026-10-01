@@ -106,11 +106,14 @@ public sealed class SAM_Reborn : SamuraiRotation
 			{
 				return true;
 			}
-			if (TengentsuPvE.CanUse(out act))
+
+			// Tengentsu and Third Eye protect the samurai alone; the area flag asks whether the party
+			// is hit (concept 13).
+			if (AreaHitOnMe && TengentsuPvE.CanUse(out act))
 			{
 				return true;
 			}
-			if (ThirdEyePvE.CanUse(out act))
+			if (AreaHitOnMe && ThirdEyePvE.CanUse(out act))
 			{
 				return true;
 			}
@@ -259,7 +262,17 @@ public sealed class SAM_Reborn : SamuraiRotation
 			|| UseSingleTargetFinishers(out act)
 			|| UseSingleTargetBuffs(out act)
 			|| UseComboStarters(out act)
+			|| UseMeditateInPause(out act)
 			|| base.GeneralGCD(out act);
+	}
+
+	// A pause in the fight (no hostile within 25 yalms) is a GCD with nothing to strike. Meditate fills
+	// it: "Gradually increases your Kenki Gauge", and only in battle. It ends on moving, and its base
+	// setting already refuses it while moving, so it is asked only when the samurai stands.
+	private bool UseMeditateInPause(out IAction? act)
+	{
+		act = null;
+		return InCombatPause && MeditatePvE.CanUse(out act);
 	}
 
 	private bool UseOgiAndHiganbana(out IAction? act)
@@ -269,6 +282,13 @@ public sealed class SAM_Reborn : SamuraiRotation
 		if (OgiNamikiriPvE.CanUse(out act) && OgiNamikiriPvE.Target.Target != null)
 		{
 			if ((!isTargetBoss || (OgiNamikiriPvE.Target.Target?.HasStatus(true, StatusID.Higanbana) ?? false)) && HasFugetsuAndFuka)
+			{
+				return true;
+			}
+
+			// On a boss Ogi waits for Higanbana and the buffs. When Higanbana never comes (switched off,
+			// or its conditions never meet), Ogi Namikiri Ready would run out and take Kaeshi with it.
+			if (IsLastChanceBeforeStatusEnds(OgiNamikiriPvE, StatusID.OgiNamikiriReady))
 			{
 				return true;
 			}

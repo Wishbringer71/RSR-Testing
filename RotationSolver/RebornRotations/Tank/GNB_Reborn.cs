@@ -8,6 +8,18 @@ namespace RotationSolver.RebornRotations.Tank;
 public sealed class GNB_Reborn : GunbreakerRotation
 {
 	#region Config Options
+	[RotationConfig(CombatType.PvE, Name = "Use Arm's Length on a pull for its Slow",
+		Tooltip = "Arm's Length is used on a group pull for its Slow, not only as knockback "
+			+ "protection.\n"
+			+ "In a fight: the Slow +20% lands on every enemy that strikes you and delays "
+			+ "auto-attacks as well as casts, so in a standing pack it throttles the whole incoming "
+			+ "stream for fifteen seconds. It costs nothing but its own cooldown. A pull is as many "
+			+ "enemies in reach as the global \"Number of hostiles\" for defensive abilities; a pack "
+			+ "that is already slowed is left alone.\n"
+			+ "Not while BossModReborn announces a knockback that lands after the barrier has run out "
+			+ "and before Arm's Length is ready again - the action is kept for it.")]
+	public bool UseArmsLengthOnPull { get; set; } = true;
+
 	[RotationConfig(CombatType.PvE, Name = "How to use Aurora")]
 	public AuroraUsageStrategy AuroraUsage { get; set; } = AuroraUsageStrategy.TankbusterTarget;
 
@@ -102,24 +114,30 @@ public sealed class GNB_Reborn : GunbreakerRotation
 	[RotationDesc(ActionID.HeartOfLightPvE, ActionID.ReprisalPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		if (nextGCD.IsTheSameTo(false, (ActionID)GnashingFangPvE.ID) && !NoMercyPvE.Cooldown.IsCoolingDown)
+		// Gunbreaker special rules: the weave before the No Mercy opener and the No Mercy window keep
+		// their slots for damage. On the universal layer, so both yield when the party is in danger
+		// (concept 08, "Die Abwehrsperren").
+		if (HoldAreaDefense(nextGCD.IsTheSameTo(false, (ActionID)GnashingFangPvE.ID) && !NoMercyPvE.Cooldown.IsCoolingDown,
+			"Gunbreaker: No Mercy opener next"))
 		{
 			return base.DefenseAreaAbility(nextGCD, out act);
 		}
 
-		if (!HasNoMercy && HeartOfLightPvE.CanUse(out act, skipAoeCheck: true))
+		var noMercyHold = HoldAreaDefense(HasNoMercy, "Gunbreaker: No Mercy window");
+
+		if (!noMercyHold && HeartOfLightPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}
 
-		if (!HasNoMercy
+		if (!noMercyHold
 			&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
 
-		if (!HasNoMercy && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
+		if (!noMercyHold && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}
@@ -130,9 +148,18 @@ public sealed class GNB_Reborn : GunbreakerRotation
 	[RotationDesc(ActionID.HeartOfStonePvE, ActionID.NebulaPvE, ActionID.RampartPvE, ActionID.CamouflagePvE, ActionID.ReprisalPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		if (nextGCD.IsTheSameTo(false, (ActionID)GnashingFangPvE.ID) && !NoMercyPvE.Cooldown.IsCoolingDown)
+		// The same opener hold for the tank's own defence; on the universal layer it yields when the
+		// tank itself, the player or another tank is in the critical class.
+		if (HoldSingleDefense(nextGCD.IsTheSameTo(false, (ActionID)GnashingFangPvE.ID) && !NoMercyPvE.Cooldown.IsCoolingDown,
+			"Gunbreaker: No Mercy opener next"))
 		{
 			return base.DefenseSingleAbility(nextGCD, out act);
+		}
+
+		// Free of cost but its cooldown, so ahead of the paid mitigations (A194).
+		if (ArmsLengthSlowsPull(UseArmsLengthOnPull, Service.Config.AutoDefenseNumber) && ArmsLengthPvE.CanUse(out act))
+		{
+			return true;
 		}
 
 		//10
@@ -247,7 +274,10 @@ public sealed class GNB_Reborn : GunbreakerRotation
 	[RotationDesc(ActionID.AuroraPvE)]
 	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		if (nextGCD.IsTheSameTo(false, (ActionID)GnashingFangPvE.ID) && !NoMercyPvE.Cooldown.IsCoolingDown)
+		// The opener hold again, for the heals on self or a tank (Heart of Corundum, Aurora); it
+		// yields when the player or a tank is in the critical class (concept 08).
+		if (HoldSingleDefense(nextGCD.IsTheSameTo(false, (ActionID)GnashingFangPvE.ID) && !NoMercyPvE.Cooldown.IsCoolingDown,
+			"Gunbreaker: No Mercy opener next"))
 		{
 			return base.HealSingleAbility(nextGCD, out act);
 		}
@@ -407,6 +437,23 @@ public sealed class GNB_Reborn : GunbreakerRotation
 	#region GCD Logic
 	protected override bool GeneralGCD(out IAction? act)
 	{
+		// Sonic Break and Reign of Beasts wait for No Mercy below. Should No Mercy pass without room for
+		// them (a window without a GCD, downtime), Ready to Break or Ready to Reign would run out unused;
+		// its last GCD goes to them, ahead of everything else, since every other GCD here can still come
+		// a GCD later.
+		if (IsLastChanceBeforeStatusEnds(SonicBreakPvE, StatusID.ReadyToBreak) && SonicBreakPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		// Not inside a cartridge or Reign combo: Reign of Beasts would take over the combo step and cost
+		// Savage Claw and Wicked Talon with their continuations.
+		if (!InReignCombo && !InGnashingFang && IsLastChanceBeforeStatusEnds(ReignOfBeastsPvE, StatusID.ReadyToReign)
+			&& ReignOfBeastsPvE.CanUse(out act, skipComboCheck: true))
+		{
+			return true;
+		}
+
 		if (BurstStrikePvE.CanUse(out act))
 		{
 			if (IsAmmoCapped && BloodfestPvE.EnoughLevel && NoMercyPvE.Cooldown.WillHaveOneChargeGCD(1))
