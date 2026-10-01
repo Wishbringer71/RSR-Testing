@@ -43,8 +43,13 @@ ab — meist mit einer Sicherheitsregel, also gewollt.
 
 **Beschwörer.** Aetherflow nicht verlieren: Fester und Necrotize fallen spätestens, wenn Energy Drain in zwei
 GCDs bereitsteht — abgedeckt. Ruin IV nicht in der Demi — abgedeckt (`UseFillers`). Ruin IV vor dem nächsten
-Energy Drain: Ruin IV steht unter den Füllern an erster Stelle; ob zwischen zwei Energy Drains immer ein
-Füllerplatz liegt, ist nicht gemessen. Höchstens zwei Ruin III je Minute: folgt aus der Reihenfolge
+Energy Drain: abgedeckt, gerechnet aus Spieldaten (xivapi, 01.10.2026). Energy Drain gewährt Further Ruin für
+60 s und hat 60 s Abklingzeit; RSR wirkt es in jeder Demi. Ein Minutenzyklus mit 2,5-s-GCD braucht: Demi 15 s,
+Ifrit 13,5 s (Beschwörung 2,5 + zwei Ruby Rite je 3,0 + Crimson Cyclone und Strike je 2,5), Titan 12,5 s
+(Beschwörung + vier Topaz Rite je 2,5), Garuda 12 s (Beschwörung 2,5 + vier Emerald Rite je 1,5 + Slipstream
+3,5) — zusammen 53 s, mit einer Demi-Beschwörung als GCD 55,5 s. Es bleiben 4,5 bis 7 s, also ein bis zwei
+Füllerplätze je Minute, mit kürzerem GCD mehr; Ruin IV hat unter den Füllern den ersten Platz (`UseFillers`).
+Verloren geht es nur, wenn eine Wiederbelebung oder Heilung diesen Platz nimmt — gewollt. Höchstens zwei Ruin III je Minute: folgt aus der Reihenfolge
 (Beschwörungen und Riten vor Füllern), nicht gemessen. Enkindle und Deathflare je Demi, Rekindle je Phoenix,
 Mountain Buster nach jedem Topaz — abgedeckt. Sechs Demi-GCDs je Beschwörung — abgedeckt, außer wo eine
 Wiederbelebung oder Heilung einen Platz nimmt (gewollt). Searing Flash je Searing Light — behoben (oben).
@@ -67,7 +72,11 @@ ist das gewollt.
 **Maschinist.** Battery nicht überlaufen (Königin vor 100), Heat nicht überlaufen, Wildfire mit Hypercharge,
 Königin vor einer vorhergesagten Pause beenden, Double Check und Checkmate nicht über die Ladungen —
 abgedeckt. Reassemble: xivanalysis erlaubt Drill, Air Anchor, Chain Saw, Excavator; RSR nimmt Drill erst
-unterhalb von Chain Saw. Ob dadurch Ladungen von Reassemble verfallen, ist nicht gemessen.
+unterhalb von Chain Saw. Kein Verlust, gerechnet aus Spieldaten (xivapi, 01.10.2026): Alle vier treffen mit
+Potenz 660, ein Reassemble auf Drill brächte also nicht mehr. Reassemble lädt alle 55 s, höchstens zwei
+Ladungen. Air Anchor (40 s), Chain Saw (60 s) und Excavator (nach Chain Saw) geben in zwei Minuten sieben
+geeignete GCDs auf gut zwei Ladungen; der längste Abstand zwischen zwei geeigneten GCDs ist höchstens 40 s,
+kürzer als eine Ladezeit — eine Ladung läuft nie über.
 
 ## Übrige Kampfjobs
 
