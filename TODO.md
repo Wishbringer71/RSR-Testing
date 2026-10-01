@@ -23,7 +23,15 @@ Passage of Arms endet mit jeder weiteren Aktion. Ohne `PldlockCasting` (ab Werk 
 
 ### Krieger: Shake It Off hebt Damnation, Bloodwhetting und Thrill of Battle auf · N
 
-Shake It Off hebt die eigenen Status Thrill of Battle, Damnation und Bloodwhetting auf, für +2 % Barriere je Effekt (am offiziellen Job-Guide belegt; im Repository ist der Name ausgeblendet). RSR wirkt es als Flächenabwehr und als Einzelheilung, ohne diese Status zu prüfen. Im Kampf: Ein Raidwide, während Damnation für einen Tankbuster liegt, kostet den Krieger 40 % Minderung. Seit A237 liegen Kampfrausch (Thrill of Battle) und Bloodwhetting vor jedem angekündigten Tankbuster auf ihm, der Fall tritt also häufiger ein. Zur Entscheidung vorgelegt. Konzept 14, „Wechselwirkungen und Zeit".
+Shake It Off hebt die eigenen Status Thrill of Battle, Damnation und Bloodwhetting auf, für +2 % Barriere je Effekt (am offiziellen Job-Guide belegt; im Repository ist der Name ausgeblendet). RSR wirkt es als Flächenabwehr und als Einzelheilung, ohne diese Status zu prüfen. Im Kampf: Ein Raidwide, während Damnation für einen Tankbuster liegt, kostet den Krieger 40 % Minderung. Seit A237 liegen Kampfrausch (Thrill of Battle) und Bloodwhetting vor jedem angekündigten Tankbuster auf ihm, der Fall tritt also häufiger ein. Neue Grundlage (The Balance): Die Aufhebung von Kampfrausch ist ein Gewinn, weil die Barriere an der erhöhten Maximalgesundheit bemessen wird; Verdammnis und Urimpuls aufzuheben kostet Minderung. Empfehlung: Abschütteln zurückhalten, solange Verdammnis/Rachsucht oder Urimpuls läuft, mit Kampfrausch frei; die Rückhaltung weicht bei Gefahr für die Gruppe. Konzept 09, „Krieger: die Abwehr im Ganzen", Befund 6. Zur Entscheidung vorgelegt. Konzept 14, „Wechselwirkungen und Zeit".
+
+### Tanks: die zweite große Minderung erst 30 s nach der ersten · N
+
+Schutzwall fällt erst 30 s nach Verdammnis, Sentinel/Guardian, Shadow Wall/Shadowed Vigil oder Nebula/Great Nebula, die 15 s wirken; umgekehrt wartet die große erst 60 s nach Schutzwall (20 s). Dazwischen liegen 15 bzw. 40 s ohne beide (Upstream abe6132d3, ohne Begründung). Im Pull deckt das 0–15 s und 30–50 s statt 0–35 s am Stück, während das Rudel am stärksten ist; am Boss bleibt die gedeckte Zeit über zwei Minuten gleich. Empfehlung: im Pull (`TankPullOnPlayer`) direkt aneinander, am Boss wie bisher. Zur Entscheidung. Konzept 09, „Krieger: die Abwehr im Ganzen", Befund 5.
+
+### Tanks: Reflexion am Tankbuster fehlt dem nächsten Raidwide · N
+
+Die Einzelabwehr wirkt Reflexion bei jeder Öffnung, auch für einen Tankbuster, der nur den Tank trifft. Ist ein Raidwide innerhalb ihrer Abklingzeit angekündigt, fehlt sie dort der Gruppe (The Balance: „very situational"). Empfehlung: in der Einzelabwehr zurückhalten, wenn BossModReborn einen Raidwide innerhalb von 60 s ansagt; weicht bei Gefahr (`HoldSingleDefense`). Zur Entscheidung. Konzept 09, Befund 7.
 
 ### Krieger: Nascent Flash — offene Bausteine · N, U
 

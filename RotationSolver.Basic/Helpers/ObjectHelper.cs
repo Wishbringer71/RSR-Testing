@@ -3868,6 +3868,25 @@ public static class ObjectHelper
 	}
 
 	/// <summary>
+	/// The health ratio this character is expected to hold <paramref name="seconds"/> from now, at the
+	/// measured net rate - every heal, barrier and mitigation already in it - with the forecast error of
+	/// the time to death taken out (<see cref="GetCorrectedTTK"/>). Today's ratio while the health is not
+	/// falling on balance. For a cooldown whose worth lasts that long, asked independently of "Heal ahead
+	/// of incoming damage", whose text promises the moment a heal lands.
+	/// </summary>
+	internal static float GetHealthRatioIn(this IBattleChara battleChara, float seconds)
+	{
+		var ratio = battleChara.GetHealthRatio();
+		var ttk = battleChara.GetCorrectedTTK();
+		if (float.IsNaN(ttk) || ttk <= 0f || seconds <= 0f)
+		{
+			return ratio;
+		}
+
+		return ratio * Math.Clamp(1f - (seconds / ttk), 0f, 1f);
+	}
+
+	/// <summary>
 	/// <see cref="GetEffectiveHp"/> carried forward to the moment a heal begun now would land.
 	/// </summary>
 	internal static uint GetForecastEffectiveHp(this IBattleChara battleChara, bool instant = false)

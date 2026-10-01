@@ -1690,12 +1690,10 @@ public partial class CustomRotation
 	/// </para>
 	/// </summary>
 	/// <remarks>
-	/// Two entries of that list are not throttles and are worth knowing about before a second caller
+	/// One entry of that list is not a throttle and is worth knowing about before a second caller
 	/// appears. <c>LivingDead</c> does not reduce the incoming stream at all - it postpones death -
 	/// so for a dark knight this reads true while the stream is unchanged; the answer still suits the
 	/// one caller, because a barrier is the wrong thing to spend during it for a different reason.
-	/// <c>Bloodwhetting</c> is a 10% mitigation, below the line the list otherwise draws, and would
-	/// make this predicate stricter than intended for a warrior.
 	/// </remarks>
 	protected static bool HasMajorMitigation
 		=> StatusHelper.PlayerHasStatus(true, StatusHelper.RampartStatus);

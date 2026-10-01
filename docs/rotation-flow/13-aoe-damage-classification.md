@@ -167,7 +167,7 @@ Entscheidung daran nicht mehr.
 **Selbstschutz in jedem Abwehrpfad, zentral (A233):** Eine Aktion, die nur den Spieler schützt, fällt in der
 Flächen- und in der Einzelabwehr nur, wenn der Treffer, der den Pfad geöffnet hat, ihn erreicht. „Nur den Spieler"
 liest `BaseAction.CanUse` aus Spieldaten und Zielwahl: Das aufgelöste Ziel ist er selbst, und die Aktion hat keinen
-Wirkradius. Darunter fallen Schutzwall, Verdammnis/Vengeance, Urinstinkt/Bloodwhetting auf sich, Abtausch,
+Wirkradius. Darunter fallen Schutzwall, Verdammnis/Rachsucht (Damnation/Vengeance), Urimpuls/Urinstinkt (Bloodwhetting/Raw Intuition) auf sich, Abtausch,
 Sentinel/Guardian, Bulwark, Shadow Wall, Nebula, Camouflage, Holmgang und The Blackest Night oder Heart of
 Corundum mit Ziel „Self". Frei bleiben, was andere oder den Gegner trifft: Reflexion (Wirkradius 5), Abschütteln,
 Divine Veil, Passage of Arms, Dark Missionary, Heart of Light, Intervention, Heart of Corundum auf das

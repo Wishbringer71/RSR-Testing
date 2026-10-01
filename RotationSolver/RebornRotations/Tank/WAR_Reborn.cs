@@ -101,6 +101,16 @@ public sealed class WAR_Reborn : WarriorRotation
 			+ "tankbuster marker on you; not while an invulnerability covers you.")]
 	public bool UseThrillForTankbuster { get; set; } = true;
 
+	[RotationConfig(CombatType.PvE, Name = "Use Thrill of Battle when your health will fall below its threshold within its duration",
+		Tooltip = "Thrill of Battle goes out as soon as your health, falling at the rate measured over the "
+			+ "last seconds, would pass \"Thrill Of Battle Heal Threshold\" within the ten seconds Thrill of "
+			+ "Battle lasts - not only once it has passed it.\n"
+			+ "In a fight: on a heavy pull the 20% extra health and the 20% stronger healing are there "
+			+ "while the pack is at full strength, and they carry Bloodwhetting's and Equilibrium's heals "
+			+ "with them. Where the healers hold your health steady it does not fire. The price is the "
+			+ "90-second cooldown: it may be spent on a pull that would have stayed above the threshold.")]
+	public bool UseThrillAheadOfFallingHealth { get; set; } = true;
+
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Thrill Of Battle Heal Threshold")]
 	public float ThrillOfBattleHeal { get; set; } = 0.6f;
@@ -227,7 +237,9 @@ public sealed class WAR_Reborn : WarriorRotation
 			}
 		}
 
-		if (Player?.GetForecastHealthRatio(true) < ThrillOfBattleHeal)
+		if (Player?.GetForecastHealthRatio(true) < ThrillOfBattleHeal
+			|| (UseThrillAheadOfFallingHealth && InCombat
+				&& Player?.GetHealthRatioIn(DefensiveValues.DurationOf((uint)ActionID.ThrillOfBattlePvE)) < ThrillOfBattleHeal))
 		{
 			if (ThrillOfBattlePvE.CanUse(out act))
 			{
@@ -308,19 +320,16 @@ public sealed class WAR_Reborn : WarriorRotation
 			return true;
 		}
 
-		// Ahead of the stagger guard below: Thrill of Battle stacks with Bloodwhetting on a tankbuster
-		// rather than replacing it (A237).
+		// Thrill of Battle stacks with Bloodwhetting on a tankbuster rather than replacing it (A237).
 		if (UseThrillForTankbuster && TankbusterOnMeWithin(DefensiveValues.DurationOf((uint)ActionID.ThrillOfBattlePvE))
 			&& ThrillOfBattlePvE.CanUse(out act))
 		{
 			return true;
 		}
 
-		if (!StatusHelper.PlayerWillStatusEndGCD(0, 0, true, StatusID.Bloodwhetting, StatusID.RawIntuition))
-		{
-			return false;
-		}
-
+		// No stop while Bloodwhetting runs: it held Damnation, Rampart and Reprisal back for its eight
+		// seconds, at the start of every pull and on every tankbuster it went out for (A238). Rampart and
+		// Damnation still stagger against each other through their status check.
 		// Predicted tankbuster takes priority over the elapsed-time stagger below.
 		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, DamnationPvE.EnoughLevel ? StatusID.Damnation : StatusID.Vengeance)
 			&& (DamnationPvE.EnoughLevel ? DamnationPvE.CanUse(out act, skipStatusProvideCheck: true) : VengeancePvE.CanUse(out act, skipStatusProvideCheck: true)))

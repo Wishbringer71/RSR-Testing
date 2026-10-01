@@ -4963,11 +4963,53 @@ Seine Frage: „ist kampfrausch vor tankbuster nicht sinnvoll? warum nicht genut
   - (b) folgt seiner Regel für Voreinstellungen (A227): Die Einstellung war bei der Erhebung von A227 nicht erfasst, der im Kampf sinnvollere Wert ist an. Ein Grund aus dem Kampf für „aus" ist nicht dokumentiert.
   - Gewählt (b), Kampfrausch hinter eigener Option, ab Werk an.
 - *Universell zuerst:* Die Erkennung „Tankbuster auf mir innerhalb der Wirkdauer" ist zentral (`TankbusterOnMeWithin`), für jeden Tank. Die Aktion ist kriegereigen, also sitzt die Regel beim Krieger.
-- *Falsifikation:* in Konzept 09, „Krieger: Kampfrausch und Bloodwhetting vor dem Tankbuster". Nicht widerlegt: Der Notheiler fehlt 90 s, Shake It Off hebt ihn auf (TODO, zur Entscheidung), und Bloodwhetting kann an einem gewöhnlichen Zauber verbraucht sein. Gewichtet nach seiner Spielweise: Der Tankbuster ist angekündigt, seine Höhe unbekannt.
+- *Falsifikation:* in Konzept 09, „Krieger: die Abwehr im Ganzen". Nicht widerlegt: Der Notheiler fehlt 90 s, Shake It Off hebt ihn auf (TODO, zur Entscheidung), und Bloodwhetting kann an einem gewöhnlichen Zauber verbraucht sein. Gewichtet nach seiner Spielweise: Der Tankbuster ist angekündigt, seine Höhe unbekannt.
 - *Keine feste Zahl:* Wirkdauer aus `DefensiveValues` (Wirktext).
 - *Nebenbefund:* Das Fenster der Einzelabwehr für Vorhersagen ist ab Werk 3 s. Fehlt darin ein Einwebeplatz, fällt keine der Minderungen dieses Pfads. Das gilt für alle Tanks und ist bestehende Bauform, nicht dieser Regel.
 
 **Prüfgrad:** statisch (Job-Guide, The Balance, Code); Prüfskripte; Compile über die CI.
+
+### A238 · Krieger: alle Abwehrfähigkeiten, voller Loop; Urimpuls sperrte die großen Minderungen (01.10.2026)
+
+Sein Auftrag: „evtl. auch bei gruppenpulls wall to wall sinnvoll. alle defskills warrior im vollen loop prüfen, bewerten, schauen, wie bislang genutzt", dann „in die bestehenden konzepte einarbeiten im vollen loop, kritisch alles bewerten". Ergebnis in Konzept 09, „Krieger: die Abwehr im Ganzen".
+
+- *Research:*
+  - Wirktexte aller Abwehrfähigkeiten am Job-Guide, deutsche Namen dort belegt und eingetragen. Konzept 13 paarte „Verdammnis/Vengeance, Urinstinkt/Bloodwhetting" über die Sprachen hinweg; berichtigt.
+  - Referenz: The Balance, Basic Guide, „Staying Alive".
+  - Code: jeder Aufruf je Fähigkeit in `WAR_Reborn`, `WarriorRotation`, den zentralen Pfaden und `StatusHelper.RampartStatus`.
+- *Befund, behoben:*
+  - Die Einzelabwehr brach ab, solange Urimpuls/Urinstinkt lief (Upstream 141f9b27a, ohne Begründung).
+  - Urimpuls stand in `RampartStatus`, deren Kommentar „the big personal mitigations" nennt; die kurzen Abklingzeiten der anderen Tanks stehen nicht darin.
+  - Folge: Verdammnis und Reflexion kamen am Pullbeginn acht Sekunden später. Für einen Tankbuster, für den Urimpuls fiel, kamen Verdammnis und Schutzwall gar nicht — mit A237 („single enemies" an) jeder Tankbuster eines einzelnen Bosses. Die Wechselwirkung mit A237 habe ich erst bei dieser Erhebung gesehen; beide Änderungen gehen im selben Push hinaus.
+  - Beide Sperren entfernt; Schutzwall und Verdammnis staffeln weiter gegeneinander. Andere Leser der Liste: `HasMajorMitigation`, nur Dunkelritter.
+- *Gebaut (A239):* Kampfrausch nach gemessenem Verlauf.
+- *Zur Entscheidung (TODO):*
+  - Schutzwall erst 30 s nach der großen Minderung, Klasse über alle vier Tanks;
+  - Abschütteln gegen Verdammnis/Urimpuls, mit neuer Grundlage aus The Balance;
+  - Reflexion am Tankbuster gegen den nächsten Raidwide, alle Tanks.
+- *Ohne Befund:* Äquilibrium, Holmgang, Tiefschlag, Zwischenruf, Urflackern (A226).
+
+**Prüfgrad:** statisch (Job-Guide, The Balance, Code, Versionsgeschichte); Prüfskripte; Compile über die CI.
+
+### A239 · Krieger: Kampfrausch nach gemessenem Gesundheitsverlauf (01.10.2026)
+
+Sein Hinweis: Kampfrausch „evtl. auch bei gruppenpulls wall to wall sinnvoll".
+
+- *Optionen:*
+  - (0) nur reaktiv wie bisher;
+  - (a) am Pullbeginn ab einer Gegnerzahl;
+  - (b) wenn der gemessene Verlauf die Gesundheit innerhalb seiner Wirkdauer unter seine Schwelle bringt.
+- *Abwägung:*
+  - (a) braucht eine neue Zahl und fällt auch auf Rudeln, die die Heiler halten.
+  - (b) misst die Wahrscheinlichkeit am Verlauf, steuert sich über die korrigierte Zeit bis zum Tod selbst nach und nutzt nur seine Schwelle und die Dauer aus den Wirktexten. Gewählt.
+- *Umsetzung:*
+  - `ObjectHelper.GetHealthRatioIn(seconds)`, zentral;
+  - Option „Use Thrill of Battle when your health will fall below its threshold within its duration", ab Werk an.
+- *Falsifikation:*
+  - Linear fortgeschrieben; ein sterbendes Rudel fällt langsamer. Kampfrausch kommt dann etwas früh, in die vorsichtige Richtung.
+  - Steht der Verlauf nicht fallend, ändert sich nichts.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)

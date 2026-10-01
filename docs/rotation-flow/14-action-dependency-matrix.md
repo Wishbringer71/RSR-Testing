@@ -183,6 +183,9 @@ anderes Werkzeug entscheidet):
 - *Shake It Off:* Im Selbstheilungspfad nur, wenn weder Thrill of Battle noch Damnation, Vengeance oder
   Bloodwhetting liegt (`safeToShakeItOff`); im Pfad für angekündigten Gruppenschaden ohne diese Prüfung.
   Bestätigt die Aufhebung auch von Vengeance auf niedriger Stufe.
+  The Balance (Basic Guide, 01.10.2026) wertet die Aufhebung von Thrill of Battle als Gewinn: Die Barriere bemisst
+  sich an der erhöhten Maximalgesundheit. Bewertung und Empfehlung: Konzept 09, „Krieger: die Abwehr im Ganzen",
+  Befund 6.
 - *Passage of Arms:* Option „Block Combos for Passage of Arms" hält alle Kombos, solange der Kanal liegt —
   ohne Frage nach dem Treffer; beenden muss der Spieler.
 - *Improvisation:* als Füller außerhalb von Technical Finish, wenn mehr als zwei Verbündete in 8 Yalm

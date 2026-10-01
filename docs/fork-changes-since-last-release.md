@@ -55,6 +55,16 @@ it. Before, Thrill of Battle went out only as a heal below its threshold, after 
 `Use Bloodwhetting/Raw intuition on single enemies` is now on by default, so Bloodwhetting also goes out
 for a lone boss's tankbuster, not only after it as a heal.
 
+Bloodwhetting no longer holds the big mitigations back. While it ran, the defence stopped, and it counted
+as one of the big mitigations that Rampart and Damnation wait for: at the start of a pull Damnation and
+Reprisal came eight seconds late, and a tankbuster Bloodwhetting went out for got no Damnation or Rampart
+at all. Rampart and Damnation still stagger against each other.
+
+On a pull, Thrill of Battle now also goes out as soon as your health, falling at the measured rate, would
+pass `Thrill Of Battle Heal Threshold` within its ten seconds (`Use Thrill of Battle when your health will
+fall below its threshold within its duration`, on by default), so the extra health and the stronger healing
+are there while the pack is at full strength. Where the healers hold you steady, it waits as before.
+
 ## Summoner: Searing Flash no longer expires unused
 
 Outside a demi, Searing Flash waited for a dying boss. With other Summoners in the party, Searing Light

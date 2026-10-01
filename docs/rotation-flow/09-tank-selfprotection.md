@@ -730,59 +730,160 @@ aus „möglicherweise tödlich" eine Zahl.
   den The Balance mit „Nascent Flash goes on a friend" meint, ist hier ein Schluss, keine Quelle. Das ist neues
   Verhalten und steht als Vorschlag im TODO. Ebenso die Messung der Tankbuster-Höhe.
 
-## Krieger: Kampfrausch und Bloodwhetting vor dem Tankbuster
+## Krieger: die Abwehr im Ganzen
 
-**Seine Frage (01.10.2026):** „ist kampfrausch vor tankbuster nicht sinnvoll? warum nicht genutzt?" Kampfrausch ist
-Thrill of Battle (deutscher Job-Guide).
+**Seine Fragen und Aufträge (01.10.2026):** „abtausch auf tankbuster durch boss bringt nichts, wird aber gecasted"
+(Boss allein in der Arena, Krieger); „ist kampfrausch vor tankbuster nicht sinnvoll? warum nicht genutzt?"; „evtl.
+auch bei gruppenpulls wall to wall sinnvoll. alle defskills warrior im vollen loop prüfen, bewerten, schauen, wie
+bislang genutzt"; „in die bestehenden konzepte einarbeiten im vollen loop, kritisch alles bewerten". Einordnung:
+Beobachtung mit Hinweis auf die Lage, Frage, Prüfauftrag.
 
-**Mechanik** (Job-Guide, deutsch und englisch, abgerufen 01.10.2026): Stufe 30, 90 s Abklingzeit, 10 s Wirkung. Die
-maximale Gesundheit steigt um 20 % und wird um diesen Betrag aufgefüllt; ab Enhanced Thrill of Battle wirkt Heilung
-auf ihn 20 % stärker. Kampfrausch mindert keinen Schaden. Er verschiebt den Anteil, den ein Treffer von der Gesundheit
-nimmt (ein Treffer über 100 % der alten Gesundheit nimmt 83 % der neuen), und er verstärkt die Heilung, die auf den
-Treffer folgt, auch Bloodwhetting und Equilibrium. The Balance führt ihn als Tankbuster-Werkzeug in den üblichen
-Stapeln (Thrill + Bloodwhetting, Damnation + Thrill, Rampart + Thrill + Bloodwhetting).
+**Maßstab:** seine Spielweise — Sicherheit vor Schaden, gewichtet mit der Wahrscheinlichkeit des Treffers. Ein
+angekündigter Tankbuster auf ihn gilt als wahrscheinlich und, ohne gemessene Höhe, als möglicherweise tödlich
+(Abschnitt Nascent Flash). Für einen Pull misst die Wahrscheinlichkeit der gemessene Gesundheitsverlauf. Keine
+der Abwehrfähigkeiten kostet Schaden; ihr Preis ist allein die Abklingzeit, also ob sie beim nächsten Bedarf fehlt.
+Referenz für Rotationen: The Balance, Warrior Basic Guide, „Staying Alive" (abgerufen 01.10.2026).
 
-**Sachstand vorher:** Kampfrausch fiel nur im allgemeinen Pfad unter „Thrill Of Battle Heal Threshold" (0,6,
-Vorausschau), also nach dem Treffer oder bei laufendem Schaden, nie davor. Die Einzelabwehr kannte ihn nicht.
-Bloodwhetting fiel vor dem Tankbuster eines einzelnen Bosses ebenfalls nicht, weil „single enemies" aus stand.
+### Die Fähigkeiten (Job-Guide deutsch und englisch, abgerufen 01.10.2026)
 
-**Geltender Stand (A237):**
-- Einstellung **„Use Thrill of Battle before a tankbuster on you"**, ab Werk an: Die Einzelabwehr wirkt Kampfrausch,
-  wenn ein Tankbuster auf ihn innerhalb seiner Wirkdauer landet (`TankbusterOnMeWithin`, Dauer aus den Wirktexten).
-  „Auf ihn" heißt: Marker oder gelisteter Tankbuster-Zauber auf ihm, oder eine Vorhersage von BossModReborn, die ihn
-  nennt oder, wo sie niemanden nennt, wen sein Ziel anvisiert (Schluss). Nicht unter Unverwundbarkeit.
-- Er steht vor der Staffelsperre der Einzelabwehr, die nach Bloodwhetting weitere Minderung zurückstellt: Kampfrausch
-  kommt zu Bloodwhetting hinzu, statt es zu ersetzen. Rampart und Damnation laufen nach ihren eigenen Regeln weiter.
-- Der reaktive Einsatz unter der Schwelle bleibt.
-- „single enemies" ab Werk an.
-- `TankbusterOnMeWithin` liegt zentral neben `TankbusterOnMe`, für jede eigene Abklingzeit mit begrenzter Wirkung.
+| Fähigkeit | Stufe | Abklingzeit | Wirkung |
+|---|---|---|---|
+| Schutzwall (Rampart) | 8 | 90 s | −20 % für 20 s, Heilung auf ihn +15 % |
+| Tiefschlag (Low Blow), Zwischenruf (Interject) | 12, 18 | 25 s, 30 s | Betäubung, Unterbrechung |
+| Reflexion (Reprisal) | 22 | 60 s | Gegner im Umkreis von 5 Yalm −10 % Schaden für 15 s |
+| Kampfrausch (Thrill of Battle) | 30 | 90 s | maximale Gesundheit +20 % und aufgefüllt, Heilung auf ihn +20 %, 10 s |
+| Abtausch (Arm's Length) | 32 | 120 s | Rückstoßschutz 6 s; wer ihn physisch trifft, bekommt Gemach +20 % für 15 s |
+| Rachsucht (Vengeance) → Verdammnis (Damnation) | 38 → 92 | 120 s | −30 % → −40 % für 15 s; Verdammnis danach Regeneration (Status Primeval Impulse) |
+| Holmgang | 42 | 240 s | Gesundheit fällt 10 s lang nicht unter 1 |
+| Urinstinkt (Raw Intuition) → Urimpuls (Bloodwhetting) | 56 → 82 | 25 s, geteilt mit Urflackern | −10 % (6 s → 8 s), Heilung je Waffenfertigkeit; Urimpuls dazu −10 % für 4 s und eine Barriere |
+| Äquilibrium (Equilibrium) | 58 | 60 s | Heilung 1200 Potenz und Regeneration |
+| Abschütteln (Shake It Off) | 68 | 90 s | Gruppenbarriere 15 % der Maximalgesundheit; hebt Kampfrausch, Verdammnis und Urimpuls auf, +2 % je aufgehobenem Effekt |
+| Urflackern (Nascent Flash) | 76 | 25 s, geteilt | Urimpuls-Wirkung auf ein Mitglied, Heilung auf ihn |
 
-**Warum vorher und nicht nur reaktiv:** Der Tankbuster ist angekündigt, also wahrscheinlich, und seine Höhe ist
-unbekannt; nach seiner Spielweise gilt er als möglicherweise tödlich (Abschnitt Nascent Flash). Kampfrausch kostet
-keinen Schaden, nur einen Einwebeplatz und die Abklingzeit. Danach senkt der Treffer die Gesundheit auf einen
-geringeren Anteil, und die Heilung danach wirkt stärker. Reaktiv füllt er nur 20 % auf, wenn der Treffer schon
-gelandet ist.
+The Balance führt sie als Stapel für Tankbuster, von „Reprisal | Thrill | Rampart | Bloodwhetting" bis zum „Kitchen
+Sink" aus allen fünf, mit Holmgang als letzter Stufe. Urimpuls heilt je Treffer, „very powerful in dungeons";
+Äquilibrium ist „great when used with Thrill of Battle, Rampart or both". Abschütteln bemisst seine Barriere an der
+durch Kampfrausch erhöhten Maximalgesundheit („Big Value"). Reflexion auf einen Tankbuster ist „very situational",
+weil sie für den nächsten Raidwide fehlen kann.
 
-**Gegenposition, geprüft:** Vorher eingesetzt, fehlt Kampfrausch 90 s als Notheilung. Nicht widerlegt, aber
-abgewogen: Für den Notfall bleiben Equilibrium (60 s), Bloodwhetting (25 s) und Holmgang. Und der Notfall, für
-den ein reaktiver Kampfrausch gebraucht würde, ist meist der Tankbuster selbst.
+### Wie RSR sie nutzt, und was davon richtig ist
 
-**Antithesen:**
-- *Kein Defekt:* Widerlegt. Der Code wirkte Kampfrausch vor keinem Tankbuster, und The Balance führt ihn genau dafür.
-- *Option falsch:*
-  - Die Näherung „wen sein Ziel anvisiert" kann bei Tankbustern auf den zweiten in der Feindseligkeit irren. Dann
-    geht Kampfrausch umsonst, in die vorsichtige Richtung.
-  - Shake It Off hebt Kampfrausch auf (offen im TODO, zur Entscheidung). Seit dieser Regel trifft das öfter einen
-    Kampfrausch, der für einen Tankbuster liegt.
-  - Mit „single enemies" an fällt Bloodwhetting auch bei einem Zauber eines einzelnen Gegners auf ihn, der kein
-    gelisteter Tankbuster ist. Dann kann es beim Tankbuster abklingen; die Abklingzeit beträgt 25 s.
-- *Ausgeliefert, nichts ändert sich:*
-  - Ohne Modul und ohne Marker oder gelisteten Zauber gibt es kein Signal. Dann bleibt es reaktiv, eine Grenze und
-    kein stiller Ausfall.
-  - Die Einzelabwehr öffnet für eine Vorhersage erst „Seconds before tankbuster to use single mitigation" vor dem
-    Treffer (ab Werk 3 s, höchstens 10 s). Kampfrausch fällt dann in diesem Fenster, stets innerhalb seiner Wirkung;
-    fehlt dort ein Einwebeplatz, fällt er nicht. Das gilt für alle Minderungen dieses Pfads gleich.
-  - Hat er „single enemies" selbst auf aus gestellt, bleibt Bloodwhetting gegen den Boss reaktiv.
+Die Einzelabwehr des Kriegers (`WAR_Reborn.DefenseSingleAbility`) öffnet zweimal: für einen Tankbuster oder Zauber
+auf ihn (Marker, gelisteter Zauber, Vorhersage innerhalb von „Seconds before tankbuster to use single mitigation",
+ab Werk 3 s) und für einen Pull (`TankPullOnPlayer`: mindestens „Number of hostiles" Gegner auf ihm in 3 Yalm, er wird
+getroffen). Je Einwebeplatz fällt die erste passende Fähigkeit in dieser Reihenfolge:
+
+1. **Abtausch** auf einem Rudel gewöhnlicher Gegner für den Slow, Bosse nicht mitgezählt (A236). *Richtig:* Er mindert
+   den Treffer nicht, der ihn auslöst. Die zentrale Rückfallstufe, die ihn auf jeden Tankbuster warf, ist geschlossen.
+2. **Urimpuls/Urinstinkt** mit „single enemies" (ab Werk an, A237) oder mehr als zwei Gegnern. *Richtig:* Er ist der
+   Kern jedes Stapels und heilt im Pull je Treffer.
+3. **Kampfrausch** vor einem Tankbuster auf ihn innerhalb seiner Wirkdauer (A237).
+4. **Verdammnis/Rachsucht** und **Schutzwall** für einen vorhergesagten Tankbuster, unabhängig voneinander. Darunter die
+   Staffelung: Verdammnis, wenn Schutzwall bereit ist oder vor mehr als 60 s fiel; Schutzwall, wenn Verdammnis vor
+   mehr als 30 s fiel. Beide schließen einander über `StatusHelper.RampartStatus` aus.
+5. **Reflexion**, nachgeführt oder sobald sie fehlt.
+
+Außerhalb der Einzelabwehr:
+- **Kampfrausch** und **Äquilibrium** reaktiv unter je 0,6 Gesundheit (Vorausschau bis zur Landung); Kampfrausch steht
+  davor, also wirkt Äquilibrium unter ihm wie von The Balance empfohlen.
+- **Kampfrausch** zusätzlich, wenn die Gesundheit beim gemessenen Verlauf **innerhalb seiner Wirkdauer** unter diese
+  Schwelle fiele (A239).
+- **Urimpuls** reaktiv unter 0,7, solo immer.
+- **Holmgang** als Notfall bei „Health of dying tank" (ab Werk 15 %).
+- **Abschütteln** als Gruppenheilung und Flächenabwehr.
+- **Urflackern**: Abschnitt Nascent Flash.
+- **Tiefschlag** und **Zwischenruf**: zentral, nicht auf Bosse.
+
+### Befunde
+
+**1. Urimpuls hielt Verdammnis, Schutzwall und Reflexion zurück — behoben (A238).** Zwei Sperren taten dasselbe: Die
+Einzelabwehr brach ab, solange Urimpuls oder Urinstinkt lief (Upstream, seit 141f9b27a), und Urimpuls stand in
+`RampartStatus`, der Liste der *großen* Minderungen, die Schutzwall und Verdammnis als Doppelbelegungssperre tragen.
+Im Kampf hieß das:
+- Am **Pullbeginn**, wenn das Rudel vollzählig ist, kamen Verdammnis und Reflexion erst nach den acht Sekunden von
+  Urimpuls.
+- Bei **jedem Tankbuster**, für den Urimpuls fiel, kamen Verdammnis und Schutzwall gar nicht. Seit „single enemies" ab
+  Werk an ist (A237), wäre das jeder Tankbuster eines einzelnen Bosses gewesen. Die Sperre hätte die Änderung von A237
+  ins Gegenteil verkehrt.
+
+Die Liste beschreibt sich selbst als „the big personal mitigations"; Urimpuls ist die kurze Abklingzeit des Kriegers wie
+Heart of Corundum, Holy Sheltron und The Blackest Night bei den anderen, und von denen steht keine darin. Der Eintrag
+widersprach also dem erklärten Zweck der Liste, und der Code folgt jetzt dem Kommentar. Beide Sperren sind entfernt;
+Schutzwall und Verdammnis staffeln weiter gegeneinander. Andere Leser der Liste: `HasMajorMitigation` (nur Dunkelritter,
+der nie Urimpuls trägt). Gegenposition: Ohne Sperre überlappen Urimpuls und Verdammnis. Das ist der Stapel „Damnation +
+Bloodwhetting" der Referenz und kostet nichts, weil Urimpuls nach 25 s wieder bereit ist.
+
+**2. Kampfrausch fiel nie vor dem Treffer — gebaut (A237, A239).**
+- *Tankbuster:* Er fällt vor einem Tankbuster auf ihn, innerhalb seiner Wirkdauer (`TankbusterOnMeWithin`, zentral für
+  jeden Tank; Dauer aus den Wirktexten). „Auf ihn" heißt: Marker oder gelisteter Tankbuster-Zauber auf ihm, oder eine
+  Vorhersage, die ihn nennt oder, wo sie niemanden nennt, wen sein Ziel anvisiert (Schluss). Nicht unter
+  Unverwundbarkeit. Option „Use Thrill of Battle before a tankbuster on you", ab Werk an.
+- *Pull (sein Hinweis):* Er fällt, sobald die Gesundheit beim gemessenen Verlauf innerhalb der zehn Sekunden seiner
+  Wirkung unter „Thrill Of Battle Heal Threshold" fiele (`GetHealthRatioIn`, die selbstkorrigierte Zeit bis zum Tod).
+  Damit liegen die 20 % Gesundheit und die verstärkte Heilung an, solange das Rudel vollzählig zuschlägt, und sie
+  tragen die Heilung von Urimpuls und Äquilibrium. Halten die Heiler ihn stabil, ist der Verlauf nicht fallend, und er
+  fällt nicht. Keine neue Zahl: Schwelle seine, Dauer aus den Wirktexten. Option „Use Thrill of Battle when your health
+  will fall below its threshold within its duration", ab Werk an.
+- *Gegenposition, geprüft:* Früher eingesetzt, fehlt er 90 s als Notheilung. Für den Notfall bleiben Äquilibrium (60 s),
+  Urimpuls (25 s) und Holmgang. Und reaktiv füllt er dieselben 20 % erst auf, wenn der Treffer gelandet ist; im Pull
+  verliert er nichts, wenn er früher kommt, weil der Verlauf den Bedarf schon belegt.
+- *Grenze:* Der Verlauf ist linear fortgeschrieben. Ein Rudel, das stirbt, fällt langsamer als vorhergesagt; dann fiel
+  Kampfrausch etwas zu früh, in die vorsichtige Richtung.
+
+**3. Urimpuls vor dem Tankbuster eines einzelnen Bosses — umgestellt (A237).** „single enemies" stand ab Werk aus, also
+fiel er gegen einen einzelnen Boss erst nach dem Treffer. Nach seiner Regel für Voreinstellungen (A227) steht er an.
+*Restrisiko:* Die Einzelabwehr öffnet auch für einen ungelisteten Zauber eines Gegners auf ihn. Dann kann Urimpuls beim
+eigentlichen Tankbuster noch abklingen (25 s).
+
+**4. Abtausch auf einem Boss-Tankbuster — behoben (A236).**
+
+**5. Schutzwall erst 30 s nach Verdammnis — zur Entscheidung.** Verdammnis wirkt 15 s; die Staffelung lässt
+Schutzwall erst 30 s nach ihr zu. Dazwischen liegen 15 s, in denen keine der beiden wirkt. Umgekehrt wartet Verdammnis bis
+60 s nach Schutzwall, der nur 20 s wirkt. Dieselbe Bauform tragen alle vier Tanks (Upstream abe6132d3, „Rampart usage
+consistency", ohne Begründung).
+- *Im Pull:* Gedeckt sind 0–15 s und 30–50 s; direkt aneinander wären es 0–35 s ohne Lücke, während das Rudel am
+  stärksten ist.
+- *Am Boss:* Über zwei Minuten ist die gedeckte Zeit gleich, nur verteilt; für Tankbuster gibt es die eigenen Pfade.
+- *Empfehlung:* Für alle vier Tanks im Pull (`TankPullOnPlayer`) die zweite große Minderung direkt nach Ablauf der
+  ersten; am Boss wie bisher.
+
+**6. Abschütteln hebt Kampfrausch, Verdammnis und Urimpuls auf — Entscheidung offen (TODO), mit neuer Grundlage.**
+The Balance wertet die Aufhebung von Kampfrausch als Gewinn: Die Barriere bemisst sich an der erhöhten
+Maximalgesundheit, dazu +2 %. Verdammnis aufzuheben kostet bis zu 40 % Minderung für den Rest ihrer 15 s, Urimpuls die
+Minderung und die Heilung je Treffer. Seit A237 und A239 liegt Kampfrausch öfter. *Empfehlung:* Abschütteln zurückhalten,
+solange Verdammnis/Rachsucht oder Urimpuls läuft, mit Kampfrausch dagegen frei. Die Rückhaltung weicht, wenn die
+Gruppe in Gefahr ist (`HoldAreaDefense`).
+
+**7. Reflexion auf einen Tankbuster kann dem Raidwide fehlen — zur Entscheidung, alle Tanks.** Die Einzelabwehr wirkt
+Reflexion bei jeder Öffnung, also auch für einen Tankbuster, der nur ihn trifft. Sagt BossModReborn einen Raidwide
+innerhalb ihrer Abklingzeit (60 s) voraus, fehlt sie dort der ganzen Gruppe. *Empfehlung:* In der Einzelabwehr
+zurückhalten, wenn ein Raidwide innerhalb ihrer Abklingzeit angekündigt ist. Die Rückhaltung weicht, wenn er in Gefahr
+ist (`HoldSingleDefense`). Ohne Modul gibt es keine Ankündigung; dann bleibt es wie heute.
+
+**Ohne Befund:**
+- *Äquilibrium* (reaktiv, unter Kampfrausch), *Holmgang* (Notfall bei 15 %; vorbeugend nur bei bekannter Höhe des
+  Treffers sinnvoll, die fehlt — Abschnitt Nascent Flash).
+- *Tiefschlag/Zwischenruf* (zentral) und *Urflackern* (A226).
+
+### Antithesen
+
+- **Kein Defekt:**
+  - Für Befund 1 widerlegt: Die Sperre stand im Code, und sie hält Verdammnis bei Pullbeginn um die Laufzeit von
+    Urimpuls zurück.
+  - Für Befund 2 widerlegt: Kampfrausch fiel nur nach dem Treffer.
+- **Option falsch:**
+  - Die Näherung „wen sein Ziel anvisiert" kann bei Tankbustern auf den zweiten in der Feindseligkeit irren. Dann geht
+    Kampfrausch umsonst, in die vorsichtige Richtung.
+  - Mehr Überlappung am Pullbeginn kann bei einem langen Pull hinten Deckung kosten. Gemindert durch die Staffelung von
+    Schutzwall und Verdammnis, die bleibt, und durch Urimpuls alle 25 s.
+- **Ausgeliefert, und nichts ändert sich:**
+  - Ohne Modul, Marker oder gelisteten Zauber gibt es kein Tankbuster-Signal; Kampfrausch fällt dann nach dem Verlauf
+    oder reaktiv.
+  - Fehlt im Fenster der Einzelabwehr (ab Werk 3 s) ein Einwebeplatz, fällt keine ihrer Minderungen. Das gilt für alle
+    Tanks und ist bestehende Bauform.
+  - Hat er „single enemies" selbst auf aus gestellt, bleibt Urimpuls gegen den Boss reaktiv.
+  - Mit „Heal ahead of incoming damage" aus bleibt die Pull-Regel von Kampfrausch wirksam; sie liest den Verlauf
+    unabhängig davon.
 
 ## Was offen bleibt
 
