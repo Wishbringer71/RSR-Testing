@@ -45,7 +45,7 @@ darauf aufsetzt, ist der gemessene Fehlerfaktor in der Diagnoseanzeige zu beurte
 | Messung: `SurveyStuns`, `SurveyHostileStatus`, `StatusHelper.StunStatus` und `SlowStatus` | umgesetzt in `CustomRotation_OtherInfo` und `StatusHelper` |
 | Aussetzbedingung aus dem **Betaeubungsgrund**, hinter `StretchHolyStun` (Standard an) | umgesetzt (`WHM_Reborn.ShouldStretchHolyStun`) |
 | Aussetzbedingung aus dem **Mitigationsgrund** — eine fremde Minderung traegt bereits | umgesetzt (`WHM_Reborn.ShouldHoldHolyWhilePackSlowed`, Standard an) |
-| **Stunbarkeit** als Bedingung ueber allen drei Aussetzregeln | umgesetzt (`headroom` aus `SurveyStuns`) |
+| **Stunbarkeit** als Bedingung ueber allen drei Aussetzregeln | umgesetzt (`headroom` aus `SurveyStuns`; bei der Streckung laufende oder frische Betaeubung aus `WHM_Reborn.LongestStunInRadius`) |
 | Aussetzbedingung als **Anteil** der verlangsamten Gegner, mit Mindestzahl | umgesetzt (`HoldHolyMinSlowedHostiles`, Standard 3) |
 | **Schranke** der Aussetzregel: der Rest muss bewaeltigbar sein | umgesetzt und **gemessen statt gesetzt**: `AnyPartyMemberFallingWithinHealWindow`. Die frühere Zahl (`HoldHolyMaxHostileOutput` 600) war meine Setzung und ist zum optionalen Deckel mit Standard 0 = aus geworden |
 | **Schadensrate je Gruppenmitglied**, netto nach allem | umgesetzt: die Gruppe steht in `RecordedHP`, `GetTTK` antwortet fuer sie |
@@ -975,8 +975,8 @@ zutrifft, fällt Sanctus wieder.
 holy aber wieder ein" (Gemach ist der deutsche Name des Slow-Status 9). Die Regel trug bis dahin die
 Ersatzgarantie der Streckung: ausgesetzt nur, solange Dia oder Aero noch ein Ziel ohne DoT hat. Während
 des Aussetzens legt der Weißmagier aber genau diese DoTs, einen je GCD; nach einem DoT je Gegner war
-der Vorbehalt verbraucht, und Sanctus fiel in die noch laufende Verlangsamung. Die Garantie gehört zur
-Streckung, die genau einen eingeschobenen GCD braucht; eine Verlangsamung dauert viele. Jetzt fällt
+der Vorbehalt verbraucht, und Sanctus fiel in die noch laufende Verlangsamung. Die Streckung trägt
+die Garantie seit A231 ebenfalls nicht mehr; sie war in beiden Regeln meine Abwägung. Jetzt fällt
 der gehaltene GCD auf die DoTs, solange einer fehlt, danach auf Glare. **Preis, im Kampf:** Ab drei
 Gegnern trifft Sanctus in Summe mehr als Glare; jeder gehaltene GCD nach dem letzten DoT kostet diese
 Differenz an Schaden, und der Pull dauert entsprechend länger. Dafür steht die Betäubung zur
@@ -1149,83 +1149,88 @@ wird.
 
 ## Die Regel
 
-Drei Gesichtspunkte sind eine einzige Frage: **Wann lohnt es sich, einen GCD nicht in
-Sanctus zu stecken?**
+**Seine Vorgabe für den Einschub, ohne Ermessensspielraum:** Die Betäubung durch Sanctus hält vier
+Sekunden, seine Erholzeit beträgt zweieinhalb; ein sofort folgender zweiter Sanctus fiele mitten in
+die laufende Betäubung und überschriebe sie. Ein anderer Zauber dazwischen legt die zweite Betäubung
+ans Ende der ersten. Darüber steht seine Bedingung für jede Aussetzregel: ausgesetzt wird nur,
+solange die Gegner überhaupt noch betäubt werden können (A90).
 
-- **Der Grund:** Der DoT fehlt oder läuft aus, der eingeschobene Cast hat eigenen Wert.
-- **Das Timing:** Läuft die Betäubung noch, streckt der Einschub sie, statt sie zu
-  überschreiben. Ist das Ziel bereits resistent oder immun, ist die Betäubung ohnehin
-  kein Argument mehr.
-- **Der zweite Grund für dasselbe Timing:** Läuft eine fremde Mitigation, ist ein Stun
-  jetzt weniger wert als später.
+> Unmittelbar nach einem Sanctus geht der nächste GCD an einen anderen Zauber, wenn die Betäubung
+> dieses Sanctus noch liefe, sobald ein jetzt begonnener zweiter Sanctus landet.
 
-> Ein Nicht-Sanctus-GCD wird eingeschoben, wenn er eigenen Wert hat **und** die
-> Betäubung dadurch nicht verloren geht — weil sie noch läuft, weil sie ohnehin nicht
-> mehr wirkt, oder weil gerade eine stärkere Mitigation trägt.
+Der eingeschobene GCD fällt an den DoT, wo einer fällig ist, sonst an Glare. Weitere Bedingungen
+trägt die Regel nicht: keine Gegnerzahl außer der Flächenprüfung von Sanctus selbst, keine
+Abwägung gegen den Schaden, keine Ausnahme für einen nachrückenden Gegner.
+
+Die beiden anderen Aussetzregeln — Aussetzen bei fremder Drosselung (Verlangsamung) und bei der
+Barriere des Dunkelritters — stehen unter „Die Vorgaben des Auftraggebers" und in Konzept 10.
 
 ### Ein einziger Einschub genügt
 
-Bei einem GCD von 2,5 s und Stundauern von 4 / 2 / 1 s:
+Sanctus hat eine Wirkzeit, und die Betäubung beginnt, wo der Zauber landet. Bei GCD und Wirkzeit
+von je 2,5 s und Betäubungsdauern von 4 / 2 / 1 s:
 
-| Verlauf | Betäubungsdeckung | Intervalle |
+| Verlauf | Betäubungsdeckung | Eingeschobene GCDs |
 |---|---|---|
-| ohne Einschub, Casts bei 0 / 2,5 / 5,0 | **5,5 s** | 0–4,5 · 5,0–6,0 |
-| ein Einschub, Casts bei 0 / 5,0 / 7,5 | **7,0 s** | 0–4,0 · 5,0–7,0 · 7,5–8,5 |
-| zwei Einschübe, Casts bei 0 / 5,0 / 10,0 | **7,0 s** | 0–4,0 · 5,0–7,0 · 10,0–11,0 |
+| ohne Einschub | **5,5 s** (2,5–7,0 · 7,5–8,5) | 0 |
+| Einschub, solange die Betäubung den nächsten Sanctus überdauert | **7,0 s** (2,5–6,5 · 7,5–9,5 · 10,0–11,0) | 1 |
+| Einschub, solange irgendeine Betäubung läuft | **7,0 s** (2,5–6,5 · 10,0–12,0 · 15,0–16,0) | 3 |
 
-Der zweite Einschub bringt nichts mehr und kostet einen weiteren GCD. Der DoT reicht
-also exakt aus. Die Zahlen stammen aus `.github/scripts/audit/stun_coverage.py`, das
-die Regel GCD für GCD simuliert und im Repository liegt; bei verkürztem GCD (2,0 s
-unter Presence of Mind) liefert die Regel sogar lückenlose Deckung von 0 bis 7 s.
+Nach der zweiten Anwendung (2 s) landet der nächste Sanctus ohnehin erst nach deren Ende; ein
+Einschub dort kostet einen GCD und bringt nichts. Unter Presence of Mind (GCD und Wirkzeit 2,0 s)
+liefert die Regel lückenlose Deckung von 2 bis 9 s, ebenfalls mit einem Einschub. Die Zahlen stammen
+aus `.github/scripts/audit/stun_coverage.py` (Aufruf mit GCD und Wirkzeit), das die Regel GCD für
+GCD simuliert und einen Selbsttest trägt.
 
 ### Warum die Bedingung so lautet, wie sie lautet
 
-**Nicht über eine Restzeit, sondern über zwei Wahrheitswerte.** Eine Restzeit
-beschreibt einen einzelnen Gegner. Im Pull kommen laufend ungestunnte Gegner hinzu;
-dann sagt die Restzeit über die bereits Betäubten nichts über die Neuzugänge, und die
-Regel würde strecken, obwohl ein Cast die Neuen mit **voller** Dauer erwischt hätte —
-die Resistenz zählt je Gegner. Gestreckt wird deshalb, wenn **alle** Gegner im Radius
-betäubt sind, oder wenn **keiner** von ihnen noch betäubt werden kann — in
-beiden Fällen zusätzlich nur, solange überhaupt **eine Betäubung läuft**. Ohne
-diesen Zusatz griff die zweite Hälfte auch nach der abgearbeiteten
-Betäubungskette, wenn alle Gegner immun und keiner mehr betäubt ist: Dort gibt es
-nichts zu schützen, und die Regel tauschte für den Rest des Pulls einen
-Flächenzauber gegen einen Einzelzielzauber (A50). Bei einem einzelnen Gegner ist
-die Bedingung gleichbedeutend mit der Restzeit-Bedingung.
+**Nach dem Sanctus, nicht nach irgendeiner Betäubung.** Seine Vorgabe spricht von zwei Sanctus und
+einem Zauber dazwischen; die Regel fragt deshalb `IsLastGCD` nach Sanctus. Nach dem eingeschobenen
+Zauber geht der nächste Sanctus hinaus, gleich was läuft. Eine Betäubung durch den Tank (Low Blow
+auf einem Gegner) hält Sanctus damit nicht fest.
 
-Eine Schwelle der Form `Restzeit > ein GCD` wäre zusätzlich falsch gewesen: Nach dem
-ersten Sanctus beträgt die Restzeit beim nächsten GCD noch 1,5 s, die Regel hätte den
-einen nötigen Einschub gerade verhindert.
+**Gegen die Landung, nicht gegen null.** Die Restzeit der Betäubung wird mit der Zeit verglichen,
+bis ein jetzt begonnener Sanctus landet: Rest des GCD plus Wirkzeit (`GetCastTime`, angepasst, also
+mit Presence of Mind). Gemessen wird die längste laufende Betäubung im Wirkradius — überschrieben
+würde jede, die die Landung überdauert.
 
-**Über den Wirkradius, nicht über die Jobreichweite.** `SurveyStuns` bekommt den
-Wirkradius der Aktion (`HolyIiiPvE.Info.EffectRange`), nicht `DataCenter.JobRange` —
-für einen Heiler sind das 25 Yalms Angriffsreichweite, nicht der Wirkradius von
-Sanctus. Über die Jobreichweite gemessen hätten ferne, nie betäubte Gegner die Deckung
-dauerhaft unvollständig erscheinen lassen und die Regel nie greifen lassen.
-Nebenwirkung dieser Wahl: Die Messung gehört zur Aktion, nicht in einen
-jobunabhängigen Updater — die Einhängung in den `MajorUpdater` und die dafür nötige
-Änderung der Aktualisierungsreihenfolge entfallen.
+**Die Betäubung, die noch nicht auf den Gegnern steht.** Wirkzeit und Erholzeit sind gleich lang;
+der nächste GCD ist in dem Moment frei, in dem der erste Sanctus landet, und seine Betäubung steht
+dann womöglich noch nicht auf den Gegnern. Ein Gegner im Radius, der weder betäubt noch resistent
+ist, bekommt gleich die erste, volle Anwendung. Sie zählt mit der Dauer aus dem Wirktext
+(`DefensiveValues.DurationOf`, Sanctus 4 s). Die frühere Regel las an genau dieser Stelle „keine
+Betäubung" und gab Sanctus frei (Schluss aus Code und Wirkzeit, im Spiel nicht beobachtet).
 
-**Über eine Statusgruppe, nicht über eine einzelne Id.** Die Spieldaten führen `Stun`
-und rund ein Dutzend Varianten mit Zahlensuffix; welche davon Sanctus anlegt, ist
-offline nicht bestimmbar. `StatusHelper.StunStatus` fasst sie nach dem im Projekt
-etablierten Muster zusammen. Damit ist die Frage gegenstandslos, und fremde
-Betäubungen zählen mit — was erwünscht ist, weil auch sie Schaden verhindern.
+**Seine Bedingung über allem.** Steht im Radius weder eine laufende Betäubung noch ein noch
+betäubbarer Gegner, gibt es nichts zu strecken; Sanctus geht hinaus. Gegner mit Resistenz zählen
+nicht als frisch, weil ihre nächste Anwendung kürzer ist und nach dem Modell nicht mehr überlappt.
 
-**Mit Ersatzgarantie.** Sanctus wird nur ausgesetzt, wenn ein Cast mit eigenem Wert
-bereitsteht (`DiaPvE`, `AeroIiPvE`, `AeroPvE`). Fehlt er, fällt Sanctus sofort. Begründet war das
-mit „ein Ausweichen auf Glare wäre ein reiner Verlust" (A19, meine Abwägung, nicht seine Vorgabe).
-Sie steht gegen seine Spielweise „Sicherheit vor Schaden": Die Streckung ist Schutz, Glare kostet
-gegenüber Sanctus nur Schaden. Zur Entscheidung vorgelegt (TODO).
+**Über den Wirkradius, nicht über die Jobreichweite.** Gemessen wird im Wirkradius der Aktion
+(`HolyIiiPvE.Info.EffectRange`), nicht in `DataCenter.JobRange` — für einen Heiler sind das 25 Yalms
+Angriffsreichweite. Über die Jobreichweite gemessen hätten ferne, nie betäubte Gegner als frisch
+gegolten.
 
-**Seine Beobachtung (29.09.2026): Das zweite Sanctus fällt wieder sofort, statt die Betäubung
-auslaufen zu lassen.** Die Regel und alle ihre Eingänge sind seit dem 10.09. (Regel), 13.09.
-(`SurveyStuns`) und 16.09. (TTK-Prüfung) unverändert; am 29.09. änderte sich nur die Voreinstellung
-von `StretchHolyStun` auf an. Welche Bedingung in seinem Pull durchließ, sagt der Code nicht. Vier Wege
-lassen Sanctus sofort fallen, während eine Betäubung im Radius läuft: weniger als
-`StretchHolyMinHostiles` Gegner im Radius; ein Gegner im Radius noch betäubbar und unbetäubt (etwa ein
-nachrückender); kein DoT-Ziel (alle tragen schon Dia, oder `IsRestrictedDOT` greift); die Einstellung
-aus. Seit A228 schreibt `DefenseTrace.log` jede dieser Entscheidungen mit Grund.
+**Über eine Statusgruppe, nicht über eine einzelne Id.** Die Spieldaten führen `Stun` und rund ein
+Dutzend Varianten mit Zahlensuffix; welche davon Sanctus anlegt, ist offline nicht bestimmbar.
+`StatusHelper.StunStatus` fasst sie nach dem im Projekt etablierten Muster zusammen.
+
+**Ausgeschlossen, weil sie seine Vorgabe einschränkten** (bis 01.10.2026 im Code, A231):
+- *Ersatzgarantie* — Sanctus nur ausgesetzt, wenn ein DoT den GCD übernimmt (A19, meine Abwägung
+  „Glare wäre ein reiner Verlust"). Seine Vorgabe sagt „ein anderer Zauber"; Glare ist einer.
+- *Ausnahme für einen unbetäubten, noch betäubbaren Gegner im Radius* — meine Ableitung, dass ein
+  Neuzugang die volle Dauer sofort bekommen soll. Sie hob die Streckung im gestaffelten Pull fast
+  immer auf.
+- *Mindestzahl `StretchHolyMinHostiles`* für die Streckung — Sanctus prüft seine Zielzahl selbst.
+  Die Einstellung gilt weiter für das Aussetzen bei der Barriere des Dunkelritters.
+- *H2 aus A19*, die Ablehnung von `Restzeit > ein GCD`, rechnete ohne Wirkzeit. Mit Wirkzeit gleich
+  GCD ist sie dieselbe Bedingung wie die jetzige.
+
+**Seine Beobachtung (29.09.2026): Das zweite Sanctus fiel sofort, statt die Betäubung auslaufen zu
+lassen.** Die Regel war seit dem 10.09. unverändert. Drei ihrer Wege ließen Sanctus sofort fallen und
+sind entfernt: die Ersatzgarantie, die Ausnahme für einen Neuzugang, die Mindestzahl; dazu der
+wahrscheinlichste, der Vergleich mit einer Betäubung, die bei der Entscheidung noch nicht auf den
+Gegnern stand. `DefenseTrace.log` nennt je Entscheidung nach einem Sanctus den Grund mit Restzeit und
+Landezeit.
 
 ## Vorhandene Bausteine
 
@@ -1285,11 +1290,9 @@ die Verdrahtung fehlt. Für den DoT-Fall zusätzlich durch die beiden Vorkehrung
 Auslöser — siehe den belegten Rückbau oben. Für die Übertragung auf weitere Aktionen
 hält der Einwand teilweise stand, weshalb sie von Beobachtung abhängig gemacht ist.
 
-**Der Einschub ist im mittleren Gegnerzahlbereich falsch.** **Hält stand.** Bei etwa
-fünf bis sieben Zielen ist weder der DoT-Wert noch der Betäubungswert groß, der
-entgangene Sanctus aber schon spürbar. Die Regel ist deshalb nicht als „immer"
-formuliert, sondern an `StretchHolyMinHostiles` gebunden; dieser Bereich ist der
-schwächste Teil.
+**Der Einschub ist im mittleren Gegnerzahlbereich falsch.** Widerlegt durch seine Vorgabe und
+seine Spielweise: Die Streckung ist Schutz, der Einschub kostet einen GCD Schaden je Pull, und
+Sicherheit geht vor Schaden. Eine Bindung an eine Gegnerzahl ist entfernt (A231).
 
 **Nicht widerlegt:** dass der Nutzen im Spiel eintritt. Die Rechnung ist ein Modell.
 

@@ -157,20 +157,11 @@ Belegt: `Status.resx` führt `Rampart_1978` — die Form, die ein Tank ab Stufe 
 ### `CanUse` als Prüfung, nicht als Wahl — mit Zuweisung als Nebenwirkung · N, R
 
 **Konzept:** `docs/rotation-flow/03-universal.md`
-`ShouldStretchHolyStun` und `ShouldHoldHolyWhilePackSlowed` fragen beide `DiaPvE.CanUse(out _) || AeroIiPvE.CanUse(out _) || AeroPvE.CanUse(out _)`, um die Ersatzgarantie zu prüfen. `CanUse` weist dabei `Target` zu — dieselbe Nebenwirkung, die beim Wiederbelebungspfad eine eigene Vorkehrung nötig gemacht hat (`RaisePendingAndCastable` sichert und stellt den Zielüberschreiber wieder her, A56).
+`CanUse` als bloße Prüfung weist `Target` zu. Anlass waren die beiden Sanctus-Regeln, die mit `DiaPvE.CanUse(out _) || AeroIiPvE.CanUse(out _) || AeroPvE.CanUse(out _)` eine Ersatzgarantie prüften; beide tun es nicht mehr (A178, A231). Es ist dieselbe Nebenwirkung, die beim Wiederbelebungspfad eine eigene Vorkehrung nötig gemacht hat (`RaisePendingAndCastable` sichert und stellt den Zielüberschreiber wieder her, A56).
 
-**Hier bislang folgenlos:** Wird der DoT anschließend tatsächlich gewirkt, ruft der Schadenszweig `CanUse` erneut und setzt das Ziel neu; wird Sanctus gewirkt, bleibt ein Ziel an einer Aktion stehen, die niemand liest. Belegt ist die Folgenlosigkeit allerdings nicht.
-
-**Umfang, erhoben statt geschätzt: 120 Fundstellen in 25 Dateien** — `BeirutaRDM` 16, `SGE_Reborn` 11, `NIN_Reborn` 10, `BeirutaSGE` 10, dazu `CustomRotation_Ability`, `CustomRotation_GCD`, `CustomRotation_Items` und die UI. Das Muster ist damit nicht die Ausnahme, die diese Rotation eingeführt hat, sondern die Hausform des gesamten Baums; die beiden Sanctus-Stellen sind zwei von 120. Das ändert die Frage: Nicht „sollen diese zwei Stellen anders gebaut werden", sondern „hat der Baum eine seiteneffektfreie Prüfung nötig".
+**Umfang, erhoben statt geschätzt: 120 Fundstellen in 25 Dateien** — `BeirutaRDM` 16, `SGE_Reborn` 11, `NIN_Reborn` 10, `BeirutaSGE` 10, dazu `CustomRotation_Ability`, `CustomRotation_GCD`, `CustomRotation_Items` und die UI. Das Muster ist damit nicht die Ausnahme, die diese Rotation eingeführt hat, sondern die Hausform des gesamten Baums. Das ändert die Frage: Nicht „sollen diese zwei Stellen anders gebaut werden", sondern „hat der Baum eine seiteneffektfreie Prüfung nötig".
 
 **Vor einer Änderung zu klären:** ob RSR eine seiteneffektfreie Prüfung anbietet. Gibt es keine, ist die Frage, ob eine solche eingeführt werden soll — mit einem Wirkungsbereich über alle Rotationen, die `CanUse` als Prüfung benutzen, und damit auch über die abgeleiteten Rotationen als Paketnutzer.
-
-### Betäubungsstreckung von Sanctus: Wirkung unbeobachtet · N
-
-**Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
-`StretchHolyStun` ist seit 29.09.2026 voreingestellt an (seine Regel: der im Kampf sinnvollere Wert); belegt ist die Wirkung ohne Laufzeitbeobachtung nicht. Der **Mitigationsgrund** derselben Regel ist umgesetzt und voreingestellt an (`ShouldHoldHolyWhilePackSlowed`); ihre heutige Fassung ist die Anteilsregel des Auftraggebers — mehr als die Hälfte der Gegner im Wirkbereich verlangsamt **und** mindestens `HoldHolyMinSlowedHostiles` betroffen, dazu Betäubungsspielraum und eine Schranke für den Restausstoß (A90, C59; die frühere Leistungsrechnung aus A79 ist damit abgelöst). Der **Betäubungsgrund** — Sanctus einen GCD aussetzen, solange die eigene Betäubung noch läuft, statt sie zu überschreiben — wartet weiter auf die Beobachtung, ob die Streckung im Spiel eintritt.
-
-**Auflösungsbedingung:** eine Beobachtung, ob Sanctus in eine laufende Betäubung hinein gewirkt wird und ob die Streckung die vom Modell gerechneten 5,5 auf 7,0 Sekunden bringt. Der Auftraggeber hat die Einstellung eingeschaltet, um überhaupt testen zu können; offen ist allein, ob die Streckung messbar eintritt.
 
 ### Die Zielwahl der Heilung misst nicht die Sterbegefährdung · N, U
 
@@ -266,11 +257,6 @@ Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A17
 ### Astrologe: Synastry wählt ihr Ziel nach Trefferfläche und aktueller Gesundheit, nicht nach der Heilung · N, U
 
 `AST_Reborn.CanCastSynastry` verlangt, dass Synastry und die folgende Einzelheilung (Aspected Benefic, Benefic II, Benefic) dasselbe Ziel haben. Laut Wirktext zählt jede Einzelheilung, „on yourself or a party member", die Gleichheit ist also kein Fehler. Synastry läuft aber in `EmergencyAbility` vor jedem Target-Override (`CustomRotation_Ability.cs:85`) und setzt keinen `TargetType`. Gewählt wird deshalb nach `Big`: größte Trefferfläche, bei Gleichstand, und Spieler haben gleiche Trefferflächen, das Mitglied mit der **meisten** aktuellen Gesundheit (`BigHp` aus, ab Werk; seit A225 liest der Zweig diese Einstellung). Die Heilung dagegen geht an den Bedürftigsten. Im Kampf (Schluss aus dem Code, nicht beobachtet): Synastry fällt nur, wenn der Geheilte zugleich der Gesündeste ist. Das trifft vor allem dann nicht zu, wenn der Tank unter die volle Gesundheit eines anderen Mitglieds gefallen ist, also genau im Bedarfsfall. Upstream-Bauform, gefunden in der Tiefenprüfung A221. Zu bearbeiten im vollen Loop: Zielwahl über das Heilziel (Override) oder Prüfung gegen das Ziel der nächsten GCD.
-
-### Weißmagier: zweites Sanctus fällt in die laufende Betäubung · N
-
-**Konzept:** `docs/rotation-flow/08-mitigation-synergy.md` („Mit Ersatzgarantie")
-Seine Beobachtung (29.09.2026): Der Weißmagier wartet nach dem ersten Sanctus nicht mehr, bis die Betäubung ausläuft. Code und Eingänge der Streckung sind seit dem 10.09. unverändert (A228). Ursache offen; vier Wege lassen Sanctus zu, `DefenseTrace.log` nennt seit A228 je Entscheidung den Grund. Zur Entscheidung vorgelegt: die Ersatzgarantie (Sanctus nur ausgesetzt, wenn ein DoT den GCD übernimmt) ist meine Abwägung aus A19 und steht gegen „Sicherheit vor Schaden". Ohne sie übernähme Glare den GCD.
 
 ## Technische Schuld
 
@@ -449,11 +435,6 @@ Gefunden bei der Erhebung der Fork-Einstellungen (A103). Die beiden Tooltip-Wege
 **Warum nicht mitbehoben:** `ShouldShowRotationConfigInternal` vergleicht `ParentValue` gegen **einen** Wert. Für die Gesundheitsschwelle wäre die Kopplung damit korrekt möglich, für die Gegnerzahl nicht — sie gilt für zwei Strategien. Eine halbe Kopplung wäre schlechter als keine: Sie ließe den Nutzer glauben, die sichtbaren Werte seien genau die wirksamen.
 
 **Auflösung:** entweder `ParentValue` auf mehrere zulässige Werte erweitern — Wirkungsbereich ist der gemeinsame Zeichenpfad aller Rotationen, Betroffenenkreis R und U — oder es beim Tooltip belassen, der jetzt sagt, für welche Option jeder Wert gilt. **Empfehlung: beim Tooltip belassen**, solange kein zweiter Fall dieser Art auftritt; der Nutzen ist eine Einrückung, die Kosten sind eine Signaturerweiterung im Upstream-Pfad.
-
-### Die Holy-Vorbehalte des Weißmagiers — neu geprüft (A207) · N
-
-**Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
-Die frühere Auflösung „Grund des Rückhalts in der Diagnoseanzeige" widerspricht seiner Vorgabe (er nutzt das Diagnosefenster nicht; keine neuen Zeilen dort). Zwei der drei Vorbehalte lesen Tatsachen im Moment der Entscheidung — `ShouldHoldHolyForBarrier` (eine Barriere liegt) und `ShouldHoldHolyWhilePackSlowed` (Anteil verlangsamter Gegner) — und sagen nichts voraus, was nachzusteuern wäre. Offen bleibt `ShouldStretchHolyStun`: seine Wirkung (Streckung von 5,5 auf 7,0 s) ist ein Modell; die Voreinstellung (aus) liegt bei ihm, eingeschaltet hat er sie zum Testen.
 
 ### `SpreadDamagePaths` enthält keinen Spread-Marker · N
 
