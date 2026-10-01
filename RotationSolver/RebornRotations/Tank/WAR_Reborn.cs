@@ -55,8 +55,13 @@ public sealed class WAR_Reborn : WarriorRotation
 
 	protected override bool HasOwnArmsLengthPullRule => true;
 
-	[RotationConfig(CombatType.PvE, Name = "Use Bloodwhetting/Raw intuition on single enemies")]
-	public bool SoloIntuition { get; set; } = false;
+	[RotationConfig(CombatType.PvE, Name = "Use Bloodwhetting/Raw intuition on single enemies",
+		Tooltip = "The single-target defence casts Bloodwhetting (Raw Intuition before level 82) also "
+			+ "when fewer than three enemies are in reach - above all for a boss's tankbuster.\n"
+			+ "In a fight: 10% less damage for 8 seconds, another 10% for the first 4, and a barrier, "
+			+ "for the price of a 25-second cooldown it shares with Nascent Flash. Off: against a lone "
+			+ "boss it goes out only after the hit, as a heal below the Bloodwhetting heal threshold.")]
+	public bool SoloIntuition { get; set; } = true;
 
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Bloodwhetting/Raw intuition heal threshold")]
@@ -84,6 +89,17 @@ public sealed class WAR_Reborn : WarriorRotation
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Nascent Flash Heal Threshold")]
 	public float FlashHeal { get; set; } = 0.6f;
+
+	[RotationConfig(CombatType.PvE, Name = "Use Thrill of Battle before a tankbuster on you",
+		Tooltip = "Thrill of Battle goes out when a tankbuster on you lands within its duration, "
+			+ "not only as a heal at low health.\n"
+			+ "In a fight: your maximum HP rise by 20% and are filled, so the hit takes a smaller share "
+			+ "of your health, and healing on you is 20% stronger while it lasts - the healers' answer "
+			+ "to the hit included. It stacks with Bloodwhetting, Rampart or Damnation. The price is its "
+			+ "90-second cooldown: it is not there as an emergency heal until then.\n"
+			+ "The tankbuster is the one BossModReborn announces for you, or a listed tankbuster cast or "
+			+ "tankbuster marker on you; not while an invulnerability covers you.")]
+	public bool UseThrillForTankbuster { get; set; } = true;
 
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Thrill Of Battle Heal Threshold")]
@@ -288,6 +304,14 @@ public sealed class WAR_Reborn : WarriorRotation
 		}
 
 		if (RawIntuitionPvE.CanUse(out act) && BloodwhettingForDefense)
+		{
+			return true;
+		}
+
+		// Ahead of the stagger guard below: Thrill of Battle stacks with Bloodwhetting on a tankbuster
+		// rather than replacing it (A237).
+		if (UseThrillForTankbuster && TankbusterOnMeWithin(DefensiveValues.DurationOf((uint)ActionID.ThrillOfBattlePvE))
+			&& ThrillOfBattlePvE.CanUse(out act))
 		{
 			return true;
 		}

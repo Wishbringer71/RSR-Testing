@@ -4947,6 +4947,28 @@ Seine Meldung, Krieger: „abtausch auf tankbuster durch boss bringt nichts, wir
 
 **Prüfgrad:** statisch (Wirktext, Code, Versionsgeschichte); Prüfskripte; Compile über die CI.
 
+### A237 · Krieger: Kampfrausch und Bloodwhetting vor dem Tankbuster (01.10.2026)
+
+Seine Frage: „ist kampfrausch vor tankbuster nicht sinnvoll? warum nicht genutzt?" Er spielte Krieger, Boss allein in der Arena.
+
+- *Name:* Kampfrausch ist Thrill of Battle. Belegt am deutschen Job-Guide: Stufe 30, 90 s, „Deine maximalen LP werden um 20 % erhöht und um diesen Betrag aufgefüllt", Heilmagie auf ihn +20 %, 10 s. Eingetragen in `action_names_de.json`.
+- *Research:* Kampfrausch stand nur im allgemeinen Pfad unter 0,6 Gesundheit, nie in der Einzelabwehr. Bloodwhetting fiel in der Einzelabwehr nur mit „single enemies" (Upstream ab Werk aus) oder bei mehr als zwei Gegnern. Vor dem Tankbuster eines einzelnen Bosses fiel also keines von beiden. The Balance (Basic Guide, „Stacking Cooldowns"): Thrill ist ein Tankbuster-Werkzeug, gestapelt mit Bloodwhetting, Rampart, Damnation.
+- *Optionen:*
+  - (0) belassen;
+  - (a) Kampfrausch vor einem Tankbuster auf ihn, in der Einzelabwehr;
+  - (b) (a) plus „single enemies" ab Werk an;
+  - (c) Kampfrausch nur, wenn keine andere Minderung liegt.
+- *Abwägung:*
+  - (c) widerspricht den Stapeln der Referenz und seiner Spielweise bei unbekannter Höhe.
+  - (b) folgt seiner Regel für Voreinstellungen (A227): Die Einstellung war bei der Erhebung von A227 nicht erfasst, der im Kampf sinnvollere Wert ist an. Ein Grund aus dem Kampf für „aus" ist nicht dokumentiert.
+  - Gewählt (b), Kampfrausch hinter eigener Option, ab Werk an.
+- *Universell zuerst:* Die Erkennung „Tankbuster auf mir innerhalb der Wirkdauer" ist zentral (`TankbusterOnMeWithin`), für jeden Tank. Die Aktion ist kriegereigen, also sitzt die Regel beim Krieger.
+- *Falsifikation:* in Konzept 09, „Krieger: Kampfrausch und Bloodwhetting vor dem Tankbuster". Nicht widerlegt: Der Notheiler fehlt 90 s, Shake It Off hebt ihn auf (TODO, zur Entscheidung), und Bloodwhetting kann an einem gewöhnlichen Zauber verbraucht sein. Gewichtet nach seiner Spielweise: Der Tankbuster ist angekündigt, seine Höhe unbekannt.
+- *Keine feste Zahl:* Wirkdauer aus `DefensiveValues` (Wirktext).
+- *Nebenbefund:* Das Fenster der Einzelabwehr für Vorhersagen ist ab Werk 3 s. Fehlt darin ein Einwebeplatz, fällt keine der Minderungen dieses Pfads. Das gilt für alle Tanks und ist bestehende Bauform, nicht dieser Regel.
+
+**Prüfgrad:** statisch (Job-Guide, The Balance, Code); Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

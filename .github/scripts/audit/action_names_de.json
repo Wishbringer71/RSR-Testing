@@ -17,6 +17,14 @@
       "note": "Settled by the German job guide: role action at level 32, \"verhindert fast alle Rückstoß- und Heranzieheffekte\", 20 % Gemach on physical attackers. \"Rückstoß\" is the game's word for the knockback effect, not this action; the entry that paired it with Arm's Length (C33) is removed."
     },
     {
+      "de": "Kampfrausch",
+      "en": "Thrill of Battle",
+      "identifier": "ThrillOfBattlePvE",
+      "kind": "action",
+      "source": "user, 2026-10-01; German job guide (de.finalfantasyxiv.com/jobguide/warrior/), 2026-10-01",
+      "note": "Level 30, 90 s: maximum HP +20 % and restored by that amount, healing on self +20 %, 10 s. Not Bloodwhetting."
+    },
+    {
       "de": "Sanctus",
       "en": "Holy",
       "identifier": "HolyPvE",

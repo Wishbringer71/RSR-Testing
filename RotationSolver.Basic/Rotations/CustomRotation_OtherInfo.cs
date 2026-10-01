@@ -1713,6 +1713,30 @@ public partial class CustomRotation
 		=> DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterImminent;
 
 	/// <summary>
+	/// Whether a tankbuster on the player lands within <paramref name="seconds"/> and can hurt him - the
+	/// question for an own cooldown whose effect lasts that long: a lock-on VFX or a listed tankbuster
+	/// cast on him, or one BossModReborn announces within that time. Where BossModReborn does not name
+	/// who is hit, the one his target has targeted is taken to get it (an inference: some tankbusters
+	/// hit the second in enmity). Not while an invulnerability covers him.
+	/// </summary>
+	protected static bool TankbusterOnMeWithin(float seconds)
+	{
+		var player = Player;
+		if (player == null || !player.NoNeedHealingInvuln())
+		{
+			return false;
+		}
+
+		if (DataCenter.IsHostileCastingTankBusterAtMe)
+		{
+			return true;
+		}
+
+		return BMRTankbusterWithin(seconds)
+			&& (DataCenter.BMRTankbusterHitsPlayer ?? ObjectHelper.PlayerIsTargetOnSelf());
+	}
+
+	/// <summary>
 	/// Whether the area hit behind the area-defence flag reaches the player himself. The flag asks
 	/// whether the party is hit, for party mitigations; an action that protects only the player asks
 	/// this as well (concept 13).

@@ -23,7 +23,7 @@ Passage of Arms endet mit jeder weiteren Aktion. Ohne `PldlockCasting` (ab Werk 
 
 ### Krieger: Shake It Off hebt Damnation, Bloodwhetting und Thrill of Battle auf · N
 
-Shake It Off hebt die eigenen Status Thrill of Battle, Damnation und Bloodwhetting auf, für +2 % Barriere je Effekt (Suchauszug des vollständigen Texts; im Repository ist der Name ausgeblendet). RSR wirkt es als Flächenabwehr und als Einzelheilung, ohne diese Status zu prüfen. Im Kampf: Ein Raidwide, während Damnation für einen Tankbuster liegt, kostet den Krieger 40 % Minderung. Zur Entscheidung vorgelegt. Konzept 14, „Wechselwirkungen und Zeit".
+Shake It Off hebt die eigenen Status Thrill of Battle, Damnation und Bloodwhetting auf, für +2 % Barriere je Effekt (am offiziellen Job-Guide belegt; im Repository ist der Name ausgeblendet). RSR wirkt es als Flächenabwehr und als Einzelheilung, ohne diese Status zu prüfen. Im Kampf: Ein Raidwide, während Damnation für einen Tankbuster liegt, kostet den Krieger 40 % Minderung. Seit A237 liegen Kampfrausch (Thrill of Battle) und Bloodwhetting vor jedem angekündigten Tankbuster auf ihm, der Fall tritt also häufiger ein. Zur Entscheidung vorgelegt. Konzept 14, „Wechselwirkungen und Zeit".
 
 ### Krieger: Nascent Flash — offene Bausteine · N, U
 

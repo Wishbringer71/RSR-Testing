@@ -46,6 +46,15 @@ towards that pack in any tank's `Use Arm's Length on a pull for its Slow`. For P
 Knight and Gunbreaker that setting now has the last word: the defence no longer casts Arm's Length after
 the rotation has declined it.
 
+## Warrior: Thrill of Battle and Bloodwhetting before a tankbuster
+
+Before an announced tankbuster on you, the Warrior's single-target defence now casts Thrill of Battle
+(`Use Thrill of Battle before a tankbuster on you`, on by default). It raises your maximum HP by 20 %, and
+the healing that follows the hit is 20 % stronger. It stacks with Bloodwhetting instead of waiting behind
+it. Before, Thrill of Battle went out only as a heal below its threshold, after the hit.
+`Use Bloodwhetting/Raw intuition on single enemies` is now on by default, so Bloodwhetting also goes out
+for a lone boss's tankbuster, not only after it as a heal.
+
 ## Summoner: Searing Flash no longer expires unused
 
 Outside a demi, Searing Flash waited for a dying boss. With other Summoners in the party, Searing Light

@@ -609,10 +609,11 @@ braucht, trägt deshalb keinen Grund, Nascent Flash zurückzuhalten.
   target priority": niedrigster **Prozentsatz der aktuellen Gesundheit** (ohne Vorausschau, ohne Barriere),
   Heiler zuerst oder nur Heiler.
 - Bloodwhetting fällt für sich
-  - in der Einzelabwehr (Tankbuster, Beschuss) nur mit „Use Bloodwhetting/Raw intuition on single enemies" oder
+  - in der Einzelabwehr (Tankbuster, Beschuss) mit „Use Bloodwhetting/Raw intuition on single enemies" oder
     bei mehr als zwei Gegnern in Reichweite, und nur, solange der Gegner den Krieger anvisiert;
   - im allgemeinen Pfad reaktiv unter „Bloodwhetting/Raw intuition heal threshold" (0,7).
-  **Vor einem Boss-Tankbuster fällt Bloodwhetting also ab Werk gar nicht** — erst danach, reaktiv.
+  „single enemies" steht ab Werk **an** (A237, seine Regel für Voreinstellungen); bis dahin stand es aus, und vor
+  einem Boss-Tankbuster fiel Bloodwhetting gar nicht, erst danach reaktiv. Mit der Einstellung aus gilt das weiter.
 
 ### Bewertung nach seinen Kriterien
 
@@ -705,9 +706,9 @@ aus „möglicherweise tödlich" eine Zahl.
 
 ### Antithesen
 
-- **Kein Defekt:** Ab Werk (einzelner Boss, „single enemies" aus) fällt Bloodwhetting nicht vor dem Tankbuster —
+- **Kein Defekt:** Mit „single enemies" aus fällt Bloodwhetting vor dem Tankbuster eines einzelnen Bosses nicht —
   dann gibt es den Konflikt am Tankbuster nicht, und die Regel hält dort auch nicht (Bedingung (a)). Er besteht mit
-  der Einstellung an und bei mehr als zwei Gegnern, und Bedingung (b) besteht immer. Die Zielwahl nach Prozentsatz
+  der Einstellung an (ab Werk seit A237) und bei mehr als zwei Gegnern, und Bedingung (b) besteht immer. Die Zielwahl nach Prozentsatz
   wählt einen Schadensausteiler bei 10 % hinter Barriere vor einem bei 12 % ohne, der am nächsten Treffer stirbt.
 - **Option falsch:** Die Näherung „wen sein Ziel anvisiert, der bekommt den Tankbuster" kann irren; dann hält der Krieger
   Nascent Flash für einen Treffer, der den anderen Tank trifft — und gerade der könnte es brauchen. Der Fehler geht
@@ -728,6 +729,60 @@ aus „möglicherweise tödlich" eine Zahl.
 - **Nicht gebaut:** Nascent Flash als Minderung für den **anderen Tank vor dessen Tankbuster** — der Anwendungsfall,
   den The Balance mit „Nascent Flash goes on a friend" meint, ist hier ein Schluss, keine Quelle. Das ist neues
   Verhalten und steht als Vorschlag im TODO. Ebenso die Messung der Tankbuster-Höhe.
+
+## Krieger: Kampfrausch und Bloodwhetting vor dem Tankbuster
+
+**Seine Frage (01.10.2026):** „ist kampfrausch vor tankbuster nicht sinnvoll? warum nicht genutzt?" Kampfrausch ist
+Thrill of Battle (deutscher Job-Guide).
+
+**Mechanik** (Job-Guide, deutsch und englisch, abgerufen 01.10.2026): Stufe 30, 90 s Abklingzeit, 10 s Wirkung. Die
+maximale Gesundheit steigt um 20 % und wird um diesen Betrag aufgefüllt; ab Enhanced Thrill of Battle wirkt Heilung
+auf ihn 20 % stärker. Kampfrausch mindert keinen Schaden. Er verschiebt den Anteil, den ein Treffer von der Gesundheit
+nimmt (ein Treffer über 100 % der alten Gesundheit nimmt 83 % der neuen), und er verstärkt die Heilung, die auf den
+Treffer folgt, auch Bloodwhetting und Equilibrium. The Balance führt ihn als Tankbuster-Werkzeug in den üblichen
+Stapeln (Thrill + Bloodwhetting, Damnation + Thrill, Rampart + Thrill + Bloodwhetting).
+
+**Sachstand vorher:** Kampfrausch fiel nur im allgemeinen Pfad unter „Thrill Of Battle Heal Threshold" (0,6,
+Vorausschau), also nach dem Treffer oder bei laufendem Schaden, nie davor. Die Einzelabwehr kannte ihn nicht.
+Bloodwhetting fiel vor dem Tankbuster eines einzelnen Bosses ebenfalls nicht, weil „single enemies" aus stand.
+
+**Geltender Stand (A237):**
+- Einstellung **„Use Thrill of Battle before a tankbuster on you"**, ab Werk an: Die Einzelabwehr wirkt Kampfrausch,
+  wenn ein Tankbuster auf ihn innerhalb seiner Wirkdauer landet (`TankbusterOnMeWithin`, Dauer aus den Wirktexten).
+  „Auf ihn" heißt: Marker oder gelisteter Tankbuster-Zauber auf ihm, oder eine Vorhersage von BossModReborn, die ihn
+  nennt oder, wo sie niemanden nennt, wen sein Ziel anvisiert (Schluss). Nicht unter Unverwundbarkeit.
+- Er steht vor der Staffelsperre der Einzelabwehr, die nach Bloodwhetting weitere Minderung zurückstellt: Kampfrausch
+  kommt zu Bloodwhetting hinzu, statt es zu ersetzen. Rampart und Damnation laufen nach ihren eigenen Regeln weiter.
+- Der reaktive Einsatz unter der Schwelle bleibt.
+- „single enemies" ab Werk an.
+- `TankbusterOnMeWithin` liegt zentral neben `TankbusterOnMe`, für jede eigene Abklingzeit mit begrenzter Wirkung.
+
+**Warum vorher und nicht nur reaktiv:** Der Tankbuster ist angekündigt, also wahrscheinlich, und seine Höhe ist
+unbekannt; nach seiner Spielweise gilt er als möglicherweise tödlich (Abschnitt Nascent Flash). Kampfrausch kostet
+keinen Schaden, nur einen Einwebeplatz und die Abklingzeit. Danach senkt der Treffer die Gesundheit auf einen
+geringeren Anteil, und die Heilung danach wirkt stärker. Reaktiv füllt er nur 20 % auf, wenn der Treffer schon
+gelandet ist.
+
+**Gegenposition, geprüft:** Vorher eingesetzt, fehlt Kampfrausch 90 s als Notheilung. Nicht widerlegt, aber
+abgewogen: Für den Notfall bleiben Equilibrium (60 s), Bloodwhetting (25 s) und Holmgang. Und der Notfall, für
+den ein reaktiver Kampfrausch gebraucht würde, ist meist der Tankbuster selbst.
+
+**Antithesen:**
+- *Kein Defekt:* Widerlegt. Der Code wirkte Kampfrausch vor keinem Tankbuster, und The Balance führt ihn genau dafür.
+- *Option falsch:*
+  - Die Näherung „wen sein Ziel anvisiert" kann bei Tankbustern auf den zweiten in der Feindseligkeit irren. Dann
+    geht Kampfrausch umsonst, in die vorsichtige Richtung.
+  - Shake It Off hebt Kampfrausch auf (offen im TODO, zur Entscheidung). Seit dieser Regel trifft das öfter einen
+    Kampfrausch, der für einen Tankbuster liegt.
+  - Mit „single enemies" an fällt Bloodwhetting auch bei einem Zauber eines einzelnen Gegners auf ihn, der kein
+    gelisteter Tankbuster ist. Dann kann es beim Tankbuster abklingen; die Abklingzeit beträgt 25 s.
+- *Ausgeliefert, nichts ändert sich:*
+  - Ohne Modul und ohne Marker oder gelisteten Zauber gibt es kein Signal. Dann bleibt es reaktiv, eine Grenze und
+    kein stiller Ausfall.
+  - Die Einzelabwehr öffnet für eine Vorhersage erst „Seconds before tankbuster to use single mitigation" vor dem
+    Treffer (ab Werk 3 s, höchstens 10 s). Kampfrausch fällt dann in diesem Fenster, stets innerhalb seiner Wirkung;
+    fehlt dort ein Einwebeplatz, fällt er nicht. Das gilt für alle Minderungen dieses Pfads gleich.
+  - Hat er „single enemies" selbst auf aus gestellt, bleibt Bloodwhetting gegen den Boss reaktiv.
 
 ## Was offen bleibt
 
