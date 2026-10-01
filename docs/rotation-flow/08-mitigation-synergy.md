@@ -516,8 +516,9 @@ Einschiebeplatz, und sie ist eine Beigabe — ungenutzt verfaellt sie mit Refulg
      Laufzeit ist es lesbar: Endet der Status vor dem naechsten Einschiebefenster, ist ein Gegner in
      Reichweite und ist Mountain Buster eingeschaltet und erlernt, verliert die Aktion durch Aufschub
      ihren Wert und geht vor. Ohne die letzte Bedingung nahme niemand den Platz, und Lux verfiele.
-   - **Searing Flash** (unter Ruby's Glimmer) konkurriert nicht: Ausserhalb einer Demi wirkt die Rotation
-     es nur auf einen sterbenden Boss; ihm vorzugehen hielte Lux fuer eine Aktion, die nicht kommt (A155).
+   - **Searing Flash** (unter Ruby's Glimmer) konkurriert kaum: Ausserhalb einer Demi wirkt die Rotation
+     es auf einen sterbenden Boss und im letzten Einschiebefenster vor dem Ende von Ruby's Glimmer (A234);
+     ihm sonst vorzugehen hielte Lux fuer eine Aktion, die nicht kommt (A155).
    Die Gewichtung lautet damit, ohne neue Zahl: Die Kleinheilung am Verfall geht vor jede
    Schadens-Faehigkeit, deren Wert durch einen Platz Aufschub nicht verfaellt, und hinter jede, deren
    ermoeglichender Status bis zum naechsten Fenster endet. In drei GCDs liegen rund sechs Plaetze; dass

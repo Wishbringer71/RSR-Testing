@@ -4884,6 +4884,19 @@ Seine Dateien: `DefenseTrace.log` (30.09.2026 18:26–20:18) und `HostileCasting
 
 **Prüfgrad:** statisch (Protokoll, Code, Spieldaten über xivapi); Prüfskripte; Compile über die CI. Ob die Selbstschutz-Aktionen bei „hits you False" ausbleiben, zeigt sein nächstes Protokoll (die Zeile nennt „single hit reaches you").
 
+
+### A234 · Abgleich mit dem Regelkatalog von xivanalysis (01.10.2026)
+
+Sein Auftrag: „generell schauen, welche regeln dort für gute rotationen gelten und was bei rsr verbesserungswürdig wäre", mit der Präzisierung, dass weniger Schaden aus einer Sicherheitsregel gewollt ist und eine solche Rotation nicht schlechter macht. Seine Angabe: Er zeichnet mit ACT auf. Beides in `CLAUDE.md` eingetragen, xivanalysis unter „Quellen".
+
+- *Quelle:* `xivanalysis/xivanalysis` f532855 (25.09.2026), MIT, Patch 7.0–7.5, alle Kampfjobs. Katalog aus den Vorschlagstexten der Module (Skript im Arbeitsverzeichnis, 844 Zeilen; nicht versioniert, weil es nur einmal einen fremden Stand ausliest).
+- *Ergebnis:* Konzept 16. Eine Lücke: Beschwörer, Searing Flash außerhalb einer Demi nur auf einen sterbenden Boss (Upstream-Code d566eda86, 2025; in A155 nur beschrieben, keine Entscheidung von ihm). Mit weiteren Beschwörern fällt Searing Light auch in einen Titan- oder Ifrit-Block, Ruby's Glimmer (30 s laut xivapi-Wirktext „Able to execute Searing Flash"; Dauer aus Fremdquelle) läuft vor der nächsten Demi ab. Jetzt zusätzlich `IsLastChanceBeforeStatusEnds(SearingFlashPvE, StatusID.RubysGlimmer)`. Konzept 08 (Lux-Gewichtung) nachgezogen.
+- *Abweichungen mit Grund, nicht behoben:* Swiftcast (seine Vorgabe), Physick des Beschwörers, gefahrbezogene Defensiven statt „so oft wie möglich" (Weißmagier), Primal Rend nur in Zielnähe (Bewegungsregel). Ungemessen und offen geführt im Konzept: Lucid Dreaming auf Abklingzeit, Reassemble auf Drill, Ruin IV vor dem nächsten Energy Drain.
+- *Stichprobe übrige Jobs:* Klasse „Proc verfällt / Leiste läuft über" an 20 Aktionen über 13 Jobs geprüft; überall Ablauf- oder Leistenregel vorhanden. Fenstererwartungen und Reihenfolgeregeln nicht einzeln geprüft (im Konzept als nicht geprüft benannt).
+- *Falsifikation:* im Konzept.
+
+**Prüfgrad:** statisch (fremder Code, eigener Code, Spieldaten); Prüfskripte; Compile über die CI. Wirkung von Searing Flash nur mit weiteren Beschwörern beobachtbar.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

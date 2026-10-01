@@ -35,3 +35,10 @@ back. An announced tankbuster whose targets BossModReborn does not name still co
 `DefenseTrace.log` now also names the pull rule (enemies on you) and unlisted casts at a tank's target as
 sources, says whether the single hit reaches you, and records each landing of a listed area cast with
 whether it reached you.
+
+## Summoner: Searing Flash no longer expires unused
+
+Outside a demi, Searing Flash waited for a dying boss. With other Summoners in the party, Searing Light
+can fall into a Titan or Ifrit block, the next demi is further off than Ruby's Glimmer lasts, and Searing
+Flash was lost. It now goes out in the last weave slot before Ruby's Glimmer runs out. As the only Summoner
+nothing changes: Searing Flash falls inside Solar Bahamut as before.
