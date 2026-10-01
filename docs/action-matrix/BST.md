@@ -1,6 +1,6 @@
 # BST — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-27; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-01; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `BeastmasterRotation`
 - Rotation: `RotationSolver/RebornRotations/Limited Jobs/BST_Reborn.cs`
@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-27; nic
 
 ## Nutzung
 
-direkt: 31 · ungenutzt: 9 · über andere Aktion: 8
+direkt: 32 · ungenutzt: 8 · über andere Aktion: 8
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -28,7 +28,7 @@ direkt: 31 · ungenutzt: 9 · über andere Aktion: 8
 | Job | Brutal Rage (`BrutalRagePvE`) | 44930 | Weaponskill | direkt |
 | Job | Calamity (`CalamityPvE`) | 44933 | Weaponskill | direkt |
 | Job | Capture (`CapturePvE`) | 44880 | Ability | ungenutzt |
-| Job | Challenge (`ChallengePvE`) | 46750 | Ability | ungenutzt |
+| Job | Challenge (`ChallengePvE`) | 46750 | Ability | direkt |
 | Job | Cloud Skim (`CloudSkimPvE`) | 44898 | Ability | ungenutzt — nicht zuweisbar: Begleiter oder Automatik |
 | Job | Cloud Skim (`CloudSkimPvE_45038`) | 45038 | Ability | ungenutzt |
 | Job | Cloud Skim (`CloudSkimPvE_45039`) | 45039 | Ability | ungenutzt |
@@ -222,16 +222,16 @@ keine im Wirktext
 
 Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
 
-- Avalanche Axe: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Avalanche Axe: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Beastskin: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Borrow: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
-- Gale Axe: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
-- Mistral Axe: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Gale Axe: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Mistral Axe: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Scaleskin: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
-- Spinning Axe: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Spinning Axe: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Tempered Release: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Tempered Release: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
-- Trick: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Trick: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
 
 ### Unvollständige Beschreibungen
 
@@ -243,7 +243,6 @@ Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 
 - Beast Mode (`BeastModePvE`, Ability): ungenutzt — Behälter: der Knopf wird zu anderen Aktionen
 - Capture (`CapturePvE`, Ability): ungenutzt
-- Challenge (`ChallengePvE`, Ability): ungenutzt
 - Cloud Skim (`CloudSkimPvE`, Ability): ungenutzt — nicht zuweisbar: Begleiter oder Automatik
 - Cloud Skim (`CloudSkimPvE_45038`, Ability): ungenutzt
 - Cloud Skim (`CloudSkimPvE_45039`, Ability): ungenutzt
