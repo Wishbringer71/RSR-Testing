@@ -631,14 +631,54 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		// rest of the pull. Hence the explicit requirement that a stun is actually running.
 		var radius = HolyIiiPvE.EnoughLevel ? HolyIiiPvE.Info.EffectRange : HolyPvE.Info.EffectRange;
 		var inRange = SurveyStuns(radius, out var stunned, out var allStunned, out var headroom);
-		if (inRange < StretchHolyMinHostiles || stunned == 0 || (!allStunned && headroom))
+		if (stunned == 0)
 		{
+			return false;
+		}
+
+		// From here a stun is running in Holy's radius, so every outcome decides whether Holy lands
+		// inside it. Each is written to DefenseTrace.log with its reason: the owner reported the
+		// second Holy going out at once again (29.09.2026), and which condition let it through is
+		// not readable from the code.
+		if (inRange < StretchHolyMinHostiles)
+		{
+			TraceStretch($"not held: {inRange} enemies in Holy's radius, fewer than {StretchHolyMinHostiles}");
+			return false;
+		}
+
+		if (!allStunned && headroom)
+		{
+			TraceStretch($"not held: {stunned} of {inRange} in radius stunned, and one can still be stunned");
 			return false;
 		}
 
 		// Replacement guarantee: yield the GCD only when something with value of its own can take
 		// it. Without this the rotation would fall through to Glare, which is a plain loss.
-		return DiaPvE.CanUse(out _) || AeroIiPvE.CanUse(out _) || AeroPvE.CanUse(out _);
+		if (DiaPvE.CanUse(out _) || AeroIiPvE.CanUse(out _) || AeroPvE.CanUse(out _))
+		{
+			TraceStretch($"held: {stunned} of {inRange} in radius stunned, a damage-over-time takes the GCD");
+			return true;
+		}
+
+		TraceStretch($"not held: {stunned} of {inRange} in radius stunned, but no damage-over-time can take the GCD");
+		return false;
+	}
+
+	private string _lastStretchTrace = string.Empty;
+	private DateTime _lastStretchTraceAt = DateTime.MinValue;
+
+	// The GCD path asks every frame; a line is written when the outcome changes or once a GCD has passed.
+	private void TraceStretch(string outcome)
+	{
+		var now = DateTime.Now;
+		if (outcome == _lastStretchTrace && (now - _lastStretchTraceAt).TotalSeconds < DataCenter.DefaultGCDTotal)
+		{
+			return;
+		}
+
+		_lastStretchTrace = outcome;
+		_lastStretchTraceAt = now;
+		DefenseTrace.Line("White Mage, Holy stretch " + outcome);
 	}
 
 	/// <summary>

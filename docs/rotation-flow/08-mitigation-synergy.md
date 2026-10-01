@@ -1213,8 +1213,19 @@ etablierten Muster zusammen. Damit ist die Frage gegenstandslos, und fremde
 Betäubungen zählen mit — was erwünscht ist, weil auch sie Schaden verhindern.
 
 **Mit Ersatzgarantie.** Sanctus wird nur ausgesetzt, wenn ein Cast mit eigenem Wert
-bereitsteht (`DiaPvE`, `AeroIiPvE`, `AeroPvE`). Fehlt er, ist Sanctus die richtige
-Wahl; ein Ausweichen auf Glare wäre ein reiner Verlust.
+bereitsteht (`DiaPvE`, `AeroIiPvE`, `AeroPvE`). Fehlt er, fällt Sanctus sofort. Begründet war das
+mit „ein Ausweichen auf Glare wäre ein reiner Verlust" (A19, meine Abwägung, nicht seine Vorgabe).
+Sie steht gegen seine Spielweise „Sicherheit vor Schaden": Die Streckung ist Schutz, Glare kostet
+gegenüber Sanctus nur Schaden. Zur Entscheidung vorgelegt (TODO).
+
+**Seine Beobachtung (29.09.2026): Das zweite Sanctus fällt wieder sofort, statt die Betäubung
+auslaufen zu lassen.** Die Regel und alle ihre Eingänge sind seit dem 10.09. (Regel), 13.09.
+(`SurveyStuns`) und 16.09. (TTK-Prüfung) unverändert; am 29.09. änderte sich nur die Voreinstellung
+von `StretchHolyStun` auf an. Welche Bedingung in seinem Pull durchließ, sagt der Code nicht. Vier Wege
+lassen Sanctus sofort fallen, während eine Betäubung im Radius läuft: weniger als
+`StretchHolyMinHostiles` Gegner im Radius; ein Gegner im Radius noch betäubbar und unbetäubt (etwa ein
+nachrückender); kein DoT-Ziel (alle tragen schon Dia, oder `IsRestrictedDOT` greift); die Einstellung
+aus. Seit A228 schreibt `DefenseTrace.log` jede dieser Entscheidungen mit Grund.
 
 ## Vorhandene Bausteine
 

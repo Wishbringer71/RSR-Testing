@@ -4781,6 +4781,27 @@ Seine Vorgabe: „warum packst du die voreinstellungen auf "aus"? sie sollen doc
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+### A228 · Weißmagier: zweites Sanctus sofort — Herkunft geprüft, Messmittel eingebaut (29.09.2026)
+
+Seine Meldung: „du hast die pause zwischen den stuns des ersten und zweiten sanctus verschlimmbessert. der whm wartet wieder nicht die ca. 1,5 sekunden, sondern casted sofort. warum hast du daran was verändert."
+
+- *Research, rückwärts:*
+  - Einziger Weg zu Sanctus ist `GeneralGCD` hinter `ShouldStretchHolyStun`, `ShouldHoldHolyForBarrier` und `ShouldHoldHolyWhilePackSlowed`.
+  - `git log -L`: `ShouldStretchHolyStun` zuletzt c75b19e5f (10.09.), `SurveyStuns` c10bbcd02 (13.09.), `StunStatus` a02ffaa44 (10.09.), `CheckTimeToKill` 5945ffae0 (16.09.), `ModifyDiaPvE` 25c5f342c (April).
+  - Änderungen am Weißmagier seit dem 27.09.: Voreinstellungen `StretchHolyStun` und Thin Air (ad73a6a5c), Regen-Pull-Erhaltung (61e6e5b18), zwei Heilschwellen (a5fb8ea35, 09bd3ab47). `SurveyHostileStatus` bekam am 28.09. nur einen Aufrufer (64b3af436).
+  - Keine davon berührt den Sanctus-Block oder seine Eingänge.
+  - Die Voreinstellung kann das Warten nicht verringern: Rotationseinstellungen stehen nur in der Konfiguration, wenn er sie gesetzt hat, und er hatte die Streckung eingeschaltet.
+- *Befund:* Kein Eingriff am Verhalten. Vier Wege lassen Sanctus sofort fallen, während im Radius eine Betäubung läuft:
+  - weniger als `StretchHolyMinHostiles` (3) Gegner im Radius;
+  - ein Gegner im Radius noch betäubbar und unbetäubt;
+  - kein DoT kann den GCD übernehmen;
+  - die Einstellung ist aus.
+  Welcher davon in seinem Pull griff, sagt der Code nicht.
+- *Messmittel:* `ShouldStretchHolyStun` schreibt jede Entscheidung bei laufender Betäubung mit Grund nach `DefenseTrace.log` („held"/„not held", Zahl der Betäubten und der Gegner im Radius), einmal je Änderung oder je GCD. Die Logik ist unverändert; nur die Reihenfolge der Abfragen ist anders, und alle Wege liefern dasselbe Ergebnis.
+- *Eigener Entwurfsfehler, zur Entscheidung:* Die Ersatzgarantie (A19) setzt Sanctus nur aus, wenn ein DoT den GCD übernimmt, begründet mit Schaden („Glare wäre ein reiner Verlust"). Das widerspricht seiner Spielweise „Sicherheit vor Schaden" und der eigenen Bemerkung im Code („The damage lost is not weighed against this").
+
+**Prüfgrad:** statisch (Versionsgeschichte, Code); Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

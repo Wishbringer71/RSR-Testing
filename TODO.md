@@ -267,6 +267,11 @@ Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A17
 
 `AST_Reborn.CanCastSynastry` verlangt, dass Synastry und die folgende Einzelheilung (Aspected Benefic, Benefic II, Benefic) dasselbe Ziel haben. Laut Wirktext zählt jede Einzelheilung, „on yourself or a party member", die Gleichheit ist also kein Fehler. Synastry läuft aber in `EmergencyAbility` vor jedem Target-Override (`CustomRotation_Ability.cs:85`) und setzt keinen `TargetType`. Gewählt wird deshalb nach `Big`: größte Trefferfläche, bei Gleichstand, und Spieler haben gleiche Trefferflächen, das Mitglied mit der **meisten** aktuellen Gesundheit (`BigHp` aus, ab Werk; seit A225 liest der Zweig diese Einstellung). Die Heilung dagegen geht an den Bedürftigsten. Im Kampf (Schluss aus dem Code, nicht beobachtet): Synastry fällt nur, wenn der Geheilte zugleich der Gesündeste ist. Das trifft vor allem dann nicht zu, wenn der Tank unter die volle Gesundheit eines anderen Mitglieds gefallen ist, also genau im Bedarfsfall. Upstream-Bauform, gefunden in der Tiefenprüfung A221. Zu bearbeiten im vollen Loop: Zielwahl über das Heilziel (Override) oder Prüfung gegen das Ziel der nächsten GCD.
 
+### Weißmagier: zweites Sanctus fällt in die laufende Betäubung · N
+
+**Konzept:** `docs/rotation-flow/08-mitigation-synergy.md` („Mit Ersatzgarantie")
+Seine Beobachtung (29.09.2026): Der Weißmagier wartet nach dem ersten Sanctus nicht mehr, bis die Betäubung ausläuft. Code und Eingänge der Streckung sind seit dem 10.09. unverändert (A228). Ursache offen; vier Wege lassen Sanctus zu, `DefenseTrace.log` nennt seit A228 je Entscheidung den Grund. Zur Entscheidung vorgelegt: die Ersatzgarantie (Sanctus nur ausgesetzt, wenn ein DoT den GCD übernimmt) ist meine Abwägung aus A19 und steht gegen „Sicherheit vor Schaden". Ohne sie übernähme Glare den GCD.
+
 ## Technische Schuld
 
 ### Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen · N, R
