@@ -4835,7 +4835,7 @@ Auftrag: PR #10 nach `main`, kompilieren, Release, neuer Zweig `claude/fixes-aft
 - *Obsolete — Wiederholbarkeit:* Die Klasse ist „Warnung, die niemand liest": `SMNGauge.Attunement` war seit 7.01 als Bitfeld markiert und wurde als Zahl gelesen. `build.yaml` baut Plugin und Generator jetzt mit `-warnaserror:CS0618,CS0612` (Syntax: MSBuild-Referenz, Komma als Trenner, `dotnet build` reicht durch). Nur in der CI, nicht in den Projekten: Dort würde das nächste Dalamud-Update seinen eigenen Build anhalten. Selbsttest im selben Job: Eine Probe mit einem Aufruf je Form muss ohne Schalter bauen und mit Schalter an `error CS0618` und `error CS0612` scheitern. Verworfen: Schalter auch in `publish.yaml` (ein Release bleibt bei einer bloßen Markierung möglich; der PR-Lauf meldet sie vorher), `WarningsAsErrors` im Projekt (s. o.).
 - *Code-Review-Befund im selben Build:* CS0419 in `DataCenter.cs`, `cref` auf `GetForecastSurvivingShare` mehrdeutig; zeigt jetzt auf die gerufene Überladung `(IBattleChara, bool)`. Kein Kampfeffekt.
 
-**Prüfgrad:** Compile über die CI (Build-Log Lauf 36823644124); statisch (Dalamud-Quelle, SDK-Paket, Baum); Prüfskripte. Der Selbsttest des Schalters läuft erst in der CI dieses Zweigs.
+**Prüfgrad:** Compile über die CI (Build-Log Lauf 36823644124; auf diesem Zweig Lauf 36824486470: Plugin und Generator 0 Warnungen, 0 Fehler); Selbsttest des Schalters in der CI bestanden (Probe ohne Schalter gebaut mit CS0618 und CS0612 als Warnung, mit Schalter gescheitert an `error CS0618` und `error CS0612`); statisch (Dalamud-Quelle, SDK-Paket, Baum); Prüfskripte.
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
