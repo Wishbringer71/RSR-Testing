@@ -854,6 +854,16 @@
    "status": "open",
    "loop": "A226",
    "reason": "Upstream's pull size for Raw Intuition/Bloodwhetting in the single-target defence (since d566eda86), moved unchanged into one property so the Nascent Flash hold reads the same condition. Derivable candidate: more than the global 'Number of hostiles' (AutoDefenseNumber, default 2) - equal at the default, different for anyone who changed it, so not switched without a decision."
+  },
+  {
+   "file": "RotationSolver.Basic/Helpers/ActionManagerHelper.cs",
+   "code": "return ActionManager.GetAdjustedRecastTime(ActionType.Action, (uint)ActionID.HeatedSplitShotPvE) / 1000f;",
+   "values": [
+    "1000"
+   ],
+   "status": "exception",
+   "loop": "A240",
+   "reason": "Unit conversion, not a game value: GetAdjustedRecastTime returns milliseconds (ClientStructs; ActionCooldownInfo.RecastTimeOneChargeRaw divides the same way), the readers expect seconds."
   }
  ]
 }

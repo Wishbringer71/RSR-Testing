@@ -41,6 +41,15 @@ namespace RotationSolver.Basic.Helpers
 		}
 
 		/// <summary>
+		/// The length of one GCD at the player's speed as the game computes it for a weaponskill, whether or not
+		/// a GCD is running.
+		/// </summary>
+		public static float GetDefaultAdjustedRecastTime()
+		{
+			return ActionManager.GetAdjustedRecastTime(ActionType.Action, (uint)ActionID.HeatedSplitShotPvE) / 1000f;
+		}
+
+		/// <summary>
 		/// Gets the elapsed recast time for a specific action.
 		/// </summary>
 		/// <param name="type">The type of the action.</param>

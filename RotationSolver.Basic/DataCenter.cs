@@ -1455,15 +1455,39 @@ internal static class DataCenter
 	public static float NextAbilityToNextGCD => Math.Max(0f, DefaultGCDRemain - AnimationLock);
 
 	/// <summary>
-	/// Returns the total duration of the default GCD (seconds). Clamped to non-negative.
+	/// Returns the total duration of the default GCD (seconds): the length of one GCD, also while none is
+	/// running.
 	/// </summary>
-	public static float DefaultGCDTotal => Math.Max(0f, ActionManagerHelper.GetDefaultRecastTime());
+	/// <remarks>
+	/// The game reports the GCD group's total only while its timer runs; between GCDs - out of range, between
+	/// pulls, before the first GCD of a fight - it reads 0. Every reader asks for the length of a GCD (a lead
+	/// time, a window, a throttle, "the first n GCDs of combat"), and 0 shut each of them: the defence trace of
+	/// 01.10.2026 holds the same decision two and three times within 50 ms, past a throttle of one GCD (A240).
+	/// So the last length the game reported stands in while the timer is idle, and before the first GCD the
+	/// adjusted recast of a weaponskill does - the game's own figure for the player's speed.
+	/// </remarks>
+	public static float DefaultGCDTotal
+	{
+		get
+		{
+			var running = ActionManagerHelper.GetDefaultRecastTime();
+			if (running > 0f)
+			{
+				_lastGcdTotal = running;
+				return running;
+			}
+
+			return _lastGcdTotal > 0f ? _lastGcdTotal : Math.Max(0f, ActionManagerHelper.GetDefaultAdjustedRecastTime());
+		}
+	}
+
+	private static float _lastGcdTotal;
 
 	/// <summary>
 	/// Returns the remaining time for the default GCD by subtracting the elapsed time from the total recast time.
-	/// Clamped to non-negative.
+	/// Clamped to non-negative; 0 while no GCD is running.
 	/// </summary>
-	public static float DefaultGCDRemain => Math.Max(0f, DefaultGCDTotal - DefaultGCDElapsed);
+	public static float DefaultGCDRemain => Math.Max(0f, ActionManagerHelper.GetDefaultRecastTime() - DefaultGCDElapsed);
 
 	/// <summary>
 	/// Returns the elapsed time since the start of the default GCD. Clamped to non-negative.
