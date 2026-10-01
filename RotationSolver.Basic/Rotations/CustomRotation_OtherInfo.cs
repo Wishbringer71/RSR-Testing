@@ -1149,6 +1149,34 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
+	/// The hostiles in reach that Arm's Length's Slow is for: not bosses.
+	/// </summary>
+	/// <remarks>
+	/// Arm's Length does not touch the hit that strikes it - "When you are struck by a physical attack,
+	/// the striker will be afflicted with Slow" - so its only worth in a defence is slowing the attacks
+	/// that follow, and that is a pack of ordinary enemies on the tank. The owner observed it cast on a
+	/// boss's tankbuster to no effect (01.10.2026); counted with the pack, a boss also let two enemies -
+	/// boss and one add - read as a pull. Spent there, it is missing for the knockback it is the tank's
+	/// only answer to.
+	/// </remarks>
+	protected static int SlowableHostilesInRange()
+	{
+		var range = DataCenter.JobRange;
+		var hostiles = DataCenter.AllHostileTargets;
+		var count = 0;
+		for (int i = 0, n = hostiles.Count; i < n; i++)
+		{
+			var hostile = hostiles[i];
+			if (hostile != null && hostile.DistanceToPlayer() < range && !hostile.IsBossFromTTK() && !hostile.IsBossFromIcon())
+			{
+				count++;
+			}
+		}
+
+		return count;
+	}
+
+	/// <summary>
 	/// Whether the pack in reach is slowed - at least two enemies and at least half of them.
 	/// </summary>
 	/// <remarks>
@@ -1182,14 +1210,16 @@ public partial class CustomRotation
 	/// Not while BossModReborn announces a knockback that lands after Arm's Length would have run out
 	/// and before its cooldown is back: the rule also fires on a boss with adds, and spent on their
 	/// Slow the action would be gone for the knockback it is the tank's only answer to. A knockback
-	/// inside the duration is no reason to wait - cast now, it is covered (A212, A219). Duration from
+	/// inside the duration is no reason to wait - cast now, it is covered (A212, A219). Bosses do not
+	/// count towards the pull: the Slow is for the stream of an ordinary pack, and on a boss alone the
+	/// rule cast it to no effect (A236). Duration from
 	/// the effect text, cooldown from the action data. Without a module there is no announcement, and
 	/// the anti-knockback use stays reactive as before.
 	/// </remarks>
 	protected bool ArmsLengthSlowsPull(bool enabled, int minimumHostiles)
 		=> enabled
 			&& DataCenter.Role == JobRole.Tank
-			&& NumberOfHostilesInRange >= minimumHostiles
+			&& SlowableHostilesInRange() >= minimumHostiles
 			&& !PackSlowed()
 			&& !(Service.Config.UseBmrTimeline && BMRKnockbackIn is > 0f and < float.MaxValue
 				&& BMRKnockbackIn > DefensiveValues.DurationOf((uint)ActionID.ArmsLengthPvE)

@@ -4911,6 +4911,42 @@ Sein Auftrag: Zusammensetzung der Gruppe, Häufigkeit und Abklingzeit der Gruppe
 
 **Prüfgrad:** statisch (Spieldaten, Gemeinschaftsquellen, Code); Modell- und Zeitsimulation mit Selbsttest. Kein Code geändert.
 
+### A236 · Abtausch auf Boss-Tankbuster (01.10.2026)
+
+Seine Meldung, Krieger: „abtausch auf tankbuster durch boss bringt nichts, wird aber gecasted", dazu „bei abtausch war boss alleine in arena". Einordnung: Beobachtung mit Hinweis auf die Lage.
+
+- *1 Research:*
+  - Wirktext (Job-Guide): Abtausch verhindert Rückstoß und Heranziehen, und „When you are struck by a physical attack, the striker will be afflicted with Slow". Er mindert den Treffer nicht, der ihn auslöst. Sein Wert in einer Abwehr ist allein der Slow auf die folgenden Angriffe, also auf ein Rudel gewöhnlicher Gegner. Ob ein Boss Slow überhaupt annimmt, ist nicht belegt und trägt nichts.
+  - Pfad bei Boss allein: Ein angekündigter Tankbuster öffnet die Einzelabwehr. Die Einzelabwehr des Kriegers liefert nichts, etwa weil Damnation und Rampart abklingen und Bloodwhetting ohne „single enemies" erst ab drei Gegnern fällt. Dann wirkte die zentrale Rückfallstufe (`CustomRotation_Ability`, Upstream 847c418d5) Abtausch **ohne jede Gegnerzahl**; gesperrt war sie nur bei sichtbarem Zauber auf den Tank, nicht bei einer Vorhersage von BossModReborn.
+  - Die eigene Pull-Regel der vier Tanks (`ArmsLengthSlowsPull`) zählte den Boss mit. Mit „Number of hostiles" 1 löst ein Boss allein sie aus, mit 2 ein Boss und ein Add.
+  - Zweiter Befund derselben Stelle: Die Rückfallstufe lief auch, wenn die Rotation Abtausch selbst geprüft und abgelehnt hatte. Sie überging so die Option „Use Arm's Length on a pull for its Slow" und die Barrierensperre des Dunkelritters.
+  - WrathCombo (nur gelesen, keine Spielquelle): Abtausch ab Werk mit „Avoid Bosses".
+- *2 Optionen:*
+  - (0) belassen;
+  - (a) Rückfallstufe streichen;
+  - (b) Bosse aus der Pull-Zählung, Rückfallstufe nur unter der Pull-Bedingung;
+  - (c) (b) plus Rückfallstufe nur für Rotationen ohne eigene Pull-Regel.
+- *3 Abwägung:*
+  - (a) nimmt fremden und abgeleiteten Tank-Rotationen ohne eigene Regel den Slow auf dem Pull.
+  - (b) behebt seinen Fall, lässt aber die Umgehung der Option offen.
+  - (c) behebt beides, ist eine Fähigkeitsprüfung nach dem Muster `HasOwnAntiKnockbackGate` und kostet nichts. Gewählt.
+- *5 Review:*
+  - Boss-Erkennung des Baums: `IsBossFromIcon` (Rang 2/6) oder `IsBossFromTTK` (Gesamtzeit ab „Boss time to kill"). Ohne Rang und vor dem ersten Lebensverlust zählt ein Boss als gewöhnlicher Gegner. Mit „Number of hostiles" 1 kann Abtausch dann in den ersten Sekunden noch fallen; ab Werk (2) nicht.
+  - Die Rückfallstufe gilt jetzt nur für Tanks (`ArmsLengthSlowsPull` prüft die Rolle). Vorher konnte sie auch einen Nahkämpfer mit Einzelabwehr-Flagge treffen, wo der Slow ebenso nichts mindert.
+  - Die Rückstoß-Zweige (`AntiKnockback`) bleiben unberührt.
+- *6 Falsifikation:*
+  - **Kein Defekt?** Widerlegt: Der Wirktext nennt keine Minderung, und die Rückfallstufe hatte keine Gegnerbedingung.
+  - **Option falsch?** Ein Boss mit vielen Adds: Die Adds zählen weiter, der Slow wirkt auf sie. Ein Rudel, das als Boss erkannt wird (lange Zeit bis zum Tod), zählt nicht; das betrifft Gegner mit sehr viel Leben, wo der Slow ebenfalls wirkte. Das ist eine Grenze in der vorsichtigen Richtung: Abtausch bleibt für den Rückstoß.
+  - **Ausgeliefert, nichts ändert sich?** Möglich, falls der Abtausch über einen Rückstoß-Zweig kam. Dort ist er gewollt; bei seiner Lage (Tankbuster, Boss allein) ist die Rückfallstufe der einzige Weg ohne Rückstoß.
+- *7 Umsetzung:*
+  - `SlowableHostilesInRange` (ohne Bosse) in `ArmsLengthSlowsPull`.
+  - Rückfallstufe hinter `!HasOwnArmsLengthPullRule && ArmsLengthSlowsPull(…)`.
+  - Die vier Reborn-Tanks setzen `HasOwnArmsLengthPullRule`.
+  - Optionstexte nennen die Ausnahme der Bosse.
+- *Betroffene:* alle Tanks; Tank-Rotationen ohne eigene Regel (unter `ExtraRotations` nur ChurinDRK) bekommen Abtausch über die Rückfallstufe nur noch auf einem Rudel; abgeleitete Rotationen erben die neue virtuelle Eigenschaft (Paket, additiv).
+
+**Prüfgrad:** statisch (Wirktext, Code, Versionsgeschichte); Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

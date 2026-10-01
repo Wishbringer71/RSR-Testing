@@ -36,6 +36,16 @@ back. An announced tankbuster whose targets BossModReborn does not name still co
 sources, says whether the single hit reaches you, and records each landing of a listed area cast with
 whether it reached you.
 
+## Tanks: Arm's Length no longer goes out on a boss's tankbuster
+
+Arm's Length does not soften the hit that strikes you; it slows the attacker. When the single-target
+defence found nothing else for an announced tankbuster, it cast Arm's Length anyway, with a boss alone in
+the arena, and the action was then missing for the next knockback. It now goes out from that path only
+for its Slow on a pack of ordinary enemies, as many as `Number of hostiles`, and bosses no longer count
+towards that pack in any tank's `Use Arm's Length on a pull for its Slow`. For Paladin, Warrior, Dark
+Knight and Gunbreaker that setting now has the last word: the defence no longer casts Arm's Length after
+the rotation has declined it.
+
 ## Summoner: Searing Flash no longer expires unused
 
 Outside a demi, Searing Flash waited for a dying boss. With other Summoners in the party, Searing Light

@@ -324,7 +324,11 @@ public partial class CustomRotation
 				return true;
 			}
 			if (DefenseSingleAbility(nextGCD, out act)
-				|| (!DataCenter.IsHostileCastingToTank && !StatusHelper.PlayerHasStatus(true, StatusID.Vengeance) && !StatusHelper.PlayerHasStatus(true, StatusID.Damnation) && ArmsLengthPvE.CanUse(out act)))
+				// Arm's Length as the last resort only for its Slow on a pack of ordinary enemies: it does not
+				// touch the hit that strikes it, and on a boss's tankbuster - the owner saw it cast there - it
+				// does nothing and is then missing for a knockback. A rotation that runs the pull rule itself
+				// has already asked, with its own option and holds, and declined (A236).
+				|| (!HasOwnArmsLengthPullRule && ArmsLengthSlowsPull(true, Service.Config.AutoDefenseNumber) && !StatusHelper.PlayerHasStatus(true, StatusID.Vengeance) && !StatusHelper.PlayerHasStatus(true, StatusID.Damnation) && ArmsLengthPvE.CanUse(out act)))
 			{
 				IBaseAction.SelfProtectionHitsMe = null;
 				DefenseTrace.Decision("single defence", act);
@@ -594,6 +598,14 @@ public partial class CustomRotation
 	/// instead of retrying it ungated after the job's own gate declined it.
 	/// </summary>
 	protected virtual bool HasOwnAntiKnockbackGate => false;
+
+	/// <summary>
+	/// Whether this rotation's <see cref="DefenseSingleAbility"/> already runs
+	/// <see cref="ArmsLengthSlowsPull"/> with its own option and holds. When true, the single defence
+	/// does not retry Arm's Length as its last resort, which would cast it past a declined option or a
+	/// hold such as the Dark Knight's barrier.
+	/// </summary>
+	protected virtual bool HasOwnArmsLengthPullRule => false;
 
 	/// <summary>
 	/// Determines if a provoke ability can be used.

@@ -78,12 +78,16 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			+ "protection - which was the only way the plugin ever used it.\n"
 			+ "In a fight: the Slow +20% lands on every enemy that strikes you and delays "
 			+ "auto-attacks as well as casts, so in a standing pack it throttles the whole incoming "
-			+ "stream for fifteen seconds. It costs nothing but its own cooldown.\n"
+			+ "stream for fifteen seconds. It costs nothing but its own cooldown. Bosses do not count "
+			+ "towards the pull - Arm's Length does not soften the hit that strikes you, so a boss's "
+			+ "tankbuster gains nothing from it.\n"
 			+ "Not while BossModReborn announces a knockback that lands after the barrier has run out "
 			+ "and before Arm's Length is ready again - the action is kept for it.\n"
 			+ "It also feeds the decision above: a pull already throttled by this Slow no longer counts "
 			+ "as unmitigated, so The Blackest Night is not spent into a stream that has been thinned.")]
 	private bool UseArmsLengthOnPull { get; set; } = true;
+
+	protected override bool HasOwnArmsLengthPullRule => true;
 
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Health threshold for The Blackest Night",
