@@ -258,6 +258,11 @@ Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A17
 
 `AST_Reborn.CanCastSynastry` verlangt, dass Synastry und die folgende Einzelheilung (Aspected Benefic, Benefic II, Benefic) dasselbe Ziel haben. Laut Wirktext zählt jede Einzelheilung, „on yourself or a party member", die Gleichheit ist also kein Fehler. Synastry läuft aber in `EmergencyAbility` vor jedem Target-Override (`CustomRotation_Ability.cs:85`) und setzt keinen `TargetType`. Gewählt wird deshalb nach `Big`: größte Trefferfläche, bei Gleichstand, und Spieler haben gleiche Trefferflächen, das Mitglied mit der **meisten** aktuellen Gesundheit (`BigHp` aus, ab Werk; seit A225 liest der Zweig diese Einstellung). Die Heilung dagegen geht an den Bedürftigsten. Im Kampf (Schluss aus dem Code, nicht beobachtet): Synastry fällt nur, wenn der Geheilte zugleich der Gesündeste ist. Das trifft vor allem dann nicht zu, wenn der Tank unter die volle Gesundheit eines anderen Mitglieds gefallen ist, also genau im Bedarfsfall. Upstream-Bauform, gefunden in der Tiefenprüfung A221. Zu bearbeiten im vollen Loop: Zielwahl über das Heilziel (Override) oder Prüfung gegen das Ziel der nächsten GCD.
 
+### Maschinist: Reassemble unter Gruppenbuffs statt beim nächsten Werkzeug · N
+
+**Konzept:** `docs/rotation-flow/16-xivanalysis-catalog.md` (Maschinist)
+RSR legt Reassemble auf das nächste geeignete Werkzeug (Air Anchor, Chain Saw, Excavator), sobald eine Ladung da ist. Gruppenbuffs vergrößern den Treffer; Krit- und Direkttrefferbuffs wirken unter Reassemble als Schaden (Wirktext). The Balance empfiehlt Reassemble unter den Gruppenbuffs und das Aufheben einer Ladung für das Zwei-Minuten-Fenster; dafür taugt Drill als zusätzliches Ziel (zwei Ladungen, Potenz 660 wie die übrigen). Vorschlag: eine Option, die eine der zwei Ladungen zurückhält, wenn das Zwei-Minuten-Fenster vor der nächsten Ladung kommt, und unter den Gruppenbuffs (`HasBuffs`) auch Drill zulässt; die zweite Ladung läuft weiter normal, damit nichts überläuft. Gewinn nicht bezifferbar (hängt an Gruppe und Buff-Zeiten). Zur Entscheidung: ob gebaut werden soll.
+
 ## Technische Schuld
 
 ### Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen · N, R

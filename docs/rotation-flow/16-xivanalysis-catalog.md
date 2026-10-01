@@ -78,6 +78,19 @@ Ladungen. Air Anchor (40 s), Chain Saw (60 s) und Excavator (nach Chain Saw) geb
 geeignete GCDs auf gut zwei Ladungen; der längste Abstand zwischen zwei geeigneten GCDs ist höchstens 40 s,
 kürzer als eine Ladezeit — eine Ladung läuft nie über.
 
+*Die übersehene Wechselwirkung (seine Nachfrage, 01.10.2026):* Für die Potenz ist Drill gleichwertig, für den
+Zeitpunkt nicht. Reassemble macht den größten Einzeltreffer des Maschinisten, und Gruppenbuffs vergrößern ihn
+weiter; Buffs auf Kritische- oder Direkttrefferrate wirken unter Reassemble als Schaden („Increases damage dealt
+when under an effect that raises critical hit rate or direct hit rate", Wirktext). The Balance (Leitfaden, keine
+Spielquelle): „we can place Reassemble on any four of these GCDs depending on our opening alignment, the raid
+buffs we have in our party" und „Attempt to use a Reassemble under raid buffs if you can. Reassemble charges can
+be held for a pot window at two minutes". RSR legt Reassemble auf das nächste geeignete Werkzeug, sobald eine
+Ladung da ist (`usedUp: true`), ohne Blick auf Gruppenbuffs. Drill einfach zuzulassen, änderte daran nichts —
+eine Ladung ginge nur früher weg. Wert bekommt Drill erst mit einer Regel, die eine Ladung für das Buff-Fenster
+aufhebt: Drill hat zwei Ladungen und steht dort fast immer bereit. Wie groß der Gewinn ist, hängt an Gruppe und
+Buff-Zeiten und ist von hier nicht bezifferbar. Mehrzielig bleibt Drill unterlegen: Chain Saw und Excavator
+treffen mehrere Gegner mit dem garantierten Treffer, Drill einen. Zur Entscheidung vorgelegt (TODO).
+
 ## Übrige Kampfjobs
 
 **Die Klasse „Proc verfällt, Leiste läuft über, Status überschrieben" ist für alle Jobs schon geprüft**
