@@ -266,6 +266,22 @@ jobs:
       - name: Build Plugin
         run: dotnet build --no-restore -c Release RotationSolver/RotationSolver.csproj -warnaserror:CS0618,CS0612
 
+      # DefenseTrace.log names the commit it was written by, so an uploaded trace can be matched to
+      # its code. The commit comes from a git call in Directory.Build.props; if that call fails the
+      # build still succeeds and the trace says "unknown". This step makes the failure visible: the
+      # generated assembly info has to carry exactly the commit that was checked out.
+      - name: Check the build names its commit
+        run: |
+          $expected = git rev-parse --short=9 HEAD
+          $info = Get-ChildItem RotationSolver/obj -Recurse -Filter 'RotationSolver.AssemblyInfo.cs' | Select-Object -First 1
+          if (-not $info) { throw 'No generated assembly info found for RotationSolver.' }
+          $text = Get-Content $info.FullName -Raw
+          if ($text -notmatch "AssemblyMetadataAttribute\(`"SourceCommit`", `"$expected`"\)") {
+            Write-Host $text
+            throw "RotationSolver.dll does not name commit $expected."
+          }
+          Write-Host "RotationSolver.dll names commit $expected."
+
       # The generator is in the solution and in no build. Nothing referenced it, so a compile error
       # in it reached the user instead of the CI - a missing `using Lumina` for LuminaOptions did
       # exactly that. It needs the game files to *run*, not to compile, so building it here costs a

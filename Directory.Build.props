@@ -80,4 +80,39 @@
 		         Condition="'$(_UpstreamTagExitCode)' != '0' OR '$(_UpstreamTag)' == ''"
 		         Text="No upstream tag reachable from HEAD - falling back to the literal $(Version). Run .github/scripts/audit/check_fork_version.py if this build is meant to be current." />
 	</Target>
+
+	<!-- Which commit a build was made from, as assembly metadata.
+
+	     The owner builds the current branch before playing and uploads DefenseTrace.log afterwards.
+	     The version names the upstream release only and is the same for every build on the branch,
+	     and the date cannot tell apart the several commits a single day carries - so a trace could
+	     not be matched to the code that wrote it. The commit can.
+
+	     Read with git like the version above, not from SourceRevisionId: that one is filled in by a
+	     target of its own and is appended to InformationalVersion, which is switched off above for
+	     the settings window. The date is not needed here: the trace's first line carries the date
+	     and time of the session. Without git the attribute is simply missing, and the trace says so
+	     instead of naming a commit. -->
+	<Target Name="EmbedSourceCommit"
+	        BeforeTargets="GetAssemblyAttributes"
+	        Condition="'$(DeriveVersionFromGit)' != 'false'">
+		<!-- No format string: on Windows Exec runs the command from a batch file, where a percent
+		     sign starts a variable reference. -->
+		<Exec Command="git rev-parse --short=9 HEAD"
+		      WorkingDirectory="$(MSBuildThisFileDirectory)"
+		      ConsoleToMSBuild="true"
+		      StandardOutputImportance="low"
+		      StandardErrorImportance="low"
+		      ContinueOnError="true"
+		      IgnoreExitCode="true">
+			<Output TaskParameter="ConsoleOutput" PropertyName="_SourceCommit" />
+			<Output TaskParameter="ExitCode" PropertyName="_SourceCommitExitCode" />
+		</Exec>
+		<ItemGroup Condition="'$(_SourceCommitExitCode)' == '0' AND '$(_SourceCommit)' != ''">
+			<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+				<_Parameter1>SourceCommit</_Parameter1>
+				<_Parameter2>$(_SourceCommit)</_Parameter2>
+			</AssemblyAttribute>
+		</ItemGroup>
+	</Target>
 </Project>

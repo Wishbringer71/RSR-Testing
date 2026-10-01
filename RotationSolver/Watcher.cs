@@ -15,7 +15,7 @@ public static class Watcher
 	public static void Enable()
 	{
 		var config = Service.Config;
-		DefenseTrace.Start($"version {typeof(Watcher).Assembly.GetName().Version} | area defence {config.UseAoeDefense}"
+		DefenseTrace.Start($"version {typeof(Watcher).Assembly.GetName().Version} | commit {SourceCommit()} | area defence {config.UseAoeDefense}"
 			+ $" | single defence {config.UseStDefense} | skip casts that missed you {config.SkipAreaCastsThatMissedMe}"
 			+ $" | big interruptible casts {config.MitigateBigAreaCastsEvenIfInterruptible} | BMR timeline {config.UseBmrTimeline}"
 			+ $" | AoE list {OtherConfiguration.HostileCastingArea.Count} | tankbuster list {OtherConfiguration.HostileCastingTank.Count}");
@@ -23,6 +23,13 @@ public static class Watcher
 		ActionEffect.ActionEffectEvent += ActionFromEnemy;
 		ActionEffect.ActionEffectEvent += ActionFromSelf;
 	}
+
+	// The commit this build was made from, so an uploaded trace can be matched to the code that wrote it:
+	// the version is the same for every build on the branch, and a day carries several commits.
+	// Embedded by Directory.Build.props; missing when the build had no git.
+	private static string SourceCommit()
+		=> typeof(Watcher).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+			.FirstOrDefault(a => a.Key == "SourceCommit")?.Value ?? "unknown";
 
 	public static void Disable()
 	{

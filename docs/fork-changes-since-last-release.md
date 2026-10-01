@@ -15,3 +15,9 @@ reached the enemies when the next GCD was chosen, since Holy's cast and recast a
 The held GCD goes to a DoT where one is due, otherwise to Glare: one GCD of Holy damage per pull for
 about 7 instead of 5.5 seconds of stun. `Enemies in Holy's radius before holding` now only applies to
 holding Holy for The Blackest Night and sits under that setting.
+
+## `DefenseTrace.log` keeps every session and names its build
+
+The trace is no longer replaced when the plugin loads, so a rebuild or reload keeps the sessions
+before it. Each session starts with its date and time and the commit the plugin was built from, so
+every section can be matched to the exact code that wrote it. Delete the file to start over.

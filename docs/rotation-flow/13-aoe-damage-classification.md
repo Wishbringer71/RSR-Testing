@@ -174,7 +174,7 @@ bis er ihn wieder trifft; ein auf ihn gewirkter Cast zählt immer. Nur die Abweh
 (`IsHostileCastingAOEForMyDefense`); Vorab-Heilung und Gefährdungsprüfung behalten die Sicht der Gruppe. Der
 Messwert gilt je Sitzung.
 
-**Protokoll der Abwehrentscheidungen (`DefenseTrace.log` im Konfigurationsordner, je Sitzung neu, A208):** Jede
+**Protokoll der Abwehrentscheidungen (`DefenseTrace.log` im Konfigurationsordner, über Sitzungen und Builds fortgeschrieben, jede Sitzung mit Datum, Uhrzeit und Commit des Builds, A208, A232):** Jede
 Wahl der Abwehrkette — Flächen- und Einzelabwehr im Dispatch für alle Jobs, beim Beschwörer auch Radiant Aegis vor
 einem BossModReborn-Raidwide — mit allen Quellen, die in diesem Moment stehen: Marker mit Pfad, Träger und Abstand,
 gelistete Casts mit Form, Abständen und „reaches you", BossModReborn-Raidwide und -Tankbuster samt erkanntem Tank.

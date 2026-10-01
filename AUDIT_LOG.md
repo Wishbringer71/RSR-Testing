@@ -4854,6 +4854,19 @@ Seine Rüge: „meine vorgabe lautete aber anders" und „deine interpretation s
 
 **Prüfgrad:** statisch (Konzept, Code, Versionsgeschichte); Modellrechnung mit Selbsttest; Prüfskripte; Compile über die CI.
 
+
+### A232 · Trace-Datei: Commit des Builds, über Sitzungen fortgeschrieben (01.10.2026)
+
+Seine Frage: ob das Log Datum und Uhrzeit hat, um abzugleichen, gegen welchen Buildstand geprüft werden muss, oder besser den Commitstand.
+
+- *Stand vorher, am Code:* `DefenseTrace.log` trägt Datum und Uhrzeit nur in der Startzeile (`yyyy-MM-dd HH:mm:ss trace started`), jede weitere Zeile nur die Uhrzeit. Der Kopf nennt `version 7.5.6.13` — die Assemblyversion, für jeden Build seit dem Release gleich. Ein Commit fehlte. Das Datum allein trennt nicht: am 01.10. liegen sieben Commits auf dem Zweig, und er baut den Zweig vor dem Spielen.
+- *Umsetzung:* `Directory.Build.props` bettet `git rev-parse --short=9 HEAD` als `AssemblyMetadata("SourceCommit")` ein (Ziel `EmbedSourceCommit`, wie die Versionsableitung über `git`, ohne `%` im Befehl, weil `Exec` unter Windows eine Batchdatei schreibt). Der Kopf von `DefenseTrace.log` nennt `commit <hash>`, ohne `git` beim Bauen `commit unknown`. Gilt auch für Release-Builds, weil das Ziel nicht an `AssemblyVersion` hängt.
+- *Nachweis:* Neuer CI-Schritt „Check the build names its commit": Die erzeugte `RotationSolver.AssemblyInfo.cs` muss genau den ausgecheckten Commit tragen. Er prüft gegen eine unabhängige Quelle (`git rev-parse` im Lauf), nicht nur die Anwesenheit.
+- *Seine Nachfrage, ob das Log über mehrere Builds geführt werden kann:* Nein — `DefenseTrace.Start` legte die Datei bei jedem Laden neu an, ein Neukompilieren und Neuladen vor dem Hochladen verlor also jede frühere Sitzung. Jetzt wird angehängt; jede Sitzung beginnt mit Leerzeile, `==== <Datum Uhrzeit> trace started` und dem Kopf mit Commit. Eine Größengrenze gibt es nicht: Sie wäre eine feste Zahl ohne Loop, und das Wachstum je Sitzung ist nicht gemessen. Löschen der Datei setzt sie zurück.
+- *Nicht geändert:* `actiontrace_*.log` (`ActionTracer`, Upstream) — fremde Datei, von ihm bisher nicht hochgeladen.
+
+**Prüfgrad:** statisch; XML-Prüfung; Compile und Commit-Prüfung über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

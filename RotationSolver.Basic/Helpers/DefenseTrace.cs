@@ -15,9 +15,12 @@ namespace RotationSolver.Basic.Helpers;
 /// chain chose and every source standing at that moment; each enemy hit on the player is listed
 /// beside it, so the file shows whether the hit the defence was spent on arrived.
 ///
-/// The file is replaced at every load, so it holds exactly one session. Written through one open
-/// writer under a lock: the dispatch writes from the framework thread, the effect handler from the
-/// game thread.
+/// The file is kept across loads and builds: the owner rebuilds the branch before playing and may
+/// reload several times before uploading, and replacing the file at each load lost every session but
+/// the last. Each session opens with its date, time and the commit the plugin was built from, so the
+/// sections can be told apart and matched to their code. Deleting the file starts it over. Written
+/// through one open writer under a lock: the dispatch writes from the framework thread, the effect
+/// handler from the game thread.
 /// </remarks>
 internal static class DefenseTrace
 {
@@ -29,7 +32,7 @@ internal static class DefenseTrace
 	/// <summary>The trace file's full path.</summary>
 	public static string FilePath => Path.Combine(Svc.PluginInterface.ConfigDirectory.FullName, "DefenseTrace.log");
 
-	/// <summary>Starts a new trace for this session, replacing the last one.</summary>
+	/// <summary>Starts this session's section of the trace, after whatever earlier sessions wrote.</summary>
 	public static void Start(string header)
 	{
 		lock (_lock)
@@ -37,8 +40,9 @@ internal static class DefenseTrace
 			try
 			{
 				_writer?.Dispose();
-				_writer = new StreamWriter(FilePath, false) { AutoFlush = true };
-				_writer.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} trace started");
+				_writer = new StreamWriter(FilePath, true) { AutoFlush = true };
+				_writer.WriteLine();
+				_writer.WriteLine($"==== {DateTime.Now:yyyy-MM-dd HH:mm:ss} trace started");
 				_writer.WriteLine(header);
 			}
 			catch (Exception ex)
