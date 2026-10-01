@@ -65,6 +65,20 @@ pass `Thrill Of Battle Heal Threshold` within its ten seconds (`Use Thrill of Ba
 fall below its threshold within its duration`, on by default), so the extra health and the stronger healing
 are there while the pack is at full strength. Where the healers hold you steady, it waits as before.
 
+## Tanks: the big mitigation first when a tankbuster is predicted
+
+When BossModReborn predicts a tankbuster on you, every tank now casts its big mitigation (Damnation,
+Guardian, Shadowed Vigil, Great Nebula and their lower forms) and Rampart before the smaller ones. The
+window opens a few seconds before the hit, and with the small ones first the big one could come only
+0.7 s before the hit, or not at all.
+
+## GCD length while no GCD is running
+
+Between GCDs - out of range, between pulls, before the first GCD - the plugin read the GCD length as 0.
+Everything measured in GCDs then collapsed: heal-ahead looked nowhere, the one-GCD window in which a
+running enemy cast is answered was closed, and the first-GCDs-of-combat guards did not hold. The last
+GCD length now stands in while none runs.
+
 ## Summoner: Searing Flash no longer expires unused
 
 Outside a demi, Searing Flash waited for a dying boss. With other Summoners in the party, Searing Light

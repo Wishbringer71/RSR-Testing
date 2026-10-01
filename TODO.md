@@ -40,9 +40,13 @@ Schutzwall fällt erst 30 s nach der großen Minderung (15 s), die große erst 6
 
 Empfehlung: belassen. Zur Entscheidung, weil er die Fälle durchgerechnet haben wollte.
 
-### Alle Rollen: Gegner-Debuff in der Einzelabwehr fehlt dem angesagten Raidwide · N
+### Alle Rollen: Gegner-Debuff am Tankbuster oder für den Raidwide · N
 
-Reflexion, Zermürben und Stumpfsinn fallen in der Einzelabwehr (Tankbuster, bei Tanks auch jeder Zauber auf ihr Ziel), auch wenn BossModReborn einen Raidwide nach ihrer Wirkdauer und vor Ende ihrer Abklingzeit ansagt; dann fehlen sie der Gruppe. Dieselbe Bauform: Abschütteln in der Einzelheilung des Kriegers. Fallmatrix, Beispielrechnung und Optionen X0–X3 in Konzept 08, „Ein Gegner-Debuff in der Einzelabwehr fehlt dem angesagten Raidwide". Empfehlung X2: zentral zurückhalten in diesem Fenster, mit Selbstbewertung, weicht bei Gefahr; ohne Modul unverändert. Zur Entscheidung.
+Sein Kriterium (01.10.2026): Wen bringt der Verzicht in ernste Bedrängnis, den Tank am Tankbuster oder die Gruppe am Raidwide? Fallmatrix a–g, Belege aus seinen Protokollen (Tankbuster bis 85 %, Raidwides bis 37 %) und Optionen Y0–Y2 in Konzept 08, „Ein Gegner-Debuff in der Einzelabwehr fehlt dem angesagten Raidwide". Empfehlung Y2: braucht eine gespeicherte Messung je Tankbuster-Aktion; zurückgehalten wird nur, wenn der Tank ohne Debuff nicht in Gefahr ist und das schwächste Mitglied am Raidwide schon. Offen ist Lage c, beide in Gefahr, mit beiden Lesarten. Zur Entscheidung.
+
+### Flächenlandung „reached you False" bei Raidwides im Sonderinhalt · N
+
+Protokoll 01.10.2026 (Klosterdämon, Todesklaue; 48-Spieler-Inhalt mit Phantom-Aktionen): Jede Landung von Berstendes Gebrüll, Gigaflare und Tückische Resonanz meldet „reached you False", und es gibt keinen „hit you"-Eintrag für sie, obwohl ihre Reichweite die Arena deckt. „Skip area defence for casts that missed you" (ab Werk an) liest diese Aufzeichnung und lässt dann die Abwehr weg, die nur ihn schützt. Ursache nicht belegt; zwei Hypothesen: Er stand tatsächlich außerhalb, oder der Schaden kam über eine andere Wirkungsmeldung (unsichtbarer Helfer, auf mehrere Meldungen verteilte Ziele). Das Protokoll nennt jetzt je Landung die Zahl der Ziele und der getroffenen Gruppenmitglieder (A242), damit die nächste Aufzeichnung entscheidet. Sonderinhalt: erfasst, nicht bearbeitet, bis er ihn freigibt; bestätigt sich die zweite Hypothese, betrifft sie jeden Kampf mit Helfer-Schaden.
 
 ### Krieger: Nascent Flash — offene Bausteine · N, U
 

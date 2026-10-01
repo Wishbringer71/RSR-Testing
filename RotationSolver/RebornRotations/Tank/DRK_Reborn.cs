@@ -493,6 +493,20 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	[RotationDesc(ActionID.OblationPvE, ActionID.ArmsLengthPvE, ActionID.TheBlackestNightPvE, ActionID.DarkMindPvE, ActionID.ShadowWallPvE, ActionID.ShadowedVigilPvE, ActionID.RampartPvE, ActionID.ReprisalPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
+		// A predicted tankbuster on the player gets the big mitigations first: the window opens a few seconds
+		// before the hit, and with the cheap ones ahead the big one landed last or not at all (trace of
+		// 01.10.2026: Damnation 0.7 s before the hit, Rampart ready and never cast, A241).
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, ShadowedVigilPvE.EnoughLevel ? StatusID.ShadowedVigil : StatusID.ShadowWall)
+			&& (ShadowedVigilPvE.EnoughLevel ? ShadowedVigilPvE.CanUse(out act, skipStatusProvideCheck: true) : ShadowWallPvE.CanUse(out act, skipStatusProvideCheck: true)))
+		{
+			return true;
+		}
+
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		//10
 		if (!IsLastAbility(false, OblationPvE))
 		{
@@ -521,18 +535,6 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		}
 		//20
 		if (DarkMindPvE.CanUse(out act))
-		{
-			return true;
-		}
-
-		// Predicted tankbuster takes priority over the elapsed-time stagger below.
-		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, ShadowedVigilPvE.EnoughLevel ? StatusID.ShadowedVigil : StatusID.ShadowWall)
-			&& (ShadowedVigilPvE.EnoughLevel ? ShadowedVigilPvE.CanUse(out act, skipStatusProvideCheck: true) : ShadowWallPvE.CanUse(out act, skipStatusProvideCheck: true)))
-		{
-			return true;
-		}
-
-		if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;
 		}

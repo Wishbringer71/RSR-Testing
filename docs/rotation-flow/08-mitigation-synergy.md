@@ -441,48 +441,80 @@ trifft — und nicht besser.
 
 ### Ein Gegner-Debuff in der Einzelabwehr fehlt dem angesagten Raidwide
 
-**Stand:** Reflexion (Reprisal, alle vier Tanks), Zermürben (Feint, Nahkämpfer) und Stumpfsinn (Addle, Magier) stehen
-in der Einzelabwehr ihrer Rotationen, jeweils hinter der Nachziehregel `ShouldSustainMitigationDebuff` und als
-schlichtes `CanUse` (erhoben 01.10.2026: WAR, PLD, GNB, DRK, SAM, RPR, MNK, VPR, DRG, RDM, PCT, BLM; der
-Beschwörer über `TryAddleBeforeDamage`). Die Einzelabwehr öffnet bei Tanks für jeden Zauber auf ihr Ziel und jeden
-Tankbuster, bei Schadensausteilern für einen Tankbuster auf sie selbst. Fällt der Debuff dort, deckt er nur diesen
-Treffer — und fehlt dem nächsten Raidwide, der die ganze Gruppe trifft. The Balance nennt Reprisal auf einen
-Tankbuster deshalb „very situational". Dieselbe Bauform hat Abschütteln in der Einzelheilung des Kriegers
-(Konzept 09, Befund 6, S3).
+**Sein Kriterium (01.10.2026), im Wortlaut:** „gewisse skills helfen bei raidwides allen, während sie bei tankbuster nur
+dem tank helfen. da ist immer die frage, wie stark der tankbuster und wie stark die raidwides sind, kommt der tank ohne
+den skill beim tankbuster in ernste bedrängnis, oder eher die anderen bei raidwides". Einordnung: Vorgabe mit Kriterium
+für diese Entscheidung. Es ersetzt meine frühere Begründung, die nur nach dem Zeitfenster fragte: Nicht *ob* ein Raidwide
+kommt, entscheidet, sondern *wen* der Verzicht in ernste Bedrängnis bringt.
+
+**Stand:** Reflexion (Reprisal, alle vier Tanks), Zermürben (Feint, Nahkämpfer) und Stumpfsinn (Addle, Magier) stehen in
+der Einzelabwehr ihrer Rotationen, jeweils hinter der Nachziehregel `ShouldSustainMitigationDebuff` und als schlichtes
+`CanUse` (erhoben 01.10.2026: WAR, PLD, GNB, DRK, SAM, RPR, MNK, VPR, DRG, RDM, PCT, BLM; der Beschwörer über
+`TryAddleBeforeDamage`). Die Einzelabwehr öffnet bei Tanks für jeden Zauber auf ihr Ziel und jeden Tankbuster — auch auf
+einen anderen Tank, weil der Debuff am Gegner allen hilft —, bei Schadensausteilern für einen Tankbuster auf sie selbst.
+Dieselbe Bauform hat Abschütteln in der Einzelheilung des Kriegers (Konzept 09, Befund 6, S3).
 
 Wirkung und Abklingzeit (Job-Guide): Reflexion −10 % ausgeteilter Schaden der Gegner im Umkreis 5 Yalm, 15 s, 60 s;
-Zermürben −10 % physisch, −5 % magisch, Stumpfsinn −10 % magisch, −5 % physisch, je 15 s und 90 s. Verschiedene Debuffs
-wirken nebeneinander, zwei gleiche nicht (`TargetStatusProvide` sperrt einen zweiten).
+Zermürben −10 % physisch, −5 % magisch, Stumpfsinn −10 % magisch, −5 % physisch, je 15 s und 90 s.
 
-| Lage | heute | X1: zurückhalten, wenn ein Raidwide in (Wirkdauer, Abklingzeit] angesagt ist |
+**Was RSR zur Höhe beider Treffer weiß:**
+- *Raidwide:* gemessen je Aktion — der höchste Anteil an der Maximalgesundheit, den sie bei einem Mitglied nach Minderung
+  und Barriere angerichtet hat (`HostileCastingAreaPotential`, gespeichert über Sitzungen). Welcher Raidwide als nächster
+  kommt, sagt BossModReborn nicht; sicher ist er nur, wenn der Zauber schon läuft.
+- *Tankbuster:* gemessen wird jeder Treffer auf den Spieler (Protokoll „hit you … % of max HP"), **gespeichert wird er
+  nicht**. Welcher Tankbuster kommt, ist bei einem gelisteten Zauber bekannt, bei Marker oder Vorhersage nicht.
+- Beide Messungen liegen nach Minderung, also eher zu niedrig; der höchste gesehene Wert ist der am wenigsten geminderte.
+
+**Belege aus seinen Protokollen vom 01.10.2026** (Treffer auf ihn als Krieger, Anteil seiner Maximalgesundheit):
+
+| Gegner | Tankbuster auf ihn | Raidwide, gemessen |
 |---|---|---|
-| kein Modul, oder Modul ohne Raidwides | Debuff am Tankbuster | unverändert — BossModReborn meldet `float.MaxValue`, also keine Ansage |
-| Raidwide innerhalb der Wirkdauer (≤ 15 s) | Debuff deckt beide | unverändert, deckt beide |
-| Raidwide nach Wirkdauer, vor Ende der Abklingzeit | deckt den Tankbuster; der Raidwide kommt ohne diesen Debuff | Tankbuster ohne die 10 %, Raidwide mit — über die Flächenabwehr, die den Debuff dann wirkt |
-| Raidwide erst nach der Abklingzeit | deckt den Tankbuster | unverändert |
-| Spieler oder ein Tank in Gefährdungsklasse 1 | — | die Rückhaltung weicht (`HoldSingleDefense`) |
-| Einzelabwehr geöffnet von einem gewöhnlichen Zauber auf das Ziel des Tanks | Debuff verbraucht | gehalten — hier gewinnt die Regel am meisten |
-| Pull ohne Modul | Reflexion im Pull | unverändert |
+| Restaurierter Löwe | Schramme 30–47 % unter Verdammnis/Schutzwall, **85 %** ohne große Minderung | Strahlende Welle: nicht gemessen |
+| Neo Garula | Trampeltier 27–35 % mit Minderung, **65 %** ohne große Minderung | Zornesbrüllen: nicht gemessen |
+| Todesklaue | Dreckige Klauen 14 % unter Urimpuls, Kampfrausch, Verdammnis | Tückische Resonanz: nicht gemessen |
+| Klosterdämon | — | Berstendes Gebrüll bis 37 %, Gigaflare bis 21 % |
 
-**Was abzuwägen ist, gerechnet an einem Beispiel** (Annahme: Tankbuster 80 % der Tankgesundheit, Raidwide 40 % je
-Mitglied): Am Tankbuster spart der Debuff 8 % *einer* Gesundheit, am Raidwide 4 % *jeder*, in einer leichten Gruppe 16 %,
-in einer vollen 32 % zusammen. Für die Sicherheit zählt nicht die Summe, sondern der Schwächste: Am Raidwide ist das ein
-Heiler oder Schadensausteiler mit weniger Gesundheit, am Tankbuster der Tank. Beide können sterben; die
-Gefährdungsklasse fängt den Fall, in dem es knapp wird.
+An diesen Bossen bringt der Tankbuster den Tank ohne große Minderung nahe an den Tod, die Raidwides liegen deutlich darunter.
+Nach seinem Kriterium gehört Reflexion dort an den Tankbuster.
 
-**Grenzen:**
-- BossModReborn nennt nur den *nächsten* Raidwide und keine Höhe (Abschnitt „BMR sagt wann"). Ist er klein und der
-  Tankbuster groß, hält X1 in die falsche Richtung. Prüfbar ist das zur Laufzeit: Kam innerhalb der Abklingzeit
-  kein Raidwide, war die Rückhaltung umsonst — dieselbe Selbstbewertung wie `ScoreProactiveHold` kann X1 stilllegen,
-  wenn sie öfter falsch als richtig liegt.
-- Ein zweiter Tank kann den Raidwide mit seiner Reflexion decken. Das ist Verhalten eines anderen Spielers, also kein
-  tragender Grund.
+**Fälle und was das Kriterium entscheidet** (Gefährdung wie in der ganzen Abwehr: Gefährdungsklasse 1, vorausgerechnete
+effektive Gesundheit auf oder unter „Health of dying tank", Konzept 07):
 
-**Optionen:** X0 belassen; X1 wie oben, als Regel für **alle Rollen** zentral (eine Prüfung „Raidwide in (Dauer,
-Abklingzeit] angesagt", gelesen von jeder Einzelabwehr mit Gegner-Debuff), mit Selbstbewertung; X2 wie X1 und dieselbe
-Prüfung für Abschütteln in der Einzelheilung (Dauer der Barriere 30 s, Abklingzeit 90 s); X3 Debuffs in der Einzelabwehr
-nur noch bei Gefahr — verworfen, weil es auch die Fälle ohne Raidwide-Konflikt verliert. **Empfehlung: X2**, als Option
-ab Werk an. Zur Entscheidung (TODO).
+| Lage | Tank ohne Debuff am Tankbuster | Schwächstes Mitglied ohne Debuff am Raidwide | Entscheidung |
+|---|---|---|---|
+| a | in Gefahr | nicht | Debuff an den Tankbuster |
+| b | nicht | in Gefahr | zurückhalten für den Raidwide |
+| c | in Gefahr | in Gefahr | an den Tankbuster: er ist sicher und unmittelbar, der Raidwide nur angesagt; der Tank hat außerdem keine andere Antwort mehr, wenn die eigenen Minderungen schon liegen — die Gruppe hat die Heiler und deren Gruppenminderung |
+| d | nicht | nicht | wie heute an den Tankbuster — der Verzicht rettet niemanden, und gespart wäre nur eine Abklingzeit |
+| e | Höhe unbekannt | — | wie heute (Sicherheit vor Ersparnis bei unbekannter Höhe) |
+| f | — | Raidwide nicht gemessen oder nicht angesagt | wie heute |
+| g | Raidwide innerhalb der Wirkdauer | | wie heute: der Debuff deckt beide |
+
+Gegenposition zu c: Ein Raidwide, der mehrere Mitglieder in Gefahr bringt, wiegt schwerer als ein Tank. Nicht widerlegt;
+sie stützt sich darauf, dass die Heiler den Raidwide ebenfalls kennen und vorsorgen, während beim Tankbuster nur der
+Tank selbst handelt — das ist Verhalten anderer Spieler, also kein tragender Grund. Ich lege c deshalb mit beiden
+Lesarten vor.
+
+**Was es zum Bauen braucht:**
+- eine gespeicherte Messung je Tankbuster-Aktion, wie die der Flächen (höchster Anteil am getroffenen Tank, nach
+  Minderung);
+- für die Vorhersage ohne Aktions-Id: der höchste in diesem Kampf gemessene Tankbuster und Raidwide desselben Gegners;
+- die Rechnung je Seite: Gesundheit nach dem Treffer ohne die 10 % des Debuffs gegen die Grenze der Gefährdungsklasse.
+
+Was das im Kampf ändert: Nur in Lage b hält der Debuff zurück. In seinen Protokollen von heute kommt b nicht vor — dort
+liegen die Tankbuster über den Raidwides, Lage a oder d. Die Regel ändert bei diesen Bossen also nichts und hält erst
+dort, wo ein schwerer Raidwide auf einen leichten Tankbuster folgt.
+
+**Optionen:**
+- Y0: belassen.
+- Y1: sein Kriterium wie oben, zentral für alle Rollen mit Gegner-Debuff in der Einzelabwehr, mit der neuen
+  Tankbuster-Messung; ohne Messung oder ohne Ansage wie heute.
+- Y2: wie Y1, dazu Abschütteln in der Einzelheilung nach demselben Kriterium.
+
+Die frühere Option X1 (halten, sobald ein Raidwide angesagt ist) ist durch sein Kriterium überholt: Sie hätte bei allen
+vier Bossen von heute Reflexion vom Tankbuster abgezogen, der den Tank auf 85 % Verlust bringt.
+
+**Empfehlung: Y2**, als Option ab Werk an; Lage c nach seiner Wahl. Zur Entscheidung (TODO).
 
 ## Wann Lux Solaris zuendet
 

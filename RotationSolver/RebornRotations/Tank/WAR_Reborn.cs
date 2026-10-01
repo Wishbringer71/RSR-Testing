@@ -309,6 +309,20 @@ public sealed class WAR_Reborn : WarriorRotation
 			return false;
 		}
 
+		// A predicted tankbuster on the player gets the big mitigations first: the window opens a few seconds
+		// before the hit, and with the cheap ones ahead the big one landed last or not at all (trace of
+		// 01.10.2026: Damnation 0.7 s before the hit, Rampart ready and never cast, A241).
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, DamnationPvE.EnoughLevel ? StatusID.Damnation : StatusID.Vengeance)
+			&& (DamnationPvE.EnoughLevel ? DamnationPvE.CanUse(out act, skipStatusProvideCheck: true) : VengeancePvE.CanUse(out act, skipStatusProvideCheck: true)))
+		{
+			return true;
+		}
+
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		// Free of cost but its cooldown, so ahead of the paid mitigations (A194).
 		if (ArmsLengthSlowsPull(UseArmsLengthOnPull, Service.Config.AutoDefenseNumber) && ArmsLengthPvE.CanUse(out act))
 		{
@@ -323,21 +337,6 @@ public sealed class WAR_Reborn : WarriorRotation
 		// Thrill of Battle stacks with Bloodwhetting on a tankbuster rather than replacing it (A237).
 		if (UseThrillForTankbuster && TankbusterOnMeWithin(DefensiveValues.DurationOf((uint)ActionID.ThrillOfBattlePvE))
 			&& ThrillOfBattlePvE.CanUse(out act))
-		{
-			return true;
-		}
-
-		// No stop while Bloodwhetting runs: it held Damnation, Rampart and Reprisal back for its eight
-		// seconds, at the start of every pull and on every tankbuster it went out for (A238). Rampart and
-		// Damnation still stagger against each other through their status check.
-		// Predicted tankbuster takes priority over the elapsed-time stagger below.
-		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, DamnationPvE.EnoughLevel ? StatusID.Damnation : StatusID.Vengeance)
-			&& (DamnationPvE.EnoughLevel ? DamnationPvE.CanUse(out act, skipStatusProvideCheck: true) : VengeancePvE.CanUse(out act, skipStatusProvideCheck: true)))
-		{
-			return true;
-		}
-
-		if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;
 		}

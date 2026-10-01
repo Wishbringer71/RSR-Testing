@@ -160,6 +160,20 @@ public sealed class GNB_Reborn : GunbreakerRotation
 			return base.DefenseSingleAbility(nextGCD, out act);
 		}
 
+		// A predicted tankbuster on the player gets the big mitigations first: the window opens a few seconds
+		// before the hit, and with the cheap ones ahead the big one landed last or not at all (trace of
+		// 01.10.2026: Damnation 0.7 s before the hit, Rampart ready and never cast, A241).
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, GreatNebulaPvE.EnoughLevel ? StatusID.GreatNebula : StatusID.Nebula)
+			&& (GreatNebulaPvE.EnoughLevel ? GreatNebulaPvE.CanUse(out act, skipStatusProvideCheck: true) : NebulaPvE.CanUse(out act, skipStatusProvideCheck: true)))
+		{
+			return true;
+		}
+
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		// Free of cost but its cooldown, so ahead of the paid mitigations (A194).
 		if (ArmsLengthSlowsPull(UseArmsLengthOnPull, Service.Config.AutoDefenseNumber) && ArmsLengthPvE.CanUse(out act))
 		{
@@ -211,18 +225,6 @@ public sealed class GNB_Reborn : GunbreakerRotation
 					}
 					break;
 			}
-		}
-
-		// Predicted tankbuster takes priority over the elapsed-time stagger below.
-		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, GreatNebulaPvE.EnoughLevel ? StatusID.GreatNebula : StatusID.Nebula)
-			&& (GreatNebulaPvE.EnoughLevel ? GreatNebulaPvE.CanUse(out act, skipStatusProvideCheck: true) : NebulaPvE.CanUse(out act, skipStatusProvideCheck: true)))
-		{
-			return true;
-		}
-
-		if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
-		{
-			return true;
 		}
 
 		//30

@@ -114,6 +114,33 @@ public static class Watcher
 		return reached;
 	}
 
+	// How many party members this set reached, for the trace line of an area landing: "missed you" with
+	// party members reached says he stood out of it; with none, the set carried no hit at all and the
+	// damage came another way (trace of 01.10.2026, A242).
+	private static int DamagedPartyMembers(ActionEffectSet set)
+	{
+		var count = 0;
+		var party = DataCenter.PartyMembers;
+		foreach (var effect in set.TargetEffects)
+		{
+			if (!ReachedTarget(effect))
+			{
+				continue;
+			}
+
+			for (var i = 0; i < party.Count; i++)
+			{
+				if (party[i]?.GameObjectId == effect.TargetID)
+				{
+					count++;
+					break;
+				}
+			}
+		}
+
+		return count;
+	}
+
 	private static float DamageShareOn(ActionEffectSet set, ulong targetId, uint denom)
 	{
 		float share = 0;
@@ -414,7 +441,8 @@ public static class Watcher
 						// arrives here; the trace shows each one, so a cast that keeps opening the defence
 						// without ever being recorded can be told from one that keeps reaching him.
 						DefenseTrace.Line($"area cast landed: {set.Action!.Value.Name.ExtractText()} #{set.Action!.Value.RowId}"
-							+ $" from {battle.Name.TextValue}, reached you {reachedPlayer}");
+							+ $" from {battle.Name.TextValue}, reached you {reachedPlayer}, {set.TargetEffects.Length} targets"
+							+ $" ({DamagedPartyMembers(set)} party members damaged)");
 					}
 
 					if (highestShare > 0f && OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))

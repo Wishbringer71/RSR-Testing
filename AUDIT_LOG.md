@@ -5011,6 +5011,63 @@ Sein Hinweis: Kampfrausch „evtl. auch bei gruppenpulls wall to wall sinnvoll".
 
 **Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
 
+
+### A240 · GCD-Länge 0, solange kein GCD läuft (01.10.2026)
+
+Befund aus seinem Protokoll vom 01.10.2026 (Build dca7edb62): Dieselbe Abwehrentscheidung steht zwei- und dreimal binnen 50 ms im Protokoll (21:31:32, 21:32:47, 21:32:50, 21:34:22, 20:58:16), obwohl `DefenseTrace.Decision` eine Wiederholung innerhalb eines GCD unter Sperre ausschließt.
+
+- *Ursache:* `DataCenter.DefaultGCDTotal` liest `ActionManager.GetRecastTime` der GCD-Gruppe. Das Spiel meldet die Gesamtzeit nur, solange der Timer läuft, sonst 0. Belegt durch das Protokoll (die Sperre ließ Wiederholungen nach 22 ms durch) und durch die Schutzabfrage in `ActionQueueManager.CanInterceptAction` („Guard against invalid GCD totals"), die Upstream schon kannte.
+- *Wirkungsbereich (erhoben):* 23 direkte Leser und 35 über `GCDTime`. Alle fragen nach der Länge eines GCD:
+  - Vorlauf der vorausschauenden Heilung;
+  - Ein-GCD-Fenster der reaktiven Abwehr (`IsHostileCastingBase`: Flächen-, Tankbuster-, Rückstoß- und Unterbrechungserkennung);
+  - Markerfenster;
+  - Frist der Gruppenbetäubung des Dunkelritters;
+  - Messbeginn der Walking-Dead-Prognose;
+  - `CombatElapsedLessGCD` (die ersten GCDs eines Kampfes);
+  - Sperren der Protokolle.
+  Lief kein GCD (außer Reichweite, zwischen Pulls, vor dem ersten GCD), war jede dieser Fragen mit 0 beantwortet. Die reaktive Abwehr erkannte dann keinen laufenden Zauber, die Vorausschau blickte nicht voraus.
+- *Behebung, ohne Schalter:*
+  - Läuft kein GCD, steht die zuletzt gemeldete Länge, vor dem ersten GCD die angepasste Wiederaufladung einer Waffenfertigkeit (`GetAdjustedRecastTime`, die Zahl des Spiels für die Geschwindigkeit des Spielers).
+  - `DefaultGCDRemain` liest weiter den rohen Wert, bleibt also 0, solange kein GCD läuft.
+- *Folgen:* `CombatElapsedLessGCD` hält jetzt auch vor dem ersten GCD, wie es seine Absicht sagt: Wer gezogen wird, ohne anzugreifen, wirkt die gehaltenen Fähigkeiten erst nach der gesetzten Zahl GCDs. Für Magier ist die Ersatzlänge vor dem ersten GCD die mit Fertigkeitstempo, nicht Zaubertempo; ab dem ersten GCD gilt die gemessene.
+- *Fester Wert:* `/ 1000f` (Millisekunden zu Sekunden) als Ausnahme gelistet.
+
+**Prüfgrad:** statisch (Code, ClientStructs, Laufzeitprotokoll); Prüfskripte; Compile über die CI.
+
+### A241 · Tanks: große Minderung zuerst bei vorhergesagtem Tankbuster (01.10.2026)
+
+Befund aus seinem Protokoll, 21:11:58–21:12:03: Marker auf ihm, Vorhersage „in 3,9 s". Gefallen sind Urimpuls (Urinstinkt-Zweig), Kampfrausch, dann Verdammnis bei 0,7 s; Treffer 14 %. Schutzwall war bereit (seit Sitzungsbeginn nicht gewirkt) und fiel nicht.
+
+- *Ursache:* Je Einwebeplatz fällt die erste passende Aktion. Die Zweige für den vorhergesagten Tankbuster standen hinter den kleinen Minderungen, bei allen vier Tanks:
+  - Krieger: Urimpuls, Kampfrausch;
+  - Paladin: Bulwark, Sheltron;
+  - Revolverklinge: Camouflage, Heart of Corundum;
+  - Dunkelritter: Oblation, The Blackest Night, Dark Mind.
+  Das Fenster („Seconds before tankbuster to use single mitigation", ab Werk 3 s; Marker etwas früher) reicht für drei bis vier Einwebeplätze.
+- *Behebung:* Die beiden Zweige des vorhergesagten Tankbusters (große Minderung, dann Schutzwall) stehen bei allen vier Tanks am Anfang der Einzelabwehr. Sie greifen nur bei einer Vorhersage; Pull und Marker ohne Vorhersage laufen wie bisher.
+- *Falsifikation:*
+  - *Kein Defekt:* widerlegt durch das Protokoll.
+  - *Option falsch:* Die kleinen kommen jetzt später und können ihrerseits wegfallen. Sie mindern weniger, haben kurze Abklingzeiten und sind beim nächsten Tankbuster wieder da.
+  - *Nichts ändert sich:* Ohne BossModReborn-Vorhersage gibt es diese Zweige nicht. Dann fällt die große nach der Staffelung, wie bisher.
+
+**Prüfgrad:** statisch; Laufzeitprotokoll als Beleg des Fehlers; Compile über die CI.
+
+### A242 · Protokolle vom 01.10.2026: Auswertung (01.10.2026)
+
+Zwei Sitzungen: Build fa21e0eba (vor A236–A239) und dca7edb62 (mit ihnen); Krieger, überwiegend 48-Spieler-Sonderinhalt mit Phantom-Aktionen.
+
+- *Bestätigt im Spiel (Laufzeitbeobachtung):*
+  - A236: Abtausch fällt im neuen Build nur noch mit „pull on you" (20:41, 21:16, 21:30, 21:32), nie am Tankbuster. Im alten Build fiel er bei 20:00:35 auf den Tankbuster („hits you True") — seine Meldung.
+  - A237: Beim Tankbuster 21:11:58 fielen Urimpuls und Kampfrausch vor dem Treffer.
+  - A238: Im Pull 21:30:38 kamen Verdammnis (21:30:39), Urimpuls (21:30:43) und Reflexion (21:30:44) dicht hintereinander; vorher hätte Urimpuls Reflexion acht Sekunden gesperrt.
+- *Neue Befunde:*
+  - Die große Minderung kam beim Tankbuster zuletzt (A241, behoben).
+  - Die GCD-Länge war 0, solange kein GCD lief (A240, behoben).
+  - Jede Flächenlandung im Sonderinhalt meldet „reached you False", Ursache offen. Das Protokoll nennt jetzt Ziele und getroffene Gruppenmitglieder je Landung (TODO).
+- *Sein Kriterium für Reflexion:* Belege aus den Treffern auf ihn — Tankbuster bis 85 % ohne große Minderung, gemessene Raidwides bis 37 %. Konzept 08.
+- *Ohne Befund:* Reflexion auf Tankbuster anderer Tanks (21:05:42, 21:09:11) ist gewollt: Der Debuff am Gegner hilft dem Getroffenen. Bei 21:09:11 lief sie 15 s und endete mit der Landung des Raidwides um 21:09:26 — genau die Lage, die sein Kriterium entscheidet.
+
+**Prüfgrad:** Laufzeitprotokoll gelesen, Befunde am Code geprüft.
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

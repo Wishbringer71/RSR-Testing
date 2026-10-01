@@ -917,12 +917,16 @@ Was S2 im Kampf ändert:
 - *Ohne BossModReborn:* Der Tankbuster ist nur am Zauber oder Marker zu sehen, Sekunden vorher; der letzte Fall wird dann
   seltener erkannt, und Abschütteln fällt wie bisher.
 
-**7. Reflexion auf einen Tankbuster kann dem Raidwide fehlen — eine Klasse über alle Rollen.** Reflexion, Zermürben
-und Stumpfsinn fallen in der Einzelabwehr jeder Rolle, auch wenn BossModReborn einen Raidwide innerhalb ihrer
-Abklingzeit ansagt. Fallmatrix, Rechnung und Optionen stehen in Konzept 08, „Ein Gegner-Debuff in der Einzelabwehr
-fehlt dem angesagten Raidwide", weil die Regel dort für alle Rollen sitzt. Empfehlung X2: zurückhalten, wenn ein
-Raidwide nach der Wirkdauer und vor Ende der Abklingzeit angesagt ist, mit Selbstbewertung; dieselbe Prüfung für
-Abschütteln in der Einzelheilung.
+**7. Reflexion am Tankbuster oder für den Raidwide — sein Kriterium (01.10.2026).** Welcher Treffer den Debuff
+bekommt, entscheidet, wen der Verzicht in ernste Bedrängnis bringt: den Tank am Tankbuster oder die Gruppe am Raidwide.
+Fallmatrix, Messgrundlage und Belege aus seinen Protokollen in Konzept 08, „Ein Gegner-Debuff in der Einzelabwehr fehlt dem
+angesagten Raidwide", weil die Regel dort für alle Rollen sitzt. Empfehlung Y2.
+
+**8. Die große Minderung kam beim Tankbuster zuletzt — behoben (A241).** Protokoll 01.10.2026, 21:11:58: Marker auf ihm,
+Urimpuls, Kampfrausch, dann Verdammnis 0,7 s vor dem Treffer; Schutzwall war bereit und fiel nicht. Das Fenster der
+Einzelabwehr öffnet bei einer Vorhersage wenige Sekunden vorher, und die kleinen Minderungen standen vorn. Jetzt stehen
+die beiden Zweige für einen vorhergesagten Tankbuster bei allen vier Tanks am Anfang: große Minderung, dann Schutzwall,
+dann der Rest. Im Pull ändert sich nichts, die Zweige greifen nur bei einer Vorhersage.
 
 **Ohne Befund:**
 - *Äquilibrium* (reaktiv, unter Kampfrausch), *Holmgang* (Notfall bei 15 %; vorbeugend nur bei bekannter Höhe des
