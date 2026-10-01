@@ -409,6 +409,12 @@ public static class Watcher
 						}
 
 						DataCenter.AreaCastReachedPlayer[set.Action!.Value.RowId] = reachedPlayer;
+
+						// "Skip area defence for casts that missed you" can only learn from a landing that
+						// arrives here; the trace shows each one, so a cast that keeps opening the defence
+						// without ever being recorded can be told from one that keeps reaching him.
+						DefenseTrace.Line($"area cast landed: {set.Action!.Value.Name.ExtractText()} #{set.Action!.Value.RowId}"
+							+ $" from {battle.Name.TextValue}, reached you {reachedPlayer}");
 					}
 
 					if (highestShare > 0f && OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))

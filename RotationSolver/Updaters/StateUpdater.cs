@@ -199,6 +199,10 @@ internal static class StateUpdater
 
 	private static bool ShouldAddDefenseSingle()
 	{
+		// Recorded where it is decided, for SingleHitReachesPlayer and the defence trace: the pull
+		// rule is the one source of this flag that is about the player and no cast or marker shows.
+		DataCenter.TankPullOnPlayer = false;
+
 		if (!DataCenter.InCombat || !Service.Config.UseStDefense || DataCenter.IsTyrantCastingSpecialIndicator())
 		{
 			return false;
@@ -268,6 +272,7 @@ internal static class StateUpdater
 				&& ObjectHelper.GetPlayerHealthRatio() <= Service.Config.HealthForAutoDefense
 				&& movingHere && attacked)
 			{
+				DataCenter.TankPullOnPlayer = true;
 				return true;
 
 			}

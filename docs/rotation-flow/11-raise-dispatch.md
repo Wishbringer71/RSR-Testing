@@ -245,7 +245,7 @@ wiederbeleben.
 
 ### Die Phönixfeder
 
-Verdrahtet im Fähigkeitenpfad (`CustomRotation_Ability.cs:374`), hinter der Heilung und vor den
+Verdrahtet im Fähigkeitenpfad (`CustomRotation_Ability.cs:411`), hinter der Heilung und vor den
 Angriffsfähigkeiten: Jemanden am Leben zu halten geht vor, jemanden aufzuheben kostet ein
 Einschiebefenster. Die Ausführungssperre schluckt sie nicht, weil diese auf `nextAction is BaseAction`
 prüft und ein Gegenstand keiner ist.

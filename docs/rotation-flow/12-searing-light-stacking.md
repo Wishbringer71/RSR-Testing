@@ -642,7 +642,7 @@ unterschätzt, nicht überschätzt. Unterbrechungen des Schadens sind nicht mode
 
 **Phasen ohne Ziel waren als Modellgrenze benannt und sind keine.** Sie wären eine, wenn V7 dort
 zünden könnte — eine Ladung auf einen Abschnitt ohne Gegner ist reiner Verlust. Der Pfad gibt das
-aber nicht her: `AttackAbility` wird in `CustomRotation_Ability.cs:383` nur unter
+aber nicht her: `AttackAbility` wird in `CustomRotation_Ability.cs:420` nur unter
 `HasHostilesInRange` aufgerufen, die Zielprüfung steht also vor jeder Zündung, der heutigen wie der
 neuen. Das Modell darf diesen Fall auslassen, weil der Code ihn ausschließt.
 

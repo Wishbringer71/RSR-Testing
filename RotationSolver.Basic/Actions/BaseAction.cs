@@ -274,6 +274,17 @@ public class BaseAction : IBaseAction
 			return ActionTracer.Reject(this, "NoTarget");
 		}
 
+		// A defence that protects only the player is spent only on a hit that reaches him. "Only the
+		// player" is read from the game data and the target: it lands on him and has no effect radius -
+		// Rampart, Damnation, Arm's Length, a barrier aimed at himself - while Reprisal, Shake It Off or
+		// Heart of Corundum on the other tank reach beyond him and stay free (concept 13, A233).
+		if (IBaseAction.SelfProtectionHitsMe == false && Info.EffectRange == 0
+			&& PreviewTarget.Value.Target is { } protectedOne && Player.Object is { } self
+			&& protectedOne.GameObjectId == self.GameObjectId)
+		{
+			return ActionTracer.Reject(this, "ProtectsOnlyYouAndTheHitMissesYou");
+		}
+
 		if (!IBaseAction.ActionPreview)
 		{
 			Target = PreviewTarget.Value;

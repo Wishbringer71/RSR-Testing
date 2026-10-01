@@ -284,8 +284,13 @@ public partial class CustomRotation
 		}
 		if (DataCenter.MergedStatus.HasFlag(AutoStatus.DefenseArea))
 		{
+			// A command from the player is not second-guessed; the automatic flag asks for the party,
+			// so the actions that protect only the player ask whether the hit reaches him (A233).
+			IBaseAction.SelfProtectionHitsMe = DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseArea)
+				|| DataCenter.AreaHitReachesPlayer;
 			if (DataCenter.CurrentDutyRotation?.DefenseAreaAbility(nextGCD, out act) == true)
 			{
+				IBaseAction.SelfProtectionHitsMe = null;
 				DefenseTrace.Decision("area defence (duty)", act);
 				return true;
 			}
@@ -294,9 +299,11 @@ public partial class CustomRotation
 			if (DefenseAreaAbility(nextGCD, out act) || (role is JobRole.Melee or JobRole.RangedPhysical or JobRole.RangedMagical
 				&& DataCenter.AreaHitReachesPlayer && DefenseSingleAbility(nextGCD, out act)))
 			{
+				IBaseAction.SelfProtectionHitsMe = null;
 				DefenseTrace.Decision("area defence", act);
 				return true;
 			}
+			IBaseAction.SelfProtectionHitsMe = null;
 		}
 		IBaseAction.ShouldEndSpecial = false;
 
@@ -306,17 +313,24 @@ public partial class CustomRotation
 		}
 		if (DataCenter.MergedStatus.HasFlag(AutoStatus.DefenseSingle))
 		{
+			// The single-target flag also carries help for the other tank, so it stays; the actions that
+			// protect only the player ask whether the single hit reaches him (A233).
+			IBaseAction.SelfProtectionHitsMe = DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseSingle)
+				|| DataCenter.SingleHitReachesPlayer;
 			if (DataCenter.CurrentDutyRotation?.DefenseSingleAbility(nextGCD, out act) == true)
 			{
+				IBaseAction.SelfProtectionHitsMe = null;
 				DefenseTrace.Decision("single defence (duty)", act);
 				return true;
 			}
 			if (DefenseSingleAbility(nextGCD, out act)
 				|| (!DataCenter.IsHostileCastingToTank && !StatusHelper.PlayerHasStatus(true, StatusID.Vengeance) && !StatusHelper.PlayerHasStatus(true, StatusID.Damnation) && ArmsLengthPvE.CanUse(out act)))
 			{
+				IBaseAction.SelfProtectionHitsMe = null;
 				DefenseTrace.Decision("single defence", act);
 				return true;
 			}
+			IBaseAction.SelfProtectionHitsMe = null;
 		}
 		IBaseAction.ShouldEndSpecial = false;
 

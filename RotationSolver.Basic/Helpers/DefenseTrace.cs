@@ -68,14 +68,19 @@ internal static class DefenseTrace
 			return;
 		}
 
+		// Checked and set under the lock: the trace of 30.09.2026 holds the same choice twice, 21 ms apart.
 		var now = DateTime.Now;
-		if (act.ID == _lastDecision && (now - _lastDecisionWritten).TotalSeconds < DataCenter.DefaultGCDTotal)
+		lock (_lock)
 		{
-			return;
+			if (act.ID == _lastDecision && (now - _lastDecisionWritten).TotalSeconds < DataCenter.DefaultGCDTotal)
+			{
+				return;
+			}
+
+			_lastDecision = act.ID;
+			_lastDecisionWritten = now;
 		}
 
-		_lastDecision = act.ID;
-		_lastDecisionWritten = now;
 		Line($"{path} -> {act.Name} #{act.ID} | {DataCenter.DescribeDefenseSources()}");
 	}
 
