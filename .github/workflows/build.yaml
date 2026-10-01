@@ -238,12 +238,37 @@ jobs:
       - name: Restore NuGet Packages
         run: dotnet restore RotationSolver/RotationSolver.csproj
 
+      # A member Dalamud, ClientStructs or ECommons marks [Obsolete] has often changed meaning, not
+      # just name: SMNGauge.Attunement became a bit field in 7.01 and was read as a plain number
+      # until upstream switched after a Dalamud update. The compiler says so as CS0618/CS0612, and a
+      # warning in a green run is read by nobody, so here - and only here, not in the projects, where
+      # it would stop the owner's own build on the next Dalamud release - it fails the check.
+      # Self-test first: a probe that calls an obsolete member must fail with the same switch, or a
+      # clean run below would not tell a tree without obsolete use from a switch that does nothing.
+      - name: Self-test the obsolete-use switch
+        run: |
+          $probe = Join-Path $env:RUNNER_TEMP 'obsolete-probe'
+          New-Item -ItemType Directory -Force $probe | Out-Null
+          Set-Content (Join-Path $probe 'Probe.csproj') '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework><OutputType>Library</OutputType></PropertyGroup></Project>'
+          Set-Content (Join-Path $probe 'Probe.cs') 'public static class P { [System.Obsolete("probe")] public static void Old() { } [System.Obsolete] public static void Bare() { } public static void Use() { Old(); Bare(); } }'
+          # Without the switch the probe must build - otherwise a failure below could come from
+          # anything (restore, SDK) and prove nothing about the switch.
+          dotnet build $probe | Out-Host
+          if ($LASTEXITCODE -ne 0) { throw 'The probe does not build even without the switch; the self-test measures nothing.' }
+          $out = dotnet build $probe --no-incremental -warnaserror:CS0618,CS0612 2>&1 | Out-String
+          Write-Host $out
+          if ($LASTEXITCODE -eq 0) { throw 'The obsolete-use switch let a call to an [Obsolete] member through.' }
+          foreach ($code in 'CS0618', 'CS0612') {
+            if ($out -notmatch "error $code") { throw "The probe failed, but not with error $code." }
+          }
+          $global:LASTEXITCODE = 0
+
       - name: Build Plugin
-        run: dotnet build --no-restore -c Release RotationSolver/RotationSolver.csproj
+        run: dotnet build --no-restore -c Release RotationSolver/RotationSolver.csproj -warnaserror:CS0618,CS0612
 
       # The generator is in the solution and in no build. Nothing referenced it, so a compile error
       # in it reached the user instead of the CI - a missing `using Lumina` for LuminaOptions did
       # exactly that. It needs the game files to *run*, not to compile, so building it here costs a
       # restore and closes the gap for every future change to it.
       - name: Build the game-data generator
-        run: dotnet build -c Release RotationSolver.GameData/RotationSolver.GameData.csproj
+        run: dotnet build -c Release RotationSolver.GameData/RotationSolver.GameData.csproj -warnaserror:CS0618,CS0612

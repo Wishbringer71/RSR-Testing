@@ -4821,6 +4821,22 @@ Drei Upstream-Commits (07f9f7daf, Merge 3acc5333a, e79608210), konfliktfrei geme
 
 **Prüfgrad:** statisch (Diffs, Dalamud-Quelle, xivapi); Prüfskripte; Compile über die CI.
 
+### A230 · Release 7.5.6.13+wsh1, Übergabe der Release-Texte, Obsolete-Verwendungen (01.10.2026)
+
+Auftrag: PR #10 nach `main`, kompilieren, Release, neuer Zweig `claude/fixes-after-7.5.6.13`, danach die `Obsolete`-Verwendungen im Loop auf die neuen Strukturen umstellen.
+
+- *Release:* PR #10 gemergt (daf80e1f2, CI Build und DispatchChain grün auf f01ca8f23), `build.yaml` auf `main` grün, `publish.yaml` per `workflow_dispatch` mit `7.5.6.13+wsh1` erfolgreich; Release mit `latest.zip` auf daf80e1f2. Der Release-Text nennt die Upstream-Änderungen 7.5.6.11–13 nicht; das folgt der bisherigen Form (die Basis steht im Tag, A229 hält sie fest).
+- *Übergabe:* `fork-changes-in-play.md` hat den Text von 7.5.6.13+wsh1 thematisch eingearbeitet, nicht angehängt; dabei veraltete Voreinstellungsangaben ersetzt („Heal ahead of incoming damage … off by default", `BlackestNightUsage` „old behaviour", Arm's Length nur Dunkelritter). `fork-changes-since-last-release.md` beginnt mit „Changes since 7.5.6.13+wsh1". Geprüft mit `check_release_note.py` und `check_concept_defaults.py`.
+- *Obsolete — Erhebung:*
+  - Maß, das den Wirkungsbereich selbst misst: der Compiler. Der CI-Build (Dalamud „latest", ClientStructs, ECommons 3.2.1.20, Lumina) meldet null CS0618/CS0612. Unterdrückt wird nichts: `NoWarn` ist leer bzw. 1591, das `Dalamud.NET.Sdk` 15.0.0 setzt kein `NoWarn` (Paket gelesen).
+  - Gegenprobe gegen Dalamud `master` (b666d82, 29.09.2026), der mehr Mitglieder als `Obsolete` führt als die ausgelieferte Fassung: Treffer `ActivePet?.DataId` (3×, `DataCenter`) und `Svc.Framework.RunOnFrameworkThread(Reset)` sind keine Verwendungen. `ActivePet` ist `BuddyMember` der ClientStructs, nicht Dalamuds `IGameObject.DataId`; `Reset` ist `void`, also die `Action`-Überladung, veraltet sind nur die `Func<Task>`-Überladungen.
+  - Nicht gebaute Projekte (`RotationSolver.Templates`): keine Verwendung der entfernten Mitglieder `Attunement`, `BeastChakras`, `DrawnCard(s)`.
+  - Ergebnis: Die drei Verwendungen (SMN, MNK, AST) hat Upstream mit A229 umgestellt; im Baum bleibt keine.
+- *Obsolete — Wiederholbarkeit:* Die Klasse ist „Warnung, die niemand liest": `SMNGauge.Attunement` war seit 7.01 als Bitfeld markiert und wurde als Zahl gelesen. `build.yaml` baut Plugin und Generator jetzt mit `-warnaserror:CS0618,CS0612` (Syntax: MSBuild-Referenz, Komma als Trenner, `dotnet build` reicht durch). Nur in der CI, nicht in den Projekten: Dort würde das nächste Dalamud-Update seinen eigenen Build anhalten. Selbsttest im selben Job: Eine Probe mit einem Aufruf je Form muss ohne Schalter bauen und mit Schalter an `error CS0618` und `error CS0612` scheitern. Verworfen: Schalter auch in `publish.yaml` (ein Release bleibt bei einer bloßen Markierung möglich; der PR-Lauf meldet sie vorher), `WarningsAsErrors` im Projekt (s. o.).
+- *Code-Review-Befund im selben Build:* CS0419 in `DataCenter.cs`, `cref` auf `GetForecastSurvivingShare` mehrdeutig; zeigt jetzt auf die gerufene Überladung `(IBattleChara, bool)`. Kein Kampfeffekt.
+
+**Prüfgrad:** Compile über die CI (Build-Log Lauf 36823644124); statisch (Dalamud-Quelle, SDK-Paket, Baum); Prüfskripte. Der Selbsttest des Schalters läuft erst in der CI dieses Zweigs.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

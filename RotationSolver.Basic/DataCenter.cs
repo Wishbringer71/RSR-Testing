@@ -1764,7 +1764,7 @@ internal static class DataCenter
 
 	/// <summary>
 	/// The area-heal statistics on forecast health: each member's health carried forward to the moment
-	/// a heal begun now would land (<see cref="ObjectHelper.GetForecastSurvivingShare"/>).
+	/// a heal begun now would land (<see cref="ObjectHelper.GetForecastSurvivingShare(IBattleChara, bool)"/>).
 	/// </summary>
 	/// <remarks>
 	/// "Heal ahead of incoming damage" states that every healing threshold reads the health a member is
