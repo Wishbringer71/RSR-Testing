@@ -13,7 +13,9 @@ effekt hat … wie optimaler schaden erzielt werden kann vs. den nachteilen eine
 nur aktiv, wenn die Gruppe Buff-Jobs hat — RSR erkennt sie im Spiel (`PartyComposition`, `JobBuffs`; sein Hinweis,
 01.10.2026). Ohne Buff-Jobs ändert sich nichts; mit ihnen wächst der Gewinn mit Zahl und Stärke der Buffs, bis gut
 eine GCD je zehn Minuten in vollen Gruppen mit versetzten Buffs. Schranken: gemessener Takt (derselbe Buff zweimal
-im Abstand seiner Abklingzeit gesehen), Zeit bis zum Tod, freier Einwebeplatz. Sicherheit ist nicht berührt.
+im Abstand seiner Abklingzeit gesehen), Zeit bis zum Tod, freier Einwebeplatz, und zwei Ladungen (ab Stufe 84;
+darunter hielte die Regel die einzige Ladung fest). Sicherheit ist nicht berührt. Offene Teilfrage an ihn: ob „Burst aus“
+auch dieses Halten abschaltet (Abschnitt „Alle Fälle“).
 
 **Größenordnung, Modell** (`.github/scripts/audit/reassemble_buff_model.py`, angenommene Werte gekennzeichnet):
 Eine Reassemble ist etwa drei Viertel einer 660er-Potenz wert (1320 gegen 835). In ein Buff-Fenster verschoben,
@@ -166,6 +168,25 @@ Air Anchor vor Drill; Drill nur, wenn kein anderes Werkzeug ins Fenster fällt.
 
 **Was bleibt:** A3 als Wesenszug — ohne fremde Buffs kein Gewinn; entschärft durch den gemessenen Takt und dadurch,
 dass eine Fehlvorhersage keine Ladung kostet. A2 ist durch die Selbstbeschränkung auf Gruppen mit Buff-Jobs entkräftet.
+
+## Alle Fälle und ihre Folgen
+
+| Fall | Was O1 tut | Folge im Kampf |
+|---|---|---|
+| keine Buff-Jobs in der Gruppe, oder allein | nichts | wie heute |
+| Buff-Jobs, Takt noch nicht zweimal gesehen (erstes Fenster, kurze Kämpfe) | nichts | wie heute; das Opener-Fenster trifft schon die Countdown-Ladung |
+| Buff-Jobs, Takt gemessen, Fenster kommt vor der vollen zweiten Ladung | hält eine Ladung | sie fällt im Fenster auf das nächste Werkzeug, auch Drill |
+| Fenster kommt erst nach der vollen zweiten Ladung | nichts | die volle zweite Ladung geht ohnehin hinaus, kein Halten nötig |
+| **unter Stufe 84 (eine Ladung, Job-Guide: Enhanced Reassemble)** | **nichts** | Halten hieße, die einzige Ladung liegen zu lassen — jede Sekunde Halten wäre verlorene Wiederaufladung. O1 setzt zwei Ladungen voraus |
+| unter Stufe 94 (Drill eine Ladung, Enhanced Multiweapon) | hält wie oben | im Fenster ist seltener ein Werkzeug frei; fällt keins hinein, verfällt nichts, die Ladung geht nach dem Fenster |
+| Gegner stirbt vor dem Fenster (Zeit bis zum Tod, selbstkorrigiert) | nichts | wie heute; Restfehler: die Prognose irrt kurz vor dem Tod, dann trägt O1 höchstens eine Ladung über das Kampfende |
+| Pause im Fenster, vorhergesagt | nichts | wie heute |
+| Pause im Fenster, ohne Modul | hält | die Ladung wartet bis zur vollen zweiten, höchstens 55 s, kein Ladungsverlust |
+| Buff-Spieler tot oder verschiebt | hält vergeblich | höchstens 55 s Warten, entgangen ist nur der Bonus |
+| mehrere Gegner | hält wie oben | im Fenster bleibt die Reihenfolge der Werkzeuge; Drill nur ohne anderes |
+| Überhitzung im Fenster | hält | Reassemble braucht ein Werkzeug danach; ist kein Einwebeplatz frei (`BurstWeaveSlotContested`), fällt es nach der Überhitzung |
+| Burst-Einstellung aus | eigener Fall | O1 betrifft fremde Buffs, nicht den eigenen Burst; gehalten wird trotzdem. Ob „Burst aus" auch das abschalten soll, ist seine Wahl — ich empfehle: ja, weil „Burst aus" meist heißt, keinen Schaden zu bündeln |
+| Sicherheit | keiner | Reassemble mindert nichts und heilt nicht; kein Sicherheitsfall berührt |
 
 ## Falsifikation
 
