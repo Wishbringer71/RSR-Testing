@@ -9,12 +9,11 @@ Entwurfsdokument nach ADR-Struktur. Es stellt den geltenden Sachstand dar; die P
 gecasted werden könnten und wie die abklingzeit wäre, und welcher der gerade möglichen gruppenbuffs den größten
 effekt hat … wie optimaler schaden erzielt werden kann vs. den nachteilen eines zurückhaltens."
 
-**Empfehlung nach den Antithesen (unten), zur Entscheidung:** Nullvariante für sein Spielprofil — die Antithese
-„der Gewinn ist für leichte Gruppen zu klein" lässt sich nicht entkräften. In leichten Gruppen mit null bis zwei
-Buff-Jobs bringt die Haltelogik höchstens eine halbe GCD je zehn Minuten, im Gleichtakt der Gruppe fast nichts.
-Lohnend wird O1 erst in vollen Gruppen mit mehreren Buff-Jobs, deren Buffs gegen die Werkzeuge versetzt liegen:
-dann gut eine GCD je zehn Minuten. Baut er es dafür, dann O1 mit drei Schranken (gemessener Takt, Zeit bis zum
-Tod, freier Einwebeplatz). Sicherheit ist in keinem Fall berührt.
+**Empfehlung nach den Antithesen (unten), zur Entscheidung:** O1 bauen, als Option, ab Werk an. Die Regel wird
+nur aktiv, wenn die Gruppe Buff-Jobs hat — RSR erkennt sie im Spiel (`PartyComposition`, `JobBuffs`; sein Hinweis,
+01.10.2026). Ohne Buff-Jobs ändert sich nichts; mit ihnen wächst der Gewinn mit Zahl und Stärke der Buffs, bis gut
+eine GCD je zehn Minuten in vollen Gruppen mit versetzten Buffs. Schranken: gemessener Takt (derselbe Buff zweimal
+im Abstand seiner Abklingzeit gesehen), Zeit bis zum Tod, freier Einwebeplatz. Sicherheit ist nicht berührt.
 
 **Größenordnung, Modell** (`.github/scripts/audit/reassemble_buff_model.py`, angenommene Werte gekennzeichnet):
 Eine Reassemble ist etwa drei Viertel einer 660er-Potenz wert (1320 gegen 835). In ein Buff-Fenster verschoben,
@@ -134,8 +133,11 @@ angenommene Spielerwerte). Je zehn Minuten:
 | volle Gruppe, sechs Buffs | ~180 = 0,2 GCD | ~900–1100 = gut 1 GCD |
 | leichte Gruppe, ein bis zwei Buffs | 25–70 | 125–420 = höchstens eine halbe GCD |
 
-Zehn Minuten haben rund 240 GCDs; das sind 0,1 bis 0,5 Prozent in vollen Gruppen und für sein übliches Spiel in
-leichten Gruppen höchstens 0,2 Prozent.
+Zehn Minuten haben rund 240 GCDs; das sind 0,1 bis 0,5 Prozent in vollen Gruppen und in leichten Gruppen höchstens
+0,2 Prozent. *Entkräftet durch Selbstbeschränkung (sein Hinweis, 01.10.2026):* Die Buff-Jobs der Gruppe sind im Spiel
+erkennbar (`PartyComposition` gegen `JobBuffs`). Die Regel ist ohne Buff-Jobs untätig und kostet dort nichts; mit
+ihnen ist der Gewinn klein, aber nie negativ. „Zu klein" ist damit kein Grund gegen die Regel, nur eine Aussage über
+ihre Größe.
 
 **A3 — „Die Regel stützt sich auf das Verhalten anderer Spieler" (`CLAUDE.md`: nie ein tragender Grund).**
 *Teilweise entkräftet.* Der Grund zu halten ist tatsächlich die erwartete Buff-Zeit anderer. Entschärfbar: erst halten,
@@ -162,7 +164,8 @@ nur daran, dass ein Buff kommt; die Rangfolge der Buffs braucht nur O3. Für den
 **A8 — „Mehrere Gegner: Drill trifft einen."** *Entkräftet:* Im Fenster bleibt die Reihenfolge Excavator, Chain Saw,
 Air Anchor vor Drill; Drill nur, wenn kein anderes Werkzeug ins Fenster fällt.
 
-**Was bleibt:** A2 für leichte Gruppen und A3 als Wesenszug. Deshalb die geänderte Empfehlung oben.
+**Was bleibt:** A3 als Wesenszug — ohne fremde Buffs kein Gewinn; entschärft durch den gemessenen Takt und dadurch,
+dass eine Fehlvorhersage keine Ladung kostet. A2 ist durch die Selbstbeschränkung auf Gruppen mit Buff-Jobs entkräftet.
 
 ## Falsifikation
 
