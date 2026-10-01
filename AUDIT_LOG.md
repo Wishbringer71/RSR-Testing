@@ -4907,7 +4907,9 @@ Sein Auftrag: Zusammensetzung der Gruppe, Häufigkeit und Abklingzeit der Gruppe
 - *Ergebnis:* Konzept 17. Rangfolge für einen Reassemble-Treffer: Battle Litany und Chain Stratagem (je 3,0 %), Divination und Radiant Finale mit drei Coda (2,2 %), die 5-%-Buffs (1,8 %), Arcane Circle (1,1 %); Battle Voice unbeziffert. Halten kostet keine Ladung; Risiko nur die gehaltene Ladung beim Tod des Gegners, abfangbar über die selbstkorrigierte Zeit bis zum Tod. Empfehlung O1, zur Entscheidung vorgelegt.
 - *Befund nebenbei:* `HasBuffs` fragt „alle Gruppenbuffs liegen", nicht „welche liegen"; für einen Wert je Fenster ungeeignet. `JobBuffs` kennt Devilment nicht (wirkt nur auf den Partner, für die Gruppe richtig).
 
-**Prüfgrad:** statisch (Spieldaten, Gemeinschaftsquellen, Code); Modellrechnung mit Selbsttest. Kein Code geändert.
+- *Antithesen (seine Vorgabe, im vollen Loop):* Zeitsimulation im Modellskript ergänzt (zehn Minuten, Werkzeuge sobald bereit, Überhitzung ausgeblendet; Selbsttest: Halten verliert über den Kampf höchstens die eine über das Ende getragene Ladung und setzt nie weniger ins Fenster). Im Gleichtakt ab Pull liegen heute 4 von 11 Reassembles im Fenster, mit Halten 5; versetzt heute 2–4, mit Halten 8–9. Full Metal Field ist kein Ziel (Wirktext: „not affected by Reassemble"). Nicht entkräftet: Für leichte Gruppen ist der Gewinn höchstens eine halbe GCD je zehn Minuten, und die Regel ruht ihrem Wesen nach auf fremdem Verhalten. Empfehlung geändert: Nullvariante für sein Profil; O1 nur für volle Gruppen, dann mit gemessenem Takt, Zeit bis zum Tod und freiem Einwebeplatz als Schranken.
+
+**Prüfgrad:** statisch (Spieldaten, Gemeinschaftsquellen, Code); Modell- und Zeitsimulation mit Selbsttest. Kein Code geändert.
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)

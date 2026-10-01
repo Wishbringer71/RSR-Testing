@@ -9,11 +9,12 @@ Entwurfsdokument nach ADR-Struktur. Es stellt den geltenden Sachstand dar; die P
 gecasted werden könnten und wie die abklingzeit wäre, und welcher der gerade möglichen gruppenbuffs den größten
 effekt hat … wie optimaler schaden erzielt werden kann vs. den nachteilen eines zurückhaltens."
 
-**Empfehlung, zur Entscheidung:** Option O1 bauen — eine Reassemble-Ladung für das nächste vorhergesagte
-Buff-Fenster zurückhalten, nur wenn die Gruppe Buff-Jobs hat; im Fenster auch Drill zulassen. Der Gewinn ist
-klein, aber ohne Verlust an Ladungen; das einzige Risiko ist eine gehaltene Ladung beim Tod des Gegners, und das
-misst die Regel selbst (Zeit bis zum Tod). Ohne Buff-Jobs in der Gruppe ändert sich nichts. Sicherheit ist nicht
-berührt: Reassemble ist eine reine Schadensaktion.
+**Empfehlung nach den Antithesen (unten), zur Entscheidung:** Nullvariante für sein Spielprofil — die Antithese
+„der Gewinn ist für leichte Gruppen zu klein" lässt sich nicht entkräften. In leichten Gruppen mit null bis zwei
+Buff-Jobs bringt die Haltelogik höchstens eine halbe GCD je zehn Minuten, im Gleichtakt der Gruppe fast nichts.
+Lohnend wird O1 erst in vollen Gruppen mit mehreren Buff-Jobs, deren Buffs gegen die Werkzeuge versetzt liegen:
+dann gut eine GCD je zehn Minuten. Baut er es dafür, dann O1 mit drei Schranken (gemessener Takt, Zeit bis zum
+Tod, freier Einwebeplatz). Sicherheit ist in keinem Fall berührt.
 
 **Größenordnung, Modell** (`.github/scripts/audit/reassemble_buff_model.py`, angenommene Werte gekennzeichnet):
 Eine Reassemble ist etwa drei Viertel einer 660er-Potenz wert (1320 gegen 835). In ein Buff-Fenster verschoben,
@@ -105,6 +106,63 @@ Gefragt waren Zusammensetzung, Häufigkeit, Abklingzeit, wertvollster Buff und G
 nicht beantwortet ist nur der Direkttreffer-Wert von Battle Voice (keine Quelle). Nicht ausgeweitet: Andere Jobs
 mit ähnlichen Garantie-Aktionen (Samurai, Mönch, Schwarzmagier) wären dieselbe Frage; erst nach seiner Entscheidung
 hier.
+
+## Antithesen, und was davon bleibt
+
+Die Simulation dazu steht im Modellskript (`simulate`, `timeline_report`): zehn Minuten, GCD 2,5 s, Werkzeuge sobald
+bereit, Reassemble mit zwei Ladungen und Countdown-Einsatz. Ausgeblendet sind Überhitzung und andere Verzögerungen
+der Werkzeuge — das begünstigt die Nullvariante, weil die Werkzeuge im Spiel gegen das Raster wandern. Ergebnis,
+Reassembles gesamt / im Fenster:
+
+| Lage der Buff-Fenster | O0 heute | O5 nur Drill im Fenster | O1 halten |
+|---|---|---|---|
+| im Zwei-Minuten-Takt ab Pull | 11 / 4 | 11 / 4 | 10 / 5 |
+| 30 s versetzt | 11 / 4 | 11 / 4 | 10 / 9 |
+| 70 s versetzt | 11 / 2 | 11 / 3 | 11 / 8 |
+
+**A1 — „RSR trifft das Fenster schon von selbst; die Werkzeuge mit 40 und 60 s richten sich alle 120 s aus."**
+*Teilweise wahr.* Im Takt ab Pull liegen heute 4 von 11 Reassembles im Fenster, mit Halten 5. Versetzt — und das
+ist die Lage, sobald Überhitzung die Werkzeuge verschiebt oder die Gruppe ihre Buffs nicht in den Opener legt —
+liegen heute 2 bis 4 im Fenster, mit Halten 8 bis 9. Entkräftet für versetzte Fenster, nicht für den Gleichtakt.
+
+**A2 — „Der Gewinn ist zu klein für eine weitere Regel."** *Nicht entkräftet, für sein Spielprofil.* Je verschobener
+Ladung bringt ein Fenster mit sechs Buffs rund 180 Potenz-Gegenwert, mit einem oder zwei Buffs 25 bis 70 (Modell,
+angenommene Spielerwerte). Je zehn Minuten:
+
+| | Gleichtakt (+1 im Fenster) | versetzt (+5 bis +6) |
+|---|---|---|
+| volle Gruppe, sechs Buffs | ~180 = 0,2 GCD | ~900–1100 = gut 1 GCD |
+| leichte Gruppe, ein bis zwei Buffs | 25–70 | 125–420 = höchstens eine halbe GCD |
+
+Zehn Minuten haben rund 240 GCDs; das sind 0,1 bis 0,5 Prozent in vollen Gruppen und für sein übliches Spiel in
+leichten Gruppen höchstens 0,2 Prozent.
+
+**A3 — „Die Regel stützt sich auf das Verhalten anderer Spieler" (`CLAUDE.md`: nie ein tragender Grund).**
+*Teilweise entkräftet.* Der Grund zu halten ist tatsächlich die erwartete Buff-Zeit anderer. Entschärfbar: erst halten,
+wenn derselbe Buff zweimal im Abstand seiner Abklingzeit beobachtet ist — dann ist der Takt gemessen, nicht
+angenommen. Und eine Fehlvorhersage kostet keine Ladung, nur den Bonus. Die Abhängigkeit bleibt aber das Wesen der
+Regel: Ohne fremde Buffs kein Gewinn.
+
+**A4 — „Halten kostet eine Ladung."** *Entkräftet bis auf das Kampfende.* Die Simulation zeigt genau diese eine: Im
+Gleichtakt trägt O1 seine gehaltene Ladung über das Kampfende (10 statt 11). Schranke: nicht halten, wenn die
+selbstkorrigierte Zeit bis zum Tod (`GetCorrectedTTK`) vor dem Fenster endet. Sonst bleibt die Zahl der Reassembles
+gleich — eine Ladung je 55 s (Selbsttest des Skripts).
+
+**A5 — „Im Fenster ist kein Einwebeplatz frei."** *Mit Schranke entkräftet.* Im eigenen Zwei-Minuten-Fenster brauchen
+Wildfire, Barrel Stabilizer, Hypercharge und Double Check/Checkmate Einwebeplätze; unter Überhitzung (1,5-s-GCDs)
+gibt es je GCD nur einen. Reassemble muss vor dem Werkzeug eingewoben werden und darf keinen dieser Plätze nehmen —
+die vorhandene Prüfung `BurstWeaveSlotContested` beantwortet genau das.
+
+**A6 — „Full Metal Field ist im Fenster das stärkere Ziel."** *Entkräftet:* Der Wirktext sagt „Delivers a critical
+direct hit … This action is not affected by Reassemble."
+
+**A7 — „Die Krit-Regel stammt aus Gemeinschaftsquellen."** *Für die Entscheidung entkräftet:* Ob gehalten wird, hängt
+nur daran, dass ein Buff kommt; die Rangfolge der Buffs braucht nur O3. Für den Betrag bleibt sie Annahme.
+
+**A8 — „Mehrere Gegner: Drill trifft einen."** *Entkräftet:* Im Fenster bleibt die Reihenfolge Excavator, Chain Saw,
+Air Anchor vor Drill; Drill nur, wenn kein anderes Werkzeug ins Fenster fällt.
+
+**Was bleibt:** A2 für leichte Gruppen und A3 als Wesenszug. Deshalb die geänderte Empfehlung oben.
 
 ## Falsifikation
 

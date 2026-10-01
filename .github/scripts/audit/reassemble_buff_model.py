@@ -67,6 +67,87 @@ def ranking(crit_mult, crit_rate, dh_rate):
     return sorted(rows, key=lambda r: -r[1])
 
 
+# --- Timeline: where do Reassembles land, with and without holding? -------------------------------
+#
+# A deliberately plain model of the Machinist's tool GCDs, to answer the antithesis "the tools align
+# on the two-minute grid by themselves (40 s and 60 s divide 120 s), so RSR already hits the window".
+# GCD 2.5 s, tools used as soon as ready - priority Excavator, Chain Saw, Air Anchor, Drill (an
+# ASSUMPTION about RSR's order) - Overheat and other GCDs that delay tools left out (ASSUMPTION:
+# drift is ignored, which favours the null variant). Reassemble: two charges, 55 s, one used in the
+# countdown on the opening Air Anchor. Game data: Air Anchor 40 s, Chain Saw 60 s (grants Excavator
+# Ready), Drill 20 s with two charges.
+
+def simulate(policy, windows, fight=600.0, gcd=2.5):
+    """Return (reassembles, reassembles inside a window). policy: 'O0', 'O5' or 'O1'."""
+    ready = {'AA': 0.0, 'CS': 0.0}
+    drill_charges, drill_progress = 2, 0.0
+    excavator = False
+    charges, progress = 1, 4.75          # one Reassemble spent in the countdown
+    used = inside = 0
+    in_window = lambda t: any(a <= t < a + 20 for a in windows)
+    next_window = lambda t: min((a for a in windows if a > t), default=None)
+    t = 0.0
+    while t < fight:
+        # recharge Reassemble and Drill up to now
+        tool = None
+        if excavator:
+            tool = 'EXC'
+        elif ready['CS'] <= t:
+            tool = 'CS'
+        elif ready['AA'] <= t:
+            tool = 'AA'
+        elif drill_charges > 0:
+            tool = 'DRILL'
+        eligible = tool in ('AA', 'CS', 'EXC') or (tool == 'DRILL' and policy in ('O5', 'O1') and in_window(t))
+        if t == 0.0 and tool == 'CS':
+            pass
+        if eligible and charges > 0:
+            hold = False
+            if policy == 'O1' and not in_window(t) and charges == 1:
+                nw = next_window(t)
+                if nw is not None and t + (55.0 - progress) > nw:
+                    hold = True          # the window comes before the second charge is full
+            if not hold:
+                charges -= 1
+                used += 1
+                inside += in_window(t)
+        if tool == 'EXC':
+            excavator = False
+        elif tool == 'CS':
+            ready['CS'] = t + 60.0
+            excavator = True
+        elif tool == 'AA':
+            ready['AA'] = t + 40.0
+        elif tool == 'DRILL':
+            drill_charges -= 1
+        # advance one GCD and recharge
+        t += gcd
+        if charges < 2:
+            progress += gcd
+            while progress >= 55.0 and charges < 2:
+                charges += 1
+                progress -= 55.0
+            if charges == 2:
+                progress = 0.0
+        if drill_charges < 2:
+            drill_progress += gcd
+            while drill_progress >= 20.0 and drill_charges < 2:
+                drill_charges += 1
+                drill_progress -= 20.0
+            if drill_charges == 2:
+                drill_progress = 0.0
+    return used, inside
+
+
+def timeline_report():
+    print('\nTimeline, 10 minutes, Reassembles used / inside a 20 s window:')
+    for label, offset in (('windows on the two-minute grid from the pull', 0.0),
+                          ('windows 30 s off the grid', 30.0), ('windows 70 s off the grid', 70.0)):
+        windows = [offset + 120.0 * k for k in range(6)]
+        row = '  '.join(f'{pol} {u}/{i}' for pol, (u, i) in ((p, simulate(p, windows)) for p in ('O0', 'O5', 'O1')))
+        print(f'  {label:<46} {row}')
+
+
 def self_test():
     # Hand-computed: crit mult 1.6, crit 25 %, dh 40 %.
     n = normal_hit(1.6, 0.25, 0.40)
@@ -87,7 +168,14 @@ def self_test():
                 assert names[-1] == 'Arcane Circle', names
                 top = set(names[:4])
                 assert {'Battle Litany', 'Chain Stratagem', 'Divination'} <= top, names
-    print('self-test ok: hit formulas, pure damage buff, no-buff case, order stable across stats\n')
+    # Holding never costs a Reassemble over the fight: the totals stay within one of each other (the
+    # one a hold may carry past the end), and holding never puts fewer into the windows.
+    for offset in (0.0, 30.0, 70.0):
+        windows = [offset + 120.0 * k for k in range(6)]
+        u0, i0 = simulate('O0', windows)
+        u1, i1 = simulate('O1', windows)
+        assert u0 - u1 <= 1 and i1 >= i0, (offset, u0, i0, u1, i1)
+    print('self-test ok: hit formulas, pure damage buff, no-buff case, order stable across stats, holding loses no charge\n')
 
 
 if __name__ == '__main__':
@@ -102,3 +190,4 @@ if __name__ == '__main__':
     for name, g in ranking(cm, cr, dr):
         print(f'  {name:<24} {g:6.1f}   ({g / r:.1%} of a Reassembled hit)')
     print('  Battle Voice             not modelled - the direct hit rule for guaranteed direct hits is undocumented')
+    timeline_report()
