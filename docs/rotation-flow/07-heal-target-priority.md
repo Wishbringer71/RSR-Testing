@@ -155,7 +155,9 @@ der Heilschwelle verlangte. Jetzt fällt sie, sobald im Radius genug Verletzte s
   `CanUseTo` (Abfrage beim Spiel), `MinHPFeature` der Aktion. Für keine freundliche Heilung mit
   Reichweite 0 ist ein `CanTarget` gesetzt (erhoben A137). `NoNewHostiles`, das im allgemeinen Pfad
   die Trefferzahl auch für freundliche Mitglieder ohne Ziel auf 0 setzte, wirkt hier nicht. **Hinweis
-  des Auftraggebers:** Heilungen erzeugen Feindschaft, wie Schaden auch; der Umfang ist nicht belegt.
+  des Auftraggebers:** Heilungen erzeugen Feindschaft, wie Schaden auch — bestätigt im consolegameswiki,
+  „Enmity" (02.10.2026: „healing effects used on allies generate enmity"); den Umfang nennt keine der
+  geprüften Quellen (consolegameswiki, Akhmorning „Raiding Fundamentals").
   Ob eine Gruppenheilung dabei mehr oder andere Gegner erreicht als eine Einzelheilung, ist ebenfalls
   nicht belegt — `NoNewHostiles` bleibt deshalb eine Regel für Angriffe, und das ist eine offene
   Annahme, keine belegte Tatsache.
@@ -392,10 +394,11 @@ mehr als nichts.
 `SMN_Reborn` aus `InPhoenix` und der Beschwörungszeit (`SummonTimeEndAfterGCD`), nicht aus dem Status
 Firebird Trance (3229). Dieser Status macht nach seinem Wirktext Fountain of Fire und Brand of
 Purgatory wirkbar und wird in den Basisrotationen sonst nur von `ModifyBrandOfPurgatoryPvP` gelesen;
-`ChurinSMN` liest ihn wie der alte Rückfall. Ob das Spiel ihn im PvE setzt, ist unbelegt — der
-Wirktext von Summon Phoenix sagt „Enters Firebird Trance". Fehlt er, gilt er als „endet jetzt", und der
-Rückfall fiel im ersten freien Einschiebeplatz der Phase statt an ihrem Ende — Rekindle war
-ausgegeben, bevor jemand es brauchte. Die Jobleiste beantwortet die Frage in beiden Fällen richtig. Der Vorlauf von drei GCDs ist ein
+`ChurinSMN` liest ihn wie der alte Rückfall. Dass das Spiel ihn im PvE setzt, ist jetzt belegt: Die
+Status-Tabelle des Spiels (xivapi, 02.10.2026) kennt genau einen Status dieses Namens, 3229, Job SMN, mit
+dem Wirktext „Able to execute Fountain of Fire and Brand of Purgatory" — beides PvE-Aktionen. Die
+Jobleiste bleibt die Quelle der Phase, weil sie auch die Restzeit liefert; der Status wäre ein
+gleichwertiger Zeuge. Der Vorlauf von drei GCDs ist ein
 fester Wert ohne eigenen Loop (`fixed_values.json`, offen).
 
 **Geprüft wird das jetzt maschinell, nicht erinnert:**

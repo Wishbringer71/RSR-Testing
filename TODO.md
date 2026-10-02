@@ -29,7 +29,7 @@ Protokoll 01.10.2026 (Klosterdämon, Todesklaue; 48-Spieler-Inhalt mit Phantom-A
 
 Nach seinen Kriterien (29.09.2026) bewertet und gebaut (Konzept 09, „Krieger: Nascent Flash für einen anderen oder Bloodwhetting für sich"; A226). Offen:
 - *Die Höhe eines Tankbusters wird nicht gemessen.* Der Effekt-Handler sieht den Treffer, misst aber nach Minderung und Barriere, bei Tankbustern also systematisch zu niedrig, und zu niedrig ist dort die gefährliche Richtung. Zum Herausrechnen fehlen belegte Antworten: die Prozentsätze je wirkendem Status am Treffer, die Schadensart je Aktion (Feint, Addle) und ob der gemeldete Schadenswert eine aufgezehrte Barriere enthält. Erst damit wird aus „möglicherweise tödlich" eine Zahl. Konzept 13 („Dieselbe Frage stellt sich bei den Tankbustern").
-- *Vorschlag, nicht gebaut:* Nascent Flash als Minderung für den anderen Tank vor dessen Tankbuster, unabhängig von seiner Gesundheit. The Balance sagt nur „Nascent Flash goes on a friend"; dieser Einsatz ist ein Schluss.
+- *Offen, jetzt mit Quelle:* Nascent Flash als Minderung für den anderen Tank vor dessen Tankbuster. The Balance (Warrior Basic Guide, Makros, 02.10.2026): „Most often on the co-tank of your eight-person party.“ Braucht die Erkennung des Tankbusters auf dem anderen Tank und die Abwägung über die vorhandene Triage.
 - *Upstream-Bauform:* Raw Intuition/Bloodwhetting fällt nur, solange das Ziel des Kriegers ihn anvisiert (`PlayerIsTargetOnSelf`). Ein Off-Tank mit Tankbuster-Marker bekommt es aus der Einzelabwehr nicht.
 ### Vorschläge aus dem WrathCombo-Vergleich · N, U
 
@@ -527,15 +527,15 @@ Schritt 3 aus `docs/rotation-flow/08-mitigation-synergy.md`. Die Schritte 1 und 
 
 ## Offene Arbeit
 
-### Six-sided Star und Flamethrower: Nutzen nicht belegt · N
+### Flächenheilung um den Wirkenden: Radius gegen Trefferfläche statt Mittelpunkt · N
 
-Die Pausenregel ist gebaut (Konzept 14, A162): Meditate (Samurai) und Rook/Queen Overdrive (Machinist). Offen bleiben zwei Aktionen, deren Vorteil aus den Wirktexten nicht rechenbar ist.
-- Six-sided Star (Monk): Die Grundpotenz ist ausgeblendet, und ob Chakra über eine Pause verfällt, ist unbelegt.
-- Flamethrower (Machinist): Die Tickrate steht nicht im Wirktext.
+Ob ein Spieler in einer Fläche steht, entscheidet der Mittelpunkt seines Modells (Akhmorning, „Raiding Fundamentals", 02.10.2026). `GetCanAffects` rechnet Trefferfläche zu Trefferfläche und zählt ein Mitglied am Rand um seinen Trefferkreis zu großzügig mit. Im Kampf: Lux Solaris und andere Flächenheilungen um den Wirkenden können eine verlangte Anzahl erreicht sehen, die die Heilung nicht trifft. Erhebung aller Leser von `GetCanAffects` für freundliche Flächen offen; Konzept 08, „Wann Lux Solaris zündet".
 
-Auflösung: eine Quelle für diese Werte (erzeugter Index aus `RotationSolver.GameData` oder eine Messung im Kampf) — dann rechnen, bauen oder verwerfen.
+### Six-sided Star und Flamethrower: Regeln jetzt belegt, nicht gebaut · N
 
-**Konzept:** `docs/rotation-flow/14-action-dependency-matrix.md`
+Quellen gefunden (Job-Guide und The Balance, 02.10.2026; Konzept 14, „Pausen und Phasenenden"):
+- *Six-sided Star (Monk):* 780 + 80 je Chakra, 4 s Wiederholzeit; Einsatz als letzter GCD vor Pause, Rückzug aus einer Fläche oder Tod des Ziels, wenn nur einer passt. Braucht die vorhergesagte Pause (BossModReborn) oder die selbstkorrigierte Zeit bis zum Tod; ohne Modul nur über die Zeit bis zum Tod.
+- *Flamethrower (Machinist):* Schwellen von The Balance (ohne Gauge ab 2 Zielen über dem Füller, ab 6 über Air Anchor; nie vor Hypercharge, Chain Saw/Excavator, Drill/Bio; keine große Abklingzeit in den 11 s). Bindet 11 s an Ort und Blickrichtung — gegen seine Spielweise nur bei stehendem Rudel ohne angesagte Fläche zulässig.
 
 ### Feste Werte im Fork: jeder offene Wert braucht seinen Loop · N, R
 

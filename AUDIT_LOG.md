@@ -5114,6 +5114,32 @@ Zwei Sitzungen: Build fa21e0eba (vor A236–A239) und dca7edb62 (mit ihnen); Kri
 Konzept 17. Antithese A3 hält: Der Grund zu halten ist fremdes Verhalten, nach `CLAUDE.md` nie ein tragender Grund; der Gewinn liegt im Promillebereich. Die frühere Empfehlung O1 (A235) widersprach der Loop-Regel. Nicht gebaut.
 
 **Prüfgrad:** statisch (Modell, Regelwerk).
+
+### A247 · Konzepte: früher gesperrte und unbelegte Quellen nachgezogen (02.10.2026)
+
+Seine Frage: ob alle Konzepte mit The Balance, Akhmorning und den früher nicht zugänglichen Quellen ergänzt sind. Antwort: nein. Erhoben über alle Konzepte (Stichworte gesperrt, Egress, Suchauszug, unbelegt, Gemeinschaftsquelle); je Stelle die Quelle abgerufen.
+
+- *Konzept 12:*
+  - Vierzehn Potenzen aus Suchauszügen am Job-Guide bestätigt.
+  - Gieß- und Wiederholzeiten aus der Action-Tabelle: Ruby Rite 2,8/3,0 s, Slipstream 3,0/3,5 s, Ruin III 1,5/2,5 s; Emerald Rite sofort, 1,5 s. **Die frühere Aussage, Emerald Rite habe eine Gießzeit, war falsch.** Demi-Beschwörungen: GCD-Gruppe als Zusatzgruppe, also kosten sie einen GCD.
+  - `smn_phase_potency.py` rechnet jetzt mit Zeiten je Aktion. Neue Zahlen: Ifrit ohne Anlauf 800 statt „800–1420", Garuda zuerst außerhalb der Demi 4420 statt 3740, Zyklus 28 990. Die Rangfolge bleibt; The Balance empfiehlt Titan nach der Demi ebenso.
+- *Konzept 09:*
+  - Barrieren-Reihenfolge am consolegameswiki (Rang 3 TBN vor Eukrasian Diagnosis 4/24, Radiant Aegis 18); Quellenkonflikt aufgelöst, offene Frage zum Weisen gestrichen.
+  - Multiplikation der Minderungen (The Balance, „100 x 0.9 x 0.9 = 81").
+  - Nascent Flash auf den Co-Tank als Regel der Referenz (The Balance, Makros).
+- *Konzept 07:*
+  - Firebird Trance 3229 ist PvE (Status-Tabelle).
+  - Heilungen erzeugen Feindschaft (consolegameswiki); den Umfang nennt keine Quelle.
+- *Konzept 08:*
+  - Titan's Favor wird überschrieben (The Balance, Job-Guide).
+  - Flächenzugehörigkeit nach Modellmittelpunkt (Akhmorning) — Abweichung der Zielwahl als TODO.
+  - Bloodbath: Quelle geprüft, Autoangriffe nicht genannt.
+- *Konzept 13:* Hilfsfiguren und Debuff-Wirkung (Akhmorning).
+- *Konzept 14:* Six-sided Star und Flamethrower jetzt mit Werten und Einsatzregel (Job-Guide, The Balance); Detonator ohne Quelle, auch nicht bei WrathCombo.
+- *Konzept 15:* Meditate 10 Kenki je 3 s (consolegameswiki).
+- *Konzept 17:* Die Krit-/Direkttreffer-Zahlen tragen das Ergebnis nicht.
+
+**Prüfgrad:** Quellen abgerufen und Aussage für Aussage abgeglichen; Modell mit Selbsttest.
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

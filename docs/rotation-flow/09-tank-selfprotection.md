@@ -144,24 +144,22 @@ von TBN also nicht — Dark Arts wird davon nicht berührt. Er geht dabei auch n
 verloren: Er bleibt liegen und absorbiert, sobald TBN aufgebraucht ist. Zurückstellen
 spart deshalb nichts, es verschiebt nur.
 
-*Quellenstatus:* Spielerdokumentation (eine nummerierte Prioritätsliste in einem
-Lodestone-Blog, wiedergegeben über die Suche), keine offizielle Beschreibung. Die
-Primärseite selbst und das Consolegames-Wiki sind vom Egress dieser Umgebung nach
-Organisationsrichtlinie gesperrt; das ist keine Fehlkonfiguration und nicht zu
-umgehen. **Ein Quellenkonflikt bleibt offen:** Ein Job-Guide führt Eukrasian Diagnosis
-als vorrangig gegenüber TBN, die Liste ordnet sie dahinter. Betroffen wäre allein der
-Weise. Für Weißmagier, Gelehrten und Astrologen sagen beide Quellen dasselbe, weil
-deren Schilde deutlich hinter TBN liegen.
+*Quellenstatus:* Gemeinschaftsquelle — die Tabelle „Barrier Consumption Priority" im consolegameswiki
+(abgerufen 02.10.2026), die sich auf einen Lodestone-Blog und einen Beitrag auf X stützt; keine offizielle
+Beschreibung. Sie führt The Blackest Night auf Rang 3 und Eukrasian Diagnosis auf Rang 4 und, mit
+Differential Diagnosis, auf Rang 24 — beide hinter TBN. Der früher offene Quellenkonflikt (ein Job-Guide
+habe Eukrasian Diagnosis vor TBN geführt) ist damit für TBN aufgelöst: Kein Heilerschild verzögert
+seine Absorption. Weitere Ränge derselben Tabelle, die andere Regeln berühren: Stem the Tide aus
+Bloodwhetting und Nascent Flash Rang 8, Divine Benison 12, Radiant Aegis 18, Shake It Off 19, Divine
+Veil 20.
 
 **Der Träger ist nicht zwingend der Dunkelritter.** `ActionId.resx` (Aktion 7393)
 beschreibt TBN als „Creates a barrier around **self or target party member**" — die
 Barriere kann auf jedem Gruppenmitglied liegen, und der Party-Zweig in `DRK_Reborn` nutzt das mit
-`targetOverride: TargetType.LowHP`. Damit ist die ebenfalls genannte Radiant Aegis
-**nicht** gegenstandslos: Sie ist zwar ein Selbstschild des Beschwörers
-(`Status.resx`: **(SMN)**), aber ein Beschwörer kann sie tragen **und** zusätzlich TBN
-vom Dunkelritter bekommen. Steht sie in der Reihenfolge vor TBN, verzögert sie dessen
-Absorption. Das ist ein realer Fall — nur keiner, den ein Heiler beeinflussen kann,
-denn Radiant Aegis wirft der Beschwörer selbst.
+`targetOverride: TargetType.LowHP`. Ein Beschwörer kann also Radiant Aegis tragen und zusätzlich TBN
+bekommen. Radiant Aegis steht auf Rang 18, also hinter TBN (Rang 3): Sie verzögert die Absorption von TBN
+nicht. Was vor TBN steht, sind nur Crest of Time Borrowed und die Tempera-Schilde (Ränge 1 und 2) — eigene
+Schilde von Schnitter (Arcane Crest, ab Stufe 84) und Piktomant, die ein Heiler ebenso wenig steuert.
 
 **Damit bleibt kein Grund, den Schild zurückzustellen.** Was bleibt, ist die gewöhnliche
 Dringlichkeitsfrage: Ein Träger mit TBN ist bereits geschützt und deshalb weniger dringend
@@ -591,7 +589,7 @@ bestätigt die Rollenordnung aus Konzept 07; dort gilt sie bei gleicher Gefährd
 
 **Daraus folgt die tragende Feststellung: Nascent Flash auf einen anderen kostet den Krieger keine Heilung.** Er
 heilt sich damit genauso wie mit Bloodwhetting. Er verliert Minderung und Barriere: in den ersten 4 s rund 19 %
-weniger Schaden (0,9 × 0,9, sofern Minderungen multiplizieren — Spielregel, hier nicht am Artefakt belegt), danach
+weniger Schaden (0,9 × 0,9: Minderungen multiplizieren sich, The Balance rechnet Bloodwhetting genauso, „100 x 0.9 x 0.9 = 81“), danach
 bis 8 s 10 %, und 400 Potenz Barriere. Die zweite seiner Fragen, ob der Tank nach dem Tankbuster viel Heilung
 braucht, trägt deshalb keinen Grund, Nascent Flash zurückzuhalten.
 
@@ -726,9 +724,12 @@ aus „möglicherweise tödlich" eine Zahl.
 - Vierte Zielwahl **„By danger"**, ab Werk gewählt (angehängt; Rotationseinstellungen speichern den Namen).
 - Heilung-wirkungslos-Ausschluss in allen vier Zielwahlen.
 - Der Zielfilter liest `NoNeedHealingInvuln()` mit der richtigen Polarität (belegter Defekt, ohne Schalter).
-- **Nicht gebaut:** Nascent Flash als Minderung für den **anderen Tank vor dessen Tankbuster** — der Anwendungsfall,
-  den The Balance mit „Nascent Flash goes on a friend" meint, ist hier ein Schluss, keine Quelle. Das ist neues
-  Verhalten und steht als Vorschlag im TODO. Ebenso die Messung der Tankbuster-Höhe.
+- **Nicht gebaut, jetzt mit Quelle:** Nascent Flash als Minderung für den **anderen Tank vor dessen Tankbuster**.
+  The Balance, Warrior Basic Guide, Abschnitt Makros (abgerufen 02.10.2026): „Nascent Flash goes on a friend. Most
+  often on the co-tank of your eight-person party." Damit ist der Einsatz am anderen Tank die Regelanwendung der
+  Referenz, kein Schluss mehr. Gebaut ist er nicht: Er braucht die Erkennung „Tankbuster auf dem anderen Tank"
+  (Marker oder Vorhersage mit Zielangabe) und die Abwägung gegen den eigenen Bedarf, die die Triage oben schon
+  führt. Steht im TODO als offene Arbeit. Die Messung der Tankbuster-Höhe bleibt ein eigenes Vorhaben.
 
 ## Krieger: die Abwehr im Ganzen
 
@@ -979,13 +980,6 @@ der Träger bei 1 HP nie erfüllt. Fall 4a verlangt eine Kursprognose: Die Daten
 steht seit A91, die **Auswertung** zur aufgenommenen Heilmenge ist eine andere als die
 zur Restzeit und noch nicht gebaut. Welche Stellen im Code beidem entgegenstehen, führt
 `TODO.md`.
-
-**Eine einzige Frage zum Weisen.** Die Verbrauchsreihenfolge ordnet Eukrasian Diagnosis
-hinter The Blackest Night ein, ein Job-Guide davor. Träfe Letzteres zu, könnte der
-Einzelschild des Weisen die TBN-Absorption verzögern und Dark Arts kosten. Die beiden
-Primärquellen, die das klären würden, sind vom Egress nach Organisationsrichtlinie
-gesperrt. Für Weißmagier, Gelehrten und Astrologen besteht die Frage nicht — deren
-Schilde liegen nach beiden Quellen deutlich hinter TBN.
 
 ## Nachweisbarkeit
 

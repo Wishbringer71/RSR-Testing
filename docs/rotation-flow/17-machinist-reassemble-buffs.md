@@ -46,7 +46,8 @@ Aus den Wirktexten (xivapi, 01.10.2026); alle 20 s Dauer, 120 s Abklingzeit, Rad
 **Warum die Krit-Buffs vorn liegen:** Laut Wirktext erhöht ein Buff auf Krit- oder Direkttreffer-Rate unter
 Reassemble den Schaden. Wie stark, sagt das Spiel nicht; Gemeinschaftsquellen (consolegameswiki, Allagan Studies)
 nennen für Krit: Die Rate wird zum Krit-Multiplikator addiert. Für Direkttreffer nennt keine der beiden Quellen
-eine Regel — Battle Voice bleibt deshalb unbeziffert. Die Rangfolge bleibt über angenommene Krit-Multiplikatoren
+eine Regel — Battle Voice bleibt deshalb unbeziffert. Für das Ergebnis (Nullvariante, A246) ist keine dieser
+Zahlen tragend: Die Regel scheitert an fremdem Verhalten als Grund, nicht an der Höhe. Die Rangfolge bleibt über angenommene Krit-Multiplikatoren
 1,5–1,7, Krit-Raten 20–30 % und Direkttreffer-Raten 30–50 % gleich (Selbsttest des Skripts); die Prozentwerte
 selbst hängen an diesen angenommenen Werten des Spielers.
 

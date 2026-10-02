@@ -584,8 +584,10 @@ Einschiebeplatz, und sie ist eine Beigabe — ungenutzt verfaellt sie mit Refulg
    - **Fester / Necrotize** (Aetherflow): verlieren durch einen Platz Aufschub nichts; ein Ueberlauf
      droht erst, wenn Energy Drain wieder bereitsteht, und dessen Abklingzeit laeuft seit der
      Solar-Phase.
-   - **Mountain Buster** (nur unter Titan's Favor): haengt an einem Status. Wie lange der liegt und ob der
-     naechste Topaz Rite eine unverbrauchte Gunst ueberschreibt, steht nicht im Repository (unbelegt). Zur
+   - **Mountain Buster** (nur unter Titan's Favor): haengt an einem Status. Der naechste Topaz Rite
+     ueberschreibt eine unverbrauchte Gunst: The Balance, Summoner Basic Guide (02.10.2026): „weave each proc
+     immediately when you gain one, otherwise you will lose a use/'overwrite' it on the next cast of Topaz
+     Rite"; der Job-Guide: „Effect of Titan's Favor ends upon execution of certain summoner actions". Zur
      Laufzeit ist es lesbar: Endet der Status vor dem naechsten Einschiebefenster, ist ein Gegner in
      Reichweite und ist Mountain Buster eingeschaltet und erlernt, verliert die Aktion durch Aufschub
      ihren Wert und geht vor. Ohne die letzte Bedingung nahme niemand den Platz, und Lux verfiele.
@@ -613,8 +615,11 @@ diese, weil ihr Einstellungstext jede Verwendung bindet.
 - Ein Dunkelritter unter Walking Dead steht bei 1 HP in Gefaehrdungsklasse 1; Lux faellt dann sofort.
   Das ist gewollt (Punkt 1, seine Entscheidung): die aufgehobene Heilung fuer mehrere, einschliesslich
   des Tanks.
-- Ob der Radius von Mitte oder Trefferflaeche gemessen wird, ist unbelegt; verwendet wird das Mass der
-  Zielwahl (`GetCanAffects`, Trefferflaeche zu Trefferflaeche).
+- Ob ein Spieler in einer Flaeche steht, entscheidet der Mittelpunkt seines Modells (Akhmorning, „Raiding
+  Fundamentals", 02.10.2026: „A player's position is determined by the direct center of their player
+  model"). Die Zielwahl rechnet dagegen Trefferflaeche zu Trefferflaeche (`GetCanAffects`) und zaehlt ein
+  Mitglied am Rand mit, das der Mittelpunkt schon ausserhalb hat — um den Trefferkreis des Mitglieds zu
+  grosszuegig. Im Kampf: Lux kann einen Randstehenden mitzaehlen, den sie nicht heilt (TODO).
 
 **Die Heilmenge ist gemessen, nicht aus der Potenz gerechnet, und es zaehlt die kleinste.** 500 Potenz
 sind von hier nicht in Lebenspunkte umzurechnen; der Effekt-Handler sieht jede eigene Heilung mit ihrem
@@ -945,7 +950,7 @@ Druochole, Haima, Excogitation (liegt bereit und loest selbst aus), Aetherpact, 
 Thrill of Battle; ebenso Raw Intuition/Bloodwhetting und Nascent Flash, deren Minderung und Barriere
 sofort wirken und deren Heilung mit jedem Waffenskill folgt. Bloodbath („Converts a portion of physical
 damage dealt into HP") heilt mit dem naechsten physischen Treffer; zaehlen Autoangriffe dazu
-(Schluss, nicht belegt), liegt der kurze Vorlauf naeher als ein voller GCD, sonst um hoechstens den GCD-Rest
+(Schluss; das consolegameswiki, „Bloodbath“, 02.10.2026, nennt nur physischen gegen magischen Schaden, Autoangriffe nicht), liegt der kurze Vorlauf naeher als ein voller GCD, sonst um hoechstens den GCD-Rest
 daneben.
 
 **Verworfen: ein zweiter Ausloeser samt eigener Rangstufe.** Er waere der naheliegende Weg gewesen

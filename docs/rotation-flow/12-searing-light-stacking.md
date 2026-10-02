@@ -119,8 +119,8 @@ ist er in der nächsten Solar-Phase um denselben Betrag zu spät bereit, und in 
   Demis — spürbar erst am Kampfende, wo die letzte Demi-Phase knapper ausfallen kann.
 
 Die Freigabe vor der Beschwörung kam zudem zu spät, erst bei abgelaufener Abklingzeit, wenn der Platz
-davor schon vorbei war; behoben (A126). *Dass hinter Ruby Rite kein Platz bleibt, ist ein Schluss aus
-Code und Wirktext; die Längen von Wirk- und Wiederholzeit sind Fremdquelle.*
+davor schon vorbei war; behoben (A126). *Dass hinter Ruby Rite kein Platz bleibt, folgt aus Code und
+Spieldaten: 2,8 s Gießzeit, 3,0 s Wiederholzeit (Action-Tabelle, Job-Guide).*
 
 **Auch das Warten innerhalb der Demi ist teurer als sein Ertrag.** Hält man statt der Beschwörung den
 ersten GCD der Phase an, bis die offenen Fähigkeiten gewoben sind, verschiebt sich keine Demi — die
@@ -227,8 +227,8 @@ liegt allein daran, wann gezündet werden darf.
 
 ## Die Zeitstruktur
 
-Ohne sie ist keine der Fragen zu beantworten. Alle Größen außerhalb des Quelltextes stammen aus
-Fremdquellen (siehe Nachweisgrenzen).
+Ohne sie ist keine der Fragen zu beantworten. Die Größen außerhalb des Quelltextes stammen aus dem
+offiziellen Job-Guide und der Action-Tabelle des Spiels (siehe Nachweisgrenzen).
 
 | Größe | Wert |
 |---|---|
@@ -730,30 +730,32 @@ Sekunden — es bleiben dieselben zwei Plätze und dieselben Werte.
 Cyclone („Grants Crimson Strike Ready", `ActionId.resx`); wird der Anlauf aus Sicherheitsgründen
 ausgelassen, fällt der Ifrit-Block von 3160 Potenz über fünf GCDs auf 2040 über drei, und die beiden
 frei werdenden Plätze gehen an den Füller zurück — 568 Potenz je GCD statt 632. Im Bufffenster ist der
-Rückschlag größer, weil der Ersatz auf dem zweiten Platz Ruby Rite ist und Ruby Rite eine Gießzeit hat:
+Rückschlag größer, weil der Ersatz auf dem zweiten Platz Ruby Rite ist und Ruby Rite 2,8 s Gießzeit hat
+(Spieldaten): Bei 17,5 s begonnen, landet es nach dem Buffende.
 
 | Zuerst gerufen, ohne Anlauf | Attacken im Buff | Potenz |
 |---|---|---|
 | **Titan** | 3 | **1300** |
-| Ifrit | 1 bis 2 | 800 bis 1420 |
+| Ifrit | 1 | 800 |
 | Garuda | 1 | 800 |
 
-**Titan ist der einzige Block, dessen Wert weder an der Position noch an einer unbelegten Gießzeit
-hängt.** Seine GCDs sind sofort wirksam, und Mountain Buster wird gewebt, kostet also keinen Platz.
-Die Spanne bei Ifrit ist genau die offene Gießzeit von Ruby Rite: sofort wirksam landet es im Buff,
-eine volle Wiederholzeit lang nicht mehr.
+**Titan ist der einzige Block, dessen Wert nicht an der Position hängt.** Seine GCDs sind sofort wirksam,
+und Mountain Buster wird gewebt, kostet also keinen Platz. The Balance empfiehlt Titan nach der
+Beschwörung ebenso: „Titan first after the demi-primal phase should generally be prioritized" (Summoner
+Basic Guide, abgerufen 02.10.2026).
 
 **Der Gewinn bleibt klein.** Zwischen der besten und der schlechtesten Reihenfolge liegen 560 Potenz
-innerhalb des Buffs; der Buff steigert um 5 Prozent, also 28 Potenz gegen 30 440 Potenz
-Zyklusleistung — 0,09 Prozent. Zwischen Ifrit und der heutigen Voreinstellung Titan sind es 60
+innerhalb des Buffs; der Buff steigert um 5 Prozent, also 28 Potenz gegen 28 990 Potenz
+Zyklusleistung — 0,1 Prozent. Zwischen Ifrit und der heutigen Voreinstellung Titan sind es 60
 Potenz, drei Potenz Schaden, 0,01 Prozent. **Die Voreinstellung ist damit bereits nahezu optimal, und
 die einzige Reihenfolge, die wirklich etwas kostet, ist Garuda zuerst — die sie ohnehin vermeidet.**
 
 **Bedeutung bekommt die Reihenfolge erst dort, wo der Buff ganz außerhalb eines
 Beschwörungsfensters liegt — im Ausweichblock.** Liegt er vollständig außerhalb eines
-Beschwörungsfensters, füllen ihn acht GCDs Primalblock: Ifrit zuerst 4800 Potenz, Titan zuerst
-3920, Garuda zuerst 3740. Zwischen bester und schlechtester Reihenfolge liegen dann 1060 Potenz,
-0,17 Prozent des Zyklus. Auch das bleibt klein.
+Beschwörungsfensters, füllen ihn 20 s Primalblock: Ifrit zuerst 4800 Potenz, Titan zuerst
+3920, Garuda zuerst 4420 (Emerald Rite hat 1,5 s Wiederholzeit, Spieldaten). Zwischen bester und
+schlechtester Reihenfolge liegen dann 880 Potenz, 44 Potenz Buffwert, 0,15 Prozent des Zyklus. Auch das
+bleibt klein.
 
 **Die Voreinstellung bleibt, und das ist die Entscheidung des Auftraggebers.** Ifrit zuerst lohnt nur,
 wenn man ohnehin am Ziel steht (0 Yalm, seine Präzisierung); der Anlauf von Crimson Cyclone in eine
@@ -777,34 +779,22 @@ CrimsonCyclonePvE.Target.Target.DistanceToPlayer() <= CrimsonCycloneDistance` �
 Entfernung heran, sobald die Option an ist. Aus — die Voreinstellung — greifen die drei Yalm aus
 `CrimsonCycloneDistance`.
 
-Dass Slipstream eine Gießzeit hat, ist aus `AddSwiftcastOnGaruda` belegt, und dass die Topaz-GCDs
-sofort wirken, aus dem Optionstext von `PreferTitanWhileMoving`.
-
-*Offen bleibt die Länge der Gießzeiten.* Belegt ist aus dem Repository nur, **dass** Slipstream und die
-Ruby- und Emerald-GCDs eine haben. Die drei Sekunden für Slipstream sind Fremdquelle. Das Prüfmittel
-führt Aktionen mit unbelegter Gießzeit als sofort wirksam und benennt sie ausdrücklich, damit aus
-einer fehlenden Zahl kein stiller Nullbefund wird.
+**Gieß- und Wiederholzeiten (Spieldaten, Action-Tabelle über xivapi, und Job-Guide, 02.10.2026):** Ruby Rite
+2,8 s / 3,0 s, Slipstream 3,0 s / 3,5 s, Ruin III 1,5 s / 2,5 s; Emerald Rite und die Topaz-GCDs sofort, Emerald
+Rite mit 1,5 s Wiederholzeit. Die Demi-Beschwörungen tragen die GCD-Gruppe als zweite Abklingzeitgruppe,
+kosten also einen GCD. Das Modell rechnet damit (`smn_phase_potency.py`); die frühere Annahme, auch Emerald
+Rite habe eine Gießzeit, war falsch.
 
 ### Woher die Zahlen kommen
 
-Alle Potenzen ohne Merkmalsaufwertung stammen aus `ActionId.resx` in diesem Repository und sind damit
-am Artefakt belegt: Umbral Impulse 640, Luxwave 160, Wyrmwave 150, Scarlet Flame 150, Sunflare 1000,
-Exodus 1500, Deathflare 500, Akh Morn 1300, Revelation 1300, Necrotize 500, Searing Flash 700, Energy
-Drain 100.
-
-**Vierzehn Werte sind nicht am Repository belegt**, weil das Spiel die Zahl im Tooltip leer lässt,
-sobald ein Merkmal sie überschreibt — `ActionId.resx` enthält an diesen Stellen wörtlich „with a
-potency of ." Betroffen sind Astral Impulse 500, Fountain of Fire 580, Ruin III 400, Ruin IV 520, Ruby
-Rite 620, Topaz Rite 340, Emerald Rite 280, Crimson Cyclone 560, Crimson Strike 560, Slipstream 520,
-Mountain Buster 160, Inferno 800, Earthen Fury 800, Aerial Blast 800. Sie stammen aus
-Suchmaschinenzusammenfassungen; die Primärquellen — Job-Guide, FFXIV-Wiki, Icy Veins, The Balance —
-sind vom Egress dieser Umgebung gesperrt. Ein Kalibrierungspunkt spricht für sie: Für Umbral Impulse
-nennt dieselbe Quelle 640, und das ist der Wert, den `ActionId.resx` unabhängig belegt.
-
-Die Tragfähigkeit der Aussagen hängt unterschiedlich stark daran. Der Abstand der drei
-Beschwörungsfenster untereinander ruht überwiegend auf belegten Werten. Der Abstand zur Zwischenphase
-und die Rangfolge der drei Sonderaktionen ruhen auf den unbelegten. Inferno, Earthen Fury und Aerial
-Blast sind mit 800 gleich angesetzt und heben sich im Vergleich der Reihenfolgen ohnehin auf.
+Alle Potenzen ohne Merkmalsaufwertung stammen aus `ActionId.resx` in diesem Repository: Umbral Impulse
+640, Luxwave 160, Wyrmwave 150, Scarlet Flame 150, Sunflare 1000, Exodus 1500, Deathflare 500, Akh Morn
+1300, Revelation 1300, Necrotize 500, Searing Flash 700, Energy Drain 100. Wo ein Merkmal die Zahl im
+Tooltip überschreibt, steht in `ActionId.resx` „with a potency of .“; diese vierzehn Werte stammen aus dem
+offiziellen Job-Guide (Stufe 100, abgerufen 02.10.2026): Astral Impulse 500, Fountain of Fire 580, Ruin III
+400, Ruin IV 520, Ruby Rite 620, Topaz Rite 340, Emerald Rite 280, Crimson Cyclone 560, Crimson Strike 560,
+Slipstream 520, Mountain Buster 160, Inferno 800, Earthen Fury 800, Aerial Blast 800. Sie stimmen mit den
+früheren Suchauszügen überein.
 
 ## Gesamtbetrachtung
 
@@ -1087,10 +1077,11 @@ Sperrlogik bis zu den Vorgabewerten und der Filterung nach Statusquelle; ebenso,
 mit `BahamutBurst` bereits eine weitere Fassung des Zündfensters führt und dass `SMN_Reborn` sie
 nicht benutzt.
 
-Aus Fremdquellen: Wirkdauer, Wiederholzeit und Stärke von Searing Light, Standzeit und Wiederholzeit
-der großen Beschwörungen, ihre Reihenfolge, und dass Ruby's Glimmer aus der eigenen Ausführung
-stammt. Dass ein zweiter Searing Light überschreibt statt zu stapeln, ist die Angabe des
-Auftraggebers.
+Am offiziellen Job-Guide belegt (02.10.2026): Searing Light +5 % für 20 s, 120 s Abklingzeit, und es gewährt
+Ruby's Glimmer für 30 s bei der eigenen Ausführung; die großen Beschwörungen haben 60 s Abklingzeit und
+kosten einen GCD (Action-Tabelle: GCD-Gruppe als zweite Abklingzeitgruppe). Die Reihenfolge Solar Bahamut,
+dann Bahamut oder Phoenix im Wechsel, nennt The Balance. Dass ein zweiter Searing Light überschreibt statt
+zu stapeln, ist die Angabe des Auftraggebers; eine schriftliche Quelle dafür habe ich nicht gefunden.
 
 Die Abdeckungszahlen stammen aus `.github/scripts/audit/searing_light_coverage.py`, das die oben
 genannten Regeln durchrechnet und in der CI mit seinem Selbsttest läuft. Das ist eine Messung am

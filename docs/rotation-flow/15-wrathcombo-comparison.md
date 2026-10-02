@@ -194,7 +194,9 @@ Bewegungen nicht abbricht. **Ergebnis: nicht bauen;** das Pausenverhalten aus A1
 Wirktext (Job-Guide, 28.09.2026): Meditate, 60 s Abklingzeit, „Gradually increases your Kenki Gauge", 15 s, im
 Kampf dazu bis zu 3 Stapel Meditation; endet bei jeder anderen Aktion und bei Bewegung, auch beim Drehen; löst
 die Abklingzeit der Waffenfertigkeiten aus und ist während ihr nicht nutzbar. Wie viel Kenki je Takt und wie oft,
-nennt der Text nicht, und die Spieldaten (Status 1231 „Storing Kenki.") auch nicht — unbelegt.
+nennen Wirktext und Spieldaten (Status 1231 „Storing Kenki.") nicht; das consolegameswiki, „Meditate"
+(Gemeinschaftsquelle, 02.10.2026): „10 Kenki is generated every tick (3 seconds), for a total of 50 Kenki if
+Meditate lasts its entire duration".
 
 - **Wo RSR Meditate wirkt:** nur in der Pause (`InCombatPause`: im Kampf, kein Gegner in 25 y) und nicht in
   Bewegung. Deine Frage „oder ist das ein anderes Problem (Meditate nur außerhalb Kampf?)" beantwortet das: Es

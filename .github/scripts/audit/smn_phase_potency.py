@@ -11,11 +11,13 @@ Answers two questions that the Searing Light concept left open:
 
 Every potency carries its source.  ``resx`` means the value was read from
 ``RotationSolver.SourceGenerators/Properties/ActionId.resx`` in this
-repository, which mirrors the game's own tooltip text.  ``extern`` means the
+repository, which mirrors the game's own tooltip text.  ``game`` means the
 tooltip in that file has the number blanked out -- the game writes a
-placeholder wherever a trait rewrites the potency -- and the value comes from
-a third party instead.  Those values are not verified against a primary
-source and are marked as such in every report this script prints.
+placeholder wherever a trait rewrites the potency -- and the value was read
+from the official job guide (na.finalfantasyxiv.com/jobguide/summoner,
+02.10.2026, level 100 values).  Cast and recast times come from the game's
+Action sheet (v2.xivapi.com, Cast100ms / Recast100ms / CooldownGroup,
+02.10.2026); they agree with the job guide.
 
 The phase composition is taken from RotationSolver/RebornRotations/Magical/
 SMN_Reborn.cs: the dispatch order in GeneralGCD (UseSummonsAndTrances ->
@@ -25,7 +27,7 @@ UsePrimalFollowUps -> SummonPrimals -> UseFillers) and in AttackAbility.
 import sys
 
 REPO_RESX = 'resx'
-THIRD_PARTY = 'extern'
+GAME = 'game'
 
 # --- potency table -------------------------------------------------------
 # name -> (potency, source)
@@ -33,9 +35,9 @@ POTENCY = {
     # demi fillers and their pet answer
     'Umbral Impulse': (640, REPO_RESX),
     'Luxwave': (160, REPO_RESX),
-    'Astral Impulse': (500, THIRD_PARTY),
+    'Astral Impulse': (500, GAME),
     'Wyrmwave': (150, REPO_RESX),
-    'Fountain of Fire': (580, THIRD_PARTY),
+    'Fountain of Fire': (580, GAME),
     'Scarlet Flame': (150, REPO_RESX),
     # demi finishers
     'Sunflare': (1000, REPO_RESX),
@@ -45,38 +47,43 @@ POTENCY = {
     'Revelation': (1300, REPO_RESX),
     'Rekindle': (0, REPO_RESX),          # cure potency only, no damage
     # primal blocks
-    'Inferno': (800, THIRD_PARTY),
-    'Earthen Fury': (800, THIRD_PARTY),
-    'Aerial Blast': (800, THIRD_PARTY),
-    'Ruby Rite': (620, THIRD_PARTY),
-    'Topaz Rite': (340, THIRD_PARTY),
-    'Emerald Rite': (280, THIRD_PARTY),
-    'Crimson Cyclone': (560, THIRD_PARTY),
-    'Crimson Strike': (560, THIRD_PARTY),
-    'Slipstream': (520, THIRD_PARTY),
-    'Mountain Buster': (160, THIRD_PARTY),
+    'Inferno': (800, GAME),
+    'Earthen Fury': (800, GAME),
+    'Aerial Blast': (800, GAME),
+    'Ruby Rite': (620, GAME),
+    'Topaz Rite': (340, GAME),
+    'Emerald Rite': (280, GAME),
+    'Crimson Cyclone': (560, GAME),
+    'Crimson Strike': (560, GAME),
+    'Slipstream': (520, GAME),
+    'Mountain Buster': (160, GAME),
     # fillers outside every window
-    'Ruin III': (400, THIRD_PARTY),
-    'Ruin IV': (520, THIRD_PARTY),
+    'Ruin III': (400, GAME),
+    'Ruin IV': (520, GAME),
     # abilities RotationSolver parks inside the Solar Bahamut window
     'Energy Drain': (100, REPO_RESX),
     'Necrotize': (500, REPO_RESX),
     'Searing Flash': (700, REPO_RESX),
 }
 
-# --- cast times ----------------------------------------------------------
+# --- cast and recast times -----------------------------------------------
 # A buff is applied when the cast snapshots, so an action started inside the
-# buff but finishing after it is not buffed.  Only two facts here come from
-# this repository, both from SMN_Reborn.cs: Slipstream has a cast time (the
-# rotation spends Swiftcast on it, AddSwiftcastOnGaruda) and the Topaz GCDs
-# are instant while the Garuda and Ifrit ones are not (option text of
-# PreferTitanWhileMoving).  The seconds themselves are third party.
+# buff but finishing after it is not buffed.  Recast is the time until the next
+# GCD.  Game data (Action sheet): Ruby Rite 2.8 s cast / 3.0 s recast, Emerald
+# Rite instant / 1.5 s, Slipstream 3.0 s / 3.5 s, Ruin III 1.5 s / 2.5 s; every
+# other GCD here is instant with 2.5 s.  The demi summons sit in cooldown group
+# 10 with the GCD group (58) as their additional group, so each costs a GCD.
 CAST_UNKNOWN = None
 CAST_TIME = {
-    'Slipstream': (3.0, THIRD_PARTY),
-    'Ruby Rite': (CAST_UNKNOWN, THIRD_PARTY),
-    'Emerald Rite': (CAST_UNKNOWN, THIRD_PARTY),
-    'Ruin III': (CAST_UNKNOWN, THIRD_PARTY),
+    'Slipstream': (3.0, GAME),
+    'Ruby Rite': (2.8, GAME),
+    'Emerald Rite': (0.0, GAME),
+    'Ruin III': (1.5, GAME),
+}
+RECAST = {
+    'Slipstream': 3.5,
+    'Ruby Rite': 3.0,
+    'Emerald Rite': 1.5,
 }
 
 
@@ -85,6 +92,11 @@ def cast_time(name):
     if name not in CAST_TIME:
         return 0.0
     return CAST_TIME[name][0]
+
+
+def recast(name, gcd=2.5):
+    """Time until the next GCD after this action, scaled with the GCD."""
+    return RECAST.get(name, 2.5) * gcd / 2.5
 
 
 # --- timing --------------------------------------------------------------
@@ -165,6 +177,11 @@ def block_gcds(block):
     return sum(1 for _, g in block if g)
 
 
+def block_time(block):
+    """Seconds the block holds the GCD."""
+    return sum(recast(n) for n, g in block if g)
+
+
 def primal_sequence(order):
     """Flatten the primal blocks into one action list in the given order."""
     seq = []
@@ -219,13 +236,13 @@ def tail_window(order, gcd=GCD, swiftcast=False, after_demi=True, blocks=None,
             if t + cast < SEARING_LIGHT:
                 hits.append((name, t + cast, pot(name)))
             weave_slots += WEAVES_PER_GCD
-            t += gcd
+            t += recast(name, gcd)
         # off-GCD actions of this block ride along with its GCDs
         for name, costs_gcd in block:
             if costs_gcd or weave_slots <= 0:
                 continue
             weave_slots -= 1
-            hits.append((name, t - gcd, pot(name)))
+            hits.append((name, t, pot(name)))
         if t >= SEARING_LIGHT:
             break
     return {'demi_casts': demi_casts, 'start': demi_casts * gcd,
@@ -246,16 +263,16 @@ def cycle_potency(summon_costs_gcd):
     primal = sum(block_potency(b) for b in PRIMAL_BLOCKS.values())
     gcds_per_round = int(round(60.0 / GCD))
     demi_slots = int(round(DEMI_DURATION / GCD))
-    primal_slots = sum(block_gcds(b) for b in PRIMAL_BLOCKS.values())
-    spare = gcds_per_round - demi_slots - primal_slots
-    filler = max(spare, 0) * pot('Ruin III')
+    primal_time = sum(block_time(b) for b in PRIMAL_BLOCKS.values())
+    spare = 60.0 - DEMI_DURATION - primal_time
+    filler = max(int(spare // GCD), 0) * pot('Ruin III')
     return per_round + second + 2 * primal + 2 * filler
 
 
 # --- report --------------------------------------------------------------
 
 def report():
-    for summon_costs_gcd in (False, True):
+    for summon_costs_gcd in (True,):
         label = ('summon off the GCD (6 filler casts per demi)'
                  if not summon_costs_gcd
                  else 'summon on the GCD (5 filler casts per demi)')
@@ -403,10 +420,9 @@ def report():
           '%.0f %% more' % (extra, solar, solar + extra, 100.0 * extra / solar))
     print()
 
-    unverified = sorted(n for n, (_, s) in POTENCY.items() if s == THIRD_PARTY)
-    print('potencies not backed by this repository (tooltip blanked by a trait),')
-    print('taken from third-party summaries and unverified:')
-    print('  ' + ', '.join(unverified))
+    from_guide = sorted(n for n, (_, s) in POTENCY.items() if s == GAME)
+    print('potencies blanked in this repository by a trait, read from the job guide:')
+    print('  ' + ', '.join(from_guide))
 
 
 # --- self test -----------------------------------------------------------
@@ -422,10 +438,10 @@ def self_test():
     # demi window takes 6 and the three primal blocks 16
     gcds_per_round = int(round(60.0 / GCD))
     demi_slots = int(round(DEMI_DURATION / GCD))
-    primal_slots = sum(block_gcds(b) for b in PRIMAL_BLOCKS.values())
-    if demi_slots + primal_slots > gcds_per_round:
-        raise AssertionError('phase model overbooks the 60 s round: %d + %d > %d'
-                             % (demi_slots, primal_slots, gcds_per_round))
+    primal_time = sum(block_time(b) for b in PRIMAL_BLOCKS.values())
+    if DEMI_DURATION + primal_time > 60.0:
+        raise AssertionError('phase model overbooks the 60 s round: %.1f + %.1f > 60'
+                             % (DEMI_DURATION, primal_time))
 
     # reordering must not change the raw potency of a cycle -- if it did, the
     # buff-coverage argument below would be measuring the wrong thing
@@ -474,7 +490,7 @@ def self_test():
     # so that a silent zero cannot pass for a measured one
     saved = CAST_TIME.get('Crimson Cyclone')
     try:
-        CAST_TIME['Crimson Cyclone'] = (CAST_UNKNOWN, THIRD_PARTY)
+        CAST_TIME['Crimson Cyclone'] = (CAST_UNKNOWN, GAME)
         probe = tail_window(('Ifrit', 'Titan', 'Garuda'))
         if 'Crimson Cyclone' not in probe['unknown_cast']:
             raise AssertionError('an unproven cast time went unreported')
