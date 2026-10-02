@@ -45,9 +45,9 @@ DEFINITION = re.compile(
 _END = r'(?![A-Za-zÄÖÜäöüß])'
 ON = (r'(?:Standard\s+an' + _END + r'|voreingestellt\s+an' + _END + r'|Voreinstellung\s+an' + _END
       + r'|on\s+by\s+default|Standard\s+ein' + _END + r'|ab\s+Werk\s+\**an' + _END
-      + r'|Vorgabewert\s+\**an' + _END + r'|\**an\**\s+als\s+Vorgabewert)')
+      + r'|Vorgabe(?:wert)?\s+\**an' + _END + r'|\**an\**\s+als\s+Vorgabewert)')
 OFF = (r'(?:Standard\s+aus|voreingestellt\s+aus|Voreinstellung\s+aus|off\s+by\s+default'
-       r'|ab\s+Werk\s+\**aus|Vorgabewert\s+\**aus|\**aus\**\s+als\s+Vorgabewert)')
+       r'|ab\s+Werk\s+\**aus|Vorgabe(?:wert)?\s+\**aus|\**aus\**\s+als\s+Vorgabewert)')
 CLAIM = re.compile(r'`([A-Z][A-Za-z0-9_]{3,})`(?P<between>[^`]{0,200}?)(?P<value>' + ON + '|' + OFF + ')',
                    re.IGNORECASE | re.DOTALL)
 
@@ -270,6 +270,9 @@ def selftest():
     wrong, _ = check('`BetaSetting`, ab Werk aus.', defaults)
     if not any(n == 'BetaSetting' for n, _, _ in wrong):
         raise AssertionError('the wording "ab Werk aus" went unnoticed')
+    wrong, _ = check('Die Regel steht hinter `BetaSetting`, Vorgabe aus.', defaults)
+    if not any(n == 'BetaSetting' for n, _, _ in wrong):
+        raise AssertionError('the wording "Vorgabe aus" went unnoticed')
     wrong, _ = check('`AlphaSetting` steht ab Werk andersherum.', defaults)
     if wrong:
         raise AssertionError('"an" inside a longer word was read as a claim')
