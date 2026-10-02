@@ -163,25 +163,17 @@ Belegt: `Status.resx` führt `Rampart_1978` — die Form, die ein Tank ab Stufe 
 
 **Vor einer Änderung zu klären:** ob RSR eine seiteneffektfreie Prüfung anbietet. Gibt es keine, ist die Frage, ob eine solche eingeführt werden soll — mit einem Wirkungsbereich über alle Rotationen, die `CanUse` als Prüfung benutzen, und damit auch über die abgeleiteten Rotationen als Paketnutzer.
 
-### Die Zielwahl der Heilung misst nicht die Sterbegefährdung · N, U
+### Zielwahl der Heilung: Rollenschwellen 45/40 kehren im Band die Rangfolge um · N, U
 
-**Vorgabe des Auftraggebers, vollständig in `docs/rotation-flow/07-heal-target-priority.md`:** Oberste Priorität hat das gesamtheitliche Überleben der Gruppe, ansonsten Triage. Maßgeblich ist, wer wie stark gefährdet ist zu sterben — Tank mit Aggro hat Priorität, Heiler mit Aggro muss überleben, bei mehreren Betroffenen entscheidet die Schadensrate, und ein Schadensausteiler ohne Aggro bei 10 % stirbt an der nächsten Flächenaktion. **Bei gleicher Gefährdung: Heiler vor Tank vor Schadensausteiler**, begründet mit Ersetzbarkeit — der Tank besteht eine Weile ohne Heiler, heilen kann nur der Heiler.
+Die Zielwahl nach Gefährdung ist gebaut (Konzept 07, Stufen 1 bis 3; A89, A93, A183). `HealTargetByDanger` und
+`HealAheadOfDamage` stehen ab Werk an. Offen ist nur noch die Schwellendifferenz: `HealthTankRatio` 0,45 gegen
+`HealthHealerRatio` und `HealthSelfRatio` 0,40, alle drei wie in `upstream/main`.
 
-**Heute entscheidet allein der Prozentsatz** (`ActionTargetInfo.FindHealTarget`, Rang 4), davor zwei Rollenabkürzungen mit festen Schwellen. Weder Aggro noch Barriere noch absoluter Lebenspuffer gehen ein. Die Sortierung stammt aus dem Upstream; Fork-Arbeit ist allein die Behandlung der Unverwundbaren.
-
-**Die Prüfreihenfolge stellt den Heiler vor den Tank, die Schwellen kehren das um:** Tank ≤ 45 %, Heiler ≤ 40 %. Im Band 40–45 % bekommt der Tank die Heilung, obwohl der Heiler gleich tief steht; spielt der Auftraggeber selbst den Heiler, trifft ihn derselbe Fall über `HealthSelfRatio` (ebenfalls 0,40). Die Differenz vertritt die fehlende Schadensrate — für den Regelfall „Tank hält die Aggro" richtig, für den zweiten Fall der Vorgabe „Heiler hält die Aggro" falsch, weil das Surrogat rollenfest statt lagefest ist. **Alle drei Werte sind identisch mit `upstream/main`**, also kein Fork-Defekt, und es sind Voreinstellungen im Code — die Konfiguration des Auftraggebers ist von hier nicht messbar.
-
-**Drei der vier Größen sind verfügbar und zwei davon gelesen:** der effektive Puffer in absoluten Punkten (`GetEffectiveHp`, gelesen), die Schadensrate je Mitglied (`GetCorrectedTTK` aus `RecordedHP`, gelesen — A91 bis A93), die Aggro (`TargetObject`, wie in `CanProvoke` aufgelöst — **nicht** gelesen) und der angekündigte Flächenschaden (`IsHostileCastingAOE`, BMR-Vorhersage — **nicht** gelesen).
-
-**Der schwerste Einzelfall ist ein Kurzschluss, nicht ein Maß:** `tankTars[0]` unter `HealthTankRatio` beendet die Suche sofort, also wird ein Schadensausteiler bei 10 % übergangen, sobald der Tank bei 44 % steht — der von der Vorgabe ausdrücklich genannte Fall.
-
-**Der Entwurf steht vollständig in `docs/rotation-flow/07-heal-target-priority.md`:** drei Gefährdungsklassen statt einer Kette von Kurzschlüssen — kritisch (unter `HealthForDyingTanks`, geordnet nach absoluten Punkten), unter Beschuss (Aggro oder Tankhaltung, geordnet nach Prozentsatz), übrige (absolute Punkte bei angekündigtem Flächenschaden, sonst Prozentsatz); Rolle nur als Gleichstandsregel. Jedes Maß wirkt dort, wo es das Richtige misst, keines wird gewichtet, keine Zahl erfunden — BossModReborn nennt Art und Zeitpunkt des nächsten Einschlags, nicht seine Höhe.
-
-**Umgesetzt sind Stufe 1 und Stufe 3.** Stufe 1 (A89): Klasse 1 steht vor allen drei Kurzschlüssen. Stufe 3 (A93): die Rate je Mitglied — allerdings nicht als zusätzliches Ordnungsmerkmal innerhalb einer Klasse, wie ursprünglich entworfen, sondern als **Ersatz der gelesenen Gesundheit** durch die vorausberechnete, hinter `HealAheadOfDamage` mit Standard aus. Damit erben alle vier Entscheidungen der Methode die Vorausschau, Klasse 1 eingeschlossen; die Begründung der Entwurfsänderung steht in Konzept 07.
-
-**Stufe 2 gebaut (A183)**, hinter `Choose the heal target by danger`, Vorgabewert an (seit 29.09.2026): Klasse 2 (Heiler/Tank unter Rollenschwelle **und** angegriffen, `DataCenter.TargetedPartyMembers`), Klasse 3 (übrige; bei angekündigtem Flächenschaden nach absoluten effektiven Punkten, sonst nach Prozentsatz), Rolle nur bei Gleichstand. Offen bleibt die Voreinstellung — zu entscheiden, wenn er die Einstellung gespielt hat.
-
-**Was der Entwurf nicht löst:** Die Schwellendifferenz 45/40 ist entweder wirksam — dann kehrt sie im Band die Rangfolge um — oder unwirksam, dann ist eine Nutzereinstellung stillgelegt. Die Klassenordnung entschärft sie, beseitigt sie nicht. Ob die Werte vereinheitlicht werden, ist eine Wertentscheidung über eine Konfiguration und liegt beim Auftraggeber.
+- *Wirkung:* Stehen Heiler und Tank beide unter Beschuss und beide zwischen 40 und 45 %, kommt nur der Tank in
+  Gefährdungsklasse 2 und wird zuerst geheilt. Das widerspricht seiner Gleichstandsregel (Heiler vor Tank).
+- *Ohne Beschuss oder bei Gefährdungsklasse 1:* keine Umkehr.
+- *Entscheidung:* Ob die Werte vereinheitlicht werden, ist eine Wertentscheidung über seine Konfiguration und
+  liegt bei ihm.
 
 ### `HasSurvivingShield` misst die **kürzeste** Schildrestzeit, nicht die längste · N, R
 
@@ -513,18 +505,6 @@ Er fällt trotzdem kaum ins Gewicht, und der Grund liegt in der Wirkweise der Ak
 
 **Empfehlung: belassen.** Die geteilte Identität kostet nur, wenn beide Fassungen gleichzeitig installiert sein sollen; sie nützt bei jedem Wechsel zwischen ihnen, weil die Nutzerkonfiguration erhalten bleibt.
 
-### Übertragung der Mitigations-Synergie auf weitere Doppelnutzen-Aktionen · N
-
-Schritt 3 aus `docs/rotation-flow/08-mitigation-synergy.md`. Die Schritte 1 und 2 — Messung und Aussetzbedingung für Sanctus — sind umgesetzt (AUDIT_LOG A20). Offen ist die Übertragung auf weitere Aktionen, die Schaden erzeugen und zugleich Schaden vermeiden.
-
-**Zur Führung dieses Punktes:** Die Einzelheiten stehen im Konzeptdokument, nicht hier. `TODO.md` führt die offene Arbeit und verweist; eine zweite Beschreibung derselben Sache würde mit der ersten auseinanderlaufen. Was hier stehen muss, ist allein, dass noch etwas offen ist und wo es beschrieben wird.
-
-**Die Kandidatensuche ist erledigt** und lief, wie hier gefordert, über ein Prüfskript statt über Erinnerung: `scan16.py` erhebt jede PvE-Aktion mit Kontroll- oder Minderungswirkung auf Gegner und prüft, ob der Baum den zugehörigen Status liest. Im Tank- und Heilerprofil bleibt genau eine Aktion, deren zweite Wirkung eine Entscheidung ändern würde — Rückstoß (Arm’s Length), eigener Eintrag oben. Offen ist damit nur noch die **Übertragung** selbst.
-
-**Auflösungsbedingung:** erst nach Beobachtung der Schritte 1 und 2 im Spiel.
-
-**Empfehlung: warten.** Schritt 3 überträgt eine Regel, deren Nutzen in den Schritten 1 und 2 noch nicht beobachtet ist; eine Übertragung vor dem Nachweis vervielfacht einen möglichen Fehler, statt einen Nutzen zu vervielfachen.
-
 ## Offene Arbeit
 
 ### Tanks: Reflexion und Gruppenbarriere auf demselben Raidwide · N
@@ -540,6 +520,17 @@ Ob ein Spieler in einer Fläche steht, entscheidet der Mittelpunkt seines Modell
 Quellen gefunden (Job-Guide und The Balance, 02.10.2026; Konzept 14, „Pausen und Phasenenden"):
 - *Six-sided Star (Monk):* 780 + 80 je Chakra, 4 s Wiederholzeit; Einsatz als letzter GCD vor Pause, Rückzug aus einer Fläche oder Tod des Ziels, wenn nur einer passt. Braucht die vorhergesagte Pause (BossModReborn) oder die selbstkorrigierte Zeit bis zum Tod; ohne Modul nur über die Zeit bis zum Tod.
 - *Flamethrower (Machinist):* Schwellen von The Balance (ohne Gauge ab 2 Zielen über dem Füller, ab 6 über Air Anchor; nie vor Hypercharge, Chain Saw/Excavator, Drill/Bio; keine große Abklingzeit in den 11 s). Bindet 11 s an Ort und Blickrichtung — gegen seine Spielweise nur bei stehendem Rudel ohne angesagte Fläche zulässig.
+
+### Vorlauf: Dragoon und Viper ohne `CountDownAction` · N
+
+Gemessen am 02.10.2026 (Konzept 04, „Was offen bleibt"). Ohne `CountDownAction` wirkt ein Job im Countdown nichts (`CustomRotation_Invoke.cs`, Basis liefert `null`), auch keinen Trank. Zu klären an den Openern von The Balance und an den Wirktexten, ob dort eine Vorlaufaktion fällig ist. Der Trank im Vorlauf ist dabei die Gesamtfrage: `UseBurstMedicine` im Vorlauf rufen nur die vier Heiler, Barde, Maschinist, Dunkelritter und Revolverklinge auf.
+
+### Vorausschau vor dem ersten Treffer: eigene Minderungen rechnerisch · N
+
+Die Vorausschau liest den gemessenen Gesundheitsverlauf; der ist netto und braucht keine Minderungssätze, setzt
+aber erst nach dem ersten Treffer ein. Vorher könnte sie die eigenen laufenden Minderungen aus
+`DefensiveValues.g.cs` einrechnen (Konzept 08, Tabelle „Ergebnis“). Zu klären: ob der gemessene Anteil eines
+angekündigten Treffers (Konzept 13) diese Lücke schon schließt, weil er die beim Messen liegende Minderung enthält.
 
 ### Feste Werte im Fork: jeder offene Wert braucht seinen Loop · N, R
 

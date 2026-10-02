@@ -214,7 +214,7 @@ abgearbeitet (Herleitungen in `AUDIT_LOG.md`):
 
 | Commit | Punkt | Ergebnis |
 |---|---|---|
-| `c6a0a40c` | WHM heilte nicht (Nutzer-Meldung) | Ursache: TTK-Heil-Gate galt auch für Heiler, §3. Bestätigung im Spiel offen |
+| `c6a0a40c` | WHM heilte nicht (Nutzer-Meldung) | Ursache: TTK-Heil-Gate galt auch für Heiler, §3. Kette im Code geprüft, keine offene Spielbestätigung (C6) |
 | `a2a3ec35` | `_lastHp` | toter Abgleich entfernt |
 | `52a0817d` | ChurinDRK Oblation | Upstream-Guard nachgezogen |
 | `00bc9c6f` | Reprisal-Platzierung PLD/WAR | in `DefenseAreaAbility` wie DRK/GNB |
@@ -236,8 +236,8 @@ python3 .github/scripts/check_base_calls.py
 ```
 
 Der Build läuft in der CI dieses Forks gegen dieselbe Dalamud-Version wie im
-Original (`.github/workflows/build.yaml`, unverändert bis auf einen
-zusätzlichen Job).
+Original: die aktuelle Veröffentlichung aus `dalamud-distrib/latest.zip` (`.github/workflows/build.yaml`). Der
+Workflow hat seit diesem Durchgang weitere Prüfschritte bekommen; die Liste steht in der Datei selbst.
 
 ## Offene Punkte zu diesem Konzept
 

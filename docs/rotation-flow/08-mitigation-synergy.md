@@ -37,8 +37,8 @@ gehen in keine Rechnung ein. Die Luecke schliesst nicht eine Tabelle von Minderu
 die Beobachtung: Der Gesundheitsverlauf je Gruppenmitglied ist bereits netto und braucht keine Liste.
 Die Schaetzung daraus ist **praeventiv** — bei 90 % Gesundheit meldet sie den Tod acht Sekunden im
 Voraus — und sie **korrigiert sich selbst**, indem sie ihre eigene Vorhersage jede Sekunde gegen den
-tatsaechlichen Verlauf haelt. Ein externer Beobachter ist dafuer nicht noetig. Bevor eine Kampfregel
-darauf aufsetzt, ist der gemessene Fehlerfaktor in der Diagnoseanzeige zu beurteilen.
+tatsaechlichen Verlauf haelt. Ein externer Beobachter ist dafuer nicht noetig; die Regeln, die darauf aufsetzen,
+erben die Selbstkorrektur.
 
 | Baustein | Stand |
 |---|---|
@@ -51,13 +51,13 @@ darauf aufsetzt, ist der gemessene Fehlerfaktor in der Diagnoseanzeige zu beurte
 | **Schadensrate je Gruppenmitglied**, netto nach allem | umgesetzt: die Gruppe steht in `RecordedHP`, `GetTTK` antwortet fuer sie |
 | **Selbstkorrektur** der Schaetzung gegen ihren eigenen Fehler | umgesetzt (`ScoreTtkForecast`, `GetCorrectedTTK`); Rohzeit, korrigierte Zeit und Faktor stehen in der Diagnoseanzeige |
 | **Vorausschau** als Ersatzgroesse an allen Heilentscheidungen | umgesetzt (`GetForecastSurvivingShare` und die drei davon abgeleiteten Getter), hinter `HealAheadOfDamage`, Standard an |
-| Vorausschau auch in der **Flaechenheilung** (`PartyMembersAverHP` und Geschwister) | erfasst, nicht bearbeitet — siehe `TODO.md`; 83 Leser ausserhalb der Heilkette, darunter fremde Rotationen |
-| Minderungen des Tanks **rechnerisch** erfassen (Vorausschau vor dem ersten Treffer) | offen, siehe `TODO.md` — braucht Saetze je Status aus `Action.resx` |
-| **Derselbe Satz je Aktion traegt zwei Zwecke**, und das war bisher nicht gesehen: die Vorausschau in der Zeile darueber **und** die Wahl des Mittels nach Treffergroesse (Vorgabe 5). Wer ihn baut, loest beide Punkte | offen, siehe `TODO.md` |
+| Vorausschau auch in der **Flaechenheilung** | umgesetzt (A182): die Flaechenschwellen lesen eigene vorausberechnete Gruppenwerte (`DataCenter.ComputeForecastAreaStats`); `PartyMembersAverHP` und Geschwister bleiben unveraendert, weil sie viele Leser ausserhalb der Heilkette haben (Konzept 07) |
+| Minderungen des Tanks **rechnerisch** erfassen (Vorausschau vor dem ersten Treffer) | nicht gebaut; die Saetze je Aktion liegen inzwischen in `DefensiveValues.g.cs` (TODO „Vorausschau vor dem ersten Treffer“) |
+| **Derselbe Satz je Aktion traegt zwei Zwecke**: die Vorausschau in der Zeile darueber **und** die Wahl des Mittels nach Treffergroesse (Vorgabe 5) | Saetze erzeugt (`generate_defensive_values.py`); die Wahl nach Treffergroesse ist zurueckgebaut, weil kein Job zwei Barrieren zur Wahl haelt (A118, Abschnitt unten) |
 | Restzeit der Barriere (`HasSurvivingShield` misst die kuerzeste statt der laengsten) | offen, siehe `TODO.md` |
 | Erhebung der uebrigen Doppelnutzen-Aktionen | umgesetzt als `scan16.py`; ein Fund im Tank-/Heilerprofil (Rueckstoss) |
-| Rueckstoss auch **als** Minderungswerkzeug wirken | offen, siehe `TODO.md` — Zielkonflikt mit der Rolle als einziger Rueckstossschutz |
-| Wirksamkeitsmessung im Spiel | offen |
+| Rueckstoss auch **als** Minderungswerkzeug wirken | umgesetzt (A194, A236): Abtausch im Pull fuer seine Verlangsamung, nicht vor einem angekuendigten Rueckstoss (A212, A219), nicht auf einen Boss |
+| Wirksamkeitsmessung im Spiel | ersetzt durch die Selbstkorrektur der Vorausschau (`ScoreTtkForecast`); keine Ablesung als Aufgabe an ihn |
 | **Sonden, die es schon gibt** — ohne sie ist im Kampf nicht zu sehen, ob eine Regel greift: `DataCenter.AreaMitigationSkipped` nennt je Aktions-Id, wo die Flächenbewertung eine Minderung verworfen hat; Rohzeit, korrigierte Zeit und Fehlerfaktor der Schätzung stehen in der Diagnoseanzeige | in Betrieb, in keinem Konzept genannt gewesen |
 
 ## Die Antwort auf einen eingehenden Treffer
@@ -277,7 +277,7 @@ ob gemindert wird. Dieselbe Zahl beantwortet die andere Haelfte: ob **vorher** z
 | Schalter | Frage | Stand |
 |---|---|---|
 | `Skip mitigation for small area casts` | Oeffnet der Treffer die Abwehrkette? | **an** als Vorgabewert |
-| `Heal ahead of an announced area cast` | Wird vor dem Treffer geheilt? | **aus** als Vorgabewert |
+| `Heal ahead of an announced area cast` | Wird vor dem Treffer geheilt? | **an** als Vorgabewert (seine Regel für Voreinstellungen, 29.09.2026) |
 
 **Die Barriere zaehlt hier mit, und das widerspricht A85 nicht.** A85 hat die Barriere aus der
 allgemeinen Heilschwelle entfernt, weil sie keine Gesundheit herstellt — ein Tank bei 40 % hinter
@@ -443,7 +443,7 @@ trifft — und nicht besser.
 
 **Geltender Stand (A244):** Ein Tank hält Reflexion in seiner Einzelabwehr zurück, wenn alle vier Bedingungen gelten:
 - ein Tankbuster trifft ihn;
-- seine eigene große Minderung oder Schutzwall läuft schon;
+- seine eigene große Minderung, Schutzwall oder eine Unverwundbarkeit läuft schon (`StatusHelper.RampartStatus`);
 - BossModReborn sagt einen Raidwide an, der nach dem Ende der Reflexion und vor ihrer neuen Bereitschaft landet;
 - weder er noch ein Tank steht in Gefährdungsklasse 1.
 
