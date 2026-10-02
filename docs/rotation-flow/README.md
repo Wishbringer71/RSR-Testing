@@ -1,6 +1,6 @@
 # Die Konzepte, nach ihrer Leitfrage
 
-Jedes Dokument beantwortet **eine** Frage. Wer die Frage kennt, muss nicht dreizehn Dateien öffnen,
+Jedes Dokument beantwortet **eine** Frage. Wer die Frage kennt, muss nicht siebzehn Dateien öffnen,
 um zu finden, wo etwas hingehört — und wer etwas einträgt, weiß, wohin.
 
 Dieser Index ist Navigation, kein Inhalt: Er nennt keine Entscheidung und keinen Sachstand. Beides
@@ -9,7 +9,7 @@ stünde hier ein zweites Mal und würde altern.
 | Konzept | Leitfrage |
 |---|---|
 | [`01-jobs.md`](01-jobs.md) | Welche Dispatch-Slots belegt welcher Job, und wie ist sein Ablauf gebaut? |
-| [`02-groups.md`](02-groups.md) | Welche Gruppenzusammensetzungen kommen vor, und was folgt daraus für eine Regel? |
+| [`02-groups.md`](02-groups.md) | Was ist innerhalb einer Rollengruppe (Heiler, Tanks, Nahkämpfer, Fernkämpfer, Magier) gleich, ähnlich, verschieden? |
 | [`03-universal.md`](03-universal.md) | Was gibt die zentrale Maschinerie allen Jobs vor — und in welcher Reihenfolge? |
 | [`04-concept.md`](04-concept.md) | Welcher strukturelle Umbau war beschlossen, was davon ist erledigt? |
 | [`05-action-coverage.md`](05-action-coverage.md) | Welche Aktionen hat ein Job, und welche davon benutzt der Baum? |

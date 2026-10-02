@@ -137,15 +137,15 @@ beendet es seinen eigenen Kanal also mit dem nächsten GCD oder der nächsten F�
 
 | Aktion | Was der Kanal trägt (Wirktext) | Was nach dem Abbruch bleibt | RSR-Sperre (Voreinstellung) |
 |---|---|---|---|
-| Passage of Arms (Paladin) | Blockrate 100 %, Gruppe im Kegel hinter ihm nimmt 85 % Schaden, 18 s | nichts | `PldlockCasting` (aus): hält GCD und Fähigkeiten, solange der angekündigte Treffer aussteht (`DataCenter.AreaHitPending`). `PosPassageOfArms` (aus) sperrt Bewegung, nur mit `PoslockCasting` (aus) |
+| Passage of Arms (Paladin) | Blockrate 100 %, Gruppe im Kegel hinter ihm nimmt 85 % Schaden, 18 s | nichts | `PldlockCasting` (an, seit 02.10.2026): hält GCD und Fähigkeiten, solange der angekündigte Treffer aussteht (`DataCenter.AreaHitPending`). `PosPassageOfArms` (aus) sperrt Bewegung, nur mit `PoslockCasting` (aus) |
 | Collective Unconscious (Astrologe) | Ring 18 s, darin Wheel of Fortune (Regen) fortlaufend | Minderung −10 % für 10 s, als Zusatzeffekt beim Wirken vergeben (Schluss aus dem Textaufbau, Status 849 ist eigener Status) | `AstlockCasting` (aus), gebaut wie beim Paladin |
 | Improvisation (Tänzer) | Stapel Rising Rhythm alle 3 s bis 4; Regen 15 s | Regen (Schluss aus dem Textaufbau) | keine Aktionssperre; Bewegungssperre `PosImprovisation` (aus), nur mit `PoslockCasting` (aus) |
 
-**Im Kampf, mit Voreinstellung:**
-- **Paladin:** RSR wirkt Passage of Arms nur, wenn ein Flächentreffer angekündigt ist (Zauberleiste
+**Im Kampf:**
+- **Paladin ohne Sperre:** RSR wirkt Passage of Arms nur, wenn ein Flächentreffer angekündigt ist (Zauberleiste
   oder BossMod-Raidwide im Fenster). Landet der Treffer nach RSRs nächster Aktion — spätestens nach
   einem GCD —, schützt die Aktion niemanden, und ihre Abklingzeit ist verbraucht.
-- **Mit Sperre:** Der Treffer ist angekündigt, die Wahrscheinlichkeit also hoch; die Sperre kostet
+- **Mit Sperre (ab Werk seit 02.10.2026, seine Regel für Voreinstellungen; vorher als Entscheidung vorgelegt, A250):** Der Treffer ist angekündigt, die Wahrscheinlichkeit also hoch; die Sperre kostet
   GCDs bis zum Treffer. Das trägt seine Präzisierung. Beide Pfade halten, solange der Treffer aussteht
   (`DataCenter.AreaHitPending`: das Flächensignal oder ein BossMod-Raidwide im Fenster, auch in den
   letzten 0,6 s, in denen das Signal schon losgelassen hat); danach beendet die nächste Aktion den

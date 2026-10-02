@@ -17,10 +17,6 @@ Barde, Pictomancer und Tänzer führen „Prevent the use of defense abilties du
 
 Seit A202 wird Improvised Finish sofort gewirkt (5 %). Offen als Verbesserung: bei angekündigtem Flächentreffer Rising Rhythm bis 4 Stapel (10 %) aufbauen, je Stapel drei Sekunden ohne Aktion. Nutzen nicht belegt, also eigene Option, ab Werk aus; zur Entscheidung, ob sie gebaut werden soll. Konzept 14, „Wechselwirkungen und Zeit".
 
-### Paladin: Passage of Arms endet ab Werk mit RSRs nächster Aktion · N, U
-
-Passage of Arms endet mit jeder weiteren Aktion. Ohne `PldlockCasting` (ab Werk aus) beendet RSR es mit seiner nächsten Aktion, meist bevor der angekündigte Treffer fällt; die Abklingzeit ist dann ohne Schutz verbraucht. Die Sperre hält seit A164 genau bis zum Treffer. Zur Entscheidung vorgelegt: Voreinstellung der Sperre. Konzept 14, „Wechselwirkungen und Zeit".
-
 ### Flächenlandung „reached you False" bei Raidwides im Sonderinhalt · N
 
 Protokoll 01.10.2026 (Klosterdämon, Todesklaue; 48-Spieler-Inhalt mit Phantom-Aktionen): Jede Landung von Berstendes Gebrüll, Gigaflare und Tückische Resonanz meldet „reached you False", und es gibt keinen „hit you"-Eintrag für sie, obwohl ihre Reichweite die Arena deckt. „Skip area defence for casts that missed you" (ab Werk an) liest diese Aufzeichnung und lässt dann die Abwehr weg, die nur ihn schützt. Ursache nicht belegt; zwei Hypothesen: Er stand tatsächlich außerhalb, oder der Schaden kam über eine andere Wirkungsmeldung (unsichtbarer Helfer, auf mehrere Meldungen verteilte Ziele). Das Protokoll nennt jetzt je Landung die Zahl der Ziele und der getroffenen Gruppenmitglieder (A242), damit die nächste Aufzeichnung entscheidet. Sonderinhalt: erfasst, nicht bearbeitet, bis er ihn freigibt; bestätigt sich die zweite Hypothese, betrifft sie jeden Kampf mit Helfer-Schaden.

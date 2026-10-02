@@ -545,8 +545,8 @@ kommt ohne Statussätze aus.
 
 **Er macht die Gefahrenfrage quantitativ.** `ObjectHelper.IsUnderThreat` fragt binär, ob irgendwo eine
 Flächenaktion läuft; mit dem Potential wird daraus „bringt dieser Einschlag **dieses** Mitglied unter
-die Heilschwelle". Damit ist auch die Bagatellfläche erledigt, die heute die Notfall-Vollheilung
-blockiert.
+die Heilschwelle". Damit wäre auch die Bagatellfläche erledigt, die heute die Notfall-Vollheilung **freigibt**:
+Jeder laufende Flächenzauber gilt dort als Gefahr (`DataCenter.IsHostileCastingAOE`, Stand 02.10.2026). Nicht gebaut.
 
 **Die Güte der eigenen Schätzung wird hier nicht gemessen — und die Bauform dafür steht schon.**
 Der abgelegte Anteil ist eine Vorhersage: „so hart schlägt diese Aktion beim nächsten Mal“. Ob sie

@@ -12,8 +12,8 @@ Umbau; die Aufrufreihenfolge ist unverändert. Wer die aktuellen Zahlen braucht,
 sie neu, statt sie hier zu lesen.
 
 **Zwei Nachbarkonzepte beantworten Fragen, die hier bewusst offen bleiben:** Welche Aktionen ein
-Job überhaupt besitzt und welche davon der Baum benutzt, steht in `05-action-coverage.md`; die
-Zusammensetzung der Gruppe, in der ein Job spielt, in `02-groups.md`. Dieses Dokument beschreibt
+Job überhaupt besitzt und welche davon der Baum benutzt, steht in `05-action-coverage.md`; was innerhalb
+einer Rollengruppe gleich und verschieden ist, in `02-groups.md`. Dieses Dokument beschreibt
 allein die **Struktur** des Ablaufs je Job.
 
 ## Lesehilfe

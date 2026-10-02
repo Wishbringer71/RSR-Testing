@@ -165,7 +165,7 @@ Spielbeobachtung.** Der Wirktext der Beschwörung gewährt selbst Refulgent Lux 
 Grants Refulgent Lux Duration: 30s“). In dem Augenblick, in dem die Beschwörung aufgeht, wird Lux
 Solaris also wirkbar — und `HealAreaAbility` fragt die Kette **vor** `AttackAbility`
 (`CustomRotation_Ability.cs:169` und `:188` gegen den Angriffszweig weiter unten), kann den
-Einschiebeplatz hinter der Beschwörung also nehmen, sobald die Flächenheilungsflagge steht und im Wirkradius um den Beschwörer genug Verletzte stehen, einer davon unter der Heilschwelle der Aktion (Konzept 07, „Flächenheilungen um den Wirkenden“, A137). **Die
+Einschiebeplatz hinter der Beschwörung also nehmen, sobald die Flächenheilungsflagge steht und die Zündregel von Lux Solaris sie freigibt (`LuxSolarisDecision`, Konzept 08, „Wann Lux Solaris zündet“; seit A154 nicht mehr der allgemeine Flächenheil-Zweig). **Die
 Beschwörung erzeugt ihren eigenen Konkurrenten um den Platz dahinter; der Platz davor hat diesen
 Konkurrenten nicht.** Das ist ein zweites, vom Zeitpunktargument unabhängiges Argument für die
 Zündung vor der Beschwörung — und ein Schluss aus Wirktext und Zweigreihenfolge, keine
@@ -263,14 +263,14 @@ Daraus folgt ein Wert, der vom Zeitpunkt abhängt, nicht von der Zündung selbst
 | nach 19 s (Restzeit 1 s) | 19 s |
 | nach Ablauf | 20 s, volle Wirkung |
 
-Der vorhandene Schutz nutzt genau das: `IsStatusProvided` (`ActionBasicInfo.cs:691`) sperrt die
+Der vorhandene Schutz nutzt genau das: `IsStatusProvided` (`ActionBasicInfo.cs:704`) sperrt die
 Zündung, solange der Status nicht innerhalb von `StatusRefreshGcdCount` GCDs endet — Vorgabe 2
 (`ActionConfig.cs:66`), also etwa fünf Sekunden vor Ablauf. Der Schutz verhindert damit die teuren
 Fälle und erlaubt die billigen. **Er ist richtig gebaut und bleibt unangetastet.**
 
 Entscheidend dafür ist `StatusFromSelf = false` in `ModifySearingLightPvE`: `PlayerHasStatus`
-(`StatusHelper.cs:1164`, Quellenfilter in `AnyStatusMatches`) filtert nur bei `isFromSelf` auf die eigene Quelle, hier zählt also jeder
-fremde Buff. Sein Gegenstück `HasSearingLight` (`SummonerRotation.cs:271`) ruft
+(`StatusHelper.cs:1351`, Quellenfilter in `AnyStatusMatches`) filtert nur bei `isFromSelf` auf die eigene Quelle, hier zählt also jeder
+fremde Buff. Sein Gegenstück `HasSearingLight` (`SummonerRotation.cs:266`) ruft
 `PlayerHasStatus(true, …)` und zählt nur den eigenen — auch das ist für seine ursprüngliche Frage
 richtig. Aus dem Zusammentreffen beider entsteht der Befund von V1.
 
@@ -674,12 +674,10 @@ hinter der Bedingung `inSolarUnique && HasSearingLight` (`SMN_Reborn.cs`), Seari
 durch Searing Light entsteht. Das sind 1800 Potenz obendrauf, 25 Prozent mehr, und sie stehen nicht in
 der Tabelle, weil der Vergleich ohne Searing Light geführt ist.
 
-**Ein Punkt des Modells ist offen und ändert nichts.** Ob die Beschwörung selbst einen GCD kostet, ist
-aus den Artefakten nicht eindeutig zu entscheiden: Ihr Tooltip sagt, sie teile keinen Recast mit
-anderen Aktionen, und anders als Slipstream fehlt ihr der Satz, der den Recast auf alle übrigen Zauber
-überträgt — das liest sich als GCD-frei; RSR ruft sie dagegen aus `GeneralGCD` auf. Das Skript rechnet
-beide Lesarten. Die Rangfolge ist in beiden dieselbe, nur der Abstand zur Zwischenphase schrumpft von
-2,46× auf 2,19×.
+**Ob die Beschwörung selbst einen GCD kostet, ist entschieden: ja.** Ihr Tooltip sagt, sie teile keinen Recast mit
+anderen Aktionen; die Action-Tabelle des Spiels führt bei den Demi-Beschwörungen aber die GCD-Gruppe als zweite
+Abklingzeitgruppe (A247, Abschnitt „Was eine Phase wert ist“), und RSR ruft sie aus `GeneralGCD` auf. Das Skript
+rechnet mit dieser Lesart; die Rangfolge ist in beiden Lesarten dieselbe.
 
 ### Die Sonderaktion der drei Primals
 

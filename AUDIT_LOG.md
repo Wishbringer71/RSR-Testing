@@ -5187,6 +5187,54 @@ Seine Frage (Fortsetzung von A247), erweitert um WrathCombo, xivanalysis und FFL
 - Aufgeräumt: der lokale Sitzungszweig `claude/fixes-after-7.5.6.10`. Seine Gegenstelle war gelöscht und er war vollständig gemergt (`git branch -d`).
 
 **Prüfgrad:** Dalamud-Versionsgeschichte und Release-Version gemessen; CI-Build grün auf `0c6e3e923`; MSBuild-Datei geparst.
+
+### A250 · Konzepte gegen den Code: Drift in allen siebzehn Konzepten erhoben (02.10.2026)
+
+Sein Auftrag: „im vollständigen loop kritisch prüfen: entspricht der codestand den konzepten? gibt es hier drift?", dazu
+seine Frage „was ist denn besser? code oder konzept?".
+
+- *Maßstab je Fund:* Ist der Code durch eine spätere, begründete Änderung weiter, ist das Konzept veraltet. Weicht der
+  Code ohne Grund von einer dokumentierten Entscheidung oder Vorgabe ab, ist der Code falsch. Gemessen an
+  Versionsgeschichte (`git log -S`) und Archiv.
+- *Konzept veraltet, Code richtig (Konzept nachgezogen):*
+  - 01, 02, 04: Lücken, die A7 (05.09.2026) geschlossen hat, standen als offen (Reflexion bei Paladin und Krieger,
+    Second Wind bei Maschinist und Barde, Mönch-Heilslot, Tänzer-Einzelabwehr); `HasHostileCountAoeMitigation`
+    (b8018cf0 entfernt) und der Sustain des Weisen (5755ad5b entfernt) als vorhanden; Krieger „ohne Notfallslot",
+    obwohl Holmgang in `WarriorRotation.EmergencyAbility` liegt; Zahlen ohne Datum, darunter vertauschte
+    BLM-Dateien und der alte Beastmaster.
+  - 03: Die Slot-Kette ließ sechs Sperren des Fähigkeitenpfads, die Phönixfeder und die Heilung ohne Anlass aus.
+  - 07: Der „Sachstand" beschrieb die Zielwahl vor A183; spätere Abschnitte den Umbau. Jetzt der geltende Rang.
+  - 08: Flächen-Vorausschau, Abtausch als Minderung und die Minderungssätze standen als offen; die verworfene
+    Wirksamkeitsmessung mit Ablesung durch ihn stand als Plan. „Heal ahead of an announced area cast" stand als
+    „aus", der Code hat es seit 29.09.2026 an.
+  - 09: Die entfernte Schildanrechnung (A85) stand als geltend; die Einzelabwehr des Kriegers in der Reihenfolge vor
+    A241; die Phase-2-Unterstützung (A147) als nicht gebaut.
+  - 10: `HoldHolyForBlackestNight` stand einmal „an", einmal „aus" (Code: an); die Sanctus-Rückhaltung bei
+    Verlangsamung nach der ersetzten Leistungssumme; Zeilenangaben ohne Dateinamen zeigten auf verschobenen Code.
+  - 11, 12: Zeilenangaben verschoben; Konzept 12 führte die Frage „kostet die Beschwörung einen GCD" noch offen,
+    die A247 beantwortet hat, und Lux Solaris über den allgemeinen Flächenheil-Zweig (seit A154 eigene Regel).
+  - 13: Die Bagatellfläche gibt die Notfall-Vollheilung frei, nicht „blockiert" sie (`IsUnderThreat`).
+  - 05, 06, 15, README: Einzelaussagen (Yaten verdrahtet, CI-Workflow, Leitfrage von 02, Entscheidungsstand).
+- *Code falsch:*
+  - `PldlockCasting` stand ab Werk aus und im TODO „zur Entscheidung vorgelegt", obwohl Konzept 14 die Sperre als den
+    im Kampf sinnvolleren Wert begründet und seine Regel für Voreinstellungen (29.09.2026) „noch nicht entschieden"
+    als Grund ausschließt. A227 hatte die Einstellung nicht erhoben. Jetzt an. Eine gespeicherte globale
+    Konfiguration behält ihren Wert (`Configs.Save` schreibt alles); der Release-Text sagt es.
+  - `Watcher.SourceCommit` nutzte LINQ entgegen `BannedSymbols.txt` (A232, mein Code); sein Build meldete RS0030.
+- *Prüfmittel:*
+  - CI fand die LINQ-Sperre nie: Beide Projekte binden die Liste über `$(SolutionDir)`, und die CI baut ein Projekt.
+    Jetzt `SolutionDir` übergeben, RS0030 als Fehler, mit Selbsttest.
+  - `check_concept_defaults.py` las keine Angaben über den Einstellungstext und nicht die Wendungen „ab Werk",
+    „Vorgabe(wert) an/aus" und „an als Vorgabewert"; ein Name in zwei Rotationen (`AddCrimsonCyclone`) nahm die
+    erste Fundstelle. Alle drei behoben, je mit Selbsttest; die Funde in 08 und 10 meldet es jetzt.
+- *TODO:* geschlossen, weil ihre eigene Auflösungsbedingung erfüllt ist: Doppelnutzen-Übertragung (Abtausch gebaut),
+  Heilwirkung unter Schutzwall (Schildanrechnung entfernt), Passage of Arms. Eingeengt: Zielwahl der Heilung (nur
+  noch 45/40). Neu: Vorlauf von Dragoon und Viper; Vorausschau vor dem ersten Treffer.
+- *Offen, seine Entscheidung:* `UsePreEukrasianDiagnosis` (A209) — ob „Verfall" in seiner V1-Vorgabe den Bruch der
+  Barriere meint; nur er kennt seine Absicht.
+
+**Prüfgrad:** Aussage für Aussage am Code und an der Versionsgeschichte; Prüfskripte mit Selbsttest; Compile über die
+CI. Konzept 16 und 17 (01. und 02.10.2026 geschrieben) stichprobenartig, ohne Fund.
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -5472,3 +5520,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C103 | Bericht vom 01.10.2026 und A228/TODO: Die Ersatzgarantie sei „zur Entscheidung“ vorzulegen, „am 10.09. so gebaut (A19)“ | Seine Vorgabe (Konzept 08, A90) entscheidet den Fall bereits: ein anderer Zauber dazwischen, ohne DoT-Bedingung. Eine Abweichung davon ist ein Defekt. A19 stammt vom 07.09., nicht vom 10.09. Geprüft hatte ich nur die eine Bedingung, nicht die ganze Regel gegen die Vorgabe | A231: Regel auf seine Vorgabe zurückgeführt, alle drei Zusatzbedingungen entfernt |
 | C104 | Berichte vom 01.10.2026 zu PR #11: „Nachprüfung … eingeplant“, dazu zwei selbst angelegte Wiedervorlagen (send_later) | `CLAUDE.md`, „Vorlagen an ihn“: Status berichten, ohne selbst gesetzte Wiedervorlagen. Die Wiedervorlagen folgten der Standardanweisung der Umgebung, die seine Regel nicht übersteuert; CI-Ergebnisse und Kommentare kommen ohnehin als Ereignis | Offene Wiedervorlage gelöscht, keine neuen |
 | C105 | Berichte vom 01.10.2026: vier Punkte „zur Entscheidung“; Reflexion bei „beide in Gefahr“ „offen“, dann „an den Tankbuster, weil er sicher und sofort kommt“; Empfehlungen O1 (Reassemble) und „Schutzwall direkt nach der großen“ | Alle vier waren aus seinen Vorgaben, den Wirktexten, The Balance und seinen Protokollen entscheidbar. Die Debuffs liegen auf dem Gegner und schützen beide (sein Hinweis); der Raidwide ist ebenso angekündigt; Gruppenwerkzeuge gehören laut The Balance auf den Raidwide. O1 ruhte auf fremdem Verhalten. Die Antithesen gegen die eigenen Empfehlungen waren nicht geführt, und das Protokoll mit zweimal 85 % war gelesen, aber nicht gegen die Staffelung gestellt | A243–A246; `CLAUDE.md`, „Bevor ich ihn frage oder ihm etwas vorlege“, geschärft |
+| C106 | Konzept 04, C1 (20.08.2026): „`BaseAction.Use()` castet `ID`, nicht `AdjustedID`“ | `Use()` wirkt bei Aktionen auf ein Ziel `AdjustedID` (seit 15311ec27, 2024), nur bei Bodenzielen `ID` | korrigiert (A250) |

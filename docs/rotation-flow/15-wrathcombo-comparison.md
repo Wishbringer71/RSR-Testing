@@ -27,11 +27,12 @@ belegt, wo sie trägt. Code wird nicht übernommen.
   (`WhenToSheltron`), Überlauf-Schutz von Lilien, Polyglot, Beast Gauge, Munition.
 - Samurai Meditate in der Pause (Konzept 14): WrathCombo verlangt zusätzlich einige Sekunden Stillstand.
 
-**Bestätigt offene Entscheidungen (Konzept 14):** Addersgall-Schutz des Weisen (WrathCombo: Druochole ab
-3 Stapeln), Shake It Off nur ohne eigene Minderungen im Selbstheilungspfad, Passage of Arms mit
-Kanal-Sperre, Improvisation als kurzes Regen.
+**Bestätigt Entscheidungen aus Konzept 14, inzwischen umgesetzt:** Addersgall-Schutz des Weisen (WrathCombo:
+Druochole ab 3 Stapeln; A203), Shake It Off nur ohne eigene Minderungen im Selbstheilungspfad (A245), Passage of
+Arms mit Kanal-Sperre (bis zum Treffer, A164; ab Werk an seit 02.10.2026, A250). Improvisation als kurzes Regen:
+Konzept 14, Tänzer.
 
-## Vorschläge, zur Entscheidung
+## Vorschläge und ihr Stand
 
 | # | Idee (WrathCombo) | Was sich im Kampf ändert | Woran die Wahrscheinlichkeit gemessen wird | Einordnung |
 |---|---|---|---|---|
