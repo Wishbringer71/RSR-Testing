@@ -1711,6 +1711,55 @@ public partial class CustomRotation
 		=> DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterImminent;
 
 	/// <summary>
+	/// Whether a party tool used now would miss the raidwide BossModReborn announces: the raidwide lands after
+	/// the tool's effect has run out and before the tool is ready again. Detection only; the consumer decides.
+	/// </summary>
+	/// <param name="tool">The party tool.</param>
+	/// <param name="lasts">How long its effect lasts, from the effect text.</param>
+	protected static bool RaidwideAfterEffectBeforeRecast(IBaseAction tool, float lasts)
+		=> Service.Config.UseBmrTimeline && BMRActive
+			&& BMRRaidwideIn is > 0f and < float.MaxValue
+			&& BMRRaidwideIn > lasts
+			&& BMRRaidwideIn <= tool.Cooldown.RecastTimeOneChargeRaw;
+
+	/// <summary>
+	/// Whether a tank keeps Reprisal in its single-target defence for the raidwide BossModReborn announces.
+	/// </summary>
+	/// <remarks>
+	/// Reprisal acts on the enemy: every hit it deals during the 15 s is reduced, the tankbuster and the
+	/// raidwide alike (the owner's hint, 01.10.2026). Only when the raidwide lands after Reprisal has run out
+	/// and before it is back does using it now cost the party its 10 % at the raidwide. Then the owner's
+	/// criterion decides: who does going without put in serious danger. The tank meets its tankbuster with
+	/// its own big mitigation already running - one of Rampart or the 40 % cooldown plus the short ones is the
+	/// standard answer (The Balance) - while the party has no personal tool of that size; party tools belong
+	/// on raid-wide damage (The Balance). So Reprisal waits when the tankbuster is on the player and he is
+	/// covered. It does not wait when he is not covered, when the hit is on someone else (their cover is
+	/// not known here), on a pull, or without an announcement. The universal hold yields when the player or
+	/// a tank is in the critical class (A244).
+	/// </remarks>
+	protected bool HoldReprisalForRaidwide()
+		=> HoldSingleDefense(
+			DataCenter.Role == JobRole.Tank
+				&& TankbusterOnMe
+				&& DataCenter.SingleHitReachesPlayer
+				&& StatusHelper.PlayerHasStatus(true, StatusHelper.RampartStatus)
+				&& RaidwideAfterEffectBeforeRecast(ReprisalPvE, MitigationDebuffDuration),
+			"Reprisal kept for the announced raidwide");
+
+	/// <summary>
+	/// Whether Rampart goes out for a predicted tankbuster: only when the job's big mitigation does not take
+	/// it - one of the two per tankbuster, plus the short ones (The Balance, "one of Rampart or your 40%
+	/// cooldown, plus your short cooldown"). Stacked on one tankbuster, both were gone for the next: trace of
+	/// 01.10.2026, tankbusters about every 61 s, 30 % under both, then 85 % with neither ready (A243).
+	/// </summary>
+	/// <param name="big">The job's big mitigation at the player's level (Damnation, Guardian, Shadowed
+	/// Vigil, Great Nebula or their lower forms).</param>
+	/// <param name="bigStatus">Its status on the player.</param>
+	protected static bool RampartTakesPredictedTankbuster(IBaseAction big, StatusID bigStatus)
+		=> !big.EnoughLevel
+			|| (!StatusHelper.PlayerHasStatus(true, bigStatus) && !IsLastAbility(false, big));
+
+	/// <summary>
 	/// Whether a tankbuster on the player lands within <paramref name="seconds"/> and can hurt him - the
 	/// question for an own cooldown whose effect lasts that long: a lock-on VFX or a listed tankbuster
 	/// cast on him, or one BossModReborn announces within that time. Where BossModReborn does not name

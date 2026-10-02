@@ -9,13 +9,17 @@ Entwurfsdokument nach ADR-Struktur. Es stellt den geltenden Sachstand dar; die P
 gecasted werden könnten und wie die abklingzeit wäre, und welcher der gerade möglichen gruppenbuffs den größten
 effekt hat … wie optimaler schaden erzielt werden kann vs. den nachteilen eines zurückhaltens."
 
-**Empfehlung nach den Antithesen (unten), zur Entscheidung:** O1 bauen, als Option, ab Werk an. Die Regel wird
-nur aktiv, wenn die Gruppe Buff-Jobs hat — RSR erkennt sie im Spiel (`PartyComposition`, `JobBuffs`; sein Hinweis,
-01.10.2026). Ohne Buff-Jobs ändert sich nichts; mit ihnen wächst der Gewinn mit Zahl und Stärke der Buffs, bis gut
-eine GCD je zehn Minuten in vollen Gruppen mit versetzten Buffs. Schranken: gemessener Takt (derselbe Buff zweimal
-im Abstand seiner Abklingzeit gesehen), Zeit bis zum Tod, freier Einwebeplatz, und zwei Ladungen (ab Stufe 84;
-darunter hielte die Regel die einzige Ladung fest). Sicherheit ist nicht berührt. Offene Teilfrage an ihn: ob „Burst aus“
-auch dieses Halten abschaltet (Abschnitt „Alle Fälle“).
+**Ergebnis: Nullvariante, nicht gebaut (A246).** Antithese A3 hält: Der einzige Grund zu halten ist die erwartete
+Buff-Zeit anderer Spieler. Seine Regel in `CLAUDE.md`: „Das Verhalten anderer Spieler ist eine Annahme, nie ein
+tragender Grund." Ein gemessener Takt ändert daran nichts: Er sagt fremdes Verhalten voraus, statt es zu sehen. Dazu
+kommt die Größe des Gewinns: 0,1–0,5 % in vollen Gruppen, höchstens 0,2 % in seinen leichten — Promillebereich. Nach
+seinen eigenen Regeln ist das keine Frage für ihn, sondern entschieden. Die frühere Empfehlung O1 (C105) hatte A3
+„teilweise entkräftet" und die Regel trotzdem empfohlen. Das widerspricht der Loop-Regel „hält eine Antithese, zurück zu
+2".
+
+Was ohne Vorhersage bliebe, ist die Reaktion auf einen Buff, der gerade liegt (O5: im Fenster Reassemble auch auf Drill,
+ohne zu halten). Sie stützt sich nicht auf fremdes Verhalten. Laut Simulation bringt sie höchstens einen Reassemble mehr
+ins Fenster je zehn Minuten (11/2 gegen 11/3), also ebenfalls Promille. Nicht gebaut.
 
 **Größenordnung, Modell** (`.github/scripts/audit/reassemble_buff_model.py`, angenommene Werte gekennzeichnet):
 Eine Reassemble ist etwa drei Viertel einer 660er-Potenz wert (1320 gegen 835). In ein Buff-Fenster verschoben,
@@ -166,8 +170,8 @@ nur daran, dass ein Buff kommt; die Rangfolge der Buffs braucht nur O3. Für den
 **A8 — „Mehrere Gegner: Drill trifft einen."** *Entkräftet:* Im Fenster bleibt die Reihenfolge Excavator, Chain Saw,
 Air Anchor vor Drill; Drill nur, wenn kein anderes Werkzeug ins Fenster fällt.
 
-**Was bleibt:** A3 als Wesenszug — ohne fremde Buffs kein Gewinn; entschärft durch den gemessenen Takt und dadurch,
-dass eine Fehlvorhersage keine Ladung kostet. A2 ist durch die Selbstbeschränkung auf Gruppen mit Buff-Jobs entkräftet.
+**Was bleibt:** A3 hält, und damit entscheidet sie: Ohne fremde Buffs gibt es keinen Gewinn, und fremdes Verhalten ist
+nach seiner Regel nie ein tragender Grund. A2 sagt dazu, dass der Gewinn im Promillebereich liegt. Nullvariante.
 
 ## Alle Fälle und ihre Folgen
 
@@ -192,8 +196,8 @@ dass eine Fehlvorhersage keine Ladung kostet. A2 ist durch die Selbstbeschränku
 
 - **Kein Nutzen?** Widerlegt im Modell: Jeder Gruppenbuff erhöht den Wert eines Reassemble im Fenster; der Nachteil
   ist ohne Ladungsverlust. Nicht widerlegt ist die Höhe — sie hängt an den Werten des Spielers und an der Gruppe.
-- **Option falsch?** O2 verfehlt die Gruppe; O3 ist bei seinem Spielprofil (leichte Gruppen, Zufallsgruppen) kaum
-  besser als O1 und hat mehr Fehlerstellen. O1 hält.
+- **Option falsch?** Ja, für O1: Die Regel ruht auf fremdem Verhalten (A3). O2 verfehlt die Gruppe, O3 trägt dieselbe
+  Abhängigkeit mit mehr Vorhersagen. Es bleibt die Nullvariante.
 - **Ausgeliefert, und nichts ändert sich?** In Gruppen ohne Buff-Jobs — beabsichtigt. Mit Buff-Jobs, wenn die
   Vorhersage nie trifft, weil Buffs nur im Opener fallen (kurze Kämpfe): dann hält die Regel nie lange, kein Schaden.
   Prüfbar am Kampfverlauf: ein FFLogs-Report zeigt, ob die Reassembles im Fenster lagen.

@@ -268,7 +268,7 @@ public sealed class WAR_Reborn : WarriorRotation
 	[RotationDesc(ActionID.ShakeItOffPvE, ActionID.NascentFlashPvE)]
 	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		if (ShakeItOffPvE.CanUse(out act, skipAoeCheck: true))
+		if (!HoldShakeItOffInHeal() && ShakeItOffPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}
@@ -309,16 +309,18 @@ public sealed class WAR_Reborn : WarriorRotation
 			return false;
 		}
 
-		// A predicted tankbuster on the player gets the big mitigations first: the window opens a few seconds
-		// before the hit, and with the cheap ones ahead the big one landed last or not at all (trace of
-		// 01.10.2026: Damnation 0.7 s before the hit, Rampart ready and never cast, A241).
+		// A predicted tankbuster on the player gets its big mitigation first - or Rampart while that one is
+		// spent - ahead of the short ones: the window opens a few seconds before the hit, and with the cheap ones
+		// ahead the big one landed last (trace of 01.10.2026: Damnation 0.7 s before the hit, A241, A243).
 		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, DamnationPvE.EnoughLevel ? StatusID.Damnation : StatusID.Vengeance)
 			&& (DamnationPvE.EnoughLevel ? DamnationPvE.CanUse(out act, skipStatusProvideCheck: true) : VengeancePvE.CanUse(out act, skipStatusProvideCheck: true)))
 		{
 			return true;
 		}
 
-		if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, DefensiveValues.DurationOf((uint)ActionID.RampartPvE), true, null, StatusID.Rampart)
+			&& RampartTakesPredictedTankbuster(DamnationPvE.EnoughLevel ? DamnationPvE : VengeancePvE, DamnationPvE.EnoughLevel ? StatusID.Damnation : StatusID.Vengeance)
+			&& RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
@@ -375,13 +377,14 @@ public sealed class WAR_Reborn : WarriorRotation
 			}
 		}
 
-		if (ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
+		if (!HoldReprisalForRaidwide()
+			&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
 
-		if (ReprisalPvE.CanUse(out act, skipAoeCheck: true))
+		if (!HoldReprisalForRaidwide() && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}
@@ -392,7 +395,7 @@ public sealed class WAR_Reborn : WarriorRotation
 	[RotationDesc(ActionID.ShakeItOffPvE, ActionID.ReprisalPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		if (ShakeItOffPvE.CanUse(out act, skipAoeCheck: true))
+		if (!HoldShakeItOffForTankbuster() && ShakeItOffPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}
@@ -540,6 +543,38 @@ public sealed class WAR_Reborn : WarriorRotation
 	// Whether the single-target defence casts Bloodwhetting (Raw Intuition before level 82): the one
 	// condition, read by that path and by the Nascent Flash hold, so the two cannot disagree (A226).
 	private bool BloodwhettingForDefense => SoloIntuition || NumberOfHostilesInRange > 2;
+
+	// Shake It Off dispels Thrill of Battle, Damnation and Bloodwhetting for 2 % more barrier each (job
+	// guide; Vengeance below level 92, WrathCombo and The Balance). Thrill of Battle is not listed here: the
+	// barrier is sized on the raised maximum HP, so dispelling it is a gain (The Balance).
+	private static readonly StatusID[] ShakeItOffStrips = [StatusID.Damnation, StatusID.Vengeance, StatusID.Bloodwhetting];
+
+	/// <summary>
+	/// Whether Shake It Off waits in the single-target heal: a party tool spent for one member below the
+	/// heal threshold (concept 09, Warrior, finding 6). It waits while it would take Damnation or
+	/// Bloodwhetting off the warrior - up to 40 % mitigation for a 2 % larger barrier - and while BossModReborn
+	/// announces a raidwide after its barrier would have run out and before it is back. The universal hold
+	/// yields when any member is in the critical class (A245).
+	/// </summary>
+	private bool HoldShakeItOffInHeal()
+		=> HoldAreaDefense(
+			StatusHelper.PlayerHasStatus(true, ShakeItOffStrips)
+				|| RaidwideAfterEffectBeforeRecast(ShakeItOffPvE, DefensiveValues.DurationOf((uint)ActionID.ShakeItOffPvE)),
+			"Warrior: Shake It Off kept from the single heal");
+
+	/// <summary>
+	/// Whether Shake It Off waits at a raidwide: only while Damnation (Vengeance) runs for a tankbuster on the
+	/// warrior that lands before it ends - dispelled now, the tankbuster would meet him without it. Otherwise
+	/// the raidwide gets it, Damnation or not: the party gains the barrier, he loses the rest of his own
+	/// mitigation. The universal hold yields when the announced, measured raidwide would put a member into the
+	/// critical class (A245).
+	/// </summary>
+	private static bool HoldShakeItOffForTankbuster()
+	{
+		var bigLeft = StatusHelper.PlayerStatusTime(true, StatusID.Damnation, StatusID.Vengeance);
+		return HoldAreaDefense(bigLeft > 0f && TankbusterOnMeWithin(bigLeft),
+			"Warrior: Shake It Off kept for the tankbuster under Damnation");
+	}
 
 	/// <summary>
 	/// Whether the warrior needs Bloodwhetting himself, which Nascent Flash on someone else would put on

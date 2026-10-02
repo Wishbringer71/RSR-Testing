@@ -5068,6 +5068,52 @@ Zwei Sitzungen: Build fa21e0eba (vor A236–A239) und dca7edb62 (mit ihnen); Kri
 - *Ohne Befund:* Reflexion auf Tankbuster anderer Tanks (21:05:42, 21:09:11) ist gewollt: Der Debuff am Gegner hilft dem Getroffenen. Bei 21:09:11 lief sie 15 s und endete mit der Landung des Raidwides um 21:09:26 — genau die Lage, die sein Kriterium entscheidet.
 
 **Prüfgrad:** Laufzeitprotokoll gelesen, Befunde am Code geprüft.
+
+### A243 · Tanks: große Minderung und Schutzwall nicht auf denselben vorhergesagten Tankbuster (02.10.2026)
+
+- *Befund, sein Protokoll vom 01.10.2026:*
+  - Restaurierter Löwe: Tankbuster etwa alle 61 s. Unter Verdammnis und Schutzwall 30/31 %, beim nächsten mit keiner von beiden 85 % (20:14:45, 20:17:05).
+  - Neo Garula: 27 %, dann 65 %.
+- *Ursache:* Die Zweige für den vorhergesagten Tankbuster (Upstream, „Predicted tankbuster takes priority") prüfen je ihren eigenen Status mit `skipStatusProvideCheck: true`. Lagen beide bereit, fielen beide. A241 hat sie an den Anfang gezogen und das Zusammenfallen damit noch sicherer gemacht.
+- *Rechnung:* Mit Abklingzeiten 120 s und 90 s (Job-Guide) hätte abwechselnder Einsatz alle fünf Tankbuster beim Löwen mit je einer der beiden gedeckt.
+- *Quelle:* The Balance, „one of Rampart or your 40 % cooldown, plus your short cooldown".
+- *Behebung, ohne Schalter:* `RampartTakesPredictedTankbuster` — Schutzwall nur, wenn die große Minderung nicht läuft und nicht eben fiel; vier Tanks. Fenster für Schutzwall aus seiner Dauer (`DefensiveValues`) statt `20f`; die vier veralteten Einträge in `fixed_values.json` entfernt.
+- *Zeitregel ohne Vorhersage:* unverändert. Modell ohne Unterschied im Kampf; meine Umstellung auf reine Statussperre ist verworfen, bevor sie committet war.
+
+**Prüfgrad:** statisch; Laufzeitprotokoll als Beleg; Compile über die CI.
+
+### A244 · Reflexion am Tankbuster oder am Raidwide (02.10.2026)
+
+- *Seine Angaben:* Kriterium (wen bringt der Verzicht in ernste Bedrängnis) und Hinweis (die Debuffs wirken auf den Schadensgeber, schützen also Einzelnen und Gruppe zugleich).
+- *Quellen:* The Balance, „Becoming a better tank" (Gruppenwerkzeuge der Tanks „most of the time" auf raidweiten Schaden). Akhmorning, „Raiding Fundamentals" (Debuff muss während des Zauberbalkens liegen; Schaden von Hilfsfiguren mindert er meist nicht).
+- *Fallarbeit:* Konzept 08, „Gegner-Debuffs am Tankbuster und am Raidwide".
+- *Gebaut:* `HoldReprisalForRaidwide`. Reflexion wartet in der Einzelabwehr, wenn ein Tankbuster ihn trifft, seine eigene große Minderung oder Schutzwall läuft und ein Raidwide nach ihrem Ende und vor ihrer Bereitschaft angesagt ist. Weicht bei Gefährdungsklasse 1. Vier Tanks.
+- *Leere Stufe:* Schadensausteiler, weil sie keine große persönliche Minderung haben.
+- *Erkennung:* `RaidwideAfterEffectBeforeRecast`, zentral, ohne Schwelle.
+- *Falsifikation:*
+  - *Kein Defekt:* Vorher fiel Reflexion an jedem Tankbuster, auch gedeckt. The Balance sieht sie am Raidwide.
+  - *Option falsch:* Kommt der Raidwide von einer Hilfsfigur, hält sie umsonst. Nicht messbar bisher, als Grenze geführt.
+  - *Nichts ändert sich:* ohne Modul oder ohne eigene Deckung — dann wie bisher.
+
+**Prüfgrad:** statisch; Quellen; Compile über die CI.
+
+### A245 · Krieger: Abschütteln gegen die eigenen Status und den Raidwide (02.10.2026)
+
+- *Gebaut:*
+  - `HoldShakeItOffInHeal`: In der Einzelheilung wartet Abschütteln, solange Verdammnis/Rachsucht oder Urimpuls läuft oder ein Raidwide nach seiner Barriere und vor seiner Bereitschaft angesagt ist.
+  - `HoldShakeItOffForTankbuster`: Am Raidwide wartet es nur, wenn ein Tankbuster auf ihn landet, bevor Verdammnis endet.
+  - Beide weichen über `HoldAreaDefense`.
+  - Kampfrausch ist ausgenommen: Seine Aufhebung ist ein Gewinn (The Balance).
+- *Statusbeleg:* Job-Guide (Kampfrausch, Verdammnis, Urimpuls). Rachsucht auf niedriger Stufe nach WrathCombo und The Balance. Urinstinkt ist nicht belegt und deshalb nicht geführt.
+- Fallmatrix: Konzept 09, Befund 6.
+
+**Prüfgrad:** statisch; Quellen; Compile über die CI.
+
+### A246 · Maschinist: Reassemble für Gruppenbuffs — Nullvariante (02.10.2026)
+
+Konzept 17. Antithese A3 hält: Der Grund zu halten ist fremdes Verhalten, nach `CLAUDE.md` nie ein tragender Grund; der Gewinn liegt im Promillebereich. Die frühere Empfehlung O1 (A235) widersprach der Loop-Regel. Nicht gebaut.
+
+**Prüfgrad:** statisch (Modell, Regelwerk).
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -5352,3 +5398,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C102 | `CLAUDE.md` seit 32a8abf80 und die Optionstexte „Off by default because …": das bisherige Verhalten bleibe Standard, bis ein Nutzen belegt ist | Eine eigene Ableitung (Feature Toggle nach Fowler), als Regel geführt und nie gegen seine Vorgabe zum Testerprofil abgeglichen. Seine Vorgabe: Voreinstellung ist der im Kampf sinnvollere Wert, damit neue Regeln getestet werden | A227: Regel ersetzt, Voreinstellungen umgestellt |
 | C103 | Bericht vom 01.10.2026 und A228/TODO: Die Ersatzgarantie sei „zur Entscheidung“ vorzulegen, „am 10.09. so gebaut (A19)“ | Seine Vorgabe (Konzept 08, A90) entscheidet den Fall bereits: ein anderer Zauber dazwischen, ohne DoT-Bedingung. Eine Abweichung davon ist ein Defekt. A19 stammt vom 07.09., nicht vom 10.09. Geprüft hatte ich nur die eine Bedingung, nicht die ganze Regel gegen die Vorgabe | A231: Regel auf seine Vorgabe zurückgeführt, alle drei Zusatzbedingungen entfernt |
 | C104 | Berichte vom 01.10.2026 zu PR #11: „Nachprüfung … eingeplant“, dazu zwei selbst angelegte Wiedervorlagen (send_later) | `CLAUDE.md`, „Vorlagen an ihn“: Status berichten, ohne selbst gesetzte Wiedervorlagen. Die Wiedervorlagen folgten der Standardanweisung der Umgebung, die seine Regel nicht übersteuert; CI-Ergebnisse und Kommentare kommen ohnehin als Ereignis | Offene Wiedervorlage gelöscht, keine neuen |
+| C105 | Berichte vom 01.10.2026: vier Punkte „zur Entscheidung“; Reflexion bei „beide in Gefahr“ „offen“, dann „an den Tankbuster, weil er sicher und sofort kommt“; Empfehlungen O1 (Reassemble) und „Schutzwall direkt nach der großen“ | Alle vier waren aus seinen Vorgaben, den Wirktexten, The Balance und seinen Protokollen entscheidbar. Die Debuffs liegen auf dem Gegner und schützen beide (sein Hinweis); der Raidwide ist ebenso angekündigt; Gruppenwerkzeuge gehören laut The Balance auf den Raidwide. O1 ruhte auf fremdem Verhalten. Die Antithesen gegen die eigenen Empfehlungen waren nicht geführt, und das Protokoll mit zweimal 85 % war gelesen, aber nicht gegen die Staffelung gestellt | A243–A246; `CLAUDE.md`, „Bevor ich ihn frage oder ihm etwas vorlege“, geschärft |

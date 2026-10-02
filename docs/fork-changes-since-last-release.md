@@ -65,12 +65,18 @@ pass `Thrill Of Battle Heal Threshold` within its ten seconds (`Use Thrill of Ba
 fall below its threshold within its duration`, on by default), so the extra health and the stronger healing
 are there while the pack is at full strength. Where the healers hold you steady, it waits as before.
 
-## Tanks: the big mitigation first when a tankbuster is predicted
+## Tanks: one big mitigation per predicted tankbuster, first in line
 
 When BossModReborn predicts a tankbuster on you, every tank now casts its big mitigation (Damnation,
-Guardian, Shadowed Vigil, Great Nebula and their lower forms) and Rampart before the smaller ones. The
-window opens a few seconds before the hit, and with the small ones first the big one could come only
-0.7 s before the hit, or not at all.
+Guardian, Shadowed Vigil, Great Nebula and their lower forms) before the smaller ones, and Rampart only
+when the big one is not taking that tankbuster. Both used to go out on the same tankbuster: with
+tankbusters about a minute apart, one hit landed under both and the next under neither. Now they
+alternate, and the short mitigations come on top as before.
+
+Reprisal in the single-target defence now waits for an announced raidwide when the tankbuster is on you,
+your own big mitigation or Rampart is already running, and the raidwide lands after Reprisal would have
+run out and before it is back. Reprisal on the enemy covers every hit it deals for 15 s; it only waits
+when it cannot cover both.
 
 ## GCD length while no GCD is running
 
@@ -78,6 +84,14 @@ Between GCDs - out of range, between pulls, before the first GCD - the plugin re
 Everything measured in GCDs then collapsed: heal-ahead looked nowhere, the one-GCD window in which a
 running enemy cast is answered was closed, and the first-GCDs-of-combat guards did not hold. The last
 GCD length now stands in while none runs.
+
+## Warrior: Shake It Off keeps your Damnation for the tankbuster
+
+Shake It Off dispels Damnation, Bloodwhetting and Thrill of Battle. As a heal for a single party member
+it now waits while Damnation or Bloodwhetting runs, or while a raidwide is announced after its barrier
+would end and before it is back. At a raidwide it waits only when a tankbuster on you lands before
+Damnation ends. Both give way when a party member is about to die. Dispelling Thrill of Battle is
+allowed: the barrier is sized on the raised maximum HP.
 
 ## Summoner: Searing Flash no longer expires unused
 

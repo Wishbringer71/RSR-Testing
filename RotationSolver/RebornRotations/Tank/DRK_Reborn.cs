@@ -493,16 +493,18 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	[RotationDesc(ActionID.OblationPvE, ActionID.ArmsLengthPvE, ActionID.TheBlackestNightPvE, ActionID.DarkMindPvE, ActionID.ShadowWallPvE, ActionID.ShadowedVigilPvE, ActionID.RampartPvE, ActionID.ReprisalPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		// A predicted tankbuster on the player gets the big mitigations first: the window opens a few seconds
-		// before the hit, and with the cheap ones ahead the big one landed last or not at all (trace of
-		// 01.10.2026: Damnation 0.7 s before the hit, Rampart ready and never cast, A241).
+		// A predicted tankbuster on the player gets its big mitigation first - or Rampart while that one is
+		// spent - ahead of the short ones: the window opens a few seconds before the hit, and with the cheap ones
+		// ahead the big one landed last (trace of 01.10.2026: Damnation 0.7 s before the hit, A241, A243).
 		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, ShadowedVigilPvE.EnoughLevel ? StatusID.ShadowedVigil : StatusID.ShadowWall)
 			&& (ShadowedVigilPvE.EnoughLevel ? ShadowedVigilPvE.CanUse(out act, skipStatusProvideCheck: true) : ShadowWallPvE.CanUse(out act, skipStatusProvideCheck: true)))
 		{
 			return true;
 		}
 
-		if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, DefensiveValues.DurationOf((uint)ActionID.RampartPvE), true, null, StatusID.Rampart)
+			&& RampartTakesPredictedTankbuster(ShadowedVigilPvE.EnoughLevel ? ShadowedVigilPvE : ShadowWallPvE, ShadowedVigilPvE.EnoughLevel ? StatusID.ShadowedVigil : StatusID.ShadowWall)
+			&& RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
@@ -579,13 +581,14 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		// reward depends on the stream that Reprisal would thin. In a boss fight the condition is
 		// false by the hostile count, so a tankbuster keeps its mitigation.
 		if (!HoldMitigationForBarrier(false)
+			&& !HoldReprisalForRaidwide()
 			&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
 
-		if (!HoldMitigationForBarrier(false) && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
+		if (!HoldReprisalForRaidwide() && !HoldMitigationForBarrier(false) && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}

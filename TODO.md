@@ -21,29 +21,6 @@ Seit A202 wird Improvised Finish sofort gewirkt (5 %). Offen als Verbesserung: b
 
 Passage of Arms endet mit jeder weiteren Aktion. Ohne `PldlockCasting` (ab Werk aus) beendet RSR es mit seiner nächsten Aktion, meist bevor der angekündigte Treffer fällt; die Abklingzeit ist dann ohne Schutz verbraucht. Die Sperre hält seit A164 genau bis zum Treffer. Zur Entscheidung vorgelegt: Voreinstellung der Sperre. Konzept 14, „Wechselwirkungen und Zeit".
 
-### Krieger: Abschütteln hebt Verdammnis, Urimpuls und Kampfrausch auf · N
-
-Abschütteln (Shake It Off) fällt als Einzelheilung, sobald irgendein Mitglied unter 0,7 sinkt, und als Flächenabwehr, ohne einen eigenen Status zu prüfen. Es hebt Kampfrausch, Verdammnis und Urimpuls auf (+2 % Barriere je Effekt). Fallmatrix und Optionen S0–S4 in Konzept 09, „Krieger: die Abwehr im Ganzen", Befund 6.
-
-Empfehlung S2:
-- In der Einzelheilung zurückhalten, solange Verdammnis/Rachsucht oder Urimpuls läuft; Kampfrausch frei, weil die Barriere an der erhöhten Maximalgesundheit bemessen wird (The Balance).
-- In der Flächenabwehr nur zurückhalten, wenn ein Tankbuster auf ihn landet, bevor Verdammnis endet.
-- Beides weicht bei Gefahr für ein Mitglied.
-
-Meine frühere Empfehlung (in beiden Wegen zurückhalten) ist verworfen: Sie nähme der Gruppe die Barriere am Raidwide. Zur Entscheidung.
-
-### Tanks: die zweite große Minderung erst 30 s nach der ersten · N
-
-Schutzwall fällt erst 30 s nach der großen Minderung (15 s), die große erst 60 s nach Schutzwall (Upstream abe6132d3). Durchgerechnet (`tank_mitigation_stagger_model.py`, Konzept 09, Befund 5):
-- Direkt aneinander schützt einen einzelnen Pull um 2–7 % besser. In einer Wall-to-Wall-Folge verschiebt es nur, welcher Pull ganz ohne beide bleibt; im Mittel liegen beide Varianten höchstens 3 Prozentpunkte auseinander, mal die eine, mal die andere vorn.
-- Am Boss ändert die Reihenfolge nichts.
-
-Empfehlung: belassen. Zur Entscheidung, weil er die Fälle durchgerechnet haben wollte.
-
-### Alle Rollen: Gegner-Debuff am Tankbuster oder für den Raidwide · N
-
-Sein Kriterium (01.10.2026): Wen bringt der Verzicht in ernste Bedrängnis, den Tank am Tankbuster oder die Gruppe am Raidwide? Fallmatrix a–g, Belege aus seinen Protokollen (Tankbuster bis 85 %, Raidwides bis 37 %) und Optionen Y0–Y2 in Konzept 08, „Ein Gegner-Debuff in der Einzelabwehr fehlt dem angesagten Raidwide". Empfehlung Y2: braucht eine gespeicherte Messung je Tankbuster-Aktion; zurückgehalten wird nur, wenn der Tank ohne Debuff nicht in Gefahr ist und das schwächste Mitglied am Raidwide schon. Offen ist Lage c, beide in Gefahr, mit beiden Lesarten. Zur Entscheidung.
-
 ### Flächenlandung „reached you False" bei Raidwides im Sonderinhalt · N
 
 Protokoll 01.10.2026 (Klosterdämon, Todesklaue; 48-Spieler-Inhalt mit Phantom-Aktionen): Jede Landung von Berstendes Gebrüll, Gigaflare und Tückische Resonanz meldet „reached you False", und es gibt keinen „hit you"-Eintrag für sie, obwohl ihre Reichweite die Arena deckt. „Skip area defence for casts that missed you" (ab Werk an) liest diese Aufzeichnung und lässt dann die Abwehr weg, die nur ihn schützt. Ursache nicht belegt; zwei Hypothesen: Er stand tatsächlich außerhalb, oder der Schaden kam über eine andere Wirkungsmeldung (unsichtbarer Helfer, auf mehrere Meldungen verteilte Ziele). Das Protokoll nennt jetzt je Landung die Zahl der Ziele und der getroffenen Gruppenmitglieder (A242), damit die nächste Aufzeichnung entscheidet. Sonderinhalt: erfasst, nicht bearbeitet, bis er ihn freigibt; bestätigt sich die zweite Hypothese, betrifft sie jeden Kampf mit Helfer-Schaden.
@@ -280,11 +257,6 @@ Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A17
 ### Astrologe: Synastry wählt ihr Ziel nach Trefferfläche und aktueller Gesundheit, nicht nach der Heilung · N, U
 
 `AST_Reborn.CanCastSynastry` verlangt, dass Synastry und die folgende Einzelheilung (Aspected Benefic, Benefic II, Benefic) dasselbe Ziel haben. Laut Wirktext zählt jede Einzelheilung, „on yourself or a party member", die Gleichheit ist also kein Fehler. Synastry läuft aber in `EmergencyAbility` vor jedem Target-Override (`CustomRotation_Ability.cs:85`) und setzt keinen `TargetType`. Gewählt wird deshalb nach `Big`: größte Trefferfläche, bei Gleichstand, und Spieler haben gleiche Trefferflächen, das Mitglied mit der **meisten** aktuellen Gesundheit (`BigHp` aus, ab Werk; seit A225 liest der Zweig diese Einstellung). Die Heilung dagegen geht an den Bedürftigsten. Im Kampf (Schluss aus dem Code, nicht beobachtet): Synastry fällt nur, wenn der Geheilte zugleich der Gesündeste ist. Das trifft vor allem dann nicht zu, wenn der Tank unter die volle Gesundheit eines anderen Mitglieds gefallen ist, also genau im Bedarfsfall. Upstream-Bauform, gefunden in der Tiefenprüfung A221. Zu bearbeiten im vollen Loop: Zielwahl über das Heilziel (Override) oder Prüfung gegen das Ziel der nächsten GCD.
-
-### Maschinist: Reassemble unter Gruppenbuffs statt beim nächsten Werkzeug · N
-
-**Konzept:** `docs/rotation-flow/17-machinist-reassemble-buffs.md`
-Voller Loop mit Antithesen geführt (A235). Empfehlung: O1 als Option, ab Werk an — die Regel ist nur mit Buff-Jobs in der Gruppe aktiv (im Spiel erkennbar, sein Hinweis), kostet ohne sie nichts; Gewinn bis gut eine GCD je zehn Minuten in vollen Gruppen. O1: eine von zwei Ladungen für das nächste vorhergesagte Buff-Fenster halten, nur mit Buff-Jobs in der Gruppe; im Fenster auch Drill. Vorhersage je Buff aus dem zuletzt beobachteten Beginn plus Abklingzeit, selbstnachsteuernd; nicht halten bei Tod des Gegners vor dem Fenster (`GetCorrectedTTK`) oder vorhergesagter Pause. Wertvollste Buffs für einen Reassemble-Treffer: Battle Litany und Chain Stratagem, dann Divination; Battle Voice unbeziffert. Fallliste vollständig im Konzept („Alle Fälle“): unter Stufe 84 nur eine Ladung, dort hält O1 nie. Zur Entscheidung: ob gebaut werden soll, und ob „Burst aus“ auch dieses Halten abschaltet (Empfehlung: ja).
 
 ### Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen · N, R
 

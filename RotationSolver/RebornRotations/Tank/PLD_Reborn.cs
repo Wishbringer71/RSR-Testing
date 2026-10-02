@@ -255,16 +255,18 @@ public sealed class PLD_Reborn : PaladinRotation
 		// If the player has the Hallowed Ground status, don't use any abilities.
 		if (!StatusHelper.PlayerHasStatus(true, StatusID.HallowedGround))
 		{
-			// A predicted tankbuster on the player gets the big mitigations first: the window opens a few seconds
-			// before the hit, and with the cheap ones ahead the big one landed last or not at all (trace of
-			// 01.10.2026: Damnation 0.7 s before the hit, Rampart ready and never cast, A241).
+			// A predicted tankbuster on the player gets its big mitigation first - or Rampart while that one is
+			// spent - ahead of the short ones: the window opens a few seconds before the hit, and with the cheap ones
+			// ahead the big one landed last (trace of 01.10.2026: Damnation 0.7 s before the hit, A241, A243).
 			if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, GuardianPvE.EnoughLevel ? StatusID.Guardian : StatusID.Sentinel)
 				&& (GuardianPvE.EnoughLevel ? GuardianPvE.CanUse(out act, skipStatusProvideCheck: true) : SentinelPvE.CanUse(out act, skipStatusProvideCheck: true)))
 			{
 				return true;
 			}
 
-			if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
+			if (BMRShouldRefreshBefore(BMRTankbusterIn, DefensiveValues.DurationOf((uint)ActionID.RampartPvE), true, null, StatusID.Rampart)
+				&& RampartTakesPredictedTankbuster(GuardianPvE.EnoughLevel ? GuardianPvE : SentinelPvE, GuardianPvE.EnoughLevel ? StatusID.Guardian : StatusID.Sentinel)
+				&& RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
 			{
 				return true;
 			}
@@ -316,14 +318,15 @@ public sealed class PLD_Reborn : PaladinRotation
 				}
 			}
 
-			if (ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
+			if (!HoldReprisalForRaidwide()
+				&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 				&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 			{
 				return true;
 			}
 
 			// If Reprisal can be used, use it and return true.
-			if (ReprisalPvE.CanUse(out act, skipAoeCheck: true))
+			if (!HoldReprisalForRaidwide() && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
 			{
 				return true;
 			}

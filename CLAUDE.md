@@ -58,7 +58,8 @@ Persistenz: Priorität 1, jede Eingabe, ausnahmslos. Kontextkomprimierung→Date
 - Was Analyse klären kann, ist geklärt; eine Anzeige trägt keine offene Annahme (→ „Option und Beobachtbarkeit").
 
 **Bevor ich ihn frage oder ihm etwas vorlege**
-- Aus dem Repository beantwortbar? Dann selbst beantworten.
+- Entscheidbar aus Repository, Wirktexten, Referenzquellen (The Balance), seinen Protokollen oder seinen Vorgaben? Dann entscheide und setze ich um; eine Frage ist erst übrig, wenn alle diese Quellen gesucht sind (seine Rüge, 02.10.2026).
+- Gegen meine eigene Empfehlung die drei Antithesen geführt, mit Quellen gegen sie, nicht nur für sie. Hält eine, gilt die Empfehlung nicht — „teilweise entkräftet" ist kein Freibrief (A246).
 - Kann er es im Kampf sehen, oder hat er es entschieden? Sonst nicht fragen.
 - In Kampfbegriffen gestellt?
 - Betrifft es meine Hilfsmittel oder einen Schaden, den ich verursacht habe? Dann nicht zur Wahl stellen.
