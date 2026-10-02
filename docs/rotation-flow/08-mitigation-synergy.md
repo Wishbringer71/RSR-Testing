@@ -679,14 +679,14 @@ nicht aus dem Spiel abgeleitet, deshalb bleibt der Wert offen.
 laesst.** Wer einen davon baut, schliesst mehrere Punkte zugleich — das ist der Grund, die Konzepte
 gemeinsam zu lesen und nicht einzeln.
 
-**Ein Wirkungswert je Aktion, aus dem eigenen Wirktext — vier offene Punkte.**
+**Ein Wirkungswert je Aktion, aus dem eigenen Wirktext — er trug vier Punkte; erzeugt ist er (`DefensiveValues.g.cs`).**
 
 | Offener Punkt | Konzept | Was der Wert dort beantwortet |
 |---|---|---|
-| Vorausschau vor dem **ersten** Treffer | hier | Wieviel Schaden der angekuendigte Einschlag traegt, bevor eine Beobachtung vorliegt |
-| Wahl des Mittels nach Treffergroesse (Vorgabe 5) | hier | Welche Barriere, welche Minderung den Treffer deckt |
+| Vorausschau vor dem **ersten** Treffer | hier; offen (TODO „Vorausschau vor dem ersten Treffer“) | Wieviel Schaden der angekuendigte Einschlag traegt, bevor eine Beobachtung vorliegt |
+| Wahl des Mittels nach Treffergroesse (Vorgabe 5) | hier; zurueckgebaut, kein Job haelt zwei Barrieren zur Wahl (A118) | Welche Barriere, welche Minderung den Treffer deckt |
 | Die Minderungsbilanz kennt Betaeubung und Verlangsamung nicht | hier, „Die Luecke" | Um wieviel eine Drosselung den Strom senkt — gemessen: `GetCurrentMitigationPercent` rechnet Addle, Feint, Dismantle und Reprisal, sonst nichts |
-| Rueckstoss auch **als** Minderungswerkzeug | `TODO.md` | Dass seine Verlangsamung in derselben Groessenordnung wirkt wie Rampart |
+| Rueckstoss auch **als** Minderungswerkzeug | umgesetzt (A194, A236) | Dass seine Verlangsamung in derselben Groessenordnung wirkt wie Rampart |
 
 Der Wert ist **erzeugbar**, nicht handzufuehren, und das ist gemessen statt vermutet: Im Lauf vom
 19.09.2026 nennen **69** Wirktexte in `ActionId.resx` die Formel „reduces damage taken by X %“, mit
@@ -810,8 +810,8 @@ weil er groesser ist als die Sanctus-Regel, an der er auffiel.
 |---|---|
 | Drosselung **auf der Gegnerseite** — Slow, Reflexion, Feint, Stumpfsinn, Dismantle | `HostileOutputPercent`, je Satz aus dem Wirktext belegt |
 | Minderung **auf der eigenen Seite**, gruppenweit — Sacred Soil, Temperance, Troubadour | `GetCurrentMitigationPercent`, aber fuer einen **einzelnen bevorstehenden Treffer** gebaut, mit Magisch/Physisch-Heuristik, nicht fuer den Dauerstrom |
-| Minderung **des Tanks persoenlich** — Rampart, Bollwerk, Sentinel, Schattenwall, Vengeance, Bloodwhetting | **fehlt vollstaendig.** `StatusHelper.RampartStatus` fuehrt die Ids, wird aber ausschliesslich als `StatusProvide` benutzt, also zur Doppelbelegungssperre — nie zur Messung |
-| Die Saetze dieser Minderungen | **fehlen.** `RampartStatus` ist eine reine Id-Liste; Rampart und Sentinel mindern verschieden stark. Ohne Satz je Status ist keine Rechnung moeglich; belegbar waeren sie aus den Wirktexten in `Action.resx` |
+| Minderung **des Tanks persoenlich** — Rampart, Bollwerk, Sentinel, Schattenwall, Vengeance | **nicht als Satz gemessen.** `StatusHelper.RampartStatus` fuehrt die Ids und dient als Doppelbelegungssperre (`StatusProvide`) und als Ja/Nein-Pruefung „gedeckt“ (`HasMajorMitigation`, `HoldReprisalForRaidwide`) — nie zur Messung |
+| Die Saetze dieser Minderungen | **liegen vor**, aus den Wirktexten erzeugt (`DefensiveValues.g.cs`); die Ratenrechnung braucht sie nicht, weil der beobachtete Verlauf netto ist (unten) |
 
 **Der ganze Anspruch ist aus Laufzeitbeobachtung erfuellbar, ohne eine einzige statische Vorgabe** —
 und er ist es inzwischen. Das ist der Weg mit dem kleinsten Eingriff und der groessten Deckung, weil
@@ -1016,11 +1016,9 @@ Richtungen: In der **Heilschwelle** zaehlt die Barriere nicht, weil sie den Heil
 (A85) — in der **Ueberlebensfrage** zaehlt sie, weil sie Schaden abfaengt. `GetEffectiveHp` fuehrt
 sie deshalb, und die kritische Rangstufe der Heilzielwahl liest genau diese Groesse (Konzept 07).
 
-**Was zur Zeitrechnung fehlt, ist der Nenner, nicht der Zaehler.** Der Puffer einschliesslich
-Barriere ist vorhanden und wird gelesen; die Rate je Mitglied ist es nicht — derselbe fehlende
-Baustein wie bei der Heilzielwahl. Ohne ihn ist „reicht die Zeit" nicht zu berechnen, und die
-Barriere bleibt auf ihre heutige Rolle beschraenkt: Sie hebt den Puffer, aus dem die
-Ueberlebensbewertung ihre Antwort zieht.
+**Zaehler und Nenner sind beide vorhanden.** Der Puffer einschliesslich Barriere wird gelesen
+(`GetEffectiveHp`), die Rate je Mitglied steht seit A91 (`RecordedHP`, `GetCorrectedTTK`), und die Vorausschau
+oben rechnet aus beiden. Die Barriere hebt den Puffer, aus dem die Ueberlebensbewertung ihre Antwort zieht.
 
 **Die Restzeit der Barriere selbst waere die zweite Haelfte dieser Frage.** `StatusHelper.HasSurvivingShield` wurde
 dafuer gebaut und hat heute keinen Leser; ihr bekannter Defekt — sie misst die **kuerzeste**
@@ -1212,7 +1210,8 @@ Die Erhebung dazu ist geführt und liegt als `scan16.py` im Repository: Sie nimm
 jede PvE-Aktion, deren Wirktext eine Kontroll- oder Minderungswirkung auf Gegner
 nennt, und fragt, ob der Baum den zugehörigen Status irgendwo liest. Im
 Tank- und Heilerprofil bleibt **eine** Aktion übrig, deren zweite Wirkung
-nirgends gelesen wurde: **Abtausch (Arm’s Length)**. Sie ist als Rückstoßschutz eingeordnet
+nirgends gelesen wurde: **Abtausch (Arm’s Length)** — inzwischen gelesen (A194, A236: Abtausch im Pull für seine
+Verlangsamung). Sie war als Rückstoßschutz eingeordnet
 (`CustomRotation_Ability.AntiKnockbackAbility`), legt aber zugleich
 Verlangsamung +20 % auf jeden physischen Angreifer für 15 Sekunden. Der Wirktext
 der Verlangsamung nennt ausdrücklich die Verzögerung der **Automatikangriffe**,
@@ -1224,10 +1223,10 @@ sind erfasst statt bearbeitet.
 Zweite, unabhängig belegte Fundstelle: Im Schadenszweig steht der Sanctus-Block
 **vor** dem DoT-Block. Sobald `AoeCount = 3` erfüllt ist, greift Sanctus und der DoT
 wird nie gesetzt — bei einem Boss mit zwei Adds läuft also nie Dia. Dass das nicht
-gewollt ist, zeigt der DoT selbst: `ModifyDiaPvE` (`WhiteMageRotation.cs:300-311`)
+gewollt ist, zeigt der DoT selbst: `ModifyDiaPvE` (`WhiteMageRotation.cs:306-317`)
 setzt `TargetStatusProvide` gegen Nachlegen und `IsRestrictedDOT` gegen ungeeignete
 Ziele — beide Vorkehrungen laufen bei AoE ins Leere, weil der Zweig nicht erreicht
-wird.
+wird. Seit A231 fällt der GCD nach einem Sanctus auf den fälligen DoT (Abschnitt „Die Regel“).
 
 ## Die Regel
 
@@ -1320,13 +1319,13 @@ Der Entwurf erfindet wenig; das meiste lag im Baum und war nur nicht verbunden.
 
 | Baustein | Fundstelle | Zustand |
 |---|---|---|
-| Mitigationsmessung: Gegner-Debuffs und Party-Buffs, verrechnet zu einem Schadensfaktor | `CustomRotation_OtherInfo.cs:534` | Gelesen nur zur Anzeige (`RotationConfigWindow.cs:4863`) |
+| Mitigationsmessung: Gegner-Debuffs und Party-Buffs, verrechnet zu einem Schadensfaktor | `CustomRotation.GetCurrentMitigationPercent` | Gelesen nur zur Anzeige (`RotationConfigWindow`, Stand 02.10.2026) |
 | Betäubung, Verlangsamung und **deren Resistenzen** als Statuseffekte | `StatusID.Stun`, `.StunResistance`, `.Slow`, `.SlowResistance`, `.ArmsLength` | In den Spieldaten vorhanden; die Resistenzstufe ist damit direkt lesbar, eine eigene Buchführung über den Ereignisstrom ist **nicht** nötig |
 | Statusabfragen mit Restzeit und Stapelzahl | `StatusHelper.HasStatus`, `.StatusTime`, `.StatusStack` | In Betrieb |
-| Vorhersagefenster aus der BossModReborn-Timeline | `Configs.cs:742`, `:747`, ausgewertet in `StateUpdater.cs:185` | In Betrieb |
+| Vorhersagefenster aus der BossModReborn-Timeline | `Configs.BMRRaidwideMitWindow` und Geschwister, ausgewertet in `StateUpdater` | In Betrieb |
 | Zentralisierte Nachzieh-Regel für Gegner-Debuffs | `CustomRotation.ShouldSustainMitigationDebuff` | In Betrieb, 25 Aufrufstellen in den Standardrotationen (Stand 26.09.2026) — Beleg, dass eine gemeinsame Regel über viele Jobs trägt |
 | Gegnerzahl-Schwelle als etabliertes Muster | `Configs.MitigationSustainHostileCount` gegen `NumberOfHostilesInRange` | In Betrieb |
-| Trennung von Mitigation und Schaden im Dispatch | `CustomRotation_GCD.cs`: HealArea 240, HealSingle 282, DefenseArea 322, DefenseSingle 337, GeneralGCD erst 449 | In Betrieb |
+| Trennung von Mitigation und Schaden im Dispatch | `CustomRotation_GCD.cs`, Reihenfolge in Konzept 03 („Die Slot-Kette“): Heilung, dann Abwehr, `GeneralGCD` zuletzt | In Betrieb |
 
 ## Was ausgeschlossen wurde und warum
 
@@ -1369,8 +1368,8 @@ die Verdrahtung fehlt. Für den DoT-Fall zusätzlich durch die beiden Vorkehrung
 `ModifyDiaPvE`, die bei AoE nie zur Wirkung kommen.
 
 **Die gewählte Option ist falsch.** Widerlegt für die Bremse, nicht für einen
-Auslöser — siehe den belegten Rückbau oben. Für die Übertragung auf weitere Aktionen
-hält der Einwand teilweise stand, weshalb sie von Beobachtung abhängig gemacht ist.
+Auslöser — siehe den belegten Rückbau oben. Die Übertragung auf weitere Aktionen hat die Erhebung (`scan16.py`)
+auf Abtausch eingegrenzt; sie ist gebaut (A194).
 
 **Der Einschub ist im mittleren Gegnerzahlbereich falsch.** Widerlegt durch seine Vorgabe und
 seine Spielweise: Die Streckung ist Schutz, der Einschub kostet einen GCD Schaden je Pull, und
@@ -1382,30 +1381,12 @@ Sicherheit geht vor Schaden. Eine Bindung an eine Gegnerzahl ist entfernt (A231)
 
 ### Wirksamkeitsmessung im Spiel
 
-Ein Nachweis, dass die Rotation besser spielt, ist **nicht** unmöglich: RSR sieht den
-Ereignisstrom und kann sich selbst messen. `Watcher.ActionFromEnemy` wertet jeden
-gegnerischen Treffer aus, summiert die Schadensanteile und legt sie über
-`DataCenter.AddDamageRec` als `DamageRec(ReceiveTime, Ratio)` in eine Warteschlange
-(`DataCenter.AddDamageRec`, gefüllt aus `Watcher.cs`). Der erlittene Schaden über die Zeit ist damit
-bereits erfasst — gebraucht wird nur eine Auswertung je Kampf statt eines gleitenden
-Fensters.
-
-| Kennzahl | Quelle — **keine davon ist gebaut**, die Namen sind Vorschläge | Aussage |
-|---|---|---|
-| Erlittener Schadensanteil je Pull | `_damages`, summiert zwischen Kampfbeginn und -ende | Das Zielkriterium |
-| Genutzte Betäubungsdauer | `StunCoverage` über die Zeit integriert | Ob die 7 s ausgeschöpft wurden |
-| Überlappungsanteil | Anteil der Betäubungszeit, in der die Minderungsquote bereits erhöht **wäre** — eine Größe dieses Namens gibt es nicht | Ob Posten 2 greift |
-| DoT-Laufzeitanteil | Zeit mit aktivem DoT geteilt durch Kampfdauer | Ob der DoT-Grund wirkt |
-
-**Versuchsanordnung.** Dieselbe Instanz, derselbe Pull, Option abwechselnd an und aus,
-mehrere Durchläufe. Weil alle vier Kennzahlen innerhalb des Plugins anfallen, genügt
-eine Anzeige im Einstellungsfenster; ein externes Werkzeug ist nicht nötig.
-
-**Was die Messung nicht leistet.** Sie ist nicht kontrolliert: Gegnerzahl,
-Tankverhalten und Gruppenzusammensetzung schwanken zwischen Durchläufen und überdecken
-einen Effekt in der Größenordnung weniger Prozent leicht. Sie taugt daher, um eine
-**Verschlechterung** zu erkennen und die Größenordnung einzugrenzen, nicht um einen
-kleinen Gewinn zu beweisen.
+**Verworfen nach seiner Vorgabe** („entscheidung immer im spiel, nicht retroperspektive auswertung“): Kennzahlen je
+Pull (erlittener Schadensanteil, genutzte Betäubungsdauer, Überlappungsanteil, DoT-Laufzeit) und eine
+Versuchsanordnung mit der Option abwechselnd an und aus. Beides wartete auf seine Ablesung und machte ihn zum Teil
+des Regelkreises. Was die Regeln dieses Konzepts zur Laufzeit selbst prüft: die Vorausschau gegen ihren eigenen
+Fehler (`ScoreTtkForecast`), die proaktive Zurückhaltung gegen ihre Trefferbilanz (oben); `DefenseTrace.log` nennt
+je Entscheidung nach einem Sanctus den Grund, für den Fall, dass ein Defekt nur zur Laufzeit zu finden ist.
 
 ### Übrige Ebenen
 
@@ -1414,9 +1395,8 @@ kleinen Gewinn zu beweisen.
 | Statisch | `stun_coverage.py` simuliert die Regel GCD für GCD und trägt seinen Selbsttest; für die Übertragung zusätzlich ein Skript, das Aktionen mit Mitigationswirkung im Schadenszweig findet |
 | Kompilierung | CI |
 
-Solange die Wirksamkeitsmessung nicht vorliegt, kommt **jeder Schritt hinter eine eigene Option**;
-voreingestellt ist der im Kampf sinnvollere Wert (seine Regel, 29.09.2026). Die Messung ist der Weg,
-den Nutzen zu belegen — sie gehört deshalb vor die Übertragung auf weitere Aktionen.
+Jeder Schritt steht hinter einer eigenen Option; voreingestellt ist der im Kampf sinnvollere Wert (seine Regel,
+29.09.2026).
 
 ## Konsequenzen
 

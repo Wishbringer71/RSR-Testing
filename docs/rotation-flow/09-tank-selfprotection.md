@@ -24,14 +24,9 @@ noch rechtzeitig kommt — hinter einer Option mit Standard aus.
 
 Für The Blackest Night ist **keine eigene Rückhalteregel** richtig: Heilung berührt den
 Auslöser nicht, und ein Heilerschild wird erst nach der TBN-Barriere aufgezehrt, kann sie
-also weder verzögern noch verdrängen. Was RSR stattdessen tut, ist allerdings nicht die
-Nachrangigkeit, als die dieses Konzept es zunächst geführt hat: `BlackestNight` steht in
-`StatusHelper.ShieldStatus`, und die Anrechnung über `GetEffectiveHpPercent` hebt die
-Gesundheitsquote des Trägers — sie verschiebt damit nicht seinen **Rang** unter den
-Heilzielen, sondern die **Schwelle**, ab der überhaupt geheilt wird. Bei einer Barriere
-über 25 % der maximalen HP sind das 25 Prozentpunkte: Die oGCD-Heilung setzt erst bei
-real rund 40 % ein statt bei 65 %. Ob das richtig bemessen ist, ist offen und steht in
-`TODO.md`; entschieden ist hier nur, dass eine **zusätzliche** TBN-Regel nichts beiträgt.
+also weder verzögern noch verdrängen. Die Barriere verschiebt auch nicht mehr die Heilschwelle: Die
+Schildanrechnung auf die Heilschwelle ist entfernt (A85). In die Zielwahl geht sie über die effektive
+Gesundheit ein (Gefährdungsklasse 1, Konzept 07).
 
 *Abgrenzung, weil dieser Satz sonst zu weit gelesen wird:* Er gilt für Heilung und
 Schild. Für den **Schadensstrom** gilt das Gegenteil, und dort liegt inzwischen eine
@@ -163,21 +158,10 @@ Schilde von Schnitter (Arcane Crest, ab Stufe 84) und Piktomant, die ein Heiler 
 
 **Damit bleibt kein Grund, den Schild zurückzustellen.** Was bleibt, ist die gewöhnliche
 Dringlichkeitsfrage: Ein Träger mit TBN ist bereits geschützt und deshalb weniger dringend
-zu versorgen als ein ungeschütztes Gruppenmitglied. Eine eigene TBN-Regel fügt dem nichts
-hinzu, denn `StatusID.BlackestNight` steht in `StatusHelper.ShieldStatus` und geht über
-`GetEffectiveHpPercent` in die Heilentscheidung ein.
-
-**Womit dieser Mechanismus allerdings nicht das tut, was der Absatz von ihm verlangt.**
-Die Dringlichkeitsfrage ist eine Frage des Rangs — wer von mehreren Verwundeten zuerst
-versorgt wird. Die Anrechnung hebt dagegen die Gesundheitsquote und verschiebt damit die
-**Schwelle**, ab der überhaupt geheilt wird; sie wirkt auch dann, wenn der Träger der
-einzige Verwundete ist und es gar nichts zu priorisieren gibt. Das ist derselbe
-Kategorienfehler, den dieses Projekt bei `HasHostileCountAoeMitigation` schon einmal
-gemacht hat: Ein Mechanismus wurde an seinem Geltungsbereich beurteilt statt an dem, was
-er auslöst. Die Anrechnung ist deshalb hier nicht mehr als erledigt geführt, sondern als
-offene Bemessungsfrage in `TODO.md` — einschließlich des Falls, für den sie am
-schlechtesten gebaut ist: eine Barriere, die zu spät oder unnötig gesetzt wurde, wird
-voll angerechnet, ohne je Schaden abzufangen.
+zu versorgen als ein ungeschütztes Gruppenmitglied. Das beantwortet die Zielwahl: `StatusID.BlackestNight` steht in
+`StatusHelper.ShieldStatus`, die effektive Gesundheit (`GetEffectiveHp`) zählt die Barriere mit, und die
+Gefährdungsklasse 1 ordnet nach ihr (Konzept 07). Die Heilschwelle liest die Barriere nicht; eine frühere
+Anrechnung dort verschob, **ob** überhaupt geheilt wird, statt **wen** zuerst, und ist entfernt (A85).
 
 ### Klasse B — Unverwundbarkeit
 
@@ -365,7 +349,7 @@ Vollständig über die Dimensionen Fähigkeitsklasse × Gesundheitsstand × Heil
 | 4 | DRK, Walking Dead aktiv, **Kurs trägt** | leicht unterstützen | nein, wirkungslos bei 1 HP | Billige Beiträge zählen voll gegen die Summe |
 | 4a | DRK, Walking Dead aktiv, **Kurs reicht nicht** | **ja, in voller Höhe** | nein | Die Alternative ist der Tod am Phasenende |
 | 4b | DRK, **Undead Rebirth** aktiv | nein, nachrangig | nein | Bedingung erfüllt, reine Stufe 3 |
-| 5 | DRK, TBN aktiv | **nach normaler Regel** | **nach normaler Regel** | **Kein Sonderfall.** Heilung berührt den Auslöser nicht, und ein Heilerschild wird erst nach TBN aufgezehrt. Die angerechnete Barriere macht den Träger über `GetEffectiveHpPercent` ohnehin nachrangig |
+| 5 | DRK, TBN aktiv | **nach normaler Regel** | **nach normaler Regel** | **Kein Sonderfall.** Heilung berührt den Auslöser nicht, und ein Heilerschild wird erst nach TBN aufgezehrt. Die Barriere zählt in der effektiven Gesundheit der Zielwahl (Konzept 07), nicht in der Heilschwelle (A85) |
 | 6 | GNB, Superbolide aktiv | **ja** | ja | HP stehen auf 1; das Fenster ist die einzige gefahrlose Gelegenheit |
 | 7 | WAR, Holmgang aktiv, HP heruntergedrückt | **ja** | ja | wie 6 |
 | 8 | PLD, Hallowed Ground aktiv, beim Zünden wenig HP | **ja** | ja | Die HP bleiben unverändert; nach Ablauf steht er, wo er stand |
@@ -481,7 +465,7 @@ beobachtet) kostet damit zehn Sekunden automatischer Heilung ohne Anlass.
 | Living Dead | `NoNeedHealingStatus` → `HealthProtectedRatio` | 0,15 statt der normalen Schwelle, wie oben |
 | Walking Dead | in `NoNeedHealingStatus` auskommentiert | keine — richtig, dort ist Heilung überlebensnotwendig |
 | The Blackest Night | Schildanteil des Spiels (`ShieldPercentage`) im effektiven Puffer | keine auf die Schwelle, seit die Schildanrechnung entfernt ist (A85); der Schild zählt im Puffer der Vorausschau und der Sterbegefährdung (`GetEffectiveHp`) |
-| Shadow Wall, Rampart | `RampartStatus` | keine: gelesen als `StatusProvide` und von `HasMajorMitigation` für den eigenen Charakter |
+| Shadow Wall, Rampart | `RampartStatus` | keine: gelesen als `StatusProvide`, von `HasMajorMitigation` und von `HoldReprisalForRaidwide`, jeweils für den eigenen Charakter |
 | Dark Mind, Oblation, Dark Missionary, Reprisal | in keiner heilrelevanten Liste bzw. am Gegner | keine |
 
 Schadensreduktion und Barriere wirken auf keine Heilschwelle; nur die Invulnerabilität tut es. Die Rate, die aus
@@ -559,8 +543,8 @@ Zwei Genauigkeitsgrenzen bestehen fort: Die 1-Hz-Abtastung ist für ein
 Zehn-Sekunden-Fenster grob, und ein Gesundheitsdelta ist ein Surrogat für kumulierte
 Heilung — fallen Heilung und Schaden in dasselbe Intervall, heben sie sich auf, obwohl
 die Heilung gegen die von Walking Dead geforderte Summe zählt. Für den Weg **zur Null**
-ist das unerheblich, für den Weg **zur aufgenommenen Heilmenge** nicht; deshalb ist
-Fall 4a mit der vorhandenen Auswertung noch nicht beantwortet.
+ist das unerheblich, für den Weg **zur aufgenommenen Heilmenge** nicht; Fall 4a beantwortet A147 deshalb nur
+näherungsweise, über den Gesundheitsanstieg seit Beginn des Fensters.
 
 **`HpRecoveryDown` und `Mounted` in der Schwellensenkung.** Ausgeschlossen: `Mounted`
 nullifiziert Heilung und gehört in einen Ausschluss, nicht in eine Herabstufung;
@@ -774,15 +758,20 @@ auf ihn (Marker, gelisteter Zauber, Vorhersage innerhalb von „Seconds before t
 ab Werk 3 s) und für einen Pull (`TankPullOnPlayer`: mindestens „Number of hostiles" Gegner auf ihm in 3 Yalm, er wird
 getroffen). Je Einwebeplatz fällt die erste passende Fähigkeit in dieser Reihenfolge:
 
-1. **Abtausch** auf einem Rudel gewöhnlicher Gegner für den Slow, Bosse nicht mitgezählt (A236). *Richtig:* Er mindert
+0. Unter **Holmgang** und unter 30 % Gesundheit fällt nichts weiter (Upstream).
+1. **Verdammnis/Rachsucht**, dann **Schutzwall** für einen von BossModReborn vorhergesagten Tankbuster, vor allen
+   kurzen (A241). Schutzwall nur, wenn die große Minderung nicht läuft und nicht eben fiel (A243): je Tankbuster eine
+   der beiden.
+2. **Abtausch** auf einem Rudel gewöhnlicher Gegner für den Slow, Bosse nicht mitgezählt (A236). *Richtig:* Er mindert
    den Treffer nicht, der ihn auslöst. Die zentrale Rückfallstufe, die ihn auf jeden Tankbuster warf, ist geschlossen.
-2. **Urimpuls/Urinstinkt** mit „single enemies" (ab Werk an, A237) oder mehr als zwei Gegnern. *Richtig:* Er ist der
+3. **Urimpuls/Urinstinkt** mit „single enemies" (ab Werk an, A237) oder mehr als zwei Gegnern. *Richtig:* Er ist der
    Kern jedes Stapels und heilt im Pull je Treffer.
-3. **Kampfrausch** vor einem Tankbuster auf ihn innerhalb seiner Wirkdauer (A237).
-4. **Verdammnis/Rachsucht** und **Schutzwall** für einen vorhergesagten Tankbuster, unabhängig voneinander. Darunter die
-   Staffelung: Verdammnis, wenn Schutzwall bereit ist oder vor mehr als 60 s fiel; Schutzwall, wenn Verdammnis vor
-   mehr als 30 s fiel. Beide schließen einander über `StatusHelper.RampartStatus` aus.
-5. **Reflexion**, nachgeführt oder sobald sie fehlt.
+4. **Kampfrausch** vor einem Tankbuster auf ihn innerhalb seiner Wirkdauer (A237).
+5. **Verdammnis/Rachsucht** und **Schutzwall** ohne Vorhersage, gestaffelt: Verdammnis, wenn Schutzwall bereit ist
+   oder vor mehr als 60 s fiel; Schutzwall, wenn Verdammnis vor mehr als 30 s fiel (unterhalb der Stufe von Rachsucht
+   ohne Bedingung). Beide schließen einander über `StatusHelper.RampartStatus` aus.
+6. **Reflexion**, nachgeführt oder sobald sie fehlt; am Tankbuster zurückgehalten, wenn er gedeckt ist und ein
+   Raidwide nach ihrem Ende ansteht (`HoldReprisalForRaidwide`, A244).
 
 Außerhalb der Einzelabwehr:
 - **Kampfrausch** und **Äquilibrium** reaktiv unter je 0,6 Gesundheit (Vorausschau bis zur Landung); Kampfrausch steht
@@ -811,7 +800,7 @@ Die Liste beschreibt sich selbst als „the big personal mitigations"; Urimpuls 
 Heart of Corundum, Holy Sheltron und The Blackest Night bei den anderen, und von denen steht keine darin. Der Eintrag
 widersprach also dem erklärten Zweck der Liste, und der Code folgt jetzt dem Kommentar. Beide Sperren sind entfernt;
 Schutzwall und Verdammnis staffeln weiter gegeneinander. Andere Leser der Liste: `HasMajorMitigation` (nur Dunkelritter,
-der nie Urimpuls trägt). Gegenposition: Ohne Sperre überlappen Urimpuls und Verdammnis. Das ist der Stapel „Damnation +
+der nie Urimpuls trägt) und seit A244 `HoldReprisalForRaidwide` (alle Tanks, für den eigenen Charakter). Gegenposition: Ohne Sperre überlappen Urimpuls und Verdammnis. Das ist der Stapel „Damnation +
 Bloodwhetting" der Referenz und kostet nichts, weil Urimpuls nach 25 s wieder bereit ist.
 
 **2. Kampfrausch fiel nie vor dem Treffer — gebaut (A237, A239).**
@@ -970,7 +959,8 @@ Heilung.** Im ungünstigsten Fall muss der laufende GCD auslaufen und ein Zauber
 Wirkzeit darauf fertig werden — zusammen zwei GCDs. Der Vorlauf muss daher mindestens
 zwei GCDs betragen. Wie viele Sekunden das sind, steht nicht fest: Gemessen wird die
 **tatsächliche** Erholzeit des Spielers, die das Spiel meldet
-(`DataCenter.DefaultGCDTotal` über `ActionManagerHelper.GetDefaultRecastTime`), also
+(`DataCenter.DefaultGCDTotal`; läuft kein GCD, die Länge, die das Spiel für einen Waffenskill rechnet,
+`ActionManagerHelper.GetDefaultAdjustedRecastTime`, A240), also
 verkürzt Zaubertempo den Vorlauf mit. Gegen die zehn Sekunden von Living Dead
 (`ActionId.resx`, Aktion 3638) ist es rund die halbe Phase.
 
@@ -994,13 +984,11 @@ wenn der Tank bereits ungeschützt ist. Eine Fähigkeit ohne Wirkzeit würde bei
 — welche Heilung gleich fällt, ist jedoch eine Rotationsentscheidung, die die zentrale
 Schicht weder kennt noch erzwingen kann.
 
-**Die gestaffelte Phase-2-Unterstützung** (Fälle 4 und 4a) ist nicht gebaut. Fall 4 —
-die leichte Unterstützung mit einem HoT — braucht keine Prognose, sondern nur die
-Feststellung, dass Walking Dead liegt; ihm steht eine Gesundheitsschwelle entgegen, die
-der Träger bei 1 HP nie erfüllt. Fall 4a verlangt eine Kursprognose: Die Datenquelle
-steht seit A91, die **Auswertung** zur aufgenommenen Heilmenge ist eine andere als die
-zur Restzeit und noch nicht gebaut. Welche Stellen im Code beidem entgegenstehen, führt
-`TODO.md`.
+**Die gestaffelte Phase-2-Unterstützung** (Fälle 4 und 4a) ist gebaut (A147, Abschnitt „Umsetzung für Phase 2“):
+`WalkingDeadCarriedBySelfHeal` lässt nur HoTs an den Träger, solange er sich selbst trägt, und gibt die volle
+Unterstützung bei den dort genannten Auslösern frei. Die Kursprognose rechnet die Gesundheit seit Beginn des Fensters
+auf die Restzeit hoch, nicht die aufgenommene Heilmenge; fallen Heilung und Schaden in dieselbe Abtastung, unterschätzt
+sie den Kurs (Grenze unter „Was ausgeschlossen wurde“).
 
 ## Nachweisbarkeit
 

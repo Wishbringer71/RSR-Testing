@@ -29,7 +29,7 @@ Bedingungen schließen einander aus:
 |---|---|---|
 | `CustomRotation_GCD.RaiseSpell`, Zweig `RaisePlayerBySwift` | wählt Spontanität **nur** bei `WeaponRemain <= 0.5f` | Auswahl |
 | `RSCommands_Actions.DoAction` | verweigert **jede** Fähigkeit bei `0 < DefaultGCDRemain <= 0.5f` | Ausführung |
-| `RSCommands_Actions.cs:47` | dieselbe Sperre im Klick-Gate | Ausführung |
+| `RSCommands_Actions.cs:49` | dieselbe Sperre im Klick-Gate | Ausführung |
 | `CustomRotation_Ability.cs:28` | dieselbe Sperre im Fähigkeiten-Dispatcher | Auswahl |
 
 Spontanität ist eine Fähigkeit. Die beiden Fenster decken sich bis auf den einzigen Punkt
@@ -42,13 +42,13 @@ Spontanität ist eine Fähigkeit. Die beiden Fenster decken sich bis auf den ein
 - genau `0`: der einzige Zustand, in dem Auswahl und Ausführung zusammenpassen.
 
 Bewegung spielt keine Rolle: Spontanität hat keine Wirkzeit, die Wirkzeitsperre in
-`ActionBasicInfo.NeedsCasting` (`:604`) wird gar nicht erreicht.
+`ActionBasicInfo.NeedsCasting` (`:610`) wird gar nicht erreicht.
 
 ### Der Beleg aus dem Spiel
 
 Der Auftraggeber hat berichtet, dass die Wiederbelebung sofort erfolgt, sobald er von automatisch
 auf manuell stellt und den Toten anvisiert. Das ist ein natürliches Experiment und bestätigt die
-Ursachenanalyse: `ActionTargetInfo.cs:117` lässt im manuellen Modus ein **feindliches** Ziel nur zu,
+Ursachenanalyse: `ActionTargetInfo.cs:143` lässt im manuellen Modus ein **feindliches** Ziel nur zu,
 wenn es das angewählte Hauptziel ist. Wer einen Toten anvisiert, hat kein feindliches Ziel, sämtliche
 Angriffsaktionen fallen aus, der GCD bleibt frei, `DefaultGCDRemain` steht auf genau `0` — der eine
 Punkt, an dem beide Fenster zusammenpassen.
@@ -245,7 +245,7 @@ wiederbeleben.
 
 ### Die Phönixfeder
 
-Verdrahtet im Fähigkeitenpfad (`CustomRotation_Ability.cs:411`), hinter der Heilung und vor den
+Verdrahtet im Fähigkeitenpfad (`CustomRotation_Ability.cs:415`), hinter der Heilung und vor den
 Angriffsfähigkeiten: Jemanden am Leben zu halten geht vor, jemanden aufzuheben kostet ein
 Einschiebefenster. Die Ausführungssperre schluckt sie nicht, weil diese auf `nextAction is BaseAction`
 prüft und ein Gegenstand keiner ist.
