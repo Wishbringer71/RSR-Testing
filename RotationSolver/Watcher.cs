@@ -28,8 +28,16 @@ public static class Watcher
 	// the version is the same for every build on the branch, and a day carries several commits.
 	// Embedded by Directory.Build.props; missing when the build had no git.
 	private static string SourceCommit()
-		=> typeof(Watcher).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-			.FirstOrDefault(a => a.Key == "SourceCommit")?.Value ?? "unknown";
+	{
+		foreach (var attribute in typeof(Watcher).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>())
+		{
+			if (attribute.Key == "SourceCommit")
+			{
+				return attribute.Value ?? "unknown";
+			}
+		}
+		return "unknown";
+	}
 
 	public static void Disable()
 	{
