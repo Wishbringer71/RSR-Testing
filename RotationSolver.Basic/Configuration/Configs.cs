@@ -466,7 +466,7 @@ internal partial class Configs : IPluginConfiguration
 
 	[ConditionBool, UI("Lock actions when casting Passage Of Arms during AOE mitigations.",
 	Filter = Extra)]
-	private static readonly bool _pldlockCasting = false;
+	private static readonly bool _pldlockCasting = true;
 
 	[ConditionBool, UI("Lock actions when casting Collective Unconscious during AOE mitigations.",
 	Filter = Extra)]

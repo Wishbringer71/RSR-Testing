@@ -99,3 +99,11 @@ Outside a demi, Searing Flash waited for a dying boss. With other Summoners in t
 can fall into a Titan or Ifrit block, the next demi is further off than Ruby's Glimmer lasts, and Searing
 Flash was lost. It now goes out in the last weave slot before Ruby's Glimmer runs out. As the only Summoner
 nothing changes: Searing Flash falls inside Solar Bahamut as before.
+
+## Paladin: Passage of Arms holds until the hit lands, by default
+
+`Lock actions when casting Passage Of Arms during AOE mitigations` is now on by default. Passage of Arms
+ends with the paladin's next action, and RSR casts it only for an announced area hit; without the lock the
+next GCD or weave ended the channel, often before the hit, and the cooldown was spent for nothing. With the
+lock, RSR holds its actions until the announced hit has landed and no longer. A configuration that was
+saved before keeps its value: switch the setting on under Extra if it shows off.
