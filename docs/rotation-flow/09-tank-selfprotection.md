@@ -818,7 +818,14 @@ Bloodwhetting" der Referenz und kostet nichts, weil Urimpuls nach 25 s wieder be
 - *Tankbuster:* Er fällt vor einem Tankbuster auf ihn, innerhalb seiner Wirkdauer (`TankbusterOnMeWithin`, zentral für
   jeden Tank; Dauer aus den Wirktexten). „Auf ihn" heißt: Marker oder gelisteter Tankbuster-Zauber auf ihm, oder eine
   Vorhersage, die ihn nennt oder, wo sie niemanden nennt, wen sein Ziel anvisiert (Schluss). Nicht unter
-  Unverwundbarkeit. Option „Use Thrill of Battle before a tankbuster on you", ab Werk an.
+  Unverwundbarkeit. Option „Use Thrill of Battle before a tankbuster on you", ab Werk an. Er fällt auch auf einen
+  Tankbuster, den Verdammnis schon nimmt. *Verworfen (A248):* ihn dort zurückzuhalten, damit er auf den schwächer
+  gedeckten Tankbuster unter Schutzwall fällt, wie WrathCombo es tut („align with Rampart", Stand 25.09.2026,
+  keine Spielquelle). Das hilft nur, wenn der nächste Tankbuster binnen seiner 90 s Abklingzeit kommt. Kommen sie
+  im Abstand von zwei Minuten, nimmt Verdammnis jeden, und Kampfrausch fiele auf keinen. Den Abstand zum übernächsten
+  Tankbuster liefert keine Quelle; BossModReborn sagt nur den nächsten an. The Balance führt „Damnation + Thrill"
+  und „Rampart + Thrill + Bloodwhetting" als gleich starke Stapel („The 60s"); eine Zuordnung zu Schutzwall
+  nennt sie nicht.
 - *Pull (sein Hinweis):* Er fällt, sobald die Gesundheit beim gemessenen Verlauf innerhalb der zehn Sekunden seiner
   Wirkung unter „Thrill Of Battle Heal Threshold" fiele (`GetHealthRatioIn`, die selbstkorrigierte Zeit bis zum Tod).
   Damit liegen die 20 % Gesundheit und die verstärkte Heilung an, solange das Rudel vollzählig zuschlägt, und sie
@@ -921,6 +928,20 @@ Minderung oder Schutzwall, dann die kurzen.
 - *Äquilibrium* (reaktiv, unter Kampfrausch), *Holmgang* (Notfall bei 15 %; vorbeugend nur bei bekannter Höhe des
   Treffers sinnvoll, die fehlt — Abschnitt Nascent Flash).
 - *Tiefschlag/Zwischenruf* (zentral) und *Urflackern* (A226).
+
+### Abgleich mit den Referenzen (02.10.2026)
+
+| Frage | The Balance | WrathCombo (Stand 25.09.2026, keine Spielquelle) | xivanalysis | RSR jetzt |
+|---|---|---|---|---|
+| Große Minderung und Schutzwall auf einen Tankbuster | je Tankbuster eine von beiden plus kurze | Vengeance nicht innerhalb 20 s nach Rampart und umgekehrt („Prevent double big mits") | — | eine je Tankbuster (A243) |
+| Urimpuls vor dem Tankbuster | Teil jedes Stapels | auf angekündigten Tankbuster | zählt nur die Nutzung | ja, „single enemies" an (A237) |
+| Kampfrausch vor dem Tankbuster | in den Stapeln, mit Verdammnis wie mit Rampart („The 60s“) | nur ohne andere große oder mit Rampart, sonst Notfall | zählt nur die Nutzung | auf jeden Tankbuster, für den er bereit ist (A237); WrathCombos Ausrichtung verworfen (A248) |
+| Reflexion am Tankbuster | Gruppenwerkzeuge auf Raidwides | im Bosskampf nur bei angesagtem Gruppenschaden | — | wartet, wenn der Tank gedeckt ist (A244) |
+| Abschütteln | Barriere an erhöhter Gesundheit | im Bosskampf bei Gruppenschaden, nicht innerhalb 10 s nach Reflexion; außerhalb nur ohne Kampfrausch, Verdammnis, Vengeance, Urimpuls | zählt nur die Nutzung | wartet bei Verdammnis/Urimpuls (A245) |
+| Reflexion und Abschütteln auf demselben Raidwide | mal stapeln, mal verteilen, je nach Größe | verteilt (je 10 s Sperre gegeneinander) | — | **beide auf denselben** — offen (TODO) |
+
+*xivanalysis* bewertet Abwehr nur danach, ob sie genutzt wurde („find helpful times"), ohne Zeitpunktregel. *FFLogs*
+liefert die Kampfdaten, keine Regeln; ein Report von ihm würde zeigen, welche Minderung auf welchem Treffer lag.
 
 ### Antithesen
 

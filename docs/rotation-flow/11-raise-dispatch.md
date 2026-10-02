@@ -315,6 +315,14 @@ zeit selbst totgeschlagen wird, bringt das nichts." **Der Code erfüllt beides:*
 kommt der Heiler vor dem toten Tank; sind beide Tanks tot, zuerst ein Tank
 (`deathTanks.Count > 1`, Upstream, C36), weil sonst niemand den Gegner hält.
 
+**Abgleich (02.10.2026):** Das consolegameswiki, „Healer Guide" (Gemeinschaftsquelle), nennt dieselbe Ordnung:
+„If both tanks are KO'd, raise a tank first. If both tanks are alive, raise your co-healer", danach Rotmagier und
+Beschwörer, dann die übrigen Schadensausteiler — RSRs Staffel Tank/Heiler, Ersatzrezzer, Übrige. Es ordnet davor
+„Heal yourself" und „Heal the tank(s)" ein: Lebende zu heilen ist billiger als Tote aufzuheben. Dem entspricht in RSR die Stellung
+`RaisePlayerFirst = aus` (Abschnitt „Die zwei Einhängepunkte"); mit `an` steht die Wiederbelebung vor
+jeder Heilung — für ihn als Tester sind beide Stellungen möglich. Abweichend vom Wiki: „Always use
+Swiftcast to Raise" gilt bei ihm wörtlich — Swiftcast bleibt für Wiederbelebungen.
+
 Die Filter in `GetDeath` sind vollständig und schließen jeweils sinnvoll aus: kein Wiederbelebungs-
 oder Verweigerungsstatus, Entfernung über 30 Yalm, fehlende Sichtlinie, Gruppen- oder
 Allianzzugehörigkeit. Der Auftraggeber hat bestätigt, dass Leichen ruhig liegen und anvisierbar sind,

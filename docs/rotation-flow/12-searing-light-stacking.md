@@ -796,6 +796,16 @@ offiziellen Job-Guide (Stufe 100, abgerufen 02.10.2026): Astral Impulse 500, Fou
 Slipstream 520, Mountain Buster 160, Inferno 800, Earthen Fury 800, Aerial Blast 800. Sie stimmen mit den
 früheren Suchauszügen überein.
 
+### Abgleich mit The Balance (Summoner Basic Guide, 02.10.2026)
+
+„Searing Light should be used on cooldown to align with all other two minute party buffs, unless a specific buff
+delay is agreed upon by the entire party. Aligning with other party buffs should be prioritized over aligning with
+your own burst phases." Für einen einzelnen Beschwörer trifft RSR das: Die Abklingzeit von 120 s ist genau ein
+Demi-Zyklus, und die Zündung im Beschwörungsfenster fällt mit „on cooldown" zusammen. Mehrere Beschwörer behandelt
+The Balance nicht; dort gilt seine Vorgabe dieses Konzepts. Die Reihenfolge der Primale nach der Demi — „Titan first
+… should generally be prioritized" — ist RSRs Voreinstellung. Swiftcast auf Slipstream nennt The Balance als
+situativen Gewinn; nach seiner Spielweise bleibt Swiftcast für Wiederbelebungen.
+
 ## Gesamtbetrachtung
 
 **Der Sperrmechanismus ist die Grundlage und bleibt.** Er ist das einzige Abstimmungsmittel zwischen

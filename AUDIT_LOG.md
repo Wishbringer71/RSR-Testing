@@ -5140,6 +5140,31 @@ Seine Frage: ob alle Konzepte mit The Balance, Akhmorning und den früher nicht 
 - *Konzept 17:* Die Krit-/Direkttreffer-Zahlen tragen das Ergebnis nicht.
 
 **Prüfgrad:** Quellen abgerufen und Aussage für Aussage abgeglichen; Modell mit Selbsttest.
+
+### A248 · Konzepte gegen The Balance, WrathCombo, xivanalysis und FFLogs; Kampfrausch-Ausrichtung verworfen (02.10.2026)
+
+Seine Frage (Fortsetzung von A247), erweitert um WrathCombo, xivanalysis und FFLogs.
+
+- *Eingearbeitet:*
+  - Konzept 09: Abgleichtabelle für den Krieger (The Balance, WrathCombo, xivanalysis, RSR).
+  - Konzept 10: The Balance zu The Blackest Night („at least once per mob pack") und Living Dead.
+  - Konzept 11: Rangfolge der Wiederbelebung wie im consolegameswiki, Healer Guide. Heilung vor Wiederbelebung entspricht `RaisePlayerFirst = aus`.
+  - Konzept 12: Searing Light „on cooldown", Titan zuerst.
+  - Konzept 16: Lucid Dreaming „around 80% MP"; RSR ab Werk 6000 MP.
+  - Konzept 08: Halbierung der Betäubung (The Balance).
+- *Einordnung der Quellen:*
+  - xivanalysis zählt bei der Abwehr nur die Nutzung, ohne Zeitpunktregel.
+  - FFLogs liefert Kampfdaten, keine Regeln.
+  - WrathCombo ist keine Spielquelle.
+- *Neu als TODO:* Reflexion und Abschütteln fallen auf denselben Raidwide; WrathCombo verteilt sie.
+- *Kampfrausch nicht auf einen Tankbuster unter Verdammnis — entworfen, vor dem Commit verworfen:*
+  - *Vorlage:* WrathCombo („align with Rampart"), damit der schwächer gedeckte Treffer gehoben wird.
+  - *Antithese hält:* Kommen die Tankbuster im Abstand von zwei Minuten oder nur einmal, nimmt Verdammnis jeden. Kampfrausch fiele dann auf keinen, obwohl er bereit ist.
+  - *Messbarkeit:* Den Abstand zum übernächsten Tankbuster kennt der Code nicht; BossModReborn sagt nur den nächsten an.
+  - *The Balance:* führt „Damnation + Thrill" und „Rampart + Thrill + Bloodwhetting" gleichrangig („The 60s").
+  - *Ergebnis:* Es bleibt A237.
+
+**Prüfgrad:** Quellen abgerufen; Codewerte nachgelesen (Lucid-Schwelle, `BlackestNightMinHostiles`, `RaisePlayerFirst`).
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

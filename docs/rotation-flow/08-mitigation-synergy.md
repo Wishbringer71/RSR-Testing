@@ -1119,7 +1119,10 @@ zu prüfende Ursache.
 ### Die Größenordnung
 
 Die Betäubungsressource ist **einmalig je Pull**, nicht wiederkehrend: Erste
-Anwendung 4 s, zweite 2 s, dritte 1 s, danach 45 s Immunität. Ein stehender
+Anwendung 4 s, zweite 2 s, dritte 1 s, danach 45 s Immunität. The Balance bestätigt die Halbierung (White Mage
+Basic Guide, 02.10.2026: „halving its duration with each application until they become temporarily immune to
+stun … the cumulative 7s of stun helps mitigate a significant amount of tank damage in trash pulls"); die 45 s
+Immunität nennt es nicht. Ein stehender
 Gruppenpull ist selten länger als diese 45 s, das Zurücksetzen der Resistenz fällt
 also praktisch nicht mehr in den Kampf. Zu verteilen sind damit genau **7 Sekunden
 Betäubung**, und die Frage lautet nicht, wie viele Zyklen man unterbringt, sondern

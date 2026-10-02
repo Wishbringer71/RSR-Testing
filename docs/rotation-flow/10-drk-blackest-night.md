@@ -368,6 +368,19 @@ Verbrauchsbedingung.
 `BMRTankbusterImminent`, nicht auf `IsHostileCastingToTank` — dieselbe Unterscheidung, die C10 für
 diese beiden Größen herausgearbeitet hat.
 
+### Abgleich mit den Referenzen (02.10.2026)
+
+- *The Balance, Dark Knight Basic Guide:* The Blackest Night „can be used liberally (at least once per mob pack)";
+  „in a large dungeon pull or facing down a tankbuster … it's almost impossible for it not to break". Das stützt den
+  Pull-Zweig im Grundsatz. Seine fünf Bedingungen verzögern die Barriere im Pull, verhindern sie aber nicht: Sie
+  kommt, sobald Reflexion und Abtausch liegen und keine große Minderung läuft. Die Gegnerzahl 4
+  (`BlackestNightMinHostiles`) ist eine Annahme; The Balance nennt keine Zahl, nur „mob pack" und „large pull".
+  Seine Vorgabe (keine Minderung, solange die Barriere steht) bleibt davon unberührt.
+- *The Balance zu Living Dead:* „an inexperienced healer may heal too much during Living Dead, preventing Walking
+  Dead from activating" — dieselbe Lage, die die Living-Dead-Rückhaltung der Heiler regelt (Konzept 09).
+- *WrathCombo:* Die Fallarbeit für die Barriere steht in Konzept 15.
+- *xivanalysis:* zählt die Nutzung der Abwehr, ohne Zeitpunktregel.
+
 ## Verworfene Optionen
 
 **Am zentralen Auslöser ansetzen.** `ShouldAddDefenseSingle` verschärfen oder den Rückfall in

@@ -527,6 +527,10 @@ Schritt 3 aus `docs/rotation-flow/08-mitigation-synergy.md`. Die Schritte 1 und 
 
 ## Offene Arbeit
 
+### Tanks: Reflexion und Gruppenbarriere auf demselben Raidwide · N
+
+Seine Protokolle vom 01.10.2026 zeigen Abschütteln und Reflexion fast immer auf demselben Raidwide, eine Sekunde auseinander. WrathCombo verteilt beide auf aufeinanderfolgende Raidwides (je 10 s Sperre gegeneinander); The Balance: stapeln für große Treffer, verteilen über mehrere. RSR kennt die gemessene Größe je Raidwide (`HostileCastingAreaPotential`), Stufe 2 der Abwehr nach Treffergröße (Konzept 08) wäre der Ort. Offen: Fallarbeit für alle vier Tanks (Divine Veil, Dark Missionary, Heart of Light). Konzept 09, „Abgleich mit den Referenzen".
+
 ### Flächenheilung um den Wirkenden: Radius gegen Trefferfläche statt Mittelpunkt · N
 
 Ob ein Spieler in einer Fläche steht, entscheidet der Mittelpunkt seines Modells (Akhmorning, „Raiding Fundamentals", 02.10.2026). `GetCanAffects` rechnet Trefferfläche zu Trefferfläche und zählt ein Mitglied am Rand um seinen Trefferkreis zu großzügig mit. Im Kampf: Lux Solaris und andere Flächenheilungen um den Wirkenden können eine verlangte Anzahl erreicht sehen, die die Heilung nicht trifft. Erhebung aller Leser von `GetCanAffects` für freundliche Flächen offen; Konzept 08, „Wann Lux Solaris zündet".
