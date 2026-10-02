@@ -5165,6 +5165,14 @@ Seine Frage (Fortsetzung von A247), erweitert um WrathCombo, xivanalysis und FFL
   - *Ergebnis:* Es bleibt A237.
 
 **Prüfgrad:** Quellen abgerufen; Codewerte nachgelesen (Lucid-Schwelle, `BlackestNightMinHostiles`, `RaisePlayerFirst`).
+
+### A249 · Lokaler Build: `ASTGauge.Card1` und `MNKGauge.BeastChakra1` fehlen (02.10.2026)
+
+- *Befund, sein Build:* CS1061 für `Card1`–`Card3` und `BeastChakra1`–`BeastChakra3`; CS0006 ist Folgefehler.
+- *Ursache, nicht im Code:* Upstream (07f9f7daf, 30.09.2026) liest die Einzelfelder, die Dalamud am 21.09.2026 eingeführt hat (20bd559c, b8418f2a). Ausgeliefert sind sie erst mit Release 15.0.3.6 (Build 29.09.2026). Die CI lädt `dalamud-distrib/latest.zip`, das 15.0.3.6 enthält, und baut grün. Sein Build bindet gegen `%AppData%\XIVLauncher\addon\Hooks\dev\`, dort liegt also ein älterer Stand.
+- *Behebung:* Er aktualisiert den Ordner `dev` aus `latest.zip`. Es gibt keine Codeänderung: Ein Rückbau auf `DrawnCards` machte den Upstream-Merge rückgängig, und Dalamud markiert `DrawnCards` als obsolet, was `build.yaml` als Fehler behandelt.
+
+**Prüfgrad:** Dalamud-Versionsgeschichte und Release-Version gemessen; CI-Build grün auf `0c6e3e923`.
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
