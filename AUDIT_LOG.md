@@ -5235,6 +5235,10 @@ seine Frage „was ist denn besser? code oder konzept?".
 
 **Prüfgrad:** Aussage für Aussage am Code und an der Versionsgeschichte; Prüfskripte mit Selbsttest; Compile über die
 CI. Konzept 16 und 17 (01. und 02.10.2026 geschrieben) stichprobenartig, ohne Fund.
+
+*Nachtrag am selben Tag, CI:* Die Umstellung von `PldlockCasting` ließ `generate_action_matrix.py --check` fehlschlagen
+(PLD-Seite nennt die Voreinstellung jeder Sperre). Vor dem Push liefen nur die `check_*.py`, nicht die Generatoren mit
+`--check`; diese laufen jetzt mit.
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
