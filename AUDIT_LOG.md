@@ -5172,7 +5172,21 @@ Seine Frage (Fortsetzung von A247), erweitert um WrathCombo, xivanalysis und FFL
 - *Ursache, nicht im Code:* Upstream (07f9f7daf, 30.09.2026) liest die Einzelfelder, die Dalamud am 21.09.2026 eingeführt hat (20bd559c, b8418f2a). Ausgeliefert sind sie erst mit Release 15.0.3.6 (Build 29.09.2026). Die CI lädt `dalamud-distrib/latest.zip`, das 15.0.3.6 enthält, und baut grün. Sein Build bindet gegen `%AppData%\XIVLauncher\addon\Hooks\dev\`, dort liegt also ein älterer Stand.
 - *Behebung:* Er aktualisiert den Ordner `dev` aus `latest.zip`. Es gibt keine Codeänderung: Ein Rückbau auf `DrawnCards` machte den Upstream-Merge rückgängig, und Dalamud markiert `DrawnCards` als obsolet, was `build.yaml` als Fehler behandelt.
 
-**Prüfgrad:** Dalamud-Versionsgeschichte und Release-Version gemessen; CI-Build grün auf `0c6e3e923`.
+- *Optionen:*
+  - *Gewählt, Nullvariante:* Er aktualisiert den Ordner `dev`.
+  - *Verworfen:* Rückbau auf `DrawnCards`. CS0618 lässt die CI fehlschlagen, und die Upstream-Anpassung ginge verloren.
+  - *Verworfen:* Eine Prüfung der Dalamud-Version im Build. Sie bräuchte eine gepflegte Mindestversion, also eine feste Zahl, für einen Handgriff außerhalb des Spiels (A173).
+  - *Verworfen:* Herunterladen beim Build. Das wäre eine Funktion ohne Bedarf und würde seine Umgebung verändern.
+- *Falsifikation:*
+  - *Kein Defekt im Code:* Hält. Die Einzelfelder gibt es seit 15.0.3.6, und die CI baut damit grün.
+  - *Option falsch:* Hält nicht. Sein Build-Protokoll nennt `Hooks\dev\` als Dalamud-Wurzel.
+  - *Ausgeliefert, und nichts ändert sich:* Liefe im Spiel ein Dalamud vor 15.0.3.6, schlüge das Lesen des Astrologen- und Mönchsbalkens zur Laufzeit fehl. Annahme: Der Launcher hält das Spiel-Dalamud aktuell.
+- *Zweite Meldung im selben Build:* „No upstream tag reachable" erscheint bei ihm immer, weil `origin` nur Fork-Tags trägt (`+wsh1`, von `git describe` ausgeschlossen).
+  - Der Rückfallwert ist richtig, weil `check_fork_version.py --require-tags` ihn in der CI mit den Upstream-Tags abgleicht.
+  - Die Meldung forderte ihn trotzdem zu einer Prüfung auf; der Text sagt jetzt, dass die CI den Wert hält. Der Wert selbst ist unverändert.
+- Aufgeräumt: der lokale Sitzungszweig `claude/fixes-after-7.5.6.10`. Seine Gegenstelle war gelöscht und er war vollständig gemergt (`git branch -d`).
+
+**Prüfgrad:** Dalamud-Versionsgeschichte und Release-Version gemessen; CI-Build grün auf `0c6e3e923`; MSBuild-Datei geparst.
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

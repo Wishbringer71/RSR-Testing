@@ -78,7 +78,7 @@
 		         Text="Fork version derived from the repository: $(Version) (upstream release this tree contains)" />
 		<Message Importance="high"
 		         Condition="'$(_UpstreamTagExitCode)' != '0' OR '$(_UpstreamTag)' == ''"
-		         Text="No upstream tag reachable from HEAD - falling back to the literal $(Version). Run .github/scripts/audit/check_fork_version.py if this build is meant to be current." />
+		         Text="No upstream tag in this clone - using the literal $(Version), which CI holds to the newest upstream release this branch contains." />
 	</Target>
 
 	<!-- Which commit a build was made from, as assembly metadata.
