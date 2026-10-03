@@ -17,6 +17,86 @@
       "note": "Settled by the German job guide: role action at level 32, \"verhindert fast alle Rückstoß- und Heranzieheffekte\", 20 % Gemach on physical attackers. \"Rückstoß\" is the game's word for the knockback effect, not this action; the entry that paired it with Arm's Length (C33) is removed."
     },
     {
+      "de": "Kampfrausch",
+      "en": "Thrill of Battle",
+      "identifier": "ThrillOfBattlePvE",
+      "kind": "action",
+      "source": "user, 2026-10-01; German job guide (de.finalfantasyxiv.com/jobguide/warrior/), 2026-10-01",
+      "note": "Level 30, 90 s: maximum HP +20 % and restored by that amount, healing on self +20 %, 10 s. Not Bloodwhetting."
+    },
+    {
+      "de": "Rachsucht",
+      "en": "Vengeance",
+      "identifier": "VengeancePvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/warrior/), 2026-10-01",
+      "note": "Level 38, 120 s: damage taken -30 %, 15 s."
+    },
+    {
+      "de": "Urinstinkt",
+      "en": "Raw Intuition",
+      "identifier": "RawIntuitionPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/warrior/), 2026-10-01",
+      "note": "Level 56, 25 s, shared with Nascent Flash."
+    },
+    {
+      "de": "Äquilibrium",
+      "en": "Equilibrium",
+      "identifier": "EquilibriumPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/warrior/), 2026-10-01",
+      "note": "Level 58, 60 s self-heal with regen."
+    },
+    {
+      "de": "Abschütteln",
+      "en": "Shake It Off",
+      "identifier": "ShakeItOffPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/warrior/), 2026-10-01",
+      "note": "Level 68, 90 s party barrier; dispels Kampfrausch, Verdammnis and Urimpuls (job guide wording)."
+    },
+    {
+      "de": "Urflackern",
+      "en": "Nascent Flash",
+      "identifier": "NascentFlashPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/warrior/), 2026-10-01",
+      "note": "Level 76, 25 s, on a party member."
+    },
+    {
+      "de": "Urimpuls",
+      "en": "Bloodwhetting",
+      "identifier": "BloodwhettingPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/warrior/), 2026-10-01",
+      "note": "Level 82, upgrades Urinstinkt."
+    },
+    {
+      "de": "Verdammnis",
+      "en": "Damnation",
+      "identifier": "DamnationPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/warrior/), 2026-10-01",
+      "note": "Level 92, upgrades Rachsucht: damage taken -40 %, 15 s."
+    },
+    {
+      "de": "Tiefschlag",
+      "en": "Low Blow",
+      "identifier": "LowBlowPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/warrior/), 2026-10-01",
+      "note": "Role action, level 12, stun."
+    },
+    {
+      "de": "Zwischenruf",
+      "en": "Interject",
+      "identifier": "InterjectPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/warrior/), 2026-10-01",
+      "note": "Role action, level 18, interrupt."
+    },
+    {
       "de": "Sanctus",
       "en": "Holy",
       "identifier": "HolyPvE",
@@ -75,6 +155,14 @@
       "identifier": "AddlePvE",
       "kind": "action",
       "source": "user, recorded in AUDIT_LOG A-146"
+    },
+    {
+      "de": "Zermürben",
+      "en": "Feint",
+      "identifier": "FeintPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/monk/), 2026-10-01",
+      "note": "Role action, level 22, 90 s: physical damage dealt -10 %, magical -5 %, 15 s."
     },
     {
       "de": "Phönixfeder",

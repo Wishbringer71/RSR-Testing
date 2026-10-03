@@ -1149,6 +1149,34 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
+	/// The hostiles in reach that Arm's Length's Slow is for: not bosses.
+	/// </summary>
+	/// <remarks>
+	/// Arm's Length does not touch the hit that strikes it - "When you are struck by a physical attack,
+	/// the striker will be afflicted with Slow" - so its only worth in a defence is slowing the attacks
+	/// that follow, and that is a pack of ordinary enemies on the tank. The owner observed it cast on a
+	/// boss's tankbuster to no effect (01.10.2026); counted with the pack, a boss also let two enemies -
+	/// boss and one add - read as a pull. Spent there, it is missing for the knockback it is the tank's
+	/// only answer to.
+	/// </remarks>
+	protected static int SlowableHostilesInRange()
+	{
+		var range = DataCenter.JobRange;
+		var hostiles = DataCenter.AllHostileTargets;
+		var count = 0;
+		for (int i = 0, n = hostiles.Count; i < n; i++)
+		{
+			var hostile = hostiles[i];
+			if (hostile != null && hostile.DistanceToPlayer() < range && !hostile.IsBossFromTTK() && !hostile.IsBossFromIcon())
+			{
+				count++;
+			}
+		}
+
+		return count;
+	}
+
+	/// <summary>
 	/// Whether the pack in reach is slowed - at least two enemies and at least half of them.
 	/// </summary>
 	/// <remarks>
@@ -1182,14 +1210,16 @@ public partial class CustomRotation
 	/// Not while BossModReborn announces a knockback that lands after Arm's Length would have run out
 	/// and before its cooldown is back: the rule also fires on a boss with adds, and spent on their
 	/// Slow the action would be gone for the knockback it is the tank's only answer to. A knockback
-	/// inside the duration is no reason to wait - cast now, it is covered (A212, A219). Duration from
+	/// inside the duration is no reason to wait - cast now, it is covered (A212, A219). Bosses do not
+	/// count towards the pull: the Slow is for the stream of an ordinary pack, and on a boss alone the
+	/// rule cast it to no effect (A236). Duration from
 	/// the effect text, cooldown from the action data. Without a module there is no announcement, and
 	/// the anti-knockback use stays reactive as before.
 	/// </remarks>
 	protected bool ArmsLengthSlowsPull(bool enabled, int minimumHostiles)
 		=> enabled
 			&& DataCenter.Role == JobRole.Tank
-			&& NumberOfHostilesInRange >= minimumHostiles
+			&& SlowableHostilesInRange() >= minimumHostiles
 			&& !PackSlowed()
 			&& !(Service.Config.UseBmrTimeline && BMRKnockbackIn is > 0f and < float.MaxValue
 				&& BMRKnockbackIn > DefensiveValues.DurationOf((uint)ActionID.ArmsLengthPvE)
@@ -1660,12 +1690,10 @@ public partial class CustomRotation
 	/// </para>
 	/// </summary>
 	/// <remarks>
-	/// Two entries of that list are not throttles and are worth knowing about before a second caller
+	/// One entry of that list is not a throttle and is worth knowing about before a second caller
 	/// appears. <c>LivingDead</c> does not reduce the incoming stream at all - it postpones death -
 	/// so for a dark knight this reads true while the stream is unchanged; the answer still suits the
 	/// one caller, because a barrier is the wrong thing to spend during it for a different reason.
-	/// <c>Bloodwhetting</c> is a 10% mitigation, below the line the list otherwise draws, and would
-	/// make this predicate stricter than intended for a warrior.
 	/// </remarks>
 	protected static bool HasMajorMitigation
 		=> StatusHelper.PlayerHasStatus(true, StatusHelper.RampartStatus);
@@ -1681,6 +1709,79 @@ public partial class CustomRotation
 	/// </summary>
 	public static bool TankbusterOnMe
 		=> DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterImminent;
+
+	/// <summary>
+	/// Whether a party tool used now would miss the raidwide BossModReborn announces: the raidwide lands after
+	/// the tool's effect has run out and before the tool is ready again. Detection only; the consumer decides.
+	/// </summary>
+	/// <param name="tool">The party tool.</param>
+	/// <param name="lasts">How long its effect lasts, from the effect text.</param>
+	protected static bool RaidwideAfterEffectBeforeRecast(IBaseAction tool, float lasts)
+		=> Service.Config.UseBmrTimeline && BMRActive
+			&& BMRRaidwideIn is > 0f and < float.MaxValue
+			&& BMRRaidwideIn > lasts
+			&& BMRRaidwideIn <= tool.Cooldown.RecastTimeOneChargeRaw;
+
+	/// <summary>
+	/// Whether a tank keeps Reprisal in its single-target defence for the raidwide BossModReborn announces.
+	/// </summary>
+	/// <remarks>
+	/// Reprisal acts on the enemy: every hit it deals during the 15 s is reduced, the tankbuster and the
+	/// raidwide alike (the owner's hint, 01.10.2026). Only when the raidwide lands after Reprisal has run out
+	/// and before it is back does using it now cost the party its 10 % at the raidwide. Then the owner's
+	/// criterion decides: who does going without put in serious danger. The tank meets its tankbuster with
+	/// its own big mitigation already running - one of Rampart or the 40 % cooldown plus the short ones is the
+	/// standard answer (The Balance) - while the party has no personal tool of that size; party tools belong
+	/// on raid-wide damage (The Balance). So Reprisal waits when the tankbuster is on the player and he is
+	/// covered. It does not wait when he is not covered, when the hit is on someone else (their cover is
+	/// not known here), on a pull, or without an announcement. The universal hold yields when the player or
+	/// a tank is in the critical class (A244).
+	/// </remarks>
+	protected bool HoldReprisalForRaidwide()
+		=> HoldSingleDefense(
+			DataCenter.Role == JobRole.Tank
+				&& TankbusterOnMe
+				&& DataCenter.SingleHitReachesPlayer
+				&& StatusHelper.PlayerHasStatus(true, StatusHelper.RampartStatus)
+				&& RaidwideAfterEffectBeforeRecast(ReprisalPvE, MitigationDebuffDuration),
+			"Reprisal kept for the announced raidwide");
+
+	/// <summary>
+	/// Whether Rampart goes out for a predicted tankbuster: only when the job's big mitigation does not take
+	/// it - one of the two per tankbuster, plus the short ones (The Balance, "one of Rampart or your 40%
+	/// cooldown, plus your short cooldown"). Stacked on one tankbuster, both were gone for the next: trace of
+	/// 01.10.2026, tankbusters about every 61 s, 30 % under both, then 85 % with neither ready (A243).
+	/// </summary>
+	/// <param name="big">The job's big mitigation at the player's level (Damnation, Guardian, Shadowed
+	/// Vigil, Great Nebula or their lower forms).</param>
+	/// <param name="bigStatus">Its status on the player.</param>
+	protected static bool RampartTakesPredictedTankbuster(IBaseAction big, StatusID bigStatus)
+		=> !big.EnoughLevel
+			|| (!StatusHelper.PlayerHasStatus(true, bigStatus) && !IsLastAbility(false, big));
+
+	/// <summary>
+	/// Whether a tankbuster on the player lands within <paramref name="seconds"/> and can hurt him - the
+	/// question for an own cooldown whose effect lasts that long: a lock-on VFX or a listed tankbuster
+	/// cast on him, or one BossModReborn announces within that time. Where BossModReborn does not name
+	/// who is hit, the one his target has targeted is taken to get it (an inference: some tankbusters
+	/// hit the second in enmity). Not while an invulnerability covers him.
+	/// </summary>
+	protected static bool TankbusterOnMeWithin(float seconds)
+	{
+		var player = Player;
+		if (player == null || !player.NoNeedHealingInvuln())
+		{
+			return false;
+		}
+
+		if (DataCenter.IsHostileCastingTankBusterAtMe)
+		{
+			return true;
+		}
+
+		return BMRTankbusterWithin(seconds)
+			&& (DataCenter.BMRTankbusterHitsPlayer ?? ObjectHelper.PlayerIsTargetOnSelf());
+	}
 
 	/// <summary>
 	/// Whether the area hit behind the area-defence flag reaches the player himself. The flag asks

@@ -37,27 +37,27 @@ gehen in keine Rechnung ein. Die Luecke schliesst nicht eine Tabelle von Minderu
 die Beobachtung: Der Gesundheitsverlauf je Gruppenmitglied ist bereits netto und braucht keine Liste.
 Die Schaetzung daraus ist **praeventiv** — bei 90 % Gesundheit meldet sie den Tod acht Sekunden im
 Voraus — und sie **korrigiert sich selbst**, indem sie ihre eigene Vorhersage jede Sekunde gegen den
-tatsaechlichen Verlauf haelt. Ein externer Beobachter ist dafuer nicht noetig. Bevor eine Kampfregel
-darauf aufsetzt, ist der gemessene Fehlerfaktor in der Diagnoseanzeige zu beurteilen.
+tatsaechlichen Verlauf haelt. Ein externer Beobachter ist dafuer nicht noetig; die Regeln, die darauf aufsetzen,
+erben die Selbstkorrektur.
 
 | Baustein | Stand |
 |---|---|
 | Messung: `SurveyStuns`, `SurveyHostileStatus`, `StatusHelper.StunStatus` und `SlowStatus` | umgesetzt in `CustomRotation_OtherInfo` und `StatusHelper` |
 | Aussetzbedingung aus dem **Betaeubungsgrund**, hinter `StretchHolyStun` (Standard an) | umgesetzt (`WHM_Reborn.ShouldStretchHolyStun`) |
 | Aussetzbedingung aus dem **Mitigationsgrund** — eine fremde Minderung traegt bereits | umgesetzt (`WHM_Reborn.ShouldHoldHolyWhilePackSlowed`, Standard an) |
-| **Stunbarkeit** als Bedingung ueber allen drei Aussetzregeln | umgesetzt (`headroom` aus `SurveyStuns`) |
+| **Stunbarkeit** als Bedingung ueber allen drei Aussetzregeln | umgesetzt (`headroom` aus `SurveyStuns`; bei der Streckung laufende oder frische Betaeubung aus `WHM_Reborn.LongestStunInRadius`) |
 | Aussetzbedingung als **Anteil** der verlangsamten Gegner, mit Mindestzahl | umgesetzt (`HoldHolyMinSlowedHostiles`, Standard 3) |
 | **Schranke** der Aussetzregel: der Rest muss bewaeltigbar sein | umgesetzt und **gemessen statt gesetzt**: `AnyPartyMemberFallingWithinHealWindow`. Die frühere Zahl (`HoldHolyMaxHostileOutput` 600) war meine Setzung und ist zum optionalen Deckel mit Standard 0 = aus geworden |
 | **Schadensrate je Gruppenmitglied**, netto nach allem | umgesetzt: die Gruppe steht in `RecordedHP`, `GetTTK` antwortet fuer sie |
 | **Selbstkorrektur** der Schaetzung gegen ihren eigenen Fehler | umgesetzt (`ScoreTtkForecast`, `GetCorrectedTTK`); Rohzeit, korrigierte Zeit und Faktor stehen in der Diagnoseanzeige |
 | **Vorausschau** als Ersatzgroesse an allen Heilentscheidungen | umgesetzt (`GetForecastSurvivingShare` und die drei davon abgeleiteten Getter), hinter `HealAheadOfDamage`, Standard an |
-| Vorausschau auch in der **Flaechenheilung** (`PartyMembersAverHP` und Geschwister) | erfasst, nicht bearbeitet — siehe `TODO.md`; 83 Leser ausserhalb der Heilkette, darunter fremde Rotationen |
-| Minderungen des Tanks **rechnerisch** erfassen (Vorausschau vor dem ersten Treffer) | offen, siehe `TODO.md` — braucht Saetze je Status aus `Action.resx` |
-| **Derselbe Satz je Aktion traegt zwei Zwecke**, und das war bisher nicht gesehen: die Vorausschau in der Zeile darueber **und** die Wahl des Mittels nach Treffergroesse (Vorgabe 5). Wer ihn baut, loest beide Punkte | offen, siehe `TODO.md` |
+| Vorausschau auch in der **Flaechenheilung** | umgesetzt (A182): die Flaechenschwellen lesen eigene vorausberechnete Gruppenwerte (`DataCenter.ComputeForecastAreaStats`); `PartyMembersAverHP` und Geschwister bleiben unveraendert, weil sie viele Leser ausserhalb der Heilkette haben (Konzept 07) |
+| Minderungen des Tanks **rechnerisch** erfassen (Vorausschau vor dem ersten Treffer) | nicht gebaut; die Saetze je Aktion liegen inzwischen in `DefensiveValues.g.cs` (TODO „Vorausschau vor dem ersten Treffer“) |
+| **Derselbe Satz je Aktion traegt zwei Zwecke**: die Vorausschau in der Zeile darueber **und** die Wahl des Mittels nach Treffergroesse (Vorgabe 5) | Saetze erzeugt (`generate_defensive_values.py`); die Wahl nach Treffergroesse ist zurueckgebaut, weil kein Job zwei Barrieren zur Wahl haelt (A118, Abschnitt unten) |
 | Restzeit der Barriere (`HasSurvivingShield` misst die kuerzeste statt der laengsten) | offen, siehe `TODO.md` |
 | Erhebung der uebrigen Doppelnutzen-Aktionen | umgesetzt als `scan16.py`; ein Fund im Tank-/Heilerprofil (Rueckstoss) |
-| Rueckstoss auch **als** Minderungswerkzeug wirken | offen, siehe `TODO.md` — Zielkonflikt mit der Rolle als einziger Rueckstossschutz |
-| Wirksamkeitsmessung im Spiel | offen |
+| Rueckstoss auch **als** Minderungswerkzeug wirken | umgesetzt (A194, A236): Abtausch im Pull fuer seine Verlangsamung, nicht vor einem angekuendigten Rueckstoss (A212, A219), nicht auf einen Boss |
+| Wirksamkeitsmessung im Spiel | ersetzt durch die Selbstkorrektur der Vorausschau (`ScoreTtkForecast`); keine Ablesung als Aufgabe an ihn |
 | **Sonden, die es schon gibt** — ohne sie ist im Kampf nicht zu sehen, ob eine Regel greift: `DataCenter.AreaMitigationSkipped` nennt je Aktions-Id, wo die Flächenbewertung eine Minderung verworfen hat; Rohzeit, korrigierte Zeit und Fehlerfaktor der Schätzung stehen in der Diagnoseanzeige | in Betrieb, in keinem Konzept genannt gewesen |
 
 ## Die Antwort auf einen eingehenden Treffer
@@ -139,7 +139,7 @@ Rückhaltung ein Job überhaupt kennt, bleibt seine Sonderregel.** Gebaut in
 | alle | **Schranke:** Eine Rückhaltung weicht bei Gefährdungsklasse 1 (`ObjectHelper.IsInCriticalClass`: ungeschützt, vorausgerechnete effektive Gesundheit auf oder unter `HealthForDyingTanks`, Konzept 07). Flächenabwehr: irgendein lebendes Mitglied dort, oder der angekündigte, gemessene Flächentreffer brächte ein ungeschütztes dorthin. Einzelabwehr: der Spieler selbst oder ein Tank dort | Konzept 09 verlangt es für den Tank („jede Rückhaltung erst, wenn Stufe 1 gesichert ist"); der Grund gilt für jede Rolle |
 | alle | **Streckungsbaustein:** Nach einer Auslöseraktion ruht die übrige eigene Abwehr, bis die Wirkung laut Wirktext ausläuft (die Dauer, die zur Minderung gehört), gezählt ab dem Einsatz laut Aktionsprotokoll. Hält der Auslöser noch eine Ladung (gelesen an seiner Wiederaufladegruppe, nicht am Knopf), streckt er nicht | derselbe Mechanismus stand zweimal mit festen Zahlen im Code (Weißmagier, Astrologe) |
 | Heiler | leer | Nur Weißmagier und Astrologe strecken; Gelehrter und Weiser nicht. Eine Heilerregel änderte zwei Jobs ohne belegten Nutzen |
-| Tanks | **Abtausch (Arm’s Length) im Pull für seine Verlangsamung** (`ArmsLengthSlowsPull`, A194): jeder Tank mit eigener Option „Use Arm's Length on a pull for its Slow", ab Werk an; ein Pull sind so viele Gegner in Reichweite wie die globale Zahl „Number of hostiles" der Abwehr (Dunkelritter: seine Barrierenzahl, dazu die Barrierenrückhaltung); nicht, solange die Gruppe schon verlangsamt ist, und nicht, solange BossModReborn einen Rückstoß nach Wirkende und vor Ende der Abklingzeit ankündigt (A212, A219). Eine Rückhaltung gibt es auf dieser Stufe nicht: Burst-Rückhaltung nur bei Dunkelritter und Revolverklinge, bei beiden an ein eigenes Burstfenster gebunden | kostet nur die eigene Abklingzeit und wirkt bei jedem Tank gleich; die Beobachtung, auf die der TODO-Eintrag wartete, wäre eine Spielbestätigung als Aufgabe an ihn gewesen |
+| Tanks | **Abtausch (Arm’s Length) im Pull für seine Verlangsamung** (`ArmsLengthSlowsPull`, A194): jeder Tank mit eigener Option „Use Arm's Length on a pull for its Slow", ab Werk an; ein Pull sind so viele Gegner in Reichweite wie die globale Zahl „Number of hostiles" der Abwehr (Dunkelritter: seine Barrierenzahl, dazu die Barrierenrückhaltung), **Bosse nicht mitgezählt** (`SlowableHostilesInRange`, A236): Abtausch mindert den Treffer nicht, der ihn auslöst, also bringt er an einem Boss-Tankbuster nichts — sein Hinweis vom 01.10.2026, Boss allein in der Arena; die zentrale Rückfallstufe der Einzelabwehr wirkt Abtausch nur noch für Rotationen ohne eigene Pull-Regel (`HasOwnArmsLengthPullRule`) und nur unter derselben Bedingung, vorher ohne jede Gegnerzahl; nicht, solange die Gruppe schon verlangsamt ist, und nicht, solange BossModReborn einen Rückstoß nach Wirkende und vor Ende der Abklingzeit ankündigt (A212, A219). Eine Rückhaltung gibt es auf dieser Stufe nicht: Burst-Rückhaltung nur bei Dunkelritter und Revolverklinge, bei beiden an ein eigenes Burstfenster gebunden | kostet nur die eigene Abklingzeit und wirkt bei jedem Tank gleich; die Beobachtung, auf die der TODO-Eintrag wartete, wäre eine Spielbestätigung als Aufgabe an ihn gewesen |
 | Damage Dealer | leer, eine Frage an ihn | Barde, Pictomancer und Tänzer führen dieselbe Einstellung „Prevent the use of defense abilties during burst" (ab Werk an), Maschinist, Dragoon und Viper feste Rückhaltungen. Eine gemeinsame Regel wäre möglich; ihr Einstellungstext bindet, siehe unten |
 | Job | die Auslöser und Rückhaltungen selbst | siehe nächste Tabelle |
 
@@ -277,7 +277,7 @@ ob gemindert wird. Dieselbe Zahl beantwortet die andere Haelfte: ob **vorher** z
 | Schalter | Frage | Stand |
 |---|---|---|
 | `Skip mitigation for small area casts` | Oeffnet der Treffer die Abwehrkette? | **an** als Vorgabewert |
-| `Heal ahead of an announced area cast` | Wird vor dem Treffer geheilt? | **aus** als Vorgabewert |
+| `Heal ahead of an announced area cast` | Wird vor dem Treffer geheilt? | **an** als Vorgabewert (seine Regel für Voreinstellungen, 29.09.2026) |
 
 **Die Barriere zaehlt hier mit, und das widerspricht A85 nicht.** A85 hat die Barriere aus der
 allgemeinen Heilschwelle entfernt, weil sie keine Gesundheit herstellt — ein Tank bei 40 % hinter
@@ -439,6 +439,79 @@ ist der grosse" ist ueber die Schnittstelle nicht lesbar.
 Groesseninformation, die in diesem Moment vorliegt. Die Regel ist deshalb so gut, wie diese Zuordnung
 trifft — und nicht besser.
 
+### Gegner-Debuffs am Tankbuster und am Raidwide
+
+**Geltender Stand (A244):** Ein Tank hält Reflexion in seiner Einzelabwehr zurück, wenn alle vier Bedingungen gelten:
+- ein Tankbuster trifft ihn;
+- seine eigene große Minderung, Schutzwall oder eine Unverwundbarkeit läuft schon (`StatusHelper.RampartStatus`);
+- BossModReborn sagt einen Raidwide an, der nach dem Ende der Reflexion und vor ihrer neuen Bereitschaft landet;
+- weder er noch ein Tank steht in Gefährdungsklasse 1.
+
+In jeder anderen Lage fällt Reflexion wie bisher. Das gilt für alle vier Tanks (`HoldReprisalForRaidwide`, zentral).
+
+**Seine Angaben (01.10.2026):**
+- *Kriterium, Vorgabe:* „gewisse skills helfen bei raidwides allen, während sie bei tankbuster nur dem tank helfen. da
+  ist immer die frage, wie stark der tankbuster und wie stark die raidwides sind, kommt der tank ohne den skill beim
+  tankbuster in ernste bedrängnis, oder eher die anderen bei raidwides".
+- *Hinweis, Mechanik:* „die benannte debuffs wirken auf den schadensgeber und damit sind dann einzelperson wie auch
+  gruppe geschützt". Bestätigt am Wirktext (Job-Guide): Reflexion „Reduces damage dealt by nearby enemies by 10 %"
+  für 15 s; Zermürben und Stumpfsinn mindern den Schaden des Ziels.
+
+**Was daraus folgt, und was nicht:**
+- Der Debuff wird nicht „an" einen Treffer gegeben. Er liegt auf dem Gegner und mindert jeden Treffer, den der
+  während der 15 s austeilt.
+- Liegen Tankbuster und Raidwide innerhalb von 15 s, deckt ein rechtzeitig gelegter Debuff beide, gleich in welcher
+  Reihenfolge. Hier gibt es nichts zu entscheiden; der Code tut es bereits, weil der Debuff beim ersten der beiden
+  fällt.
+- Eine Wahl gibt es nur, wenn der zweite Treffer nach dem Ende des Debuffs und vor seiner neuen Bereitschaft landet
+  (Reflexion 60 s, Zermürben und Stumpfsinn 90 s).
+
+**Quellen zum Fall mit Wahl:**
+- The Balance, „Becoming a better tank": Gruppenwerkzeuge der Tanks, Reflexion eingeschlossen, gehören „most of the time"
+  auf raidweiten Schaden, „since reducing damage on everyone at once is more valuable than reducing damage only on
+  yourself".
+- Für den Tankbuster hat der Tank eigene Werkzeuge: eine große Minderung oder Schutzwall, dazu die kurzen.
+- Akhmorning, „Raiding Fundamentals" (Gemeinschaftsquelle):
+  - Ein Debuff muss liegen, bevor der Treffer festgelegt wird, also während des Zauberbalkens. Zwischen dem Ende des
+    Balkens und dem Schaden gelegt, wirkt er nicht.
+  - Schaden, den unsichtbare Hilfsfiguren austeilen, mindert ein Debuff auf dem sichtbaren Boss „usually" nicht; es
+    gibt Ausnahmen (E7S).
+
+**Die Fälle mit Wahl und ihre Entscheidung nach seinem Kriterium:**
+
+| Lage | Tank ohne Debuff am Tankbuster | Gruppe ohne Debuff am Raidwide | Entscheidung |
+|---|---|---|---|
+| eigene große Minderung oder Schutzwall läuft | gedeckt; die 10 % fehlen ihm, die Deckung trägt | jedes Mitglied verliert 10 %, kein persönliches Werkzeug dieser Größe | **halten** für den Raidwide |
+| keine eigene Deckung (alles verbraucht) | ernste Bedrängnis möglich (Höhe unbekannt, Konzept 09: angesagt heißt möglicherweise tödlich) | wie oben | **an den Tankbuster** |
+| Spieler oder ein Tank in Gefährdungsklasse 1 | — | — | an den Tankbuster (die Rückhaltung weicht) |
+| Tankbuster auf einem anderen Tank | dessen Deckung ist hier nicht bekannt | wie oben | wie bisher, an den Tankbuster |
+| Pull | — | — | wie bisher (kein Tankbuster, Reflexion trifft das ganze Rudel) |
+| kein Modul oder keine Raidwide-Ansage | — | Raidwide nicht bekannt | wie bisher |
+
+**Grenzen:**
+- *Hilfsfiguren:* Kommt der angesagte Raidwide von einer Hilfsfigur, wirkt Reflexion dort vermutlich nicht. Dann hält
+  die Regel umsonst; der Tank war am Tankbuster gedeckt, verloren sind 10 % an ihm. Ob ein Raidwide von einer Hilfsfigur
+  kommt, misst RSR nicht. Erste Daten: Das Protokoll nennt seit A242 je Landung die getroffenen Gruppenmitglieder, und
+  seine Raidwides im 48-Spieler-Inhalt meldeten „reached you False" ohne Treffer (TODO).
+- *Andere Spieler:* Ein zweiter Tank kann den Raidwide mit seiner Reflexion decken. Das ist Verhalten eines anderen
+  Spielers, kein tragender Grund.
+- *Zermürben und Stumpfsinn:* Die Einzelabwehr eines Schadensausteilers öffnet für einen Tankbuster auf ihn selbst. Eine
+  große persönliche Minderung hat er nicht, die Bedingung „gedeckt" gilt nie. Die Stufe der Schadensausteiler bleibt
+  deshalb leer; ihre Debuffs fallen wie bisher.
+
+**Belege aus seinen Protokollen vom 01.10.2026:** Krieger, Restaurierter Löwe. Tankbuster kamen etwa alle 61 s und
+trafen ihn mit 30–47 % unter einer großen Minderung, mit 85 % ohne. Seine Raidwides wurden mit bis zu 37 % gemessen
+(Klosterdämon). Unter seiner eigenen Deckung ist der Tank also nicht in ernster Bedrängnis; die Gruppe verliert am
+Raidwide 10 % jedes Mitglieds.
+
+**Verworfen:**
+- „An den Tankbuster, weil er sicher und sofort kommt" (meine Aussage vom 01.10.2026, C105). Ein angesagter Raidwide ist
+  ebenso angekündigt, und die Reihenfolge der beiden ist nicht fest.
+- „Zurückhalten, sobald ein Raidwide angesagt ist", ohne Blick auf die eigene Deckung. Das ließe einen ungedeckten Tank
+  am Tankbuster ohne Reflexion.
+- Eine neue Messung der Tankbuster-Höhe als Voraussetzung. Die eigene Deckung beantwortet die Frage seines Kriteriums
+  ohne sie. Die Messung nach Minderung liegt systematisch zu niedrig (Konzept 09).
+
 ## Wann Lux Solaris zuendet
 
 **Sachstand der Regel, aus seinen Vorgaben vom 26.09.2026 (A151 bis A153), umgesetzt in A154 bis A156**
@@ -511,13 +584,16 @@ Einschiebeplatz, und sie ist eine Beigabe — ungenutzt verfaellt sie mit Refulg
    - **Fester / Necrotize** (Aetherflow): verlieren durch einen Platz Aufschub nichts; ein Ueberlauf
      droht erst, wenn Energy Drain wieder bereitsteht, und dessen Abklingzeit laeuft seit der
      Solar-Phase.
-   - **Mountain Buster** (nur unter Titan's Favor): haengt an einem Status. Wie lange der liegt und ob der
-     naechste Topaz Rite eine unverbrauchte Gunst ueberschreibt, steht nicht im Repository (unbelegt). Zur
+   - **Mountain Buster** (nur unter Titan's Favor): haengt an einem Status. Der naechste Topaz Rite
+     ueberschreibt eine unverbrauchte Gunst: The Balance, Summoner Basic Guide (02.10.2026): „weave each proc
+     immediately when you gain one, otherwise you will lose a use/'overwrite' it on the next cast of Topaz
+     Rite"; der Job-Guide: „Effect of Titan's Favor ends upon execution of certain summoner actions". Zur
      Laufzeit ist es lesbar: Endet der Status vor dem naechsten Einschiebefenster, ist ein Gegner in
      Reichweite und ist Mountain Buster eingeschaltet und erlernt, verliert die Aktion durch Aufschub
      ihren Wert und geht vor. Ohne die letzte Bedingung nahme niemand den Platz, und Lux verfiele.
-   - **Searing Flash** (unter Ruby's Glimmer) konkurriert nicht: Ausserhalb einer Demi wirkt die Rotation
-     es nur auf einen sterbenden Boss; ihm vorzugehen hielte Lux fuer eine Aktion, die nicht kommt (A155).
+   - **Searing Flash** (unter Ruby's Glimmer) konkurriert kaum: Ausserhalb einer Demi wirkt die Rotation
+     es auf einen sterbenden Boss und im letzten Einschiebefenster vor dem Ende von Ruby's Glimmer (A234);
+     ihm sonst vorzugehen hielte Lux fuer eine Aktion, die nicht kommt (A155).
    Die Gewichtung lautet damit, ohne neue Zahl: Die Kleinheilung am Verfall geht vor jede
    Schadens-Faehigkeit, deren Wert durch einen Platz Aufschub nicht verfaellt, und hinter jede, deren
    ermoeglichender Status bis zum naechsten Fenster endet. In drei GCDs liegen rund sechs Plaetze; dass
@@ -539,8 +615,11 @@ diese, weil ihr Einstellungstext jede Verwendung bindet.
 - Ein Dunkelritter unter Walking Dead steht bei 1 HP in Gefaehrdungsklasse 1; Lux faellt dann sofort.
   Das ist gewollt (Punkt 1, seine Entscheidung): die aufgehobene Heilung fuer mehrere, einschliesslich
   des Tanks.
-- Ob der Radius von Mitte oder Trefferflaeche gemessen wird, ist unbelegt; verwendet wird das Mass der
-  Zielwahl (`GetCanAffects`, Trefferflaeche zu Trefferflaeche).
+- Ob ein Spieler in einer Flaeche steht, entscheidet der Mittelpunkt seines Modells (Akhmorning, „Raiding
+  Fundamentals", 02.10.2026: „A player's position is determined by the direct center of their player
+  model"). Die Zielwahl rechnet dagegen Trefferflaeche zu Trefferflaeche (`GetCanAffects`) und zaehlt ein
+  Mitglied am Rand mit, das der Mittelpunkt schon ausserhalb hat — um den Trefferkreis des Mitglieds zu
+  grosszuegig. Im Kampf: Lux kann einen Randstehenden mitzaehlen, den sie nicht heilt (TODO).
 
 **Die Heilmenge ist gemessen, nicht aus der Potenz gerechnet, und es zaehlt die kleinste.** 500 Potenz
 sind von hier nicht in Lebenspunkte umzurechnen; der Effekt-Handler sieht jede eigene Heilung mit ihrem
@@ -600,14 +679,14 @@ nicht aus dem Spiel abgeleitet, deshalb bleibt der Wert offen.
 laesst.** Wer einen davon baut, schliesst mehrere Punkte zugleich — das ist der Grund, die Konzepte
 gemeinsam zu lesen und nicht einzeln.
 
-**Ein Wirkungswert je Aktion, aus dem eigenen Wirktext — vier offene Punkte.**
+**Ein Wirkungswert je Aktion, aus dem eigenen Wirktext — er trug vier Punkte; erzeugt ist er (`DefensiveValues.g.cs`).**
 
 | Offener Punkt | Konzept | Was der Wert dort beantwortet |
 |---|---|---|
-| Vorausschau vor dem **ersten** Treffer | hier | Wieviel Schaden der angekuendigte Einschlag traegt, bevor eine Beobachtung vorliegt |
-| Wahl des Mittels nach Treffergroesse (Vorgabe 5) | hier | Welche Barriere, welche Minderung den Treffer deckt |
+| Vorausschau vor dem **ersten** Treffer | hier; offen (TODO „Vorausschau vor dem ersten Treffer“) | Wieviel Schaden der angekuendigte Einschlag traegt, bevor eine Beobachtung vorliegt |
+| Wahl des Mittels nach Treffergroesse (Vorgabe 5) | hier; zurueckgebaut, kein Job haelt zwei Barrieren zur Wahl (A118) | Welche Barriere, welche Minderung den Treffer deckt |
 | Die Minderungsbilanz kennt Betaeubung und Verlangsamung nicht | hier, „Die Luecke" | Um wieviel eine Drosselung den Strom senkt — gemessen: `GetCurrentMitigationPercent` rechnet Addle, Feint, Dismantle und Reprisal, sonst nichts |
-| Rueckstoss auch **als** Minderungswerkzeug | `TODO.md` | Dass seine Verlangsamung in derselben Groessenordnung wirkt wie Rampart |
+| Rueckstoss auch **als** Minderungswerkzeug | umgesetzt (A194, A236) | Dass seine Verlangsamung in derselben Groessenordnung wirkt wie Rampart |
 
 Der Wert ist **erzeugbar**, nicht handzufuehren, und das ist gemessen statt vermutet: Im Lauf vom
 19.09.2026 nennen **69** Wirktexte in `ActionId.resx` die Formel „reduces damage taken by X %“, mit
@@ -731,8 +810,8 @@ weil er groesser ist als die Sanctus-Regel, an der er auffiel.
 |---|---|
 | Drosselung **auf der Gegnerseite** — Slow, Reflexion, Feint, Stumpfsinn, Dismantle | `HostileOutputPercent`, je Satz aus dem Wirktext belegt |
 | Minderung **auf der eigenen Seite**, gruppenweit — Sacred Soil, Temperance, Troubadour | `GetCurrentMitigationPercent`, aber fuer einen **einzelnen bevorstehenden Treffer** gebaut, mit Magisch/Physisch-Heuristik, nicht fuer den Dauerstrom |
-| Minderung **des Tanks persoenlich** — Rampart, Bollwerk, Sentinel, Schattenwall, Vengeance, Bloodwhetting | **fehlt vollstaendig.** `StatusHelper.RampartStatus` fuehrt die Ids, wird aber ausschliesslich als `StatusProvide` benutzt, also zur Doppelbelegungssperre — nie zur Messung |
-| Die Saetze dieser Minderungen | **fehlen.** `RampartStatus` ist eine reine Id-Liste; Rampart und Sentinel mindern verschieden stark. Ohne Satz je Status ist keine Rechnung moeglich; belegbar waeren sie aus den Wirktexten in `Action.resx` |
+| Minderung **des Tanks persoenlich** — Rampart, Bollwerk, Sentinel, Schattenwall, Vengeance | **nicht als Satz gemessen.** `StatusHelper.RampartStatus` fuehrt die Ids und dient als Doppelbelegungssperre (`StatusProvide`) und als Ja/Nein-Pruefung „gedeckt“ (`HasMajorMitigation`, `HoldReprisalForRaidwide`) — nie zur Messung |
+| Die Saetze dieser Minderungen | **liegen vor**, aus den Wirktexten erzeugt (`DefensiveValues.g.cs`); die Ratenrechnung braucht sie nicht, weil der beobachtete Verlauf netto ist (unten) |
 
 **Der ganze Anspruch ist aus Laufzeitbeobachtung erfuellbar, ohne eine einzige statische Vorgabe** —
 und er ist es inzwischen. Das ist der Weg mit dem kleinsten Eingriff und der groessten Deckung, weil
@@ -871,7 +950,7 @@ Druochole, Haima, Excogitation (liegt bereit und loest selbst aus), Aetherpact, 
 Thrill of Battle; ebenso Raw Intuition/Bloodwhetting und Nascent Flash, deren Minderung und Barriere
 sofort wirken und deren Heilung mit jedem Waffenskill folgt. Bloodbath („Converts a portion of physical
 damage dealt into HP") heilt mit dem naechsten physischen Treffer; zaehlen Autoangriffe dazu
-(Schluss, nicht belegt), liegt der kurze Vorlauf naeher als ein voller GCD, sonst um hoechstens den GCD-Rest
+(Schluss; das consolegameswiki, „Bloodbath“, 02.10.2026, nennt nur physischen gegen magischen Schaden, Autoangriffe nicht), liegt der kurze Vorlauf naeher als ein voller GCD, sonst um hoechstens den GCD-Rest
 daneben.
 
 **Verworfen: ein zweiter Ausloeser samt eigener Rangstufe.** Er waere der naheliegende Weg gewesen
@@ -937,11 +1016,9 @@ Richtungen: In der **Heilschwelle** zaehlt die Barriere nicht, weil sie den Heil
 (A85) — in der **Ueberlebensfrage** zaehlt sie, weil sie Schaden abfaengt. `GetEffectiveHp` fuehrt
 sie deshalb, und die kritische Rangstufe der Heilzielwahl liest genau diese Groesse (Konzept 07).
 
-**Was zur Zeitrechnung fehlt, ist der Nenner, nicht der Zaehler.** Der Puffer einschliesslich
-Barriere ist vorhanden und wird gelesen; die Rate je Mitglied ist es nicht — derselbe fehlende
-Baustein wie bei der Heilzielwahl. Ohne ihn ist „reicht die Zeit" nicht zu berechnen, und die
-Barriere bleibt auf ihre heutige Rolle beschraenkt: Sie hebt den Puffer, aus dem die
-Ueberlebensbewertung ihre Antwort zieht.
+**Zaehler und Nenner sind beide vorhanden.** Der Puffer einschliesslich Barriere wird gelesen
+(`GetEffectiveHp`), die Rate je Mitglied steht seit A91 (`RecordedHP`, `GetCorrectedTTK`), und die Vorausschau
+oben rechnet aus beiden. Die Barriere hebt den Puffer, aus dem die Ueberlebensbewertung ihre Antwort zieht.
 
 **Die Restzeit der Barriere selbst waere die zweite Haelfte dieser Frage.** `StatusHelper.HasSurvivingShield` wurde
 dafuer gebaut und hat heute keinen Leser; ihr bekannter Defekt — sie misst die **kuerzeste**
@@ -975,8 +1052,8 @@ zutrifft, fällt Sanctus wieder.
 holy aber wieder ein" (Gemach ist der deutsche Name des Slow-Status 9). Die Regel trug bis dahin die
 Ersatzgarantie der Streckung: ausgesetzt nur, solange Dia oder Aero noch ein Ziel ohne DoT hat. Während
 des Aussetzens legt der Weißmagier aber genau diese DoTs, einen je GCD; nach einem DoT je Gegner war
-der Vorbehalt verbraucht, und Sanctus fiel in die noch laufende Verlangsamung. Die Garantie gehört zur
-Streckung, die genau einen eingeschobenen GCD braucht; eine Verlangsamung dauert viele. Jetzt fällt
+der Vorbehalt verbraucht, und Sanctus fiel in die noch laufende Verlangsamung. Die Streckung trägt
+die Garantie seit A231 ebenfalls nicht mehr; sie war in beiden Regeln meine Abwägung. Jetzt fällt
 der gehaltene GCD auf die DoTs, solange einer fehlt, danach auf Glare. **Preis, im Kampf:** Ab drei
 Gegnern trifft Sanctus in Summe mehr als Glare; jeder gehaltene GCD nach dem letzten DoT kostet diese
 Differenz an Schaden, und der Pull dauert entsprechend länger. Dafür steht die Betäubung zur
@@ -1040,7 +1117,10 @@ zu prüfende Ursache.
 ### Die Größenordnung
 
 Die Betäubungsressource ist **einmalig je Pull**, nicht wiederkehrend: Erste
-Anwendung 4 s, zweite 2 s, dritte 1 s, danach 45 s Immunität. Ein stehender
+Anwendung 4 s, zweite 2 s, dritte 1 s, danach 45 s Immunität. The Balance bestätigt die Halbierung (White Mage
+Basic Guide, 02.10.2026: „halving its duration with each application until they become temporarily immune to
+stun … the cumulative 7s of stun helps mitigate a significant amount of tank damage in trash pulls"); die 45 s
+Immunität nennt es nicht. Ein stehender
 Gruppenpull ist selten länger als diese 45 s, das Zurücksetzen der Resistenz fällt
 also praktisch nicht mehr in den Kampf. Zu verteilen sind damit genau **7 Sekunden
 Betäubung**, und die Frage lautet nicht, wie viele Zyklen man unterbringt, sondern
@@ -1130,7 +1210,8 @@ Die Erhebung dazu ist geführt und liegt als `scan16.py` im Repository: Sie nimm
 jede PvE-Aktion, deren Wirktext eine Kontroll- oder Minderungswirkung auf Gegner
 nennt, und fragt, ob der Baum den zugehörigen Status irgendwo liest. Im
 Tank- und Heilerprofil bleibt **eine** Aktion übrig, deren zweite Wirkung
-nirgends gelesen wurde: **Abtausch (Arm’s Length)**. Sie ist als Rückstoßschutz eingeordnet
+nirgends gelesen wurde: **Abtausch (Arm’s Length)** — inzwischen gelesen (A194, A236: Abtausch im Pull für seine
+Verlangsamung). Sie war als Rückstoßschutz eingeordnet
 (`CustomRotation_Ability.AntiKnockbackAbility`), legt aber zugleich
 Verlangsamung +20 % auf jeden physischen Angreifer für 15 Sekunden. Der Wirktext
 der Verlangsamung nennt ausdrücklich die Verzögerung der **Automatikangriffe**,
@@ -1142,90 +1223,95 @@ sind erfasst statt bearbeitet.
 Zweite, unabhängig belegte Fundstelle: Im Schadenszweig steht der Sanctus-Block
 **vor** dem DoT-Block. Sobald `AoeCount = 3` erfüllt ist, greift Sanctus und der DoT
 wird nie gesetzt — bei einem Boss mit zwei Adds läuft also nie Dia. Dass das nicht
-gewollt ist, zeigt der DoT selbst: `ModifyDiaPvE` (`WhiteMageRotation.cs:300-311`)
+gewollt ist, zeigt der DoT selbst: `ModifyDiaPvE` (`WhiteMageRotation.cs:306-317`)
 setzt `TargetStatusProvide` gegen Nachlegen und `IsRestrictedDOT` gegen ungeeignete
 Ziele — beide Vorkehrungen laufen bei AoE ins Leere, weil der Zweig nicht erreicht
-wird.
+wird. Seit A231 fällt der GCD nach einem Sanctus auf den fälligen DoT (Abschnitt „Die Regel“).
 
 ## Die Regel
 
-Drei Gesichtspunkte sind eine einzige Frage: **Wann lohnt es sich, einen GCD nicht in
-Sanctus zu stecken?**
+**Seine Vorgabe für den Einschub, ohne Ermessensspielraum:** Die Betäubung durch Sanctus hält vier
+Sekunden, seine Erholzeit beträgt zweieinhalb; ein sofort folgender zweiter Sanctus fiele mitten in
+die laufende Betäubung und überschriebe sie. Ein anderer Zauber dazwischen legt die zweite Betäubung
+ans Ende der ersten. Darüber steht seine Bedingung für jede Aussetzregel: ausgesetzt wird nur,
+solange die Gegner überhaupt noch betäubt werden können (A90).
 
-- **Der Grund:** Der DoT fehlt oder läuft aus, der eingeschobene Cast hat eigenen Wert.
-- **Das Timing:** Läuft die Betäubung noch, streckt der Einschub sie, statt sie zu
-  überschreiben. Ist das Ziel bereits resistent oder immun, ist die Betäubung ohnehin
-  kein Argument mehr.
-- **Der zweite Grund für dasselbe Timing:** Läuft eine fremde Mitigation, ist ein Stun
-  jetzt weniger wert als später.
+> Unmittelbar nach einem Sanctus geht der nächste GCD an einen anderen Zauber, wenn die Betäubung
+> dieses Sanctus noch liefe, sobald ein jetzt begonnener zweiter Sanctus landet.
 
-> Ein Nicht-Sanctus-GCD wird eingeschoben, wenn er eigenen Wert hat **und** die
-> Betäubung dadurch nicht verloren geht — weil sie noch läuft, weil sie ohnehin nicht
-> mehr wirkt, oder weil gerade eine stärkere Mitigation trägt.
+Der eingeschobene GCD fällt an den DoT, wo einer fällig ist, sonst an Glare. Weitere Bedingungen
+trägt die Regel nicht: keine Gegnerzahl außer der Flächenprüfung von Sanctus selbst, keine
+Abwägung gegen den Schaden, keine Ausnahme für einen nachrückenden Gegner.
+
+Die beiden anderen Aussetzregeln — Aussetzen bei fremder Drosselung (Verlangsamung) und bei der
+Barriere des Dunkelritters — stehen unter „Die Vorgaben des Auftraggebers" und in Konzept 10.
 
 ### Ein einziger Einschub genügt
 
-Bei einem GCD von 2,5 s und Stundauern von 4 / 2 / 1 s:
+Sanctus hat eine Wirkzeit, und die Betäubung beginnt, wo der Zauber landet. Bei GCD und Wirkzeit
+von je 2,5 s und Betäubungsdauern von 4 / 2 / 1 s:
 
-| Verlauf | Betäubungsdeckung | Intervalle |
+| Verlauf | Betäubungsdeckung | Eingeschobene GCDs |
 |---|---|---|
-| ohne Einschub, Casts bei 0 / 2,5 / 5,0 | **5,5 s** | 0–4,5 · 5,0–6,0 |
-| ein Einschub, Casts bei 0 / 5,0 / 7,5 | **7,0 s** | 0–4,0 · 5,0–7,0 · 7,5–8,5 |
-| zwei Einschübe, Casts bei 0 / 5,0 / 10,0 | **7,0 s** | 0–4,0 · 5,0–7,0 · 10,0–11,0 |
+| ohne Einschub | **5,5 s** (2,5–7,0 · 7,5–8,5) | 0 |
+| Einschub, solange die Betäubung den nächsten Sanctus überdauert | **7,0 s** (2,5–6,5 · 7,5–9,5 · 10,0–11,0) | 1 |
+| Einschub, solange irgendeine Betäubung läuft | **7,0 s** (2,5–6,5 · 10,0–12,0 · 15,0–16,0) | 3 |
 
-Der zweite Einschub bringt nichts mehr und kostet einen weiteren GCD. Der DoT reicht
-also exakt aus. Die Zahlen stammen aus `.github/scripts/audit/stun_coverage.py`, das
-die Regel GCD für GCD simuliert und im Repository liegt; bei verkürztem GCD (2,0 s
-unter Presence of Mind) liefert die Regel sogar lückenlose Deckung von 0 bis 7 s.
+Nach der zweiten Anwendung (2 s) landet der nächste Sanctus ohnehin erst nach deren Ende; ein
+Einschub dort kostet einen GCD und bringt nichts. Unter Presence of Mind (GCD und Wirkzeit 2,0 s)
+liefert die Regel lückenlose Deckung von 2 bis 9 s, ebenfalls mit einem Einschub. Die Zahlen stammen
+aus `.github/scripts/audit/stun_coverage.py` (Aufruf mit GCD und Wirkzeit), das die Regel GCD für
+GCD simuliert und einen Selbsttest trägt.
 
 ### Warum die Bedingung so lautet, wie sie lautet
 
-**Nicht über eine Restzeit, sondern über zwei Wahrheitswerte.** Eine Restzeit
-beschreibt einen einzelnen Gegner. Im Pull kommen laufend ungestunnte Gegner hinzu;
-dann sagt die Restzeit über die bereits Betäubten nichts über die Neuzugänge, und die
-Regel würde strecken, obwohl ein Cast die Neuen mit **voller** Dauer erwischt hätte —
-die Resistenz zählt je Gegner. Gestreckt wird deshalb, wenn **alle** Gegner im Radius
-betäubt sind, oder wenn **keiner** von ihnen noch betäubt werden kann — in
-beiden Fällen zusätzlich nur, solange überhaupt **eine Betäubung läuft**. Ohne
-diesen Zusatz griff die zweite Hälfte auch nach der abgearbeiteten
-Betäubungskette, wenn alle Gegner immun und keiner mehr betäubt ist: Dort gibt es
-nichts zu schützen, und die Regel tauschte für den Rest des Pulls einen
-Flächenzauber gegen einen Einzelzielzauber (A50). Bei einem einzelnen Gegner ist
-die Bedingung gleichbedeutend mit der Restzeit-Bedingung.
+**Nach dem Sanctus, nicht nach irgendeiner Betäubung.** Seine Vorgabe spricht von zwei Sanctus und
+einem Zauber dazwischen; die Regel fragt deshalb `IsLastGCD` nach Sanctus. Nach dem eingeschobenen
+Zauber geht der nächste Sanctus hinaus, gleich was läuft. Eine Betäubung durch den Tank (Low Blow
+auf einem Gegner) hält Sanctus damit nicht fest.
 
-Eine Schwelle der Form `Restzeit > ein GCD` wäre zusätzlich falsch gewesen: Nach dem
-ersten Sanctus beträgt die Restzeit beim nächsten GCD noch 1,5 s, die Regel hätte den
-einen nötigen Einschub gerade verhindert.
+**Gegen die Landung, nicht gegen null.** Die Restzeit der Betäubung wird mit der Zeit verglichen,
+bis ein jetzt begonnener Sanctus landet: Rest des GCD plus Wirkzeit (`GetCastTime`, angepasst, also
+mit Presence of Mind). Gemessen wird die längste laufende Betäubung im Wirkradius — überschrieben
+würde jede, die die Landung überdauert.
 
-**Über den Wirkradius, nicht über die Jobreichweite.** `SurveyStuns` bekommt den
-Wirkradius der Aktion (`HolyIiiPvE.Info.EffectRange`), nicht `DataCenter.JobRange` —
-für einen Heiler sind das 25 Yalms Angriffsreichweite, nicht der Wirkradius von
-Sanctus. Über die Jobreichweite gemessen hätten ferne, nie betäubte Gegner die Deckung
-dauerhaft unvollständig erscheinen lassen und die Regel nie greifen lassen.
-Nebenwirkung dieser Wahl: Die Messung gehört zur Aktion, nicht in einen
-jobunabhängigen Updater — die Einhängung in den `MajorUpdater` und die dafür nötige
-Änderung der Aktualisierungsreihenfolge entfallen.
+**Die Betäubung, die noch nicht auf den Gegnern steht.** Wirkzeit und Erholzeit sind gleich lang;
+der nächste GCD ist in dem Moment frei, in dem der erste Sanctus landet, und seine Betäubung steht
+dann womöglich noch nicht auf den Gegnern. Ein Gegner im Radius, der weder betäubt noch resistent
+ist, bekommt gleich die erste, volle Anwendung. Sie zählt mit der Dauer aus dem Wirktext
+(`DefensiveValues.DurationOf`, Sanctus 4 s). Die frühere Regel las an genau dieser Stelle „keine
+Betäubung" und gab Sanctus frei (Schluss aus Code und Wirkzeit, im Spiel nicht beobachtet).
 
-**Über eine Statusgruppe, nicht über eine einzelne Id.** Die Spieldaten führen `Stun`
-und rund ein Dutzend Varianten mit Zahlensuffix; welche davon Sanctus anlegt, ist
-offline nicht bestimmbar. `StatusHelper.StunStatus` fasst sie nach dem im Projekt
-etablierten Muster zusammen. Damit ist die Frage gegenstandslos, und fremde
-Betäubungen zählen mit — was erwünscht ist, weil auch sie Schaden verhindern.
+**Seine Bedingung über allem.** Steht im Radius weder eine laufende Betäubung noch ein noch
+betäubbarer Gegner, gibt es nichts zu strecken; Sanctus geht hinaus. Gegner mit Resistenz zählen
+nicht als frisch, weil ihre nächste Anwendung kürzer ist und nach dem Modell nicht mehr überlappt.
 
-**Mit Ersatzgarantie.** Sanctus wird nur ausgesetzt, wenn ein Cast mit eigenem Wert
-bereitsteht (`DiaPvE`, `AeroIiPvE`, `AeroPvE`). Fehlt er, fällt Sanctus sofort. Begründet war das
-mit „ein Ausweichen auf Glare wäre ein reiner Verlust" (A19, meine Abwägung, nicht seine Vorgabe).
-Sie steht gegen seine Spielweise „Sicherheit vor Schaden": Die Streckung ist Schutz, Glare kostet
-gegenüber Sanctus nur Schaden. Zur Entscheidung vorgelegt (TODO).
+**Über den Wirkradius, nicht über die Jobreichweite.** Gemessen wird im Wirkradius der Aktion
+(`HolyIiiPvE.Info.EffectRange`), nicht in `DataCenter.JobRange` — für einen Heiler sind das 25 Yalms
+Angriffsreichweite. Über die Jobreichweite gemessen hätten ferne, nie betäubte Gegner als frisch
+gegolten.
 
-**Seine Beobachtung (29.09.2026): Das zweite Sanctus fällt wieder sofort, statt die Betäubung
-auslaufen zu lassen.** Die Regel und alle ihre Eingänge sind seit dem 10.09. (Regel), 13.09.
-(`SurveyStuns`) und 16.09. (TTK-Prüfung) unverändert; am 29.09. änderte sich nur die Voreinstellung
-von `StretchHolyStun` auf an. Welche Bedingung in seinem Pull durchließ, sagt der Code nicht. Vier Wege
-lassen Sanctus sofort fallen, während eine Betäubung im Radius läuft: weniger als
-`StretchHolyMinHostiles` Gegner im Radius; ein Gegner im Radius noch betäubbar und unbetäubt (etwa ein
-nachrückender); kein DoT-Ziel (alle tragen schon Dia, oder `IsRestrictedDOT` greift); die Einstellung
-aus. Seit A228 schreibt `DefenseTrace.log` jede dieser Entscheidungen mit Grund.
+**Über eine Statusgruppe, nicht über eine einzelne Id.** Die Spieldaten führen `Stun` und rund ein
+Dutzend Varianten mit Zahlensuffix; welche davon Sanctus anlegt, ist offline nicht bestimmbar.
+`StatusHelper.StunStatus` fasst sie nach dem im Projekt etablierten Muster zusammen.
+
+**Ausgeschlossen, weil sie seine Vorgabe einschränkten** (bis 01.10.2026 im Code, A231):
+- *Ersatzgarantie* — Sanctus nur ausgesetzt, wenn ein DoT den GCD übernimmt (A19, meine Abwägung
+  „Glare wäre ein reiner Verlust"). Seine Vorgabe sagt „ein anderer Zauber"; Glare ist einer.
+- *Ausnahme für einen unbetäubten, noch betäubbaren Gegner im Radius* — meine Ableitung, dass ein
+  Neuzugang die volle Dauer sofort bekommen soll. Sie hob die Streckung im gestaffelten Pull fast
+  immer auf.
+- *Mindestzahl `StretchHolyMinHostiles`* für die Streckung — Sanctus prüft seine Zielzahl selbst.
+  Die Einstellung gilt weiter für das Aussetzen bei der Barriere des Dunkelritters.
+- *H2 aus A19*, die Ablehnung von `Restzeit > ein GCD`, rechnete ohne Wirkzeit. Mit Wirkzeit gleich
+  GCD ist sie dieselbe Bedingung wie die jetzige.
+
+**Seine Beobachtung (29.09.2026): Das zweite Sanctus fiel sofort, statt die Betäubung auslaufen zu
+lassen.** Die Regel war seit dem 10.09. unverändert. Drei ihrer Wege ließen Sanctus sofort fallen und
+sind entfernt: die Ersatzgarantie, die Ausnahme für einen Neuzugang, die Mindestzahl; dazu der
+wahrscheinlichste, der Vergleich mit einer Betäubung, die bei der Entscheidung noch nicht auf den
+Gegnern stand. `DefenseTrace.log` nennt je Entscheidung nach einem Sanctus den Grund mit Restzeit und
+Landezeit.
 
 ## Vorhandene Bausteine
 
@@ -1233,13 +1319,13 @@ Der Entwurf erfindet wenig; das meiste lag im Baum und war nur nicht verbunden.
 
 | Baustein | Fundstelle | Zustand |
 |---|---|---|
-| Mitigationsmessung: Gegner-Debuffs und Party-Buffs, verrechnet zu einem Schadensfaktor | `CustomRotation_OtherInfo.cs:534` | Gelesen nur zur Anzeige (`RotationConfigWindow.cs:4863`) |
+| Mitigationsmessung: Gegner-Debuffs und Party-Buffs, verrechnet zu einem Schadensfaktor | `CustomRotation.GetCurrentMitigationPercent` | Gelesen nur zur Anzeige (`RotationConfigWindow`, Stand 02.10.2026) |
 | Betäubung, Verlangsamung und **deren Resistenzen** als Statuseffekte | `StatusID.Stun`, `.StunResistance`, `.Slow`, `.SlowResistance`, `.ArmsLength` | In den Spieldaten vorhanden; die Resistenzstufe ist damit direkt lesbar, eine eigene Buchführung über den Ereignisstrom ist **nicht** nötig |
 | Statusabfragen mit Restzeit und Stapelzahl | `StatusHelper.HasStatus`, `.StatusTime`, `.StatusStack` | In Betrieb |
-| Vorhersagefenster aus der BossModReborn-Timeline | `Configs.cs:742`, `:747`, ausgewertet in `StateUpdater.cs:185` | In Betrieb |
+| Vorhersagefenster aus der BossModReborn-Timeline | `Configs.BMRRaidwideMitWindow` und Geschwister, ausgewertet in `StateUpdater` | In Betrieb |
 | Zentralisierte Nachzieh-Regel für Gegner-Debuffs | `CustomRotation.ShouldSustainMitigationDebuff` | In Betrieb, 25 Aufrufstellen in den Standardrotationen (Stand 26.09.2026) — Beleg, dass eine gemeinsame Regel über viele Jobs trägt |
 | Gegnerzahl-Schwelle als etabliertes Muster | `Configs.MitigationSustainHostileCount` gegen `NumberOfHostilesInRange` | In Betrieb |
-| Trennung von Mitigation und Schaden im Dispatch | `CustomRotation_GCD.cs`: HealArea 240, HealSingle 282, DefenseArea 322, DefenseSingle 337, GeneralGCD erst 449 | In Betrieb |
+| Trennung von Mitigation und Schaden im Dispatch | `CustomRotation_GCD.cs`, Reihenfolge in Konzept 03 („Die Slot-Kette“): Heilung, dann Abwehr, `GeneralGCD` zuletzt | In Betrieb |
 
 ## Was ausgeschlossen wurde und warum
 
@@ -1282,14 +1368,12 @@ die Verdrahtung fehlt. Für den DoT-Fall zusätzlich durch die beiden Vorkehrung
 `ModifyDiaPvE`, die bei AoE nie zur Wirkung kommen.
 
 **Die gewählte Option ist falsch.** Widerlegt für die Bremse, nicht für einen
-Auslöser — siehe den belegten Rückbau oben. Für die Übertragung auf weitere Aktionen
-hält der Einwand teilweise stand, weshalb sie von Beobachtung abhängig gemacht ist.
+Auslöser — siehe den belegten Rückbau oben. Die Übertragung auf weitere Aktionen hat die Erhebung (`scan16.py`)
+auf Abtausch eingegrenzt; sie ist gebaut (A194).
 
-**Der Einschub ist im mittleren Gegnerzahlbereich falsch.** **Hält stand.** Bei etwa
-fünf bis sieben Zielen ist weder der DoT-Wert noch der Betäubungswert groß, der
-entgangene Sanctus aber schon spürbar. Die Regel ist deshalb nicht als „immer"
-formuliert, sondern an `StretchHolyMinHostiles` gebunden; dieser Bereich ist der
-schwächste Teil.
+**Der Einschub ist im mittleren Gegnerzahlbereich falsch.** Widerlegt durch seine Vorgabe und
+seine Spielweise: Die Streckung ist Schutz, der Einschub kostet einen GCD Schaden je Pull, und
+Sicherheit geht vor Schaden. Eine Bindung an eine Gegnerzahl ist entfernt (A231).
 
 **Nicht widerlegt:** dass der Nutzen im Spiel eintritt. Die Rechnung ist ein Modell.
 
@@ -1297,30 +1381,12 @@ schwächste Teil.
 
 ### Wirksamkeitsmessung im Spiel
 
-Ein Nachweis, dass die Rotation besser spielt, ist **nicht** unmöglich: RSR sieht den
-Ereignisstrom und kann sich selbst messen. `Watcher.ActionFromEnemy` wertet jeden
-gegnerischen Treffer aus, summiert die Schadensanteile und legt sie über
-`DataCenter.AddDamageRec` als `DamageRec(ReceiveTime, Ratio)` in eine Warteschlange
-(`DataCenter.AddDamageRec`, gefüllt aus `Watcher.cs`). Der erlittene Schaden über die Zeit ist damit
-bereits erfasst — gebraucht wird nur eine Auswertung je Kampf statt eines gleitenden
-Fensters.
-
-| Kennzahl | Quelle — **keine davon ist gebaut**, die Namen sind Vorschläge | Aussage |
-|---|---|---|
-| Erlittener Schadensanteil je Pull | `_damages`, summiert zwischen Kampfbeginn und -ende | Das Zielkriterium |
-| Genutzte Betäubungsdauer | `StunCoverage` über die Zeit integriert | Ob die 7 s ausgeschöpft wurden |
-| Überlappungsanteil | Anteil der Betäubungszeit, in der die Minderungsquote bereits erhöht **wäre** — eine Größe dieses Namens gibt es nicht | Ob Posten 2 greift |
-| DoT-Laufzeitanteil | Zeit mit aktivem DoT geteilt durch Kampfdauer | Ob der DoT-Grund wirkt |
-
-**Versuchsanordnung.** Dieselbe Instanz, derselbe Pull, Option abwechselnd an und aus,
-mehrere Durchläufe. Weil alle vier Kennzahlen innerhalb des Plugins anfallen, genügt
-eine Anzeige im Einstellungsfenster; ein externes Werkzeug ist nicht nötig.
-
-**Was die Messung nicht leistet.** Sie ist nicht kontrolliert: Gegnerzahl,
-Tankverhalten und Gruppenzusammensetzung schwanken zwischen Durchläufen und überdecken
-einen Effekt in der Größenordnung weniger Prozent leicht. Sie taugt daher, um eine
-**Verschlechterung** zu erkennen und die Größenordnung einzugrenzen, nicht um einen
-kleinen Gewinn zu beweisen.
+**Verworfen nach seiner Vorgabe** („entscheidung immer im spiel, nicht retroperspektive auswertung“): Kennzahlen je
+Pull (erlittener Schadensanteil, genutzte Betäubungsdauer, Überlappungsanteil, DoT-Laufzeit) und eine
+Versuchsanordnung mit der Option abwechselnd an und aus. Beides wartete auf seine Ablesung und machte ihn zum Teil
+des Regelkreises. Was die Regeln dieses Konzepts zur Laufzeit selbst prüft: die Vorausschau gegen ihren eigenen
+Fehler (`ScoreTtkForecast`), die proaktive Zurückhaltung gegen ihre Trefferbilanz (oben); `DefenseTrace.log` nennt
+je Entscheidung nach einem Sanctus den Grund, für den Fall, dass ein Defekt nur zur Laufzeit zu finden ist.
 
 ### Übrige Ebenen
 
@@ -1329,9 +1395,8 @@ kleinen Gewinn zu beweisen.
 | Statisch | `stun_coverage.py` simuliert die Regel GCD für GCD und trägt seinen Selbsttest; für die Übertragung zusätzlich ein Skript, das Aktionen mit Mitigationswirkung im Schadenszweig findet |
 | Kompilierung | CI |
 
-Solange die Wirksamkeitsmessung nicht vorliegt, kommt **jeder Schritt hinter eine eigene Option**;
-voreingestellt ist der im Kampf sinnvollere Wert (seine Regel, 29.09.2026). Die Messung ist der Weg,
-den Nutzen zu belegen — sie gehört deshalb vor die Übertragung auf weitere Aktionen.
+Jeder Schritt steht hinter einer eigenen Option; voreingestellt ist der im Kampf sinnvollere Wert (seine Regel,
+29.09.2026).
 
 ## Konsequenzen
 

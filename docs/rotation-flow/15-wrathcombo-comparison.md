@@ -27,15 +27,16 @@ belegt, wo sie trägt. Code wird nicht übernommen.
   (`WhenToSheltron`), Überlauf-Schutz von Lilien, Polyglot, Beast Gauge, Munition.
 - Samurai Meditate in der Pause (Konzept 14): WrathCombo verlangt zusätzlich einige Sekunden Stillstand.
 
-**Bestätigt offene Entscheidungen (Konzept 14):** Addersgall-Schutz des Weisen (WrathCombo: Druochole ab
-3 Stapeln), Shake It Off nur ohne eigene Minderungen im Selbstheilungspfad, Passage of Arms mit
-Kanal-Sperre, Improvisation als kurzes Regen.
+**Bestätigt Entscheidungen aus Konzept 14, inzwischen umgesetzt:** Addersgall-Schutz des Weisen (WrathCombo:
+Druochole ab 3 Stapeln; A203), Shake It Off nur ohne eigene Minderungen im Selbstheilungspfad (A245), Passage of
+Arms mit Kanal-Sperre (bis zum Treffer, A164; ab Werk an seit 02.10.2026, A250). Improvisation als kurzes Regen:
+Konzept 14, Tänzer.
 
-## Vorschläge, zur Entscheidung
+## Vorschläge und ihr Stand
 
 | # | Idee (WrathCombo) | Was sich im Kampf ändert | Woran die Wahrscheinlichkeit gemessen wird | Einordnung |
 |---|---|---|---|---|
-| V1 | Vorbeugendes Regen oder Schild auf den Tank **ohne Countdown**, sobald er außerhalb des Kampfs nahe an Gegner kommt (`PreEmptiveHot`, `PreEmptiveShield`: Weißmagier Regen, Astrologe Aspected Benefic, Weiser Eukrasian Diagnosis, Gelehrter Adloquium) | Dungeon-Pulls: Der Tank hat Regen oder Schild, bevor der erste Treffer fällt. RSR tut das heute nur im Countdown (Weißmagier „UsePreRegen") | Tank außerhalb des Kampfs in Reichweite eines Gegners — der Pull ist nah | Stufe „Heiler"; neue Option (Weiser ab Werk aus, offene Entscheidung A209) |
+| V1 | Vorbeugendes Regen oder Schild auf den Tank **ohne Countdown**, sobald er außerhalb des Kampfs nahe an Gegner kommt (`PreEmptiveHot`, `PreEmptiveShield`: Weißmagier Regen, Astrologe Aspected Benefic, Weiser Eukrasian Diagnosis, Gelehrter Adloquium) | Dungeon-Pulls: Der Tank hat Regen oder Schild, bevor der erste Treffer fällt. RSR tut das heute nur im Countdown (Weißmagier „UsePreRegen") | Tank außerhalb des Kampfs in Reichweite eines Gegners — der Pull ist nah | Stufe „Heiler"; neue Option (Weiser ab Werk an seit 03.10.2026, A251) |
 | V2 | Zielmarkierungen: allgemeiner Präfix `vfx/lockon/eff/tank` statt einzelner Tank-Marker, dazu die bei RSR fehlenden Einträge (`sharelaser2tank`, `share_1`, zwei Dungeon-Sammelmarker) | Mehr Tankbuster und Sammeltreffer werden erkannt, bevor sie fallen; Einzel- und Flächenabwehr öffnen öfter rechtzeitig | Marker über dem Ziel — der Treffer ist angekündigt | **Gebaut (A189)** mit der Negativliste aus seiner Vorgabe, siehe „V2: Stand der Umsetzung" |
 | V3 | Kuratierte Raidwide-, Tankbuster- und Ignorier-Listen je Begegnung (`BattleData`, etwa Blicke, die wie Raidwides aussehen) | Weniger Fehlalarme bei Blickmechaniken, Raidwides ohne Flächen-Wurftyp werden erkannt | angekündigter Cast mit bekannter Wirkung | **Geprüft (A190):** siehe „V3: Ergebnis" |
 | V4 | Samurai Meditate erst nach kurzem Stillstand | Weniger abgebrochenes Meditate beim kurzen Anhalten zwischen zwei Bewegungen | — | **Geprüft (A188):** nicht bauen, siehe „V4: Ergebnis" |
@@ -56,6 +57,7 @@ Kanal-Sperre, Improvisation als kurzes Regen.
 | V1 | „beim gelehrten könnte evtl. die fee helfen? deren fähigkeiten mit prüfen im konzept" | Prüfauftrag: die Feen- und Seraph-Fähigkeiten des Gelehrten in das V1-Konzept aufnehmen |
 | V1 | „also hat der gelehrte doch über die fee auch einen hot. der wie beim astro oder whm genutzt werden kann. da heiler dem tank folgen, sollten die 30y nicht so schlimm sein. was ist mit dots beim schildheiler? instacastbar? überhaupt vorhanden?" | Vorschlag: Aetherpact/Fey Union als Pre-HoT des Gelehrten wie Regen und Aspected Benefic; seine Einschätzung der 30-y-Grenze ist im Loop zu prüfen (die Fee folgt dem Gelehrten, der Tank läuft im Wall-to-Wall voraus); dazu eine Frage nach DoTs der Schildheiler — Antwort in der Tabelle „V1: Sofortaktionen" |
 | V1 | „punkt 2 ist uninteressant, da der heiler dem tank folgt" (28.09.2026, zur 30-y-Grenze von Fey Union) | Hinweis zur Spielweise: Der Heiler folgt dem Tank, die 30-y-Grenze der Fee trägt kein Argument gegen Aetherpact im Pull |
+| V1 | „ein schild kann auf zwei arten verschwinden: zeitablauf und durch aufbrauchen durch eingehenden schaden. also ist verfall das zweite, da ablauf parallel genannt wurde" (03.10.2026) | Präzisierung seiner V1-Vorgabe: Erneuert wird bei Ablauf **und** beim Aufbrauchen durch Schaden. Umgesetzt (A251) |
 
 ## V1: Sofortaktionen der Heiler im Laufen (Job-Guide, abgerufen 27.09.2026)
 
@@ -87,16 +89,19 @@ in Gefahr war.
 |---|---|---|
 | Weißmagier | Regen, auch im Countdown | vorhanden (`UsePreRegen`), jetzt über die gemeinsame Regel |
 | Astrologe | Aspected Benefic | vorhanden (`UsePreAspectedBenefic`), jetzt über die gemeinsame Regel |
-| Weiser | Eukrasia + Eukrasian Diagnosis, beide sofort | **neu** (`UsePreEukrasianDiagnosis`, ab Werk **aus** bis zu seiner Entscheidung, A209: Die Erneuerung bei jedem Bruch ist das Verhalten, das Konzept 06 §2.1 als entfernten Fehler führt). Rang in der Eukrasia-Wahl: nach Flächen- und Einzelabwehr, vor den DoTs. Nicht gelegt, solange der Tank Galvanize oder Eukrasian Prognosis trägt (laut Wirktext nicht stapelbar): Der Tank trägt dann schon eine Barriere, und die Pflege hält eine, nicht die größte. Die Einzelabwehr dagegen sperrt nur Eukrasian Diagnosis und Galvanize (Upstream) und legt über eine Eukrasian Prognosis hinweg — richtig, weil die neuere Barriere des Weisen die ältere ganz ersetzt (Wiki „Eukrasian Diagnosis", Community-Quelle, nicht offiziell) und die der Diagnose größer ist (Heilung 300 × 180 % gegen 100 × 320–360 %, Job-Guide); vor einem Tankbuster ist das Zugewinn, kein verschenkter GCD. Keine Gesundheitsuntergrenze: Anders als Regen ist Eukrasian Diagnosis selbst der beste Sofort-GCD im Notfall. Außerhalb des Kampfs erst, wenn ein Gegner in Reichweite des Weisen ist — sonst nimmt die bestehende Eukrasia-Bereinigung den Status wieder ab. |
+| Weiser | Eukrasia + Eukrasian Diagnosis, beide sofort | **neu** (`UsePreEukrasianDiagnosis`, ab Werk **an** seit 03.10.2026, A251: Er hat die Erneuerung bei Ablauf und Verfall ausdrücklich verlangt, Wortlaut in der Tabelle oben). Rang in der Eukrasia-Wahl: nach Flächen- und Einzelabwehr, vor den DoTs. Nicht gelegt, solange der Tank Galvanize oder Eukrasian Prognosis trägt (laut Wirktext nicht stapelbar): Der Tank trägt dann schon eine Barriere, und die Pflege hält eine, nicht die größte. Die Einzelabwehr dagegen sperrt nur Eukrasian Diagnosis und Galvanize (Upstream) und legt über eine Eukrasian Prognosis hinweg — richtig, weil die neuere Barriere des Weisen die ältere ganz ersetzt (Wiki „Eukrasian Diagnosis", Community-Quelle, nicht offiziell) und die der Diagnose größer ist (Heilung 300 × 180 % gegen 100 × 320–360 %, Job-Guide); vor einem Tankbuster ist das Zugewinn, kein verschenkter GCD. Keine Gesundheitsuntergrenze: Anders als Regen ist Eukrasian Diagnosis selbst der beste Sofort-GCD im Notfall. Außerhalb des Kampfs erst, wenn ein Gegner in Reichweite des Weisen ist — sonst nimmt die bestehende Eukrasia-Bereinigung den Status wieder ab. |
 | Gelehrter | kein Sofortschild (Adloquium 2 s Wirkzeit) | nicht gebaut: Stehenbleiben erst am Ende des Wall-to-Wall (seine Präzisierung). Sein Vorschlag Aetherpact/Fey Union als Vorab-HoT bleibt offen; Gegenargumente: Jede andere Feenaktion (Whispering Dawn, Fey Illumination, Fey Blessing) beendet die Verbindung, und auf einem vollen Tank verbraucht Fey Union Feenanzeige ohne Heilung (Nachschub nur über Aetherflow-Aktionen, je +10). Die 30-y-Grenze zählt nicht, der Heiler folgt dem Tank (sein Hinweis). Ob die Fee während Fey Union Embrace aussetzt, ist nicht belegt. Er kollidiert zudem mit zwei bestehenden Einstellungstexten („Remove Aetherpact if … above 90 %", „Do not start Aetherpact if … above 80 %"); zur Entscheidung vorgelegt. |
 
-**Konsequenz, die er kennen muss (Schlussfolgerung, am Spiel nicht gemessen):** Bei Regen fällt die
-Erneuerung alle 18 s. Eine Barriere bricht in einem großen Pull, sobald der Tank ihren Wert an Schaden
-nimmt. Bricht sie jeden GCD, gehen alle GCDs des Weisen an sie statt an Dosis — je Erneuerung Eukrasia (1 s)
-und ein GCD —, und 800 MP je Erneuerung leeren den Vorrat bis zur Wiederbelebungsreserve. Wie oft sie bricht,
-hängt vom Pull ab und ist von hier nicht messbar. Genau diese Erneuerung hat der Zweig am 05.09.2026 als Fehler
-entfernt (Konzept 06 §2.1: „Zwei GCDs pro Platzer, den ganzen Pull"). Seine V1-Vorgabe kann sie wieder meinen
-oder nur den Ablauf; das weiß nur er. Bis dahin ist die Option ab Werk aus (A209), gebündelte Vorlage.
+**Was die Erneuerung im Kampf kostet (Schlussfolgerung, am Spiel nicht gemessen):** Bei Regen fällt die
+Erneuerung alle 18 s. Eine Barriere bricht in einem großen Pull, sobald der Tank ihren Wert an Schaden nimmt. Bricht
+sie jeden GCD, gehen die GCDs des Weisen an sie statt an Dosis — je Erneuerung Eukrasia (1 s) und ein GCD —, und
+800 MP je Erneuerung, nie unter die Wiederbelebungsreserve. **Das ist sein Wortlaut, nicht ein Nebeneffekt:**
+„erneuerung bei ablauf/verfall solange walltowall läuft" (27.09.2026) nennt beides, und „da während des laufens MP
+regenerieren, können es sogar vorzugsweise MP-verbrauchende schilde sein, solange sie insta sind" nimmt den MP-Preis
+an. Im Laufen hat der Weise ohnehin nur Sofortaktionen; Dosis mit Wirkzeit fällt erst beim Stehen. Die Entfernung vom
+05.09.2026 (Konzept 06 §2.1) traf eine Barriere ohne Auftrag; seine Vorgabe ist dieser Auftrag. Deshalb ab Werk an
+(A251). Die Frage, ob „Verfall" auch den Bruch meint, war unnötig: Sein Text nennt Ablauf und Verfall nebeneinander
+(C107).
 
 ## V5: Stand der Umsetzung (A186)
 
@@ -194,7 +199,9 @@ Bewegungen nicht abbricht. **Ergebnis: nicht bauen;** das Pausenverhalten aus A1
 Wirktext (Job-Guide, 28.09.2026): Meditate, 60 s Abklingzeit, „Gradually increases your Kenki Gauge", 15 s, im
 Kampf dazu bis zu 3 Stapel Meditation; endet bei jeder anderen Aktion und bei Bewegung, auch beim Drehen; löst
 die Abklingzeit der Waffenfertigkeiten aus und ist während ihr nicht nutzbar. Wie viel Kenki je Takt und wie oft,
-nennt der Text nicht, und die Spieldaten (Status 1231 „Storing Kenki.") auch nicht — unbelegt.
+nennen Wirktext und Spieldaten (Status 1231 „Storing Kenki.") nicht; das consolegameswiki, „Meditate"
+(Gemeinschaftsquelle, 02.10.2026): „10 Kenki is generated every tick (3 seconds), for a total of 50 Kenki if
+Meditate lasts its entire duration".
 
 - **Wo RSR Meditate wirkt:** nur in der Pause (`InCombatPause`: im Kampf, kein Gegner in 25 y) und nicht in
   Bewegung. Deine Frage „oder ist das ein anderes Problem (Meditate nur außerhalb Kampf?)" beantwortet das: Es

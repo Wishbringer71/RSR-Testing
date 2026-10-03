@@ -508,14 +508,6 @@
   },
   {
    "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
-   "code": "if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))",
-   "values": [
-    "20"
-   ],
-   "status": "open"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
    "code": "if (stunned >= 2 && stunned * 2 >= inRange)",
    "values": [
     "2",
@@ -557,14 +549,6 @@
    "status": "open"
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.cs",
-   "code": "if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))",
-   "values": [
-    "20"
-   ],
-   "status": "open"
-  },
-  {
    "file": "RotationSolver/RebornRotations/Tank/PLD_Reborn.cs",
    "code": "if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, GuardianPvE.EnoughLevel ? StatusID.Guardian : StatusID.Sentinel)",
    "values": [
@@ -573,26 +557,10 @@
    "status": "open"
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/PLD_Reborn.cs",
-   "code": "if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))",
-   "values": [
-    "20"
-   ],
-   "status": "open"
-  },
-  {
    "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.cs",
    "code": "if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, DamnationPvE.EnoughLevel ? StatusID.Damnation : StatusID.Vengeance)",
    "values": [
     "15"
-   ],
-   "status": "open"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.cs",
-   "code": "if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))",
-   "values": [
-    "20"
    ],
    "status": "open"
   },
@@ -854,6 +822,16 @@
    "status": "open",
    "loop": "A226",
    "reason": "Upstream's pull size for Raw Intuition/Bloodwhetting in the single-target defence (since d566eda86), moved unchanged into one property so the Nascent Flash hold reads the same condition. Derivable candidate: more than the global 'Number of hostiles' (AutoDefenseNumber, default 2) - equal at the default, different for anyone who changed it, so not switched without a decision."
+  },
+  {
+   "file": "RotationSolver.Basic/Helpers/ActionManagerHelper.cs",
+   "code": "return ActionManager.GetAdjustedRecastTime(ActionType.Action, (uint)ActionID.HeatedSplitShotPvE) / 1000f;",
+   "values": [
+    "1000"
+   ],
+   "status": "exception",
+   "loop": "A240",
+   "reason": "Unit conversion, not a game value: GetAdjustedRecastTime returns milliseconds (ClientStructs; ActionCooldownInfo.RecastTimeOneChargeRaw divides the same way), the readers expect seconds."
   }
  ]
 }

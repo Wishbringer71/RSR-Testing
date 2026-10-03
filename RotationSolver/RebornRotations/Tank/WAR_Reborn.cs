@@ -45,14 +45,23 @@ public sealed class WAR_Reborn : WarriorRotation
 			+ "In a fight: the Slow +20% lands on every enemy that strikes you and delays "
 			+ "auto-attacks as well as casts, so in a standing pack it throttles the whole incoming "
 			+ "stream for fifteen seconds. It costs nothing but its own cooldown. A pull is as many "
-			+ "enemies in reach as the global \"Number of hostiles\" for defensive abilities; a pack "
+			+ "enemies in reach as the global \"Number of hostiles\" for defensive abilities, bosses not "
+			+ "counted - Arm's Length does not soften the hit that strikes you, so a boss's tankbuster "
+			+ "gains nothing from it; a pack "
 			+ "that is already slowed is left alone.\n"
 			+ "Not while BossModReborn announces a knockback that lands after the barrier has run out "
 			+ "and before Arm's Length is ready again - the action is kept for it.")]
 	public bool UseArmsLengthOnPull { get; set; } = true;
 
-	[RotationConfig(CombatType.PvE, Name = "Use Bloodwhetting/Raw intuition on single enemies")]
-	public bool SoloIntuition { get; set; } = false;
+	protected override bool HasOwnArmsLengthPullRule => true;
+
+	[RotationConfig(CombatType.PvE, Name = "Use Bloodwhetting/Raw intuition on single enemies",
+		Tooltip = "The single-target defence casts Bloodwhetting (Raw Intuition before level 82) also "
+			+ "when fewer than three enemies are in reach - above all for a boss's tankbuster.\n"
+			+ "In a fight: 10% less damage for 8 seconds, another 10% for the first 4, and a barrier, "
+			+ "for the price of a 25-second cooldown it shares with Nascent Flash. Off: against a lone "
+			+ "boss it goes out only after the hit, as a heal below the Bloodwhetting heal threshold.")]
+	public bool SoloIntuition { get; set; } = true;
 
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Bloodwhetting/Raw intuition heal threshold")]
@@ -80,6 +89,27 @@ public sealed class WAR_Reborn : WarriorRotation
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Nascent Flash Heal Threshold")]
 	public float FlashHeal { get; set; } = 0.6f;
+
+	[RotationConfig(CombatType.PvE, Name = "Use Thrill of Battle before a tankbuster on you",
+		Tooltip = "Thrill of Battle goes out when a tankbuster on you lands within its duration, "
+			+ "not only as a heal at low health.\n"
+			+ "In a fight: your maximum HP rise by 20% and are filled, so the hit takes a smaller share "
+			+ "of your health, and healing on you is 20% stronger while it lasts - the healers' answer "
+			+ "to the hit included. It stacks with Bloodwhetting, Rampart or Damnation. The price is its "
+			+ "90-second cooldown: it is not there as an emergency heal until then.\n"
+			+ "The tankbuster is the one BossModReborn announces for you, or a listed tankbuster cast or "
+			+ "tankbuster marker on you; not while an invulnerability covers you.")]
+	public bool UseThrillForTankbuster { get; set; } = true;
+
+	[RotationConfig(CombatType.PvE, Name = "Use Thrill of Battle when your health will fall below its threshold within its duration",
+		Tooltip = "Thrill of Battle goes out as soon as your health, falling at the rate measured over the "
+			+ "last seconds, would pass \"Thrill Of Battle Heal Threshold\" within the ten seconds Thrill of "
+			+ "Battle lasts - not only once it has passed it.\n"
+			+ "In a fight: on a heavy pull the 20% extra health and the 20% stronger healing are there "
+			+ "while the pack is at full strength, and they carry Bloodwhetting's and Equilibrium's heals "
+			+ "with them. Where the healers hold your health steady it does not fire. The price is the "
+			+ "90-second cooldown: it may be spent on a pull that would have stayed above the threshold.")]
+	public bool UseThrillAheadOfFallingHealth { get; set; } = true;
 
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Thrill Of Battle Heal Threshold")]
@@ -207,7 +237,9 @@ public sealed class WAR_Reborn : WarriorRotation
 			}
 		}
 
-		if (Player?.GetForecastHealthRatio(true) < ThrillOfBattleHeal)
+		if (Player?.GetForecastHealthRatio(true) < ThrillOfBattleHeal
+			|| (UseThrillAheadOfFallingHealth && InCombat
+				&& Player?.GetHealthRatioIn(DefensiveValues.DurationOf((uint)ActionID.ThrillOfBattlePvE)) < ThrillOfBattleHeal))
 		{
 			if (ThrillOfBattlePvE.CanUse(out act))
 			{
@@ -236,7 +268,7 @@ public sealed class WAR_Reborn : WarriorRotation
 	[RotationDesc(ActionID.ShakeItOffPvE, ActionID.NascentFlashPvE)]
 	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		if (ShakeItOffPvE.CanUse(out act, skipAoeCheck: true))
+		if (!HoldShakeItOffInHeal() && ShakeItOffPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}
@@ -277,6 +309,22 @@ public sealed class WAR_Reborn : WarriorRotation
 			return false;
 		}
 
+		// A predicted tankbuster on the player gets its big mitigation first - or Rampart while that one is
+		// spent - ahead of the short ones: the window opens a few seconds before the hit, and with the cheap ones
+		// ahead the big one landed last (trace of 01.10.2026: Damnation 0.7 s before the hit, A241, A243).
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, DamnationPvE.EnoughLevel ? StatusID.Damnation : StatusID.Vengeance)
+			&& (DamnationPvE.EnoughLevel ? DamnationPvE.CanUse(out act, skipStatusProvideCheck: true) : VengeancePvE.CanUse(out act, skipStatusProvideCheck: true)))
+		{
+			return true;
+		}
+
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, DefensiveValues.DurationOf((uint)ActionID.RampartPvE), true, null, StatusID.Rampart)
+			&& RampartTakesPredictedTankbuster(DamnationPvE.EnoughLevel ? DamnationPvE : VengeancePvE, DamnationPvE.EnoughLevel ? StatusID.Damnation : StatusID.Vengeance)
+			&& RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		// Free of cost but its cooldown, so ahead of the paid mitigations (A194).
 		if (ArmsLengthSlowsPull(UseArmsLengthOnPull, Service.Config.AutoDefenseNumber) && ArmsLengthPvE.CanUse(out act))
 		{
@@ -288,19 +336,9 @@ public sealed class WAR_Reborn : WarriorRotation
 			return true;
 		}
 
-		if (!StatusHelper.PlayerWillStatusEndGCD(0, 0, true, StatusID.Bloodwhetting, StatusID.RawIntuition))
-		{
-			return false;
-		}
-
-		// Predicted tankbuster takes priority over the elapsed-time stagger below.
-		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, DamnationPvE.EnoughLevel ? StatusID.Damnation : StatusID.Vengeance)
-			&& (DamnationPvE.EnoughLevel ? DamnationPvE.CanUse(out act, skipStatusProvideCheck: true) : VengeancePvE.CanUse(out act, skipStatusProvideCheck: true)))
-		{
-			return true;
-		}
-
-		if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
+		// Thrill of Battle stacks with Bloodwhetting on a tankbuster rather than replacing it (A237).
+		if (UseThrillForTankbuster && TankbusterOnMeWithin(DefensiveValues.DurationOf((uint)ActionID.ThrillOfBattlePvE))
+			&& ThrillOfBattlePvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -339,13 +377,14 @@ public sealed class WAR_Reborn : WarriorRotation
 			}
 		}
 
-		if (ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
+		if (!HoldReprisalForRaidwide()
+			&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
 
-		if (ReprisalPvE.CanUse(out act, skipAoeCheck: true))
+		if (!HoldReprisalForRaidwide() && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}
@@ -356,7 +395,7 @@ public sealed class WAR_Reborn : WarriorRotation
 	[RotationDesc(ActionID.ShakeItOffPvE, ActionID.ReprisalPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		if (ShakeItOffPvE.CanUse(out act, skipAoeCheck: true))
+		if (!HoldShakeItOffForTankbuster() && ShakeItOffPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}
@@ -504,6 +543,38 @@ public sealed class WAR_Reborn : WarriorRotation
 	// Whether the single-target defence casts Bloodwhetting (Raw Intuition before level 82): the one
 	// condition, read by that path and by the Nascent Flash hold, so the two cannot disagree (A226).
 	private bool BloodwhettingForDefense => SoloIntuition || NumberOfHostilesInRange > 2;
+
+	// Shake It Off dispels Thrill of Battle, Damnation and Bloodwhetting for 2 % more barrier each (job
+	// guide; Vengeance below level 92, WrathCombo and The Balance). Thrill of Battle is not listed here: the
+	// barrier is sized on the raised maximum HP, so dispelling it is a gain (The Balance).
+	private static readonly StatusID[] ShakeItOffStrips = [StatusID.Damnation, StatusID.Vengeance, StatusID.Bloodwhetting];
+
+	/// <summary>
+	/// Whether Shake It Off waits in the single-target heal: a party tool spent for one member below the
+	/// heal threshold (concept 09, Warrior, finding 6). It waits while it would take Damnation or
+	/// Bloodwhetting off the warrior - up to 40 % mitigation for a 2 % larger barrier - and while BossModReborn
+	/// announces a raidwide after its barrier would have run out and before it is back. The universal hold
+	/// yields when any member is in the critical class (A245).
+	/// </summary>
+	private bool HoldShakeItOffInHeal()
+		=> HoldAreaDefense(
+			StatusHelper.PlayerHasStatus(true, ShakeItOffStrips)
+				|| RaidwideAfterEffectBeforeRecast(ShakeItOffPvE, DefensiveValues.DurationOf((uint)ActionID.ShakeItOffPvE)),
+			"Warrior: Shake It Off kept from the single heal");
+
+	/// <summary>
+	/// Whether Shake It Off waits at a raidwide: only while Damnation (Vengeance) runs for a tankbuster on the
+	/// warrior that lands before it ends - dispelled now, the tankbuster would meet him without it. Otherwise
+	/// the raidwide gets it, Damnation or not: the party gains the barrier, he loses the rest of his own
+	/// mitigation. The universal hold yields when the announced, measured raidwide would put a member into the
+	/// critical class (A245).
+	/// </summary>
+	private static bool HoldShakeItOffForTankbuster()
+	{
+		var bigLeft = StatusHelper.PlayerStatusTime(true, StatusID.Damnation, StatusID.Vengeance);
+		return HoldAreaDefense(bigLeft > 0f && TankbusterOnMeWithin(bigLeft),
+			"Warrior: Shake It Off kept for the tankbuster under Damnation");
+	}
 
 	/// <summary>
 	/// Whether the warrior needs Bloodwhetting himself, which Nascent Flash on someone else would put on

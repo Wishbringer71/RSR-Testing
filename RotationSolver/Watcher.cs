@@ -15,13 +15,28 @@ public static class Watcher
 	public static void Enable()
 	{
 		var config = Service.Config;
-		DefenseTrace.Start($"version {typeof(Watcher).Assembly.GetName().Version} | area defence {config.UseAoeDefense}"
+		DefenseTrace.Start($"version {typeof(Watcher).Assembly.GetName().Version} | commit {SourceCommit()} | area defence {config.UseAoeDefense}"
 			+ $" | single defence {config.UseStDefense} | skip casts that missed you {config.SkipAreaCastsThatMissedMe}"
 			+ $" | big interruptible casts {config.MitigateBigAreaCastsEvenIfInterruptible} | BMR timeline {config.UseBmrTimeline}"
 			+ $" | AoE list {OtherConfiguration.HostileCastingArea.Count} | tankbuster list {OtherConfiguration.HostileCastingTank.Count}");
 
 		ActionEffect.ActionEffectEvent += ActionFromEnemy;
 		ActionEffect.ActionEffectEvent += ActionFromSelf;
+	}
+
+	// The commit this build was made from, so an uploaded trace can be matched to the code that wrote it:
+	// the version is the same for every build on the branch, and a day carries several commits.
+	// Embedded by Directory.Build.props; missing when the build had no git.
+	private static string SourceCommit()
+	{
+		foreach (var attribute in typeof(Watcher).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>())
+		{
+			if (attribute.Key == "SourceCommit")
+			{
+				return attribute.Value ?? "unknown";
+			}
+		}
+		return "unknown";
 	}
 
 	public static void Disable()
@@ -105,6 +120,33 @@ public static class Watcher
 		effect.ForEach(e => reached |= IsDamageEntry(e.type) || e.type is ActionEffectType.Invulnerable
 			or ActionEffectType.PartialInvulnerable or ActionEffectType.Miss or ActionEffectType.FullResist);
 		return reached;
+	}
+
+	// How many party members this set reached, for the trace line of an area landing: "missed you" with
+	// party members reached says he stood out of it; with none, the set carried no hit at all and the
+	// damage came another way (trace of 01.10.2026, A242).
+	private static int DamagedPartyMembers(ActionEffectSet set)
+	{
+		var count = 0;
+		var party = DataCenter.PartyMembers;
+		foreach (var effect in set.TargetEffects)
+		{
+			if (!ReachedTarget(effect))
+			{
+				continue;
+			}
+
+			for (var i = 0; i < party.Count; i++)
+			{
+				if (party[i]?.GameObjectId == effect.TargetID)
+				{
+					count++;
+					break;
+				}
+			}
+		}
+
+		return count;
 	}
 
 	private static float DamageShareOn(ActionEffectSet set, ulong targetId, uint denom)
@@ -402,6 +444,13 @@ public static class Watcher
 						}
 
 						DataCenter.AreaCastReachedPlayer[set.Action!.Value.RowId] = reachedPlayer;
+
+						// "Skip area defence for casts that missed you" can only learn from a landing that
+						// arrives here; the trace shows each one, so a cast that keeps opening the defence
+						// without ever being recorded can be told from one that keeps reaching him.
+						DefenseTrace.Line($"area cast landed: {set.Action!.Value.Name.ExtractText()} #{set.Action!.Value.RowId}"
+							+ $" from {battle.Name.TextValue}, reached you {reachedPlayer}, {set.TargetEffects.Length} targets"
+							+ $" ({DamagedPartyMembers(set)} party members damaged)");
 					}
 
 					if (highestShare > 0f && OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
@@ -483,6 +532,9 @@ public static class Watcher
 			// Record
 			//PluginLog.Debug($"ActionFromSelf: ActionType is {set.Header.ActionType}.");
 			DataCenter.AddActionRec(action!.Value);
+
+			// The trace writes what the defence chose; this line says that it went out.
+			DefenseTrace.Executed(action.Value.RowId, action.Value.Name.ExtractText());
 
 			// Only shown on the Debug tab; formatting the whole effect set for every action is wasted otherwise.
 			if (Service.Config.InDebug)

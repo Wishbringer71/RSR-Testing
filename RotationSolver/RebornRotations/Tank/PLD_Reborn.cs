@@ -12,11 +12,15 @@ public sealed class PLD_Reborn : PaladinRotation
 			+ "In a fight: the Slow +20% lands on every enemy that strikes you and delays "
 			+ "auto-attacks as well as casts, so in a standing pack it throttles the whole incoming "
 			+ "stream for fifteen seconds. It costs nothing but its own cooldown. A pull is as many "
-			+ "enemies in reach as the global \"Number of hostiles\" for defensive abilities; a pack "
+			+ "enemies in reach as the global \"Number of hostiles\" for defensive abilities, bosses not "
+			+ "counted - Arm's Length does not soften the hit that strikes you, so a boss's tankbuster "
+			+ "gains nothing from it; a pack "
 			+ "that is already slowed is left alone.\n"
 			+ "Not while BossModReborn announces a knockback that lands after the barrier has run out "
 			+ "and before Arm's Length is ready again - the action is kept for it.")]
 	public bool UseArmsLengthOnPull { get; set; } = true;
+
+	protected override bool HasOwnArmsLengthPullRule => true;
 
 
 	[RotationConfig(CombatType.PvE, Name = "Use GCDs to heal. (Ignored if there are no healers alive in party)")]
@@ -251,6 +255,22 @@ public sealed class PLD_Reborn : PaladinRotation
 		// If the player has the Hallowed Ground status, don't use any abilities.
 		if (!StatusHelper.PlayerHasStatus(true, StatusID.HallowedGround))
 		{
+			// A predicted tankbuster on the player gets its big mitigation first - or Rampart while that one is
+			// spent - ahead of the short ones: the window opens a few seconds before the hit, and with the cheap ones
+			// ahead the big one landed last (trace of 01.10.2026: Damnation 0.7 s before the hit, A241, A243).
+			if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, GuardianPvE.EnoughLevel ? StatusID.Guardian : StatusID.Sentinel)
+				&& (GuardianPvE.EnoughLevel ? GuardianPvE.CanUse(out act, skipStatusProvideCheck: true) : SentinelPvE.CanUse(out act, skipStatusProvideCheck: true)))
+			{
+				return true;
+			}
+
+			if (BMRShouldRefreshBefore(BMRTankbusterIn, DefensiveValues.DurationOf((uint)ActionID.RampartPvE), true, null, StatusID.Rampart)
+				&& RampartTakesPredictedTankbuster(GuardianPvE.EnoughLevel ? GuardianPvE : SentinelPvE, GuardianPvE.EnoughLevel ? StatusID.Guardian : StatusID.Sentinel)
+				&& RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
+			{
+				return true;
+			}
+
 			// If Bulwark can be used, use it and return true.
 			if (BulwarkPvE.CanUse(out act, skipAoeCheck: true))
 			{
@@ -259,18 +279,6 @@ public sealed class PLD_Reborn : PaladinRotation
 
 			// If Oath can be used, use it and return true.
 			if (UseOath(out act))
-			{
-				return true;
-			}
-
-			// Predicted tankbuster takes priority over the elapsed-time stagger below.
-			if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, GuardianPvE.EnoughLevel ? StatusID.Guardian : StatusID.Sentinel)
-				&& (GuardianPvE.EnoughLevel ? GuardianPvE.CanUse(out act, skipStatusProvideCheck: true) : SentinelPvE.CanUse(out act, skipStatusProvideCheck: true)))
-			{
-				return true;
-			}
-
-			if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
 			{
 				return true;
 			}
@@ -310,14 +318,15 @@ public sealed class PLD_Reborn : PaladinRotation
 				}
 			}
 
-			if (ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
+			if (!HoldReprisalForRaidwide()
+				&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 				&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 			{
 				return true;
 			}
 
 			// If Reprisal can be used, use it and return true.
-			if (ReprisalPvE.CanUse(out act, skipAoeCheck: true))
+			if (!HoldReprisalForRaidwide() && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
 			{
 				return true;
 			}

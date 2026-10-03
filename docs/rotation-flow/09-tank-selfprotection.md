@@ -24,14 +24,9 @@ noch rechtzeitig kommt — hinter einer Option mit Standard aus.
 
 Für The Blackest Night ist **keine eigene Rückhalteregel** richtig: Heilung berührt den
 Auslöser nicht, und ein Heilerschild wird erst nach der TBN-Barriere aufgezehrt, kann sie
-also weder verzögern noch verdrängen. Was RSR stattdessen tut, ist allerdings nicht die
-Nachrangigkeit, als die dieses Konzept es zunächst geführt hat: `BlackestNight` steht in
-`StatusHelper.ShieldStatus`, und die Anrechnung über `GetEffectiveHpPercent` hebt die
-Gesundheitsquote des Trägers — sie verschiebt damit nicht seinen **Rang** unter den
-Heilzielen, sondern die **Schwelle**, ab der überhaupt geheilt wird. Bei einer Barriere
-über 25 % der maximalen HP sind das 25 Prozentpunkte: Die oGCD-Heilung setzt erst bei
-real rund 40 % ein statt bei 65 %. Ob das richtig bemessen ist, ist offen und steht in
-`TODO.md`; entschieden ist hier nur, dass eine **zusätzliche** TBN-Regel nichts beiträgt.
+also weder verzögern noch verdrängen. Die Barriere verschiebt auch nicht mehr die Heilschwelle: Die
+Schildanrechnung auf die Heilschwelle ist entfernt (A85). In die Zielwahl geht sie über die effektive
+Gesundheit ein (Gefährdungsklasse 1, Konzept 07).
 
 *Abgrenzung, weil dieser Satz sonst zu weit gelesen wird:* Er gilt für Heilung und
 Schild. Für den **Schadensstrom** gilt das Gegenteil, und dort liegt inzwischen eine
@@ -144,42 +139,29 @@ von TBN also nicht — Dark Arts wird davon nicht berührt. Er geht dabei auch n
 verloren: Er bleibt liegen und absorbiert, sobald TBN aufgebraucht ist. Zurückstellen
 spart deshalb nichts, es verschiebt nur.
 
-*Quellenstatus:* Spielerdokumentation (eine nummerierte Prioritätsliste in einem
-Lodestone-Blog, wiedergegeben über die Suche), keine offizielle Beschreibung. Die
-Primärseite selbst und das Consolegames-Wiki sind vom Egress dieser Umgebung nach
-Organisationsrichtlinie gesperrt; das ist keine Fehlkonfiguration und nicht zu
-umgehen. **Ein Quellenkonflikt bleibt offen:** Ein Job-Guide führt Eukrasian Diagnosis
-als vorrangig gegenüber TBN, die Liste ordnet sie dahinter. Betroffen wäre allein der
-Weise. Für Weißmagier, Gelehrten und Astrologen sagen beide Quellen dasselbe, weil
-deren Schilde deutlich hinter TBN liegen.
+*Quellenstatus:* Gemeinschaftsquelle — die Tabelle „Barrier Consumption Priority" im consolegameswiki
+(abgerufen 02.10.2026), die sich auf einen Lodestone-Blog und einen Beitrag auf X stützt; keine offizielle
+Beschreibung. Sie führt The Blackest Night auf Rang 3 und Eukrasian Diagnosis auf Rang 4 und, mit
+Differential Diagnosis, auf Rang 24 — beide hinter TBN. Der früher offene Quellenkonflikt (ein Job-Guide
+habe Eukrasian Diagnosis vor TBN geführt) ist damit für TBN aufgelöst: Kein Heilerschild verzögert
+seine Absorption. Weitere Ränge derselben Tabelle, die andere Regeln berühren: Stem the Tide aus
+Bloodwhetting und Nascent Flash Rang 8, Divine Benison 12, Radiant Aegis 18, Shake It Off 19, Divine
+Veil 20.
 
 **Der Träger ist nicht zwingend der Dunkelritter.** `ActionId.resx` (Aktion 7393)
 beschreibt TBN als „Creates a barrier around **self or target party member**" — die
 Barriere kann auf jedem Gruppenmitglied liegen, und der Party-Zweig in `DRK_Reborn` nutzt das mit
-`targetOverride: TargetType.LowHP`. Damit ist die ebenfalls genannte Radiant Aegis
-**nicht** gegenstandslos: Sie ist zwar ein Selbstschild des Beschwörers
-(`Status.resx`: **(SMN)**), aber ein Beschwörer kann sie tragen **und** zusätzlich TBN
-vom Dunkelritter bekommen. Steht sie in der Reihenfolge vor TBN, verzögert sie dessen
-Absorption. Das ist ein realer Fall — nur keiner, den ein Heiler beeinflussen kann,
-denn Radiant Aegis wirft der Beschwörer selbst.
+`targetOverride: TargetType.LowHP`. Ein Beschwörer kann also Radiant Aegis tragen und zusätzlich TBN
+bekommen. Radiant Aegis steht auf Rang 18, also hinter TBN (Rang 3): Sie verzögert die Absorption von TBN
+nicht. Was vor TBN steht, sind nur Crest of Time Borrowed und die Tempera-Schilde (Ränge 1 und 2) — eigene
+Schilde von Schnitter (Arcane Crest, ab Stufe 84) und Piktomant, die ein Heiler ebenso wenig steuert.
 
 **Damit bleibt kein Grund, den Schild zurückzustellen.** Was bleibt, ist die gewöhnliche
 Dringlichkeitsfrage: Ein Träger mit TBN ist bereits geschützt und deshalb weniger dringend
-zu versorgen als ein ungeschütztes Gruppenmitglied. Eine eigene TBN-Regel fügt dem nichts
-hinzu, denn `StatusID.BlackestNight` steht in `StatusHelper.ShieldStatus` und geht über
-`GetEffectiveHpPercent` in die Heilentscheidung ein.
-
-**Womit dieser Mechanismus allerdings nicht das tut, was der Absatz von ihm verlangt.**
-Die Dringlichkeitsfrage ist eine Frage des Rangs — wer von mehreren Verwundeten zuerst
-versorgt wird. Die Anrechnung hebt dagegen die Gesundheitsquote und verschiebt damit die
-**Schwelle**, ab der überhaupt geheilt wird; sie wirkt auch dann, wenn der Träger der
-einzige Verwundete ist und es gar nichts zu priorisieren gibt. Das ist derselbe
-Kategorienfehler, den dieses Projekt bei `HasHostileCountAoeMitigation` schon einmal
-gemacht hat: Ein Mechanismus wurde an seinem Geltungsbereich beurteilt statt an dem, was
-er auslöst. Die Anrechnung ist deshalb hier nicht mehr als erledigt geführt, sondern als
-offene Bemessungsfrage in `TODO.md` — einschließlich des Falls, für den sie am
-schlechtesten gebaut ist: eine Barriere, die zu spät oder unnötig gesetzt wurde, wird
-voll angerechnet, ohne je Schaden abzufangen.
+zu versorgen als ein ungeschütztes Gruppenmitglied. Das beantwortet die Zielwahl: `StatusID.BlackestNight` steht in
+`StatusHelper.ShieldStatus`, die effektive Gesundheit (`GetEffectiveHp`) zählt die Barriere mit, und die
+Gefährdungsklasse 1 ordnet nach ihr (Konzept 07). Die Heilschwelle liest die Barriere nicht; eine frühere
+Anrechnung dort verschob, **ob** überhaupt geheilt wird, statt **wen** zuerst, und ist entfernt (A85).
 
 ### Klasse B — Unverwundbarkeit
 
@@ -367,7 +349,7 @@ Vollständig über die Dimensionen Fähigkeitsklasse × Gesundheitsstand × Heil
 | 4 | DRK, Walking Dead aktiv, **Kurs trägt** | leicht unterstützen | nein, wirkungslos bei 1 HP | Billige Beiträge zählen voll gegen die Summe |
 | 4a | DRK, Walking Dead aktiv, **Kurs reicht nicht** | **ja, in voller Höhe** | nein | Die Alternative ist der Tod am Phasenende |
 | 4b | DRK, **Undead Rebirth** aktiv | nein, nachrangig | nein | Bedingung erfüllt, reine Stufe 3 |
-| 5 | DRK, TBN aktiv | **nach normaler Regel** | **nach normaler Regel** | **Kein Sonderfall.** Heilung berührt den Auslöser nicht, und ein Heilerschild wird erst nach TBN aufgezehrt. Die angerechnete Barriere macht den Träger über `GetEffectiveHpPercent` ohnehin nachrangig |
+| 5 | DRK, TBN aktiv | **nach normaler Regel** | **nach normaler Regel** | **Kein Sonderfall.** Heilung berührt den Auslöser nicht, und ein Heilerschild wird erst nach TBN aufgezehrt. Die Barriere zählt in der effektiven Gesundheit der Zielwahl (Konzept 07), nicht in der Heilschwelle (A85) |
 | 6 | GNB, Superbolide aktiv | **ja** | ja | HP stehen auf 1; das Fenster ist die einzige gefahrlose Gelegenheit |
 | 7 | WAR, Holmgang aktiv, HP heruntergedrückt | **ja** | ja | wie 6 |
 | 8 | PLD, Hallowed Ground aktiv, beim Zünden wenig HP | **ja** | ja | Die HP bleiben unverändert; nach Ablauf steht er, wo er stand |
@@ -483,7 +465,7 @@ beobachtet) kostet damit zehn Sekunden automatischer Heilung ohne Anlass.
 | Living Dead | `NoNeedHealingStatus` → `HealthProtectedRatio` | 0,15 statt der normalen Schwelle, wie oben |
 | Walking Dead | in `NoNeedHealingStatus` auskommentiert | keine — richtig, dort ist Heilung überlebensnotwendig |
 | The Blackest Night | Schildanteil des Spiels (`ShieldPercentage`) im effektiven Puffer | keine auf die Schwelle, seit die Schildanrechnung entfernt ist (A85); der Schild zählt im Puffer der Vorausschau und der Sterbegefährdung (`GetEffectiveHp`) |
-| Shadow Wall, Rampart | `RampartStatus` | keine: gelesen als `StatusProvide` und von `HasMajorMitigation` für den eigenen Charakter |
+| Shadow Wall, Rampart | `RampartStatus` | keine: gelesen als `StatusProvide`, von `HasMajorMitigation` und von `HoldReprisalForRaidwide`, jeweils für den eigenen Charakter |
 | Dark Mind, Oblation, Dark Missionary, Reprisal | in keiner heilrelevanten Liste bzw. am Gegner | keine |
 
 Schadensreduktion und Barriere wirken auf keine Heilschwelle; nur die Invulnerabilität tut es. Die Rate, die aus
@@ -561,8 +543,8 @@ Zwei Genauigkeitsgrenzen bestehen fort: Die 1-Hz-Abtastung ist für ein
 Zehn-Sekunden-Fenster grob, und ein Gesundheitsdelta ist ein Surrogat für kumulierte
 Heilung — fallen Heilung und Schaden in dasselbe Intervall, heben sie sich auf, obwohl
 die Heilung gegen die von Walking Dead geforderte Summe zählt. Für den Weg **zur Null**
-ist das unerheblich, für den Weg **zur aufgenommenen Heilmenge** nicht; deshalb ist
-Fall 4a mit der vorhandenen Auswertung noch nicht beantwortet.
+ist das unerheblich, für den Weg **zur aufgenommenen Heilmenge** nicht; Fall 4a beantwortet A147 deshalb nur
+näherungsweise, über den Gesundheitsanstieg seit Beginn des Fensters.
 
 **`HpRecoveryDown` und `Mounted` in der Schwellensenkung.** Ausgeschlossen: `Mounted`
 nullifiziert Heilung und gehört in einen Ausschluss, nicht in eine Herabstufung;
@@ -591,7 +573,7 @@ bestätigt die Rollenordnung aus Konzept 07; dort gilt sie bei gleicher Gefährd
 
 **Daraus folgt die tragende Feststellung: Nascent Flash auf einen anderen kostet den Krieger keine Heilung.** Er
 heilt sich damit genauso wie mit Bloodwhetting. Er verliert Minderung und Barriere: in den ersten 4 s rund 19 %
-weniger Schaden (0,9 × 0,9, sofern Minderungen multiplizieren — Spielregel, hier nicht am Artefakt belegt), danach
+weniger Schaden (0,9 × 0,9: Minderungen multiplizieren sich, The Balance rechnet Bloodwhetting genauso, „100 x 0.9 x 0.9 = 81“), danach
 bis 8 s 10 %, und 400 Potenz Barriere. Die zweite seiner Fragen, ob der Tank nach dem Tankbuster viel Heilung
 braucht, trägt deshalb keinen Grund, Nascent Flash zurückzuhalten.
 
@@ -609,10 +591,11 @@ braucht, trägt deshalb keinen Grund, Nascent Flash zurückzuhalten.
   target priority": niedrigster **Prozentsatz der aktuellen Gesundheit** (ohne Vorausschau, ohne Barriere),
   Heiler zuerst oder nur Heiler.
 - Bloodwhetting fällt für sich
-  - in der Einzelabwehr (Tankbuster, Beschuss) nur mit „Use Bloodwhetting/Raw intuition on single enemies" oder
+  - in der Einzelabwehr (Tankbuster, Beschuss) mit „Use Bloodwhetting/Raw intuition on single enemies" oder
     bei mehr als zwei Gegnern in Reichweite, und nur, solange der Gegner den Krieger anvisiert;
   - im allgemeinen Pfad reaktiv unter „Bloodwhetting/Raw intuition heal threshold" (0,7).
-  **Vor einem Boss-Tankbuster fällt Bloodwhetting also ab Werk gar nicht** — erst danach, reaktiv.
+  „single enemies" steht ab Werk **an** (A237, seine Regel für Voreinstellungen); bis dahin stand es aus, und vor
+  einem Boss-Tankbuster fiel Bloodwhetting gar nicht, erst danach reaktiv. Mit der Einstellung aus gilt das weiter.
 
 ### Bewertung nach seinen Kriterien
 
@@ -705,9 +688,9 @@ aus „möglicherweise tödlich" eine Zahl.
 
 ### Antithesen
 
-- **Kein Defekt:** Ab Werk (einzelner Boss, „single enemies" aus) fällt Bloodwhetting nicht vor dem Tankbuster —
+- **Kein Defekt:** Mit „single enemies" aus fällt Bloodwhetting vor dem Tankbuster eines einzelnen Bosses nicht —
   dann gibt es den Konflikt am Tankbuster nicht, und die Regel hält dort auch nicht (Bedingung (a)). Er besteht mit
-  der Einstellung an und bei mehr als zwei Gegnern, und Bedingung (b) besteht immer. Die Zielwahl nach Prozentsatz
+  der Einstellung an (ab Werk seit A237) und bei mehr als zwei Gegnern, und Bedingung (b) besteht immer. Die Zielwahl nach Prozentsatz
   wählt einen Schadensausteiler bei 10 % hinter Barriere vor einem bei 12 % ohne, der am nächsten Treffer stirbt.
 - **Option falsch:** Die Näherung „wen sein Ziel anvisiert, der bekommt den Tankbuster" kann irren; dann hält der Krieger
   Nascent Flash für einen Treffer, der den anderen Tank trifft — und gerade der könnte es brauchen. Der Fehler geht
@@ -725,9 +708,249 @@ aus „möglicherweise tödlich" eine Zahl.
 - Vierte Zielwahl **„By danger"**, ab Werk gewählt (angehängt; Rotationseinstellungen speichern den Namen).
 - Heilung-wirkungslos-Ausschluss in allen vier Zielwahlen.
 - Der Zielfilter liest `NoNeedHealingInvuln()` mit der richtigen Polarität (belegter Defekt, ohne Schalter).
-- **Nicht gebaut:** Nascent Flash als Minderung für den **anderen Tank vor dessen Tankbuster** — der Anwendungsfall,
-  den The Balance mit „Nascent Flash goes on a friend" meint, ist hier ein Schluss, keine Quelle. Das ist neues
-  Verhalten und steht als Vorschlag im TODO. Ebenso die Messung der Tankbuster-Höhe.
+- **Nicht gebaut, jetzt mit Quelle:** Nascent Flash als Minderung für den **anderen Tank vor dessen Tankbuster**.
+  The Balance, Warrior Basic Guide, Abschnitt Makros (abgerufen 02.10.2026): „Nascent Flash goes on a friend. Most
+  often on the co-tank of your eight-person party." Damit ist der Einsatz am anderen Tank die Regelanwendung der
+  Referenz, kein Schluss mehr. Gebaut ist er nicht: Er braucht die Erkennung „Tankbuster auf dem anderen Tank"
+  (Marker oder Vorhersage mit Zielangabe) und die Abwägung gegen den eigenen Bedarf, die die Triage oben schon
+  führt. Steht im TODO als offene Arbeit. Die Messung der Tankbuster-Höhe bleibt ein eigenes Vorhaben.
+
+## Krieger: die Abwehr im Ganzen
+
+**Seine Fragen und Aufträge (01.10.2026):** „abtausch auf tankbuster durch boss bringt nichts, wird aber gecasted"
+(Boss allein in der Arena, Krieger); „ist kampfrausch vor tankbuster nicht sinnvoll? warum nicht genutzt?"; „evtl.
+auch bei gruppenpulls wall to wall sinnvoll. alle defskills warrior im vollen loop prüfen, bewerten, schauen, wie
+bislang genutzt"; „in die bestehenden konzepte einarbeiten im vollen loop, kritisch alles bewerten". Einordnung:
+Beobachtung mit Hinweis auf die Lage, Frage, Prüfauftrag.
+
+**Maßstab:** seine Spielweise — Sicherheit vor Schaden, gewichtet mit der Wahrscheinlichkeit des Treffers. Ein
+angekündigter Tankbuster auf ihn gilt als wahrscheinlich und, ohne gemessene Höhe, als möglicherweise tödlich
+(Abschnitt Nascent Flash). Für einen Pull misst die Wahrscheinlichkeit der gemessene Gesundheitsverlauf. Keine
+der Abwehrfähigkeiten kostet Schaden; ihr Preis ist allein die Abklingzeit, also ob sie beim nächsten Bedarf fehlt.
+Referenz für Rotationen: The Balance, Warrior Basic Guide, „Staying Alive" (abgerufen 01.10.2026).
+
+### Die Fähigkeiten (Job-Guide deutsch und englisch, abgerufen 01.10.2026)
+
+| Fähigkeit | Stufe | Abklingzeit | Wirkung |
+|---|---|---|---|
+| Schutzwall (Rampart) | 8 | 90 s | −20 % für 20 s, Heilung auf ihn +15 % |
+| Tiefschlag (Low Blow), Zwischenruf (Interject) | 12, 18 | 25 s, 30 s | Betäubung, Unterbrechung |
+| Reflexion (Reprisal) | 22 | 60 s | Gegner im Umkreis von 5 Yalm −10 % Schaden für 15 s |
+| Kampfrausch (Thrill of Battle) | 30 | 90 s | maximale Gesundheit +20 % und aufgefüllt, Heilung auf ihn +20 %, 10 s |
+| Abtausch (Arm's Length) | 32 | 120 s | Rückstoßschutz 6 s; wer ihn physisch trifft, bekommt Gemach +20 % für 15 s |
+| Rachsucht (Vengeance) → Verdammnis (Damnation) | 38 → 92 | 120 s | −30 % → −40 % für 15 s; Verdammnis danach Regeneration (Status Primeval Impulse) |
+| Holmgang | 42 | 240 s | Gesundheit fällt 10 s lang nicht unter 1 |
+| Urinstinkt (Raw Intuition) → Urimpuls (Bloodwhetting) | 56 → 82 | 25 s, geteilt mit Urflackern | −10 % (6 s → 8 s), Heilung je Waffenfertigkeit; Urimpuls dazu −10 % für 4 s und eine Barriere |
+| Äquilibrium (Equilibrium) | 58 | 60 s | Heilung 1200 Potenz und Regeneration |
+| Abschütteln (Shake It Off) | 68 | 90 s | Gruppenbarriere 15 % der Maximalgesundheit; hebt Kampfrausch, Verdammnis und Urimpuls auf, +2 % je aufgehobenem Effekt |
+| Urflackern (Nascent Flash) | 76 | 25 s, geteilt | Urimpuls-Wirkung auf ein Mitglied, Heilung auf ihn |
+
+The Balance führt sie als Stapel für Tankbuster, von „Reprisal | Thrill | Rampart | Bloodwhetting" bis zum „Kitchen
+Sink" aus allen fünf, mit Holmgang als letzter Stufe. Urimpuls heilt je Treffer, „very powerful in dungeons";
+Äquilibrium ist „great when used with Thrill of Battle, Rampart or both". Abschütteln bemisst seine Barriere an der
+durch Kampfrausch erhöhten Maximalgesundheit („Big Value"). Reflexion auf einen Tankbuster ist „very situational",
+weil sie für den nächsten Raidwide fehlen kann.
+
+### Wie RSR sie nutzt, und was davon richtig ist
+
+Die Einzelabwehr des Kriegers (`WAR_Reborn.DefenseSingleAbility`) öffnet zweimal: für einen Tankbuster oder Zauber
+auf ihn (Marker, gelisteter Zauber, Vorhersage innerhalb von „Seconds before tankbuster to use single mitigation",
+ab Werk 3 s) und für einen Pull (`TankPullOnPlayer`: mindestens „Number of hostiles" Gegner auf ihm in 3 Yalm, er wird
+getroffen). Je Einwebeplatz fällt die erste passende Fähigkeit in dieser Reihenfolge:
+
+0. Unter **Holmgang** und unter 30 % Gesundheit fällt nichts weiter (Upstream).
+1. **Verdammnis/Rachsucht**, dann **Schutzwall** für einen von BossModReborn vorhergesagten Tankbuster, vor allen
+   kurzen (A241). Schutzwall nur, wenn die große Minderung nicht läuft und nicht eben fiel (A243): je Tankbuster eine
+   der beiden.
+2. **Abtausch** auf einem Rudel gewöhnlicher Gegner für den Slow, Bosse nicht mitgezählt (A236). *Richtig:* Er mindert
+   den Treffer nicht, der ihn auslöst. Die zentrale Rückfallstufe, die ihn auf jeden Tankbuster warf, ist geschlossen.
+3. **Urimpuls/Urinstinkt** mit „single enemies" (ab Werk an, A237) oder mehr als zwei Gegnern. *Richtig:* Er ist der
+   Kern jedes Stapels und heilt im Pull je Treffer.
+4. **Kampfrausch** vor einem Tankbuster auf ihn innerhalb seiner Wirkdauer (A237).
+5. **Verdammnis/Rachsucht** und **Schutzwall** ohne Vorhersage, gestaffelt: Verdammnis, wenn Schutzwall bereit ist
+   oder vor mehr als 60 s fiel; Schutzwall, wenn Verdammnis vor mehr als 30 s fiel (unterhalb der Stufe von Rachsucht
+   ohne Bedingung). Beide schließen einander über `StatusHelper.RampartStatus` aus.
+6. **Reflexion**, nachgeführt oder sobald sie fehlt; am Tankbuster zurückgehalten, wenn er gedeckt ist und ein
+   Raidwide nach ihrem Ende ansteht (`HoldReprisalForRaidwide`, A244).
+
+Außerhalb der Einzelabwehr:
+- **Kampfrausch** und **Äquilibrium** reaktiv unter je 0,6 Gesundheit (Vorausschau bis zur Landung); Kampfrausch steht
+  davor, also wirkt Äquilibrium unter ihm wie von The Balance empfohlen.
+- **Kampfrausch** zusätzlich, wenn die Gesundheit beim gemessenen Verlauf **innerhalb seiner Wirkdauer** unter diese
+  Schwelle fiele (A239).
+- **Urimpuls** reaktiv unter 0,7, solo immer.
+- **Holmgang** als Notfall bei „Health of dying tank" (ab Werk 15 %).
+- **Abschütteln** als Gruppenheilung und Flächenabwehr.
+- **Urflackern**: Abschnitt Nascent Flash.
+- **Tiefschlag** und **Zwischenruf**: zentral, nicht auf Bosse.
+
+### Befunde
+
+**1. Urimpuls hielt Verdammnis, Schutzwall und Reflexion zurück — behoben (A238).** Zwei Sperren taten dasselbe: Die
+Einzelabwehr brach ab, solange Urimpuls oder Urinstinkt lief (Upstream, seit 141f9b27a), und Urimpuls stand in
+`RampartStatus`, der Liste der *großen* Minderungen, die Schutzwall und Verdammnis als Doppelbelegungssperre tragen.
+Im Kampf hieß das:
+- Am **Pullbeginn**, wenn das Rudel vollzählig ist, kamen Verdammnis und Reflexion erst nach den acht Sekunden von
+  Urimpuls.
+- Bei **jedem Tankbuster**, für den Urimpuls fiel, kamen Verdammnis und Schutzwall gar nicht. Seit „single enemies" ab
+  Werk an ist (A237), wäre das jeder Tankbuster eines einzelnen Bosses gewesen. Die Sperre hätte die Änderung von A237
+  ins Gegenteil verkehrt.
+
+Die Liste beschreibt sich selbst als „the big personal mitigations"; Urimpuls ist die kurze Abklingzeit des Kriegers wie
+Heart of Corundum, Holy Sheltron und The Blackest Night bei den anderen, und von denen steht keine darin. Der Eintrag
+widersprach also dem erklärten Zweck der Liste, und der Code folgt jetzt dem Kommentar. Beide Sperren sind entfernt;
+Schutzwall und Verdammnis staffeln weiter gegeneinander. Andere Leser der Liste: `HasMajorMitigation` (nur Dunkelritter,
+der nie Urimpuls trägt) und seit A244 `HoldReprisalForRaidwide` (alle Tanks, für den eigenen Charakter). Gegenposition: Ohne Sperre überlappen Urimpuls und Verdammnis. Das ist der Stapel „Damnation +
+Bloodwhetting" der Referenz und kostet nichts, weil Urimpuls nach 25 s wieder bereit ist.
+
+**2. Kampfrausch fiel nie vor dem Treffer — gebaut (A237, A239).**
+- *Tankbuster:* Er fällt vor einem Tankbuster auf ihn, innerhalb seiner Wirkdauer (`TankbusterOnMeWithin`, zentral für
+  jeden Tank; Dauer aus den Wirktexten). „Auf ihn" heißt: Marker oder gelisteter Tankbuster-Zauber auf ihm, oder eine
+  Vorhersage, die ihn nennt oder, wo sie niemanden nennt, wen sein Ziel anvisiert (Schluss). Nicht unter
+  Unverwundbarkeit. Option „Use Thrill of Battle before a tankbuster on you", ab Werk an. Er fällt auch auf einen
+  Tankbuster, den Verdammnis schon nimmt. *Verworfen (A248):* ihn dort zurückzuhalten, damit er auf den schwächer
+  gedeckten Tankbuster unter Schutzwall fällt, wie WrathCombo es tut („align with Rampart", Stand 25.09.2026,
+  keine Spielquelle). Das hilft nur, wenn der nächste Tankbuster binnen seiner 90 s Abklingzeit kommt. Kommen sie
+  im Abstand von zwei Minuten, nimmt Verdammnis jeden, und Kampfrausch fiele auf keinen. Den Abstand zum übernächsten
+  Tankbuster liefert keine Quelle; BossModReborn sagt nur den nächsten an. The Balance führt „Damnation + Thrill"
+  und „Rampart + Thrill + Bloodwhetting" als gleich starke Stapel („The 60s"); eine Zuordnung zu Schutzwall
+  nennt sie nicht.
+- *Pull (sein Hinweis):* Er fällt, sobald die Gesundheit beim gemessenen Verlauf innerhalb der zehn Sekunden seiner
+  Wirkung unter „Thrill Of Battle Heal Threshold" fiele (`GetHealthRatioIn`, die selbstkorrigierte Zeit bis zum Tod).
+  Damit liegen die 20 % Gesundheit und die verstärkte Heilung an, solange das Rudel vollzählig zuschlägt, und sie
+  tragen die Heilung von Urimpuls und Äquilibrium. Halten die Heiler ihn stabil, ist der Verlauf nicht fallend, und er
+  fällt nicht. Keine neue Zahl: Schwelle seine, Dauer aus den Wirktexten. Option „Use Thrill of Battle when your health
+  will fall below its threshold within its duration", ab Werk an.
+- *Gegenposition, geprüft:* Früher eingesetzt, fehlt er 90 s als Notheilung. Für den Notfall bleiben Äquilibrium (60 s),
+  Urimpuls (25 s) und Holmgang. Und reaktiv füllt er dieselben 20 % erst auf, wenn der Treffer gelandet ist; im Pull
+  verliert er nichts, wenn er früher kommt, weil der Verlauf den Bedarf schon belegt.
+- *Grenze:* Der Verlauf ist linear fortgeschrieben. Ein Rudel, das stirbt, fällt langsamer als vorhergesagt; dann fiel
+  Kampfrausch etwas zu früh, in die vorsichtige Richtung.
+
+**3. Urimpuls vor dem Tankbuster eines einzelnen Bosses — umgestellt (A237).** „single enemies" stand ab Werk aus, also
+fiel er gegen einen einzelnen Boss erst nach dem Treffer. Nach seiner Regel für Voreinstellungen (A227) steht er an.
+*Restrisiko:* Die Einzelabwehr öffnet auch für einen ungelisteten Zauber eines Gegners auf ihn. Dann kann Urimpuls beim
+eigentlichen Tankbuster noch abklingen (25 s).
+
+**4. Abtausch auf einem Boss-Tankbuster — behoben (A236).**
+
+**5. Ein vorhergesagter Tankbuster bekam große Minderung und Schutzwall zugleich — behoben (A243).** Beide Zweige
+für einen vorhergesagten Tankbuster prüften nur, ob ihr eigener Status bis zum Treffer abläuft, und übergingen die
+gegenseitige Sperre. Lagen beide bereit, fielen beide auf denselben Tankbuster.
+
+*Beleg, sein Protokoll vom 01.10.2026, Restaurierter Löwe:* Tankbuster etwa alle 61 s.
+- 20:13:43: Verdammnis und Schutzwall, Treffer 30 %.
+- 20:14:45: keine von beiden bereit, Treffer 85 %.
+- 20:16:02: beide, Treffer 31 %.
+- 20:17:05: keine, Treffer 85 %.
+
+Bei Neo Garula dasselbe: 27 % unter beiden, 49 s später 65 % ohne. Abwechselnd eingesetzt (Verdammnis 120 s, Schutzwall
+90 s, Job-Guide) wären alle fünf Tankbuster beim Löwen gedeckt gewesen, je mit einer der beiden.
+
+*Referenz:* The Balance empfiehlt je Tankbuster „one of Rampart or your 40 % cooldown, plus your short cooldown".
+
+*Jetzt:* Schutzwall fällt für einen vorhergesagten Tankbuster nur, wenn die große Minderung ihn nicht nimmt — sie läuft
+nicht und fiel nicht eben erst (`RampartTakesPredictedTankbuster`, zentral). Das gilt für alle vier Tanks. Die kurzen
+Minderungen (Urimpuls, Kampfrausch, Heart of Corundum, Oblation, Sheltron, The Blackest Night) kommen wie bisher dazu.
+Das Fenster für Schutzwall ist jetzt seine Dauer aus dem Wirktext statt der Zahl 20.
+
+*Antithesen:*
+- *Kein Defekt:* widerlegt durch das Protokoll.
+- *Option falsch, ein Tankbuster braucht beide:* möglich bei einem Treffer weit über der Maximalgesundheit. Für diesen
+  Fall bleiben Holmgang (bei „Health of dying tank") und die kurzen Minderungen. Ein Tankbuster gleich nach dem ersten
+  bekäme mit beiden auf dem ersten gar nichts mehr, wie im Protokoll.
+- *Ausgeliefert, nichts ändert sich:* Ohne Vorhersage greifen diese Zweige nicht. Dann staffelt die Zeitregel darunter,
+  die beide schon nicht zugleich zulässt.
+
+**Die Zeitregel ohne Vorhersage** (Schutzwall 30 s nach der großen, die große 60 s nach Schutzwall, Upstream
+abe6132d3) bleibt unverändert. Durchgerechnet mit `tank_mitigation_stagger_model.py`: Direkt aneinander schützt einen
+einzelnen Pull um 2–7 % besser. In einer Wall-to-Wall-Folge verschiebt es nur, welcher Pull ganz ohne beide bleibt; im
+Mittel liegen beide Varianten höchstens 3 Prozentpunkte auseinander, mal die eine, mal die andere vorn. Am Boss ohne
+Vorhersage ändert die Reihenfolge nichts. Ohne einen Unterschied im Kampf gibt es keinen Grund für einen Eingriff. Die
+Zahlen 30 und 60 bleiben als offene feste Werte geführt.
+
+**6. Abschütteln gegen die eigenen Status und gegen den Raidwide — gebaut (A245).** Abschütteln hat zwei Wege, und beide
+wirkten es als Erstes, ohne einen eigenen Status zu prüfen:
+- *Einzelheilung* (`HealSingleAbility`): Sie öffnet, sobald irgendein Mitglied in der Vorausschau unter
+  „HealthSingleAbility" fällt (ab Werk 0,7).
+- *Flächenabwehr:* Sie öffnet bei einem erkannten Flächenzauber oder einem angesagten Raidwide.
+
+Wirkung (Job-Guide): Barriere 15 % der Maximalgesundheit je Mitglied, 30 s; Heilung 300 Potenz und Regeneration;
+Abklingzeit 90 s. Es hebt Kampfrausch, Verdammnis und Urimpuls auf, je +2 % Barriere. Die Barriere des Kriegers bemisst
+sich an seiner Maximalgesundheit vor der Aufhebung (The Balance). The Balance führt Abschütteln unter den
+Gruppenwerkzeugen, die auf raidweiten Schaden gehören.
+
+| Fall | Gewinn | Kosten | Jetzt |
+|---|---|---|---|
+| Einzelheilung, Verdammnis/Rachsucht oder Urimpuls läuft | +2 % Barriere, Heilung für ein Mitglied unter 70 % | bis 15 s −40 % (−30 %) auf ihn, oder Urimpuls' Minderung und Heilung | **wartet**, bis sie enden |
+| Einzelheilung, Raidwide nach Ende der Barriere und vor neuer Bereitschaft angesagt | Barriere für eine Einzellage | fehlt der Gruppe am Raidwide | **wartet** |
+| Einzelheilung, Kampfrausch läuft | Barriere an der erhöhten Gesundheit, +2 % | Rest von Kampfrausch | frei |
+| Raidwide, Verdammnis läuft, kein Tankbuster vor ihrem Ende | Barriere für alle | Rest von Verdammnis | frei |
+| Raidwide, Verdammnis läuft **für einen Tankbuster, der vor ihrem Ende landet** | Barriere für alle | 40 % am Tankbuster | **wartet** bis nach dem Tankbuster |
+| ein Mitglied in Gefährdungsklasse 1, oder der gemessene Raidwide brächte eines dorthin | — | — | jede Rückhaltung weicht (`HoldAreaDefense`) |
+
+Das folgt seinem Kriterium: Wen bringt der Verzicht in ernste Bedrängnis? Am Raidwide verliert die Gruppe die Barriere,
+er den Rest seiner Minderung, also bekommt die Gruppe sie. Steht ihm ein Tankbuster unter Verdammnis bevor, verlöre er
+40 % an einem möglicherweise tödlichen Treffer; die Gruppe verliert eine Barriere, und gerät sie dadurch in Gefahr,
+weicht die Rückhaltung.
+
+*Antithesen:*
+- *Kein Defekt:* widerlegt; die Wege prüften keinen Status.
+- *Option falsch:* In der Einzelheilung wartet die Heilung für ein Mitglied unter 70 % bis zu 15 s. Ein Mitglied in
+  Gefahr bekommt sie trotzdem (die Rückhaltung weicht); darüber heilen die Heiler.
+- *Ausgeliefert, nichts ändert sich:* Ohne Modul gibt es keine Raidwide-Ansage, dann entfällt dieser Teil. Ohne
+  sichtbaren Tankbuster entfällt der Teil am Raidwide. Die Statusprüfung wirkt immer.
+
+**7. Reflexion am Tankbuster oder am Raidwide — gebaut (A244).** Reflexion liegt auf dem Gegner und schützt jeden, den er
+während ihrer 15 s trifft (sein Hinweis). Eine Wahl gibt es nur, wenn der Raidwide nach ihrem Ende und vor ihrer neuen
+Bereitschaft landet. Dann wartet sie, wenn der Tank seinen Tankbuster schon mit eigener großer Minderung oder Schutzwall
+nimmt. Fälle, Quellen und Grenzen in Konzept 08, „Gegner-Debuffs am Tankbuster und am Raidwide", weil die Regel dort für
+alle Rollen sitzt.
+
+**8. Die große Minderung kam beim Tankbuster zuletzt — behoben (A241).** Sein Protokoll, 21:11:58: Marker auf ihm, dann
+Urimpuls, Kampfrausch und Verdammnis erst 0,7 s vor dem Treffer. Das Fenster der Einzelabwehr öffnet bei einer
+Vorhersage wenige Sekunden vorher, und die kleinen Minderungen standen vorn. Jetzt stehen die Zweige für einen
+vorhergesagten Tankbuster bei allen vier Tanks am Anfang. Zusammen mit Befund 5 fällt dort je Tankbuster eine große
+Minderung oder Schutzwall, dann die kurzen.
+
+**Ohne Befund:**
+- *Äquilibrium* (reaktiv, unter Kampfrausch), *Holmgang* (Notfall bei 15 %; vorbeugend nur bei bekannter Höhe des
+  Treffers sinnvoll, die fehlt — Abschnitt Nascent Flash).
+- *Tiefschlag/Zwischenruf* (zentral) und *Urflackern* (A226).
+
+### Abgleich mit den Referenzen (02.10.2026)
+
+| Frage | The Balance | WrathCombo (Stand 25.09.2026, keine Spielquelle) | xivanalysis | RSR jetzt |
+|---|---|---|---|---|
+| Große Minderung und Schutzwall auf einen Tankbuster | je Tankbuster eine von beiden plus kurze | Vengeance nicht innerhalb 20 s nach Rampart und umgekehrt („Prevent double big mits") | — | eine je Tankbuster (A243) |
+| Urimpuls vor dem Tankbuster | Teil jedes Stapels | auf angekündigten Tankbuster | zählt nur die Nutzung | ja, „single enemies" an (A237) |
+| Kampfrausch vor dem Tankbuster | in den Stapeln, mit Verdammnis wie mit Rampart („The 60s“) | nur ohne andere große oder mit Rampart, sonst Notfall | zählt nur die Nutzung | auf jeden Tankbuster, für den er bereit ist (A237); WrathCombos Ausrichtung verworfen (A248) |
+| Reflexion am Tankbuster | Gruppenwerkzeuge auf Raidwides | im Bosskampf nur bei angesagtem Gruppenschaden | — | wartet, wenn der Tank gedeckt ist (A244) |
+| Abschütteln | Barriere an erhöhter Gesundheit | im Bosskampf bei Gruppenschaden, nicht innerhalb 10 s nach Reflexion; außerhalb nur ohne Kampfrausch, Verdammnis, Vengeance, Urimpuls | zählt nur die Nutzung | wartet bei Verdammnis/Urimpuls (A245) |
+| Reflexion und Abschütteln auf demselben Raidwide | mal stapeln, mal verteilen, je nach Größe | verteilt (je 10 s Sperre gegeneinander) | — | **beide auf denselben** — offen (TODO) |
+
+*xivanalysis* bewertet Abwehr nur danach, ob sie genutzt wurde („find helpful times"), ohne Zeitpunktregel. *FFLogs*
+liefert die Kampfdaten, keine Regeln; ein Report von ihm würde zeigen, welche Minderung auf welchem Treffer lag.
+
+### Antithesen
+
+- **Kein Defekt:**
+  - Für Befund 1 widerlegt: Die Sperre stand im Code, und sie hält Verdammnis bei Pullbeginn um die Laufzeit von
+    Urimpuls zurück.
+  - Für Befund 2 widerlegt: Kampfrausch fiel nur nach dem Treffer.
+- **Option falsch:**
+  - Die Näherung „wen sein Ziel anvisiert" kann bei Tankbustern auf den zweiten in der Feindseligkeit irren. Dann geht
+    Kampfrausch umsonst, in die vorsichtige Richtung.
+  - Mehr Überlappung am Pullbeginn kann bei einem langen Pull hinten Deckung kosten. Gemindert durch die Staffelung von
+    Schutzwall und Verdammnis, die bleibt, und durch Urimpuls alle 25 s.
+- **Ausgeliefert, und nichts ändert sich:**
+  - Ohne Modul, Marker oder gelisteten Zauber gibt es kein Tankbuster-Signal; Kampfrausch fällt dann nach dem Verlauf
+    oder reaktiv.
+  - Fehlt im Fenster der Einzelabwehr (ab Werk 3 s) ein Einwebeplatz, fällt keine ihrer Minderungen. Das gilt für alle
+    Tanks und ist bestehende Bauform.
+  - Hat er „single enemies" selbst auf aus gestellt, bleibt Urimpuls gegen den Boss reaktiv.
+  - Mit „Heal ahead of incoming damage" aus bleibt die Pull-Regel von Kampfrausch wirksam; sie liest den Verlauf
+    unabhängig davon.
 
 ## Was offen bleibt
 
@@ -736,7 +959,8 @@ Heilung.** Im ungünstigsten Fall muss der laufende GCD auslaufen und ein Zauber
 Wirkzeit darauf fertig werden — zusammen zwei GCDs. Der Vorlauf muss daher mindestens
 zwei GCDs betragen. Wie viele Sekunden das sind, steht nicht fest: Gemessen wird die
 **tatsächliche** Erholzeit des Spielers, die das Spiel meldet
-(`DataCenter.DefaultGCDTotal` über `ActionManagerHelper.GetDefaultRecastTime`), also
+(`DataCenter.DefaultGCDTotal`; läuft kein GCD, die Länge, die das Spiel für einen Waffenskill rechnet,
+`ActionManagerHelper.GetDefaultAdjustedRecastTime`, A240), also
 verkürzt Zaubertempo den Vorlauf mit. Gegen die zehn Sekunden von Living Dead
 (`ActionId.resx`, Aktion 3638) ist es rund die halbe Phase.
 
@@ -760,20 +984,11 @@ wenn der Tank bereits ungeschützt ist. Eine Fähigkeit ohne Wirkzeit würde bei
 — welche Heilung gleich fällt, ist jedoch eine Rotationsentscheidung, die die zentrale
 Schicht weder kennt noch erzwingen kann.
 
-**Die gestaffelte Phase-2-Unterstützung** (Fälle 4 und 4a) ist nicht gebaut. Fall 4 —
-die leichte Unterstützung mit einem HoT — braucht keine Prognose, sondern nur die
-Feststellung, dass Walking Dead liegt; ihm steht eine Gesundheitsschwelle entgegen, die
-der Träger bei 1 HP nie erfüllt. Fall 4a verlangt eine Kursprognose: Die Datenquelle
-steht seit A91, die **Auswertung** zur aufgenommenen Heilmenge ist eine andere als die
-zur Restzeit und noch nicht gebaut. Welche Stellen im Code beidem entgegenstehen, führt
-`TODO.md`.
-
-**Eine einzige Frage zum Weisen.** Die Verbrauchsreihenfolge ordnet Eukrasian Diagnosis
-hinter The Blackest Night ein, ein Job-Guide davor. Träfe Letzteres zu, könnte der
-Einzelschild des Weisen die TBN-Absorption verzögern und Dark Arts kosten. Die beiden
-Primärquellen, die das klären würden, sind vom Egress nach Organisationsrichtlinie
-gesperrt. Für Weißmagier, Gelehrten und Astrologen besteht die Frage nicht — deren
-Schilde liegen nach beiden Quellen deutlich hinter TBN.
+**Die gestaffelte Phase-2-Unterstützung** (Fälle 4 und 4a) ist gebaut (A147, Abschnitt „Umsetzung für Phase 2“):
+`WalkingDeadCarriedBySelfHeal` lässt nur HoTs an den Träger, solange er sich selbst trägt, und gibt die volle
+Unterstützung bei den dort genannten Auslösern frei. Die Kursprognose rechnet die Gesundheit seit Beginn des Fensters
+auf die Restzeit hoch, nicht die aufgenommene Heilmenge; fallen Heilung und Schaden in dieselbe Abtastung, unterschätzt
+sie den Kurs (Grenze unter „Was ausgeschlossen wurde“).
 
 ## Nachweisbarkeit
 

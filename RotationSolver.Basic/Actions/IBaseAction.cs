@@ -15,6 +15,10 @@ public interface IBaseAction : IAction
 	internal static bool AllEmpty { get; set; } = false;
 	internal static bool ShouldEndSpecial { get; set; } = false;
 
+	// Set by the defence dispatch while a defence path runs: whether the hit that opened it reaches the
+	// player. False rejects the actions that protect only him (concept 13, A233); null outside the paths.
+	internal static bool? SelfProtectionHitsMe { get; set; } = null;
+
 	/// <summary>
 	/// The action itself.
 	/// </summary>

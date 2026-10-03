@@ -4821,6 +4821,474 @@ Drei Upstream-Commits (07f9f7daf, Merge 3acc5333a, e79608210), konfliktfrei geme
 
 **Prüfgrad:** statisch (Diffs, Dalamud-Quelle, xivapi); Prüfskripte; Compile über die CI.
 
+### A230 · Release 7.5.6.13+wsh1, Übergabe der Release-Texte, Obsolete-Verwendungen (01.10.2026)
+
+Auftrag: PR #10 nach `main`, kompilieren, Release, neuer Zweig `claude/fixes-after-7.5.6.13`, danach die `Obsolete`-Verwendungen im Loop auf die neuen Strukturen umstellen.
+
+- *Release:* PR #10 gemergt (daf80e1f2, CI Build und DispatchChain grün auf f01ca8f23), `build.yaml` auf `main` grün, `publish.yaml` per `workflow_dispatch` mit `7.5.6.13+wsh1` erfolgreich; Release mit `latest.zip` auf daf80e1f2. Der Release-Text nennt die Upstream-Änderungen 7.5.6.11–13 nicht; das folgt der bisherigen Form (die Basis steht im Tag, A229 hält sie fest).
+- *Übergabe:* `fork-changes-in-play.md` hat den Text von 7.5.6.13+wsh1 thematisch eingearbeitet, nicht angehängt; dabei veraltete Voreinstellungsangaben ersetzt („Heal ahead of incoming damage … off by default", `BlackestNightUsage` „old behaviour", Arm's Length nur Dunkelritter). `fork-changes-since-last-release.md` beginnt mit „Changes since 7.5.6.13+wsh1". Geprüft mit `check_release_note.py` und `check_concept_defaults.py`.
+- *Obsolete — Erhebung:*
+  - Maß, das den Wirkungsbereich selbst misst: der Compiler. Der CI-Build (Dalamud „latest", ClientStructs, ECommons 3.2.1.20, Lumina) meldet null CS0618/CS0612. Unterdrückt wird nichts: `NoWarn` ist leer bzw. 1591, das `Dalamud.NET.Sdk` 15.0.0 setzt kein `NoWarn` (Paket gelesen).
+  - Gegenprobe gegen Dalamud `master` (b666d82, 29.09.2026), der mehr Mitglieder als `Obsolete` führt als die ausgelieferte Fassung: Treffer `ActivePet?.DataId` (3×, `DataCenter`) und `Svc.Framework.RunOnFrameworkThread(Reset)` sind keine Verwendungen. `ActivePet` ist `BuddyMember` der ClientStructs, nicht Dalamuds `IGameObject.DataId`; `Reset` ist `void`, also die `Action`-Überladung, veraltet sind nur die `Func<Task>`-Überladungen.
+  - Nicht gebaute Projekte (`RotationSolver.Templates`): keine Verwendung der entfernten Mitglieder `Attunement`, `BeastChakras`, `DrawnCard(s)`.
+  - Ergebnis: Die drei Verwendungen (SMN, MNK, AST) hat Upstream mit A229 umgestellt; im Baum bleibt keine.
+- *Obsolete — Wiederholbarkeit:* Die Klasse ist „Warnung, die niemand liest": `SMNGauge.Attunement` war seit 7.01 als Bitfeld markiert und wurde als Zahl gelesen. `build.yaml` baut Plugin und Generator jetzt mit `-warnaserror:CS0618,CS0612` (Syntax: MSBuild-Referenz, Komma als Trenner, `dotnet build` reicht durch). Nur in der CI, nicht in den Projekten: Dort würde das nächste Dalamud-Update seinen eigenen Build anhalten. Selbsttest im selben Job: Eine Probe mit einem Aufruf je Form muss ohne Schalter bauen und mit Schalter an `error CS0618` und `error CS0612` scheitern. Verworfen: Schalter auch in `publish.yaml` (ein Release bleibt bei einer bloßen Markierung möglich; der PR-Lauf meldet sie vorher), `WarningsAsErrors` im Projekt (s. o.).
+- *Code-Review-Befund im selben Build:* CS0419 in `DataCenter.cs`, `cref` auf `GetForecastSurvivingShare` mehrdeutig; zeigt jetzt auf die gerufene Überladung `(IBattleChara, bool)`. Kein Kampfeffekt.
+
+**Prüfgrad:** Compile über die CI (Build-Log Lauf 36823644124; auf diesem Zweig Lauf 36824486470: Plugin und Generator 0 Warnungen, 0 Fehler); Selbsttest des Schalters in der CI bestanden (Probe ohne Schalter gebaut mit CS0618 und CS0612 als Warnung, mit Schalter gescheitert an `error CS0618` und `error CS0612`); statisch (Dalamud-Quelle, SDK-Paket, Baum); Prüfskripte.
+
+
+### A231 · Weißmagier: Streckung der Sanctus-Betäubung ohne eigenen Spielraum (01.10.2026)
+
+Seine Rüge: „meine vorgabe lautete aber anders" und „deine interpretation setzt einen spielraum, ob sanctus gestreckt wird."
+
+- *Vorgabe, am Konzept belegt:* Konzept 08, „Die Vorgaben des Auftraggebers" (A90): Betäubung 4 s gegen Erholzeit 2,5 s; ein sofort folgender zweiter Sanctus überschriebe die laufende Betäubung, „ein anderer Zauber dazwischen legt die zweite Betäubung ans Ende der ersten". Darüber seine Bedingung für jede Aussetzregel: nur, solange die Gegner noch betäubt werden können. Keine weitere Bedingung.
+- *Was der Code daraus gemacht hatte, alles meine Ableitungen:* Ersatzgarantie (nur ausgesetzt, wenn Dia/Aero den GCD übernimmt; A19), Ausnahme für einen unbetäubten, noch betäubbaren Gegner im Radius, Mindestzahl `StretchHolyMinHostiles`. Jede davon ließ Sanctus sofort zu. Vorgelegt hatte ich am 01.10. nur die erste, als offene Entscheidung — eine Abweichung von seiner Vorgabe ist ein Defekt, keine Wahl (C103).
+- *Ganze Regel neu geprüft, ein vierter Weg gefunden (Schluss aus Code und Wirkzeit, nicht beobachtet):* Sanctus hat 2,5 s Wirkzeit bei 2,5 s Erholzeit. Der nächste GCD ist frei, wenn der erste Sanctus landet; seine Betäubung steht dann womöglich noch nicht auf den Gegnern. Die Regel brach bei `stunned == 0` ab und gab Sanctus frei — genau im Moment, für den sie gebaut ist.
+- *Modell nachgezogen:* `stun_coverage.py` rechnete ohne Wirkzeit. Mit Wirkzeit fällt die Betäubung eine Wirkzeit später, und „Einschub, solange eine Betäubung läuft" schiebt drei GCDs ein statt einen (gleiche Deckung, 7,0 s). H2 aus A19 hatte `Restzeit > ein GCD` mit dem Sofortmodell verworfen; mit Wirkzeit gleich GCD ist sie die richtige Bedingung. Selbsttest um Wirkzeit und Presence of Mind erweitert.
+- *Umsetzung:* `ShouldStretchHolyStun` hält genau dann, wenn der letzte GCD Sanctus war (`IsLastGCD`) und dessen Betäubung einen jetzt begonnenen Sanctus überdauern würde: längste laufende Betäubung im Wirkradius gegen `WeaponRemain` plus angepasste Wirkzeit (`GetCastTime`); steht noch keine, zählt ein frischer Gegner (weder betäubt noch resistent) mit der Dauer aus dem Wirktext (`DefensiveValues.DurationOf`). Ohne laufende Betäubung und ohne frischen Gegner: kein Halten (seine Bedingung). Der gehaltene GCD fällt an den DoT, sonst an Glare. Ersatzgarantie, Neuzugangsausnahme und Mindestzahl entfernt. Keine neue Zahl.
+- *Einstellungen:* Text von „Stretch the Holy stun" an das Verhalten angepasst; „Enemies in Holy's radius before holding" hängt jetzt unter der Barrierenregel, die es allein noch liest. Gespeicherte Werte bleiben (Name unverändert).
+- *Wirkung im Kampf:* Nach dem ersten Sanctus eines Pulls kommt ein DoT oder Glare, der zweite Sanctus landet nach dem Ende der ersten Betäubung. Deckung laut Modell 7,0 statt 5,5 s je Pull, Preis ein GCD Sanctus-Schaden je Pull. Betroffen: nur `WHM_Reborn`; der Dunkelritter wartet weiter, solange ein Sanctus sichtbar gewirkt wird (A215).
+- *Falsifikation:* Kein Defekt? Widerlegt, der Code ließ Sanctus über drei Bedingungen zu, die die Vorgabe nicht kennt. Option falsch? Die Alternative „Einschub, solange eine Betäubung läuft" kostet laut Modell zwei GCDs mehr ohne Deckungsgewinn. Ausgeliefert, und nichts ändert sich? Möglich, wenn der Spielserver eine laufende Betäubung durch eine neue nicht überschreibt, sondern die längere behält — dann wäre die Streckung ohne Wirkung, kostet aber nur einen GCD je Pull. Das Überschreibmodell stammt aus A19 und ist nicht am Spiel belegt. `DefenseTrace.log` nennt je Entscheidung nach einem Sanctus Restzeit und Landezeit.
+- *Archiv und TODO:* Konzept 08 („Die Regel" bis „Seine Beobachtung", Falsifikation) umgeschrieben; drei TODO-Einträge zur Streckung entfernt (behoben bzw. überholt), der `CanUse`-Eintrag angepasst.
+
+**Prüfgrad:** statisch (Konzept, Code, Versionsgeschichte); Modellrechnung mit Selbsttest; Prüfskripte; Compile über die CI.
+
+
+### A232 · Trace-Datei: Commit des Builds, über Sitzungen fortgeschrieben (01.10.2026)
+
+Seine Frage: ob das Log Datum und Uhrzeit hat, um abzugleichen, gegen welchen Buildstand geprüft werden muss, oder besser den Commitstand.
+
+- *Stand vorher, am Code:* `DefenseTrace.log` trägt Datum und Uhrzeit nur in der Startzeile (`yyyy-MM-dd HH:mm:ss trace started`), jede weitere Zeile nur die Uhrzeit. Der Kopf nennt `version 7.5.6.13` — die Assemblyversion, für jeden Build seit dem Release gleich. Ein Commit fehlte. Das Datum allein trennt nicht: am 01.10. liegen sieben Commits auf dem Zweig, und er baut den Zweig vor dem Spielen.
+- *Umsetzung:* `Directory.Build.props` bettet `git rev-parse --short=9 HEAD` als `AssemblyMetadata("SourceCommit")` ein (Ziel `EmbedSourceCommit`, wie die Versionsableitung über `git`, ohne `%` im Befehl, weil `Exec` unter Windows eine Batchdatei schreibt). Der Kopf von `DefenseTrace.log` nennt `commit <hash>`, ohne `git` beim Bauen `commit unknown`. Gilt auch für Release-Builds, weil das Ziel nicht an `AssemblyVersion` hängt.
+- *Nachweis:* Neuer CI-Schritt „Check the build names its commit": Die erzeugte `RotationSolver.AssemblyInfo.cs` muss genau den ausgecheckten Commit tragen. Er prüft gegen eine unabhängige Quelle (`git rev-parse` im Lauf), nicht nur die Anwesenheit.
+- *Seine Nachfrage, ob das Log über mehrere Builds geführt werden kann:* Nein — `DefenseTrace.Start` legte die Datei bei jedem Laden neu an, ein Neukompilieren und Neuladen vor dem Hochladen verlor also jede frühere Sitzung. Jetzt wird angehängt; jede Sitzung beginnt mit Leerzeile, `==== <Datum Uhrzeit> trace started` und dem Kopf mit Commit. Eine Größengrenze gibt es nicht: Sie wäre eine feste Zahl ohne Loop, und das Wachstum je Sitzung ist nicht gemessen. Löschen der Datei setzt sie zurück.
+- *Nicht geändert:* `actiontrace_*.log` (`ActionTracer`, Upstream) — fremde Datei, von ihm bisher nicht hochgeladen.
+
+**Prüfgrad:** statisch; XML-Prüfung; Compile und Commit-Prüfung über die CI.
+
+
+### A233 · Protokoll 30.09.2026 (Krieger): Selbstschutz auf fremde Tankbuster, Lücken im Protokoll (01.10.2026)
+
+Seine Dateien: `DefenseTrace.log` (30.09.2026 18:26–20:18) und `HostileCastingAreaPotential.json`, „von gestern abend, also noch nicht der aktuelle build". Sein Build: ad73a6a5c (29.09.2026 15:53 UTC, Kopfzeile `version 7.5.6.12`). Seitdem ist an der Abwehr der Tanks nichts geändert; die Befunde gelten für den heutigen Code. Inhalt: Occult Crescent (Kreszentia-Gegner, Nammu, Loploth, Gedankenschinder), Krieger.
+
+- *Befund 1, Defekt:* Verdammnis und Schutzwall (19:47:08), Schutzwall und Abtausch (19:45:03/07), Verdammnis, Schutzwall und Reflexion (19:43:11) auf angekündigte Tankbuster auf Josy Akuma und Lyx Parsingreen, BossModReborn „hits you False" bzw. „unknown". Ursache: Der Tankzweig von `StateUpdater.ShouldAddDefenseSingle` öffnet die Einzelabwehr für jeden BossModReborn-Tankbuster und für jeden ungelisteten Cast eines Gegners auf sein eigenes Ziel, ohne zu fragen, wen er trifft; der Zweig der Schadensausteiler fragt seit A220 die Maske. Im Kampf: Verdammnis (120 s) und Schutzwall (90 s) fehlen für den Buster auf ihn.
+- *Optionen:* (0) nichts; (1) Flagge beim Tank an „trifft mich" binden; (2) Selbstschutz-Aktionen je Tankrotation mit einer Abfrage versehen (wie `AreaHitOnMe` bei SAM/SMN); (3) zentral in `CanUse`: im Abwehrpfad wird eine Aktion abgelehnt, deren aufgelöstes Ziel der Spieler ist und die keinen Wirkradius hat, wenn der öffnende Treffer ihn nicht erreicht. (1) verworfen: Die Einzelabwehr des Tanks trägt auch Intervention und Heart of Corundum auf das Tankbuster-Ziel. (2) verworfen: vier Rotationen plus Basis, jede Selbstschutz-Aktion einzeln, und fremde Rotationen blieben offen (Klasse). Gewählt (3), für Flächen- und Einzelpfad, auf der höchsten Stufe (alle Jobs).
+- *Umsetzung:* `DataCenter.SingleHitReachesPlayer` (Marker oder gelisteter Buster auf ihm; beim Tank ein Cast eines Gegners auf ihn als Ziel und die Pull-Regel; BossModReborn-Tankbuster mit Maske „trifft dich", unbekannt beim Tank als Treffer, sonst nur ohne lebenden Tank). `TankPullOnPlayer` wird im `StateUpdater` gesetzt, wo die Pull-Regel entscheidet. `IBaseAction.SelfProtectionHitsMe` setzt der Dispatch je Pfad (Befehl des Spielers: immer erlaubt), `BaseAction.CanUse` lehnt ab mit `ProtectsOnlyYouAndTheHitMissesYou`, `TryInvoke` setzt den Schalter je Update zurück. „Nur den Spieler" aus Spieldaten: `FindTarget` gibt für Reichweite und Wirkradius 0 den Spieler zurück, ebenso für `TargetType.Self`; Reflexion (Wirkradius 5) und Abschütteln bleiben frei.
+- *Befund 2, Protokolllücke:* 33 Abwehrzeilen ohne jede Quelle (19:01:26, 19:52 bis 20:13), jeweils mit Abtausch zuerst. Quelle laut Code: die Pull-Regel (mindestens `AutoDefenseNumber` = 2 Gegner bis 3 y auf ihm, die ihn angreifen; `HealthForAutoDefense` ab Werk 1, also bei jeder Gesundheit) — eine berechtigte Quelle, die das Protokoll nicht nannte, ebenso wenig ungelistete Casts eines Gegners auf sein Ziel. Beide stehen jetzt in der Zeile, dazu „single hit reaches you".
+- *Befund 3, offen und im Protokoll messbar gemacht:* „Ätherschub" (#41424, Kommandopott; Spieldaten Typ 1, Reichweite 0, Wirkradius 0 — gilt nach A192/A218 als Raidwide) öffnete sechsmal die Flächenabwehr (Abschütteln, Reflexion), ohne ihn je zu treffen; kein „hit you" danach. „Skip area defence for casts that missed you" griff nicht, weil keine Landung aufgezeichnet wurde (sonst stünde ein Fehlschlag). Warum keine ankam, zeigt das Protokoll nicht; es schreibt jetzt jede Landung eines gelisteten Flächencasts mit „reached you" und in der Quellenzeile das Ergebnis der letzten. Inhalt: Occult Crescent (Sonderinhalt, außerhalb seines Profils), nur erfasst. Die zugleich angekündigten BossModReborn-Raidwides trafen ihn ebenfalls nicht.
+- *Befund 4, klein:* Dieselbe Wahl zweimal in 21 ms (19:58:49): Vergleich und Setzen in `DefenseTrace.Decision` liefen ohne Sperre; jetzt unter der Sperre der Datei. Derselbe Marker steht zweimal in einer Zeile (zwei Einträge der VFX-Warteschlange), ohne Wirkung auf Entscheidungen.
+- *Kein Befund:* `HostileCastingAreaPotential.json` mit 53 Werten; über 100 % bei „Voller Schwinger" #7378 (109 %) — ein Treffer über die maximale HP eines Mitglieds, gemessen wie vorgesehen (xivapi: Typ 2, Wirkradius 60).
+- *Falsifikation:* Kein Defekt? 19:47:08 widerlegt es: „hits you False", Verdammnis fiel. Option falsch? Hält für eine geteilte Tankbuster-Kegel, die die Maske nicht nennt: Trifft ein Buster auf den anderen Tank auch ihn, ohne dass BossModReborn ihn in der Maske führt, fehlt nun sein Selbstschutz — die Maske ist BossModReborns Aussage über die Getroffenen, ein Modul ohne die Angabe liefert „unknown", und das zählt beim Tank als Treffer. Ausgeliefert, und nichts ändert sich? Wenn eine Rotation Selbstschutz außerhalb der Abwehrpfade wirkt (etwa in `EmergencyAbility` oder Angriffsfähigkeiten): dort greift der Schalter nicht, beabsichtigt.
+- *Konzept:* 13, „Selbstschutz in jedem Abwehrpfad, zentral"; Protokollabsatz. Zeilenverweise in Konzept 11 und 12 auf `CustomRotation_Ability.cs` nachgezogen (Phönixfeder 411, `AttackAbility` 420), Inhalt geprüft.
+
+**Prüfgrad:** statisch (Protokoll, Code, Spieldaten über xivapi); Prüfskripte; Compile über die CI. Ob die Selbstschutz-Aktionen bei „hits you False" ausbleiben, zeigt sein nächstes Protokoll (die Zeile nennt „single hit reaches you").
+
+
+### A234 · Abgleich mit dem Regelkatalog von xivanalysis (01.10.2026)
+
+Sein Auftrag: „generell schauen, welche regeln dort für gute rotationen gelten und was bei rsr verbesserungswürdig wäre", mit der Präzisierung, dass weniger Schaden aus einer Sicherheitsregel gewollt ist und eine solche Rotation nicht schlechter macht. Seine Angabe: Er zeichnet mit ACT auf. Beides in `CLAUDE.md` eingetragen, xivanalysis unter „Quellen".
+
+- *Quelle:* `xivanalysis/xivanalysis` f532855 (25.09.2026), MIT, Patch 7.0–7.5, alle Kampfjobs. Katalog aus den Vorschlagstexten der Module (Skript im Arbeitsverzeichnis, 844 Zeilen; nicht versioniert, weil es nur einmal einen fremden Stand ausliest).
+- *Ergebnis:* Konzept 16. Eine Lücke: Beschwörer, Searing Flash außerhalb einer Demi nur auf einen sterbenden Boss (Upstream-Code d566eda86, 2025; in A155 nur beschrieben, keine Entscheidung von ihm). Mit weiteren Beschwörern fällt Searing Light auch in einen Titan- oder Ifrit-Block, Ruby's Glimmer (30 s laut xivapi-Wirktext „Able to execute Searing Flash"; Dauer aus Fremdquelle) läuft vor der nächsten Demi ab. Jetzt zusätzlich `IsLastChanceBeforeStatusEnds(SearingFlashPvE, StatusID.RubysGlimmer)`. Konzept 08 (Lux-Gewichtung) nachgezogen.
+- *Abweichungen mit Grund, nicht behoben:* Swiftcast (seine Vorgabe), Physick des Beschwörers, gefahrbezogene Defensiven statt „so oft wie möglich" (Weißmagier), Primal Rend nur in Zielnähe (Bewegungsregel). Lucid Dreaming an der MP-Schwelle: zunächst als ungemessen geführt; seine Entscheidung (01.10.2026), Sicherheit — auf Abklingzeit verfiele die Wirkung bei vollem MP und fehlte bei echtem Bedarf. Reassemble auf Drill und Ruin IV vor dem nächsten Energy Drain: zunächst als ungemessen geführt, auf seine Rückfrage aus Spieldaten gerechnet (xivapi) und abgedeckt — gleiche Potenz 660 und keine überlaufende Ladung (längster Abstand geeigneter GCDs 40 s gegen 55 s Ladezeit); ein bis zwei Füllerplätze je Minute bei Ruin IV an erster Stelle. Beides hätte vor dem Bericht gerechnet werden müssen (`CLAUDE.md`: was Analyse klären kann, ist geklärt).
+- *Übrige Jobs:* Die Klasse „Proc verfällt / Leiste läuft über" war mit der Generatorliste schon für alle Jobs von Hand bewertet (Konzept 14, A165–A167); das hatte ich erst nach einer Stichprobe an 20 Aktionen nachgelesen. Die Bewertung von Searing Flash dort („Bedingung ist der Zweck, Konzept 12") übersah den Fall mehrerer Beschwörer und ist berichtigt. Fenstererwartungen und Reihenfolgeregeln nicht einzeln geprüft (im Konzept benannt).
+- *Falsifikation:* im Konzept.
+
+**Prüfgrad:** statisch (fremder Code, eigener Code, Spieldaten); Prüfskripte; Compile über die CI. Wirkung von Searing Flash nur mit weiteren Beschwörern beobachtbar.
+
+
+### A235 · Maschinist: Reassemble und Gruppenbuffs, voller Loop (01.10.2026)
+
+Sein Auftrag: Zusammensetzung der Gruppe, Häufigkeit und Abklingzeit der Gruppenbuffs, der wertvollste Buff, und Gewinn gegen Nachteile eines Zurückhaltens prüfen. Vorausgegangen: seine Nachfrage nach Nebeneffekten bei Reassemble auf Drill (Konzept 16).
+
+- *Quellen:* Wirktexte und Abklingzeiten aller Gruppenbuffs und von Reassemble über xivapi; Regel „Krit-Rate wird unter garantiertem Krit zum Multiplikator addiert" aus consolegameswiki und Allagan Studies (Gemeinschaftsquellen, Patch 6.2); für Direkttreffer keine Quelle gefunden. The Balance: Reassemble unter Gruppenbuffs, eine Ladung für das Zwei-Minuten-Fenster halten.
+- *Modell:* `.github/scripts/audit/reassemble_buff_model.py` mit Selbsttest (Formeln an Handrechnungen, Rangfolge über Krit-Multiplikator 1,5–1,7, Krit 20–30 %, Direkttreffer 30–50 % stabil). Spielerwerte sind Annahmen und als solche ausgewiesen.
+- *Ergebnis:* Konzept 17. Rangfolge für einen Reassemble-Treffer: Battle Litany und Chain Stratagem (je 3,0 %), Divination und Radiant Finale mit drei Coda (2,2 %), die 5-%-Buffs (1,8 %), Arcane Circle (1,1 %); Battle Voice unbeziffert. Halten kostet keine Ladung; Risiko nur die gehaltene Ladung beim Tod des Gegners, abfangbar über die selbstkorrigierte Zeit bis zum Tod. Empfehlung O1, zur Entscheidung vorgelegt.
+- *Befund nebenbei:* `HasBuffs` fragt „alle Gruppenbuffs liegen", nicht „welche liegen"; für einen Wert je Fenster ungeeignet. `JobBuffs` kennt Devilment nicht (wirkt nur auf den Partner, für die Gruppe richtig).
+
+- *Antithesen (seine Vorgabe, im vollen Loop):* Zeitsimulation im Modellskript ergänzt (zehn Minuten, Werkzeuge sobald bereit, Überhitzung ausgeblendet; Selbsttest: Halten verliert über den Kampf höchstens die eine über das Ende getragene Ladung und setzt nie weniger ins Fenster). Im Gleichtakt ab Pull liegen heute 4 von 11 Reassembles im Fenster, mit Halten 5; versetzt heute 2–4, mit Halten 8–9. Full Metal Field ist kein Ziel (Wirktext: „not affected by Reassemble"). Nicht entkräftet: Für leichte Gruppen ist der Gewinn höchstens eine halbe GCD je zehn Minuten, und die Regel ruht ihrem Wesen nach auf fremdem Verhalten. Empfehlung zunächst Nullvariante für sein Profil. Sein Hinweis: Buff-Jobs sind im Spiel in der Gruppe feststellbar — das stand im Konzept (`PartyComposition`, `JobBuffs`), war aber nicht gegen A2 gestellt: Eine nur mit Buff-Jobs aktive Regel kostet ohne sie nichts. A2 damit entkräftet; Empfehlung O1 als Option, ab Werk an, mit gemessenem Takt, Zeit bis zum Tod und freiem Einwebeplatz als Schranken.
+
+**Prüfgrad:** statisch (Spieldaten, Gemeinschaftsquellen, Code); Modell- und Zeitsimulation mit Selbsttest. Kein Code geändert.
+
+### A236 · Abtausch auf Boss-Tankbuster (01.10.2026)
+
+Seine Meldung, Krieger: „abtausch auf tankbuster durch boss bringt nichts, wird aber gecasted", dazu „bei abtausch war boss alleine in arena". Einordnung: Beobachtung mit Hinweis auf die Lage.
+
+- *1 Research:*
+  - Wirktext (Job-Guide): Abtausch verhindert Rückstoß und Heranziehen, und „When you are struck by a physical attack, the striker will be afflicted with Slow". Er mindert den Treffer nicht, der ihn auslöst. Sein Wert in einer Abwehr ist allein der Slow auf die folgenden Angriffe, also auf ein Rudel gewöhnlicher Gegner. Ob ein Boss Slow überhaupt annimmt, ist nicht belegt und trägt nichts.
+  - Pfad bei Boss allein: Ein angekündigter Tankbuster öffnet die Einzelabwehr. Die Einzelabwehr des Kriegers liefert nichts, etwa weil Damnation und Rampart abklingen und Bloodwhetting ohne „single enemies" erst ab drei Gegnern fällt. Dann wirkte die zentrale Rückfallstufe (`CustomRotation_Ability`, Upstream 847c418d5) Abtausch **ohne jede Gegnerzahl**; gesperrt war sie nur bei sichtbarem Zauber auf den Tank, nicht bei einer Vorhersage von BossModReborn.
+  - Die eigene Pull-Regel der vier Tanks (`ArmsLengthSlowsPull`) zählte den Boss mit. Mit „Number of hostiles" 1 löst ein Boss allein sie aus, mit 2 ein Boss und ein Add.
+  - Zweiter Befund derselben Stelle: Die Rückfallstufe lief auch, wenn die Rotation Abtausch selbst geprüft und abgelehnt hatte. Sie überging so die Option „Use Arm's Length on a pull for its Slow" und die Barrierensperre des Dunkelritters.
+  - WrathCombo (nur gelesen, keine Spielquelle): Abtausch ab Werk mit „Avoid Bosses".
+- *2 Optionen:*
+  - (0) belassen;
+  - (a) Rückfallstufe streichen;
+  - (b) Bosse aus der Pull-Zählung, Rückfallstufe nur unter der Pull-Bedingung;
+  - (c) (b) plus Rückfallstufe nur für Rotationen ohne eigene Pull-Regel.
+- *3 Abwägung:*
+  - (a) nimmt fremden und abgeleiteten Tank-Rotationen ohne eigene Regel den Slow auf dem Pull.
+  - (b) behebt seinen Fall, lässt aber die Umgehung der Option offen.
+  - (c) behebt beides, ist eine Fähigkeitsprüfung nach dem Muster `HasOwnAntiKnockbackGate` und kostet nichts. Gewählt.
+- *5 Review:*
+  - Boss-Erkennung des Baums: `IsBossFromIcon` (Rang 2/6) oder `IsBossFromTTK` (Gesamtzeit ab „Boss time to kill"). Ohne Rang und vor dem ersten Lebensverlust zählt ein Boss als gewöhnlicher Gegner. Mit „Number of hostiles" 1 kann Abtausch dann in den ersten Sekunden noch fallen; ab Werk (2) nicht.
+  - Die Rückfallstufe gilt jetzt nur für Tanks (`ArmsLengthSlowsPull` prüft die Rolle). Vorher konnte sie auch einen Nahkämpfer mit Einzelabwehr-Flagge treffen, wo der Slow ebenso nichts mindert.
+  - Die Rückstoß-Zweige (`AntiKnockback`) bleiben unberührt.
+- *6 Falsifikation:*
+  - **Kein Defekt?** Widerlegt: Der Wirktext nennt keine Minderung, und die Rückfallstufe hatte keine Gegnerbedingung.
+  - **Option falsch?** Ein Boss mit vielen Adds: Die Adds zählen weiter, der Slow wirkt auf sie. Ein Rudel, das als Boss erkannt wird (lange Zeit bis zum Tod), zählt nicht; das betrifft Gegner mit sehr viel Leben, wo der Slow ebenfalls wirkte. Das ist eine Grenze in der vorsichtigen Richtung: Abtausch bleibt für den Rückstoß.
+  - **Ausgeliefert, nichts ändert sich?** Möglich, falls der Abtausch über einen Rückstoß-Zweig kam. Dort ist er gewollt; bei seiner Lage (Tankbuster, Boss allein) ist die Rückfallstufe der einzige Weg ohne Rückstoß.
+- *7 Umsetzung:*
+  - `SlowableHostilesInRange` (ohne Bosse) in `ArmsLengthSlowsPull`.
+  - Rückfallstufe hinter `!HasOwnArmsLengthPullRule && ArmsLengthSlowsPull(…)`.
+  - Die vier Reborn-Tanks setzen `HasOwnArmsLengthPullRule`.
+  - Optionstexte nennen die Ausnahme der Bosse.
+- *Betroffene:* alle Tanks; Tank-Rotationen ohne eigene Regel (unter `ExtraRotations` nur ChurinDRK) bekommen Abtausch über die Rückfallstufe nur noch auf einem Rudel; abgeleitete Rotationen erben die neue virtuelle Eigenschaft (Paket, additiv).
+
+**Prüfgrad:** statisch (Wirktext, Code, Versionsgeschichte); Prüfskripte; Compile über die CI.
+
+### A237 · Krieger: Kampfrausch und Bloodwhetting vor dem Tankbuster (01.10.2026)
+
+Seine Frage: „ist kampfrausch vor tankbuster nicht sinnvoll? warum nicht genutzt?" Er spielte Krieger, Boss allein in der Arena.
+
+- *Name:* Kampfrausch ist Thrill of Battle. Belegt am deutschen Job-Guide: Stufe 30, 90 s, „Deine maximalen LP werden um 20 % erhöht und um diesen Betrag aufgefüllt", Heilmagie auf ihn +20 %, 10 s. Eingetragen in `action_names_de.json`.
+- *Research:* Kampfrausch stand nur im allgemeinen Pfad unter 0,6 Gesundheit, nie in der Einzelabwehr. Bloodwhetting fiel in der Einzelabwehr nur mit „single enemies" (Upstream ab Werk aus) oder bei mehr als zwei Gegnern. Vor dem Tankbuster eines einzelnen Bosses fiel also keines von beiden. The Balance (Basic Guide, „Stacking Cooldowns"): Thrill ist ein Tankbuster-Werkzeug, gestapelt mit Bloodwhetting, Rampart, Damnation.
+- *Optionen:*
+  - (0) belassen;
+  - (a) Kampfrausch vor einem Tankbuster auf ihn, in der Einzelabwehr;
+  - (b) (a) plus „single enemies" ab Werk an;
+  - (c) Kampfrausch nur, wenn keine andere Minderung liegt.
+- *Abwägung:*
+  - (c) widerspricht den Stapeln der Referenz und seiner Spielweise bei unbekannter Höhe.
+  - (b) folgt seiner Regel für Voreinstellungen (A227): Die Einstellung war bei der Erhebung von A227 nicht erfasst, der im Kampf sinnvollere Wert ist an. Ein Grund aus dem Kampf für „aus" ist nicht dokumentiert.
+  - Gewählt (b), Kampfrausch hinter eigener Option, ab Werk an.
+- *Universell zuerst:* Die Erkennung „Tankbuster auf mir innerhalb der Wirkdauer" ist zentral (`TankbusterOnMeWithin`), für jeden Tank. Die Aktion ist kriegereigen, also sitzt die Regel beim Krieger.
+- *Falsifikation:* in Konzept 09, „Krieger: die Abwehr im Ganzen". Nicht widerlegt: Der Notheiler fehlt 90 s, Shake It Off hebt ihn auf (TODO, zur Entscheidung), und Bloodwhetting kann an einem gewöhnlichen Zauber verbraucht sein. Gewichtet nach seiner Spielweise: Der Tankbuster ist angekündigt, seine Höhe unbekannt.
+- *Keine feste Zahl:* Wirkdauer aus `DefensiveValues` (Wirktext).
+- *Nebenbefund:* Das Fenster der Einzelabwehr für Vorhersagen ist ab Werk 3 s. Fehlt darin ein Einwebeplatz, fällt keine der Minderungen dieses Pfads. Das gilt für alle Tanks und ist bestehende Bauform, nicht dieser Regel.
+
+**Prüfgrad:** statisch (Job-Guide, The Balance, Code); Prüfskripte; Compile über die CI.
+
+### A238 · Krieger: alle Abwehrfähigkeiten, voller Loop; Urimpuls sperrte die großen Minderungen (01.10.2026)
+
+Sein Auftrag: „evtl. auch bei gruppenpulls wall to wall sinnvoll. alle defskills warrior im vollen loop prüfen, bewerten, schauen, wie bislang genutzt", dann „in die bestehenden konzepte einarbeiten im vollen loop, kritisch alles bewerten". Ergebnis in Konzept 09, „Krieger: die Abwehr im Ganzen".
+
+- *Research:*
+  - Wirktexte aller Abwehrfähigkeiten am Job-Guide, deutsche Namen dort belegt und eingetragen. Konzept 13 paarte „Verdammnis/Vengeance, Urinstinkt/Bloodwhetting" über die Sprachen hinweg; berichtigt.
+  - Referenz: The Balance, Basic Guide, „Staying Alive".
+  - Code: jeder Aufruf je Fähigkeit in `WAR_Reborn`, `WarriorRotation`, den zentralen Pfaden und `StatusHelper.RampartStatus`.
+- *Befund, behoben:*
+  - Die Einzelabwehr brach ab, solange Urimpuls/Urinstinkt lief (Upstream 141f9b27a, ohne Begründung).
+  - Urimpuls stand in `RampartStatus`, deren Kommentar „the big personal mitigations" nennt; die kurzen Abklingzeiten der anderen Tanks stehen nicht darin.
+  - Folge: Verdammnis und Reflexion kamen am Pullbeginn acht Sekunden später. Für einen Tankbuster, für den Urimpuls fiel, kamen Verdammnis und Schutzwall gar nicht — mit A237 („single enemies" an) jeder Tankbuster eines einzelnen Bosses. Die Wechselwirkung mit A237 habe ich erst bei dieser Erhebung gesehen; beide Änderungen gehen im selben Push hinaus.
+  - Beide Sperren entfernt; Schutzwall und Verdammnis staffeln weiter gegeneinander. Andere Leser der Liste: `HasMajorMitigation`, nur Dunkelritter.
+- *Gebaut (A239):* Kampfrausch nach gemessenem Verlauf.
+- *Zur Entscheidung (TODO):*
+  - Schutzwall erst 30 s nach der großen Minderung, Klasse über alle vier Tanks;
+  - Abschütteln gegen Verdammnis/Urimpuls, mit neuer Grundlage aus The Balance;
+  - Reflexion am Tankbuster gegen den nächsten Raidwide, alle Tanks.
+- *Ohne Befund:* Äquilibrium, Holmgang, Tiefschlag, Zwischenruf, Urflackern (A226).
+
+**Prüfgrad:** statisch (Job-Guide, The Balance, Code, Versionsgeschichte); Prüfskripte; Compile über die CI.
+
+### A239 · Krieger: Kampfrausch nach gemessenem Gesundheitsverlauf (01.10.2026)
+
+Sein Hinweis: Kampfrausch „evtl. auch bei gruppenpulls wall to wall sinnvoll".
+
+- *Optionen:*
+  - (0) nur reaktiv wie bisher;
+  - (a) am Pullbeginn ab einer Gegnerzahl;
+  - (b) wenn der gemessene Verlauf die Gesundheit innerhalb seiner Wirkdauer unter seine Schwelle bringt.
+- *Abwägung:*
+  - (a) braucht eine neue Zahl und fällt auch auf Rudeln, die die Heiler halten.
+  - (b) misst die Wahrscheinlichkeit am Verlauf, steuert sich über die korrigierte Zeit bis zum Tod selbst nach und nutzt nur seine Schwelle und die Dauer aus den Wirktexten. Gewählt.
+- *Umsetzung:*
+  - `ObjectHelper.GetHealthRatioIn(seconds)`, zentral;
+  - Option „Use Thrill of Battle when your health will fall below its threshold within its duration", ab Werk an.
+- *Falsifikation:*
+  - Linear fortgeschrieben; ein sterbendes Rudel fällt langsamer. Kampfrausch kommt dann etwas früh, in die vorsichtige Richtung.
+  - Steht der Verlauf nicht fallend, ändert sich nichts.
+
+**Prüfgrad:** statisch; Prüfskripte; Compile über die CI.
+
+
+### A240 · GCD-Länge 0, solange kein GCD läuft (01.10.2026)
+
+Befund aus seinem Protokoll vom 01.10.2026 (Build dca7edb62): Dieselbe Abwehrentscheidung steht zwei- und dreimal binnen 50 ms im Protokoll (21:31:32, 21:32:47, 21:32:50, 21:34:22, 20:58:16), obwohl `DefenseTrace.Decision` eine Wiederholung innerhalb eines GCD unter Sperre ausschließt.
+
+- *Ursache:* `DataCenter.DefaultGCDTotal` liest `ActionManager.GetRecastTime` der GCD-Gruppe. Das Spiel meldet die Gesamtzeit nur, solange der Timer läuft, sonst 0. Belegt durch das Protokoll (die Sperre ließ Wiederholungen nach 22 ms durch) und durch die Schutzabfrage in `ActionQueueManager.CanInterceptAction` („Guard against invalid GCD totals"), die Upstream schon kannte.
+- *Wirkungsbereich (erhoben):* 23 direkte Leser und 35 über `GCDTime`. Alle fragen nach der Länge eines GCD:
+  - Vorlauf der vorausschauenden Heilung;
+  - Ein-GCD-Fenster der reaktiven Abwehr (`IsHostileCastingBase`: Flächen-, Tankbuster-, Rückstoß- und Unterbrechungserkennung);
+  - Markerfenster;
+  - Frist der Gruppenbetäubung des Dunkelritters;
+  - Messbeginn der Walking-Dead-Prognose;
+  - `CombatElapsedLessGCD` (die ersten GCDs eines Kampfes);
+  - Sperren der Protokolle.
+  Lief kein GCD (außer Reichweite, zwischen Pulls, vor dem ersten GCD), war jede dieser Fragen mit 0 beantwortet. Die reaktive Abwehr erkannte dann keinen laufenden Zauber, die Vorausschau blickte nicht voraus.
+- *Behebung, ohne Schalter:*
+  - Läuft kein GCD, steht die zuletzt gemeldete Länge, vor dem ersten GCD die angepasste Wiederaufladung einer Waffenfertigkeit (`GetAdjustedRecastTime`, die Zahl des Spiels für die Geschwindigkeit des Spielers).
+  - `DefaultGCDRemain` liest weiter den rohen Wert, bleibt also 0, solange kein GCD läuft.
+- *Folgen:* `CombatElapsedLessGCD` hält jetzt auch vor dem ersten GCD, wie es seine Absicht sagt: Wer gezogen wird, ohne anzugreifen, wirkt die gehaltenen Fähigkeiten erst nach der gesetzten Zahl GCDs. Für Magier ist die Ersatzlänge vor dem ersten GCD die mit Fertigkeitstempo, nicht Zaubertempo; ab dem ersten GCD gilt die gemessene.
+- *Fester Wert:* `/ 1000f` (Millisekunden zu Sekunden) als Ausnahme gelistet.
+
+**Prüfgrad:** statisch (Code, ClientStructs, Laufzeitprotokoll); Prüfskripte; Compile über die CI.
+
+### A241 · Tanks: große Minderung zuerst bei vorhergesagtem Tankbuster (01.10.2026)
+
+Befund aus seinem Protokoll, 21:11:58–21:12:03: Marker auf ihm, Vorhersage „in 3,9 s". Gefallen sind Urimpuls (Urinstinkt-Zweig), Kampfrausch, dann Verdammnis bei 0,7 s; Treffer 14 %. Schutzwall war bereit (seit Sitzungsbeginn nicht gewirkt) und fiel nicht.
+
+- *Ursache:* Je Einwebeplatz fällt die erste passende Aktion. Die Zweige für den vorhergesagten Tankbuster standen hinter den kleinen Minderungen, bei allen vier Tanks:
+  - Krieger: Urimpuls, Kampfrausch;
+  - Paladin: Bulwark, Sheltron;
+  - Revolverklinge: Camouflage, Heart of Corundum;
+  - Dunkelritter: Oblation, The Blackest Night, Dark Mind.
+  Das Fenster („Seconds before tankbuster to use single mitigation", ab Werk 3 s; Marker etwas früher) reicht für drei bis vier Einwebeplätze.
+- *Behebung:* Die beiden Zweige des vorhergesagten Tankbusters (große Minderung, dann Schutzwall) stehen bei allen vier Tanks am Anfang der Einzelabwehr. Sie greifen nur bei einer Vorhersage; Pull und Marker ohne Vorhersage laufen wie bisher.
+- *Falsifikation:*
+  - *Kein Defekt:* widerlegt durch das Protokoll.
+  - *Option falsch:* Die kleinen kommen jetzt später und können ihrerseits wegfallen. Sie mindern weniger, haben kurze Abklingzeiten und sind beim nächsten Tankbuster wieder da.
+  - *Nichts ändert sich:* Ohne BossModReborn-Vorhersage gibt es diese Zweige nicht. Dann fällt die große nach der Staffelung, wie bisher.
+
+**Prüfgrad:** statisch; Laufzeitprotokoll als Beleg des Fehlers; Compile über die CI.
+
+### A242 · Protokolle vom 01.10.2026: Auswertung (01.10.2026)
+
+Zwei Sitzungen: Build fa21e0eba (vor A236–A239) und dca7edb62 (mit ihnen); Krieger, überwiegend 48-Spieler-Sonderinhalt mit Phantom-Aktionen.
+
+- *Bestätigt im Spiel (Laufzeitbeobachtung):*
+  - A236: Abtausch fällt im neuen Build nur noch mit „pull on you" (20:41, 21:16, 21:30, 21:32), nie am Tankbuster. Im alten Build fiel er bei 20:00:35 auf den Tankbuster („hits you True") — seine Meldung.
+  - A237: Beim Tankbuster 21:11:58 fielen Urimpuls und Kampfrausch vor dem Treffer.
+  - A238: Im Pull 21:30:38 kamen Verdammnis (21:30:39), Urimpuls (21:30:43) und Reflexion (21:30:44) dicht hintereinander; vorher hätte Urimpuls Reflexion acht Sekunden gesperrt.
+- *Neue Befunde:*
+  - Die große Minderung kam beim Tankbuster zuletzt (A241, behoben).
+  - Die GCD-Länge war 0, solange kein GCD lief (A240, behoben).
+  - Jede Flächenlandung im Sonderinhalt meldet „reached you False", Ursache offen. Das Protokoll nennt jetzt Ziele und getroffene Gruppenmitglieder je Landung (TODO).
+- *Sein Kriterium für Reflexion:* Belege aus den Treffern auf ihn — Tankbuster bis 85 % ohne große Minderung, gemessene Raidwides bis 37 %. Konzept 08.
+- *Ohne Befund:* Reflexion auf Tankbuster anderer Tanks (21:05:42, 21:09:11) ist gewollt: Der Debuff am Gegner hilft dem Getroffenen. Bei 21:09:11 lief sie 15 s und endete mit der Landung des Raidwides um 21:09:26 — genau die Lage, die sein Kriterium entscheidet.
+
+**Prüfgrad:** Laufzeitprotokoll gelesen, Befunde am Code geprüft.
+
+### A243 · Tanks: große Minderung und Schutzwall nicht auf denselben vorhergesagten Tankbuster (02.10.2026)
+
+- *Befund, sein Protokoll vom 01.10.2026:*
+  - Restaurierter Löwe: Tankbuster etwa alle 61 s. Unter Verdammnis und Schutzwall 30/31 %, beim nächsten mit keiner von beiden 85 % (20:14:45, 20:17:05).
+  - Neo Garula: 27 %, dann 65 %.
+- *Ursache:* Die Zweige für den vorhergesagten Tankbuster (Upstream, „Predicted tankbuster takes priority") prüfen je ihren eigenen Status mit `skipStatusProvideCheck: true`. Lagen beide bereit, fielen beide. A241 hat sie an den Anfang gezogen und das Zusammenfallen damit noch sicherer gemacht.
+- *Rechnung:* Mit Abklingzeiten 120 s und 90 s (Job-Guide) hätte abwechselnder Einsatz alle fünf Tankbuster beim Löwen mit je einer der beiden gedeckt.
+- *Quelle:* The Balance, „one of Rampart or your 40 % cooldown, plus your short cooldown".
+- *Behebung, ohne Schalter:* `RampartTakesPredictedTankbuster` — Schutzwall nur, wenn die große Minderung nicht läuft und nicht eben fiel; vier Tanks. Fenster für Schutzwall aus seiner Dauer (`DefensiveValues`) statt `20f`; die vier veralteten Einträge in `fixed_values.json` entfernt.
+- *Zeitregel ohne Vorhersage:* unverändert. Modell ohne Unterschied im Kampf; meine Umstellung auf reine Statussperre ist verworfen, bevor sie committet war.
+
+**Prüfgrad:** statisch; Laufzeitprotokoll als Beleg; Compile über die CI.
+
+### A244 · Reflexion am Tankbuster oder am Raidwide (02.10.2026)
+
+- *Seine Angaben:* Kriterium (wen bringt der Verzicht in ernste Bedrängnis) und Hinweis (die Debuffs wirken auf den Schadensgeber, schützen also Einzelnen und Gruppe zugleich).
+- *Quellen:* The Balance, „Becoming a better tank" (Gruppenwerkzeuge der Tanks „most of the time" auf raidweiten Schaden). Akhmorning, „Raiding Fundamentals" (Debuff muss während des Zauberbalkens liegen; Schaden von Hilfsfiguren mindert er meist nicht).
+- *Fallarbeit:* Konzept 08, „Gegner-Debuffs am Tankbuster und am Raidwide".
+- *Gebaut:* `HoldReprisalForRaidwide`. Reflexion wartet in der Einzelabwehr, wenn ein Tankbuster ihn trifft, seine eigene große Minderung oder Schutzwall läuft und ein Raidwide nach ihrem Ende und vor ihrer Bereitschaft angesagt ist. Weicht bei Gefährdungsklasse 1. Vier Tanks.
+- *Leere Stufe:* Schadensausteiler, weil sie keine große persönliche Minderung haben.
+- *Erkennung:* `RaidwideAfterEffectBeforeRecast`, zentral, ohne Schwelle.
+- *Falsifikation:*
+  - *Kein Defekt:* Vorher fiel Reflexion an jedem Tankbuster, auch gedeckt. The Balance sieht sie am Raidwide.
+  - *Option falsch:* Kommt der Raidwide von einer Hilfsfigur, hält sie umsonst. Nicht messbar bisher, als Grenze geführt.
+  - *Nichts ändert sich:* ohne Modul oder ohne eigene Deckung — dann wie bisher.
+
+**Prüfgrad:** statisch; Quellen; Compile über die CI.
+
+### A245 · Krieger: Abschütteln gegen die eigenen Status und den Raidwide (02.10.2026)
+
+- *Gebaut:*
+  - `HoldShakeItOffInHeal`: In der Einzelheilung wartet Abschütteln, solange Verdammnis/Rachsucht oder Urimpuls läuft oder ein Raidwide nach seiner Barriere und vor seiner Bereitschaft angesagt ist.
+  - `HoldShakeItOffForTankbuster`: Am Raidwide wartet es nur, wenn ein Tankbuster auf ihn landet, bevor Verdammnis endet.
+  - Beide weichen über `HoldAreaDefense`.
+  - Kampfrausch ist ausgenommen: Seine Aufhebung ist ein Gewinn (The Balance).
+- *Statusbeleg:* Job-Guide (Kampfrausch, Verdammnis, Urimpuls). Rachsucht auf niedriger Stufe nach WrathCombo und The Balance. Urinstinkt ist nicht belegt und deshalb nicht geführt.
+- Fallmatrix: Konzept 09, Befund 6.
+
+**Prüfgrad:** statisch; Quellen; Compile über die CI.
+
+### A246 · Maschinist: Reassemble für Gruppenbuffs — Nullvariante (02.10.2026)
+
+Konzept 17. Antithese A3 hält: Der Grund zu halten ist fremdes Verhalten, nach `CLAUDE.md` nie ein tragender Grund; der Gewinn liegt im Promillebereich. Die frühere Empfehlung O1 (A235) widersprach der Loop-Regel. Nicht gebaut.
+
+**Prüfgrad:** statisch (Modell, Regelwerk).
+
+### A247 · Konzepte: früher gesperrte und unbelegte Quellen nachgezogen (02.10.2026)
+
+Seine Frage: ob alle Konzepte mit The Balance, Akhmorning und den früher nicht zugänglichen Quellen ergänzt sind. Antwort: nein. Erhoben über alle Konzepte (Stichworte gesperrt, Egress, Suchauszug, unbelegt, Gemeinschaftsquelle); je Stelle die Quelle abgerufen.
+
+- *Konzept 12:*
+  - Vierzehn Potenzen aus Suchauszügen am Job-Guide bestätigt.
+  - Gieß- und Wiederholzeiten aus der Action-Tabelle: Ruby Rite 2,8/3,0 s, Slipstream 3,0/3,5 s, Ruin III 1,5/2,5 s; Emerald Rite sofort, 1,5 s. **Die frühere Aussage, Emerald Rite habe eine Gießzeit, war falsch.** Demi-Beschwörungen: GCD-Gruppe als Zusatzgruppe, also kosten sie einen GCD.
+  - `smn_phase_potency.py` rechnet jetzt mit Zeiten je Aktion. Neue Zahlen: Ifrit ohne Anlauf 800 statt „800–1420", Garuda zuerst außerhalb der Demi 4420 statt 3740, Zyklus 28 990. Die Rangfolge bleibt; The Balance empfiehlt Titan nach der Demi ebenso.
+- *Konzept 09:*
+  - Barrieren-Reihenfolge am consolegameswiki (Rang 3 TBN vor Eukrasian Diagnosis 4/24, Radiant Aegis 18); Quellenkonflikt aufgelöst, offene Frage zum Weisen gestrichen.
+  - Multiplikation der Minderungen (The Balance, „100 x 0.9 x 0.9 = 81").
+  - Nascent Flash auf den Co-Tank als Regel der Referenz (The Balance, Makros).
+- *Konzept 07:*
+  - Firebird Trance 3229 ist PvE (Status-Tabelle).
+  - Heilungen erzeugen Feindschaft (consolegameswiki); den Umfang nennt keine Quelle.
+- *Konzept 08:*
+  - Titan's Favor wird überschrieben (The Balance, Job-Guide).
+  - Flächenzugehörigkeit nach Modellmittelpunkt (Akhmorning) — Abweichung der Zielwahl als TODO.
+  - Bloodbath: Quelle geprüft, Autoangriffe nicht genannt.
+- *Konzept 13:* Hilfsfiguren und Debuff-Wirkung (Akhmorning).
+- *Konzept 14:* Six-sided Star und Flamethrower jetzt mit Werten und Einsatzregel (Job-Guide, The Balance); Detonator ohne Quelle, auch nicht bei WrathCombo.
+- *Konzept 15:* Meditate 10 Kenki je 3 s (consolegameswiki).
+- *Konzept 17:* Die Krit-/Direkttreffer-Zahlen tragen das Ergebnis nicht.
+
+**Prüfgrad:** Quellen abgerufen und Aussage für Aussage abgeglichen; Modell mit Selbsttest.
+
+### A248 · Konzepte gegen The Balance, WrathCombo, xivanalysis und FFLogs; Kampfrausch-Ausrichtung verworfen (02.10.2026)
+
+Seine Frage (Fortsetzung von A247), erweitert um WrathCombo, xivanalysis und FFLogs.
+
+- *Eingearbeitet:*
+  - Konzept 09: Abgleichtabelle für den Krieger (The Balance, WrathCombo, xivanalysis, RSR).
+  - Konzept 10: The Balance zu The Blackest Night („at least once per mob pack") und Living Dead.
+  - Konzept 11: Rangfolge der Wiederbelebung wie im consolegameswiki, Healer Guide. Heilung vor Wiederbelebung entspricht `RaisePlayerFirst = aus`.
+  - Konzept 12: Searing Light „on cooldown", Titan zuerst.
+  - Konzept 16: Lucid Dreaming „around 80% MP"; RSR ab Werk 6000 MP.
+  - Konzept 08: Halbierung der Betäubung (The Balance).
+- *Einordnung der Quellen:*
+  - xivanalysis zählt bei der Abwehr nur die Nutzung, ohne Zeitpunktregel.
+  - FFLogs liefert Kampfdaten, keine Regeln.
+  - WrathCombo ist keine Spielquelle.
+- *Neu als TODO:* Reflexion und Abschütteln fallen auf denselben Raidwide; WrathCombo verteilt sie.
+- *Kampfrausch nicht auf einen Tankbuster unter Verdammnis — entworfen, vor dem Commit verworfen:*
+  - *Vorlage:* WrathCombo („align with Rampart"), damit der schwächer gedeckte Treffer gehoben wird.
+  - *Antithese hält:* Kommen die Tankbuster im Abstand von zwei Minuten oder nur einmal, nimmt Verdammnis jeden. Kampfrausch fiele dann auf keinen, obwohl er bereit ist.
+  - *Messbarkeit:* Den Abstand zum übernächsten Tankbuster kennt der Code nicht; BossModReborn sagt nur den nächsten an.
+  - *The Balance:* führt „Damnation + Thrill" und „Rampart + Thrill + Bloodwhetting" gleichrangig („The 60s").
+  - *Ergebnis:* Es bleibt A237.
+
+**Prüfgrad:** Quellen abgerufen; Codewerte nachgelesen (Lucid-Schwelle, `BlackestNightMinHostiles`, `RaisePlayerFirst`).
+
+### A249 · Lokaler Build: `ASTGauge.Card1` und `MNKGauge.BeastChakra1` fehlen (02.10.2026)
+
+- *Befund, sein Build:* CS1061 für `Card1`–`Card3` und `BeastChakra1`–`BeastChakra3`; CS0006 ist Folgefehler.
+- *Ursache, nicht im Code:* Upstream (07f9f7daf, 30.09.2026) liest die Einzelfelder, die Dalamud am 21.09.2026 eingeführt hat (20bd559c, b8418f2a). Ausgeliefert sind sie erst mit Release 15.0.3.6 (Build 29.09.2026). Die CI lädt `dalamud-distrib/latest.zip`, das 15.0.3.6 enthält, und baut grün. Sein Build bindet gegen `%AppData%\XIVLauncher\addon\Hooks\dev\`, dort liegt also ein älterer Stand.
+- *Behebung:* Er aktualisiert den Ordner `dev` aus `latest.zip`. Es gibt keine Codeänderung: Ein Rückbau auf `DrawnCards` machte den Upstream-Merge rückgängig, und Dalamud markiert `DrawnCards` als obsolet, was `build.yaml` als Fehler behandelt.
+
+- *Optionen:*
+  - *Gewählt, Nullvariante:* Er aktualisiert den Ordner `dev`.
+  - *Verworfen:* Rückbau auf `DrawnCards`. CS0618 lässt die CI fehlschlagen, und die Upstream-Anpassung ginge verloren.
+  - *Verworfen:* Eine Prüfung der Dalamud-Version im Build. Sie bräuchte eine gepflegte Mindestversion, also eine feste Zahl, für einen Handgriff außerhalb des Spiels (A173).
+  - *Verworfen:* Herunterladen beim Build. Das wäre eine Funktion ohne Bedarf und würde seine Umgebung verändern.
+- *Falsifikation:*
+  - *Kein Defekt im Code:* Hält. Die Einzelfelder gibt es seit 15.0.3.6, und die CI baut damit grün.
+  - *Option falsch:* Hält nicht. Sein Build-Protokoll nennt `Hooks\dev\` als Dalamud-Wurzel.
+  - *Ausgeliefert, und nichts ändert sich:* Liefe im Spiel ein Dalamud vor 15.0.3.6, schlüge das Lesen des Astrologen- und Mönchsbalkens zur Laufzeit fehl. Annahme: Der Launcher hält das Spiel-Dalamud aktuell.
+- *Zweite Meldung im selben Build:* „No upstream tag reachable" erscheint bei ihm immer, weil `origin` nur Fork-Tags trägt (`+wsh1`, von `git describe` ausgeschlossen).
+  - Der Rückfallwert ist richtig, weil `check_fork_version.py --require-tags` ihn in der CI mit den Upstream-Tags abgleicht.
+  - Die Meldung forderte ihn trotzdem zu einer Prüfung auf; der Text sagt jetzt, dass die CI den Wert hält. Der Wert selbst ist unverändert.
+- Aufgeräumt: der lokale Sitzungszweig `claude/fixes-after-7.5.6.10`. Seine Gegenstelle war gelöscht und er war vollständig gemergt (`git branch -d`).
+
+**Prüfgrad:** Dalamud-Versionsgeschichte und Release-Version gemessen; CI-Build grün auf `0c6e3e923`; MSBuild-Datei geparst.
+
+### A250 · Konzepte gegen den Code: Drift in allen siebzehn Konzepten erhoben (02.10.2026)
+
+Sein Auftrag: „im vollständigen loop kritisch prüfen: entspricht der codestand den konzepten? gibt es hier drift?", dazu
+seine Frage „was ist denn besser? code oder konzept?".
+
+- *Maßstab je Fund:* Ist der Code durch eine spätere, begründete Änderung weiter, ist das Konzept veraltet. Weicht der
+  Code ohne Grund von einer dokumentierten Entscheidung oder Vorgabe ab, ist der Code falsch. Gemessen an
+  Versionsgeschichte (`git log -S`) und Archiv.
+- *Konzept veraltet, Code richtig (Konzept nachgezogen):*
+  - 01, 02, 04: Lücken, die A7 (05.09.2026) geschlossen hat, standen als offen (Reflexion bei Paladin und Krieger,
+    Second Wind bei Maschinist und Barde, Mönch-Heilslot, Tänzer-Einzelabwehr); `HasHostileCountAoeMitigation`
+    (b8018cf0 entfernt) und der Sustain des Weisen (5755ad5b entfernt) als vorhanden; Krieger „ohne Notfallslot",
+    obwohl Holmgang in `WarriorRotation.EmergencyAbility` liegt; Zahlen ohne Datum, darunter vertauschte
+    BLM-Dateien und der alte Beastmaster.
+  - 03: Die Slot-Kette ließ sechs Sperren des Fähigkeitenpfads, die Phönixfeder und die Heilung ohne Anlass aus.
+  - 07: Der „Sachstand" beschrieb die Zielwahl vor A183; spätere Abschnitte den Umbau. Jetzt der geltende Rang.
+  - 08: Flächen-Vorausschau, Abtausch als Minderung und die Minderungssätze standen als offen; die verworfene
+    Wirksamkeitsmessung mit Ablesung durch ihn stand als Plan. „Heal ahead of an announced area cast" stand als
+    „aus", der Code hat es seit 29.09.2026 an.
+  - 09: Die entfernte Schildanrechnung (A85) stand als geltend; die Einzelabwehr des Kriegers in der Reihenfolge vor
+    A241; die Phase-2-Unterstützung (A147) als nicht gebaut.
+  - 10: `HoldHolyForBlackestNight` stand einmal „an", einmal „aus" (Code: an); die Sanctus-Rückhaltung bei
+    Verlangsamung nach der ersetzten Leistungssumme; Zeilenangaben ohne Dateinamen zeigten auf verschobenen Code.
+  - 11, 12: Zeilenangaben verschoben; Konzept 12 führte die Frage „kostet die Beschwörung einen GCD" noch offen,
+    die A247 beantwortet hat, und Lux Solaris über den allgemeinen Flächenheil-Zweig (seit A154 eigene Regel).
+  - 13: Die Bagatellfläche gibt die Notfall-Vollheilung frei, nicht „blockiert" sie (`IsUnderThreat`).
+  - 05, 06, 15, README: Einzelaussagen (Yaten verdrahtet, CI-Workflow, Leitfrage von 02, Entscheidungsstand).
+- *Code falsch:*
+  - `PldlockCasting` stand ab Werk aus und im TODO „zur Entscheidung vorgelegt", obwohl Konzept 14 die Sperre als den
+    im Kampf sinnvolleren Wert begründet und seine Regel für Voreinstellungen (29.09.2026) „noch nicht entschieden"
+    als Grund ausschließt. A227 hatte die Einstellung nicht erhoben. Jetzt an. Eine gespeicherte globale
+    Konfiguration behält ihren Wert (`Configs.Save` schreibt alles); der Release-Text sagt es.
+  - `Watcher.SourceCommit` nutzte LINQ entgegen `BannedSymbols.txt` (A232, mein Code); sein Build meldete RS0030.
+- *Prüfmittel:*
+  - CI fand die LINQ-Sperre nie: Beide Projekte binden die Liste über `$(SolutionDir)`, und die CI baut ein Projekt.
+    Jetzt `SolutionDir` übergeben, RS0030 als Fehler, mit Selbsttest.
+  - `check_concept_defaults.py` las keine Angaben über den Einstellungstext und nicht die Wendungen „ab Werk",
+    „Vorgabe(wert) an/aus" und „an als Vorgabewert"; ein Name in zwei Rotationen (`AddCrimsonCyclone`) nahm die
+    erste Fundstelle. Alle drei behoben, je mit Selbsttest; die Funde in 08 und 10 meldet es jetzt.
+- *TODO:* geschlossen, weil ihre eigene Auflösungsbedingung erfüllt ist: Doppelnutzen-Übertragung (Abtausch gebaut),
+  Heilwirkung unter Schutzwall (Schildanrechnung entfernt), Passage of Arms. Eingeengt: Zielwahl der Heilung (nur
+  noch 45/40). Neu: Vorlauf von Dragoon und Viper; Vorausschau vor dem ersten Treffer.
+- *Offen, seine Entscheidung:* `UsePreEukrasianDiagnosis` (A209) — ob „Verfall" in seiner V1-Vorgabe den Bruch der
+  Barriere meint; nur er kennt seine Absicht.
+
+**Prüfgrad:** Aussage für Aussage am Code und an der Versionsgeschichte; Prüfskripte mit Selbsttest; Compile über die
+CI. Konzept 16 und 17 (01. und 02.10.2026 geschrieben) stichprobenartig, ohne Fund.
+
+*Nachtrag am selben Tag, CI:* Die Umstellung von `PldlockCasting` ließ `generate_action_matrix.py --check` fehlschlagen
+(PLD-Seite nennt die Voreinstellung jeder Sperre). Vor dem Push liefen nur die `check_*.py`, nicht die Generatoren mit
+`--check`; diese laufen jetzt mit.
+
+### A251 · Weiser: Pull-Barriere ab Werk an — seine Vorgabe nennt Ablauf und Verfall (03.10.2026)
+
+- *Anlass:* seine Frage „hab ich jemals von verfall gesprochen?" auf meine Rückfrage vom 02.10.2026, ob „Verfall" den
+  Bruch meine.
+- *Beleg:* ja, am 27.09.2026 (V1): „schild bei schildheilern ist ebenso sinnvoll mit regelmäßiger erneuerung bei
+  ablauf/verfall solange walltowall läuft. gleiche bedingungen wie bei whm hot." Dazu am selben Tag: „da während des
+  laufens MP regenerieren, können es sogar vorzugsweise MP-verbrauchende schilde sein, solange sie insta sind."
+- *Folgerung:* Der Wortlaut nennt Ablauf und Verfall nebeneinander und nimmt den MP-Preis an. Die Frage nach seiner
+  Lesart war aus seinen Angaben entscheidbar und hätte nicht gestellt werden dürfen (C107). Die Rückhaltung ab Werk
+  (A209) stützte sich auf die Entfernung vom 05.09.2026 (5755ad5b); die war ein Befund meiner Prüfung über eine Barriere
+  ohne Auftrag, keine Entscheidung von ihm.
+- *Gebaut:* `UsePreEukrasianDiagnosis` ab Werk an. Der Einstellungstext beschrieb die Erneuerung bei Ablauf und Verbrauch
+  schon, nur die Voreinstellung fehlte. Rotationseinstellungen stehen nur in seiner Konfiguration, wenn er sie gesetzt
+  hat (A227); unberührt erreicht ihn die neue Voreinstellung.
+- *Antithesen:*
+  - *Kein Defekt:* Ohne die Voreinstellung blieb seine Vorgabe beim Weisen ab Werk unerfüllt; widerlegt.
+  - *Option falsch:* In einem großen Pull gehen die GCDs des Weisen an die Barriere, Kardia heilt ohne Dosis nicht.
+    Je GCD-Paar bringt Eukrasian Diagnosis 300 Potenz Heilung und eine Barriere von 180 % davon auf den Tank, Kardia
+    170 je Dosis (Job-Guide): für die Sicherheit des Tanks mehr, nicht weniger. Der Schaden sinkt; das deckt seine
+    Präzisierung zu Sicherheitsregeln.
+  - *Ausgeliefert, nichts ändert sich:* Hat er die Option schon gesetzt, bleibt sein Wert. Außerhalb von Dungeons greift
+    die Regel nicht (`TankApproachingMobGroup`).
+
+- *Seine Präzisierung (03.10.2026):* „ein schild kann auf zwei arten verschwinden: zeitablauf und durch aufbrauchen
+  durch eingehenden schaden. also ist verfall das zweite, da ablauf parallel genannt wurde." Bestätigt die Lesart; in
+  Konzept 15 eingetragen.
+
+**Prüfgrad:** Wortlaut aus dem Gesprächsprotokoll vom 27.09.2026; statisch; Compile über die CI.
+
+### A252 · Protokolle vom 02.10.2026 (Beschwörer, Krieger, Dunkelritter; Commit c742f01e9) (03.10.2026)
+
+- *Sitzungen:* 18:48 bis 20:21. Beschwörer im Dungeon (Belebtes Wasser) und im Occult Crescent, Krieger und
+  Dunkelritter im Occult Crescent.
+- *Ohne Befund:*
+  - Schimmerschild beim ersten Wegspülen (#4863, nie gesehen, also unbewertet) gewirkt; der Treffer war ein Rückstoß
+    mit 0 %. Seitdem mit 2 % bewertet, also künftig ohne Abwehr. So gebaut (Konzept 13).
+  - Abschütteln, Reflexion und Phantom-Genesung auf angesagte Raidwides; Reflexion und Oblation beim Dunkelritter.
+- *Nicht entscheidbar aus dem Protokoll:* Schimmerschild steht vor einem Raidwide zwei- bis viermal gewählt, je
+  einen GCD auseinander (19:41:47 und 19:41:50; 19:58:39 bis 19:58:46). Das Protokoll schreibt die Wahl, nicht die
+  Ausführung. Nach dem Code kann der Flächenpfad Schimmerschild erst wieder wählen, wenn die Barriere weg ist
+  (`StatusProvide`, ohne Ausnahme); zweimal gewirkt hieße also, die erste wurde aufgebraucht. Ebenso möglich: eine
+  Wahl, die das Spiel nicht ausführte, etwa ohne Karfunkel (`ActionCheck` fragt nur, ob irgendein Begleiter da ist).
+- *Gebaut, Messmittel nach `CLAUDE.md`:* `DefenseTrace.Executed` schreibt „used …", wenn die zuletzt gewählte Abwehr
+  tatsächlich landet (eigener Effektsatz, auch unter der vom Spiel ersetzten Id). Danach wird dieselbe Wahl sofort neu
+  geschrieben, eine zweite Nutzung steht also als eigene Zeile da.
+- *Konfliktkopie:* `HostileCastingAreaPotential-Siona_X570.json` enthält sechs Einträge, alle gleich in der aktuellen
+  Datei mit 56 Einträgen. Nichts verloren.
+
+**Prüfgrad:** Protokoll Zeile für Zeile gegen den Code; statisch; Compile über die CI.
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -5103,3 +5571,8 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C100 | A221 in erster Fassung, Commit 79887dd36, Konzept 08, Release-Text: Synastry habe mit dem kurzen Vorlauf ein anderes Ziel gewählt als die Einzelheilung, mit der sie landet, und sei deshalb bei steilem Verlauf ausgefallen | Synastry läuft in `EmergencyAbility` vor jedem Target-Override und setzt keinen `TargetType`; gewählt wird nach `Big`, der Vorlauf kommt darin nicht vor. Behauptet ohne den Weg der Zielwahl am Code zu verfolgen — in der Wirksamkeitsprüfung desselben Bereichs gefunden | A221, Konzept 08 und Release-Text berichtigt; der Befund an den Schwellen und die Zielwahl für Krasis im Heilpfad bleiben |
 | C101 | A222: Nascent Flash aus dem Upstream-Merge sei geprüft ohne Befund („Der Filtertausch … stellt im `finally` zurück") | Der Filter selbst las `!t.NoNeedHealingInvuln()` und ließ nur Unverwundbare durch. `scan8.py` listete die Zeile unter „read negated"; ich habe die Liste nicht gegen den Code abgeglichen und nur den Rahmen des Filters geprüft, nicht seine Bedingungen | A226: Polarität behoben, `check_invuln_polarity.py` in der CI, damit die Klasse nicht mehr von einer Handprüfung abhängt |
 | C102 | `CLAUDE.md` seit 32a8abf80 und die Optionstexte „Off by default because …": das bisherige Verhalten bleibe Standard, bis ein Nutzen belegt ist | Eine eigene Ableitung (Feature Toggle nach Fowler), als Regel geführt und nie gegen seine Vorgabe zum Testerprofil abgeglichen. Seine Vorgabe: Voreinstellung ist der im Kampf sinnvollere Wert, damit neue Regeln getestet werden | A227: Regel ersetzt, Voreinstellungen umgestellt |
+| C103 | Bericht vom 01.10.2026 und A228/TODO: Die Ersatzgarantie sei „zur Entscheidung“ vorzulegen, „am 10.09. so gebaut (A19)“ | Seine Vorgabe (Konzept 08, A90) entscheidet den Fall bereits: ein anderer Zauber dazwischen, ohne DoT-Bedingung. Eine Abweichung davon ist ein Defekt. A19 stammt vom 07.09., nicht vom 10.09. Geprüft hatte ich nur die eine Bedingung, nicht die ganze Regel gegen die Vorgabe | A231: Regel auf seine Vorgabe zurückgeführt, alle drei Zusatzbedingungen entfernt |
+| C104 | Berichte vom 01.10.2026 zu PR #11: „Nachprüfung … eingeplant“, dazu zwei selbst angelegte Wiedervorlagen (send_later) | `CLAUDE.md`, „Vorlagen an ihn“: Status berichten, ohne selbst gesetzte Wiedervorlagen. Die Wiedervorlagen folgten der Standardanweisung der Umgebung, die seine Regel nicht übersteuert; CI-Ergebnisse und Kommentare kommen ohnehin als Ereignis | Offene Wiedervorlage gelöscht, keine neuen |
+| C105 | Berichte vom 01.10.2026: vier Punkte „zur Entscheidung“; Reflexion bei „beide in Gefahr“ „offen“, dann „an den Tankbuster, weil er sicher und sofort kommt“; Empfehlungen O1 (Reassemble) und „Schutzwall direkt nach der großen“ | Alle vier waren aus seinen Vorgaben, den Wirktexten, The Balance und seinen Protokollen entscheidbar. Die Debuffs liegen auf dem Gegner und schützen beide (sein Hinweis); der Raidwide ist ebenso angekündigt; Gruppenwerkzeuge gehören laut The Balance auf den Raidwide. O1 ruhte auf fremdem Verhalten. Die Antithesen gegen die eigenen Empfehlungen waren nicht geführt, und das Protokoll mit zweimal 85 % war gelesen, aber nicht gegen die Staffelung gestellt | A243–A246; `CLAUDE.md`, „Bevor ich ihn frage oder ihm etwas vorlege“, geschärft |
+| C106 | Konzept 04, C1 (20.08.2026): „`BaseAction.Use()` castet `ID`, nicht `AdjustedID`“ | `Use()` wirkt bei Aktionen auf ein Ziel `AdjustedID` (seit 15311ec27, 2024), nur bei Bodenzielen `ID` | korrigiert (A250) |
+| C107 | Bericht vom 02.10.2026: „Offen ist nur deine Absicht: Meint ‚Verfall‘ den Bruch durch Schaden, oder nur das Auslaufen der Zeit?“ | Sein V1-Wortlaut (27.09.2026) nennt „ablauf/verfall“ nebeneinander und nimmt MP-verbrauchende Sofortschilde an; aus seinen Angaben entscheidbar, keine offene Frage | umgesetzt (A251) |

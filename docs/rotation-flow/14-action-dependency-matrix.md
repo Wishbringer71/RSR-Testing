@@ -29,7 +29,7 @@ maschinell als „ungenutzt" erscheint, zerfällt in sechs Klassen (Stand 26.09.
 | Limit Breaks | je Job drei | ohne Wirktext im Datensatz; RSR castet keine PvE-Limit-Breaks (Konzept 05) |
 | Hilfsaktionen | Sleep, Repose, Rescue, Leg Graze, Foot Graze, das Ablegen der Tankhaltung (Release …), Dissolve Union, Ending | Sie wirken auf Mitspieler oder die Gruppenlage (Rescue zieht einen Spieler, das Ablegen der Haltung gibt die Feindseligkeit ab, Schlaf bricht beim ersten Treffer). Nicht automatisiert — Schluss aus der Wirkung, kein Beleg für eine Absicht |
 | **Knopfwechsel gesperrt** | Improvised Finish (DNC) · Detonator (MCH) | Die Basisaktion führt den Status, den die Zielaktion braucht, als `StatusProvide` und verweigert sich, solange der Knopf gewechselt hat — außer in den letzten `StatusRefreshGcdCount` GCDs des Status (ab Werk 2) oder mit ausgeschaltetem `ShouldCheckStatus`. Detonator: seit A164 schließt `WildfirePvE` den gewechselten Knopf auch dort aus; Wildfire zündet mit allen Stapeln von selbst. Improvised Finish: seit A202 eigens gerufen, siehe „Wechselwirkungen und Zeit" |
-| **Ohne belegten Nutzen** | Six-sided Star (MNK) · Flamethrower (MCH) | Der Vorteil ist aus den Wirktexten nicht rechenbar — siehe „Pausen und Phasenenden". Meditate (SAM) und Rook/Queen Overdrive (MCH) wirkt die Rotation seit A162 in der Pause |
+| **Mit Quelle, nicht gebaut** | Six-sided Star (MNK) · Flamethrower (MCH) | Job-Guide und The Balance nennen jetzt Werte und Einsatzregel — siehe „Pausen und Phasenenden". Meditate (SAM) und Rook/Queen Overdrive (MCH) wirkt die Rotation seit A162 in der Pause |
 
 ## Die Stufen (seine Vorgabe „universell zuerst")
 
@@ -137,15 +137,15 @@ beendet es seinen eigenen Kanal also mit dem nächsten GCD oder der nächsten F�
 
 | Aktion | Was der Kanal trägt (Wirktext) | Was nach dem Abbruch bleibt | RSR-Sperre (Voreinstellung) |
 |---|---|---|---|
-| Passage of Arms (Paladin) | Blockrate 100 %, Gruppe im Kegel hinter ihm nimmt 85 % Schaden, 18 s | nichts | `PldlockCasting` (aus): hält GCD und Fähigkeiten, solange der angekündigte Treffer aussteht (`DataCenter.AreaHitPending`). `PosPassageOfArms` (aus) sperrt Bewegung, nur mit `PoslockCasting` (aus) |
+| Passage of Arms (Paladin) | Blockrate 100 %, Gruppe im Kegel hinter ihm nimmt 85 % Schaden, 18 s | nichts | `PldlockCasting` (an, seit 02.10.2026): hält GCD und Fähigkeiten, solange der angekündigte Treffer aussteht (`DataCenter.AreaHitPending`). `PosPassageOfArms` (aus) sperrt Bewegung, nur mit `PoslockCasting` (aus) |
 | Collective Unconscious (Astrologe) | Ring 18 s, darin Wheel of Fortune (Regen) fortlaufend | Minderung −10 % für 10 s, als Zusatzeffekt beim Wirken vergeben (Schluss aus dem Textaufbau, Status 849 ist eigener Status) | `AstlockCasting` (aus), gebaut wie beim Paladin |
 | Improvisation (Tänzer) | Stapel Rising Rhythm alle 3 s bis 4; Regen 15 s | Regen (Schluss aus dem Textaufbau) | keine Aktionssperre; Bewegungssperre `PosImprovisation` (aus), nur mit `PoslockCasting` (aus) |
 
-**Im Kampf, mit Voreinstellung:**
-- **Paladin:** RSR wirkt Passage of Arms nur, wenn ein Flächentreffer angekündigt ist (Zauberleiste
+**Im Kampf:**
+- **Paladin ohne Sperre:** RSR wirkt Passage of Arms nur, wenn ein Flächentreffer angekündigt ist (Zauberleiste
   oder BossMod-Raidwide im Fenster). Landet der Treffer nach RSRs nächster Aktion — spätestens nach
   einem GCD —, schützt die Aktion niemanden, und ihre Abklingzeit ist verbraucht.
-- **Mit Sperre:** Der Treffer ist angekündigt, die Wahrscheinlichkeit also hoch; die Sperre kostet
+- **Mit Sperre (ab Werk seit 02.10.2026, seine Regel für Voreinstellungen; vorher als Entscheidung vorgelegt, A250):** Der Treffer ist angekündigt, die Wahrscheinlichkeit also hoch; die Sperre kostet
   GCDs bis zum Treffer. Das trägt seine Präzisierung. Beide Pfade halten, solange der Treffer aussteht
   (`DataCenter.AreaHitPending`: das Flächensignal oder ein BossMod-Raidwide im Fenster, auch in den
   letzten 0,6 s, in denen das Signal schon losgelassen hat); danach beendet die nächste Aktion den
@@ -176,13 +176,16 @@ Rückhaltung von Abwehr im Burst steht in Konzept 08, „Die Abwehrsperren".
 | Shake It Off (Krieger) | Thrill of Battle, Damnation, Bloodwhetting | **Befund.** Der Wirktext im Repository lautet „Dispels Thrill of Battle and increasing…" — ein stufenabhängiger Name ist ausgeblendet. Vollständig laut offiziellem Job-Guide (27.09.2026): „Dispels Thrill of Battle, Damnation, and Bloodwhetting, increasing damage absorbed by 2% for each effect removed". Auf niedrigerer Stufe Vengeance statt Damnation — so prüft es WrathCombo; Raw Intuition vor Bloodwhetting ist ein Schluss aus den Ausbauketten. Was verloren geht: Damnation −40 % Schaden für 15 s, Bloodwhetting −10 % mit Heilung je Waffenfertigkeit, Thrill of Battle +20 % Maximalgesundheit und +20 % erhaltene Heilung (Enhanced Thrill of Battle) — gegen +2 % Barriere je Effekt. RSR wirkt Shake It Off als Flächenabwehr und als Einzelheilung, ohne einen dieser Status zu prüfen. Im Kampf: Ein angekündigter Raidwide, während Damnation für einen Tankbuster liegt, nimmt dem Krieger 40 % Minderung vor dem Tankbuster |
 | Tempera Grassa (Pictomancer) | Tempera Coat | Zweck der Aktion; RSR wandelt nur bei angekündigtem Flächentreffer oder kurz vor Ablauf |
 | Meisui (Ninja) | Shadow Walker | Zweck der Aktion. RSR wirkt es, während Trick Attack (Kunai's Bane) abkühlt, und zusätzlich (a) wenn Ten Chi Jin bereit ist — dessen Abfolge endet mit Suiton, das Shadow Walker neu gibt (Wirktext) —, (b) wenn Shadow Walker in zwei GCDs endet, oder (c) wenn Trick Attack nicht in 19 s bereit ist |
-| Detonator (Machinist) | Wildfire | RSR wirkt ihn nie; Wildfire zündet mit allen Stapeln von selbst. Bis A164 konnte `WildfirePvE` in den letzten zwei GCDs von Wildfire als Detonator hinausgehen (gesperrter Knopfwechsel, siehe oben) und die übrigen Stapel abschneiden. Nicht gebaut: Detonator vor dem Tod des Ziels — ob die Ladung dann verfällt, steht in keiner Quelle |
+| Detonator (Machinist) | Wildfire | RSR wirkt ihn nie; Wildfire zündet mit allen Stapeln von selbst. Bis A164 konnte `WildfirePvE` in den letzten zwei GCDs von Wildfire als Detonator hinausgehen (gesperrter Knopfwechsel, siehe oben) und die übrigen Stapel abschneiden. Nicht gebaut: Detonator vor dem Tod des Ziels — ob die Ladung dann verfällt, nennt keine Quelle (geprüft 02.10.2026: Job-Guide, consolegameswiki „Wildfire“, The Balance); WrathCombo wirkt Detonator ebenfalls nicht |
 
 **Vergleich mit WrathCombo** (Community-Plugin, Stand 25.09.2026; keine Spielquelle — es zeigt, wie ein
 anderes Werkzeug entscheidet):
 - *Shake It Off:* Im Selbstheilungspfad nur, wenn weder Thrill of Battle noch Damnation, Vengeance oder
   Bloodwhetting liegt (`safeToShakeItOff`); im Pfad für angekündigten Gruppenschaden ohne diese Prüfung.
   Bestätigt die Aufhebung auch von Vengeance auf niedriger Stufe.
+  The Balance (Basic Guide, 01.10.2026) wertet die Aufhebung von Thrill of Battle als Gewinn: Die Barriere bemisst
+  sich an der erhöhten Maximalgesundheit. Bewertung und Empfehlung: Konzept 09, „Krieger: die Abwehr im Ganzen",
+  Befund 6.
 - *Passage of Arms:* Option „Block Combos for Passage of Arms" hält alle Kombos, solange der Kanal liegt —
   ohne Frage nach dem Treffer; beenden muss der Spieler.
 - *Improvisation:* als Füller außerhalb von Technical Finish, wenn mehr als zwei Verbündete in 8 Yalm
@@ -328,7 +331,9 @@ Rückfall-Horizont die Wirkzeit deckt, prüft die Liste nicht; das steht je Fall
 - *Die Bedingung ist der Zweck:* Heilbedarf (Horoscope, Pepsis), Option (Retrace), Burst (Radiant
   Encore, Reawaken, Starfall Dance, Technical Step, Flourish), Tanzschritte vor den Procs (Tänzer: Reverse
   Cascade, Fountainfall, Rising Windmill, Bloodshower warten, solange ein Schritt bereit ist; die Procs
-  gelten 30 s laut Job-Guide, ein Tanz ist kürzer), Konzept 12 (Lux Solaris, Searing Flash, Ruin IV).
+  gelten 30 s laut Job-Guide, ein Tanz ist kürzer), Konzept 12 (Lux Solaris, Ruin IV). Searing Flash hat seit
+  A234 einen Rückfall vor dem Ende von Ruby's Glimmer: Mit weiteren Beschwörern fällt Searing Light auch in
+  einen Titan- oder Ifrit-Block, und die nächste Demi kommt nach dem Ende des Status (Konzept 16).
 - *Sicherheit:* Krieger Primal Rend auf Distanz nur mit den Sprung-Optionen — seine Vorgabe zu Bewegung.
 - *Niedrige Stufe:* Straight Shot, Trick Attack.
 
@@ -374,10 +379,18 @@ herausläuft); der Machinist verschießt Heat vor einer vorhergesagten Pause (`B
 Schnitter wirkt Soulsow.
 
 **Nicht gebaut, mit Grund:**
-- *Six-sided Star (Monk):* Die Grundpotenz blendet der Wirktext aus. Ob Chakra über eine Pause
-  verfällt, steht in keiner Quelle im Repository. Ein Vorteil gegenüber dem Aufsparen ist nicht belegt.
-- *Flamethrower (Machinist):* keine Pausenaktion, sondern ein Flächenkanal. Wie oft er tickt, steht
-  nicht im Wirktext; ein Vergleich mit dem Flächenfüller ist deshalb nicht rechenbar.
+- *Six-sided Star (Monk):* Job-Guide (02.10.2026): 780 Potenz, +80 je offenem Chakra, schließt alle Chakren,
+  Wiederholzeit 4 s — zwei GCDs lang. The Balance, Monk Basic Guide: „two GCDs is always more potency than doing
+  one SSS"; nützlich, wo die Zeit nicht für zwei GCDs reicht — „before running out of a big aoe, before a boss
+  dies, or before a boss goes untargetable". Damit ist die Einsatzregel belegt: der letzte GCD vor einer Pause oder
+  dem Tod des Ziels, wenn nur noch einer passt. Ob Chakra über eine Pause verfällt, nennt keine der Quellen.
+  WrathCombo (Stand 25.09.2026) führt die Aktion nur als Id und wirkt sie nicht. Nicht gebaut; offen im TODO.
+- *Flamethrower (Machinist):* Job-Guide: Flächenkanal im Kegel 12 Yalm, 120 Potenz über 10 s, endet bei jeder
+  anderen Aktion und bei Bewegung oder Drehung, löst die GCD-Abklingzeit aus. The Balance, Machinist Basic Guide:
+  „If gauge is not usable, beats filler on 2+; Beats Air Anchor (incl. battery) on 6+; Never beats Hypercharge,
+  Chain Saw/Excavator, Drill/Bio", und keine große Abklingzeit darf in den 11 s des Kanals bereit werden. Damit ist
+  die Regel belegt. Er bindet ihn 11 s an Ort und Blickrichtung — nach seiner Spielweise ein Positionsrisiko, das
+  im Kampf nur bei stehenden Rudeln ohne Mechanik trägt. Nicht gebaut; offen im TODO.
 
 **Folgen, bewusst hingenommen:**
 - Läuft der Samurai im Kampf aus 25 Yalm heraus, ohne dass eine Pause ist, fällt Meditate, sobald er

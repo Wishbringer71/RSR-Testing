@@ -78,12 +78,16 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			+ "protection - which was the only way the plugin ever used it.\n"
 			+ "In a fight: the Slow +20% lands on every enemy that strikes you and delays "
 			+ "auto-attacks as well as casts, so in a standing pack it throttles the whole incoming "
-			+ "stream for fifteen seconds. It costs nothing but its own cooldown.\n"
+			+ "stream for fifteen seconds. It costs nothing but its own cooldown. Bosses do not count "
+			+ "towards the pull - Arm's Length does not soften the hit that strikes you, so a boss's "
+			+ "tankbuster gains nothing from it.\n"
 			+ "Not while BossModReborn announces a knockback that lands after the barrier has run out "
 			+ "and before Arm's Length is ready again - the action is kept for it.\n"
 			+ "It also feeds the decision above: a pull already throttled by this Slow no longer counts "
 			+ "as unmitigated, so The Blackest Night is not spent into a stream that has been thinned.")]
 	private bool UseArmsLengthOnPull { get; set; } = true;
+
+	protected override bool HasOwnArmsLengthPullRule => true;
 
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Health threshold for The Blackest Night",
@@ -489,6 +493,22 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	[RotationDesc(ActionID.OblationPvE, ActionID.ArmsLengthPvE, ActionID.TheBlackestNightPvE, ActionID.DarkMindPvE, ActionID.ShadowWallPvE, ActionID.ShadowedVigilPvE, ActionID.RampartPvE, ActionID.ReprisalPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
+		// A predicted tankbuster on the player gets its big mitigation first - or Rampart while that one is
+		// spent - ahead of the short ones: the window opens a few seconds before the hit, and with the cheap ones
+		// ahead the big one landed last (trace of 01.10.2026: Damnation 0.7 s before the hit, A241, A243).
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, ShadowedVigilPvE.EnoughLevel ? StatusID.ShadowedVigil : StatusID.ShadowWall)
+			&& (ShadowedVigilPvE.EnoughLevel ? ShadowedVigilPvE.CanUse(out act, skipStatusProvideCheck: true) : ShadowWallPvE.CanUse(out act, skipStatusProvideCheck: true)))
+		{
+			return true;
+		}
+
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, DefensiveValues.DurationOf((uint)ActionID.RampartPvE), true, null, StatusID.Rampart)
+			&& RampartTakesPredictedTankbuster(ShadowedVigilPvE.EnoughLevel ? ShadowedVigilPvE : ShadowWallPvE, ShadowedVigilPvE.EnoughLevel ? StatusID.ShadowedVigil : StatusID.ShadowWall)
+			&& RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		//10
 		if (!IsLastAbility(false, OblationPvE))
 		{
@@ -517,18 +537,6 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		}
 		//20
 		if (DarkMindPvE.CanUse(out act))
-		{
-			return true;
-		}
-
-		// Predicted tankbuster takes priority over the elapsed-time stagger below.
-		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, ShadowedVigilPvE.EnoughLevel ? StatusID.ShadowedVigil : StatusID.ShadowWall)
-			&& (ShadowedVigilPvE.EnoughLevel ? ShadowedVigilPvE.CanUse(out act, skipStatusProvideCheck: true) : ShadowWallPvE.CanUse(out act, skipStatusProvideCheck: true)))
-		{
-			return true;
-		}
-
-		if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
@@ -573,13 +581,14 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		// reward depends on the stream that Reprisal would thin. In a boss fight the condition is
 		// false by the hostile count, so a tankbuster keeps its mitigation.
 		if (!HoldMitigationForBarrier(false)
+			&& !HoldReprisalForRaidwide()
 			&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
 
-		if (!HoldMitigationForBarrier(false) && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
+		if (!HoldReprisalForRaidwide() && !HoldMitigationForBarrier(false) && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}

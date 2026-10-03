@@ -3,7 +3,7 @@
 ## Datenquelle
 
 Die vollständige Aktionsliste liegt maschinenlesbar im Repo:
-`RotationSolver.SourceGenerators/Properties/Rotation.resx` (1,98 MB,
+`RotationSolver.SourceGenerators/Properties/Rotation.resx` (2,05 MB am 02.10.2026,
 eingecheckt) enthält für alle 23 Jobklassen jede Aktion mit Anzeigename,
 Aktions-ID, Kategorie (Spell / Ability / Weaponskill / Limit Break), Jobliste
 und **der Spielbeschreibung im Klartext**. Der Source-Generator emittiert
@@ -15,7 +15,7 @@ geschätzt, sondern gezählt.
 
 ## Methodik und ihre Fallstricke
 
-Die Zahlen unten gelten unter drei Regeln, die diese Art Messung braucht. Alle drei
+Die Zahlen unten (Zählung vom 05.09.2026, Archiv #69) gelten unter drei Regeln, die diese Art Messung braucht. Alle drei
 sind Scoping-Fragen derselben Art, und jede von ihnen verfälscht das Ergebnis in eine
 andere Richtung:
 
@@ -55,9 +55,10 @@ richtig ist:
 ### Der Befund, der den größten Teil des Rests erklärt: `AdjustedID`
 
 `BaseAction.Use()` castet nicht die deklarierte ID, sondern
-`adjustId = AdjustedID` (`BaseAction.cs:48/300`), und das ist
+`adjustId = AdjustedID` (`BaseAction.cs:48/311`), und das ist
 `ActionManager->GetAdjustedActionId(ID)` — die vom **Spiel** aufgelöste
-Ersetzung.
+Ersetzung. Ausnahme sind Aktionen auf einen Bodenpunkt: Dort wirkt `Use()` die deklarierte `ID` und bricht ab, wenn
+das Spiel sie ersetzt hat (`BaseAction.cs:315`).
 
 Daraus folgt: **die Basisaktion ist der Griff, das Upgrade löst das Spiel
 auf.** `ArtOfWarPvE.CanUse()` feuert ab Stufe 82 Art of War II. Deshalb ist es
@@ -75,9 +76,9 @@ neben `X.CanUse` vollständig?" sucht, schon.
 
 Dieselbe Erkenntnis trifft die level-gestaffelten Ketten: wo SCH sechs Zweige
 zwischen `RuinPvE`/`BroilPvE`/`BroilIiPvE`/`BroilIiiPvE`/`BroilIvPvE`
-unterscheidet, tut das Spiel dasselbe von allein. Ob die Ketten deshalb
-entbehrlich sind, ist **nicht** aus dem Code entscheidbar — siehe C1 im
-Zielkonzept, wo derselbe Punkt für DRG als Spielfrage geführt wird.
+unterscheidet, tut das Spiel dasselbe von allein. Entbehrlich werden die Ketten dadurch nicht ohne Weiteres: Sie
+unterscheiden sich vom ungegateten Aufruf, sobald `CanUse` der höheren Stufe aus einem anderen Grund als dem Level
+scheitert. Für DRG ist die Vereinfachung deshalb verworfen (Zielkonzept, C1).
 
 ## Zwei Ebenen — der strukturelle Befund
 
@@ -102,7 +103,7 @@ Konkrete Folge, nicht nur Kosmetik:
 
 Vollständige Erhebung aller Aktionen, deren Spielbeschreibung eine Ortsänderung
 nennt, gegen die Belegung von `MoveForwardAbility` / `MoveBackAbility` (beide
-laufen laut `CustomRotation_Ability.cs:327/344` **nur** bei gesetztem
+laufen laut `CustomRotation_Ability.cs:348/365` **nur** bei gesetztem
 `AutoStatus.MoveForward`/`MoveBack`, können die Schadensrotation also nicht
 stören; die drei direkten Aufrufer in `NIN_Reborn`, `WAR_Reborn` und `BeirutaNIN`
 prüfen dieselbe Flagge, geprüft 29.09.2026):
@@ -115,10 +116,9 @@ prüfen dieselbe Flagge, geprüft 29.09.2026):
 | SGE | Icarus | vor | **war** verdrahtet, eine Ebene höher | unverändert |
 | BLM · DNC · DRK · DRG · MNK · NIN · PCT · RPR · RDM · SAM · SMN · VPR · WAR · PLD | — | — | verdrahtet | unverändert |
 
-Bewusst **nicht** ergänzt: SAM `HissatsuYatenPvE`. Es ist keine reine
-Bewegungsfähigkeit, sondern eine Schadensaktion mit Rückstoß, die zusätzlich
-Enhanced Enpi gewährt — sie in den Bewegungsslot zu hängen ist eine
-Rotationsentscheidung, keine Lückenschließung, und gehört ins Spiel geprüft.
+SAM `HissatsuYatenPvE` liegt in `SAM_Reborn.MoveBackAbility` (f90c7bf7, A7). Es ist keine reine
+Bewegungsfähigkeit, sondern eine Schadensaktion mit Rücksprung, die zusätzlich Enhanced Enpi gewährt. Im
+Rückzugsslot fällt es nur bei gesetztem `AutoStatus.MoveBack`, also nur, wenn ein Rückzug ohnehin gewollt ist.
 
 ## Verbleibender Rest — offene Kandidaten
 

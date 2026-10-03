@@ -24,6 +24,9 @@ public partial class CustomRotation
 			IBaseAction.ActionPreview = false;
 
 			CountingOfLastUsing = CountingOfCombatTimeUsing = 0;
+			// The defence paths set this and clear it on the way out; an exception in one of them would
+			// leave it standing for every action of the next update.
+			IBaseAction.SelfProtectionHitsMe = null;
 			newAction = Invoke(out gcdAction);
 			// Track when the next GCD action (IBaseAction) returned by Invoke changes.
 			try

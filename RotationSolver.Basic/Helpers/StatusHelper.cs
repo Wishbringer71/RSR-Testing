@@ -892,7 +892,10 @@ public static class StatusHelper
 	/// other direction, <c>Nebula_3051</c> ("inflicting a portion of sustained damage back to its
 	/// source") and <c>Bloodwhetting_3030</c> ("weaponskills generate HP") share a name with a
 	/// mitigation but are the reflect and lifesteal halves, so they stay out. So do the Holmgang ids
-	/// 88 and 1305, which sit on the target rather than the tank (AUDIT_LOG C15).
+	/// 88 and 1305, which sit on the target rather than the tank (AUDIT_LOG C15). Bloodwhetting itself
+	/// (2678) is the warrior's short cooldown - 10% for eight seconds, every 25 - as Heart of Corundum,
+	/// Holy Sheltron and The Blackest Night are for the others, none of them listed; listed, it held
+	/// Rampart and Damnation back at the start of every pull and on every tankbuster (A238).
 	/// </para>
 	/// </summary>
 	public static StatusID[] RampartStatus { get; } =
@@ -902,7 +905,6 @@ public static class StatusHelper
 		StatusID.Rampart_1978,
 		StatusID.Rampart_4168,
 		StatusID.Bulwark,
-		StatusID.Bloodwhetting,
 
 		StatusID.Vengeance,
 		StatusID.Damnation,

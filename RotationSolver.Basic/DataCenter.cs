@@ -1455,15 +1455,39 @@ internal static class DataCenter
 	public static float NextAbilityToNextGCD => Math.Max(0f, DefaultGCDRemain - AnimationLock);
 
 	/// <summary>
-	/// Returns the total duration of the default GCD (seconds). Clamped to non-negative.
+	/// Returns the total duration of the default GCD (seconds): the length of one GCD, also while none is
+	/// running.
 	/// </summary>
-	public static float DefaultGCDTotal => Math.Max(0f, ActionManagerHelper.GetDefaultRecastTime());
+	/// <remarks>
+	/// The game reports the GCD group's total only while its timer runs; between GCDs - out of range, between
+	/// pulls, before the first GCD of a fight - it reads 0. Every reader asks for the length of a GCD (a lead
+	/// time, a window, a throttle, "the first n GCDs of combat"), and 0 shut each of them: the defence trace of
+	/// 01.10.2026 holds the same decision two and three times within 50 ms, past a throttle of one GCD (A240).
+	/// So the last length the game reported stands in while the timer is idle, and before the first GCD the
+	/// adjusted recast of a weaponskill does - the game's own figure for the player's speed.
+	/// </remarks>
+	public static float DefaultGCDTotal
+	{
+		get
+		{
+			var running = ActionManagerHelper.GetDefaultRecastTime();
+			if (running > 0f)
+			{
+				_lastGcdTotal = running;
+				return running;
+			}
+
+			return _lastGcdTotal > 0f ? _lastGcdTotal : Math.Max(0f, ActionManagerHelper.GetDefaultAdjustedRecastTime());
+		}
+	}
+
+	private static float _lastGcdTotal;
 
 	/// <summary>
 	/// Returns the remaining time for the default GCD by subtracting the elapsed time from the total recast time.
-	/// Clamped to non-negative.
+	/// Clamped to non-negative; 0 while no GCD is running.
 	/// </summary>
-	public static float DefaultGCDRemain => Math.Max(0f, DefaultGCDTotal - DefaultGCDElapsed);
+	public static float DefaultGCDRemain => Math.Max(0f, ActionManagerHelper.GetDefaultRecastTime() - DefaultGCDElapsed);
 
 	/// <summary>
 	/// Returns the elapsed time since the start of the default GCD. Clamped to non-negative.
@@ -1764,7 +1788,7 @@ internal static class DataCenter
 
 	/// <summary>
 	/// The area-heal statistics on forecast health: each member's health carried forward to the moment
-	/// a heal begun now would land (<see cref="ObjectHelper.GetForecastSurvivingShare"/>).
+	/// a heal begun now would land (<see cref="ObjectHelper.GetForecastSurvivingShare(IBattleChara, bool)"/>).
 	/// </summary>
 	/// <remarks>
 	/// "Heal ahead of incoming damage" states that every healing threshold reads the health a member is
@@ -3117,6 +3141,77 @@ internal static class DataCenter
 	}
 
 	/// <summary>
+	/// Whether the tank's pull rule opened the single-target defence in this update: enough enemies
+	/// within reach on the player and attacking him. Written by the state updater where the rule is
+	/// decided, so nothing reads a second copy of it.
+	/// </summary>
+	public static bool TankPullOnPlayer { get; internal set; }
+
+	/// <summary>
+	/// Whether the single hit that opens the single-target defence reaches the player himself - the
+	/// question for the actions that protect only him, as <see cref="AreaHitReachesPlayer"/> is for the
+	/// area defence (concept 13, A233).
+	/// </summary>
+	/// <remarks>
+	/// The flag is measured by the paths it opens, and a tank's single-target path also carries help for
+	/// the other tank - Intervention, Heart of Corundum on the tankbuster's target, Reprisal on the enemy -
+	/// so the flag itself stays as it is. A tank's own cooldowns, though, were spent on every announced
+	/// tankbuster and every cast an enemy aimed at its own target, whoever that was: Damnation and Rampart
+	/// for a buster BossModReborn had marked as not hitting him (the owner's trace, 30.09.2026).
+	///
+	/// Sources: a tankbuster marker on the player or a listed tankbuster cast at him; for a tank also any
+	/// cast an enemy aims at him as its target, and the pull rule; and an announced BossModReborn tankbuster
+	/// when its mask names him. An unknown mask counts for a tank - the chance is not measured then, and
+	/// safety comes first - and for anyone else only with no living tank in the party (A220).
+	/// </remarks>
+	public static bool SingleHitReachesPlayer
+	{
+		get
+		{
+			var player = Player.Object;
+			if (!InCombat || player == null)
+			{
+				return false;
+			}
+
+			if (IsHostileCastingTankBusterAtMe)
+			{
+				return true;
+			}
+
+			var isTank = Role == JobRole.Tank;
+			if (isTank && (TankPullOnPlayer || IsAnyHostileCastingAtPlayer(player.GameObjectId)))
+			{
+				return true;
+			}
+
+			return BMRTankbusterImminent && (BMRTankbusterHitsPlayer ?? (isTank || PartyTank == null));
+		}
+	}
+
+	// The tank's reading of an unlisted cast - an enemy casting at the one it is attacking - narrowed to
+	// casts whose target is the player.
+	private static bool IsAnyHostileCastingAtPlayer(ulong playerId)
+	{
+		var hostiles = AllHostileTargets;
+		if (hostiles == null)
+		{
+			return false;
+		}
+
+		for (var i = 0; i < hostiles.Count; i++)
+		{
+			var h = hostiles[i];
+			if (h != null && h.CastTargetObjectId == playerId && IsHostileCastingTank(h))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>
 	/// Whether the hostile is casting an action from the curated tankbuster list, without the
 	/// target-identity fallback that <see cref="IsHostileCastingTank"/> adds on top of it.
 	/// </summary>
@@ -4112,6 +4207,7 @@ internal static class DataCenter
 			}
 
 			var sheet = Service.GetSheet<Action>();
+			var isTank = Role == JobRole.Tank;
 			foreach (var h in AllHostileTargets)
 			{
 				if (h == null || !h.IsValid() || !h.IsCasting)
@@ -4122,8 +4218,19 @@ internal static class DataCenter
 				var id = h.CastActionId;
 				var listedArea = OtherConfiguration.HostileCastingArea.Contains(id);
 				var listedTank = OtherConfiguration.HostileCastingTank.Contains(id);
+
+				// A tank also reads an unlisted cast an enemy aims at the one it is attacking as a
+				// tankbuster; that source opened his single-target defence without showing here.
 				if (!listedArea && !listedTank)
 				{
+					if (isTank && IsHostileCastingTank(h))
+					{
+						var aimed = Svc.Objects.SearchById(h.CastTargetObjectId);
+						parts.Add($"cast {sheet?.GetRow(id).Name.ExtractText() ?? "?"} #{id} by {h.Name.TextValue} at "
+							+ $"{(player != null && h.CastTargetObjectId == player.GameObjectId ? "you" : aimed?.Name.TextValue ?? "?")}"
+							+ $" (unlisted, cast at its target) {h.TotalCastTime - h.CurrentCastTime:F1} s left");
+					}
+
 					continue;
 				}
 
@@ -4141,7 +4248,8 @@ internal static class DataCenter
 					if (listedArea)
 					{
 						text += $", reaches you {AreaCastCanReachPlayer(h, a)}, reaches the party {AreaCastReachesParty(h, a)}, interruptible {h.IsCastInterruptible}"
-							+ $", rated {(OtherConfiguration.HostileCastingAreaPotential.TryGetValue(id, out var share) ? share.ToString("P0") : "no")}";
+							+ $", rated {(OtherConfiguration.HostileCastingAreaPotential.TryGetValue(id, out var share) ? share.ToString("P0") : "no")}"
+							+ $", last landing reached you {(AreaCastReachedPlayer.TryGetValue(id, out var reachedLast) ? reachedLast.ToString() : "not seen")}";
 					}
 				}
 
@@ -4154,6 +4262,12 @@ internal static class DataCenter
 		}
 
 		parts.Add($"area hit reaches you {AreaHitReachesPlayer}");
+		parts.Add($"single hit reaches you {SingleHitReachesPlayer}");
+
+		if (TankPullOnPlayer)
+		{
+			parts.Add($"pull on you: at least {Service.Config.AutoDefenseNumber} enemies within reach attacking you");
+		}
 
 		if (BMRNextRaidwideIn is > 0f and < float.MaxValue)
 		{

@@ -15,21 +15,26 @@ namespace RotationSolver.Basic.Helpers;
 /// chain chose and every source standing at that moment; each enemy hit on the player is listed
 /// beside it, so the file shows whether the hit the defence was spent on arrived.
 ///
-/// The file is replaced at every load, so it holds exactly one session. Written through one open
-/// writer under a lock: the dispatch writes from the framework thread, the effect handler from the
-/// game thread.
+/// The file is kept across loads and builds: the owner rebuilds the branch before playing and may
+/// reload several times before uploading, and replacing the file at each load lost every session but
+/// the last. Each session opens with its date, time and the commit the plugin was built from, so the
+/// sections can be told apart and matched to their code. Deleting the file starts it over. Written
+/// through one open writer under a lock: the dispatch writes from the framework thread, the effect
+/// handler from the game thread.
 /// </remarks>
 internal static class DefenseTrace
 {
 	private static readonly object _lock = new();
 	private static StreamWriter? _writer;
 	private static uint _lastDecision;
+	// The id the game casts for the last choice: Raw Intuition goes out as Bloodwhetting.
+	private static uint _lastDecisionCast;
 	private static DateTime _lastDecisionWritten = DateTime.MinValue;
 
 	/// <summary>The trace file's full path.</summary>
 	public static string FilePath => Path.Combine(Svc.PluginInterface.ConfigDirectory.FullName, "DefenseTrace.log");
 
-	/// <summary>Starts a new trace for this session, replacing the last one.</summary>
+	/// <summary>Starts this session's section of the trace, after whatever earlier sessions wrote.</summary>
 	public static void Start(string header)
 	{
 		lock (_lock)
@@ -37,8 +42,9 @@ internal static class DefenseTrace
 			try
 			{
 				_writer?.Dispose();
-				_writer = new StreamWriter(FilePath, false) { AutoFlush = true };
-				_writer.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} trace started");
+				_writer = new StreamWriter(FilePath, true) { AutoFlush = true };
+				_writer.WriteLine();
+				_writer.WriteLine($"==== {DateTime.Now:yyyy-MM-dd HH:mm:ss} trace started");
 				_writer.WriteLine(header);
 			}
 			catch (Exception ex)
@@ -64,15 +70,48 @@ internal static class DefenseTrace
 			return;
 		}
 
+		// Checked and set under the lock: the trace of 30.09.2026 holds the same choice twice, 21 ms apart.
 		var now = DateTime.Now;
-		if (act.ID == _lastDecision && (now - _lastDecisionWritten).TotalSeconds < DataCenter.DefaultGCDTotal)
+		lock (_lock)
+		{
+			if (act.ID == _lastDecision && (now - _lastDecisionWritten).TotalSeconds < DataCenter.DefaultGCDTotal)
+			{
+				return;
+			}
+
+			_lastDecision = act.ID;
+			_lastDecisionCast = act.AdjustedID;
+			_lastDecisionWritten = now;
+		}
+
+		Line($"{path} -> {act.Name} #{act.ID} | {DataCenter.DescribeDefenseSources()}");
+	}
+
+	/// <summary>
+	/// The player's own action <paramref name="id"/> landed. Written only for the action the defence chose last.
+	/// </summary>
+	/// <remarks>
+	/// A choice is written when it is made, not when it goes out. The trace of 02.10.2026 holds Radiant Aegis
+	/// chosen three times within seven seconds before one raidwide: two charges spent, or one choice the game
+	/// did not carry out - the decision lines alone cannot tell the two apart. After this line the same action
+	/// chosen again is written at once, so a second use reads as its own choice.
+	/// </remarks>
+	public static void Executed(uint id, string name)
+	{
+		if (_writer == null)
 		{
 			return;
 		}
-
-		_lastDecision = act.ID;
-		_lastDecisionWritten = now;
-		Line($"{path} -> {act.Name} #{act.ID} | {DataCenter.DescribeDefenseSources()}");
+		lock (_lock)
+		{
+			if (id == 0 || (id != _lastDecision && id != _lastDecisionCast))
+			{
+				return;
+			}
+			_lastDecision = 0;
+			_lastDecisionCast = 0;
+		}
+		Line($"used {name} #{id}");
 	}
 
 	/// <summary>Adds one line with the time of day in front.</summary>

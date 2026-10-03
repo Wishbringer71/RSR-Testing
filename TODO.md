@@ -17,23 +17,19 @@ Barde, Pictomancer und Tänzer führen „Prevent the use of defense abilties du
 
 Seit A202 wird Improvised Finish sofort gewirkt (5 %). Offen als Verbesserung: bei angekündigtem Flächentreffer Rising Rhythm bis 4 Stapel (10 %) aufbauen, je Stapel drei Sekunden ohne Aktion. Nutzen nicht belegt, also eigene Option, ab Werk aus; zur Entscheidung, ob sie gebaut werden soll. Konzept 14, „Wechselwirkungen und Zeit".
 
-### Paladin: Passage of Arms endet ab Werk mit RSRs nächster Aktion · N, U
+### Flächenlandung „reached you False" bei Raidwides im Sonderinhalt · N
 
-Passage of Arms endet mit jeder weiteren Aktion. Ohne `PldlockCasting` (ab Werk aus) beendet RSR es mit seiner nächsten Aktion, meist bevor der angekündigte Treffer fällt; die Abklingzeit ist dann ohne Schutz verbraucht. Die Sperre hält seit A164 genau bis zum Treffer. Zur Entscheidung vorgelegt: Voreinstellung der Sperre. Konzept 14, „Wechselwirkungen und Zeit".
-
-### Krieger: Shake It Off hebt Damnation, Bloodwhetting und Thrill of Battle auf · N
-
-Shake It Off hebt die eigenen Status Thrill of Battle, Damnation und Bloodwhetting auf, für +2 % Barriere je Effekt (Suchauszug des vollständigen Texts; im Repository ist der Name ausgeblendet). RSR wirkt es als Flächenabwehr und als Einzelheilung, ohne diese Status zu prüfen. Im Kampf: Ein Raidwide, während Damnation für einen Tankbuster liegt, kostet den Krieger 40 % Minderung. Zur Entscheidung vorgelegt. Konzept 14, „Wechselwirkungen und Zeit".
+Protokoll 01.10.2026 (Klosterdämon, Todesklaue; 48-Spieler-Inhalt mit Phantom-Aktionen): Jede Landung von Berstendes Gebrüll, Gigaflare und Tückische Resonanz meldet „reached you False", und es gibt keinen „hit you"-Eintrag für sie, obwohl ihre Reichweite die Arena deckt. „Skip area defence for casts that missed you" (ab Werk an) liest diese Aufzeichnung und lässt dann die Abwehr weg, die nur ihn schützt. Ursache nicht belegt; zwei Hypothesen: Er stand tatsächlich außerhalb, oder der Schaden kam über eine andere Wirkungsmeldung (unsichtbarer Helfer, auf mehrere Meldungen verteilte Ziele). Das Protokoll nennt jetzt je Landung die Zahl der Ziele und der getroffenen Gruppenmitglieder (A242), damit die nächste Aufzeichnung entscheidet. Sonderinhalt: erfasst, nicht bearbeitet, bis er ihn freigibt; bestätigt sich die zweite Hypothese, betrifft sie jeden Kampf mit Helfer-Schaden.
 
 ### Krieger: Nascent Flash — offene Bausteine · N, U
 
 Nach seinen Kriterien (29.09.2026) bewertet und gebaut (Konzept 09, „Krieger: Nascent Flash für einen anderen oder Bloodwhetting für sich"; A226). Offen:
 - *Die Höhe eines Tankbusters wird nicht gemessen.* Der Effekt-Handler sieht den Treffer, misst aber nach Minderung und Barriere, bei Tankbustern also systematisch zu niedrig, und zu niedrig ist dort die gefährliche Richtung. Zum Herausrechnen fehlen belegte Antworten: die Prozentsätze je wirkendem Status am Treffer, die Schadensart je Aktion (Feint, Addle) und ob der gemeldete Schadenswert eine aufgezehrte Barriere enthält. Erst damit wird aus „möglicherweise tödlich" eine Zahl. Konzept 13 („Dieselbe Frage stellt sich bei den Tankbustern").
-- *Vorschlag, nicht gebaut:* Nascent Flash als Minderung für den anderen Tank vor dessen Tankbuster, unabhängig von seiner Gesundheit. The Balance sagt nur „Nascent Flash goes on a friend"; dieser Einsatz ist ein Schluss.
+- *Offen, jetzt mit Quelle:* Nascent Flash als Minderung für den anderen Tank vor dessen Tankbuster. The Balance (Warrior Basic Guide, Makros, 02.10.2026): „Most often on the co-tank of your eight-person party.“ Braucht die Erkennung des Tankbusters auf dem anderen Tank und die Abwägung über die vorhandene Triage.
 - *Upstream-Bauform:* Raw Intuition/Bloodwhetting fällt nur, solange das Ziel des Kriegers ihn anvisiert (`PlayerIsTargetOnSelf`). Ein Off-Tank mit Tankbuster-Marker bekommt es aus der Einzelabwehr nicht.
 ### Vorschläge aus dem WrathCombo-Vergleich · N, U
 
-V1 gebaut für Weißmagier, Astrologe und Weiser (A184). Die Barriere des Weisen ist ab Werk aus (A209), weil die Erneuerung bei jedem Bruch das ist, was Konzept 06 §2.1 als entfernten Fehler führt. Offen dazu: seine Lesart von „Verfall" (Verbrauch oder nur Ablauf) und ob sie jene Entscheidung aufhebt; außerdem Aetherpact als Vorab-HoT des Gelehrten. Beides ist gebündelt vorgelegt. V3 geprüft, keine Übernahme (A190). V2 gebaut (A189), V5 gebaut (A186); V4 und V6 geprüft, nicht gebaut (A188, A187).
+V1 gebaut für Weißmagier, Astrologe und Weiser (A184); die Barriere des Weisen steht seit 03.10.2026 ab Werk an (A251). Offen: Aetherpact als Vorab-HoT des Gelehrten, sein Vorschlag gegen zwei bindende Einstellungstexte, gebündelt vorgelegt. V3 geprüft, keine Übernahme (A190). V2 gebaut (A189), V5 gebaut (A186); V4 und V6 geprüft, nicht gebaut (A188, A187).
 
 **Konzept:** `docs/rotation-flow/15-wrathcombo-comparison.md`
 
@@ -133,19 +129,6 @@ Stand V8 (A78, A89, C69; Konzept 12). **Neu geprüft (A207):** Der Eintrag warte
 
 **Empfehlung: liegen lassen.** Alle vier verbliebenen Fundstellen liegen in PvP oder Bozja, also außerhalb des Nutzungsprofils, und jede verlangt eine Richtungsentscheidung, die eine Beobachtung im jeweiligen Inhalt voraussetzt. Die Klasse ist vollständig erhoben und durch `scan11.py` gegen Rückfall gesichert — das ist der Zweck der Erfassung, die Bearbeitung ist es hier nicht.
 
-### Die erhöhte Heilwirkung unter Schutzwall wird nirgends gelesen · N
-
-**Konzept:** `docs/rotation-flow/07-heal-target-priority.md`
-Belegt: `Status.resx` führt `Rampart_1978` — die Form, die ein Tank ab Stufe 94 trägt, eingegrenzt auf PLD WAR DRK GNB — mit „Damage taken is reduced **while HP recovered via healing actions is increased**". Die Grundformen 71 und 1191 sagen nur „Damage taken is reduced". Der Auftraggeber gibt die Erhöhung mit 15 % an; die Spieldaten nennen keine Zahl, wie bei jedem merkmalsabhängigen Wert.
-
-**Gelesen wird die Wirkung nirgends.** `Rampart_1978` steht allein in `StatusHelper.RampartStatus`, und deren zwei Leser — `StatusProvide` der Tank-Rotationen und `HasMajorMitigation` — fragen nach Überlappung, nicht nach Heilwirkung. Die Gegenrichtung ist dagegen bekannt: `HpRecoveryDown` wird an drei Stellen im `StateUpdater` geprüft, allerdings nur im Sonderfall `IsInWindurst`.
-
-**Kandidat, kein Defekt.** Es gibt derzeit keine Entscheidung im Baum, die davon abhinge: RSR entscheidet über Heilung an HP-Schwellen, nicht an Heilmengen, und eine um 15 % stärkere Heilung ändert nicht, **ob** geheilt werden muss.
-
-**Was sie ändert, ist die Menge, nicht die Dringlichkeit** — und die frühere Fassung dieses Eintrags hat beides verwechselt. Sie schloss, ein Tank unter Schutzwall brauche die Heilung „weniger dringend". Das ist derselbe Fehlschluss wie bei der Schildanrechnung: Ein Tank bei 40 % steht bei 40 %, ob Schutzwall läuft oder nicht. Die stärkere Wirkung heißt, dass **eine Heilung** ihn weiter hochbringt, nicht dass er sie später braucht. Der einzige Fall, in dem die Kenntnis etwas einbrächte, ist die Wahl **welcher** Heilung: Unter Schutzwall genügt vielleicht das billigere oGCD, wo sonst der Zauber nötig wäre. Eine Schwelle zu verschieben ist es nicht.
-
-**Auflösungsbedingung:** die Entscheidung über die Schildanrechnung. Fällt sie für eine Anrechnung des Schutzzustands aus, gehört die Heilverstärkung in dieselbe Rechnung; bleibt es beim Upstream-Verhalten, ist dieser Punkt gegenstandslos. Vorher zu klären wäre die Herkunft der 15 %.
-
 ### Der erzeugte Merkmalssatz enthält keine Rollenmerkmale · N, R
 
 `TraitRotationGetter.AddToList` verwirft jedes Merkmal mit `item.ClassJob.RowId == 0`. Rollenmerkmale sind keiner einzelnen Klasse zugeordnet und fallen damit sämtlich heraus: Im erzeugten `Rotation.resx` findet sich kein `EnhancedReprisalTrait`, `EnhancedRampartTrait`, `EnhancedSecondWindTrait`, `EnhancedSwiftcastTrait`, `EnhancedFeintTrait`, `EnhancedAddleTrait` — null Treffer für jedes davon.
@@ -157,40 +140,23 @@ Belegt: `Status.resx` führt `Rampart_1978` — die Form, die ein Tank ab Stufe 
 ### `CanUse` als Prüfung, nicht als Wahl — mit Zuweisung als Nebenwirkung · N, R
 
 **Konzept:** `docs/rotation-flow/03-universal.md`
-`ShouldStretchHolyStun` und `ShouldHoldHolyWhilePackSlowed` fragen beide `DiaPvE.CanUse(out _) || AeroIiPvE.CanUse(out _) || AeroPvE.CanUse(out _)`, um die Ersatzgarantie zu prüfen. `CanUse` weist dabei `Target` zu — dieselbe Nebenwirkung, die beim Wiederbelebungspfad eine eigene Vorkehrung nötig gemacht hat (`RaisePendingAndCastable` sichert und stellt den Zielüberschreiber wieder her, A56).
+`CanUse` als bloße Prüfung weist `Target` zu. Anlass waren die beiden Sanctus-Regeln, die mit `DiaPvE.CanUse(out _) || AeroIiPvE.CanUse(out _) || AeroPvE.CanUse(out _)` eine Ersatzgarantie prüften; beide tun es nicht mehr (A178, A231). Es ist dieselbe Nebenwirkung, die beim Wiederbelebungspfad eine eigene Vorkehrung nötig gemacht hat (`RaisePendingAndCastable` sichert und stellt den Zielüberschreiber wieder her, A56).
 
-**Hier bislang folgenlos:** Wird der DoT anschließend tatsächlich gewirkt, ruft der Schadenszweig `CanUse` erneut und setzt das Ziel neu; wird Sanctus gewirkt, bleibt ein Ziel an einer Aktion stehen, die niemand liest. Belegt ist die Folgenlosigkeit allerdings nicht.
-
-**Umfang, erhoben statt geschätzt: 120 Fundstellen in 25 Dateien** — `BeirutaRDM` 16, `SGE_Reborn` 11, `NIN_Reborn` 10, `BeirutaSGE` 10, dazu `CustomRotation_Ability`, `CustomRotation_GCD`, `CustomRotation_Items` und die UI. Das Muster ist damit nicht die Ausnahme, die diese Rotation eingeführt hat, sondern die Hausform des gesamten Baums; die beiden Sanctus-Stellen sind zwei von 120. Das ändert die Frage: Nicht „sollen diese zwei Stellen anders gebaut werden", sondern „hat der Baum eine seiteneffektfreie Prüfung nötig".
+**Umfang, erhoben statt geschätzt: 120 Fundstellen in 25 Dateien** — `BeirutaRDM` 16, `SGE_Reborn` 11, `NIN_Reborn` 10, `BeirutaSGE` 10, dazu `CustomRotation_Ability`, `CustomRotation_GCD`, `CustomRotation_Items` und die UI. Das Muster ist damit nicht die Ausnahme, die diese Rotation eingeführt hat, sondern die Hausform des gesamten Baums. Das ändert die Frage: Nicht „sollen diese zwei Stellen anders gebaut werden", sondern „hat der Baum eine seiteneffektfreie Prüfung nötig".
 
 **Vor einer Änderung zu klären:** ob RSR eine seiteneffektfreie Prüfung anbietet. Gibt es keine, ist die Frage, ob eine solche eingeführt werden soll — mit einem Wirkungsbereich über alle Rotationen, die `CanUse` als Prüfung benutzen, und damit auch über die abgeleiteten Rotationen als Paketnutzer.
 
-### Betäubungsstreckung von Sanctus: Wirkung unbeobachtet · N
+### Zielwahl der Heilung: Rollenschwellen 45/40 kehren im Band die Rangfolge um · N, U
 
-**Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
-`StretchHolyStun` ist seit 29.09.2026 voreingestellt an (seine Regel: der im Kampf sinnvollere Wert); belegt ist die Wirkung ohne Laufzeitbeobachtung nicht. Der **Mitigationsgrund** derselben Regel ist umgesetzt und voreingestellt an (`ShouldHoldHolyWhilePackSlowed`); ihre heutige Fassung ist die Anteilsregel des Auftraggebers — mehr als die Hälfte der Gegner im Wirkbereich verlangsamt **und** mindestens `HoldHolyMinSlowedHostiles` betroffen, dazu Betäubungsspielraum und eine Schranke für den Restausstoß (A90, C59; die frühere Leistungsrechnung aus A79 ist damit abgelöst). Der **Betäubungsgrund** — Sanctus einen GCD aussetzen, solange die eigene Betäubung noch läuft, statt sie zu überschreiben — wartet weiter auf die Beobachtung, ob die Streckung im Spiel eintritt.
+Die Zielwahl nach Gefährdung ist gebaut (Konzept 07, Stufen 1 bis 3; A89, A93, A183). `HealTargetByDanger` und
+`HealAheadOfDamage` stehen ab Werk an. Offen ist nur noch die Schwellendifferenz: `HealthTankRatio` 0,45 gegen
+`HealthHealerRatio` und `HealthSelfRatio` 0,40, alle drei wie in `upstream/main`.
 
-**Auflösungsbedingung:** eine Beobachtung, ob Sanctus in eine laufende Betäubung hinein gewirkt wird und ob die Streckung die vom Modell gerechneten 5,5 auf 7,0 Sekunden bringt. Der Auftraggeber hat die Einstellung eingeschaltet, um überhaupt testen zu können; offen ist allein, ob die Streckung messbar eintritt.
-
-### Die Zielwahl der Heilung misst nicht die Sterbegefährdung · N, U
-
-**Vorgabe des Auftraggebers, vollständig in `docs/rotation-flow/07-heal-target-priority.md`:** Oberste Priorität hat das gesamtheitliche Überleben der Gruppe, ansonsten Triage. Maßgeblich ist, wer wie stark gefährdet ist zu sterben — Tank mit Aggro hat Priorität, Heiler mit Aggro muss überleben, bei mehreren Betroffenen entscheidet die Schadensrate, und ein Schadensausteiler ohne Aggro bei 10 % stirbt an der nächsten Flächenaktion. **Bei gleicher Gefährdung: Heiler vor Tank vor Schadensausteiler**, begründet mit Ersetzbarkeit — der Tank besteht eine Weile ohne Heiler, heilen kann nur der Heiler.
-
-**Heute entscheidet allein der Prozentsatz** (`ActionTargetInfo.FindHealTarget`, Rang 4), davor zwei Rollenabkürzungen mit festen Schwellen. Weder Aggro noch Barriere noch absoluter Lebenspuffer gehen ein. Die Sortierung stammt aus dem Upstream; Fork-Arbeit ist allein die Behandlung der Unverwundbaren.
-
-**Die Prüfreihenfolge stellt den Heiler vor den Tank, die Schwellen kehren das um:** Tank ≤ 45 %, Heiler ≤ 40 %. Im Band 40–45 % bekommt der Tank die Heilung, obwohl der Heiler gleich tief steht; spielt der Auftraggeber selbst den Heiler, trifft ihn derselbe Fall über `HealthSelfRatio` (ebenfalls 0,40). Die Differenz vertritt die fehlende Schadensrate — für den Regelfall „Tank hält die Aggro" richtig, für den zweiten Fall der Vorgabe „Heiler hält die Aggro" falsch, weil das Surrogat rollenfest statt lagefest ist. **Alle drei Werte sind identisch mit `upstream/main`**, also kein Fork-Defekt, und es sind Voreinstellungen im Code — die Konfiguration des Auftraggebers ist von hier nicht messbar.
-
-**Drei der vier Größen sind verfügbar und zwei davon gelesen:** der effektive Puffer in absoluten Punkten (`GetEffectiveHp`, gelesen), die Schadensrate je Mitglied (`GetCorrectedTTK` aus `RecordedHP`, gelesen — A91 bis A93), die Aggro (`TargetObject`, wie in `CanProvoke` aufgelöst — **nicht** gelesen) und der angekündigte Flächenschaden (`IsHostileCastingAOE`, BMR-Vorhersage — **nicht** gelesen).
-
-**Der schwerste Einzelfall ist ein Kurzschluss, nicht ein Maß:** `tankTars[0]` unter `HealthTankRatio` beendet die Suche sofort, also wird ein Schadensausteiler bei 10 % übergangen, sobald der Tank bei 44 % steht — der von der Vorgabe ausdrücklich genannte Fall.
-
-**Der Entwurf steht vollständig in `docs/rotation-flow/07-heal-target-priority.md`:** drei Gefährdungsklassen statt einer Kette von Kurzschlüssen — kritisch (unter `HealthForDyingTanks`, geordnet nach absoluten Punkten), unter Beschuss (Aggro oder Tankhaltung, geordnet nach Prozentsatz), übrige (absolute Punkte bei angekündigtem Flächenschaden, sonst Prozentsatz); Rolle nur als Gleichstandsregel. Jedes Maß wirkt dort, wo es das Richtige misst, keines wird gewichtet, keine Zahl erfunden — BossModReborn nennt Art und Zeitpunkt des nächsten Einschlags, nicht seine Höhe.
-
-**Umgesetzt sind Stufe 1 und Stufe 3.** Stufe 1 (A89): Klasse 1 steht vor allen drei Kurzschlüssen. Stufe 3 (A93): die Rate je Mitglied — allerdings nicht als zusätzliches Ordnungsmerkmal innerhalb einer Klasse, wie ursprünglich entworfen, sondern als **Ersatz der gelesenen Gesundheit** durch die vorausberechnete, hinter `HealAheadOfDamage` mit Standard aus. Damit erben alle vier Entscheidungen der Methode die Vorausschau, Klasse 1 eingeschlossen; die Begründung der Entwurfsänderung steht in Konzept 07.
-
-**Stufe 2 gebaut (A183)**, hinter `Choose the heal target by danger`, Vorgabewert an (seit 29.09.2026): Klasse 2 (Heiler/Tank unter Rollenschwelle **und** angegriffen, `DataCenter.TargetedPartyMembers`), Klasse 3 (übrige; bei angekündigtem Flächenschaden nach absoluten effektiven Punkten, sonst nach Prozentsatz), Rolle nur bei Gleichstand. Offen bleibt die Voreinstellung — zu entscheiden, wenn er die Einstellung gespielt hat.
-
-**Was der Entwurf nicht löst:** Die Schwellendifferenz 45/40 ist entweder wirksam — dann kehrt sie im Band die Rangfolge um — oder unwirksam, dann ist eine Nutzereinstellung stillgelegt. Die Klassenordnung entschärft sie, beseitigt sie nicht. Ob die Werte vereinheitlicht werden, ist eine Wertentscheidung über eine Konfiguration und liegt beim Auftraggeber.
+- *Wirkung:* Stehen Heiler und Tank beide unter Beschuss und beide zwischen 40 und 45 %, kommt nur der Tank in
+  Gefährdungsklasse 2 und wird zuerst geheilt. Das widerspricht seiner Gleichstandsregel (Heiler vor Tank).
+- *Ohne Beschuss oder bei Gefährdungsklasse 1:* keine Umkehr.
+- *Entscheidung:* Ob die Werte vereinheitlicht werden, ist eine Wertentscheidung über seine Konfiguration und
+  liegt bei ihm.
 
 ### `HasSurvivingShield` misst die **kürzeste** Schildrestzeit, nicht die längste · N, R
 
@@ -266,13 +232,6 @@ Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A17
 ### Astrologe: Synastry wählt ihr Ziel nach Trefferfläche und aktueller Gesundheit, nicht nach der Heilung · N, U
 
 `AST_Reborn.CanCastSynastry` verlangt, dass Synastry und die folgende Einzelheilung (Aspected Benefic, Benefic II, Benefic) dasselbe Ziel haben. Laut Wirktext zählt jede Einzelheilung, „on yourself or a party member", die Gleichheit ist also kein Fehler. Synastry läuft aber in `EmergencyAbility` vor jedem Target-Override (`CustomRotation_Ability.cs:85`) und setzt keinen `TargetType`. Gewählt wird deshalb nach `Big`: größte Trefferfläche, bei Gleichstand, und Spieler haben gleiche Trefferflächen, das Mitglied mit der **meisten** aktuellen Gesundheit (`BigHp` aus, ab Werk; seit A225 liest der Zweig diese Einstellung). Die Heilung dagegen geht an den Bedürftigsten. Im Kampf (Schluss aus dem Code, nicht beobachtet): Synastry fällt nur, wenn der Geheilte zugleich der Gesündeste ist. Das trifft vor allem dann nicht zu, wenn der Tank unter die volle Gesundheit eines anderen Mitglieds gefallen ist, also genau im Bedarfsfall. Upstream-Bauform, gefunden in der Tiefenprüfung A221. Zu bearbeiten im vollen Loop: Zielwahl über das Heilziel (Override) oder Prüfung gegen das Ziel der nächsten GCD.
-
-### Weißmagier: zweites Sanctus fällt in die laufende Betäubung · N
-
-**Konzept:** `docs/rotation-flow/08-mitigation-synergy.md` („Mit Ersatzgarantie")
-Seine Beobachtung (29.09.2026): Der Weißmagier wartet nach dem ersten Sanctus nicht mehr, bis die Betäubung ausläuft. Code und Eingänge der Streckung sind seit dem 10.09. unverändert (A228). Ursache offen; vier Wege lassen Sanctus zu, `DefenseTrace.log` nennt seit A228 je Entscheidung den Grund. Zur Entscheidung vorgelegt: die Ersatzgarantie (Sanctus nur ausgesetzt, wenn ein DoT den GCD übernimmt) ist meine Abwägung aus A19 und steht gegen „Sicherheit vor Schaden". Ohne sie übernähme Glare den GCD.
-
-## Technische Schuld
 
 ### Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen · N, R
 
@@ -450,11 +409,6 @@ Gefunden bei der Erhebung der Fork-Einstellungen (A103). Die beiden Tooltip-Wege
 
 **Auflösung:** entweder `ParentValue` auf mehrere zulässige Werte erweitern — Wirkungsbereich ist der gemeinsame Zeichenpfad aller Rotationen, Betroffenenkreis R und U — oder es beim Tooltip belassen, der jetzt sagt, für welche Option jeder Wert gilt. **Empfehlung: beim Tooltip belassen**, solange kein zweiter Fall dieser Art auftritt; der Nutzen ist eine Einrückung, die Kosten sind eine Signaturerweiterung im Upstream-Pfad.
 
-### Die Holy-Vorbehalte des Weißmagiers — neu geprüft (A207) · N
-
-**Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
-Die frühere Auflösung „Grund des Rückhalts in der Diagnoseanzeige" widerspricht seiner Vorgabe (er nutzt das Diagnosefenster nicht; keine neuen Zeilen dort). Zwei der drei Vorbehalte lesen Tatsachen im Moment der Entscheidung — `ShouldHoldHolyForBarrier` (eine Barriere liegt) und `ShouldHoldHolyWhilePackSlowed` (Anteil verlangsamter Gegner) — und sagen nichts voraus, was nachzusteuern wäre. Offen bleibt `ShouldStretchHolyStun`: seine Wirkung (Streckung von 5,5 auf 7,0 s) ist ein Modell; die Voreinstellung (aus) liegt bei ihm, eingeschaltet hat er sie zum Testen.
-
 ### `SpreadDamagePaths` enthält keinen Spread-Marker · N
 
 **Konzept:** `docs/rotation-flow/13-aoe-damage-classification.md`
@@ -534,29 +488,32 @@ Er fällt trotzdem kaum ins Gewicht, und der Grund liegt in der Wirkweise der Ak
 
 **Empfehlung: belassen.** Die geteilte Identität kostet nur, wenn beide Fassungen gleichzeitig installiert sein sollen; sie nützt bei jedem Wechsel zwischen ihnen, weil die Nutzerkonfiguration erhalten bleibt.
 
-### Übertragung der Mitigations-Synergie auf weitere Doppelnutzen-Aktionen · N
-
-Schritt 3 aus `docs/rotation-flow/08-mitigation-synergy.md`. Die Schritte 1 und 2 — Messung und Aussetzbedingung für Sanctus — sind umgesetzt (AUDIT_LOG A20). Offen ist die Übertragung auf weitere Aktionen, die Schaden erzeugen und zugleich Schaden vermeiden.
-
-**Zur Führung dieses Punktes:** Die Einzelheiten stehen im Konzeptdokument, nicht hier. `TODO.md` führt die offene Arbeit und verweist; eine zweite Beschreibung derselben Sache würde mit der ersten auseinanderlaufen. Was hier stehen muss, ist allein, dass noch etwas offen ist und wo es beschrieben wird.
-
-**Die Kandidatensuche ist erledigt** und lief, wie hier gefordert, über ein Prüfskript statt über Erinnerung: `scan16.py` erhebt jede PvE-Aktion mit Kontroll- oder Minderungswirkung auf Gegner und prüft, ob der Baum den zugehörigen Status liest. Im Tank- und Heilerprofil bleibt genau eine Aktion, deren zweite Wirkung eine Entscheidung ändern würde — Rückstoß (Arm’s Length), eigener Eintrag oben. Offen ist damit nur noch die **Übertragung** selbst.
-
-**Auflösungsbedingung:** erst nach Beobachtung der Schritte 1 und 2 im Spiel.
-
-**Empfehlung: warten.** Schritt 3 überträgt eine Regel, deren Nutzen in den Schritten 1 und 2 noch nicht beobachtet ist; eine Übertragung vor dem Nachweis vervielfacht einen möglichen Fehler, statt einen Nutzen zu vervielfachen.
-
 ## Offene Arbeit
 
-### Six-sided Star und Flamethrower: Nutzen nicht belegt · N
+### Tanks: Reflexion und Gruppenbarriere auf demselben Raidwide · N
 
-Die Pausenregel ist gebaut (Konzept 14, A162): Meditate (Samurai) und Rook/Queen Overdrive (Machinist). Offen bleiben zwei Aktionen, deren Vorteil aus den Wirktexten nicht rechenbar ist.
-- Six-sided Star (Monk): Die Grundpotenz ist ausgeblendet, und ob Chakra über eine Pause verfällt, ist unbelegt.
-- Flamethrower (Machinist): Die Tickrate steht nicht im Wirktext.
+Seine Protokolle vom 01.10.2026 zeigen Abschütteln und Reflexion fast immer auf demselben Raidwide, eine Sekunde auseinander. WrathCombo verteilt beide auf aufeinanderfolgende Raidwides (je 10 s Sperre gegeneinander); The Balance: stapeln für große Treffer, verteilen über mehrere. RSR kennt die gemessene Größe je Raidwide (`HostileCastingAreaPotential`), Stufe 2 der Abwehr nach Treffergröße (Konzept 08) wäre der Ort. Offen: Fallarbeit für alle vier Tanks (Divine Veil, Dark Missionary, Heart of Light). Konzept 09, „Abgleich mit den Referenzen".
 
-Auflösung: eine Quelle für diese Werte (erzeugter Index aus `RotationSolver.GameData` oder eine Messung im Kampf) — dann rechnen, bauen oder verwerfen.
+### Flächenheilung um den Wirkenden: Radius gegen Trefferfläche statt Mittelpunkt · N
 
-**Konzept:** `docs/rotation-flow/14-action-dependency-matrix.md`
+Ob ein Spieler in einer Fläche steht, entscheidet der Mittelpunkt seines Modells (Akhmorning, „Raiding Fundamentals", 02.10.2026). `GetCanAffects` rechnet Trefferfläche zu Trefferfläche und zählt ein Mitglied am Rand um seinen Trefferkreis zu großzügig mit. Im Kampf: Lux Solaris und andere Flächenheilungen um den Wirkenden können eine verlangte Anzahl erreicht sehen, die die Heilung nicht trifft. Erhebung aller Leser von `GetCanAffects` für freundliche Flächen offen; Konzept 08, „Wann Lux Solaris zündet".
+
+### Six-sided Star und Flamethrower: Regeln jetzt belegt, nicht gebaut · N
+
+Quellen gefunden (Job-Guide und The Balance, 02.10.2026; Konzept 14, „Pausen und Phasenenden"):
+- *Six-sided Star (Monk):* 780 + 80 je Chakra, 4 s Wiederholzeit; Einsatz als letzter GCD vor Pause, Rückzug aus einer Fläche oder Tod des Ziels, wenn nur einer passt. Braucht die vorhergesagte Pause (BossModReborn) oder die selbstkorrigierte Zeit bis zum Tod; ohne Modul nur über die Zeit bis zum Tod.
+- *Flamethrower (Machinist):* Schwellen von The Balance (ohne Gauge ab 2 Zielen über dem Füller, ab 6 über Air Anchor; nie vor Hypercharge, Chain Saw/Excavator, Drill/Bio; keine große Abklingzeit in den 11 s). Bindet 11 s an Ort und Blickrichtung — gegen seine Spielweise nur bei stehendem Rudel ohne angesagte Fläche zulässig.
+
+### Vorlauf: Dragoon und Viper ohne `CountDownAction` · N
+
+Gemessen am 02.10.2026 (Konzept 04, „Was offen bleibt"). Ohne `CountDownAction` wirkt ein Job im Countdown nichts (`CustomRotation_Invoke.cs`, Basis liefert `null`), auch keinen Trank. Zu klären an den Openern von The Balance und an den Wirktexten, ob dort eine Vorlaufaktion fällig ist. Der Trank im Vorlauf ist dabei die Gesamtfrage: `UseBurstMedicine` im Vorlauf rufen nur die vier Heiler, Barde, Maschinist, Dunkelritter und Revolverklinge auf.
+
+### Vorausschau vor dem ersten Treffer: eigene Minderungen rechnerisch · N
+
+Die Vorausschau liest den gemessenen Gesundheitsverlauf; der ist netto und braucht keine Minderungssätze, setzt
+aber erst nach dem ersten Treffer ein. Vorher könnte sie die eigenen laufenden Minderungen aus
+`DefensiveValues.g.cs` einrechnen (Konzept 08, Tabelle „Ergebnis“). Zu klären: ob der gemessene Anteil eines
+angekündigten Treffers (Konzept 13) diese Lücke schon schließt, weil er die beim Messen liegende Minderung enthält.
 
 ### Feste Werte im Fork: jeder offene Wert braucht seinen Loop · N, R
 

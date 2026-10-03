@@ -5,8 +5,9 @@ Prüfhistorie steht in `AUDIT_LOG.md` (A7, Register #66).
 
 ## Ergebnis
 
-Der strukturelle Umbau ist abgeschlossen. Was blieb, sind vier **Verhaltensfragen**,
-die keine Codeentscheidung sind, sondern eine Spielbeobachtung brauchen.
+Der strukturelle Umbau ist abgeschlossen. Von den vier Verhaltensfragen, die danach offen standen, sind drei
+im Code gelöst (A7, 05.09.2026). Die vierte (C1) ist keine offene Frage mehr: Die Vereinfachung ist verworfen,
+und die geltende Form bleibt.
 
 | Punkt | Inhalt | Stand |
 |---|---|---|
@@ -15,7 +16,8 @@ die keine Codeentscheidung sind, sondern eine Spielbeobachtung brauchen.
 | A4a | Zweige oberster Ebene zu benannten Stufen | umgesetzt für BLU, PhantomDefault, PCT, SAM, SMN; MCH bewusst ausgelassen |
 | A4b | Die Stufenliste gilt als Reihenfolge, nicht als Namensvorschrift | Konvention, angewandt |
 | B1 | `SwiftRaisePending` | umgesetzt |
-| B3 · B4 · B5 · C1 | Reprisal-Platzierung, Slot-Asymmetrien, MNK-Heilslot, DRG-Trait-Gates | offen — Spielfragen |
+| B3 · B4 · B5 | Reprisal-Platzierung, Slot-Lücken der Schadensausteiler, MNK-Heilslot | umgesetzt (A7: 00bc9c6f, 4b3c9412) |
+| C1 | DRG-Trait-Gates | Vereinfachung verworfen, Gates bleiben |
 | A1 · A2 · B2 · Rollenebene | — | verworfen, Begründung unten |
 
 **Reihenfolge nach Wirkbreite:** A wirkt auf alle Jobs, B auf eine Gruppe, C auf einen
@@ -47,7 +49,7 @@ CustomRotation                     handgeschrieben, gemeinsam
 | Artefakt | Ort | Status |
 |---|---|---|
 | `public partial class WhiteMageRotation` (Gauge, Job-Helfer) | `RotationSolver.Basic/Rotations/Basic/*.cs`, 23 Dateien | handgeschrieben, eingecheckt |
-| `public abstract partial class WhiteMageRotation : CustomRotation` (alle Aktionen, `AllBaseActions`, `AllTraits`) | `RotationSolver.SourceGenerators/Properties/Rotation.resx`, 23× in 1,98 MB | **generierter Text**, eingecheckt |
+| `public abstract partial class WhiteMageRotation : CustomRotation` (alle Aktionen, `AllBaseActions`, `AllTraits`) | `RotationSolver.SourceGenerators/Properties/Rotation.resx`, 23× (2,05 MB am 02.10.2026) | **generierter Text**, eingecheckt |
 | Emission zur Compile-Zeit | `StaticCodeGenerator.GenerateRotations` | – |
 | Erzeugung der resx | `RotationSolver.GameData/Program.cs` → `RotationGetter` | offline, **braucht `C:\FF14\game\sqpack`** |
 
@@ -84,7 +86,7 @@ das sämtlich Fehlalarme.
 
 ### A4a · Zweige oberster Ebene zu benannten Stufen
 
-Gemessen über alle 31 PvE-Rotationsdateien lagen **1239** Zweige auf oberster Ebene,
+Gemessen am 05.09.2026 (A7) lagen über alle 31 PvE-Rotationsdateien **1239** Zweige auf oberster Ebene,
 im `GeneralGCD` Median 16 und Maximum 80 (BLU). Umgebaut sind die fünf Dateien mit dem
 größten Nutzen: BLU, PhantomDefault, PCT, SAM, SMN. `GeneralGCD` ist dort ein
 Dispatcher über benannte Stufen; eingefügt wurden nur Methodengrenzen (208 +, 5 −, 0
@@ -141,25 +143,28 @@ Alle B-Punkte sind **benannte Helfer auf `CustomRotation`**, keine neue Vererbun
 
 13 wortgleiche Kopien von
 `(HasSwift || IsLastAction(SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise)`
-in vier Dateien → eine Definition, 13 Verwendungen von einem Wort.
+in vier Dateien → eine private Eigenschaft `SwiftRaisePending` je Heilerdatei (ae51e6c3), 13 Verwendungen. Sie
+liegt nicht auf `CustomRotation`, anders als der Abschnittskopf sagt: Sie liest `SwiftLogic`, eine Option jeder
+Heilerrotation, und eine zentrale Fassung müsste diese Option mitziehen. Die Option ist als Name in der gespeicherten
+Konfiguration ein Vertrag.
 
-### B3 · Tanks — Reprisal-Platzierung · offen
+### B3 · Tanks — Reprisal-Platzierung · umgesetzt
 
-DRK/GNB haben den Sustain in Area **und** Single, PLD/WAR nur in Single. Die Ursache
-ist die Upstream-Platzierung von Reprisal je Job, also begründet — aber das Ergebnis
-ist, dass dieselbe Fähigkeit rollenintern uneinheitlich reagiert. Die Angleichung
-erfordert eine Spielentscheidung, keine Code-Entscheidung.
+Alle vier Tanks führen Reflexion in `DefenseAreaAbility` und in `DefenseSingleAbility` (00bc9c6f). Vorher fehlte
+sie bei Paladin und Krieger in der Flächenabwehr, obwohl die `RotationDesc` des Kriegers sie dort schon nannte.
+Am Tankbuster wartet sie inzwischen auf einen angesagten Raidwide, wenn der Tank gedeckt ist (Konzept 08, A244).
 
-### B4 · Physische Fernkämpfer — Slot-Mengen · offen
+### B4 · Physische Fernkämpfer — Slot-Mengen · umgesetzt
 
-Keine zwei der drei Jobs belegen dieselben Slots (DNC ohne `DefenseSingleAbility`, MCH
-ohne `HealSingleAbility`, BRD als einziger mit `DispelAbility`). Reihenfolge: prüfen →
-begründen → erst danach ändern.
+Die Lücken sind geschlossen (4b3c9412): Maschinist und Barde haben Second Wind in `HealSingleAbility`, der Tänzer
+`DefenseSingleAbility`. Die übrigen Unterschiede folgen den Aktionen, die nur ein Job hat: `DispelAbility` beim
+Barden (Warden's Paean), `HealAreaAbility` beim Tänzer (Curing Waltz, Improvisation), `MoveForwardAbility` beim Tänzer (En Avant),
+`MoveBackAbility` beim Barden (Repelling Shot).
 
-### B5 · Melee — MNK-Heilslot · offen
+### B5 · Melee — MNK-Heilslot · umgesetzt
 
-MNK überschreibt `HealAreaAbility` statt `HealSingleAbility`, obwohl Second Wind eine
-Einzelziel-Selbstheilung ist. Einzige Gruppenabweichung ohne erkennbare Begründung.
+Second Wind und Bloodbath stehen beim Mönch in `HealSingleAbility` (4b3c9412). `HealAreaAbility` trägt nur noch die
+Flächenheilungen Earth's Reply und Mantra.
 
 ## C · Jobebene
 
@@ -169,13 +174,13 @@ Nach der Zuordnung zu A4a bleibt von C ein einziger eigenständiger Punkt.
 |---|---|---|
 | BLU · PhantomDefault · PCT · SAM · SMN | 80 / 33 / 32 / 27 / 23 Zweige | A4a, umgesetzt |
 | MCH | 23 Zweige | A4a, bewusst ausgelassen |
-| DRG | 8 `Trait.EnoughLevel`/`!Trait…`-Paare | **offen, Spielfrage** |
+| DRG | 6 `Trait.EnoughLevel`/`!Trait…`-Paare (gezählt am 02.10.2026) | Vereinfachung verworfen |
 | DRG · VPR | kein `CountDownAction` | offen, prüfen ob Lücke oder Absicht |
-| RPR · SAM · WAR | kein `EmergencyAbility` | offen, dito |
+| RPR · SAM · WAR | kein `EmergencyAbility` in der Reborn-Datei | keine Lücke: WAR in der Basisschicht, RPR/SAM ohne eigene Notfallaktion |
 
 ### C1 · DRG-Trait-Paare — der Fund, der die Vereinfachung blockiert
 
-Achtmal steht in `DRG_Reborn.cs` dasselbe Muster:
+Sechsmal steht in `DRG_Reborn.cs` dasselbe Muster (gezählt am 02.10.2026):
 
 ```csharp
 if (LanceMasteryIiTrait.EnoughLevel)  { if (HeavensThrustPvE.CanUse(out act)) return true; }
@@ -190,11 +195,10 @@ genau dann, wenn `HeavensThrustPvE.CanUse` aus einem **anderen Grund als dem Lev
 fehlschlägt — Combo nicht offen, Reichweite, Status. Dann versucht die ordnende
 Schreibweise zusätzlich die Vorgängeraktion, die gegatete nicht.
 
-Ob das schadet, hängt daran, ob `FullThrustPvE.CanUse` oberhalb der Traitstufe
-überhaupt noch `true` liefern kann. `BaseAction.Use()` castet `ID`, nicht `AdjustedID`
-(`BaseAction.cs:225/300`), verlässt sich also auf die Aktionsersetzung des Spiels — der
-Cast wäre folgenlos richtig, aber die Combo-Buchführung von RSR läuft über die andere
-Aktion. Ohne Spielbeobachtung nicht entscheidbar.
+**Entscheidung: Die Gates bleiben.** Die gegatete Form ist das geltende Verhalten. Es gibt keinen Defekt, den eine
+Vereinfachung beheben würde. Sie wäre nur eine Umformung mit möglicher Verhaltensänderung, also bleibt die Form.
+`BaseAction.Use()` wirkt bei Aktionen auf ein Ziel `AdjustedID` (`BaseAction.cs:346/352`), bei Bodenzielen `ID`
+(`:325/331`). Die frühere Aussage, `Use()` wirke immer `ID`, war falsch (C106).
 
 ## Was ausgeschlossen wurde und warum
 
@@ -247,14 +251,16 @@ Lesen ein Sprung in die Basisklasse für eine Information, die vorher direkt das
 |---|---|---|
 | Statisch | Beide Wächter laufen in der CI und finden ihre Fehlerklassen vollständig; A4a-Diffs zeigen, dass nur Methodengrenzen eingefügt wurden | — |
 | Kompilierung | CI | — |
-| Laufzeit | Spielbeobachtung für B3, B4, B5 und C1 | Belegt ist keiner der vier Punkte |
+| Laufzeit | — | — |
 
-Kein Punkt dieses Dokuments ist spielgetestet. Alle Zahlen sind aus dem Code gezählt,
-alle Wirkungen statisch hergeleitet. Für A3, A2′, A4a und B1 genügt das, weil sie
-verhaltensgleich sind; für B3, B4, B5 und C1 genügt es nicht, weshalb sie offen stehen.
+Alle Zahlen sind aus dem Code gezählt, alle Wirkungen statisch hergeleitet. Für A3, A2′, A4a und B1 genügt das,
+weil sie verhaltensgleich sind. B3, B4 und B5 schließen je eine Lücke, in der vorher keine Aktion fiel.
 
-## Was für die offenen Punkte fehlt
+## Was offen bleibt
 
-B3, B4, B5 und C1 sind keine Struktur-, sondern Verhaltensfragen. Ihre Diffs wären
-winzig. Was fehlt, ist die Spielbeobachtung — nicht die Machbarkeit und nicht die
-Erlaubnis.
+In der Tabelle unter C: Dragoon und Viper haben kein `CountDownAction` (TODO „Vorlauf“). Ob das eine Lücke ist, ist
+aus den Openern der Referenz und den Wirktexten zu klären, nicht im Spiel.
+
+Der Notfallslot ist keine Lücke. Der Krieger hat ihn in der Basisschicht (`WarriorRotation.EmergencyAbility`,
+Holmgang). Schnitter und Samurai haben keine eigene Notfallaktion; ihre Abwehr läuft über die Abwehrslots, und den
+Rollen-Notfall stellt `CustomRotation.EmergencyAbility`.

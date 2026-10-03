@@ -42,7 +42,7 @@ Abtausch-Zweige gegen Rückstoß: Von einer Plattform geworfen zu werden ist kei
 Deshalb fällt Abtausch auf dem Pull nicht, solange BossModReborn einen Rückstoß ankündigt, der nach dem
 Ende seiner Wirkung (6 s, Wirktext) und vor dem Ende seiner Abklingzeit landet (`ArmsLengthSlowsPull`, alle
 Tanks, A212, A219); einen Rückstoß innerhalb der Wirkung deckt der Einsatz jetzt mit ab. Die Regel greift auch bei einem Boss
-mit Adds, und für seinen Slow verbraucht fehlte Abtausch dem Rückstoß. Ohne Modul gibt es keine
+mit Adds — der Boss zählt dabei nicht mit (A236) —, und für ihren Slow verbraucht fehlte Abtausch dem Rückstoß. Ohne Modul gibt es keine
 Ankündigung; der Schutz gegen Rückstoß bleibt dann reaktiv wie bisher.
 
 ## Ergebnis
@@ -52,14 +52,13 @@ zurück, wenn ihre Barriere **vollständig** aufgezehrt wird. Die Rotation behan
 Rampart oder Reprisal — als beliebiges Glied einer Prioritätsliste, ohne eigene Bedingung. Drei
 Eingriffe in `DRK_Reborn.cs`, alle auf Upstream-Code:
 
-1. **Der Party-Zweig fragt seine Option ab** (`:155`). `BlackLantern` soll steuern, ob die Fähigkeit
+1. **Der Party-Zweig fragt seine Option ab**. `BlackLantern` soll steuern, ob die Fähigkeit
    auf das Party-Mitglied mit den niedrigsten HP geht, wurde aber nie gelesen. Defektbehebung.
-2. **Der Selbstschutz-Zweig bekommt eine Zeitpunktwahl** (`BlackestNightUsage`, `:35`) mit drei
+2. **Der Selbstschutz-Zweig bekommt eine Zeitpunktwahl** (`BlackestNightUsage`) mit drei
    Stufen. Voreinstellung ist die engste mit Notfall, `TankbusterHeavyPullOrLowHealth` (seine Regel für
    Voreinstellungen, 29.09.2026: der im Kampf sinnvollere Wert).
-3. **Zwei Prüfgrößen liegen zentral** in `CustomRotation_OtherInfo`: `TankbusterOnMe` (`:1377`) und
-   `HasMajorMitigation` (`:1365`); `SurveyStuns` hat eine Überladung mit der Trefferzahl bekommen
-   (`:544`).
+3. **Zwei Prüfgrößen liegen zentral** in `CustomRotation_OtherInfo`: `TankbusterOnMe` und
+   `HasMajorMitigation`; `SurveyStuns` hat eine Überladung mit der Trefferzahl bekommen.
 4. **Die Gegenrichtung steht beim Weißmagier** (`WHM_Reborn.ShouldHoldHolyForBarrier()`, Option
    `HoldHolyForBlackestNight`): Sanctus wartet, solange ein Tank die Barriere trägt. Ohne diese
    Seite behandelt die Betäubungsbedingung nur den Fall, dass der Heiler zuerst da war.
@@ -229,8 +228,8 @@ Beginnt in dieser Frist kein Sanctus, ist die Kette zu Ende oder unterbrochen, u
 Mit der Immunität endet der Halt von selbst — „zurückhalten, bis die Betäubungen nicht mehr wirken" braucht
 keinen eigenen Zähler.
 
-**Durchgerechnet** (GCD 2,5 s; die abnehmende Betäubungsdauer 4 s, 2 s, 1 s, dann Immunität steht als
-Kommentar in `WHM_Reborn` und ist an keiner Spielquelle belegt):
+**Durchgerechnet** (GCD 2,5 s; die abnehmende Betäubungsdauer 4 s, 2 s, 1 s, dann Immunität: Die Halbierung
+bestätigt The Balance, die 45 s Immunität nennt es nicht, Konzept 08):
 
 | Lage | Lücke zwischen zwei Betäubungen | Getragen durch |
 |---|---|---|
@@ -256,8 +255,9 @@ Holy (139) und Holy III (25860). Die Spieldaten führen dazu zahlreiche Nicht-Sp
 betäubt, ist nicht belegt; zudem steht ein NPC nur mit „Heal and raise Party NPCs" in der Gruppenliste.
 
 **Reprisal zuerst.** Der Pfad gibt je Gelegenheit **eine** Aktion zurück und arbeitet von oben nach
-unten: Oblation (10) · The Blackest Night (20) · Dark Mind · Shadowed Vigil/Shadow Wall · Rampart ·
-… · Reprisal (`:175`, `:180` im Flächenpfad, am Ende auch im Einzelpfad). Bei 15 Sekunden
+unten (Einzelpfad, Stand 02.10.2026): große Minderung und Rampart für einen vorhergesagten Tankbuster (A241, A243) ·
+Oblation · Abtausch im Pull · The Blackest Night · Dark Mind · Shadowed Vigil/Shadow Wall · Rampart · Reprisal;
+Reprisal steht auch im Flächenpfad. Bei 15 Sekunden
 Abklingzeit gewinnt die Barriere fast jede Gelegenheit, und die Rollenaktion landet erst, wenn jene
 zufällig nicht verfügbar ist. Für einen Pull ist das die verkehrte Rangfolge:
 
@@ -308,9 +308,9 @@ zurück, solange ein Gruppenmitglied in Tankrolle The Blackest Night trägt
 (`StatusHelper.FullAbsorbRewardStatus`).
 
 **Eine dritte Bedingung steht inzwischen daneben und misst breiter.**
-`ShouldHoldHolyWhilePackSlowed` hält Sanctus zurück, wenn die **Leistung** der Gegner im Wirkradius
-unter die Flächenschwelle gefallen ist — gleich durch welche Minderung, nicht nur durch die
-Barriere. Sie ist der dritte Zeitpunkt der Regel aus Konzept 08 und der Grund, warum die
+`ShouldHoldHolyWhilePackSlowed` hält Sanctus zurück, solange mehr als die Hälfte der Gegner im Wirkradius
+verlangsamt ist und mindestens `HoldHolyMinSlowedHostiles` (Vorgabe 3) den Slow tragen — gleich durch wen, nicht nur
+durch die Barriere (Konzept 08, „Die Aussetzbedingung ist ein Anteil, mit Schranke“). Sie ist der dritte Zeitpunkt der Regel aus Konzept 08 und der Grund, warum die
 Verlangsamung hier in beide Richtungen wirkt: Sie hält die Barriere des Dunkelritters zurück
 (`PackSlowed`) **und** den Sanctus des Weißmagiers. Anders als die beiden Nachbarbedingungen steht
 sie auf Standard an, weil sie eine Anweisung des Auftraggebers mit einer Beobachtung aus dem Spiel
@@ -335,7 +335,7 @@ Flächenzauber dieses Jobs, ein zurückgehaltener GCD fällt auf Einzelzielschad
 | nur solange die Betäubung noch landen könnte (`headroom`) | mit der Betäubungsimmunität endet die Rückhaltung für den Rest des Pulls |
 | nur solange die Barriere die Wirkzeit überdauert (`WillStatusEnd` gegen `Info.CastTime`) | eine auslaufende Barriere ist kein Wartegrund |
 
-Die Regel steht hinter `HoldHolyForBlackestNight`, Vorgabe aus. `StatusHelper.FullAbsorbRewardStatus`
+Die Regel steht hinter `HoldHolyForBlackestNight`, ab Werk an (seine Regel für Voreinstellungen, 29.09.2026). `StatusHelper.FullAbsorbRewardStatus`
 führt nur The Blackest Night: Jede andere Barriere ist reiner Schutz, bei dem ein unverbrauchter Rest
 ein gutes Ergebnis ist — nur hier ist der vollständige Verbrauch die Bedingung einer Belohnung.
 
@@ -345,14 +345,14 @@ Drei Stellen wirken die Fähigkeit, und zwei davon trugen keine eigene Bedingung
 
 | Weg | Fundstelle | Zustand vorher |
 |---|---|---|
-| Opener | `:92` | `remainTime <= 3f` im Countdown — Dark Arts steht zum Kampfbeginn bereit; unverändert |
-| Party-Schild | `:155` | Ziel unter `BlackLanternRatio`, **ohne** `BlackLantern` zu prüfen |
-| Selbstschutz | `:303` | **keine** eigene Bedingung, zweite Priorität nach Oblation |
+| Opener | `CountDownAction` | `remainTime <= 3f` im Countdown — Dark Arts steht zum Kampfbeginn bereit; unverändert |
+| Party-Schild | Einzelabwehr, Party-Zweig | Ziel unter `BlackLanternRatio`, **ohne** `BlackLantern` zu prüfen |
+| Selbstschutz | Einzelabwehr | **keine** eigene Bedingung, zweite Priorität nach Oblation |
 
 Beim Party-Zweig ist die Absicht dreifach belegt: Der Optionstext verspricht Schaltbarkeit, die
 Oblation-Nachbarzeile prüft ihr Gegenstück `OblationLantern`, und `ChurinDRK.cs:173` prüft
 `BlackLantern` am selben Zweig. Verschärfend blendet die Oberfläche den Schwellwert aus, solange der
-Schalter aus ist (`Parent = nameof(BlackLantern)`, `:21`) — die einzige Stellschraube des laufenden
+Schalter aus ist (`Parent = nameof(BlackLantern)`) — die einzige Stellschraube des laufenden
 Zweigs war unsichtbar.
 
 Der Selbstschutz-Zweig öffnet mit `AutoStatus.DefenseSingle`, und dessen Tank-Zweig
@@ -367,6 +367,19 @@ Verbrauchsbedingung.
 `TankbusterOnMe` stützt sich deshalb auf `IsHostileCastingTankBusterAtMe` und
 `BMRTankbusterImminent`, nicht auf `IsHostileCastingToTank` — dieselbe Unterscheidung, die C10 für
 diese beiden Größen herausgearbeitet hat.
+
+### Abgleich mit den Referenzen (02.10.2026)
+
+- *The Balance, Dark Knight Basic Guide:* The Blackest Night „can be used liberally (at least once per mob pack)";
+  „in a large dungeon pull or facing down a tankbuster … it's almost impossible for it not to break". Das stützt den
+  Pull-Zweig im Grundsatz. Seine fünf Bedingungen verzögern die Barriere im Pull, verhindern sie aber nicht: Sie
+  kommt, sobald Reflexion und Abtausch liegen und keine große Minderung läuft. Die Gegnerzahl 4
+  (`BlackestNightMinHostiles`) ist eine Annahme; The Balance nennt keine Zahl, nur „mob pack" und „large pull".
+  Seine Vorgabe (keine Minderung, solange die Barriere steht) bleibt davon unberührt.
+- *The Balance zu Living Dead:* „an inexperienced healer may heal too much during Living Dead, preventing Walking
+  Dead from activating" — dieselbe Lage, die die Living-Dead-Rückhaltung der Heiler regelt (Konzept 09).
+- *WrathCombo:* Die Fallarbeit für die Barriere steht in Konzept 15.
+- *xivanalysis:* zählt die Nutzung der Abwehr, ohne Zeitpunktregel.
 
 ## Verworfene Optionen
 
@@ -418,10 +431,10 @@ folgenlos.
 
 **Randbedingungen.** Der Opener bleibt außen vor: Im Countdown gibt es weder Tankbuster noch Pull,
 eine engere Stufe würde dort nur Dark Arts für die Eröffnung kosten. Rotationskonfigurationen
-speichern Enums als **Namen**, nicht als Ordinalzahlen (`RotationConfigBase.cs:208`) — die
+speichern Enums als **Namen**, nicht als Ordinalzahlen (`RotationConfigBase.cs:208`, `Enum.Parse`) — die
 Reihenfolge der Stufen ist frei, ihre Bezeichner sind Vertrag. Und der MP-Haushalt bleibt
-unberührt: `CheckDarkSide` gibt MP für Edge erst oberhalb von 8500 frei (`:525`) und behandelt den
-Fall „Dark Arts liegt an, während die Barriere noch läuft" bereits selbst (`:515`).
+unberührt: `CheckDarkSide` gibt MP für Edge erst oberhalb von 8500 frei und behandelt den
+Fall „Dark Arts liegt an, während die Barriere noch läuft" bereits selbst.
 
 **Was das nicht leistet.** Ob vier Gegner die Verbrauchsrate im gespielten Inhalt erreichen, ob eine
 halb betäubte Gruppe den Strom weit genug drückt und ob die engeren Stufen insgesamt besser

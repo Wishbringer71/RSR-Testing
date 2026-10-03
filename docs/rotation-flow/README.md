@@ -1,6 +1,6 @@
 # Die Konzepte, nach ihrer Leitfrage
 
-Jedes Dokument beantwortet **eine** Frage. Wer die Frage kennt, muss nicht dreizehn Dateien öffnen,
+Jedes Dokument beantwortet **eine** Frage. Wer die Frage kennt, muss nicht siebzehn Dateien öffnen,
 um zu finden, wo etwas hingehört — und wer etwas einträgt, weiß, wohin.
 
 Dieser Index ist Navigation, kein Inhalt: Er nennt keine Entscheidung und keinen Sachstand. Beides
@@ -9,7 +9,7 @@ stünde hier ein zweites Mal und würde altern.
 | Konzept | Leitfrage |
 |---|---|
 | [`01-jobs.md`](01-jobs.md) | Welche Dispatch-Slots belegt welcher Job, und wie ist sein Ablauf gebaut? |
-| [`02-groups.md`](02-groups.md) | Welche Gruppenzusammensetzungen kommen vor, und was folgt daraus für eine Regel? |
+| [`02-groups.md`](02-groups.md) | Was ist innerhalb einer Rollengruppe (Heiler, Tanks, Nahkämpfer, Fernkämpfer, Magier) gleich, ähnlich, verschieden? |
 | [`03-universal.md`](03-universal.md) | Was gibt die zentrale Maschinerie allen Jobs vor — und in welcher Reihenfolge? |
 | [`04-concept.md`](04-concept.md) | Welcher strukturelle Umbau war beschlossen, was davon ist erledigt? |
 | [`05-action-coverage.md`](05-action-coverage.md) | Welche Aktionen hat ein Job, und welche davon benutzt der Baum? |
@@ -23,6 +23,8 @@ stünde hier ein zweites Mal und würde altern.
 | [`13-aoe-damage-classification.md`](13-aoe-damage-classification.md) | Wie hart schlägt eine angekündigte Flächenaktion, und woher weiß der Baum das? |
 | [`14-action-dependency-matrix.md`](14-action-dependency-matrix.md) | Wie hängen die Aktionen eines Jobs voneinander ab, und welche wirkt der Baum nie? |
 | [`15-wrathcombo-comparison.md`](15-wrathcombo-comparison.md) | Welche Ideen aus WrathCombo verbessern RSR, und welche nicht? |
+| [`16-xivanalysis-catalog.md`](16-xivanalysis-catalog.md) | Welche Regeln für gute Rotationen kennt xivanalysis, und wo weicht RSR ab — mit welchem Grund? |
+| [`17-machinist-reassemble-buffs.md`](17-machinist-reassemble-buffs.md) | Soll der Maschinist eine Reassemble-Ladung für die Gruppenbuffs halten, und welcher Buff zählt am meisten? |
 
 **Der Knoten der Kampffamilie ist `08`.** Heilung, Barriere und Minderung sind drei Antworten auf
 dieselbe Frage; die Ordnung zwischen ihnen steht dort, die Messung der Treffergröße in `13`, die

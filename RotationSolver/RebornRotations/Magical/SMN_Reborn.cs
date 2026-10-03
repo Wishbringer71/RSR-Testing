@@ -874,6 +874,14 @@ public sealed class SMN_Reborn : SummonerRotation
 			{
 				return true;
 			}
+
+			// Outside a demi it waited for a dying boss only. With other Summoners the charge falls back
+			// into a Titan or Ifrit block, the next demi is further off than Ruby's Glimmer lasts, and the
+			// action was lost with the status (xivanalysis: one Searing Flash per Searing Light, concept 16).
+			if (IsLastChanceBeforeStatusEnds(SearingFlashPvE, StatusID.RubysGlimmer))
+			{
+				return true;
+			}
 		}
 		return base.AttackAbility(nextGCD, out act);
 	}

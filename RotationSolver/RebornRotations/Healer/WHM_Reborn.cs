@@ -135,26 +135,15 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	public bool ThinAirOnMpPressureOnly { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Stretch the Holy stun",
-		Tooltip = "Holy (Sanctus) is skipped for one GCD while every enemy it would hit is already "
-			+ "stunned by it.\n"
+		Tooltip = "Right after Holy (Sanctus), the next GCD goes to another spell while Holy's stun would "
+			+ "still be running when a second Holy lands.\n"
 			+ "In a fight: Holy's stun does not stack on top of itself - casting into a stun that is "
-			+ "still running overwrites it and the pack starts swinging again sooner. Waiting one GCD "
-			+ "lets the running stun finish first, so the same number of casts holds the pack still for "
-			+ "longer and the damage stream to the tank stays thinner.\n"
-			+ "Costs one GCD of Holy damage each time it triggers, and only where a damage GCD is "
-			+ "guaranteed to replace it.")]
+			+ "still running overwrites it and the pack starts swinging again sooner. One spell in "
+			+ "between puts the second stun at the end of the first, so the same number of casts holds "
+			+ "the pack still for longer and the damage stream to the tank stays thinner.\n"
+			+ "Costs one GCD of Holy damage per pull: it goes to a DoT where one is due, otherwise to "
+			+ "Glare.")]
 	public bool StretchHolyStun { get; set; } = true;
-
-	[Range(2, 8, ConfigUnitType.None, 1)]
-	[RotationConfig(CombatType.PvE, Name = "Enemies in Holy's radius before holding", Parent = nameof(StretchHolyStun),
-		Tooltip = "How many enemies have to stand in the radius of Holy (Sanctus) before it may be "
-			+ "held back at all.\n"
-			+ "This number governs two rules, not one: the stun stretch above and the Blackest Night "
-			+ "hold below. Raising it switches both off for smaller pulls.\n"
-			+ "In a fight: below this count the pack is thin enough that the tank is not in danger from "
-			+ "the stream, so giving up Holy damage buys nothing. Above it, a held stun is worth more "
-			+ "than one cast of damage.")]
-	public int StretchHolyMinHostiles { get; set; } = 3;
 
 	[RotationConfig(CombatType.PvE, Name = "Hold Holy while a tank carries The Blackest Night",
 		Tooltip = "On a group pull, Holy (Sanctus) is held back while a tank carries the barrier from "
@@ -166,12 +155,22 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			+ "barrier, which is what it is for.\n"
 			+ "Group pulls only - in a boss fight the damage arrives as scripted single hits that break "
 			+ "the barrier whatever the stun does. Only while the barrier sits on a tank, and only "
-			+ "while there is stun headroom left to give up; it also needs the enemy count above.")]
+			+ "while there is stun headroom left to give up; it also needs the enemy count below.")]
 	public bool HoldHolyForBlackestNight { get; set; } = true;
 
-	// On by default, unlike the two above: this one is not a proposal but the third timing of the
-	// rule in concept 08, and the user asked for it directly after seeing Holy cast into a slow that
-	// had just landed. The cost stays bounded by the same replacement guarantee the stun branch uses.
+	[Range(2, 8, ConfigUnitType.None, 1)]
+	[RotationConfig(CombatType.PvE, Name = "Enemies in Holy's radius before holding", Parent = nameof(HoldHolyForBlackestNight),
+		Tooltip = "How many enemies have to be in range before Holy (Sanctus) may be held back for "
+			+ "The Blackest Night.\n"
+			+ "In a fight: below this count the pack is thin enough that the tank is not in danger from "
+			+ "the stream, so giving up Holy damage buys nothing. Above it, a held stun is worth more "
+			+ "than one cast of damage. The stun stretch does not read it: that one follows Holy's own "
+			+ "area check.")]
+	public int StretchHolyMinHostiles { get; set; } = 3;
+
+	// The third timing of the rule in concept 08; the user asked for it directly after seeing Holy
+	// cast into a slow that had just landed. Held for as long as the slow carries, with no
+	// replacement guarantee: the held GCDs go to DoTs and then Glare (A178).
 	[RotationConfig(CombatType.PvE, Name = "Hold Holy while the pack is slowed",
 		Tooltip = "Holy (Sanctus) is held back while the pack is already slowed, typically by the "
 			+ "tank's Arm's Length.\n"
@@ -599,21 +598,30 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	/// it still runs.
 	/// </summary>
 	/// <remarks>
-	/// A stun lasts 4s, then 2s, then 1s, after which the target is immune - seven seconds to place,
-	/// once per pull. Recasting on cooldown lands the second application inside the first and wastes
-	/// part of it: about 5.5s of coverage instead of 7s. Yielding a single GCD while the stun runs
-	/// recovers the difference, and only one is needed, because the shorter follow-ups are over
-	/// before the next cast comes round. Modelled in .github/scripts/audit/stun_coverage.py.
+	/// The user's rule, without room for discretion: a stun from Holy lasts four seconds and its
+	/// recast is two and a half, so a second Holy cast straight away lands inside the running stun
+	/// and overwrites it instead of extending it. Another spell in between puts the second stun at
+	/// the end of the first. A stun lasts 4s, then 2s, then 1s, after which the target is immune -
+	/// seven seconds per pull, about 5.5s of them when recast on cooldown.
 	///
-	/// The damage lost is not weighed against this. Keeping the party alive ranks above dealing
-	/// damage, so more coverage decides; only the absence of a worthwhile replacement stops it.
-	/// The two emergency checks the design first carried were dropped after inspection: the
-	/// dispatcher already runs every heal and defense branch ahead of GeneralGCD, so a critical
-	/// state never reaches this code, and a predicted raidwide comes from a boss the stun does not
-	/// touch.
+	/// The question is whether a Holy started now would land while the last one's stun still runs.
+	/// Holy has a cast time and stuns where the cast lands, so the stun is compared with the time to
+	/// that landing, not with zero: after the 2s application the next cast lands after the stun
+	/// anyway, and holding there would spend a GCD for nothing. That yields exactly one GCD per pull
+	/// at any GCD length, Presence of Mind included (.github/scripts/audit/stun_coverage.py with a
+	/// cast time).
 	///
-	/// Radius rather than job range: Holy covers eight yalms while a caster reaches twenty-five,
-	/// and the wider set would count enemies the cast never hits.
+	/// The stun of a Holy that has just finished casting may not be on the enemies yet when the next
+	/// GCD is chosen - cast and recast are equally long, so the next GCD is free the moment the cast
+	/// lands. An enemy in the radius that is neither stunned nor resistant is about to receive the
+	/// first, full application, and that counts as running for the duration its effect text states.
+	/// Without it the rule saw no stun at exactly the moment it exists for.
+	///
+	/// Nothing else is weighed. The held GCD goes to a DoT where one is due and to Glare otherwise;
+	/// the damage lost is not set against the stun, because keeping the party alive ranks above
+	/// dealing damage. Whether Holy is worth casting at all stays with Holy's own area check. The one
+	/// condition above every hold is the user's too: once nothing in the radius can be stunned any
+	/// more, there is nothing to stretch.
 	/// </remarks>
 	private bool ShouldStretchHolyStun()
 	{
@@ -622,46 +630,77 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			return false;
 		}
 
-		// Only worth it where an area cast is the filler at all, and where a stun still does something.
-		//
-		// "No headroom" generalises "everyone is stunned" to "nobody left this cast could stun", which
-		// covers a pack of two stunned enemies and one already immune. It must not be read as a reason
-		// on its own: once every enemy in radius is immune and none is still stunned, there is no stun
-		// to protect, and yielding the GCD would trade an area cast for a single-target dot for the
-		// rest of the pull. Hence the explicit requirement that a stun is actually running.
-		var radius = HolyIiiPvE.EnoughLevel ? HolyIiiPvE.Info.EffectRange : HolyPvE.Info.EffectRange;
-		var inRange = SurveyStuns(radius, out var stunned, out var allStunned, out var headroom);
-		if (stunned == 0)
+		// "Between the first and the second Holy": only the GCD right after a Holy is held. After the
+		// spell in between, the next Holy goes out whatever is running.
+		if (!IsLastGCD(true, HolyPvE, HolyIiiPvE))
 		{
 			return false;
 		}
 
-		// From here a stun is running in Holy's radius, so every outcome decides whether Holy lands
-		// inside it. Each is written to DefenseTrace.log with its reason: the owner reported the
-		// second Holy going out at once again (29.09.2026), and which condition let it through is
-		// not readable from the code.
-		if (inRange < StretchHolyMinHostiles)
+		var holy = HolyIiiPvE.EnoughLevel ? HolyIiiPvE : HolyPvE;
+		var radius = holy.Info.EffectRange;
+		var running = LongestStunInRadius(radius, out var fresh);
+		var stunLasts = running > 0 ? running : fresh ? DefensiveValues.DurationOf(holy.ID) : 0f;
+		var lands = WeaponRemain + ((ActionID)holy.ID).GetCastTime();
+
+		// Each outcome is written to DefenseTrace.log with its reason: the owner reported the second
+		// Holy going out at once (29.09.2026), and which case let it through is not readable from the
+		// code.
+		if (stunLasts <= 0)
 		{
-			TraceStretch($"not held: {inRange} enemies in Holy's radius, fewer than {StretchHolyMinHostiles}");
+			TraceStretch("not held: nothing in Holy's radius is stunned or can still be stunned");
 			return false;
 		}
 
-		if (!allStunned && headroom)
+		if (stunLasts <= lands)
 		{
-			TraceStretch($"not held: {stunned} of {inRange} in radius stunned, and one can still be stunned");
+			TraceStretch($"not held: the stun ends in {stunLasts:F1}s, before a Holy cast now lands in {lands:F1}s");
 			return false;
 		}
 
-		// Replacement guarantee: yield the GCD only when something with value of its own can take
-		// it. Without this the rotation would fall through to Glare, which is a plain loss.
-		if (DiaPvE.CanUse(out _) || AeroIiPvE.CanUse(out _) || AeroPvE.CanUse(out _))
+		TraceStretch(running > 0
+			? $"held: the stun runs {running:F1}s, a Holy cast now would land inside it in {lands:F1}s"
+			: $"held: the last Holy's stun is about to land on enemies in radius, {stunLasts:F1}s against a cast landing in {lands:F1}s");
+		return true;
+	}
+
+	/// <summary>
+	/// The longest stun still running on a hostile inside the radius, from any source.
+	/// </summary>
+	/// <param name="radius">How far around the player hostiles are counted, in yalms.</param>
+	/// <param name="fresh">
+	/// Whether a hostile inside the radius is neither stunned nor resistant - one that the next stun
+	/// would reach with its first, full application.
+	/// </param>
+	private static float LongestStunInRadius(float radius, out bool fresh)
+	{
+		fresh = false;
+		var longest = 0f;
+		var hostiles = DataCenter.AllHostileTargets;
+		if (hostiles == null)
 		{
-			TraceStretch($"held: {stunned} of {inRange} in radius stunned, a damage-over-time takes the GCD");
-			return true;
+			return 0f;
 		}
 
-		TraceStretch($"not held: {stunned} of {inRange} in radius stunned, but no damage-over-time can take the GCD");
-		return false;
+		for (int i = 0, n = hostiles.Count; i < n; i++)
+		{
+			var hostile = hostiles[i];
+			if (hostile == null || hostile.DistanceToPlayer() > radius)
+			{
+				continue;
+			}
+
+			if (hostile.HasStatus(false, StatusHelper.StunStatus))
+			{
+				longest = Math.Max(longest, hostile.StatusTime(false, StatusHelper.StunStatus));
+			}
+			else if (!hostile.HasStatus(false, StatusHelper.StunResistanceStatus))
+			{
+				fresh = true;
+			}
+		}
+
+		return longest;
 	}
 
 	private string _lastStretchTrace = string.Empty;
