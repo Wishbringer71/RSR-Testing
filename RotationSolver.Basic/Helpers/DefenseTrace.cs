@@ -27,6 +27,8 @@ internal static class DefenseTrace
 	private static readonly object _lock = new();
 	private static StreamWriter? _writer;
 	private static uint _lastDecision;
+	// The id the game casts for the last choice: Raw Intuition goes out as Bloodwhetting.
+	private static uint _lastDecisionCast;
 	private static DateTime _lastDecisionWritten = DateTime.MinValue;
 
 	/// <summary>The trace file's full path.</summary>
@@ -78,10 +80,38 @@ internal static class DefenseTrace
 			}
 
 			_lastDecision = act.ID;
+			_lastDecisionCast = act.AdjustedID;
 			_lastDecisionWritten = now;
 		}
 
 		Line($"{path} -> {act.Name} #{act.ID} | {DataCenter.DescribeDefenseSources()}");
+	}
+
+	/// <summary>
+	/// The player's own action <paramref name="id"/> landed. Written only for the action the defence chose last.
+	/// </summary>
+	/// <remarks>
+	/// A choice is written when it is made, not when it goes out. The trace of 02.10.2026 holds Radiant Aegis
+	/// chosen three times within seven seconds before one raidwide: two charges spent, or one choice the game
+	/// did not carry out - the decision lines alone cannot tell the two apart. After this line the same action
+	/// chosen again is written at once, so a second use reads as its own choice.
+	/// </remarks>
+	public static void Executed(uint id, string name)
+	{
+		if (_writer == null)
+		{
+			return;
+		}
+		lock (_lock)
+		{
+			if (id == 0 || (id != _lastDecision && id != _lastDecisionCast))
+			{
+				return;
+			}
+			_lastDecision = 0;
+			_lastDecisionCast = 0;
+		}
+		Line($"used {name} #{id}");
 	}
 
 	/// <summary>Adds one line with the time of day in front.</summary>

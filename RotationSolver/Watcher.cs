@@ -533,6 +533,9 @@ public static class Watcher
 			//PluginLog.Debug($"ActionFromSelf: ActionType is {set.Header.ActionType}.");
 			DataCenter.AddActionRec(action!.Value);
 
+			// The trace writes what the defence chose; this line says that it went out.
+			DefenseTrace.Executed(action.Value.RowId, action.Value.Name.ExtractText());
+
 			// Only shown on the Debug tab; formatting the whole effect set for every action is wasted otherwise.
 			if (Service.Config.InDebug)
 			{

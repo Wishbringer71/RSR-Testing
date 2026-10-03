@@ -5263,7 +5263,32 @@ CI. Konzept 16 und 17 (01. und 02.10.2026 geschrieben) stichprobenartig, ohne Fu
   - *Ausgeliefert, nichts ändert sich:* Hat er die Option schon gesetzt, bleibt sein Wert. Außerhalb von Dungeons greift
     die Regel nicht (`TankApproachingMobGroup`).
 
+- *Seine Präzisierung (03.10.2026):* „ein schild kann auf zwei arten verschwinden: zeitablauf und durch aufbrauchen
+  durch eingehenden schaden. also ist verfall das zweite, da ablauf parallel genannt wurde." Bestätigt die Lesart; in
+  Konzept 15 eingetragen.
+
 **Prüfgrad:** Wortlaut aus dem Gesprächsprotokoll vom 27.09.2026; statisch; Compile über die CI.
+
+### A252 · Protokolle vom 02.10.2026 (Beschwörer, Krieger, Dunkelritter; Commit c742f01e9) (03.10.2026)
+
+- *Sitzungen:* 18:48 bis 20:21. Beschwörer im Dungeon (Belebtes Wasser) und im Occult Crescent, Krieger und
+  Dunkelritter im Occult Crescent.
+- *Ohne Befund:*
+  - Schimmerschild beim ersten Wegspülen (#4863, nie gesehen, also unbewertet) gewirkt; der Treffer war ein Rückstoß
+    mit 0 %. Seitdem mit 2 % bewertet, also künftig ohne Abwehr. So gebaut (Konzept 13).
+  - Abschütteln, Reflexion und Phantom-Genesung auf angesagte Raidwides; Reflexion und Oblation beim Dunkelritter.
+- *Nicht entscheidbar aus dem Protokoll:* Schimmerschild steht vor einem Raidwide zwei- bis viermal gewählt, je
+  einen GCD auseinander (19:41:47 und 19:41:50; 19:58:39 bis 19:58:46). Das Protokoll schreibt die Wahl, nicht die
+  Ausführung. Nach dem Code kann der Flächenpfad Schimmerschild erst wieder wählen, wenn die Barriere weg ist
+  (`StatusProvide`, ohne Ausnahme); zweimal gewirkt hieße also, die erste wurde aufgebraucht. Ebenso möglich: eine
+  Wahl, die das Spiel nicht ausführte, etwa ohne Karfunkel (`ActionCheck` fragt nur, ob irgendein Begleiter da ist).
+- *Gebaut, Messmittel nach `CLAUDE.md`:* `DefenseTrace.Executed` schreibt „used …", wenn die zuletzt gewählte Abwehr
+  tatsächlich landet (eigener Effektsatz, auch unter der vom Spiel ersetzten Id). Danach wird dieselbe Wahl sofort neu
+  geschrieben, eine zweite Nutzung steht also als eigene Zeile da.
+- *Konfliktkopie:* `HostileCastingAreaPotential-Siona_X570.json` enthält sechs Einträge, alle gleich in der aktuellen
+  Datei mit 56 Einträgen. Nichts verloren.
+
+**Prüfgrad:** Protokoll Zeile für Zeile gegen den Code; statisch; Compile über die CI.
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -57,6 +57,7 @@ Konzept 14, Tänzer.
 | V1 | „beim gelehrten könnte evtl. die fee helfen? deren fähigkeiten mit prüfen im konzept" | Prüfauftrag: die Feen- und Seraph-Fähigkeiten des Gelehrten in das V1-Konzept aufnehmen |
 | V1 | „also hat der gelehrte doch über die fee auch einen hot. der wie beim astro oder whm genutzt werden kann. da heiler dem tank folgen, sollten die 30y nicht so schlimm sein. was ist mit dots beim schildheiler? instacastbar? überhaupt vorhanden?" | Vorschlag: Aetherpact/Fey Union als Pre-HoT des Gelehrten wie Regen und Aspected Benefic; seine Einschätzung der 30-y-Grenze ist im Loop zu prüfen (die Fee folgt dem Gelehrten, der Tank läuft im Wall-to-Wall voraus); dazu eine Frage nach DoTs der Schildheiler — Antwort in der Tabelle „V1: Sofortaktionen" |
 | V1 | „punkt 2 ist uninteressant, da der heiler dem tank folgt" (28.09.2026, zur 30-y-Grenze von Fey Union) | Hinweis zur Spielweise: Der Heiler folgt dem Tank, die 30-y-Grenze der Fee trägt kein Argument gegen Aetherpact im Pull |
+| V1 | „ein schild kann auf zwei arten verschwinden: zeitablauf und durch aufbrauchen durch eingehenden schaden. also ist verfall das zweite, da ablauf parallel genannt wurde" (03.10.2026) | Präzisierung seiner V1-Vorgabe: Erneuert wird bei Ablauf **und** beim Aufbrauchen durch Schaden. Umgesetzt (A251) |
 
 ## V1: Sofortaktionen der Heiler im Laufen (Job-Guide, abgerufen 27.09.2026)
 

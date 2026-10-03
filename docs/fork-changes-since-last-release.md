@@ -20,7 +20,8 @@ holding Holy for The Blackest Night and sits under that setting.
 
 The trace is no longer replaced when the plugin loads, so a rebuild or reload keeps the sessions
 before it. Each session starts with its date and time and the commit the plugin was built from, so
-every section can be matched to the exact code that wrote it. Delete the file to start over.
+every section can be matched to the exact code that wrote it. Delete the file to start over. A chosen defence is followed by a
+`used` line when it actually goes out, so a choice the game did not carry out can be told from a second use.
 
 ## Own cooldowns stay for hits that reach you
 
