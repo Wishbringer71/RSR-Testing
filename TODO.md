@@ -29,7 +29,7 @@ Nach seinen Kriterien (29.09.2026) bewertet und gebaut (Konzept 09, „Krieger: 
 - *Upstream-Bauform:* Raw Intuition/Bloodwhetting fällt nur, solange das Ziel des Kriegers ihn anvisiert (`PlayerIsTargetOnSelf`). Ein Off-Tank mit Tankbuster-Marker bekommt es aus der Einzelabwehr nicht.
 ### Vorschläge aus dem WrathCombo-Vergleich · N, U
 
-V1 gebaut für Weißmagier, Astrologe und Weiser (A184). Die Barriere des Weisen ist ab Werk aus (A209), weil die Erneuerung bei jedem Bruch das ist, was Konzept 06 §2.1 als entfernten Fehler führt. Offen dazu: seine Lesart von „Verfall" (Verbrauch oder nur Ablauf) und ob sie jene Entscheidung aufhebt; außerdem Aetherpact als Vorab-HoT des Gelehrten. Beides ist gebündelt vorgelegt. V3 geprüft, keine Übernahme (A190). V2 gebaut (A189), V5 gebaut (A186); V4 und V6 geprüft, nicht gebaut (A188, A187).
+V1 gebaut für Weißmagier, Astrologe und Weiser (A184); die Barriere des Weisen steht seit 03.10.2026 ab Werk an (A251). Offen: Aetherpact als Vorab-HoT des Gelehrten, sein Vorschlag gegen zwei bindende Einstellungstexte, gebündelt vorgelegt. V3 geprüft, keine Übernahme (A190). V2 gebaut (A189), V5 gebaut (A186); V4 und V6 geprüft, nicht gebaut (A188, A187).
 
 **Konzept:** `docs/rotation-flow/15-wrathcombo-comparison.md`
 

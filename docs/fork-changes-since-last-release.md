@@ -107,3 +107,10 @@ ends with the paladin's next action, and RSR casts it only for an announced area
 next GCD or weave ended the channel, often before the hit, and the cooldown was spent for nothing. With the
 lock, RSR holds its actions until the announced hit has landed and no longer. A configuration that was
 saved before keeps its value: switch the setting on under Extra if it shows off.
+
+## Sage: the pull barrier on the tank is on by default
+
+`Keep Eukrasian Diagnosis on the tank through a pull` is now on by default. In dungeons Eukrasian Diagnosis
+goes on the tank as they close in on a group and is renewed whenever it runs out or breaks, for as long as
+the pull lasts, never below the MP for Egeiro. In a large pull, where the barrier breaks within a few hits,
+that takes most of the sage's GCDs.

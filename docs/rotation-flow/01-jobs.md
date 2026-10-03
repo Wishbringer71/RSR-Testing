@@ -125,7 +125,7 @@ kennt — die acht Stufen sind größtenteils diesem Modell geschuldet. Der frü
 `TrySustainEukrasianDiagnosisOnTank` ist entfernt (5755ad5b, A5): Er prüfte die Barriere selbst als
 Erneuerungsgrund; Schaden verbraucht sie, und der Zweig legte sie im Pull alle paar Sekunden neu auf. Die
 Barriere im Pull läuft jetzt über die gemeinsame Heilerregel `TryPullUpkeepOnTank` als Eukrasia-Ziel in Stufe 1
-(`PullBarrierDue`, Option `UsePreEukrasianDiagnosis`, ab Werk aus; Konzept 15, V1).
+(`PullBarrierDue`, Option `UsePreEukrasianDiagnosis`, ab Werk an; Konzept 15, V1).
 
 ### SCH — 951 LOC, 24 Configs
 

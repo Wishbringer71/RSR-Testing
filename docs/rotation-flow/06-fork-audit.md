@@ -57,12 +57,12 @@ WHMs Regen und ASTs Aspected Benefic sind HoTs und ticken ihre Dauer ab; für
 sie trägt derselbe Helfer und bleibt. **Nur SGE war betroffen, Feature
 entfernt.**
 
-**Stand 29.09.2026:** Seit A184 (28.09.2026) gibt es die Pull-Barriere des Weisen
-wieder, als Option `UsePreEukrasianDiagnosis`. Anlass ist seine V1-Vorgabe
-(Konzept 15): „schild bei schildheilern … mit regelmäßiger erneuerung bei
+**Stand 03.10.2026:** Seit A184 (28.09.2026) gibt es die Pull-Barriere des Weisen
+wieder, als Option `UsePreEukrasianDiagnosis`, seit 03.10.2026 ab Werk an (A251). Anlass ist seine V1-Vorgabe
+(27.09.2026, Konzept 15): „schild bei schildheilern … mit regelmäßiger erneuerung bei
 ablauf/verfall solange walltowall läuft". Sie erneuert bei jedem Bruch, also
-genau wie oben beschrieben, und ist deshalb ab Werk aus (A209). Ob seine Vorgabe
-diese Entscheidung aufhebt, entscheidet er.
+genau wie oben beschrieben — das verlangt seine Vorgabe ausdrücklich, und den MP-Preis nimmt sie an. Die
+Entfernung oben traf eine Barriere, die niemand verlangt hatte.
 
 ### 2.2 Weakness-Schwellenfaktor heilte praktisch immer
 

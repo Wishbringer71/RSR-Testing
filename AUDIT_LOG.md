@@ -5239,6 +5239,31 @@ CI. Konzept 16 und 17 (01. und 02.10.2026 geschrieben) stichprobenartig, ohne Fu
 *Nachtrag am selben Tag, CI:* Die Umstellung von `PldlockCasting` ließ `generate_action_matrix.py --check` fehlschlagen
 (PLD-Seite nennt die Voreinstellung jeder Sperre). Vor dem Push liefen nur die `check_*.py`, nicht die Generatoren mit
 `--check`; diese laufen jetzt mit.
+
+### A251 · Weiser: Pull-Barriere ab Werk an — seine Vorgabe nennt Ablauf und Verfall (03.10.2026)
+
+- *Anlass:* seine Frage „hab ich jemals von verfall gesprochen?" auf meine Rückfrage vom 02.10.2026, ob „Verfall" den
+  Bruch meine.
+- *Beleg:* ja, am 27.09.2026 (V1): „schild bei schildheilern ist ebenso sinnvoll mit regelmäßiger erneuerung bei
+  ablauf/verfall solange walltowall läuft. gleiche bedingungen wie bei whm hot." Dazu am selben Tag: „da während des
+  laufens MP regenerieren, können es sogar vorzugsweise MP-verbrauchende schilde sein, solange sie insta sind."
+- *Folgerung:* Der Wortlaut nennt Ablauf und Verfall nebeneinander und nimmt den MP-Preis an. Die Frage nach seiner
+  Lesart war aus seinen Angaben entscheidbar und hätte nicht gestellt werden dürfen (C107). Die Rückhaltung ab Werk
+  (A209) stützte sich auf die Entfernung vom 05.09.2026 (5755ad5b); die war ein Befund meiner Prüfung über eine Barriere
+  ohne Auftrag, keine Entscheidung von ihm.
+- *Gebaut:* `UsePreEukrasianDiagnosis` ab Werk an. Der Einstellungstext beschrieb die Erneuerung bei Ablauf und Verbrauch
+  schon, nur die Voreinstellung fehlte. Rotationseinstellungen stehen nur in seiner Konfiguration, wenn er sie gesetzt
+  hat (A227); unberührt erreicht ihn die neue Voreinstellung.
+- *Antithesen:*
+  - *Kein Defekt:* Ohne die Voreinstellung blieb seine Vorgabe beim Weisen ab Werk unerfüllt; widerlegt.
+  - *Option falsch:* In einem großen Pull gehen die GCDs des Weisen an die Barriere, Kardia heilt ohne Dosis nicht.
+    Je GCD-Paar bringt Eukrasian Diagnosis 300 Potenz Heilung und eine Barriere von 180 % davon auf den Tank, Kardia
+    170 je Dosis (Job-Guide): für die Sicherheit des Tanks mehr, nicht weniger. Der Schaden sinkt; das deckt seine
+    Präzisierung zu Sicherheitsregeln.
+  - *Ausgeliefert, nichts ändert sich:* Hat er die Option schon gesetzt, bleibt sein Wert. Außerhalb von Dungeons greift
+    die Regel nicht (`TankApproachingMobGroup`).
+
+**Prüfgrad:** Wortlaut aus dem Gesprächsprotokoll vom 27.09.2026; statisch; Compile über die CI.
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -5525,3 +5550,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C104 | Berichte vom 01.10.2026 zu PR #11: „Nachprüfung … eingeplant“, dazu zwei selbst angelegte Wiedervorlagen (send_later) | `CLAUDE.md`, „Vorlagen an ihn“: Status berichten, ohne selbst gesetzte Wiedervorlagen. Die Wiedervorlagen folgten der Standardanweisung der Umgebung, die seine Regel nicht übersteuert; CI-Ergebnisse und Kommentare kommen ohnehin als Ereignis | Offene Wiedervorlage gelöscht, keine neuen |
 | C105 | Berichte vom 01.10.2026: vier Punkte „zur Entscheidung“; Reflexion bei „beide in Gefahr“ „offen“, dann „an den Tankbuster, weil er sicher und sofort kommt“; Empfehlungen O1 (Reassemble) und „Schutzwall direkt nach der großen“ | Alle vier waren aus seinen Vorgaben, den Wirktexten, The Balance und seinen Protokollen entscheidbar. Die Debuffs liegen auf dem Gegner und schützen beide (sein Hinweis); der Raidwide ist ebenso angekündigt; Gruppenwerkzeuge gehören laut The Balance auf den Raidwide. O1 ruhte auf fremdem Verhalten. Die Antithesen gegen die eigenen Empfehlungen waren nicht geführt, und das Protokoll mit zweimal 85 % war gelesen, aber nicht gegen die Staffelung gestellt | A243–A246; `CLAUDE.md`, „Bevor ich ihn frage oder ihm etwas vorlege“, geschärft |
 | C106 | Konzept 04, C1 (20.08.2026): „`BaseAction.Use()` castet `ID`, nicht `AdjustedID`“ | `Use()` wirkt bei Aktionen auf ein Ziel `AdjustedID` (seit 15311ec27, 2024), nur bei Bodenzielen `ID` | korrigiert (A250) |
+| C107 | Bericht vom 02.10.2026: „Offen ist nur deine Absicht: Meint ‚Verfall‘ den Bruch durch Schaden, oder nur das Auslaufen der Zeit?“ | Sein V1-Wortlaut (27.09.2026) nennt „ablauf/verfall“ nebeneinander und nimmt MP-verbrauchende Sofortschilde an; aus seinen Angaben entscheidbar, keine offene Frage | umgesetzt (A251) |
