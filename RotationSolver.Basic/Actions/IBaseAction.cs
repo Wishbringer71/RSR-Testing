@@ -19,6 +19,10 @@ public interface IBaseAction : IAction
 	// player. False rejects the actions that protect only him (concept 13, A233); null outside the paths.
 	internal static bool? SelfProtectionHitsMe { get; set; } = null;
 
+	// Set by the single defence dispatch while the player's invulnerability covers the coming hit, or is
+	// committed to it: true rejects every defence aimed at the player himself (concept 09); false outside.
+	internal static bool HoldDefenceOnSelf { get; set; } = false;
+
 	/// <summary>
 	/// The action itself.
 	/// </summary>

@@ -89,6 +89,14 @@ public partial class CustomRotation
 
 		var role = DataCenter.Role;
 
+		// The invulnerability ahead of a tankbuster that the best case says kills - before the swap, which
+		// holds while the invulnerability is ready (concept 09).
+		if (role == JobRole.Tank && Service.Config.InvulnerabilityBeforeLethalTankbuster
+			&& TankInvulnerabilityAbility(out act))
+		{
+			return true;
+		}
+
 		// After the emergency abilities, so an invulnerability that fires at its HP threshold goes first.
 		if (role == JobRole.Tank && Service.Config.ShirkToSwapAfterTankbuster
 			&& (TankSwapAbility(out act) || TankSwapBackAbility(out act)))
@@ -324,9 +332,11 @@ public partial class CustomRotation
 			// protect only the player ask whether the single hit reaches him (A233).
 			IBaseAction.SelfProtectionHitsMe = DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseSingle)
 				|| DataCenter.SingleHitReachesPlayer;
+			IBaseAction.HoldDefenceOnSelf = HoldDefenceForInvulnerability();
 			if (DataCenter.CurrentDutyRotation?.DefenseSingleAbility(nextGCD, out act) == true)
 			{
 				IBaseAction.SelfProtectionHitsMe = null;
+				IBaseAction.HoldDefenceOnSelf = false;
 				DefenseTrace.Decision("single defence (duty)", act);
 				return true;
 			}
@@ -338,10 +348,12 @@ public partial class CustomRotation
 				|| (!HasOwnArmsLengthPullRule && ArmsLengthSlowsPull(true, Service.Config.AutoDefenseNumber) && !StatusHelper.PlayerHasStatus(true, StatusID.Vengeance) && !StatusHelper.PlayerHasStatus(true, StatusID.Damnation) && ArmsLengthPvE.CanUse(out act)))
 			{
 				IBaseAction.SelfProtectionHitsMe = null;
+				IBaseAction.HoldDefenceOnSelf = false;
 				DefenseTrace.Decision("single defence", act);
 				return true;
 			}
 			IBaseAction.SelfProtectionHitsMe = null;
+			IBaseAction.HoldDefenceOnSelf = false;
 		}
 		IBaseAction.ShouldEndSpecial = false;
 
@@ -997,6 +1009,73 @@ public partial class CustomRotation
 	/// rules that need to know whether it can still save him. Null for every other job.
 	/// </summary>
 	protected virtual IBaseAction? Invulnerability => null;
+
+	/// <inheritdoc cref="ICustomRotation.TankInvulnerability"/>
+	public IBaseAction? TankInvulnerability => Invulnerability;
+
+	/// <summary>
+	/// The owner's proposal of 04.10.2026 (concept 09): whether the single defence holds everything aimed
+	/// at the player, because his invulnerability is committed to the coming tankbuster or Hallowed
+	/// Ground or Superbolide keeps it off him (<see cref="LethalTankbusterWatch"/>). A command from the
+	/// player is not second-guessed.
+	/// </summary>
+	internal static bool HoldDefenceForInvulnerability()
+	{
+		return DataCenter.Role == JobRole.Tank && Service.Config.HoldMitigationUnderInvulnerability
+			&& !DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseSingle)
+			&& (LethalTankbusterWatch.HoldMitigation || LethalTankbusterWatch.PlayerImpervious);
+	}
+
+	/// <summary>
+	/// The owner's proposal of 04.10.2026 (concept 09, "Unverwundbarkeit vor einem tödlichen Tankbuster"):
+	/// the invulnerability goes out for a tankbuster being cast at the player that the learned table rates
+	/// lethal even in the best case (<see cref="LethalTankbusterWatch"/>), once the hit is no further away
+	/// than the invulnerability's own duration less one GCD - all four last ten seconds (effect texts), so
+	/// drawn earlier it would run out first, and the GCD is the time the hit needs to arrive after the
+	/// cast ends.
+	/// </summary>
+	private bool TankInvulnerabilityAbility(out IAction? act)
+	{
+		act = null;
+		if (!LethalTankbusterWatch.InvulnerabilityCommitted || LethalTankbusterWatch.Source == null
+			|| LethalTankbusterWatch.PlayerUnderInvulnerability)
+		{
+			return false;
+		}
+
+		var invulnerability = Invulnerability;
+		if (invulnerability == null)
+		{
+			return false;
+		}
+
+		var lasts = DefensiveValues.DurationOf(invulnerability.ID);
+		if (lasts > 0f && LethalTankbusterWatch.Remaining > lasts - DataCenter.DefaultGCDTotal)
+		{
+			return false;
+		}
+
+		// The action's own target type: a GCD path that returned early can leave its override standing
+		// when the abilities run (TODO.md, "Zielüberschreibung").
+		var previous = IBaseAction.TargetOverride;
+		IBaseAction.TargetOverride = null;
+		try
+		{
+			if (!invulnerability.CanUse(out act))
+			{
+				act = null;
+				return false;
+			}
+		}
+		finally
+		{
+			IBaseAction.TargetOverride = previous;
+		}
+
+		DefenseTrace.Decision($"invulnerability before a lethal tankbuster from {LethalTankbusterWatch.Source?.Name.TextValue}"
+			+ $" in {LethalTankbusterWatch.Remaining:F1} s", act);
+		return true;
+	}
 
 	/// <summary>
 	/// The owner's proposal of 04.10.2026 (concept 09, "Tankwechsel nach einem Tankbuster"): after a

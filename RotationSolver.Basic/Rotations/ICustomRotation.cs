@@ -113,6 +113,9 @@ public interface ICustomRotation : ITexture
 	internal IAction? ActionRaiseShirkAbility { get; }
 	internal IAction? ActionAntiKnockbackAbility { get; }
 
+	/// <summary>The tank's invulnerability, or null for every other job.</summary>
+	internal IBaseAction? TankInvulnerability { get; }
+
 	/// <summary>
 	/// Tries to use this rotation.
 	/// </summary>

@@ -22,7 +22,8 @@ namespace RotationSolver.Basic.Helpers;
 /// here. An underestimate means a defensive that does not fire - the behaviour before the table.</para>
 ///
 /// <para>Detection only: nothing here decides. Readers are the tank swap
-/// (<see cref="TankSwapWatch"/>) for "would a repeat kill".</para>
+/// (<see cref="TankSwapWatch"/>) for "would a repeat kill", and <see cref="LethalTankbusterWatch"/> for
+/// "does the coming hit kill even in the best case".</para>
 /// </remarks>
 internal static class TankbusterTable
 {
@@ -41,6 +42,17 @@ internal static class TankbusterTable
 		{
 			// Nothing arrived: a hit turned away by invulnerability or evasion, or wholly absorbed. Zero
 			// says that something stopped it, not that the action is harmless.
+			return;
+		}
+
+		// A strengthened attacker hits harder than the action does: stored, the figure would rate the
+		// action too high, and a lethal verdict on it draws the invulnerability and holds every other
+		// mitigation where the best case would have been survived. Not stored - the one error the
+		// table must not make (concept 09, "Unverwundbarkeit vor einem tödlichen Tankbuster").
+		if (attacker != null && attacker.CarriesDamageUp())
+		{
+			DefenseTrace.Line($"tankbuster measured: {name} #{actionId} on {target.Name.TextValue} for {share:P0} of max HP"
+				+ " - not stored, the attacker carried a damage-up status");
 			return;
 		}
 

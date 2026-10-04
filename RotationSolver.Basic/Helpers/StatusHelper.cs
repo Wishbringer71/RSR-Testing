@@ -595,6 +595,29 @@ public static class StatusHelper
 	];
 
 	/// <summary>
+	/// The subset of <see cref="NoNeedHealingStatus"/> under which a hit does no damage at all - the
+	/// status texts read "Impervious to most attacks" (Hallowed Ground, Superbolide). Holmgang, Living
+	/// Dead, Walking Dead and Undead Rebirth are not in it: under them a hit still takes HP, down to 1,
+	/// so a mitigation still decides how much HP is left when they end.
+	/// </summary>
+	internal static StatusID[] ImperviousStatus { get; } =
+	[
+		StatusID.Superbolide,
+		StatusID.HallowedGround,
+		StatusID.HallowedGround_1302,
+	];
+
+	/// <summary>
+	/// Whether <paramref name="battleChara"/> stands under an <see cref="ImperviousStatus"/> that is
+	/// still up in <paramref name="seconds"/>.
+	/// </summary>
+	internal static bool ImperviousThrough(this IBattleChara battleChara, float seconds)
+	{
+		return battleChara.HasStatus(false, ImperviousStatus)
+			&& !battleChara.WillStatusEnd(seconds, false, ImperviousStatus);
+	}
+
+	/// <summary>
 	/// The subset of <see cref="NoNeedHealingStatus"/> whose trigger is the bearer's own death.
 	/// Living Dead is the only one: the dark knight spends it expecting to be killed, and the kill
 	/// is what converts it into Walking Dead and its self-healing. Healing the bearer above zero
@@ -1127,6 +1150,45 @@ public static class StatusHelper
 	/// <summary>Whether <paramref name="battleChara"/> carries any vulnerability debuff.</summary>
 	internal static bool CarriesVulnerabilityUp(this IBattleChara battleChara)
 	{
+		return Carries(battleChara, IsVulnerabilityUp);
+	}
+
+	private static HashSet<uint>? _damageUpIds;
+
+	/// <summary>
+	/// The game's "damage dealt is increased" statuses - Damage Up, Physical and Magic Damage Up - by the
+	/// generator's names from the status sheet, as <see cref="IsVulnerabilityUp"/> does for the debuffs.
+	/// </summary>
+	internal static bool IsDamageUp(uint statusId)
+	{
+		if (_damageUpIds == null)
+		{
+			HashSet<uint> ids = [];
+			foreach (var value in Enum.GetValues<StatusID>())
+			{
+				var name = value.ToString();
+				if (name.StartsWith("DamageUp", StringComparison.Ordinal)
+					|| name.StartsWith("PhysicalDamageUp", StringComparison.Ordinal)
+					|| name.StartsWith("MagicDamageUp", StringComparison.Ordinal))
+				{
+					_ = ids.Add((uint)value);
+				}
+			}
+
+			_damageUpIds = ids;
+		}
+
+		return _damageUpIds.Contains(statusId);
+	}
+
+	/// <summary>Whether <paramref name="battleChara"/> carries any damage-up status.</summary>
+	internal static bool CarriesDamageUp(this IBattleChara battleChara)
+	{
+		return Carries(battleChara, IsDamageUp);
+	}
+
+	private static bool Carries(IBattleChara battleChara, Func<uint, bool> isOfKind)
+	{
 		var statuses = battleChara.StatusList;
 		if (statuses == null)
 		{
@@ -1135,7 +1197,7 @@ public static class StatusHelper
 
 		foreach (var status in statuses)
 		{
-			if (status != null && status.StatusId != 0 && IsVulnerabilityUp(status.StatusId))
+			if (status != null && status.StatusId != 0 && isOfKind(status.StatusId))
 			{
 				return true;
 			}

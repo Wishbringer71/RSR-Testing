@@ -469,6 +469,7 @@ internal static class MajorUpdater
 			// After the cleanup, so a marker's watch sees it leave the queue in the cycle it does.
 			TankbusterMarkerWatch.Update();
 			TankSwapWatch.Update();
+			LethalTankbusterWatch.Update();
 		}
 		catch (Exception ex)
 		{

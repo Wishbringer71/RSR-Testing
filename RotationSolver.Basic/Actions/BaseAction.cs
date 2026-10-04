@@ -278,6 +278,16 @@ public class BaseAction : IBaseAction
 			return ActionTracer.Reject(this, "ProtectsOnlyYouAndTheHitMissesYou");
 		}
 
+		// Under the invulnerability that covers the coming hit, or committed to it, nothing aimed at the
+		// player changes that hit - own mitigation, own barrier, Reprisal around him alike; help aimed at
+		// another member stays free (concept 09, "Unverwundbarkeit vor einem tödlichen Tankbuster").
+		if (IBaseAction.HoldDefenceOnSelf
+			&& PreviewTarget.Value.Target is { } heldOne && Player.Object is { } holder
+			&& heldOne.GameObjectId == holder.GameObjectId)
+		{
+			return ActionTracer.Reject(this, "HeldForTheInvulnerability");
+		}
+
 		if (!IBaseAction.ActionPreview)
 		{
 			Target = PreviewTarget.Value;

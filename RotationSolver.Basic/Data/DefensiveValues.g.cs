@@ -833,4 +833,68 @@ public static class DefensiveValues
 		[5317] = new(0f, 0.99f, 0.99f, 0f), // OccultToad from OccultToadPvE
 		[5321] = new(0.2f, 0f, 0f, 0f), // OccultMightyGuard from OccultMightyGuardPvE
 	};
+
+	/// <summary>
+	/// The statuses each rated action's mitigation stands as - the pairs of
+	/// <see cref="MitigationByStatusId"/> keyed by the action instead.
+	/// </summary>
+	public static readonly Dictionary<uint, uint[]> MitigatingStatusesByActionId = new()
+	{
+		[17] = [74], // SentinelPvE
+		[44] = [89], // VengeancePvE
+		[2887] = [860], // DismantlePvE
+		[3542] = [728, 1856], // SheltronPvE
+		[3551] = [735], // RawIntuitionPvE
+		[3613] = [847, 848, 849, 2283], // CollectiveUnconsciousPvE
+		[3636] = [747], // ShadowWallPvE
+		[7394] = [1179, 1310, 2008], // RiddleOfEarthPvE
+		[7433] = [1219], // PlenaryIndulgencePvE
+		[7531] = [71, 1191, 1978, 4168], // RampartPvE
+		[7535] = [753, 1193, 2101], // ReprisalPvE
+		[7549] = [1195, 2185], // FeintPvE
+		[7560] = [1203, 1988], // AddlePvE
+		[11417] = [1719], // MightyGuardPvE
+		[11424] = [1722], // DiamondbackPvE
+		[12960] = [1633], // WisdomOfThePlatebearerPvE
+		[12961] = [1634], // WisdomOfTheGuardianPvE
+		[14480] = [1742], // WisdomOfTheIndomitablePvE
+		[16140] = [1832], // CamouflagePvE
+		[16148] = [1834, 3051], // NebulaPvE
+		[16161] = [1840], // HeartOfStonePvE
+		[16464] = [1857, 2061, 2227], // NascentFlashPvE
+		[16536] = [1872, 1873, 2037, 2038, 3984, 3985], // TemperancePvE
+		[20495] = [2295], // AetherialAegisPvE
+		[20703] = [2345], // LostManawallPvE
+		[20722] = [2328], // BannerOfTirelessConvictionPvE
+		[20723] = [2329], // BannerOfFirmResolvePvE
+		[21611] = [2639, 2640, 2641], // FixedSignPvE
+		[22354] = [2484], // LostSeraphStrikePvE
+		[22355] = [2443], // LostAethershieldPvE
+		[23273] = [2496], // ChelonianGatePvE
+		[23280] = [2500], // DragonForcePvE
+		[23921] = [2566], // LostBloodRagePvE
+		[24298] = [2618], // KeracholePvE
+		[24310] = [3003], // HolosPvE
+		[25746] = [2674, 3026], // HolySheltronPvE
+		[25751] = [2678, 3030], // BloodwhettingPvE
+		[25754] = [2682], // OblationPvE
+		[25758] = [2683, 4295], // HeartOfCorundumPvE
+		[25861] = [2708, 3086], // AquaveilPvE
+		[25868] = [2711, 2712], // ExpedientPvE
+		[25873] = [2717], // ExaltationPvE
+		[29733] = [3360], // VariantRampartPvE
+		[36920] = [3829], // GuardianPvE
+		[36923] = [3832], // DamnationPvE
+		[36927] = [3835], // ShadowedVigilPvE
+		[36935] = [3838], // GreatNebulaPvE
+		[36962] = [3853], // TengentsuPvE
+		[37027] = [830, 1339, 1883, 3890], // TheBolePvE
+		[37031] = [3896], // SunSignPvE
+		[41610] = [4249], // HerosRimePvE
+		[44899] = [4622], // SeedsowerPvE
+		[46595] = [4792], // DefendPvE
+		[46605] = [4264, 4801], // MesmerizePvE
+		[49075] = [5317], // OccultToadPvE
+		[49088] = [5321], // OccultMightyGuardPvE
+	};
 }

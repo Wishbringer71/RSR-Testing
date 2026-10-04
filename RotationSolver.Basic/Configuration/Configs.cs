@@ -823,6 +823,16 @@ internal partial class Configs : IPluginConfiguration
 		Parent = nameof(UseAbility), PvEFilter = JobFilterType.Tank)]
 	private static readonly bool _shirkToSwapAfterTankbuster = true;
 
+	[ConditionBool, UI("Use the invulnerability before a tankbuster that would kill you",
+		Description = "When a tankbuster is being cast at you that the learned tankbuster table rates lethal even at full HP, with every mitigation and barrier of your own you could still add and everything already standing, your invulnerability goes out before it lands - no earlier than its own duration less one GCD before the hit. What other players might add is not counted. An action not yet measured, a tankbuster marker and a BossModReborn prediction get no invulnerability: none of them names the action. Living Dead included: after the hit, the healers have to restore your full HP within Walking Dead, or you fall.\nIn a fight: you survive a hit that no mitigation of yours would have let you survive, instead of the invulnerability firing only once your HP is already under the threshold.",
+		Parent = nameof(UseAbility), PvEFilter = JobFilterType.Tank)]
+	private static readonly bool _invulnerabilityBeforeLethalTankbuster = true;
+
+	[ConditionBool, UI("Hold other mitigation while the invulnerability covers the hit",
+		Description = "While your invulnerability is committed to a lethal tankbuster coming at you, or Hallowed Ground or Superbolide keeps the coming hit off you, the single-target defence spends nothing aimed at yourself - no mitigation, no barrier, no Reprisal; help for another member stays. If the invulnerability has not gone out by the last GCD before the hit, the hold opens. Holmgang and Living Dead let a hit take HP down to 1, so outside a committed lethal tankbuster nothing is held under them. As a healer: no single-target mitigation for a tankbuster cast at a tank who stands under Hallowed Ground or Superbolide past the hit. Area defence is not affected.\nIn a fight: Rampart, Vengeance and the like stay ready for the next tankbuster instead of being spent on a hit they could not change.",
+		Parent = nameof(UseAbility))]
+	private static readonly bool _holdMitigationUnderInvulnerability = true;
+
 	/// <markdown file="Auto" name="Auto True North" section="Healing Usage and Control" subsection="RotationSolver.Basic.Configuration.Configs._useAbility">
 	/// Whether to cast True North when playing as a melee DPS when you do not have the right
 	/// positional on the enemy.

@@ -415,6 +415,28 @@ def render(table, durations, enmity=None, statuses=None):
     for row, (name, identifier, figures) in (statuses or {}).items():
         values = ", ".join(f"{figures[key]:g}f" for key in ("Self", "EnemyPhysical", "EnemyMagical"))
         lines.append(f"\t\t[{row}] = new({values}, 0f), // {name} from {identifier}")
+
+    # The same pairs the other way round: which statuses mean an action's mitigation already stands, so
+    # a reader that asks "what could still be added" does not count it twice.
+    by_action = {}
+    identifiers = {identifier: row for row, (identifier, _) in table.items()}
+    for status_row, (name, identifier, _) in (statuses or {}).items():
+        by_action.setdefault(identifiers[identifier], (identifier, []))[1].append(status_row)
+    lines.extend(
+        [
+            "\t};",
+            "",
+            "\t/// <summary>",
+            "\t/// The statuses each rated action's mitigation stands as - the pairs of",
+            "\t/// <see cref=\"MitigationByStatusId\"/> keyed by the action instead.",
+            "\t/// </summary>",
+            "\tpublic static readonly Dictionary<uint, uint[]> MitigatingStatusesByActionId = new()",
+            "\t{",
+        ]
+    )
+    for row in sorted(by_action):
+        identifier, rows = by_action[row]
+        lines.append(f"\t\t[{row}] = [{', '.join(str(r) for r in sorted(rows))}], // {identifier}")
     lines.extend(
         [
             "\t};",
