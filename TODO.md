@@ -237,9 +237,29 @@ Verwundbarkeit, oder ein Treffer von 85 % ohne bereite Minderung wie „Schramme
 bereite, aber ungenutzte Unverwundbarkeit. Der Tankwechsel nach einem Tankbuster hält, solange sie bereit ist (seine
 Bedingung, bestätigt 04.10.2026: „wenn unverwundbarkeit bereit ist, dann braucht aggro nicht gewechselt werden"),
 und das Zurückholen wartet auf sie (seine Präzisierung). Beides verlässt sich damit auf eine Rettung, die nur
-reaktiv kommt. **Offen:** voller Loop zu einer
-vorausgehenden Auslösung (Vorhersage über BMR, Cast oder Marker auf dir, gemessener Anteil des letzten Tankbusters;
-Living Dead gesondert wegen Walking Dead).
+reaktiv kommt.
+
+**Sein Einwand (04.10.2026, Hinweis):** Ob ein Tankbuster tödlich ist, lässt sich ohne den zu erwartenden Schaden
+nicht sagen – erst nach dem Einschlag oder aus Erfahrungswerten früherer Tankbuster. Eine Unverwundbarkeit bei jedem
+Tankbuster wäre schädlich.
+
+**Recherche (A258):** Eine öffentliche, aktuelle Quelle für den Schaden einzelner Tankbuster gibt es nicht.
+- cactbot (Stand 03.10.2026) nennt eine Unverwundbarkeit fast nur als Strategiefrage („tanks may choose to invuln
+  this, but that is strat specific"). Ausdrücklich angesagt ist „Invuln Tank Buster" nur in Delubrum Reginae
+  (Savage).
+- BossModReborn führt bei Tankbustern keine Schadenshöhe (`PredictedDamageType.Tankbuster` ohne Betrag); nur
+  vereinzelt steht im Kommentar „lethal tankbuster … should be invulned".
+- `xiv-stats/xiv-damage-samples` enthält Rohschaden samt Minderungen, aber nur für E12S (2021).
+- consolegameswiki nennt die Unverwundbarkeit nur als Strategie für geteilte Tankbuster.
+
+**Damit gilt:** Tödlichkeit ist nur aus eigenen Messungen ableitbar, wie er sagt. **Offen:** voller Loop zu einer
+gelernten Tankbuster-Tabelle, die über Sitzungen gespeichert wird wie `HostileCastingAreaPotential`.
+- Je Aktion der ungeminderte Anteil: gemessener Schaden geteilt durch die beim Einschlag aktiven Minderungen. Diese
+  sind bekannt aus `DefensiveValues` und den Status auf dir und auf dem Gegner; Verwundbarkeit getrennt geführt.
+- Vor dem nächsten Einschlag derselben Aktion die Vorhersage mit den dann verfügbaren Minderungen gegen LP und
+  Schild. Erst wenn auch alle verfügbaren Minderungen nicht reichen, die Unverwundbarkeit.
+- Beim ersten Auftreten gibt es keinen Wert und damit keine Unverwundbarkeit.
+- Living Dead gesondert wegen Walking Dead.
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 

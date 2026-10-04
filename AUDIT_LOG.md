@@ -5450,6 +5450,26 @@ Wechsel greift, schreibt das Protokoll selbst.
     ihren Inhalt.
 
 **Prüfgrad:** statisch, alle Prüfskripte und Generatoren, Compile über die CI. Im Spiel nicht beobachtet.
+
+### A258 · Ist der Schaden von Tankbustern öffentlich bekannt? (04.10.2026)
+
+- *Sein Hinweis:* Ohne erwarteten Schaden ist nicht entscheidbar, ob ein Tankbuster tödlich ist; eine
+  Unverwundbarkeit bei jedem Tankbuster wäre schädlich. Seine Frage: ob bekannt ist, welche Tankbuster welchen
+  Schaden haben und welche immer tödlich sind.
+- *Quellen, gemessen:*
+  - cactbot (`OverlayPlugin/cactbot`, d8b89c1 vom 03.10.2026): sechs Stellen mit „invuln" in den Raid-Triggern,
+    fast alle Strategiekommentare. Eine ausdrückliche Ansage „Invuln Tank Buster" gibt es nur in Delubrum Reginae
+    (Savage). Keine Schadenswerte.
+  - BossModReborn (25b10e4 vom 27.09.2026): `PredictedDamage` trägt Spieler, Zeitpunkt und Art, keinen Betrag.
+    Einzelne Kommentare nennen tödliche Tankbuster („SpiteSmite … lethal tankbuster … should be invulned").
+  - `xiv-stats/xiv-damage-samples` (1080c2d, 2021): Rohschaden mit Minderungslisten, nur E12S.
+  - consolegameswiki, Seite „Tankbuster": Unverwundbarkeit nur als Strategie für geteilte Tankbuster.
+  - Websuche nach Schadenstabellen und Minderungsplänen: keine öffentliche, aktuelle Sammlung gefunden.
+- *Ergebnis:* Tödlichkeit ist nur aus eigenen Messungen ableitbar. Ein Katalog „immer tödlich" existiert nicht;
+  wo eine Unverwundbarkeit Pflicht ist, liegt es meist an stapelnden Debuffs, also am Fall des Tankwechsels. Der
+  Weg einer gelernten Tankbuster-Tabelle steht in `TODO.md`.
+
+**Prüfgrad:** Quellenrecherche; Repositories geklont und durchsucht, Webseiten abgerufen.
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
