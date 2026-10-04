@@ -284,14 +284,22 @@ public partial class CustomRotation
 
 			if (DataCenter.MergedStatus.HasFlag(AutoStatus.DefenseArea))
 			{
-				if (DataCenter.CurrentDutyRotation?.DefenseAreaGCD(out act) == true)
+				IBaseAction.AreaDefenceRunning = true;
+				try
 				{
-					return act;
-				}
+					if (DataCenter.CurrentDutyRotation?.DefenseAreaGCD(out act) == true)
+					{
+						return act;
+					}
 
-				if (DefenseAreaGCD(out var action))
+					if (DefenseAreaGCD(out var action))
+					{
+						return action;
+					}
+				}
+				finally
 				{
-					return action;
+					IBaseAction.AreaDefenceRunning = false;
 				}
 			}
 

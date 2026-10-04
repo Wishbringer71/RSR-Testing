@@ -214,7 +214,7 @@ internal static class StateUpdater
 			// A tank the hit cannot touch - Hallowed Ground or Superbolide up past it - gets nothing from
 			// a mitigation on him for it (the owner's proposal of 04.10.2026, concept 09).
 			if (DataCenter.IsHostileCastingToTank
-				&& !(Service.Config.HoldMitigationUnderInvulnerability && TankbusterTargetsAllImpervious(out _)))
+				&& !(Service.Config.HoldMitigationUnderInvulnerability && TankbusterTargetsAllImpervious()))
 			{
 				foreach (var member in DataCenter.PartyMembers)
 				{
@@ -240,12 +240,9 @@ internal static class StateUpdater
 				return true;
 			}
 
-			// BossModReborn predicts the same tankbuster the cast shows; it does not open what the cast check
-			// above held for a tank under Hallowed Ground or Superbolide, unless it says the hit is on us.
-			if (DataCenter.BMRTankbusterImminent
-				&& !(Service.Config.HoldMitigationUnderInvulnerability && DataCenter.BMRTankbusterHitsPlayer != true
-					&& TankbusterTargetsAllImpervious(out var coveredUntil)
-					&& DataCenter.BMRNextTankbusterIn <= coveredUntil))
+			// A BossModReborn prediction stays open even beside a covered cast: it does not say whom it hits,
+			// and a second tankbuster on the co-tank looks the same (review of A260).
+			if (DataCenter.BMRTankbusterImminent)
 			{
 				return true;
 			}
@@ -328,11 +325,9 @@ internal static class StateUpdater
 	/// Whether every member a tankbuster is now being cast at stands under Hallowed Ground or
 	/// Superbolide past the hit. False when no target is known, and whenever a tankbuster marker
 	/// stands: a marker states no landing time, so whether the invulnerability outlasts it is unknown.
-	/// <paramref name="latestHit"/>: seconds until the last of those hits arrives.
 	/// </summary>
-	private static bool TankbusterTargetsAllImpervious(out float latestHit)
+	private static bool TankbusterTargetsAllImpervious()
 	{
-		latestHit = 0f;
 		if (DataCenter.TankbusterTargets.Count > 0)
 		{
 			return false;
@@ -354,7 +349,6 @@ internal static class StateUpdater
 				return false;
 			}
 
-			latestHit = Math.Max(latestHit, hitIn);
 			any = true;
 		}
 

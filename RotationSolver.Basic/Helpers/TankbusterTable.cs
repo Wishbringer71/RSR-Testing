@@ -22,8 +22,8 @@ namespace RotationSolver.Basic.Helpers;
 /// here. An underestimate means a defensive that does not fire - the behaviour before the table.</para>
 ///
 /// <para>Detection only: nothing here decides. Readers are the tank swap
-/// (<see cref="TankSwapWatch"/>) for "would a repeat kill", and <see cref="LethalTankbusterWatch"/> for
-/// "does the coming hit kill even in the best case".</para>
+/// (<see cref="TankSwapWatch"/>) for "would a repeat kill", and <see cref="TankbusterForecast"/> for
+/// "what does the coming hit take".</para>
 /// </remarks>
 internal static class TankbusterTable
 {
@@ -46,9 +46,8 @@ internal static class TankbusterTable
 		}
 
 		// A strengthened attacker hits harder than the action does: stored, the figure would rate the
-		// action too high, and a lethal verdict on it draws the invulnerability and holds every other
-		// mitigation where the best case would have been survived. Not stored - the one error the
-		// table must not make (concept 09, "Unverwundbarkeit vor einem tödlichen Tankbuster").
+		// action too high, and the tankbuster plan would draw the invulnerability, or stack mitigation,
+		// where less would have done. Not stored - the one error the table must not make (concept 09, "Das geringste Mittel gegen einen gemessenen Tankbuster").
 		if (attacker != null && attacker.CarriesDamageUp())
 		{
 			DefenseTrace.Line($"tankbuster measured: {name} #{actionId} on {target.Name.TextValue} for {share:P0} of max HP"
@@ -97,11 +96,13 @@ internal static class TankbusterTable
 	}
 
 	/// <summary>
-	/// The share of <paramref name="target"/>'s maximum HP the tankbuster is expected to take now: its
+	/// The share of <paramref name="target"/>'s maximum HP the tankbuster is expected to take: its
 	/// stored unmitigated figure (the one under vulnerability when the target carries one and it is
-	/// known) times the mitigation standing now. Zero when the action has not been measured.
+	/// known) times the mitigation standing now and still standing in <paramref name="horizon"/>
+	/// seconds - whoever put it there, the player, a co-tank's Reprisal, a healer. Zero when the action
+	/// has not been measured.
 	/// </summary>
-	public static float PredictedShare(uint actionId, IBattleChara target, IBattleChara? attacker)
+	public static float PredictedShare(uint actionId, IBattleChara target, IBattleChara? attacker, float horizon = 0f)
 	{
 		TankbusterReading? reading;
 		lock (OtherConfiguration.TankbusterPotentialGate)
@@ -117,18 +118,19 @@ internal static class TankbusterTable
 		var unmitigated = target.CarriesVulnerabilityUp() && reading.UnderVulnerability > 0f
 			? reading.UnderVulnerability
 			: reading.Unmitigated;
-		return unmitigated * MitigationFactor(actionId, target, attacker);
+		return unmitigated * MitigationFactor(actionId, target, attacker, horizon);
 	}
 
 	/// <summary>
 	/// The share of a hit that gets through the mitigation standing now: on the target, and on the
 	/// attacker by the action's damage type. Where the type is neither physical nor magical, the smaller
-	/// of the attacker's two reductions counts - the reading errs low rather than high.
+	/// of the attacker's two reductions counts - the reading errs low rather than high. With a
+	/// <paramref name="horizon"/>, a status that runs out before it does not count.
 	/// </summary>
-	public static float MitigationFactor(uint actionId, IBattleChara target, IBattleChara? attacker)
+	public static float MitigationFactor(uint actionId, IBattleChara target, IBattleChara? attacker, float horizon = 0f)
 	{
 		var factor = 1f;
-		foreach (var status in StatusesOf(target))
+		foreach (var status in StatusesOf(target, horizon))
 		{
 			if (DefensiveValues.MitigationByStatusId.TryGetValue(status, out var value) && value.Self > 0f)
 			{
@@ -141,7 +143,7 @@ internal static class TankbusterTable
 			var attackType = Service.GetSheet<Lumina.Excel.Sheets.Action>().TryGetRow(actionId, out var row)
 				? row.AttackType.RowId
 				: 0u;
-			foreach (var status in StatusesOf(attacker))
+			foreach (var status in StatusesOf(attacker, horizon))
 			{
 				if (!DefensiveValues.MitigationByStatusId.TryGetValue(status, out var value))
 				{
@@ -176,7 +178,8 @@ internal static class TankbusterTable
 		return false;
 	}
 
-	private static List<uint> StatusesOf(IBattleChara battleChara)
+	// A remaining time of zero or less is a status without an end; it stands at any horizon.
+	private static List<uint> StatusesOf(IBattleChara battleChara, float horizon = 0f)
 	{
 		List<uint> ids = [];
 		var statuses = battleChara.StatusList;
@@ -187,7 +190,8 @@ internal static class TankbusterTable
 
 		foreach (var status in statuses)
 		{
-			if (status != null && status.StatusId != 0)
+			if (status != null && status.StatusId != 0
+				&& (horizon <= 0f || status.RemainingTime <= 0f || status.RemainingTime >= horizon))
 			{
 				ids.Add(status.StatusId);
 			}

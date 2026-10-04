@@ -548,9 +548,11 @@ unerkannt.
   Treffer dieses Kampfes auf dich und der Vorhersage der Tabelle: ungeminderter Wert mal der Minderung, die jetzt
   auf dir und auf dem Boss liegt. Gleiches gilt für die Prüfung, ob der Empfänger selbst in Gefahr ist. Damit
   greift der Tankwechsel schon beim ersten Tankbuster eines späteren Abends und mit Messungen vom Co-Tank.
-- **Unverwundbarkeit vor einem tödlichen Tankbuster (Konzept 09, A260):** Hält die Tabelle einen gewirkten
-  Tankbuster selbst bei vollen LP und mit allen eigenen Minderungen für tödlich, geht die Unverwundbarkeit vorher
-  aus, und die übrige Abwehr auf den Tank wird zurückgehalten. Hier entscheidet die Tabelle über Abklingzeiten.
+- **Das geringste Mittel gegen einen gemessenen Tankbuster (Konzept 09, A260, A261):** Für einen gewirkten Tankbuster
+  wählt der Plan das billigste Bündel eigener Minderungen, das ihn bei den LP jetzt und mit dem, was beim Einschlag
+  noch steht, überlebt – gestapelt, wo eine nicht reicht. Die Unverwundbarkeit nur, wenn kein Bündel reicht; der
+  Rest wird zurückgehalten. Hier entscheidet die Tabelle über Abklingzeiten. Dafür rechnet `PredictedShare` mit einem
+  Horizont: Eine Minderung, die vor dem Einschlag endet, zählt nicht.
 
 **Ablesbar:** Die Liste zeigt neben der Tankbuster-Liste je Eintrag den ungeminderten Anteil, die Zahl der
 bewerteten Tankbuster und „Store:" in derselben Form wie die Flächentabelle. `DefenseTrace.log` schreibt jede
@@ -585,13 +587,15 @@ tödlich ist, nur noch invul nimmt und alle anderen schilde, debuffs und mitigat
 nichts bringen würden und somit nur unnütz verbraucht wären. das müsste aber im konzept mehrfach geprüft und
 gegengerechnet sein."
 
-**Gebaut (A260), Regel und Lagen in Konzept 09, Abschnitt „Unverwundbarkeit vor einem tödlichen Tankbuster".** Hier
+**Gebaut (A260, A261), Regel und Lagen in Konzept 09, Abschnitt „Das geringste Mittel gegen einen gemessenen
+Tankbuster".** Seine Vorgabe vom selben Tag macht daraus eine Planung: das geringste Mittel, das ohne Risiko reicht,
+die Unverwundbarkeit nur als zweite Wahl. Hier
 die Gegenrechnung, die die Tabelle betrifft. Zwei Entscheidungen sind auseinanderzuhalten, und nur die erste trägt
 Risiko:
 
-**1. Die Unverwundbarkeit ziehen, weil die Tabelle den Treffer für tödlich hält.**
-- Die Tabelle irrt fast nur nach unten (siehe oben). Ein Urteil „tödlich auch mit allen verfügbaren Minderungen"
-  aus einem zu kleinen Wert ist also erst recht richtig.
+**1. Die Unverwundbarkeit ziehen, weil kein Bündel eigener Minderungen den Treffer übersteht.**
+- Die Tabelle irrt beim Messen fast nur nach unten (siehe oben). Ein Urteil „tödlich auch mit allen verfügbaren
+  Minderungen" aus einem zu kleinen Wert ist also erst recht richtig.
 - Nach oben irren kann sie über den Höchstwert: ein Treffer unter einer Stärkung des Gegners – seit A260 beim Messen
   ausgeschlossen, soweit die Stärkung als Damage Up erkennbar ist –, oder ein Wert unter Verwundbarkeit mit mehr
   Stapeln. Den zweiten Fall nimmt Konzept 09 in Kauf: Er gilt nur unter Verwundbarkeit, also in der Wechsellage.

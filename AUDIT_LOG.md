@@ -5596,6 +5596,50 @@ Wechsel greift, schreibt das Protokoll selbst.
   - Offen als Einschränkung: Stärkungen unter anderem Namen als Damage Up, und Tankbuster ohne Aktionsangabe.
 
 **Prüfgrad:** statisch, alle Prüfskripte und Generatoren, Compile über die CI. Im Spiel nicht beobachtet.
+
+### A261 · Das geringste Mittel gegen einen gemessenen Tankbuster (04.10.2026)
+
+- *Seine Angaben, eingeordnet:*
+  - Präzisierung: Er hat nie gesagt, dass bei Tankbustern nur eine große Minderung erlaubt ist. Die Staffelung (A243)
+    war meine Abwägung ohne Kenntnis der Stärke.
+  - Vorgabe: Braucht ein Tankbuster zwei verfügbare Minderungen, werden beide genutzt, gerade ohne
+    Unverwundbarkeit. Es gilt das geringste notwendige Mittel; die Unverwundbarkeit ist zweite Wahl, wenn es anders
+    ohne Risiko geht.
+  - Hinweis: Fremdeffekte zählen mit – ein Debuff eines anderen auf dem Boss, ein großer Heilerschild, die beim
+    Einschlag noch wirken.
+- *Widerrufen:* Das Urteil „tödlich selbst bei vollen LP" (A260, meine Lesart seines Satzes „selbst bei 100%
+  gesundheit") ist durch „ohne Risiko" ersetzt: gerechnet wird mit den LP jetzt. Sein Satz beschrieb, was sich ohne
+  Messung nicht wissen lässt, keine Bedingung. Der Abschnitt in Konzept 09 heißt jetzt „Das geringste Mittel gegen
+  einen gemessenen Tankbuster"; A260 nennt ihn noch unter dem alten Titel.
+- *Research am Code:* `CanUse` lehnt eine Fähigkeit während der Animationssperre ab (`CooldownCheck`); die Planung
+  liest Verfügbarkeit deshalb aus Stufe, Option, `BasicCheck` (Ressourcen, Aktionsprüfung) und Abklingzeit, nicht aus
+  `CanUse`. Die Wirktexte bewerten Urimpuls und Schiltron nur mit der Grundminderung. Die Sperrgruppe großer
+  Minderungen steckt in der Statusangabe von Schutzwall; ein geplanter Druck überspringt sie.
+- *Zweites Code-Review (1f2be614c..dd1b47ef6), zehn Punkte:*
+  1. Eine abgelehnte Unverwundbarkeit galt für das ganze Wirken als abgelehnt, auch bei Ablehnung nur wegen der
+     Animationssperre. Behoben: jeder Durchlauf versucht neu; der Rückfall ist der letzte GCD.
+  2. Eine Bindung überlebte ein abgebrochenes Wirken und blockierte ein neues. Behoben: keine Bindung mehr, der Plan
+     wird je Durchlauf aus den laufenden Wirken gerechnet.
+  3. `IsLastAbility` hielt nach einer früh gezündeten Unverwundbarkeit zu lange. Behoben: „eben gedrückt" heißt
+     abklingend und nicht länger als einen GCD her.
+  4. Tankwechsel und Plan hatten zwei Begriffe von „verfügbar". Behoben: `InvulnerabilityUsable` zählt den Plan mit.
+  5. Der Optionstext versprach freie Heilungen, das Gatter hielt bewertete Heilaktionen. Behoben: Heilpfade sind
+     frei (`TargetOverride` Heal).
+  6. `DefenseAreaGCD` war vom Flächen-Freibetrag ausgenommen. Behoben.
+  7. Die Unterdrückung der BossModReborn-Vorhersage beim Heiler verschluckte einen zweiten Tankbuster auf den
+     Co-Tank. Zurückgenommen; die Vorhersage öffnet wieder.
+  8. Mehrfache Bereitschaftsprüfung. Mit dem Umbau auf eine Stelle je Frage reduziert.
+  9. Konzept 05: Der eingefügte Satz verband `HallowedWithCover` mit der neuen Regel. Neu gefasst.
+  10. Die Protokollmenge wuchs über den Kampf. Behoben: nur laufende Wirken behalten ihre Zeile.
+- *Gebaut:* `TankbusterForecast` (vorher `LethalTankbusterWatch`, nur noch Messung: Anteil beim Einschlag, LP und
+  haltende Barrieren); `CustomRotation_Tankbuster.cs` mit `UpdateTankbusterPlan`, `TankbusterPlanAbility`,
+  `HoldDefenceForTankbuster`; `TankbusterTable.PredictedShare` mit Horizont; `IBaseAction.AllowedDefenceOnSelf`.
+  Die Brücke `ICustomRotation.TankInvulnerability` ist entfernt.
+- *Falsifikation:* Konzept 09, Abschnitt „Das geringste Mittel gegen einen gemessenen Tankbuster", Antithesen 1–6.
+  Offen als Grenze: keine Reserve nach einem knapp überlebten Treffer (`TODO.md`); zwei Wirken binnen eines GCD
+  bekommen einen Minderungsplan nur für das erste.
+
+**Prüfgrad:** statisch, alle Prüfskripte und Generatoren, Compile über die CI. Im Spiel nicht beobachtet.
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

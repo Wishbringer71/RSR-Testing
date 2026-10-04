@@ -233,7 +233,7 @@ Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A17
 
 **Stand (A260):** Vor einem gewirkten Tankbuster, den die Tankbuster-Tabelle selbst bei vollen LP und mit allen
 eigenen Minderungen für tödlich hält, geht die Unverwundbarkeit vorher aus, und die übrige Abwehr auf den Tank wird
-zurückgehalten (Konzept 09, „Unverwundbarkeit vor einem tödlichen Tankbuster"). Weiter nur reaktiv, also erst unter
+zurückgehalten (Konzept 09, „Das geringste Mittel gegen einen gemessenen Tankbuster"). Weiter nur reaktiv, also erst unter
 `HealthForDyingTanks`, bleibt sie
 - bei Tankbustern, die nur ein Marker oder BossModReborn ankündigt: Beide nennen die Aktion nicht, also gibt es
   keinen Tabellenwert;
@@ -248,16 +248,15 @@ der sich hochrechnen ließe).
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 
-### Tankbuster überlebbar nur mit gestapelter Minderung: die Abwehr staffelt trotzdem · N
+### Tankbuster-Plan: keine Reserve nach einem knapp überlebten Treffer · N
 
-**Befund (A260, Review):** `LethalTankbusterWatch` zählt im besten Fall alle eigenen Minderungen. Die Abwehr gibt je
-vorhergesagtem Tankbuster aber nur eine große (`RampartTakesPredictedTankbuster`, A243), ohne Vorhersage staffelt die
-Zeitregel. Braucht ein gemessener Tankbuster Schutzwall *und* die 40-%-Minderung, ist das Urteil „überlebbar", keine
-Unverwundbarkeit, und mit einer der beiden fällt der Tank. **Im Kampf:** wie vor der Tabelle; wie oft ein Treffer
-genau zwischen „eine reicht" und „beide reichen" liegt, ist nicht erhoben. **Offen:** voller Loop. Die Tabelle
-beantwortet die Frage, die A243 als Antithese offenließ („ein Tankbuster braucht beide"). Die Staffelung ist meine
-Behebung (A243), keine Entscheidung von ihm; das Stapeln kostet aber die Deckung des nächsten Tankbusters und ist
-ihm deshalb mit Rechnung vorzulegen.
+**Befund (A261):** Der Plan rechnet bis zum Einschlag: Er wählt das billigste Bündel, mit dem der gemessene
+Tankbuster weniger nimmt, als der Tank hat. Ein Treffer, der ihn knapp über 0 lässt, gilt als überlebt. Danach
+enden Plan und Zurückhalten, die Minderungen sind wieder frei, und die reaktive Unverwundbarkeit und die Heiler
+übernehmen – aber ein Auto-Angriff unmittelbar danach trifft einen Tank fast ohne LP. **Offen:** voller Loop, ob die
+Rechnung eine Reserve verlangen soll und woraus sie sich ableitet (gemessener Schadenseingang des Tanks über einen
+GCD, Konzept 08), ohne feste Zahl. **Im Kampf:** wie oft ein Plan so knapp ausgeht, schreibt das Protokoll mit
+(„leaving …% against …%").
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 

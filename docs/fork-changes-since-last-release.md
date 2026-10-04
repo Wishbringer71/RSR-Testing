@@ -152,24 +152,29 @@ the game is closed.
 
 Hits from an enemy carrying a Damage Up status are not stored: they would rate the action too high.
 
-## Tanks: the invulnerability goes out before a tankbuster that would kill you
+## Tanks: a measured tankbuster gets the mitigation it needs, and the invulnerability only when nothing less does
 
-New setting `Use the invulnerability before a tankbuster that would kill you`, on by default. When a tankbuster is
-cast at you that the table rates lethal even at full HP, with every mitigation and barrier of your own that could
-still be used and everything already standing, RSR uses Hallowed Ground, Holmgang, Living Dead or Superbolide
-before it lands - no earlier than its ten seconds less one GCD before the hit. Until now it went out only once your
-HP had dropped under the dying threshold, which a hit that kills from full never passes. The new rule does not
-depend on that threshold: setting it to 0 switches off only the old one. What other players might
-add is not counted. Tankbusters announced only by a marker or by BossModReborn, and actions not yet measured, keep
-the old behaviour: neither names the action, so there is no figure to judge by. After Living Dead the healers still
-have to restore your full HP within Walking Dead.
+New setting `Spend only the mitigation a measured tankbuster needs`, on by default. When a tankbuster the table
+has measured is cast at you, RSR works out what it takes under what will still stand when it lands - your own
+mitigation, a co-tank's Reprisal, a healer's mitigation or barrier - against your HP now, and spends the cheapest
+set of your own ready mitigations, by cooldown, that lets you survive it:
+- one if one is enough, two or more stacked if not - also two big ones at once, which the old defence never did;
+- none if the hit is survivable as it stands;
+- each one pressed late enough to still stand when the hit lands.
 
-New setting `Hold other mitigation while the invulnerability covers the hit`, on by default. While the
-invulnerability is committed to such a tankbuster, or Hallowed Ground or Superbolide keeps the coming hit off you,
-RSR spends nothing aimed at you - no Rampart, no Vengeance, no own barrier, no Reprisal -, from whichever part of
-the rotation would have used it, so they are ready for the next tankbuster. Help for another party member and heals
-still go out, and in area defence so does what reaches beyond you. If the invulnerability refuses, or has not gone
-out by the last GCD before the hit, the hold opens. Under Holmgang and Living Dead
-a hit still takes HP down to 1, so outside the committed tankbuster nothing is held there. As a healer, RSR spends no
+Everything else aimed at you - Rampart, Vengeance, your own barrier, Reprisal - is held for the next tankbuster,
+from whichever part of the rotation would have used it. Help for another party member, heals and area defence that
+reaches beyond you still go out. If a planned mitigation has not gone out by the last GCD before the hit, the hold
+opens. Under Hallowed Ground or Superbolide past the hit, nothing aimed at you is spent. As a healer, RSR spends no
 single-target mitigation for a tankbuster cast at a tank who stands under Hallowed Ground or Superbolide past the
-hit. `DefenseTrace.log` writes the verdict for every tankbuster cast at you and what it was built on.
+hit.
+
+New setting `Use the invulnerability before a tankbuster nothing less survives`, on by default. Only when no set of
+your mitigations would get you through does RSR use Hallowed Ground, Holmgang, Living Dead or Superbolide before
+the hit - no earlier than its ten seconds less one GCD. It does not depend on the dying-tank threshold: setting that
+to 0 switches off only the old reactive use. After Living Dead the healers still have to restore your full HP within
+Walking Dead. If nothing survives and the invulnerability is not ready, everything goes.
+
+The plan is recomputed all the time, so a heal or a Reprisal that lands before the hit makes it smaller. Tankbusters
+announced only by a marker or by BossModReborn, and actions not yet measured, keep the old behaviour.
+`DefenseTrace.log` writes the figures for every tankbuster cast at you, the plan and every press.

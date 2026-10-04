@@ -60,8 +60,8 @@ GCD()                                    Ability()
  6  DispelGCD                             6  Befohlener Gegenstand
  7  ProvokeGCD                            7  UseAbility aus / Wirken läuft / Fesselung
  8  RaiseSpell   (wenn RaisePlayerFirst)  8  EmergencyAbility
- 9  MoveForwardGCD                        9  Unverwundbarkeit vor tödlichem
-10  HealAreaGCD                              Tankbuster (nur Tanks, Option)
+ 9  MoveForwardGCD                        9  Tankbuster-Plan (nur Tanks, Option):
+10  HealAreaGCD                              Minderung nach Bedarf oder Unverwundbarkeit
 11  HealSingleGCD                        10  Tankwechsel (nur Tanks, Option):
 12  DefenseAreaGCD                           Shirk auf den Co-Tank, dann Zurückprovozieren
 13  DefenseSingleGCD                     11  InterruptAbility
@@ -84,13 +84,15 @@ GCD()                                    Ability()
                                          28  MP-Potion · GeneralUsing · Speed
 ```
 
-Die Unverwundbarkeit vor einem tödlichen Tankbuster (9) und der Tankwechsel (10) sitzen hinter `EmergencyAbility`,
+Der Tankbuster-Plan (9) und der Tankwechsel (10) sitzen hinter `EmergencyAbility`,
 damit eine Unverwundbarkeit, die an ihrer Schwelle zündet, vorgeht, und vor allem anderen, weil beide an einem
-Tankbuster hängen (Konzept 09, „Unverwundbarkeit vor einem tödlichen Tankbuster" und „Tankwechsel nach einem
-Tankbuster"). Die Unverwundbarkeit steht vor dem Wechsel, der hält, solange sie bereit ist. Beide haben keinen
-befohlenen Eingang; Shirk (13) läuft weiterhin nur auf Befehl. Solange die Unverwundbarkeit den Treffer deckt oder
-an ihn gebunden ist, lehnt `BaseAction.CanUse` für Tanks in jedem Slot bewertete Abwehr auf den Spieler ab; in der
-Flächenabwehr (21) bleibt frei, was über ihn hinaus wirkt.
+Tankbuster hängen (Konzept 09, „Das geringste Mittel gegen einen gemessenen Tankbuster" und „Tankwechsel nach einem
+Tankbuster"). Der Plan drückt die Minderungen, die ein gemessener Tankbuster braucht, oder die Unverwundbarkeit, und
+steht vor dem Wechsel, der hält, solange sie bereit ist. Beide haben keinen
+befohlenen Eingang; Shirk (13) läuft weiterhin nur auf Befehl. Solange ein Plan läuft oder
+Heiliger Boden oder Meteoritenfall den Treffer abhalten, lehnt `BaseAction.CanUse` für Tanks in jedem Slot bewertete
+Abwehr auf den Spieler ab, die nicht im Plan steht; frei bleiben die Heilslots und in der Flächenabwehr (21), was über
+ihn hinaus wirkt.
 
 In jedem Slot fragt der Dispatcher zuerst die Duty-Rotation (`DataCenter.CurrentDutyRotation`), dann den Job. Die
 Heil-, Abwehr-, Bewegungs- und Rückzugsslots haben je zwei Eingänge: zuerst den befohlenen (`CommandStatus`), dann

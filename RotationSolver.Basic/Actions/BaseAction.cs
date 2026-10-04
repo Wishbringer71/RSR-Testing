@@ -278,13 +278,16 @@ public class BaseAction : IBaseAction
 			return ActionTracer.Reject(this, "ProtectsOnlyYouAndTheHitMissesYou");
 		}
 
-		// Under the invulnerability that covers the coming hit, or committed to it, no rated defence aimed
-		// at the player changes that hit - own mitigation, own barrier, Reprisal around him alike - from
-		// whichever path the rotation spends it. Help aimed at another member stays free, and in the area
-		// defence so does what reaches beyond the player (concept 09, "Unverwundbarkeit vor einem
-		// tödlichen Tankbuster").
+		// While the tankbuster plan or an invulnerability makes it unneeded, no rated defence aimed at the
+		// player goes out beyond what the plan spends - own mitigation, own barrier, Reprisal around him
+		// alike - from whichever path the rotation spends it. Help aimed at another member stays free, so do
+		// the heal paths (Heart of Corundum heals a tank Superbolide left at 1 HP), and in the area defence
+		// so does what reaches beyond the player (concept 09, "Das geringste Mittel gegen einen gemessenen
+		// Tankbuster").
 		if (IBaseAction.HoldDefenceOnSelf && !IBaseAction.ForceEnable
+			&& IBaseAction.TargetOverride != TargetType.Heal
 			&& (Info.EffectRange == 0 || !IBaseAction.AreaDefenceRunning)
+			&& IBaseAction.AllowedDefenceOnSelf?.Contains(ID) != true
 			&& PreviewTarget.Value.Target is { } heldOne && Player.Object is { } holder
 			&& heldOne.GameObjectId == holder.GameObjectId
 			&& DefensiveValues.For(ID) != default)

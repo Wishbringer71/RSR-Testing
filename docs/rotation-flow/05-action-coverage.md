@@ -95,10 +95,10 @@ Konkrete Folge, nicht nur Kosmetik:
   (`EmergencyAbility`, gegated auf `Service.Config.HealthForDyingTanks`), bei
   **PLD** dagegen in `PLD_Reborn.EmergencyAbility` mit eigener Logik. Welche Aktion
   die Unverwundbarkeit ist, nennt seit A255 für alle vier die Basisschicht
-  (`Invulnerability`); der Tankwechsel liest daraus, ob sie noch retten kann, und seit A260 zieht
-  `TankInvulnerabilityAbility` sie vor einem gewirkten Tankbuster, den die Tabelle für tödlich hält
-  (`HallowedWithCover`, daneben dieselbe Schwelle `HealthForDyingTanks`). Vier Tanks, dieselbe Fähigkeitsklasse, zwei Orte und
-  zwei Gates.
+  (`Invulnerability`), und der Tankwechsel liest daraus, ob sie noch retten kann. Die reaktive Unverwundbarkeit hat
+  zwei Gates: beim PLD `HallowedWithCover`, daneben bei allen die Schwelle `HealthForDyingTanks`. Vier Tanks, dieselbe
+  Fähigkeitsklasse, zwei Orte und zwei Gates. Seit A260/A261 zieht sie zusätzlich der Tankbuster-Plan (`CustomRotation.TankbusterPlanAbility`),
+  ohne die Schwelle, wenn kein Bündel eigener Minderungen einen gemessenen Tankbuster übersteht.
 - Beim Lesen einer `{Job}_Reborn.cs` ist nicht erkennbar, ob ein Slot leer ist
   oder eine Ebene tiefer belegt. Genau daran ist die Messung oben gescheitert.
 

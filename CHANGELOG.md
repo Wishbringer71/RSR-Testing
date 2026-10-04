@@ -35,11 +35,12 @@ the action that grants it states in its effect text. Both are additive; no ordin
 to, so a reader can tell whether that mitigation already stands. Additive.
 
 A tank's `CanUse` now returns false for any action that carries a mitigation or barrier figure
-(`DefensiveValues`) and targets the player, while his invulnerability is committed to a lethal tankbuster or
-Hallowed Ground or Superbolide covers the coming hit (option "Hold other mitigation while the invulnerability
-covers the hit", on by default). This holds in every method of a derived rotation, not only the defence
-methods; inside `DefenseAreaAbility`/`DefenseAreaGCD` actions with an effect radius stay free, and a commanded
-action is never held.
+(`DefensiveValues`), targets the player and is not part of the current tankbuster plan, while a plan for a measured
+tankbuster runs or Hallowed Ground or Superbolide covers the coming hit (option "Spend only the mitigation a
+measured tankbuster needs", on by default). This holds in every method of a derived rotation, not only the defence
+methods; the heal paths stay free, inside `DefenseAreaAbility`/`DefenseAreaGCD` actions with an effect radius stay
+free, and a commanded action is never held. `TankbusterTable.PredictedShare` and `MitigationFactor` are internal
+and gained an optional horizon.
 
 ### Added to RotationSolver.Basic: `CustomRotation.Invulnerability`
 

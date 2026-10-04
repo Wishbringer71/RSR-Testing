@@ -19,9 +19,13 @@ public interface IBaseAction : IAction
 	// player. False rejects the actions that protect only him (concept 13, A233); null outside the paths.
 	internal static bool? SelfProtectionHitsMe { get; set; } = null;
 
-	// Set for a whole cycle of the rotation while the player's invulnerability covers the coming hit, or is
-	// committed to it: true rejects every rated defence aimed at the player himself (concept 09).
+	// Set for a whole cycle of the rotation while a measured tankbuster's plan, or an invulnerability that
+	// keeps the hit off, makes the player's own defence unneeded: true rejects every rated defence aimed at
+	// him outside the heal paths, except the ids in AllowedDefenceOnSelf (concept 09).
 	internal static bool HoldDefenceOnSelf { get; set; } = false;
+
+	// The planned mitigations that stay free while HoldDefenceOnSelf holds the rest; null holds all.
+	internal static HashSet<uint>? AllowedDefenceOnSelf { get; set; } = null;
 
 	// Set while the area defence path runs: the hold above then spares what reaches beyond the player.
 	internal static bool AreaDefenceRunning { get; set; } = false;

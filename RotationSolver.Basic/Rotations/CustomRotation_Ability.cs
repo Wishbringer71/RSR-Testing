@@ -89,9 +89,9 @@ public partial class CustomRotation
 
 		var role = DataCenter.Role;
 
-		// The invulnerability ahead of a tankbuster that the best case says kills - before the swap, which
-		// holds while the invulnerability is ready (concept 09).
-		if (role == JobRole.Tank && TankInvulnerabilityAbility(out act))
+		// The plan for a measured tankbuster - the mitigation it needs, or the invulnerability when nothing
+		// less survives it - before the swap, which holds while the invulnerability is ready (concept 09).
+		if (role == JobRole.Tank && TankbusterPlanAbility(out act))
 		{
 			return true;
 		}
@@ -1009,176 +1009,6 @@ public partial class CustomRotation
 	/// </summary>
 	protected virtual IBaseAction? Invulnerability => null;
 
-	private static (ulong Source, uint ActionId, DateTime Ends)? _invulnerabilityBinding;
-	private static bool _invulnerabilityRefused;
-	private static (ulong Source, uint ActionId, float Total) _invulnerabilityTraced;
-
-	/// <summary>
-	/// The owner's proposal of 04.10.2026 (concept 09, "Unverwundbarkeit vor einem tödlichen Tankbuster"):
-	/// whether the invulnerability is committed to a tankbuster cast at the player that
-	/// <see cref="LethalTankbusterWatch"/> rates lethal even in the best case. Committed when the option is
-	/// on and the invulnerability is enabled, learned and off cooldown at the verdict; bound to that cast
-	/// until it is over and one GCD more for the hit to arrive, so a barrier arriving later cannot take
-	/// back a hold already given on its strength. <paramref name="cast"/> is the running cast, null
-	/// once it has ended.
-	/// </summary>
-	/// <remarks>
-	/// Its own option and nothing else: the HP threshold of the reactive invulnerability
-	/// (HealthForDyingTanks) is another rule's, and setting it to zero does not switch this one off.
-	/// </remarks>
-	private bool InvulnerabilityCommitted(out LethalTankbusterWatch.Cast? cast)
-	{
-		cast = null;
-		if (DataCenter.Role != JobRole.Tank || !Service.Config.InvulnerabilityBeforeLethalTankbuster)
-		{
-			_invulnerabilityBinding = null;
-			return false;
-		}
-
-		if (_invulnerabilityBinding is { } bound)
-		{
-			if (DateTime.Now <= bound.Ends)
-			{
-				cast = LethalTankbusterWatch.Find(bound.Source, bound.ActionId);
-				return true;
-			}
-
-			_invulnerabilityBinding = null;
-		}
-
-		var lethal = LethalTankbusterWatch.SoonestLethal;
-		if (lethal == null)
-		{
-			return false;
-		}
-
-		var invulnerability = Invulnerability;
-		var ready = invulnerability != null && invulnerability.Config.IsEnabled && invulnerability.EnoughLevel
-			&& invulnerability.Cooldown.HasOneCharge;
-		var key = (lethal.Source.GameObjectId, lethal.ActionId, lethal.Total);
-		if (!ready)
-		{
-			if (_invulnerabilityTraced != key)
-			{
-				_invulnerabilityTraced = key;
-				DefenseTrace.Line($"lethal tankbuster from {lethal.Source.Name.TextValue}: no invulnerability ready"
-					+ (invulnerability == null ? string.Empty : $" ({invulnerability.Name})"));
-			}
-
-			return false;
-		}
-
-		_invulnerabilityBinding = (lethal.Source.GameObjectId, lethal.ActionId,
-			DateTime.Now + TimeSpan.FromSeconds(lethal.Remaining + DataCenter.DefaultGCDTotal));
-		_invulnerabilityRefused = false;
-		_invulnerabilityTraced = key;
-		DefenseTrace.Line($"lethal tankbuster from {lethal.Source.Name.TextValue} in {lethal.Remaining:F1} s:"
-			+ $" {invulnerability!.Name} committed");
-		cast = lethal;
-		return true;
-	}
-
-	/// <summary>
-	/// The owner's proposal of 04.10.2026 (concept 09): whether every rated defence aimed at the player
-	/// is held this cycle, because Hallowed Ground or Superbolide keeps the coming hit off him, or because
-	/// his invulnerability is committed to a lethal tankbuster and either already covers it or can still
-	/// be drawn before the last GCD. Read once per cycle into <see cref="IBaseAction.HoldDefenceOnSelf"/>.
-	/// A command from the player is not second-guessed.
-	/// </summary>
-	private bool HoldDefenceForInvulnerability()
-	{
-		if (DataCenter.Role != JobRole.Tank || !Service.Config.HoldMitigationUnderInvulnerability
-			|| DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseSingle))
-		{
-			return false;
-		}
-
-		if (LethalTankbusterWatch.PlayerImpervious)
-		{
-			return true;
-		}
-
-		if (!InvulnerabilityCommitted(out var cast))
-		{
-			return false;
-		}
-
-		var gcd = DataCenter.DefaultGCDTotal;
-		var hitIn = cast?.Remaining ?? 0f;
-		var invulnerability = Invulnerability;
-
-		// The invulnerability already stands and outlasts the hit, or has just gone out and its status is
-		// not on the player yet.
-		if (LethalTankbusterWatch.PlayerInvulnerableThrough(hitIn + gcd)
-			|| (invulnerability != null && IsLastAbility(true, invulnerability)))
-		{
-			return true;
-		}
-
-		// Not yet drawn: held while it still can be, and the last GCD before the hit stays open. One that
-		// went out early - at its HP threshold - and runs out before the hit holds nothing, nor does one
-		// its own checks refused.
-		return !_invulnerabilityRefused && cast != null && hitIn > gcd && invulnerability != null
-			&& invulnerability.Cooldown.HasOneCharge;
-	}
-
-	/// <summary>
-	/// The owner's proposal of 04.10.2026 (concept 09, "Unverwundbarkeit vor einem tödlichen Tankbuster"):
-	/// the invulnerability goes out for the tankbuster it is committed to, once the hit is no further away
-	/// than the invulnerability's own duration less one GCD - all four last ten seconds (effect texts), so
-	/// drawn earlier it would run out first, and the GCD is the time the hit needs to arrive after the
-	/// cast ends. Refused by its own checks, the hold on the other defence opens at once.
-	/// </summary>
-	private bool TankInvulnerabilityAbility(out IAction? act)
-	{
-		act = null;
-		if (!InvulnerabilityCommitted(out var cast) || cast == null || _invulnerabilityRefused)
-		{
-			return false;
-		}
-
-		var gcd = DataCenter.DefaultGCDTotal;
-		var invulnerability = Invulnerability;
-
-		// Already covering, just gone out, or spent early at its HP threshold: nothing to draw.
-		if (invulnerability == null || LethalTankbusterWatch.PlayerInvulnerableThrough(cast.Remaining + gcd)
-			|| IsLastAbility(true, invulnerability) || !invulnerability.Cooldown.HasOneCharge)
-		{
-			return false;
-		}
-
-		var lasts = DefensiveValues.DurationOf(invulnerability.ID);
-		if (lasts > 0f && cast.Remaining > lasts - gcd)
-		{
-			return false;
-		}
-
-		// The action's own target type: a GCD path that returned early can leave its override standing
-		// when the abilities run (TODO.md, "Zielüberschreibung").
-		var previous = IBaseAction.TargetOverride;
-		IBaseAction.TargetOverride = null;
-		try
-		{
-			if (!invulnerability.CanUse(out act))
-			{
-				act = null;
-				_invulnerabilityRefused = true;
-				IBaseAction.HoldDefenceOnSelf = false;
-				DefenseTrace.Line($"{invulnerability.Name} refused before the lethal tankbuster from"
-					+ $" {cast.Source.Name.TextValue}; the other defence is no longer held");
-				return false;
-			}
-		}
-		finally
-		{
-			IBaseAction.TargetOverride = previous;
-		}
-
-		DefenseTrace.Decision($"invulnerability before a lethal tankbuster from {cast.Source.Name.TextValue}"
-			+ $" in {cast.Remaining:F1} s", act);
-		return true;
-	}
-
 	/// <summary>
 	/// The owner's proposal of 04.10.2026 (concept 09, "Tankwechsel nach einem Tankbuster"): after a
 	/// tankbuster that leaves the player in danger of dying to the next one, and with his
@@ -1186,9 +1016,9 @@ public partial class CustomRotation
 	/// one that will then hold the enemy.
 	/// </summary>
 	/// <remarks>
-	/// The invulnerability counts as available only when RSR would use it: enabled, learned, off
-	/// cooldown, and with a threshold above zero (HealthForDyingTanks; at zero it never fires). It
-	/// fires at that threshold, not ahead of a hit - see concept 09 for the gap that leaves.
+	/// The invulnerability counts as available only when RSR would use it (<see cref="InvulnerabilityUsable"/>)
+	/// and it is off cooldown: at its threshold, or ahead of a measured tankbuster that nothing less survives
+	/// (concept 09, "Das geringste Mittel gegen einen gemessenen Tankbuster").
 	/// </remarks>
 	private bool TankSwapAbility(out IAction? act)
 	{
@@ -1237,13 +1067,15 @@ public partial class CustomRotation
 
 	/// <summary>
 	/// Whether RSR would use the tank's invulnerability at all: it exists for the job, is learned at the
-	/// current level, enabled, and its threshold (HealthForDyingTanks) is above zero.
+	/// current level, enabled, and one of the two rules that draw it is on - the reactive one at its
+	/// threshold (HealthForDyingTanks above zero), or the tankbuster plan
+	/// (InvulnerabilityBeforeLethalTankbuster), which draws it ahead of a measured hit nothing less survives.
 	/// </summary>
 	private bool InvulnerabilityUsable(out IBaseAction? invulnerability)
 	{
 		invulnerability = Invulnerability;
 		return invulnerability != null && invulnerability.Config.IsEnabled && invulnerability.EnoughLevel
-			&& HealthForDyingTanks > 0f;
+			&& (HealthForDyingTanks > 0f || Service.Config.InvulnerabilityBeforeLethalTankbuster);
 	}
 
 	/// <summary>

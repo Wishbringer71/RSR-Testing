@@ -232,7 +232,8 @@ public partial class CustomRotation
 
 			// For every path of this cycle, not only the single defence: a rotation spends the same
 			// mitigation from its general abilities too (concept 09).
-			IBaseAction.HoldDefenceOnSelf = HoldDefenceForInvulnerability();
+			UpdateTankbusterPlan();
+			IBaseAction.HoldDefenceOnSelf = HoldDefenceForTankbuster();
 
 			// Attempt to get the GCD action
 			gcdAction = GCD();
@@ -266,6 +267,7 @@ public partial class CustomRotation
 			// Ensure IgnoreClipping is reset
 			IBaseAction.IgnoreClipping = false;
 			IBaseAction.HoldDefenceOnSelf = false;
+			IBaseAction.AllowedDefenceOnSelf = null;
 		}
 	}
 
