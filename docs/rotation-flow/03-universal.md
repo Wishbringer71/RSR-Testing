@@ -60,31 +60,36 @@ GCD()                                    Ability()
  6  DispelGCD                             6  Befohlener Gegenstand
  7  ProvokeGCD                            7  UseAbility aus / Wirken läuft / Fesselung
  8  RaiseSpell   (wenn RaisePlayerFirst)  8  EmergencyAbility
- 9  MoveForwardGCD                        9  Tankwechsel (nur Tanks, Option):
-10  HealAreaGCD                              Shirk auf den Co-Tank, dann Zurückprovozieren
-11  HealSingleGCD                        10  InterruptAbility
-12  DefenseAreaGCD                       11  DispelAbility
-13  DefenseSingleGCD                     12  Shirk (befohlen)
-14  RaiseSpell   (sonst)                 13  TankStance
-15  GeneralGCD                           14  AntiKnockback
-16  Heilung ohne Anlass                  15  TrueNorth / Positional
-    (HealWhenNothingTodo)                16  HealAreaAbility
-                                         17  HealSingleAbility
-                                         18  SpeedAbility (nur befohlen)
-                                         19  ProvokeAbility
-                                         20  DefenseAreaAbility
-                                         21  DefenseSingleAbility
-                                         22  MoveForward / MoveBack
-                                         23  HP-Potion
-                                         24  Phönixfeder
-                                         25  AttackAbility
-                                         26  GeneralAbility
-                                         27  MP-Potion · GeneralUsing · Speed
+ 9  MoveForwardGCD                        9  Unverwundbarkeit vor tödlichem
+10  HealAreaGCD                              Tankbuster (nur Tanks, Option)
+11  HealSingleGCD                        10  Tankwechsel (nur Tanks, Option):
+12  DefenseAreaGCD                           Shirk auf den Co-Tank, dann Zurückprovozieren
+13  DefenseSingleGCD                     11  InterruptAbility
+14  RaiseSpell   (sonst)                 12  DispelAbility
+15  GeneralGCD                           13  Shirk (befohlen)
+16  Heilung ohne Anlass                  14  TankStance
+    (HealWhenNothingTodo)                15  AntiKnockback
+                                         16  TrueNorth / Positional
+                                         17  HealAreaAbility
+                                         18  HealSingleAbility
+                                         19  SpeedAbility (nur befohlen)
+                                         20  ProvokeAbility
+                                         21  DefenseAreaAbility
+                                         22  DefenseSingleAbility
+                                         23  MoveForward / MoveBack
+                                         24  HP-Potion
+                                         25  Phönixfeder
+                                         26  AttackAbility
+                                         27  GeneralAbility
+                                         28  MP-Potion · GeneralUsing · Speed
 ```
 
-Der Tankwechsel (9) sitzt hinter `EmergencyAbility`, damit eine Unverwundbarkeit, die an ihrer Schwelle zündet,
-vorgeht, und vor allem anderen, weil er nach einem Tankbuster eilt (Konzept 09, „Tankwechsel nach einem
-Tankbuster"). Er hat keinen befohlenen Eingang; Shirk (12) läuft weiterhin nur auf Befehl.
+Die Unverwundbarkeit vor einem tödlichen Tankbuster (9) und der Tankwechsel (10) sitzen hinter `EmergencyAbility`,
+damit eine Unverwundbarkeit, die an ihrer Schwelle zündet, vorgeht, und vor allem anderen, weil beide an einem
+Tankbuster hängen (Konzept 09, „Unverwundbarkeit vor einem tödlichen Tankbuster" und „Tankwechsel nach einem
+Tankbuster"). Die Unverwundbarkeit steht vor dem Wechsel, der hält, solange sie bereit ist. Beide haben keinen
+befohlenen Eingang; Shirk (13) läuft weiterhin nur auf Befehl. In der Einzelabwehr (22) lehnt `BaseAction.CanUse`
+für Tanks Aktionen auf den Spieler ab, solange die Unverwundbarkeit den Treffer deckt oder an ihn gebunden ist.
 
 In jedem Slot fragt der Dispatcher zuerst die Duty-Rotation (`DataCenter.CurrentDutyRotation`), dann den Job. Die
 Heil-, Abwehr-, Bewegungs- und Rückzugsslots haben je zwei Eingänge: zuerst den befohlenen (`CommandStatus`), dann
