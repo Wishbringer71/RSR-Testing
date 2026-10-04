@@ -5654,6 +5654,23 @@ Wechsel greift, schreibt das Protokoll selbst.
   9. Die Heilpfad-Ausnahme hing an der Zielüberschreibung, die aus `GCD()` stehen bleiben kann. Behoben: eigener
      Schalter `IBaseAction.HealPathRunning`, am Anfang von `Ability()` zurückgesetzt.
   10. Jede LP-Änderung schrieb eine neue Planzeile. Behoben: neue Zeile nur bei geändertem Inhalt.
+- *Viertes Code-Review (c6701fb9e..4a1b75582), zehn Punkte:*
+  1./2. „Eben gedrückt" las die Abklingzeit: Rachsucht und Verdammnis teilen sie und zählten doppelt, ein The Blackest
+     Night auf dem Co-Tank zählte als eigene Barriere – der Plan konnte auf „nichts nötig" fallen und alles halten.
+     Behoben: nur die eigenen Drücke des Plans, mit Zeitpunkt.
+  3. Abgelehntes trug sich auf ein späteres Wirken derselben Aktion über. Behoben: alles je Wirken, auch die
+     Protokollzeile (Befund 7).
+  4. Eine Ablehnung aus MP-Mangel oder kurz außer Reichweite schloss die Aktion für das ganze Wirken aus. Behoben:
+     für einen GCD, dann neu.
+  5. Eine BossModReborn-Vorhersage auf den Co-Tank schaltete das Zurückhalten ab. Behoben: eine Vorhersage, die
+     ausdrücklich einen anderen trifft, zählt nicht.
+  6. Neben einem zweiten Wirken gingen Minderungen unter Holmgang hinaus, gegen „nie zusätzlich zur
+     Unverwundbarkeit". Behoben: Hält sie über jedes Wirken, hält das Zurückhalten.
+  8. „Eben gedrückt" bei der Unverwundbarkeit jetzt über `JustUsedAfter` (je Ladung).
+  9. `HealPathRunning` ist ein von Hand gesetzter Schalter; belassen, weil `Ability()` und `Invoke` ihn zurücksetzen
+     und kein Aufrufer zwischen `GCD()` und `Ability()` liegt. Ein künftiger Aufrufer dort muss ihn selbst
+     zurücksetzen.
+  10. „Göttlicher Schleier" stand unbelegt im Konzept. Ersetzt durch „Divine Veil".
 - *Seine Präzisierung zu „alles" (während der dritten Runde):* alles nur, wenn die Unverwundbarkeit nicht verfügbar ist
   und alle Minderungen zusammen nicht reichen – nie die Unverwundbarkeit plus Minderungen. So gebaut; Befund 1 war der
   Fehler genau dagegen.

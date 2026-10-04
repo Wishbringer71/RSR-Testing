@@ -20,10 +20,12 @@ public partial class CustomRotation
 	private static readonly HashSet<uint> _plannedIds = [];
 	private static (ulong Source, uint ActionId, float Total, string Summary) _planTraced;
 
-	// Actions the game or the rotation refused for the current cast outside an animation lock - out of
-	// range, no target, a check of the rotation's own. The plan is made again without them.
-	private static (ulong Source, uint ActionId, float Total) _refusedFor;
-	private static readonly HashSet<uint> _refused = [];
+	// Per cast: what the game or the rotation refused outside an animation lock - out of range, no MP, a
+	// check of the rotation's own -, left out of the plan for one GCD and then tried again; and what the
+	// plan pressed itself, which counts as standing until its status is on.
+	private static (ulong Source, uint ActionId, float Total) _planCast;
+	private static readonly Dictionary<uint, DateTime> _refused = [];
+	private static readonly Dictionary<uint, DateTime> _pressed = [];
 
 	/// <summary>
 	/// The owner's rule of 04.10.2026 (concept 09, "Das geringste Mittel gegen einen gemessenen
@@ -51,16 +53,19 @@ public partial class CustomRotation
 		}
 
 		var cast = TankbusterForecast.SoonestMeasured;
+		var castKey = cast == null ? default : (cast.Source.GameObjectId, cast.ActionId, cast.Total);
+		if (_planCast != castKey)
+		{
+			// A new cast, or none: nothing of the last one carries over, not even its trace line.
+			_planCast = castKey;
+			_refused.Clear();
+			_pressed.Clear();
+			_planTraced = default;
+		}
+
 		if (cast == null)
 		{
 			return;
-		}
-
-		var castKey = (cast.Source.GameObjectId, cast.ActionId, cast.Total);
-		if (_refusedFor != castKey)
-		{
-			_refusedFor = castKey;
-			_refused.Clear();
 		}
 
 		var gcd = DataCenter.DefaultGCDTotal;
@@ -109,7 +114,7 @@ public partial class CustomRotation
 			SetPlan(new TankbusterPlan(cast, Pick(candidates, bestMask), false, true, bestAfter));
 		}
 		else if (Service.Config.InvulnerabilityBeforeLethalTankbuster && invulnerability != null
-			&& !_refused.Contains(invulnerability.ID) && InvulnerabilityReadyBy(cast.Remaining - gcd))
+			&& !Refused(invulnerability.ID, gcd) && InvulnerabilityReadyBy(cast.Remaining - gcd))
 		{
 			SetPlan(new TankbusterPlan(cast, [], true, true, 0f));
 		}
@@ -139,8 +144,9 @@ public partial class CustomRotation
 	/// button as the game casts it. Party tools - a barrier or mitigation spread over the party, Shake It
 	/// Off, Divine Veil, Dark Missionary, Heart of Light - stay out: they belong to the area defence, and
 	/// Shake It Off dispels the tank's own Damnation and Bloodwhetting. Reprisal, a debuff on the enemy,
-	/// stays in. <paramref name="pending"/>: mitigations pressed within the last GCD whose status is not on
-	/// yet.
+	/// stays in. <paramref name="pending"/>: mitigations this plan pressed within the last GCD whose status
+	/// is not on yet - only its own presses, which went on the player; a cooldown alone says neither who
+	/// pressed it nor on whom, and a shared recast (Vengeance and Damnation) would count twice.
 	/// </summary>
 	private List<PlanCandidate> PlanCandidates(TankbusterForecast.Cast cast, float gcd, out List<PlanCandidate> pending)
 	{
@@ -150,7 +156,7 @@ public partial class CustomRotation
 		foreach (var action in AllBaseActions)
 		{
 			if (action == null || player == null || action.Info.IsRealGCD || !action.EnoughLevel
-				|| !action.Config.IsEnabled || _refused.Contains(action.ID))
+				|| !action.Config.IsEnabled || Refused(action.ID, gcd))
 			{
 				continue;
 			}
@@ -188,7 +194,7 @@ public partial class CustomRotation
 
 			var candidate = new PlanCandidate(action, (1f - self) * (1f - enemy), barrier,
 				action.Cooldown.RecastTimeOneChargeRaw);
-			if (action.Cooldown.IsCoolingDown && !action.Cooldown.ElapsedAfter(gcd))
+			if (_pressed.TryGetValue(action.ID, out var pressedAt) && (DateTime.Now - pressedAt).TotalSeconds < gcd)
 			{
 				pending.Add(candidate);
 				continue;
@@ -280,10 +286,16 @@ public partial class CustomRotation
 			&& invulnerability.Cooldown.WillHaveOneCharge(Math.Max(0f, seconds));
 	}
 
-	// Pressed within the last GCD, its status perhaps not on the player yet.
+	// Pressed within the last GCD - by the plan or at its HP threshold -, its status perhaps not on yet.
+	// The invulnerability has no shared recast and one charge, so its cooldown says who: the tank himself.
 	private static bool InvulnerabilityJustUsed(IBaseAction invulnerability, float gcd)
 	{
-		return invulnerability.Cooldown.IsCoolingDown && !invulnerability.Cooldown.ElapsedAfter(gcd);
+		return invulnerability.Cooldown.IsCoolingDown && invulnerability.Cooldown.JustUsedAfter(gcd);
+	}
+
+	private static bool Refused(uint actionId, float gcd)
+	{
+		return _refused.TryGetValue(actionId, out var at) && (DateTime.Now - at).TotalSeconds < gcd;
 	}
 
 	// One line per change of what the plan spends; the figures ride along but do not make a new line.
@@ -386,10 +398,10 @@ public partial class CustomRotation
 				targetOverride: TargetType.Self))
 			{
 				act = null;
-				if (ECommons.GameHelpers.Player.AnimationLock <= 0f && action.Cooldown.HasOneCharge
-					&& _refused.Add(action.ID))
+				if (ECommons.GameHelpers.Player.AnimationLock <= 0f && action.Cooldown.HasOneCharge)
 				{
-					DefenseTrace.Line($"{action.Name} refused for #{plan.Cast.ActionId}; planning without it");
+					_refused[action.ID] = DateTime.Now;
+					DefenseTrace.Line($"{action.Name} refused for #{plan.Cast.ActionId}; planning without it for a GCD");
 				}
 
 				return false;
@@ -399,6 +411,8 @@ public partial class CustomRotation
 		{
 			IBaseAction.TargetOverride = previous;
 		}
+
+		_pressed[action.ID] = DateTime.Now;
 
 		DefenseTrace.Decision($"{why} for #{plan.Cast.ActionId} from {plan.Cast.Source.Name.TextValue}"
 			+ $" in {plan.Cast.Remaining:F1} s", act);
@@ -417,8 +431,21 @@ public partial class CustomRotation
 			return false;
 		}
 
-		return !DataCenter.BMRTankbusterImminent
+		// A prediction known to be on someone else is not a hit on the player.
+		return !DataCenter.BMRTankbusterImminent || DataCenter.BMRTankbusterHitsPlayer == false
 			|| DataCenter.BMRNextTankbusterIn >= plan.Cast.Remaining - DataCenter.DefaultGCDTotal;
+	}
+
+	// An invulnerability that outlasts every cast now coming at the player covers them all.
+	private static bool InvulnerabilityCoversEveryCast()
+	{
+		var latest = 0f;
+		foreach (var cast in TankbusterForecast.Casts)
+		{
+			latest = Math.Max(latest, cast.Horizon);
+		}
+
+		return TankbusterForecast.PlayerInvulnerableThrough(latest);
 	}
 
 	/// <summary>
@@ -446,7 +473,18 @@ public partial class CustomRotation
 		}
 
 		var plan = _tankbusterPlan;
-		if (plan == null || !PlanCoversEveryHit(plan))
+		if (plan == null)
+		{
+			return false;
+		}
+
+		// Never mitigation on top of an invulnerability that holds over everything coming.
+		if (plan.Invulnerability && InvulnerabilityCoversEveryCast())
+		{
+			return true;
+		}
+
+		if (!PlanCoversEveryHit(plan))
 		{
 			return false;
 		}
