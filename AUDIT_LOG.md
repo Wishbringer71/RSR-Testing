@@ -5506,6 +5506,12 @@ Wechsel greift, schreibt das Protokoll selbst.
     nur bei unbekannter Stärkung des Gegners; das ist vor dem Verbraucher Unverwundbarkeit zu schließen.
   - **Ausgeliefert, und nichts ändert sich?** Ohne Tankbuster-Treffer bleibt die Tabelle leer; die Liste zeigt das
     am Zähler, das Protokoll an der Messzeile.
+- *Seine Rückfrage zur Gegenrechnung:* Mit stehender Unverwundbarkeit wirkt keine Minderung mehr – warum also ein
+  Gegenpunkt? Er hat recht. Der Gegenpunkt (eine Überschätzung der Tabelle) richtet sich gegen das Ziehen der
+  Unverwundbarkeit, nicht gegen das Weglassen der übrigen Mittel. In Konzept 13 sind die beiden Entscheidungen jetzt
+  getrennt. Ursache am System: Der Text hatte zwei Entscheidungen unter einer Überschrift vermischt.
+- *Compile-Fehler bei 2753c3c8a:* `ObjectKind.Player` gibt es in der aktuellen Dalamud-Version nicht (CS0117).
+  Spieler werden jetzt über `IPlayerCharacter` erkannt; Ursache war eine Annahme über die API ohne Beleg im Baum.
 
 **Prüfgrad:** statisch, alle Prüfskripte und Generatoren, Compile über die CI. Im Spiel nicht beobachtet.
 ---

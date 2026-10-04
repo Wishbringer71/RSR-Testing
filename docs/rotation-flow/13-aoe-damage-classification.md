@@ -578,31 +578,35 @@ tödlich ist, nur noch invul nimmt und alle anderen schilde, debuffs und mitigat
 nichts bringen würden und somit nur unnütz verbraucht wären. das müsste aber im konzept mehrfach geprüft und
 gegengerechnet sein."
 
-**Erste Gegenrechnung, keine Entscheidung** (gebaut wird erst mit dem vorausgehenden Einsatz der
-Unverwundbarkeit, `TODO.md`):
+**Gegenrechnung, keine Entscheidung** (gebaut wird erst mit dem vorausgehenden Einsatz der Unverwundbarkeit,
+`TODO.md`). Zwei Entscheidungen sind auseinanderzuhalten, und nur die erste trägt Risiko:
 
-- **Dafür:** Alle vier Unverwundbarkeiten machen eine Minderung für *diesen* Treffer wertlos.
+**1. Die Unverwundbarkeit ziehen, weil die Tabelle den Treffer für tödlich hält.** Das ist die Entscheidung, gegen
+die der Gegenpunkt steht – nicht gegen das Weglassen der Minderung.
+- Die Tabelle irrt fast nur nach unten (siehe oben). Ein Urteil „tödlich auch mit allen verfügbaren Minderungen"
+  aus einem zu kleinen Wert ist also erst recht richtig.
+- Nach oben irren kann sie über den Höchstwert: ein Treffer unter einer unbekannten Stärkung des Bosses (Raserei,
+  Schadensplus), oder ein Wert unter Verwundbarkeit mit mehr Stapeln.
+- Dann zöge die Regel eine Unverwundbarkeit (240 s bis 420 s, xivapi) für einen Treffer, den Minderung allein
+  getragen hätte. Sie fehlt dann beim nächsten wirklich tödlichen Treffer.
+- Deshalb ist ein erhöhter Gegnerschaden beim Messen zu erkennen und auszuschließen, bevor diese Regel gebaut wird.
+
+**2. Steht die Unverwundbarkeit, die übrigen Mittel weglassen (sein Vorschlag).** Dagegen gibt es für diesen
+Treffer keinen Einwand.
+- Alle vier machen eine Minderung für diesen Treffer wirkungslos:
   - Heiliger Boden: immun, 10 s.
   - Holmgang: LP fallen nicht unter 1, 10 s.
   - Superbolide: LP auf 1, immun, 10 s.
   - Totenerweckung: der Tod wird zu Walking Dead, danach zählt die Heilung, nicht die Minderung.
-  
-  Eine Minderung von 90 s bis 120 s, die dabei verbraucht wird, fehlt beim nächsten Tankbuster.
-- **Wann „sicher tödlich" belastbar ist:** Die Tabelle irrt fast nur nach unten (siehe oben). Ein Urteil „tödlich
-  auch mit allen verfügbaren Minderungen" aus einem zu kleinen Wert ist also erst recht richtig.
-  - Nach oben irren kann sie über den Höchstwert: ein Treffer unter einer unbekannten Stärkung des Bosses (Raserei,
-    Schadensplus), oder ein Wert unter Verwundbarkeit mit mehr Stapeln.
-  - Dann kostete die Regel eine Unverwundbarkeit (240 s bis 420 s), wo Minderung gereicht hätte. Das ist der
-    schwerste Gegenpunkt. Er spricht dafür, einen erhöhten Gegner-Schaden beim Messen zu erkennen und
-    auszuschließen, bevor die Regel gebaut wird.
-- **Was nicht weggelassen werden darf:**
-  - Eine Minderung, die zugleich anderen hilft: Reflexion auf dem Boss mindert auch einen Raidwide im selben
-    Fenster.
-  - Was über die 10 s hinaus wirkt: Folgetreffer, DoT des Tankbusters (messbar an den Status, die er legt).
-  - Heilerschilde: deren Einsatz entscheidet der Heiler, nicht der Tank.
-- **Kein Rückfall durch die Minderung:** Scheitert die Unverwundbarkeit, etwa durch einen verpassten
-  Einschiebeplatz, hätte die Minderung bei einem sicher tödlichen Treffer ohnehin nicht gerettet. Ein Rückfallwert
-  entsteht nur dort, wo die Vorhersage falsch ist – siehe den Punkt davor.
+- Ein Schild oder Gegner-Debuff wäre verbraucht, ohne etwas zu bewirken. Schutzwall (90 s) und Verdammnis (120 s)
+  fehlten beim nächsten Tankbuster.
+- Auch als Rückfall taugt die Minderung nicht: Scheitert die Unverwundbarkeit bei einem tödlichen Treffer, rettet
+  die Minderung ebenfalls nicht.
+- Was dennoch nicht wegfallen darf, betrifft andere Treffer:
+  - Eine Minderung, die zugleich anderen hilft (Reflexion auf dem Boss mindert auch einen Raidwide im selben
+    Fenster).
+  - Was über die 10 s hinaus wirkt (Folgetreffer, DoT des Tankbusters – messbar an den Status, die er legt).
+  - Heilerschilde; deren Einsatz entscheidet der Heiler.
 
 ## Falsifikation
 
