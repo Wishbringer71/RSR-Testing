@@ -54,12 +54,13 @@ internal static class TankbusterForecast
 		public required ulong Target { get; init; }
 		public required long Tick { get; init; }
 		public required StatusID[] Statuses { get; init; }
+		public required bool Outward { get; init; }
 		public required float PriorRemaining { get; init; }
 		public bool StatusSeen { get; set; }
 	}
 
 	private static readonly List<Execution> _own = [];
-	private static readonly Dictionary<uint, StatusID[]> _statusesOfAction = [];
+	private static readonly Dictionary<uint, (StatusID[] Statuses, bool Outward)> _factsOfAction = [];
 	private static ICustomRotation? _statusesFor;
 	private static readonly Dictionary<(ulong Source, uint ActionId, float Total), (int Serial, float Elapsed)> _serials = [];
 	private static readonly HashSet<(ulong Source, uint ActionId, float Total)> _live = [];
@@ -97,19 +98,30 @@ internal static class TankbusterForecast
 		var now = Environment.TickCount64;
 		_ = _own.RemoveAll(e => SecondsSince(e.Tick, now) > DefensiveValues.DurationOf(e.ActionId));
 		var player = Player.Object;
-		var statuses = StatusesOfAction(actionId);
-		if (player == null || statuses.Length == 0 || DefensiveValues.DurationOf(actionId) <= 0f)
+		var lasts = DefensiveValues.DurationOf(actionId);
+		if (player == null || lasts <= 0f || !DataCenter.InCombat || DataCenter.Role != JobRole.Tank)
 		{
 			return;
 		}
 
+		var (statuses, outward) = FactsOfAction(actionId);
+		if (statuses.Length == 0)
+		{
+			return;
+		}
+
+		// The client may have put the new copy on before this handler ran: a copy with more than the
+		// duration less one GCD left cannot be an older one, so it is already the new status.
+		var prior = LongestOwnCopy(player, targetId, statuses, outward, float.MaxValue);
 		_own.Add(new Execution
 		{
 			ActionId = actionId,
 			Target = targetId,
 			Tick = now,
 			Statuses = statuses,
-			PriorRemaining = OwnRemaining(player, targetId, statuses, player.GameObjectId),
+			Outward = outward,
+			PriorRemaining = prior,
+			StatusSeen = prior > lasts - DataCenter.DefaultGCDTotal,
 		});
 	}
 
@@ -146,27 +158,28 @@ internal static class TankbusterForecast
 	}
 
 	// Marks every execution whose new status shows: an own copy on the player, its target or - for an
-	// effect around the player - any enemy, running longer than an own copy ran when the action went out.
-	// Read from the status list itself, not from the status the confirming packet predicts, and a renewal
-	// counts only once the renewed copy is on.
+	// effect around the player, Reprisal - any character, running longer than an own copy ran when the
+	// action went out. Read from the status list itself, not from the status the confirming packet
+	// predicts, and a renewal counts only once the renewed copy is on.
 	private static void RecordStatusesSeen(IBattleChara player)
 	{
 		foreach (var execution in _own)
 		{
-			if (!execution.StatusSeen && OwnRemaining(player, execution.Target, execution.Statuses, player.GameObjectId)
-				> execution.PriorRemaining)
+			if (!execution.StatusSeen && LongestOwnCopy(player, execution.Target, execution.Statuses, execution.Outward,
+				execution.PriorRemaining) > execution.PriorRemaining)
 			{
 				execution.StatusSeen = true;
 			}
 		}
 	}
 
-	// The longest an own copy of the statuses still runs on the player, on the target, and - when the
-	// target is not the player - on any other character; -1 when there is none.
-	private static float OwnRemaining(IBattleChara player, ulong targetId, StatusID[] statuses, ulong playerEntity)
+	// The longest an own copy of the statuses still runs on the player, on the target, and - for an
+	// effect around the player or one aimed at someone else - on any character; -1 when there is none.
+	// Stops at the first copy above <paramref name="enough"/>.
+	private static float LongestOwnCopy(IBattleChara player, ulong targetId, StatusID[] statuses, bool outward, float enough)
 	{
-		var longest = OwnRemainingOn(player, statuses, playerEntity);
-		if (targetId == 0 || targetId == player.GameObjectId)
+		var longest = OwnCopy(player, statuses);
+		if (longest > enough || (!outward && (targetId == 0 || targetId == player.GameObjectId)))
 		{
 			return longest;
 		}
@@ -175,35 +188,9 @@ internal static class TankbusterForecast
 		{
 			if (obj is IBattleChara chara && chara.GameObjectId != player.GameObjectId)
 			{
-				longest = Math.Max(longest, OwnRemainingOn(chara, statuses, playerEntity));
-			}
-		}
-
-		return longest;
-	}
-
-	// The status list's source is compared with the player's object id, as StatusHelper does.
-	private static float OwnRemainingOn(IBattleChara chara, StatusID[] statuses, ulong playerEntity)
-	{
-		var longest = -1f;
-		var list = chara.StatusList;
-		if (list == null)
-		{
-			return longest;
-		}
-
-		foreach (var status in list)
-		{
-			if (status == null || status.SourceId != playerEntity)
-			{
-				continue;
-			}
-
-			foreach (var id in statuses)
-			{
-				if (status.StatusId == (uint)id)
+				longest = Math.Max(longest, OwnCopy(chara, statuses));
+				if (longest > enough)
 				{
-					longest = Math.Max(longest, status.RemainingTime);
 					break;
 				}
 			}
@@ -212,19 +199,27 @@ internal static class TankbusterForecast
 		return longest;
 	}
 
-	// The statuses an action puts on: those its effect text is tied to, and those its setting in the
-	// current rotation provides (The Blackest Night's barrier has no mitigation figure, only a status).
-	// Kept per action until the rotation changes.
-	private static StatusID[] StatusesOfAction(uint actionId)
+	// StatusHelper's own reading: the status list itself, guarded, the player or his pet as source.
+	private static float OwnCopy(IBattleChara chara, StatusID[] statuses)
+	{
+		var left = StatusHelper.MinStatusRemainingTime(chara, true, statuses, out var found);
+		return found ? left : -1f;
+	}
+
+	// The statuses an action puts on - those its effect text is tied to, and those its setting in the
+	// current rotation provides (The Blackest Night's barrier has no mitigation figure, only a status) -,
+	// and whether it works around the player (an effect radius, game data). Kept per action until the
+	// rotation changes.
+	private static (StatusID[] Statuses, bool Outward) FactsOfAction(uint actionId)
 	{
 		var rotation = DataCenter.CurrentRotation;
 		if (!ReferenceEquals(rotation, _statusesFor))
 		{
 			_statusesFor = rotation;
-			_statusesOfAction.Clear();
+			_factsOfAction.Clear();
 		}
 
-		if (_statusesOfAction.TryGetValue(actionId, out var known))
+		if (_factsOfAction.TryGetValue(actionId, out var known))
 		{
 			return known;
 		}
@@ -253,8 +248,9 @@ internal static class TankbusterForecast
 			}
 		}
 
-		StatusID[] result = [.. statuses];
-		_statusesOfAction[actionId] = result;
+		var outward = Service.GetSheet<Lumina.Excel.Sheets.Action>().TryGetRow(actionId, out var row) && row.EffectRange > 0;
+		(StatusID[] Statuses, bool Outward) result = ([.. statuses], outward);
+		_factsOfAction[actionId] = result;
 		return result;
 	}
 
@@ -356,8 +352,6 @@ internal static class TankbusterForecast
 				_ = _serials.Remove(identity);
 			}
 		}
-
-		_live.Clear();
 
 		PlayerImpervious = player.ImperviousThrough(_casts.Count == 0 ? gcd : _casts[0].Horizon);
 	}

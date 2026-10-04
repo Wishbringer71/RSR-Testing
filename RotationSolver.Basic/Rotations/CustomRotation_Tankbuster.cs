@@ -25,11 +25,7 @@ public partial class CustomRotation
 	// plan for one GCD, then tried again. The entry stays until the cast ends, so the refusal is written once.
 	private static readonly Dictionary<(int Cast, uint ActionId), long> _refused = [];
 
-	// Casts for which something of "everything" has gone out: the invulnerability is not drawn on top of it
-	// afterwards (the owner's precision: "nicht invul und dann noch zusätzlich buffs"). A stun that refuses
-	// the invulnerability refuses every other ability as well, so then nothing goes out and the
-	// invulnerability stays in play.
-	private static readonly HashSet<int> _everythingSpent = [];
+
 
 	/// <summary>
 	/// The owner's rule of 04.10.2026 (concept 09, "Das geringste Mittel gegen einen gemessenen
@@ -66,7 +62,6 @@ public partial class CustomRotation
 			_ = _refused.Remove(key);
 		}
 
-		_ = _everythingSpent.RemoveWhere(serial => !TankbusterForecast.IsRunning(serial));
 
 		if (DataCenter.Role != JobRole.Tank
 			|| (!Service.Config.InvulnerabilityBeforeLethalTankbuster && !Service.Config.HoldMitigationUnderInvulnerability))
@@ -126,7 +121,7 @@ public partial class CustomRotation
 			SetPlan(new TankbusterPlan(cast, Pick(candidates, bestMask), false, true, bestAfter));
 		}
 		else if (Service.Config.InvulnerabilityBeforeLethalTankbuster && invulnerability != null
-			&& !_everythingSpent.Contains(cast.Serial) && !Refused(cast, invulnerability.ID, gcd)
+			&& !Refused(cast, invulnerability.ID, gcd)
 			&& InvulnerabilityReadyBy(cast.Remaining - gcd))
 		{
 			SetPlan(new TankbusterPlan(cast, [], true, true, 0f));
@@ -445,11 +440,6 @@ public partial class CustomRotation
 			IBaseAction.TargetOverride = previous;
 		}
 
-		if (!plan.Survivable && !plan.Invulnerability)
-		{
-			_ = _everythingSpent.Add(plan.Cast.Serial);
-		}
-
 		DefenseTrace.Decision($"{why} for #{plan.Cast.ActionId} from {plan.Cast.Source.Name.TextValue}"
 			+ $" in {plan.Cast.Remaining:F1} s", act);
 		return true;
@@ -534,8 +524,10 @@ public partial class CustomRotation
 				return false;
 			}
 
-			// Covering only this cast (a second is coming) was answered above; here it is still to be drawn.
-			return plan.Cast.Remaining > gcd && invulnerability.Cooldown.HasOneCharge;
+			// Still to be drawn. Once refused in this cast it is tried again, but the rest is not held for it
+			// any more - a refusal that comes back every GCD would otherwise switch the hold on and off.
+			return plan.Cast.Remaining > gcd && invulnerability.Cooldown.HasOneCharge
+				&& !_refused.ContainsKey((plan.Cast.Serial, invulnerability.ID));
 		}
 
 		if (!plan.Survivable)

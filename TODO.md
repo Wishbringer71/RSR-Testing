@@ -248,6 +248,25 @@ der sich hochrechnen ließe).
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 
+### Unverwundbarkeit nach „alles" im selben Wirken: seine Entscheidung · N
+
+**Lage (A261):** Ist die Unverwundbarkeit für einen gemessenen Tankbuster verweigert – vom Spiel (Stun, Amnesie)
+oder einer Prüfung der Rotation –, ist der Plan „alles", und Minderungen gehen hinaus. Wird sie danach im selben
+Wirken nutzbar und reicht noch immer nichts Geringeres, stehen zwei Wege offen:
+- **A (gebaut, Voreinstellung):** Sie geht trotzdem. Im Kampf: Der Tank überlebt den Treffer, den nach der Messung
+  nichts Geringeres trägt; die schon verbrauchten Minderungen fehlen beim nächsten Tankbuster ohnehin, die
+  Unverwundbarkeit (240–420 s) zusätzlich.
+- **B:** Sie geht nicht mehr, sobald aus „alles" etwas hinausging. Im Kampf: Die Unverwundbarkeit bleibt für den
+  nächsten tödlichen Treffer; der jetzige trifft auf alle Minderungen und tötet nach der Messung, außer ein anderer
+  legt noch einen Debuff oder Schild.
+
+Seine Präzisierung („nicht invul und dann noch zusätzlich buffs … alles raushauen, wenn invul nicht verfügbar ist")
+legt fest, was „alles" heißt; diesen Fall berührt sie nicht. **Empfehlung:** A – die Messung nennt den Treffer
+tödlich, und B nimmt den Tod bewusst in Kauf, um eine Abklingzeit zu sparen. Die Runden des Code-Reviews haben
+zwischen beiden gependelt; die Frage ist keine technische.
+
+**Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
+
 ### Tankbuster-Plan: keine Reserve nach einem knapp überlebten Treffer · N
 
 **Befund (A261):** Der Plan rechnet bis zum Einschlag: Er wählt das billigste Bündel, mit dem der gemessene

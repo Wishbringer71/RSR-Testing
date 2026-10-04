@@ -5730,6 +5730,19 @@ Wechsel greift, schreibt das Protokoll selbst.
   6. Statuslisten je Durchlauf neu gebaut. Behoben: einmal je Aktion (bis die Rotation wechselt), bei der Ausführung.
   7. Grenze und Vorlage standen nur im Archiv. Beide mit 2./3. und 1. erledigt; nichts Offenes für `TODO.md`.
   8. `action.AdjustedID` statt `Service.GetAdjustedActionId`.
+- *Neuntes Code-Review (376c5f296..6ec7538b6), zehn Punkte:*
+  1. Reflexion wurde mit dem Spieler als Ziel aufgezeichnet und nie auf dem Gegner gesucht. Behoben: Wirkung um den
+     Spieler (Wirkradius laut Spieldaten) sucht auf jedem Charakter.
+  2.–4./7. Die Regel „nach ‚alles' keine Unverwundbarkeit" hing an einem `CanUse`-Treffer, übersah andere Pfade,
+     sperrte nach einem kurzen Stun und flackerte. Die Frage pendelt seit vier Runden; sie ist keine technische.
+     Gebaut ist die sicherere Voreinstellung (sie geht, wenn sie wieder nutzbar ist und nichts Geringeres reicht),
+     vorgelegt als Entscheidung in `TODO.md`. Nach einer Verweigerung hält sie den Rest nicht mehr zurück (kein
+     Flackern des Zurückhaltens).
+  5./8./10. Statusliste ungeschützt gelesen, Haustier als Quelle fehlte, doppelte Prüfung. Behoben: über
+     `StatusHelper.MinStatusRemainingTime`.
+  6. Lag der neue Status beim Bestätigen schon, wurde er nie als gesehen erkannt. Behoben: eine Kopie mit mehr als
+     Wirkdauer weniger einem GCD gilt sofort als die neue.
+  9. Arbeit für Nicht-Tanks und volle Objektdurchläufe. Behoben: nur Tanks im Kampf, Abbruch beim ersten Treffer.
 - *Seine Präzisierung zu „alles" (während der dritten Runde):* alles nur, wenn die Unverwundbarkeit nicht verfügbar ist
   und alle Minderungen zusammen nicht reichen – nie die Unverwundbarkeit plus Minderungen. So gebaut; Befund 1 war der
   Fehler genau dagegen.
