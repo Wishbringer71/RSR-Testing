@@ -16,17 +16,11 @@ no plugin repository manifest of its own, so the install instructions below add 
 `InternalName: RotationSolver` and the upstream `RepoUrl` included — so a fork build presents
 itself to Dalamud under the same plugin identity as upstream.
 
-**The `RotationSolverReborn.Basic` package** keeps upstream's `PackageId` and marks the fork
-with the pre-release label `-wsh<n>`, so the published package carries the upstream version
-number with that label appended. The label is there because `GeneratePackageOnBuild` makes
-every local and pull-request build produce a `.nupkg`, which would otherwise ship under the
-bare upstream identity; the releases carry the plugin's `latest.zip` only, so the package
-comes from a build of this repository rather than from a feed. Consuming it means allowing
-pre-release versions or pinning the exact version: a version without a suffix
-sorts higher, so in a feed holding both, a consumer that asks for neither still resolves to
-upstream. Changes to the package surface are listed in [CHANGELOG.md](CHANGELOG.md), because
-the version number cannot express them — its numeric part follows the upstream release, not
-this fork's own compatibility.
+**`RotationSolver.Basic`** is no longer built as a NuGet package: upstream made the project
+`IsPackable=false` in its UI rework, so the releases carry no `.nupkg`. A derived rotation
+compiles against `RotationSolver.Basic.dll` from the plugin's `latest.zip`. Changes to its public
+surface are listed in [CHANGELOG.md](CHANGELOG.md), because the version number cannot express
+them — its numeric part follows the upstream release, not this fork's own compatibility.
 
 **Where the fork documents itself**
 

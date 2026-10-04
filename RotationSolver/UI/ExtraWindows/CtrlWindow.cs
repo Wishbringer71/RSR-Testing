@@ -1,8 +1,8 @@
 ﻿using Dalamud.Interface.Windowing;
 
-namespace RotationSolver.UI;
+namespace RotationSolver.UI.ExtraWindows;
 
-internal abstract class CtrlWindow(string name) : Window(name, BaseFlags)
+internal abstract class FullCtrlWindow(string name) : Window(name, BaseFlags)
 {
 	public const ImGuiWindowFlags BaseFlags = ImGuiWindowFlags.NoScrollbar
 						| ImGuiWindowFlags.NoNav

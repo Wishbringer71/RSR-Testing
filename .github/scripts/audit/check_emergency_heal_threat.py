@@ -31,7 +31,7 @@ HELPER = Path('RotationSolver.Basic/Helpers/ObjectHelper.cs')
 UPDATER = Path('RotationSolver/Updaters/TargetUpdater.cs')
 CENTER = Path('RotationSolver.Basic/DataCenter.cs')
 CONFIGS = Path('RotationSolver.Basic/Configuration/Configs.cs')
-WINDOW = Path('RotationSolver/UI/RotationConfigWindow.cs')
+WINDOW = Path('RotationSolver/UI/MainWindow/MainWindow_List.cs')
 
 BENEDICTION_BRANCH = re.compile(
     r'BenedictionPvE\.CanUse\(out act\).*?\)\s*\{', re.DOTALL)
