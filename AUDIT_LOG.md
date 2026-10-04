@@ -5555,6 +5555,18 @@ Wechsel greift, schreibt das Protokoll selbst.
 - *Neben dem Auftrag gefunden:* `Ability()` erbt eine Zielüberschreibung aus `GCD()` (Eintrag in `TODO.md`). Der neue
   Verbraucher setzt sie für seinen Aufruf zurück. Außerdem zwei Zeilenangaben in Konzept 05, die schon vor dieser
   Änderung leer waren, durch Bezeichner ersetzt.
+- *Code-Review nach dem Push (2d40c84c0):*
+  - Die Bindung entstand auch bei abgeschalteter Unverwundbarkeits-Option. Das Zurückhalten hätte die Minderung dann
+    bis in den letzten GCD verzögert, ohne dass eine Unverwundbarkeit kommt. Jetzt nur bei eingeschalteter Option;
+    das Protokoll nennt den Fall („ready, but the option is off").
+  - Eine Ausnahme in einer Rotationsabwehr hätte `HoldDefenceOnSelf` stehen lassen und jede Aktion auf den Spieler
+    abgelehnt. `Invoke` setzt es und `SelfProtectionHitsMe` je Durchlauf zurück.
+  - Ein fehlendes `using` für `OtherConfiguration` noch vor dem Push gefunden.
+  - Grenze, nicht gebaut: Der beste Fall zählt alle Minderungen, die Abwehr staffelt die großen (Eintrag in
+    `TODO.md`).
+  - Geprüft ohne Befund: Die vier Unverwundbarkeiten stehen in `DefensiveValues.ByActionId` nicht als Minderung
+    (sonst wäre jeder beste Fall null). Reflexion löst ihr Ziel als den Spieler auf und wird damit zurückgehalten.
+    Die Vorschau der Abwehr im Steuerfenster zeigt das Zurückhalten nicht; sie führt nichts aus.
 - *Falsifikation:* Konzept 09, Abschnitt „Unverwundbarkeit vor einem tödlichen Tankbuster", Antithesen 1–4.
   - Widerlegt: Die reaktive Unverwundbarkeit genügt nicht; ein Treffer von voller Gesundheit führt in einem Schritt
     auf 0.

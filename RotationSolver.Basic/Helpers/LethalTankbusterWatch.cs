@@ -49,6 +49,7 @@ internal static class LethalTankbusterWatch
 		NotMeasured,
 		Survivable,
 		LethalNoInvulnerability,
+		LethalOptionOff,
 		Committed,
 	}
 
@@ -169,9 +170,12 @@ internal static class LethalTankbusterWatch
 		var maxHp = Math.Max(1u, player.MaxHp);
 		var standing = 1f + ((float)player.GetObjectShield() / maxHp);
 		var lethal = predicted > 0f && predicted >= standing;
+		// Committed only when the consumer will act on it: with the option off, a commitment would hold
+		// the other mitigation for an invulnerability that never comes.
+		var enabled = Service.Config.InvulnerabilityBeforeLethalTankbuster;
 		var ready = InvulnerabilityReady(out var invulnerability);
 
-		if (lethal && ready)
+		if (lethal && ready && enabled)
 		{
 			_committed = new Committed
 			{
@@ -186,7 +190,7 @@ internal static class LethalTankbusterWatch
 		// One line per cast and verdict, so the file shows what the verdict was built on - and a second
 		// one when the invulnerability comes off cooldown during the cast and the verdict turns.
 		var verdict = predicted <= 0f ? Verdict.NotMeasured : !lethal ? Verdict.Survivable
-			: ready ? Verdict.Committed : Verdict.LethalNoInvulnerability;
+			: !ready ? Verdict.LethalNoInvulnerability : enabled ? Verdict.Committed : Verdict.LethalOptionOff;
 		var key = (caster.GameObjectId, actionId, total, verdict);
 		if (_written != key)
 		{
@@ -198,9 +202,13 @@ internal static class LethalTankbusterWatch
 				+ (predicted <= 0f
 					? "not in the tankbuster table, no verdict"
 					: $"best case {predicted:P0} of max HP against full HP and barrier {standing:P0} ({detail}): "
-						+ (!lethal ? "survivable"
-							: ready ? $"lethal, {invulnerability!.Name} committed"
-							: "lethal, but no invulnerability is ready")));
+						+ (verdict switch
+						{
+							Verdict.Survivable => "survivable",
+							Verdict.Committed => $"lethal, {invulnerability!.Name} committed",
+							Verdict.LethalOptionOff => $"lethal, {invulnerability!.Name} ready, but the option is off",
+							_ => "lethal, but no invulnerability is ready",
+						})));
 		}
 	}
 

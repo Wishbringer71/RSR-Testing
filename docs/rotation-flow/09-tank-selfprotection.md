@@ -1153,6 +1153,9 @@ Die Unverwundbarkeit wird an ein Wirken gebunden, wenn alles zutrifft:
    nicht gezählte Heilung, eigene oder fremde, kann das Urteil nicht kippen.
 4. **Die Unverwundbarkeit ist verfügbar:** aktiviert, erlernt, abgeklungen, Schwelle `HealthForDyingTanks` über 0
    (dieselbe Bedingung wie beim Tankwechsel).
+5. **Die Option „Use the invulnerability before a tankbuster that would kill you" ist an.** Ohne sie wird nichts
+   gebunden, und damit hält auch das Zurückhalten nichts zurück – sonst wartete die Minderung auf eine
+   Unverwundbarkeit, die nicht kommt.
 
 Die Bindung gilt bis zum Wirkende und einen GCD darüber. Kommt danach ein Schild hinzu, hebt er sie nicht auf: Das
 Zurückhalten der übrigen Abwehr ist schon darauf gegeben, und eine Unverwundbarkeit, die dann ausbliebe, ließe weniger
@@ -1211,6 +1214,11 @@ Dead. Der Heiler kennt dieses Urteil nicht, er hält deshalb nur bei Heiligem Bo
 - **„Überlebbar" zu oft** (die Unverwundbarkeit bleibt aus, wie ohne die Regel): Zwei Minderungen gezählt, die nicht
   beide gehen; eine Tabelle, die zu klein ist (Konzept 13); eine Stärkung des Gegners bei der Vorhersage; eine
   Minderung, die du bis zum Einschlag nicht mehr drücken kannst.
+  - Der schwerste Fall dieser Seite: Der beste Fall zählt *alle* eigenen Minderungen, die Abwehr gibt je Tankbuster
+    aber nur eine große (Schutzwall oder die 40-%-Minderung, A243, Befund 5 im Abschnitt „Krieger: die Abwehr im
+    Ganzen"). Braucht ein Treffer beide, lautet das Urteil „überlebbar", die Abwehr staffelt, und der Tank fällt –
+    wie vor dieser Regel. Die Tabelle könnte hier das Stapeln auslösen; das berührt die Staffelung und steht offen
+    in `TODO.md`.
 - **„Tödlich" zu oft** (die Unverwundbarkeit geht für einen Treffer hinaus, den Minderung getragen hätte):
   - Gemessen unter einer Stärkung des Gegners: seit A260 ausgeschlossen. Ein Treffer eines Angreifers mit
     `DamageUp`, `PhysicalDamageUp` oder `MagicDamageUp` (Bezeichner aus dem Statusblatt) wird nicht gespeichert, das
@@ -1257,8 +1265,8 @@ Dead. Der Heiler kennt dieses Urteil nicht, er hält deshalb nur bei Heiligem Bo
 ### Messmittel und Nachsteuerung
 
 `DefenseTrace.log` schreibt je Wirken auf dich eine Zeile „tankbuster coming at you: … best case … of max HP against
-full HP and barrier … (now …, with …): survivable / lethal, … committed / lethal, but no invulnerability is ready /
-not in the tankbuster table". Ändert sich das Urteil während des Wirkens, etwa weil die Unverwundbarkeit abklingt,
+full HP and barrier … (now …, with …): survivable / lethal, … committed / lethal, … ready, but the option is off /
+lethal, but no invulnerability is ready / not in the tankbuster table". Ändert sich das Urteil während des Wirkens, etwa weil die Unverwundbarkeit abklingt,
 folgt eine zweite Zeile. Die Wahl schreibt „invulnerability before a lethal tankbuster from … in … s", die Ausführung
 die „used"-Zeile. Nachsteuerung: Jeder Treffer hebt den Tabellenwert, wo er höher ausfällt, und das Urteil wird für
 jedes Wirken neu gerechnet.

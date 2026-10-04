@@ -246,6 +246,19 @@ wie oft es sie gibt, ist nicht erhoben.
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 
+### Tankbuster überlebbar nur mit gestapelter Minderung: die Abwehr staffelt trotzdem · N
+
+**Befund (A260, Review):** `LethalTankbusterWatch` zählt im besten Fall alle eigenen Minderungen. Die Abwehr gibt je
+vorhergesagtem Tankbuster aber nur eine große (`RampartTakesPredictedTankbuster`, A243), ohne Vorhersage staffelt die
+Zeitregel. Braucht ein gemessener Tankbuster Schutzwall *und* die 40-%-Minderung, ist das Urteil „überlebbar", keine
+Unverwundbarkeit, und mit einer der beiden fällt der Tank. **Im Kampf:** wie vor der Tabelle; wie oft ein Treffer
+genau zwischen „eine reicht" und „beide reichen" liegt, ist nicht erhoben. **Offen:** voller Loop. Die Tabelle
+beantwortet die Frage, die A243 als Antithese offenließ („ein Tankbuster braucht beide"). Die Staffelung ist meine
+Behebung (A243), keine Entscheidung von ihm; das Stapeln kostet aber die Deckung des nächsten Tankbusters und ist
+ihm deshalb mit Rechnung vorzulegen.
+
+**Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
+
 ### Zielüberschreibung aus dem GCD-Lauf gilt in den Fähigkeiten weiter · N, R
 
 **Befund (A260, am Code):** `CustomRotation.Invoke` setzt `IBaseAction.TargetOverride` vor `GCD()` auf null, aber

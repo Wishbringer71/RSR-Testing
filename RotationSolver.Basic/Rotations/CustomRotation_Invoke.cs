@@ -213,6 +213,10 @@ public partial class CustomRotation
 		// Reset special action flags
 		IBaseAction.ShouldEndSpecial = false;
 		IBaseAction.IgnoreClipping = true;
+		// The defence paths clear these on every exit they take; an exception thrown inside a rotation's
+		// defence would leave them standing and reject every action on the player until the path ran again.
+		IBaseAction.HoldDefenceOnSelf = false;
+		IBaseAction.SelfProtectionHitsMe = null;
 
 		try
 		{
