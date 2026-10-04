@@ -718,4 +718,21 @@ public static class DefensiveValues
 	{
 		return DurationByActionId.TryGetValue(actionId, out var seconds) ? seconds : 0f;
 	}
+
+	/// <summary>
+	/// The share of the user's enmity an action moves to its target, as its effect text states
+	/// it ("Diverts 25% of enmity to target party member."). After the transfer the user keeps
+	/// 1 - s and the receiver gains s, so the receiver becomes the enemy's target from one side
+	/// alone only if it held more than 1 - 2s of the user's enmity beforehand.
+	/// </summary>
+	public static readonly Dictionary<uint, float> EnmityTransferByActionId = new()
+	{
+		[7537] = 0.25f, // ShirkPvE
+	};
+
+	/// <summary>The stated enmity share moved, or 0 when the effect text states none.</summary>
+	public static float EnmityTransferOf(uint actionId)
+	{
+		return EnmityTransferByActionId.TryGetValue(actionId, out var share) ? share : 0f;
+	}
 }
