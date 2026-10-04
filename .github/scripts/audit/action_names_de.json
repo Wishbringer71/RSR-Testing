@@ -343,6 +343,46 @@
       "kind": "job",
       "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27",
       "note": "The user says the job is called Pictomancer in German as well (2026-09-27), correcting a self-formed 'Maler'. The German job guide titles it 'Piktomant'. Use 'Pictomancer' in text for him until he says which his client shows."
+    },
+    {
+      "de": "Heiliger Boden",
+      "en": "Hallowed Ground",
+      "identifier": "HallowedGroundPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/paladin/), 2026-10-04",
+      "note": "Level 50, 420 s, invulnerability for 10 s; status text \"Impervious to most attacks\"."
+    },
+    {
+      "de": "Holmgang",
+      "en": "Holmgang",
+      "identifier": "HolmgangPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/warrior/), 2026-10-04",
+      "note": "Level 42, 240 s, 10 s: most attacks cannot reduce HP below 1. Same name in both clients."
+    },
+    {
+      "de": "Meteoritenfall",
+      "en": "Superbolide",
+      "identifier": "SuperbolidePvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/gunbreaker/), 2026-10-04",
+      "note": "Level 50, 360 s: HP to 1, impervious to most attacks for 10 s. Position in the guide between Aurora and Schallbrecher (Sonic Break)."
+    },
+    {
+      "de": "Intervention",
+      "en": "Intervention",
+      "identifier": "InterventionPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/paladin/), 2026-10-04",
+      "note": "Level 62, mitigation on another party member. Same name in both clients."
+    },
+    {
+      "de": "Herz des Korunds",
+      "en": "Heart of Corundum",
+      "identifier": "HeartOfCorundumPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/gunbreaker/), 2026-10-04",
+      "note": "Level 82, upgrades Steinernes Herz (Heart of Stone); on self or a party member."
     }
   ]
 }

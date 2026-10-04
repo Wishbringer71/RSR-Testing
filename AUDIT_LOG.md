@@ -5514,6 +5514,53 @@ Wechsel greift, schreibt das Protokoll selbst.
   Spieler werden jetzt über `IPlayerCharacter` erkannt; Ursache war eine Annahme über die API ohne Beleg im Baum.
 
 **Prüfgrad:** statisch, alle Prüfskripte und Generatoren, Compile über die CI. Im Spiel nicht beobachtet.
+
+### A260 · Unverwundbarkeit vor einem tödlichen Tankbuster und Zurückhalten der übrigen Abwehr (04.10.2026)
+
+- *Sein Auftrag:* sein Vorschlag aus A259 („nur noch invul … alle anderen schilde, debuffs und mitigations
+  wegläßt"), dazu der Verbraucher, auf den er wartete: „das war der sinn der idee. konkrete prüfung des konzeptes im
+  loop und auch deren umsetzung im loop mit audit und codereview".
+- *Research:*
+  - Statustexte (xivapi): Heiliger Boden 82/1302 und Meteoritenfall 1836 „Impervious to most attacks"; Holmgang 409,
+    Undead Rebirth 3255, Invulnerability 4275 „Most attacks cannot reduce your HP to less than 1". Living Dead laut
+    Job-Guide: Walking Dead verlangt Heilung in Höhe der maximalen LP, sonst KO.
+  - Deutsche Namen am Job-Guide belegt und eingetragen: Heiliger Boden, Holmgang, Meteoritenfall, Intervention, Herz
+    des Korunds.
+  - Abwehrpfad: Der Einzelabwehr-Schalter des Tanks trägt auch Hilfe für den Co-Tank (Kommentar in
+    `CustomRotation.Ability`). Reflexion löst ihr Ziel als den Spieler auf (`ActionTargetInfo`, Range 0 mit
+    Wirkradius).
+- *Erste Fassung verworfen (im selben Zug, vor dem Commit):*
+  - Das Zurückhalten nahm dem Tank den ganzen Einzelabwehr-Schalter. Damit wäre auch Hilfe für den Co-Tank
+    ausgefallen. Ersetzt durch ein Gatter, das nur Aktionen auf den Spieler selbst ablehnt
+    (`IBaseAction.HoldDefenceOnSelf`).
+  - Es hielt unter jeder Unverwundbarkeit. Unter Holmgang und Totenerweckung nimmt ein Treffer aber LP bis 1, und
+    Minderung zählt für die Zeit danach. Jetzt nur unter Heiligem Boden und Meteoritenfall, bei Holmgang und
+    Totenerweckung nur für den gebundenen Treffer.
+  - Das Urteil maß gegen die aktuellen LP. Dann kippte eine nicht gezählte Heilung das Urteil nach „tödlich". Jetzt
+    volle LP, sein Kriterium „selbst bei 100% gesundheit".
+  - Gezogen werden sollte bei Einschlag ≤ 10 s. Dann liefe die Unverwundbarkeit genau mit dem Wirkende ab. Jetzt
+    Wirkdauer weniger ein GCD.
+  - Kein Rückfall, falls das Ziehen scheitert. Jetzt öffnet das Zurückhalten im letzten GCD.
+  - Heiler-Halt bei Markern mit „ein GCD, der kürzeste Abstand". Das war die unsichere Richtung; bei Markern hält
+    jetzt nichts.
+- *Gebaut:*
+  - Erkennung `LethalTankbusterWatch` mit bestem Fall, Bindung je Wirken und `HoldMitigation`.
+  - Verbraucher `CustomRotation.TankInvulnerabilityAbility` (nach `EmergencyAbility`, vor dem Tankwechsel).
+  - Gatter in `BaseAction.CanUse`, gesetzt im Einzelabwehr-Pfad für Fähigkeiten und GCDs.
+  - Heiler-Halt in `StateUpdater.ShouldAddDefenseSingle`.
+  - `StatusHelper.ImperviousStatus`, `ImperviousThrough`, `IsDamageUp`, `CarriesDamageUp`.
+  - Generator: `DefensiveValues.MitigatingStatusesByActionId`.
+  - Messausschluss für gestärkte Angreifer in `TankbusterTable.Record`.
+  - Zwei Optionen, ab Werk an.
+- *Neben dem Auftrag gefunden:* `Ability()` erbt eine Zielüberschreibung aus `GCD()` (Eintrag in `TODO.md`). Der neue
+  Verbraucher setzt sie für seinen Aufruf zurück. Außerdem zwei Zeilenangaben in Konzept 05, die schon vor dieser
+  Änderung leer waren, durch Bezeichner ersetzt.
+- *Falsifikation:* Konzept 09, Abschnitt „Unverwundbarkeit vor einem tödlichen Tankbuster", Antithesen 1–4.
+  - Widerlegt: Die reaktive Unverwundbarkeit genügt nicht; ein Treffer von voller Gesundheit führt in einem Schritt
+    auf 0.
+  - Offen als Einschränkung: Stärkungen unter anderem Namen als Damage Up, und Tankbuster ohne Aktionsangabe.
+
+**Prüfgrad:** statisch, alle Prüfskripte und Generatoren, Compile über die CI. Im Spiel nicht beobachtet.
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

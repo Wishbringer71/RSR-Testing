@@ -149,3 +149,25 @@ The tank swap now also uses this table to judge whether a repeat would kill you,
 earlier evening or from your co-tank. The list shows each entry's figure and the store's state, and
 `DefenseTrace.log` names every measurement. To start over after a patch, delete `TankbusterPotential.json` while
 the game is closed.
+
+Hits from an enemy carrying a Damage Up status are not stored: they would rate the action too high.
+
+## Tanks: the invulnerability goes out before a tankbuster that would kill you
+
+New setting `Use the invulnerability before a tankbuster that would kill you`, on by default. When a tankbuster is
+cast at you that the table rates lethal even at full HP, with every mitigation and barrier of your own that could
+still be used and everything already standing, RSR uses Hallowed Ground, Holmgang, Living Dead or Superbolide
+before it lands - no earlier than its ten seconds less one GCD before the hit. Until now it went out only once your
+HP had dropped under the dying threshold, which a hit that kills from full never passes. What other players might
+add is not counted. Tankbusters announced only by a marker or by BossModReborn, and actions not yet measured, keep
+the old behaviour: neither names the action, so there is no figure to judge by. After Living Dead the healers still
+have to restore your full HP within Walking Dead.
+
+New setting `Hold other mitigation while the invulnerability covers the hit`, on by default. While the
+invulnerability is committed to such a tankbuster, or Hallowed Ground or Superbolide keeps the coming hit off you,
+the single-target defence spends nothing aimed at you - no Rampart, no Vengeance, no own barrier, no Reprisal -, so
+they are ready for the next tankbuster. Help for another party member still goes out, and so does area defence. If
+the invulnerability has not gone out by the last GCD before the hit, the hold opens. Under Holmgang and Living Dead
+a hit still takes HP down to 1, so outside the committed tankbuster nothing is held there. As a healer, RSR spends no
+single-target mitigation for a tankbuster cast at a tank who stands under Hallowed Ground or Superbolide past the
+hit. `DefenseTrace.log` writes the verdict for every tankbuster cast at you and what it was built on.

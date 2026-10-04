@@ -46,6 +46,7 @@ hier.
 | Schildanrechnung auf die Heilschwelle | **entfernt** (A85). Gesundheit und Schild addieren sich, sie ersetzen einander nicht |
 | Messbaustein für Raten auf Gruppenmitglieder | **gebaut** (A91–A93): `RecordedHP` führt die Gruppe mit, `GetCorrectedTTK` liefert die Restzeit je Mitglied. Die frühere Verwerfung ist überholt |
 | Tankwechsel nach einem Tankbuster (sein Vorschlag): Geteiltes Leid auf den Co-Tank, Zurückprovozieren nach dessen Tankbuster | **gebaut**, Option ab Werk an (A255–A257); Abschnitt „Tankwechsel nach einem Tankbuster" |
+| Unverwundbarkeit vor einem tödlichen Tankbuster und Zurückhalten der übrigen Abwehr (sein Vorschlag) | **gebaut**, zwei Optionen ab Werk an (A260); Abschnitt „Unverwundbarkeit vor einem tödlichen Tankbuster" |
 
 ## Prüfmaßstab — die Rangordnung
 
@@ -1088,9 +1089,11 @@ Leid sofort und festigt den Wechsel, wie es die Referenz vorsieht.
    Protokoll je Tankbuster einen Grund. Eine falsche Prognose zieht die Regel selbst nach (unten).
 4. **Das Zurückholen kommt zu früh oder unnötig.** Ohne Bindung an den Tankbuster des Co-Tanks zog es einen
    geplanten Rückwechsel vor; diese Antithese hielt und hat die Bedingung geändert (seine Frage). Mit der Bindung
-   folgt es dem Takt der Treffer. Nicht widerlegt bleibt, dass die Unverwundbarkeit nur
-   unter der Sterbe-Schwelle zündet (Eintrag in `TODO.md`). Gegen einen tödlichen Treffer von oben sichert sie also
-   nicht.
+   folgt es dem Takt der Treffer. Dass der Wechsel bei bereiter Unverwundbarkeit hält, trägt seit A260 auch gegen
+   einen tödlichen Treffer von oben: Sie geht vor einem gewirkten Tankbuster aus, den die Tabelle selbst im besten
+   Fall für tödlich hält (Abschnitt „Unverwundbarkeit vor einem tödlichen Tankbuster"). Offen bleibt das für
+   Tankbuster, die nur ein Marker oder BossModReborn ankündigt, und für Aktionen ohne Messung; dort zündet sie weiter
+   erst unter der Sterbe-Schwelle.
 
 ### Messmittel und Nachsteuerung
 
@@ -1106,6 +1109,159 @@ der Wechsel sofort als gelungen. Wartet das Zurückholen, steht einmal je Wechse
 Abklingen oder außer Reichweite); trifft der Tankbuster den Co-Tank, steht „tankbuster on …; holt RSR zurück, steht
 „tank swap back … -> Provoke". Ob die Geste des Co-Tanks (Geteiltes Leid auf dich) als eigener Effektsatz bei dir
 ankommt, ist nicht belegt; fehlt die Zeile, ändert das nichts an der Entscheidung.
+
+**Prüfgrad:** statisch, Prüfskripte, Compile über die CI; im Spiel nicht beobachtet.
+
+## Unverwundbarkeit vor einem tödlichen Tankbuster
+
+**Sein Hinweis (04.10.2026):** „ohne kennung des ankommenden schadens [kann] nicht gesagt werden …, ob ein
+tankbuster selbst bei 100% gesundheit und debuffs auf den bossgegner und gezogener mitigation tödlich ist oder nicht.
+das geht erst nach dem schadenseingang oder aufgrund von erfahrungswerten aus aufzeichnungen vorheriger tankbuster.
+ansonsten müsste ja bei jedem tankbuster unverwundbarkeit gezogen werden, was schädlich wäre." Die Erfahrungswerte
+liefert die Tankbuster-Tabelle (Konzept 13).
+
+**Sein Vorschlag (04.10.2026):** „rein ökonomisch kann die liste und deren auswertung auch dazu führen, dass für
+einen tankbuster, welcher 100% tödlich ist, nur noch invul nimmt und alle anderen schilde, debuffs und mitigations
+wegläßt, da sie hier eh nichts bringen würden und somit nur unnütz verbraucht wären." Auf die Frage nach dem
+Verbraucher: „das war der sinn der idee."
+
+**Gebaut (A260), zwei Optionen, ab Werk an:**
+- „Use the invulnerability before a tankbuster that would kill you" (nur Tanks).
+- „Hold other mitigation while the invulnerability covers the hit" (wirkt für Tanks und Heiler).
+
+Erkennung in `LethalTankbusterWatch`, Entscheidung in `CustomRotation.TankInvulnerabilityAbility` und
+`CustomRotation.HoldDefenceForInvulnerability` (Gatter in `BaseAction.CanUse`, Ablehnung
+„HeldForTheInvulnerability"), für Heiler in `StateUpdater.ShouldAddDefenseSingle`. Stufe Tanks: Alle vier
+Unverwundbarkeiten wirken 10 s, das Urteil ist für alle gleich. Der Heiler-Teil sitzt auf der Stufe Heiler; für
+Damage Dealer gibt es nichts zurückzuhalten, weil die Regel nur Tanks unter Unverwundbarkeit betrifft.
+
+### Das Urteil: tödlich selbst im besten Fall
+
+Die Unverwundbarkeit wird an ein Wirken gebunden, wenn alles zutrifft:
+
+1. **Ein Gegner wirkt auf dich eine bekannte Tankbuster-Aktion:** Sie steht in der Tankbuster-Liste oder ist in der
+   Tabelle gemessen. Nur ein Wirken nennt die Aktion. Ein Marker oder eine BossModReborn-Vorhersage sagt, *dass* ein
+   Tankbuster kommt, nicht *welcher*; dort gibt es keine Zahl und kein Urteil. Ohne Messung ebenfalls nicht – seine
+   Bedingung.
+2. **Der beste Fall:** Vorhersage der Tabelle unter der Minderung, die jetzt auf dir und nach Schadensart auf dem
+   Gegner liegt. Darauf jede eigene Minderung, die aktiviert, erlernt, bis zum Einschlag bereit ist und noch nicht
+   steht, abzüglich jeder eigenen Barriere. Ein Knopf zählt einmal: Rachsucht und Verdammnis, Urinstinkt und Urimpuls
+   sind je eine Aktion (`Service.GetAdjustedActionId`); ob eine Minderung schon steht, liest der Generator aus
+   (`DefensiveValues.MitigatingStatusesByActionId`).
+3. **Tödlich:** wenn dieser beste Fall mindestens volle LP plus den jetzt stehenden Schild ausmacht – sein
+   Kriterium „selbst bei 100% gesundheit". Volle statt aktueller LP, weil keine Heilung über das Maximum hebt: Eine
+   nicht gezählte Heilung, eigene oder fremde, kann das Urteil nicht kippen.
+4. **Die Unverwundbarkeit ist verfügbar:** aktiviert, erlernt, abgeklungen, Schwelle `HealthForDyingTanks` über 0
+   (dieselbe Bedingung wie beim Tankwechsel).
+
+Die Bindung gilt bis zum Wirkende und einen GCD darüber. Kommt danach ein Schild hinzu, hebt er sie nicht auf: Das
+Zurückhalten der übrigen Abwehr ist schon darauf gegeben, und eine Unverwundbarkeit, die dann ausbliebe, ließe weniger
+übrig als jeder der beiden Wege.
+
+### Der Zeitpunkt
+
+Gezogen wird, sobald der Einschlag nicht weiter entfernt ist als die Wirkdauer der Unverwundbarkeit weniger einem GCD
+(alle vier: 10 s, Wirktexte über den Generator, `DefensiveValues.DurationOf`). Früher liefe sie vor dem Einschlag ab;
+der GCD ist die Zeit, die der Treffer nach dem Wirkende braucht – dieselbe Annahme wie im Marker-Fenster und in der
+Bindung. Ein kürzeres Wirken löst sie sofort aus. Ein Wirken mit 12 s Restzeit wartet also bis etwa 7,5 s vor dem
+Einschlag (GCD 2,5 s), und die Unverwundbarkeit steht dann noch rund 2,5 s über das Wirkende hinaus.
+
+### Das Zurückhalten der übrigen Abwehr
+
+**Tank:** Die Einzelabwehr lehnt jede Aktion ab, die auf dich selbst zielt – eigene Minderung, eigene Barriere,
+Reflexion um dich herum, Abtausch –, solange
+- die Unverwundbarkeit an das Wirken gebunden ist und entweder schon steht oder der Einschlag mehr als einen GCD
+  entfernt ist, oder
+- Heiliger Boden oder Meteoritenfall über den Einschlag (ohne Wirken: über einen GCD) hinaus liegen.
+
+Hilfe, die auf ein anderes Mitglied zielt (Intervention, Herz des Korunds auf dem Co-Tank, Urflackern), bleibt
+frei. Ein Befehl von dir wird nicht übersteuert. Die Flächenabwehr ist unberührt: Reflexion für einen Raidwide im
+selben Fenster kommt über sie, und sie läuft vor der Einzelabwehr. Damit ist der Einwand aus Konzept 13 erledigt,
+Reflexion helfe zugleich anderen.
+
+**Rückfall:** Ist die Unverwundbarkeit im letzten GCD vor dem Einschlag noch nicht gezogen (ihr `CanUse` scheiterte),
+öffnet das Zurückhalten, und die Minderung geht noch hinaus. Sie rettet nach dem Urteil nicht, aber das Urteil kann
+irren, und mehr Minderung ist dann besser als keine.
+
+**Heiler:** keine Einzelabwehr für einen gewirkten Tankbuster, wenn jedes seiner Ziele unter Heiligem Boden oder
+Meteoritenfall über den Einschlag hinaus steht. Steht ein Tankbuster-Marker, hält nichts: Der Marker nennt keinen
+Einschlagszeitpunkt.
+
+**Warum Holmgang und Living Dead nur beim gebundenen Treffer:** Heiliger Boden und Meteoritenfall: „Impervious to most
+attacks" – kein Schaden, jede Minderung ist wirkungslos, für jeden Treffer. Holmgang, Undead Rebirth: „Most attacks
+cannot reduce your HP to less than 1"; Living Dead wandelt den Tod in Walking Dead. Unter ihnen nimmt ein Treffer LP
+bis 1, und eine Minderung entscheidet, wie viel davon bleibt, wenn sie enden. Nur beim gebundenen Treffer ändert sie
+nichts: Nach dem besten Fall reicht auch alle Minderung nicht, der Treffer endet so oder so bei 1 LP oder in Walking
+Dead. Der Heiler kennt dieses Urteil nicht, er hält deshalb nur bei Heiligem Boden und Meteoritenfall.
+
+### Mechanik (Belege, abgerufen 04.10.2026)
+
+- Statustexte (xivapi, Blatt `Status`): Heiliger Boden 82 und 1302, Meteoritenfall (Superbolide) 1836 „Impervious to most attacks";
+  Holmgang 409, Undead Rebirth 3255, Invulnerability 4275 „Most attacks cannot reduce your HP to less than 1". Im
+  Code: `StatusHelper.ImperviousStatus`.
+- Living Dead (Job-Guide englisch): Fällt die Gesundheit unter Living Dead auf 0, folgt Walking Dead; wird bis zu dessen
+  Ablauf Heilung in Höhe der maximalen LP aufgenommen, folgt Undead Rebirth, „If this amount is not restored, you will
+  be KO'd." Die vorausgehende Totenerweckung verlagert den Tod also auf eine Heilaufgabe, wie die reaktive schon
+  heute; die Uhrregel und die Phase-2-Unterstützung (Abschnitt „Living Dead ist ein Zeitproblem") gelten unverändert.
+- Wirkdauer 10 s für alle vier (Generator), Abklingzeiten Heiliger Boden 420 s, Holmgang 240 s, Totenerweckung
+  300 s, Meteoritenfall 360 s (A259).
+
+### In welche Richtung das Urteil irrt
+
+- **„Überlebbar" zu oft** (die Unverwundbarkeit bleibt aus, wie ohne die Regel): Zwei Minderungen gezählt, die nicht
+  beide gehen; eine Tabelle, die zu klein ist (Konzept 13); eine Stärkung des Gegners bei der Vorhersage; eine
+  Minderung, die du bis zum Einschlag nicht mehr drücken kannst.
+- **„Tödlich" zu oft** (die Unverwundbarkeit geht für einen Treffer hinaus, den Minderung getragen hätte):
+  - Gemessen unter einer Stärkung des Gegners: seit A260 ausgeschlossen. Ein Treffer eines Angreifers mit
+    `DamageUp`, `PhysicalDamageUp` oder `MagicDamageUp` (Bezeichner aus dem Statusblatt) wird nicht gespeichert, das
+    Protokoll schreibt „not stored, the attacker carried a damage-up status". Stärkungen unter anderem Namen bleiben
+    unerkannt; wie oft es sie gibt, ist nicht erhoben.
+  - Der Wert unter Verwundbarkeit stammt aus mehr Stapeln als jetzt: Er gilt nur, wenn du eine Verwundbarkeit
+    trägst, also genau in der Wechsellage, in der der Tankwechsel hält, weil die Unverwundbarkeit bereit ist. Mit dem
+    Wert ohne Verwundbarkeit bliebe diese Lücke offen.
+  - Minderung und Barrieren anderer Spieler zählen nicht. Was andere Spieler tun, ist eine Annahme und kein
+    tragender Grund; sein Kriterium nennt die Debuffs auf dem Boss und die gezogene Minderung, beides zählt.
+
+### Lagen
+
+- **Allein, Vierer-Instanz:** wirkt; die Regel braucht keinen Co-Tank.
+- **Zwei RSR-Tanks:** Jeder urteilt nur für sich, über die Tankbuster, die auf ihn gewirkt werden.
+- **BossMod ohne Modul:** unverändert; die Regel liest keine Vorhersage.
+- **Stufensynchron:** Unverwundbarkeit und Minderungen zählen nur, wenn erlernt (`EnoughLevel`). Die Tabelle rechnet in
+  Anteilen der maximalen LP je Aktion; eine Gegneraktion gehört zu ihrem Inhalt und wird dort stets auf dessen Stufe
+  getroffen. Dass die Anteile dadurch vergleichbar bleiben, ist ein Schluss, nicht gemessen.
+- **Burst aus:** unberührt.
+- **Tankwechsel:** hält bei bereiter Unverwundbarkeit. Bei gewirkten, gemessenen Tankbustern geht sie nun vorher aus,
+  und danach ist sie nicht mehr bereit – der Wechsel greift beim nächsten Treffer, wie seine Bedingungen es wollen.
+- **Reaktive Unverwundbarkeit** (`EmergencyAbility` unter `HealthForDyingTanks`): unverändert, läuft vor dieser Regel.
+
+### Antithesen
+
+1. **Kein Defekt, die reaktive Unverwundbarkeit genügt.** Sie zündet unter der Sterbe-Schwelle. Ein Treffer, der von
+   voller Gesundheit tötet, führt aber in einem Schritt von darüber auf 0, die Schwelle wird nie unterschritten,
+   solange der Tank lebt. Widerlegt.
+2. **Die Option ist falsch, eine Überschätzung kostet die Unverwundbarkeit.** Die Fehler nach oben sind oben
+   aufgezählt; der größte (Stärkung beim Messen) ist ausgeschlossen. Gegen den Preis von 240 s bis 420 s Abklingzeit
+   steht der Tod des Tanks bei einem Treffer, den nach eigener Messung keine eigene Minderung trägt. Widerlegt bis auf
+   Stärkungen unter anderem Namen (Einschränkung).
+3. **Ausgeliefert, und nichts ändert sich – warum?**
+   - Die Aktion ist noch nicht gemessen: Das erste Auftreten bleibt unbekannt. Die Tabelle misst aber jeden Spieler,
+     auch den Co-Tank, und speichert über Sitzungen.
+   - Der Tankbuster kommt nur als Marker oder BossModReborn-Vorhersage: Keine Aktion, kein Urteil.
+   - `HealthForDyingTanks` steht auf 0: Die Unverwundbarkeit gilt als nicht verfügbar.
+
+   Das Protokoll schreibt je Wirken das Urteil und seine Grundlage, sodass jeder dieser Fälle ablesbar ist.
+4. **Das Zurückhalten kostet einen Treffer, falls die Unverwundbarkeit nicht kommt.** Abgefangen durch den Rückfall im
+   letzten GCD.
+
+### Messmittel und Nachsteuerung
+
+`DefenseTrace.log` schreibt je Wirken auf dich eine Zeile „tankbuster coming at you: … best case … of max HP against
+full HP and barrier … (now …, with …): survivable / lethal, … committed / lethal, but no invulnerability is ready /
+not in the tankbuster table". Ändert sich das Urteil während des Wirkens, etwa weil die Unverwundbarkeit abklingt,
+folgt eine zweite Zeile. Die Wahl schreibt „invulnerability before a lethal tankbuster from … in … s", die Ausführung
+die „used"-Zeile. Nachsteuerung: Jeder Treffer hebt den Tabellenwert, wo er höher ausfällt, und das Urteil wird für
+jedes Wirken neu gerechnet.
 
 **Prüfgrad:** statisch, Prüfskripte, Compile über die CI; im Spiel nicht beobachtet.
 

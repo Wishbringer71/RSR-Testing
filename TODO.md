@@ -229,43 +229,35 @@ Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A17
 
 **Messmittel:** `DefenseTrace.log` schreibt je Sitzung jede Wahl der Abwehrkette mit den Quellen, die dabei standen, und jeden Treffer auf ihn. **Erledigt, wenn** eine Datei aus seinen Kämpfen die Quelle zeigt und sie behoben ist. Danach wird das Protokoll wieder entfernt.
 
-### Tank-Unverwundbarkeit nur unter der Sterbe-Schwelle: ein tödlicher Treffer von oben wird nicht abgefangen · N
+### Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder ohne Messung weiter nur reaktiv · N
 
-**Befund (A255):** Hallowed Ground, Holmgang, Living Dead und Superbolide zünden nur bei LP ≤ `HealthForDyingTanks`
-(`EmergencyAbility` der vier Tanks, PLD in `PLD_Reborn`). Ein Tankbuster, der von darüber tötet – unter einer
-Verwundbarkeit, oder ein Treffer von 85 % ohne bereite Minderung wie „Schramme" am 01.10.2026 –, trifft auf eine
-bereite, aber ungenutzte Unverwundbarkeit. Der Tankwechsel nach einem Tankbuster hält, solange sie bereit ist (seine
-Bedingung, bestätigt 04.10.2026: „wenn unverwundbarkeit bereit ist, dann braucht aggro nicht gewechselt werden"),
-und das Zurückholen wartet auf sie (seine Präzisierung). Beides verlässt sich damit auf eine Rettung, die nur
-reaktiv kommt.
+**Stand (A260):** Vor einem gewirkten Tankbuster, den die Tankbuster-Tabelle selbst bei vollen LP und mit allen
+eigenen Minderungen für tödlich hält, geht die Unverwundbarkeit vorher aus, und die übrige Abwehr auf den Tank wird
+zurückgehalten (Konzept 09, „Unverwundbarkeit vor einem tödlichen Tankbuster"). Weiter nur reaktiv, also erst unter
+`HealthForDyingTanks`, bleibt sie
+- bei Tankbustern, die nur ein Marker oder BossModReborn ankündigt: Beide nennen die Aktion nicht, also gibt es
+  keinen Tabellenwert;
+- beim ersten Auftreten einer Aktion, solange kein Spieler davon getroffen wurde.
 
-**Sein Einwand (04.10.2026, Hinweis):** Ob ein Tankbuster tödlich ist, lässt sich ohne den zu erwartenden Schaden
-nicht sagen – erst nach dem Einschlag oder aus Erfahrungswerten früherer Tankbuster. Eine Unverwundbarkeit bei jedem
-Tankbuster wäre schädlich.
-
-**Recherche (A258):** Eine öffentliche, aktuelle Quelle für den Schaden einzelner Tankbuster gibt es nicht.
-- cactbot (Stand 03.10.2026) nennt eine Unverwundbarkeit fast nur als Strategiefrage („tanks may choose to invuln
-  this, but that is strat specific"). Ausdrücklich angesagt ist „Invuln Tank Buster" nur in Delubrum Reginae
-  (Savage).
-- BossModReborn führt bei Tankbustern keine Schadenshöhe (`PredictedDamageType.Tankbuster` ohne Betrag); nur
-  vereinzelt steht im Kommentar „lethal tankbuster … should be invulned".
-- `xiv-stats/xiv-damage-samples` enthält Rohschaden samt Minderungen, aber nur für E12S (2021).
-- consolegameswiki nennt die Unverwundbarkeit nur als Strategie für geteilte Tankbuster.
-
-**Damit gilt:** Tödlichkeit ist nur aus eigenen Messungen ableitbar, wie er sagt. **Gebaut (A259):** die gelernte
-Tankbuster-Tabelle (Konzept 13, „Die Tankbuster-Tabelle"), aus Treffern auf jeden Spieler, auf ungemindert
-zurückgerechnet, über Sitzungen gespeichert. **Offen:** der Verbraucher, also der vorausgehende Einsatz der
-Unverwundbarkeit, wenn die Vorhersage auch mit allen verfügbaren Minderungen tödlich ist. Dazu kommt sein Vorschlag,
-dann die übrigen Minderungen wegzulassen; die Gegenrechnung steht in Konzept 13. Vorher zu schließen: ein erhöhter
-Gegnerschaden beim Messen. Ursprünglich gedacht als:
-- Je Aktion der ungeminderte Anteil: gemessener Schaden geteilt durch die beim Einschlag aktiven Minderungen. Diese
-  sind bekannt aus `DefensiveValues` und den Status auf dir und auf dem Gegner; Verwundbarkeit getrennt geführt.
-- Vor dem nächsten Einschlag derselben Aktion die Vorhersage mit den dann verfügbaren Minderungen gegen LP und
-  Schild. Erst wenn auch alle verfügbaren Minderungen nicht reichen, die Unverwundbarkeit.
-- Beim ersten Auftreten gibt es keinen Wert und damit keine Unverwundbarkeit.
-- Living Dead gesondert wegen Walking Dead.
+**Offen:** Ob sich ein Marker einer Aktion zuordnen lässt – etwa über das Wirken, das während des Markers beginnt,
+wie es `TankbusterMarkerWatch` für die Bestätigung schon tut –, ist ungeprüft. Voller Loop vor jedem Bau.
+Ebenfalls offen: Stärkungen des Gegners, die nicht als Damage Up benannt sind, werden beim Messen nicht erkannt;
+wie oft es sie gibt, ist nicht erhoben.
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
+
+### Zielüberschreibung aus dem GCD-Lauf gilt in den Fähigkeiten weiter · N, R
+
+**Befund (A260, am Code):** `CustomRotation.Invoke` setzt `IBaseAction.TargetOverride` vor `GCD()` auf null, aber
+nicht vor `Ability()`. Kehrt `GCD()` mitten aus einem Pfad zurück, der die Überschreibung gesetzt hat (Heilung,
+Abwehr `BeAttacked`, Wiederbelebung `Death`, `Provoke`), laufen Befehlsaktion, `EmergencyAbility` und alle
+Fähigkeiten bis zur nächsten Zuweisung mit dieser Überschreibung (`ActionSetting.TargetType` liest sie vor dem
+eigenen Typ). Eine Notfallaktion ohne eigene `targetOverride` sucht ihr Ziel dann nach fremder Art.
+`TankInvulnerabilityAbility` setzt sie deshalb für ihren Aufruf zurück.
+
+**Im Kampf:** unbelegt, ob es eine Aktion trifft. Fehlbild wäre eine Notfallfähigkeit, die kein Ziel findet oder
+auf das falsche geht. **Offen:** alle `EmergencyAbility`-Überschreibungen auf Aktionen ohne eigene Zielart prüfen;
+ob eine Rotation sich auf die geerbte Überschreibung verlässt, vor einem zentralen Zurücksetzen erheben.
 
 ### Tankwechsel von der anderen Seite: Herausforderung, wenn der Haupttank eine Verwundbarkeit trägt · N
 

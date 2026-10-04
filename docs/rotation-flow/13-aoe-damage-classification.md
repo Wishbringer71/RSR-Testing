@@ -536,14 +536,21 @@ In allen drei Fällen fällt der ungeminderte Wert zu klein aus, und jeder spät
 zu kleiner Wert heißt: Eine Abwehr unterbleibt – das Verhalten ohne Tabelle. Der erste Treffer einer Aktion hat
 keinen Wert.
 
+**Nach oben ausgeschlossen:** ein Treffer eines gestärkten Angreifers. Trägt er `DamageUp`, `PhysicalDamageUp` oder
+`MagicDamageUp` (Bezeichner aus dem Statusblatt, `StatusHelper.IsDamageUp`), wird nichts gespeichert, und das
+Protokoll schreibt „not stored, the attacker carried a damage-up status". Ein solcher Wert stufte die Aktion zu hoch
+ein, und auf ihm zöge die Regel aus Konzept 09 eine Unverwundbarkeit. Stärkungen unter anderem Namen bleiben
+unerkannt.
+
 ### Wofür
 
 - **Tankwechsel (Konzept 09):** „eine Wiederholung bringt dich um" rechnet mit dem Höheren aus dem härtesten
   Treffer dieses Kampfes auf dich und der Vorhersage der Tabelle: ungeminderter Wert mal der Minderung, die jetzt
   auf dir und auf dem Boss liegt. Gleiches gilt für die Prüfung, ob der Empfänger selbst in Gefahr ist. Damit
   greift der Tankwechsel schon beim ersten Tankbuster eines späteren Abends und mit Messungen vom Co-Tank.
-- **Offen:** der vorausgehende Einsatz der Unverwundbarkeit (`TODO.md`). Erst dort entscheidet die Tabelle über
-  Abklingzeiten.
+- **Unverwundbarkeit vor einem tödlichen Tankbuster (Konzept 09, A260):** Hält die Tabelle einen gewirkten
+  Tankbuster selbst bei vollen LP und mit allen eigenen Minderungen für tödlich, geht die Unverwundbarkeit vorher
+  aus, und die übrige Abwehr auf den Tank wird zurückgehalten. Hier entscheidet die Tabelle über Abklingzeiten.
 
 **Ablesbar:** Die Liste zeigt neben der Tankbuster-Liste je Eintrag den ungeminderten Anteil, die Zahl der
 bewerteten Tankbuster und „Store:" in derselben Form wie die Flächentabelle. `DefenseTrace.log` schreibt jede
@@ -578,35 +585,41 @@ tödlich ist, nur noch invul nimmt und alle anderen schilde, debuffs und mitigat
 nichts bringen würden und somit nur unnütz verbraucht wären. das müsste aber im konzept mehrfach geprüft und
 gegengerechnet sein."
 
-**Gegenrechnung, keine Entscheidung** (gebaut wird erst mit dem vorausgehenden Einsatz der Unverwundbarkeit,
-`TODO.md`). Zwei Entscheidungen sind auseinanderzuhalten, und nur die erste trägt Risiko:
+**Gebaut (A260), Regel und Lagen in Konzept 09, Abschnitt „Unverwundbarkeit vor einem tödlichen Tankbuster".** Hier
+die Gegenrechnung, die die Tabelle betrifft. Zwei Entscheidungen sind auseinanderzuhalten, und nur die erste trägt
+Risiko:
 
-**1. Die Unverwundbarkeit ziehen, weil die Tabelle den Treffer für tödlich hält.** Das ist die Entscheidung, gegen
-die der Gegenpunkt steht – nicht gegen das Weglassen der Minderung.
+**1. Die Unverwundbarkeit ziehen, weil die Tabelle den Treffer für tödlich hält.**
 - Die Tabelle irrt fast nur nach unten (siehe oben). Ein Urteil „tödlich auch mit allen verfügbaren Minderungen"
   aus einem zu kleinen Wert ist also erst recht richtig.
-- Nach oben irren kann sie über den Höchstwert: ein Treffer unter einer unbekannten Stärkung des Bosses (Raserei,
-  Schadensplus), oder ein Wert unter Verwundbarkeit mit mehr Stapeln.
+- Nach oben irren kann sie über den Höchstwert: ein Treffer unter einer Stärkung des Gegners – seit A260 beim Messen
+  ausgeschlossen, soweit die Stärkung als Damage Up erkennbar ist –, oder ein Wert unter Verwundbarkeit mit mehr
+  Stapeln. Den zweiten Fall nimmt Konzept 09 in Kauf: Er gilt nur unter Verwundbarkeit, also in der Wechsellage.
 - Dann zöge die Regel eine Unverwundbarkeit (240 s bis 420 s, xivapi) für einen Treffer, den Minderung allein
-  getragen hätte. Sie fehlt dann beim nächsten wirklich tödlichen Treffer.
-- Deshalb ist ein erhöhter Gegnerschaden beim Messen zu erkennen und auszuschließen, bevor diese Regel gebaut wird.
+  getragen hätte. Sie fehlte beim nächsten wirklich tödlichen Treffer.
 
-**2. Steht die Unverwundbarkeit, die übrigen Mittel weglassen (sein Vorschlag).** Dagegen gibt es für diesen
-Treffer keinen Einwand.
-- Alle vier machen eine Minderung für diesen Treffer wirkungslos:
-  - Heiliger Boden: immun, 10 s.
+**2. Steht die Unverwundbarkeit, die übrigen Mittel weglassen (sein Vorschlag).** Für den gebundenen Treffer gibt
+es dagegen keinen Einwand.
+- Alle vier machen eine Minderung für *diesen* Treffer wirkungslos, weil er nach dem besten Fall auch mit aller
+  Minderung tötet:
+  - Heiliger Boden und Meteoritenfall: immun, 10 s – das gilt für jeden Treffer in dieser Zeit.
   - Holmgang: LP fallen nicht unter 1, 10 s.
-  - Superbolide: LP auf 1, immun, 10 s.
   - Totenerweckung: der Tod wird zu Walking Dead, danach zählt die Heilung, nicht die Minderung.
+- Für einen *anderen*, nicht tödlichen Treffer unter Holmgang oder Totenerweckung zählt Minderung weiter: Er nimmt
+  LP, die nach dem Ende fehlen. Zurückgehalten wird dort deshalb nur beim gebundenen Treffer.
 - Ein Schild oder Gegner-Debuff wäre verbraucht, ohne etwas zu bewirken. Schutzwall (90 s) und Verdammnis (120 s)
   fehlten beim nächsten Tankbuster.
-- Auch als Rückfall taugt die Minderung nicht: Scheitert die Unverwundbarkeit bei einem tödlichen Treffer, rettet
-  die Minderung ebenfalls nicht.
-- Was dennoch nicht wegfallen darf, betrifft andere Treffer:
-  - Eine Minderung, die zugleich anderen hilft (Reflexion auf dem Boss mindert auch einen Raidwide im selben
-    Fenster).
-  - Was über die 10 s hinaus wirkt (Folgetreffer, DoT des Tankbusters – messbar an den Status, die er legt).
-  - Heilerschilde; deren Einsatz entscheidet der Heiler.
+- Als Rückfall taugt die Minderung kaum: Scheitert die Unverwundbarkeit bei einem tödlichen Treffer, rettet die
+  Minderung nach dem Urteil ebenfalls nicht. Das Urteil kann aber irren; deshalb öffnet das Zurückhalten im letzten
+  GCD, wenn die Unverwundbarkeit bis dahin nicht kam.
+- Was nicht wegfällt, betrifft andere Treffer oder andere Spieler:
+  - Reflexion für einen Raidwide im selben Fenster: Die Flächenabwehr ist nicht betroffen und läuft vor der
+    Einzelabwehr.
+  - Hilfe für ein anderes Mitglied (Intervention, Herz des Korunds auf dem Co-Tank).
+  - Was über den Treffer hinaus wirken soll: Die Bindung endet einen GCD nach dem Wirkende; danach entscheidet die
+    Abwehr wieder wie sonst.
+  - Heilerschilde auf einem Tank unter Holmgang oder Totenerweckung: Der Heiler kennt das Urteil des Tanks nicht. RSR
+    als Heiler hält nur bei Heiligem Boden und Meteoritenfall.
 
 ## Falsifikation
 

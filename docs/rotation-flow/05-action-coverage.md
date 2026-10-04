@@ -55,10 +55,10 @@ richtig ist:
 ### Der Befund, der den größten Teil des Rests erklärt: `AdjustedID`
 
 `BaseAction.Use()` castet nicht die deklarierte ID, sondern
-`adjustId = AdjustedID` (`BaseAction.cs:48/311`), und das ist
+`adjustId = AdjustedID` (Eigenschaft `BaseAction.AdjustedID`, gelesen in `Use()`), und das ist
 `ActionManager->GetAdjustedActionId(ID)` — die vom **Spiel** aufgelöste
 Ersetzung. Ausnahme sind Aktionen auf einen Bodenpunkt: Dort wirkt `Use()` die deklarierte `ID` und bricht ab, wenn
-das Spiel sie ersetzt hat (`BaseAction.cs:315`).
+das Spiel sie ersetzt hat (`BaseAction.Use()`, Zweig `TargetInfo.IsTargetArea`).
 
 Daraus folgt: **die Basisaktion ist der Griff, das Upgrade löst das Spiel
 auf.** `ArtOfWarPvE.CanUse()` feuert ab Stufe 82 Art of War II. Deshalb ist es
@@ -105,7 +105,7 @@ Konkrete Folge, nicht nur Kosmetik:
 
 Vollständige Erhebung aller Aktionen, deren Spielbeschreibung eine Ortsänderung
 nennt, gegen die Belegung von `MoveForwardAbility` / `MoveBackAbility` (beide
-laufen laut `CustomRotation_Ability.cs:354/371` **nur** bei gesetztem
+laufen laut `CustomRotation.Ability` (die Flaggenprüfung vor beiden Aufrufen) **nur** bei gesetztem
 `AutoStatus.MoveForward`/`MoveBack`, können die Schadensrotation also nicht
 stören; die drei direkten Aufrufer in `NIN_Reborn`, `WAR_Reborn` und `BeirutaNIN`
 prüfen dieselbe Flagge, geprüft 29.09.2026):
