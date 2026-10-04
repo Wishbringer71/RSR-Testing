@@ -5470,6 +5470,44 @@ Wechsel greift, schreibt das Protokoll selbst.
   Weg einer gelernten Tankbuster-Tabelle steht in `TODO.md`.
 
 **Prüfgrad:** Quellenrecherche; Repositories geklont und durchsucht, Webseiten abgerufen.
+
+### A259 · Die Tankbuster-Tabelle (04.10.2026)
+
+- *Sein Auftrag:* eine Tankbuster-Liste mit Auswertung im Spiel wie die Flächenliste, ohne deren Speicherfehler.
+  Dazu sollen Tankbuster auf andere Spieler ausgewertet werden. Sein Vorschlag, bei sicher tödlichem Tankbuster nur
+  die Unverwundbarkeit zu nehmen, ist in Konzept 13 gegengerechnet, aber nicht gebaut.
+- *Research:*
+  - Die Statustexte nennen keine Zahlen. Die Spieldaten verknüpfen Aktion und Status nicht (`StatusGainSelf` leer
+    bei Schutzwall, Reflexion, Holmgang, Urimpuls, Göttlicher Schleier, Dark Missionary; xivapi).
+  - Die Verknüpfung über den gemeinsamen Namen trifft 57 von 71 bewerteten Aktionen. Die Statusangabe im Code
+    trifft weitere, sofern sie direkt und klein ist; Sammellisten wie `RampartStatus` sind Sperrgruppen und
+    bleiben draußen.
+  - Schadensart: `AttackType` 1–4 physisch, 5 magisch (Spielblatt). Im Enum fehlte 4 (Shot); ergänzt, als Ausnahme
+    in `fixed_values.json`, weil das Ordinal die Zeilennummer des Spielblatts ist, mit der `AttackType.RowId`
+    verglichen wird.
+  - Abklingzeiten laut xivapi: Heiliger Boden 420 s, Holmgang 240 s, Totenerweckung 300 s, Superbolide 360 s,
+    Schutzwall 90 s, Verdammnis 120 s, Reflexion 60 s.
+- *Gebaut:*
+  - Der Generator erzeugt `DefensiveValues.MitigationByStatusId` (88 Status), mit Selbsttest.
+  - `OtherConfiguration.TankbusterPotential` mit `TankbusterReading` (ungemindert, unter Verwundbarkeit).
+  - `TankbusterTable` misst jeden Tankbuster auf jeden Spieler, rechnet auf ungemindert zurück und sagt für ein
+    Ziel unter der jetzigen Minderung voraus. Die Gefahrenprüfungen des Tankwechsels nutzen diese Vorhersage.
+  - Die Liste zeigt die Werte und „Store:", `DefenseTrace.log` schreibt jede Messung.
+  - Die Erkennung von Verwundbarkeit liegt jetzt gemeinsam in `StatusHelper`.
+- *Speichern:* `SaveTracked<T>` und `LoadLearned` sind verallgemeinert, die Flächentabelle nutzt denselben Weg.
+  Jeder ihrer zehn Fehlerfälle ist für die neue Tabelle ausgeschlossen (Tabelle in Konzept 13). Neu ist die Sperre
+  zwischen Effekt-Handler und Lesern.
+- *Defekt im eigenen Prüfmittel:* `check_config_store_roundtrip.py` erkannte `SaveTracked` nicht, die
+  Flächentabelle blieb so ungeprüft. Behoben, mit Selbsttest; das Skript meldet jetzt 21 Speicher.
+- *Falsifikation:*
+  - **Kein Bedarf?** Die Tabelle beantwortet, was keine Quelle liefert (A258).
+  - **Falsche Option?** Die Rückrechnung irrt nach unten (Barrieren, unbezifferte Minderungen, unsichtbare
+    Helfer). Damit bleibt sie beim Verhalten ohne Tabelle und löst nie eine unnötige Abwehr aus. Nach oben irrt sie
+    nur bei unbekannter Stärkung des Gegners; das ist vor dem Verbraucher Unverwundbarkeit zu schließen.
+  - **Ausgeliefert, und nichts ändert sich?** Ohne Tankbuster-Treffer bleibt die Tabelle leer; die Liste zeigt das
+    am Zähler, das Protokoll an der Messzeile.
+
+**Prüfgrad:** statisch, alle Prüfskripte und Generatoren, Compile über die CI. Im Spiel nicht beobachtet.
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

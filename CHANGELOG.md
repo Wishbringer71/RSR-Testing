@@ -23,6 +23,12 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Added to RotationSolver.Basic: `AttackType.Shot` and `DefensiveValues.MitigationByStatusId`
+
+`AttackType` gains `Shot = 4`, the game's AttackType row 4 (physical), which `ActionBasicInfo.AttackType`
+already produced as an unnamed value. `DefensiveValues.MitigationByStatusId` maps a status to the mitigation
+the action that grants it states in its effect text. Both are additive; no ordinal changed.
+
 ### Added to RotationSolver.Basic: `CustomRotation.Invulnerability`
 
 `protected virtual IBaseAction? Invulnerability`, null by default; the four tank base rotations return

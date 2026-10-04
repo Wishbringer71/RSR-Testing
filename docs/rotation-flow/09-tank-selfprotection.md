@@ -982,14 +982,17 @@ anderen Tank, wenn alles zutrifft:
 2. **Ein zweiter Treffer wäre tödlich.** Entweder trägst du noch eine Verwundbarkeit, die der Tankbuster gelegt hat
    (`VulnerabilityUp`, `PhysicalVulnerabilityUp`, `MagicVulnerabilityUp` – erkannt an den Bezeichnern, die der
    Generator aus dem englischen Statusblatt bildet, also unabhängig von der Client-Sprache). Oder LP und Schild zusammen liegen nicht über dem
-   härtesten Anteil, der für diese Aktion in diesem Kampf auf dir gemessen wurde („eine Wiederholung bringt dich um").
+   härtesten Anteil, der für diese Aktion in diesem Kampf auf dir gemessen wurde, oder der Vorhersage der
+   Tankbuster-Tabelle für dich unter der jetzt stehenden Minderung, je nachdem, was höher ist (Konzept 13, „Die
+   Tankbuster-Tabelle"; „eine Wiederholung bringt dich um").
    Das zweite Kriterium erlischt von selbst, sobald du über diese Linie geheilt bist.
 3. **Deine Unverwundbarkeit ist nicht verfügbar.** Verfügbar heißt hier: aktiviert, erlernt, abgeklungen und mit
    einer Schwelle über 0 (`HealthForDyingTanks`). Unter einer laufenden Unverwundbarkeit, Living Dead oder Walking
    Dead geschieht nichts.
 4. **Der andere Tank behält den Gegner danach.** Das ist gemessen, nicht angenommen; siehe Mechanik.
 5. **Der andere Tank ist nicht selbst in Gefahr** (sein Hinweis). Er trägt keine Verwundbarkeit, und seine LP mit
-   Schild liegen über dem härtesten gemessenen Anteil dieses Tankbusters, gerechnet auf seine maximalen LP. Ob
+   Schild liegen über dem, was dieser Tankbuster ihn erwartbar kostet: dem härtesten gemessenen Anteil oder der
+   Vorhersage der Tankbuster-Tabelle unter seiner jetzt stehenden Minderung, gerechnet auf seine maximalen LP. Ob
    *seine* Unverwundbarkeit bereit ist, kann RSR nicht lesen: Die Abklingzeiten anderer Spieler liegen nicht vor.
    Gemessen wird deshalb, ob ein Treffer ihn umbrächte, nicht, ob er sich retten könnte. Hat er dir den Gegner mit
    Geteiltem Leid gegeben, weil er in Gefahr ist, zeigt genau diese Messung das, und du gibst ihn nicht zurück.
@@ -998,7 +1001,8 @@ anderen Tank, wenn alles zutrifft:
 **Zurückholen (seine Vorgabe und Präzisierungen):** Hat dein Geteiltes Leid den Gegner bewegt, provoziert RSR ihn
 zurück, sobald
 - der Tank, der ihn jetzt hält, den nächsten Tankbuster dieses Gegners genommen hat,
-- die Verwundbarkeit abgelaufen ist und LP mit Schild über dem härtesten gemessenen Anteil liegen, und
+- die Verwundbarkeit abgelaufen ist und LP mit Schild über dem liegen, was eine Wiederholung erwartbar kostet
+  (wie oben), und
 - deine Unverwundbarkeit wieder bereit ist. Wo RSR sie gar nicht einsetzen würde (auf dieser Stufe nicht erlernt,
   abgeschaltet, Schwelle 0), wartet es darauf nicht.
 

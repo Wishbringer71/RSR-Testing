@@ -1095,6 +1095,55 @@ public static class StatusHelper
 	/// </summary>
 	/// <param name="Invulnp"></param>
 	/// <returns></returns>
+	private static HashSet<uint>? _vulnerabilityUpIds;
+
+	/// <summary>
+	/// The game's "damage taken is increased" debuffs, recognised by the names the generator gives them
+	/// from the status sheet (Vulnerability Up, Physical and Magic Vulnerability Up) rather than by a
+	/// hand-kept id list. The names are the English sheet names, so the client language does not matter.
+	/// </summary>
+	internal static bool IsVulnerabilityUp(uint statusId)
+	{
+		if (_vulnerabilityUpIds == null)
+		{
+			HashSet<uint> ids = [];
+			foreach (var value in Enum.GetValues<StatusID>())
+			{
+				var name = value.ToString();
+				if (name.StartsWith("VulnerabilityUp", StringComparison.Ordinal)
+					|| name.StartsWith("PhysicalVulnerabilityUp", StringComparison.Ordinal)
+					|| name.StartsWith("MagicVulnerabilityUp", StringComparison.Ordinal))
+				{
+					_ = ids.Add((uint)value);
+				}
+			}
+
+			_vulnerabilityUpIds = ids;
+		}
+
+		return _vulnerabilityUpIds.Contains(statusId);
+	}
+
+	/// <summary>Whether <paramref name="battleChara"/> carries any vulnerability debuff.</summary>
+	internal static bool CarriesVulnerabilityUp(this IBattleChara battleChara)
+	{
+		var statuses = battleChara.StatusList;
+		if (statuses == null)
+		{
+			return false;
+		}
+
+		foreach (var status in statuses)
+		{
+			if (status != null && status.StatusId != 0 && IsVulnerabilityUp(status.StatusId))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public static bool NoNeedHealingInvuln(this IBattleChara Invulnp)
 	{
 		return Invulnp.WillStatusEndGCD(2, 0, false, NoNeedHealingStatus);

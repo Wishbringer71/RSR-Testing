@@ -26,6 +26,11 @@ public enum AttackType : byte
 	Blunt = 3,
 
 	/// <summary>
+	/// Shot attack type - physical, as the game's AttackType sheet lists it between Blunt and Magic.
+	/// </summary>
+	Shot = 4,
+
+	/// <summary>
 	/// Magic attack type.
 	/// </summary>
 	Magic = 5,

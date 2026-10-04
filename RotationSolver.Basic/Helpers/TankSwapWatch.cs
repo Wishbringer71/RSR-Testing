@@ -59,7 +59,6 @@ internal static class TankSwapWatch
 	private static readonly Dictionary<uint, float> _hardestShare = [];
 	// The after-transfer ratio receiver/player that last failed to move the source; a swap needs more.
 	private static float _failedRatio = 1f;
-	private static HashSet<uint>? _vulnerabilityIds;
 	private static DateTime _heldWritten = DateTime.MinValue;
 
 	/// <summary>The tank a Shirk would hand the buster's source to, or null when none would hold it.</summary>
@@ -104,7 +103,7 @@ internal static class TankSwapWatch
 			List<uint> vulnerabilities = [];
 			foreach (var status in appliedStatuses)
 			{
-				if (IsVulnerability(status))
+				if (StatusHelper.IsVulnerabilityUp(status))
 				{
 					vulnerabilities.Add(status);
 				}
@@ -370,7 +369,7 @@ internal static class TankSwapWatch
 					continue;
 				}
 
-				if (CarriesVulnerability(member))
+				if (member.CarriesVulnerabilityUp())
 				{
 					why = $"{member.Name.TextValue} carries a vulnerability too";
 					continue;
@@ -378,7 +377,7 @@ internal static class TankSwapWatch
 
 				// The owner's case of 04.10.2026: the other tank may be the one in danger - he may even
 				// have shirked to you for it. Handing him the enemy back would trade one death for another.
-				if (member.CurrentHp + member.GetObjectShield() <= HardestShare() * Math.Max(1u, member.MaxHp))
+				if (member.CurrentHp + member.GetObjectShield() <= ExpectedShare(member, source) * Math.Max(1u, member.MaxHp))
 				{
 					why = $"{member.Name.TextValue} would not survive a repeat either";
 					continue;
@@ -472,6 +471,17 @@ internal static class TankSwapWatch
 		return _hardestShare.TryGetValue(last.ActionId, out var share) ? share : last.Share;
 	}
 
+	/// <summary>
+	/// What a repeat of the last tankbuster is expected to take from <paramref name="target"/>: the higher
+	/// of the hardest share measured on the player this fight and the learned table's prediction for this
+	/// target under the mitigation standing now (<see cref="TankbusterTable"/>, carried across sessions
+	/// and learned from every player hit).
+	/// </summary>
+	private static float ExpectedShare(IBattleChara target, IBattleChara? source)
+	{
+		return Math.Max(HardestShare(), TankbusterTable.PredictedShare(_last!.ActionId, target, source));
+	}
+
 	private static string DangerOf(IBattleChara player)
 	{
 		var last = _last!;
@@ -484,7 +494,7 @@ internal static class TankSwapWatch
 			}
 		}
 
-		var hardest = HardestShare();
+		var hardest = ExpectedShare(player, Svc.Objects.SearchById(last.Source) as IBattleChara);
 		var maxHp = Math.Max(1u, player.MaxHp);
 		var standing = player.CurrentHp + player.GetObjectShield();
 		if (standing <= hardest * maxHp)
@@ -493,53 +503,6 @@ internal static class TankSwapWatch
 		}
 
 		return string.Empty;
-	}
-
-	private static bool CarriesVulnerability(IBattleChara member)
-	{
-		var statuses = member.StatusList;
-		if (statuses == null)
-		{
-			return false;
-		}
-
-		foreach (var status in statuses)
-		{
-			if (status != null && status.StatusId != 0 && IsVulnerability(status.StatusId))
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/// <summary>
-	/// The game's "damage taken is increased" debuffs, recognised by the names the generator gives
-	/// them from the status sheet (Vulnerability Up, Physical and Magic Vulnerability Up) rather than
-	/// by a hand-kept id list. The names are the English sheet names, so the client language does not
-	/// matter.
-	/// </summary>
-	private static bool IsVulnerability(uint statusId)
-	{
-		if (_vulnerabilityIds == null)
-		{
-			HashSet<uint> ids = [];
-			foreach (var value in Enum.GetValues<StatusID>())
-			{
-				var name = value.ToString();
-				if (name.StartsWith("VulnerabilityUp", StringComparison.Ordinal)
-					|| name.StartsWith("PhysicalVulnerabilityUp", StringComparison.Ordinal)
-					|| name.StartsWith("MagicVulnerabilityUp", StringComparison.Ordinal))
-				{
-					_ = ids.Add((uint)value);
-				}
-			}
-
-			_vulnerabilityIds = ids;
-		}
-
-		return _vulnerabilityIds.Contains(statusId);
 	}
 
 	private static string Describe(List<uint> statuses)

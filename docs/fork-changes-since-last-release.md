@@ -136,3 +136,16 @@ why a swap held, and whether the boss moved; a Shirk that did not move it raises
 fight.
 
 The manual Shirk command no longer targets you yourself when you are the tank in stance.
+
+## Tankbusters are learned, from every player they hit
+
+RSR now keeps a table of tankbusters, like the one for area attacks. Every hit of a listed tankbuster, or of one
+whose marker was confirmed, counts on any player: you, your co-tank, or other parties in large content.
+- Each hit is scaled back to unmitigated by the mitigation that stood on the target and on the boss, and stored
+  per action as a share of maximum HP.
+- A hit taken under a vulnerability debuff is kept apart.
+
+The tank swap now also uses this table to judge whether a repeat would kill you, so it knows a tankbuster from an
+earlier evening or from your co-tank. The list shows each entry's figure and the store's state, and
+`DefenseTrace.log` names every measurement. To start over after a patch, delete `TankbusterPotential.json` while
+the game is closed.

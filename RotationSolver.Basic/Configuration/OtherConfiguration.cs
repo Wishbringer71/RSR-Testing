@@ -142,6 +142,29 @@ internal class OtherConfiguration
 	/// </remarks>
 	public static Dictionary<uint, float> HostileCastingAreaPotential = [];
 
+	/// <summary>
+	/// What each tankbuster does to the one it hits, scaled back to unmitigated, as a share of that
+	/// member's maximum HP - keyed by action id. Learned in play from every tankbuster seen on any
+	/// player, not only on the user (concept 13, "Die Tankbuster-Tabelle").
+	/// </summary>
+	/// <remarks>
+	/// The tankbuster counterpart of <see cref="HostileCastingAreaPotential"/>, stored the same way and
+	/// through the same guarded path (<see cref="SaveTracked{T}"/>): merged with the file on every
+	/// save, never written when its load did not finish, read back after writing, written through a
+	/// temporary file, set aside as .corrupt when unreadable. Changed on the game thread under
+	/// <see cref="TankbusterPotentialGate"/>, and every reader takes the same lock.
+	///
+	/// Unlike the area table it is not a raw observation: the measured share is divided by the
+	/// mitigation that stood on the member and on the attacker at the hit
+	/// (<see cref="DefensiveValues.MitigationByStatusId"/>), so a well-mitigated hit does not rate the
+	/// action low. A hit taken under a vulnerability debuff goes into its own figure. Both only ever
+	/// rise. No button discards it: after a patch the file is deleted by hand with the game closed.
+	/// </remarks>
+	public static Dictionary<uint, TankbusterReading> TankbusterPotential = [];
+
+	/// <summary>Guards <see cref="TankbusterPotential"/> between the effect handler and its readers.</summary>
+	public static readonly object TankbusterPotentialGate = new();
+
 	public static RotationSolverRecord RotationSolverRecord = new();
 
 	/// <summary>
@@ -173,17 +196,11 @@ internal class OtherConfiguration
 		// No download: this one is learned in play and has no shipped counterpart to fetch.
 		// The outcome is recorded for the list window: "loaded 0" and "file unreadable" and "no file
 		// yet" all leave an empty table behind, and only the first of them is harmless.
-		() =>
-		{
-			var path = GetFilePath(nameof(HostileCastingAreaPotential));
-			var existed = File.Exists(path);
-			InitOne(ref HostileCastingAreaPotential, nameof(HostileCastingAreaPotential), false);
-			AreaPotentialStoreState = !existed
-				? $"loaded {DateTime.Now:HH:mm:ss}: no file yet, started empty"
-				: !File.Exists(path)
-					? $"LOAD FAILED {DateTime.Now:HH:mm:ss}: file unreadable, set aside as .corrupt, started empty"
-					: $"loaded {DateTime.Now:HH:mm:ss}: {HostileCastingAreaPotential.Count} rated action(s) from file";
-		},
+		() => LoadLearned(ref HostileCastingAreaPotential, nameof(HostileCastingAreaPotential),
+			state => AreaPotentialStoreState = state, "rated action(s)"),
+		// Learned in play like the area table, through the same load.
+		() => LoadLearned(ref TankbusterPotential, nameof(TankbusterPotential),
+			state => TankbusterStoreState = state, "rated tankbuster(s)"),
 		() => InitOne(ref HostileCastingTank, nameof(HostileCastingTank)),
 		() => InitOne(ref BeneficialPositions, nameof(BeneficialPositions)),
 		() => InitOne(ref RotationSolverRecord, nameof(RotationSolverRecord), false),
@@ -195,6 +212,23 @@ internal class OtherConfiguration
 		() => InitOne(ref NorthHornWeaknessRecords, nameof(NorthHornWeaknessRecords), false),
 		() => InitOne(ref SouthHornWeaknessRecords, nameof(SouthHornWeaknessRecords), false),
 	];
+
+	/// <summary>
+	/// Loads a store learned in play - nothing to download - and says what the load found: "loaded
+	/// 0", "file unreadable" and "no file yet" all leave an empty table behind, and only the first of
+	/// them is harmless.
+	/// </summary>
+	private static void LoadLearned<T>(ref T value, string name, Action<string> report, string noun) where T : System.Collections.ICollection, new()
+	{
+		var path = GetFilePath(name);
+		var existed = File.Exists(path);
+		InitOne(ref value, name, false);
+		report(!existed
+			? $"loaded {DateTime.Now:HH:mm:ss}: no file yet, started empty"
+			: !File.Exists(path)
+				? $"LOAD FAILED {DateTime.Now:HH:mm:ss}: file unreadable, set aside as .corrupt, started empty"
+				: $"loaded {DateTime.Now:HH:mm:ss}: {value.Count} {noun} from file");
+	}
 
 	private static void EnsureConfigDirectory()
 	{
@@ -240,6 +274,7 @@ internal class OtherConfiguration
 		[
 			SaveHostileCastingArea(),
 			SaveHostileCastingAreaPotential(),
+			SaveTankbusterPotential(),
 			SaveHostileCastingKnockback(),
 			SaveTankbusterMarkerWithoutHit(),
 		];
@@ -309,8 +344,31 @@ internal class OtherConfiguration
 		// reading stayed in memory, so it looked recorded, and reached the file only if a later
 		// save came along. The last reading of a session had no later save.
 		var snapshot = new Dictionary<uint, float>(HostileCastingAreaPotential);
-		return Task.Run(() => SaveTracked(snapshot, nameof(HostileCastingAreaPotential)));
+		return Task.Run(() => SaveTracked(snapshot, nameof(HostileCastingAreaPotential), Math.Max,
+			state => AreaPotentialStoreState = state, _areaPotentialSaveLock, "rated action(s)"));
 	}
+
+	/// <summary>
+	/// Saves the tankbuster table. The copy is taken here, under the table's lock, on the caller's
+	/// thread - the effect handler writes the table on the game thread - and only the copy goes to the
+	/// pool (the lesson of A224 for the area table).
+	/// </summary>
+	public static Task SaveTankbusterPotential()
+	{
+		Dictionary<uint, TankbusterReading> snapshot;
+		lock (TankbusterPotentialGate)
+		{
+			snapshot = new Dictionary<uint, TankbusterReading>(TankbusterPotential);
+		}
+
+		return Task.Run(() => SaveTracked(snapshot, nameof(TankbusterPotential), TankbusterReading.Higher,
+			state => TankbusterStoreState = state, _tankbusterSaveLock, "rated tankbuster(s)"));
+	}
+
+	/// <summary>What the last save and load of the tankbuster table did, in words.</summary>
+	public static string TankbusterStoreState { get; private set; } = "not loaded yet";
+
+	private static readonly object _tankbusterSaveLock = new();
 
 	/// <summary>
 	/// What the last save and the last load of the learned damage table did, in words. Read by the
@@ -321,11 +379,17 @@ internal class OtherConfiguration
 
 	private static readonly object _areaPotentialSaveLock = new();
 
-	private static void SaveTracked(Dictionary<uint, float> snapshot, string name)
+	/// <summary>
+	/// The guarded save of a table learned in play. <paramref name="higher"/> merges a value in memory
+	/// with the one on disk - each store only ever grows, so the file is a lower bound and nothing it
+	/// holds is dropped. <paramref name="report"/> receives what happened, in words.
+	/// </summary>
+	private static void SaveTracked<T>(Dictionary<uint, T> snapshot, string name, Func<T, T, T> higher,
+		Action<string> report, object gate, string noun)
 	{
 		if (!WasLoaded(name))
 		{
-			AreaPotentialStoreState = $"NOT SAVED {DateTime.Now:HH:mm:ss}: the table was never loaded this session, file left as it is";
+			report($"NOT SAVED {DateTime.Now:HH:mm:ss}: the table was never loaded this session, file left as it is");
 			return;
 		}
 
@@ -333,7 +397,7 @@ internal class OtherConfiguration
 		// tasks writing it at once made the second one fail on the locked file - retried twice, and
 		// on the third failure dropped. Serialising them costs nothing here: a save is a few
 		// hundred entries, and the order they land in is the order the readings were taken.
-		lock (_areaPotentialSaveLock)
+		lock (gate)
 		{
 			// The table only ever grows by itself, so what is on disk is never less than true: a save
 			// takes the higher value of memory and file for every action and drops nothing the file
@@ -341,23 +405,20 @@ internal class OtherConfiguration
 			// empty for any reason - and before this a single save then replaced weeks of readings
 			// with the few taken since. To start over after a patch, the file is deleted by hand
 			// while the game is closed - there is deliberately no button for it (owner's decision).
-			if (!TryReadEntriesOnDisk(name, out var onDiskBefore))
+			if (!TryReadEntriesOnDisk<T>(name, out var onDiskBefore))
 			{
 				// A file that is there but cannot be read now - locked by another program, or broken -
 				// is not overwritten by a save that could not merge with it. The reading stays in
 				// memory and goes out with the next save.
-				AreaPotentialStoreState = $"NOT SAVED {DateTime.Now:HH:mm:ss}: the file could not be read to merge with, left as it is - see the log";
+				report($"NOT SAVED {DateTime.Now:HH:mm:ss}: the file could not be read to merge with, left as it is - see the log");
 				return;
 			}
 
 			if (onDiskBefore != null)
 			{
-				foreach (var (id, share) in onDiskBefore)
+				foreach (var (id, onDisk) in onDiskBefore)
 				{
-					if (!snapshot.TryGetValue(id, out var inMemory) || inMemory < share)
-					{
-						snapshot[id] = share;
-					}
+					snapshot[id] = snapshot.TryGetValue(id, out var inMemory) ? higher(inMemory, onDisk) : onDisk;
 				}
 			}
 
@@ -366,17 +427,17 @@ internal class OtherConfiguration
 			// Read back what is on disk rather than trusting the call. A save that "succeeded" but
 			// left a file the loader cannot read, or one with fewer entries than were written, is
 			// exactly the failure this store cannot afford, and only the file itself can say so.
-			var onDisk = CountEntriesOnDisk(name);
-			AreaPotentialStoreState = ok && onDisk == snapshot.Count
-				? $"saved {DateTime.Now:HH:mm:ss}: {snapshot.Count} rated action(s) written and read back"
+			var readBack = CountEntriesOnDisk<T>(name);
+			report(ok && readBack == snapshot.Count
+				? $"saved {DateTime.Now:HH:mm:ss}: {snapshot.Count} {noun} written and read back"
 				: !ok
 					? $"SAVE FAILED {DateTime.Now:HH:mm:ss}: {snapshot.Count} in memory, file unchanged - see the log"
-					: $"SAVE MISMATCH {DateTime.Now:HH:mm:ss}: {snapshot.Count} written, {onDisk} read back";
+					: $"SAVE MISMATCH {DateTime.Now:HH:mm:ss}: {snapshot.Count} written, {readBack} read back");
 		}
 	}
 
 	/// <returns>False when the file exists but could not be read; true with null when there is none.</returns>
-	private static bool TryReadEntriesOnDisk(string name, out Dictionary<uint, float>? entries)
+	private static bool TryReadEntriesOnDisk<T>(string name, out Dictionary<uint, T>? entries)
 	{
 		entries = null;
 		try
@@ -387,7 +448,7 @@ internal class OtherConfiguration
 				return true;
 			}
 
-			entries = JsonConvert.DeserializeObject<Dictionary<uint, float>>(File.ReadAllText(path));
+			entries = JsonConvert.DeserializeObject<Dictionary<uint, T>>(File.ReadAllText(path));
 			return entries != null;
 		}
 		catch (Exception ex)
@@ -397,7 +458,7 @@ internal class OtherConfiguration
 		}
 	}
 
-	private static int CountEntriesOnDisk(string name)
+	private static int CountEntriesOnDisk<T>(string name)
 	{
 		try
 		{
@@ -407,7 +468,7 @@ internal class OtherConfiguration
 				return -1;
 			}
 
-			var read = JsonConvert.DeserializeObject<Dictionary<uint, float>>(File.ReadAllText(path));
+			var read = JsonConvert.DeserializeObject<Dictionary<uint, T>>(File.ReadAllText(path));
 			return read?.Count ?? -1;
 		}
 		catch

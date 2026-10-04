@@ -252,8 +252,12 @@ Tankbuster wäre schädlich.
 - `xiv-stats/xiv-damage-samples` enthält Rohschaden samt Minderungen, aber nur für E12S (2021).
 - consolegameswiki nennt die Unverwundbarkeit nur als Strategie für geteilte Tankbuster.
 
-**Damit gilt:** Tödlichkeit ist nur aus eigenen Messungen ableitbar, wie er sagt. **Offen:** voller Loop zu einer
-gelernten Tankbuster-Tabelle, die über Sitzungen gespeichert wird wie `HostileCastingAreaPotential`.
+**Damit gilt:** Tödlichkeit ist nur aus eigenen Messungen ableitbar, wie er sagt. **Gebaut (A259):** die gelernte
+Tankbuster-Tabelle (Konzept 13, „Die Tankbuster-Tabelle"), aus Treffern auf jeden Spieler, auf ungemindert
+zurückgerechnet, über Sitzungen gespeichert. **Offen:** der Verbraucher, also der vorausgehende Einsatz der
+Unverwundbarkeit, wenn die Vorhersage auch mit allen verfügbaren Minderungen tödlich ist. Dazu kommt sein Vorschlag,
+dann die übrigen Minderungen wegzulassen; die Gegenrechnung steht in Konzept 13. Vorher zu schließen: ein erhöhter
+Gegnerschaden beim Messen. Ursprünglich gedacht als:
 - Je Aktion der ungeminderte Anteil: gemessener Schaden geteilt durch die beim Einschlag aktiven Minderungen. Diese
   sind bekannt aus `DefensiveValues` und den Status auf dir und auf dem Gegner; Verwundbarkeit getrennt geführt.
 - Vor dem nächsten Einschlag derselben Aktion die Vorhersage mit den dann verfügbaren Minderungen gegen LP und

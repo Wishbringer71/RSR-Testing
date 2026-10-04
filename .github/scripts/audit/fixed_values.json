@@ -50,6 +50,16 @@
    "status": "open"
   },
   {
+   "file": "RotationSolver.Basic/Data/AttackType.cs",
+   "code": "Shot = 4,",
+   "values": [
+    "4"
+   ],
+   "status": "exception",
+   "loop": "A259",
+   "reason": "Enum ordinal mirroring row 4 of the game's AttackType sheet (shot, physical); the enum is the typed name of that row id, compared with AttackType.RowId, so the ordinal is the game's own number"
+  },
+  {
    "file": "RotationSolver.Basic/Data/BossModEnums.cs",
    "code": "Freezing = 3,",
    "values": [

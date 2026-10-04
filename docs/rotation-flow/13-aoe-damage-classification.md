@@ -493,6 +493,117 @@ anzufangen — **ohne** neu herunterzuladen, weil die Datei existiert. Für die 
 das einen Knopfdruck, für die Erfahrungswerte alles. Und geschrieben wird dieser Speicher **im
 Kampf**, bei jedem neuen Höchstwert, also genau dann, wenn ein Absturz am wahrscheinlichsten ist.
 
+## Die Tankbuster-Tabelle
+
+**Sein Auftrag (04.10.2026):** „erstelle eine solche liste mit ingame auswertung ähnlich der liste für aoes. mach
+da aber beim speichern nicht die gleichen fehler." Dazu seine Frage: „kannst du auch gesehene tankbuster auf andere
+spieler auswerten?" Anlass ist sein Hinweis, dass sich ohne den erwarteten Schaden nicht sagen lässt, ob ein
+Tankbuster tödlich ist. Eine öffentliche Quelle dafür gibt es nicht (A258).
+
+**Gebaut (A259):** `OtherConfiguration.TankbusterPotential`, je Aktion zwei Werte als Anteil an den maximalen LP
+des Getroffenen: der ungeminderte Schaden ohne Verwundbarkeit und der unter Verwundbarkeit. Beide steigen nur.
+Messung in `TankbusterTable`, Ablage über denselben gesicherten Weg wie die Flächentabelle.
+
+### Was gemessen wird
+
+- **Welche Treffer:** jeder Treffer einer gegnerischen Aktion, die in der Tankbuster-Liste steht oder deren
+  Tankbuster-Marker bestätigt wurde (`TankbusterMarkerWatch.RecordHit`), auf **jeden Spieler**. Das schließt den
+  Co-Tank ein und in großen Inhalten Spieler anderer Gruppen. Die LP und Status anderer Spieler liegen vor.
+- **Zurückgerechnet auf ungemindert:** Der gemessene Anteil wird durch die Minderung geteilt, die beim Einschlag
+  stand.
+  - Auf dem Getroffenen zählt sein eigener Anteil, auf dem Angreifer der Anteil nach Schadensart: physisch für
+    `AttackType` 1–4, magisch für 5, sonst die kleinere der beiden Minderungen.
+  - Die Werte kommen aus den Wirktexten der Aktionen, die den Status legen (`DefensiveValues.MitigationByStatusId`).
+    Der Generator verknüpft 88 Status über den gemeinsamen Namen oder über die Statusangabe im Code.
+    Sammellisten wie die von Schutzwall, die die Sperrgruppe aller großen Minderungen sind, bleiben dabei außen vor.
+  - Damit drückt ein gut geminderter Treffer die Aktion nicht nach unten – die Schwäche des Höchstwerts der
+    Flächentabelle (Abschnitt „Falsifikation") entfällt hier.
+- **Unter Verwundbarkeit getrennt:** Trägt der Getroffene eine Verwundbarkeit, geht der Wert in die zweite Zahl.
+  Ausgenommen ist eine, die genau dieser Treffer legt (Effektsatz): Sie kam mit ihm und hat ihn nicht verstärkt.
+  Ob das Spiel sie beim Eintreffen des Effekts schon gesetzt hat, ist nicht belegt; die Ausnahme macht die Frage
+  gegenstandslos.
+  Sonst würde der zweite Treffer einer Wechselmechanik die Aktion selbst als so hart einstufen.
+- **Null zählt nicht:** Ein Treffer ohne Schaden – Unverwundbarkeit, Ausweichen, ganz absorbiert – sagt, dass
+  etwas ihn aufhielt, nicht, dass er harmlos ist.
+
+**Fehler nur nach unten:**
+- Eine Minderung, die kein Wirktext beziffert (Merkmal, unverknüpfter Status), wird nicht herausgerechnet.
+- Eine Barriere wird nicht herausgerechnet: Ob die Schadenszahl des Spiels den absorbierten Teil enthält, ist hier
+  nicht belegt.
+- Treffer unsichtbarer Helfer tragen die Debuffs des Bosses nicht.
+
+In allen drei Fällen fällt der ungeminderte Wert zu klein aus, und jeder spätere Treffer kann ihn nur anheben. Ein
+zu kleiner Wert heißt: Eine Abwehr unterbleibt – das Verhalten ohne Tabelle. Der erste Treffer einer Aktion hat
+keinen Wert.
+
+### Wofür
+
+- **Tankwechsel (Konzept 09):** „eine Wiederholung bringt dich um" rechnet mit dem Höheren aus dem härtesten
+  Treffer dieses Kampfes auf dich und der Vorhersage der Tabelle: ungeminderter Wert mal der Minderung, die jetzt
+  auf dir und auf dem Boss liegt. Gleiches gilt für die Prüfung, ob der Empfänger selbst in Gefahr ist. Damit
+  greift der Tankwechsel schon beim ersten Tankbuster eines späteren Abends und mit Messungen vom Co-Tank.
+- **Offen:** der vorausgehende Einsatz der Unverwundbarkeit (`TODO.md`). Erst dort entscheidet die Tabelle über
+  Abklingzeiten.
+
+**Ablesbar:** Die Liste zeigt neben der Tankbuster-Liste je Eintrag den ungeminderten Anteil, die Zahl der
+bewerteten Tankbuster und „Store:" in derselben Form wie die Flächentabelle. `DefenseTrace.log` schreibt jede
+Messung („tankbuster measured: … mitigation factor …, unmitigated … - stored").
+
+### Speichern: welche Fehler der Flächentabelle hier ausgeschlossen sind
+
+Gemeinsamer Weg, nicht kopiert: Laden über `LoadLearned`, Speichern über `SaveTracked<T>` mit einer
+Zusammenführung je Speicher. Die Flächentabelle nutzt seit A259 denselben Weg.
+
+| Fehler der Flächentabelle | Hier |
+|---|---|
+| Nicht geladen, weil nur in `Init` eingetragen (A121) | in der einzigen Ladeliste `LoadSteps`; `check_config_store_roundtrip.py` prüft das. Dabei gefunden: Das Skript erkannte die gesicherte Speicherung `SaveTracked` gar nicht und prüfte die Flächentabelle deshalb nie; behoben, mit Selbsttest |
+| Speichern überschreibt die Datei mit weniger (A172) | jedes Speichern führt Datei und Speicher zusammen, je Wert das Höhere |
+| Datei beim Speichern unlesbar | nicht überschrieben, „NOT SAVED" |
+| Laden nicht zu Ende gelaufen, dann Entladen | nicht geschrieben |
+| Unlesbare Datei beim Start | als `.corrupt` beiseitegelegt und gemeldet |
+| Halb geschriebene Datei nach Absturz | über eine temporäre Datei geschrieben |
+| Zwei Speicherungen gleichzeitig auf dieselbe `.tmp` | eine Sperre je Speicher |
+| Kopie auf dem Pool-Thread, während der Effekt-Handler schreibt (A224) | Kopie auf dem aufrufenden Thread, unter der Sperre der Tabelle, auch im Gesamtspeichern |
+| Messung zwischen letztem Speichern und Entladen | Effekt-Handler wird vor dem letzten Speichern abgehängt (gilt für alle Speicher) |
+| Erfolg ohne Beleg | die Datei wird zurückgelesen, „SAVE MISMATCH" bei Abweichung |
+| Neu: Lesen und Schreiben im Speicher aus zwei Threads | jeder Zugriff unter `TankbusterPotentialGate` |
+
+Verworfen wird die Tabelle von Hand bei geschlossenem Spiel, wie die Flächentabelle (seine Vorgabe, keine
+Schaltfläche).
+
+### Sein Vorschlag: bei sicher tödlichem Tankbuster nur die Unverwundbarkeit (04.10.2026)
+
+„rein ökonomisch kann die liste und deren auswertung auch dazu führen, dass für einen tankbuster, welcher 100%
+tödlich ist, nur noch invul nimmt und alle anderen schilde, debuffs und mitigations wegläßt, da sie hier eh
+nichts bringen würden und somit nur unnütz verbraucht wären. das müsste aber im konzept mehrfach geprüft und
+gegengerechnet sein."
+
+**Erste Gegenrechnung, keine Entscheidung** (gebaut wird erst mit dem vorausgehenden Einsatz der
+Unverwundbarkeit, `TODO.md`):
+
+- **Dafür:** Alle vier Unverwundbarkeiten machen eine Minderung für *diesen* Treffer wertlos.
+  - Heiliger Boden: immun, 10 s.
+  - Holmgang: LP fallen nicht unter 1, 10 s.
+  - Superbolide: LP auf 1, immun, 10 s.
+  - Totenerweckung: der Tod wird zu Walking Dead, danach zählt die Heilung, nicht die Minderung.
+  
+  Eine Minderung von 90 s bis 120 s, die dabei verbraucht wird, fehlt beim nächsten Tankbuster.
+- **Wann „sicher tödlich" belastbar ist:** Die Tabelle irrt fast nur nach unten (siehe oben). Ein Urteil „tödlich
+  auch mit allen verfügbaren Minderungen" aus einem zu kleinen Wert ist also erst recht richtig.
+  - Nach oben irren kann sie über den Höchstwert: ein Treffer unter einer unbekannten Stärkung des Bosses (Raserei,
+    Schadensplus), oder ein Wert unter Verwundbarkeit mit mehr Stapeln.
+  - Dann kostete die Regel eine Unverwundbarkeit (240 s bis 420 s), wo Minderung gereicht hätte. Das ist der
+    schwerste Gegenpunkt. Er spricht dafür, einen erhöhten Gegner-Schaden beim Messen zu erkennen und
+    auszuschließen, bevor die Regel gebaut wird.
+- **Was nicht weggelassen werden darf:**
+  - Eine Minderung, die zugleich anderen hilft: Reflexion auf dem Boss mindert auch einen Raidwide im selben
+    Fenster.
+  - Was über die 10 s hinaus wirkt: Folgetreffer, DoT des Tankbusters (messbar an den Status, die er legt).
+  - Heilerschilde: deren Einsatz entscheidet der Heiler, nicht der Tank.
+- **Kein Rückfall durch die Minderung:** Scheitert die Unverwundbarkeit, etwa durch einen verpassten
+  Einschiebeplatz, hätte die Minderung bei einem sicher tödlichen Treffer ohnehin nicht gerettet. Ein Rückfallwert
+  entsteht nur dort, wo die Vorhersage falsch ist – siehe den Punkt davor.
+
 ## Falsifikation
 
 **Der Höchstwert konvergiert nicht, wenn immer gemindert wird.** Nicht widerlegt, aber entschärft:
