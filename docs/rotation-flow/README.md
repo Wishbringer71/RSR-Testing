@@ -16,7 +16,7 @@ stünde hier ein zweites Mal und würde altern.
 | [`06-fork-audit.md`](06-fork-audit.md) | Worin wich der Fork im ersten Durchgang von Upstream ab? (abgeschlossen, Archiv) |
 | [`07-heal-target-priority.md`](07-heal-target-priority.md) | Wer wird zuerst geheilt, wenn nicht alle zugleich versorgt werden können? |
 | [`08-mitigation-synergy.md`](08-mitigation-synergy.md) | Womit wird auf einen eingehenden Treffer geantwortet — Heilung, Barriere oder Minderung? |
-| [`09-tank-selfprotection.md`](09-tank-selfprotection.md) | Wann darf der Heiler eine Tank-Schutzmechanik laufen lassen, statt sie wegzuheilen? |
+| [`09-tank-selfprotection.md`](09-tank-selfprotection.md) | Wann darf der Heiler eine Tank-Schutzmechanik laufen lassen, statt sie wegzuheilen? Wann gibt ein Tank den Boss nach einem Tankbuster ab, und wann holt er ihn zurück? |
 | [`10-drk-blackest-night.md`](10-drk-blackest-night.md) | Wann ist die Barriere des Dunkelritters das richtige Mittel, und was darf ihr nicht dazwischenkommen? |
 | [`11-raise-dispatch.md`](11-raise-dispatch.md) | Wann und auf welchem Weg fällt die Wiederbelebung? |
 | [`12-searing-light-stacking.md`](12-searing-light-stacking.md) | Wann zündet der Beschwörerbuff, wenn mehrere Beschwörer in der Gruppe stehen? |

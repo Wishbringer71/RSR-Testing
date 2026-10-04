@@ -45,6 +45,7 @@ hier.
 | Sonderbehandlung für The Blackest Night | **nicht nötig**, aber aus dem umgekehrten Grund: Eine Barriere ist kein Grund, später zu heilen — s. u. |
 | Schildanrechnung auf die Heilschwelle | **entfernt** (A85). Gesundheit und Schild addieren sich, sie ersetzen einander nicht |
 | Messbaustein für Raten auf Gruppenmitglieder | **gebaut** (A91–A93): `RecordedHP` führt die Gruppe mit, `GetCorrectedTTK` liefert die Restzeit je Mitglied. Die frühere Verwerfung ist überholt |
+| Tankwechsel nach einem Tankbuster (sein Vorschlag): Geteiltes Leid auf den Co-Tank, Zurückprovozieren nach dessen Tankbuster | **gebaut**, Option ab Werk an (A255–A257); Abschnitt „Tankwechsel nach einem Tankbuster" |
 
 ## Prüfmaßstab — die Rangordnung
 
@@ -970,7 +971,7 @@ die höchste gesundheit."
 - *Präzisierung (als Frage gestellt, geprüft und übernommen):* „müsste das zurückprovozieren nicht erst dann
   erfolgen, wenn auch der andere tank einen tankbuster bekommen hat?"
 
-**Gebaut (A255, A256), Option „Shirk the co-tank after a tankbuster that leaves you in danger", ab Werk an:**
+**Gebaut (A255–A257), Option „Shirk the co-tank after a tankbuster that leaves you in danger", ab Werk an:**
 Erkennung in `TankSwapWatch`, Entscheidung in `CustomRotation.TankSwapAbility`, für alle Tanks an einer Stelle (Stufe
 Tanks; Geteiltes Leid ist eine Rollenaktion, für keinen Tank-Job gilt etwas anderes). Geteiltes Leid geht auf den
 anderen Tank, wenn alles zutrifft:
@@ -1009,8 +1010,10 @@ denn er ist ein Tank, und fällt er unter die Sterbe-Schwelle, nimmt die automat
 ab, sofern du nicht selbst in Gefahr bist. Trifft sein Tankbuster, solange dein Debuff noch läuft, wartet das
 Zurückholen auf deine übrigen Bedingungen.
 
-Greift der Gegner dich schon wieder an, ist nichts zurückzuholen. Hat der Co-Tank ihn per Herausforderung
-übernommen, ohne dass dein Geteiltes Leid ihn bewegt hat, holt RSR ihn nicht zurück: Das war ein geplanter Wechsel.
+Greift der Gegner dich schon wieder an, ist nichts zurückzuholen. Zurückgeholt wird nach jedem Wechsel, bei dem
+dein Geteiltes Leid ausgeführt wurde und der Gegner danach den Empfänger angreift – auch wenn der Co-Tank vorher
+provoziert hatte. Hat er ihn ohne dein Geteiltes Leid übernommen, holt RSR ihn nicht zurück: Das war ein geplanter
+Wechsel.
 
 **Kein Zurückholen, solange du in Gefahr bist:** Die automatische Herausforderung nimmt einem Co-Tank den Gegner ab,
 der unter `HealthForDyingTanks` fällt (`ObjectHelper.CanProvoke`). Solange du selbst nach einem Tankbuster in Gefahr
@@ -1058,7 +1061,9 @@ Leid sofort und festigt den Wechsel, wie es die Referenz vorsieht.
   in Gefahr, wirkt keiner, und keiner provoziert.
 - **Haltung:** RSR schaltet die Haltung nur ein, wenn kein anderer Tank sie trägt. Ein RSR-Co-Tank liegt daher
   meist weit unter der Hälfte, und die Regel hält. Das ist richtig: Ohne Haltung behielte er den Gegner nicht.
-- **Automatische Herausforderung** greift nur bei Gegnern auf Nicht-Tanks und kreuzt diese Regel nicht.
+- **Automatische Herausforderung** (`ObjectHelper.CanProvoke`, bei zwei Tanks nur mit „Auto provoke when there is
+  another tank in party") greift bei Gegnern auf Nicht-Tanks und nimmt einem Co-Tank unter `HealthForDyingTanks`
+  den Gegner ab. Den zweiten Fall sperrt die Regel, solange du selbst in Gefahr bist (oben, „Kein Zurückholen").
 - **Allein, Vierer-Instanz, Allianzraid:** Es gibt keinen anderen Tank in der Gruppe, die Regel ist still.
 - **BossMod ohne Modul:** Die Regel liest keine Vorhersage; Erkennung über Liste, Marker und Effektsatz.
 - **Stufensynchron:** Geteiltes Leid erst ab St. 48 (`EnoughLevel`), darunter still.

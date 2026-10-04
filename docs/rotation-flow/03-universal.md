@@ -60,25 +60,31 @@ GCD()                                    Ability()
  6  DispelGCD                             6  Befohlener Gegenstand
  7  ProvokeGCD                            7  UseAbility aus / Wirken läuft / Fesselung
  8  RaiseSpell   (wenn RaisePlayerFirst)  8  EmergencyAbility
- 9  MoveForwardGCD                        9  InterruptAbility
-10  HealAreaGCD                          10  DispelAbility
-11  HealSingleGCD                        11  Shirk
-12  DefenseAreaGCD                       12  TankStance
-13  DefenseSingleGCD                     13  AntiKnockback
-14  RaiseSpell   (sonst)                 14  TrueNorth / Positional
-15  GeneralGCD                           15  HealAreaAbility
-16  Heilung ohne Anlass                  16  HealSingleAbility
-    (HealWhenNothingTodo)                17  SpeedAbility (nur befohlen)
-                                         18  ProvokeAbility
-                                         19  DefenseAreaAbility
-                                         20  DefenseSingleAbility
-                                         21  MoveForward / MoveBack
-                                         22  HP-Potion
-                                         23  Phönixfeder
-                                         24  AttackAbility
-                                         25  GeneralAbility
-                                         26  MP-Potion · GeneralUsing · Speed
+ 9  MoveForwardGCD                        9  Tankwechsel (nur Tanks, Option):
+10  HealAreaGCD                              Shirk auf den Co-Tank, dann Zurückprovozieren
+11  HealSingleGCD                        10  InterruptAbility
+12  DefenseAreaGCD                       11  DispelAbility
+13  DefenseSingleGCD                     12  Shirk (befohlen)
+14  RaiseSpell   (sonst)                 13  TankStance
+15  GeneralGCD                           14  AntiKnockback
+16  Heilung ohne Anlass                  15  TrueNorth / Positional
+    (HealWhenNothingTodo)                16  HealAreaAbility
+                                         17  HealSingleAbility
+                                         18  SpeedAbility (nur befohlen)
+                                         19  ProvokeAbility
+                                         20  DefenseAreaAbility
+                                         21  DefenseSingleAbility
+                                         22  MoveForward / MoveBack
+                                         23  HP-Potion
+                                         24  Phönixfeder
+                                         25  AttackAbility
+                                         26  GeneralAbility
+                                         27  MP-Potion · GeneralUsing · Speed
 ```
+
+Der Tankwechsel (9) sitzt hinter `EmergencyAbility`, damit eine Unverwundbarkeit, die an ihrer Schwelle zündet,
+vorgeht, und vor allem anderen, weil er nach einem Tankbuster eilt (Konzept 09, „Tankwechsel nach einem
+Tankbuster"). Er hat keinen befohlenen Eingang; Shirk (12) läuft weiterhin nur auf Befehl.
 
 In jedem Slot fragt der Dispatcher zuerst die Duty-Rotation (`DataCenter.CurrentDutyRotation`), dann den Job. Die
 Heil-, Abwehr-, Bewegungs- und Rückzugsslots haben je zwei Eingänge: zuerst den befohlenen (`CommandStatus`), dann

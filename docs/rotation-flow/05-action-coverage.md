@@ -93,7 +93,9 @@ Konkrete Folge, nicht nur Kosmetik:
 
 - **Invulnerability** ist bei DRK, GNB und WAR in der Basisschicht verdrahtet
   (`EmergencyAbility`, gegated auf `Service.Config.HealthForDyingTanks`), bei
-  **PLD** dagegen in `PLD_Reborn.EmergencyAbility` mit eigener Logik
+  **PLD** dagegen in `PLD_Reborn.EmergencyAbility` mit eigener Logik. Welche Aktion
+  die Unverwundbarkeit ist, nennt seit A255 für alle vier die Basisschicht
+  (`Invulnerability`); der Tankwechsel liest daraus, ob sie noch retten kann
   (`HallowedWithCover`, daneben dieselbe Schwelle `HealthForDyingTanks`). Vier Tanks, dieselbe Fähigkeitsklasse, zwei Orte und
   zwei Gates.
 - Beim Lesen einer `{Job}_Reborn.cs` ist nicht erkennbar, ob ein Slot leer ist

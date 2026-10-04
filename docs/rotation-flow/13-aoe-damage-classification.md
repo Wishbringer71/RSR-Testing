@@ -213,7 +213,10 @@ Tank, und je Pfad, ob der Treffer ihn erreicht („area hit reaches you", „sin
 jeder gegnerische Treffer auf ihn (ohne Auto-Attacken) und jede Landung eines gelisteten Flächencasts mit
 „reached you" — ohne diese Zeile blieb offen, warum „Ätherschub" am 30.09. sechsmal die Flächenabwehr öffnete,
 obwohl er ihn nie traf: Eine Landung, aus der „Skip area defence for casts that missed you" lernt, kam nicht an. So steht in der Datei, ob der Treffer, für den die
-Abwehr fiel, ankam. Aufgelöst wird das Protokoll, sobald eine Datei seiner Kämpfe die Quelle zeigt und sie behoben ist.
+Abwehr fiel, ankam. Seit A255 bis A257 kommen die Zeilen des Tankwechsels dazu: jeder erkannte Tankbuster auf ihn
+(„tankbuster on you", mit der Verwundbarkeit, die er legte) und nach einem Wechsel auf den Halter, warum ein
+Wechsel oder das Zurückholen wartet, die Wahl, ihr Ausgang und ein Geteiltes Leid eines Gruppenmitglieds auf ihn
+(Konzept 09). Aufgelöst wird das Protokoll, sobald eine Datei seiner Kämpfe die Quelle zeigt und sie behoben ist.
 
 ## Wen die Unterdrückung erreicht
 

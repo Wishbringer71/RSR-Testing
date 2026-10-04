@@ -5436,6 +5436,18 @@ Wechsel greift, schreibt das Protokoll selbst.
     nachgezogen.
 - *Fehlerursache am System:* Eine Antithese wurde abgewogen statt widerlegt; nach `CLAUDE.md` gilt die Empfehlung
   dann nicht.
+- *Abgleich aller Konzepte (seine Frage, ob nur Code angepasst ist):*
+  - Konzept 09 Satz für Satz gegen den Code. Zwei Aussagen waren falsch:
+    - Die automatische Herausforderung „greift nur bei Gegnern auf Nicht-Tanks" – sie nimmt auch einem Co-Tank
+      unter der Sterbe-Schwelle den Gegner ab.
+    - „Kein Zurückholen nach einer Herausforderung des Co-Tanks" – nach dessen Herausforderung mit deinem
+      folgenden Geteilten Leid holt RSR sehr wohl zurück.
+    Beide berichtigt.
+  - Nachgezogen: Ablaufreihenfolge (Konzept 03, neuer Platz 9), Protokollbeschreibung (13), Unverwundbarkeit in der
+    Basisschicht (05), Marker-Bestätigung als Tankbuster-Erkennung (15), Ergebnistabelle von 09 und Index.
+  - Die Aktionsmatrix führt Geteiltes Leid weiter als direkt genutzt; der Generator ist unverändert gültig.
+  - Ursache am System: Die Konzeptstellen außerhalb von 09 waren nur auf verschobene Zeilen geprüft, nicht auf
+    ihren Inhalt.
 
 **Prüfgrad:** statisch, alle Prüfskripte und Generatoren, Compile über die CI. Im Spiel nicht beobachtet.
 ---

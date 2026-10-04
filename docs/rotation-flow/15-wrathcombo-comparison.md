@@ -149,7 +149,8 @@ Pfade sind Spieldaten (Asset-Namen), kein übernommener Code.
   geschluckt, oder ein Treffer, den Unverwundbarkeit oder Ausweichen abwies; Auto-Attacken ausgenommen, Quelle
   anvisierbar oder unsichtbarer Helfer —, ist der Marker bestätigt. Endet die Beobachtung ohne solchen Treffer,
   ist der Pfad widerlegt und kommt auf die Liste. Die Entscheidung (`IsCastingTankVfx`, `IsTankbusterVfxOnPlayer`)
-  überspringt Pfade auf der Liste. Bis A211 zählte nur die Effektart „Damage": Ein unter Sheltron geblockter oder
+  überspringt Pfade auf der Liste. Dieselbe Bestätigung sagt dem Tankwechsel, ob ein Treffer ein Tankbuster war
+  (`RecordHit` meldet einen Marker, der nicht auf der Liste steht; Konzept 09). Bis A211 zählte nur die Effektart „Damage": Ein unter Sheltron geblockter oder
   unter Hallowed Ground abgewiesener Tankbuster widerlegte seinen Marker.
 - **Selbstkorrektur statt Zählschwelle:** Die Beobachtung läuft für gelistete Pfade weiter; ein späterer Treffer
   nach demselben Marker nimmt den Pfad wieder heraus. Ein falscher Eintrag kostet eine ausgelassene Abwehr beim
