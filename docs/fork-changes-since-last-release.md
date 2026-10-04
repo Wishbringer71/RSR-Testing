@@ -160,9 +160,11 @@ mitigation, a co-tank's Reprisal, a healer's mitigation or barrier - against you
 set of your own ready mitigations, by cooldown, that lets you survive it:
 - one if one is enough, two or more stacked if not - also two big ones at once, which the old defence never did;
 - none if the hit is survivable as it stands;
-- each one pressed late enough to still stand when the hit lands.
+- each one pressed late enough to still stand when the hit lands;
+- party tools such as Shake It Off or Divine Veil are left to the area defence.
 
-Everything else aimed at you - Rampart, Vengeance, your own barrier, Reprisal - is held for the next tankbuster,
+While that tankbuster is the only one known to be coming at you, everything else aimed at you - Rampart,
+Vengeance, your own barrier, Reprisal - is held for the next tankbuster,
 from whichever part of the rotation would have used it. Help for another party member, heals and area defence that
 reaches beyond you still go out. If a planned mitigation has not gone out by the last GCD before the hit, the hold
 opens. Under Hallowed Ground or Superbolide past the hit, nothing aimed at you is spent. As a healer, RSR spends no
@@ -173,7 +175,8 @@ New setting `Use the invulnerability before a tankbuster nothing less survives`,
 your mitigations would get you through does RSR use Hallowed Ground, Holmgang, Living Dead or Superbolide before
 the hit - no earlier than its ten seconds less one GCD. It does not depend on the dying-tank threshold: setting that
 to 0 switches off only the old reactive use. After Living Dead the healers still have to restore your full HP within
-Walking Dead. If nothing survives and the invulnerability is not ready, everything goes.
+Walking Dead. Only if nothing survives and the invulnerability is not there to use - on cooldown, switched off or
+refused - does everything go, in the hope of someone else's debuff or barrier; never on top of the invulnerability.
 
 The plan is recomputed all the time, so a heal or a Reprisal that lands before the hit makes it smaller. Tankbusters
 announced only by a marker or by BossModReborn, and actions not yet measured, keep the old behaviour.

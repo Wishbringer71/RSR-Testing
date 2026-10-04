@@ -198,6 +198,7 @@ public partial class CustomRotation
 			}
 
 			IBaseAction.TargetOverride = TargetType.Heal;
+			IBaseAction.HealPathRunning = true;
 
 			if (DataCenter.CommandStatus.HasFlag(AutoStatus.HealAreaSpell))
 			{
@@ -281,6 +282,7 @@ public partial class CustomRotation
 			}
 
 			IBaseAction.TargetOverride = null;
+			IBaseAction.HealPathRunning = false;
 
 			if (DataCenter.MergedStatus.HasFlag(AutoStatus.DefenseArea))
 			{
@@ -401,6 +403,7 @@ public partial class CustomRotation
 					if (PartyMembersMinHP < Service.Config.HealWhenNothingTodoBelow)
 					{
 						IBaseAction.TargetOverride = TargetType.Heal;
+						IBaseAction.HealPathRunning = true;
 
 						if (DataCenter.PartyMembersDifferHP < Service.Config.HealthDifference)
 						{
@@ -431,6 +434,7 @@ public partial class CustomRotation
 						}
 
 						IBaseAction.TargetOverride = null;
+						IBaseAction.HealPathRunning = false;
 					}
 				}
 			}

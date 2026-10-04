@@ -15,6 +15,9 @@ public partial class CustomRotation
 	{
 		act = DataCenter.CommandNextAction;
 
+		// GCD() may have returned from inside its heal path.
+		IBaseAction.HealPathRunning = false;
+
 		if (Player == null)
 		{
 			return false;
@@ -179,6 +182,7 @@ public partial class CustomRotation
 		IBaseAction.ShouldEndSpecial = false;
 
 		IBaseAction.TargetOverride = TargetType.Heal;
+		IBaseAction.HealPathRunning = true;
 
 		if (DataCenter.CommandStatus.HasFlag(AutoStatus.HealAreaAbility))
 		{
@@ -253,6 +257,7 @@ public partial class CustomRotation
 		}
 
 		IBaseAction.TargetOverride = null;
+		IBaseAction.HealPathRunning = false;
 
 		if (DataCenter.CommandStatus.HasFlag(AutoStatus.Speed))
 		{
@@ -1016,9 +1021,9 @@ public partial class CustomRotation
 	/// one that will then hold the enemy.
 	/// </summary>
 	/// <remarks>
-	/// The invulnerability counts as available only when RSR would use it (<see cref="InvulnerabilityUsable"/>)
-	/// and it is off cooldown: at its threshold, or ahead of a measured tankbuster that nothing less survives
-	/// (concept 09, "Das geringste Mittel gegen einen gemessenen Tankbuster").
+	/// The invulnerability counts as available only when RSR would use it for any next hit
+	/// (<see cref="InvulnerabilityUsable"/>: at its threshold) and it is off cooldown. The tankbuster plan
+	/// draws it ahead of a measured cast as well, but not for every next hit, so it does not count here.
 	/// </remarks>
 	private bool TankSwapAbility(out IAction? act)
 	{
@@ -1066,16 +1071,17 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
-	/// Whether RSR would use the tank's invulnerability at all: it exists for the job, is learned at the
-	/// current level, enabled, and one of the two rules that draw it is on - the reactive one at its
-	/// threshold (HealthForDyingTanks above zero), or the tankbuster plan
-	/// (InvulnerabilityBeforeLethalTankbuster), which draws it ahead of a measured hit nothing less survives.
+	/// Whether RSR would use the tank's invulnerability for the next hit whatever it is: it exists for the
+	/// job, is learned at the current level, enabled, and its threshold (HealthForDyingTanks) is above zero.
+	/// The tankbuster plan does not count here: it draws the invulnerability only for a measured cast that
+	/// nothing less survives, not for a marker, a BossModReborn prediction or an unmeasured action
+	/// (review of A261).
 	/// </summary>
 	private bool InvulnerabilityUsable(out IBaseAction? invulnerability)
 	{
 		invulnerability = Invulnerability;
 		return invulnerability != null && invulnerability.Config.IsEnabled && invulnerability.EnoughLevel
-			&& (HealthForDyingTanks > 0f || Service.Config.InvulnerabilityBeforeLethalTankbuster);
+			&& HealthForDyingTanks > 0f;
 	}
 
 	/// <summary>

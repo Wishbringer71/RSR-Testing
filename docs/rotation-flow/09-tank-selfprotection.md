@@ -1130,6 +1130,9 @@ ankommt, ist nicht belegt; fehlt die Zeile, ändert das nichts an der Entscheidu
   auch geht (aber dann ohne risiko)."
 - *Hinweis:* Externe Effekte sind mitzubewerten – ein Debuff eines anderen auf dem Boss, der beim Einschlag noch
   wirkt; ein besonders großer Heilerschild auf dem Tank, der beim Einschlag noch steht.
+- *Präzisierung zu „alles":* „nicht invul und dann noch zusätzlich buffs, sondern alles raushauen, wenn invul nicht
+  verfügbar ist, alle buffs zusammen aber eigentlich nicht reichen, aber man hofft, dass irgendjemand anderes noch
+  einen debuff oder ein schild raushaut."
 
 **Gebaut (A260, A261), zwei Optionen, ab Werk an:**
 - „Spend only the mitigation a measured tankbuster needs" (Planung, Stapeln, Zurückhalten; Tanks und Heiler).
@@ -1157,15 +1160,24 @@ Für den frühesten gemessenen Tankbuster, der auf dich gewirkt wird:
 3. **Was du noch tun kannst:** jede eigene Minderung, die erlernt, aktiviert und nach ihren eigenen Prüfungen
    nutzbar ist (Ressourcen eingeschlossen), bis einen GCD vor dem Einschlag abgeklungen ist, mindestens einen GCD
    wirkt, nach Wirktext gegen diese Schadensart mindert oder eine Barriere legt und beim Einschlag nicht schon steht.
-   Ein Knopf zählt einmal (Rachsucht/Verdammnis, Urinstinkt/Urimpuls).
+   Ein Knopf zählt einmal (Rachsucht/Verdammnis, Urinstinkt/Urimpuls). Eine Minderung, die eben gedrückt wurde und
+   deren Status noch nicht liegt, zählt schon als stehend. **Nicht** dabei sind Gruppenwerkzeuge – Barriere oder
+   Minderung über die Gruppe (Abschütteln, Göttlicher Schleier, Dark Missionary, Heart of Light): Sie gehören der
+   Flächenabwehr, und Abschütteln hebt Verdammnis und Urimpuls des Kriegers selbst auf. Reflexion, ein Debuff auf dem
+   Gegner, ist dabei.
 4. **Das geringste Mittel:** unter allen Bündeln dieser Minderungen das billigste, mit dem der Treffer weniger nimmt,
    als du hast. Billig nach der Abklingzeit des Verbrauchten, bei Gleichstand das kleinere Bündel – was am wenigsten
    Abklingzeit kostet, lässt am meisten für den nächsten Tankbuster (meine Lesart von „geringstes notwendiges
    Mittel", nicht seine Regel). Reicht der Treffer schon ohne alles nicht zum Tod, ist das Bündel leer.
 5. **Die Unverwundbarkeit** nur, wenn kein Bündel reicht – und nur, wenn sie bis einen GCD vor dem Einschlag bereit
    ist. „Mit kanonen auf spatzen schießen" sonst.
-6. **Alles,** wenn kein Bündel reicht und die Unverwundbarkeit nicht bereit oder abgeschaltet ist. Nach den Zahlen
-   überlebst du dann nicht, aber die Zahlen sind ein Höchstwert, und jede Minderung mehr senkt den Treffer.
+6. **Alles,** nur wenn kein Bündel reicht und die Unverwundbarkeit nicht zu haben ist – auf Abklingzeit,
+   abgeschaltet oder vom Spiel verweigert (seine Präzisierung). Nie die Unverwundbarkeit und die Minderungen dazu.
+   Nach den Zahlen überlebst du dann nicht, aber die Zahlen sind ein Höchstwert, und vielleicht legt ein anderer noch
+   einen Debuff oder Schild.
+
+Steht schon eine Unverwundbarkeit über dem Einschlag – vom Plan gezogen oder an ihrer Sterbe-Schwelle – oder wurde sie
+eben gedrückt und ihr Status liegt noch nicht, ist der Plan „die Unverwundbarkeit, nichts sonst".
 
 **Ohne Risiko, wie er es für jedes Mittel unterhalb der Unverwundbarkeit verlangt:** Gerechnet wird mit dem höchsten
 je gemessenen Treffer, den LP jetzt und nur dem, was beim Einschlag noch steht. Eine Heilung, die bis dahin kommen
@@ -1185,13 +1197,17 @@ und zählen unter 1. mit.
 - **Die Sperrgruppe des Spiels** (eine große Minderung zur Zeit, `RampartStatus` als Statusangabe) wird für einen
   geplanten Druck übergangen: Ob die Minderung beim Einschlag schon steht, hat der Plan selbst gefragt, und die
   Staffelung ist genau das, was der Plan für einen gemessenen Treffer ersetzt (seine Präzisierung).
-- **Ein abgelehnter Druck** ist nicht endgültig – `CanUse` lehnt auch während der kurzen Animationssperre nach jeder
-  Aktion ab – und wird je Durchlauf neu versucht.
+- **Ziel:** jeder geplante Druck geht auf dich (`TargetType.Self`); The Blackest Night suchte sich sonst ein eigenes Ziel.
+- **Ein abgelehnter Druck:** Während einer Animationssperre lehnt `CanUse` jede Fähigkeit ab; das ist keine Antwort,
+  der Druck wird im nächsten Durchlauf neu versucht. Lehnt es außerhalb einer Sperre ab – Reflexion außer Reichweite,
+  eine Prüfung der Rotation, die Unverwundbarkeit verweigert –, gilt das für dieses Wirken: Der Plan wird ohne die
+  Aktion neu gerechnet, und ist es die Unverwundbarkeit, ist der Plan „alles".
 
 ### Das Zurückhalten
 
-Solange ein Plan läuft, wird jede Aktion mit Wirktextwert (`DefensiveValues`) abgelehnt, die auf dich selbst zielt und
-nicht im Plan steht – eigene Minderung, eigene Barriere, Reflexion um dich herum –, aus jedem Pfad der Rotation:
+Solange ein Plan läuft und sein Tankbuster der einzige ist, der auf dich zukommt – kein zweites Wirken auf dich,
+gemessen oder nicht, und keine BossModReborn-Vorhersage vor ihm; ein Marker neben dem Wirken gilt als dessen –, wird
+jede Aktion mit Wirktextwert (`DefensiveValues`) abgelehnt, die auf dich selbst zielt und nicht im Plan steht – eigene Minderung, eigene Barriere, Reflexion um dich herum –, aus jedem Pfad der Rotation:
 Einzelabwehr, Notfall, allgemeine Fähigkeiten (der Krieger wählt Urimpuls auch nach der Gesundheitsprognose, der
 Paladin Schiltron außerhalb der Abwehr).
 - **Ganz** (auch nichts aus dem Plan), solange Heiliger Boden oder Meteoritenfall über den Einschlag hinaus liegen,
@@ -1201,7 +1217,8 @@ Paladin Schiltron außerhalb der Abwehr).
 - **Gar nicht,** wenn nichts reicht und die Unverwundbarkeit nicht kommt, und im letzten GCD vor dem Einschlag, wenn
   eine geplante Minderung bis dahin nicht hinausging – dann ist der Rückfall alles.
 - **Frei bleiben** Hilfe für ein anderes Mitglied (Intervention, Herz des Korunds auf dem Co-Tank, Urflackern), die
-  Heilpfade (Herz des Korunds heilt einen Tank, den Meteoritenfall auf 1 LP setzte), in der Flächenabwehr, was über
+  Heilpfade (Herz des Korunds heilt einen Tank, den Meteoritenfall auf 1 LP setzte; erkannt an einem eigenen Schalter,
+  nicht an der Zielüberschreibung, die über ihren Pfad hinaus stehen bleiben kann), in der Flächenabwehr, was über
   dich hinaus wirkt (Reflexion, Abschütteln für einen Raidwide), und jeder Befehl von dir.
 
 **Warum Holmgang und Totenerweckung nur im Plan:** Heiliger Boden und Meteoritenfall: „Impervious to most attacks" –
@@ -1260,12 +1277,16 @@ Holmgang oder Totenerweckung bleibt also, wie sie war.
   Inhalt und wird dort stets auf dessen Stufe getroffen; dass die Anteile dadurch vergleichbar bleiben, ist ein
   Schluss, nicht gemessen.
 - **Burst aus:** unberührt.
-- **Mehrere Wirken auf dich:** geplant wird für das früheste gemessene. Ein späteres bekommt seinen Plan, sobald das
-  erste endet; liegen beide in einem GCD, deckt eine Unverwundbarkeit beide, ein Minderungsplan nur das erste
-  (Grenze).
-- **Tankwechsel:** hält bei bereiter Unverwundbarkeit, die RSR nutzen würde – an ihrer Schwelle oder über diese
-  Regel (`CustomRotation.InvulnerabilityUsable`). Die Schwelle `HealthForDyingTanks` gehört der reaktiven
-  Unverwundbarkeit; wer sie auf 0 setzt, schaltet nur die reaktive ab.
+- **Mehrere Wirken auf dich:** geplant wird für das früheste gemessene; zurückgehalten wird dann nichts, weil der Plan
+  das zweite nicht kennt. Ein späteres bekommt seinen Plan, sobald das erste endet (Grenze: liegen beide in einem GCD,
+  deckt ein Minderungsplan nur das erste).
+- **Ein ungemessenes Wirken, ein Marker ohne Wirken oder eine frühere BossModReborn-Vorhersage** neben einem
+  gemessenen: Der Plan drückt, hält aber nichts zurück.
+- **Tankwechsel:** hält bei bereiter Unverwundbarkeit, die RSR für jeden nächsten Treffer nutzen würde – an ihrer
+  Schwelle (`CustomRotation.InvulnerabilityUsable`). Der Plan zählt dort nicht: Er zieht sie nur vor einem gemessenen
+  Wirken, nicht vor einem Marker oder einer Vorhersage. Die Schwelle `HealthForDyingTanks` gehört der reaktiven
+  Unverwundbarkeit; wer sie auf 0 setzt, schaltet für den Plan nichts ab, der Tankwechsel wechselt dann aber auch bei
+  bereiter Unverwundbarkeit.
 - **Reaktive Unverwundbarkeit** (`EmergencyAbility` unter `HealthForDyingTanks`): unverändert, läuft vor dieser Regel.
   Hält sie über den Einschlag, zählt sie; läuft sie vorher ab, hält nichts zurück.
 - **Staffelung ohne Messung** (A243, `RampartTakesPredictedTankbuster`, Zeitregel): bleibt für Tankbuster ohne

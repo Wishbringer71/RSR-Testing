@@ -217,6 +217,7 @@ public partial class CustomRotation
 		// defence would leave them standing until the path ran again.
 		IBaseAction.SelfProtectionHitsMe = null;
 		IBaseAction.AreaDefenceRunning = false;
+		IBaseAction.HealPathRunning = false;
 
 		try
 		{

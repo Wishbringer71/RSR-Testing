@@ -285,7 +285,7 @@ public class BaseAction : IBaseAction
 		// so does what reaches beyond the player (concept 09, "Das geringste Mittel gegen einen gemessenen
 		// Tankbuster").
 		if (IBaseAction.HoldDefenceOnSelf && !IBaseAction.ForceEnable
-			&& IBaseAction.TargetOverride != TargetType.Heal
+			&& !IBaseAction.HealPathRunning
 			&& (Info.EffectRange == 0 || !IBaseAction.AreaDefenceRunning)
 			&& IBaseAction.AllowedDefenceOnSelf?.Contains(ID) != true
 			&& PreviewTarget.Value.Target is { } heldOne && Player.Object is { } holder

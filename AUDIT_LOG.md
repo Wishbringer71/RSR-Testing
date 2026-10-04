@@ -5635,9 +5635,31 @@ Wechsel greift, schreibt das Protokoll selbst.
   haltende Barrieren); `CustomRotation_Tankbuster.cs` mit `UpdateTankbusterPlan`, `TankbusterPlanAbility`,
   `HoldDefenceForTankbuster`; `TankbusterTable.PredictedShare` mit Horizont; `IBaseAction.AllowedDefenceOnSelf`.
   Die Brücke `ICustomRotation.TankInvulnerability` ist entfernt.
+- *Drittes Code-Review (dd1b47ef6..c6701fb9e), zehn Punkte:*
+  1. Nach dem Druck der Unverwundbarkeit stand sie auf Abklingzeit, der neu gerechnete Plan lautete „alles", und
+     unter Holmgang gingen alle Minderungen hinaus – genau das, was seine Präzisierung zu „alles" ausschließt.
+     Behoben: Steht eine Unverwundbarkeit über dem Einschlag oder wurde sie eben gedrückt, ist der Plan „die
+     Unverwundbarkeit, nichts sonst".
+  2. Ein ungemessenes oder zweites Wirken, eine frühere Vorhersage blieb vom Zurückhalten mit erfasst. Behoben:
+     gehalten wird nur, wenn der Plan den einzigen bekannten Tankbuster betrifft.
+  3. Abschütteln hebt Verdammnis und Urimpuls auf und ist ein Gruppenwerkzeug. Behoben: Gruppenwerkzeuge sind keine
+     Kandidaten.
+  4./5. Eine Unverwundbarkeit oder Minderung, die das Spiel dauerhaft ablehnt (Reichweite, Prüfung der Rotation),
+     blockierte bis zum letzten GCD. Behoben: Eine Ablehnung außerhalb der Animationssperre gilt für das Wirken, der
+     Plan rechnet ohne die Aktion.
+  6. The Blackest Night konnte auf einem anderen landen. Behoben: geplante Drücke zielen auf den Spieler.
+  7. Der Tankwechsel hielt bei Schwelle 0 auf eine Unverwundbarkeit, die für Marker nicht kommt. Zurückgenommen: Er
+     zählt nur die reaktive.
+  8. Eine eben gedrückte Minderung ohne Status ließ den Plan eine zweite wählen. Behoben: Sie zählt als stehend.
+  9. Die Heilpfad-Ausnahme hing an der Zielüberschreibung, die aus `GCD()` stehen bleiben kann. Behoben: eigener
+     Schalter `IBaseAction.HealPathRunning`, am Anfang von `Ability()` zurückgesetzt.
+  10. Jede LP-Änderung schrieb eine neue Planzeile. Behoben: neue Zeile nur bei geändertem Inhalt.
+- *Seine Präzisierung zu „alles" (während der dritten Runde):* alles nur, wenn die Unverwundbarkeit nicht verfügbar ist
+  und alle Minderungen zusammen nicht reichen – nie die Unverwundbarkeit plus Minderungen. So gebaut; Befund 1 war der
+  Fehler genau dagegen.
 - *Falsifikation:* Konzept 09, Abschnitt „Das geringste Mittel gegen einen gemessenen Tankbuster", Antithesen 1–6.
   Offen als Grenze: keine Reserve nach einem knapp überlebten Treffer (`TODO.md`); zwei Wirken binnen eines GCD
-  bekommen einen Minderungsplan nur für das erste.
+  bekommen einen Minderungsplan nur für das erste, und solange zwei laufen, hält nichts zurück.
 
 **Prüfgrad:** statisch, alle Prüfskripte und Generatoren, Compile über die CI. Im Spiel nicht beobachtet.
 ---

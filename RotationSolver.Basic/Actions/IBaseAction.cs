@@ -30,6 +30,10 @@ public interface IBaseAction : IAction
 	// Set while the area defence path runs: the hold above then spares what reaches beyond the player.
 	internal static bool AreaDefenceRunning { get; set; } = false;
 
+	// Set while a heal path runs: the hold above spares it (a tank Superbolide left at 1 HP needs the heal
+	// in Heart of Corundum). Its own flag, because TargetOverride can outlive its path (TODO.md).
+	internal static bool HealPathRunning { get; set; } = false;
+
 	/// <summary>
 	/// The action itself.
 	/// </summary>
