@@ -23,6 +23,20 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Removed upstream in RotationSolver.Basic: the cooldown window and the package
+
+Both came with upstream's UI rework (merged into this fork on 04.10.2026); the fork passes them on
+unchanged.
+
+- **Removed** `IAction.IsOnCooldownWindow`, together with `ActionConfig.IsOnCooldownWindow`,
+  `ItemConfig.IsOnCooldownWindow` and the implementations on `BaseAction` and `BaseItem`. The
+  cooldown window they configured is gone. A derived rotation that reads or sets the property no
+  longer compiles; one that implements `IAction` itself loses a member it no longer has to provide.
+  Saved action settings that still carry the key load as before - the serializer ignores it.
+- **No package any more.** `RotationSolver.Basic` is `IsPackable=false`, so no `.nupkg` is built
+  and the pre-release label described above has nothing to label at present. Compile against
+  `RotationSolver.Basic.dll` from the plugin's `latest.zip`.
+
 ### Behaviour change in RotationSolver.Basic: the raise dispatch
 
 No signature changed, but a derived rotation that relies on the raise path sees different actions

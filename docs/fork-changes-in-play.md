@@ -252,8 +252,8 @@ With `Use BMR intergration to verify safety of movement actions…` (off by defa
 - **Diagnostics window** — Settings → UI → Windows → **Show Diagnostics Window** (off by default):
   the rotation's status, the damage table's store state and last rated hit, the last area heal
   weighed, the last movement action withheld, why each HP potion is or is not used, and per hold
-  whether it last held or gave way. Its close button, Escape and the gamepad back button turn it off,
-  as for the Control and Cooldown windows.
+  whether it last held or gave way. Its close button, Escape and the gamepad back button turn it off;
+  Escape and the back button turn the Control window off the same way.
 - **`DefenseTrace.log`** in the plugin's config folder records, for one session, every action the
   defensive chain chose with every source standing at that moment, and every enemy hit on you.
 

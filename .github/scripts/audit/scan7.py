@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Phase 7: public surface of RotationSolver.Basic removed or changed since a base revision.
 
-RotationSolver.Basic ships as a NuGet package (GeneratePackageOnBuild), so authors of derived
-rotations compile against its public and protected members. Removing one, renaming it or changing its
+Authors of derived rotations compile against the public and protected members of
+RotationSolver.Basic. Until upstream's UI rework (merged 04.10.2026) it shipped as a NuGet package
+(GeneratePackageOnBuild); since then the project is IsPackable=false and the assembly reaches them
+as RotationSolver.Basic.dll in the plugin's latest.zip - the surface is the same contract either way. Removing one, renaming it or changing its
 parameter list breaks their build; Semantic Versioning calls that a major change, and the project has
 no deprecation path for it.
 

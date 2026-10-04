@@ -1,6 +1,7 @@
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Windowing;
 using RotationSolver.Basic.Configuration;
+using RotationSolver.UI.ExtraWindows;
 
 namespace RotationSolver.UI;
 
@@ -15,7 +16,7 @@ namespace RotationSolver.UI;
 /// </summary>
 internal class DiagnosticsWindow : Window
 {
-	private const ImGuiWindowFlags BaseFlags = ControlWindow.BaseFlags
+	private const ImGuiWindowFlags BaseFlags = FullCtrlWindow.BaseFlags
 		| ImGuiWindowFlags.AlwaysAutoResize
 		| ImGuiWindowFlags.NoCollapse
 		| ImGuiWindowFlags.NoResize;

@@ -62,6 +62,49 @@ namespace RotationSolver.Commands
 			});
 		}
 
+		public static void SetStateCommandType(StateCommandType stateType)
+		{
+			WithPlayerRole(role =>
+			{
+				if (stateType != StateCommandType.Off)
+				{
+					if (DataCenter.IsInDutyReplay())
+					{
+						stateType = StateCommandType.Off;
+					}
+					else if (DataCenter.IsPvP && Service.Config.PvpStateControl)
+					{
+						stateType = StateCommandType.PvP;
+					}
+				}
+
+				UpdateState(stateType, role);
+
+				if (!DataCenter.AutoFaceTargetOnActionSetting() && DataCenter.MoveModeSetting() == 1)
+				{
+					Svc.GameConfig.UiControl.Set(UiControlOption.AutoFaceTargetOnAction.ToString(), 1);
+				}
+			});
+		}
+
+		public static void SetTargetingIndex(int index)
+		{
+			var count = Service.Config.TargetingTypes.Count;
+			if (count == 0)
+			{
+				return;
+			}
+
+			Service.Config.TargetingIndex = ((index % count) + count) % count;
+
+			if (!DataCenter.State || DataCenter.IsManual || DataCenter.IsAutoDuty || DataCenter.IsPvPStateEnabled)
+			{
+				return;
+			}
+
+			SetStateCommandType(DataCenter.IsTargetOnly ? StateCommandType.TargetOnly : StateCommandType.Auto);
+		}
+
 		public static void DoAutodutyStateCommandType(StateCommandType stateType, TargetingType targetingType)
 		{
 			WithPlayerRole(role => AutodutyUpdateState(stateType, role, targetingType));
@@ -90,7 +133,15 @@ namespace RotationSolver.Commands
 			}
 			else if (stateType == StateCommandType.Auto)
 			{
-				if (Service.Config.ToggleAuto)
+				var isAlreadyAuto = DataCenter.State && !DataCenter.IsManual && !DataCenter.IsTargetOnly && !DataCenter.IsAutoDuty && !DataCenter.IsPvPStateEnabled;
+				if (!isAlreadyAuto)
+				{
+					if (index != -1)
+					{
+						UpdateTargetingIndex(ref index);
+					}
+				}
+				else if (Service.Config.ToggleAuto)
 				{
 					return StateCommandType.Off;
 				}

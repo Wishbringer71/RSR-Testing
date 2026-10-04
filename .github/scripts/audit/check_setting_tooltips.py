@@ -9,11 +9,12 @@ connection between a value and the game, not a restatement of the label.
 
 Two mechanisms carry it, and they render differently:
 
-  * Configs.cs uses [UI(..., Description = "...")]. The text appears as a tooltip while the setting
-    is hovered, and it is gated on the "Show tooltips" setting (default on).
-  * Rotation settings use [RotationConfig(..., Tooltip = "...")]. A non-empty tooltip is what makes
-    RotationConfigWindow draw the "(?)" marker next to the setting at all - with no tooltip there is
-    no marker and nothing to hover. That marker is bypassed by the tooltip toggle and always shows.
+  * Configs.cs uses [UI(..., Description = "...")]. The text is printed under the setting's name
+    while "Show setting descriptions inline" is on (default on, Searchable.SupportingText), and
+    otherwise appears as a tooltip while the setting is hovered, gated on "Show tooltips".
+  * Rotation settings use [RotationConfig(..., Tooltip = "...")]. MainWindow_Job prints it under the
+    setting the same way and offers it on hover; with no tooltip there is nothing under the name
+    and nothing to hover.
 
 Nothing fails when an explanation is missing. The setting works, the window renders, the build is
 green, and the only symptom is a user guessing what a slider does to their fight. So it is checked

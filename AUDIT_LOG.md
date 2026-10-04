@@ -5289,6 +5289,48 @@ CI. Konzept 16 und 17 (01. und 02.10.2026 geschrieben) stichprobenartig, ohne Fu
   Datei mit 56 Einträgen. Nichts verloren.
 
 **Prüfgrad:** Protokoll Zeile für Zeile gegen den Code; statisch; Compile über die CI.
+
+### A253 · Upstream-Sync: Material-Oberfläche 7.5.6.14–7.5.6.16 (04.10.2026)
+
+- *Umfang:* sechs Upstream-Commits (`7e539f3a5` bis `9ace4ce8a`, 96 Dateien), Tags 7.5.6.14, .15 und .16. Merge-Basis
+  `c75cb716c`. `<Version>` auf 7.5.6.16 nachgezogen (`check_fork_version.py`).
+- *Im Kampf ändert sich durch Upstream:*
+  - **Befehl `Auto`:** Aus Manual oder TargetOnly wechselt er jetzt nach Auto, statt bei `ToggleAuto` alles auszuschalten
+    oder ohne Index den Zieltyp weiterzuschalten. Nur ein `Auto` im laufenden Auto schaltet mit `ToggleAuto` ab. Berührt
+    keinen Fork-Abschnitt.
+  - Sonst nichts an Entscheidungen: Zeitleiste, Teaching-Mode-Hotbar (Suche nach `HotbarAddonHelper.GetHotbarID` verlegt),
+    Tastenbelegung im Next-Action-Fenster (`ShowNextActionKeybind`, aus; `HotbarKeybindHelper.Update` kehrt dann sofort
+    zurück), neues Zustandsfenster mit `/rotation Control`, Änderungsfenster beim ersten Laden einer neuen
+    `AssemblyVersion` (`ChangelogPopup`, an), Einführung beim ersten Start. ECommons 3.2.1.21, Lumina 7.7.1.
+  - Einstellungstexte stehen jetzt ab Werk unter dem Namen (`UiInlineDescriptions`, an) — für die Fork-Einstellungen, deren
+    Text die Wirkung im Kampf nennt (`check_setting_tooltips.py`), ein Gewinn ohne eigenes Zutun.
+- *Wie es auf Fork-Abschnitte trifft, und was daraus wurde:*
+  - **Konflikt `RotationSolverPlugin`:** Upstream-Fassung übernommen, darauf wieder: Diagnosefenster (Feld, Erzeugung,
+    Registrierung, `IsOpen`), `DataCenter.ResetHealMeasurements()` beim Gebietswechsel, Fenstertitel aus der
+    `InformationalVersion`, `Watcher.Disable()` vor dem letzten Speichern (sonst geht eine Messung beim Entladen verloren).
+  - **Altes Einstellungsfenster gelöscht:** alle zehn Fork-Abschnitte nach `MainWindow_*` übertragen. Darunter zwei
+    Defektbehebungen, die der Upstream-Neubau wieder aufhob: Der Schalter „Positionsprüfung überspringen" fehlte erneut bei
+    Rückwärtssprung-Angriffen (A193), weil `MainWindow_Actions` die alte Aufzählung führte — jetzt wieder über
+    `ActionTargetInfo.IsMovingSpecialType`, samt Anzeige des Landepunkts. `ShouldCheckTargetStatus` (vom Fork entfernt,
+    A16) wäre ein Compile-Fehler gewesen. Ebenso zurück: Trank-Grund, Flächenliste mit Messwert je Eintrag und Zählern,
+    Gruppenvorhersage, BMR-Modulzeilen. `check_emergency_heal_threat.py` liest den Zähler jetzt in `MainWindow_List.cs`.
+  - **Kontroll- und Abklingfenster gelöscht:** Abklingfenster samt `ShowCooldownWindow` entfällt, der Fork-Zusatz dort mit.
+    Das neue Kontrollfenster hat keine Titelleiste und einen eigenen Schließknopf; Escape und Gamepad-Zurück schlössen es
+    nur für einen Frame (die Aktualisierung öffnet es wieder). `WindowCloseButton` sitzt deshalb jetzt in
+    `FullControlWindow.PostDraw`. Das Diagnosefenster nimmt die Flags von `FullCtrlWindow`.
+  - **Stiller Merge-Fehler:** Upstreams neues `SetStateCommandType` rief `DoOneCommandType`, das der Fork zu
+    `WithPlayerRole` vereinfacht hat — textuell konfliktfrei, nicht kompilierbar. Umgestellt. Klasse erhoben: Bezeichner,
+    die an der Merge-Basis deklariert waren und es jetzt nicht mehr sind, gegen jeden Zugriff im Baum geprüft; kein
+    weiterer Treffer. Upstream-Zusatzcode gegen `BannedSymbols.txt` (LINQ): kein Treffer.
+  - **Paketvertrag:** `IAction.IsOnCooldownWindow` samt Konfigurationsfeldern entfernt; `RotationSolver.Basic` ist
+    `IsPackable=false`, das Release trägt kein `.nupkg` mehr. In `CHANGELOG.md` für abgeleitete Rotationen vermerkt;
+    README, `Directory.Build.props` und `scan7.py` auf diesen Stand. Gespeicherte Einstellungen mit dem alten Schlüssel
+    laden weiter (Newtonsoft ignoriert unbekannte Felder; keine abweichende `MissingMemberHandling`).
+- *Offen geblieben:* `MainWindow.GetMovementSafetyStatus` wiederholt die Sicherheitsprüfung weiterhin in eigener Form
+  (TODO, A212); der Neubau hat daran nichts geändert.
+
+**Prüfgrad:** statisch, alle Prüfskripte und Generatoren mit `--check`; Compile über die CI. Oberfläche im Spiel nicht
+geprüft.
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
