@@ -214,7 +214,7 @@ internal static class StateUpdater
 			// A tank the hit cannot touch - Hallowed Ground or Superbolide up past it - gets nothing from
 			// a mitigation on him for it (the owner's proposal of 04.10.2026, concept 09).
 			if (DataCenter.IsHostileCastingToTank
-				&& !(Service.Config.HoldMitigationUnderInvulnerability && TankbusterTargetsAllImpervious()))
+				&& !(Service.Config.HoldMitigationUnderInvulnerability && TankbusterTargetsAllImpervious(out _)))
 			{
 				foreach (var member in DataCenter.PartyMembers)
 				{
@@ -240,7 +240,12 @@ internal static class StateUpdater
 				return true;
 			}
 
-			if (DataCenter.BMRTankbusterImminent)
+			// BossModReborn predicts the same tankbuster the cast shows; it does not open what the cast check
+			// above held for a tank under Hallowed Ground or Superbolide, unless it says the hit is on us.
+			if (DataCenter.BMRTankbusterImminent
+				&& !(Service.Config.HoldMitigationUnderInvulnerability && DataCenter.BMRTankbusterHitsPlayer != true
+					&& TankbusterTargetsAllImpervious(out var coveredUntil)
+					&& DataCenter.BMRNextTankbusterIn <= coveredUntil))
 			{
 				return true;
 			}
@@ -323,9 +328,11 @@ internal static class StateUpdater
 	/// Whether every member a tankbuster is now being cast at stands under Hallowed Ground or
 	/// Superbolide past the hit. False when no target is known, and whenever a tankbuster marker
 	/// stands: a marker states no landing time, so whether the invulnerability outlasts it is unknown.
+	/// <paramref name="latestHit"/>: seconds until the last of those hits arrives.
 	/// </summary>
-	private static bool TankbusterTargetsAllImpervious()
+	private static bool TankbusterTargetsAllImpervious(out float latestHit)
 	{
+		latestHit = 0f;
 		if (DataCenter.TankbusterTargets.Count > 0)
 		{
 			return false;
@@ -340,12 +347,14 @@ internal static class StateUpdater
 			}
 
 			// One GCD on top of the cast for the hit to arrive, as everywhere a cast's hit is timed.
+			var hitIn = hostile.TotalCastTime - hostile.CurrentCastTime + DataCenter.DefaultGCDTotal;
 			if (Svc.Objects.SearchById(hostile.CastTargetObjectId) is not IBattleChara target
-				|| !target.ImperviousThrough(hostile.TotalCastTime - hostile.CurrentCastTime + DataCenter.DefaultGCDTotal))
+				|| !target.ImperviousThrough(hitIn))
 			{
 				return false;
 			}
 
+			latestHit = Math.Max(latestHit, hitIn);
 			any = true;
 		}
 

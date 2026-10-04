@@ -595,6 +595,23 @@ public static class StatusHelper
 	];
 
 	/// <summary>
+	/// Every status under which a hit cannot kill the bearer: <see cref="NoNeedHealingStatus"/> and
+	/// Walking Dead, which that list leaves out for the heal decision's sake.
+	/// </summary>
+	internal static StatusID[] InvulnerabilityStatus { get; } = [.. NoNeedHealingStatus, StatusID.WalkingDead];
+
+	/// <summary>
+	/// Whether <paramref name="battleChara"/> stands under an <see cref="InvulnerabilityStatus"/> that is
+	/// still up in <paramref name="seconds"/>. The earliest expiry across the list counts, so a short
+	/// second status beside a long one errs towards "not covered".
+	/// </summary>
+	internal static bool InvulnerableThrough(this IBattleChara battleChara, float seconds)
+	{
+		return battleChara.HasStatus(false, InvulnerabilityStatus)
+			&& !battleChara.WillStatusEnd(seconds, false, InvulnerabilityStatus);
+	}
+
+	/// <summary>
 	/// The subset of <see cref="NoNeedHealingStatus"/> under which a hit does no damage at all - the
 	/// status texts read "Impervious to most attacks" (Hallowed Ground, Superbolide). Holmgang, Living
 	/// Dead, Walking Dead and Undead Rebirth are not in it: under them a hit still takes HP, down to 1,
@@ -1127,24 +1144,27 @@ public static class StatusHelper
 	/// </summary>
 	internal static bool IsVulnerabilityUp(uint statusId)
 	{
-		if (_vulnerabilityUpIds == null)
+		_vulnerabilityUpIds ??= IdsByNamePrefix("VulnerabilityUp", "PhysicalVulnerabilityUp", "MagicVulnerabilityUp");
+		return _vulnerabilityUpIds.Contains(statusId);
+	}
+
+	private static HashSet<uint> IdsByNamePrefix(params string[] prefixes)
+	{
+		HashSet<uint> ids = [];
+		foreach (var value in Enum.GetValues<StatusID>())
 		{
-			HashSet<uint> ids = [];
-			foreach (var value in Enum.GetValues<StatusID>())
+			var name = value.ToString();
+			foreach (var prefix in prefixes)
 			{
-				var name = value.ToString();
-				if (name.StartsWith("VulnerabilityUp", StringComparison.Ordinal)
-					|| name.StartsWith("PhysicalVulnerabilityUp", StringComparison.Ordinal)
-					|| name.StartsWith("MagicVulnerabilityUp", StringComparison.Ordinal))
+				if (name.StartsWith(prefix, StringComparison.Ordinal))
 				{
 					_ = ids.Add((uint)value);
+					break;
 				}
 			}
-
-			_vulnerabilityUpIds = ids;
 		}
 
-		return _vulnerabilityUpIds.Contains(statusId);
+		return ids;
 	}
 
 	/// <summary>Whether <paramref name="battleChara"/> carries any vulnerability debuff.</summary>
@@ -1161,23 +1181,7 @@ public static class StatusHelper
 	/// </summary>
 	internal static bool IsDamageUp(uint statusId)
 	{
-		if (_damageUpIds == null)
-		{
-			HashSet<uint> ids = [];
-			foreach (var value in Enum.GetValues<StatusID>())
-			{
-				var name = value.ToString();
-				if (name.StartsWith("DamageUp", StringComparison.Ordinal)
-					|| name.StartsWith("PhysicalDamageUp", StringComparison.Ordinal)
-					|| name.StartsWith("MagicDamageUp", StringComparison.Ordinal))
-				{
-					_ = ids.Add((uint)value);
-				}
-			}
-
-			_damageUpIds = ids;
-		}
-
+		_damageUpIds ??= IdsByNamePrefix("DamageUp", "PhysicalDamageUp", "MagicDamageUp");
 		return _damageUpIds.Contains(statusId);
 	}
 

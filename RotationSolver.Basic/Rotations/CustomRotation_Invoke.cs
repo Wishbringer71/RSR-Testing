@@ -214,9 +214,9 @@ public partial class CustomRotation
 		IBaseAction.ShouldEndSpecial = false;
 		IBaseAction.IgnoreClipping = true;
 		// The defence paths clear these on every exit they take; an exception thrown inside a rotation's
-		// defence would leave them standing and reject every action on the player until the path ran again.
-		IBaseAction.HoldDefenceOnSelf = false;
+		// defence would leave them standing until the path ran again.
 		IBaseAction.SelfProtectionHitsMe = null;
+		IBaseAction.AreaDefenceRunning = false;
 
 		try
 		{
@@ -229,6 +229,10 @@ public partial class CustomRotation
 
 			// Reset target override
 			IBaseAction.TargetOverride = null;
+
+			// For every path of this cycle, not only the single defence: a rotation spends the same
+			// mitigation from its general abilities too (concept 09).
+			IBaseAction.HoldDefenceOnSelf = HoldDefenceForInvulnerability();
 
 			// Attempt to get the GCD action
 			gcdAction = GCD();
@@ -261,6 +265,7 @@ public partial class CustomRotation
 		{
 			// Ensure IgnoreClipping is reset
 			IBaseAction.IgnoreClipping = false;
+			IBaseAction.HoldDefenceOnSelf = false;
 		}
 	}
 

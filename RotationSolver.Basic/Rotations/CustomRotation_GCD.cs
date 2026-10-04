@@ -299,22 +299,14 @@ public partial class CustomRotation
 
 			if (DataCenter.MergedStatus.HasFlag(AutoStatus.DefenseSingle))
 			{
-				IBaseAction.HoldDefenceOnSelf = HoldDefenceForInvulnerability();
-				try
+				if (DataCenter.CurrentDutyRotation?.DefenseSingleGCD(out act) == true)
 				{
-					if (DataCenter.CurrentDutyRotation?.DefenseSingleGCD(out act) == true)
-					{
-						return act;
-					}
-
-					if (DefenseSingleGCD(out var action))
-					{
-						return action;
-					}
+					return act;
 				}
-				finally
+
+				if (DefenseSingleGCD(out var action))
 				{
-					IBaseAction.HoldDefenceOnSelf = false;
+					return action;
 				}
 			}
 

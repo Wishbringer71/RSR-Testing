@@ -158,16 +158,18 @@ New setting `Use the invulnerability before a tankbuster that would kill you`, o
 cast at you that the table rates lethal even at full HP, with every mitigation and barrier of your own that could
 still be used and everything already standing, RSR uses Hallowed Ground, Holmgang, Living Dead or Superbolide
 before it lands - no earlier than its ten seconds less one GCD before the hit. Until now it went out only once your
-HP had dropped under the dying threshold, which a hit that kills from full never passes. What other players might
+HP had dropped under the dying threshold, which a hit that kills from full never passes. The new rule does not
+depend on that threshold: setting it to 0 switches off only the old one. What other players might
 add is not counted. Tankbusters announced only by a marker or by BossModReborn, and actions not yet measured, keep
 the old behaviour: neither names the action, so there is no figure to judge by. After Living Dead the healers still
 have to restore your full HP within Walking Dead.
 
 New setting `Hold other mitigation while the invulnerability covers the hit`, on by default. While the
 invulnerability is committed to such a tankbuster, or Hallowed Ground or Superbolide keeps the coming hit off you,
-the single-target defence spends nothing aimed at you - no Rampart, no Vengeance, no own barrier, no Reprisal -, so
-they are ready for the next tankbuster. Help for another party member still goes out, and so does area defence. If
-the invulnerability has not gone out by the last GCD before the hit, the hold opens. Under Holmgang and Living Dead
+RSR spends nothing aimed at you - no Rampart, no Vengeance, no own barrier, no Reprisal -, from whichever part of
+the rotation would have used it, so they are ready for the next tankbuster. Help for another party member and heals
+still go out, and in area defence so does what reaches beyond you. If the invulnerability refuses, or has not gone
+out by the last GCD before the hit, the hold opens. Under Holmgang and Living Dead
 a hit still takes HP down to 1, so outside the committed tankbuster nothing is held there. As a healer, RSR spends no
 single-target mitigation for a tankbuster cast at a tank who stands under Hallowed Ground or Superbolide past the
 hit. `DefenseTrace.log` writes the verdict for every tankbuster cast at you and what it was built on.

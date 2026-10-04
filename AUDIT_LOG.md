@@ -5567,7 +5567,30 @@ Wechsel greift, schreibt das Protokoll selbst.
   - Geprüft ohne Befund: Die vier Unverwundbarkeiten stehen in `DefensiveValues.ByActionId` nicht als Minderung
     (sonst wäre jeder beste Fall null). Reflexion löst ihr Ziel als den Spieler auf und wird damit zurückgehalten.
     Die Vorschau der Abwehr im Steuerfenster zeigt das Zurückhalten nicht; sie führt nichts aus.
-- *Falsifikation:* Konzept 09, Abschnitt „Unverwundbarkeit vor einem tödlichen Tankbuster", Antithesen 1–4.
+- *Unabhängiges Code-Review (Skill `code-review`, Stufe hoch, 781fdf57b..1f2be614c), zehn Punkte, je am Code geprüft:*
+  1. Eine früh gezündete Unverwundbarkeit, die vor dem Einschlag abläuft, hielt die Minderung trotzdem zurück.
+     Behoben: Gehalten wird nur, wenn sie über den Einschlag hält (`StatusHelper.InvulnerableThrough`), eben gedrückt
+     wurde oder noch bereit ist.
+  2. Die BossModReborn-Vorhersage desselben Tankbusters öffnete den Heiler-Halt. Behoben: Eine Vorhersage im Fenster
+     der gedeckten Wirken öffnet nichts, außer sie nennt den Heiler als Ziel.
+  3. Nur das früheste Wirken wurde beurteilt; ein überlebbares davor löste die Bindung eines tödlichen. Behoben: jedes
+     Wirken wird beurteilt, gebunden wird das früheste tödliche.
+  4. Lehnte `CanUse` die Unverwundbarkeit ab, blieb die Minderung bis zum letzten GCD gehalten. Behoben: Die
+     Ablehnung öffnet sofort. Beim Umbau selbst gefunden: Zwischen Drücken und Status lag die Gefahr, die eigene
+     Unverwundbarkeit als abgelehnt zu werten; `IsLastAbility` deckt das Fenster.
+  5. Die Erkennung las Optionen und `HealthForDyingTanks` – gegen „Erkennung und Entscheidung trennen" und gegen
+     „keinen Verbraucher mit eigener Grundlage an eine fremde Freigabe hängen". Behoben: Die Erkennung urteilt nur;
+     Bindung und Option liegen in `CustomRotation.InvulnerabilityCommitted`, ohne `HealthForDyingTanks`.
+  6. Eine Vorhersage unter Damage Up unterschätzt; ein Gegner mit Damage Up im ganzen Kampf bleibt ohne Wert. Richtig,
+     und die sichere Richtung (keine Unverwundbarkeit, wie vor der Regel); in Konzept 09 und `TODO.md` als Grenze.
+  7. Das Zurückhalten galt nur im Einzelabwehr-Pfad; Urimpuls (`WAR_Reborn.GeneralAbility`) und Schiltron
+     (`PLD_Reborn`) liefen daran vorbei. Behoben: Das Gatter gilt je Durchlauf für jeden Pfad und jede bewertete
+     Abwehr auf den Spieler; die Flächenabwehr lässt frei, was über ihn hinaus wirkt; Befehle sind ausgenommen.
+  8. Der beste Fall wird je Durchlauf neu gerechnet. Belassen: So folgt er Abklingzeiten und Status sofort; die
+     Kosten sind ein Durchgang über die Aktionen der Rotation je Wirken auf den Spieler, nur für Tanks.
+  9. Zwei Kopien des Namenspräfix-Aufbaus. Behoben: `StatusHelper.IdsByNamePrefix`.
+  10. Die Option wurde in Erkennung und Aufruf doppelt geprüft. Mit 5 erledigt.
+- *Falsifikation:* Konzept 09, Abschnitt „Unverwundbarkeit vor einem tödlichen Tankbuster", Antithesen 1–5.
   - Widerlegt: Die reaktive Unverwundbarkeit genügt nicht; ein Treffer von voller Gesundheit führt in einem Schritt
     auf 0.
   - Offen als Einschränkung: Stärkungen unter anderem Namen als Damage Up, und Tankbuster ohne Aktionsangabe.

@@ -29,16 +29,17 @@ are not reconstructed here.
 already produced as an unnamed value. `DefensiveValues.MitigationByStatusId` maps a status to the mitigation
 the action that grants it states in its effect text. Both are additive; no ordinal changed.
 
-### Added to RotationSolver.Basic: `CustomRotation.TankInvulnerability` and `DefensiveValues.MitigatingStatusesByActionId`
+### Added to RotationSolver.Basic: `DefensiveValues.MitigatingStatusesByActionId`
 
-`public IBaseAction? TankInvulnerability`, the value of `Invulnerability` for readers outside the rotation (the
-lethal-tankbuster rule). `DefensiveValues.MitigatingStatusesByActionId` maps a defensive action to the statuses
-its effect text is tied to, so a reader can tell whether that mitigation already stands. Both are additive.
+`DefensiveValues.MitigatingStatusesByActionId` maps a defensive action to the statuses its effect text is tied
+to, so a reader can tell whether that mitigation already stands. Additive.
 
-The single-target defence of a tank now rejects actions aimed at the player while his invulnerability is
-committed to a lethal tankbuster or Hallowed Ground or Superbolide covers the coming hit (option "Hold other
-mitigation while the invulnerability covers the hit", on by default). A derived rotation's
-`DefenseSingleAbility` and `DefenseSingleGCD` see such an action's `CanUse` return false in that time.
+A tank's `CanUse` now returns false for any action that carries a mitigation or barrier figure
+(`DefensiveValues`) and targets the player, while his invulnerability is committed to a lethal tankbuster or
+Hallowed Ground or Superbolide covers the coming hit (option "Hold other mitigation while the invulnerability
+covers the hit", on by default). This holds in every method of a derived rotation, not only the defence
+methods; inside `DefenseAreaAbility`/`DefenseAreaGCD` actions with an effect radius stay free, and a commanded
+action is never held.
 
 ### Added to RotationSolver.Basic: `CustomRotation.Invulnerability`
 

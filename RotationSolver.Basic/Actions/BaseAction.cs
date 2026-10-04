@@ -278,12 +278,16 @@ public class BaseAction : IBaseAction
 			return ActionTracer.Reject(this, "ProtectsOnlyYouAndTheHitMissesYou");
 		}
 
-		// Under the invulnerability that covers the coming hit, or committed to it, nothing aimed at the
-		// player changes that hit - own mitigation, own barrier, Reprisal around him alike; help aimed at
-		// another member stays free (concept 09, "Unverwundbarkeit vor einem tödlichen Tankbuster").
-		if (IBaseAction.HoldDefenceOnSelf
+		// Under the invulnerability that covers the coming hit, or committed to it, no rated defence aimed
+		// at the player changes that hit - own mitigation, own barrier, Reprisal around him alike - from
+		// whichever path the rotation spends it. Help aimed at another member stays free, and in the area
+		// defence so does what reaches beyond the player (concept 09, "Unverwundbarkeit vor einem
+		// tödlichen Tankbuster").
+		if (IBaseAction.HoldDefenceOnSelf && !IBaseAction.ForceEnable
+			&& (Info.EffectRange == 0 || !IBaseAction.AreaDefenceRunning)
 			&& PreviewTarget.Value.Target is { } heldOne && Player.Object is { } holder
-			&& heldOne.GameObjectId == holder.GameObjectId)
+			&& heldOne.GameObjectId == holder.GameObjectId
+			&& DefensiveValues.For(ID) != default)
 		{
 			return ActionTracer.Reject(this, "HeldForTheInvulnerability");
 		}

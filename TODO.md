@@ -242,7 +242,9 @@ zurückgehalten (Konzept 09, „Unverwundbarkeit vor einem tödlichen Tankbuster
 **Offen:** Ob sich ein Marker einer Aktion zuordnen lässt – etwa über das Wirken, das während des Markers beginnt,
 wie es `TankbusterMarkerWatch` für die Bestätigung schon tut –, ist ungeprüft. Voller Loop vor jedem Bau.
 Ebenfalls offen: Stärkungen des Gegners, die nicht als Damage Up benannt sind, werden beim Messen nicht erkannt;
-wie oft es sie gibt, ist nicht erhoben.
+wie oft es sie gibt, ist nicht erhoben. Umgekehrt bleibt ein Gegner, der den ganzen Kampf ein Damage Up trägt, ohne
+Messung, und eine Vorhersage unter Damage Up unterschätzt (sichere Richtung; die Wirktexte nennen keine Stärke, mit
+der sich hochrechnen ließe).
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 

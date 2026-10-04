@@ -88,8 +88,9 @@ Die Unverwundbarkeit vor einem tödlichen Tankbuster (9) und der Tankwechsel (10
 damit eine Unverwundbarkeit, die an ihrer Schwelle zündet, vorgeht, und vor allem anderen, weil beide an einem
 Tankbuster hängen (Konzept 09, „Unverwundbarkeit vor einem tödlichen Tankbuster" und „Tankwechsel nach einem
 Tankbuster"). Die Unverwundbarkeit steht vor dem Wechsel, der hält, solange sie bereit ist. Beide haben keinen
-befohlenen Eingang; Shirk (13) läuft weiterhin nur auf Befehl. In der Einzelabwehr (22) lehnt `BaseAction.CanUse`
-für Tanks Aktionen auf den Spieler ab, solange die Unverwundbarkeit den Treffer deckt oder an ihn gebunden ist.
+befohlenen Eingang; Shirk (13) läuft weiterhin nur auf Befehl. Solange die Unverwundbarkeit den Treffer deckt oder
+an ihn gebunden ist, lehnt `BaseAction.CanUse` für Tanks in jedem Slot bewertete Abwehr auf den Spieler ab; in der
+Flächenabwehr (21) bleibt frei, was über ihn hinaus wirkt.
 
 In jedem Slot fragt der Dispatcher zuerst die Duty-Rotation (`DataCenter.CurrentDutyRotation`), dann den Job. Die
 Heil-, Abwehr-, Bewegungs- und Rückzugsslots haben je zwei Eingänge: zuerst den befohlenen (`CommandStatus`), dann

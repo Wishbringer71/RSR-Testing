@@ -9,9 +9,11 @@ namespace RotationSolver.Basic.Helpers;
 /// "Unverwundbarkeit vor einem tödlichen Tankbuster").
 /// </summary>
 /// <remarks>
-/// <para>Detection only: what is the case, under which figures. The consumers decide - the
-/// invulnerability (<c>CustomRotation.TankInvulnerabilityAbility</c>) and the hold on every other
-/// single defence (<c>StateUpdater.ShouldAddDefenseSingle</c>).</para>
+/// <para>Detection only: what is the case, under which figures. No option, no threshold of a rule is
+/// read here. The decisions - whether the invulnerability is committed to a cast, and whether the other
+/// defence is held - are taken in <c>CustomRotation</c> (<c>InvulnerabilityCommitted</c>,
+/// <c>TankInvulnerabilityAbility</c>, <c>HoldDefenceForInvulnerability</c>) and, for healers, in
+/// <c>StateUpdater.ShouldAddDefenseSingle</c>.</para>
 ///
 /// <para>The verdict needs the action: only a cast names it. A marker or a BossModReborn prediction says
 /// that a tankbuster comes, not which, so it gives no figure to judge by and no verdict. An action the
@@ -27,90 +29,87 @@ namespace RotationSolver.Basic.Helpers;
 /// side is what other players add, a healer's mitigation or barrier on the tank: it is not counted,
 /// because what other players do is an assumption and never a reason (concept 09).</para>
 ///
-/// <para>Bound per cast: once a cast is judged lethal while the invulnerability is ready, the verdict
-/// stands until that cast is over and one GCD more for the hit to arrive. A barrier arriving later
-/// cannot take it back, because the hold on the other mitigations was already given on its strength -
-/// an invulnerability that then did not come would leave the player with less than either path. The
-/// hold itself opens again in the last GCD before the hit if the invulnerability has still not gone
-/// out (<see cref="HoldMitigation"/>), so a failed draw falls back to the mitigation.</para>
+/// <para>Every cast at the player is judged, not only the one that lands first: a survivable hit ahead
+/// of a lethal one must not hide it.</para>
 /// </remarks>
 internal static class LethalTankbusterWatch
 {
-	private sealed class Committed
+	/// <summary>One tankbuster being cast at the player, and the verdict on it.</summary>
+	internal sealed record Cast(IBattleChara Source, uint ActionId, float Remaining, float Total,
+		float Predicted, float Standing, string Detail)
 	{
-		public required ulong Source { get; init; }
-		public required uint ActionId { get; init; }
-		public required DateTime Ends { get; init; }
+		/// <summary>Measured at all: the table has a figure for the action.</summary>
+		public bool Measured => Predicted > 0f;
+
+		/// <summary>The best case takes full HP and the barrier standing now.</summary>
+		public bool Lethal => Measured && Predicted >= Standing;
 	}
 
-	private static Committed? _committed;
-	private enum Verdict
-	{
-		NotMeasured,
-		Survivable,
-		LethalNoInvulnerability,
-		LethalOptionOff,
-		Committed,
-	}
+	private static readonly List<Cast> _casts = [];
+	private static readonly HashSet<(ulong Source, uint ActionId, float Total, bool Lethal)> _written = [];
 
-	private static (ulong Source, uint ActionId, float Total, Verdict Verdict) _written;
+	/// <summary>Every known tankbuster now being cast at the player, the soonest first.</summary>
+	public static IReadOnlyList<Cast> Casts => _casts;
 
-	/// <summary>The tankbuster being cast at the player, if one is, or null.</summary>
-	public static IBattleChara? Source { get; private set; }
-
-	/// <summary>Seconds until that cast lands.</summary>
-	public static float Remaining { get; private set; }
-
-	/// <summary>
-	/// Whether the invulnerability is committed to the cast: judged lethal in the best case, with the
-	/// invulnerability ready at the time. Holds until the cast is over.
-	/// </summary>
-	public static bool InvulnerabilityCommitted { get; private set; }
-
-	/// <summary>
-	/// Whether the other single mitigations are held for the committed invulnerability: committed, and
-	/// either the invulnerability already stands or the hit is more than one GCD away - so that, if the
-	/// draw has failed by then, the last GCD before the hit is still open for a mitigation.
-	/// </summary>
-	public static bool HoldMitigation { get; private set; }
+	/// <summary>The soonest cast whose verdict is lethal, or null.</summary>
+	public static Cast? SoonestLethal { get; private set; }
 
 	/// <summary>
 	/// Whether the player stands under any invulnerability now - Hallowed Ground, Holmgang, Superbolide,
-	/// Living Dead, Walking Dead or Undead Rebirth -, so that a second one is not drawn.
+	/// Living Dead, Walking Dead or Undead Rebirth.
 	/// </summary>
 	public static bool PlayerUnderInvulnerability { get; private set; }
 
 	/// <summary>
 	/// Whether the coming hit cannot touch the player: Hallowed Ground or Superbolide lasts past the
-	/// tankbuster being cast at him (plus one GCD for the hit to arrive) or, with no cast to time it,
-	/// for at least one more GCD - long enough to still press a mitigation once it runs low.
+	/// soonest tankbuster being cast at him (plus one GCD for the hit to arrive) or, with no cast to time
+	/// it, for at least one more GCD - long enough to still press a mitigation once it runs low.
 	/// </summary>
 	public static bool PlayerImpervious { get; private set; }
 
-	/// <summary>Recomputes the verdict. Called once per framework cycle, on the game thread.</summary>
+	/// <summary>The cast of <paramref name="actionId"/> by <paramref name="source"/>, if it is still running.</summary>
+	public static Cast? Find(ulong source, uint actionId)
+	{
+		foreach (var cast in _casts)
+		{
+			if (cast.Source.GameObjectId == source && cast.ActionId == actionId)
+			{
+				return cast;
+			}
+		}
+
+		return null;
+	}
+
+	/// <summary>
+	/// Whether an invulnerability on the player - any of <see cref="PlayerUnderInvulnerability"/> - is
+	/// still up in <paramref name="seconds"/>, so that it covers a hit landing then.
+	/// </summary>
+	public static bool PlayerInvulnerableThrough(float seconds)
+	{
+		var player = Player.Object;
+		return player != null && player.InvulnerableThrough(seconds);
+	}
+
+	/// <summary>Recomputes the verdicts. Called once per framework cycle, on the game thread.</summary>
 	public static void Update()
 	{
-		Source = null;
-		Remaining = 0f;
-		InvulnerabilityCommitted = false;
+		_casts.Clear();
+		SoonestLethal = null;
 		PlayerUnderInvulnerability = false;
 		PlayerImpervious = false;
-		HoldMitigation = false;
 
 		var player = Player.Object;
 		if (!DataCenter.InCombat || player == null || player.IsDead || DataCenter.Role != JobRole.Tank)
 		{
-			_committed = null;
+			_written.Clear();
 			return;
 		}
 
-		PlayerUnderInvulnerability = player.HasStatus(false, StatusHelper.NoNeedHealingStatus)
-			|| player.HasStatus(false, StatusID.WalkingDead);
+		PlayerUnderInvulnerability = player.InvulnerableThrough(0f);
 
-		IBattleChara? caster = null;
-		uint actionId = 0;
-		var remaining = 0f;
-		var total = 0f;
+		var maxHp = Math.Max(1u, player.MaxHp);
+		var standing = 1f + ((float)player.GetObjectShield() / maxHp);
 		foreach (var hostile in DataCenter.AllHostileTargets)
 		{
 			if (hostile == null || !hostile.IsCasting || hostile.CastTargetObjectId != player.GameObjectId)
@@ -125,102 +124,42 @@ internal static class LethalTankbusterWatch
 			}
 
 			var left = hostile.TotalCastTime - hostile.CurrentCastTime;
-			if (caster == null || left < remaining)
+			var predicted = BestCaseShare(id, player, hostile, left, out var detail);
+			var cast = new Cast(hostile, id, left, hostile.TotalCastTime, predicted, standing, detail);
+			_casts.Add(cast);
+			Trace(cast);
+		}
+
+		_casts.Sort((a, b) => a.Remaining.CompareTo(b.Remaining));
+		foreach (var cast in _casts)
+		{
+			if (cast.Lethal)
 			{
-				caster = hostile;
-				actionId = id;
-				remaining = left;
-				total = hostile.TotalCastTime;
+				SoonestLethal = cast;
+				break;
 			}
 		}
 
 		var gcd = DataCenter.DefaultGCDTotal;
-		PlayerImpervious = player.ImperviousThrough(caster == null ? gcd : remaining + gcd);
-
-		if (caster == null)
-		{
-			// The binding outlives the cast by the one GCD the hit needs to arrive, so the hold does
-			// not open in the moment between cast end and hit.
-			if (_committed is { } after && DateTime.Now <= after.Ends)
-			{
-				InvulnerabilityCommitted = true;
-				HoldMitigation = PlayerUnderInvulnerability;
-			}
-			else
-			{
-				_committed = null;
-			}
-
-			return;
-		}
-
-		Source = caster;
-		Remaining = remaining;
-
-		if (_committed is { } bound && bound.Source == caster.GameObjectId && bound.ActionId == actionId
-			&& DateTime.Now <= bound.Ends)
-		{
-			InvulnerabilityCommitted = true;
-			HoldMitigation = PlayerUnderInvulnerability || remaining > gcd;
-			return;
-		}
-
-		_committed = null;
-		var predicted = BestCaseShare(actionId, player, caster, remaining, out var detail);
-		var maxHp = Math.Max(1u, player.MaxHp);
-		var standing = 1f + ((float)player.GetObjectShield() / maxHp);
-		var lethal = predicted > 0f && predicted >= standing;
-		// Committed only when the consumer will act on it: with the option off, a commitment would hold
-		// the other mitigation for an invulnerability that never comes.
-		var enabled = Service.Config.InvulnerabilityBeforeLethalTankbuster;
-		var ready = InvulnerabilityReady(out var invulnerability);
-
-		if (lethal && ready && enabled)
-		{
-			_committed = new Committed
-			{
-				Source = caster.GameObjectId,
-				ActionId = actionId,
-				Ends = DateTime.Now + TimeSpan.FromSeconds(remaining + gcd),
-			};
-			InvulnerabilityCommitted = true;
-			HoldMitigation = PlayerUnderInvulnerability || remaining > gcd;
-		}
-
-		// One line per cast and verdict, so the file shows what the verdict was built on - and a second
-		// one when the invulnerability comes off cooldown during the cast and the verdict turns.
-		var verdict = predicted <= 0f ? Verdict.NotMeasured : !lethal ? Verdict.Survivable
-			: !ready ? Verdict.LethalNoInvulnerability : enabled ? Verdict.Committed : Verdict.LethalOptionOff;
-		var key = (caster.GameObjectId, actionId, total, verdict);
-		if (_written != key)
-		{
-			_written = key;
-			var name = Service.GetSheet<Lumina.Excel.Sheets.Action>().TryGetRow(actionId, out var row)
-				? row.Name.ExtractText()
-				: $"#{actionId}";
-			DefenseTrace.Line($"tankbuster coming at you: {name} #{actionId} in {remaining:F1} s - "
-				+ (predicted <= 0f
-					? "not in the tankbuster table, no verdict"
-					: $"best case {predicted:P0} of max HP against full HP and barrier {standing:P0} ({detail}): "
-						+ (verdict switch
-						{
-							Verdict.Survivable => "survivable",
-							Verdict.Committed => $"lethal, {invulnerability!.Name} committed",
-							Verdict.LethalOptionOff => $"lethal, {invulnerability!.Name} ready, but the option is off",
-							_ => "lethal, but no invulnerability is ready",
-						})));
-		}
+		PlayerImpervious = player.ImperviousThrough(_casts.Count == 0 ? gcd : _casts[0].Remaining + gcd);
 	}
 
-	/// <summary>
-	/// Whether the tank's invulnerability can be drawn before the hit: one RSR would use at all (enabled,
-	/// learned, its threshold HealthForDyingTanks above zero) and off cooldown.
-	/// </summary>
-	public static bool InvulnerabilityReady(out IBaseAction? invulnerability)
+	// One line per cast and verdict, so the file shows what the verdict was built on.
+	private static void Trace(Cast cast)
 	{
-		invulnerability = DataCenter.CurrentRotation?.TankInvulnerability;
-		return invulnerability != null && invulnerability.Config.IsEnabled && invulnerability.EnoughLevel
-			&& Service.Config.HealthForDyingTanks > 0f && invulnerability.Cooldown.HasOneCharge;
+		if (!_written.Add((cast.Source.GameObjectId, cast.ActionId, cast.Total, cast.Lethal)))
+		{
+			return;
+		}
+
+		var name = Service.GetSheet<Lumina.Excel.Sheets.Action>().TryGetRow(cast.ActionId, out var row)
+			? row.Name.ExtractText()
+			: $"#{cast.ActionId}";
+		DefenseTrace.Line($"tankbuster coming at you: {name} #{cast.ActionId} in {cast.Remaining:F1} s - "
+			+ (!cast.Measured
+				? "not in the tankbuster table, no verdict"
+				: $"best case {cast.Predicted:P0} of max HP against full HP and barrier {cast.Standing:P0}"
+					+ $" ({cast.Detail}): {(cast.Lethal ? "lethal" : "survivable")}"));
 	}
 
 	private static bool IsLearned(uint actionId)
