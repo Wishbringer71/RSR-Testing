@@ -21,11 +21,15 @@ public partial class CustomRotation
 	private static (ulong Source, uint ActionId, float Total, string Summary) _planTraced;
 
 	// What the game or the rotation refused for a cast while neither an animation lock nor a cast of the
-	// player's own explains it - out of range, no MP, a check of the rotation's own. A mitigation is left
-	// out of the plan for one GCD, then tried again; the invulnerability for the rest of the cast, so that
-	// "everything" is never followed by it (the owner's precision on "everything"). The entry stays until
-	// the cast ends, so the refusal is written once.
+	// player's own explains it - out of range, no MP, a stun, a check of the rotation's own: left out of the
+	// plan for one GCD, then tried again. The entry stays until the cast ends, so the refusal is written once.
 	private static readonly Dictionary<(int Cast, uint ActionId), long> _refused = [];
+
+	// Casts for which something of "everything" has gone out: the invulnerability is not drawn on top of it
+	// afterwards (the owner's precision: "nicht invul und dann noch zusätzlich buffs"). A stun that refuses
+	// the invulnerability refuses every other ability as well, so then nothing goes out and the
+	// invulnerability stays in play.
+	private static readonly HashSet<int> _everythingSpent = [];
 
 	/// <summary>
 	/// The owner's rule of 04.10.2026 (concept 09, "Das geringste Mittel gegen einen gemessenen
@@ -61,6 +65,8 @@ public partial class CustomRotation
 		{
 			_ = _refused.Remove(key);
 		}
+
+		_ = _everythingSpent.RemoveWhere(serial => !TankbusterForecast.IsRunning(serial));
 
 		if (DataCenter.Role != JobRole.Tank
 			|| (!Service.Config.InvulnerabilityBeforeLethalTankbuster && !Service.Config.HoldMitigationUnderInvulnerability))
@@ -120,7 +126,8 @@ public partial class CustomRotation
 			SetPlan(new TankbusterPlan(cast, Pick(candidates, bestMask), false, true, bestAfter));
 		}
 		else if (Service.Config.InvulnerabilityBeforeLethalTankbuster && invulnerability != null
-			&& !Refused(cast, invulnerability.ID, gcd) && InvulnerabilityReadyBy(cast.Remaining - gcd))
+			&& !_everythingSpent.Contains(cast.Serial) && !Refused(cast, invulnerability.ID, gcd)
+			&& InvulnerabilityReadyBy(cast.Remaining - gcd))
 		{
 			SetPlan(new TankbusterPlan(cast, [], true, true, 0f));
 		}
@@ -317,7 +324,7 @@ public partial class CustomRotation
 	private static bool Refused(TankbusterForecast.Cast cast, uint actionId, float gcd)
 	{
 		return _refused.TryGetValue((cast.Serial, actionId), out var tick)
-			&& (tick == long.MaxValue || TankbusterForecast.SecondsSince(tick, Environment.TickCount64) < gcd);
+			&& TankbusterForecast.SecondsSince(tick, Environment.TickCount64) < gcd;
 	}
 
 	// One line per change of what the plan spends; the figures ride along but do not make a new line.
@@ -376,8 +383,7 @@ public partial class CustomRotation
 				return false;
 			}
 
-			return PressForTankbuster(invulnerability, plan, gcd, "invulnerability, nothing less survives", out act,
-				refusalLasts: true);
+			return PressForTankbuster(invulnerability, plan, gcd, "invulnerability, nothing less survives", out act);
 		}
 
 		if (!Service.Config.HoldMitigationUnderInvulnerability)
@@ -396,8 +402,7 @@ public partial class CustomRotation
 		return false;
 	}
 
-	private static bool PressForTankbuster(IBaseAction action, TankbusterPlan plan, float gcd, string why, out IAction? act,
-		bool refusalLasts = false)
+	private static bool PressForTankbuster(IBaseAction action, TankbusterPlan plan, float gcd, string why, out IAction? act)
 	{
 		act = null;
 		var lasts = DefensiveValues.DurationOf(action.ID);
@@ -411,8 +416,7 @@ public partial class CustomRotation
 		// "Zielüberschreibung"). The status check is skipped because the plan has already asked whether
 		// this mitigation stands at impact; the game's blocking group of big mitigations is the stagger the
 		// plan replaces for a measured hit. A refusal while an animation lock runs or the player casts is not
-		// an answer. One outside them leaves a mitigation out of the plan for one GCD (MP, range), the
-		// invulnerability for the rest of the cast.
+		// an answer. One outside them leaves the action out of the plan for one GCD (MP, range, a stun).
 		var previous = IBaseAction.TargetOverride;
 		IBaseAction.TargetOverride = null;
 		try
@@ -427,11 +431,10 @@ public partial class CustomRotation
 					var key = (plan.Cast.Serial, action.ID);
 					if (!_refused.ContainsKey(key))
 					{
-						DefenseTrace.Line($"{action.Name} refused for #{plan.Cast.ActionId}; planning without it"
-							+ (refusalLasts ? " for this cast" : " for a GCD at a time"));
+						DefenseTrace.Line($"{action.Name} refused for #{plan.Cast.ActionId}; planning without it for a GCD at a time");
 					}
 
-					_refused[key] = refusalLasts ? long.MaxValue : Environment.TickCount64;
+					_refused[key] = Environment.TickCount64;
 				}
 
 				return false;
@@ -440,6 +443,11 @@ public partial class CustomRotation
 		finally
 		{
 			IBaseAction.TargetOverride = previous;
+		}
+
+		if (!plan.Survivable && !plan.Invulnerability)
+		{
+			_ = _everythingSpent.Add(plan.Cast.Serial);
 		}
 
 		DefenseTrace.Decision($"{why} for #{plan.Cast.ActionId} from {plan.Cast.Source.Name.TextValue}"

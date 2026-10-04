@@ -1166,9 +1166,11 @@ Für den frühesten gemessenen Tankbuster, der auf dich gewirkt wird:
    Effekt-Handler mit Ziel und Zeitpunkt). Ist der Status einmal gesehen, sagt nur noch er, ob sie steht – auch wenn
    sie vorzeitig endet (Barriere gebrochen, Abschütteln). Weder ein `CanUse`-Treffer noch eine Abklingzeit taugt
    dafür: Der erste ist noch kein Druck, die zweite sagt weder, wer drückte, noch auf wen (The Blackest Night auf dem
-   Co-Tank), und Rachsucht/Verdammnis teilen sie. Ob ein Status erschienen ist, erhebt die Erkennung in jedem
-   Durchlauf (eigene Anwendung auf dir oder einem Gegner). Reflexion wird überbrückt, bis ihr Debuff auf einem Gegner
-   erscheint; erreichte sie diesen nicht, sagt danach sein Fehlen. **Nicht** dabei sind Gruppenwerkzeuge – Barriere oder
+   Co-Tank), und Rachsucht/Verdammnis teilen sie. Ob der neue Status erschienen ist, erhebt die Erkennung in jedem
+   Durchlauf aus der Statusliste selbst (nicht aus dem Status, den das Bestätigungspaket vorhersagt): eine eigene Kopie
+   auf dir, dem Ziel oder – bei Wirkung um dich – einem beliebigen Gegner, die länger läuft als eine eigene Kopie beim
+   Hinausgehen lief. Eine Erneuerung zählt so erst, wenn die erneuerte Kopie liegt. Reflexion wird überbrückt, bis ihr
+   Debuff auf einem Gegner erscheint; erreichte sie diesen nicht, sagt danach sein Fehlen. **Nicht** dabei sind Gruppenwerkzeuge – Barriere oder
    Minderung über die Gruppe (Abschütteln, Divine Veil, Dark Missionary, Heart of Light): Sie gehören der
    Flächenabwehr, und Abschütteln hebt Verdammnis und Urimpuls des Kriegers selbst auf. Reflexion, ein Debuff auf dem
    Gegner, ist dabei.
@@ -1208,12 +1210,13 @@ und zählen unter 1. mit.
 - **Ziel:** jeder geplante Druck geht auf dich (`TargetType.Self`); The Blackest Night suchte sich sonst ein eigenes Ziel.
 - **Ein abgelehnter Druck:** Während einer Animationssperre lehnt `CanUse` jede Fähigkeit ab; das ist keine Antwort,
   der Druck wird im nächsten Durchlauf neu versucht. Lehnt es ab, ohne dass eine Animationssperre oder ein
-  eigener Zauber das erklärt – Reflexion außer Reichweite, zu wenig MP, eine Prüfung der Rotation –, rechnet der Plan
-  einen GCD lang ohne die Minderung und versucht sie danach wieder. Eine verweigerte Unverwundbarkeit bleibt für den
-  Rest des Wirkens draußen: Der Plan ist dann „alles", und auf „alles" folgt nicht noch die Unverwundbarkeit – nach
-  seiner Präzisierung („nicht invul und dann noch zusätzlich buffs"). Ob sie, wenn sie im selben Wirken doch noch
-  nutzbar würde, zusätzlich gehen soll, ist ihm vorgelegt. Ablehnungen gelten je Wirken (eigene Nummer je Wirken);
-  ein späteres derselben Aktion beginnt neu.
+  eigener Zauber das erklärt – Reflexion außer Reichweite, zu wenig MP, ein Stun, eine Prüfung der Rotation –, rechnet
+  der Plan einen GCD lang ohne die Aktion und versucht sie danach wieder. Ist es die Unverwundbarkeit, ist der Plan in
+  der Zeit „alles". Sobald daraus etwas hinausging, kommt die Unverwundbarkeit für dieses Wirken nicht mehr – seine
+  Präzisierung: „nicht invul und dann noch zusätzlich buffs". Ein Stun, der die Unverwundbarkeit verweigert, sperrt
+  jede andere Fähigkeit ebenso; dann geht nichts hinaus, und sie bleibt im Spiel. Ablehnungen gelten je Wirken
+  (eigene Nummer je Wirken, auch bei zwei gleichen Wirken ohne Pause, erkannt am Zurückspringen der Wirkzeit); ein
+  späteres derselben Aktion beginnt neu.
 
 ### Das Zurückhalten
 

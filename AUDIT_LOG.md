@@ -5708,14 +5708,28 @@ Wechsel greift, schreibt das Protokoll selbst.
      erhebt es in jedem Durchlauf (`TankbusterForecast.RecordStatusesSeen`), nur eigene Anwendungen.
   3./4. Die Rücknahme auf „Unverwundbarkeit je GCD neu" (sechste Runde) kehrte die festgehaltene Folge „auf alles
      folgt nicht noch die Unverwundbarkeit" um, ohne ihn, und ließ den Plan flackern. Wiederhergestellt: Eine
-     Verweigerung gilt für das Wirken, gezählt nur ohne Animationssperre und ohne eigenen Zauber. Die Frage, ob eine im
-     selben Wirken später nutzbare Unverwundbarkeit zusätzlich gehen soll, ist ihm vorgelegt.
+     Verweigerung gilt für das Wirken, gezählt nur ohne Animationssperre und ohne eigenen Zauber (in der achten Runde
+     ersetzt, siehe dort).
   5. Reflexion war nicht überbrückt. Behoben: bis ihr Debuff auf einem Gegner erscheint.
   6. Fremde oder alte Anwendungen markierten einen Status als gesehen. Behoben: nur eigene (`HasStatus(true, …)`).
      Grenze: Wird eine eigene, noch stehende Minderung erneuert, gilt sie sofort als gesehen; bis die neue liegt, kann
      der Plan kurz eine weitere wählen.
   7./8. Doppelte Wirken-Identität, Speicher je Durchlauf. Behoben: `_written` entfernt, Protokollzeile beim ersten
      Sehen, eine wiederverwendete Menge statt Liste und Closures.
+- *Achtes Code-Review (d072b6e8a..376c5f296), acht Punkte:*
+  1. Die Sperre der Unverwundbarkeit für das Wirken griff auch bei einem kurzen Stun. Die Runden pendelten zwischen
+     „Sperre zu hart" und „erneuter Versuch widerspricht ‚nicht invul und dann noch zusätzlich buffs'". Gelöst an
+     seiner Präzisierung selbst: Eine Verweigerung gilt je GCD; die Unverwundbarkeit fällt erst weg, sobald aus „alles"
+     etwas hinausging. Ein Stun sperrt alle Fähigkeiten, dann bleibt sie im Spiel. Die Vorlage an ihn entfällt.
+  2. „Gesehen" las auch den vorhergesagten Status des Bestätigungspakets. Behoben: nur die Statusliste.
+  3. Eine Erneuerung galt sofort als gesehen (Grenze der siebten Runde). Behoben: gesehen, wenn eine eigene Kopie
+     länger läuft als beim Hinausgehen.
+  4. Zwei gleiche Wirken ohne Pause behielten eine Nummer. Behoben: Zurückspringen der Wirkzeit gibt eine neue;
+     `_live` wird am Anfang geleert.
+  5. Reflexion auf einem gefilterten Gegner blieb ungesehen. Behoben: alle Charaktere im Objektverzeichnis.
+  6. Statuslisten je Durchlauf neu gebaut. Behoben: einmal je Aktion (bis die Rotation wechselt), bei der Ausführung.
+  7. Grenze und Vorlage standen nur im Archiv. Beide mit 2./3. und 1. erledigt; nichts Offenes für `TODO.md`.
+  8. `action.AdjustedID` statt `Service.GetAdjustedActionId`.
 - *Seine Präzisierung zu „alles" (während der dritten Runde):* alles nur, wenn die Unverwundbarkeit nicht verfügbar ist
   und alle Minderungen zusammen nicht reichen – nie die Unverwundbarkeit plus Minderungen. So gebaut; Befund 1 war der
   Fehler genau dagegen.

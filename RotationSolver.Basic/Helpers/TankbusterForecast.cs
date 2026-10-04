@@ -1,3 +1,4 @@
+using ECommons.DalamudServices;
 using ECommons.GameHelpers;
 using RotationSolver.Basic.Configuration;
 
@@ -44,19 +45,23 @@ internal static class TankbusterForecast
 
 	private static readonly List<Cast> _casts = [];
 
-	// The player's own actions as the server confirmed them: action, target, when (monotonic, so a clock
-	// change does not stretch anything), and whether its status has been seen since. Kept while the
-	// action's effect can still last.
+	// The player's own actions that put a status on, as the server confirmed them: action, target, when
+	// (monotonic, so a clock change does not stretch anything), its statuses, how long an own copy of them
+	// still ran at that moment, and whether the new one has shown since. Kept while the effect can last.
 	private sealed class Execution
 	{
 		public required uint ActionId { get; init; }
 		public required ulong Target { get; init; }
 		public required long Tick { get; init; }
+		public required StatusID[] Statuses { get; init; }
+		public required float PriorRemaining { get; init; }
 		public bool StatusSeen { get; set; }
 	}
 
 	private static readonly List<Execution> _own = [];
-	private static readonly Dictionary<(ulong Source, uint ActionId, float Total), int> _serials = [];
+	private static readonly Dictionary<uint, StatusID[]> _statusesOfAction = [];
+	private static ICustomRotation? _statusesFor;
+	private static readonly Dictionary<(ulong Source, uint ActionId, float Total), (int Serial, float Elapsed)> _serials = [];
 	private static readonly HashSet<(ulong Source, uint ActionId, float Total)> _live = [];
 	private static int _nextSerial;
 
@@ -91,10 +96,21 @@ internal static class TankbusterForecast
 	{
 		var now = Environment.TickCount64;
 		_ = _own.RemoveAll(e => SecondsSince(e.Tick, now) > DefensiveValues.DurationOf(e.ActionId));
-		if (DefensiveValues.DurationOf(actionId) > 0f)
+		var player = Player.Object;
+		var statuses = StatusesOfAction(actionId);
+		if (player == null || statuses.Length == 0 || DefensiveValues.DurationOf(actionId) <= 0f)
 		{
-			_own.Add(new Execution { ActionId = actionId, Target = targetId, Tick = now });
+			return;
 		}
+
+		_own.Add(new Execution
+		{
+			ActionId = actionId,
+			Target = targetId,
+			Tick = now,
+			Statuses = statuses,
+			PriorRemaining = OwnRemaining(player, targetId, statuses, player.GameObjectId),
+		});
 	}
 
 	/// <summary>
@@ -129,43 +145,90 @@ internal static class TankbusterForecast
 			: Math.Max(0f, lasts - SecondsSince(latest.Tick, Environment.TickCount64));
 	}
 
-	// Marks every execution whose status - one the player applied, on him or on an enemy - now shows.
+	// Marks every execution whose new status shows: an own copy on the player, its target or - for an
+	// effect around the player - any enemy, running longer than an own copy ran when the action went out.
+	// Read from the status list itself, not from the status the confirming packet predicts, and a renewal
+	// counts only once the renewed copy is on.
 	private static void RecordStatusesSeen(IBattleChara player)
 	{
 		foreach (var execution in _own)
 		{
-			if (execution.StatusSeen)
+			if (!execution.StatusSeen && OwnRemaining(player, execution.Target, execution.Statuses, player.GameObjectId)
+				> execution.PriorRemaining)
+			{
+				execution.StatusSeen = true;
+			}
+		}
+	}
+
+	// The longest an own copy of the statuses still runs on the player, on the target, and - when the
+	// target is not the player - on any other character; -1 when there is none.
+	private static float OwnRemaining(IBattleChara player, ulong targetId, StatusID[] statuses, ulong playerEntity)
+	{
+		var longest = OwnRemainingOn(player, statuses, playerEntity);
+		if (targetId == 0 || targetId == player.GameObjectId)
+		{
+			return longest;
+		}
+
+		foreach (var obj in Svc.Objects)
+		{
+			if (obj is IBattleChara chara && chara.GameObjectId != player.GameObjectId)
+			{
+				longest = Math.Max(longest, OwnRemainingOn(chara, statuses, playerEntity));
+			}
+		}
+
+		return longest;
+	}
+
+	// The status list's source is compared with the player's object id, as StatusHelper does.
+	private static float OwnRemainingOn(IBattleChara chara, StatusID[] statuses, ulong playerEntity)
+	{
+		var longest = -1f;
+		var list = chara.StatusList;
+		if (list == null)
+		{
+			return longest;
+		}
+
+		foreach (var status in list)
+		{
+			if (status == null || status.SourceId != playerEntity)
 			{
 				continue;
 			}
 
-			var statuses = StatusesOfAction(execution.ActionId);
-			if (statuses.Length == 0)
+			foreach (var id in statuses)
 			{
-				continue;
-			}
-
-			var seen = player.HasStatus(true, statuses);
-			if (!seen)
-			{
-				foreach (var hostile in DataCenter.AllHostileTargets)
+				if (status.StatusId == (uint)id)
 				{
-					if (hostile != null && hostile.HasStatus(true, statuses))
-					{
-						seen = true;
-						break;
-					}
+					longest = Math.Max(longest, status.RemainingTime);
+					break;
 				}
 			}
-
-			execution.StatusSeen = seen;
 		}
+
+		return longest;
 	}
 
 	// The statuses an action puts on: those its effect text is tied to, and those its setting in the
 	// current rotation provides (The Blackest Night's barrier has no mitigation figure, only a status).
+	// Kept per action until the rotation changes.
 	private static StatusID[] StatusesOfAction(uint actionId)
 	{
+		var rotation = DataCenter.CurrentRotation;
+		if (!ReferenceEquals(rotation, _statusesFor))
+		{
+			_statusesFor = rotation;
+			_statusesOfAction.Clear();
+		}
+
+		if (_statusesOfAction.TryGetValue(actionId, out var known))
+		{
+			return known;
+		}
+
 		List<StatusID> statuses = [];
 		if (DefensiveValues.MitigatingStatusesByActionId.TryGetValue(actionId, out var tied))
 		{
@@ -175,12 +238,12 @@ internal static class TankbusterForecast
 			}
 		}
 
-		var actions = DataCenter.CurrentRotation?.AllBaseActions;
+		var actions = rotation?.AllBaseActions;
 		if (actions != null)
 		{
 			foreach (var action in actions)
 			{
-				if (action == null || (action.ID != actionId && Service.GetAdjustedActionId(action.ID) != actionId))
+				if (action == null || (action.ID != actionId && action.AdjustedID != actionId))
 				{
 					continue;
 				}
@@ -190,7 +253,9 @@ internal static class TankbusterForecast
 			}
 		}
 
-		return [.. statuses];
+		StatusID[] result = [.. statuses];
+		_statusesOfAction[actionId] = result;
+		return result;
 	}
 
 	/// <summary>Whether the cast with <paramref name="serial"/> is still coming at the player.</summary>
@@ -228,6 +293,7 @@ internal static class TankbusterForecast
 			return;
 		}
 
+		_live.Clear();
 		RecordStatusesSeen(player);
 
 		var gcd = DataCenter.DefaultGCDTotal;
@@ -255,13 +321,12 @@ internal static class TankbusterForecast
 			var attackType = Service.GetSheet<Lumina.Excel.Sheets.Action>().TryGetRow(id, out var row)
 				? row.AttackType.RowId
 				: 0u;
+			// A cast whose elapsed time went back is a new cast of the same action, even without a frame
+			// between the two.
 			var identity = (hostile.GameObjectId, id, hostile.TotalCastTime);
-			var isNew = !_serials.TryGetValue(identity, out var serial);
-			if (isNew)
-			{
-				serial = ++_nextSerial;
-				_serials[identity] = serial;
-			}
+			var isNew = !_serials.TryGetValue(identity, out var known) || hostile.CurrentCastTime < known.Elapsed;
+			var serial = isNew ? ++_nextSerial : known.Serial;
+			_serials[identity] = (serial, hostile.CurrentCastTime);
 
 			_ = _live.Add(identity);
 			var cast = new Cast(serial, hostile, id, attackType, left, hostile.TotalCastTime, predicted,
