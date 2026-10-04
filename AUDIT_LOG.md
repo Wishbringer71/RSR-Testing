@@ -5331,6 +5331,19 @@ CI. Konzept 16 und 17 (01. und 02.10.2026 geschrieben) stichprobenartig, ohne Fu
 
 **Prüfgrad:** statisch, alle Prüfskripte und Generatoren mit `--check`; Compile über die CI. Oberfläche im Spiel nicht
 geprüft.
+
+### A254 · Protokoll vom 03.10.2026 und Schadenstabelle (04.10.2026)
+
+- *Neu gegenüber A252:* nur die Sitzung 14:07 bis 14:34 (Commit 9c17edaf4, also mit der „used"-Zeile). Darin sieben
+  Treffer von Ovjang (BNpcName 2924) binnen 20 s: Feuerstaub #2178 (Einzelziel, 0–4 %) und Spaltschub #2073 (Kreis
+  5 y, 8 %, 2 Ziele). Keine Abwehrwahl, also auch keine „used"-Zeile. Beides auf keiner Liste, also auch keine Messung.
+- *Ohne Befund:* Bei Treffern von 4 bis 8 % und höchstens einem angreifenden Gegner greift keine Abwehrregel — so gebaut.
+- *Schadenstabelle:* byte-gleich mit dem Stand vom 02.10.2026 (56 Einträge); in dieser Sitzung kam kein gelisteter
+  Flächenangriff vor.
+- *Offen wie in A252:* Ob Schimmerschild vor einem Raidwide mehrfach wirklich gewirkt wird, beantwortet erst eine
+  Beschwörer-Sitzung mit Raidwides auf einem Build ab 9c17edaf4.
+
+**Prüfgrad:** Protokoll Zeile für Zeile, Tabelle per Diff gegen die vorige Datei; Aktionsdaten über xivapi.
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
