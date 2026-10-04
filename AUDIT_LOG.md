@@ -5743,6 +5743,18 @@ Wechsel greift, schreibt das Protokoll selbst.
   6. Lag der neue Status beim Bestätigen schon, wurde er nie als gesehen erkannt. Behoben: eine Kopie mit mehr als
      Wirkdauer weniger einem GCD gilt sofort als die neue.
   9. Arbeit für Nicht-Tanks und volle Objektdurchläufe. Behoben: nur Tanks im Kampf, Abbruch beim ersten Treffer.
+- *Zehntes Code-Review (6ec7538b6..a4ced5b6d), neun Punkte:*
+  1./6. `MinStatusRemainingTime` liefert die kürzeste Kopie; bei Aktionen mit Zusatzstatus (Urimpuls, Herz des
+     Korunds, Schiltron) wurde die neue Kopie nie als gesehen erkannt. Ursache: ein geteilter Helfer mit anderer
+     Bedeutung übernommen, ohne sie zu prüfen. Behoben: eigene geschützte Lesung, längster Status.
+  2./3. Die Rückkehr zu Weg A stellte eine im Konzept mit seiner Präzisierung begründete Festlegung ohne ihn um
+     (CLAUDE.md, „Getroffene Entscheidungen"). Wiederhergestellt: Weg B, jetzt an bestätigten Ausführungen aus jedem
+     Pfad (`TankbusterForecast.OwnDefenceSince`) seit dem Moment, in dem der Plan „alles" wurde. A bleibt Vorlage.
+  4. „Sofort gesehen" las auch die Kopie auf dem Spieler, wenn die Aktion einem anderen galt. Behoben: gelesen wird,
+     wo die Aktion landet.
+  5. Jeder fremde Status löste eine Objektsuche aus. Behoben: Vergleich nur der Quelle, Wirkung um den Spieler nur
+     auf Gegnern gesucht.
+  7./8./9. Kommentar, Konzeptsatz und Leerzeilen nachgezogen.
 - *Seine Präzisierung zu „alles" (während der dritten Runde):* alles nur, wenn die Unverwundbarkeit nicht verfügbar ist
   und alle Minderungen zusammen nicht reichen – nie die Unverwundbarkeit plus Minderungen. So gebaut; Befund 1 war der
   Fehler genau dagegen.

@@ -36,7 +36,8 @@ internal static class TankbusterForecast
 	/// <param name="Horizon">Seconds until the hit can arrive: the cast's rest plus one GCD.</param>
 	/// <param name="Serial">Tells this cast from every other, also from a later cast of the same action
 	/// by the same enemy with the same cast time.</param>
-	internal sealed record Cast(int Serial, IBattleChara Source, uint ActionId, uint AttackType, float Remaining,
+	/// <param name="SeenTick">When this cast was first seen (<see cref="Environment.TickCount64"/>).</param>
+	internal sealed record Cast(int Serial, long SeenTick, IBattleChara Source, uint ActionId, uint AttackType, float Remaining,
 		float Total, float Predicted, float Budget, float Horizon)
 	{
 		/// <summary>Measured at all: the table has a figure for the action.</summary>
@@ -62,7 +63,7 @@ internal static class TankbusterForecast
 	private static readonly List<Execution> _own = [];
 	private static readonly Dictionary<uint, (StatusID[] Statuses, bool Outward)> _factsOfAction = [];
 	private static ICustomRotation? _statusesFor;
-	private static readonly Dictionary<(ulong Source, uint ActionId, float Total), (int Serial, float Elapsed)> _serials = [];
+	private static readonly Dictionary<(ulong Source, uint ActionId, float Total), (int Serial, long SeenTick, float Elapsed)> _serials = [];
 	private static readonly HashSet<(ulong Source, uint ActionId, float Total)> _live = [];
 	private static int _nextSerial;
 
@@ -157,10 +158,27 @@ internal static class TankbusterForecast
 			: Math.Max(0f, lasts - SecondsSince(latest.Tick, Environment.TickCount64));
 	}
 
-	// Marks every execution whose new status shows: an own copy on the player, its target or - for an
-	// effect around the player, Reprisal - any character, running longer than an own copy ran when the
-	// action went out. Read from the status list itself, not from the status the confirming packet
-	// predicts, and a renewal counts only once the renewed copy is on.
+	/// <summary>
+	/// Whether one of the player's own rated defences (a mitigation or barrier figure in the effect texts)
+	/// went out, as the server confirmed, at or after <paramref name="sinceTick"/>.
+	/// </summary>
+	public static bool OwnDefenceSince(long sinceTick)
+	{
+		foreach (var execution in _own)
+		{
+			if (execution.Tick >= sinceTick && DefensiveValues.For(execution.ActionId) != default)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	// Marks every execution whose new status shows: an own copy where the action lands - on the player,
+	// on its target, or for an effect around the player (Reprisal) on any enemy - running longer than an
+	// own copy ran there when the action went out. Read from the status list itself, not from the status
+	// the confirming packet predicts, and a renewal counts only once the renewed copy is on.
 	private static void RecordStatusesSeen(IBattleChara player)
 	{
 		foreach (var execution in _own)
@@ -173,22 +191,29 @@ internal static class TankbusterForecast
 		}
 	}
 
-	// The longest an own copy of the statuses still runs on the player, on the target, and - for an
-	// effect around the player or one aimed at someone else - on any character; -1 when there is none.
-	// Stops at the first copy above <paramref name="enough"/>.
+	// The longest an own copy of the statuses still runs where the action lands: on the player when he
+	// is the target, on the target when it is someone else, on any enemy for an effect around the player;
+	// -1 when there is none. Stops at the first copy above <paramref name="enough"/>.
 	private static float LongestOwnCopy(IBattleChara player, ulong targetId, StatusID[] statuses, bool outward, float enough)
 	{
-		var longest = OwnCopy(player, statuses);
-		if (longest > enough || (!outward && (targetId == 0 || targetId == player.GameObjectId)))
+		if (!outward)
 		{
-			return longest;
+			if (targetId == 0 || targetId == player.GameObjectId)
+			{
+				return OwnCopy(player, statuses, player.GameObjectId);
+			}
+
+			return Svc.Objects.SearchById(targetId) is IBattleChara target
+				? OwnCopy(target, statuses, player.GameObjectId)
+				: -1f;
 		}
 
+		var longest = -1f;
 		foreach (var obj in Svc.Objects)
 		{
-			if (obj is IBattleChara chara && chara.GameObjectId != player.GameObjectId)
+			if (obj is IBattleNpc enemy)
 			{
-				longest = Math.Max(longest, OwnCopy(chara, statuses));
+				longest = Math.Max(longest, OwnCopy(enemy, statuses, player.GameObjectId));
 				if (longest > enough)
 				{
 					break;
@@ -199,11 +224,44 @@ internal static class TankbusterForecast
 		return longest;
 	}
 
-	// StatusHelper's own reading: the status list itself, guarded, the player or his pet as source.
-	private static float OwnCopy(IBattleChara chara, StatusID[] statuses)
+	// The longest of the action's statuses an own copy of which runs on <paramref name="chara"/> - an
+	// action can put several on, of different lengths (Bloodwhetting and Stem the Flow), and the longest is
+	// the action's own. Read from the status list itself, guarded as StatusHelper guards it; the source is
+	// compared with the player's object id only, a tank has no pet. A status without an end does not count.
+	private static float OwnCopy(IBattleChara chara, StatusID[] statuses, ulong playerId)
 	{
-		var left = StatusHelper.MinStatusRemainingTime(chara, true, statuses, out var found);
-		return found ? left : -1f;
+		var longest = -1f;
+		try
+		{
+			var list = chara.StatusList;
+			if (list == null)
+			{
+				return longest;
+			}
+
+			foreach (var status in list)
+			{
+				if (status == null || status.SourceId != playerId || status.RemainingTime <= 0f)
+				{
+					continue;
+				}
+
+				foreach (var id in statuses)
+				{
+					if (status.StatusId == (uint)id)
+					{
+						longest = Math.Max(longest, status.RemainingTime);
+						break;
+					}
+				}
+			}
+		}
+		catch (Exception)
+		{
+			// A status list that throws (an object going away) answers nothing.
+		}
+
+		return longest;
 	}
 
 	// The statuses an action puts on - those its effect text is tied to, and those its setting in the
@@ -322,10 +380,11 @@ internal static class TankbusterForecast
 			var identity = (hostile.GameObjectId, id, hostile.TotalCastTime);
 			var isNew = !_serials.TryGetValue(identity, out var known) || hostile.CurrentCastTime < known.Elapsed;
 			var serial = isNew ? ++_nextSerial : known.Serial;
-			_serials[identity] = (serial, hostile.CurrentCastTime);
+			var seenTick = isNew ? Environment.TickCount64 : known.SeenTick;
+			_serials[identity] = (serial, seenTick, hostile.CurrentCastTime);
 
 			_ = _live.Add(identity);
-			var cast = new Cast(serial, hostile, id, attackType, left, hostile.TotalCastTime, predicted,
+			var cast = new Cast(serial, seenTick, hostile, id, attackType, left, hostile.TotalCastTime, predicted,
 				(player.CurrentHp / maxHp) + barrier, horizon);
 			_casts.Add(cast);
 			if (isNew)

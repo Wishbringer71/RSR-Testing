@@ -25,7 +25,12 @@ public partial class CustomRotation
 	// plan for one GCD, then tried again. The entry stays until the cast ends, so the refusal is written once.
 	private static readonly Dictionary<(int Cast, uint ActionId), long> _refused = [];
 
-
+	// Per cast, since when the plan has been "everything". Once an own rated defence went out after that -
+	// from the plan or any other path, as the server confirmed it -, the invulnerability does not follow in
+	// that cast: the owner's precision, "nicht invul und dann noch zusätzlich buffs" (concept 09, A261;
+	// whether it should follow anyway is his decision, TODO.md). A stun that refuses the invulnerability
+	// refuses every other ability too, so then nothing goes out and it stays in play.
+	private static readonly Dictionary<int, long> _everythingSince = [];
 
 	/// <summary>
 	/// The owner's rule of 04.10.2026 (concept 09, "Das geringste Mittel gegen einen gemessenen
@@ -62,6 +67,13 @@ public partial class CustomRotation
 			_ = _refused.Remove(key);
 		}
 
+		foreach (var serial in _everythingSince.Keys)
+		{
+			if (!TankbusterForecast.IsRunning(serial))
+			{
+				_ = _everythingSince.Remove(serial);
+			}
+		}
 
 		if (DataCenter.Role != JobRole.Tank
 			|| (!Service.Config.InvulnerabilityBeforeLethalTankbuster && !Service.Config.HoldMitigationUnderInvulnerability))
@@ -121,13 +133,14 @@ public partial class CustomRotation
 			SetPlan(new TankbusterPlan(cast, Pick(candidates, bestMask), false, true, bestAfter));
 		}
 		else if (Service.Config.InvulnerabilityBeforeLethalTankbuster && invulnerability != null
-			&& !Refused(cast, invulnerability.ID, gcd)
+			&& !Refused(cast, invulnerability.ID, gcd) && !EverythingSpent(cast)
 			&& InvulnerabilityReadyBy(cast.Remaining - gcd))
 		{
 			SetPlan(new TankbusterPlan(cast, [], true, true, 0f));
 		}
 		else
 		{
+			_ = _everythingSince.TryAdd(cast.Serial, Environment.TickCount64);
 			var all = (1 << candidates.Count) - 1;
 			SetPlan(new TankbusterPlan(cast, Pick(candidates, all), false, false, After(predicted, candidates, all, out _, out _)));
 		}
@@ -314,6 +327,11 @@ public partial class CustomRotation
 		var invulnerability = Invulnerability;
 		return TankbusterForecast.PlayerInvulnerableThrough(seconds)
 			|| (invulnerability != null && TankbusterForecast.OwnPendingCover(invulnerability.ID, true) >= seconds);
+	}
+
+	private static bool EverythingSpent(TankbusterForecast.Cast cast)
+	{
+		return _everythingSince.TryGetValue(cast.Serial, out var since) && TankbusterForecast.OwnDefenceSince(since);
 	}
 
 	private static bool Refused(TankbusterForecast.Cast cast, uint actionId, float gcd)
@@ -524,10 +542,9 @@ public partial class CustomRotation
 				return false;
 			}
 
-			// Still to be drawn. Once refused in this cast it is tried again, but the rest is not held for it
-			// any more - a refusal that comes back every GCD would otherwise switch the hold on and off.
-			return plan.Cast.Remaining > gcd && invulnerability.Cooldown.HasOneCharge
-				&& !_refused.ContainsKey((plan.Cast.Serial, invulnerability.ID));
+			// Still to be drawn. A refusal makes the plan "everything" for a GCD; if anything goes out then,
+			// the invulnerability is out of the plan for the cast, so the hold cannot switch back and forth.
+			return plan.Cast.Remaining > gcd && invulnerability.Cooldown.HasOneCharge;
 		}
 
 		if (!plan.Survivable)
