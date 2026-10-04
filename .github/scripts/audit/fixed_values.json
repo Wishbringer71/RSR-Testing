@@ -131,7 +131,7 @@
   },
   {
    "file": "RotationSolver.Basic/Helpers/ObjectHelper.cs",
-   "code": "&& targetObject.GetEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f)",
+   "code": "&& targetObject.GetEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f",
    "values": [
     "100"
    ],

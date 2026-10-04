@@ -204,6 +204,20 @@ public static class Watcher
 				return;
 			}
 
+			// A party member's Shirk on the player, for the trace.
+			if (set.Source is IBattleChara shirker && shirker.GameObjectId != playerObject.GameObjectId && shirker.IsParty()
+				&& set.Action is { RowId: (uint)ActionID.ShirkPvE })
+			{
+				foreach (var effect in set.TargetEffects)
+				{
+					if (effect.TargetID == playerObject.GameObjectId)
+					{
+						TankSwapWatch.RecordShirkOnPlayer(shirker.Name.TextValue);
+						break;
+					}
+				}
+			}
+
 			// The first auto-attack after a swap Shirk shows whom the enemy attacks now.
 			if (set.Source is IBattleChara swinger && set.Action is { } swing && swing.GetActionCate() == ActionCate.Autoattack)
 			{

@@ -960,7 +960,15 @@ debuff, der einen zweiten tankbuster auf dich tödlich enden läßt (also auch s
 totenerweckung etc. auf cooldown sind), dann geteiltes leid auf den tank casten, welcher am wenigsten aggro hat bzw.
 die höchste gesundheit."
 
-**Gebaut (A255), Option „Shirk the co-tank after a tankbuster that leaves you in danger", ab Werk an:**
+**Seine Angaben dazu (04.10.2026):**
+- *Präzisierung:* „wenn unverwundbarkeit bereit ist, dann braucht aggro nicht gewechselt werden."
+- *Hinweis:* „es kann ja umgekehrt sein, dass der andere tank sterben könnte, weil seine unverwundbarkeit nicht bereit
+  ist, und er ebenfalls geteiltes leid auf mich gewirkt hat."
+- *Vorgabe:* „weiterhin sollte erst dann mit provozieren wieder aggro aufgebaut werden, wenn debuff und kritischer
+  zustand abgelaufen sind."
+- *Präzisierung dazu:* „am besten, wenn auch unverwundbarkeit wieder bereitsteht."
+
+**Gebaut (A255, A256), Option „Shirk the co-tank after a tankbuster that leaves you in danger", ab Werk an:**
 Erkennung in `TankSwapWatch`, Entscheidung in `CustomRotation.TankSwapAbility`, für alle Tanks an einer Stelle (Stufe
 Tanks; Geteiltes Leid ist eine Rollenaktion, für keinen Tank-Job gilt etwas anderes). Geteiltes Leid geht auf den
 anderen Tank, wenn alles zutrifft:
@@ -977,6 +985,27 @@ anderen Tank, wenn alles zutrifft:
    einer Schwelle über 0 (`HealthForDyingTanks`). Unter einer laufenden Unverwundbarkeit, Living Dead oder Walking
    Dead geschieht nichts.
 4. **Der andere Tank behält den Gegner danach.** Das ist gemessen, nicht angenommen; siehe Mechanik.
+5. **Der andere Tank ist nicht selbst in Gefahr** (sein Hinweis). Er trägt keine Verwundbarkeit, und seine LP mit
+   Schild liegen über dem härtesten gemessenen Anteil dieses Tankbusters, gerechnet auf seine maximalen LP. Ob
+   *seine* Unverwundbarkeit bereit ist, kann RSR nicht lesen: Die Abklingzeiten anderer Spieler liegen nicht vor.
+   Gemessen wird deshalb, ob ein Treffer ihn umbrächte, nicht, ob er sich retten könnte. Hat er dir den Gegner mit
+   Geteiltem Leid gegeben, weil er in Gefahr ist, zeigt genau diese Messung das, und du gibst ihn nicht zurück.
+   Seine Geste selbst schreibt das Protokoll nur mit („… shirked to you").
+
+**Zurückholen (seine Vorgabe und Präzisierung):** Hat dein Geteiltes Leid den Gegner bewegt, provoziert RSR ihn
+zurück, sobald
+- die Verwundbarkeit abgelaufen ist und LP mit Schild über dem härtesten gemessenen Anteil liegen, und
+- deine Unverwundbarkeit wieder bereit ist. Wo RSR sie gar nicht einsetzen würde (auf dieser Stufe nicht erlernt,
+  abgeschaltet, Schwelle 0), wartet es darauf nicht.
+
+Greift der Gegner dich schon wieder an, ist nichts zurückzuholen. Hat der Co-Tank ihn per Herausforderung
+übernommen, ohne dass dein Geteiltes Leid ihn bewegt hat, holt RSR ihn nicht zurück: Das war ein geplanter Wechsel.
+
+**Kein Zurückholen, solange du in Gefahr bist:** Die automatische Herausforderung nimmt einem Co-Tank den Gegner ab,
+der unter `HealthForDyingTanks` fällt (`ObjectHelper.CanProvoke`). Solange du selbst nach einem Tankbuster in Gefahr
+bist, tut sie das nicht mehr. Ohne diese Sperre hätte sie dir den Gegner zurückgeholt, während dein Debuff noch
+läuft – genau das, was seine Vorgabe ausschließt. Diese Sperre gilt unabhängig von der Option, weil sie eine
+bestehende Regel an seine Vorgabe bindet.
 
 **Die Zielwahl:** unter den anderen Tanks der Gruppe die, die lebend, anvisierbar, in Reichweite sind, selbst keine
 Verwundbarkeit tragen und den Gegner nach der Übertragung behalten würden. Davon der, den die wenigsten Gegner
@@ -1013,8 +1042,9 @@ Leid sofort und festigt den Wechsel, wie es die Referenz vorsieht.
 
 ### Wechselwirkungen und Lagen
 
-- **Zwei RSR-Tanks:** Nur der Getroffene wirkt. Der Empfänger kann dir den Gegner nicht zurückgeben, solange du eine
-  Verwundbarkeit trägst – ein Tank mit Verwundbarkeit ist kein Empfänger.
+- **Zwei RSR-Tanks:** Nur der Getroffene wirkt. Der Empfänger gibt dir den Gegner nicht zurück, solange du eine
+  Verwundbarkeit trägst oder eine Wiederholung nicht überlebst – ein Tank in Gefahr ist kein Empfänger. Sind beide
+  in Gefahr, wirkt keiner, und keiner provoziert.
 - **Haltung:** RSR schaltet die Haltung nur ein, wenn kein anderer Tank sie trägt. Ein RSR-Co-Tank liegt daher
   meist weit unter der Hälfte, und die Regel hält. Das ist richtig: Ohne Haltung behielte er den Gegner nicht.
 - **Automatische Herausforderung** greift nur bei Gegnern auf Nicht-Tanks und kreuzt diese Regel nicht.
@@ -1028,14 +1058,20 @@ Leid sofort und festigt den Wechsel, wie es die Referenz vorsieht.
    ohnehin geschieht. Den Ausschlag gibt der ungeplante Fall: Tankbuster in Unterzahl der Abklingzeiten. Seine
    Kämpfe vom 01.10.2026 zeigen „Schramme" zweimal mit 85 %, beide Male ohne vorher gewählte Abwehr; die 30 bis
    39 % davor und danach kamen nach Verdammnis und Schutzwall. Dass beim 85-%-Treffer keine Minderung bereit war,
-   ist daraus geschlossen, nicht gemessen. Ob dort ein zweiter Tank in
-   der Gruppe war, zeigt das Protokoll nicht. Entkräftet, aber die Häufigkeit ist offen.
+   ist daraus geschlossen, nicht gemessen. Ob dort ein zweiter Tank in der Gruppe war, zeigt das Protokoll nicht. Entkräftet, aber die Häufigkeit ist offen.
 2. **Falsches Werkzeug, Herausforderung des Co-Tanks wirkt sicher.** Stimmt, aber die drückt der andere Spieler.
-   Die Gegenseite – RSR als Co-Tank provoziert, wenn der Haupttank in dieser Lage ist – ist nicht gebaut. Sie ist
-   als eigener Vorschlag in `TODO.md` erfasst.
+   Die Gegenseite gibt es zum Teil schon: Fällt der Co-Tank unter `HealthForDyingTanks`, provoziert RSR. Fehlt
+   noch der Fall, dass er nach einem Tankbuster eine Verwundbarkeit trägt, aber nicht tief steht. Das steht als
+   eigener Eintrag in `TODO.md`.
 3. **Ausgeliefert, und nichts ändert sich.** Bei Spielern, deren Co-Tank ohne Haltung spielt, wirkt die Regel nie.
    Das ist so gebaut, weil sie dort nichts bewirken könnte. Damit das von außen unterscheidbar bleibt, schreibt das
    Protokoll je Tankbuster einen Grund. Eine falsche Prognose zieht die Regel selbst nach (unten).
+4. **Das Zurückholen ist unnötig, der Co-Tank kommt zurecht.** In geplanten Wechseln liegt der Zeitpunkt des
+   Rückwechsels im Ablauf des Kampfes, und RSR kann ihn vorziehen; der Gegner dreht dann einmal mehr. Das steht
+   gegen seine Vorgabe nur scheinbar: Sie bestimmt, *wann frühestens* zurückgeholt wird, und mit bereiter
+   Unverwundbarkeit gilt der Haupttank nach seiner Präzisierung wieder als gesichert. Nicht widerlegt bleibt, dass die Unverwundbarkeit nur
+   unter der Sterbe-Schwelle zündet (Eintrag in `TODO.md`). Gegen einen tödlichen Treffer von oben sichert sie also
+   nicht.
 
 ### Messmittel und Nachsteuerung
 
@@ -1045,7 +1081,11 @@ die Quelle, Feindseligkeit zu gering, Geteiltes Leid im Abklingen). Wählt sie, 
 Shirk" mit den Feindseligkeitswerten; ist die Aktion ausgeführt, folgt die „used"-Zeile. Den Ausgang misst der erste
 Auto-Angriff der Quelle danach: „moved the enemy" oder „did not move". Im zweiten Fall verlangt jeder weitere
 Wechsel in diesem Kampf mehr als das Verhältnis, das versagt hat. Gezählt wird erst ab der Ausführung, eine Wahl
-ohne Ausführung verschiebt nichts.
+ohne Ausführung verschiebt nichts. Den Erfolg zeigt schon das Ziel des Gegners: Wechselt es auf den Empfänger, gilt
+der Wechsel sofort als gelungen. Wartet das Zurückholen, steht einmal je Wechsel „tank swap back waits: …"
+(Unverwundbarkeit noch nicht bereit, Herausforderung im Abklingen oder außer Reichweite); holt RSR zurück, steht
+„tank swap back … -> Provoke". Ob die Geste des Co-Tanks (Geteiltes Leid auf dich) als eigener Effektsatz bei dir
+ankommt, ist nicht belegt; fehlt die Zeile, ändert das nichts an der Entscheidung.
 
 **Prüfgrad:** statisch, Prüfskripte, Compile über die CI; im Spiel nicht beobachtet.
 

@@ -125,8 +125,13 @@ in the party, RSR Shirks that tank after a tankbuster on you if both hold:
 - your invulnerability is not ready.
 
 It does this only when the party's enmity on the boss shows the co-tank will take it over. Shirk moves a quarter
-of your enmity, so below half of yours nothing would change. With several candidates it picks the tank the
-fewest enemies are attacking, then the one with the most HP. `DefenseTrace.log` names every tankbuster on you,
+of your enmity, so below half of yours nothing would change. A co-tank who is in danger himself - a
+vulnerability, or too low to survive the same buster - gets nothing, even if he just Shirked to you. With several
+candidates it picks the tank the fewest enemies are attacking, then the one with the most HP.
+
+Once your debuff has run out, you are above that line again and your invulnerability is ready, RSR provokes the
+boss back. While you are still in danger, the automatic Provoke no longer takes the boss off a co-tank who drops
+low. `DefenseTrace.log` names every tankbuster on you,
 why a swap held, and whether the boss moved; a Shirk that did not move it raises the bar for the rest of the
 fight.
 

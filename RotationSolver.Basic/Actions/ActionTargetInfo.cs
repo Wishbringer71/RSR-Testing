@@ -3158,11 +3158,12 @@ public struct ActionTargetInfo(IBaseAction action)
 			return null;
 		}
 
-		// The tank a Shirk would hand a tankbuster's source to (TankSwapWatch), if it is among this
-		// action's candidates - in range and targetable for it.
+		// A tank swap (TankSwapWatch): for Shirk the tank to hand the tankbuster's source to, for
+		// Provoke that source when it is taken back - in either case only if it is among this action's
+		// candidates, in range and targetable for it.
 		IBattleChara? FindTankSwapTarget()
 		{
-			var swap = TankSwapWatch.Target;
+			var swap = isFriendly ? TankSwapWatch.Target : TankSwapWatch.ReclaimSource;
 			if (battleChara != null && swap != null)
 			{
 				foreach (var o in battleChara)

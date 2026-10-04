@@ -235,18 +235,21 @@ Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A17
 (`EmergencyAbility` der vier Tanks, PLD in `PLD_Reborn`). Ein Tankbuster, der von darüber tötet – unter einer
 Verwundbarkeit, oder ein Treffer von 85 % ohne bereite Minderung wie „Schramme" am 01.10.2026 –, trifft auf eine
 bereite, aber ungenutzte Unverwundbarkeit. Der Tankwechsel nach einem Tankbuster hält, solange sie bereit ist (seine
-Bedingung), und verlässt sich damit auf eine Rettung, die nur reaktiv kommt. **Offen:** voller Loop zu einer
+Bedingung, bestätigt 04.10.2026: „wenn unverwundbarkeit bereit ist, dann braucht aggro nicht gewechselt werden"),
+und das Zurückholen wartet auf sie (seine Präzisierung). Beides verlässt sich damit auf eine Rettung, die nur
+reaktiv kommt. **Offen:** voller Loop zu einer
 vorausgehenden Auslösung (Vorhersage über BMR, Cast oder Marker auf dir, gemessener Anteil des letzten Tankbusters;
 Living Dead gesondert wegen Walking Dead).
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 
-### Tankwechsel von der anderen Seite: Herausforderung, wenn der Haupttank in Lebensgefahr ist · N
+### Tankwechsel von der anderen Seite: Herausforderung, wenn der Haupttank eine Verwundbarkeit trägt · N
 
-**Meine Ableitung, nicht seine Vorgabe (A255):** Geteiltes Leid bewegt den Gegner nur, wenn der Co-Tank schon über
-der Hälfte der Feindseligkeit liegt. Herausforderung des Co-Tanks wirkt immer. Ist RSR der Co-Tank, könnte es
-provozieren, wenn der Haupttank nach einem Tankbuster eine Verwundbarkeit trägt oder eine Wiederholung nicht
-überlebt und keine Unverwundbarkeit bereit hat. Dafür braucht es dieselbe Erkennung für ein anderes Gruppenmitglied
+**Meine Ableitung, nicht seine Vorgabe (A255, A256):** Geteiltes Leid bewegt den Gegner nur, wenn der Co-Tank schon
+über der Hälfte der Feindseligkeit liegt. Herausforderung des Co-Tanks wirkt immer. Teilweise besteht diese Seite
+schon: Fällt der Haupttank unter `HealthForDyingTanks`, provoziert RSR (`ObjectHelper.CanProvoke`, seit A256 nicht
+mehr, solange der Spieler selbst in Gefahr ist). Fehlt der Fall, dass der Haupttank nach einem Tankbuster eine
+Verwundbarkeit trägt oder eine Wiederholung nicht überlebt, ohne tief zu stehen. Dafür braucht es dieselbe Erkennung für ein anderes Gruppenmitglied
 (Effektsatz auf ihn, nicht auf dich). **Offen:** voller Loop, dann ihm vorlegen – die Lehre aus `451d9e90` (der
 Co-Tank-Provoke zog den Boss von einem Tank unter Unverwundbarkeit) gehört in die Bedingungen.
 

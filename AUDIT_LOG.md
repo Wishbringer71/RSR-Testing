@@ -5388,6 +5388,35 @@ geprüft.
 
 **Prüfgrad:** statisch, alle Prüfskripte und Generatoren, Compile über die CI. Im Spiel nicht beobachtet; ob der
 Wechsel greift, schreibt das Protokoll selbst.
+
+### A256 · Tankwechsel: der andere Tank in Gefahr, und das Zurückholen (04.10.2026)
+
+- *Seine Angaben, eingeordnet (Wortlaut in Konzept 09):*
+  - Unverwundbarkeit bereit → kein Wechsel: Präzisierung, so gebaut seit A255.
+  - Der andere Tank kann selbst in Gefahr sein und dir Geteiltes Leid gegeben haben: Hinweis.
+  - Zurückprovozieren erst nach Debuff und kritischem Zustand: Vorgabe.
+  - „am besten, wenn auch unverwundbarkeit wieder bereitsteht": Präzisierung dazu.
+- *Research:*
+  - Die automatische Herausforderung nimmt einem Co-Tank unter `HealthForDyingTanks` den Gegner ab
+    (`ObjectHelper.CanProvoke`, eingeführt mit 451d9e90). Sie hätte dir nach einem Wechsel den Gegner
+    zurückgeholt, während dein Debuff noch läuft – ein Verstoß gegen die Vorgabe.
+  - Die Abklingzeiten anderer Spieler liest RSR nicht; ihre LP, Schilde und Status schon.
+- *Gebaut:*
+  - Ein Empfänger in Gefahr ist ausgeschlossen: Verwundbarkeit, oder LP mit Schild nicht über dem härtesten Anteil
+    dieses Tankbusters, gerechnet auf seine LP.
+  - `TankSwapWatch.PlayerInDanger` sperrt die Rettungs-Herausforderung, unabhängig von der Option.
+  - Nach einem Wechsel, der den Gegner bewegt hat: `ReclaimSource` und `TankSwapBackAbility` provozieren zurück,
+    sobald die Gefahr vorbei und die Unverwundbarkeit bereit ist. Wo RSR sie nicht einsetzen würde, wird nicht
+    gewartet.
+  - Der Erfolg eines Wechsels zählt jetzt schon, wenn das Ziel des Gegners auf den Empfänger springt.
+  - Protokollzeilen für das Warten und das Zurückholen; eine Zeile, wenn ein Gruppenmitglied dir Geteiltes Leid
+    gibt.
+- *Antithese gegen das Zurückholen:* Es zieht einen geplanten Rückwechsel vor. Das steht nicht gegen seine Vorgabe,
+  die nur den frühesten Zeitpunkt bestimmt. Offen bleibt, dass die Unverwundbarkeit nur reaktiv zündet (`TODO.md`).
+- *Nicht belegt:* ob Geteiltes Leid eines anderen Spielers als Effektsatz mit dir als Ziel ankommt. Die Zeile dient
+  nur dem Protokoll.
+
+**Prüfgrad:** statisch, alle Prüfskripte und Generatoren, Compile über die CI. Im Spiel nicht beobachtet.
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

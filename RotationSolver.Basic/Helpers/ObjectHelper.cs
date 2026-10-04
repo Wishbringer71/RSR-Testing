@@ -119,11 +119,15 @@ public static class ObjectHelper
 					// The co-tank is at the HP the user already set for a tank in danger, and is still
 					// being attacked - take it back, unless they are riding an invulnerability (Superbolide
 					// leaves them at 1 HP on purpose). No distance gate: any healthy tank should react.
+					// Not while the player himself is in danger after a tankbuster (TankSwapWatch): the
+					// owner's rule of 04.10.2026 - the enemy comes back only once his debuff and his
+					// critical state are over.
 					if (targetObject.IsJobCategory(JobRole.Tank)
 						&& !targetObject.IsDead
 						&& targetObject.GameObjectId != Player.Object?.GameObjectId
 						&& targetObject.NoNeedHealingInvuln()
-						&& targetObject.GetEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f)
+						&& targetObject.GetEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f
+						&& !TankSwapWatch.PlayerInDanger)
 					{
 						return true;
 					}

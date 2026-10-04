@@ -90,7 +90,8 @@ public partial class CustomRotation
 		var role = DataCenter.Role;
 
 		// After the emergency abilities, so an invulnerability that fires at its HP threshold goes first.
-		if (role == JobRole.Tank && Service.Config.ShirkToSwapAfterTankbuster && TankSwapAbility(out act))
+		if (role == JobRole.Tank && Service.Config.ShirkToSwapAfterTankbuster
+			&& (TankSwapAbility(out act) || TankSwapBackAbility(out act)))
 		{
 			return true;
 		}
@@ -1017,9 +1018,7 @@ public partial class CustomRotation
 			return false;
 		}
 
-		var invulnerability = Invulnerability;
-		if (invulnerability != null && invulnerability.Config.IsEnabled && invulnerability.EnoughLevel
-			&& invulnerability.Cooldown.HasOneCharge && HealthForDyingTanks > 0f)
+		if (InvulnerabilityUsable(out var invulnerability) && invulnerability!.Cooldown.HasOneCharge)
 		{
 			TankSwapWatch.TraceHeld($"{invulnerability.Name} is ready");
 			return false;
@@ -1052,6 +1051,60 @@ public partial class CustomRotation
 
 		TankSwapWatch.PlanSwapShirk(TankSwapWatch.DangerSource, receiver, TankSwapWatch.Ratio);
 		DefenseTrace.Decision($"tank swap ({danger}; {TankSwapWatch.Detail})", act);
+		return true;
+	}
+
+	/// <summary>
+	/// Whether RSR would use the tank's invulnerability at all: it exists for the job, is learned at the
+	/// current level, enabled, and its threshold (HealthForDyingTanks) is above zero.
+	/// </summary>
+	private bool InvulnerabilityUsable(out IBaseAction? invulnerability)
+	{
+		invulnerability = Invulnerability;
+		return invulnerability != null && invulnerability.Config.IsEnabled && invulnerability.EnoughLevel
+			&& HealthForDyingTanks > 0f;
+	}
+
+	/// <summary>
+	/// The other half of the swap (the owner's rule of 04.10.2026): the enemy the swap handed to the
+	/// co-tank is provoked back only once the debuff and the critical state are over - and, his
+	/// precision, once the invulnerability is ready again. Where RSR would not use an invulnerability at
+	/// all (not learned at this level, disabled, threshold zero) there is nothing to wait for.
+	/// </summary>
+	private bool TankSwapBackAbility(out IAction? act)
+	{
+		act = null;
+		var source = TankSwapWatch.ReclaimSource;
+		if (source == null)
+		{
+			return false;
+		}
+
+		if (InvulnerabilityUsable(out var invulnerability) && !invulnerability!.Cooldown.HasOneCharge)
+		{
+			TankSwapWatch.TraceReclaimHeld($"{invulnerability.Name} is not ready yet");
+			return false;
+		}
+
+		var previous = IBaseAction.TargetOverride;
+		IBaseAction.TargetOverride = TargetType.TankSwap;
+		try
+		{
+			if (!ProvokePvE.CanUse(out act))
+			{
+				TankSwapWatch.TraceReclaimHeld(ProvokePvE.Cooldown.HasOneCharge
+					? $"Provoke cannot reach {source.Name.TextValue}"
+					: "Provoke is on cooldown");
+				act = null;
+				return false;
+			}
+		}
+		finally
+		{
+			IBaseAction.TargetOverride = previous;
+		}
+
+		DefenseTrace.Decision($"tank swap back (your debuff and danger are over) on {source.Name.TextValue}", act);
 		return true;
 	}
 }

@@ -51,6 +51,9 @@ internal static class TankSwapWatch
 	private static Buster? _last;
 	private static Pending? _planned;
 	private static Pending? _pending;
+	// A swap that moved the enemy, until the player has taken it back or it is gone.
+	private static Pending? _swappedAway;
+	private static DateTime _reclaimHeldWritten = DateTime.MinValue;
 	private static readonly Dictionary<uint, float> _hardestShare = [];
 	// The after-transfer ratio receiver/player that last failed to move the source; a swap needs more.
 	private static float _failedRatio = 1f;
@@ -65,6 +68,19 @@ internal static class TankSwapWatch
 
 	/// <summary>The receiver's figures for the trace line, or why there is none.</summary>
 	public static string Detail { get; private set; } = string.Empty;
+
+	/// <summary>
+	/// Whether the player is in danger after a tankbuster right now - the state in which nothing may
+	/// take the enemy back to him (the owner's rule of 04.10.2026: provoke back only once the debuff
+	/// and the critical state are over).
+	/// </summary>
+	public static bool PlayerInDanger { get; private set; }
+
+	/// <summary>
+	/// The enemy a swap handed to the co-tank, once the player is out of danger again; null otherwise.
+	/// Whether his invulnerability is back is the consumer's question.
+	/// </summary>
+	public static IBattleChara? ReclaimSource { get; private set; }
 
 	/// <summary>The source of the last tankbuster on the player while the danger holds.</summary>
 	public static ulong DangerSource => Danger.Length > 0 && _last != null ? _last.Source : 0;
@@ -128,7 +144,7 @@ internal static class TankSwapWatch
 			_pending = null;
 			if (target == pending.Receiver)
 			{
-				DefenseTrace.Line($"tank swap moved the enemy: it now attacks {pending.ReceiverName}");
+				Moved(pending);
 				return;
 			}
 
@@ -142,6 +158,36 @@ internal static class TankSwapWatch
 				DefenseTrace.Line($"tank swap did not move the enemy: it still attacks you; the next one needs more than"
 					+ $" {_failedRatio:F2} of your enmity after the transfer");
 			}
+		}
+	}
+
+	private static void Moved(Pending pending)
+	{
+		_swappedAway = pending;
+		DefenseTrace.Line($"tank swap moved the enemy: it now attacks {pending.ReceiverName}");
+	}
+
+	/// <summary>
+	/// A party member's Shirk reached the player. Written to the trace only: whether to hand the enemy
+	/// back is decided by that member's measured danger, which covers the case without this signal.
+	/// </summary>
+	public static void RecordShirkOnPlayer(string from)
+	{
+		DefenseTrace.Line($"{from} shirked to you");
+	}
+
+	/// <summary>Writes, once per swap, why the enemy is not yet taken back.</summary>
+	public static void TraceReclaimHeld(string why)
+	{
+		lock (_gate)
+		{
+			if (_swappedAway == null || _last == null || _reclaimHeldWritten == _last.At)
+			{
+				return;
+			}
+
+			_reclaimHeldWritten = _last.At;
+			DefenseTrace.Line($"tank swap back waits: {why}");
 		}
 	}
 
@@ -193,12 +239,15 @@ internal static class TankSwapWatch
 			Target = null;
 			Danger = string.Empty;
 			Detail = string.Empty;
+			PlayerInDanger = false;
+			ReclaimSource = null;
 
 			if (!DataCenter.InCombat)
 			{
 				_last = null;
 				_planned = null;
 				_pending = null;
+				_swappedAway = null;
 				_hardestShare.Clear();
 				_failedRatio = 1f;
 				return;
@@ -208,6 +257,14 @@ internal static class TankSwapWatch
 			if (player == null || _last == null || player.IsDead)
 			{
 				return;
+			}
+
+			// The enemy's own target shows a moved swap at once; the auto-attack check is the fallback.
+			if (_pending is { } open && Svc.Objects.SearchById(open.Source) is IBattleChara swung
+				&& swung.TargetObjectId == open.Receiver)
+			{
+				_pending = null;
+				Moved(open);
 			}
 
 			if (Svc.Objects.SearchById(_last.Source) is not IBattleChara source || source.IsDead || !source.IsTargetable)
@@ -222,8 +279,10 @@ internal static class TankSwapWatch
 			}
 
 			Danger = DangerOf(player);
-			if (Danger.Length == 0)
+			PlayerInDanger = Danger.Length > 0;
+			if (!PlayerInDanger)
 			{
+				UpdateReclaim(player);
 				return;
 			}
 
@@ -292,6 +351,14 @@ internal static class TankSwapWatch
 					continue;
 				}
 
+				// The owner's case of 04.10.2026: the other tank may be the one in danger - he may even
+				// have shirked to you for it. Handing him the enemy back would trade one death for another.
+				if (member.CurrentHp + member.GetObjectShield() <= HardestShare() * Math.Max(1u, member.MaxHp))
+				{
+					why = $"{member.Name.TextValue} would not survive a repeat either";
+					continue;
+				}
+
 				var theirs = enmity.TryGetValue(member.EntityId, out var value) ? value : 0f;
 				var top = 0f;
 				foreach (var pair in enmity)
@@ -346,6 +413,34 @@ internal static class TankSwapWatch
 	/// <summary>The after-transfer ratio of the current <see cref="Target"/>.</summary>
 	public static float Ratio { get; private set; }
 
+	private static void UpdateReclaim(IBattleChara player)
+	{
+		if (_swappedAway is not { } away)
+		{
+			return;
+		}
+
+		if (Svc.Objects.SearchById(away.Source) is not IBattleChara source || source.IsDead || !source.IsTargetable)
+		{
+			_swappedAway = null;
+			return;
+		}
+
+		if (source.TargetObjectId == player.GameObjectId)
+		{
+			_swappedAway = null;
+			return;
+		}
+
+		ReclaimSource = source;
+	}
+
+	private static float HardestShare()
+	{
+		var last = _last!;
+		return _hardestShare.TryGetValue(last.ActionId, out var share) ? share : last.Share;
+	}
+
 	private static string DangerOf(IBattleChara player)
 	{
 		var last = _last!;
@@ -358,7 +453,7 @@ internal static class TankSwapWatch
 			}
 		}
 
-		var hardest = _hardestShare.TryGetValue(last.ActionId, out var share) ? share : last.Share;
+		var hardest = HardestShare();
 		var maxHp = Math.Max(1u, player.MaxHp);
 		var standing = player.CurrentHp + player.GetObjectShield();
 		if (standing <= hardest * maxHp)
