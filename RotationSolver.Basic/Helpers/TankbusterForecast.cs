@@ -41,6 +41,10 @@ internal static class TankbusterForecast
 	}
 
 	private static readonly List<Cast> _casts = [];
+
+	// The player's own actions as the server confirmed them: action, target, and when (monotonic, so a
+	// clock change does not stretch a window). Kept while the action's effect can still last.
+	private static readonly List<(uint ActionId, ulong Target, long Tick)> _own = [];
 	private static readonly HashSet<(ulong Source, uint ActionId, float Total)> _written = [];
 
 	/// <summary>Every known tankbuster now being cast at the player, the soonest first.</summary>
@@ -67,6 +71,53 @@ internal static class TankbusterForecast
 		return player != null && player.InvulnerableThrough(seconds);
 	}
 
+	/// <summary>
+	/// An action of the player went out, as the effect handler saw it. Called on the game thread.
+	/// </summary>
+	public static void RecordOwnAction(uint actionId, ulong targetId)
+	{
+		var now = Environment.TickCount64;
+		_ = _own.RemoveAll(e => SecondsSince(e.Tick, now) > DefensiveValues.DurationOf(e.ActionId));
+		if (DefensiveValues.DurationOf(actionId) > 0f)
+		{
+			_own.Add((actionId, targetId, now));
+		}
+	}
+
+	/// <summary>
+	/// Seconds the player's own <paramref name="actionId"/>, gone out and aimed at him, still lasts by its
+	/// duration from that moment - also before its status is on him; zero if it did not go out within its
+	/// duration. <paramref name="anyTarget"/>: an effect around the player that lands on enemies (Reprisal),
+	/// whose recorded target is not him.
+	/// </summary>
+	public static float OwnCoverLeft(uint actionId, bool anyTarget)
+	{
+		var player = Player.Object;
+		var lasts = DefensiveValues.DurationOf(actionId);
+		if (player == null || lasts <= 0f)
+		{
+			return 0f;
+		}
+
+		var now = Environment.TickCount64;
+		var best = 0f;
+		foreach (var (id, target, tick) in _own)
+		{
+			if (id == actionId && (anyTarget || target == player.GameObjectId))
+			{
+				best = Math.Max(best, lasts - SecondsSince(tick, now));
+			}
+		}
+
+		return best;
+	}
+
+	/// <summary>Seconds between two readings of <see cref="Environment.TickCount64"/>.</summary>
+	internal static float SecondsSince(long tick, long now)
+	{
+		return (float)TimeSpan.FromMilliseconds(now - tick).TotalSeconds;
+	}
+
 	/// <summary>Recomputes the figures. Called once per framework cycle, on the game thread.</summary>
 	public static void Update()
 	{
@@ -78,6 +129,7 @@ internal static class TankbusterForecast
 		if (!DataCenter.InCombat || player == null || player.IsDead || DataCenter.Role != JobRole.Tank)
 		{
 			_written.Clear();
+			_own.Clear();
 			return;
 		}
 

@@ -1160,10 +1160,11 @@ Für den frühesten gemessenen Tankbuster, der auf dich gewirkt wird:
 3. **Was du noch tun kannst:** jede eigene Minderung, die erlernt, aktiviert und nach ihren eigenen Prüfungen
    nutzbar ist (Ressourcen eingeschlossen), bis einen GCD vor dem Einschlag abgeklungen ist, mindestens einen GCD
    wirkt, nach Wirktext gegen diese Schadensart mindert oder eine Barriere legt und beim Einschlag nicht schon steht.
-   Ein Knopf zählt einmal (Rachsucht/Verdammnis, Urinstinkt/Urimpuls). Eine Minderung, die der Plan selbst eben
-   gedrückt hat und deren Status noch nicht liegt, zählt schon als stehend – nur seine eigenen Drücke, die auf dich
-   gingen; eine Abklingzeit sagt weder, wer drückte, noch auf wen (The Blackest Night auf dem Co-Tank), und eine
-   geteilte (Rachsucht/Verdammnis) zählte doppelt. **Nicht** dabei sind Gruppenwerkzeuge – Barriere oder
+   Ein Knopf zählt einmal (Rachsucht/Verdammnis, Urinstinkt/Urimpuls). Eine eigene Minderung, die nach dem
+   Effektpaket des Servers auf dich hinausging und nach ihrer Wirkdauer bis zum Einschlag hält, zählt als stehend,
+   auch bevor ihr Status liegt (`TankbusterForecast.OwnCoverLeft`, aus dem Effekt-Handler mit Ziel und Zeitpunkt).
+   Weder ein `CanUse`-Treffer noch eine Abklingzeit taugt dafür: Der erste ist noch kein Druck, die zweite sagt weder,
+   wer drückte, noch auf wen (The Blackest Night auf dem Co-Tank), und Rachsucht/Verdammnis teilen sie. **Nicht** dabei sind Gruppenwerkzeuge – Barriere oder
    Minderung über die Gruppe (Abschütteln, Divine Veil, Dark Missionary, Heart of Light): Sie gehören der
    Flächenabwehr, und Abschütteln hebt Verdammnis und Urimpuls des Kriegers selbst auf. Reflexion, ein Debuff auf dem
    Gegner, ist dabei.
@@ -1178,8 +1179,9 @@ Für den frühesten gemessenen Tankbuster, der auf dich gewirkt wird:
    Nach den Zahlen überlebst du dann nicht, aber die Zahlen sind ein Höchstwert, und vielleicht legt ein anderer noch
    einen Debuff oder Schild.
 
-Steht schon eine Unverwundbarkeit über dem Einschlag – vom Plan gezogen oder an ihrer Sterbe-Schwelle – oder wurde sie
-eben gedrückt und ihr Status liegt noch nicht, ist der Plan „die Unverwundbarkeit, nichts sonst".
+Hält schon eine Unverwundbarkeit über den Einschlag – vom Plan gezogen oder an ihrer Sterbe-Schwelle, ihr Status
+liegt oder der Server hat den Druck bestätigt und ihre Wirkdauer reicht –, ist der Plan „die Unverwundbarkeit, nichts
+sonst".
 
 **Ohne Risiko, wie er es für jedes Mittel unterhalb der Unverwundbarkeit verlangt:** Gerechnet wird mit dem höchsten
 je gemessenen Treffer, den LP jetzt und nur dem, was beim Einschlag noch steht. Eine Heilung, die bis dahin kommen
@@ -1202,22 +1204,24 @@ und zählen unter 1. mit.
 - **Ziel:** jeder geplante Druck geht auf dich (`TargetType.Self`); The Blackest Night suchte sich sonst ein eigenes Ziel.
 - **Ein abgelehnter Druck:** Während einer Animationssperre lehnt `CanUse` jede Fähigkeit ab; das ist keine Antwort,
   der Druck wird im nächsten Durchlauf neu versucht. Lehnt es außerhalb einer Sperre ab – Reflexion außer Reichweite,
-  zu wenig MP, eine Prüfung der Rotation, die Unverwundbarkeit verweigert –, rechnet der Plan einen GCD lang ohne
-  die Aktion und versucht sie danach wieder; ist es die Unverwundbarkeit, ist der Plan für diesen GCD „alles".
-  Abgelehntes und Gedrücktes gilt nur für das laufende Wirken; ein späteres derselben Aktion beginnt neu.
+  zu wenig MP, eine Prüfung der Rotation –, rechnet der Plan einen GCD lang ohne die Minderung und versucht sie danach
+  wieder. Eine verweigerte Unverwundbarkeit bleibt für den Rest des Wirkens draußen: Der Plan ist dann „alles", und
+  auf „alles" folgt nie noch die Unverwundbarkeit. Ablehnungen gelten je Wirken; ein späteres derselben Aktion
+  beginnt neu.
 
 ### Das Zurückhalten
 
 Solange ein Plan läuft und sein Tankbuster der einzige ist, der auf dich zukommt – kein zweites Wirken auf dich,
-gemessen oder nicht, und keine BossModReborn-Vorhersage vor ihm, die nicht ausdrücklich einen anderen trifft; ein
-Marker neben dem Wirken gilt als dessen –, wird
+gemessen oder nicht, und keine BossModReborn-Vorhersage vor ihm (sie nennt ihr Ziel nur für den nächsten Eintrag,
+also zählt jede); ein Marker neben dem Wirken gilt als dessen –, wird
 jede Aktion mit Wirktextwert (`DefensiveValues`) abgelehnt, die auf dich selbst zielt und nicht im Plan steht – eigene Minderung, eigene Barriere, Reflexion um dich herum –, aus jedem Pfad der Rotation:
 Einzelabwehr, Notfall, allgemeine Fähigkeiten (der Krieger wählt Urimpuls auch nach der Gesundheitsprognose, der
 Paladin Schiltron außerhalb der Abwehr).
 - **Ganz** (auch nichts aus dem Plan), solange Heiliger Boden oder Meteoritenfall über den Einschlag hinaus liegen,
   oder die Unverwundbarkeit der Plan ist und über den Einschlag hält, eben gedrückt wurde oder noch bereit ist und der
-  Einschlag mehr als einen GCD entfernt ist. Hält eine stehende Unverwundbarkeit über jedes Wirken, das auf dich
-  zukommt, gilt das auch neben einem zweiten Wirken: nie Minderung zusätzlich zur Unverwundbarkeit.
+  Einschlag mehr als einen GCD entfernt ist. Hält eine Unverwundbarkeit über jedes Wirken, das auf dich zukommt,
+  gilt das auch neben einem zweiten Wirken: nie Minderung zusätzlich zur Unverwundbarkeit. Deckt sie nur das erste,
+  hält nichts zurück – die Minderung geht dann für das zweite, nicht zusätzlich zum ersten.
 - **Außer dem Plan,** solange ein überlebbarer Plan läuft.
 - **Gar nicht,** wenn nichts reicht und die Unverwundbarkeit nicht kommt, und im letzten GCD vor dem Einschlag, wenn
   eine geplante Minderung bis dahin nicht hinausging – dann ist der Rückfall alles.

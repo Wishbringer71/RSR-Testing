@@ -604,6 +604,7 @@ public static class Watcher
 			// Record
 			//PluginLog.Debug($"ActionFromSelf: ActionType is {set.Header.ActionType}.");
 			DataCenter.AddActionRec(action!.Value);
+			TankbusterForecast.RecordOwnAction(action.Value.RowId, tar?.GameObjectId ?? 0);
 
 			// The trace writes what the defence chose; this line says that it went out.
 			DefenseTrace.Executed(action.Value.RowId, action.Value.Name.ExtractText());

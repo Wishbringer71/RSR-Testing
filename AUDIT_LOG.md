@@ -5671,6 +5671,22 @@ Wechsel greift, schreibt das Protokoll selbst.
      und kein Aufrufer zwischen `GCD()` und `Ability()` liegt. Ein künftiger Aufrufer dort muss ihn selbst
      zurücksetzen.
   10. „Göttlicher Schleier" stand unbelegt im Konzept. Ersetzt durch „Divine Veil".
+- *Fünftes Code-Review (4a1b75582..9247a7d10), zehn Punkte, mehrere aus meinen Fixes der vierten Runde:*
+  1. „Gedrückt" wurde beim `CanUse`-Treffer vermerkt, nicht bei der Ausführung; die geplante Minderung fiel dann aus
+     dem Plan und wurde gesperrt, ohne je zu fallen. 2. `JustUsedAfter` misst das laufende GCD-Fenster, nicht die
+     Zeit seit dem Druck. 4. Ein zweites Wirken öffnete die Lücke zwischen Druck und Status. 6. Ein Wechsel des
+     frühesten Wirkens löschte das Gedrückte. 8. `DateTime.Now` springt bei der Zeitumstellung.
+     Gemeinsame Ursache: Zeitfenster als Ersatz für eine Tatsache. Behoben an der Wurzel: Der Effekt-Handler führt
+     die eigenen Aktionen mit Ziel und monotonem Zeitpunkt (`TankbusterForecast.RecordOwnAction`); eine Minderung oder
+     Unverwundbarkeit deckt den Einschlag, wenn ihre Wirkdauer ab der bestätigten Ausführung über ihn reicht. Kein
+     Fenster mehr, keine Löschung beim Wechsel.
+  3. Eine verweigerte Unverwundbarkeit kam nach einem GCD „alles" doch noch. Behoben: Sie bleibt für das Wirken
+     draußen; Minderungen weiter je GCD.
+  5. `BMRTankbusterHitsPlayer` gilt nur für den nächsten Eintrag. Zurückgenommen: jede Vorhersage vor dem Wirken
+     öffnet.
+  7. Kommentare widersprachen dem Code (Ablehnungsdauer, Fenster). Mit dem Umbau neu gefasst.
+  9. Doppelte Zeitprüfung, überflüssiger Zweig. Mit dem Umbau eine Stelle (`SecondsSince`), Zweig entfernt.
+  10. Eine dauerhafte Ablehnung schrieb je GCD eine Zeile. Behoben: eine Zeile je Wirken und Aktion.
 - *Seine Präzisierung zu „alles" (während der dritten Runde):* alles nur, wenn die Unverwundbarkeit nicht verfügbar ist
   und alle Minderungen zusammen nicht reichen – nie die Unverwundbarkeit plus Minderungen. So gebaut; Befund 1 war der
   Fehler genau dagegen.
