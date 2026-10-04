@@ -23,6 +23,14 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Added to RotationSolver.Basic: `CustomRotation.Invulnerability`
+
+`protected virtual IBaseAction? Invulnerability`, null by default; the four tank base rotations return
+Hallowed Ground, Holmgang, Living Dead and Superbolide. The tank-swap rule reads it to know whether the
+invulnerability could still save the player. A derived tank rotation built on its job's base class inherits
+the right value; one that derives from `CustomRotation` directly can override it. `TargetType` gains
+`TankSwap` at the end, so existing ordinals are unchanged.
+
 ### Removed upstream in RotationSolver.Basic: the cooldown window and the package
 
 Both came with upstream's UI rework (merged into this fork on 04.10.2026); the fork passes them on

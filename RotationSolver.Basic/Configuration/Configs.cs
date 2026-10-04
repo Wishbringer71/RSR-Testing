@@ -818,6 +818,11 @@ internal partial class Configs : IPluginConfiguration
 		Parent = nameof(UseAbility), PvEFilter = JobFilterType.Tank)]
 	private static readonly bool _autoProvokeForTank = true;
 
+	[ConditionBool, UI("Shirk the co-tank after a tankbuster that leaves you in danger",
+		Description = "With another tank in the party: after a tankbuster on you, if it left you with a vulnerability debuff or so low that a repeat of the hardest one measured would kill you, and your invulnerability is not ready, Shirk goes to the other tank - but only when the party's enmity on the enemy shows it will then attack that tank, because below that Shirk moves nothing. With several, the one fewest enemies are attacking, then the one with most HP.\nIn a fight: the next hit goes to the co-tank instead of killing you. Off: you keep the enemy unless your co-tank provokes it.",
+		Parent = nameof(UseAbility), PvEFilter = JobFilterType.Tank)]
+	private static readonly bool _shirkToSwapAfterTankbuster = true;
+
 	/// <markdown file="Auto" name="Auto True North" section="Healing Usage and Control" subsection="RotationSolver.Basic.Configuration.Configs._useAbility">
 	/// Whether to cast True North when playing as a melee DPS when you do not have the right
 	/// positional on the enemy.

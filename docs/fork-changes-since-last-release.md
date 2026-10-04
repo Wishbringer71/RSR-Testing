@@ -115,3 +115,19 @@ saved before keeps its value: switch the setting on under Extra if it shows off.
 goes on the tank as they close in on a group and is renewed whenever it runs out or breaks, for as long as
 the pull lasts, never below the MP for Egeiro. In a large pull, where the barrier breaks within a few hits,
 that takes most of the sage's GCDs.
+
+## Tanks: Shirk hands the boss to your co-tank when the next tankbuster would kill you
+
+New setting `Shirk the co-tank after a tankbuster that leaves you in danger`, on by default. With another tank
+in the party, RSR Shirks that tank after a tankbuster on you if both hold:
+- the buster left you with a vulnerability debuff, or so low that a repeat of the hardest buster measured would
+  kill you;
+- your invulnerability is not ready.
+
+It does this only when the party's enmity on the boss shows the co-tank will take it over. Shirk moves a quarter
+of your enmity, so below half of yours nothing would change. With several candidates it picks the tank the
+fewest enemies are attacking, then the one with the most HP. `DefenseTrace.log` names every tankbuster on you,
+why a swap held, and whether the boss moved; a Shirk that did not move it raises the bar for the rest of the
+fight.
+
+The manual Shirk command no longer targets you yourself when you are the tank in stance.

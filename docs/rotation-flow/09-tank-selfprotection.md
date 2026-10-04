@@ -952,6 +952,103 @@ liefert die Kampfdaten, keine Regeln; ein Report von ihm würde zeigen, welche M
   - Mit „Heal ahead of incoming damage" aus bleibt die Pull-Regel von Kampfrausch wirksam; sie liest den Verlauf
     unabhängig davon.
 
+## Tankwechsel nach einem Tankbuster: Geteiltes Leid auf den anderen Tank
+
+**Sein Vorschlag (04.10.2026), als Option geprüft:** „bei inhalten mit mehr als einem tank (also keine instanzen
+mit wall to wall), wenn gerade ein tankbuster auf dich erfolgt ist und du danach kritische gesundheit hat, bzw. einen
+debuff, der einen zweiten tankbuster auf dich tödlich enden läßt (also auch solche spezialeffekte wie holmgang,
+totenerweckung etc. auf cooldown sind), dann geteiltes leid auf den tank casten, welcher am wenigsten aggro hat bzw.
+die höchste gesundheit."
+
+**Gebaut (A255), Option „Shirk the co-tank after a tankbuster that leaves you in danger", ab Werk an:**
+Erkennung in `TankSwapWatch`, Entscheidung in `CustomRotation.TankSwapAbility`, für alle Tanks an einer Stelle (Stufe
+Tanks; Geteiltes Leid ist eine Rollenaktion, für keinen Tank-Job gilt etwas anderes). Geteiltes Leid geht auf den
+anderen Tank, wenn alles zutrifft:
+
+1. **Ein Tankbuster hat dich getroffen.** Tankbuster heißt: die Aktion steht in der Tankbuster-Liste, oder ein
+   Tankbuster-Marker stand auf dir, der nicht auf der gelernten Liste der Marker ohne Treffer steht. Gemessen werden
+   der Schadensanteil an deinen maximalen LP und die Status, die genau dieser Treffer auf dich legt (Effektsatz).
+2. **Ein zweiter Treffer wäre tödlich.** Entweder trägst du noch eine Verwundbarkeit, die der Tankbuster gelegt hat
+   (`VulnerabilityUp`, `PhysicalVulnerabilityUp`, `MagicVulnerabilityUp` – erkannt an den Bezeichnern, die der
+   Generator aus dem englischen Statusblatt bildet, also unabhängig von der Client-Sprache). Oder LP und Schild zusammen liegen nicht über dem
+   härtesten Anteil, der für diese Aktion in diesem Kampf auf dir gemessen wurde („eine Wiederholung bringt dich um").
+   Das zweite Kriterium erlischt von selbst, sobald du über diese Linie geheilt bist.
+3. **Deine Unverwundbarkeit ist nicht verfügbar.** Verfügbar heißt hier: aktiviert, erlernt, abgeklungen und mit
+   einer Schwelle über 0 (`HealthForDyingTanks`). Unter einer laufenden Unverwundbarkeit, Living Dead oder Walking
+   Dead geschieht nichts.
+4. **Der andere Tank behält den Gegner danach.** Das ist gemessen, nicht angenommen; siehe Mechanik.
+
+**Die Zielwahl:** unter den anderen Tanks der Gruppe die, die lebend, anvisierbar, in Reichweite sind, selbst keine
+Verwundbarkeit tragen und den Gegner nach der Übertragung behalten würden. Davon der, den die wenigsten Gegner
+angreifen, bei Gleichstand der mit den meisten LP. „Am wenigsten Aggro" lese ich als „am wenigsten belastet" (meine
+Ableitung, nicht seine Regel): Wörtlich – die geringste Feindseligkeit auf diesem Gegner – wäre es genau der Tank, bei
+dem Geteiltes Leid am wenigsten bewirkt. Die Frage stellt sich nur bei drei und mehr Tanks in einer Gruppe; in Achter-
+Inhalten gibt es genau einen anderen.
+
+### Mechanik (Belege, abgerufen 04.10.2026)
+
+- **Geteiltes Leid** (Shirk, #7537): „Du überträgst 25 % deiner Feindseligkeit auf das ausgewählte Gruppenmitglied",
+  St. 48, 120 s, 25 y (Job-Guide deutsch und englisch). Nicht auf dich selbst, nicht auf Allianzmitglieder (xivapi:
+  `CanTargetSelf`, `CanTargetAlliance` falsch). In Allianzraids ist der andere Tank also nie erreichbar.
+- **Herausforderung** (Provoke, #7533) setzt den Wirker an die Spitze der Feindseligkeitsliste – das Werkzeug der
+  *anderen* Seite eines Tankwechsels.
+- **Wann Geteiltes Leid allein den Gegner bewegt:** Danach hältst du (1 − s) deiner Feindseligkeit, der Empfänger
+  gewinnt s davon. Er wird zum Ziel, wenn er danach vor dir und vor allen anderen liegt; von dir aus gerechnet
+  braucht er vorher mehr als 1 − 2s, bei s = 25 % also mehr als die Hälfte deiner Feindseligkeit. s kommt aus dem
+  Wirktext über den Generator (`DefensiveValues.EnmityTransferOf`), nicht aus dem Code.
+- **Die Feindseligkeit der Gruppe** auf dein aktuelles Ziel liest das Spiel selbst (`UIState.Hate`, je Mitglied 0 bis
+  100 relativ zur Spitze – so in FFXIVClientStructs dokumentiert, Gemeinschaftsquelle, und so liest sie WrathCombo).
+  Ist dein Ziel nicht die Quelle des Tankbusters, ist die Zahl nicht lesbar, und die Regel hält.
+- **The Balance** führt den Tankwechsel als letzte Stufe nach der Unverwundbarkeit („It Still Kills Me: Holmgang
+  (invulnerability), Tank Swap (mechanical requirement)", Krieger-Leitfaden) und ein Makro für Geteiltes Leid auf
+  den Co-Tank. WrathCombo kennt Geteiltes Leid nur als Zielumlenkung beim manuellen Drücken, keine eigene Auslösung.
+
+### Wo die Umsetzung von seinem Wortlaut abweicht
+
+**Verengung, mit Grund:** Liegt der andere Tank bei höchstens der Hälfte deiner Feindseligkeit, wirkt die Regel
+nicht, obwohl seine Bedingungen erfüllt sind. Geteiltes Leid würde dort nichts daran ändern, wer den nächsten Treffer
+nimmt. Es kostete aber die Aktion für 120 s und fehlte beim geplanten Wechsel, wenn der Co-Tank provoziert und du
+mit Geteiltem Leid nachlegen sollst. Hat der Co-Tank schon provoziert, liegt er an der Spitze; dann geht Geteiltes
+Leid sofort und festigt den Wechsel, wie es die Referenz vorsieht.
+
+### Wechselwirkungen und Lagen
+
+- **Zwei RSR-Tanks:** Nur der Getroffene wirkt. Der Empfänger kann dir den Gegner nicht zurückgeben, solange du eine
+  Verwundbarkeit trägst – ein Tank mit Verwundbarkeit ist kein Empfänger.
+- **Haltung:** RSR schaltet die Haltung nur ein, wenn kein anderer Tank sie trägt. Ein RSR-Co-Tank liegt daher
+  meist weit unter der Hälfte, und die Regel hält. Das ist richtig: Ohne Haltung behielte er den Gegner nicht.
+- **Automatische Herausforderung** greift nur bei Gegnern auf Nicht-Tanks und kreuzt diese Regel nicht.
+- **Allein, Vierer-Instanz, Allianzraid:** Es gibt keinen anderen Tank in der Gruppe, die Regel ist still.
+- **BossMod ohne Modul:** Die Regel liest keine Vorhersage; Erkennung über Liste, Marker und Effektsatz.
+- **Stufensynchron:** Geteiltes Leid erst ab St. 48 (`EnoughLevel`), darunter still.
+
+### Antithesen
+
+1. **Kein Bedarf, der Co-Tank provoziert ohnehin.** Bei geplanten Wechseln ja; dann festigt die Regel nur, was
+   ohnehin geschieht. Den Ausschlag gibt der ungeplante Fall: Tankbuster in Unterzahl der Abklingzeiten. Seine
+   Kämpfe vom 01.10.2026 zeigen „Schramme" zweimal mit 85 %, beide Male ohne vorher gewählte Abwehr; die 30 bis
+   39 % davor und danach kamen nach Verdammnis und Schutzwall. Dass beim 85-%-Treffer keine Minderung bereit war,
+   ist daraus geschlossen, nicht gemessen. Ob dort ein zweiter Tank in
+   der Gruppe war, zeigt das Protokoll nicht. Entkräftet, aber die Häufigkeit ist offen.
+2. **Falsches Werkzeug, Herausforderung des Co-Tanks wirkt sicher.** Stimmt, aber die drückt der andere Spieler.
+   Die Gegenseite – RSR als Co-Tank provoziert, wenn der Haupttank in dieser Lage ist – ist nicht gebaut. Sie ist
+   als eigener Vorschlag in `TODO.md` erfasst.
+3. **Ausgeliefert, und nichts ändert sich.** Bei Spielern, deren Co-Tank ohne Haltung spielt, wirkt die Regel nie.
+   Das ist so gebaut, weil sie dort nichts bewirken könnte. Damit das von außen unterscheidbar bleibt, schreibt das
+   Protokoll je Tankbuster einen Grund. Eine falsche Prognose zieht die Regel selbst nach (unten).
+
+### Messmittel und Nachsteuerung
+
+`DefenseTrace.log` schreibt je erkanntem Tankbuster „tankbuster on you: … vulnerability …". Hält die Regel, schreibt
+sie einmal je Tankbuster „tank swap held: …" mit dem Grund (Unverwundbarkeit bereit, kein anderer Tank, Ziel nicht
+die Quelle, Feindseligkeit zu gering, Geteiltes Leid im Abklingen). Wählt sie, schreibt sie „tank swap (…) ->
+Shirk" mit den Feindseligkeitswerten; ist die Aktion ausgeführt, folgt die „used"-Zeile. Den Ausgang misst der erste
+Auto-Angriff der Quelle danach: „moved the enemy" oder „did not move". Im zweiten Fall verlangt jeder weitere
+Wechsel in diesem Kampf mehr als das Verhältnis, das versagt hat. Gezählt wird erst ab der Ausführung, eine Wahl
+ohne Ausführung verschiebt nichts.
+
+**Prüfgrad:** statisch, Prüfskripte, Compile über die CI; im Spiel nicht beobachtet.
+
 ## Was offen bleibt
 
 **Der Vorlauf der Uhrregel misst bis zur Entscheidung, nicht bis zum Landen der

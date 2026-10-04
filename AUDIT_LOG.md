@@ -5344,6 +5344,50 @@ geprüft.
   Beschwörer-Sitzung mit Raidwides auf einem Build ab 9c17edaf4.
 
 **Prüfgrad:** Protokoll Zeile für Zeile, Tabelle per Diff gegen die vorige Datei; Aktionsdaten über xivapi.
+
+### A255 · Tankwechsel nach einem Tankbuster: sein Vorschlag im Loop, gebaut als Option (04.10.2026)
+
+- *Einordnung:* sein Vorschlag (Wortlaut in Konzept 09), als Option zu prüfen.
+- *Research:*
+  - Geteiltes Leid: 25 % Feindseligkeit, 120 s, 25 y, nicht auf sich selbst und nicht auf die Allianz (Job-Guide
+    deutsch und englisch, xivapi).
+  - Die Feindseligkeit der Gruppe steht in `UIState.Hate` (FFXIVClientStructs: 0–100 relativ zur Spitze;
+    WrathCombo liest dieselbe Struktur).
+  - The Balance führt den Tankwechsel als letzte Stufe nach der Unverwundbarkeit. WrathCombo hat keine eigene
+    Auslösung für Geteiltes Leid.
+- *Befund im Bestand:*
+  - Geteiltes Leid lief nur über den manuellen Befehl. `FindTankTarget` nahm den ersten Tank mit Haltung aus der
+    Gruppenliste, und dort steht der Spieler zuerst. Als Haupttank zielte der Befehl also auf dich selbst und ging
+    ins Leere; das Spiel lehnt das Ziel ab. Behoben: der Spieler ist ausgeschlossen. Heiler sind nie Tank, ihre
+    Aufrufer bleiben gleich.
+  - Die Unverwundbarkeiten zünden nur unter `HealthForDyingTanks` (neu in `TODO.md`).
+- *Optionen:*
+  - Nullvariante.
+  - Wörtlich: Geteiltes Leid immer.
+  - Mit gemessener Wirkung: nur wenn der Empfänger den Gegner danach behält.
+  - Gegenseite: Herausforderung, wenn RSR Co-Tank ist.
+  - Vorausgehende Unverwundbarkeit.
+- *Entscheidung:* gemessene Wirkung. Wörtlich wirkt Geteiltes Leid unter der Hälfte der Feindseligkeit nicht,
+  kostet aber 120 s und fehlt beim geplanten Wechsel. Die Schwelle 1 − 2s kommt aus dem Wirktext über den Generator
+  (`DefensiveValues.EnmityTransferOf`, neue Tabelle). Die Gegenseite und die vorausgehende Unverwundbarkeit sind als
+  eigene Einträge in `TODO.md` offen.
+- *Gebaut:*
+  - Erkennung `TankSwapWatch`: Tankbuster über Liste oder bestätigten Marker; Anteil und gelegte Status aus dem
+    Effektsatz.
+  - Gefahr: Verwundbarkeit vom Treffer, oder LP mit Schild nicht über dem härtesten Anteil dieser Aktion.
+  - Empfänger nach Feindseligkeit, Belastung und LP; `TargetType.TankSwap`.
+  - Entscheidung `CustomRotation.TankSwapAbility` hinter den Notfall-Fähigkeiten, nur ohne verfügbare
+    Unverwundbarkeit (neue Eigenschaft `Invulnerability` je Tank).
+  - Option ab Werk an (seine Vorgabe vom 29.09.2026 für neue Regeln).
+  - Protokollzeilen und Nachsteuerung über den ersten Auto-Angriff nach der Ausführung.
+- *Abweichung von seinem Wortlaut:* die Verengung oben. „Am wenigsten Aggro" ist als „am wenigsten belastet"
+  gelesen; als meine Ableitung im Konzept gekennzeichnet.
+- *Nebenbei:* verschobene Zeilenangaben in den Konzepten 05, 11 und 12 inhaltlich geprüft und nachgezogen. Zwei
+  TODO-Verweise standen schon vorher auf falschen Zeilen (`SwiftcastBuffer`, `InterruptDelay`/`ProvokeDelay`); sie
+  nennen jetzt Bezeichner statt Zeilen.
+
+**Prüfgrad:** statisch, alle Prüfskripte und Generatoren, Compile über die CI. Im Spiel nicht beobachtet; ob der
+Wechsel greift, schreibt das Protokoll selbst.
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

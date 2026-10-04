@@ -5,6 +5,9 @@ namespace RotationSolver.Basic.Rotations.Basic;
 public partial class GunbreakerRotation
 {
 	/// <inheritdoc/>
+	protected override IBaseAction? Invulnerability => SuperbolidePvE;
+
+	/// <inheritdoc/>
 	public override MedicineType MedicineType => MedicineType.Strength;
 
 	#region Job Gauge

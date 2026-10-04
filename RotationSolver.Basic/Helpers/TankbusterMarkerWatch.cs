@@ -135,17 +135,22 @@ internal static class TankbusterMarkerWatch
 
 	/// <summary>
 	/// An enemy action that is not an auto-attack damaged <paramref name="targetId"/>. Called from the
-	/// effect handler, on the game thread.
+	/// effect handler, on the game thread. Returns whether a marker on that member stood for the hit
+	/// that is not on the learned list of markers without one - the hit was a tankbuster on them.
 	/// </summary>
-	public static void RecordHit(ulong targetId)
+	public static bool RecordHit(ulong targetId)
 	{
+		var marked = false;
 		foreach (var watch in _open)
 		{
 			if (watch.Target == targetId)
 			{
 				watch.Hit = true;
+				marked |= !OtherConfiguration.TankbusterMarkerWithoutHit.Contains(watch.Path);
 			}
 		}
+
+		return marked;
 	}
 
 	private static bool IsWatched(VfxNewData vfx)

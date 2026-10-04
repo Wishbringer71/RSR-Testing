@@ -89,6 +89,12 @@ public partial class CustomRotation
 
 		var role = DataCenter.Role;
 
+		// After the emergency abilities, so an invulnerability that fires at its HP threshold goes first.
+		if (role == JobRole.Tank && Service.Config.ShirkToSwapAfterTankbuster && TankSwapAbility(out act))
+		{
+			return true;
+		}
+
 		IBaseAction.TargetOverride = TargetType.Interrupt;
 		if (DataCenter.MergedStatus.HasFlag(AutoStatus.Interrupt) && !StatusHelper.PlayerHasStatus(true, StatusID.Mudra))
 		{
@@ -983,5 +989,69 @@ public partial class CustomRotation
 	{
 		act = null;
 		return false;
+	}
+
+	/// <summary>
+	/// The tank's own invulnerability - Hallowed Ground, Holmgang, Living Dead, Superbolide - for the
+	/// rules that need to know whether it can still save him. Null for every other job.
+	/// </summary>
+	protected virtual IBaseAction? Invulnerability => null;
+
+	/// <summary>
+	/// The owner's proposal of 04.10.2026 (concept 09, "Tankwechsel nach einem Tankbuster"): after a
+	/// tankbuster that leaves the player in danger of dying to the next one, and with his
+	/// invulnerability not available, Shirk goes to the tank <see cref="TankSwapWatch"/> names - the
+	/// one that will then hold the enemy.
+	/// </summary>
+	/// <remarks>
+	/// The invulnerability counts as available only when RSR would use it: enabled, learned, off
+	/// cooldown, and with a threshold above zero (HealthForDyingTanks; at zero it never fires). It
+	/// fires at that threshold, not ahead of a hit - see concept 09 for the gap that leaves.
+	/// </remarks>
+	private bool TankSwapAbility(out IAction? act)
+	{
+		act = null;
+		var danger = TankSwapWatch.Danger;
+		if (danger.Length == 0)
+		{
+			return false;
+		}
+
+		var invulnerability = Invulnerability;
+		if (invulnerability != null && invulnerability.Config.IsEnabled && invulnerability.EnoughLevel
+			&& invulnerability.Cooldown.HasOneCharge && HealthForDyingTanks > 0f)
+		{
+			TankSwapWatch.TraceHeld($"{invulnerability.Name} is ready");
+			return false;
+		}
+
+		var receiver = TankSwapWatch.Target;
+		if (receiver == null)
+		{
+			TankSwapWatch.TraceHeld(TankSwapWatch.Detail);
+			return false;
+		}
+
+		var previous = IBaseAction.TargetOverride;
+		IBaseAction.TargetOverride = TargetType.TankSwap;
+		try
+		{
+			if (!ShirkPvE.CanUse(out act))
+			{
+				TankSwapWatch.TraceHeld(ShirkPvE.Cooldown.HasOneCharge
+					? $"Shirk cannot reach {receiver.Name.TextValue}"
+					: "Shirk is on cooldown");
+				act = null;
+				return false;
+			}
+		}
+		finally
+		{
+			IBaseAction.TargetOverride = previous;
+		}
+
+		TankSwapWatch.PlanSwapShirk(TankSwapWatch.DangerSource, receiver, TankSwapWatch.Ratio);
+		DefenseTrace.Decision($"tank swap ({danger}; {TankSwapWatch.Detail})", act);
+		return true;
 	}
 }

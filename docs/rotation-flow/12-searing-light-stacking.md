@@ -164,7 +164,7 @@ aus; das ist die Defektklasse aus `TODO.md`.
 Spielbeobachtung.** Der Wirktext der Beschwörung gewährt selbst Refulgent Lux („Additional Effect:
 Grants Refulgent Lux Duration: 30s“). In dem Augenblick, in dem die Beschwörung aufgeht, wird Lux
 Solaris also wirkbar — und `HealAreaAbility` fragt die Kette **vor** `AttackAbility`
-(`CustomRotation_Ability.cs:169` und `:188` gegen den Angriffszweig weiter unten), kann den
+(`CustomRotation_Ability.cs:175` und `:194` gegen den Angriffszweig weiter unten), kann den
 Einschiebeplatz hinter der Beschwörung also nehmen, sobald die Flächenheilungsflagge steht und die Zündregel von Lux Solaris sie freigibt (`LuxSolarisDecision`, Konzept 08, „Wann Lux Solaris zündet“; seit A154 nicht mehr der allgemeine Flächenheil-Zweig). **Die
 Beschwörung erzeugt ihren eigenen Konkurrenten um den Platz dahinter; der Platz davor hat diesen
 Konkurrenten nicht.** Das ist ein zweites, vom Zeitpunktargument unabhängiges Argument für die
@@ -642,7 +642,7 @@ unterschätzt, nicht überschätzt. Unterbrechungen des Schadens sind nicht mode
 
 **Phasen ohne Ziel waren als Modellgrenze benannt und sind keine.** Sie wären eine, wenn V7 dort
 zünden könnte — eine Ladung auf einen Abschnitt ohne Gegner ist reiner Verlust. Der Pfad gibt das
-aber nicht her: `AttackAbility` wird in `CustomRotation_Ability.cs:420` nur unter
+aber nicht her: `AttackAbility` wird in `CustomRotation_Ability.cs:426` nur unter
 `HasHostilesInRange` aufgerufen, die Zielprüfung steht also vor jeder Zündung, der heutigen wie der
 neuen. Das Modell darf diesen Fall auslassen, weil der Code ihn ausschließt.
 

@@ -5,6 +5,9 @@ namespace RotationSolver.Basic.Rotations.Basic;
 public partial class WarriorRotation
 {
 	/// <inheritdoc/>
+	protected override IBaseAction? Invulnerability => HolmgangPvE;
+
+	/// <inheritdoc/>
 	public override MedicineType MedicineType => MedicineType.Strength;
 
 	#region Job Gauge

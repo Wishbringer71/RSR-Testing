@@ -103,7 +103,7 @@ Konkrete Folge, nicht nur Kosmetik:
 
 Vollständige Erhebung aller Aktionen, deren Spielbeschreibung eine Ortsänderung
 nennt, gegen die Belegung von `MoveForwardAbility` / `MoveBackAbility` (beide
-laufen laut `CustomRotation_Ability.cs:348/365` **nur** bei gesetztem
+laufen laut `CustomRotation_Ability.cs:354/371` **nur** bei gesetztem
 `AutoStatus.MoveForward`/`MoveBack`, können die Schadensrotation also nicht
 stören; die drei direkten Aufrufer in `NIN_Reborn`, `WAR_Reborn` und `BeirutaNIN`
 prüfen dieselbe Flagge, geprüft 29.09.2026):

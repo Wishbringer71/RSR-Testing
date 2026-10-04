@@ -1,6 +1,6 @@
 # TODO — nur offene Arbeit
 
-Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schuld (bewusst eingegangener Kompromiss mit Auflösungsbedingung) und offener Arbeit. Je Eintrag der betroffene Personenkreis: **N** Endnutzer des Plugins · **R** Autoren abgeleiteter Rotationen, die `RotationSolver.Basic` als Paket beziehen · **U** Upstream-Pflege.
+Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schuld (bewusst eingegangener Kompromiss mit Auflösungsbedingung) und offener Arbeit. Je Eintrag der betroffene Personenkreis: **N** Endnutzer des Plugins · **R** Autoren abgeleiteter Rotationen, die gegen `RotationSolver.Basic` kompilieren (bis 7.5.6.13 als Paket, seither als DLL aus `latest.zip`) · **U** Upstream-Pflege.
 
 ## Defekte
 
@@ -74,7 +74,7 @@ nachvollzogen; was fehlt, ist die Bestätigung im Spiel.
 
 ### `SwiftcastBuffer` hat keinen Leser, und ihre Absicht ist überholt · N
 
-`Configs.cs:1005` definiert die Einstellung (0,6 s, eigene Oberfläche, eigene Dokumentation „how early before next GCD should RSR use swiftcast for raise"). Eine Volltextsuche über den Baum findet genau diese eine Fundstelle: Sie wird nirgends gelesen.
+`Configs.cs`, `SwiftcastBuffer`, definiert die Einstellung (0,6 s, eigene Oberfläche, eigene Dokumentation „how early before next GCD should RSR use swiftcast for raise"). Eine Volltextsuche über den Baum findet genau diese eine Fundstelle: Sie wird nirgends gelesen.
 
 Sie ist nicht nur unverbunden, sondern in ihrer dokumentierten Bedeutung unerfüllbar geworden. Sie besagt, Spontanität solle erst fallen, wenn nur noch `SwiftcastBuffer` Restzeit auf dem GCD liegt — bei 0,6 s liegt dieses Fenster fast vollständig, bei 0 vollständig in dem Bereich, den `RSCommands_Actions.DoAction` für Fähigkeiten sperrt. Sie zu verdrahten hieße, den in `docs/rotation-flow/11-raise-dispatch.md` behobenen Defekt an einer zweiten Stelle neu zu bauen; deshalb ist sie bei der dortigen Behebung bewusst unangetastet geblieben.
 
@@ -82,7 +82,7 @@ Sie ist nicht nur unverbunden, sondern in ihrer dokumentierten Bedeutung unerfü
 
 ### `InterruptDelay` und `ProvokeDelay` haben keinen Leser · N
 
-`Configs.cs:1057` und `:1061`. Beide sind `Vector2` mit Vorgabe `(0,5 s; 1 s)`, eigener Beschriftung und Wertebereich — und versprechen damit eine Zufallsverzögerung vor dem Unterbrechen beziehungsweise vor Provoke. Gelesen werden sie nirgends.
+`Configs.cs`, `InterruptDelay` und `ProvokeDelay`. Beide sind `Vector2` mit Vorgabe `(0,5 s; 1 s)`, eigener Beschriftung und Wertebereich — und versprechen damit eine Zufallsverzögerung vor dem Unterbrechen beziehungsweise vor Provoke. Gelesen werden sie nirgends.
 
 Die Klasse ist belegt, weil die beiden Geschwister derselben Bauart **gelesen** werden: `RaiseDelay2` und `EsunaDelay` speisen die `ObjectListDelay`-Instanzen in `TargetUpdater.cs:13-15`. Für Provoke- und Unterbrechungsziele gibt es keine solche Instanz; `TargetUpdater.cs:43-46` ermittelt beide ohne jede Verzögerung.
 
@@ -228,6 +228,29 @@ Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A17
 **Stand:** Behoben sind die Fehler, die der Code zeigt. A192 betrifft Einzelzielaktionen in der Flächenliste, A208 Kreise um ihr Ziel und Linien in ihrer Breite. A218 misst Kreise vom Mittelpunkt des Wirkenden und lässt Selbstschutz nur fallen, wenn der Treffer ihn erreicht. A220 zählt nur Marker der eigenen Gruppe und entscheidet einen angekündigten Tankbuster nach BossModReborns Zielmaske statt nach „kein Tank erkannt". Die letzte Lücke passt am besten zu seiner Beschreibung „nicht betroffen, weit weg": ein Tankbuster auf einem Duty-Support-Tank, den RSR nicht als Gruppenmitglied zählt. Das ist ein Schluss aus dem Code; ob er Duty Support spielte, ist nicht bekannt. Weitere mögliche Quellen: ein BossModReborn-Modul, das einen Tankbuster als Raidwide meldet, und ein gelernter Tankbuster, der als Bodenkreis geführt wird.
 
 **Messmittel:** `DefenseTrace.log` schreibt je Sitzung jede Wahl der Abwehrkette mit den Quellen, die dabei standen, und jeden Treffer auf ihn. **Erledigt, wenn** eine Datei aus seinen Kämpfen die Quelle zeigt und sie behoben ist. Danach wird das Protokoll wieder entfernt.
+
+### Tank-Unverwundbarkeit nur unter der Sterbe-Schwelle: ein tödlicher Treffer von oben wird nicht abgefangen · N
+
+**Befund (A255):** Hallowed Ground, Holmgang, Living Dead und Superbolide zünden nur bei LP ≤ `HealthForDyingTanks`
+(`EmergencyAbility` der vier Tanks, PLD in `PLD_Reborn`). Ein Tankbuster, der von darüber tötet – unter einer
+Verwundbarkeit, oder ein Treffer von 85 % ohne bereite Minderung wie „Schramme" am 01.10.2026 –, trifft auf eine
+bereite, aber ungenutzte Unverwundbarkeit. Der Tankwechsel nach einem Tankbuster hält, solange sie bereit ist (seine
+Bedingung), und verlässt sich damit auf eine Rettung, die nur reaktiv kommt. **Offen:** voller Loop zu einer
+vorausgehenden Auslösung (Vorhersage über BMR, Cast oder Marker auf dir, gemessener Anteil des letzten Tankbusters;
+Living Dead gesondert wegen Walking Dead).
+
+**Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
+
+### Tankwechsel von der anderen Seite: Herausforderung, wenn der Haupttank in Lebensgefahr ist · N
+
+**Meine Ableitung, nicht seine Vorgabe (A255):** Geteiltes Leid bewegt den Gegner nur, wenn der Co-Tank schon über
+der Hälfte der Feindseligkeit liegt. Herausforderung des Co-Tanks wirkt immer. Ist RSR der Co-Tank, könnte es
+provozieren, wenn der Haupttank nach einem Tankbuster eine Verwundbarkeit trägt oder eine Wiederholung nicht
+überlebt und keine Unverwundbarkeit bereit hat. Dafür braucht es dieselbe Erkennung für ein anderes Gruppenmitglied
+(Effektsatz auf ihn, nicht auf dich). **Offen:** voller Loop, dann ihm vorlegen – die Lehre aus `451d9e90` (der
+Co-Tank-Provoke zog den Boss von einem Tank unter Unverwundbarkeit) gehört in die Bedingungen.
+
+**Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 
 ### Astrologe: Synastry wählt ihr Ziel nach Trefferfläche und aktueller Gesundheit, nicht nach der Heilung · N, U
 

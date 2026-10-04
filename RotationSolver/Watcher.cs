@@ -169,6 +169,29 @@ public static class Watcher
 		return share;
 	}
 
+	// The statuses an effect set puts on one target: the entry's value is the status id.
+	private static List<uint> StatusesAppliedTo(ActionEffectSet set, ulong targetId)
+	{
+		List<uint> statuses = [];
+		foreach (var effect in set.TargetEffects)
+		{
+			if (effect.TargetID != targetId)
+			{
+				continue;
+			}
+
+			effect.ForEach(entry =>
+			{
+				if (entry.type == ActionEffectType.ApplyStatusEffectTarget && entry.value != 0)
+				{
+					statuses.Add(entry.value);
+				}
+			});
+		}
+
+		return statuses;
+	}
+
 	private static void ActionFromEnemy(ActionEffectSet set)
 	{
 		try
@@ -181,6 +204,19 @@ public static class Watcher
 				return;
 			}
 
+			// The first auto-attack after a swap Shirk shows whom the enemy attacks now.
+			if (set.Source is IBattleChara swinger && set.Action is { } swing && swing.GetActionCate() == ActionCate.Autoattack)
+			{
+				foreach (var effect in set.TargetEffects)
+				{
+					if (ReachedTarget(effect))
+					{
+						TankSwapWatch.RecordAutoAttack(swinger.GameObjectId, effect.TargetID);
+						break;
+					}
+				}
+			}
+
 			// A tankbuster marker is confirmed by any enemy action that damages the marked member, from a
 			// targetable enemy or from one of the invisible helpers that resolve many of them - so this
 			// comes before the source filter below. Auto-attacks do not count: the tank takes them
@@ -189,11 +225,16 @@ public static class Watcher
 				&& (source.IsEnemy() || source.GetBattleNPCSubKind() == Dalamud.Game.ClientState.Objects.Enums.BattleNpcSubKind.Combatant)
 				&& set.Action is { } marked && marked.GetActionCate() != ActionCate.Autoattack)
 			{
+				var markedForPlayer = false;
 				foreach (var effect in set.TargetEffects)
 				{
 					if (ReachedTarget(effect))
 					{
-						TankbusterMarkerWatch.RecordHit(effect.TargetID);
+						var isMarked = TankbusterMarkerWatch.RecordHit(effect.TargetID);
+						if (effect.TargetID == playerObject.GameObjectId)
+						{
+							markedForPlayer = isMarked;
+						}
 					}
 				}
 
@@ -214,6 +255,8 @@ public static class Watcher
 				{
 					DefenseTrace.Line($"hit you: {marked.Name.ExtractText()} #{marked.RowId} from {source.Name.TextValue}"
 						+ $" for {hitShare:P0} of max HP, {set.TargetEffects.Length} targets");
+					TankSwapWatch.RecordHitOnPlayer(marked.RowId, marked.Name.ExtractText(), source.GameObjectId, hitShare,
+						markedForPlayer, StatusesAppliedTo(set, playerObject.GameObjectId));
 				}
 			}
 
@@ -535,6 +578,10 @@ public static class Watcher
 
 			// The trace writes what the defence chose; this line says that it went out.
 			DefenseTrace.Executed(action.Value.RowId, action.Value.Name.ExtractText());
+			if (action.Value.RowId == (uint)ActionID.ShirkPvE)
+			{
+				TankSwapWatch.ShirkLanded();
+			}
 
 			// Only shown on the Debug tab; formatting the whole effect set for every action is wasted otherwise.
 			if (Service.Config.InDebug)

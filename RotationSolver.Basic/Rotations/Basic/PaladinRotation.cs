@@ -3,6 +3,9 @@
 public partial class PaladinRotation
 {
 	/// <inheritdoc/>
+	protected override IBaseAction? Invulnerability => HallowedGroundPvE;
+
+	/// <inheritdoc/>
 	public override MedicineType MedicineType => MedicineType.Strength;
 
 	/// <summary>
