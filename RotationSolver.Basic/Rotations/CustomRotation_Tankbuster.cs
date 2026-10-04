@@ -20,9 +20,11 @@ public partial class CustomRotation
 	private static readonly HashSet<uint> _plannedIds = [];
 	private static (ulong Source, uint ActionId, float Total, string Summary) _planTraced;
 
-	// What the game or the rotation refused outside an animation lock - out of range, no MP, a cast in
-	// progress, a check of the rotation's own -, per cast: left out of the plan for one GCD, then tried
-	// again. The entry stays until the cast ends, so the refusal is written once.
+	// What the game or the rotation refused for a cast while neither an animation lock nor a cast of the
+	// player's own explains it - out of range, no MP, a check of the rotation's own. A mitigation is left
+	// out of the plan for one GCD, then tried again; the invulnerability for the rest of the cast, so that
+	// "everything" is never followed by it (the owner's precision on "everything"). The entry stays until
+	// the cast ends, so the refusal is written once.
 	private static readonly Dictionary<(int Cast, uint ActionId), long> _refused = [];
 
 	/// <summary>
@@ -151,8 +153,8 @@ public partial class CustomRotation
 	/// stays in. <paramref name="pending"/>: mitigations of the player that went out on him (the server's
 	/// effect, not a press) and last until the hit by their duration, in the moment before their status
 	/// first shows; from then on the status tells. A cooldown would say neither who pressed nor on whom, and
-	/// Vengeance and Damnation share one. Reprisal is never pending: whether it reached this enemy only its
-	/// status on him says.
+	/// Vengeance and Damnation share one. Reprisal is bridged until its debuff shows on any enemy; if it did
+	/// not reach this one, its absence there then tells.
 	/// </summary>
 	private List<PlanCandidate> PlanCandidates(TankbusterForecast.Cast cast, float gcd, out List<PlanCandidate> pending)
 	{
@@ -207,8 +209,7 @@ public partial class CustomRotation
 				continue;
 			}
 
-			if (action.Info.EffectRange == 0
-				&& TankbusterForecast.OwnPendingCover(key, false, () => StatusOn(action, player)) >= cast.Horizon)
+			if (TankbusterForecast.OwnPendingCover(key, action.Info.EffectRange > 0) >= cast.Horizon)
 			{
 				pendingByButton[key] = candidate;
 				_ = byButton.Remove(key);
@@ -230,25 +231,6 @@ public partial class CustomRotation
 
 		pending = [.. pendingByButton.Values];
 		return [.. byButton.Values];
-	}
-
-	// Whether a status of the action is on the player now - the statuses its effect text is tied to, and
-	// those its setting provides (The Blackest Night's barrier has no mitigation figure, only a status).
-	private static bool StatusOn(IBaseAction action, IBattleChara player)
-	{
-		if (DefensiveValues.MitigatingStatusesByActionId.TryGetValue(Service.GetAdjustedActionId(action.ID), out var statuses))
-		{
-			foreach (var status in statuses)
-			{
-				if (player.HasStatus(false, (StatusID)status))
-				{
-					return true;
-				}
-			}
-		}
-
-		return (action.Setting.StatusProvide is { Length: > 0 } provided && player.HasStatus(false, provided))
-			|| (action.Setting.TargetStatusProvide is { Length: > 0 } onTarget && player.HasStatus(false, onTarget));
 	}
 
 	private static bool StandsAtImpact(uint actionId, IBattleChara player, TankbusterForecast.Cast cast)
@@ -328,17 +310,14 @@ public partial class CustomRotation
 	private bool InvulnerabilityCovers(float seconds)
 	{
 		var invulnerability = Invulnerability;
-		var player = Player;
 		return TankbusterForecast.PlayerInvulnerableThrough(seconds)
-			|| (invulnerability != null && player != null
-				&& TankbusterForecast.OwnPendingCover(invulnerability.ID, true,
-					() => player.HasStatus(false, StatusHelper.InvulnerabilityStatus)) >= seconds);
+			|| (invulnerability != null && TankbusterForecast.OwnPendingCover(invulnerability.ID, true) >= seconds);
 	}
 
 	private static bool Refused(TankbusterForecast.Cast cast, uint actionId, float gcd)
 	{
 		return _refused.TryGetValue((cast.Serial, actionId), out var tick)
-			&& TankbusterForecast.SecondsSince(tick, Environment.TickCount64) < gcd;
+			&& (tick == long.MaxValue || TankbusterForecast.SecondsSince(tick, Environment.TickCount64) < gcd);
 	}
 
 	// One line per change of what the plan spends; the figures ride along but do not make a new line.
@@ -397,7 +376,8 @@ public partial class CustomRotation
 				return false;
 			}
 
-			return PressForTankbuster(invulnerability, plan, gcd, "invulnerability, nothing less survives", out act);
+			return PressForTankbuster(invulnerability, plan, gcd, "invulnerability, nothing less survives", out act,
+				refusalLasts: true);
 		}
 
 		if (!Service.Config.HoldMitigationUnderInvulnerability)
@@ -416,7 +396,8 @@ public partial class CustomRotation
 		return false;
 	}
 
-	private static bool PressForTankbuster(IBaseAction action, TankbusterPlan plan, float gcd, string why, out IAction? act)
+	private static bool PressForTankbuster(IBaseAction action, TankbusterPlan plan, float gcd, string why, out IAction? act,
+		bool refusalLasts = false)
 	{
 		act = null;
 		var lasts = DefensiveValues.DurationOf(action.ID);
@@ -429,11 +410,9 @@ public partial class CustomRotation
 		// target), and a GCD path that returned early can leave its override standing (TODO.md,
 		// "Zielüberschreibung"). The status check is skipped because the plan has already asked whether
 		// this mitigation stands at impact; the game's blocking group of big mitigations is the stagger the
-		// plan replaces for a measured hit. A refusal while an animation lock runs is not an answer. One
-		// outside it leaves the action out of the plan for one GCD, after which it is tried again (MP, range,
-		// a cast in progress). For the invulnerability that makes the plan "everything" meanwhile; what goes
-		// out then is spent, and the invulnerability is still drawn once it can be - survival before the
-		// cooldowns already gone.
+		// plan replaces for a measured hit. A refusal while an animation lock runs or the player casts is not
+		// an answer. One outside them leaves a mitigation out of the plan for one GCD (MP, range), the
+		// invulnerability for the rest of the cast.
 		var previous = IBaseAction.TargetOverride;
 		IBaseAction.TargetOverride = null;
 		try
@@ -442,15 +421,17 @@ public partial class CustomRotation
 				targetOverride: TargetType.Self))
 			{
 				act = null;
-				if (ECommons.GameHelpers.Player.AnimationLock <= 0f && action.Cooldown.HasOneCharge)
+				if (ECommons.GameHelpers.Player.AnimationLock <= 0f && Player is { IsCasting: false }
+					&& action.Cooldown.HasOneCharge)
 				{
 					var key = (plan.Cast.Serial, action.ID);
 					if (!_refused.ContainsKey(key))
 					{
-						DefenseTrace.Line($"{action.Name} refused for #{plan.Cast.ActionId}; planning without it for a GCD at a time");
+						DefenseTrace.Line($"{action.Name} refused for #{plan.Cast.ActionId}; planning without it"
+							+ (refusalLasts ? " for this cast" : " for a GCD at a time"));
 					}
 
-					_refused[key] = Environment.TickCount64;
+					_refused[key] = refusalLasts ? long.MaxValue : Environment.TickCount64;
 				}
 
 				return false;

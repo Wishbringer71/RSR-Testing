@@ -5702,6 +5702,20 @@ Wechsel greift, schreibt das Protokoll selbst.
   7. Holmgang auf einen Gegner galt nicht als Deckung. Behoben: Bei der Unverwundbarkeit zählt jedes Ziel.
   8. Konzept 09 „eben gedrückt" überholt. Neu gefasst.
   9./10. Doppelter Zustand und doppelte Wirken-Identität. Behoben: eine Ablehnungstabelle, `TankbusterForecast.IsRunning`.
+- *Siebtes Code-Review (b9722c419..d072b6e8a), acht Punkte:*
+  1./2. Ob der Status einer Ausführung erschien, wurde nur nebenbei im Plan vermerkt – nicht, wenn die Minderung
+     übersprungen wurde oder kein Plan lief; eine danach entfernte Minderung zählte weiter. Behoben: Die Erkennung
+     erhebt es in jedem Durchlauf (`TankbusterForecast.RecordStatusesSeen`), nur eigene Anwendungen.
+  3./4. Die Rücknahme auf „Unverwundbarkeit je GCD neu" (sechste Runde) kehrte die festgehaltene Folge „auf alles
+     folgt nicht noch die Unverwundbarkeit" um, ohne ihn, und ließ den Plan flackern. Wiederhergestellt: Eine
+     Verweigerung gilt für das Wirken, gezählt nur ohne Animationssperre und ohne eigenen Zauber. Die Frage, ob eine im
+     selben Wirken später nutzbare Unverwundbarkeit zusätzlich gehen soll, ist ihm vorgelegt.
+  5. Reflexion war nicht überbrückt. Behoben: bis ihr Debuff auf einem Gegner erscheint.
+  6. Fremde oder alte Anwendungen markierten einen Status als gesehen. Behoben: nur eigene (`HasStatus(true, …)`).
+     Grenze: Wird eine eigene, noch stehende Minderung erneuert, gilt sie sofort als gesehen; bis die neue liegt, kann
+     der Plan kurz eine weitere wählen.
+  7./8. Doppelte Wirken-Identität, Speicher je Durchlauf. Behoben: `_written` entfernt, Protokollzeile beim ersten
+     Sehen, eine wiederverwendete Menge statt Liste und Closures.
 - *Seine Präzisierung zu „alles" (während der dritten Runde):* alles nur, wenn die Unverwundbarkeit nicht verfügbar ist
   und alle Minderungen zusammen nicht reichen – nie die Unverwundbarkeit plus Minderungen. So gebaut; Befund 1 war der
   Fehler genau dagegen.

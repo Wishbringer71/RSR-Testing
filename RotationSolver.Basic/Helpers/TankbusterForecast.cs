@@ -57,8 +57,8 @@ internal static class TankbusterForecast
 
 	private static readonly List<Execution> _own = [];
 	private static readonly Dictionary<(ulong Source, uint ActionId, float Total), int> _serials = [];
+	private static readonly HashSet<(ulong Source, uint ActionId, float Total)> _live = [];
 	private static int _nextSerial;
-	private static readonly HashSet<(ulong Source, uint ActionId, float Total)> _written = [];
 
 	/// <summary>Every known tankbuster now being cast at the player, the soonest first.</summary>
 	public static IReadOnlyList<Cast> Casts => _casts;
@@ -98,14 +98,14 @@ internal static class TankbusterForecast
 	}
 
 	/// <summary>
-	/// For the gap between the server confirming one of the player's own actions and its status showing
-	/// on him: the seconds it will still last by its duration from that moment, while its status has not
-	/// been seen yet; zero once it has (from then on the status itself tells, also when it ends early -
-	/// a barrier broken, a mitigation dispelled) or when the action did not go out within its duration.
-	/// <paramref name="statusOn"/> answers whether its status is on now; <paramref name="anyTarget"/>: the
-	/// action protects the player whatever it was aimed at (Holmgang on an enemy).
+	/// For the gap between the server confirming one of the player's own actions and its status showing:
+	/// the seconds it will still last by its duration from that moment, while its status has not been seen
+	/// yet; zero once it has (from then on the status itself tells, also when it ends early - a barrier
+	/// broken, a mitigation dispelled) or when the action did not go out within its duration. Whether the
+	/// status showed is recorded every cycle in <see cref="Update"/>. <paramref name="anyTarget"/>: the
+	/// action counts whatever it was aimed at (Holmgang on an enemy, Reprisal around the player).
 	/// </summary>
-	public static float OwnPendingCover(uint actionId, bool anyTarget, Func<bool> statusOn)
+	public static float OwnPendingCover(uint actionId, bool anyTarget)
 	{
 		var player = Player.Object;
 		var lasts = DefensiveValues.DurationOf(actionId);
@@ -124,18 +124,73 @@ internal static class TankbusterForecast
 			}
 		}
 
-		if (latest == null || latest.StatusSeen)
+		return latest == null || latest.StatusSeen
+			? 0f
+			: Math.Max(0f, lasts - SecondsSince(latest.Tick, Environment.TickCount64));
+	}
+
+	// Marks every execution whose status - one the player applied, on him or on an enemy - now shows.
+	private static void RecordStatusesSeen(IBattleChara player)
+	{
+		foreach (var execution in _own)
 		{
-			return 0f;
+			if (execution.StatusSeen)
+			{
+				continue;
+			}
+
+			var statuses = StatusesOfAction(execution.ActionId);
+			if (statuses.Length == 0)
+			{
+				continue;
+			}
+
+			var seen = player.HasStatus(true, statuses);
+			if (!seen)
+			{
+				foreach (var hostile in DataCenter.AllHostileTargets)
+				{
+					if (hostile != null && hostile.HasStatus(true, statuses))
+					{
+						seen = true;
+						break;
+					}
+				}
+			}
+
+			execution.StatusSeen = seen;
+		}
+	}
+
+	// The statuses an action puts on: those its effect text is tied to, and those its setting in the
+	// current rotation provides (The Blackest Night's barrier has no mitigation figure, only a status).
+	private static StatusID[] StatusesOfAction(uint actionId)
+	{
+		List<StatusID> statuses = [];
+		if (DefensiveValues.MitigatingStatusesByActionId.TryGetValue(actionId, out var tied))
+		{
+			foreach (var status in tied)
+			{
+				statuses.Add((StatusID)status);
+			}
 		}
 
-		if (statusOn())
+		var actions = DataCenter.CurrentRotation?.AllBaseActions;
+		if (actions != null)
 		{
-			latest.StatusSeen = true;
-			return 0f;
+			foreach (var action in actions)
+			{
+				if (action == null || (action.ID != actionId && Service.GetAdjustedActionId(action.ID) != actionId))
+				{
+					continue;
+				}
+
+				statuses.AddRange(action.Setting.StatusProvide ?? []);
+				statuses.AddRange(action.Setting.TargetStatusProvide ?? []);
+			}
 		}
 
-		return Math.Max(0f, lasts - SecondsSince(latest.Tick, Environment.TickCount64));
+		return [.. statuses];
 	}
 
 	/// <summary>Whether the cast with <paramref name="serial"/> is still coming at the player.</summary>
@@ -168,11 +223,12 @@ internal static class TankbusterForecast
 		var player = Player.Object;
 		if (!DataCenter.InCombat || player == null || player.IsDead || DataCenter.Role != JobRole.Tank)
 		{
-			_written.Clear();
 			_own.Clear();
 			_serials.Clear();
 			return;
 		}
+
+		RecordStatusesSeen(player);
 
 		var gcd = DataCenter.DefaultGCDTotal;
 		var maxHp = (float)Math.Max(1u, player.MaxHp);
@@ -200,16 +256,21 @@ internal static class TankbusterForecast
 				? row.AttackType.RowId
 				: 0u;
 			var identity = (hostile.GameObjectId, id, hostile.TotalCastTime);
-			if (!_serials.TryGetValue(identity, out var serial))
+			var isNew = !_serials.TryGetValue(identity, out var serial);
+			if (isNew)
 			{
 				serial = ++_nextSerial;
 				_serials[identity] = serial;
 			}
 
+			_ = _live.Add(identity);
 			var cast = new Cast(serial, hostile, id, attackType, left, hostile.TotalCastTime, predicted,
 				(player.CurrentHp / maxHp) + barrier, horizon);
 			_casts.Add(cast);
-			Trace(cast);
+			if (isNew)
+			{
+				Trace(cast);
+			}
 		}
 
 		_casts.Sort((a, b) => a.Remaining.CompareTo(b.Remaining));
@@ -222,36 +283,23 @@ internal static class TankbusterForecast
 			}
 		}
 
-		// Only the casts still running keep their line and their serial; the next cast of the same action
-		// is a new one.
-		_ = _written.RemoveWhere(key => !_casts.Exists(c => c.Source.GameObjectId == key.Source
-			&& c.ActionId == key.ActionId && c.Total == key.Total));
-		List<(ulong, uint, float)> ended = [];
+		// Only the casts still running keep their serial; the next cast of the same action is a new one.
 		foreach (var identity in _serials.Keys)
 		{
-			if (!_casts.Exists(c => c.Source.GameObjectId == identity.Item1 && c.ActionId == identity.Item2
-				&& c.Total == identity.Item3))
+			if (!_live.Contains(identity))
 			{
-				ended.Add(identity);
+				_ = _serials.Remove(identity);
 			}
 		}
 
-		foreach (var identity in ended)
-		{
-			_ = _serials.Remove(identity);
-		}
+		_live.Clear();
 
 		PlayerImpervious = player.ImperviousThrough(_casts.Count == 0 ? gcd : _casts[0].Horizon);
 	}
 
-	// One line per cast, so the file shows what the plan was built on.
+	// One line per cast, written when it is first seen, so the file shows what the plan was built on.
 	private static void Trace(Cast cast)
 	{
-		if (!_written.Add((cast.Source.GameObjectId, cast.ActionId, cast.Total)))
-		{
-			return;
-		}
-
 		var name = Service.GetSheet<Lumina.Excel.Sheets.Action>().TryGetRow(cast.ActionId, out var row)
 			? row.Name.ExtractText()
 			: $"#{cast.ActionId}";
