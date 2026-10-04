@@ -20,11 +20,10 @@ public partial class CustomRotation
 	private static readonly HashSet<uint> _plannedIds = [];
 	private static (ulong Source, uint ActionId, float Total, string Summary) _planTraced;
 
-	// What the game or the rotation refused outside an animation lock - out of range, no MP, a check of
-	// the rotation's own -, per cast: a mitigation is left out of the plan for one GCD and then tried again;
-	// the invulnerability for the rest of the cast, so that "everything" is never followed by it.
-	private static readonly Dictionary<(ulong Source, uint Cast, float Total, uint ActionId), long> _refused = [];
-	private static readonly HashSet<(ulong Source, uint Cast, float Total, uint ActionId)> _refusalTraced = [];
+	// What the game or the rotation refused outside an animation lock - out of range, no MP, a cast in
+	// progress, a check of the rotation's own -, per cast: left out of the plan for one GCD, then tried
+	// again. The entry stays until the cast ends, so the refusal is written once.
+	private static readonly Dictionary<(int Cast, uint ActionId), long> _refused = [];
 
 	/// <summary>
 	/// The owner's rule of 04.10.2026 (concept 09, "Das geringste Mittel gegen einen gemessenen
@@ -45,17 +44,12 @@ public partial class CustomRotation
 	{
 		_tankbusterPlan = null;
 		_plannedIds.Clear();
-		if (DataCenter.Role != JobRole.Tank
-			|| (!Service.Config.InvulnerabilityBeforeLethalTankbuster && !Service.Config.HoldMitigationUnderInvulnerability))
-		{
-			return;
-		}
 
-		// Refusals belong to casts still running; a later cast of the same action starts afresh.
-		List<(ulong, uint, float, uint)> ended = [];
+		// Refusals belong to casts still running.
+		List<(int, uint)> ended = [];
 		foreach (var key in _refused.Keys)
 		{
-			if (!IsRunning(key))
+			if (!TankbusterForecast.IsRunning(key.Cast))
 			{
 				ended.Add(key);
 			}
@@ -66,7 +60,11 @@ public partial class CustomRotation
 			_ = _refused.Remove(key);
 		}
 
-		_ = _refusalTraced.RemoveWhere(key => !IsRunning(key));
+		if (DataCenter.Role != JobRole.Tank
+			|| (!Service.Config.InvulnerabilityBeforeLethalTankbuster && !Service.Config.HoldMitigationUnderInvulnerability))
+		{
+			return;
+		}
 
 		var cast = TankbusterForecast.SoonestMeasured;
 		if (cast == null)
@@ -151,14 +149,16 @@ public partial class CustomRotation
 	/// Off, Divine Veil, Dark Missionary, Heart of Light - stay out: they belong to the area defence, and
 	/// Shake It Off dispels the tank's own Damnation and Bloodwhetting. Reprisal, a debuff on the enemy,
 	/// stays in. <paramref name="pending"/>: mitigations of the player that went out on him (the server's
-	/// effect, not a press) and last until the hit by their duration, but whose status is not on yet - a
-	/// cooldown alone says neither who pressed nor on whom, and Vengeance and Damnation share one.
+	/// effect, not a press) and last until the hit by their duration, in the moment before their status
+	/// first shows; from then on the status tells. A cooldown would say neither who pressed nor on whom, and
+	/// Vengeance and Damnation share one. Reprisal is never pending: whether it reached this enemy only its
+	/// status on him says.
 	/// </summary>
 	private List<PlanCandidate> PlanCandidates(TankbusterForecast.Cast cast, float gcd, out List<PlanCandidate> pending)
 	{
 		var player = Player;
-		pending = [];
 		Dictionary<uint, PlanCandidate> byButton = [];
+		Dictionary<uint, PlanCandidate> pendingByButton = [];
 		foreach (var action in AllBaseActions)
 		{
 			if (action == null || player == null || action.Info.IsRealGCD || !action.EnoughLevel
@@ -200,12 +200,18 @@ public partial class CustomRotation
 
 			var candidate = new PlanCandidate(action, (1f - self) * (1f - enemy), barrier,
 				action.Cooldown.RecastTimeOneChargeRaw);
-			var executed = Service.GetAdjustedActionId(action.ID);
-			var outward = action.Info.EffectRange > 0;
-			if (TankbusterForecast.OwnCoverLeft(executed, outward) >= cast.Horizon
-				|| TankbusterForecast.OwnCoverLeft(action.ID, outward) >= cast.Horizon)
+			// One entry per button as the game casts it, whether it went out already or can still go.
+			var key = Service.GetAdjustedActionId(action.ID);
+			if (pendingByButton.ContainsKey(key))
 			{
-				pending.Add(candidate);
+				continue;
+			}
+
+			if (action.Info.EffectRange == 0
+				&& TankbusterForecast.OwnPendingCover(key, false, () => StatusOn(action, player)) >= cast.Horizon)
+			{
+				pendingByButton[key] = candidate;
+				_ = byButton.Remove(key);
 				continue;
 			}
 
@@ -215,7 +221,6 @@ public partial class CustomRotation
 				continue;
 			}
 
-			var key = Service.GetAdjustedActionId(action.ID);
 			if (!byButton.TryGetValue(key, out var known) || candidate.Factor < known.Factor
 				|| (candidate.Factor == known.Factor && candidate.Barrier > known.Barrier))
 			{
@@ -223,7 +228,27 @@ public partial class CustomRotation
 			}
 		}
 
+		pending = [.. pendingByButton.Values];
 		return [.. byButton.Values];
+	}
+
+	// Whether a status of the action is on the player now - the statuses its effect text is tied to, and
+	// those its setting provides (The Blackest Night's barrier has no mitigation figure, only a status).
+	private static bool StatusOn(IBaseAction action, IBattleChara player)
+	{
+		if (DefensiveValues.MitigatingStatusesByActionId.TryGetValue(Service.GetAdjustedActionId(action.ID), out var statuses))
+		{
+			foreach (var status in statuses)
+			{
+				if (player.HasStatus(false, (StatusID)status))
+				{
+					return true;
+				}
+			}
+		}
+
+		return (action.Setting.StatusProvide is { Length: > 0 } provided && player.HasStatus(false, provided))
+			|| (action.Setting.TargetStatusProvide is { Length: > 0 } onTarget && player.HasStatus(false, onTarget));
 	}
 
 	private static bool StandsAtImpact(uint actionId, IBattleChara player, TankbusterForecast.Cast cast)
@@ -296,38 +321,24 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
-	/// Whether an invulnerability on the player lasts <paramref name="seconds"/>: its status, or - before
-	/// the status is on - the press the server confirmed, by the invulnerability's duration from then.
+	/// Whether an invulnerability on the player lasts <paramref name="seconds"/>: its status, or - in the
+	/// moment between the server confirming the press and the status showing - its duration from then.
+	/// Holmgang protects its user whatever it was aimed at.
 	/// </summary>
 	private bool InvulnerabilityCovers(float seconds)
 	{
 		var invulnerability = Invulnerability;
+		var player = Player;
 		return TankbusterForecast.PlayerInvulnerableThrough(seconds)
-			|| (invulnerability != null && TankbusterForecast.OwnCoverLeft(invulnerability.ID, false) >= seconds);
-	}
-
-	private static (ulong, uint, float, uint) RefusalKey(TankbusterForecast.Cast cast, uint actionId)
-	{
-		return (cast.Source.GameObjectId, cast.ActionId, cast.Total, actionId);
-	}
-
-	private static bool IsRunning((ulong Source, uint Cast, float Total, uint ActionId) key)
-	{
-		foreach (var cast in TankbusterForecast.Casts)
-		{
-			if (cast.Source.GameObjectId == key.Source && cast.ActionId == key.Cast && cast.Total == key.Total)
-			{
-				return true;
-			}
-		}
-
-		return false;
+			|| (invulnerability != null && player != null
+				&& TankbusterForecast.OwnPendingCover(invulnerability.ID, true,
+					() => player.HasStatus(false, StatusHelper.InvulnerabilityStatus)) >= seconds);
 	}
 
 	private static bool Refused(TankbusterForecast.Cast cast, uint actionId, float gcd)
 	{
-		return _refused.TryGetValue(RefusalKey(cast, actionId), out var tick)
-			&& (tick == long.MaxValue || TankbusterForecast.SecondsSince(tick, Environment.TickCount64) < gcd);
+		return _refused.TryGetValue((cast.Serial, actionId), out var tick)
+			&& TankbusterForecast.SecondsSince(tick, Environment.TickCount64) < gcd;
 	}
 
 	// One line per change of what the plan spends; the figures ride along but do not make a new line.
@@ -386,8 +397,7 @@ public partial class CustomRotation
 				return false;
 			}
 
-			return PressForTankbuster(invulnerability, plan, gcd, "invulnerability, nothing less survives", out act,
-				refusalLasts: true);
+			return PressForTankbuster(invulnerability, plan, gcd, "invulnerability, nothing less survives", out act);
 		}
 
 		if (!Service.Config.HoldMitigationUnderInvulnerability)
@@ -406,8 +416,7 @@ public partial class CustomRotation
 		return false;
 	}
 
-	private static bool PressForTankbuster(IBaseAction action, TankbusterPlan plan, float gcd, string why, out IAction? act,
-		bool refusalLasts = false)
+	private static bool PressForTankbuster(IBaseAction action, TankbusterPlan plan, float gcd, string why, out IAction? act)
 	{
 		act = null;
 		var lasts = DefensiveValues.DurationOf(action.ID);
@@ -421,8 +430,10 @@ public partial class CustomRotation
 		// "Zielüberschreibung"). The status check is skipped because the plan has already asked whether
 		// this mitigation stands at impact; the game's blocking group of big mitigations is the stagger the
 		// plan replaces for a measured hit. A refusal while an animation lock runs is not an answer. One
-		// outside it leaves the action out of the plan - a mitigation for one GCD, after which it is tried
-		// again (MP, range), the invulnerability for the rest of the cast.
+		// outside it leaves the action out of the plan for one GCD, after which it is tried again (MP, range,
+		// a cast in progress). For the invulnerability that makes the plan "everything" meanwhile; what goes
+		// out then is spent, and the invulnerability is still drawn once it can be - survival before the
+		// cooldowns already gone.
 		var previous = IBaseAction.TargetOverride;
 		IBaseAction.TargetOverride = null;
 		try
@@ -433,13 +444,13 @@ public partial class CustomRotation
 				act = null;
 				if (ECommons.GameHelpers.Player.AnimationLock <= 0f && action.Cooldown.HasOneCharge)
 				{
-					var key = RefusalKey(plan.Cast, action.ID);
-					_refused[key] = refusalLasts ? long.MaxValue : Environment.TickCount64;
-					if (_refusalTraced.Add(key))
+					var key = (plan.Cast.Serial, action.ID);
+					if (!_refused.ContainsKey(key))
 					{
-						DefenseTrace.Line($"{action.Name} refused for #{plan.Cast.ActionId}; planning without it"
-							+ (refusalLasts ? " for this cast" : " for a GCD at a time"));
+						DefenseTrace.Line($"{action.Name} refused for #{plan.Cast.ActionId}; planning without it for a GCD at a time");
 					}
+
+					_refused[key] = Environment.TickCount64;
 				}
 
 				return false;

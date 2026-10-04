@@ -5687,6 +5687,21 @@ Wechsel greift, schreibt das Protokoll selbst.
   7. Kommentare widersprachen dem Code (Ablehnungsdauer, Fenster). Mit dem Umbau neu gefasst.
   9. Doppelte Zeitprüfung, überflüssiger Zweig. Mit dem Umbau eine Stelle (`SecondsSince`), Zweig entfernt.
   10. Eine dauerhafte Ablehnung schrieb je GCD eine Zeile. Behoben: eine Zeile je Wirken und Aktion.
+- *Sechstes Code-Review (9247a7d10..b9722c419), zehn Punkte:*
+  1./2./3. Die bestätigte Ausführung zählte für die ganze Wirkdauer: doppelt, sobald der Status lag (Barriere schon
+     im Budget, Rachsucht und Verdammnis je Knopf), und weiter, wenn der Status vorzeitig weg war (Barriere
+     gebrochen, Abschütteln). Behoben: Sie überbrückt nur bis zum ersten Erscheinen ihres Status
+     (`OwnPendingCover`), je Knopf einmal.
+  4. Eine Reflexion außer Reichweite zählte gegen den Boss. Behoben: Reflexion zählt nur mit ihrem Status.
+  5. Eine einmalige Ablehnung der Unverwundbarkeit (etwa während eines Zaubers) schloss sie für das Wirken aus.
+     Zurückgenommen auf je einen GCD; was in „alles" hinausging, ist verbraucht, und die Unverwundbarkeit geht
+     trotzdem, sobald sie kann. Abwägung gegen Befund 3 der fünften Runde: Überleben vor Abklingzeiten, die schon weg
+     sind; seine Präzisierung betrifft den Plan, nicht einen später möglichen Druck.
+  6. Gleiche Schlüssel für ein späteres gleiches Wirken. Behoben: eine Nummer je Wirken (`Cast.Serial`), Aufräumen vor
+     jeder frühen Rückkehr.
+  7. Holmgang auf einen Gegner galt nicht als Deckung. Behoben: Bei der Unverwundbarkeit zählt jedes Ziel.
+  8. Konzept 09 „eben gedrückt" überholt. Neu gefasst.
+  9./10. Doppelter Zustand und doppelte Wirken-Identität. Behoben: eine Ablehnungstabelle, `TankbusterForecast.IsRunning`.
 - *Seine Präzisierung zu „alles" (während der dritten Runde):* alles nur, wenn die Unverwundbarkeit nicht verfügbar ist
   und alle Minderungen zusammen nicht reichen – nie die Unverwundbarkeit plus Minderungen. So gebaut; Befund 1 war der
   Fehler genau dagegen.

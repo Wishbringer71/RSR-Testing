@@ -33,8 +33,10 @@ internal static class TankbusterForecast
 	/// <param name="Budget">Share of maximum HP the player has to take it: HP now plus the barriers that
 	/// still stand at impact.</param>
 	/// <param name="Horizon">Seconds until the hit can arrive: the cast's rest plus one GCD.</param>
-	internal sealed record Cast(IBattleChara Source, uint ActionId, uint AttackType, float Remaining, float Total,
-		float Predicted, float Budget, float Horizon)
+	/// <param name="Serial">Tells this cast from every other, also from a later cast of the same action
+	/// by the same enemy with the same cast time.</param>
+	internal sealed record Cast(int Serial, IBattleChara Source, uint ActionId, uint AttackType, float Remaining,
+		float Total, float Predicted, float Budget, float Horizon)
 	{
 		/// <summary>Measured at all: the table has a figure for the action.</summary>
 		public bool Measured => Predicted > 0f;
@@ -42,9 +44,20 @@ internal static class TankbusterForecast
 
 	private static readonly List<Cast> _casts = [];
 
-	// The player's own actions as the server confirmed them: action, target, and when (monotonic, so a
-	// clock change does not stretch a window). Kept while the action's effect can still last.
-	private static readonly List<(uint ActionId, ulong Target, long Tick)> _own = [];
+	// The player's own actions as the server confirmed them: action, target, when (monotonic, so a clock
+	// change does not stretch anything), and whether its status has been seen since. Kept while the
+	// action's effect can still last.
+	private sealed class Execution
+	{
+		public required uint ActionId { get; init; }
+		public required ulong Target { get; init; }
+		public required long Tick { get; init; }
+		public bool StatusSeen { get; set; }
+	}
+
+	private static readonly List<Execution> _own = [];
+	private static readonly Dictionary<(ulong Source, uint ActionId, float Total), int> _serials = [];
+	private static int _nextSerial;
 	private static readonly HashSet<(ulong Source, uint ActionId, float Total)> _written = [];
 
 	/// <summary>Every known tankbuster now being cast at the player, the soonest first.</summary>
@@ -80,17 +93,19 @@ internal static class TankbusterForecast
 		_ = _own.RemoveAll(e => SecondsSince(e.Tick, now) > DefensiveValues.DurationOf(e.ActionId));
 		if (DefensiveValues.DurationOf(actionId) > 0f)
 		{
-			_own.Add((actionId, targetId, now));
+			_own.Add(new Execution { ActionId = actionId, Target = targetId, Tick = now });
 		}
 	}
 
 	/// <summary>
-	/// Seconds the player's own <paramref name="actionId"/>, gone out and aimed at him, still lasts by its
-	/// duration from that moment - also before its status is on him; zero if it did not go out within its
-	/// duration. <paramref name="anyTarget"/>: an effect around the player that lands on enemies (Reprisal),
-	/// whose recorded target is not him.
+	/// For the gap between the server confirming one of the player's own actions and its status showing
+	/// on him: the seconds it will still last by its duration from that moment, while its status has not
+	/// been seen yet; zero once it has (from then on the status itself tells, also when it ends early -
+	/// a barrier broken, a mitigation dispelled) or when the action did not go out within its duration.
+	/// <paramref name="statusOn"/> answers whether its status is on now; <paramref name="anyTarget"/>: the
+	/// action protects the player whatever it was aimed at (Holmgang on an enemy).
 	/// </summary>
-	public static float OwnCoverLeft(uint actionId, bool anyTarget)
+	public static float OwnPendingCover(uint actionId, bool anyTarget, Func<bool> statusOn)
 	{
 		var player = Player.Object;
 		var lasts = DefensiveValues.DurationOf(actionId);
@@ -99,17 +114,42 @@ internal static class TankbusterForecast
 			return 0f;
 		}
 
-		var now = Environment.TickCount64;
-		var best = 0f;
-		foreach (var (id, target, tick) in _own)
+		Execution? latest = null;
+		foreach (var execution in _own)
 		{
-			if (id == actionId && (anyTarget || target == player.GameObjectId))
+			if (execution.ActionId == actionId && (anyTarget || execution.Target == player.GameObjectId)
+				&& (latest == null || execution.Tick > latest.Tick))
 			{
-				best = Math.Max(best, lasts - SecondsSince(tick, now));
+				latest = execution;
 			}
 		}
 
-		return best;
+		if (latest == null || latest.StatusSeen)
+		{
+			return 0f;
+		}
+
+		if (statusOn())
+		{
+			latest.StatusSeen = true;
+			return 0f;
+		}
+
+		return Math.Max(0f, lasts - SecondsSince(latest.Tick, Environment.TickCount64));
+	}
+
+	/// <summary>Whether the cast with <paramref name="serial"/> is still coming at the player.</summary>
+	public static bool IsRunning(int serial)
+	{
+		foreach (var cast in _casts)
+		{
+			if (cast.Serial == serial)
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/// <summary>Seconds between two readings of <see cref="Environment.TickCount64"/>.</summary>
@@ -130,6 +170,7 @@ internal static class TankbusterForecast
 		{
 			_written.Clear();
 			_own.Clear();
+			_serials.Clear();
 			return;
 		}
 
@@ -158,7 +199,14 @@ internal static class TankbusterForecast
 			var attackType = Service.GetSheet<Lumina.Excel.Sheets.Action>().TryGetRow(id, out var row)
 				? row.AttackType.RowId
 				: 0u;
-			var cast = new Cast(hostile, id, attackType, left, hostile.TotalCastTime, predicted,
+			var identity = (hostile.GameObjectId, id, hostile.TotalCastTime);
+			if (!_serials.TryGetValue(identity, out var serial))
+			{
+				serial = ++_nextSerial;
+				_serials[identity] = serial;
+			}
+
+			var cast = new Cast(serial, hostile, id, attackType, left, hostile.TotalCastTime, predicted,
 				(player.CurrentHp / maxHp) + barrier, horizon);
 			_casts.Add(cast);
 			Trace(cast);
@@ -174,9 +222,24 @@ internal static class TankbusterForecast
 			}
 		}
 
-		// Only the casts still running keep their line, so the set does not grow through a fight.
+		// Only the casts still running keep their line and their serial; the next cast of the same action
+		// is a new one.
 		_ = _written.RemoveWhere(key => !_casts.Exists(c => c.Source.GameObjectId == key.Source
 			&& c.ActionId == key.ActionId && c.Total == key.Total));
+		List<(ulong, uint, float)> ended = [];
+		foreach (var identity in _serials.Keys)
+		{
+			if (!_casts.Exists(c => c.Source.GameObjectId == identity.Item1 && c.ActionId == identity.Item2
+				&& c.Total == identity.Item3))
+			{
+				ended.Add(identity);
+			}
+		}
+
+		foreach (var identity in ended)
+		{
+			_ = _serials.Remove(identity);
+		}
 
 		PlayerImpervious = player.ImperviousThrough(_casts.Count == 0 ? gcd : _casts[0].Horizon);
 	}
