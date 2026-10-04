@@ -1067,8 +1067,9 @@ public partial class CustomRotation
 
 	/// <summary>
 	/// The other half of the swap (the owner's rule of 04.10.2026): the enemy the swap handed to the
-	/// co-tank is provoked back only once the debuff and the critical state are over - and, his
-	/// precision, once the invulnerability is ready again. Where RSR would not use an invulnerability at
+	/// co-tank is provoked back only after the co-tank has taken its next tankbuster (his question,
+	/// accepted), once the debuff and the critical state are over - and, his precision, once the
+	/// invulnerability is ready again. Where RSR would not use an invulnerability at
 	/// all (not learned at this level, disabled, threshold zero) there is nothing to wait for.
 	/// </summary>
 	private bool TankSwapBackAbility(out IAction? act)
@@ -1104,7 +1105,7 @@ public partial class CustomRotation
 			IBaseAction.TargetOverride = previous;
 		}
 
-		DefenseTrace.Decision($"tank swap back (your debuff and danger are over) on {source.Name.TextValue}", act);
+		DefenseTrace.Decision($"tank swap back (the co-tank took the next tankbuster, your debuff and danger are over) on {source.Name.TextValue}", act);
 		return true;
 	}
 }

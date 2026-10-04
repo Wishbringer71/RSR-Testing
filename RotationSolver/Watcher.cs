@@ -249,6 +249,10 @@ public static class Watcher
 						{
 							markedForPlayer = isMarked;
 						}
+						else if (isMarked || OtherConfiguration.HostileCastingTank.Contains(marked.RowId))
+						{
+							TankSwapWatch.RecordBusterOnOther(source.GameObjectId, effect.TargetID, marked.Name.ExtractText());
+						}
 					}
 				}
 

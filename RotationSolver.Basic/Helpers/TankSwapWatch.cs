@@ -53,7 +53,9 @@ internal static class TankSwapWatch
 	private static Pending? _pending;
 	// A swap that moved the enemy, until the player has taken it back or it is gone.
 	private static Pending? _swappedAway;
-	private static DateTime _reclaimHeldWritten = DateTime.MinValue;
+	// Whether the enemy's next tankbuster has gone to the tank holding it since the swap.
+	private static bool _holderTookBuster;
+	private static string _reclaimHeldWritten = string.Empty;
 	private static readonly Dictionary<uint, float> _hardestShare = [];
 	// The after-transfer ratio receiver/player that last failed to move the source; a swap needs more.
 	private static float _failedRatio = 1f;
@@ -164,7 +166,30 @@ internal static class TankSwapWatch
 	private static void Moved(Pending pending)
 	{
 		_swappedAway = pending;
+		_holderTookBuster = false;
+		_reclaimHeldWritten = string.Empty;
 		DefenseTrace.Line($"tank swap moved the enemy: it now attacks {pending.ReceiverName}");
+	}
+
+	/// <summary>
+	/// A tankbuster from <paramref name="source"/> reached <paramref name="target"/>, someone other than
+	/// the player. After a swap this is the moment the enemy may come back: the swap follows the
+	/// rhythm of the busters, and taking it back before the holder's buster would hand the player the
+	/// next one himself and leave the co-tank's cooldowns unspent (the owner's question of 04.10.2026).
+	/// </summary>
+	public static void RecordBusterOnOther(ulong source, ulong target, string name)
+	{
+		lock (_gate)
+		{
+			// The holder: the receiver, or whoever the enemy attacks now if it has moved on.
+			if (_swappedAway is { } away && away.Source == source && !_holderTookBuster
+				&& (target == away.Receiver || Svc.Objects.SearchById(source) is IBattleChara enemy && enemy.TargetObjectId == target))
+			{
+				_holderTookBuster = true;
+				var holder = Svc.Objects.SearchById(target)?.Name.TextValue ?? "the co-tank";
+				DefenseTrace.Line($"tankbuster on {holder}: {name} - the enemy may come back once you are safe");
+			}
+		}
 	}
 
 	/// <summary>
@@ -176,17 +201,17 @@ internal static class TankSwapWatch
 		DefenseTrace.Line($"{from} shirked to you");
 	}
 
-	/// <summary>Writes, once per swap, why the enemy is not yet taken back.</summary>
+	/// <summary>Writes why the enemy is not yet taken back, once per reason and swap.</summary>
 	public static void TraceReclaimHeld(string why)
 	{
 		lock (_gate)
 		{
-			if (_swappedAway == null || _last == null || _reclaimHeldWritten == _last.At)
+			if (_swappedAway == null || _reclaimHeldWritten == why)
 			{
 				return;
 			}
 
-			_reclaimHeldWritten = _last.At;
+			_reclaimHeldWritten = why;
 			DefenseTrace.Line($"tank swap back waits: {why}");
 		}
 	}
@@ -429,6 +454,12 @@ internal static class TankSwapWatch
 		if (source.TargetObjectId == player.GameObjectId)
 		{
 			_swappedAway = null;
+			return;
+		}
+
+		if (!_holderTookBuster)
+		{
+			TraceReclaimHeld($"{away.ReceiverName} has not taken a tankbuster from {source.Name.TextValue} yet");
 			return;
 		}
 

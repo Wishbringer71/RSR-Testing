@@ -5417,6 +5417,27 @@ Wechsel greift, schreibt das Protokoll selbst.
   nur dem Protokoll.
 
 **Prüfgrad:** statisch, alle Prüfskripte und Generatoren, Compile über die CI. Im Spiel nicht beobachtet.
+
+### A257 · Zurückholen erst nach dem Tankbuster des Co-Tanks (04.10.2026)
+
+- *Seine Frage:* ob das Zurückprovozieren nicht erst nach einem Tankbuster auf den anderen Tank erfolgen müsste.
+  Eingeordnet als Präzisierung der Vorgabe aus A256.
+- *Loop:*
+  - Die Antithese 4 aus A256 – das Zurückholen zieht den geplanten Rückwechsel vor – war nur als „steht nicht gegen
+    die Vorgabe" abgetan, nicht widerlegt. Sie hält: Zurückgeholt vor seinem Tankbuster, nimmst du den nächsten
+    selbst, seine Abklingzeiten bleiben ungenutzt, und der Gegner dreht einmal mehr.
+  - Gegenprüfung: Kommt kein Tankbuster, behält der Co-Tank den Gegner; seine kritische Lage deckt die
+    Rettungs-Herausforderung.
+- *Gebaut:*
+  - Der Effekt-Handler meldet Tankbuster (Liste oder bestätigter Marker) auf andere Mitglieder.
+  - Nach einem Wechsel setzt der erste Tankbuster der Quelle auf den Halter – Empfänger oder aktuelles Ziel des
+    Gegners – die Freigabe; erst dann gilt `ReclaimSource`.
+  - Protokoll: „tankbuster on …", Wartegrund einmal je Grund und Wechsel. Optionstext, Konzept 09 und Release-Text
+    nachgezogen.
+- *Fehlerursache am System:* Eine Antithese wurde abgewogen statt widerlegt; nach `CLAUDE.md` gilt die Empfehlung
+  dann nicht.
+
+**Prüfgrad:** statisch, alle Prüfskripte und Generatoren, Compile über die CI. Im Spiel nicht beobachtet.
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

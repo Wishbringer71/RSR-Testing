@@ -967,6 +967,8 @@ die höchste gesundheit."
 - *Vorgabe:* „weiterhin sollte erst dann mit provozieren wieder aggro aufgebaut werden, wenn debuff und kritischer
   zustand abgelaufen sind."
 - *Präzisierung dazu:* „am besten, wenn auch unverwundbarkeit wieder bereitsteht."
+- *Präzisierung (als Frage gestellt, geprüft und übernommen):* „müsste das zurückprovozieren nicht erst dann
+  erfolgen, wenn auch der andere tank einen tankbuster bekommen hat?"
 
 **Gebaut (A255, A256), Option „Shirk the co-tank after a tankbuster that leaves you in danger", ab Werk an:**
 Erkennung in `TankSwapWatch`, Entscheidung in `CustomRotation.TankSwapAbility`, für alle Tanks an einer Stelle (Stufe
@@ -992,11 +994,20 @@ anderen Tank, wenn alles zutrifft:
    Geteiltem Leid gegeben, weil er in Gefahr ist, zeigt genau diese Messung das, und du gibst ihn nicht zurück.
    Seine Geste selbst schreibt das Protokoll nur mit („… shirked to you").
 
-**Zurückholen (seine Vorgabe und Präzisierung):** Hat dein Geteiltes Leid den Gegner bewegt, provoziert RSR ihn
+**Zurückholen (seine Vorgabe und Präzisierungen):** Hat dein Geteiltes Leid den Gegner bewegt, provoziert RSR ihn
 zurück, sobald
+- der Tank, der ihn jetzt hält, den nächsten Tankbuster dieses Gegners genommen hat,
 - die Verwundbarkeit abgelaufen ist und LP mit Schild über dem härtesten gemessenen Anteil liegen, und
 - deine Unverwundbarkeit wieder bereit ist. Wo RSR sie gar nicht einsetzen würde (auf dieser Stufe nicht erlernt,
   abgeschaltet, Schwelle 0), wartet es darauf nicht.
+
+Warum erst nach seinem Tankbuster: Ein Wechsel folgt dem Takt der Tankbuster. Früher zurückgeholt, nähmst du den
+nächsten selbst, und die Abklingzeiten, die der Co-Tank dafür bereithält, blieben ungenutzt; der Gegner drehte
+einmal mehr als nötig. Danach wechseln sich die Treffer ab, und trägt er nun selbst eine Verwundbarkeit, ist das
+genau der Moment, in dem er dich braucht. Kommt lange kein Tankbuster, behält er den Gegner. Das ist ungefährlich,
+denn er ist ein Tank, und fällt er unter die Sterbe-Schwelle, nimmt die automatische Herausforderung ihm den Gegner
+ab, sofern du nicht selbst in Gefahr bist. Trifft sein Tankbuster, solange dein Debuff noch läuft, wartet das
+Zurückholen auf deine übrigen Bedingungen.
 
 Greift der Gegner dich schon wieder an, ist nichts zurückzuholen. Hat der Co-Tank ihn per Herausforderung
 übernommen, ohne dass dein Geteiltes Leid ihn bewegt hat, holt RSR ihn nicht zurück: Das war ein geplanter Wechsel.
@@ -1066,10 +1077,9 @@ Leid sofort und festigt den Wechsel, wie es die Referenz vorsieht.
 3. **Ausgeliefert, und nichts ändert sich.** Bei Spielern, deren Co-Tank ohne Haltung spielt, wirkt die Regel nie.
    Das ist so gebaut, weil sie dort nichts bewirken könnte. Damit das von außen unterscheidbar bleibt, schreibt das
    Protokoll je Tankbuster einen Grund. Eine falsche Prognose zieht die Regel selbst nach (unten).
-4. **Das Zurückholen ist unnötig, der Co-Tank kommt zurecht.** In geplanten Wechseln liegt der Zeitpunkt des
-   Rückwechsels im Ablauf des Kampfes, und RSR kann ihn vorziehen; der Gegner dreht dann einmal mehr. Das steht
-   gegen seine Vorgabe nur scheinbar: Sie bestimmt, *wann frühestens* zurückgeholt wird, und mit bereiter
-   Unverwundbarkeit gilt der Haupttank nach seiner Präzisierung wieder als gesichert. Nicht widerlegt bleibt, dass die Unverwundbarkeit nur
+4. **Das Zurückholen kommt zu früh oder unnötig.** Ohne Bindung an den Tankbuster des Co-Tanks zog es einen
+   geplanten Rückwechsel vor; diese Antithese hielt und hat die Bedingung geändert (seine Frage). Mit der Bindung
+   folgt es dem Takt der Treffer. Nicht widerlegt bleibt, dass die Unverwundbarkeit nur
    unter der Sterbe-Schwelle zündet (Eintrag in `TODO.md`). Gegen einen tödlichen Treffer von oben sichert sie also
    nicht.
 
@@ -1083,7 +1093,8 @@ Auto-Angriff der Quelle danach: „moved the enemy" oder „did not move". Im zw
 Wechsel in diesem Kampf mehr als das Verhältnis, das versagt hat. Gezählt wird erst ab der Ausführung, eine Wahl
 ohne Ausführung verschiebt nichts. Den Erfolg zeigt schon das Ziel des Gegners: Wechselt es auf den Empfänger, gilt
 der Wechsel sofort als gelungen. Wartet das Zurückholen, steht einmal je Wechsel „tank swap back waits: …"
-(Unverwundbarkeit noch nicht bereit, Herausforderung im Abklingen oder außer Reichweite); holt RSR zurück, steht
+(der Co-Tank hat noch keinen Tankbuster genommen, Unverwundbarkeit noch nicht bereit, Herausforderung im
+Abklingen oder außer Reichweite); trifft der Tankbuster den Co-Tank, steht „tankbuster on …; holt RSR zurück, steht
 „tank swap back … -> Provoke". Ob die Geste des Co-Tanks (Geteiltes Leid auf dich) als eigener Effektsatz bei dir
 ankommt, ist nicht belegt; fehlt die Zeile, ändert das nichts an der Entscheidung.
 
