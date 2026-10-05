@@ -91,9 +91,9 @@ public partial class CustomRotation
 		var gcd = DataCenter.DefaultGCDTotal;
 		var invulnerability = Invulnerability;
 
-		// An invulnerability over the hit - drawn by this plan or at its HP threshold, its status on or the
-		// press confirmed and its duration reaching the hit: covered, nothing else is spent on it.
-		if (InvulnerabilityCovers(cast.Horizon))
+		// Z1 (concept 09, "Das Zustandsmodell je Wirken"): Hallowed Ground or Superbolide over the hit - no
+		// damage lands, nothing else is spent on it.
+		if (Player is { } player && player.ImperviousThrough(cast.Horizon))
 		{
 			SetPlan(new TankbusterPlan(cast, [], true, true, 0f));
 			return;
@@ -130,7 +130,15 @@ public partial class CustomRotation
 
 		if (bestMask >= 0)
 		{
+			// Z2, also under Holmgang or Living Dead: there a hit still takes HP down to 1, and the bundle
+			// decides how much is left when they end.
 			SetPlan(new TankbusterPlan(cast, Pick(candidates, bestMask), false, true, bestAfter));
+		}
+		else if (InvulnerabilityCovers(cast.Horizon))
+		{
+			// Z1: no bundle survives, and an invulnerability - drawn by this plan or at its HP threshold, its
+			// status on or the press confirmed and its duration reaching the hit - already holds over it.
+			SetPlan(new TankbusterPlan(cast, [], true, true, 0f));
 		}
 		else if (Service.Config.InvulnerabilityBeforeLethalTankbuster && invulnerability != null
 			&& !Refused(cast, invulnerability.ID, gcd) && !EverythingSpent(cast)
@@ -183,8 +191,10 @@ public partial class CustomRotation
 				continue;
 			}
 
+			// Invariant 5: it has to be able to stand at impact, so its duration has to be known and at least a
+			// GCD. Reprisal and Sheltron state none in the table (TODO.md) and stay out until it is known.
 			var lasts = DefensiveValues.DurationOf(action.ID);
-			if (lasts > 0f && lasts < gcd)
+			if (lasts < gcd)
 			{
 				continue;
 			}

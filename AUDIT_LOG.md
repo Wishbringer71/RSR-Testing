@@ -5797,6 +5797,31 @@ Wechsel greift, schreibt das Protokoll selbst.
 
 **Prüfgrad:** statisch, Prüfskripte; Compile über die CI.
 
+### A263 · Erst das Konzept, dann der Code: Zustandsmodell des Tankbuster-Plans (05.10.2026)
+
+- *Seine Frage:* „müsste nicht eigentlich immer erst das konzept stehen und dann der code?" Ja. Nach seiner Vorgabe
+  zum geringsten Mittel (A261) habe ich den Plan gebaut und das Konzept nachgezogen; elf Review-Runden fanden je neue
+  Fehler, fast alle Konzeptfragen – die Zustände eines Plans je Wirken und ihre Übergänge, was zwischen Druck,
+  Bestätigung und Status gilt, was „aus ‚alles' ging etwas hinaus" heißt. Ursache am System: Das Review ersetzte die
+  Definition of Ready; ein Befund wurde je an der Stelle geflickt, statt das Konzept neu zu prüfen, wie es die
+  Prüfpunkte verlangen.
+- *Nachgeholt:* Konzept 09, Abschnitt „Das Zustandsmodell je Wirken": Tatsachen, Zustände Z0–Z4, Übergänge,
+  Invarianten, offene Entscheidung D1 (a: nach „alles", b: nach einem überlebbaren Bündel). Falsifikation gegen das
+  Modell vor jeder Code-Änderung.
+- *Beim Aufstellen gefundene Abweichungen des Codes (7af48d947), danach behoben:*
+  - Z1 griff bei jeder Unverwundbarkeit über dem Einschlag, auch bei Holmgang oder Totenerweckung über einem Treffer,
+    den ein Bündel trägt; dann hielt der Plan alles zurück, obwohl unter ihnen die Minderung die LP nach ihrem Ende
+    bestimmt. Jetzt Z1 nur bei Heiligem Boden/Meteoritenfall, oder wenn kein Bündel übersteht.
+  - Reflexion (7535) und Schiltron (3542) haben in der Tabelle keine Wirkdauer („Duration: s", Wert am Merkmal). Sie
+    wurden sofort gedrückt und nicht überbrückt und konnten vor dem Einschlag ablaufen. Jetzt keine Kandidaten, bis die
+    Dauer bekannt ist (`TODO.md`).
+- *Falsifikation:* kein Defekt – beide am Code belegt; Option falsch – ohne die zwei Aktionen wählt der Plan teurer,
+  das kostet Abklingzeit, nicht Leben; die Gegenposition „unter Holmgang ist das geringste Mittel nichts" steht gegen
+  die begründete Konzeptaussage zu den LP nach dem Ende und hängt am offenen Reserve-Eintrag; ausgeliefert ohne
+  Wirkung – im Protokoll an der Planzeile ablesbar.
+
+**Prüfgrad:** statisch, Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

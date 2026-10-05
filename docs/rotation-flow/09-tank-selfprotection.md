@@ -1158,8 +1158,8 @@ Für den frühesten gemessenen Tankbuster, der auf dich gewirkt wird:
    zählt keine (`HasSurvivingShield`: die früheste Barriere entscheidet). Ein großer Heilerschild, der hält, zählt
    also voll – sein Hinweis.
 3. **Was du noch tun kannst:** jede eigene Minderung, die erlernt, aktiviert und nach ihren eigenen Prüfungen
-   nutzbar ist (Ressourcen eingeschlossen), bis einen GCD vor dem Einschlag abgeklungen ist, mindestens einen GCD
-   wirkt, nach Wirktext gegen diese Schadensart mindert oder eine Barriere legt und beim Einschlag nicht schon steht.
+   nutzbar ist (Ressourcen eingeschlossen), bis einen GCD vor dem Einschlag abgeklungen ist, eine bekannte Wirkdauer
+   von mindestens einem GCD hat (Reflexion und Schiltron nennen in der Tabelle keine, `TODO.md`), nach Wirktext gegen diese Schadensart mindert oder eine Barriere legt und beim Einschlag nicht schon steht.
    Ein Knopf zählt einmal (Rachsucht/Verdammnis, Urinstinkt/Urimpuls). In dem Moment zwischen dem
    Effektpaket des Servers (die eigene Minderung ging auf dich hinaus) und dem ersten Erscheinen ihres Status zählt
    sie schon als stehend, nach ihrer Wirkdauer ab der Ausführung (`TankbusterForecast.OwnPendingCover`, aus dem
@@ -1201,6 +1201,50 @@ unterscheidet die Fremdeffekte seines Hinweises von einer erhofften Hilfe.
 Der Plan wird je Durchlauf neu gerechnet. Heilt ein Heiler dich vor dem Einschlag hoch oder legt der Co-Tank
 Reflexion, schrumpft er; fallen deine LP durch Auto-Angriffe, wächst er. Bereits gedrückte Minderungen stehen dann
 und zählen unter 1. mit.
+
+### Das Zustandsmodell je Wirken
+
+Maßgeblich für Code und Prüfung; die Abschnitte davor und danach beschreiben Teile davon. Gerechnet wird in jedem
+Durchlauf neu, nur für Tanks und nur, wenn mindestens eine der beiden Optionen an ist.
+
+**Die Tatsachen (Erkennung, `TankbusterForecast`, liest keine Option):** je Wirken auf dich seine Nummer, die
+Restzeit R, der Horizont H = R + ein GCD, der erwartete Anteil P unter dem, was über H steht, und was du hast,
+B = LP jetzt plus Barrieren, die über H stehen. Dazu die eigenen Ausführungen, die der Server bestätigt hat, mit
+Ziel, Zeitpunkt und ob ihr Status seither erschienen ist, und ob Heiliger Boden oder Meteoritenfall über H liegen.
+
+**Die Zustände** für das früheste gemessene Wirken c:
+
+| Zustand | Wann | Was gedrückt wird | Was zurückgehalten wird (nur Option „Spend only …") |
+|---|---|---|---|
+| Z0 kein Plan | kein gemessenes Wirken auf dich | nichts | nichts (Heiliger Boden/Meteoritenfall über den nächsten GCD: alles) |
+| Z1 gedeckt | Heiliger Boden oder Meteoritenfall über H, **oder** Holmgang/Totenerweckung über H und kein Bündel übersteht c | nichts | alles Bewertete auf dich |
+| Z2 Bündel S | das billigste Bündel S übersteht c; S darf leer sein | jedes Glied von S in seinem Fenster | alles Bewertete auf dich außer S; im letzten GCD nichts, wenn ein Glied fehlt |
+| Z3 Unverwundbarkeit | kein Bündel übersteht c, Option „Use the invulnerability …" an, sie ist einen GCD vor dem Einschlag bereit, in diesem GCD nicht verweigert und nicht durch „alles" ausgeschlossen | die Unverwundbarkeit in ihrem Fenster | alles Bewertete auf dich, solange R > GCD und sie bereit ist |
+| Z4 alles | kein Bündel, keine Unverwundbarkeit | jedes verfügbare Glied in seinem Fenster | nichts |
+
+„Zurückgehalten" gilt nur, wenn c das einzige bekannte Wirken auf dich ist (kein zweites, gemessen oder nicht, keine
+BossModReborn-Vorhersage davor); Z1 auch neben einem zweiten, wenn die Deckung über jedes Wirken reicht. Frei bleiben
+immer: Hilfe für andere, die Heilpfade, nach außen wirkende Flächenabwehr, jeder Befehl.
+
+**Die Übergänge** – jeder Durchlauf rechnet den Zustand aus den Tatsachen; gespeichert wird nur:
+- *Verweigerung:* Lehnt eine Aktion ab, ohne dass Animationssperre oder eigener Zauber das erklärt, fehlt sie einen GCD
+  lang unter den Kandidaten (Z2/Z4) oder als Unverwundbarkeit (Z3 → Z4 für diesen GCD).
+- *„Alles" ausgeschöpft:* Geht ein Druck aus Z4 hinaus (vom Ausführungsprotokoll bestätigt), ist Z3 für dieses Wirken
+  ausgeschlossen (offene Entscheidung D1a).
+- *Eigene Ausführung ohne Status:* zählt als stehend, bis ihr Status erscheint; danach sagt nur der Status.
+- Alles Übrige ergibt sich aus den Tatsachen: Heilung hebt B (Z3 → Z2 möglich), Auto-Angriffe senken B (Z2 → größeres
+  S oder Z3), eine fremde Reflexion senkt P, ein gezogenes Glied von S steht und fällt aus den Kandidaten.
+
+**Invarianten:**
+1. Die Unverwundbarkeit wird nie geplant, solange ein Bündel reicht.
+2. In Z1 und Z3 drückt der Plan keine Minderung.
+3. Das Zurückhalten trifft nie Heilung, Hilfe für andere, nach außen wirkende Flächenabwehr oder einen Befehl.
+4. Fehlt im letzten GCD ein Glied von S, endet das Zurückhalten.
+5. Ein Kandidat muss beim Einschlag noch stehen können: Er braucht eine bekannte Wirkdauer von mindestens einem GCD.
+
+**Offene Entscheidung D1 (`TODO.md`):** Die Unverwundbarkeit, nachdem für dasselbe Wirken schon Minderungen
+hinausgingen – (a) aus Z4, weil sie verweigert war (gebaut: nicht mehr, aus seiner Präzisierung abgeleitet);
+(b) aus Z2, wenn danach die LP fallen und kein Bündel mehr reicht (gebaut: ja).
 
 ### Die Ausführung
 

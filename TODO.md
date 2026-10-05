@@ -248,7 +248,7 @@ der sich hochrechnen ließe).
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 
-### Unverwundbarkeit nach „alles" im selben Wirken: seine Entscheidung · N
+### Unverwundbarkeit, nachdem für dasselbe Wirken schon Minderungen hinausgingen: seine Entscheidung (D1) · N
 
 **Lage (A261):** Ist die Unverwundbarkeit für einen gemessenen Tankbuster verweigert – vom Spiel (Stun, Amnesie)
 oder einer Prüfung der Rotation –, ist der Plan „alles", und Minderungen gehen hinaus. Wird sie danach im selben
@@ -261,11 +261,25 @@ Wirken nutzbar und reicht noch immer nichts Geringeres, stehen zwei Wege offen:
   Treffer; der jetzige trifft auf alle Minderungen und tötet nach der Messung, außer ein anderer legt noch einen
   Debuff oder Schild.
 
+**Teil b:** Ging für dasselbe Wirken ein überlebbares Bündel hinaus und fallen danach die LP, sodass kein Bündel mehr
+reicht, geht die Unverwundbarkeit zusätzlich (gebaut). Im Kampf: Der Tank überlebt; das Bündel war die richtige Wahl
+zu seiner Zeit. Die Alternative hielte sie zurück und nähme den Treffer mit dem Bündel. Empfehlung: wie gebaut.
+
 Seine Präzisierung („nicht invul und dann noch zusätzlich buffs … alles raushauen, wenn invul nicht verfügbar ist")
 legt fest, was „alles" heißt; diesen Fall berührt sie nicht. **Empfehlung:** A – die Messung nennt den Treffer
 tödlich, und B nimmt den Tod bewusst in Kauf, um eine Abklingzeit zu sparen. Gebaut bleibt B, bis er entscheidet:
 Die Festlegung steht mit seiner Präzisierung als Grund im Konzept, und die ändere ich nicht ohne ihn. Die Runden des
 Code-Reviews haben zwischen beiden gependelt; die Frage ist keine technische.
+
+**Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
+
+### Wirkdauer von Reflexion und Schiltron fehlt in der Tabelle · N, R
+
+**Befund (A261, Zustandsmodell):** Der Wirktext von Reflexion (7535) und Schiltron (3542) in `ActionId.resx` lautet
+„Duration: s" – der Wert hängt an einem Merkmal (Verbesserte Reflexion ab Stufe 98) und fehlt deshalb in
+`DefensiveValues.DurationByActionId`. Der Tankbuster-Plan nimmt nur Kandidaten mit bekannter Dauer; beide fallen
+damit heraus, obwohl Reflexion oft das billigste Glied wäre. **Offen:** die Dauer aus dem Job-Guide
+(`na.finalfantasyxiv.com/jobguide/`, Wert samt Merkmalsstufe) in den Generator übernehmen, mit Selbsttest.
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 
