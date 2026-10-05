@@ -1215,23 +1215,32 @@ an ist.
 - Status nur aus der Statusliste selbst – nie der Status, den ein Bestätigungspaket vorhersagt (`DataCenter.ApplyStatus`
   meldet ihn mit unendlicher Restzeit und hielte so alles für „steht über H");
 - die eigenen Drücke (RSR hat die Aktion ausgeführt, `BaseAction.Use`) und die eigenen Ausführungen, die der Server
-  bestätigt hat, jeder Aktion mit bekannter Wirkdauer – Minderung, Barriere und Unverwundbarkeit –, je mit Ziel,
-  Zeitpunkt und ob ihr Status seither erschienen ist, unabhängig davon, ob die Aktion gerade Kandidat sein könnte
+  bestätigt hat, jeder bewerteten Minderung oder Barriere mit bekannter Wirkdauer und jeder Unverwundbarkeit, je mit
+  Ziel, Zeitpunkt, wie lange eine eigene Kopie ihres Status beim Druck noch lief, und ob ihr neuer Status seither
+  erschienen ist, unabhängig davon, ob die Aktion gerade Kandidat sein könnte
   (abgeschaltet, verweigert, per Befehl gedrückt). Ein Ziel, das der Effekt-Handler nicht auflösen konnte, zählt nicht
   als „auf dich";
 - wie viele Drücke bewerteter Abwehr auf dich RSR bisher ausgeführt hat – Minderung, Barriere, Reflexion um dich, auch
-  ohne bekannte Wirkdauer; Drücke von Hand und Hilfe für andere nicht;
-- die Erkennung erhebt einmal je Bild, nach der Rotation; der Plan rechnet mit ihrer letzten Erhebung, und die
-  Restdauer eines Datensatzes gilt wie R zum Zeitpunkt dieser Erhebung (hochauflösende Uhr), damit ein Glied, das
-  genau am Rand seines Fensters gedrückt wurde, nicht durch den Versatz zweier Uhren unter H rutscht. Was er daneben
+  ohne bekannte Wirkdauer; Drücke von Hand, Hilfe für andere und Gruppenwerkzeuge (sie gehören der Flächenabwehr)
+  nicht;
+- die Erkennung erhebt einmal je Bild, nach der Rotation; P und B stammen aus ihrer letzten Erhebung. Der Plan rechnet
+  auf „jetzt": R und H rückt er um die Zeit seit der Erhebung vor (hochauflösende Uhr), sodass alles, was er selbst
+  aus der Statusliste und aus Abklingzeiten liest, mit derselben Uhr verglichen wird. Ein Ruckler zwischen zwei Bildern
+  verschiebt so beide Seiten gleich. Was er daneben
   selbst aus der Statusliste liest – ob eine Wirkung beim Einschlag schon steht –, fragt er erst nach dem Datensatz:
   Ein Datensatz, dessen Status die Erhebung noch nicht gesehen hat, zählt als stehend, auch wenn der Status im
   laufenden Bild schon liegt. So fällt eine eben erschienene Minderung nie zwischen Erhebung und Statusliste durch.
 
 **Wann eine eigene Aktion als stehend zählt, ohne dass ihr Status schon liegt:** Jede Ausführung ist ein Datensatz vom
-eigenen Druck an. Er zählt als stehend, bis ihr neuer Status erscheint (eine eigene Kopie dort, wo sie landet, die länger
-läuft als eine beim Druck lief) – längstens einen GCD ohne Bestätigung des Servers, mit Bestätigung längstens ihre
-Wirkdauer über H. Danach sagt nur der Status, auch wenn er vorzeitig endet. So ist eine eben gedrückte Minderung nie
+eigenen Druck an. Er lebt, bis ihr neuer Status erscheint (eine eigene Kopie dort, wo sie landet, die länger läuft als
+eine beim Druck lief) – längstens einen GCD ohne Bestätigung des Servers, mit Bestätigung längstens ihre Wirkdauer.
+Solange er lebt, zählt die Aktion als stehend,
+- wenn der Plan sie in ihrem Fenster gedrückt hat: Die Fensterprüfung beim Druck hat gesichert, dass sie über den
+  Einschlag reicht; ein zweiter Vergleich mit H, auf einer anderen Uhr, könnte sie nur durch Messversatz verlieren;
+- sonst, wenn ihre Wirkdauer ab dem Druck über H reicht (ein früher Druck aus einem anderen Pfad läuft vorher ab).
+
+Nicht zusätzlich zählt ein Datensatz, dessen alte eigene Kopie schon über H reicht – eine Erneuerung: Die alte Kopie
+steckt bereits in P. Danach sagt nur der Status, auch wenn er vorzeitig endet. So ist eine eben gedrückte Minderung nie
 weder Kandidat noch stehend, und sie zählt nie zugleich als Status und als Datensatz.
 
 **Die Zustände** für das früheste gemessene Wirken c:

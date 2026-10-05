@@ -5898,6 +5898,23 @@ Wechsel greift, schreibt das Protokoll selbst.
     dritten Runde; nachgezogen.
   - Konzept sagte „Reflexion wird überbrückt"; ohne Wirkdauer ist sie weder Kandidat noch überbrückt. Berichtigt.
   - Liste je Durchlauf in `UpdateTankbusterPlan` durch eine wiederverwendete ersetzt.
+- *Fünftes Review (4d79f0725, CI grün), sechs Befunde.* Die Ableitung am Fensterrand hielt für den Datensatz, aber
+  dieselbe Uhrenklasse traf die Statusabfragen: Eine gesehene Unverwundbarkeit wurde live gelesen und gegen ein H
+  von der letzten Erhebung verglichen; ein Ruckler größer als die Latenz ließ Holmgang unter H fallen, der Plan
+  rechnete Z4 und drückte Minderungen auf die stehende Unverwundbarkeit. Ins Modell, statt die Stelle zu flicken:
+  - Der Plan rechnet auf „jetzt": R und H werden um die Zeit seit der Erhebung vorgerückt; alles Selbstgelesene
+    (Status, Abklingzeiten, Datensätze) vergleicht auf derselben Uhr.
+  - Ein Glied, das der Plan in seinem Fenster gedrückt hat, zählt als stehend, solange sein Datensatz lebt – die
+    Fensterprüfung beim Druck hat die Deckung gesichert; ein späterer Druck aus einem anderen Pfad liegt ebenfalls im
+    Fenster, weil R nur fällt. Andere Datensätze vergleichen ihre Wirkdauer ab dem Druck mit H.
+  - Erneuerung: Reichte die alte eigene Kopie beim Druck schon über H, zählt der Datensatz nicht zusätzlich (sie steckt
+    in P) – vorher konnte ein zweites Heiliges Schiltron den Plan auf „survivable as it stands" springen lassen.
+  - Gruppenwerkzeuge zählen nicht als Druck für „‚Alles' ausgeschöpft" (Divine Veil für einen Raidwide hätte die
+    Unverwundbarkeit gesperrt).
+  - Datensätze nur für bewertete Minderung/Barriere und Unverwundbarkeiten (über ihren Status), nicht für jede Aktion
+    mit Wirkdauer – die Tabelle führt auch Schadensbuffs und DoTs.
+  - Optionstext und Release-Text: „kein Versuch vor dem letzten GCD vor dem Einschlag", wie der Code.
+  - Ein Kommentar sagte noch „Reprisal is bridged"; berichtigt.
 
 **Prüfgrad:** statisch, Prüfskripte; Compile über die CI.
 

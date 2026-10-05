@@ -47,7 +47,12 @@ public partial class CustomRotation
 	// The cast the last cycle planned "everything" for, and how many rated defences on the player RSR had
 	// pressed by then; one more went out under it.
 	private static (int Serial, long Presses)? _everythingSince;
-	private static readonly List<(int, uint)> _refusalsEnded = [];
+	private static readonly List<(int, uint)> _endedKeys = [];
+
+	// What the plan pressed inside its window, per cast and button, and when: the window check at the press
+	// made sure it lasts over the hit, so its record counts as standing until its status shows, without a
+	// second comparison against the horizon on another clock.
+	private static readonly Dictionary<(int Cast, uint ActionId), long> _pressedInWindow = [];
 
 	/// <summary>
 	/// The owner's rule of 04.10.2026 (concept 09, "Das geringste Mittel gegen einen gemessenen
@@ -69,18 +74,27 @@ public partial class CustomRotation
 		_tankbusterPlan = null;
 
 		// Refusals belong to casts still running.
-		_refusalsEnded.Clear();
+		_endedKeys.Clear();
 		foreach (var key in _refused.Keys)
 		{
 			if (!TankbusterForecast.IsRunning(key.Cast))
 			{
-				_refusalsEnded.Add(key);
+				_endedKeys.Add(key);
 			}
 		}
 
-		foreach (var key in _refusalsEnded)
+		foreach (var key in _pressedInWindow.Keys)
+		{
+			if (!TankbusterForecast.IsRunning(key.Cast))
+			{
+				_endedKeys.Add(key);
+			}
+		}
+
+		foreach (var key in _endedKeys)
 		{
 			_ = _refused.Remove(key);
+			_ = _pressedInWindow.Remove(key);
 		}
 
 		_ = _everythingSpent.RemoveWhere(serial => !TankbusterForecast.IsRunning(serial));
@@ -99,19 +113,28 @@ public partial class CustomRotation
 			return;
 		}
 
-		var cast = TankbusterForecast.SoonestMeasured;
-		if (cast == null)
+		var measured = TankbusterForecast.SoonestMeasured;
+		if (measured == null)
 		{
 			_planTraced = default;
 			return;
 		}
+
+		// On the clock of now: what the plan reads itself - statuses, cooldowns, own records - is read now, the
+		// cast's remaining time at the forecast's last reading.
+		var lag = TankbusterForecast.SinceReading;
+		var cast = measured with
+		{
+			Remaining = Math.Max(0f, measured.Remaining - lag),
+			Horizon = Math.Max(0f, measured.Horizon - lag),
+		};
 
 		var gcd = DataCenter.DefaultGCDTotal;
 		var invulnerability = Invulnerability;
 
 		// Z1 (concept 09, "Das Zustandsmodell je Wirken"): an invulnerability over the hit - its status, or the
 		// own press of it - and for this cast no mitigation goes out on top of it (invariant 2).
-		if (InvulnerabilityCovers(cast.Horizon))
+		if (InvulnerabilityCovers(cast, true))
 		{
 			SetPlan(new TankbusterPlan(cast, [], true, true, 0f, Covered: true));
 			return;
@@ -219,11 +242,11 @@ public partial class CustomRotation
 	/// spread over the party, Shake It Off, Divine Veil, Dark Missionary, Heart of Light - stay out: they belong
 	/// to the area defence, and Shake It Off dispels the tank's own Damnation and Bloodwhetting. Reprisal, a
 	/// debuff on the enemy, stays in. <paramref name="pending"/>: mitigations of the player pressed or gone out
-	/// on him whose status the forecast has not seen yet, lasting until the hit by their duration from the
-	/// press - asked before the status list, which can already show what the forecast's last reading did not
-	/// count. A cooldown would say neither who pressed nor on whom, and Vengeance and Damnation share one.
-	/// Reprisal is bridged until its debuff shows on any enemy; if it did not reach this one, its absence
-	/// there then tells.
+	/// on him whose status the forecast has not seen yet and that stand at the hit (<see cref="PendingStands"/>)
+	/// - asked before the status list, which can already show what the forecast's last reading did not count.
+	/// A cooldown would say neither who pressed nor on whom, and Vengeance and Damnation share one. Reprisal
+	/// states no duration in the table yet (TODO.md), so it is neither a candidate nor bridged; it counts once
+	/// its debuff is on the caster.
 	/// </summary>
 	private List<PlanCandidate> PlanCandidates(TankbusterForecast.Cast cast, float gcd, out List<PlanCandidate> pending)
 	{
@@ -271,7 +294,7 @@ public partial class CustomRotation
 				continue;
 			}
 
-			if (TankbusterForecast.OwnPendingCover(key, action.Info.EffectRange > 0) >= cast.Horizon)
+			if (PendingStands(key, action.Info.EffectRange > 0, cast))
 			{
 				pendingByButton[key] = candidate;
 				_ = byButton.Remove(key);
@@ -381,15 +404,34 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
-	/// Whether an invulnerability on the player lasts <paramref name="seconds"/>: its status, or - between the
-	/// own press and the status showing - its duration from the press. Holmgang protects its user whatever it
-	/// was aimed at.
+	/// Whether an invulnerability on the player lasts over the horizon of <paramref name="cast"/>, from now: its
+	/// status, or - between the own press and the status showing - its record (<see cref="PendingStands"/>).
+	/// Holmgang protects its user whatever it was aimed at.
 	/// </summary>
-	private bool InvulnerabilityCovers(float seconds)
+	private bool InvulnerabilityCovers(TankbusterForecast.Cast cast, bool windowCounts)
 	{
 		var invulnerability = Invulnerability;
-		return TankbusterForecast.PlayerInvulnerableThrough(seconds)
-			|| (invulnerability != null && TankbusterForecast.OwnPendingCover(invulnerability.ID, true) >= seconds);
+		return TankbusterForecast.PlayerInvulnerableThrough(cast.Horizon)
+			|| (invulnerability != null && PendingStands(invulnerability.AdjustedID, true, cast, windowCounts));
+	}
+
+	/// <summary>
+	/// Whether an own action whose status has not shown yet stands at the hit (concept 09, "Wann eine eigene
+	/// Aktion als stehend zählt"): pressed by the plan inside its window, or lasting over the horizon by its
+	/// duration from the press. Not when the own copy that ran at the press already lasts over the horizon - a
+	/// renewal: that copy is in the forecast's figures already. <paramref name="windowCounts"/>: false when the
+	/// horizon reaches past the cast the press was planned for, which its window does not cover.
+	/// </summary>
+	private static bool PendingStands(uint actionId, bool anyTarget, TankbusterForecast.Cast cast, bool windowCounts = true)
+	{
+		var pending = TankbusterForecast.OwnPending(actionId, anyTarget);
+		if (pending.Cover <= 0f || pending.PriorLeft >= cast.Horizon)
+		{
+			return false;
+		}
+
+		return pending.Cover >= cast.Horizon
+			|| (windowCounts && _pressedInWindow.TryGetValue((cast.Serial, actionId), out var pressed) && pending.Tick >= pressed);
 	}
 
 	private static bool EverythingSpent(TankbusterForecast.Cast cast)
@@ -482,7 +524,7 @@ public partial class CustomRotation
 		if (plan.Invulnerability)
 		{
 			var invulnerability = Invulnerability;
-			if (invulnerability == null || InvulnerabilityCovers(plan.Cast.Horizon) || Refused(plan.Cast, invulnerability.ID, gcd))
+			if (invulnerability == null || InvulnerabilityCovers(plan.Cast, true) || Refused(plan.Cast, invulnerability.ID, gcd))
 			{
 				return false;
 			}
@@ -550,6 +592,7 @@ public partial class CustomRotation
 			IBaseAction.TargetOverride = previous;
 		}
 
+		_pressedInWindow[(plan.Cast.Serial, action.AdjustedID)] = TankbusterForecast.Now;
 		DefenseTrace.Decision($"{why} for #{plan.Cast.ActionId} from {plan.Cast.Source.Name.TextValue}"
 			+ $" in {plan.Cast.Remaining:F1} s", act);
 		return true;
@@ -574,16 +617,18 @@ public partial class CustomRotation
 			|| bmr >= plan.Cast.Remaining - DataCenter.DefaultGCDTotal;
 	}
 
-	// An invulnerability that outlasts every cast now coming at the player covers them all.
-	private bool InvulnerabilityCoversEveryCast()
+	// An invulnerability that outlasts every cast now coming at the player covers them all. The casts' times
+	// are taken to now, like the plan's.
+	private bool InvulnerabilityCoversEveryCast(TankbusterPlan plan)
 	{
-		var latest = 0f;
+		var lag = TankbusterForecast.SinceReading;
+		var latest = plan.Cast.Horizon;
 		foreach (var cast in TankbusterForecast.Casts)
 		{
-			latest = Math.Max(latest, cast.Horizon);
+			latest = Math.Max(latest, cast.Horizon - lag);
 		}
 
-		return InvulnerabilityCovers(latest);
+		return InvulnerabilityCovers(plan.Cast with { Horizon = latest }, latest <= plan.Cast.Horizon);
 	}
 
 	/// <summary>
@@ -617,7 +662,7 @@ public partial class CustomRotation
 		}
 
 		// Never mitigation on top of an invulnerability that holds over everything coming.
-		if (plan.Invulnerability && InvulnerabilityCoversEveryCast())
+		if (plan.Invulnerability && InvulnerabilityCoversEveryCast(plan))
 		{
 			return true;
 		}

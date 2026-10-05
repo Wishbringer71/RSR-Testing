@@ -177,7 +177,7 @@ the hit - no earlier than its ten seconds less one GCD. With the mitigation sett
 for you, so only what already stands counts. It does not depend on the dying-tank threshold: setting that
 to 0 switches off only the old reactive use. After Living Dead the healers still have to restore your full HP within
 Walking Dead. Only if nothing survives and the invulnerability is not there to use - on cooldown, switched off or
-refused with no retry left before the hit - does everything go, in the hope of someone else's debuff or barrier; never on top of the invulnerability.
+refused with no retry left before the last GCD before the hit - does everything go, in the hope of someone else's debuff or barrier; never on top of the invulnerability.
 
 The plan is recomputed all the time, so a heal or a Reprisal that lands before the hit makes it smaller. Tankbusters
 announced only by a marker or by BossModReborn, and actions not yet measured, keep the old behaviour.

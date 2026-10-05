@@ -75,6 +75,20 @@ internal static class TankbusterForecast
 
 	/// <summary>The clock of this forecast: high resolution, monotonic.</summary>
 	public static long Now => System.Diagnostics.Stopwatch.GetTimestamp();
+
+	/// <summary>
+	/// Seconds since the last reading of the casts: what a reader has to take off their remaining time to
+	/// compare it with a status or cooldown read now, on the same clock.
+	/// </summary>
+	public static float SinceReading => Math.Max(0f, SecondsSince(_readAt, Now));
+
+	/// <summary>
+	/// An own action pressed or gone out whose new status has not shown yet.
+	/// </summary>
+	/// <param name="Cover">Seconds it still lasts by its duration from the press; zero when there is no such record.</param>
+	/// <param name="Tick">When it was pressed (<see cref="Now"/>).</param>
+	/// <param name="PriorLeft">Seconds the own copy that ran at the press still runs; negative when there was none.</param>
+	public readonly record struct Pending(float Cover, long Tick, float PriorLeft);
 	private static readonly Dictionary<uint, (StatusID[] OnSelf, StatusID[] Where, bool Outward)> _factsOfAction = [];
 	private static ICustomRotation? _statusesFor;
 	private static readonly Dictionary<(ulong Source, uint ActionId, float Total), (int Serial, float Elapsed)> _serials = [];
@@ -109,10 +123,14 @@ internal static class TankbusterForecast
 	/// </summary>
 	public static void RecordOwnPress(uint actionId, ulong targetId)
 	{
+		// A party tool (a barrier or mitigation spread over the party) belongs to the area defence, not to
+		// "everything" against a tankbuster; Reprisal, rated only against the enemy, is counted.
 		var player = Player.Object;
-		if (player != null && DataCenter.InCombat && DataCenter.Role == JobRole.Tank
-			&& DefensiveValues.For(actionId) != default
-			&& (targetId == player.GameObjectId || FactsOfAction(actionId).Outward))
+		var value = DefensiveValues.For(actionId);
+		var outward = FactsOfAction(actionId).Outward;
+		if (player != null && DataCenter.InCombat && DataCenter.Role == JobRole.Tank && value != default
+			&& (targetId == player.GameObjectId || outward)
+			&& !(outward && (value.Self > 0f || value.Barrier > 0f)))
 		{
 			SelfDefencePresses++;
 		}
@@ -156,10 +174,10 @@ internal static class TankbusterForecast
 		started.StatusSeen = started.PriorOnSelf > fresh || started.PriorWhere > fresh;
 	}
 
-	// Starts the record of one of the player's own actions with a known duration - a mitigation, a barrier, an
-	// invulnerability -, with how long an own copy of its statuses ran at that moment; null for what is not
-	// followed. Party tools (a barrier or mitigation spread over the party) never enter a tankbuster plan and
-	// are not followed.
+	// Starts the record of one of the player's own rated mitigations or barriers with a known duration, or of an
+	// invulnerability, with how long an own copy of its statuses ran at that moment; null for what is not
+	// followed - damage buffs and damage over time among them, which no plan asks about. Party tools (a barrier
+	// or mitigation spread over the party) never enter a tankbuster plan and are not followed.
 	private static Execution? Follow(uint actionId, ulong targetId, bool confirmed)
 	{
 		var now = Now;
@@ -173,7 +191,8 @@ internal static class TankbusterForecast
 
 		var value = DefensiveValues.For(actionId);
 		var (onSelf, where, outward) = FactsOfAction(actionId);
-		if ((onSelf.Length == 0 && where.Length == 0) || (outward && (value.Self > 0f || value.Barrier > 0f)))
+		if ((onSelf.Length == 0 && where.Length == 0) || (outward && (value.Self > 0f || value.Barrier > 0f))
+			|| (value == default && !GivesInvulnerability(onSelf)))
 		{
 			return null;
 		}
@@ -195,22 +214,20 @@ internal static class TankbusterForecast
 	}
 
 	/// <summary>
-	/// For the gap between one of the player's own actions going out and its status showing: the seconds it
-	/// will still last by its duration from the press, while its status has not been seen yet - for at most
-	/// one GCD while the server has not confirmed it; zero once the status has shown. Measured at the moment of
-	/// the last reading, like the casts' remaining time, so both are on one clock: a member pressed at the very
-	/// edge of its window does not slip below the horizon by the offset of two clocks (from then on the status
-	/// itself tells, also when it ends early - a barrier broken, a mitigation dispelled). Whether the status
-	/// showed is recorded every cycle in <see cref="Update"/>. <paramref name="anyTarget"/>: the action
-	/// counts whatever it was aimed at (Holmgang on an enemy, Reprisal around the player).
+	/// For the gap between one of the player's own actions going out and its status showing: its latest
+	/// record while the new status has not been seen yet - for at most one GCD while the server has not
+	/// confirmed it; <c>default</c> once the status has shown (from then on the status itself tells, also when
+	/// it ends early - a barrier broken, a mitigation dispelled). Measured now, on <see cref="Now"/>. Whether
+	/// the status showed is recorded every cycle in <see cref="Update"/>. <paramref name="anyTarget"/>: the
+	/// action counts whatever it was aimed at (Holmgang on an enemy, Reprisal around the player).
 	/// </summary>
-	public static float OwnPendingCover(uint actionId, bool anyTarget)
+	public static Pending OwnPending(uint actionId, bool anyTarget)
 	{
 		var player = Player.Object;
 		var lasts = DefensiveValues.DurationOf(actionId);
 		if (player == null || lasts <= 0f)
 		{
-			return 0f;
+			return default;
 		}
 
 		// A press the server has not confirmed within a GCD did not go out.
@@ -228,9 +245,27 @@ internal static class TankbusterForecast
 			}
 		}
 
-		return latest == null || latest.StatusSeen
-			? 0f
-			: Math.Max(0f, lasts - Math.Max(0f, SecondsSince(latest.Tick, _readAt)));
+		if (latest == null || latest.StatusSeen)
+		{
+			return default;
+		}
+
+		var since = SecondsSince(latest.Tick, now);
+		var prior = Math.Max(latest.PriorOnSelf, latest.PriorWhere);
+		return new Pending(Math.Max(0f, lasts - since), latest.Tick, prior < 0f ? -1f : prior - since);
+	}
+
+	private static bool GivesInvulnerability(StatusID[] statuses)
+	{
+		foreach (var status in statuses)
+		{
+			if (Array.IndexOf(StatusHelper.InvulnerabilityStatus, status) >= 0)
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	// Marks every execution whose new status shows: an own copy of what the action puts on its user, on
