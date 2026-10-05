@@ -1167,10 +1167,11 @@ Für den frühesten gemessenen Tankbuster, der auf dich gewirkt wird:
    sie vorzeitig endet (Barriere gebrochen, Abschütteln). Weder ein `CanUse`-Treffer noch eine Abklingzeit taugt
    dafür: Der erste ist noch kein Druck, die zweite sagt weder, wer drückte, noch auf wen (The Blackest Night auf dem
    Co-Tank), und Rachsucht/Verdammnis teilen sie. Ob der neue Status erschienen ist, erhebt die Erkennung in jedem
-   Durchlauf aus der Statusliste selbst (`StatusHelper.MinStatusRemainingTime`, nicht der Status, den das
-   Bestätigungspaket vorhersagt): eine eigene Kopie dort, wo die Aktion landet – auf dir, auf ihrem Ziel oder bei
-   Wirkung um dich (Wirkradius laut Spieldaten) auf einem beliebigen Gegner –, die länger läuft als eine eigene Kopie
-   dort beim Hinausgehen lief; bei mehreren Status einer Aktion zählt der längste. Eine
+   Durchlauf aus der Statusliste selbst (geschützt gelesen, Quelle der Spieler; nicht der Status, den das
+   Bestätigungspaket vorhersagt): eine eigene Kopie dessen, was die Aktion ihrem Nutzer gibt, auf dir (Holmgang,
+   worauf es auch gerichtet war), oder dessen, was sie dort legt, wo sie landet – auf ihrem Ziel oder bei Wirkung um
+   dich (Wirkradius laut Spieldaten) auf einem beliebigen Gegner –, die länger läuft als eine eigene Kopie dort beim
+   Hinausgehen lief; bei mehreren Status einer Aktion zählt der längste. Gruppenwerkzeuge werden nicht verfolgt. Eine
    Erneuerung zählt so erst, wenn die erneuerte Kopie liegt; lag sie beim Bestätigen schon (mehr als Wirkdauer weniger
    ein GCD übrig), gilt sie sofort als gesehen. Reflexion wird überbrückt, bis ihr
    Debuff auf einem Gegner erscheint; erreichte sie diesen nicht, sagt danach sein Fehlen. **Nicht** dabei sind Gruppenwerkzeuge – Barriere oder
@@ -1215,9 +1216,9 @@ und zählen unter 1. mit.
   der Druck wird im nächsten Durchlauf neu versucht. Lehnt es ab, ohne dass eine Animationssperre oder ein
   eigener Zauber das erklärt – Reflexion außer Reichweite, zu wenig MP, ein Stun, eine Prüfung der Rotation –, rechnet
   der Plan einen GCD lang ohne die Aktion und versucht sie danach wieder. Ist es die Unverwundbarkeit, ist der Plan in
-  der Zeit „alles" (seine Präzisierung: alles nur, wenn sie nicht verfügbar ist). Geht daraus etwas hinaus – eine
-  eigene bewertete Abwehr, vom Server bestätigt, aus welchem Pfad auch immer –, kommt die Unverwundbarkeit für dieses
-  Wirken nicht mehr: „nicht invul und dann noch zusätzlich buffs". Ein Stun, der sie verweigert, sperrt jede andere
+  der Zeit „alles" (seine Präzisierung: alles nur, wenn sie nicht verfügbar ist). Geht daraus etwas hinaus – ein Druck
+  des Plans im Modus „alles", den das Ausführungsprotokoll des Spiels nach dem Druck bestätigt –, kommt die
+  Unverwundbarkeit für dieses Wirken nicht mehr: „nicht invul und dann noch zusätzlich buffs". Ein Stun, der sie verweigert, sperrt jede andere
   Fähigkeit ebenso; dann geht nichts hinaus, und sie bleibt im Spiel. Ob sie, im selben Wirken wieder nutzbar, doch
   noch gehen soll, ist ihm vorgelegt (`TODO.md`, „Unverwundbarkeit nach ‚alles' im selben Wirken"). Ablehnungen gelten je Wirken
   (eigene Nummer je Wirken, auch bei zwei gleichen Wirken ohne Pause, erkannt am Zurückspringen der Wirkzeit); ein

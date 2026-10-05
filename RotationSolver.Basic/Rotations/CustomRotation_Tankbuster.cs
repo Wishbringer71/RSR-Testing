@@ -25,12 +25,12 @@ public partial class CustomRotation
 	// plan for one GCD, then tried again. The entry stays until the cast ends, so the refusal is written once.
 	private static readonly Dictionary<(int Cast, uint ActionId), long> _refused = [];
 
-	// Per cast, since when the plan has been "everything". Once an own rated defence went out after that -
-	// from the plan or any other path, as the server confirmed it -, the invulnerability does not follow in
-	// that cast: the owner's precision, "nicht invul und dann noch zusätzlich buffs" (concept 09, A261;
-	// whether it should follow anyway is his decision, TODO.md). A stun that refuses the invulnerability
-	// refuses every other ability too, so then nothing goes out and it stays in play.
-	private static readonly Dictionary<int, long> _everythingSince = [];
+	// Per cast, what "everything" pressed and when. Once one of these presses went out - the game's record of
+	// executed actions shows it after the press -, the invulnerability does not follow in that cast: the
+	// owner's precision, "nicht invul und dann noch zusätzlich buffs" (concept 09, A261; whether it should
+	// follow anyway is his decision, TODO.md). A stun that refuses the invulnerability refuses every other
+	// ability too, so then nothing goes out and it stays in play.
+	private static readonly Dictionary<int, List<(uint ActionId, DateTime Pressed)>> _everythingPressed = [];
 
 	/// <summary>
 	/// The owner's rule of 04.10.2026 (concept 09, "Das geringste Mittel gegen einen gemessenen
@@ -67,11 +67,11 @@ public partial class CustomRotation
 			_ = _refused.Remove(key);
 		}
 
-		foreach (var serial in _everythingSince.Keys)
+		foreach (var serial in _everythingPressed.Keys)
 		{
 			if (!TankbusterForecast.IsRunning(serial))
 			{
-				_ = _everythingSince.Remove(serial);
+				_ = _everythingPressed.Remove(serial);
 			}
 		}
 
@@ -140,7 +140,6 @@ public partial class CustomRotation
 		}
 		else
 		{
-			_ = _everythingSince.TryAdd(cast.Serial, Environment.TickCount64);
 			var all = (1 << candidates.Count) - 1;
 			SetPlan(new TankbusterPlan(cast, Pick(candidates, all), false, false, After(predicted, candidates, all, out _, out _)));
 		}
@@ -331,7 +330,24 @@ public partial class CustomRotation
 
 	private static bool EverythingSpent(TankbusterForecast.Cast cast)
 	{
-		return _everythingSince.TryGetValue(cast.Serial, out var since) && TankbusterForecast.OwnDefenceSince(since);
+		if (!_everythingPressed.TryGetValue(cast.Serial, out var pressed))
+		{
+			return false;
+		}
+
+		foreach (var record in DataCenter.RecordActions)
+		{
+			foreach (var (actionId, at) in pressed)
+			{
+				if (record.UsedTime >= at && (record.Action.RowId == actionId
+					|| record.Action.RowId == Service.GetAdjustedActionId(actionId)))
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	private static bool Refused(TankbusterForecast.Cast cast, uint actionId, float gcd)
@@ -456,6 +472,17 @@ public partial class CustomRotation
 		finally
 		{
 			IBaseAction.TargetOverride = previous;
+		}
+
+		if (!plan.Survivable && !plan.Invulnerability)
+		{
+			if (!_everythingPressed.TryGetValue(plan.Cast.Serial, out var pressed))
+			{
+				pressed = [];
+				_everythingPressed[plan.Cast.Serial] = pressed;
+			}
+
+			pressed.Add((action.ID, DateTime.Now));
 		}
 
 		DefenseTrace.Decision($"{why} for #{plan.Cast.ActionId} from {plan.Cast.Source.Name.TextValue}"

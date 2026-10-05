@@ -36,8 +36,7 @@ internal static class TankbusterForecast
 	/// <param name="Horizon">Seconds until the hit can arrive: the cast's rest plus one GCD.</param>
 	/// <param name="Serial">Tells this cast from every other, also from a later cast of the same action
 	/// by the same enemy with the same cast time.</param>
-	/// <param name="SeenTick">When this cast was first seen (<see cref="Environment.TickCount64"/>).</param>
-	internal sealed record Cast(int Serial, long SeenTick, IBattleChara Source, uint ActionId, uint AttackType, float Remaining,
+	internal sealed record Cast(int Serial, IBattleChara Source, uint ActionId, uint AttackType, float Remaining,
 		float Total, float Predicted, float Budget, float Horizon)
 	{
 		/// <summary>Measured at all: the table has a figure for the action.</summary>
@@ -54,16 +53,18 @@ internal static class TankbusterForecast
 		public required uint ActionId { get; init; }
 		public required ulong Target { get; init; }
 		public required long Tick { get; init; }
-		public required StatusID[] Statuses { get; init; }
+		public required StatusID[] OnSelf { get; init; }
+		public required StatusID[] Where { get; init; }
 		public required bool Outward { get; init; }
-		public required float PriorRemaining { get; init; }
+		public required float PriorOnSelf { get; init; }
+		public required float PriorWhere { get; init; }
 		public bool StatusSeen { get; set; }
 	}
 
 	private static readonly List<Execution> _own = [];
-	private static readonly Dictionary<uint, (StatusID[] Statuses, bool Outward)> _factsOfAction = [];
+	private static readonly Dictionary<uint, (StatusID[] OnSelf, StatusID[] Where, bool Outward)> _factsOfAction = [];
 	private static ICustomRotation? _statusesFor;
-	private static readonly Dictionary<(ulong Source, uint ActionId, float Total), (int Serial, long SeenTick, float Elapsed)> _serials = [];
+	private static readonly Dictionary<(ulong Source, uint ActionId, float Total), (int Serial, float Elapsed)> _serials = [];
 	private static readonly HashSet<(ulong Source, uint ActionId, float Total)> _live = [];
 	private static int _nextSerial;
 
@@ -105,24 +106,31 @@ internal static class TankbusterForecast
 			return;
 		}
 
-		var (statuses, outward) = FactsOfAction(actionId);
-		if (statuses.Length == 0)
+		// Party tools (a barrier or mitigation spread over the party) never enter a tankbuster plan and are
+		// not followed; Reprisal, a debuff around the player on enemies, is.
+		var value = DefensiveValues.For(actionId);
+		var (onSelf, where, outward) = FactsOfAction(actionId);
+		if ((onSelf.Length == 0 && where.Length == 0) || (outward && (value.Self > 0f || value.Barrier > 0f)))
 		{
 			return;
 		}
 
 		// The client may have put the new copy on before this handler ran: a copy with more than the
 		// duration less one GCD left cannot be an older one, so it is already the new status.
-		var prior = LongestOwnCopy(player, targetId, statuses, outward, float.MaxValue);
+		var priorOnSelf = OwnCopy(player, onSelf, player.GameObjectId);
+		var priorWhere = LongestOwnCopy(player, targetId, where, outward, float.MaxValue);
+		var fresh = lasts - DataCenter.DefaultGCDTotal;
 		_own.Add(new Execution
 		{
 			ActionId = actionId,
 			Target = targetId,
 			Tick = now,
-			Statuses = statuses,
+			OnSelf = onSelf,
+			Where = where,
 			Outward = outward,
-			PriorRemaining = prior,
-			StatusSeen = prior > lasts - DataCenter.DefaultGCDTotal,
+			PriorOnSelf = priorOnSelf,
+			PriorWhere = priorWhere,
+			StatusSeen = priorOnSelf > fresh || priorWhere > fresh,
 		});
 	}
 
@@ -158,33 +166,19 @@ internal static class TankbusterForecast
 			: Math.Max(0f, lasts - SecondsSince(latest.Tick, Environment.TickCount64));
 	}
 
-	/// <summary>
-	/// Whether one of the player's own rated defences (a mitigation or barrier figure in the effect texts)
-	/// went out, as the server confirmed, at or after <paramref name="sinceTick"/>.
-	/// </summary>
-	public static bool OwnDefenceSince(long sinceTick)
-	{
-		foreach (var execution in _own)
-		{
-			if (execution.Tick >= sinceTick && DefensiveValues.For(execution.ActionId) != default)
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	// Marks every execution whose new status shows: an own copy where the action lands - on the player,
-	// on its target, or for an effect around the player (Reprisal) on any enemy - running longer than an
-	// own copy ran there when the action went out. Read from the status list itself, not from the status
-	// the confirming packet predicts, and a renewal counts only once the renewed copy is on.
+	// Marks every execution whose new status shows: an own copy of what the action puts on its user, on
+	// the player (Holmgang, whatever it was aimed at), or of what it puts where it lands - on its target,
+	// or for an effect around the player (Reprisal) on any enemy -, running longer than an own copy ran
+	// there when the action went out. Read from the status list itself, not from the status the confirming
+	// packet predicts, and a renewal counts only once the renewed copy is on.
 	private static void RecordStatusesSeen(IBattleChara player)
 	{
 		foreach (var execution in _own)
 		{
-			if (!execution.StatusSeen && LongestOwnCopy(player, execution.Target, execution.Statuses, execution.Outward,
-				execution.PriorRemaining) > execution.PriorRemaining)
+			if (!execution.StatusSeen
+				&& (OwnCopy(player, execution.OnSelf, player.GameObjectId) > execution.PriorOnSelf
+					|| LongestOwnCopy(player, execution.Target, execution.Where, execution.Outward, execution.PriorWhere)
+						> execution.PriorWhere))
 			{
 				execution.StatusSeen = true;
 			}
@@ -264,11 +258,11 @@ internal static class TankbusterForecast
 		return longest;
 	}
 
-	// The statuses an action puts on - those its effect text is tied to, and those its setting in the
-	// current rotation provides (The Blackest Night's barrier has no mitigation figure, only a status) -,
-	// and whether it works around the player (an effect radius, game data). Kept per action until the
-	// rotation changes.
-	private static (StatusID[] Statuses, bool Outward) FactsOfAction(uint actionId)
+	// The statuses an action puts on its user (its setting's StatusProvide) and where it lands (its
+	// setting's TargetStatusProvide and the statuses its effect text is tied to; The Blackest Night's barrier
+	// has no mitigation figure, only a status), and whether it works around the player (an effect radius,
+	// game data). Kept per action until the rotation changes.
+	private static (StatusID[] OnSelf, StatusID[] Where, bool Outward) FactsOfAction(uint actionId)
 	{
 		var rotation = DataCenter.CurrentRotation;
 		if (!ReferenceEquals(rotation, _statusesFor))
@@ -282,12 +276,13 @@ internal static class TankbusterForecast
 			return known;
 		}
 
-		List<StatusID> statuses = [];
+		List<StatusID> onSelf = [];
+		List<StatusID> where = [];
 		if (DefensiveValues.MitigatingStatusesByActionId.TryGetValue(actionId, out var tied))
 		{
 			foreach (var status in tied)
 			{
-				statuses.Add((StatusID)status);
+				where.Add((StatusID)status);
 			}
 		}
 
@@ -301,13 +296,13 @@ internal static class TankbusterForecast
 					continue;
 				}
 
-				statuses.AddRange(action.Setting.StatusProvide ?? []);
-				statuses.AddRange(action.Setting.TargetStatusProvide ?? []);
+				onSelf.AddRange(action.Setting.StatusProvide ?? []);
+				where.AddRange(action.Setting.TargetStatusProvide ?? []);
 			}
 		}
 
 		var outward = Service.GetSheet<Lumina.Excel.Sheets.Action>().TryGetRow(actionId, out var row) && row.EffectRange > 0;
-		(StatusID[] Statuses, bool Outward) result = ([.. statuses], outward);
+		(StatusID[] OnSelf, StatusID[] Where, bool Outward) result = ([.. onSelf], [.. where], outward);
 		_factsOfAction[actionId] = result;
 		return result;
 	}
@@ -380,11 +375,10 @@ internal static class TankbusterForecast
 			var identity = (hostile.GameObjectId, id, hostile.TotalCastTime);
 			var isNew = !_serials.TryGetValue(identity, out var known) || hostile.CurrentCastTime < known.Elapsed;
 			var serial = isNew ? ++_nextSerial : known.Serial;
-			var seenTick = isNew ? Environment.TickCount64 : known.SeenTick;
-			_serials[identity] = (serial, seenTick, hostile.CurrentCastTime);
+			_serials[identity] = (serial, hostile.CurrentCastTime);
 
 			_ = _live.Add(identity);
-			var cast = new Cast(serial, seenTick, hostile, id, attackType, left, hostile.TotalCastTime, predicted,
+			var cast = new Cast(serial, hostile, id, attackType, left, hostile.TotalCastTime, predicted,
 				(player.CurrentHp / maxHp) + barrier, horizon);
 			_casts.Add(cast);
 			if (isNew)

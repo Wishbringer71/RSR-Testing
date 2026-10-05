@@ -257,7 +257,7 @@ Wirken nutzbar und reicht noch immer nichts Geringeres, stehen zwei Wege offen:
   die schon verbrauchten Minderungen fehlen beim nächsten Tankbuster ohnehin, die Unverwundbarkeit (240–420 s)
   zusätzlich.
 - **B (gebaut, aus seiner Präzisierung abgeleitet):** Sie geht nicht mehr, sobald aus „alles" etwas hinausging –
-  bestätigt vom Server, aus welchem Pfad auch immer. Im Kampf: Die Unverwundbarkeit bleibt für den nächsten tödlichen
+  ein Druck des Plans im Modus „alles", vom Ausführungsprotokoll des Spiels bestätigt. Im Kampf: Die Unverwundbarkeit bleibt für den nächsten tödlichen
   Treffer; der jetzige trifft auf alle Minderungen und tötet nach der Messung, außer ein anderer legt noch einen
   Debuff oder Schild.
 

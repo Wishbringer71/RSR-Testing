@@ -5755,6 +5755,18 @@ Wechsel greift, schreibt das Protokoll selbst.
   5. Jeder fremde Status löste eine Objektsuche aus. Behoben: Vergleich nur der Quelle, Wirkung um den Spieler nur
      auf Gegnern gesucht.
   7./8./9. Kommentar, Konzeptsatz und Leerzeilen nachgezogen.
+- *Elftes Code-Review (a4ced5b6d..d1cc61ddd), neun Punkte:*
+  1.–3./5. „Aus ‚alles' ging etwas hinaus" zählte Hilfe für andere und Gruppenwerkzeuge, übersah Aktionen ohne
+     Wirkdauer in der Tabelle (Reflexion), zählte auch nach dem Verlassen von „alles" und erwischte Drücke von davor.
+     Ursache: eine Liste zum Überbrücken von Status als Ausführungsprotokoll weiterverwendet. Behoben: Gezählt werden die
+     eigenen Drücke des Plans im Modus „alles", sobald das Ausführungsprotokoll des Spiels (`DataCenter.RecordActions`)
+     sie nach dem Druck zeigt.
+  4. Das Zurückhalten kann bei wiederkehrender Verweigerung je GCD wechseln, wenn in der Zeit nichts hinausgehen kann.
+     Belassen als Grenze: Nichts geht dann ohnehin hinaus; sobald etwas hinausgeht, bleibt der Plan „alles".
+  6. Holmgang auf einen Gegner wurde auf dem Gegner gesucht. Behoben: Was eine Aktion ihrem Nutzer gibt
+     (`StatusProvide`), wird auf dem Spieler gesucht, was sie legt (`TargetStatusProvide`, Wirktext), dort, wo sie landet.
+  7. Gruppenwerkzeuge wurden auf Gegnern gesucht. Behoben: Sie werden nicht verfolgt.
+  8./9. Konzeptsatz nachgezogen, ungenutztes `Cast.SeenTick` entfernt.
 - *Seine Präzisierung zu „alles" (während der dritten Runde):* alles nur, wenn die Unverwundbarkeit nicht verfügbar ist
   und alle Minderungen zusammen nicht reichen – nie die Unverwundbarkeit plus Minderungen. So gebaut; Befund 1 war der
   Fehler genau dagegen.
