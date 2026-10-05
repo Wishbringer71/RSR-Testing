@@ -62,6 +62,10 @@ internal static class TankbusterForecast
 	}
 
 	private static readonly List<Execution> _own = [];
+
+	// The player's own presses (RSR executed the action), by action, with target and when: they count as
+	// standing from the press until the server confirms them, for at most one GCD.
+	private static readonly Dictionary<uint, (ulong Target, long Tick)> _presses = [];
 	private static readonly Dictionary<uint, (StatusID[] OnSelf, StatusID[] Where, bool Outward)> _factsOfAction = [];
 	private static ICustomRotation? _statusesFor;
 	private static readonly Dictionary<(ulong Source, uint ActionId, float Total), (int Serial, float Elapsed)> _serials = [];
@@ -88,8 +92,18 @@ internal static class TankbusterForecast
 	/// </summary>
 	public static bool PlayerInvulnerableThrough(float seconds)
 	{
-		var player = Player.Object;
-		return player != null && player.InvulnerableThrough(seconds);
+		return LongestCopy(Player.Object, StatusHelper.InvulnerabilityStatus, false) >= seconds;
+	}
+
+	/// <summary>
+	/// RSR executed one of the player's actions (<c>BaseAction.Use</c> succeeded). Called on the game thread.
+	/// </summary>
+	public static void RecordOwnPress(uint actionId, ulong targetId)
+	{
+		if (DataCenter.InCombat && DataCenter.Role == JobRole.Tank && DefensiveValues.DurationOf(actionId) > 0f)
+		{
+			_presses[actionId] = (targetId, Environment.TickCount64);
+		}
 	}
 
 	/// <summary>
@@ -117,7 +131,7 @@ internal static class TankbusterForecast
 
 		// The client may have put the new copy on before this handler ran: a copy with more than the
 		// duration less one GCD left cannot be an older one, so it is already the new status.
-		var priorOnSelf = OwnCopy(player, onSelf, player.GameObjectId);
+		var priorOnSelf = OwnCopy(player, onSelf);
 		var priorWhere = LongestOwnCopy(player, targetId, where, outward, float.MaxValue);
 		var fresh = lasts - DataCenter.DefaultGCDTotal;
 		_own.Add(new Execution
@@ -151,6 +165,14 @@ internal static class TankbusterForecast
 			return 0f;
 		}
 
+		// Pressed, not yet confirmed: for at most one GCD it counts with its full duration from the press.
+		var now = Environment.TickCount64;
+		if (_presses.TryGetValue(actionId, out var press) && (anyTarget || press.Target == player.GameObjectId)
+			&& SecondsSince(press.Tick, now) <= DataCenter.DefaultGCDTotal && !ConfirmedSince(actionId, press.Tick))
+		{
+			return Math.Max(0f, lasts - SecondsSince(press.Tick, now));
+		}
+
 		Execution? latest = null;
 		foreach (var execution in _own)
 		{
@@ -176,7 +198,7 @@ internal static class TankbusterForecast
 		foreach (var execution in _own)
 		{
 			if (!execution.StatusSeen
-				&& (OwnCopy(player, execution.OnSelf, player.GameObjectId) > execution.PriorOnSelf
+				&& (OwnCopy(player, execution.OnSelf) > execution.PriorOnSelf
 					|| LongestOwnCopy(player, execution.Target, execution.Where, execution.Outward, execution.PriorWhere)
 						> execution.PriorWhere))
 			{
@@ -194,11 +216,11 @@ internal static class TankbusterForecast
 		{
 			if (targetId == 0 || targetId == player.GameObjectId)
 			{
-				return OwnCopy(player, statuses, player.GameObjectId);
+				return OwnCopy(player, statuses);
 			}
 
 			return Svc.Objects.SearchById(targetId) is IBattleChara target
-				? OwnCopy(target, statuses, player.GameObjectId)
+				? OwnCopy(target, statuses)
 				: -1f;
 		}
 
@@ -207,7 +229,7 @@ internal static class TankbusterForecast
 		{
 			if (obj is IBattleNpc enemy)
 			{
-				longest = Math.Max(longest, OwnCopy(enemy, statuses, player.GameObjectId));
+				longest = Math.Max(longest, OwnCopy(enemy, statuses));
 				if (longest > enough)
 				{
 					break;
@@ -218,44 +240,11 @@ internal static class TankbusterForecast
 		return longest;
 	}
 
-	// The longest of the action's statuses an own copy of which runs on <paramref name="chara"/> - an
-	// action can put several on, of different lengths (Bloodwhetting and Stem the Flow), and the longest is
-	// the action's own. Read from the status list itself, guarded as StatusHelper guards it; the source is
-	// compared with the player's object id only, a tank has no pet. A status without an end does not count.
-	private static float OwnCopy(IBattleChara chara, StatusID[] statuses, ulong playerId)
+	// The longest of the action's statuses an own copy of which runs on <paramref name="chara"/> - an action
+	// can put several on, of different lengths (Bloodwhetting and Stem the Flow), and the longest is its own.
+	private static float OwnCopy(IBattleChara chara, StatusID[] statuses)
 	{
-		var longest = -1f;
-		try
-		{
-			var list = chara.StatusList;
-			if (list == null)
-			{
-				return longest;
-			}
-
-			foreach (var status in list)
-			{
-				if (status == null || status.SourceId != playerId || status.RemainingTime <= 0f)
-				{
-					continue;
-				}
-
-				foreach (var id in statuses)
-				{
-					if (status.StatusId == (uint)id)
-					{
-						longest = Math.Max(longest, status.RemainingTime);
-						break;
-					}
-				}
-			}
-		}
-		catch (Exception)
-		{
-			// A status list that throws (an object going away) answers nothing.
-		}
-
-		return longest;
+		return LongestCopy(chara, statuses, true);
 	}
 
 	// The statuses an action puts on its user (its setting's StatusProvide) and where it lands (its
@@ -307,6 +296,66 @@ internal static class TankbusterForecast
 		return result;
 	}
 
+	private static bool ConfirmedSince(uint actionId, long tick)
+	{
+		foreach (var execution in _own)
+		{
+			if (execution.ActionId == actionId && execution.Tick >= tick)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// The longest any copy of the statuses still runs on <paramref name="chara"/>, read from the status list
+	/// itself - never the status a confirming packet predicts - and guarded; -1 when there is none or it has
+	/// no end. <paramref name="fromPlayer"/> counts only the player's own copies.
+	/// </summary>
+	public static float LongestCopy(IBattleChara? chara, StatusID[] statuses, bool fromPlayer)
+	{
+		var longest = -1f;
+		var player = Player.Object;
+		if (chara == null || player == null)
+		{
+			return longest;
+		}
+
+		try
+		{
+			var list = chara.StatusList;
+			if (list == null)
+			{
+				return longest;
+			}
+
+			foreach (var status in list)
+			{
+				if (status == null || status.RemainingTime <= 0f || (fromPlayer && status.SourceId != player.GameObjectId))
+				{
+					continue;
+				}
+
+				foreach (var id in statuses)
+				{
+					if (status.StatusId == (uint)id)
+					{
+						longest = Math.Max(longest, status.RemainingTime);
+						break;
+					}
+				}
+			}
+		}
+		catch (Exception)
+		{
+			// A status list that throws (an object going away) answers nothing.
+		}
+
+		return longest;
+	}
+
 	/// <summary>Whether the cast with <paramref name="serial"/> is still coming at the player.</summary>
 	public static bool IsRunning(int serial)
 	{
@@ -338,6 +387,7 @@ internal static class TankbusterForecast
 		if (!DataCenter.InCombat || player == null || player.IsDead || DataCenter.Role != JobRole.Tank)
 		{
 			_own.Clear();
+			_presses.Clear();
 			_serials.Clear();
 			return;
 		}
@@ -406,7 +456,15 @@ internal static class TankbusterForecast
 			}
 		}
 
-		PlayerImpervious = player.ImperviousThrough(_casts.Count == 0 ? gcd : _casts[0].Horizon);
+		// Over every cast now coming at the player, or with none for at least one more GCD: a cover that ends
+		// between two casts keeps nothing back for the second.
+		var latest = gcd;
+		foreach (var cast in _casts)
+		{
+			latest = Math.Max(latest, cast.Horizon);
+		}
+
+		PlayerImpervious = LongestCopy(player, StatusHelper.ImperviousStatus, false) >= latest;
 	}
 
 	// One line per cast, written when it is first seen, so the file shows what the plan was built on.

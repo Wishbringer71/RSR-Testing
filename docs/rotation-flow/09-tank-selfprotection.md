@@ -1204,47 +1204,73 @@ und zählen unter 1. mit.
 
 ### Das Zustandsmodell je Wirken
 
-Maßgeblich für Code und Prüfung; die Abschnitte davor und danach beschreiben Teile davon. Gerechnet wird in jedem
-Durchlauf neu, nur für Tanks und nur, wenn mindestens eine der beiden Optionen an ist.
+Maßgeblich für Code und Prüfung; die Abschnitte davor und danach beschreiben Teile davon und dürfen ihm nicht
+widersprechen. Gerechnet wird in jedem Durchlauf neu, nur für Tanks und nur, wenn mindestens eine der beiden Optionen
+an ist.
 
-**Die Tatsachen (Erkennung, `TankbusterForecast`, liest keine Option):** je Wirken auf dich seine Nummer, die
-Restzeit R, der Horizont H = R + ein GCD, der erwartete Anteil P unter dem, was über H steht, und was du hast,
-B = LP jetzt plus Barrieren, die über H stehen. Dazu die eigenen Ausführungen, die der Server bestätigt hat, mit
-Ziel, Zeitpunkt und ob ihr Status seither erschienen ist, und ob Heiliger Boden oder Meteoritenfall über H liegen.
+**Die Tatsachen (Erkennung, `TankbusterForecast`, liest keine Option):**
+- je Wirken auf dich: Nummer, Restzeit R, Horizont H = R + ein GCD, erwarteter Anteil P unter dem, was über H steht,
+  und was du hast, B = LP jetzt plus Barrieren, die über H stehen;
+- Status nur aus der Statusliste selbst – nie der Status, den ein Bestätigungspaket vorhersagt (`DataCenter.ApplyStatus`
+  meldet ihn mit unendlicher Restzeit und hielte so alles für „steht über H");
+- die eigenen Drücke (RSR hat die Aktion ausgeführt, `BaseAction.Use`) und die eigenen Ausführungen, die der Server
+  bestätigt hat, je mit Ziel, Zeitpunkt und ob ihr Status seither erschienen ist – unabhängig davon, ob die Aktion
+  gerade Kandidat sein könnte (abgeschaltet, verweigert, per Befehl gedrückt).
+
+**Wann eine eigene Aktion als stehend zählt, ohne dass ihr Status schon liegt:** ab dem eigenen Druck höchstens einen
+GCD lang, solange keine Bestätigung kam; ab der Bestätigung bis ihr Status erscheint, solange ihre Wirkdauer über H
+reicht. Danach sagt nur der Status. So gibt es keinen Augenblick, in dem eine eben gedrückte Minderung weder Kandidat
+noch stehend ist.
 
 **Die Zustände** für das früheste gemessene Wirken c:
 
-| Zustand | Wann | Was gedrückt wird | Was zurückgehalten wird (nur Option „Spend only …") |
+| Zustand | Wann | Was gedrückt wird | Was zurückgehalten wird |
 |---|---|---|---|
-| Z0 kein Plan | kein gemessenes Wirken auf dich | nichts | nichts (Heiliger Boden/Meteoritenfall über den nächsten GCD: alles) |
-| Z1 gedeckt | Heiliger Boden oder Meteoritenfall über H, **oder** Holmgang/Totenerweckung über H und kein Bündel übersteht c | nichts | alles Bewertete auf dich |
-| Z2 Bündel S | das billigste Bündel S übersteht c; S darf leer sein | jedes Glied von S in seinem Fenster | alles Bewertete auf dich außer S; im letzten GCD nichts, wenn ein Glied fehlt |
-| Z3 Unverwundbarkeit | kein Bündel übersteht c, Option „Use the invulnerability …" an, sie ist einen GCD vor dem Einschlag bereit, in diesem GCD nicht verweigert und nicht durch „alles" ausgeschlossen | die Unverwundbarkeit in ihrem Fenster | alles Bewertete auf dich, solange R > GCD und sie bereit ist |
+| Z0 kein Plan | kein gemessenes Wirken auf dich | nichts | nichts; Heiliger Boden/Meteoritenfall über den nächsten GCD: alles |
+| Z1 gedeckt | eine Unverwundbarkeit steht über H (Status oder eigener Druck, siehe oben) | nichts | alles Bewertete auf dich |
+| Z2 Bündel S | das billigste Bündel S übersteht c; S darf leer sein | jedes Glied von S in seinem Fenster | alles Bewertete auf dich außer S; ein Glied von S erst in seinem Fenster, aus jedem Pfad; im letzten GCD nichts, wenn ein Glied fehlt |
+| Z3 Unverwundbarkeit | kein Bündel übersteht c, sie ist einen GCD vor dem Einschlag bereit, für dieses Wirken nicht ausgeschlossen | sie, in ihrem Fenster | alles Bewertete auf dich, solange R > GCD |
 | Z4 alles | kein Bündel, keine Unverwundbarkeit | jedes verfügbare Glied in seinem Fenster | nichts |
 
-„Zurückgehalten" gilt nur, wenn c das einzige bekannte Wirken auf dich ist (kein zweites, gemessen oder nicht, keine
-BossModReborn-Vorhersage davor); Z1 auch neben einem zweiten, wenn die Deckung über jedes Wirken reicht. Frei bleiben
-immer: Hilfe für andere, die Heilpfade, nach außen wirkende Flächenabwehr, jeder Befehl.
+**Die Optionen:** „Spend only the mitigation a measured tankbuster needs" trägt die Minderungsdrücke in Z2 und Z4
+und jedes Zurückhalten; ohne sie drückt der Plan keine Minderung und hält nichts zurück. „Use the invulnerability
+before a tankbuster nothing less survives" trägt Z3; ohne sie wird aus Z3 Z4.
+
+**Wann zurückgehalten wird:** nur, wenn c das einzige bekannte Wirken auf dich ist – kein zweites Wirken auf dich,
+gemessen oder nicht, und keine BossModReborn-Vorhersage vor c (bei aktivem „Use BMR timeline", gleich wie weit
+voraus). Ein Tankbuster-Marker auf dir, während c läuft, gilt als der von c. Z1 hält auch neben einem zweiten Wirken
+zurück, wenn die Deckung über jedes Wirken reicht; deckt sie nur c, hält nichts zurück. Frei bleiben immer: Hilfe für
+andere, die Heilpfade, nach außen wirkende Flächenabwehr, jeder Befehl.
 
 **Die Übergänge** – jeder Durchlauf rechnet den Zustand aus den Tatsachen; gespeichert wird nur:
-- *Verweigerung:* Lehnt eine Aktion ab, ohne dass Animationssperre oder eigener Zauber das erklärt, fehlt sie einen GCD
-  lang unter den Kandidaten (Z2/Z4) oder als Unverwundbarkeit (Z3 → Z4 für diesen GCD).
-- *„Alles" ausgeschöpft:* Geht ein Druck aus Z4 hinaus (vom Ausführungsprotokoll bestätigt), ist Z3 für dieses Wirken
+- *Verweigerung:* Lehnt eine Aktion ab, ohne dass Animationssperre oder eigener Zauber das erklärt, wird sie einen GCD
+  lang nicht gedrückt. Für die Frage, ob ein Bündel reicht, zählt sie weiter, solange bis zum letzten GCD vor dem
+  Einschlag noch ein neuer Versuch bleibt (R > zwei GCD); bei der Wahl werden Bündel ohne verweigerte Glieder
+  vorgezogen. Eine einmalige Verweigerung führt so nicht zur Unverwundbarkeit; eine, die bis zuletzt anhält, schon.
+  Ist die Unverwundbarkeit selbst verweigert, wird aus Z3 für diesen GCD Z4.
+- *„Alles" ausgeschöpft:* Ging ein Druck aus Z4 hinaus (vom Ausführungsprotokoll bestätigt), ist Z3 für dieses Wirken
   ausgeschlossen (offene Entscheidung D1a).
-- *Eigene Ausführung ohne Status:* zählt als stehend, bis ihr Status erscheint; danach sagt nur der Status.
-- Alles Übrige ergibt sich aus den Tatsachen: Heilung hebt B (Z3 → Z2 möglich), Auto-Angriffe senken B (Z2 → größeres
-  S oder Z3), eine fremde Reflexion senkt P, ein gezogenes Glied von S steht und fällt aus den Kandidaten.
+- Alles Übrige ergibt sich aus den Tatsachen: Heilung hebt B (Z3 → Z2 möglich, solange die Unverwundbarkeit nicht
+  gedrückt ist), Auto-Angriffe senken B (größeres S, Z3), eine fremde Reflexion senkt P, ein gedrücktes Glied von S
+  steht und fällt aus den Kandidaten.
 
 **Invarianten:**
-1. Die Unverwundbarkeit wird nie geplant, solange ein Bündel reicht.
-2. In Z1 und Z3 drückt der Plan keine Minderung.
+1. Die Unverwundbarkeit wird nie geplant, solange ein Bündel reicht, dessen Glieder bis zum letzten GCD noch gedrückt
+   werden können – auch eines mit einem eben verweigerten Glied.
+2. Steht eine Unverwundbarkeit über H oder ist sie für c gedrückt, geht für c keine Minderung mehr hinaus, aus keinem
+   Pfad (Z1). Holmgang und Totenerweckung eingeschlossen: Sie sichern das Überleben; wie viele LP nach ihrem Ende
+   bleiben, ist die offene Reserve-Frage (`TODO.md`).
 3. Das Zurückhalten trifft nie Heilung, Hilfe für andere, nach außen wirkende Flächenabwehr oder einen Befehl.
-4. Fehlt im letzten GCD ein Glied von S, endet das Zurückhalten.
-5. Ein Kandidat muss beim Einschlag noch stehen können: Er braucht eine bekannte Wirkdauer von mindestens einem GCD.
+4. Ein Glied von S geht aus keinem Pfad vor seinem Fenster hinaus; fehlt im letzten GCD eines, endet das Zurückhalten.
+5. Ein Kandidat braucht eine bekannte Wirkdauer von mindestens einem GCD.
+6. Nach einem Druck gibt es keinen Durchlauf, in dem die Aktion weder Kandidat noch stehend ist.
 
-**Offene Entscheidung D1 (`TODO.md`):** Die Unverwundbarkeit, nachdem für dasselbe Wirken schon Minderungen
-hinausgingen – (a) aus Z4, weil sie verweigert war (gebaut: nicht mehr, aus seiner Präzisierung abgeleitet);
-(b) aus Z2, wenn danach die LP fallen und kein Bündel mehr reicht (gebaut: ja).
+**Offene Entscheidung D1 (`TODO.md`):** die Unverwundbarkeit, nachdem für dasselbe Wirken schon Minderungen
+hinausgingen – (a) aus Z4, weil sie verweigert oder abklingend war (gebaut: nicht mehr, aus seiner Präzisierung
+abgeleitet); (b) aus Z2, wenn danach die LP fallen und kein Bündel mehr reicht (gebaut: ja).
+
+**Grenzen des Modells:** zwei Wirken binnen eines GCD bekommen einen Minderungsplan nur für das erste; ein Treffer über
+dem bisher gemessenen Höchstwert wird unterschätzt; keine Reserve nach einem knapp überlebten Treffer (`TODO.md`).
 
 ### Die Ausführung
 
@@ -1256,44 +1282,29 @@ hinausgingen – (a) aus Z4, weil sie verweigert war (gebaut: nicht mehr, aus se
   geplanten Druck übergangen: Ob die Minderung beim Einschlag schon steht, hat der Plan selbst gefragt, und die
   Staffelung ist genau das, was der Plan für einen gemessenen Treffer ersetzt (seine Präzisierung).
 - **Ziel:** jeder geplante Druck geht auf dich (`TargetType.Self`); The Blackest Night suchte sich sonst ein eigenes Ziel.
-- **Ein abgelehnter Druck:** Während einer Animationssperre lehnt `CanUse` jede Fähigkeit ab; das ist keine Antwort,
-  der Druck wird im nächsten Durchlauf neu versucht. Lehnt es ab, ohne dass eine Animationssperre oder ein
-  eigener Zauber das erklärt – Reflexion außer Reichweite, zu wenig MP, ein Stun, eine Prüfung der Rotation –, rechnet
-  der Plan einen GCD lang ohne die Aktion und versucht sie danach wieder. Ist es die Unverwundbarkeit, ist der Plan in
-  der Zeit „alles" (seine Präzisierung: alles nur, wenn sie nicht verfügbar ist). Geht daraus etwas hinaus – ein Druck
-  des Plans im Modus „alles", den das Ausführungsprotokoll des Spiels nach dem Druck bestätigt –, kommt die
-  Unverwundbarkeit für dieses Wirken nicht mehr: „nicht invul und dann noch zusätzlich buffs". Ein Stun, der sie verweigert, sperrt jede andere
-  Fähigkeit ebenso; dann geht nichts hinaus, und sie bleibt im Spiel. Ob sie, im selben Wirken wieder nutzbar, doch
-  noch gehen soll, ist ihm vorgelegt (`TODO.md`, „Unverwundbarkeit nach ‚alles' im selben Wirken"). Ablehnungen gelten je Wirken
-  (eigene Nummer je Wirken, auch bei zwei gleichen Wirken ohne Pause, erkannt am Zurückspringen der Wirkzeit); ein
-  späteres derselben Aktion beginnt neu.
+- **Ein abgelehnter Druck:** Während einer Animationssperre oder eines eigenen Zaubers lehnt `CanUse` ab; das ist
+  keine Antwort, der Druck wird im nächsten Durchlauf neu versucht. Jede andere Ablehnung – Reflexion außer Reichweite,
+  zu wenig MP, ein Stun, eine Prüfung der Rotation – sperrt den Druck für einen GCD; was daraus für Bündel und
+  Unverwundbarkeit folgt, regelt das Zustandsmodell („Verweigerung", „‚Alles' ausgeschöpft"). Ablehnungen gelten je
+  Wirken (eigene Nummer je Wirken, auch bei zwei gleichen Wirken ohne Pause, erkannt am Zurückspringen der Wirkzeit).
 
 ### Das Zurückhalten
 
-Solange ein Plan läuft und sein Tankbuster der einzige ist, der auf dich zukommt – kein zweites Wirken auf dich,
-gemessen oder nicht, und keine BossModReborn-Vorhersage vor ihm (sie nennt ihr Ziel nur für den nächsten Eintrag,
-also zählt jede); ein Marker neben dem Wirken gilt als dessen –, wird
-jede Aktion mit Wirktextwert (`DefensiveValues`) abgelehnt, die auf dich selbst zielt und nicht im Plan steht – eigene Minderung, eigene Barriere, Reflexion um dich herum –, aus jedem Pfad der Rotation:
-Einzelabwehr, Notfall, allgemeine Fähigkeiten (der Krieger wählt Urimpuls auch nach der Gesundheitsprognose, der
-Paladin Schiltron außerhalb der Abwehr).
-- **Ganz** (auch nichts aus dem Plan), solange Heiliger Boden oder Meteoritenfall über den Einschlag hinaus liegen,
-  oder die Unverwundbarkeit über den Einschlag hält (Status oder bestätigte Ausführung, siehe oben), oder sie geplant
-  und noch bereit ist und der Einschlag mehr als einen GCD entfernt ist. Hält eine Unverwundbarkeit über jedes Wirken, das auf dich zukommt,
-  gilt das auch neben einem zweiten Wirken: nie Minderung zusätzlich zur Unverwundbarkeit. Deckt sie nur das erste,
-  hält nichts zurück – die Minderung geht dann für das zweite, nicht zusätzlich zum ersten.
-- **Außer dem Plan,** solange ein überlebbarer Plan läuft.
-- **Gar nicht,** wenn nichts reicht und die Unverwundbarkeit nicht kommt, und im letzten GCD vor dem Einschlag, wenn
-  eine geplante Minderung bis dahin nicht hinausging – dann ist der Rückfall alles.
+Wann und was, regelt das Zustandsmodell. Abgelehnt wird jede Aktion mit Wirktextwert (`DefensiveValues`), die auf dich
+selbst zielt und nicht freigegeben ist – eigene Minderung, eigene Barriere, Reflexion um dich herum –, aus jedem Pfad
+der Rotation: Einzelabwehr, Notfall, allgemeine Fähigkeiten (der Krieger wählt Urimpuls auch nach der
+Gesundheitsprognose, der Paladin Schiltron außerhalb der Abwehr). Freigegeben ist in Z2 ein Glied von S ab seinem
+Fenster.
 - **Frei bleiben** Hilfe für ein anderes Mitglied (Intervention, Herz des Korunds auf dem Co-Tank, Urflackern), die
   Heilpfade (Herz des Korunds heilt einen Tank, den Meteoritenfall auf 1 LP setzte; erkannt an einem eigenen Schalter,
   nicht an der Zielüberschreibung, die über ihren Pfad hinaus stehen bleiben kann), in der Flächenabwehr, was über
   dich hinaus wirkt (Reflexion, Abschütteln für einen Raidwide), und jeder Befehl von dir.
 
-**Warum Holmgang und Totenerweckung nur im Plan:** Heiliger Boden und Meteoritenfall: „Impervious to most attacks" –
-kein Schaden, jede Minderung wirkungslos, für jeden Treffer. Holmgang, Undead Rebirth: „Most attacks cannot reduce your
-HP to less than 1"; Totenerweckung wandelt den Tod in Walking Dead. Unter ihnen nimmt ein Treffer LP bis 1, und
-Minderung entscheidet, wie viel bleibt. Nur für den Treffer, für den sie geplant sind, ändert Minderung nichts: Er
-tötet nach der Rechnung auch mit aller Minderung, endet also so oder so bei 1 LP oder in Walking Dead.
+**Holmgang und Totenerweckung:** Heiliger Boden und Meteoritenfall: „Impervious to most attacks" – kein Schaden.
+Holmgang, Undead Rebirth: „Most attacks cannot reduce your HP to less than 1"; Totenerweckung wandelt den Tod in
+Walking Dead. Unter allen sichert die Unverwundbarkeit das Überleben des Treffers, und für ihn geht keine Minderung
+mehr hinaus (Invariante 2, seine Präzisierung „nicht invul und dann noch zusätzlich buffs"). Unter Holmgang und
+Totenerweckung nimmt ein Treffer LP bis 1; wie viele nach ihrem Ende bleiben, ist die offene Reserve-Frage.
 
 **Heiler:** keine Einzelabwehr für einen gewirkten Tankbuster, wenn jedes seiner Ziele unter Heiligem Boden oder
 Meteoritenfall über den Einschlag hinaus steht. Eine BossModReborn-Vorhersage öffnet sie weiterhin: Sie sagt nicht, wen
@@ -1348,8 +1359,8 @@ Holmgang oder Totenerweckung bleibt also, wie sie war.
 - **Mehrere Wirken auf dich:** geplant wird für das früheste gemessene; zurückgehalten wird dann nichts, weil der Plan
   das zweite nicht kennt. Ein späteres bekommt seinen Plan, sobald das erste endet (Grenze: liegen beide in einem GCD,
   deckt ein Minderungsplan nur das erste).
-- **Ein ungemessenes Wirken, ein Marker ohne Wirken oder eine frühere BossModReborn-Vorhersage** neben einem
-  gemessenen: Der Plan drückt, hält aber nichts zurück.
+- **Ein ungemessenes Wirken oder eine frühere BossModReborn-Vorhersage** neben einem gemessenen: Der Plan drückt,
+  hält aber nichts zurück. Ein Tankbuster-Marker auf dir während des gemessenen Wirkens gilt als dessen.
 - **Tankwechsel:** hält bei bereiter Unverwundbarkeit, die RSR für jeden nächsten Treffer nutzen würde – an ihrer
   Schwelle (`CustomRotation.InvulnerabilityUsable`). Der Plan zählt dort nicht: Er zieht sie nur vor einem gemessenen
   Wirken, nicht vor einem Marker oder einer Vorhersage. Die Schwelle `HealthForDyingTanks` gehört der reaktiven

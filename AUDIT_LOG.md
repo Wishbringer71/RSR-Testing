@@ -5811,10 +5811,27 @@ Wechsel greift, schreibt das Protokoll selbst.
 - *Beim Aufstellen gefundene Abweichungen des Codes (7af48d947), danach behoben:*
   - Z1 griff bei jeder Unverwundbarkeit über dem Einschlag, auch bei Holmgang oder Totenerweckung über einem Treffer,
     den ein Bündel trägt; dann hielt der Plan alles zurück, obwohl unter ihnen die Minderung die LP nach ihrem Ende
-    bestimmt. Jetzt Z1 nur bei Heiligem Boden/Meteoritenfall, oder wenn kein Bündel übersteht.
+    bestimmt. Zunächst Z1 nur bei Heiligem Boden/Meteoritenfall oder ohne Bündel – nach dem Review gegen das Modell
+    zurückgenommen (unten).
   - Reflexion (7535) und Schiltron (3542) haben in der Tabelle keine Wirkdauer („Duration: s", Wert am Merkmal). Sie
     wurden sofort gedrückt und nicht überbrückt und konnten vor dem Einschlag ablaufen. Jetzt keine Kandidaten, bis die
     Dauer bekannt ist (`TODO.md`).
+- *Review gegen das Modell (6a27d1c59):* Es fand Lücken und Widersprüche **im Modell selbst** – das Konzept war also
+  noch nicht vollständig. Vor jeder weiteren Code-Änderung ins Modell eingearbeitet:
+  - Widerspruch: Die Verengung von Z1 (oben) hätte nach einem gezogenen Holmgang und einer Heilung ein Bündel
+    zusätzlich hinausgeschickt. Zurückgenommen: Jede Unverwundbarkeit über H ist Z1 (Invariante 2, seine Präzisierung);
+    die LP nach ihrem Ende gehören zur Reserve-Frage.
+  - Lücke Druck → Bestätigung: Ein eigener Druck zählt ab `BaseAction.Use` höchstens einen GCD lang als stehend
+    (Invariante 6). Glieder von S gehen auch aus anderen Pfaden erst in ihrem Fenster hinaus (Invariante 4).
+  - Z3 hält schon zurück, solange die Unverwundbarkeit bis zu ihrem Fenster bereit wird.
+  - Optionen eindeutig: „Spend only …" trägt Minderungsdrücke und Zurückhalten, „Use the invulnerability …" Z3.
+  - BossModReborn-Vorhersagen vor c zählen unabhängig vom Minderungsfenster; ein Marker auf dem Spieler während c ist
+    der von c (der widersprechende Lagen-Satz ist korrigiert).
+  - Eigene Ausführungen sind Tatsachen unabhängig von den Kandidatenfiltern; Status nur aus der Statusliste.
+  - Verweigerung: zählt für die Machbarkeit, solange vor dem letzten GCD ein neuer Versuch bleibt; Bündel ohne
+    verweigerte Glieder werden vorgezogen. Eine vorübergehende Verweigerung führt nicht zur Unverwundbarkeit, eine
+    anhaltende schon (Falsifikation des ersten Entwurfs: Er hätte an einem nie drückbaren Glied festgehalten).
+  Danach der Code nach dem Modell.
 - *Falsifikation:* kein Defekt – beide am Code belegt; Option falsch – ohne die zwei Aktionen wählt der Plan teurer,
   das kostet Abklingzeit, nicht Leben; die Gegenposition „unter Holmgang ist das geringste Mittel nichts" steht gegen
   die begründete Konzeptaussage zu den LP nach dem Ende und hängt am offenen Reserve-Eintrag; ausgeliefert ohne

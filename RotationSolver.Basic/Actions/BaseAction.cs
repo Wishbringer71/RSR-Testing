@@ -351,16 +351,26 @@ public class BaseAction : IBaseAction
 			}
 
 			// Use ActionManagerEx for enhanced timing if tweaks are enabled
+			bool used;
 			if (Service.Config.RemoveAnimationLockDelay || Service.Config.RemoveCooldownDelay)
 			{
-				return ActionManagerEx.Instance.UseActionWithTweaks(ActionType.Action, adjustId, targetId);
+				used = ActionManagerEx.Instance.UseActionWithTweaks(ActionType.Action, adjustId, targetId);
 			}
 			else
 			{
 				var actionManager = ActionManager.Instance();
-				return actionManager != null &&
+				used = actionManager != null &&
 					   actionManager->UseAction(ActionType.Action, adjustId, targetId);
 			}
+
+			// The tankbuster plan counts its own press from this moment, before the server confirms it
+			// (concept 09, "Das Zustandsmodell je Wirken").
+			if (used)
+			{
+				TankbusterForecast.RecordOwnPress(adjustId, targetId);
+			}
+
+			return used;
 		}
 	}
 
