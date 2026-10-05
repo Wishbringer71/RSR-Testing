@@ -5775,6 +5775,28 @@ Wechsel greift, schreibt das Protokoll selbst.
   bekommen einen Minderungsplan nur für das erste, und solange zwei laufen, hält nichts zurück.
 
 **Prüfgrad:** statisch, alle Prüfskripte und Generatoren, Compile über die CI. Im Spiel nicht beobachtet.
+### A262 · Upstream-Sync 7.5.6.17: Einstellungen, die AutoDuty über IPC übersteuert (05.10.2026)
+
+- *Inhalt (3d6e86128, PR #1386):* AutoDuty kann über IPC für die Dauer seines Betriebsmodus vier Einstellungen
+  übersteuern, ohne sie zu speichern: Zielwahl (`HostileType`), `TargetFreely`, `AutoOffAfterCombat`,
+  `FriendlyPartyNpcHealRaise3`. Gelesen wird jetzt über `DataCenter.CurrentTargetToHostileType`,
+  `TargetFreelyEnabled`, `AutoOffAfterCombatEnabled`, `FriendlyPartyNpcHealRaiseEnabled`; dazu Oberflächen- und
+  Changelog-Kleinigkeiten.
+- *Auswertung gegen die Fork-Abschnitte:*
+  - Im Kampf: Läuft AutoDuty mit eigener Vorgabe, gilt für Duty-Support-NPCs, freies Zielen und das Abschalten nach
+    dem Kampf dessen Wert, nicht seine Einstellung. Ohne AutoDuty ändert sich nichts.
+  - Der Fork liest keine der vier Einstellungen an anderer Stelle direkt (gesucht in `RotationSolver` und
+    `RotationSolver.Basic`; einzig der Einrichtungsassistent zeigt `AutoOffAfterCombat` an, was richtig ist: er
+    zeigt die gespeicherte Einstellung). Die Übersteuerung greift also überall.
+  - Konzepte 10 und 13 nennen „Heal and raise Party NPCs" als Bedingung, dass ein Duty-Support-NPC in der Gruppenliste
+    steht (A220). Unter AutoDuty kann dessen Vorgabe den Wert ersetzen; die Aussagen bleiben richtig, sie beschreiben
+    den wirksamen Wert. Kein Konzepttext zu ändern.
+  - Kein Vertrag berührt: `IpcStateOverrides` und `SettingOverride` sind neue öffentliche Typen von Upstream, keine
+    Fork-Typen; `SettingOverride` ist ein Enum, aber nicht persistiert.
+- *Version:* `Directory.Build.props` auf 7.5.6.17 (`check_fork_version.py`).
+
+**Prüfgrad:** statisch, Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
