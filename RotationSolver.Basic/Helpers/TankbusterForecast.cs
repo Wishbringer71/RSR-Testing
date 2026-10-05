@@ -54,6 +54,7 @@ internal static class TankbusterForecast
 		public required uint ActionId { get; init; }
 		public required ulong Target { get; init; }
 		public required long Tick { get; init; }
+		public required long Sequence { get; init; }
 		public required bool Confirmed { get; set; }
 		public required StatusID[] OnSelf { get; init; }
 		public required StatusID[] Where { get; init; }
@@ -64,6 +65,10 @@ internal static class TankbusterForecast
 	}
 
 	private static readonly List<Execution> _own = [];
+	private static long _sequence;
+
+	/// <summary>The number the next record of an own action gets; records are numbered in the order they start.</summary>
+	public static long NextSequence => _sequence + 1;
 	private static readonly Dictionary<uint, (StatusID[] OnSelf, StatusID[] Where, bool Outward)> _factsOfAction = [];
 	private static ICustomRotation? _statusesFor;
 	private static readonly Dictionary<(ulong Source, uint ActionId, float Total), (int Serial, float Elapsed)> _serials = [];
@@ -137,9 +142,10 @@ internal static class TankbusterForecast
 		started.StatusSeen = started.PriorOnSelf > fresh || started.PriorWhere > fresh;
 	}
 
-	// Starts the record of one of the player's own actions, with how long an own copy of its statuses ran at
-	// that moment; null for what is not followed. Party tools (a barrier or mitigation spread over the party)
-	// never enter a tankbuster plan and are not followed; Reprisal, a debuff around the player on enemies, is.
+	// Starts the record of one of the player's own rated defences, with how long an own copy of its statuses
+	// ran at that moment; null for what is not followed. Party tools (a barrier or mitigation spread over the
+	// party) never enter a tankbuster plan and are not followed; Reprisal, a debuff around the player on
+	// enemies, is.
 	private static Execution? Follow(uint actionId, ulong targetId, bool confirmed)
 	{
 		var now = Environment.TickCount64;
@@ -152,6 +158,11 @@ internal static class TankbusterForecast
 		}
 
 		var value = DefensiveValues.For(actionId);
+		if (value == default)
+		{
+			return null;
+		}
+
 		var (onSelf, where, outward) = FactsOfAction(actionId);
 		if ((onSelf.Length == 0 && where.Length == 0) || (outward && (value.Self > 0f || value.Barrier > 0f)))
 		{
@@ -163,6 +174,7 @@ internal static class TankbusterForecast
 			ActionId = actionId,
 			Target = targetId,
 			Tick = now,
+			Sequence = ++_sequence,
 			Confirmed = confirmed,
 			OnSelf = onSelf,
 			Where = where,
@@ -175,11 +187,12 @@ internal static class TankbusterForecast
 	}
 
 	/// <summary>
-	/// Whether, since <paramref name="tick"/> (<see cref="Environment.TickCount64"/>), one of the player's
-	/// followed actions went out on himself - aimed at him, or working around him (Reprisal). Help aimed at
-	/// another member does not count.
+	/// Whether one of the player's rated defences numbered <paramref name="sequence"/> or later (see
+	/// <see cref="NextSequence"/>) went out on himself - aimed at him, or working around him (Reprisal). By
+	/// number, not by clock: the clock can be coarser than a frame. Help aimed at another member, and a target
+	/// the effect handler could not resolve, do not count.
 	/// </summary>
-	public static bool OwnActionOnSelfSince(long tick)
+	public static bool OwnActionOnSelfSince(long sequence)
 	{
 		var player = Player.Object;
 		if (player == null)
@@ -189,8 +202,8 @@ internal static class TankbusterForecast
 
 		foreach (var execution in _own)
 		{
-			if (execution.Tick >= tick
-				&& (execution.Outward || execution.Target == 0 || execution.Target == player.GameObjectId))
+			if (execution.Sequence >= sequence
+				&& (execution.Outward || execution.Target == player.GameObjectId))
 			{
 				return true;
 			}
@@ -223,7 +236,7 @@ internal static class TankbusterForecast
 		foreach (var execution in _own)
 		{
 			if (execution.ActionId == actionId
-				&& (anyTarget || execution.Target == 0 || execution.Target == player.GameObjectId)
+				&& (anyTarget || execution.Target == player.GameObjectId)
 				&& (execution.Confirmed || SecondsSince(execution.Tick, now) <= gcd)
 				&& (latest == null || execution.Tick > latest.Tick))
 			{
@@ -391,46 +404,51 @@ internal static class TankbusterForecast
 		return longest;
 	}
 
-	// Whether the player's barrier still stands in <paramref name="seconds"/>: a barrier status is on, and the
-	// earliest of them - from whoever - lasts that long. A barrier without a known status counts none, as in
-	// StatusHelper.HasSurvivingShield, but no status a confirming packet predicts is taken for standing.
-	private static bool BarrierStandsThrough(IBattleChara player, float seconds)
+	/// <summary>
+	/// The shortest any copy of the statuses still runs on <paramref name="chara"/>, read like
+	/// <see cref="LongestCopy"/>: from the status list itself, guarded, copies without an end left out; -1 when
+	/// there is none.
+	/// </summary>
+	public static float ShortestCopy(IBattleChara? chara, StatusID[] statuses)
 	{
-		if (player.GetObjectShield() <= 0)
+		var shortest = float.MaxValue;
+		if (chara == null)
 		{
-			return false;
+			return -1f;
 		}
 
-		var found = false;
 		try
 		{
-			var list = player.StatusList;
+			var list = chara.StatusList;
 			if (list == null)
 			{
-				return false;
+				return -1f;
 			}
 
 			foreach (var status in list)
 			{
-				if (status == null || Array.IndexOf(StatusHelper.ShieldStatus, (StatusID)status.StatusId) < 0)
+				if (status == null || status.RemainingTime <= 0f)
 				{
 					continue;
 				}
 
-				found = true;
-				if (status.RemainingTime > 0f && status.RemainingTime < seconds)
+				foreach (var id in statuses)
 				{
-					return false;
+					if (status.StatusId == (uint)id)
+					{
+						shortest = Math.Min(shortest, status.RemainingTime);
+						break;
+					}
 				}
 			}
 		}
 		catch (Exception)
 		{
-			// A status list that throws answers nothing.
-			return false;
+			// A status list that throws (an object going away) answers nothing.
+			return -1f;
 		}
 
-		return found;
+		return shortest == float.MaxValue ? -1f : shortest;
 	}
 
 	/// <summary>Whether the cast with <paramref name="serial"/> is still coming at the player.</summary>
@@ -491,8 +509,11 @@ internal static class TankbusterForecast
 			var predicted = TankbusterTable.PredictedShare(id, player, hostile, horizon);
 
 			// The barrier counts only when it still stands then; the earliest barrier's end decides, so a
-			// short one beside a long one counts none. Read from the status list itself, like every status here.
-			var barrier = BarrierStandsThrough(player, horizon) ? player.GetObjectShield() / maxHp : 0f;
+			// short one beside a long one counts none, and one without a known status counts none (as in
+			// StatusHelper.HasSurvivingShield). Read from the status list itself, like every status here.
+			var barrier = player.GetObjectShield() > 0 && ShortestCopy(player, StatusHelper.ShieldStatus) >= horizon
+				? player.GetObjectShield() / maxHp
+				: 0f;
 			var attackType = Service.GetSheet<Lumina.Excel.Sheets.Action>().TryGetRow(id, out var row)
 				? row.AttackType.RowId
 				: 0u;

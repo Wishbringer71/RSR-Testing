@@ -341,27 +341,31 @@ public partial class CustomRotation
 			IBaseAction.SelfProtectionHitsMe = DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseSingle)
 				|| DataCenter.SingleHitReachesPlayer;
 			IBaseAction.CommandedDefenceRunning = DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseSingle);
-			if (DataCenter.CurrentDutyRotation?.DefenseSingleAbility(nextGCD, out act) == true)
+			try
 			{
-				IBaseAction.SelfProtectionHitsMe = null;
-				IBaseAction.CommandedDefenceRunning = false;
-				DefenseTrace.Decision("single defence (duty)", act);
-				return true;
+				if (DataCenter.CurrentDutyRotation?.DefenseSingleAbility(nextGCD, out act) == true)
+				{
+					IBaseAction.SelfProtectionHitsMe = null;
+					DefenseTrace.Decision("single defence (duty)", act);
+					return true;
+				}
+				if (DefenseSingleAbility(nextGCD, out act)
+					// Arm's Length as the last resort only for its Slow on a pack of ordinary enemies: it does not
+					// touch the hit that strikes it, and on a boss's tankbuster - the owner saw it cast there - it
+					// does nothing and is then missing for a knockback. A rotation that runs the pull rule itself
+					// has already asked, with its own option and holds, and declined (A236).
+					|| (!HasOwnArmsLengthPullRule && ArmsLengthSlowsPull(true, Service.Config.AutoDefenseNumber) && !StatusHelper.PlayerHasStatus(true, StatusID.Vengeance) && !StatusHelper.PlayerHasStatus(true, StatusID.Damnation) && ArmsLengthPvE.CanUse(out act)))
+				{
+					IBaseAction.SelfProtectionHitsMe = null;
+					DefenseTrace.Decision("single defence", act);
+					return true;
+				}
 			}
-			if (DefenseSingleAbility(nextGCD, out act)
-				// Arm's Length as the last resort only for its Slow on a pack of ordinary enemies: it does not
-				// touch the hit that strikes it, and on a boss's tankbuster - the owner saw it cast there - it
-				// does nothing and is then missing for a knockback. A rotation that runs the pull rule itself
-				// has already asked, with its own option and holds, and declined (A236).
-				|| (!HasOwnArmsLengthPullRule && ArmsLengthSlowsPull(true, Service.Config.AutoDefenseNumber) && !StatusHelper.PlayerHasStatus(true, StatusID.Vengeance) && !StatusHelper.PlayerHasStatus(true, StatusID.Damnation) && ArmsLengthPvE.CanUse(out act)))
+			finally
 			{
-				IBaseAction.SelfProtectionHitsMe = null;
 				IBaseAction.CommandedDefenceRunning = false;
-				DefenseTrace.Decision("single defence", act);
-				return true;
 			}
 			IBaseAction.SelfProtectionHitsMe = null;
-			IBaseAction.CommandedDefenceRunning = false;
 		}
 		IBaseAction.ShouldEndSpecial = false;
 

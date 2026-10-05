@@ -1212,9 +1212,14 @@ an ist.
   und was du hast, B = LP jetzt plus Barrieren, die über H stehen;
 - Status nur aus der Statusliste selbst – nie der Status, den ein Bestätigungspaket vorhersagt (`DataCenter.ApplyStatus`
   meldet ihn mit unendlicher Restzeit und hielte so alles für „steht über H");
-- die eigenen Drücke (RSR hat die Aktion ausgeführt, `BaseAction.Use`) und die eigenen Ausführungen, die der Server
-  bestätigt hat, je mit Ziel, Zeitpunkt und ob ihr Status seither erschienen ist – unabhängig davon, ob die Aktion
-  gerade Kandidat sein könnte (abgeschaltet, verweigert, per Befehl gedrückt).
+- die eigenen Drücke bewerteter Abwehr (RSR hat die Aktion ausgeführt, `BaseAction.Use`) und die eigenen
+  Ausführungen, die der Server bestätigt hat, je mit Ziel, Zeitpunkt, laufender Nummer und ob ihr Status seither
+  erschienen ist – unabhängig davon, ob die Aktion gerade Kandidat sein könnte (abgeschaltet, verweigert, per Befehl
+  gedrückt). Ein Ziel, das der Effekt-Handler nicht auflösen konnte, zählt nicht als „auf dich";
+- die Erkennung erhebt einmal je Bild, nach der Rotation; der Plan rechnet mit ihrer letzten Erhebung. Was er daneben
+  selbst aus der Statusliste liest – ob eine Wirkung beim Einschlag schon steht –, fragt er erst nach dem Datensatz:
+  Ein Datensatz, dessen Status die Erhebung noch nicht gesehen hat, zählt als stehend, auch wenn der Status im
+  laufenden Bild schon liegt. So fällt eine eben erschienene Minderung nie zwischen Erhebung und Statusliste durch.
 
 **Wann eine eigene Aktion als stehend zählt, ohne dass ihr Status schon liegt:** Jede Ausführung ist ein Datensatz vom
 eigenen Druck an. Er zählt als stehend, bis ihr neuer Status erscheint (eine eigene Kopie dort, wo sie landet, die länger
@@ -1233,8 +1238,10 @@ weder Kandidat noch stehend, und sie zählt nie zugleich als Status und als Date
 | Z4 alles | kein Bündel, keine Unverwundbarkeit | jedes verfügbare Glied in seinem Fenster | nichts |
 
 **Die Optionen:** „Spend only the mitigation a measured tankbuster needs" trägt die Minderungsdrücke in Z2 und Z4
-und jedes Zurückhalten; ohne sie drückt der Plan keine Minderung und hält nichts zurück. „Use the invulnerability
-before a tankbuster nothing less survives" trägt Z3; ohne sie wird aus Z3 Z4.
+und jedes Zurückhalten; ohne sie drückt der Plan keine Minderung und hält nichts zurück – und weil dann niemand ein
+Bündel sicher drückt, zählt für Z2 nur das leere Bündel: was schon steht oder gedrückt ist. Ein Bündel, auf dessen
+Druck die Rotation nur hoffen kann, ist nicht „ohne Risiko" (seine Vorgabe). „Use the invulnerability before a
+tankbuster nothing less survives" trägt Z3; ohne sie wird aus Z3 Z4.
 
 **Wann zurückgehalten wird:** nur mit der Option „Spend only …" und nur, wenn c das einzige bekannte Wirken
 auf dich ist – kein zweites Wirken auf dich,
@@ -1251,9 +1258,13 @@ befohlen, nicht jede).
   vor dem Einschlag endet, also ein neuer Versuch vor dem Rückfall bleibt; bei der Wahl werden Bündel ohne verweigerte
   Glieder vorgezogen. Eine einmalige Verweigerung führt so nicht zur Unverwundbarkeit; eine, die bis zuletzt anhält,
   schon.
-  Ist die Unverwundbarkeit selbst verweigert, wird aus Z3 für diesen GCD Z4.
-- *„Alles" ausgeschöpft:* Ging, während der Zustand Z4 war, ein eigener Druck einer bewerteten Abwehr auf dich hinaus –
-  vom Plan oder aus einem anderen Pfad –, ist Z3 für dieses Wirken ausgeschlossen (offene Entscheidung D1a). Hilfe für
+  Für die Unverwundbarkeit gilt dieselbe Regel: Läuft ihre Sperre vor dem letzten GCD ab, bleibt Z3 – zurückgehalten
+  wird weiter, gedrückt wird nach der Sperre neu; erst eine Verweigerung, nach der kein Versuch vor dem letzten GCD
+  bleibt, macht Z4. Sonst gäbe ein kurzer Stun alle Pfade frei, und ihr erster Druck schlösse sie über „‚Alles'
+  ausgeschöpft" für das Wirken aus.
+- *„Alles" ausgeschöpft:* Ging nach einem Durchlauf, der Z4 rechnete, ein eigener Druck einer bewerteten Abwehr auf
+  dich hinaus – vom Plan oder aus einem anderen Pfad; zugeordnet nach der laufenden Nummer, nicht nach der Uhr, deren
+  Auflösung gröber als ein Bild sein kann –, ist Z3 für dieses Wirken ausgeschlossen (offene Entscheidung D1a). Hilfe für
   andere zählt nicht.
 - Alles Übrige ergibt sich aus den Tatsachen: Heilung hebt B (Z3 → Z2 möglich, solange die Unverwundbarkeit nicht
   gedrückt ist), Auto-Angriffe senken B (größeres S, Z3), eine fremde Reflexion senkt P, ein gedrücktes Glied von S
@@ -1263,7 +1274,8 @@ befohlen, nicht jede).
 zweiten Wirken oder einer früheren Vorhersage sind die anderen Pfade bewusst frei, ebenso der Pfad eines Befehls (dann kann
 die Rotation auch neben einer gedrückten Unverwundbarkeit mindern – für den zweiten Treffer oder weil er es so will):
 1. Die Unverwundbarkeit wird nie geplant, solange ein Bündel reicht, dessen Glieder bis zum letzten GCD noch gedrückt
-   werden können – auch eines mit einem eben verweigerten Glied.
+   werden können – auch eines mit einem eben verweigerten Glied. Ohne „Spend only …" drückt niemand ein Bündel; dann
+   reicht nur das leere.
 2. Steht eine Unverwundbarkeit über H oder ist sie für c gedrückt, geht für c keine Minderung mehr hinaus, aus keinem
    Pfad (Z1). Holmgang und Totenerweckung eingeschlossen: Sie sichern das Überleben; wie viele LP nach ihrem Ende
    bleiben, ist die offene Reserve-Frage (`TODO.md`).

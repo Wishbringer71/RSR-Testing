@@ -21,7 +21,16 @@ public partial class CustomRotation
 
 	private static TankbusterPlan? _tankbusterPlan;
 	private static readonly HashSet<uint> _allowedNow = [];
-	private static (ulong Source, uint ActionId, float Total, string Summary) _planTraced;
+	// The states of concept 09, "Das Zustandsmodell je Wirken", that a plan can be in.
+	private enum PlanState
+	{
+		Covered,
+		Bundle,
+		Invulnerability,
+		Everything,
+	}
+
+	private static (ulong Source, uint ActionId, float Total, PlanState State, int Members) _planTraced;
 
 	// What the game or the rotation refused for a cast while neither an animation lock nor a cast of the
 	// player's own explains it - out of range, no MP, a stun, a check of the rotation's own: left out of the
@@ -31,12 +40,13 @@ public partial class CustomRotation
 	// The casts for which, while the plan was "everything" (Z4), an own rated defence went out on the player -
 	// from the plan or any other path. The invulnerability does not follow in that cast: the owner's
 	// precision, "nicht invul und dann noch zusätzlich buffs" (concept 09, A261; whether it should follow
-	// anyway is his decision, TODO.md, D1a). A stun that refuses the invulnerability refuses every other
-	// ability too, so then nothing goes out and it stays in play.
+	// anyway is his decision, TODO.md, D1a). A refusal of the invulnerability that runs out before the last
+	// GCD keeps it planned (Z3), so a passing stun does not open this.
 	private static readonly HashSet<int> _everythingSpent = [];
 
-	// The cast the last cycle planned "everything" for, and when; a press after that went out under it.
-	private static (int Serial, long Tick)? _everythingSince;
+	// The cast the last cycle planned "everything" for, and the number the next own record had then; a record
+	// from that number on went out under it.
+	private static (int Serial, long Sequence)? _everythingSince;
 
 	/// <summary>
 	/// The owner's rule of 04.10.2026 (concept 09, "Das geringste Mittel gegen einen gemessenen
@@ -75,7 +85,7 @@ public partial class CustomRotation
 		_ = _everythingSpent.RemoveWhere(serial => !TankbusterForecast.IsRunning(serial));
 
 		// The presses of the last cycle went out under its plan.
-		if (_everythingSince is { } since && TankbusterForecast.OwnActionOnSelfSince(since.Tick))
+		if (_everythingSince is { } since && TankbusterForecast.OwnActionOnSelfSince(since.Sequence))
 		{
 			_ = _everythingSpent.Add(since.Serial);
 		}
@@ -108,6 +118,13 @@ public partial class CustomRotation
 
 		var candidates = PlanCandidates(cast, gcd, out var pending);
 
+		// Without the plan option nothing presses a bundle for the player; hoping the rotation will is not
+		// "ohne Risiko" (his rule), so only what already stands or went out counts.
+		if (!Service.Config.HoldMitigationUnderInvulnerability)
+		{
+			candidates.Clear();
+		}
+
 		// What went out on the player and lasts until the hit, its status not on yet, counts as standing.
 		var predicted = cast.Predicted;
 		foreach (var done in pending)
@@ -130,7 +147,7 @@ public partial class CustomRotation
 			SetPlan(new TankbusterPlan(cast, Pick(candidates, bestMask), false, true, bestAfter));
 		}
 		else if (Service.Config.InvulnerabilityBeforeLethalTankbuster && invulnerability != null
-			&& !Refused(cast, invulnerability.ID, gcd) && !EverythingSpent(cast)
+			&& RetryLeft(cast, invulnerability.ID, gcd) && !EverythingSpent(cast)
 			&& InvulnerabilityReadyBy(cast.Remaining - gcd))
 		{
 			SetPlan(new TankbusterPlan(cast, [], true, true, 0f));
@@ -139,7 +156,7 @@ public partial class CustomRotation
 		{
 			var all = (1 << candidates.Count) - 1;
 			SetPlan(new TankbusterPlan(cast, Pick(candidates, all), false, false, After(predicted, candidates, all, out _, out _)));
-			_everythingSince = (cast.Serial, Environment.TickCount64);
+			_everythingSince = (cast.Serial, TankbusterForecast.NextSequence);
 		}
 	}
 
@@ -195,16 +212,17 @@ public partial class CustomRotation
 
 	/// <summary>
 	/// The own mitigations that can still act on the hit: learned, enabled, usable by their own checks
-	/// (resources included), off cooldown by one GCD before the hit, lasting at least that GCD, rated by
-	/// their effect text against this hit's damage type, and not already standing at impact. One per
-	/// button as the game casts it. Party tools - a barrier or mitigation spread over the party, Shake It
-	/// Off, Divine Veil, Dark Missionary, Heart of Light - stay out: they belong to the area defence, and
-	/// Shake It Off dispels the tank's own Damnation and Bloodwhetting. Reprisal, a debuff on the enemy,
-	/// stays in. <paramref name="pending"/>: mitigations of the player that went out on him (the server's
-	/// effect, not a press) and last until the hit by their duration, in the moment before their status
-	/// first shows; from then on the status tells. A cooldown would say neither who pressed nor on whom, and
-	/// Vengeance and Damnation share one. Reprisal is bridged until its debuff shows on any enemy; if it did
-	/// not reach this one, its absence there then tells.
+	/// (resources included), off cooldown by one GCD before the hit, lasting more than two GCD (their window
+	/// has to open before the last GCD), rated by their effect text against this hit's damage type, and not
+	/// already standing at impact. One per button as the game casts it. Party tools - a barrier or mitigation
+	/// spread over the party, Shake It Off, Divine Veil, Dark Missionary, Heart of Light - stay out: they belong
+	/// to the area defence, and Shake It Off dispels the tank's own Damnation and Bloodwhetting. Reprisal, a
+	/// debuff on the enemy, stays in. <paramref name="pending"/>: mitigations of the player pressed or gone out
+	/// on him whose status the forecast has not seen yet, lasting until the hit by their duration from the
+	/// press - asked before the status list, which can already show what the forecast's last reading did not
+	/// count. A cooldown would say neither who pressed nor on whom, and Vengeance and Damnation share one.
+	/// Reprisal is bridged until its debuff shows on any enemy; if it did not reach this one, its absence
+	/// there then tells.
 	/// </summary>
 	private List<PlanCandidate> PlanCandidates(TankbusterForecast.Cast cast, float gcd, out List<PlanCandidate> pending)
 	{
@@ -238,17 +256,14 @@ public partial class CustomRotation
 				continue;
 			}
 
-			if (StandsAtImpact(action, player, cast))
-			{
-				continue;
-			}
-
 			var refusal = RefusalLeft(cast, action.ID, gcd);
 			var candidate = new PlanCandidate(action, (1f - self) * (1f - enemy), barrier,
 				action.Cooldown.RecastTimeOneChargeRaw, refusal > 0f);
 
 			// One entry per button as the game casts it. What went out on the player is a fact whatever
-			// would make it a candidate - switched off, refused, pressed by command (invariant 6).
+			// would make it a candidate - switched off, refused, pressed by command (invariant 6). Asked before
+			// the status list: the forecast reads once a frame, after the rotation, so a status that has just
+			// shown is in the list but not yet in its figures, and the record still counts it.
 			var key = action.AdjustedID;
 			if (pendingByButton.ContainsKey(key))
 			{
@@ -259,6 +274,11 @@ public partial class CustomRotation
 			{
 				pendingByButton[key] = candidate;
 				_ = byButton.Remove(key);
+				continue;
+			}
+
+			if (StandsAtImpact(action, player, cast))
+			{
 				continue;
 			}
 
@@ -360,9 +380,9 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
-	/// Whether an invulnerability on the player lasts <paramref name="seconds"/>: its status, or - in the
-	/// moment between the server confirming the press and the status showing - its duration from then.
-	/// Holmgang protects its user whatever it was aimed at.
+	/// Whether an invulnerability on the player lasts <paramref name="seconds"/>: its status, or - between the
+	/// own press and the status showing - its duration from the press. Holmgang protects its user whatever it
+	/// was aimed at.
 	/// </summary>
 	private bool InvulnerabilityCovers(float seconds)
 	{
@@ -381,6 +401,14 @@ public partial class CustomRotation
 		return RefusalLeft(cast, actionId, gcd) > 0f;
 	}
 
+	// Whether the action is free to press, or its refusal runs out before the last GCD before the hit, so a
+	// retry is left (invariant 1).
+	private static bool RetryLeft(TankbusterForecast.Cast cast, uint actionId, float gcd)
+	{
+		var left = RefusalLeft(cast, actionId, gcd);
+		return left <= 0f || cast.Remaining - left > gcd;
+	}
+
 	// Seconds until a refusal of the action for this cast runs out; zero when none runs.
 	private static float RefusalLeft(TankbusterForecast.Cast cast, uint actionId, float gcd)
 	{
@@ -389,9 +417,27 @@ public partial class CustomRotation
 			: 0f;
 	}
 
-	// One line per change of what the plan spends; the figures ride along but do not make a new line.
+	// One line per change of what the plan spends; the figures ride along but do not make a new line. The
+	// line is built only on a change.
 	private static void TracePlan(TankbusterPlan plan)
 	{
+		var state = plan.Covered ? PlanState.Covered
+			: plan.Invulnerability ? PlanState.Invulnerability
+			: !plan.Survivable ? PlanState.Everything
+			: PlanState.Bundle;
+		var members = 0;
+		foreach (var action in plan.Mitigations)
+		{
+			members = HashCode.Combine(members, action.AdjustedID);
+		}
+
+		var key = (plan.Cast.Source.GameObjectId, plan.Cast.ActionId, plan.Cast.Total, state, members);
+		if (_planTraced == key)
+		{
+			return;
+		}
+
+		_planTraced = key;
 		var summary = plan.Covered
 			? "the invulnerability already covers it, nothing else"
 			: plan.Invulnerability
@@ -401,13 +447,6 @@ public partial class CustomRotation
 					: plan.Mitigations.Length == 0
 						? "survivable as it stands, nothing spent"
 						: Names(plan.Mitigations);
-		var key = (plan.Cast.Source.GameObjectId, plan.Cast.ActionId, plan.Cast.Total, summary);
-		if (_planTraced == key)
-		{
-			return;
-		}
-
-		_planTraced = key;
 		DefenseTrace.Line($"tankbuster plan for #{plan.Cast.ActionId} from {plan.Cast.Source.Name.TextValue}"
 			+ $" in {plan.Cast.Remaining:F1} s: {summary}"
 			+ (plan.Invulnerability ? string.Empty : $", leaving {plan.After:P0} against {plan.Cast.Budget:P0}"));
@@ -442,7 +481,7 @@ public partial class CustomRotation
 		if (plan.Invulnerability)
 		{
 			var invulnerability = Invulnerability;
-			if (invulnerability == null || InvulnerabilityCovers(plan.Cast.Horizon))
+			if (invulnerability == null || InvulnerabilityCovers(plan.Cast.Horizon) || Refused(plan.Cast, invulnerability.ID, gcd))
 			{
 				return false;
 			}

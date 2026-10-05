@@ -5863,6 +5863,26 @@ Wechsel greift, schreibt das Protokoll selbst.
   Minderung") der gebauten D1b (Bündel, dann Unverwundbarkeit bei fallenden LP) und ist auf die Reihenfolge
   „nach der Unverwundbarkeit" verengt; die Grenze „mehr als zwei GCD" schließt bei sehr langem GCD (ab 3,5 s)
   The Blackest Night (7 s) aus – der Plan wählt dann teurer, die sichere Richtung.
+- *Drittes Review gegen das Modell (154ef7844, CI grün), zehn Befunde.* Ins Modell:
+  - Reihenfolge der Erhebung: `TankbusterForecast.Update` läuft nach der Rotation; der Plan las die Statusliste
+    live, Zahlen und „Status gesehen" aber aus dem Vorbild. Eine eben erschienene Minderung fiel ein Bild lang aus
+    Kandidaten, Datensätzen und Zahlen – der Plan konnte Heiligen Boden zusätzlich zu Schutzwall ziehen. Jetzt fragt
+    der Plan den Datensatz vor der Statusliste.
+  - Verweigerte Unverwundbarkeit machte sofort Z4: Zurückhalten aus, der nächste eigene Druck schloss sie über D1a
+    aus, obwohl nach einem kurzen Stun ein zweiter Versuch blieb. Jetzt dieselbe Ablaufregel wie für Bündelglieder.
+  - „Use the invulnerability …" an, „Spend only …" aus: Der Plan rechnete ein Bündel als ausreichend, das niemand
+    drückt, und die Unverwundbarkeit kam nie. Aus seiner Vorgabe „ohne risiko" entschieden: Ohne den Plan zählt nur,
+    was steht; der Optionstext sagt es jetzt.
+  - „Alles ausgeschöpft" ordnete nach der Uhr zu, deren Auflösung gröber als ein Bild sein kann; jetzt nach laufender
+    Nummer. Verfolgt werden nur bewertete Abwehraktionen (bisher nur über die Wirkdauertabelle, die ohnehin nur
+    Abwehr führt; jetzt ausdrücklich).
+  - Ziel 0 (vom Effekt-Handler nicht aufgelöst) galt als „auf dich" – The Blackest Night auf dem Co-Tank hätte als
+    eigene Barriere gezählt. Zurückgenommen; ein Druck aus RSR hat immer ein Ziel.
+  Am Code: Barriere im Budget über `ShortestCopy`, gleiche Leseregel wie `LongestCopy` (Kopien ohne Ende zählen
+  nicht; `StatusHelper.MinStatusRemainingTime` wertet Restzeit 0 als endlos – die unsichere Richtung, deshalb nicht
+  übernommen); Protokollschlüssel ohne Zeichenkette je Bild; Befehlsflag im Fähigkeitenpfad per `try/finally`;
+  veraltete Kommentare berichtigt. Nicht übernommen: Aufzählung der Statusliste je Wirken und Bild – dieselbe
+  Lesart wie überall im Plan, ohne gemessene Last.
 
 **Prüfgrad:** statisch, Prüfskripte; Compile über die CI.
 
