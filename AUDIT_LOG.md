@@ -5883,6 +5883,21 @@ Wechsel greift, schreibt das Protokoll selbst.
   übernommen); Protokollschlüssel ohne Zeichenkette je Bild; Befehlsflag im Fähigkeitenpfad per `try/finally`;
   veraltete Kommentare berichtigt. Nicht übernommen: Aufzählung der Statusliste je Wirken und Bild – dieselbe
   Lesart wie überall im Plan, ohne gemessene Last.
+- *Viertes Review (5459798dc, CI grün), sechs Befunde.* Ins Modell und dann in den Code:
+  - Rückschritt aus der dritten Runde: Der Filter „nur bewertete Abwehr" für Datensätze schloss die
+    Unverwundbarkeiten aus (sie haben keinen Minderungswert, nur eine Wirkdauer). Nach einem gedrückten Holmgang war
+    bis zum Status kein Z1 – der Plan rechnete Z4 und drückte die Minderungen dazu. Getrennt: Datensätze für jede
+    Aktion mit Wirkdauer (stehend zählen); für „‚Alles' ausgeschöpft" ein eigener Zähler der RSR-Drücke bewerteter
+    Abwehr auf dich, auch ohne Wirkdauer (Reflexion hat keine und wurde bisher nicht gezählt), Drücke von Hand nicht
+    (ihr Datensatz entsteht erst mit der Bestätigung und wäre einem späteren Z4 zugeschlagen worden).
+  - Fensterrand: Ein Glied, gedrückt bei Wirkdauer ≈ H, konnte durch den Versatz zwischen Spieluhr (R) und
+    `Environment.TickCount64` (Auflösung bis 15,6 ms) unter H rutschen und war dann weder Kandidat (Abklingzeit) noch
+    stehend. Jetzt hochauflösende Uhr und Restdauer zum Zeitpunkt der Erhebung wie R; nachgerechnet: die Reserve ist
+    dann der Abstand zwischen Erhebung und Druck, nie negativ.
+  - Optionstext „Spend only …", Release-Text und Rechnung Schritt 6 nannten „verweigert" ohne die Ablaufregel der
+    dritten Runde; nachgezogen.
+  - Konzept sagte „Reflexion wird überbrückt"; ohne Wirkdauer ist sie weder Kandidat noch überbrückt. Berichtigt.
+  - Liste je Durchlauf in `UpdateTankbusterPlan` durch eine wiederverwendete ersetzt.
 
 **Prüfgrad:** statisch, Prüfskripte; Compile über die CI.
 

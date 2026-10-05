@@ -1172,8 +1172,9 @@ Für den frühesten gemessenen Tankbuster, der auf dich gewirkt wird:
    dich (Wirkradius laut Spieldaten) auf einem beliebigen Gegner –, die länger läuft als eine eigene Kopie dort beim
    Hinausgehen lief; bei mehreren Status einer Aktion zählt der längste. Gruppenwerkzeuge werden nicht verfolgt. Eine
    Erneuerung zählt so erst, wenn die erneuerte Kopie liegt; lag sie beim Bestätigen schon (mehr als Wirkdauer weniger
-   ein GCD übrig), gilt sie sofort als gesehen. Reflexion wird überbrückt, bis ihr
-   Debuff auf einem Gegner erscheint; erreichte sie diesen nicht, sagt danach sein Fehlen. **Nicht** dabei sind Gruppenwerkzeuge – Barriere oder
+   ein GCD übrig), gilt sie sofort als gesehen. Reflexion würde überbrückt, bis ihr
+   Debuff auf einem Gegner erscheint; solange ihre Wirkdauer in der Tabelle fehlt (`TODO.md`), ist sie weder Kandidat
+   noch überbrückt und zählt erst, wenn ihr Debuff auf dem Wirkenden steht. **Nicht** dabei sind Gruppenwerkzeuge – Barriere oder
    Minderung über die Gruppe (Abschütteln, Divine Veil, Dark Missionary, Heart of Light): Sie gehören der
    Flächenabwehr, und Abschütteln hebt Verdammnis und Urimpuls des Kriegers selbst auf. Reflexion, ein Debuff auf dem
    Gegner, ist dabei.
@@ -1184,7 +1185,8 @@ Für den frühesten gemessenen Tankbuster, der auf dich gewirkt wird:
 5. **Die Unverwundbarkeit** nur, wenn kein Bündel reicht – und nur, wenn sie bis einen GCD vor dem Einschlag bereit
    ist. „Mit kanonen auf spatzen schießen" sonst.
 6. **Alles,** nur wenn kein Bündel reicht und die Unverwundbarkeit nicht zu haben ist – auf Abklingzeit,
-   abgeschaltet oder vom Spiel verweigert (seine Präzisierung). Nie die Unverwundbarkeit und die Minderungen dazu.
+   abgeschaltet oder vom Spiel verweigert, ohne dass vor dem letzten GCD ein neuer Versuch bleibt (seine Präzisierung;
+   Zustandsmodell, „Verweigerung"). Nie die Unverwundbarkeit und die Minderungen dazu.
    Nach den Zahlen überlebst du dann nicht, aber die Zahlen sind ein Höchstwert, und vielleicht legt ein anderer noch
    einen Debuff oder Schild.
 
@@ -1212,11 +1214,16 @@ an ist.
   und was du hast, B = LP jetzt plus Barrieren, die über H stehen;
 - Status nur aus der Statusliste selbst – nie der Status, den ein Bestätigungspaket vorhersagt (`DataCenter.ApplyStatus`
   meldet ihn mit unendlicher Restzeit und hielte so alles für „steht über H");
-- die eigenen Drücke bewerteter Abwehr (RSR hat die Aktion ausgeführt, `BaseAction.Use`) und die eigenen
-  Ausführungen, die der Server bestätigt hat, je mit Ziel, Zeitpunkt, laufender Nummer und ob ihr Status seither
-  erschienen ist – unabhängig davon, ob die Aktion gerade Kandidat sein könnte (abgeschaltet, verweigert, per Befehl
-  gedrückt). Ein Ziel, das der Effekt-Handler nicht auflösen konnte, zählt nicht als „auf dich";
-- die Erkennung erhebt einmal je Bild, nach der Rotation; der Plan rechnet mit ihrer letzten Erhebung. Was er daneben
+- die eigenen Drücke (RSR hat die Aktion ausgeführt, `BaseAction.Use`) und die eigenen Ausführungen, die der Server
+  bestätigt hat, jeder Aktion mit bekannter Wirkdauer – Minderung, Barriere und Unverwundbarkeit –, je mit Ziel,
+  Zeitpunkt und ob ihr Status seither erschienen ist, unabhängig davon, ob die Aktion gerade Kandidat sein könnte
+  (abgeschaltet, verweigert, per Befehl gedrückt). Ein Ziel, das der Effekt-Handler nicht auflösen konnte, zählt nicht
+  als „auf dich";
+- wie viele Drücke bewerteter Abwehr auf dich RSR bisher ausgeführt hat – Minderung, Barriere, Reflexion um dich, auch
+  ohne bekannte Wirkdauer; Drücke von Hand und Hilfe für andere nicht;
+- die Erkennung erhebt einmal je Bild, nach der Rotation; der Plan rechnet mit ihrer letzten Erhebung, und die
+  Restdauer eines Datensatzes gilt wie R zum Zeitpunkt dieser Erhebung (hochauflösende Uhr), damit ein Glied, das
+  genau am Rand seines Fensters gedrückt wurde, nicht durch den Versatz zweier Uhren unter H rutscht. Was er daneben
   selbst aus der Statusliste liest – ob eine Wirkung beim Einschlag schon steht –, fragt er erst nach dem Datensatz:
   Ein Datensatz, dessen Status die Erhebung noch nicht gesehen hat, zählt als stehend, auch wenn der Status im
   laufenden Bild schon liegt. So fällt eine eben erschienene Minderung nie zwischen Erhebung und Statusliste durch.
@@ -1262,10 +1269,10 @@ befohlen, nicht jede).
   wird weiter, gedrückt wird nach der Sperre neu; erst eine Verweigerung, nach der kein Versuch vor dem letzten GCD
   bleibt, macht Z4. Sonst gäbe ein kurzer Stun alle Pfade frei, und ihr erster Druck schlösse sie über „‚Alles'
   ausgeschöpft" für das Wirken aus.
-- *„Alles" ausgeschöpft:* Ging nach einem Durchlauf, der Z4 rechnete, ein eigener Druck einer bewerteten Abwehr auf
-  dich hinaus – vom Plan oder aus einem anderen Pfad; zugeordnet nach der laufenden Nummer, nicht nach der Uhr, deren
-  Auflösung gröber als ein Bild sein kann –, ist Z3 für dieses Wirken ausgeschlossen (offene Entscheidung D1a). Hilfe für
-  andere zählt nicht.
+- *„Alles" ausgeschöpft:* Stieg nach einem Durchlauf, der Z4 rechnete, die Zahl der Drücke bewerteter Abwehr auf dich
+  – vom Plan oder aus einem anderen Pfad der Rotation; gezählt, nicht nach der Uhr verglichen, deren Auflösung gröber
+  als ein Bild sein kann –, ist Z3 für dieses Wirken ausgeschlossen (offene Entscheidung D1a). Hilfe für
+  andere und Drücke von Hand zählen nicht: Er handelt dann selbst, und RSR weiß nicht, wann er drückte.
 - Alles Übrige ergibt sich aus den Tatsachen: Heilung hebt B (Z3 → Z2 möglich, solange die Unverwundbarkeit nicht
   gedrückt ist), Auto-Angriffe senken B (größeres S, Z3), eine fremde Reflexion senkt P, ein gedrücktes Glied von S
   steht und fällt aus den Kandidaten.

@@ -54,7 +54,6 @@ internal static class TankbusterForecast
 		public required uint ActionId { get; init; }
 		public required ulong Target { get; init; }
 		public required long Tick { get; init; }
-		public required long Sequence { get; init; }
 		public required bool Confirmed { get; set; }
 		public required StatusID[] OnSelf { get; init; }
 		public required StatusID[] Where { get; init; }
@@ -65,10 +64,17 @@ internal static class TankbusterForecast
 	}
 
 	private static readonly List<Execution> _own = [];
-	private static long _sequence;
+	private static long _readAt;
 
-	/// <summary>The number the next record of an own action gets; records are numbered in the order they start.</summary>
-	public static long NextSequence => _sequence + 1;
+	/// <summary>
+	/// How many rated defences aimed at the player - or working around him, as Reprisal - RSR has pressed so
+	/// far: mitigation, barrier, Reprisal, with or without a known duration. Presses by hand and help aimed at
+	/// another member are not counted.
+	/// </summary>
+	public static long SelfDefencePresses { get; private set; }
+
+	/// <summary>The clock of this forecast: high resolution, monotonic.</summary>
+	public static long Now => System.Diagnostics.Stopwatch.GetTimestamp();
 	private static readonly Dictionary<uint, (StatusID[] OnSelf, StatusID[] Where, bool Outward)> _factsOfAction = [];
 	private static ICustomRotation? _statusesFor;
 	private static readonly Dictionary<(ulong Source, uint ActionId, float Total), (int Serial, float Elapsed)> _serials = [];
@@ -103,6 +109,14 @@ internal static class TankbusterForecast
 	/// </summary>
 	public static void RecordOwnPress(uint actionId, ulong targetId)
 	{
+		var player = Player.Object;
+		if (player != null && DataCenter.InCombat && DataCenter.Role == JobRole.Tank
+			&& DefensiveValues.For(actionId) != default
+			&& (targetId == player.GameObjectId || FactsOfAction(actionId).Outward))
+		{
+			SelfDefencePresses++;
+		}
+
 		_ = Follow(actionId, targetId, false);
 	}
 
@@ -112,7 +126,7 @@ internal static class TankbusterForecast
 	/// </summary>
 	public static void RecordOwnAction(uint actionId, ulong targetId)
 	{
-		var now = Environment.TickCount64;
+		var now = Now;
 		Execution? pressed = null;
 		foreach (var execution in _own)
 		{
@@ -142,13 +156,13 @@ internal static class TankbusterForecast
 		started.StatusSeen = started.PriorOnSelf > fresh || started.PriorWhere > fresh;
 	}
 
-	// Starts the record of one of the player's own rated defences, with how long an own copy of its statuses
-	// ran at that moment; null for what is not followed. Party tools (a barrier or mitigation spread over the
-	// party) never enter a tankbuster plan and are not followed; Reprisal, a debuff around the player on
-	// enemies, is.
+	// Starts the record of one of the player's own actions with a known duration - a mitigation, a barrier, an
+	// invulnerability -, with how long an own copy of its statuses ran at that moment; null for what is not
+	// followed. Party tools (a barrier or mitigation spread over the party) never enter a tankbuster plan and
+	// are not followed.
 	private static Execution? Follow(uint actionId, ulong targetId, bool confirmed)
 	{
-		var now = Environment.TickCount64;
+		var now = Now;
 		_ = _own.RemoveAll(e => SecondsSince(e.Tick, now) > DefensiveValues.DurationOf(e.ActionId));
 		var player = Player.Object;
 		var lasts = DefensiveValues.DurationOf(actionId);
@@ -158,11 +172,6 @@ internal static class TankbusterForecast
 		}
 
 		var value = DefensiveValues.For(actionId);
-		if (value == default)
-		{
-			return null;
-		}
-
 		var (onSelf, where, outward) = FactsOfAction(actionId);
 		if ((onSelf.Length == 0 && where.Length == 0) || (outward && (value.Self > 0f || value.Barrier > 0f)))
 		{
@@ -174,7 +183,6 @@ internal static class TankbusterForecast
 			ActionId = actionId,
 			Target = targetId,
 			Tick = now,
-			Sequence = ++_sequence,
 			Confirmed = confirmed,
 			OnSelf = onSelf,
 			Where = where,
@@ -187,35 +195,11 @@ internal static class TankbusterForecast
 	}
 
 	/// <summary>
-	/// Whether one of the player's rated defences numbered <paramref name="sequence"/> or later (see
-	/// <see cref="NextSequence"/>) went out on himself - aimed at him, or working around him (Reprisal). By
-	/// number, not by clock: the clock can be coarser than a frame. Help aimed at another member, and a target
-	/// the effect handler could not resolve, do not count.
-	/// </summary>
-	public static bool OwnActionOnSelfSince(long sequence)
-	{
-		var player = Player.Object;
-		if (player == null)
-		{
-			return false;
-		}
-
-		foreach (var execution in _own)
-		{
-			if (execution.Sequence >= sequence
-				&& (execution.Outward || execution.Target == player.GameObjectId))
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/// <summary>
 	/// For the gap between one of the player's own actions going out and its status showing: the seconds it
 	/// will still last by its duration from the press, while its status has not been seen yet - for at most
-	/// one GCD while the server has not confirmed it; zero once the status has shown (from then on the status
+	/// one GCD while the server has not confirmed it; zero once the status has shown. Measured at the moment of
+	/// the last reading, like the casts' remaining time, so both are on one clock: a member pressed at the very
+	/// edge of its window does not slip below the horizon by the offset of two clocks (from then on the status
 	/// itself tells, also when it ends early - a barrier broken, a mitigation dispelled). Whether the status
 	/// showed is recorded every cycle in <see cref="Update"/>. <paramref name="anyTarget"/>: the action
 	/// counts whatever it was aimed at (Holmgang on an enemy, Reprisal around the player).
@@ -230,7 +214,7 @@ internal static class TankbusterForecast
 		}
 
 		// A press the server has not confirmed within a GCD did not go out.
-		var now = Environment.TickCount64;
+		var now = Now;
 		var gcd = DataCenter.DefaultGCDTotal;
 		Execution? latest = null;
 		foreach (var execution in _own)
@@ -246,7 +230,7 @@ internal static class TankbusterForecast
 
 		return latest == null || latest.StatusSeen
 			? 0f
-			: Math.Max(0f, lasts - SecondsSince(latest.Tick, now));
+			: Math.Max(0f, lasts - Math.Max(0f, SecondsSince(latest.Tick, _readAt)));
 	}
 
 	// Marks every execution whose new status shows: an own copy of what the action puts on its user, on
@@ -465,10 +449,10 @@ internal static class TankbusterForecast
 		return false;
 	}
 
-	/// <summary>Seconds between two readings of <see cref="Environment.TickCount64"/>.</summary>
+	/// <summary>Seconds between two readings of <see cref="Now"/>.</summary>
 	internal static float SecondsSince(long tick, long now)
 	{
-		return (float)TimeSpan.FromMilliseconds(now - tick).TotalSeconds;
+		return (float)((double)(now - tick) / System.Diagnostics.Stopwatch.Frequency);
 	}
 
 	/// <summary>Recomputes the figures. Called once per framework cycle, on the game thread.</summary>
@@ -477,6 +461,7 @@ internal static class TankbusterForecast
 		_casts.Clear();
 		SoonestMeasured = null;
 		PlayerImpervious = false;
+		_readAt = Now;
 
 		var player = Player.Object;
 		if (!DataCenter.InCombat || player == null || player.IsDead || DataCenter.Role != JobRole.Tank)

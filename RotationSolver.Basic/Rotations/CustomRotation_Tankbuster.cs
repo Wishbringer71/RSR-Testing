@@ -44,9 +44,10 @@ public partial class CustomRotation
 	// GCD keeps it planned (Z3), so a passing stun does not open this.
 	private static readonly HashSet<int> _everythingSpent = [];
 
-	// The cast the last cycle planned "everything" for, and the number the next own record had then; a record
-	// from that number on went out under it.
-	private static (int Serial, long Sequence)? _everythingSince;
+	// The cast the last cycle planned "everything" for, and how many rated defences on the player RSR had
+	// pressed by then; one more went out under it.
+	private static (int Serial, long Presses)? _everythingSince;
+	private static readonly List<(int, uint)> _refusalsEnded = [];
 
 	/// <summary>
 	/// The owner's rule of 04.10.2026 (concept 09, "Das geringste Mittel gegen einen gemessenen
@@ -68,16 +69,16 @@ public partial class CustomRotation
 		_tankbusterPlan = null;
 
 		// Refusals belong to casts still running.
-		List<(int, uint)> ended = [];
+		_refusalsEnded.Clear();
 		foreach (var key in _refused.Keys)
 		{
 			if (!TankbusterForecast.IsRunning(key.Cast))
 			{
-				ended.Add(key);
+				_refusalsEnded.Add(key);
 			}
 		}
 
-		foreach (var key in ended)
+		foreach (var key in _refusalsEnded)
 		{
 			_ = _refused.Remove(key);
 		}
@@ -85,7 +86,7 @@ public partial class CustomRotation
 		_ = _everythingSpent.RemoveWhere(serial => !TankbusterForecast.IsRunning(serial));
 
 		// The presses of the last cycle went out under its plan.
-		if (_everythingSince is { } since && TankbusterForecast.OwnActionOnSelfSince(since.Sequence))
+		if (_everythingSince is { } since && TankbusterForecast.SelfDefencePresses > since.Presses)
 		{
 			_ = _everythingSpent.Add(since.Serial);
 		}
@@ -156,7 +157,7 @@ public partial class CustomRotation
 		{
 			var all = (1 << candidates.Count) - 1;
 			SetPlan(new TankbusterPlan(cast, Pick(candidates, all), false, false, After(predicted, candidates, all, out _, out _)));
-			_everythingSince = (cast.Serial, TankbusterForecast.NextSequence);
+			_everythingSince = (cast.Serial, TankbusterForecast.SelfDefencePresses);
 		}
 	}
 
@@ -413,7 +414,7 @@ public partial class CustomRotation
 	private static float RefusalLeft(TankbusterForecast.Cast cast, uint actionId, float gcd)
 	{
 		return _refused.TryGetValue((cast.Serial, actionId), out var tick)
-			? Math.Max(0f, gcd - TankbusterForecast.SecondsSince(tick, Environment.TickCount64))
+			? Math.Max(0f, gcd - TankbusterForecast.SecondsSince(tick, TankbusterForecast.Now))
 			: 0f;
 	}
 
@@ -538,7 +539,7 @@ public partial class CustomRotation
 						DefenseTrace.Line($"{action.Name} refused for #{plan.Cast.ActionId}; planning without it for a GCD at a time");
 					}
 
-					_refused[key] = Environment.TickCount64;
+					_refused[key] = TankbusterForecast.Now;
 				}
 
 				return false;
