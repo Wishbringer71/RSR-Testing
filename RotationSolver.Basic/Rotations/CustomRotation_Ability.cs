@@ -340,9 +340,11 @@ public partial class CustomRotation
 			// protect only the player ask whether the single hit reaches him (A233).
 			IBaseAction.SelfProtectionHitsMe = DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseSingle)
 				|| DataCenter.SingleHitReachesPlayer;
+			IBaseAction.CommandedDefenceRunning = DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseSingle);
 			if (DataCenter.CurrentDutyRotation?.DefenseSingleAbility(nextGCD, out act) == true)
 			{
 				IBaseAction.SelfProtectionHitsMe = null;
+				IBaseAction.CommandedDefenceRunning = false;
 				DefenseTrace.Decision("single defence (duty)", act);
 				return true;
 			}
@@ -354,10 +356,12 @@ public partial class CustomRotation
 				|| (!HasOwnArmsLengthPullRule && ArmsLengthSlowsPull(true, Service.Config.AutoDefenseNumber) && !StatusHelper.PlayerHasStatus(true, StatusID.Vengeance) && !StatusHelper.PlayerHasStatus(true, StatusID.Damnation) && ArmsLengthPvE.CanUse(out act)))
 			{
 				IBaseAction.SelfProtectionHitsMe = null;
+				IBaseAction.CommandedDefenceRunning = false;
 				DefenseTrace.Decision("single defence", act);
 				return true;
 			}
 			IBaseAction.SelfProtectionHitsMe = null;
+			IBaseAction.CommandedDefenceRunning = false;
 		}
 		IBaseAction.ShouldEndSpecial = false;
 

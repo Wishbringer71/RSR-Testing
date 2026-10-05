@@ -34,6 +34,10 @@ public interface IBaseAction : IAction
 	// in Heart of Corundum). Its own flag, because TargetOverride can outlive its path (TODO.md).
 	internal static bool HealPathRunning { get; set; } = false;
 
+	// Set while the single defence runs under the player's command: the hold above spares that path, and only
+	// that path - he commanded a defence, not every one (concept 09).
+	internal static bool CommandedDefenceRunning { get; set; } = false;
+
 	/// <summary>
 	/// The action itself.
 	/// </summary>

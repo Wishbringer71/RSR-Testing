@@ -218,6 +218,7 @@ public partial class CustomRotation
 		IBaseAction.SelfProtectionHitsMe = null;
 		IBaseAction.AreaDefenceRunning = false;
 		IBaseAction.HealPathRunning = false;
+		IBaseAction.CommandedDefenceRunning = false;
 
 		try
 		{

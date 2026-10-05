@@ -281,11 +281,11 @@ public class BaseAction : IBaseAction
 		// While the tankbuster plan or an invulnerability makes it unneeded, no rated defence aimed at the
 		// player goes out beyond what the plan spends - own mitigation, own barrier, Reprisal around him
 		// alike - from whichever path the rotation spends it. Help aimed at another member stays free, so do
-		// the heal paths (Heart of Corundum heals a tank Superbolide left at 1 HP), and in the area defence
-		// so does what reaches beyond the player (concept 09, "Das geringste Mittel gegen einen gemessenen
+		// the heal paths (Heart of Corundum heals a tank Superbolide left at 1 HP), the single defence while
+		// the player commands it, and in the area defence what reaches beyond the player (concept 09, "Das geringste Mittel gegen einen gemessenen
 		// Tankbuster").
 		if (IBaseAction.HoldDefenceOnSelf && !IBaseAction.ForceEnable
-			&& !IBaseAction.HealPathRunning
+			&& !IBaseAction.HealPathRunning && !IBaseAction.CommandedDefenceRunning
 			&& (Info.EffectRange == 0 || !IBaseAction.AreaDefenceRunning)
 			&& IBaseAction.AllowedDefenceOnSelf?.Contains(ID) != true
 			&& PreviewTarget.Value.Target is { } heldOne && Player.Object is { } holder

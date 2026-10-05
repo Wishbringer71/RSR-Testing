@@ -309,14 +309,22 @@ public partial class CustomRotation
 
 			if (DataCenter.MergedStatus.HasFlag(AutoStatus.DefenseSingle))
 			{
-				if (DataCenter.CurrentDutyRotation?.DefenseSingleGCD(out act) == true)
+				IBaseAction.CommandedDefenceRunning = DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseSingle);
+				try
 				{
-					return act;
-				}
+					if (DataCenter.CurrentDutyRotation?.DefenseSingleGCD(out act) == true)
+					{
+						return act;
+					}
 
-				if (DefenseSingleGCD(out var action))
+					if (DefenseSingleGCD(out var action))
+					{
+						return action;
+					}
+				}
+				finally
 				{
-					return action;
+					IBaseAction.CommandedDefenceRunning = false;
 				}
 			}
 

@@ -11,10 +11,13 @@ public partial class CustomRotation
 	/// survives it, or already standing over it; nothing else is spent.</param>
 	/// <param name="Survivable">The plan survives the hit by the figures; false when even everything does not.</param>
 	/// <param name="After">Share of maximum HP the hit takes under the plan.</param>
+	/// <param name="Covered">The invulnerability already stands over the hit (Z1), rather than being planned (Z3).</param>
 	private sealed record TankbusterPlan(TankbusterForecast.Cast Cast, IBaseAction[] Mitigations, bool Invulnerability,
-		bool Survivable, float After);
+		bool Survivable, float After, bool Covered = false);
 
 	private readonly record struct PlanCandidate(IBaseAction Action, float Factor, float Barrier, float Cost, bool Refused);
+
+	private static readonly Dictionary<uint, StatusID[]> _statusesOfAction = [];
 
 	private static TankbusterPlan? _tankbusterPlan;
 	private static readonly HashSet<uint> _allowedNow = [];
@@ -25,12 +28,15 @@ public partial class CustomRotation
 	// plan for one GCD, then tried again. The entry stays until the cast ends, so the refusal is written once.
 	private static readonly Dictionary<(int Cast, uint ActionId), long> _refused = [];
 
-	// Per cast, what "everything" pressed and when. Once one of these presses went out - the game's record of
-	// executed actions shows it after the press -, the invulnerability does not follow in that cast: the
-	// owner's precision, "nicht invul und dann noch zusätzlich buffs" (concept 09, A261; whether it should
-	// follow anyway is his decision, TODO.md). A stun that refuses the invulnerability refuses every other
+	// The casts for which, while the plan was "everything" (Z4), an own rated defence went out on the player -
+	// from the plan or any other path. The invulnerability does not follow in that cast: the owner's
+	// precision, "nicht invul und dann noch zusätzlich buffs" (concept 09, A261; whether it should follow
+	// anyway is his decision, TODO.md, D1a). A stun that refuses the invulnerability refuses every other
 	// ability too, so then nothing goes out and it stays in play.
-	private static readonly Dictionary<int, List<(uint ActionId, DateTime Pressed)>> _everythingPressed = [];
+	private static readonly HashSet<int> _everythingSpent = [];
+
+	// The cast the last cycle planned "everything" for, and when; a press after that went out under it.
+	private static (int Serial, long Tick)? _everythingSince;
 
 	/// <summary>
 	/// The owner's rule of 04.10.2026 (concept 09, "Das geringste Mittel gegen einen gemessenen
@@ -66,13 +72,15 @@ public partial class CustomRotation
 			_ = _refused.Remove(key);
 		}
 
-		foreach (var serial in _everythingPressed.Keys)
+		_ = _everythingSpent.RemoveWhere(serial => !TankbusterForecast.IsRunning(serial));
+
+		// The presses of the last cycle went out under its plan.
+		if (_everythingSince is { } since && TankbusterForecast.OwnActionOnSelfSince(since.Tick))
 		{
-			if (!TankbusterForecast.IsRunning(serial))
-			{
-				_ = _everythingPressed.Remove(serial);
-			}
+			_ = _everythingSpent.Add(since.Serial);
 		}
+
+		_everythingSince = null;
 
 		if (DataCenter.Role != JobRole.Tank
 			|| (!Service.Config.InvulnerabilityBeforeLethalTankbuster && !Service.Config.HoldMitigationUnderInvulnerability))
@@ -94,7 +102,7 @@ public partial class CustomRotation
 		// own press of it - and for this cast no mitigation goes out on top of it (invariant 2).
 		if (InvulnerabilityCovers(cast.Horizon))
 		{
-			SetPlan(new TankbusterPlan(cast, [], true, true, 0f));
+			SetPlan(new TankbusterPlan(cast, [], true, true, 0f, Covered: true));
 			return;
 		}
 
@@ -108,12 +116,11 @@ public partial class CustomRotation
 		}
 
 		// Every subset, the cheapest that survives; a tank's rated actions are few, so this stays small. A bundle
-		// without a refused member is preferred; one with a member refused a moment ago still counts while a
-		// retry is left before the last GCD - the refusal lasts one GCD, the last one is the fallback's -, so a
-		// passing refusal never draws the invulnerability.
-		var allowRefused = cast.Remaining - gcd > gcd;
+		// without a refused member is preferred; one with a member refused a moment ago still counts - the
+		// candidates keep a refused member only while its refusal runs out before the last GCD, so a retry is
+		// left before the fallback -, so a passing refusal never draws the invulnerability (invariant 1).
 		var bestMask = BestBundle(candidates, predicted, cast.Budget, false, out var bestAfter);
-		if (bestMask < 0 && allowRefused)
+		if (bestMask < 0)
 		{
 			bestMask = BestBundle(candidates, predicted, cast.Budget, true, out bestAfter);
 		}
@@ -132,6 +139,7 @@ public partial class CustomRotation
 		{
 			var all = (1 << candidates.Count) - 1;
 			SetPlan(new TankbusterPlan(cast, Pick(candidates, all), false, false, After(predicted, candidates, all, out _, out _)));
+			_everythingSince = (cast.Serial, Environment.TickCount64);
 		}
 	}
 
@@ -235,9 +243,9 @@ public partial class CustomRotation
 				continue;
 			}
 
-			var refused = Refused(cast, action.ID, gcd);
+			var refusal = RefusalLeft(cast, action.ID, gcd);
 			var candidate = new PlanCandidate(action, (1f - self) * (1f - enemy), barrier,
-				action.Cooldown.RecastTimeOneChargeRaw, refused);
+				action.Cooldown.RecastTimeOneChargeRaw, refusal > 0f);
 
 			// One entry per button as the game casts it. What went out on the player is a fact whatever
 			// would make it a candidate - switched off, refused, pressed by command (invariant 6).
@@ -254,9 +262,12 @@ public partial class CustomRotation
 				continue;
 			}
 
-			// Invariant 5: a candidate has to be able to stand at impact, so its duration has to be known and at
-			// least a GCD. Reprisal and Sheltron state none in the table (TODO.md) and stay out until it is known.
-			if (!action.EnoughLevel || !action.Config.IsEnabled || DefensiveValues.DurationOf(action.ID) < gcd
+			// Invariant 5: its window (the hit no further away than its duration less a GCD) has to open before the
+			// last GCD, in which the hold ends for a missing member, so its duration has to be known and longer
+			// than two GCD. Reprisal and Sheltron state none in the table (TODO.md) and stay out until it is known.
+			// A refused member stays only while its refusal runs out before the last GCD (invariant 1).
+			if (!action.EnoughLevel || !action.Config.IsEnabled || DefensiveValues.DurationOf(action.ID) - gcd <= gcd
+				|| (refusal > 0f && cast.Remaining - refusal <= gcd)
 				|| !action.Cooldown.WillHaveOneCharge(Math.Max(0f, cast.Remaining - gcd))
 				|| !action.Info.BasicCheck(true, false, true, true))
 			{
@@ -278,16 +289,21 @@ public partial class CustomRotation
 	// caster -, from whoever put it there; read from the status list itself (no predicted status).
 	private static bool StandsAtImpact(IBaseAction action, IBattleChara player, TankbusterForecast.Cast cast)
 	{
-		if (!DefensiveValues.MitigatingStatusesByActionId.TryGetValue(action.AdjustedID, out var tied)
-			&& !DefensiveValues.MitigatingStatusesByActionId.TryGetValue(action.ID, out tied))
+		var key = DefensiveValues.MitigatingStatusesByActionId.ContainsKey(action.AdjustedID) ? action.AdjustedID : action.ID;
+		if (!_statusesOfAction.TryGetValue(key, out var statuses))
 		{
-			return false;
-		}
+			if (!DefensiveValues.MitigatingStatusesByActionId.TryGetValue(key, out var tied))
+			{
+				return false;
+			}
 
-		var statuses = new StatusID[tied.Length];
-		for (var i = 0; i < tied.Length; i++)
-		{
-			statuses[i] = (StatusID)tied[i];
+			statuses = new StatusID[tied.Length];
+			for (var i = 0; i < tied.Length; i++)
+			{
+				statuses[i] = (StatusID)tied[i];
+			}
+
+			_statusesOfAction[key] = statuses;
 		}
 
 		return TankbusterForecast.LongestCopy(player, statuses, false) >= cast.Horizon
@@ -357,42 +373,34 @@ public partial class CustomRotation
 
 	private static bool EverythingSpent(TankbusterForecast.Cast cast)
 	{
-		if (!_everythingPressed.TryGetValue(cast.Serial, out var pressed))
-		{
-			return false;
-		}
-
-		foreach (var record in DataCenter.RecordActions)
-		{
-			foreach (var (actionId, at) in pressed)
-			{
-				if (record.UsedTime >= at && (record.Action.RowId == actionId
-					|| record.Action.RowId == Service.GetAdjustedActionId(actionId)))
-				{
-					return true;
-				}
-			}
-		}
-
-		return false;
+		return _everythingSpent.Contains(cast.Serial);
 	}
 
 	private static bool Refused(TankbusterForecast.Cast cast, uint actionId, float gcd)
 	{
+		return RefusalLeft(cast, actionId, gcd) > 0f;
+	}
+
+	// Seconds until a refusal of the action for this cast runs out; zero when none runs.
+	private static float RefusalLeft(TankbusterForecast.Cast cast, uint actionId, float gcd)
+	{
 		return _refused.TryGetValue((cast.Serial, actionId), out var tick)
-			&& TankbusterForecast.SecondsSince(tick, Environment.TickCount64) < gcd;
+			? Math.Max(0f, gcd - TankbusterForecast.SecondsSince(tick, Environment.TickCount64))
+			: 0f;
 	}
 
 	// One line per change of what the plan spends; the figures ride along but do not make a new line.
 	private static void TracePlan(TankbusterPlan plan)
 	{
-		var summary = plan.Invulnerability
-			? "the invulnerability, nothing else"
-			: !plan.Survivable
-				? $"nothing survives it and no invulnerability, everything goes ({Names(plan.Mitigations)})"
-				: plan.Mitigations.Length == 0
-					? "survivable as it stands, nothing spent"
-					: Names(plan.Mitigations);
+		var summary = plan.Covered
+			? "the invulnerability already covers it, nothing else"
+			: plan.Invulnerability
+				? "nothing less survives it: the invulnerability"
+				: !plan.Survivable
+					? $"nothing survives it and no invulnerability, everything goes ({Names(plan.Mitigations)})"
+					: plan.Mitigations.Length == 0
+						? "survivable as it stands, nothing spent"
+						: Names(plan.Mitigations);
 		var key = (plan.Cast.Source.GameObjectId, plan.Cast.ActionId, plan.Cast.Total, summary);
 		if (_planTraced == key)
 		{
@@ -502,20 +510,6 @@ public partial class CustomRotation
 			IBaseAction.TargetOverride = previous;
 		}
 
-		if (!plan.Survivable && !plan.Invulnerability)
-		{
-			if (!_everythingPressed.TryGetValue(plan.Cast.Serial, out var pressed))
-			{
-				pressed = [];
-				_everythingPressed[plan.Cast.Serial] = pressed;
-			}
-
-			if (!pressed.Exists(p => p.ActionId == action.ID))
-			{
-				pressed.Add((action.ID, DateTime.Now));
-			}
-		}
-
 		DefenseTrace.Decision($"{why} for #{plan.Cast.ActionId} from {plan.Cast.Source.Name.TextValue}"
 			+ $" in {plan.Cast.Remaining:F1} s", act);
 		return true;
@@ -559,14 +553,14 @@ public partial class CustomRotation
 	/// with more than a GCD to go. Held except the planned mitigations while a survivable plan runs for the
 	/// only tankbuster known to come; in the last GCD before the hit, a planned mitigation still missing
 	/// opens it. Not held when nothing survives the hit and the invulnerability is not there to use, nor
-	/// while another tankbuster the plan does not know is coming. Read once per cycle into <see cref="IBaseAction.HoldDefenceOnSelf"/>. A command from
-	/// the player is not second-guessed.
+	/// while another tankbuster the plan does not know is coming. Read once per cycle into
+	/// <see cref="IBaseAction.HoldDefenceOnSelf"/>. A command from the player frees what he commanded - the
+	/// commanded action, and the single defence while he commands it -, not the other paths.
 	/// </summary>
 	private bool HoldDefenceForTankbuster()
 	{
 		IBaseAction.AllowedDefenceOnSelf = null;
-		if (DataCenter.Role != JobRole.Tank || !Service.Config.HoldMitigationUnderInvulnerability
-			|| DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseSingle))
+		if (DataCenter.Role != JobRole.Tank || !Service.Config.HoldMitigationUnderInvulnerability)
 		{
 			return false;
 		}

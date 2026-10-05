@@ -45,14 +45,16 @@ internal static class TankbusterForecast
 
 	private static readonly List<Cast> _casts = [];
 
-	// The player's own actions that put a status on, as the server confirmed them: action, target, when
-	// (monotonic, so a clock change does not stretch anything), its statuses, how long an own copy of them
-	// still ran at that moment, and whether the new one has shown since. Kept while the effect can last.
+	// The player's own actions that put a status on, from RSR's press on (or, for one RSR did not press, from
+	// the server's confirmation): action, target, when (monotonic, so a clock change does not stretch
+	// anything), whether the server confirmed it, its statuses, how long an own copy of them still ran at
+	// that moment, and whether the new one has shown since. Kept while the effect can last.
 	private sealed class Execution
 	{
 		public required uint ActionId { get; init; }
 		public required ulong Target { get; init; }
 		public required long Tick { get; init; }
+		public required bool Confirmed { get; set; }
 		public required StatusID[] OnSelf { get; init; }
 		public required StatusID[] Where { get; init; }
 		public required bool Outward { get; init; }
@@ -62,10 +64,6 @@ internal static class TankbusterForecast
 	}
 
 	private static readonly List<Execution> _own = [];
-
-	// The player's own presses (RSR executed the action), by action, with target and when: they count as
-	// standing from the press until the server confirms them, for at most one GCD.
-	private static readonly Dictionary<uint, (ulong Target, long Tick)> _presses = [];
 	private static readonly Dictionary<uint, (StatusID[] OnSelf, StatusID[] Where, bool Outward)> _factsOfAction = [];
 	private static ICustomRotation? _statusesFor;
 	private static readonly Dictionary<(ulong Source, uint ActionId, float Total), (int Serial, float Elapsed)> _serials = [];
@@ -100,16 +98,49 @@ internal static class TankbusterForecast
 	/// </summary>
 	public static void RecordOwnPress(uint actionId, ulong targetId)
 	{
-		if (DataCenter.InCombat && DataCenter.Role == JobRole.Tank && DefensiveValues.DurationOf(actionId) > 0f)
-		{
-			_presses[actionId] = (targetId, Environment.TickCount64);
-		}
+		_ = Follow(actionId, targetId, false);
 	}
 
 	/// <summary>
-	/// An action of the player went out, as the effect handler saw it. Called on the game thread.
+	/// An action of the player went out, as the effect handler saw it: it confirms the press it belongs to,
+	/// or - pressed by hand or by another tool - starts its own record. Called on the game thread.
 	/// </summary>
 	public static void RecordOwnAction(uint actionId, ulong targetId)
+	{
+		var now = Environment.TickCount64;
+		Execution? pressed = null;
+		foreach (var execution in _own)
+		{
+			if (!execution.Confirmed && execution.ActionId == actionId
+				&& SecondsSince(execution.Tick, now) <= DataCenter.DefaultGCDTotal
+				&& (pressed == null || execution.Tick > pressed.Tick))
+			{
+				pressed = execution;
+			}
+		}
+
+		if (pressed != null)
+		{
+			pressed.Confirmed = true;
+			return;
+		}
+
+		var started = Follow(actionId, targetId, true);
+		if (started == null)
+		{
+			return;
+		}
+
+		// The client may have put the new copy on before this handler ran: a copy with more than the
+		// duration less one GCD left cannot be an older one, so it is already the new status.
+		var fresh = DefensiveValues.DurationOf(actionId) - DataCenter.DefaultGCDTotal;
+		started.StatusSeen = started.PriorOnSelf > fresh || started.PriorWhere > fresh;
+	}
+
+	// Starts the record of one of the player's own actions, with how long an own copy of its statuses ran at
+	// that moment; null for what is not followed. Party tools (a barrier or mitigation spread over the party)
+	// never enter a tankbuster plan and are not followed; Reprisal, a debuff around the player on enemies, is.
+	private static Execution? Follow(uint actionId, ulong targetId, bool confirmed)
 	{
 		var now = Environment.TickCount64;
 		_ = _own.RemoveAll(e => SecondsSince(e.Tick, now) > DefensiveValues.DurationOf(e.ActionId));
@@ -117,44 +148,64 @@ internal static class TankbusterForecast
 		var lasts = DefensiveValues.DurationOf(actionId);
 		if (player == null || lasts <= 0f || !DataCenter.InCombat || DataCenter.Role != JobRole.Tank)
 		{
-			return;
+			return null;
 		}
 
-		// Party tools (a barrier or mitigation spread over the party) never enter a tankbuster plan and are
-		// not followed; Reprisal, a debuff around the player on enemies, is.
 		var value = DefensiveValues.For(actionId);
 		var (onSelf, where, outward) = FactsOfAction(actionId);
 		if ((onSelf.Length == 0 && where.Length == 0) || (outward && (value.Self > 0f || value.Barrier > 0f)))
 		{
-			return;
+			return null;
 		}
 
-		// The client may have put the new copy on before this handler ran: a copy with more than the
-		// duration less one GCD left cannot be an older one, so it is already the new status.
-		var priorOnSelf = OwnCopy(player, onSelf);
-		var priorWhere = LongestOwnCopy(player, targetId, where, outward, float.MaxValue);
-		var fresh = lasts - DataCenter.DefaultGCDTotal;
-		_own.Add(new Execution
+		var execution = new Execution
 		{
 			ActionId = actionId,
 			Target = targetId,
 			Tick = now,
+			Confirmed = confirmed,
 			OnSelf = onSelf,
 			Where = where,
 			Outward = outward,
-			PriorOnSelf = priorOnSelf,
-			PriorWhere = priorWhere,
-			StatusSeen = priorOnSelf > fresh || priorWhere > fresh,
-		});
+			PriorOnSelf = OwnCopy(player, onSelf),
+			PriorWhere = LongestOwnCopy(player, targetId, where, outward, float.MaxValue),
+		};
+		_own.Add(execution);
+		return execution;
 	}
 
 	/// <summary>
-	/// For the gap between the server confirming one of the player's own actions and its status showing:
-	/// the seconds it will still last by its duration from that moment, while its status has not been seen
-	/// yet; zero once it has (from then on the status itself tells, also when it ends early - a barrier
-	/// broken, a mitigation dispelled) or when the action did not go out within its duration. Whether the
-	/// status showed is recorded every cycle in <see cref="Update"/>. <paramref name="anyTarget"/>: the
-	/// action counts whatever it was aimed at (Holmgang on an enemy, Reprisal around the player).
+	/// Whether, since <paramref name="tick"/> (<see cref="Environment.TickCount64"/>), one of the player's
+	/// followed actions went out on himself - aimed at him, or working around him (Reprisal). Help aimed at
+	/// another member does not count.
+	/// </summary>
+	public static bool OwnActionOnSelfSince(long tick)
+	{
+		var player = Player.Object;
+		if (player == null)
+		{
+			return false;
+		}
+
+		foreach (var execution in _own)
+		{
+			if (execution.Tick >= tick
+				&& (execution.Outward || execution.Target == 0 || execution.Target == player.GameObjectId))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// For the gap between one of the player's own actions going out and its status showing: the seconds it
+	/// will still last by its duration from the press, while its status has not been seen yet - for at most
+	/// one GCD while the server has not confirmed it; zero once the status has shown (from then on the status
+	/// itself tells, also when it ends early - a barrier broken, a mitigation dispelled). Whether the status
+	/// showed is recorded every cycle in <see cref="Update"/>. <paramref name="anyTarget"/>: the action
+	/// counts whatever it was aimed at (Holmgang on an enemy, Reprisal around the player).
 	/// </summary>
 	public static float OwnPendingCover(uint actionId, bool anyTarget)
 	{
@@ -165,18 +216,15 @@ internal static class TankbusterForecast
 			return 0f;
 		}
 
-		// Pressed, not yet confirmed: for at most one GCD it counts with its full duration from the press.
+		// A press the server has not confirmed within a GCD did not go out.
 		var now = Environment.TickCount64;
-		if (_presses.TryGetValue(actionId, out var press) && (anyTarget || press.Target == player.GameObjectId)
-			&& SecondsSince(press.Tick, now) <= DataCenter.DefaultGCDTotal && !ConfirmedSince(actionId, press.Tick))
-		{
-			return Math.Max(0f, lasts - SecondsSince(press.Tick, now));
-		}
-
+		var gcd = DataCenter.DefaultGCDTotal;
 		Execution? latest = null;
 		foreach (var execution in _own)
 		{
-			if (execution.ActionId == actionId && (anyTarget || execution.Target == player.GameObjectId)
+			if (execution.ActionId == actionId
+				&& (anyTarget || execution.Target == 0 || execution.Target == player.GameObjectId)
+				&& (execution.Confirmed || SecondsSince(execution.Tick, now) <= gcd)
 				&& (latest == null || execution.Tick > latest.Tick))
 			{
 				latest = execution;
@@ -185,7 +233,7 @@ internal static class TankbusterForecast
 
 		return latest == null || latest.StatusSeen
 			? 0f
-			: Math.Max(0f, lasts - SecondsSince(latest.Tick, Environment.TickCount64));
+			: Math.Max(0f, lasts - SecondsSince(latest.Tick, now));
 	}
 
 	// Marks every execution whose new status shows: an own copy of what the action puts on its user, on
@@ -296,19 +344,6 @@ internal static class TankbusterForecast
 		return result;
 	}
 
-	private static bool ConfirmedSince(uint actionId, long tick)
-	{
-		foreach (var execution in _own)
-		{
-			if (execution.ActionId == actionId && execution.Tick >= tick)
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 	/// <summary>
 	/// The longest any copy of the statuses still runs on <paramref name="chara"/>, read from the status list
 	/// itself - never the status a confirming packet predicts - and guarded; -1 when there is none or it has
@@ -356,6 +391,48 @@ internal static class TankbusterForecast
 		return longest;
 	}
 
+	// Whether the player's barrier still stands in <paramref name="seconds"/>: a barrier status is on, and the
+	// earliest of them - from whoever - lasts that long. A barrier without a known status counts none, as in
+	// StatusHelper.HasSurvivingShield, but no status a confirming packet predicts is taken for standing.
+	private static bool BarrierStandsThrough(IBattleChara player, float seconds)
+	{
+		if (player.GetObjectShield() <= 0)
+		{
+			return false;
+		}
+
+		var found = false;
+		try
+		{
+			var list = player.StatusList;
+			if (list == null)
+			{
+				return false;
+			}
+
+			foreach (var status in list)
+			{
+				if (status == null || Array.IndexOf(StatusHelper.ShieldStatus, (StatusID)status.StatusId) < 0)
+				{
+					continue;
+				}
+
+				found = true;
+				if (status.RemainingTime > 0f && status.RemainingTime < seconds)
+				{
+					return false;
+				}
+			}
+		}
+		catch (Exception)
+		{
+			// A status list that throws answers nothing.
+			return false;
+		}
+
+		return found;
+	}
+
 	/// <summary>Whether the cast with <paramref name="serial"/> is still coming at the player.</summary>
 	public static bool IsRunning(int serial)
 	{
@@ -387,7 +464,6 @@ internal static class TankbusterForecast
 		if (!DataCenter.InCombat || player == null || player.IsDead || DataCenter.Role != JobRole.Tank)
 		{
 			_own.Clear();
-			_presses.Clear();
 			_serials.Clear();
 			return;
 		}
@@ -415,8 +491,8 @@ internal static class TankbusterForecast
 			var predicted = TankbusterTable.PredictedShare(id, player, hostile, horizon);
 
 			// The barrier counts only when it still stands then; the earliest barrier's end decides, so a
-			// short one beside a long one counts none (HasSurvivingShield).
-			var barrier = player.HasSurvivingShield(horizon) ? player.GetObjectShield() / maxHp : 0f;
+			// short one beside a long one counts none. Read from the status list itself, like every status here.
+			var barrier = BarrierStandsThrough(player, horizon) ? player.GetObjectShield() / maxHp : 0f;
 			var attackType = Service.GetSheet<Lumina.Excel.Sheets.Action>().TryGetRow(id, out var row)
 				? row.AttackType.RowId
 				: 0u;

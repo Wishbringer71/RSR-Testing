@@ -1155,18 +1155,17 @@ Für den frühesten gemessenen Tankbuster, der auf dich gewirkt wird:
    eines Heilers auf dir. „Beim Einschlag" heißt: Restzeit des Wirkens plus ein GCD für das Eintreffen; ein Status,
    der vorher endet, zählt nicht (`TankbusterTable.PredictedShare` mit Horizont).
 2. **Was du hast:** deine LP jetzt plus die Barrieren, die beim Einschlag noch stehen. Läuft eine Barriere vorher ab,
-   zählt keine (`HasSurvivingShield`: die früheste Barriere entscheidet). Ein großer Heilerschild, der hält, zählt
+   zählt keine (die früheste Barriere entscheidet, gelesen aus der Statusliste selbst wie unter 1.). Ein großer Heilerschild, der hält, zählt
    also voll – sein Hinweis.
 3. **Was du noch tun kannst:** jede eigene Minderung, die erlernt, aktiviert und nach ihren eigenen Prüfungen
    nutzbar ist (Ressourcen eingeschlossen), bis einen GCD vor dem Einschlag abgeklungen ist, eine bekannte Wirkdauer
-   von mindestens einem GCD hat (Reflexion und Schiltron nennen in der Tabelle keine, `TODO.md`), nach Wirktext gegen diese Schadensart mindert oder eine Barriere legt und beim Einschlag nicht schon steht.
-   Ein Knopf zählt einmal (Rachsucht/Verdammnis, Urinstinkt/Urimpuls). In dem Moment zwischen dem
-   Effektpaket des Servers (die eigene Minderung ging auf dich hinaus) und dem ersten Erscheinen ihres Status zählt
-   sie schon als stehend, nach ihrer Wirkdauer ab der Ausführung (`TankbusterForecast.OwnPendingCover`, aus dem
-   Effekt-Handler mit Ziel und Zeitpunkt). Ist der Status einmal gesehen, sagt nur noch er, ob sie steht – auch wenn
-   sie vorzeitig endet (Barriere gebrochen, Abschütteln). Weder ein `CanUse`-Treffer noch eine Abklingzeit taugt
-   dafür: Der erste ist noch kein Druck, die zweite sagt weder, wer drückte, noch auf wen (The Blackest Night auf dem
-   Co-Tank), und Rachsucht/Verdammnis teilen sie. Ob der neue Status erschienen ist, erhebt die Erkennung in jedem
+   von mehr als zwei GCD hat (Zustandsmodell, Invariante 5; Reflexion und Schiltron nennen in der Tabelle keine,
+   `TODO.md`), nach Wirktext gegen diese Schadensart mindert oder eine Barriere legt und beim Einschlag nicht schon steht.
+   Ein Knopf zählt einmal (Rachsucht/Verdammnis, Urinstinkt/Urimpuls). Eine eigene Minderung, die schon gedrückt ist,
+   deren Status aber noch nicht liegt, zählt als stehend – wie lange, regelt das Zustandsmodell (Druck aus
+   `BaseAction.Use`, Bestätigung aus dem Effekt-Handler, `TankbusterForecast.OwnPendingCover`). Weder ein
+   `CanUse`-Treffer noch eine Abklingzeit taugt dafür: Der erste ist noch kein Druck, die zweite sagt weder, wer
+   drückte, noch auf wen (The Blackest Night auf dem Co-Tank), und Rachsucht/Verdammnis teilen sie. Ob der neue Status erschienen ist, erhebt die Erkennung in jedem
    Durchlauf aus der Statusliste selbst (geschützt gelesen, Quelle der Spieler; nicht der Status, den das
    Bestätigungspaket vorhersagt): eine eigene Kopie dessen, was die Aktion ihrem Nutzer gibt, auf dir (Holmgang,
    worauf es auch gerichtet war), oder dessen, was sie dort legt, wo sie landet – auf ihrem Ziel oder bei Wirkung um
@@ -1190,8 +1189,8 @@ Für den frühesten gemessenen Tankbuster, der auf dich gewirkt wird:
    einen Debuff oder Schild.
 
 Hält schon eine Unverwundbarkeit über den Einschlag – vom Plan gezogen oder an ihrer Sterbe-Schwelle; ihr Status
-liegt, oder der Server hat den Druck bestätigt, der Status ist noch nicht erschienen und ihre Wirkdauer reicht –, ist
-der Plan „die Unverwundbarkeit, nichts sonst". Holmgang schützt seinen Nutzer, worauf es auch gerichtet war.
+liegt, oder sie ist gedrückt und ihr Status noch nicht erschienen (Zustandsmodell) –, ist der Plan „die
+Unverwundbarkeit, nichts sonst" (Z1). Holmgang schützt seinen Nutzer, worauf es auch gerichtet war.
 
 **Ohne Risiko, wie er es für jedes Mittel unterhalb der Unverwundbarkeit verlangt:** Gerechnet wird mit dem höchsten
 je gemessenen Treffer, den LP jetzt und nur dem, was beim Einschlag noch steht. Eine Heilung, die bis dahin kommen
@@ -1217,10 +1216,11 @@ an ist.
   bestätigt hat, je mit Ziel, Zeitpunkt und ob ihr Status seither erschienen ist – unabhängig davon, ob die Aktion
   gerade Kandidat sein könnte (abgeschaltet, verweigert, per Befehl gedrückt).
 
-**Wann eine eigene Aktion als stehend zählt, ohne dass ihr Status schon liegt:** ab dem eigenen Druck höchstens einen
-GCD lang, solange keine Bestätigung kam; ab der Bestätigung bis ihr Status erscheint, solange ihre Wirkdauer über H
-reicht. Danach sagt nur der Status. So gibt es keinen Augenblick, in dem eine eben gedrückte Minderung weder Kandidat
-noch stehend ist.
+**Wann eine eigene Aktion als stehend zählt, ohne dass ihr Status schon liegt:** Jede Ausführung ist ein Datensatz vom
+eigenen Druck an. Er zählt als stehend, bis ihr neuer Status erscheint (eine eigene Kopie dort, wo sie landet, die länger
+läuft als eine beim Druck lief) – längstens einen GCD ohne Bestätigung des Servers, mit Bestätigung längstens ihre
+Wirkdauer über H. Danach sagt nur der Status, auch wenn er vorzeitig endet. So ist eine eben gedrückte Minderung nie
+weder Kandidat noch stehend, und sie zählt nie zugleich als Status und als Datensatz.
 
 **Die Zustände** für das früheste gemessene Wirken c:
 
@@ -1236,33 +1236,44 @@ noch stehend ist.
 und jedes Zurückhalten; ohne sie drückt der Plan keine Minderung und hält nichts zurück. „Use the invulnerability
 before a tankbuster nothing less survives" trägt Z3; ohne sie wird aus Z3 Z4.
 
-**Wann zurückgehalten wird:** nur, wenn c das einzige bekannte Wirken auf dich ist – kein zweites Wirken auf dich,
+**Wann zurückgehalten wird:** nur mit der Option „Spend only …" und nur, wenn c das einzige bekannte Wirken
+auf dich ist – kein zweites Wirken auf dich,
 gemessen oder nicht, und keine BossModReborn-Vorhersage vor c (bei aktivem „Use BMR timeline", gleich wie weit
 voraus). Ein Tankbuster-Marker auf dir, während c läuft, gilt als der von c. Z1 hält auch neben einem zweiten Wirken
 zurück, wenn die Deckung über jedes Wirken reicht; deckt sie nur c, hält nichts zurück. Frei bleiben immer: Hilfe für
-andere, die Heilpfade, nach außen wirkende Flächenabwehr, jeder Befehl.
+andere, die Heilpfade, nach außen wirkende Flächenabwehr und was du befiehlst – eine befohlene Aktion und, solange der
+Einzelabwehr-Befehl steht, dessen Pfad; die übrigen Pfade bleiben auch dann zurückgehalten (er hat eine Abwehr
+befohlen, nicht jede).
 
 **Die Übergänge** – jeder Durchlauf rechnet den Zustand aus den Tatsachen; gespeichert wird nur:
 - *Verweigerung:* Lehnt eine Aktion ab, ohne dass Animationssperre oder eigener Zauber das erklärt, wird sie einen GCD
-  lang nicht gedrückt. Für die Frage, ob ein Bündel reicht, zählt sie weiter, solange bis zum letzten GCD vor dem
-  Einschlag noch ein neuer Versuch bleibt (R > zwei GCD); bei der Wahl werden Bündel ohne verweigerte Glieder
-  vorgezogen. Eine einmalige Verweigerung führt so nicht zur Unverwundbarkeit; eine, die bis zuletzt anhält, schon.
+  lang nicht gedrückt. Für die Frage, ob ein Bündel reicht, zählt sie weiter, solange ihre Sperre vor dem letzten GCD
+  vor dem Einschlag endet, also ein neuer Versuch vor dem Rückfall bleibt; bei der Wahl werden Bündel ohne verweigerte
+  Glieder vorgezogen. Eine einmalige Verweigerung führt so nicht zur Unverwundbarkeit; eine, die bis zuletzt anhält,
+  schon.
   Ist die Unverwundbarkeit selbst verweigert, wird aus Z3 für diesen GCD Z4.
-- *„Alles" ausgeschöpft:* Ging ein Druck aus Z4 hinaus (vom Ausführungsprotokoll bestätigt), ist Z3 für dieses Wirken
-  ausgeschlossen (offene Entscheidung D1a).
+- *„Alles" ausgeschöpft:* Ging, während der Zustand Z4 war, ein eigener Druck einer bewerteten Abwehr auf dich hinaus –
+  vom Plan oder aus einem anderen Pfad –, ist Z3 für dieses Wirken ausgeschlossen (offene Entscheidung D1a). Hilfe für
+  andere zählt nicht.
 - Alles Übrige ergibt sich aus den Tatsachen: Heilung hebt B (Z3 → Z2 möglich, solange die Unverwundbarkeit nicht
   gedrückt ist), Auto-Angriffe senken B (größeres S, Z3), eine fremde Reflexion senkt P, ein gedrücktes Glied von S
   steht und fällt aus den Kandidaten.
 
-**Invarianten:**
+**Invarianten** – die zu „aus keinem Pfad" gelten, solange zurückgehalten wird; ohne „Spend only …" und neben einem
+zweiten Wirken oder einer früheren Vorhersage sind die anderen Pfade bewusst frei, ebenso der Pfad eines Befehls (dann kann
+die Rotation auch neben einer gedrückten Unverwundbarkeit mindern – für den zweiten Treffer oder weil er es so will):
 1. Die Unverwundbarkeit wird nie geplant, solange ein Bündel reicht, dessen Glieder bis zum letzten GCD noch gedrückt
    werden können – auch eines mit einem eben verweigerten Glied.
 2. Steht eine Unverwundbarkeit über H oder ist sie für c gedrückt, geht für c keine Minderung mehr hinaus, aus keinem
    Pfad (Z1). Holmgang und Totenerweckung eingeschlossen: Sie sichern das Überleben; wie viele LP nach ihrem Ende
    bleiben, ist die offene Reserve-Frage (`TODO.md`).
-3. Das Zurückhalten trifft nie Heilung, Hilfe für andere, nach außen wirkende Flächenabwehr oder einen Befehl.
+3. Das Zurückhalten trifft nie Heilung, Hilfe für andere, nach außen wirkende Flächenabwehr oder das Befohlene; ein
+   Befehl gibt nur sich selbst frei.
+7. Der Plan selbst drückt nach einer Unverwundbarkeit für dasselbe Wirken keine Minderung mehr, auch ohne „Spend only …"
+   (seine Präzisierung zu „alles"); ob er nach Minderungen noch die Unverwundbarkeit zieht, ist D1.
 4. Ein Glied von S geht aus keinem Pfad vor seinem Fenster hinaus; fehlt im letzten GCD eines, endet das Zurückhalten.
-5. Ein Kandidat braucht eine bekannte Wirkdauer von mindestens einem GCD.
+5. Ein Kandidat braucht eine bekannte Wirkdauer von mehr als zwei GCD: Sein Fenster (Einschlag höchstens Wirkdauer weniger
+   ein GCD entfernt) muss sich vor dem letzten GCD öffnen, in dem das Zurückhalten für fehlende Glieder endet.
 6. Nach einem Druck gibt es keinen Durchlauf, in dem die Aktion weder Kandidat noch stehend ist.
 
 **Offene Entscheidung D1 (`TODO.md`):** die Unverwundbarkeit, nachdem für dasselbe Wirken schon Minderungen
@@ -1298,7 +1309,7 @@ Fenster.
 - **Frei bleiben** Hilfe für ein anderes Mitglied (Intervention, Herz des Korunds auf dem Co-Tank, Urflackern), die
   Heilpfade (Herz des Korunds heilt einen Tank, den Meteoritenfall auf 1 LP setzte; erkannt an einem eigenen Schalter,
   nicht an der Zielüberschreibung, die über ihren Pfad hinaus stehen bleiben kann), in der Flächenabwehr, was über
-  dich hinaus wirkt (Reflexion, Abschütteln für einen Raidwide), und jeder Befehl von dir.
+  dich hinaus wirkt (Reflexion, Abschütteln für einen Raidwide), und was du befiehlst (Zustandsmodell, „Wann zurückgehalten wird").
 
 **Holmgang und Totenerweckung:** Heiliger Boden und Meteoritenfall: „Impervious to most attacks" – kein Schaden.
 Holmgang, Undead Rebirth: „Most attacks cannot reduce your HP to less than 1"; Totenerweckung wandelt den Tod in
@@ -1398,8 +1409,9 @@ Holmgang oder Totenerweckung bleibt also, wie sie war.
 
 `DefenseTrace.log` schreibt je Wirken auf dich „tankbuster coming at you: … takes …% of max HP under what stands at
 impact, you have …%", je Änderung des Plans „tankbuster plan for … in … s: Rampart + Damnation, leaving …% against
-…%" (oder „survivable as it stands, nothing spent", „nothing less survives it: the invulnerability", „nothing survives
-it, everything goes"), je Druck „tankbuster plan for … -> Rampart" mit der „used"-Zeile. Nachsteuerung: Jeder Treffer
+…%" (oder „survivable as it stands, nothing spent", Z1 „the invulnerability already covers it, nothing else", Z3
+„nothing less survives it: the invulnerability", Z4 „nothing survives it and no invulnerability, everything goes
+(…)"), je Druck „tankbuster plan for … -> Rampart" mit der „used"-Zeile. Nachsteuerung: Jeder Treffer
 hebt den Tabellenwert, wo er höher ausfällt, und der Plan wird je Durchlauf neu gerechnet.
 
 **Prüfgrad:** statisch, Prüfskripte, Compile über die CI, zwei unabhängige Code-Reviews; im Spiel nicht beobachtet.

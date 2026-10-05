@@ -5836,6 +5836,33 @@ Wechsel greift, schreibt das Protokoll selbst.
   das kostet Abklingzeit, nicht Leben; die Gegenposition „unter Holmgang ist das geringste Mittel nichts" steht gegen
   die begründete Konzeptaussage zu den LP nach dem Ende und hängt am offenen Reserve-Eintrag; ausgeliefert ohne
   Wirkung – im Protokoll an der Planzeile ablesbar.
+- *Zweites Review gegen das Modell (f62c4eb16), zehn Befunde.* Wieder lagen die meisten im Modell; erst dort
+  eingearbeitet, dann der Code:
+  - Verweigerung: Die feste Grenze „R > zwei GCD" widersprach Invariante 1 – ein 8-s-Glied (Urimpuls, Herz des
+    Korunds, Heiliges Schiltron) öffnet sein Fenster knapp über zwei GCD, eine Verweigerung beim ersten Versuch zog
+    sofort die Unverwundbarkeit, obwohl vor dem letzten GCD ein zweiter Versuch blieb. Jetzt zählt ein verweigertes
+    Glied, solange seine Sperre vor dem letzten GCD endet (`RefusalLeft`).
+  - Invarianten 2 und 4 sagten „aus keinem Pfad" ohne Bedingung, die Optionen und „Wann zurückgehalten wird" schalten
+    das Zurückhalten aber ab. Geltungsbereich jetzt ausdrücklich: solange zurückgehalten wird; neue Invariante 7 für
+    den Plan selbst (nach einer Unverwundbarkeit keine Minderung, auch ohne „Spend only …").
+  - Ältere Konzepttexte (Rechnung Schritt 3, Z1-Absatz) zählten nur ab der Bestätigung; jetzt Verweis aufs Modell.
+  - Druckphase: Sie endete nur mit der Bestätigung, nie mit dem Status – erschien der Status vorher oder blieb die
+    Bestätigung aus, zählte die Minderung doppelt (Status und Datensatz). Jetzt ein Datensatz je Ausführung ab dem
+    Druck, die Bestätigung markiert ihn, der Status beendet ihn (`TankbusterForecast.Follow`).
+  - „Alles ausgeschöpft" wurde beim `CanUse`-Treffer in Z4 vorgemerkt und später durch einen Druck aus Z2
+    ausgelöst. Jetzt: ein eigener Druck auf dich nach einem Durchlauf, der Z4 rechnete (`OwnActionOnSelfSince`).
+  - Der Einzelabwehr-Befehl schaltete das Zurückhalten für alle Pfade ab. Jetzt gibt er nur seinen Pfad frei
+    (`IBaseAction.CommandedDefenceRunning`).
+  - Barrieren im Budget liefen über `HasSurvivingShield` und damit über `DataCenter.ApplyStatus`. Jetzt aus der
+    Statusliste selbst, gleiche Regel (die früheste Barriere entscheidet).
+  - Invariante 5 ließ Glieder ab einem GCD Wirkdauer zu; deren Fenster öffnet erst im letzten GCD, in dem das
+    Zurückhalten für fehlende Glieder endet. Jetzt mehr als zwei GCD.
+  - Z1 und Z3 schrieben dieselbe Protokollzeile, das Konzept zitierte andere. Jetzt getrennt und wörtlich zitiert.
+  - `StandsAtImpact` legte je Aufruf und Bild ein Feld an; jetzt je Aktion zwischengespeichert.
+  Falsifikation des überarbeiteten Modells: Invariante 7 widersprach in erster Fassung („nie Unverwundbarkeit und
+  Minderung") der gebauten D1b (Bündel, dann Unverwundbarkeit bei fallenden LP) und ist auf die Reihenfolge
+  „nach der Unverwundbarkeit" verengt; die Grenze „mehr als zwei GCD" schließt bei sehr langem GCD (ab 3,5 s)
+  The Blackest Night (7 s) aus – der Plan wählt dann teurer, die sichere Richtung.
 
 **Prüfgrad:** statisch, Prüfskripte; Compile über die CI.
 
