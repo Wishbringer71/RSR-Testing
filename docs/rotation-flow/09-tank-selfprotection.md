@@ -1163,12 +1163,15 @@ Für den frühesten gemessenen Tankbuster, der auf dich gewirkt wird:
    `TODO.md`), nach Wirktext gegen diese Schadensart mindert oder eine Barriere legt und beim Einschlag nicht schon steht.
    Ein Knopf zählt einmal (Rachsucht/Verdammnis, Urinstinkt/Urimpuls). Eine eigene Minderung, die schon gedrückt ist,
    deren Status aber noch nicht liegt, zählt als stehend – wie lange, regelt das Zustandsmodell (Druck aus
-   `BaseAction.Use`, Bestätigung aus dem Effekt-Handler, `TankbusterForecast.OwnPendingCover`). Weder ein
+   `BaseAction.Use`, Bestätigung aus dem Effekt-Handler, Datensatz `TankbusterForecast.OwnPending`, Urteil
+   `PendingStands`). Weder ein
    `CanUse`-Treffer noch eine Abklingzeit taugt dafür: Der erste ist noch kein Druck, die zweite sagt weder, wer
    drückte, noch auf wen (The Blackest Night auf dem Co-Tank), und Rachsucht/Verdammnis teilen sie. Ob der neue Status erschienen ist, erhebt die Erkennung in jedem
    Durchlauf aus der Statusliste selbst (geschützt gelesen, Quelle der Spieler; nicht der Status, den das
-   Bestätigungspaket vorhersagt): eine eigene Kopie dessen, was die Aktion ihrem Nutzer gibt, auf dir (Holmgang,
-   worauf es auch gerichtet war), oder dessen, was sie dort legt, wo sie landet – auf ihrem Ziel oder bei Wirkung um
+   Bestätigungspaket vorhersagt): eine eigene Kopie ihres eigenen Status – des Status, an den ihr Wirktext gebunden
+   ist; die Statusangabe der Aktion nur, wo der Wirktext keinen nennt (Unverwundbarkeiten: Holmgang auf dir, worauf es
+   auch gerichtet war), denn bei den großen Minderungen ist diese Angabe die gemeinsame Sperrliste, und ein stehender
+   Schutzwall sähe sonst wie der neue Status von Verdammnis aus –, dort, wo sie landet – auf ihrem Ziel oder bei Wirkung um
    dich (Wirkradius laut Spieldaten) auf einem beliebigen Gegner –, die länger läuft als eine eigene Kopie dort beim
    Hinausgehen lief; bei mehreren Status einer Aktion zählt der längste. Gruppenwerkzeuge werden nicht verfolgt. Eine
    Erneuerung zählt so erst, wenn die erneuerte Kopie liegt; lag sie beim Bestätigen schon (mehr als Wirkdauer weniger
@@ -1235,9 +1238,11 @@ an ist.
 eigenen Druck an. Er lebt, bis ihr neuer Status erscheint (eine eigene Kopie dort, wo sie landet, die länger läuft als
 eine beim Druck lief) – längstens einen GCD ohne Bestätigung des Servers, mit Bestätigung längstens ihre Wirkdauer.
 Solange er lebt, zählt die Aktion als stehend,
-- wenn der Plan sie in ihrem Fenster gedrückt hat: Die Fensterprüfung beim Druck hat gesichert, dass sie über den
-  Einschlag reicht; ein zweiter Vergleich mit H, auf einer anderen Uhr, könnte sie nur durch Messversatz verlieren;
-- sonst, wenn ihre Wirkdauer ab dem Druck über H reicht (ein früher Druck aus einem anderen Pfad läuft vorher ab).
+- wenn sie in ihrem Fenster hinausging – beim Druck reichte ihre Wirkdauer über das H des frühesten gemessenen
+  Wirkens, gleich ob vom Plan, aus einem anderen Pfad oder von Hand (dann gilt der Zeitpunkt der Bestätigung): Das
+  hält die Erkennung beim Druck fest, und ein zweiter Vergleich mit H, auf einer anderen Uhr, könnte die Aktion nur
+  durch Messversatz verlieren;
+- sonst, wenn ihre Wirkdauer ab dem Druck über H reicht (ein früher Druck läuft vorher ab).
 
 Nicht zusätzlich zählt ein Datensatz, dessen alte eigene Kopie schon über H reicht – eine Erneuerung: Die alte Kopie
 steckt bereits in P. Danach sagt nur der Status, auch wenn er vorzeitig endet. So ist eine eben gedrückte Minderung nie

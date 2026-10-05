@@ -5915,6 +5915,18 @@ Wechsel greift, schreibt das Protokoll selbst.
     mit Wirkdauer – die Tabelle führt auch Schadensbuffs und DoTs.
   - Optionstext und Release-Text: „kein Versuch vor dem letzten GCD vor dem Einschlag", wie der Code.
   - Ein Kommentar sagte noch „Reprisal is bridged"; berichtigt.
+- *Sechstes Review (3bfb35245, CI grün), fünf Befunde.* Eine Tatsache des Modells war falsch belegt: „was die Aktion
+  ihrem Nutzer gibt" las die Erkennung aus `StatusProvide`, und das ist bei allen großen Minderungen die gemeinsame
+  Sperrliste `StatusHelper.RampartStatus` (am Code: DRK 241/407, GNB 312/455, PLD 208/405, WAR 157). Ein zweites
+  gestapeltes Glied galt so als Erneuerung des ersten (Verdammnis neben Schutzwall), und ein stehender Schutzwall
+  markierte den Datensatz von Verdammnis als gesehen – beide Male war Verdammnis bis zu ihrem Status weder stehend noch
+  Kandidat. Jetzt: eigener Status nach Wirktext (`MitigatingStatusesByActionId`, alle betroffenen Aktionen haben einen),
+  `StatusProvide` nur ohne Wirktextstatus (die vier Unverwundbarkeiten, je eigener Status).
+  - Fensterregel: hing an `PressForTankbuster`; ein Glied, das ein anderer Pfad oder er selbst in seinem Fenster
+    drückte, fiel auf den Uhrenvergleich zurück. Jetzt hält die Erkennung beim Druck fest, ob die Wirkdauer über das H
+    des frühesten gemessenen Wirkens reichte (`CoveredSerial`).
+  - Konzept Rechnung Schritt 3 nannte noch `OwnPendingCover`; nachgezogen.
+  - `RecordOwnPress` las die Spieldaten für jeden Druck jedes Jobs; jetzt erst nach den billigen Prüfungen.
 
 **Prüfgrad:** statisch, Prüfskripte; Compile über die CI.
 

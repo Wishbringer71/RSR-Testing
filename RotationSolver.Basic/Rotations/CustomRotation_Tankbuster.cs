@@ -49,10 +49,6 @@ public partial class CustomRotation
 	private static (int Serial, long Presses)? _everythingSince;
 	private static readonly List<(int, uint)> _endedKeys = [];
 
-	// What the plan pressed inside its window, per cast and button, and when: the window check at the press
-	// made sure it lasts over the hit, so its record counts as standing until its status shows, without a
-	// second comparison against the horizon on another clock.
-	private static readonly Dictionary<(int Cast, uint ActionId), long> _pressedInWindow = [];
 
 	/// <summary>
 	/// The owner's rule of 04.10.2026 (concept 09, "Das geringste Mittel gegen einen gemessenen
@@ -83,18 +79,9 @@ public partial class CustomRotation
 			}
 		}
 
-		foreach (var key in _pressedInWindow.Keys)
-		{
-			if (!TankbusterForecast.IsRunning(key.Cast))
-			{
-				_endedKeys.Add(key);
-			}
-		}
-
 		foreach (var key in _endedKeys)
 		{
 			_ = _refused.Remove(key);
-			_ = _pressedInWindow.Remove(key);
 		}
 
 		_ = _everythingSpent.RemoveWhere(serial => !TankbusterForecast.IsRunning(serial));
@@ -417,8 +404,8 @@ public partial class CustomRotation
 
 	/// <summary>
 	/// Whether an own action whose status has not shown yet stands at the hit (concept 09, "Wann eine eigene
-	/// Aktion als stehend zählt"): pressed by the plan inside its window, or lasting over the horizon by its
-	/// duration from the press. Not when the own copy that ran at the press already lasts over the horizon - a
+	/// Aktion als stehend zählt"): gone out inside its window for this cast - from the plan, another path or by
+	/// hand, as the forecast noted at the press -, or lasting over the horizon by its duration from the press. Not when the own copy that ran at the press already lasts over the horizon - a
 	/// renewal: that copy is in the forecast's figures already. <paramref name="windowCounts"/>: false when the
 	/// horizon reaches past the cast the press was planned for, which its window does not cover.
 	/// </summary>
@@ -430,8 +417,7 @@ public partial class CustomRotation
 			return false;
 		}
 
-		return pending.Cover >= cast.Horizon
-			|| (windowCounts && _pressedInWindow.TryGetValue((cast.Serial, actionId), out var pressed) && pending.Tick >= pressed);
+		return pending.Cover >= cast.Horizon || (windowCounts && pending.CoveredSerial == cast.Serial);
 	}
 
 	private static bool EverythingSpent(TankbusterForecast.Cast cast)
@@ -592,7 +578,6 @@ public partial class CustomRotation
 			IBaseAction.TargetOverride = previous;
 		}
 
-		_pressedInWindow[(plan.Cast.Serial, action.AdjustedID)] = TankbusterForecast.Now;
 		DefenseTrace.Decision($"{why} for #{plan.Cast.ActionId} from {plan.Cast.Source.Name.TextValue}"
 			+ $" in {plan.Cast.Remaining:F1} s", act);
 		return true;

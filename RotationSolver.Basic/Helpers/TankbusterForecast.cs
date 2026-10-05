@@ -55,6 +55,7 @@ internal static class TankbusterForecast
 		public required ulong Target { get; init; }
 		public required long Tick { get; init; }
 		public required bool Confirmed { get; set; }
+		public required int CoveredSerial { get; init; }
 		public required StatusID[] OnSelf { get; init; }
 		public required StatusID[] Where { get; init; }
 		public required bool Outward { get; init; }
@@ -88,7 +89,9 @@ internal static class TankbusterForecast
 	/// <param name="Cover">Seconds it still lasts by its duration from the press; zero when there is no such record.</param>
 	/// <param name="Tick">When it was pressed (<see cref="Now"/>).</param>
 	/// <param name="PriorLeft">Seconds the own copy that ran at the press still runs; negative when there was none.</param>
-	public readonly record struct Pending(float Cover, long Tick, float PriorLeft);
+	/// <param name="CoveredSerial">The soonest measured cast whose horizon its duration reached when it went out
+	/// (inside its window); zero when none.</param>
+	public readonly record struct Pending(float Cover, long Tick, float PriorLeft, int CoveredSerial);
 	private static readonly Dictionary<uint, (StatusID[] OnSelf, StatusID[] Where, bool Outward)> _factsOfAction = [];
 	private static ICustomRotation? _statusesFor;
 	private static readonly Dictionary<(ulong Source, uint ActionId, float Total), (int Serial, float Elapsed)> _serials = [];
@@ -127,12 +130,13 @@ internal static class TankbusterForecast
 		// "everything" against a tankbuster; Reprisal, rated only against the enemy, is counted.
 		var player = Player.Object;
 		var value = DefensiveValues.For(actionId);
-		var outward = FactsOfAction(actionId).Outward;
-		if (player != null && DataCenter.InCombat && DataCenter.Role == JobRole.Tank && value != default
-			&& (targetId == player.GameObjectId || outward)
-			&& !(outward && (value.Self > 0f || value.Barrier > 0f)))
+		if (player != null && DataCenter.InCombat && DataCenter.Role == JobRole.Tank && value != default)
 		{
-			SelfDefencePresses++;
+			var outward = FactsOfAction(actionId).Outward;
+			if ((targetId == player.GameObjectId || outward) && !(outward && (value.Self > 0f || value.Barrier > 0f)))
+			{
+				SelfDefencePresses++;
+			}
 		}
 
 		_ = Follow(actionId, targetId, false);
@@ -197,12 +201,16 @@ internal static class TankbusterForecast
 			return null;
 		}
 
+		// Inside its window: its duration reaches the horizon of the soonest measured cast as it goes out. Read
+		// now, so the cast's time is taken to now as well.
+		var soonest = SoonestMeasured;
 		var execution = new Execution
 		{
 			ActionId = actionId,
 			Target = targetId,
 			Tick = now,
 			Confirmed = confirmed,
+			CoveredSerial = soonest != null && lasts >= soonest.Horizon - SinceReading ? soonest.Serial : 0,
 			OnSelf = onSelf,
 			Where = where,
 			Outward = outward,
@@ -252,7 +260,7 @@ internal static class TankbusterForecast
 
 		var since = SecondsSince(latest.Tick, now);
 		var prior = Math.Max(latest.PriorOnSelf, latest.PriorWhere);
-		return new Pending(Math.Max(0f, lasts - since), latest.Tick, prior < 0f ? -1f : prior - since);
+		return new Pending(Math.Max(0f, lasts - since), latest.Tick, prior < 0f ? -1f : prior - since, latest.CoveredSerial);
 	}
 
 	private static bool GivesInvulnerability(StatusID[] statuses)
@@ -327,10 +335,12 @@ internal static class TankbusterForecast
 		return LongestCopy(chara, statuses, true);
 	}
 
-	// The statuses an action puts on its user (its setting's StatusProvide) and where it lands (its
-	// setting's TargetStatusProvide and the statuses its effect text is tied to; The Blackest Night's barrier
-	// has no mitigation figure, only a status), and whether it works around the player (an effect radius,
-	// game data). Kept per action until the rotation changes.
+	// The action's own statuses: where it lands, the statuses its effect text is tied to and its setting's
+	// TargetStatusProvide (The Blackest Night's barrier has no mitigation figure, only a status); on its user,
+	// its setting's StatusProvide - only for an action whose effect text names none, the invulnerabilities,
+	// because for the big mitigations that setting is the shared lock-out list (StatusHelper.RampartStatus), in
+	// which a standing Rampart would look like Damnation's new status. And whether it works around the player
+	// (an effect radius, game data). Kept per action until the rotation changes.
 	private static (StatusID[] OnSelf, StatusID[] Where, bool Outward) FactsOfAction(uint actionId)
 	{
 		var rotation = DataCenter.CurrentRotation;
@@ -355,6 +365,7 @@ internal static class TankbusterForecast
 			}
 		}
 
+		var namedByEffectText = where.Count > 0;
 		var actions = rotation?.AllBaseActions;
 		if (actions != null)
 		{
@@ -365,7 +376,11 @@ internal static class TankbusterForecast
 					continue;
 				}
 
-				onSelf.AddRange(action.Setting.StatusProvide ?? []);
+				if (!namedByEffectText)
+				{
+					onSelf.AddRange(action.Setting.StatusProvide ?? []);
+				}
+
 				where.AddRange(action.Setting.TargetStatusProvide ?? []);
 			}
 		}
