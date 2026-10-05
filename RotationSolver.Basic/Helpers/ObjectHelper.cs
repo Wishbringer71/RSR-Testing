@@ -752,7 +752,7 @@ public static class ObjectHelper
 			}
 		}
 
-		if (Service.Config.FriendlyPartyNpcHealRaise3 && battleChara.IsNpcPartyMember())
+		if (DataCenter.FriendlyPartyNpcHealRaiseEnabled && battleChara.IsNpcPartyMember())
 		{
 			return true;
 		}
