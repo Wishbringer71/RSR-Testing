@@ -24,6 +24,9 @@ public partial class CustomRotation
 			IBaseAction.ActionPreview = false;
 
 			CountingOfLastUsing = CountingOfCombatTimeUsing = 0;
+			// The defence paths set this and clear it on the way out; an exception in one of them would
+			// leave it standing for every action of the next update.
+			IBaseAction.SelfProtectionHitsMe = null;
 			newAction = Invoke(out gcdAction);
 			// Track when the next GCD action (IBaseAction) returned by Invoke changes.
 			try
@@ -210,6 +213,12 @@ public partial class CustomRotation
 		// Reset special action flags
 		IBaseAction.ShouldEndSpecial = false;
 		IBaseAction.IgnoreClipping = true;
+		// The defence paths clear these on every exit they take; an exception thrown inside a rotation's
+		// defence would leave them standing until the path ran again.
+		IBaseAction.SelfProtectionHitsMe = null;
+		IBaseAction.AreaDefenceRunning = false;
+		IBaseAction.HealPathRunning = false;
+		IBaseAction.CommandedDefenceRunning = false;
 
 		try
 		{
@@ -222,6 +231,11 @@ public partial class CustomRotation
 
 			// Reset target override
 			IBaseAction.TargetOverride = null;
+
+			// For every path of this cycle, not only the single defence: a rotation spends the same
+			// mitigation from its general abilities too (concept 09).
+			UpdateTankbusterPlan();
+			IBaseAction.HoldDefenceOnSelf = HoldDefenceForTankbuster();
 
 			// Attempt to get the GCD action
 			gcdAction = GCD();
@@ -254,6 +268,8 @@ public partial class CustomRotation
 		{
 			// Ensure IgnoreClipping is reset
 			IBaseAction.IgnoreClipping = false;
+			IBaseAction.HoldDefenceOnSelf = false;
+			IBaseAction.AllowedDefenceOnSelf = null;
 		}
 	}
 

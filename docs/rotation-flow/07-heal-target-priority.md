@@ -78,16 +78,15 @@ wurde oder nicht. Vier Größen also, und keine davon genügt allein:
 
 | Größe | Beantwortet | Im Baum vorhanden |
 |---|---|---|
-| **Effektive Gesundheit, absolut** | Wie viele Punkte liegen zwischen ihm und dem Tod? | ja — `GetEffectiveHp` (Gesundheit plus Barriere); die Zielwahl liest sie nur nicht |
-| **Aggro** | Bekommt er gerichteten Schaden — Auto-Angriffe, Tankbuster? | ja — ein Gegner nennt sein Ziel über `TargetObject`, `ObjectHelper.CanProvoke` löst das bereits auf |
+| **Effektive Gesundheit, absolut** | Wie viele Punkte liegen zwischen ihm und dem Tod? | ja — `GetEffectiveHp` (Gesundheit plus Barriere); die Zielwahl liest sie vorausberechnet in Klasse 1 und, bei angekündigtem Flächenschaden, in Klasse 3 |
+| **Aggro** | Bekommt er gerichteten Schaden — Auto-Angriffe, Tankbuster? | ja — `DataCenter.TargetedPartyMembers`, je Bild aus den Zielen der Gegner; die Zielwahl liest sie in Klasse 2 |
 | **Angekündigter Flächenschaden** | Kommt Schaden, der ihn ohne Aggro trifft? | ja — `IsHostileCastingAOE` und die BossModReborn-Vorhersage (`BMRNextDamageIn`); **wie hart** er trifft, misst `13-aoe-damage-classification.md` je Aktion, hier ungenutzt |
-| **Eingehende Schadensrate** | Wie schnell schwindet der Puffer? | **ja, seit A91** — `RecordedHP` trägt die Gruppe mit, `GetTTK` antwortet für Mitglieder, `GetCorrectedTTK` teilt den Schätzfehler heraus. Die Zielwahl liest sie nicht |
+| **Eingehende Schadensrate** | Wie schnell schwindet der Puffer? | **ja, seit A91** — `RecordedHP` trägt die Gruppe mit, `GetTTK` antwortet für Mitglieder, `GetCorrectedTTK` teilt den Schätzfehler heraus. Die Zielwahl liest sie über die vorausberechnete Gesundheit (Stufe 3) |
 
 Aus den ersten beiden folgt der Puffer, aus allen vieren die **Zeit bis zum Tod**. Sie ist **vorhanden**:
 `08-mitigation-synergy.md` hat sie gebaut — die Gesundheitsreihe `RecordedHP` nimmt die Gruppe seit A91
 mit auf, also antwortet `GetTTK` auch für Mitglieder, und `GetCorrectedTTK` hält jede Vorhersage gegen
-den tatsächlichen Verlauf. **Was fehlt, ist nicht die Größe, sondern ihr Verbraucher:** Die Zielwahl
-fragt sie nicht ab (erfasst in `TODO.md`, „Die Zielwahl der Heilung misst nicht die Sterbegefährdung“).
+den tatsächlichen Verlauf. Die Zielwahl liest sie über die vorausberechnete Gesundheit (Stufe 3).
 
 **Der kleine Puffer ist damit für sich gefährlich.** Wer bei 10 % steht, braucht keine Aggro, um an
 der nächsten Flächenaktion zu sterben; die Aggro entscheidet nur, ob er auch ohne Mechanik fällt. Ein
@@ -106,19 +105,19 @@ lesbar, weil angekündigter Flächenschaden im Baum steht.
 
 ## Sachstand
 
-**Die Zielwahl fragt keine dieser Größen.** `ActionTargetInfo.FindHealTarget` entscheidet so:
+**Die Zielwahl ordnet nach Gefährdung** (`ActionTargetInfo.GeneralHealTarget`, Stand 02.10.2026). Alle
+Gesundheitswerte darin sind vorausberechnet (`GetForecast*`, hinter `HealAheadOfDamage`, ab Werk an):
 
-| Rang | Bedingung | Schwelle |
+| Rang | Bedingung | Ordnung |
 |---|---|---|
-| 1 | der Spieler selbst | ≤ `HealthSelfRatio` (0,40) |
-| 2 | Heiler, nicht unverwundbar | ≤ `HealthHealerRatio` (0,40) |
-| 3 | Tank, nicht unverwundbar | ≤ `HealthTankRatio` (0,45) |
-| 4 | sonst: niedrigster **Prozentsatz** zuerst | — |
+| 1 | Gefährdungsklasse 1: ungeschützt, effektive Gesundheit ≤ `HealthForDyingTanks` | absolute effektive Punkte, bei Gleichstand Heiler vor Tank vor Schadensausteiler |
+| 2 | der Spieler selbst | ≤ `HealthSelfRatio` (0,40) |
+| 3a | mit `HealTargetByDanger` (ab Werk an): Klassen 2 und 3 (`DangerClassTarget`) | siehe „Der Entwurf“ |
+| 3b | ohne: Heiler ≤ `HealthHealerRatio` (0,40), dann Tank ≤ `HealthTankRatio` (0,45), dann niedrigster Prozentsatz | — |
 
-Die Rollenabkürzungen bilden die Vorgabe **teilweise** ab: Heiler und Tank stehen vor den übrigen.
-Was fehlt, ist die Bedingung, die sie tragen soll. Ein Heiler bei 50 %, auf dem drei Gegner stehen,
-wird behandelt wie ein Heiler bei 50 % ohne jede Bedrohung; ein Tank hinter einer Barriere wie einer
-ohne; und ein Schadensausteiler mit kleinem Lebenspool wie einer mit großem.
+Geschützte (Unverwundbare) stehen in jeder Stufe zuletzt. Die folgenden Befunde beschreiben die Lage **vor** dem
+Umbau (Stufen 1 bis 3, unten); sie bleiben stehen, weil sie den Entwurf begründen. Was davon heute noch gilt, steht
+jeweils am Ende des Befunds.
 
 **Die Schwellen sind Zielwahlschwellen, keine Heilschwellen.** Ob überhaupt geheilt wird, entscheiden
 `HealthSingleAbility` und `HealthSingleSpell` weiter oben; `FindHealTarget` bekommt bereits ein durch
@@ -155,7 +154,9 @@ der Heilschwelle verlangte. Jetzt fällt sie, sobald im Radius genug Verletzte s
   `CanUseTo` (Abfrage beim Spiel), `MinHPFeature` der Aktion. Für keine freundliche Heilung mit
   Reichweite 0 ist ein `CanTarget` gesetzt (erhoben A137). `NoNewHostiles`, das im allgemeinen Pfad
   die Trefferzahl auch für freundliche Mitglieder ohne Ziel auf 0 setzte, wirkt hier nicht. **Hinweis
-  des Auftraggebers:** Heilungen erzeugen Feindschaft, wie Schaden auch; der Umfang ist nicht belegt.
+  des Auftraggebers:** Heilungen erzeugen Feindschaft, wie Schaden auch — bestätigt im consolegameswiki,
+  „Enmity" (02.10.2026: „healing effects used on allies generate enmity"); den Umfang nennt keine der
+  geprüften Quellen (consolegameswiki, Akhmorning „Raiding Fundamentals").
   Ob eine Gruppenheilung dabei mehr oder andere Gegner erreicht als eine Einzelheilung, ist ebenfalls
   nicht belegt — `NoNewHostiles` bleibt deshalb eine Regel für Angriffe, und das ist eine offene
   Annahme, keine belegte Tatsache.
@@ -182,9 +183,10 @@ Ein belegter Defekt, keine Verbesserung auf Verdacht — deshalb ohne eigene Opt
 niemanden sonst an.** `healerTars[0]` unter `HealthHealerRatio` beendet die Suche, `tankTars[0]`
 unter `HealthTankRatio` ebenso — der Prozentvergleich in Rang 4 wird gar nicht mehr erreicht.
 
-Im Kampf heißt das: **Ein Schadensausteiler bei 10 % wird übergangen, sobald der Tank bei 44 %
-steht.** Das ist genau der Fall, den die Vorgabe nennt — „auch ein Damagedealer ohne Aggro mit 10 %
-Leben kann bei einem AoE sterben" —, und er ist heute falsch entschieden. Der Tank bei 44 % hinter
+Im Kampf hieß das: **Ein Schadensausteiler bei 10 % wurde übergangen, sobald der Tank bei 44 %
+stand.** Das ist genau der Fall, den die Vorgabe nennt — „auch ein Damagedealer ohne Aggro mit 10 %
+Leben kann bei einem AoE sterben" —, und er war falsch entschieden. **Heute behoben** durch Stufe 1: Klasse 1
+steht vor allen Kurzschlüssen. Der Tank bei 44 % hinter
 Minderungen und einem großen Lebenspool ist nicht gefährdeter als ein Schadensausteiler bei 10 %; er
 ist nur früher in der Reihenfolge.
 
@@ -224,6 +226,9 @@ nimmt der Heiler den gerichteten Schaden, ohne Tankminderungen, ohne Tankpool, u
 fünf Prozentpunkte später versorgt als der Tank, der in diesem Moment gar nichts abbekommt. Dasselbe
 gilt für den Wall-to-Wall-Pull vor dem Einsammeln und für jeden ungerichteten Flächenschaden, der
 beide gleich trifft.
+
+**Heute gilt davon:** Mit `HealTargetByDanger` greift die Umkehr nur noch, wenn Heiler und Tank beide unter
+Beschuss stehen und beide im Band liegen (TODO „Rollenschwellen 45/40“).
 
 **Damit ist der Befund keine falsche Zahl, sondern eine fehlende Bedingung.** Die Schwellendifferenz
 ersetzt eine Messung, die es nicht gibt. Solange die Rate je Mitglied fehlt, ist jede feste Zahl an
@@ -288,8 +293,8 @@ Vorgabe, und nur dort, wo sie hingehört, nämlich bei gleicher Gefährdung.
   entschärft — hält der Heiler die Aggro und der Tank nicht, steht der Heiler in Klasse 2 und der
   Tank in Klasse 3, obwohl die Zahlen unverändert sind.
 - Auch der Selbst-Kurzschluss rückt hinter Klasse 1. Er trägt denselben Überholfehler wie die beiden
-  Rollenzweige: Heute wird ein Schadensausteiler bei 10 % übergangen, sobald der Spieler selbst bei
-  39 % steht.
+  Rollenzweige: Vor dem Umbau wurde ein Schadensausteiler bei 10 % übergangen, sobald der Spieler selbst bei
+  39 % stand.
 - **Kein Maß wird gewichtet und keine Zahl erfunden.** Die Klassen sind Ja/Nein-Fragen an
   vorhandene Größen; innerhalb einer Klasse wird verglichen, nicht verrechnet. Das ist der
   Unterschied zu einer gemeinsamen Gefährdungszahl, die einen Nenner bräuchte, den es nicht gibt:
@@ -317,9 +322,8 @@ Millisekunden sieht bei einem Bild von rund sechzehn fast immer nichts.
 
 **Die Aggro steht ebenfalls.** `DataCenter.TargetedPartyMembers` wird in `TargetUpdater.UpdateLists` einmal
 je Bild aus den `TargetObjectId` der Gegner gefüllt — ein Durchlauf über die Gegner, danach ist „wird
-angegriffen" eine Nachschlageoperation. Gelesen wird sie bisher von `ObjectHelper.IsUnderThreat`,
-nicht von der Zielwahl: Sie beantwortet die Frage nach dem **Mittel**, die Klassen 2 und 3 der
-Zielwahl sind davon unberührt und weiterhin offen.
+angegriffen" eine Nachschlageoperation. Gelesen wird sie von `ObjectHelper.IsUnderThreat` (Wahl des **Mittels**)
+und von `DangerClassTarget` (Klasse 2 der Zielwahl).
 
 **Kosten der Erhebung, gemessen am Ort:** Die Aggro braucht keinen Vergleich je Mitglied. In
 `TargetUpdater.UpdateLists`, wo `AllHostileTargets` ohnehin einmal je Bild aufgebaut wird, sammelt
@@ -331,7 +335,7 @@ Nachschlageoperation. Der Aufwand wächst mit der Zahl der Gegner, nicht mit ihr
 | Stufe | Inhalt | Nachweislage |
 |---|---|---|
 | **1** | Klasse 1 vor alle drei Kurzschlüsse ziehen | **umgesetzt** in `ActionTargetInfo.GeneralHealTarget`: ungeschützte Kandidaten auf oder unter `HealthForDyingTanks` (effektive Gesundheit, wie `CanProvoke` sie liest) werden vor Selbst-, Heiler- und Tankzweig zurückgegeben, geordnet nach absoluten effektiven Punkten, bei Gleichstand Heiler vor Tank vor Schadensausteiler |
-| **2** | Klassen 2 und 3 mit Aggro und lageabhängigem Maß | Verbesserung, deren Nutzen ohne Spielbeobachtung eine Annahme bleibt → hinter eine Einstellung, Voreinstellung wie bisher |
+| **2** | Klassen 2 und 3 mit Aggro und lageabhängigem Maß | **umgesetzt** (A183) hinter `HealTargetByDanger`, ab Werk an |
 | **3** | Rate je Mitglied | **umgesetzt**, aber anders als hier zunächst geplant — siehe unten |
 
 ### Stufe 3 ist nicht die Ordnung innerhalb einer Klasse geworden, sondern die Größe selbst
@@ -351,12 +355,12 @@ gerade dort entscheidet sich, wer stirbt.
 
 **Was sie im Kampf ändert:** Ein Schwarzmagier bei 48 %, dessen Gesundheit in vier Sekunden
 aufgebraucht ist, steht prognostiziert bei 3 % und fällt damit in Klasse 1 — vor den Tank-Kurzschluss,
-der ihn bei 44 % des Tanks heute überholt. Rechnung und Grenzfälle in Konzept 08, Abschnitt „Der
+der ihn bei 44 % des Tanks vor dem Umbau überholte. Rechnung und Grenzfälle in Konzept 08, Abschnitt „Der
 Verbraucher".
 
 Hinter `HealAheadOfDamage`, Standard an (seine Regel für Voreinstellungen, 29.09.2026); ausgeschaltet liefern alle vier Getter die Werte ohne Vorausschau.
-Die Nachweislage ist damit unverändert die der Stufe 2: Der Nutzen bleibt eine Annahme, bis er im
-Spiel beobachtet ist.
+Die Vorausschau steuert sich selbst nach: `ScoreTtkForecast` hält jede Vorhersage gegen den Verlauf und rechnet den
+Fehler heraus.
 
 ## Die Zielüberschreibung hebt die ganze Rangfolge auf
 
@@ -392,10 +396,11 @@ mehr als nichts.
 `SMN_Reborn` aus `InPhoenix` und der Beschwörungszeit (`SummonTimeEndAfterGCD`), nicht aus dem Status
 Firebird Trance (3229). Dieser Status macht nach seinem Wirktext Fountain of Fire und Brand of
 Purgatory wirkbar und wird in den Basisrotationen sonst nur von `ModifyBrandOfPurgatoryPvP` gelesen;
-`ChurinSMN` liest ihn wie der alte Rückfall. Ob das Spiel ihn im PvE setzt, ist unbelegt — der
-Wirktext von Summon Phoenix sagt „Enters Firebird Trance". Fehlt er, gilt er als „endet jetzt", und der
-Rückfall fiel im ersten freien Einschiebeplatz der Phase statt an ihrem Ende — Rekindle war
-ausgegeben, bevor jemand es brauchte. Die Jobleiste beantwortet die Frage in beiden Fällen richtig. Der Vorlauf von drei GCDs ist ein
+`ChurinSMN` liest ihn wie der alte Rückfall. Dass das Spiel ihn im PvE setzt, ist jetzt belegt: Die
+Status-Tabelle des Spiels (xivapi, 02.10.2026) kennt genau einen Status dieses Namens, 3229, Job SMN, mit
+dem Wirktext „Able to execute Fountain of Fire and Brand of Purgatory" — beides PvE-Aktionen. Die
+Jobleiste bleibt die Quelle der Phase, weil sie auch die Restzeit liefert; der Status wäre ein
+gleichwertiger Zeuge. Der Vorlauf von drei GCDs ist ein
 fester Wert ohne eigenen Loop (`fixed_values.json`, offen).
 
 **Geprüft wird das jetzt maschinell, nicht erinnert:**
@@ -447,10 +452,9 @@ die Frage nach dem Mittel, dann die nach dem Ziel.
 
 ## Grenzen des Nachweises
 
-Am Quelltext belegt: die Rangfolge samt Vorgabewerten, die Umkehr im Band 40–45 %, die Gleichheit der
-drei Werte mit `upstream/main`, das Fehlen jeder Aggro- und Barrierenabfrage darin, die Verfügbarkeit
-von `TargetObject` und `GetEffectiveHp`, und dass die Rate je Mitglied nicht erhoben wird. Der
-Prüfgrad ist statische Selbstprüfung am Quelltext beider Stände.
+Am Quelltext belegt (02.10.2026): die Rangfolge samt Vorgabewerten, die Klassenordnung, die Umkehr im Band
+40–45 % unter Beschuss, die Gleichheit der drei Werte mit `upstream/main`. Der Prüfgrad ist statische
+Selbstprüfung am Quelltext.
 
 Nicht belegbar: welche Reihenfolge im Kampf die bessere ist, und wie oft das Band 40–45 % mit einem
 gleich tief stehenden Heiler überhaupt erreicht wird. Das entscheidet sich an einer Beobachtung — ob

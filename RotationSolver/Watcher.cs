@@ -15,13 +15,28 @@ public static class Watcher
 	public static void Enable()
 	{
 		var config = Service.Config;
-		DefenseTrace.Start($"version {typeof(Watcher).Assembly.GetName().Version} | area defence {config.UseAoeDefense}"
+		DefenseTrace.Start($"version {typeof(Watcher).Assembly.GetName().Version} | commit {SourceCommit()} | area defence {config.UseAoeDefense}"
 			+ $" | single defence {config.UseStDefense} | skip casts that missed you {config.SkipAreaCastsThatMissedMe}"
 			+ $" | big interruptible casts {config.MitigateBigAreaCastsEvenIfInterruptible} | BMR timeline {config.UseBmrTimeline}"
 			+ $" | AoE list {OtherConfiguration.HostileCastingArea.Count} | tankbuster list {OtherConfiguration.HostileCastingTank.Count}");
 
 		ActionEffect.ActionEffectEvent += ActionFromEnemy;
 		ActionEffect.ActionEffectEvent += ActionFromSelf;
+	}
+
+	// The commit this build was made from, so an uploaded trace can be matched to the code that wrote it:
+	// the version is the same for every build on the branch, and a day carries several commits.
+	// Embedded by Directory.Build.props; missing when the build had no git.
+	private static string SourceCommit()
+	{
+		foreach (var attribute in typeof(Watcher).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>())
+		{
+			if (attribute.Key == "SourceCommit")
+			{
+				return attribute.Value ?? "unknown";
+			}
+		}
+		return "unknown";
 	}
 
 	public static void Disable()
@@ -107,6 +122,33 @@ public static class Watcher
 		return reached;
 	}
 
+	// How many party members this set reached, for the trace line of an area landing: "missed you" with
+	// party members reached says he stood out of it; with none, the set carried no hit at all and the
+	// damage came another way (trace of 01.10.2026, A242).
+	private static int DamagedPartyMembers(ActionEffectSet set)
+	{
+		var count = 0;
+		var party = DataCenter.PartyMembers;
+		foreach (var effect in set.TargetEffects)
+		{
+			if (!ReachedTarget(effect))
+			{
+				continue;
+			}
+
+			for (var i = 0; i < party.Count; i++)
+			{
+				if (party[i]?.GameObjectId == effect.TargetID)
+				{
+					count++;
+					break;
+				}
+			}
+		}
+
+		return count;
+	}
+
 	private static float DamageShareOn(ActionEffectSet set, ulong targetId, uint denom)
 	{
 		float share = 0;
@@ -127,6 +169,29 @@ public static class Watcher
 		return share;
 	}
 
+	// The statuses an effect set puts on one target: the entry's value is the status id.
+	private static List<uint> StatusesAppliedTo(ActionEffectSet set, ulong targetId)
+	{
+		List<uint> statuses = [];
+		foreach (var effect in set.TargetEffects)
+		{
+			if (effect.TargetID != targetId)
+			{
+				continue;
+			}
+
+			effect.ForEach(entry =>
+			{
+				if (entry.type == ActionEffectType.ApplyStatusEffectTarget && entry.value != 0)
+				{
+					statuses.Add(entry.value);
+				}
+			});
+		}
+
+		return statuses;
+	}
+
 	private static void ActionFromEnemy(ActionEffectSet set)
 	{
 		try
@@ -139,6 +204,33 @@ public static class Watcher
 				return;
 			}
 
+			// A party member's Shirk on the player, for the trace.
+			if (set.Source is IBattleChara shirker && shirker.GameObjectId != playerObject.GameObjectId && shirker.IsParty()
+				&& set.Action is { RowId: (uint)ActionID.ShirkPvE })
+			{
+				foreach (var effect in set.TargetEffects)
+				{
+					if (effect.TargetID == playerObject.GameObjectId)
+					{
+						TankSwapWatch.RecordShirkOnPlayer(shirker.Name.TextValue);
+						break;
+					}
+				}
+			}
+
+			// The first auto-attack after a swap Shirk shows whom the enemy attacks now.
+			if (set.Source is IBattleChara swinger && set.Action is { } swing && swing.GetActionCate() == ActionCate.Autoattack)
+			{
+				foreach (var effect in set.TargetEffects)
+				{
+					if (ReachedTarget(effect))
+					{
+						TankSwapWatch.RecordAutoAttack(swinger.GameObjectId, effect.TargetID);
+						break;
+					}
+				}
+			}
+
 			// A tankbuster marker is confirmed by any enemy action that damages the marked member, from a
 			// targetable enemy or from one of the invisible helpers that resolve many of them - so this
 			// comes before the source filter below. Auto-attacks do not count: the tank takes them
@@ -147,11 +239,31 @@ public static class Watcher
 				&& (source.IsEnemy() || source.GetBattleNPCSubKind() == Dalamud.Game.ClientState.Objects.Enums.BattleNpcSubKind.Combatant)
 				&& set.Action is { } marked && marked.GetActionCate() != ActionCate.Autoattack)
 			{
+				var markedForPlayer = false;
 				foreach (var effect in set.TargetEffects)
 				{
 					if (ReachedTarget(effect))
 					{
-						TankbusterMarkerWatch.RecordHit(effect.TargetID);
+						var isMarked = TankbusterMarkerWatch.RecordHit(effect.TargetID);
+						var isTankbuster = isMarked || OtherConfiguration.HostileCastingTank.Contains(marked.RowId);
+						if (effect.TargetID == playerObject.GameObjectId)
+						{
+							markedForPlayer = isMarked;
+						}
+						else if (isTankbuster)
+						{
+							TankSwapWatch.RecordBusterOnOther(source.GameObjectId, effect.TargetID, marked.Name.ExtractText());
+						}
+
+						// The tankbuster table learns from every player it is seen to hit, not only from
+						// the user - the co-tank's busters, and other parties' in large content.
+						if (isTankbuster
+							&& Svc.Objects.SearchById(effect.TargetID) is Dalamud.Game.ClientState.Objects.SubKinds.IPlayerCharacter struck)
+						{
+							TankbusterTable.Record(marked.RowId, marked.Name.ExtractText(), struck, source,
+								DamageShareOn(set, effect.TargetID, Math.Max(1u, struck.MaxHp)),
+								StatusesAppliedTo(set, effect.TargetID));
+						}
 					}
 				}
 
@@ -172,6 +284,8 @@ public static class Watcher
 				{
 					DefenseTrace.Line($"hit you: {marked.Name.ExtractText()} #{marked.RowId} from {source.Name.TextValue}"
 						+ $" for {hitShare:P0} of max HP, {set.TargetEffects.Length} targets");
+					TankSwapWatch.RecordHitOnPlayer(marked.RowId, marked.Name.ExtractText(), source.GameObjectId, hitShare,
+						markedForPlayer, StatusesAppliedTo(set, playerObject.GameObjectId));
 				}
 			}
 
@@ -402,6 +516,13 @@ public static class Watcher
 						}
 
 						DataCenter.AreaCastReachedPlayer[set.Action!.Value.RowId] = reachedPlayer;
+
+						// "Skip area defence for casts that missed you" can only learn from a landing that
+						// arrives here; the trace shows each one, so a cast that keeps opening the defence
+						// without ever being recorded can be told from one that keeps reaching him.
+						DefenseTrace.Line($"area cast landed: {set.Action!.Value.Name.ExtractText()} #{set.Action!.Value.RowId}"
+							+ $" from {battle.Name.TextValue}, reached you {reachedPlayer}, {set.TargetEffects.Length} targets"
+							+ $" ({DamagedPartyMembers(set)} party members damaged)");
 					}
 
 					if (highestShare > 0f && OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
@@ -483,6 +604,14 @@ public static class Watcher
 			// Record
 			//PluginLog.Debug($"ActionFromSelf: ActionType is {set.Header.ActionType}.");
 			DataCenter.AddActionRec(action!.Value);
+			TankbusterForecast.RecordOwnAction(action.Value.RowId, tar?.GameObjectId ?? 0);
+
+			// The trace writes what the defence chose; this line says that it went out.
+			DefenseTrace.Executed(action.Value.RowId, action.Value.Name.ExtractText());
+			if (action.Value.RowId == (uint)ActionID.ShirkPvE)
+			{
+				TankSwapWatch.ShirkLanded();
+			}
 
 			// Only shown on the Debug tab; formatting the whole effect set for every action is wasted otherwise.
 			if (Service.Config.InDebug)

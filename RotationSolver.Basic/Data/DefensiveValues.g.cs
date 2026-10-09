@@ -718,4 +718,183 @@ public static class DefensiveValues
 	{
 		return DurationByActionId.TryGetValue(actionId, out var seconds) ? seconds : 0f;
 	}
+
+	/// <summary>
+	/// The share of the user's enmity an action moves to its target, as its effect text states
+	/// it ("Diverts 25% of enmity to target party member."). After the transfer the user keeps
+	/// 1 - s and the receiver gains s, so the receiver becomes the enemy's target from one side
+	/// alone only if it held more than 1 - 2s of the user's enmity beforehand.
+	/// </summary>
+	public static readonly Dictionary<uint, float> EnmityTransferByActionId = new()
+	{
+		[7537] = 0.25f, // ShirkPvE
+	};
+
+	/// <summary>The stated enmity share moved, or 0 when the effect text states none.</summary>
+	public static float EnmityTransferOf(uint actionId)
+	{
+		return EnmityTransferByActionId.TryGetValue(actionId, out var share) ? share : 0f;
+	}
+
+	/// <summary>
+	/// What a status takes off a hit, from the effect text of the action that puts it there:
+	/// Self on the one hit, the Enemy figures on the attacker (split by damage type). Lets a
+	/// measured hit be scaled back to what it would have done unmitigated, whoever's
+	/// mitigation it was. Barriers are not here: they absorb points rather than scale a hit.
+	/// </summary>
+	public static readonly Dictionary<uint, DefensiveValue> MitigationByStatusId = new()
+	{
+		[71] = new(0.2f, 0f, 0f, 0f), // Rampart from RampartPvE
+		[74] = new(0.3f, 0f, 0f, 0f), // Sentinel from SentinelPvE
+		[89] = new(0.3f, 0f, 0f, 0f), // Vengeance from VengeancePvE
+		[728] = new(0.15f, 0f, 0f, 0f), // Sheltron from SheltronPvE
+		[735] = new(0.1f, 0f, 0f, 0f), // RawIntuition from RawIntuitionPvE
+		[747] = new(0.3f, 0f, 0f, 0f), // ShadowWall from ShadowWallPvE
+		[753] = new(0f, 0.1f, 0.1f, 0f), // Reprisal from ReprisalPvE
+		[830] = new(0.1f, 0f, 0f, 0f), // TheBole from TheBolePvE
+		[847] = new(0.1f, 0f, 0f, 0f), // CollectiveUnconscious from CollectiveUnconsciousPvE
+		[848] = new(0.1f, 0f, 0f, 0f), // CollectiveUnconscious_848 from CollectiveUnconsciousPvE
+		[849] = new(0.1f, 0f, 0f, 0f), // CollectiveUnconscious_849 from CollectiveUnconsciousPvE
+		[860] = new(0f, 0.1f, 0.1f, 0f), // Dismantled from DismantlePvE
+		[1179] = new(0.2f, 0f, 0f, 0f), // RiddleOfEarth from RiddleOfEarthPvE
+		[1191] = new(0.2f, 0f, 0f, 0f), // Rampart_1191 from RampartPvE
+		[1193] = new(0f, 0.1f, 0.1f, 0f), // Reprisal_1193 from ReprisalPvE
+		[1195] = new(0f, 0.1f, 0.05f, 0f), // Feint from FeintPvE
+		[1203] = new(0f, 0.05f, 0.1f, 0f), // Addle from AddlePvE
+		[1219] = new(0.1f, 0f, 0f, 0f), // Confession from PlenaryIndulgencePvE
+		[1310] = new(0.2f, 0f, 0f, 0f), // RiddleOfEarth_1310 from RiddleOfEarthPvE
+		[1339] = new(0.1f, 0f, 0f, 0f), // TheBole_1339 from TheBolePvE
+		[1633] = new(0.8f, 0f, 0f, 0f), // WisdomOfThePlatebearer from WisdomOfThePlatebearerPvE
+		[1634] = new(0.45f, 0f, 0f, 0f), // WisdomOfTheGuardian from WisdomOfTheGuardianPvE
+		[1719] = new(0.4f, 0.4f, 0.4f, 0f), // MightyGuard from MightyGuardPvE
+		[1722] = new(0.9f, 0f, 0f, 0f), // Diamondback from DiamondbackPvE
+		[1742] = new(0.64f, 0f, 0f, 0f), // WisdomOfTheIndomitable from WisdomOfTheIndomitablePvE
+		[1832] = new(0.1f, 0f, 0f, 0f), // Camouflage from CamouflagePvE
+		[1834] = new(0.3f, 0f, 0f, 0f), // Nebula from NebulaPvE
+		[1840] = new(0.15f, 0f, 0f, 0f), // HeartOfStone from HeartOfStonePvE
+		[1856] = new(0.15f, 0f, 0f, 0f), // Sheltron_1856 from SheltronPvE
+		[1857] = new(0.1f, 0f, 0f, 0f), // NascentFlash from NascentFlashPvE
+		[1872] = new(0.1f, 0f, 0f, 0f), // Temperance from TemperancePvE
+		[1873] = new(0.1f, 0f, 0f, 0f), // Temperance_1873 from TemperancePvE
+		[1883] = new(0.1f, 0f, 0f, 0f), // TheBole_1883 from TheBolePvE
+		[1978] = new(0.2f, 0f, 0f, 0f), // Rampart_1978 from RampartPvE
+		[1988] = new(0f, 0.05f, 0.1f, 0f), // Addle_1988 from AddlePvE
+		[2008] = new(0.2f, 0f, 0f, 0f), // RiddleOfEarth_2008 from RiddleOfEarthPvE
+		[2037] = new(0.1f, 0f, 0f, 0f), // Temperance_2037 from TemperancePvE
+		[2038] = new(0.1f, 0f, 0f, 0f), // Temperance_2038 from TemperancePvE
+		[2061] = new(0.1f, 0f, 0f, 0f), // NascentFlash_2061 from NascentFlashPvE
+		[2101] = new(0f, 0.1f, 0.1f, 0f), // Reprisal_2101 from ReprisalPvE
+		[2185] = new(0f, 0.1f, 0.05f, 0f), // Feint_2185 from FeintPvE
+		[2227] = new(0.1f, 0f, 0f, 0f), // NascentFlash_2227 from NascentFlashPvE
+		[2283] = new(0.1f, 0f, 0f, 0f), // CollectiveUnconscious_2283 from CollectiveUnconsciousPvE
+		[2295] = new(0.5f, 0f, 0f, 0f), // AetherialAegis from AetherialAegisPvE
+		[2328] = new(0.3f, 0f, 0f, 0f), // BannerOfTirelessConviction from BannerOfTirelessConvictionPvE
+		[2329] = new(0.3f, 0.15f, 0.15f, 0f), // BannerOfFirmResolve from BannerOfFirmResolvePvE
+		[2345] = new(0.9f, 0f, 0f, 0f), // LostManawall from LostManawallPvE
+		[2443] = new(0.3f, 0f, 0f, 0f), // LostAethershield from LostAethershieldPvE
+		[2484] = new(0f, 0.6f, 0.6f, 0f), // ClericStance_2484 from LostSeraphStrikePvE
+		[2496] = new(0.2f, 0f, 0f, 0f), // ChelonianGate from ChelonianGatePvE
+		[2500] = new(0.2f, 0f, 0f, 0f), // DragonForce from DragonForcePvE
+		[2566] = new(0.05f, 0f, 0f, 0f), // LostBloodRage from LostBloodRagePvE
+		[2618] = new(0.1f, 0f, 0f, 0f), // Kerachole from KeracholePvE
+		[2639] = new(0.1f, 0f, 0f, 0f), // FixedSign from FixedSignPvE
+		[2640] = new(0.1f, 0f, 0f, 0f), // FixedSign_2640 from FixedSignPvE
+		[2641] = new(0.1f, 0f, 0f, 0f), // FixedSign_2641 from FixedSignPvE
+		[2674] = new(0.15f, 0f, 0f, 0f), // HolySheltron from HolySheltronPvE
+		[2678] = new(0.1f, 0f, 0f, 0f), // Bloodwhetting from BloodwhettingPvE
+		[2682] = new(0.1f, 0f, 0f, 0f), // Oblation from OblationPvE
+		[2683] = new(0.15f, 0f, 0f, 0f), // HeartOfCorundum from HeartOfCorundumPvE
+		[2708] = new(0.15f, 0f, 0f, 0f), // Aquaveil from AquaveilPvE
+		[2711] = new(0.1f, 0f, 0f, 0f), // DesperateMeasures from ExpedientPvE
+		[2712] = new(0.1f, 0f, 0f, 0f), // Expedience from ExpedientPvE
+		[2717] = new(0.1f, 0f, 0f, 0f), // Exaltation from ExaltationPvE
+		[3003] = new(0.1f, 0f, 0f, 0f), // Holos from HolosPvE
+		[3026] = new(0.15f, 0f, 0f, 0f), // HolySheltron_3026 from HolySheltronPvE
+		[3030] = new(0.1f, 0f, 0f, 0f), // Bloodwhetting_3030 from BloodwhettingPvE
+		[3051] = new(0.3f, 0f, 0f, 0f), // Nebula_3051 from NebulaPvE
+		[3086] = new(0.15f, 0f, 0f, 0f), // Aquaveil_3086 from AquaveilPvE
+		[3360] = new(0.2f, 0f, 0f, 0f), // VulnerabilityDown_3360 from VariantRampartPvE
+		[3829] = new(0.4f, 0f, 0f, 0f), // Guardian from GuardianPvE
+		[3832] = new(0.4f, 0f, 0f, 0f), // Damnation from DamnationPvE
+		[3835] = new(0.4f, 0f, 0f, 0f), // ShadowedVigil from ShadowedVigilPvE
+		[3838] = new(0.4f, 0f, 0f, 0f), // GreatNebula from GreatNebulaPvE
+		[3853] = new(0.1f, 0f, 0f, 0f), // Tengentsu from TengentsuPvE
+		[3890] = new(0.1f, 0f, 0f, 0f), // TheBole_3890 from TheBolePvE
+		[3896] = new(0.1f, 0f, 0f, 0f), // SunSign from SunSignPvE
+		[3984] = new(0.1f, 0f, 0f, 0f), // Temperance_3984 from TemperancePvE
+		[3985] = new(0.1f, 0f, 0f, 0f), // Temperance_3985 from TemperancePvE
+		[4168] = new(0.2f, 0f, 0f, 0f), // Rampart_4168 from RampartPvE
+		[4249] = new(0.1f, 0f, 0f, 0f), // HerosRime from HerosRimePvE
+		[4264] = new(0f, 0.1f, 0.1f, 0f), // SilverSickness from MesmerizePvE
+		[4295] = new(0.15f, 0f, 0f, 0f), // HeartOfCorundum_4295 from HeartOfCorundumPvE
+		[4622] = new(0f, 0.1f, 0.1f, 0f), // SeedsSown from SeedsowerPvE
+		[4792] = new(0.5f, 0f, 0f, 0f), // Defend from DefendPvE
+		[4801] = new(0f, 0.1f, 0.1f, 0f), // Enamored from MesmerizePvE
+		[5317] = new(0f, 0.99f, 0.99f, 0f), // OccultToad from OccultToadPvE
+		[5321] = new(0.2f, 0f, 0f, 0f), // OccultMightyGuard from OccultMightyGuardPvE
+	};
+
+	/// <summary>
+	/// The statuses each rated action's mitigation stands as - the pairs of
+	/// <see cref="MitigationByStatusId"/> keyed by the action instead.
+	/// </summary>
+	public static readonly Dictionary<uint, uint[]> MitigatingStatusesByActionId = new()
+	{
+		[17] = [74], // SentinelPvE
+		[44] = [89], // VengeancePvE
+		[2887] = [860], // DismantlePvE
+		[3542] = [728, 1856], // SheltronPvE
+		[3551] = [735], // RawIntuitionPvE
+		[3613] = [847, 848, 849, 2283], // CollectiveUnconsciousPvE
+		[3636] = [747], // ShadowWallPvE
+		[7394] = [1179, 1310, 2008], // RiddleOfEarthPvE
+		[7433] = [1219], // PlenaryIndulgencePvE
+		[7531] = [71, 1191, 1978, 4168], // RampartPvE
+		[7535] = [753, 1193, 2101], // ReprisalPvE
+		[7549] = [1195, 2185], // FeintPvE
+		[7560] = [1203, 1988], // AddlePvE
+		[11417] = [1719], // MightyGuardPvE
+		[11424] = [1722], // DiamondbackPvE
+		[12960] = [1633], // WisdomOfThePlatebearerPvE
+		[12961] = [1634], // WisdomOfTheGuardianPvE
+		[14480] = [1742], // WisdomOfTheIndomitablePvE
+		[16140] = [1832], // CamouflagePvE
+		[16148] = [1834, 3051], // NebulaPvE
+		[16161] = [1840], // HeartOfStonePvE
+		[16464] = [1857, 2061, 2227], // NascentFlashPvE
+		[16536] = [1872, 1873, 2037, 2038, 3984, 3985], // TemperancePvE
+		[20495] = [2295], // AetherialAegisPvE
+		[20703] = [2345], // LostManawallPvE
+		[20722] = [2328], // BannerOfTirelessConvictionPvE
+		[20723] = [2329], // BannerOfFirmResolvePvE
+		[21611] = [2639, 2640, 2641], // FixedSignPvE
+		[22354] = [2484], // LostSeraphStrikePvE
+		[22355] = [2443], // LostAethershieldPvE
+		[23273] = [2496], // ChelonianGatePvE
+		[23280] = [2500], // DragonForcePvE
+		[23921] = [2566], // LostBloodRagePvE
+		[24298] = [2618], // KeracholePvE
+		[24310] = [3003], // HolosPvE
+		[25746] = [2674, 3026], // HolySheltronPvE
+		[25751] = [2678, 3030], // BloodwhettingPvE
+		[25754] = [2682], // OblationPvE
+		[25758] = [2683, 4295], // HeartOfCorundumPvE
+		[25861] = [2708, 3086], // AquaveilPvE
+		[25868] = [2711, 2712], // ExpedientPvE
+		[25873] = [2717], // ExaltationPvE
+		[29733] = [3360], // VariantRampartPvE
+		[36920] = [3829], // GuardianPvE
+		[36923] = [3832], // DamnationPvE
+		[36927] = [3835], // ShadowedVigilPvE
+		[36935] = [3838], // GreatNebulaPvE
+		[36962] = [3853], // TengentsuPvE
+		[37027] = [830, 1339, 1883, 3890], // TheBolePvE
+		[37031] = [3896], // SunSignPvE
+		[41610] = [4249], // HerosRimePvE
+		[44899] = [4622], // SeedsowerPvE
+		[46595] = [4792], // DefendPvE
+		[46605] = [4264, 4801], // MesmerizePvE
+		[49075] = [5317], // OccultToadPvE
+		[49088] = [5321], // OccultMightyGuardPvE
+	};
 }

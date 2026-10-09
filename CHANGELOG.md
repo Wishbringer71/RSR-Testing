@@ -23,6 +23,33 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Added to RotationSolver.Basic: `AttackType.Shot` and `DefensiveValues.MitigationByStatusId`
+
+`AttackType` gains `Shot = 4`, the game's AttackType row 4 (physical), which `ActionBasicInfo.AttackType`
+already produced as an unnamed value. `DefensiveValues.MitigationByStatusId` maps a status to the mitigation
+the action that grants it states in its effect text. Both are additive; no ordinal changed.
+
+### Added to RotationSolver.Basic: `DefensiveValues.MitigatingStatusesByActionId`
+
+`DefensiveValues.MitigatingStatusesByActionId` maps a defensive action to the statuses its effect text is tied
+to, so a reader can tell whether that mitigation already stands. Additive.
+
+A tank's `CanUse` now returns false for any action that carries a mitigation or barrier figure
+(`DefensiveValues`), targets the player and is not part of the current tankbuster plan, while a plan for a measured
+tankbuster runs or Hallowed Ground or Superbolide covers the coming hit (option "Spend only the mitigation a
+measured tankbuster needs", on by default). This holds in every method of a derived rotation, not only the defence
+methods; the heal paths stay free, inside `DefenseAreaAbility`/`DefenseAreaGCD` actions with an effect radius stay
+free, and a commanded action is never held. `TankbusterTable.PredictedShare` and `MitigationFactor` are internal
+and gained an optional horizon.
+
+### Added to RotationSolver.Basic: `CustomRotation.Invulnerability`
+
+`protected virtual IBaseAction? Invulnerability`, null by default; the four tank base rotations return
+Hallowed Ground, Holmgang, Living Dead and Superbolide. The tank-swap rule reads it to know whether the
+invulnerability could still save the player. A derived tank rotation built on its job's base class inherits
+the right value; one that derives from `CustomRotation` directly can override it. `TargetType` gains
+`TankSwap` at the end, so existing ordinals are unchanged.
+
 ### Removed upstream in RotationSolver.Basic: the cooldown window and the package
 
 Both came with upstream's UI rework (merged into this fork on 04.10.2026); the fork passes them on

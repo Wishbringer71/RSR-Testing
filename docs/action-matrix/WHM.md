@@ -83,12 +83,10 @@ direkt: 41 · ungenutzt: 2 · über andere Aktion: 1
 | Aero II | Regel prüft | Aero |
 | Aero II | Regel prüft | Dia |
 | Aero | Regel prüft | Aero II |
-| Aero | Regel prüft | Dia |
 | Afflatus Rapture | Regel prüft | Afflatus Misery |
 | Afflatus Solace | Regel prüft | Afflatus Misery |
 | Aquaveil | Regel sperrt vorher | Divine Benison |
 | Asylum | Regel sperrt vorher | Benediction |
-| Dia | Regel prüft | Aero II |
 | Dia | Regel prüft | Aero |
 | Divine Benison | Regel sperrt vorher | Aquaveil |
 | Divine Benison | Regel sperrt vorher | Benediction |

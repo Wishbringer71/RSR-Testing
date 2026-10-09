@@ -1,4 +1,5 @@
 ﻿using ECommons.GameFunctions;
+using ECommons.DalamudServices;
 using ECommons.GameHelpers;
 
 namespace RotationSolver.Updaters;
@@ -199,6 +200,10 @@ internal static class StateUpdater
 
 	private static bool ShouldAddDefenseSingle()
 	{
+		// Recorded where it is decided, for SingleHitReachesPlayer and the defence trace: the pull
+		// rule is the one source of this flag that is about the player and no cast or marker shows.
+		DataCenter.TankPullOnPlayer = false;
+
 		if (!DataCenter.InCombat || !Service.Config.UseStDefense || DataCenter.IsTyrantCastingSpecialIndicator())
 		{
 			return false;
@@ -206,7 +211,10 @@ internal static class StateUpdater
 
 		if (DataCenter.Role == JobRole.Healer)
 		{
-			if (DataCenter.IsHostileCastingToTank)
+			// A tank the hit cannot touch - Hallowed Ground or Superbolide up past it - gets nothing from
+			// a mitigation on him for it (the owner's proposal of 04.10.2026, concept 09).
+			if (DataCenter.IsHostileCastingToTank
+				&& !(Service.Config.HoldMitigationUnderInvulnerability && TankbusterTargetsAllImpervious()))
 			{
 				foreach (var member in DataCenter.PartyMembers)
 				{
@@ -232,6 +240,8 @@ internal static class StateUpdater
 				return true;
 			}
 
+			// A BossModReborn prediction stays open even beside a covered cast: it does not say whom it hits,
+			// and a second tankbuster on the co-tank looks the same (review of A260).
 			if (DataCenter.BMRTankbusterImminent)
 			{
 				return true;
@@ -268,6 +278,7 @@ internal static class StateUpdater
 				&& ObjectHelper.GetPlayerHealthRatio() <= Service.Config.HealthForAutoDefense
 				&& movingHere && attacked)
 			{
+				DataCenter.TankPullOnPlayer = true;
 				return true;
 
 			}
@@ -308,6 +319,40 @@ internal static class StateUpdater
 		}
 
 		return false;
+	}
+
+	/// <summary>
+	/// Whether every member a tankbuster is now being cast at stands under Hallowed Ground or
+	/// Superbolide past the hit. False when no target is known, and whenever a tankbuster marker
+	/// stands: a marker states no landing time, so whether the invulnerability outlasts it is unknown.
+	/// </summary>
+	private static bool TankbusterTargetsAllImpervious()
+	{
+		if (DataCenter.TankbusterTargets.Count > 0)
+		{
+			return false;
+		}
+
+		var any = false;
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile == null || !hostile.IsCasting || !DataCenter.IsHostileCastingTank(hostile))
+			{
+				continue;
+			}
+
+			// One GCD on top of the cast for the hit to arrive, as everywhere a cast's hit is timed.
+			var hitIn = hostile.TotalCastTime - hostile.CurrentCastTime + DataCenter.DefaultGCDTotal;
+			if (Svc.Objects.SearchById(hostile.CastTargetObjectId) is not IBattleChara target
+				|| !target.ImperviousThrough(hitIn))
+			{
+				return false;
+			}
+
+			any = true;
+		}
+
+		return any;
 	}
 
 	// Helper: Returns true if there are any healers in the party with HP > 0

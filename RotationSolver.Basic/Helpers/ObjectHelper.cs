@@ -119,11 +119,15 @@ public static class ObjectHelper
 					// The co-tank is at the HP the user already set for a tank in danger, and is still
 					// being attacked - take it back, unless they are riding an invulnerability (Superbolide
 					// leaves them at 1 HP on purpose). No distance gate: any healthy tank should react.
+					// Not while the player himself is in danger after a tankbuster (TankSwapWatch): the
+					// owner's rule of 04.10.2026 - the enemy comes back only once his debuff and his
+					// critical state are over.
 					if (targetObject.IsJobCategory(JobRole.Tank)
 						&& !targetObject.IsDead
 						&& targetObject.GameObjectId != Player.Object?.GameObjectId
 						&& targetObject.NoNeedHealingInvuln()
-						&& targetObject.GetEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f)
+						&& targetObject.GetEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f
+						&& !TankSwapWatch.PlayerInDanger)
 					{
 						return true;
 					}
@@ -3865,6 +3869,25 @@ public static class ObjectHelper
 	public static float GetForecastHealthRatio(this IBattleChara battleChara, bool instant)
 	{
 		return battleChara.GetHealthRatio() * battleChara.GetForecastSurvivingShare(instant);
+	}
+
+	/// <summary>
+	/// The health ratio this character is expected to hold <paramref name="seconds"/> from now, at the
+	/// measured net rate - every heal, barrier and mitigation already in it - with the forecast error of
+	/// the time to death taken out (<see cref="GetCorrectedTTK"/>). Today's ratio while the health is not
+	/// falling on balance. For a cooldown whose worth lasts that long, asked independently of "Heal ahead
+	/// of incoming damage", whose text promises the moment a heal lands.
+	/// </summary>
+	internal static float GetHealthRatioIn(this IBattleChara battleChara, float seconds)
+	{
+		var ratio = battleChara.GetHealthRatio();
+		var ttk = battleChara.GetCorrectedTTK();
+		if (float.IsNaN(ttk) || ttk <= 0f || seconds <= 0f)
+		{
+			return ratio;
+		}
+
+		return ratio * Math.Clamp(1f - (seconds / ttk), 0f, 1f);
 	}
 
 	/// <summary>

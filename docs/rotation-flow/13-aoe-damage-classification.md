@@ -164,6 +164,36 @@ ihren `ClassJob` überhaupt als Tank erkennt, ist nicht belegt. WrathCombo liest
 `InfoProxyPartyMember` statt aus `ClassJob`; das ist ein Hinweis, keine Spielquelle. Mit der Maske hängt die
 Entscheidung daran nicht mehr.
 
+**Selbstschutz in jedem Abwehrpfad, zentral (A233):** Eine Aktion, die nur den Spieler schützt, fällt in der
+Flächen- und in der Einzelabwehr nur, wenn der Treffer, der den Pfad geöffnet hat, ihn erreicht. „Nur den Spieler"
+liest `BaseAction.CanUse` aus Spieldaten und Zielwahl: Das aufgelöste Ziel ist er selbst, und die Aktion hat keinen
+Wirkradius. Darunter fallen Schutzwall, Verdammnis/Rachsucht (Damnation/Vengeance), Urimpuls/Urinstinkt (Bloodwhetting/Raw Intuition) auf sich, Abtausch,
+Sentinel/Guardian, Bulwark, Shadow Wall, Nebula, Camouflage, Holmgang und The Blackest Night oder Heart of
+Corundum mit Ziel „Self". Frei bleiben, was andere oder den Gegner trifft: Reflexion (Wirkradius 5), Abschütteln,
+Divine Veil, Passage of Arms, Dark Missionary, Heart of Light, Intervention, Heart of Corundum auf das
+Tankbuster-Ziel, Nascent Flash. Ein Befehl des Spielers (Makro „Defense") wird nicht geprüft.
+
+- *Flächenpfad:* „erreicht ihn" ist `AreaHitReachesPlayer` — dieselbe Frage, die Radiant Aegis, Tengentsu und Third
+  Eye bisher je Rotation stellten; die Abfragen dort bleiben und sind jetzt doppelt.
+- *Einzelpfad:* „erreicht ihn" ist `SingleHitReachesPlayer`: ein Tankbuster-Marker auf ihm oder ein gelisteter
+  Tankbuster auf ihn; beim Tank zusätzlich ein Cast, den ein Gegner auf den Spieler als sein Ziel wirkt, und die
+  Pull-Regel (mindestens `AutoDefenseNumber` Gegner bis 3 y auf ihm, die ihn angreifen, Gesundheit unter
+  `HealthForAutoDefense`); ein angekündigter BossModReborn-Tankbuster, wenn seine Maske ihn trifft. Ist die Maske
+  unbekannt, zählt sie beim Tank als Treffer — die Wahrscheinlichkeit ist dann nicht gemessen, und Sicherheit geht
+  vor —, bei allen anderen nur ohne lebenden Tank (wie A220).
+- *Warum nicht die Flagge sperren:* Die Einzelabwehr eines Tanks trägt auch die Hilfe am anderen Tank —
+  Intervention („Use Intervention on CoTank during tankbusters"), Heart of Corundum mit Ziel `Tankbuster`,
+  Reflexion auf den Gegner. Ein Flag wird an den Pfaden gemessen, die es öffnet; gesperrt wird deshalb die
+  Selbstschutz-Aktion, nicht der Pfad.
+
+**Anlass, sein Protokoll vom 30.09.2026 (Krieger, Build ad73a6a5c):** Bei angekündigten Tankbustern auf Josy Akuma
+und Lyx Parsingreen, die BossModReborn mit „hits you False" meldete, fielen Verdammnis und Schutzwall (19:47:08)
+sowie Schutzwall und Abtausch (19:45:03); Verdammnis und Schutzwall auch bei „hits you unknown" vier Sekunden vor
+dem Buster auf Josy Akuma (19:43:11). Im Kampf: Verdammnis (120 s) und Schutzwall (90 s) waren für den Buster auf
+ihn selbst verbraucht. Ursache: Der Tankzweig von `ShouldAddDefenseSingle` öffnet die Einzelabwehr für jeden
+angekündigten Tankbuster und für jeden Cast eines Gegners auf sein eigenes Ziel, gleich wen er trifft; der Zweig
+der Schadensausteiler fragt seit A220 die Maske.
+
 **Selbst gemessen, ob ein gelisteter Cast den Spieler erreicht (A205, Option „Skip area defence for casts that
 missed you", ab Werk an):** Der Effekt-Handler hält je gelisteter Aktion fest, ob ihre letzte Landung dem
 lebenden Spieler einen Treffer brachte: Schaden jeder Höhe, auch geblockt, pariert oder von einer Barriere
@@ -174,12 +204,19 @@ bis er ihn wieder trifft; ein auf ihn gewirkter Cast zählt immer. Nur die Abweh
 (`IsHostileCastingAOEForMyDefense`); Vorab-Heilung und Gefährdungsprüfung behalten die Sicht der Gruppe. Der
 Messwert gilt je Sitzung.
 
-**Protokoll der Abwehrentscheidungen (`DefenseTrace.log` im Konfigurationsordner, je Sitzung neu, A208):** Jede
+**Protokoll der Abwehrentscheidungen (`DefenseTrace.log` im Konfigurationsordner, über Sitzungen und Builds fortgeschrieben, jede Sitzung mit Datum, Uhrzeit und Commit des Builds, A208, A232):** Jede
 Wahl der Abwehrkette — Flächen- und Einzelabwehr im Dispatch für alle Jobs, beim Beschwörer auch Radiant Aegis vor
 einem BossModReborn-Raidwide — mit allen Quellen, die in diesem Moment stehen: Marker mit Pfad, Träger und Abstand,
-gelistete Casts mit Form, Abständen und „reaches you", BossModReborn-Raidwide und -Tankbuster samt erkanntem Tank.
-Daneben jeder gegnerische Treffer auf ihn (ohne Auto-Attacken). So steht in der Datei, ob der Treffer, für den die
-Abwehr fiel, ankam. Aufgelöst wird das Protokoll, sobald eine Datei seiner Kämpfe die Quelle zeigt und sie behoben ist.
+gelistete Casts mit Form, Abständen, „reaches you" und dem Ergebnis ihrer letzten Landung, beim Tank auch
+ungelistete Casts eines Gegners auf sein Ziel, die Pull-Regel, BossModReborn-Raidwide und -Tankbuster samt erkanntem
+Tank, und je Pfad, ob der Treffer ihn erreicht („area hit reaches you", „single hit reaches you", A233). Daneben
+jeder gegnerische Treffer auf ihn (ohne Auto-Attacken) und jede Landung eines gelisteten Flächencasts mit
+„reached you" — ohne diese Zeile blieb offen, warum „Ätherschub" am 30.09. sechsmal die Flächenabwehr öffnete,
+obwohl er ihn nie traf: Eine Landung, aus der „Skip area defence for casts that missed you" lernt, kam nicht an. So steht in der Datei, ob der Treffer, für den die
+Abwehr fiel, ankam. Seit A255 bis A257 kommen die Zeilen des Tankwechsels dazu: jeder erkannte Tankbuster auf ihn
+(„tankbuster on you", mit der Verwundbarkeit, die er legte) und nach einem Wechsel auf den Halter, warum ein
+Wechsel oder das Zurückholen wartet, die Wahl, ihr Ausgang und ein Geteiltes Leid eines Gruppenmitglieds auf ihn
+(Konzept 09). Aufgelöst wird das Protokoll, sobald eine Datei seiner Kämpfe die Quelle zeigt und sie behoben ist.
 
 ## Wen die Unterdrückung erreicht
 
@@ -408,7 +445,7 @@ verschwinden kann.
 
 **Eine leere Flächenliste misst nichts**, gleich wie der Kampf verläuft; beide Fenster melden sie rot. Sie entsteht, wenn der Download beim ersten Start scheitert. Seit A196 bleibt sie auf diese Sitzung beschränkt: `InitOne` schreibt dann keine leere Datei mehr, die Liste gilt als nicht geladen (kein Speichern), und der nächste Start lädt erneut; eine unlesbare Liste wird beiseitegelegt und ebenfalls neu geladen. Downloads beim Laden sind an das Ladezeitlimit des Plugins gebunden.
 
-**Grenze, keine Ursache:** Viele Raidwides löst ein unsichtbarer Helfer aus, oft mit einer anderen Id als der sichtbare Cast des Bosses. Solche Treffer kommen nicht an: Die Messung nimmt nur anvisierbare Quellen, und die Verbraucher lesen ohnehin nur deren Casts. Der sichtbare Cast bleibt dann unbewertet, also beim Verhalten ohne Tabelle. Wie häufig das ist, ist nicht belegt; die Zählung weist es als „cast by an untargetable enemy" aus.
+**Grenze, keine Ursache:** Viele Raidwides löst ein unsichtbarer Helfer aus, oft mit einer anderen Id als der sichtbare Cast des Bosses (Akhmorning, „Raiding Fundamentals“, 02.10.2026: bei Zaubern, deren Wirkung später eintritt oder weiterläuft, sind „often invisible, untargetable entities responsible“; ein Debuff auf dem Boss wie Reflexion mindert deren Schaden „usually“ nicht — Folge für die Gegner-Debuffs in Konzept 08). Seine Protokolle vom 01.10.2026 passen dazu: Raidwides im 48-Spieler-Inhalt blieben „rated no“, und ihre Landung meldete keinen Treffer auf ihn (TODO). Solche Treffer kommen nicht an: Die Messung nimmt nur anvisierbare Quellen, und die Verbraucher lesen ohnehin nur deren Casts. Der sichtbare Cast bleibt dann unbewertet, also beim Verhalten ohne Tabelle. Wie häufig das ist, ist nicht belegt; die Zählung weist es als „cast by an untargetable enemy" aus.
 
 **Das Zurücksetzen der Liste lässt die Werte stehen** — Vorgabe des Auftraggebers: „es wäre schade,
 wenn dann auch die Erfahrungswerte weg wären." Die kuratierte Liste neu zu laden ist ein Download, die
@@ -455,6 +492,138 @@ Absturz dazwischen hinterlässt unlesbares JSON, und der Ladepfad beantwortet da
 anzufangen — **ohne** neu herunterzuladen, weil die Datei existiert. Für die kuratierten Listen kostet
 das einen Knopfdruck, für die Erfahrungswerte alles. Und geschrieben wird dieser Speicher **im
 Kampf**, bei jedem neuen Höchstwert, also genau dann, wenn ein Absturz am wahrscheinlichsten ist.
+
+## Die Tankbuster-Tabelle
+
+**Sein Auftrag (04.10.2026):** „erstelle eine solche liste mit ingame auswertung ähnlich der liste für aoes. mach
+da aber beim speichern nicht die gleichen fehler." Dazu seine Frage: „kannst du auch gesehene tankbuster auf andere
+spieler auswerten?" Anlass ist sein Hinweis, dass sich ohne den erwarteten Schaden nicht sagen lässt, ob ein
+Tankbuster tödlich ist. Eine öffentliche Quelle dafür gibt es nicht (A258).
+
+**Gebaut (A259):** `OtherConfiguration.TankbusterPotential`, je Aktion zwei Werte als Anteil an den maximalen LP
+des Getroffenen: der ungeminderte Schaden ohne Verwundbarkeit und der unter Verwundbarkeit. Beide steigen nur.
+Messung in `TankbusterTable`, Ablage über denselben gesicherten Weg wie die Flächentabelle.
+
+### Was gemessen wird
+
+- **Welche Treffer:** jeder Treffer einer gegnerischen Aktion, die in der Tankbuster-Liste steht oder deren
+  Tankbuster-Marker bestätigt wurde (`TankbusterMarkerWatch.RecordHit`), auf **jeden Spieler**. Das schließt den
+  Co-Tank ein und in großen Inhalten Spieler anderer Gruppen. Die LP und Status anderer Spieler liegen vor.
+- **Zurückgerechnet auf ungemindert:** Der gemessene Anteil wird durch die Minderung geteilt, die beim Einschlag
+  stand.
+  - Auf dem Getroffenen zählt sein eigener Anteil, auf dem Angreifer der Anteil nach Schadensart: physisch für
+    `AttackType` 1–4, magisch für 5, sonst die kleinere der beiden Minderungen.
+  - Die Werte kommen aus den Wirktexten der Aktionen, die den Status legen (`DefensiveValues.MitigationByStatusId`).
+    Der Generator verknüpft 88 Status über den gemeinsamen Namen oder über die Statusangabe im Code.
+    Sammellisten wie die von Schutzwall, die die Sperrgruppe aller großen Minderungen sind, bleiben dabei außen vor.
+  - Damit drückt ein gut geminderter Treffer die Aktion nicht nach unten – die Schwäche des Höchstwerts der
+    Flächentabelle (Abschnitt „Falsifikation") entfällt hier.
+- **Unter Verwundbarkeit getrennt:** Trägt der Getroffene eine Verwundbarkeit, geht der Wert in die zweite Zahl.
+  Ausgenommen ist eine, die genau dieser Treffer legt (Effektsatz): Sie kam mit ihm und hat ihn nicht verstärkt.
+  Ob das Spiel sie beim Eintreffen des Effekts schon gesetzt hat, ist nicht belegt; die Ausnahme macht die Frage
+  gegenstandslos.
+  Sonst würde der zweite Treffer einer Wechselmechanik die Aktion selbst als so hart einstufen.
+- **Null zählt nicht:** Ein Treffer ohne Schaden – Unverwundbarkeit, Ausweichen, ganz absorbiert – sagt, dass
+  etwas ihn aufhielt, nicht, dass er harmlos ist.
+
+**Fehler nur nach unten:**
+- Eine Minderung, die kein Wirktext beziffert (Merkmal, unverknüpfter Status), wird nicht herausgerechnet.
+- Eine Barriere wird nicht herausgerechnet: Ob die Schadenszahl des Spiels den absorbierten Teil enthält, ist hier
+  nicht belegt.
+- Treffer unsichtbarer Helfer tragen die Debuffs des Bosses nicht.
+
+In allen drei Fällen fällt der ungeminderte Wert zu klein aus, und jeder spätere Treffer kann ihn nur anheben. Ein
+zu kleiner Wert heißt: Eine Abwehr unterbleibt – das Verhalten ohne Tabelle. Der erste Treffer einer Aktion hat
+keinen Wert.
+
+**Nach oben ausgeschlossen:** ein Treffer eines gestärkten Angreifers. Trägt er `DamageUp`, `PhysicalDamageUp` oder
+`MagicDamageUp` (Bezeichner aus dem Statusblatt, `StatusHelper.IsDamageUp`), wird nichts gespeichert, und das
+Protokoll schreibt „not stored, the attacker carried a damage-up status". Ein solcher Wert stufte die Aktion zu hoch
+ein, und auf ihm zöge die Regel aus Konzept 09 eine Unverwundbarkeit. Stärkungen unter anderem Namen bleiben
+unerkannt.
+
+### Wofür
+
+- **Tankwechsel (Konzept 09):** „eine Wiederholung bringt dich um" rechnet mit dem Höheren aus dem härtesten
+  Treffer dieses Kampfes auf dich und der Vorhersage der Tabelle: ungeminderter Wert mal der Minderung, die jetzt
+  auf dir und auf dem Boss liegt. Gleiches gilt für die Prüfung, ob der Empfänger selbst in Gefahr ist. Damit
+  greift der Tankwechsel schon beim ersten Tankbuster eines späteren Abends und mit Messungen vom Co-Tank.
+- **Das geringste Mittel gegen einen gemessenen Tankbuster (Konzept 09, A260, A261):** Für einen gewirkten Tankbuster
+  wählt der Plan das billigste Bündel eigener Minderungen, das ihn bei den LP jetzt und mit dem, was beim Einschlag
+  noch steht, überlebt – gestapelt, wo eine nicht reicht. Die Unverwundbarkeit nur, wenn kein Bündel reicht; der
+  Rest wird zurückgehalten. Hier entscheidet die Tabelle über Abklingzeiten. Dafür rechnet `PredictedShare` mit einem
+  Horizont: Eine Minderung, die vor dem Einschlag endet, zählt nicht.
+
+**Ablesbar:** Die Liste zeigt neben der Tankbuster-Liste je Eintrag den ungeminderten Anteil, die Zahl der
+bewerteten Tankbuster und „Store:" in derselben Form wie die Flächentabelle. `DefenseTrace.log` schreibt jede
+Messung („tankbuster measured: … mitigation factor …, unmitigated … - stored").
+
+### Speichern: welche Fehler der Flächentabelle hier ausgeschlossen sind
+
+Gemeinsamer Weg, nicht kopiert: Laden über `LoadLearned`, Speichern über `SaveTracked<T>` mit einer
+Zusammenführung je Speicher. Die Flächentabelle nutzt seit A259 denselben Weg.
+
+| Fehler der Flächentabelle | Hier |
+|---|---|
+| Nicht geladen, weil nur in `Init` eingetragen (A121) | in der einzigen Ladeliste `LoadSteps`; `check_config_store_roundtrip.py` prüft das. Dabei gefunden: Das Skript erkannte die gesicherte Speicherung `SaveTracked` gar nicht und prüfte die Flächentabelle deshalb nie; behoben, mit Selbsttest |
+| Speichern überschreibt die Datei mit weniger (A172) | jedes Speichern führt Datei und Speicher zusammen, je Wert das Höhere |
+| Datei beim Speichern unlesbar | nicht überschrieben, „NOT SAVED" |
+| Laden nicht zu Ende gelaufen, dann Entladen | nicht geschrieben |
+| Unlesbare Datei beim Start | als `.corrupt` beiseitegelegt und gemeldet |
+| Halb geschriebene Datei nach Absturz | über eine temporäre Datei geschrieben |
+| Zwei Speicherungen gleichzeitig auf dieselbe `.tmp` | eine Sperre je Speicher |
+| Kopie auf dem Pool-Thread, während der Effekt-Handler schreibt (A224) | Kopie auf dem aufrufenden Thread, unter der Sperre der Tabelle, auch im Gesamtspeichern |
+| Messung zwischen letztem Speichern und Entladen | Effekt-Handler wird vor dem letzten Speichern abgehängt (gilt für alle Speicher) |
+| Erfolg ohne Beleg | die Datei wird zurückgelesen, „SAVE MISMATCH" bei Abweichung |
+| Neu: Lesen und Schreiben im Speicher aus zwei Threads | jeder Zugriff unter `TankbusterPotentialGate` |
+
+Verworfen wird die Tabelle von Hand bei geschlossenem Spiel, wie die Flächentabelle (seine Vorgabe, keine
+Schaltfläche).
+
+### Sein Vorschlag: bei sicher tödlichem Tankbuster nur die Unverwundbarkeit (04.10.2026)
+
+„rein ökonomisch kann die liste und deren auswertung auch dazu führen, dass für einen tankbuster, welcher 100%
+tödlich ist, nur noch invul nimmt und alle anderen schilde, debuffs und mitigations wegläßt, da sie hier eh
+nichts bringen würden und somit nur unnütz verbraucht wären. das müsste aber im konzept mehrfach geprüft und
+gegengerechnet sein."
+
+**Gebaut (A260, A261), Regel und Lagen in Konzept 09, Abschnitt „Das geringste Mittel gegen einen gemessenen
+Tankbuster".** Seine Vorgabe vom selben Tag macht daraus eine Planung: das geringste Mittel, das ohne Risiko reicht,
+die Unverwundbarkeit nur als zweite Wahl. Hier
+die Gegenrechnung, die die Tabelle betrifft. Zwei Entscheidungen sind auseinanderzuhalten, und nur die erste trägt
+Risiko:
+
+**1. Die Unverwundbarkeit ziehen, weil kein Bündel eigener Minderungen den Treffer übersteht.**
+- Die Tabelle irrt beim Messen fast nur nach unten (siehe oben). Ein Urteil „tödlich auch mit allen verfügbaren
+  Minderungen" aus einem zu kleinen Wert ist also erst recht richtig.
+- Nach oben irren kann sie über den Höchstwert: ein Treffer unter einer Stärkung des Gegners – seit A260 beim Messen
+  ausgeschlossen, soweit die Stärkung als Damage Up erkennbar ist –, oder ein Wert unter Verwundbarkeit mit mehr
+  Stapeln. Den zweiten Fall nimmt Konzept 09 in Kauf: Er gilt nur unter Verwundbarkeit, also in der Wechsellage.
+- Dann zöge die Regel eine Unverwundbarkeit (240 s bis 420 s, xivapi) für einen Treffer, den Minderung allein
+  getragen hätte. Sie fehlte beim nächsten wirklich tödlichen Treffer.
+
+**2. Steht die Unverwundbarkeit, die übrigen Mittel weglassen (sein Vorschlag).** Für den gebundenen Treffer gibt
+es dagegen keinen Einwand.
+- Alle vier machen eine Minderung für *diesen* Treffer wirkungslos, weil er nach dem besten Fall auch mit aller
+  Minderung tötet:
+  - Heiliger Boden und Meteoritenfall: immun, 10 s – das gilt für jeden Treffer in dieser Zeit.
+  - Holmgang: LP fallen nicht unter 1, 10 s.
+  - Totenerweckung: der Tod wird zu Walking Dead, danach zählt die Heilung, nicht die Minderung.
+- Für einen *anderen*, nicht tödlichen Treffer unter Holmgang oder Totenerweckung zählt Minderung weiter: Er nimmt
+  LP, die nach dem Ende fehlen. Zurückgehalten wird dort deshalb nur beim gebundenen Treffer.
+- Ein Schild oder Gegner-Debuff wäre verbraucht, ohne etwas zu bewirken. Schutzwall (90 s) und Verdammnis (120 s)
+  fehlten beim nächsten Tankbuster.
+- Als Rückfall taugt die Minderung kaum: Scheitert die Unverwundbarkeit bei einem tödlichen Treffer, rettet die
+  Minderung nach dem Urteil ebenfalls nicht. Das Urteil kann aber irren; deshalb öffnet das Zurückhalten im letzten
+  GCD, wenn die Unverwundbarkeit bis dahin nicht kam.
+- Was nicht wegfällt, betrifft andere Treffer oder andere Spieler:
+  - Reflexion für einen Raidwide im selben Fenster: Die Flächenabwehr ist nicht betroffen und läuft vor der
+    Einzelabwehr.
+  - Hilfe für ein anderes Mitglied (Intervention, Herz des Korunds auf dem Co-Tank).
+  - Was über den Treffer hinaus wirken soll: Die Bindung endet einen GCD nach dem Wirkende; danach entscheidet die
+    Abwehr wieder wie sonst.
+  - Heilerschilde auf einem Tank unter Holmgang oder Totenerweckung: Der Heiler kennt das Urteil des Tanks nicht. RSR
+    als Heiler hält nur bei Heiligem Boden und Meteoritenfall.
 
 ## Falsifikation
 
@@ -511,8 +680,8 @@ kommt ohne Statussätze aus.
 
 **Er macht die Gefahrenfrage quantitativ.** `ObjectHelper.IsUnderThreat` fragt binär, ob irgendwo eine
 Flächenaktion läuft; mit dem Potential wird daraus „bringt dieser Einschlag **dieses** Mitglied unter
-die Heilschwelle". Damit ist auch die Bagatellfläche erledigt, die heute die Notfall-Vollheilung
-blockiert.
+die Heilschwelle". Damit wäre auch die Bagatellfläche erledigt, die heute die Notfall-Vollheilung **freigibt**:
+Jeder laufende Flächenzauber gilt dort als Gefahr (`DataCenter.IsHostileCastingAOE`, Stand 02.10.2026). Nicht gebaut.
 
 **Die Güte der eigenen Schätzung wird hier nicht gemessen — und die Bauform dafür steht schon.**
 Der abgelegte Anteil ist eine Vorhersage: „so hart schlägt diese Aktion beim nächsten Mal“. Ob sie

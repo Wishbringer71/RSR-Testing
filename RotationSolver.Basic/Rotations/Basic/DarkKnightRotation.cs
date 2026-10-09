@@ -3,6 +3,9 @@
 public partial class DarkKnightRotation
 {
 	/// <inheritdoc/>
+	protected override IBaseAction? Invulnerability => LivingDeadPvE;
+
+	/// <inheritdoc/>
 	public override MedicineType MedicineType => MedicineType.Strength;
 	private protected sealed override IBaseAction TankStance => GritPvE;
 

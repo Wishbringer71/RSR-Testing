@@ -17,6 +17,86 @@
       "note": "Settled by the German job guide: role action at level 32, \"verhindert fast alle Rückstoß- und Heranzieheffekte\", 20 % Gemach on physical attackers. \"Rückstoß\" is the game's word for the knockback effect, not this action; the entry that paired it with Arm's Length (C33) is removed."
     },
     {
+      "de": "Kampfrausch",
+      "en": "Thrill of Battle",
+      "identifier": "ThrillOfBattlePvE",
+      "kind": "action",
+      "source": "user, 2026-10-01; German job guide (de.finalfantasyxiv.com/jobguide/warrior/), 2026-10-01",
+      "note": "Level 30, 90 s: maximum HP +20 % and restored by that amount, healing on self +20 %, 10 s. Not Bloodwhetting."
+    },
+    {
+      "de": "Rachsucht",
+      "en": "Vengeance",
+      "identifier": "VengeancePvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/warrior/), 2026-10-01",
+      "note": "Level 38, 120 s: damage taken -30 %, 15 s."
+    },
+    {
+      "de": "Urinstinkt",
+      "en": "Raw Intuition",
+      "identifier": "RawIntuitionPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/warrior/), 2026-10-01",
+      "note": "Level 56, 25 s, shared with Nascent Flash."
+    },
+    {
+      "de": "Äquilibrium",
+      "en": "Equilibrium",
+      "identifier": "EquilibriumPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/warrior/), 2026-10-01",
+      "note": "Level 58, 60 s self-heal with regen."
+    },
+    {
+      "de": "Abschütteln",
+      "en": "Shake It Off",
+      "identifier": "ShakeItOffPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/warrior/), 2026-10-01",
+      "note": "Level 68, 90 s party barrier; dispels Kampfrausch, Verdammnis and Urimpuls (job guide wording)."
+    },
+    {
+      "de": "Urflackern",
+      "en": "Nascent Flash",
+      "identifier": "NascentFlashPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/warrior/), 2026-10-01",
+      "note": "Level 76, 25 s, on a party member."
+    },
+    {
+      "de": "Urimpuls",
+      "en": "Bloodwhetting",
+      "identifier": "BloodwhettingPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/warrior/), 2026-10-01",
+      "note": "Level 82, upgrades Urinstinkt."
+    },
+    {
+      "de": "Verdammnis",
+      "en": "Damnation",
+      "identifier": "DamnationPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/warrior/), 2026-10-01",
+      "note": "Level 92, upgrades Rachsucht: damage taken -40 %, 15 s."
+    },
+    {
+      "de": "Tiefschlag",
+      "en": "Low Blow",
+      "identifier": "LowBlowPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/warrior/), 2026-10-01",
+      "note": "Role action, level 12, stun."
+    },
+    {
+      "de": "Zwischenruf",
+      "en": "Interject",
+      "identifier": "InterjectPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/warrior/), 2026-10-01",
+      "note": "Role action, level 18, interrupt."
+    },
+    {
       "de": "Sanctus",
       "en": "Holy",
       "identifier": "HolyPvE",
@@ -77,6 +157,14 @@
       "source": "user, recorded in AUDIT_LOG A-146"
     },
     {
+      "de": "Zermürben",
+      "en": "Feint",
+      "identifier": "FeintPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/monk/), 2026-10-01",
+      "note": "Role action, level 22, 90 s: physical damage dealt -10 %, magical -5 %, 15 s."
+    },
+    {
       "de": "Phönixfeder",
       "en": "Phoenix Down",
       "identifier": "4570",
@@ -91,6 +179,22 @@
       "kind": "action",
       "source": "user, 2026-09-12",
       "note": "The upgraded form Enhanced Rampart grants at level 94 is status Rampart_1978, scoped to PLD WAR DRK GNB, whose effect text adds 'while HP recovered via healing actions is increased' - the plain form (71, 1191) does not. The user gives that increase as 15%; the game data states no figure, as with every trait-modified value."
+    },
+    {
+      "de": "Geteiltes Leid",
+      "en": "Shirk",
+      "identifier": "ShirkPvE",
+      "kind": "action",
+      "source": "user, 2026-10-04; German job guide (de.finalfantasyxiv.com/jobguide/paladin/), 2026-10-04",
+      "note": "Role action, level 48, 120 s, 25 y: \"Du überträgst 25 % deiner Feindseligkeit auf das ausgewählte Gruppenmitglied.\" Cannot target self or alliance members (xivapi)."
+    },
+    {
+      "de": "Herausforderung",
+      "en": "Provoke",
+      "identifier": "ProvokePvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/paladin/), 2026-10-04",
+      "note": "Role action, level 15, 30 s: puts the user at the top of the target's enmity list."
     },
     {
       "de": "Paladin",
@@ -239,6 +343,46 @@
       "kind": "job",
       "source": "job guide, de.finalfantasyxiv.com/jobguide, page title, 2026-09-27",
       "note": "The user says the job is called Pictomancer in German as well (2026-09-27), correcting a self-formed 'Maler'. The German job guide titles it 'Piktomant'. Use 'Pictomancer' in text for him until he says which his client shows."
+    },
+    {
+      "de": "Heiliger Boden",
+      "en": "Hallowed Ground",
+      "identifier": "HallowedGroundPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/paladin/), 2026-10-04",
+      "note": "Level 50, 420 s, invulnerability for 10 s; status text \"Impervious to most attacks\"."
+    },
+    {
+      "de": "Holmgang",
+      "en": "Holmgang",
+      "identifier": "HolmgangPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/warrior/), 2026-10-04",
+      "note": "Level 42, 240 s, 10 s: most attacks cannot reduce HP below 1. Same name in both clients."
+    },
+    {
+      "de": "Meteoritenfall",
+      "en": "Superbolide",
+      "identifier": "SuperbolidePvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/gunbreaker/), 2026-10-04",
+      "note": "Level 50, 360 s: HP to 1, impervious to most attacks for 10 s. Position in the guide between Aurora and Schallbrecher (Sonic Break)."
+    },
+    {
+      "de": "Intervention",
+      "en": "Intervention",
+      "identifier": "InterventionPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/paladin/), 2026-10-04",
+      "note": "Level 62, mitigation on another party member. Same name in both clients."
+    },
+    {
+      "de": "Herz des Korunds",
+      "en": "Heart of Corundum",
+      "identifier": "HeartOfCorundumPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/gunbreaker/), 2026-10-04",
+      "note": "Level 82, upgrades Steinernes Herz (Heart of Stone); on self or a party member."
     }
   ]
 }

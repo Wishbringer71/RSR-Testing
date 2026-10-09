@@ -1,7 +1,7 @@
 # 02 · Ablaufstruktur je Jobgruppe
 
 Aufbauend auf `01-jobs.md`. Diese Ebene zeigt pro Gruppe, was **gleich**,
-**ähnlich** und **unterschiedlich** ist. Farbcode in allen Diagrammen:
+**ähnlich** und **unterschiedlich** ist. Hooks, Optionen und Voreinstellungen am 02.10.2026 aus dem Code gemessen. Farbcode in allen Diagrammen:
 
 - durchgezogen = bei jedem Job der Gruppe vorhanden
 - gestrichelt = bei einigen Jobs der Gruppe vorhanden
@@ -16,8 +16,8 @@ flowchart TD
     A[GeneralGCD] --> B{Raise ansteht<br/>und Swiftcast bereit?}
     B -- ja --> C[Kurzschluss: base / RaiseGCD]
     B -- nein --> D{Sustain-Zweig<br/>vorhanden?}
-    D -- "WHM AST SGE" --> E[TrySustain…OnTank]
-    D -- "SCH" --> F[kein Sustain]
+    D -- "WHM AST" --> E[TrySustain…OnTank]
+    D -- "SGE SCH" --> F[kein Sustain-Zweig]
     E --> G[Job-Ressource]
     F --> G
     G --> H[AoE-Zweig]
@@ -32,9 +32,8 @@ flowchart TD
 
 ### Identisch in allen vier
 
-1. **Raise-Kurzschluss ganz oben.** Wortgleich, 13 Kopien über die vier
-   Dateien (jeder Heiler hat ihn zusätzlich in `HealSingleGCD` und
-   `HealAreaGCD`). Der einzige Zweig, der die Methode verlässt, bevor
+1. **Raise-Kurzschluss ganz oben.** `SwiftRaisePending`, je Datei privat und gleichlautend, 13 Verwendungen
+   (jeder Heiler hat ihn zusätzlich in `HealSingleGCD` und `HealAreaGCD`). Der einzige Zweig, der die Methode verlässt, bevor
    irgendeine Rotationsentscheidung fällt.
 2. **Reihenfolge AoE → DoT → Filler.** Ohne Ausnahme.
 3. **Filler ist immer eine Level-Kette** (Glare/Malefic/Dosis/Broil).
@@ -46,9 +45,10 @@ flowchart TD
 | | WHM | AST | SGE | SCH |
 |---|---|---|---|---|
 | Kurzschlüsse | **2** (ThinAir + Swift) | 1 | 1 | 1 |
-| Sustain-Zweig | Regen | Aspected Benefic | Eukr. Diagnosis | **keiner** |
-| HP-Boden Sustain | 0.3 | 0.4 | **keiner** | – |
-| `GCDHeal`-Default | **true** | false | false | false |
+| Sustain-Zweig in `GeneralGCD` | Regen | Aspected Benefic | **keiner** (entfernt, A5) | **keiner** |
+| Pflege auf dem Tank im Pull (`TryPullUpkeepOnTank`) | Regen | Aspected Benefic | Eukr. Diagnosis | **nicht gebaut** |
+| HP-Schwelle der Pflege | `RegenHeal` 0.3 | `AspectedBeneficHeal` 0.4 | keine (Konzept 15) | – |
+| `GCDHeal`-Default | **true** | false | false | **true** |
 | Ressourcenlogik in GeneralGCD | Lily | **keine** | Phlegma | MP-Schwelle |
 | Zweistufiger Cast | nein | nein | **ja** (Eukrasia) | nein |
 | Pet-Verwaltung | nein | nein | nein | **ja** (Eos) |
@@ -73,12 +73,10 @@ flowchart TD
     E --> F
     F --> G[base.GeneralGCD]
 
-    H[DefenseAreaAbility] -.-> I{HasHostileCountAoeMitigation}
-    I -- "DRK GNB" --> J[Reprisal-Sustain]
-    I -- "PLD WAR" --> K[nur reaktiv]
+    H[DefenseAreaAbility] --> J[Reprisal-Sustain]
+    L[DefenseSingleAbility] --> J
 
     style J fill:#36c,color:#fff
-    style K fill:#a33,color:#fff
 ```
 
 ### Identisch in allen vier
@@ -90,22 +88,24 @@ flowchart TD
    Shield Lob (PLD), Unmend (DRK). Vier strukturgleiche Zeilen.
 3. **`AoeCount = 2`** für die AoE-Aggro-Aktion — bei allen vier explizit
    überschrieben (globaler Default wäre 3).
-4. **Keine GCD-Heilung, kein Raise** (Ausnahme PLD/WAR `HealSingleGCD`).
+4. **Kein Raise; GCD-Heilung nur beim Paladin** (Clemency, `HealSingleGCD`).
+5. **Reflexion in Flächen- und Einzelabwehr** über `ShouldSustainMitigationDebuff` (00bc9c6f), am Tankbuster mit
+   `HoldReprisalForRaidwide` (A244).
+6. **`HasOwnArmsLengthPullRule`**: Abtausch im Pull nach der eigenen Regel, nie auf einen Boss (A236).
 
 ### Wo die Gruppe auseinanderläuft
 
 | | PLD | WAR | DRK | GNB |
 |---|---|---|---|---|
-| `EmergencyAbility` | ✓ | **fehlt** | ✓ | ✓ |
-| `HealSingleGCD` | ✓ Clemency | ✓ | – | – |
-| `HasHostileCountAoeMitigation` | **fehlt** | **fehlt** | ✓ | ✓ |
-| Reprisal-Sustain in | nur DefenseSingle | nur DefenseSingle | **Area + Single** | **Area + Single** |
-| Configs | 15 | 12 | 8 | **2** |
+| `EmergencyAbility` | ✓ Reborn | ✓ Basisschicht (Holmgang) | ✓ Basis + Reborn | ✓ Basis + Reborn |
+| `HealSingleGCD` | ✓ Clemency | – | – | – |
+| `HealSingleAbility` | – | ✓ | ✓ | ✓ |
+| `MyInterruptGCD` | ✓ | – | – | – |
+| Configs | 16 | 17 | 12 | **3** |
 
-Die PLD/WAR-vs-DRK/GNB-Spaltung bei Reprisal folgt der Upstream-Platzierung
-(PLD/WAR haben Reprisal nur in `DefenseSingleAbility`) — sie ist damit
-begründet, aber sie macht die Gruppe an einer fachlich einheitlichen Stelle
-uneinheitlich.
+Die frühere Spaltung bei Reflexion (Paladin und Krieger nur in der Einzelabwehr) ist aufgehoben (00bc9c6f).
+`HasHostileCountAoeMitigation` gibt es nicht mehr: Es setzte `DefenseArea` allein auf die Gegnerzahl und
+öffnete damit die ganze Abwehrkette (b8018cf0, Konzept 08).
 
 ---
 
@@ -134,11 +134,10 @@ flowchart TD
 ### Identisch in allen sechs
 
 1. **Feint-Sustain** über `ShouldSustainMitigationDebuff(StatusID.Feint)` in
-   `DefenseAreaAbility` **und** `DefenseSingleAbility` — nach der
-   Vereinheitlichung eine Zeile pro Stelle, zwölf Stellen gesamt.
-2. **Ranged-Fallback am Ende** (Piercing Talon, Writhing Snap, Harpe …).
-3. **`HasHostileCountAoeMitigation = true`** bei allen sechs.
-4. **`HealSingleAbility`** (Second Wind/Bloodbath) — außer MNK.
+   `DefenseAreaAbility` **und** `DefenseSingleAbility` — eine Zeile pro Stelle, zwölf Stellen gesamt; beim Ninja
+   in der versiegelten `NinjaRotation`.
+2. **Ranged-Fallback am Ende** (Piercing Talon, Writhing Snap, Harpe …); der Mönch hat keinen.
+3. **`HealSingleAbility`** (Second Wind/Bloodbath) bei allen sechs.
 
 ### Wo die Gruppe auseinanderläuft
 
@@ -146,14 +145,13 @@ flowchart TD
 |---|---|---|---|---|---|---|
 | `CountDownAction` | **fehlt** | ✓ | ✓ | ✓ | ✓ | **fehlt** |
 | `EmergencyAbility` | ✓ | ✓ | ✓ | **fehlt** | **fehlt** | ✓ |
-| `HealSingleAbility` | ✓ | **fehlt** | ✓ | ✓ | ✓ | ✓ |
-| `HealAreaAbility` | – | **✓** | – | – | – | – |
+| `HealAreaAbility` | – | **✓** (Earth's Reply, Mantra) | – | – | – | – |
 | `HasOwnInterruptGate` | – | – | – | ✓ | – | ✓ |
 | Combo-Form | if-Kette | Automat | Automat | if-Kette | if-Kette | switch |
-| Trait-Duplikate | **8 Paare** | – | – | – | – | – |
+| Trait-Duplikate | **6 Paare** | – | – | – | – | – |
 
-MNKs `HealAreaAbility`-statt-`HealSingleAbility` ist die einzige Abweichung
-ohne erkennbare fachliche Begründung.
+Der Mönch führt Second Wind und Bloodbath seit 4b3c9412 in `HealSingleAbility`; `HealAreaAbility` trägt seine
+Gruppenheilungen.
 
 ---
 
@@ -181,24 +179,23 @@ flowchart TD
 
 ### Identisch in allen drei
 
-1. **Rollen-Mitigation als Selbstbuff** (Troubadour/Tactician/Shield Samba) —
-   dieselbe Rolle, dieselbe Dauer (15 s), dieselbe BMR-Refresh-Logik.
+1. **Gruppen-Minderung** (Troubadour/Tactician/Shield Samba) —
+   dieselbe Rolle, dieselbe Dauer (15 s), dieselbe BMR-Auslösung (`BMRShouldRefreshBefore` vor Raidwide und
+   Tankbuster).
 2. **Level-Ketten dominieren den Filler.**
-3. **Kein Raise, keine GCD-Heilung.**
+3. **Kein Raise, keine GCD-Heilung; Second Wind in `HealSingleAbility` bei allen drei.**
 
 ### Wo die Gruppe auseinanderläuft
 
 | | BRD | MCH | DNC |
 |---|---|---|---|
-| `DefenseSingleAbility` | ✓ | ✓ | **fehlt** |
-| `HealAreaAbility` | – | – | **✓** |
-| `HealSingleAbility` | ✓ | **fehlt** | ✓ |
-| `DispelAbility` | **✓** | – | – |
-| `MoveForwardAbility` | – | – | ✓ |
+| `HealAreaAbility` | – | – | **✓** (Curing Waltz, Improvisation) |
+| `DispelAbility` | **✓** (Warden's Paean) | – | – |
+| `MoveForwardAbility` | – | – | ✓ (En Avant) |
+| `MoveBackAbility` | ✓ (Repelling Shot) | – | – |
 | Level-Ketten-Glieder | 2 | **12** | 0 |
 
-Die Gruppe ist bei den Hooks am inkonsistentesten: keine zwei Jobs belegen
-dieselbe Slot-Menge.
+Die verbleibenden Unterschiede folgen den Aktionen, die nur ein Job hat (A7, 4b3c9412).
 
 ---
 
@@ -223,24 +220,23 @@ flowchart TD
 ### Identisch in allen vier
 
 1. **Addle-Sustain** über `ShouldSustainMitigationDebuff(StatusID.Addle)` in
-   beiden Defense-Slots.
-2. **`HasHostileCountAoeMitigation = true`.**
-3. **Ein Zustandsautomat als Kern**, Filler nur als Rest.
+   beiden Defense-Slots (beim Beschwörer über `TryAddleBeforeDamage`).
+2. **Ein Zustandsautomat als Kern**, Filler nur als Rest.
 
 ### Wo die Gruppe auseinanderläuft
 
 | | SMN | RDM | PCT | BLM |
 |---|---|---|---|---|
-| Automat liegt in | `GeneralGCD` | `GeneralGCD` | `GeneralGCD` | **privaten Methoden** |
-| Top-Level-Zweige | 24 | 22 | 33 | **7** |
+| Automat liegt in | benannten Stufen (A4a) | `GeneralGCD` | benannten Stufen (A4a) | **privaten Methoden** |
+| Top-Level-Zweige vor A4a | 24 | 22 | 33 | **7** |
 | `HealSingleGCD` | ✓ | ✓ | – | – |
 | `RaiseGCD` | ✓ | ✓ | – | – |
 | `MoveForwardGCD` | ✓ | – | – | – |
-| Configs | 14 | 9 | 8 | 4 |
+| Configs | 13 | 9 | 8 | 5 |
 
-BLM erreicht mit **7** Top-Level-Zweigen dieselbe fachliche Abdeckung, für die
-PCT **33** braucht. Der Unterschied ist reine Ablauforganisation, nicht
-Job-Komplexität — das ist der stärkste Einzelbefund dieser Ebene.
+BLM erreichte mit **7** Top-Level-Zweigen dieselbe fachliche Abdeckung, für die
+PCT **33** brauchte. Der Unterschied ist reine Ablauforganisation, nicht
+Job-Komplexität; A4a hat PCT und SMN deshalb in benannte Stufen zerlegt.
 
 ---
 
@@ -248,8 +244,8 @@ Job-Komplexität — das ist der stärkste Einzelbefund dieser Ebene.
 
 | Gruppe | gemeinsame Makrostruktur | echte Abweichungen | unbegründete Abweichungen |
 |---|---|---|---|
-| Heiler | Kurzschluss → Sustain → Ressource → AoE → DoT → Filler | Eukrasia, Pet, Karten | SCH ohne Sustain, HP-Boden 0.3/0.4/keiner |
-| Tanks | Ressource → AoE/ST → Combo → Ranged-Fallback | – | WAR ohne Emergency, PLD/WAR ohne HCA-Flag |
-| Melee | Burst → Combo → AoE → Ranged-Fallback | Mudra, Formen, Positionals | DRG/VPR ohne CountDown, MNK-Heal-Slot |
-| Phys. Ranged | DoT/Ressource → Burst → AoE/ST | Tänze (DNC) | drei verschiedene Slot-Mengen |
+| Heiler | Kurzschluss → Sustain → Ressource → AoE → DoT → Filler | Eukrasia, Pet, Karten | Gelehrter ohne Pflege im Pull (kein Sofortschild, Konzept 15) |
+| Tanks | Ressource → AoE/ST → Combo → Ranged-Fallback | – | Unverwundbarkeit an zwei Orten (Konzept 05) |
+| Melee | Burst → Combo → AoE → Ranged-Fallback | Mudra, Formen, Positionals | DRG/VPR ohne CountDown (TODO „Vorlauf“) |
+| Phys. Ranged | DoT/Ressource → Burst → AoE/ST | Tänze (DNC) | – |
 | Mag. Ranged | Automat → Filler | Elementphasen | Automat mal ausgelagert, mal inline |

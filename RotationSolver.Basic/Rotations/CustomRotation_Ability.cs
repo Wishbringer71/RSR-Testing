@@ -15,6 +15,9 @@ public partial class CustomRotation
 	{
 		act = DataCenter.CommandNextAction;
 
+		// GCD() may have returned from inside its heal path.
+		IBaseAction.HealPathRunning = false;
+
 		if (Player == null)
 		{
 			return false;
@@ -88,6 +91,20 @@ public partial class CustomRotation
 		}
 
 		var role = DataCenter.Role;
+
+		// The plan for a measured tankbuster - the mitigation it needs, or the invulnerability when nothing
+		// less survives it - before the swap, which holds while the invulnerability is ready (concept 09).
+		if (role == JobRole.Tank && TankbusterPlanAbility(out act))
+		{
+			return true;
+		}
+
+		// After the emergency abilities, so an invulnerability that fires at its HP threshold goes first.
+		if (role == JobRole.Tank && Service.Config.ShirkToSwapAfterTankbuster
+			&& (TankSwapAbility(out act) || TankSwapBackAbility(out act)))
+		{
+			return true;
+		}
 
 		IBaseAction.TargetOverride = TargetType.Interrupt;
 		if (DataCenter.MergedStatus.HasFlag(AutoStatus.Interrupt) && !StatusHelper.PlayerHasStatus(true, StatusID.Mudra))
@@ -165,6 +182,7 @@ public partial class CustomRotation
 		IBaseAction.ShouldEndSpecial = false;
 
 		IBaseAction.TargetOverride = TargetType.Heal;
+		IBaseAction.HealPathRunning = true;
 
 		if (DataCenter.CommandStatus.HasFlag(AutoStatus.HealAreaAbility))
 		{
@@ -239,6 +257,7 @@ public partial class CustomRotation
 		}
 
 		IBaseAction.TargetOverride = null;
+		IBaseAction.HealPathRunning = false;
 
 		if (DataCenter.CommandStatus.HasFlag(AutoStatus.Speed))
 		{
@@ -284,8 +303,15 @@ public partial class CustomRotation
 		}
 		if (DataCenter.MergedStatus.HasFlag(AutoStatus.DefenseArea))
 		{
+			// A command from the player is not second-guessed; the automatic flag asks for the party,
+			// so the actions that protect only the player ask whether the hit reaches him (A233).
+			IBaseAction.SelfProtectionHitsMe = DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseArea)
+				|| DataCenter.AreaHitReachesPlayer;
+			IBaseAction.AreaDefenceRunning = true;
 			if (DataCenter.CurrentDutyRotation?.DefenseAreaAbility(nextGCD, out act) == true)
 			{
+				IBaseAction.SelfProtectionHitsMe = null;
+				IBaseAction.AreaDefenceRunning = false;
 				DefenseTrace.Decision("area defence (duty)", act);
 				return true;
 			}
@@ -294,9 +320,13 @@ public partial class CustomRotation
 			if (DefenseAreaAbility(nextGCD, out act) || (role is JobRole.Melee or JobRole.RangedPhysical or JobRole.RangedMagical
 				&& DataCenter.AreaHitReachesPlayer && DefenseSingleAbility(nextGCD, out act)))
 			{
+				IBaseAction.SelfProtectionHitsMe = null;
+				IBaseAction.AreaDefenceRunning = false;
 				DefenseTrace.Decision("area defence", act);
 				return true;
 			}
+			IBaseAction.SelfProtectionHitsMe = null;
+			IBaseAction.AreaDefenceRunning = false;
 		}
 		IBaseAction.ShouldEndSpecial = false;
 
@@ -306,17 +336,36 @@ public partial class CustomRotation
 		}
 		if (DataCenter.MergedStatus.HasFlag(AutoStatus.DefenseSingle))
 		{
-			if (DataCenter.CurrentDutyRotation?.DefenseSingleAbility(nextGCD, out act) == true)
+			// The single-target flag also carries help for the other tank, so it stays; the actions that
+			// protect only the player ask whether the single hit reaches him (A233).
+			IBaseAction.SelfProtectionHitsMe = DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseSingle)
+				|| DataCenter.SingleHitReachesPlayer;
+			IBaseAction.CommandedDefenceRunning = DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseSingle);
+			try
 			{
-				DefenseTrace.Decision("single defence (duty)", act);
-				return true;
+				if (DataCenter.CurrentDutyRotation?.DefenseSingleAbility(nextGCD, out act) == true)
+				{
+					IBaseAction.SelfProtectionHitsMe = null;
+					DefenseTrace.Decision("single defence (duty)", act);
+					return true;
+				}
+				if (DefenseSingleAbility(nextGCD, out act)
+					// Arm's Length as the last resort only for its Slow on a pack of ordinary enemies: it does not
+					// touch the hit that strikes it, and on a boss's tankbuster - the owner saw it cast there - it
+					// does nothing and is then missing for a knockback. A rotation that runs the pull rule itself
+					// has already asked, with its own option and holds, and declined (A236).
+					|| (!HasOwnArmsLengthPullRule && ArmsLengthSlowsPull(true, Service.Config.AutoDefenseNumber) && !StatusHelper.PlayerHasStatus(true, StatusID.Vengeance) && !StatusHelper.PlayerHasStatus(true, StatusID.Damnation) && ArmsLengthPvE.CanUse(out act)))
+				{
+					IBaseAction.SelfProtectionHitsMe = null;
+					DefenseTrace.Decision("single defence", act);
+					return true;
+				}
 			}
-			if (DefenseSingleAbility(nextGCD, out act)
-				|| (!DataCenter.IsHostileCastingToTank && !StatusHelper.PlayerHasStatus(true, StatusID.Vengeance) && !StatusHelper.PlayerHasStatus(true, StatusID.Damnation) && ArmsLengthPvE.CanUse(out act)))
+			finally
 			{
-				DefenseTrace.Decision("single defence", act);
-				return true;
+				IBaseAction.CommandedDefenceRunning = false;
 			}
+			IBaseAction.SelfProtectionHitsMe = null;
 		}
 		IBaseAction.ShouldEndSpecial = false;
 
@@ -580,6 +629,14 @@ public partial class CustomRotation
 	/// instead of retrying it ungated after the job's own gate declined it.
 	/// </summary>
 	protected virtual bool HasOwnAntiKnockbackGate => false;
+
+	/// <summary>
+	/// Whether this rotation's <see cref="DefenseSingleAbility"/> already runs
+	/// <see cref="ArmsLengthSlowsPull"/> with its own option and holds. When true, the single defence
+	/// does not retry Arm's Length as its last resort, which would cast it past a declined option or a
+	/// hold such as the Dark Knight's barrier.
+	/// </summary>
+	protected virtual bool HasOwnArmsLengthPullRule => false;
 
 	/// <summary>
 	/// Determines if a provoke ability can be used.
@@ -957,5 +1014,125 @@ public partial class CustomRotation
 	{
 		act = null;
 		return false;
+	}
+
+	/// <summary>
+	/// The tank's own invulnerability - Hallowed Ground, Holmgang, Living Dead, Superbolide - for the
+	/// rules that need to know whether it can still save him. Null for every other job.
+	/// </summary>
+	protected virtual IBaseAction? Invulnerability => null;
+
+	/// <summary>
+	/// The owner's proposal of 04.10.2026 (concept 09, "Tankwechsel nach einem Tankbuster"): after a
+	/// tankbuster that leaves the player in danger of dying to the next one, and with his
+	/// invulnerability not available, Shirk goes to the tank <see cref="TankSwapWatch"/> names - the
+	/// one that will then hold the enemy.
+	/// </summary>
+	/// <remarks>
+	/// The invulnerability counts as available only when RSR would use it for any next hit
+	/// (<see cref="InvulnerabilityUsable"/>: at its threshold) and it is off cooldown. The tankbuster plan
+	/// draws it ahead of a measured cast as well, but not for every next hit, so it does not count here.
+	/// </remarks>
+	private bool TankSwapAbility(out IAction? act)
+	{
+		act = null;
+		var danger = TankSwapWatch.Danger;
+		if (danger.Length == 0)
+		{
+			return false;
+		}
+
+		if (InvulnerabilityUsable(out var invulnerability) && invulnerability!.Cooldown.HasOneCharge)
+		{
+			TankSwapWatch.TraceHeld($"{invulnerability.Name} is ready");
+			return false;
+		}
+
+		var receiver = TankSwapWatch.Target;
+		if (receiver == null)
+		{
+			TankSwapWatch.TraceHeld(TankSwapWatch.Detail);
+			return false;
+		}
+
+		var previous = IBaseAction.TargetOverride;
+		IBaseAction.TargetOverride = TargetType.TankSwap;
+		try
+		{
+			if (!ShirkPvE.CanUse(out act))
+			{
+				TankSwapWatch.TraceHeld(ShirkPvE.Cooldown.HasOneCharge
+					? $"Shirk cannot reach {receiver.Name.TextValue}"
+					: "Shirk is on cooldown");
+				act = null;
+				return false;
+			}
+		}
+		finally
+		{
+			IBaseAction.TargetOverride = previous;
+		}
+
+		TankSwapWatch.PlanSwapShirk(TankSwapWatch.DangerSource, receiver, TankSwapWatch.Ratio);
+		DefenseTrace.Decision($"tank swap ({danger}; {TankSwapWatch.Detail})", act);
+		return true;
+	}
+
+	/// <summary>
+	/// Whether RSR would use the tank's invulnerability for the next hit whatever it is: it exists for the
+	/// job, is learned at the current level, enabled, and its threshold (HealthForDyingTanks) is above zero.
+	/// The tankbuster plan does not count here: it draws the invulnerability only for a measured cast that
+	/// nothing less survives, not for a marker, a BossModReborn prediction or an unmeasured action
+	/// (review of A261).
+	/// </summary>
+	private bool InvulnerabilityUsable(out IBaseAction? invulnerability)
+	{
+		invulnerability = Invulnerability;
+		return invulnerability != null && invulnerability.Config.IsEnabled && invulnerability.EnoughLevel
+			&& HealthForDyingTanks > 0f;
+	}
+
+	/// <summary>
+	/// The other half of the swap (the owner's rule of 04.10.2026): the enemy the swap handed to the
+	/// co-tank is provoked back only after the co-tank has taken its next tankbuster (his question,
+	/// accepted), once the debuff and the critical state are over - and, his precision, once the
+	/// invulnerability is ready again. Where RSR would not use an invulnerability at
+	/// all (not learned at this level, disabled, threshold zero) there is nothing to wait for.
+	/// </summary>
+	private bool TankSwapBackAbility(out IAction? act)
+	{
+		act = null;
+		var source = TankSwapWatch.ReclaimSource;
+		if (source == null)
+		{
+			return false;
+		}
+
+		if (InvulnerabilityUsable(out var invulnerability) && !invulnerability!.Cooldown.HasOneCharge)
+		{
+			TankSwapWatch.TraceReclaimHeld($"{invulnerability.Name} is not ready yet");
+			return false;
+		}
+
+		var previous = IBaseAction.TargetOverride;
+		IBaseAction.TargetOverride = TargetType.TankSwap;
+		try
+		{
+			if (!ProvokePvE.CanUse(out act))
+			{
+				TankSwapWatch.TraceReclaimHeld(ProvokePvE.Cooldown.HasOneCharge
+					? $"Provoke cannot reach {source.Name.TextValue}"
+					: "Provoke is on cooldown");
+				act = null;
+				return false;
+			}
+		}
+		finally
+		{
+			IBaseAction.TargetOverride = previous;
+		}
+
+		DefenseTrace.Decision($"tank swap back (the co-tank took the next tankbuster, your debuff and danger are over) on {source.Name.TextValue}", act);
+		return true;
 	}
 }

@@ -14,11 +14,15 @@ public sealed class GNB_Reborn : GunbreakerRotation
 			+ "In a fight: the Slow +20% lands on every enemy that strikes you and delays "
 			+ "auto-attacks as well as casts, so in a standing pack it throttles the whole incoming "
 			+ "stream for fifteen seconds. It costs nothing but its own cooldown. A pull is as many "
-			+ "enemies in reach as the global \"Number of hostiles\" for defensive abilities; a pack "
+			+ "enemies in reach as the global \"Number of hostiles\" for defensive abilities, bosses not "
+			+ "counted - Arm's Length does not soften the hit that strikes you, so a boss's tankbuster "
+			+ "gains nothing from it; a pack "
 			+ "that is already slowed is left alone.\n"
 			+ "Not while BossModReborn announces a knockback that lands after the barrier has run out "
 			+ "and before Arm's Length is ready again - the action is kept for it.")]
 	public bool UseArmsLengthOnPull { get; set; } = true;
+
+	protected override bool HasOwnArmsLengthPullRule => true;
 
 	[RotationConfig(CombatType.PvE, Name = "How to use Aurora")]
 	public AuroraUsageStrategy AuroraUsage { get; set; } = AuroraUsageStrategy.TankbusterTarget;
@@ -156,6 +160,22 @@ public sealed class GNB_Reborn : GunbreakerRotation
 			return base.DefenseSingleAbility(nextGCD, out act);
 		}
 
+		// A predicted tankbuster on the player gets its big mitigation first - or Rampart while that one is
+		// spent - ahead of the short ones: the window opens a few seconds before the hit, and with the cheap ones
+		// ahead the big one landed last (trace of 01.10.2026: Damnation 0.7 s before the hit, A241, A243).
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, GreatNebulaPvE.EnoughLevel ? StatusID.GreatNebula : StatusID.Nebula)
+			&& (GreatNebulaPvE.EnoughLevel ? GreatNebulaPvE.CanUse(out act, skipStatusProvideCheck: true) : NebulaPvE.CanUse(out act, skipStatusProvideCheck: true)))
+		{
+			return true;
+		}
+
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, DefensiveValues.DurationOf((uint)ActionID.RampartPvE), true, null, StatusID.Rampart)
+			&& RampartTakesPredictedTankbuster(GreatNebulaPvE.EnoughLevel ? GreatNebulaPvE : NebulaPvE, GreatNebulaPvE.EnoughLevel ? StatusID.GreatNebula : StatusID.Nebula)
+			&& RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
+		{
+			return true;
+		}
+
 		// Free of cost but its cooldown, so ahead of the paid mitigations (A194).
 		if (ArmsLengthSlowsPull(UseArmsLengthOnPull, Service.Config.AutoDefenseNumber) && ArmsLengthPvE.CanUse(out act))
 		{
@@ -209,18 +229,6 @@ public sealed class GNB_Reborn : GunbreakerRotation
 			}
 		}
 
-		// Predicted tankbuster takes priority over the elapsed-time stagger below.
-		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, GreatNebulaPvE.EnoughLevel ? StatusID.GreatNebula : StatusID.Nebula)
-			&& (GreatNebulaPvE.EnoughLevel ? GreatNebulaPvE.CanUse(out act, skipStatusProvideCheck: true) : NebulaPvE.CanUse(out act, skipStatusProvideCheck: true)))
-		{
-			return true;
-		}
-
-		if (BMRShouldRefreshBefore(BMRTankbusterIn, 20f, true, null, StatusID.Rampart) && RampartPvE.CanUse(out act, skipStatusProvideCheck: true))
-		{
-			return true;
-		}
-
 		//30
 		if ((!RampartPvE.Cooldown.IsCoolingDown || RampartPvE.Cooldown.ElapsedAfter(60)) && GreatNebulaPvE.CanUse(out act) && GreatNebulaPvE.EnoughLevel)
 		{
@@ -257,13 +265,14 @@ public sealed class GNB_Reborn : GunbreakerRotation
 			}
 		}
 
-		if (ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
+		if (!HoldReprisalForRaidwide()
+			&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
 
-		if (ReprisalPvE.CanUse(out act, skipAoeCheck: true))
+		if (!HoldReprisalForRaidwide() && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}

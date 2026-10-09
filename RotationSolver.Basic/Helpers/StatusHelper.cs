@@ -595,6 +595,46 @@ public static class StatusHelper
 	];
 
 	/// <summary>
+	/// Every status under which a hit cannot kill the bearer: <see cref="NoNeedHealingStatus"/> and
+	/// Walking Dead, which that list leaves out for the heal decision's sake.
+	/// </summary>
+	internal static StatusID[] InvulnerabilityStatus { get; } = [.. NoNeedHealingStatus, StatusID.WalkingDead];
+
+	/// <summary>
+	/// Whether <paramref name="battleChara"/> stands under an <see cref="InvulnerabilityStatus"/> that is
+	/// still up in <paramref name="seconds"/>. The earliest expiry across the list counts, so a short
+	/// second status beside a long one errs towards "not covered".
+	/// </summary>
+	internal static bool InvulnerableThrough(this IBattleChara battleChara, float seconds)
+	{
+		return battleChara.HasStatus(false, InvulnerabilityStatus)
+			&& !battleChara.WillStatusEnd(seconds, false, InvulnerabilityStatus);
+	}
+
+	/// <summary>
+	/// The subset of <see cref="NoNeedHealingStatus"/> under which a hit does no damage at all - the
+	/// status texts read "Impervious to most attacks" (Hallowed Ground, Superbolide). Holmgang, Living
+	/// Dead, Walking Dead and Undead Rebirth are not in it: under them a hit still takes HP, down to 1,
+	/// so a mitigation still decides how much HP is left when they end.
+	/// </summary>
+	internal static StatusID[] ImperviousStatus { get; } =
+	[
+		StatusID.Superbolide,
+		StatusID.HallowedGround,
+		StatusID.HallowedGround_1302,
+	];
+
+	/// <summary>
+	/// Whether <paramref name="battleChara"/> stands under an <see cref="ImperviousStatus"/> that is
+	/// still up in <paramref name="seconds"/>.
+	/// </summary>
+	internal static bool ImperviousThrough(this IBattleChara battleChara, float seconds)
+	{
+		return battleChara.HasStatus(false, ImperviousStatus)
+			&& !battleChara.WillStatusEnd(seconds, false, ImperviousStatus);
+	}
+
+	/// <summary>
 	/// The subset of <see cref="NoNeedHealingStatus"/> whose trigger is the bearer's own death.
 	/// Living Dead is the only one: the dark knight spends it expecting to be killed, and the kill
 	/// is what converts it into Walking Dead and its self-healing. Healing the bearer above zero
@@ -892,7 +932,10 @@ public static class StatusHelper
 	/// other direction, <c>Nebula_3051</c> ("inflicting a portion of sustained damage back to its
 	/// source") and <c>Bloodwhetting_3030</c> ("weaponskills generate HP") share a name with a
 	/// mitigation but are the reflect and lifesteal halves, so they stay out. So do the Holmgang ids
-	/// 88 and 1305, which sit on the target rather than the tank (AUDIT_LOG C15).
+	/// 88 and 1305, which sit on the target rather than the tank (AUDIT_LOG C15). Bloodwhetting itself
+	/// (2678) is the warrior's short cooldown - 10% for eight seconds, every 25 - as Heart of Corundum,
+	/// Holy Sheltron and The Blackest Night are for the others, none of them listed; listed, it held
+	/// Rampart and Damnation back at the start of every pull and on every tankbuster (A238).
 	/// </para>
 	/// </summary>
 	public static StatusID[] RampartStatus { get; } =
@@ -902,7 +945,6 @@ public static class StatusHelper
 		StatusID.Rampart_1978,
 		StatusID.Rampart_4168,
 		StatusID.Bulwark,
-		StatusID.Bloodwhetting,
 
 		StatusID.Vengeance,
 		StatusID.Damnation,
@@ -1093,6 +1135,81 @@ public static class StatusHelper
 	/// </summary>
 	/// <param name="Invulnp"></param>
 	/// <returns></returns>
+	private static HashSet<uint>? _vulnerabilityUpIds;
+
+	/// <summary>
+	/// The game's "damage taken is increased" debuffs, recognised by the names the generator gives them
+	/// from the status sheet (Vulnerability Up, Physical and Magic Vulnerability Up) rather than by a
+	/// hand-kept id list. The names are the English sheet names, so the client language does not matter.
+	/// </summary>
+	internal static bool IsVulnerabilityUp(uint statusId)
+	{
+		_vulnerabilityUpIds ??= IdsByNamePrefix("VulnerabilityUp", "PhysicalVulnerabilityUp", "MagicVulnerabilityUp");
+		return _vulnerabilityUpIds.Contains(statusId);
+	}
+
+	private static HashSet<uint> IdsByNamePrefix(params string[] prefixes)
+	{
+		HashSet<uint> ids = [];
+		foreach (var value in Enum.GetValues<StatusID>())
+		{
+			var name = value.ToString();
+			foreach (var prefix in prefixes)
+			{
+				if (name.StartsWith(prefix, StringComparison.Ordinal))
+				{
+					_ = ids.Add((uint)value);
+					break;
+				}
+			}
+		}
+
+		return ids;
+	}
+
+	/// <summary>Whether <paramref name="battleChara"/> carries any vulnerability debuff.</summary>
+	internal static bool CarriesVulnerabilityUp(this IBattleChara battleChara)
+	{
+		return Carries(battleChara, IsVulnerabilityUp);
+	}
+
+	private static HashSet<uint>? _damageUpIds;
+
+	/// <summary>
+	/// The game's "damage dealt is increased" statuses - Damage Up, Physical and Magic Damage Up - by the
+	/// generator's names from the status sheet, as <see cref="IsVulnerabilityUp"/> does for the debuffs.
+	/// </summary>
+	internal static bool IsDamageUp(uint statusId)
+	{
+		_damageUpIds ??= IdsByNamePrefix("DamageUp", "PhysicalDamageUp", "MagicDamageUp");
+		return _damageUpIds.Contains(statusId);
+	}
+
+	/// <summary>Whether <paramref name="battleChara"/> carries any damage-up status.</summary>
+	internal static bool CarriesDamageUp(this IBattleChara battleChara)
+	{
+		return Carries(battleChara, IsDamageUp);
+	}
+
+	private static bool Carries(IBattleChara battleChara, Func<uint, bool> isOfKind)
+	{
+		var statuses = battleChara.StatusList;
+		if (statuses == null)
+		{
+			return false;
+		}
+
+		foreach (var status in statuses)
+		{
+			if (status != null && status.StatusId != 0 && isOfKind(status.StatusId))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public static bool NoNeedHealingInvuln(this IBattleChara Invulnp)
 	{
 		return Invulnp.WillStatusEndGCD(2, 0, false, NoNeedHealingStatus);

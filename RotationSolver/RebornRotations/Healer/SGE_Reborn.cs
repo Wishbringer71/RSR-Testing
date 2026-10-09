@@ -47,9 +47,10 @@ public sealed class SGE_Reborn : SageRotation
 
 	// The owner's rule for shield healers (concept 15, V1): the same pull upkeep as the white mage's
 	// Regen, with a barrier, renewed when it runs out or is used up, instant so it can be cast while
-	// running. Off by default: renewing a barrier each time it breaks is what concept 06 (section 2.1)
-	// records as removed on 05.09.2026 - two GCDs per break for the whole pull - and whether his rule
-	// meant that is his decision (A209).
+	// running. On by default: the owner asked for exactly this (27.09.2026, "erneuerung bei ablauf/verfall
+	// solange walltowall läuft", and MP-costing shields are fine as long as they are instant). The renewal
+	// on every break is what 5755ad5b removed on 05.09.2026 as a barrier kept up without a request; his rule
+	// is that request (A251).
 	[RotationConfig(CombatType.PvE, Name = "Keep Eukrasian Diagnosis on the tank through a pull",
 		Tooltip = "Eukrasian Diagnosis goes on the tank as they close in on a group and is renewed for as long "
 			+ "as the pull lasts - whenever the barrier runs out or has been used up.\n"
@@ -61,7 +62,7 @@ public sealed class SGE_Reborn : SageRotation
 			+ "the tank already carries a barrier it cannot stack with (Galvanize, Eukrasian Prognosis).\n"
 			+ "Dungeons only: in Trials and Raids the rule does not apply, because there the damage is scripted "
 			+ "rather than a stream.")]
-	public bool UsePreEukrasianDiagnosis { get; set; } = false;
+	public bool UsePreEukrasianDiagnosis { get; set; } = true;
 
 	[Range(1, 8, ConfigUnitType.None, 1)]
 	[RotationConfig(CombatType.PvE, Name = "Enemies near the tank before the pull", Parent = nameof(UsePreEukrasianDiagnosis),

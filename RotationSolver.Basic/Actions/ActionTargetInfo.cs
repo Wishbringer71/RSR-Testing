@@ -2081,6 +2081,7 @@ public struct ActionTargetInfo(IBaseAction action)
 			{
 				TargetType.BeAttacked => FindBeAttackedTarget(),
 				TargetType.Provoke => FindProvokeTarget(),
+				TargetType.TankSwap => FindTankSwapTarget(),
 				TargetType.Dispel => FindDispelTarget(),
 				TargetType.Move => FindTargetForMoving(),
 				TargetType.Heal => FindHealTarget(healRatio),
@@ -3157,6 +3158,25 @@ public struct ActionTargetInfo(IBaseAction action)
 			return null;
 		}
 
+		// A tank swap (TankSwapWatch): for Shirk the tank to hand the tankbuster's source to, for
+		// Provoke that source when it is taken back - in either case only if it is among this action's
+		// candidates, in range and targetable for it.
+		IBattleChara? FindTankSwapTarget()
+		{
+			var swap = isFriendly ? TankSwapWatch.Target : TankSwapWatch.ReclaimSource;
+			if (battleChara != null && swap != null)
+			{
+				foreach (var o in battleChara)
+				{
+					if (o.GameObjectId == swap.GameObjectId)
+					{
+						return swap;
+					}
+				}
+			}
+			return null;
+		}
+
 		IBattleChara? FindTargetForMoving()
 		{
 			return Service.Config == null || battleChara == null
@@ -4027,9 +4047,14 @@ public struct ActionTargetInfo(IBaseAction action)
 				return null;
 			}
 
+			// Never the player: the one tank action that asks for "a tank" is Shirk, which cannot
+			// target its user, and a tank in stance is first in the party list - so the manual Shirk
+			// command picked the main tank himself and went nowhere. A healer is never a tank, so the
+			// heal-over-time callers are unchanged.
+			var self = Player.Object?.GameObjectId;
 			foreach (var m in DataCenter.PartyMembers)
 			{
-				if (m.IsJobCategory(JobRole.Tank) && !m.IsDead)
+				if (m.IsJobCategory(JobRole.Tank) && !m.IsDead && m.GameObjectId != self)
 				{
 					// 1. Tanks with tank stance
 					if (m.HasStatus(false, StatusHelper.TankStanceStatus))
@@ -4050,7 +4075,7 @@ public struct ActionTargetInfo(IBaseAction action)
 
 			foreach (var m in DataCenter.PartyMembers)
 			{
-				if (m.IsJobCategory(JobRole.Tank) && !m.IsDead)
+				if (m.IsJobCategory(JobRole.Tank) && !m.IsDead && m.GameObjectId != self)
 				{
 					if (m.IsConditionCannotTarget())
 					{
@@ -4065,7 +4090,21 @@ public struct ActionTargetInfo(IBaseAction action)
 				}
 			}
 
-			return battleChara == null ? null : RandomPickByJobs(battleChara, JobRole.Tank);
+			if (battleChara == null)
+			{
+				return null;
+			}
+
+			List<IBattleChara> others = [];
+			foreach (var b in battleChara)
+			{
+				if (b.GameObjectId != self)
+				{
+					others.Add(b);
+				}
+			}
+
+			return RandomPickByJobs(others, JobRole.Tank);
 		}
 
 		IBattleChara? FindTankbusterTarget()
@@ -4312,7 +4351,8 @@ public enum TargetType : byte
 	HighHPPercent,
 	LowHPPercent,
 	Tankbuster,
-	Capture
+	Capture,
+	TankSwap
 }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 

@@ -37,6 +37,11 @@ ROOT = Path(__file__).resolve().parents[3]
 PROPERTIES = ROOT / "RotationSolver.SourceGenerators" / "Properties"
 SOURCES = [PROPERTIES / "ActionId.resx", PROPERTIES / "DutyAction.resx"]
 OUTPUT = ROOT / "RotationSolver.Basic" / "Data" / "DefensiveValues.g.cs"
+STATUS_SHEET = PROPERTIES / "Status.resx"
+ROTATION_SOURCES = ROOT / "RotationSolver.Basic" / "Rotations"
+STATUS_ASSIGNMENT = re.compile(r"^(\w+)\s*=\s*(\d+),", re.M)
+MODIFY_BODY = re.compile(r"Modify(\w+PvE)\(ref ActionSetting setting\)\s*\{(.*?)\n\t\}", re.S)
+PROVIDE = re.compile(r"(Target)?StatusProvide\s*=\s*([^;]+);")
 
 # "Reduces damage taken by 20%" - the bearer takes less. The game also names the bearers between
 # "taken" and the figure: "reducing damage taken by self and all party members within a radius of
@@ -67,6 +72,12 @@ BARRIER_SHARE = re.compile(
 BARRIER_REACHES_PARTY = re.compile(
     r"barrier (?:around|to) (?:self (?:or|and) )?(?:all )?(?:target|nearby party|party)"
 )
+
+# "Diverts 25% of enmity to target party member." (Shirk) - the share of the user's enmity that moves.
+# Whether a transfer makes the receiver the enemy's target depends on that figure alone: after it the
+# giver holds (1 - s) of his enmity and the receiver gains s of it, so a tank swap from one side needs
+# the receiver at more than 1 - 2s of the giver beforehand.
+ENMITY_TRANSFER = re.compile(r"Diverts (\d{1,3})\s*% of enmity")
 
 # "Duration: 30s" - how long the effect stands. A trait that changes the figure leaves the text
 # with an empty number ("Duration: s"), and then nothing is stated and nothing is carried.
@@ -168,6 +179,84 @@ def extract(text):
     return values
 
 
+def transfers():
+    """Action row id to (identifier, share of enmity the effect text says it moves)."""
+    found = {}
+    for path in SOURCES:
+        if not path.exists():
+            continue
+        pending = None
+        for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+            para = PARA.search(line)
+            if para:
+                pending = unescape(para.group(1))
+                continue
+            assignment = ASSIGNMENT.match(line.strip())
+            if not assignment:
+                continue
+            identifier, row = assignment.group(1), int(assignment.group(2))
+            text, pending = pending, None
+            match = ENMITY_TRANSFER.search(text or "")
+            if match and row not in found:
+                found[row] = (identifier, int(match.group(1)) / 100)
+    return dict(sorted(found.items()))
+
+
+def status_ids():
+    """Status identifier (as the generator names it from the sheet) to row id."""
+    if not STATUS_SHEET.exists():
+        return {}
+    return {m.group(1): int(m.group(2)) for m in STATUS_ASSIGNMENT.finditer(STATUS_SHEET.read_text(encoding="utf-8"))}
+
+
+def provided_statuses():
+    """Action identifier to the statuses its Modify method names directly - small lists only.
+
+    A list that goes through a StatusHelper group (Rampart's is every big mitigation, to keep them
+    from overlapping) says what blocks the action, not what it grants, and is left out.
+    """
+    provided = {}
+    if not ROTATION_SOURCES.exists():
+        return provided
+    for path in sorted(ROTATION_SOURCES.rglob("*.cs")):
+        text = path.read_text(encoding="utf-8-sig", errors="replace")
+        for match in MODIFY_BODY.finditer(text):
+            identifier, body = match.group(1), match.group(2)
+            for provide in PROVIDE.finditer(body):
+                expression = provide.group(2)
+                if "StatusHelper." in expression:
+                    continue
+                names = re.findall(r"StatusID\.(\w+)", expression)
+                if 0 < len(names) <= 2:
+                    provided.setdefault(identifier, names)
+    return provided
+
+
+def status_mitigation(table):
+    """Status row id to (identifier, action identifier, values) for every rated action's status.
+
+    The status the action puts on its bearer or on the enemy is found by name first - the generator
+    names a status and an action from the same English sheet name (RampartPvE, Rampart, Rampart_1191)
+    - and, where the names differ, from the statuses the action's own Modify method names (Dismantle
+    puts Dismantled on the enemy). Barriers are left out: a barrier absorbs points, it does not scale
+    the hit. A status two actions claim keeps the first action's figures in row order.
+    """
+    ids = status_ids()
+    provided = provided_statuses()
+    result = {}
+    for row, (identifier, values) in table.items():
+        figures = {key: values.get(key, 0.0) for key in ("Self", "EnemyPhysical", "EnemyMagical")}
+        if not any(figures.values()):
+            continue
+        base = identifier[:-3] if identifier.endswith("PvE") else identifier
+        names = sorted(n for n in ids if n == base or n.startswith(base + "_"))
+        if not names:
+            names = [n for n in provided.get(identifier, []) if n in ids]
+        for name in names:
+            result.setdefault(ids[name], (name, identifier, figures))
+    return dict(sorted(result.items()))
+
+
 def collect():
     found = {}
     durations = {}
@@ -189,7 +278,7 @@ def collect():
     return dict(sorted(found.items())), dict(sorted(durations.items()))
 
 
-def render(table, durations):
+def render(table, durations, enmity=None, statuses=None):
     lines = [
         "// <auto-generated>",
         "//     Generated by .github/scripts/audit/generate_defensive_values.py from the effect",
@@ -290,6 +379,67 @@ def render(table, durations):
             "\t{",
             "\t\treturn DurationByActionId.TryGetValue(actionId, out var seconds) ? seconds : 0f;",
             "\t}",
+            "",
+            "\t/// <summary>",
+            "\t/// The share of the user's enmity an action moves to its target, as its effect text states",
+            "\t/// it (\"Diverts 25% of enmity to target party member.\"). After the transfer the user keeps",
+            "\t/// 1 - s and the receiver gains s, so the receiver becomes the enemy's target from one side",
+            "\t/// alone only if it held more than 1 - 2s of the user's enmity beforehand.",
+            "\t/// </summary>",
+            "\tpublic static readonly Dictionary<uint, float> EnmityTransferByActionId = new()",
+            "\t{",
+        ]
+    )
+    for row, (identifier, share) in (enmity or {}).items():
+        lines.append(f"\t\t[{row}] = {share:g}f, // {identifier}")
+    lines.extend(
+        [
+            "\t};",
+            "",
+            "\t/// <summary>The stated enmity share moved, or 0 when the effect text states none.</summary>",
+            "\tpublic static float EnmityTransferOf(uint actionId)",
+            "\t{",
+            "\t\treturn EnmityTransferByActionId.TryGetValue(actionId, out var share) ? share : 0f;",
+            "\t}",
+            "",
+            "\t/// <summary>",
+            "\t/// What a status takes off a hit, from the effect text of the action that puts it there:",
+            "\t/// Self on the one hit, the Enemy figures on the attacker (split by damage type). Lets a",
+            "\t/// measured hit be scaled back to what it would have done unmitigated, whoever's",
+            "\t/// mitigation it was. Barriers are not here: they absorb points rather than scale a hit.",
+            "\t/// </summary>",
+            "\tpublic static readonly Dictionary<uint, DefensiveValue> MitigationByStatusId = new()",
+            "\t{",
+        ]
+    )
+    for row, (name, identifier, figures) in (statuses or {}).items():
+        values = ", ".join(f"{figures[key]:g}f" for key in ("Self", "EnemyPhysical", "EnemyMagical"))
+        lines.append(f"\t\t[{row}] = new({values}, 0f), // {name} from {identifier}")
+
+    # The same pairs the other way round: which statuses mean an action's mitigation already stands, so
+    # a reader that asks "what could still be added" does not count it twice.
+    by_action = {}
+    identifiers = {identifier: row for row, (identifier, _) in table.items()}
+    for status_row, (name, identifier, _) in (statuses or {}).items():
+        by_action.setdefault(identifiers[identifier], (identifier, []))[1].append(status_row)
+    lines.extend(
+        [
+            "\t};",
+            "",
+            "\t/// <summary>",
+            "\t/// The statuses each rated action's mitigation stands as - the pairs of",
+            "\t/// <see cref=\"MitigationByStatusId\"/> keyed by the action instead.",
+            "\t/// </summary>",
+            "\tpublic static readonly Dictionary<uint, uint[]> MitigatingStatusesByActionId = new()",
+            "\t{",
+        ]
+    )
+    for row in sorted(by_action):
+        identifier, rows = by_action[row]
+        lines.append(f"\t\t[{row}] = [{', '.join(str(r) for r in sorted(rows))}], // {identifier}")
+    lines.extend(
+        [
+            "\t};",
             "}",
             "",
         ]
@@ -388,6 +538,27 @@ def self_test():
         got = duration_of(text)
         if got != expected:
             return f"duration of {text!r} read as {got}, expected {expected}"
+
+    # A provide list through a StatusHelper group says what blocks the action, not what it grants.
+    for body, expected in (
+        ("setting.TargetStatusProvide = [StatusID.Dismantled];", ["Dismantled"]),
+        ("setting.StatusProvide = StatusHelper.RampartStatus;", None),
+    ):
+        provide = PROVIDE.search(body)
+        expression = provide.group(2)
+        got = None if "StatusHelper." in expression else re.findall(r"StatusID\.(\w+)", expression)
+        if got != expected:
+            return f"provided statuses of {body!r} read as {got}, expected {expected}"
+
+    # The enmity transfer: Shirk's sentence is read, a text about enmity generation is not.
+    for text, expected in (
+        ("Diverts 25% of enmity to target party member.", "25"),
+        ("Significantly increases enmity generation. Effect ends upon reuse.", None),
+    ):
+        match = ENMITY_TRANSFER.search(text)
+        got = match.group(1) if match else None
+        if got != expected:
+            return f"enmity transfer of {text!r} read as {got}, expected {expected}"
     return None
 
 
@@ -406,7 +577,17 @@ def main():
         print("No effect text stated a defensive figure - the parser or the sheets have changed.")
         return 1
 
-    rendered = render(table, durations)
+    enmity = transfers()
+    if not enmity:
+        print("No effect text states an enmity transfer - Shirk's sentence or the sheets have changed.")
+        return 1
+
+    statuses = status_mitigation(table)
+    if not statuses:
+        print("No status could be tied to a rated action - the status sheet or the names have changed.")
+        return 1
+
+    rendered = render(table, durations, enmity, statuses)
     checking = "--check" in sys.argv
 
     if checking:

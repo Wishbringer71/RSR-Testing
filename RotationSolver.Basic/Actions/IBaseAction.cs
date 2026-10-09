@@ -15,6 +15,29 @@ public interface IBaseAction : IAction
 	internal static bool AllEmpty { get; set; } = false;
 	internal static bool ShouldEndSpecial { get; set; } = false;
 
+	// Set by the defence dispatch while a defence path runs: whether the hit that opened it reaches the
+	// player. False rejects the actions that protect only him (concept 13, A233); null outside the paths.
+	internal static bool? SelfProtectionHitsMe { get; set; } = null;
+
+	// Set for a whole cycle of the rotation while a measured tankbuster's plan, or an invulnerability that
+	// keeps the hit off, makes the player's own defence unneeded: true rejects every rated defence aimed at
+	// him outside the heal paths, except the ids in AllowedDefenceOnSelf (concept 09).
+	internal static bool HoldDefenceOnSelf { get; set; } = false;
+
+	// The planned mitigations that stay free while HoldDefenceOnSelf holds the rest; null holds all.
+	internal static HashSet<uint>? AllowedDefenceOnSelf { get; set; } = null;
+
+	// Set while the area defence path runs: the hold above then spares what reaches beyond the player.
+	internal static bool AreaDefenceRunning { get; set; } = false;
+
+	// Set while a heal path runs: the hold above spares it (a tank Superbolide left at 1 HP needs the heal
+	// in Heart of Corundum). Its own flag, because TargetOverride can outlive its path (TODO.md).
+	internal static bool HealPathRunning { get; set; } = false;
+
+	// Set while the single defence runs under the player's command: the hold above spares that path, and only
+	// that path - he commanded a defence, not every one (concept 09).
+	internal static bool CommandedDefenceRunning { get; set; } = false;
+
 	/// <summary>
 	/// The action itself.
 	/// </summary>

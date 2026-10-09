@@ -238,12 +238,73 @@ jobs:
       - name: Restore NuGet Packages
         run: dotnet restore RotationSolver/RotationSolver.csproj
 
+      # A member Dalamud, ClientStructs or ECommons marks [Obsolete] has often changed meaning, not
+      # just name: SMNGauge.Attunement became a bit field in 7.01 and was read as a plain number
+      # until upstream switched after a Dalamud update. The compiler says so as CS0618/CS0612, and a
+      # warning in a green run is read by nobody, so here - and only here, not in the projects, where
+      # it would stop the owner's own build on the next Dalamud release - it fails the check.
+      # Self-test first: a probe that calls an obsolete member must fail with the same switch, or a
+      # clean run below would not tell a tree without obsolete use from a switch that does nothing.
+      - name: Self-test the obsolete-use switch
+        run: |
+          $probe = Join-Path $env:RUNNER_TEMP 'obsolete-probe'
+          New-Item -ItemType Directory -Force $probe | Out-Null
+          Set-Content (Join-Path $probe 'Probe.csproj') '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework><OutputType>Library</OutputType></PropertyGroup></Project>'
+          Set-Content (Join-Path $probe 'Probe.cs') 'public static class P { [System.Obsolete("probe")] public static void Old() { } [System.Obsolete] public static void Bare() { } public static void Use() { Old(); Bare(); } }'
+          # Without the switch the probe must build - otherwise a failure below could come from
+          # anything (restore, SDK) and prove nothing about the switch.
+          dotnet build $probe | Out-Host
+          if ($LASTEXITCODE -ne 0) { throw 'The probe does not build even without the switch; the self-test measures nothing.' }
+          $out = dotnet build $probe --no-incremental -warnaserror:CS0618,CS0612 2>&1 | Out-String
+          Write-Host $out
+          if ($LASTEXITCODE -eq 0) { throw 'The obsolete-use switch let a call to an [Obsolete] member through.' }
+          foreach ($code in 'CS0618', 'CS0612') {
+            if ($out -notmatch "error $code") { throw "The probe failed, but not with error $code." }
+          }
+          $global:LASTEXITCODE = 0
+
+      # The projects ban LINQ through BannedSymbols.txt, found as $(SolutionDir)BannedSymbols.txt. The
+      # owner builds the solution, where SolutionDir is set; this job builds a project, where it is empty,
+      # the list is not found, and the analyzer bans nothing - so a LINQ call reached the owner's build
+      # as RS0030 while every run here stayed clean (A250). SolutionDir is passed explicitly, and RS0030
+      # fails the check like an obsolete call. The self-test wires a probe exactly like the projects and
+      # builds it with the same arguments: if the list is not found, the probe builds and the step fails.
+      - name: Self-test the banned-API switch
+        run: |
+          $probe = Join-Path $env:RUNNER_TEMP 'banned-probe'
+          New-Item -ItemType Directory -Force $probe | Out-Null
+          Set-Content (Join-Path $probe 'Probe.csproj') '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework><OutputType>Library</OutputType></PropertyGroup><ItemGroup><PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.6.0"><PrivateAssets>all</PrivateAssets><IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets></PackageReference><AdditionalFiles Include="$(SolutionDir)BannedSymbols.txt" /></ItemGroup></Project>'
+          Set-Content (Join-Path $probe 'Probe.cs') 'public static class P { public static int First(int[] a) => System.Linq.Enumerable.FirstOrDefault(a); }'
+          dotnet build $probe | Out-Host
+          if ($LASTEXITCODE -ne 0) { throw 'The probe does not build even without the switch; the self-test measures nothing.' }
+          $out = dotnet build $probe --no-incremental "-p:SolutionDir=$env:GITHUB_WORKSPACE/" -warnaserror:RS0030 2>&1 | Out-String
+          Write-Host $out
+          if ($LASTEXITCODE -eq 0) { throw 'The banned-API switch let a LINQ call through: BannedSymbols.txt was not found or RS0030 did not fail.' }
+          if ($out -notmatch 'error RS0030') { throw 'The probe failed, but not with error RS0030.' }
+          $global:LASTEXITCODE = 0
+
       - name: Build Plugin
-        run: dotnet build --no-restore -c Release RotationSolver/RotationSolver.csproj
+        run: dotnet build --no-restore -c Release RotationSolver/RotationSolver.csproj "-p:SolutionDir=$env:GITHUB_WORKSPACE/" -warnaserror:CS0618,CS0612,RS0030
+
+      # DefenseTrace.log names the commit it was written by, so an uploaded trace can be matched to
+      # its code. The commit comes from a git call in Directory.Build.props; if that call fails the
+      # build still succeeds and the trace says "unknown". This step makes the failure visible: the
+      # generated assembly info has to carry exactly the commit that was checked out.
+      - name: Check the build names its commit
+        run: |
+          $expected = git rev-parse --short=9 HEAD
+          $info = Get-ChildItem RotationSolver/obj -Recurse -Filter 'RotationSolver.AssemblyInfo.cs' | Select-Object -First 1
+          if (-not $info) { throw 'No generated assembly info found for RotationSolver.' }
+          $text = Get-Content $info.FullName -Raw
+          if ($text -notmatch "AssemblyMetadataAttribute\(`"SourceCommit`", `"$expected`"\)") {
+            Write-Host $text
+            throw "RotationSolver.dll does not name commit $expected."
+          }
+          Write-Host "RotationSolver.dll names commit $expected."
 
       # The generator is in the solution and in no build. Nothing referenced it, so a compile error
       # in it reached the user instead of the CI - a missing `using Lumina` for LuminaOptions did
       # exactly that. It needs the game files to *run*, not to compile, so building it here costs a
       # restore and closes the gap for every future change to it.
       - name: Build the game-data generator
-        run: dotnet build -c Release RotationSolver.GameData/RotationSolver.GameData.csproj
+        run: dotnet build -c Release RotationSolver.GameData/RotationSolver.GameData.csproj -warnaserror:CS0618,CS0612

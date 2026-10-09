@@ -51,26 +51,52 @@ AUDIT_LOG.
 ```
 GCD()                                    Ability()
 ─────────────────────────────────        ─────────────────────────────────
- 1  CommandNextAction                     1  NoCasting-Sperre
- 2  NoCasting-Sperre                      2  EmergencyAbility
- 3  Job-Cast-Sperren (PLD/AST/BLU/NIN)    3  InterruptAbility
- 4  EmergencyGCD                          4  DispelAbility
- 5  MyInterruptGCD                        5  Shirk
- 6  DispelGCD                             6  TankStance
- 7  ProvokeGCD                            7  AntiKnockback
- 8  RaiseSpell   (wenn RaisePlayerFirst)  8  TrueNorth / Positional
- 9  MoveForwardGCD                        9  HealAreaAbility
-10  HealAreaGCD                          10  HealSingleAbility
-11  HealSingleGCD                        11  SpeedAbility
-12  DefenseAreaGCD                       12  ProvokeAbility
-13  DefenseSingleGCD                     13  DefenseAreaAbility
-14  RaiseSpell   (sonst)                 14  DefenseSingleAbility
-15  GeneralGCD                           15  MoveForward / MoveBack
-                                         16  HP-Potion
-                                         17  AttackAbility
-                                         18  GeneralAbility
-                                         19  MP-Potion · GeneralUsing · Speed
+ 1  CommandNextAction (GCD)               1  NoCasting-Sperre
+ 2  NoCasting-Sperre                      2  Einschiebesperre (GCD ≤ 0,5 s)
+ 3  Kanal-/Wirksperren (Orbonne, PLD,     3  Kanal-/Wirksperren (Orbonne, PLD,
+    AST, BLU, NIN-Mudra, PvP)                AST, BLU)
+ 4  EmergencyGCD                          4  CommandNextAction (oGCD)
+ 5  MyInterruptGCD                        5  NIN-Mudra-, PvP-Sperre
+ 6  DispelGCD                             6  Befohlener Gegenstand
+ 7  ProvokeGCD                            7  UseAbility aus / Wirken läuft / Fesselung
+ 8  RaiseSpell   (wenn RaisePlayerFirst)  8  EmergencyAbility
+ 9  MoveForwardGCD                        9  Tankbuster-Plan (nur Tanks, Option):
+10  HealAreaGCD                              Minderung nach Bedarf oder Unverwundbarkeit
+11  HealSingleGCD                        10  Tankwechsel (nur Tanks, Option):
+12  DefenseAreaGCD                           Shirk auf den Co-Tank, dann Zurückprovozieren
+13  DefenseSingleGCD                     11  InterruptAbility
+14  RaiseSpell   (sonst)                 12  DispelAbility
+15  GeneralGCD                           13  Shirk (befohlen)
+16  Heilung ohne Anlass                  14  TankStance
+    (HealWhenNothingTodo)                15  AntiKnockback
+                                         16  TrueNorth / Positional
+                                         17  HealAreaAbility
+                                         18  HealSingleAbility
+                                         19  SpeedAbility (nur befohlen)
+                                         20  ProvokeAbility
+                                         21  DefenseAreaAbility
+                                         22  DefenseSingleAbility
+                                         23  MoveForward / MoveBack
+                                         24  HP-Potion
+                                         25  Phönixfeder
+                                         26  AttackAbility
+                                         27  GeneralAbility
+                                         28  MP-Potion · GeneralUsing · Speed
 ```
+
+Der Tankbuster-Plan (9) und der Tankwechsel (10) sitzen hinter `EmergencyAbility`,
+damit eine Unverwundbarkeit, die an ihrer Schwelle zündet, vorgeht, und vor allem anderen, weil beide an einem
+Tankbuster hängen (Konzept 09, „Das geringste Mittel gegen einen gemessenen Tankbuster" und „Tankwechsel nach einem
+Tankbuster"). Der Plan drückt die Minderungen, die ein gemessener Tankbuster braucht, oder die Unverwundbarkeit, und
+steht vor dem Wechsel, der hält, solange sie bereit ist. Beide haben keinen
+befohlenen Eingang; Shirk (13) läuft weiterhin nur auf Befehl. Solange ein Plan läuft oder
+Heiliger Boden oder Meteoritenfall den Treffer abhalten, lehnt `BaseAction.CanUse` für Tanks in jedem Slot bewertete
+Abwehr auf den Spieler ab, die nicht im Plan steht; frei bleiben die Heilslots und in der Flächenabwehr (21), was über
+ihn hinaus wirkt.
+
+In jedem Slot fragt der Dispatcher zuerst die Duty-Rotation (`DataCenter.CurrentDutyRotation`), dann den Job. Die
+Heil-, Abwehr-, Bewegungs- und Rückzugsslots haben je zwei Eingänge: zuerst den befohlenen (`CommandStatus`), dann
+den automatischen (`AutoStatus` beziehungsweise `MergedStatus`).
 
 Beide Ketten sind **fest verdrahtet** und für alle Jobs gleich. Zwei
 Konsequenzen, die im ganzen AUDIT_LOG immer wieder auftauchen:
@@ -86,7 +112,7 @@ Konsequenzen, die im ganzen AUDIT_LOG immer wieder auftauchen:
 
 ## C · Muster, die in jedem Job wiederkehren
 
-### C1 · Level-Kette (65 Ketten in 16 Dateien)
+### C1 · Level-Kette
 
 Immer dieselbe Form:
 
@@ -100,7 +126,7 @@ Zwei eingebaute Fehlerquellen:
 
 1. Der linke Teil `X.EnoughLevel && X.CanUse` ist **redundant** —
    `ActionBasicInfo.BasicCheck` prüft `EnoughLevel` bereits selbst und bricht
-   ab. 43 Vorkommen im Repo.
+   ab. Gezählt am 02.10.2026: 56 Vorkommen, davon 44 außerhalb von `ExtraRotations`.
 2. Der Ausschluss der höheren Stufe wird **von Hand** geschrieben und mal als
    `!X.EnoughLevel`, mal als `!X.Info.EnoughLevelAndQuest()` formuliert. Beide
    Varianten kommen nebeneinander vor. Genau hier entstand der bereits
@@ -130,8 +156,10 @@ Jeder Job hat sie, aber an **drei verschiedenen Orten**:
 
 ### C4 · Ranged-Fallback am Ende von `GeneralGCD`
 
-Tanks und Melee: letzter Zweig vor `base.GeneralGCD`, nur durch das eigene
-`CanUse` gegated. Zehn strukturgleiche Zeilen.
+Tanks und Nahkämpfer: letzter Zweig vor `base.GeneralGCD`. Gezählt am 02.10.2026 in neun Reborn-Rotationen; der
+Mönch hat keinen. Bei den vier Tanks und beim Schnitter gilt nur das eigene `CanUse`. Eigene Bedingungen haben der
+Samurai (nicht in den ersten 15 s eines High-End-Kampfs), der Ninja (nicht während Mudra), der Dragoon (nicht direkt nach
+`WingedGlidePvE`) und die Viper (Option `UFGhosting`).
 
 ### C5 · Kurzschluss ganz oben
 
@@ -167,7 +195,7 @@ Phasenenden"). Die vorhergesagte Pause liest `BMRDowntimeWithin`, nur mit Modul.
 |---|---|---|---|
 | U1 | `GeneralGCD` ist Sammelbecken ohne Untergliederung | 7–81 Zweige auf einer Ebene, Median ~19 | für die fünf größten Dateien behoben (`04` A4a); MCH bewusst ausgelassen |
 | U2 | Proaktive Logik steht in drei Methoden | Heiler-Sustain | **keine Schwäche.** Die Bedingung liegt in genau einem Helfer je Job; dreifach steht nur die **Position**, und die ist je Dispatch-Slot eine eigene Prioritätsaussage. Herleitung in `04-concept.md` unter A1 |
-| U3 | Level-Ketten von Hand | 65 Ketten, 2 Schreibweisen, 1 realer Bug daraus | Fehlerklasse durch den Wächter A2′ geschlossen; die Ketten selbst bleiben |
+| U3 | Level-Ketten von Hand | 2 Schreibweisen, 1 realer Bug daraus | Fehlerklasse durch den Wächter A2′ geschlossen; die Ketten selbst bleiben |
 | U4 | Hook-Belegung ohne Regel | 2 Jobs ohne CountDown, 3 ohne Emergency, MNK/DNC-Heal-Slot-Tausch | offen, Spielfragen (`04` B4/B5) |
 | U5 | Gleiche Rolle, verschiedene Orte | AoE-Schwelle an 3 Orten; Mitigation mal Area, mal Single, mal beides | offen, Spielfrage (`04` B3) |
 | U6 | Kein Job kann sagen „ich bin fertig" | jede Ebene muss `base.X` aufrufen; Vergessen oder Vertauschen war mit neun Fällen die häufigste Fehlerklasse im AUDIT_LOG | Fehlerklasse durch den Wächter A3 in der CI geschlossen; die Kette selbst bleibt |

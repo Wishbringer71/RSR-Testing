@@ -267,6 +267,34 @@ public class BaseAction : IBaseAction
 			return ActionTracer.Reject(this, "NoTarget");
 		}
 
+		// A defence that protects only the player is spent only on a hit that reaches him. "Only the
+		// player" is read from the game data and the target: it lands on him and has no effect radius -
+		// Rampart, Damnation, Arm's Length, a barrier aimed at himself - while Reprisal, Shake It Off or
+		// Heart of Corundum on the other tank reach beyond him and stay free (concept 13, A233).
+		if (IBaseAction.SelfProtectionHitsMe == false && Info.EffectRange == 0
+			&& PreviewTarget.Value.Target is { } protectedOne && Player.Object is { } self
+			&& protectedOne.GameObjectId == self.GameObjectId)
+		{
+			return ActionTracer.Reject(this, "ProtectsOnlyYouAndTheHitMissesYou");
+		}
+
+		// While the tankbuster plan or an invulnerability makes it unneeded, no rated defence aimed at the
+		// player goes out beyond what the plan spends - own mitigation, own barrier, Reprisal around him
+		// alike - from whichever path the rotation spends it. Help aimed at another member stays free, so do
+		// the heal paths (Heart of Corundum heals a tank Superbolide left at 1 HP), the single defence while
+		// the player commands it, and in the area defence what reaches beyond the player (concept 09, "Das geringste Mittel gegen einen gemessenen
+		// Tankbuster").
+		if (IBaseAction.HoldDefenceOnSelf && !IBaseAction.ForceEnable
+			&& !IBaseAction.HealPathRunning && !IBaseAction.CommandedDefenceRunning
+			&& (Info.EffectRange == 0 || !IBaseAction.AreaDefenceRunning)
+			&& IBaseAction.AllowedDefenceOnSelf?.Contains(ID) != true
+			&& PreviewTarget.Value.Target is { } heldOne && Player.Object is { } holder
+			&& heldOne.GameObjectId == holder.GameObjectId
+			&& DefensiveValues.For(ID) != default)
+		{
+			return ActionTracer.Reject(this, "HeldForTheInvulnerability");
+		}
+
 		if (!IBaseAction.ActionPreview)
 		{
 			Target = PreviewTarget.Value;
@@ -323,16 +351,26 @@ public class BaseAction : IBaseAction
 			}
 
 			// Use ActionManagerEx for enhanced timing if tweaks are enabled
+			bool used;
 			if (Service.Config.RemoveAnimationLockDelay || Service.Config.RemoveCooldownDelay)
 			{
-				return ActionManagerEx.Instance.UseActionWithTweaks(ActionType.Action, adjustId, targetId);
+				used = ActionManagerEx.Instance.UseActionWithTweaks(ActionType.Action, adjustId, targetId);
 			}
 			else
 			{
 				var actionManager = ActionManager.Instance();
-				return actionManager != null &&
+				used = actionManager != null &&
 					   actionManager->UseAction(ActionType.Action, adjustId, targetId);
 			}
+
+			// The tankbuster plan counts its own press from this moment, before the server confirms it
+			// (concept 09, "Das Zustandsmodell je Wirken").
+			if (used)
+			{
+				TankbusterForecast.RecordOwnPress(adjustId, targetId);
+			}
+
+			return used;
 		}
 	}
 

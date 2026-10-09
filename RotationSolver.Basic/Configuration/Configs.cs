@@ -468,7 +468,7 @@ internal partial class Configs : IPluginConfiguration
 
 	[ConditionBool, UI("Lock actions when casting Passage Of Arms during AOE mitigations.",
 	Filter = Extra)]
-	private static readonly bool _pldlockCasting = false;
+	private static readonly bool _pldlockCasting = true;
 
 	[ConditionBool, UI("Lock actions when casting Collective Unconscious during AOE mitigations.",
 	Filter = Extra)]
@@ -817,6 +817,21 @@ internal partial class Configs : IPluginConfiguration
 	[ConditionBool, UI("Auto provoke when there is another tank in party", Description = "Automatically use provoke when an enemy is attacking a non-tank member of the party while there is more than one tank in party.",
 		Parent = nameof(UseAbility), PvEFilter = JobFilterType.Tank)]
 	private static readonly bool _autoProvokeForTank = true;
+
+	[ConditionBool, UI("Shirk the co-tank after a tankbuster that leaves you in danger",
+		Description = "With another tank in the party: after a tankbuster on you, if it left you with a vulnerability debuff or so low that a repeat of the hardest one measured would kill you, and your invulnerability is not ready, Shirk goes to the other tank - but only when the party's enmity on the enemy shows it will then attack that tank, because below that Shirk moves nothing, and never to a tank who is in danger himself. With several, the one fewest enemies are attacking, then the one with most HP. Once the co-tank has taken the enemy's next tankbuster, your debuff has run out, you could survive the buster again and your invulnerability is ready, RSR provokes the enemy back.\nIn a fight: the next hit goes to the co-tank instead of killing you, and you take the enemy back when you are safe. Off: you keep the enemy unless your co-tank provokes it.",
+		Parent = nameof(UseAbility), PvEFilter = JobFilterType.Tank)]
+	private static readonly bool _shirkToSwapAfterTankbuster = true;
+
+	[ConditionBool, UI("Use the invulnerability before a tankbuster nothing less survives",
+		Description = "When a tankbuster is cast at you that the learned tankbuster table has measured, and no set of your own mitigations that is ready by the hit would let you survive it - at your HP now, with only what still stands when it lands, a co-tank's Reprisal or a healer's barrier included -, your invulnerability goes out before it lands, no earlier than its own duration less one GCD before the hit. With \"Spend only the mitigation a measured tankbuster needs\" off, nothing presses such a set for you, so only what already stands or has gone out counts. It needs the invulnerability enabled, learned and off cooldown, not the dying-tank threshold. A tankbuster marker, a BossModReborn prediction and an action not yet measured get nothing: none of them names a measured action. Living Dead included: after the hit, the healers have to restore your full HP within Walking Dead, or you fall.\nIn a fight: you survive a hit that no mitigation of yours would have let you survive, instead of the invulnerability firing only once your HP is already under the threshold - and it is not spent where mitigation does the job.",
+		Parent = nameof(UseAbility), PvEFilter = JobFilterType.Tank)]
+	private static readonly bool _invulnerabilityBeforeLethalTankbuster = true;
+
+	[ConditionBool, UI("Spend only the mitigation a measured tankbuster needs",
+		Description = "As a tank: against a tankbuster the table has measured, RSR spends the cheapest set of your own mitigations - by their cooldown - that lets you survive it at your HP now, with only what still stands when it lands; several at once if one is not enough, none if the hit is survivable as it stands. While that tankbuster is the only one known to be coming at you, every other mitigation, barrier or Reprisal aimed at yourself is held for the next one, from any part of the rotation; help for another member, heals and area defence that reaches beyond you stay. Party tools such as Shake It Off or Divine Veil stay with the area defence. Only when nothing survives it and the invulnerability is not there to use - on cooldown, switched off, or refused with no retry left before the last GCD before the hit - does everything go, never on top of the invulnerability. If a planned mitigation has not gone out by the last GCD before the hit, the hold opens. Under Hallowed Ground or Superbolide past the hit nothing aimed at you is spent. As a healer: no single-target mitigation for a tankbuster cast at a tank who stands under Hallowed Ground or Superbolide past the hit; a BossModReborn prediction still opens it.\nIn a fight: a tankbuster that needs two mitigations gets both, one that needs one gets one, and Rampart, Vengeance and the like stay ready for the next.",
+		Parent = nameof(UseAbility))]
+	private static readonly bool _holdMitigationUnderInvulnerability = true;
 
 	/// <markdown file="Auto" name="Auto True North" section="Healing Usage and Control" subsection="RotationSolver.Basic.Configuration.Configs._useAbility">
 	/// Whether to cast True North when playing as a melee DPS when you do not have the right

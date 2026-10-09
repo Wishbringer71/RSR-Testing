@@ -39,10 +39,26 @@ DEFINITION = re.compile(
     r'(?:\s*\{\s*get;\s*set;\s*\})?\s*=\s*(true|false)\s*;')
 
 # The wordings the concepts actually use, German and English, in the sentence around the name.
-ON = r'(?:Standard\s+an|voreingestellt\s+an|Voreinstellung\s+an|on\s+by\s+default|Standard\s+ein)'
-OFF = r'(?:Standard\s+aus|voreingestellt\s+aus|Voreinstellung\s+aus|off\s+by\s+default)'
+# "ab Werk an" and "**an** als Vorgabewert" were missing, and a concept said "aus als Vorgabewert" about
+# a setting the code had switched on four days earlier - unnoticed, because the wording was not read
+# (A250). The trailing guard keeps "an" from matching the start of a longer word.
+_END = r'(?![A-Za-zÄÖÜäöüß])'
+ON = (r'(?:Standard\s+an' + _END + r'|voreingestellt\s+an' + _END + r'|Voreinstellung\s+an' + _END
+      + r'|on\s+by\s+default|Standard\s+ein' + _END + r'|ab\s+Werk\s+\**an' + _END
+      + r'|Vorgabe(?:wert)?\s+\**an' + _END + r'|\**an\**\s+als\s+Vorgabewert)')
+OFF = (r'(?:Standard\s+aus|voreingestellt\s+aus|Voreinstellung\s+aus|off\s+by\s+default'
+       r'|ab\s+Werk\s+\**aus|Vorgabe(?:wert)?\s+\**aus|\**aus\**\s+als\s+Vorgabewert)')
 CLAIM = re.compile(r'`([A-Z][A-Za-z0-9_]{3,})`(?P<between>[^`]{0,200}?)(?P<value>' + ON + '|' + OFF + ')',
                    re.IGNORECASE | re.DOTALL)
+
+# Concepts mostly quote a setting by the text the owner sees, not by its property name - `Heal ahead of
+# an announced area cast`, „Use Thrill of Battle before a tankbuster on you". Those claims were not read
+# at all. A label is mapped to its property through the definition that follows it in the source
+# (`UI("...")` in the configuration, `Name = "..."` in a rotation); a quoted text that is no label is
+# left alone, because quotation marks carry far more than setting names.
+LABEL_CLAIM = re.compile(r'(?:`|„|")(?P<label>[^`„“"\n]{6,160})(?:`|“|")(?P<between>[^`„]{0,200}?)'
+                         r'(?P<value>' + ON + '|' + OFF + ')', re.IGNORECASE | re.DOTALL)
+LABEL_DEFINITION = re.compile(r'(?:\bUI\(\s*|\bName\s*=\s*)"(?P<label>[^"]{6,})"')
 
 # A sentence may name a second setting between the first name and the default - then the default
 # belongs to the nearer name, not the first. Bailing out is the honest answer: report it as
@@ -73,20 +89,77 @@ NUMERIC_CLAIM = re.compile(
 METHOD = re.compile(r'\b(?:bool|void|int|float|string|Task|IAction)\s+([A-Za-z0-9_]+)\s*\(')
 
 
-def code_defaults(dirs=SOURCE_DIRS):
-    """Returns ({bool setting: value}, {numeric setting: value}, {method names}) over the tree."""
-    found, numbers, methods = {}, {}, set()
+def label_map(text):
+    """Returns {label lower-cased: (property, default)} for the bool settings defined in `text`.
+
+    The definition belongs to a label only if no other label stands between them, so a label whose
+    setting is numeric does not borrow the next bool's default.
+    """
+    out = {}
+    labels = list(LABEL_DEFINITION.finditer(text))
+    for i, m in enumerate(labels):
+        limit = labels[i + 1].start() if i + 1 < len(labels) else len(text)
+        d = DEFINITION.search(text, m.end(), limit)
+        if d is None or NUMERIC_DEFINITION.search(text, m.end(), d.start()):
+            continue
+        name = d.group(1)
+        out.setdefault(m.group('label').strip().lower(), (name[0].upper() + name[1:], d.group(2)))
+    return out
+
+
+def code_defaults(dirs=SOURCE_DIRS, labels=None):
+    """Returns ({bool setting: value}, {numeric setting: value}, {method names}) over the tree.
+
+    With `labels` given, it is filled with {label: (property, default)} on the way.
+    """
+    # The same property name occurs in several rotations - `AddCrimsonCyclone` is off in SMN_Reborn and
+    # on in the third-party ChurinSMN. Taking whichever file came first scored a correct concept as
+    # wrong. The concepts describe the owner's rotations, so a definition outside ExtraRotations wins;
+    # where the owner's own files still disagree, the name says nothing and is dropped.
+    seen, seen_numbers = {}, {}
+    methods = set()
     for directory in dirs:
         if not directory.is_dir():
             continue
         for path in directory.rglob('*.cs'):
             text = path.read_text(encoding='utf-8', errors='replace')
+            third_party = 'ExtraRotations' in path.parts
             for name, value in DEFINITION.findall(text):
-                found.setdefault(name[0].upper() + name[1:], value)
+                seen.setdefault(name[0].upper() + name[1:], []).append((third_party, value))
             for name, value in NUMERIC_DEFINITION.findall(text):
-                numbers.setdefault(name[0].upper() + name[1:], float(value))
+                seen_numbers.setdefault(name[0].upper() + name[1:], []).append((third_party, float(value)))
             methods.update(METHOD.findall(text))
-    return found, numbers, methods
+            if labels is not None:
+                for label, entry in label_map(text).items():
+                    if third_party:
+                        labels.setdefault(label, entry)
+                    else:
+                        labels[label] = entry
+    return resolve(seen), resolve(seen_numbers), methods
+
+
+def resolve(seen):
+    """One value per name: the owner's definitions first, and none where they disagree."""
+    out = {}
+    for name, entries in seen.items():
+        own = {v for third, v in entries if not third}
+        values = own or {v for _, v in entries}
+        if len(values) == 1:
+            out[name] = values.pop()
+    return out
+
+
+def check_labels(text, labels):
+    """Returns [(label, stated, actual)] for claims made about a setting by its visible text."""
+    wrong = []
+    for m in LABEL_CLAIM.finditer(text):
+        entry = labels.get(m.group('label').strip().lower())
+        if entry is None or ANOTHER_NAME.search(m.group('between')):
+            continue
+        stated = 'off' if re.search(OFF, m.group('value'), re.IGNORECASE) else 'on'
+        if (stated == 'on') != (entry[1] == 'true'):
+            wrong.append((m.group('label').strip(), stated, entry[1]))
+    return wrong
 
 
 def claims(text):
@@ -191,15 +264,48 @@ def selftest():
     if nunknown:
         raise AssertionError('a method name was reported as a numeric setting')
 
+    wrong, _ = check('`AlphaSetting` steht **an** als Vorgabewert.', defaults)
+    if not any(n == 'AlphaSetting' for n, _, _ in wrong):
+        raise AssertionError('the wording "an als Vorgabewert" went unnoticed')
+    wrong, _ = check('`BetaSetting`, ab Werk aus.', defaults)
+    if not any(n == 'BetaSetting' for n, _, _ in wrong):
+        raise AssertionError('the wording "ab Werk aus" went unnoticed')
+    wrong, _ = check('Die Regel steht hinter `BetaSetting`, Vorgabe aus.', defaults)
+    if not any(n == 'BetaSetting' for n, _, _ in wrong):
+        raise AssertionError('the wording "Vorgabe aus" went unnoticed')
+    wrong, _ = check('`AlphaSetting` steht ab Werk andersherum.', defaults)
+    if wrong:
+        raise AssertionError('"an" inside a longer word was read as a claim')
+
+    source = ('[UI("Heal ahead of a cast", Filter = X)]\n public bool HealAhead { get; set; } = true;\n'
+              '[UI("Cast count for that", Filter = X)]\n public int CastCount { get; set; } = 3;\n'
+              '[RotationConfig(CombatType.PvE, Name = "Use it on a pull")]\n public bool UseOnPull { get; set; } = false;')
+    labels = label_map(source)
+    if labels.get('heal ahead of a cast') != ('HealAhead', 'true') or 'cast count for that' in labels:
+        raise AssertionError('labels were not mapped to their own setting: %s' % labels)
+    if not check_labels('| `Heal ahead of a cast` | Wird geheilt? | **aus** als Vorgabewert |', labels):
+        raise AssertionError('a wrong default stated by the setting text went unnoticed')
+    if check_labels('Option „Use it on a pull", ab Werk aus.', labels):
+        raise AssertionError('a correct default stated by the setting text was reported')
+    if check_labels('„Some quoted words", Standard an.', labels):
+        raise AssertionError('a quotation that is no setting text was scored')
+
+    resolved = resolve({'Twice': [(True, 'true'), (False, 'false')], 'Split': [(False, 'true'), (False, 'false')],
+                        'Foreign': [(True, 'true')]})
+    if resolved != {'Twice': 'false', 'Foreign': 'true'}:
+        raise AssertionError('a name defined in several rotations was not resolved: %s' % resolved)
+
     print('self-test ok: a matching claim passes; a contradicting one is caught in both wordings; '
           'a claim\n  about an unknown setting is reported; a sentence naming two settings, and one '
           'naming a method,\n  are both left alone; the same four cases hold for the numeric '
-          'thresholds.')
+          'thresholds; claims by setting text\n  and in the wordings "ab Werk" and "als Vorgabewert" '
+          'are read.')
 
 
 def main():
     selftest()
-    defaults, numbers, methods = code_defaults()
+    labels = {}
+    defaults, numbers, methods = code_defaults(labels=labels)
     if not defaults:
         print('no bool settings found in the source tree - the check cannot say anything')
         return 1
@@ -212,6 +318,9 @@ def main():
         wrong, unknown = check(text, defaults, methods)
         wrong_all += [(str(path), *w) for w in wrong]
         unknown_all += [(str(path), *u) for u in unknown]
+        lwrong = check_labels(text, labels)
+        counted += len(lwrong)
+        wrong_all += [(str(path), *w) for w in lwrong]
         nwrong, nunknown = check_numbers(text, numbers, methods)
         wrong_all += [(str(path), n, s, a) for n, s, a in nwrong]
         unknown_all += [(str(path), n, s) for n, s in nunknown]

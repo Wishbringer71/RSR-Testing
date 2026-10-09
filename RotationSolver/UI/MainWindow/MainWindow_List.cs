@@ -407,7 +407,29 @@ public partial class MainWindow
 
 			_ = ImGui.TableNextColumn();
 			ImGui.TextWrapped(UiString.ConfigWindow_List_HostileCastingTankDesc.GetDescription());
-			DrawActionsList(nameof(OtherConfiguration.HostileCastingTank), OtherConfiguration.HostileCastingTank);
+			// The learned tankbuster table beside the list: per entry the unmitigated share measured, and
+			// what the store last did with its file - the same readout the area table has, for the same
+			// reason: a count in memory looks alike whether the readings reached the disk or not.
+			Dictionary<uint, float> tankbusterShares = [];
+			int tankbustersRated;
+			lock (OtherConfiguration.TankbusterPotentialGate)
+			{
+				foreach (var (id, reading) in OtherConfiguration.TankbusterPotential)
+				{
+					tankbusterShares[id] = reading.Unmitigated > 0f ? reading.Unmitigated : reading.UnderVulnerability;
+				}
+
+				tankbustersRated = OtherConfiguration.TankbusterPotential.Count;
+			}
+
+			DrawActionsList(nameof(OtherConfiguration.HostileCastingTank), OtherConfiguration.HostileCastingTank, tankbusterShares);
+			ImGui.Text($"Tankbusters rated, unmitigated: {tankbustersRated} (learned from every player hit, listed or marked)");
+			var tankbusterStore = OtherConfiguration.TankbusterStoreState;
+			ImGui.TextColored(
+				tankbusterStore.Contains("FAILED") || tankbusterStore.Contains("MISMATCH") || tankbusterStore.Contains("NOT SAVED")
+					? ImGuiColors.DalamudRed
+					: ImGuiColors.DalamudGrey,
+				"Store: " + tankbusterStore);
 
 			_ = ImGui.TableNextColumn();
 			_allSearchable.DrawItems(Configs.List);

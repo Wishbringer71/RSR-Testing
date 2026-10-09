@@ -34,9 +34,12 @@ TARGET = Path('RotationSolver.Basic/Configuration/OtherConfiguration.cs')
 # Save(value, nameof(Field)) - the store is named by the nameof, which is the file written. The value is
 # usually the field itself; a store changed on the game thread passes a copy taken there
 # (TankbusterMarkerWithoutHit), and keying on the first argument would miss it.
-SAVED = re.compile(r'\bSave\(\s*\w+\s*,\s*nameof\(\s*(\w+)\s*\)\s*\)')
+# SaveTracked(...) is the guarded save of the tables learned in play - the stores this check exists for;
+# matching only Save( left exactly those out of it (found while adding the tankbuster table, A259).
+SAVED = re.compile(r'\bSave(?:Tracked)?\(\s*\w+\s*,\s*nameof\(\s*(\w+)\s*\)')
 # InitOne(ref Field, nameof(Field) - trailing arguments (download flags) vary and do not matter here.
-LOADED = re.compile(r'\bInitOne\(\s*ref\s+(\w+)\s*,\s*nameof\(\s*\1\s*\)')
+# LoadLearned(ref Field, nameof(Field), ...) loads a learned table through InitOne and reports the outcome.
+LOADED = re.compile(r'\b(?:InitOne|LoadLearned)\(\s*ref\s+(\w+)\s*,\s*nameof\(\s*\1\s*\)')
 # The one list both entry points iterate, from its signature to the closing bracket of the array.
 STEPS = re.compile(r'private\s+static\s+Action\[\]\s+LoadSteps\(\)\s*=>\s*\[(?P<body>.*?)\n\t\];',
                    re.DOTALL)
@@ -105,6 +108,15 @@ def self_test():
     found = check(tree(only, saves))
     if not any('HostileCastingAreaPotential' in p for p in found):
         raise AssertionError('a store that is saved but never loaded went unnoticed: %s' % found)
+
+    # The guarded save of a learned table is a save too, and its loader is a load (A259).
+    tracked = ('\tpublic static Task SaveTankbusterPotential()\n'
+               '\t\t=> Task.Run(() => SaveTracked(snapshot, nameof(TankbusterPotential), Higher));')
+    if not any('TankbusterPotential' in p for p in check(tree(only, tracked))):
+        raise AssertionError('a tracked save without a load went unnoticed')
+    learned = only + '\n\t\t() => LoadLearned(ref TankbusterPotential, nameof(TankbusterPotential), report, "x"),'
+    if check(tree(learned, tracked)):
+        raise AssertionError('a tracked save loaded through LoadLearned was rejected: %s' % check(tree(learned, tracked)))
 
     # Loaded but not saved is legitimate - a curated list the user never edits - and must not fail.
     if check(tree('\t\t() => InitOne(ref DangerousStatus, nameof(DangerousStatus)),')):

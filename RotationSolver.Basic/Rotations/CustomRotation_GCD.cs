@@ -198,6 +198,7 @@ public partial class CustomRotation
 			}
 
 			IBaseAction.TargetOverride = TargetType.Heal;
+			IBaseAction.HealPathRunning = true;
 
 			if (DataCenter.CommandStatus.HasFlag(AutoStatus.HealAreaSpell))
 			{
@@ -281,17 +282,26 @@ public partial class CustomRotation
 			}
 
 			IBaseAction.TargetOverride = null;
+			IBaseAction.HealPathRunning = false;
 
 			if (DataCenter.MergedStatus.HasFlag(AutoStatus.DefenseArea))
 			{
-				if (DataCenter.CurrentDutyRotation?.DefenseAreaGCD(out act) == true)
+				IBaseAction.AreaDefenceRunning = true;
+				try
 				{
-					return act;
-				}
+					if (DataCenter.CurrentDutyRotation?.DefenseAreaGCD(out act) == true)
+					{
+						return act;
+					}
 
-				if (DefenseAreaGCD(out var action))
+					if (DefenseAreaGCD(out var action))
+					{
+						return action;
+					}
+				}
+				finally
 				{
-					return action;
+					IBaseAction.AreaDefenceRunning = false;
 				}
 			}
 
@@ -299,14 +309,22 @@ public partial class CustomRotation
 
 			if (DataCenter.MergedStatus.HasFlag(AutoStatus.DefenseSingle))
 			{
-				if (DataCenter.CurrentDutyRotation?.DefenseSingleGCD(out act) == true)
+				IBaseAction.CommandedDefenceRunning = DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseSingle);
+				try
 				{
-					return act;
-				}
+					if (DataCenter.CurrentDutyRotation?.DefenseSingleGCD(out act) == true)
+					{
+						return act;
+					}
 
-				if (DefenseSingleGCD(out var action))
+					if (DefenseSingleGCD(out var action))
+					{
+						return action;
+					}
+				}
+				finally
 				{
-					return action;
+					IBaseAction.CommandedDefenceRunning = false;
 				}
 			}
 
@@ -393,6 +411,7 @@ public partial class CustomRotation
 					if (PartyMembersMinHP < Service.Config.HealWhenNothingTodoBelow)
 					{
 						IBaseAction.TargetOverride = TargetType.Heal;
+						IBaseAction.HealPathRunning = true;
 
 						if (DataCenter.PartyMembersDifferHP < Service.Config.HealthDifference)
 						{
@@ -423,6 +442,7 @@ public partial class CustomRotation
 						}
 
 						IBaseAction.TargetOverride = null;
+						IBaseAction.HealPathRunning = false;
 					}
 				}
 			}
