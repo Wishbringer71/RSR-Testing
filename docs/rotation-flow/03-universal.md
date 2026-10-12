@@ -96,10 +96,10 @@ damit eine Unverwundbarkeit, die an ihrer Schwelle zündet, vorgeht, und vor all
 Tankbuster hängen (Konzept 09, „Gemessener Tankbuster: das geringste Mittel" und „Tankwechsel nach einem
 Tankbuster"). Der Plan drückt die Minderungen, die ein gemessener Tankbuster braucht, oder die Unverwundbarkeit, und
 steht vor dem Wechsel, der hält, solange sie bereit ist. Beide haben keinen
-befohlenen Eingang; Shirk (13) läuft weiterhin nur auf Befehl. Solange ein Plan läuft oder
-Heiliger Boden oder Meteoritenfall den Treffer abhalten, lehnt `BaseAction.CanUse` für Tanks in jedem Slot bewertete
-Abwehr auf den Spieler ab, die nicht im Plan steht; frei bleiben die Heilslots und in der Flächenabwehr (21), was über
-ihn hinaus wirkt.
+befohlenen Eingang; Shirk (13) läuft weiterhin nur auf Befehl. Solange der Plan zurückhält (Konzept 09, „Wann
+zurückgehalten wird") oder Heiliger Boden oder Meteoritenfall den Treffer abhalten, lehnt `BaseAction.CanUse` für Tanks
+in jedem Slot bewertete Abwehr auf den Spieler ab, die der Plan nicht freigibt; frei bleiben die Heilslots, Hilfe für
+andere, in der Flächenabwehr (21), was über ihn hinaus wirkt, und das Befohlene.
 
 In jedem Slot fragt der Dispatcher zuerst die Duty-Rotation (`DataCenter.CurrentDutyRotation`), dann den Job. Die
 Heil-, Abwehr-, Bewegungs- und Rückzugsslots haben je zwei Eingänge: zuerst den befohlenen (`CommandStatus`), dann
@@ -165,7 +165,7 @@ Jeder Job hat sie, aber an **drei verschiedenen Orten**:
 
 Tanks und Nahkämpfer: letzter Zweig vor `base.GeneralGCD`. Gezählt am 02.10.2026 in neun Reborn-Rotationen; der
 Mönch hat keinen. Bei den vier Tanks und beim Schnitter gilt nur das eigene `CanUse`. Eigene Bedingungen haben der
-Samurai (nicht in den ersten 15 s eines High-End-Kampfs), der Ninja (nicht während Mudra), der Dragoon (nicht direkt nach
+Samurai (nicht in den ersten 15 GCDs eines High-End-Kampfs, `CombatElapsedLessGCD(15)`), der Ninja (nicht während Mudra), der Dragoon (nicht direkt nach
 `WingedGlidePvE`) und die Viper (Option `UFGhosting`).
 
 ### C5 · Kurzschluss ganz oben
@@ -203,8 +203,8 @@ Phasenenden"). Die vorhergesagte Pause liest `BMRDowntimeWithin`, nur mit Modul.
 | U1 | `GeneralGCD` ist Sammelbecken ohne Untergliederung | 7–81 Zweige auf einer Ebene, Median ~19 | für die fünf größten Dateien behoben (`04` A4a); MCH bewusst ausgelassen |
 | U2 | Proaktive Logik steht in drei Methoden | Heiler-Sustain | **keine Schwäche.** Die Bedingung liegt in genau einem Helfer je Job; dreifach steht nur die **Position**, und die ist je Dispatch-Slot eine eigene Prioritätsaussage. Herleitung in `04-concept.md` unter A1 |
 | U3 | Level-Ketten von Hand | 2 Schreibweisen, 1 realer Bug daraus | Fehlerklasse durch den Wächter A2′ geschlossen; die Ketten selbst bleiben |
-| U4 | Hook-Belegung ohne Regel | 2 Jobs ohne CountDown, 3 ohne Emergency, MNK/DNC-Heal-Slot-Tausch | offen, Spielfragen (`04` B4/B5) |
-| U5 | Gleiche Rolle, verschiedene Orte | AoE-Schwelle an 3 Orten; Mitigation mal Area, mal Single, mal beides | offen, Spielfrage (`04` B3) |
+| U4 | Hook-Belegung ohne Regel | Dragoon und Viper ohne `CountDownAction` | offen (TODO „Vorlauf"); die Slot-Lücken der Fernkämpfer und der Heilslot des Mönchs sind geschlossen (`04` B4/B5); ohne eigenen Notfall sind Schnitter und Samurai, und das ist keine Lücke (`04`, „Was offen bleibt") |
+| U5 | Gleiche Rolle, verschiedene Orte | AoE-Schwelle an drei Orten (C3) | offen; die Platzierung der Reflexion ist vereinheitlicht (`04` B3) |
 | U6 | Kein Job kann sagen „ich bin fertig" | jede Ebene muss `base.X` aufrufen; Vergessen oder Vertauschen war mit neun Fällen die häufigste Fehlerklasse im AUDIT_LOG | Fehlerklasse durch den Wächter A3 in der CI geschlossen; die Kette selbst bleibt |
 
 U6 war der unauffälligste und teuerste Punkt: Die Kette wird über

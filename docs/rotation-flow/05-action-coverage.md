@@ -97,12 +97,13 @@ Konkrete Folge, nicht nur Kosmetik:
   die Unverwundbarkeit ist, nennt seit A255 für alle vier die Basisschicht
   (`Invulnerability`), und der Tankwechsel liest daraus, ob sie noch retten kann. Die reaktive Unverwundbarkeit hat
   zwei Gates: beim PLD `HallowedWithCover`, daneben bei allen die Schwelle `HealthForDyingTanks`. Vier Tanks, dieselbe
-  Fähigkeitsklasse, zwei Orte und zwei Gates. Seit A260/A261 zieht sie zusätzlich der Tankbuster-Plan (`CustomRotation.TankbusterPlanAbility`),
-  ohne die Schwelle, wenn kein Bündel eigener Minderungen einen gemessenen Tankbuster übersteht.
+  Fähigkeitsklasse, zwei Orte und zwei Gates. Zusätzlich zieht sie der Tankbuster-Plan
+  (`CustomRotation.TankbusterPlanAbility`, A260 und folgende), ohne die Schwelle, wenn kein Bündel eigener Abwehr einen
+  gemessenen Tankbuster übersteht (Konzept 09).
 - Beim Lesen einer `{Job}_Reborn.cs` ist nicht erkennbar, ob ein Slot leer ist
   oder eine Ebene tiefer belegt. Genau daran ist die Messung oben gescheitert.
 
-## Bewegungsfähigkeiten — geschlossene Lücke
+## Bewegungsfähigkeiten
 
 Vollständige Erhebung aller Aktionen, deren Spielbeschreibung eine Ortsänderung
 nennt, gegen die Belegung von `MoveForwardAbility` / `MoveBackAbility` (beide
@@ -111,13 +112,15 @@ laufen laut `CustomRotation.Ability` (die Flaggenprüfung vor beiden Aufrufen) *
 stören; die drei direkten Aufrufer in `NIN_Reborn`, `WAR_Reborn` und `BeirutaNIN`
 prüfen dieselbe Flagge, geprüft 29.09.2026):
 
-| Job | Aktion | Richtung | Vorher | Jetzt |
-|---|---|---|---|---|
-| GNB | Trajectory (2 Ladungen) | vor | nicht verdrahtet | `GNB_Reborn.MoveForwardAbility` |
-| WHM | Aetherial Shift | vor | nicht verdrahtet | `WHM_Reborn.MoveForwardAbility` |
-| BRD | Repelling Shot | zurück | nicht verdrahtet | `BRD_Reborn.MoveBackAbility` |
-| SGE | Icarus | vor | **war** verdrahtet, eine Ebene höher | unverändert |
-| BLM · DNC · DRK · DRG · MNK · NIN · PCT · RPR · RDM · SAM · SMN · VPR · WAR · PLD | — | — | verdrahtet | unverändert |
+| Job | Aktion | Richtung | Verdrahtet in |
+|---|---|---|---|
+| GNB | Trajectory (2 Ladungen) | vor | `GNB_Reborn.MoveForwardAbility` (644b30074) |
+| WHM | Aetherial Shift | vor | `WHM_Reborn.MoveForwardAbility` (644b30074) |
+| BRD | Repelling Shot | zurück | `BRD_Reborn.MoveBackAbility` (644b30074) |
+| SGE | Icarus | vor | `SageRotation.MoveForwardAbility` (Basisschicht) |
+| BLM · DNC · DRK · DRG · MNK · NIN · PCT · RPR · RDM · SAM · SMN · VPR · WAR · PLD | — | — | in der Rotation des Jobs |
+
+Jede Aktion, deren Spielbeschreibung eine Ortsänderung nennt, ist damit verdrahtet.
 
 SAM `HissatsuYatenPvE` liegt in `SAM_Reborn.MoveBackAbility` (f90c7bf7, A7). Es ist keine reine
 Bewegungsfähigkeit, sondern eine Schadensaktion mit Rücksprung, die zusätzlich Enhanced Enpi gewährt. Im
