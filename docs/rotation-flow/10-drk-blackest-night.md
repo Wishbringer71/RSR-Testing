@@ -1,7 +1,8 @@
 # 10 · The Blackest Night beim Dunkelritter
 
-Entwurfsdokument nach ADR-Struktur. Es stellt den geltenden Stand dar; die Prüfhistorie steht in
-`AUDIT_LOG.md` (A44 bis A50).
+**Leitfrage:** Wann ist die Barriere des Dunkelritters das richtige Mittel, und was darf ihr nicht dazwischenkommen?
+
+Das Dokument gibt den geltenden Stand; die Prüfhistorie steht in `AUDIT_LOG.md` (A44 bis A50).
 
 ## Vorgabe des Auftraggebers
 
@@ -45,27 +46,26 @@ Tanks, A212, A219); einen Rückstoß innerhalb der Wirkung deckt der Einsatz jet
 mit Adds — der Boss zählt dabei nicht mit (A236) —, und für ihren Slow verbraucht fehlte Abtausch dem Rückstoß. Ohne Modul gibt es keine
 Ankündigung; der Schutz gegen Rückstoß bleibt dann reaktiv wie bisher.
 
-## Ergebnis
+## Sachstand
 
 The Blackest Night ist keine Verteidigung wie die anderen: Sie kostet 3000 MP und zahlt sie nur
-zurück, wenn ihre Barriere **vollständig** aufgezehrt wird. Die Rotation behandelte sie dennoch wie
-Rampart oder Reprisal — als beliebiges Glied einer Prioritätsliste, ohne eigene Bedingung. Drei
-Eingriffe in `DRK_Reborn.cs`, alle auf Upstream-Code:
+zurück, wenn ihre Barriere **vollständig** aufgezehrt wird. Deshalb trägt sie in `DRK_Reborn.cs` eigene
+Bedingungen statt eines Platzes in der Prioritätsliste wie Rampart oder Reprisal:
 
-1. **Der Party-Zweig fragt seine Option ab**. `BlackLantern` soll steuern, ob die Fähigkeit
-   auf das Party-Mitglied mit den niedrigsten HP geht, wurde aber nie gelesen. Defektbehebung.
-2. **Der Selbstschutz-Zweig bekommt eine Zeitpunktwahl** (`BlackestNightUsage`) mit drei
+1. **Der Party-Zweig fragt seine Option ab.** `BlackLantern` steuert, ob die Fähigkeit auf das
+   Party-Mitglied mit den niedrigsten HP geht; vorher wurde sie nie gelesen (Defektbehebung).
+2. **Der Selbstschutz-Zweig hat eine Zeitpunktwahl** (`BlackestNightUsage`) mit drei
    Stufen. Voreinstellung ist die engste mit Notfall, `TankbusterHeavyPullOrLowHealth` (seine Regel für
    Voreinstellungen, 29.09.2026: der im Kampf sinnvollere Wert).
 3. **Zwei Prüfgrößen liegen zentral** in `CustomRotation_OtherInfo`: `TankbusterOnMe` und
-   `HasMajorMitigation`; `SurveyStuns` hat eine Überladung mit der Trefferzahl bekommen.
+   `HasMajorMitigation`; `SurveyStuns` hat eine Überladung mit der Trefferzahl.
 4. **Die Gegenrichtung steht beim Weißmagier** (`WHM_Reborn.ShouldHoldHolyForBarrier()`, Option
    `HoldHolyForBlackestNight`): Sanctus wartet, solange ein Tank die Barriere trägt. Ohne diese
    Seite behandelt die Betäubungsbedingung nur den Fall, dass der Heiler zuerst da war.
 
 **Ihre Größe ist zugleich der Maßstab für alle anderen.** The Blackest Night ist die einzige Barriere
 im Baum, die ihre Deckung im eigenen Wirktext als Anteil nennt — „absorbs damage totaling 25 % of
-target's maximum HP" (`ActionId.resx`, Zeile 1234). Dieser Wert ist seit A108 die Obergrenze der
+target's maximum HP" (`ActionId.resx`, Aktion 7393). Dieser Wert ist seit A108 die Obergrenze der
 Flächenbewertung: Ein Treffer ab 25 % der Maximalgesundheit gilt als groß, unabhängig vom Zustand der
 Gruppe. Und er ist der erste belegte Eintrag für die Wahl des Mittels nach Treffergröße
 (`08-mitigation-synergy.md`, „Die Antwort auf einen eingehenden Treffer") — eine Barriere dieser
@@ -339,11 +339,11 @@ Die Regel steht hinter `HoldHolyForBlackestNight`, ab Werk an (seine Regel für 
 führt nur The Blackest Night: Jede andere Barriere ist reiner Schutz, bei dem ein unverbrauchter Rest
 ein gutes Ergebnis ist — nur hier ist der vollständige Verbrauch die Bedingung einer Belohnung.
 
-### Der Ausgangsbefund
+### Warum Party-Zweig und Selbstschutz eigene Bedingungen brauchen
 
-Drei Stellen wirken die Fähigkeit, und zwei davon trugen keine eigene Bedingung:
+Drei Stellen wirken die Fähigkeit; zwei davon trugen ohne diese Regeln keine eigene Bedingung:
 
-| Weg | Fundstelle | Zustand vorher |
+| Weg | Fundstelle | ohne eigene Bedingung |
 |---|---|---|
 | Opener | `CountDownAction` | `remainTime <= 3f` im Countdown — Dark Arts steht zum Kampfbeginn bereit; unverändert |
 | Party-Schild | Einzelabwehr, Party-Zweig | Ziel unter `BlackLanternRatio`, **ohne** `BlackLantern` zu prüfen |
@@ -382,7 +382,7 @@ Stand 02.10.2026.
 - *WrathCombo:* Die Fallarbeit für die Barriere steht in Konzept 15.
 - *xivanalysis:* zählt die Nutzung der Abwehr, ohne Zeitpunktregel.
 
-## Verworfene Optionen
+## Ausgeschlossen
 
 **Am zentralen Auslöser ansetzen.** `ShouldAddDefenseSingle` verschärfen oder den Rückfall in
 `IsHostileCastingTank` entfernen. Das öffnet und schließt die Verteidigungskette **aller** Tanks;
@@ -391,9 +391,9 @@ C9 belegt, wie weit eine an einer Stelle plausible Änderung an diesem Flag reic
 **Den Verbrauch messen statt die Lage zu prüfen.** Der eingehende Schaden ist im Effekt-Handler
 sichtbar (`Watcher`, `damageEffect.value`). Ein eigener Ringpuffer dafür bleibt verworfen — er liefe
 in jedem Kampf für jeden Nutzer, während der Nutzen bei einem Job in einer Fähigkeit entstünde.
-**Eine Rate steht inzwischen allerdings ohne diesen Aufwand zur Verfügung:** `GetCorrectedTTK` liest
-sie aus der Gesundheitshistorie, die ohnehin geführt wird (A91–A93). Was gegen ihren Einsatz **hier**
-spricht, ist deshalb nicht mehr die Kostenseite, sondern die Sache: Der Schadensfluss der letzten
+**Eine Rate steht ohne diesen Aufwand zur Verfügung:** `GetCorrectedTTK` liest
+sie aus der Gesundheitshistorie, die ohnehin geführt wird (A91–A93). Gegen ihren Einsatz **hier**
+spricht nicht die Kostenseite, sondern die Sache: Der Schadensfluss der letzten
 Sekunden sagt nichts über die nächsten sieben, und die Barriere ist eine Wette auf diese sieben.
 
 **Eine reine MP-Schwelle.** Begrenzt, wie oft die Fähigkeit ausfällt, nicht ob sie sich lohnt. Bei
@@ -416,15 +416,13 @@ hinter der Option bleibt. In `TODO.md` mit Auflösungsbedingung geführt.
 **Nullvariante.** Lässt eine im Spiel beobachtete Fehlausgabe stehen und die Option `BlackLantern`
 wirkungslos.
 
-## Konsequenzen
+## Betroffene
 
-**Endnutzer (N).** Ohne Umstellung ändert sich nur der Party-Zweig, und der nur in der
-Voreinstellung, in der `BlackLantern` ausgeschaltet ist. Wer die Fähigkeit auf Gruppenmitglieder
-legen will, schaltet die Option ein und erhält das bisherige Verhalten.
+**Endnutzer (N).** Der Party-Zweig greift nur mit `BlackLantern`, ab Werk aus; wer die Fähigkeit auf
+Gruppenmitglieder legen will, schaltet die Option ein. Der Selbstschutz folgt `BlackestNightUsage`.
 
 **Autoren abgeleiteter Rotationen (R).** `TankbusterOnMe`, `HasMajorMitigation` und die
-`SurveyStuns`-Überladung sind additiv; die vorhandene Signatur bleibt bestehen und delegiert. Kein
-Bruch, Eintrag in `CHANGELOG.md`.
+`SurveyStuns`-Überladung sind additiv; die vorhandene Signatur bleibt bestehen und delegiert.
 
 **Upstream-Pflege (U).** Alle Eingriffe liegen in `DRK_Reborn.cs` und `CustomRotation_OtherInfo.cs`.
 Nimmt Upstream die Verdrahtung von `BlackLantern` selbst vor, entfällt unsere Zeile im Merge
@@ -445,7 +443,7 @@ Treffer, die die Barriere füllen, und der Notfall unter der Gesundheitsschwelle
 Gesundheitsschwelle sind einstellbar, und deshalb steht der offene
 Rest in `TODO.md`.
 
-## Offene Punkte zu diesem Konzept
+## Offene Punkte
 
 Sie stehen in `TODO.md` und sind dort unter der Überschrift des Eintrags mit **Konzept:** auf dieses
 Dokument gekennzeichnet — an **einer** Stelle statt in zweien, damit keine Kopie altert.
