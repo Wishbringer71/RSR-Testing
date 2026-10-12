@@ -268,7 +268,7 @@ determination"); vorher lag die Grenze bei 0.
 - **Betroffen:** alle Jobs (Endnutzer), jede abgeleitete Rotation mit `StatusNeed` (Paketnutzer),
   Upstream-Pflege.
 
-### Rückfälle vor Ablauf, je Job (A165, A166)
+### Rückfälle vor Ablauf, je Job
 
 Wartet ein Verbraucher auf eine Ausrichtung (Burst, Debuff), verfällt sein Fenster, wenn die Ausrichtung
 nicht kommt. Behoben mit einem Rückfall in der letzten Gelegenheit; vorher bleibt jede Ausrichtung

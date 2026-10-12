@@ -6129,8 +6129,21 @@ beobachtet.
   Verweise auf die alten Abschnittsnamen in Code-Kommentaren, TODO und Konzepten 03, 13, 14 nachgezogen; Konzept 13
   nannte Dark Mind und erhöhte maximale LP noch als Messfehler (seit A266 herausgerechnet).
 
-**Prüfgrad:** Prüfskripte (Aufbau, Verweise, Bezeichner, Voreinstellungen); Inhalt Abschnitt für Abschnitt am Code der
-berührten Stellen gelesen, nicht jede ältere Aussage des Living-Dead-Teils.
+- *Die übrigen Konzepte:* 17 als Entscheidung mit Gründen neu geschrieben (vorher Optionen, Abwägung, Abgleich,
+  Antithesen, Falsifikation als Gliederung); 15 je Vorschlag ein Abschnitt nach Gegenstand; 08 und 13 Antwort vorn,
+  Falsifikation in Grenzen und Begründung eingearbeitet; 13 ohne seine Kopie des Tankbuster-Plans; 04, 05, 07, 10, 11,
+  12, 14, 16 Überschriften nach Gegenstand statt Befund, Abgleich, Datum, Archivnummer. Veraltet und korrigiert: in 08
+  „für Tankbuster gibt es keinen gemessenen Anteil" und die verworfene „neue Messung", die es gibt; in 13 Dark Mind und
+  erhöhte maximale LP als Messfehler (seit A266 herausgerechnet) und die Übergangsfolge „alle Einträge unbewertet";
+  in 07 der behobene Rollen-Kurzschluss als „Befund". `check_concept_structure.py` steht strikt in der CI;
+  `check_concept_identifiers.py` nimmt einen fremden Namen auf einer Zeile hin, die das fremde Werkzeug nennt.
+- *Dabei gefunden, Defekt:* Der Tankbuster-Plan drückt Reflexion als billigstes Glied, auch wo die Einzelabwehr sie
+  für einen angesagten Raidwide hielte (A244); K6 in Konzept 09, `TODO.md`.
+
+**Prüfgrad:** Prüfskripte (Aufbau strikt, Verweise, Bezeichner, Voreinstellungen); Inhalt gegen den Code geprüft für
+die Gegenstände, die sich seit dem 04.10.2026 geändert haben (Tankbuster-Tabelle und -Plan, Triage, Abschütteln,
+Merkmalsdauern, Verweigerung, BossModReborn-Ziel). Ältere Aussagen der Konzepte sind nicht Satz für Satz gegen den
+Code geprüft (`TODO.md`).
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)

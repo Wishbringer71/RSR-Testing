@@ -126,7 +126,7 @@ Tengentsu, Third Eye). Gemessen wird ein Flag an den Pfaden, die es öffnet (CLA
   rect", halbe Breite 4).
 - Kreis und Kegel um den Wirkenden: Abstand vom **Mittelpunkt** des Wirkenden, ohne dessen Trefferkreis.
   BossModReborn setzt keine seiner 3494 Kreisformen um den Trefferkreis des Wirkenden größer
-  (`AOEShapeCircle`, geprüft 29.09.2026); gemessen am Trefferkreis verlängerte ein großer Boss jeden
+  (BossModReborn `AOEShapeCircle`, geprüft 29.09.2026); gemessen am Trefferkreis verlängerte ein großer Boss jeden
   Rundumschlag um seinen Trefferkreis — 10 y reichten bei 8 y Trefferkreis bis 18 y. Der Kegel ohne Winkel
   (steht in keinem Blatt) zählt wie ein Kreis.
 - Bodenkreise (`TargetArea`): Ihr Mittelpunkt steht nur in den nativen Castdaten; weiter Abstand zum Wirkenden
@@ -162,7 +162,7 @@ Gehört die Maske zu einem anderen Ereignis, gilt die bisherige Näherung: kein 
 diese Näherung öffnete Radiant Aegis für einen Tankbuster auf einem Tank, den RSR nicht als Gruppenmitglied
 zählte — ein Duty-Support-Tank bei ausgeschaltetem „Heal and raise Party NPCs". Ob RSR Duty-Support-Tanks über
 ihren `ClassJob` überhaupt als Tank erkennt, ist nicht belegt. WrathCombo liest den Job solcher NPCs aus
-`InfoProxyPartyMember` statt aus `ClassJob`; das ist ein Hinweis, keine Spielquelle. Mit der Maske hängt die
+`InfoProxyPartyMember` (FFXIVClientStructs) statt aus `ClassJob`; das ist ein Hinweis, keine Spielquelle. Mit der Maske hängt die
 Entscheidung daran nicht mehr.
 
 **Selbstschutz in jedem Abwehrpfad, zentral (A233):** Eine Aktion, die nur den Spieler schützt, fällt in der

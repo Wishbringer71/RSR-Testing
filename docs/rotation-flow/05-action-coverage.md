@@ -52,7 +52,7 @@ richtig ist:
 | Morph-Platzhalter | 3 | VPR `SerpentsTail`/`Twinfang`/`Twinblood` — „Changes to … when requirements are met"; RSR ruft die Zielaktion |
 | Rest | 74 | s. u. |
 
-### Der Befund, der den größten Teil des Rests erklärt: `AdjustedID`
+### `AdjustedID` erklärt den größten Teil des Rests
 
 `BaseAction.Use()` castet nicht die deklarierte ID, sondern
 `adjustId = AdjustedID` (Eigenschaft `BaseAction.AdjustedID`, gelesen in `Use()`), und das ist
@@ -80,7 +80,7 @@ unterscheidet, tut das Spiel dasselbe von allein. Entbehrlich werden die Ketten 
 unterscheiden sich vom ungegateten Aufruf, sobald `CanUse` der höheren Stufe aus einem anderen Grund als dem Level
 scheitert. Für DRG ist die Vereinfachung deshalb verworfen (Zielkonzept, C1).
 
-## Zwei Ebenen — der strukturelle Befund
+## Zwei Ebenen der Dispatch-Overrides
 
 Dispatch-Overrides liegen in **zwei** Schichten, ohne erkennbare Regel:
 

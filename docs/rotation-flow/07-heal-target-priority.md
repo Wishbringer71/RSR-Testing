@@ -177,26 +177,25 @@ der Heilschwelle verlangte. Jetzt fällt sie, sobald im Radius genug Verletzte s
 anders antwortet; die Upstream-Pflege durch eine weitere Abweichung in `ActionTargetInfo.FindTarget`.
 Ein belegter Defekt, keine Verbesserung auf Verdacht — deshalb ohne eigene Option.
 
-### Befund: ein Rollen-Kurzschluss überholt den, der tatsächlich stirbt
+### Klasse 1 vor den Rollen-Kurzschlüssen
 
 **Die Rollenabkürzungen kehren sofort zurück, sobald ihre Schwelle erfüllt ist, und sehen dabei
-niemanden sonst an.** `healerTars[0]` unter `HealthHealerRatio` beendet die Suche, `tankTars[0]`
+niemanden sonst an; deshalb steht Klasse 1 vor ihnen.** `healerTars[0]` unter `HealthHealerRatio` beendet die Suche, `tankTars[0]`
 unter `HealthTankRatio` ebenso — der Prozentvergleich in Rang 4 wird gar nicht mehr erreicht.
 
-Im Kampf hieß das: **Ein Schadensausteiler bei 10 % wurde übergangen, sobald der Tank bei 44 %
-stand.** Das ist genau der Fall, den die Vorgabe nennt — „auch ein Damagedealer ohne Aggro mit 10 %
-Leben kann bei einem AoE sterben" —, und er war falsch entschieden. **Heute behoben** durch Stufe 1: Klasse 1
-steht vor allen Kurzschlüssen. Der Tank bei 44 % hinter
+Ohne Klasse 1 davor wurde **ein Schadensausteiler bei 10 % übergangen, sobald der Tank bei 44 % stand.** Das
+ist genau der Fall, den die Vorgabe nennt — „auch ein Damagedealer ohne Aggro mit 10 % Leben kann bei einem AoE
+sterben". Der Tank bei 44 % hinter
 Minderungen und einem großen Lebenspool ist nicht gefährdeter als ein Schadensausteiler bei 10 %; er
 ist nur früher in der Reihenfolge.
 
-**Das ist der schwerere der beiden Befunde**, weil er ohne jede neue Messung zu beheben ist: Wer
+**Das ist der schwerere der beiden Fälle**, weil er ohne jede neue Messung zu beheben war: Wer
 unter der Schwelle steht, an der der Baum selbst „dieser Spieler fällt gleich" sagt
 (`HealthForDyingTanks`), gehört vor jeden Rollen-Kurzschluss. Die Rangfolge der Vorgabe — Heiler vor
 Tank vor Schadensausteiler — gilt bei **gleicher** Gefährdung, und 10 % gegen 44 % ist keine gleiche
 Gefährdung.
 
-### Befund: die Rangfolge steht, die Schwellen kehren sie um
+### Die Schwellen 45/40 kehren die Rangfolge um (offen)
 
 Die Prüfreihenfolge stellt den Heiler vor den Tank, wie die Vorgabe es verlangt. Die Zahlen tun es
 nicht: Der Tank löst bei ≤ 45 % aus, der Heiler erst bei ≤ 40 %. **Im Band zwischen 40 % und 45 %
@@ -230,7 +229,7 @@ beide gleich trifft.
 **Heute gilt davon:** Mit `HealTargetByDanger` greift die Umkehr nur noch, wenn Heiler und Tank beide unter
 Beschuss stehen und beide im Band liegen (TODO „Rollenschwellen 45/40“).
 
-**Damit ist der Befund keine falsche Zahl, sondern eine fehlende Bedingung.** Die Schwellendifferenz
+**Damit ist das keine falsche Zahl, sondern eine fehlende Bedingung.** Die Schwellendifferenz
 ersetzt eine Messung, die es nicht gibt. Solange die Rate je Mitglied fehlt, ist jede feste Zahl an
 dieser Stelle in der einen Lage richtig und in der anderen falsch.
 

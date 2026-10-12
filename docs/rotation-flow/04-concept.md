@@ -245,7 +245,7 @@ bräuchte je Job ein `protected override IBaseAction RangedPull => TomahawkPvE;`
 gleiche Zeilenzahl, ein zusätzliches abstraktes Mitglied auf `CustomRotation`, und beim
 Lesen ein Sprung in die Basisklasse für eine Information, die vorher direkt dastand.
 
-## Nachweisbarkeit
+## Prüfmittel und Prüfgrad
 
 | Ebene | Möglich | Nicht möglich |
 |---|---|---|

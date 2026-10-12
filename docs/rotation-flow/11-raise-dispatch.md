@@ -372,13 +372,11 @@ eine Festlegung über die Bedeutung der Einstellung. Die Existenz von
   eine zweite Buchführung neben der des Spielclients und veraltet auf dieselbe Weise. Die Frage an
   `GetActionStatus` mit dem Ziel leistet dasselbe, ohne einen eigenen Zustand zu führen.
 
-## Vom Upstream behoben: der Cast brach sich selbst ab
+## Der Abbruch eines laufenden Zaubers trifft keine Wiederbelebung
 
-**Dieses Konzept hat die Wiederbelebung an ihrer Auslösung repariert. Am anderen Ende stand ein
-zweiter Defekt, und den hat Upstream mit 7.5.6.10 behoben** (`CancelCastUpdater`, A119): Der Abbruch
-eines laufenden Zaubers bei totem Zielobjekt prüfte allein `castTarget.CurrentHp == 0` — und das
-trifft **jedes** Wiederbelebungsziel. Wer `UseStopCasting` eingeschaltet hatte, brach damit jede
-hart gewirkte Wiederbelebung selbst ab. Jetzt gilt der Abbruch nur noch für feindliche Ziele.
+**Der Abbruch bei totem Zielobjekt (`CancelCastUpdater`) gilt nur für feindliche Ziele** (Upstream 7.5.6.10, A119).
+Vorher prüfte er allein `castTarget.CurrentHp == 0` — und das trifft **jedes** Wiederbelebungsziel; wer
+`UseStopCasting` eingeschaltet hatte, brach damit jede hart gewirkte Wiederbelebung selbst ab.
 
 **Die beiden Behebungen greifen ineinander, und erst zusammen tragen sie:** Der Fork sorgt dafür,
 dass Swiftcast für die Wiederbelebung fällt und die Ankündigung nicht auf sich selbst wartet;
@@ -389,7 +387,7 @@ in dem hart gewirkt wird, und genau der, den der Abbruch traf.
 **Der Vorgabewert von `UseStopCasting` ist aus**, die Einstellung des Auftraggebers ist von hier aus
 nicht messbar. Wer sie an hat, konnte ohne Swiftcast niemanden hochholen.
 
-## Erfasst, nicht behoben
+## Bekannte Mängel neben diesem Konzept
 
 - **`IBaseAction.IgnoreClipping` wird geschrieben und nirgends gelesen** (sechs Schreibzugriffe in
   `CustomRotation_Invoke.cs`, Definition in `IBaseAction.cs:14`). Wirkungsbereich zu groß für diesen

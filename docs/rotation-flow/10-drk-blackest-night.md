@@ -368,7 +368,9 @@ Verbrauchsbedingung.
 `BMRTankbusterImminent`, nicht auf `IsHostileCastingToTank` — dieselbe Unterscheidung, die C10 für
 diese beiden Größen herausgearbeitet hat.
 
-### Abgleich mit den Referenzen (02.10.2026)
+### Referenzen
+
+Stand 02.10.2026.
 
 - *The Balance, Dark Knight Basic Guide:* The Blackest Night „can be used liberally (at least once per mob pack)";
   „in a large dungeon pull or facing down a tankbuster … it's almost impossible for it not to break". Das stützt den

@@ -794,7 +794,9 @@ offiziellen Job-Guide (Stufe 100, abgerufen 02.10.2026): Astral Impulse 500, Fou
 Slipstream 520, Mountain Buster 160, Inferno 800, Earthen Fury 800, Aerial Blast 800. Sie stimmen mit den
 früheren Suchauszügen überein.
 
-### Abgleich mit The Balance (Summoner Basic Guide, 02.10.2026)
+### Referenz: The Balance
+
+Summoner Basic Guide, Stand 02.10.2026.
 
 „Searing Light should be used on cooldown to align with all other two minute party buffs, unless a specific buff
 delay is agreed upon by the entire party. Aligning with other party buffs should be prioritized over aligning with

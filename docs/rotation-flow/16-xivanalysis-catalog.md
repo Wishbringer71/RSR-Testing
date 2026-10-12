@@ -120,14 +120,13 @@ gelaufen, zeigt sie (er zeichnet mit ACT auf).
 - **Laufzeitmessung über FFLogs als Teil einer Regel**: ausgeschlossen, sie wartete auf sein Hochladen und
   eine spätere Auswertung (`CLAUDE.md`, „Entscheidung zur Laufzeit"). Ein Report bleibt ein Prüfmittel.
 
-## Falsifikation
+## Begründung und Grenzen der Searing-Flash-Regel
 
-- **Kein Defekt bei Searing Flash?** Widerlegt am Code: Außerhalb einer Demi verlangte die Rotation einen
-  sterbenden Boss; Ruby's Glimmer läuft unabhängig davon ab.
-- **Option falsch?** Hält nicht: Searing Flash kostet keinen GCD; im letzten Fenster vor Ablauf verdrängt es
-  nichts, was später noch ginge. Lux Solaris hat Vorrang bei ihrem eigenen Ablauf (Konzept 08).
-- **Ausgeliefert, und nichts ändert sich?** Als einziger Beschwörer: ja, beabsichtigt. Mit weiteren
-  Beschwörern greift die Regel nur, wenn Searing Light außerhalb einer Demi fiel.
-- **Klasse unvollständig erfasst?** Die Matrix findet nur Verbraucher mit eigener Bedingung in jedem Aufruf;
-  ein Fenster, das an anderer Stelle verfällt (etwa weil ein höherer Zweig den Platz nimmt), zeigt erst ein
-  Report.
+- Außerhalb einer Demi verlangte die Rotation einen sterbenden Boss; Ruby's Glimmer läuft unabhängig davon ab.
+  Deshalb die Regel.
+- Searing Flash kostet keinen GCD; im letzten Fenster vor Ablauf verdrängt es nichts, was später noch ginge. Lux
+  Solaris hat bei ihrem eigenen Ablauf Vorrang (Konzept 08).
+- Als einziger Beschwörer greift die Regel nicht – beabsichtigt. Mit weiteren Beschwörern nur, wenn Searing Light
+  außerhalb einer Demi fiel.
+- Die Matrix findet nur Verbraucher mit eigener Bedingung in jedem Aufruf; ein Fenster, das an anderer Stelle
+  verfällt (etwa weil ein höherer Zweig den Platz nimmt), zeigt erst ein Report.

@@ -272,6 +272,14 @@ Loop vor jedem Bau.
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 
+### Konzepte: ältere Aussagen Satz für Satz gegen den Code prüfen · technische Schuld
+
+**Stand (12.10.2026, A270):** Aufbau aller Konzepte nach den Regeln (strikt in der CI); Inhalt gegen den Code geprüft
+für die Gegenstände, die sich seit dem 04.10.2026 geändert haben. Nicht geprüft sind ältere Aussagen, deren Code sich
+seither durch andere Änderungen (Upstream-Syncs, andere Vorhaben) verschoben haben kann. *Kosten:* rund 9000 Zeilen
+in 18 Konzepten. *Auflösung:* je Konzept jede Aussage über Code oder Verhalten am Code belegen; veraltete
+einarbeiten, nicht anhängen.
+
 ### Tankbuster-Plan nimmt Reflexion, die für einen angesagten Raidwide gehalten würde · N
 
 **Befund (12.10.2026, beim Umbau der Konzepte):** Die Einzelabwehr hält Reflexion am Tankbuster zurück, wenn der Tank
