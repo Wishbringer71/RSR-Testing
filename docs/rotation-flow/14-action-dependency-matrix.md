@@ -1,9 +1,10 @@
 # 14 · Abhängigkeitsmatrix der Aktionen je Job
 
-Entwurfsdokument nach ADR-Struktur. Es stellt den geltenden Sachstand dar; die Prüfhistorie steht in
-`AUDIT_LOG.md` (A160).
+**Leitfrage:** Wie hängen die Aktionen eines Jobs voneinander ab, und welche wirkt der Baum nie?
 
-## Ergebnis
+Die Prüfhistorie steht in `AUDIT_LOG.md` (A160, A162–A167).
+
+## Antwort
 
 **Auftrag (seine Vorgabe):** „erstelle eine abhängigkeitsmatrix aller spells, abilitys und skills eines
 jobs zueinander. mache das für jeden job einzeln. finde heraus, ob irgendwelche fähigkeiten nicht
@@ -18,18 +19,23 @@ Selbsttest gegen konstruierte Texte und konstruierten Code; `--check` meldet ver
 läuft in der CI.
 
 **Jede Kampfaktion, die ein Spieler auslösen kann und die ohne Sonderlage Schaden, Heilung oder
-Schutz bringt, hat in den Standardrotationen einen Aufruf.** Ob dieser Aufruf erreicht wird — hinter
-welcher Einstellung, auf welcher Stufe, in welcher Lage —, sagt die Matrix nicht (Grenzen). Was
-maschinell als „ungenutzt" erscheint, zerfällt in sechs Klassen (Stand 26.09.2026):
+Schutz bringt, hat in den Standardrotationen einen Aufruf — außer Six-sided Star und Flamethrower.**
+Ob ein Aufruf erreicht wird — hinter welcher Einstellung, auf welcher Stufe, in welcher Lage —, sagt
+die Matrix nicht (Grenzen). Was maschinell nicht als gewirkt erscheint („ungenutzt" oder „nur
+gelesen"), zerfällt in sechs Klassen (Stand der erzeugten Dateien: 01.10.2026):
 
-| Klasse | Aktionen | Warum nicht genutzt |
+| Klasse | Aktionen | Warum nicht gewirkt |
 |---|---|---|
-| Behälter | Gemshine, Precious Brilliance, Astral Flow (SMN) · Play I–III, Minor Arcana (AST) · Serpent's Tail, Twinfang, Twinblood (VPR) · Riposte, Zwerchhau, Redoublement, Moulinet, Reprise (RDM) · Motive und Musen (PCT) · Iaijutsu, Tsubame-gaeshi (SAM) · Masterful Blitz (MNK) · Ninjutsu (NIN) · Continuation (GNB) | Der Knopf wird zu einer anderen Aktion; RSR ruft die Zielaktion, und das Spiel führt die angepasste Id aus (`BaseAction.Use`, `AdjustedID`) |
+| Behälter | Gemshine, Precious Brilliance, Astral Flow (SMN) · Play I–III, Minor Arcana (AST) · Serpent's Tail, Twinfang, Twinblood (VPR) · Riposte, Zwerchhau, Redoublement, Moulinet, Reprise (RDM) · Motive und Musen (PCT) · Iaijutsu, Tsubame-gaeshi (SAM) · Masterful Blitz (MNK) · Ninjutsu (NIN) · Continuation (GNB) | Der Knopf wird zu einer anderen Aktion; RSR ruft die Zielaktion, und das Spiel führt die angepasste Id aus (`BaseAction.Use`, `AdjustedID`). Wo eine Regel den Behälter in einer Bedingung liest, steht er als „nur gelesen" |
 | Begleiter und Automatik | Akh Morn, Revelation, Exodus, Wyrmwave, Scarlet Flame, Luxwave, Everlasting Flight (SMN) · Embrace, Seraphic Veil (SCH) · Arm Punch, Roller Dash, Pile Bunker, Crowned Collider, Rook Overload (MCH) · Hollow Nozuchi (NIN) | Wirktext: „cannot be assigned to a hotbar"; der Begleiter oder ein Auslöser führt sie aus |
 | Limit Breaks | je Job drei | ohne Wirktext im Datensatz; RSR castet keine PvE-Limit-Breaks (Konzept 05) |
-| Hilfsaktionen | Sleep, Repose, Rescue, Leg Graze, Foot Graze, das Ablegen der Tankhaltung (Release …), Dissolve Union, Ending | Sie wirken auf Mitspieler oder die Gruppenlage (Rescue zieht einen Spieler, das Ablegen der Haltung gibt die Feindseligkeit ab, Schlaf bricht beim ersten Treffer). Nicht automatisiert — Schluss aus der Wirkung, kein Beleg für eine Absicht |
-| **Knopfwechsel gesperrt** | Improvised Finish (DNC) · Detonator (MCH) | Die Basisaktion führt den Status, den die Zielaktion braucht, als `StatusProvide` und verweigert sich, solange der Knopf gewechselt hat — außer in den letzten `StatusRefreshGcdCount` GCDs des Status (ab Werk 2) oder mit ausgeschaltetem `ShouldCheckStatus`. Detonator: seit A164 schließt `WildfirePvE` den gewechselten Knopf auch dort aus; Wildfire zündet mit allen Stapeln von selbst. Improvised Finish: seit A202 eigens gerufen, siehe „Wechselwirkungen und Zeit" |
-| **Mit Quelle, nicht gebaut** | Six-sided Star (MNK) · Flamethrower (MCH) | Job-Guide und The Balance nennen jetzt Werte und Einsatzregel — siehe „Pausen und Phasenenden". Meditate (SAM) und Rook/Queen Overdrive (MCH) wirkt die Rotation seit A162 in der Pause |
+| Hilfsaktionen | Sleep, Repose, Rescue, Leg Graze, Foot Graze, das Ablegen der Tankhaltung (Release …), Dissolve Union | Sie wirken auf Mitspieler oder die Gruppenlage (Rescue zieht einen Spieler, das Ablegen der Haltung gibt die Feindseligkeit ab, Schlaf bricht beim ersten Treffer). Nicht automatisiert — Schluss aus der Wirkung, kein Beleg für eine Absicht |
+| **Knopfwechsel gesperrt** | Detonator (MCH) | `WildfirePvE` führt Wildfire als `StatusProvide` und schließt den gewechselten Knopf aus (`ModifyWildfirePvE`: `!DetonatorPvEReady`); Wildfire zündet mit allen Stapeln von selbst. Siehe „Wo eine Aktion einen Status aufhebt" |
+| **Mit Quelle, nicht gebaut** | Six-sided Star (MNK) · Flamethrower (MCH) | Job-Guide und The Balance nennen Werte und Einsatzregel — siehe „Pausen und Phasenenden" |
+
+Improvised Finish (DNC) gehörte zur gesperrten Klasse: `ImprovisationPvE` führt Improvisation als
+`StatusProvide` und verweigert sich, solange der Knopf gewechselt hat. `DNC_Reborn` ruft es deshalb
+eigens (siehe „Wechselwirkungen und Zeit").
 
 ## Die Stufen (seine Vorgabe „universell zuerst")
 
@@ -48,8 +54,8 @@ Monk und Samurai · Dragoon und Schnitter · Ninja und Viper → Job.
 | Magier | Addle, Lucid Dreaming, Swiftcast, Surecast, Sleep |
 | Nahkampf-Paare | — |
 
-**Befund zur Stufenordnung (Gegenposition, zur Kenntnis):** Die gemeinsamen Aktionen des Spiels
-folgen dem Baum nicht überall.
+**Die gemeinsamen Aktionen des Spiels folgen dem Baum nicht überall** (Gegenposition zur
+Stufenordnung, zur Kenntnis):
 - Arm's Length haben Tanks, Nahkämpfer und Fernkämpfer, Second Wind haben Nahkämpfer und
   Fernkämpfer. Auf der Stufe „Damage Dealer" steht deshalb nichts, weil die Magier sie nicht haben.
 - Lucid Dreaming, Swiftcast und Surecast teilen Heiler und Magier, über die Grenze zwischen Heilern und
@@ -87,10 +93,12 @@ Baums, sondern quer dazu. Die Matrix zeigt es; eine Entscheidung verlangt es nic
 
 **Abgleich Wirktext ↔ Code:** Nennt der Wirktext eine Statusbedingung und führt die Basisrotation
 dafür weder `StatusNeed` noch `ActionCheck`, steht die Aktion in der Liste. Unter den bewerteten Jobs
-bleiben Manafont (BLM) und die Eukrasia-Aktionen (SGE); der Blaumagier führt weitere, unbewertet.
-Beides ist kein Befund, aus demselben Grund: Die Bedingung steht in einer Eigenschaft, die der
-Abgleich nicht verfolgt.
+stehen dort Manafont (BLM), Improvised Finish (DNC) und die Eukrasia-Aktionen (SGE); der Blaumagier
+führt weitere, unbewertet. Keiner ist ein Befund, aus demselben Grund: Die Bedingung steht in einer
+Eigenschaft oder einem umschließenden `if`, das der Abgleich nicht verfolgt.
 - Manafont wird in `BLM_Default` und `BLM_RP` nur innerhalb von `if (InAstralFire)` gewirkt.
+- Improvised Finish wirkt `DNC_Reborn` nur unter `ImprovisedFinishPvEReady` — der Knopf von
+  Improvisation ist dann Improvised Finish, Improvisation liegt also.
 - Die Eukrasia-Aktionen wirkt `SGE_Reborn` nur unter Eukrasia: hinter `if (!HasEukrasia) { … return … }`
   oder mit `HasEukrasia &&` in der Bedingung. Sie sind der Knopf, zu dem Dosis, Diagnosis und
   Prognosis unter Eukrasia werden.
@@ -110,8 +118,8 @@ Abgleich nicht verfolgt.
   Shroud, …), weil die Texte das vorige Feld in den Namen laufen lassen.
 - **Vom Spiel ausgeblendete Namen:** Hängt ein Combo-Vorgänger von einer Eigenschaft ab, lässt der
   Wirktext ihn leer (wie eine Potenz); dann fehlt die Combo-Kante.
-- **Nicht erfasst:** Zusatzrotationen (`ExtraRotations`, darunter Churin), PvP. Blaumagier und
-  Beastmaster werden erzeugt, aber nicht bewertet (begrenzte Jobs, außerhalb seines Profils).
+- **Nicht erfasst:** Zusatzrotationen (`ExtraRotations`), PvP. Blaumagier und Beastmaster werden
+  erzeugt, aber nicht bewertet (begrenzte Jobs, außerhalb seines Profils).
 - **Die Zahlen altern** mit jeder Rotationsänderung; die erzeugten Dateien tragen ihr Datum,
   `--check` zeigt, ob sie noch stimmen.
 
@@ -124,10 +132,10 @@ oder werden sie defensive skills durch die nutzung von offensive skills aufgehob
 einigen ein quasi-perpetum-mobile möglich zu erschaffen oder positive effekte extrem auszureizen."
 Dazu seine Präzisierung: Eine Sicherheitsbewertung braucht eine Wahrscheinlichkeit (CLAUDE.md).
 
-**Sachstand (A163):** Der Generator liest aus den Wirktexten, was eine Aktion zeitlich und im
-Zusammenspiel tut, und schreibt es je Job in den Abschnitt „Wechselwirkungen und Zeit" der Matrix.
-Die Befunde unten sind daraus und aus dem Code erhoben; wo eine Spielmechanik nicht im Text steht, ist
-sie als Schluss markiert.
+**Sachstand:** Der Generator liest aus den Wirktexten, was eine Aktion zeitlich und im Zusammenspiel
+tut, und schreibt es je Job in den Abschnitt „Wechselwirkungen und Zeit" der Matrix. Die Befunde unten
+sind daraus und aus dem Code erhoben; wo eine Spielmechanik nicht im Text steht, ist sie als Schluss
+markiert.
 
 ### Wo Angriff die Abwehr beendet: die Kanäle
 
@@ -137,60 +145,55 @@ beendet es seinen eigenen Kanal also mit dem nächsten GCD oder der nächsten F�
 
 | Aktion | Was der Kanal trägt (Wirktext) | Was nach dem Abbruch bleibt | RSR-Sperre (Voreinstellung) |
 |---|---|---|---|
-| Passage of Arms (Paladin) | Blockrate 100 %, Gruppe im Kegel hinter ihm nimmt 85 % Schaden, 18 s | nichts | `PldlockCasting` (an, seit 02.10.2026): hält GCD und Fähigkeiten, solange der angekündigte Treffer aussteht (`DataCenter.AreaHitPending`). `PosPassageOfArms` (aus) sperrt Bewegung, nur mit `PoslockCasting` (aus) |
+| Passage of Arms (Paladin) | Blockrate 100 %, Gruppe im Kegel hinter ihm nimmt 85 % Schaden, 18 s | nichts | `PldlockCasting` (an): hält GCD und Fähigkeiten, solange der angekündigte Treffer aussteht (`DataCenter.AreaHitPending`). `PosPassageOfArms` (aus) sperrt Bewegung, nur mit `PoslockCasting` (aus) |
 | Collective Unconscious (Astrologe) | Ring 18 s, darin Wheel of Fortune (Regen) fortlaufend | Minderung −10 % für 10 s, als Zusatzeffekt beim Wirken vergeben (Schluss aus dem Textaufbau, Status 849 ist eigener Status) | `AstlockCasting` (aus), gebaut wie beim Paladin |
 | Improvisation (Tänzer) | Stapel Rising Rhythm alle 3 s bis 4; Regen 15 s | Regen (Schluss aus dem Textaufbau) | keine Aktionssperre; Bewegungssperre `PosImprovisation` (aus), nur mit `PoslockCasting` (aus) |
 
 **Im Kampf:**
-- **Paladin ohne Sperre:** RSR wirkt Passage of Arms nur, wenn ein Flächentreffer angekündigt ist (Zauberleiste
-  oder BossMod-Raidwide im Fenster). Landet der Treffer nach RSRs nächster Aktion — spätestens nach
-  einem GCD —, schützt die Aktion niemanden, und ihre Abklingzeit ist verbraucht.
-- **Mit Sperre (ab Werk seit 02.10.2026, seine Regel für Voreinstellungen; vorher als Entscheidung vorgelegt, A250):** Der Treffer ist angekündigt, die Wahrscheinlichkeit also hoch; die Sperre kostet
-  GCDs bis zum Treffer. Das trägt seine Präzisierung. Beide Pfade halten, solange der Treffer aussteht
+- **Paladin:** RSR wirkt Passage of Arms nur, wenn ein Flächentreffer angekündigt ist (Zauberleiste
+  oder BossMod-Raidwide im Fenster). Die Sperre hält GCD und Fähigkeiten, solange der Treffer aussteht
   (`DataCenter.AreaHitPending`: das Flächensignal oder ein BossMod-Raidwide im Fenster, auch in den
   letzten 0,6 s, in denen das Signal schon losgelassen hat); danach beendet die nächste Aktion den
-  Kanal. So verlangt es der Einstellungstext („during AOE mitigations"). Bis A164 hielt der GCD-Pfad
-  ohne diese Frage, bis eine Fähigkeit den Kanal beendete — bis zu 18 s ohne GCD, der Fall seines
-  Extrembeispiels.
+  Kanal. So verlangt es der Einstellungstext („during AOE mitigations"). Der Treffer ist angekündigt,
+  die Wahrscheinlichkeit also hoch; die Sperre kostet GCDs bis zum Treffer — das trägt seine
+  Präzisierung, und ab Werk an steht sie nach seiner Regel für Voreinstellungen (A250). Ohne Sperre
+  schützt die Aktion niemanden, wenn der Treffer nach RSRs nächster Aktion landet — spätestens nach
+  einem GCD —, und ihre Abklingzeit ist verbraucht. Ohne die Frage nach dem Treffer hielte der GCD-Pfad,
+  bis eine Fähigkeit den Kanal beendet — bis zu 18 s ohne GCD, der Fall seines Extrembeispiels; so war
+  es bis A164.
 - **Astrologe:** Die Minderung bleibt nach dem Abbruch; der Kanal verlängert nur das Regen. Die Sperre
-  hält dafür bis zum Treffer auch die GCD-Heilungen des Astrologen zurück. Ohne Sperre verliert er
-  wenig.
-- **Tänzer:** Improvised Finish — die Barriere, 5 % bei 0 bis 10 % bei 4 Stapeln — wirkte RSR nie:
-  `ImprovisationPvE` führt `Improvisation` als `StatusProvide` und verweigert sich, solange der Knopf
-  Improvised Finish ist, und ein eigener Aufruf fehlte; die nächste Aktion beendete den Tanz. **Seit A202**
-  schließt `DNC_Reborn` den Tanz sofort mit Improvised Finish ab: 5 % Barriere für 30 s für die Gruppe in 8 y,
-  und verloren geht höchstens der Rest eines GCDs Regen, den die nächste Aktion ohnehin beendet hätte.
-  Offen, als Verbesserung mit eigener Option: bei angekündigtem Treffer Stapel bis 10 % aufbauen — kostet je
-  Stapel drei Sekunden ohne Aktion.
+  hielte dafür bis zum Treffer auch die GCD-Heilungen des Astrologen zurück. Ohne Sperre verliert er
+  wenig; deshalb steht sie ab Werk aus.
+- **Tänzer:** `DNC_Reborn` schließt den Tanz sofort mit Improvised Finish ab: 5 % Barriere für 30 s für
+  die Gruppe in 8 y (0 Stapel, Job-Guide); verloren geht höchstens der Rest eines GCDs Regen, den die
+  nächste Aktion ohnehin beendet hätte. Offen, als Verbesserung mit eigener Option: bei angekündigtem
+  Treffer Stapel bis 10 % aufbauen — kostet je Stapel drei Sekunden ohne Aktion (TODO).
 
 **Umgekehrt, Abwehr beendet Angriff:** Flamethrower (Machinist) ist ebenfalls ein Kanal; RSR wirkt ihn
 nicht. Meditate (Samurai) wirkt RSR nur in der Pause. Dort beendet ihn jede Abwehr oder Heilung, die
 ohne Gegner in Reichweite fällt: die eigene Heilung (Second Wind, Bloodbath), Tengentsu und Third Eye
-bei angekündigtem Treffer oder eigener niedriger Gesundheit. Sicherheit vor Kenki — so gewollt. Die
-Rückhaltung von Abwehr im Burst steht in Konzept 08, „Die Abwehrsperren".
+bei angekündigtem Treffer auf ihn oder eigener niedriger Gesundheit. Sicherheit vor Kenki — so gewollt.
+Die Rückhaltung von Abwehr im Burst steht in Konzept 08, „Die Abwehrsperren".
 
 ### Wo eine Aktion einen Status aufhebt
 
-| Aktion | hebt auf | Bewertung |
+| Aktion | hebt auf | Wie RSR damit umgeht |
 |---|---|---|
-| Shake It Off (Krieger) | Thrill of Battle, Damnation, Bloodwhetting | **Befund.** Der Wirktext im Repository lautet „Dispels Thrill of Battle and increasing…" — ein stufenabhängiger Name ist ausgeblendet. Vollständig laut offiziellem Job-Guide (27.09.2026): „Dispels Thrill of Battle, Damnation, and Bloodwhetting, increasing damage absorbed by 2% for each effect removed". Auf niedrigerer Stufe Vengeance statt Damnation — so prüft es WrathCombo; Raw Intuition vor Bloodwhetting ist ein Schluss aus den Ausbauketten. Was verloren geht: Damnation −40 % Schaden für 15 s, Bloodwhetting −10 % mit Heilung je Waffenfertigkeit, Thrill of Battle +20 % Maximalgesundheit und +20 % erhaltene Heilung (Enhanced Thrill of Battle) — gegen +2 % Barriere je Effekt. RSR wirkt Shake It Off als Flächenabwehr und als Einzelheilung, ohne einen dieser Status zu prüfen. Im Kampf: Ein angekündigter Raidwide, während Damnation für einen Tankbuster liegt, nimmt dem Krieger 40 % Minderung vor dem Tankbuster |
-| Tempera Grassa (Pictomancer) | Tempera Coat | Zweck der Aktion; RSR wandelt nur bei angekündigtem Flächentreffer oder kurz vor Ablauf |
-| Meisui (Ninja) | Shadow Walker | Zweck der Aktion. RSR wirkt es, während Trick Attack (Kunai's Bane) abkühlt, und zusätzlich (a) wenn Ten Chi Jin bereit ist — dessen Abfolge endet mit Suiton, das Shadow Walker neu gibt (Wirktext) —, (b) wenn Shadow Walker in zwei GCDs endet, oder (c) wenn Trick Attack nicht in 19 s bereit ist |
-| Detonator (Machinist) | Wildfire | RSR wirkt ihn nie; Wildfire zündet mit allen Stapeln von selbst. Bis A164 konnte `WildfirePvE` in den letzten zwei GCDs von Wildfire als Detonator hinausgehen (gesperrter Knopfwechsel, siehe oben) und die übrigen Stapel abschneiden. Nicht gebaut: Detonator vor dem Tod des Ziels — ob die Ladung dann verfällt, nennt keine Quelle (geprüft 02.10.2026: Job-Guide, consolegameswiki „Wildfire“, The Balance); WrathCombo wirkt Detonator ebenfalls nicht |
+| Shake It Off (Krieger) | Thrill of Battle, Damnation, Bloodwhetting | Vollständig laut offiziellem Job-Guide (27.09.2026): „Dispels Thrill of Battle, Damnation, and Bloodwhetting, increasing damage absorbed by 2% for each effect removed"; der Wirktext im Repository blendet die stufenabhängigen Namen aus („Dispels Thrill of Battle and increasing…"). Auf niedrigerer Stufe Vengeance statt Damnation — so prüft es WrathCombo; Raw Intuition vor Bloodwhetting ist ein Schluss aus den Ausbauketten. RSR wägt die Aufhebung je Weg ab: Die Einzelheilung wartet, solange Damnation, Vengeance oder Bloodwhetting liegt; die Flächenabwehr wartet nur, solange Damnation (Vengeance) für einen Tankbuster auf ihn liegt, der vor ihrem Ende landet; beide warten, solange der Tankbuster-Plan einen dieser Status braucht. Thrill of Battle hält keinen Weg auf — die Barriere bemisst sich an der erhöhten Maximalgesundheit (The Balance). Regeln und Gründe: Konzept 09, „Krieger: die übrige Abwehr", Regel 6 |
+| Tempera Grassa (Pictomancer) | Tempera Coat | Zweck der Aktion; RSR wandelt nur bei angekündigtem Flächentreffer oder in den letzten zwei GCDs von Tempera Coat |
+| Meisui (Ninja) | Shadow Walker | Zweck der Aktion. RSR wirkt es nur, während Trick Attack (Kunai's Bane) abkühlt, und dann, wenn (a) Ten Chi Jin bereit ist — dessen Abfolge endet mit Suiton, das Shadow Walker neu gibt (Wirktext) —, (b) Shadow Walker in zwei GCDs endet oder (c) Trick Attack nicht in 19 s bereit ist und Ten Chi Jin abkühlt |
+| Detonator (Machinist) | Wildfire | RSR wirkt ihn nie; Wildfire zündet mit allen Stapeln von selbst. `ModifyWildfirePvE` schließt den gewechselten Knopf aus, weil `WildfirePvE` sonst in den letzten zwei GCDs von Wildfire (Sperrlücke von `StatusProvide`, siehe oben) als Detonator hinausginge und die übrigen Stapel abschnitte. Nicht gebaut: Detonator vor dem Tod des Ziels — ob die Ladung dann verfällt, nennt keine Quelle (geprüft 02.10.2026: Job-Guide, consolegameswiki „Wildfire“, The Balance); WrathCombo wirkt Detonator ebenfalls nicht |
 
-**Vergleich mit WrathCombo** (Community-Plugin, Stand 25.09.2026; keine Spielquelle — es zeigt, wie ein
+**Vergleich mit WrathCombo** (Community-Plugin, Stand 10.10.2026; keine Spielquelle — es zeigt, wie ein
 anderes Werkzeug entscheidet):
 - *Shake It Off:* Im Selbstheilungspfad nur, wenn weder Thrill of Battle noch Damnation, Vengeance oder
   Bloodwhetting liegt (`safeToShakeItOff`); im Pfad für angekündigten Gruppenschaden ohne diese Prüfung.
-  Bestätigt die Aufhebung auch von Vengeance auf niedriger Stufe.
-  The Balance (Basic Guide, 01.10.2026) wertet die Aufhebung von Thrill of Battle als Gewinn: Die Barriere bemisst
-  sich an der erhöhten Maximalgesundheit. Bewertung und Empfehlung: Konzept 09, „Krieger: die übrige Abwehr",
-  Befund 6.
-- *Passage of Arms:* Option „Block Combos for Passage of Arms" hält alle Kombos, solange der Kanal liegt —
-  ohne Frage nach dem Treffer; beenden muss der Spieler.
+  Bestätigt die Aufhebung auch von Vengeance auf niedriger Stufe. The Balance (Basic Guide, 01.10.2026)
+  wertet die Aufhebung von Thrill of Battle dagegen als Gewinn; RSR folgt darin The Balance.
+- *Passage of Arms:* Die Option „Block Combos for Passage of Arms" (`PLD_BlockForWings`) hält alle
+  Kombos, solange der Kanal liegt — ohne Frage nach dem Treffer; beenden muss der Spieler.
 - *Improvisation:* als Füller außerhalb von Technical Finish, wenn mehr als zwei Verbündete in 8 Yalm
-  stehen; Improvised Finish nutzt WrathCombo nirgends. Es behandelt Improvisation also wie RSR heute als
-  kurzes Regen.
+  stehen; Improvised Finish nutzt WrathCombo nirgends. Es behandelt Improvisation also als kurzes Regen.
 - *Addersgall (Weiser):* „Addersgall Protect" wirkt Druochole auf das Mitglied mit der niedrigsten
   Gesundheit (sonst auf sich), sobald die Stapel eine Schwelle erreichen (ab Werk 3).
 
@@ -235,78 +238,85 @@ sie nie strecken — der Generator erfindet keinen Wert.
 **Auftrag (seine Vorgabe, 26.09.2026):** prüfen, ob die optimalen Kombinationen in den Rotationen
 tatsächlich genutzt werden — „für alle im Loop".
 
-**Sachstand (A165–A167):** Geprüft ist, ob ein gewährtes Fenster — ein Status, der eine Aktion für eine
-Zeit freigibt (Proc, „Ready", Stapel), oder eine Ressource mit Obergrenze — verbraucht wird, bevor es
-verfällt oder überläuft. Ob eine Abfolge die beste ist, ist noch nicht geprüft: Die Referenz dafür (The
-Balance) ist seit 27.09.2026 erreichbar; der Abgleich ist offene Arbeit (TODO). Die Dauern der Fenster,
-die `ActionId.resx` ausblendet, belegt der offizielle Job-Guide: Ready to Break, Ready to Reign, Ogi
-Namikiri Ready, Hypercharged, Full Metal Machinist je 30 s, Phantom Kamaitachi Ready 45 s, Silken Symmetry
-und Silken Flow 30 s. Der Code braucht sie nicht: Er liest die Restzeit zur Laufzeit.
+**Sachstand:** Geprüft ist, ob ein gewährtes Fenster — ein Status, der eine Aktion für eine Zeit
+freigibt (Proc, „Ready", Stapel), oder eine Ressource mit Obergrenze — verbraucht wird, bevor es
+verfällt oder überläuft. Ob eine Abfolge die beste ist, prüft dieser Abschnitt nicht; der Abgleich mit
+The Balance ist offene Arbeit (TODO, „Rotationen gegen The Balance abgleichen"). Die Dauern der
+Fenster, die `ActionId.resx` ausblendet, belegt der offizielle Job-Guide: Ready to Break, Ready to
+Reign, Ogi Namikiri Ready, Hypercharged, Full Metal Machinist je 30 s, Phantom Kamaitachi Ready 45 s,
+Silken Symmetry und Silken Flow 30 s. Der Code braucht sie nicht: Er liest die Restzeit zur Laufzeit.
 
-### Die gemeinsame Ursache: die Statusbedingung sperrte das Ende jedes Fensters
+### Die Statusbedingung: Der Status muss bis zum Losgehen liegen
 
-**Stufe „alle", behoben (A166).** Eine Aktion mit Statusbedingung (`StatusNeed`, auf der Zielseite
-`TargetStatusNeed`) war gesperrt, sobald ihr Status in `StatusRefreshGcdCount` GCDs (ab Werk 2, rund 5 s)
-endete. Die Einstellung heißt in der Oberfläche „Number of GCDs before the DOT/Status effect is
-reapplied" und erscheint nur bei Aktionen, die einen Status vergeben; ihr Text bindet. Eingeführt hat
-die Verwendung auf der Bedarfsseite Upstream-Commit `dc067e0d3` (April 2025, „for better status
-determination"); vorher lag die Grenze bei 0.
+**Stufe „alle":** Eine Aktion mit Statusbedingung (`StatusNeed`, auf der Zielseite `TargetStatusNeed`)
+ist nutzbar, solange der benötigte Status liegt, bis die Aktion losgeht und ihr Wirken endet
+(`ActionBasicInfo.NeededStatusMargin`: Wirkzeit, bei einem GCD dazu die Restzeit des laufenden GCD).
+Ein GCD wird vor dem Ablauf des GCD gewählt (`CalculatedActionAhead`) und geht los, wenn er abläuft;
+deshalb zählt die Restzeit mit. Die Wirkzeit ist die angepasste des Spiels — unter Swiftcast oder
+Dualcast null (belegt an WrathCombo, das „Wiederbelebung nur mit Swiftcast" über
+`GetAdjustedCastTime == 0` prüft).
 
-- **Im Kampf:** Jeder Proc-Verbraucher aller Jobs war in den letzten ~5 s seines Fensters gesperrt. Wer
-  ihn bis dahin nicht verbraucht hatte, verlor ihn. Jede Regel „vor Ablauf nutzen" mit kleinerem Horizont
-  war wirkungslos (Rotmagier Prefulgence, Weißmagier Divine Caress, Gelehrter Baneful Impaction, Ninja
-  Meisui, Pictomancer Tempera Grassa).
-- **Jetzt:** Der benötigte Status muss liegen, bis die Aktion losgeht und ihr Wirken endet
-  (`ActionBasicInfo.NeededStatusMargin`). Ein GCD wird vor dem Ablauf des GCD gewählt
-  (`CalculatedActionAhead`) und geht los, wenn er abläuft; die Restzeit zählt deshalb mit. Die Wirkzeit ist
-  die angepasste des Spiels — unter Swiftcast oder Dualcast null (belegt an WrathCombo, das „Wiederbelebung
-  nur mit Swiftcast" über `GetAdjustedCastTime == 0` prüft).
-- **Wo die alte Sperre einen Zweck hatte:** Einige Statusbedingungen sind keine Proc-Verbraucher, sondern
-  „nur unter dem Buff". Retrace (Schwarzmagier) versetzt Ley Lines und lohnt nur, wenn der Kreis den
-  nächsten GCD überdauert; diese Grenze steht jetzt in seinem `ActionCheck`. Upheaval (Krieger, braucht
-  Surging Tempest) geht sofort los und trifft unter dem Buff, solange er liegt; keine Grenze nötig.
-- **Betroffen:** alle Jobs (Endnutzer), jede abgeleitete Rotation mit `StatusNeed` (Paketnutzer),
-  Upstream-Pflege.
+**Warum so:** Bis A166 war eine solche Aktion gesperrt, sobald ihr Status in `StatusRefreshGcdCount`
+GCDs (ab Werk 2, rund 5 s) endete. Die Einstellung heißt in der Oberfläche „Number of GCDs before the
+DOT/Status effect is reapplied" und erscheint nur bei Aktionen, die einen Status vergeben; ihr Text
+bindet, und er spricht vom Erneuern, nicht vom Verbrauchen. Eingeführt hatte die Verwendung auf der
+Bedarfsseite Upstream-Commit `dc067e0d3` (April 2025, „for better status determination"); vorher lag
+die Grenze bei 0. Im Kampf war damit jeder Proc-Verbraucher aller Jobs in den letzten ~5 s seines
+Fensters gesperrt, und jede Regel „vor Ablauf nutzen" mit kleinerem Horizont war wirkungslos
+(Rotmagier Prefulgence, Weißmagier Divine Caress, Gelehrter Baneful Impaction, Ninja Meisui,
+Pictomancer Tempera Grassa).
+
+**Wo eine Grenze bleibt:** Einige Statusbedingungen sind keine Proc-Verbraucher, sondern „nur unter dem
+Buff". Retrace (Schwarzmagier) versetzt Ley Lines und lohnt nur, wenn der Kreis den nächsten GCD
+überdauert; diese Grenze steht in seinem `ActionCheck`. Upheaval (Krieger, braucht Surging Tempest)
+geht sofort los und trifft unter dem Buff, solange er liegt; keine Grenze nötig.
+
+**Betroffen:** alle Jobs (Endnutzer), jede abgeleitete Rotation mit `StatusNeed` (Paketnutzer),
+Upstream-Pflege.
 
 ### Rückfälle vor Ablauf, je Job
 
 Wartet ein Verbraucher auf eine Ausrichtung (Burst, Debuff), verfällt sein Fenster, wenn die Ausrichtung
-nicht kommt. Behoben mit einem Rückfall in der letzten Gelegenheit; vorher bleibt jede Ausrichtung
+nicht kommt. Ein Rückfall wirkt ihn in der letzten Gelegenheit; vorher bleibt jede Ausrichtung
 unberührt.
 - **Stufe „alle":** `CustomRotation.IsLastChanceBeforeStatusEnds(action, status)` — wahr, wenn die nächste
   Gelegenheit einen GCD nach dieser käme und das Fenster dann vor Losgehen und Wirken der Aktion endete
   (GCD-Restzeit + GCD-Länge + Wirkzeit, alle aus dem Spiel). Worauf ein Verbraucher wartet, bleibt die
-  Regel des Jobs.
-- **Ältere Rückfälle mit eigenem Horizont** (Paladin Atonement-Kette, Rotmagier Prefulgence, Weißmagier
+  Regel des Jobs. Leser: Maschinist, Samurai, Revolverklinge, Ninja (unten) und Beschwörer (Searing Flash).
+- **Rückfälle mit eigenem Horizont** (Paladin Atonement-Kette, Rotmagier Prefulgence, Weißmagier
   Divine Caress, Gelehrter Baneful Impaction, Ninja Meisui, Pictomancer Tempera Grassa, Monk Fire's/Wind's
-  Reply): Fähigkeiten ohne Wirkzeit oder mit großzügigem Horizont; sie greifen seit A166. Nicht auf den
-  gemeinsamen Baustein umgestellt, weil es sie nicht ändert.
-- **Maschinist:** Hypercharged (Barrel Stabilizer, eine Überhitzung ohne Heat) wartete auf Wildfire.
-  Wird Wildfire zurückgehalten — „Only use Wildfire on Boss targets" gegen Trash, oder vor einer Pause —,
-  verfiel es. Liegt Reassemble für ein Werkzeug bereit, wartet der Rückfall bis nach dessen GCD, sofern
-  Hypercharged bis zum Einschub danach hält; sonst geht Hypercharge vor, und Reassemble landet auf einem
-  Blazing Shot — fünf freie Überhitzungs-Schüsse wiegen mehr. Gesperrt bleibt er während einer laufenden Überhitzung (die Basisrotation
-  lässt Hypercharge dort nicht zu, `!IsOverheated`).
-- **Samurai:** Ogi Namikiri wartete auf einem Boss auf Higanbana. Kommt Higanbana nicht — abgeschaltet,
+  Reply): Fähigkeiten ohne Wirkzeit oder mit großzügigem Horizont; sie greifen, seit die
+  Statusbedingung das Ende des Fensters nicht mehr sperrt. Nicht auf den gemeinsamen Baustein
+  umgestellt, weil es sie nicht ändert.
+- **Maschinist:** Hypercharged (Barrel Stabilizer, eine Überhitzung ohne Heat) wartet in den übrigen
+  Pfaden auf Wildfire. Wird Wildfire zurückgehalten — „Only use Wildfire on Boss targets" gegen Trash,
+  oder vor einer Pause —, fällt Hypercharge in der letzten Gelegenheit. Liegt Reassemble für ein Werkzeug
+  bereit, wartet der Rückfall bis nach dessen GCD, sofern Hypercharged bis zum Einschub danach hält; sonst
+  geht Hypercharge vor, und Reassemble landet auf einem Blazing Shot — fünf freie Überhitzungs-Schüsse
+  wiegen mehr. Gesperrt bleibt er während einer laufenden Überhitzung (die Basisrotation lässt
+  Hypercharge dort nicht zu, `!IsOverheated`).
+- **Samurai:** Ogi Namikiri wartet auf einem Boss auf Higanbana. Kommt Higanbana nicht — abgeschaltet,
   oder „Prevent Higanbana use if theres more than one target" (ab Werk an) sperrt es über
   `NumberOfAllHostilesInRange`, während der Flächenpfad von Ogi `NumberOfHostilesInRange` unter zwei
-  sieht —, verfiel Ogi samt Kaeshi. Der Rückfall rechnet die Wirkzeit von Ogi mit ein.
-- **Revolverklinge:** Sonic Break und Reign of Beasts fielen nur unter No Mercy. Vergeht No Mercy ohne
-  Platz dafür (Pause), verfielen Ready to Break und Ready to Reign. Der Rückfall steht vor allen anderen
-  GCDs, weil jeder andere einen GCD später noch kommen kann — Reign of Beasts aber nicht mitten in einer
-  Gnashing-Fang- oder Reign-Kombo: Es übernähme den Kombo-Schritt und kostete Savage Claw und Wicked Talon
-  samt Fortsetzungen.
-- **Ninja:** Phantom Kamaitachi wartete auf das Trick-Attack- oder Mug-Fenster; Bunshin läuft auf eigener
-  Abklingzeit. Öffnet sich kein Fenster vor Ablauf, fällt es jetzt im letzten GCD.
+  sieht —, fällt Ogi in der letzten Gelegenheit; sonst verfiele es samt Kaeshi. Der Rückfall rechnet die
+  Wirkzeit von Ogi mit ein.
+- **Revolverklinge:** Sonic Break und Reign of Beasts fallen nur unter No Mercy. Vergeht No Mercy ohne
+  Platz dafür (Pause), fallen sie in der letzten Gelegenheit vor dem Ende von Ready to Break und Ready to
+  Reign. Der Rückfall steht vor allen anderen GCDs, weil jeder andere einen GCD später noch kommen kann —
+  Reign of Beasts aber nicht mitten in einer Gnashing-Fang- oder Reign-Kombo: Es übernähme den
+  Kombo-Schritt und kostete Savage Claw und Wicked Talon samt Fortsetzungen.
+- **Ninja:** Phantom Kamaitachi wartet auf das Trick-Attack- oder Mug-Fenster; Bunshin läuft auf eigener
+  Abklingzeit. Öffnet sich kein Fenster vor Ablauf, fällt es im letzten GCD, nicht während einer
+  Mudra-Ausführung.
 
 **Weiser, Addersgall (A203):** Bei drei Stapeln und dem nächsten innerhalb eines GCD fällt Druochole (7 % MP
 und eine Heilung, Wirktext) — kein Zielkonflikt, weil der Stapel sonst verloren ginge und nach dem Nachwachsen
-wieder drei für Notfälle stehen. Die Uhr des Weisen zählt die verstrichene Zeit (Dalamud); sie wurde als
-Restzeit gelesen und ist berichtigt. Prämisse: Die Uhr läuft bei drei Stapeln weiter. Der Job-Guide sagt
+wieder drei für Notfälle stehen. Die Uhr des Weisen zählt die verstrichene Zeit (Dalamud); `AddersgallTime`
+rechnet sie in die Restzeit um. Prämisse: Die Uhr läuft bei drei Stapeln weiter. Der Job-Guide sagt
 dazu nichts („alle zwanzig Sekunden, höchstens 3, lädt auch außerhalb des Kampfes"); belegt ist sie nur
 mittelbar durch The Balance („be sure to not let it overcap" — ein Überlaufen setzt die laufende Uhr
 voraus). Stimmt sie nicht, steht die Uhr bei vollem Vorrat, `AddersgallEndAfterGCD(1)` wird nie wahr, und
-Druochole fällt wie vor A203 nur nach Heilbedarf — kein Schaden, nur kein Gewinn. Gleiche Klasse: Die Lilien
+Druochole fällt nur nach Heilbedarf — kein Schaden, nur kein Gewinn. Gleiche Klasse: Die Lilien
 des Weißmagiers haben ihren eigenen Überlaufschutz (`LilyAfterGCD`); die übrigen Heiler haben keine
 selbst nachwachsenden Stapel.
 
@@ -331,8 +341,9 @@ Rückfall-Horizont die Wirkzeit deckt, prüft die Liste nicht; das steht je Fall
 - *Die Bedingung ist der Zweck:* Heilbedarf (Horoscope, Pepsis), Option (Retrace), Burst (Radiant
   Encore, Reawaken, Starfall Dance, Technical Step, Flourish), Tanzschritte vor den Procs (Tänzer: Reverse
   Cascade, Fountainfall, Rising Windmill, Bloodshower warten, solange ein Schritt bereit ist; die Procs
-  gelten 30 s laut Job-Guide, ein Tanz ist kürzer), Konzept 12 (Lux Solaris, Ruin IV). Searing Flash hat seit
-  A234 einen Rückfall vor dem Ende von Ruby's Glimmer: Mit weiteren Beschwörern fällt Searing Light auch in
+  gelten 30 s laut Job-Guide, ein Tanz ist kürzer), Lux Solaris (Konzept 08, „Wann Lux Solaris zuendet“), Ruin IV
+  (Konzept 16, „Jobs in seinem Schwerpunkt“). Searing Flash fällt
+  vor dem Ende von Ruby's Glimmer im Rückfall: Mit weiteren Beschwörern fällt Searing Light auch in
   einen Titan- oder Ifrit-Block, und die nächste Demi kommt nach dem Ende des Status (Konzept 16).
 - *Sicherheit:* Krieger Primal Rend auf Distanz nur mit den Sprung-Optionen — seine Vorgabe zu Bewegung.
 - *Niedrige Stufe:* Straight Shot, Trick Attack.
@@ -348,20 +359,22 @@ Rückfall-Horizont die Wirkzeit deckt, prüft die Liste nicht; das steht je Fall
 - *Fernkampf und Magie:* Barde, Tänzer, Pictomancer, Rotmagier, Schwarzmagier (Polyglot vor dem Überlauf, beide
   Rotationen), Beschwörer (Konzept 12).
 
-**Bewusst so, mit Grund:** *Barde:* Soul Voice bleibt bis zu 25 s bei 100, wenn Battle Voice kommt —
-Apex Arrow im Burst ist mehr wert als der Überlauf (Schluss aus dem Regelaufbau).
+**Bewusst so, mit Grund:** *Barde:* Soul Voice bleibt bis zu 25 s bei der Schwelle „Soul Voice Threshold
+for Apex Arrow" (ab Werk 100), wenn Battle Voice kommt — Apex Arrow im Burst ist mehr wert als der
+Überlauf (Schluss aus dem Regelaufbau).
 
-**Dunkelritter, Blut für den Burst (A197):** `UseBlood` war unverdrahtet und rechnete mit Blutkosten von
-Living Shadow, die es nicht mehr gibt; Bloodspiller fiel bei 50 Blut, wann immer möglich. The Balance (7.5,
-Leitfaden, keine Spielquelle): Bloodspiller unter Gruppenbuffs oder gegen Überlauf, mit möglichst viel Blut
-bis 70 in Delirium — Delirium gibt drei Stapel Blood Weapon zu je +10 (Job-Guide). Jetzt: Bloodspiller und
-Quietus unter Delirium, im Zwei-Minuten-Fenster (`InTwoMIsBurst`) oder über 70 Blut; sonst wird Blut
-aufgespart. Im Kampf: Mehr Bloodspiller fallen in die Gruppenbuffs statt davor.
+**Dunkelritter, Blut für den Burst:** Bloodspiller und Quietus fallen unter Delirium, im
+Zwei-Minuten-Fenster (`InTwoMIsBurst`) oder über 70 Blut; sonst wird Blut aufgespart (`UseBlood`).
+Unterhalb der Stufe von Delirium und mit Delirium-Stapeln fallen sie frei. Grund: The Balance (7.5,
+Leitfaden, keine Spielquelle): Bloodspiller unter Gruppenbuffs oder gegen Überlauf, mit möglichst viel
+Blut bis 70 in Delirium — Delirium gibt drei Stapel Blood Weapon zu je +10 (Job-Guide). Im Kampf: Mehr
+Bloodspiller fallen in die Gruppenbuffs statt davor. Vor A197 las keine Regel `UseBlood`, und
+Bloodspiller fiel bei 50 Blut, wann immer möglich.
 
 ## Pausen und Phasenenden
 
-**Sachstand (A162):** Seine Angabe zum Profil — Machinist zwischendurch, alle anderen Kampfjobs
-seltener — holt diese Jobs in die Bearbeitung.
+**Sachstand:** Seine Angabe zum Profil — Machinist zwischendurch, alle anderen Kampfjobs
+seltener — holt diese Jobs in die Bearbeitung (A162).
 
 **Die Pause selbst ist eine Regel für alle, was darin fällt, eine Regel des Jobs.**
 - **Stufe „alle":** `CustomRotation.InCombatPause` — im Kampf, kein Gegner in 25 Yalm; nichts zu
@@ -375,8 +388,8 @@ seltener — holt diese Jobs in die Bearbeitung.
 
 **Bestehendes Pausenverhalten bleibt, wie es ist,** weil es eine andere Frage beantwortet: Der Monk lädt
 schon Chakra, wenn kein Gegner in **seiner** Reichweite steht (3 Yalm, auch wenn er nur für eine Mechanik
-herausläuft); der Machinist verschießt Heat vor einer vorhergesagten Pause (`BmrDumpBeforeDowntime`); der
-Schnitter wirkt Soulsow.
+herausläuft); der Machinist verschießt Heat vor einer vorhergesagten Pause (`BmrDumpBeforeDowntime`, ab
+Werk an).
 
 **Nicht gebaut, mit Grund:**
 - *Six-sided Star (Monk):* Job-Guide (02.10.2026): 780 Potenz, +80 je offenem Chakra, schließt alle Chakren,
@@ -384,13 +397,20 @@ Schnitter wirkt Soulsow.
   one SSS"; nützlich, wo die Zeit nicht für zwei GCDs reicht — „before running out of a big aoe, before a boss
   dies, or before a boss goes untargetable". Damit ist die Einsatzregel belegt: der letzte GCD vor einer Pause oder
   dem Tod des Ziels, wenn nur noch einer passt. Ob Chakra über eine Pause verfällt, nennt keine der Quellen.
-  WrathCombo (Stand 25.09.2026) führt die Aktion nur als Id und wirkt sie nicht. Nicht gebaut; offen im TODO.
+  WrathCombo (Stand 25.09.2026) führt die Aktion nur als Id und wirkt sie nicht. Offen im TODO.
 - *Flamethrower (Machinist):* Job-Guide: Flächenkanal im Kegel 12 Yalm, 120 Potenz über 10 s, endet bei jeder
   anderen Aktion und bei Bewegung oder Drehung, löst die GCD-Abklingzeit aus. The Balance, Machinist Basic Guide:
   „If gauge is not usable, beats filler on 2+; Beats Air Anchor (incl. battery) on 6+; Never beats Hypercharge,
   Chain Saw/Excavator, Drill/Bio", und keine große Abklingzeit darf in den 11 s des Kanals bereit werden. Damit ist
   die Regel belegt. Er bindet ihn 11 s an Ort und Blickrichtung — nach seiner Spielweise ein Positionsrisiko, das
-  im Kampf nur bei stehenden Rudeln ohne Mechanik trägt. Nicht gebaut; offen im TODO.
+  im Kampf nur bei stehenden Rudeln ohne Mechanik trägt. Offen im TODO.
+- *Soulsow in der Kampfpause (Schnitter):* RSR wirkt Soulsow nur außerhalb des Kampfes
+  (`ModifySoulsowPvE`: `!InCombat`) — im Countdown und zwischen Rudeln. Der Wirktext erlaubt es im Kampf
+  („Cast time is instant when used outside of battle"); The Balance, Reaper Basic Guide (12.10.2026): „five second
+  cast time in combat", „Make sure to get one Harvest Moon between each pull and downtime!" WrathCombo legt es mit
+  der Option `RPR_Soulsow_Combat` im Kampf auf Harpe, wenn kein Kampfziel besteht. Im Kampf: In einer Pause, in der
+  er 5 s steht, käme danach ein Harvest Moon hinzu. Ohne vorhergesagtes Pausenende kann die Wirkzeit in die Rückkehr
+  des Ziels laufen und den ersten GCD danach verzögern. Offen im TODO.
 
 **Folgen, bewusst hingenommen:**
 - Läuft der Samurai im Kampf aus 25 Yalm heraus, ohne dass eine Pause ist, fällt Meditate, sobald er

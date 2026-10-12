@@ -643,9 +643,10 @@ Seine Protokolle vom 01.10.2026 zeigen Abschütteln und Reflexion fast immer auf
 
 Ob ein Spieler in einer Fläche steht, entscheidet der Mittelpunkt seines Modells (Akhmorning, „Raiding Fundamentals", 02.10.2026). `GetCanAffects` rechnet Trefferfläche zu Trefferfläche und zählt ein Mitglied am Rand um seinen Trefferkreis zu großzügig mit. Im Kampf: Lux Solaris und andere Flächenheilungen um den Wirkenden können eine verlangte Anzahl erreicht sehen, die die Heilung nicht trifft. Erhebung aller Leser von `GetCanAffects` für freundliche Flächen offen; Konzept 08, „Wann Lux Solaris zündet".
 
-### Six-sided Star und Flamethrower: Regeln jetzt belegt, nicht gebaut · N
+### Six-sided Star, Flamethrower und Soulsow in der Kampfpause: Regeln belegt, nicht gebaut · N
 
-Quellen gefunden (Job-Guide und The Balance, 02.10.2026; Konzept 14, „Pausen und Phasenenden"):
+Quellen gefunden (Job-Guide und The Balance, 02.10. und 12.10.2026; Konzept 14, „Pausen und Phasenenden"):
+- *Soulsow (Schnitter):* RSR wirkt es nur außerhalb des Kampfes (`ModifySoulsowPvE`: `!InCombat`). Im Kampf 5 s Wirkzeit (Wirktext, The Balance); The Balance verlangt ein Harvest Moon zwischen Pull und jeder Pause. Regel: in `InCombatPause`, stehend, ohne Soulsow; mit Modul nur, wenn das vorhergesagte Pausenende (`BMRNextDowntimeEndIn`) die Wirkzeit deckt, ohne Modul nur mit Nachsteuerung gegen eine Rückkehr des Ziels in die Wirkzeit.
 - *Six-sided Star (Monk):* 780 + 80 je Chakra, 4 s Wiederholzeit; Einsatz als letzter GCD vor Pause, Rückzug aus einer Fläche oder Tod des Ziels, wenn nur einer passt. Braucht die vorhergesagte Pause (BossModReborn) oder die selbstkorrigierte Zeit bis zum Tod; ohne Modul nur über die Zeit bis zum Tod.
 - *Flamethrower (Machinist):* Schwellen von The Balance (ohne Gauge ab 2 Zielen über dem Füller, ab 6 über Air Anchor; nie vor Hypercharge, Chain Saw/Excavator, Drill/Bio; keine große Abklingzeit in den 11 s). Bindet 11 s an Ort und Blickrichtung — gegen seine Spielweise nur bei stehendem Rudel ohne angesagte Fläche zulässig.
 
