@@ -67,13 +67,6 @@ internal static class TankbusterForecast
 	private static readonly List<Execution> _own = [];
 	private static long _readAt;
 
-	/// <summary>
-	/// How many rated defences aimed at the player - or working around him, as Reprisal - RSR has pressed so
-	/// far: mitigation, barrier, Reprisal, with or without a known duration. Presses by hand and help aimed at
-	/// another member are not counted.
-	/// </summary>
-	public static long SelfDefencePresses { get; private set; }
-
 	/// <summary>The clock of this forecast: high resolution, monotonic.</summary>
 	public static long Now => System.Diagnostics.Stopwatch.GetTimestamp();
 
@@ -126,19 +119,6 @@ internal static class TankbusterForecast
 	/// </summary>
 	public static void RecordOwnPress(uint actionId, ulong targetId)
 	{
-		// A party tool (a barrier or mitigation spread over the party) belongs to the area defence, not to
-		// "everything" against a tankbuster; Reprisal, rated only against the enemy, is counted.
-		var player = Player.Object;
-		var value = DefensiveValues.For(actionId);
-		if (player != null && DataCenter.InCombat && DataCenter.Role == JobRole.Tank && value != default)
-		{
-			var outward = FactsOfAction(actionId).Outward;
-			if ((targetId == player.GameObjectId || outward) && !(outward && value.ProtectsBearer))
-			{
-				SelfDefencePresses++;
-			}
-		}
-
 		_ = Follow(actionId, targetId, false);
 	}
 

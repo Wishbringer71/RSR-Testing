@@ -567,14 +567,13 @@ public sealed class WAR_Reborn : WarriorRotation
 	/// Whether Shake It Off would dispel what the tankbuster plan cannot do without - Damnation, Vengeance,
 	/// Bloodwhetting, Raw Intuition or Thrill of Battle, standing or pressed and still on its way (concept 09,
 	/// K1). It then waits even while the party is in danger: without it the measured tankbuster kills the
-	/// warrior by the figures, the raidwide only endangers the party. Not when the measured raidwide kills a
-	/// member by the figures - death against death is his decision (D2), and until then the party's danger
-	/// opens it as before.
+	/// warrior by the figures. It goes when the measured raidwide costs the group more than that one tank -
+	/// a healer, or more than one member, by the figures: the owner's measure, the best result for the group.
 	/// </summary>
 	private bool ShakeItOffTakesNeeded()
 		=> (TankbusterPlanNeeds(DamnationPvE) || TankbusterPlanNeeds(VengeancePvE) || TankbusterPlanNeeds(BloodwhettingPvE)
 				|| TankbusterPlanNeeds(RawIntuitionPvE) || TankbusterPlanNeeds(ThrillOfBattlePvE))
-			&& !AnnouncedAreaHitKillsSomeone;
+			&& !AnnouncedAreaHitCostsMoreThanATank;
 
 	/// <summary>
 	/// Whether Shake It Off waits at a raidwide: only while Damnation (Vengeance) runs for a tankbuster on the
@@ -670,6 +669,13 @@ public sealed class WAR_Reborn : WarriorRotation
 		if (member.IsJobCategory(JobRole.Healer))
 		{
 			return true;
+		}
+
+		// Against a measured need the plan's triage decides: another tank wins only while the warrior's
+		// invulnerability can take over (the owner's answer to D3, concept 09).
+		if (TankbusterPlanActive)
+		{
+			return HelpWinsTriage(member);
 		}
 
 		return member.IsJobCategory(JobRole.Tank) && !warriorAboutToDie;

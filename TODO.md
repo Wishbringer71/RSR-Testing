@@ -261,62 +261,14 @@ der sich hochrechnen ließe).
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 
-### Unverwundbarkeit, nachdem für dasselbe Wirken schon Minderungen hinausgingen: seine Entscheidung (D1) · N
+### Wirkdauer unterhalb der Merkmalsstufe unbekannt (Reflexion, Schiltron, Urflackern, Intervention) · N, R
 
-**Lage (A261):** Ist die Unverwundbarkeit für einen gemessenen Tankbuster verweigert – vom Spiel (Stun, Amnesie)
-oder einer Prüfung der Rotation –, ist der Plan „alles", und Minderungen gehen hinaus. Wird sie danach im selben
-Wirken nutzbar und reicht noch immer nichts Geringeres, stehen zwei Wege offen:
-- **A:** Sie geht trotzdem. Im Kampf: Der Tank überlebt den Treffer, den nach der Messung nichts Geringeres trägt;
-  die schon verbrauchten Minderungen fehlen beim nächsten Tankbuster ohnehin, die Unverwundbarkeit (240–420 s)
-  zusätzlich.
-- **B (gebaut, aus seiner Präzisierung abgeleitet):** Sie geht nicht mehr, sobald aus „alles" etwas hinausging –
-  ein RSR-Druck bewerteter Abwehr auf dich nach einem Durchlauf, der „alles" rechnete (Konzept 09, Zustandsmodell). Im Kampf: Die Unverwundbarkeit bleibt für den nächsten tödlichen
-  Treffer; der jetzige trifft auf alle Minderungen und tötet nach der Messung, außer ein anderer legt noch einen
-  Debuff oder Schild.
-
-**Teil b:** Ging für dasselbe Wirken ein überlebbares Bündel hinaus und fallen danach die LP, sodass kein Bündel mehr
-reicht, geht die Unverwundbarkeit zusätzlich (gebaut). Im Kampf: Der Tank überlebt; das Bündel war die richtige Wahl
-zu seiner Zeit. Die Alternative hielte sie zurück und nähme den Treffer mit dem Bündel. Empfehlung: wie gebaut.
-
-Seine Präzisierung („nicht invul und dann noch zusätzlich buffs … alles raushauen, wenn invul nicht verfügbar ist")
-legt fest, was „alles" heißt; diesen Fall berührt sie nicht. **Empfehlung:** A – die Messung nennt den Treffer
-tödlich, und B nimmt den Tod bewusst in Kauf, um eine Abklingzeit zu sparen. Gebaut bleibt B, bis er entscheidet:
-Die Festlegung steht mit seiner Präzisierung als Grund im Konzept, und die ändere ich nicht ohne ihn. Die Runden des
-Code-Reviews haben zwischen beiden gependelt; die Frage ist keine technische.
-
-**Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
-
-
-### Abschütteln gegen ein gebrauchtes Glied bei tödlichem Raidwide: seine Entscheidung (D2) · N
-
-**Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`, „Die Ableitung aus dem Bestand", K1. Abschütteln hebt
-Verdammnis, Rachsucht und Urimpuls auf. Wird ein solches Glied für einen gemessenen Tankbuster gebraucht und steht
-zugleich ein Raidwide an, der nach den Zahlen ein Mitglied tötet, steht Tod gegen Tod. **Empfehlung:** die Triage
-seiner Vorgabe – ein Heiler geht vor; sonst bleibt das Glied, weil ein toter Tank meist den Kampf kostet. Gebaut ist
-bis dahin: Abschütteln weicht bei Gefahr für die Gruppe (A245).
-
-### Tank gegen Tank um ein Glied ohne bereite Unverwundbarkeit: seine Entscheidung (D3) · N
-
-**Konzept:** wie D2, K2–K4. Seine Triage gab einem kritischen Tank Vorrang, weil „sein Tod sicher, der Tankbuster
-möglich" war; für einen gemessenen, ohne das Glied tödlichen Tankbuster ist auch der eigene Tod sicher.
-**Empfehlung:** das Glied bleibt beim Planenden (sein Treffer ist gemessen und terminiert; den Stand des anderen
-können die Heiler bis zu dessen nächstem Treffer ändern). Gebaut ist bis dahin: Hilfe für andere ist frei.
-
-### Tankbuster-Plan weicht vom vollständigen Konzept ab (Abgleich 12.10.2026) · N, R
-
-**Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`, „Abgleich mit dem Code". Acht Abweichungen: Minderung je
-Schadensart (Dark Mind) und Erhöhung der maximalen LP (Kampfrausch) fehlen im Wertemodell; das Zurückhalten erfasst
-Block und die beiden nicht; K1–K4 (Abschütteln, Urflackern, The Blackest Night, Herz des Korunds, Oblation,
-Intervention, Cover) nehmen dem Plan gebrauchte Glieder; fehlende Dauern (Reflexion, Schiltron, Urflackern); die
-Tankbuster-Tabelle speichert Treffer unter Dark Mind oder erhöhten maximalen LP zu niedrig. Wird in einem Zug behoben,
-soweit nicht von D2/D3 abhängig.
-### Wirkdauer von Reflexion und Schiltron fehlt in der Tabelle · N, R
-
-**Befund (A261, Zustandsmodell):** Der Wirktext von Reflexion (7535) und Schiltron (3542) in `ActionId.resx` lautet
-„Duration: s" – der Wert hängt an einem Merkmal (Verbesserte Reflexion ab Stufe 98) und fehlt deshalb in
-`DefensiveValues.DurationByActionId`. Der Tankbuster-Plan nimmt nur Kandidaten mit bekannter Dauer; beide fallen
-damit heraus, obwohl Reflexion oft das billigste Glied wäre. **Offen:** die Dauer aus dem Job-Guide
-(`na.finalfantasyxiv.com/jobguide/`, Wert samt Merkmalsstufe) in den Generator übernehmen, mit Selbsttest.
+**Befund (A266):** Wo der Wirktext die Dauer leer lässt („Duration: s"), liest der Plan sie aus dem Merkmal, das sie
+setzt – im Spiel (`TraitDurations`), sonst aus `trait_durations.json`. Unterhalb der Merkmalsstufe (Reflexion,
+Feint, Addle 98; Schiltron 74; Urflackern, Intervention 82) nennt kein Text die Dauer; die Aktion ist dann kein
+Kandidat. Im Kampf, stufensynchron darunter: Der Plan wählt ein teureres Bündel oder die Unverwundbarkeit (Richtung:
+zu viel Mittel, nicht zu wenig). **Offen:** ob die Grunddauer irgendwo im Spiel steht (Status-Blatt, Job-Guide), voller
+Loop vor jedem Bau.
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 

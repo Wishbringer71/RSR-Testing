@@ -3924,6 +3924,40 @@ internal static class DataCenter
 		return AnnouncedHitDropsBelow(threshold, true, out who);
 	}
 
+	/// <summary>
+	/// How many party members the measured announced area hit takes to zero by the figures - the forecast
+	/// effective health against its share, the invulnerable left out (the critical class's footing) - and
+	/// whether a healer is among them.
+	/// </summary>
+	internal static int AnnouncedHitKills(out bool healer)
+	{
+		healer = false;
+		var share = AnnouncedAreaShare;
+		if (share <= 0f)
+		{
+			return 0;
+		}
+
+		var killed = 0;
+		var party = PartyMembers;
+		for (var i = 0; i < party.Count; i++)
+		{
+			var member = party[i];
+			if (member == null || member.IsDead || member.MaxHp == 0 || !member.NoNeedHealingInvuln())
+			{
+				continue;
+			}
+
+			if (member.GetForecastEffectiveHp() / (float)member.MaxHp - share <= 0f)
+			{
+				killed++;
+				healer |= member.IsJobCategory(JobRole.Healer);
+			}
+		}
+
+		return killed;
+	}
+
 	private static bool AnnouncedHitDropsBelow(float threshold, bool unprotectedOnly, out string who)
 	{
 		who = string.Empty;

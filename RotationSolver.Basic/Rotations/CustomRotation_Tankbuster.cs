@@ -37,19 +37,13 @@ public partial class CustomRotation
 	// plan for one GCD, then tried again. The entry stays until the cast ends, so the refusal is written once.
 	private static readonly Dictionary<(int Cast, uint ActionId), long> _refused = [];
 
-	// The casts for which, while the plan was "everything" (Z4), an own rated defence went out on the player -
-	// from the plan or any other path. The invulnerability does not follow in that cast: the owner's
-	// precision, "nicht invul und dann noch zusätzlich buffs" (concept 09, A261; whether it should follow
-	// anyway is his decision, TODO.md, D1a). A refusal of the invulnerability that runs out before the last
-	// GCD keeps it planned (Z3), so a passing stun does not open this.
-	private static readonly HashSet<int> _everythingSpent = [];
-
 	// What the plan cannot do without this cycle (FindNeeded).
 	private static readonly HashSet<IBaseAction> _needed = [];
 
-	// The cast the last cycle planned "everything" for, and how many rated defences on the player RSR had
-	// pressed by then; one more went out under it.
-	private static (int Serial, long Presses)? _everythingSince;
+	// Whether, for the bundle now planned, the invulnerability could take over before the last GCD - option on,
+	// learned, ready by then, a retry left. A help that takes a needed member then costs no one's life.
+	private static bool _invulnerabilityCanTakeOver;
+
 	private static readonly List<(int, uint)> _endedKeys = [];
 
 
@@ -72,6 +66,7 @@ public partial class CustomRotation
 	{
 		_tankbusterPlan = null;
 		_needed.Clear();
+		_invulnerabilityCanTakeOver = false;
 
 		// Refusals belong to casts still running.
 		_endedKeys.Clear();
@@ -88,15 +83,6 @@ public partial class CustomRotation
 			_ = _refused.Remove(key);
 		}
 
-		_ = _everythingSpent.RemoveWhere(serial => !TankbusterForecast.IsRunning(serial));
-
-		// The presses of the last cycle went out under its plan.
-		if (_everythingSince is { } since && TankbusterForecast.SelfDefencePresses > since.Presses)
-		{
-			_ = _everythingSpent.Add(since.Serial);
-		}
-
-		_everythingSince = null;
 
 		if (DataCenter.Role != JobRole.Tank
 			|| (!Service.Config.InvulnerabilityBeforeLethalTankbuster && !Service.Config.HoldMitigationUnderInvulnerability))
@@ -157,14 +143,16 @@ public partial class CustomRotation
 			bestMask = BestBundle(candidates, predicted, cast.Budget, true, out bestAfter);
 		}
 
+		var invulnerabilityAvailable = Service.Config.InvulnerabilityBeforeLethalTankbuster && invulnerability != null
+			&& RetryLeft(cast, invulnerability.ID, gcd)
+			&& InvulnerabilityReadyBy(cast.Remaining - gcd);
 		if (bestMask >= 0)
 		{
 			SetPlan(new TankbusterPlan(cast, Pick(candidates, bestMask), false, true, bestAfter));
 			FindNeeded(candidates, bestMask, pending, standing, predicted, cast.Budget);
+			_invulnerabilityCanTakeOver = invulnerabilityAvailable;
 		}
-		else if (Service.Config.InvulnerabilityBeforeLethalTankbuster && invulnerability != null
-			&& RetryLeft(cast, invulnerability.ID, gcd) && !EverythingSpent(cast)
-			&& InvulnerabilityReadyBy(cast.Remaining - gcd))
+		else if (invulnerabilityAvailable)
 		{
 			SetPlan(new TankbusterPlan(cast, [], true, true, 0f));
 		}
@@ -172,7 +160,6 @@ public partial class CustomRotation
 		{
 			var all = (1 << candidates.Count) - 1;
 			SetPlan(new TankbusterPlan(cast, Pick(candidates, all), false, false, After(predicted, candidates, all, out _, out _)));
-			_everythingSince = (cast.Serial, TankbusterForecast.SelfDefencePresses);
 
 			// Everything goes, in the hope of someone else's help (his precision): every member and every
 			// own mitigation that stands is needed.
@@ -299,9 +286,13 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
-	/// The triage of his rule for Nascent Flash, universal for every help that takes a needed member
-	/// (concept 09): the member helped must be in the critical class, and then a healer wins, a tank wins
-	/// while you are not in it yourself (D3 open for the measured case), a damage dealer does not.
+	/// The triage of his rule for Nascent Flash, for every help that takes a member a measured tankbuster
+	/// needs (concept 09, K2-K4): a healer in the critical class wins ("fällt der Heiler, fällt die Gruppe").
+	/// Another tank in the critical class wins only while your invulnerability can take over and you are not
+	/// critical yourself - then both live. Without it he does not: your death without the member is measured
+	/// and certain, his critical state an uncertain one, and trading the certain for the uncertain is not
+	/// necessarily good for the group (his answer to D3). A damage dealer does not. When the help goes, the
+	/// plan reckons without the member and draws the invulnerability if nothing less survives.
 	/// </summary>
 	internal static bool HelpWinsTriage(IBattleChara member)
 	{
@@ -315,18 +306,26 @@ public partial class CustomRotation
 			return true;
 		}
 
-		return member.IsJobCategory(JobRole.Tank) && !(Player?.IsInCriticalClass() ?? false);
+		return member.IsJobCategory(JobRole.Tank) && _invulnerabilityCanTakeOver && !(Player?.IsInCriticalClass() ?? false);
 	}
 
 	/// <summary>Whether a plan stands for a measured tankbuster cast at you (any state).</summary>
 	protected static bool TankbusterPlanActive => _tankbusterPlan != null;
 
 	/// <summary>
-	/// Whether the measured area cast now coming would, by the figures, take a member's forecast effective
-	/// health to zero - the line beyond which a needed tankbuster member against the party's survival is his
-	/// decision (concept 09, D2), not a hold.
+	/// Whether the measured area cast now coming costs the group more, by the figures, than the one tank a
+	/// tankbuster kills without a needed member: it kills a healer ("fällt der Heiler, fällt die Gruppe"), or
+	/// more than one member. The owner's measure for a needed member against the party: the best result for
+	/// the group (concept 09, K1).
 	/// </summary>
-	protected static bool AnnouncedAreaHitKillsSomeone => DataCenter.AnnouncedHitDropsUnprotectedBelow(0f, out _);
+	protected static bool AnnouncedAreaHitCostsMoreThanATank
+	{
+		get
+		{
+			var killed = DataCenter.AnnouncedHitKills(out var healer);
+			return healer || killed > 1;
+		}
+	}
 
 	/// <summary>
 	/// Whether <paramref name="help"/>, aimed at another member, takes away something the plan needs: the
@@ -582,11 +581,6 @@ public partial class CustomRotation
 		}
 
 		return pending.Cover >= cast.Horizon || (windowCounts && pending.CoveredSerial == cast.Serial);
-	}
-
-	private static bool EverythingSpent(TankbusterForecast.Cast cast)
-	{
-		return _everythingSpent.Contains(cast.Serial);
 	}
 
 	private static bool Refused(TankbusterForecast.Cast cast, uint actionId, float gcd)

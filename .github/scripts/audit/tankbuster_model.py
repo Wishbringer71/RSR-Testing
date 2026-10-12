@@ -14,10 +14,12 @@ Checked per run, against the true world state:
   O3  the invulnerability is never pressed while a bundle of members that can still be pressed
       before the last GCD survives;
   O4  every member the plan pressed still stands at impact (pressed inside its window);
-  O5  from the press until the hit, the plan never loses track of a pressed member.
+  O5  from the press until the hit, the plan never loses track of a pressed member;
+  O8  "everything" (Z4) is planned only while the invulnerability cannot be pressed before the last GCD -
+      also after mitigation went out for the same cast (his decision D1).
 
 The self-test switches on, one at a time, the defects review rounds found in the built code
-(A263): each has to be caught by at least one check. A model that cannot find them would not
+(A263) and the exclusion his decision D1 rejected (A267): each has to be caught by at least one check. A model that cannot find them would not
 have found them before the code either.
 
 Run from the repository root:  python3 .github/scripts/audit/tankbuster_model.py
@@ -80,6 +82,7 @@ class Defects:
     shake_free: bool = False      # Shake It Off ignores pressed/needed members
     help_free: bool = False       # Nascent Flash on a party member ignores the plan
     hold_off: bool = False        # the hold ignores the rotation's other paths
+    everything_excludes: bool = False  # D1a: once "everything" went out, no invulnerability for the cast
 
 
 @dataclass
@@ -108,7 +111,6 @@ class World:
     refused_until: dict = field(default_factory=dict)
     invul_pressed: bool = False
     everything_spent: bool = False
-    z4_other_press: bool = False
 
 
 def own_left(w, act, t):
@@ -221,7 +223,8 @@ def plan(w, d, t, read_t, R_read, H_read, P_read, B_read):
     plan.double = {a.name for a in pending} & plan.in_reading
     if best is not None:
         return 'Z2', best[1], R, H
-    if w.opt_a and w.invul_ready and not w.everything_spent and ready_by(w, HOLMGANG, t, max(0.0, R - GCD)):
+    if w.opt_a and w.invul_ready and invul_retry_left(w, t, R) and ready_by(w, HOLMGANG, t, max(0.0, R - GCD)) \
+            and not (d.everything_excludes and w.everything_spent):
         return 'Z3', [HOLMGANG], R, H
     return 'Z4', [a for a, _ in cands], R, H
 
@@ -239,6 +242,13 @@ def held(w, state, members, act, R):
             return False
         return not (act in members and R <= act.duration - GCD)
     return False
+
+
+def invul_retry_left(w, t, R):
+    """A refusal of the invulnerability makes Z4 only while no retry is left before the last GCD; once it
+    runs out, the invulnerability is planned again (concept 09, "Verweigerung"; D1: also after "everything")."""
+    left = max(0.0, w.refused_until.get(HOLMGANG.name, -1) - t)
+    return left <= 0 or R - left > GCD
 
 
 def bundle_exists_true(w, t):
@@ -280,12 +290,15 @@ def run(w, d):
         next_dt = w.frames[i + 1] if i + 1 < len(w.frames) else dt
         if t >= w.cast_time:
             break
-        # "everything" spent: an own press of rated defence went out after a cycle that planned Z4
-        if w.z4_other_press or (last_state == 'Z4' and w.pressed and w.pressed[-1][2] in ('plan-z4', 'other')
-                                and w.pressed[-1][0] > t - 0.5):
-            w.everything_spent = True
         state, members, R, H = plan(w, d, t, read_t, R_read, H_read, P_read, B_read)
         last_state = state
+
+        # O8 (D1): "everything" only while the invulnerability is not available - it is planned whenever it can
+        # still be pressed before the last GCD, also after mitigation went out for the same cast
+        Rt = w.cast_time - t
+        if state == 'Z4' and w.opt_a and w.invul_ready and invul_retry_left(w, t, Rt) \
+                and ready_by(w, HOLMGANG, t, max(0.0, Rt - GCD)) and not bundle_exists_true(w, t):
+            violations.append(('O8', w.seed, t, 'everything planned while the invulnerability is available'))
 
         # O5: a pressed plan member that truly stands at impact is in the plan's arithmetic every frame -
         # through the forecast's reading or as a record. O6: never through both.
@@ -325,16 +338,16 @@ def run(w, d):
                     if w.refuse_twice:
                         w.refuse_at = t + GCD + 0.01
                     break
-                press(w, act, t, 'plan-z4' if state == 'Z4' else 'plan', H)
+                press(w, act, t, 'plan', H)
                 tracked[act.name] = act
+                if state == 'Z4':
+                    w.everything_spent = True
                 break
 
         # free paths
         if w.other and t >= w.lock_until and rng.random() < 0.05:
             want = rng.choice(KIT)
             if ready_by(w, want, t, 0) and (d.hold_off or not held(w, state, members, want, R)):
-                if state == 'Z4':
-                    w.z4_other_press = True
                 press(w, want, t, 'other', H)
         if w.shake_at is not None and abs(t - w.shake_at) < dt:
             needed = any(a.dispelled_by_shake and a.name in tracked for a in KIT)
@@ -402,15 +415,21 @@ def world(seed, scenario):
     if scenario.get('tight'):
         # every member needed: all four survive it, any three do not (Bloodwhetting the weakest)
         hit = (hp + THRILL.barrier) / (RAMPART.factor * DAMNATION.factor * BLOODWHETTING.factor) * rng.uniform(0.92, 0.99)
+    late = scenario.get('late_refusal')
+    if late:
+        # D1: the invulnerability is refused at the first press with no retry left before the last GCD - "everything"
+        # goes out - and the refusal runs out inside the last GCD; nothing less survives the hit
+        hit = rng.uniform(3.0, 4.0)
     return World(
         seed=seed,
-        cast_time=rng.choice([6.0, 8.0, 10.0, 12.0]) if scenario.get('tight') else rng.choice([4.0, 5.0, 6.0, 8.0, 10.0, 12.0]),
+        cast_time=rng.choice([4.0, 4.5]) if late else rng.choice([6.0, 8.0, 10.0, 12.0]) if scenario.get('tight')
+        else rng.choice([4.0, 5.0, 6.0, 8.0, 10.0, 12.0]),
         hit=hit,
         hp=hp,
         latency=rng.uniform(0.03, 0.3),
         show_delta=rng.uniform(-0.05, 0.12),
         frames=frames,
-        refuse_at=rng.uniform(0.0, 6.0) if scenario.get('refuse') else None,
+        refuse_at=frames[0] / 2 if late else rng.uniform(0.0, 6.0) if scenario.get('refuse') else None,
         refuse_twice=bool(scenario.get('refuse_twice')),
         shake_at=rng.uniform(0.5, 7.0) if scenario.get('shake') else None,
         help_at=rng.uniform(0.5, 7.0) if scenario.get('help') else None,
@@ -431,6 +450,7 @@ SCENARIOS = [
     {'tight': True, 'help': True, 'invul': False},
     {'other': True}, {'other': True, 'refuse': True}, {'other': True, 'tight': True}, {'other': True, 'invul': False},
     {'opt_b': False}, {'opt_a': False}, {'opt_a': False, 'tight': True}, {'opt_b': False, 'other': True},
+    {'late_refusal': True}, {'late_refusal': True, 'other': True},
 ]
 
 
@@ -463,6 +483,7 @@ def self_test():
         'shake_free': Defects(shake_free=True),
         'help_free': Defects(help_free=True),
         'hold_off': Defects(hold_off=True),
+        'everything_excludes': Defects(everything_excludes=True),
     }
     missed = []
     for name, d in variants.items():
@@ -471,7 +492,7 @@ def self_test():
     if missed:
         print('SELF-TEST FAILED: the model does not catch the constructed defect(s):', ', '.join(missed))
         return False
-    print(f'self-test ok: each of {len(variants)} defects found in the built code by review is caught '
+    print(f'self-test ok: each of {len(variants)} defects (found by review, or rejected by his decision D1) is caught '
           f'({", ".join(variants)})')
     return True
 

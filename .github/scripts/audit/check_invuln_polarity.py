@@ -30,6 +30,8 @@ NEGATED = re.compile(r"!\s*[\w?.()\[\]]*?\bP?(?:layer)?NoNeedHealingInvuln\(\)|!
 ACCEPTED = [
     ("RotationSolver.Basic/DataCenter.cs", "unprotectedOnly && !member.NoNeedHealingInvuln()",
      "skips the protected when only the unprotected are asked for"),
+    ("RotationSolver.Basic/DataCenter.cs", "member.MaxHp == 0 || !member.NoNeedHealingInvuln()",
+     "AnnouncedHitKills: an invulnerable member does not die of the raidwide, so it is not counted"),
     ("RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs", "player == null || !player.NoNeedHealingInvuln()",
      "TankbusterOnMeWithin: no own cooldown for a tankbuster while an invulnerability covers the player"),
 ]

@@ -6038,6 +6038,35 @@ beobachtet.
   auslesbare werte haben ingame vorrang", präzisiert „vorrang ist gewichtung". Prüfgrad: Prüfskripte; Compile über
   die CI; im Spiel nicht beobachtet.
 
+### A267 · Tankbuster-Plan: seine Entscheidungen D1–D3 eingearbeitet (12.10.2026)
+
+- *D1, seine Antwort:* „unverwundbarkeit ist die ultimative lösung … wenn tankbuster durch „alles" nicht überlebt
+  werden kann, dann ist auf alles zu verzichten und nur unverwundbarkeit zu nehmen … hast du das nicht im Konzept
+  selbst rausgefunden?" Nein. *Ursache am System:* Seine Präzisierung („nicht invul und dann noch zusätzlich buffs …
+  alles raushauen, wenn invul nicht verfügbar ist") legt die Reihenfolge fest – nach der Unverwundbarkeit keine
+  Minderung mehr. Gebaut war daraus auch die Umkehrung (nach „alles" keine Unverwundbarkeit mehr, Zähler
+  „‚Alles' ausgeschöpft"); die steht nicht darin, und die Falsifikation prüfte die Ableitung nicht gegen ihren Wortlaut.
+  Entfernt: Zähler und Ausschluss (`SelfDefencePresses`, `EverythingSpent`). Z3 gilt wieder, sobald die
+  Unverwundbarkeit vor dem letzten GCD nutzbar ist.
+- *D2, seine Antwort:* „es geht um das beste ergebnis für die gruppe." Umgesetzt: Abschütteln geht gegen ein
+  gebrauchtes Glied, wenn der gemessene Raidwide nach den Zahlen einen Heiler oder mehr als ein Mitglied tötet
+  (`AnnouncedAreaHitCostsMoreThanATank`, `DataCenter.AnnouncedHitKills`); tötet er einen Schadensausteiler, bleibt das
+  Glied.
+- *D3, seine Antwort:* „sichere option gegen unsicher tauschen ist für gruppe nicht unbedingt gut." Umgesetzt: Ein
+  kritischer anderer Tank gewinnt gegen ein gebrauchtes Glied nur, solange die eigene Unverwundbarkeit übernehmen kann
+  (dann überleben beide; Fall war nicht Teil von D3 und bleibt wie gebaut); sonst bleibt das Glied. Gilt universell
+  (`HelpWinsTriage`) und für Urflackern des Kriegers.
+- *Modell:* Der Ausschluss war im Modell unerreichbar – Z4 trat dort nur auf, wenn die Unverwundbarkeit das ganze
+  Wirken fehlte, und eine Verweigerung der Unverwundbarkeit führte nie zu Z4. Ergänzt: die Verweigerungsregel des
+  Konzepts für die Unverwundbarkeit, ein Szenario mit Verweigerung ohne Wiederholung bis in den letzten GCD, Prüfung
+  O8 („alles" nur, solange die Unverwundbarkeit nicht nutzbar ist) und der alte Ausschluss als achter Defekt des
+  Selbsttests; er wird gefunden.
+- *Abgleich A266 abgeschlossen:* Zu den dort genannten Funden kam die fehlende Merkmalsdauer von Reflexion, Schiltron
+  und Urflackern („Duration: s"); sie kommt jetzt aus dem Spiel (`TraitDurations`), die abgerufene Tabelle ist
+  Rückfall. Offen bleibt die Dauer unterhalb der Merkmalsstufe (`TODO.md`).
+
+**Prüfgrad:** Modell mit Selbsttest, Prüfskripte; Compile über die CI; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

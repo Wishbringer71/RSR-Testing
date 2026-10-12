@@ -1237,7 +1237,6 @@ und auf dich gerichtet). Abklingzeit in Sekunden, Gruppe = Abklinggruppe des Spi
 | B | LP + Barrieren über H (früheste) | dieselbe Erhebung | Barriere ohne gelisteten Status zählt nicht |
 | Datensatz | Druck (`BaseAction.Use`), Bestätigung (Effekt-Handler, nach Laufzeit zum Server), Status gesehen (Erhebung) | Spielthread bzw. Erhebung | Bestätigung fehlt: Druck verfällt nach einem GCD |
 | Verweigerung | `CanUse` falsch außerhalb Sperre/Zauber | Plan | – |
-| Zähler „alles" | RSR-Druck bewerteter Abwehr auf dich | `BaseAction.Use` | Druck von Hand zählt nicht |
 | BossModReborn | Zeitleiste, Ziel des ersten Eintrags | Plugin-Abfrage | kein Modul = keine Vorhersage |
 
 ### Die Ableitung aus dem Bestand
@@ -1271,10 +1270,13 @@ zuerst"):
   Ressource (Intervention, Cover ↔ Holy Sheltron über Eid) –, wartet, bis das Glied gedrückt ist oder der Plan es
   nicht mehr braucht.
 - Die Triage seiner Vorgabe entscheidet, wenn beide es brauchen: Ein kritischer Heiler gewinnt („fällt der Heiler,
-  fällt die Gruppe"); ein kritischer Schadensausteiler nicht („am ehesten entbehrlich"). Ein kritischer Tank gewann
-  dort, weil „sein Tod sicher, der Tankbuster möglich" war. Für einen gemessenen Tankbuster, den du ohne das Glied
-  nach den Zahlen nicht überlebst, ist auch dein Tod sicher; seine Begründung entscheidet Tank gegen Tank dann nicht
-  mehr (D3).
+  fällt die Gruppe"); ein kritischer Schadensausteiler nicht („am ehesten entbehrlich"). Ein kritischer anderer Tank
+  gewinnt, solange deine Unverwundbarkeit vor dem letzten GCD übernehmen kann und du selbst nicht kritisch bist – dann
+  überleben beide. Kann sie es nicht, gewinnt er nicht (seine Entscheidung D3, 12.10.2026: „sichere option gegen
+  unsicher tauschen ist für gruppe nicht unbedingt gut"): Dein Glied wirkt gegen einen gemessenen Treffer zu bekanntem
+  Zeitpunkt; den kritischen Stand des anderen können die Heiler bis zu seinem nächsten Treffer noch ändern. Seine
+  frühere Begründung für den Tank („sein Tod sicher, der Tankbuster möglich") trägt nur, solange dein Tankbuster
+  ungemessen ist.
 - Für einen ungemessenen Tankbuster gilt die bisherige Regel (Urflackern: „möglicherweise tödlich").
 - Gebraucht ist das Glied nur, wenn kein überlebendes Bündel ohne es bleibt. Bleibt eines, geht die Hilfe, und der Plan
   rechnet ohne das Glied weiter – meist mit einem teureren Bündel; das ist der Preis der Hilfe. Die Unverwundbarkeit
@@ -1289,21 +1291,14 @@ Bedrängnis?". Mit dem Plan ist die Bedrängnis des Tanks gemessen:
 - Ist das Glied gebraucht (kein überlebendes Bündel ohne es, keine Unverwundbarkeit), stirbt der Tank nach den
   Zahlen am Tankbuster, wenn Abschütteln geht. Der Raidwide bringt die Gruppe in Gefahr, aber nicht notwendig in den
   Tod. „Sicher vor möglich" hält Abschütteln dann auch bei Gefahr für die Gruppe zurück, **außer** der gemessene
-  Raidwide tötet nach den Zahlen ein Mitglied – dann steht Tod gegen Tod, und das entscheidet er (D2).
+  Raidwide tötet nach den Zahlen einen Heiler oder mehr als ein Mitglied: Dann kostet er die Gruppe mehr als ein
+  toter Tank, und Abschütteln geht (seine Entscheidung D2, 12.10.2026: „es geht um das beste ergebnis für die
+  gruppe"). Tötet er genau einen Schadensausteiler, bleibt das Glied – ein toter Tank kostet meist den Kampf
+  (Konzept 08), ein Schadensausteiler ist nach seiner Triage am ehesten entbehrlich. Gezählt wird mit dem gemessenen
+  Anteil des Raidwides an den vorhergesagten effektiven LP jedes Mitglieds; Unverwundbare und Tote zählen nicht
+  (`DataCenter.AnnouncedHitKills`).
 
 **K5: befohlenes Objektziel.** Sein Befehl; der Plan rechnet ohne das umgelenkte Glied weiter (Ausführung, „Ziel").
-
-**Offene Entscheidung D3 (`TODO.md`):** ein kritischer anderer Tank gegen dein Glied, ohne das ein gemessener
-Tankbuster dich nach den Zahlen tötet, **und deine Unverwundbarkeit ist nicht bereit** (sonst überleben beide, siehe
-oben). Einer von beiden steht nach den Zahlen ohne Schutz. Empfehlung: das Glied bleibt bei dir – dein Treffer ist
-gemessen und landet zu bekanntem Zeitpunkt; den kritischen Stand des anderen können die Heiler bis zu seinem nächsten
-Treffer noch ändern, deinen Tankbuster nicht. Gegenposition: Der andere ist jetzt kritisch und stirbt womöglich vor
-deinem Tankbuster; dein Treffer ist ein Höchstwert, du überlebst ihn vielleicht mit einer Heilung, die bis dahin
-kommt.
-
-**Offene Entscheidung D2 (`TODO.md`):** Abschütteln für einen Raidwide, der nach den Zahlen ein Mitglied tötet,
-gegen Verdammnis oder Urimpuls, ohne die der Tankbuster den Krieger nach den Zahlen tötet. Empfehlung: die Triage
-seiner Vorgabe – ein Heiler geht vor; sonst bleibt Verdammnis, weil ein toter Tank meist den Kampf kostet (Konzept 08).
 
 ### Modellprüfung
 
@@ -1311,7 +1306,8 @@ seiner Vorgabe – ein Heiler geht vor; sonst bleibt Verdammnis, weil ein toter 
 sie gegen eine simulierte Welt laufen: Bilder von 1/144 bis 1/30 s mit Rucklern bis 0,2 s; die Erkennung erhebt nach
 der Rotation; Laufzeit zum Server 30–300 ms; der Status erscheint vor oder nach der Bestätigung; Verweigerungen, auch
 zweimal; Abschütteln und Urflackern als freie Pfade; andere Pfade, die jederzeit drücken wollen; alle vier
-Schalterstellungen; knappe Treffer, bei denen jedes Glied gebraucht wird. Geprüft wird je Lauf:
+Schalterstellungen; knappe Treffer, bei denen jedes Glied gebraucht wird; eine Verweigerung der Unverwundbarkeit
+ohne Wiederholung vor dem letzten GCD, die in ihm abläuft. Geprüft wird je Lauf:
 - O1: Sagte der Plan „überlebbar", überlebt der Tank – an der wahren Welt gemessen;
 - O2: Nach der Unverwundbarkeit geht nichts Bewertetes mehr hinaus (mit „Spend only …");
 - O3: Die Unverwundbarkeit fällt nie, solange ein Bündel reicht, dessen Glieder vor dem letzten GCD gedrückt werden
@@ -1319,36 +1315,27 @@ Schalterstellungen; knappe Treffer, bei denen jedes Glied gebraucht wird. Geprü
 - O4: Jedes gedrückte Glied steht am Einschlag;
 - O5/O6: Vom Druck bis zum Treffer zählt der Plan ein gedrücktes Glied, und nie doppelt;
 - O7: Ein freier Pfad macht aus einem Treffer, den der Plan allein überlebt, keinen Tod und erzwingt keine
-  Unverwundbarkeit (Gegenprobe derselben Welt ohne den freien Druck).
+  Unverwundbarkeit (Gegenprobe derselben Welt ohne den freien Druck);
+- O8: „Alles" (Z4) nur, solange die Unverwundbarkeit vor dem letzten GCD nicht nutzbar ist – auch nachdem für
+  dasselbe Wirken schon Minderungen hinausgingen (D1).
 O1 und O7 messen an der Welt; O3 bildet eine Invariante nach. Der Selbsttest schaltet die Defekte ein, die sieben
 Review-Runden im gebauten Code fanden (zwei Uhren, Reihenfolge Statusliste vor Datensatz, Erneuerung über die
 gemeinsame Sperrliste, feste Verweigerungsgrenze, Abschütteln und Urflackern ohne Rücksicht auf den Plan,
-Zurückhalten ohne die anderen Pfade); jeder muss gefunden werden. Stand 12.10.2026: alle gefunden; die Regeln dieses
-Konzepts verletzen in 23 Szenarien × 300 Läufen keine Prüfung.
+Zurückhalten ohne die anderen Pfade), dazu den Ausschluss der Unverwundbarkeit nach „alles", den D1 verwarf; jeder
+muss gefunden werden. Stand 12.10.2026: alle gefunden; die Regeln dieses Konzepts verletzen in 25 Szenarien × 300
+Läufen keine Prüfung.
 
 *Was das Modell nicht abdeckt* (dort trägt nur die Herleitung): ein zweites Wirken und BossModReborn-Vorhersagen
-(das Zurückhalten ist dann aus), Befehle (sie sind frei), D1b, Minderung je Schadensart, die Ressourcenkopplung K4
+(das Zurückhalten ist dann aus), Befehle (sie sind frei), die Unverwundbarkeit nach einem Bündel bei fallenden LP,
+Minderung je Schadensart, die Ressourcenkopplung K4
 (gleicher Mechanismus wie K2), die Ausrüstung der anderen drei Tanks (gleiche Rechnung, andere Zahlen).
 
-### Abgleich mit dem Code (12.10.2026)
+### Abgleich mit dem Code
 
-Abweichungen des gebauten Codes von diesem Konzept, je mit Wirkung im Kampf. Behoben werden sie in einem Zug, nachdem
-D2 und D3 entschieden sind, soweit sie davon abhängen:
-1. *Minderung je Schadensart fehlt* (Generator, `DefensiveValue`): Dark Mind ist weder Mittel noch zurückgehalten.
-   Gegen einen magischen Tankbuster wählt der Plan teurer oder die Unverwundbarkeit; neben einer stehenden
-   Unverwundbarkeit kann Dark Mind hinausgehen.
-2. *Erhöhung der maximalen LP fehlt:* Kampfrausch ist kein Mittel des Plans (−20 % auf den Bedarf, 90 s).
-3. *Das Zurückhalten erfasst nur bewertete Aktionen* (`DefensiveValues.For(ID) != default`): Bulwark, Dark Mind und
-   Kampfrausch gehen neben der Unverwundbarkeit hinaus – gegen seine Präzisierung.
-4. *K1:* Abschütteln wartet nur auf *liegende* Status und weicht bei Gefahr für die Gruppe auch, wenn ein gebrauchtes
-   Glied fällt. Folge: Verdammnis oder Urimpuls fehlen am Tankbuster, den der Plan mit ihnen überlebt.
-5. *K2:* Urflackern fragt nach einem angekündigten Tankbuster, nicht nach dem Plan; für einen gemessenen nimmt es dem
-   Plan Urimpuls, auch wenn er gebraucht ist.
-6. *K3/K4:* The Blackest Night, Herz des Korunds, Oblation, Intervention und Cover auf andere sind frei, gleich ob sie
-   ein gebrauchtes Glied verbrauchen.
-7. *Fehlende Dauern* (Reflexion, Schiltron, Urflackern) – Generator; Richtung: zu viel Mittel.
-8. *Messung zu niedrig* bei Dark Mind oder erhöhten maximalen LP am gemessenen Treffer (Bestand, Lücken) – jeder
-   spätere Plan für diesen Tankbuster rechnet zu knapp.
+Stand 12.10.2026: Die acht Abweichungen, die der Abgleich fand (A266: Minderung je Schadensart, Erhöhung der maximalen
+LP, Zurückhalten nur bewerteter Aktionen, K1, K2, K3/K4, fehlende Merkmalsdauern, zu niedrige Messung), und seine
+Entscheidungen D1–D3 (A267) sind eingearbeitet. Prüfgrad: Prüfskripte und Modell, Compile über die CI; im Spiel nicht
+beobachtet.
 
 **Vertrag:** `DefensiveValue` ist öffentlich im Paket (Betroffene R). Neue Werte – eigene Minderung je Schadensart,
 Erhöhung der maximalen LP, „schützt den Nutzer" für Block – kommen als nicht-positionale Eigenschaften hinzu; der
@@ -1490,12 +1477,13 @@ befohlen, nicht jede).
   schon.
   Für die Unverwundbarkeit gilt dieselbe Regel: Läuft ihre Sperre vor dem letzten GCD ab, bleibt Z3 – zurückgehalten
   wird weiter, gedrückt wird nach der Sperre neu; erst eine Verweigerung, nach der kein Versuch vor dem letzten GCD
-  bleibt, macht Z4. Sonst gäbe ein kurzer Stun alle Pfade frei, und ihr erster Druck schlösse sie über „‚Alles'
-  ausgeschöpft" für das Wirken aus.
-- *„Alles" ausgeschöpft:* Stieg nach einem Durchlauf, der Z4 rechnete, die Zahl der Drücke bewerteter Abwehr auf dich
-  – vom Plan oder aus einem anderen Pfad der Rotation; gezählt, nicht nach der Uhr verglichen, deren Auflösung gröber
-  als ein Bild sein kann –, ist Z3 für dieses Wirken ausgeschlossen (offene Entscheidung D1a). Hilfe für
-  andere und Drücke von Hand zählen nicht: Er handelt dann selbst, und RSR weiß nicht, wann er drückte.
+  bleibt, macht Z4. Sonst gäbe ein kurzer Stun alle Pfade frei, und „alles" ginge für einen Treffer hinaus, den die
+  Unverwundbarkeit allein trägt.
+- *Unverwundbarkeit nach „alles":* Läuft die Verweigerung im letzten GCD ab oder wird die Unverwundbarkeit sonst
+  wieder nutzbar, gilt Z3 erneut, auch wenn aus Z4 schon Minderungen hinausgingen (seine Entscheidung D1, 12.10.2026:
+  „unverwundbarkeit ist die ultimative lösung … wenn tankbuster durch „alles" nicht überlebt werden kann, dann ist auf
+  alles zu verzichten und nur unverwundbarkeit zu nehmen"). Im Kampf: Der Tank überlebt einen Treffer, den nach der
+  Messung nichts Geringeres trägt; die schon verbrauchten Minderungen fehlen danach ohnehin.
 - Alles Übrige ergibt sich aus den Tatsachen: Heilung hebt B (Z3 → Z2 möglich, solange die Unverwundbarkeit nicht
   gedrückt ist), Auto-Angriffe senken B (größeres S, Z3), eine fremde Reflexion senkt P, ein gedrücktes Glied von S
   steht und fällt aus den Kandidaten.
@@ -1512,15 +1500,12 @@ die Rotation auch neben einer gedrückten Unverwundbarkeit mindern – für den 
 3. Das Zurückhalten trifft nie Heilung, Hilfe für andere, nach außen wirkende Flächenabwehr oder das Befohlene; ein
    Befehl gibt nur sich selbst frei.
 7. Der Plan selbst drückt nach einer Unverwundbarkeit für dasselbe Wirken keine Minderung mehr, auch ohne „Spend only …"
-   (seine Präzisierung zu „alles"); ob er nach Minderungen noch die Unverwundbarkeit zieht, ist D1.
+   (seine Präzisierung zu „alles"). Umgekehrt zieht er die Unverwundbarkeit auch nach Minderungen noch, sobald sie
+   nutzbar ist und kein Bündel reicht (D1).
 4. Ein Glied von S geht aus keinem Pfad vor seinem Fenster hinaus; fehlt im letzten GCD eines, endet das Zurückhalten.
 5. Ein Kandidat braucht eine bekannte Wirkdauer von mehr als zwei GCD: Sein Fenster (Einschlag höchstens Wirkdauer weniger
    ein GCD entfernt) muss sich vor dem letzten GCD öffnen, in dem das Zurückhalten für fehlende Glieder endet.
 6. Nach einem Druck gibt es keinen Durchlauf, in dem die Aktion weder Kandidat noch stehend ist.
-
-**Offene Entscheidung D1 (`TODO.md`):** die Unverwundbarkeit, nachdem für dasselbe Wirken schon Minderungen
-hinausgingen – (a) aus Z4, weil sie verweigert oder abklingend war (gebaut: nicht mehr, aus seiner Präzisierung
-abgeleitet); (b) aus Z2, wenn danach die LP fallen und kein Bündel mehr reicht (gebaut: ja).
 
 **Grenzen des Modells:** zwei Wirken binnen eines GCD bekommen einen Minderungsplan nur für das erste; ein Treffer über
 dem bisher gemessenen Höchstwert wird unterschätzt; keine Reserve nach einem knapp überlebten Treffer (`TODO.md`).
@@ -1542,7 +1527,7 @@ dem bisher gemessenen Höchstwert wird unterschätzt; keine Reserve nach einem k
 - **Ein abgelehnter Druck:** Während einer Animationssperre oder eines eigenen Zaubers lehnt `CanUse` ab; das ist
   keine Antwort, der Druck wird im nächsten Durchlauf neu versucht. Jede andere Ablehnung – Reflexion außer Reichweite,
   zu wenig MP, ein Stun, eine Prüfung der Rotation – sperrt den Druck für einen GCD; was daraus für Bündel und
-  Unverwundbarkeit folgt, regelt das Zustandsmodell („Verweigerung", „‚Alles' ausgeschöpft"). Ablehnungen gelten je
+  Unverwundbarkeit folgt, regelt das Zustandsmodell („Verweigerung", „Unverwundbarkeit nach ‚alles'"). Ablehnungen gelten je
   Wirken (eigene Nummer je Wirken, auch bei zwei gleichen Wirken ohne Pause, erkannt am Zurückspringen der Wirkzeit).
 
 ### Das Zurückhalten
@@ -1595,9 +1580,9 @@ Holmgang oder Totenerweckung bleibt also, wie sie war.
     Treffer unter Damage Up wird nicht gespeichert (A260), aber auch nicht hochgerechnet: Die Wirktexte nennen keine
     Stärke. Stärkungen unter anderem Namen bleiben unerkannt.
   - Ein Wert unter Verwundbarkeit aus weniger Stapeln als jetzt.
-  - Ein zu niedrig gespeicherter Höchstwert (Konzept 13, „Fehler nur nach unten": unbezifferte Minderung, Dark Mind,
-    erhöhte maximale LP beim Treffer). Mit „Spend only …" ist das schlimmer als ohne Tabelle: Der Plan wählt zu wenig
-    und hält den Rest zurück. Behebung: Abgleich mit dem Code, Punkt 8.
+  - Ein zu niedrig gespeicherter Höchstwert (Konzept 13, „Fehler nur nach unten": eine unbezifferte Minderung beim
+    Treffer; Dark Mind und erhöhte maximale LP rechnet die Messung heraus). Mit „Spend only …" ist das schlimmer als
+    ohne Tabelle: Der Plan wählt zu wenig und hält den Rest zurück.
   - Auto-Angriffe zwischen Plan und Einschlag: Der Plan wächst mit, solange Zeit ist.
   - Nach dem Einschlag zählt die Rechnung nicht weiter: Ein Tank, den ein knapp überlebter Tankbuster tief lässt,
     hat danach die zurückgehaltenen Minderungen wieder frei (das Zurückhalten endet mit dem Wirken), und die reaktive
