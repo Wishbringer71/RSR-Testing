@@ -1,5 +1,7 @@
 # 07 · Zielwahl der Heilung
 
+**Leitfrage:** Wer wird zuerst geheilt, wenn nicht alle zugleich versorgt werden können?
+
 ## Vorgabe des Auftraggebers
 
 **Oberste Priorität hat das gesamtheitliche Überleben der Gruppe.** Es sollen alle überleben; wo das
@@ -115,9 +117,8 @@ Gesundheitswerte darin sind vorausberechnet (`GetForecast*`, hinter `HealAheadOf
 | 3a | mit `HealTargetByDanger` (ab Werk an): Klassen 2 und 3 (`DangerClassTarget`) | siehe „Der Entwurf“ |
 | 3b | ohne: Heiler ≤ `HealthHealerRatio` (0,40), dann Tank ≤ `HealthTankRatio` (0,45), dann niedrigster Prozentsatz | — |
 
-Geschützte (Unverwundbare) stehen in jeder Stufe zuletzt. Die folgenden Befunde beschreiben die Lage **vor** dem
-Umbau (Stufen 1 bis 3, unten); sie bleiben stehen, weil sie den Entwurf begründen. Was davon heute noch gilt, steht
-jeweils am Ende des Befunds.
+Geschützte (Unverwundbare) stehen in jeder Stufe zuletzt. Die beiden Abschnitte nach dem folgenden begründen die
+Rangfolge an den Fällen, die sie entscheidet; was davon offen ist, steht jeweils am Ende.
 
 **Die Schwellen sind Zielwahlschwellen, keine Heilschwellen.** Ob überhaupt geheilt wird, entscheiden
 `HealthSingleAbility` und `HealthSingleSpell` weiter oben; `FindHealTarget` bekommt bereits ein durch
@@ -242,7 +243,7 @@ einer Barriere über 25 % seiner maximalen Gesundheit steht effektiv bei 75 %. U
 Lebenspools sind weniger Punkte als 50 % eines großen — derselbe Treffer tötet den mit den wenigeren
 Punkten.
 
-## Der Entwurf: Gefährdungsklassen statt einer Kette von Kurzschlüssen
+## Gefährdungsklassen statt einer Kette von Kurzschlüssen
 
 **Keines der Einzelmaße trägt allein, und der Grund ist derselbe bei allen: Jedes ist ein Surrogat,
 und jedes bricht in einer anderen Lage.** Die Lösung ist deshalb nicht, eines davon zu wählen,
@@ -256,7 +257,7 @@ sondern jedes dort einzusetzen, wo es das Richtige misst.
 | Rollenschwellen 45/40 | vertreten die fehlende Schadensrate | rollenfest statt lagefest: falsch, sobald der Heiler die Aggro hält |
 | Aggro | misst, wer gerichteten Schaden bekommt, statt es aus der Rolle zu schließen | sagt nichts über Flächenschaden |
 
-**Der Entwurf ordnet die Kandidaten in drei Gefährdungsklassen. Innerhalb einer Klasse entscheidet
+**Die Zielwahl ordnet die Kandidaten in drei Gefährdungsklassen. Innerhalb einer Klasse entscheidet
 das Maß, das für diese Lage das richtige ist; bei Gleichstand die Rolle.**
 
 | Klasse | Wer hineinfällt | Ordnung darin | Warum dieses Maß |
@@ -280,7 +281,7 @@ die Bedeutung, die sie heute haben, und bekommen zusätzlich die Bedingung, die 
 **Gleichstandsregel in jeder Klasse: Heiler vor Tank vor Schadensausteiler** — die Triage der
 Vorgabe, und nur dort, wo sie hingehört, nämlich bei gleicher Gefährdung.
 
-**Was der Entwurf damit von jedem Maß nimmt und was er ablegt:**
+**Was die Klassenordnung von jedem Maß nimmt und was sie ablegt:**
 
 - Der Rollenvorrang bleibt erhalten, **überholt aber niemanden mehr**, der tiefer steht: Er wirkt
   nur noch innerhalb einer Klasse. Der Schadensausteiler bei 10 % steht in Klasse 1, der Tank bei
@@ -288,7 +289,7 @@ Vorgabe, und nur dort, wo sie hingehört, nämlich bei gleicher Gefährdung.
 - Der Prozentsatz behält die Lage, in der er richtig ist, und verliert die, in der er blind ist.
 - Die absoluten Punkte bekommen genau die zwei Lagen, für die sie gebaut sind, und keine weitere.
 - Die Aggro tritt **neben** die Rollenschwellen, statt sie zu ersetzen: Die Schwelle sagt weiterhin
-  „tief genug", die Aggro neu „und er bekommt tatsächlich Schaden". Damit ist der zweite Befund
+  „tief genug", die Aggro „und er bekommt tatsächlich Schaden". Damit ist die Umkehr der Schwellen
   entschärft — hält der Heiler die Aggro und der Tank nicht, steht der Heiler in Klasse 2 und der
   Tank in Klasse 3, obwohl die Zahlen unverändert sind.
 - Auch der Selbst-Kurzschluss rückt hinter Klasse 1. Er trägt denselben Überholfehler wie die beiden
@@ -300,20 +301,20 @@ Vorgabe, und nur dort, wo sie hingehört, nämlich bei gleicher Gefährdung.
   BossModReborn nennt Art und Zeitpunkt des nächsten Einschlags (`BMRNextDamageType`,
   `BMRNextDamageIn`), **nicht seine Höhe**.
 
-**Was der Entwurf nicht löst, und das ist ehrlich zu benennen:** Die Schwellendifferenz 45/40 ist in
+**Was die Klassenordnung nicht löst:** Die Schwellendifferenz 45/40 ist in
 jeder Fassung entweder wirksam — dann kehrt sie im Band zwischen den beiden Werten die Rangfolge um —
 oder unwirksam, dann ist eine Einstellung des Nutzers stillgelegt. Die Klassenordnung entschärft sie,
 weil Klasse 1 und die Aggro davorstehen, aber sie beseitigt sie nicht. Ob die beiden Werte
 vereinheitlicht werden, ist eine Wertentscheidung über eine Konfiguration und gehört dem
 Auftraggeber.
 
-**Umgesetzt (A183):** Klassen 2 und 3 hinter `HealTargetByDanger` („Choose the heal target by danger"), Vorgabewert an (seine Regel für Voreinstellungen, 29.09.2026), in `ActionTargetInfo.DangerClassTarget`. „Unter Beschuss" liest `DataCenter.TargetedPartyMembers` (je Bild aus den Zielen der Gegner). Klasse 1 und der Selbst-Kurzschluss stehen unverändert davor; die Geschützten bleiben zuletzt. Klasse 3 reiht nur Verletzte: Nach Punkten gereiht gewann sonst ein Unverletzter mit kleinem Pool, und niemand wurde geheilt (A210).
+**Gebaut (A183):** Klassen 2 und 3 hinter `HealTargetByDanger` („Choose the heal target by danger"), Vorgabewert an (seine Regel für Voreinstellungen, 29.09.2026), in `ActionTargetInfo.DangerClassTarget`. „Unter Beschuss" liest `DataCenter.TargetedPartyMembers` (je Bild aus den Zielen der Gegner). Klasse 1 und der Selbst-Kurzschluss stehen unverändert davor; die Geschützten bleiben zuletzt. Klasse 3 reiht nur Verletzte: Nach Punkten gereiht gewann sonst ein Unverletzter mit kleinem Pool, und niemand wurde geheilt (A210).
 
 **Die Rate steht.** `DataCenter.RecordedHP` führt die Gruppe seit A91 mit, `GetTTK` antwortet damit
 für jede Gruppen-Id, `ScoreTtkForecast` korrigiert die Schätzung gegen ihren eigenen Fehler (A92),
 und `GetForecastSurvivingShare` macht daraus die Größe, die alle Heilentscheidungen lesen (A93). Sie
-ist damit nicht, wie hier zunächst geplant, ein Ordnungsmerkmal innerhalb von Klasse 2 geworden,
-sondern die vorausberechnete Gesundheit selbst — siehe „Die Stufen".
+ist kein Ordnungsmerkmal innerhalb von Klasse 2, sondern die vorausberechnete Gesundheit selbst —
+siehe „Die Rate geht über die vorausberechnete Gesundheit ein".
 
 **Die schwächere Alternative ist verworfen und bleibt es:** `DataCenter.DPSTaken` misst die Gruppe
 als Ganzes, `DamageRec` trägt Zeitpunkt und Anteil, **kein Ziel**, und ihr Fenster von fünf
@@ -329,28 +330,25 @@ und von `DangerClassTarget` (Klasse 2 der Zielwahl).
 ein Durchlauf über die Gegner deren `TargetObjectId` in ein Set — danach ist „wird angegriffen" eine
 Nachschlageoperation. Der Aufwand wächst mit der Zahl der Gegner, nicht mit ihrem Produkt.
 
-## Die Stufen
+## Die Bausteine
 
-| Stufe | Inhalt | Nachweislage |
+| Baustein | Inhalt | Stand |
 |---|---|---|
 | **1** | Klasse 1 vor alle drei Kurzschlüsse ziehen | **umgesetzt** in `ActionTargetInfo.GeneralHealTarget`: ungeschützte Kandidaten auf oder unter `HealthForDyingTanks` (effektive Gesundheit, wie `CanProvoke` sie liest) werden vor Selbst-, Heiler- und Tankzweig zurückgegeben, geordnet nach absoluten effektiven Punkten, bei Gleichstand Heiler vor Tank vor Schadensausteiler |
 | **2** | Klassen 2 und 3 mit Aggro und lageabhängigem Maß | **umgesetzt** (A183) hinter `HealTargetByDanger`, ab Werk an |
-| **3** | Rate je Mitglied | **umgesetzt**, aber anders als hier zunächst geplant — siehe unten |
+| **3** | Rate je Mitglied | **umgesetzt** als vorausberechnete Gesundheit — siehe unten |
 
-### Stufe 3 ist nicht die Ordnung innerhalb einer Klasse geworden, sondern die Größe selbst
+### Die Rate geht über die vorausberechnete Gesundheit ein
 
-Geplant war, die Rate als **zusätzliches** Ordnungsmerkmal innerhalb von Klasse 2 einzusetzen. Beim
-Bauen hat sich das als der schlechtere Zuschnitt erwiesen, und der Entwurf ist geändert worden:
-Statt ein zweites Merkmal neben die Gesundheit zu stellen, wird die **gelesene Gesundheit selbst**
-vorausberechnet. Jede der vier Entscheidungen dieser Methode — die Kandidatenordnung, die Schwelle
+Die Rate ist kein **zusätzliches** Ordnungsmerkmal innerhalb von Klasse 2; die **gelesene Gesundheit selbst**
+ist vorausberechnet (A93). Jede der vier Entscheidungen dieser Methode — die Kandidatenordnung, die Schwelle
 der kritischen Klasse, ihre Ordnung nach absoluten Punkten und der Selbstkurzschluss — liest jetzt
 `ObjectHelper.GetForecast*` statt der aktuellen Größe.
 
-**Warum das besser ist:** Ein zusätzliches Merkmal hätte eine zweite Rangregel erzeugt, die mit der
+**Warum so:** Ein zusätzliches Merkmal hätte eine zweite Rangregel erzeugt, die mit der
 ersten auseinanderläuft, sobald eine von beiden angefasst wird. Die Ersetzung ändert **eine** Größe,
 und alle vorhandenen Klassen, Schwellen und Kurzschlüsse erben die Vorausschau, ohne umgebaut zu
-werden. Sie wirkt zudem auf Klasse 1 mit, was der ursprüngliche Zuschnitt nicht getan hätte — und
-gerade dort entscheidet sich, wer stirbt.
+werden. Sie wirkt zudem auf Klasse 1 mit — und gerade dort entscheidet sich, wer stirbt.
 
 **Was sie im Kampf ändert:** Ein Schwarzmagier bei 48 %, dessen Gesundheit in vier Sekunden
 aufgebraucht ist, steht prognostiziert bei 3 % und fällt damit in Klasse 1 — vor den Tank-Kurzschluss,
@@ -402,7 +400,7 @@ Jobleiste bleibt die Quelle der Phase, weil sie auch die Restzeit liefert; der S
 gleichwertiger Zeuge. Der Vorlauf von drei GCDs ist ein
 fester Wert ohne eigenen Loop (`fixed_values.json`, offen).
 
-**Geprüft wird das jetzt maschinell, nicht erinnert:**
+**Geprüft wird das maschinell:**
 `.github/scripts/audit/check_heal_target_measure.py` erhebt aus `ActionId.resx` jede Aktion, deren
 Wirktext eine eigene Prozentschwelle nennt, und meldet jede Stelle, die genau eine solche Aktion
 nach Punkten sortiert. Es prüft das Maß, nicht die Zielwahl im Ganzen — eine Barriere nach Punkten
@@ -460,7 +458,7 @@ gleich tief stehenden Heiler überhaupt erreicht wird. Das entscheidet sich an e
 ein Mitglied stirbt, während ein besser geschütztes zuerst versorgt wurde. Ebenfalls nicht messbar:
 die tatsächliche Konfiguration des Auftraggebers.
 
-## Offene Punkte zu diesem Konzept
+## Offene Punkte
 
 Sie stehen in `TODO.md` und sind dort unter der Überschrift des Eintrags mit **Konzept:** auf dieses
 Dokument gekennzeichnet — an **einer** Stelle statt in zweien, damit keine Kopie altert.

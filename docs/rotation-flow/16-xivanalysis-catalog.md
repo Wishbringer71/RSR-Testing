@@ -1,9 +1,10 @@
 # 16 · Abgleich mit dem Regelkatalog von xivanalysis
 
-Entwurfsdokument nach ADR-Struktur. Es stellt den geltenden Sachstand dar; die Prüfhistorie steht in
-`AUDIT_LOG.md` (A234).
+**Leitfrage:** Welche Regeln für gute Rotationen kennt xivanalysis, und wo weicht RSR ab — mit welchem Grund?
 
-## Ergebnis
+Das Dokument gibt den geltenden Stand; die Prüfhistorie steht in `AUDIT_LOG.md` (A234).
+
+## Antwort
 
 **Auftrag (01.10.2026):** „generell schauen, welche regeln dort für gute rotationen gelten und was bei rsr
 verbesserungswürdig wäre". Dazu seine Präzisierung: Sicherheit geht vor; eine Rotation, die deshalb weniger
@@ -14,14 +15,13 @@ Es wertet FFLogs-Reports je Job aus, Patch 7.0 bis 7.5, und bewertet auf Schaden
 Community-Auswertung, keine Spielquelle; Code wird nicht übernommen. Der Katalog sind die Vorschlagstexte und
 Erwartungen der Module unter `src/parser/core/modules` und `src/parser/jobs/<job>/modules`.
 
-**Befund:** Eine Lücke, behoben. Sonst deckt RSR die mechanisch prüfbaren Regeln ab oder weicht mit Grund
-ab — meist mit einer Sicherheitsregel, also gewollt.
+RSR deckt die mechanisch prüfbaren Regeln ab oder weicht mit Grund ab — meist mit einer Sicherheitsregel, also
+gewollt. Eine Lücke fand der Abgleich, sie ist geschlossen:
 
-- **Behoben, Beschwörer: Searing Flash verfiel mit Ruby's Glimmer** (A234). Außerhalb einer Demi wirkte
-  `SMN_Reborn` es nur auf einen sterbenden Boss. Mit weiteren Beschwörern fällt Searing Light auch in einen
-  Titan- oder Ifrit-Block (Konzept 12); die nächste Demi liegt dann weiter weg, als Ruby's Glimmer hält, und
-  die Aktion ging verloren. Jetzt fällt sie zusätzlich im letzten Einschiebefenster vor dem Ende des Status
-  (`IsLastChanceBeforeStatusEnds`). Als einziger Beschwörer ändert sich nichts: Dort liegt Searing Light vor
+- **Beschwörer: Searing Flash fällt auch im letzten Einschiebefenster vor dem Ende von Ruby's Glimmer**
+  (`IsLastChanceBeforeStatusEnds`, A234). Außerhalb einer Demi wirkte `SMN_Reborn` es vorher nur auf einen
+  sterbenden Boss. Mit weiteren Beschwörern fällt Searing Light auch in einen Titan- oder Ifrit-Block (Konzept
+  12); die nächste Demi liegt dann weiter weg, als Ruby's Glimmer hält, und die Aktion ging verloren. Als einziger Beschwörer ändert sich nichts: Dort liegt Searing Light vor
   Solar Bahamut, und Searing Flash fällt in der Demi.
 
 ## Allgemeine Regeln (alle Jobs)
@@ -87,7 +87,7 @@ buffs we have in our party" und „Attempt to use a Reassemble under raid buffs 
 be held for a pot window at two minutes". RSR legt Reassemble auf das nächste geeignete Werkzeug, sobald eine
 Ladung da ist (`usedUp: true`), ohne Blick auf Gruppenbuffs. Drill einfach zuzulassen, änderte daran nichts —
 eine Ladung ginge nur früher weg. Wert bekommt Drill erst mit einer Regel, die eine Ladung für das Buff-Fenster
-aufhebt: Drill hat zwei Ladungen und steht dort fast immer bereit. Wie groß der Gewinn ist, hängt an Gruppe und
+aufhebt: Drill hat zwei Ladungen und steht dort fast immer bereit. Diese Regel ist nicht gebaut (Konzept 17). Wie groß der Gewinn ist, hängt an Gruppe und
 Buff-Zeiten und ist von hier nicht bezifferbar. Mehrzielig bleibt Drill unterlegen: Chain Saw und Excavator
 treffen mehrere Gegner mit dem garantierten Treffer, Drill einen. Der volle Loop dazu steht in Konzept 17.
 
@@ -97,8 +97,7 @@ treffen mehrere Gegner mit dem garantierten Treffer, Drill einen. Der volle Loop
 (Konzept 14, „Werden die Fenster genutzt", A165–A167): Die Aktionsmatrix listet jeden Verbraucher eines
 Fensters, dessen Aufrufe alle an eine eigene Bedingung gebunden sind und keinen Rückfall vor Ablauf tragen;
 jeder Kandidat ist dort von Hand bewertet. Die xivanalysis-Regeln dieser Klasse decken sich mit dieser Liste.
-Eine Bewertung dort war unvollständig — Searing Flash, oben behoben; die Matrix führt es jetzt „mit Rückfall vor
-Ablauf". Die übrigen Kandidaten tragen eine Bedingung, die das Fenster selbst ist (Schnitter, Viper, Monk,
+Searing Flash führt die Matrix „mit Rückfall vor Ablauf" (oben). Die übrigen Kandidaten tragen eine Bedingung, die das Fenster selbst ist (Schnitter, Viper, Monk,
 Ninja-Mudras, Rotmagier, Pictomancer), deren Zweck sie ist (Heilbedarf, Burst, Tanzschritte) oder eine
 Sicherheitsregel (Primal Rend).
 
@@ -111,7 +110,7 @@ Reihenfolgeregeln (Viper, Schnitter, Paladin im Fight or Flight). Sie hängen an
 Rotationen und lassen sich am Code nicht ohne Kampfverlauf beurteilen; ein FFLogs-Report, durch xivanalysis
 gelaufen, zeigt sie (er zeichnet mit ACT auf).
 
-## Was ausgeschlossen wurde und warum
+## Ausgeschlossen
 
 - **Regeln übernehmen, die seiner Sicherheitsregel widersprechen** (Swiftcast verbrauchen, Defensiven auf
   Abklingzeit statt auf Gefahr, Primal Rend auf Distanz): ausgeschlossen, seine Vorgabe.
