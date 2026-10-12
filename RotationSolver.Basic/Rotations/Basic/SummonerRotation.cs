@@ -309,6 +309,22 @@ public partial class SummonerRotation
 	private readonly bool[] _searingPhaseHeld = new bool[Enum.GetValues<SearingPhase>().Length];
 	private SearingPhase _lastSearingPhase = SearingPhase.None;
 	private bool _searingPhaseBooked;
+	private bool _inBurstWindow;
+	private bool _burstHeldThisWindow;
+	private bool _burstHeldLastWindow;
+
+	/// <summary>
+	/// Did somebody else's Searing Light stand at any time in the own last burst window (Solar Bahamut,
+	/// below its level Demi-Bahamut), or does it stand in the current one?
+	///
+	/// The owner's rule moves to Bahamut or Phoenix only when another Summoner got there first
+	/// (concept 12, points 2 to 4); without that, a charge that comes free in a minor phase waits for the
+	/// next Solar instead of drifting onto the minor phases for the rest of the fight. Observed over the
+	/// whole window rather than on entering it: the phase book judges on entry, and a buff cast a moment
+	/// later went unseen - in the model that cost up to ten points in a synchronised pull
+	/// (searing_light_coverage.py, 'plugin_narrow').
+	/// </summary>
+	protected bool BurstPhaseHeldByAnother => _burstHeldLastWindow || _burstHeldThisWindow;
 
 	/// <summary>
 	/// Is every burst phase held by somebody who keeps coming back?
@@ -387,10 +403,30 @@ public partial class SummonerRotation
 			_lastSearingPhase = SearingPhase.None;
 			_lastBigSummon = SearingPhase.None;
 			_searingPhaseBooked = false;
+			_inBurstWindow = _burstHeldThisWindow = _burstHeldLastWindow = false;
 			return;
 		}
 
 		var phase = CurrentSearingPhase;
+
+		// The burst window, watched over its whole length (BurstPhaseHeldByAnother).
+		var inBurst = phase == (SummonSolarBahamutPvE.EnoughLevel ? SearingPhase.Solar : SearingPhase.Bahamut);
+		if (inBurst != _inBurstWindow)
+		{
+			if (_inBurstWindow)
+			{
+				_burstHeldLastWindow = _burstHeldThisWindow;
+			}
+
+			_burstHeldThisWindow = false;
+			_inBurstWindow = inBurst;
+		}
+
+		if (inBurst && HasAnySearingLight && !HasSearingLight)
+		{
+			_burstHeldThisWindow = true;
+		}
+
 		if (phase != _lastSearingPhase)
 		{
 			_lastSearingPhase = phase;

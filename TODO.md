@@ -128,12 +128,6 @@ Nicht behoben, weil der Wirkungsbereich den Vorgang sprengt. Das Flag wird in `I
 
 **Auflösungsbedingung:** eine Erhebung, welche der sechs Setzstellen eine Ausnahme rechtfertigen, und eine Engführung des Flags auf diese.
 
-### Searing Light mit mehreren Beschwörern: Ausweichen nur nach tatsächlicher Blockade · N
-
-Mit einem zweiten Beschwörer in der Gruppe öffnet jede große Beschwörung das Zündfenster, ohne eine Kollision vorauszusetzen. Wird die eigene Ladung frei, während Bahamut oder Phoenix steht, ohne dass Solar fremd belegt war — der andere ist tot, spielt von Hand oder hat die Aktion abgeschaltet, oder der eigene Takt ist gerutscht, weil die Beschwörung mit zweitem Beschwörer auf keinen abkühlenden Buff wartet —, zündet RSR dort und bleibt danach im Takt von Bahamut und Phoenix: Im Kampf fällt jede weitere Ladung in eine Phase mit 78 % der Solar-Potenz. Die enge Fassung (ausweichen nur, wenn das Phasenbuch Solar beim letzten Betreten fremd belegt sah, `SearingPhaseSeen`) hielte die Ladung einmalig bis zu 60 s bis zur nächsten Solar-Phase. Welche Fassung mehr bringt, ist nicht gemessen: `searing_light_coverage.py` startet alle Beschwörer mit freier Wiederholzeit und erzeugt den Fall nicht; dafür braucht es versetzte Anfangs-Wiederholzeiten.
-
-**Konzept:** `docs/rotation-flow/12-searing-light-stacking.md`
-
 ### Status-Einstellungen auf der falschen Seite der Aktion · N, U
 
 `ActionSetting` liest `StatusProvide` und `StatusNeed` gegen `Player.Object`, `TargetStatusProvide` und `TargetStatusNeed` gegen das Ziel. Eine ID, die der Spieler nie tragen kann, macht die erste Sperre wirkungslos und die zweite dauerhaft blockierend. `scan11.py` erhebt die Klasse; nach der Behebung der beiden Blaumagier-Stellen (A32) bleiben vier Fundstellen, deren richtige Auflösung PvP- beziehungsweise Bozja-Verhalten voraussetzt.

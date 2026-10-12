@@ -203,7 +203,12 @@ def best_possible(n, burst_share):
             + (1.0 - burst_share) * covered_rest / rest_span)
 
 
-PLUGIN_MODES = ('plugin', 'plugin_kinds', 'plugin_expired')
+# 'plugin_expired' is the broad firing window: with another Summoner every big summon opens it. 'plugin_narrow'
+# is the plugin's rule: Bahamut and Phoenix open it only when somebody else's Searing Light was seen at any
+# time during the own last Solar window (SummonerRotation.BurstPhaseHeldByAnother). Booking that on entering
+# the window, as the phase book does, missed a buff cast a moment later and cost up to ten points in a
+# synchronised pull; observed over the whole window it never falls below the broad rule (self-test).
+PLUGIN_MODES = ('plugin', 'plugin_kinds', 'plugin_expired', 'plugin_narrow')
 # SummonerRotation.SearingPhaseHeldAfter
 PLUGIN_HELD_AFTER = 2
 
@@ -223,21 +228,22 @@ def plugin_all_held(counts, mode):
     return all(counts.get(k, 0) >= PLUGIN_HELD_AFTER for k in slots)
 
 
-def averaged(n, mine_mode, opponents, drift, fight=None):
+def averaged(n, mine_mode, opponents, drift, fight=None, ready0=None):
     """Damage-weighted own coverage of Summoner 0, averaged over who wins a simultaneous chance.
 
     The party that occurs: one Summoner on the rule under test, the others on their own. Who takes a
     window both could take is a fraction of a second in the fight, so every starting order counts.
+    `ready0` gives each Summoner the time his first charge is free; by default all start ready.
     """
     total = 0.0
     for first in range(n):
         total += simulate(n, None, drift, fight, modes=[mine_mode] + [opponents] * (n - 1),
-                          mine=0, by_potency=True, first=first)
+                          mine=0, by_potency=True, first=first, ready0=ready0)
     return total / n
 
 
 def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=None,
-             burst_only=False, modes=None, mine=None, by_potency=False, first=0):
+             burst_only=False, modes=None, mine=None, by_potency=False, first=0, ready0=None):
     """Return the fraction of the fight covered by a Searing Light.
 
     `window` restricts the measurement to (start, end) seconds without changing the run, which is
@@ -260,7 +266,7 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
     lo, hi = window if window else (0.0, fight)
     per = list(modes) if modes else [mode] * n
     offsets = [0.0] * n if n == 1 or drift == 0 else [drift * i / (n - 1) for i in range(n)]
-    ready = [0.0] * n          # earliest time each Summoner may cast again
+    ready = list(ready0) if ready0 else [0.0] * n   # earliest time each Summoner may cast again
     # The user's rule, per Summoner: which burst phase he is currently aiming at. 0 Solar, 1 the
     # next demi, 2 the one after, 3 means all three were taken and the charge goes into a primal
     # phase instead. It only ever moves forward when somebody else got there first.
@@ -289,6 +295,10 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
     plugin_counts = [dict() for _ in range(n)]
     plugin_instance = [None] * n
     plugin_booked = [False] * n
+    # For 'plugin_narrow': was somebody else's buff seen at any time during the own last Solar window.
+    solar_held_last = [False] * n
+    solar_held_now = [False] * n
+    solar_instance = [None] * n
 
     last_seen = [None] * n     # when each Summoner was last observed casting
     # What the party has observed: earliest possible return per Summoner, or None if never seen.
@@ -507,10 +517,16 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
                     idx = demi_index(t, offsets[i])
                     another = n > 1
                     if idx is not None:
-                        allowed = another or idx in (0, 2)
+                        if mine_mode == 'plugin_narrow':
+                            allowed = idx in (0, 2) or (another and solar_held_last[i])
+                        else:
+                            allowed = another or idx in (0, 2)
                     elif another and plugin_all_held(plugin_counts[i], mine_mode):
                         allowed = (primal_block(t, offsets[i]) == FALLBACK_BLOCK
-                                   and (mine_mode != 'plugin_expired' or buff_until <= t))
+                                   and (mine_mode not in ('plugin_expired', 'plugin_narrow')
+                                        or buff_until <= t))
+                elif mine_mode == 'none':
+                    allowed = False   # a Summoner who never casts: dead, by hand, or switched off
                 elif mine_mode == 'simple':
                     allowed = in_window(t, offsets[i], 'demi') or buff_until <= t
                 elif mine_mode in ('informed', 'adaptive'):
@@ -546,6 +562,20 @@ def simulate(n, mode, drift, fight=None, window=None, dropout=None, burst_share=
                     seen_ready[i] = t + RECAST   # every client sees the source of the status
                     last_seen[i] = t
                     break
+
+        for i in range(n):
+            if per[i] != 'plugin_narrow':
+                continue
+            idx = demi_index(t, offsets[i])
+            instance = int((t - offsets[i]) // DEMI_EVERY) if idx in (0, 2) else None
+            if instance != solar_instance[i]:
+                if solar_instance[i] is not None:
+                    solar_held_last[i] = solar_held_now[i]
+                solar_instance[i] = instance
+                solar_held_now[i] = False
+            if instance is not None and buff_until > t and buff_owner != i:
+                solar_held_now[i] = True
+                solar_held_last[i] = True
 
         # The plugin judges a window on entering it, after its own summon, so a charge cast in the
         # slot ahead of that summon - anybody's - is already running when it looks.
@@ -787,13 +817,23 @@ def self_test():
     for opponents in ('solar', 'demi'):
         for drift in (0, 30, 60):
             for n in range(2, 6):
-                got = averaged(n, 'plugin_expired', opponents, drift)
                 wide = averaged(n, 'demi', opponents, drift)
-                if got < wide - TOL:
-                    raise AssertionError('the plugin rule fell below the widening vs %s at n=%d '
-                                         'drift=%d: %.3f < %.3f' % (opponents, n, drift, got, wide))
-    if abs(simulate(1, 'plugin', 0) - simulate(1, 'solar', 0)) > TOL:
-        raise AssertionError('a lone Summoner on the plugin rule must behave like Solar only')
+                for mode in ('plugin_expired', 'plugin_narrow'):
+                    got = averaged(n, mode, opponents, drift)
+                    if got < wide - TOL:
+                        raise AssertionError('%s fell below the widening vs %s at n=%d drift=%d: '
+                                             '%.3f < %.3f' % (mode, opponents, n, drift, got, wide))
+    for mode in ('plugin', 'plugin_narrow'):
+        if abs(simulate(1, mode, 0) - simulate(1, 'solar', 0)) > TOL:
+            raise AssertionError('a lone Summoner on %s must behave like Solar only' % mode)
+    # The narrow rule moves to Bahamut or Phoenix only after somebody else took Solar (the owner's rule,
+    # points 2 to 4). Where nobody does - the other Summoner dead, by hand, or switched off - and the own
+    # charge comes free during Bahamut, the broad rule spends it there and stays off Solar for the rest of
+    # the fight; the narrow one waits for Solar. It has to win that case, or it buys nothing.
+    late = [65.0, 0.0]
+    if averaged(2, 'plugin_narrow', 'none', 0, ready0=late) \
+            <= averaged(2, 'plugin_expired', 'none', 0, ready0=late) + TOL:
+        raise AssertionError('the narrow rule does not win the case it exists for')
     # Booking Bahamut and Phoenix as one slot has to reach "all held" where the kinds apart do not
     # within the same fight - otherwise the pairing buys nothing and the reasoning behind it is wrong.
     paired = averaged(3, 'plugin_expired', 'demi', 0)
@@ -906,20 +946,35 @@ def main():
     print()
     print('V8 - share of the own DAMAGE under a buff, one Summoner on the rule, the others on theirs,')
     print('averaged over who wins a simultaneous chance. "model" is the book the concept describes,')
-    print('"plugin" the book SummonerRotation keeps; "kinds" books Bahamut and Phoenix apart,')
+    print('"broad" every demi with another Summoner, "plugin" the rule SummonerRotation keeps (Bahamut')
+    print('and Phoenix only after somebody else held Solar); "kinds" books Bahamut and Phoenix apart,')
     print('"guard" lets the fallback refresh into the last seconds of a foreign buff.')
     for opponents, label in (('solar', 'opponents cast in Solar only'),
                              ('demi', 'opponents cast in every demi')):
         print('  %s' % label)
-        print('    %-7s %-10s %-9s %-9s %-11s %-9s %-9s %s'
-              % ('Summ.', 'drift', 'today', 'V2', 'V8 model', 'V8 plugin', 'kinds', 'guard'))
+        print('    %-7s %-10s %-9s %-9s %-11s %-9s %-9s %-9s %s'
+              % ('Summ.', 'drift', 'Solar', 'V2', 'V8 model', 'broad', 'kinds', 'guard', 'plugin'))
         for drift in (0, 30, 60):
             for n in range(2, upto):
                 row = [averaged(n, m, opponents, drift, fight)
                        for m in ('solar', 'demi', 'hybrid', 'plugin_expired', 'plugin_kinds',
-                                 'plugin')]
+                                 'plugin', 'plugin_narrow')]
                 print('    %-7d %-10d %s' % (n, drift, ' '.join('%-9s' % ('%.1f%%' % (v * 100))
                                                               for v in row)))
+
+    print()
+    print('Own charge free mid-cycle (Summoner 0 ready at the given second, the others at 0): "broad"')
+    print('spends it in the next demi, "plugin" waits for Solar unless somebody else held it.')
+    print('    %-7s %-7s %-7s %-7s %-9s %s' % ('Summ.', 'others', 'drift', 'ready', 'broad', 'plugin'))
+    for n in (2, 3):
+        for opponents in ('none', 'solar', 'demi'):
+            for drift in (0, 30):
+                for r0 in (30.0, 65.0):
+                    late = [r0] + [0.0] * (n - 1)
+                    a = averaged(n, 'plugin_expired', opponents, drift, fight, ready0=late)
+                    b = averaged(n, 'plugin_narrow', opponents, drift, fight, ready0=late)
+                    print('    %-7d %-7s %-7d %-7d %-9s %s' % (n, opponents, drift, r0,
+                                                         '%.1f%%' % (a * 100), '%.1f%%' % (b * 100)))
 
     print()
     print('Ceiling: n x 20s per 120s. A regular eight-man party holds four to five damage jobs, so')

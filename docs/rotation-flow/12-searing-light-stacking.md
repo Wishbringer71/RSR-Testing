@@ -6,7 +6,7 @@
 ist belegt und in `.github/scripts/audit/action_names_de.json` geführt; Quelle ist seine eigene
 Angabe. Das Dokument benutzt den englischen Bezeichner, weil der Code ihn trägt.*
 
-Die Prüfhistorie steht in `AUDIT_LOG.md` (A78, A89, A112–A115, A126, A127, A129, A132, A138, A206, A247).
+Die Prüfhistorie steht in `AUDIT_LOG.md` (A78, A89, A112–A115, A126, A127, A129, A132, A138, A206, A247, A271).
 
 ## Antwort
 
@@ -14,9 +14,11 @@ Die Prüfhistorie steht in `AUDIT_LOG.md` (A78, A89, A112–A115, A126, A127, A1
   unterhalb seiner Stufe Demi-Bahamut), und die Beschwörung wartet dafür, wenn der Buff bereit ist oder in den
   Platz des Warte-GCDs zurückkehrt. So steht der Buff vor dem ersten Burstschaden, und sein Takt bleibt an
   Solar gebunden.
-- **Mehrere Beschwörer:** Jede große Beschwörung ist ein Zündfenster. Sind alle Burstphasen dauerhaft von
-  anderen belegt, weicht die Ladung in den Titan-Block aus, in den Ifrit-Block nur, wenn der Spieler ohnehin
-  am Ziel steht. Die Beschwörung wartet dann auf keinen abkühlenden Buff.
+- **Mehrere Beschwörer:** Die Ladung bleibt bei Solar, bis ein anderer dort zuvorkommt. Stand im letzten
+  eigenen Solar-Fenster ein fremder Searing Light, ist jede große Beschwörung ein Zündfenster. Sind alle
+  Burstphasen dauerhaft von anderen belegt, weicht die Ladung in den Titan-Block aus, in den Ifrit-Block nur,
+  wenn der Spieler ohnehin am Ziel steht. Die Beschwörung wartet auf keinen abkühlenden Buff, nur auf einen,
+  der bis zum nächsten GCD bereit ist.
 - **Immer:** Ein fremder Searing Light zählt als Buff-Fenster für die eigenen Aetherflow-Ausgaben. Über einen
   laufenden Buff gleich welcher Herkunft zündet RSR nicht, außer in seinen letzten GCDs. Ein fälliger
   Schimmerschild geht vor jeder Demi vor, und vor einer Wiederbelebung oder Heilung als nächstem GCD
@@ -137,7 +139,10 @@ bliebe die ganze Phase aus.
 
 **Das Zündfenster** (`SMN_Reborn.AttackAbility`):
 
-`burstInSolar || burstAboutToStart || (AnotherSummonerInParty && (inBigInvocation || (AllSearingPhasesHeld && (TitanActive || (IfritActive && am Ziel stehend)) && !HasAnySearingLight)))`
+`burstInSolar || burstAboutToStart || (AnotherSummonerInParty && ((inBigInvocation && BurstPhaseHeldByAnother) || (AllSearingPhasesHeld && (TitanActive || (IfritActive && am Ziel stehend)) && !HasAnySearingLight)))`
+
+`burstAboutToStart` öffnet den Platz vor der Burst-Beschwörung und, unter `AnotherSummonerInParty &&
+BurstPhaseHeldByAnother`, auch den vor Bahamut und Phoenix.
 
 - **Gruppenprüfung als Schalter** (`AnotherSummonerInParty`): ein lebender Beschwörer in der Gruppe, der
   die Stufe von Searing Light hat (`SearingLightPvE.Level`, aus den Aktionsdaten). Tote zählen nicht, denn
@@ -145,14 +150,29 @@ bliebe die ganze Phase aus.
   diesen hier für einen Buff zurück, der nicht kommen kann — derselbe Fehler, den `AnyLivingRaiser` beim
   Rotmagier gemacht hatte. Die Allianz wird nicht gefragt: Searing Light erreicht „nearby party members",
   ein Beschwörer in einer anderen Allianzgruppe verstärkt diesen Spieler nie.
-- **Jede große Beschwörung** öffnet das Fenster, und `burstAboutToStart` öffnet den Platz vor jeder.
+- **Bahamut und Phoenix öffnen erst, wenn ein anderer bei Solar zuvorgekommen ist**
+  (`SummonerRotation.BurstPhaseHeldByAnother`, Punkte 2 bis 4 seiner Vorgabe): Stand im letzten eigenen
+  Solar-Fenster zu irgendeinem Zeitpunkt ein fremder Searing Light, oder steht er im laufenden, öffnet
+  jede große Beschwörung das Fenster. Sonst bleibt die Ladung bei Solar wie beim einzelnen Beschwörer.
+  Unterhalb der Stufe von Solar Bahamut ist Demi-Bahamut das beobachtete Fenster.
+- **Beobachtet wird das ganze Fenster, nicht sein Betreten.** Das Phasenbuch urteilt beim Betreten; ein
+  fremder Buff, der einen Augenblick später fällt, bliebe dort ungesehen, und im synchronen Pull bliebe die
+  Ladung bei Solar, das der andere schon hält — im Modell bis zu zehn Punkte weniger.
 - **Ausweichen** (Punkt 6 seiner Vorgabe): außerhalb einer Burstphase nur, wenn **alle** Phasenarten
   dauerhaft belegt sind (`AllSearingPhasesHeld`), dann in den Titan-Block, in den Ifrit-Block nur am Ziel
   stehend, und nur auf einen vollständig abgelaufenen Buff.
 
-**Was die Prüfung nicht leisten kann:** Sie sieht nicht, ob der andere Beschwörer RSR benutzt, ob seine
-Rotation dieselbe ist oder ob er von Hand spielt. Sie beantwortet nur „kann überhaupt ein zweiter Searing
-Light kommen" — und genau das ist die Frage, auf die es ankommt.
+**Im Kampf:** Zündet der andere Beschwörer nicht im eigenen Solar-Fenster — er spielt von Hand ohne Searing
+Light, hat es abgeschaltet oder liegt mit seinem Takt daneben —, und wird die eigene Ladung erst nach
+diesem Fenster frei, hält RSR sie bis zur nächsten Solar-Phase: einmalig, höchstens 60 s länger, als sie
+bis Bahamut oder Phoenix gewartet hätte. Ohne diese Bedingung zündete es dort und bliebe für den Rest des
+Kampfes im Takt der schwächeren Phasen: 950 und 947 Potenz je GCD gegen 1217 bei Solar. Hält der andere
+Solar, ändert sich nichts: Sein Buff steht im eigenen Solar-Fenster, und Bahamut und Phoenix sind offen.
+
+**Was die Gruppenprüfung nicht leisten kann:** Sie sieht nicht, ob der andere Beschwörer RSR benutzt, ob
+seine Rotation dieselbe ist oder ob er von Hand spielt. Sie beantwortet nur „kann überhaupt ein zweiter
+Searing Light kommen". Ob er tatsächlich kommt, beantwortet die Beobachtung des Solar-Fensters; erst beide
+zusammen öffnen die schwächeren Phasen.
 
 **Welcher Block beim Ausweichen.** Ifrit ist auf dem Papier der stärkste (632 Potenz je GCD gegen Titans
 464), aber die Zahl enthält Crimson Cyclone, einen Gapcloser in den Nahkampf. Ohne Anlauf kehrt sich die
@@ -215,7 +235,8 @@ Solar-Fensters zündet, setzt Searing Light zu einem anderen Zeitpunkt auf Abkli
 Solar-Beschwörung dann auf den Buff, verschöbe die Ausweichregel die teuerste Phase des Zyklus — eine
 Verschiebung um ein Fenster kostete 1600 Potenz, mehr als der gesamte Zugewinn an Buffzeit. Das ist sein
 Prüfvorschlag: kein Verzögern aller Demis, stattdessen Ausweichen auf die nächste Demi oder den stärksten
-Primal.
+Primal. Vor Bahamut und Phoenix wartet die Beschwörung nur, solange sie offen sind
+(`BurstPhaseHeldByAnother`); sonst fällt dort kein Buff, und das Warten bliebe vergeblich.
 
 **Die drei großen Beschwörungen teilen eine Abklingzeit.** Ihre Wirktexte sagen „does not share a recast
 timer with any other actions"; die Action-Tabelle des Spiels führt alle drei samt Aethercharge in
@@ -263,7 +284,7 @@ führen nicht zu mehr Überschreibungen, sondern zu mehr genutzten Lücken.
 
 | Ort | Was dort steht |
 |---|---|
-| `SummonerRotation.cs` | `HasAnySearingLight` (Buff gleich welcher Herkunft), `AnotherSummonerInParty`, `NextBigSummonIsBurst` (nächste große Beschwörung ist die Burst-Demi, aus der Beschwörungstaste und der Reihenfolge), Phasenbuch (`UpdateSearingPhaseBook`, `AllSearingPhasesHeld`, `BookSlot`) |
+| `SummonerRotation.cs` | `HasAnySearingLight` (Buff gleich welcher Herkunft), `AnotherSummonerInParty`, `NextBigSummonIsBurst` (nächste große Beschwörung ist die Burst-Demi, aus der Beschwörungstaste und der Reihenfolge), Phasenbuch (`UpdateSearingPhaseBook`, `AllSearingPhasesHeld`, `BookSlot`), Beobachtung des Burst-Fensters (`BurstPhaseHeldByAnother`, in `UpdateSearingPhaseBook` fortgeschrieben) |
 | `SMN_Reborn.AttackAbility` | Zündfenster, Platz vor der Beschwörung (`burstAboutToStart`), Schild vor der Demi, Rückhalt vor Wiederbelebung und Heilung (`higherGcdFirst`), Aetherflow-Ausgaben unter `HasAnySearingLight` |
 | `SMN_Reborn.UseSummonsAndTrances` | Warten der Beschwörung (`searingSettled`, `RadiantAegisDueBeforeDemi`) |
 
@@ -516,6 +537,8 @@ Gelegenheit zuerst zündet. Zwischen den Demis laufen die drei Primals in der vo
 Reihenfolge Titan, Garuda, Ifrit; ausgewichen wird in den Titan-Block. „V2" ist die Regel ohne
 Ausweichklausel (jede große Beschwörung mit zweitem Beschwörer), „V8" die gebaute mit ihr; „V8 (Plugin)"
 ist das Buch, das `SummonerRotation` führt, „V8 (Modellbuch)" das Buch, aus dem die Regel hergeleitet ist.
+Alle Beschwörer beginnen mit freier Ladung; dort liefert die gebaute Bedingung für Bahamut und Phoenix
+(`BurstPhaseHeldByAnother`) dieselben Werte wie ein Fenster, das jede große Beschwörung öffnet.
 
 **Gegenspieler, die nur Solar nutzen** — Bahamut und Phoenix bleiben frei, die Klausel greift nie:
 
@@ -556,6 +579,32 @@ Ohne die beiden gebauten Punkte erreichte das Plugin 49,0 % — anderthalb Punkt
 führt je Phasenart den zuletzt beobachteten fremden Zünder samt Zeitstempel und lässt den Eintrag nach
 Wiederholzeit plus Nachfrist verfallen; das Plugin bleibt beim Merker ohne Uhr und Urheber (Begründung
 unter „Das Phasenbuch").
+
+**Wird die eigene Ladung mitten im Zyklus frei, entscheidet die Bedingung für Bahamut und Phoenix.**
+Gemessen im Abschnitt „Own charge free mid-cycle" (eigene Ladung nach 30 oder 65 s frei, die der anderen
+sofort; 20-Minuten-Kampf; 12.10.2026). „Weit" öffnet mit zweitem Beschwörer jede große Beschwörung, „eng"
+ist die gebaute:
+
+| Lage | weit | eng (gebaut) |
+|---|---|---|
+| zwei Beschwörer, der andere zündet nie, Ladung nach 65 s | 18,1 % | 23,6 % |
+| zwei Beschwörer, der andere bei Solar oder in jeder Demi, halb versetzt, Ladung nach 65 s | 30,0 % | 35,5 % |
+| drei Beschwörer, Gegenspieler in jeder Demi, synchron | 51,7 und 51,0 % | gleich |
+| drei Beschwörer, Gegenspieler bei Solar oder in jeder Demi, halb versetzt, Ladung nach 30 s | 42,2 % | 42,0 % |
+
+Die enge Fassung gewinnt bis zu 5,5 Punkte, wo kein anderer Solar hält: Die weite zündet die frei
+gewordene Ladung in Bahamut oder Phoenix und bleibt für den Rest des Kampfes dort. Hält ein anderer Solar,
+sind beide gleich. **Der einzige Verlust (0,2 Punkte) hängt an der Kampflänge, nicht an der Regel:** Das
+einmalige Warten bis Solar verschiebt den eigenen Takt um bis zu 60 s, und ob dabei am Ende eine Zündung
+entfällt, hängt davon ab, wo das Ende liegt. In derselben Lage gewinnt die enge Fassung bei 19, 20,5 und
+21 Minuten 2,0 Punkte und verliert bei 19,5 und 20 Minuten 0,2 (gemessen 12.10.2026). Entschieden ist die
+Fassung durch seine Vorgabe — Punkte 2 bis 4 rücken erst weiter, wenn ein anderer zuvorgekommen ist —; das
+Modell zeigt, dass sie dafür nichts Messbares hergibt. Der Selbsttest hält fest, dass keine Fassung unter
+V2 fällt und dass die enge den Fall gewinnt, für den sie gebaut ist.
+
+Beim Phasenbuch misst das Modell die umgekehrte Wahl als besser (Tabelle oben: Buchen beim Betreten). Beide
+Wahlen sind je für sich gemessen; das Buch fragt, ob eine Phase dauerhaft vergeben ist, die Beobachtung
+des Burst-Fensters, ob dort überhaupt ein fremder Buff stand.
 
 **Warum die Klausel nicht früher greifen darf, ist die Potenzdichte.** Solar trägt 1217 je GCD,
 Bahamut 950, Phoenix 947; ein Primal-Block 407 bis 632. Eine ausgelassene Gelegenheit kostet dabei
@@ -719,8 +768,17 @@ Verlust, aber der Pfad gibt das nicht her: `AttackAbility` wird in `CustomRotati
   (`StatusFromCmdOrCondition` in `StateUpdater.cs`); `burstInSolar` prüft das nicht. `SMN_Reborn` benutzt
   `BahamutBurst` nicht.
 - **Nullvariante (nur Solar).** Für einen Beschwörer richtig und so gebaut: Die Gruppenprüfung lässt ihn
-  bei Solar. Ab zwei nicht tragfähig, weil zwei Beschwörer in einer Gruppe gewöhnlich sind und die Ladungen
-  dann kollidieren.
+  bei Solar, und mit weiteren Beschwörern bleibt er dort, solange keiner von ihnen Solar hält. Als feste
+  Regel ab zwei nicht tragfähig, weil zwei Beschwörer in einer Gruppe gewöhnlich sind und die Ladungen dann
+  kollidieren.
+- **Jede große Beschwörung öffnet mit zweitem Beschwörer das Zündfenster, ohne Beobachtung** (die weite
+  Fassung). Wo alle mit freier Ladung beginnen, gleich; wird die eigene Ladung mitten im Zyklus frei, ohne
+  dass ein anderer Solar hält, bis zu 5,5 Punkte weniger, weil sie dann für den Rest des Kampfes in Bahamut
+  und Phoenix bleibt (Tabelle unter „Gemessen"). Sie rückte zudem weiter, ohne dass jemand zuvorgekommen
+  ist, was Punkt 2 seiner Vorgabe nicht vorsieht.
+- **Das Solar-Fenster nur beim Betreten beobachten**, wie das Phasenbuch bucht. Ein fremder Buff, der einen
+  Augenblick nach dem Betreten fällt, bliebe ungesehen; im synchronen Pull kostete das im Modell bis zu zehn
+  Punkte.
 - **Addle hinter Searing Light zurücktreten lassen**, solange er vor dem Castende des Gegners liegt (sein
   Hinweis: sein Wert hängt nur daran, dass er vor dem Treffer steht). Nicht gebaut: Es beträfe nur den
   seltenen Fall, dass beide Plätze hinter der Beschwörung belegt sind, und gewönne dort 15 bis 23 Potenz;
@@ -749,9 +807,11 @@ nicht gefunden.
   das Modell zeigt, dass keine der Regeln eine Anlaufzeit braucht, aber nicht, wie schnell eine Gruppe von
   der synchronen in die versetzte Tabelle wandert. Die Richtung steht fest — sie verbessert die Lage —,
   ihr Tempo nicht;
-- startet alle Beschwörer mit freier Wiederholzeit. Den Fall, in dem die weite Fassung des Zündfensters
-  von einer engen („ausweichen nur nach tatsächlicher Blockade") abweicht, kann es darum nicht erzeugen
-  (offen, `TODO.md`).
+- kennt als Anfangslage nur freie Ladungen und eine eigene, die nach 30 oder 65 s frei wird; wie oft eine
+  Ladung im Kampf aus dem Solar-Takt fällt (Schimmerschild, Wiederbelebung, Bewegung), sagt es nicht. Es
+  zeigt nur, was ein solcher Fall unter jeder Fassung kostet;
+- rechnet einen Kampf fester Länge. Wo eine Regel den eigenen Takt verschiebt, entscheidet das Kampfende,
+  ob eine Zündung entfällt; solche Unterschiede sind darum über mehrere Längen geprüft, nicht an einer.
 
 **Der Burst-Anteil ist eine Annahme;** der Schaden außerhalb des Bursts ist als gleichmäßig modelliert, was
 er nicht ist — die Beschwörungsfenster sind selbst Spitzen (das Zwei- bis Zweieinhalbfache eines gleich

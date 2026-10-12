@@ -6216,6 +6216,24 @@ Kommentar.
   Meditate, mit Modul ausgeschlossen. Ausgeliefert und nichts ändert sich — trifft zu, wenn der Kampf keine Pause hat oder
   der Schnitter danach nie aus dem Nahkampf muss; dann liegt Harvest Moon bereit. Betroffen: nur `RPR_Reborn` ruft
   `SoulsowPvE` (keine Zusatzrotation).
+- *Searing Light mit mehreren Beschwörern, Bahamut und Phoenix:* Mit einem zweiten Beschwörer öffnete jede große
+  Beschwörung das Zündfenster, ohne dass jemand bei Solar zuvorgekommen war. Jetzt nur, wenn im letzten eigenen
+  Burst-Fenster zu irgendeinem Zeitpunkt ein fremder Searing Light stand oder im laufenden steht
+  (`SummonerRotation.BurstPhaseHeldByAnother`, gelesen in `SMN_Reborn.AttackAbility` und `searingSettled`). Grundlage:
+  seine Vorgabe, Punkte 2 bis 4 (weiterrücken, „kommt mir ein anderer Beschwörer zuvor"). Gemessen mit
+  `searing_light_coverage.py`, neu: Anfangs-Wiederholzeit je Beschwörer (`ready0`), Gegenspieler, der nie zündet
+  (`none`), Modus `plugin_narrow`, Tabelle „Own charge free mid-cycle" (12.10.2026): wo alle mit freier Ladung beginnen,
+  gleich der weiten Fassung; wird die eigene Ladung mitten im Zyklus frei, ohne dass ein anderer Solar hält, bis zu
+  +5,5 Punkte. Eine erste Fassung urteilte beim Betreten des Fensters wie das Phasenbuch und verlor im synchronen Pull
+  bis zu zehn Punkte; beobachtet wird jetzt das ganze Fenster. *Falsifikation:* kein Defekt — widerlegt, die weite
+  Fassung blieb nach einer in Bahamut gezündeten Ladung für den Rest des Kampfes in den schwächeren Phasen und rückte
+  ohne Zuvorkommen weiter; Behebung falsch — stärkste Gegenposition: Das Warten bis Solar verschiebt den Takt einmalig
+  um bis zu 60 s und kostet am Kampfende eine Zündung (−0,2 Punkte bei drei Beschwörern, halb versetzt, 20 Minuten,
+  nachgerechnet mit feinerem Zeitraster −0,15). Über 19 bis 21,5 Minuten geprüft: bei 19, 20,5 und 21 Minuten +2,0, bei
+  19,5 und 20 −0,2, bei 21,5 gleich — eine Eigenschaft der Kampflänge, nicht der Regel. Ausgeliefert und nichts ändert
+  sich — trifft zu, solange die eigene Ladung im Solar-Takt bleibt oder ein anderer Solar hält; dann gleich. Selbsttest
+  ergänzt: keine Fassung unter V2, ein einzelner Beschwörer bleibt bei Solar, die enge gewinnt den Fall, für den sie
+  gebaut ist. Betroffen: nur `SMN_Reborn`; die neue geschützte Eigenschaft ist additiv für abgeleitete Rotationen.
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)

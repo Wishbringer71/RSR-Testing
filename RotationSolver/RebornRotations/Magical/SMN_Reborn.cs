@@ -665,16 +665,19 @@ public sealed class SMN_Reborn : SummonerRotation
 			? SummonSolarBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain)
 			: SummonBahamutPvE.Cooldown.WillHaveOneCharge(WeaponRemain);
 		// Only ahead of the summon that opens the burst - Solar Bahamut, or Demi-Bahamut below its
-		// level - unless another Summoner widens the window to every big summon. Without that, a lone
-		// Summoner whose charge had come loose from Solar fired it ahead of Bahamut or Phoenix, and the
-		// summon waited for it there: concept 12 ties him to Solar.
+		// level - unless another Summoner took that phase from us, which opens the minor summons as well
+		// (the owner's rule, concept 12: try the next burst phase "when another Summoner got there
+		// first"). Without the condition, a Summoner whose charge had come loose from Solar fired it
+		// ahead of Bahamut or Phoenix and stayed off Solar for the rest of the fight.
+		var minorSummonsOpen = AnotherSummonerInParty && BurstPhaseHeldByAnother;
 		var burstAboutToStart = IsBurst && bigSummonReady
-			&& (NextBigSummonIsBurst || AnotherSummonerInParty);
+			&& (NextBigSummonIsBurst || minorSummonsOpen);
 
 		var mayFireSearingLight = burstInSolar
 			|| burstAboutToStart
 			|| (AnotherSummonerInParty
-				&& (inBigInvocation || (AllSearingPhasesHeld && fallbackBlockIsWorthIt && !HasAnySearingLight)));
+				&& ((inBigInvocation && BurstPhaseHeldByAnother)
+					|| (AllSearingPhasesHeld && fallbackBlockIsWorthIt && !HasAnySearingLight)));
 
 		// The shield first, in the slot ahead of the summon. The flag-driven shield already comes before
 		// this branch in the dispatch; the one BMR announces sits in GeneralAbility, after it, so without
@@ -1043,8 +1046,8 @@ public sealed class SMN_Reborn : SummonerRotation
 		//   demi of the fight, the delay the owner named.
 		// - Burst switched off. The slot ahead of the summon is opened by burstAboutToStart, which reads
 		//   IsBurst; with burst off the buff never goes there, and a ready buff held the summon for good.
-		// - A summon that is not the burst one, for a lone Summoner. burstAboutToStart does not open the
-		//   slot ahead of it, so the buff would never come.
+		// - A summon that is not the burst one, unless another Summoner took the burst phase from us.
+		//   burstAboutToStart does not open the slot ahead of it then, so the buff would never come.
 		var searingBackSoon = AnotherSummonerInParty
 			? SearingLightPvE.Cooldown.WillHaveOneCharge(WeaponRemain)
 			: SearingLightPvE.Cooldown.WillHaveOneCharge(
@@ -1052,7 +1055,7 @@ public sealed class SMN_Reborn : SummonerRotation
 		var searingSettled = !SearingLightPvE.EnoughLevel
 			|| !SearingLightPvE.IsEnabled
 			|| !IsBurst
-			|| (!NextBigSummonIsBurst && !AnotherSummonerInParty)
+			|| (!NextBigSummonIsBurst && !(AnotherSummonerInParty && BurstPhaseHeldByAnother))
 			|| HasAnySearingLight
 			|| !searingBackSoon;
 
