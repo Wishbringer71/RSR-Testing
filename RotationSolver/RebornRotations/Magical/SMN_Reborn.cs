@@ -585,9 +585,10 @@ public sealed class SMN_Reborn : SummonerRotation
 
 		// Searing Light overwrites, it does not stack, and it comes back exactly as often as the
 		// Solar Bahamut window it is tied to. With one Summoner that tie is right. With a second one
-		// every window collides and all but one charge is wasted, so with another Summoner in the
-		// party the firing window widens - to any big summon, not just Solar, because the minor
-		// windows carry 78% of a Solar window and are the natural place for a second caster.
+		// whose buff lands in the same window all but one charge is wasted, so once another Summoner's
+		// Searing Light has stood in our Solar window the firing window widens - to any big summon, not
+		// just Solar, because the minor windows carry 78% of a Solar window and are the natural place for
+		// a second caster. Until then the charge stays with Solar (BurstPhaseHeldByAnother).
 		//
 		// Outside a summon the charge goes out only when every burst phase is held by somebody who
 		// keeps coming back, and then into a primal block: one carries at best 632 potency per GCD
