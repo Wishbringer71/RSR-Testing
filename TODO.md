@@ -272,16 +272,27 @@ Loop vor jedem Bau.
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 
-### Tankbuster-Plan: ein Stun sperrt ein Glied einen GCD statt bis zu seinem Ende · N
+### Tankbuster-Plan: Stun sperrt ein Glied einen GCD; Druck nach dem Snapshot möglich · N
 
-**Befund (A267):** Eine Ablehnung einer Minderung außerhalb von Animationssperre und eigenem Zauber sperrt sie für den
-Plan einen GCD. Ein Stun oder eine Amnesie verweigert aber alle Fähigkeiten und endet oft früher. Im Kampf: Nach einem
-kurzen Stun gehen die Glieder bis zu einen GCD später; reicht die Sperre in den letzten GCD, rechnet der Plan ohne sie
-und zieht die Unverwundbarkeit oder „alles" (Richtung: zu viel Mittel). Für die Unverwundbarkeit behoben (Konzept 09,
-„Verweigerung der Unverwundbarkeit"). **Offen:** eine spielerweite Sperre an Status oder `GetActionStatus` erkennen und
-wie die Animationssperre behandeln – voller Loop vor dem Bau.
+**Konzept (geplant, 12.10.2026):** `docs/rotation-flow/09-tank-selfprotection.md`, „Spielerweite Sperre und Frist".
+- *Defekt 1:* Eine Ablehnung unter Stun oder Amnesie sperrt eine Minderung einen GCD statt bis zum Ende der Sperre.
+- *Defekt 2:* Der Plan drückt bis zum Ende des Wirkbalkens. Ein Druck, der nach dem Snapshot ankommt, ist verloren –
+  seine Hinweise: „unverwundbarkeit nach tod bringt nichts, "alles" nach schadenseingang bringt auch nix".
+- *Im Kampf:* Nach einem kurzen Stun gehen die Glieder bis zu einen GCD zu spät; der Plan kann dann zu Unrecht die
+  Unverwundbarkeit oder „alles" ziehen. Ein später Druck kostet eine Abklingzeit, ohne den Treffer zu ändern.
+- *Vor dem Code offen:*
+  - Ob die Totenerweckung, Heiliger Boden und Meteoritenfall am Snapshot oder beim Zufügen zählen.
+  - Ob die Zeitangabe von BossModReborn den Snapshot oder das Zufügen meint (für die Klasse über den Plan hinaus).
+  - Die Modellerweiterung O9/O10.
 
-**Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
+### Horizont H gegen den Snapshot prüfen · N
+
+**Befund (12.10.2026, Konzept 09, „Spielerweite Sperre und Frist"):** H = R + GCD verlangt, dass eine Minderung bis
+einen GCD nach dem Ende des Wirkens steht. Nach dem Snapshot-Beleg (Community) genügt das Ende des Wirkens samt
+Laufzeit; für Holmgang zählt das Zufügen.
+- *Im Kampf:* Die Fenster öffnen sich heute bis zu einen GCD zu spät. Das kann ein Glied mit kurzer Wirkdauer ganz
+  ausschließen; die Richtung ist zu viel Mittel.
+- *Offen:* voller Loop über alle Regeln, die H tragen (Fenster, Invarianten 4 und 5, Modell).
 
 ### Tankbuster-Plan: keine Reserve nach einem knapp überlebten Treffer · N
 

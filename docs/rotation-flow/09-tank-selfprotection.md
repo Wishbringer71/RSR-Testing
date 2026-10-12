@@ -1560,6 +1560,108 @@ sie trifft, und ein zweiter Tankbuster auf den Co-Tank sähe genauso aus. Steht 
 nennt keinen Einschlagszeitpunkt. Den Plan des Tanks kennt der Heiler nicht; seine Minderung auf einem Tank unter
 Holmgang oder Totenerweckung bleibt also, wie sie war.
 
+### Spielerweite Sperre und Frist (geplant, nicht gebaut)
+
+**Stand 12.10.2026:** geplant, kein Code. Gebaut ist nur der Teil für die Unverwundbarkeit („Verweigerung der
+Unverwundbarkeit"). Für Minderungen gilt noch die Sperre für einen GCD (`TODO.md`).
+
+**Seine Hinweise (12.10.2026):** „unverwundbarkeit nach tod bringt nichts, "alles" nach schadenseingang bringt auch
+nix". Das ist Mechanik: Was erst nach dem Treffer wirkt, ändert ihn nicht. Daraus folgt eine Frist je Wirken, nach der
+der Plan für dieses Wirken nichts mehr drückt.
+
+**Belege:**
+- *Sperre:* Das Blatt `Status` des Clients trägt das Feld `LockActions` (xivapi 12.10.2026). Es ist gesetzt bei Stun
+  („Unable to execute actions"), Schlaf, Versteinerung und rund 260 weiteren Status, etwa Deep Freeze, Down for the
+  Count und Bubble Gaol. Amnesie (Zeilen 5, 1092, 4210: „Unable to use abilities") sperrt alle Fähigkeiten, trägt das
+  Feld aber nicht. Silence und Pacification treffen nur Zauber und Waffenfertigkeiten. Alle Glieder des Plans und alle
+  vier Unverwundbarkeiten sind Fähigkeiten.
+- *Snapshot:* Der Schaden eines gewirkten Angriffs wird festgelegt, wenn der Wirkbalken endet. Er wird erst später
+  zugefügt, der Abstand ist je Angriff verschieden. Eine Minderung, die danach kommt, wirkt nicht mehr (Community-Quellen:
+  consolegameswiki „Snapshot", akhmorning „Raiding Fundamentals", abgerufen 12.10.2026; keine offizielle Quelle).
+- *Holmgang:* Das gilt nach akhmorning nicht für die LP-Untergrenze. Sie zählt, wenn sie beim Zufügen des Schadens
+  steht (Community-Quelle).
+  - Totenerweckung: Ihr Text („HP reduced to 0") legt dasselbe nahe; für die Zeit ist das unbelegt.
+  - Heiliger Boden und Meteoritenfall („Impervious"): Ob sie am Snapshot oder beim Zufügen zählen, ist unbelegt.
+
+**Regeln:**
+1. *Erkennung (Stufe „alle", zentral):*
+   - Ob der Spieler gerade keine Fähigkeit benutzen kann, und wie lange noch: ein Status mit `LockActions` aus dem Blatt
+     des Clients (Fähigkeitsprüfung statt Liste, sprachunabhängig) oder Amnesie (Wirktext der englischen Fassung).
+   - Die Restzeit kommt aus dem Status, wo das Spiel sie nennt; sonst bleibt sie unbekannt.
+   - Die Erkennung urteilt nicht; die Verbraucher entscheiden.
+2. *Ablehnung unter Sperre:* keine Antwort, wie die Animationssperre. Die Aktion wird im nächsten Durchlauf neu versucht
+   und nicht für einen GCD gesperrt. Das gilt für jedes Glied und für die Unverwundbarkeit.
+3. *Frist je Wirken:* Ein Druck für das Wirken c hilft nur, wenn er vor dem Snapshot beim Server ankommt.
+   - Frist = Ende des Wirkens weniger der gemessenen Laufzeit von Druck bis Bestätigung. Der Datensatz kennt den
+     Zeitpunkt des Drucks und das Ereignis der Bestätigung (Effekt-Handler), speichert dessen Zeitpunkt aber noch nicht.
+     Neu: ihn festhalten und den jüngsten Abstand nutzen. Vor der ersten Messung gibt es keine Frist vor dem Ende des
+     Wirkens, also das heutige Verhalten.
+   - Für Holmgang und Totenerweckung später: Frist = Zufügen des Schadens. Diesen Abstand misst der Effekt-Handler am
+     gemessenen Treffer selbst, als Zeit vom Ende des Wirkens bis zum Effekt, je Aktion gespeichert wie der Höchstwert.
+     Ohne Messung gilt die Snapshot-Frist (sichere Richtung).
+4. *Nach der Frist* drückt der Plan für c nichts mehr: keine Unverwundbarkeit, kein „alles" (seine Hinweise). Das
+   Zurückhalten für c endet mit der Frist.
+   - Was danach kommt, etwa Auto-Angriffe auf einen tiefen Tank, entscheiden die gewöhnlichen Pfade mit ihren eigenen
+     Gründen. Sie sind kein „alles" für diesen Treffer.
+   - Heute endet der Plan erst mit dem Wirkbalken. Ein Druck in dessen letzten Millisekunden kommt nach dem Snapshot an.
+5. *Druckplätze:* Von jetzt bis zur Frist passen so viele Drücke, wie die gemessene Sperre je Druck (die
+   Animationssperre nach dem letzten eigenen Druck) zulässt; während einer Sperre zählen sie ab ihrem Ende.
+   - Ein Bündel ist nur wählbar, wenn seine ungedrückten Glieder hineinpassen.
+   - Sonst kommt die Unverwundbarkeit, die einen Platz braucht; ohne sie „alles", das wertvollste Glied zuerst.
+   - Ist das Ende der Sperre unbekannt, rechnet der Plan, als ende sie jetzt. Er rechnet in jedem Durchlauf neu und
+     liegt damit richtig, sobald sie endet.
+   - Das gilt nicht nur nach einem Stun, sondern auch für ein spät erkanntes, kurzes Wirken.
+6. *Sperre über die Frist hinaus* (Ende bekannt): Für c gibt es nichts zu tun. Das Zurückhalten ist ohne Wirkung, denn es
+   kann ohnehin nichts hinausgehen.
+
+**Im Kampf:**
+- Nach einem kurzen Stun im Fenster gehen die Glieder im ersten Durchlauf danach, nicht bis zu einen GCD später. Bleiben
+  zu wenige Plätze für das Bündel, geht die Unverwundbarkeit allein.
+- Endet der Stun nach dem Snapshot, geht für diesen Treffer nichts hinaus. Die Abklingzeiten bleiben für den nächsten.
+- Ein Druck, der nach dem Snapshot ankäme, unterbleibt.
+
+**Betroffene über den Plan hinaus (Klasse):**
+- Jeder Pfad, der für einen vorhergesagten Treffer drückt, kann nach dessen Frist drücken: Fenster aus BossModReborn,
+  Tankbuster-Marker, die Einzelabwehr der Heiler.
+- Regel 4 gehört deshalb auf die Stufe „alle". Für BossModReborn ist unbelegt, ob dessen Zeitangabe den Snapshot oder
+  das Zufügen meint, und sie ist erst nach diesem Beleg anwendbar.
+- Ein Marker nennt keinen Zeitpunkt: kein Verbraucher.
+
+**Folge für eine bestehende Regel (offen, `TODO.md`):** Der Horizont H = R + GCD verlangt, dass eine Minderung bis einen
+GCD nach dem Ende des Wirkens steht. Nach dem Snapshot-Beleg genügt das Ende des Wirkens samt Laufzeit. Die Fenster
+öffneten sich dann bis zu einen GCD früher. Für Holmgang und Totenerweckung gilt das Zufügen.
+
+**Ausgeschlossen:**
+- *Vor einem Stun vorbeugend drücken:* Ein Stun ist nicht vorhersagbar, außer über ein BossModReborn-Modul, und dafür
+  gibt es keinen Weg ohne BossModReborn.
+- *Die Sperre an `GetActionStatus` erkennen:* Welche Rückgabe einen Stun meint, ist unbelegt. Der Status ist belegt und
+  nennt die Restzeit.
+
+**Falsifikation:**
+- *Kein Defekt:* Stuns im Fenster eines Tankbusters sind selten; die Häufigkeit ist unbelegt. Der Defekt besteht
+  dennoch: Der Plan drückt heute bis zum Ende des Wirkbalkens, und das Modell zeigt die Verzögerung nach einem Stun.
+  Selten heißt geringer Nutzen, nicht kein Defekt.
+- *Option falsch:*
+  - `LockActions` könnte Status tragen, unter denen Fähigkeiten doch gehen. Folge: keine Sperre notiert, Neuversuch in
+    jedem Durchlauf – harmlos.
+  - Eine übersehene Sperre hält das heutige Verhalten, die GCD-Sperre – sichere Richtung.
+  - Die Snapshot-Frist ist Community-Wissen. Läge der Snapshot später, unterbliebe ein Druck, der noch gewirkt hätte.
+    Deshalb kommt die Frist aus der gemessenen Laufzeit, nicht aus einer festen Marge. Ein Angriff ohne Wirkbalken
+    kennt der Plan ohnehin nicht.
+- *Ausgeliefert, und nichts ändert sich – warum?* Der Plan drückt früh, bei Öffnung des Fensters. Drücke in den
+  letzten Millisekunden gibt es nur im Rückfall „alles", nach einer Verweigerung oder bei kurzem Wirken. Sichtbar wird
+  die Änderung nur in diesen Lagen.
+  - Messmittel ist die Plan-Zeile in `DefenseTrace.log`. Sie erhielte die Frist und, je Druck, den Abstand zu ihr. Ein
+    Druck nach der Frist wäre dann im hochgeladenen Protokoll ablesbar, ohne Diagnosefenster. Nachgesteuert wird die
+    Frist selbst über die gemessene Laufzeit.
+
+**Modell (vor dem Code):**
+- `tankbuster_model.py` bekommt einen Stun, der alle Pfade sperrt, in drei Lagen: im Fenster, über den Snapshot hinaus
+  und über das Fenster eines Glieds.
+- Prüfungen: O9 „kein Druck des Plans für c nach der Frist"; O10 „bleibt nach einer Sperre mindestens ein Platz und ist
+  die Unverwundbarkeit verfügbar, überlebt der Tank, wenn kein passendes Bündel bleibt".
+- Defekte des Selbsttests: die GCD-Sperre unter Stun und ein Druck nach der Frist.
+
 ### Mechanik (Belege, abgerufen 04.10.2026)
 
 - Statustexte (xivapi, Blatt `Status`): Heiliger Boden 82 und 1302, Meteoritenfall (Superbolide) 1836 „Impervious to

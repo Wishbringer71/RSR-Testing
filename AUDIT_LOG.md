@@ -6074,6 +6074,23 @@ beobachtet.
 
 **Prüfgrad:** Modell mit Selbsttest, Prüfskripte; Compile über die CI; im Spiel nicht beobachtet.
 
+### A268 · Tankbuster-Plan: spielerweite Sperre und Frist geplant (12.10.2026)
+
+- *Auftrag:* „todo zu stun und unverwundbarkeit im konzept planen. unverwundbarkeit nach tod bringt nichts, "alles"
+  nach schadenseingang bringt auch nix" – Planung ohne Code; die beiden Sätze als Hinweise (Mechanik) eingeordnet.
+- *Erhoben:*
+  - Blatt `Status` des Clients: `LockActions` bei Stun, Schlaf, Versteinerung und rund 260 Status, nicht bei
+    Amnesie (xivapi).
+  - Snapshot am Ende des Wirkbalkens; Holmgang zählt beim Zufügen (Community: consolegameswiki, akhmorning).
+  - Code: Der Plan drückt bis zum Ende des Wirkbalkens; der Zeitpunkt der Bestätigung wird nicht gespeichert; es gibt
+    keine Laufzeitmessung.
+- *Ergebnis:* Konzept 09, „Spielerweite Sperre und Frist" – Erkennung auf Stufe „alle", Ablehnung unter Sperre als
+  keine Antwort, Frist aus gemessener Laufzeit, Druckplätze, nichts nach der Frist; Klasse über den Plan hinaus
+  (BossModReborn-Fenster, Heiler) mit offenem Beleg zur Zeitangabe von BossModReborn.
+- *Nebenbefund:* Der Horizont H = R + GCD ist nach dem Snapshot-Beleg um bis zu einen GCD zu streng (`TODO.md`).
+
+**Prüfgrad:** Quellen und Code gelesen; kein Code, kein Modelllauf.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
