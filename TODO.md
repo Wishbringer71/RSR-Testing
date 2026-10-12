@@ -163,6 +163,18 @@ Mit einem zweiten Beschwörer in der Gruppe öffnet jede große Beschwörung das
 
 **Vor einer Änderung zu klären:** ob RSR eine seiteneffektfreie Prüfung anbietet. Gibt es keine, ist die Frage, ob eine solche eingeführt werden soll — mit einem Wirkungsbereich über alle Rotationen, die `CanUse` als Prüfung benutzen, und damit auch über die abgeleiteten Rotationen als Paketnutzer.
 
+### Heilzielwahl, Gefährdungsklasse 3: liest die Flächenfrage mit dem Minderungsurteil · N, R
+
+Klasse 3 ordnet nach absoluten effektiven Punkten, solange `DataCenter.IsHostileCastingAOE` steht, sonst nach Gesundheit (`ActionTargetInfo`, `byPoints`; Konzept 07). Diese Frage trägt das Minderungsurteil (`AreaCastIsWorthMitigating`, Konzept 13) und den Vorfilter, der unterbrechbare Casts verwirft. Die Zielwahl erbt damit eine fremde Schwelle — gegen die Regel „Erkennung und Entscheidung trennen", die Konzept 13 für diese Frage selbst aufstellt. Im Kampf: Vor einem großen unterbrechbaren Rundumschlag, den niemand unterbricht, und vor einem nur von BossModReborn angekündigten Raidwide heilt der Heiler zuerst nach Prozent — den Tank bei 40 % vor dem Schadensausteiler bei 45 % mit weniger Punkten, den der Treffer eher tötet. Ein gemessener kleiner Treffer, den die Minderung auslässt, ändert die Reihenfolge kaum: Er bringt niemanden unter die Flächenheilschwelle. Behebung: die unbewertete Erkennung lesen wie die Heilflagge (`IsHostileCastingAreaUnrated || IsHostileCastingLargeArea`), dazu den angekündigten BossModReborn-Raidwide; Konzept 07 und 13 vorher fortschreiben.
+
+**Konzept:** `docs/rotation-flow/07-heal-target-priority.md`
+
+### Selbstschutz im Flächenpfad doppelt geprüft, und die Rotationsprüfung überstimmt seinen Befehl · N, R
+
+Seit A233 hält `BaseAction.CanUse` zentral jede Aktion zurück, die nur den Spieler schützt (Wirkradius 0, Ziel er selbst), wenn der Treffer des offenen Abwehrpfads ihn nicht erreicht — außer unter seinem Befehl („Defense"-Makro), der nicht hinterfragt wird. Daneben fragen `SAM_Reborn.DefenseAreaAbility` (Tengentsu, Third Eye) und `SMN_Reborn.DefenseAreaAbility` (Radiant Aegis) weiter selbst `AreaHitOnMe`. Alle drei haben Wirkradius 0 und zielen auf ihn (xivapi, 12.10.2026); die zentrale Prüfung deckt sie also ab. Die Rotationsprüfung bleibt aber auch unter seinem Befehl stehen: Drückt er die Flächenabwehr, fallen Tengentsu, Third Eye und Radiant Aegis nur, wenn ein gelisteter Treffer ihn erreicht. Behebung: die drei Abfragen entfernen. `RadiantAegisDueBeforeDemi` (Rückhalt der Beschwörung) liegt außerhalb des Abwehrpfads und braucht seine Abfrage.
+
+**Konzept:** `docs/rotation-flow/13-aoe-damage-classification.md`
+
 ### Zielwahl der Heilung: Rollenschwellen 45/40 kehren im Band die Rangfolge um · N, U
 
 Die Zielwahl nach Gefährdung ist gebaut (Konzept 07, Stufen 1 bis 3; A89, A93, A183). `HealTargetByDanger` und

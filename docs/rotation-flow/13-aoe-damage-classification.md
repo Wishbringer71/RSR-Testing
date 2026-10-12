@@ -56,8 +56,7 @@ Gruppenminderung.
 > **minus** dem gespeicherten Anteil seiner Maximalgesundheit. Bleibt das über der Schwelle, ab der
 > der Baum von sich aus heilen würde, ist nichts zu tun; unterschreitet es sie, wird gemindert.
 
-**Beide Stufen zusammen sind nötig, und die erste ist die später nachgerüstete** (A108, C67): Allein
-mit der zweiten fragt die Regel nur, ob **Heilbedarf** entstünde, und bei gesunder Gruppe lautet die
+**Beide Stufen zusammen sind nötig** (A108, C67): Allein mit der zweiten fragte die Regel nur, ob **Heilbedarf** entstünde, und bei gesunder Gruppe lautet die
 Antwort für fast jeden Raidwide nein. Gemindert werden soll aber, **bevor** Heilbedarf entsteht. Die
 zweite Stufe bleibt gleichwohl richtig für alles darunter: Dort ist die Rangregel *Heilung vor
 Minderung* maßgeblich — gemindert wird, wo sonst geheilt werden müsste — und sie bringt seine
@@ -81,7 +80,7 @@ den Puffer. Dieselbe Größe, zwei Fragen, zwei Antworten — nachzulesen in
 | Schutz der Werte gegen Zurücksetzen und gegen Absturz beim Schreiben | umgesetzt |
 | Sonde: Bestand und härtester Einschlag in der Listenverwaltung | umgesetzt |
 | Sonde: Anteil je Eintrag, und die Aktionen, deren Minderung unterblieb | umgesetzt |
-| Übertragung auf die Tankbuster-Liste (dieselbe Frage, dieselbe Struktur) | offen |
+| Übertragung auf die Tankbuster-Liste (dieselbe Frage, dieselbe Struktur) | umgesetzt (A259), Abschnitt „Die Tankbuster-Tabelle" |
 
 **Die Sonde zählt Aktionen, nicht Aufrufe, und das ist keine Feinheit.** `IsHostileCastingArea` wird
 je castendem Gegner je Bild gefragt; ein Zähler hätte die Bildrate gemeldet statt der Zahl
@@ -175,7 +174,8 @@ Divine Veil, Passage of Arms, Dark Missionary, Heart of Light, Intervention, Hea
 Tankbuster-Ziel, Nascent Flash. Ein Befehl des Spielers (Makro „Defense") wird nicht geprüft.
 
 - *Flächenpfad:* „erreicht ihn" ist `AreaHitReachesPlayer` — dieselbe Frage, die Radiant Aegis, Tengentsu und Third
-  Eye bisher je Rotation stellten; die Abfragen dort bleiben und sind jetzt doppelt.
+  Eye zusätzlich je Rotation stellen (`AreaHitOnMe`). Die Abfragen dort sind doppelt und gelten auch unter seinem
+  Befehl; offen in `TODO.md`.
 - *Einzelpfad:* „erreicht ihn" ist `SingleHitReachesPlayer`: ein Tankbuster-Marker auf ihm oder ein gelisteter
   Tankbuster auf ihn; beim Tank zusätzlich ein Cast, den ein Gegner auf den Spieler als sein Ziel wirkt, und die
   Pull-Regel (mindestens `AutoDefenseNumber` Gegner bis 3 y auf ihm, die ihn angreifen, Gesundheit unter
@@ -224,14 +224,14 @@ Wechsel oder das Zurückholen wartet, die Wahl, ihr Ausgang und ein Geteiltes Le
 
 ## Wen die Unterdrückung erreicht
 
-Erhoben, nicht geschätzt (Lauf vom 20.09.2026): `AreaCastIsWorthMitigating` sitzt in
-`IsHostileCastingArea`, und über `IsHostileCastingAOE` hat diese Frage **zwei** Leser, die etwas
-bewirken, und zwei Anzeigen.
+Erhoben am Code (12.10.2026): `AreaCastIsWorthMitigating` sitzt in `IsHostileCastingArea`, und über
+`IsHostileCastingAOE` hat diese Frage **drei** Leser, die etwas bewirken, und zwei Anzeigen.
 
 | Leser | Wirkung der Unterdrückung |
 |---|---|
-| `StateUpdater` → `AutoStatus.DefenseArea` (hinter `UseAoeDefense`) | die gemeinte: keine Gruppenminderung auf eine Bagatelle |
+| `StateUpdater` → `AutoStatus.DefenseArea` (hinter `UseAoeDefense`, über `IsHostileCastingAOEForMyDefense`) | die gemeinte: keine Gruppenminderung auf eine Bagatelle |
 | `ObjectHelper.IsUnderThreat`, zweiter Arm | die Bagatellfläche hält die Notfall-Vollheilung nicht mehr frei — **gewollt**, es ist der Fall aus der Rezz-Meldung |
+| Heilzielwahl, Gefährdungsklasse 3 (`ActionTargetInfo`, `byPoints`) | **erbt das Minderungsurteil** — ein Befund, offen in `TODO.md` (unten) |
 | Diagnosezeile der Gruppe, Feld `IsHostileCastingAOE` | keine, Anzeige |
 | Listenverwaltung, Spalte je Aktion | keine, Anzeige |
 
@@ -245,6 +245,14 @@ ausgelöst. Die Heilung hätte also eine Entscheidung geerbt, die nicht ihre ist
 **Daraus die allgemeine Form: eine Erkennung darf keine Entscheidung enthalten.** `IsHostileCastingAOE`
 trägt das Minderungsurteil in sich und ist deshalb nur für die Minderung die richtige Frage. Wer
 etwas anderes entscheidet, fragt die unbewertete Erkennung und legt seine eigene Schwelle an.
+
+**Die Heilzielwahl hält sich nicht daran.** Gefährdungsklasse 3 ordnet nach absoluten effektiven Punkten,
+solange `IsHostileCastingAOE` steht, sonst nach Gesundheit (Konzept 07). Sie sieht damit keinen
+unterbrechbaren großen Cast (den fängt nur `IsHostileCastingLargeArea`), keinen nur von BossModReborn
+angekündigten Raidwide, und keinen gemessenen Treffer, den die Minderung als zu klein auslässt. Im Kampf:
+Vor einem großen Rundumschlag in einem Dungeon, in dem niemand unterbricht, heilt der Heiler zuerst den
+Tank mit dem niedrigsten Prozentwert statt des Schadensausteilers mit den wenigsten Punkten. Offen in
+`TODO.md`.
 
 **Kein unerwarteter Verbraucher, und der zweite ist der Grund, warum diese Frage gestellt werden
 musste:** Ein gelernter Flächencast, der zwei Prozent nimmt, hielt Benediction genauso frei wie einer,
@@ -280,15 +288,16 @@ damit dort proaktiv gedeckt, wo ein Modul diese Ereignisart liefert, und sonst n
 es ohnehin kein Modul.
 
 **Beide Ausfälle sind still:** Sie kommen als `float.MaxValue` an, und jede Prüfung gegen ein
-Zeitfenster liest das als „es kommt nichts". Die Diagnoseseite „BMR Data" nennt deshalb jetzt das
-aktive Modul und je Ereignisart, ob überhaupt eine Vorhersage vorliegt. Die vollständige Erhebung,
+Zeitfenster liest das als „es kommt nichts". Die Diagnoseseite „BMR Data" nennt das aktive Modul und je
+Ereignisart, ob überhaupt eine Vorhersage vorliegt. Die vollständige Erhebung,
 welche Regeln des Baums so hängen, steht in `08-mitigation-synergy.md`.
 
 **Die Antwort ist ein zweiter, eigener Weg** (`DataCenter.IsHostileCastingLargeArea`, hinter
 `Mitigate a big area cast even when it is interruptible`, **Vorgabewert an**): Er fragt nicht nach
 Unterbrechbarkeit und nicht nach Mindestlänge, sondern nach dem **gemessenen** Anteil — mindestens
-das, was die größte Barriere des Spiels absorbiert — und nach demselben Ein-GCD-Fenster vor dem
-Einschlag.
+das, was die größte Barriere des Spiels absorbiert — und nach dem letzten GCD vor dem Einschlag (Restzeit
+bis ein GCD; der Vorfilter fragt eins bis zwei GCDs vorher). Ein Unterbrechen hat bis dahin stattgefunden
+oder findet nicht mehr statt.
 
 **Warum das kein Rückbau der Entscheidung aus A9 ist.** A9 hat auf seine Meldung hin einen Rückfall
 entfernt, der die Verteidigung aus der **Gegnerzahl** heraus hob: kein Gefahrenbeleg, und er stand
@@ -303,9 +312,9 @@ Frage heute anders zu beantworten ist als im September.
 `ObjectHelper.IsUnderThreat` und darüber die Notfallheilung des Weißmagiers. Ein Lockern dort
 verschöbe zwei Pfade auf einmal. Der neue Weg hängt allein an der Verteidigungsflagge.
 
-## Was im Kampf anders wird
+## Was die Bewertung im Kampf ändert
 
-| Lage | Vorher | Nachher |
+| Lage | ohne Bewertung | mit Bewertung |
 |---|---|---|
 | Gelernte Fläche, noch nie gemessen | volle Gruppenminderung | **unverändert** |
 | Gemessene Bagatelle (2 %), Gruppe gesund | volle Gruppenminderung, Abklingzeit weg | keine Minderung, Abklingzeit bleibt |
@@ -315,7 +324,7 @@ verschöbe zwei Pfade auf einmal. Der neue Weg hängt allein an der Verteidigung
 | Savage-Training, zweiter Versuch | jede Fläche gleich behandelt | die kleinen kosten nichts mehr |
 | Nach dem Kampf, Blick in die Listenverwaltung | nichts zu sehen | je Aktion der gemessene Anteil, und welche davon eine Minderung gespart hat |
 
-**Die letzte Zeile ist der eigentliche Gewinn**, und sie stammt aus einer Vorgabe des Auftraggebers:
+**Die Zeile zum Savage-Training ist der eigentliche Gewinn**, und sie stammt aus einer Vorgabe des Auftraggebers:
 „der effekt bei der umsetzung ergibt sich sofort bei regelmäßigen wiederholungen von inhalten.
 beispiel training in extreme trials und savage raids." Ein solcher Kampf führt wenige Flächenaktionen,
 und sie wiederholen sich in jedem Versuch — nach **einem** Durchlauf ist der Bestand für diesen Kampf
@@ -334,8 +343,8 @@ Genau danach fragt die Entscheidung.
 Anstieg wirkt beim nächsten Verbrauch sofort.
 
 **Ein vollständig absorbierter Treffer wird übersprungen, nicht als null gewertet.** Der Lernpfad
-prüft `damageEffect.value > 0 || (damageEffect.param0 & 6) == 6`; die zweite Hälfte zählt einen
-Treffer, bei dem kein Schaden ankam. *Die genaue Bedeutung dieses Flags ist hier nicht belegbar* und
+(`Watcher`) zählt einen Treffer für die Aufnahme, wenn `FullAmount(damageEffect) > 0 || (damageEffect.param0 & 6) == 6`;
+die zweite Hälfte zählt einen Treffer, bei dem kein Schaden ankam. Gemessen wird nur, wo ein Betrag ankam. *Die genaue Bedeutung dieses Flags ist hier nicht belegbar* und
 wird nicht behauptet — sicher ist nur, dass `value` dann nicht der Einschlag ist. Für die **Messung**
 ist ein solcher Satz wertlos: Null heißt nicht harmlos, sondern absorbiert. Für die **Aufnahme** zählt
 er weiter, sonst fiele ein Raidwide aus der Liste, nur weil die Gruppe gut geschildet war.
@@ -397,7 +406,7 @@ auswertbare Potenz für Gegneraktionen, gehört sie **neben** den Anteil, nicht 
 **Was dagegen spricht, in der Reihenfolge des Gewichts:**
 
 1. **Verfügbarkeit für Gegneraktionen ist unbelegt.** Im gesamten Baum wird keine Potenz gelesen; die
-   465 Vorkommen in `ActionId.resx` sind Freitext in den Beschreibungen von **Spieler**aktionen. Der
+   Vorkommen in `ActionId.resx` sind Freitext in den Beschreibungen von **Spieler**aktionen. Der
    beobachtete Schadensbetrag ist demgegenüber nachweislich vorhanden.
 2. **Die Potenz altert an der anderen Achse.** Sie ist gegenüber der Ausrüstung stabil, nicht
    gegenüber dem Inhalt — dieselbe Potenz ist auf Stufe 50 tödlich und auf Stufe 100 belanglos. Der
@@ -439,13 +448,17 @@ verschwinden kann.
 
 **Die Messung hat sechs Tore**, jedes einzeln hinreichend, um sie zu verhindern: der Effekt-Hook liefert überhaupt Treffer; die Quelle ist ein anvisierbarer Gegner; eine Aktion mit Wirkzeit; eine reguläre Aktion der Kategorie Zauber, Waffenfertigkeit oder Fähigkeit; ihre Id in der Flächenliste; ein Betrag über null bei einem Gruppenmitglied.
 
-**`Record AOE actions` und die Gruppengröße gelten nur der Aufnahme in die Liste, nicht der Messung.** Die Option stammt von Upstream (2023) und entscheidet, ob neue Ids in die Liste kommen; wer sie ausschaltet, will die kuratierte Liste so behalten, wie sie geliefert wurde. Die Mindestgröße von vier ist die kleinste Gruppenzusammensetzung des Spiels (`ContentMemberType`, Zeile 2: je ein Tank, Heiler, Nahkämpfer, Fernkämpfer); darunter trifft auch ein Kegel oder ein kleiner Kreis alle, und „alle getroffen" belegt keinen Gruppentreffer mehr. Für eine bereits gelistete Id beantwortet die Messung nur, wie hart sie trifft — das hängt an keiner der beiden Bedingungen. Solange die Messung dahinter stand, fiel sie für jeden aus, der die Option abschaltete oder mit Duty Support ohne NPC-Gruppenoption spielte, und mit ihr alle drei Leser: das Auslassen kleiner Casts, das Heilen vor einem großen und das Aufheben einer Zurückhaltung. Ein Wert aus einem Lauf ohne Stufensynchronisation fällt zu klein aus; er korrigiert sich wie jede Unterschätzung beim nächsten ungemilderten Treffer, und die Höchstwert-Regel lässt ihn einen höheren Stand nie senken. Das Listenfenster und die Diagnoseanzeige zählen seit dem Laden **je Grund**, wie oft ein gegnerischer Cast den Spieler traf und woran er hängenblieb („Casts this session"). Steht dort nach einem Abend mit Raidwides kein einziger Eintrag, traf ihn kein Cast eines anvisierbaren oder unsichtbaren Gegners, oder der Hook liefert nichts; stehen dort nur Gründe ohne „measured", nennt die Zeile das Tor. Davor steht, was der Effekt-Handler überhaupt erhält („Effect handler": Effektsätze, davon von Gegnern, davon mit Schaden am Spieler, dazu Fehler und der erste Fehlertext). Null Sätze heißt: Der Hook liefert nichts. Sätze ohne Gegnertreffer heißen: Der Filter vor der Messung verwirft sie. Fehler heißen: Der Handler bricht vor der Messung ab. **Die Ursache der leeren Tabelle: die Aktionsart wurde vier Bytes breit gelesen** (A177, belegt an seinem Protokoll vom 27.09.2026). ECommons führt `EffectHeader.ActionType` an Offset 0x1F mit dem Enum `ActionType` der ClientStructs, und dessen zugrunde liegender Typ ist `uint` (aus der Assembly gelesen). Das Spielfeld ist ein Byte; ClientStructs legt `Flags` an 0x20 und `NumTargets` an 0x21. Gelesen wurde also `0x00NN0001`: im niedrigen Byte die Aktionsart, im dritten die Zahl der Ziele. In allen 422 Protokollzeilen war das niedrige Byte 1, das dritte die Zielzahl. Der Vergleich mit `ActionType.Action` schlug damit genau für jeden Satz fehl, der jemanden traf — die Messung konnte nie greifen, und ebenso wenig die Aufnahme neuer Ids, auch bei Upstream. Die Messstelle liest jetzt nur das eine Byte. Ob ECommons selbst betroffen ist: Sein `ActionEffectSet` wählt mit demselben Feld zwischen Aktion, Gegenstand und Reittier; mit Zielen fällt jeder Gegenstand in den Zweig „Aktion" (offen in `TODO.md`).
+**`Record AOE actions` und die Gruppengröße gelten nur der Aufnahme in die Liste, nicht der Messung.** Die Option stammt von Upstream (2023) und entscheidet, ob neue Ids in die Liste kommen; wer sie ausschaltet, will die kuratierte Liste so behalten, wie sie geliefert wurde. Die Mindestgröße von vier ist die kleinste Gruppenzusammensetzung des Spiels (`ContentMemberType`, Zeile 2: je ein Tank, Heiler, Nahkämpfer, Fernkämpfer); darunter trifft auch ein Kegel oder ein kleiner Kreis alle, und „alle getroffen" belegt keinen Gruppentreffer mehr. Für eine bereits gelistete Id beantwortet die Messung nur, wie hart sie trifft — das hängt an keiner der beiden Bedingungen. Stünde die Messung dahinter, fiele sie für jeden aus, der die Option abschaltet oder mit Duty Support ohne NPC-Gruppenoption spielt, und mit ihr alle drei Leser: das Auslassen kleiner Casts, das Heilen vor einem großen und das Aufheben einer Zurückhaltung. Ein Wert aus einem Lauf ohne Stufensynchronisation fällt zu klein aus; er korrigiert sich wie jede Unterschätzung beim nächsten ungemilderten Treffer, und die Höchstwert-Regel lässt ihn einen höheren Stand nie senken.
 
-**Folge der leeren Tabelle im Kampf, an seiner Beobachtung (A181):** „es scheint, als ob addle immer zusammen mit schimmerschild gecasted wird beim beschwörer. ich habe addle alleine bislang nicht gesehen, wenn schimmerschild nicht verfügbar war beim aoe." Beide stehen im selben Verteidigungspfad, erst Radiant Aegis, im nächsten Einschiebeplatz Addle; ausgelöst durch die Verteidigungsflagge, die für einen gelisteten Cast nur fällt, wenn er als „lohnt Minderung" gilt. Unbewertet heißt „lohnt", und solange nichts gemessen wurde, war jeder gelistete Flächencast unbewertet — also jeder ein Anlass für beide. Radiant Aegis trägt zwei Ladungen je 60 s, Addle 90 s Abklingzeit (Job-Guide): Nach dem ersten Paar lädt Radiant Aegis nach, Addle nicht; ist Radiant Aegis später leer, ist Addle fast immer noch in der Abklingzeit. Ein eigener Defekt der Paarung liegt nicht vor — die beiden schützen Verschiedenes (Radiant Aegis nur den Beschwörer, 20 % seiner Maximalgesundheit; Addle die ganze Gruppe gegen diesen Gegner, 10 % magisch, 5 % physisch), und bei einem großen Treffer sind beide richtig. Mit laufender Messung (A177) lösen als klein bewertete Casts die Flagge nicht mehr aus, und Addle bleibt für die großen. Grenze: Der Weg über erkannte Flächen-VFX liest die Tabelle nicht.
+**Woran die Messung hängenbleibt, zählt das Listenfenster** seit dem Laden je Grund: wie oft ein gegnerischer Cast den Spieler traf und an welchem Tor er hängenblieb („Casts this session"), und davor, was der Effekt-Handler überhaupt erhält („Effect handler": Effektsätze, davon von Gegnern, davon mit Schaden am Spieler, dazu Fehler und der erste Fehlertext). Null Sätze heißt: Der Hook liefert nichts. Sätze ohne Gegnertreffer heißen: Der Filter vor der Messung verwirft sie. Fehler heißen: Der Handler bricht vor der Messung ab.
+
+**Die Aktionsart wird als ein Byte gelesen** (A177, belegt an seinem Protokoll vom 27.09.2026). ECommons führt `EffectHeader.ActionType` an Offset 0x1F mit dem Enum `ActionType` der ClientStructs, und dessen zugrunde liegender Typ ist `uint` (aus der Assembly gelesen). Das Spielfeld ist ein Byte; ClientStructs legt `Flags` an 0x20 und `NumTargets` an 0x21. Vier Bytes breit gelesen ergab sich `0x00NN0001`: im niedrigen Byte die Aktionsart, im dritten die Zahl der Ziele — in allen 422 Protokollzeilen. Der Vergleich mit `ActionType.Action` schlug damit genau für jeden Satz fehl, der jemanden traf: Die Tabelle blieb leer, und ebenso wenig wurden neue Ids aufgenommen, auch bei Upstream. Ob ECommons selbst betroffen ist: Sein `ActionEffectSet` wählt mit demselben Feld zwischen Aktion, Gegenstand und Reittier; mit Zielen fällt jeder Gegenstand in den Zweig „Aktion" (offen in `TODO.md`).
+
+**Addle und Radiant Aegis beim Beschwörer** (seine Beobachtung, A181: „es scheint, als ob addle immer zusammen mit schimmerschild gecasted wird beim beschwörer"): Beide stehen im selben Verteidigungspfad, erst Radiant Aegis, im nächsten Einschiebeplatz Addle; ausgelöst durch die Verteidigungsflagge, die für einen gelisteten Cast nur fällt, wenn er als „lohnt Minderung" gilt. Unbewertet heißt „lohnt" — solange die Tabelle leer war, war also jeder gelistete Flächencast ein Anlass für beide. Radiant Aegis trägt zwei Ladungen je 60 s, Addle 90 s Abklingzeit (Job-Guide): Nach dem ersten Paar lädt Radiant Aegis nach, Addle nicht. Ein eigener Defekt der Paarung liegt nicht vor — die beiden schützen Verschiedenes (Radiant Aegis nur den Beschwörer, 20 % seiner Maximalgesundheit; Addle die ganze Gruppe gegen diesen Gegner, 10 % magisch, 5 % physisch), und bei einem großen Treffer sind beide richtig. Mit laufender Messung lösen als klein bewertete Casts die Flagge nicht aus, und Addle bleibt für die großen. Grenze: Der Weg über erkannte Flächen-VFX liest die Tabelle nicht.
 
 **Messung und Speicherung sind belegt (A185):** Seine Datei vom 28.09.2026 enthält sechs bewertete Flächenaktionen (Augen auf, Müllentsorger, Immersion, Störender Schweif, Blitzender Boden, Fluchstimme; Namen über xivapi), beim Start geladen, beim Entladen geschrieben und zurückgelesen. Die Protokolldatei, die nach seiner Vorgabe die Ursache finden sollte, ist damit entfernt; die Zählung je Grund bleibt.
 
-**Seine Angabe (27.09.2026):** Nach frischem Kompilieren und vier Instanzen mit Flächenschaden blieb die Tabelle leer; eine veraltete lokale Flächenliste schließt er aus, und seine hochgeladene `HostileCastingArea.json` belegt es: 850 Einträge, identisch mit der gelieferten Liste. Sofortaktionen zählen nicht mit: Sie werden nie bewertet, und als sie in „Last hit" standen, überschrieb der nächste Auto-Attack den Grund des Raidwides binnen einer Sekunde — die Zeile zeigte praktisch nur Auto-Attacks.
+**Sofortaktionen zählen nicht mit:** Sie werden nie bewertet und erscheinen nicht in der Zählung je Grund — sonst überschriebe jeder Auto-Attack binnen einer Sekunde den Grund eines Raidwides.
 
 **Eine leere Flächenliste misst nichts**, gleich wie der Kampf verläuft; beide Fenster melden sie rot. Sie entsteht, wenn der Download beim ersten Start scheitert. Seit A196 bleibt sie auf diese Sitzung beschränkt: `InitOne` schreibt dann keine leere Datei mehr, die Liste gilt als nicht geladen (kein Speichern), und der nächste Start lädt erneut; eine unlesbare Liste wird beiseitegelegt und ebenfalls neu geladen. Downloads beim Laden sind an das Ladezeitlimit des Plugins gebunden.
 
@@ -518,10 +531,10 @@ Messung in `TankbusterTable`, Ablage über denselben gesicherten Weg wie die Fl�
   - Auf dem Getroffenen zählt sein eigener Anteil, auf dem Angreifer der Anteil nach Schadensart: physisch für
     `AttackType` 1–4, magisch für 5, sonst die kleinere der beiden Minderungen.
   - Die Werte kommen aus den Wirktexten der Aktionen, die den Status legen (`DefensiveValues.MitigationByStatusId`).
-    Der Generator verknüpft 88 Status über den gemeinsamen Namen oder über die Statusangabe im Code.
+    Der Generator verknüpft die Status über den gemeinsamen Namen oder über die Statusangabe im Code.
     Sammellisten wie die von Schutzwall, die die Sperrgruppe aller großen Minderungen sind, bleiben dabei außen vor.
   - Damit drückt ein gut geminderter Treffer die Aktion nicht nach unten – die Schwäche des Höchstwerts der
-    Flächentabelle (Abschnitt „Falsifikation") entfällt hier.
+    Flächentabelle (Abschnitt „Grenzen der Messung") entfällt hier.
 - **Unter Verwundbarkeit getrennt:** Trägt der Getroffene eine Verwundbarkeit, geht der Wert in die zweite Zahl.
   Ausgenommen ist eine, die genau dieser Treffer legt (Effektsatz): Sie kam mit ihm und hat ihn nicht verstärkt.
   Ob das Spiel sie beim Eintreffen des Effekts schon gesetzt hat, ist nicht belegt; die Ausnahme macht die Frage
@@ -638,10 +651,11 @@ Statussätzen vor — eine gepflegte Tabelle mit genau der Alterung, die dieses 
 Ein angekündigter Cast mit bekanntem Potential **ist** die Vorausschau auf den ersten Treffer, und sie
 kommt ohne Statussätze aus.
 
-**Er macht die Gefahrenfrage quantitativ.** `ObjectHelper.IsUnderThreat` fragt binär, ob irgendwo eine
-Flächenaktion läuft; mit dem Potential wird daraus „bringt dieser Einschlag **dieses** Mitglied unter
-die Heilschwelle". Damit wäre auch die Bagatellfläche erledigt, die heute die Notfall-Vollheilung **freigibt**:
-Jeder laufende Flächenzauber gilt dort als Gefahr (`DataCenter.IsHostileCastingAOE`, Stand 02.10.2026). Nicht gebaut.
+**Er macht die Gefahrenfrage mitgliedsgenau.** `ObjectHelper.IsUnderThreat` fragt über
+`IsHostileCastingAOE`, ob ein unbewerteter oder ein als lohnend bewerteter Flächencast läuft — eine Antwort
+für die ganze Gruppe („bringt er irgendwen unter die Schwelle"). Mit dem Potential wird daraus „bringt dieser
+Einschlag **dieses** Mitglied unter die Heilschwelle"; dann hielte ein Treffer, der nur den Gerezzten
+gefährdet, die Notfall-Vollheilung nicht für den gesunden Tank frei. Nicht gebaut.
 
 **Die Güte der eigenen Schätzung wird hier nicht gemessen — und die Bauform dafür steht schon.**
 Der abgelegte Anteil ist eine Vorhersage: „so hart schlägt diese Aktion beim nächsten Mal“. Ob sie
@@ -661,21 +675,21 @@ Treffer ihn anhebt.
 offene Punkte zugleich schließt, steht in `08-mitigation-synergy.md`, Abschnitt „Was ein Baustein
 mehrfach trägt“.
 
-**Dieselbe Frage stellt sich bei den Tankbustern.** `HostileCastingTank` trägt sie wörtlich — wie hart
-schlägt dieser zu —, und `HostileCastingKnockback` und `HostileCastingStop` dieselbe Struktur. Der
-Messpfad ist derselbe; was fehlt, ist je Liste ein eigener Speicher und die passende Rechnung.
+**Für die Tankbuster ist dieselbe Frage beantwortet** (Abschnitt „Die Tankbuster-Tabelle").
+`HostileCastingKnockback` und `HostileCastingStop` haben dieselbe Struktur; dort fehlen ein eigener
+Speicher und eine Rechnung, und keine Regel fragt bisher nach der Größe eines Rückstoßes oder eines
+Stopp-Casts.
 
-**Er erlaubt die Wahl des Mittels, nicht nur die Entscheidung über das Ob — Vorgabe des
-Auftraggebers:** „man könnte es auch so anpassen, dass die geeignete schadensverringerung bzw. das
-geeignete schild bei dem eintreffenden schaden gewählt wird." Heute ist die Reihenfolge der
-Abwehraktionen je Job fest verdrahtet, und die gemessene Größe entscheidet allein, ob diese Kette
-überhaupt geöffnet wird. Mit einem Wert auf beiden Seiten ließe sich stattdessen zuordnen: der
-Zehn-Prozent-Tick zieht das billige Mittel, der Vierzig-Prozent-Raidwide das stärkste verfügbare.
-
-**Die Messgröße dieses Konzepts ist zugleich die Eingangsgröße für die Wahl des Mittels.** Abgelegt
-wird der **höchste** Anteil im Effektsatz, und das ist bei gleichem absolutem Schaden der Spieler mit
-der geringsten Maximalgesundheit — genau die Bezugsgröße, die die Vorgabe des Auftraggebers zur
-Deckung nennt. Für die Wahl muss die Messung also nicht geändert werden, nur ihr Verbraucher.
+**Die Wahl des Mittels nach der Treffergröße — Vorgabe des Auftraggebers:** „man könnte es auch so
+anpassen, dass die geeignete schadensverringerung bzw. das geeignete schild bei dem eintreffenden schaden
+gewählt wird." Für Flächen ist die Zuordnung „kleiner Treffer, billiges Mittel; großer Treffer, starkes"
+geprüft und widerlegt (A118): Minderungen kennen kein „zu groß", sie skalieren mit dem Treffer, und kein
+Job hält zwei Anteilsbarrieren zur Wahl. Gebaut ist die zweite Stufe, Heilung vor dem angekündigten
+Treffer; offen ist die dritte, Barriere und Minderung zusätzlich bei Treffern über der Maximalgesundheit
+(`TODO.md`). Für Tankbuster wählt der Tankbuster-Plan das geringste Bündel, das den gemessenen Treffer
+übersteht (Konzept 09). Die Messgröße dieses Konzepts trägt beides: Abgelegt wird der **höchste** Anteil
+im Effektsatz, bei gleichem absolutem Schaden der des Spielers mit der geringsten Maximalgesundheit —
+die Bezugsgröße, die seine Vorgabe zur Deckung nennt.
 
 **Die Entscheidungsordnung selbst steht in `08-mitigation-synergy.md`**, Vorgabe 5 und der Abschnitt
 „Die Antwort auf einen eingehenden Treffer": Deckung in Höhe des Treffers, Heilung zuerst, sobald die
