@@ -1807,11 +1807,11 @@ public partial class CustomRotation
 	/// <param name="statusFromSelf">Whether the status is read on the player rather than the target.</param>
 	/// <param name="target">Null for a self status, the enemy for a debuff.</param>
 	/// <param name="action">
-	/// The action this refresh would spend, when the caller can name it. Carried for the open
-	/// decision described at the hold below - whether an action with a charge to spare should skip
-	/// the hold, since it could cover both hits of a pair. Radiant Aegis is the case ("Enhanced
+	/// The action this refresh would spend, when the caller can name it. Read by the hold below: an
+	/// action with a charge to spare, or with its next charge back before the predicted event, is not
+	/// held, because the reserve A9 protects is not at risk. Radiant Aegis is the case ("Enhanced
 	/// Radiant Aegis [480]: Maximum Charges: 2") while Troubadour, Tactician and Shield Samba have
-	/// one. Not acted on: spending the second charge is what A9 removed, on the owner's report.
+	/// one.
 	/// </param>
 	/// <param name="statusIDs">The status or statuses whose remaining time decides the refresh.</param>
 	public static bool BMRShouldRefreshBefore(float predictedIn, float statusDuration, bool statusFromSelf, IBattleChara? target, IBaseAction? action, params StatusID[] statusIDs)

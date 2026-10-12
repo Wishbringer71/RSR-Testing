@@ -286,7 +286,7 @@ selbst Refulgent Lux („Additional Effect: Grants Refulgent Lux Duration: 30s�
 Solaris wirkbar, und `HealAreaAbility` fragt die Kette **vor** `AttackAbility` (in `CustomRotation.Ability`
 stehen die Heilzweige vor dem Angriffszweig); er kann den Platz dahinter nehmen, sobald die
 Flächenheilungsflagge steht und die Zündregel von Lux Solaris sie freigibt (`LuxSolarisDecision`, Konzept 08,
-„Wann Lux Solaris zuendet“). Dazu kommen dort Addle und ein Trank. Schluss aus Wirktext und
+„Wann Lux Solaris zündet“). Dazu kommen dort Addle und ein Trank. Schluss aus Wirktext und
 Zweigreihenfolge, keine Spielbeobachtung.
 
 **Vor der Beschwörung kommen nur Schild und Addle in Betracht.** Die Zweigkette des Fähigkeitenpfads
@@ -758,13 +758,8 @@ er nicht ist — die Beschwörungsfenster sind selbst Spitzen (das Zwei- bis Zwe
 langen Primalfensters). Weil die Regel gerade diese Fenster mit abdeckt, wird ihr Vorsprung unterschätzt,
 nicht überschätzt.
 
-**Zweitverwendung des Modells für die Streckung der Minderung (Konzept 08) trägt nicht ohne
-Verallgemeinerung:** Es kennt nur eine Aktion (`BUFF` 20 s, `RECAST` 120 s als Konstanten), die Streckung hat
-ungleiche Quellen; und es rechnet mit Überschreiben (`buff_until = t + BUFF   # overwrite, never stack`),
-Minderungen stapeln dagegen multiplikativ — „Strecken statt stapeln" ist dort eine Vorgabe des
-Auftraggebers, keine Spielmechanik. Übertragbar ist die Zeitschritt-Simulation mit Quellen, Dauer,
-Wiederholzeit und Zündregel, samt der Trennung „Abdeckung ist nicht Schaden"; Quellenliste und
-Stapelverhalten müssten dafür Parameter werden.
+**Ob das Modell auch die Streckung der Minderung rechnen kann,** beantwortet Konzept 08, „Was ein Baustein
+mehrfach trägt“.
 
 ## Offene Punkte
 

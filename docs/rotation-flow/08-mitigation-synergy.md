@@ -47,18 +47,18 @@ erben die Selbstkorrektur.
 | Aussetzbedingung aus dem **Mitigationsgrund** — eine fremde Minderung traegt bereits | umgesetzt (`WHM_Reborn.ShouldHoldHolyWhilePackSlowed`, Standard an) |
 | **Stunbarkeit** als Bedingung ueber allen drei Aussetzregeln | umgesetzt (`headroom` aus `SurveyStuns`; bei der Streckung laufende oder frische Betaeubung aus `WHM_Reborn.LongestStunInRadius`) |
 | Aussetzbedingung als **Anteil** der verlangsamten Gegner, mit Mindestzahl | umgesetzt (`HoldHolyMinSlowedHostiles`, Standard 3) |
-| **Schranke** der Aussetzregel: der Rest muss bewaeltigbar sein | umgesetzt und **gemessen statt gesetzt**: `AnyPartyMemberFallingWithinHealWindow`. Die frühere Zahl (`HoldHolyMaxHostileOutput` 600) war meine Setzung und ist zum optionalen Deckel mit Standard 0 = aus geworden |
+| **Schranke** der Aussetzregel: der Rest muss bewaeltigbar sein | umgesetzt und **gemessen statt gesetzt**: `AnyPartyMemberFallingWithinHealWindow`; `HoldHolyMaxHostileOutput` bleibt als optionaler Deckel, Standard 0 = aus |
 | **Schadensrate je Gruppenmitglied**, netto nach allem | umgesetzt: die Gruppe steht in `RecordedHP`, `GetTTK` antwortet fuer sie |
-| **Selbstkorrektur** der Schaetzung gegen ihren eigenen Fehler | umgesetzt (`ScoreTtkForecast`, `GetCorrectedTTK`); Rohzeit, korrigierte Zeit und Faktor stehen in der Diagnoseanzeige |
+| **Selbstkorrektur** der Schaetzung gegen ihren eigenen Fehler | umgesetzt (`ScoreTtkForecast`, `GetCorrectedTTK`) |
 | **Vorausschau** als Ersatzgroesse an allen Heilentscheidungen | umgesetzt (`GetForecastSurvivingShare` und die drei davon abgeleiteten Getter), hinter `HealAheadOfDamage`, Standard an |
 | Vorausschau auch in der **Flaechenheilung** | umgesetzt (A182): die Flaechenschwellen lesen eigene vorausberechnete Gruppenwerte (`DataCenter.ComputeForecastAreaStats`); `PartyMembersAverHP` und Geschwister bleiben unveraendert, weil sie viele Leser ausserhalb der Heilkette haben (Konzept 07) |
-| Minderungen des Tanks **rechnerisch** erfassen (Vorausschau vor dem ersten Treffer) | nicht gebaut; die Saetze je Aktion liegen inzwischen in `DefensiveValues.g.cs` (TODO „Vorausschau vor dem ersten Treffer“) |
+| Minderungen des Tanks **rechnerisch** erfassen (Vorausschau vor dem ersten Treffer) | nicht gebaut; die Saetze je Aktion liegen in `DefensiveValues.g.cs` (TODO „Vorausschau vor dem ersten Treffer“) |
 | **Derselbe Satz je Aktion traegt zwei Zwecke**: die Vorausschau in der Zeile darueber **und** die Wahl des Mittels nach Treffergroesse (Vorgabe 5) | Saetze erzeugt (`generate_defensive_values.py`); die Wahl nach Treffergroesse ist zurueckgebaut, weil kein Job zwei Barrieren zur Wahl haelt (A118, Abschnitt unten) |
 | Restzeit der Barriere (`HasSurvivingShield` misst die kuerzeste statt der laengsten) | offen, siehe `TODO.md` |
 | Erhebung der uebrigen Doppelnutzen-Aktionen | umgesetzt als `scan16.py`; ein Fund im Tank-/Heilerprofil (Rueckstoss) |
 | Rueckstoss auch **als** Minderungswerkzeug wirken | umgesetzt (A194, A236): Abtausch im Pull fuer seine Verlangsamung, nicht vor einem angekuendigten Rueckstoss (A212, A219), nicht auf einen Boss |
 | Wirksamkeitsmessung im Spiel | ersetzt durch die Selbstkorrektur der Vorausschau (`ScoreTtkForecast`); keine Ablesung als Aufgabe an ihn |
-| **Sonden** — ohne sie ist im Kampf nicht zu sehen, ob eine Regel greift: `DataCenter.AreaMitigationSkipped` nennt je Aktions-Id, wo die Flächenbewertung eine Minderung verworfen hat; Rohzeit, korrigierte Zeit und Fehlerfaktor der Schätzung stehen in der Diagnoseanzeige | in Betrieb |
+| **Sonde der Flächenbewertung**: `DataCenter.AreaMitigationSkipped` nennt je Aktions-Id, wo die Bewertung eine Minderung verworfen hat (Listenverwaltung) | in Betrieb |
 
 ## Die Antwort auf einen eingehenden Treffer
 
@@ -122,7 +122,7 @@ Mittel derselben Art zur Wahl hat. Gemessen an der erzeugten Tabelle trifft das 
 gegriffen.
 
 **Was stattdessen wirkt, ist Stufe 2 — und sie schliesst eine Luecke, die dieses Konzept ohnehin
-fuehrt.** Siehe „Heilung vor dem angekuendigten Treffer" weiter unten.
+fuehrt.** Siehe „Heilung vor dem angekündigten Treffer" weiter unten.
 
 ## Die Abwehrsperren (E1): allgemeine Schranke, Sonderregeln je Job
 
@@ -260,20 +260,19 @@ wahrscheinlich ist. Die Regeln dieses Konzepts messen das so:
 | Streckung | eine eigene Minderung liegt noch; der nächste Treffer wird von ihr getragen, bis sie ausläuft |
 | Kanalsperre (Paladin, Astrologe) | der angekündigte Treffer steht noch aus (`DataCenter.AreaHitPending`); danach löst sie (Konzept 14, „Wechselwirkungen und Zeit") |
 
-**Im Kampf ablesbar:** Unter „Defense hold" im Diagnosefenster steht je Regel, ob sie zuletzt hielt
-oder warum sie wich, seit Kampfbeginn — nur zur Kontrolle, weil eine wartende Abwehr sonst nicht von
-einer nie gefragten zu unterscheiden ist.
+Die Regeln entscheiden selbst; ob eine zuletzt hielt oder warum sie wich, führt das Diagnosefenster unter
+„Defense hold", und keine Regel liest es.
 
-## Heilung vor dem angekuendigten Treffer
+## Heilung vor dem angekündigten Treffer
 
 **Jede Heilschwelle im Baum liest die Gesundheit, die ein Mitglied **hat**. Keine liest die, die es
 haben wird, wenn der bereits laufende Cast einschlaegt.** Ein Mitglied bei 60 % vor einem
 45-%-Raidwide steht ueber jeder Schwelle und stirbt daran. Das ist Stufe 2 der Vorgabe, woertlich:
 „die aktuelle hp liegt unter dem schadenswert. dann waere aber eine heilung sinnvoll bis max maxhp."
 
-**Die Groesse dafuer wird seit A99–A102 gemessen und war bisher nur fuer eine Frage im Gebrauch** —
-ob gemindert wird. Dieselbe Zahl beantwortet die andere Haelfte: ob **vorher** zu heilen ist.
-`DataCenter.AnnouncedHitDropsAnyoneBelow` stellt die Frage einmal, und beide Seiten lesen sie.
+**Die Groesse dafuer wird gemessen (A99–A102, Konzept 13) und beantwortet zwei Fragen:** ob gemindert
+wird und ob **vorher** zu heilen ist. `DataCenter.AnnouncedHitDropsAnyoneBelow` stellt die Frage einmal,
+und beide Seiten lesen sie.
 
 | Schalter | Frage | Stand |
 |---|---|---|
@@ -286,14 +285,17 @@ einem Schild steht bei 40 %, sobald der Schild ungenutzt ablaeuft. Hier ist die 
 ueberlebt er **diesen** Treffer. Gegen ihn wird die Barriere verbraucht und faengt ihn ab; sie
 herauszurechnen hiesse, eine Heilung zu fordern, die der Schild bereits bezahlt hat.
 
-**Gefragt wird an derselben Schwelle, die die Flagge ohnehin benutzt**, nur einen Cast frueher —
-nicht an einer schaerferen. Die Regel kann deshalb nicht dort heilen, wo der Baum ohnehin nicht
-geheilt haette. Und sie stellt die Frage **selbst** (`IsHostileCastingAOE`), statt einen anderswo
-abgelegten Wert zu lesen: Sonst haenge sie daran, ob der Verteidigungszweig im selben Bild vorher
-lief — und der steht hinter `UseAoeDefense`, sodass die Regel bei abgeschalteter Flaechenabwehr
-still nie gefeuert haette.
+**Gefragt wird an derselben Schwelle, die die Flagge ohnehin benutzt** (`HealthAreaAbility`,
+`HealthAreaSpell`), nur einen Cast frueher — nicht an einer schaerferen. Die Regel kann deshalb nicht dort
+heilen, wo der Baum ohnehin nicht geheilt haette. Sie stellt die Frage **selbst**
+(`StateUpdater.AnnouncedAreaCastIsUpForHealing`), statt einen anderswo abgelegten Wert zu lesen: Sonst haenge
+sie daran, ob der Verteidigungszweig im selben Bild vorher lief — und der steht hinter `UseAoeDefense`. Und
+sie fragt die **unbewerteten** Erkennungen (`IsHostileCastingAreaUnrated || IsHostileCastingLargeArea`),
+nicht `IsHostileCastingAOE`: Die trägt das Minderungsurteil an der niedrigeren Schwelle `HealthAreaSpell`,
+und ein Treffer, der die Gruppe auf 70 % bringt, gälte dort als zu klein, während die Heilflagge bei genau
+diesem Stand auslöst (Konzept 13, „Wen die Unterdrückung erreicht").
 
-**Beim Beschwoerer gilt fuer Lux Solaris die eigene Regel** („Wann Lux Solaris zuendet"), auch auf dem
+**Beim Beschwoerer gilt fuer Lux Solaris die eigene Regel** („Wann Lux Solaris zündet"), auch auf dem
 Heilpfad. Sie ist reaktiv; vor einem angekuendigten Treffer faellt sie nur, wenn ein Mitglied im Radius
 schon in Gefaehrdungsklasse 1 steht, dem Wirkenden oder jedem anderen im Radius eine volle Heilung fehlt
 oder das Fenster verfaellt.
@@ -309,18 +311,18 @@ vor dem Cast mindert. Schluss aus Zweigreihenfolge und Castdauer, im Spiel nicht
 Treffer je ohne Minderung einschlug, weil der letzte Platz an eine Heilung ging, zeigt keine Anzeige;
 das ist eine benannte Grenze dieses Abschnitts, kein geaendertes Verhalten.
 
-## Die proaktive Schicht haengt fast vollstaendig an BossModReborn
+## Die proaktive Schicht hängt fast vollständig an BossModReborn
 
 **Vorgabe des Auftraggebers:** „bossmod liefert nicht für jeden boss werte, sondern nur für
 unterstützte module. und da ist der abdeckungsgrad in bossmod auch unterschiedlich. sich auf bossmod
 zu 100% zu verlassen ist fahrlässig."
 
-**Erhoben, nicht geschaetzt** (Lauf vom 20.09.2026): Der Baum kennt zwei Ebenen der Abwehr, und die
-Trennung verlaeuft genau entlang der Frage, woher die Vorhersage kommt.
+**Erhoben am Code (12.10.2026):** Der Baum kennt zwei Ebenen der Abwehr, und die Trennung verlaeuft
+genau entlang der Frage, woher die Vorhersage kommt.
 
 | Ebene | Ausloeser | Quelle | Faellt aus, wenn |
 |---|---|---|---|
-| **proaktiv** — mindern, **bevor** etwas ankommt | `BMRShouldRefreshBefore(BMRTankbusterIn \| BMRRaidwideIn, …)` bei allen vier Tanks, bei Barde, Maschinist, Taenzer und beim Beschwoerer (Schimmerschild) | ausschliesslich BMR | kein Modul, oder ein Modul ohne diese Ereignisart |
+| **proaktiv** — mindern, **bevor** etwas ankommt | `BMRShouldRefreshBefore(BMRTankbusterIn \| BMRRaidwideIn \| BMRDamageIn, …)` bei allen vier Tanks, bei Barde, Maschinist, Taenzer, beim Beschwoerer (Schimmerschild) und zentral für Addle, Feint und Reflexion (`ShouldSustainMitigationDebuff`); `IsHostileCastingLargeArea` als einziger Weg aus der eigenen Messung | BMR, bis auf den großen gemessenen Cast | kein Modul, oder ein Modul ohne diese Ereignisart |
 | **reaktiv** — antworten, wenn der Cast **laeuft** | `IsHostileCastingAOE`, `IsHostileCastingToTank`, `IsHostileCastingTankBusterAtMe`, Gegnerzahl in `ShouldSustainMitigationDebuff` | eigene Beobachtung | der Cast ist unterbrechbar, zu kurz, oder ausserhalb des Ein-GCD-Fensters |
 
 **Kein Alleinstand, aber eine vollstaendige Ebene.** Jede proaktive Stelle hat einen reaktiven
@@ -331,8 +333,9 @@ gedeckt" und „waehrend des Einschlags gedeckt".
 **Der Ausfall ist still, und das ist der eigentliche Mangel.** Beide Ausfallarten — kein Modul, oder
 ein Modul, das Raidwides nicht fuehrt — erreichen den Baum als `float.MaxValue`, und jede Pruefung
 gegen ein Zeitfenster liest das als „es kommt nichts". Eine ausbleibende Minderung sieht damit aus
-wie ein ruhiger Kampf. Die Diagnoseseite „BMR Data" nennt deshalb jetzt das aktive Modul und, je
-Ereignisart, ob es dafuer ueberhaupt eine Vorhersage liefert.
+wie ein ruhiger Kampf. Die Diagnoseseite „BMR Data" nennt das aktive Modul und, je
+Ereignisart, ob es dafuer ueberhaupt eine Vorhersage liefert. Ohne Modul hält `ShouldSustainMitigationDebuff`
+die Gegner-Debuffs über die Gegnerzahl (`MitigationSustainHostileCount`) aufrecht, weil Trash meist kein Modul hat.
 
 **Seine Begruendung, woertlich:** „daher die eigene liste mit dem aoe-schadensausmaß.“ Die Messung je
 Aktion ist als **Ersatz** fuer die fehlende Verlaesslichkeit gedacht, nicht als Zusatz — und sie
@@ -353,8 +356,8 @@ abgelaufen.
 **Die Ursache steht in der Bedingung selbst.** `BMRShouldRefreshBefore` prueft die **Zeit** bis zum
 naechsten Ereignis und ob der eigene Status bis dahin abgelaufen waere — mehr nicht. Eine Groesse
 kommt darin nicht vor, und BMR liefert auch keine: Die Schnittstelle nennt den Zeitpunkt, nicht die
-Wucht. **Das ist das Loch, das die Groessenbewertung offen gelassen hat:** Der reaktive Weg fragt seit
-A108 „ist dieser Treffer eine Abklingzeit wert"; der proaktive hat es nie gefragt.
+Wucht. **Das ist das Loch, das die Groessenbewertung offen laesst:** Der reaktive Weg fragt seit A108 „ist
+dieser Treffer eine Abklingzeit wert"; der proaktive fragt es nur über die Zurückhaltung unten.
 
 **Eine Barriere ist dabei der klarere Fall als eine Minderung**, und das folgt aus dem Unterschied,
 den dieses Konzept ohnehin fuehrt: Sie gibt **feste Punkte** aus, also frisst ein kleiner Treffer sie
@@ -420,7 +423,7 @@ nach dem Muster des anderen zu beurteilen.
 **Die Anzeige ist damit Zweitverwertung, nicht Zweck** — sie meldet das Urteil, das die Regel bereits
 gefällt hat, und nennt ausdrücklich, wenn die Regel sich selbst stillgelegt hat.
 
-#### Die genaue Frage laesst sich nicht stellen, und das ist gemessen
+#### Die genaue Frage lässt sich nicht stellen, und das ist gemessen
 
 **Naheliegender waere:** erheben, auf **welches Ereignis** die Vorhersage anspielt, dessen Bewertung
 in der eigenen Liste nachschlagen und nur bei „gering" aussetzen. Der Auftraggeber hat genau das
@@ -518,7 +521,7 @@ Tankbuster wählt er das Bündel mit der geringsten Abklingzeit, und Reflexion (
 wenn ein Raidwide nach ihrem Ende und vor ihrer neuen Bereitschaft angesagt ist. Dann fehlen der Gruppe am Raidwide
 10 %, obwohl ein Bündel ohne Reflexion den Tank getragen hätte.
 
-## Wann Lux Solaris zuendet
+## Wann Lux Solaris zündet
 
 **Sachstand der Regel, aus seinen Vorgaben vom 26.09.2026 (A151 bis A153), umgesetzt in A154 bis A156**
 (`SMN_Reborn.LuxSolarisDecision`, gefragt von allen drei Wegen).
@@ -527,9 +530,7 @@ wenn ein Raidwide nach ihrem Ende und vor ihrer neuen Bereitschaft angesagt ist.
 Wirkenden aus, wie Holy beim Weissmagier. Die Wirktexte stuetzen das gleich: Holy trifft „all nearby
 enemies", Lux Solaris heilt „own HP and the HP of all nearby party members". Im Baum gehoeren beide
 damit in die Zweige fuer Flaechen mit Reichweite 0 — Holy in den feindlichen, Lux Solaris in das
-freundliche Gegenstueck (`ActionTargetInfo.FindTarget`); welche Reichweite das Spiel zur Laufzeit meldet,
-zeigt die Beschwoerer-Anzeige. Eine
-reaktive Flaechenheilung um den Beschwoerer (Wirktext 36997: „Restores
+freundliche Gegenstueck (`ActionTargetInfo.FindTarget`). Eine reaktive Flaechenheilung um den Beschwoerer (Wirktext 36997: „Restores
 own HP and the HP of all nearby party members", Heilpotenz 500), wirkbar nur unter Refulgent Lux, das
 Summon Solar Bahamut fuer 30 s gewaehrt (36992). Kein Schild, keine Minderung: Was sie vor einem Treffer
 tut, zaehlt nach dem Treffer nicht mehr. Sie kostet kein MP und keinen GCD, nur einen
@@ -606,8 +607,8 @@ Einschiebeplatz, und sie ist eine Beigabe — ungenutzt verfaellt sie mit Refulg
    Lux dabei leer ausgeht, ist die Ausnahme (Schluss aus der Platzzahl, nicht gemessen).
 
 **Eine Entscheidung fuer alle Wege.** Heilflagge (`HealAreaAbility`), `AttackAbility` und
-`GeneralAbility` fragen dieselbe Entscheidung; heute folgt jeder Weg einer eigenen Bedingung, und genau
-daraus entstanden die Befunde in A150. Ausgenommen ist nur der **manuelle Heilbefehl**: Er ist sein
+`GeneralAbility` fragen dieselbe Entscheidung (`LuxSolarisDecision`); dass jeder Weg einer eigenen Bedingung
+folgte, war die Ursache der Befunde in A150. Ausgenommen ist nur der **manuelle Heilbefehl**: Er ist sein
 ausdruecklicher Wunsch und prueft allein die Verbote aus Punkt 1 und die AoE-Anzahl aus Punkt 2 —
 diese, weil ihr Einstellungstext jede Verwendung bindet.
 
@@ -657,15 +658,10 @@ wird nicht gemessen; ein Treffer dazwischen verhindert die Bestaetigung ebenso �
 Richtung. **Grenzen:** Eine fremde Heilung im selben Fenster kann ein solches Ziel faelschlich
 bestaetigen; dann ist der Fehlbetrag zu klein angesetzt, und der Wurf gilt womoeglich als Bruttomeldung,
 was das Minimum senkt (Lux faellt dann eher). Ein zweiter eigener Heilwurf im selben Fenster schliesst
-den ersten vorzeitig ab. Beides zeigt die Anzeige als unbestaetigte Ziele.
+den ersten vorzeitig ab.
 
-**Im Kampf ablesbar** (Beschwoerer-Anzeige): was die Entscheidung gerade sagt, und getrennt davon, warum
-und wann sie zuletzt zum Wurf riet („last chosen") — der Wurf verbraucht Refulgent Lux, die erste Zeile
-springt danach auf „no Refulgent Lux". Eine Wahl ist noch kein Wurf; ob er fiel, zeigt die Landezeile
-aus dem Effekt selbst: Zeitpunkt, wie viele Ziele der Gesundheitsanstieg bestaetigte und wie viele nicht,
-welcher Anteil fehlende Gesundheit traf und ob Ueberheilung gemeldet wird. Dazu die gemessene Heilmenge
-und der Radius. Lux erscheint **nicht** unter „Area heal
-around you": Sie wird auf den Wirkenden gezielt und laeuft nicht durch den Flaechenheil-Zweig.
+Lux Solaris laeuft **nicht** durch den Flaechenheil-Zweig („Area heal around you"): Sie wird auf den
+Wirkenden gezielt.
 
 **Verworfen, mit Grund:** der groesste Einzelfehlbetrag der ganzen Gruppe als Ausloeser (A150: misst
 ausserhalb des Radius, zuendet bei einem Mitglied, uebergeht den Living-Dead-Traeger); die Vorhersage des
@@ -679,7 +675,7 @@ dessen Plaetze schon verbraucht sein koennen — drei GCDs. Seit A155 geht nur n
 womit zwei GCDs reichten; der Wert bleibt, bis der Loop neu gefuehrt ist. Die Praemisse „zwei Plaetze je Fenster" ist
 nicht aus dem Spiel abgeleitet, deshalb bleibt der Wert offen.
 
-## Was ein Baustein mehrfach traegt
+## Was ein Baustein mehrfach trägt
 
 **Die offenen Punkte dieser Konzeptfamilie haengen an weniger Bausteinen, als ihre Zahl vermuten
 laesst.** Wer einen davon baut, schliesst mehrere Punkte zugleich — das ist der Grund, die Konzepte
@@ -691,7 +687,7 @@ gemeinsam zu lesen und nicht einzeln.
 |---|---|---|
 | Vorausschau vor dem **ersten** Treffer | hier; offen (TODO „Vorausschau vor dem ersten Treffer“) | Wieviel Schaden der angekuendigte Einschlag traegt, bevor eine Beobachtung vorliegt |
 | Wahl des Mittels nach Treffergroesse (Vorgabe 5) | hier; zurueckgebaut, kein Job haelt zwei Barrieren zur Wahl (A118) | Welche Barriere, welche Minderung den Treffer deckt |
-| Die Minderungsbilanz kennt Betaeubung und Verlangsamung nicht | hier, „Die Luecke" | Um wieviel eine Drosselung den Strom senkt — gemessen: `GetCurrentMitigationPercent` rechnet Addle, Feint, Dismantle und Reprisal, sonst nichts |
+| Die Minderungsbilanz kennt Betaeubung und Verlangsamung nicht | hier, „Die Luecke" | Um wieviel eine Drosselung den Strom senkt — am Code: `GetCurrentMitigationPercent` rechnet auf Gegnerseite Addle, Feint, Dismantle und Reprisal, dazu die Gruppenminderungen auf den Mitgliedern; Betaeubung und Verlangsamung nicht |
 | Rueckstoss auch **als** Minderungswerkzeug | umgesetzt (A194, A236) | Dass seine Verlangsamung in derselben Groessenordnung wirkt wie Rampart |
 
 Der Wert ist **erzeugbar**, nicht handzufuehren, und das ist gemessen statt vermutet: Im Lauf vom
@@ -700,9 +696,9 @@ ausgeschriebenem Prozentsatz — 10, 15, 20, 25, 30, 40, 50 und 99 %; die Barrie
 Anteil ebenso (25 %, 15 %, 10 %). `RotationSolver.GameData` liest dieselben Blätter ohnehin aus. Das unterscheidet ihn von der hier verworfenen
 Statussatz-Tabelle, deren Einwand die Pflege war.
 
-**Die Schadensart aus BossModReborn ist ab sofort benutzbar, und das ist neu.** `PredictedDamageType`
-kommt als `int` ueber die IPC-Grenze und wurde direkt in das eigene Enum gecastet; ob die Gegenseite
-gleich nummeriert, galt als ungeprueft und nicht pruefbar. Gemessen am 20.09.2026 gegen
+**Die Schadensart aus BossModReborn ist benutzbar.** `PredictedDamageType` kommt als `int` ueber die
+IPC-Grenze und wird direkt in das eigene Enum gecastet — ein Vertrag ohne Compilerpruefung (CLAUDE.md,
+„Vertraege"). Gemessen am 20.09.2026 gegen
 `BossMod/BossModule/AIHints.cs`: **beide Enums stimmen** (`None, Tankbuster, Raidwide, Shared` und
 `Normal, Pyretic, NoMovement, Freezing, Misdirection`). Damit ist `BMRDamageType` eine belastbare
 Groesse und keine Wette mehr — sie trennt Tankbuster von Raidwide und beantwortet damit
@@ -718,14 +714,18 @@ aber fuer **jede** Heilaktion zur Verfuegung, weil der Effekt-Handler nicht nach
 Was er nicht beantwortet: den Wert einer Aktion, die noch nie gewirkt wurde — dafuer bleibt der
 Wirktext die Quelle.
 
-**Das gemessene Schadenspotential je Gegneraktion — drei Fragen in drei Konzepten.** Es liegt seit
-A99 bis A102 vor (`13-aoe-damage-classification.md`) und wird bisher an **einer** Stelle gelesen:
+**Das gemessene Schadenspotential je Gegneraktion — wo es gelesen wird und wo nicht.** Es liegt seit
+A99 bis A102 vor (`13-aoe-damage-classification.md`). Gelesen wird es vom Minderungsurteil
+(`AreaCastIsWorthMitigating`), von der Vorausheilung (`AnnouncedHitDropsAnyoneBelow`), vom zweiten Weg für
+große unterbrechbare Casts (`IsHostileCastingLargeArea`), von der Zurückhaltung der proaktiven Minderung
+(`AnnouncedHitIsSmall`) und vom Tankbuster-Plan, wenn er gegen einen Raidwide abwägt (`AnnouncedHitKills`,
+Konzept 09). Offen:
 
-| Frage | Konzept | Heute |
+| Frage | Konzept | Stand |
 |---|---|---|
-| Wie gefaehrlich ist der angekuendigte Flaechenschaden? | `07-heal-target-priority.md` | binaer (`IsHostileCastingAOE`) — die Groesse bleibt ungenutzt |
+| Wen gefaehrdet der angekuendigte Flaechenschaden zuerst? | `07-heal-target-priority.md` | Klasse 3 liest `IsHostileCastingAOE` und erbt damit das Minderungsurteil (TODO) |
 | Wie steht es vor dem ersten Treffer eines Pulls? | hier | blind; die Beobachtung braucht 2,5 s Anlauf |
-| Wie hart schlaegt dieser Tankbuster, Rueckstoss, Stopp? | `13-…`, Abschnitt „Was der Baustein eroeffnet" | dieselbe Messstruktur, je Liste fehlt der eigene Speicher |
+| Wie hart schlaegt ein Rueckstoss, ein Stopp-Cast? | `13-…`, Abschnitt „Was der Baustein eroeffnet" | dieselbe Messstruktur, je Liste fehlt der eigene Speicher; fuer Tankbuster gebaut (A259) |
 
 **Die Sonden sind der gemeinsame Nachweisweg, und sie haben selbst zu entscheiden.** Keine Regel
 dieser Familie ist am Code zu belegen — ob sie im Kampf greift, zeigt erst die Laufzeit. Daraus folgt
@@ -802,15 +802,15 @@ aussichtslos); der Vorgabewert 600 dazwischen war **meine** Setzung und kein Mes
 optionaler Deckel bleibt `HoldHolyMaxHostileOutput` erhalten, Standard 0 = aus — eine Einstellung
 zu entfernen verwirft einen bereits gespeicherten Nutzerwert.
 
-### Der Grenzwert gilt fuer den gesamten Schadenseingang
+### Der Grenzwert gilt für den gesamten Schadenseingang
 
 **Es geht nicht um die Verlangsamung, sondern um die Kontrolle des eingehenden Schadens.** Dazu
 dienen Reflexion, The Blackest Night und die uebrigen Minderungen des Tanks ebenso. Der
 Schadenseingang **einschliesslich eingerechneter Schadensreduktion und Mitigation** soll zu jedem
 Zeitpunkt bestimmte Grenzwerte nicht ueberschreiten.
 
-**Gegengeprueft: die Umsetzung deckt davon eine Haelfte ab.** Der Befund steht hier vollstaendig,
-weil er groesser ist als die Sanctus-Regel, an der er auffiel.
+**Was der Baum davon misst**, vollstaendig, weil die Frage groesser ist als die Sanctus-Regel, an der sie
+auffiel:
 
 | Was zu messen waere | Stand im Baum |
 |---|---|
@@ -819,16 +819,16 @@ weil er groesser ist als die Sanctus-Regel, an der er auffiel.
 | Minderung **des Tanks persoenlich** — Rampart, Bollwerk, Sentinel, Schattenwall, Vengeance | **nicht als Satz gemessen.** `StatusHelper.RampartStatus` fuehrt die Ids und dient als Doppelbelegungssperre (`StatusProvide`) und als Ja/Nein-Pruefung „gedeckt“ (`HasMajorMitigation`, `HoldReprisalForRaidwide`) — nie zur Messung |
 | Die Saetze dieser Minderungen | **liegen vor**, aus den Wirktexten erzeugt (`DefensiveValues.g.cs`); die Ratenrechnung braucht sie nicht, weil der beobachtete Verlauf netto ist (unten) |
 
-**Der ganze Anspruch ist aus Laufzeitbeobachtung erfuellbar, ohne eine einzige statische Vorgabe** —
-und er ist es inzwischen. Das ist der Weg mit dem kleinsten Eingriff und der groessten Deckung, weil
-die Maschinerie dafuer bereits im Baum stand; sie war nur nicht auf die Gruppe angewandt.
+**Der ganze Anspruch ist aus Laufzeitbeobachtung erfuellt, ohne eine einzige statische Vorgabe.** Das
+ist der Weg mit dem kleinsten Eingriff und der groessten Deckung, weil die Maschinerie dafuer bereits im
+Baum stand; sie war nur nicht auf die Gruppe angewandt.
 
 `DataCenter.RecordedHP` ist eine Zeitreihe von Gesundheitsanteilen **je Objekt-Id**: einmal je
 Sekunde ein Eintrag, 240 tief, also vier Minuten Historie. `ObjectHelper.GetTTK` liest daraus fuer
 eine beliebige Id den Verlauf, bildet einen gleitenden Mittelwert und schaetzt die Zeit bis auf null.
-Die Methode fragt nichts weiter als `GameObjectId` — sie ist generisch. Gefuellt wurde die Reihe
-lange ausschliesslich aus `AllHostileTargets`, weshalb sie fuer ein Gruppenmitglied `NaN` lieferte;
-seit A91 nimmt `TargetUpdater.UpdateTimeToKill` die Gruppe mit auf.
+Die Methode fragt nichts weiter als `GameObjectId` — sie ist generisch. `TargetUpdater.UpdateTimeToKill`
+fuellt die Reihe fuer die Gegner und fuer die Gruppe (A91); vorher lieferte sie fuer ein Gruppenmitglied
+`NaN`.
 
 **Was ein beobachteter Verlauf leistet, das eine Hochrechnung nicht leistet:** Er ist bereits netto.
 Jede Minderung, jede Mitigation, jede Barriere und jede fremde Heilung stecken darin, ohne dass
@@ -850,17 +850,16 @@ er trotz laufender Heilung, reicht sie nicht.
 **Die Groesse ist praeventiv, nicht rueckwaertsgewandt.** Bei 90 % Gesundheit meldet `GetTTK`
 „in acht Sekunden tot" — das ist die Vorhersage, und sie liegt acht Sekunden vor dem Ereignis, um
 das es geht. Genau darauf zielt die Vorgabe des Auftraggebers, dass **vorab** einzugreifen ist und
-der Tank gar nicht erst fallen soll. Was die Groesse nicht kann, ist enger als frueher hier stand:
+der Tank gar nicht erst fallen soll. Was die Groesse nicht kann:
 
 - **Blind fuer den ersten Treffer.** Vor 2,5 Sekunden Beobachtung (`CheckSpan`) liefert `GetTTK`
   `NaN`, und abgetastet wird einmal je Sekunde. Der Eroeffnungsschlag eines Pulls ist daraus nicht
   vorhersehbar — dafuer bleibt die Vorhersage von BossModReborn zustaendig. Ab dem zweiten Treffer
   hat die Reihe eine Rate, und die Vorausschau steht.
-  **Diese Grenze ist inzwischen adressierbar, und zwar ebenfalls aus Beobachtung:** Ein angekuendigter
-  Cast, dessen Schadenspotential aus frueheren Einschlaegen bekannt ist, sagt den ersten Treffer
-  voraus, bevor er faellt. Konzept `13-aoe-damage-classification.md` fuehrt das aus; es ersetzt den
-  unten beschriebenen Weg ueber Statussaetze durch gemessene Einschlaege und braucht damit keine
-  gepflegte Tabelle.
+  **Diese Grenze ist adressierbar, ebenfalls aus Beobachtung:** Ein angekuendigter Cast, dessen
+  Schadenspotential aus frueheren Einschlaegen bekannt ist, sagt den ersten Treffer voraus, bevor er
+  faellt (Konzept 13); das ersetzt die verworfene Statussatz-Tabelle durch gemessene Einschlaege und
+  braucht keine gepflegte Tabelle.
 - **Traegheit, und sie ist gemessen.** `GetTTK` misst den Abfall seit dem **ersten** beobachteten
   Wert geteilt durch die **gesamte** verstrichene Zeit — eine Durchschnittsrate ueber den Kampf,
   keine Momentanrate. Ein ploetzlicher Einbruch wird darin verwaessert, und der Fehler geht in die
@@ -886,17 +885,14 @@ Er leistet damit mehr, als eine berichtete Spielsitzung leisten koennte.
 - **Gelesen wird die korrigierte Zeit** (`GetCorrectedTTK` = `GetTTK` geteilt durch den Faktor). Die
   Korrektur kostet keine einzige gesetzte Zahl; sie faellt aus der Beobachtung.
 
-**Bewertet wird sie neben ihrem Verbraucher, nicht vor ihm.** Rohzeit, korrigierte Zeit und Faktor
-stehen je Mitglied in der Diagnoseanzeige, dazu der prognostizierte Gesundheitsanteil, den die
-Regeln lesen. Bleibt der Faktor ueber einen Pull hinweg nahe 1, genuegt der schlichte Trend und die
-Korrektur ist ueberfluessig; laeuft er hoch, sobald eine Gruppe anbindet, ist die Rohzahl die zu
-spaete und die korrigierte die zu nehmende.
+**Einer Ablesung bedarf die Korrektur nicht.** Bleibt der Faktor ueber einen Pull hinweg nahe 1, wirkt
+sie nicht; laeuft er hoch, sobald eine Gruppe anbindet, ist die Rohzahl die zu spaete, und die Regeln
+lesen ohnehin die korrigierte.
 
 ### Der Verbraucher: vorausberechnete Gesundheit statt zweiter Mechanismus
 
-**Der Fehler der heutigen Heilkette ist eine Verwechslung von Pegel und Rate.** Jede Schwelle —
-`HealthSingleAbility`, `HealthTankRatio`, `HealthForDyingTanks` — vergleicht einen **Stand**. Die
-Gefahr ist aber ein **Zufluss**: Wer schnell faellt, unterschreitet seine Schwelle mit weniger
+**Eine Schwelle, die einen Stand vergleicht, verwechselt Pegel und Rate.** `HealthSingleAbility`,
+`HealthTankRatio`, `HealthForDyingTanks` sind Staende; die Gefahr ist aber ein **Zufluss**: Wer schnell faellt, unterschreitet seine Schwelle mit weniger
 Restzeit, als die dadurch ausgeloeste Heilung zum Ankommen braucht — GCD-Rest, dann Cast. Der Zauber
 geht nach dem Tod heraus. Bei schwachem Zufluss ist dieselbe Schwelle frueh genug; die Korrektur
 muss deshalb mit der Rate skalieren und darf kein fester Abschlag sein.
@@ -906,7 +902,7 @@ Frage einer Regel lautet nicht mehr „wie steht dieses Mitglied", sondern „wi
 Heilung ankommt". Damit erben Schwellen, Rangstufen und Kurzschluesse die Vorausschau, ohne dass
 einer von ihnen umgebaut wird.
 
-**Das Tor entscheidet vor allen anderen, und es wurde beim Bauen zuerst uebersehen.**
+**Das Tor entscheidet vor allen anderen.**
 `FindHealTarget` verwirft jeden Kandidaten, dessen Gesundheit nicht unter `AutoHealRatio` liegt
 (Vorgabewert 0,8), **bevor** Rangstufe und Kurzschluesse ihn je sehen. Auf der schlichten Groesse
 gelesen faellt damit genau der Fall heraus, fuer den die Vorausschau gebaut ist: ein Tank bei 90 %,
@@ -966,13 +962,13 @@ sind — ein Ausloeser ohne Zielwahl heilt den Falschen, eine Zielwahl ohne Ausl
 wenn ohnehin geheilt wird.
 
 **Selbstbegrenzend im teuren Fall.** Steht die Gruppe stabil, ist der Nettotrend nicht fallend,
-`GetTTK` liefert `NaN` und der Anteil ist 1 — kein Unterschied zu heute, kein zusaetzlicher Zauber,
+`GetTTK` liefert `NaN` und der Anteil ist 1 — kein Unterschied zum Stand ohne Vorausschau, kein zusaetzlicher Zauber,
 kein MP. Die Vorausschau erscheint genau dann, wenn der Trend nach unten dreht, und waechst mit
 seiner Steilheit.
 
 **Was im Kampf anders wird, durchgerechnet.** GCD 2,5 s, halb abgelaufen, Vorlaufzeit 3,75 s.
 
-| Lage | Heute | Mit Vorausschau |
+| Lage | ohne Vorausschau | mit Vorausschau |
 |---|---|---|
 | Tank 90 %, korrigierte Restzeit 6 s (Anteil 0,375 → 34 %) | Heilung faellt erst bei 45 % real, rund 3 s spaeter | Heilung faellt sofort — ein GCD Vorsprung |
 | Tank 44 %, Restzeit 20 s (→ 36 %) · Schwarzmagier 48 %, Restzeit 4 s (→ 3 %) | Tank-Kurzschluss greift bei 44 ≤ 45, der Magier stirbt | Der Magier faellt mit 3 % in die kritische Rangstufe und wird davor abgefangen |
@@ -1004,7 +1000,7 @@ Nullvariante ist also eingebaut.
 gebaut.** `DataCenter.DPSTaken` misst den **tatsaechlich angekommenen** Schaden, also bereits nach
 allen Minderungen und Mitigationen; hochrechnen muesste man dafuer gar nichts. Ihr Zeitfenster
 betraegt jedoch fuenf Millisekunden, waehrend ein Bild rund sechzehn dauert — die Groesse sieht damit
-fast immer nichts. Sie ist Upstream-Code, und ihr einziger Leser im Baum ist die Diagnoseanzeige.
+fast immer nichts. Sie ist Upstream-Code, und ihr einziger Leser im Baum ist die Diagnoseanzeige (Stand 12.10.2026).
 
 **Eine Barriere gehoert in den Zaehler, nicht in den Nenner.** The Blackest Night senkt die Rate
 nicht, es absorbiert eine Menge: Der Strom laeuft unveraendert weiter, er trifft nur zuerst den
@@ -1027,7 +1023,7 @@ sie deshalb, und die kritische Rangstufe der Heilzielwahl liest genau diese Groe
 oben rechnet aus beiden. Die Barriere hebt den Puffer, aus dem die Ueberlebensbewertung ihre Antwort zieht.
 
 **Die Restzeit der Barriere selbst waere die zweite Haelfte dieser Frage.** `StatusHelper.HasSurvivingShield` wurde
-dafuer gebaut und hat heute keinen Leser; ihr bekannter Defekt — sie misst die **kuerzeste**
+dafuer gebaut und hat keinen Leser (Stand 12.10.2026; der Tankbuster-Plan liest die Schildrestzeit selbst); ihr bekannter Defekt — sie misst die **kuerzeste**
 Schildrestzeit statt der laengsten — steht in `TODO.md`. Wer die Zeitrechnung baut, loest ihn mit,
 denn eine Barriere, die vor der Heilung ausläuft, kauft keine Zeit.
 
@@ -1053,51 +1049,28 @@ Nachzügler; die **Mindestzahl** verhindert, dass ein Rest von zwei Gegnern den 
 erfüllt. Aufgeschoben heißt aufgeschoben, nicht aufgegeben — sobald die Bedingung nicht mehr
 zutrifft, fällt Sanctus wieder.
 
-**Gehalten wird, solange die Bedingung gilt, ohne Ersatzvorbehalt** (A178). Seine Beobachtung vom
-27.09.2026: „nach abtausch wird holy wie gewünscht ausgesetzt, bis alle gegner gemach haben. dann setzt
-holy aber wieder ein" (Gemach ist der deutsche Name des Slow-Status 9). Die Regel trug bis dahin die
-Ersatzgarantie der Streckung: ausgesetzt nur, solange Dia oder Aero noch ein Ziel ohne DoT hat. Während
-des Aussetzens legt der Weißmagier aber genau diese DoTs, einen je GCD; nach einem DoT je Gegner war
-der Vorbehalt verbraucht, und Sanctus fiel in die noch laufende Verlangsamung. Die Streckung trägt
-die Garantie seit A231 ebenfalls nicht mehr; sie war in beiden Regeln meine Abwägung. Jetzt fällt
-der gehaltene GCD auf die DoTs, solange einer fehlt, danach auf Glare. **Preis, im Kampf:** Ab drei
-Gegnern trifft Sanctus in Summe mehr als Glare; jeder gehaltene GCD nach dem letzten DoT kostet diese
-Differenz an Schaden, und der Pull dauert entsprechend länger. Dafür steht die Betäubung zur
-Verfügung, wenn die Verlangsamung abläuft — das ist der Zweck seiner Regel. Die Schranke (ein
-Gruppenmitglied fällt) und der abschaltbare Deckel bleiben; das Diagnosefenster nennt unter der
-Rotation, ob und warum zuletzt gehalten wurde.
+**Gehalten wird, solange die Bedingung gilt, ohne Ersatzvorbehalt** (A178). Der gehaltene GCD fällt auf
+die DoTs, solange einer fehlt, danach auf Glare. **Preis, im Kampf:** Ab drei Gegnern trifft Sanctus in Summe
+mehr als Glare; jeder gehaltene GCD nach dem letzten DoT kostet diese Differenz an Schaden, und der Pull
+dauert entsprechend länger. Dafür steht die Betäubung zur Verfügung, wenn die Verlangsamung abläuft — das ist
+der Zweck seiner Regel. Die Schranke (ein Gruppenmitglied fällt) und der abschaltbare Deckel bleiben.
+**Warum ohne Vorbehalt:** Ein Ersatzvorbehalt — ausgesetzt nur, solange Dia oder Aero noch ein Ziel ohne DoT
+hat — war beim Aussetzen nach einem DoT je Gegner verbraucht, und Sanctus fiel in die noch laufende
+Verlangsamung; so seine Beobachtung vom 27.09.2026: „nach abtausch wird holy wie gewünscht ausgesetzt, bis alle
+gegner gemach haben. dann setzt holy aber wieder ein" (Gemach ist der deutsche Name des Slow-Status 9). Der
+Vorbehalt war meine Abwägung, nicht seine Regel; die Streckung trägt ihn ebenfalls nicht (A231).
 
 Umgesetzt als `WHM_Reborn.ShouldHoldHolyWhilePackSlowed` über `SurveyHostileStatus` im Wirkbereich
 von Sanctus; die Mindestzahl steht als `HoldHolyMinSlowedHostiles` (Vorgabewert 3) hinter derselben
 Einstellung. Streng mehr als die Hälfte: 3 von 5 hält, 3 von 6 hält nicht, 4 von 6 hält.
 
-**Die vorige Messgröße war Leistung statt Kopfzahl, und sie hat im Spiel nichts bewirkt.** Sie
-summierte die Restleistung aller Gegner im Radius gegen `AoeCount * 100` — die Flächenschwelle in
-der Einheit, in der sich Minderungen ausdrücken lassen, und sie ging ebenfalls auf eine Korrektur
-des Auftraggebers zurück (C52). Ihre eigene Dokumentation hielt bereits fest, dass sie „nur bei
-genau `AoeCount` Gegnern greift": Ein Gegner mehr trägt für sich mindestens 80 und hebt die Summe
-über die Schwelle, gleich wie viele verlangsamt sind. Ein Wall-to-Wall-Pull hält immer mehr Gegner,
-als der Zauber braucht — dort ist die Regel nie eingetreten. Genau das hat der Auftraggeber
-beobachtet: Sanctus fiel weiter, obwohl der Slow fast alle Gegner erfasst hatte. Fünf Gegner mit
-vier verlangsamten ergaben 432 gegen eine Schwelle von 300.
-
-**Der Fehler war nicht die Zahl, sondern die Frage.** Die Leistungssumme beantwortet „lohnt sich für
-diesen Pull noch ein Flächenzauber", und die Antwort lautet fast immer ja. Die Regel hat aber zu
-fragen: „wird der Strom bereits gebändigt" — und das ist ein Anteil, keine Summe.
-
-**Wo der eigene Anteil daran liegt, und er liegt nicht bei der Wahl des Maßes:** Die Einschränkung
-„greift nur bei genau `AoeCount` Gegnern" wurde bei der Umsetzung erkannt und als **richtige
-Eigenschaft** ausgeschrieben — „that narrow reach is correct, not a shortfall". Damit war der
-Nachweis, dass die Regel im Regelfall wirkungslos ist, bereits geführt und ist gleichwohl nicht
-vorgelegt worden. Eine erkannte Bedingung, unter der ein Eingriff im gesamten maßgeblichen Bereich
-nichts tut, ist keine Eigenschaft, sondern seine Widerlegung, und gehört dem Auftraggeber
-vorgetragen, bevor sie im Spiel auffällt.
-
-**Die Leistungsrechnung ist zweimal versetzt worden und steht jetzt ganz hinten.** Zuerst war sie der
-Auslöser der Regel — dort maß sie die falsche Frage und die Regel griff im Wall-to-Wall nie (C59).
-Dann war sie die Schranke am Ende, mit einem von mir gesetzten Trennwert. Heute ist die Schranke
-gemessen (`AnyPartyMemberFallingWithinHealWindow`), und die Leistungsrechnung bleibt als
-**abschaltbarer Deckel** darüber, Standard aus. `HostileOutputPercent` und `SurveyHostileOutput`
+**Ein Anteil, keine Leistungssumme.** Die Restleistung aller Gegner im Radius gegen `AoeCount * 100`
+beantwortet „lohnt sich für diesen Pull noch ein Flächenzauber", und die Antwort lautet fast immer ja: Ein
+Gegner mehr als `AoeCount` trägt für sich mindestens 80 und hebt die Summe über die Schwelle, gleich wie
+viele verlangsamt sind (fünf Gegner mit vier verlangsamten: 432 gegen 300). Als Auslöser griff sie im
+Wall-to-Wall nie (C52, C59). Die Regel hat zu fragen: „wird der Strom bereits gebändigt" — ein Anteil.
+Die Leistungsrechnung bleibt als **abschaltbarer Deckel** hinter der gemessenen Schranke
+(`AnyPartyMemberFallingWithinHealWindow`), Standard aus. `HostileOutputPercent` und `SurveyHostileOutput`
 messen unverändert, was sie immer gemessen haben; ihre Faktoren stammen aus den Wirktexten, die
 Verlangsamung als einzige Nicht-Minderung über die Angriffsrate umgerechnet (C57).
 
@@ -1114,9 +1087,8 @@ wieder** betäuben will. Beide Regeln stehen deshalb nebeneinander und nicht ine
 
 **Grenze der Zählung, benannt statt verschwiegen:** `SlowStatus` führt zwölf Ids einschließlich
 Slow+, und die Erhebung unterscheidet sie nicht. Für eine Anteilsregel ist das ohne Belang — gezählt
-wird, ob ein Gegner verlangsamt ist, nicht wie stark. Welche Id Abtausch tatsächlich setzt, ist von
-hier aus nicht zu bestimmen; bliebe die Regel im Spiel weiterhin wirkungslos, wäre das die nächste
-zu prüfende Ursache.
+wird, ob ein Gegner verlangsamt ist, nicht wie stark. Welche der Ids Abtausch setzt, nennen weder Wirktext
+noch Aktionsdaten; gezählt wird deshalb die ganze Gruppe.
 
 ## Warum die Streckung richtig ist
 
@@ -1139,7 +1111,7 @@ teilweise. Wird jeweils erst nach Ablauf nachgecastet, stehen die vollen **7 s**
 Verfügung.
 
 **Posten 2 — Entzerrung gegen fremde Mitigation.** Reprisal senkt den Gegnerschaden
-um 10 % für 10 s. Liegt die Betäubung darin, ist ihr Reprisal-Anteil verloren:
+um 10 % für 15 s (unterhalb von Stufe 98 für 10 s). Liegt die Betäubung darin, ist ihr Reprisal-Anteil verloren:
 7 s × 10 % = **0,7 s** je Gegner.
 
 | | überlappend | entzerrt |
@@ -1216,9 +1188,9 @@ Sanctus steht im Schadenszweig; dass es betäubt, ist im Entscheidungsmodell nic
 vorhanden. Assize steht im Angriffs-oGCD (`WHM_Reborn.AttackAbility`); dass es heilt,
 ebenfalls nicht. Umgekehrt kennt `GetCurrentMitigationPercent` die Wirkung von
 Reprisal, aber weder Betäubung noch Verlangsamung, obwohl beide wie
-Schadensreduktion wirken. Beide sind inzwischen an der Stelle gelesen, an der sie
-eine Entscheidung ändern — der Barrierenregel des Dunkelritters —, in der
-Minderungsbilanz selbst aber weiterhin nicht.
+Schadensreduktion wirken. Beide werden an der Stelle gelesen, an der sie eine
+Entscheidung ändern — der Barrierenregel des Dunkelritters —, in der
+Minderungsbilanz selbst nicht.
 
 Die Erhebung dazu ist geführt und liegt als `scan16.py` im Repository: Sie nimmt
 jede PvE-Aktion, deren Wirktext eine Kontroll- oder Minderungswirkung auf Gegner
@@ -1293,8 +1265,8 @@ würde jede, die die Landung überdauert.
 der nächste GCD ist in dem Moment frei, in dem der erste Sanctus landet, und seine Betäubung steht
 dann womöglich noch nicht auf den Gegnern. Ein Gegner im Radius, der weder betäubt noch resistent
 ist, bekommt gleich die erste, volle Anwendung. Sie zählt mit der Dauer aus dem Wirktext
-(`DefensiveValues.DurationOf`, Sanctus 4 s). Die frühere Regel las an genau dieser Stelle „keine
-Betäubung" und gab Sanctus frei (Schluss aus Code und Wirkzeit, im Spiel nicht beobachtet).
+(`DefensiveValues.DurationOf`, Sanctus 4 s). Ohne sie läse die Regel an genau dieser Stelle „keine
+Betäubung" und gäbe Sanctus frei (Schluss aus Code und Wirkzeit).
 
 **Seine Bedingung über allem.** Steht im Radius weder eine laufende Betäubung noch ein noch
 betäubbarer Gegner, gibt es nichts zu strecken; Sanctus geht hinaus. Gegner mit Resistenz zählen
@@ -1320,12 +1292,9 @@ Dutzend Varianten mit Zahlensuffix; welche davon Sanctus anlegt, ist offline nic
 - *H2 aus A19*, die Ablehnung von `Restzeit > ein GCD`, rechnete ohne Wirkzeit. Mit Wirkzeit gleich
   GCD ist sie dieselbe Bedingung wie die jetzige.
 
-**Seine Beobachtung (29.09.2026): Das zweite Sanctus fiel sofort, statt die Betäubung auslaufen zu
-lassen.** Die Regel war seit dem 10.09. unverändert. Drei ihrer Wege ließen Sanctus sofort fallen und
-sind entfernt: die Ersatzgarantie, die Ausnahme für einen Neuzugang, die Mindestzahl; dazu der
-wahrscheinlichste, der Vergleich mit einer Betäubung, die bei der Entscheidung noch nicht auf den
-Gegnern stand. `DefenseTrace.log` nennt je Entscheidung nach einem Sanctus den Grund mit Restzeit und
-Landezeit.
+Anlass war seine Beobachtung vom 29.09.2026: Das zweite Sanctus fiel sofort, statt die Betäubung auslaufen
+zu lassen. Diese drei Wege und der Vergleich mit einer noch nicht stehenden Betäubung ließen es fallen.
+`DefenseTrace.log` nennt je Entscheidung nach einem Sanctus den Grund mit Restzeit und Landezeit.
 
 ## Vorhandene Bausteine
 
@@ -1333,7 +1302,7 @@ Der Entwurf erfindet wenig; das meiste lag im Baum und war nur nicht verbunden.
 
 | Baustein | Fundstelle | Zustand |
 |---|---|---|
-| Mitigationsmessung: Gegner-Debuffs und Party-Buffs, verrechnet zu einem Schadensfaktor | `CustomRotation.GetCurrentMitigationPercent` | Gelesen nur zur Anzeige (`MainWindow_Debug`, Stand 04.10.2026) |
+| Mitigationsmessung: Gegner-Debuffs und Party-Buffs, verrechnet zu einem Schadensfaktor | `CustomRotation.GetCurrentMitigationPercent` | Gelesen nur zur Anzeige (`MainWindow_Debug`, Stand 12.10.2026) |
 | Betäubung, Verlangsamung und **deren Resistenzen** als Statuseffekte | `StatusID.Stun`, `.StunResistance`, `.Slow`, `.SlowResistance`, `.ArmsLength` | In den Spieldaten vorhanden; die Resistenzstufe ist damit direkt lesbar, eine eigene Buchführung über den Ereignisstrom ist **nicht** nötig |
 | Statusabfragen mit Restzeit und Stapelzahl | `StatusHelper.HasStatus`, `.StatusTime`, `.StatusStack` | In Betrieb |
 | Vorhersagefenster aus der BossModReborn-Timeline | `Configs.BMRRaidwideMitWindow` und Geschwister, ausgewertet in `StateUpdater` | In Betrieb |
@@ -1397,10 +1366,10 @@ Jeder Schritt steht hinter einer eigenen Option; voreingestellt ist der im Kampf
 
 ## Betroffene
 
-**Endnutzer.** Bei eingeschalteter Option fallen Mitigationswerkzeuge seltener, aber
-gezielter; die frei werdenden GCDs gehen in Schaden, und die DoT-Uptime steigt.
-Spürbar im großen Flächenpull, folgenlos im Einzelzielkampf — was durch die
-Gegnerzahl-Schwelle so gewollt ist.
+**Endnutzer.** Beim Weißmagier fällt Sanctus seltener hintereinander: Die Betäubung deckt
+nach dem Modell 7 statt 5,5 Sekunden je Pull, und während einer fremden Verlangsamung hält er den
+Flächenzauber zurück; die frei werdenden GCDs gehen an DoTs oder Glare. Spürbar im großen
+Flächenpull; im Einzelzielkampf fällt Sanctus nicht (eigene Zielzahl der Aktion).
 
 **Autoren abgeleiteter Rotationen.** Die Messung ergänzt die öffentliche Oberfläche
 von `RotationSolver.Basic` additiv; keine Signatur bricht. Wer die neuen Prüfungen
