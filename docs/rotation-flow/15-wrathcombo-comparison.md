@@ -1,9 +1,10 @@
 # 15 · Vergleich mit WrathCombo: Ideen für RSR
 
-Entwurfsdokument nach ADR-Struktur. Es stellt den geltenden Sachstand dar; die Prüfhistorie steht in
-`AUDIT_LOG.md` (A169).
+**Leitfrage:** Welche Ideen aus WrathCombo verbessern RSR, und welche nicht?
 
-## Ergebnis
+Das Dokument gibt den geltenden Stand; die Prüfhistorie steht in `AUDIT_LOG.md` (A169, A184–A190).
+
+## Antwort
 
 **Auftrag (seine Vorgabe, 27.09.2026):** „sind darin ideen zu rotationen und unseren bisherigen patches
 vorhanden, die den eigenen plugin verbessern könnten? im loop nach erledigter arbeit prüfen".
@@ -13,12 +14,12 @@ vorhanden, die den eigenen plugin verbessern könnten? im loop nach erledigter a
 Spielquelle: Es zeigt, wie ein zweites Werkzeug entscheidet. Spielmechanik ist am offiziellen Job-Guide
 belegt, wo sie trägt. Code wird nicht übernommen.
 
-**Umgesetzt (A169), weil RSR dort auf etwas wartete, das nicht kommt:**
+**Übernommen, weil RSR dort auf etwas wartete, das nicht kommt (A169):**
 - **Maschinist:** Mit „Only use Wildfire on Boss targets" hielt RSR Heat auf jedem Nicht-Boss für ein
   Wildfire zurück, das dort nie fällt; Hypercharge kam erst bei 100 Heat. Im Kampf: gegen Trash weniger
   Überhitzungen, Heat läuft über. Jetzt fällt Hypercharge dort wie ohne Wildfire-Ausrichtung, sobald die
   Werkzeuge es zulassen, und nur, wenn die Kombo die Überhitzung überdauert (Dauer aus dem Wirktext).
-  WrathCombo macht es ebenso (`ShouldUseHyperchargeST`).
+  WrathCombo macht es ebenso (WrathCombo: `ShouldUseHyperchargeST`).
 
 **Schon vorhanden in RSR (kein Handlungsbedarf):**
 - Tankbuster- und Sammeltreffer-Erkennung über Zielmarkierungen (VFX): RSR hat sie, laut Kommentar
@@ -27,7 +28,7 @@ belegt, wo sie trägt. Code wird nicht übernommen.
   (`WhenToSheltron`), Überlauf-Schutz von Lilien, Polyglot, Beast Gauge, Munition.
 - Samurai Meditate in der Pause (Konzept 14): WrathCombo verlangt zusätzlich einige Sekunden Stillstand.
 
-**Bestätigt Entscheidungen aus Konzept 14, inzwischen umgesetzt:** Addersgall-Schutz des Weisen (WrathCombo:
+**Bestätigt Entscheidungen aus Konzept 14, umgesetzt:** Addersgall-Schutz des Weisen (WrathCombo:
 Druochole ab 3 Stapeln; A203), Shake It Off nur ohne eigene Minderungen im Selbstheilungspfad (A245), Passage of
 Arms mit Kanal-Sperre (bis zum Treffer, A164; ab Werk an seit 02.10.2026, A250). Improvisation als kurzes Regen:
 Konzept 14, Tänzer.
@@ -36,14 +37,16 @@ Konzept 14, Tänzer.
 
 | # | Idee (WrathCombo) | Was sich im Kampf ändert | Woran die Wahrscheinlichkeit gemessen wird | Einordnung |
 |---|---|---|---|---|
-| V1 | Vorbeugendes Regen oder Schild auf den Tank **ohne Countdown**, sobald er außerhalb des Kampfs nahe an Gegner kommt (`PreEmptiveHot`, `PreEmptiveShield`: Weißmagier Regen, Astrologe Aspected Benefic, Weiser Eukrasian Diagnosis, Gelehrter Adloquium) | Dungeon-Pulls: Der Tank hat Regen oder Schild, bevor der erste Treffer fällt. RSR tut das heute nur im Countdown (Weißmagier „UsePreRegen") | Tank außerhalb des Kampfs in Reichweite eines Gegners — der Pull ist nah | Stufe „Heiler"; neue Option (Weiser ab Werk an seit 03.10.2026, A251) |
-| V2 | Zielmarkierungen: allgemeiner Präfix `vfx/lockon/eff/tank` statt einzelner Tank-Marker, dazu die bei RSR fehlenden Einträge (`sharelaser2tank`, `share_1`, zwei Dungeon-Sammelmarker) | Mehr Tankbuster und Sammeltreffer werden erkannt, bevor sie fallen; Einzel- und Flächenabwehr öffnen öfter rechtzeitig | Marker über dem Ziel — der Treffer ist angekündigt | **Gebaut (A189)** mit der Negativliste aus seiner Vorgabe, siehe „V2: Stand der Umsetzung" |
-| V3 | Kuratierte Raidwide-, Tankbuster- und Ignorier-Listen je Begegnung (`BattleData`, etwa Blicke, die wie Raidwides aussehen) | Weniger Fehlalarme bei Blickmechaniken, Raidwides ohne Flächen-Wurftyp werden erkannt | angekündigter Cast mit bekannter Wirkung | **Geprüft (A190):** siehe „V3: Ergebnis" |
-| V4 | Samurai Meditate erst nach kurzem Stillstand | Weniger abgebrochenes Meditate beim kurzen Anhalten zwischen zwei Bewegungen | — | **Geprüft (A188):** nicht bauen, siehe „V4: Ergebnis" |
-| V5 | Tanzpartner neu wählen, wenn der Partner tot ist | Standard Finish und Devilment gehen nicht auf einen Toten | — | **Gebaut (A186)**, siehe „V5: Stand der Umsetzung" |
-| V6 | Kerachole nicht über eine liegende Sacred Soil legen (`SGE_OverProtect`) | Gruppenminderung zweier Heiler verteilt sich auf zwei Treffer statt einen | — | **Geprüft (A187):** nicht bauen, siehe „V6: Ergebnis" |
+| V1 | Vorbeugendes Regen oder Schild auf den Tank **ohne Countdown**, sobald er außerhalb des Kampfs nahe an Gegner kommt (WrathCombo: `PreEmptiveHot`, `PreEmptiveShield`; Weißmagier Regen, Astrologe Aspected Benefic, Weiser Eukrasian Diagnosis, Gelehrter Adloquium) | Dungeon-Pulls: Der Tank hat Regen oder Schild, bevor der erste Treffer fällt. RSR tut das heute nur im Countdown (Weißmagier „UsePreRegen") | Tank außerhalb des Kampfs in Reichweite eines Gegners — der Pull ist nah | Stufe „Heiler"; neue Option (Weiser ab Werk an seit 03.10.2026, A251) |
+| V2 | Zielmarkierungen: allgemeiner Präfix `vfx/lockon/eff/tank` statt einzelner Tank-Marker, dazu die bei RSR fehlenden Einträge (`sharelaser2tank`, `share_1`, zwei Dungeon-Sammelmarker) | Mehr Tankbuster und Sammeltreffer werden erkannt, bevor sie fallen; Einzel- und Flächenabwehr öffnen öfter rechtzeitig | Marker über dem Ziel — der Treffer ist angekündigt | **Gebaut (A189)** mit der Negativliste aus seiner Vorgabe, siehe „V2: Tankbuster-Marker breiter erkennen" |
+| V3 | Kuratierte Raidwide-, Tankbuster- und Ignorier-Listen je Begegnung (WrathCombo: `BattleData`, etwa Blicke, die wie Raidwides aussehen) | Weniger Fehlalarme bei Blickmechaniken, Raidwides ohne Flächen-Wurftyp werden erkannt | angekündigter Cast mit bekannter Wirkung | **Geprüft (A190):** keine Übernahme, siehe „V3: Begegnungsdaten" |
+| V4 | Samurai Meditate erst nach kurzem Stillstand | Weniger abgebrochenes Meditate beim kurzen Anhalten zwischen zwei Bewegungen | — | **Geprüft (A188):** nicht gebaut, siehe „V4: Meditate erst nach Stillstand" |
+| V5 | Tanzpartner neu wählen, wenn der Partner tot ist | Standard Finish und Devilment gehen nicht auf einen Toten | — | **Gebaut (A186)**, siehe „V5: Tanzpartner neu wählen" |
+| V6 | Kerachole nicht über eine liegende Sacred Soil legen (`SGE_OverProtect`) | Gruppenminderung zweier Heiler verteilt sich auf zwei Treffer statt einen | — | **Geprüft (A187):** nicht gebaut, siehe „V6: Kerachole über Sacred Soil" |
 
-## Seine Angaben zu den Vorschlägen (27.09.2026)
+## Seine Angaben zu den Vorschlägen
+
+Vom 27.09.2026, wo nicht anders angegeben.
 
 | # | Wortlaut | Einordnung |
 |---|---|---|
@@ -59,9 +62,11 @@ Konzept 14, Tänzer.
 | V1 | „punkt 2 ist uninteressant, da der heiler dem tank folgt" (28.09.2026, zur 30-y-Grenze von Fey Union) | Hinweis zur Spielweise: Der Heiler folgt dem Tank, die 30-y-Grenze der Fee trägt kein Argument gegen Aetherpact im Pull |
 | V1 | „ein schild kann auf zwei arten verschwinden: zeitablauf und durch aufbrauchen durch eingehenden schaden. also ist verfall das zweite, da ablauf parallel genannt wurde" (03.10.2026) | Präzisierung seiner V1-Vorgabe: Erneuert wird bei Ablauf **und** beim Aufbrauchen durch Schaden. Umgesetzt (A251) |
 
-## V1: Sofortaktionen der Heiler im Laufen (Job-Guide, abgerufen 27.09.2026)
+## V1: Vorbeugender HoT oder Schild auf den Tank im Pull
 
-Grundlage für das V1-Konzept; Kriterium seiner Präzisierung ist das Wirken im Laufen, also „Instant".
+### Sofortaktionen der Heiler im Laufen
+
+Job-Guide, abgerufen 27.09.2026. Kriterium seiner Präzisierung ist das Wirken im Laufen, also „Instant".
 
 | Heiler | HoT oder Schild sofort | Schaden sofort | Betäubung |
 |---|---|---|---|
@@ -73,9 +78,9 @@ Grundlage für das V1-Konzept; Kriterium seiner Präzisierung ist das Wirken im 
 
 Die Rollenaktionen der Heiler (Repose, Esuna, Lucid Dreaming, Swiftcast, Surecast, Rescue) enthalten keine Betäubung; Repose ist Schlaf mit 2,5 s Wirkzeit. Swiftcast bleibt nach seiner Vorgabe für Wiederbelebungen.
 
-## V1: Stand der Umsetzung (A184)
+### Die Regel
 
-**Eine Regel für alle Heiler** („Universell zuerst", Stufe „Heiler"): `TryPullUpkeepOnTank` in
+Gebaut mit A184. **Eine Regel für alle Heiler** („Universell zuerst", Stufe „Heiler"): `TryPullUpkeepOnTank` in
 `CustomRotation_OtherInfo.cs`. Sie hält eine Sofort-Regen- oder Sofort-Barriereaktion auf dem Tank, solange
 er sich einer Gruppe nähert oder sie bindet (`TankApproachingMobGroup`, nur Dungeons), und erneuert sie,
 sobald der Status fehlt oder innerhalb der Auffrischfrist endet. Eine verbrauchte Barriere nimmt das Spiel
@@ -92,7 +97,9 @@ in Gefahr war.
 | Weiser | Eukrasia + Eukrasian Diagnosis, beide sofort | **neu** (`UsePreEukrasianDiagnosis`, ab Werk **an** seit 03.10.2026, A251: Er hat die Erneuerung bei Ablauf und Verfall ausdrücklich verlangt, Wortlaut in der Tabelle oben). Rang in der Eukrasia-Wahl: nach Flächen- und Einzelabwehr, vor den DoTs. Nicht gelegt, solange der Tank Galvanize oder Eukrasian Prognosis trägt (laut Wirktext nicht stapelbar): Der Tank trägt dann schon eine Barriere, und die Pflege hält eine, nicht die größte. Die Einzelabwehr dagegen sperrt nur Eukrasian Diagnosis und Galvanize (Upstream) und legt über eine Eukrasian Prognosis hinweg — richtig, weil die neuere Barriere des Weisen die ältere ganz ersetzt (Wiki „Eukrasian Diagnosis", Community-Quelle, nicht offiziell) und die der Diagnose größer ist (Heilung 300 × 180 % gegen 100 × 320–360 %, Job-Guide); vor einem Tankbuster ist das Zugewinn, kein verschenkter GCD. Keine Gesundheitsuntergrenze: Anders als Regen ist Eukrasian Diagnosis selbst der beste Sofort-GCD im Notfall. Außerhalb des Kampfs erst, wenn ein Gegner in Reichweite des Weisen ist — sonst nimmt die bestehende Eukrasia-Bereinigung den Status wieder ab. |
 | Gelehrter | kein Sofortschild (Adloquium 2 s Wirkzeit) | nicht gebaut: Stehenbleiben erst am Ende des Wall-to-Wall (seine Präzisierung). Sein Vorschlag Aetherpact/Fey Union als Vorab-HoT bleibt offen; Gegenargumente: Jede andere Feenaktion (Whispering Dawn, Fey Illumination, Fey Blessing) beendet die Verbindung, und auf einem vollen Tank verbraucht Fey Union Feenanzeige ohne Heilung (Nachschub nur über Aetherflow-Aktionen, je +10). Die 30-y-Grenze zählt nicht, der Heiler folgt dem Tank (sein Hinweis). Ob die Fee während Fey Union Embrace aussetzt, ist nicht belegt. Er kollidiert zudem mit zwei bestehenden Einstellungstexten („Remove Aetherpact if … above 90 %", „Do not start Aetherpact if … above 80 %"); zur Entscheidung vorgelegt. |
 
-**Was die Erneuerung im Kampf kostet (Schlussfolgerung, am Spiel nicht gemessen):** Bei Regen fällt die
+### Was die Erneuerung im Kampf kostet
+
+*Schlussfolgerung, am Spiel nicht gemessen.* Bei Regen fällt die
 Erneuerung alle 18 s. Eine Barriere bricht in einem großen Pull, sobald der Tank ihren Wert an Schaden nimmt. Bricht
 sie jeden GCD, gehen die GCDs des Weisen an sie statt an Dosis — je Erneuerung Eukrasia (1 s) und ein GCD —, und
 800 MP je Erneuerung, nie unter die Wiederbelebungsreserve. **Das ist sein Wortlaut, nicht ein Nebeneffekt:**
@@ -103,9 +110,9 @@ an. Im Laufen hat der Weise ohnehin nur Sofortaktionen; Dosis mit Wirkzeit fäll
 (A251). Die Frage, ob „Verfall" auch den Bruch meint, war unnötig: Sein Text nennt Ablauf und Verfall nebeneinander
 (C107).
 
-## V5: Stand der Umsetzung (A186)
+## V5: Tanzpartner neu wählen
 
-Seine Vorgabe: Partnerschaft während des Todes aufheben, während der Schwäche nach einer Wiederbelebung neu
+Gebaut mit A186. Seine Vorgabe: Partnerschaft während des Todes aufheben, während der Schwäche nach einer Wiederbelebung neu
 wählen, nach ihrem Ende erneut. Gebaut als `DancerRotation.DancePartnerNeedsChange` (Stufe „Tänzer": nur er hat
 einen Partner), gelesen von `DNC_Reborn` vor Closed Position: trifft sie zu, fällt Ending, und Closed Position
 wählt über die bestehende Partnerwahl neu.
@@ -135,9 +142,9 @@ wählt über die bestehende Partnerwahl neu.
 Gruppenmitglied, bis die Schwäche endet; danach zurück an den ersten. Ein neuer Partner erhält Standard Finish
 erst mit dem nächsten Standard Finish.
 
-## V2: Stand der Umsetzung (A189)
+## V2: Tankbuster-Marker breiter erkennen
 
-**Erkennung breiter:** Die Tankbuster-Pfade sind Präfixe: `vfx/lockon/eff/tank` (jeder Tank-Marker) und
+Gebaut mit A189. **Erkennung breiter:** Die Tankbuster-Pfade sind Präfixe: `vfx/lockon/eff/tank` (jeder Tank-Marker) und
 `vfx/lockon/eff/sharelaser2tank` (jeder geteilte Tank-Laser) statt der vier Einzelpfade. Bei den Sammeltreffern
 kommen `share_1` und der Sammelmarker aus San d'Oria: The Second Walk dazu. `target_ae_s5f` aus WrathCombos
 Liste bleibt draußen: Dort gilt es nur für ein Gebiet und trifft laut deren Kommentar auch Verteilmarker. Die
@@ -175,10 +182,10 @@ Pfade sind Spieldaten (Asset-Namen), kein übernommener Code.
 nicht beginnt, solange der Marker steht, würde fälschlich widerlegt — und beim nächsten Treffer nach demselben
 Marker korrigiert. Das kostet einmal eine ausgelassene Abwehr gegen einen Tankbuster.
 
-## V3: Ergebnis (A190)
+## V3: Begegnungsdaten
 
-**Sein Auftrag:** „schauen, ob die infos aus wrath auch ingame verfügbar wären (ohne wrath, nur aus den normal
-vorhandenen daten)". WrathCombos `BattleData` führt je Gebiet (Stand 25.09.2026, sechs Erweiterungen) fünf
+Geprüft mit A190; keine Übernahme. **Sein Auftrag:** „schauen, ob die infos aus wrath auch ingame verfügbar wären (ohne wrath, nur aus den normal
+vorhandenen daten)". WrathCombos `BattleData` (WrathCombo) führt je Gebiet (Stand 25.09.2026, sechs Erweiterungen) fünf
 Arten von Daten. Ergebnis je Art:
 
 | Art | Ableitbar im Spiel? | RSR heute | Folge |
@@ -192,10 +199,10 @@ Arten von Daten. Ergebnis je Art:
 **Folge:** Keine Datenübernahme — damit entfällt auch der Lizenzhinweis. Was ableitbar ist, leitet RSR schon ab
 oder hängt an der offenen Unterscheidung „Raidwide oder ausweichbare Fläche".
 
-## V4: Ergebnis (A188)
+## V4: Meditate erst nach Stillstand
 
-**These (WrathCombo):** Meditate erst nach einigen Sekunden Stillstand, damit es beim kurzen Anhalten zwischen zwei
-Bewegungen nicht abbricht. **Ergebnis: nicht bauen;** das Pausenverhalten aus A162 bleibt.
+Geprüft mit A188; nicht gebaut. **These (WrathCombo):** Meditate erst nach einigen Sekunden Stillstand, damit es beim kurzen Anhalten zwischen zwei
+Bewegungen nicht abbricht. **Nicht gebaut;** das Pausenverhalten aus A162 bleibt.
 
 Wirktext (Job-Guide, 28.09.2026): Meditate, 60 s Abklingzeit, „Gradually increases your Kenki Gauge", 15 s, im
 Kampf dazu bis zu 3 Stapel Meditation; endet bei jeder anderen Aktion und bei Bewegung, auch beim Drehen; löst
@@ -219,10 +226,10 @@ Meditate lasts its entire duration".
 - **Läuft er im Kampf aus 25 y heraus,** ohne dass eine Pause ist, fällt Meditate beim ersten Stillstand und bricht
   beim Zurücklaufen (Konzept 14, „Folgen, bewusst hingenommen").
 
-## V6: Ergebnis (A187)
+## V6: Kerachole über Sacred Soil
 
-**These (WrathCombo):** Der Weise legt Kerachole nicht, solange Sacred Soil eines Gelehrten liegt; die
-Gruppenminderung zweier Heiler verteilt sich so auf zwei Treffer. **Ergebnis: nicht bauen.** Das bisherige
+Geprüft mit A187; nicht gebaut. **These (WrathCombo):** Der Weise legt Kerachole nicht, solange Sacred Soil eines Gelehrten liegt; die
+Gruppenminderung zweier Heiler verteilt sich so auf zwei Treffer. **Nicht gebaut.** Das bisherige
 Verhalten bleibt — Kerachole fällt, wenn die Abwehr- oder Heilregel es verlangt.
 
 Wirktexte (Job-Guide, 28.09.2026): Kerachole 30 s Abklingzeit, −10 % für den Weisen und alle in 30 y, 15 s, dazu
@@ -251,7 +258,7 @@ gemessener Treffer löst die Abwehr nicht aus, und seit die Schadenstabelle miss
   nach Gefährdungsklasse und vorausberechneter Gesundheit (Konzept 07) misst mehr.
 - **Staffelung der Raidwide-Antworten nach mittlerer Gruppengesundheit** (1/2/3 Antworten ab 60/30 %):
   feste Schwellen; RSR entscheidet über Gefährdungsklasse und Streckung (Konzept 08).
-- **Burst-Erkennung über Zahl der Gruppenbuffs mit Ausnahme bei Schwäche** (`InGoodBurstPhase`):
+- **Burst-Erkennung über Zahl der Gruppenbuffs mit Ausnahme bei Schwäche** (WrathCombo: `InGoodBurstPhase`):
   ohne belegten Nutzen gegenüber den eigenen Burstfenstern der Jobs.
 - **„Protection"-Einstellungen** (Doppeldruck-Schutz für Meikyo, Enshroud usw.): betreffen Knopfdruck
   von Hand; RSR verhindert das über `StatusProvide`.

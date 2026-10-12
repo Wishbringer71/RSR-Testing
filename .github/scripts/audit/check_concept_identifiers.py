@@ -38,12 +38,15 @@ CANDIDATE = re.compile(r'`([A-Z][A-Za-z0-9]*(?:\.[A-Za-z][A-Za-z0-9]*)*)`')
 MIN_LENGTH = 5
 
 # A line that says the thing is gone, was rejected, or is still to be built explains its own
-# dangling name. Checked per line, because that is where the explanation stands.
+# dangling name, and so does a line that names the other tool the name belongs to. Checked per line,
+# because that is where the explanation stands.
 EXPLAINED = re.compile(
     r'entfernt|gelöscht|zurückgebaut|zurueckgebaut|verworfen|ausgeschlossen|abgelehnt|'
     r'nicht umgesetzt|nicht gebaut|geplant|künftig|kuenftig|würde|wuerde|hieße|hiesse|'
     r'toter Code|dead code|früher|frueher|ehemals|einst|'
-    r'removed|rejected|planned|would be', re.IGNORECASE)
+    r'removed|rejected|planned|would be|'
+    # A name from another tool's code, on a line that names the tool: it lives there, not here.
+    r'WrathCombo|BossModReborn|FFXIVClientStructs|xivanalysis', re.IGNORECASE)
 
 
 def tree_text(dirs=SOURCE_DIRS, patterns=SOURCE_PATTERNS):
