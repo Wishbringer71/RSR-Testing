@@ -511,7 +511,7 @@ braucht, trägt deshalb keinen Grund, Nascent Flash zurückzuhalten.
   also nur Geschützte durch — einen Tank unter Holmgang, Superbolide, Hallowed Ground oder Living Dead, sonst
   niemanden. Seit Upstream c3fac720b heilte der Krieger damit praktisch nie ein anderes Mitglied; der in A191
   vorgelegte Konflikt am Tankbuster trat so gar nicht auf. Dieselbe Verwechslung ist die dritte ihrer Art im Baum
-  (Heilzielwahl, Excogitation); `check_invuln_polarity.py` hält sie jetzt in der CI.
+  (Heilzielwahl, Excogitation); `check_invuln_polarity.py` hält sie in der CI.
 - Nascent Flash liegt im Heilpfad der Fähigkeiten (`HealSingleAbility`, Upstream c3fac720b). Dieser läuft im
   Dispatch vor der Einzelabwehr und vor dem allgemeinen Pfad. Ziel ist ein Mitglied unter
   `Nascent Flash Heal Threshold` (0,6, Vorausschau), nicht unverwundbar, sortiert nach Einstellung „Nascent Flash
@@ -577,7 +577,7 @@ weil ihr Text bindet.
 - *HoTs und Minderungen* wirken über den gemessenen Verlauf: Er ist netto aller Heilung und Minderung, die
   Vorausschau liest ihn (mit „Heal ahead of incoming damage" an).
 - *Ein Nascent Glint eines anderen Kriegers* sperrt das Ziel (`TargetStatusProvide`).
-- *Unverwundbare* sind ausgeschlossen (Filter), *Heilung wirkungslos* (`HealingIneffectiveStatus`, Mounted) jetzt
+- *Unverwundbare* sind ausgeschlossen (Filter), *Heilung wirkungslos* (`HealingIneffectiveStatus`, Mounted)
   ebenfalls — die Heilzielwahl schloss sie schon aus, die Sortierung nach Prozentsatz nicht.
 
 **Debuffs:**
@@ -633,7 +633,7 @@ Umgesetzt mit A226.
 - Vierte Zielwahl **„By danger"**, ab Werk gewählt (angehängt; Rotationseinstellungen speichern den Namen).
 - Heilung-wirkungslos-Ausschluss in allen vier Zielwahlen.
 - Der Zielfilter liest `NoNeedHealingInvuln()` mit der richtigen Polarität (belegter Defekt, ohne Schalter).
-- **Nicht gebaut, jetzt mit Quelle:** Nascent Flash als Minderung für den **anderen Tank vor dessen Tankbuster**.
+- **Nicht gebaut, mit Quelle:** Nascent Flash als Minderung für den **anderen Tank vor dessen Tankbuster**.
   The Balance, Warrior Basic Guide, Abschnitt Makros (abgerufen 02.10.2026): „Nascent Flash goes on a friend. Most
   often on the co-tank of your eight-person party." Damit ist der Einsatz am anderen Tank die Regelanwendung der
   Referenz, kein Schluss mehr. Gebaut ist er nicht: Er braucht die Erkennung „Tankbuster auf dem anderen Tank"
@@ -726,7 +726,7 @@ Im Kampf hieß das:
 
 Die Liste beschreibt sich selbst als „the big personal mitigations"; Urimpuls ist die kurze Abklingzeit des Kriegers wie
 Heart of Corundum, Holy Sheltron und The Blackest Night bei den anderen, und von denen steht keine darin. Der Eintrag
-widersprach also dem erklärten Zweck der Liste, und der Code folgt jetzt dem Kommentar. Beide Sperren sind entfernt;
+widersprach also dem erklärten Zweck der Liste, und der Code folgt dem Kommentar. Beide Sperren sind entfernt;
 Schutzwall und Verdammnis staffeln weiter gegeneinander. Andere Leser der Liste: `HasMajorMitigation` (nur Dunkelritter,
 der nie Urimpuls trägt) und seit A244 `HoldReprisalForRaidwide` (alle Tanks, für den eigenen Charakter). Gegenposition: Ohne Sperre überlappen Urimpuls und Verdammnis. Das ist der Stapel „Damnation +
 Bloodwhetting" der Referenz und kostet nichts, weil Urimpuls nach 25 s wieder bereit ist.
@@ -781,7 +781,7 @@ Bei Neo Garula dasselbe: 27 % unter beiden, 49 s später 65 % ohne. Abwechselnd 
 *Regel:* Schutzwall fällt für einen vorhergesagten Tankbuster nur, wenn die große Minderung ihn nicht nimmt — sie läuft
 nicht und fiel nicht eben erst (`RampartTakesPredictedTankbuster`, zentral). Das gilt für alle vier Tanks. Die kurzen
 Minderungen (Urimpuls, Kampfrausch, Heart of Corundum, Oblation, Sheltron, The Blackest Night) kommen wie bisher dazu.
-Das Fenster für Schutzwall ist jetzt seine Dauer aus dem Wirktext statt der Zahl 20.
+Das Fenster für Schutzwall ist seine Dauer aus dem Wirktext, keine feste Zahl.
 
 *Gegenpositionen:*
 - *Ein Tankbuster braucht beide:* möglich bei einem Treffer weit über der Maximalgesundheit. Für diesen

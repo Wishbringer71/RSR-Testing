@@ -230,7 +230,7 @@ Dauern (Reflexion, Addle, Feint, Sheltron, Nascent Flash), Statusnamen (Gluttony
 Duration"; Shake It Off: „Dispels Thrill of Battle and increasing"). Die Matrix zählt sie je Aktion.
 Eine Lücke in einer Aufzählung aufgehobener Status verfälscht die Wechselwirkungen: Der Generator sieht
 dort nur den ersten Namen. Wirkung auf RSR: Eine leere Dauer ergibt in
-`DefensiveValues` 0 s. Keine dieser Aktionen ist heute Auslöser einer Streckung; wäre sie es, würde
+`DefensiveValues` 0 s. Keine dieser Aktionen ist Auslöser einer Streckung; wäre sie es, würde
 sie nie strecken — der Generator erfindet keinen Wert.
 
 ## Werden die Fenster genutzt?

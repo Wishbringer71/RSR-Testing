@@ -90,7 +90,7 @@ zusaetzlich geschildet werden. bzw. der schadensoutput reduziert."
 | Treffer erreicht die aktuelle, bleibt unter der maximalen | **zuerst heilen**, Ziel ist die Maximalgesundheit — danach wieder Deckung |
 | Treffer uebersteigt auch die maximale Gesundheit | Heilung allein rettet nicht: Barriere **und** Minderung zusaetzlich, bis der Rest darunter liegt |
 
-**Das ist Vorgabe 2 dieses Konzepts, zu Ende gedacht.** „Heilung vor Minderung" sagte bisher nur die
+**Das ist Vorgabe 2 dieses Konzepts, zu Ende gedacht.** „Heilung vor Minderung" allein sagt nur die
 Reihenfolge; die Tabelle sagt, **woran** sich entscheidet, ob der Fall ueberhaupt eintritt. Und sie
 loest die dritte Vorgabe ein: Die Barriere steht im Zaehler, also addiert sie sich in Zeile drei zur
 Minderung, statt mit ihr zu konkurrieren.
@@ -218,7 +218,7 @@ soll, ist seine Entscheidung (Einstellungstext und Vorgabe).
   antwortet die Heilkette.
 - **Ein angekündigter Tankbuster allein ist kein Grund.** Er ist genau das Signal, das die Einzelabwehr
   öffnet; wiche die Rückhaltung ihm, wäre sie in dem Moment aufgelöst, in dem sie gefragt ist — zwei
-  Tankbuster in Folge verlören beide die Streckung. Für einen gewirkten, gemessenen Tankbuster gibt es inzwischen
+  Tankbuster in Folge verlören beide die Streckung. Für einen gewirkten, gemessenen Tankbuster gibt es
   einen Anteil (Tankbuster-Tabelle, Konzept 13); mit ihm rechnet der Plan des Tanks (Konzept 09), die Schranke liest
   ihn nicht – für sie bleibt Klasse 1.
 - **Unverwundbare zählen nicht:** Ein Tank unter Hallowed Ground oder Superbolide steht absichtlich
@@ -238,7 +238,7 @@ soll, ist seine Entscheidung (Einstellungstext und Vorgabe).
 
 ### Folgen, bewusst hingenommen
 
-- **Astrologe:** Die Streckung dauert jetzt so lange wie die Wirkung laut Wirktext: 15 s nach
+- **Astrologe:** Die Streckung dauert so lange wie die Wirkung laut Wirktext: 15 s nach
   Macrocosmos und 10 s nach Collective Unconscious, statt der früheren festen 30 und 20 s, die zu
   keiner Wirkung passten.
 - **Ein Treffer ohne Zauberleiste** wird nur über Klasse 1 erkannt. Die Schranke kann ihn sonst
@@ -341,7 +341,7 @@ die Gegner-Debuffs über die Gegnerzahl (`MitigationSustainHostileCount`) aufrec
 Aktion ist als **Ersatz** fuer die fehlende Verlaesslichkeit gedacht, nicht als Zusatz — und sie
 beantwortet zudem eine Frage, die BMR gar nicht stellt: wie hart der Treffer ist.
 
-**Die eigene Messung ist die einzige BMR-unabhaengige Vorhersagequelle im Baum**, und sie ist bisher
+**Die eigene Messung ist die einzige BMR-unabhaengige Vorhersagequelle im Baum**, und sie ist
 an genau einer Stelle proaktiv verdrahtet: `IsHostileCastingLargeArea` (Konzept 13) liest den
 gemessenen Anteil je Aktion und braucht dafuer kein fremdes Plugin. Dass dieselbe Quelle die
 proaktive Schicht der uebrigen Jobs tragen koennte, ist erfasst und nicht gebaut — `TODO.md`.
@@ -1196,7 +1196,7 @@ Die Erhebung dazu ist geführt und liegt als `scan16.py` im Repository: Sie nimm
 jede PvE-Aktion, deren Wirktext eine Kontroll- oder Minderungswirkung auf Gegner
 nennt, und fragt, ob der Baum den zugehörigen Status irgendwo liest. Im
 Tank- und Heilerprofil bleibt **eine** Aktion übrig, deren zweite Wirkung
-nirgends gelesen wurde: **Abtausch (Arm’s Length)** — inzwischen gelesen (A194, A236: Abtausch im Pull für seine
+nirgends gelesen wurde: **Abtausch (Arm’s Length)** — gelesen (A194, A236: Abtausch im Pull für seine
 Verlangsamung). Sie war als Rückstoßschutz eingeordnet
 (`CustomRotation_Ability.AntiKnockbackAbility`), legt aber zugleich
 Verlangsamung +20 % auf jeden physischen Angreifer für 15 Sekunden. Der Wirktext

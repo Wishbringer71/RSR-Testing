@@ -6140,10 +6140,47 @@ beobachtet.
 - *Dabei gefunden, Defekt:* Der Tankbuster-Plan drückt Reflexion als billigstes Glied, auch wo die Einzelabwehr sie
   für einen angesagten Raidwide hielte (A244); K6 in Konzept 09, `TODO.md`.
 
-**Prüfgrad:** Prüfskripte (Aufbau strikt, Verweise, Bezeichner, Voreinstellungen); Inhalt gegen den Code geprüft für
-die Gegenstände, die sich seit dem 04.10.2026 geändert haben (Tankbuster-Tabelle und -Plan, Triage, Abschütteln,
-Merkmalsdauern, Verweigerung, BossModReborn-Ziel). Ältere Aussagen der Konzepte sind nicht Satz für Satz gegen den
-Code geprüft (`TODO.md`).
+- *Seine Rüge zum offenen Schuld-Eintrag:* „warum noch offen in todo? keine lust fehlerfrei zu arbeiten?" – „du hast
+  die werkzeuge, du nutztsie bloß nicht konsequent!" Zutreffend: Der Eintrag verschob Arbeit, die im selben Vorhaben
+  zu leisten war. Erledigt in diesem Zug, der Eintrag ist entfernt.
+- *Inhalt Satz für Satz gegen den Code (01–05, 07–17):* jede Aussage über Code oder Verhalten am Code oder an den Quellen
+  belegt (Commits 8c5ec113e bis 25fba203c). Veraltet oder falsch und korrigiert, über die Aufbaufehler hinaus:
+  - 03: Samurai-Fernkampfrückfall wartet 15 GCDs, nicht 15 s; das Halten gilt, solange der Plan hält.
+  - 07: `IsHostileCastingAOE` als „Größe hier ungenutzt" beschrieben – sie trägt das Minderungsurteil (Befund unten).
+  - 08: Vorausheilung fragt die unbewerteten Erkennungen, nicht `IsHostileCastingAOE`; die proaktive Ebene umfasst die
+    zentralen Gegner-Debuffs und den großen gemessenen Cast; das Schadenspotential hat fünf Leser, nicht einen; die
+    Tankbuster-Tabelle existiert; Reflexion wirkt ab Stufe 98 15 s; die Minderungsbilanz zählt Gruppenbuffs mit.
+  - 09 (Living Dead): einundzwanzig Lagen, nicht achtzehn; 1d ist keine Aufhebung; eine beschriebene Aufhebungsregel für
+    nicht tödliche Auslöser gibt es nicht.
+  - 12: Necrotize und Fester fragen `HasAnySearingLight`; der Rückhalt vor Wiederbelebung und Heilung (A206) gehört zur
+    Regel; die Beschwörungen teilen die Abklingzeitgruppe 10 (xivapi) – der offene Punkt dazu ist geschlossen.
+  - 13: Tankbuster-Tabelle gebaut, nicht offen; Mittelwahl nach Treffergröße für Flächen widerlegt (A118), nicht offen;
+    Lernpfad liest `FullAmount`; der zweite Weg fragt den letzten GCD, nicht das Fenster des Vorfilters.
+  - 14: Klassen der nicht gewirkten Aktionen nach den erzeugten Dateien (Behälter teils „nur gelesen", Improvised Finish
+    und Ending gewirkt); Shake It Off ist nicht mehr ungeprüft; der Schnitter sät **nicht** in der Kampfpause
+    (`ModifySoulsowPvE`: `!InCombat`) – als offene Regel mit Quellen ins TODO.
+  - 15: Pull-Pflege gilt außerhalb von Prüfungen und Raids, nicht „nur Dungeons"; der Tanzpartner endet beim Tod außer
+    während eines Tanzes.
+  - Verweise auf das Diagnosefenster als Ablesung für ihn entfernt (07, 08, 09, 12, 13), ebenso Bitten um
+    Laufzeitbeobachtung und Chronik-Wörter („jetzt", „inzwischen", „bisher", „heute") im Sinn der Dokumentgeschichte.
+- *Dabei gefunden, Defekte (TODO):* Die Heilzielwahl der Gefährdungsklasse 3 liest `IsHostileCastingAOE` und erbt damit das
+  Minderungsurteil; Tengentsu, Third Eye und Radiant Aegis fragen `AreaHitOnMe` doppelt zur zentralen Prüfung, und die
+  Rotationsabfrage hält sie auch unter seinem Defense-Befehl zurück. Offen ohne Grund war die enge Fassung des
+  Searing-Light-Ausweichens („nur nach Blockade"); jetzt eigener TODO-Eintrag.
+- *Ins Archiv verschoben aus TODO, ohne offene Arbeit:* „Beschwörer: Searing Light bei mehreren Beschwörern — Grenzen, keine
+  offene Bestätigung" (Grenze gleichzeitiger Zündung, steht in Konzept 12) und „Searing Light: das Warten der Beschwörung
+  kann den Burst verzögern" (Restrisiko Schild/Addle vor der Beschwörung; die Beschwörung wartet dann einen GCD, Konzept
+  12; die Bitte „zu beobachten" war eine Spielbestätigung als Aufgabe an ihn).
+- *Code-Kommentar:* Der Parameterkommentar von `BMRShouldRefreshBefore` sagte, die freie Ladung werde nicht ausgewertet;
+  214fd4951 wertet sie fünf Minuten nach diesem Text aus (Verfügbarkeit statt Verbot, Grund in Konzept 08). Angepasst
+  nach Prüfung der Versionsgeschichte.
+- *Konzept 06* bleibt das abgeschlossene Archiv des ersten Durchgangs (Bezugsstand `f5c8432`, ausdrücklich nicht
+  fortgeschrieben, README so geführt); seine Aussagen sind Stand jenes Durchgangs und keine Gegenwartsaussagen.
+
+**Prüfgrad:** Prüfskripte (Aufbau strikt, Verweise, Bezeichner, Voreinstellungen); Inhalt jedes Konzepts außer dem
+Archiv 06 Satz für Satz gegen Code, erzeugte Dateien und Quellen (Job-Guide, The Balance, xivapi, WrathCombo-Klon vom
+12.10.2026) geprüft. Kompiliert und im Spiel beobachtet ist dadurch nichts: Der Durchgang ändert Dokumente und einen
+Kommentar.
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)

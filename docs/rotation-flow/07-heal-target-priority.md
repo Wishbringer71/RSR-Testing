@@ -38,7 +38,7 @@ fällt, und seiner Präzisierung dazu — im Wortlaut:
 > der spieler aber keine aggro hat, kein aoe ansteht, oder kein sonstiger schaden ansteht, würde
 > doch hot oder kleinere heals bzw. beides reichen"
 
-**Die Vorgabe trennt zwei Fragen, die der Baum bisher zu einer verschmolzen hat:** *Wer* braucht
+**Die Vorgabe trennt zwei Fragen, die eine einzelne Schwelle zu einer verschmilzt:** *Wer* braucht
 Heilung — das entscheidet der Gesundheitsstand — und *welches Mittel* er bekommt — das entscheidet
 die Gefahr. Ein Wiederbelebter steht bei wenigen Prozent und ist damit nach jeder Schwelle der
 dringendste Fall, obwohl ihm gerade nichts geschieht: Er trägt keine Aggro, und sein
@@ -163,19 +163,13 @@ der Heilschwelle verlangte. Jetzt fällt sie, sobald im Radius genug Verletzte s
   Annahme, keine belegte Tatsache.
 - Die AoE-Einstellung (Full/Cleave/Off) gilt nur Angriffen, seine Lesart (A147): Unter „Cleave" und
   „Off" gehen Gruppenheilungen und Gruppenminderungen wie unter „Full".
-- **Im Kampf ablesbar:** Das Diagnosefenster zeigt unter „Area heal around you" die zuletzt gewogene
-  Heilung dieser Art — Aufnahmefähige im Radius gegen die verlangte Anzahl, ob jemand darunter unter
-  der Heilschwelle liegt. Taucht eine Heilung dort nie auf, meldet das Spiel für
-  sie keine Reichweite 0, die Flagge stand nicht, oder die Aktion wurde vorher abgelehnt
-  (Abklingzeit, Stufe, benötigter Status wie Refulgent Lux). Den Stand der Flagge zeigt die Zeile
-  nicht.
 - Ob überhaupt geheilt wird, entscheidet weiter die Flagge. Deren Streuungsbedingung hält die Flagge
   unten, wenn ein einzelner Spieler getroffen ist — das ist eine eigene Frage (TODO „Flächenheilung nach
   Pegel statt Rate").
 
 **Betroffene:** alle Heiler dieses Baums einschließlich der fremden Rotationen, die dieselben Aktionen
-über den Heilpfad rufen; die Autoren abgeleiteter Rotationen, weil `CanUse` dieser Aktionen jetzt
-anders antwortet; die Upstream-Pflege durch eine weitere Abweichung in `ActionTargetInfo.FindTarget`.
+über den Heilpfad rufen; die Autoren abgeleiteter Rotationen, weil `CanUse` dieser Aktionen
+anders antwortet als im Original; die Upstream-Pflege durch eine weitere Abweichung in `ActionTargetInfo.FindTarget`.
 Ein belegter Defekt, keine Verbesserung auf Verdacht — deshalb ohne eigene Option.
 
 ### Klasse 1 vor den Rollen-Kurzschlüssen
@@ -276,7 +270,7 @@ vor jedem echten Notfall. Die Klassenordnung wirkt innerhalb der Ungeschützten.
 Ohne sie wäre jeder Tank dauerhaft in Klasse 2, denn er trägt seine Tankhaltung immer — und ein Tank
 bei 65 % stünde vor einem Schadensausteiler bei 30 % in Klasse 3. Das Kandidatenfeld fängt das nicht
 ab: `healRatio` filtert bei 0,70, beide sind darin. Die beiden Rollenschwellen behalten damit genau
-die Bedeutung, die sie heute haben, und bekommen zusätzlich die Bedingung, die ihnen fehlte.
+ihre Bedeutung und bekommen zusätzlich die Bedingung, die ihnen fehlte.
 
 **Gleichstandsregel in jeder Klasse: Heiler vor Tank vor Schadensausteiler** — die Triage der
 Vorgabe, und nur dort, wo sie hingehört, nämlich bei gleicher Gefährdung.
@@ -342,7 +336,7 @@ Nachschlageoperation. Der Aufwand wächst mit der Zahl der Gegner, nicht mit ihr
 
 Die Rate ist kein **zusätzliches** Ordnungsmerkmal innerhalb von Klasse 2; die **gelesene Gesundheit selbst**
 ist vorausberechnet (A93). Jede der vier Entscheidungen dieser Methode — die Kandidatenordnung, die Schwelle
-der kritischen Klasse, ihre Ordnung nach absoluten Punkten und der Selbstkurzschluss — liest jetzt
+der kritischen Klasse, ihre Ordnung nach absoluten Punkten und der Selbstkurzschluss — liest
 `ObjectHelper.GetForecast*` statt der aktuellen Größe.
 
 **Warum so:** Ein zusätzliches Merkmal hätte eine zweite Rangregel erzeugt, die mit der

@@ -42,7 +42,7 @@ Regel ohnehin verlangt, statt an einer zweiten Zahl daneben. Unberührt bleiben 
 Abtausch-Zweige gegen Rückstoß: Von einer Plattform geworfen zu werden ist keine Schadensfrage.
 Deshalb fällt Abtausch auf dem Pull nicht, solange BossModReborn einen Rückstoß ankündigt, der nach dem
 Ende seiner Wirkung (6 s, Wirktext) und vor dem Ende seiner Abklingzeit landet (`ArmsLengthSlowsPull`, alle
-Tanks, A212, A219); einen Rückstoß innerhalb der Wirkung deckt der Einsatz jetzt mit ab. Die Regel greift auch bei einem Boss
+Tanks, A212, A219); einen Rückstoß innerhalb der Wirkung deckt der Einsatz mit ab. Die Regel greift auch bei einem Boss
 mit Adds — der Boss zählt dabei nicht mit (A236) —, und für ihren Slow verbraucht fehlte Abtausch dem Rückstoß. Ohne Modul gibt es keine
 Ankündigung; der Schutz gegen Rückstoß bleibt dann reaktiv wie bisher.
 
@@ -307,7 +307,7 @@ müsste. Deshalb steht in `WHM_Reborn` die Gegenbedingung: `ShouldHoldHolyForBar
 zurück, solange ein Gruppenmitglied in Tankrolle The Blackest Night trägt
 (`StatusHelper.FullAbsorbRewardStatus`).
 
-**Eine dritte Bedingung steht inzwischen daneben und misst breiter.**
+**Eine dritte Bedingung steht daneben und misst breiter.**
 `ShouldHoldHolyWhilePackSlowed` hält Sanctus zurück, solange mehr als die Hälfte der Gegner im Wirkradius
 verlangsamt ist und mindestens `HoldHolyMinSlowedHostiles` (Vorgabe 3) den Slow tragen — gleich durch wen, nicht nur
 durch die Barriere (Konzept 08, „Die Aussetzbedingung ist ein Anteil, mit Schranke“). Sie ist der dritte Zeitpunkt der Regel aus Konzept 08 und der Grund, warum die

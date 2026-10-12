@@ -32,7 +32,7 @@ Gruppenminderung.
 
 **Drei Entscheidungen tragen die Umsetzung.**
 
-1. **„Unbewertet" ist eine eigene Kategorie und verhält sich wie heute.** Eine Aktion tritt erst in
+1. **„Unbewertet" ist eine eigene Kategorie und verhält sich wie ohne Bewertung.** Eine Aktion tritt erst in
    die neue Rechnung ein, wenn ein Einschlag gemessen wurde. Damit ist der Umstieg verhaltensneutral,
    und es braucht keinen Stichtag. Der Auftraggeber hat dieselbe Bauform unabhängig vorgeschlagen —
    „einträge ohne potential wie bisher behandeln und nur einträge mit potential nach neuer struktur".
@@ -143,7 +143,7 @@ dort nichts; 41 bis 30 y, bei denen er entschied. 152 Kreise mit Reichweite (70 
 auch wenn er weit weg steht. Ob die Form oder eine andere Quelle sein Fall war, zeigt der Code nicht. Möglich
 sind außerdem Marker (Stack- und Spread-Marker ohne Abstand) und BossModReborn (ein Modul, das einen
 Tankbuster als Raidwide meldet). Welche Quelle in seinen Kämpfen die Abwehr öffnet, schreibt
-`DefenseTrace.log` (unten); die Zeilen nennen jetzt auch, ob der Treffer ihn erreicht.
+`DefenseTrace.log` (unten); die Zeilen nennen auch, ob der Treffer ihn erreicht.
 
 **Marker:** Es zählen nur Marker auf ihm oder einem Mitglied seiner eigenen Gruppe, Duty-Support-Begleiter
 eingeschlossen, gleich wie „Heal and raise Party NPCs" steht (A220). Das gilt für die Flagge
@@ -442,7 +442,7 @@ verschwinden kann.
 | Gesamtspeichern (`OtherConfiguration.Save`, etwa nach einer neuen Knockback-Aktion im Kampf) während einer neuen Messung | Bis A224 zog es den Schnappschuss erst auf dem Pool-Thread; warf die Kopie, fielen **alle** folgenden Listen dieses Durchgangs aus, still. Behoben: Die vier im Spiel beschriebenen Speicher (Flächenliste, Schadenstabelle, Knockback-Liste, Marker-Negativliste) ziehen ihre Kopie auf dem aufrufenden Thread, auch im Gesamtspeichern |
 | Messung zwischen letztem Speichern und Entladen | Verlust dieser einen Messung; behoben — der Effekt-Handler wird vor dem letzten Speichern abgehängt |
 
-**Ablesbar ist das jetzt im Listenfenster unter „Store:".** Das Laden meldet, ob es eine Datei fand, keine fand oder eine unlesbare beiseitelegte; jedes Speichern liest die Datei zurück und meldet Erfolg nur, wenn dort so viele Einträge stehen wie geschrieben wurden. Die Zahl „Damage potential recorded" darüber ist die Tabelle im Speicher — sie sieht gleich aus, ob die Werte die Platte erreicht haben oder nicht.
+**Das Listenfenster führt das unter „Store:".** Das Laden meldet, ob es eine Datei fand, keine fand oder eine unlesbare beiseitelegte; jedes Speichern liest die Datei zurück und meldet Erfolg nur, wenn dort so viele Einträge stehen wie geschrieben wurden. Die Zahl „Damage potential recorded" darüber ist die Tabelle im Speicher — sie sieht gleich aus, ob die Werte die Platte erreicht haben oder nicht.
 
 **Was eine Datei mit `{}` sagt, und was nicht.** Sie entsteht auf genau zwei Wegen: beim ersten Start ohne Datei (das Laden legt die leere Tabelle an) oder in der Sitzung nach einer unlesbaren Datei (die liegt dann als `.corrupt` daneben). Jedes andere Speichern schreibt mindestens einen Eintrag, weil die Tabelle von selbst nur wächst. Seit dem Ladefix heißt `{}` also: **in keiner Sitzung seither wurde ein Wert gemessen.** Die Datei sagt nicht, warum — das sagt nur die Messstelle.
 
@@ -498,7 +498,7 @@ stand nur in `OtherConfiguration.Init()`, und die ruft niemand; gerufen wird `In
 begann damit jede Sitzung leer, und weil ein Speichervorgang **die ganze** Tabelle schreibt, legte die
 erste Messung des Abends — spätestens das Entladen des Plugins — die leere Fassung über den
 gespeicherten Stand. Im Kampf war das Bild identisch mit „noch nichts gemessen": jede Aktion
-unbewertet, beide Stufen der Rechnung wirkungslos. **Beide Einstiegspunkte teilen sich jetzt eine
+unbewertet, beide Stufen der Rechnung wirkungslos. **Beide Einstiegspunkte teilen sich eine
 einzige Ladeliste**, und `check_config_store_roundtrip.py` hält in der CI fest, dass kein Speicher
 einen Schreibweg ohne erreichbaren Leseweg hat. Die Lehre daran ist allgemeiner als der Fall: Ein
 Speicher, der geschrieben, aber nicht gelesen wird, ist gefährlicher als gar keiner — er ersetzt den
@@ -668,7 +668,7 @@ nicht anzeigen und auf eine Auswertung warten. Vorgabe des Auftraggebers: Eine S
 über das Modell läuft, kostet je Messwert einen Kampf, einen Bericht und eine Runde; zulässig ist nur,
 was sich selbst nachsteuert. Das ist
 **nicht gebaut**, und der Nutzen ist nicht bloß Diagnose: Ein Anteil, der durch eine zufällig
-laufende Minderung zu niedrig gemessen wurde, bleibt heute zu niedrig, bis ein ungeminderter
+laufende Minderung zu niedrig gemessen wurde, bleibt zu niedrig, bis ein ungeminderter
 Treffer ihn anhebt.
 
 **Wer den Verbraucher baut, löst mehr als eine Frage.** Welche das sind und welcher Baustein wie viele
@@ -677,7 +677,7 @@ mehrfach trägt“.
 
 **Für die Tankbuster ist dieselbe Frage beantwortet** (Abschnitt „Die Tankbuster-Tabelle").
 `HostileCastingKnockback` und `HostileCastingStop` haben dieselbe Struktur; dort fehlen ein eigener
-Speicher und eine Rechnung, und keine Regel fragt bisher nach der Größe eines Rückstoßes oder eines
+Speicher und eine Rechnung, und keine Regel fragt nach der Größe eines Rückstoßes oder eines
 Stopp-Casts.
 
 **Die Wahl des Mittels nach der Treffergröße — Vorgabe des Auftraggebers:** „man könnte es auch so

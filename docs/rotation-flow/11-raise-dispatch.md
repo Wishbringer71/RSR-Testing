@@ -220,7 +220,7 @@ andere: Hartwirken kostet acht Sekunden GCD und lohnt nur, wenn es sonst niemand
 | Einzelheiler, solo | beide Mengen leer, `> 0` scheitert → **nie Hartwirk** | niemand sonst da → Hartwirken ist genau richtig |
 | Ausdruckskraft | Größenvergleich | „niemand außer mir" |
 
-Beide Fragen — die des Hartwirkens und die der Feder — laufen jetzt über
+Beide Fragen — die des Hartwirkens und die der Feder — laufen über
 `DataCenter.AnyLivingRaiser(excludeSelf)`. Derselbe Satz Rezzerjobs, dieselbe Bezugsmenge; der
 Parameter trägt den einzigen echten Unterschied. Die Feder fragt „kann das niemand richtig" und zählt
 den Spieler mit, weil ein lebender Rezzer statt ihrer den Zauber wirkt. Die Nur-Heiler-Modi fragen
@@ -236,7 +236,7 @@ immer.
 **Die Stufe gehört zur Rezzereigenschaft.** `CanRaise()` prüft sie für den Spieler seit jeher: 12 für
 Heiler und Beschwörer, 64 für den Rotmagier. Für alle anderen wurde sie nicht geprüft, sodass ein
 Rotmagier unter 64 — jeder stufensynchronisierte Durchgang durch ältere Inhalte — als lebender Rezzer
-zählte und die Feder zurückhielt, die dort der einzige Weg war. Beide Stellen teilen sich jetzt
+zählte und die Feder zurückhielt, die dort der einzige Weg war. Beide Stellen teilen sich
 dieselben zwei Konstanten; das ist die Konstruktion, die nicht wieder auseinanderläuft. Die Stufe
 eines Gruppenmitglieds stammt aus `ICharacter.Level`; ob der Wert in einem synchronisierten Inhalt
 die synchronisierte oder die wahre Stufe meldet, ist von hier nicht entschieden. In beiden Fällen ist
@@ -334,9 +334,9 @@ womit `IsTargetMoving` und `IsTargetable` als Ursache ausscheiden.
 Sonderfall für `PartyAndAllianceHealers` stand also schon im Einklang mit dem Text. Vorgabe des
 Auftraggebers: Die Regeln der Einstellungstexte sind einzuhalten.
 
-**Der Einschiebezweig für Swiftcast erkennt die Wiederbelebung an `Raise` (A141).** Früher verglich er
-den nächsten GCD mit vier Ids; Verraise und Angel Whisper fehlten, dieselbe Alterungsursache wie die
-Hauptursache des Wiederbelebungsdefekts. Im Kampf ändert sich heute nichts, weil der zweite Zweig
+**Der Einschiebezweig für Swiftcast erkennt die Wiederbelebung an `Raise` (A141)**, nicht an einer Liste
+von Ids: Eine solche Liste (vier Ids, ohne Verraise und Angel Whisper) war dieselbe Alterungsursache wie die
+Hauptursache des Wiederbelebungsdefekts. Im Kampf änderte die Umstellung nichts, weil der zweite Zweig
 (`RaisePendingAndCastable`) diese Jobs schon über `Raise` erreichte; ein künftiger Rezzer-Job fällt
 nicht mehr still heraus.
 
@@ -405,7 +405,7 @@ Statische Prüfung am Quelltext, Versionsgeschichte für die Entstehung, Fremddo
 Vorschaufenster und wird nicht gewirkt, unabhängig von Bewegung; im manuellen Betrieb mit
 anvisiertem Leichnam fällt die Wiederbelebung sofort.
 
-Für den Kernpfad liegt die Laufzeitbestätigung inzwischen vor (A73): teils sofortige, teils um
+Für den Kernpfad liegt die Laufzeitbestätigung vor (A73): teils sofortige, teils um
 wenige Sekunden verzögerte Wiederbelebung, ohne Ausfall anderer Fähigkeiten. Kein Vier-Augen-Prinzip.
 
 **Ungemessen bleiben die drei einstellungsabhängigen Eingriffe desselben Zweigs** — Federverdrahtung,

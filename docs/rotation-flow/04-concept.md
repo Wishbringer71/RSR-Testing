@@ -77,7 +77,7 @@ Laufzeitcode.
 ### A2′ · Wächter gegen widersprüchliche Level-Prädikate
 
 `!X.EnoughLevel && X.CanUse(...)` kann nie wahr werden — der Zweig ist tot. Das ist
-exakt die Form des RDM-Impact-Bugs und jetzt ein Build-Fehler.
+exakt die Form des RDM-Impact-Bugs und ist ein Build-Fehler.
 
 Die Prüfung überspringt Bedingungen mit `||`. Das im Repo verbreitete und **korrekte**
 Idiom ist die explizite Level-Klammer `(X.EnoughLevel && …) || !X.EnoughLevel`, in der
@@ -152,7 +152,7 @@ Konfiguration ein Vertrag.
 
 Alle vier Tanks führen Reflexion in `DefenseAreaAbility` und in `DefenseSingleAbility` (00bc9c6f). Vorher fehlte
 sie bei Paladin und Krieger in der Flächenabwehr, obwohl die `RotationDesc` des Kriegers sie dort schon nannte.
-Am Tankbuster wartet sie inzwischen auf einen angesagten Raidwide, wenn der Tank gedeckt ist (Konzept 08, A244).
+Am Tankbuster wartet sie auf einen angesagten Raidwide, wenn der Tank gedeckt ist (Konzept 08, A244).
 
 ### B4 · Physische Fernkämpfer — Slot-Mengen · umgesetzt
 
