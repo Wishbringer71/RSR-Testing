@@ -5969,6 +5969,18 @@ Wechsel greift, schreibt das Protokoll selbst.
   er über `RebornMaterial.IM3Settings`, das `Configs` implementiert; der Name steht in der Paket-DLL 7.5.6.2
   (geprüft). Als akzeptiert mit diesem Grund eingetragen. Ursache am System: Lokal liefen nur `check_*.py`, nicht die
   übrigen Python-Schritte des Workflows. Neu: `run_ci_checks.py` liest die Schritte aus `build.yaml` und führt alle aus.
+- *Einarbeitung in die Konzepte (nachgeholt):* Konzept 03 (Befehle mit Ziel: Objektziel vor jeder Zielüberschreibung,
+  ausgenommen Aktionen ohne Reichweite und Wirkradius; Zielart ersetzt nicht „du selbst" – am Code:
+  `FindTarget` gibt bei `Range == 0 && EffectRange == 0` sofort den Spieler zurück, `FindCommandObjectTarget` steht vor
+  `FindTargetByType`, dort kehren `TargetType.Self` und die Überschreibung „Self" vor der Befehlszielart zurück).
+  Konzept 09, Ausführung „Ziel": Ein befohlenes Objektziel lenkt auch den Druck des Plans um; der Datensatz trägt das
+  fremde Ziel, der Plan zählt die Aktion nicht für dich, und der Zähler für „‚Alles' ausgeschöpft" zählt sie nicht.
+- *Falsifikation der Auswertung:* **Kein Effekt im Kampf durch das Vorschauziel?** Die Fork-Gatter lesen
+  `PreviewTarget`, nicht `Target`; `Invoke` setzt das Ziel nach der Vorschau neu – gehalten. **Zusammenführung falsch?**
+  Die öffentliche Sechs-Parameter-Überladung reicht `instantHeal = false` und kein Befehlsziel durch, die mit Heilart
+  kein Befehlsziel; nur der Pfad aus `FindTarget` trägt beides – gehalten, Compile grün. **Ausgeliefert, nichts
+  ändert sich?** Für den Befehl mit Ziel gilt das nur ohne passende BossModReborn-/Makro-Nutzung; für die übrigen
+  Änderungen nicht anwendbar.
 
 **Prüfgrad:** statisch, Prüfskripte (alle 27 Python-Schritte des Workflows); Compile über die CI.
 

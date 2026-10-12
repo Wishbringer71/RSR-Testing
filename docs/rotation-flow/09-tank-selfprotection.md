@@ -1326,6 +1326,10 @@ dem bisher gemessenen Höchstwert wird unterschätzt; keine Reserve nach einem k
   geplanten Druck übergangen: Ob die Minderung beim Einschlag schon steht, hat der Plan selbst gefragt, und die
   Staffelung ist genau das, was der Plan für einen gemessenen Treffer ersetzt (seine Präzisierung).
 - **Ziel:** jeder geplante Druck geht auf dich (`TargetType.Self`); The Blackest Night suchte sich sonst ein eigenes Ziel.
+  Ausnahme seit Upstream 7.5.6.22 (A264): Steht dieselbe Aktion mit einem Objektziel als Befehl in der Warteschlange
+  (DoActions oder abgefangenes Makro, etwa The Blackest Night auf `<2>`), geht auch der Druck des Plans dorthin. Ihr
+  Datensatz trägt dann dieses Ziel, der Plan zählt sie nicht für dich und rechnet ohne sie weiter – sein Befehl
+  entscheidet. Schutzwall und andere Aktionen ohne Reichweite gehen immer auf dich.
 - **Ein abgelehnter Druck:** Während einer Animationssperre oder eines eigenen Zaubers lehnt `CanUse` ab; das ist
   keine Antwort, der Druck wird im nächsten Durchlauf neu versucht. Jede andere Ablehnung – Reflexion außer Reichweite,
   zu wenig MP, ein Stun, eine Prüfung der Rotation – sperrt den Druck für einen GCD; was daraus für Bündel und
