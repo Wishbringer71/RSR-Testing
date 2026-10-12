@@ -272,6 +272,19 @@ Loop vor jedem Bau.
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 
+### Tankbuster-Plan nimmt Reflexion, die für einen angesagten Raidwide gehalten würde · N
+
+**Befund (12.10.2026, beim Umbau der Konzepte):** Die Einzelabwehr hält Reflexion am Tankbuster zurück, wenn der Tank
+selbst gedeckt ist und ein Raidwide nach ihrem Ende und vor ihrer neuen Bereitschaft angesagt ist
+(`HoldReprisalForRaidwide`, A244, Konzept 08, „Gegner-Debuffs am Tankbuster und am Raidwide"). Der Tankbuster-Plan
+drückt über `TankbusterPlanAbility` und kennt diese Regel nicht; er wählt das Bündel mit der geringsten Abklingzeit,
+und Reflexion (60 s) ist oft das billigste Glied. *Im Kampf:* Vor einem gemessenen Tankbuster geht Reflexion auf den
+Tank, obwohl Schutzwall oder die große Minderung ihn getragen hätte; am folgenden Raidwide fehlen jedem Mitglied 10 %.
+Gilt für alle vier Tanks. **Offen:** voller Loop – etwa Reflexion wie ein Glied, das eine andere Regel braucht, nur
+nehmen, wenn kein Bündel ohne sie reicht (dieselbe Form wie K2–K4).
+
+**Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
+
 ### Tankbuster-Plan: Stun sperrt ein Glied einen GCD; Druck nach dem Snapshot möglich · N
 
 **Konzept (geplant, 12.10.2026):** `docs/rotation-flow/09-tank-selfprotection.md`, „Spielerweite Sperre und Frist".

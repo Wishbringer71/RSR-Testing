@@ -1,9 +1,10 @@
 # 08 · Synergie von Schadensvermeidung und Schadenserzeugung
 
-Entwurfsdokument nach ADR-Struktur. Es stellt den geltenden Stand dar; die
-Prüfhistorie steht in `AUDIT_LOG.md` (A20).
+**Leitfrage:** Womit wird auf einen eingehenden Treffer geantwortet — Heilung, Barriere oder Minderung?
 
-## Ergebnis
+Das Dokument gibt den geltenden Stand; die Prüfhistorie steht in `AUDIT_LOG.md` (A20 und folgende).
+
+## Antwort
 
 **Zweck der ganzen Regelfamilie ist die Heilbarkeit des Tanks, und der Engpass ist die Gegnerzahl.**
 Bei drei Gegnern traegt ein HoT; bei neun laeuft der Strom jeder Faehigkeit davon. Der eingehende
@@ -31,10 +32,9 @@ senkt.
 **Gewaehlt ist eine zentrale Bremse bei dezentraler Ausloesung:** Die vorhandenen Ausloeser bleiben,
 hinzu kommt eine Pruefung, die *zurueckhaelt*. Faellt sie aus, verhaelt sich RSR wie zuvor.
 
-**Der Grenzwertanspruch ist heute zur Haelfte erfuellt, und der fehlende Teil ist seit Kurzem
-messbar.** Gemessen wurde bisher allein die Gegnerseite; die persoenlichen Minderungen des Tanks
-gehen in keine Rechnung ein. Die Luecke schliesst nicht eine Tabelle von Minderungssaetzen, sondern
-die Beobachtung: Der Gesundheitsverlauf je Gruppenmitglied ist bereits netto und braucht keine Liste.
+**Gemessen werden die Gegnerseite (Betäubung, Verlangsamung, ihre Resistenzen) und der Gesundheitsverlauf je
+Gruppenmitglied.** Die persoenlichen Minderungen des Tanks gehen in die Vorausschau nicht als Tabelle ein, sondern
+ueber diesen Verlauf: Er ist bereits netto und braucht keine Liste.
 Die Schaetzung daraus ist **praeventiv** — bei 90 % Gesundheit meldet sie den Tod acht Sekunden im
 Voraus — und sie **korrigiert sich selbst**, indem sie ihre eigene Vorhersage jede Sekunde gegen den
 tatsaechlichen Verlauf haelt. Ein externer Beobachter ist dafuer nicht noetig; die Regeln, die darauf aufsetzen,
@@ -58,7 +58,7 @@ erben die Selbstkorrektur.
 | Erhebung der uebrigen Doppelnutzen-Aktionen | umgesetzt als `scan16.py`; ein Fund im Tank-/Heilerprofil (Rueckstoss) |
 | Rueckstoss auch **als** Minderungswerkzeug wirken | umgesetzt (A194, A236): Abtausch im Pull fuer seine Verlangsamung, nicht vor einem angekuendigten Rueckstoss (A212, A219), nicht auf einen Boss |
 | Wirksamkeitsmessung im Spiel | ersetzt durch die Selbstkorrektur der Vorausschau (`ScoreTtkForecast`); keine Ablesung als Aufgabe an ihn |
-| **Sonden, die es schon gibt** — ohne sie ist im Kampf nicht zu sehen, ob eine Regel greift: `DataCenter.AreaMitigationSkipped` nennt je Aktions-Id, wo die Flächenbewertung eine Minderung verworfen hat; Rohzeit, korrigierte Zeit und Fehlerfaktor der Schätzung stehen in der Diagnoseanzeige | in Betrieb, in keinem Konzept genannt gewesen |
+| **Sonden** — ohne sie ist im Kampf nicht zu sehen, ob eine Regel greift: `DataCenter.AreaMitigationSkipped` nennt je Aktions-Id, wo die Flächenbewertung eine Minderung verworfen hat; Rohzeit, korrigierte Zeit und Fehlerfaktor der Schätzung stehen in der Diagnoseanzeige | in Betrieb |
 
 ## Die Antwort auf einen eingehenden Treffer
 
@@ -118,8 +118,8 @@ Mittel derselben Art zur Wahl hat. Gemessen an der erzeugten Tabelle trifft das 
   **entfernt** Tempera Coat („Removes Tempera Coat to create a barrier…") — eine Umwandlung, keine
   Alternative. Die uebrigen sind Bozja-Aktionen ausserhalb des Nutzungsprofils.
 
-**Die Auswahlregel war gebaut und ist zurueckgebaut worden**, nachdem die Falsifikationsstufe das
-ergeben hat (A118). Sie haette im ganzen Baum nie gegriffen.
+**Eine Auswahlregel gibt es deshalb nicht** (gebaut und zurueckgebaut, A118): Sie haette im ganzen Baum nie
+gegriffen.
 
 **Was stattdessen wirkt, ist Stufe 2 — und sie schliesst eine Luecke, die dieses Konzept ohnehin
 fuehrt.** Siehe „Heilung vor dem angekuendigten Treffer" weiter unten.
@@ -189,8 +189,8 @@ soll, ist seine Entscheidung (Einstellungstext und Vorgabe).
     Treffer wie Temperance; welches von beiden mehr wert ist, hängt am Abstand der Treffer. Die
     Schranke deckt den Fall, in dem es auf den ersten Treffer ankommt.
 - **Dunkelritter:** Herkunft ist die Balance-Rotation 6.38 (c97be9ec5).
-  - Damals hieß Burst „mindestens die Hälfte der Gruppe im Zwei-Minuten-Burst"
-    (`RatioOfMembersIn2minsBurst`). Heute zählen nur die eigenen Abklingzeiten: Delirium kühlt ab
+  - Früher hieß Burst „mindestens die Hälfte der Gruppe im Zwei-Minuten-Burst"
+    (`RatioOfMembersIn2minsBurst`, früher). Heute zählen nur die eigenen Abklingzeiten: Delirium kühlt ab
     (Blood Weapon ist durch Blood Weapon Mastery Delirium, gelesen über die angepasste Id), und Living
     Shadow liegt unter 15 s zurück.
   - Der Zweck ist Schaden in den 20 s der Gruppenbuffs. Größenordnung (Überschlag, nicht gemessen):
@@ -218,8 +218,9 @@ soll, ist seine Entscheidung (Einstellungstext und Vorgabe).
   antwortet die Heilkette.
 - **Ein angekündigter Tankbuster allein ist kein Grund.** Er ist genau das Signal, das die Einzelabwehr
   öffnet; wiche die Rückhaltung ihm, wäre sie in dem Moment aufgelöst, in dem sie gefragt ist — zwei
-  Tankbuster in Folge verlören beide die Streckung. Einen gemessenen Anteil wie beim Flächentreffer
-  gibt es für Tankbuster nicht; es bleibt Klasse 1.
+  Tankbuster in Folge verlören beide die Streckung. Für einen gewirkten, gemessenen Tankbuster gibt es inzwischen
+  einen Anteil (Tankbuster-Tabelle, Konzept 13); mit ihm rechnet der Plan des Tanks (Konzept 09), die Schranke liest
+  ihn nicht – für sie bleibt Klasse 1.
 - **Unverwundbare zählen nicht:** Ein Tank unter Hallowed Ground oder Superbolide steht absichtlich
   niedrig und ist durch den Treffer nicht gefährdet.
 - **Einsatzzeit aus dem Aktionsprotokoll, Ladung aus der Wiederaufladegruppe, nie vom Knopf:** Manche
@@ -429,7 +430,7 @@ BossmodReborns Quelltext am 20.09.2026, nicht angenommen:
 | Endpunkt | Was er zurueckgibt | Aktionsbezug |
 |---|---|---|
 | `Timeline.NextRaidwideIn` | `module.StateMachine.NextTransitionWithFlag(StateHint.Raidwide)` — ein **Zustandsuebergang**, den der Modulautor als Raidwide markiert hat | keiner; es gibt keinen Cast dahinter |
-| `Hints.NextRaidwideDamageIn` | Aktivierungszeit des ersten `PredictedDamage`-Eintrags dieses Typs | keiner; `DamagePrediction` traegt genau `Players`, `Activation`, `Type` |
+| `Hints.NextRaidwideDamageIn` | Aktivierungszeit des ersten `PredictedDamage`-Eintrags dieses Typs | keiner; `DamagePrediction` (BossModReborn) traegt genau `Players`, `Activation`, `Type` |
 
 **Und selbst mit Groessen waere der gemeldete Fall nicht zu loesen:** Die Vorhersageliste wird nicht
 herausgegeben. Jeder Endpunkt liefert den **ersten** passenden Eintrag. „Es kommen zwei, der zweite
@@ -482,7 +483,7 @@ In jeder anderen Lage fällt Reflexion wie bisher. Das gilt für alle vier Tanks
 | Lage | Tank ohne Debuff am Tankbuster | Gruppe ohne Debuff am Raidwide | Entscheidung |
 |---|---|---|---|
 | eigene große Minderung oder Schutzwall läuft | gedeckt; die 10 % fehlen ihm, die Deckung trägt | jedes Mitglied verliert 10 %, kein persönliches Werkzeug dieser Größe | **halten** für den Raidwide |
-| keine eigene Deckung (alles verbraucht) | ernste Bedrängnis möglich (Höhe unbekannt, Konzept 09: angesagt heißt möglicherweise tödlich) | wie oben | **an den Tankbuster** |
+| keine eigene Deckung (alles verbraucht) | ernste Bedrängnis möglich (ohne Messung gilt ein angesagter Tankbuster als möglicherweise tödlich, Konzept 09) | wie oben | **an den Tankbuster** |
 | Spieler oder ein Tank in Gefährdungsklasse 1 | — | — | an den Tankbuster (die Rückhaltung weicht) |
 | Tankbuster auf einem anderen Tank | dessen Deckung ist hier nicht bekannt | wie oben | wie bisher, an den Tankbuster |
 | Pull | — | — | wie bisher (kein Tankbuster, Reflexion trifft das ganze Rudel) |
@@ -509,8 +510,13 @@ Raidwide 10 % jedes Mitglieds.
   ebenso angekündigt, und die Reihenfolge der beiden ist nicht fest.
 - „Zurückhalten, sobald ein Raidwide angesagt ist", ohne Blick auf die eigene Deckung. Das ließe einen ungedeckten Tank
   am Tankbuster ohne Reflexion.
-- Eine neue Messung der Tankbuster-Höhe als Voraussetzung. Die eigene Deckung beantwortet die Frage seines Kriteriums
-  ohne sie. Die Messung nach Minderung liegt systematisch zu niedrig (Konzept 09).
+- Die gemessene Tankbuster-Höhe als Voraussetzung. Die eigene Deckung beantwortet die Frage seines Kriteriums ohne
+  sie, auch für ungemessene Tankbuster.
+
+**Offen (Defekt, `TODO.md`):** Der Tankbuster-Plan (Konzept 09) kennt diese Regel nicht. Für einen gemessenen
+Tankbuster wählt er das Bündel mit der geringsten Abklingzeit, und Reflexion (60 s) ist oft das billigste Glied – auch
+wenn ein Raidwide nach ihrem Ende und vor ihrer neuen Bereitschaft angesagt ist. Dann fehlen der Gruppe am Raidwide
+10 %, obwohl ein Bündel ohne Reflexion den Tank getragen hätte.
 
 ## Wann Lux Solaris zuendet
 
@@ -1195,6 +1201,14 @@ und deshalb liegt die Betäubung im Schadenszweig — nicht weil sie nachrangig 
 sondern weil sie dort mangels Alternative gelandet ist. Das ist der eigentliche Befund
 hinter der gesamten Frage.
 
+### Grenzen der Begründung
+
+- **Der Einschub im mittleren Gegnerzahlbereich** kostet einen GCD Schaden je Pull. Die Streckung ist Schutz, und
+  Sicherheit geht vor Schaden (seine Vorgabe und Spielweise); eine Bindung an eine Gegnerzahl gibt es deshalb nicht
+  (A231).
+- **Die Übertragung auf weitere Aktionen** hat die Erhebung (`scan16.py`) auf Abtausch eingegrenzt; gebaut (A194).
+- **Nicht belegt ist, dass der Nutzen im Spiel eintritt.** Die Rechnung ist ein Modell.
+
 ## Die Lücke
 
 **Aktionen mit doppelter Wirkung sind nur nach einer ihrer Wirkungen eingeordnet.**
@@ -1327,7 +1341,7 @@ Der Entwurf erfindet wenig; das meiste lag im Baum und war nur nicht verbunden.
 | Gegnerzahl-Schwelle als etabliertes Muster | `Configs.MitigationSustainHostileCount` gegen `NumberOfHostilesInRange` | In Betrieb |
 | Trennung von Mitigation und Schaden im Dispatch | `CustomRotation_GCD.cs`, Reihenfolge in Konzept 03 („Die Slot-Kette“): Heilung, dann Abwehr, `GeneralGCD` zuletzt | In Betrieb |
 
-## Was ausgeschlossen wurde und warum
+## Ausgeschlossen
 
 **Nullvariante.** Ausgeschlossen: Die bezifferte Überlappung bliebe, der DoT bliebe
 bei AoE unerreichbar, `GetCurrentMitigationPercent` bliebe Anzeige.
@@ -1360,35 +1374,18 @@ diesen Code also gar nicht; und ein vorhergesagter Raidwide kommt vom Boss, nich
 den betäubbaren Trash-Gegnern. Ein Vorbehalt, der nachweislich nichts abfängt, ist
 toter Code.
 
-## Falsifikation
+## Prüfmittel
 
-**Es liegt kein Defekt vor.** Widerlegt durch die bezifferte Größenordnung und durch
-die Existenz von `GetCurrentMitigationPercent` — die Entwurfsabsicht ist vorhanden,
-die Verdrahtung fehlt. Für den DoT-Fall zusätzlich durch die beiden Vorkehrungen an
-`ModifyDiaPvE`, die bei AoE nie zur Wirkung kommen.
+### Selbstprüfung zur Laufzeit statt Ablesung
 
-**Die gewählte Option ist falsch.** Widerlegt für die Bremse, nicht für einen
-Auslöser — siehe den belegten Rückbau oben. Die Übertragung auf weitere Aktionen hat die Erhebung (`scan16.py`)
-auf Abtausch eingegrenzt; sie ist gebaut (A194).
-
-**Der Einschub ist im mittleren Gegnerzahlbereich falsch.** Widerlegt durch seine Vorgabe und
-seine Spielweise: Die Streckung ist Schutz, der Einschub kostet einen GCD Schaden je Pull, und
-Sicherheit geht vor Schaden. Eine Bindung an eine Gegnerzahl ist entfernt (A231).
-
-**Nicht widerlegt:** dass der Nutzen im Spiel eintritt. Die Rechnung ist ein Modell.
-
-## Nachweisbarkeit
-
-### Wirksamkeitsmessung im Spiel
-
-**Verworfen nach seiner Vorgabe** („entscheidung immer im spiel, nicht retroperspektive auswertung“): Kennzahlen je
+**Eine Wirksamkeitsmessung im Spiel ist verworfen, nach seiner Vorgabe** („entscheidung immer im spiel, nicht retroperspektive auswertung“): Kennzahlen je
 Pull (erlittener Schadensanteil, genutzte Betäubungsdauer, Überlappungsanteil, DoT-Laufzeit) und eine
 Versuchsanordnung mit der Option abwechselnd an und aus. Beides wartete auf seine Ablesung und machte ihn zum Teil
 des Regelkreises. Was die Regeln dieses Konzepts zur Laufzeit selbst prüft: die Vorausschau gegen ihren eigenen
 Fehler (`ScoreTtkForecast`), die proaktive Zurückhaltung gegen ihre Trefferbilanz (oben); `DefenseTrace.log` nennt
 je Entscheidung nach einem Sanctus den Grund, für den Fall, dass ein Defekt nur zur Laufzeit zu finden ist.
 
-### Übrige Ebenen
+### Statische Prüfung
 
 | Ebene | Möglich |
 |---|---|
@@ -1398,7 +1395,7 @@ je Entscheidung nach einem Sanctus den Grund, für den Fall, dass ein Defekt nur
 Jeder Schritt steht hinter einer eigenen Option; voreingestellt ist der im Kampf sinnvollere Wert (seine Regel,
 29.09.2026).
 
-## Konsequenzen
+## Betroffene
 
 **Endnutzer.** Bei eingeschalteter Option fallen Mitigationswerkzeuge seltener, aber
 gezielter; die frei werdenden GCDs gehen in Schaden, und die DoT-Uptime steigt.
@@ -1413,7 +1410,7 @@ nicht aufruft, merkt nichts.
 `WHM_Reborn`, beides Dateien mit regelmäßiger Upstream-Aktivität. Neue Teile liegen in
 eigenen Regionen; kein Block wandert.
 
-## Offene Punkte zu diesem Konzept
+## Offene Punkte
 
 Sie stehen in `TODO.md` und sind dort unter der Überschrift des Eintrags mit **Konzept:** auf dieses
 Dokument gekennzeichnet — an **einer** Stelle statt in zweien, damit keine Kopie altert.

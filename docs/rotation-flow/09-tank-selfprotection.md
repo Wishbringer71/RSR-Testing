@@ -249,6 +249,10 @@ aus Einzelheilung und Flächenabwehr, die beide vom Zurückhalten frei sind (`WA
 
 **Befohlenes Objektziel (K5):** siehe Ausführung, „Ziel".
 
+**Reflexion für den Raidwide (K6, offen, Defekt in `TODO.md`):** Die Einzelabwehr hält Reflexion am Tankbuster
+zurück, wenn der Tank gedeckt ist und ein Raidwide nach ihrem Ende angesagt ist (Konzept 08, „Gegner-Debuffs am
+Tankbuster und am Raidwide"). Der Plan kennt diese Regel nicht und wählt Reflexion als billigstes Glied auch dann.
+
 ### Spielerweite Sperre und Frist (geplant, nicht gebaut)
 
 **Stand:** Gebaut ist nur der Teil für die Unverwundbarkeit (Zustände, „Ablehnung der Unverwundbarkeit"). Für
