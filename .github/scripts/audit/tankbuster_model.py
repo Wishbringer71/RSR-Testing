@@ -15,11 +15,11 @@ Checked per run, against the true world state:
       before the last GCD survives;
   O4  every member the plan pressed still stands at impact (pressed inside its window);
   O5  from the press until the hit, the plan never loses track of a pressed member;
-  O8  "everything" (Z4) is planned only while the invulnerability cannot be pressed before the last GCD -
-      also after mitigation went out for the same cast (his decision D1).
+  O8  "everything" (Z4) is planned only while the invulnerability is not available (option, cooldown),
+      never because it was refused: a stun or amnesia blocks every other ability alike (his note).
 
 The self-test switches on, one at a time, the defects review rounds found in the built code
-(A263) and the exclusion his decision D1 rejected (A267): each has to be caught by at least one check. A model that cannot find them would not
+(A263) and the refusal rule his note rejected (A267): each has to be caught by at least one check. A model that cannot find them would not
 have found them before the code either.
 
 Run from the repository root:  python3 .github/scripts/audit/tankbuster_model.py
@@ -82,7 +82,7 @@ class Defects:
     shake_free: bool = False      # Shake It Off ignores pressed/needed members
     help_free: bool = False       # Nascent Flash on a party member ignores the plan
     hold_off: bool = False        # the hold ignores the rotation's other paths
-    everything_excludes: bool = False  # D1a: once "everything" went out, no invulnerability for the cast
+    invul_refusal_everything: bool = False  # a refusal of the invulnerability with no retry left makes Z4
 
 
 @dataclass
@@ -96,6 +96,7 @@ class World:
     frames: list
     refuse_at: float | None
     refuse_twice: bool
+    stun: float                   # length of the block on every ability that refuses the invulnerability
     shake_at: float | None
     help_at: float | None
     early_press: bool
@@ -110,7 +111,6 @@ class World:
     lock_until: float = 0.0
     refused_until: dict = field(default_factory=dict)
     invul_pressed: bool = False
-    everything_spent: bool = False
 
 
 def own_left(w, act, t):
@@ -223,8 +223,8 @@ def plan(w, d, t, read_t, R_read, H_read, P_read, B_read):
     plan.double = {a.name for a in pending} & plan.in_reading
     if best is not None:
         return 'Z2', best[1], R, H
-    if w.opt_a and w.invul_ready and invul_retry_left(w, t, R) and ready_by(w, HOLMGANG, t, max(0.0, R - GCD)) \
-            and not (d.everything_excludes and w.everything_spent):
+    if w.opt_a and w.invul_ready and ready_by(w, HOLMGANG, t, max(0.0, R - GCD)) \
+            and not (d.invul_refusal_everything and not invul_retry_left(w, t, R)):
         return 'Z3', [HOLMGANG], R, H
     return 'Z4', [a for a, _ in cands], R, H
 
@@ -245,8 +245,8 @@ def held(w, state, members, act, R):
 
 
 def invul_retry_left(w, t, R):
-    """A refusal of the invulnerability makes Z4 only while no retry is left before the last GCD; once it
-    runs out, the invulnerability is planned again (concept 09, "Verweigerung"; D1: also after "everything")."""
+    """The rule his note rejected (defect variant only): a refusal of the invulnerability with no retry left
+    before the last GCD made Z4."""
     left = max(0.0, w.refused_until.get(HOLMGANG.name, -1) - t)
     return left <= 0 or R - left > GCD
 
@@ -293,10 +293,10 @@ def run(w, d):
         state, members, R, H = plan(w, d, t, read_t, R_read, H_read, P_read, B_read)
         last_state = state
 
-        # O8 (D1): "everything" only while the invulnerability is not available - it is planned whenever it can
-        # still be pressed before the last GCD, also after mitigation went out for the same cast
+        # O8: "everything" only while the invulnerability is not available (option, cooldown) - never because it
+        # was refused: what refuses it in the game blocks every other ability alike (his note, 12.10.2026)
         Rt = w.cast_time - t
-        if state == 'Z4' and w.opt_a and w.invul_ready and invul_retry_left(w, t, Rt) \
+        if state == 'Z4' and w.opt_a and w.invul_ready \
                 and ready_by(w, HOLMGANG, t, max(0.0, Rt - GCD)) and not bundle_exists_true(w, t):
             violations.append(('O8', w.seed, t, 'everything planned while the invulnerability is available'))
 
@@ -317,8 +317,13 @@ def run(w, d):
                 if act.invul and state == 'Z3':
                     if R <= act.duration - GCD:
                         if w.refuse_at is not None and abs(t - w.refuse_at) < dt and act.name not in w.refused_until:
+                            # in the game only a block on every ability refuses it (stun, amnesia): nothing goes
+                            # out from any path until it ends; RSR notes the refusal for a GCD
                             w.refused_until[act.name] = t + GCD
+                            w.lock_until = t + w.stun
                             break
+                        if d.invul_refusal_everything and w.refused_until.get(act.name, -1) > t:
+                            continue   # the rejected rule: no retry for a GCD after a refusal
                         if bundle_exists_true(w, t):
                             violations.append(('O3', w.seed, t, act.name))
                         press(w, act, t, 'plan', H)
@@ -340,8 +345,6 @@ def run(w, d):
                     break
                 press(w, act, t, 'plan', H)
                 tracked[act.name] = act
-                if state == 'Z4':
-                    w.everything_spent = True
                 break
 
         # free paths
@@ -417,8 +420,8 @@ def world(seed, scenario):
         hit = (hp + THRILL.barrier) / (RAMPART.factor * DAMNATION.factor * BLOODWHETTING.factor) * rng.uniform(0.92, 0.99)
     late = scenario.get('late_refusal')
     if late:
-        # D1: the invulnerability is refused at the first press with no retry left before the last GCD - "everything"
-        # goes out - and the refusal runs out inside the last GCD; nothing less survives the hit
+        # a short stun at the first press of the invulnerability, the refusal's GCD running into the last GCD;
+        # nothing less survives
         hit = rng.uniform(3.0, 4.0)
     return World(
         seed=seed,
@@ -431,6 +434,7 @@ def world(seed, scenario):
         frames=frames,
         refuse_at=frames[0] / 2 if late else rng.uniform(0.0, 6.0) if scenario.get('refuse') else None,
         refuse_twice=bool(scenario.get('refuse_twice')),
+        stun=rng.uniform(0.3, 1.5),
         shake_at=rng.uniform(0.5, 7.0) if scenario.get('shake') else None,
         help_at=rng.uniform(0.5, 7.0) if scenario.get('help') else None,
         early_press=bool(scenario.get('early')),
@@ -483,7 +487,7 @@ def self_test():
         'shake_free': Defects(shake_free=True),
         'help_free': Defects(help_free=True),
         'hold_off': Defects(hold_off=True),
-        'everything_excludes': Defects(everything_excludes=True),
+        'invul_refusal_everything': Defects(invul_refusal_everything=True),
     }
     missed = []
     for name, d in variants.items():
@@ -492,7 +496,7 @@ def self_test():
     if missed:
         print('SELF-TEST FAILED: the model does not catch the constructed defect(s):', ', '.join(missed))
         return False
-    print(f'self-test ok: each of {len(variants)} defects (found by review, or rejected by his decision D1) is caught '
+    print(f'self-test ok: each of {len(variants)} defects (found by review, or rejected by his note) is caught '
           f'({", ".join(variants)})')
     return True
 

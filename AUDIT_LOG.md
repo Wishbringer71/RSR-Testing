@@ -6042,12 +6042,18 @@ beobachtet.
 
 - *D1, seine Antwort:* „unverwundbarkeit ist die ultimative lösung … wenn tankbuster durch „alles" nicht überlebt
   werden kann, dann ist auf alles zu verzichten und nur unverwundbarkeit zu nehmen … hast du das nicht im Konzept
-  selbst rausgefunden?" Nein. *Ursache am System:* Seine Präzisierung („nicht invul und dann noch zusätzlich buffs …
-  alles raushauen, wenn invul nicht verfügbar ist") legt die Reihenfolge fest – nach der Unverwundbarkeit keine
-  Minderung mehr. Gebaut war daraus auch die Umkehrung (nach „alles" keine Unverwundbarkeit mehr, Zähler
-  „‚Alles' ausgeschöpft"); die steht nicht darin, und die Falsifikation prüfte die Ableitung nicht gegen ihren Wortlaut.
-  Entfernt: Zähler und Ausschluss (`SelfDefencePresses`, `EverythingSpent`). Z3 gilt wieder, sobald die
-  Unverwundbarkeit vor dem letzten GCD nutzbar ist.
+  selbst rausgefunden?" Nein. Seine Präzisierung („nicht invul und dann noch zusätzlich buffs … alles raushauen, wenn
+  invul nicht verfügbar ist") legt die Reihenfolge fest; gebaut war daraus auch die Umkehrung (nach „alles" keine
+  Unverwundbarkeit mehr, Zähler „‚Alles' ausgeschöpft"). Erster Schritt (e68584734): Zähler und Ausschluss entfernt.
+- *Sein Hinweis danach:* „wenn andere Dinge rausgehen können, dann kann es auch die unverwundbarkeit." Zutreffend
+  (xivapi 12.10.2026: die vier Unverwundbarkeiten und alle Plan-Glieder sind Fähigkeiten; Stun „Unable to execute
+  actions", Amnesie „Unable to use abilities"). *Ursache am System:* Das Konzept behandelte die Verweigerung der
+  Unverwundbarkeit wie die einer Minderung – eigene Ursache, Sperre für einen GCD, Z4 ohne Wiederholung vor dem letzten
+  GCD. Der Fall D1 („alles" ging hinaus, die Unverwundbarkeit war verweigert) entstand nur aus dieser Sperre: Endete ein
+  Stun vor ihr, war die Unverwundbarkeit spielseitig frei, RSR drückte aber erst „alles". Die Definition of Ready prüfte
+  die Ursachen einer Verweigerung nicht am Spiel. Behoben: Verweigerung der Unverwundbarkeit macht nie Z4, sie wird in
+  jedem Durchlauf neu versucht; was RSRs Prüfung vorher weiß (Freischaltung, Leiste, TTK-Schwelle), ist Verfügbarkeit
+  (`InvulnerabilityReadyBy`). Damit entfällt D1 als Fall.
 - *D2, seine Antwort:* „es geht um das beste ergebnis für die gruppe." Umgesetzt: Abschütteln geht gegen ein
   gebrauchtes Glied, wenn der gemessene Raidwide nach den Zahlen einen Heiler oder mehr als ein Mitglied tötet
   (`AnnouncedAreaHitCostsMoreThanATank`, `DataCenter.AnnouncedHitKills`); tötet er einen Schadensausteiler, bleibt das
@@ -6057,10 +6063,11 @@ beobachtet.
   (dann überleben beide; Fall war nicht Teil von D3 und bleibt wie gebaut); sonst bleibt das Glied. Gilt universell
   (`HelpWinsTriage`) und für Urflackern des Kriegers.
 - *Modell:* Der Ausschluss war im Modell unerreichbar – Z4 trat dort nur auf, wenn die Unverwundbarkeit das ganze
-  Wirken fehlte, und eine Verweigerung der Unverwundbarkeit führte nie zu Z4. Ergänzt: die Verweigerungsregel des
-  Konzepts für die Unverwundbarkeit, ein Szenario mit Verweigerung ohne Wiederholung bis in den letzten GCD, Prüfung
-  O8 („alles" nur, solange die Unverwundbarkeit nicht nutzbar ist) und der alte Ausschluss als achter Defekt des
-  Selbsttests; er wird gefunden.
+  Wirken fehlte. Ergänzt: Verweigerung der Unverwundbarkeit als Stun, der alle Pfade sperrt; Szenario mit kurzem Stun
+  beim ersten Druck; Prüfung O8 („alles" nur bei nicht verfügbarer Unverwundbarkeit, nie wegen einer Verweigerung); die
+  frühere Verweigerungsregel als Defekt des Selbsttests. Mit ihr gingen in 100 von 100 Läufen erst Minderungen, dann
+  die Unverwundbarkeit; ohne sie in 100 von 100 die Unverwundbarkeit allein.
+- *Rest der Klasse (`TODO.md`):* Ein Stun sperrt auch eine Minderung des Plans einen GCD lang statt bis zu seinem Ende.
 - *Abgleich A266 abgeschlossen:* Zu den dort genannten Funden kam die fehlende Merkmalsdauer von Reflexion, Schiltron
   und Urflackern („Duration: s"); sie kommt jetzt aus dem Spiel (`TraitDurations`), die abgerufene Tabelle ist
   Rückfall. Offen bleibt die Dauer unterhalb der Merkmalsstufe (`TODO.md`).

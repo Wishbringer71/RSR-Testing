@@ -143,8 +143,10 @@ public partial class CustomRotation
 			bestMask = BestBundle(candidates, predicted, cast.Budget, true, out bestAfter);
 		}
 
+		// A refusal of the invulnerability never makes "everything" (the owner's note, 12.10.2026): what refuses it
+		// in the game - a stun, amnesia - refuses every other ability alike, so nothing else would go out either.
+		// What RSR knows beforehand is availability (InvulnerabilityReadyBy), not a refusal.
 		var invulnerabilityAvailable = Service.Config.InvulnerabilityBeforeLethalTankbuster && invulnerability != null
-			&& RetryLeft(cast, invulnerability.ID, gcd)
 			&& InvulnerabilityReadyBy(cast.Remaining - gcd);
 		if (bestMask >= 0)
 		{
@@ -545,11 +547,17 @@ public partial class CustomRotation
 		return mask < 0 ? int.MaxValue : System.Numerics.BitOperations.PopCount((uint)mask);
 	}
 
-	/// <summary>Whether the invulnerability is learned, enabled and off cooldown within <paramref name="seconds"/>.</summary>
+	/// <summary>
+	/// Whether the invulnerability is available within <paramref name="seconds"/>: everything RSR's own check
+	/// would refuse it for that is known beforehand - learned and unlocked, enabled, on a slot, the action's
+	/// time-to-kill threshold - and off cooldown by then. A refusal at the press can then come only from the game
+	/// blocking every ability.
+	/// </summary>
 	private bool InvulnerabilityReadyBy(float seconds)
 	{
 		var invulnerability = Invulnerability;
-		return invulnerability != null && invulnerability.Config.IsEnabled && invulnerability.EnoughLevel
+		return invulnerability != null && invulnerability.Config.IsEnabled && invulnerability.Info.EnoughLevelAndQuest()
+			&& invulnerability.Info.IsOnSlot && DataCenter.AverageTTK >= invulnerability.Config.TimeToKill
 			&& invulnerability.Cooldown.WillHaveOneCharge(Math.Max(0f, seconds));
 	}
 
@@ -586,14 +594,6 @@ public partial class CustomRotation
 	private static bool Refused(TankbusterForecast.Cast cast, uint actionId, float gcd)
 	{
 		return RefusalLeft(cast, actionId, gcd) > 0f;
-	}
-
-	// Whether the action is free to press, or its refusal runs out before the last GCD before the hit, so a
-	// retry is left (invariant 1).
-	private static bool RetryLeft(TankbusterForecast.Cast cast, uint actionId, float gcd)
-	{
-		var left = RefusalLeft(cast, actionId, gcd);
-		return left <= 0f || cast.Remaining - left > gcd;
 	}
 
 	// Seconds until a refusal of the action for this cast runs out; zero when none runs.
@@ -668,12 +668,13 @@ public partial class CustomRotation
 		if (plan.Invulnerability)
 		{
 			var invulnerability = Invulnerability;
-			if (invulnerability == null || InvulnerabilityCovers(plan.Cast, true) || Refused(plan.Cast, invulnerability.ID, gcd))
+			if (invulnerability == null || InvulnerabilityCovers(plan.Cast, true))
 			{
 				return false;
 			}
 
-			return PressForTankbuster(invulnerability, plan, gcd, "invulnerability, nothing less survives", out act);
+			// Retried every cycle: a refusal here is a block on every ability (stun, amnesia), no answer about it.
+			return PressForTankbuster(invulnerability, plan, gcd, "invulnerability, nothing less survives", out act, notesRefusal: false);
 		}
 
 		if (!Service.Config.HoldMitigationUnderInvulnerability)
@@ -693,7 +694,8 @@ public partial class CustomRotation
 		return false;
 	}
 
-	private static bool PressForTankbuster(IBaseAction action, TankbusterPlan plan, float gcd, string why, out IAction? act)
+	private static bool PressForTankbuster(IBaseAction action, TankbusterPlan plan, float gcd, string why, out IAction? act,
+		bool notesRefusal = true)
 	{
 		act = null;
 		var lasts = DefensiveValues.DurationOf(action.ID);
@@ -707,7 +709,8 @@ public partial class CustomRotation
 		// "Zielüberschreibung"). The status check is skipped because the plan has already asked whether
 		// this mitigation stands at impact; the game's blocking group of big mitigations is the stagger the
 		// plan replaces for a measured hit. A refusal while an animation lock runs or the player casts is not
-		// an answer. One outside them leaves the action out of the plan for one GCD (MP, range, a stun).
+		// an answer. One outside them leaves a mitigation out of the plan for one GCD (MP, range, a stun); the
+		// invulnerability is retried every cycle instead (notesRefusal false).
 		var previous = IBaseAction.TargetOverride;
 		IBaseAction.TargetOverride = null;
 		try
@@ -716,7 +719,7 @@ public partial class CustomRotation
 				targetOverride: TargetType.Self))
 			{
 				act = null;
-				if (ECommons.GameHelpers.Player.AnimationLock <= 0f && Player is { IsCasting: false }
+				if (notesRefusal && ECommons.GameHelpers.Player.AnimationLock <= 0f && Player is { IsCasting: false }
 					&& action.Cooldown.HasOneCharge)
 				{
 					var key = (plan.Cast.Serial, action.ID);

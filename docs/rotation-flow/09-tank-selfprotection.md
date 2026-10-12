@@ -1306,8 +1306,8 @@ Bedrängnis?". Mit dem Plan ist die Bedrängnis des Tanks gemessen:
 sie gegen eine simulierte Welt laufen: Bilder von 1/144 bis 1/30 s mit Rucklern bis 0,2 s; die Erkennung erhebt nach
 der Rotation; Laufzeit zum Server 30–300 ms; der Status erscheint vor oder nach der Bestätigung; Verweigerungen, auch
 zweimal; Abschütteln und Urflackern als freie Pfade; andere Pfade, die jederzeit drücken wollen; alle vier
-Schalterstellungen; knappe Treffer, bei denen jedes Glied gebraucht wird; eine Verweigerung der Unverwundbarkeit
-ohne Wiederholung vor dem letzten GCD, die in ihm abläuft. Geprüft wird je Lauf:
+Schalterstellungen; knappe Treffer, bei denen jedes Glied gebraucht wird; ein Stun beim ersten Druck der
+Unverwundbarkeit, der alle Pfade sperrt. Geprüft wird je Lauf:
 - O1: Sagte der Plan „überlebbar", überlebt der Tank – an der wahren Welt gemessen;
 - O2: Nach der Unverwundbarkeit geht nichts Bewertetes mehr hinaus (mit „Spend only …");
 - O3: Die Unverwundbarkeit fällt nie, solange ein Bündel reicht, dessen Glieder vor dem letzten GCD gedrückt werden
@@ -1316,13 +1316,13 @@ ohne Wiederholung vor dem letzten GCD, die in ihm abläuft. Geprüft wird je Lau
 - O5/O6: Vom Druck bis zum Treffer zählt der Plan ein gedrücktes Glied, und nie doppelt;
 - O7: Ein freier Pfad macht aus einem Treffer, den der Plan allein überlebt, keinen Tod und erzwingt keine
   Unverwundbarkeit (Gegenprobe derselben Welt ohne den freien Druck);
-- O8: „Alles" (Z4) nur, solange die Unverwundbarkeit vor dem letzten GCD nicht nutzbar ist – auch nachdem für
-  dasselbe Wirken schon Minderungen hinausgingen (D1).
+- O8: „Alles" (Z4) nur, solange die Unverwundbarkeit nicht verfügbar ist (Option, Abklingzeit), nie wegen einer
+  Verweigerung.
 O1 und O7 messen an der Welt; O3 bildet eine Invariante nach. Der Selbsttest schaltet die Defekte ein, die sieben
 Review-Runden im gebauten Code fanden (zwei Uhren, Reihenfolge Statusliste vor Datensatz, Erneuerung über die
 gemeinsame Sperrliste, feste Verweigerungsgrenze, Abschütteln und Urflackern ohne Rücksicht auf den Plan,
-Zurückhalten ohne die anderen Pfade), dazu den Ausschluss der Unverwundbarkeit nach „alles", den D1 verwarf; jeder
-muss gefunden werden. Stand 12.10.2026: alle gefunden; die Regeln dieses Konzepts verletzen in 25 Szenarien × 300
+Zurückhalten ohne die anderen Pfade), dazu die frühere Verweigerungsregel der Unverwundbarkeit (Sperre für einen GCD,
+Z4 ohne Wiederholung), die sein Hinweis widerlegte; jeder muss gefunden werden. Stand 12.10.2026: alle gefunden; die Regeln dieses Konzepts verletzen in 25 Szenarien × 300
 Läufen keine Prüfung.
 
 *Was das Modell nicht abdeckt* (dort trägt nur die Herleitung): ein zweites Wirken und BossModReborn-Vorhersagen
@@ -1334,7 +1334,7 @@ Minderung je Schadensart, die Ressourcenkopplung K4
 
 Stand 12.10.2026: Die acht Abweichungen, die der Abgleich fand (A266: Minderung je Schadensart, Erhöhung der maximalen
 LP, Zurückhalten nur bewerteter Aktionen, K1, K2, K3/K4, fehlende Merkmalsdauern, zu niedrige Messung), und seine
-Entscheidungen D1–D3 (A267) sind eingearbeitet. Prüfgrad: Prüfskripte und Modell, Compile über die CI; im Spiel nicht
+Entscheidungen D2 und D3 und sein Hinweis zur Verweigerung der Unverwundbarkeit (A267) sind eingearbeitet. Prüfgrad: Prüfskripte und Modell, Compile über die CI; im Spiel nicht
 beobachtet.
 
 **Vertrag:** `DefensiveValue` ist öffentlich im Paket (Betroffene R). Neue Werte – eigene Minderung je Schadensart,
@@ -1451,8 +1451,8 @@ weder Kandidat noch stehend, und sie zählt nie zugleich als Status und als Date
 | Z0 kein Plan | kein gemessenes Wirken auf dich | nichts | nichts; Heiliger Boden/Meteoritenfall über den nächsten GCD: alles |
 | Z1 gedeckt | eine Unverwundbarkeit steht über H (Status oder eigener Druck, siehe oben) | nichts | alles Bewertete auf dich |
 | Z2 Bündel S | das billigste Bündel S übersteht c; S darf leer sein | jedes Glied von S in seinem Fenster | alles Bewertete auf dich außer S; ein Glied von S erst in seinem Fenster, aus jedem Pfad; im letzten GCD nichts, wenn ein Glied fehlt |
-| Z3 Unverwundbarkeit | kein Bündel übersteht c, sie ist einen GCD vor dem Einschlag bereit, für dieses Wirken nicht ausgeschlossen | sie, in ihrem Fenster | alles Bewertete auf dich, solange R > GCD |
-| Z4 alles | kein Bündel, keine Unverwundbarkeit | jedes verfügbare Glied in seinem Fenster | nichts |
+| Z3 Unverwundbarkeit | kein Bündel übersteht c, sie ist einen GCD vor dem Einschlag verfügbar | sie, in ihrem Fenster, nach einer Verweigerung in jedem Durchlauf neu | alles Bewertete auf dich, solange R > GCD |
+| Z4 alles | kein Bündel, keine verfügbare Unverwundbarkeit (Option, Stufe, Freischaltung, Leiste, TTK-Schwelle der Aktion, Abklingzeit) | jedes verfügbare Glied in seinem Fenster | nichts |
 
 **Die Optionen:** „Spend only the mitigation a measured tankbuster needs" trägt die Minderungsdrücke in Z2 und Z4
 und jedes Zurückhalten; ohne sie drückt der Plan keine Minderung und hält nichts zurück – und weil dann niemand ein
@@ -1475,15 +1475,21 @@ befohlen, nicht jede).
   vor dem Einschlag endet, also ein neuer Versuch vor dem Rückfall bleibt; bei der Wahl werden Bündel ohne verweigerte
   Glieder vorgezogen. Eine einmalige Verweigerung führt so nicht zur Unverwundbarkeit; eine, die bis zuletzt anhält,
   schon.
-  Für die Unverwundbarkeit gilt dieselbe Regel: Läuft ihre Sperre vor dem letzten GCD ab, bleibt Z3 – zurückgehalten
-  wird weiter, gedrückt wird nach der Sperre neu; erst eine Verweigerung, nach der kein Versuch vor dem letzten GCD
-  bleibt, macht Z4. Sonst gäbe ein kurzer Stun alle Pfade frei, und „alles" ginge für einen Treffer hinaus, den die
-  Unverwundbarkeit allein trägt.
-- *Unverwundbarkeit nach „alles":* Läuft die Verweigerung im letzten GCD ab oder wird die Unverwundbarkeit sonst
-  wieder nutzbar, gilt Z3 erneut, auch wenn aus Z4 schon Minderungen hinausgingen (seine Entscheidung D1, 12.10.2026:
-  „unverwundbarkeit ist die ultimative lösung … wenn tankbuster durch „alles" nicht überlebt werden kann, dann ist auf
-  alles zu verzichten und nur unverwundbarkeit zu nehmen"). Im Kampf: Der Tank überlebt einen Treffer, den nach der
-  Messung nichts Geringeres trägt; die schon verbrauchten Minderungen fehlen danach ohnehin.
+- *Verweigerung der Unverwundbarkeit:* macht nie Z4. Sie wird in jedem Durchlauf neu versucht, Z3 hält zurück, bis sie
+  gedrückt ist oder der letzte GCD beginnt. Sein Hinweis (12.10.2026): „wenn andere Dinge rausgehen können, dann kann
+  es auch die unverwundbarkeit". Beleg: Holmgang, Living Dead, Superbolide, Heiliger Boden und alle Glieder des Plans
+  sind Fähigkeiten (`ActionCategory` Ability, xivapi 12.10.2026); was eine Fähigkeit im Spiel verweigert – Stun („Unable
+  to execute actions"), Amnesie („Unable to use abilities") –, verweigert alle. Silence und Pacification treffen nur
+  Zauber und Waffenfertigkeiten. Was RSRs eigene Prüfung verweigern würde und vorher feststeht – Option, Stufe und
+  Freischaltung, Leiste, TTK-Schwelle der Aktion –, ist Verfügbarkeit und entscheidet schon bei der Planung (Z4 von
+  Anfang an). Die übrigen Prüfungen von `CanUse` treffen die Unverwundbarkeit nicht (Ziel ist der Spieler; nicht
+  bewertet, also nicht zurückgehalten; Hilfe-Sperre nur für andere Ziele).
+  Im Kampf: Nach einem Stun geht die Unverwundbarkeit im ersten Durchlauf danach, und nichts anderes. Die frühere
+  Regel sperrte sie nach der Verweigerung einen GCD lang und machte Z4, wenn diese Sperre in den letzten GCD reichte:
+  Endete der Stun vorher, gingen erst alle Minderungen hinaus und danach die Unverwundbarkeit – ein Zustand, den das
+  Spiel nicht hervorbringt, sondern nur die Sperre (die Frage D1 beruhte darauf).
+  Gilt die Annahme nicht (eine unbekannte Verweigerung nur der Unverwundbarkeit), endet das Zurückhalten im letzten
+  GCD, und die anderen Pfade sind frei.
 - Alles Übrige ergibt sich aus den Tatsachen: Heilung hebt B (Z3 → Z2 möglich, solange die Unverwundbarkeit nicht
   gedrückt ist), Auto-Angriffe senken B (größeres S, Z3), eine fremde Reflexion senkt P, ein gedrücktes Glied von S
   steht und fällt aus den Kandidaten.
@@ -1500,8 +1506,7 @@ die Rotation auch neben einer gedrückten Unverwundbarkeit mindern – für den 
 3. Das Zurückhalten trifft nie Heilung, Hilfe für andere, nach außen wirkende Flächenabwehr oder das Befohlene; ein
    Befehl gibt nur sich selbst frei.
 7. Der Plan selbst drückt nach einer Unverwundbarkeit für dasselbe Wirken keine Minderung mehr, auch ohne „Spend only …"
-   (seine Präzisierung zu „alles"). Umgekehrt zieht er die Unverwundbarkeit auch nach Minderungen noch, sobald sie
-   nutzbar ist und kein Bündel reicht (D1).
+   (seine Präzisierung zu „alles"). Fallen nach einem Bündel die LP, sodass keines mehr reicht, zieht er sie noch.
 4. Ein Glied von S geht aus keinem Pfad vor seinem Fenster hinaus; fehlt im letzten GCD eines, endet das Zurückhalten.
 5. Ein Kandidat braucht eine bekannte Wirkdauer von mehr als zwei GCD: Sein Fenster (Einschlag höchstens Wirkdauer weniger
    ein GCD entfernt) muss sich vor dem letzten GCD öffnen, in dem das Zurückhalten für fehlende Glieder endet.
@@ -1525,10 +1530,11 @@ dem bisher gemessenen Höchstwert wird unterschätzt; keine Reserve nach einem k
   Datensatz trägt dann dieses Ziel, der Plan zählt sie nicht für dich und rechnet ohne sie weiter – sein Befehl
   entscheidet. Schutzwall und andere Aktionen ohne Reichweite gehen immer auf dich.
 - **Ein abgelehnter Druck:** Während einer Animationssperre oder eines eigenen Zaubers lehnt `CanUse` ab; das ist
-  keine Antwort, der Druck wird im nächsten Durchlauf neu versucht. Jede andere Ablehnung – Reflexion außer Reichweite,
-  zu wenig MP, ein Stun, eine Prüfung der Rotation – sperrt den Druck für einen GCD; was daraus für Bündel und
-  Unverwundbarkeit folgt, regelt das Zustandsmodell („Verweigerung", „Unverwundbarkeit nach ‚alles'"). Ablehnungen gelten je
-  Wirken (eigene Nummer je Wirken, auch bei zwei gleichen Wirken ohne Pause, erkannt am Zurückspringen der Wirkzeit).
+  keine Antwort, der Druck wird im nächsten Durchlauf neu versucht. Jede andere Ablehnung einer Minderung – Reflexion
+  außer Reichweite, zu wenig MP, ein Stun, eine Prüfung der Rotation – sperrt den Druck für einen GCD; was daraus für
+  das Bündel folgt, regelt das Zustandsmodell („Verweigerung"). Die Unverwundbarkeit wird nach einer Ablehnung im
+  nächsten Durchlauf neu versucht („Verweigerung der Unverwundbarkeit"). Ablehnungen gelten je Wirken (eigene Nummer
+  je Wirken, auch bei zwei gleichen Wirken ohne Pause, erkannt am Zurückspringen der Wirkzeit).
 
 ### Das Zurückhalten
 

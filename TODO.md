@@ -272,6 +272,17 @@ Loop vor jedem Bau.
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 
+### Tankbuster-Plan: ein Stun sperrt ein Glied einen GCD statt bis zu seinem Ende · N
+
+**Befund (A267):** Eine Ablehnung einer Minderung außerhalb von Animationssperre und eigenem Zauber sperrt sie für den
+Plan einen GCD. Ein Stun oder eine Amnesie verweigert aber alle Fähigkeiten und endet oft früher. Im Kampf: Nach einem
+kurzen Stun gehen die Glieder bis zu einen GCD später; reicht die Sperre in den letzten GCD, rechnet der Plan ohne sie
+und zieht die Unverwundbarkeit oder „alles" (Richtung: zu viel Mittel). Für die Unverwundbarkeit behoben (Konzept 09,
+„Verweigerung der Unverwundbarkeit"). **Offen:** eine spielerweite Sperre an Status oder `GetActionStatus` erkennen und
+wie die Animationssperre behandeln – voller Loop vor dem Bau.
+
+**Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
+
 ### Tankbuster-Plan: keine Reserve nach einem knapp überlebten Treffer · N
 
 **Befund (A261):** Der Plan rechnet bis zum Einschlag: Er wählt das billigste Bündel, mit dem der gemessene
