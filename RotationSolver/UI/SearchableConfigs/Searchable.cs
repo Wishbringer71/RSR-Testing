@@ -1,8 +1,8 @@
 using ECommons.DalamudServices;
 using ECommons.ExcelServices;
 using Lumina.Excel.Sheets;
+using RebornMaterial;
 using RotationSolver.Data;
-using RotationSolver.UI.Material;
 
 namespace RotationSolver.UI.SearchableConfigs;
 
@@ -279,7 +279,7 @@ internal abstract class Searchable(PropertyInfo property) : ISearchable
 	protected void RowInteractions(in M3RowInfo row)
 	{
 		RowTooltip(row, "Right-click for the matching chat command.");
-		ImGuiHelper.ReactPopupAt(row.Hovered, PopupKey, Command, ResetToDefault, false);
+		ImGuiHelper.ReactPopupAt(row.Hovered, PopupKey, false);
 	}
 
 	protected void ShowTooltip(bool showHand = true)
@@ -294,7 +294,7 @@ internal abstract class Searchable(PropertyInfo property) : ISearchable
 			});
 		}
 
-		ImGuiHelper.ReactPopup(PopupKey, Command, ResetToDefault, showHand);
+		ImGuiHelper.ReactPopup(PopupKey, showHand);
 	}
 
 	public virtual void ResetToDefault()

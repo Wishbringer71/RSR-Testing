@@ -1,6 +1,6 @@
+using RebornMaterial;
 using RotationSolver.Basic.Configuration;
 using RotationSolver.Data;
-using RotationSolver.UI.Material;
 using RotationSolver.UI.SearchableConfigs;
 
 namespace RotationSolver.UI;
@@ -13,7 +13,7 @@ public partial class MainWindow
 	private void SearchingBox(float width)
 	{
 		if (M3Widgets.SearchField("##Rotation Solver Reborn Search Box",
-			UiString.ConfigWindow_Searching.GetDescription(), ref _searchText, width))
+			UiString.ConfigWindow_Searching.GetDescription(), ref _searchText, width, busy: _searchResults is { Length: > 0 }))
 		{
 			_searchResults = _allSearchable.SearchItems(_searchText);
 		}

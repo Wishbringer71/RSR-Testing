@@ -192,11 +192,6 @@ Das Spiel führt jede Wirkung unter mehreren Status-Ids desselben Anzeigenamens 
 
 **Empfehlung: erfassen, nicht bearbeiten.** Behoben ist, was eine Wirkkette im Code liest und wo der Beleg trägt. Der Rest ist eine Klasse ohne Schranke: Ein Rückgabewert, den nur Wegsehen grün hält, wäre schlechter als keiner, und `scan14.py` hält die Liste jederzeit wieder abrufbar.
 
-### Im Vorschaulauf liefert `CanUse` wahr, ohne ein Ziel zu setzen · R
-
-**Konzept:** `docs/rotation-flow/03-universal.md`
-`BaseAction.CanUse` schreibt das Ziel nur außerhalb der Vorschau und liefert trotzdem `true`. Ein Leser von `X.Target.Target` im Vorschaulauf sieht ein veraltetes Ziel oder `null`. **Die Ausnahme ist behoben (A204):** Die sechs erreichbaren Stellen (Essential Dignity dreifach, Aspected Benefic, Excogitation zweifach, dazu die Excogitation-Anzeige der Basisrotation) prüfen jetzt auf `null`; die Vorschau verliert dort keine Heilanzeige mehr. **Neu geprüft, ob Entscheidung (A204): nein** — was bleibt, ist ein veraltetes Ziel in der Vorschauanzeige, kein Kampfeffekt. Die Bauform (Rotationen auf `PreviewTarget` umstellen, oder `CanUse` in der Vorschau ohne Ziel `false`) ist technische Schuld mit Wirkungsbereich über die Paketnutzer; auflösen, sobald ein Leser außerhalb der Heilpfade betroffen ist.
-
 ### Die Minderungsbilanz kennt zwei Schadensarten, die Datenquelle drei · N, R
 
 **Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`

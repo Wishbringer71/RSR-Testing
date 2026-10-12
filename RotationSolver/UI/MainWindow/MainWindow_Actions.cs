@@ -3,8 +3,8 @@ using Dalamud.Interface.Utility.Raii;
 using ECommons.DalamudServices;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using RebornMaterial;
 using RotationSolver.Data;
-using RotationSolver.UI.Material;
 using RotationSolver.Updaters;
 
 namespace RotationSolver.UI;
@@ -109,7 +109,7 @@ public partial class MainWindow
 								var key = $"Action Macro Usage {item.Name} {item.ID}";
 								var cmd = ToCommandStr(OtherCommandType.DoActions, $"{item}-{5}");
 								ImGuiHelper.DrawHotKeysPopup(key, cmd);
-								ImGuiHelper.ExecuteHotKeysPopup(key, cmd, item.Name, false);
+								ImGuiHelper.ExecuteHotKeysPopup(key, item.Name, false);
 							}
 						});
 					}
@@ -140,7 +140,7 @@ public partial class MainWindow
 			const string key = "Action Enable Popup";
 			var cmd = ToCommandStr(OtherCommandType.ToggleActions, _activeAction.ToString()!);
 			ImGuiHelper.DrawHotKeysPopup(key, cmd);
-			ImGuiHelper.ExecuteHotKeysPopupAt(enableHovered, key, cmd, string.Empty, false);
+			ImGuiHelper.ReactPopupAt(enableHovered, key, false);
 
 			var isIntercepted = _activeAction.IsIntercepted;
 			if (M3Widgets.RowSwitch($"{UiString.ConfigWindow_Actions_IsIntercepted.GetDescription()}##{_activeAction.Name}", ref isIntercepted))

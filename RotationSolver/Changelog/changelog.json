@@ -1,6 +1,117 @@
 {
-  "tagline": "No plan survives contact with the real enemy",
+  "tagline": "Witty tagline (idk what to put here)",
   "entries": [
+    {
+      "version": "7.5.6.24",
+      "title": "Beastmaster and UI fixes",
+      "date": "October 11, 2026",
+      "sections": [
+        {
+          "title": "Beastmaster Fixes",
+          "icon": "User",
+          "items": [
+            "Fixed some bugs with the Beastmaster rotation and added special handling for Ymir in 3rd board of the Crucible."
+          ]
+        },
+        {
+          "title": "Settings window",
+          "icon": "Lock",
+          "items": [
+            "The settings window has a new lock button at the top right, next to minimize. While locked, the window can't be moved or resized, and it stays locked the next time you open it."
+          ]
+        },
+        {
+          "title": "Fixes",
+          "icon": "Wrench",
+          "items": [
+            "The settings, control and state windows no longer creep up and to the left by a pixel or two each time they are minimized and restored. I thought I was going crazy but it looks it was bug and is now fixed lol."
+          ]
+        }
+      ]
+    },
+    {
+      "version": "7.5.6.23",
+      "title": "Crash fix",
+      "date": "October 10, 2026",
+      "sections": [
+        {
+          "title": "Fixes",
+          "icon": "Wrench",
+          "items": [
+            "Fixed a game crash when the control window was open, most often on tanks using healing or party mitigation on someone who had left or despawned."
+          ]
+        }
+      ]
+    },
+    {
+      "version": "7.5.6.22",
+      "title": "Targets for DoActions and intercepted macros",
+      "date": "October 10, 2026",
+      "sections": [
+        {
+          "title": "DoActions targets",
+          "icon": "Crosshairs",
+          "items": [
+            "DoActions can now end with a target, like a game macro: \"/rotation DoActions Cure II-5 <f>\".",
+            "Any placeholder the game's macros accept works, such as <t>, <f>, <tt>, <mo>, <me> and <2> to <8>.",
+            "Targeting types work too, such as <LowHP>, <Big>, <Nearest> or <HighHPPercent>. The target is picked when the action is used.",
+            "If the target can't be hit when the action fires (out of range, out of sight, or the placeholder found nothing), RSR picks the target like before."
+          ]
+        },
+        {
+          "title": "Intercepted macros",
+          "icon": "HandPointer",
+          "items": [
+            "When an intercepted action comes from a macro, RSR now uses it on the target the macro picked, e.g. /ac \"Cure II\" <mo>."
+          ]
+        }
+      ]
+    },
+    {
+      "version": "7.5.6.21",
+      "title": "BMR IPC fixes",
+      "date": "October 9, 2026",
+      "sections": [
+        {
+          "title": "Stutter casting fixed (I hope)",
+          "icon": "Wrench",
+          "items": [
+            "Issue with BMR Movement causing movement/casting stuttering issues.",
+          ]
+        }
+      ]
+    },
+    {
+      "version": "7.5.6.19",
+      "title": "Control window rework + Padding option",
+      "date": "October 6, 2026",
+      "sections": [
+        {
+          "title": "Full Control Window",
+          "icon": "SlidersH",
+          "items": [
+            "The AoE switch now sits directly under the Auto / Manual / Off switch, and its buttons are ordered Full, Cleave, Off so each one lines up under Auto, Manual and Off.",
+            "New link toggles between Auto and Full, and between Manual and Cleave. While linked, choosing that state in the Control window also sets the matching AoE type, like the State Window does.",
+            "The window remembers one width for when the special buttons are shown and another for when they're hidden."
+          ]
+        },
+        {
+          "title": "Padding",
+          "icon": "CompressAlt",
+          "items": [
+            "New \"Padding\" option in UI > Information scales the space around and between things in every RSR window, from 25% to 200%. Buttons, icons and text keep their size.",
+            "The settings window, State Window and Control window now use a tighter layout: thinner window edges, and less padding in cards, setting rows and the sidebar."
+          ]
+        },
+        {
+          "title": "Settings window",
+          "icon": "Search",
+          "items": [
+            "The search icon turns into a spinner while search results are showing. I just think its neat :)"
+          ]
+        }
+      ]
+    },
     {
       "version": "7.5.6.16",
       "title": "Various Minor Fixes + Autoduty IPC update",

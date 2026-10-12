@@ -1,7 +1,7 @@
 using Dalamud.Game.ClientState.Keys;
+using RebornMaterial;
 using RotationSolver.Basic.Configuration;
 using RotationSolver.Data;
-using RotationSolver.UI.Material;
 
 namespace RotationSolver.UI;
 
@@ -131,7 +131,7 @@ public partial class MainWindow
 
 			M3SettingRow.End(row);
 
-			ImGuiHelper.ExecuteHotKeysPopupAt(row.Hovered, key, string.Empty, string.Empty, true,
+			ImGuiHelper.ExecuteHotKeysPopupAt(row.Hovered, key, string.Empty, true,
 				(Delete, new[] { VirtualKey.DELETE }),
 				(Up, new[] { VirtualKey.UP }),
 				(Down, new[] { VirtualKey.DOWN }));

@@ -1,7 +1,7 @@
 using ECommons.GameHelpers;
+using RebornMaterial;
 using RotationSolver.Basic.Rotations.Duties;
 using RotationSolver.Data;
-using RotationSolver.UI.Material;
 
 namespace RotationSolver.UI;
 
@@ -104,7 +104,7 @@ public partial class MainWindow
 			ImguiTooltips.ShowTooltip(tooltip);
 		}
 
-		ImGuiHelper.ReactPopupAt(row.Hovered, key, command, Reset, false);
+		ImGuiHelper.ReactPopupAt(row.Hovered, key, false);
 		M3SettingRow.End(row);
 	}
 }

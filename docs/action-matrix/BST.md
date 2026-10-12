@@ -1,6 +1,6 @@
 # BST — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-01; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-12; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `BeastmasterRotation`
 - Rotation: `RotationSolver/RebornRotations/Limited Jobs/BST_Reborn.cs`
@@ -157,6 +157,7 @@ direkt: 32 · ungenutzt: 8 · über andere Aktion: 8
 | Hawkish Talons | StatusNeed Sunstrider | Brutal Rage |
 | Hawkish Talons | StatusNeed Sunstrider | Risen Fall |
 | Mistral Axe | StatusNeed RampantHeart | Avalanche Axe |
+| Parting Blow | Regel prüft | Trick |
 | Quelling Wave | StatusNeed BlazeSpikes_5465 | Status BlazeSpikes_5465 |
 | Quelling Wave | StatusNeed DamageUp_1225 | Status DamageUp_1225 |
 | Quelling Wave | StatusNeed DamageUp_2550 | Status DamageUp_2550 |

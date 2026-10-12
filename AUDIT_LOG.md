@@ -5930,6 +5930,44 @@ Wechsel greift, schreibt das Protokoll selbst.
 
 **Prüfgrad:** statisch, Prüfskripte; Compile über die CI.
 
+### A264 · Upstream-Sync 7.5.6.24: Befehlsziele, Ziel in der Vorschau, Zauberabbruch, neue Oberfläche (12.10.2026)
+
+- *Inhalt (15 Commits, PR #1387–#1395, c207ff9ce..8f258dbc5):* DoActions und abgefangene Makros tragen ein Ziel
+  (Platzhalter wie `<t>`, `<2>`, `<mo>` oder eine Zielart wie `<LowHP>`; `CommandTarget`, `NextAct.Target`,
+  `ActionTargetInfo.FindCommandObjectTarget`); `CanUse` setzt das Ziel auch im Vorschaulauf (Absturz bei offenem
+  Steuerfenster, 7.5.6.23); `ActionPreview` per `try/finally`; Zauberabbruch bei Nicht-Wirken-Status nur in den letzten
+  3 s vor dessen Auflösung und nicht in PvP (gleiches Fenster wie DoAction); BossModReborn-Abbruch liest nur noch die
+  Mechanik-Signale (`Hints.ForceCancelCastMechanic…`); Ymir-Immunität (Crucible); Beastmaster; die eigene
+  Material-Oberfläche durch das Paket `RebornMaterial` ersetzt, Steuerfenster in `FullControlWindow.cs` umbenannt;
+  ECommons 3.2.1.22, Actions checkout v7 / setup-dotnet v6.
+- *Konflikte:* `BaseAction.CanUse` – Fork-Gatter (Selbstschutz, Zurückhalten) behalten, Upstreams Zielsetzung in der
+  Vorschau übernommen. `ActionTargetInfo.FindTargetByType` – beide Erweiterungen derselben Funktion vereint: die
+  Heilart des Forks (`instantHeal`, A213) und Upstreams Befehlsziel (`commandTargeting`) in einer privaten Überladung;
+  die öffentlichen Signaturen beider Seiten bleiben.
+- *Auswertung gegen die Fork-Abschnitte:*
+  - Befehlsziel: Ein befohlener Druck läuft mit `ForceEnable` (`CustomRotation_GCD.cs`, `CustomRotation_Ability.cs`)
+    und passiert damit das Zurückhalten des Tankbuster-Plans – wie es Konzept 09 für jeden Befehl vorsieht. Steht eine
+    Aktion mit Objektziel in der Warteschlange, gewinnt dieses Ziel auch beim Druck des Plans (vor `TargetOverride`):
+    The Blackest Night, auf den Co-Tank befohlen, geht dorthin; der Datensatz trägt dieses Ziel, der Plan zählt sie
+    nicht für dich und plant weiter. Seine Entscheidung, richtig abgebildet.
+  - Ziel in der Vorschau: beantwortet den TODO-Eintrag „Im Vorschaulauf liefert `CanUse` wahr, ohne ein Ziel zu setzen"
+    (A204) – die Bauform-Schuld ist von Upstream aufgelöst, der Eintrag entfällt. Die `null`-Prüfungen aus A204 bleiben
+    richtig (ein `CanUse` ohne Treffer setzt weiterhin kein Ziel). Im Kampf: keine Wirkung, die Vorschau zeigt aktuelle
+    Ziele.
+  - Zauberabbruch: Ein Zauber, der vor der Auflösung eines Nicht-Wirken-Status fertig wird, läuft jetzt durch statt
+    sofort abgebrochen zu werden. Konzept 11 (Abbruch bei totem Ziel, `UseStopCasting`) ist nicht berührt.
+  - BossModReborn: Nur Mechanik-Abbrüche (z. B. Pyretic, Blick); setzt eine BossModReborn-Version mit den neuen
+    IPC-Namen voraus, eine ältere liefert keinen Abbruch mehr. Für die Fork-Regeln, die BossModReborn lesen, ändert sich
+    nichts (sie lesen die Zeitleiste, nicht den Abbruch).
+  - Oberfläche: Die Fork-Fenster (`DiagnosticsWindow`, `WindowCloseButton`) nutzen keine entfernten Typen; der
+    Schließ-Haken des Forks im Steuerfenster ist in `FullControlWindow.cs` erhalten. Compile über die CI.
+  - Beastmaster: begrenzter Job, außerhalb seines Profils; Abhängigkeitsmatrix neu erzeugt (BST).
+  - Kein Vertrag berührt: `CommandTarget` und `NextAct.Target` sind neue Upstream-Typen, nicht persistiert; die neuen
+    Einstellungen sind Oberflächenwerte und `Crucible of the Unbroken – Ymir logic`.
+- *Version:* `Directory.Build.props` auf 7.5.6.24.
+
+**Prüfgrad:** statisch, Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

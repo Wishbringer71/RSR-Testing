@@ -295,10 +295,8 @@ public class BaseAction : IBaseAction
 			return ActionTracer.Reject(this, "HeldForTheInvulnerability");
 		}
 
-		if (!IBaseAction.ActionPreview)
-		{
-			Target = PreviewTarget.Value;
-		}
+		// Set in preview too: rotations read Target right after CanUse, and a skipped update leaves a despawned object there.
+		Target = PreviewTarget.Value;
 
 		ActionTracer.Accept(this);
 		return true;

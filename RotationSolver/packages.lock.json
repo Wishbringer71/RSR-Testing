@@ -16,9 +16,9 @@
       },
       "ECommons": {
         "type": "Direct",
-        "requested": "[3.2.1.21, )",
-        "resolved": "3.2.1.21",
-        "contentHash": "t8aWdB5cIOjuCT+fR8L1h9EF9+VUB/YVDdocbB9Ig5qb6s2/RYTtLmR8dskBeRlIIi0OPh840F4Y/3MVz/o3Xw=="
+        "requested": "[3.2.1.22, )",
+        "resolved": "3.2.1.22",
+        "contentHash": "dGjjULRQtFbTdau9Cu1VcIQTwsbdomRxugyLciWrawHQ7nfNm76H8oUwAZFztwKtt3moiMdevzRVGIBsrgHO3g=="
       },
       "Microsoft.CodeAnalysis.BannedApiAnalyzers": {
         "type": "Direct",
@@ -35,6 +35,12 @@
           "Microsoft.CodeAnalysis.Analyzers": "5.9.0-1.26328.17",
           "Microsoft.CodeAnalysis.Common": "[5.9.0]"
         }
+      },
+      "RebornMaterial": {
+        "type": "Direct",
+        "requested": "[7.5.6.2, )",
+        "resolved": "7.5.6.2",
+        "contentHash": "j90MpHxbivvtAz4dEkB+cX/xH84a54zh9pKqVvZoTvTPaAD/8CHVv775fXgwfHYR315fzm8SE2JfsZCAIggsPA=="
       },
       "ExCSS": {
         "type": "Transitive",
@@ -79,8 +85,9 @@
       "rotationsolver.basic": {
         "type": "Project",
         "dependencies": {
-          "ECommons": "[3.2.1.21, )",
+          "ECommons": "[3.2.1.22, )",
           "Microsoft.CodeAnalysis.CSharp": "[5.9.0, )",
+          "RebornMaterial": "[7.5.6.2, )",
           "RotationSolver.SourceGenerators": "[1.0.0, )",
           "Svg": "[3.4.8, )",
           "System.Drawing.Common": "[10.0.12, )"

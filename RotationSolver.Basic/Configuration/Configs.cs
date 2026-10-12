@@ -2,12 +2,13 @@
 using ECommons.DalamudServices;
 using ECommons.ExcelServices;
 using ECommons.Logging;
+using RebornMaterial;
 using System.Collections.Concurrent;
 using static RotationSolver.Basic.Configuration.ConfigTypes;
 
 namespace RotationSolver.Basic.Configuration;
 
-internal partial class Configs : IPluginConfiguration
+internal partial class Configs : IPluginConfiguration, IM3Settings
 {
 	[JsonIgnore]
 	public const string
@@ -48,6 +49,11 @@ internal partial class Configs : IPluginConfiguration
 	public bool TutorialDone { get; set; } = false;
 
 	public AoEType StateWindowManualAoEType { get; set; } = AoEType.Cleave;
+
+	public bool ControlWindowLinkAutoFull { get; set; } = false;
+	public bool ControlWindowLinkManualCleave { get; set; } = false;
+
+	public bool IsMainWindowLock { get; set; } = false;
 
 	public List<ActionEventInfo> Events { get; private set; } = [];
 	public SortedSet<Job> DisabledJobs { get; private set; } = [];
@@ -257,6 +263,11 @@ internal partial class Configs : IPluginConfiguration
 	Description = "Sets mobs with number plates as top priority in order from lowest to highest to resolve extra loot mechanic.",
 	Filter = DutySpecificTreasureDungeon)]
 	private static readonly bool _treasuredungeonnumbered = true;
+
+	[ConditionBool, UI("Crucible of the Unbroken - Ymir logic.",
+	Description = "Treat Ymir as immune if it has the Vulnerability Down buff.",
+	Filter = DutySpecificCrucibleOfTheUnbroken)]
+	private static readonly bool _crucibleYmir = true;
 	#endregion
 
 	#region PvP
@@ -717,16 +728,22 @@ internal partial class Configs : IPluginConfiguration
 	public Vector4 UiAccentColor { get; set; } = new(0.690f, 0.125f, 0.122f, 1f);
 
 	[UI("Text size",
-		Description = "Scales the text in every Rotation Solver window, on top of Dalamud's own font settings.",
+		Description = "Scales the text in every RSR window, on top of Dalamud's own font settings.",
 		Filter = UiInformation)]
 	[Range(0.75f, 1.75f, ConfigUnitType.Percent, 0.01f)]
 	public float UiTextScale { get; set; } = 1f;
 
 	[UI("Element size",
-		Description = "Scales the padding, spacing and controls in every Rotation Solver window. Turn it down for a more compact layout; text keeps to the Text size setting.",
+		Description = "Scales the padding, spacing and controls in every RSR window. Turn it down for a more compact layout; text keeps to the Text size setting.",
 		Filter = UiInformation)]
 	[Range(0.75f, 1.75f, ConfigUnitType.Percent, 0.01f)]
 	public float UiElementScale { get; set; } = 1f;
+
+	[UI("Padding",
+		Description = "Scales the space around and between things in every RSR window: window edges, card and row padding, and the gaps between items. Buttons, icons and text keep their size.",
+		Filter = UiInformation)]
+	[Range(0.25f, 2f, ConfigUnitType.Percent, 0.01f)]
+	public float UiPaddingScale { get; set; } = 1.5f;
 
 	[ConditionBool, UI("Display do action feedback on toast",
 		Filter = UiInformation)]

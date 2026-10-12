@@ -17,11 +17,17 @@ public partial class CustomRotation
 		{
 			UpdateInfo(); // Rotation specific info updates
 			IBaseAction.ActionPreview = true;
-			if (DataCenter.DrawingActions)
+			try
 			{
-				UpdateActions(Role);
+				if (DataCenter.DrawingActions)
+				{
+					UpdateActions(Role);
+				}
 			}
-			IBaseAction.ActionPreview = false;
+			finally
+			{
+				IBaseAction.ActionPreview = false;
+			}
 
 			CountingOfLastUsing = CountingOfCombatTimeUsing = 0;
 			// The defence paths set this and clear it on the way out; an exception in one of them would

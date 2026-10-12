@@ -1,7 +1,7 @@
 using ECommons.ExcelServices;
 using ECommons.GameHelpers;
+using RebornMaterial;
 using RotationSolver.Data;
-using RotationSolver.UI.Material;
 
 namespace RotationSolver.UI;
 
@@ -14,7 +14,6 @@ public partial class MainWindow
 	"3Some",
 	"ABA",
 	"Akurosuki",
-	"Alkeid",
 	"Armerun",
 	"catfourteen",
 	"Chaos_co",
@@ -24,8 +23,7 @@ public partial class MainWindow
 	"Enyo",
 	"ExiledxSnake",
 	"fishsticks",
-	"Frogs",
-	"Goku",
+	"Frozyn",
 	"Headrushed",
 	"Hex",
 	"Jayhow",
@@ -44,13 +42,13 @@ public partial class MainWindow
 	"Preset",
 	"prismagreen",
 	"Radium226",
-	"Robsie",
 	"sinbad",
 	"smf26",
 	"Twoshoes",
 	"Utterly Hopeless!",
 	"Vaex_Darastrix",
 	"wangel",
+	"Xeltor",
 	"KuwoBlack"
 	];
 

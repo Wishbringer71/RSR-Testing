@@ -7,6 +7,7 @@ using ECommons.GameFunctions;
 using ECommons.GameHelpers;
 using ECommons.Logging;
 using FFXIVClientStructs.FFXIV.Client.Game.Fate;
+using RebornMaterial;
 using RotationSolver.Basic.Configuration;
 using RotationSolver.Basic.Rotations.Duties;
 using RotationSolver.Helpers;
@@ -120,7 +121,7 @@ public partial class MainWindow
 				ImGui.Separator();
 				ImGui.Text(DataCenter.Role.ToString());
 			} },
-		{() => "Material 3 Gallery", MaterialGallery.Draw },
+		{() => "Material 3 Gallery", M3Gallery.Draw },
 	});
 
 		group.SetHeaderIcon("Loaded Rotation Info", FontAwesomeIcon.Sync);
