@@ -33,6 +33,11 @@ the defence reaches you, in the single-target and the area defence alike and for
 stays: Reprisal, Shake It Off, Intervention and Heart of Corundum on the tankbuster's target are not held
 back. An announced tankbuster whose targets BossModReborn does not name still counts as hitting a tank.
 
+Your own area defence command - "Def AoE" in the control window or the defence macro - is not second-guessed:
+it casts a self-only defence even when RSR does not see the hit reaching you. The Samurai's Tengentsu and Third
+Eye and the Summoner's Radiant Aegis checked the reach a second time and stayed back under that command; they
+now go out with it like every other job's, and the control window shows them.
+
 `DefenseTrace.log` now also names the pull rule (enemies on you) and unlisted casts at a tank's target as
 sources, says whether the single hit reaches you, and records each landing of a listed area cast with
 whether it reached you. When the area or single-target defence is open but nothing it asks for can go out,
@@ -102,6 +107,22 @@ Outside a demi, Searing Flash waited for a dying boss. With other Summoners in t
 can fall into a Titan or Ifrit block, the next demi is further off than Ruby's Glimmer lasts, and Searing
 Flash was lost. It now goes out in the last weave slot before Ruby's Glimmer runs out. As the only Summoner
 nothing changes: Searing Flash falls inside Solar Bahamut as before.
+
+## Summoner: Searing Light stays with Solar Bahamut until another Summoner takes it
+
+With another Summoner in the party, Searing Light could go out ahead of or inside every demi. When your charge
+came free after Solar Bahamut - the other Summoner playing by hand, their Searing Light off, or their cycle
+apart from yours - it went into Demi-Bahamut or Demi-Phoenix and stayed there for the rest of the fight, a weaker
+burst than Solar's. Bahamut and Phoenix now open only after another Summoner's Searing Light stood in your
+last Solar Bahamut window, or stands in the current one; otherwise the charge waits for the next Solar
+Bahamut, at most one demi longer. When the other Summoner does hold Solar, nothing changes.
+
+## Reaper: Soulsow in a pause of the fight
+
+Soulsow was cast only out of combat, so after the first Harvest Moon every later one was missing until the
+fight ended. It now also goes out in combat while no enemy is within 25 yalms, the pause the fight rules use.
+With a BossModReborn module running and `Use BossModReborn timeline for proactive mitigation` on, it waits
+when its 5-second cast would not finish before the predicted end of the pause.
 
 ## Paladin: Passage of Arms holds until the hit lands, by default
 
@@ -184,3 +205,10 @@ refused with no retry left before the last GCD before the hit - does everything 
 The plan is recomputed all the time, so a heal or a Reprisal that lands before the hit makes it smaller. Tankbusters
 announced only by a marker or by BossModReborn, and actions not yet measured, keep the old behaviour.
 `DefenseTrace.log` writes the figures for every tankbuster cast at you, the plan and every press.
+
+## Healing: the order of the injured follows every announced area hit
+
+While area damage is announced, the heal target is chosen by the hit points left after what is coming, not by
+the share of the bar. That counted only casts that RSR also judged worth mitigating, so a large cast that can be
+interrupted, an area marker on the party and a raidwide BossModReborn announces within the mitigation window
+left the order by share. They now count as well.
