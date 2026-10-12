@@ -82,7 +82,7 @@ wurde oder nicht. Vier Größen also, und keine davon genügt allein:
 |---|---|---|
 | **Effektive Gesundheit, absolut** | Wie viele Punkte liegen zwischen ihm und dem Tod? | ja — `GetEffectiveHp` (Gesundheit plus Barriere); die Zielwahl liest sie vorausberechnet in Klasse 1 und, bei angekündigtem Flächenschaden, in Klasse 3 |
 | **Aggro** | Bekommt er gerichteten Schaden — Auto-Angriffe, Tankbuster? | ja — `DataCenter.TargetedPartyMembers`, je Bild aus den Zielen der Gegner; die Zielwahl liest sie in Klasse 2 |
-| **Angekündigter Flächenschaden** | Kommt Schaden, der ihn ohne Aggro trifft? | ja — `IsHostileCastingAOE` und die BossModReborn-Vorhersage (`BMRNextDamageIn`). Die Zielwahl liest in Klasse 3 nur `IsHostileCastingAOE`, und das trägt das Minderungsurteil aus `13-aoe-damage-classification.md` in sich: Ein gemessener Treffer, der die Minderung nicht lohnt, ein unterbrechbarer großer Cast und ein nur von BossModReborn angekündigter Raidwide fehlen ihr (offen in `TODO.md`) |
+| **Angekündigter Flächenschaden** | Kommt Schaden, der ihn ohne Aggro trifft? | ja — die Zielwahl liest in Klasse 3 `DataCenter.AreaHitAnnounced`: Flächenmarker auf der Gruppe, gelisteter Cast, großer gemessener auch unterbrechbar, BossModReborn-Raidwide im Minderungsfenster — ohne das Minderungsurteil aus `13-aoe-damage-classification.md` (A271). `IsUnderThreat` liest weiter `IsHostileCastingAOE` mit Urteil (Abschnitt „Vorgabe des Auftraggebers“) |
 | **Eingehende Schadensrate** | Wie schnell schwindet der Puffer? | **ja, seit A91** — `RecordedHP` trägt die Gruppe mit, `GetTTK` antwortet für Mitglieder, `GetCorrectedTTK` teilt den Schätzfehler heraus. Die Zielwahl liest sie über die vorausberechnete Gesundheit (Stufe 3) |
 
 Aus den ersten beiden folgt der Puffer, aus allen vieren die **Zeit bis zum Tod**. Sie ist **vorhanden**:
@@ -258,7 +258,7 @@ das Maß, das für diese Lage das richtige ist; bei Gleichstand die Rolle.**
 |---|---|---|---|
 | **1 — kritisch** | effektive Gesundheit ≤ `HealthForDyingTanks` (Vorgabe 0,15) | niedrigste **absolute** effektive Punkte zuerst | Wer hier steht, stirbt am nächsten Treffer, und ein Treffer ist eine absolute Zahl |
 | **2 — Rollenvorrang, bedingt** | Heiler ≤ `HealthHealerRatio` oder Tank ≤ `HealthTankRatio`, **und** unter Beschuss | niedrigster **Prozentsatz** zuerst, bei Gleichstand Heiler vor Tank | Hier ist die Rate rollenproportional, und genau dafür ist der Prozentsatz das brauchbare Surrogat |
-| **3 — übrige** | alle anderen | absolute Punkte, solange ein Flächenschaden angekündigt ist; sonst Prozentsatz | Ein Raidwide trifft alle mit derselben Zahl; ohne ihn gilt wieder die Rollenproportionalität |
+| **3 — übrige** | alle anderen | absolute Punkte, solange ein Flächenschaden angekündigt ist (`AreaHitAnnounced`, gleich wie groß); sonst Prozentsatz | Ein Raidwide trifft alle mit derselben Zahl; ohne ihn gilt wieder die Rollenproportionalität. Ohne Größenschwelle, weil gemessene Anteile nur nach unten irren: Ein unterschätzter Treffer ließe gerade im gefährlichen Fall nach Prozent ordnen; bei einem bekannt kleinen kostet die Punkte-Ordnung höchstens die Reihenfolge zweier Verletzter, die der Treffer beide nicht gefährdet |
 
 **Über allen Klassen steht weiterhin die Unterscheidung geschützt/ungeschützt**, und zwar
 unverändert: Wer eine Unverwundbarkeit trägt, wird nach hinten gestellt, nicht ausgeschlossen. Ohne

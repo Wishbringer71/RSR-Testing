@@ -723,7 +723,6 @@ Konzept 09). Offen:
 
 | Frage | Konzept | Stand |
 |---|---|---|
-| Wen gefaehrdet der angekuendigte Flaechenschaden zuerst? | `07-heal-target-priority.md` | Klasse 3 liest `IsHostileCastingAOE` und erbt damit das Minderungsurteil (TODO) |
 | Wie steht es vor dem ersten Treffer eines Pulls? | hier | blind; die Beobachtung braucht 2,5 s Anlauf |
 | Wie hart schlaegt ein Rueckstoss, ein Stopp-Cast? | `13-…`, Abschnitt „Was der Baustein eroeffnet" | dieselbe Messstruktur, je Liste fehlt der eigene Speicher; fuer Tankbuster gebaut (A259) |
 

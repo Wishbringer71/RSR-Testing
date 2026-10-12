@@ -4561,6 +4561,19 @@ internal static class DataCenter
 	public static float BMRNextRaidwideIn { get; set; } = float.MaxValue;
 
 	/// <summary>
+	/// Whether area damage on the party is announced, from any source, without asking how hard it lands:
+	/// an area marker on the party, a listed area cast reaching the party, a large measured one even when
+	/// interruptible, or a BossMod raidwide inside the mitigation window. A recognition, not a decision -
+	/// unlike <see cref="IsHostileCastingAOE"/>, which drops what is not worth mitigating (concept 13). The
+	/// heal target's danger class 3 ranks by points while this holds, because a raidwide takes the same
+	/// number from everybody (concept 07).
+	/// </summary>
+	public static bool AreaHitAnnounced => InCombat
+		&& (IsCastingAreaVfx() || IsHostileCastingAreaUnrated || IsHostileCastingLargeArea
+			|| (Service.Config.UseBmrTimeline && BMRNextRaidwideIn > 0f
+				&& BMRNextRaidwideIn <= Service.Config.BMRRaidwideMitWindow));
+
+	/// <summary>
 	/// An announced area hit that has not landed yet: the area-defense signal, or a BossMod raidwide
 	/// still ahead inside the mitigation window - including the last moment before it, where the
 	/// signal already lets go. What the channel locks of Passage of Arms and Collective Unconscious

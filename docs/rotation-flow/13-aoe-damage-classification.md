@@ -226,13 +226,12 @@ Wechsel oder das Zurückholen wartet, die Wahl, ihr Ausgang und ein Geteiltes Le
 ## Wen die Unterdrückung erreicht
 
 Erhoben am Code (12.10.2026): `AreaCastIsWorthMitigating` sitzt in `IsHostileCastingArea`, und über
-`IsHostileCastingAOE` hat diese Frage **drei** Leser, die etwas bewirken, und zwei Anzeigen.
+`IsHostileCastingAOE` hat diese Frage **zwei** Leser, die etwas bewirken, und zwei Anzeigen.
 
 | Leser | Wirkung der Unterdrückung |
 |---|---|
 | `StateUpdater` → `AutoStatus.DefenseArea` (hinter `UseAoeDefense`, über `IsHostileCastingAOEForMyDefense`) | die gemeinte: keine Gruppenminderung auf eine Bagatelle |
 | `ObjectHelper.IsUnderThreat`, zweiter Arm | die Bagatellfläche hält die Notfall-Vollheilung nicht mehr frei — **gewollt**, es ist der Fall aus der Rezz-Meldung |
-| Heilzielwahl, Gefährdungsklasse 3 (`ActionTargetInfo`, `byPoints`) | **erbt das Minderungsurteil** — ein Befund, offen in `TODO.md` (unten) |
 | Diagnosezeile der Gruppe, Feld `IsHostileCastingAOE` | keine, Anzeige |
 | Listenverwaltung, Spalte je Aktion | keine, Anzeige |
 
@@ -247,13 +246,12 @@ ausgelöst. Die Heilung hätte also eine Entscheidung geerbt, die nicht ihre ist
 trägt das Minderungsurteil in sich und ist deshalb nur für die Minderung die richtige Frage. Wer
 etwas anderes entscheidet, fragt die unbewertete Erkennung und legt seine eigene Schwelle an.
 
-**Die Heilzielwahl hält sich nicht daran.** Gefährdungsklasse 3 ordnet nach absoluten effektiven Punkten,
-solange `IsHostileCastingAOE` steht, sonst nach Gesundheit (Konzept 07). Sie sieht damit keinen
-unterbrechbaren großen Cast (den fängt nur `IsHostileCastingLargeArea`), keinen nur von BossModReborn
-angekündigten Raidwide, und keinen gemessenen Treffer, den die Minderung als zu klein auslässt. Im Kampf:
-Vor einem großen Rundumschlag in einem Dungeon, in dem niemand unterbricht, heilt der Heiler zuerst den
-Tank mit dem niedrigsten Prozentwert statt des Schadensausteilers mit den wenigsten Punkten. Offen in
-`TODO.md`.
+**Die Heilzielwahl fragt deshalb die unbewertete Erkennung.** Gefährdungsklasse 3 ordnet nach absoluten
+effektiven Punkten, solange `DataCenter.AreaHitAnnounced` steht: Flächenmarker auf der Gruppe, ein gelisteter
+Cast, ein großer gemessener auch unterbrechbar, ein BossModReborn-Raidwide im Minderungsfenster (Konzept 07,
+A271). Mit `IsHostileCastingAOE` sah sie weder den unterbrechbaren großen Cast noch den nur von BossModReborn
+angekündigten Raidwide; vor einem großen Rundumschlag, den niemand unterbricht, heilte der Heiler zuerst den
+Tank mit dem niedrigsten Prozentwert statt des Schadensausteilers mit den wenigsten Punkten.
 
 **Kein unerwarteter Verbraucher, und der zweite ist der Grund, warum diese Frage gestellt werden
 musste:** Ein gelernter Flächencast, der zwei Prozent nimmt, hielt Benediction genauso frei wie einer,

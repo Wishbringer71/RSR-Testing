@@ -3593,9 +3593,11 @@ public struct ActionTargetInfo(IBaseAction action)
 		// sit in this class for good, since he always wears his stance. Lowest health first, a healer
 		// before a tank at equal health.
 		//
-		// Class 3: everyone else unprotected. While an area cast is announced, fewest effective hit
+		// Class 3: everyone else unprotected. While area damage is announced, fewest effective hit
 		// points first, because a raidwide takes the same number from everybody and a small pool dies
-		// to it first; otherwise lowest health first. Role decides a tie.
+		// to it first; otherwise lowest health first. Role decides a tie. Announced is asked without the
+		// mitigation verdict (DataCenter.AreaHitAnnounced): a cast too small to spend a cooldown on is
+		// still area damage, and the large interruptible cast and the BossMod raidwide count as well.
 		//
 		// Protected members come last, as everywhere in this method; the last pick keeps the plain
 		// "is anyone hurt at all" check.
@@ -3636,7 +3638,7 @@ public struct ActionTargetInfo(IBaseAction action)
 				return pressed;
 			}
 
-			var byPoints = DataCenter.IsHostileCastingAOE;
+			var byPoints = DataCenter.AreaHitAnnounced;
 			IBattleChara? rest = null;
 			var restKey = float.MaxValue;
 			var restRole = int.MaxValue;

@@ -6195,6 +6195,17 @@ Kommentar.
   from the player is not second-guessed"); Behebung falsch — widerlegt, die zentrale Prüfung greift für alle drei
   (Wirkradius, Ziel); ausgeliefert und nichts ändert sich — trifft zu, solange er keinen Defense-Befehl gibt; dann bleibt
   die Beseitigung der Doppelung.
+- *Heilzielwahl, Gefährdungsklasse 3:* ordnete nach Punkten, solange `IsHostileCastingAOE` stand – die Frage mit dem
+  Minderungsurteil und dem Vorfilter, der unterbrechbare Casts verwirft. Konzept 07 legt die Regel ohne Größenausnahme fest
+  („solange ein Flächenschaden angekündigt ist"). Jetzt `DataCenter.AreaHitAnnounced`: Flächenmarker auf der Gruppe,
+  `IsHostileCastingAreaUnrated`, `IsHostileCastingLargeArea`, BossModReborn-Raidwide im Minderungsfenster; eine Erkennung
+  ohne Entscheidung. *Falsifikation:* kein Defekt — widerlegt, der große unterbrechbare Cast und der nur angesagte Raidwide
+  fehlten der Zielwahl; Behebung falsch — stärkste Gegenposition: Bei einem bekannt kleinen Raidwide ordnet die Zielwahl
+  jetzt nach Punkten und kann einen Tank mit Dauerschaden hinter einen Schadensausteiler stellen. Eine eigene
+  Größenschwelle verworfen: Gemessene Anteile irren nur nach unten (Konzept 13), ein unterschätzter Treffer ließe gerade
+  im gefährlichen Fall nach Prozent ordnen; der kleine Fall kostet nur die Reihenfolge zweier Verletzter, die der Treffer
+  beide nicht gefährdet, und die vorausberechnete Gesundheit rechnet den Dauerschaden des Tanks ein. Ausgeliefert und
+  nichts ändert sich — trifft zu, wo kein Flächenschaden angesagt ist; dort bleibt die Ordnung nach Prozent.
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
