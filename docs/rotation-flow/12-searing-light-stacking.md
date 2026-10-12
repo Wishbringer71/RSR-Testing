@@ -164,7 +164,7 @@ aus; das ist die Defektklasse aus `TODO.md`.
 Spielbeobachtung.** Der Wirktext der Beschwörung gewährt selbst Refulgent Lux („Additional Effect:
 Grants Refulgent Lux Duration: 30s“). In dem Augenblick, in dem die Beschwörung aufgeht, wird Lux
 Solaris also wirkbar — und `HealAreaAbility` fragt die Kette **vor** `AttackAbility`
-(`CustomRotation_Ability.cs:175` und `:194` gegen den Angriffszweig weiter unten), kann den
+(in `CustomRotation.Ability` stehen die Heilzweige vor dem Angriffszweig), kann den
 Einschiebeplatz hinter der Beschwörung also nehmen, sobald die Flächenheilungsflagge steht und die Zündregel von Lux Solaris sie freigibt (`LuxSolarisDecision`, Konzept 08, „Wann Lux Solaris zündet“; seit A154 nicht mehr der allgemeine Flächenheil-Zweig). **Die
 Beschwörung erzeugt ihren eigenen Konkurrenten um den Platz dahinter; der Platz davor hat diesen
 Konkurrenten nicht.** Das ist ein zweites, vom Zeitpunktargument unabhängiges Argument für die
@@ -269,7 +269,7 @@ Zündung, solange der Status nicht innerhalb von `StatusRefreshGcdCount` GCDs en
 Fälle und erlaubt die billigen. **Er ist richtig gebaut und bleibt unangetastet.**
 
 Entscheidend dafür ist `StatusFromSelf = false` in `ModifySearingLightPvE`: `PlayerHasStatus`
-(`StatusHelper.cs:1351`, Quellenfilter in `AnyStatusMatches`) filtert nur bei `isFromSelf` auf die eigene Quelle, hier zählt also jeder
+(`StatusHelper.PlayerHasStatus`, Quellenfilter in `AnyStatusMatches`) filtert nur bei `isFromSelf` auf die eigene Quelle, hier zählt also jeder
 fremde Buff. Sein Gegenstück `HasSearingLight` (`SummonerRotation.cs:266`) ruft
 `PlayerHasStatus(true, …)` und zählt nur den eigenen — auch das ist für seine ursprüngliche Frage
 richtig. Aus dem Zusammentreffen beider entsteht der Befund von V1.
@@ -503,7 +503,7 @@ kein bloßes Aufrufen.
 ## Die Buchführung: welche Frage sie beantwortet
 
 Der naheliegende Zusatz wäre, die Wiederholzeiten der anderen mitzuschreiben. Die Information ist
-verfügbar: `IStatus.SourceId` benennt den Urheber, `StatusHelper.PlayerHasStatus` (`:1164`) liest ihn
+verfügbar: `IStatus.SourceId` benennt den Urheber, `StatusHelper.PlayerHasStatus` liest ihn
 über den Quellenfilter in `AnyStatusMatches` bereits. Ab der ersten beobachteten Zündung eines Beschwörers steht fest, wann er frühestens
 wiederkehren kann. Die Regel wäre dann: außerhalb eines Fensters nur zünden, wenn kein anderer
 bekannter Beschwörer die Lücke decken könnte.
@@ -642,7 +642,7 @@ unterschätzt, nicht überschätzt. Unterbrechungen des Schadens sind nicht mode
 
 **Phasen ohne Ziel waren als Modellgrenze benannt und sind keine.** Sie wären eine, wenn V7 dort
 zünden könnte — eine Ladung auf einen Abschnitt ohne Gegner ist reiner Verlust. Der Pfad gibt das
-aber nicht her: `AttackAbility` wird in `CustomRotation_Ability.cs:426` nur unter
+aber nicht her: `AttackAbility` wird in `CustomRotation.Ability` nur unter
 `HasHostilesInRange` aufgerufen, die Zielprüfung steht also vor jeder Zündung, der heutigen wie der
 neuen. Das Modell darf diesen Fall auslassen, weil der Code ihn ausschließt.
 
@@ -1044,12 +1044,9 @@ members"; ein Beschwörer in einer anderen Allianzgruppe verstärkt diesen Spiel
 damit eine Gruppenfrage, keine Allianzfrage — anders als bei der Wiederbelebung, wo die Allianz je
 nach `RaiseType` mitzählt.
 
-**Zwei Stellen bleiben bewusst unverändert.** Die Burst-Medizin (`UseBurstMedicine` in
-`SMN_Reborn.cs`) fragt weiter
-nach dem **eigenen** Buff: Sie ist eine Fünfzehn-Minuten-Ressource und gehört in das eigene
-Solar-Fenster, das stärkste des Zyklus; an einen fremden Buff gehängt landete sie irgendwo. Und
-`ChurinSMN.cs` trägt denselben V1-Befund (`:995`, `:1015`), ist aber fremdes Werk mit eigener
-Abstimmung — erfasst, nicht bearbeitet.
+**Die Burst-Medizin bleibt beim eigenen Buff.** `UseBurstMedicine` in `SMN_Reborn.cs` fragt nach dem **eigenen**
+Buff: Sie ist eine Fünfzehn-Minuten-Ressource und gehört in das eigene Solar-Fenster, das stärkste des Zyklus; an
+einen fremden Buff gehängt landete sie irgendwo.
 
 ### Die Kopplung zwischen Zündung und Beschwörungswahl
 
@@ -1071,14 +1068,6 @@ Solar-Phase zurück — ist das ohne Wirkung.
 gleichzeitig frei und können im selben Augenblick zünden; einer verschwendet. Das Modell schreibt
 sequenziell zu und bildet das nicht ab. Die erweiterten Fenster verteilen die Gelegenheiten und machen
 die Kollision seltener, nicht häufiger.
-
-## Erfasst, nicht bearbeitet
-
-`ChurinSMN.cs` trägt denselben V1-Befund (`:1015`, Aetherflow-Ausgabe an `HasSearingLight`). Beim
-Zündfenster ist die fremde Rotation dagegen bereits weiter: Sie benutzt `BahamutBurst` (`:948`),
-zündet also in jeder großen Beschwörung — allerdings ohne Gruppenprüfung, also auch bei einem
-einzelnen Beschwörer. Fremde Rotationsdatei mit eigener Abstimmung; der Befund wird benannt, nicht
-behoben.
 
 ## Grenzen des Nachweises
 

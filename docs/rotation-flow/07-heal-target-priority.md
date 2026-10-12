@@ -394,8 +394,8 @@ mehr als nichts.
 **Der Rückfall fällt kurz vor Phasenende, gemessen an der Jobleiste (A137).** Die Phase liest
 `SMN_Reborn` aus `InPhoenix` und der Beschwörungszeit (`SummonTimeEndAfterGCD`), nicht aus dem Status
 Firebird Trance (3229). Dieser Status macht nach seinem Wirktext Fountain of Fire und Brand of
-Purgatory wirkbar und wird in den Basisrotationen sonst nur von `ModifyBrandOfPurgatoryPvP` gelesen;
-`ChurinSMN` liest ihn wie der alte Rückfall. Dass das Spiel ihn im PvE setzt, ist jetzt belegt: Die
+Purgatory wirkbar und wird in den Basisrotationen sonst nur von `ModifyBrandOfPurgatoryPvP` gelesen. Dass das
+Spiel ihn im PvE setzt, ist belegt: Die
 Status-Tabelle des Spiels (xivapi, 02.10.2026) kennt genau einen Status dieses Namens, 3229, Job SMN, mit
 dem Wirktext „Able to execute Fountain of Fire and Brand of Purgatory" — beides PvE-Aktionen. Die
 Jobleiste bleibt die Quelle der Phase, weil sie auch die Restzeit liefert; der Status wäre ein

@@ -3,7 +3,7 @@
 Entwurfsdokument nach ADR-Struktur. Es stellt den geltenden Stand dar; die
 Prüfhistorie steht in `AUDIT_LOG.md` (A7, Register #66).
 
-## Ergebnis
+## Stand
 
 Der strukturelle Umbau ist abgeschlossen. Von den vier Verhaltensfragen, die danach offen standen, sind drei
 im Code gelöst (A7, 05.09.2026). Die vierte (C1) ist keine offene Frage mehr: Die Vereinfachung ist verworfen,
@@ -197,8 +197,8 @@ Schreibweise zusätzlich die Vorgängeraktion, die gegatete nicht.
 
 **Entscheidung: Die Gates bleiben.** Die gegatete Form ist das geltende Verhalten. Es gibt keinen Defekt, den eine
 Vereinfachung beheben würde. Sie wäre nur eine Umformung mit möglicher Verhaltensänderung, also bleibt die Form.
-`BaseAction.Use()` wirkt bei Aktionen auf ein Ziel `AdjustedID` (`BaseAction.cs:346/352`), bei Bodenzielen `ID`
-(`:325/331`). Die frühere Aussage, `Use()` wirke immer `ID`, war falsch (C106).
+`BaseAction.Use()` wirkt bei Aktionen auf ein Ziel `AdjustedID`, bei Bodenzielen (Zweig `TargetInfo.IsTargetArea`)
+`ID`. Die frühere Aussage, `Use()` wirke immer `ID`, war falsch (C106).
 
 ## Was ausgeschlossen wurde und warum
 

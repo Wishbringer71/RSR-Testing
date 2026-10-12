@@ -1357,8 +1357,8 @@ darauf aufbauenden Stufen liefen ins Leere, und der Aufrufer fiel auf den Träge
 Tank-Haltung zurück. Praktisch: **Die generische Heilzielwahl war blind für den am
 schwersten verletzten Gruppenteil und wählte faktisch immer den Tank.** War die Liste
 einmal gefüllt, wurde bevorzugt der Unverwundbare geheilt. Derselbe Fehler stand ein
-zweites Mal in `SCH_Reborn.cs:830`, wo Excogitation nur auf gerade unverwundbare
-Ziele ging.
+zweites Mal in der Excogitation-Heilzielwahl von `SCH_Reborn`, wo Excogitation nur auf gerade unverwundbare
+Ziele ging; dort liest sie jetzt `NoNeedHealingInvuln()` ohne Negation.
 
 Umgesetzt ist beides zusammen, denn getrennt wäre der erste Schritt schädlich: Sobald
 die Liste normale Ziele enthält, fielen die geschützten heraus und der Zufallszustand

@@ -172,7 +172,7 @@ käme sie nie. Die Grenze verläuft deshalb bei der Wirkungsstärke: Die schwach
 die nötige Rate um ein Neuntel bis ein Sechstel, die starken (ab 20 %) um ein Viertel bis zwei
 Drittel.
 `StatusHelper.RampartStatus` führt genau die starken, und dieselbe Liste tragen Shadow Wall und
-Shadowed Vigil bereits als `StatusProvide` (`DarkKnightRotation.cs:238`, `:404`) — die Staffelung
+Shadowed Vigil bereits als `StatusProvide` (`ModifyShadowWallPvE`, `ModifyShadowedVigilPvE` in `DarkKnightRotation`) — die Staffelung
 ist im Projekt etabliert, The Blackest Night stand nur außerhalb. Über `StatusProvide` kann sie
 diese Staffelung nicht ausdrücken, weil ihr eigener Status eine Barriere ist und kein
 Minderungsstatus; deshalb steht die Prüfung in der Rotation.
@@ -350,8 +350,7 @@ Drei Stellen wirken die Fähigkeit, und zwei davon trugen keine eigene Bedingung
 | Selbstschutz | Einzelabwehr | **keine** eigene Bedingung, zweite Priorität nach Oblation |
 
 Beim Party-Zweig ist die Absicht dreifach belegt: Der Optionstext verspricht Schaltbarkeit, die
-Oblation-Nachbarzeile prüft ihr Gegenstück `OblationLantern`, und `ChurinDRK.cs:173` prüft
-`BlackLantern` am selben Zweig. Verschärfend blendet die Oberfläche den Schwellwert aus, solange der
+Oblation-Nachbarzeile prüft ihr Gegenstück `OblationLantern`. Verschärfend blendet die Oberfläche den Schwellwert aus, solange der
 Schalter aus ist (`Parent = nameof(BlackLantern)`) — die einzige Stellschraube des laufenden
 Zweigs war unsichtbar.
 

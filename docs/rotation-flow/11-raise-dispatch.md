@@ -30,7 +30,7 @@ Bedingungen schließen einander aus:
 | `CustomRotation_GCD.RaiseSpell`, Zweig `RaisePlayerBySwift` | wählt Spontanität **nur** bei `WeaponRemain <= 0.5f` | Auswahl |
 | `RSCommands_Actions.DoAction` | verweigert **jede** Fähigkeit bei `0 < DefaultGCDRemain <= 0.5f` | Ausführung |
 | `RSCommands_Actions.cs:49` | dieselbe Sperre im Klick-Gate | Ausführung |
-| `CustomRotation_Ability.cs:28` | dieselbe Sperre im Fähigkeiten-Dispatcher | Auswahl |
+| `CustomRotation.Ability`, Einschiebesperre (`WeaponRemain <= 0.5f`) | dieselbe Sperre im Fähigkeiten-Dispatcher | Auswahl |
 
 Spontanität ist eine Fähigkeit. Die beiden Fenster decken sich bis auf den einzigen Punkt
 `DefaultGCDRemain == 0`. Daraus folgt das beobachtete Verhalten vollständig:
@@ -42,7 +42,7 @@ Spontanität ist eine Fähigkeit. Die beiden Fenster decken sich bis auf den ein
 - genau `0`: der einzige Zustand, in dem Auswahl und Ausführung zusammenpassen.
 
 Bewegung spielt keine Rolle: Spontanität hat keine Wirkzeit, die Wirkzeitsperre in
-`ActionBasicInfo.NeedsCasting` (`:610`) wird gar nicht erreicht.
+`ActionBasicInfo.NeedsCasting` wird gar nicht erreicht.
 
 ### Der Beleg aus dem Spiel
 
@@ -122,8 +122,8 @@ Der Wiederbelebungsblock existiert **zweimal**, und eine Einstellung entscheidet
 
 | `RaisePlayerFirst` | Ort | Was davor gewinnt |
 |---|---|---|
-| an | `CustomRotation_GCD.cs:127` | Notfall, Unterbrechung, Reinigung, Provokation |
-| **aus (Vorgabe)** | `:315` | zusätzlich **die gesamte Heilung** (`:244`) und die Einzelziel-Verteidigung (`:302`) |
+| an | `CustomRotation.GCD`, Zweig nach `ProvokeGCD` | Notfall, Unterbrechung, Reinigung, Provokation |
+| **aus (Vorgabe)** | `CustomRotation.GCD`, Zweig nach `DefenseSingleGCD`, vor `GeneralGCD` | zusätzlich `MoveForwardGCD`, **die gesamte Heilung** und die Flächen- und Einzelziel-Verteidigung |
 
 Mit der Vorgabe steht die Wiederbelebung hinter jeder Heilung. Das ist die dokumentierte Bedeutung
 der Einstellung und kein Defekt — es erklärt aber, warum ihre Wahl das beobachtete Verhalten stark
@@ -151,9 +151,9 @@ Wiederbeleben einzustellen.
 
 Die Behebung unterscheidet zwei Zweigarten, weil sie verschiedene Fragen stellen:
 
-- `HardCastNormal` (`:130`, `:357`) fragt über `SwiftcastComingForRaise`, ob die Rotation
+- `HardCastNormal` (in beiden Raise-Zweigen von `CustomRotation.GCD`) fragt über `SwiftcastComingForRaise`, ob die Rotation
   Spontanität überhaupt noch für diese Wiederbelebung ausgeben wird. Nur wenn nicht, wird hartgewirkt.
-- `HardCastSwiftCooldown` und `HardCastOnlyHealerSwiftCooldown` (`:140`, `:159`, `:367`, `:409`)
+- `HardCastSwiftCooldown` und `HardCastOnlyHealerSwiftCooldown` (ebenda)
   wägen ab, ob die Wirkzeit kürzer ist als die Wartezeit auf Spontanität. Diese Abwägung bleibt
   unangetastet; ergänzt ist allein der Fall `!RaisePlayerBySwift`, in dem nichts kommt, worauf zu
   warten wäre.
