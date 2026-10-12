@@ -6091,6 +6091,23 @@ beobachtet.
 
 **Prüfgrad:** Quellen und Code gelesen; kein Code, kein Modelllauf.
 
+### A269 · Tankbuster-Plan: der GCD als ungeprüfte Ersatzgröße (12.10.2026)
+
+- *Seine Frage:* ob der Horizont H aus Upstream stammt. Nein: Plan, Vorhersage und Tabelle gibt es upstream nicht; H
+  kam am 04.10.2026 mit `2d40c84c0` und `c6701fb9e`. Seine Folgerung „also hast du einfach nur unsauber geplant" trifft
+  zu.
+- *Ursache am System:* Der GCD stand im Plan für vier verschiedene Zeiten: Eintreffen des Treffers, Reserve vor ihm,
+  Verfall einer Bestätigung, Sperre nach einer Verweigerung. Keine wurde am Spiel geprüft. Die Definition of Ready
+  verlangt Belege für alle mitwirkenden Mechaniken; die Zeitpunkte des Spiels (Snapshot, Laufzeit, Animationssperre)
+  wurden als Mechanik nicht erhoben. Sieben Reviews und das Modell prüften die Regeln gegeneinander, nicht gegen diese
+  Zeiten – das Modell übernahm dieselbe Annahme (Treffer bis einen GCD nach dem Wirken).
+- *Nebenbei gefunden:* Drei Stellen des Konzepts nannten nach d8aa2d91d und A266 noch den alten Stand (Rechnung,
+  Punkte 3 und 6: fehlende Dauer von Reflexion und Schiltron, „alles" nach Verweigerung ohne neuen Versuch).
+  Korrigiert.
+- *Folge:* ein TODO-Eintrag über alle vier Stellen zusammen.
+
+**Prüfgrad:** Versionsgeschichte und Konzept gelesen; kein Code.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

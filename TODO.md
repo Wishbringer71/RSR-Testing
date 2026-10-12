@@ -285,14 +285,25 @@ Loop vor jedem Bau.
   - Ob die Zeitangabe von BossModReborn den Snapshot oder das Zufügen meint (für die Klasse über den Plan hinaus).
   - Die Modellerweiterung O9/O10.
 
-### Horizont H gegen den Snapshot prüfen · N
+### Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt · N
 
-**Befund (12.10.2026, Konzept 09, „Spielerweite Sperre und Frist"):** H = R + GCD verlangt, dass eine Minderung bis
-einen GCD nach dem Ende des Wirkens steht. Nach dem Snapshot-Beleg (Community) genügt das Ende des Wirkens samt
-Laufzeit; für Holmgang zählt das Zufügen.
-- *Im Kampf:* Die Fenster öffnen sich heute bis zu einen GCD zu spät. Das kann ein Glied mit kurzer Wirkdauer ganz
-  ausschließen; die Richtung ist zu viel Mittel.
-- *Offen:* voller Loop über alle Regeln, die H tragen (Fenster, Invarianten 4 und 5, Modell).
+**Befund (A269):** Der Plan setzt an mehreren Stellen einen GCD ein, ohne dass die Zeit am Spiel geprüft wurde. Gemeint
+sind je verschiedene Größen:
+- *Horizont H = R + GCD* („Eintreffen des Treffers"): Der Snapshot liegt am Ende des Wirkbalkens (Community-Beleg),
+  für Holmgang zählt das Zufügen. Eine Minderung muss also bis zum Snapshot stehen, nicht einen GCD länger.
+  - Daran hängen: Fenster („Wirkdauer weniger ein GCD"), Invariante 5 (Wirkdauer über zwei GCD) und die
+    Erneuerungsschwelle („mehr als Wirkdauer weniger ein GCD übrig").
+- *Letzter GCD als Reserve für den Rückfall* (Z2: „im letzten GCD nichts, wenn ein Glied fehlt"; Zurückhalten bis
+  R > GCD): Gebraucht werden Druckplätze bis zur Frist, also Animationssperre je Druck und Laufzeit (Konzept 09,
+  „Spielerweite Sperre und Frist", Regel 5).
+- *Bestätigung verfällt nach einem GCD:* Gemeint ist die Laufzeit von Druck bis Bestätigung, die gemessen werden kann.
+- *Verweigerung sperrt einen GCD:* Gemeint ist das Ende der Ursache, unter Stun deren Restzeit (eigener Eintrag oben).
+
+Ausgenommen ist die Living-Dead-Uhr (zwei GCD Vorlauf): Dort ist der GCD die Zeit, die eine Heilung braucht, also die
+gemeinte Größe.
+- *Im Kampf:* Fenster öffnen bis zu einen GCD zu spät, und Glieder mit kurzer Wirkdauer fallen ganz heraus – zu viel
+  Mittel. Der Rückfall „alles" beginnt einen GCD vor dem Treffer statt bei den letzten nötigen Druckplätzen.
+- *Offen:* ein Loop über alle Stellen zusammen, mit Modell. Erst Konzept, dann Code.
 
 ### Tankbuster-Plan: keine Reserve nach einem knapp überlebten Treffer · N
 

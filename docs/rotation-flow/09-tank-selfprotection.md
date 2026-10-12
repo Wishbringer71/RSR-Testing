@@ -1355,8 +1355,8 @@ Für den frühesten gemessenen Tankbuster, der auf dich gewirkt wird:
    also voll – sein Hinweis.
 3. **Was du noch tun kannst:** jede eigene Minderung, die erlernt, aktiviert und nach ihren eigenen Prüfungen
    nutzbar ist (Ressourcen eingeschlossen), bis einen GCD vor dem Einschlag abgeklungen ist, eine bekannte Wirkdauer
-   von mehr als zwei GCD hat (Zustandsmodell, Invariante 5; Reflexion und Schiltron nennen in der Tabelle keine,
-   `TODO.md`), nach Wirktext gegen diese Schadensart mindert oder eine Barriere legt und beim Einschlag nicht schon steht.
+   von mehr als zwei GCD hat (Zustandsmodell, Invariante 5; wo der Wirktext sie offen lässt, aus dem Merkmal, unterhalb
+   seiner Stufe unbekannt, `TODO.md`), nach Wirktext gegen diese Schadensart mindert oder eine Barriere legt und beim Einschlag nicht schon steht.
    Ein Knopf zählt einmal (Rachsucht/Verdammnis, Urinstinkt/Urimpuls). Eine eigene Minderung, die schon gedrückt ist,
    deren Status aber noch nicht liegt, zählt als stehend – wie lange, regelt das Zustandsmodell (Druck aus
    `BaseAction.Use`, Bestätigung aus dem Effekt-Handler, Datensatz `TankbusterForecast.OwnPending`, Urteil
@@ -1372,8 +1372,8 @@ Für den frühesten gemessenen Tankbuster, der auf dich gewirkt wird:
    Hinausgehen lief; bei mehreren Status einer Aktion zählt der längste. Gruppenwerkzeuge werden nicht verfolgt. Eine
    Erneuerung zählt so erst, wenn die erneuerte Kopie liegt; lag sie beim Bestätigen schon (mehr als Wirkdauer weniger
    ein GCD übrig), gilt sie sofort als gesehen. Reflexion würde überbrückt, bis ihr
-   Debuff auf einem Gegner erscheint; solange ihre Wirkdauer in der Tabelle fehlt (`TODO.md`), ist sie weder Kandidat
-   noch überbrückt und zählt erst, wenn ihr Debuff auf dem Wirkenden steht. **Nicht** dabei sind Gruppenwerkzeuge – Barriere oder
+   Debuff auf einem Gegner erscheint; unterhalb ihrer Merkmalsstufe, wo ihre Wirkdauer unbekannt ist (`TODO.md`), ist
+   sie weder Kandidat noch überbrückt und zählt erst, wenn ihr Debuff auf dem Wirkenden steht. **Nicht** dabei sind Gruppenwerkzeuge – Barriere oder
    Minderung über die Gruppe (Abschütteln, Divine Veil, Dark Missionary, Heart of Light): Sie gehören der
    Flächenabwehr, und Abschütteln hebt Verdammnis und Urimpuls des Kriegers selbst auf. Reflexion, ein Debuff auf dem
    Gegner, ist dabei.
@@ -1383,9 +1383,9 @@ Für den frühesten gemessenen Tankbuster, der auf dich gewirkt wird:
    Mittel", nicht seine Regel). Reicht der Treffer schon ohne alles nicht zum Tod, ist das Bündel leer.
 5. **Die Unverwundbarkeit** nur, wenn kein Bündel reicht – und nur, wenn sie bis einen GCD vor dem Einschlag bereit
    ist. „Mit kanonen auf spatzen schießen" sonst.
-6. **Alles,** nur wenn kein Bündel reicht und die Unverwundbarkeit nicht zu haben ist – auf Abklingzeit,
-   abgeschaltet oder vom Spiel verweigert, ohne dass vor dem letzten GCD ein neuer Versuch bleibt (seine Präzisierung;
-   Zustandsmodell, „Verweigerung"). Nie die Unverwundbarkeit und die Minderungen dazu.
+6. **Alles,** nur wenn kein Bündel reicht und die Unverwundbarkeit nicht verfügbar ist – Abklingzeit, Option, Stufe
+   oder Freischaltung, Leiste, TTK-Schwelle der Aktion (seine Präzisierung). Eine Verweigerung beim Druck macht nie
+   „alles" (Zustandsmodell, „Verweigerung der Unverwundbarkeit"). Nie die Unverwundbarkeit und die Minderungen dazu.
    Nach den Zahlen überlebst du dann nicht, aber die Zahlen sind ein Höchstwert, und vielleicht legt ein anderer noch
    einen Debuff oder Schild.
 
@@ -1627,9 +1627,12 @@ der Plan für dieses Wirken nichts mehr drückt.
   das Zufügen meint, und sie ist erst nach diesem Beleg anwendbar.
 - Ein Marker nennt keinen Zeitpunkt: kein Verbraucher.
 
-**Folge für eine bestehende Regel (offen, `TODO.md`):** Der Horizont H = R + GCD verlangt, dass eine Minderung bis einen
-GCD nach dem Ende des Wirkens steht. Nach dem Snapshot-Beleg genügt das Ende des Wirkens samt Laufzeit. Die Fenster
-öffneten sich dann bis zu einen GCD früher. Für Holmgang und Totenerweckung gilt das Zufügen.
+**Folge für bestehende Regeln (offen, `TODO.md`, „der GCD als Ersatz"):** Der Plan setzt den GCD für vier
+verschiedene Zeiten ein, ohne sie am Spiel geprüft zu haben:
+- das Eintreffen des Treffers, H = R + GCD; nach dem Snapshot-Beleg genügt das Ende des Wirkens samt Laufzeit;
+- die Reserve vor dem Treffer, gemeint sind Druckplätze;
+- den Verfall einer Bestätigung, gemeint ist die gemessene Laufzeit;
+- die Sperre nach einer Verweigerung, gemeint ist das Ende ihrer Ursache.
 
 **Ausgeschlossen:**
 - *Vor einem Stun vorbeugend drücken:* Ein Stun ist nicht vorhersagbar, außer über ein BossModReborn-Modul, und dafür
