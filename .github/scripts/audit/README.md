@@ -10,6 +10,10 @@ Run from the repository root with no arguments:
 python3 .github/scripts/audit/scan.py
 ```
 
+Before a push, `run_ci_checks.py` runs every Python step of `.github/workflows/build.yaml` in
+the workflow's order, read from the workflow itself, so a local run covers what CI covers - a
+run over `check_*.py` alone misses the scans and model scripts the workflow also calls (A264).
+
 | Script | Defect classes | Found (AUDIT_LOG) |
 |---|---|---|
 | `scan.py` | Range/default mismatches, config properties never read, stale `RotationDesc`, dead code, unguarded dereferences | A8: SAM `MeikyoShisuiCountdown`, BLU `UseBasicInstinct`/`UseMightyGuard`, nine `RotationDesc`, eleven configs, `OldUpdateTargets` |

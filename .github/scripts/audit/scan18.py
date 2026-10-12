@@ -52,6 +52,9 @@ ACCEPTED = {
         'assemblies from elsewhere, so the feature this configured is gone rather than broken',
     'ActionSequencerIndex':
         'internal persisted index, no UI and no label - stored state, not a promise to the user',
+    'UiPaddingScale':
+        'read outside this tree: Configs implements RebornMaterial.IM3Settings, and the package '
+        '(7.5.6.2, upstream 27f6acb41) reads it through that interface (name found in its DLL)',
     'LastSeenChangelog':
         'internal persisted marker for a changelog prompt that no longer exists - stored state, '
         'not a promise to the user',

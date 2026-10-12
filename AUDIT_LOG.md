@@ -5965,8 +5965,12 @@ Wechsel greift, schreibt das Protokoll selbst.
   - Kein Vertrag berührt: `CommandTarget` und `NextAct.Target` sind neue Upstream-Typen, nicht persistiert; die neuen
     Einstellungen sind Oberflächenwerte und `Crucible of the Unbroken – Ymir logic`.
 - *Version:* `Directory.Build.props` auf 7.5.6.24.
+- *CI auf `main` (Lauf 38212909881):* Build grün, `scan18.py` rot: `UiPaddingScale` ohne Leser im Baum. Gelesen wird
+  er über `RebornMaterial.IM3Settings`, das `Configs` implementiert; der Name steht in der Paket-DLL 7.5.6.2
+  (geprüft). Als akzeptiert mit diesem Grund eingetragen. Ursache am System: Lokal liefen nur `check_*.py`, nicht die
+  übrigen Python-Schritte des Workflows. Neu: `run_ci_checks.py` liest die Schritte aus `build.yaml` und führt alle aus.
 
-**Prüfgrad:** statisch, Prüfskripte; Compile über die CI.
+**Prüfgrad:** statisch, Prüfskripte (alle 27 Python-Schritte des Workflows); Compile über die CI.
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
