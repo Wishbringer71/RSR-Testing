@@ -1,0 +1,55 @@
+{
+  "source": "xivapi v2, sheets TraitTransient (Description) and Trait (Level)",
+  "fetched": "2026-10-12",
+  "traits": [
+    {
+      "trait": "Enhanced Addle",
+      "trait_row": 643,
+      "level": 98,
+      "action": "Addle",
+      "seconds": 15
+    },
+    {
+      "trait": "Enhanced Feint",
+      "trait_row": 641,
+      "level": 98,
+      "action": "Feint",
+      "seconds": 15
+    },
+    {
+      "trait": "Enhanced Intervention",
+      "trait_row": 413,
+      "level": 82,
+      "action": "Intervention",
+      "seconds": 8
+    },
+    {
+      "trait": "Enhanced Nascent Flash",
+      "trait_row": 419,
+      "level": 82,
+      "action": "Nascent Flash",
+      "seconds": 8
+    },
+    {
+      "trait": "Enhanced Reprisal",
+      "trait_row": 640,
+      "level": 98,
+      "action": "Reprisal",
+      "seconds": 15
+    },
+    {
+      "trait": "Enhanced Sheltron",
+      "trait_row": 262,
+      "level": 74,
+      "action": "Sheltron",
+      "seconds": 6
+    },
+    {
+      "trait": "Enhanced Physis II",
+      "trait_row": 638,
+      "level": 98,
+      "action": "the effect increasing HP recovered by healing actions",
+      "seconds": 15
+    }
+  ]
+}

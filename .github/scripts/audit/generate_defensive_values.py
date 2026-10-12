@@ -38,6 +38,7 @@ PROPERTIES = ROOT / "RotationSolver.SourceGenerators" / "Properties"
 SOURCES = [PROPERTIES / "ActionId.resx", PROPERTIES / "DutyAction.resx"]
 OUTPUT = ROOT / "RotationSolver.Basic" / "Data" / "DefensiveValues.g.cs"
 STATUS_SHEET = PROPERTIES / "Status.resx"
+TRAIT_DURATIONS = Path(__file__).resolve().with_name("trait_durations.json")
 ROTATION_SOURCES = ROOT / "RotationSolver.Basic" / "Rotations"
 STATUS_ASSIGNMENT = re.compile(r"^(\w+)\s*=\s*(\d+),", re.M)
 MODIFY_BODY = re.compile(r"Modify(\w+PvE)\(ref ActionSetting setting\)\s*\{(.*?)\n\t\}", re.S)
@@ -51,6 +52,20 @@ PROVIDE = re.compile(r"(Target)?StatusProvide\s*=\s*([^;]+);")
 SELF_MITIGATION = re.compile(r"[Rr]educ(?:es|ing) damage taken by (?:[^%.]{0,80}? by )?(\d{1,2})\s*%")
 # "Reduces damage dealt by nearby enemies by 10%", "Lowers target's damage dealt by 10%"
 ENEMY_MITIGATION = re.compile(r"(?:[Rr]educes|[Ll]owers)[^.]{0,60}?damage dealt[^.]{0,40}? by (\d{1,2})\s*%")
+# A self mitigation split by damage type: "Reduces physical damage taken by 10% and magic damage
+# taken by 20%" (Dark Mind). SELF_MITIGATION needs "damage taken" right after the verb and missed it,
+# so Dark Mind was neither a means of the tankbuster plan nor held under an invulnerability (A266).
+SELF_SPLIT_MITIGATION = re.compile(
+    r"[Rr]educ(?:es|ing) physical damage taken by (\d{1,2})\s*% and magic(?:al)? damage taken by (\d{1,2})\s*%"
+)
+# "Increases maximum HP by 20% and restores the amount increased" (Thrill of Battle), "Increases
+# maximum HP of a party member or self by 10%": the hit stays as large, the bearer's pool grows. For a
+# plan the raise counts like a barrier of that share of the old maximum; a hit measured under it is a
+# share of the RAISED maximum and has to be scaled back (concept 13).
+MAX_HP_UP = re.compile(r"[Ii]ncreases maximum HP (?:of [^.%]{0,40}? )?by (\d{1,2})\s*%")
+# "Block incoming attacks." (Bulwark): protects the bearer by a share the game does not state. No
+# figure, but it is a defence on the user - held under an invulnerability like any other (A266).
+GUARDS = re.compile(r"\bBlock incoming attacks\b")
 # Addle's split form, physical and magical named separately in one sentence.
 SPLIT_MITIGATION = re.compile(
     r"physical damage dealt by (\d{1,2})\s*%[^.]{0,20}?and magic(?:al)? damage dealt by (\d{1,2})\s*%"
@@ -129,7 +144,8 @@ def figure_end(text):
     """Where the first defensive figure in the text ends, or 0 when it states none."""
     ends = [
         match.end()
-        for pattern in (SPLIT_MITIGATION, ENEMY_MITIGATION, SELF_MITIGATION, BARRIER_SHARE)
+        for pattern in (SPLIT_MITIGATION, ENEMY_MITIGATION, SELF_MITIGATION, SELF_SPLIT_MITIGATION, BARRIER_SHARE,
+                        MAX_HP_UP, GUARDS)
         for match in [pattern.search(text)]
         if match
     ]
@@ -169,6 +185,18 @@ def extract(text):
     own = SELF_MITIGATION.search(text)
     if own:
         values["Self"] = int(own.group(1)) / 100
+
+    own_split = SELF_SPLIT_MITIGATION.search(text)
+    if own_split:
+        values["SelfPhysical"] = int(own_split.group(1)) / 100
+        values["SelfMagical"] = int(own_split.group(2)) / 100
+
+    raised = MAX_HP_UP.search(text)
+    if raised:
+        values["MaxHp"] = int(raised.group(1)) / 100
+
+    if GUARDS.search(text):
+        values["Guards"] = True
 
     barrier = BARRIER_SHARE.search(text)
     if barrier:
@@ -245,7 +273,8 @@ def status_mitigation(table):
     provided = provided_statuses()
     result = {}
     for row, (identifier, values) in table.items():
-        figures = {key: values.get(key, 0.0) for key in ("Self", "EnemyPhysical", "EnemyMagical")}
+        figures = {key: values.get(key, 0.0)
+                   for key in ("Self", "EnemyPhysical", "EnemyMagical", "SelfPhysical", "SelfMagical", "MaxHp")}
         if not any(figures.values()):
             continue
         base = identifier[:-3] if identifier.endswith("PvE") else identifier
@@ -257,11 +286,32 @@ def status_mitigation(table):
     return dict(sorted(result.items()))
 
 
+def trait_durations(identifiers):
+    """Row id to (identifier, seconds, level) for every action a trait extends - only where the effect
+    text leaves the number blank. The trait's own text names the action ("Extends the duration of
+    Reprisal to 15 seconds"); fetch_trait_durations.py reads them from the game data."""
+    if not TRAIT_DURATIONS.exists():
+        return {}
+    import json
+    found = {}
+    for trait in json.loads(TRAIT_DURATIONS.read_text(encoding="utf-8"))["traits"]:
+        identifier = re.sub(r"\W", "", trait["action"]) + "PvE"
+        for row, known in identifiers.items():
+            if known == identifier:
+                current = found.get(row)
+                # a later trait for the same action supersedes an earlier one from its level on
+                if current is None or trait["level"] > current[2]:
+                    found[row] = (identifier, trait["seconds"], trait["level"])
+    return dict(sorted(found.items()))
+
+
 def collect():
     found = {}
     durations = {}
+    collect.identifiers = {}
     for path in SOURCES:
         for identifier, row, values, duration in parse(path):
+            collect.identifiers.setdefault(row, identifier)
             if duration is not None and row not in durations:
                 durations[row] = (identifier, duration)
             if not values:
@@ -278,7 +328,15 @@ def collect():
     return dict(sorted(found.items())), dict(sorted(durations.items()))
 
 
-def render(table, durations, enmity=None, statuses=None):
+def extras(values):
+    """The non-positional figures as an object initializer, or nothing when the action has none."""
+    parts = [f"{key} = {values[key]:g}f" for key in ("SelfPhysical", "SelfMagical", "MaxHp") if values.get(key)]
+    if values.get("Guards"):
+        parts.append("Guards = true")
+    return " { " + ", ".join(parts) + " }" if parts else ""
+
+
+def render(table, durations, enmity=None, statuses=None, traits=None):
     lines = [
         "// <auto-generated>",
         "//     Generated by .github/scripts/audit/generate_defensive_values.py from the effect",
@@ -304,7 +362,39 @@ def render(table, durations, enmity=None, statuses=None):
         "\tfloat Self,",
         "\tfloat EnemyPhysical,",
         "\tfloat EnemyMagical,",
-        "\tfloat Barrier);",
+        "\tfloat Barrier)",
+        "{",
+        "\t/// <summary>The bearer takes this share less of a physical hit only (Dark Mind).</summary>",
+        "\tpublic float SelfPhysical { get; init; }",
+        "",
+        "\t/// <summary>The bearer takes this share less of a magical hit only (Dark Mind).</summary>",
+        "\tpublic float SelfMagical { get; init; }",
+        "",
+        "\t/// <summary>",
+        "\t/// The bearer's maximum HP rises by this share (Thrill of Battle). The hit stays as large, so",
+        "\t/// against it the raise works like a barrier of this share of the old maximum.",
+        "\t/// </summary>",
+        "\tpublic float MaxHp { get; init; }",
+        "",
+        "\t/// <summary>Protects the bearer by an unstated share - blocking (Bulwark).</summary>",
+        "\tpublic bool Guards { get; init; }",
+        "",
+        "\t/// <summary>",
+        "\t/// The share the bearer takes less of a hit of <paramref name=\"attackType\"/> (the action",
+        "\t/// sheet's AttackType): <see cref=\"Self\"/> together with the split figure for the type;",
+        "\t/// neither physical nor magical counts the smaller split figure.",
+        "\t/// </summary>",
+        "\tpublic float SelfAgainst(uint attackType)",
+        "\t{",
+        "\t\tvar split = attackType is >= (uint)AttackType.Slashing and <= (uint)AttackType.Shot ? SelfPhysical",
+        "\t\t\t: attackType == (uint)AttackType.Magic ? SelfMagical",
+        "\t\t\t: Math.Min(SelfPhysical, SelfMagical);",
+        "\t\treturn 1f - ((1f - Self) * (1f - split));",
+        "\t}",
+        "",
+        "\t/// <summary>Whether it protects its bearer at all: mitigation, barrier, raised maximum HP or block.</summary>",
+        "\tpublic bool ProtectsBearer => Self > 0f || SelfPhysical > 0f || SelfMagical > 0f || Barrier > 0f || MaxHp > 0f || Guards;",
+        "}",
         "",
         # The type is public and the assembly ships a documentation file, so a missing summary is a
         # build warning (CS1591) in every consumer's build as well as ours - generated code is not
@@ -327,7 +417,7 @@ def render(table, durations, enmity=None, statuses=None):
             f"{values.get(key, 0.0):g}f"
             for key in ("Self", "EnemyPhysical", "EnemyMagical", "Barrier")
         )
-        lines.append(f"\t\t[{row}] = new({figures}), // {identifier}")
+        lines.append(f"\t\t[{row}] = new({figures}){extras(values)}, // {identifier}")
         # The owner's measure for a big area hit is "above a large shield": more than a large
         # shield on the member being hit would absorb. A barrier only its caster can carry
         # (Manaward, 30%) answers that for nobody else, so it does not set the measure.
@@ -374,10 +464,41 @@ def render(table, durations, enmity=None, statuses=None):
         [
             "\t};",
             "",
-            "\t/// <summary>The stated duration in seconds, or 0 when the effect text states none.</summary>",
+            "\t/// <summary>",
+            "\t/// Durations a trait sets where the effect text leaves the number blank (\"Duration: s\"), with the",
+            "\t/// level the trait is learned at - the trait's own text (\"Extends the duration of Reprisal to",
+            "\t/// 15 seconds\"), fetched from the game data (fetch_trait_durations.py). The second source: in the",
+            "\t/// game the trait is read from the client itself (<see cref=\"TraitDurations\"/>), which weighs",
+            "\t/// more. Below the trait's level the duration is not stated anywhere, so it stays unknown.",
+            "\t/// </summary>",
+            "\tpublic static readonly Dictionary<uint, (float Seconds, int Level)> TraitDurationByActionId = new()",
+            "\t{",
+        ]
+    )
+    for row, (identifier, seconds, level) in (traits or {}).items():
+        if row not in durations:
+            lines.append(f"\t\t[{row}] = ({seconds}f, {level}), // {identifier}")
+    lines.extend(
+        [
+            "\t};",
+            "",
+            "\t/// <summary>",
+            "\t/// The stated duration in seconds: from the effect text, or - where a trait sets it and the text",
+            "\t/// leaves the number blank - from that trait once the player's synced level has it, read in the",
+            "\t/// game first and from <see cref=\"TraitDurationByActionId\"/> where the game gives nothing; 0",
+            "\t/// when none states one.",
+            "\t/// </summary>",
             "\tpublic static float DurationOf(uint actionId)",
             "\t{",
-            "\t\treturn DurationByActionId.TryGetValue(actionId, out var seconds) ? seconds : 0f;",
+            "\t\tif (DurationByActionId.TryGetValue(actionId, out var seconds))",
+            "\t\t{",
+            "\t\t\treturn seconds;",
+            "\t\t}",
+            "",
+            "\t\treturn (TraitDurations.TryInGame(actionId, out var trait) || TraitDurationByActionId.TryGetValue(actionId, out trait))",
+            "\t\t\t&& DataCenter.PlayerSyncedLevel() >= trait.Level",
+            "\t\t\t? trait.Seconds",
+            "\t\t\t: 0f;",
             "\t}",
             "",
             "\t/// <summary>",
@@ -414,7 +535,7 @@ def render(table, durations, enmity=None, statuses=None):
     )
     for row, (name, identifier, figures) in (statuses or {}).items():
         values = ", ".join(f"{figures[key]:g}f" for key in ("Self", "EnemyPhysical", "EnemyMagical"))
-        lines.append(f"\t\t[{row}] = new({values}, 0f), // {name} from {identifier}")
+        lines.append(f"\t\t[{row}] = new({values}, 0f){extras(figures)}, // {name} from {identifier}")
 
     # The same pairs the other way round: which statuses mean an action's mitigation already stands, so
     # a reader that asks "what could still be added" does not count it twice.
@@ -507,6 +628,22 @@ def self_test():
             "Creates a barrier that nullifies damage totaling up to 30% of maximum HP. Duration: 20s",
             {"Barrier": 0.3},
         ),
+        # Dark Mind: a self mitigation split by damage type (A266).
+        (
+            "Reduces physical damage taken by 10% and magic damage taken by 20%. Duration: 10s",
+            {"SelfPhysical": 0.1, "SelfMagical": 0.2},
+        ),
+        # Thrill of Battle and a raise on a party member: the pool grows, the hit does not shrink.
+        (
+            "Increases maximum HP by 20% and restores the amount increased. Additional Effect: Increases HP "
+            "recovery via healing actions on self by 20% Duration: 10s",
+            {"MaxHp": 0.2},
+        ),
+        ("Increases maximum HP of a party member or self by 10% and restores the amount increased.", {"MaxHp": 0.1}),
+        # Bulwark: a defence on the bearer without a figure.
+        ("Block incoming attacks. Duration: 10s", {"Guards": True}),
+        # "reduced" maximum HP is no raise.
+        ("Evasion is increased while maximum HP is reduced.", {}),
         # A barrier stated as potency carries no share, and must not be mistaken for one.
         ("absorbs damage equivalent to a heal of 21,000 potency", {}),
         # Healing is not mitigation.
@@ -587,7 +724,12 @@ def main():
         print("No status could be tied to a rated action - the status sheet or the names have changed.")
         return 1
 
-    rendered = render(table, durations, enmity, statuses)
+    traits = trait_durations(collect.identifiers)
+    if TRAIT_DURATIONS.exists() and not traits:
+        print("No trait in trait_durations.json names an action of the sheets - the names have changed.")
+        return 1
+
+    rendered = render(table, durations, enmity, statuses, traits)
     checking = "--check" in sys.argv
 
     if checking:

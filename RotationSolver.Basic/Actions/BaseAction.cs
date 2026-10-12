@@ -295,6 +295,18 @@ public class BaseAction : IBaseAction
 			return ActionTracer.Reject(this, "HeldForTheInvulnerability");
 		}
 
+		// Help aimed at another member that takes away what the tankbuster plan cannot do without - the
+		// same button, recast group or gauge - waits for the plan's member, unless the member it helps wins
+		// the triage of the owner's rule: a healer in the critical class, or a tank there while the player
+		// is not (concept 09, "Die Ableitung aus dem Bestand", K2-K4). A command is his decision.
+		if (!IBaseAction.ForceEnable && Setting.IsFriendly
+			&& PreviewTarget.Value.Target is { } helped && Player.Object is { } helper
+			&& helped.GameObjectId != helper.GameObjectId
+			&& CustomRotation.HelpTakesNeededMember(this) && !CustomRotation.HelpWinsTriage(helped))
+		{
+			return ActionTracer.Reject(this, "TakesWhatTheTankbusterPlanNeeds");
+		}
+
 		// Set in preview too: rotations read Target right after CanUse, and a skipped update leaves a despawned object there.
 		Target = PreviewTarget.Value;
 

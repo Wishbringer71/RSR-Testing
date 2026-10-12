@@ -44,6 +44,9 @@ public partial class CustomRotation
 	// GCD keeps it planned (Z3), so a passing stun does not open this.
 	private static readonly HashSet<int> _everythingSpent = [];
 
+	// What the plan cannot do without this cycle (FindNeeded).
+	private static readonly HashSet<IBaseAction> _needed = [];
+
 	// The cast the last cycle planned "everything" for, and how many rated defences on the player RSR had
 	// pressed by then; one more went out under it.
 	private static (int Serial, long Presses)? _everythingSince;
@@ -68,6 +71,7 @@ public partial class CustomRotation
 	private void UpdateTankbusterPlan()
 	{
 		_tankbusterPlan = null;
+		_needed.Clear();
 
 		// Refusals belong to casts still running.
 		_endedKeys.Clear();
@@ -127,7 +131,7 @@ public partial class CustomRotation
 			return;
 		}
 
-		var candidates = PlanCandidates(cast, gcd, out var pending);
+		var candidates = PlanCandidates(cast, gcd, out var pending, out var standing);
 
 		// Without the plan option nothing presses a bundle for the player; hoping the rotation will is not
 		// "ohne Risiko" (his rule), so only what already stands or went out counts.
@@ -156,6 +160,7 @@ public partial class CustomRotation
 		if (bestMask >= 0)
 		{
 			SetPlan(new TankbusterPlan(cast, Pick(candidates, bestMask), false, true, bestAfter));
+			FindNeeded(candidates, bestMask, pending, standing, predicted, cast.Budget);
 		}
 		else if (Service.Config.InvulnerabilityBeforeLethalTankbuster && invulnerability != null
 			&& RetryLeft(cast, invulnerability.ID, gcd) && !EverythingSpent(cast)
@@ -168,6 +173,23 @@ public partial class CustomRotation
 			var all = (1 << candidates.Count) - 1;
 			SetPlan(new TankbusterPlan(cast, Pick(candidates, all), false, false, After(predicted, candidates, all, out _, out _)));
 			_everythingSince = (cast.Serial, TankbusterForecast.SelfDefencePresses);
+
+			// Everything goes, in the hope of someone else's help (his precision): every member and every
+			// own mitigation that stands is needed.
+			foreach (var c in candidates)
+			{
+				_needed.Add(c.Action);
+			}
+
+			foreach (var c in pending)
+			{
+				_needed.Add(c.Action);
+			}
+
+			foreach (var c in standing)
+			{
+				_needed.Add(c.Action);
+			}
 		}
 	}
 
@@ -200,6 +222,141 @@ public partial class CustomRotation
 		}
 
 		return bestMask;
+	}
+
+	/// <summary>
+	/// The plan's members and the own mitigation standing or on its way that the hit cannot be survived
+	/// without - no bundle without it survives, the invulnerability not counted as a replacement (concept 09,
+	/// "Die Ableitung aus dem Bestand", K1-K4). What takes one of them away - Shake It Off dispelling it, help
+	/// for another member on the same button, recast group or gauge - waits for it.
+	/// </summary>
+	private static void FindNeeded(List<PlanCandidate> candidates, int bestMask, List<PlanCandidate> pending,
+		List<PlanCandidate> standing, float predicted, float budget)
+	{
+		for (var i = 0; i < candidates.Count; i++)
+		{
+			if ((bestMask & (1 << i)) != 0 && BestBundle(Without(candidates, i), predicted, budget, true, out _) < 0)
+			{
+				_needed.Add(candidates[i].Action);
+			}
+		}
+
+		// What already stands or went out: the hit without it - its factor taken back out of the figure, its
+		// barrier off the budget (a pending one was taken off the figure).
+		foreach (var c in pending)
+		{
+			if (c.Factor > 0f && BestBundle(candidates, (predicted + c.Barrier) / c.Factor, budget, true, out _) < 0)
+			{
+				_needed.Add(c.Action);
+			}
+		}
+
+		foreach (var c in standing)
+		{
+			if (c.Factor > 0f && BestBundle(candidates, predicted / c.Factor, budget - c.Barrier, true, out _) < 0)
+			{
+				_needed.Add(c.Action);
+			}
+		}
+	}
+
+	private static List<PlanCandidate> Without(List<PlanCandidate> candidates, int index)
+	{
+		List<PlanCandidate> rest = [];
+		for (var i = 0; i < candidates.Count; i++)
+		{
+			if (i != index)
+			{
+				rest.Add(candidates[i]);
+			}
+		}
+
+		return rest;
+	}
+
+	/// <summary>
+	/// Whether the plan for the measured tankbuster coming at you cannot do without <paramref name="action"/>:
+	/// a member no other surviving bundle replaces, or own mitigation standing or on its way that the hit
+	/// would not be survived without (concept 09, K1-K4). False with no plan, under an invulnerability, and
+	/// for an action the plan does not count.
+	/// </summary>
+	protected static bool TankbusterPlanNeeds(IBaseAction? action)
+	{
+		if (action == null)
+		{
+			return false;
+		}
+
+		foreach (var needed in _needed)
+		{
+			if (needed.ID == action.ID || needed.AdjustedID == action.AdjustedID)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// The triage of his rule for Nascent Flash, universal for every help that takes a needed member
+	/// (concept 09): the member helped must be in the critical class, and then a healer wins, a tank wins
+	/// while you are not in it yourself (D3 open for the measured case), a damage dealer does not.
+	/// </summary>
+	internal static bool HelpWinsTriage(IBattleChara member)
+	{
+		if (!member.IsInCriticalClass())
+		{
+			return false;
+		}
+
+		if (member.IsJobCategory(JobRole.Healer))
+		{
+			return true;
+		}
+
+		return member.IsJobCategory(JobRole.Tank) && !(Player?.IsInCriticalClass() ?? false);
+	}
+
+	/// <summary>Whether a plan stands for a measured tankbuster cast at you (any state).</summary>
+	protected static bool TankbusterPlanActive => _tankbusterPlan != null;
+
+	/// <summary>
+	/// Whether the measured area cast now coming would, by the figures, take a member's forecast effective
+	/// health to zero - the line beyond which a needed tankbuster member against the party's survival is his
+	/// decision (concept 09, D2), not a hold.
+	/// </summary>
+	protected static bool AnnouncedAreaHitKillsSomeone => DataCenter.AnnouncedHitDropsUnprotectedBelow(0f, out _);
+
+	/// <summary>
+	/// Whether <paramref name="help"/>, aimed at another member, takes away something the plan needs: the
+	/// same button with no second charge (The Blackest Night, Heart of Corundum, Oblation on its last
+	/// charge), the same recast group (Nascent Flash and Bloodwhetting), or the same gauge (Intervention,
+	/// Cover and Holy Sheltron spend the Oath Gauge) - read from the cooldown and the action sheet's cost
+	/// type, not from a list (concept 09, K2-K4).
+	/// </summary>
+	internal static bool HelpTakesNeededMember(IBaseAction help)
+	{
+		foreach (var needed in _needed)
+		{
+			if (needed.ID == help.ID || needed.AdjustedID == help.AdjustedID)
+			{
+				if (help.Cooldown.CurrentCharges <= 1)
+				{
+					return true;
+				}
+
+				continue;
+			}
+
+			if (needed.Cooldown.CoolDownGroup == help.Cooldown.CoolDownGroup
+				|| (help.Action.PrimaryCostType != 0 && needed.Action.PrimaryCostType == help.Action.PrimaryCostType))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private static bool HasRefused(List<PlanCandidate> candidates, int mask)
@@ -235,8 +392,10 @@ public partial class CustomRotation
 	/// states no duration in the table yet (TODO.md), so it is neither a candidate nor bridged; it counts once
 	/// its debuff is on the caster.
 	/// </summary>
-	private List<PlanCandidate> PlanCandidates(TankbusterForecast.Cast cast, float gcd, out List<PlanCandidate> pending)
+	private List<PlanCandidate> PlanCandidates(TankbusterForecast.Cast cast, float gcd, out List<PlanCandidate> pending,
+		out List<PlanCandidate> standing)
 	{
+		standing = [];
 		var player = Player;
 		Dictionary<uint, PlanCandidate> byButton = [];
 		Dictionary<uint, PlanCandidate> pendingByButton = [];
@@ -249,20 +408,24 @@ public partial class CustomRotation
 
 			var value = DefensiveValues.For(action.ID);
 			var canSelf = action.Action.CanTargetSelf;
-			var self = canSelf ? value.Self : 0f;
+
+			// Own mitigation for this hit's damage type (Dark Mind halves differ by type), and what enlarges
+			// the pool the hit meets: a barrier, or a raise of the maximum HP (Thrill of Battle, Great Nebula)
+			// - the hit stays as large, so the raise works like a barrier of that share (concept 09, A266).
+			var self = canSelf ? value.SelfAgainst(cast.AttackType) : 0f;
 			var enemy = cast.AttackType is >= (uint)AttackType.Slashing and <= (uint)AttackType.Shot
 				? value.EnemyPhysical
 				: cast.AttackType == (uint)AttackType.Magic
 					? value.EnemyMagical
 					: Math.Min(value.EnemyPhysical, value.EnemyMagical);
-			var barrier = canSelf ? value.Barrier : 0f;
+			var barrier = canSelf ? value.Barrier + value.MaxHp : 0f;
 			if (self <= 0f && enemy <= 0f && barrier <= 0f)
 			{
 				continue;
 			}
 
 			// A party tool: it reaches beyond the tank and protects the party, not against the enemy.
-			if (action.Info.EffectRange > 0 && (self > 0f || barrier > 0f))
+			if (action.Info.EffectRange > 0 && value.ProtectsBearer)
 			{
 				continue;
 			}
@@ -290,6 +453,7 @@ public partial class CustomRotation
 
 			if (StandsAtImpact(action, player, cast))
 			{
+				standing.Add(candidate);
 				continue;
 			}
 

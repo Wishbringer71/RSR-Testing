@@ -557,10 +557,24 @@ public sealed class WAR_Reborn : WarriorRotation
 	/// yields when any member is in the critical class (A245).
 	/// </summary>
 	private bool HoldShakeItOffInHeal()
-		=> HoldAreaDefense(
-			StatusHelper.PlayerHasStatus(true, ShakeItOffStrips)
-				|| RaidwideAfterEffectBeforeRecast(ShakeItOffPvE, DefensiveValues.DurationOf((uint)ActionID.ShakeItOffPvE)),
-			"Warrior: Shake It Off kept from the single heal");
+		=> ShakeItOffTakesNeeded()
+			|| HoldAreaDefense(
+				StatusHelper.PlayerHasStatus(true, ShakeItOffStrips)
+					|| RaidwideAfterEffectBeforeRecast(ShakeItOffPvE, DefensiveValues.DurationOf((uint)ActionID.ShakeItOffPvE)),
+				"Warrior: Shake It Off kept from the single heal");
+
+	/// <summary>
+	/// Whether Shake It Off would dispel what the tankbuster plan cannot do without - Damnation, Vengeance,
+	/// Bloodwhetting, Raw Intuition or Thrill of Battle, standing or pressed and still on its way (concept 09,
+	/// K1). It then waits even while the party is in danger: without it the measured tankbuster kills the
+	/// warrior by the figures, the raidwide only endangers the party. Not when the measured raidwide kills a
+	/// member by the figures - death against death is his decision (D2), and until then the party's danger
+	/// opens it as before.
+	/// </summary>
+	private bool ShakeItOffTakesNeeded()
+		=> (TankbusterPlanNeeds(DamnationPvE) || TankbusterPlanNeeds(VengeancePvE) || TankbusterPlanNeeds(BloodwhettingPvE)
+				|| TankbusterPlanNeeds(RawIntuitionPvE) || TankbusterPlanNeeds(ThrillOfBattlePvE))
+			&& !AnnouncedAreaHitKillsSomeone;
 
 	/// <summary>
 	/// Whether Shake It Off waits at a raidwide: only while Damnation (Vengeance) runs for a tankbuster on the
@@ -569,8 +583,13 @@ public sealed class WAR_Reborn : WarriorRotation
 	/// mitigation. The universal hold yields when the announced, measured raidwide would put a member into the
 	/// critical class (A245).
 	/// </summary>
-	private static bool HoldShakeItOffForTankbuster()
+	private bool HoldShakeItOffForTankbuster()
 	{
+		if (ShakeItOffTakesNeeded())
+		{
+			return true;
+		}
+
 		var bigLeft = StatusHelper.PlayerStatusTime(true, StatusID.Damnation, StatusID.Vengeance);
 		return HoldAreaDefense(bigLeft > 0f && TankbusterOnMeWithin(bigLeft),
 			"Warrior: Shake It Off kept for the tankbuster under Damnation");
@@ -603,6 +622,14 @@ public sealed class WAR_Reborn : WarriorRotation
 		if (aboutToDie)
 		{
 			return true;
+		}
+
+		// A measured tankbuster answers his first question - is it lethal - with figures: the plan needs
+		// Bloodwhetting when no surviving bundle does without it (concept 09, K2). The announcement rule
+		// below stays for the tankbusters the table has not measured.
+		if (TankbusterPlanActive)
+		{
+			return TankbusterPlanNeeds(BloodwhettingPvE) || TankbusterPlanNeeds(RawIntuitionPvE);
 		}
 
 		// Raw Intuition's own check: Bloodwhetting goes out only while his target has him targeted. An

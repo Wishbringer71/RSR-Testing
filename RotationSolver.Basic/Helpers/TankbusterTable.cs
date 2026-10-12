@@ -61,7 +61,9 @@ internal static class TankbusterTable
 			return;
 		}
 
-		var unmitigated = share / factor;
+		// A share of a raised maximum (Thrill of Battle, Great Nebula, Protraction) is a share of the larger
+		// pool; scaled back to the unraised maximum, as every plan reads it (concept 13).
+		var unmitigated = share * (1f + MaxHpRaise(target)) / factor;
 		var vulnerable = CarriedVulnerability(target, appliedByHit);
 
 		bool raised;
@@ -99,8 +101,9 @@ internal static class TankbusterTable
 	/// The share of <paramref name="target"/>'s maximum HP the tankbuster is expected to take: its
 	/// stored unmitigated figure (the one under vulnerability when the target carries one and it is
 	/// known) times the mitigation standing now and still standing in <paramref name="horizon"/>
-	/// seconds - whoever put it there, the player, a co-tank's Reprisal, a healer. Zero when the action
-	/// has not been measured.
+	/// seconds - whoever put it there, the player, a co-tank's Reprisal, a healer - as a share of the
+	/// maximum HP the target has now: a raise of the maximum that still stands then makes the same hit a
+	/// smaller share. Zero when the action has not been measured.
 	/// </summary>
 	public static float PredictedShare(uint actionId, IBattleChara target, IBattleChara? attacker, float horizon = 0f)
 	{
@@ -118,7 +121,26 @@ internal static class TankbusterTable
 		var unmitigated = target.CarriesVulnerabilityUp() && reading.UnderVulnerability > 0f
 			? reading.UnderVulnerability
 			: reading.Unmitigated;
-		return unmitigated * MitigationFactor(actionId, target, attacker, horizon);
+		return unmitigated * MitigationFactor(actionId, target, attacker, horizon) / (1f + MaxHpRaise(target, horizon));
+	}
+
+	/// <summary>
+	/// By how much the target's maximum HP is raised (0.2 for +20 %) by statuses standing now and, with a
+	/// <paramref name="horizon"/>, still standing then - read from the effect texts of the actions that
+	/// put them there (<see cref="DefensiveValue.MaxHp"/>). Raises multiply.
+	/// </summary>
+	public static float MaxHpRaise(IBattleChara target, float horizon = 0f)
+	{
+		var raised = 1f;
+		foreach (var status in StatusesOf(target, horizon))
+		{
+			if (DefensiveValues.MitigationByStatusId.TryGetValue(status, out var value) && value.MaxHp > 0f)
+			{
+				raised *= 1f + value.MaxHp;
+			}
+		}
+
+		return raised - 1f;
 	}
 
 	/// <summary>
@@ -129,20 +151,26 @@ internal static class TankbusterTable
 	/// </summary>
 	public static float MitigationFactor(uint actionId, IBattleChara target, IBattleChara? attacker, float horizon = 0f)
 	{
+		var attackType = Service.GetSheet<Lumina.Excel.Sheets.Action>().TryGetRow(actionId, out var row)
+			? row.AttackType.RowId
+			: 0u;
+
+		// On the target: its own mitigation, together with a split one for this damage type (Dark Mind).
 		var factor = 1f;
 		foreach (var status in StatusesOf(target, horizon))
 		{
-			if (DefensiveValues.MitigationByStatusId.TryGetValue(status, out var value) && value.Self > 0f)
+			if (DefensiveValues.MitigationByStatusId.TryGetValue(status, out var value))
 			{
-				factor *= 1f - value.Self;
+				var reduction = value.SelfAgainst(attackType);
+				if (reduction > 0f)
+				{
+					factor *= 1f - reduction;
+				}
 			}
 		}
 
 		if (attacker != null)
 		{
-			var attackType = Service.GetSheet<Lumina.Excel.Sheets.Action>().TryGetRow(actionId, out var row)
-				? row.AttackType.RowId
-				: 0u;
 			foreach (var status in StatusesOf(attacker, horizon))
 			{
 				if (!DefensiveValues.MitigationByStatusId.TryGetValue(status, out var value))

@@ -183,6 +183,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Dauern, Schwellen, Stufen, Abstände, GCD-Zahlen und Anteile leite ich aus dem Spiel ab: Aktionsdaten (`Level`, `EnoughLevel`, Wirkzeit, Abklingzeit, Ladungen), Statusrestzeiten, Wirktexte über den Generator, GCD-Länge, Vorlauf, Ausführungssperre, Gruppenzusammensetzung, Messungen im Kampf.
 - Eine Ausnahme erst nach einem Loop zu genau diesem Wert, mit Beleg im Archiv. Das gilt auch für eine Zahl, die eine seiner Regeln wiedergibt, und für jede bestehende Zahl, die ich anfasse.
 - `check_fixed_values.py` hält das in der CI fest.
+- Was das Spiel zur Laufzeit liefert, hat Vorrang (seine Vorgabe, 12.10.2026): Blätter des Clients (sprachunabhängig über die englische Fassung), Status, Abklingzeiten, Stufe. Vorrang ist Gewichtung, kein Ausschluss (seine Präzisierung): Erzeugte oder von außen abgerufene Werte bleiben als zweite Quelle – Rückfall, wo das Spiel nichts liefert, und Gegenprobe; bei Widerspruch wiegt das Spiel schwerer, weil es den laufenden Patch zeigt.
 
 **Universell zuerst**
 - Eine Regel baue ich zuerst allgemein, für alle Fälle, in denen sie anwendbar ist — alle Jobs, alle Lagen —, zentral an einer Stelle (seine Vorgabe). Sonderregelungen spalte ich stufenweise ab; jede Stufe nutzt die darüberliegende, statt sie zu kopieren.

@@ -133,7 +133,7 @@ internal static class TankbusterForecast
 		if (player != null && DataCenter.InCombat && DataCenter.Role == JobRole.Tank && value != default)
 		{
 			var outward = FactsOfAction(actionId).Outward;
-			if ((targetId == player.GameObjectId || outward) && !(outward && (value.Self > 0f || value.Barrier > 0f)))
+			if ((targetId == player.GameObjectId || outward) && !(outward && value.ProtectsBearer))
 			{
 				SelfDefencePresses++;
 			}
@@ -195,7 +195,7 @@ internal static class TankbusterForecast
 
 		var value = DefensiveValues.For(actionId);
 		var (onSelf, where, outward) = FactsOfAction(actionId);
-		if ((onSelf.Length == 0 && where.Length == 0) || (outward && (value.Self > 0f || value.Barrier > 0f))
+		if ((onSelf.Length == 0 && where.Length == 0) || (outward && value.ProtectsBearer)
 			|| (value == default && !GivesInvulnerability(onSelf)))
 		{
 			return null;

@@ -6031,6 +6031,12 @@ beobachtet.
   nächsten Bild). Ergebnis: 23 Szenarien × 300 Läufe ohne Verletzung.
 
 **Prüfgrad:** Modell (simuliert, mit Selbsttest gegen die historischen Defekte); Code nicht geändert.
+- *Umsetzung danach (ohne D2/D3):* Wertemodell um Minderung je Schadensart, Erhöhung der maximalen LP und Block erweitert
+  (nicht-positional, Vertrag gewahrt); Plan, Zurückhalten und Tabellenmessung lesen sie; K1 (Abschütteln) und K2–K4
+  (Hilfe, die ein gebrauchtes Glied verbraucht, universell in `BaseAction.CanUse` mit seiner Triage); Merkmalsdauern
+  zur Laufzeit aus dem Spiel (`TraitDurations`), die abgerufene Tabelle als Rückfall – seine Vorgabe „ingame
+  auslesbare werte haben ingame vorrang", präzisiert „vorrang ist gewichtung". Prüfgrad: Prüfskripte; Compile über
+  die CI; im Spiel nicht beobachtet.
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
