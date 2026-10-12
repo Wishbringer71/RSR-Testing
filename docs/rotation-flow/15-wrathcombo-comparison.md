@@ -15,11 +15,11 @@ Spielquelle: Es zeigt, wie ein zweites Werkzeug entscheidet. Spielmechanik ist a
 belegt, wo sie trägt. Code wird nicht übernommen.
 
 **Übernommen, weil RSR dort auf etwas wartete, das nicht kommt (A169):**
-- **Maschinist:** Mit „Only use Wildfire on Boss targets" hielt RSR Heat auf jedem Nicht-Boss für ein
-  Wildfire zurück, das dort nie fällt; Hypercharge kam erst bei 100 Heat. Im Kampf: gegen Trash weniger
-  Überhitzungen, Heat läuft über. Jetzt fällt Hypercharge dort wie ohne Wildfire-Ausrichtung, sobald die
-  Werkzeuge es zulassen, und nur, wenn die Kombo die Überhitzung überdauert (Dauer aus dem Wirktext).
-  WrathCombo macht es ebenso (WrathCombo: `ShouldUseHyperchargeST`).
+- **Maschinist:** Mit „Only use Wildfire on Boss targets" fällt Hypercharge auf einem Nicht-Boss wie ohne
+  Wildfire-Ausrichtung, sobald die Werkzeuge es zulassen, und nur, wenn die Kombo die Überhitzung überdauert
+  (Dauer aus dem Wirktext). WrathCombo macht es ebenso (WrathCombo: `ShouldUseHyperchargeST`). Grund: Ohne
+  diese Regel hielte RSR Heat dort für ein Wildfire zurück, das nie fällt; Hypercharge käme erst bei 100 Heat,
+  gegen Trash gäbe es weniger Überhitzungen, und Heat liefe über.
 
 **Schon vorhanden in RSR (kein Handlungsbedarf):**
 - Tankbuster- und Sammeltreffer-Erkennung über Zielmarkierungen (VFX): RSR hat sie, laut Kommentar
@@ -28,16 +28,17 @@ belegt, wo sie trägt. Code wird nicht übernommen.
   (`WhenToSheltron`), Überlauf-Schutz von Lilien, Polyglot, Beast Gauge, Munition.
 - Samurai Meditate in der Pause (Konzept 14): WrathCombo verlangt zusätzlich einige Sekunden Stillstand.
 
-**Bestätigt Entscheidungen aus Konzept 14, umgesetzt:** Addersgall-Schutz des Weisen (WrathCombo:
-Druochole ab 3 Stapeln; A203), Shake It Off nur ohne eigene Minderungen im Selbstheilungspfad (A245), Passage of
-Arms mit Kanal-Sperre (bis zum Treffer, A164; ab Werk an seit 02.10.2026, A250). Improvisation als kurzes Regen:
-Konzept 14, Tänzer.
+**Bestätigt Entscheidungen aus den Konzepten 09 und 14, umgesetzt:** Addersgall-Schutz des Weisen
+(WrathCombo: Druochole ab 3 Stapeln; A203). Shake It Off im Selbstheilungspfad nur ohne Damnation, Vengeance
+oder Bloodwhetting (A245); Thrill of Battle hält ihn anders als bei WrathCombo nicht auf, weil die Barriere an
+der erhöhten Maximalgesundheit bemessen wird (The Balance; Konzept 09, „Krieger: die übrige Abwehr"). Passage of
+Arms mit Kanal-Sperre, die bis zum Treffer hält, ab Werk an (A164, A250). Improvisation: Konzept 14, Tänzer.
 
 ## Vorschläge und ihr Stand
 
 | # | Idee (WrathCombo) | Was sich im Kampf ändert | Woran die Wahrscheinlichkeit gemessen wird | Einordnung |
 |---|---|---|---|---|
-| V1 | Vorbeugendes Regen oder Schild auf den Tank **ohne Countdown**, sobald er außerhalb des Kampfs nahe an Gegner kommt (WrathCombo: `PreEmptiveHot`, `PreEmptiveShield`; Weißmagier Regen, Astrologe Aspected Benefic, Weiser Eukrasian Diagnosis, Gelehrter Adloquium) | Dungeon-Pulls: Der Tank hat Regen oder Schild, bevor der erste Treffer fällt. RSR tut das heute nur im Countdown (Weißmagier „UsePreRegen") | Tank außerhalb des Kampfs in Reichweite eines Gegners — der Pull ist nah | Stufe „Heiler"; neue Option (Weiser ab Werk an seit 03.10.2026, A251) |
+| V1 | Vorbeugendes Regen oder Schild auf den Tank **ohne Countdown**, sobald er außerhalb des Kampfs nahe an Gegner kommt (WrathCombo: `PreEmptiveHot`, `PreEmptiveShield`; Weißmagier Regen, Astrologe Aspected Benefic, Weiser Eukrasian Diagnosis, Gelehrter Adloquium) | Dungeon-Pulls: Der Tank hat Regen oder Schild, bevor der erste Treffer fällt. RSR tut das heute nur im Countdown (Weißmagier „UsePreRegen") | Tank außerhalb des Kampfs in Reichweite eines Gegners — der Pull ist nah | **Gebaut (A184)** auf Stufe „Heiler", je Heiler eine Option; Weiser ab Werk an (A251) |
 | V2 | Zielmarkierungen: allgemeiner Präfix `vfx/lockon/eff/tank` statt einzelner Tank-Marker, dazu die bei RSR fehlenden Einträge (`sharelaser2tank`, `share_1`, zwei Dungeon-Sammelmarker) | Mehr Tankbuster und Sammeltreffer werden erkannt, bevor sie fallen; Einzel- und Flächenabwehr öffnen öfter rechtzeitig | Marker über dem Ziel — der Treffer ist angekündigt | **Gebaut (A189)** mit der Negativliste aus seiner Vorgabe, siehe „V2: Tankbuster-Marker breiter erkennen" |
 | V3 | Kuratierte Raidwide-, Tankbuster- und Ignorier-Listen je Begegnung (WrathCombo: `BattleData`, etwa Blicke, die wie Raidwides aussehen) | Weniger Fehlalarme bei Blickmechaniken, Raidwides ohne Flächen-Wurftyp werden erkannt | angekündigter Cast mit bekannter Wirkung | **Geprüft (A190):** keine Übernahme, siehe „V3: Begegnungsdaten" |
 | V4 | Samurai Meditate erst nach kurzem Stillstand | Weniger abgebrochenes Meditate beim kurzen Anhalten zwischen zwei Bewegungen | — | **Geprüft (A188):** nicht gebaut, siehe „V4: Meditate erst nach Stillstand" |
@@ -80,9 +81,10 @@ Die Rollenaktionen der Heiler (Repose, Esuna, Lucid Dreaming, Swiftcast, Surecas
 
 ### Die Regel
 
-Gebaut mit A184. **Eine Regel für alle Heiler** („Universell zuerst", Stufe „Heiler"): `TryPullUpkeepOnTank` in
+**Eine Regel für alle Heiler** („Universell zuerst", Stufe „Heiler"; A184): `TryPullUpkeepOnTank` in
 `CustomRotation_OtherInfo.cs`. Sie hält eine Sofort-Regen- oder Sofort-Barriereaktion auf dem Tank, solange
-er sich einer Gruppe nähert oder sie bindet (`TankApproachingMobGroup`, nur Dungeons), und erneuert sie,
+er sich einer Gruppe nähert oder sie bindet (`TankApproachingMobGroup`: genug Gegner in 20 y um den Tank,
+nicht in Prüfungen und Raids), und erneuert sie,
 sobald der Status fehlt oder innerhalb der Auffrischfrist endet. Eine verbrauchte Barriere nimmt das Spiel
 vom Ziel; dieselbe Prüfung erneuert deshalb bei Ablauf wie bei Verbrauch. Nur die Aktion ist je Job
 verschieden. Die Regel gibt nie das MP aus, das die eigene Wiederbelebung braucht (Wirkkosten beider Aktionen
@@ -94,7 +96,7 @@ in Gefahr war.
 |---|---|---|
 | Weißmagier | Regen, auch im Countdown | vorhanden (`UsePreRegen`), jetzt über die gemeinsame Regel |
 | Astrologe | Aspected Benefic | vorhanden (`UsePreAspectedBenefic`), jetzt über die gemeinsame Regel |
-| Weiser | Eukrasia + Eukrasian Diagnosis, beide sofort | **neu** (`UsePreEukrasianDiagnosis`, ab Werk **an** seit 03.10.2026, A251: Er hat die Erneuerung bei Ablauf und Verfall ausdrücklich verlangt, Wortlaut in der Tabelle oben). Rang in der Eukrasia-Wahl: nach Flächen- und Einzelabwehr, vor den DoTs. Nicht gelegt, solange der Tank Galvanize oder Eukrasian Prognosis trägt (laut Wirktext nicht stapelbar): Der Tank trägt dann schon eine Barriere, und die Pflege hält eine, nicht die größte. Die Einzelabwehr dagegen sperrt nur Eukrasian Diagnosis und Galvanize (Upstream) und legt über eine Eukrasian Prognosis hinweg — richtig, weil die neuere Barriere des Weisen die ältere ganz ersetzt (Wiki „Eukrasian Diagnosis", Community-Quelle, nicht offiziell) und die der Diagnose größer ist (Heilung 300 × 180 % gegen 100 × 320–360 %, Job-Guide); vor einem Tankbuster ist das Zugewinn, kein verschenkter GCD. Keine Gesundheitsuntergrenze: Anders als Regen ist Eukrasian Diagnosis selbst der beste Sofort-GCD im Notfall. Außerhalb des Kampfs erst, wenn ein Gegner in Reichweite des Weisen ist — sonst nimmt die bestehende Eukrasia-Bereinigung den Status wieder ab. |
+| Weiser | Eukrasia + Eukrasian Diagnosis, beide sofort | **neu** (`UsePreEukrasianDiagnosis`, ab Werk **an**, A251: Er hat die Erneuerung bei Ablauf und Verfall ausdrücklich verlangt, Wortlaut in der Tabelle oben). Rang in der Eukrasia-Wahl: nach Flächen- und Einzelabwehr, vor den DoTs. Nicht gelegt, solange der Tank Galvanize oder Eukrasian Prognosis trägt (laut Wirktext nicht stapelbar): Der Tank trägt dann schon eine Barriere, und die Pflege hält eine, nicht die größte. Die Einzelabwehr dagegen sperrt nur Eukrasian Diagnosis und Galvanize (Upstream) und legt über eine Eukrasian Prognosis hinweg — richtig, weil die neuere Barriere des Weisen die ältere ganz ersetzt (Wiki „Eukrasian Diagnosis", Community-Quelle, nicht offiziell) und die der Diagnose größer ist (Heilung 300 × 180 % gegen 100 × 320–360 %, Job-Guide); vor einem Tankbuster ist das Zugewinn, kein verschenkter GCD. Keine Gesundheitsuntergrenze: Anders als Regen ist Eukrasian Diagnosis selbst der beste Sofort-GCD im Notfall. Außerhalb des Kampfs erst, wenn ein Gegner in Reichweite des Weisen ist — sonst nimmt die bestehende Eukrasia-Bereinigung den Status wieder ab. |
 | Gelehrter | kein Sofortschild (Adloquium 2 s Wirkzeit) | nicht gebaut: Stehenbleiben erst am Ende des Wall-to-Wall (seine Präzisierung). Sein Vorschlag Aetherpact/Fey Union als Vorab-HoT bleibt offen; Gegenargumente: Jede andere Feenaktion (Whispering Dawn, Fey Illumination, Fey Blessing) beendet die Verbindung, und auf einem vollen Tank verbraucht Fey Union Feenanzeige ohne Heilung (Nachschub nur über Aetherflow-Aktionen, je +10). Die 30-y-Grenze zählt nicht, der Heiler folgt dem Tank (sein Hinweis). Ob die Fee während Fey Union Embrace aussetzt, ist nicht belegt. Er kollidiert zudem mit zwei bestehenden Einstellungstexten („Remove Aetherpact if … above 90 %", „Do not start Aetherpact if … above 80 %"); zur Entscheidung vorgelegt. |
 
 ### Was die Erneuerung im Kampf kostet
@@ -107,18 +109,17 @@ sie jeden GCD, gehen die GCDs des Weisen an sie statt an Dosis — je Erneuerung
 regenerieren, können es sogar vorzugsweise MP-verbrauchende schilde sein, solange sie insta sind" nimmt den MP-Preis
 an. Im Laufen hat der Weise ohnehin nur Sofortaktionen; Dosis mit Wirkzeit fällt erst beim Stehen. Die Entfernung vom
 05.09.2026 (Konzept 06 §2.1) traf eine Barriere ohne Auftrag; seine Vorgabe ist dieser Auftrag. Deshalb ab Werk an
-(A251). Die Frage, ob „Verfall" auch den Bruch meint, war unnötig: Sein Text nennt Ablauf und Verfall nebeneinander
-(C107).
+(A251).
 
 ## V5: Tanzpartner neu wählen
 
-Gebaut mit A186. Seine Vorgabe: Partnerschaft während des Todes aufheben, während der Schwäche nach einer Wiederbelebung neu
+Seine Vorgabe: Partnerschaft während des Todes aufheben, während der Schwäche nach einer Wiederbelebung neu
 wählen, nach ihrem Ende erneut. Gebaut als `DancerRotation.DancePartnerNeedsChange` (Stufe „Tänzer": nur er hat
-einen Partner), gelesen von `DNC_Reborn` vor Closed Position: trifft sie zu, fällt Ending, und Closed Position
-wählt über die bestehende Partnerwahl neu.
+einen Partner; A186), gelesen von `DNC_Reborn` vor Closed Position: trifft sie zu, fällt Ending, und Closed
+Position wählt über die bestehende Partnerwahl neu.
 
 - **Tod:** Ist der Partner tot oder trägt niemand mehr den Partnerstatus des Tänzers, endet die Partnerschaft
-  sofort. Ob das Spiel den Partnerstatus beim Tod entfernt, sagt der Job-Guide nicht; die Regel greift in beiden
+  sofort — außer während eines Tanzes, dann mit seinem Ende. Ob das Spiel den Partnerstatus beim Tod entfernt, sagt der Job-Guide nicht; die Regel greift in beiden
   Fällen.
 - **Schwäche:** Trägt der Partner Weakness, Brink of Death oder Damage Down — dieselbe Menge, die die
   Partnerwahl ausschließt —, wird gewechselt, sobald ein anderes Gruppenmitglied ohne sie verfügbar ist. Ohne
@@ -144,8 +145,9 @@ erst mit dem nächsten Standard Finish.
 
 ## V2: Tankbuster-Marker breiter erkennen
 
-Gebaut mit A189. **Erkennung breiter:** Die Tankbuster-Pfade sind Präfixe: `vfx/lockon/eff/tank` (jeder Tank-Marker) und
-`vfx/lockon/eff/sharelaser2tank` (jeder geteilte Tank-Laser) statt der vier Einzelpfade. Bei den Sammeltreffern
+**Erkennung breiter (A189):** Die Tankbuster-Pfade sind Präfixe: `vfx/lockon/eff/tank` (jeder Tank-Marker) und
+`vfx/lockon/eff/sharelaser2tank` (jeder geteilte Tank-Laser) statt der vier Einzelpfade; dazu stehen
+begegnungsspezifische Pfade aus Upstream in der Liste (`DataCenter.TankbusterPaths`). Bei den Sammeltreffern
 kommen `share_1` und der Sammelmarker aus San d'Oria: The Second Walk dazu. `target_ae_s5f` aus WrathCombos
 Liste bleibt draußen: Dort gilt es nur für ein Gebiet und trifft laut deren Kommentar auch Verteilmarker. Die
 Pfade sind Spieldaten (Asset-Namen), kein übernommener Code.
@@ -184,7 +186,7 @@ Marker korrigiert. Das kostet einmal eine ausgelassene Abwehr gegen einen Tankbu
 
 ## V3: Begegnungsdaten
 
-Geprüft mit A190; keine Übernahme. **Sein Auftrag:** „schauen, ob die infos aus wrath auch ingame verfügbar wären (ohne wrath, nur aus den normal
+Keine Übernahme (A190). **Sein Auftrag:** „schauen, ob die infos aus wrath auch ingame verfügbar wären (ohne wrath, nur aus den normal
 vorhandenen daten)". WrathCombos `BattleData` (WrathCombo) führt je Gebiet (Stand 25.09.2026, sechs Erweiterungen) fünf
 Arten von Daten. Ergebnis je Art:
 
@@ -201,8 +203,8 @@ oder hängt an der offenen Unterscheidung „Raidwide oder ausweichbare Fläche"
 
 ## V4: Meditate erst nach Stillstand
 
-Geprüft mit A188; nicht gebaut. **These (WrathCombo):** Meditate erst nach einigen Sekunden Stillstand, damit es beim kurzen Anhalten zwischen zwei
-Bewegungen nicht abbricht. **Nicht gebaut;** das Pausenverhalten aus A162 bleibt.
+**Nicht gebaut (A188);** das Pausenverhalten aus Konzept 14 bleibt. **These (WrathCombo):** Meditate erst nach
+einigen Sekunden Stillstand, damit es beim kurzen Anhalten zwischen zwei Bewegungen nicht abbricht.
 
 Wirktext (Job-Guide, 28.09.2026): Meditate, 60 s Abklingzeit, „Gradually increases your Kenki Gauge", 15 s, im
 Kampf dazu bis zu 3 Stapel Meditation; endet bei jeder anderen Aktion und bei Bewegung, auch beim Drehen; löst
@@ -212,7 +214,7 @@ nennen Wirktext und Spieldaten (Status 1231 „Storing Kenki.") nicht; das conso
 Meditate lasts its entire duration".
 
 - **Wo RSR Meditate wirkt:** nur in der Pause (`InCombatPause`: im Kampf, kein Gegner in 25 y) und nicht in
-  Bewegung. Deine Frage „oder ist das ein anderes Problem (Meditate nur außerhalb Kampf?)" beantwortet das: Es
+  Bewegung. Seine Frage „oder ist das ein anderes Problem (Meditate nur außerhalb Kampf?)" beantwortet das: Es
   fällt nie, solange ein Gegner in Reichweite steht. **Positionals und True North berühren es deshalb nicht** —
   Stellungswechsel für Positionals gibt es nur mit einem Gegner in Nahkampfreichweite, und dann ist keine Pause.
 - **Ab wann es sich lohnt:** ab dem ersten Takt. In der Pause gibt es nichts zu schlagen; die GCD-Sperre, die
@@ -228,9 +230,9 @@ Meditate lasts its entire duration".
 
 ## V6: Kerachole über Sacred Soil
 
-Geprüft mit A187; nicht gebaut. **These (WrathCombo):** Der Weise legt Kerachole nicht, solange Sacred Soil eines Gelehrten liegt; die
-Gruppenminderung zweier Heiler verteilt sich so auf zwei Treffer. **Nicht gebaut.** Das bisherige
-Verhalten bleibt — Kerachole fällt, wenn die Abwehr- oder Heilregel es verlangt.
+**Nicht gebaut (A187):** Kerachole fällt, wenn die Abwehr- oder Heilregel es verlangt, auch über einer
+liegenden Sacred Soil. **These (WrathCombo):** Der Weise legt Kerachole nicht, solange Sacred Soil eines
+Gelehrten liegt; die Gruppenminderung zweier Heiler verteilt sich so auf zwei Treffer.
 
 Wirktexte (Job-Guide, 28.09.2026): Kerachole 30 s Abklingzeit, −10 % für den Weisen und alle in 30 y, 15 s, dazu
 Regen 100 Potenz und 7 % MP, kostet 1 Addersgall; nicht stapelbar nur mit Taurochole. Sacred Soil 30 s, eine

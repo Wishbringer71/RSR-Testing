@@ -360,7 +360,7 @@ public partial class SummonerRotation
 	/// Where a phase is booked. With Solar Bahamut in the cycle, Demi-Bahamut and Demi-Phoenix take
 	/// the windows between two Solars in turn, and Searing Light's 120 s recast is two windows - so a
 	/// Summoner seen in one of them returns in the other, and both are spoken for (concept 12,
-	/// "Die Buchführung"). Booking them apart needed two sightings of each, every 240 s, before
+	/// "Das Phasenbuch"). Booking them apart needed two sightings of each, every 240 s, before
 	/// either counted as held. Below Solar's level the two alternate every window and a caster
 	/// returns to the same one, so they are booked apart.
 	/// </summary>

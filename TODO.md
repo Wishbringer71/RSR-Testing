@@ -127,9 +127,11 @@ Nicht behoben, weil der Wirkungsbereich den Vorgang sprengt. Das Flag wird in `I
 
 **Auflösungsbedingung:** eine Erhebung, welche der sechs Setzstellen eine Ausnahme rechtfertigen, und eine Engführung des Flags auf diese.
 
-### Beschwörer: Searing Light bei mehreren Beschwörern — Grenzen, keine offene Bestätigung · N
+### Searing Light mit mehreren Beschwörern: Ausweichen nur nach tatsächlicher Blockade · N
 
-Stand V8 (A78, A89, C69; Konzept 12). **Neu geprüft (A207):** Der Eintrag wartete auf zwei Beobachtungen von ihm. Die Regel sagt nichts voraus, was ein Spielbefund korrigieren müsste — sie liest in jedem Zyklus die Bereitschaft von Solar, den eigenen und fremden Buff-Status, und weicht bei belegten Phasen aus. Rutscht der Solar-Takt, fällt die Zündbedingung auf den Zweig für den zweiten Beschwörer zurück, wie gebaut. **Benannte Grenze:** Zünden zwei Beschwörer im selben Rahmen, kann das Modell es nicht verhindern; ein Abgleich zwischen zwei Spielern wäre eine Annahme über den anderen, kein tragender Grund.
+Mit einem zweiten Beschwörer in der Gruppe öffnet jede große Beschwörung das Zündfenster, ohne eine Kollision vorauszusetzen. Wird die eigene Ladung frei, während Bahamut oder Phoenix steht, ohne dass Solar fremd belegt war — der andere ist tot, spielt von Hand oder hat die Aktion abgeschaltet, oder der eigene Takt ist gerutscht, weil die Beschwörung mit zweitem Beschwörer auf keinen abkühlenden Buff wartet —, zündet RSR dort und bleibt danach im Takt von Bahamut und Phoenix: Im Kampf fällt jede weitere Ladung in eine Phase mit 78 % der Solar-Potenz. Die enge Fassung (ausweichen nur, wenn das Phasenbuch Solar beim letzten Betreten fremd belegt sah, `SearingPhaseSeen`) hielte die Ladung einmalig bis zu 60 s bis zur nächsten Solar-Phase. Welche Fassung mehr bringt, ist nicht gemessen: `searing_light_coverage.py` startet alle Beschwörer mit freier Wiederholzeit und erzeugt den Fall nicht; dafür braucht es versetzte Anfangs-Wiederholzeiten.
+
+**Konzept:** `docs/rotation-flow/12-searing-light-stacking.md`
 
 ### Status-Einstellungen auf der falschen Seite der Aktion · N, U
 
@@ -429,16 +431,6 @@ Die Zustandswahl liegt an zwei Orten: implizit in `AdjustStateType`, wo `/rotati
 **Auflösungsbedingung:** erst mit einer Möglichkeit zur Laufzeitbeobachtung; ein Zustandsautomat mit acht Zuständen, fünf Zykluswegen und zwei Schaltern ist statisch nicht abzusichern. Bei einem Eingriff ist der Persistenzvertrag zu beachten: `DTRType` und `CycleType` liegen als Ordinalzahlen in der Nutzerkonfiguration, ihre Reihenfolge ist nicht frei änderbar.
 
 Geprüfte Nicht-Fehlstellen: `DTRManualAuto` bildet den vom Enum-Text beschriebenen Zwei-Zustands-Zyklus ab (kein Fehler, AUDIT_LOG A14); ein zu großer `TargetingIndex` kann keinen Indexfehler auslösen, `DataCenter.TargetingType` rechnet `% Count`.
-
-### Searing Light: das Warten der Beschwörung kann den Burst verzögern · N
-
-**Der gemeldete Fall ist behoben** (A114, A115): Die Zündung wird schon angeboten, sobald die große Beschwörung bereit ist und das Burstfenster steht — gelesen an der Abklingzeit der Beschwörung, nicht am nächsten GCD, weil daraus sonst dasselbe Henne-Ei-Problem würde, das die Wiederbelebung ein Jahr lang lahmgelegt hat (Konzept 11). Und die Beschwörung **wartet** auf den Buff, statt ihn nur zuzulassen: Seine Vorgabe lautet, Searing Light muss aktiv sein, **bevor** der erste Burstschaden entsteht.
-
-**Was an seine Stelle tritt, und es ist schmaler als die allgemeine Zweigliste:** „Heilung oder Verteidigung“ heißt bei diesem Job Schimmerschild und Addle; die einzige nennenswerte Heilung des Beschwörers ist die Flächenheilung aus einer laufenden Demi, und die kann **vor** der Beschwörung nicht feuern — `ModifyLuxSolarisPvE` fordert `StatusID.RefulgentLux`, `ModifyRekindlePvE` fordert `InPhoenix`, beides entsteht erst aus der Phase. Vor der Beschwörung bleiben also nur Schimmerschild und Addle, und die nur bei gesetzter Verteidigungsflagge; darauf beschränkt sich das Restrisiko. Die Sicherung dagegen wäre eine `CanUse`-Abfrage als Prüfung — genau die Defektklasse, die weiter oben in dieser Datei steht —, deshalb ist sie unterblieben. **Zu beobachten:** ob der Burst im Spiel je spürbar später anläuft.
-
-**Ein zweites Argument für die Zündung vor der Beschwörung, aus derselben Erhebung:** Die Beschwörung gewährt laut Wirktext selbst Refulgent Lux (30 s). Sobald sie aufgeht, ist Lux Solaris wirkbar, und `HealAreaAbility` wird in `CustomRotation.Ability` **vor** dem Angriffszweig gefragt — der Platz **hinter** der Beschwörung hat damit einen Konkurrenten, den der Platz **davor** nicht hat. Schluss aus Wirktext und Zweigreihenfolge, keine Spielbeobachtung.
-
-**Konzept:** `docs/rotation-flow/12-searing-light-stacking.md`
 
 ### Tanks: ein angekündigter Tankbuster auf dem anderen Tank öffnet die eigene Einzelabwehr · N
 
