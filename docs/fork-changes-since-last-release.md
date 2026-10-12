@@ -35,7 +35,9 @@ back. An announced tankbuster whose targets BossModReborn does not name still co
 
 `DefenseTrace.log` now also names the pull rule (enemies on you) and unlisted casts at a tank's target as
 sources, says whether the single hit reaches you, and records each landing of a listed area cast with
-whether it reached you.
+whether it reached you. When the area or single-target defence is open but nothing it asks for can go out,
+it writes "open, nothing chosen" with the sources standing, so a defence that never opened and one that
+found nothing usable can be told apart.
 
 ## Tanks: Arm's Length no longer goes out on a boss's tankbuster
 

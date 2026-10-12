@@ -5972,6 +5972,31 @@ Wechsel greift, schreibt das Protokoll selbst.
 
 **Prüfgrad:** statisch, Prüfskripte (alle 27 Python-Schritte des Workflows); Compile über die CI.
 
+### A265 · Fremde Meldung: Samurai ohne Feint und Tengentsu seit 7.5.6.13+wsh1 (12.10.2026)
+
+- *Anlass:* Kommentar unter PR #11 (05.10.2026), weitergegeben in seiner Antwort; er vermutet die Änderungen an den
+  Nahkämpfer-Debuffs. Einordnung: Hinweis eines Dritten, unbestätigt.
+- *1 Research, Wirkkette am Code:* Feint (Debuff auf dem Gegner) und Tengentsu/Third Eye (nur der Samurai) stehen in
+  `SAM_Reborn.DefenseAreaAbility`, `DefenseSingleAbility` und `GeneralAbility` (unter 50 % LP); beide nur ohne Zanshin
+  Ready. Vergleich der Releases 7.5.6.10+wsh1 und 7.5.6.13+wsh1 (184 Commits) an SAM-Datei, Basisrotation, Dispatch,
+  StateUpdater und `CanUse`: neu ist allein `AreaHitOnMe` vor Tengentsu/Third Eye im Flächenpfad (A218). Die Gatter
+  `SelfProtectionHitsMe` und das Tankbuster-Zurückhalten kamen erst danach und treffen Feint nicht (Ziel Gegner) bzw.
+  nur Tanks. Die Flächenflagge wurde im Fenster erweitert (Gruppe statt Spieler).
+- *Hypothese geprüft und widerlegt:* eb3fce2eb lässt ein Einzelziel mit Wirkreichweite nur noch für sein Ziel durch.
+  Spieldaten aller 850 Einträge der ausgelieferten Flächenliste (xivapi, `CastType`, `Range`, `EffectRange`): ein
+  einziger solcher Eintrag, Holy Bladedance (Tankbuster). Raidwides verlieren dadurch nichts.
+- *Quellenvergleich Flagge gegen „trifft mich":* Bei gelisteten Raidwides lesen beide dieselbe Erkennung
+  (`IsHostileCastingBase`, Liste, Reichweite, „lohnt Minderung"); verschieden sind nur Spread-Marker auf anderen
+  (öffnen die Flagge, nicht „trifft mich") – so beabsichtigt.
+- *Ergebnis:* Kein Defekt am Code belegt. Ob Feint im Kampf ausblieb, weil die Flagge zu war oder weil alles abgelehnt
+  wurde, ist von hier nicht messbar – und war es auch aus dem Protokoll nicht: Ein offener, leer gebliebener Pfad
+  hinterließ keine Zeile. **Messmittel ergänzt:** `DefenseTrace.NothingChosen`, „area/single defence open, nothing
+  chosen" mit den Quellen, höchstens einmal je GCD und Pfad, für alle Jobs. TODO-Eintrag „Samurai nutzt Feint und
+  Tengentsu im Kampf nicht".
+
+**Prüfgrad:** statisch (Code, Versionsgeschichte, Spieldaten); Prüfskripte; Compile über die CI. Im Spiel nicht
+beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -30,6 +30,7 @@ internal static class DefenseTrace
 	// The id the game casts for the last choice: Raw Intuition goes out as Bloodwhetting.
 	private static uint _lastDecisionCast;
 	private static DateTime _lastDecisionWritten = DateTime.MinValue;
+	private static readonly Dictionary<string, DateTime> _lastNothingChosen = [];
 
 	/// <summary>The trace file's full path.</summary>
 	public static string FilePath => Path.Combine(Svc.PluginInterface.ConfigDirectory.FullName, "DefenseTrace.log");
@@ -112,6 +113,33 @@ internal static class DefenseTrace
 			_lastDecisionCast = 0;
 		}
 		Line($"used {name} #{id}");
+	}
+
+	/// <summary>
+	/// The defensive path <paramref name="path"/> was open and chose nothing - every action it asked was
+	/// refused or none was there to ask. Without this line an open path that came out empty and a path
+	/// that never opened look the same in the file, and a report that a job "never uses" its mitigation
+	/// cannot be told apart (concept 13). At most once a GCD per path, with the sources standing.
+	/// </summary>
+	public static void NothingChosen(string path)
+	{
+		if (_writer == null)
+		{
+			return;
+		}
+
+		var now = DateTime.Now;
+		lock (_lock)
+		{
+			if (_lastNothingChosen.TryGetValue(path, out var last) && (now - last).TotalSeconds < DataCenter.DefaultGCDTotal)
+			{
+				return;
+			}
+
+			_lastNothingChosen[path] = now;
+		}
+
+		Line($"{path} open, nothing chosen | {DataCenter.DescribeDefenseSources()}");
 	}
 
 	/// <summary>Adds one line with the time of day in front.</summary>

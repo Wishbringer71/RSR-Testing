@@ -325,6 +325,7 @@ public partial class CustomRotation
 				DefenseTrace.Decision("area defence", act);
 				return true;
 			}
+			DefenseTrace.NothingChosen("area defence");
 			IBaseAction.SelfProtectionHitsMe = null;
 			IBaseAction.AreaDefenceRunning = false;
 		}
@@ -365,6 +366,7 @@ public partial class CustomRotation
 			{
 				IBaseAction.CommandedDefenceRunning = false;
 			}
+			DefenseTrace.NothingChosen("single defence");
 			IBaseAction.SelfProtectionHitsMe = null;
 		}
 		IBaseAction.ShouldEndSpecial = false;

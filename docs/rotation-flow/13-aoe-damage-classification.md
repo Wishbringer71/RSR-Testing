@@ -209,7 +209,10 @@ Wahl der Abwehrkette — Flächen- und Einzelabwehr im Dispatch für alle Jobs, 
 einem BossModReborn-Raidwide — mit allen Quellen, die in diesem Moment stehen: Marker mit Pfad, Träger und Abstand,
 gelistete Casts mit Form, Abständen, „reaches you" und dem Ergebnis ihrer letzten Landung, beim Tank auch
 ungelistete Casts eines Gegners auf sein Ziel, die Pull-Regel, BossModReborn-Raidwide und -Tankbuster samt erkanntem
-Tank, und je Pfad, ob der Treffer ihn erreicht („area hit reaches you", „single hit reaches you", A233). Daneben
+Tank, und je Pfad, ob der Treffer ihn erreicht („area hit reaches you", „single hit reaches you", A233). Kam ein offener
+Pfad leer heraus – jede gefragte Aktion abgelehnt oder keine da –, steht „area defence open, nothing chosen" bzw.
+„single defence open, nothing chosen" mit denselben Quellen, höchstens einmal je GCD (A265): Sonst sähen ein Pfad,
+der nie öffnete, und einer, der offen nichts fand, in der Datei gleich aus. Daneben
 jeder gegnerische Treffer auf ihn (ohne Auto-Attacken) und jede Landung eines gelisteten Flächencasts mit
 „reached you" — ohne diese Zeile blieb offen, warum „Ätherschub" am 30.09. sechsmal die Flächenabwehr öffnete,
 obwohl er ihn nie traf: Eine Landung, aus der „Skip area defence for casts that missed you" lernt, kam nicht an. So steht in der Datei, ob der Treffer, für den die

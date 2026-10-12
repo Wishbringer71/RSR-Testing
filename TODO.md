@@ -9,6 +9,21 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 `EffectHeader.ActionType` (ECommons) nutzt das `uint`-Enum der ClientStructs für ein Ein-Byte-Feld und liest `Flags` und `NumTargets` mit (A177). RSR liest in `Watcher` jetzt das niedrige Byte. Offen: ECommons' eigenes `ActionEffectSet` wählt mit diesem Feld, ob die Id eine Aktion, ein Gegenstand oder ein Reittier ist; sobald der Satz Ziele hat, fällt jeder Gegenstand in den Zweig „Aktion" — `set.Action`, Name und Symbol eines Heiltranks sind dann die einer Aktion gleicher Nummer. Adressat ist ECommons; im Fork betroffen, was `set.Action` für Gegenstände liest (`Watcher.ActionFromSelf`, Aktions-Zeitleiste).
 
 
+### Samurai nutzt Feint und Tengentsu im Kampf nicht (fremde Meldung) · N
+
+**Konzept:** `docs/rotation-flow/13-aoe-damage-classification.md`
+Gemeldet unter PR #11 (05.10.2026, ein Nutzer des Releases 7.5.6.13+wsh1, von ihm beantwortet): Seit 7.5.6.13+wsh1
+setze der Samurai im Kampf weder Feint noch Tengentsu ein. Unbestätigt; kein Protokoll. *Statisch geprüft (A265):*
+Zwischen 7.5.6.10+wsh1 und 7.5.6.13+wsh1 kam für den Samurai genau ein neues Gatter dazu: Tengentsu und Third Eye
+im Flächenpfad nur, wenn der Treffer ihn selbst erreicht (`AreaHitOnMe`, A218, beabsichtigt). Feint hat im Flächen-
+und Einzelpfad kein neues Gatter; die Flächenflagge wurde im selben Fenster erweitert (Gruppe statt Spieler, A218),
+nicht verengt. Die Hypothese, die Einzelziel-Regel (eb3fce2eb) nehme Raidwides die Flagge, ist an den Spieldaten
+widerlegt: Von 850 Listeneinträgen ist einer ein Einzelziel mit Wirkreichweite (Holy Bladedance, ein Tankbuster).
+Unverändert seit früher: beide nur ohne Zanshin Ready (`!HasZanshinReady`, Upstream), und die Bewertung „lohnt
+Minderung" (`Skip mitigation for small area casts`). *Messmittel:* `DefenseTrace.log` schreibt jetzt auch „area
+defence open, nothing chosen" mit den Quellen; zusammen mit „hit you" trennt eine Aufzeichnung eines Samurai-Kampfs
+„Flagge nie offen" von „offen, alles abgelehnt". Auflösung: ein solches Protokoll.
+
 ### Burst-Einstellung der Fernkämpfer und Pictomancer weicht keiner Gefahr · N
 
 Barde, Pictomancer und Tänzer führen „Prevent the use of defense abilties during burst" (ab Werk an). Die allgemeine Schranke (Konzept 08, „Die Abwehrsperren") greift dort nicht, weil der Einstellungstext ohne Ausnahme „verhindern" sagt und bindet. Im Kampf: Ein tödlicher Raidwide im Burst bekommt von diesen drei Jobs keine Minderung. Zur Entscheidung vorzulegen: Text ändern (seine Entscheidung) oder so lassen. Dieselbe Einstellung als Damage-Dealer-Regel zu führen, wäre die Stufe „Damage Dealer".
