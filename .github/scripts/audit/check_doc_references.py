@@ -6,17 +6,20 @@ rot: any edit above the cited line moves it, and nothing fails. The reader follo
 reference, lands somewhere unrelated, and either loses trust in the document or - worse -
 believes what the wrong place appears to say.
 
-Two checks, in increasing strictness:
+Checks, in increasing strictness:
 
-  * the file exists and has that many lines. A miss here is always wrong.
-  * where the same sentence names a code identifier in backticks, that identifier should
-    appear near the cited line. A miss is reported with the identifier's real position, so
-    the fix is mechanical.
+  * the file exists and has that many lines, and the cited line carries code - not a blank
+    or a lone brace. A miss here is always wrong, and fails.
+  * the sentence names a code identifier in backticks. A reference nothing vouches for drifts
+    unseen (A270: eleven references in concepts and TODO had drifted onto braces and other
+    code), so a reference without one fails too: name what the line holds, or cite the
+    method instead of the line.
+  * that identifier appears near the cited line. A miss is reported with the identifier's real
+    position, so the fix is mechanical.
 
-Only the first check fails the run. The second cannot tell a drifted reference from a
-correct one that cites a line inside the body of the named method - BaseAction.cs:257 sits
-45 lines below the CanUse it belongs to and is right - so it reports and leaves the
-judgement to a reader. A check that cannot separate the two must not claim it can.
+The last one reports and does not fail: it cannot tell a drifted reference from a correct one
+that cites a line inside the body of the named method - BaseAction.cs:257 sits 45 lines below
+the CanUse it belongs to and is right. A check that cannot separate the two must not claim it can.
 """
 
 import os
@@ -160,16 +163,20 @@ def check(paths):
                                 % (where, cited, line_no, total))
                     continue
 
+                # A cited line has to carry something, whether or not the sentence names an
+                # identifier: one named a few lines away let a reference to a closing brace pass
+                # (04-concept.md cited BaseAction.cs:346 after the code below it had moved).
+                empty, content = cited_line_is_empty(target, line_no)
+                if empty:
+                    hard.append('%s cites %s:%d, but that line is empty%s'
+                                % (where, cited, line_no,
+                                   '' if not content.strip()
+                                   else ' but for %r' % content.strip()))
+                    continue
+
                 if not names:
-                    empty, content = cited_line_is_empty(target, line_no)
-                    if empty:
-                        hard.append('%s cites %s:%d, but that line is empty%s'
-                                    % (where, cited, line_no,
-                                       '' if not content.strip()
-                                       else ' but for %r' % content.strip()))
-                    else:
-                        unverifiable.append('%s cites %s:%d with no identifier to check it '
-                                            'against' % (where, cited, line_no))
+                    unverifiable.append('%s cites %s:%d with no identifier to check it '
+                                        'against' % (where, cited, line_no))
                 elif not near and elsewhere:
                     first = sorted(elsewhere.items(), key=lambda kv: kv[1])[0]
                     drifted.append('%s cites %s:%d, but %s sits at line %d'
@@ -253,9 +260,14 @@ def main():
             print('  ' + item)
         print()
 
-    print('%d reference(s) carry no identifier and are not checked here.' % len(unverifiable))
+    if unverifiable:
+        # A reference no identifier vouches for drifts unseen; name what the line holds.
+        print('%d reference(s) carry no identifier to check them against:' % len(unverifiable))
+        for item in unverifiable:
+            print('  ' + item)
+        print()
 
-    if hard:
+    if hard or unverifiable:
         return 1
 
     print('Every reference points at a line that exists.')

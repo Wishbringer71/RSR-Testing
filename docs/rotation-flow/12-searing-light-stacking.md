@@ -265,7 +265,7 @@ Daraus folgt ein Wert, der vom Zeitpunkt abhängt, nicht von der Zündung selbst
 
 Der vorhandene Schutz nutzt genau das: `IsStatusProvided` (`ActionBasicInfo.cs:704`) sperrt die
 Zündung, solange der Status nicht innerhalb von `StatusRefreshGcdCount` GCDs endet — Vorgabe 2
-(`ActionConfig.cs:66`), also etwa fünf Sekunden vor Ablauf. Der Schutz verhindert damit die teuren
+(`StatusRefreshGcdCount`, `ActionConfig.cs:66`), also etwa fünf Sekunden vor Ablauf. Der Schutz verhindert damit die teuren
 Fälle und erlaubt die billigen. **Er ist richtig gebaut und bleibt unangetastet.**
 
 Entscheidend dafür ist `StatusFromSelf = false` in `ModifySearingLightPvE`: `PlayerHasStatus`
