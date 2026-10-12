@@ -381,6 +381,11 @@ seltener — holt diese Jobs in die Bearbeitung (A162).
   schlagen. Ohne BossModReborn lesbar. Die vorhergesagte Pause ist `BMRDowntimeWithin` (nur mit Modul).
 - **Samurai:** Meditate in der Pause („Gradually increases your Kenki Gauge", nur im Kampf). Die
   Basiseinstellung verweigert es in Bewegung; es endet bei Bewegung.
+- **Schnitter:** Soulsow in der Pause (`ReaperRotation.SoulsowFitsThePause`, A271). Im Kampf 5 s Wirkzeit („Cast time is
+  instant when used outside of battle"); The Balance, Reaper Basic Guide (12.10.2026): „Make sure to get one Harvest Moon
+  between each pull and downtime!" Harvest Moon trifft mit 800 Potenz und gibt 10 Soul (Job-Guide); RSR wirkt es, wenn
+  der Schnitter nicht im Nahkampf zuschlagen kann. Mit Modul fällt Soulsow nur, wenn die Wirkzeit vor dem vorhergesagten
+  Ende der Pause fertig ist (`BMRDowntimeEndIn`); ohne Modul ist die Länge der Pause unbekannt, und es fällt.
 - **Machinist:** Rook/Queen Overdrive im letzten GCD vor einer vorhergesagten Pause, wenn die Königin
   sonst erst in der Pause endet. Ihr Wirktext: Ungewirkt fällt der Abschluss „automatically immediately
   before shutting down" — in der Pause trifft er nichts. Nur mit Modul; ohne Vorhersage ist die Pause
@@ -404,16 +409,11 @@ Werk an).
   Chain Saw/Excavator, Drill/Bio", und keine große Abklingzeit darf in den 11 s des Kanals bereit werden. Damit ist
   die Regel belegt. Er bindet ihn 11 s an Ort und Blickrichtung — nach seiner Spielweise ein Positionsrisiko, das
   im Kampf nur bei stehenden Rudeln ohne Mechanik trägt. Offen im TODO.
-- *Soulsow in der Kampfpause (Schnitter):* RSR wirkt Soulsow nur außerhalb des Kampfes
-  (`ModifySoulsowPvE`: `!InCombat`) — im Countdown und zwischen Rudeln. Der Wirktext erlaubt es im Kampf
-  („Cast time is instant when used outside of battle"); The Balance, Reaper Basic Guide (12.10.2026): „five second
-  cast time in combat", „Make sure to get one Harvest Moon between each pull and downtime!" WrathCombo legt es mit
-  der Option `RPR_Soulsow_Combat` im Kampf auf Harpe, wenn kein Kampfziel besteht. Im Kampf: In einer Pause, in der
-  er 5 s steht, käme danach ein Harvest Moon hinzu. Ohne vorhergesagtes Pausenende kann die Wirkzeit in die Rückkehr
-  des Ziels laufen und den ersten GCD danach verzögern. Offen im TODO.
-
 **Folgen, bewusst hingenommen:**
 - Läuft der Samurai im Kampf aus 25 Yalm heraus, ohne dass eine Pause ist, fällt Meditate, sobald er
   steht. Es bricht bei der ersten Bewegung und kostet dann einen GCD-Takt.
 - Liegt die vorhergesagte Pause später als gemeldet, verliert die Königin ihre letzten Angriffe
   zugunsten des Abschlusses.
+- Kehrt das Ziel ohne Modul während der 5 s von Soulsow zurück, kommt der erste GCD danach bis zu einer Wirkzeit
+  später. Läuft der Schnitter nur aus 25 Yalm heraus, fällt Soulsow wie Meditate, sobald er steht, und bricht bei
+  der ersten Bewegung ab; dafür steht danach Harvest Moon für den nächsten Rückzug bereit.

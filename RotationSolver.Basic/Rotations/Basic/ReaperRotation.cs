@@ -389,9 +389,21 @@ public partial class ReaperRotation
 	static partial void ModifySoulsowPvE(ref ActionSetting setting)
 	{
 		setting.StatusProvide = [StatusID.Soulsow];
-		setting.ActionCheck = () => !InCombat;
+		// Instant out of battle, a 5 s cast in it ("Cast time is instant when used outside of battle"). In a
+		// pause of the fight there is nothing to strike, so the cast costs nothing unless the target returns
+		// before it ends; The Balance asks for "one Harvest Moon between each pull and downtime" (concept 14).
+		setting.ActionCheck = () => !InCombat || SoulsowFitsThePause;
 		setting.IsFriendly = true;
 	}
+
+	/// <summary>
+	/// Whether Soulsow's cast fits a pause in the fight: in combat with no hostile in reach
+	/// (<see cref="CustomRotation.InCombatPause"/>), and, where BossModReborn predicts the end of the downtime,
+	/// done before it. Without a prediction the length of the pause is unknown, and the cast goes.
+	/// </summary>
+	protected static bool SoulsowFitsThePause => InCombatPause
+		&& !(Service.Config.UseBmrTimeline && BMRActive && BMRDowntimeEndIn is > 0f and < float.MaxValue
+			&& BMRDowntimeEndIn < WeaponRemain + ActionID.SoulsowPvE.GetCastTime());
 
 	static partial void ModifyPlentifulHarvestPvE(ref ActionSetting setting)
 	{

@@ -6206,6 +6206,16 @@ Kommentar.
   im gefährlichen Fall nach Prozent ordnen; der kleine Fall kostet nur die Reihenfolge zweier Verletzter, die der Treffer
   beide nicht gefährdet, und die vorausberechnete Gesundheit rechnet den Dauerschaden des Tanks ein. Ausgeliefert und
   nichts ändert sich — trifft zu, wo kein Flächenschaden angesagt ist; dort bleibt die Ordnung nach Prozent.
+- *Schnitter, Soulsow in der Kampfpause:* `ModifySoulsowPvE` ließ Soulsow nur außerhalb des Kampfes zu. Jetzt auch in
+  `InCombatPause`, mit Modul nur, wenn die Wirkzeit vor dem vorhergesagten Ende der Pause fertig ist
+  (`ReaperRotation.SoulsowFitsThePause`). Quellen: Wirktext (im Kampf 5 s), Job-Guide (Harvest Moon 800 Potenz, +10 Soul),
+  The Balance („one Harvest Moon between each pull and downtime"). Ohne Option: Der Nutzen ist durch Referenz und Wirktext
+  belegt, die Kosten sind begrenzt. *Falsifikation:* nichts zu verbessern — widerlegt, ohne die Regel fehlte nach dem ersten
+  Harvest Moon eines Kampfes jedes weitere bis zum Kampfende; Regel falsch — stärkste Gegenposition: Ohne Modul kann das Ziel
+  während der 5 s zurückkehren, der erste GCD danach kommt bis zu einer Wirkzeit später; begrenzt und hingenommen wie bei
+  Meditate, mit Modul ausgeschlossen. Ausgeliefert und nichts ändert sich — trifft zu, wenn der Kampf keine Pause hat oder
+  der Schnitter danach nie aus dem Nahkampf muss; dann liegt Harvest Moon bereit. Betroffen: nur `RPR_Reborn` ruft
+  `SoulsowPvE` (keine Zusatzrotation).
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
