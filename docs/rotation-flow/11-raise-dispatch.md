@@ -1,15 +1,15 @@
-# Wiederbelebung: Auswahl und Ausführung
+# 11 · Wiederbelebung: Auswahl und Ausführung
+
+**Leitfrage:** Wann und auf welchem Weg fällt die Wiederbelebung?
 
 ## Sachstand
 
-Die Wiederbelebung kommt im automatischen Betrieb verspätet oder gar nicht zustande, weil Auswahl
-und Ausführung dieselbe Uhr mit einander ausschließenden Bedingungen lesen. Die Ursache ist statisch
-am Quelltext und durch eine Laufzeitbeobachtung des Auftraggebers belegt.
-
-Die Behebung zündet Spontanität dort, wo die Ausführungsschicht eine Fähigkeit überhaupt durchlässt
-— im Einschiebefenster — und lässt den GCD-Pfad unangetastet. Sie ist **im Spiel bestätigt**: Die
-Wiederbelebung fällt teils sofort, teils nach wenigen Sekunden, gegenüber „über 15 Sekunden oder
-länger" vorher, und keine andere Fähigkeit bleibt aus (`AUDIT_LOG.md` A73).
+Spontanität für eine anstehende Wiederbelebung fällt im Einschiebefenster, dort, wo die Ausführungsschicht eine
+Fähigkeit überhaupt durchlässt (`RaisePendingAndCastable` in `EmergencyAbility`); der GCD-Pfad bleibt unangetastet.
+**Im Spiel bestätigt** (`AUDIT_LOG.md` A73): Die Wiederbelebung fällt teils sofort, teils nach wenigen Sekunden, und
+keine andere Fähigkeit bleibt aus. Ohne diesen Zweig kam sie im automatischen Betrieb nach „über 15 Sekunden oder
+länger" oder gar nicht, weil Auswahl und Ausführung dieselbe Uhr mit einander ausschließenden Bedingungen lesen
+(„Ursache").
 
 **Die verbleibenden Sekunden sind Bauart, kein Rest des Defekts.** Der Einschub greift nur bei
 `WeaponRemain > 0,5 s`, danach geht die Wiederbelebung als nächster GCD hinaus — dazwischen liegt die
@@ -71,7 +71,7 @@ Stelle unrichtig, ohne dass etwas fehlschlug — Parnas' *Lack of Movement*.
 Daraus folgt, dass die Behebung nicht die Zahl `0.5f` verschieben darf. Das reproduzierte dieselbe
 Kopplung an einem anderen Punkt. Zu ersetzen ist die Zuständigkeit für das Einschieben.
 
-## Der Entwurf
+## Die Regel
 
 Der Fähigkeitenpfad zündet Spontanität bereits für die Wiederbelebung, aber nur, wenn diese schon
 als nächster GCD gemeldet ist. Das kann den Ablauf nie **starten**, weil die Meldung ihrerseits
@@ -165,7 +165,7 @@ Erholung ist, und damit genau die Abwägung entfernt, die dem Wahlwert seinen Na
 Die Verhaltenswirkung der Korrektur ist auszählbar und beschränkt sich auf **eine** von vier
 Kombinationen:
 
-| Einstellung | Erholung | alt | neu | |
+| Einstellung | Erholung | ohne die Korrektur | mit ihr | |
 |---|---|---|---|---|
 | an | ja | wirkt | wirkt | gleich |
 | an | nein | wirkt nicht | wirkt nicht | gleich |
@@ -212,7 +212,7 @@ nichts (A86).
 vorhandener **Heiler der eigenen Gruppe** und verglichen deren Größe. Die gemeinte Frage ist eine
 andere: Hartwirken kostet acht Sekunden GCD und lohnt nur, wenn es sonst niemand übernehmen kann.
 
-| | maß bisher | gemeint |
+| | maß früher | gilt |
 |---|---|---|
 | Wer zählt | nur Heiler | **Hartwirken: nur Heiler** (Vorgabe, s. o.) · **Feder: Rezzer** — Heiler, Beschwörer, Rotmagier |
 | Stufe | ungeprüft | ein Rotmagier unter 64 hat Verraise nicht |
@@ -348,7 +348,7 @@ Zweig nicht prüft; ob der Vorbehalt in die Bedingung gehört oder aus dem Text 
 eine Festlegung über die Bedeutung der Einstellung. Die Existenz von
 `HardCastOnlyHealerSwiftCooldown` spricht dafür, dass er gemeint war.
 
-## Verworfene Optionen
+## Ausgeschlossen
 
 - **Nullvariante.** Scheidet aus: Der Defekt trifft jede Wiederbelebung jedes Rezzers und hat keine
   Selbstheilung.
@@ -413,7 +413,7 @@ Zieleignung über den Item-Status und Stufenprüfung der Rezzereigenschaft sowie
 und die Bezugsmenge der Nur-Heiler-Modi. Sie liegen hinter Vorgaben, die im Spieltest nicht verändert
 wurden, und sind in `TODO.md` als offener Nachweis geführt.
 
-## Offene Punkte zu diesem Konzept
+## Offene Punkte
 
 Sie stehen in `TODO.md` und sind dort unter der Überschrift des Eintrags mit **Konzept:** auf dieses
 Dokument gekennzeichnet — an **einer** Stelle statt in zweien, damit keine Kopie altert.
