@@ -6108,6 +6108,30 @@ beobachtet.
 
 **Prüfgrad:** Versionsgeschichte und Konzept gelesen; kein Code.
 
+### A270 · Konzepte gegen ihre eigenen Regeln: Aufbau und Stand (12.10.2026)
+
+- *Seine Rüge:* „also werden auch die konzepte von dir schlampig und nicht den regeln entsprechend geführt" – „ich
+  rede nicht nur von einem konzept" – „und ich meine auch den konzeptaufbau" – „wer hat loopstufen als überschriften
+  vorgegeben?" Zutreffend: niemand; CLAUDE.md verbietet es seit 24.09.2026 („Die Loop-Stufen sind Arbeitsverfahren,
+  keine Gliederung eines Konzepts"). Die erste „Antithesen"-Überschrift steht seit 29.09.2026 in Konzept 09.
+- *Ursache am System:* Fortgeschrieben wurde je Arbeitsgang der Abschnitt, an dem gearbeitet wurde, nicht jede Stelle,
+  die denselben Gegenstand trägt; neue Arbeit wurde als neuer Abschnitt angehängt (Befunde, Abgleich, Antithesen,
+  Umsetzung (Axxx)), statt die bestehenden umzuschreiben. Es gab kein Prüfmittel für den Aufbau.
+- *Prüfmittel:* `check_concept_structure.py` – Loop-Stufe als Überschrift (S1), Geschichte in der Überschrift (S2),
+  derselbe Gegenstand zweimal unter einem Elternabschnitt (S3); Selbsttest. Erster Lauf: 64 Überschriften in 13
+  Konzepten.
+- *Konzept 09 umgebaut:* eine Leitfrage (README angepasst), Antwort vorn, Tankbuster-Plan als ein Abschnitt statt
+  Bestand, Ableitung, Abgleich, Rechnung, Zustandsmodell, Ausführung, Zurückhalten, Mechanik, Irrtum, Lagen,
+  Antithesen und Messmittel nebeneinander. Veraltet und korrigiert: Bestandstabelle und „Lücken der Wertetabelle"
+  (Stand vor A266), der Zähler „alles" in den Tatsachen (entfernt mit e68584734), die Bewertung von Urflackern („keine
+  Höhe", „Messung bleibt eigenes Vorhaben"), die Triage-Zeile für Tanks (D3), die Tabelle zu Abschütteln (K1/D2),
+  Holmgang „vorbeugend nur bei bekannter Höhe, die fehlt", die Ziel-Aussage zu BossModReborn im Living-Dead-Teil.
+  Verweise auf die alten Abschnittsnamen in Code-Kommentaren, TODO und Konzepten 03, 13, 14 nachgezogen; Konzept 13
+  nannte Dark Mind und erhöhte maximale LP noch als Messfehler (seit A266 herausgerechnet).
+
+**Prüfgrad:** Prüfskripte (Aufbau, Verweise, Bezeichner, Voreinstellungen); Inhalt Abschnitt für Abschnitt am Code der
+berührten Stellen gelesen, nicht jede ältere Aussage des Living-Dead-Teils.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

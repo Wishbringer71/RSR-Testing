@@ -282,8 +282,8 @@ public class BaseAction : IBaseAction
 		// player goes out beyond what the plan spends - own mitigation, own barrier, Reprisal around him
 		// alike - from whichever path the rotation spends it. Help aimed at another member stays free, so do
 		// the heal paths (Heart of Corundum heals a tank Superbolide left at 1 HP), the single defence while
-		// the player commands it, and in the area defence what reaches beyond the player (concept 09, "Das geringste Mittel gegen einen gemessenen
-		// Tankbuster").
+		// the player commands it, and in the area defence what reaches beyond the player (concept 09, "Gemessener Tankbuster: das geringste
+		// Mittel").
 		if (IBaseAction.HoldDefenceOnSelf && !IBaseAction.ForceEnable
 			&& !IBaseAction.HealPathRunning && !IBaseAction.CommandedDefenceRunning
 			&& (Info.EffectRange == 0 || !IBaseAction.AreaDefenceRunning)
@@ -298,7 +298,7 @@ public class BaseAction : IBaseAction
 		// Help aimed at another member that takes away what the tankbuster plan cannot do without - the
 		// same button, recast group or gauge - waits for the plan's member, unless the member it helps wins
 		// the triage of the owner's rule: a healer in the critical class, or a tank there while the player
-		// is not (concept 09, "Die Ableitung aus dem Bestand", K2-K4). A command is his decision.
+		// is not (concept 09, "Andere Pfade, die dem Plan ein Glied nehmen", K2-K4). A command is his decision.
 		if (!IBaseAction.ForceEnable && Setting.IsFriendly
 			&& PreviewTarget.Value.Target is { } helped && Player.Object is { } helper
 			&& helped.GameObjectId != helper.GameObjectId
@@ -374,7 +374,7 @@ public class BaseAction : IBaseAction
 			}
 
 			// The tankbuster plan counts its own press from this moment, before the server confirms it
-			// (concept 09, "Das Zustandsmodell je Wirken").
+			// (concept 09, "Die Zustände je Wirken").
 			if (used)
 			{
 				TankbusterForecast.RecordOwnPress(adjustId, targetId);

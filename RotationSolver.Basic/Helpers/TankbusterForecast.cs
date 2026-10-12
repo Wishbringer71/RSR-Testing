@@ -6,8 +6,8 @@ namespace RotationSolver.Basic.Helpers;
 
 /// <summary>
 /// What a tankbuster now being cast at the player is expected to do to him, against what he has to
-/// take it - the measurement behind the tankbuster plan (concept 09, "Das geringste Mittel gegen einen
-/// gemessenen Tankbuster").
+/// take it - the measurement behind the tankbuster plan (concept 09, "Gemessener Tankbuster: das
+/// geringste Mittel").
 /// </summary>
 /// <remarks>
 /// <para>Detection only: what is the case, under which figures. No option is read here, and no

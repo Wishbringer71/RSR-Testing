@@ -93,7 +93,7 @@ Zielüberschreibung, nicht aber „du selbst". Ist das Objektziel nicht erreichb
 
 Der Tankbuster-Plan (9) und der Tankwechsel (10) sitzen hinter `EmergencyAbility`,
 damit eine Unverwundbarkeit, die an ihrer Schwelle zündet, vorgeht, und vor allem anderen, weil beide an einem
-Tankbuster hängen (Konzept 09, „Das geringste Mittel gegen einen gemessenen Tankbuster" und „Tankwechsel nach einem
+Tankbuster hängen (Konzept 09, „Gemessener Tankbuster: das geringste Mittel" und „Tankwechsel nach einem
 Tankbuster"). Der Plan drückt die Minderungen, die ein gemessener Tankbuster braucht, oder die Unverwundbarkeit, und
 steht vor dem Wechsel, der hält, solange sie bereit ist. Beide haben keinen
 befohlenen Eingang; Shirk (13) läuft weiterhin nur auf Befehl. Solange ein Plan läuft oder

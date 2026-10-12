@@ -184,7 +184,7 @@ anderes Werkzeug entscheidet):
   Bloodwhetting liegt (`safeToShakeItOff`); im Pfad für angekündigten Gruppenschaden ohne diese Prüfung.
   Bestätigt die Aufhebung auch von Vengeance auf niedriger Stufe.
   The Balance (Basic Guide, 01.10.2026) wertet die Aufhebung von Thrill of Battle als Gewinn: Die Barriere bemisst
-  sich an der erhöhten Maximalgesundheit. Bewertung und Empfehlung: Konzept 09, „Krieger: die Abwehr im Ganzen",
+  sich an der erhöhten Maximalgesundheit. Bewertung und Empfehlung: Konzept 09, „Krieger: die übrige Abwehr",
   Befund 6.
 - *Passage of Arms:* Option „Block Combos for Passage of Arms" hält alle Kombos, solange der Kanal liegt —
   ohne Frage nach dem Treffer; beenden muss der Spieler.

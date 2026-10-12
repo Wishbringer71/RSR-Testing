@@ -38,7 +38,7 @@ Protokoll 01.10.2026 (Klosterdämon, Todesklaue; 48-Spieler-Inhalt mit Phantom-A
 
 ### Krieger: Nascent Flash — offene Bausteine · N, U
 
-Nach seinen Kriterien (29.09.2026) bewertet und gebaut (Konzept 09, „Krieger: Nascent Flash für einen anderen oder Bloodwhetting für sich"; A226). Offen:
+Nach seinen Kriterien (29.09.2026) bewertet und gebaut (Konzept 09, „Krieger: Urimpuls für sich oder Urflackern für andere"; A226). Offen:
 - *Die Höhe eines Tankbusters wird nicht gemessen.* Der Effekt-Handler sieht den Treffer, misst aber nach Minderung und Barriere, bei Tankbustern also systematisch zu niedrig, und zu niedrig ist dort die gefährliche Richtung. Zum Herausrechnen fehlen belegte Antworten: die Prozentsätze je wirkendem Status am Treffer, die Schadensart je Aktion (Feint, Addle) und ob der gemeldete Schadenswert eine aufgezehrte Barriere enthält. Erst damit wird aus „möglicherweise tödlich" eine Zahl. Konzept 13 („Dieselbe Frage stellt sich bei den Tankbustern").
 - *Offen, jetzt mit Quelle:* Nascent Flash als Minderung für den anderen Tank vor dessen Tankbuster. The Balance (Warrior Basic Guide, Makros, 02.10.2026): „Most often on the co-tank of your eight-person party.“ Braucht die Erkennung des Tankbusters auf dem anderen Tank und die Abwägung über die vorhandene Triage.
 - *Upstream-Bauform:* Raw Intuition/Bloodwhetting fällt nur, solange das Ziel des Kriegers ihn anvisiert (`PlayerIsTargetOnSelf`). Ein Off-Tank mit Tankbuster-Marker bekommt es aus der Einzelabwehr nicht.
@@ -246,7 +246,7 @@ Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A17
 
 **Stand (A260):** Vor einem gewirkten Tankbuster, den die Tankbuster-Tabelle selbst bei vollen LP und mit allen
 eigenen Minderungen für tödlich hält, geht die Unverwundbarkeit vorher aus, und die übrige Abwehr auf den Tank wird
-zurückgehalten (Konzept 09, „Das geringste Mittel gegen einen gemessenen Tankbuster"). Weiter nur reaktiv, also erst unter
+zurückgehalten (Konzept 09, „Gemessener Tankbuster: das geringste Mittel"). Weiter nur reaktiv, also erst unter
 `HealthForDyingTanks`, bleibt sie
 - bei Tankbustern, die nur ein Marker oder BossModReborn ankündigt: Beide nennen die Aktion nicht, also gibt es
   keinen Tabellenwert;
@@ -304,6 +304,17 @@ gemeinte Größe.
 - *Im Kampf:* Fenster öffnen bis zu einen GCD zu spät, und Glieder mit kurzer Wirkdauer fallen ganz heraus – zu viel
   Mittel. Der Rückfall „alles" beginnt einen GCD vor dem Treffer statt bei den letzten nötigen Druckplätzen.
 - *Offen:* ein Loop über alle Stellen zusammen, mit Modell. Erst Konzept, dann Code.
+
+### Living Dead: Die Rückhaltung liest die gemessene Tankbuster-Höhe nicht · N
+
+**Befund (12.10.2026, Konzept 09, „Warum eine Überlebensprüfung diese Zusage nicht tragen kann"):** Die Uhrregel hält
+Heilung unter Living Dead zurück, solange der Tod noch rechtzeitig kommt, gemessen an `HealthForDyingTanks` und der
+Restzeit. Für einen gewirkten, gemessenen Tankbuster kennt die Tankbuster-Tabelle inzwischen den Höchstwert; ob der
+Treffer den Träger vor Ablauf auf 0 bringt, wäre damit rechenbar. *Im Kampf:* Heute kann die Regel einen Träger
+zurückhalten, den der kommende Tankbuster nicht auf 0 bringt, oder ihn vor dem Tankbuster heilen, der ihn sonst in
+Walking Dead brächte. **Offen:** voller Loop, ob die Regel den Wert lesen soll.
+
+**Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 
 ### Tankbuster-Plan: keine Reserve nach einem knapp überlebten Treffer · N
 
@@ -605,7 +616,7 @@ Er fällt trotzdem kaum ins Gewicht, und der Grund liegt in der Wirkweise der Ak
 
 ### Tanks: Reflexion und Gruppenbarriere auf demselben Raidwide · N
 
-Seine Protokolle vom 01.10.2026 zeigen Abschütteln und Reflexion fast immer auf demselben Raidwide, eine Sekunde auseinander. WrathCombo verteilt beide auf aufeinanderfolgende Raidwides (je 10 s Sperre gegeneinander); The Balance: stapeln für große Treffer, verteilen über mehrere. RSR kennt die gemessene Größe je Raidwide (`HostileCastingAreaPotential`), Stufe 2 der Abwehr nach Treffergröße (Konzept 08) wäre der Ort. Offen: Fallarbeit für alle vier Tanks (Divine Veil, Dark Missionary, Heart of Light). Konzept 09, „Abgleich mit den Referenzen".
+Seine Protokolle vom 01.10.2026 zeigen Abschütteln und Reflexion fast immer auf demselben Raidwide, eine Sekunde auseinander. WrathCombo verteilt beide auf aufeinanderfolgende Raidwides (je 10 s Sperre gegeneinander); The Balance: stapeln für große Treffer, verteilen über mehrere. RSR kennt die gemessene Größe je Raidwide (`HostileCastingAreaPotential`), Stufe 2 der Abwehr nach Treffergröße (Konzept 08) wäre der Ort. Offen: Fallarbeit für alle vier Tanks (Divine Veil, Dark Missionary, Heart of Light). Konzept 09, „Krieger: die übrige Abwehr", Referenzen.
 
 ### Flächenheilung um den Wirkenden: Radius gegen Trefferfläche statt Mittelpunkt · N
 

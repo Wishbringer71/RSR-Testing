@@ -21,7 +21,7 @@ public partial class CustomRotation
 
 	private static TankbusterPlan? _tankbusterPlan;
 	private static readonly HashSet<uint> _allowedNow = [];
-	// The states of concept 09, "Das Zustandsmodell je Wirken", that a plan can be in.
+	// The states of concept 09, "Die Zustände je Wirken", that a plan can be in.
 	private enum PlanState
 	{
 		Covered,
@@ -48,8 +48,8 @@ public partial class CustomRotation
 
 
 	/// <summary>
-	/// The owner's rule of 04.10.2026 (concept 09, "Das geringste Mittel gegen einen gemessenen
-	/// Tankbuster"): against a tankbuster the table has measured, the least means that survives it without
+	/// The owner's rule of 04.10.2026 (concept 09, "Gemessener Tankbuster: das geringste
+	/// Mittel"): against a tankbuster the table has measured, the least means that survives it without
 	/// risk. The cheapest set of the own mitigations available by the hit - one, or several stacked when one
 	/// is not enough; nothing when the hit is survivable as it stands. The invulnerability only when no set
 	/// survives - "mit kanonen auf spatzen schießen" otherwise - and then nothing else. Everything only when
@@ -109,7 +109,7 @@ public partial class CustomRotation
 		var gcd = DataCenter.DefaultGCDTotal;
 		var invulnerability = Invulnerability;
 
-		// Z1 (concept 09, "Das Zustandsmodell je Wirken"): an invulnerability over the hit - its status, or the
+		// Z1 (concept 09, "Die Zustände je Wirken"): an invulnerability over the hit - its status, or the
 		// own press of it - and for this cast no mitigation goes out on top of it (invariant 2).
 		if (InvulnerabilityCovers(cast, true))
 		{
@@ -216,7 +216,7 @@ public partial class CustomRotation
 	/// <summary>
 	/// The plan's members and the own mitigation standing or on its way that the hit cannot be survived
 	/// without - no bundle without it survives, the invulnerability not counted as a replacement (concept 09,
-	/// "Die Ableitung aus dem Bestand", K1-K4). What takes one of them away - Shake It Off dispelling it, help
+	/// "Andere Pfade, die dem Plan ein Glied nehmen", K1-K4). What takes one of them away - Shake It Off dispelling it, help
 	/// for another member on the same button, recast group or gauge - waits for it.
 	/// </summary>
 	private static void FindNeeded(List<PlanCandidate> candidates, int bestMask, List<PlanCandidate> pending,

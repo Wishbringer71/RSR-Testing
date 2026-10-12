@@ -47,7 +47,7 @@ internal static class TankbusterTable
 
 		// A strengthened attacker hits harder than the action does: stored, the figure would rate the
 		// action too high, and the tankbuster plan would draw the invulnerability, or stack mitigation,
-		// where less would have done. Not stored - the one error the table must not make (concept 09, "Das geringste Mittel gegen einen gemessenen Tankbuster").
+		// where less would have done. Not stored - the one error the table must not make (concept 09, "Gemessener Tankbuster: das geringste Mittel").
 		if (attacker != null && attacker.CarriesDamageUp())
 		{
 			DefenseTrace.Line($"tankbuster measured: {name} #{actionId} on {target.Name.TextValue} for {share:P0} of max HP"

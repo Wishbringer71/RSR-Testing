@@ -1,4 +1,4 @@
-"""Executable model of the tankbuster plan (concept 09, "Das Zustandsmodell je Wirken").
+"""Executable model of the tankbuster plan (concept 09, "Die Zustände je Wirken").
 
 It implements the concept's rules - not the C# code - and runs them against a simulated world
 with the timing the game has: frames of varying length with hitches, a forecast that reads once

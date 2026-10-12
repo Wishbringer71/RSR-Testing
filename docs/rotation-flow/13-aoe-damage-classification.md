@@ -534,15 +534,16 @@ Messung in `TankbusterTable`, Ablage über denselben gesicherten Weg wie die Fl�
 - Eine Barriere wird nicht herausgerechnet: Ob die Schadenszahl des Spiels den absorbierten Teil enthält, ist hier
   nicht belegt.
 - Treffer unsichtbarer Helfer tragen die Debuffs des Bosses nicht.
-- Eine Minderung je Schadensart auf dem Getroffenen (Dark Mind: physisch 10 %, magisch 20 %) hat im Wertemodell kein
-  Feld und wird nicht herausgerechnet (Konzept 09, „Bestand", Lücken).
-- Der Anteil wird an den *aktuellen* maximalen LP gemessen (`Watcher.DamageShareOn`). Steht eine Erhöhung der
-  maximalen LP (Kampfrausch +20 %; im Spiel auch „of a party member or self by 10 %"), ist der Nenner zu groß.
+
+Herausgerechnet werden dagegen eine Minderung je Schadensart auf dem Getroffenen (Dark Mind: physisch 10 %, magisch
+20 %; `MitigationFactor` über `SelfAgainst`) und eine Erhöhung der maximalen LP, die beim Treffer steht (Kampfrausch,
+Great Nebula; `MaxHpRaise`): Der Anteil wird an den aktuellen maximalen LP gemessen (`Watcher.DamageShareOn`) und auf
+die maximalen LP ohne Erhöhung umgerechnet.
 
 In allen diesen Fällen fällt der ungeminderte Wert zu klein aus, und jeder spätere Treffer kann ihn nur anheben. Ein
 zu kleiner Wert heißt **seit dem Tankbuster-Plan nicht mehr** „das Verhalten ohne Tabelle": Der Plan wählt ein zu
 kleines Bündel und hält mit „Spend only …" den Rest zurück – der Tank nimmt den Treffer mit weniger, als die alte
-Abwehr gedrückt hätte (Konzept 09, „In welche Richtung die Rechnung irrt"). Der erste Treffer einer Aktion hat
+Abwehr gedrückt hätte (Konzept 09, „Gemessener Tankbuster: das geringste Mittel", Grenzen). Der erste Treffer einer Aktion hat
 keinen Wert.
 
 **Nach oben ausgeschlossen:** ein Treffer eines gestärkten Angreifers. Trägt er `DamageUp`, `PhysicalDamageUp` oder
@@ -557,7 +558,7 @@ unerkannt.
   Treffer dieses Kampfes auf dich und der Vorhersage der Tabelle: ungeminderter Wert mal der Minderung, die jetzt
   auf dir und auf dem Boss liegt. Gleiches gilt für die Prüfung, ob der Empfänger selbst in Gefahr ist. Damit
   greift der Tankwechsel schon beim ersten Tankbuster eines späteren Abends und mit Messungen vom Co-Tank.
-- **Das geringste Mittel gegen einen gemessenen Tankbuster (Konzept 09, A260, A261):** Für einen gewirkten Tankbuster
+- **Gemessener Tankbuster: das geringste Mittel (Konzept 09, A260, A261):** Für einen gewirkten Tankbuster
   wählt der Plan das billigste Bündel eigener Minderungen, das ihn bei den LP jetzt und mit dem, was beim Einschlag
   noch steht, überlebt – gestapelt, wo eine nicht reicht. Die Unverwundbarkeit nur, wenn kein Bündel reicht; der
   Rest wird zurückgehalten. Hier entscheidet die Tabelle über Abklingzeiten. Dafür rechnet `PredictedShare` mit einem

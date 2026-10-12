@@ -1,54 +1,28 @@
-# 09 · Tank-Selbstschutz und das Verhalten des Heilers
+# 09 · Tank-Selbstschutz
 
-Entwurfsdokument nach ADR-Struktur. Es stellt den geltenden Stand dar; die
-Prüfhistorie steht in `AUDIT_LOG.md` (A21–A23, A27–A29), zurückgenommene Aussagen
-dort in Abschnitt C.
+**Leitfrage:** Womit schützt sich ein Tank gegen einen Treffer, und was dürfen Heilung, Hilfe für andere und die
+übrigen Pfade der Rotation diesem Schutz nicht nehmen?
 
-## Ergebnis
+Das Dokument gibt den geltenden Stand; die Prüfhistorie steht in `AUDIT_LOG.md`, zurückgenommene Aussagen dort in
+Abschnitt C.
 
-Mehrere Tank-Fähigkeiten warten auf ein **Ereignis**, das fremde Heilung abfangen
-kann. RSR kannte davon eine einzige Wechselwirkung und setzte sie fehlerhaft um.
+## Antwort
 
-Der belastbare Kern des Vorhabens ist **nicht** die Rückhaltung, sondern die
-Richtigstellung der Heilzielwahl: `NoNeedHealingInvuln()` liefert `true`, wenn
-*kein* Schutzstatus liegt, und zwei Aufrufer werteten sie mit dem entgegengesetzten
-Vorzeichen aus. Die generische Zielwahl sammelte dadurch genau die geschützten
-Gruppenmitglieder, war im Regelfall leer und fiel auf den Tank zurück — sie war
-blind für den am schwersten Verletzten. Das ist ein Defekt der Rangstufe 1 und
-umgesetzt.
+- **Gemessener Tankbuster:** das billigste Bündel eigener Abwehr, mit dem der Tank ihn übersteht; die
+  Unverwundbarkeit nur, wenn keines reicht; „alles" nur, wenn auch sie nicht verfügbar ist. Was der Plan nicht
+  braucht, hält RSR auf allen Pfaden zurück. Zwei Optionen, ab Werk an.
+- **Tankbuster ohne Messung** (Marker, Vorhersage, nie gemessene Aktion): die Einzelabwehr der Tank-Rotationen, je
+  vorhergesagtem Tankbuster eine große Minderung oder Schutzwall und die kurzen dazu; die Unverwundbarkeit reaktiv
+  unter `HealthForDyingTanks`.
+- **Krieger:** Urflackern geht an ein anderes Mitglied, wenn er Urimpuls nicht selbst braucht oder das Mitglied die
+  Triage gewinnt; Abschütteln wartet, solange es ihm laufende oder vom Plan gebrauchte eigene Minderungen nähme.
+- **Tankwechsel:** Geteiltes Leid auf den anderen Tank nach einem Tankbuster, der dich in Gefahr lässt; zurück
+  provoziert, wenn er den nächsten Tankbuster genommen hat und du wieder sicher bist. Option, ab Werk an.
+- **Schutzmechaniken mit Auslöser und die Heilung:** Geschützte Tanks sind nachrangige, nicht ausgeschlossene
+  Heilziele. Unter Living Dead hält RSR Heilung zurück, solange der Tod noch rechtzeitig kommt (Option, ab Werk aus);
+  für The Blackest Night gibt es keine Rückhaltung.
 
-Die Rückhaltung selbst ist ein eng umgrenzter Sonderfall: Von neunzehn geprüften
-Lagen bleiben **zwei** echte Rückhaltefälle, denen fünf Aufhebungen gegenüberstehen.
-Sie ist für Living Dead als **Uhrregel** umgesetzt — zurückhalten, solange der Tod
-noch rechtzeitig kommt — hinter einer Option mit Standard aus.
-
-Für The Blackest Night ist **keine eigene Rückhalteregel** richtig: Heilung berührt den
-Auslöser nicht, und ein Heilerschild wird erst nach der TBN-Barriere aufgezehrt, kann sie
-also weder verzögern noch verdrängen. Die Barriere verschiebt auch nicht mehr die Heilschwelle: Die
-Schildanrechnung auf die Heilschwelle ist entfernt (A85). In die Zielwahl geht sie über die effektive
-Gesundheit ein (Gefährdungsklasse 1, Konzept 07).
-
-*Abgrenzung, weil dieser Satz sonst zu weit gelesen wird:* Er gilt für Heilung und
-Schild. Für den **Schadensstrom** gilt das Gegenteil, und dort liegt inzwischen eine
-Sonderregel — der Weißmagier hält Sanctus zurück, solange ein Tank die Barriere trägt,
-weil dessen Betäubung genau den Schaden anhält, an dem die Barriere aufgezehrt werden
-müsste. Das ist keine Frage der Heilzielwahl und steht deshalb in Konzept 10, nicht
-hier.
-
-| Baustein | Stand |
-|---|---|
-| Invertierte Prüfung an beiden Fundorten korrigiert | umgesetzt |
-| Zielwahl vom Ausschluss zur Prioritätsstufe | umgesetzt |
-| Fehlende Ids (`HallowedGround`, `HallowedGround_1302`, `UndeadRebirth`) | umgesetzt |
-| Schutzstatus senkt die Heilschwelle, statt das Flag zu unterdrücken | umgesetzt |
-| Living-Dead-Rückhaltung als Uhrregel, hinter Option | umgesetzt |
-| Sonderbehandlung für The Blackest Night | **nicht nötig**, aber aus dem umgekehrten Grund: Eine Barriere ist kein Grund, später zu heilen — s. u. |
-| Schildanrechnung auf die Heilschwelle | **entfernt** (A85). Gesundheit und Schild addieren sich, sie ersetzen einander nicht |
-| Messbaustein für Raten auf Gruppenmitglieder | **gebaut** (A91–A93): `RecordedHP` führt die Gruppe mit, `GetCorrectedTTK` liefert die Restzeit je Mitglied. Die frühere Verwerfung ist überholt |
-| Tankwechsel nach einem Tankbuster (sein Vorschlag): Geteiltes Leid auf den Co-Tank, Zurückprovozieren nach dessen Tankbuster | **gebaut**, Option ab Werk an (A255–A257); Abschnitt „Tankwechsel nach einem Tankbuster" |
-| Das geringste Mittel gegen einen gemessenen Tankbuster: Minderung nach Bedarf, gestapelt wo nötig; Unverwundbarkeit nur, wenn nichts Geringeres reicht; der Rest zurückgehalten (seine Vorgabe) | **gebaut**, zwei Optionen ab Werk an (A260, A261); Abschnitt „Das geringste Mittel gegen einen gemessenen Tankbuster" |
-
-## Prüfmaßstab — die Rangordnung
+## Rangordnung
 
 Alles Folgende ist an dieser Ordnung zu messen. Sie ist **lexikographisch**: Eine
 nachrangige Stufe darf eine vorrangige nie aufwiegen, gleich wie groß ihr Betrag
@@ -82,477 +56,418 @@ bereits eine eigene Rangfolge in `ActionTargetInfo.GeneralHealTarget`: zuerst we
 the heal target by danger" statt der Rollen-Kurzwege die Gefährdungsklassen 2 und 3 (Stand 29.09.2026).
 Sie hier ebenfalls umzustellen wäre eine zweite, größere Änderung.
 
-## Taxonomie nach Auslöser
+## Gemessener Tankbuster: das geringste Mittel
 
-Entscheidend ist nicht, ob eine Fähigkeit schützt, sondern **ob sie auf ein Ereignis
-wartet**, das der Heiler abfangen kann.
+**Sachstand:** Für einen gewirkten Tankbuster, dessen Höhe die Tankbuster-Tabelle kennt (Konzept 13), plant RSR je
+Durchlauf das billigste Bündel eigener Minderungen, mit dem der Tank den Treffer übersteht. Die Unverwundbarkeit
+kommt nur, wenn kein Bündel reicht. „Alles" geht nur hinaus, wenn auch sie nicht verfügbar ist. Was der Plan nicht
+braucht, hält RSR auf allen Pfaden zurück. Zwei Optionen, ab Werk an:
+- „Spend only the mitigation a measured tankbuster needs": Minderungsdrücke und Zurückhalten; Tanks und Heiler.
+- „Use the invulnerability before a tankbuster nothing less survives": die Unverwundbarkeit vor dem Treffer; nur Tanks.
 
-### Klasse A — auslöserbehaftet
+Die Regel sitzt auf der Stufe Tanks: Die Rechnung ist für alle vier gleich, die Aktionen liest sie aus den Wirktexten.
+Der Heiler-Teil sitzt auf der Stufe Heiler; Damage Dealer betrifft sie nicht.
+- Erkennung in `TankbusterForecast`: Sie liest keine Option und wählt keine Aktion.
+- Entscheidung in `CustomRotation_Tankbuster.cs`: `UpdateTankbusterPlan` (je Durchlauf), `TankbusterPlanAbility`
+  (Ausführung, Fähigkeiten-Slot 9), `HoldDefenceForTankbuster` (Zurückhalten über `IBaseAction.HoldDefenceOnSelf`,
+  Gatter in `BaseAction.CanUse`, Ablehnung „HeldForTheInvulnerability").
+- Für Heiler: `StateUpdater.ShouldAddDefenseSingle`.
 
-| Job | Fähigkeit | Auslöser | Auslöser ist… | Was fremde Heilung bewirkt |
-|---|---|---|---|---|
-| DRK | Living Dead | HP fallen auf 0 | **der Tod selbst** | verhindert den Tod, also den Übergang in Walking Dead samt dessen Selbstheilung |
-| DRK | The Blackest Night | Barriere wird **vollständig** absorbiert | ein Schadensereignis unterhalb des Todes | **nichts.** Eine Barriere absorbiert vor den HP; ihr Verbrauch hängt am eingehenden Schaden, nicht am Gesundheitsstand. Heilung wirkt hier sogar *für* den Auslöser, weil sie den Tod verhindert, der ihn vereiteln würde |
-| SCH | Excogitation | HP-Schwelle auf dem Ziel | ein Schadensereignis unterhalb des Todes | vorzeitige Heilung entwertet die eigene, bereits gesetzte Fähigkeit |
+### Seine Angaben
 
-**Die vierte Spalte trennt die Klasse in zwei, und diese Trennung entscheidet über
-alles Weitere.**
+- *Hinweis (04.10.2026):* Ob ein Tankbuster tödlich ist, lässt sich ohne den erwarteten Schaden nicht sagen – erst nach
+  dem Einschlag oder aus Erfahrungswerten. Eine Unverwundbarkeit bei jedem Tankbuster wäre schädlich. Die
+  Erfahrungswerte liefert die Tankbuster-Tabelle.
+- *Vorschlag (04.10.2026), geprüft und übernommen:* „rein ökonomisch … für einen tankbuster, welcher 100% tödlich ist,
+  nur noch invul nimmt und alle anderen schilde, debuffs und mitigations wegläßt" – „das war der sinn der idee."
+- *Präzisierung:* „ich habe nie gesagt, dass bei tankbustern nur eine große minderung erlaubt ist."
+- *Vorgabe:* „wenn klar ist, dass man den tankbuster nur mit zwei aktuell verfügbaren (also nicht auf cooldown)
+  minderungen überleben kann, dann sollte man diese auch bei verfügbarkeit nutzen. gerade dann, wenn invul
+  aufgebraucht ist. und selbst wenn invul verfügbar ist, gilt immer das geringste notwendige mittel und invul ist
+  ‚mit kanonen auf spatzen schießen'. manchmal absolut notwendig, manchmal das mittel zweiter wahl, wenn es anders
+  auch geht (aber dann ohne risiko)."
+- *Hinweis:* Externe Effekte sind mitzubewerten – ein Debuff eines anderen auf dem Boss, der beim Einschlag noch
+  wirkt; ein großer Heilerschild auf dem Tank, der beim Einschlag noch steht.
+- *Präzisierung zu „alles":* „nicht invul und dann noch zusätzlich buffs, sondern alles raushauen, wenn invul nicht
+  verfügbar ist, alle buffs zusammen aber eigentlich nicht reichen, aber man hofft, dass irgendjemand anderes noch
+  einen debuff oder ein schild raushaut."
+- *Entscheidung D1 (12.10.2026):* „unverwundbarkeit ist die ultimative lösung … wenn tankbuster durch "alles" nicht
+  überlebt werden kann, dann ist auf alles zu verzichten und nur unverwundbarkeit zu nehmen."
+- *Hinweis (12.10.2026):* „wenn andere Dinge rausgehen können, dann kann es auch die unverwundbarkeit."
+- *Entscheidung D2 (12.10.2026):* „es geht um das beste ergebnis für die gruppe."
+- *Entscheidung D3 (12.10.2026):* „sichere option gegen unsicher tauschen ist für gruppe nicht unbedingt gut."
+- *Hinweise (12.10.2026):* „unverwundbarkeit nach tod bringt nichts, "alles" nach schadenseingang bringt auch nix."
 
-**A-tödlich — der Auslöser *ist* der Tod.** Living Dead ist der einzige Fall. Das
-Ereignis, das der Heiler sonst um jeden Preis verhindert, ist hier das erwünschte.
-Jede sonst geltende Regel — „bei niedriger Gesundheit heilen", „bei drohendem
-Tankbuster heilen" — ist hier nicht bloß unnötig, sondern **kontraproduktiv**: Sie
-zielt auf die Verhinderung dessen, worauf die Fähigkeit wartet.
+### Die Zustände je Wirken
 
-**A-nichttödlich — der Auslöser liegt unterhalb des Todes.** The Blackest Night und
-Excogitation. Der Tod bleibt die Katastrophe; die üblichen Aufhebungsregeln gelten
-unverändert.
+Für das früheste gemessene Wirken c auf dich rechnet RSR in jedem Durchlauf neu, nur für Tanks und nur, wenn eine der
+beiden Optionen an ist:
 
-### Klasse A+ — The Blackest Night: eine Frage der Werkzeugwahl, nicht der Rückhaltung
-
-Die Fähigkeit kostet **3000 MP** und legt eine Barriere über 25 % der maximalen HP
-für 7 Sekunden. Dark Arts — und damit ein kostenloser Edge oder Flood of Shadow —
-wird nur gewährt, wenn die Barriere **vollständig** absorbiert wird. Wird sie es
-nicht, sind die 3000 MP ersatzlos ausgegeben: Edge of Shadow kostet seinerseits
-3000 MP und verlängert Darkside um 30 Sekunden, deren Abriss zehn Prozent Schaden
-kostet.
-
-**Heilung und HoT berühren diesen Auslöser nicht.** Eine Barriere absorbiert
-eingehenden Schaden, bevor er die HP erreicht; wie schnell sie aufgezehrt wird, hängt
-allein am eingehenden Schaden. Der Gesundheitsstand des Trägers ändert daran nichts.
-Die einzige Kopplung läuft in die **andere** Richtung: Stirbt der Träger, bevor die
-Barriere aufgebraucht ist, entfällt Dark Arts — Heilung wirkt also für den Auslöser,
-nicht gegen ihn. *Schluss aus der Wirkbeschreibung („nullifying damage") und der
-Auslösebedingung („completely absorbed"), nicht wörtlich belegt.*
-
-**Ein zweiter Schild schadet ebenfalls nicht.** Mehrere Barrieren auf demselben
-Charakter werden in einer festen **Verbrauchsreihenfolge** aufgezehrt, nicht anteilig,
-und The Blackest Night steht in dieser Reihenfolge **vor** den Schilden, die ein Heiler
-auf einen Tank legen kann:
-
-| Barriere | Verbrauchsrang |
-|---|---|
-| The Blackest Night | 3 |
-| Eukrasian Diagnosis (SGE) | 4 |
-| Divine Benison (WHM) | 12 |
-
-Der niedrigere Rang wird zuerst aufgezehrt. Ein Heilerschild verzögert die Absorption
-von TBN also nicht — Dark Arts wird davon nicht berührt. Er geht dabei auch nicht
-verloren: Er bleibt liegen und absorbiert, sobald TBN aufgebraucht ist. Zurückstellen
-spart deshalb nichts, es verschiebt nur.
-
-*Quellenstatus:* Gemeinschaftsquelle — die Tabelle „Barrier Consumption Priority" im consolegameswiki
-(abgerufen 02.10.2026), die sich auf einen Lodestone-Blog und einen Beitrag auf X stützt; keine offizielle
-Beschreibung. Sie führt The Blackest Night auf Rang 3 und Eukrasian Diagnosis auf Rang 4 und, mit
-Differential Diagnosis, auf Rang 24 — beide hinter TBN. Der früher offene Quellenkonflikt (ein Job-Guide
-habe Eukrasian Diagnosis vor TBN geführt) ist damit für TBN aufgelöst: Kein Heilerschild verzögert
-seine Absorption. Weitere Ränge derselben Tabelle, die andere Regeln berühren: Stem the Tide aus
-Bloodwhetting und Nascent Flash Rang 8, Divine Benison 12, Radiant Aegis 18, Shake It Off 19, Divine
-Veil 20.
-
-**Der Träger ist nicht zwingend der Dunkelritter.** `ActionId.resx` (Aktion 7393)
-beschreibt TBN als „Creates a barrier around **self or target party member**" — die
-Barriere kann auf jedem Gruppenmitglied liegen, und der Party-Zweig in `DRK_Reborn` nutzt das mit
-`targetOverride: TargetType.LowHP`. Ein Beschwörer kann also Radiant Aegis tragen und zusätzlich TBN
-bekommen. Radiant Aegis steht auf Rang 18, also hinter TBN (Rang 3): Sie verzögert die Absorption von TBN
-nicht. Was vor TBN steht, sind nur Crest of Time Borrowed und die Tempera-Schilde (Ränge 1 und 2) — eigene
-Schilde von Schnitter (Arcane Crest, ab Stufe 84) und Piktomant, die ein Heiler ebenso wenig steuert.
-
-**Damit bleibt kein Grund, den Schild zurückzustellen.** Was bleibt, ist die gewöhnliche
-Dringlichkeitsfrage: Ein Träger mit TBN ist bereits geschützt und deshalb weniger dringend
-zu versorgen als ein ungeschütztes Gruppenmitglied. Das beantwortet die Zielwahl: `StatusID.BlackestNight` steht in
-`StatusHelper.ShieldStatus`, die effektive Gesundheit (`GetEffectiveHp`) zählt die Barriere mit, und die
-Gefährdungsklasse 1 ordnet nach ihr (Konzept 07). Die Heilschwelle liest die Barriere nicht; eine frühere
-Anrechnung dort verschob, **ob** überhaupt geheilt wird, statt **wen** zuerst, und ist entfernt (A85).
-
-### Klasse B — Unverwundbarkeit
-
-Heilung während der Phase wirkt nicht auf den Schutz, wohl aber auf das, was danach
-kommt.
-
-| Job | Fähigkeit | Wirkung auf die HP | Lage nach Ablauf |
+| Zustand | Wann | Was gedrückt wird | Was zurückgehalten wird |
 |---|---|---|---|
-| PLD | Hallowed Ground | unverändert | so niedrig wie beim Zünden |
-| WAR | Holmgang | fallen nicht unter 1 | möglicherweise 1 HP |
-| GNB | Superbolide | **sofort auf 1** | 1 HP, sofern nicht geheilt wurde |
-| DRK | Undead Rebirth | fallen nicht unter 1 | Erfolgszustand |
+| Z0 kein Plan | kein gemessenes Wirken auf dich | nichts | nichts; unter Heiligem Boden oder Meteoritenfall über den nächsten GCD: alles Bewertete auf dich |
+| Z1 gedeckt | eine Unverwundbarkeit steht über H (Status oder eigener Druck) | nichts | alles Bewertete auf dich |
+| Z2 Bündel S | das billigste Bündel S übersteht c; S darf leer sein | jedes Glied von S in seinem Fenster | alles Bewertete auf dich außer S; ein Glied von S erst ab seinem Fenster; im letzten GCD nichts mehr, wenn ein Glied fehlt |
+| Z3 Unverwundbarkeit | kein Bündel übersteht c, sie ist einen GCD vor dem Einschlag verfügbar | sie, in ihrem Fenster; nach einer Ablehnung im nächsten Durchlauf neu | alles Bewertete auf dich, solange R > GCD |
+| Z4 alles | kein Bündel, keine verfügbare Unverwundbarkeit | jedes verfügbare Glied in seinem Fenster | nichts |
 
-**Living Dead hat drei Phasen.** Die Aktionsbeschreibung im Repository
-(`ActionId.resx`, Aktion 3638) ist die Primärquelle:
+- **Verfügbar** heißt für die Unverwundbarkeit: Option an, erlernt und freigeschaltet, aktiviert, auf der Leiste, über
+  der TTK-Schwelle der Aktion und vor dem letzten GCD abgeklungen (`InvulnerabilityReadyBy`). Das ist alles, was
+  RSRs eigene Prüfung ablehnen würde und vorher feststeht.
+- **Eine Ablehnung der Unverwundbarkeit beim Druck macht nie Z4.** Was sie im Spiel ablehnt – Stun, Amnesie –,
+  lehnt jede andere Fähigkeit ebenso ab (Mechanik unten). „Alles" könnte also auch nicht hinausgehen. Gälte das
+  einmal nicht, endet das Zurückhalten im letzten GCD, und die anderen Pfade sind frei.
+- **Ablehnung einer Minderung:** Lehnt `CanUse` ab, ohne dass Animationssperre oder eigener Zauber das erklärt, wird sie
+  einen GCD lang nicht gedrückt. Für die Frage, ob ein Bündel reicht, zählt sie weiter, solange ihre Sperre vor dem
+  letzten GCD endet; Bündel ohne abgelehnte Glieder gehen vor. Eine einmalige Ablehnung führt so nicht zur
+  Unverwundbarkeit, eine, die bis zuletzt anhält, schon. Ablehnungen gelten je Wirken (eigene Nummer, auch bei zwei
+  gleichen Wirken ohne Pause, erkannt am Zurückspringen der Wirkzeit).
+- **Übergänge** ergeben sich aus den Tatsachen: Heilung hebt B (Z3 → Z2, solange die Unverwundbarkeit nicht gedrückt
+  ist), Auto-Angriffe senken B (größeres S oder Z3), eine fremde Reflexion senkt P, ein gedrücktes Glied steht und
+  fällt aus den Kandidaten. Fallen nach einem Bündel die LP, sodass keines mehr reicht, zieht der Plan die
+  Unverwundbarkeit noch.
 
-1. **Living Dead**, 10 s. Fällt die Gesundheit auf 0, tritt kein Tod ein, sondern
-   der Wechsel nach Walking Dead. Die Selbstheilung — 1500 Potenz je getroffenem
-   Waffenskill oder gewirktem Zauber — hängt bereits an *dieser* Phase.
-2. **Walking Dead**, 10 s. Angriffe drücken die Gesundheit nicht unter 1. Wird bis
-   zum Ablauf kumuliert Heilung in Höhe der **maximalen** Gesundheit aufgenommen,
-   folgt Phase 3; sonst tritt der Tod ein. Die Quelle sagt „an amount of HP totaling
-   your maximum HP is restored" ohne Einschränkung auf die Quelle — fremde Heilung
-   zählt mit, und bei heutigen Tank-Gesundheitswerten trägt die Selbstheilung davon
-   nur einen Bruchteil.
-3. **Undead Rebirth**, Restlaufzeit von Walking Dead. Der Dunkelritter kann nicht
-   sterben, und der Auslöser ist eingelöst. Der einzige Zustand der ganzen Taxonomie,
-   in dem Zurückhaltung weder Stufe 1 noch Stufe 2 berührt, sondern rein Stufe 3
-   bedient.
+**Die Optionen im Einzelnen:** Ohne „Spend only …" drückt der Plan keine Minderung und hält nichts zurück; weil dann
+niemand ein Bündel sicher drückt, zählt für Z2 nur das leere Bündel, also was schon steht oder gedrückt ist. Ein
+Bündel, auf dessen Druck die Rotation nur hoffen kann, ist nicht „ohne Risiko". Ohne „Use the invulnerability …"
+wird aus Z3 Z4.
 
-### Klasse C — reine Schadensreduktion
+**Wann zurückgehalten wird:** nur mit „Spend only …" und nur, wenn c das einzige bekannte Wirken auf dich ist – kein
+zweites Wirken auf dich, gemessen oder nicht, und keine BossModReborn-Vorhersage vor c (bei „Use BMR timeline", gleich
+wie weit voraus). Ein Tankbuster-Marker auf dir, während c läuft, gilt als der von c. Z1 hält auch neben einem zweiten
+Wirken zurück, wenn die Deckung über jedes Wirken reicht.
 
-Rampart, Sentinel, Shadow Wall, Nebula, Sheltron und Holy Sheltron, Bulwark,
-Camouflage, Oblation, Heart of Corundum und Clarity of Corundum (die
-Reduktionsanteile), Reprisal. Keine Wechselwirkung.
+**Invarianten**, solange zurückgehalten wird (aus keinem Pfad):
+1. Die Unverwundbarkeit wird nie geplant, solange ein Bündel reicht, dessen Glieder bis zum letzten GCD noch gedrückt
+   werden können – auch eines mit einem eben abgelehnten Glied.
+2. Steht eine Unverwundbarkeit über H oder ist sie für c gedrückt, geht für c keine Minderung mehr hinaus (Z1), auch
+   nicht vom Plan selbst und auch ohne „Spend only …" (seine Präzisierung zu „alles"). Holmgang und Totenerweckung
+   eingeschlossen; wie viele LP nach ihrem Ende bleiben, ist offen (`TODO.md`, Reserve).
+3. Das Zurückhalten trifft nie Heilung, Hilfe für andere, nach außen wirkende Flächenabwehr oder das Befohlene; ein
+   Befehl gibt nur sich selbst frei.
+4. Ein Glied von S geht aus keinem Pfad vor seinem Fenster hinaus; fehlt im letzten GCD eines, endet das Zurückhalten.
+5. Ein Kandidat braucht eine bekannte Wirkdauer von mehr als zwei GCD: Sein Fenster muss sich vor dem letzten GCD
+   öffnen.
+6. Nach einem Druck gibt es keinen Durchlauf, in dem die Aktion weder Kandidat noch stehend ist.
 
-### Klasse D — Selbstheilung ohne Auslöser
+### Die Rechnung
 
-Bloodwhetting und Raw Intuition, Aurora, Clemency, Nascent Flash. Fremde Heilung
-addiert sich, verhindert aber nichts.
+1. **Was der Treffer nimmt (P):** der höchste je gemessene ungeminderte Anteil der Aktion an deinen maximalen LP
+   (Konzept 13), mal jede Minderung, die über H steht – deine (gegen seine Schadensart, Dark Mind je Art), die
+   Reflexion des Co-Tanks, Zermürben oder Stumpfsinn auf dem Boss, eine Minderung eines Heilers auf dir – und geteilt
+   durch eine Erhöhung der maximalen LP, die dann steht (`TankbusterTable.PredictedShare`).
+2. **Was du hast (B):** LP jetzt plus die Barrieren, die über H stehen; läuft eine vorher ab, zählt keine (die früheste
+   entscheidet). Ein großer Heilerschild, der hält, zählt voll – sein Hinweis.
+3. **Was du noch tun kannst:** jede eigene Abwehr, die erlernt, aktiviert und nach ihren eigenen Prüfungen nutzbar ist
+   (Ressourcen eingeschlossen), bis einen GCD vor dem Einschlag abgeklungen ist, eine bekannte Wirkdauer von mehr als
+   zwei GCD hat, sich rechnen lässt – Minderung gegen diese Schadensart, Barriere oder Erhöhung der maximalen LP – und
+   beim Einschlag nicht schon steht. Ein Knopf zählt einmal (Rachsucht/Verdammnis, Urinstinkt/Urimpuls).
+4. **Das geringste Mittel:** unter allen Bündeln dieser Abwehr das billigste, mit dem P unter B bleibt. Billig nach der
+   Abklingzeit des Verbrauchten, bei Gleichstand das kleinere Bündel – was am wenigsten Abklingzeit kostet, lässt am
+   meisten für den nächsten Tankbuster (meine Lesart von „geringstes notwendiges Mittel", nicht seine Regel). Reicht
+   der Treffer schon ohne alles nicht zum Tod, ist das Bündel leer.
 
-## Living Dead ist ein Zeitproblem, kein Zustandsproblem
+**H, der Horizont:** Restzeit des Wirkens R plus ein GCD für das Eintreffen des Treffers. *Offen (`TODO.md`, „der GCD
+als Ersatz"):* Nach dem Snapshot-Beleg (Mechanik) genügt das Ende des Wirkens samt Laufzeit; H ist bis zu einen GCD
+zu streng, die Richtung ist zu viel Mittel.
 
-Die Frage lautet nicht *liegt der Status?*, sondern in beiden Phasen eine über
-**Rate und Restzeit**.
+**Ohne Risiko,** wie er es für jedes Mittel unterhalb der Unverwundbarkeit verlangt: der höchste gemessene Treffer,
+die LP jetzt und nur, was beim Einschlag steht. Eine Heilung, die bis dahin kommen könnte, zählt nicht – sie ist eine
+Annahme über das, was jemand tun wird. Was schon steht, ist keine Annahme: Das unterscheidet die Fremdeffekte seines
+Hinweises von einer erhofften Hilfe.
 
-**Phase 1 — reicht der eingehende Schaden, um vor Ablauf auf 0 zu kommen?** Living
-Dead nützt nur, wenn der Tod **innerhalb** der zehn Sekunden eintritt. Zeichnet sich
-ab, dass der Tod erst nach Ablauf käme, war die Rückhaltung nicht nur nutzlos — sie
-hat den Tank zehn Sekunden ungeheilt gelassen, der nun mit niedriger Gesundheit ohne
-Schutz dasteht. Dann ist **im letzten Augenblick** zu handeln, ausreichend und nicht
-symbolisch.
+**Wann eine eigene Abwehr als stehend zählt, bevor ihr Status liegt:** Jeder eigene Druck einer bewerteten Abwehr mit
+bekannter Wirkdauer und jeder Unverwundbarkeit ist ein Datensatz vom Druck an (`BaseAction.Use`), mit Ziel,
+Zeitpunkt, der Restzeit einer eigenen Kopie ihres Status beim Druck und ob der neue Status seither erschienen ist
+(`TankbusterForecast.OwnPending`, Urteil `PendingStands`).
+- Er lebt, bis der neue Status erscheint – eine eigene Kopie dort, wo die Aktion landet, die länger läuft als eine beim
+  Druck lief –, längstens einen GCD ohne Bestätigung des Servers (Effekt-Handler), mit Bestätigung längstens ihre
+  Wirkdauer.
+- Solange er lebt, zählt die Aktion als stehend, wenn sie in ihrem Fenster hinausging (beim Druck festgehalten), sonst,
+  wenn ihre Wirkdauer ab dem Druck über H reicht.
+- Eine Erneuerung zählt nicht zusätzlich, solange die alte Kopie schon über H reicht; sie steckt bereits in P.
+- Status liest RSR nur aus der Statusliste selbst, nie den, den ein Bestätigungspaket vorhersagt
+  (`DataCenter.ApplyStatus` meldet ihn mit unendlicher Restzeit).
+- Bei den großen Minderungen ist die Statusangabe der Aktion die gemeinsame Sperrliste; deshalb gilt der Status, an den
+  ihr Wirktext gebunden ist, und die Statusangabe nur, wo der Wirktext keinen nennt (Unverwundbarkeiten).
 
-Zurückgehalten wird also nicht, *weil* der Status liegt, sondern solange der Tod
-noch rechtzeitig kommt.
+**Die Uhr:** Die Erkennung erhebt einmal je Bild, nach der Rotation. Der Plan rückt R und H um die Zeit seit der
+Erhebung vor (hochauflösende Uhr), sodass er alles mit derselben Uhr vergleicht; ein Datensatz, dessen Status die
+Erhebung noch nicht gesehen hat, zählt als stehend, auch wenn der Status im laufenden Bild schon liegt.
 
-**Umgesetzt ist das in `StatusHelper.InDeathTriggerWindow` als zwei Bedingungen, nicht
-als eine Uhr.** Die Zurückhaltung endet einen Vorlauf von zwei GCDs vor Ablauf, damit
-die Heilung noch landen kann — **aber nur, solange der Träger über
-`HealthForDyingTanks` steht.** Darunter läuft sie bis zum Ablauf durch, weil dort der
-Fall auf 0 die wahrscheinliche Fortsetzung ist und der Vorlauf sonst genau den Auslöser
-wegheilen würde, für den die ganze Regel da ist. Die Uhr allein hätte die Fälle 1c und
-1e der Tabelle oben nicht mehr unterschieden: Sie beantwortet „wie viel Zeit bleibt",
-nicht „kommt der Tod noch".
+### Die Ausführung
 
-**Phase 2 — heilt er sich schnell genug selbst?** Walking Dead verlangt kumuliert
-eine volle Maximalgesundheit in zehn Sekunden. Die Selbstheilung liefert 1500 Potenz
-je Waffenskill oder Zauber, bei rund 2,4 s GCD also etwa vier Auslösungen. Daraus
-folgt ein gestaffeltes Verhalten statt eines Schalters:
+- **Zeitpunkt:** jede geplante Minderung, sobald der Einschlag nicht weiter entfernt ist als ihre Wirkdauer weniger
+  einem GCD (`DefensiveValues.DurationOf`). Früher liefe sie vor dem Einschlag ab. Die Unverwundbarkeit ebenso.
+- **Die Sperrgruppe des Spiels** (eine große Minderung zur Zeit, `RampartStatus`) wird für einen geplanten Druck
+  übergangen: Ob die Minderung beim Einschlag schon steht, hat der Plan selbst gefragt, und die Staffelung ist genau
+  das, was er für einen gemessenen Treffer ersetzt (seine Präzisierung).
+- **Ziel:** jeder geplante Druck geht auf dich (`TargetType.Self`). Steht dieselbe Aktion mit einem Objektziel als
+  Befehl in der Warteschlange (Upstream 7.5.6.22: DoActions oder abgefangenes Makro, etwa The Blackest Night auf
+  `<2>`), geht auch der Druck des Plans dorthin; der Plan zählt sie dann nicht für dich und rechnet ohne sie weiter –
+  sein Befehl entscheidet (K5).
 
-| Zeitpunkt in Phase 2 | Verhalten | Begründung |
+### Das Zurückhalten
+
+Abgelehnt wird jede eigene Aktion mit Wirktextwert (`DefensiveValues.For` ungleich leer), die auf dich zielt und nicht
+freigegeben ist – Minderung, auch je Schadensart (Dark Mind), Barriere, Erhöhung der maximalen LP (Kampfrausch),
+Block (Bulwark), Reflexion um dich –, aus jedem Pfad der Rotation: Einzelabwehr, Notfall, allgemeine Fähigkeiten.
+Freigegeben ist in Z2 ein Glied von S ab seinem Fenster.
+- **Frei bleiben** Hilfe für ein anderes Mitglied, die Heilpfade (Herz des Korunds heilt einen Tank, den Meteoritenfall
+  auf 1 LP setzte; erkannt an einem eigenen Schalter), in der Flächenabwehr, was über dich hinaus wirkt (Reflexion,
+  Abschütteln für einen Raidwide), und was du befiehlst.
+- **Heiler:** keine Einzelabwehr für einen gewirkten Tankbuster, wenn jedes seiner Ziele unter Heiligem Boden oder
+  Meteoritenfall über den Einschlag hinaus steht. Eine BossModReborn-Vorhersage öffnet sie weiterhin – sie sagt nicht,
+  wen sie trifft –, ein Tankbuster-Marker ebenso, er nennt keinen Zeitpunkt. Den Plan des Tanks kennt der Heiler nicht.
+
+### Andere Pfade, die dem Plan ein Glied nehmen
+
+**Hilfe für andere (K2–K4), universell für alle vier Tanks:** Eine Hilfe, die ein Glied des Plans verbraucht –
+dieselbe Aktion (The Blackest Night, Herz des Korunds, Oblation bei nur noch einer Ladung), dieselbe Abklinggruppe
+(Urflackern ↔ Urinstinkt/Urimpuls) oder dieselbe Ressource (Intervention, Cover ↔ Holy Sheltron über Eid) –, wartet,
+bis das Glied gedrückt ist oder der Plan es nicht mehr braucht (`HelpTakesNeededMember`, Gatter in
+`BaseAction.CanUse`, Ablehnung „TakesWhatTheTankbusterPlanNeeds").
+- *Gebraucht* ist ein Glied nur, wenn kein überlebendes Bündel ohne es bleibt. Bleibt eines, geht die Hilfe, und der
+  Plan rechnet ohne das Glied weiter, meist teurer. Die Unverwundbarkeit zählt dabei nicht als Ersatz, sonst erzwänge
+  jede Hilfe die Kanone auf Spatzen.
+- *Triage* (`HelpWinsTriage`), wenn beide es brauchen: Ein kritischer Heiler gewinnt („fällt der Heiler, fällt die
+  Gruppe"). Ein kritischer Schadensausteiler nicht („am ehesten entbehrlich"). Ein kritischer anderer Tank gewinnt,
+  solange deine Unverwundbarkeit vor dem letzten GCD übernehmen kann und du selbst nicht kritisch bist; dann geht die
+  Hilfe, der Plan zieht für dich die Unverwundbarkeit, und beide überleben. Kann sie es nicht, behältst du das Glied
+  (D3): Dein Glied wirkt gegen einen gemessenen Treffer zu bekanntem Zeitpunkt; den kritischen Stand des anderen
+  können die Heiler bis zu seinem nächsten Treffer noch ändern.
+- Für einen ungemessenen Tankbuster gilt die Triage des Kriegers (Abschnitt „Krieger: Urimpuls für sich oder Urflackern für andere").
+
+**Abschütteln hebt Glieder auf (K1):** Es hebt Rachsucht, Verdammnis, Urinstinkt, Urimpuls und Kampfrausch auf und kommt
+aus Einzelheilung und Flächenabwehr, die beide vom Zurückhalten frei sind (`WAR_Reborn.ShakeItOffTakesNeeded`).
+- Ein gedrücktes Glied, dessen Status noch nicht liegt, zählt wie ein liegendes.
+- Ist ein solches Glied gebraucht, hält Abschütteln auch bei Gefahr für die Gruppe zurück, **außer** der gemessene
+  Raidwide tötet nach den Zahlen einen Heiler oder mehr als ein Mitglied (D2): Dann kostet er die Gruppe mehr als ein
+  toter Tank. Tötet er genau einen Schadensausteiler, bleibt das Glied – ein toter Tank kostet meist den Kampf (Konzept
+  08). Gezählt wird mit dem gemessenen Anteil des Raidwides an den vorhergesagten effektiven LP jedes Mitglieds;
+  Unverwundbare und Tote zählen nicht (`DataCenter.AnnouncedHitKills`).
+
+**Befohlenes Objektziel (K5):** siehe Ausführung, „Ziel".
+
+### Spielerweite Sperre und Frist (geplant, nicht gebaut)
+
+**Stand:** Gebaut ist nur der Teil für die Unverwundbarkeit (Zustände, „Ablehnung der Unverwundbarkeit"). Für
+Minderungen gilt noch die Sperre für einen GCD, und der Plan drückt bis zum Ende des Wirkbalkens (`TODO.md`).
+
+**Geplante Regeln:**
+1. *Erkennung (Stufe „alle", zentral):*
+   - Ob der Spieler gerade keine Fähigkeit benutzen kann, und wie lange noch: ein Status mit `LockActions` aus dem Blatt
+     des Clients (Fähigkeitsprüfung statt Liste, sprachunabhängig) oder Amnesie (Wirktext der englischen Fassung).
+   - Die Restzeit kommt aus dem Status, wo das Spiel sie nennt; sonst bleibt sie unbekannt.
+   - Die Erkennung urteilt nicht; die Verbraucher entscheiden.
+2. *Ablehnung unter Sperre:* keine Antwort, wie die Animationssperre; Neuversuch im nächsten Durchlauf, für jedes Glied
+   und für die Unverwundbarkeit.
+3. *Frist je Wirken:* Ein Druck für c hilft nur, wenn er vor dem Snapshot beim Server ankommt.
+   - Frist = Ende des Wirkens weniger der gemessenen Laufzeit von Druck bis Bestätigung. Der Datensatz kennt den
+     Zeitpunkt des Drucks und das Ereignis der Bestätigung, speichert dessen Zeitpunkt aber noch nicht. Vor der ersten
+     Messung gibt es keine Frist vor dem Ende des Wirkens.
+   - Für Holmgang (und, wenn belegt, Totenerweckung): Frist = Zufügen des Schadens, gemessen am Treffer selbst (Zeit
+     vom Ende des Wirkens bis zum Effekt, je Aktion gespeichert). Ohne Messung gilt die Snapshot-Frist.
+4. *Nach der Frist* drückt der Plan für c nichts mehr – keine Unverwundbarkeit, kein „alles" (seine Hinweise) – und
+   das Zurückhalten für c endet. Was danach kommt, etwa Auto-Angriffe auf einen tiefen Tank, entscheiden die
+   gewöhnlichen Pfade mit eigenen Gründen.
+5. *Druckplätze:* Von jetzt bis zur Frist passen so viele Drücke, wie die gemessene Animationssperre je Druck zulässt;
+   während einer Sperre zählen sie ab ihrem Ende.
+   - Ein Bündel ist nur wählbar, wenn seine ungedrückten Glieder hineinpassen; sonst die Unverwundbarkeit (ein Platz),
+     ohne sie „alles", das wertvollste Glied zuerst.
+   - Ist das Ende der Sperre unbekannt, rechnet der Plan, als ende sie jetzt; er rechnet in jedem Durchlauf neu.
+6. *Sperre über die Frist hinaus:* Für c gibt es nichts zu tun.
+
+**Im Kampf:**
+- Nach einem kurzen Stun gehen die Glieder im ersten Durchlauf danach; bleiben zu wenige Plätze, geht die
+  Unverwundbarkeit allein.
+- Endet er nach dem Snapshot, geht für diesen Treffer nichts hinaus.
+- Ein Druck, der nach dem Snapshot ankäme, unterbleibt.
+
+**Klasse über den Plan hinaus:** Jeder Pfad, der für einen vorhergesagten Treffer drückt (Fenster aus BossModReborn, die
+Einzelabwehr der Heiler), kann nach dessen Frist drücken. Regel 4 gehört deshalb auf die Stufe „alle". Für
+BossModReborn ist unbelegt, ob dessen Zeitangabe den Snapshot oder das Zufügen meint; erst nach diesem Beleg ist sie
+dort anwendbar.
+
+**Warum so, und was ausgeschlossen ist:**
+- Vorbeugend vor einem Stun zu drücken scheidet aus: Ein Stun ist nur über ein BossModReborn-Modul vorhersagbar, und
+  dafür gibt es keinen Weg ohne BossModReborn.
+- Die Sperre an `GetActionStatus` zu erkennen scheidet aus: Welche Rückgabe einen Stun meint, ist unbelegt; der Status
+  ist belegt und nennt die Restzeit.
+- Ein falsch erkannter Status mit `LockActions`, unter dem Fähigkeiten doch gehen, kostet nichts: keine Sperre
+  notiert, Neuversuch in jedem Durchlauf. Eine übersehene Sperre lässt das heutige Verhalten stehen – sichere
+  Richtung.
+- Die Frist kommt aus der gemessenen Laufzeit, nicht aus einer festen Marge; läge der Snapshot später als belegt,
+  unterbliebe sonst ein Druck, der noch gewirkt hätte.
+- Sichtbar wird die Änderung nur nach einer Ablehnung, im Rückfall „alles" und bei kurzem Wirken, denn der Plan drückt
+  sonst früh. Die Plan-Zeile in `DefenseTrace.log` erhielte die Frist und je Druck den Abstand zu ihr; ein Druck nach
+  der Frist wäre dann im hochgeladenen Protokoll ablesbar.
+
+**Prüfmittel vor dem Code:** `tankbuster_model.py` bekommt einen Stun, der alle Pfade sperrt (im Fenster, über den
+Snapshot hinaus, über das Fenster eines Glieds), die Prüfungen „kein Druck für c nach der Frist" und „bleibt nach einer
+Sperre ein Platz und ist die Unverwundbarkeit verfügbar, überlebt der Tank, wenn kein passendes Bündel bleibt", und
+die GCD-Sperre unter Stun sowie einen Druck nach der Frist als Defekte des Selbsttests.
+
+### Die Abwehr der vier Tanks
+
+„Kandidat": kann Glied eines Bündels sein. „Gehalten": das Zurückhalten erfasst sie. Werte und Dauern aus den
+Wirktexten über den Generator (`DefensiveValues.g.cs`); wo der Wirktext die Dauer offen lässt, aus dem Merkmal, das
+sie setzt – zur Laufzeit aus dem Spiel (`TraitDurations`), sonst aus `trait_durations.json`. Reichweite, Radius,
+Abklingzeit und Gruppe aus den Spieldaten (xivapi, Blatt `Action`, 12.10.2026).
+
+| Job | Aktion | Wirkung laut Wirktext | Dauer | Reichweite/Radius | Abklingzeit, Gruppe | Rolle | Gehalten |
+|---|---|---|---|---|---|---|---|
+| alle | Schutzwall | −20 % | 20 | 0/0 | 90, 47 | Kandidat | ja |
+| alle | Reflexion | Gegner −10 % | 15 ab Stufe 98, darunter unbekannt | 0/5 | 60, 45 | Kandidat ab 98 | ja |
+| alle | Abtausch | Rückstoßschutz, Slow | – | 0/0 | 120, 49 | unbewertet | nein |
+| PLD | Sentinel / Guardian | −30 % / −40 % | 15 | 0/0 | 120, 20 | Kandidat | ja |
+| PLD | Bulwark | Block | 10 | 0/0 | 90, 16 | kein Kandidat (Block lässt sich nicht rechnen) | ja |
+| PLD | Sheltron / Holy Sheltron | −15 % (Zusatzwirkung nicht gezählt) | 6 ab Stufe 74 / 8 | 0/0 | 5, 3; Eid 50 | Kandidat | ja |
+| PLD | Intervention, Cover | auf ein anderes Mitglied | 8 ab 82 / 12 | 30 bzw. 20/0 | 10 bzw. 120; Eid 50 | Hilfe für andere | nein |
+| PLD | Divine Veil, Passage of Arms | Gruppe | – | 0/30 bzw. 8 | 90 / 120 | Gruppenwerkzeug | nein |
+| PLD | Heiliger Boden | unverwundbar | 10 | 0/0 | 420, 25 | Unverwundbarkeit | – |
+| WAR | Rachsucht / Verdammnis | −30 % / −40 % | 15 | 0/0 | 120, 22 | Kandidat | ja |
+| WAR | Urinstinkt / Urimpuls | −10 % | 6 / 8 | 0/0 | 25, 7 | Kandidat | ja |
+| WAR | Urflackern | −10 % auf ein anderes Mitglied | 8 ab 82 | 30/0 | 25, 7 | Hilfe für andere | nein |
+| WAR | Kampfrausch | maximale LP +20 % | 10 | 0/0 | 90, 16 | Kandidat | ja |
+| WAR | Abschütteln | Gruppenbarriere; hebt Kampfrausch, Rachsucht/Verdammnis, Urinstinkt/Urimpuls auf | – | 0/30 | 90, 15 | Gruppenwerkzeug | nein |
+| WAR | Holmgang | LP nicht unter 1 | 10 | 6/0 | 240, 25 | Unverwundbarkeit | – |
+| DRK | Shadow Wall / Shadowed Vigil | −30 % / −40 % | 15 | 0/0 | 120, 21 | Kandidat | ja |
+| DRK | Dark Mind | physisch −10 %, magisch −20 % | 10 | 0/0 | 60, 9 | Kandidat je Schadensart | ja |
+| DRK | The Blackest Night | Barriere 25 % der maximalen LP | 7 | 30/0 | 15, 3 | Kandidat; auf andere Hilfe | ja |
+| DRK | Oblation | −10 % | 10 | 30/0 | 60, 19, 2 Ladungen | Kandidat; auf andere Hilfe | ja |
+| DRK | Dark Missionary | Gruppe | – | 0/30 | 90, 15 | Gruppenwerkzeug | nein |
+| DRK | Totenerweckung | Tod → Walking Dead | 10 | 0/0 | 300, 25 | Unverwundbarkeit | – |
+| GNB | Camouflage | −10 % | 20 | 0/0 | 90, 16 | Kandidat | ja |
+| GNB | Nebula / Great Nebula | −30 % / −40 % und maximale LP +20 % | 15 | 0/0 | 120, 22 | Kandidat | ja |
+| GNB | Heart of Stone / Herz des Korunds | −15 % | 7 / 8 | 30/0 | 25, 6 | Kandidat; auf andere Hilfe | ja |
+| GNB | Heart of Light | Gruppe | – | 0/30 | 90, 15 | Gruppenwerkzeug | nein |
+| GNB | Aurora | Regeneration | – | 30/0 | 60, 20 | Heilpfad | nein |
+| GNB | Meteoritenfall | unverwundbar, LP auf 1 | 10 | 0/0 | 360, 25 | Unverwundbarkeit | – |
+
+**Das Wertemodell** (`DefensiveValue`, öffentlich im Paket): eigene Minderung, Minderung des Gegners physisch und
+magisch, Barriere als Positionswerte; dazu als nicht-positionale Eigenschaften eigene Minderung je Schadensart
+(`SelfPhysical`, `SelfMagical`, gelesen über `SelfAgainst`), Erhöhung der maximalen LP (`MaxHp`) und Block
+(`Guards`); `ProtectsBearer` sagt, ob eine Aktion ihren Nutzer schützt. Der Konstruktor mit vier Werten bleibt
+(Vertrag für abgeleitete Rotationen). Was zurückgehalten wird, erzeugt der Generator aus dem Wirktext
+(Fähigkeitsprüfung statt Liste).
+
+**Die Pfade**, die eine Abwehr auf dich drücken können:
+
+| Pfad | Zurückgehalten | Was dort fällt |
 |---|---|---|
-| Anfang | **leicht unterstützen** — Regeneration, ein günstiges HoT | Der Beitrag zählt voll gegen die geforderte Summe, kostet aber wenig |
-| Mitte | Kurs prüfen, weiter leicht unterstützen | Solange der Kurs trägt, ist ein großer Zauber vergeudet |
-| Kurs reicht nicht | **eingreifen, in voller Höhe** | Die Alternative ist der Tod am Phasenende |
-| Kurs trägt bis zum Ende | nichts weiter | Der Rest ist Überheilung |
+| Befehl (`CommandNextAction`, `ForceEnable`) | nein (sein Befehl) | jede |
+| Countdown | – (vor dem Kampf kein Wirken, kein Plan) | The Blackest Night, Divine Veil |
+| `EmergencyAbility` (unter `HealthForDyingTanks`) | ja, außer der Unverwundbarkeit | Unverwundbarkeit; PLD Heiliger Boden, Cover, Intervention |
+| Tankbuster-Plan | – | Bündel oder Unverwundbarkeit |
+| Heilpfade | nein (`HealPathRunning`) | WAR Abschütteln, Urflackern; GNB Aurora |
+| Flächenabwehr | nur was nur dich trifft | Reflexion, Gruppenwerkzeuge, DRK Oblation/TBN |
+| Einzelabwehr (eigener Befehl: nur ihr Pfad frei) | ja | alle Kandidaten, Reflexion, Bulwark, Dark Mind, Kampfrausch, Abtausch |
+| `GeneralAbility` | ja | WAR Urinstinkt/Urimpuls, Kampfrausch, Äquilibrium; PLD Eid (Holy Sheltron, Intervention) |
+| Hilfe für andere (Ziel ≠ du) | nein, außer K2–K4 | Intervention, Cover, Urflackern, TBN, Herz des Korunds, Oblation |
 
-### Umsetzung für Phase 2 (A147)
+**Die Tatsachen**, mit Quelle, Zeitpunkt und Ausfall:
 
-**Vorgabe des Auftraggebers (25.09.2026):** „walking dead läßt solange es läuft den darkknight sich
-selbst durch angriffe heilen. […] also vertraut man am anfang (bei eben den 1hp) darauf, dass der tank
-sich selbst heilt, indem er bei gegnern schaden verursacht. das soll nur leicht mit einem hot
-unterstützt werden. erst wenn der timer des effektes ausläuft bzw. klar ist, dass der darkknight sich
-in der verbleibenden zeit nicht selbst durch angriff (vollständig) heilen kann, soll unterstützt werden.
-das kann z.b. durch fehlende gegnerzahlen oder durch ein anstehendes event passieren, wo der darkknight
-nicht mehr angreifen kann." Der Wirktext bestätigt die Mechanik (Living Dead, `ActionId.resx` 3638).
+| Tatsache | Quelle | erhoben | Ausfall |
+|---|---|---|---|
+| R, H | Wirkzeit des Gegners | `TankbusterForecast.Update`, einmal je Bild nach der Rotation; im Plan auf „jetzt" vorgerückt | Wirken abgebrochen: verschwindet; neu begonnen: neue Nummer |
+| P | Tabellen-Höchstwert × Status, die über H stehen | dieselbe Erhebung | ungemessen: kein Plan; unter Damage Up gemessen: nicht gespeichert |
+| B | LP + Barrieren über H (früheste) | dieselbe Erhebung | Barriere ohne gelisteten Status zählt nicht |
+| Datensatz | Druck (`BaseAction.Use`), Bestätigung (Effekt-Handler), Status gesehen (Erhebung) | Spielthread bzw. Erhebung | Bestätigung fehlt: Datensatz verfällt nach einem GCD |
+| Ablehnung | `CanUse` falsch außerhalb Animationssperre und eigenem Zauber | Plan | – |
+| BossModReborn | Zeitleiste, Ziel des ersten Eintrags | Plugin-Abfrage | kein Modul: keine Vorhersage |
 
-**Sachstand:** `StatusHelper.WalkingDeadCarriedBySelfHeal` sagt, ob der Träger noch von seinen eigenen
-Angriffen getragen wird. Solange das gilt, nimmt ihn keine Heilaktion als Ziel, die keinen HoT aus
-`SingleHots` verleiht (`ActionTargetInfo.FindTarget`), und er zählt nicht als Grund für eine
-Flächenheilung um den Wirkenden. Regen des Weißmagiers ist unter Walking Dead von der
-`RegenHeal`-Sperre ausgenommen. Die volle Unterstützung setzt ein, sobald einer dieser Fälle eintritt:
+### Mechanik (Belege)
 
-| Auslöser | Maß, aus dem Spiel |
-|---|---|
-| Timer läuft aus | derselbe Vorlauf wie bei der Living-Dead-Sperre (zwei GCDs bis zur Entscheidung) |
-| kein Gegner in Reichweite | Spielreichweite von Hard Slash, Trefferfläche zu Trefferfläche |
-| angekündigtes Ereignis | BossModReborn-Auszeit vor Ablauf; ohne Modul erst reaktiv über die Reichweite |
-| Tank-Limitbruch auf der Gruppe | Status Last Bastion, Land Waker, Dark Force oder Gunmetal Soul |
-| er schafft es nicht | Gesundheit seit Beginn des Fensters, auf die Restzeit hochgerechnet, bleibt unter 100 % |
+- *Unverwundbarkeiten* (xivapi, Blatt `Status`): Heiliger Boden 82 und 1302, Meteoritenfall 1836 „Impervious to most
+  attacks"; Holmgang 409, Undead Rebirth 3255, Invulnerability 4275 „Most attacks cannot reduce your HP to less than
+  1". Im Code `StatusHelper.ImperviousStatus`, `StatusHelper.InvulnerabilityStatus`. Je 10 s; Abklingzeiten Heiliger
+  Boden 420 s, Holmgang 240 s, Totenerweckung 300 s, Meteoritenfall 360 s.
+- *Totenerweckung* (Job-Guide): Fällt die Gesundheit unter Living Dead auf 0, folgt Walking Dead; wird bis zu dessen
+  Ablauf Heilung in Höhe der maximalen LP aufgenommen, folgt Undead Rebirth, sonst der Tod. Die geplante
+  Totenerweckung verlagert den Tod auf eine Heilaufgabe (Abschnitt „Living Dead ist ein Zeitproblem, kein Zustandsproblem").
+- *Wirkdauern und Werte* aus den Wirktexten; Urimpuls und Schiltron nur mit der Grundminderung, nicht der kurzen
+  Zusatzwirkung der ersten Sekunden – das unterschätzt sie, die sichere Richtung.
+- *Kategorie:* Alle vier Unverwundbarkeiten und alle Glieder des Plans sind Fähigkeiten (`ActionCategory` Ability,
+  xivapi 12.10.2026).
+- *Sperre:* Das Blatt `Status` trägt `LockActions` bei Stun („Unable to execute actions"), Schlaf, Versteinerung und
+  rund 260 weiteren Status, etwa Deep Freeze, Down for the Count, Bubble Gaol. Amnesie (Zeilen 5, 1092, 4210: „Unable
+  to use abilities") sperrt alle Fähigkeiten ohne dieses Feld. Silence und Pacification treffen nur Zauber und
+  Waffenfertigkeiten (xivapi 12.10.2026).
+- *Snapshot:* Der Schaden eines gewirkten Angriffs wird festgelegt, wenn der Wirkbalken endet, und später zugefügt;
+  eine Minderung danach wirkt nicht mehr. Die LP-Untergrenze von Holmgang zählt, wenn sie beim Zufügen steht.
+  Community-Quellen (consolegameswiki „Snapshot", akhmorning „Raiding Fundamentals", 12.10.2026), keine offizielle.
+  Für Totenerweckung, Heiligen Boden und Meteoritenfall ist unbelegt, ob Snapshot oder Zufügen zählt.
 
-Der Kurs ist netto: Schaden zieht ab, er unterschätzt also die kumulierte Heilung, und die Freigabe
-kommt eher zu früh als zu spät. Im ersten GCD gibt es noch nichts zu messen; dann wird ihm vertraut.
+### Grenzen
 
-**Hinweis des Auftraggebers zu „most attacks":** Es gibt Raidwides, die alle nur mit dem Limitbruch
-eines Tanks überleben; das ist wahrscheinlich die Ausnahme, die der Wirktext meint (seine Deutung).
-Es sind sehr wenige, seine Beispiele: die Alexander-Raids, die Prüfung gegen den Krieger des Lichts.
-Deshalb gibt nicht jeder Raidwide die volle Unterstützung frei — das höbe das Vertrauen am Anfang bei
-jedem Raidwide auf —, sondern erst der Tank-Limitbruch auf der Gruppe: Er wird für genau diesen
-Treffer gezogen, und bei 1 HP stünde der Träger schutzlos davor.
+**Die Rechnung irrt zu viel Mittel,** wo der Höchstwert über dem typischen Treffer liegt, eine Heilung vor dem
+Einschlag nicht zählt, Zusatzwirkungen fehlen und H einen GCD zu streng ist. Das kostet Abklingzeit, nicht Leben.
 
-**Grenzen:** Rotationen, die ihr Heilziel selbst wählen statt über `FindTarget` (fremde Rotationen,
-direkte Aufrufe von `FindTargetByType`), sehen die Sperre nicht. Die Flächenheilflagge rechnet den
-Träger bei 1 HP weiter in ihre Mittelwerte ein. Ein solcher Treffer ohne Tank-Limitbruch wird nicht
-erkannt. Der Limitbruch selbst wird im selben Bild erkannt, in dem sein Status erscheint; die Heilung
-kommt aber nur vor dem Einschlag an, wenn dazwischen noch ein Einschiebeplatz (Benediction) oder ein
-GCD mit Wirkzeit (Cure II) liegt. Wie viel Zeit zwischen Limitbruch und Einschlag liegt, entscheidet der
-Tank, der ihn zieht.
+**Zu wenig Mittel** (der Tank fällt mit Plan):
+- Ein Treffer über dem bisher gemessenen Höchstwert, etwa unter einer Stärkung des Bosses. Ein Treffer unter Damage Up
+  wird nicht gespeichert, aber auch nicht hochgerechnet: Die Wirktexte nennen keine Stärke. Stärkungen unter anderem
+  Namen bleiben unerkannt.
+- Ein Wert unter Verwundbarkeit aus weniger Stapeln als jetzt.
+- Ein zu niedrig gespeicherter Höchstwert (Konzept 13: eine unbezifferte Minderung beim Treffer). Mit „Spend only …"
+  ist das schlimmer als ohne Tabelle: Der Plan wählt zu wenig und hält den Rest zurück.
+- Nach dem Einschlag zählt die Rechnung nicht weiter: Ein knapp überlebter Treffer lässt den Tank tief, und die
+  Abwehr ist wieder frei (`TODO.md`, Reserve).
 
-**Im Kampf ablesbar:** Das Diagnosefenster zeigt, solange jemand unter Walking Dead steht, ob er
-getragen wird oder welcher Auslöser die volle Unterstützung freigegeben hat, mit dem hochgerechneten
-Kurs.
+**Die Unverwundbarkeit kommt eher zu oft:** nur, wenn kein Bündel reicht – bei LP jetzt. Ein Tank, der tief in den
+Tankbuster geht, bekommt sie eher, auch wenn ein Heiler ihn noch hochgeheilt hätte. Das ist der Preis von „ohne
+Risiko"; die Neurechnung gibt sie zurück, wenn die Heilung vor dem Ziehen kommt.
 
-### Die Aufhebungen kehren sich für Living Dead um
+**Lagen:**
+- *Allein, Vierer-Instanz:* wirkt; die Regel braucht keinen Co-Tank.
+- *Zwei RSR-Tanks:* Jeder plant für die Tankbuster auf ihn; die Reflexion des anderen zählt, sobald sie steht; Hilfe
+  zwischen ihnen regelt die Triage.
+- *BossModReborn ohne Modul:* unverändert; die Regel liest keine Vorhersage.
+- *Stufensynchron:* Abwehr zählt nur, wenn erlernt; Merkmalsdauern unterhalb ihrer Stufe sind unbekannt, die Aktion
+  dann kein Kandidat (`TODO.md`). Dass gemessene Anteile auf der Stufe ihres Inhalts vergleichbar bleiben, ist ein
+  Schluss, nicht gemessen.
+- *Mehrere Wirken auf dich:* geplant wird für das früheste gemessene; zurückgehalten wird dann nichts. Liegen zwei in
+  einem GCD, deckt ein Minderungsplan nur das erste.
+- *Ein ungemessenes Wirken oder eine frühere BossModReborn-Vorhersage* neben einem gemessenen: Der Plan drückt, hält
+  aber nichts zurück.
+- *Ein Tankbuster nur als Marker oder Vorhersage, oder eine noch nie gemessene Aktion:* kein Plan; dann gilt die
+  Abwehr ohne Messung (Abschnitt „Krieger: die übrige Abwehr", Staffelung) und die reaktive Unverwundbarkeit unter
+  `HealthForDyingTanks`.
+- *Tankwechsel:* hält bei bereiter Unverwundbarkeit, die RSR für jeden nächsten Treffer nutzen würde
+  (`CustomRotation.InvulnerabilityUsable`).
+- *Der Boss trägt den ganzen Kampf ein Damage Up:* kein Treffer wird gespeichert, kein Plan.
 
-| Aufhebung | Bei A-nichttödlich | Bei Living Dead Phase 1 |
-|---|---|---|
-| Niedrige Gesundheit | hebt auf — der Tank droht zu sterben | **hebt nicht auf** — niedrige Gesundheit ist der erwünschte Zustand, sie bringt den Auslöser näher |
-| Tankbuster-Fenster | hebt auf — die Sequenz ist nicht beurteilbar | **hebt nicht auf** — der Buster liefert den Auslöser |
+**Warum nicht die alte Abwehr:** Sie gibt je Tankbuster eine große Minderung. Ein gemessener Treffer, der zwei braucht,
+tötet damit – seine Präzisierung nennt genau das –, und die reaktive Unverwundbarkeit zündet unter der
+Sterbe-Schwelle, die ein Treffer von voller Gesundheit in einem Schritt überspringt. Die Staffelung aus seinem
+Protokoll vom 01.10.2026 (zwei große auf einen Tankbuster, nichts auf den nächsten) entsteht im Plan nur, wenn jeder
+Tankbuster zwei braucht, und dann ist der nächste mit der Unverwundbarkeit oder mit allem geplant.
 
-Eine Vollheilung bei zehn Prozent Gesundheit in Phase 1 geht auf zwei Weisen daneben,
-und beide treffen zu: **Sie rettet nicht**, wenn der Buster auch vollgeheilt tötet;
-und **sie schadet**, wenn sie rettet, weil sie dann den Übergang in Phase 2 verhindert
-und die Fähigkeit entwertet, die der Tank für genau diesen Moment gezündet hat. Einen
-dritten Ausgang gibt es nicht: Eine Heilung, die den Tod in Phase 1 verhindert,
-verhindert per Konstruktion den Auslöser. Das ist keine Abwägung, sondern eine
-Identität.
+### Prüfmittel
 
-**Für Phase 1 bleibt damit genau eine Aufhebung** — und sie hat nichts mit Gefahr zu
-tun, sondern mit der Uhr:
+- `tankbuster_model.py` (CI) setzt die Regeln dieses Abschnitts um – nicht den Code – und lässt sie gegen eine
+  simulierte Welt laufen: Bilder unterschiedlicher Länge mit Rucklern, Erhebung nach der Rotation, Laufzeit zum
+  Server, Status vor oder nach der Bestätigung, Ablehnungen, ein Stun beim Druck der Unverwundbarkeit, Abschütteln und
+  Urflackern als freie Pfade, andere Pfade, die jederzeit drücken wollen, alle vier Schalterstellungen, knappe
+  Treffer, bei denen jedes Glied gebraucht wird.
+  - Geprüft: überlebt, was der Plan überlebbar nannte (an der wahren Welt); nach der Unverwundbarkeit nichts
+    Bewertetes mehr; die Unverwundbarkeit nie, solange ein Bündel reicht; jedes gedrückte Glied steht am Einschlag und
+    wird bis dahin genau einmal gezählt; ein freier Pfad macht aus einem überlebten Treffer keinen Tod und erzwingt
+    keine Unverwundbarkeit; „alles" nur, solange die Unverwundbarkeit nicht verfügbar ist.
+  - Der Selbsttest schaltet die Defekte ein, die frühere Fassungen des Codes hatten (Archiv A263, A267); jeder muss
+    gefunden werden.
+  - Nicht abgedeckt, dort trägt nur die Herleitung: ein zweites Wirken und BossModReborn-Vorhersagen, Befehle, die
+    Unverwundbarkeit nach einem Bündel bei fallenden LP, Minderung je Schadensart, die Kopplung über Eid, die anderen
+    drei Tanks (gleiche Rechnung, andere Zahlen). Das Modell übernimmt H = R + GCD (`TODO.md`, „der GCD als Ersatz").
+- `DefenseTrace.log` schreibt je Wirken auf dich „tankbuster coming at you: … takes …% … you have …%", je Änderung des
+  Plans „tankbuster plan for … : Rampart + Damnation, leaving …% against …%" (oder „survivable as it stands, nothing
+  spent", „the invulnerability already covers it, nothing else", „nothing less survives it: the invulnerability",
+  „nothing survives it and no invulnerability, everything goes (…)"), je Ablehnung einer Minderung eine Zeile und je
+  Druck die „used"-Zeile. Nachgesteuert wird über die Tabelle: Jeder höhere Treffer hebt ihren Wert, und der Plan
+  rechnet je Durchlauf neu.
+- Prüfgrad: Modell, Prüfskripte, Compile über die CI; im Spiel nicht beobachtet.
 
-> Die Rückhaltung wird aufgehoben, **wenn der Tod nicht mehr vor dem Ende der ersten
-> Phase eintreten würde.**
-
-Dazu die Vorbedingung aus Fall 1b, die vor der Phase liegt: Wer die Heilmenge für
-Phase 2 gar nicht aufbringen kann, darf den Weg über den Tod nicht einschlagen.
-
-### Warum eine Überlebensprüfung diese Zusage nicht tragen kann
-
-Eine Prüfung der Form „erst feststellen, ob der Tank ohne mich überlebt, dann
-zurückhalten" ist aus den vorhandenen Größen **nicht herstellbar**:
-
-- **Tankbuster wechseln das Ziel mitten in der Sequenz.** `DataCenter.BMRNextTankbusterIn`
-  ist eine einzige Zahl ohne Angabe, auf wen; `IsHostileCastingTankBusterAtMe` ist
-  ausdrücklich spielerzentriert (`DataCenter.IsHostileCastingTankBusterAtMe`).
-- **Ein Tankbuster ist nicht ein Einschlag.** Mehrfach einschlagende Buster sind eine
-  Folge von Treffern; die Vorhersage nennt den Beginn, nicht die Anzahl und nicht die
-  Gesamtsumme.
-- **Manche Buster töten auch einen vollgeheilten und geschildeten Tank.** Die
-  stillschweigende Annahme „wenn ich rechtzeitig heile, überlebt er" trifft dort nicht
-  zu.
-
-Daraus folgt **nicht**, die Rückhaltung freizugeben. Dass Heilung manchmal nichts
-nützt, macht Zurückhaltung nicht besser, nur nicht schlechter — und welcher Fall
-vorliegt, ist vorab nicht erkennbar. Die Folgerung ist strenger: Für
-**A-nichttödliche** Auslöser hebt **jedes** erkannte Tankbuster-Fenster die
-Rückhaltung auf, HP-unabhängig, weil die Prognose dort unmöglich ist. Die
-HP-Schwelle bleibt als zweite, unabhängige Aufhebung: sie fängt den Dauerschaden ab,
-das Buster-Fenster den Einzelschlag.
-
-## Fallvarianten
-
-Vollständig über die Dimensionen Fähigkeitsklasse × Gesundheitsstand × Heileraktion.
-„Richtig" meint die Handlung, die dem Vorrang der Überlebenssicherung folgt.
-
-| # | Lage | Heilung richtig? | Schild richtig? | Begründung |
-|---|---|---|---|---|
-| 1 | DRK, Living Dead aktiv, **Tod tritt vor Ablauf ein**, Heilkapazität für Phase 2 gesichert | **nein** | **nein** | Stufe 1 ist gesichert, also darf Stufe 2 entscheiden |
-| 1b | dieselbe Lage, **Heilkapazität nicht gesichert** | **ja** | ja | Stufe 1 schlägt Stufe 2: sicheres gegen unsicheres Überleben zu tauschen ist verboten |
-| 1c | DRK, Living Dead aktiv, **Tod würde nicht mehr vor Phasenende eintreten** | **ja, rechtzeitig vor Ablauf** | ja | Die **einzige** Aufhebung in Phase 1 |
-| 1d | DRK, Living Dead aktiv, **Tankbuster-Fenster erkannt** | **nein** | **nein** | Der Buster liefert den Auslöser |
-| 1e | DRK, Living Dead aktiv, **HP sehr niedrig**, Tod noch vor Ablauf zu erwarten | **nein** | **nein** | Niedrige Gesundheit ist hier erwünschter Zustand, keine Gefahrenmeldung |
-| 2 | DRK, Living Dead aktiv, HP niedrig, Ablauf fern | wie 1 / 1b / 1e | dito | Der Gesundheitsstand entscheidet in dieser Phase nicht |
-| 3 | DRK, Living Dead läuft ab, Tod nicht eingetreten | **ja, dringend** | ja | Ausführungsform von 1c: mit Vorlauf, damit die Heilung vor dem Ablauf wirkt |
-| 4 | DRK, Walking Dead aktiv, **Kurs trägt** | leicht unterstützen | nein, wirkungslos bei 1 HP | Billige Beiträge zählen voll gegen die Summe |
-| 4a | DRK, Walking Dead aktiv, **Kurs reicht nicht** | **ja, in voller Höhe** | nein | Die Alternative ist der Tod am Phasenende |
-| 4b | DRK, **Undead Rebirth** aktiv | nein, nachrangig | nein | Bedingung erfüllt, reine Stufe 3 |
-| 5 | DRK, TBN aktiv | **nach normaler Regel** | **nach normaler Regel** | **Kein Sonderfall.** Heilung berührt den Auslöser nicht, und ein Heilerschild wird erst nach TBN aufgezehrt. Die Barriere zählt in der effektiven Gesundheit der Zielwahl (Konzept 07), nicht in der Heilschwelle (A85) |
-| 6 | GNB, Superbolide aktiv | **ja** | ja | HP stehen auf 1; das Fenster ist die einzige gefahrlose Gelegenheit |
-| 7 | WAR, Holmgang aktiv, HP heruntergedrückt | **ja** | ja | wie 6 |
-| 8 | PLD, Hallowed Ground aktiv, beim Zünden wenig HP | **ja** | ja | Die HP bleiben unverändert; nach Ablauf steht er, wo er stand |
-| 9 | PLD, Hallowed Ground aktiv, beim Zünden viel HP | nein, nachrangig | nein | Einziger Fall echter Entbehrlichkeit in Klasse B |
-| 10 | GNB, Heart of Corundum liegt | **nach normaler Regel** | nach normaler Regel | **Kein Rückhaltefall** — der Catharsis-Stoß löst auch bei Ablauf aus |
-| 11 | GNB, Catharsis ausgelöst | **ja** | ja | Der Auslöser ist verbraucht |
-| 12 | Klasse C aktiv | nach normaler Regel | nach normaler Regel | keine Wechselwirkung |
-| 13 | Klasse D aktiv | nachrangig | nach normaler Regel | Die Selbstheilung trägt einen Teil, ersetzt sie nicht |
-| 14 | Mehrere brauchen Heilung, Tank geschützt | Tank **nachrangig**, andere zuerst | dito | Der Schutz verschiebt die Dringlichkeit, hebt den Bedarf nicht auf |
-| 15 | Nur der geschützte Tank braucht Heilung | **ja** | ja | Das Fenster ist die sicherste Gelegenheit |
-
-Zeile 14 und 15 sind der Kern: **Der Schutz verschiebt die Reihenfolge, er hebt den
-Bedarf nicht auf.** Handeln schadet nur in den Zeilen 1 und 2 — und dort nur, solange
-Stufe 1 gesichert ist. Von achtzehn Lagen bleibt damit **ein** echter Rückhaltefall
-(1), dem vier Aufhebungen (1b, 1c, 1d, 4a) gegenüberstehen; einer ist reine
-Ressourcenschonung ohne Risiko (4b). Eine Bedingung, die häufiger nicht gilt als gilt,
-ist kein Leitmotiv: Der belastbare Kern bleibt die Richtigstellung der Zielwahl, und
-der einzige verbliebene Sonderfall ist Living Dead.
-
-## Was gebaut ist
-
-### Die Zielwahl (Rangstufe 1)
-
-`NoNeedHealingInvuln()` ruft `WillStatusEndGCD(2, 0, false, …)`. Die Kette
-`WillStatusEnd` → `StatusTime` (beide in `StatusHelper.cs`) liefert bei
-**fehlendem** Status die Zeit `0f`, und `(0 >= 0 || !HasStatus) && 0 <= time` ergibt
-`true`. Der Rückgabewert bedeutet also: *kein schützender Status aktiv, Heilung ist
-zuzulassen* — der Name sagt das Gegenteil, was die ganze Defektklasse erklärt.
-
-`GeneralHealTarget` sammelte mit `if (!o.NoNeedHealingInvuln())` folglich genau die
-Gruppenmitglieder mit **aktivem Schutz**. Im Regelfall blieb die Liste leer, alle
-darauf aufbauenden Stufen liefen ins Leere, und der Aufrufer fiel auf den Träger der
-Tank-Haltung zurück. Praktisch: **Die generische Heilzielwahl war blind für den am
-schwersten verletzten Gruppenteil und wählte faktisch immer den Tank.** War die Liste
-einmal gefüllt, wurde bevorzugt der Unverwundbare geheilt. Derselbe Fehler stand ein
-zweites Mal in `SCH_Reborn.cs:830`, wo Excogitation nur auf gerade unverwundbare
-Ziele ging.
-
-Umgesetzt ist beides zusammen, denn getrennt wäre der erste Schritt schädlich: Sobald
-die Liste normale Ziele enthält, fielen die geschützten heraus und der Zufallszustand
-kippte in den entgegengesetzten. Geschützte Ziele sind seither **nachrangig, nicht
-ausgeschlossen**, und die fehlenden Ids `HallowedGround`, `HallowedGround_1302` und
-`UndeadRebirth` sind ergänzt — zwingend nach dem Umbau, weil sie davor das *Ob* und
-danach nur noch die *Reihenfolge* ändern.
-
-Im `StateUpdater` senkt ein Schutzstatus seither die Heilschwelle auf
-`HealthProtectedRatio`, statt das Heilflag zu unterdrücken. Ohne diese Umstellung
-erreicht die Herabstufung ihren Zweck nicht: Ohne Flag ruft der Dispatcher
-`HealSingleGCD` gar nicht auf.
-
-### Die Living-Dead-Rückhaltung
-
-Sie liegt hinter `WithholdHealingForLivingDead` (Standard **aus**) und benutzt
-`StatusHelper.InDeathTriggerWindow` auf einer eigenen Liste `DeathTriggeredStatus`,
-die genau den einen Status führt, dessen Auslöser der eigene Tod ist. Die Paarung aus
-Einstellung und Fenster steht als `ObjectHelper.IsHeldForDeathTrigger` an **einem**
-Ort; die Bedingung selbst kommt im Baum kein zweites Mal vor.
-
-**Ein Halt muss auf jedem Weg halten, auf dem eine Heilung den Träger erreicht.** Eine
-einzelne Lücke schwächt ihn nicht, sie hebt ihn auf — der Träger wird aus dem Auslöser
-herausgeheilt und die Fähigkeit ist umsonst gezündet. Erfasst sind deshalb:
-
-| Weg | Ort |
-|---|---|
-| Heilflag für ein Gruppenmitglied | `StateUpdater.ShouldHealSingle` |
-| Heilflag für den Spieler selbst | `StateUpdater.ShouldHealSelf` |
-| Kandidatenliste, Rollenpässe, Auswahl des am schwersten Verletzten, Tank-Haltungs-Fallback und `partyMembers[0]`-Fallback | Eingangsfilter von `ActionTargetInfo.FindHealTarget` |
-| Selbstabkürzung, die die Kandidatenliste umgeht | eigene Prüfung in `GeneralHealTarget` |
-
-Der Eingangsfilter ist der tragende Teil: Das Heilflag kann von einem **anderen**
-Gruppenmitglied gesetzt worden sein, und liegt dieses außerhalb der Reichweite der
-gewählten Heilaktion, bleibt der Träger als einziger Kandidat übrig. Ohne den Filter
-holt ihn spätestens der Tank-Haltungs-Fallback zurück — ein Dunkelritter trägt Grit.
-
-Zwei Wege bleiben bewusst offen. **Flächenheilung** trifft den Träger als
-Nebenwirkung; sie deswegen zu unterlassen hieße, die Gruppe für den Auslöser zu
-opfern, und verstieße gegen die Rangordnung. **Fremde Rotationen, die ihr Heilziel
-selbst setzen** (`targetOverride: TargetType.Tank`, in den Beiruta-Heilern) umgehen
-die zentrale Zielwahl; sie halten allerdings über ihre eigene Sperrliste ohnehin
-zurück, dort sogar unabhängig von der Einstellung.
-
-Die Uhrregel musste nicht gebaut werden: `WillStatusEndGCD` meldet einen Status vor
-seinem Ablauf als endend. Sie braucht aber eine **eigene** Liste — `StatusTime`
-liefert das Minimum über die ganze übergebene Liste, sodass eine fremde kurze
-Unverwundbarkeit das Fenster als endend gemeldet hätte.
-
-Die Option ist nötig, weil RSR Living Dead selbst als Notrettung bei
-`HealthForDyingTanks` zündet. Dort ist der Tod die Katastrophe, und Walking Dead
-verlangt danach eine volle Maximalgesundheit an Heilung in zehn Sekunden.
-
-
-**Der Hebel ist die Option, nicht der Grenzwert.** Zwei Mechanismen, je nach Stellung von
-`WithholdHealingForLivingDead`:
-- **Option aus:** `StateUpdater.ShouldHealSingle` senkt die Schwelle unter einem Schutzstatus auf
-  `HealthProtectedRatio` (0,15), solange Living Dead mehr als zwei GCDs Restzeit hat; danach kehrt die
-  normale Schwelle zurück, unabhängig von der Gesundheit.
-- **Option an:** Der Träger wird gar nicht geheilt, solange das Todesfenster läuft
-  (`IsHeldForDeathTrigger`). Das Fenster endet zwei GCDs vor Ablauf, außer der Träger steht auf oder
-  unter `HealthForDyingTanks` (`DeathStillLikely`, A88) — dann läuft es bis zum Ablauf.
-
-`HealthProtectedRatio` anzuheben verschöbe den ersten Mechanismus und heilte **früher** im Fenster,
-also gerade den Tod weg, auf den die Regel wartet. Wer den Todeseffekt will, schaltet
-`WithholdHealingForLivingDead` ein; der Grenzwert ist nur für die
-übrigen Invulnerabilitäten der Liste maßgeblich (Holmgang, Superbolide, Hallowed Ground), bei denen
-kein Tod gewollt ist. Upstream heilt ein Ziel unter Invulnerabilität gar nicht; die Absenkung ist die
-mildere Fassung. Ein zu früh gesetzter Living Dead (vom Auftraggeber bei 70 % im Wall-to-Wall
-beobachtet) kostet damit zehn Sekunden automatischer Heilung ohne Anlass.
-
-**Welche Abwehr des Dunkelritters die Heilentscheidung berührt** (erhoben A141):
-
-| Fähigkeit | Pfad | Wirkung auf die Heilschwelle |
-|---|---|---|
-| Living Dead | `NoNeedHealingStatus` → `HealthProtectedRatio` | 0,15 statt der normalen Schwelle, wie oben |
-| Walking Dead | in `NoNeedHealingStatus` auskommentiert | keine — richtig, dort ist Heilung überlebensnotwendig |
-| The Blackest Night | Schildanteil des Spiels (`ShieldPercentage`) im effektiven Puffer | keine auf die Schwelle, seit die Schildanrechnung entfernt ist (A85); der Schild zählt im Puffer der Vorausschau und der Sterbegefährdung (`GetEffectiveHp`) |
-| Shadow Wall, Rampart | `RampartStatus` | keine: gelesen als `StatusProvide`, von `HasMajorMitigation` und von `HoldReprisalForRaidwide`, jeweils für den eigenen Charakter |
-| Dark Mind, Oblation, Dark Missionary, Reprisal | in keiner heilrelevanten Liste bzw. am Gegner | keine |
-
-Schadensreduktion und Barriere wirken auf keine Heilschwelle; nur die Invulnerabilität tut es. Die Rate, die aus
-Minderung folgt, geht über die Vorausschau ein (`GetForecastSurvivingShare`), nicht über Listen.
-### Die Barriere senkt den Heilbedarf nicht
-
-**Ein Schild verhindert Schaden, er stellt keine Gesundheit her.** Ein vollgeheilter Tank **mit**
-Barriere ist besser geschützt als ein geschildeter Tank mit wenig Gesundheit; beide Größen addieren
-sich, sie ersetzen einander nicht. Eine laufende Barriere ist damit die Gelegenheit, das Polster zu
-vergrößern, nicht der Grund, es kleiner zu lassen. Läuft sie ungenutzt ab, steht der Träger
-unverändert tief; fängt sie den Treffer, ist sie verbraucht und er steht ebenso tief — verändert hat
-sich nur die verbleibende Zeit.
-
-Die frühere Anrechnung (`CreditShieldToEffectiveHp`) rechnete den Schild auf die Gesundheitsquote und
-verzögerte damit die Einzelziel-Heilung um die Barrierengröße — bei The Blackest Night 25
-Prozentpunkte. Sie ist entfernt (A85); das Verhalten entspricht wieder dem Upstream.
-
-**Heilung steht dem Aufzehren der Barriere nicht entgegen**, und darin liegt der Unterschied zur
-Minderungssperre: Wie schnell eine Barriere verbraucht wird, hängt allein am eingehenden Schaden. Die
-einzige Kopplung läuft umgekehrt — stirbt der Träger vorher, entfällt Dark Arts. Was den Verbrauch
-verhindert, ist Schadensminderung, und dagegen steht die Sperre in Konzept 10.
-
-### Zwei Lücken in der Schildanrechnung, die diese Prüfung nebenbei fand — beide geschlossen
-
-| Befund | Wirkung | Stand |
-|---|---|---|
-| `ModifyDivineBenisonPvE` setzte `StatusProvide` statt `TargetStatusProvide` | Divine Benison geht auf **fremde** Ziele. Die Doppelbelegungssperre prüfte damit den Spieler statt das Ziel und griff nie; zugleich sperrte sie die Aktion ganz, sobald der Weißmagier den Schild selbst trug. Die drei Geschwister (`AdloquiumPvE`, `EukrasianDiagnosisPvE`, `CelestialIntersectionPvE`) nutzen `TargetStatusProvide` | behoben, beide Ids auf der Zielseite |
-| `StatusID.Intersection` (1889) und `Intersection_4040` fehlten in `StatusHelper.ShieldStatus` | Beide sind als „A magicked barrier is nullifying damage" ausgewiesen. Der Schild eines Astrologen zählte nicht zur effektiven Gesundheit; sein Ziel erschien verletzter, als es ist | behoben (A43) |
-
-
-## Was ausgeschlossen wurde und warum
-
-**Nullvariante** — nichts ändern. Ausgeschlossen: zwei belegte Defekte der Rangstufe 1
-blieben stehen.
-
-**Nur Living Dead behandeln, Zielwahl unangetastet.** Ausgeschlossen: Es hätte den
-größeren, bereits belegten Fehler stehen gelassen, um einen Sonderfall zu bedienen.
-
-**Eine Rückhaltung von Heilung für The Blackest Night oder Excogitation.**
-Ausgeschlossen für **Excogitation**, weil sein Auslöser nicht vorhersehbar ist: Ob der
-Schaden kommt, der die Schwelle unterschreitet, ist unbekannt. Ausgeschlossen für
-**The Blackest Night**, weil Heilung dessen Auslöser gar nicht berührt — eine Barriere
-absorbiert vor den HP. Was dort bleibt, ist keine Rückhaltung, sondern die
-Nachrangigkeit eines **zweiten Schildes**; siehe Klasse A+.
-
-**Gunbreaker Catharsis of Corundum als Rückhaltefall.** Ausgeschlossen am Artefakt:
-`Status.resx` beschreibt Status 2685 mit „HP will be restored automatically upon
-falling below a certain level **or expiration of effect duration**". Der Heilstoß
-kommt in jedem Fall; es gibt nichts zurückzuhalten. Der auslösertragende Bezeichner
-heißt `CatharsisOfCorundum` (2685, in Dawntrail zusätzlich 4296); `ClarityOfCorundum`
-(2684) ist reine Schadensreduktion und gehört nach Klasse C.
-
-**Eine Gesundheitsschwelle statt der Prioritätsstufe.** Ausgeschlossen, weil sie
-Fall 14 nicht trifft: Sie kennt den Vergleich mit anderen Gruppenmitgliedern nicht.
-Die Prioritätsstufe leistet beides, und `GeneralHealTarget` besitzt die Rangfolge
-bereits — es fehlte nur eine Ebene.
-
-**Ein eigener Messbaustein für Heilraten auf Gruppenmitglieder.** Ausgeschlossen — und
-inzwischen auch überflüssig. Ausgeschlossen war er, weil die Uhrregel seinen einzigen
-vorgesehenen Verbraucher ersetzt; überflüssig ist er, weil die Größe ohne neuen
-Baustein entstanden ist: `DataCenter.RecordedHP` nimmt die Gruppenmitglieder seit A91
-mit auf, und `GetTTK` wertet sie seitdem für jede Gruppen-Id aus. Der Eingriff war eine
-Schleife neben der bestehenden, kein Ringpuffer und kein dritter Effekt-Handler.
-
-| Größe | Vorhanden? | Beleg |
-|---|---|---|
-| Restzeit des Status | **ja** | `StatusHelper.StatusTime(…)` |
-| Historie der Gesundheit über die Zeit | **für Gegner und Gruppe** | `DataCenter.RecordedHP`, gefüllt in `TargetUpdater.UpdateTimeToKill` aus `AllHostileTargets` **und** `PartyMembers` |
-| Zeit bis zum Tod eines Gruppenmitglieds | **ja** | `ObjectHelper.GetCorrectedTTK`, gegen den eigenen Vorhersagefehler kalibriert |
-| Abtastrate der Historie | **1 Hz** | `TimeToKillUpdateInterval` |
-| Eingehende Heilung auf ein Party-Mitglied | **nicht gesondert ausgewertet, und nicht nötig** | Der Gesundheitsverlauf ist bereits netto: Eine fremde Heilung zeigt sich als steigender Anteil, `GetTTK` antwortet dann `NaN` |
-| Schadensbetrag eines Gegnertreffers | **verfügbar und gelesen** | `Watcher.FullAmount`, voller Betrag auch über 65.535 Punkte (A140, A144) |
-
-Zwei Genauigkeitsgrenzen bestehen fort: Die 1-Hz-Abtastung ist für ein
-Zehn-Sekunden-Fenster grob, und ein Gesundheitsdelta ist ein Surrogat für kumulierte
-Heilung — fallen Heilung und Schaden in dasselbe Intervall, heben sie sich auf, obwohl
-die Heilung gegen die von Walking Dead geforderte Summe zählt. Für den Weg **zur Null**
-ist das unerheblich, für den Weg **zur aufgenommenen Heilmenge** nicht; Fall 4a beantwortet A147 deshalb nur
-näherungsweise, über den Gesundheitsanstieg seit Beginn des Fensters.
-
-**`HpRecoveryDown` und `Mounted` in der Schwellensenkung.** Ausgeschlossen: `Mounted`
-nullifiziert Heilung und gehört in einen Ausschluss, nicht in eine Herabstufung;
-`HpRecoveryDown` mindert Heilung nur und ist damit ein Grund, **härter** zu heilen.
-
-## Krieger: Nascent Flash für einen anderen oder Bloodwhetting für sich
+## Krieger: Urimpuls für sich oder Urflackern für andere
 
 **Seine Vorgabe (29.09.2026), im Wortlaut:** „nascent flash dahingehend im vollständigen loop bewerten: ist der
 tankbuster tödlich? braucht der tank nach dem tankbuster viel heilung? ist der tankbuster mit bestehenden
@@ -564,7 +479,9 @@ durch tod verzichtet werden und wer ist am ehestens entbehrlich?" Einordnung: Vo
 vorgelegte Entscheidung (TODO, A191). Der Satz „Heiler haben eine höhere Priorität als normale Damagedealer"
 bestätigt die Rollenordnung aus Konzept 07; dort gilt sie bei gleicher Gefährdung.
 
-### Die Mechanik (Wirktexte, Job-Guide und Spieldaten, abgerufen 29.09.2026)
+### Mechanik
+
+Wirktexte, Job-Guide und Spieldaten, abgerufen 29.09.2026.
 
 | | Bloodwhetting (82, auf sich) | Nascent Flash (76, auf ein Mitglied, nicht auf sich) |
 |---|---|---|
@@ -601,18 +518,15 @@ braucht, trägt deshalb keinen Grund, Nascent Flash zurückzuhalten.
 
 ### Bewertung nach seinen Kriterien
 
-**Ist der Tankbuster tödlich?** Das weiß RSR nicht, und das ist kein Mangel der Regel, sondern der Datenlage.
-BossModReborn meldet Art, Zeitpunkt und Getroffene, **keine Höhe** (Konzept 07). Der Effekt-Handler könnte die Höhe
-messen: Der Messweg der Flächen (Konzept 13) sieht jeden Treffer. Er misst aber **nach** Minderung und Barriere,
-und ein Tank mindert Tankbuster fast immer — gemessen würde also systematisch zu niedrig, und „zu niedrig" ist
-hier die gefährliche Richtung (ein tödlicher Treffer läse sich als harmlos). Das Herausrechnen bräuchte je Treffer
-die wirkenden Minderungen mit ihren Prozentsätzen, die Schadensart der Aktion (Feint mindert physisch, Addle
-magisch) und die Antwort, ob der gemeldete Schadenswert eine aufgezehrte Barriere enthält — die letzte ist nicht
-belegt. Das ist ein eigenes Vorhaben (TODO). **Bis dahin gilt ein angekündigter Tankbuster auf den Krieger als
-möglicherweise tödlich**: Er ist angekündigt, also wahrscheinlich, und seine Höhe ist unbekannt — nach seiner
-Spielweise geht dann die Sicherheit vor.
+**Ist der Tankbuster tödlich?** Für einen gewirkten Tankbuster, den die Tankbuster-Tabelle kennt (Konzept 13),
+rechnet es der Plan (Abschnitt „Gemessener Tankbuster: das geringste Mittel"): Der Krieger braucht Urimpuls genau dann,
+wenn der Plan ihn als gebrauchtes Glied führt (`NeedsBloodwhettingHimself` liest dann `TankbusterPlanNeeds`). Ohne
+Messung – ein Marker, eine BossModReborn-Vorhersage, eine noch nie gemessene Aktion – kennt RSR keine Höhe:
+BossModReborn meldet Art, Zeitpunkt und Getroffene (Konzept 07). **Dann gilt ein angekündigter Tankbuster auf den
+Krieger als möglicherweise tödlich**: Er ist angekündigt, also wahrscheinlich, und seine Höhe ist unbekannt — nach
+seiner Spielweise geht dann die Sicherheit vor.
 
-**Ist er mit Bestehendem wegsteckbar?** Ohne Höhe nur in einem Fall entscheidbar, und der ist vollständig: Liegt
+**Ist er mit Bestehendem wegsteckbar?** Mit Messung beantwortet es der Plan. Ohne Höhe nur in einem Fall entscheidbar, und der ist vollständig: Liegt
 eine Unverwundbarkeit (Holmgang, oder jede andere aus `NoNeedHealingStatus`) auf dem Krieger, während der
 Tankbuster auf ihn gewirkt wird, kann er ihn nicht töten. Schilde, laufende Minderungen, HoTs und die Heiler senken
 den Treffer oder füllen nach; ob das genügt, hängt an der Höhe, die fehlt.
@@ -663,8 +577,9 @@ weil ihr Text bindet.
   und Heilung helfen, und die volle Heilung kommt aus dem Heilpfad der Heiler. `HpRecoveryDown` mindert nur die
   Heilung; Minderung und Barriere wirken voll, das Ziel bleibt Kandidat. Eine Verwundbarkeit erhöht den Eingang;
   der Verlauf zeigt ihn.
-- *Beim Krieger:* Eine Verwundbarkeit macht den nächsten Tankbuster härter. Ohne Höhe ändert das an der Regel
-  nichts, sie ist bereits vorsichtig. Heilstrafen (Scalebound, Shackled Healing) sperren den ganzen Heilpfad
+- *Beim Krieger:* Eine Verwundbarkeit macht den nächsten Tankbuster härter. Mit Messung führt die Tankbuster-Tabelle
+  den Wert unter Verwundbarkeit eigens (Konzept 13); ohne Höhe ändert sie an der Regel nichts, die bereits vorsichtig
+  ist. Heilstrafen (Scalebound, Shackled Healing) sperren den ganzen Heilpfad
   schon (`PlayerHealingPunished`).
 
 ### Die Triage: wer verzichtet, wenn beide es brauchen
@@ -678,31 +593,31 @@ dem Grundsatz „sicher vor möglich":
 |---|---|---|
 | nicht kritisch, gleich welche Rolle | nein | es stirbt nicht am nächsten Treffer; die Heiler decken es |
 | **Heiler**, kritisch | **ja** | fällt der Heiler, fällt die Gruppe mit ihm (seine Begründung) |
-| **Tank**, kritisch | ja, solange der Krieger selbst nicht kritisch ist | gleiche Rolle; sein Tod ist sicher, der Tankbuster möglich |
+| **Tank**, kritisch | ja, solange der Krieger selbst nicht kritisch ist; vor einem gemessenen Tankbuster nur, solange die Unverwundbarkeit des Kriegers übernehmen kann (D3) | gleiche Rolle; sein Tod ist sicher, der ungemessene Tankbuster möglich; der gemessene ist es nicht mehr |
 | **Schadensausteiler**, kritisch | **nein** | am ehesten entbehrlich: wiederbelebbar, während ein toter Tank meist den Kampf kostet (Konzept 08) |
 
-**Gegenposition, geprüft und nicht widerlegt:** Bloodwhetting ist am Tankbuster ein kleiner Anteil — rund 19 % in
-4 s und eine Barriere — und oft nicht der Unterschied zwischen Leben und Tod. Nascent Flash auf einen kritischen
-Schadensausteiler kann dagegen genau diesen Unterschied machen. Ohne die Höhe des Tankbusters opfert die Regel im
-Zweifel einen Schadensausteiler für einen Treffer, den der Krieger auch ohne Bloodwhetting überlebt hätte. Sie ist
-nicht widerlegbar, solange die Höhe fehlt; die Regel folgt seiner Ordnung, und mit der Messung aus dem TODO wird
-aus „möglicherweise tödlich" eine Zahl.
+**Gegenposition:** Bloodwhetting ist am Tankbuster ein kleiner Anteil — rund 19 % in 4 s und eine Barriere — und oft
+nicht der Unterschied zwischen Leben und Tod. Nascent Flash auf einen kritischen Schadensausteiler kann dagegen genau
+diesen Unterschied machen. Für einen gemessenen Tankbuster entscheidet deshalb der Plan, ob Urimpuls gebraucht ist;
+ohne Messung opfert die Regel im Zweifel einen Schadensausteiler für einen Treffer, den der Krieger auch ohne
+Bloodwhetting überlebt hätte, und folgt damit seiner Ordnung.
 
-### Antithesen
+### Grenzen
 
-- **Kein Defekt:** Mit „single enemies" aus fällt Bloodwhetting vor dem Tankbuster eines einzelnen Bosses nicht —
-  dann gibt es den Konflikt am Tankbuster nicht, und die Regel hält dort auch nicht (Bedingung (a)). Er besteht mit
-  der Einstellung an (ab Werk seit A237) und bei mehr als zwei Gegnern, und Bedingung (b) besteht immer. Die Zielwahl nach Prozentsatz
-  wählt einen Schadensausteiler bei 10 % hinter Barriere vor einem bei 12 % ohne, der am nächsten Treffer stirbt.
-- **Option falsch:** Die Näherung „wen sein Ziel anvisiert, der bekommt den Tankbuster" kann irren; dann hält der Krieger
+- Mit „single enemies" aus fällt Bloodwhetting vor dem Tankbuster eines einzelnen Bosses nicht; dann gibt es den
+  Konflikt am Tankbuster nicht, und die Regel hält dort auch nicht (Bedingung (a)). Bedingung (b) besteht immer.
+- Die Näherung „wen sein Ziel anvisiert, der bekommt den Tankbuster" kann irren; dann hält der Krieger
   Nascent Flash für einen Treffer, der den anderen Tank trifft — und gerade der könnte es brauchen. Der Fehler geht
   in die vorsichtige Richtung und endet, sobald der Tankbuster im Minderungsfenster steht und die Maske ihn richtig
   zuordnet. Die Triage kann einen Schadensausteiler kosten (Gegenposition oben).
-- **Ausgeliefert, und nichts ändert sich:** Ohne Tankbuster-Signal greift nur (b). Ohne Bloodwhetting in der
+- Ohne Tankbuster-Signal greift nur (b). Ohne Bloodwhetting in der
   Einzelabwehr greift nur (b) — richtig so, siehe oben. Mit „By danger" ändert sich die Wahl nur, wo kritische
   Klasse, Barriere oder Verlauf vom Prozentsatz abweichen; sonst wählt sie denselben.
 
-### Umsetzung (A226)
+### Gebaut
+
+Umgesetzt mit A226.
+
 
 - `WAR_Reborn.BloodwhettingForDefense`: die Bedingung der Einzelabwehr, gelesen von ihr und von der Zurückhaltung.
 - Einstellung **„Keep Bloodwhetting for yourself when you need it"**, ab Werk **an** (seine Regel für Voreinstellungen,
@@ -715,9 +630,9 @@ aus „möglicherweise tödlich" eine Zahl.
   often on the co-tank of your eight-person party." Damit ist der Einsatz am anderen Tank die Regelanwendung der
   Referenz, kein Schluss mehr. Gebaut ist er nicht: Er braucht die Erkennung „Tankbuster auf dem anderen Tank"
   (Marker oder Vorhersage mit Zielangabe) und die Abwägung gegen den eigenen Bedarf, die die Triage oben schon
-  führt. Steht im TODO als offene Arbeit. Die Messung der Tankbuster-Höhe bleibt ein eigenes Vorhaben.
+  führt. Steht im TODO als offene Arbeit.
 
-## Krieger: die Abwehr im Ganzen
+## Krieger: die übrige Abwehr
 
 **Seine Fragen und Aufträge (01.10.2026):** „abtausch auf tankbuster durch boss bringt nichts, wird aber gecasted"
 (Boss allein in der Arena, Krieger); „ist kampfrausch vor tankbuster nicht sinnvoll? warum nicht genutzt?"; „evtl.
@@ -726,12 +641,15 @@ bislang genutzt"; „in die bestehenden konzepte einarbeiten im vollen loop, kri
 Beobachtung mit Hinweis auf die Lage, Frage, Prüfauftrag.
 
 **Maßstab:** seine Spielweise — Sicherheit vor Schaden, gewichtet mit der Wahrscheinlichkeit des Treffers. Ein
-angekündigter Tankbuster auf ihn gilt als wahrscheinlich und, ohne gemessene Höhe, als möglicherweise tödlich
-(Abschnitt Nascent Flash). Für einen Pull misst die Wahrscheinlichkeit der gemessene Gesundheitsverlauf. Keine
+gemessener Tankbuster gehört dem Plan (Abschnitt „Gemessener Tankbuster: das geringste Mittel"): Sein Zurückhalten
+lässt aus den Pfaden unten nur seine Glieder durch. Ohne Messung gilt ein angekündigter Tankbuster auf ihn als
+wahrscheinlich und möglicherweise tödlich (Abschnitt „Krieger: Urimpuls für sich oder Urflackern für andere"). Für einen Pull misst die Wahrscheinlichkeit der gemessene Gesundheitsverlauf. Keine
 der Abwehrfähigkeiten kostet Schaden; ihr Preis ist allein die Abklingzeit, also ob sie beim nächsten Bedarf fehlt.
 Referenz für Rotationen: The Balance, Warrior Basic Guide, „Staying Alive" (abgerufen 01.10.2026).
 
-### Die Fähigkeiten (Job-Guide deutsch und englisch, abgerufen 01.10.2026)
+### Die Fähigkeiten
+
+Job-Guide deutsch und englisch, abgerufen 01.10.2026.
 
 | Fähigkeit | Stufe | Abklingzeit | Wirkung |
 |---|---|---|---|
@@ -783,12 +701,12 @@ Außerhalb der Einzelabwehr:
 - **Urimpuls** reaktiv unter 0,7, solo immer.
 - **Holmgang** als Notfall bei „Health of dying tank" (ab Werk 15 %).
 - **Abschütteln** als Gruppenheilung und Flächenabwehr.
-- **Urflackern**: Abschnitt Nascent Flash.
+- **Urflackern**: Abschnitt „Krieger: Urimpuls für sich oder Urflackern für andere".
 - **Tiefschlag** und **Zwischenruf**: zentral, nicht auf Bosse.
 
-### Befunde
+### Die Regeln je Fähigkeit, mit Grund
 
-**1. Urimpuls hielt Verdammnis, Schutzwall und Reflexion zurück — behoben (A238).** Zwei Sperren taten dasselbe: Die
+**1. Urimpuls hält Verdammnis, Schutzwall und Reflexion nicht zurück (A238).** Zwei Sperren taten dasselbe: Die
 Einzelabwehr brach ab, solange Urimpuls oder Urinstinkt lief (Upstream, seit 141f9b27a), und Urimpuls stand in
 `RampartStatus`, der Liste der *großen* Minderungen, die Schutzwall und Verdammnis als Doppelbelegungssperre tragen.
 Im Kampf hieß das:
@@ -805,7 +723,7 @@ Schutzwall und Verdammnis staffeln weiter gegeneinander. Andere Leser der Liste:
 der nie Urimpuls trägt) und seit A244 `HoldReprisalForRaidwide` (alle Tanks, für den eigenen Charakter). Gegenposition: Ohne Sperre überlappen Urimpuls und Verdammnis. Das ist der Stapel „Damnation +
 Bloodwhetting" der Referenz und kostet nichts, weil Urimpuls nach 25 s wieder bereit ist.
 
-**2. Kampfrausch fiel nie vor dem Treffer — gebaut (A237, A239).**
+**2. Kampfrausch vor dem Treffer (A237, A239).**
 - *Tankbuster:* Er fällt vor einem Tankbuster auf ihn, innerhalb seiner Wirkdauer (`TankbusterOnMeWithin`, zentral für
   jeden Tank; Dauer aus den Wirktexten). „Auf ihn" heißt: Marker oder gelisteter Tankbuster-Zauber auf ihm, oder eine
   Vorhersage, die ihn nennt oder, wo sie niemanden nennt, wen sein Ziel anvisiert (Schluss). Nicht unter
@@ -829,14 +747,15 @@ Bloodwhetting" der Referenz und kostet nichts, weil Urimpuls nach 25 s wieder be
 - *Grenze:* Der Verlauf ist linear fortgeschrieben. Ein Rudel, das stirbt, fällt langsamer als vorhergesagt; dann fiel
   Kampfrausch etwas zu früh, in die vorsichtige Richtung.
 
-**3. Urimpuls vor dem Tankbuster eines einzelnen Bosses — umgestellt (A237).** „single enemies" stand ab Werk aus, also
+**3. Urimpuls vor dem Tankbuster eines einzelnen Bosses (A237).** „single enemies" stand ab Werk aus, also
 fiel er gegen einen einzelnen Boss erst nach dem Treffer. Nach seiner Regel für Voreinstellungen (A227) steht er an.
 *Restrisiko:* Die Einzelabwehr öffnet auch für einen ungelisteten Zauber eines Gegners auf ihn. Dann kann Urimpuls beim
 eigentlichen Tankbuster noch abklingen (25 s).
 
-**4. Abtausch auf einem Boss-Tankbuster — behoben (A236).**
+**4. Kein Abtausch auf einen Boss-Tankbuster (A236).**
 
-**5. Ein vorhergesagter Tankbuster bekam große Minderung und Schutzwall zugleich — behoben (A243).** Beide Zweige
+**5. Je vorhergesagtem Tankbuster ohne Messung eine große Minderung oder Schutzwall (A243).** Für einen gemessenen
+ersetzt der Plan diese Staffelung. Beide Zweige
 für einen vorhergesagten Tankbuster prüften nur, ob ihr eigener Status bis zum Treffer abläuft, und übergingen die
 gegenseitige Sperre. Lagen beide bereit, fielen beide auf denselben Tankbuster.
 
@@ -851,14 +770,13 @@ Bei Neo Garula dasselbe: 27 % unter beiden, 49 s später 65 % ohne. Abwechselnd 
 
 *Referenz:* The Balance empfiehlt je Tankbuster „one of Rampart or your 40 % cooldown, plus your short cooldown".
 
-*Jetzt:* Schutzwall fällt für einen vorhergesagten Tankbuster nur, wenn die große Minderung ihn nicht nimmt — sie läuft
+*Regel:* Schutzwall fällt für einen vorhergesagten Tankbuster nur, wenn die große Minderung ihn nicht nimmt — sie läuft
 nicht und fiel nicht eben erst (`RampartTakesPredictedTankbuster`, zentral). Das gilt für alle vier Tanks. Die kurzen
 Minderungen (Urimpuls, Kampfrausch, Heart of Corundum, Oblation, Sheltron, The Blackest Night) kommen wie bisher dazu.
 Das Fenster für Schutzwall ist jetzt seine Dauer aus dem Wirktext statt der Zahl 20.
 
-*Antithesen:*
-- *Kein Defekt:* widerlegt durch das Protokoll.
-- *Option falsch, ein Tankbuster braucht beide:* möglich bei einem Treffer weit über der Maximalgesundheit. Für diesen
+*Gegenpositionen:*
+- *Ein Tankbuster braucht beide:* möglich bei einem Treffer weit über der Maximalgesundheit. Für diesen
   Fall bleiben Holmgang (bei „Health of dying tank") und die kurzen Minderungen. Ein Tankbuster gleich nach dem ersten
   bekäme mit beiden auf dem ersten gar nichts mehr, wie im Protokoll.
 - *Ausgeliefert, nichts ändert sich:* Ohne Vorhersage greifen diese Zweige nicht. Dann staffelt die Zeitregel darunter,
@@ -871,7 +789,7 @@ Mittel liegen beide Varianten höchstens 3 Prozentpunkte auseinander, mal die ei
 Vorhersage ändert die Reihenfolge nichts. Ohne einen Unterschied im Kampf gibt es keinen Grund für einen Eingriff. Die
 Zahlen 30 und 60 bleiben als offene feste Werte geführt.
 
-**6. Abschütteln gegen die eigenen Status und gegen den Raidwide — gebaut (A245).** Abschütteln hat zwei Wege, und beide
+**6. Abschütteln gegen die eigenen Status und gegen den Raidwide (A245).** Abschütteln hat zwei Wege, und beide
 wirkten es als Erstes, ohne einen eigenen Status zu prüfen:
 - *Einzelheilung* (`HealSingleAbility`): Sie öffnet, sobald irgendein Mitglied in der Vorausschau unter
   „HealthSingleAbility" fällt (ab Werk 0,7).
@@ -889,70 +807,66 @@ Gruppenwerkzeugen, die auf raidweiten Schaden gehören.
 | Einzelheilung, Kampfrausch läuft | Barriere an der erhöhten Gesundheit, +2 % | Rest von Kampfrausch | frei |
 | Raidwide, Verdammnis läuft, kein Tankbuster vor ihrem Ende | Barriere für alle | Rest von Verdammnis | frei |
 | Raidwide, Verdammnis läuft **für einen Tankbuster, der vor ihrem Ende landet** | Barriere für alle | 40 % am Tankbuster | **wartet** bis nach dem Tankbuster |
-| ein Mitglied in Gefährdungsklasse 1, oder der gemessene Raidwide brächte eines dorthin | — | — | jede Rückhaltung weicht (`HoldAreaDefense`) |
+| ein Mitglied in Gefährdungsklasse 1, oder der gemessene Raidwide brächte eines dorthin | — | — | jede Rückhaltung weicht (`HoldAreaDefense`), außer der nächsten Zeile |
+| gemessener Tankbuster, der Plan braucht Rachsucht/Verdammnis, Urinstinkt/Urimpuls oder Kampfrausch | Barriere für alle | der Tank stirbt nach den Zahlen am Tankbuster | **wartet** auch bei Gefahr für die Gruppe, außer der Raidwide tötet nach den Zahlen einen Heiler oder mehr als ein Mitglied (D2; Abschnitt „Gemessener Tankbuster", K1) |
 
 Das folgt seinem Kriterium: Wen bringt der Verzicht in ernste Bedrängnis? Am Raidwide verliert die Gruppe die Barriere,
 er den Rest seiner Minderung, also bekommt die Gruppe sie. Steht ihm ein Tankbuster unter Verdammnis bevor, verlöre er
 40 % an einem möglicherweise tödlichen Treffer; die Gruppe verliert eine Barriere, und gerät sie dadurch in Gefahr,
 weicht die Rückhaltung.
 
-*Antithesen:*
-- *Kein Defekt:* widerlegt; die Wege prüften keinen Status.
-- *Option falsch:* In der Einzelheilung wartet die Heilung für ein Mitglied unter 70 % bis zu 15 s. Ein Mitglied in
+*Gegenpositionen:*
+- In der Einzelheilung wartet die Heilung für ein Mitglied unter 70 % bis zu 15 s. Ein Mitglied in
   Gefahr bekommt sie trotzdem (die Rückhaltung weicht); darüber heilen die Heiler.
-- *Ausgeliefert, nichts ändert sich:* Ohne Modul gibt es keine Raidwide-Ansage, dann entfällt dieser Teil. Ohne
+- Ohne Modul gibt es keine Raidwide-Ansage, dann entfällt dieser Teil. Ohne
   sichtbaren Tankbuster entfällt der Teil am Raidwide. Die Statusprüfung wirkt immer.
 
-**7. Reflexion am Tankbuster oder am Raidwide — gebaut (A244).** Reflexion liegt auf dem Gegner und schützt jeden, den er
+**7. Reflexion am Tankbuster oder am Raidwide (A244).** Reflexion liegt auf dem Gegner und schützt jeden, den er
 während ihrer 15 s trifft (sein Hinweis). Eine Wahl gibt es nur, wenn der Raidwide nach ihrem Ende und vor ihrer neuen
 Bereitschaft landet. Dann wartet sie, wenn der Tank seinen Tankbuster schon mit eigener großer Minderung oder Schutzwall
 nimmt. Fälle, Quellen und Grenzen in Konzept 08, „Gegner-Debuffs am Tankbuster und am Raidwide", weil die Regel dort für
 alle Rollen sitzt.
 
-**8. Die große Minderung kam beim Tankbuster zuletzt — behoben (A241).** Sein Protokoll, 21:11:58: Marker auf ihm, dann
+**8. Die große Minderung zuerst (A241).** Sein Protokoll, 21:11:58: Marker auf ihm, dann
 Urimpuls, Kampfrausch und Verdammnis erst 0,7 s vor dem Treffer. Das Fenster der Einzelabwehr öffnet bei einer
-Vorhersage wenige Sekunden vorher, und die kleinen Minderungen standen vorn. Jetzt stehen die Zweige für einen
+Vorhersage wenige Sekunden vorher, und die kleinen Minderungen standen vorn. Deshalb stehen die Zweige für einen
 vorhergesagten Tankbuster bei allen vier Tanks am Anfang. Zusammen mit Befund 5 fällt dort je Tankbuster eine große
 Minderung oder Schutzwall, dann die kurzen.
 
-**Ohne Befund:**
-- *Äquilibrium* (reaktiv, unter Kampfrausch), *Holmgang* (Notfall bei 15 %; vorbeugend nur bei bekannter Höhe des
-  Treffers sinnvoll, die fehlt — Abschnitt Nascent Flash).
+**Ohne eigene Regel:**
+- *Äquilibrium* (reaktiv, unter Kampfrausch), *Holmgang* (Notfall bei „Health of dying tank", ab Werk 15 %; vorbeugend
+  vor einem gemessenen Tankbuster, den nichts Geringeres trägt, über den Plan).
 - *Tiefschlag/Zwischenruf* (zentral) und *Urflackern* (A226).
 
-### Abgleich mit den Referenzen (02.10.2026)
+### Referenzen
 
-| Frage | The Balance | WrathCombo (Stand 25.09.2026, keine Spielquelle) | xivanalysis | RSR jetzt |
+Stand 02.10.2026.
+
+| Frage | The Balance | WrathCombo (Stand 25.09.2026, keine Spielquelle) | xivanalysis | RSR |
 |---|---|---|---|---|
 | Große Minderung und Schutzwall auf einen Tankbuster | je Tankbuster eine von beiden plus kurze | Vengeance nicht innerhalb 20 s nach Rampart und umgekehrt („Prevent double big mits") | — | eine je Tankbuster (A243) |
 | Urimpuls vor dem Tankbuster | Teil jedes Stapels | auf angekündigten Tankbuster | zählt nur die Nutzung | ja, „single enemies" an (A237) |
 | Kampfrausch vor dem Tankbuster | in den Stapeln, mit Verdammnis wie mit Rampart („The 60s“) | nur ohne andere große oder mit Rampart, sonst Notfall | zählt nur die Nutzung | auf jeden Tankbuster, für den er bereit ist (A237); WrathCombos Ausrichtung verworfen (A248) |
 | Reflexion am Tankbuster | Gruppenwerkzeuge auf Raidwides | im Bosskampf nur bei angesagtem Gruppenschaden | — | wartet, wenn der Tank gedeckt ist (A244) |
-| Abschütteln | Barriere an erhöhter Gesundheit | im Bosskampf bei Gruppenschaden, nicht innerhalb 10 s nach Reflexion; außerhalb nur ohne Kampfrausch, Verdammnis, Vengeance, Urimpuls | zählt nur die Nutzung | wartet bei Verdammnis/Urimpuls (A245) |
+| Abschütteln | Barriere an erhöhter Gesundheit | im Bosskampf bei Gruppenschaden, nicht innerhalb 10 s nach Reflexion; außerhalb nur ohne Kampfrausch, Verdammnis, Vengeance, Urimpuls | zählt nur die Nutzung | wartet bei Verdammnis/Urimpuls (A245) und für gebrauchte Glieder des Plans |
 | Reflexion und Abschütteln auf demselben Raidwide | mal stapeln, mal verteilen, je nach Größe | verteilt (je 10 s Sperre gegeneinander) | — | **beide auf denselben** — offen (TODO) |
 
 *xivanalysis* bewertet Abwehr nur danach, ob sie genutzt wurde („find helpful times"), ohne Zeitpunktregel. *FFLogs*
 liefert die Kampfdaten, keine Regeln; ein Report von ihm würde zeigen, welche Minderung auf welchem Treffer lag.
 
-### Antithesen
+### Grenzen
 
-- **Kein Defekt:**
-  - Für Befund 1 widerlegt: Die Sperre stand im Code, und sie hält Verdammnis bei Pullbeginn um die Laufzeit von
-    Urimpuls zurück.
-  - Für Befund 2 widerlegt: Kampfrausch fiel nur nach dem Treffer.
-- **Option falsch:**
-  - Die Näherung „wen sein Ziel anvisiert" kann bei Tankbustern auf den zweiten in der Feindseligkeit irren. Dann geht
-    Kampfrausch umsonst, in die vorsichtige Richtung.
-  - Mehr Überlappung am Pullbeginn kann bei einem langen Pull hinten Deckung kosten. Gemindert durch die Staffelung von
-    Schutzwall und Verdammnis, die bleibt, und durch Urimpuls alle 25 s.
-- **Ausgeliefert, und nichts ändert sich:**
-  - Ohne Modul, Marker oder gelisteten Zauber gibt es kein Tankbuster-Signal; Kampfrausch fällt dann nach dem Verlauf
-    oder reaktiv.
-  - Fehlt im Fenster der Einzelabwehr (ab Werk 3 s) ein Einwebeplatz, fällt keine ihrer Minderungen. Das gilt für alle
-    Tanks und ist bestehende Bauform.
-  - Hat er „single enemies" selbst auf aus gestellt, bleibt Urimpuls gegen den Boss reaktiv.
-  - Mit „Heal ahead of incoming damage" aus bleibt die Pull-Regel von Kampfrausch wirksam; sie liest den Verlauf
-    unabhängig davon.
+- Die Näherung „wen sein Ziel anvisiert" kann bei Tankbustern auf den zweiten in der Feindseligkeit irren. Dann geht
+  Kampfrausch umsonst, in die vorsichtige Richtung.
+- Mehr Überlappung am Pullbeginn kann bei einem langen Pull hinten Deckung kosten. Gemindert durch die Staffelung von
+  Schutzwall und Verdammnis, die bleibt, und durch Urimpuls alle 25 s.
+- Ohne Modul, Marker oder gelisteten Zauber gibt es kein Tankbuster-Signal; Kampfrausch fällt dann nach dem Verlauf
+  oder reaktiv.
+- Fehlt im Fenster der Einzelabwehr (ab Werk 3 s) ein Einwebeplatz, fällt keine ihrer Minderungen. Das gilt für alle
+  Tanks und ist bestehende Bauform.
+- Hat er „single enemies" selbst auf aus gestellt, bleibt Urimpuls gegen den Boss reaktiv.
+- Mit „Heal ahead of incoming damage" aus bleibt die Pull-Regel von Kampfrausch wirksam; sie liest den Verlauf
+  unabhängig davon.
 
 ## Tankwechsel nach einem Tankbuster: Geteiltes Leid auf den anderen Tank
 
@@ -1033,7 +947,9 @@ Ableitung, nicht seine Regel): Wörtlich – die geringste Feindseligkeit auf di
 dem Geteiltes Leid am wenigsten bewirkt. Die Frage stellt sich nur bei drei und mehr Tanks in einer Gruppe; in Achter-
 Inhalten gibt es genau einen anderen.
 
-### Mechanik (Belege, abgerufen 04.10.2026)
+### Mechanik
+
+Belege abgerufen 04.10.2026.
 
 - **Geteiltes Leid** (Shirk, #7537): „Du überträgst 25 % deiner Feindseligkeit auf das ausgewählte Gruppenmitglied",
   St. 48, 120 s, 25 y (Job-Guide deutsch und englisch). Nicht auf dich selbst, nicht auf Allianzmitglieder (xivapi:
@@ -1073,27 +989,22 @@ Leid sofort und festigt den Wechsel, wie es die Referenz vorsieht.
 - **BossMod ohne Modul:** Die Regel liest keine Vorhersage; Erkennung über Liste, Marker und Effektsatz.
 - **Stufensynchron:** Geteiltes Leid erst ab St. 48 (`EnoughLevel`), darunter still.
 
-### Antithesen
+### Begründung und Grenzen
 
-1. **Kein Bedarf, der Co-Tank provoziert ohnehin.** Bei geplanten Wechseln ja; dann festigt die Regel nur, was
-   ohnehin geschieht. Den Ausschlag gibt der ungeplante Fall: Tankbuster in Unterzahl der Abklingzeiten. Seine
-   Kämpfe vom 01.10.2026 zeigen „Schramme" zweimal mit 85 %, beide Male ohne vorher gewählte Abwehr; die 30 bis
-   39 % davor und danach kamen nach Verdammnis und Schutzwall. Dass beim 85-%-Treffer keine Minderung bereit war,
-   ist daraus geschlossen, nicht gemessen. Ob dort ein zweiter Tank in der Gruppe war, zeigt das Protokoll nicht. Entkräftet, aber die Häufigkeit ist offen.
-2. **Falsches Werkzeug, Herausforderung des Co-Tanks wirkt sicher.** Stimmt, aber die drückt der andere Spieler.
-   Die Gegenseite gibt es zum Teil schon: Fällt der Co-Tank unter `HealthForDyingTanks`, provoziert RSR. Fehlt
-   noch der Fall, dass er nach einem Tankbuster eine Verwundbarkeit trägt, aber nicht tief steht. Das steht als
-   eigener Eintrag in `TODO.md`.
-3. **Ausgeliefert, und nichts ändert sich.** Bei Spielern, deren Co-Tank ohne Haltung spielt, wirkt die Regel nie.
-   Das ist so gebaut, weil sie dort nichts bewirken könnte. Damit das von außen unterscheidbar bleibt, schreibt das
-   Protokoll je Tankbuster einen Grund. Eine falsche Prognose zieht die Regel selbst nach (unten).
-4. **Das Zurückholen kommt zu früh oder unnötig.** Ohne Bindung an den Tankbuster des Co-Tanks zog es einen
-   geplanten Rückwechsel vor; diese Antithese hielt und hat die Bedingung geändert (seine Frage). Mit der Bindung
-   folgt es dem Takt der Treffer. Dass der Wechsel bei bereiter Unverwundbarkeit hält, trägt seit A260 auch gegen
-   einen tödlichen Treffer von oben: Sie geht vor einem gewirkten Tankbuster aus, den die Tabelle selbst im besten
-   Fall für tödlich hält (Abschnitt „Das geringste Mittel gegen einen gemessenen Tankbuster"). Offen bleibt das für
-   Tankbuster, die nur ein Marker oder BossModReborn ankündigt, und für Aktionen ohne Messung; dort zündet sie weiter
-   erst unter der Sterbe-Schwelle.
+- Bei geplanten Wechseln festigt die Regel nur, was ohnehin geschieht. Den Ausschlag gibt der ungeplante Fall: ein
+  Tankbuster, für den die Abklingzeiten fehlen. Seine Kämpfe vom 01.10.2026 zeigen „Schramme" zweimal mit 85 %, beide
+  Male ohne vorher gewählte Abwehr; die 30 bis 39 % davor und danach kamen nach Verdammnis und Schutzwall. Dass beim
+  85-%-Treffer keine Minderung bereit war, ist geschlossen, nicht gemessen; ob dort ein zweiter Tank in der Gruppe war,
+  zeigt das Protokoll nicht. Wie oft der Fall vorkommt, ist offen.
+- Die Herausforderung des Co-Tanks wirkt sicherer, aber die drückt der andere Spieler. Die Gegenseite gibt es zum
+  Teil: Fällt der Co-Tank unter `HealthForDyingTanks`, provoziert RSR. Trägt er nach einem Tankbuster eine
+  Verwundbarkeit, ohne tief zu stehen, fehlt sie (`TODO.md`).
+- Spielt der Co-Tank ohne Haltung, wirkt die Regel nie, weil sie dort nichts bewirken könnte. Das Protokoll schreibt je
+  Tankbuster den Grund; eine falsche Prognose zieht die Regel selbst nach (unten).
+- Das Zurückholen folgt dem Takt der Tankbuster (oben). Dass der Wechsel bei bereiter Unverwundbarkeit hält, trägt auch
+  gegen einen tödlichen Treffer: Vor einem gemessenen Tankbuster, den nichts Geringeres trägt, zieht der Plan sie
+  (Abschnitt „Gemessener Tankbuster: das geringste Mittel"). Für Tankbuster nur als Marker oder Vorhersage und für
+  ungemessene Aktionen zündet sie weiter erst unter der Sterbe-Schwelle.
 
 ### Messmittel und Nachsteuerung
 
@@ -1112,656 +1023,505 @@ ankommt, ist nicht belegt; fehlt die Zeile, ändert das nichts an der Entscheidu
 
 **Prüfgrad:** statisch, Prüfskripte, Compile über die CI; im Spiel nicht beobachtet.
 
-## Das geringste Mittel gegen einen gemessenen Tankbuster
+## Schutzmechaniken mit Auslöser und die Heilung
 
-**Seine Angaben (04.10.2026):**
-- *Hinweis:* Ob ein Tankbuster tödlich ist, lässt sich ohne den erwarteten Schaden nicht sagen – erst nach dem
-  Einschlag oder aus Erfahrungswerten. Eine Unverwundbarkeit bei jedem Tankbuster wäre schädlich. Die Erfahrungswerte
-  liefert die Tankbuster-Tabelle (Konzept 13).
-- *Vorschlag, als Prüfaufgabe übernommen:* „rein ökonomisch … für einen tankbuster, welcher 100% tödlich ist, nur
-  noch invul nimmt und alle anderen schilde, debuffs und mitigations wegläßt". Bestätigt: „das war der sinn der
-  idee."
-- *Präzisierung:* „ich habe nie gesagt, dass bei tankbustern nur eine große minderung erlaubt ist." Die Staffelung
-  aus A243 war eine Abwägung ohne Kenntnis der Stärke, keine Regel von ihm.
-- *Vorgabe:* „wenn klar ist, dass man den tankbuster nur mit zwei aktuell verfügbaren (also nicht auf cooldown)
-  minderungen überleben kann, dann sollte man diese auch bei verfügbarkeit nutzen. gerade dann, wenn invul
-  aufgebraucht ist. und selbst wenn invul verfügbar ist, gilt immer das geringste notwendige mittel und invul ist
-  ‚mit kanonen auf spatzen schießen'. manchmal absolut notwendig, manchmal das mittel zweiter wahl, wenn es anders
-  auch geht (aber dann ohne risiko)."
-- *Hinweis:* Externe Effekte sind mitzubewerten – ein Debuff eines anderen auf dem Boss, der beim Einschlag noch
-  wirkt; ein besonders großer Heilerschild auf dem Tank, der beim Einschlag noch steht.
-- *Präzisierung zu „alles":* „nicht invul und dann noch zusätzlich buffs, sondern alles raushauen, wenn invul nicht
-  verfügbar ist, alle buffs zusammen aber eigentlich nicht reichen, aber man hofft, dass irgendjemand anderes noch
-  einen debuff oder ein schild raushaut."
+Mehrere Tank-Fähigkeiten warten auf ein **Ereignis**, das fremde Heilung abfangen kann. Tragend ist dabei nicht die
+Rückhaltung, sondern die richtige Heilzielwahl: `NoNeedHealingInvuln()` liefert `true`, wenn *kein* Schutzstatus
+liegt; zwei Aufrufer lasen sie mit dem entgegengesetzten Vorzeichen, und die generische Zielwahl war dadurch blind für
+den am schwersten Verletzten (Abschnitt „Gebaut"). Die Rückhaltung selbst ist ein eng umgrenzter Sonderfall: Von den
+Lagen unten bleibt ein echter Rückhaltefall, Living Dead, umgesetzt als Uhrregel hinter einer Option (ab Werk aus).
+Für The Blackest Night ist keine eigene Rückhalteregel richtig: Heilung berührt den Auslöser nicht, und ein
+Heilerschild wird erst nach der TBN-Barriere aufgezehrt. Die Barriere verschiebt auch die Heilschwelle nicht (A85);
+in die Zielwahl geht sie über die effektive Gesundheit ein (Gefährdungsklasse 1, Konzept 07).
 
-**Gebaut (A260, A261), zwei Optionen, ab Werk an:**
-- „Spend only the mitigation a measured tankbuster needs" (Planung, Stapeln, Zurückhalten; Tanks und Heiler).
-- „Use the invulnerability before a tankbuster nothing less survives" (nur Tanks).
+*Abgrenzung:* Das gilt für Heilung und Schild. Für den **Schadensstrom** gilt das Gegenteil – der Weißmagier hält
+Sanctus zurück, solange ein Tank die Barriere trägt, weil die Betäubung den Schaden anhält, an dem sie aufgezehrt
+werden müsste. Das steht in Konzept 10.
 
-Erkennung in `TankbusterForecast`: je Wirken auf dich der erwartete Anteil beim Einschlag und was du dagegen hast;
-sie liest keine Option und wählt keine Aktion. Entscheidung in `CustomRotation_Tankbuster.cs`:
-`UpdateTankbusterPlan` (je Durchlauf), `TankbusterPlanAbility` (Ausführung, Fähigkeiten-Slot 9) und
-`HoldDefenceForTankbuster` (Zurückhalten, je Durchlauf in `IBaseAction.HoldDefenceOnSelf`, Gatter in
-`BaseAction.CanUse`, Ablehnung „HeldForTheInvulnerability"). Für Heiler `StateUpdater.ShouldAddDefenseSingle`.
-Stufe Tanks: Die Rechnung ist für alle vier gleich, nur die Aktionen unterscheiden sich, und die liest sie aus den
-Wirktexten. Der Heiler-Teil sitzt auf der Stufe Heiler; Damage Dealer betrifft die Regel nicht.
+### Klassen nach Auslöser
 
-### Bestand: Aktionen, Kopplungen, Pfade, Tatsachen (Erhebung 12.10.2026)
+Entscheidend ist nicht, ob eine Fähigkeit schützt, sondern **ob sie auf ein Ereignis
+wartet**, das der Heiler abfangen kann.
 
-Grundlage jeder Aussage unten. Erhoben aus `DefensiveValues.g.cs` (Wert, Dauer, Statusbindung nach Wirktext), den
-Spieldaten (xivapi, Blatt `Action`: Reichweite, Radius, Abklingzeit, Gruppe, Ladungen; `ActionTransient`: Wirktext)
-und den vier Tank-Rotationen. Deutsche Namen nur aus `action_names_de.json`, sonst der englische.
+#### Klasse A — auslöserbehaftet
 
-**Die Aktionen.** „Kandidat": kann Glied eines Bündels sein. „Gehalten": das Zurückhalten erfasst sie (bewertet
-und auf dich gerichtet). Abklingzeit in Sekunden, Gruppe = Abklinggruppe des Spiels.
+| Job | Fähigkeit | Auslöser | Auslöser ist… | Was fremde Heilung bewirkt |
+|---|---|---|---|---|
+| DRK | Living Dead | HP fallen auf 0 | **der Tod selbst** | verhindert den Tod, also den Übergang in Walking Dead samt dessen Selbstheilung |
+| DRK | The Blackest Night | Barriere wird **vollständig** absorbiert | ein Schadensereignis unterhalb des Todes | **nichts.** Eine Barriere absorbiert vor den HP; ihr Verbrauch hängt am eingehenden Schaden, nicht am Gesundheitsstand. Heilung wirkt hier sogar *für* den Auslöser, weil sie den Tod verhindert, der ihn vereiteln würde |
+| SCH | Excogitation | HP-Schwelle auf dem Ziel | ein Schadensereignis unterhalb des Todes | vorzeitige Heilung entwertet die eigene, bereits gesetzte Fähigkeit |
 
-| Job | Aktion | Wirkung laut Wirktext | Dauer (Tabelle) | Reichweite/Radius | Abklingzeit, Gruppe | Rolle | Gehalten |
-|---|---|---|---|---|---|---|---|
-| alle | Schutzwall | −20 % | 20 | 0/0 | 90, 47 | Kandidat | ja |
-| alle | Reflexion | Gegner −10 % | 15 laut Text, **0** | 0/5 | 60, 45 | kein Kandidat (Dauer fehlt) | ja |
-| alle | Abtausch | Rückstoßschutz, Slow | – | 0/0 | 120, 49 | unbewertet (A236) | nein |
-| PLD | Sentinel / Guardian | −30 % / −40 % | 15 | 0/0 | 120, 20 | Kandidat | ja |
-| PLD | Bulwark | Block 100 % | – | 0/0 | 90, 16 | **unbewertet** | nein |
-| PLD | Sheltron / Holy Sheltron | −15 % (+15 % 4 s) | **0** / 8 | 0/0 | 5, 3; Eid 50 | Kandidat nur Holy Sheltron | ja |
-| PLD | Intervention, Cover | auf ein anderes Mitglied | – | 30 bzw. 20/0 | 10 bzw. 120; Eid 50 | Hilfe für andere | nein |
-| PLD | Divine Veil, Passage of Arms | Gruppe | 30 / – | 0/30 bzw. 8 | 90 / 120 | Gruppenwerkzeug | nein |
-| PLD | Heiliger Boden | unverwundbar | 10 | 0/0 | 420, 25 | Unverwundbarkeit | – |
-| WAR | Rachsucht / Verdammnis | −30 % / −40 % | 15 | 0/0 | 120, 22 | Kandidat | ja |
-| WAR | Urinstinkt / Urimpuls | −10 % | 6 / 8 | 0/0 | 25, **7** | Kandidat | ja |
-| WAR | Urflackern | −10 % auf ein anderes Mitglied | **0** | 30/0 | 25, **7** | Hilfe für andere | nein |
-| WAR | Kampfrausch | max. LP +20 %, Heilung | – | 0/0 | 90, 16 | **unbewertet** | nein |
-| WAR | Abschütteln | Gruppenbarriere 15 %; hebt Kampfrausch, Verdammnis, Urimpuls auf | 30 | 0/30 | 90, 15 | Gruppenwerkzeug | nein |
-| WAR | Holmgang | LP nicht unter 1 | 10 | 6/0 | 240, 25 | Unverwundbarkeit | – |
-| DRK | Shadow Wall / Shadowed Vigil | −30 % / −40 % | 15 | 0/0 | 120, 21 | Kandidat | ja |
-| DRK | Dark Mind | physisch −10 %, magisch −20 % | – | 0/0 | 60, 9 | **unbewertet** | nein |
-| DRK | The Blackest Night | Barriere 25 % max. LP | 7 | 30/0 | 15, 3 | Kandidat; auf andere Hilfe | ja |
-| DRK | Oblation | −10 % | 10 | 30/0 | 60, 19, **2 Ladungen** | Kandidat; auf andere Hilfe | ja |
-| DRK | Dark Missionary | Gruppe | – | 0/30 | 90, 15 | Gruppenwerkzeug | nein |
-| DRK | Totenerweckung | Tod → Walking Dead | 10 | 0/0 | 300, 25 | Unverwundbarkeit | – |
-| GNB | Camouflage | −10 % | 20 | 0/0 | 90, 16 | Kandidat | ja |
-| GNB | Nebula / Great Nebula | −30 % / −40 % | 15 | 0/0 | 120, 22 | Kandidat | ja |
-| GNB | Heart of Stone / Herz des Korunds | −15 % | 7 / 8 | 30/0 | 25, 6 | Kandidat; auf andere Hilfe | ja |
-| GNB | Heart of Light | Gruppe | – | 0/30 | 90, 15 | Gruppenwerkzeug | nein |
-| GNB | Aurora | Regen | – | 30/0 | 60, 20 | unbewertet (Heilpfad) | nein |
-| GNB | Meteoritenfall | unverwundbar, LP auf 1 | 10 | 0/0 | 360, 25 | Unverwundbarkeit | – |
+**Die vierte Spalte trennt die Klasse in zwei, und diese Trennung entscheidet über
+alles Weitere.**
 
-**Lücken der Wertetabelle**, je mit Folge im Kampf:
-- *Eigene Minderung je Schadensart fehlt im Wertemodell* (`DefensiveValue` kennt Self, Gegner physisch, Gegner
-  magisch, Barriere). Dark Mind bleibt unbewertet: gegen einen magischen Tankbuster sind 20 % ungenutzt, der Plan
-  wählt ein teureres Bündel oder die Unverwundbarkeit; und Dark Mind wird nicht zurückgehalten, kann also neben einer
-  stehenden Unverwundbarkeit hinausgehen.
-- *Dauer fehlt, wo der Text sie nennt:* Reflexion (15 s, der Wert hängt an einem Merkmal), Schiltron (6 s),
-  Urflackern (mehrere Dauern im Text). Keine Kandidaten.
-- *Andere Wirkungsarten ohne Modell:* Block (Bulwark, Passage of Arms), Erhöhung der maximalen LP (Kampfrausch – hebt
-  B), Heilung (Äquilibrium, Aurora). Weder Mittel des Plans noch zurückgehalten.
-- *Dieselben Lücken verfälschen die Messung* (Konzept 13, Tankbuster-Tabelle): Die Tabelle speichert den Treffer
-  ungemindert, indem sie die beim Treffer stehende Minderung herausrechnet (`TankbusterTable.MitigationFactor`), und
-  misst den Anteil an den *aktuellen* maximalen LP (`Watcher.DamageShareOn`). Stand beim Treffer Dark Mind, fehlt dessen
-  Minderung in der Rückrechnung; stand eine Erhöhung der maximalen LP (Kampfrausch; im Spiel auch „of a party member or
-  self by 10 %"), ist der Nenner zu groß. Beide Male wird der Treffer **zu niedrig** gespeichert – die gefährliche
-  Richtung, denn jeder spätere Plan rechnet mit diesem Höchstwert.
+**A-tödlich — der Auslöser *ist* der Tod.** Living Dead ist der einzige Fall. Das
+Ereignis, das der Heiler sonst um jeden Preis verhindert, ist hier das erwünschte.
+Jede sonst geltende Regel — „bei niedriger Gesundheit heilen", „bei drohendem
+Tankbuster heilen" — ist hier nicht bloß unnötig, sondern **kontraproduktiv**: Sie
+zielt auf die Verhinderung dessen, worauf die Fähigkeit wartet.
 
-**Die Kopplungen** – wo eine freie Aktion dem Plan ein Glied nimmt oder ein Glied aufhebt:
-- *K1 Abschütteln hebt Verdammnis, Rachsucht, Urimpuls und Kampfrausch auf* (Job-Guide). Es kommt aus dem
-  Einzelheilpfad und der Flächenabwehr – beide sind vom Zurückhalten frei. Die Rotation hält es zurück, solange einer
-  dieser Status *liegt* (`HoldShakeItOffInHeal`) oder Verdammnis für einen Tankbuster läuft
-  (`HoldShakeItOffForTankbuster`); beide Sperren weichen bei Gefahr für die Gruppe, und keine kennt ein gedrücktes
-  Glied, dessen Status noch nicht liegt.
-- *K2 Gemeinsame Abklingzeit:* Urflackern auf einen anderen verbraucht Urinstinkt/Urimpuls (Gruppe 7). Die eigene
-  Sperre der Rotation fragt nach einem Tankbuster auf ihn, nicht nach dem Plan.
-- *K3 Dieselbe Aktion für dich und andere:* The Blackest Night, Herz des Korunds, Oblation. Ein Druck auf den Co-Tank
-  verbraucht das Glied (Oblation: eine von zwei Ladungen).
-- *K4 Gemeinsame Ressource:* Eid 50 für Holy Sheltron, Intervention und Cover.
-- *K5 Befohlenes Objektziel* lenkt einen Druck des Plans um (Upstream 7.5.6.22, A264).
+**A-nichttödlich — der Auslöser liegt unterhalb des Todes.** The Blackest Night und
+Excogitation. Der Tod bleibt die Katastrophe; die üblichen Aufhebungsregeln gelten
+unverändert.
 
-**Die Pfade**, die eine Abwehr auf dich drücken können, und ob das Zurückhalten sie erfasst:
+#### Klasse A+ — The Blackest Night: eine Frage der Werkzeugwahl, nicht der Rückhaltung
 
-| Pfad | Erfasst | Was dort fällt (Tank-Rotationen) |
+Die Fähigkeit kostet **3000 MP** und legt eine Barriere über 25 % der maximalen HP
+für 7 Sekunden. Dark Arts — und damit ein kostenloser Edge oder Flood of Shadow —
+wird nur gewährt, wenn die Barriere **vollständig** absorbiert wird. Wird sie es
+nicht, sind die 3000 MP ersatzlos ausgegeben: Edge of Shadow kostet seinerseits
+3000 MP und verlängert Darkside um 30 Sekunden, deren Abriss zehn Prozent Schaden
+kostet.
+
+**Heilung und HoT berühren diesen Auslöser nicht.** Eine Barriere absorbiert
+eingehenden Schaden, bevor er die HP erreicht; wie schnell sie aufgezehrt wird, hängt
+allein am eingehenden Schaden. Der Gesundheitsstand des Trägers ändert daran nichts.
+Die einzige Kopplung läuft in die **andere** Richtung: Stirbt der Träger, bevor die
+Barriere aufgebraucht ist, entfällt Dark Arts — Heilung wirkt also für den Auslöser,
+nicht gegen ihn. *Schluss aus der Wirkbeschreibung („nullifying damage") und der
+Auslösebedingung („completely absorbed"), nicht wörtlich belegt.*
+
+**Ein zweiter Schild schadet ebenfalls nicht.** Mehrere Barrieren auf demselben
+Charakter werden in einer festen **Verbrauchsreihenfolge** aufgezehrt, nicht anteilig,
+und The Blackest Night steht in dieser Reihenfolge **vor** den Schilden, die ein Heiler
+auf einen Tank legen kann:
+
+| Barriere | Verbrauchsrang |
+|---|---|
+| The Blackest Night | 3 |
+| Eukrasian Diagnosis (SGE) | 4 |
+| Divine Benison (WHM) | 12 |
+
+Der niedrigere Rang wird zuerst aufgezehrt. Ein Heilerschild verzögert die Absorption
+von TBN also nicht — Dark Arts wird davon nicht berührt. Er geht dabei auch nicht
+verloren: Er bleibt liegen und absorbiert, sobald TBN aufgebraucht ist. Zurückstellen
+spart deshalb nichts, es verschiebt nur.
+
+*Quellenstatus:* Gemeinschaftsquelle — die Tabelle „Barrier Consumption Priority" im consolegameswiki
+(abgerufen 02.10.2026), die sich auf einen Lodestone-Blog und einen Beitrag auf X stützt; keine offizielle
+Beschreibung. Sie führt The Blackest Night auf Rang 3 und Eukrasian Diagnosis auf Rang 4 und, mit
+Differential Diagnosis, auf Rang 24 — beide hinter TBN. Der früher offene Quellenkonflikt (ein Job-Guide
+habe Eukrasian Diagnosis vor TBN geführt) ist damit für TBN aufgelöst: Kein Heilerschild verzögert
+seine Absorption. Weitere Ränge derselben Tabelle, die andere Regeln berühren: Stem the Tide aus
+Bloodwhetting und Nascent Flash Rang 8, Divine Benison 12, Radiant Aegis 18, Shake It Off 19, Divine
+Veil 20.
+
+**Der Träger ist nicht zwingend der Dunkelritter.** `ActionId.resx` (Aktion 7393)
+beschreibt TBN als „Creates a barrier around **self or target party member**" — die
+Barriere kann auf jedem Gruppenmitglied liegen, und der Party-Zweig in `DRK_Reborn` nutzt das mit
+`targetOverride: TargetType.LowHP`. Ein Beschwörer kann also Radiant Aegis tragen und zusätzlich TBN
+bekommen. Radiant Aegis steht auf Rang 18, also hinter TBN (Rang 3): Sie verzögert die Absorption von TBN
+nicht. Was vor TBN steht, sind nur Crest of Time Borrowed und die Tempera-Schilde (Ränge 1 und 2) — eigene
+Schilde von Schnitter (Arcane Crest, ab Stufe 84) und Piktomant, die ein Heiler ebenso wenig steuert.
+
+**Damit bleibt kein Grund, den Schild zurückzustellen.** Was bleibt, ist die gewöhnliche
+Dringlichkeitsfrage: Ein Träger mit TBN ist bereits geschützt und deshalb weniger dringend
+zu versorgen als ein ungeschütztes Gruppenmitglied. Das beantwortet die Zielwahl: `StatusID.BlackestNight` steht in
+`StatusHelper.ShieldStatus`, die effektive Gesundheit (`GetEffectiveHp`) zählt die Barriere mit, und die
+Gefährdungsklasse 1 ordnet nach ihr (Konzept 07). Die Heilschwelle liest die Barriere nicht; eine frühere
+Anrechnung dort verschob, **ob** überhaupt geheilt wird, statt **wen** zuerst, und ist entfernt (A85).
+
+#### Klasse B — Unverwundbarkeit
+
+Heilung während der Phase wirkt nicht auf den Schutz, wohl aber auf das, was danach
+kommt.
+
+| Job | Fähigkeit | Wirkung auf die HP | Lage nach Ablauf |
+|---|---|---|---|
+| PLD | Hallowed Ground | unverändert | so niedrig wie beim Zünden |
+| WAR | Holmgang | fallen nicht unter 1 | möglicherweise 1 HP |
+| GNB | Superbolide | **sofort auf 1** | 1 HP, sofern nicht geheilt wurde |
+| DRK | Undead Rebirth | fallen nicht unter 1 | Erfolgszustand |
+
+**Living Dead hat drei Phasen.** Die Aktionsbeschreibung im Repository
+(`ActionId.resx`, Aktion 3638) ist die Primärquelle:
+
+1. **Living Dead**, 10 s. Fällt die Gesundheit auf 0, tritt kein Tod ein, sondern
+   der Wechsel nach Walking Dead. Die Selbstheilung — 1500 Potenz je getroffenem
+   Waffenskill oder gewirktem Zauber — hängt bereits an *dieser* Phase.
+2. **Walking Dead**, 10 s. Angriffe drücken die Gesundheit nicht unter 1. Wird bis
+   zum Ablauf kumuliert Heilung in Höhe der **maximalen** Gesundheit aufgenommen,
+   folgt Phase 3; sonst tritt der Tod ein. Die Quelle sagt „an amount of HP totaling
+   your maximum HP is restored" ohne Einschränkung auf die Quelle — fremde Heilung
+   zählt mit, und bei heutigen Tank-Gesundheitswerten trägt die Selbstheilung davon
+   nur einen Bruchteil.
+3. **Undead Rebirth**, Restlaufzeit von Walking Dead. Der Dunkelritter kann nicht
+   sterben, und der Auslöser ist eingelöst. Der einzige Zustand der ganzen Taxonomie,
+   in dem Zurückhaltung weder Stufe 1 noch Stufe 2 berührt, sondern rein Stufe 3
+   bedient.
+
+#### Klasse C — reine Schadensreduktion
+
+Rampart, Sentinel, Shadow Wall, Nebula, Sheltron und Holy Sheltron, Bulwark,
+Camouflage, Oblation, Heart of Corundum und Clarity of Corundum (die
+Reduktionsanteile), Reprisal. Keine Wechselwirkung.
+
+#### Klasse D — Selbstheilung ohne Auslöser
+
+Bloodwhetting und Raw Intuition, Aurora, Clemency, Nascent Flash. Fremde Heilung
+addiert sich, verhindert aber nichts.
+
+### Living Dead ist ein Zeitproblem, kein Zustandsproblem
+
+Die Frage lautet nicht *liegt der Status?*, sondern in beiden Phasen eine über
+**Rate und Restzeit**.
+
+**Phase 1 — reicht der eingehende Schaden, um vor Ablauf auf 0 zu kommen?** Living
+Dead nützt nur, wenn der Tod **innerhalb** der zehn Sekunden eintritt. Zeichnet sich
+ab, dass der Tod erst nach Ablauf käme, war die Rückhaltung nicht nur nutzlos — sie
+hat den Tank zehn Sekunden ungeheilt gelassen, der nun mit niedriger Gesundheit ohne
+Schutz dasteht. Dann ist **im letzten Augenblick** zu handeln, ausreichend und nicht
+symbolisch.
+
+Zurückgehalten wird also nicht, *weil* der Status liegt, sondern solange der Tod
+noch rechtzeitig kommt.
+
+**Umgesetzt ist das in `StatusHelper.InDeathTriggerWindow` als zwei Bedingungen, nicht
+als eine Uhr.** Die Zurückhaltung endet einen Vorlauf von zwei GCDs vor Ablauf, damit
+die Heilung noch landen kann — **aber nur, solange der Träger über
+`HealthForDyingTanks` steht.** Darunter läuft sie bis zum Ablauf durch, weil dort der
+Fall auf 0 die wahrscheinliche Fortsetzung ist und der Vorlauf sonst genau den Auslöser
+wegheilen würde, für den die ganze Regel da ist. Die Uhr allein hätte die Fälle 1c und
+1e der Tabelle oben nicht mehr unterschieden: Sie beantwortet „wie viel Zeit bleibt",
+nicht „kommt der Tod noch".
+
+**Phase 2 — heilt er sich schnell genug selbst?** Walking Dead verlangt kumuliert
+eine volle Maximalgesundheit in zehn Sekunden. Die Selbstheilung liefert 1500 Potenz
+je Waffenskill oder Zauber, bei rund 2,4 s GCD also etwa vier Auslösungen. Daraus
+folgt ein gestaffeltes Verhalten statt eines Schalters:
+
+| Zeitpunkt in Phase 2 | Verhalten | Begründung |
 |---|---|---|
-| Befehl (`CommandNextAction`, `ForceEnable`) | nein (sein Befehl) | jede |
-| Countdown | – (vor dem Kampf gibt es kein Wirken, also keinen Plan) | The Blackest Night, Divine Veil |
-| `EmergencyAbility` (Basis, unter `HealthForDyingTanks`; PLD) | ja, außer Unverwundbarkeit | Unverwundbarkeit; PLD Heiliger Boden, Cover, Intervention |
-| Tankbuster-Plan | – | Bündel oder Unverwundbarkeit |
-| Heilpfade | nein (`HealPathRunning`) | WAR Abschütteln, Urflackern; GNB Aurora |
-| Flächenabwehr | nur was nur dich trifft | Reflexion, Gruppenwerkzeuge, DRK Oblation/TBN |
-| Einzelabwehr (eigener Befehl: nur ihr Pfad frei) | ja | alle Kandidaten, Reflexion, Bulwark, Dark Mind, Kampfrausch, Abtausch |
-| `GeneralAbility` | ja | WAR Urinstinkt/Urimpuls, Kampfrausch, Äquilibrium; PLD Eid (Holy Sheltron, Intervention) |
-| Hilfe für andere (Ziel ≠ du) | nein | Intervention, Cover, Urflackern, TBN, Herz des Korunds, Oblation |
+| Anfang | **leicht unterstützen** — Regeneration, ein günstiges HoT | Der Beitrag zählt voll gegen die geforderte Summe, kostet aber wenig |
+| Mitte | Kurs prüfen, weiter leicht unterstützen | Solange der Kurs trägt, ist ein großer Zauber vergeudet |
+| Kurs reicht nicht | **eingreifen, in voller Höhe** | Die Alternative ist der Tod am Phasenende |
+| Kurs trägt bis zum Ende | nichts weiter | Der Rest ist Überheilung |
 
-**Die Tatsachen**, mit Quelle, Zeitpunkt und Ausfall:
+#### Phase 2: Walking Dead
 
-| Tatsache | Quelle | erhoben | Ausfall |
-|---|---|---|---|
-| R, H | Wirkzeit des Gegners | `TankbusterForecast.Update`, einmal je Bild nach der Rotation; im Plan auf „jetzt" vorgerückt | Wirken abgebrochen: verschwindet; neu begonnen: neue Nummer |
-| P | Tabellen-Höchstwert × Status, die über H stehen | dieselbe Erhebung | ungemessen: kein Plan; Damage Up: nicht gespeichert |
-| B | LP + Barrieren über H (früheste) | dieselbe Erhebung | Barriere ohne gelisteten Status zählt nicht |
-| Datensatz | Druck (`BaseAction.Use`), Bestätigung (Effekt-Handler, nach Laufzeit zum Server), Status gesehen (Erhebung) | Spielthread bzw. Erhebung | Bestätigung fehlt: Druck verfällt nach einem GCD |
-| Verweigerung | `CanUse` falsch außerhalb Sperre/Zauber | Plan | – |
-| BossModReborn | Zeitleiste, Ziel des ersten Eintrags | Plugin-Abfrage | kein Modul = keine Vorhersage |
+**Vorgabe des Auftraggebers (25.09.2026, A147):** „walking dead läßt solange es läuft den darkknight sich
+selbst durch angriffe heilen. […] also vertraut man am anfang (bei eben den 1hp) darauf, dass der tank
+sich selbst heilt, indem er bei gegnern schaden verursacht. das soll nur leicht mit einem hot
+unterstützt werden. erst wenn der timer des effektes ausläuft bzw. klar ist, dass der darkknight sich
+in der verbleibenden zeit nicht selbst durch angriff (vollständig) heilen kann, soll unterstützt werden.
+das kann z.b. durch fehlende gegnerzahlen oder durch ein anstehendes event passieren, wo der darkknight
+nicht mehr angreifen kann." Der Wirktext bestätigt die Mechanik (Living Dead, `ActionId.resx` 3638).
 
-### Die Ableitung aus dem Bestand
+**Sachstand:** `StatusHelper.WalkingDeadCarriedBySelfHeal` sagt, ob der Träger noch von seinen eigenen
+Angriffen getragen wird. Solange das gilt, nimmt ihn keine Heilaktion als Ziel, die keinen HoT aus
+`SingleHots` verleiht (`ActionTargetInfo.FindTarget`), und er zählt nicht als Grund für eine
+Flächenheilung um den Wirkenden. Regen des Weißmagiers ist unter Walking Dead von der
+`RegenHeal`-Sperre ausgenommen. Die volle Unterstützung setzt ein, sobald einer dieser Fälle eintritt:
 
-Jeder Punkt des Bestands bekommt hier seine Regel, mit dem, was sie trägt. Wo der Code anders handelt, steht es unter
-„Abgleich mit dem Code" am Ende dieses Abschnitts.
+| Auslöser | Maß, aus dem Spiel |
+|---|---|
+| Timer läuft aus | derselbe Vorlauf wie bei der Living-Dead-Sperre (zwei GCDs bis zur Entscheidung) |
+| kein Gegner in Reichweite | Spielreichweite von Hard Slash, Trefferfläche zu Trefferfläche |
+| angekündigtes Ereignis | BossModReborn-Auszeit vor Ablauf; ohne Modul erst reaktiv über die Reichweite |
+| Tank-Limitbruch auf der Gruppe | Status Last Bastion, Land Waker, Dark Force oder Gunmetal Soul |
+| er schafft es nicht | Gesundheit seit Beginn des Fensters, auf die Restzeit hochgerechnet, bleibt unter 100 % |
 
-**Was „Abwehr auf dich" ist.** Zwei verschiedene Mengen, bisher in einer vermischt:
-- *Mittel des Plans:* was sich in P oder B rechnen lässt – Minderung (für alle Schadensarten oder je Art), Barriere,
-  Erhöhung der maximalen LP. Kampfrausch ist eine solche Erhöhung: „Increases maximum HP by 20 % and restores the
-  amount increased" – der Treffer bleibt gleich groß, das Polster wächst um 20 % der bisherigen maximalen LP; in B
-  wie eine Barriere von 0,2. Dark Mind ist Minderung je Art (physisch 10 %, magisch 20 %).
-  *Getragen von:* seiner Vorgabe, verfügbare Minderungen zu nutzen, und dem geringsten Mittel – Dark Mind (60 s) und
-  Kampfrausch (90 s) sind billiger als jede große Minderung.
-- *Was zurückgehalten wird:* jede eigene Aktion, deren Wirktext nur den Nutzer schützt – die Mittel oben und dazu
-  Block (Bulwark). Passage of Arms schützt die Gruppe und bleibt als Gruppenwerkzeug frei. *Getragen von:* seiner Präzisierung „nicht invul und dann noch zusätzlich buffs" – Bulwark neben Heiligem Boden ist
-  ein solcher Buff, auch wenn er sich nicht rechnen lässt.
-- Heilungen (Äquilibrium, Aurora) sind keine Abwehr; die Heilpfade bleiben frei.
+Der Kurs ist netto: Schaden zieht ab, er unterschätzt also die kumulierte Heilung, und die Freigabe
+kommt eher zu früh als zu spät. Im ersten GCD gibt es noch nichts zu messen; dann wird ihm vertraut.
 
-**Fehlende Dauern** (Reflexion, Schiltron, Urflackern): bis der Generator sie liest, keine Kandidaten. Richtung: zu
-viel Mittel, nie zu wenig. Reflexion zählt, sobald ihr Debuff auf dem Wirkenden liegt.
+**Hinweis des Auftraggebers zu „most attacks":** Es gibt Raidwides, die alle nur mit dem Limitbruch
+eines Tanks überleben; das ist wahrscheinlich die Ausnahme, die der Wirktext meint (seine Deutung).
+Es sind sehr wenige, seine Beispiele: die Alexander-Raids, die Prüfung gegen den Krieger des Lichts.
+Deshalb gibt nicht jeder Raidwide die volle Unterstützung frei — das höbe das Vertrauen am Anfang bei
+jedem Raidwide auf —, sondern erst der Tank-Limitbruch auf der Gruppe: Er wird für genau diesen
+Treffer gezogen, und bei 1 HP stünde der Träger schutzlos davor.
 
-**K2–K4: Hilfe für andere, die dem Plan ein Glied nimmt.** Seine Vorgabe zu Urflackern (29.09.2026, Abschnitt
-„Krieger: Nascent Flash…") fragt: Ist der Tankbuster tödlich, ist er mit Bestehendem wegsteckbar, wer ist am
-ehesten entbehrlich? Damals war die erste Frage unbeantwortbar, und die Regel nahm jeden angekündigten Tankbuster als
-möglicherweise tödlich. Für einen **gemessenen** Tankbuster beantwortet der Plan sie: Das Glied wird gebraucht, wenn
-es im billigsten überlebenden Bündel steht. Daraus, universell für alle vier Tanks (seine Vorgabe „Universell
-zuerst"):
-- Eine Hilfe für andere, die ein Glied des laufenden Plans verbraucht – dieselbe Aktion (The Blackest Night, Herz
-  des Korunds, Oblation bei nur noch einer Ladung), dieselbe Abklinggruppe (Urflackern ↔ Urimpuls) oder dieselbe
-  Ressource (Intervention, Cover ↔ Holy Sheltron über Eid) –, wartet, bis das Glied gedrückt ist oder der Plan es
-  nicht mehr braucht.
-- Die Triage seiner Vorgabe entscheidet, wenn beide es brauchen: Ein kritischer Heiler gewinnt („fällt der Heiler,
-  fällt die Gruppe"); ein kritischer Schadensausteiler nicht („am ehesten entbehrlich"). Ein kritischer anderer Tank
-  gewinnt, solange deine Unverwundbarkeit vor dem letzten GCD übernehmen kann und du selbst nicht kritisch bist – dann
-  überleben beide. Kann sie es nicht, gewinnt er nicht (seine Entscheidung D3, 12.10.2026: „sichere option gegen
-  unsicher tauschen ist für gruppe nicht unbedingt gut"): Dein Glied wirkt gegen einen gemessenen Treffer zu bekanntem
-  Zeitpunkt; den kritischen Stand des anderen können die Heiler bis zu seinem nächsten Treffer noch ändern. Seine
-  frühere Begründung für den Tank („sein Tod sicher, der Tankbuster möglich") trägt nur, solange dein Tankbuster
-  ungemessen ist.
-- Für einen ungemessenen Tankbuster gilt die bisherige Regel (Urflackern: „möglicherweise tödlich").
-- Gebraucht ist das Glied nur, wenn kein überlebendes Bündel ohne es bleibt. Bleibt eines, geht die Hilfe, und der Plan
-  rechnet ohne das Glied weiter – meist mit einem teureren Bündel; das ist der Preis der Hilfe. Die Unverwundbarkeit
-  zählt dabei nicht als Ersatz, sonst erzwänge jede Hilfe die Kanone auf Spatzen – **außer** die Triage gibt dem
-  anderen den Vorrang: Dann geht die Hilfe, und der Plan zieht für dich die Unverwundbarkeit, wenn sie bereit ist. So
-  überleben beide; die Kanone ist dann das notwendige Mittel.
+**Grenzen:** Rotationen, die ihr Heilziel selbst wählen statt über `FindTarget` (fremde Rotationen,
+direkte Aufrufe von `FindTargetByType`), sehen die Sperre nicht. Die Flächenheilflagge rechnet den
+Träger bei 1 HP weiter in ihre Mittelwerte ein. Ein solcher Treffer ohne Tank-Limitbruch wird nicht
+erkannt. Der Limitbruch selbst wird im selben Bild erkannt, in dem sein Status erscheint; die Heilung
+kommt aber nur vor dem Einschlag an, wenn dazwischen noch ein Einschiebeplatz (Benediction) oder ein
+GCD mit Wirkzeit (Cure II) liegt. Wie viel Zeit zwischen Limitbruch und Einschlag liegt, entscheidet der
+Tank, der ihn zieht.
 
-**K1: Abschütteln hebt ein Glied auf.** A245 hält Abschütteln, solange Verdammnis, Rachsucht oder Urimpuls *liegt*,
-und weicht bei Gefahr für die Gruppe – abgeleitet aus seinem Kriterium „Wen bringt der Verzicht in ernste
-Bedrängnis?". Mit dem Plan ist die Bedrängnis des Tanks gemessen:
-- Ein gedrücktes Glied, dessen Status noch nicht liegt, zählt wie ein liegendes (dieselbe Gefahr, nur früher).
-- Ist das Glied gebraucht (kein überlebendes Bündel ohne es, keine Unverwundbarkeit), stirbt der Tank nach den
-  Zahlen am Tankbuster, wenn Abschütteln geht. Der Raidwide bringt die Gruppe in Gefahr, aber nicht notwendig in den
-  Tod. „Sicher vor möglich" hält Abschütteln dann auch bei Gefahr für die Gruppe zurück, **außer** der gemessene
-  Raidwide tötet nach den Zahlen einen Heiler oder mehr als ein Mitglied: Dann kostet er die Gruppe mehr als ein
-  toter Tank, und Abschütteln geht (seine Entscheidung D2, 12.10.2026: „es geht um das beste ergebnis für die
-  gruppe"). Tötet er genau einen Schadensausteiler, bleibt das Glied – ein toter Tank kostet meist den Kampf
-  (Konzept 08), ein Schadensausteiler ist nach seiner Triage am ehesten entbehrlich. Gezählt wird mit dem gemessenen
-  Anteil des Raidwides an den vorhergesagten effektiven LP jedes Mitglieds; Unverwundbare und Tote zählen nicht
-  (`DataCenter.AnnouncedHitKills`).
+**Im Kampf ablesbar:** Das Diagnosefenster zeigt, solange jemand unter Walking Dead steht, ob er
+getragen wird oder welcher Auslöser die volle Unterstützung freigegeben hat, mit dem hochgerechneten
+Kurs.
 
-**K5: befohlenes Objektziel.** Sein Befehl; der Plan rechnet ohne das umgelenkte Glied weiter (Ausführung, „Ziel").
+#### Die Aufhebungen kehren sich für Living Dead um
 
-### Modellprüfung
+| Aufhebung | Bei A-nichttödlich | Bei Living Dead Phase 1 |
+|---|---|---|
+| Niedrige Gesundheit | hebt auf — der Tank droht zu sterben | **hebt nicht auf** — niedrige Gesundheit ist der erwünschte Zustand, sie bringt den Auslöser näher |
+| Tankbuster-Fenster | hebt auf — die Sequenz ist nicht beurteilbar | **hebt nicht auf** — der Buster liefert den Auslöser |
 
-`.github/scripts/audit/tankbuster_model.py` (CI) setzt die Regeln dieses Abschnitts um – nicht den Code – und lässt
-sie gegen eine simulierte Welt laufen: Bilder von 1/144 bis 1/30 s mit Rucklern bis 0,2 s; die Erkennung erhebt nach
-der Rotation; Laufzeit zum Server 30–300 ms; der Status erscheint vor oder nach der Bestätigung; Verweigerungen, auch
-zweimal; Abschütteln und Urflackern als freie Pfade; andere Pfade, die jederzeit drücken wollen; alle vier
-Schalterstellungen; knappe Treffer, bei denen jedes Glied gebraucht wird; ein Stun beim ersten Druck der
-Unverwundbarkeit, der alle Pfade sperrt. Geprüft wird je Lauf:
-- O1: Sagte der Plan „überlebbar", überlebt der Tank – an der wahren Welt gemessen;
-- O2: Nach der Unverwundbarkeit geht nichts Bewertetes mehr hinaus (mit „Spend only …");
-- O3: Die Unverwundbarkeit fällt nie, solange ein Bündel reicht, dessen Glieder vor dem letzten GCD gedrückt werden
-  können (Invariante 1, mit ihrem Optionssatz und dem Horizont H);
-- O4: Jedes gedrückte Glied steht am Einschlag;
-- O5/O6: Vom Druck bis zum Treffer zählt der Plan ein gedrücktes Glied, und nie doppelt;
-- O7: Ein freier Pfad macht aus einem Treffer, den der Plan allein überlebt, keinen Tod und erzwingt keine
-  Unverwundbarkeit (Gegenprobe derselben Welt ohne den freien Druck);
-- O8: „Alles" (Z4) nur, solange die Unverwundbarkeit nicht verfügbar ist (Option, Abklingzeit), nie wegen einer
-  Verweigerung.
-O1 und O7 messen an der Welt; O3 bildet eine Invariante nach. Der Selbsttest schaltet die Defekte ein, die sieben
-Review-Runden im gebauten Code fanden (zwei Uhren, Reihenfolge Statusliste vor Datensatz, Erneuerung über die
-gemeinsame Sperrliste, feste Verweigerungsgrenze, Abschütteln und Urflackern ohne Rücksicht auf den Plan,
-Zurückhalten ohne die anderen Pfade), dazu die frühere Verweigerungsregel der Unverwundbarkeit (Sperre für einen GCD,
-Z4 ohne Wiederholung), die sein Hinweis widerlegte; jeder muss gefunden werden. Stand 12.10.2026: alle gefunden; die Regeln dieses Konzepts verletzen in 25 Szenarien × 300
-Läufen keine Prüfung.
+Eine Vollheilung bei zehn Prozent Gesundheit in Phase 1 geht auf zwei Weisen daneben,
+und beide treffen zu: **Sie rettet nicht**, wenn der Buster auch vollgeheilt tötet;
+und **sie schadet**, wenn sie rettet, weil sie dann den Übergang in Phase 2 verhindert
+und die Fähigkeit entwertet, die der Tank für genau diesen Moment gezündet hat. Einen
+dritten Ausgang gibt es nicht: Eine Heilung, die den Tod in Phase 1 verhindert,
+verhindert per Konstruktion den Auslöser. Das ist keine Abwägung, sondern eine
+Identität.
 
-*Was das Modell nicht abdeckt* (dort trägt nur die Herleitung): ein zweites Wirken und BossModReborn-Vorhersagen
-(das Zurückhalten ist dann aus), Befehle (sie sind frei), die Unverwundbarkeit nach einem Bündel bei fallenden LP,
-Minderung je Schadensart, die Ressourcenkopplung K4
-(gleicher Mechanismus wie K2), die Ausrüstung der anderen drei Tanks (gleiche Rechnung, andere Zahlen).
+**Für Phase 1 bleibt damit genau eine Aufhebung** — und sie hat nichts mit Gefahr zu
+tun, sondern mit der Uhr:
 
-### Abgleich mit dem Code
+> Die Rückhaltung wird aufgehoben, **wenn der Tod nicht mehr vor dem Ende der ersten
+> Phase eintreten würde.**
 
-Stand 12.10.2026: Die acht Abweichungen, die der Abgleich fand (A266: Minderung je Schadensart, Erhöhung der maximalen
-LP, Zurückhalten nur bewerteter Aktionen, K1, K2, K3/K4, fehlende Merkmalsdauern, zu niedrige Messung), und seine
-Entscheidungen D2 und D3 und sein Hinweis zur Verweigerung der Unverwundbarkeit (A267) sind eingearbeitet. Prüfgrad: Prüfskripte und Modell, Compile über die CI; im Spiel nicht
-beobachtet.
+Dazu die Vorbedingung aus Fall 1b, die vor der Phase liegt: Wer die Heilmenge für
+Phase 2 gar nicht aufbringen kann, darf den Weg über den Tod nicht einschlagen.
 
-**Vertrag:** `DefensiveValue` ist öffentlich im Paket (Betroffene R). Neue Werte – eigene Minderung je Schadensart,
-Erhöhung der maximalen LP, „schützt den Nutzer" für Block – kommen als nicht-positionale Eigenschaften hinzu; der
-Konstruktor mit vier Werten bleibt. Was zurückgehalten wird, erzeugt der Generator aus dem Wirktext (Fähigkeitsprüfung
-statt Liste): eigene Minderung, eigene Barriere, Block, Erhöhung der maximalen LP.
+#### Warum eine Überlebensprüfung diese Zusage nicht tragen kann
 
-### Die Rechnung
+Eine Prüfung der Form „erst feststellen, ob der Tank ohne mich überlebt, dann
+zurückhalten" ist aus den vorhandenen Größen **nicht herstellbar**:
 
-Für den frühesten gemessenen Tankbuster, der auf dich gewirkt wird:
+- **Tankbuster wechseln das Ziel mitten in der Sequenz.** `DataCenter.BMRNextTankbusterIn`
+  nennt nur den Zeitpunkt; wen er trifft, sagt BossModReborn nur für den ersten Eintrag im
+  Minderungsfenster (`DataCenter.BMRTankbusterHitsPlayer`). `IsHostileCastingTankBusterAtMe` ist
+  spielerzentriert (`DataCenter.IsHostileCastingTankBusterAtMe`).
+- **Ein Tankbuster ist nicht ein Einschlag.** Mehrfach einschlagende Buster sind eine
+  Folge von Treffern; die Vorhersage nennt den Beginn, nicht die Anzahl und nicht die
+  Gesamtsumme.
+- **Manche Buster töten auch einen vollgeheilten und geschildeten Tank.** Die
+  stillschweigende Annahme „wenn ich rechtzeitig heile, überlebt er" trifft dort nicht
+  zu.
 
-1. **Was er nimmt:** der höchste je gemessene ungeminderte Wert der Aktion (Konzept 13), mal jede Minderung, die beim
-   Einschlag noch steht – deine, die Reflexion des Co-Tanks, ein Zermürben oder Stumpfsinn auf dem Boss, eine Minderung
-   eines Heilers auf dir. „Beim Einschlag" heißt: Restzeit des Wirkens plus ein GCD für das Eintreffen; ein Status,
-   der vorher endet, zählt nicht (`TankbusterTable.PredictedShare` mit Horizont).
-2. **Was du hast:** deine LP jetzt plus die Barrieren, die beim Einschlag noch stehen. Läuft eine Barriere vorher ab,
-   zählt keine (die früheste Barriere entscheidet, gelesen aus der Statusliste selbst wie unter 1.). Ein großer Heilerschild, der hält, zählt
-   also voll – sein Hinweis.
-3. **Was du noch tun kannst:** jede eigene Minderung, die erlernt, aktiviert und nach ihren eigenen Prüfungen
-   nutzbar ist (Ressourcen eingeschlossen), bis einen GCD vor dem Einschlag abgeklungen ist, eine bekannte Wirkdauer
-   von mehr als zwei GCD hat (Zustandsmodell, Invariante 5; wo der Wirktext sie offen lässt, aus dem Merkmal, unterhalb
-   seiner Stufe unbekannt, `TODO.md`), nach Wirktext gegen diese Schadensart mindert oder eine Barriere legt und beim Einschlag nicht schon steht.
-   Ein Knopf zählt einmal (Rachsucht/Verdammnis, Urinstinkt/Urimpuls). Eine eigene Minderung, die schon gedrückt ist,
-   deren Status aber noch nicht liegt, zählt als stehend – wie lange, regelt das Zustandsmodell (Druck aus
-   `BaseAction.Use`, Bestätigung aus dem Effekt-Handler, Datensatz `TankbusterForecast.OwnPending`, Urteil
-   `PendingStands`). Weder ein
-   `CanUse`-Treffer noch eine Abklingzeit taugt dafür: Der erste ist noch kein Druck, die zweite sagt weder, wer
-   drückte, noch auf wen (The Blackest Night auf dem Co-Tank), und Rachsucht/Verdammnis teilen sie. Ob der neue Status erschienen ist, erhebt die Erkennung in jedem
-   Durchlauf aus der Statusliste selbst (geschützt gelesen, Quelle der Spieler; nicht der Status, den das
-   Bestätigungspaket vorhersagt): eine eigene Kopie ihres eigenen Status – des Status, an den ihr Wirktext gebunden
-   ist; die Statusangabe der Aktion nur, wo der Wirktext keinen nennt (Unverwundbarkeiten: Holmgang auf dir, worauf es
-   auch gerichtet war), denn bei den großen Minderungen ist diese Angabe die gemeinsame Sperrliste, und ein stehender
-   Schutzwall sähe sonst wie der neue Status von Verdammnis aus –, dort, wo sie landet – auf ihrem Ziel oder bei Wirkung um
-   dich (Wirkradius laut Spieldaten) auf einem beliebigen Gegner –, die länger läuft als eine eigene Kopie dort beim
-   Hinausgehen lief; bei mehreren Status einer Aktion zählt der längste. Gruppenwerkzeuge werden nicht verfolgt. Eine
-   Erneuerung zählt so erst, wenn die erneuerte Kopie liegt; lag sie beim Bestätigen schon (mehr als Wirkdauer weniger
-   ein GCD übrig), gilt sie sofort als gesehen. Reflexion würde überbrückt, bis ihr
-   Debuff auf einem Gegner erscheint; unterhalb ihrer Merkmalsstufe, wo ihre Wirkdauer unbekannt ist (`TODO.md`), ist
-   sie weder Kandidat noch überbrückt und zählt erst, wenn ihr Debuff auf dem Wirkenden steht. **Nicht** dabei sind Gruppenwerkzeuge – Barriere oder
-   Minderung über die Gruppe (Abschütteln, Divine Veil, Dark Missionary, Heart of Light): Sie gehören der
-   Flächenabwehr, und Abschütteln hebt Verdammnis und Urimpuls des Kriegers selbst auf. Reflexion, ein Debuff auf dem
-   Gegner, ist dabei.
-4. **Das geringste Mittel:** unter allen Bündeln dieser Minderungen das billigste, mit dem der Treffer weniger nimmt,
-   als du hast. Billig nach der Abklingzeit des Verbrauchten, bei Gleichstand das kleinere Bündel – was am wenigsten
-   Abklingzeit kostet, lässt am meisten für den nächsten Tankbuster (meine Lesart von „geringstes notwendiges
-   Mittel", nicht seine Regel). Reicht der Treffer schon ohne alles nicht zum Tod, ist das Bündel leer.
-5. **Die Unverwundbarkeit** nur, wenn kein Bündel reicht – und nur, wenn sie bis einen GCD vor dem Einschlag bereit
-   ist. „Mit kanonen auf spatzen schießen" sonst.
-6. **Alles,** nur wenn kein Bündel reicht und die Unverwundbarkeit nicht verfügbar ist – Abklingzeit, Option, Stufe
-   oder Freischaltung, Leiste, TTK-Schwelle der Aktion (seine Präzisierung). Eine Verweigerung beim Druck macht nie
-   „alles" (Zustandsmodell, „Verweigerung der Unverwundbarkeit"). Nie die Unverwundbarkeit und die Minderungen dazu.
-   Nach den Zahlen überlebst du dann nicht, aber die Zahlen sind ein Höchstwert, und vielleicht legt ein anderer noch
-   einen Debuff oder Schild.
+Für einen **gewirkten, gemessenen** Tankbuster gibt es inzwischen einen Höchstwert (Tankbuster-Tabelle, Konzept 13),
+den der Plan des Tanks rechnet (Abschnitt „Gemessener Tankbuster: das geringste Mittel"). Die Living-Dead-Regel liest
+ihn nicht; ob sie es sollte, ist offen (`TODO.md`). Für Marker, Vorhersagen und nie gemessene Aktionen bleibt die
+Prüfung unmöglich.
 
-Hält schon eine Unverwundbarkeit über den Einschlag – vom Plan gezogen oder an ihrer Sterbe-Schwelle; ihr Status
-liegt, oder sie ist gedrückt und ihr Status noch nicht erschienen (Zustandsmodell) –, ist der Plan „die
-Unverwundbarkeit, nichts sonst" (Z1). Holmgang schützt seinen Nutzer, worauf es auch gerichtet war.
+Daraus folgt **nicht**, die Rückhaltung freizugeben. Dass Heilung manchmal nichts
+nützt, macht Zurückhaltung nicht besser, nur nicht schlechter — und welcher Fall
+vorliegt, ist vorab nicht erkennbar. Die Folgerung ist strenger: Für
+**A-nichttödliche** Auslöser hebt **jedes** erkannte Tankbuster-Fenster die
+Rückhaltung auf, HP-unabhängig, weil die Prognose dort unmöglich ist. Die
+HP-Schwelle bleibt als zweite, unabhängige Aufhebung: sie fängt den Dauerschaden ab,
+das Buster-Fenster den Einzelschlag.
 
-**Ohne Risiko, wie er es für jedes Mittel unterhalb der Unverwundbarkeit verlangt:** Gerechnet wird mit dem höchsten
-je gemessenen Treffer, den LP jetzt und nur dem, was beim Einschlag noch steht. Eine Heilung, die bis dahin kommen
-könnte, zählt nicht – sie ist eine Annahme über das, was jemand tun wird. Was schon steht, ist keine Annahme: Das
-unterscheidet die Fremdeffekte seines Hinweises von einer erhofften Hilfe.
+### Lagen und richtige Handlung
 
-Der Plan wird je Durchlauf neu gerechnet. Heilt ein Heiler dich vor dem Einschlag hoch oder legt der Co-Tank
-Reflexion, schrumpft er; fallen deine LP durch Auto-Angriffe, wächst er. Bereits gedrückte Minderungen stehen dann
-und zählen unter 1. mit.
+Vollständig über die Dimensionen Fähigkeitsklasse × Gesundheitsstand × Heileraktion.
+„Richtig" meint die Handlung, die dem Vorrang der Überlebenssicherung folgt.
 
-### Das Zustandsmodell je Wirken
+| # | Lage | Heilung richtig? | Schild richtig? | Begründung |
+|---|---|---|---|---|
+| 1 | DRK, Living Dead aktiv, **Tod tritt vor Ablauf ein**, Heilkapazität für Phase 2 gesichert | **nein** | **nein** | Stufe 1 ist gesichert, also darf Stufe 2 entscheiden |
+| 1b | dieselbe Lage, **Heilkapazität nicht gesichert** | **ja** | ja | Stufe 1 schlägt Stufe 2: sicheres gegen unsicheres Überleben zu tauschen ist verboten |
+| 1c | DRK, Living Dead aktiv, **Tod würde nicht mehr vor Phasenende eintreten** | **ja, rechtzeitig vor Ablauf** | ja | Die **einzige** Aufhebung in Phase 1 |
+| 1d | DRK, Living Dead aktiv, **Tankbuster-Fenster erkannt** | **nein** | **nein** | Der Buster liefert den Auslöser |
+| 1e | DRK, Living Dead aktiv, **HP sehr niedrig**, Tod noch vor Ablauf zu erwarten | **nein** | **nein** | Niedrige Gesundheit ist hier erwünschter Zustand, keine Gefahrenmeldung |
+| 2 | DRK, Living Dead aktiv, HP niedrig, Ablauf fern | wie 1 / 1b / 1e | dito | Der Gesundheitsstand entscheidet in dieser Phase nicht |
+| 3 | DRK, Living Dead läuft ab, Tod nicht eingetreten | **ja, dringend** | ja | Ausführungsform von 1c: mit Vorlauf, damit die Heilung vor dem Ablauf wirkt |
+| 4 | DRK, Walking Dead aktiv, **Kurs trägt** | leicht unterstützen | nein, wirkungslos bei 1 HP | Billige Beiträge zählen voll gegen die Summe |
+| 4a | DRK, Walking Dead aktiv, **Kurs reicht nicht** | **ja, in voller Höhe** | nein | Die Alternative ist der Tod am Phasenende |
+| 4b | DRK, **Undead Rebirth** aktiv | nein, nachrangig | nein | Bedingung erfüllt, reine Stufe 3 |
+| 5 | DRK, TBN aktiv | **nach normaler Regel** | **nach normaler Regel** | **Kein Sonderfall.** Heilung berührt den Auslöser nicht, und ein Heilerschild wird erst nach TBN aufgezehrt. Die Barriere zählt in der effektiven Gesundheit der Zielwahl (Konzept 07), nicht in der Heilschwelle (A85) |
+| 6 | GNB, Superbolide aktiv | **ja** | ja | HP stehen auf 1; das Fenster ist die einzige gefahrlose Gelegenheit |
+| 7 | WAR, Holmgang aktiv, HP heruntergedrückt | **ja** | ja | wie 6 |
+| 8 | PLD, Hallowed Ground aktiv, beim Zünden wenig HP | **ja** | ja | Die HP bleiben unverändert; nach Ablauf steht er, wo er stand |
+| 9 | PLD, Hallowed Ground aktiv, beim Zünden viel HP | nein, nachrangig | nein | Einziger Fall echter Entbehrlichkeit in Klasse B |
+| 10 | GNB, Heart of Corundum liegt | **nach normaler Regel** | nach normaler Regel | **Kein Rückhaltefall** — der Catharsis-Stoß löst auch bei Ablauf aus |
+| 11 | GNB, Catharsis ausgelöst | **ja** | ja | Der Auslöser ist verbraucht |
+| 12 | Klasse C aktiv | nach normaler Regel | nach normaler Regel | keine Wechselwirkung |
+| 13 | Klasse D aktiv | nachrangig | nach normaler Regel | Die Selbstheilung trägt einen Teil, ersetzt sie nicht |
+| 14 | Mehrere brauchen Heilung, Tank geschützt | Tank **nachrangig**, andere zuerst | dito | Der Schutz verschiebt die Dringlichkeit, hebt den Bedarf nicht auf |
+| 15 | Nur der geschützte Tank braucht Heilung | **ja** | ja | Das Fenster ist die sicherste Gelegenheit |
 
-Maßgeblich für Code und Prüfung; die Abschnitte davor und danach beschreiben Teile davon und dürfen ihm nicht
-widersprechen. Gerechnet wird in jedem Durchlauf neu, nur für Tanks und nur, wenn mindestens eine der beiden Optionen
-an ist.
+Zeile 14 und 15 sind der Kern: **Der Schutz verschiebt die Reihenfolge, er hebt den
+Bedarf nicht auf.** Handeln schadet nur in den Zeilen 1 und 2 — und dort nur, solange
+Stufe 1 gesichert ist. Von achtzehn Lagen bleibt damit **ein** echter Rückhaltefall
+(1), dem vier Aufhebungen (1b, 1c, 1d, 4a) gegenüberstehen; einer ist reine
+Ressourcenschonung ohne Risiko (4b). Eine Bedingung, die häufiger nicht gilt als gilt,
+ist kein Leitmotiv: Der belastbare Kern bleibt die Richtigstellung der Zielwahl, und
+der einzige verbliebene Sonderfall ist Living Dead.
 
-**Die Tatsachen (Erkennung, `TankbusterForecast`, liest keine Option):**
-- je Wirken auf dich: Nummer, Restzeit R, Horizont H = R + ein GCD, erwarteter Anteil P unter dem, was über H steht,
-  und was du hast, B = LP jetzt plus Barrieren, die über H stehen;
-- Status nur aus der Statusliste selbst – nie der Status, den ein Bestätigungspaket vorhersagt (`DataCenter.ApplyStatus`
-  meldet ihn mit unendlicher Restzeit und hielte so alles für „steht über H");
-- die eigenen Drücke (RSR hat die Aktion ausgeführt, `BaseAction.Use`) und die eigenen Ausführungen, die der Server
-  bestätigt hat, jeder bewerteten Minderung oder Barriere mit bekannter Wirkdauer und jeder Unverwundbarkeit, je mit
-  Ziel, Zeitpunkt, wie lange eine eigene Kopie ihres Status beim Druck noch lief, und ob ihr neuer Status seither
-  erschienen ist, unabhängig davon, ob die Aktion gerade Kandidat sein könnte
-  (abgeschaltet, verweigert, per Befehl gedrückt). Ein Ziel, das der Effekt-Handler nicht auflösen konnte, zählt nicht
-  als „auf dich";
-- wie viele Drücke bewerteter Abwehr auf dich RSR bisher ausgeführt hat – Minderung, Barriere, Reflexion um dich, auch
-  ohne bekannte Wirkdauer; Drücke von Hand, Hilfe für andere und Gruppenwerkzeuge (sie gehören der Flächenabwehr)
-  nicht;
-- die Erkennung erhebt einmal je Bild, nach der Rotation; P und B stammen aus ihrer letzten Erhebung. Der Plan rechnet
-  auf „jetzt": R und H rückt er um die Zeit seit der Erhebung vor (hochauflösende Uhr), sodass alles, was er selbst
-  aus der Statusliste und aus Abklingzeiten liest, mit derselben Uhr verglichen wird. Ein Ruckler zwischen zwei Bildern
-  verschiebt so beide Seiten gleich. Was er daneben
-  selbst aus der Statusliste liest – ob eine Wirkung beim Einschlag schon steht –, fragt er erst nach dem Datensatz:
-  Ein Datensatz, dessen Status die Erhebung noch nicht gesehen hat, zählt als stehend, auch wenn der Status im
-  laufenden Bild schon liegt. So fällt eine eben erschienene Minderung nie zwischen Erhebung und Statusliste durch.
+### Gebaut
 
-**Wann eine eigene Aktion als stehend zählt, ohne dass ihr Status schon liegt:** Jede Ausführung ist ein Datensatz vom
-eigenen Druck an. Er lebt, bis ihr neuer Status erscheint (eine eigene Kopie dort, wo sie landet, die länger läuft als
-eine beim Druck lief) – längstens einen GCD ohne Bestätigung des Servers, mit Bestätigung längstens ihre Wirkdauer.
-Solange er lebt, zählt die Aktion als stehend,
-- wenn sie in ihrem Fenster hinausging – beim Druck reichte ihre Wirkdauer über das H des frühesten gemessenen
-  Wirkens, gleich ob vom Plan, aus einem anderen Pfad oder von Hand (dann gilt der Zeitpunkt der Bestätigung): Das
-  hält die Erkennung beim Druck fest, und ein zweiter Vergleich mit H, auf einer anderen Uhr, könnte die Aktion nur
-  durch Messversatz verlieren;
-- sonst, wenn ihre Wirkdauer ab dem Druck über H reicht (ein früher Druck läuft vorher ab).
+#### Die Zielwahl (Rangstufe 1)
 
-Nicht zusätzlich zählt ein Datensatz, dessen alte eigene Kopie schon über H reicht – eine Erneuerung: Die alte Kopie
-steckt bereits in P. Danach sagt nur der Status, auch wenn er vorzeitig endet. So ist eine eben gedrückte Minderung nie
-weder Kandidat noch stehend, und sie zählt nie zugleich als Status und als Datensatz.
+`NoNeedHealingInvuln()` ruft `WillStatusEndGCD(2, 0, false, …)`. Die Kette
+`WillStatusEnd` → `StatusTime` (beide in `StatusHelper.cs`) liefert bei
+**fehlendem** Status die Zeit `0f`, und `(0 >= 0 || !HasStatus) && 0 <= time` ergibt
+`true`. Der Rückgabewert bedeutet also: *kein schützender Status aktiv, Heilung ist
+zuzulassen* — der Name sagt das Gegenteil, was die ganze Defektklasse erklärt.
 
-**Die Zustände** für das früheste gemessene Wirken c:
+`GeneralHealTarget` sammelte mit `if (!o.NoNeedHealingInvuln())` folglich genau die
+Gruppenmitglieder mit **aktivem Schutz**. Im Regelfall blieb die Liste leer, alle
+darauf aufbauenden Stufen liefen ins Leere, und der Aufrufer fiel auf den Träger der
+Tank-Haltung zurück. Praktisch: **Die generische Heilzielwahl war blind für den am
+schwersten verletzten Gruppenteil und wählte faktisch immer den Tank.** War die Liste
+einmal gefüllt, wurde bevorzugt der Unverwundbare geheilt. Derselbe Fehler stand ein
+zweites Mal in `SCH_Reborn.cs:830`, wo Excogitation nur auf gerade unverwundbare
+Ziele ging.
 
-| Zustand | Wann | Was gedrückt wird | Was zurückgehalten wird |
-|---|---|---|---|
-| Z0 kein Plan | kein gemessenes Wirken auf dich | nichts | nichts; Heiliger Boden/Meteoritenfall über den nächsten GCD: alles |
-| Z1 gedeckt | eine Unverwundbarkeit steht über H (Status oder eigener Druck, siehe oben) | nichts | alles Bewertete auf dich |
-| Z2 Bündel S | das billigste Bündel S übersteht c; S darf leer sein | jedes Glied von S in seinem Fenster | alles Bewertete auf dich außer S; ein Glied von S erst in seinem Fenster, aus jedem Pfad; im letzten GCD nichts, wenn ein Glied fehlt |
-| Z3 Unverwundbarkeit | kein Bündel übersteht c, sie ist einen GCD vor dem Einschlag verfügbar | sie, in ihrem Fenster, nach einer Verweigerung in jedem Durchlauf neu | alles Bewertete auf dich, solange R > GCD |
-| Z4 alles | kein Bündel, keine verfügbare Unverwundbarkeit (Option, Stufe, Freischaltung, Leiste, TTK-Schwelle der Aktion, Abklingzeit) | jedes verfügbare Glied in seinem Fenster | nichts |
+Umgesetzt ist beides zusammen, denn getrennt wäre der erste Schritt schädlich: Sobald
+die Liste normale Ziele enthält, fielen die geschützten heraus und der Zufallszustand
+kippte in den entgegengesetzten. Geschützte Ziele sind seither **nachrangig, nicht
+ausgeschlossen**, und die fehlenden Ids `HallowedGround`, `HallowedGround_1302` und
+`UndeadRebirth` sind ergänzt — zwingend nach dem Umbau, weil sie davor das *Ob* und
+danach nur noch die *Reihenfolge* ändern.
 
-**Die Optionen:** „Spend only the mitigation a measured tankbuster needs" trägt die Minderungsdrücke in Z2 und Z4
-und jedes Zurückhalten; ohne sie drückt der Plan keine Minderung und hält nichts zurück – und weil dann niemand ein
-Bündel sicher drückt, zählt für Z2 nur das leere Bündel: was schon steht oder gedrückt ist. Ein Bündel, auf dessen
-Druck die Rotation nur hoffen kann, ist nicht „ohne Risiko" (seine Vorgabe). „Use the invulnerability before a
-tankbuster nothing less survives" trägt Z3; ohne sie wird aus Z3 Z4.
+Im `StateUpdater` senkt ein Schutzstatus seither die Heilschwelle auf
+`HealthProtectedRatio`, statt das Heilflag zu unterdrücken. Ohne diese Umstellung
+erreicht die Herabstufung ihren Zweck nicht: Ohne Flag ruft der Dispatcher
+`HealSingleGCD` gar nicht auf.
 
-**Wann zurückgehalten wird:** nur mit der Option „Spend only …" und nur, wenn c das einzige bekannte Wirken
-auf dich ist – kein zweites Wirken auf dich,
-gemessen oder nicht, und keine BossModReborn-Vorhersage vor c (bei aktivem „Use BMR timeline", gleich wie weit
-voraus). Ein Tankbuster-Marker auf dir, während c läuft, gilt als der von c. Z1 hält auch neben einem zweiten Wirken
-zurück, wenn die Deckung über jedes Wirken reicht; deckt sie nur c, hält nichts zurück. Frei bleiben immer: Hilfe für
-andere, die Heilpfade, nach außen wirkende Flächenabwehr und was du befiehlst – eine befohlene Aktion und, solange der
-Einzelabwehr-Befehl steht, dessen Pfad; die übrigen Pfade bleiben auch dann zurückgehalten (er hat eine Abwehr
-befohlen, nicht jede).
+#### Die Living-Dead-Rückhaltung
 
-**Die Übergänge** – jeder Durchlauf rechnet den Zustand aus den Tatsachen; gespeichert wird nur:
-- *Verweigerung:* Lehnt eine Aktion ab, ohne dass Animationssperre oder eigener Zauber das erklärt, wird sie einen GCD
-  lang nicht gedrückt. Für die Frage, ob ein Bündel reicht, zählt sie weiter, solange ihre Sperre vor dem letzten GCD
-  vor dem Einschlag endet, also ein neuer Versuch vor dem Rückfall bleibt; bei der Wahl werden Bündel ohne verweigerte
-  Glieder vorgezogen. Eine einmalige Verweigerung führt so nicht zur Unverwundbarkeit; eine, die bis zuletzt anhält,
-  schon.
-- *Verweigerung der Unverwundbarkeit:* macht nie Z4. Sie wird in jedem Durchlauf neu versucht, Z3 hält zurück, bis sie
-  gedrückt ist oder der letzte GCD beginnt. Sein Hinweis (12.10.2026): „wenn andere Dinge rausgehen können, dann kann
-  es auch die unverwundbarkeit". Beleg: Holmgang, Living Dead, Superbolide, Heiliger Boden und alle Glieder des Plans
-  sind Fähigkeiten (`ActionCategory` Ability, xivapi 12.10.2026); was eine Fähigkeit im Spiel verweigert – Stun („Unable
-  to execute actions"), Amnesie („Unable to use abilities") –, verweigert alle. Silence und Pacification treffen nur
-  Zauber und Waffenfertigkeiten. Was RSRs eigene Prüfung verweigern würde und vorher feststeht – Option, Stufe und
-  Freischaltung, Leiste, TTK-Schwelle der Aktion –, ist Verfügbarkeit und entscheidet schon bei der Planung (Z4 von
-  Anfang an). Die übrigen Prüfungen von `CanUse` treffen die Unverwundbarkeit nicht (Ziel ist der Spieler; nicht
-  bewertet, also nicht zurückgehalten; Hilfe-Sperre nur für andere Ziele).
-  Im Kampf: Nach einem Stun geht die Unverwundbarkeit im ersten Durchlauf danach, und nichts anderes. Die frühere
-  Regel sperrte sie nach der Verweigerung einen GCD lang und machte Z4, wenn diese Sperre in den letzten GCD reichte:
-  Endete der Stun vorher, gingen erst alle Minderungen hinaus und danach die Unverwundbarkeit – ein Zustand, den das
-  Spiel nicht hervorbringt, sondern nur die Sperre (die Frage D1 beruhte darauf).
-  Gilt die Annahme nicht (eine unbekannte Verweigerung nur der Unverwundbarkeit), endet das Zurückhalten im letzten
-  GCD, und die anderen Pfade sind frei.
-- Alles Übrige ergibt sich aus den Tatsachen: Heilung hebt B (Z3 → Z2 möglich, solange die Unverwundbarkeit nicht
-  gedrückt ist), Auto-Angriffe senken B (größeres S, Z3), eine fremde Reflexion senkt P, ein gedrücktes Glied von S
-  steht und fällt aus den Kandidaten.
+Sie liegt hinter `WithholdHealingForLivingDead` (Standard **aus**) und benutzt
+`StatusHelper.InDeathTriggerWindow` auf einer eigenen Liste `DeathTriggeredStatus`,
+die genau den einen Status führt, dessen Auslöser der eigene Tod ist. Die Paarung aus
+Einstellung und Fenster steht als `ObjectHelper.IsHeldForDeathTrigger` an **einem**
+Ort; die Bedingung selbst kommt im Baum kein zweites Mal vor.
 
-**Invarianten** – die zu „aus keinem Pfad" gelten, solange zurückgehalten wird; ohne „Spend only …" und neben einem
-zweiten Wirken oder einer früheren Vorhersage sind die anderen Pfade bewusst frei, ebenso der Pfad eines Befehls (dann kann
-die Rotation auch neben einer gedrückten Unverwundbarkeit mindern – für den zweiten Treffer oder weil er es so will):
-1. Die Unverwundbarkeit wird nie geplant, solange ein Bündel reicht, dessen Glieder bis zum letzten GCD noch gedrückt
-   werden können – auch eines mit einem eben verweigerten Glied. Ohne „Spend only …" drückt niemand ein Bündel; dann
-   reicht nur das leere.
-2. Steht eine Unverwundbarkeit über H oder ist sie für c gedrückt, geht für c keine Minderung mehr hinaus, aus keinem
-   Pfad (Z1). Holmgang und Totenerweckung eingeschlossen: Sie sichern das Überleben; wie viele LP nach ihrem Ende
-   bleiben, ist die offene Reserve-Frage (`TODO.md`).
-3. Das Zurückhalten trifft nie Heilung, Hilfe für andere, nach außen wirkende Flächenabwehr oder das Befohlene; ein
-   Befehl gibt nur sich selbst frei.
-7. Der Plan selbst drückt nach einer Unverwundbarkeit für dasselbe Wirken keine Minderung mehr, auch ohne „Spend only …"
-   (seine Präzisierung zu „alles"). Fallen nach einem Bündel die LP, sodass keines mehr reicht, zieht er sie noch.
-4. Ein Glied von S geht aus keinem Pfad vor seinem Fenster hinaus; fehlt im letzten GCD eines, endet das Zurückhalten.
-5. Ein Kandidat braucht eine bekannte Wirkdauer von mehr als zwei GCD: Sein Fenster (Einschlag höchstens Wirkdauer weniger
-   ein GCD entfernt) muss sich vor dem letzten GCD öffnen, in dem das Zurückhalten für fehlende Glieder endet.
-6. Nach einem Druck gibt es keinen Durchlauf, in dem die Aktion weder Kandidat noch stehend ist.
+**Ein Halt muss auf jedem Weg halten, auf dem eine Heilung den Träger erreicht.** Eine
+einzelne Lücke schwächt ihn nicht, sie hebt ihn auf — der Träger wird aus dem Auslöser
+herausgeheilt und die Fähigkeit ist umsonst gezündet. Erfasst sind deshalb:
 
-**Grenzen des Modells:** zwei Wirken binnen eines GCD bekommen einen Minderungsplan nur für das erste; ein Treffer über
-dem bisher gemessenen Höchstwert wird unterschätzt; keine Reserve nach einem knapp überlebten Treffer (`TODO.md`).
+| Weg | Ort |
+|---|---|
+| Heilflag für ein Gruppenmitglied | `StateUpdater.ShouldHealSingle` |
+| Heilflag für den Spieler selbst | `StateUpdater.ShouldHealSelf` |
+| Kandidatenliste, Rollenpässe, Auswahl des am schwersten Verletzten, Tank-Haltungs-Fallback und `partyMembers[0]`-Fallback | Eingangsfilter von `ActionTargetInfo.FindHealTarget` |
+| Selbstabkürzung, die die Kandidatenliste umgeht | eigene Prüfung in `GeneralHealTarget` |
 
-### Die Ausführung
+Der Eingangsfilter ist der tragende Teil: Das Heilflag kann von einem **anderen**
+Gruppenmitglied gesetzt worden sein, und liegt dieses außerhalb der Reichweite der
+gewählten Heilaktion, bleibt der Träger als einziger Kandidat übrig. Ohne den Filter
+holt ihn spätestens der Tank-Haltungs-Fallback zurück — ein Dunkelritter trägt Grit.
 
-- **Zeitpunkt:** jede geplante Minderung, sobald der Einschlag nicht weiter entfernt ist als ihre Wirkdauer weniger
-  einem GCD (Wirktexte über den Generator, `DefensiveValues.DurationOf`). Früher liefe sie vor dem Einschlag ab.
-  Schutzwall (20 s) geht bei den meisten Wirken sofort, Urimpuls (8 s) etwa 5,5 s vorher (GCD 2,5 s). Die
-  Unverwundbarkeit (10 s) ebenso.
-- **Die Sperrgruppe des Spiels** (eine große Minderung zur Zeit, `RampartStatus` als Statusangabe) wird für einen
-  geplanten Druck übergangen: Ob die Minderung beim Einschlag schon steht, hat der Plan selbst gefragt, und die
-  Staffelung ist genau das, was der Plan für einen gemessenen Treffer ersetzt (seine Präzisierung).
-- **Ziel:** jeder geplante Druck geht auf dich (`TargetType.Self`); The Blackest Night suchte sich sonst ein eigenes Ziel.
-  Ausnahme seit Upstream 7.5.6.22 (A264): Steht dieselbe Aktion mit einem Objektziel als Befehl in der Warteschlange
-  (DoActions oder abgefangenes Makro, etwa The Blackest Night auf `<2>`), geht auch der Druck des Plans dorthin. Ihr
-  Datensatz trägt dann dieses Ziel, der Plan zählt sie nicht für dich und rechnet ohne sie weiter – sein Befehl
-  entscheidet. Schutzwall und andere Aktionen ohne Reichweite gehen immer auf dich.
-- **Ein abgelehnter Druck:** Während einer Animationssperre oder eines eigenen Zaubers lehnt `CanUse` ab; das ist
-  keine Antwort, der Druck wird im nächsten Durchlauf neu versucht. Jede andere Ablehnung einer Minderung – Reflexion
-  außer Reichweite, zu wenig MP, ein Stun, eine Prüfung der Rotation – sperrt den Druck für einen GCD; was daraus für
-  das Bündel folgt, regelt das Zustandsmodell („Verweigerung"). Die Unverwundbarkeit wird nach einer Ablehnung im
-  nächsten Durchlauf neu versucht („Verweigerung der Unverwundbarkeit"). Ablehnungen gelten je Wirken (eigene Nummer
-  je Wirken, auch bei zwei gleichen Wirken ohne Pause, erkannt am Zurückspringen der Wirkzeit).
+Zwei Wege bleiben bewusst offen. **Flächenheilung** trifft den Träger als
+Nebenwirkung; sie deswegen zu unterlassen hieße, die Gruppe für den Auslöser zu
+opfern, und verstieße gegen die Rangordnung. **Fremde Rotationen, die ihr Heilziel
+selbst setzen** (`targetOverride: TargetType.Tank`, in den Beiruta-Heilern) umgehen
+die zentrale Zielwahl; sie halten allerdings über ihre eigene Sperrliste ohnehin
+zurück, dort sogar unabhängig von der Einstellung.
 
-### Das Zurückhalten
+Die Uhrregel musste nicht gebaut werden: `WillStatusEndGCD` meldet einen Status vor
+seinem Ablauf als endend. Sie braucht aber eine **eigene** Liste — `StatusTime`
+liefert das Minimum über die ganze übergebene Liste, sodass eine fremde kurze
+Unverwundbarkeit das Fenster als endend gemeldet hätte.
 
-Wann und was, regelt das Zustandsmodell. Abgelehnt wird jede Aktion mit Wirktextwert (`DefensiveValues`), die auf dich
-selbst zielt und nicht freigegeben ist – eigene Minderung, eigene Barriere, Reflexion um dich herum –, aus jedem Pfad
-der Rotation: Einzelabwehr, Notfall, allgemeine Fähigkeiten (der Krieger wählt Urimpuls auch nach der
-Gesundheitsprognose, der Paladin Schiltron außerhalb der Abwehr). Freigegeben ist in Z2 ein Glied von S ab seinem
-Fenster.
-- **Frei bleiben** Hilfe für ein anderes Mitglied (Intervention, Herz des Korunds auf dem Co-Tank, Urflackern), die
-  Heilpfade (Herz des Korunds heilt einen Tank, den Meteoritenfall auf 1 LP setzte; erkannt an einem eigenen Schalter,
-  nicht an der Zielüberschreibung, die über ihren Pfad hinaus stehen bleiben kann), in der Flächenabwehr, was über
-  dich hinaus wirkt (Reflexion, Abschütteln für einen Raidwide), und was du befiehlst (Zustandsmodell, „Wann zurückgehalten wird").
+Die Option ist nötig, weil RSR Living Dead selbst als Notrettung bei
+`HealthForDyingTanks` zündet. Dort ist der Tod die Katastrophe, und Walking Dead
+verlangt danach eine volle Maximalgesundheit an Heilung in zehn Sekunden.
 
-**Holmgang und Totenerweckung:** Heiliger Boden und Meteoritenfall: „Impervious to most attacks" – kein Schaden.
-Holmgang, Undead Rebirth: „Most attacks cannot reduce your HP to less than 1"; Totenerweckung wandelt den Tod in
-Walking Dead. Unter allen sichert die Unverwundbarkeit das Überleben des Treffers, und für ihn geht keine Minderung
-mehr hinaus (Invariante 2, seine Präzisierung „nicht invul und dann noch zusätzlich buffs"). Unter Holmgang und
-Totenerweckung nimmt ein Treffer LP bis 1; wie viele nach ihrem Ende bleiben, ist die offene Reserve-Frage.
 
-**Heiler:** keine Einzelabwehr für einen gewirkten Tankbuster, wenn jedes seiner Ziele unter Heiligem Boden oder
-Meteoritenfall über den Einschlag hinaus steht. Eine BossModReborn-Vorhersage öffnet sie weiterhin: Sie sagt nicht, wen
-sie trifft, und ein zweiter Tankbuster auf den Co-Tank sähe genauso aus. Steht ein Tankbuster-Marker, hält nichts: Er
-nennt keinen Einschlagszeitpunkt. Den Plan des Tanks kennt der Heiler nicht; seine Minderung auf einem Tank unter
-Holmgang oder Totenerweckung bleibt also, wie sie war.
+**Der Hebel ist die Option, nicht der Grenzwert.** Zwei Mechanismen, je nach Stellung von
+`WithholdHealingForLivingDead`:
+- **Option aus:** `StateUpdater.ShouldHealSingle` senkt die Schwelle unter einem Schutzstatus auf
+  `HealthProtectedRatio` (0,15), solange Living Dead mehr als zwei GCDs Restzeit hat; danach kehrt die
+  normale Schwelle zurück, unabhängig von der Gesundheit.
+- **Option an:** Der Träger wird gar nicht geheilt, solange das Todesfenster läuft
+  (`IsHeldForDeathTrigger`). Das Fenster endet zwei GCDs vor Ablauf, außer der Träger steht auf oder
+  unter `HealthForDyingTanks` (`DeathStillLikely`, A88) — dann läuft es bis zum Ablauf.
 
-### Spielerweite Sperre und Frist (geplant, nicht gebaut)
+`HealthProtectedRatio` anzuheben verschöbe den ersten Mechanismus und heilte **früher** im Fenster,
+also gerade den Tod weg, auf den die Regel wartet. Wer den Todeseffekt will, schaltet
+`WithholdHealingForLivingDead` ein; der Grenzwert ist nur für die
+übrigen Invulnerabilitäten der Liste maßgeblich (Holmgang, Superbolide, Hallowed Ground), bei denen
+kein Tod gewollt ist. Upstream heilt ein Ziel unter Invulnerabilität gar nicht; die Absenkung ist die
+mildere Fassung. Ein zu früh gesetzter Living Dead (vom Auftraggeber bei 70 % im Wall-to-Wall
+beobachtet) kostet damit zehn Sekunden automatischer Heilung ohne Anlass.
 
-**Stand 12.10.2026:** geplant, kein Code. Gebaut ist nur der Teil für die Unverwundbarkeit („Verweigerung der
-Unverwundbarkeit"). Für Minderungen gilt noch die Sperre für einen GCD (`TODO.md`).
+**Welche Abwehr des Dunkelritters die Heilentscheidung berührt** (erhoben A141):
 
-**Seine Hinweise (12.10.2026):** „unverwundbarkeit nach tod bringt nichts, "alles" nach schadenseingang bringt auch
-nix". Das ist Mechanik: Was erst nach dem Treffer wirkt, ändert ihn nicht. Daraus folgt eine Frist je Wirken, nach der
-der Plan für dieses Wirken nichts mehr drückt.
+| Fähigkeit | Pfad | Wirkung auf die Heilschwelle |
+|---|---|---|
+| Living Dead | `NoNeedHealingStatus` → `HealthProtectedRatio` | 0,15 statt der normalen Schwelle, wie oben |
+| Walking Dead | in `NoNeedHealingStatus` auskommentiert | keine — richtig, dort ist Heilung überlebensnotwendig |
+| The Blackest Night | Schildanteil des Spiels (`ShieldPercentage`) im effektiven Puffer | keine auf die Schwelle, seit die Schildanrechnung entfernt ist (A85); der Schild zählt im Puffer der Vorausschau und der Sterbegefährdung (`GetEffectiveHp`) |
+| Shadow Wall, Rampart | `RampartStatus` | keine: gelesen als `StatusProvide`, von `HasMajorMitigation` und von `HoldReprisalForRaidwide`, jeweils für den eigenen Charakter |
+| Dark Mind, Oblation, Dark Missionary, Reprisal | in keiner heilrelevanten Liste bzw. am Gegner | keine |
 
-**Belege:**
-- *Sperre:* Das Blatt `Status` des Clients trägt das Feld `LockActions` (xivapi 12.10.2026). Es ist gesetzt bei Stun
-  („Unable to execute actions"), Schlaf, Versteinerung und rund 260 weiteren Status, etwa Deep Freeze, Down for the
-  Count und Bubble Gaol. Amnesie (Zeilen 5, 1092, 4210: „Unable to use abilities") sperrt alle Fähigkeiten, trägt das
-  Feld aber nicht. Silence und Pacification treffen nur Zauber und Waffenfertigkeiten. Alle Glieder des Plans und alle
-  vier Unverwundbarkeiten sind Fähigkeiten.
-- *Snapshot:* Der Schaden eines gewirkten Angriffs wird festgelegt, wenn der Wirkbalken endet. Er wird erst später
-  zugefügt, der Abstand ist je Angriff verschieden. Eine Minderung, die danach kommt, wirkt nicht mehr (Community-Quellen:
-  consolegameswiki „Snapshot", akhmorning „Raiding Fundamentals", abgerufen 12.10.2026; keine offizielle Quelle).
-- *Holmgang:* Das gilt nach akhmorning nicht für die LP-Untergrenze. Sie zählt, wenn sie beim Zufügen des Schadens
-  steht (Community-Quelle).
-  - Totenerweckung: Ihr Text („HP reduced to 0") legt dasselbe nahe; für die Zeit ist das unbelegt.
-  - Heiliger Boden und Meteoritenfall („Impervious"): Ob sie am Snapshot oder beim Zufügen zählen, ist unbelegt.
+Schadensreduktion und Barriere wirken auf keine Heilschwelle; nur die Invulnerabilität tut es. Die Rate, die aus
+Minderung folgt, geht über die Vorausschau ein (`GetForecastSurvivingShare`), nicht über Listen.
+#### Die Barriere senkt den Heilbedarf nicht
 
-**Regeln:**
-1. *Erkennung (Stufe „alle", zentral):*
-   - Ob der Spieler gerade keine Fähigkeit benutzen kann, und wie lange noch: ein Status mit `LockActions` aus dem Blatt
-     des Clients (Fähigkeitsprüfung statt Liste, sprachunabhängig) oder Amnesie (Wirktext der englischen Fassung).
-   - Die Restzeit kommt aus dem Status, wo das Spiel sie nennt; sonst bleibt sie unbekannt.
-   - Die Erkennung urteilt nicht; die Verbraucher entscheiden.
-2. *Ablehnung unter Sperre:* keine Antwort, wie die Animationssperre. Die Aktion wird im nächsten Durchlauf neu versucht
-   und nicht für einen GCD gesperrt. Das gilt für jedes Glied und für die Unverwundbarkeit.
-3. *Frist je Wirken:* Ein Druck für das Wirken c hilft nur, wenn er vor dem Snapshot beim Server ankommt.
-   - Frist = Ende des Wirkens weniger der gemessenen Laufzeit von Druck bis Bestätigung. Der Datensatz kennt den
-     Zeitpunkt des Drucks und das Ereignis der Bestätigung (Effekt-Handler), speichert dessen Zeitpunkt aber noch nicht.
-     Neu: ihn festhalten und den jüngsten Abstand nutzen. Vor der ersten Messung gibt es keine Frist vor dem Ende des
-     Wirkens, also das heutige Verhalten.
-   - Für Holmgang und Totenerweckung später: Frist = Zufügen des Schadens. Diesen Abstand misst der Effekt-Handler am
-     gemessenen Treffer selbst, als Zeit vom Ende des Wirkens bis zum Effekt, je Aktion gespeichert wie der Höchstwert.
-     Ohne Messung gilt die Snapshot-Frist (sichere Richtung).
-4. *Nach der Frist* drückt der Plan für c nichts mehr: keine Unverwundbarkeit, kein „alles" (seine Hinweise). Das
-   Zurückhalten für c endet mit der Frist.
-   - Was danach kommt, etwa Auto-Angriffe auf einen tiefen Tank, entscheiden die gewöhnlichen Pfade mit ihren eigenen
-     Gründen. Sie sind kein „alles" für diesen Treffer.
-   - Heute endet der Plan erst mit dem Wirkbalken. Ein Druck in dessen letzten Millisekunden kommt nach dem Snapshot an.
-5. *Druckplätze:* Von jetzt bis zur Frist passen so viele Drücke, wie die gemessene Sperre je Druck (die
-   Animationssperre nach dem letzten eigenen Druck) zulässt; während einer Sperre zählen sie ab ihrem Ende.
-   - Ein Bündel ist nur wählbar, wenn seine ungedrückten Glieder hineinpassen.
-   - Sonst kommt die Unverwundbarkeit, die einen Platz braucht; ohne sie „alles", das wertvollste Glied zuerst.
-   - Ist das Ende der Sperre unbekannt, rechnet der Plan, als ende sie jetzt. Er rechnet in jedem Durchlauf neu und
-     liegt damit richtig, sobald sie endet.
-   - Das gilt nicht nur nach einem Stun, sondern auch für ein spät erkanntes, kurzes Wirken.
-6. *Sperre über die Frist hinaus* (Ende bekannt): Für c gibt es nichts zu tun. Das Zurückhalten ist ohne Wirkung, denn es
-   kann ohnehin nichts hinausgehen.
+**Ein Schild verhindert Schaden, er stellt keine Gesundheit her.** Ein vollgeheilter Tank **mit**
+Barriere ist besser geschützt als ein geschildeter Tank mit wenig Gesundheit; beide Größen addieren
+sich, sie ersetzen einander nicht. Eine laufende Barriere ist damit die Gelegenheit, das Polster zu
+vergrößern, nicht der Grund, es kleiner zu lassen. Läuft sie ungenutzt ab, steht der Träger
+unverändert tief; fängt sie den Treffer, ist sie verbraucht und er steht ebenso tief — verändert hat
+sich nur die verbleibende Zeit.
 
-**Im Kampf:**
-- Nach einem kurzen Stun im Fenster gehen die Glieder im ersten Durchlauf danach, nicht bis zu einen GCD später. Bleiben
-  zu wenige Plätze für das Bündel, geht die Unverwundbarkeit allein.
-- Endet der Stun nach dem Snapshot, geht für diesen Treffer nichts hinaus. Die Abklingzeiten bleiben für den nächsten.
-- Ein Druck, der nach dem Snapshot ankäme, unterbleibt.
+Die frühere Anrechnung (`CreditShieldToEffectiveHp`) rechnete den Schild auf die Gesundheitsquote und
+verzögerte damit die Einzelziel-Heilung um die Barrierengröße — bei The Blackest Night 25
+Prozentpunkte. Sie ist entfernt (A85); das Verhalten entspricht wieder dem Upstream.
 
-**Betroffene über den Plan hinaus (Klasse):**
-- Jeder Pfad, der für einen vorhergesagten Treffer drückt, kann nach dessen Frist drücken: Fenster aus BossModReborn,
-  Tankbuster-Marker, die Einzelabwehr der Heiler.
-- Regel 4 gehört deshalb auf die Stufe „alle". Für BossModReborn ist unbelegt, ob dessen Zeitangabe den Snapshot oder
-  das Zufügen meint, und sie ist erst nach diesem Beleg anwendbar.
-- Ein Marker nennt keinen Zeitpunkt: kein Verbraucher.
+**Heilung steht dem Aufzehren der Barriere nicht entgegen**, und darin liegt der Unterschied zur
+Minderungssperre: Wie schnell eine Barriere verbraucht wird, hängt allein am eingehenden Schaden. Die
+einzige Kopplung läuft umgekehrt — stirbt der Träger vorher, entfällt Dark Arts. Was den Verbrauch
+verhindert, ist Schadensminderung, und dagegen steht die Sperre in Konzept 10.
 
-**Folge für bestehende Regeln (offen, `TODO.md`, „der GCD als Ersatz"):** Der Plan setzt den GCD für vier
-verschiedene Zeiten ein, ohne sie am Spiel geprüft zu haben:
-- das Eintreffen des Treffers, H = R + GCD; nach dem Snapshot-Beleg genügt das Ende des Wirkens samt Laufzeit;
-- die Reserve vor dem Treffer, gemeint sind Druckplätze;
-- den Verfall einer Bestätigung, gemeint ist die gemessene Laufzeit;
-- die Sperre nach einer Verweigerung, gemeint ist das Ende ihrer Ursache.
+#### Schildanrechnung: Divine Benison und Intersection
 
-**Ausgeschlossen:**
-- *Vor einem Stun vorbeugend drücken:* Ein Stun ist nicht vorhersagbar, außer über ein BossModReborn-Modul, und dafür
-  gibt es keinen Weg ohne BossModReborn.
-- *Die Sperre an `GetActionStatus` erkennen:* Welche Rückgabe einen Stun meint, ist unbelegt. Der Status ist belegt und
-  nennt die Restzeit.
+| Stelle | Wirkung | Stand |
+|---|---|---|
+| `ModifyDivineBenisonPvE` setzte `StatusProvide` statt `TargetStatusProvide` | Divine Benison geht auf **fremde** Ziele. Die Doppelbelegungssperre prüfte damit den Spieler statt das Ziel und griff nie; zugleich sperrte sie die Aktion ganz, sobald der Weißmagier den Schild selbst trug. Die drei Geschwister (`AdloquiumPvE`, `EukrasianDiagnosisPvE`, `CelestialIntersectionPvE`) nutzen `TargetStatusProvide` | behoben, beide Ids auf der Zielseite |
+| `StatusID.Intersection` (1889) und `Intersection_4040` fehlten in `StatusHelper.ShieldStatus` | Beide sind als „A magicked barrier is nullifying damage" ausgewiesen. Der Schild eines Astrologen zählte nicht zur effektiven Gesundheit; sein Ziel erschien verletzter, als es ist | behoben (A43) |
 
-**Falsifikation:**
-- *Kein Defekt:* Stuns im Fenster eines Tankbusters sind selten; die Häufigkeit ist unbelegt. Der Defekt besteht
-  dennoch: Der Plan drückt heute bis zum Ende des Wirkbalkens, und das Modell zeigt die Verzögerung nach einem Stun.
-  Selten heißt geringer Nutzen, nicht kein Defekt.
-- *Option falsch:*
-  - `LockActions` könnte Status tragen, unter denen Fähigkeiten doch gehen. Folge: keine Sperre notiert, Neuversuch in
-    jedem Durchlauf – harmlos.
-  - Eine übersehene Sperre hält das heutige Verhalten, die GCD-Sperre – sichere Richtung.
-  - Die Snapshot-Frist ist Community-Wissen. Läge der Snapshot später, unterbliebe ein Druck, der noch gewirkt hätte.
-    Deshalb kommt die Frist aus der gemessenen Laufzeit, nicht aus einer festen Marge. Ein Angriff ohne Wirkbalken
-    kennt der Plan ohnehin nicht.
-- *Ausgeliefert, und nichts ändert sich – warum?* Der Plan drückt früh, bei Öffnung des Fensters. Drücke in den
-  letzten Millisekunden gibt es nur im Rückfall „alles", nach einer Verweigerung oder bei kurzem Wirken. Sichtbar wird
-  die Änderung nur in diesen Lagen.
-  - Messmittel ist die Plan-Zeile in `DefenseTrace.log`. Sie erhielte die Frist und, je Druck, den Abstand zu ihr. Ein
-    Druck nach der Frist wäre dann im hochgeladenen Protokoll ablesbar, ohne Diagnosefenster. Nachgesteuert wird die
-    Frist selbst über die gemessene Laufzeit.
+#### Prüfmittel und Prüfgrad
 
-**Modell (vor dem Code):**
-- `tankbuster_model.py` bekommt einen Stun, der alle Pfade sperrt, in drei Lagen: im Fenster, über den Snapshot hinaus
-  und über das Fenster eines Glieds.
-- Prüfungen: O9 „kein Druck des Plans für c nach der Frist"; O10 „bleibt nach einer Sperre mindestens ein Platz und ist
-  die Unverwundbarkeit verfügbar, überlebt der Tank, wenn kein passendes Bündel bleibt".
-- Defekte des Selbsttests: die GCD-Sperre unter Stun und ein Druck nach der Frist.
+`.github/scripts/audit/scan8.py` meldet Prädikate mit negierendem Namen, die im Baum mit beiden Polaritäten gelesen
+werden, `check_invuln_polarity.py` jede negierte Lesart von `NoNeedHealingInvuln` ohne Grund – genau die hier
+gefundene Defektklasse. Prüfgrad: Prüfskripte, Fallmatrix, Compile über die CI; im Spiel nicht beobachtet. Dass die
+Rückhaltung besser spielt, ist nicht belegt und steht deshalb hinter einer Option; die Richtigstellung der Zielwahl
+ist eine belegte Defektbehebung und hat keinen Schalter – er würde den fehlerhaften Zustand konservieren.
 
-### Mechanik (Belege, abgerufen 04.10.2026)
+### Ausgeschlossen
 
-- Statustexte (xivapi, Blatt `Status`): Heiliger Boden 82 und 1302, Meteoritenfall (Superbolide) 1836 „Impervious to
-  most attacks"; Holmgang 409, Undead Rebirth 3255, Invulnerability 4275 „Most attacks cannot reduce your HP to less
-  than 1". Im Code: `StatusHelper.ImperviousStatus`, `StatusHelper.InvulnerabilityStatus`.
-- Living Dead (Job-Guide englisch): Fällt die Gesundheit unter Living Dead auf 0, folgt Walking Dead; wird bis zu dessen
-  Ablauf Heilung in Höhe der maximalen LP aufgenommen, folgt Undead Rebirth, „If this amount is not restored, you will
-  be KO'd." Die geplante Totenerweckung verlagert den Tod also auf eine Heilaufgabe, wie die reaktive schon heute; die
-  Uhrregel und die Phase-2-Unterstützung (Abschnitt „Living Dead ist ein Zeitproblem") gelten unverändert.
-- Wirkdauern und Werte aus den Wirktexten (Generator): Schutzwall 20 %/20 s, Verdammnis 40 %/15 s, Reflexion
-  10 %/15 s, Urimpuls 10 %/8 s, Heiliges Schiltron 15 %/8 s, Herz des Korunds 15 %/8 s, The Blackest Night 25 % der
-  maximalen LP als Barriere/7 s. Der Generator zählt bei Urimpuls und Schiltron nur die Grundminderung, nicht die
-  kurze Zusatzwirkung der ersten Sekunden – das unterschätzt sie, die sichere Richtung.
-- Unverwundbarkeiten: 10 s; Abklingzeiten Heiliger Boden 420 s, Holmgang 240 s, Totenerweckung 300 s, Meteoritenfall
-  360 s (A259).
+**Nullvariante** — nichts ändern. Ausgeschlossen: zwei belegte Defekte der Rangstufe 1
+blieben stehen.
 
-### In welche Richtung die Rechnung irrt
+**Nur Living Dead behandeln, Zielwahl unangetastet.** Ausgeschlossen: Es hätte den
+größeren, bereits belegten Fehler stehen gelassen, um einen Sonderfall zu bedienen.
 
-- **Zu viel Mittel** (mehr verbraucht als nötig): Der Höchstwert liegt über dem typischen Treffer; eine Heilung vor dem
-  Einschlag zählt nicht; Zusatzwirkungen (Urimpuls, Schiltron) sind nicht gezählt. Alles drei kostet Abklingzeit,
-  nicht Leben.
-- **Zu wenig Mittel** (der Tank fällt mit Plan):
-  - Ein Treffer über dem bisher gemessenen Höchstwert, etwa unter einer Stärkung des Bosses bei der Vorhersage. Ein
-    Treffer unter Damage Up wird nicht gespeichert (A260), aber auch nicht hochgerechnet: Die Wirktexte nennen keine
-    Stärke. Stärkungen unter anderem Namen bleiben unerkannt.
-  - Ein Wert unter Verwundbarkeit aus weniger Stapeln als jetzt.
-  - Ein zu niedrig gespeicherter Höchstwert (Konzept 13, „Fehler nur nach unten": eine unbezifferte Minderung beim
-    Treffer; Dark Mind und erhöhte maximale LP rechnet die Messung heraus). Mit „Spend only …" ist das schlimmer als
-    ohne Tabelle: Der Plan wählt zu wenig und hält den Rest zurück.
-  - Auto-Angriffe zwischen Plan und Einschlag: Der Plan wächst mit, solange Zeit ist.
-  - Nach dem Einschlag zählt die Rechnung nicht weiter: Ein Tank, den ein knapp überlebter Tankbuster tief lässt,
-    hat danach die zurückgehaltenen Minderungen wieder frei (das Zurückhalten endet mit dem Wirken), und die reaktive
-    Unverwundbarkeit und die Heiler übernehmen. Ob „knapp" eine Reserve braucht, ist offen (`TODO.md`).
-- **Unverwundbarkeit zu oft:** nur, wenn kein Bündel reicht – bei LP jetzt. Ein Tank, der tief in den Tankbuster
-  geht, bekommt sie eher, auch wenn ein Heiler ihn noch hochgeheilt hätte. Das ist der Preis von „ohne Risiko"; die
-  Neurechnung je Durchlauf gibt sie zurück, wenn die Heilung vor dem Ziehen kommt.
+**Eine Rückhaltung von Heilung für The Blackest Night oder Excogitation.**
+Ausgeschlossen für **Excogitation**, weil sein Auslöser nicht vorhersehbar ist: Ob der
+Schaden kommt, der die Schwelle unterschreitet, ist unbekannt. Ausgeschlossen für
+**The Blackest Night**, weil Heilung dessen Auslöser gar nicht berührt — eine Barriere
+absorbiert vor den HP. Was dort bleibt, ist keine Rückhaltung, sondern die
+Nachrangigkeit eines **zweiten Schildes**; siehe Klasse A+.
 
-### Lagen
+**Gunbreaker Catharsis of Corundum als Rückhaltefall.** Ausgeschlossen am Artefakt:
+`Status.resx` beschreibt Status 2685 mit „HP will be restored automatically upon
+falling below a certain level **or expiration of effect duration**". Der Heilstoß
+kommt in jedem Fall; es gibt nichts zurückzuhalten. Der auslösertragende Bezeichner
+heißt `CatharsisOfCorundum` (2685, in Dawntrail zusätzlich 4296); `ClarityOfCorundum`
+(2684) ist reine Schadensreduktion und gehört nach Klasse C.
 
-- **Allein, Vierer-Instanz:** wirkt; die Regel braucht keinen Co-Tank.
-- **Zwei RSR-Tanks:** Jeder plant nur für sich, über die Tankbuster auf ihn. Die Reflexion des anderen zählt, sobald
-  sie steht.
-- **BossMod ohne Modul:** unverändert; die Regel liest keine Vorhersage.
-- **Stufensynchron:** Unverwundbarkeit und Minderungen zählen nur, wenn erlernt. Eine Gegneraktion gehört zu ihrem
-  Inhalt und wird dort stets auf dessen Stufe getroffen; dass die Anteile dadurch vergleichbar bleiben, ist ein
-  Schluss, nicht gemessen.
-- **Burst aus:** unberührt.
-- **Mehrere Wirken auf dich:** geplant wird für das früheste gemessene; zurückgehalten wird dann nichts, weil der Plan
-  das zweite nicht kennt. Ein späteres bekommt seinen Plan, sobald das erste endet (Grenze: liegen beide in einem GCD,
-  deckt ein Minderungsplan nur das erste).
-- **Ein ungemessenes Wirken oder eine frühere BossModReborn-Vorhersage** neben einem gemessenen: Der Plan drückt,
-  hält aber nichts zurück. Ein Tankbuster-Marker auf dir während des gemessenen Wirkens gilt als dessen.
-- **Tankwechsel:** hält bei bereiter Unverwundbarkeit, die RSR für jeden nächsten Treffer nutzen würde – an ihrer
-  Schwelle (`CustomRotation.InvulnerabilityUsable`). Der Plan zählt dort nicht: Er zieht sie nur vor einem gemessenen
-  Wirken, nicht vor einem Marker oder einer Vorhersage. Die Schwelle `HealthForDyingTanks` gehört der reaktiven
-  Unverwundbarkeit; wer sie auf 0 setzt, schaltet für den Plan nichts ab, der Tankwechsel wechselt dann aber auch bei
-  bereiter Unverwundbarkeit.
-- **Reaktive Unverwundbarkeit** (`EmergencyAbility` unter `HealthForDyingTanks`): unverändert, läuft vor dieser Regel.
-  Hält sie über den Einschlag, zählt sie; läuft sie vorher ab, hält nichts zurück.
-- **Staffelung ohne Messung** (A243, `RampartTakesPredictedTankbuster`, Zeitregel): bleibt für Tankbuster ohne
-  Messwert. Für einen gemessenen ersetzt der Plan sie; die Staffelungszweige sehen den Plan nur über das Gatter.
+**Eine Gesundheitsschwelle statt der Prioritätsstufe.** Ausgeschlossen, weil sie
+Fall 14 nicht trifft: Sie kennt den Vergleich mit anderen Gruppenmitgliedern nicht.
+Die Prioritätsstufe leistet beides, und `GeneralHealTarget` besitzt die Rangfolge
+bereits — es fehlte nur eine Ebene.
 
-### Antithesen
+**Ein eigener Messbaustein für Heilraten auf Gruppenmitglieder.** Ausgeschlossen — und
+inzwischen auch überflüssig. Ausgeschlossen war er, weil die Uhrregel seinen einzigen
+vorgesehenen Verbraucher ersetzt; überflüssig ist er, weil die Größe ohne neuen
+Baustein entstanden ist: `DataCenter.RecordedHP` nimmt die Gruppenmitglieder seit A91
+mit auf, und `GetTTK` wertet sie seitdem für jede Gruppen-Id aus. Der Eingriff war eine
+Schleife neben der bestehenden, kein Ringpuffer und kein dritter Effekt-Handler.
 
-1. **Kein Defekt, die alte Abwehr genügt.** Sie gibt je Tankbuster eine große Minderung. Ein gemessener Treffer, der
-   zwei braucht, tötet damit – seine Präzisierung nennt genau das. Und die reaktive Unverwundbarkeit zündet unter
-   der Sterbe-Schwelle, die ein Treffer von voller Gesundheit in einem Schritt überspringt. Widerlegt.
-2. **Die Option ist falsch, das billigste Bündel ist zu knapp.** Die Rechnung nimmt den Höchstwert, die LP jetzt
-   und nur, was beim Einschlag steht; jede dieser Größen irrt zur sicheren Seite. Nicht widerlegt ist ein Treffer
-   über allem bisher Gemessenen; dagegen hilft keine Rechnung, und die Tabelle hebt den Wert danach an.
-3. **Ausgeliefert, und nichts ändert sich – warum?**
-   - Die Aktion ist noch nicht gemessen: Das erste Auftreten bleibt ohne Plan. Die Tabelle misst jeden Spieler und
-     speichert über Sitzungen.
-   - Der Tankbuster kommt nur als Marker oder BossModReborn-Vorhersage: keine Aktion, kein Plan.
-   - Der Boss trägt den ganzen Kampf ein Damage Up: kein Treffer wird gespeichert.
+| Größe | Vorhanden? | Beleg |
+|---|---|---|
+| Restzeit des Status | **ja** | `StatusHelper.StatusTime(…)` |
+| Historie der Gesundheit über die Zeit | **für Gegner und Gruppe** | `DataCenter.RecordedHP`, gefüllt in `TargetUpdater.UpdateTimeToKill` aus `AllHostileTargets` **und** `PartyMembers` |
+| Zeit bis zum Tod eines Gruppenmitglieds | **ja** | `ObjectHelper.GetCorrectedTTK`, gegen den eigenen Vorhersagefehler kalibriert |
+| Abtastrate der Historie | **1 Hz** | `TimeToKillUpdateInterval` |
+| Eingehende Heilung auf ein Party-Mitglied | **nicht gesondert ausgewertet, und nicht nötig** | Der Gesundheitsverlauf ist bereits netto: Eine fremde Heilung zeigt sich als steigender Anteil, `GetTTK` antwortet dann `NaN` |
+| Schadensbetrag eines Gegnertreffers | **verfügbar und gelesen** | `Watcher.FullAmount`, voller Betrag auch über 65.535 Punkte (A140, A144) |
 
-   Das Protokoll schreibt je Wirken die Zahlen und den Plan, sodass jeder dieser Fälle ablesbar ist.
-4. **Das Zurückhalten kostet einen Treffer, wenn der Plan nicht aufgeht.** Abgefangen: Fehlt eine geplante Minderung
-   im letzten GCD, öffnet es; reicht nichts und kommt keine Unverwundbarkeit, hält es gar nicht.
-5. **Die Rotation wählt dieselbe Minderung anderswo.** Das Gatter gilt für jeden Pfad eines Durchlaufs. Widerlegt.
-6. **Gegen seine eigene frühere Lage:** Die Staffelung (A243) kam aus dem Protokoll vom 01.10.2026: zwei große auf
-   einen Tankbuster, nichts auf den nächsten. Der Plan stapelt nur, wo der Treffer es verlangt, und für einen
-   Treffer, den eine reicht, gibt er eine – das Muster von damals entsteht nur, wenn jeder Tankbuster zwei braucht,
-   und dann ist der zweite Tankbuster ohne Minderung, aber mit der Unverwundbarkeit geplant oder mit allem.
+Zwei Genauigkeitsgrenzen bestehen fort: Die 1-Hz-Abtastung ist für ein
+Zehn-Sekunden-Fenster grob, und ein Gesundheitsdelta ist ein Surrogat für kumulierte
+Heilung — fallen Heilung und Schaden in dasselbe Intervall, heben sie sich auf, obwohl
+die Heilung gegen die von Walking Dead geforderte Summe zählt. Für den Weg **zur Null**
+ist das unerheblich, für den Weg **zur aufgenommenen Heilmenge** nicht; Fall 4a beantwortet A147 deshalb nur
+näherungsweise, über den Gesundheitsanstieg seit Beginn des Fensters.
 
-### Messmittel und Nachsteuerung
+**`HpRecoveryDown` und `Mounted` in der Schwellensenkung.** Ausgeschlossen: `Mounted`
+nullifiziert Heilung und gehört in einen Ausschluss, nicht in eine Herabstufung;
+`HpRecoveryDown` mindert Heilung nur und ist damit ein Grund, **härter** zu heilen.
 
-`DefenseTrace.log` schreibt je Wirken auf dich „tankbuster coming at you: … takes …% of max HP under what stands at
-impact, you have …%", je Änderung des Plans „tankbuster plan for … in … s: Rampart + Damnation, leaving …% against
-…%" (oder „survivable as it stands, nothing spent", Z1 „the invulnerability already covers it, nothing else", Z3
-„nothing less survives it: the invulnerability", Z4 „nothing survives it and no invulnerability, everything goes
-(…)"), je Druck „tankbuster plan for … -> Rampart" mit der „used"-Zeile. Nachsteuerung: Jeder Treffer
-hebt den Tabellenwert, wo er höher ausfällt, und der Plan wird je Durchlauf neu gerechnet.
-
-**Prüfgrad:** statisch, Prüfskripte, Compile über die CI, zwei unabhängige Code-Reviews; im Spiel nicht beobachtet.
-
-## Was offen bleibt
+### Grenzen der Living-Dead-Regel
 
 **Der Vorlauf der Uhrregel misst bis zur Entscheidung, nicht bis zum Landen der
 Heilung.** Im ungünstigsten Fall muss der laufende GCD auslaufen und ein Zauber mit
@@ -1793,33 +1553,17 @@ wenn der Tank bereits ungeschützt ist. Eine Fähigkeit ohne Wirkzeit würde bei
 — welche Heilung gleich fällt, ist jedoch eine Rotationsentscheidung, die die zentrale
 Schicht weder kennt noch erzwingen kann.
 
-**Die gestaffelte Phase-2-Unterstützung** (Fälle 4 und 4a) ist gebaut (A147, Abschnitt „Umsetzung für Phase 2“):
+**Die gestaffelte Phase-2-Unterstützung** (Fälle 4 und 4a) ist gebaut (A147, Abschnitt „Phase 2: Walking Dead"):
 `WalkingDeadCarriedBySelfHeal` lässt nur HoTs an den Träger, solange er sich selbst trägt, und gibt die volle
 Unterstützung bei den dort genannten Auslösern frei. Die Kursprognose rechnet die Gesundheit seit Beginn des Fensters
 auf die Restzeit hoch, nicht die aufgenommene Heilmenge; fallen Heilung und Schaden in dieselbe Abtastung, unterschätzt
-sie den Kurs (Grenze unter „Was ausgeschlossen wurde“).
+sie den Kurs (Grenze unter „Ausgeschlossen").
 
-## Nachweisbarkeit
+### Betroffene
 
-| Ebene | Möglich | Nicht möglich |
-|---|---|---|
-| Statisch | `.github/scripts/audit/scan8.py` meldet Prädikate mit negierendem Namen, die im Baum mit beiden Polaritäten gelesen werden — genau die hier gefundene Defektklasse | — |
-| Kompilierung | CI | — |
-| Laufzeit | Beobachtung, ob ein Dunkelritter unter Living Dead noch geheilt wird | Beweis, dass die neue Rangfolge besser spielt |
-
-Erreichter Prüfgrad: statische Selbstprüfung, Prüfskript, Fallmatrizen, CI-Kompilierung.
-Keine Laufzeitbeobachtung, kein Vier-Augen-Prinzip. Dass die Rückhaltung besser spielt,
-ist deshalb **nicht** belegt und steht hinter einer Option; die Richtigstellung der
-Zielwahl ist eine belegte Defektbehebung und bekommt keine — ein Schalter würde den
-fehlerhaften Zustand konservieren.
-
-## Konsequenzen
-
-**Endnutzer.** Die Heilzielwahl aller Jobs ändert sich spürbar, weil die Rangfolge
-erstmals greift: Der am schwersten verletzte DPS wird überhaupt erst wählbar, wo
-zuvor regelmäßig der Tank gewählt wurde. Das ist die größte Verhaltensänderung des
-Vorhabens und zugleich die einzige, für die eine Laufzeitbeobachtung wirklich
-wünschenswert wäre.
+**Endnutzer.** Die Heilzielwahl aller Jobs folgt der Rangfolge: Der am schwersten verletzte Schadensausteiler ist
+wählbar, wo vor der Richtigstellung regelmäßig der Tank gewählt wurde. Für diese Änderung wäre eine
+Laufzeitbeobachtung am wertvollsten.
 
 **Autoren abgeleiteter Rotationen.** `NoNeedHealingStatus` behält seine Signatur,
 ändert aber seinen Inhalt — eine Verhaltensänderung ohne Compilerfehler für jede
@@ -1828,7 +1572,7 @@ abgeleitete Rotation, die die Liste liest. Im `CHANGELOG` vermerkt.
 **Upstream.** Der Eingriff liegt in `ActionTargetInfo`, `StatusHelper` und
 `StateUpdater`, alle mit regelmäßiger Upstream-Aktivität.
 
-## Offene Punkte zu diesem Konzept
+## Offene Punkte
 
 Sie stehen in `TODO.md` und sind dort unter der Überschrift des Eintrags mit **Konzept:** auf dieses
 Dokument gekennzeichnet — an **einer** Stelle statt in zweien, damit keine Kopie altert.

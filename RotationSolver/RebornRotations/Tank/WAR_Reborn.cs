@@ -551,7 +551,7 @@ public sealed class WAR_Reborn : WarriorRotation
 
 	/// <summary>
 	/// Whether Shake It Off waits in the single-target heal: a party tool spent for one member below the
-	/// heal threshold (concept 09, Warrior, finding 6). It waits while it would take Damnation or
+	/// heal threshold (concept 09, "Krieger: die übrige Abwehr", rule 6). It waits while it would take Damnation or
 	/// Bloodwhetting off the warrior - up to 40 % mitigation for a 2 % larger barrier - and while BossModReborn
 	/// announces a raidwide after its barrier would have run out and before it is back. The universal hold
 	/// yields when any member is in the critical class (A245).
@@ -596,8 +596,8 @@ public sealed class WAR_Reborn : WarriorRotation
 
 	/// <summary>
 	/// Whether the warrior needs Bloodwhetting himself, which Nascent Flash on someone else would put on
-	/// its shared cooldown (concept 09, "Krieger: Nascent Flash für einen anderen oder Bloodwhetting für
-	/// sich"): he is about to die, or a tankbuster on him lands before the cooldown is back and the
+	/// its shared cooldown (concept 09, "Krieger: Urimpuls für sich oder Urflackern für
+	/// andere"): he is about to die, or a tankbuster on him lands before the cooldown is back and the
 	/// single-target defence would cast Bloodwhetting for it.
 	/// </summary>
 	/// <remarks>
