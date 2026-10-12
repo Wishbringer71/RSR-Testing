@@ -108,10 +108,10 @@ Tengentsu, Third Eye). Gemessen wird ein Flag an den Pfaden, die es öffnet (CLA
   alle, ein Rundumschlag am Boss Tank und Nahkämpfer. Ein Tankbuster-Kreis auf dem Tank trifft nur einen und
   öffnet sie nicht. „Die Hälfte der Gruppe" ist verworfen: Im Achterteam träfe ein Rundumschlag auf Tank und
   zwei Nahkämpfer drei von acht und bekäme keine Gruppenminderung.
-- **Selbstschutz fragt nach dem Spieler** (`DataCenter.AreaHitReachesPlayer`, in den Rotationen
-  `AreaHitOnMe`): Radiant Aegis, Tempera Coat, Tengentsu und Third Eye im Flächenpfad, und der Aufruf der
-  Einzelabwehr eines Schadensausteilers unter der Flächenflagge (Dispatch) fallen nur, wenn der Treffer ihn
-  erreicht. Das ist die Antwort auf seine Meldung zu Radiant Aegis.
+- **Selbstschutz fragt nach dem Spieler** (`DataCenter.AreaHitReachesPlayer`): Radiant Aegis, Tempera Coat,
+  Tengentsu und Third Eye im Flächenpfad fallen nur, wenn der Treffer ihn erreicht — gefragt zentral für jede
+  Aktion, die nur ihn schützt (unten, A233) —, ebenso der Aufruf der Einzelabwehr eines Schadensausteilers unter
+  der Flächenflagge (Dispatch). Das ist die Antwort auf seine Meldung zu Radiant Aegis.
 
 **Wen die Form erreicht, aus den Spieldaten** (`DataCenter.AreaCastReaches`, je Mitglied):
 
@@ -173,9 +173,10 @@ Corundum mit Ziel „Self". Frei bleiben, was andere oder den Gegner trifft: Ref
 Divine Veil, Passage of Arms, Dark Missionary, Heart of Light, Intervention, Heart of Corundum auf das
 Tankbuster-Ziel, Nascent Flash. Ein Befehl des Spielers (Makro „Defense") wird nicht geprüft.
 
-- *Flächenpfad:* „erreicht ihn" ist `AreaHitReachesPlayer` — dieselbe Frage, die Radiant Aegis, Tengentsu und Third
-  Eye zusätzlich je Rotation stellen (`AreaHitOnMe`). Die Abfragen dort sind doppelt und gelten auch unter seinem
-  Befehl; offen in `TODO.md`.
+- *Flächenpfad:* „erreicht ihn" ist `AreaHitReachesPlayer`. Die Rotationen fragen es nicht ein zweites Mal: Eine
+  eigene Abfrage in `SAM_Reborn` und `SMN_Reborn` galt auch unter seinem Befehl und ließ Tengentsu, Third Eye und
+  Radiant Aegis dort aus (entfernt, A271). Außerhalb des Abwehrpfads fragt `SMN_Reborn.RadiantAegisDueBeforeDemi`
+  selbst, weil dort keine zentrale Prüfung läuft.
 - *Einzelpfad:* „erreicht ihn" ist `SingleHitReachesPlayer`: ein Tankbuster-Marker auf ihm oder ein gelisteter
   Tankbuster auf ihn; beim Tank zusätzlich ein Cast, den ein Gegner auf den Spieler als sein Ziel wirkt, und die
   Pull-Regel (mindestens `AutoDefenseNumber` Gegner bis 3 y auf ihm, die ihn angreifen, Gesundheit unter

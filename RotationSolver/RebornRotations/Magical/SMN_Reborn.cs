@@ -455,8 +455,10 @@ public sealed class SMN_Reborn : SummonerRotation
 	[RotationDesc(ActionID.RadiantAegisPvE, ActionID.AddlePvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
-		// Radiant Aegis shields the summoner alone, and the area flag asks whether the party is hit.
-		if (AreaHitOnMe && !IsLastAction(false, RadiantAegisPvE) && RadiantAegisPvE.CanUse(out act, usedUp: true))
+		// Radiant Aegis shields the summoner alone. Whether the hit that opened this path reaches him is
+		// asked centrally for every such action (BaseAction.CanUse, A233), and not under the player's own
+		// Defense command (concept 13).
+		if (!IsLastAction(false, RadiantAegisPvE) && RadiantAegisPvE.CanUse(out act, usedUp: true))
 		{
 			return true;
 		}

@@ -6182,6 +6182,20 @@ Archiv 06 Satz für Satz gegen Code, erzeugte Dateien und Quellen (Job-Guide, Th
 12.10.2026) geprüft. Kompiliert und im Spiel beobachtet ist dadurch nichts: Der Durchgang ändert Dokumente und einen
 Kommentar.
 
+### A271 · Die Befunde des Konzept-Audits abgearbeitet statt ins TODO gelegt (12.10.2026)
+
+- *Seine Frage:* „und warum offen in todo?" Kein tragfähiger Grund: Die Grenze des Auftrags (Konzeptprüfung) war keiner;
+  zwei Einträge waren belegte Defekte mit klarer Behebung, die beiden anderen aus Repository und Quellen entscheidbar.
+- *Selbstschutz doppelt geprüft:* `SAM_Reborn.DefenseAreaAbility` (Tengentsu, Third Eye) und
+  `SMN_Reborn.DefenseAreaAbility` (Radiant Aegis) fragten `AreaHitOnMe` zusätzlich zur zentralen Prüfung aus A233. Alle drei
+  haben Wirkradius 0 und zielen auf den Spieler (xivapi, 12.10.2026), die zentrale Prüfung deckt sie. Die Kopie hielt sie
+  auch unter seinem Befehl zurück — Befehl „Def AoE" im Steuerfenster und Makro — und die Vorschau des Steuerfensters
+  (`UpdateDefenseActions`, ohne zentrale Prüfung) zeigte sie dort nicht. Entfernt. `RadiantAegisDueBeforeDemi` behält seine
+  Abfrage: Es liegt außerhalb des Abwehrpfads. *Falsifikation:* kein Defekt — widerlegt am Optionstext von A233 („a command
+  from the player is not second-guessed"); Behebung falsch — widerlegt, die zentrale Prüfung greift für alle drei
+  (Wirkradius, Ziel); ausgeliefert und nichts ändert sich — trifft zu, solange er keinen Defense-Befehl gibt; dann bleibt
+  die Beseitigung der Doppelung.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

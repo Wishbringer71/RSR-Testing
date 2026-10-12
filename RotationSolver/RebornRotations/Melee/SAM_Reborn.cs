@@ -107,13 +107,14 @@ public sealed class SAM_Reborn : SamuraiRotation
 				return true;
 			}
 
-			// Tengentsu and Third Eye protect the samurai alone; the area flag asks whether the party
-			// is hit (concept 13).
-			if (AreaHitOnMe && TengentsuPvE.CanUse(out act))
+			// Tengentsu and Third Eye protect the samurai alone. Whether the hit that opened this path
+			// reaches him is asked centrally for every such action (BaseAction.CanUse, A233), and not
+			// under the player's own Defense command (concept 13).
+			if (TengentsuPvE.CanUse(out act))
 			{
 				return true;
 			}
-			if (AreaHitOnMe && ThirdEyePvE.CanUse(out act))
+			if (ThirdEyePvE.CanUse(out act))
 			{
 				return true;
 			}
