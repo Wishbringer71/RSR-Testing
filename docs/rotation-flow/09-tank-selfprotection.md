@@ -1037,7 +1037,8 @@ Mehrere Tank-Fähigkeiten warten auf ein **Ereignis**, das fremde Heilung abfang
 Rückhaltung, sondern die richtige Heilzielwahl: `NoNeedHealingInvuln()` liefert `true`, wenn *kein* Schutzstatus
 liegt; zwei Aufrufer lasen sie mit dem entgegengesetzten Vorzeichen, und die generische Zielwahl war dadurch blind für
 den am schwersten Verletzten (Abschnitt „Gebaut"). Die Rückhaltung selbst ist ein eng umgrenzter Sonderfall: Von den
-Lagen unten bleibt ein echter Rückhaltefall, Living Dead, umgesetzt als Uhrregel hinter einer Option (ab Werk aus).
+Lagen (Abschnitt „Lagen und richtige Handlung“) bleibt ein echter Rückhaltefall, Living Dead, umgesetzt als Uhrregel hinter einer
+Option (ab Werk aus, Grund unter „Die Living-Dead-Rückhaltung“).
 Für The Blackest Night ist keine eigene Rückhalteregel richtig: Heilung berührt den Auslöser nicht, und ein
 Heilerschild wird erst nach der TBN-Barriere aufgezehrt. Die Barriere verschiebt auch die Heilschwelle nicht (A85);
 in die Zielwahl geht sie über die effektive Gesundheit ein (Gefährdungsklasse 1, Konzept 07).
@@ -1108,9 +1109,7 @@ spart deshalb nichts, es verschiebt nur.
 *Quellenstatus:* Gemeinschaftsquelle — die Tabelle „Barrier Consumption Priority" im consolegameswiki
 (abgerufen 02.10.2026), die sich auf einen Lodestone-Blog und einen Beitrag auf X stützt; keine offizielle
 Beschreibung. Sie führt The Blackest Night auf Rang 3 und Eukrasian Diagnosis auf Rang 4 und, mit
-Differential Diagnosis, auf Rang 24 — beide hinter TBN. Der früher offene Quellenkonflikt (ein Job-Guide
-habe Eukrasian Diagnosis vor TBN geführt) ist damit für TBN aufgelöst: Kein Heilerschild verzögert
-seine Absorption. Weitere Ränge derselben Tabelle, die andere Regeln berühren: Stem the Tide aus
+Differential Diagnosis, auf Rang 24 — beide hinter TBN: Kein Heilerschild verzögert seine Absorption. Weitere Ränge derselben Tabelle, die andere Regeln berühren: Stem the Tide aus
 Bloodwhetting und Nascent Flash Rang 8, Divine Benison 12, Radiant Aegis 18, Shake It Off 19, Divine
 Veil 20.
 
@@ -1190,8 +1189,8 @@ die Heilung noch landen kann — **aber nur, solange der Träger über
 `HealthForDyingTanks` steht.** Darunter läuft sie bis zum Ablauf durch, weil dort der
 Fall auf 0 die wahrscheinliche Fortsetzung ist und der Vorlauf sonst genau den Auslöser
 wegheilen würde, für den die ganze Regel da ist. Die Uhr allein hätte die Fälle 1c und
-1e der Tabelle oben nicht mehr unterschieden: Sie beantwortet „wie viel Zeit bleibt",
-nicht „kommt der Tod noch".
+1e (Tabelle „Lagen und richtige Handlung“) nicht mehr unterschieden: Sie beantwortet „wie viel Zeit
+bleibt", nicht „kommt der Tod noch".
 
 **Phase 2 — heilt er sich schnell genug selbst?** Walking Dead verlangt kumuliert
 eine volle Maximalgesundheit in zehn Sekunden. Die Selbstheilung liefert 1500 Potenz
@@ -1247,10 +1246,6 @@ kommt aber nur vor dem Einschlag an, wenn dazwischen noch ein Einschiebeplatz (B
 GCD mit Wirkzeit (Cure II) liegt. Wie viel Zeit zwischen Limitbruch und Einschlag liegt, entscheidet der
 Tank, der ihn zieht.
 
-**Im Kampf ablesbar:** Das Diagnosefenster zeigt, solange jemand unter Walking Dead steht, ob er
-getragen wird oder welcher Auslöser die volle Unterstützung freigegeben hat, mit dem hochgerechneten
-Kurs.
-
 #### Die Aufhebungen kehren sich für Living Dead um
 
 | Aufhebung | Bei A-nichttödlich | Bei Living Dead Phase 1 |
@@ -1272,7 +1267,7 @@ tun, sondern mit der Uhr:
 > Die Rückhaltung wird aufgehoben, **wenn der Tod nicht mehr vor dem Ende der ersten
 > Phase eintreten würde.**
 
-Dazu die Vorbedingung aus Fall 1b, die vor der Phase liegt: Wer die Heilmenge für
+Dazu die Vorbedingung aus Fall 1b (Tabelle „Lagen und richtige Handlung“), die vor der Phase liegt: Wer die Heilmenge für
 Phase 2 gar nicht aufbringen kann, darf den Weg über den Tod nicht einschlagen.
 
 #### Warum eine Überlebensprüfung diese Zusage nicht tragen kann
@@ -1291,18 +1286,16 @@ zurückhalten" ist aus den vorhandenen Größen **nicht herstellbar**:
   stillschweigende Annahme „wenn ich rechtzeitig heile, überlebt er" trifft dort nicht
   zu.
 
-Für einen **gewirkten, gemessenen** Tankbuster gibt es inzwischen einen Höchstwert (Tankbuster-Tabelle, Konzept 13),
+Für einen **gewirkten, gemessenen** Tankbuster gibt es einen Höchstwert (Tankbuster-Tabelle, Konzept 13),
 den der Plan des Tanks rechnet (Abschnitt „Gemessener Tankbuster: das geringste Mittel"). Die Living-Dead-Regel liest
 ihn nicht; ob sie es sollte, ist offen (`TODO.md`). Für Marker, Vorhersagen und nie gemessene Aktionen bleibt die
 Prüfung unmöglich.
 
-Daraus folgt **nicht**, die Rückhaltung freizugeben. Dass Heilung manchmal nichts
+Daraus folgt **nicht**, die Rückhaltung unter Living Dead freizugeben. Dass Heilung manchmal nichts
 nützt, macht Zurückhaltung nicht besser, nur nicht schlechter — und welcher Fall
-vorliegt, ist vorab nicht erkennbar. Die Folgerung ist strenger: Für
-**A-nichttödliche** Auslöser hebt **jedes** erkannte Tankbuster-Fenster die
-Rückhaltung auf, HP-unabhängig, weil die Prognose dort unmöglich ist. Die
-HP-Schwelle bleibt als zweite, unabhängige Aufhebung: sie fängt den Dauerschaden ab,
-das Buster-Fenster den Einzelschlag.
+vorliegt, ist vorab nicht erkennbar. Für **A-nichttödliche** Auslöser folgt umgekehrt: keine
+Rückhaltung, weil die Prognose dort unmöglich ist und der Tod die Katastrophe bleibt (Abschnitt
+„Ausgeschlossen“).
 
 ### Lagen und richtige Handlung
 
@@ -1334,10 +1327,10 @@ Vollständig über die Dimensionen Fähigkeitsklasse × Gesundheitsstand × Heil
 | 15 | Nur der geschützte Tank braucht Heilung | **ja** | ja | Das Fenster ist die sicherste Gelegenheit |
 
 Zeile 14 und 15 sind der Kern: **Der Schutz verschiebt die Reihenfolge, er hebt den
-Bedarf nicht auf.** Handeln schadet nur in den Zeilen 1 und 2 — und dort nur, solange
-Stufe 1 gesichert ist. Von achtzehn Lagen bleibt damit **ein** echter Rückhaltefall
-(1), dem vier Aufhebungen (1b, 1c, 1d, 4a) gegenüberstehen; einer ist reine
-Ressourcenschonung ohne Risiko (4b). Eine Bedingung, die häufiger nicht gilt als gilt,
+Bedarf nicht auf.** Handeln schadet nur unter Living Dead in Phase 1 (Zeilen 1, 1d, 1e und 2) —
+und dort nur, solange Stufe 1 gesichert ist. Von einundzwanzig Lagen bleibt damit **ein** echter
+Rückhaltefall (Living Dead, Phase 1), dem drei Aufhebungen (1b, 1c samt Ausführungsform 3, 4a)
+gegenüberstehen; eine Lage ist reine Ressourcenschonung ohne Risiko (4b). Eine Bedingung, die häufiger nicht gilt als gilt,
 ist kein Leitmotiv: Der belastbare Kern bleibt die Richtigstellung der Zielwahl, und
 der einzige verbliebene Sonderfall ist Living Dead.
 
@@ -1358,7 +1351,7 @@ Tank-Haltung zurück. Praktisch: **Die generische Heilzielwahl war blind für de
 schwersten verletzten Gruppenteil und wählte faktisch immer den Tank.** War die Liste
 einmal gefüllt, wurde bevorzugt der Unverwundbare geheilt. Derselbe Fehler stand ein
 zweites Mal in der Excogitation-Heilzielwahl von `SCH_Reborn`, wo Excogitation nur auf gerade unverwundbare
-Ziele ging; dort liest sie jetzt `NoNeedHealingInvuln()` ohne Negation.
+Ziele ging; dort liest sie `NoNeedHealingInvuln()` ohne Negation.
 
 Umgesetzt ist beides zusammen, denn getrennt wäre der erste Schritt schädlich: Sobald
 die Liste normale Ziele enthält, fielen die geschützten heraus und der Zufallszustand
@@ -1502,8 +1495,8 @@ Fall 14 nicht trifft: Sie kennt den Vergleich mit anderen Gruppenmitgliedern nic
 Die Prioritätsstufe leistet beides, und `GeneralHealTarget` besitzt die Rangfolge
 bereits — es fehlte nur eine Ebene.
 
-**Ein eigener Messbaustein für Heilraten auf Gruppenmitglieder.** Ausgeschlossen — und
-inzwischen auch überflüssig. Ausgeschlossen war er, weil die Uhrregel seinen einzigen
+**Ein eigener Messbaustein für Heilraten auf Gruppenmitglieder.** Ausgeschlossen und
+überflüssig. Ausgeschlossen war er, weil die Uhrregel seinen einzigen
 vorgesehenen Verbraucher ersetzt; überflüssig ist er, weil die Größe ohne neuen
 Baustein entstanden ist: `DataCenter.RecordedHP` nimmt die Gruppenmitglieder seit A91
 mit auf, und `GetTTK` wertet sie seitdem für jede Gruppen-Id aus. Der Eingriff war eine
@@ -1542,7 +1535,7 @@ verkürzt Zaubertempo den Vorlauf mit. Gegen die zehn Sekunden von Living Dead
 (`ActionId.resx`, Aktion 3638) ist es rund die halbe Phase.
 
 **Der Vorlauf greift nicht, solange der Tod noch erreichbar ist** — das ist Fall 1e der
-Tabelle oben, und er ist die Bedingung, unter der der Preis des Vorlaufs überhaupt
+Tabelle „Lagen und richtige Handlung“, und er ist die Bedingung, unter der der Preis des Vorlaufs überhaupt
 tragbar ist. Ohne ihn wird die Startbahn für die Heilung mit genau dem Ergebnis
 bezahlt, das die Zurückhaltung erzeugen soll: Ein Träger, der tief genug für den Fall
 auf 0 steht, würde in der Vorlaufzeit über die Linie zurückgeheilt, Living Dead liefe
@@ -1570,8 +1563,7 @@ sie den Kurs (Grenze unter „Ausgeschlossen").
 ### Betroffene
 
 **Endnutzer.** Die Heilzielwahl aller Jobs folgt der Rangfolge: Der am schwersten verletzte Schadensausteiler ist
-wählbar, wo vor der Richtigstellung regelmäßig der Tank gewählt wurde. Für diese Änderung wäre eine
-Laufzeitbeobachtung am wertvollsten.
+wählbar, wo vor der Richtigstellung regelmäßig der Tank gewählt wurde.
 
 **Autoren abgeleiteter Rotationen.** `NoNeedHealingStatus` behält seine Signatur,
 ändert aber seinen Inhalt — eine Verhaltensänderung ohne Compilerfehler für jede
