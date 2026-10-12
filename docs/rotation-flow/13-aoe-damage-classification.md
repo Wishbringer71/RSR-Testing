@@ -534,9 +534,15 @@ Messung in `TankbusterTable`, Ablage über denselben gesicherten Weg wie die Fl�
 - Eine Barriere wird nicht herausgerechnet: Ob die Schadenszahl des Spiels den absorbierten Teil enthält, ist hier
   nicht belegt.
 - Treffer unsichtbarer Helfer tragen die Debuffs des Bosses nicht.
+- Eine Minderung je Schadensart auf dem Getroffenen (Dark Mind: physisch 10 %, magisch 20 %) hat im Wertemodell kein
+  Feld und wird nicht herausgerechnet (Konzept 09, „Bestand", Lücken).
+- Der Anteil wird an den *aktuellen* maximalen LP gemessen (`Watcher.DamageShareOn`). Steht eine Erhöhung der
+  maximalen LP (Kampfrausch +20 %; im Spiel auch „of a party member or self by 10 %"), ist der Nenner zu groß.
 
-In allen drei Fällen fällt der ungeminderte Wert zu klein aus, und jeder spätere Treffer kann ihn nur anheben. Ein
-zu kleiner Wert heißt: Eine Abwehr unterbleibt – das Verhalten ohne Tabelle. Der erste Treffer einer Aktion hat
+In allen diesen Fällen fällt der ungeminderte Wert zu klein aus, und jeder spätere Treffer kann ihn nur anheben. Ein
+zu kleiner Wert heißt **seit dem Tankbuster-Plan nicht mehr** „das Verhalten ohne Tabelle": Der Plan wählt ein zu
+kleines Bündel und hält mit „Spend only …" den Rest zurück – der Tank nimmt den Treffer mit weniger, als die alte
+Abwehr gedrückt hätte (Konzept 09, „In welche Richtung die Rechnung irrt"). Der erste Treffer einer Aktion hat
 keinen Wert.
 
 **Nach oben ausgeschlossen:** ein Treffer eines gestärkten Angreifers. Trägt er `DamageUp`, `PhysicalDamageUp` oder

@@ -206,6 +206,12 @@ jobs:
       - name: Check the Searing Light coverage model
         run: python3 .github/scripts/audit/searing_light_coverage.py
 
+      # The tankbuster plan's rules (concept 09) against a simulated world with the game's timing.
+      # Its self-test switches on the defects seven review rounds found in the built code; each must
+      # be caught, so a passing run says the method would have found them before the code (A266).
+      - name: Check the tankbuster plan model
+        run: python3 .github/scripts/audit/tankbuster_model.py
+
       # The owner's rule: no fixed values in the code, everything derived from the game, and an
       # exception only after a loop that asked whether the game can supply the value after all.
       # Every number on a line the fork added has to be listed - as an exception with its loop in

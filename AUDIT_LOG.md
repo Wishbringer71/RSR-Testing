@@ -6009,6 +6009,29 @@ Wechsel greift, schreibt das Protokoll selbst.
 **Prüfgrad:** statisch (Code, Versionsgeschichte, Spieldaten); Prüfskripte; Compile über die CI. Im Spiel nicht
 beobachtet.
 
+### A266 · Tankbuster-Plan: das Konzept vollständig hergeleitet statt Review-getrieben (12.10.2026)
+
+- *Seine Rüge:* „bei tank hast du von mir damals eine anweisung bekommen, erst das konzept voll auszuarbeiten und kein
+  trial & error zu machen. sieben reviews sagen was anderes aus." Zutreffend. *Ursache am System:* Das Code-Review
+  ersetzte die Definition of Ready. Jede Runde fand Lücken des Modells, und jede wurde einzeln eingearbeitet – sechs
+  Runden lang (A260–A263), weil es keine vollständige Erhebung gab, gegen die das Modell geprüft worden wäre.
+- *Nachgeholt, ohne Code:* Konzept 09, „Bestand" – alle Abwehraktionen der vier Tanks mit Wert, Dauer, Status,
+  Reichweite, Abklinggruppe (Spieldaten, Wirktexte), die Kopplungen K1–K5, der Pfadkatalog, die Tatsachen mit Quelle
+  und Zeitpunkt; „Ableitung aus dem Bestand" mit dem, was jede Regel trägt; offene Entscheidungen D2, D3.
+- *Was die Erhebung fand, das sieben Reviews nicht fanden:* Dark Mind (Minderung je Schadensart) und Kampfrausch
+  (maximale LP) fehlen im Wertemodell – weder Mittel noch zurückgehalten; Bulwark wird nicht zurückgehalten; Abschütteln
+  hebt Plan-Glieder auf (K1), Urflackern, The Blackest Night, Herz des Korunds, Oblation, Intervention und Cover
+  verbrauchen sie (K2–K4); die Tankbuster-Tabelle speichert Treffer unter Dark Mind oder erhöhten maximalen LP zu
+  niedrig (gefährliche Richtung, Konzept 13).
+- *Prüfmittel:* `tankbuster_model.py` (CI) – die Regeln des Konzepts gegen eine simulierte Welt mit Bildern, Rucklern,
+  Laufzeit, Statusreihenfolge, Verweigerungen, freien Pfaden und allen Schalterstellungen; Prüfungen O1–O7, O1 und O7
+  an der wahren Welt. Der Selbsttest schaltet die sieben in den Reviews gefundenen Defekte ein; alle werden gefunden.
+  Beim Aufbau korrigiert: drei Stellen des Orakels, die strenger waren als die Invarianten (Verweigerung bis in den
+  letzten GCD, Optionssatz von Invariante 1, Horizont H), und ein Zeitfehler des Modells selbst (Erhebung nach dem
+  nächsten Bild). Ergebnis: 23 Szenarien × 300 Läufe ohne Verletzung.
+
+**Prüfgrad:** Modell (simuliert, mit Selbsttest gegen die historischen Defekte); Code nicht geändert.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

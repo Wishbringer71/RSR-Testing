@@ -270,7 +270,7 @@ Wirken nutzbar und reicht noch immer nichts Geringeres, stehen zwei Wege offen:
   die schon verbrauchten Minderungen fehlen beim nächsten Tankbuster ohnehin, die Unverwundbarkeit (240–420 s)
   zusätzlich.
 - **B (gebaut, aus seiner Präzisierung abgeleitet):** Sie geht nicht mehr, sobald aus „alles" etwas hinausging –
-  ein Druck des Plans im Modus „alles", vom Ausführungsprotokoll des Spiels bestätigt. Im Kampf: Die Unverwundbarkeit bleibt für den nächsten tödlichen
+  ein RSR-Druck bewerteter Abwehr auf dich nach einem Durchlauf, der „alles" rechnete (Konzept 09, Zustandsmodell). Im Kampf: Die Unverwundbarkeit bleibt für den nächsten tödlichen
   Treffer; der jetzige trifft auf alle Minderungen und tötet nach der Messung, außer ein anderer legt noch einen
   Debuff oder Schild.
 
@@ -286,6 +286,30 @@ Code-Reviews haben zwischen beiden gependelt; die Frage ist keine technische.
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 
+
+### Abschütteln gegen ein gebrauchtes Glied bei tödlichem Raidwide: seine Entscheidung (D2) · N
+
+**Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`, „Die Ableitung aus dem Bestand", K1. Abschütteln hebt
+Verdammnis, Rachsucht und Urimpuls auf. Wird ein solches Glied für einen gemessenen Tankbuster gebraucht und steht
+zugleich ein Raidwide an, der nach den Zahlen ein Mitglied tötet, steht Tod gegen Tod. **Empfehlung:** die Triage
+seiner Vorgabe – ein Heiler geht vor; sonst bleibt das Glied, weil ein toter Tank meist den Kampf kostet. Gebaut ist
+bis dahin: Abschütteln weicht bei Gefahr für die Gruppe (A245).
+
+### Tank gegen Tank um ein Glied ohne bereite Unverwundbarkeit: seine Entscheidung (D3) · N
+
+**Konzept:** wie D2, K2–K4. Seine Triage gab einem kritischen Tank Vorrang, weil „sein Tod sicher, der Tankbuster
+möglich" war; für einen gemessenen, ohne das Glied tödlichen Tankbuster ist auch der eigene Tod sicher.
+**Empfehlung:** das Glied bleibt beim Planenden (sein Treffer ist gemessen und terminiert; den Stand des anderen
+können die Heiler bis zu dessen nächstem Treffer ändern). Gebaut ist bis dahin: Hilfe für andere ist frei.
+
+### Tankbuster-Plan weicht vom vollständigen Konzept ab (Abgleich 12.10.2026) · N, R
+
+**Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`, „Abgleich mit dem Code". Acht Abweichungen: Minderung je
+Schadensart (Dark Mind) und Erhöhung der maximalen LP (Kampfrausch) fehlen im Wertemodell; das Zurückhalten erfasst
+Block und die beiden nicht; K1–K4 (Abschütteln, Urflackern, The Blackest Night, Herz des Korunds, Oblation,
+Intervention, Cover) nehmen dem Plan gebrauchte Glieder; fehlende Dauern (Reflexion, Schiltron, Urflackern); die
+Tankbuster-Tabelle speichert Treffer unter Dark Mind oder erhöhten maximalen LP zu niedrig. Wird in einem Zug behoben,
+soweit nicht von D2/D3 abhängig.
 ### Wirkdauer von Reflexion und Schiltron fehlt in der Tabelle · N, R
 
 **Befund (A261, Zustandsmodell):** Der Wirktext von Reflexion (7535) und Schiltron (3542) in `ActionId.resx` lautet

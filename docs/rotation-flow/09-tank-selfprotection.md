@@ -1146,6 +1146,215 @@ sie liest keine Option und wählt keine Aktion. Entscheidung in `CustomRotation_
 Stufe Tanks: Die Rechnung ist für alle vier gleich, nur die Aktionen unterscheiden sich, und die liest sie aus den
 Wirktexten. Der Heiler-Teil sitzt auf der Stufe Heiler; Damage Dealer betrifft die Regel nicht.
 
+### Bestand: Aktionen, Kopplungen, Pfade, Tatsachen (Erhebung 12.10.2026)
+
+Grundlage jeder Aussage unten. Erhoben aus `DefensiveValues.g.cs` (Wert, Dauer, Statusbindung nach Wirktext), den
+Spieldaten (xivapi, Blatt `Action`: Reichweite, Radius, Abklingzeit, Gruppe, Ladungen; `ActionTransient`: Wirktext)
+und den vier Tank-Rotationen. Deutsche Namen nur aus `action_names_de.json`, sonst der englische.
+
+**Die Aktionen.** „Kandidat": kann Glied eines Bündels sein. „Gehalten": das Zurückhalten erfasst sie (bewertet
+und auf dich gerichtet). Abklingzeit in Sekunden, Gruppe = Abklinggruppe des Spiels.
+
+| Job | Aktion | Wirkung laut Wirktext | Dauer (Tabelle) | Reichweite/Radius | Abklingzeit, Gruppe | Rolle | Gehalten |
+|---|---|---|---|---|---|---|---|
+| alle | Schutzwall | −20 % | 20 | 0/0 | 90, 47 | Kandidat | ja |
+| alle | Reflexion | Gegner −10 % | 15 laut Text, **0** | 0/5 | 60, 45 | kein Kandidat (Dauer fehlt) | ja |
+| alle | Abtausch | Rückstoßschutz, Slow | – | 0/0 | 120, 49 | unbewertet (A236) | nein |
+| PLD | Sentinel / Guardian | −30 % / −40 % | 15 | 0/0 | 120, 20 | Kandidat | ja |
+| PLD | Bulwark | Block 100 % | – | 0/0 | 90, 16 | **unbewertet** | nein |
+| PLD | Sheltron / Holy Sheltron | −15 % (+15 % 4 s) | **0** / 8 | 0/0 | 5, 3; Eid 50 | Kandidat nur Holy Sheltron | ja |
+| PLD | Intervention, Cover | auf ein anderes Mitglied | – | 30 bzw. 20/0 | 10 bzw. 120; Eid 50 | Hilfe für andere | nein |
+| PLD | Divine Veil, Passage of Arms | Gruppe | 30 / – | 0/30 bzw. 8 | 90 / 120 | Gruppenwerkzeug | nein |
+| PLD | Heiliger Boden | unverwundbar | 10 | 0/0 | 420, 25 | Unverwundbarkeit | – |
+| WAR | Rachsucht / Verdammnis | −30 % / −40 % | 15 | 0/0 | 120, 22 | Kandidat | ja |
+| WAR | Urinstinkt / Urimpuls | −10 % | 6 / 8 | 0/0 | 25, **7** | Kandidat | ja |
+| WAR | Urflackern | −10 % auf ein anderes Mitglied | **0** | 30/0 | 25, **7** | Hilfe für andere | nein |
+| WAR | Kampfrausch | max. LP +20 %, Heilung | – | 0/0 | 90, 16 | **unbewertet** | nein |
+| WAR | Abschütteln | Gruppenbarriere 15 %; hebt Kampfrausch, Verdammnis, Urimpuls auf | 30 | 0/30 | 90, 15 | Gruppenwerkzeug | nein |
+| WAR | Holmgang | LP nicht unter 1 | 10 | 6/0 | 240, 25 | Unverwundbarkeit | – |
+| DRK | Shadow Wall / Shadowed Vigil | −30 % / −40 % | 15 | 0/0 | 120, 21 | Kandidat | ja |
+| DRK | Dark Mind | physisch −10 %, magisch −20 % | – | 0/0 | 60, 9 | **unbewertet** | nein |
+| DRK | The Blackest Night | Barriere 25 % max. LP | 7 | 30/0 | 15, 3 | Kandidat; auf andere Hilfe | ja |
+| DRK | Oblation | −10 % | 10 | 30/0 | 60, 19, **2 Ladungen** | Kandidat; auf andere Hilfe | ja |
+| DRK | Dark Missionary | Gruppe | – | 0/30 | 90, 15 | Gruppenwerkzeug | nein |
+| DRK | Totenerweckung | Tod → Walking Dead | 10 | 0/0 | 300, 25 | Unverwundbarkeit | – |
+| GNB | Camouflage | −10 % | 20 | 0/0 | 90, 16 | Kandidat | ja |
+| GNB | Nebula / Great Nebula | −30 % / −40 % | 15 | 0/0 | 120, 22 | Kandidat | ja |
+| GNB | Heart of Stone / Herz des Korunds | −15 % | 7 / 8 | 30/0 | 25, 6 | Kandidat; auf andere Hilfe | ja |
+| GNB | Heart of Light | Gruppe | – | 0/30 | 90, 15 | Gruppenwerkzeug | nein |
+| GNB | Aurora | Regen | – | 30/0 | 60, 20 | unbewertet (Heilpfad) | nein |
+| GNB | Meteoritenfall | unverwundbar, LP auf 1 | 10 | 0/0 | 360, 25 | Unverwundbarkeit | – |
+
+**Lücken der Wertetabelle**, je mit Folge im Kampf:
+- *Eigene Minderung je Schadensart fehlt im Wertemodell* (`DefensiveValue` kennt Self, Gegner physisch, Gegner
+  magisch, Barriere). Dark Mind bleibt unbewertet: gegen einen magischen Tankbuster sind 20 % ungenutzt, der Plan
+  wählt ein teureres Bündel oder die Unverwundbarkeit; und Dark Mind wird nicht zurückgehalten, kann also neben einer
+  stehenden Unverwundbarkeit hinausgehen.
+- *Dauer fehlt, wo der Text sie nennt:* Reflexion (15 s, der Wert hängt an einem Merkmal), Schiltron (6 s),
+  Urflackern (mehrere Dauern im Text). Keine Kandidaten.
+- *Andere Wirkungsarten ohne Modell:* Block (Bulwark, Passage of Arms), Erhöhung der maximalen LP (Kampfrausch – hebt
+  B), Heilung (Äquilibrium, Aurora). Weder Mittel des Plans noch zurückgehalten.
+- *Dieselben Lücken verfälschen die Messung* (Konzept 13, Tankbuster-Tabelle): Die Tabelle speichert den Treffer
+  ungemindert, indem sie die beim Treffer stehende Minderung herausrechnet (`TankbusterTable.MitigationFactor`), und
+  misst den Anteil an den *aktuellen* maximalen LP (`Watcher.DamageShareOn`). Stand beim Treffer Dark Mind, fehlt dessen
+  Minderung in der Rückrechnung; stand eine Erhöhung der maximalen LP (Kampfrausch; im Spiel auch „of a party member or
+  self by 10 %"), ist der Nenner zu groß. Beide Male wird der Treffer **zu niedrig** gespeichert – die gefährliche
+  Richtung, denn jeder spätere Plan rechnet mit diesem Höchstwert.
+
+**Die Kopplungen** – wo eine freie Aktion dem Plan ein Glied nimmt oder ein Glied aufhebt:
+- *K1 Abschütteln hebt Verdammnis, Rachsucht, Urimpuls und Kampfrausch auf* (Job-Guide). Es kommt aus dem
+  Einzelheilpfad und der Flächenabwehr – beide sind vom Zurückhalten frei. Die Rotation hält es zurück, solange einer
+  dieser Status *liegt* (`HoldShakeItOffInHeal`) oder Verdammnis für einen Tankbuster läuft
+  (`HoldShakeItOffForTankbuster`); beide Sperren weichen bei Gefahr für die Gruppe, und keine kennt ein gedrücktes
+  Glied, dessen Status noch nicht liegt.
+- *K2 Gemeinsame Abklingzeit:* Urflackern auf einen anderen verbraucht Urinstinkt/Urimpuls (Gruppe 7). Die eigene
+  Sperre der Rotation fragt nach einem Tankbuster auf ihn, nicht nach dem Plan.
+- *K3 Dieselbe Aktion für dich und andere:* The Blackest Night, Herz des Korunds, Oblation. Ein Druck auf den Co-Tank
+  verbraucht das Glied (Oblation: eine von zwei Ladungen).
+- *K4 Gemeinsame Ressource:* Eid 50 für Holy Sheltron, Intervention und Cover.
+- *K5 Befohlenes Objektziel* lenkt einen Druck des Plans um (Upstream 7.5.6.22, A264).
+
+**Die Pfade**, die eine Abwehr auf dich drücken können, und ob das Zurückhalten sie erfasst:
+
+| Pfad | Erfasst | Was dort fällt (Tank-Rotationen) |
+|---|---|---|
+| Befehl (`CommandNextAction`, `ForceEnable`) | nein (sein Befehl) | jede |
+| Countdown | – (vor dem Kampf gibt es kein Wirken, also keinen Plan) | The Blackest Night, Divine Veil |
+| `EmergencyAbility` (Basis, unter `HealthForDyingTanks`; PLD) | ja, außer Unverwundbarkeit | Unverwundbarkeit; PLD Heiliger Boden, Cover, Intervention |
+| Tankbuster-Plan | – | Bündel oder Unverwundbarkeit |
+| Heilpfade | nein (`HealPathRunning`) | WAR Abschütteln, Urflackern; GNB Aurora |
+| Flächenabwehr | nur was nur dich trifft | Reflexion, Gruppenwerkzeuge, DRK Oblation/TBN |
+| Einzelabwehr (eigener Befehl: nur ihr Pfad frei) | ja | alle Kandidaten, Reflexion, Bulwark, Dark Mind, Kampfrausch, Abtausch |
+| `GeneralAbility` | ja | WAR Urinstinkt/Urimpuls, Kampfrausch, Äquilibrium; PLD Eid (Holy Sheltron, Intervention) |
+| Hilfe für andere (Ziel ≠ du) | nein | Intervention, Cover, Urflackern, TBN, Herz des Korunds, Oblation |
+
+**Die Tatsachen**, mit Quelle, Zeitpunkt und Ausfall:
+
+| Tatsache | Quelle | erhoben | Ausfall |
+|---|---|---|---|
+| R, H | Wirkzeit des Gegners | `TankbusterForecast.Update`, einmal je Bild nach der Rotation; im Plan auf „jetzt" vorgerückt | Wirken abgebrochen: verschwindet; neu begonnen: neue Nummer |
+| P | Tabellen-Höchstwert × Status, die über H stehen | dieselbe Erhebung | ungemessen: kein Plan; Damage Up: nicht gespeichert |
+| B | LP + Barrieren über H (früheste) | dieselbe Erhebung | Barriere ohne gelisteten Status zählt nicht |
+| Datensatz | Druck (`BaseAction.Use`), Bestätigung (Effekt-Handler, nach Laufzeit zum Server), Status gesehen (Erhebung) | Spielthread bzw. Erhebung | Bestätigung fehlt: Druck verfällt nach einem GCD |
+| Verweigerung | `CanUse` falsch außerhalb Sperre/Zauber | Plan | – |
+| Zähler „alles" | RSR-Druck bewerteter Abwehr auf dich | `BaseAction.Use` | Druck von Hand zählt nicht |
+| BossModReborn | Zeitleiste, Ziel des ersten Eintrags | Plugin-Abfrage | kein Modul = keine Vorhersage |
+
+### Die Ableitung aus dem Bestand
+
+Jeder Punkt des Bestands bekommt hier seine Regel, mit dem, was sie trägt. Wo der Code anders handelt, steht es unter
+„Abgleich mit dem Code" am Ende dieses Abschnitts.
+
+**Was „Abwehr auf dich" ist.** Zwei verschiedene Mengen, bisher in einer vermischt:
+- *Mittel des Plans:* was sich in P oder B rechnen lässt – Minderung (für alle Schadensarten oder je Art), Barriere,
+  Erhöhung der maximalen LP. Kampfrausch ist eine solche Erhöhung: „Increases maximum HP by 20 % and restores the
+  amount increased" – der Treffer bleibt gleich groß, das Polster wächst um 20 % der bisherigen maximalen LP; in B
+  wie eine Barriere von 0,2. Dark Mind ist Minderung je Art (physisch 10 %, magisch 20 %).
+  *Getragen von:* seiner Vorgabe, verfügbare Minderungen zu nutzen, und dem geringsten Mittel – Dark Mind (60 s) und
+  Kampfrausch (90 s) sind billiger als jede große Minderung.
+- *Was zurückgehalten wird:* jede eigene Aktion, deren Wirktext nur den Nutzer schützt – die Mittel oben und dazu
+  Block (Bulwark). Passage of Arms schützt die Gruppe und bleibt als Gruppenwerkzeug frei. *Getragen von:* seiner Präzisierung „nicht invul und dann noch zusätzlich buffs" – Bulwark neben Heiligem Boden ist
+  ein solcher Buff, auch wenn er sich nicht rechnen lässt.
+- Heilungen (Äquilibrium, Aurora) sind keine Abwehr; die Heilpfade bleiben frei.
+
+**Fehlende Dauern** (Reflexion, Schiltron, Urflackern): bis der Generator sie liest, keine Kandidaten. Richtung: zu
+viel Mittel, nie zu wenig. Reflexion zählt, sobald ihr Debuff auf dem Wirkenden liegt.
+
+**K2–K4: Hilfe für andere, die dem Plan ein Glied nimmt.** Seine Vorgabe zu Urflackern (29.09.2026, Abschnitt
+„Krieger: Nascent Flash…") fragt: Ist der Tankbuster tödlich, ist er mit Bestehendem wegsteckbar, wer ist am
+ehesten entbehrlich? Damals war die erste Frage unbeantwortbar, und die Regel nahm jeden angekündigten Tankbuster als
+möglicherweise tödlich. Für einen **gemessenen** Tankbuster beantwortet der Plan sie: Das Glied wird gebraucht, wenn
+es im billigsten überlebenden Bündel steht. Daraus, universell für alle vier Tanks (seine Vorgabe „Universell
+zuerst"):
+- Eine Hilfe für andere, die ein Glied des laufenden Plans verbraucht – dieselbe Aktion (The Blackest Night, Herz
+  des Korunds, Oblation bei nur noch einer Ladung), dieselbe Abklinggruppe (Urflackern ↔ Urimpuls) oder dieselbe
+  Ressource (Intervention, Cover ↔ Holy Sheltron über Eid) –, wartet, bis das Glied gedrückt ist oder der Plan es
+  nicht mehr braucht.
+- Die Triage seiner Vorgabe entscheidet, wenn beide es brauchen: Ein kritischer Heiler gewinnt („fällt der Heiler,
+  fällt die Gruppe"); ein kritischer Schadensausteiler nicht („am ehesten entbehrlich"). Ein kritischer Tank gewann
+  dort, weil „sein Tod sicher, der Tankbuster möglich" war. Für einen gemessenen Tankbuster, den du ohne das Glied
+  nach den Zahlen nicht überlebst, ist auch dein Tod sicher; seine Begründung entscheidet Tank gegen Tank dann nicht
+  mehr (D3).
+- Für einen ungemessenen Tankbuster gilt die bisherige Regel (Urflackern: „möglicherweise tödlich").
+- Gebraucht ist das Glied nur, wenn kein überlebendes Bündel ohne es bleibt. Bleibt eines, geht die Hilfe, und der Plan
+  rechnet ohne das Glied weiter – meist mit einem teureren Bündel; das ist der Preis der Hilfe. Die Unverwundbarkeit
+  zählt dabei nicht als Ersatz, sonst erzwänge jede Hilfe die Kanone auf Spatzen – **außer** die Triage gibt dem
+  anderen den Vorrang: Dann geht die Hilfe, und der Plan zieht für dich die Unverwundbarkeit, wenn sie bereit ist. So
+  überleben beide; die Kanone ist dann das notwendige Mittel.
+
+**K1: Abschütteln hebt ein Glied auf.** A245 hält Abschütteln, solange Verdammnis, Rachsucht oder Urimpuls *liegt*,
+und weicht bei Gefahr für die Gruppe – abgeleitet aus seinem Kriterium „Wen bringt der Verzicht in ernste
+Bedrängnis?". Mit dem Plan ist die Bedrängnis des Tanks gemessen:
+- Ein gedrücktes Glied, dessen Status noch nicht liegt, zählt wie ein liegendes (dieselbe Gefahr, nur früher).
+- Ist das Glied gebraucht (kein überlebendes Bündel ohne es, keine Unverwundbarkeit), stirbt der Tank nach den
+  Zahlen am Tankbuster, wenn Abschütteln geht. Der Raidwide bringt die Gruppe in Gefahr, aber nicht notwendig in den
+  Tod. „Sicher vor möglich" hält Abschütteln dann auch bei Gefahr für die Gruppe zurück, **außer** der gemessene
+  Raidwide tötet nach den Zahlen ein Mitglied – dann steht Tod gegen Tod, und das entscheidet er (D2).
+
+**K5: befohlenes Objektziel.** Sein Befehl; der Plan rechnet ohne das umgelenkte Glied weiter (Ausführung, „Ziel").
+
+**Offene Entscheidung D3 (`TODO.md`):** ein kritischer anderer Tank gegen dein Glied, ohne das ein gemessener
+Tankbuster dich nach den Zahlen tötet, **und deine Unverwundbarkeit ist nicht bereit** (sonst überleben beide, siehe
+oben). Einer von beiden steht nach den Zahlen ohne Schutz. Empfehlung: das Glied bleibt bei dir – dein Treffer ist
+gemessen und landet zu bekanntem Zeitpunkt; den kritischen Stand des anderen können die Heiler bis zu seinem nächsten
+Treffer noch ändern, deinen Tankbuster nicht. Gegenposition: Der andere ist jetzt kritisch und stirbt womöglich vor
+deinem Tankbuster; dein Treffer ist ein Höchstwert, du überlebst ihn vielleicht mit einer Heilung, die bis dahin
+kommt.
+
+**Offene Entscheidung D2 (`TODO.md`):** Abschütteln für einen Raidwide, der nach den Zahlen ein Mitglied tötet,
+gegen Verdammnis oder Urimpuls, ohne die der Tankbuster den Krieger nach den Zahlen tötet. Empfehlung: die Triage
+seiner Vorgabe – ein Heiler geht vor; sonst bleibt Verdammnis, weil ein toter Tank meist den Kampf kostet (Konzept 08).
+
+### Modellprüfung
+
+`.github/scripts/audit/tankbuster_model.py` (CI) setzt die Regeln dieses Abschnitts um – nicht den Code – und lässt
+sie gegen eine simulierte Welt laufen: Bilder von 1/144 bis 1/30 s mit Rucklern bis 0,2 s; die Erkennung erhebt nach
+der Rotation; Laufzeit zum Server 30–300 ms; der Status erscheint vor oder nach der Bestätigung; Verweigerungen, auch
+zweimal; Abschütteln und Urflackern als freie Pfade; andere Pfade, die jederzeit drücken wollen; alle vier
+Schalterstellungen; knappe Treffer, bei denen jedes Glied gebraucht wird. Geprüft wird je Lauf:
+- O1: Sagte der Plan „überlebbar", überlebt der Tank – an der wahren Welt gemessen;
+- O2: Nach der Unverwundbarkeit geht nichts Bewertetes mehr hinaus (mit „Spend only …");
+- O3: Die Unverwundbarkeit fällt nie, solange ein Bündel reicht, dessen Glieder vor dem letzten GCD gedrückt werden
+  können (Invariante 1, mit ihrem Optionssatz und dem Horizont H);
+- O4: Jedes gedrückte Glied steht am Einschlag;
+- O5/O6: Vom Druck bis zum Treffer zählt der Plan ein gedrücktes Glied, und nie doppelt;
+- O7: Ein freier Pfad macht aus einem Treffer, den der Plan allein überlebt, keinen Tod und erzwingt keine
+  Unverwundbarkeit (Gegenprobe derselben Welt ohne den freien Druck).
+O1 und O7 messen an der Welt; O3 bildet eine Invariante nach. Der Selbsttest schaltet die Defekte ein, die sieben
+Review-Runden im gebauten Code fanden (zwei Uhren, Reihenfolge Statusliste vor Datensatz, Erneuerung über die
+gemeinsame Sperrliste, feste Verweigerungsgrenze, Abschütteln und Urflackern ohne Rücksicht auf den Plan,
+Zurückhalten ohne die anderen Pfade); jeder muss gefunden werden. Stand 12.10.2026: alle gefunden; die Regeln dieses
+Konzepts verletzen in 23 Szenarien × 300 Läufen keine Prüfung.
+
+*Was das Modell nicht abdeckt* (dort trägt nur die Herleitung): ein zweites Wirken und BossModReborn-Vorhersagen
+(das Zurückhalten ist dann aus), Befehle (sie sind frei), D1b, Minderung je Schadensart, die Ressourcenkopplung K4
+(gleicher Mechanismus wie K2), die Ausrüstung der anderen drei Tanks (gleiche Rechnung, andere Zahlen).
+
+### Abgleich mit dem Code (12.10.2026)
+
+Abweichungen des gebauten Codes von diesem Konzept, je mit Wirkung im Kampf. Behoben werden sie in einem Zug, nachdem
+D2 und D3 entschieden sind, soweit sie davon abhängen:
+1. *Minderung je Schadensart fehlt* (Generator, `DefensiveValue`): Dark Mind ist weder Mittel noch zurückgehalten.
+   Gegen einen magischen Tankbuster wählt der Plan teurer oder die Unverwundbarkeit; neben einer stehenden
+   Unverwundbarkeit kann Dark Mind hinausgehen.
+2. *Erhöhung der maximalen LP fehlt:* Kampfrausch ist kein Mittel des Plans (−20 % auf den Bedarf, 90 s).
+3. *Das Zurückhalten erfasst nur bewertete Aktionen* (`DefensiveValues.For(ID) != default`): Bulwark, Dark Mind und
+   Kampfrausch gehen neben der Unverwundbarkeit hinaus – gegen seine Präzisierung.
+4. *K1:* Abschütteln wartet nur auf *liegende* Status und weicht bei Gefahr für die Gruppe auch, wenn ein gebrauchtes
+   Glied fällt. Folge: Verdammnis oder Urimpuls fehlen am Tankbuster, den der Plan mit ihnen überlebt.
+5. *K2:* Urflackern fragt nach einem angekündigten Tankbuster, nicht nach dem Plan; für einen gemessenen nimmt es dem
+   Plan Urimpuls, auch wenn er gebraucht ist.
+6. *K3/K4:* The Blackest Night, Herz des Korunds, Oblation, Intervention und Cover auf andere sind frei, gleich ob sie
+   ein gebrauchtes Glied verbrauchen.
+7. *Fehlende Dauern* (Reflexion, Schiltron, Urflackern) – Generator; Richtung: zu viel Mittel.
+8. *Messung zu niedrig* bei Dark Mind oder erhöhten maximalen LP am gemessenen Treffer (Bestand, Lücken) – jeder
+   spätere Plan für diesen Tankbuster rechnet zu knapp.
+
+**Vertrag:** `DefensiveValue` ist öffentlich im Paket (Betroffene R). Neue Werte – eigene Minderung je Schadensart,
+Erhöhung der maximalen LP, „schützt den Nutzer" für Block – kommen als nicht-positionale Eigenschaften hinzu; der
+Konstruktor mit vier Werten bleibt. Was zurückgehalten wird, erzeugt der Generator aus dem Wirktext (Fähigkeitsprüfung
+statt Liste): eigene Minderung, eigene Barriere, Block, Erhöhung der maximalen LP.
+
 ### Die Rechnung
 
 Für den frühesten gemessenen Tankbuster, der auf dich gewirkt wird:
@@ -1386,6 +1595,9 @@ Holmgang oder Totenerweckung bleibt also, wie sie war.
     Treffer unter Damage Up wird nicht gespeichert (A260), aber auch nicht hochgerechnet: Die Wirktexte nennen keine
     Stärke. Stärkungen unter anderem Namen bleiben unerkannt.
   - Ein Wert unter Verwundbarkeit aus weniger Stapeln als jetzt.
+  - Ein zu niedrig gespeicherter Höchstwert (Konzept 13, „Fehler nur nach unten": unbezifferte Minderung, Dark Mind,
+    erhöhte maximale LP beim Treffer). Mit „Spend only …" ist das schlimmer als ohne Tabelle: Der Plan wählt zu wenig
+    und hält den Rest zurück. Behebung: Abgleich mit dem Code, Punkt 8.
   - Auto-Angriffe zwischen Plan und Einschlag: Der Plan wächst mit, solange Zeit ist.
   - Nach dem Einschlag zählt die Rechnung nicht weiter: Ein Tank, den ein knapp überlebter Tankbuster tief lässt,
     hat danach die zurückgehaltenen Minderungen wieder frei (das Zurückhalten endet mit dem Wirken), und die reaktive
