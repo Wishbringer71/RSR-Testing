@@ -406,7 +406,11 @@ magisch, Barriere als Positionswerte; dazu als nicht-positionale Eigenschaften e
 ### Grenzen
 
 **Die Rechnung irrt zu viel Mittel,** wo der Höchstwert über dem typischen Treffer liegt, eine Heilung vor dem
-Einschlag nicht zählt, Zusatzwirkungen fehlen und H einen GCD zu streng ist. Das kostet Abklingzeit, nicht Leben.
+Einschlag nicht zählt, Zusatzwirkungen fehlen, H einen GCD zu streng ist und ein Wert unter Verwundbarkeit mit mehr
+Stapeln gemessen wurde als jetzt liegen (nur in der Wechsellage). Das kostet Abklingzeit, nicht Leben – im
+schlimmsten Fall eine Unverwundbarkeit (240 bis 420 s) für einen Treffer, den Minderung getragen hätte; sie fehlt dann
+beim nächsten wirklich tödlichen. Umgekehrt irrt die Messung fast nur nach unten (Konzept 13): Ein Urteil „tödlich
+auch mit allem" aus einem zu kleinen Wert ist erst recht richtig.
 
 **Zu wenig Mittel** (der Tank fällt mit Plan):
 - Ein Treffer über dem bisher gemessenen Höchstwert, etwa unter einer Stärkung des Bosses. Ein Treffer unter Damage Up

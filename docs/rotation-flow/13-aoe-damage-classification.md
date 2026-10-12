@@ -1,12 +1,13 @@
 # 13 · Schadenspotential der Flächenaktionen
 
-Entwurfsdokument nach ADR-Struktur. Es stellt den geltenden Sachstand dar; die Prüfhistorie und die
-zurückgenommenen Aussagen stehen in `AUDIT_LOG.md` (A96, A98–A102).
+**Leitfrage:** Wie hart schlägt eine angekündigte Flächenaktion – oder ein Tankbuster –, und woher weiß der Baum das?
 
-## Ergebnis
+Das Dokument gibt den geltenden Stand; die Prüfhistorie und die zurückgenommenen Aussagen stehen in `AUDIT_LOG.md`
+(A96, A98–A102, A260 und folgende).
 
-**Die gelernte Liste gegnerischer Flächenaktionen kannte nur „drin oder nicht drin", und das ist zu
-grob.** Eine Aktion, die zwei Prozent der Gesundheit nimmt, löste dieselbe Gruppenminderung aus wie
+## Antwort
+
+**Eine Liste gegnerischer Flächenaktionen, die nur „drin oder nicht drin" kennt, ist zu grob.** Eine Aktion, die zwei Prozent der Gesundheit nimmt, löste dieselbe Gruppenminderung aus wie
 eine, die sechzig nimmt. Verbraucht wird dabei nicht der Schild, sondern die **Abklingzeit**: Eine auf
 eine Bagatelle gelegte Reflexion fehlt beim nächsten großen Einschlag.
 
@@ -25,9 +26,9 @@ für die proaktive Ebene folgt, steht in `08-mitigation-synergy.md`.
 geringe, die nur bei Gruppenmitgliedern mit wenig Gesundheit etwas auslöst; was oberhalb eines großen
 Schildes liegt, ist eine große. Weil der beobachtete Wert durch Minderung und Schild schwankt, wird
 über weitere Durchläufe neu bewertet. Bestehende Einträge ohne Potential sollen nachträglich bewertet
-werden können, **ohne** dabei als gering zu gelten — sein eigener Nachtrag, und der schwerste Punkt
-des Entwurfs: Der ausgelieferte Bestand führt **850 Einträge**, und sie pauschal als gering zu
-behandeln wäre ein Totalausfall der Gruppenminderung.
+werden können, **ohne** dabei als gering zu gelten — sein eigener Nachtrag: Der ausgelieferte Bestand führte bei
+der Einführung **850 Einträge** (A96), und sie pauschal als gering zu behandeln wäre ein Totalausfall der
+Gruppenminderung.
 
 **Drei Entscheidungen tragen die Umsetzung.**
 
@@ -558,11 +559,12 @@ unerkannt.
   Treffer dieses Kampfes auf dich und der Vorhersage der Tabelle: ungeminderter Wert mal der Minderung, die jetzt
   auf dir und auf dem Boss liegt. Gleiches gilt für die Prüfung, ob der Empfänger selbst in Gefahr ist. Damit
   greift der Tankwechsel schon beim ersten Tankbuster eines späteren Abends und mit Messungen vom Co-Tank.
-- **Gemessener Tankbuster: das geringste Mittel (Konzept 09, A260, A261):** Für einen gewirkten Tankbuster
-  wählt der Plan das billigste Bündel eigener Minderungen, das ihn bei den LP jetzt und mit dem, was beim Einschlag
-  noch steht, überlebt – gestapelt, wo eine nicht reicht. Die Unverwundbarkeit nur, wenn kein Bündel reicht; der
-  Rest wird zurückgehalten. Hier entscheidet die Tabelle über Abklingzeiten. Dafür rechnet `PredictedShare` mit einem
-  Horizont: Eine Minderung, die vor dem Einschlag endet, zählt nicht.
+- **Der Tankbuster-Plan (Konzept 09, „Gemessener Tankbuster: das geringste Mittel"):** Für einen gewirkten
+  Tankbuster wählt er das billigste Bündel eigener Abwehr, das ihn übersteht, die Unverwundbarkeit nur, wenn keines
+  reicht, und hält den Rest zurück. Hier entscheidet die Tabelle über Abklingzeiten und darüber, ob die
+  Unverwundbarkeit fällt. Dafür rechnet `PredictedShare` mit einem Horizont: Eine Minderung, die vor dem Einschlag
+  endet, zählt nicht. Sein Vorschlag vom 04.10.2026, bei sicher tödlichem Tankbuster nur die Unverwundbarkeit zu
+  nehmen, ist dort Regel; die Gegenrechnung steht dort unter „Grenzen".
 
 **Ablesbar:** Die Liste zeigt neben der Tankbuster-Liste je Eintrag den ungeminderten Anteil, die Zahl der
 bewerteten Tankbuster und „Store:" in derselben Form wie die Flächentabelle. `DefenseTrace.log` schreibt jede
@@ -590,52 +592,7 @@ Zusammenführung je Speicher. Die Flächentabelle nutzt seit A259 denselben Weg.
 Verworfen wird die Tabelle von Hand bei geschlossenem Spiel, wie die Flächentabelle (seine Vorgabe, keine
 Schaltfläche).
 
-### Sein Vorschlag: bei sicher tödlichem Tankbuster nur die Unverwundbarkeit (04.10.2026)
-
-„rein ökonomisch kann die liste und deren auswertung auch dazu führen, dass für einen tankbuster, welcher 100%
-tödlich ist, nur noch invul nimmt und alle anderen schilde, debuffs und mitigations wegläßt, da sie hier eh
-nichts bringen würden und somit nur unnütz verbraucht wären. das müsste aber im konzept mehrfach geprüft und
-gegengerechnet sein."
-
-**Gebaut (A260, A261), Regel und Lagen in Konzept 09, Abschnitt „Das geringste Mittel gegen einen gemessenen
-Tankbuster".** Seine Vorgabe vom selben Tag macht daraus eine Planung: das geringste Mittel, das ohne Risiko reicht,
-die Unverwundbarkeit nur als zweite Wahl. Hier
-die Gegenrechnung, die die Tabelle betrifft. Zwei Entscheidungen sind auseinanderzuhalten, und nur die erste trägt
-Risiko:
-
-**1. Die Unverwundbarkeit ziehen, weil kein Bündel eigener Minderungen den Treffer übersteht.**
-- Die Tabelle irrt beim Messen fast nur nach unten (siehe oben). Ein Urteil „tödlich auch mit allen verfügbaren
-  Minderungen" aus einem zu kleinen Wert ist also erst recht richtig.
-- Nach oben irren kann sie über den Höchstwert: ein Treffer unter einer Stärkung des Gegners – seit A260 beim Messen
-  ausgeschlossen, soweit die Stärkung als Damage Up erkennbar ist –, oder ein Wert unter Verwundbarkeit mit mehr
-  Stapeln. Den zweiten Fall nimmt Konzept 09 in Kauf: Er gilt nur unter Verwundbarkeit, also in der Wechsellage.
-- Dann zöge die Regel eine Unverwundbarkeit (240 s bis 420 s, xivapi) für einen Treffer, den Minderung allein
-  getragen hätte. Sie fehlte beim nächsten wirklich tödlichen Treffer.
-
-**2. Steht die Unverwundbarkeit, die übrigen Mittel weglassen (sein Vorschlag).** Für den gebundenen Treffer gibt
-es dagegen keinen Einwand.
-- Alle vier machen eine Minderung für *diesen* Treffer wirkungslos, weil er nach dem besten Fall auch mit aller
-  Minderung tötet:
-  - Heiliger Boden und Meteoritenfall: immun, 10 s – das gilt für jeden Treffer in dieser Zeit.
-  - Holmgang: LP fallen nicht unter 1, 10 s.
-  - Totenerweckung: der Tod wird zu Walking Dead, danach zählt die Heilung, nicht die Minderung.
-- Für einen *anderen*, nicht tödlichen Treffer unter Holmgang oder Totenerweckung zählt Minderung weiter: Er nimmt
-  LP, die nach dem Ende fehlen. Zurückgehalten wird dort deshalb nur beim gebundenen Treffer.
-- Ein Schild oder Gegner-Debuff wäre verbraucht, ohne etwas zu bewirken. Schutzwall (90 s) und Verdammnis (120 s)
-  fehlten beim nächsten Tankbuster.
-- Als Rückfall taugt die Minderung kaum: Scheitert die Unverwundbarkeit bei einem tödlichen Treffer, rettet die
-  Minderung nach dem Urteil ebenfalls nicht. Das Urteil kann aber irren; deshalb öffnet das Zurückhalten im letzten
-  GCD, wenn die Unverwundbarkeit bis dahin nicht kam.
-- Was nicht wegfällt, betrifft andere Treffer oder andere Spieler:
-  - Reflexion für einen Raidwide im selben Fenster: Die Flächenabwehr ist nicht betroffen und läuft vor der
-    Einzelabwehr.
-  - Hilfe für ein anderes Mitglied (Intervention, Herz des Korunds auf dem Co-Tank).
-  - Was über den Treffer hinaus wirken soll: Die Bindung endet einen GCD nach dem Wirkende; danach entscheidet die
-    Abwehr wieder wie sonst.
-  - Heilerschilde auf einem Tank unter Holmgang oder Totenerweckung: Der Heiler kennt das Urteil des Tanks nicht. RSR
-    als Heiler hält nur bei Heiligem Boden und Meteoritenfall.
-
-## Falsifikation
+## Grenzen der Messung
 
 **Der Höchstwert konvergiert nicht, wenn immer gemindert wird.** Nicht widerlegt, aber entschärft:
 Minderungen haben Abklingzeiten, sind verschieden stark, und die **erste** Beobachtung einer Aktion
@@ -669,16 +626,9 @@ Benannte Grenze, nicht behoben.
 über Effektpfade statt über Aktions-Ids; für die gibt es kein Potential, also greift die Rechnung dort
 nicht. Konsistent mit „unbewertet heißt mindern", aber benannt: Diese Auslöser bleiben grob.
 
-**Premortem — ausgeliefert, und es ändert sich nichts. Warum?** Vier Gründe, drei davon in der
-Umsetzung behandelt: Alteinträge bekommen kein Potential (behoben durch Fortschreibung bei bekannten
-Ids), die Fortschreibung greift in harten Kämpfen nicht (behoben durch die gelockerte Bedingung), und
-die Rechnung löst nie aus (sie verglich zunächst gegen `HealthForDyingTanks` 0,15, was einen vollen
-Spieler selbst bei dreißig Prozent Einschlag nicht unterschreitet — dieselbe Fehlerform wie C59, und
-korrigiert auf die Heilschwelle). **Der vierte war der gefährlichste, weil er nach dem Bauen nicht
-mehr auffällt:** Niemand kann sehen, ob es wirkt. Er ist mit der Sonde behoben — und die Form, in der
-er sich zeigte, ist der Beweis für ihre Notwendigkeit: Der Vergleich gegen 0,15 konnte nie feuern und
-wurde durch Nachdenken gefunden, nicht durch eine Messung. Dieselbe Fehlerform noch einmal, und die
-Regel wäre stumm geblieben, während der Speicher sich weiter füllt.
+**Ob die Rechnung im Kampf auslöst,** zeigt die Sonde in der Listenverwaltung (Antwort, Tabelle): Bestand,
+härtester Einschlag, Anteil je Eintrag und die Aktionen, deren Minderung unterblieb. Eine Rechnung, die nie feuert,
+fällt nach dem Bauen sonst nicht mehr auf.
 
 ## Was der Baustein eröffnet
 
@@ -733,12 +683,11 @@ aktuelle Gesundheit nicht reicht, und Barriere samt Minderung zusätzlich, wo au
 reicht. Sie gilt nicht nur für Flächen — dieselbe Frage stellt sich beim Tankbuster —, deshalb steht
 sie dort und nicht hier.
 
-## Konsequenzen
+## Betroffene
 
-**Endnutzer.** Nach dem Umstieg zunächst kein Unterschied — alle vorhandenen Einträge sind unbewertet.
-Mit jedem beobachteten Einschlag wird eine Aktion bewertet; Bagatellflächen hören auf, Abklingzeiten
-zu verbrauchen, und diese stehen beim nächsten großen Einschlag zur Verfügung. Der Weg dorthin ist
-graduell und ohne Stichtag. In wiederholten Inhalten ist er einen Durchlauf lang.
+**Endnutzer.** Mit jedem beobachteten Einschlag wird eine Aktion bewertet; Bagatellflächen verbrauchen keine
+Abklingzeiten, die beim nächsten großen Einschlag fehlten. Eine Aktion ohne Messung gilt weiter als lohnend. In
+wiederholten Inhalten ist der Weg dorthin einen Durchlauf lang.
 
 **Autoren abgeleiteter Rotationen.** `HostileCastingArea` bleibt unverändert — Typ, Format und
 Signatur. Die Ergänzung ist additiv; wer sie nicht liest, merkt nichts.
@@ -748,7 +697,7 @@ Signatur. Die Ergänzung ist additiv; wer sie nicht liest, merkt nichts.
 und stehen als eigene Blöcke; `check_emergency_heal_threat.py` meldet in der CI, wenn ein Merge die
 Rechnung oder ihren Rückfall auf „mindern" entfernt.
 
-## Offene Punkte zu diesem Konzept
+## Offene Punkte
 
 Sie stehen in `TODO.md` und sind dort unter der Überschrift des Eintrags mit **Konzept:** auf dieses
 Dokument gekennzeichnet — an **einer** Stelle statt in zweien, damit keine Kopie altert.
