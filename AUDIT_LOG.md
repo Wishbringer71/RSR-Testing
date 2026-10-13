@@ -6282,6 +6282,16 @@ Protokoll stehen hier nicht.
     Der Messwert bleibt aus demselben Grund leer („rated no"), die Aktion gilt dann als lohnend.
   - Klärt den offenen Eintrag „Flächenlandung reached you False bei Raidwides im Sonderinhalt": zweite Hypothese
     bestätigt, wo ein Folgetreffer kam; sonst traf die Aktion die Gruppe gar nicht.
+  - *Behoben:* Eine leere Landung steht zunächst als „verfehlt"; eine gleichnamige Aktion mit Treffer auf die Gruppe
+    vor der nächsten Landung und vor Kampfende gilt als ihre Landung, für „erreicht" und für den Messwert
+    (`Watcher.RecordFollowUpOfEmptyLanding`, vor dem Quellenfilter, weil der Folgetreffer oft von einem Helfer kommt).
+    Verworfen: leere Landungen gar nicht zu schreiben – dann öffneten die neun Wind-ups ohne Folgetreffer die Abwehr bei
+    jedem Cast; eine Frist statt Name und nächster Landung – eine neue Zahl ohne Beleg. *Falsifikation:* kein Defekt –
+    widerlegt, der Folgetreffer traf ihn mit 14–22 %, und die Option ließ seine Abwehr dafür weg; Behebung falsch –
+    stärkste Gegenposition: Ein gleichnamiger, fachlich anderer Angriff vor der nächsten Landung würde zugeordnet;
+    begrenzt durch nächste Landung und Kampfende, und der Höchstwert ändert nur nach oben. Ausgeliefert und nichts
+    ändert sich – trifft zu für Wind-ups ohne Folgetreffer (neun der zehn) und wo BossModReborn die Abwehr ohnehin
+    öffnete; nach Befund 1 entscheidet wieder der Cast.
 - *Offener Punkt aus A252/A254 beantwortet:* Schimmerschild steht mehrfach als Wahl, gewirkt wird es einmal („used"
   danach je einmal); die Wahl wird bis zur Ausführung neu geschrieben. Sieben Mal kam eine zweite Ladung binnen 4–12 s.
   Fünfmal kam die zweite über den Flächenpfad, der die eigene Barriere prüft (`StatusProvide`) – die erste war dann

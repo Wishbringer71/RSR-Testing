@@ -212,3 +212,12 @@ While area damage is announced, the heal target is chosen by the hit points left
 the share of the bar. That counted only casts that RSR also judged worth mitigating, so a large cast that can be
 interrupted, an area marker on the party and a raidwide BossModReborn announces within the mitigation window
 left the order by share. They now count as well.
+
+## Area defence: the hit that follows an empty wind-up counts
+
+Some listed area casts land only on their caster and hurt nobody; where a hit follows, it comes under the
+same name right after, often from an invisible helper. The empty landing was taken as "it missed you", so with
+`Skip area defence for casts that missed you` on, the next cast opened no area defence for the hit that did
+come, and the cast was never rated. A same-named hit on the party after an empty landing now counts as that
+landing: it decides whether the cast reached you and how hard it hits. A wind-up that nothing follows stays
+skipped as before.

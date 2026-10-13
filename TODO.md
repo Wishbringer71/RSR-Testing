@@ -45,12 +45,6 @@ Barde, Pictomancer und Tänzer führen „Prevent the use of defense abilties du
 
 Seit A202 wird Improvised Finish sofort gewirkt (5 %). Offen als Verbesserung: bei angekündigtem Flächentreffer Rising Rhythm bis 4 Stapel (10 %) aufbauen, je Stapel drei Sekunden ohne Aktion. Nutzen nicht belegt, also eigene Option, ab Werk aus; zur Entscheidung, ob sie gebaut werden soll. Konzept 14, „Wechselwirkungen und Zeit".
 
-### Leere Landung gilt als „verfehlt", der Folgetreffer unter anderer Id bleibt unbewertet · N
-
-Protokoll 04.–10.10.2026 (A272) beantwortet den Eintrag vom 01.10.: Zehn gelistete Aktionen landen auf dem Wirkenden selbst („1 targets, 0 party members damaged", `CastType` 1, `EffectRange` 0). Bei Head-splitting Roar folgt die gleichnamige 43579 mit 1–22 %, bei den übrigen neun trifft niemanden etwas. Der Effekt-Handler schreibt die leere Landung als „missed you"; „Skip area defence for casts that missed you" lässt dann auch die Abwehr für den echten Folgetreffer weg, und der Messwert bleibt leer. In Arbeit.
-
-**Konzept:** `docs/rotation-flow/13-aoe-damage-classification.md`
-
 ### Krieger: Nascent Flash — offene Bausteine · N, U
 
 Nach seinen Kriterien (29.09.2026) bewertet und gebaut (Konzept 09, „Krieger: Urimpuls für sich oder Urflackern für andere"; A226). Offen:

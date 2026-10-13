@@ -149,6 +149,89 @@ public static class Watcher
 		return count;
 	}
 
+	// Listed area casts whose last landing reached nobody in the party, by name. Such a cast is the visible
+	// wind-up; the hit, where there is one, is a same-named action right after it, often from an
+	// untargetable helper (trace of 04-10 October, A272: Head-splitting Roar lands on its caster, and its
+	// namesake 43579 hits the party for up to 22 % half a second later). An entry stands until the listed
+	// cast lands again or the fight ends - no clock, so no window to guess.
+	private static readonly Dictionary<string, uint> _emptyLandingByName = [];
+
+	/// <summary>
+	/// Reads a same-named hit after an empty landing as that landing: whether it reached the player, for
+	/// "Skip area defence for casts that missed you", and how hard it hit, for the damage table.
+	/// </summary>
+	/// <remarks>
+	/// Without it the empty landing stood as "missed you": the next cast opened no area defence for the hit
+	/// that does come, and the table never rated the cast, so every other rule treated it as unknown. A
+	/// wind-up nothing follows keeps its "missed you", which is right - it hurt nobody.
+	/// </remarks>
+	private static void RecordFollowUpOfEmptyLanding(ActionEffectSet set, Lumina.Excel.Sheets.Action action,
+		IBattleChara player, bool hitPlayer)
+	{
+		uint listed;
+		lock (_emptyLandingByName)
+		{
+			if (!DataCenter.InCombat)
+			{
+				_emptyLandingByName.Clear();
+				return;
+			}
+
+			// A listed action records its own landing.
+			if (OtherConfiguration.HostileCastingArea.Contains(action.RowId)
+				|| !_emptyLandingByName.TryGetValue(action.Name.ExtractText(), out listed))
+			{
+				return;
+			}
+		}
+
+		var damaged = DamagedPartyMembers(set);
+		if (damaged == 0 && !hitPlayer)
+		{
+			return;
+		}
+
+		// Reached once is reached: a mechanic resolved in several sets need not hit him in the first.
+		if (hitPlayer && !player.IsDead)
+		{
+			DataCenter.AreaCastReachedPlayer[listed] = true;
+		}
+
+		var highestShare = 0f;
+		foreach (var member in DataCenter.PartyMembers)
+		{
+			if (member == null || member.MaxHp == 0)
+			{
+				continue;
+			}
+
+			foreach (var effect in set.TargetEffects)
+			{
+				if (effect.TargetID == member.GameObjectId && TryGetDamageEntry(effect, out var entry)
+					&& FullAmount(entry) > 0)
+				{
+					highestShare = Math.Max(highestShare, (float)FullAmount(entry) / member.MaxHp);
+				}
+			}
+		}
+
+		// Same rule as a listed landing: only a real amount measures, and only an increase is written.
+		if (highestShare > 0f
+			&& (!OtherConfiguration.HostileCastingAreaPotential.TryGetValue(listed, out var known) || highestShare > known))
+		{
+			OtherConfiguration.HostileCastingAreaPotential[listed] = highestShare;
+			_ = OtherConfiguration.SaveHostileCastingAreaPotential();
+		}
+
+		if (highestShare > 0f)
+		{
+			DataCenter.RecordAreaMeasurementOutcome(listed, "measured", $" at {highestShare:P0} of max HP, from #{action.RowId}");
+		}
+
+		DefenseTrace.Line($"follow-up of #{listed}: {action.Name.ExtractText()} #{action.RowId}, reached you {hitPlayer},"
+			+ $" {damaged} party members damaged, highest {highestShare:P0} of max HP");
+	}
+
 	private static float DamageShareOn(ActionEffectSet set, ulong targetId, uint denom)
 	{
 		float share = 0;
@@ -287,6 +370,9 @@ public static class Watcher
 					TankSwapWatch.RecordHitOnPlayer(marked.RowId, marked.Name.ExtractText(), source.GameObjectId, hitShare,
 						markedForPlayer, StatusesAppliedTo(set, playerObject.GameObjectId));
 				}
+
+				// Before the source filter below: the follow-up often comes from an untargetable helper.
+				RecordFollowUpOfEmptyLanding(set, marked, playerObject, hitPlayer);
 			}
 
 			float damageRatio = 0;
@@ -517,12 +603,28 @@ public static class Watcher
 
 						DataCenter.AreaCastReachedPlayer[set.Action!.Value.RowId] = reachedPlayer;
 
+						// A landing that reached nobody in the party carried no hit; if one comes, it comes as
+						// a same-named action, and that one settles both records (RecordFollowUpOfEmptyLanding).
+						var damagedMembers = DamagedPartyMembers(set);
+						var landedName = set.Action!.Value.Name.ExtractText();
+						lock (_emptyLandingByName)
+						{
+							if (damagedMembers == 0 && !reachedPlayer)
+							{
+								_emptyLandingByName[landedName] = set.Action!.Value.RowId;
+							}
+							else
+							{
+								_ = _emptyLandingByName.Remove(landedName);
+							}
+						}
+
 						// "Skip area defence for casts that missed you" can only learn from a landing that
 						// arrives here; the trace shows each one, so a cast that keeps opening the defence
 						// without ever being recorded can be told from one that keeps reaching him.
-						DefenseTrace.Line($"area cast landed: {set.Action!.Value.Name.ExtractText()} #{set.Action!.Value.RowId}"
+						DefenseTrace.Line($"area cast landed: {landedName} #{set.Action!.Value.RowId}"
 							+ $" from {battle.Name.TextValue}, reached you {reachedPlayer}, {set.TargetEffects.Length} targets"
-							+ $" ({DamagedPartyMembers(set)} party members damaged)");
+							+ $" ({damagedMembers} party members damaged)");
 					}
 
 					if (highestShare > 0f && OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))

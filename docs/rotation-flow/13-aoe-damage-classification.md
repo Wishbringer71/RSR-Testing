@@ -206,6 +206,17 @@ bis er ihn wieder trifft; ein auf ihn gewirkter Cast zählt immer. Nur die Abweh
 (`IsHostileCastingAOEForMyDefense`); Vorab-Heilung und Gefährdungsprüfung behalten die Sicht der Gruppe. Der
 Messwert gilt je Sitzung.
 
+**Eine Landung, die niemanden aus der Gruppe traf, trägt keinen Treffer** (A272). Zehn gelistete Aktionen landen
+auf dem Wirkenden selbst (`CastType` 1, `EffectRange` 0; „1 targets, 0 party members damaged"). Bei Head-splitting
+Roar (43578) trifft eine halbe Sekunde später die gleichnamige 43579 die Gruppe mit 1–22 %; bei den übrigen neun
+trifft niemanden etwas. Eine solche Landung steht deshalb zunächst als „verfehlt"; folgt vor der nächsten Landung
+derselben Aktion und vor Kampfende eine gleichnamige Aktion mit Treffer auf die Gruppe, gilt sie als ihre Landung:
+Erreicht sie ihn, steht „erreicht", und ihr Anteil misst die gelistete Aktion (`Watcher.RecordFollowUpOfEmptyLanding`,
+Protokollzeile „follow-up of"). Im Kampf: Der Folgetreffer bekommt wieder die Flächenabwehr, und der Cast wird
+bewertet; ein Wind-up ohne Folgetreffer bleibt ausgelassen, wie bisher. Verknüpft wird über den Namen, nicht über
+den Wirkenden, weil der Folgetreffer von einer anderen Figur kommt; eine Frist gibt es nicht, die nächste Landung
+und das Kampfende begrenzen die Zuordnung. Grenze: Ein Folgetreffer unter anderem Namen bleibt unverknüpft.
+
 **Protokoll der Abwehrentscheidungen (`DefenseTrace.log` im Konfigurationsordner, über Sitzungen und Builds fortgeschrieben, jede Sitzung mit Datum, Uhrzeit und Commit des Builds, A208, A232):** Jede
 Wahl der Abwehrkette — Flächen- und Einzelabwehr im Dispatch für alle Jobs, beim Beschwörer auch Radiant Aegis vor
 einem BossModReborn-Raidwide — mit allen Quellen, die in diesem Moment stehen: Marker mit Pfad, Träger und Abstand,
@@ -445,7 +456,7 @@ verschwinden kann.
 
 **Was eine Datei mit `{}` sagt, und was nicht.** Sie entsteht auf genau zwei Wegen: beim ersten Start ohne Datei (das Laden legt die leere Tabelle an) oder in der Sitzung nach einer unlesbaren Datei (die liegt dann als `.corrupt` daneben). Jedes andere Speichern schreibt mindestens einen Eintrag, weil die Tabelle von selbst nur wächst. Seit dem Ladefix heißt `{}` also: **in keiner Sitzung seither wurde ein Wert gemessen.** Die Datei sagt nicht, warum — das sagt nur die Messstelle.
 
-**Die Messung hat sechs Tore**, jedes einzeln hinreichend, um sie zu verhindern: der Effekt-Hook liefert überhaupt Treffer; die Quelle ist ein anvisierbarer Gegner; eine Aktion mit Wirkzeit; eine reguläre Aktion der Kategorie Zauber, Waffenfertigkeit oder Fähigkeit; ihre Id in der Flächenliste; ein Betrag über null bei einem Gruppenmitglied.
+**Die Messung hat sechs Tore**, jedes einzeln hinreichend, um sie zu verhindern: der Effekt-Hook liefert überhaupt Treffer; die Quelle ist ein anvisierbarer Gegner (außer beim gleichnamigen Folgetreffer einer leeren Landung, der auch von einem Helfer kommen darf); eine Aktion mit Wirkzeit; eine reguläre Aktion der Kategorie Zauber, Waffenfertigkeit oder Fähigkeit; ihre Id in der Flächenliste; ein Betrag über null bei einem Gruppenmitglied.
 
 **`Record AOE actions` und die Gruppengröße gelten nur der Aufnahme in die Liste, nicht der Messung.** Die Option stammt von Upstream (2023) und entscheidet, ob neue Ids in die Liste kommen; wer sie ausschaltet, will die kuratierte Liste so behalten, wie sie geliefert wurde. Die Mindestgröße von vier ist die kleinste Gruppenzusammensetzung des Spiels (`ContentMemberType`, Zeile 2: je ein Tank, Heiler, Nahkämpfer, Fernkämpfer); darunter trifft auch ein Kegel oder ein kleiner Kreis alle, und „alle getroffen" belegt keinen Gruppentreffer mehr. Für eine bereits gelistete Id beantwortet die Messung nur, wie hart sie trifft — das hängt an keiner der beiden Bedingungen. Stünde die Messung dahinter, fiele sie für jeden aus, der die Option abschaltet oder mit Duty Support ohne NPC-Gruppenoption spielt, und mit ihr alle drei Leser: das Auslassen kleiner Casts, das Heilen vor einem großen und das Aufheben einer Zurückhaltung. Ein Wert aus einem Lauf ohne Stufensynchronisation fällt zu klein aus; er korrigiert sich wie jede Unterschätzung beim nächsten ungemilderten Treffer, und die Höchstwert-Regel lässt ihn einen höheren Stand nie senken.
 
@@ -461,7 +472,14 @@ verschwinden kann.
 
 **Eine leere Flächenliste misst nichts**, gleich wie der Kampf verläuft; beide Fenster melden sie rot. Sie entsteht, wenn der Download beim ersten Start scheitert. Seit A196 bleibt sie auf diese Sitzung beschränkt: `InitOne` schreibt dann keine leere Datei mehr, die Liste gilt als nicht geladen (kein Speichern), und der nächste Start lädt erneut; eine unlesbare Liste wird beiseitegelegt und ebenfalls neu geladen. Downloads beim Laden sind an das Ladezeitlimit des Plugins gebunden.
 
-**Grenze, keine Ursache:** Viele Raidwides löst ein unsichtbarer Helfer aus, oft mit einer anderen Id als der sichtbare Cast des Bosses (Akhmorning, „Raiding Fundamentals“, 02.10.2026: bei Zaubern, deren Wirkung später eintritt oder weiterläuft, sind „often invisible, untargetable entities responsible“; ein Debuff auf dem Boss wie Reflexion mindert deren Schaden „usually“ nicht — Folge für die Gegner-Debuffs in Konzept 08). Seine Protokolle vom 01.10.2026 passen dazu: Raidwides im 48-Spieler-Inhalt blieben „rated no“, und ihre Landung meldete keinen Treffer auf ihn (TODO). Solche Treffer kommen nicht an: Die Messung nimmt nur anvisierbare Quellen, und die Verbraucher lesen ohnehin nur deren Casts. Der sichtbare Cast bleibt dann unbewertet, also beim Verhalten ohne Tabelle. Wie häufig das ist, ist nicht belegt; die Zählung weist es als „cast by an untargetable enemy" aus.
+**Grenze, keine Ursache:** Viele Raidwides löst ein unsichtbarer Helfer aus, oft mit einer anderen Id als der sichtbare Cast des Bosses (Akhmorning, „Raiding Fundamentals“, 02.10.2026: bei Zaubern, deren Wirkung später eintritt oder weiterläuft, sind „often invisible, untargetable entities responsible“; ein Debuff auf dem Boss wie Reflexion mindert deren Schaden „usually“ nicht — Folge für die Gegner-Debuffs in Konzept 08). Seine Protokolle vom 01.10. und 04.–10.10.2026 zeigen beide Formen: Landungen ohne Treffer auf die Gruppe, und bei
+Head-splitting Roar den gleichnamigen Folgetreffer (A272). Ein gleichnamiger Folgetreffer misst seit A272 den
+sichtbaren Cast (oben, „Eine Landung, die niemanden aus der Gruppe traf"). Ein Helfertreffer unter anderem Namen
+kommt weiter nicht an: Die Messung nimmt sonst nur anvisierbare Quellen, und die Verbraucher lesen ohnehin nur
+deren Casts. Der sichtbare Cast bleibt dann unbewertet, also beim Verhalten ohne Tabelle; die Zählung weist es als
+„cast by an untargetable enemy" aus. Ebenso unsichtbar bleiben Raidwides, deren sichtbarer Wirkender nicht
+anvisierbar ist (Ultima-Titan, -Garuda, -Ifrit im selben Protokoll, 48–56 %): `IsHostileCastingBase` fragt
+`IsEnemy`, und das verlangt Anvisierbarkeit.
 
 **Das Zurücksetzen der Liste lässt die Werte stehen** — Vorgabe des Auftraggebers: „es wäre schade,
 wenn dann auch die Erfahrungswerte weg wären." Die kuratierte Liste neu zu laden ist ein Download, die
