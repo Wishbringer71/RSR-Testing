@@ -311,6 +311,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Einen Sync werte ich aus, statt ihn nur einzupflegen: je fremder Änderung an einem Fork-Abschnitt — was ändert sie im Kampf, wie greift sie in die eigenen Änderungen, was wird daraus (trägt sie eine Regel, schärft sie einen Vertrag, beantwortet sie eine offene Frage)?
 
 **Commits und Zweige**
+- Der Arbeitszweig heißt `claude/fixes-after-<letztes Fork-Release>`, etwa `claude/fixes-after-7.5.6.13` (seine Vorgabe); nach einem neuen Release ein neuer Zweig mit dessen Nummer. Grund: Der Name sagt, auf welchem Release-Stand gearbeitet wird. Gibt die Sitzungsumgebung einen anderen Namen vor, gilt seine Vorgabe, und ich sage es ihm.
 - Klein geschnitten, zeitnah gepusht; ein eigener Zweig je Vorhaben ist nicht nötig.
 - Vollständig gemergte Zweige sind Löschfälle; ich melde sie ihm.
 - Bleibt ein Prüflauf aus: zuerst `mergeable_state` messen und die Basis mergen.

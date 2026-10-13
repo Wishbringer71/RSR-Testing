@@ -6386,6 +6386,22 @@ wahrnehmung und einordnung falsch". Einordnung: Hinweis mit Frage; am Artefakt g
 
 **Prüfgrad:** fremder Quelltext gelesen; statisch; Prüfskripte; Compile über die CI. Im Spiel nicht beobachtet.
 
+### A274 · Arbeitszweig nach seiner Namenskonvention (13.10.2026)
+
+Seine Frage, wie `claude/repo-privacy-settings-f06dqh` entstand, dann: „wir hatten aber konventionen für die
+namensbenennung" und „fixes-after-x.x.x.xx". Einordnung: Vorgabe.
+
+- *Gemessen:* Die Sitzung (`session_01CwVHyGudeSM6XveigdcJCF`, aus der Desktop-App am 12.08.2026) führt
+  `claude/repo-privacy-settings-f06dqh` als Zielzweig; den Namen vergibt die Sitzungsumgebung. Am 12.10.2026 06:22
+  legte ich ihn lokal von `main` an, pushte ihn und öffnete PR #12 – nach der Sitzungsanweisung, ohne ihm den
+  Widerspruch zu seiner Konvention zu nennen. Die Konvention stand nur im Archiv (A230: „neuer Zweig
+  `claude/fixes-after-7.5.6.13`") und in den Zweignamen der PRs #9–#11, nicht in `CLAUDE.md`; nach der
+  Kontextkomprimierung fehlte sie deshalb.
+- *Behoben:* Konvention in `CLAUDE.md` („Commits und Zweige"). Der Stand zieht als Vorspulen nach
+  `claude/fixes-after-7.5.6.13` um (letztes Fork-Release 7.5.6.13+wsh1; der alte Kopf 04ab61bee, gemergt mit PR #11,
+  ist Vorfahr), neuer Entwurfs-PR, PR #12 geschlossen. `claude/repo-privacy-settings-f06dqh` ist danach ein
+  Löschfall; Ref-Löschungen enden hier mit 403.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
