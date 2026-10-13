@@ -246,3 +246,18 @@ hits you.
 New setting `No fall damage` under Extra, off by default. On, the game's fall damage function returns zero, so a
 fall deals no damage. The hook and its signature come from Henchman's hacks (AGPL-3.0, credited in the file). If
 the game version does not have that function, the setting switches itself off.
+
+## Area casts of invisible helpers open the defence
+
+Many raidwides are cast by untargetable helpers, or by a boss off the field - Shinryu's Meteor Impact comes from
+five light spheres, each hitting the whole party. RSR read area casts of targetable enemies only, so without a
+BossModReborn module such a raidwide opened no defence at all. The area recognition now also reads untargetable
+enemies while they cast an action on the AoE list, and their actions are added to the list and measured like any
+other. `DefenseTrace.log` marks such a caster "(untargetable)".
+
+## Summoner: Radiant Aegis is no longer chosen during a demi
+
+Radiant Aegis can only be cast while Carbuncle is summoned, and a demi takes Carbuncle's place for 15 s. RSR asked
+only for a pet, so during a demi the area defence kept choosing a shield the game does not allow then, and Addle
+behind it never went out. Now the shield waits for the demi to end, and Addle comes in its place. Each defence decision in
+`DefenseTrace.log` also names the game's status for the chosen action.

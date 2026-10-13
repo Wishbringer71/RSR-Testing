@@ -629,7 +629,11 @@ public partial class SummonerRotation
 
 	static partial void ModifyRadiantAegisPvE(ref ActionSetting setting)
 	{
-		setting.ActionCheck = () => DataCenter.HasPet();
+		// "Can only be executed while Carbuncle is summoned" (effect text), and a demi stands in Carbuncle's
+		// place for its 15 s (the owner's hint, A129). The pet check alone let the area defence pick the
+		// shield throughout a demi: the game refused it, and Addle behind it in the chain never came (A277).
+		// The same gate the demi summons carry.
+		setting.ActionCheck = () => DataCenter.HasPet() && SummonTimeRaw <= 0f;
 		setting.StatusProvide = [StatusID.RadiantAegis];
 		setting.IsFriendly = true;
 	}

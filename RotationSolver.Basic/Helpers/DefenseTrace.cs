@@ -85,7 +85,18 @@ internal static class DefenseTrace
 			_lastDecisionWritten = now;
 		}
 
-		Line($"{path} -> {act.Name} #{act.ID} | {DataCenter.DescribeDefenseSources()}");
+		Line($"{path} -> {act.Name} #{act.ID}{GameStatus(act)} | {DataCenter.DescribeDefenseSources()}");
+	}
+
+	// What the game says to the chosen action right now (ActionManager.GetActionStatus, the id of the message it
+	// would show, LogMessage sheet): 0 usable, 580 casting, 582 recast. Written because a choice that never goes
+	// out cannot otherwise be told from one the game refused (A277).
+	private static unsafe string GameStatus(IAction act)
+	{
+		var manager = FFXIVClientStructs.FFXIV.Client.Game.ActionManager.Instance();
+		return act is IBaseAction action && manager != null
+			? $", game status {manager->GetActionStatus(FFXIVClientStructs.FFXIV.Client.Game.ActionType.Action, action.AdjustedID)}"
+			: string.Empty;
 	}
 
 	/// <summary>

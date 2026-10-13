@@ -6484,6 +6484,73 @@ henchman extrahieren und in rsr einbauen?" Einordnung: Vorgabe (Auftrag).
 
 **Prüfgrad:** fremder Quelltext gelesen; statisch, Prüfskripte, Compile über die CI. Im Spiel nicht beobachtet.
 
+### A277 · Protokoll 13.10.2026: Shinryu Unreal und eine Vierer-Instanz, Schimmerschild bei starken Flächen (13.10.2026)
+
+Seine Datei: `DefenseTrace.log`, eine Sitzung 19:39–22:16, Build f97099f00 (7.5.6.24), Beschwörer. Seine Angaben:
+„ich habe das gefühl, dass bei starken aoes kein schimmerschild gecasted wurde. bei shinryu unreal", „einige
+schimmerschilde habe ich manuell geworfen, weil nix kam", „nicht nur shinryu auswerten, alles auswerten".
+Einordnung: Hinweis (Beobachtung aus dem Spiel). Ausgewertet per Skript über alle 270 Zeilen; Spieldaten über
+xivapi; BossModReborn be8ff77 (13.10.2026 frisch geholt, unverändert). Spielernamen stehen hier nicht.
+
+- *Befund 1, Shinryu Unreal (20:05–20:47, vier Versuche): Meteoreinschlag ohne jede Abwehr.*
+  - Gemessen: je Versuch drei Wellen Meteoreinschlag (#50283, Wirkzeit 5 s, Kreis 60 y), je Welle fünf Treffer auf
+    ihn von „Lichtsphäre", je 7–8 Ziele; zusammen bis 65 % je Welle. Vor keiner Welle eine Abwehrzeile, auch kein
+    „open, nothing chosen": Die Flagge ging nie auf. Treffer mit 0 % fallen auf Wellen, vor denen er Schimmerschild
+    von Hand gewirkt hatte; das Protokoll schreibt eine Hand-Aktion nur nach einer eigenen Wahl.
+  - Ursache am Code: Die Flächenerkennung las nur Casts anvisierbarer Gegner (`AllHostileTargets`,
+    `IsHostileCastingBase` fragt `IsEnemy`), der Effekt-Handler warf Treffer nicht anvisierbarer Quellen vor Liste
+    und Messung weg. Den Meteoreinschlag wirkt ein Helfer (BossModReborn, Stormblood-Shinryu: `MeteorImpact`,
+    „Helper->self, 5.0s cast, range 60 circle"). Für Shinryu Unreal hat BossModReborn kein Modul (Aktions-Ids weder
+    in be8ff77 noch im aktuellen Stand). Konzept 13 führte das als „Grenze, keine Ursache".
+  - Shinryus Ruf (#50293, 22 %, 5 Ziele, `CastType` 10) traf nicht die ganze Gruppe und kam deshalb nicht in die
+    Liste; kein Defekt. Die Stack-Marker (acht Mal) öffneten die Abwehr; Schimmerschild und Stumpfsinn gingen hinaus.
+- *Behoben, zentral:* `TargetUpdater.UpdateAreaCasters` legt neben die Gegnerliste jeden nicht anvisierbaren
+  Kämpfer, solange er eine Aktion der Flächenliste wirkt (`DataCenter.AreaCasters`); die Flächenflagge, „erreicht
+  ihn", der große Cast, die unbewertete Erkennung, die eigene Flächenabwehr und das Protokoll lesen darüber.
+  `IsHostileCastingBase` nimmt diese Kämpfer an. Der Effekt-Handler lässt nicht anvisierbare Kämpfer durch, also
+  werden ihre Aktionen aufgenommen und gemessen. *Verworfen:* alle Helfercasts ohne Liste lesen (jede ausweichbare
+  Fläche öffnete die Abwehr); Helfer in `AllHostileTargets` aufnehmen (Zielwahl, Zielzahl und alle übrigen Leser
+  hätten unsichtbare Figuren bekommen). *Nicht mitgebaut:* Rückstoß- und Tankbuster-Casts von Helfern (`TODO.md`),
+  weil beide Regeln eigene Entscheidungen tragen.
+  *Falsifikation:* kein Defekt — widerlegt, zwölf Wellen bis 65 % ohne Abwehr und am Code der Ausschluss. Option
+  falsch — stärkste Gegenposition: Ein Helfer, der eine gelistete Id als ausweichbare Fläche wirkt, öffnet die
+  Abwehr; dieselbe Gefahr besteht für sichtbare Gegner, und die Aufnahmeregel (jedes Gruppenmitglied getroffen) ist
+  dieselbe. Freundliche nicht anvisierbare Kämpfer: Ihre Aktionen stehen nicht in der Liste, weil sie die Gruppe
+  nicht beschädigen. Ausgeliefert und nichts ändert sich — wenn „Record AOE actions" aus ist oder die Gruppe kleiner
+  als vier ist (Aufnahme geschlossen), und für Helfertreffer ohne Wirkzeit; die erste Welle eines Kampfs, dessen
+  Aktion noch nicht in der Liste steht, bleibt ohne Abwehr.
+- *Befund 2, Vierer-Instanz (21:07–22:07, Yozakura, Moko, Shishio, Gorai; Raidwides von BossModReborn angesagt,
+  „hits you True"): Schimmerschild gewählt, aber nicht gewirkt.*
+  - Gemessen: 38 Wahlen von Schimmerschild, 10 gewirkt; in 15 von 25 Abwehrfenstern mit gewähltem Schild ging gar
+    nichts hinaus, auch Stumpfsinn nicht, das in der Kette hinter dem Schild steht (in sieben der zehn erfolgreichen
+    kam es binnen eines Einschiebeplatzes nach). In den erfolglosen Fenstern steht die Wahl jedes Mal 0,3–0,6 s nach einem
+    „open, nothing chosen" und wiederholt sich im GCD-Takt: das Muster sofort wirkender GCD-Aktionen mit ihrer
+    Animationssperre. Treffer darin bis 31 % (Kenki-Entfesselung), 26 % (Enkyo), 21 % (Oka Ranman).
+  - Ursache, gefolgert: Schimmerschild „can only be executed while Carbuncle is summoned" (Wirktext), und eine Demi
+    ersetzt Carbuncle für 15 s (sein Hinweis, A129: „muss vor demi bei bedarf gecasted werden"). Die Demi-Phase hat
+    sofort wirkende GCD-Aktionen. `ModifyRadiantAegisPvE` fragte nur `HasPet()`; liefe der Begleiter dort als
+    Demi weiter, wählte die Abwehr den Schild die ganze Demi über, das Spiel wiese ihn ab, und Stumpfsinn dahinter
+    käme nie. Die Demi-Beschwörungen und Dreadwyrm Trance tragen die Sperre schon (`SummonTime`). Ob `HasPet()` in
+    der Demi wahr ist, ist nicht am Spiel belegt.
+  - Die Fähigkeitsprüfung gegen den Spielstatus (`ActionBasicInfo`, `BadStatusAbility`) fragt `ActionType.EventAction`
+    statt `ActionType.Action` (Upstream; vor e9de49d57 `ActionType.Ability`, derselbe Wert 4): Für Job-Fähigkeiten
+    greift sie vermutlich nie (nicht gemessen). Nicht geändert: Der Upstream-Commit nennt Mudren und Tanzschritte als
+    Anlass, und eine Wiederbelebung träfe jede Fähigkeit jedes Jobs.
+- *Behoben:* Schimmerschild verlangt zusätzlich, dass kein Demi-Zeitgeber läuft (`SummonTimeRaw <= 0`). Messmittel
+  für den Rest: Jede Abwehrwahl im Protokoll nennt „game status N", den Status des Spiels für die gewählte Aktion
+  (`GetActionStatus`, Id der Spielmeldung: 0 wirkbar, 580 Wirken läuft, 582 Abklingzeit, 635/636 Begleiter).
+  *Falsifikation:* kein Defekt — widerlegt, 15 Fenster ohne jede Abwehr bei gewählter Abwehr. Option falsch — wenn
+  die Ursache nicht die Demi ist (etwa harte Casts ohne Einschiebeplatz); dann ändert die Sperre nichts, und der
+  Spielstatus in der Wahlzeile zeigt die tatsächliche Ursache. Ausgeliefert und nichts ändert sich — trifft genau
+  diesen Fall.
+- *Ohne Defekt:* Einzeltreffer ohne Ankündigung auf ihn (Wolke zu Wolke 37 % und 25 %, Yoki-uzu 45 %) haben keinen
+  Abwehrpfad für einen Fernkämpfer ohne Marker oder Tankbuster-Vorhersage. Mondlose Nacht (15 %) sagte
+  BossModReborn nicht an, und die Flächenliste nimmt in einer Gruppe unter vier nichts auf (die Raidwides trafen je
+  drei Ziele). Der Tankbuster-Marker auf ihm (21:31) öffnete die Einzelabwehr; Unsteter Schutzwall ging hinaus.
+
+**Prüfgrad:** Protokoll per Skript; Code und fremder Quelltext statisch; Prüfskripte; Compile über die CI. Im Spiel
+nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

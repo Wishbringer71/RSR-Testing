@@ -122,7 +122,10 @@ einen Kampf, eine Ablesung, einen Bericht und eine Runde (seine Vorgabe).
 
 **Schimmerschild (Radiant Aegis) geht vor jeder Demi, wenn er fällig ist** (`RadiantAegisDueBeforeDemi`).
 Der Wirktext begründet es: „Can only be executed while Carbuncle is summoned" — die Demi ersetzt Carbuncle
-für 15 Sekunden. Fällig heißt, was die Rotation ohnehin fragt: ein von BossModReborn angekündigter Raidwide
+für 15 Sekunden (sein Hinweis, A129). Während der Demi ist der Schild deshalb nicht wirkbar
+(`ModifyRadiantAegisPvE`: Begleiter und kein laufender Demi-Zeitgeber, A277); vorher genügte ein beliebiger
+Begleiter, und die Flächenabwehr wählte den Schild die ganze Demi über, das Spiel wies ihn ab, und Addle dahinter
+kam nicht. Fällig heißt, was die Rotation ohnehin fragt: ein von BossModReborn angekündigter Raidwide
 innerhalb der Wirkdauer des Schilds (aus seinem Wirktext, `DefensiveValues.DurationOf`) oder die stehende
 Verteidigungsflagge ohne eigenen Schild, wenn der Treffer den Beschwörer selbst erreicht (`AreaHitOnMe`,
 Konzept 13: die Flagge fragt nach der Gruppe, der Schild schützt nur ihn). Wirkbar heißt Stufe, Option,
