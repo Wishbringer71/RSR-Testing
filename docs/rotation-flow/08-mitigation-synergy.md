@@ -477,8 +477,8 @@ Occult Crescent, das nach seinem Weggang weiterläuft (am Quelltext gefolgert, `
 Eine dritte ist offen: Im Kampf gegen Necrophobia (Forked Tower: Magic, 10.10.2026) steht von 12:32 bis 12:44 kein
 Treffer auf ihn, während sieben Raidwides vorhergesagt wurden und Necrophobias Tankbuster zweimal gemessen wurde.
 BossModReborn führt für diesen Kampf den Raidwide Hail of Hellflares, dessen Schaden von Hilfsfiguren kommt. Ob er
-dort nicht getroffen wurde oder das Protokoll diese Quelle nicht sieht, weiß ich nicht. „Kein Treffer im Protokoll" ist deshalb
-kein sicheres Maß für „Fehlvorhersage". Seine Frage vom 13.10.2026, ob es Raidwides waren oder Flächen, außerhalb
+dort nicht getroffen wurde oder das Protokoll diese Quelle nicht sieht, ist nicht bestimmt. „Kein Treffer im
+Protokoll" ist deshalb kein sicheres Maß für „Fehlvorhersage". Seine Frage vom 13.10.2026, ob es Raidwides waren oder Flächen, außerhalb
 derer er stand, führte zur Maske.
 
 **Ausgeschlossen:**
