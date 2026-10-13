@@ -32,7 +32,7 @@ senkt.
 **Gewaehlt ist eine zentrale Bremse bei dezentraler Ausloesung:** Die vorhandenen Ausloeser bleiben,
 hinzu kommt eine Pruefung, die *zurueckhaelt*. Faellt sie aus, verhaelt sich RSR wie zuvor.
 
-**Gemessen werden die Gegnerseite (Betäubung, Verlangsamung, ihre Resistenzen) und der Gesundheitsverlauf je
+**Gemessen werden die Gegnerseite (Betäubung samt Abnahme und Immunität, Verlangsamung) und der Gesundheitsverlauf je
 Gruppenmitglied.** Die persoenlichen Minderungen des Tanks gehen in die Vorausschau nicht als Tabelle ein, sondern
 ueber diesen Verlauf: Er ist bereits netto und braucht keine Liste.
 Die Schaetzung daraus ist **praeventiv** — bei 90 % Gesundheit meldet sie den Tod acht Sekunden im
@@ -252,7 +252,7 @@ wahrscheinlich ist. Die Regeln dieses Konzepts messen das so:
 
 | Regel | Maß der Wahrscheinlichkeit |
 |---|---|
-| Flächenabwehr (`AutoStatus.DefenseArea`) | ein laufender Flächenzauber; mit `MitigateBigAreaCastsEvenIfInterruptible` auch ein unterbrechbarer, dessen gemessener Anteil die größte Barriere übersteigt; ein BossMod-Raidwide im Fenster; der Befehl „Defense Area" von Hand |
+| Flächenabwehr (`AutoStatus.DefenseArea`) | ein laufender Flächenzauber; mit `MitigateBigAreaCastsEvenIfInterruptible` auch ein unterbrechbarer, dessen gemessener Anteil die größte Barriere übersteigt; ein BossMod-Raidwide im Fenster, mit `SetAsideMissingBmrRaidwides` (ab Werk aus) nur, solange die Vorhersagen dieses Moduls mindestens so oft eintrafen wie nicht („BossModReborn-Vorhersagen werden am Kampf gemessen"); der Befehl „Defense Area" von Hand |
 | Einzelabwehr (`AutoStatus.DefenseSingle`) | ein Zauber auf einen Tank (Tankbuster) oder ein BossMod-Tankbuster im Fenster; beim Heiler zusätzlich, wie viele Gegner den Tank angreifen |
 | Heilung vor dem angekündigten Treffer | die vorausberechnete Gesundheit nach dem laufenden Cast — der Treffer ist angekündigt |
 | Schranke der Rückhaltungen | Gefährdungsklasse 1 jetzt, oder ein angekündigter, gemessener Treffer brächte ein ungeschütztes Mitglied dorthin |
@@ -442,6 +442,50 @@ ist der grosse" ist ueber die Schnittstelle nicht lesbar.
 **Daraus folgt die Bauform, nicht aus Bequemlichkeit:** Was gerade laeuft, ist die einzige
 Groesseninformation, die in diesem Moment vorliegt. Die Regel ist deshalb so gut, wie diese Zuordnung
 trifft — und nicht besser.
+
+### BossModReborn-Vorhersagen werden am Kampf gemessen
+
+**Jede Raidwide-Vorhersage im Minderungsfenster wird gegen den Kampf gehalten** (`BmrRaidwideWatch`, A272): Traf
+eine gegnerische Aktion mehr als ein Gruppenmitglied oder ihn und einen weiteren, innerhalb desselben Fensters um
+den vorhergesagten Zeitpunkt? Gezählt wird je Modul; `DefenseTrace.log` schreibt jede Abrechnung mit Modul und
+BossModReborn-Endpunkt (Zeitleiste, Hinweise, allgemeine Vorhersage), jede Entscheidung nennt „landed h of n".
+Das Fenster ist seine Einstellung `BMRRaidwideMitWindow`: Eine Minderung, die so früh fällt, deckt einen Treffer,
+der so spät kommt; eine Vorhersage, die weiter danebenliegt, hätte sie ohnehin falsch gelegt.
+
+**Mit `SetAsideMissingBmrRaidwides` (ab Werk aus) öffnet eine Vorhersage die Abwehr nur, solange die Vorhersagen
+ihres Moduls mindestens so oft eintrafen wie nicht.** Darunter liest `DataCenter.BMRNextRaidwideIn` „nichts
+angesagt", gemessen wird weiter, und die nächste, die trifft, gibt die Vorhersagen zurück. Alle Leser folgen dem:
+die Flächenabwehr, die Auffrischungen vor einem Raidwide (Schimmerschild, Tactician, Troubadour, Shield Samba), die
+Gegner-Debuffs und das Zurückhalten einer Gruppenfähigkeit für den Raidwide (`RaidwideAfterEffectBeforeRecast`), die
+Kanalsperre und Gefährdungsklasse 3 der Heilzielwahl. Die Bauform folgt der Zurückhaltung oben („Die Regel
+bewertet sich selbst"): beginnt mit Vertrauen, Schwelle Gleichstand. Gezählt wird je Modul, nicht je Kampf: Ein
+Modul ist eine Begegnung, das übertragene Muster also das desselben Bosses. Die Zählung gilt je Sitzung.
+
+**Warum gemessen werden muss — sein Protokoll vom 04.–10.10.2026:** Von 175 Vorhersagen, die die Abwehr allein
+öffneten, trafen ihn 27 zum vorhergesagten Zeitpunkt; 144 Abwehraktionen gingen auf Vorhersagen ohne Treffer
+(Schimmerschild 54, Vollkommener Ablass 32, Stumpfsinn 25, Linderung 21). Im Kampf: Linderung fiel auf eine
+Vorhersage ohne Treffer und war abgelaufen, als 25 s später ein Raidwide mit 27 % kam.
+
+**Warum ab Werk aus — ein Grund aus dem Kampf:** Über dasselbe Protokoll nachgerechnet (Modul angenähert durch
+Abschnitte ohne fünfminütige Pause, eingetroffen nur, wo ihn selbst ein Mehrzieltreffer traf) legte die Regel 134 von
+275 Vorhersagen beiseite. 91 davon trafen nicht ein; 43 trafen, 27 davon mit 15 % und mehr, 11 dieser 27 hatte nur
+BossModReborn angekündigt (bis 66 %) — dort fiele die Abwehr vor dem Treffer ganz weg, bei den übrigen 16 käme sie
+erst mit dem Cast. Ob verschenkte Abklingzeiten oder fehlende Abwehr vor einem großen Raidwide schwerer wiegen, ist
+seine Entscheidung (vorgelegt 13.10.2026). Die Nachrechnung unterschätzt „eingetroffen", weil das Protokoll Treffer
+auf andere Gruppenmitglieder nur bei gelisteten Casts zeigt; die gebaute Messung sieht sie.
+
+**Ausgeschlossen:**
+- *Die Größe der Vorhersage aus dem Treffer lernen* — BossModReborn nennt keine Aktion zur Vorhersage (Tabelle oben),
+  und die eingetroffenen streuen von 0 % bis über 40 %; der Höchstwert eines Moduls bewertete jede Vorhersage
+  als groß. Eingetroffene Vorhersagen von 0–1 % bekommen deshalb weiter dieselbe Abwehr.
+- *Eine feste Zahl verfehlter Vorhersagen oder eine eigene Frist* — Zahlen ohne Beleg; die Mehrheit ist die
+  Schwelle, die der Tausch selbst setzt, und das Fenster ist seine Einstellung.
+
+**Grenzen:** Ein Raidwide, dessen Schaden von einer Figur kommt, die weder anvisierbarer Gegner noch Kämpfer ist,
+gilt als nicht eingetroffen. Ein Treffer auf zwei Gruppenmitglieder im Fenster, der nicht der vorhergesagte war,
+zählt als eingetroffen — der Fehler führt zum alten Verhalten. Die allgemeine Schadensvorhersage
+(`BMRNextDamageIn`, Raidwide oder Tankbuster) bleibt ungemessen. Ohne Modul fehlt die Vorhersage ganz, und es bleibt
+der reaktive Weg.
 
 ### Gegner-Debuffs am Tankbuster und am Raidwide
 
@@ -776,7 +820,10 @@ Daraus folgen beide Regeln dieses Konzepts:
 Gegner ueberhaupt noch betaeubt werden koennen.** Ist die Betaeubungskette abgearbeitet und alles im
 Wirkbereich immun, gibt es nichts mehr zu strecken und nichts mehr zu sparen - dann ist das Aussetzen
 sinnfrei und kostet nur den Flaechenzauber. Umgesetzt ist das als `headroom` aus `SurveyStuns`, also
-"mindestens ein Gegner ist weder betaeubt noch resistent", in allen drei Aussetzregeln.
+"mindestens ein Gegner ist weder betaeubt noch immun", in allen drei Aussetzregeln und beim Dunkelritter.
+Immun heißt, was der Kampf gezeigt hat (`StunWatch`, A272): eine Betäubung, die das Spiel als widerstanden
+meldet, oder eine betäubende Aktion, die traf, ohne zu betäuben. Die Abnahme nach jeder Anwendung zeigt das
+Spiel nicht als Status; „Stun Resistance" (39, 1349) ist die Dauerimmunität bestimmter Gegner (xivapi).
 
 **Zweite Bedingung ueber allem: der verbleibende Strom muss bewaeltigbar sein.** Der Anteil sagt, dass
 gedrosselt wird - er sagt nicht, dass der Rest durchzuheilen ist. Drei Gegner bei voller Leistung
@@ -1094,12 +1141,11 @@ noch Aktionsdaten; gezählt wird deshalb die ganze Gruppe.
 ### Die Größenordnung
 
 Die Betäubungsressource ist **einmalig je Pull**, nicht wiederkehrend: Erste
-Anwendung 4 s, zweite 2 s, dritte 1 s, danach 45 s Immunität. The Balance bestätigt die Halbierung (White Mage
-Basic Guide, 02.10.2026: „halving its duration with each application until they become temporarily immune to
-stun … the cumulative 7s of stun helps mitigate a significant amount of tank damage in trash pulls"); die 45 s
-Immunität nennt es nicht. Ein stehender
-Gruppenpull ist selten länger als diese 45 s, das Zurücksetzen der Resistenz fällt
-also praktisch nicht mehr in den Kampf. Zu verteilen sind damit genau **7 Sekunden
+Anwendung 4 s, zweite 2 s, dritte 1 s, danach Immunität. The Balance bestätigt die Halbierung und die Summe (White
+Mage Basic Guide, 02.10.2026: „halving its duration with each application until they become temporarily immune to
+stun … the cumulative 7s of stun helps mitigate a significant amount of tank damage in trash pulls"); wie lange
+die Immunität hält, nennt es nicht (45 s steht ohne Quelle). Die Regeln brauchen die Zahl nicht: `StunWatch` liest
+Anwendungen und Immunität aus dem Kampf (A272). Zu verteilen sind damit genau **7 Sekunden
 Betäubung**, und die Frage lautet nicht, wie viele Zyklen man unterbringt, sondern
 wie man diese sieben Sekunden legt.
 
@@ -1260,16 +1306,19 @@ bis ein jetzt begonnener Sanctus landet: Rest des GCD plus Wirkzeit (`GetCastTim
 mit Presence of Mind). Gemessen wird die längste laufende Betäubung im Wirkradius — überschrieben
 würde jede, die die Landung überdauert.
 
-**Die Betäubung, die noch nicht auf den Gegnern steht.** Wirkzeit und Erholzeit sind gleich lang;
+**Die Betäubung, die noch nicht in der Statusliste steht.** Wirkzeit und Erholzeit sind gleich lang;
 der nächste GCD ist in dem Moment frei, in dem der erste Sanctus landet, und seine Betäubung steht
-dann womöglich noch nicht auf den Gegnern. Ein Gegner im Radius, der weder betäubt noch resistent
-ist, bekommt gleich die erste, volle Anwendung. Sie zählt mit der Dauer aus dem Wirktext
-(`DefensiveValues.DurationOf`, Sanctus 4 s). Ohne sie läse die Regel an genau dieser Stelle „keine
-Betäubung" und gäbe Sanctus frei (Schluss aus Code und Wirkzeit).
+dann womöglich noch nicht in der Statusliste der Gegner. Die Effektmeldung des Sanctus sagt aber schon,
+wen er betäubt hat: `StunWatch` zählt je Gegner die Anwendungen und rechnet die gerade gelandete mit
+der Dauer aus dem Wirktext (`DefensiveValues.DurationOf`, Sanctus 4 s), halbiert je vorheriger
+Anwendung (The Balance: „halving its duration with each application"). Sobald die Betäubung in der
+Statusliste steht, gilt deren Restzeit, und ihre volle Länge korrigiert die Zählung.
 
-**Seine Bedingung über allem.** Steht im Radius weder eine laufende Betäubung noch ein noch
-betäubbarer Gegner, gibt es nichts zu strecken; Sanctus geht hinaus. Gegner mit Resistenz zählen
-nicht als frisch, weil ihre nächste Anwendung kürzer ist und nach dem Modell nicht mehr überlappt.
+**Seine Bedingung über allem.** Läuft im Radius keine Betäubung und hat der eben gelandete Sanctus
+niemanden betäubt, gibt es nichts zu strecken; Sanctus geht hinaus. Bis A272 galt ein Gegner ohne
+Betäubung und ohne Resistenzstatus als frisch und bekam eine volle Anwendung zugerechnet; weil das Spiel
+die Abnahme nicht als Status zeigt, hielt die Regel so auch Rudel fest, die nicht mehr betäubt werden
+konnten — in seinem Protokoll vom 04.–10.10.2026 bei 134 von 180 Wahlen nach einem Sanctus.
 
 **Über den Wirkradius, nicht über die Jobreichweite.** Gemessen wird im Wirkradius der Aktion
 (`HolyIiiPvE.Info.EffectRange`), nicht in `DataCenter.JobRange` — für einen Heiler sind das 25 Yalms
@@ -1302,7 +1351,7 @@ Der Entwurf erfindet wenig; das meiste lag im Baum und war nur nicht verbunden.
 | Baustein | Fundstelle | Zustand |
 |---|---|---|
 | Mitigationsmessung: Gegner-Debuffs und Party-Buffs, verrechnet zu einem Schadensfaktor | `CustomRotation.GetCurrentMitigationPercent` | Gelesen nur zur Anzeige (`MainWindow_Debug`, Stand 12.10.2026) |
-| Betäubung, Verlangsamung und **deren Resistenzen** als Statuseffekte | `StatusID.Stun`, `.StunResistance`, `.Slow`, `.SlowResistance`, `.ArmsLength` | In den Spieldaten vorhanden; die Resistenzstufe ist damit direkt lesbar, eine eigene Buchführung über den Ereignisstrom ist **nicht** nötig |
+| Betäubung und Verlangsamung als Statuseffekte | `StatusHelper.StunStatus`, `.SlowStatus`, `StatusID.ArmsLength` | In Betrieb. „Stun Resistance" (39, 1349) ist die Dauerimmunität bestimmter Gegner, nicht die Abnahme nach jeder Anwendung; die zeigt das Spiel nicht als Status, `StunWatch` liest sie aus dem Ereignisstrom (A272). Ob es eine Abnahme der Verlangsamung gibt und ob sie sichtbar ist, ist unbelegt |
 | Statusabfragen mit Restzeit und Stapelzahl | `StatusHelper.HasStatus`, `.StatusTime`, `.StatusStack` | In Betrieb |
 | Vorhersagefenster aus der BossModReborn-Timeline | `Configs.BMRRaidwideMitWindow` und Geschwister, ausgewertet in `StateUpdater` | In Betrieb |
 | Zentralisierte Nachzieh-Regel für Gegner-Debuffs | `CustomRotation.ShouldSustainMitigationDebuff` | In Betrieb, 25 Aufrufstellen in den Standardrotationen (Stand 26.09.2026) — Beleg, dass eine gemeinsame Regel über viele Jobs trägt |

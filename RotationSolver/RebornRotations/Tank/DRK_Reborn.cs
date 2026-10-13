@@ -286,8 +286,8 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	/// the stun ended - the time the white mage needs to begin the next Holy with his next GCD - and
 	/// for as long as a party member is casting Holy or Holy III with this pack in its radius. A gap
 	/// estimated from earlier gaps (A195, A212) held the barrier after a chain had ended, as long as
-	/// the longest or the last pause - a raise, say - while the tank took the stream. Once the enemies
-	/// carry stun resistance there is no headroom left and the hold ends by itself.
+	/// the longest or the last pause - a raise, say - while the tank took the stream. Once the fight has
+	/// shown the enemies immune (StunWatch) there is no headroom left and the hold ends by itself.
 	/// </para>
 	/// </summary>
 	private bool GroupStunRunning()

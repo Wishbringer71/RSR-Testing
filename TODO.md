@@ -4,15 +4,9 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 ## Defekte
 
-### BossModReborn-Raidwides öffnen die Flächenabwehr, ohne dass gemessen wird, ob sie eintreffen · N
+### BossModReborn-Raidwides ohne Treffer: ob Fehlvorhersagen beiseitegelegt werden, ist zu entscheiden · N
 
-Protokoll 04.–10.10.2026 (A272): Von 175 allein über BossModReborn geöffneten Vorhersagen trafen ihn 27 zum vorhergesagten Zeitpunkt; 144 Abwehraktionen gingen auf Vorhersagen ohne Treffer, eingetroffene von 0–1 % bekamen dieselbe Abwehr wie 31 %. `StateUpdater.ShouldAddDefenseArea` misst weder, ob Vorhersagen eines Moduls eintreffen, noch wie groß sie sind — gegen seine Vorgabe, die Wahrscheinlichkeit zu messen. In Arbeit.
-
-**Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
-
-### Weißmagier: Sanctus-Streckung hält, wo nichts mehr betäubt werden kann · N
-
-Protokoll 04.–10.10.2026 (A272): Bei 134 von 180 GCD-Wahlen nach einem Sanctus hielt die Streckung den nächsten, ohne dass eine Betäubung lief, die ihn überdauert hätte. Die Abnahme der Betäubung zeigt das Spiel nicht als Status; `LongestStunInRadius` zählt solche Gegner als frisch, und eine gemeldete, noch nicht sichtbare Betäubung gilt als unbegrenzt. In Arbeit.
+Protokoll 04.–10.10.2026 (A272): 144 Abwehraktionen auf Vorhersagen ohne Treffer. Gebaut: die Messung je Modul (`BmrRaidwideWatch`, im Protokoll mit Modul und Endpunkt) und „Set aside BossModReborn raidwides that keep missing", ab Werk aus, weil die Nachrechnung auch elf große, nur von BossModReborn angekündigte Raidwides ohne Abwehr gelassen hätte. Vorgelegt: Voreinstellung. Das nächste Protokoll zeigt je Modul und Endpunkt, wie oft Vorhersagen eintreffen.
 
 **Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
 

@@ -183,10 +183,10 @@ Barriere, die sonst hinter ihrer eigenen Vorgängerin hängen bliebe.
 **Keine Gruppenbetäubung.** Eine Betäubung ist der Grenzfall der Minderung: Für ihre Dauer kommt
 nicht weniger Schaden, sondern gar keiner. Sanctus (Holy), ab Stufe 82 Sanctga (Holy III), hält alles im
 Umkreis von acht Yalm 4 Sekunden lang an (`ActionId.resx` 139, 25860). Der Weißmagier kann das im
-Trash absichtlich aufrechterhalten: `WHM_Reborn.ShouldStretchHolyStun` streckt die Betäubung über
-`SurveyStuns`, solange die Gegner betäubbar sind — **hinter einer Option, seit 29.09.2026 Standard an**; die
-Wirkung ist ohne Laufzeitbeobachtung nicht belegt. Erst wenn sie `StunResistance` tragen
-(39, „Immune to stun effects"), läuft der Strom wieder.
+Trash absichtlich aufrechterhalten: `WHM_Reborn.ShouldStretchHolyStun` streckt die Betäubung, solange sie
+den nächsten Sanctus überdauert — **hinter einer Option, seit 29.09.2026 Standard an** (Konzept 08). Erst wenn
+die Gegner immun sind, läuft der Strom wieder; das zeigt das Spiel nicht als Status, `StunWatch` liest es aus
+dem Kampf (A272).
 
 Wer betäuben kann, entscheidet über die Reichweite der Regel:
 
@@ -226,7 +226,8 @@ denn beide Bedingungen beantworten dieselbe Frage.
 
 Beginnt in dieser Frist kein Sanctus, ist die Kette zu Ende oder unterbrochen, und die Barriere ist frei.
 Mit der Immunität endet der Halt von selbst — „zurückhalten, bis die Betäubungen nicht mehr wirken" braucht
-keinen eigenen Zähler.
+keinen eigenen Zähler. Immun heißt, was der Kampf zeigt (`StunWatch`, A272): Das Spiel führt die Abnahme
+nach jeder Anwendung nicht als Status.
 
 **Durchgerechnet** (GCD 2,5 s; die abnehmende Betäubungsdauer 4 s, 2 s, 1 s, dann Immunität: Die Halbierung
 bestätigt The Balance, die 45 s Immunität nennt es nicht, Konzept 08):

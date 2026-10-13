@@ -470,6 +470,8 @@ internal static class MajorUpdater
 			TankbusterMarkerWatch.Update();
 			TankSwapWatch.Update();
 			TankbusterForecast.Update();
+			StunWatch.Update();
+			BmrRaidwideWatch.Update();
 		}
 		catch (Exception ex)
 		{

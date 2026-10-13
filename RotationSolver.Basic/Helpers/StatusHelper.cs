@@ -1057,13 +1057,14 @@ public static class StatusHelper
 		StatusID.Stun_4378,
 		StatusID.Stun_4433,
 		StatusID.Stun_5043,
-		StatusID.Stun_5411
+		StatusID.Stun_5411,
+		StatusID.Stun_5803
 	];
 
 	/// <summary>
-	/// The resistance a target builds up against being stunned again. The game tracks it as a
-	/// status of its own, so no application has to be counted: while this sits on a target, a
-	/// further stun is shorter or does not land at all, and when it falls off the budget is back.
+	/// Stun Resistance, "Immune to stun effects": the permanent immunity of certain enemies (39 is
+	/// marked permanent in the game data). It is not the halving of repeated stuns - the game shows
+	/// that as no status, and <see cref="StunWatch"/> reads it from the fight instead (A272).
 	/// </summary>
 	public static StatusID[] StunResistanceStatus { get; } =
 	[

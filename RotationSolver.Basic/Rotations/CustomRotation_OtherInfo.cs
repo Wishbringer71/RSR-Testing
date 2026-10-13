@@ -523,9 +523,10 @@ public partial class CustomRotation
 	/// </param>
 	/// <param name="allStunned">True when every hostile inside the radius is currently stunned.</param>
 	/// <param name="headroom">
-	/// True when at least one of them could still be stunned, that is, carries no stun resistance.
-	/// The game tracks resistance as a status, so it clears itself when the immunity expires and a
-	/// long fight needs no special case.
+	/// True when at least one of them is not stunned and could still be stunned
+	/// (<see cref="StunWatch.CanStillBeStunned"/>). The game shows the halving of repeated stuns as no
+	/// status, so the immunity it ends in is what the fight has shown: a stun reported as resisted, or
+	/// a stunning action that hit without stunning (A272).
 	/// </param>
 	/// <returns>How many hostiles were inside the radius. Zero means neither flag says anything.</returns>
 	protected static int SurveyStuns(float radius, out bool allStunned, out bool headroom)
@@ -576,7 +577,7 @@ public partial class CustomRotation
 			{
 				stunned++;
 			}
-			else if (!hostile.HasStatus(false, StatusHelper.StunResistanceStatus))
+			else if (StunWatch.CanStillBeStunned(hostile))
 			{
 				headroom = true;
 			}

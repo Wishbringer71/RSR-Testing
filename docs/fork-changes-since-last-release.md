@@ -221,3 +221,25 @@ same name right after, often from an invisible helper. The empty landing was tak
 come, and the cast was never rated. A same-named hit on the party after an empty landing now counts as that
 landing: it decides whether the cast reached you and how hard it hits. A wind-up that nothing follows stays
 skipped as before.
+
+## White Mage: Holy is held only while a stun runs
+
+`Stretch the Holy stun` held the next Holy whenever an enemy in range showed neither a stun nor a stun
+resistance. The game shows the shortening of repeated stuns as no status, so a pack that could no longer be
+stunned looked fresh, and every Holy was followed by Glare or a DoT for the rest of the pull. RSR now reads
+from the fight which enemies a stun landed on, how often, and which ones turned it away, and holds the next
+Holy only while the stun of the last one would outlast it. The same reading decides when the White Mage's
+other two Holy holds and the Dark Knight's barrier hold see nothing left to stun.
+
+## BossModReborn raidwides: each prediction is checked against the fight
+
+Every raidwide BossModReborn predicts inside `Seconds before raidwide to use area mitigation` is now checked
+against the fight: did a hit on more than one party member come around the predicted moment? `DefenseTrace.log`
+writes each check with the module and the BossModReborn source, and each defence decision names the module's
+record. In recorded fights most predictions were followed by nothing, and the cooldown spent on them was gone when a
+real raidwide came.
+
+New setting `Set aside BossModReborn raidwides that keep missing`, off by default. On, a module whose predictions
+have missed more often than they landed opens no area defence and refreshes no mitigation ahead of a raidwide,
+until one of its predictions lands again. It is off because the same recordings also hold large raidwides that
+only BossModReborn announced and that would then have had no defence ahead of them.

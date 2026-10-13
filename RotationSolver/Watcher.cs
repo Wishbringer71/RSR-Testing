@@ -149,6 +149,63 @@ public static class Watcher
 		return count;
 	}
 
+	// What a set did to stuns, target by target, for StunWatch: a stun put on, a stun the game reports as
+	// fully resisted, and damage - an action that stunned before and now only damages has met immunity.
+	private static void ObserveStuns(ActionEffectSet set)
+	{
+		if (set.Action is not { } action || set.TargetEffects.Length == 0)
+		{
+			return;
+		}
+
+		List<StunWatch.Observation>? found = null;
+		foreach (var effect in set.TargetEffects)
+		{
+			bool applied = false, resisted = false, damaged = false;
+			effect.ForEach(e =>
+			{
+				if (e.type == ActionEffectType.ApplyStatusEffectTarget && IsStun(e.value))
+				{
+					applied = true;
+				}
+				// ECommons names two effect types for a fully resisted status (52 and 55); WrathCombo's table
+				// gives 55 for a resisted Low Blow stun. Either one counts.
+				else if (e.type is ActionEffectType.FullResistStatus or ActionEffectType.FullResistStatus2
+					&& IsStun(e.value))
+				{
+					resisted = true;
+				}
+				else if (IsDamageEntry(e.type))
+				{
+					damaged = true;
+				}
+			});
+
+			if (applied || resisted || damaged)
+			{
+				(found ??= []).Add(new StunWatch.Observation(effect.TargetID, applied, resisted, damaged));
+			}
+		}
+
+		if (found != null)
+		{
+			StunWatch.Observe(action.RowId, found);
+		}
+	}
+
+	private static bool IsStun(uint statusId)
+	{
+		foreach (var stun in StatusHelper.StunStatus)
+		{
+			if ((uint)stun == statusId)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	// Listed area casts whose last landing reached nobody in the party, by name. Such a cast is the visible
 	// wind-up; the hit, where there is one, is a same-named action right after it, often from an
 	// untargetable helper (trace of 04-10 October, A272: Head-splitting Roar lands on its caster, and its
@@ -287,6 +344,10 @@ public static class Watcher
 				return;
 			}
 
+			// Every set, from any source: the stuns that matter come from the party, so this sits before
+			// every filter below.
+			ObserveStuns(set);
+
 			// A party member's Shirk on the player, for the trace.
 			if (set.Source is IBattleChara shirker && shirker.GameObjectId != playerObject.GameObjectId && shirker.IsParty()
 				&& set.Action is { RowId: (uint)ActionID.ShirkPvE })
@@ -373,6 +434,13 @@ public static class Watcher
 
 				// Before the source filter below: the follow-up often comes from an untargetable helper.
 				RecordFollowUpOfEmptyLanding(set, marked, playerObject, hitPlayer);
+
+				// What a raidwide prediction waits for: more than one of the party hit, or the player and
+				// someone else (BmrRaidwideWatch). From helpers too, which resolve many raidwides.
+				if (DamagedPartyMembers(set) > 1 || (hitPlayer && set.TargetEffects.Length > 1))
+				{
+					BmrRaidwideWatch.RecordPartyHit();
+				}
 			}
 
 			float damageRatio = 0;

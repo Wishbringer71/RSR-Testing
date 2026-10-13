@@ -6257,6 +6257,22 @@ Protokoll stehen hier nicht.
   - Am Code unverändert seit dem Build: `StateUpdater.ShouldAddDefenseArea` öffnet für jede Vorhersage im Fenster,
     ohne Größe und ohne Prüfung, ob Vorhersagen dieses Moduls eintreffen. Das widerspricht seiner Spielweise:
     Sicherheit gewichtet mit der Wahrscheinlichkeit, und jede Sicherheitsregel nennt, woran sie sie misst.
+  - *Gebaut:* `BmrRaidwideWatch` hält jede Vorhersage im Minderungsfenster gegen den Kampf (Treffer auf mehr als
+    ein Gruppenmitglied oder ihn und einen weiteren, im selben Fenster um den vorhergesagten Zeitpunkt) und zählt je
+    Modul; jede Abrechnung steht als „BMR raidwide predicted for …" mit Modul und Endpunkt im Protokoll, jede
+    Entscheidung nennt Modul, Endpunkt und „landed h of n". Mit der neuen Einstellung „Set aside BossModReborn
+    raidwides that keep missing" setzt `BossModUpdater` die Vorhersage unter Gleichstand beiseite
+    (`BMRNextRaidwideIn` = nichts angesagt, `BMRNextRaidwideInRaw` bleibt für die Messung). Bauform der vorhandenen
+    Zurückhaltung (`ProactiveHoldIsEarningItsKeep`). Verworfen: die Größe je Modul lernen (keine Aktion zur
+    Vorhersage, eingetroffene streuen von 0 % bis über 40 %); feste Zahlen.
+  - *Falsifikation, und sie hielt für den ersten Entwurf (Beiseitelegen ohne Einstellung):* Über das Protokoll
+    nachgerechnet (Modul angenähert durch Abschnitte ohne fünfminütige Pause) legte die Regel 134 von 275 Vorhersagen
+    beiseite, 91 ohne Treffer, aber 43 mit, 27 davon ab 15 %, 11 dieser 27 nur von BossModReborn angekündigt (bis
+    66 %). Die Behebung ist damit ein Tausch – verschenkte Abklingzeiten gegen fehlende Abwehr vor großen Raidwides –
+    und seine Entscheidung. Deshalb hinter einer Einstellung, ab Werk aus (Grund aus dem Kampf: diese elf), und zur
+    Entscheidung vorgelegt. Die Nachrechnung unterschätzt „eingetroffen" (sie sieht Treffer auf andere nur bei
+    gelisteten Casts); die gebaute Messung sieht sie und trennt im nächsten Protokoll nach Modul und Endpunkt.
+    Ausgeliefert und nichts ändert sich – ab Werk ja, bis auf die Protokollzeilen.
 - *Befund 2, Weißmagier: Sanctus-Streckung ohne Betäubung:*
   - Gemessen: 222 Folgen von Zeilen nach einem Sanctus. Am Zeitpunkt der nächsten GCD-Wahl stand in 49 Fällen
     „about to land" (frischer Gegner, 4,0 s), obwohl der eben gelandete Sanctus niemanden betäubt hatte (keine
@@ -6270,6 +6286,25 @@ Protokoll stehen hier nicht.
     gemeldete, noch nicht sichtbare Betäubung `float.MaxValue`, gleich wie kurz sie wegen der Abnahme ist.
   - Folge im Kampf: In Rudeln kommt nach jedem Sanctus Glare oder ein DoT statt des nächsten Sanctus, auch wenn nichts
     mehr betäubt werden kann. Seine Bedingung „nur, solange die Gegner noch betäubt werden können" ist damit verletzt.
+  - *Klasse:* Dieselbe Frage („noch betäubbar" über den Resistenzstatus) stellen `SurveyStuns` und damit die beiden
+    anderen Aussetzregeln des Weißmagiers und die Barrierenregel des Dunkelritters (`GroupStunRunning`). Dazu fehlte
+    in `StunStatus` die Id 5803 („Stun", xivapi).
+  - *Behoben, zentral:* `StunWatch` (Basis) liest aus jedem Effektsatz jeder Quelle je Gegner: eine aufgelegte
+    Betäubung (Zählung, Zeitpunkt, erwartete Länge = Wirktextdauer halbiert je vorheriger Anwendung), eine als
+    widerstanden gemeldete (ECommons `FullResistStatus` 52 und `FullResistStatus2` 55; WrathCombo nennt 55 für Low
+    Blow) und einen Treffer einer schon einmal betäubenden Aktion ohne Betäubung – beides heißt immun. Sobald die
+    Betäubung in der Statusliste steht, korrigiert ihre volle Länge die Zählung; die nächste gelandete Betäubung hebt
+    die Immunität auf. Leser: `ShouldStretchHolyStun` über `StunLeft` (sichtbar oder gemeldet, ohne `float.MaxValue`;
+    Betäubungen ohne Zeitgeber zählen nicht, sie enden nicht), `SurveyStuns` über `CanStillBeStunned`.
+    Verworfen: eine feste Zahl an Anwendungen bis zur Immunität und eine feste Immunitätsdauer (45 s ohne Quelle) – der
+    Kampf zeigt beides; WrathCombos 60-s-Fenster – eine fremde Zahl ohne Beleg.
+  - *Falsifikation:* kein Defekt – widerlegt, in 49 Fällen hatte der eben gelandete Sanctus niemanden betäubt, gehalten
+    wurde trotzdem; Behebung falsch – stärkste Gegenposition: Kommt eine Betäubung nicht im selben Effektsatz wie der
+    Treffer, gälte der Gegner als immun. Im Protokoll steht die Meldung stets im Satz des Sanctus (die Phase
+    `float.MaxValue` beginnt mit ihm), und eine falsche Immunität hebt die nächste gelandete Betäubung auf. Ausgeliefert
+    und nichts ändert sich – für die Streckung ausgeschlossen, sie hält nur noch bei laufender oder eben gelandeter
+    Betäubung; für die drei anderen Leser möglich, wenn das Spiel Immunität weder meldet noch der Treffer im Satz steht,
+    dann wie bisher.
 - *Befund 3, leere Landungen gelistet als „verfehlt":*
   - Gemessen: 47 Landungen von zehn gelisteten Aktionen mit „1 targets (0 party members damaged)". Alle sind laut
     Spieldaten auf den Wirkenden selbst gerichtet ohne Wirkbereich (`CastType` 1, `EffectRange` 0).

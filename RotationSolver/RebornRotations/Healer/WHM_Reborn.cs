@@ -611,17 +611,19 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	/// at any GCD length, Presence of Mind included (.github/scripts/audit/stun_coverage.py with a
 	/// cast time).
 	///
-	/// The stun of a Holy that has just finished casting may not be on the enemies yet when the next
-	/// GCD is chosen - cast and recast are equally long, so the next GCD is free the moment the cast
-	/// lands. An enemy in the radius that is neither stunned nor resistant is about to receive the
-	/// first, full application, and that counts as running for the duration its effect text states.
-	/// Without it the rule saw no stun at exactly the moment it exists for.
+	/// The stun of a Holy that has just finished casting may not be in the enemies' status lists yet
+	/// when the next GCD is chosen - cast and recast are equally long, so the next GCD is free the
+	/// moment the cast lands. StunWatch knows it from the effect set, at the length the halving gives
+	/// that application, and knows the enemies the cast found immune. Until A272 an enemy that was
+	/// neither stunned nor carrying a resistance status counted as about to receive a full four
+	/// seconds; the game shows no such status for the halving, so every pack that could no longer be
+	/// stunned held the next Holy all the same (trace of 04-10 October: 134 of 180 decisions).
 	///
 	/// Nothing else is weighed. The held GCD goes to a DoT where one is due and to Glare otherwise;
 	/// the damage lost is not set against the stun, because keeping the party alive ranks above
 	/// dealing damage. Whether Holy is worth casting at all stays with Holy's own area check. The one
 	/// condition above every hold is the user's too: once nothing in the radius can be stunned any
-	/// more, there is nothing to stretch.
+	/// more, there is nothing to stretch - and then no stun runs that a Holy could overwrite.
 	/// </remarks>
 	private bool ShouldStretchHolyStun()
 	{
@@ -639,8 +641,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 
 		var holy = HolyIiiPvE.EnoughLevel ? HolyIiiPvE : HolyPvE;
 		var radius = holy.Info.EffectRange;
-		var running = LongestStunInRadius(radius, out var fresh);
-		var stunLasts = running > 0 ? running : fresh ? DefensiveValues.DurationOf(holy.ID) : 0f;
+		var stunLasts = LongestStunInRadius(radius, out var application);
 		var lands = WeaponRemain + ((ActionID)holy.ID).GetCastTime();
 
 		// Each outcome is written to DefenseTrace.log with its reason: the owner reported the second
@@ -648,7 +649,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		// code.
 		if (stunLasts <= 0)
 		{
-			TraceStretch("not held: nothing in Holy's radius is stunned or can still be stunned");
+			TraceStretch("not held: nothing in Holy's radius is stunned");
 			return false;
 		}
 
@@ -658,23 +659,19 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			return false;
 		}
 
-		TraceStretch(running > 0
-			? $"held: the stun runs {running:F1}s, a Holy cast now would land inside it in {lands:F1}s"
-			: $"held: the last Holy's stun is about to land on enemies in radius, {stunLasts:F1}s against a cast landing in {lands:F1}s");
+		TraceStretch($"held: the stun runs {stunLasts:F1}s (application {application}), a Holy cast now would land inside it in {lands:F1}s");
 		return true;
 	}
 
 	/// <summary>
-	/// The longest stun still running on a hostile inside the radius, from any source.
+	/// The longest stun still running on a hostile inside the radius, from any source, including one
+	/// that has landed and is not in its status list yet (<see cref="StunWatch.StunLeft"/>).
 	/// </summary>
 	/// <param name="radius">How far around the player hostiles are counted, in yalms.</param>
-	/// <param name="fresh">
-	/// Whether a hostile inside the radius is neither stunned nor resistant - one that the next stun
-	/// would reach with its first, full application.
-	/// </param>
-	private static float LongestStunInRadius(float radius, out bool fresh)
+	/// <param name="application">Which application of a stun the longest one is, zero when unknown.</param>
+	private static float LongestStunInRadius(float radius, out int application)
 	{
-		fresh = false;
+		application = 0;
 		var longest = 0f;
 		var hostiles = DataCenter.AllHostileTargets;
 		if (hostiles == null)
@@ -690,13 +687,11 @@ public sealed class WHM_Reborn : WhiteMageRotation
 				continue;
 			}
 
-			if (hostile.HasStatus(false, StatusHelper.StunStatus))
+			var left = StunWatch.StunLeft(hostile);
+			if (left > longest)
 			{
-				longest = Math.Max(longest, hostile.StatusTime(false, StatusHelper.StunStatus));
-			}
-			else if (!hostile.HasStatus(false, StatusHelper.StunResistanceStatus))
-			{
-				fresh = true;
+				longest = left;
+				application = StunWatch.Applications(hostile);
 			}
 		}
 
@@ -779,7 +774,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 
 		// No enemy left that this cast could stun, no reason to hold it back. The point of holding
 		// is to keep the stun budget for a moment when the stream is not already thinned; once every
-		// enemy in radius is stunned or resistant, there is no budget left to keep, and yielding the
+		// enemy in radius is stunned or immune, there is no budget left to keep, and yielding the
 		// GCD trades an area cast for a single-target dot without buying anything at all.
 		//
 		// The user states it as the condition on every hold: only suspend Holy while the enemies can
