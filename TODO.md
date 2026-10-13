@@ -4,6 +4,18 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 ## Defekte
 
+### BossModReborn-Raidwides öffnen die Flächenabwehr, ohne dass gemessen wird, ob sie eintreffen · N
+
+Protokoll 04.–10.10.2026 (A272): Von 175 allein über BossModReborn geöffneten Vorhersagen trafen ihn 27 zum vorhergesagten Zeitpunkt; 144 Abwehraktionen gingen auf Vorhersagen ohne Treffer, eingetroffene von 0–1 % bekamen dieselbe Abwehr wie 31 %. `StateUpdater.ShouldAddDefenseArea` misst weder, ob Vorhersagen eines Moduls eintreffen, noch wie groß sie sind — gegen seine Vorgabe, die Wahrscheinlichkeit zu messen. In Arbeit.
+
+**Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
+
+### Weißmagier: Sanctus-Streckung hält, wo nichts mehr betäubt werden kann · N
+
+Protokoll 04.–10.10.2026 (A272): Bei 134 von 180 GCD-Wahlen nach einem Sanctus hielt die Streckung den nächsten, ohne dass eine Betäubung lief, die ihn überdauert hätte. Die Abnahme der Betäubung zeigt das Spiel nicht als Status; `LongestStunInRadius` zählt solche Gegner als frisch, und eine gemeldete, noch nicht sichtbare Betäubung gilt als unbegrenzt. In Arbeit.
+
+**Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
+
 ### ECommons liest die Aktionsart eines Effektsatzes vier Bytes breit · N, U
 
 `EffectHeader.ActionType` (ECommons) nutzt das `uint`-Enum der ClientStructs für ein Ein-Byte-Feld und liest `Flags` und `NumTargets` mit (A177). RSR liest in `Watcher` jetzt das niedrige Byte. Offen: ECommons' eigenes `ActionEffectSet` wählt mit diesem Feld, ob die Id eine Aktion, ein Gegenstand oder ein Reittier ist; sobald der Satz Ziele hat, fällt jeder Gegenstand in den Zweig „Aktion" — `set.Action`, Name und Symbol eines Heiltranks sind dann die einer Aktion gleicher Nummer. Adressat ist ECommons; im Fork betroffen, was `set.Action` für Gegenstände liest (`Watcher.ActionFromSelf`, Aktions-Zeitleiste).
@@ -33,9 +45,11 @@ Barde, Pictomancer und Tänzer führen „Prevent the use of defense abilties du
 
 Seit A202 wird Improvised Finish sofort gewirkt (5 %). Offen als Verbesserung: bei angekündigtem Flächentreffer Rising Rhythm bis 4 Stapel (10 %) aufbauen, je Stapel drei Sekunden ohne Aktion. Nutzen nicht belegt, also eigene Option, ab Werk aus; zur Entscheidung, ob sie gebaut werden soll. Konzept 14, „Wechselwirkungen und Zeit".
 
-### Flächenlandung „reached you False" bei Raidwides im Sonderinhalt · N
+### Leere Landung gilt als „verfehlt", der Folgetreffer unter anderer Id bleibt unbewertet · N
 
-Protokoll 01.10.2026 (Klosterdämon, Todesklaue; 48-Spieler-Inhalt mit Phantom-Aktionen): Jede Landung von Berstendes Gebrüll, Gigaflare und Tückische Resonanz meldet „reached you False", und es gibt keinen „hit you"-Eintrag für sie, obwohl ihre Reichweite die Arena deckt. „Skip area defence for casts that missed you" (ab Werk an) liest diese Aufzeichnung und lässt dann die Abwehr weg, die nur ihn schützt. Ursache nicht belegt; zwei Hypothesen: Er stand tatsächlich außerhalb, oder der Schaden kam über eine andere Wirkungsmeldung (unsichtbarer Helfer, auf mehrere Meldungen verteilte Ziele). Das Protokoll nennt jetzt je Landung die Zahl der Ziele und der getroffenen Gruppenmitglieder (A242), damit die nächste Aufzeichnung entscheidet. Sonderinhalt: erfasst, nicht bearbeitet, bis er ihn freigibt; bestätigt sich die zweite Hypothese, betrifft sie jeden Kampf mit Helfer-Schaden.
+Protokoll 04.–10.10.2026 (A272) beantwortet den Eintrag vom 01.10.: Zehn gelistete Aktionen landen auf dem Wirkenden selbst („1 targets, 0 party members damaged", `CastType` 1, `EffectRange` 0). Bei Head-splitting Roar folgt die gleichnamige 43579 mit 1–22 %, bei den übrigen neun trifft niemanden etwas. Der Effekt-Handler schreibt die leere Landung als „missed you"; „Skip area defence for casts that missed you" lässt dann auch die Abwehr für den echten Folgetreffer weg, und der Messwert bleibt leer. In Arbeit.
+
+**Konzept:** `docs/rotation-flow/13-aoe-damage-classification.md`
 
 ### Krieger: Nascent Flash — offene Bausteine · N, U
 

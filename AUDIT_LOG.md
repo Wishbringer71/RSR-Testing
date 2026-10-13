@@ -6235,6 +6235,74 @@ Kommentar.
   ergänzt: keine Fassung unter V2, ein einzelner Beschwörer bleibt bei Solar, die enge gewinnt den Fall, für den sie
   gebaut ist. Betroffen: nur `SMN_Reborn`; die neue geschützte Eigenschaft ist additiv für abgeleitete Rotationen.
 
+### A272 · Protokoll 04.–10.10.2026: BossModReborn-Raidwides ohne Treffer, Sanctus-Streckung ohne Betäubung, leere Landungen (13.10.2026)
+
+Seine Datei: `DefenseTrace.log`, 14 Sitzungen vom 04.10. bis 10.10.2026, Builds f66dfb043 (7.5.6.16) und 04ab61bee
+(7.5.6.17). Bisher keine davon ausgewertet. Jobs nach den Aktionen: Beschwörer, Weißmagier, Krieger; Inhalte:
+Allianzraids (24 Ziele), Vierer- und Achter-Instanzen, 48-Spieler-Inhalt mit Phantom-Aktionen. Ausgewertet mit
+Skripten über alle 6366 Zeilen; Spieldaten der betroffenen Aktionen über xivapi (13.10.2026). Spielernamen aus dem
+Protokoll stehen hier nicht.
+
+- *Befund 1, BossModReborn-Raidwides ohne Treffer:*
+  - Gemessen: 280 Vorhersagen (über die Entscheidungen gebündelt, die auf denselben Zeitpunkt zielen). Bei 191 traf
+    ihn in −2 bis +6 s um den vorhergesagten Zeitpunkt keine gegnerische Aktion, auch keine mit 0 %.
+  - Allein über BossModReborn geöffnet (kein Cast, kein Marker): 175 Vorhersagen. Davon trafen ihn 27 in −4 bis +2 s
+    mit mindestens zwei Zielen; 113 blieben 60 s lang ohne Mehrzieltreffer; der Rest streut ohne festen Versatz.
+  - Ausgeführt wurden darauf 169 Abwehraktionen, 144 davon ohne Treffer im Fenster: Schimmerschild 54, Stumpfsinn 25,
+    Vollkommener Ablass 32, Linderung 21, Abschütteln 5, Reflexion 4, Phantom-Genesung 3.
+  - Auch die eingetroffenen tragen keine Größe: 1 % (Göttliches Urteil), 0 % (Ultimatives Extremmanöver) bekamen
+    dieselbe Abwehr wie 31 %.
+  - Folge im Kampf, ein Beispiel (06.10., Weißmagier): Linderung auf eine Vorhersage ohne Treffer; 25 s später traf ein
+    Raidwide mit 27 %, Linderung (20 s) war abgelaufen.
+  - Am Code unverändert seit dem Build: `StateUpdater.ShouldAddDefenseArea` öffnet für jede Vorhersage im Fenster,
+    ohne Größe und ohne Prüfung, ob Vorhersagen dieses Moduls eintreffen. Das widerspricht seiner Spielweise:
+    Sicherheit gewichtet mit der Wahrscheinlichkeit, und jede Sicherheitsregel nennt, woran sie sie misst.
+- *Befund 2, Weißmagier: Sanctus-Streckung ohne Betäubung:*
+  - Gemessen: 222 Folgen von Zeilen nach einem Sanctus. Am Zeitpunkt der nächsten GCD-Wahl stand in 49 Fällen
+    „about to land" (frischer Gegner, 4,0 s), obwohl der eben gelandete Sanctus niemanden betäubt hatte (keine
+    Statusmeldung im Effektsatz) und keine Betäubung sichtbar wurde. In 40 Fällen dasselbe nach einer Betäubung, die
+    schon wieder vorbei war; in 45 Fällen hielt `float.MaxValue` als Restzeit (gemeldet, noch nicht sichtbar), ohne
+    dass die Betäubung später sichtbar wurde. Halteketten bis zu sechs Sanctus in Folge.
+  - Ursache am Code (unverändert seit dem Build): `LongestStunInRadius` zählt einen Gegner ohne Betäubung und ohne
+    Resistenzstatus als frisch. Die Abnahme nach jeder Anwendung zeigt das Spiel aber nicht als Status: Status 39 und
+    1349 („Stun Resistance", „Immune to stun effects") sind Dauerimmunitäten bestimmter Gegner (xivapi). WrathCombo
+    zählt die Anwendungen deshalb selbst (`ICDTracker`, Werkzeug, keine Spielquelle). Und `StatusTime` liefert für eine
+    gemeldete, noch nicht sichtbare Betäubung `float.MaxValue`, gleich wie kurz sie wegen der Abnahme ist.
+  - Folge im Kampf: In Rudeln kommt nach jedem Sanctus Glare oder ein DoT statt des nächsten Sanctus, auch wenn nichts
+    mehr betäubt werden kann. Seine Bedingung „nur, solange die Gegner noch betäubt werden können" ist damit verletzt.
+- *Befund 3, leere Landungen gelistet als „verfehlt":*
+  - Gemessen: 47 Landungen von zehn gelisteten Aktionen mit „1 targets (0 party members damaged)". Alle sind laut
+    Spieldaten auf den Wirkenden selbst gerichtet ohne Wirkbereich (`CastType` 1, `EffectRange` 0).
+  - Bei Head-splitting Roar (Schädelspaltergebrüll, 43578) folgte nach 0,4–1,1 s die gleichnamige Aktion 43579
+    (Kreis, 60 y) mit 1–22 % auf ihn. Bei den anderen neun (The Grip of Poison, Primal Roar, Radiant Wave, Blackened
+    Rain, Marginalia u. a.) traf ihn binnen 8 s nichts.
+  - Am Code: Der Effekt-Handler schreibt jede Landung einer gelisteten Aktion als „reached you" ja oder nein, auch eine,
+    die niemanden aus der Gruppe traf. „Skip area defence for casts that missed you" liest daraus „ausgewichen" und
+    lässt die nächste Flächenabwehr weg – richtig für die neun ohne Folgetreffer, falsch für den Folgetreffer mit 22 %.
+    Der Messwert bleibt aus demselben Grund leer („rated no"), die Aktion gilt dann als lohnend.
+  - Klärt den offenen Eintrag „Flächenlandung reached you False bei Raidwides im Sonderinhalt": zweite Hypothese
+    bestätigt, wo ein Folgetreffer kam; sonst traf die Aktion die Gruppe gar nicht.
+- *Offener Punkt aus A252/A254 beantwortet:* Schimmerschild steht mehrfach als Wahl, gewirkt wird es einmal („used"
+  danach je einmal); die Wahl wird bis zur Ausführung neu geschrieben. Sieben Mal kam eine zweite Ladung binnen 4–12 s.
+  Fünfmal kam die zweite über den Flächenpfad, der die eigene Barriere prüft (`StatusProvide`) – die erste war dann
+  fort, ohne dass das Protokoll einen Treffer dazwischen zeigt; zweimal über die BossModReborn-Pfade, die die Prüfung
+  überspringen und eine stehende Barriere erneuern. Weshalb die erste fort war, ist offen; mit Befund 1 fallen die
+  meisten dieser Paare weg.
+- *Ohne neuen Defekt:*
+  - Tank Purge (29022, Kreis 40 y) landete sechsmal mit 33–36 % auf allen vier ohne Abwehr. Nach dem Code ist das die
+    Regel „lohnt Minderung": unter der größten Barriere und bei voller Gruppe kein Absturz unter die Flächenheilschwelle.
+    Ob das der Grund war, zeigt das Protokoll dieses Builds nicht (die Zeile „open, nothing chosen" kam erst mit A265).
+  - Die drei Primal-Raidwides im selben Kampf (Earthen Fury, Aerial Blast, Hellfire; 48–56 %) stehen nicht auf der
+    Liste und kamen nicht als Landung an: Ihre Quelle ist ein nicht anvisierbarer Gegner (Grenze in Konzept 13).
+  - Krieger, Schramme (41301): gemessen ungemildert 32 %, 72 %, 32 %, 80 % unter Verwundbarkeit. Der Plan las beim
+    zweiten Mal 29 % und es kamen 52 %; überlebt mit 48 %. Das ist die Grenze „zu niedrig gespeicherter Höchstwert" aus
+    Konzept 09; der Plan ist seit dem Build neu gebaut (A263–A269).
+  - BossModReborn-Tankbuster: 41 Vorhersagen, 25 ohne gemessenen Tankbuster im Fenster. Die Einzelabwehr der Heiler
+    für den Tank ist billig; erfasst, ohne eigenen Eingriff.
+
+**Prüfgrad:** Protokoll vollständig per Skript, Stichproben Zeile für Zeile; Code am Build und an `HEAD` (unverändert
+an den drei Stellen); Spieldaten über xivapi.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

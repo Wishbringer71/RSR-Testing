@@ -383,6 +383,41 @@
       "kind": "action",
       "source": "German job guide (de.finalfantasyxiv.com/jobguide/gunbreaker/), 2026-10-04",
       "note": "Level 82, upgrades Steinernes Herz (Heart of Stone); on self or a party member."
+    },
+    {
+      "de": "Linderung",
+      "en": "Temperance",
+      "identifier": "TemperancePvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/whitemage/), 2026-10-13, paired by row with the English guide; also the names his client wrote into DefenseTrace.log"
+    },
+    {
+      "de": "Vollkommener Ablass",
+      "en": "Plenary Indulgence",
+      "identifier": "PlenaryIndulgencePvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/whitemage/), 2026-10-13, paired by row with the English guide; also the names his client wrote into DefenseTrace.log"
+    },
+    {
+      "de": "Wasserschleier",
+      "en": "Aquaveil",
+      "identifier": "AquaveilPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/whitemage/), 2026-10-13, paired by row with the English guide; also the names his client wrote into DefenseTrace.log"
+    },
+    {
+      "de": "Göttlicher Segen",
+      "en": "Divine Benison",
+      "identifier": "DivineBenisonPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/whitemage/), 2026-10-13, paired by row with the English guide; also the names his client wrote into DefenseTrace.log"
+    },
+    {
+      "de": "Glockenspiel",
+      "en": "Liturgy of the Bell",
+      "identifier": "LiturgyOfTheBellPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/whitemage/), 2026-10-13, paired by row with the English guide; also the names his client wrote into DefenseTrace.log"
     }
   ]
 }
