@@ -6235,7 +6235,7 @@ Kommentar.
   ergänzt: keine Fassung unter V2, ein einzelner Beschwörer bleibt bei Solar, die enge gewinnt den Fall, für den sie
   gebaut ist. Betroffen: nur `SMN_Reborn`; die neue geschützte Eigenschaft ist additiv für abgeleitete Rotationen.
 
-### A272 · Protokoll 04.–10.10.2026: BossModReborn-Raidwides ohne Treffer, Sanctus-Streckung ohne Betäubung, leere Landungen (13.10.2026)
+### A272 · Protokoll 04.–10.10.2026: BossModReborn-Raidwides ohne Treffer auf ihn, Sanctus-Streckung ohne Betäubung, leere Landungen (13.10.2026)
 
 Seine Datei: `DefenseTrace.log`, 14 Sitzungen vom 04.10. bis 10.10.2026, Builds f66dfb043 (7.5.6.16) und 04ab61bee
 (7.5.6.17). Bisher keine davon ausgewertet. Jobs nach den Aktionen: Beschwörer, Weißmagier, Krieger; Inhalte:
@@ -6243,16 +6243,16 @@ Allianzraids (24 Ziele), Vierer- und Achter-Instanzen, 48-Spieler-Inhalt mit Pha
 Skripten über alle 6366 Zeilen; Spieldaten der betroffenen Aktionen über xivapi (13.10.2026). Spielernamen aus dem
 Protokoll stehen hier nicht.
 
-- *Befund 1, BossModReborn-Raidwides ohne Treffer:*
+- *Befund 1, BossModReborn-Raidwides ohne Treffer auf ihn* (was sie waren: A273):
   - Gemessen: 280 Vorhersagen (über die Entscheidungen gebündelt, die auf denselben Zeitpunkt zielen). Bei 191 traf
     ihn in −2 bis +6 s um den vorhergesagten Zeitpunkt keine gegnerische Aktion, auch keine mit 0 %.
   - Allein über BossModReborn geöffnet (kein Cast, kein Marker): 175 Vorhersagen. Davon trafen ihn 27 in −4 bis +2 s
     mit mindestens zwei Zielen; 113 blieben 60 s lang ohne Mehrzieltreffer; der Rest streut ohne festen Versatz.
-  - Ausgeführt wurden darauf 169 Abwehraktionen, 144 davon ohne Treffer im Fenster: Schimmerschild 54, Stumpfsinn 25,
+  - Ausgeführt wurden darauf 169 Abwehraktionen, 144 davon ohne Treffer auf ihn im Fenster: Schimmerschild 54, Stumpfsinn 25,
     Vollkommener Ablass 32, Linderung 21, Abschütteln 5, Reflexion 4, Phantom-Genesung 3.
   - Auch die eingetroffenen tragen keine Größe: 1 % (Göttliches Urteil), 0 % (Ultimatives Extremmanöver) bekamen
     dieselbe Abwehr wie 31 %.
-  - Folge im Kampf, ein Beispiel (06.10., Weißmagier): Linderung auf eine Vorhersage ohne Treffer; 25 s später traf ein
+  - Folge im Kampf, ein Beispiel (06.10., Weißmagier): Linderung auf eine Vorhersage, die ihn nicht traf; 25 s später traf ein
     Raidwide mit 27 %, Linderung (20 s) war abgelaufen.
   - Am Code unverändert seit dem Build: `StateUpdater.ShouldAddDefenseArea` öffnet für jede Vorhersage im Fenster,
     ohne Größe und ohne Prüfung, ob Vorhersagen dieses Moduls eintreffen. Das widerspricht seiner Spielweise:
@@ -6267,7 +6267,7 @@ Protokoll stehen hier nicht.
     Vorhersage, eingetroffene streuen von 0 % bis über 40 %); feste Zahlen.
   - *Falsifikation, und sie hielt für den ersten Entwurf (Beiseitelegen ohne Einstellung):* Über das Protokoll
     nachgerechnet (Modul angenähert durch Abschnitte ohne fünfminütige Pause) legte die Regel 134 von 275 Vorhersagen
-    beiseite, 91 ohne Treffer, aber 43 mit, 27 davon ab 15 %, 11 dieser 27 nur von BossModReborn angekündigt (bis
+    beiseite, 91 ohne Treffer auf ihn, aber 43 mit, 27 davon ab 15 %, 11 dieser 27 nur von BossModReborn angekündigt (bis
     66 %). Die Behebung ist damit ein Tausch – verschenkte Abklingzeiten gegen fehlende Abwehr vor großen Raidwides –
     und seine Entscheidung. Deshalb hinter einer Einstellung, ab Werk aus (Grund aus dem Kampf: diese elf), und zur
     Entscheidung vorgelegt. Die Nachrechnung unterschätzt „eingetroffen" (sie sieht Treffer auf andere nur bei
@@ -6347,6 +6347,44 @@ Protokoll stehen hier nicht.
 
 **Prüfgrad:** Protokoll vollständig per Skript, Stichproben Zeile für Zeile; Code am Build und an `HEAD` (unverändert
 an den drei Stellen); Spieldaten über xivapi.
+
+### A273 · Sein Hinweis: Waren die Raidwides Raidwides? BossModReborns Maske gelesen (13.10.2026)
+
+Seine Frage zu A272: „waren die raidwides denn wirklich raidwides oder nur große schadensflächen, wo man ausserhalb
+stand. ich erinnere an tankbuster, die auf andere gingen, aber die eigene abwehr zündeten. vielleicht ist nur die
+wahrnehmung und einordnung falsch". Einordnung: Hinweis mit Frage; am Artefakt geprüft.
+
+- *Quelle, BossModReborn be8ff77 (12.10.2026), gelesen 13.10.2026:* `PredictedDamageType.Raidwide` ist kommentiert als
+  „cast is expected to hit everyone and deal minor damage; also used for spread components". `AddPredictedDamage`
+  setzt `Raidwide` als Vorgabetyp; ohne eigenen Typ legen ihn Türme (`GenericTowers`, Abnehmer), Köder
+  (`BaitAwayIcon`, Geköderte), Sturmangriffe (`WildCharge`, wer in der Linie steht), `ProximityAOEs` und die
+  Raidwide-Casts an. Jeder Eintrag trägt die Maske der Getroffenen; die Liste ist nach Zeitpunkt sortiert; Plätze
+  0–7 sind die Gruppe, 0 der Spieler (`PartyState`). Die Zeitleiste (`StateHint.Raidwide`) nennt niemanden.
+- *Am Code:* RSR las die Maske nur für Tankbuster (A220); jeder „Raidwide" öffnete Flächenabwehr, Auffrischungen
+  (Schimmerschild als reiner Selbstschutz eingeschlossen) und „area hit reaches you". Dieselbe Klasse wie der
+  Tankbuster auf andere, den er erinnert.
+- *Was das Protokoll davon zeigt:* nur, dass ihn nichts traf. Treffer auf andere stehen nur bei gelisteten Casts,
+  und bei den 175 allein angesagten lief keiner. Wie viele davon Türme, Köder oder Spreads waren, ist nicht
+  bestimmbar. Die Aussagen in A272 sind darauf berichtigt („ohne Treffer auf ihn").
+- *Behoben:* `BossModUpdater` liest die Maske, wenn der erste Eintrag der Raidwide ist: Erreicht er weder ihn noch
+  mehr als ein Gruppenmitglied, fällt er aus der Vorhersage (wie ein Cast ohne „reaches the party", A218).
+  `BMRRaidwideHitsPlayer` sagt, ob er ihn trifft; `AreaHitReachesPlayer` und `RadiantAegisAheadOfRaidwide` lesen es.
+  Unbekannt (anderer Eintrag vorn, Zeitleiste): wie bisher. Jede Abwehrzeile nennt „hits you".
+- *Falsifikation:* kein Defekt – widerlegt am Quelltext, die Maske nennt Abnehmer und Geköderte, und RSR ignorierte
+  sie. Behebung falsch – stärkste Gegenposition: Ein echter Raidwide hinter einem Turm in derselben Sekunde rückt erst
+  nach, wenn der Turm vorbei ist; die Abwehr kommt dann um höchstens das Fenster später. Ausgeliefert und nichts
+  ändert sich – trifft zu, wo die Vorhersagen aus der Zeitleiste kommen; das nächste Protokoll nennt je Zeile den
+  Endpunkt.
+- *Seine zweite Angabe:* „das sollte doch auch durch die schadenstabelle bei aoes abgedeckt sein: ein aoe, welcher
+  keinen schaden verursacht ist doch in tabelle so eingetragen, dass er nicht mehr defensiv bearbeitet wird." Am
+  Code nicht so: Gespeichert wird nur ein Anteil über null (`Watcher`), „unbewertet verhält sich wie ohne Bewertung"
+  und „Null zählt nicht" (Konzept 13, seine Vorgabe und Bauform). Die zehn leeren Landungen aus A272 blieben in allen
+  Sitzungen „rated no", also gemindert; nur „Skip area defence for casts that missed you" hielt seine eigene
+  Flächenabwehr nach der ersten Landung je Sitzung zurück. Eine BossModReborn-Vorhersage kann die Tabelle nicht
+  erreichen: Sie nennt keine Aktion. Ob leere Landungen künftig als „trifft niemanden" gespeichert werden, berührt
+  „Null zählt nicht" → vorgelegt.
+
+**Prüfgrad:** fremder Quelltext gelesen; statisch; Prüfskripte; Compile über die CI. Im Spiel nicht beobachtet.
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)

@@ -236,8 +236,13 @@ other two Holy holds and the Dark Knight's barrier hold see nothing left to stun
 Every raidwide BossModReborn predicts inside `Seconds before raidwide to use area mitigation` is now checked
 against the fight: did a hit on more than one party member come around the predicted moment? `DefenseTrace.log`
 writes each check with the module and the BossModReborn source, and each defence decision names the module's
-record. In recorded fights most predictions were followed by nothing, and the cooldown spent on them was gone when a
-real raidwide came.
+record. In recorded fights most predictions were followed by no hit on the player, and the cooldown spent on them was
+gone when a real raidwide came.
+
+BossModReborn calls more than raidwides "raidwide": towers, baits, spreads and charges on single players carry the
+same type, and each prediction names whom it hits. RSR now reads that list where it can (when that prediction is the
+next one): one that reaches neither you nor more than one party member opens nothing, and one that reaches the party
+but not you no longer spends Radiant Aegis or the other defences that protect only you.
 
 New setting `Set aside BossModReborn raidwides that keep missing`, off by default. On, a module whose predictions
 have missed more often than they landed opens no area defence and refreshes no mitigation ahead of a raidwide,

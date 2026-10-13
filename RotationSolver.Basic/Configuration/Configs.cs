@@ -825,7 +825,7 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 			+ "while its predictions have missed more often than they landed, they open no area defence and refresh "
 			+ "no mitigation; the next one that lands brings them back.\n"
 			+ "In a fight: cooldowns such as Radiant Aegis, Addle, Temperance or Shake It Off are not spent on "
-			+ "raidwides that do not come, and are there for the next one that does. The cost: a real raidwide from a "
+			+ "predicted raidwides that do not hit the party, and are there for the next one that does. The cost: a real raidwide from a "
 			+ "module that has been wrong more often than right gets no defence ahead of it - only once its cast is "
 			+ "seen, if it is.\n"
 			+ "Off: every predicted raidwide inside the window opens the area defence, as before. The check runs "

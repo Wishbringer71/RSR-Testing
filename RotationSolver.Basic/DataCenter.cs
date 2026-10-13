@@ -2787,7 +2787,8 @@ internal static class DataCenter
 	/// Sources, read without side effects: a stack marker (a stack involves everyone who stacks), a
 	/// spread marker on the player, a listed area cast within its landing window that reaches him -
 	/// rated worth mitigating, or unrated - interruptible ones included under "mitigate big area casts
-	/// even if interruptible", and a BossModReborn raidwide inside the mitigation window.
+	/// even if interruptible", and a BossModReborn raidwide inside the mitigation window, unless its own list of
+	/// whom it hits leaves him out (A273).
 	/// </remarks>
 	public static bool AreaHitReachesPlayer
 	{
@@ -2803,9 +2804,13 @@ internal static class DataCenter
 				return true;
 			}
 
-			if (Service.Config.UseBmrTimeline && BMRNextRaidwideIn > 0.6f && BMRNextRaidwideIn <= Service.Config.BMRRaidwideMitWindow)
+			// Unless the prediction names whom it hits and leaves him out (A273).
+			if (BMRRaidwideHitsPlayer ?? true)
 			{
-				return true;
+				if (Service.Config.UseBmrTimeline && BMRNextRaidwideIn > 0.6f && BMRNextRaidwideIn <= Service.Config.BMRRaidwideMitWindow)
+				{
+					return true;
+				}
 			}
 
 			var targets = AllHostileTargets;
@@ -4331,7 +4336,8 @@ internal static class DataCenter
 		{
 			var (landed, missed) = BmrRaidwideWatch.Record(BMRActiveModuleName);
 			parts.Add($"BMR raidwide in {BMRNextRaidwideIn:F1} s (window {Service.Config.BMRRaidwideMitWindow:F1},"
-				+ $" {BMRActiveModuleName ?? "no module"} by {BMRNextRaidwideSource}, landed {landed} of {landed + missed})");
+				+ $" {BMRActiveModuleName ?? "no module"} by {BMRNextRaidwideSource}, hits you {BMRRaidwideHitsPlayer?.ToString() ?? "unknown"},"
+				+ $" landed {landed} of {landed + missed})");
 		}
 		else if (BMRNextRaidwideInRaw is > 0f and < float.MaxValue && BMRNextRaidwideInRaw <= Service.Config.BMRRaidwideMitWindow)
 		{
@@ -4585,6 +4591,14 @@ internal static class DataCenter
 	public static string BMRNextRaidwideSource { get; set; } = string.Empty;
 
 	/// <summary>
+	/// Whether the raidwide BossModReborn predicts hits the player, from the entry's own list of whom it hits;
+	/// null when that list belongs to another entry or the prediction comes from the timeline, which names
+	/// nobody. BossModReborn's "raidwide" also covers towers, baits, spreads and charges on single players
+	/// (A273).
+	/// </summary>
+	public static bool? BMRRaidwideHitsPlayer { get; set; }
+
+	/// <summary>
 	/// Whether area damage on the party is announced, from any source, without asking how hard it lands:
 	/// an area marker on the party, a listed area cast reaching the party, a large measured one even when
 	/// interruptible, or a BossMod raidwide inside the mitigation window. A recognition, not a decision -
@@ -4788,6 +4802,7 @@ internal static class DataCenter
 		BMRNextRaidwideIn = float.MaxValue;
 		BMRNextRaidwideInRaw = float.MaxValue;
 		BMRNextRaidwideSource = string.Empty;
+		BMRRaidwideHitsPlayer = null;
 		BMRNextTankbusterIn = float.MaxValue;
 		BMRNextKnockbackIn = float.MaxValue;
 		BMRNextDowntimeIn = float.MaxValue;

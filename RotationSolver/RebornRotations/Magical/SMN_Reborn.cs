@@ -548,10 +548,13 @@ public sealed class SMN_Reborn : SummonerRotation
 
 	// BMRRaidwideIn is already the earliest of BMR's timeline/hints/generic raidwide predictions,
 	// so unlike the raw BMRDamageIn/BMRDamageType pair this can't fire on a tankbuster meant for someone else.
-	// The horizon is the shield's own duration, as its effect text states it: a shield cast further
-	// ahead than that is gone before the hit.
+	// BossModReborn's "raidwide" also covers towers, baits and spreads on other players; the shield
+	// protects only the Summoner, so a prediction that names whom it hits and leaves him out is passed
+	// over (A273). The horizon is the shield's own duration, as its effect text states it: a shield cast
+	// further ahead than that is gone before the hit.
 	private bool RadiantAegisAheadOfRaidwide =>
 		InCombat && !IsLastAction(false, RadiantAegisPvE)
+		&& (DataCenter.BMRRaidwideHitsPlayer ?? true)
 		&& BMRShouldRefreshBefore(BMRRaidwideIn, DefensiveValues.DurationOf((uint)ActionID.RadiantAegisPvE),
 			true, null, StatusID.RadiantAegis);
 

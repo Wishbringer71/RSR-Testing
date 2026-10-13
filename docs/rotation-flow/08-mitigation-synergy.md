@@ -443,6 +443,30 @@ ist der grosse" ist ueber die Schnittstelle nicht lesbar.
 Groesseninformation, die in diesem Moment vorliegt. Die Regel ist deshalb so gut, wie diese Zuordnung
 trifft — und nicht besser.
 
+### Was BossModReborn „Raidwide" nennt, und wen es trifft
+
+**Eine Raidwide-Vorhersage, die nennt, wen sie trifft, und weder ihn noch mehr als ein Gruppenmitglied
+einschließt, ist kein Flächentreffer auf diese Gruppe** (`BossModUpdater`, A273). BossModReborns eigener Typ sagt
+„expected to hit everyone and deal minor damage; also used for spread components", und er ist der Typ jeder
+Vorhersage, die ein Baustein ohne eigenen Typ anlegt: Türme für ihre Abnehmer, Köder für die Geköderten, ein
+Sturmangriff für die, die in seiner Linie stehen (`AIHints.AddPredictedDamage` und seine Aufrufer, BossModReborn
+be8ff77, gelesen 13.10.2026). Jeder Eintrag führt die Maske der Getroffenen; lesbar ist sie nur für den ersten
+Eintrag der Liste, und ist der ein Raidwide, ist er auch der erste Raidwide, weil die Liste nach Zeitpunkt sortiert
+ist. Plätze 0 bis 7 sind die Gruppe, Platz 0 er (`PartyState`). Dieselbe Lesart wie beim Cast (Konzept 13, „reaches
+the party", A218) und beim Tankbuster (A220). Im Kampf: Ein Turm, ein Köder oder ein Sturmangriff auf einen anderen
+öffnet weder die Flächenabwehr noch die Auffrischungen davor; trifft er zwei aus der Gruppe, bleibt die
+Gruppenminderung, und die eigene Abwehr (Schimmerschild, die Abwehr, die nur ihn schützt) fällt nur, wenn er
+selbst darunter ist (`BMRRaidwideHitsPlayer`, gelesen in `AreaHitReachesPlayer` und
+`SMN_Reborn.RadiantAegisAheadOfRaidwide`). Unbekannt bleibt die Maske, wenn ein anderer Eintrag vorn steht oder die
+Vorhersage aus der Zeitleiste kommt (Zustandsmarkierung des Modulautors, ohne Getroffene); dann wie bisher.
+
+**Anlass, sein Hinweis vom 13.10.2026:** „waren die raidwides denn wirklich raidwides oder nur große
+schadensflächen, wo man außerhalb stand … vielleicht ist nur die wahrnehmung und einordnung falsch". Im Protokoll
+vom 04.–10.10.2026 traf ihn bei 148 von 175 allein angesagten Vorhersagen zum vorhergesagten Zeitpunkt nichts (A272);
+ob andere getroffen wurden, zeigt das Protokoll nur bei gelisteten Casts, und bei diesen 175 lief keiner. Wie viele
+davon Türme, Köder oder Spreads auf andere waren, ist aus dem Protokoll nicht bestimmbar; jede Abwehrzeile nennt
+jetzt „hits you", Modul und Endpunkt.
+
 ### BossModReborn-Vorhersagen werden am Kampf gemessen
 
 **Jede Raidwide-Vorhersage im Minderungsfenster wird gegen den Kampf gehalten** (`BmrRaidwideWatch`, A272): Traf
@@ -462,13 +486,13 @@ bewertet sich selbst"): beginnt mit Vertrauen, Schwelle Gleichstand. Gezählt wi
 Modul ist eine Begegnung, das übertragene Muster also das desselben Bosses. Die Zählung gilt je Sitzung.
 
 **Warum gemessen werden muss — sein Protokoll vom 04.–10.10.2026:** Von 175 Vorhersagen, die die Abwehr allein
-öffneten, trafen ihn 27 zum vorhergesagten Zeitpunkt; 144 Abwehraktionen gingen auf Vorhersagen ohne Treffer
-(Schimmerschild 54, Vollkommener Ablass 32, Stumpfsinn 25, Linderung 21). Im Kampf: Linderung fiel auf eine
-Vorhersage ohne Treffer und war abgelaufen, als 25 s später ein Raidwide mit 27 % kam.
+öffneten, trafen ihn 27 zum vorhergesagten Zeitpunkt; 144 Abwehraktionen gingen auf Vorhersagen, die ihn nicht
+trafen (Schimmerschild 54, Vollkommener Ablass 32, Stumpfsinn 25, Linderung 21). Im Kampf: Linderung fiel auf eine
+solche Vorhersage und war abgelaufen, als 25 s später ein Raidwide mit 27 % kam.
 
 **Warum ab Werk aus — ein Grund aus dem Kampf:** Über dasselbe Protokoll nachgerechnet (Modul angenähert durch
 Abschnitte ohne fünfminütige Pause, eingetroffen nur, wo ihn selbst ein Mehrzieltreffer traf) legte die Regel 134 von
-275 Vorhersagen beiseite. 91 davon trafen nicht ein; 43 trafen, 27 davon mit 15 % und mehr, 11 dieser 27 hatte nur
+275 Vorhersagen beiseite. 91 davon trafen ihn nicht; 43 trafen ihn, 27 davon mit 15 % und mehr, 11 dieser 27 hatte nur
 BossModReborn angekündigt (bis 66 %) — dort fiele die Abwehr vor dem Treffer ganz weg, bei den übrigen 16 käme sie
 erst mit dem Cast. Ob verschenkte Abklingzeiten oder fehlende Abwehr vor einem großen Raidwide schwerer wiegen, ist
 seine Entscheidung (vorgelegt 13.10.2026). Die Nachrechnung unterschätzt „eingetroffen", weil das Protokoll Treffer
@@ -539,8 +563,9 @@ In jeder anderen Lage fällt Reflexion wie bisher. Das gilt für alle vier Tanks
 **Grenzen:**
 - *Hilfsfiguren:* Kommt der angesagte Raidwide von einer Hilfsfigur, wirkt Reflexion dort vermutlich nicht. Dann hält
   die Regel umsonst; der Tank war am Tankbuster gedeckt, verloren sind 10 % an ihm. Ob ein Raidwide von einer Hilfsfigur
-  kommt, misst RSR nicht. Erste Daten: Das Protokoll nennt seit A242 je Landung die getroffenen Gruppenmitglieder, und
-  seine Raidwides im 48-Spieler-Inhalt meldeten „reached you False" ohne Treffer (TODO).
+  kommt, misst RSR nicht. Das Protokoll nennt seit A242 je Landung die getroffenen Gruppenmitglieder; im 48-Spieler-Inhalt
+  landeten die gelisteten Casts nur auf ihrem Wirkenden, der Treffer kam als gleichnamige Folgeaktion oder gar nicht
+  (A272, Konzept 13).
 - *Andere Spieler:* Ein zweiter Tank kann den Raidwide mit seiner Reflexion decken. Das ist Verhalten eines anderen
   Spielers, kein tragender Grund.
 - *Zermürben und Stumpfsinn:* Die Einzelabwehr eines Schadensausteilers öffnet für einen Tankbuster auf ihn selbst. Eine

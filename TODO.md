@@ -4,9 +4,15 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 ## Defekte
 
-### BossModReborn-Raidwides ohne Treffer: ob Fehlvorhersagen beiseitegelegt werden, ist zu entscheiden · N
+### Leere Landungen in der Schadenstabelle als „trifft niemanden" führen? · N
 
-Protokoll 04.–10.10.2026 (A272): 144 Abwehraktionen auf Vorhersagen ohne Treffer. Gebaut: die Messung je Modul (`BmrRaidwideWatch`, im Protokoll mit Modul und Endpunkt) und „Set aside BossModReborn raidwides that keep missing", ab Werk aus, weil die Nachrechnung auch elf große, nur von BossModReborn angekündigte Raidwides ohne Abwehr gelassen hätte. Vorgelegt: Voreinstellung. Das nächste Protokoll zeigt je Modul und Endpunkt, wie oft Vorhersagen eintreffen.
+Sein Vorschlag (A273): Ein Flächenangriff ohne Schaden soll so in der Tabelle stehen, dass er nicht mehr defensiv bearbeitet wird. Heute wird nur ein Anteil über null gespeichert, „Null zählt nicht" (Konzept 13). Vorgelegt mit Empfehlung; berührt eine dokumentierte Entscheidung.
+
+**Konzept:** `docs/rotation-flow/13-aoe-damage-classification.md`
+
+### BossModReborn-Raidwides ohne Treffer auf ihn: ob Fehlvorhersagen beiseitegelegt werden, ist zu entscheiden · N
+
+Protokoll 04.–10.10.2026 (A272): 144 Abwehraktionen auf Vorhersagen ohne Treffer auf ihn. Seit A273 fallen Vorhersagen weg, deren Maske weder ihn noch mehr als ein Gruppenmitglied nennt (Türme, Köder, Spreads auf andere). Gebaut: die Messung je Modul (`BmrRaidwideWatch`, im Protokoll mit Modul und Endpunkt) und „Set aside BossModReborn raidwides that keep missing", ab Werk aus, weil die Nachrechnung auch elf große, nur von BossModReborn angekündigte Raidwides ohne Abwehr gelassen hätte. Vorgelegt: Voreinstellung. Das nächste Protokoll zeigt je Modul und Endpunkt, wie oft Vorhersagen eintreffen.
 
 **Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
 

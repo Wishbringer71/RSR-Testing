@@ -74,6 +74,24 @@ internal static class BossModUpdater
 			var genericRaidwide = (damageType == 2 && damageIn > 0f) ? damageIn : float.MaxValue;
 			var genericTankbuster = (damageType == 1 && damageIn > 0f) ? damageIn : float.MaxValue;
 
+			// BossModReborn calls a prediction "Raidwide" when it is "expected to hit everyone and deal minor
+			// damage; also used for spread components", and it is the type of every prediction a component
+			// adds without naming one - towers on their soakers, baits on the baited, a charge on whoever
+			// stands in its line (AIHints.AddPredictedDamage and its callers, BossModReborn be8ff77,
+			// 13.10.2026). Each entry names whom it hits. That mask is readable for entry [0] only; when [0]
+			// is a raidwide it is also the first raidwide, the one the raidwide endpoint returns, because the
+			// list is sorted by activation. Slots 0..7 are the party, slot 0 the player (PartyState). One that
+			// reaches neither the player nor more than one of the party is no area hit on this party -
+			// concept 13's reading of a cast (A218), and the reading A220 gave the tankbuster (A273).
+			var raidwideMaskKnown = damageType == (int)PredictedDamageType.Raidwide && damageIn > 0f;
+			var raidwideHitsPlayer = (predictedPlayers & 1ul) != 0ul;
+			var raidwideReachesParty = raidwideHitsPlayer || BitOperations.PopCount((uint)(byte)predictedPlayers) > 1;
+			if (raidwideMaskKnown && !raidwideReachesParty)
+			{
+				hintsRaidwide = float.MaxValue;
+				genericRaidwide = float.MaxValue;
+			}
+
 			// Merge all sources: Timeline OR type-specific Hints OR generic damage prediction
 			// Under "Set aside BossModReborn raidwides that keep missing", set aside while this module's
 			// predictions miss more often than they land (BmrRaidwideWatch, which scores them either way).
@@ -82,6 +100,12 @@ internal static class BossModUpdater
 				: DataCenter.BMRNextRaidwideInRaw == timelineRaidwide ? "timeline"
 				: DataCenter.BMRNextRaidwideInRaw == hintsRaidwide ? "hints"
 				: "generic";
+
+			// Known only when the raidwide in use is that entry; the timeline's raidwide names nobody.
+			DataCenter.BMRRaidwideHitsPlayer = raidwideMaskKnown && hintsRaidwide < float.MaxValue
+				&& DataCenter.BMRNextRaidwideInRaw == hintsRaidwide
+				? raidwideHitsPlayer
+				: null;
 			DataCenter.BMRNextRaidwideIn = Service.Config.SetAsideMissingBmrRaidwides
 				&& !BmrRaidwideWatch.ModuleLands(DataCenter.BMRActiveModuleName)
 				? float.MaxValue

@@ -150,8 +150,14 @@ eingeschlossen, gleich wie „Heal and raise Party NPCs" steht (A220). Das gilt 
 (`IsCastingAreaVfx`, eine Upstream-Erkennung, die bis dahin jeden Marker in Reichweite las) und für den
 Selbstschutz. Ein Stack auf einem Mitglied einer anderen Allianzgruppe traf keinen von ihnen und öffnete doch
 ihre Gruppenminderungen und seinen Selbstschutz. Für den Selbstschutz zählt ein Stack-Marker in der eigenen
-Gruppe als „erreicht ihn" (wer stackt, wird getroffen); ein Spread-Marker zählt nur auf ihm selbst. Ein
-angekündigter BossModReborn-Raidwide trifft jeden.
+Gruppe als „erreicht ihn" (wer stackt, wird getroffen); ein Spread-Marker zählt nur auf ihm selbst.
+
+**BossModReborn-Raidwide (A273):** Was BossModReborn „Raidwide" nennt, trifft nicht jeden — derselbe Typ steht für
+Spreads, Türme, Köder und Sturmangriffe auf einzelne Spieler (Konzept 08, „Was BossModReborn Raidwide nennt").
+Ist der nächste vorhergesagte Treffer dieser Raidwide, nennt seine Maske die Getroffenen: Erreicht er weder ihn
+noch mehr als ein Gruppenmitglied, öffnet er nichts; erreicht er die Gruppe, aber nicht ihn, öffnet er die
+Gruppenminderung, nicht den Selbstschutz. Gehört die Maske zu einem anderen Ereignis oder kommt die Vorhersage aus
+der Zeitleiste, gilt er wie bisher als Treffer auf jeden.
 
 **Tankbuster und die Einzelabwehr der Schadensausteiler (A220):** Ein angekündigter BossModReborn-Tankbuster
 öffnet sie, wenn er ihn trifft. Ist der nächste vorhergesagte Treffer dieser Tankbuster, sagt BossModReborn das
