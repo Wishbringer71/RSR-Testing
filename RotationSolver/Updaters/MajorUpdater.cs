@@ -373,6 +373,7 @@ internal static class MajorUpdater
 
 			// Update timing tweaks
 			ActionManagerEx.Instance.UpdateTweaks();
+			NoFallDamageUpdater.Update();
 
 			// Update displaying the additional UI windows
 			RotationSolverPlugin.UpdateDisplayWindow();

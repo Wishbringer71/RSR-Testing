@@ -177,6 +177,7 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 
 			MajorUpdater.Enable();
 			AutoAttackUpdater.Enable();
+			NoFallDamageUpdater.Enable();
 			Watcher.Enable();
 			ActionQueueManager.Enable();
 			BMRPlanUpdater.Enable();
@@ -451,6 +452,7 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 		await OtherConfiguration.Save();
 
 		AutoAttackUpdater.Disable();
+		NoFallDamageUpdater.Disable();
 		RSCommands.Disable();
 		ActionQueueManager.Disable();
 		BMRPlanUpdater.Disable();

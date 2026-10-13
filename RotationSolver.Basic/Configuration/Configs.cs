@@ -1408,6 +1408,13 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	Description = "This setting controls how many oGCDs RSR will try to fit in a single GCD window\nLower numbers mean more oGCDs, but potentially more GCD clipping")]
 	private readonly float _action6head = 0.25f;
 
+	// Henchman's "No Fall Damage" hack (A276). Off by default: it hooks a game function, and nobody should run
+	// that without having chosen it.
+	[ConditionBool, UI("No fall damage",
+	Description = "The game's fall damage function returns zero, a hook taken from Henchman's hacks.\nIn a fight: a fall from a height costs no HP.\nIf this game version does not have that function, the setting switches itself off.",
+	Filter = Extra)]
+	private static readonly bool _noFallDamage = false;
+
 	/// <summary>
 	/// Remove extra lag-induced animation lock delay from instant casts (read tooltip!)
 	/// Do NOT use with XivAlexander or NoClippy - this should automatically disable itself if they are detected, but double check first!

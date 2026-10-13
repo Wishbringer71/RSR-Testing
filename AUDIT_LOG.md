@@ -6458,6 +6458,32 @@ steht schon in `CLAUDE.md` (Loop, Stufe 6: „Hält eine, zurück zu 2"; „Bevo
 **Prüfgrad:** fremder Quelltext (BossModReborn be8ff77 mit Verlauf, Dalamud 896d831, ECommons) gelesen; Protokoll per
 Skript; statisch, Prüfskripte, Compile über die CI. Im Spiel nicht beobachtet.
 
+### A276 · Henchmans „No Fall Damage" übernommen (13.10.2026)
+
+Sein Auftrag: „in henchman … gibt es eine funktion (als hack), fallschaden auszuschalten. kannst du das aus
+henchman extrahieren und in rsr einbauen?" Einordnung: Vorgabe (Auftrag).
+
+- *Quelle:* `Knightmore/Henchman` 074d920 (08.10.2026), `Henchman/Tweaks/HacksUI.cs`: ein Signatur-Hook
+  `E8 ?? ?? ?? ?? 48 ?? ?? ?? ?? 48 ?? ?? C6 05 ?? ?? ?? ?? ?? 48 ?? ?? ??` auf eine Funktion `(actor, flags) → int`,
+  Detour `=> 0`, ohne Aufruf des Originals; unverändert seit 5813feb (15.07.2026). Der Hook-Rahmen (`SigHook`,
+  Submodul `Knightmore/Underlings`) ist nicht öffentlich (Klon verlangt Anmeldung); Dalamuds `ScanText` löst eine
+  mit E8 beginnende Signatur selbst auf das Aufrufziel auf. Was die Funktion außer dem Rückgabewert tut, ist ohne
+  Spielbinärdatei nicht prüfbar: weiß nicht. Belegt ist nur Henchmans Name und dass Henchman sie so ausliefert.
+- *Lizenz:* Henchman steht unter AGPL-3.0, RSR unter LGPL-3.0. Die übernommene Signatur samt Detour liegt in einer
+  eigenen Datei (`RotationSolver/Updaters/NoFallDamageUpdater.cs`) mit Herkunft und AGPL-Hinweis; GPL-3.0 §13, auf
+  dem LGPL-3.0 aufbaut, erlaubt die Verbindung.
+- *Gebaut:* Einstellung „No fall damage" (Extra, ab Werk aus), Hook beim Laden angelegt und je Durchlauf der
+  Einstellung nachgeführt (`RSRCommonUpdate`, läuft unabhängig davon, ob RSR aktiv ist). Findet die Signatur im
+  laufenden Spiel nichts, schaltet die Einstellung sich ab; das zeigt die Oberfläche.
+- *Ab Werk aus, Grund:* ein Eingriff in eine Spielfunktion, den jeder Nutzer des Releases bewusst wählen soll;
+  Henchman verlangt dafür selbst eine Bestätigung (`[Confirmation(publicOnly: true)]`).
+- *Falsifikation:* kein Bedarf — sein Auftrag. Bauform falsch — stärkste Gegenposition: Das Original nicht
+  aufzurufen, könnte eine Nebenwirkung der Funktion unterdrücken; so liefert Henchman sie seit Juli aus, eine andere
+  Bauform wäre ohne Spielbinärdatei geraten. Ausgeliefert und nichts ändert sich — wenn die Signatur nicht mehr passt;
+  dann schaltet sich die Einstellung ab.
+
+**Prüfgrad:** fremder Quelltext gelesen; statisch, Prüfskripte, Compile über die CI. Im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

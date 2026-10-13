@@ -240,3 +240,9 @@ but not you no longer spends Radiant Aegis or the other defences that protect on
 nobody (its timeline, or another prediction comes first), the raidwide still counts as hitting everyone.
 `DefenseTrace.log` names, for each defence decision, the module, the BossModReborn source and whether the raidwide
 hits you.
+
+## No fall damage
+
+New setting `No fall damage` under Extra, off by default. On, the game's fall damage function returns zero, so a
+fall deals no damage. The hook and its signature come from Henchman's hacks (AGPL-3.0, credited in the file). If
+the game version does not have that function, the setting switches itself off.
