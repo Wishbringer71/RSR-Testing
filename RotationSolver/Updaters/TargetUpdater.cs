@@ -33,6 +33,7 @@ internal static partial class TargetUpdater
 			DataCenter.PartyMembers.Clear();
 			DataCenter.AllianceMembers.Clear();
 			DataCenter.AllHostileTargets.Clear();
+			UpdateAreaCasters();
 			// Cleared with the rest, or it keeps naming whoever was last under fire. Nothing fails
 			// when it is left behind: the set simply reports that member as threatened for as long
 			// as the party stays out of combat, and the emergency heal treats them accordingly the
@@ -47,6 +48,7 @@ internal static partial class TargetUpdater
 		}
 
 		UpdateLists();
+		UpdateAreaCasters();
 		DataCenter.DeathTarget = GetDeathTarget();
 		DataCenter.DispelTarget = GetDispelTarget();
 		DataCenter.ProvokeTarget = (DataCenter.Role == JobRole.Tank || StatusHelper.PlayerHasStatus(true, StatusID.VariantUltimatumSet))
@@ -60,6 +62,45 @@ internal static partial class TargetUpdater
 		}
 
 		UpdateTimeToKill();
+	}
+
+	/// <summary>
+	/// The enemies whose casts the area recognition reads: the hostile list, and every untargetable enemy casting an
+	/// action on the area list (A277).
+	/// </summary>
+	/// <remarks>
+	/// Many raidwides are cast by invisible helpers - Shinryu's Meteor Impact by five light spheres, 5 s cast, each
+	/// hitting the whole party (trace of 13.10.2026) - and a boss off the field casts its own. The hostile list holds
+	/// targetable enemies only (<see cref="GetAllTargets"/>), so none of these opened a defence. The area list is
+	/// the evidence of hostility here: an id enters it only after it damaged every party member, and an
+	/// untargetable caster carries no other. Range and line of sight are left to the reach check of each cast,
+	/// because a helper stands where its area is, not where an enemy can be attacked.
+	/// </remarks>
+	private static void UpdateAreaCasters()
+	{
+		var hostiles = DataCenter.AllHostileTargets;
+		List<IBattleChara> casters = new(capacity: hostiles.Count);
+		casters.AddRange(hostiles);
+		HashSet<ulong> helperIds = [];
+
+		foreach (var obj in Svc.Objects)
+		{
+			if (obj is not IBattleChara caster || caster.ObjectKind != Dalamud.Game.ClientState.Objects.Enums.ObjectKind.BattleNpc
+				|| caster.IsTargetable || !caster.IsCasting
+				|| caster.GetBattleNPCSubKind() != Dalamud.Game.ClientState.Objects.Enums.BattleNpcSubKind.Combatant
+				|| !OtherConfiguration.HostileCastingArea.Contains(caster.CastActionId))
+			{
+				continue;
+			}
+
+			if (helperIds.Add(caster.GameObjectId))
+			{
+				casters.Add(caster);
+			}
+		}
+
+		DataCenter.AreaCastHelperIds = helperIds;
+		DataCenter.AreaCasters = casters;
 	}
 
 	private static unsafe void UpdateLists()

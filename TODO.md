@@ -18,6 +18,18 @@ Kampf vermutlich: der Rotmagier nimmt Engagement statt Displacement (gefolgert, 
 Abbildung von Start und Ziel auf Weite und Richtung — BossModReborn rechnet das Ziel aus der aktuellen Blickrichtung,
 RSR den Rückwärtssprung vom Ziel weg.
 
+### Rückstoß- und Tankbuster-Casts unsichtbarer Helfer werden nicht gelesen · N
+
+Seit A277 liest die Flächenerkennung Casts nicht anvisierbarer Kämpfer, die eine Aktion der Flächenliste wirken
+(`DataCenter.AreaCasters`). Dieselbe Lücke haben die Rückstoßerkennung (`AreHostilesCastingKnockback`) und die
+Tankbuster-Erkennung (`IsAnyHostileCastingTank`, `IsAnyHostileCastingListedTankBusterAtMe`): Sie gehen über
+`AllHostileTargets`, also nur über anvisierbare Gegner. Der Effekt-Handler nimmt Rückstöße von Helfern seit A277
+in die Rückstoßliste auf, gelesen werden sie nicht. Nicht mitgebaut, weil beide Regeln eigene Entscheidungen
+tragen (Abtausch und Rückstoßschutz in Konzept 08, der Tankbuster-Plan in Konzept 09) und ein Rückstoß, den die
+Mechanik braucht, nicht abgewehrt werden darf; die Erweiterung braucht je Regel einen eigenen Durchgang.
+
+**Konzept:** `docs/rotation-flow/13-aoe-damage-classification.md`, „Casts unsichtbarer Helfer zählen wie die sichtbarer Gegner"
+
 ### BossModReborn: Ein FATE-Modul in Occult Crescent läuft nach seinem Weggang weiter · N
 
 Am Quelltext gefolgert (BossModReborn be8ff77, 13.10.2026), im Spiel nicht beobachtet. `OpenWorldFate` will sich

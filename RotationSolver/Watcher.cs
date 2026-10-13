@@ -441,21 +441,13 @@ public static class Watcher
 			var maxHp = playerObject.MaxHp;
 			var denom = Math.Max(1u, maxHp); // avoid division by zero
 
-			if (set.Source is not IBattleChara battle || !set.Source.IsEnemy())
+			// An enemy nobody can target - the invisible helpers that resolve many raidwides, or a boss
+			// while it is off the field - counts as an enemy here: the area recognition reads its casts
+			// (DataCenter.AreaCasters, A277), so its actions are listed and measured like any other.
+			if (set.Source is not IBattleChara battle
+				|| !(set.Source.IsEnemy() || (battle.IsValid() && !battle.IsTargetable
+					&& battle.GetBattleNPCSubKind() == Dalamud.Game.ClientState.Objects.Enums.BattleNpcSubKind.Combatant)))
 			{
-				// An enemy nobody can target - the invisible helpers that resolve many raidwides, or a
-				// boss while it is off the field - is left out of everything below, the damage table
-				// included, because the consumers only ever read casts of targetable enemies. The tally
-				// says how often that happened.
-				if (set.Source is IBattleChara hidden && hidden.IsValid()
-					&& hidden.GetBattleNPCSubKind() == Dalamud.Game.ClientState.Objects.Enums.BattleNpcSubKind.Combatant
-					&& set.Action is { Cast100ms: > 0 } hiddenAction
-					&& DamageShareOn(set, playerId, denom) > 0f)
-				{
-					DataCenter.RecordAreaMeasurementOutcome(hiddenAction.RowId,
-						"not measured - cast by an untargetable enemy");
-				}
-
 				return;
 			}
 

@@ -50,6 +50,24 @@ internal static class DataCenter
 	public static List<IBattleChara> AllHostileTargets { get; set; } = [];
 
 	/// <summary>
+	/// The enemies whose casts the area recognition reads: <see cref="AllHostileTargets"/>, and the untargetable
+	/// enemies - the helpers that resolve many raidwides, a boss off the field - while they cast an action on the
+	/// area list (A277). Rebuilt with the hostile list in <c>TargetUpdater</c>.
+	/// </summary>
+	public static List<IBattleChara> AreaCasters { get; set; } = [];
+
+	/// <summary>The untargetable members of <see cref="AreaCasters"/>.</summary>
+	public static HashSet<ulong> AreaCastHelperIds { get; set; } = [];
+
+	/// <summary>
+	/// Whether <paramref name="h"/> counts as an enemy for the area recognition: targetable and hostile, or an
+	/// untargetable enemy casting an action on the area list.
+	/// </summary>
+	/// <param name="h">The caster.</param>
+	/// <returns>True for an enemy whose area cast is read.</returns>
+	internal static bool IsAreaCastEnemy(IBattleChara h) => h.IsEnemy() || AreaCastHelperIds.Contains(h.GameObjectId);
+
+	/// <summary>
 	/// The party members an enemy is currently aiming at - either attacking them, or casting
 	/// something that will land on them. Rebuilt once per frame beside the hostile list itself in
 	/// <c>TargetUpdater.UpdateLists</c>.
@@ -2813,7 +2831,7 @@ internal static class DataCenter
 				}
 			}
 
-			var targets = AllHostileTargets;
+			var targets = AreaCasters;
 			if (targets == null)
 			{
 				return false;
@@ -2907,9 +2925,10 @@ internal static class DataCenter
 	private static bool IsAnyHostileCastingAreaReachingMe()
 	{
 		var playerId = Player.Object?.GameObjectId ?? 0;
-		for (var i = 0; i < AllHostileTargets.Count; i++)
+		var casters = AreaCasters;
+		for (var i = 0; i < casters.Count; i++)
 		{
-			var h = AllHostileTargets[i];
+			var h = casters[i];
 			if (!IsHostileCastingArea(h))
 			{
 				continue;
@@ -2970,7 +2989,7 @@ internal static class DataCenter
 				return false;
 			}
 
-			var targets = AllHostileTargets;
+			var targets = AreaCasters;
 			if (targets == null)
 			{
 				return false;
@@ -2987,7 +3006,7 @@ internal static class DataCenter
 				var h = targets[i];
 				try
 				{
-					if (h == null || !h.IsValid() || h.GameObjectId == 0 || !h.IsCasting || !h.IsEnemy())
+					if (h == null || !h.IsValid() || h.GameObjectId == 0 || !h.IsCasting || !IsAreaCastEnemy(h))
 					{
 						continue;
 					}
@@ -3065,7 +3084,7 @@ internal static class DataCenter
 	{
 		get
 		{
-			var targets = AllHostileTargets;
+			var targets = AreaCasters;
 			if (!InCombat || targets == null)
 			{
 				return false;
@@ -3101,14 +3120,15 @@ internal static class DataCenter
 
 	private static bool IsAnyHostileCastingArea()
 	{
-		if (AllHostileTargets == null)
+		var casters = AreaCasters;
+		if (casters == null)
 		{
 			return false;
 		}
 
-		for (var i = 0; i < AllHostileTargets.Count; i++)
+		for (var i = 0; i < casters.Count; i++)
 		{
-			if (IsHostileCastingArea(AllHostileTargets[i]))
+			if (IsHostileCastingArea(casters[i]))
 			{
 				return true;
 			}
@@ -4271,7 +4291,7 @@ internal static class DataCenter
 
 			var sheet = Service.GetSheet<Action>();
 			var isTank = Role == JobRole.Tank;
-			foreach (var h in AllHostileTargets)
+			foreach (var h in AreaCasters)
 			{
 				if (h == null || !h.IsValid() || !h.IsCasting)
 				{
@@ -4299,7 +4319,8 @@ internal static class DataCenter
 
 				var act = sheet?.GetRow(id);
 				var target = Svc.Objects.SearchById(h.CastTargetObjectId);
-				var text = $"cast {act?.Name.ExtractText() ?? "?"} #{id} by {h.Name.TextValue} at {target?.Name.TextValue ?? "?"}"
+				var text = $"cast {act?.Name.ExtractText() ?? "?"} #{id} by {h.Name.TextValue}"
+					+ $"{(AreaCastHelperIds.Contains(h.GameObjectId) ? " (untargetable)" : string.Empty)} at {target?.Name.TextValue ?? "?"}"
 					+ $" ({(listedArea ? "area list" : string.Empty)}{(listedArea && listedTank ? ", " : string.Empty)}{(listedTank ? "tankbuster list" : string.Empty)})"
 					+ $" {h.TotalCastTime - h.CurrentCastTime:F1} s left";
 				if (act is { } a)
@@ -4439,7 +4460,7 @@ internal static class DataCenter
 				return false;
 			}
 
-			if (!h.IsEnemy())
+			if (!IsAreaCastEnemy(h))
 			{
 				return false;
 			}
