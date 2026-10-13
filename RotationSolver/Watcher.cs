@@ -434,13 +434,6 @@ public static class Watcher
 
 				// Before the source filter below: the follow-up often comes from an untargetable helper.
 				RecordFollowUpOfEmptyLanding(set, marked, playerObject, hitPlayer);
-
-				// What a raidwide prediction waits for: more than one of the party hit, or the player and
-				// someone else (BmrRaidwideWatch). From helpers too, which resolve many raidwides.
-				if (DamagedPartyMembers(set) > 1 || (hitPlayer && set.TargetEffects.Length > 1))
-				{
-					BmrRaidwideWatch.RecordPartyHit();
-				}
 			}
 
 			float damageRatio = 0;

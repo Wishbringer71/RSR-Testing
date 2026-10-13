@@ -4,17 +4,34 @@ Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schu
 
 ## Defekte
 
-### Leere Landungen in der Schadenstabelle als „trifft niemanden" führen? · N
+### Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn · N, U
 
-Sein Vorschlag (A273): Ein Flächenangriff ohne Schaden soll so in der Tabelle stehen, dass er nicht mehr defensiv bearbeitet wird. Heute wird nur ein Anteil über null gespeichert, „Null zählt nicht" (Konzept 13). Vorgelegt mit Empfehlung; berührt eine dokumentierte Entscheidung.
+`BMRTimeline_IPCSubscriber.IsFixedDashSafe` abonniert `Hints.IsFixedDashSafe` als `Func<Vector3, Vector3, bool>`
+(Upstream, 33e6acb1f, 07.05.2026); BossModReborn registriert den Endpunkt als `(float range, bool backwards)`
+(b6698a19f, 05.05.2026; unverändert in be8ff77). EzIPC mit `SafeWrapper.AnyException` gibt bei einer Ausnahme den
+Vorgabewert zurück, also `false` (ECommons `SafeWrapperAny`), und Dalamud wirft: `CallGateChannel.CheckAndConvertArgs`
+versucht einen `Vector3` per JSON in `float` und `bool` zu wandeln und meldet `IpcTypeMismatchError` (Dalamud 896d831,
+gelesen 13.10.2026). Bei laufendem BossModReborn gilt damit jeder feste Sprung und jeder Rückwärtssprung als
+gefährlich: `CheckMovementSafety` lehnt Displacement (Rotmagier) und Hissatsu: Yaten (Samurai) ab, seit 17aba32af
+(29.09.2026) über die Rückwärtssprung-Prüfung, dazu Repelling Shot und die übrigen `FixedDistanceMove`-Aktionen. Im
+Kampf vermutlich: der Rotmagier nimmt Engagement statt Displacement (gefolgert, nicht am Code verfolgt). Offen: die
+Abbildung von Start und Ziel auf Weite und Richtung — BossModReborn rechnet das Ziel aus der aktuellen Blickrichtung,
+RSR den Rückwärtssprung vom Ziel weg.
 
-**Konzept:** `docs/rotation-flow/13-aoe-damage-classification.md`
+### BossModReborn: Ein FATE-Modul in Occult Crescent läuft nach seinem Weggang weiter · N
 
-### BossModReborn-Raidwides ohne Treffer auf ihn: ob Fehlvorhersagen beiseitegelegt werden, ist zu entscheiden · N
+Am Quelltext gefolgert (BossModReborn be8ff77, 13.10.2026), im Spiel nicht beobachtet. `OpenWorldFate` will sich
+zurücksetzen, sobald der Spieler 40 y von der Arenamitte weg ist (`CheckReset`). Die Mitte setzt aber
+`SimpleBossModule.UpdateModule` in jedem Durchlauf auf die Position des Spielers, also greift die Entfernung nie.
+In Inhalten mit Inhaltsnummer, Occult Crescent eingeschlossen, lädt `BossModuleManager` ein aktives Modul auch
+nicht nach Entfernung ab (seit be21ea6a2, 01.10.2026). Das Modul eines FATE, an dem er teilnahm, bleibt deshalb aktiv,
+bis dessen Boss den Kampf verlässt. Ein später aktives Modul löst es nicht ab, weil die Ablösung eine höhere
+Priorität verlangt und beide aktiv sind. Im Kampf: RSR liest die Vorhersagen des verlassenen FATE (ein Raidwide-Cast
+nennt jedes Gruppenmitglied als getroffen), und für das Critical Engagement, in das er weitergeht, kommt keine. Über
+die Schnittstelle nicht erkennbar: Die Arena des FATE-Moduls wandert mit dem Spieler, und BossModReborn nennt den
+Namen des Bosses, nicht die Figur. Adressat ist BossModReborn.
 
-Protokoll 04.–10.10.2026 (A272): 144 Abwehraktionen auf Vorhersagen ohne Treffer auf ihn. Seit A273 fallen Vorhersagen weg, deren Maske weder ihn noch mehr als ein Gruppenmitglied nennt (Türme, Köder, Spreads auf andere). Gebaut: die Messung je Modul (`BmrRaidwideWatch`, im Protokoll mit Modul und Endpunkt) und „Set aside BossModReborn raidwides that keep missing", ab Werk aus, weil die Nachrechnung auch elf große, nur von BossModReborn angekündigte Raidwides ohne Abwehr gelassen hätte. Vorgelegt: Voreinstellung. Das nächste Protokoll zeigt je Modul und Endpunkt, wie oft Vorhersagen eintreffen.
-
-**Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
+**Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`, „Wann eine BossModReborn-Vorhersage ihn betrifft"
 
 ### ECommons liest die Aktionsart eines Effektsatzes vier Bytes breit · N, U
 

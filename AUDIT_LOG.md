@@ -6402,6 +6402,62 @@ namensbenennung" und „fixes-after-x.x.x.xx". Einordnung: Vorgabe.
   ist Vorfahr), neuer Entwurfs-PR, PR #12 geschlossen. `claude/repo-privacy-settings-f06dqh` ist danach ein
   Löschfall; Ref-Löschungen enden hier mit 403.
 
+### A275 · BossModReborn-Vorhersagen im vollständigen Loop neu geprüft: die Einstellung zurückgenommen (13.10.2026)
+
+Seine Rüge zu A272/A273: „ich habe nie gesagt, dass ich einen schalter haben will … wenn das ergebnis eines
+konzeptes eine option ist, wo man nicht weiß, ob sie sinnvoll ist, dann war der gesamte konzeptionierungsweg
+fehlerhaft und falsch. also kritische prüfung im vollständigen loop". Einordnung: Vorgabe zur Arbeitsweise; sie
+steht schon in `CLAUDE.md` (Loop, Stufe 6: „Hält eine, zurück zu 2"; „Bevor ich ihn frage oder ihm etwas vorlege").
+
+- *Wo der Weg falsch war:* In A272 hielt die Falsifikation des Entwurfs „Vorhersagen je Modul nach Trefferquote
+  beiseitelegen": Die Nachrechnung nahm die Abwehr vor elf großen Raidwides. Nach Stufe 6 hieß das zurück zu den
+  Optionen. Stattdessen kam derselbe Entwurf hinter eine Einstellung, ab Werk aus, und deren Voreinstellung als seine
+  Entscheidung in den Bericht. Erhoben war zu diesem Zeitpunkt nur das Fehlerbild (Vorhersagen ohne Treffer im
+  Protokoll), nicht, was BossModReborn vorhersagt und für wen; die Statistik behandelte das Fehlerbild.
+- *Zurückgenommen:* `SetAsideMissingBmrRaidwides`, `BmrRaidwideWatch`, `BMRNextRaidwideInRaw`, die Zählung im
+  Effekt-Handler und die Protokollteile „landed h of n" und „set aside". Gründe: (1) BossModReborn nennt zu keiner
+  Vorhersage eine Aktion; eine Quote je Modul zählt Türme auf andere und echte Raidwides desselben Moduls zusammen.
+  (2) Ihr Maß „eingetroffen" ist das Protokollmaß, und das ist unsicher (unten, Necrophobia). (3) Die gemessene
+  Folge: elf Raidwides von 15–66 % ohne Abwehr davor. Es bleiben die Maske (A273) und die beschreibenden Teile jeder
+  Abwehrzeile: Modul, Endpunkt, „hits you".
+- *Am Protokoll neu gemessen (Skript über alle Zeilen):* 174 allein über BossModReborn geöffnete Vorhersagen,
+  gebündelt nach vorhergesagtem Zeitpunkt (A272 zählte mit anderer Bündelung 175). Bei 79 traf ihn 90 s davor und
+  danach keine gegnerische Aktion, und kein gelisteter Cast landete; 56 davon fallen in drei Sitzungen mit Occult
+  Crescent und Forked Tower: Magic (08.10. abends 39 von 47, 10.10. mittags 11 von 14, 10.10. nachmittags 6 von 14).
+  Im Kampf gegen Necrophobia (10.10., 12:32–12:44) steht kein Treffer auf ihn, während sieben Raidwides vorhergesagt
+  und Necrophobias Tankbuster Corpse Mangler zweimal gemessen wurden. BossModReborn führt für diesen Kampf
+  Hail of Hellflares als Raidwide (`RaidwideCast`), dessen Schaden von Hilfsfiguren kommt (47453, 48956, 48957). Ob
+  er nicht getroffen wurde oder das Protokoll diese Quelle nicht sieht: weiß nicht. Unbelegt ist damit auch die
+  Aussage aus A272, 144 Abwehraktionen seien auf Vorhersagen ohne Treffer gegangen; belegt ist nur, dass das
+  Protokoll keinen zeigt.
+- *Geprüft und nicht gebaut — Vorhersagen eines Moduls verwerfen, in dessen Arena er nicht steht:* Anlass war
+  `BossModuleManager`: In Inhalten mit Inhaltsnummer bleibt ein aktives Modul bei jeder Entfernung aktiv (be21ea6a2,
+  01.10.2026), und `RaidwideCast.AffectedPlayers` nennt jedes Gruppenmitglied ohne Position. Widerlegt am Quelltext:
+  Die Critical Engagements in Occult Crescent (30 von 30) und Forked Tower: Magic (4 von 4) werden nur aktiv, wenn er
+  beim Pull in der Arena steht (`CheckPull`); FATE-Module (24 von 24) sind `OpenWorldFate`, ihre Arena wandert mit dem
+  Spieler. Eine Arena-Regel änderte in seinem Inhalt nichts. Der Entwurf stand schon im Arbeitsbaum und ist vor dem
+  Commit zurückgebaut.
+- *Neu erkannt, Adressat BossModReborn (`TODO.md`):* `OpenWorldFate.CheckReset` misst die Entfernung zur Arenamitte,
+  die `SimpleBossModule.UpdateModule` auf den Spieler setzt; ein verlassenes FATE-Modul bleibt aktiv, bis sein Boss
+  den Kampf verlässt, und ein später aktives löst es nicht ab (gleiche Priorität). Gefolgert, nicht beobachtet.
+- *Neu erkannt, Upstream (`TODO.md`):* `Hints.IsFixedDashSafe` wird mit falscher Signatur abonniert; Dalamud wirft
+  `IpcTypeMismatchError`, EzIPC gibt `false` zurück, jeder feste Sprung und Rückwärtssprung gilt bei laufendem
+  BossModReborn als gefährlich.
+- *Seine Angabe zur Schadenstabelle (A273), ohne ihn abgeschlossen:* Leere Landungen werden nicht als „trifft
+  niemanden" gespeichert. Die Frage war aus Konzept 13 entscheidbar, und die Entscheidung ändert nichts: „Null zählt
+  nicht" bleibt. Für die neun Wind-ups ohne Folgetreffer lässt „Skip area defence for casts that missed you" seine
+  Flächenabwehr ab der zweiten Landung je Sitzung weg; gespeichert gewönne das eine Abwehr je Sitzung und Aktion und
+  kostete dauerhaft die Abwehr, wo ein Folgetreffer unter anderem Namen kommt.
+- *Falsifikation des verbleibenden Stands (Maske ohne Statistik):* kein Defekt — für die Maske am Quelltext
+  widerlegt (A273). Option falsch — stärkste Gegenposition: Ohne Statistik bleiben Fehlvorhersagen aus der Zeitleiste
+  und Vorhersagen ohne lesbare Maske gedeckt, also Abklingzeiten ohne Treffer. Sie hält nicht: Ob es solche
+  Fehlvorhersagen in nennenswerter Zahl gibt, zeigt das Protokoll nicht (Necrophobia), und jede Unterscheidung, die
+  die Schnittstelle zulässt (Modul, Endpunkt, Zeitpunkt), mischt sie mit echten Raidwides. Selbstkorrektur ist hier
+  nicht baubar. Ausgeliefert und nichts ändert sich — trifft zu für Vorhersagen ohne lesbare Maske; dort wie vor A272.
+
+**Prüfgrad:** fremder Quelltext (BossModReborn be8ff77 mit Verlauf, Dalamud 896d831, ECommons) gelesen; Protokoll per
+Skript; statisch, Prüfskripte, Compile über die CI. Im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -6689,3 +6745,6 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C105 | Berichte vom 01.10.2026: vier Punkte „zur Entscheidung“; Reflexion bei „beide in Gefahr“ „offen“, dann „an den Tankbuster, weil er sicher und sofort kommt“; Empfehlungen O1 (Reassemble) und „Schutzwall direkt nach der großen“ | Alle vier waren aus seinen Vorgaben, den Wirktexten, The Balance und seinen Protokollen entscheidbar. Die Debuffs liegen auf dem Gegner und schützen beide (sein Hinweis); der Raidwide ist ebenso angekündigt; Gruppenwerkzeuge gehören laut The Balance auf den Raidwide. O1 ruhte auf fremdem Verhalten. Die Antithesen gegen die eigenen Empfehlungen waren nicht geführt, und das Protokoll mit zweimal 85 % war gelesen, aber nicht gegen die Staffelung gestellt | A243–A246; `CLAUDE.md`, „Bevor ich ihn frage oder ihm etwas vorlege“, geschärft |
 | C106 | Konzept 04, C1 (20.08.2026): „`BaseAction.Use()` castet `ID`, nicht `AdjustedID`“ | `Use()` wirkt bei Aktionen auf ein Ziel `AdjustedID` (seit 15311ec27, 2024), nur bei Bodenzielen `ID` | korrigiert (A250) |
 | C107 | Bericht vom 02.10.2026: „Offen ist nur deine Absicht: Meint ‚Verfall‘ den Bruch durch Schaden, oder nur das Auslaufen der Zeit?“ | Sein V1-Wortlaut (27.09.2026) nennt „ablauf/verfall“ nebeneinander und nimmt MP-verbrauchende Sofortschilde an; aus seinen Angaben entscheidbar, keine offene Frage | umgesetzt (A251) |
+| C108 | A272 und Bericht vom 13.10.2026: „Set aside BossModReborn raidwides that keep missing", ab Werk aus, Voreinstellung „zur Entscheidung vorgelegt" | Die Falsifikation des Entwurfs hielt (elf große Raidwides ohne Abwehr); nach Stufe 6 hieß das zurück zu den Optionen, nicht eine Einstellung. Eine Einstellung, deren Sinn das Konzept nicht klärt, ist kein Ergebnis | zurückgenommen (A275) |
+| C109 | A272, Befund 1: „144 Abwehraktionen gingen auf Vorhersagen, die ihn nicht trafen" | Belegt ist nur, dass das Protokoll keinen Treffer zeigt; bei Necrophobia zeigt es zwölf Minuten lang keinen, auch nicht den modellierten Raidwide | berichtigt (A275) |
+| C110 | A273, Falsifikation: „Ein echter Raidwide hinter einem Turm … die Abwehr kommt dann um höchstens das Fenster später" | Löst der Turm weniger als 0,6 s vor dem Raidwide auf, kommt der Raidwide über BossModReborn gar nicht mehr (Mindestvorlauf der Leser); A273 „vorgelegt" (leere Landungen) war aus Konzept 13 entscheidbar | berichtigt, ohne ihn abgeschlossen (A275) |

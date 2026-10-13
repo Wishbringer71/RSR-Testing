@@ -93,23 +93,17 @@ internal static class BossModUpdater
 			}
 
 			// Merge all sources: Timeline OR type-specific Hints OR generic damage prediction
-			// Under "Set aside BossModReborn raidwides that keep missing", set aside while this module's
-			// predictions miss more often than they land (BmrRaidwideWatch, which scores them either way).
-			DataCenter.BMRNextRaidwideInRaw = Math.Min(Math.Min(timelineRaidwide, hintsRaidwide), genericRaidwide);
-			DataCenter.BMRNextRaidwideSource = DataCenter.BMRNextRaidwideInRaw == float.MaxValue ? string.Empty
-				: DataCenter.BMRNextRaidwideInRaw == timelineRaidwide ? "timeline"
-				: DataCenter.BMRNextRaidwideInRaw == hintsRaidwide ? "hints"
+			DataCenter.BMRNextRaidwideIn = Math.Min(Math.Min(timelineRaidwide, hintsRaidwide), genericRaidwide);
+			DataCenter.BMRNextRaidwideSource = DataCenter.BMRNextRaidwideIn == float.MaxValue ? string.Empty
+				: DataCenter.BMRNextRaidwideIn == timelineRaidwide ? "timeline"
+				: DataCenter.BMRNextRaidwideIn == hintsRaidwide ? "hints"
 				: "generic";
 
 			// Known only when the raidwide in use is that entry; the timeline's raidwide names nobody.
 			DataCenter.BMRRaidwideHitsPlayer = raidwideMaskKnown && hintsRaidwide < float.MaxValue
-				&& DataCenter.BMRNextRaidwideInRaw == hintsRaidwide
+				&& DataCenter.BMRNextRaidwideIn == hintsRaidwide
 				? raidwideHitsPlayer
 				: null;
-			DataCenter.BMRNextRaidwideIn = Service.Config.SetAsideMissingBmrRaidwides
-				&& !BmrRaidwideWatch.ModuleLands(DataCenter.BMRActiveModuleName)
-				? float.MaxValue
-				: DataCenter.BMRNextRaidwideInRaw;
 			DataCenter.BMRNextTankbusterIn = Math.Min(Math.Min(timelineTankbuster, hintsTankbuster), genericTankbuster);
 
 			DataCenter.BMRSpecialModeIn = BMRTimeline_IPCSubscriber.SpecialModeIn?.Invoke() ?? float.MaxValue;

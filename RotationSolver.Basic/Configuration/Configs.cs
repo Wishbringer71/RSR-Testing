@@ -813,25 +813,6 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	[UI("Seconds before knockback to use anti-knockback", Parent = nameof(UseBmrTimeline))]
 	[Range(1, 10, ConfigUnitType.Seconds, 0.5f)]
 	public float BMRKnockbackWindow { get; set; } = 3f;
-
-	// The owner's rule weights a protection by how likely its hit is (concept 08). A module whose raidwide
-	// predictions keep missing makes it unlikely: in the trace of 04-10 October 144 defensive actions went to
-	// predictions nothing followed (A272). Off by default, for a reason from the fight: replayed over that trace,
-	// setting aside below parity also took the defence ahead of eleven raidwides of 15 % and more that only
-	// BossModReborn had announced. Which way that trade goes is the owner's decision.
-	[UI("Set aside BossModReborn raidwides that keep missing",
-		Description = "Each raidwide BossModReborn predicts inside the window above is checked against the fight: "
-			+ "did a hit on more than one party member come around the predicted moment? Per BossModReborn module, "
-			+ "while its predictions have missed more often than they landed, they open no area defence and refresh "
-			+ "no mitigation; the next one that lands brings them back.\n"
-			+ "In a fight: cooldowns such as Radiant Aegis, Addle, Temperance or Shake It Off are not spent on "
-			+ "predicted raidwides that do not hit the party, and are there for the next one that does. The cost: a real raidwide from a "
-			+ "module that has been wrong more often than right gets no defence ahead of it - only once its cast is "
-			+ "seen, if it is.\n"
-			+ "Off: every predicted raidwide inside the window opens the area defence, as before. The check runs "
-			+ "either way and is written to DefenseTrace.log.",
-		Parent = nameof(UseBmrTimeline))]
-	public bool SetAsideMissingBmrRaidwides { get; set; } = false;
 	[UI("Number of hostiles", Parent = nameof(UseDefenseAbility),
 		PvEFilter = JobFilterType.Tank)]
 	[Range(1, 8, ConfigUnitType.None, 0.05f)]

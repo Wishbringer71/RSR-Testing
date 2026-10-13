@@ -4334,15 +4334,8 @@ internal static class DataCenter
 
 		if (BMRNextRaidwideIn is > 0f and < float.MaxValue)
 		{
-			var (landed, missed) = BmrRaidwideWatch.Record(BMRActiveModuleName);
 			parts.Add($"BMR raidwide in {BMRNextRaidwideIn:F1} s (window {Service.Config.BMRRaidwideMitWindow:F1},"
-				+ $" {BMRActiveModuleName ?? "no module"} by {BMRNextRaidwideSource}, hits you {BMRRaidwideHitsPlayer?.ToString() ?? "unknown"},"
-				+ $" landed {landed} of {landed + missed})");
-		}
-		else if (BMRNextRaidwideInRaw is > 0f and < float.MaxValue && BMRNextRaidwideInRaw <= Service.Config.BMRRaidwideMitWindow)
-		{
-			var (landed, missed) = BmrRaidwideWatch.Record(BMRActiveModuleName);
-			parts.Add($"BMR raidwide in {BMRNextRaidwideInRaw:F1} s set aside: landed {landed} of {landed + missed}");
+				+ $" {BMRActiveModuleName ?? "no module"} by {BMRNextRaidwideSource}, hits you {BMRRaidwideHitsPlayer?.ToString() ?? "unknown"})");
 		}
 
 		if (BMRNextTankbusterIn is > 0f and < float.MaxValue)
@@ -4571,22 +4564,11 @@ internal static class DataCenter
 
 	public static bool BMRHasActiveModule { get; set; }
 	public static string? BMRActiveModuleName { get; set; }
-	/// <summary>
-	/// The next raidwide BossModReborn predicts, in seconds - set aside (<see cref="float.MaxValue"/>) while the
-	/// active module's predictions have missed more often than they landed (<see cref="BmrRaidwideWatch"/>).
-	/// What every defence reads.
-	/// </summary>
 	public static float BMRNextRaidwideIn { get; set; } = float.MaxValue;
 
 	/// <summary>
-	/// The next raidwide BossModReborn predicts, as it reports it. Only the watch that scores the predictions
-	/// reads this; a defence reads <see cref="BMRNextRaidwideIn"/>.
-	/// </summary>
-	public static float BMRNextRaidwideInRaw { get; set; } = float.MaxValue;
-
-	/// <summary>
-	/// Which BossModReborn endpoint gave <see cref="BMRNextRaidwideInRaw"/>: "timeline", "hints" or "generic".
-	/// For the trace, so a module's misses can be told apart by where the prediction came from.
+	/// Which BossModReborn endpoint gave <see cref="BMRNextRaidwideIn"/>: "timeline", "hints" or "generic".
+	/// For the trace: only "hints" carries a list of whom the raidwide hits.
 	/// </summary>
 	public static string BMRNextRaidwideSource { get; set; } = string.Empty;
 
@@ -4800,7 +4782,6 @@ internal static class DataCenter
 		BMRHasActiveModule = false;
 		BMRActiveModuleName = null;
 		BMRNextRaidwideIn = float.MaxValue;
-		BMRNextRaidwideInRaw = float.MaxValue;
 		BMRNextRaidwideSource = string.Empty;
 		BMRRaidwideHitsPlayer = null;
 		BMRNextTankbusterIn = float.MaxValue;

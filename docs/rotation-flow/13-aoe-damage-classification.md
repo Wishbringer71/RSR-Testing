@@ -153,7 +153,8 @@ ihre Gruppenminderungen und seinen Selbstschutz. Für den Selbstschutz zählt ei
 Gruppe als „erreicht ihn" (wer stackt, wird getroffen); ein Spread-Marker zählt nur auf ihm selbst.
 
 **BossModReborn-Raidwide (A273):** Was BossModReborn „Raidwide" nennt, trifft nicht jeden — derselbe Typ steht für
-Spreads, Türme, Köder und Sturmangriffe auf einzelne Spieler (Konzept 08, „Was BossModReborn Raidwide nennt").
+Spreads, Türme, Köder und Sturmangriffe auf einzelne Spieler (Konzept 08, „Wann eine BossModReborn-Vorhersage ihn
+betrifft").
 Ist der nächste vorhergesagte Treffer dieser Raidwide, nennt seine Maske die Getroffenen: Erreicht er weder ihn
 noch mehr als ein Gruppenmitglied, öffnet er nichts; erreicht er die Gruppe, aber nicht ihn, öffnet er die
 Gruppenminderung, nicht den Selbstschutz. Gehört die Maske zu einem anderen Ereignis oder kommt die Vorhersage aus
@@ -222,6 +223,13 @@ Protokollzeile „follow-up of"). Im Kampf: Der Folgetreffer bekommt wieder die 
 bewertet; ein Wind-up ohne Folgetreffer bleibt ausgelassen, wie bisher. Verknüpft wird über den Namen, nicht über
 den Wirkenden, weil der Folgetreffer von einer anderen Figur kommt; eine Frist gibt es nicht, die nächste Landung
 und das Kampfende begrenzen die Zuordnung. Grenze: Ein Folgetreffer unter anderem Namen bleibt unverknüpft.
+
+**Als „trifft niemanden" gespeichert wird eine leere Landung nicht** (A275; sein Hinweis vom 13.10.2026, die
+Tabelle decke solche Flächen ab). Die Tabelle führt nur Anteile über null, weil ein Treffer ohne Schaden sagt, dass
+etwas ihn aufhielt, nicht, dass er harmlos ist. Für die neun Wind-ups ohne Folgetreffer lässt „Skip area defence for
+casts that missed you" seine Flächenabwehr ab der zweiten Landung je Sitzung ohnehin weg. Gespeichert gewönne das
+eine Abwehr je Sitzung und Aktion; es kostete dauerhaft die Abwehr dort, wo der Folgetreffer unter anderem Namen
+kommt und unverknüpft bleibt.
 
 **Protokoll der Abwehrentscheidungen (`DefenseTrace.log` im Konfigurationsordner, über Sitzungen und Builds fortgeschrieben, jede Sitzung mit Datum, Uhrzeit und Commit des Builds, A208, A232):** Jede
 Wahl der Abwehrkette — Flächen- und Einzelabwehr im Dispatch für alle Jobs, beim Beschwörer auch Radiant Aegis vor

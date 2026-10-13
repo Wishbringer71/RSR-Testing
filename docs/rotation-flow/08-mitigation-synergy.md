@@ -252,7 +252,7 @@ wahrscheinlich ist. Die Regeln dieses Konzepts messen das so:
 
 | Regel | Maß der Wahrscheinlichkeit |
 |---|---|
-| Flächenabwehr (`AutoStatus.DefenseArea`) | ein laufender Flächenzauber; mit `MitigateBigAreaCastsEvenIfInterruptible` auch ein unterbrechbarer, dessen gemessener Anteil die größte Barriere übersteigt; ein BossMod-Raidwide im Fenster, mit `SetAsideMissingBmrRaidwides` (ab Werk aus) nur, solange die Vorhersagen dieses Moduls mindestens so oft eintrafen wie nicht („BossModReborn-Vorhersagen werden am Kampf gemessen"); der Befehl „Defense Area" von Hand |
+| Flächenabwehr (`AutoStatus.DefenseArea`) | ein laufender Flächenzauber; mit `MitigateBigAreaCastsEvenIfInterruptible` auch ein unterbrechbarer, dessen gemessener Anteil die größte Barriere übersteigt; ein BossMod-Raidwide im Fenster, dessen Maske ihn oder die Gruppe einschließt oder fehlt („Wann eine BossModReborn-Vorhersage ihn betrifft"); der Befehl „Defense Area" von Hand |
 | Einzelabwehr (`AutoStatus.DefenseSingle`) | ein Zauber auf einen Tank (Tankbuster) oder ein BossMod-Tankbuster im Fenster; beim Heiler zusätzlich, wie viele Gegner den Tank angreifen |
 | Heilung vor dem angekündigten Treffer | die vorausberechnete Gesundheit nach dem laufenden Cast — der Treffer ist angekündigt |
 | Schranke der Rückhaltungen | Gefährdungsklasse 1 jetzt, oder ein angekündigter, gemessener Treffer brächte ein ungeschütztes Mitglied dorthin |
@@ -443,73 +443,64 @@ ist der grosse" ist ueber die Schnittstelle nicht lesbar.
 Groesseninformation, die in diesem Moment vorliegt. Die Regel ist deshalb so gut, wie diese Zuordnung
 trifft — und nicht besser.
 
-### Was BossModReborn „Raidwide" nennt, und wen es trifft
+### Wann eine BossModReborn-Vorhersage ihn betrifft
 
-**Eine Raidwide-Vorhersage, die nennt, wen sie trifft, und weder ihn noch mehr als ein Gruppenmitglied
-einschließt, ist kein Flächentreffer auf diese Gruppe** (`BossModUpdater`, A273). BossModReborns eigener Typ sagt
-„expected to hit everyone and deal minor damage; also used for spread components", und er ist der Typ jeder
+**Eine Raidwide-Vorhersage öffnet die Abwehr, wenn sie ihn oder seine Gruppe trifft oder nicht sagt, wen** — eine
+weitere Zurückhaltung gibt es nicht. Eine Ankündigung ist nach seiner Spielweise der Grund für Schutz, und
+BossModReborn sagt zu einer Vorhersage nur, wann und wen, nicht welche Aktion (Tabelle oben). Was darüber hinaus zu
+prüfen wäre, lässt sich an dieser Schnittstelle nicht prüfen, ohne die Abwehr vor echten Raidwides mitzunehmen
+(„Ausgeschlossen").
+
+**Wen sie trifft** (`BossModUpdater`, A273): Eine Raidwide-Vorhersage, die nennt, wen sie trifft, und weder ihn noch
+mehr als ein Gruppenmitglied einschließt, ist kein Flächentreffer auf diese Gruppe. BossModReborns eigener Typ sagt
+„expected to hit everyone and deal minor damage; also used for spread components". Er ist zugleich der Typ jeder
 Vorhersage, die ein Baustein ohne eigenen Typ anlegt: Türme für ihre Abnehmer, Köder für die Geköderten, ein
 Sturmangriff für die, die in seiner Linie stehen (`AIHints.AddPredictedDamage` und seine Aufrufer, BossModReborn
-be8ff77, gelesen 13.10.2026). Jeder Eintrag führt die Maske der Getroffenen; lesbar ist sie nur für den ersten
-Eintrag der Liste, und ist der ein Raidwide, ist er auch der erste Raidwide, weil die Liste nach Zeitpunkt sortiert
-ist. Plätze 0 bis 7 sind die Gruppe, Platz 0 er (`PartyState`). Dieselbe Lesart wie beim Cast (Konzept 13, „reaches
-the party", A218) und beim Tankbuster (A220). Im Kampf: Ein Turm, ein Köder oder ein Sturmangriff auf einen anderen
-öffnet weder die Flächenabwehr noch die Auffrischungen davor; trifft er zwei aus der Gruppe, bleibt die
-Gruppenminderung, und die eigene Abwehr (Schimmerschild, die Abwehr, die nur ihn schützt) fällt nur, wenn er
-selbst darunter ist (`BMRRaidwideHitsPlayer`, gelesen in `AreaHitReachesPlayer` und
-`SMN_Reborn.RadiantAegisAheadOfRaidwide`). Unbekannt bleibt die Maske, wenn ein anderer Eintrag vorn steht oder die
-Vorhersage aus der Zeitleiste kommt (Zustandsmarkierung des Modulautors, ohne Getroffene); dann wie bisher.
+be8ff77, gelesen 13.10.2026). Jeder Eintrag führt die Maske der Getroffenen, je Baustein über alle Türme, Köder oder
+Spreads zusammen. Lesbar ist sie nur für den ersten Eintrag der Liste; ist der ein Raidwide, ist er auch der erste
+Raidwide, weil die Liste nach Zeitpunkt sortiert ist. Plätze 0 bis 7 sind die Gruppe, Platz 0 er (`PartyState`).
+Dieselbe Lesart wie beim Cast (Konzept 13, „reaches the party", A218) und beim Tankbuster (A220).
 
-**Anlass, sein Hinweis vom 13.10.2026:** „waren die raidwides denn wirklich raidwides oder nur große
-schadensflächen, wo man außerhalb stand … vielleicht ist nur die wahrnehmung und einordnung falsch". Im Protokoll
-vom 04.–10.10.2026 traf ihn bei 148 von 175 allein angesagten Vorhersagen zum vorhergesagten Zeitpunkt nichts (A272);
-ob andere getroffen wurden, zeigt das Protokoll nur bei gelisteten Casts, und bei diesen 175 lief keiner. Wie viele
-davon Türme, Köder oder Spreads auf andere waren, ist aus dem Protokoll nicht bestimmbar; jede Abwehrzeile nennt
-jetzt „hits you", Modul und Endpunkt.
+Im Kampf: Ein Turm, ein Köder oder ein Sturmangriff auf einen anderen öffnet weder die Flächenabwehr noch die
+Auffrischungen davor. Trifft er zwei aus der Gruppe, bleibt die Gruppenminderung. Die eigene Abwehr (Schimmerschild,
+die Abwehr, die nur ihn schützt) fällt nur, wenn er selbst darunter ist (`BMRRaidwideHitsPlayer`, gelesen in
+`AreaHitReachesPlayer` und `SMN_Reborn.RadiantAegisAheadOfRaidwide`). Unbekannt bleibt die Maske, wenn ein anderer
+Eintrag vorn steht oder die Vorhersage aus der Zeitleiste kommt; die Zeitleiste ist eine Zustandsmarkierung des
+Modulautors („someone better press some save") ohne Getroffene. Dann gilt die Vorhersage als Treffer auf jeden. Jede
+Abwehrzeile im Protokoll nennt Modul, Endpunkt und „hits you".
 
-### BossModReborn-Vorhersagen werden am Kampf gemessen
-
-**Jede Raidwide-Vorhersage im Minderungsfenster wird gegen den Kampf gehalten** (`BmrRaidwideWatch`, A272): Traf
-eine gegnerische Aktion mehr als ein Gruppenmitglied oder ihn und einen weiteren, innerhalb desselben Fensters um
-den vorhergesagten Zeitpunkt? Gezählt wird je Modul; `DefenseTrace.log` schreibt jede Abrechnung mit Modul und
-BossModReborn-Endpunkt (Zeitleiste, Hinweise, allgemeine Vorhersage), jede Entscheidung nennt „landed h of n".
-Das Fenster ist seine Einstellung `BMRRaidwideMitWindow`: Eine Minderung, die so früh fällt, deckt einen Treffer,
-der so spät kommt; eine Vorhersage, die weiter danebenliegt, hätte sie ohnehin falsch gelegt.
-
-**Mit `SetAsideMissingBmrRaidwides` (ab Werk aus) öffnet eine Vorhersage die Abwehr nur, solange die Vorhersagen
-ihres Moduls mindestens so oft eintrafen wie nicht.** Darunter liest `DataCenter.BMRNextRaidwideIn` „nichts
-angesagt", gemessen wird weiter, und die nächste, die trifft, gibt die Vorhersagen zurück. Alle Leser folgen dem:
-die Flächenabwehr, die Auffrischungen vor einem Raidwide (Schimmerschild, Tactician, Troubadour, Shield Samba), die
-Gegner-Debuffs und das Zurückhalten einer Gruppenfähigkeit für den Raidwide (`RaidwideAfterEffectBeforeRecast`), die
-Kanalsperre und Gefährdungsklasse 3 der Heilzielwahl. Die Bauform folgt der Zurückhaltung oben („Die Regel
-bewertet sich selbst"): beginnt mit Vertrauen, Schwelle Gleichstand. Gezählt wird je Modul, nicht je Kampf: Ein
-Modul ist eine Begegnung, das übertragene Muster also das desselben Bosses. Die Zählung gilt je Sitzung.
-
-**Warum gemessen werden muss — sein Protokoll vom 04.–10.10.2026:** Von 175 Vorhersagen, die die Abwehr allein
-öffneten, trafen ihn 27 zum vorhergesagten Zeitpunkt; 144 Abwehraktionen gingen auf Vorhersagen, die ihn nicht
-trafen (Schimmerschild 54, Vollkommener Ablass 32, Stumpfsinn 25, Linderung 21). Im Kampf: Linderung fiel auf eine
-solche Vorhersage und war abgelaufen, als 25 s später ein Raidwide mit 27 % kam.
-
-**Warum ab Werk aus — ein Grund aus dem Kampf:** Über dasselbe Protokoll nachgerechnet (Modul angenähert durch
-Abschnitte ohne fünfminütige Pause, eingetroffen nur, wo ihn selbst ein Mehrzieltreffer traf) legte die Regel 134 von
-275 Vorhersagen beiseite. 91 davon trafen ihn nicht; 43 trafen ihn, 27 davon mit 15 % und mehr, 11 dieser 27 hatte nur
-BossModReborn angekündigt (bis 66 %) — dort fiele die Abwehr vor dem Treffer ganz weg, bei den übrigen 16 käme sie
-erst mit dem Cast. Ob verschenkte Abklingzeiten oder fehlende Abwehr vor einem großen Raidwide schwerer wiegen, ist
-seine Entscheidung (vorgelegt 13.10.2026). Die Nachrechnung unterschätzt „eingetroffen", weil das Protokoll Treffer
-auf andere Gruppenmitglieder nur bei gelisteten Casts zeigt; die gebaute Messung sieht sie.
+**Anlass, sein Protokoll vom 04.–10.10.2026** (A272, A275): Allein über BossModReborn geöffnet wurde die Abwehr bei
+174 Vorhersagen, gebündelt nach dem vorhergesagten Zeitpunkt; bei den meisten steht im Protokoll kein Treffer auf
+ihn. Was sie waren, ist aus dem Protokoll nicht bestimmbar, weil es weder Modul noch Endpunkt noch Maske nennt. Zwei
+Erklärungen sind am Quelltext belegt: Türme, Köder und Spreads auf andere (die Maske oben), und ein FATE-Modul in
+Occult Crescent, das nach seinem Weggang weiterläuft (am Quelltext gefolgert, `TODO.md`, Adressat BossModReborn).
+Eine dritte ist offen: Im Kampf gegen Necrophobia (Forked Tower: Magic, 10.10.2026) steht von 12:32 bis 12:44 kein
+Treffer auf ihn, während sieben Raidwides vorhergesagt wurden und Necrophobias Tankbuster zweimal gemessen wurde.
+BossModReborn führt für diesen Kampf den Raidwide Hail of Hellflares, dessen Schaden von Hilfsfiguren kommt. Ob er
+dort nicht getroffen wurde oder das Protokoll diese Quelle nicht sieht, weiß ich nicht. „Kein Treffer im Protokoll" ist deshalb
+kein sicheres Maß für „Fehlvorhersage". Seine Frage vom 13.10.2026, ob es Raidwides waren oder Flächen, außerhalb
+derer er stand, führte zur Maske.
 
 **Ausgeschlossen:**
-- *Die Größe der Vorhersage aus dem Treffer lernen* — BossModReborn nennt keine Aktion zur Vorhersage (Tabelle oben),
-  und die eingetroffenen streuen von 0 % bis über 40 %; der Höchstwert eines Moduls bewertete jede Vorhersage
-  als groß. Eingetroffene Vorhersagen von 0–1 % bekommen deshalb weiter dieselbe Abwehr.
-- *Eine feste Zahl verfehlter Vorhersagen oder eine eigene Frist* — Zahlen ohne Beleg; die Mehrheit ist die
-  Schwelle, die der Tausch selbst setzt, und das Fenster ist seine Einstellung.
+- *Die Vorhersagen eines Moduls nach ihrer Trefferquote beiseitelegen* — gebaut und zurückgenommen (A272, A275).
+  BossModReborn nennt zu keiner Vorhersage eine Aktion. Eine Quote je Modul zählt deshalb Türme auf andere und echte
+  Raidwides desselben Moduls zusammen, und ihr Maß „eingetroffen" ist das Protokollmaß, das bei Necrophobia nichts
+  sah. Über sein Protokoll nachgerechnet, nahm sie die Abwehr vor elf Raidwides von 15 % bis 66 %, die nur
+  BossModReborn angekündigt hatte.
+- *Die Größe der Vorhersage aus dem Treffer lernen* — BossModReborn nennt keine Aktion zur Vorhersage, und die
+  eingetroffenen streuen von 0 % bis über 40 %; der Höchstwert eines Moduls bewertete jede Vorhersage als groß.
+  Eingetroffene Vorhersagen von 0–1 % bekommen deshalb dieselbe Abwehr wie große.
+- *Vorhersagen eines Moduls verwerfen, in dessen Arena er nicht steht* — ändert in seinem Inhalt nichts. In
+  Occult Crescent werden die Module der Critical Engagements (30 von 30) und des Forked Tower: Magic (4 von 4) nur
+  aktiv, wenn er beim Pull in der Arena steht (`CheckPull`), und die Arena eines FATE-Moduls (24 von 24,
+  `OpenWorldFate`) wandert mit dem Spieler. Den Fall, den sie fangen sollte — ein Kampf, den er verlassen hat —,
+  sieht die Arena deshalb gerade beim FATE nicht.
 
-**Grenzen:** Ein Raidwide, dessen Schaden von einer Figur kommt, die weder anvisierbarer Gegner noch Kämpfer ist,
-gilt als nicht eingetroffen. Ein Treffer auf zwei Gruppenmitglieder im Fenster, der nicht der vorhergesagte war,
-zählt als eingetroffen — der Fehler führt zum alten Verhalten. Die allgemeine Schadensvorhersage
-(`BMRNextDamageIn`, Raidwide oder Tankbuster) bleibt ungemessen. Ohne Modul fehlt die Vorhersage ganz, und es bleibt
-der reaktive Weg.
+**Grenzen:**
+- Ein Raidwide hinter einem Einzelmechanismus auf einen anderen, der zur selben Zeit oder kurz davor fällt, ist bis
+  zu dessen Auflösung unsichtbar. Löst der Einzelmechanismus weniger als 0,6 s vor dem Raidwide auf (der
+  Mindestvorlauf der Leser), kommt der Raidwide über BossModReborn gar nicht mehr; der Cast-Weg bleibt.
+- Ohne Modul fehlt die Vorhersage ganz, und es bleibt der reaktive Weg.
 
 ### Gegner-Debuffs am Tankbuster und am Raidwide
 
