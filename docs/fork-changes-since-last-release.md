@@ -42,3 +42,17 @@ under it. The pick is now made among the members under the threshold.
 
 With `How to use Aurora` on `Full target usage`, Aurora went to whoever had the fewest HP points, often a barely hurt
 damage dealer rather than the member the heal was for. It now picks its target like every other heal, by danger.
+
+## HP potions: the emergency is a tankbuster on you, not on anyone
+
+The emergency branch of the HP potions, which drops the potion's own HP threshold, opened for every tankbuster
+BossModReborn predicted, whoever it targeted. A White Mage at 60 % drank an Ultra-Potion for a tankbuster on the
+tank. It now opens only for a tankbuster that reaches you: one cast at you, or a predicted one whose targets name you;
+when BossModReborn names nobody, for a tank, or when the party has no tank alive. The same reading now decides when
+a rotation counts a tankbuster as on you (the Dark Knight's The Blackest Night on itself among them).
+
+## `DefenseTrace.log` says what the defence turned down
+
+Each defence decision, and each "open, nothing chosen", now ends with the actions the defence refused on its way and
+the reason the game check gave, and with the holds that were standing. Each HP potion RSR chooses is written with the
+branch that allowed it and your HP at that moment.

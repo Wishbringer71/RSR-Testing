@@ -166,6 +166,7 @@ internal static class ActionTracer
 
 	internal static bool Reject(IBaseAction a, string reason)
 	{
+		DefenseTrace.NoteRefused(a, reason);
 		if (!Enabled)
 		{
 			return false;

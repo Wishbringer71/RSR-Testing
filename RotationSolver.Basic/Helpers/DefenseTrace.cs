@@ -32,6 +32,15 @@ internal static class DefenseTrace
 	private static DateTime _lastDecisionWritten = DateTime.MinValue;
 	private static readonly Dictionary<string, DateTime> _lastNothingChosen = [];
 
+	// What the defence path refused on its way to the choice, and why (BaseAction.CanUse through ActionTracer.Reject).
+	// A choice and an "open, nothing chosen" both said what stood, never what was turned down: the trace of 14.10.2026
+	// holds Temperance chosen while Plenary Indulgence, off its recast for minutes, was passed over, and nothing in the
+	// file says why (A284). Collected only between BeginPath and the line that ends the path.
+	private static readonly List<string> _refused = [];
+	private static bool _collecting;
+	private static uint _lastPotion;
+	private static DateTime _lastPotionWritten = DateTime.MinValue;
+
 	/// <summary>The trace file's full path.</summary>
 	public static string FilePath => Path.Combine(Svc.PluginInterface.ConfigDirectory.FullName, "DefenseTrace.log");
 
@@ -71,6 +80,9 @@ internal static class DefenseTrace
 			return;
 		}
 
+		// Ended before the throttle, so a choice that is not written does not carry its refusals into another line.
+		var tail = EndPath();
+
 		// Checked and set under the lock: the trace of 30.09.2026 holds the same choice twice, 21 ms apart.
 		var now = DateTime.Now;
 		lock (_lock)
@@ -85,7 +97,98 @@ internal static class DefenseTrace
 			_lastDecisionWritten = now;
 		}
 
-		Line($"{path} -> {act.Name} #{act.ID}{GameStatus(act)} | {DataCenter.DescribeDefenseSources()}");
+		Line($"{path} -> {act.Name} #{act.ID}{GameStatus(act)} | {DataCenter.DescribeDefenseSources()}{tail}");
+	}
+
+	/// <summary>
+	/// Starts collecting what the defence path about to run refuses; <see cref="Decision"/> or
+	/// <see cref="NothingChosen"/> writes it and ends the collection.
+	/// </summary>
+	public static void BeginPath()
+	{
+		if (_writer == null)
+		{
+			return;
+		}
+
+		lock (_lock)
+		{
+			_refused.Clear();
+			_collecting = true;
+		}
+	}
+
+	/// <summary>
+	/// An action the running defence path asked for was refused, with the reason <c>CanUse</c> gave.
+	/// </summary>
+	internal static void NoteRefused(IAction action, string reason)
+	{
+		if (!_collecting)
+		{
+			return;
+		}
+
+		var entry = $"{action.Name} ({reason})";
+		lock (_lock)
+		{
+			if (_collecting && !_refused.Contains(entry))
+			{
+				_refused.Add(entry);
+			}
+		}
+	}
+
+	// The refusals of the path and the holds standing now, as the tail of its line; ends the collection.
+	private static string EndPath()
+	{
+		string refused;
+		lock (_lock)
+		{
+			refused = _collecting && _refused.Count > 0 ? $" | refused before: {string.Join(", ", _refused)}" : string.Empty;
+			_refused.Clear();
+			_collecting = false;
+		}
+
+		var now = DateTime.Now;
+		List<string> held = [];
+		foreach (var hold in DataCenter.DefenseHolds.Values)
+		{
+			if (hold.Held && (now - hold.At).TotalSeconds <= DataCenter.DefaultGCDTotal)
+			{
+				held.Add(hold.Rule);
+			}
+		}
+
+		return held.Count > 0 ? $"{refused} | holding: {string.Join(", ", held)}" : refused;
+	}
+
+	/// <summary>
+	/// An HP potion goes out, with the path that let it: its own threshold, or the emergency of a tankbuster that
+	/// reaches the player (A284).
+	/// </summary>
+	public static void Potion(IAction potion, bool emergency)
+	{
+		if (_writer == null)
+		{
+			return;
+		}
+
+		var now = DateTime.Now;
+		lock (_lock)
+		{
+			if (potion.ID == _lastPotion && (now - _lastPotionWritten).TotalSeconds < DataCenter.DefaultGCDTotal)
+			{
+				return;
+			}
+
+			_lastPotion = potion.ID;
+			_lastPotionWritten = now;
+		}
+
+		var source = !emergency ? "below its HP threshold"
+			: DataCenter.IsHostileCastingTankBusterAtMe ? "emergency: a tankbuster cast at you"
+			: "emergency: a BossModReborn tankbuster that reaches you";
+		Line($"HP potion -> {potion.Name} #{potion.ID}, {source}, HP {ObjectHelper.GetPlayerHealthRatio():P0} | {DataCenter.DescribeDefenseSources()}");
 	}
 
 	// What the game says to the chosen action right now (ActionManager.GetActionStatus, the id of the message it
@@ -139,6 +242,7 @@ internal static class DefenseTrace
 			return;
 		}
 
+		var tail = EndPath();
 		var now = DateTime.Now;
 		lock (_lock)
 		{
@@ -150,7 +254,7 @@ internal static class DefenseTrace
 			_lastNothingChosen[path] = now;
 		}
 
-		Line($"{path} open, nothing chosen | {DataCenter.DescribeDefenseSources()}");
+		Line($"{path} open, nothing chosen | {DataCenter.DescribeDefenseSources()}{tail}");
 	}
 
 	/// <summary>Adds one line with the time of day in front.</summary>

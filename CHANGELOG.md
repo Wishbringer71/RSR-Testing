@@ -23,7 +23,13 @@ are not reconstructed here.
 
 ## Unreleased
 
-Nothing yet.
+### Behaviour change in RotationSolver.Basic: `CustomRotation.TankbusterOnMe` asks whom BossModReborn's tankbuster hits
+
+`TankbusterOnMe` was true for every tankbuster BossModReborn predicted inside the mitigation window, whoever it
+targeted. It now counts a prediction only when it reaches the player: BossModReborn's mask names him, or, without a
+mask for that event, the player is a tank or the party has no living tank. A cast at the player or a tankbuster
+marker on him counts as before. A derived rotation that spent a self-defence on `TankbusterOnMe` no longer does so
+for a tankbuster on the other tank. The signature is unchanged.
 
 ## 7.5.7.1+wsh1
 

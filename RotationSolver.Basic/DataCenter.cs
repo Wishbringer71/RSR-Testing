@@ -3234,7 +3234,7 @@ internal static class DataCenter
 				return true;
 			}
 
-			return BMRTankbusterImminent && (BMRTankbusterHitsPlayer ?? (isTank || PartyTank == null));
+			return BMRTankbusterReachesPlayer;
 		}
 	}
 
@@ -4669,6 +4669,15 @@ internal static class DataCenter
 			&& BMRNextDamageIn > 0f && BMRNextDamageIn <= Service.Config.BMRTankbusterMitWindow
 			? BMRNextDamageHitsPlayer
 			: null;
+
+	/// <summary>
+	/// Whether BossModReborn's imminent tankbuster reaches the player: its mask when the prediction is the next hit
+	/// (<see cref="BMRTankbusterHitsPlayer"/>), otherwise for a tank, and for anyone else only when no tank is in the
+	/// party (A220). <see cref="BMRTankbusterImminent"/> alone says that a tankbuster comes, not whom it hits: the
+	/// emergency HP potion read it so and a White Mage at 60 % drank for a tankbuster on the tank (A284).
+	/// </summary>
+	internal static bool BMRTankbusterReachesPlayer
+		=> BMRTankbusterImminent && (BMRTankbusterHitsPlayer ?? (Role == JobRole.Tank || PartyTank == null));
 
 	/// <summary>
 	/// BMR predicts a tankbuster inside the user's single-target mitigation window.

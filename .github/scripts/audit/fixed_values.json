@@ -199,7 +199,7 @@
   },
   {
    "file": "RotationSolver.Basic/Rotations/CustomRotation_Items.cs",
-   "code": "if ((DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterImminent) && a.ID != 47102 && a.ID != 22306 && a.ID != 20309 && a.CanUseEmergency(out _))",
+   "code": "if ((DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterReachesPlayer) && a.ID != 47102 && a.ID != 22306 && a.ID != 20309 && a.CanUseEmergency(out _))",
    "values": [
     "47102",
     "22306",

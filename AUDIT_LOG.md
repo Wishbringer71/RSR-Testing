@@ -6808,6 +6808,38 @@ mich abzuschieben". Einordnung: Bekräftigung der Vorgabe „Bevor ich ihn frage
 **Prüfgrad:** statisch (Code, Konzepte, Archiv, Versionsgeschichte); Job-Guide; Messung an seinen beiden Protokollen;
 Prüfskripte; Compile über die CI nach dem Push. Im Spiel nicht beobachtet.
 
+### A284 · Protokoll 14.10.2026: Ultratrank ohne Anlass, bereite Abwehr des Weißmagiers ohne Grund (14.10.2026)
+
+Seine Meldung: „es wurde ein ultratrank genutzt, obwohl ich darin keinen sinn gesehen habe: hp über 60%, kein angriff
+auf mich, kein aoe. ansonsten neue events auswerten". Datei `e6bab17d-DefenseTrace.log`: Sitzungen 13.10. (bekannt,
+A277), 14.10. 09:03 (Build f97099f00, leer) und 14.10. 09:56 bis 11:31 (Build 43488aa24, Weißmagier, Dungeons und
+Prüfungen).
+
+- *Ultratrank:* Item 47701 (Ultra-Potion, HP-Trank). Tränke stehen nicht im Protokoll; der Weg ist am Code belegt.
+  `UseHpPotion` hat einen Notfallzweig ohne HP-Schwelle, nur mit der Prüfung „genug HP fehlen" (bei 60 % fehlen 40 %,
+  der Ultratrank heilt 25 %). Er öffnete für `IsHostileCastingTankBusterAtMe || BMRTankbusterImminent` — der zweite
+  Teil sagt, dass ein Tankbuster kommt, nicht wen er trifft. Das Protokoll hält solche Vorhersagen im Fenster mit
+  „hits you False" (Tankbuster auf den Tank). Dieselbe Klasse hatte A233 für die eigene Abwehr geschlossen.
+- *Klasse erhoben:* Leser von `BMRTankbusterImminent` — Heilflaggen (öffnen Hilfe für den Tank, eigene Abwehr gesperrt
+  über A233), Tank- und Damage-Dealer-Zweig (Maske gelesen), Anzeigen, der Trank und `CustomRotation.TankbusterOnMe`
+  (öffentlich, „aimed at the player", ohne Maske; Leser: The Blackest Night des Dunkelritters auf sich).
+- *Behoben:* `DataCenter.BMRTankbusterReachesPlayer` — Maske, ohne Maske Tank oder kein lebender Tank (A220) —,
+  gelesen von `SingleHitReachesPlayer`, dem Notfallzweig des Tranks und `TankbusterOnMe` (CHANGELOG: Verhalten des
+  Pakets). Konzept 08, „HP-Trank im Notfall".
+- *Übrige Auswertung:* Flächentreffer auf ihn ab 5 % mit zwei Zielen: 31, davon 30 mit Flächenabwehr-Entscheidung in
+  den 10 s davor (Helfer seit A277 gelesen). Flächenabwehr: 50 Lagen, 16 ohne Wahl; in 13 davon lagen Plenary und
+  Temperance in ihrer Abklingzeit oder der Streckung, in drei war Plenary nach den Zeilen „used" bereit. Liturgy of the
+  Bell nie gewählt. Einzelabwehr: 14 Lagen, 4 ohne Wahl bei bereitem Divine Benison oder Aquaveil. Die Ursache ist
+  statisch nicht auffindbar (TODO, ausgeschlossene Ursachen dort). Sanctus-Streckung: hält, solange die Betäubung
+  den nächsten Sanctus überdauert; nach Ende der Betäubung frei — wie gebaut (A231).
+- *Messmittel:* `DefenseTrace` sammelt zwischen Beginn eines Abwehrpfads und seiner Zeile die Ablehnungen aus
+  `ActionTracer.Reject` (Grund aus `CanUse`) und hängt sie samt den stehenden Rückhaltungen an; ein gewählter HP-Trank
+  bekommt eine Zeile mit dem Zweig und den HP. Ohne Option: Das Protokoll ist sein Werkzeug für Laufzeitdefekte.
+
+**Prüfgrad:** statisch (Code), Spieldaten (xivapi, Item 47701 und die Aktionen des Weißmagiers), Auszählung seines
+Protokolls; Prüfskripte; Compile über die CI nach dem Push. Ob der Trank bei ihm genau über diesen Zweig ging, sagt
+das Protokoll nicht — er ist der einzige Weg ohne HP-Schwelle, und seine Bedingung stand in der Sitzung.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

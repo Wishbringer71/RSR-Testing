@@ -308,6 +308,7 @@ public partial class CustomRotation
 			IBaseAction.SelfProtectionHitsMe = DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseArea)
 				|| DataCenter.AreaHitReachesPlayer;
 			IBaseAction.AreaDefenceRunning = true;
+			DefenseTrace.BeginPath();
 			if (DataCenter.CurrentDutyRotation?.DefenseAreaAbility(nextGCD, out act) == true)
 			{
 				IBaseAction.SelfProtectionHitsMe = null;
@@ -342,6 +343,7 @@ public partial class CustomRotation
 			IBaseAction.SelfProtectionHitsMe = DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseSingle)
 				|| DataCenter.SingleHitReachesPlayer;
 			IBaseAction.CommandedDefenceRunning = DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseSingle);
+			DefenseTrace.BeginPath();
 			try
 			{
 				if (DataCenter.CurrentDutyRotation?.DefenseSingleAbility(nextGCD, out act) == true)

@@ -195,6 +195,17 @@ Mana selbst: Welche Heilung ein Heiler mit seinem Rest noch wirken kann, hängt 
 antwortet für alle gleich. Außerhalb des Bursts entscheiden weiter die Heilschwellen und die globalen
 Nicht-Heiler-Einstellungen.
 
+### HP-Trank im Notfall
+
+Ein HP-Trank geht unter seiner eigenen HP-Schwelle aus (`CustomRotation.UseHpPotion`). Der Notfallzweig lässt
+die Schwelle fallen und behält nur die Prüfung, dass genug HP fehlen, damit der Trank nicht verpufft. Er gilt
+für einen Tankbuster, der den Spieler erreicht: ein Tankbuster-Cast auf ihn, oder ein von BossModReborn
+vorhergesagter, dessen Maske ihn nennt; ohne Maske für einen Tank oder ohne lebenden Tank in der Gruppe
+(`DataCenter.BMRTankbusterReachesPlayer`, dieselbe Regel wie die Einzelabwehr, A220). Bis A284 fragte der
+BossModReborn-Teil nur, ob ein Tankbuster kommt: Ein Weißmagier bei 60 % trank für einen Tankbuster auf den
+Tank — 40 % fehlten, der Ultratrank heilt 25 %, die Prüfung war erfüllt. `DefenseTrace.log` schreibt jeden
+gewählten Trank mit dem Zweig, der ihn freigab, und den HP.
+
 ### Was die Sperren im Spiel bewirken
 
 - **Weißmagier:** Plenary Indulgence und Temperance fallen auf denselben Treffer (je −10 %,

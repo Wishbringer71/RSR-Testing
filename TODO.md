@@ -33,6 +33,18 @@ verschenkter kritischer Heilschub je Minute.
 
 **Konzept:** `docs/rotation-flow/14-action-dependency-matrix.md`
 
+### Weißmagier: bereite Abwehr bleibt aus, Grund unbekannt · N
+
+Protokoll vom 14.10.2026 (Build 43488aa24, A284): In vier Flächenlagen war Plenary Indulgence nach den Zeilen
+„used" seit über 60 s bereit und wurde nicht gewählt; um 10:42:33 ging Temperance allein hinaus, obwohl Plenary
+davor steht. Liturgy of the Bell kam in der ganzen Sitzung nie, auch in Lagen, in denen Plenary und Temperance
+abklangen und die Stufe für Temperance reichte. In vier Einzelabwehrlagen auf Tankbuster gegen den Tank blieben
+Divine Benison und Aquaveil aus, obwohl bereit. Statisch ausgeschlossen: Abklingzeit, Stufe, die Streckung, die
+Zielwahl `BeAttacked` ohne Einzelabwehr-Flagge, die Freund-Einstufung (Liturgy über die überschriebene
+Effektweite). Nicht messbar von hier: seine Einstellungen je Aktion. *Messmittel:* `DefenseTrace.log` schreibt
+jetzt zu jeder Abwehrentscheidung die abgelehnten Aktionen mit dem Grund aus `CanUse` und die stehenden
+Rückhaltungen; das nächste Protokoll eines Weißmagiers nennt die Ursache.
+
 ### Rückstoß- und Tankbuster-Casts unsichtbarer Helfer werden nicht gelesen · N
 
 Seit A277 liest die Flächenerkennung Casts nicht anvisierbarer Kämpfer, die eine Aktion der Flächenliste wirken
