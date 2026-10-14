@@ -6972,6 +6972,34 @@ Die schon nachgeprüften Code-Commits derselben Gegenstände (A85–A87) gehöre
   Datum (`scan.py` „105 Treffer", „43 Treffer", „Erster Lauf: 122 Zitate") (**C6**). Ergebnis: **KEIN FEHLER** im
   Commit, C6 offen.
 
+**K5 · Searing Light und Beschwörer-Modelle**, gelesen mit den späteren `b44e905d6`, `a8e8f53b4`, `ece80e1c3`,
+`0b6431fb7`, `81b00b85a`, `9d88227d1`, `bb7f36e66`, `2dd18ea45`, `e377966a6` und dem Code-Commit `93789065c` (A87)
+- *Abdeckungsmodell `8bcaaea32`, `e81195537`, `d1763e2f3`, `befbb3ebf`, `a7075ea4b`:* trug vom ersten Commit an zwei
+  Messfehler — `simulate(window=)` zählte Buffzeit über den ganzen Kampf und teilte durch die Fensterlänge, und die
+  Zündschleife begann stets bei Beschwörer 0, der damit jeden Gleichstand gewann; dazu Sekunden statt Schaden und für
+  jeden Beschwörer dieselbe Regel (C56). Darauf ruhten Urteile, die später fielen: „bookkeeping buys nothing"
+  (`befbb3ebf`; nach der Fensterkorrektur kostet sie bei einem Ausfall die Hälfte) und das V5-Urteil. Behoben am
+  13.09. (`b44e905d6`, `0b6431fb7`, `a8e8f53b4`). Heute: Konstanten gegen die Spieldaten 7.57 gemessen (Searing
+  Light 20 s / 120 s, Demis 15 s / 60 s, xivapi), Reihenfolge Solar–Bahamut–Solar–Phoenix wie im Code; die
+  Phasenbuchung des Modus „plugin" entspricht `UpdateSearingPhaseBook` (gehalten = zwei bewertete Fenster in Folge
+  besetzt, eigener Buff bewertet nicht). Sie ist von Hand nachgebaut: Ändert sich der Code, schlägt im Modell nichts an
+  (**P1**). Ergebnis: **FEHLER**, korrigiert; P1 offen.
+- *Potenzmodell `dca7bd913`:* Potenzen damals aus Drittquellen, am 02.10. am Job-Guide bestätigt (`2dd18ea45`);
+  falsch war eine Wirkzeit für Emerald Rite, und die Zeit je Aktion war nicht gezählt — beides am 02.10. behoben.
+  Stichprobe heute gegen xivapi (Umbral Impulse 640, Astral Impulse 500, Ruby Rite 620, Emerald Rite 280, Topaz Rite
+  340, Mountain Buster 160, Ruin III 400, Crimson Strike 560, Slipstream 520, Necrotize 500, Searing Flash 700):
+  gleich. Ergebnis: **FEHLER**, korrigiert.
+- *`a90fb264e` (auf Distanz verliert der Ifrit-Block Crimson Strike):* deckt sich mit dem Code — Crimson Cyclone nur
+  mit `AddCrimsonCyclone` (ab Werk aus) oder innerhalb `CrimsonCycloneDistance`. **KEIN FEHLER.**
+- *`a48b67d24` (Swiftcast bleibt für Wiederbelebungen):* seine Vorgabe, im Modell eingehalten. **KEIN FEHLER.**
+- *`e5fc338c2` (Konzept, zwei bis acht Beschwörer):* Analyse der Sperre richtig (`StatusProvide` mit fremdem Buff,
+  `HasSearingLight` nur eigener) und die drei Verluste daraus; die Abdeckungszahlen setzen den synchronen Pull als
+  Regel (C56). `d274d54de`: „20 von 120 Sekunden, ob zwei oder acht" — gilt nur synchron (C41, C56). Beide sind durch
+  seine Regel (Konzept 12) und A271 abgelöst. Ergebnis: **FEHLER**, korrigiert.
+- *`aeea25b0a` (Phasen ohne Ziel sind keine Modellgrenze):* hält im genannten Sinn — Searing Light zündet in
+  `AttackAbility`, das nur unter `HasHostilesInRange` läuft; die Zyklusverschiebung durch zielfreie Phasen deckt der
+  Versatz-Parameter, wie Konzept 12 in seiner Ursachentabelle selbst sagt. **KEIN FEHLER.**
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
