@@ -6855,6 +6855,74 @@ weil `check_fork_version.py --require-tags` sie an das neueste enthaltene Upstre
 **Prüfgrad:** Diff gelesen; Newtonsoft-Quelltext (`JsonTextReader.ParseValue`, `]` nach Komma ergibt `EndArray`,
 Stand `master`, nicht die eingebundene Version); Prüfskripte; Compile über die CI.
 
+### A286 · Nachprüfung B2: kritische Einzelprüfung der 55 offenen Commits (14.10.2026)
+
+Seine Entscheidung (14.10.2026): „kritische einzelprüfung im vollständigen loop, danach falls notwendig
+konzeptanpassung und fehlerbehebung. ebenfalls im loop." Je Commit: Nachricht gegen Diff, Wirkkette nachvollzogen oder
+erzählt, erreichter Prüfgrad, was heute steht und ob es heute stimmt. Befunde tragen eine Kennung (G…, C…, P…, D…);
+ihre Behebung folgt nach der Prüfung aller Ketten, jede im eigenen Loop.
+
+Seine Präzisierung im selben Zug: „du sollst die commits zwar einzeln prüfen, aber in ihrer gesamtheit. ein commit,
+der einen anderen ergänzt, aufhebt oder abändert, ist zusammen zu prüfen." Prüfeinheit ist die Kette eines
+Gegenstands — die Commits der Liste mit allen früheren und späteren, auch außerhalb der Liste, die dieselben Zeilen
+oder denselben Gegenstand ändern. Aus den berührten Artefakten der 55 Commits ergeben sich zehn Ketten:
+
+| Kette | Gegenstand | Commits der Liste |
+|---|---|---|
+| K1 | Deutsche Namen: Index, Wörterbuch, Prüfung | `92bad597e` `bddeb5e03` `f13b812a2` `cb5db4452` |
+| K2 | Fork-Version | `2c6f2b5c1` `c025e0802` `50e50e5e3` |
+| K3 | Sync-Messung, Prüflauf-Nachweis, Zweige | `08b8c82a4` `e5fc338c2` (Teil) `e7c0dca6e` `539b7bda3` `138e7c1b8` `0bff1c175` |
+| K4 | Zeilenverweise in Dokumenten | `d4e81f70f` `374534aa0` `2cc1329b8` `a70fe20b7` |
+| K5 | Searing Light und Beschwörer-Modelle (Konzept 12) | `a90fb264e` `dca7bd913` `a48b67d24` `befbb3ebf` `a7075ea4b` `8bcaaea32` `e81195537` `d1763e2f3` `e5fc338c2` `aeea25b0a` `d274d54de` |
+| K6 | Prüfskripte `scan*`, Ressourcenlisten, README | `bddeb5e03` (Teil) `2bb009344` `4455fa2bb` `c962a1366` `165e69e09` `5748a9ddd` `1c2f67d2e` `8d8176695` |
+| K7 | Wiederbelebung (Konzept 11) | `6cd15453a` `3a233b03c` `6ab021908` `5702d695c` `5c94ecf29` `59675ee33` |
+| K8 | Schildgutschrift, Heilschwelle, Dunkelritter (Konzepte 08–10) | `52af29a53` `1070d53d6` `4973b9d0c` `aeea1e7e6` `87e6d8f4d` `56bf37581` `bc893957b` `2c2e3f0d3` `5b87c32fc` |
+| K9 | Sanctus-Bremsen des Weißmagiers | `e66bd3f79` `58cf8f8f6` `bd4f4046e` |
+| K10 | `DataCenter`: ungelesene Mitglieder, Iteration je Abfrage, abgefangene Speicherfehler | `8bceac769` `1f9ac197e` `714b899e1` |
+
+Die schon nachgeprüften Code-Commits derselben Gegenstände (A85–A87) gehören in ihre Kette und werden dort mitgelesen.
+
+**K1 · Deutsche Namen** (Teil: Generator)
+- *`92bad597e` (deutscher Namensindex aus den Spieldateien):* Die Nachricht behauptet einen Selbsttest „against a
+  constructed index"; im Skript steht keiner — `check_against_game_data` ist ungeprüft (**G2**). Der Commit brach den
+  Generator: zweite `GameData`-Instanz ohne `using Lumina` (CS0246, er stieß beim Bauen darauf) und ein fester
+  Spielpfad, der nur auf einer Maschine stimmt; beides behoben in `bddeb5e03`. Er checkte Python-Bytecode ein
+  (`__pycache__/…pyc`), entfernt in `7d1ab71a1`, seitdem in `.gitignore`. Die Prämisse „jede äußere Quelle gesperrt"
+  war schon damals überzogen (`bddeb5e03` korrigiert sie) und ist seit 27.09. hinfällig; der Kommentarkopf von
+  `GermanNameIndex` sagt sie noch (**G3**). Ergebnis: **FEHLER**, teils behoben.
+- *`bddeb5e03` (Sprachargument, Spielpfad):* Am Lumina-Quelltext 7.7.1 bestätigt: `GetExcelSheet<T>(Language?,
+  string)`, `DefaultExcelLanguage` „can be overriden on a case-by-case basis". `ResolveSqpackPath` (Argument,
+  `FFXIV_GAME_PATH`, übliche Installationsorte, alter Pfad zuletzt; Spielordner oder `sqpack`) am Code bestätigt; die CI
+  baut den Generator (`build.yaml`). **Falsch** ist die Begründung des Gleichheitsfilters: Lumina fällt laut eigener
+  Doku *je Datei* auf die sprachneutrale Tabelle zurück, nicht je Zeile, und gleiche Namen gibt es wirklich — sieben
+  handgeführte Einträge (Holmgang, Intervention, fünf Jobnamen), in den Spieldaten etwa Sprint (xivapi v2,
+  `language=de`). Der Filter wirft sie aus dem Index, und `check_action_names.py` meldete Holmgang und Intervention
+  dann als „not in the game data at all" (**G1**). Ungenannt in der Nachricht: zwei Einengungen in `scan.py` gegen
+  Fehlalarme. Gemessen am heutigen Baum verdecken sie nichts: Die sieben ungelesenen mehrzeiligen `RotationConfig`
+  sind Anzeigetexte der Beiruta-Rotationen, die eine unterdrückte Doppelabfrage (`BeirutaSCH.cs:1021`) steht in zwei
+  Zweigen eines `if/else`. Das Kriterium „mehrzeilige Argumente" ist ein Surrogat für „Anzeigetext"; `scan.py` läuft
+  nicht in der CI. Ergebnis: **FEHLER** (G1 offen).
+- *Übergreifend (**G4**):* `action_names_game.json` wurde in 32 Tagen nie erzeugt — der Pfad braucht seine
+  Spielinstallation und lief nie. Seit 27.09. liefert xivapi v2 dieselben Blätter mit `language=de` (gemessen:
+  Reprisal → „Reflexion", wie der handgeführte Eintrag). Ob der Index von hier erzeugt wird und welche Quelle für
+  deutsche Namen zulässig ist, klärt die Behebungsphase.
+- *`f13b812a2` (Wörterbuch und Prüfung):* `check_action_names.py` löst jeden Aktionseintrag gegen `ActionId.resx`
+  auf, verlangt eine Quelle, meldet einen deutschen Namen für zwei Aktionen; Selbsttest dafür vorhanden, in der CI
+  (`build.yaml`). Bestätigt: Abtausch = Arm's Length (später auch Job-Guide). **Falsch** war „Rückstoß" als zweiter
+  möglicher Name derselben Aktion — Rückstoß ist das Spielwort für den Effekt (C33, Eintrag entfernt). Der Docstring
+  führt den Fall noch als Beispiel, und der Kommentar über `ADMISSIBLE_SOURCES` (aus `b44e905d6`, außerhalb der
+  Liste) sagt, „Armlänge" sei für eine Aktion geraten worden, „actually called Rückstoß" — falsch (**G5**). Ebenfalls
+  aus `b44e905d6`: Ein Eintrag mit unzulässiger Quelle schlägt nicht fehl, weil der Job-Guide gesperrt sei — seit
+  27.09. hinfällig (G3). Heute steht kein solcher Eintrag. Ergebnis: **FEHLER**, korrigiert bis auf G3, G5.
+- *`cb5db4452` (Schutzwall, Heilbonus von Rampart):* Der Eintrag sagt, die Formen 71 und 1191 kennten nur die
+  Schadensminderung. Für 1191 stimmt das nur in `Status.resx`; der Spieltext lautet „Damage taken is reduced and HP
+  recovery via healing actions is increased" (xivapi v2, Fassungen 7.0, 7.2, 7.55 und 7.57 gleich, ohne
+  Bedingungsmakro). Bei Widerspruch gilt das Spiel: Die Aussage ist falsch (**G6**); ob die erzeugten Wirktexte
+  weitere solche Abweichungen haben, ist zu erheben. Die Folgerung „keine Entscheidung hängt an Heilmengen" hält heute
+  noch: Kein Code außerhalb der erzeugten Tabellen liest einen Heilbonus. Ergebnis: **FEHLER** (G6 offen).
+- *Spätere Glieder der Kette:* `4db89d1a6` (Jobnamen aus dem Job-Guide, „Maler" als selbst gebildet entfernt) ohne
+  Befund; die übrigen fügen Wörterbucheinträge mit Quelle hinzu.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
