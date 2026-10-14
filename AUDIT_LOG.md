@@ -7000,6 +7000,33 @@ Die schon nachgeprüften Code-Commits derselben Gegenstände (A85–A87) gehöre
   `AttackAbility`, das nur unter `HasHostilesInRange` läuft; die Zyklusverschiebung durch zielfreie Phasen deckt der
   Versatz-Parameter, wie Konzept 12 in seiner Ursachentabelle selbst sagt. **KEIN FEHLER.**
 
+**K6 · Prüfskripte `scan*`, Ressourcenlisten, README**, gelesen mit `bddeb5e03` (Teil `scan.py`), A82, A174 und A264.
+Alle sieben Skripte liefen am 14.10.2026 mit bestandenem Selbsttest. Laut README sind die `scan*` Handwerkzeuge für eine
+erneute Prüfung, nicht Teil der CI — eine Entscheidung, kein Befund.
+- *`4455fa2bb` (`check_resource_lists.py`):* Aussage am Code bestätigt — `OtherConfiguration.InitOne` lädt die
+  kuratierten Listen von `raw.githubusercontent.com/FFXIV-CombatReborn/RotationSolverReborn` (`Service.USERNAME`,
+  `REPO`); die Kopien unter `Resources/` liest das Plugin nie. Heute: 18 Listen gleich. Die Prüfung bewacht eine
+  Klasse, die bei jeder Fork-Änderung an `Resources/` entsteht, läuft aber nur von Hand (**P2**). Ergebnis: **KEIN
+  FEHLER** im Inhalt, P2 offen.
+- *`2bb009344` (`scan9`, `GCDTime() == 0f`):* Der Fund ist echt (konstanter Vergleich in `NIN_Reborn` und
+  `BeirutaNIN`), das Urteil „whatever timing guard was meant there is not there" nicht: A174 belegte, dass die Stelle
+  in `EmergencyGCD` nur bei freiem GCD läuft, also keine Wirkung im Kampf. `scan9` führt beide Stellen als bekannt mit
+  Verweis auf `TODO.md`, wo kein Eintrag mehr steht (**P3**). Ergebnis: **FEHLER** im Urteil, korrigiert; P3 offen.
+- *`c962a1366` (`scan.py` misst den Defekt):* Verengungen am Merkmal begründet, Selbsttest beider Seiten. Die
+  README-Gegenprobe zu (d) — „genau diese sieben" `RotationConfig` hätten mehrzeilige Argumente — ist heute falsch: Es
+  sind 38; die Verengung verdeckt trotzdem nichts, weil die 31 übrigen gelesen werden (gemessen) (**P4**).
+  Ergebnis: **KEIN FEHLER** im Wirkpfad, P4 offen.
+- *`165e69e09` (`scan3`), `5748a9ddd` (`scan2`), `1c2f67d2e` (`scan6`):* Einengungen am Merkmal (Implikation über
+  Konjunkte, Ganzzahlindex, Zweige statt Zeile, Wächter im ganzen Rumpf; dritte Bindung „aus fremdem `int`
+  gecastet" für `SpecialMode`), Selbsttests beider Seiten, Gegenprobe am Baum. `scan3` und `scan6` melden heute nichts
+  Unbekanntes. **KEIN FEHLER.**
+- *`8d8176695` (A82, zweiter Durchgang):* Die zwei neuen Klassen sind erledigt — `CanUse` im Vorschaulauf durch
+  Upstream 7.5.6.24 (A264), die vier wirkungslosen Vorrangregeln als Upstream-Code ohne Kampfwirkung (A174).
+  **KEIN FEHLER.** Aber: `scan.py` druckt heute genau diese vier Stellen samt den zwei `RotationDesc`-Fällen des
+  Weisen (Upstream) ohne Bekannt-Vermerk, `scan2` vier Divisionen, deren Divisor nie null ist (`lowestCount` ≥ 1 unter
+  `count > 0`, feste nicht leere Felder in der Oberfläche). Die Ausgabe muss wieder von Hand sortiert werden — die
+  Lage, die diese Commits abstellen wollten (**P5**).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
