@@ -14,12 +14,13 @@ Checks, in increasing strictness:
     unseen (A270: eleven references in concepts and TODO had drifted onto braces and other
     code), so a reference without one fails too: name what the line holds, or cite the
     method instead of the line.
-  * that identifier appears near the cited line. A miss is reported with the identifier's real
-    position, so the fix is mechanical.
-
-The last one reports and does not fail: it cannot tell a drifted reference from a correct one
-that cites a line inside the body of the named method - BaseAction.cs:257 sits 45 lines below
-the CanUse it belongs to and is right. A check that cannot separate the two must not claim it can.
+  * that identifier stands at the cited line (two lines either way), or the cited line lies in
+    the body of a member whose declaration names it - BaseAction.cs:257 sits 45 lines below the
+    CanUse it belongs to and is right. Anything else is a drifted reference and fails, reported
+    with the identifier's real position so the fix is mechanical; and a sentence whose
+    identifiers the cited file does not contain at all fails as unverifiable. Until A286 the
+    test was "within 25 lines", which let a reference six lines off pass and could not tell
+    the two cases apart, so it only reported (C4).
 """
 
 import os
@@ -39,10 +40,16 @@ CONTINUATION = re.compile(r'`:(\d+)(?:-\d+)?`')
 # An identifier in backticks: method, property or type name, optionally qualified.
 IDENTIFIER = re.compile(r'`([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)`')
 
-# How far from the cited line the identifier may sit before the reference counts as drifted.
-# Generous on purpose: a reference to a method usually cites its first line while the
-# sentence names something used in its body.
-WINDOW = 25
+# How far from the cited line the identifier may stand when the line is not inside its body: the
+# line itself and its immediate neighbours, for a sentence that names the condition on the line
+# above the cited statement.
+NEAR = 2
+
+# A line that declares a member: modifiers or a type ahead of the name, then a parameter list, an
+# expression body, a property block or an initialiser.
+DECLARATION = r'^\s*(?:\[[^\]]*\]\s*)*(?:(?:public|private|protected|internal|static|override|virtual|' \
+    r'abstract|sealed|async|readonly|partial|unsafe|extern|new|const)\s+)*[\w<>\[\],.?]+\s+%s\s*(?:\(|=>|\{|=|$)'
+
 
 # Checked, because these state the position as it is now: a concept in the ruling style and
 # the list of open work. The archive is deliberately left out - AUDIT_LOG and CHANGELOG
@@ -88,20 +95,53 @@ def resolve(cited):
     return matches[0] if len(matches) == 1 else None
 
 
+def body_end(lines, start):
+    """The last line of the block that opens at or after `start`, by brace count; None without one."""
+    depth, opened = 0, False
+    for i in range(start, len(lines)):
+        for char in lines[i]:
+            if char == '{':
+                depth += 1
+                opened = True
+            elif char == '}':
+                depth -= 1
+                if opened and depth == 0:
+                    return i
+        # An expression-bodied member ends with its statement.
+        if not opened and lines[i].rstrip().endswith(';') and i >= start:
+            return i
+    return None
+
+
 def identifiers_near(path, line_no, names):
-    """Which of names appear within WINDOW lines of line_no, and where each really sits."""
+    """Which of names vouch for line_no, and where each really sits.
+
+    A name vouches when it stands within NEAR lines of the cited line, or when the cited line lies
+    in the body of a member whose declaration names it.
+    """
     with open(path, encoding='utf-8', errors='replace') as handle:
         lines = handle.readlines()
 
     near, elsewhere = set(), {}
-    low, high = max(0, line_no - 1 - WINDOW), min(len(lines), line_no + WINDOW)
+    low, high = max(0, line_no - 1 - NEAR), min(len(lines), line_no + NEAR)
     for name in names:
         short = name.split('.')[-1]
-        if any(short in lines[i] for i in range(low, high)):
+        if any(re.search(r'\b%s\b' % re.escape(short), lines[i]) for i in range(low, high)):
+            near.add(name)
+            continue
+        declaration = re.compile(DECLARATION % re.escape(short))
+        inside = False
+        for i, text in enumerate(lines):
+            if declaration.search(text):
+                end = body_end(lines, i)
+                if end is not None and i + 1 <= line_no <= end + 1:
+                    inside = True
+                    break
+        if inside:
             near.add(name)
             continue
         for i, text in enumerate(lines):
-            if short in text:
+            if re.search(r'\b%s\b' % re.escape(short), text):
                 elsewhere[name] = i + 1
                 break
     return near, elsewhere, len(lines)
@@ -181,6 +221,12 @@ def check(paths):
                     first = sorted(elsewhere.items(), key=lambda kv: kv[1])[0]
                     drifted.append('%s cites %s:%d, but %s sits at line %d'
                                    % (where, cited, line_no, first[0], first[1]))
+                elif not near:
+                    # Nothing the sentence names is in that file: the reference vouches for
+                    # nothing there (TODO.md cited publish.yaml:42 for a build line at 94, naming
+                    # only csproj properties, and passed - A286, C4).
+                    unverifiable.append('%s cites %s:%d, but none of %s occurs in that file'
+                                        % (where, cited, line_no, ', '.join(names)))
 
     return hard, drifted, unverifiable
 
@@ -203,6 +249,35 @@ def self_test():
 
         if total != 51:  # 40 blank + the method + 10 blank
             raise AssertionError('line count is wrong: %d' % total)
+
+    # A cited line inside the body of the member the sentence names is right however far below the
+    # declaration it sits; six lines outside it is a drifted reference (A286, C4).
+    with tempfile.TemporaryDirectory() as tmp:
+        code = os.path.join(tmp, 'Body.cs')
+        body = ['\tpublic bool CanUse(out IAction? act)', '\t{'] + ['\t\tvar x = %d;' % i for i in range(40)] + \
+            ['\t\treturn true;', '\t}', '', '\tprivate void Other()', '\t{', '\t\tvar y = 1;', '\t}']
+        with open(code, 'w', encoding='utf-8') as handle:
+            handle.write('\n'.join(body) + '\n')
+        near, _, _ = identifiers_near(code, 30, ['CanUse'])
+        if 'CanUse' not in near:
+            raise AssertionError('a line inside the named method was not accepted')
+        near, elsewhere, _ = identifiers_near(code, 48, ['CanUse'])
+        if 'CanUse' in near or elsewhere.get('CanUse') != 1:
+            raise AssertionError('a line in the next method was taken as inside CanUse')
+
+        doc = os.path.join(tmp, 'Doc.md')
+        with open(doc, 'w', encoding='utf-8') as handle:
+            handle.write('`Body.cs:30` liegt in `CanUse`.\n`Body.cs:48` nennt `CanUse`.\n'
+                         '`Body.cs:30` nennt nur `Nirgends`.\n')
+        global ROOT
+        saved, ROOT = ROOT, tmp
+        try:
+            hard, drifted, unverifiable = check([doc])
+        finally:
+            ROOT = saved
+        if hard or len(drifted) != 1 or len(unverifiable) != 1:
+            raise AssertionError('body, drift and absent identifier not told apart: %r %r %r'
+                                 % (hard, drifted, unverifiable))
 
     # A sentence that cites one file and then a second line inside it carries two references,
     # not one, and none of its identifiers can be attributed to either.
@@ -231,9 +306,9 @@ def self_test():
         if cited_line_is_empty(code, 99)[0]:
             raise AssertionError('a line past the end must not be reported as empty')
 
-    print('self-test ok: an identifier at the cited line is accepted, one 36 lines away is '
-          'reported with its real position, and a citation of a blank or brace-only line is '
-          'caught without one')
+    print('self-test ok: an identifier at the cited line or around it in its body is accepted, one '
+          'outside is a drift reported with its real position, a name the file lacks is '
+          'unverifiable, and a citation of a blank or brace-only line is caught without one')
     print()
 
 
@@ -253,9 +328,9 @@ def main():
         print()
 
     if drifted:
-        print('%d reference(s) worth a look - the named identifier is elsewhere, which means'
+        print('%d reference(s) that drifted - the named identifier is neither at the cited line nor'
               % len(drifted))
-        print('either the reference drifted or it cites a line inside that method:')
+        print('the member whose body holds it:')
         for item in drifted:
             print('  ' + item)
         print()
@@ -267,7 +342,7 @@ def main():
             print('  ' + item)
         print()
 
-    if hard or unverifiable:
+    if hard or drifted or unverifiable:
         return 1
 
     print('Every reference points at a line that exists.')

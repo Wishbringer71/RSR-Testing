@@ -285,19 +285,27 @@ def check_collapsed_comparisons(files):
                 if line and pattern.search(line):
                     hits.append((name, where, f'{path}:{no}', line.strip()[:110]))
 
-    # Recorded and not repaired: the intended expression cannot be recovered from the code, and
-    # Ninja is outside the usage profile this fork is maintained for. Listing them as known keeps
-    # the return value meaningful for a *new* one instead of staying red for ever. See TODO.md.
+    # Settled and not repaired: A174 measured both sites - they sit in EmergencyGCD, which only runs
+    # with a free GCD, so the constant comparison changes nothing in a fight; the lines are upstream's
+    # and the foreign rotation's. Listing them as known keeps the return value meaningful for a *new*
+    # one instead of staying red for ever. Keyed by file and expression, not by line number, so the
+    # list does not age with every edit above them (A286, P3).
     known = {
-        ('GCDTime', 'RotationSolver/RebornRotations/Melee/NIN_Reborn.cs:977'),
-        ('GCDTime', 'RotationSolver/ExtraRotations/Melee/BeirutaNIN.cs:1003'),
+        ('GCDTime', 'RotationSolver/RebornRotations/Melee/NIN_Reborn.cs', 'GCDTime() == 0f'),
+        ('GCDTime', 'RotationSolver/ExtraRotations/Melee/BeirutaNIN.cs', 'GCDTime() == 0f'),
     }
-    open_hits = [h for h in hits if (h[0], h[2]) not in known]
+
+    def is_known(hit):
+        name, _, loc, text = hit
+        path = loc.rsplit(':', 1)[0]
+        return any(name == k[0] and path == k[1] and k[2] in text for k in known)
+
+    open_hits = [h for h in hits if not is_known(h)]
 
     print(f'{len(candidates)} method(s) whose no-argument call is constant by its defaults.')
-    for name, where, loc, text in hits:
-        if (name, loc) in known:
-            print(f'  known: {loc}  {text}  (TODO.md)')
+    for hit in hits:
+        if is_known(hit):
+            print(f'  known: {hit[2]}  {hit[3]}  (A174)')
     if not open_hits:
         print('No further literal comparison against such a call collapses.')
         return open_hits

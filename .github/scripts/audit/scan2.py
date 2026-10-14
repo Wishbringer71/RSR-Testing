@@ -268,12 +268,32 @@ def main():
     for path, src in sources.items():
         scan_source(path, src, R, ints)
 
+    # Findings already settled, keyed by class, file and expression rather than line, with the
+    # reason (A286, P5). Churin rotations carry no findings by the owner's rule (CLAUDE.md).
+    known = [
+        ('i_unguarded_division', 'FullControlWindow.cs', '/ AoeSegments.Length', 'divisor is a fixed non-empty array'),
+        ('i_unguarded_division', 'StateControlWindow.cs', '/ Segments.Length', 'divisor is a fixed non-empty array'),
+        ('i_unguarded_division', 'DataCenter.cs', '/ lowestCount', 'lowestCount = Math.Min(count, LightPartySize) under count > 0'),
+    ]
+
+    def known_reason(key, item):
+        if '/Churin' in item:
+            return 'Churin rotation, no findings (CLAUDE.md)'
+        for k, path, fragment, reason in known:
+            if key == k and path in item.split(':', 1)[0] and fragment in item:
+                return reason
+        return None
+
     for k in sorted(k for k in R if not k.startswith('_')):
-        print(f'\n== {k} ({len(R[k])})')
-        for x in R[k][:40]:
+        open_items = [x for x in R[k] if known_reason(k, x) is None]
+        settled = [(x, known_reason(k, x)) for x in R[k] if known_reason(k, x) is not None]
+        print(f'\n== {k} ({len(open_items)} open, {len(settled)} known)')
+        for x in open_items[:40]:
             print('  ' + x)
-        if len(R[k]) > 40:
-            print(f'  ... {len(R[k]) - 40} more')
+        if len(open_items) > 40:
+            print(f'  ... {len(open_items) - 40} more')
+        for x, reason in settled:
+            print(f'  known: {x[:110]}  ({reason})')
 
     print(f'\nscanned {len(files)} files, {len(ints)} integer-typed names indexed')
     # Surveyed, not reported: the class is real but nothing in it is decidable as a defect by a

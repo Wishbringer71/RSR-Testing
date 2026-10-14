@@ -121,11 +121,17 @@ jobs:
 
       # A line reference is the cheapest way to make a concept verifiable and the first thing to
       # rot, because any edit above the cited line moves it and nothing fails. This fails the run
-      # for a line that cannot exist or holds no code, and for a reference no identifier vouches
-      # for; a reference whose identifier sits elsewhere is reported for a reader to judge, since a
-      # correct reference may well cite a line inside a method.
+      # for a line that cannot exist or holds no code, for a reference no identifier vouches for,
+      # and for one whose identifier is neither at the line nor the member whose body holds it.
       - name: Check the documentation's line references still exist
         run: python3 .github/scripts/audit/check_doc_references.py
+
+      # The plugin downloads its curated lists (tankbusters, area attacks, invulnerabilities) from
+      # upstream's repository and never reads the fork's Resources/ copies, so an edit made only
+      # here would change nothing and nothing would fail. Skipped, not failed, when GitHub is
+      # unreachable, so an outage does not read as a defect (A286, P2).
+      - name: Check the fork's resource lists match what the plugin loads
+        run: python3 .github/scripts/audit/check_resource_lists.py
 
       # Fails when the GCD path picks an ability inside the window the execution gate refuses.
       # Nothing fails at runtime when it does - the action shows up in the preview and is silently
