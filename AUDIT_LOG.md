@@ -7052,6 +7052,28 @@ Von `6cd15453a` stehen 211 der 421 Konzeptzeilen.
   Beobachtung unter der zugehörigen Einstellung" — eine offene Spielbestätigung als Aufgabe an ihn, die die heutige
   Regel ausschließt. Die Wirkketten sind statisch prüfbar und oben geprüft (**R4**). Ergebnis: **FEHLER** (R4 offen).
 
+**K8 · Schildgutschrift, Heilschwelle, Dunkelritter**, gelesen mit `9e1a0eb9e`, `672713a57` (A85), `78856488b` (A87),
+`155df03ce` und dem heutigen `StateUpdater`, `StatusHelper`, `WHM_Reborn`.
+- *`87e6d8f4d`, `56bf37581`, `aeea1e7e6` (die Schildgutschrift senkt die Heilschwelle um die ganze Barriere, der
+  Weißmagier füttert sie mit Divine Benison selbst, eine falsch gesetzte Barriere kehrt sie um), `52af29a53` (Konzept 09:
+  Rang statt Schwelle):* in der Sache richtig — A85 hat genau diese Wirkung belegt (The Blackest Night: oGCD-Heilung ab
+  45 % statt 70 %), und die Gutschrift ist auf seine Entscheidung entfernt. Konzept 08 aus `52af29a53`: die Faktoren der
+  Gegnerleistung stehen heute so in `HostileOutputPercent` (Slow als 1/1,2, Reprisal, Feint, Addle, Dismantle).
+  **KEIN FEHLER.**
+- *`bc893957b`:* nimmt die „zweite Fork-Wirkung" auf die Schwelle zurück — `GetHealingOfTimeRatio` steht in
+  `upstream/main` (gemessen). **KEIN FEHLER.**
+- *`2c2e3f0d3` (Abwehr des Dunkelritters gegen die Heilentscheidung):* Erhebung heute stimmig (unter Schutz
+  `min(normal, HealthProtectedRatio)`, 0,15 ab Werk; Walking Dead bewusst nicht in `NoNeedHealingStatus`; Minderung
+  wirkt nicht auf die Schwelle). „Zehn Sekunden lang" war überzogen — die Absenkung gilt nur, solange mehr als zwei
+  GCDs bleiben; korrigiert in `78856488b`. Ergebnis: **FEHLER**, korrigiert.
+- *`1070d53d6` (zwei Stellen gegen die gestaffelte Walking-Dead-Hilfe), `4973b9d0c` (eigene Deutung aus Konzept 09
+  zurückgenommen):* beide Funde gemessen und später gebaut — Regen auch unter Walking Dead (`WHM_Reborn`), der
+  Dunkelritter bleibt aus der Heilzielwahl, solange seine Selbstheilung trägt (`WalkingDeadCarriedBySelfHeal`).
+  **KEIN FEHLER.**
+- *`5b87c32fc` (Minderungsbilanz kennt zwei Schadensarten):* Der TODO-Eintrag hält heute: `IsMagicalDamageIncoming`
+  prüft eine Angriffsart, ohne laufenden Zauber gilt alles als physisch, und `GetCurrentMitigationPercent` hat weiter
+  genau einen Verbraucher, die Diagnosezeile (`MainWindow_Debug`). **KEIN FEHLER.**
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
