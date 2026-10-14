@@ -23,6 +23,10 @@ are not reconstructed here.
 
 ## Unreleased
 
+Nothing yet.
+
+## 7.5.7.1+wsh1
+
 ### Added to RotationSolver.Basic: `AttackType.Shot` and `DefensiveValues.MitigationByStatusId`
 
 `AttackType` gains `Shot = 4`, the game's AttackType row 4 (physical), which `ActionBasicInfo.AttackType`
@@ -63,6 +67,25 @@ unchanged.
 - **No package any more.** `RotationSolver.Basic` is `IsPackable=false`, so no `.nupkg` is built
   and the pre-release label described above has nothing to label at present. Compile against
   `RotationSolver.Basic.dll` from the plugin's `latest.zip`.
+
+### Renamed upstream in RotationSolver.Basic: `CanBeHealed`
+
+Upstream 7.5.7.1 renamed `StatusHelper.NoNeedHealingInvuln(this IBattleChara)` to `CanBeHealed` and
+`StatusHelper.PlayerNoNeedHealingInvuln()` to `PlayerCanBeHealed()`; the fork passes the rename on. The meaning
+is unchanged - true while no invulnerability lasts beyond two GCDs, so also when none is up at all - and the new
+name reads the way the method answers. A derived rotation that calls the old name no longer compiles; replace it
+by the new one without inverting anything. A caller that negated the old name because it read "needs no healing"
+was picking the protected members: read the call again rather than keep the negation.
+
+### Behaviour change in RotationSolver.Basic: `DataCenter.DefaultGCDTotal` between GCDs
+
+Between GCDs - out of range, between pulls, before the first GCD of a fight - the property returned 0, because
+the game reports the GCD group's total only while its timer runs. It now returns the last length the game
+reported, and before the first GCD the adjusted recast of a weaponskill. The signature is unchanged. Code that
+took 0 to mean "no GCD is running" has to ask `DefaultGCDRemain` or the recast timer instead; code that divides
+by it or measures windows in GCDs now gets a length where it used to get 0.
+
+## 7.5.6.9+wsh1
 
 ### Behaviour change in RotationSolver.Basic: the raise dispatch
 
