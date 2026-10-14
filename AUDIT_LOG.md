@@ -7027,6 +7027,31 @@ erneute Prüfung, nicht Teil der CI — eine Entscheidung, kein Befund.
   `count > 0`, feste nicht leere Felder in der Oberfläche). Die Ausgabe muss wieder von Hand sortiert werden — die
   Lage, die diese Commits abstellen wollten (**P5**).
 
+**K7 · Wiederbelebung (Konzept 11)**, gelesen mit den Code-Commits aus A86, A88 und den späteren Konzeptfassungen.
+Von `6cd15453a` stehen 211 der 421 Konzeptzeilen.
+- *`6cd15453a` (Konzept auf den beschriebenen Stand), `6ab021908` (alle Anwendungsfälle):* am Code bestätigt —
+  Ursachentabelle (`RaiseSpell` Swiftcast nur bei `WeaponRemain <= 0.5f`; `DoAction` und `CanDoAnAction` sperren
+  Fähigkeiten bei `0 < DefaultGCDRemain <= 0.5f`; `Ability()` kehrt im selben Fenster zurück), der Einschub über
+  `RaisePendingAndCastable` mit gesicherter Zielüberschreibung, nach ihm nur die zwei Second-Wind-Zweige bei Doom, zwei
+  Einhängepunkte nach `RaisePlayerFirst`, alle vier Hartwirk-Modi mit Swiftcast-Vorbehalt, `AnyLivingRaiser` mit
+  Bezugsmenge nach `RaiseType` und den Stufen 12/64 als gemeinsame Konstanten, Feder nach `UseHpPotion` mit
+  `GetActionStatus` für Item 4570, `UseStopCasting` ab Werk aus, `SwiftcastBuffer` und `TargetColor` ohne Leser.
+  Befunde: Der Abschnitt „Was aus dem Quelltext nicht zu entscheiden ist" (aus diesem Commit) sagt,
+  `HardCastOnlyHealer` prüfe „while Swiftcast is on cooldown" nicht, und ob er bei einem einzigen Heiler greifen solle,
+  sei offen — beides ist seit `c99da333a` und A88 entschieden und steht weiter oben im selben Konzept; wer den Abschnitt
+  allein liest, erhält einen überholten Stand (**R3**). Die Zahl „447 Fundstellen" für `nextGCD` steht ohne Datum in
+  Konzept und Codekommentar (**R1**). Offen gelassen ist, ob `ICharacter.Level` eines Mitglieds im synchronisierten
+  Inhalt die synchronisierte Stufe meldet; WrathCombo setzt das voraus (`InFATE`: Teilnahme nur bei
+  `LocalPlayer.Level <= MaxLevel` der FATE) — ein Beleg aus einem anderen Werkzeug, keine Spielquelle, aber mehr als
+  „nicht entschieden" (**R2**). Ergebnis: **FEHLER** (R1–R3 offen).
+- *`3a233b03c` (im Spiel bestätigt), `5702d695c`, `5c94ecf29`:* Seine Beobachtung trägt die Aussage (A73: vorher „über
+  15 Sekunden oder länger", jetzt „teils sofort, teils ein paar Sekunden"; die Restzeit an der Kette erklärt).
+  Prüfgrad eine Spielsitzung. Der Satz „Ungemessen bleiben die **drei** … Eingriffe" zählt danach fünf auf, der
+  TODO-Eintrag vier (**R5**). **KEIN FEHLER** in der Sache, R5 offen.
+- *`59675ee33` und der TODO-Eintrag „vier Eingriffe … ungemessen":* Seine Auflösungsbedingung ist „je Eingriff eine
+  Beobachtung unter der zugehörigen Einstellung" — eine offene Spielbestätigung als Aufgabe an ihn, die die heutige
+  Regel ausschließt. Die Wirkketten sind statisch prüfbar und oben geprüft (**R4**). Ergebnis: **FEHLER** (R4 offen).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
