@@ -6694,6 +6694,44 @@ brachte nur dort etwas Neues, wo der Fork nichts hatte (Recitation), und das ist
 **Prüfgrad:** statisch (Diff, Code beider Seiten, Versionsgeschichte); Wirktext über Job-Guide und xivapi;
 Prüfskripte; Compile über die CI. Im Spiel nicht beobachtet.
 
+### A281 · TODO gegen den Code: erledigte Einträge, veraltete Aussagen, technische Schuld getrennt (14.10.2026)
+
+Anlass: seine Frage „was ist in todo offen?". Beim Lesen widersprachen mehrere Einträge dem Stand des Codes und des
+Gesamtstands von heute; so hätte die Antwort Erledigtes als offen gemeldet. Je Eintrag am Code geprüft.
+
+- *Entfernt, weil erledigt:*
+  - „Schadenseingang und Vorausschau: … die Voreinstellungen sind zu entscheiden": `HealAheadOfDamage` und
+    `HealAheadOfAnnouncedHit` stehen ab Werk an (`Configs.cs`, A227 vom 29.09.2026). Die Barriere-Restzeit führt der
+    Eintrag `HasSurvivingShield`.
+  - „Vorhergesagte Minderung bei zwei Treffern in Folge": `HoldProactiveMitigationForSmallCast` steht an und bewertet
+    sich selbst; offen war nur die Voreinstellung, und die folgt seit 29.09.2026 seiner Regel (der sinnvollere Wert).
+  - „Tanks: ein angekündigter Tankbuster auf dem anderen Tank öffnet die eigene Einzelabwehr": Die Flagge öffnet weiter,
+    aber seit A233 lehnt `BaseAction.CanUse` jede Abwehr ohne Wirkradius auf den Spieler ab, solange der Treffer ihn
+    nicht erreicht (`SingleHitReachesPlayer` mit BossModReborns Maske); Hilfe für den anderen bleibt frei — genau der
+    Bau, den der Eintrag verlangte.
+  - „Radiant Aegis bei Tankbustern auf den Tank — Quelle in seinen Kämpfen offen": Seine Protokolle zeigten die Quelle
+    (A272: BossModReborn-„Raidwides", die einzelne Spieler treffen); behoben durch das Lesen der Maske (A273) und die
+    zentrale Reichweitensperre (A233), die auch einen nicht gezählten Duty-Support-Tank abdeckt, weil sie nach der
+    Reichweite des Treffers fragt, nicht nach der Gruppe. Das Protokoll bleibt als Werkzeug; „danach entfernen" ist
+    überholt.
+  - „`CanEarlyWeave` steht auf dem beobachteten statt auf dem geschriebenen Verhalten": Alle Verbraucher sind
+    Churin-Rotationen (gemessen: kein anderer Leser im Baum); nach seiner Vorgabe werden dazu keine Befunde geführt.
+- *Berichtigt:*
+  - Die Aufnahme in die AoE-Liste: „offen bleibt die Voreinstellung" gestrichen (ab Werk an, seine Regel).
+  - Nascent Flash: „die Höhe eines Tankbusters wird nicht gemessen" gestrichen — die Tankbuster-Tabelle misst sie
+    ungemindert (A259).
+  - „Dieselbe Frage bei Tankbustern, Rückstoß und Unterbrechung": Tankbuster beantwortet (A259), offen bleiben Rückstoß
+    und Unterbrechung.
+  - The Blackest Night: Der Eintrag nannte die erste Stufe als Voreinstellung; seit A227 ist es die dritte. Was offen
+    bleibt, ist die Messung, ob die Barriere bricht — statt einer Spielbeobachtung durch ihn als Aufgabe der Regel.
+  - Proaktive Minderung nur über BossModReborn: „der Beschwörer als einziger von ihm gespielter Job" (sein Profil umfasst
+    alle Kampfjobs) und „erst nach einer Spielbeobachtung entscheiden" ersetzt durch den offenen Loop.
+- *Gegliedert:* Der Kopf versprach Defekte, technische Schuld und offene Arbeit getrennt; einen Abschnitt für die Schuld
+  gab es nicht. 22 Einträge, die sich selbst als Kompromiss, erfassten Befund ohne Kampfwirkung oder „belassen" führen,
+  stehen jetzt unter „Technische Schuld".
+
+**Prüfgrad:** statisch (Code, Archiv); Prüfskripte. Kein Code geändert.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
