@@ -56,7 +56,10 @@ CLAIM = re.compile(r'`([A-Z][A-Za-z0-9_]{3,})`(?P<between>[^`]{0,200}?)(?P<value
 # at all. A label is mapped to its property through the definition that follows it in the source
 # (`UI("...")` in the configuration, `Name = "..."` in a rotation); a quoted text that is no label is
 # left alone, because quotation marks carry far more than setting names.
-LABEL_CLAIM = re.compile(r'(?:`|„|")(?P<label>[^`„“"\n]{6,160})(?:`|“|")(?P<between>[^`„]{0,200}?)'
+# A label may run over a line break - concepts and the standing picture wrap at a fixed width, and eleven
+# setting texts there stood on two lines, unread (A279). It is compared with whitespace collapsed and without
+# the closing full stop some UI texts carry.
+LABEL_CLAIM = re.compile(r'(?:`|„|")(?P<label>[^`„“"]{6,160})(?:`|“|")(?P<between>[^`„]{0,200}?)'
                          r'(?P<value>' + ON + '|' + OFF + ')', re.IGNORECASE | re.DOTALL)
 LABEL_DEFINITION = re.compile(r'(?:\bUI\(\s*|\bName\s*=\s*)"(?P<label>[^"]{6,})"')
 
@@ -89,6 +92,11 @@ NUMERIC_CLAIM = re.compile(
 METHOD = re.compile(r'\b(?:bool|void|int|float|string|Task|IAction)\s+([A-Za-z0-9_]+)\s*\(')
 
 
+def label_key(label):
+    """A setting text as it is compared: lower-cased, whitespace collapsed, no closing full stop."""
+    return ' '.join(label.split()).rstrip('.').lower()
+
+
 def label_map(text):
     """Returns {label lower-cased: (property, default)} for the bool settings defined in `text`.
 
@@ -103,7 +111,7 @@ def label_map(text):
         if d is None or NUMERIC_DEFINITION.search(text, m.end(), d.start()):
             continue
         name = d.group(1)
-        out.setdefault(m.group('label').strip().lower(), (name[0].upper() + name[1:], d.group(2)))
+        out.setdefault(label_key(m.group('label')), (name[0].upper() + name[1:], d.group(2)))
     return out
 
 
@@ -153,12 +161,12 @@ def check_labels(text, labels):
     """Returns [(label, stated, actual)] for claims made about a setting by its visible text."""
     wrong = []
     for m in LABEL_CLAIM.finditer(text):
-        entry = labels.get(m.group('label').strip().lower())
+        entry = labels.get(label_key(m.group('label')))
         if entry is None or ANOTHER_NAME.search(m.group('between')):
             continue
         stated = 'off' if re.search(OFF, m.group('value'), re.IGNORECASE) else 'on'
         if (stated == 'on') != (entry[1] == 'true'):
-            wrong.append((m.group('label').strip(), stated, entry[1]))
+            wrong.append((' '.join(m.group('label').split()), stated, entry[1]))
     return wrong
 
 
@@ -289,6 +297,11 @@ def selftest():
         raise AssertionError('a correct default stated by the setting text was reported')
     if check_labels('„Some quoted words", Standard an.', labels):
         raise AssertionError('a quotation that is no setting text was scored')
+    if not check_labels('- **x** — `Heal ahead\n  of a cast`, **off by default**.', labels):
+        raise AssertionError('a setting text wrapped over two lines went unread')
+    stopped = label_map('[UI("Lock it during mitigations.", Filter = X)]\n public bool LockIt { get; set; } = true;')
+    if not check_labels('`Lock it during mitigations` is off by default.', stopped):
+        raise AssertionError('a UI text with a closing full stop did not match its quotation without one')
 
     resolved = resolve({'Twice': [(True, 'true'), (False, 'false')], 'Split': [(False, 'true'), (False, 'false')],
                         'Foreign': [(True, 'true')]})
