@@ -632,7 +632,7 @@ Umgesetzt mit A226.
   29.09.2026): hält Nascent Flash nach (a)/(b) und der Triage zurück.
 - Vierte Zielwahl **„By danger"**, ab Werk gewählt (angehängt; Rotationseinstellungen speichern den Namen).
 - Heilung-wirkungslos-Ausschluss in allen vier Zielwahlen.
-- Der Zielfilter liest `NoNeedHealingInvuln()` mit der richtigen Polarität (belegter Defekt, ohne Schalter).
+- Der Zielfilter liest `CanBeHealed()` (bis Upstream 7.5.7.1 `NoNeedHealingInvuln()`) mit der richtigen Polarität (belegter Defekt, ohne Schalter).
 - **Nicht gebaut, mit Quelle:** Nascent Flash als Minderung für den **anderen Tank vor dessen Tankbuster**.
   The Balance, Warrior Basic Guide, Abschnitt Makros (abgerufen 02.10.2026): „Nascent Flash goes on a friend. Most
   often on the co-tank of your eight-person party." Damit ist der Einsatz am anderen Tank die Regelanwendung der
@@ -1034,7 +1034,7 @@ ankommt, ist nicht belegt; fehlt die Zeile, ändert das nichts an der Entscheidu
 ## Schutzmechaniken mit Auslöser und die Heilung
 
 Mehrere Tank-Fähigkeiten warten auf ein **Ereignis**, das fremde Heilung abfangen kann. Tragend ist dabei nicht die
-Rückhaltung, sondern die richtige Heilzielwahl: `NoNeedHealingInvuln()` liefert `true`, wenn *kein* Schutzstatus
+Rückhaltung, sondern die richtige Heilzielwahl: `CanBeHealed()` (bis Upstream 7.5.7.1 `NoNeedHealingInvuln()`) liefert `true`, wenn *kein* Schutzstatus
 liegt; zwei Aufrufer lasen sie mit dem entgegengesetzten Vorzeichen, und die generische Zielwahl war dadurch blind für
 den am schwersten Verletzten (Abschnitt „Gebaut"). Die Rückhaltung selbst ist ein eng umgrenzter Sonderfall: Von den
 Lagen (Abschnitt „Lagen und richtige Handlung“) bleibt ein echter Rückhaltefall, Living Dead, umgesetzt als Uhrregel hinter einer
@@ -1338,7 +1338,7 @@ der einzige verbliebene Sonderfall ist Living Dead.
 
 #### Die Zielwahl (Rangstufe 1)
 
-`NoNeedHealingInvuln()` ruft `WillStatusEndGCD(2, 0, false, …)`. Die Kette
+`CanBeHealed()` (bis Upstream 7.5.7.1 `NoNeedHealingInvuln()`) ruft `WillStatusEndGCD(2, 0, false, …)`. Die Kette
 `WillStatusEnd` → `StatusTime` (beide in `StatusHelper.cs`) liefert bei
 **fehlendem** Status die Zeit `0f`, und `(0 >= 0 || !HasStatus) && 0 <= time` ergibt
 `true`. Der Rückgabewert bedeutet also: *kein schützender Status aktiv, Heilung ist
@@ -1351,7 +1351,7 @@ Tank-Haltung zurück. Praktisch: **Die generische Heilzielwahl war blind für de
 schwersten verletzten Gruppenteil und wählte faktisch immer den Tank.** War die Liste
 einmal gefüllt, wurde bevorzugt der Unverwundbare geheilt. Derselbe Fehler stand ein
 zweites Mal in der Excogitation-Heilzielwahl von `SCH_Reborn`, wo Excogitation nur auf gerade unverwundbare
-Ziele ging; dort liest sie `NoNeedHealingInvuln()` ohne Negation.
+Ziele ging; dort liest sie `CanBeHealed()` ohne Negation.
 
 Umgesetzt ist beides zusammen, denn getrennt wäre der erste Schritt schädlich: Sobald
 die Liste normale Ziele enthält, fielen die geschützten heraus und der Zufallszustand
@@ -1463,7 +1463,7 @@ verhindert, ist Schadensminderung, und dagegen steht die Sperre in Konzept 10.
 #### Prüfmittel und Prüfgrad
 
 `.github/scripts/audit/scan8.py` meldet Prädikate mit negierendem Namen, die im Baum mit beiden Polaritäten gelesen
-werden, `check_invuln_polarity.py` jede negierte Lesart von `NoNeedHealingInvuln` ohne Grund – genau die hier
+werden, `check_invuln_polarity.py` jede negierte Lesart von `CanBeHealed` (und dem alten Namen) ohne Grund – genau die hier
 gefundene Defektklasse. Prüfgrad: Prüfskripte, Fallmatrix, Compile über die CI; im Spiel nicht beobachtet. Dass die
 Rückhaltung besser spielt, ist nicht belegt und steht deshalb hinter einer Option; die Richtigstellung der Zielwahl
 ist eine belegte Defektbehebung und hat keinen Schalter – er würde den fehlerhaften Zustand konservieren.

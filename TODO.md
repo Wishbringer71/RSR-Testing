@@ -18,6 +18,16 @@ Kampf vermutlich: der Rotmagier nimmt Engagement statt Displacement (gefolgert, 
 Abbildung von Start und Ziel auf Weite und Richtung — BossModReborn rechnet das Ziel aus der aktuellen Blickrichtung,
 RSR den Rückwärtssprung vom Ziel weg.
 
+### Gelehrter: Recitation ohne Rückfall vor Ablauf · N
+
+Seit Upstream 7.5.7.1 (A278) folgt Excogitation einer gedrückten Recitation; die Aktionsmatrix führt
+Excogitation jetzt mit drei Aufrufen „ohne Rückfall vor Ablauf" (`docs/action-matrix/SCH.md`). Zu prüfen
+(Konzept 14, „Rückfälle vor Ablauf, je Job"): ob Recitation verfällt, wenn nach dem Drücken kein Tank unter die
+Excogitation-Schwelle fällt und kein Tankbuster kommt, und ob dann eine andere Heilung, die Recitation trägt
+(Indomitability, Adloquium), das Fenster nutzen soll. Im Kampf: ein verschenkter kritischer Heilschub je Minute.
+
+**Konzept:** `docs/rotation-flow/14-action-dependency-matrix.md`
+
 ### Rückstoß- und Tankbuster-Casts unsichtbarer Helfer werden nicht gelesen · N
 
 Seit A277 liest die Flächenerkennung Casts nicht anvisierbarer Kämpfer, die eine Aktion der Flächenliste wirken

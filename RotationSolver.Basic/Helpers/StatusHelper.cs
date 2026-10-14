@@ -658,7 +658,7 @@ public static class StatusHelper
 	/// for the death to arrive - that is, <see cref="DeathTriggeredStatus"/> is up and not about to
 	/// expire.
 	/// <para>
-	/// The clock has to be read on this list alone. <see cref="NoNeedHealingInvuln"/> measures the
+	/// The clock has to be read on this list alone. <see cref="CanBeHealed"/> measures the
 	/// *earliest* expiry across all of <see cref="NoNeedHealingStatus"/>, so an unrelated short
 	/// invulnerability on the same target - a Phantom Oracle's, say - would report the window as
 	/// ending while Living Dead still had most of its duration left.
@@ -1118,10 +1118,9 @@ public static class StatusHelper
 	}
 
 	/// <summary>
-	/// Check whether the Player needs to be healing.
+	/// True when the player has no <see cref="NoNeedHealingStatus"/> (invuln, healing block) lasting beyond 2 GCDs.
 	/// </summary>
-	/// <returns></returns>
-	public static bool PlayerNoNeedHealingInvuln()
+	public static bool PlayerCanBeHealed()
 	{
 		if (Player.Object == null)
 		{
@@ -1131,11 +1130,6 @@ public static class StatusHelper
 		return PlayerWillStatusEndGCD(2, 0, false, NoNeedHealingStatus);
 	}
 
-	/// <summary>
-	/// Check whether the target needs to be healing.
-	/// </summary>
-	/// <param name="Invulnp"></param>
-	/// <returns></returns>
 	private static HashSet<uint>? _vulnerabilityUpIds;
 
 	/// <summary>
@@ -1211,9 +1205,13 @@ public static class StatusHelper
 		return false;
 	}
 
-	public static bool NoNeedHealingInvuln(this IBattleChara Invulnp)
+
+	/// <summary>
+	/// True when the target has no <see cref="NoNeedHealingStatus"/> (invuln, healing block) lasting beyond 2 GCDs.
+	/// </summary>
+	public static bool CanBeHealed(this IBattleChara battleChara)
 	{
-		return Invulnp.WillStatusEndGCD(2, 0, false, NoNeedHealingStatus);
+		return battleChara.WillStatusEndGCD(2, 0, false, NoNeedHealingStatus);
 	}
 
 	/// <summary>

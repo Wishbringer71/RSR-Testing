@@ -125,7 +125,7 @@ public static class ObjectHelper
 					if (targetObject.IsJobCategory(JobRole.Tank)
 						&& !targetObject.IsDead
 						&& targetObject.GameObjectId != Player.Object?.GameObjectId
-						&& targetObject.NoNeedHealingInvuln()
+						&& targetObject.CanBeHealed()
 						&& targetObject.GetEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f
 						&& !TankSwapWatch.PlayerInDanger)
 					{
@@ -3933,7 +3933,7 @@ public static class ObjectHelper
 	/// </summary>
 	internal static bool IsInCriticalClass(this IBattleChara battleChara)
 	{
-		return battleChara.IsInCriticalClass(battleChara.NoNeedHealingInvuln());
+		return battleChara.IsInCriticalClass(battleChara.CanBeHealed());
 	}
 
 	/// <summary>

@@ -1770,7 +1770,7 @@ public partial class CustomRotation
 	protected static bool TankbusterOnMeWithin(float seconds)
 	{
 		var player = Player;
-		if (player == null || !player.NoNeedHealingInvuln())
+		if (player == null || !player.CanBeHealed())
 		{
 			return false;
 		}

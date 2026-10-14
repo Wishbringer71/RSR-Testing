@@ -3401,8 +3401,8 @@ public struct ActionTargetInfo(IBaseAction action)
 				// Everyone healable is a candidate. Only a status that nullifies healing outright
 				// takes a target out; a protective status merely moves it back in the queue.
 				//
-				// This used to read `if (!o.NoNeedHealingInvuln())`, which collected the exact
-				// opposite set: NoNeedHealingInvuln() returns true when NO protective status is up
+				// This used to read `if (!o.NoNeedHealingInvuln())`, which collected the exact opposite set:
+				// the function (CanBeHealed since 7.5.7.1) returns true when NO protective status is up
 				// (an absent status has trivially "ended"), so the list held only the invulnerable
 				// and was empty in the ordinary case. Everything below it - the healer pass, the
 				// tank pass, the worst-hurt pick - then ran over nothing and the caller fell back
@@ -3414,7 +3414,7 @@ public struct ActionTargetInfo(IBaseAction action)
 				// Both sort keys are read once per member rather than inside the comparator. Sorting
 				// n members costs O(n log n) comparisons, and each key walks a status list or the
 				// party/doom checks in GetHealthRatio - this runs in the combat path. Reading them
-				// up front also fixes the keys for the duration of the sort: NoNeedHealingInvuln
+				// up front also fixes the keys for the duration of the sort: CanBeHealed
 				// compares a live RemainingTime against a GCD window, so a status sitting on that
 				// boundary could otherwise answer differently between two comparisons, and an
 				// inconsistent comparer makes List.Sort throw.
@@ -3439,7 +3439,7 @@ public struct ActionTargetInfo(IBaseAction action)
 					// Forecast health rather than current, so the ordering below answers "who will be
 					// worst off when a heal lands" instead of "who is worst off now". With the
 					// setting off the two are the same number.
-					ranked.Add((o, o.NoNeedHealingInvuln(), o.GetForecastHealthRatio(instant)));
+					ranked.Add((o, o.CanBeHealed(), o.GetForecastHealthRatio(instant)));
 				}
 
 				// Unprotected before protected, then lowest health first inside each group.

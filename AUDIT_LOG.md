@@ -6551,6 +6551,30 @@ xivapi; BossModReborn be8ff77 (13.10.2026 frisch geholt, unverändert). Spielern
 **Prüfgrad:** Protokoll per Skript; Code und fremder Quelltext statisch; Prüfskripte; Compile über die CI. Im Spiel
 nicht beobachtet.
 
+### A278 · Upstream-Sync 7.5.7.1: CanBeHealed, Gelehrter mit Recitation, ECommons 3.2.1.24 (14.10.2026)
+
+Vier Upstream-Commits (7398531a5 „7.57 rebuild and sourcegen update", 7f8577226 „Fix typo in WAR Nascent Flash
+logic", mit Merges), gemergt in `claude/fixes-after-7.5.6.13` vor dem Release. Je Änderung:
+
+- *`NoNeedHealingInvuln` → `CanBeHealed`, `PlayerNoNeedHealingInvuln` → `PlayerCanBeHealed`, gleiche Bedeutung*
+  (wahr, solange kein Schutzstatus über zwei GCDs liegt). Upstream fand dieselbe vertauschte Lesart im Krieger
+  (Nascent Flash nur an Unverwundbare) und im Gelehrten (Excogitation), die der Fork in A226 und Konzept 09 schon
+  behoben hatte. Konflikte in `ActionTargetInfo`, `StatusHelper`, `SCH_Reborn`, `WAR_Reborn`, `StateUpdater`: die
+  Fork-Fassung behalten (Vorhersage-Gesundheit, `HealingIneffectiveStatus`, Triage), den neuen Namen übernommen;
+  alle übrigen Fork-Aufrufe umbenannt. In `StatusHelper` stand der Doku-Kommentar der alten Methode über den
+  Verwundbarkeitshelfern des Forks (ein früherer Merge); jetzt steht er wieder über der Methode. Im Kampf: nichts
+  Neues, der Name liest sich jetzt richtig. Vertrag: öffentliche Methoden des Pakets umbenannt (Upstream-Entscheidung).
+  `check_invuln_polarity.py` prüft den neuen und den alten Namen; ohne Anpassung wäre es stumm geblieben.
+- *Gelehrter: Indomitability und Excogitation auch mit Recitation ohne Aetherflow* (`ActionCheck`), und
+  Excogitation folgt einer gedrückten Recitation (`SCH_Reborn`, „HasRecitation ||"). Im Kampf: Recitation wird
+  nicht mehr verschenkt, wenn Aetherflow leer ist; der Fork hatte dort keinen eigenen Abschnitt.
+- *ECommons 3.2.1.22 → 3.2.1.24:* Änderungen an TaskManager, ImGui-Helfern, Excel- und Addon-Lesern (Quelltext
+  a27ff04 bis fddc0ee); `Hooks`, `ActionEffectTypes`, `EzIpcManager` und `GameHelpers` unverändert, also weder
+  `StunWatch` noch die IPC-Abonnements berührt (A177 bleibt offen).
+- *Rest:* `OpCode.resx` neu erzeugt, Paketsperren, Changelog.
+
+**Prüfgrad:** Diff und fremder Quelltext gelesen; Prüfskripte; Compile über die CI. Im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

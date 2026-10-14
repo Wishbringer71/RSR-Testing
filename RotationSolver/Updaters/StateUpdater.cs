@@ -722,7 +722,7 @@ internal static class StateUpdater
 		// than suppressing the flag entirely. This path matters for a tank healing itself while
 		// riding its own invulnerability.
 		var normal = Lerp(healSingle, healSingleHot, ratio);
-		var threshold = StatusHelper.PlayerNoNeedHealingInvuln()
+		var threshold = StatusHelper.PlayerCanBeHealed()
 			? normal
 			: Math.Min(normal, Service.Config.HealthProtectedRatio);
 
@@ -791,7 +791,7 @@ internal static class StateUpdater
 		// Math.Min keeps the invariant that a protected target is never healed more readily than an
 		// unprotected one, whatever the two settings are configured to.
 		var normal = Lerp(healSingle, healSingleHot, ratio);
-		var threshold = target.NoNeedHealingInvuln()
+		var threshold = target.CanBeHealed()
 			? normal
 			: Math.Min(normal, Service.Config.HealthProtectedRatio);
 

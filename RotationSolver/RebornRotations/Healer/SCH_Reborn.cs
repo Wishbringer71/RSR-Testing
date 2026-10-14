@@ -466,7 +466,7 @@ public sealed class SCH_Reborn : ScholarRotation
 			return true;
 		}
 
-		if (!HasRecitation && !IsLastAbility(false, RecitationPvE) && ExcogitationPvE.CanUse(out act))
+		if ((HasRecitation || !IsLastAbility(false, RecitationPvE)) && ExcogitationPvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -841,7 +841,7 @@ public sealed class SCH_Reborn : ScholarRotation
 			var tanks = PartyMembers.GetJobCategory(JobRole.Tank);
 			foreach (var member in tanks)
 			{
-				// NoNeedHealingInvuln() returns true when NO protective status is up, so the
+				// CanBeHealed() (NoNeedHealingInvuln before 7.5.7.1) returns true when NO protective status is up, so the
 				// negation asked for a tank that is currently invulnerable - the opposite of the
 				// "looks dangerous" this block is written for.
 				//
@@ -850,7 +850,7 @@ public sealed class SCH_Reborn : ScholarRotation
 				// and spend Recitation on an Excogitation that cannot land. The inverted form
 				// happened to mask that. The tank searches in ActionTargetInfo carry the same
 				// guard at the same place.
-				if (!member.IsDead && member.GetForecastHealthRatio(true) <= ExcogHeal && member.NoNeedHealingInvuln())
+				if (!member.IsDead && member.GetForecastHealthRatio(true) <= ExcogHeal && member.CanBeHealed())
 				{
 					tankNeedsExcog = true;
 					break;

@@ -641,7 +641,7 @@ public sealed class WAR_Reborn : WarriorRotation
 
 		if (DataCenter.IsHostileCastingTankBusterAtMe)
 		{
-			return player.NoNeedHealingInvuln();
+			return player.CanBeHealed();
 		}
 
 		if (!BMRTankbusterWithin(NascentFlashPvE.Cooldown.RecastTimeOneChargeRaw))
@@ -699,12 +699,12 @@ public sealed class WAR_Reborn : WarriorRotation
 			held = NeedsBloodwhettingHimself(out warriorAboutToDie);
 		}
 
-		// NoNeedHealingInvuln is true while NO invulnerability is up: the candidate is unprotected. It
+		// CanBeHealed is true while NO invulnerability is up: the candidate is unprotected. It
 		// read negated here, which let only the invulnerable through - Nascent Flash went to a tank under
 		// Holmgang, Superbolide, Hallowed Ground or Living Dead, and to nobody else (A226).
 		setting.CanTarget = t => canTarget(t)
 			&& t.GetForecastHealthRatio(true) < healRatio
-			&& t.NoNeedHealingInvuln()
+			&& t.CanBeHealed()
 			&& !t.HasStatus(false, StatusHelper.HealingIneffectiveStatus)
 			&& (!healersOnly || t.IsJobCategory(JobRole.Healer))
 			&& (!held || WinsTriageOverWarrior(t, warriorAboutToDie));

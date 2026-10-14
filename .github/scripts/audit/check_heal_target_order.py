@@ -153,7 +153,7 @@ def check_helper(text):
                         'fastest is judged by the health they still have')
     if re.search(r'HealthForDyingTanks', body) is None:
         problems.append('IsInCriticalClass no longer reads HealthForDyingTanks')
-    if re.search(r'NoNeedHealingInvuln\(\)', body) is None:
+    if re.search(r'(?:CanBeHealed|NoNeedHealingInvuln)\(\)', body) is None:
         problems.append('IsInCriticalClass no longer leaves invulnerable members out')
     return problems
 
@@ -202,7 +202,7 @@ def self_test():
             static IBattleChara? GeneralHealTarget(List<IBattleChara> objs, bool instant)
             {
                 foreach (var o in objs) { if (o.IsDead || o.HasStatus()) { continue; } }
-                ranked.Add((o, o.NoNeedHealingInvuln(), o.GetForecastHealthRatio(instant)));
+                ranked.Add((o, o.CanBeHealed(), o.GetForecastHealthRatio(instant)));
                 if (x.GetForecastEffectiveHpPercent() > Service.Config.HealthForDyingTanks * 100f) { }
                 var hp = r.Obj.GetForecastEffectiveHp(instant);
                 if (ObjectHelper.GetForecastPlayerHealthRatio(instant) <= Service.Config.HealthSelfRatio) { }
@@ -304,7 +304,7 @@ def self_test():
     helper_good = '''
         internal static bool IsInCriticalClass(this IBattleChara b)
         {
-            return b.NoNeedHealingInvuln()
+            return b.CanBeHealed()
                 && b.GetForecastEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f;
         }
     '''
@@ -313,7 +313,7 @@ def self_test():
     for broken, expected in (
         (helper_good.replace('GetForecastEffectiveHpPercent', 'GetEffectiveHpPercent'), 'forecast'),
         (helper_good.replace('Service.Config.HealthForDyingTanks', 'Threshold'), 'HealthForDyingTanks'),
-        (helper_good.replace('b.NoNeedHealingInvuln()', 'true'), 'invulnerable'),
+        (helper_good.replace('b.CanBeHealed()', 'true'), 'invulnerable'),
     ):
         if not any(expected in p for p in check_helper(broken)):
             raise AssertionError('a critical class without %s went unnoticed' % expected)
