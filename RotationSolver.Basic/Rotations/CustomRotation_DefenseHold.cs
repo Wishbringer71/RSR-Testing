@@ -73,6 +73,50 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
+	/// Whether a strategic hold of a heal the player casts on the party stands. It yields when no
+	/// healer in the party is alive, or when the healers do not keep up: a living member stands in the
+	/// critical class. The owner's rule for a damage dealer's heal (14.10.2026): heal when it is needed
+	/// and the healers are dead or cannot keep up, for instance without mana - own damage is worth
+	/// nothing when others die and deal none. A healer short of mana shows here by its effect, a member
+	/// falling into the critical class, not by reading the mana itself.
+	/// </summary>
+	/// <param name="wanted">The job rule's own verdict that the heal should wait.</param>
+	/// <param name="rule">What the hold is, in a few words, for the diagnostics window.</param>
+	/// <returns>True while the hold stands.</returns>
+	protected static bool HoldPartyHeal(bool wanted, string rule)
+	{
+		if (!wanted)
+		{
+			return false;
+		}
+
+		var healerAlive = false;
+		foreach (var member in PartyMembers)
+		{
+			if (member != null && !member.IsDead && member.IsJobCategory(JobRole.Healer))
+			{
+				healerAlive = true;
+				break;
+			}
+		}
+
+		if (!healerAlive)
+		{
+			return Record("party heal", rule, false, "no healer in the party is alive");
+		}
+
+		foreach (var member in PartyMembers)
+		{
+			if (member != null && !member.IsDead && member.MaxHp > 0 && member.IsInCriticalClass())
+			{
+				return Record("party heal", rule, false, $"{member.Name} is in the critical class");
+			}
+		}
+
+		return Record("party heal", rule, true, string.Empty);
+	}
+
+	/// <summary>
 	/// The stretching of a job's own defense: after one of <paramref name="triggers"/> the rest waits
 	/// until that trigger's effect has run out, so two hits in a row both get something instead of
 	/// the first getting everything. Area scope; yields like <see cref="HoldAreaDefense"/>.

@@ -3635,6 +3635,34 @@ public struct ActionTargetInfo(IBaseAction action)
 
 			if (pressed != null)
 			{
+				// The role thresholds differ (tank 0.45, healer 0.40 by default), and they stand in for the damage
+				// rate: the tank takes the hits, the healer stands still. In this class both are being attacked, so
+				// that reason does not hold, and a healer at 42 % lost to a tank at 44 % - against the owner's
+				// triage, the one most likely to die first and a healer before a tank at equal health (concept 07).
+				// A threshold says when a role is low enough to come first, not that a lower member of the other
+				// role must wait: whoever is being attacked and stands as low as the pick or lower joins it (A283).
+				foreach (var r in ranked)
+				{
+					if (!r.Unprotected || r.Health > pressedHealth || !DataCenter.TargetedPartyMembers.Contains(r.Obj.GameObjectId))
+					{
+						continue;
+					}
+
+					var isHealer = r.Obj.IsJobCategory(JobRole.Healer);
+					if (!isHealer && !r.Obj.IsJobCategory(JobRole.Tank))
+					{
+						continue;
+					}
+
+					var role = isHealer ? 0 : 1;
+					if (r.Health < pressedHealth || (r.Health == pressedHealth && role < pressedRole))
+					{
+						pressed = r.Obj;
+						pressedHealth = r.Health;
+						pressedRole = role;
+					}
+				}
+
 				return pressed;
 			}
 

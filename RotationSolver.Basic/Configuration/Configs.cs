@@ -1078,8 +1078,8 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	// his own order of who is healed first; that it keeps more people alive is not shown in play.
 	[UI("Choose the heal target by danger",
 		Description = "Below a member who is about to fall, heal first a healer or tank who is under their "
-			+ "role threshold AND being attacked - lowest health first, a healer before a tank at equal "
-			+ "health. Everyone else after that: while an area cast is announced, the one with the fewest "
+			+ "role threshold AND being attacked, together with any healer or tank being attacked who stands as "
+			+ "low or lower - lowest health first, a healer before a tank at equal health. Everyone else after that: while an area cast is announced, the one with the fewest "
 			+ "hit points left first, because the hit takes the same number from everybody; otherwise the "
 			+ "lowest percentage.\n"
 			+ "In a fight: when the healer holds aggro and the tank does not, the healer comes first; a tank "
