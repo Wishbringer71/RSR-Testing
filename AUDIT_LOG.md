@@ -6921,7 +6921,56 @@ Die schon nachgeprüften Code-Commits derselben Gegenstände (A85–A87) gehöre
   weitere solche Abweichungen haben, ist zu erheben. Die Folgerung „keine Entscheidung hängt an Heilmengen" hält heute
   noch: Kein Code außerhalb der erzeugten Tabellen liest einen Heilbonus. Ergebnis: **FEHLER** (G6 offen).
 - *Spätere Glieder der Kette:* `4db89d1a6` (Jobnamen aus dem Job-Guide, „Maler" als selbst gebildet entfernt) ohne
-  Befund; die übrigen fügen Wörterbucheinträge mit Quelle hinzu.
+  Befund; die übrigen fügen Wörterbucheinträge hinzu, deren Quelle `check_action_names.py` heute als zulässig führt.
+
+**K2 · Fork-Version**
+- *`2c6f2b5c1`, `50e50e5e3`, `c025e0802`:* ziehen die Literale in `Directory.Build.props` nach (7.5.6.1 → 7.5.6.2 auf
+  dem Arbeitszweig und auf `main`, dann → 7.5.6.4); jeder Stand ist durch den nächsten ersetzt, wie gewollt. Die
+  Aussage „die Zahl zeigt das Einstellungsfenster" hält für einen Build ohne Upstream-Tags (`MainWindow.RSRVersion`
+  liest die Assembly-Version; mit Tags leitet `DeriveUpstreamVersion` sie ab). `2c6f2b5c1` hängt
+  `check_fork_version.py --require-tags` samt Tag-Abruf in die CI; die Prüfung hat am 14.10.2026 das veraltete Literal
+  nach dem Merge von 7.5.7.2 gemeldet (A285), sie wirkt also. Der Zweig „keine Tags gefunden → mit
+  `--require-tags` Fehlschlag" hat keinen Selbsttest; bräche er, liefe die CI grün und prüfte nichts. Der Docstring
+  nennt die Option nicht und sagt, das Skript könne „if that is ever wanted" als Schranke dienen — es ist eine
+  (**C1**). Ergebnis: **KEIN FEHLER** im Wirkpfad, C1 offen.
+
+**K3 · Sync-Messung, Prüflauf-Nachweis, Zweige**
+- *`08b8c82a4` mit dem Skriptteil von `e5fc338c2`:* `check_sync_state.py` holt beide Gegenstellen, misst `HEAD`
+  gegen `upstream/main`, meldet verwaiste und zurückliegende Zweige, erkennt flache Klone — am 14.10.2026 mehrfach
+  benutzt, Ergebnis gegen `git log` stimmig. Zwei Mängel: Der Selbsttest prüft `git` (Zählung, Flag
+  `--is-shallow-repository`), nicht die Urteile des Skripts (Rückgabe 1 bei Rückstand oder flachem Klon,
+  Einordnung der Zweige) (**C2**). Ein gescheiterter Abruf wird verschluckt (`check=False`, Ergebnis ungelesen); das
+  Skript misst dann den letzten Abruf und meldet „up to date" — genau der Fehler, den sein Docstring beschreibt
+  (**C3**). `e5fc338c2` mischt diesen Fix mit dem Searing-Light-Konzept (K5). Ergebnis: **FEHLER** (C2, C3 offen).
+- *`e7c0dca6e` (ausbleibender Prüflauf ist ein Befund):* GitHub-Dokumentation bestätigt: „Workflows will not run on
+  `pull_request` activity if the pull request has a merge conflict." Die Regel steht in `CLAUDE.md`. **KEIN FEHLER.**
+- *`539b7bda3`:* nimmt die verfrühte CI-Aussage aus A78 zurück; Lauf 34643359459 auf `c025e0802` ist grün (gemessen).
+  **KEIN FEHLER.**
+- *`138e7c1b8` (kein Zweig je Vorhaben):* deckt sich mit der heutigen Regel. Ungenannt in der Nachricht: ein
+  TODO-Eintrag, der ihm eine Spielbestätigung zu Searing Light auftrug — heute verboten, der Eintrag ist entfernt.
+  **KEIN FEHLER** im Bestand.
+- *`0bff1c175` (fünf lokale Zweige gelöscht):* Die Freigabe steht nur im Archiv (A64) und ist aus diesem Gespräch
+  nicht nachprüfbar. Für `backup/pre-msgfix` (acht eigene Commits) belegte die Prüfung nur gleiche *Titel* in
+  `origin/main`, nicht gleichen Inhalt — ein Surrogat; nachträglich nicht mehr messbar, die Objekte sind fort (**Z1**,
+  ohne Behebung; die heutige Regel verlangt die Messung „ohne eigenen Commit"). `refs/pull/6/head` besteht weiter
+  (gemessen). Ergebnis: **FEHLER** in der Methode, Folgen unbestimmbar.
+
+**K4 · Zeilenverweise**
+- *`d4e81f70f` mit `374534aa0`, `b44e905d6`, `1f5efafc0`:* `check_doc_references.py` (CI) schlägt an bei
+  Zeile außerhalb der Datei, leerer Zeile, Verweis ohne Bezeichner und mehrdeutigem Dateinamen. Zwei Lücken, beide
+  heute mit Folgen: Liegt der genannte Bezeichner innerhalb von 25 Zeilen, gilt der Verweis als richtig —
+  `TODO.md` zitiert `SearchableCollection.cs:45`, die beschriebene Zeile ist 39; und kommt keiner der genannten
+  Bezeichner in der zitierten Datei vor, schweigt die Prüfung — `TODO.md` zitiert `publish.yaml:42` für
+  `--output .\build`, es steht in Zeile 94 (**C4**). Der Selbsttest prüft die Hilfsfunktionen, nicht `check()` als
+  Ganzes. Ergebnis: **FEHLER** (C4 offen).
+- *`374534aa0`:* neun Verweise durch Bezeichner ersetzt, Fortsetzungsform `:948` mit Selbsttest, `scan15` erkennt
+  bloße Dateinamen (Selbsttest „anchorless"); Erzählung früherer Fassungen aus Konzept 12 entfernt. **KEIN FEHLER.**
+  Dieselbe Aufgabe führt aber auch `scan15.py` (nur `.cs`, Fenster 12, nicht in der CI) — zwei Werkzeuge mit
+  verschiedenen Fenstern für dieselben Verweise, und keins sieht die beiden Fälle oben (**C5**).
+- *`2cc1329b8`:* ein Satzzeichen in Konzept 11. **KEIN FEHLER.**
+- *`a70fe20b7` (Messzahlen nicht als Stand):* Regel steht in `CLAUDE.md`. Die README trägt noch drei Zählungen ohne
+  Datum (`scan.py` „105 Treffer", „43 Treffer", „Erster Lauf: 122 Zitate") (**C6**). Ergebnis: **KEIN FEHLER** im
+  Commit, C6 offen.
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
