@@ -7074,6 +7074,32 @@ Von `6cd15453a` stehen 211 der 421 Konzeptzeilen.
   prüft eine Angriffsart, ohne laufenden Zauber gilt alles als physisch, und `GetCurrentMitigationPercent` hat weiter
   genau einen Verbraucher, die Diagnosezeile (`MainWindow_Debug`). **KEIN FEHLER.**
 
+**K9 · Sanctus-Bremsen des Weißmagiers**, gelesen mit den Code-Commits aus A87 und A178, A231.
+- *`e66bd3f79` (Sanctus in laufende Betäubung und frischen Slow):* Beobachtung und Befund stimmten — damals beide
+  Bremsen ab Werk aus, Slow ungeprüft. Heute gebaut und ab Werk an (`StretchHolyStun`, `HoldHolyForBlackestNight`,
+  `HoldHolyWhilePackSlowed`). **KEIN FEHLER.**
+- *`58cf8f8f6`:* Archivteil zu `115a58988` (A87 geprüft). **KEIN FEHLER.**
+- *`bd4f4046e` (Konzeptdurchgang A81, zwei Funde):* Die Ersatzgarantie über `CanUse` ist aus den Sanctus-Regeln
+  entfernt (A178, A231); der Eintrag „`CanUse` als Prüfung" steht, mit der Vorfrage „ob RSR eine seiteneffektfreie
+  Prüfung anbietet" — seit 12.09. offen, obwohl sie am Code zu beantworten ist (**H1**). Der Leistungsposten
+  `SurveyHostileOutput` ist in den Klasseneintrag aus K10 aufgegangen. Ergebnis: **KEIN FEHLER** im Befund, H1 offen.
+
+**K10 · `DataCenter`**
+- *`714b899e1` (abgefangene Speicherfehler):* in der Sache richtig — unter .NET Core erreicht eine Zugriffsverletzung
+  keinen verwalteten Handler; behoben in A199 (`IsValid()` vor dem Zugriff). Die genannte Zahl „19 Fänge" stimmt
+  nicht: am Elterncommit stehen 16 (gemessen). Ergebnis: **FEHLER** in der Zahl, in der Sache korrigiert.
+- *`1f9ac197e` (Iteration je Abfrage als Klasse):* Befund richtig, `RefinedHP` und `AverageTTK` hat Upstream mit einem
+  Zwischenspeicher versehen. Die Auflösungsbedingung „eine Laufzeitbeobachtung, ob es spürbar ist" macht ihn zum Teil
+  des Regelkreises, und „ein Profiler ist von hier aus nicht verfügbar" ist ohne die Prüfung behauptet, ob der Code
+  seine Zeit selbst messen kann (**H2**). Ergebnis: **FEHLER** im Eintrag, H2 offen.
+- *`8bceac769` (179 Mitglieder von `DataCenter` auf Leser geprüft):* ein Kandidat, die Aquapolis ohne Vorrangziele.
+  Außerhalb seines Profils und richtig als „erfassen" geführt; die Auflösungsbedingung nennt aber ihn oder eine
+  Spielbeobachtung als Quelle, wo Spieldaten und Referenzquellen zuerst zu suchen sind (**H3**). Ergebnis: **KEIN
+  FEHLER** im Befund, H3 offen.
+
+**Zwischenstand:** Alle zehn Ketten geprüft. Offene Befunde: G1–G6, C1–C6, Z1 (ohne Behebung), P1–P5, R1–R5,
+H1–H3. Ihre Behebung folgt, jede im eigenen Loop.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
