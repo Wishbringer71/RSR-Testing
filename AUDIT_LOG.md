@@ -7040,10 +7040,11 @@ Von `6cd15453a` stehen 211 der 421 Konzeptzeilen.
   `HardCastOnlyHealer` prüfe „while Swiftcast is on cooldown" nicht, und ob er bei einem einzigen Heiler greifen solle,
   sei offen — beides ist seit `c99da333a` und A88 entschieden und steht weiter oben im selben Konzept; wer den Abschnitt
   allein liest, erhält einen überholten Stand (**R3**). Die Zahl „447 Fundstellen" für `nextGCD` steht ohne Datum in
-  Konzept und Codekommentar (**R1**). Offen gelassen ist, ob `ICharacter.Level` eines Mitglieds im synchronisierten
+  Konzept und Codekommentar; sie stammt aus `05e109580` (10.09., dieselbe Kette) (**R1**). Offen gelassen ist, ob `ICharacter.Level` eines Mitglieds im synchronisierten
   Inhalt die synchronisierte Stufe meldet; WrathCombo setzt das voraus (`InFATE`: Teilnahme nur bei
   `LocalPlayer.Level <= MaxLevel` der FATE) — ein Beleg aus einem anderen Werkzeug, keine Spielquelle, aber mehr als
-  „nicht entschieden" (**R2**). Ergebnis: **FEHLER** (R1–R3 offen).
+  „nicht entschieden" (**R2**). Ergebnis: `6cd15453a` **FEHLER** (R2, R3 offen; R1 mitgetragen), `6ab021908`
+  **KEIN FEHLER** — seine Anwendungsfälle stimmen am Code.
 - *`3a233b03c` (im Spiel bestätigt), `5702d695c`, `5c94ecf29`:* Seine Beobachtung trägt die Aussage (A73: vorher „über
   15 Sekunden oder länger", jetzt „teils sofort, teils ein paar Sekunden"; die Restzeit an der Kette erklärt).
   Prüfgrad eine Spielsitzung. Der Satz „Ungemessen bleiben die **drei** … Eingriffe" zählt danach fünf auf, der
@@ -7177,61 +7178,61 @@ Jeder Commit einzeln geprüft: löst er ein reales Kampfproblem, codearm, gibt e
 | `c99da333a` | 2026-09-12 | Code | Give HardCastOnlyHealer the Swiftcast reservation its text promises | **NACHGEPRÜFT → A86** |
 | `9e1a0eb9e` | 2026-09-12 | Code | Put the shield credit behind a switch, default off | **NACHGEPRÜFT → A85** |
 | `a8ba8b0ed` | 2026-09-12 | Code | Write out the ordinals PredictedDamageType owes a foreign plugin | **NACHGEPRÜFT → A87** |
-| `92bad597e` | 2026-09-12 | Generator | feat(gamedata): generate the full German name index from the game files | ZWEIFELHAFT |
-| `bddeb5e03` | 2026-09-12 | Generator | Read German names through the language argument, and resolve the game path | ZWEIFELHAFT |
-| `2c6f2b5c1` | 2026-09-11 | CI | Name the upstream release the tree actually holds, and check it in CI | ZWEIFELHAFT |
-| `08b8c82a4` | 2026-09-11 | CI | Take in upstream 7.5.6.2, and fix how sync state gets measured | ZWEIFELHAFT |
-| `d4e81f70f` | 2026-09-12 | CI | feat(audit): check that the documentation's line references still exist | ZWEIFELHAFT |
-| `f13b812a2` | 2026-09-12 | CI | feat(audit): record the German action names instead of researching them again | ZWEIFELHAFT |
-| `a90fb264e` | 2026-09-11 | Prüfmittel | docs: at range the Ifrit block loses Crimson Strike with the approach | ZWEIFELHAFT |
-| `dca7bd913` | 2026-09-11 | Prüfmittel | docs: measure what each Summoner phase is worth and what fits in the buff tail | ZWEIFELHAFT |
-| `a48b67d24` | 2026-09-11 | Prüfmittel | docs: Swiftcast is held for raises, not spent in the rotation | ZWEIFELHAFT |
-| `befbb3ebf` | 2026-09-11 | Prüfmittel | Drop the bookkeeping, then check coverage against damage | ZWEIFELHAFT |
-| `a7075ea4b` | 2026-09-11 | Prüfmittel | Measure burst coverage on its own, because a total would hide the loss | ZWEIFELHAFT |
-| `8bcaaea32` | 2026-09-11 | Prüfmittel | Measure the Searing Light coverage instead of estimating it | ZWEIFELHAFT |
-| `e81195537` | 2026-09-11 | Prüfmittel | Narrow the range to real parties, which reverses the V5 verdict | ZWEIFELHAFT |
-| `d1763e2f3` | 2026-09-11 | Prüfmittel | Regulate on what is observed instead of steering by assumption | ZWEIFELHAFT |
-| `e5fc338c2` | 2026-09-11 | Prüfmittel | Work out what happens to Searing Light with two to eight Summoners | ZWEIFELHAFT |
-| `2bb009344` | 2026-09-12 | Prüfmittel | Catch the neighbour class of HasWeaved: GCDTime() == 0f | ZWEIFELHAFT |
-| `cb5db4452` | 2026-09-12 | Prüfmittel | docs: record Rampart's healing bonus and the dictionary entry for Schutzwall | ZWEIFELHAFT |
-| `4455fa2bb` | 2026-09-12 | Prüfmittel | Guard the class where an edit to Resources/ is never loaded | ZWEIFELHAFT |
-| `c962a1366` | 2026-09-12 | Prüfmittel | Make scan.py measure the defect too, and record what that turned up | ZWEIFELHAFT |
-| `165e69e09` | 2026-09-12 | Prüfmittel | Make scan3 measure the defect, not the resemblance | ZWEIFELHAFT |
-| `5748a9ddd` | 2026-09-12 | Prüfmittel | Narrow scan2: 541 findings, not one of them a defect | ZWEIFELHAFT |
-| `374534aa0` | 2026-09-12 | Prüfmittel | Repair nine aged code citations, and the two blind spots that hid them | ZWEIFELHAFT |
-| `a70fe20b7` | 2026-09-12 | Prüfmittel | Stop documenting measured numbers as the current state | ZWEIFELHAFT |
-| `1c2f67d2e` | 2026-09-12 | Prüfmittel | Teach scan6 the binding that made its own classification wrong | ZWEIFELHAFT |
-| `6cd15453a` | 2026-09-11 | Doku | Bring the raise concept up to the state it actually describes | ZWEIFELHAFT |
-| `e7c0dca6e` | 2026-09-11 | Doku | docs: a missing check run is a finding, not a coincidence | ZWEIFELHAFT |
-| `aeea25b0a` | 2026-09-11 | Doku | docs: downtime was listed as a model limit and is none | ZWEIFELHAFT |
-| `138e7c1b8` | 2026-09-11 | Doku | docs: one branch per topic is not required, the commit is the unit | ZWEIFELHAFT |
-| `714b899e1` | 2026-09-11 | Doku | docs: record the AccessViolationException catches upstream did not harden | ZWEIFELHAFT |
-| `539b7bda3` | 2026-09-11 | Doku | docs: record the verification actually reached for the Searing Light change | ZWEIFELHAFT |
-| `5702d695c` | 2026-09-11 | Doku | Record the first play observation, and what it does not cover | ZWEIFELHAFT |
-| `5c94ecf29` | 2026-09-11 | Doku | Record the Swiftcast-unavailable finding in the audit log | ZWEIFELHAFT |
-| `3a233b03c` | 2026-09-11 | Doku | The raise defect is confirmed fixed in play | ZWEIFELHAFT |
-| `6ab021908` | 2026-09-11 | Doku | Walk every raise use case, and record what falls out | ZWEIFELHAFT |
-| `0bff1c175` | 2026-09-11 | Doku | Wind up the orphaned branches, keeping what one of them carried | ZWEIFELHAFT |
-| `d274d54de` | 2026-09-11 | Doku | Work the Searing Light question again, from the timing structure up | ZWEIFELHAFT |
-| `59675ee33` | 2026-09-12 | Doku | Add A84 to the raise path's list of unmeasured interventions | ZWEIFELHAFT |
-| `aeea1e7e6` | 2026-09-12 | Doku | docs: a misplaced barrier inverts the shield credit, and nothing catches it | ZWEIFELHAFT |
-| `52af29a53` | 2026-09-12 | Doku | docs: bring concepts 08, 09 and 10 onto the state this session established | ZWEIFELHAFT |
-| `e66bd3f79` | 2026-09-12 | Doku | docs: Holy ignores running enemy debuffs - stun only on request, slow never | ZWEIFELHAFT |
-| `bd4f4046e` | 2026-09-12 | Doku | docs: record the concept pass and two findings from reviewing my own changes | ZWEIFELHAFT |
-| `58cf8f8f6` | 2026-09-12 | Doku | docs: record the output-weighted slow rule and its three predecessors | ZWEIFELHAFT |
-| `2c2e3f0d3` | 2026-09-12 | Doku | docs: survey every dark knight defensive against the healing decision | ZWEIFELHAFT |
-| `87e6d8f4d` | 2026-09-12 | Doku | docs: the shield credit lowers the heal threshold by the full barrier, unswitched | ZWEIFELHAFT |
-| `56bf37581` | 2026-09-12 | Doku | docs: the shield credit needs no foreign barrier, the healer makes its own | ZWEIFELHAFT |
-| `8d8176695` | 2026-09-12 | Doku | Move the finished second pass into the archive | ZWEIFELHAFT |
-| `1f9ac197e` | 2026-09-12 | Doku | Raise the per-read iteration finding from one case to its class | ZWEIFELHAFT |
-| `5b87c32fc` | 2026-09-12 | Doku | Record the mitigation balance's two-way split of a three-way fact | ZWEIFELHAFT |
-| `8bceac769` | 2026-09-12 | Doku | Record the one candidate a sweep of DataCenter's 179 members turned up | ZWEIFELHAFT |
-| `1070d53d6` | 2026-09-12 | Doku | Record the two code sites that work against the phase-2 staggering | ZWEIFELHAFT |
-| `2cc1329b8` | 2026-09-12 | Doku | Repair the sentence the citation removal broke | ZWEIFELHAFT |
-| `bc893957b` | 2026-09-12 | Doku | Retract the second fork effect on the healing threshold: it is upstream | ZWEIFELHAFT |
-| `4973b9d0c` | 2026-09-12 | Doku | Take my interpretation back out of concept 09 | ZWEIFELHAFT |
-| `c025e0802` | 2026-09-11 | sonstiges | chore: name the upstream release this tree sits on, 7.5.6.4 | ZWEIFELHAFT |
-| `50e50e5e3` | 2026-09-11 | sonstiges | Name the release this tree holds, after taking in 7.5.6.2 | ZWEIFELHAFT |
+| `92bad597e` | 2026-09-12 | Generator | feat(gamedata): generate the full German name index from the game files | **NACHGEPRÜFT → A286:** FEHLER, teils korrigiert (G2, G3 offen) |
+| `bddeb5e03` | 2026-09-12 | Generator | Read German names through the language argument, and resolve the game path | **NACHGEPRÜFT → A286:** FEHLER (G1 offen) |
+| `2c6f2b5c1` | 2026-09-11 | CI | Name the upstream release the tree actually holds, and check it in CI | **NACHGEPRÜFT → A286:** KEIN FEHLER (C1 offen) |
+| `08b8c82a4` | 2026-09-11 | CI | Take in upstream 7.5.6.2, and fix how sync state gets measured | **NACHGEPRÜFT → A286:** FEHLER (C2, C3 offen) |
+| `d4e81f70f` | 2026-09-12 | CI | feat(audit): check that the documentation's line references still exist | **NACHGEPRÜFT → A286:** FEHLER (C4 offen) |
+| `f13b812a2` | 2026-09-12 | CI | feat(audit): record the German action names instead of researching them again | **NACHGEPRÜFT → A286:** FEHLER, korrigiert (G3, G5 offen) |
+| `a90fb264e` | 2026-09-11 | Prüfmittel | docs: at range the Ifrit block loses Crimson Strike with the approach | **NACHGEPRÜFT → A286:** KEIN FEHLER |
+| `dca7bd913` | 2026-09-11 | Prüfmittel | docs: measure what each Summoner phase is worth and what fits in the buff tail | **NACHGEPRÜFT → A286:** FEHLER, korrigiert |
+| `a48b67d24` | 2026-09-11 | Prüfmittel | docs: Swiftcast is held for raises, not spent in the rotation | **NACHGEPRÜFT → A286:** KEIN FEHLER |
+| `befbb3ebf` | 2026-09-11 | Prüfmittel | Drop the bookkeeping, then check coverage against damage | **NACHGEPRÜFT → A286:** FEHLER, korrigiert |
+| `a7075ea4b` | 2026-09-11 | Prüfmittel | Measure burst coverage on its own, because a total would hide the loss | **NACHGEPRÜFT → A286:** FEHLER, korrigiert |
+| `8bcaaea32` | 2026-09-11 | Prüfmittel | Measure the Searing Light coverage instead of estimating it | **NACHGEPRÜFT → A286:** FEHLER, korrigiert (P1 offen) |
+| `e81195537` | 2026-09-11 | Prüfmittel | Narrow the range to real parties, which reverses the V5 verdict | **NACHGEPRÜFT → A286:** FEHLER, korrigiert |
+| `d1763e2f3` | 2026-09-11 | Prüfmittel | Regulate on what is observed instead of steering by assumption | **NACHGEPRÜFT → A286:** FEHLER, korrigiert |
+| `e5fc338c2` | 2026-09-11 | Prüfmittel | Work out what happens to Searing Light with two to eight Summoners | **NACHGEPRÜFT → A286:** FEHLER, korrigiert (C2 offen) |
+| `2bb009344` | 2026-09-12 | Prüfmittel | Catch the neighbour class of HasWeaved: GCDTime() == 0f | **NACHGEPRÜFT → A286:** FEHLER, korrigiert (P3 offen) |
+| `cb5db4452` | 2026-09-12 | Prüfmittel | docs: record Rampart's healing bonus and the dictionary entry for Schutzwall | **NACHGEPRÜFT → A286:** FEHLER (G6 offen) |
+| `4455fa2bb` | 2026-09-12 | Prüfmittel | Guard the class where an edit to Resources/ is never loaded | **NACHGEPRÜFT → A286:** KEIN FEHLER (P2 offen) |
+| `c962a1366` | 2026-09-12 | Prüfmittel | Make scan.py measure the defect too, and record what that turned up | **NACHGEPRÜFT → A286:** KEIN FEHLER (P4 offen) |
+| `165e69e09` | 2026-09-12 | Prüfmittel | Make scan3 measure the defect, not the resemblance | **NACHGEPRÜFT → A286:** KEIN FEHLER |
+| `5748a9ddd` | 2026-09-12 | Prüfmittel | Narrow scan2: 541 findings, not one of them a defect | **NACHGEPRÜFT → A286:** KEIN FEHLER |
+| `374534aa0` | 2026-09-12 | Prüfmittel | Repair nine aged code citations, and the two blind spots that hid them | **NACHGEPRÜFT → A286:** KEIN FEHLER (C5 offen) |
+| `a70fe20b7` | 2026-09-12 | Prüfmittel | Stop documenting measured numbers as the current state | **NACHGEPRÜFT → A286:** KEIN FEHLER (C6 offen) |
+| `1c2f67d2e` | 2026-09-12 | Prüfmittel | Teach scan6 the binding that made its own classification wrong | **NACHGEPRÜFT → A286:** KEIN FEHLER |
+| `6cd15453a` | 2026-09-11 | Doku | Bring the raise concept up to the state it actually describes | **NACHGEPRÜFT → A286:** FEHLER (R2, R3 offen) |
+| `e7c0dca6e` | 2026-09-11 | Doku | docs: a missing check run is a finding, not a coincidence | **NACHGEPRÜFT → A286:** KEIN FEHLER |
+| `aeea25b0a` | 2026-09-11 | Doku | docs: downtime was listed as a model limit and is none | **NACHGEPRÜFT → A286:** KEIN FEHLER |
+| `138e7c1b8` | 2026-09-11 | Doku | docs: one branch per topic is not required, the commit is the unit | **NACHGEPRÜFT → A286:** KEIN FEHLER |
+| `714b899e1` | 2026-09-11 | Doku | docs: record the AccessViolationException catches upstream did not harden | **NACHGEPRÜFT → A286:** FEHLER in der Zahl, korrigiert |
+| `539b7bda3` | 2026-09-11 | Doku | docs: record the verification actually reached for the Searing Light change | **NACHGEPRÜFT → A286:** KEIN FEHLER |
+| `5702d695c` | 2026-09-11 | Doku | Record the first play observation, and what it does not cover | **NACHGEPRÜFT → A286:** KEIN FEHLER |
+| `5c94ecf29` | 2026-09-11 | Doku | Record the Swiftcast-unavailable finding in the audit log | **NACHGEPRÜFT → A286:** KEIN FEHLER |
+| `3a233b03c` | 2026-09-11 | Doku | The raise defect is confirmed fixed in play | **NACHGEPRÜFT → A286:** KEIN FEHLER (R5 offen) |
+| `6ab021908` | 2026-09-11 | Doku | Walk every raise use case, and record what falls out | **NACHGEPRÜFT → A286:** KEIN FEHLER |
+| `0bff1c175` | 2026-09-11 | Doku | Wind up the orphaned branches, keeping what one of them carried | **NACHGEPRÜFT → A286:** FEHLER in der Methode (Z1) |
+| `d274d54de` | 2026-09-11 | Doku | Work the Searing Light question again, from the timing structure up | **NACHGEPRÜFT → A286:** FEHLER, korrigiert |
+| `59675ee33` | 2026-09-12 | Doku | Add A84 to the raise path's list of unmeasured interventions | **NACHGEPRÜFT → A286:** FEHLER (R4 offen) |
+| `aeea1e7e6` | 2026-09-12 | Doku | docs: a misplaced barrier inverts the shield credit, and nothing catches it | **NACHGEPRÜFT → A286:** KEIN FEHLER |
+| `52af29a53` | 2026-09-12 | Doku | docs: bring concepts 08, 09 and 10 onto the state this session established | **NACHGEPRÜFT → A286:** KEIN FEHLER |
+| `e66bd3f79` | 2026-09-12 | Doku | docs: Holy ignores running enemy debuffs - stun only on request, slow never | **NACHGEPRÜFT → A286:** KEIN FEHLER |
+| `bd4f4046e` | 2026-09-12 | Doku | docs: record the concept pass and two findings from reviewing my own changes | **NACHGEPRÜFT → A286:** KEIN FEHLER (H1 offen) |
+| `58cf8f8f6` | 2026-09-12 | Doku | docs: record the output-weighted slow rule and its three predecessors | **NACHGEPRÜFT → A286:** KEIN FEHLER |
+| `2c2e3f0d3` | 2026-09-12 | Doku | docs: survey every dark knight defensive against the healing decision | **NACHGEPRÜFT → A286:** FEHLER, korrigiert |
+| `87e6d8f4d` | 2026-09-12 | Doku | docs: the shield credit lowers the heal threshold by the full barrier, unswitched | **NACHGEPRÜFT → A286:** KEIN FEHLER |
+| `56bf37581` | 2026-09-12 | Doku | docs: the shield credit needs no foreign barrier, the healer makes its own | **NACHGEPRÜFT → A286:** KEIN FEHLER |
+| `8d8176695` | 2026-09-12 | Doku | Move the finished second pass into the archive | **NACHGEPRÜFT → A286:** KEIN FEHLER (P5 offen) |
+| `1f9ac197e` | 2026-09-12 | Doku | Raise the per-read iteration finding from one case to its class | **NACHGEPRÜFT → A286:** FEHLER (H2 offen) |
+| `5b87c32fc` | 2026-09-12 | Doku | Record the mitigation balance's two-way split of a three-way fact | **NACHGEPRÜFT → A286:** KEIN FEHLER |
+| `8bceac769` | 2026-09-12 | Doku | Record the one candidate a sweep of DataCenter's 179 members turned up | **NACHGEPRÜFT → A286:** KEIN FEHLER (H3 offen) |
+| `1070d53d6` | 2026-09-12 | Doku | Record the two code sites that work against the phase-2 staggering | **NACHGEPRÜFT → A286:** KEIN FEHLER |
+| `2cc1329b8` | 2026-09-12 | Doku | Repair the sentence the citation removal broke | **NACHGEPRÜFT → A286:** KEIN FEHLER |
+| `bc893957b` | 2026-09-12 | Doku | Retract the second fork effect on the healing threshold: it is upstream | **NACHGEPRÜFT → A286:** KEIN FEHLER |
+| `4973b9d0c` | 2026-09-12 | Doku | Take my interpretation back out of concept 09 | **NACHGEPRÜFT → A286:** KEIN FEHLER |
+| `c025e0802` | 2026-09-11 | sonstiges | chore: name the upstream release this tree sits on, 7.5.6.4 | **NACHGEPRÜFT → A286:** KEIN FEHLER |
+| `50e50e5e3` | 2026-09-11 | sonstiges | Name the release this tree holds, after taking in 7.5.6.2 | **NACHGEPRÜFT → A286:** KEIN FEHLER |
 
 Code 18 · Generator 2 · CI 4 · Prüfmittel 18 · Doku 29 · sonstiges 2 · insgesamt: 73
 

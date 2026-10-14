@@ -610,6 +610,38 @@ Im Kampf ändert keine dieser Gruppen etwas unmittelbar: Der Generator erzeugt d
 
 **Freigabe:** erteilt am 14.10.2026 für alle offenen Gruppen (seine Entscheidung oben); zuvor nur die Code-Gruppe (A86, A87).
 
+**Stand (14.10.2026):** Die Einzelprüfung ist abgeschlossen, alle 55 Commits stehen in B2 mit Ergebnis (A286, zehn Ketten K1–K10). Offen ist die Behebung der Befunde, jeder im eigenen Loop:
+
+| Kennung | Befund | Kette |
+|---|---|---|
+| G1 | Der Namensindex wirft Namen aus, die in beiden Sprachen gleich sind (Holmgang, Intervention, Sprint) — falsche Lesart des Lumina-Rückfalls | K1 |
+| G2 | Der Abgleich mit dem erzeugten Index hat keinen Selbsttest | K1 |
+| G3 | „Job-Guide und xivapi gesperrt" steht noch in `GermanNameIndex` und `check_action_names.py`; deshalb schlägt eine unzulässige Quelle nicht fehl | K1 |
+| G4 | `action_names_game.json` wurde nie erzeugt; xivapi liefert dieselben Blätter auf Deutsch | K1 |
+| G5 | Docstring und Kommentar in `check_action_names.py` nennen Rückstoß als Aktion | K1 |
+| G6 | Wörterbucheintrag Schutzwall: Status 1191 trägt im Spiel den Heilbonus, `Status.resx` nicht; weitere Abweichungen der erzeugten Wirktexte zu erheben | K1 |
+| C1 | `check_fork_version.py`: Zweig ohne Tags ohne Selbsttest, Docstring veraltet | K2 |
+| C2 | `check_sync_state.py`: Selbsttest prüft `git`, nicht die Urteile des Skripts | K3 |
+| C3 | `check_sync_state.py`: gescheiterter Abruf wird verschluckt, der alte Stand gilt als aktuell | K3 |
+| C4 | `check_doc_references.py`: 25-Zeilen-Fenster und fehlende Bezeichner lassen zwei verrutschte Verweise in diesem Dokument durch | K4 |
+| C5 | `scan15.py` führt dieselbe Aufgabe mit anderem Fenster | K4 |
+| C6 | README: drei Zählungen ohne Datum | K4 |
+| P1 | Abdeckungsmodell bildet die Phasenbuchung von Hand nach | K5 |
+| P2 | `check_resource_lists.py` läuft nur von Hand | K6 |
+| P3 | `scan9` verweist für bekannte Stellen auf einen entfernten TODO-Eintrag | K6 |
+| P4 | README-Gegenprobe „genau sieben" mehrzeilige `RotationConfig` ist falsch (38) | K6 |
+| P5 | `scan.py` und `scan2` drucken zehn erledigte oder falsche Befunde ohne Bekannt-Vermerk | K6 |
+| R1 | „447 Fundstellen" für `nextGCD` ohne Datum (Konzept 11, Codekommentar) | K7 |
+| R2 | Stufe eines Mitglieds im synchronisierten Inhalt: Beleg aus WrathCombo nicht genutzt | K7 |
+| R3 | Konzept 11, „Was aus dem Quelltext nicht zu entscheiden ist": überholt und im Widerspruch zum eigenen Text | K7 |
+| R4 | Eintrag „Wiederbelebung: vier Eingriffe ungemessen" wartet auf seine Spielbeobachtung | K7 |
+| R5 | Konzept 11 zählt „drei" Eingriffe und nennt fünf | K7 |
+| H1 | Eintrag „`CanUse` als Prüfung": Vorfrage am Code beantwortbar | K9 |
+| H2 | Eintrag „Zustandsabfragen je Lesen": wartet auf seine Beobachtung, Selbstmessung nicht geprüft | K10 |
+| H3 | Eintrag „Aquapolis": nennt ihn als Quelle vor Spieldaten und Referenzquellen | K10 |
+
+Z1 (Zweiglöschung in A64 auf Titelgleichheit gestützt) ist nachträglich nicht messbar und hat keine Behebung.
+
 ### Audit + Code-Review der gesamten Codebasis
 
 Umfang: `RotationSolver.Basic` (48k Zeilen) · RebornRotations (21k) · ExtraRotations (15k) · Updaters (4k) · UI (11k) · Commands/IPC/Data (3k). Der ganze Baum, Upstream-Code eingeschlossen. Phasen 1 bis 4 sind abgeschlossen (AUDIT_LOG A8, A10).
