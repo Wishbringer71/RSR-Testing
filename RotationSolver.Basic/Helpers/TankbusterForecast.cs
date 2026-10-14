@@ -36,6 +36,12 @@ internal static class TankbusterForecast
 	/// <param name="Horizon">Seconds until the hit can arrive: the cast's rest plus one GCD.</param>
 	/// <param name="Serial">Tells this cast from every other, also from a later cast of the same action
 	/// by the same enemy with the same cast time.</param>
+	/// <param name="Source">The enemy casting it.</param>
+	/// <param name="ActionId">The action being cast.</param>
+	/// <param name="AttackType">The action's attack type row in the game data, which decides which mitigation
+	/// counts against it; zero when the row is not readable.</param>
+	/// <param name="Remaining">Seconds of the cast still to run.</param>
+	/// <param name="Total">The cast's whole length in seconds.</param>
 	internal sealed record Cast(int Serial, IBattleChara Source, uint ActionId, uint AttackType, float Remaining,
 		float Total, float Predicted, float Budget, float Horizon)
 	{

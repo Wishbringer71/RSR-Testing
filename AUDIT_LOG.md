@@ -6732,6 +6732,24 @@ Gesamtstands von heute; so hätte die Antwort Erledigtes als offen gemeldet. Je 
 
 **Prüfgrad:** statisch (Code, Archiv); Prüfskripte. Kein Code geändert.
 
+### A282 · Fünf Doku-Warnungen in seinem Build, die Klasse in der CI gesperrt (14.10.2026)
+
+Seine Build-Ausgabe (Neuerstellung 09:25): fünf Warnungen CS1573 in `TankbusterForecast.cs`. Der Datensatz `Cast`
+nannte im Doku-Kommentar vier von neun Parametern (`Predicted`, `Budget`, `Horizon`, `Serial`); `Source`, `ActionId`,
+`AttackType`, `Remaining` und `Total` fehlten. Der CI-Build zeigt dieselben fünf und sonst keine (Lauf 38525979400:
+Plugin 5 Warnungen, GameData 0). Im Kampf ohne Wirkung.
+
+- *Behoben:* die fünf `param`-Angaben, je am Konstruktoraufruf belegt (`AttackType` ist die Zeile des Aktionsblatts,
+  0 ohne Zeile).
+- *Klasse:* Doku-Warnungen liest in einem grünen Lauf niemand; CS0419 (mehrdeutiger `cref`) kam schon in A230 nur über
+  ein Review ans Licht. `build.yaml` baut Plugin und Generator jetzt zusätzlich mit
+  `-warnaserror:CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1734`, wie A230 für `Obsolete`: nur in der CI, nicht in den
+  Projekten, damit sein eigener Build nicht an einer fremden Doku-Änderung stehen bleibt. Selbsttest im selben Job:
+  eine Probe mit einem Verstoß je Code muss ohne Schalter bauen und mit Schalter an jedem Code als Fehler scheitern.
+  Preis: Bringt ein Upstream-Sync einen dieser Verstöße mit, schlägt die CI fehl, bis die Stelle im Fork berichtigt ist.
+
+**Prüfgrad:** CI-Protokoll gelesen; statisch. Der Selbsttest der Probe läuft erst mit dem Push.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
