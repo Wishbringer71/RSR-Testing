@@ -6840,6 +6840,21 @@ Prüfungen).
 Protokolls; Prüfskripte; Compile über die CI nach dem Push. Ob der Trank bei ihm genau über diesen Zweig ging, sagt
 das Protokoll nicht — er ist der einzige Weg ohne HP-Schwelle, und seine Bedingung stand in der Sitzung.
 
+### A285 · Upstream-Sync 7.5.7.2: gesperrtes Einstellungsfenster bleibt auf dem Bildschirm (14.10.2026)
+
+Zwei Upstream-Commits (2d34fdef6 „Fix issue with off screen pinned window", Merge a9fdbb236), gemergt in `main`
+(2e67fa24e) und von dort in `claude/fixes-after-7.5.7.1`; Literale in `Directory.Build.props` auf 7.5.7.2 (896184aaf),
+weil `check_fork_version.py --require-tags` sie an das neueste enthaltene Upstream-Tag bindet.
+
+- *`MainWindow`:* Ein gesperrtes Fenster (`IsMainWindowLock`) wird beim Zeichnen in den Arbeitsbereich des Bildschirms
+  zurückgesetzt, wenn es teilweise außerhalb liegt. Im Kampf: nichts. Fork-Abschnitte: keine in beiden Dateien; der
+  Fork hatte nur `changelog.json` berührt, der Merge lief ohne Konflikt.
+- *`changelog.json`:* Eintrag 7.5.7.2. Die Datei ist seit Upstream 7.5.6.21 kein striktes JSON (nachgestelltes Komma
+  in einer Liste); `ChangelogData.Read` liest sie mit Newtonsoft, das dieses Komma annimmt — kein Defekt.
+
+**Prüfgrad:** Diff gelesen; Newtonsoft-Quelltext (`JsonTextReader.ParseValue`, `]` nach Komma ergibt `EndArray`,
+Stand `master`, nicht die eingebundene Version); Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
