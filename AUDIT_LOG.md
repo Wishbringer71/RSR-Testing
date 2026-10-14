@@ -6626,6 +6626,74 @@ Auftrag: „Branch zu Main, Main Release, dann neuer Branch".
 **Prüfgrad:** Release-API und Workflow-Lauf gelesen, Asset heruntergeladen und geprüft; Prüfskripte samt Selbsttests;
 statischer Abgleich der Texte mit Code und Konzepten. Nichts davon ändert das Spielgeschehen.
 
+### A280 · Upstream 7.5.7.0–7.5.7.1 gegen den Fork, Stelle für Stelle (14.10.2026)
+
+Sein Auftrag: „Upstream Änderungen im Loop genauer analysieren. Sind sie besser oder schlechter als die eigenen? Wenn
+anders, welche sind logischer?" Umfang: der Sync aus A278, 7398531a5 (7.5.7.0: Rebuild, `OpCode.resx`, Pakete, ohne
+Logik) und 7f8577226 (7.5.7.1). Logik steht an sechs Stellen; je Stelle Upstream gegen Fork, im Kampf.
+
+- *Heilzielwahl (`ActionTargetInfo.GeneralHealTarget`):* Upstream benennt nur um und behält `!o.CanBeHealed()`.
+  Kandidaten sind damit nur Geschützte, nach Upstreams Liste auch Spieler mit Heilungsminderung oder beritten; im
+  Normalfall ist die Liste leer, gewählt wird dann der Heiler selbst unter seiner Schwelle, sonst der Träger der
+  Tankhaltung, sonst der Erste der Liste — ein Schadensausteiler bei 10 % nie wegen seiner Lage. Fork seit 896718184
+  (07.09.2026): alle Heilbaren, Geschützte nachrangig, Tote und Heilung-unwirksam ausgeschlossen, Gefahrenklassen
+  (Konzept 07, 09). **Fork.** Upstreams Changelog meldet die doppelte Verneinung als behoben; diese Stelle fehlt darin.
+- *Heilflaggen (`StateUpdater.ShouldHealSingle`, `ShouldHealSelf`):* Upstream unterdrückt die Flagge, solange ein
+  Schutzstatus über zwei GCDs hält (die Lesart war dort schon vorher richtig). Fork seit 7e2ba594d: Schwelle auf
+  `HealthProtectedRatio` gesenkt, Heilung-unwirksam unterdrückt. Im Kampf: Superbolide lässt den Revolverklingen-Tank
+  bei 1 HP; Upstream heilt erst in den letzten zwei GCDs (bei 2,5 s GCD etwa 5 s, gefolgert), der Fork von Beginn an;
+  ein Tank unter Hallowed Ground mit viel HP wird bei beiden nicht geheilt. **Fork** (Konzept 09).
+- *Statusliste `NoNeedHealingStatus`:* Upstream führt Holmgang, Living Dead, Superbolide, Invulnerability,
+  HpRecoveryDown und Mounted; Hallowed Ground (beide Ids) und Undead Rebirth fehlen. Fork seit 4b15d27fa und
+  ff46f0a80: nur echte Unverwundbarkeiten, beide Hallowed Ground und Undead Rebirth ergänzt, Heilungsminderung als
+  Grund, härter zu heilen, Mounted in `HealingIneffectiveStatus`. Im Kampf bei Upstream: der Paladin unter Hallowed
+  Ground wird normal geheilt, ein Spieler mit Heilungsminderung bekommt keine Heilflagge. **Fork.** Der Doku-Kommentar
+  über `CanBeHealed` und `PlayerCanBeHealed` kam im Merge von Upstream und nannte „healing block" — er beschrieb
+  Upstreams Liste. Korrigiert; die Absicht des Forks steht am Listenkommentar und in Konzept 09, ein Code-Befund war
+  es nicht.
+- *Krieger, Nascent Flash:* Upstream liest `t.CanBeHealed()` unverneint — derselbe Kern wie der Fork seit 2bf36cd39
+  (29.09.2026, A226). Der Fork hat dazu Vorausschau, Ausschluss bei Heilung-unwirksam, Zielwahl nach Gefahr und den
+  Bloodwhetting-Rückhalt. **Gleich im Kern, Fork Obermenge.**
+- *Gelehrter, Auslöser von Recitation für einen Tank:* Upstream `GetHealthRatio() <= ExcogHeal && CanBeHealed()`;
+  Fork seit 27e0a43cf (07.09.2026) mit `!IsDead` und Vorausschau. Bei Upstream erfüllt ein toter Tank (Quote 0, ohne
+  Status) die Bedingung, und Recitation geht für ihn raus. **Fork.**
+- *Gelehrter, Recitation trägt die Kosten, und Excogitation folgt ihr im Abwehrpfad:* Der Fork hatte dort nichts.
+  Wirktext (Job-Guide und xivapi, gelesen 14.10.2026): „Allows the execution of Adloquium, Concitation,
+  Indomitability, or Excogitation without consuming resources". Vorher drückte der Auslöser Recitation bei leerem
+  Aetherflow, und Excogitation und Indomitability scheiterten an der Kostenprüfung; bei angefordertem Einzelschutz
+  sperrte der Abwehrpfad Excogitation, solange Recitation stand. **Upstream richtig**, übernommen (A278).
+
+**Wechselwirkung, gefunden an der letzten Stelle:** Auslöser und Verbraucher von Recitation fragten Verschiedenes. A180
+setzte die Gefahrenprüfung (`ExcogitationNeedsThreat`, ab Werk an) vor Excogitation als Heilung, mit und ohne
+Recitation, nicht an den Auslöser. Ein Tank unter `ExcogHeal` ohne Gefahr — der abgelöste Tank nach einem Wechsel —
+bekam Recitation und danach keine Excogitation; Recitation verfiel, und seine 60 s fehlten beim nächsten Tankbuster.
+Upstreams Abwehrpfad-Änderung schloss dieselbe Klasse (Auslöser ohne Verbraucher) für die Einzelabwehr-Flagge.
+- *Behoben:* `ShouldUseRecitation` fragt `< ExcogHeal` und, bei eingeschalteter Einstellung, `IsUnderThreat`, wie der
+  Verbraucher. Keine neue Zahl.
+- *Falsifikation:* **Kein Defekt?** `IsUnderThreat` ist für einen Tank ohne Aggro, ohne angekündigten Flächenschaden
+  und mit stehender Gesundheit falsch; der Fall ist erreichbar. Das Vorab-Drücken bringt nur, dass Excogitation
+  einen Einschub früher fällt, wenn die Gefahr binnen 15 s kommt; Excogitation greift erst bei 50 %, ein Einschub
+  wiegt dort wenig gegen eine verlorene Recitation für den Tankbuster. **Option falsch?** Die Alternative, die
+  Gefahrenprüfung unter Recitation zu streichen, widerspricht seiner Regel (Konzept 07: die teuerste Einzelheilung
+  nur bei Gefahr). **Ausgeliefert, und nichts ändert sich?** Für den Tank mit Aggro (immer in Gefahr) und bei
+  ausgeschalteter Einstellung bleibt alles, wie es war — gewollt; es ändert sich nur der Fall ohne Gefahr.
+- *Rest:* Fällt der Anlass zwischen Drücken und Verbrauch weg oder wählt Excogitation ein Heilziel, das kein Tank
+  ist, nimmt kein Verbraucher Recitation. TODO präzisiert.
+
+**Nebenbefunde:**
+- `ActionId.resx` führt den Wirktext von Recitation ohne „Concitation", die Spieldaten nennen es. Warum der
+  Generator es weglässt, ist nicht untersucht; kein Code liest diesen Text. `ReciteSuccor` (Concitation, Succor,
+  Accession als Anlass) bleibt: Auf Stufe 100 trägt Recitation Concitation. Ob Accession und Manifestation unter
+  Seraphism Recitation tragen, nennt kein Wirktext — unbelegt; der Upstream-Code nimmt sie als Anlass, unverändert.
+- Upstreams `GeneralHealTarget` sammelt weiter nur Geschützte. Für die Upstream-Pflege ein meldbarer Defekt;
+  `upstream` ist für mich nur lesbar.
+
+**Ergebnis:** Wo Upstream und Fork verschieden sind, ist an keiner Stelle Upstream die logischere Fassung. Upstream
+brachte nur dort etwas Neues, wo der Fork nichts hatte (Recitation), und das ist richtig.
+
+**Prüfgrad:** statisch (Diff, Code beider Seiten, Versionsgeschichte); Wirktext über Job-Guide und xivapi;
+Prüfskripte; Compile über die CI. Im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

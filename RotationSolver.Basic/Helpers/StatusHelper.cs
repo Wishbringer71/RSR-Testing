@@ -1118,7 +1118,7 @@ public static class StatusHelper
 	}
 
 	/// <summary>
-	/// True when the player has no <see cref="NoNeedHealingStatus"/> (invuln, healing block) lasting beyond 2 GCDs.
+	/// True when the player has no <see cref="NoNeedHealingStatus"/> (an invulnerability) lasting beyond 2 GCDs.
 	/// </summary>
 	public static bool PlayerCanBeHealed()
 	{
@@ -1207,7 +1207,9 @@ public static class StatusHelper
 
 
 	/// <summary>
-	/// True when the target has no <see cref="NoNeedHealingStatus"/> (invuln, healing block) lasting beyond 2 GCDs.
+	/// True when the target has no <see cref="NoNeedHealingStatus"/> (an invulnerability) lasting beyond 2 GCDs. The
+	/// list holds genuine invulnerabilities only; what blocks healing outright is <see cref="HealingIneffectiveStatus"/>,
+	/// which upstream keeps in this list (A280).
 	/// </summary>
 	public static bool CanBeHealed(this IBattleChara battleChara)
 	{
