@@ -592,11 +592,26 @@ Der Auftraggeber hat die Arbeit dieser beiden Tage als nicht belastbar zurückge
 3. **Prüfmittel** — offen. Ein Skript, das das Surrogat statt der Wirkung misst, erzeugt stille Nullbefunde; genau diese Fehlerklasse war der Anlass ihrer Überarbeitung.
 4. **Doku und sonstiges** — offen, zuletzt, weil eine falsche Aussage dort nur mitträgt, was der Code ohnehin zeigt.
 
-Wie viele Commits in jeder Gruppe noch auf ZWEIFELHAFT stehen, zählt die Tabelle in B2 aus. Gemessen am 14.10.2026 (A283): 55 offen; bei 14 überlebt keine Zeile im heutigen Baum, die übrigen 41 tragen noch 3752 von 5699 hinzugefügten Zeilen.
+Wie viele Commits in jeder Gruppe noch auf ZWEIFELHAFT stehen, zählt die Tabelle in B2 aus. Gemessen am 14.10.2026 nach A285 (`git blame -w HEAD` je berührter Datei; hinzugefügte → überlebende Zeilen):
+
+| Gruppe | offen | ohne überlebende Zeile | Zeilen | wo sie heute stehen |
+|---|---|---|---|---|
+| Generator | 2 | 0 | 392 → 339 | `RotationSolver.GameData` 253 (deutscher Namensindex), `.github` 86 |
+| CI | 4 | 0 | 725 → 680 | `.github` 614 (Versionsprüfung, Zeilenverweise, Aktionsnamen) |
+| Prüfmittel | 18 | 0 | 3388 → 2227 | `.github/scripts` 1932, Archiv 187, Konzepte 108 |
+| Doku | 29 | 12 | 1188 → 500 | Konzepte 286 (11: 267, 12: 11, 10: 6, 08: 2), Archiv 193, TODO 21 |
+| sonstiges | 2 | 2 | 6 → 0 | — |
+
+Im Kampf ändert keine dieser Gruppen etwas unmittelbar: Der Generator erzeugt den Namensindex, nach dem ich deutsche Namen nachschlage, CI und Prüfmittel bewachen den Baum. Die Gefahr liegt mittelbar: Ein falsch messendes Prüfskript meldet stumm „sauber", und jede spätere Aussage, die sich darauf stützt, erbt das.
+
+**Vorlage (Loop 14.10.2026):**
+- *Nullvariante:* alles bleibt ZWEIFELHAFT. Kostet nichts im Kampf; das Risiko des stummen Prüfskripts bleibt.
+- *Empfehlung:* Doku und sonstiges ohne Einzellesung schließen — die 14 Commits ohne überlebende Zeile als ÜBERHOLT, die überlebenden Konzeptzeilen sind durch die Inhaltsprüfung A270 (12.10.2026, Satz für Satz gegen den Code) gedeckt, die TODO-Zeilen durch A281, die Archivzeilen bleiben Geschichte mit dem Vermerk „Selbstauskunft". Generator, CI und Prüfmittel je Artefakt statt je Commit nachprüfen: Misst das Skript heute, was es behauptet, und fängt sein Selbsttest einen konstruierten Defekt? Etwa 2600 Zeilen Skript- und Generatorcode.
+- *Gegenprüfung:* (1) Je Artefakt verliert die Frage, ob eine Commit-Nachricht damals stimmte — sie trägt heute nichts mehr, was nicht im Artefakt steht. (2) A270 als Ersatz sei ein Surrogat — A270 prüfte genau die Sätze, die heute stehen, also die überlebenden Zeilen. (3) Arbeit mit Wirkung im Kampf zuerst — trägt: Reihenfolge nach dem Improvised-Finish-Eintrag; die Weißmagier-Ablehnungen warten ohnehin auf sein nächstes Protokoll.
 
 **Prüfmaßstab je Commit:** Belegt der Diff, was die Nachricht behauptet? Ist die zugehörige Wirkkette im Code nachvollzogen oder nur erzählt? Welcher Prüfgrad war tatsächlich erreicht — statisch, Prüfskript, Compile, Spiel? Ergebnis je Commit als **KEIN FEHLER**, **KORRIGIERT** oder **VERWORFEN** in B2 eintragen; ZWEIFELHAFT bleibt stehen, bis geprüft.
 
-**Die Fortsetzung beginnt auf Freigabe des Auftraggebers**, nicht aus eigenem Antrieb — er hat die Code-Gruppe ausdrücklich beauftragt, die übrigen drei nicht.
+**Die Fortsetzung beginnt auf Freigabe des Auftraggebers**, nicht aus eigenem Antrieb — sein Auftrag vom 12.09. sieht die Nachprüfung vor, „wenn du wieder vernünftig arbeitest"; freigegeben hat er bisher die Code-Gruppe (A86, A87). Vorgelegt am 14.10.2026 mit der Vorlage oben.
 
 ### Audit + Code-Review der gesamten Codebasis
 
