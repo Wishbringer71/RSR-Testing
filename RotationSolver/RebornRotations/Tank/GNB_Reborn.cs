@@ -311,7 +311,10 @@ public sealed class GNB_Reborn : GunbreakerRotation
 
 				case AuroraUsageStrategy.Fullusage:
 				default:
-					if (AuroraPvE.CanUse(out act, targetOverride: TargetType.LowHP))
+					// Aurora is a heal, not a barrier against one hit: it goes by the heal target order (concept 07),
+					// not to whoever has the fewest points, which was a barely hurt damage dealer as often as the
+					// member the heal flag was raised for (A283).
+					if (AuroraPvE.CanUse(out act, targetOverride: TargetType.Heal))
 					{
 						return true;
 					}

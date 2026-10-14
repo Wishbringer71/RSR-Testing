@@ -90,6 +90,13 @@ zusaetzlich geschildet werden. bzw. der schadensoutput reduziert."
 | Treffer erreicht die aktuelle, bleibt unter der maximalen | **zuerst heilen**, Ziel ist die Maximalgesundheit — danach wieder Deckung |
 | Treffer uebersteigt auch die maximale Gesundheit | Heilung allein rettet nicht: Barriere **und** Minderung zusaetzlich, bis der Rest darunter liegt |
 
+**Zeile drei steht im Code über die allgemeine Schranke (A159):** Jede Rückhaltung weicht, sobald der
+gemessene angekündigte Treffer ein ungeschütztes Mitglied in Gefährdungsklasse 1 brächte, und ein Treffer über
+der Maximalgesundheit tut das immer. Die offene Abwehrkette gibt dann in jedem Einschiebeplatz das nächste
+bereite Mittel aus, Barriere und Minderung nebeneinander; die Stapelsperren (Streckung des Weißmagiers,
+Burst von Dunkelritter und Revolverklinge) sind genau die Rückhaltungen, die dort weichen. Die Schranke greift
+früher als Zeile drei (schon an `HealthForDyingTanks`, nicht erst an null), also in der sicheren Richtung (A283).
+
 **Das ist Vorgabe 2 dieses Konzepts, zu Ende gedacht.** „Heilung vor Minderung" allein sagt nur die
 Reihenfolge; die Tabelle sagt, **woran** sich entscheidet, ob der Fall ueberhaupt eintritt. Und sie
 loest die dritte Vorgabe ein: Die Barriere steht im Zaehler, also addiert sie sich in Zeile drei zur
@@ -140,7 +147,7 @@ Rückhaltung ein Job überhaupt kennt, bleibt seine Sonderregel.** Gebaut in
 | alle | **Streckungsbaustein:** Nach einer Auslöseraktion ruht die übrige eigene Abwehr, bis die Wirkung laut Wirktext ausläuft (die Dauer, die zur Minderung gehört), gezählt ab dem Einsatz laut Aktionsprotokoll. Hält der Auslöser noch eine Ladung (gelesen an seiner Wiederaufladegruppe, nicht am Knopf), streckt er nicht | derselbe Mechanismus stand zweimal mit festen Zahlen im Code (Weißmagier, Astrologe) |
 | Heiler | leer | Nur Weißmagier und Astrologe strecken; Gelehrter und Weiser nicht. Eine Heilerregel änderte zwei Jobs ohne belegten Nutzen |
 | Tanks | **Abtausch (Arm’s Length) im Pull für seine Verlangsamung** (`ArmsLengthSlowsPull`, A194): jeder Tank mit eigener Option „Use Arm's Length on a pull for its Slow", ab Werk an; ein Pull sind so viele Gegner in Reichweite wie die globale Zahl „Number of hostiles" der Abwehr (Dunkelritter: seine Barrierenzahl, dazu die Barrierenrückhaltung), **Bosse nicht mitgezählt** (`SlowableHostilesInRange`, A236): Abtausch mindert den Treffer nicht, der ihn auslöst, also bringt er an einem Boss-Tankbuster nichts — sein Hinweis vom 01.10.2026, Boss allein in der Arena; die zentrale Rückfallstufe der Einzelabwehr wirkt Abtausch nur noch für Rotationen ohne eigene Pull-Regel (`HasOwnArmsLengthPullRule`) und nur unter derselben Bedingung, vorher ohne jede Gegnerzahl; nicht, solange die Gruppe schon verlangsamt ist, und nicht, solange BossModReborn einen Rückstoß nach Wirkende und vor Ende der Abklingzeit ankündigt (A212, A219). Eine Rückhaltung gibt es auf dieser Stufe nicht: Burst-Rückhaltung nur bei Dunkelritter und Revolverklinge, bei beiden an ein eigenes Burstfenster gebunden | kostet nur die eigene Abklingzeit und wirkt bei jedem Tank gleich; die Beobachtung, auf die der TODO-Eintrag wartete, wäre eine Spielbestätigung als Aufgabe an ihn gewesen |
-| Damage Dealer | leer, eine Frage an ihn | Barde, Pictomancer und Tänzer führen dieselbe Einstellung „Prevent the use of defense abilties during burst" (ab Werk an), Maschinist, Dragoon und Viper feste Rückhaltungen. Eine gemeinsame Regel wäre möglich; ihr Einstellungstext bindet, siehe unten |
+| Damage Dealer | **Heilung für die Gruppe** (`HoldPartyHeal`, A283): eine strategische Rückhaltung einer Heilung für andere weicht, wenn kein Heiler lebt oder ein Mitglied in Gefährdungsklasse 1 steht; erster Leser der Rotmagier | seine Vorgabe vom 14.10.2026 gilt für jeden Schadensausteiler, der andere heilt. Abwehr: Barde, Pictomancer und Tänzer führen dieselbe Einstellung „Prevent the use of defense abilties during burst" (seit A283 ab Werk aus), Maschinist, Dragoon und Viper feste Rückhaltungen; siehe unten |
 | Job | die Auslöser und Rückhaltungen selbst | siehe nächste Tabelle |
 
 ### Die Sonderregeln je Job
@@ -170,8 +177,23 @@ Einstellung sind nur die zwei in der Tabelle (Revolverklinge, Dragoon).
   Burst-Einstellung von Barde, Pictomancer und Tänzer (unten). Der Text bindet.
 
 **Barde, Pictomancer, Tänzer:** Deren Einstellung „Prevent the use of defense abilties during burst" sagt
-ohne Ausnahme „verhindern". Ihr Text bindet; die Schranke greift dort deshalb nicht. Ob sie weichen
-soll, ist seine Entscheidung (Einstellungstext und Vorgabe).
+ohne Ausnahme „verhindern"; ihr Text bindet, die Schranke greift dort deshalb nicht. Sie steht seit A283 ab Werk
+**aus**, nach seiner Regel für Voreinstellungen und seiner Spielweise: Die Abwehrpfade laufen nur für einen
+angekündigten oder gemessenen Treffer, die Flagge ist also das Wahrscheinlichkeitsmaß. Die Einstellung verwirft
+genau diese Treffer im Burst, allein für Schaden. Der Preis von Troubadour, Shield Samba, Tempera und Addle im
+Burst ist ein Einschub, der Gewinn des Haltens Schaden im Promillebereich. Ausgeschlossen: die Einstellung an
+lassen und an der Schranke weichen lassen — das widerspräche ihrem Text; wer sie einschaltet, will sie ohne
+Ausnahme.
+
+**Rotmagier, Heilung und Wiederbelebung im Burst (seine Vorgabe, 14.10.2026):** „rezz während burst ist erlaubt"
+wie beim Beschwörer; „heilung wenn notwendig und heiler tot sind oder mit heilen nicht nachkommen (z.b. kein mana
+haben)". Sein Grund: „was nutzt eigener ausgeteilter schaden, wenn andere sterben und damit keinen schaden mehr
+verursachen?" Umgesetzt (A283): „Prevent raising during burst combos" ab Werk aus; „Prevent healing during burst
+combos" bleibt an und weicht über `HoldPartyHeal`, wenn kein Heiler lebt oder ein Mitglied in Gefährdungsklasse 1
+steht. Fehlendes Mana der Heiler misst die Regel an seiner Wirkung (ein Mitglied fällt in Klasse 1), nicht am
+Mana selbst: Welche Heilung ein Heiler mit seinem Rest noch wirken kann, hängt an Job und Stufe; die Wirkung
+antwortet für alle gleich. Außerhalb des Bursts entscheiden weiter die Heilschwellen und die globalen
+Nicht-Heiler-Einstellungen.
 
 ### Was die Sperren im Spiel bewirken
 

@@ -410,9 +410,11 @@ aufgezehrt (A36).
 Fähigkeit unterdrücken, während Rampart (20 s) oder Shadow Wall (15 s) laufen, obwohl der Einschlag
 die angehobene Schwelle mitnimmt — C18 in neuer Gestalt.
 
-**Die Reihenfolge im Pfad selbst umstellen**, statt Reprisal über eine Bedingung vorzuziehen. Der
-direktere Weg, aber er ändert das Verhalten für alle Nutzer in allen Lagen, während die Bedingung
-hinter der Option bleibt. In `TODO.md` mit Auflösungsbedingung geführt.
+**Die Reihenfolge im Pfad selbst umstellen**, statt Reprisal über eine Bedingung vorzuziehen. Nicht nötig:
+Die Bedingung steht seit A227 in der Voreinstellung (`TankbusterHeavyPullOrLowHealth`), im Pull geht Reprisal
+also schon vor der Barriere. Gegen einen Tankbuster ist die Reihenfolge gleichgültig, unter niedriger
+Gesundheit soll die Barriere sofort stehen; nur die Stufe „wie bisher" behält die alte Rangfolge, und die
+wählt, wer sie einstellt (A283).
 
 **Nullvariante.** Lässt eine im Spiel beobachtete Fehlausgabe stehen und die Option `BlackLantern`
 wirkungslos.
@@ -420,7 +422,9 @@ wirkungslos.
 ## Betroffene
 
 **Endnutzer (N).** Der Party-Zweig greift nur mit `BlackLantern`, ab Werk aus; wer die Fähigkeit auf
-Gruppenmitglieder legen will, schaltet die Option ein. Der Selbstschutz folgt `BlackestNightUsage`.
+Gruppenmitglieder legen will, schaltet die Option ein. Gewählt wird das Mitglied mit den wenigsten Punkten unter
+den Mitgliedern unter `BlackLanternRatio` (Oblation ebenso unter `OblationLanternRatio`); bis A283 kam die Wahl
+zuerst und die Schwelle danach, und stand das gewählte Mitglied darüber, ging die Barriere an niemanden. Der Selbstschutz folgt `BlackestNightUsage`.
 
 **Autoren abgeleiteter Rotationen (R).** `TankbusterOnMe`, `HasMajorMitigation` und die
 `SurveyStuns`-Überladung sind additiv; die vorhandene Signatur bleibt bestehen und delegiert.

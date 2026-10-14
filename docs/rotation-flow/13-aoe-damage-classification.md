@@ -332,6 +332,17 @@ stammt. Eine Aktion, von der noch niemand getroffen wurde, trägt keine Zahl und
 wurde. Die Grobheit musste deshalb der Vorfilter allein tragen. Das ist der Grund, warum dieselbe
 Frage heute anders zu beantworten ist als im September.
 
+**Das Zeitfenster des Vorfilters ist nicht der Engpass, gemessen an seinen Protokollen (A283).** Ein gelisteter
+Cast von höchstens einem GCD Gesamtzeit öffnet über diesen Weg nie. Ausgezählt wurden die Flächentreffer auf ihn
+ab 5 % mit mindestens zwei Zielen und ob in den zehn Sekunden davor eine Flächenabwehr-Entscheidung stand: im
+Protokoll 04.–10.10.2026 285 Treffer, 181 ohne Entscheidung — 3 davon gelistet mit kurzer Wirkzeit, 42 ohne
+Wirkzeit (keinem Cast vorhersehbar, nur BossModReborn oder ein Marker kündigt sie an), 41 nicht auf der
+ausgelieferten Liste, 62 gelistet mit langer Wirkzeit, aus älteren Builds, deren Ursachen A272 und A277 behoben
+haben (leere Landungen, Helfer); im Protokoll vom 13.10.2026 30 Treffer, 14 ohne Entscheidung, davon 10
+Meteoreinschlag von Helfern (A277), kein kurzer Cast. Das Fenster zu weiten träfe alle Jobs und die Notfallheilung
+über `IsUnderThreat` für keinen gemessenen Fall; es bleibt. Ebenso bleibt die Tankbuster-Einschränkung für
+Magier aus A9/C10, seiner Meldung, sie feuere zu oft.
+
 **Getrennt gehalten statt gelockert, und das ist Absicht:** `IsHostileCastingAOE` speist auch
 `ObjectHelper.IsUnderThreat` und darüber die Notfallheilung des Weißmagiers. Ein Lockern dort
 verschöbe zwei Pfade auf einmal. Der neue Weg hängt allein an der Verteidigungsflagge.
