@@ -6575,6 +6575,57 @@ logic", mit Merges), gemergt in `claude/fixes-after-7.5.6.13` vor dem Release. J
 
 **Prüfgrad:** Diff und fremder Quelltext gelesen; Prüfskripte; Compile über die CI. Im Spiel nicht beobachtet.
 
+### A279 · Release 7.5.7.1+wsh1, Übergabe der Release-Texte, CHANGELOG nach Releases (14.10.2026)
+
+Auftrag: „Branch zu Main, Main Release, dann neuer Branch".
+
+- *Release:* Upstream-Sync 7.5.7.1 vorab (A278), CI grün auf f902bd4cc. `main` per Vorspulen auf f902bd4cc, kein
+  Merge über die API (der Merge-Commit entstünde unter seiner Identität); PR #13 steht damit als gemergt.
+  `publish.yaml` per `workflow_dispatch` mit `7.5.7.1+wsh1`, Lauf 38517355570 erfolgreich; Release mit
+  `latest.zip` (4 673 948 Bytes) auf f902bd4cc, SHA-256 der heruntergeladenen Datei gleich dem Digest des Assets.
+- *Übergabe:* `fork-changes-in-play.md` steht auf Upstream 7.5.7.1 und hat die 23 Abschnitte des Release-Texts in
+  seine Themen eingearbeitet, nicht angehängt (Abgleich je Abschnitt per Stichwort). Veraltet und ersetzt:
+  Kanalsperre Passage of Arms „off by default" (seit diesem Release an); Sage-Barriere „off by default" (an);
+  „Tempera Coat is unchanged" (seit A233 sperrt `BaseAction.CanUse` jede Abwehr ohne Wirkradius auf den Spieler,
+  Konzept 13); Arm's Length, Searing Light bei mehreren Beschwörern, Sanctus-Streckung und `DefenseTrace.log` auf
+  den neuen Stand. „For rotation authors" nennt jetzt `StunWatch`, `AreaHitAnnounced`, `SingleHitReachesPlayer`,
+  `AreaCasters`, `DefaultGCDTotal` und die beiden neuen Ablehnungen in `CanUse` (Paketoberfläche gegen
+  7.5.6.13+wsh1 gemessen, Upstream-Zugänge wie `IpcStateOverrides` ausgenommen).
+  `fork-changes-since-last-release.md` beginnt mit „Changes since 7.5.7.1+wsh1".
+- *`check_concept_defaults.py` las umbrochene Einstellungstexte nicht:* Der Name durfte keinen Zeilenumbruch
+  enthalten, und elf Texte im neuen Gesamtstand standen auf zwei Zeilen — ein stiller Nullbefund. Der Name darf
+  jetzt umbrechen und wird ohne Leerraumunterschiede und ohne den Schlusspunkt mancher UI-Texte verglichen;
+  Selbsttest um beide Fälle erweitert. Zusätzlich die elf Stellen im Gesamtstand auf eine Zeile gebracht. Ergebnis:
+  22 Angaben über Einstellungstexte gelesen, alle stimmen mit dem Code.
+- *`scan7.py` (Paketoberfläche) meldete 66 Änderungen gegen 7.5.6.13+wsh1, 56 davon Phantome in `Configs`:* Der UI-Text „A scrolling
+  record of the actions you use" las sich als Deklaration eines Typs „of", und jedes `Configs`-Mitglied darunter
+  galt als entfernt — dieselbe Klasse wie der Kommentarfall, den das Skript schon abfing. Zeichen- und
+  Zeichenkettenliterale werden jetzt vor der Typsuche ausgeblendet. Zweite, stille Lücke derselben Prüfung: Eine
+  Eigenschaft, deren Rumpf auf der nächsten Zeile beginnt (`public static float DefaultGCDTotal`), wurde auf keiner
+  Seite gelesen, ihre Entfernung bliebe ungemeldet; das Zeilenende zählt jetzt als Abschluss (139 Mitglieder mehr im
+  Tag, 141 im Baum). Selbsttest um beide Fälle erweitert. Bleibende Befunde: `IsOnCooldownWindow` (fünf Stellen, im CHANGELOG),
+  die Umbenennung `CanBeHealed`, und drei Mitglieder von `Configs` — der Typ ist `internal` und nur dem Plugin
+  sichtbar (`InternalsVisibleTo("RotationSolver")`), also kein Vertrag; das Skript wertet die Sichtbarkeit des
+  umgebenden Typs nicht aus, das bleibt eine laute Fehlmeldung, keine stille.
+- *CHANGELOG:* Der Abschnitt „Unreleased" stand seit 7.5.6.9+wsh1 unverändert über vier Releases, obwohl der
+  TODO-Eintrag „Zwei entfernte öffentliche Member seit dem letzten Release" ihn mit dem nächsten Tag auf die vergebene
+  Nummer setzen wollte. Zuordnung je Zeile über `git blame` und den ersten Fork-Tag, der den Commit enthält:
+  Zeilen bis „Removed upstream … the package" zuerst in 7.5.7.1+wsh1, der Rest in 7.5.6.9+wsh1; 7.5.6.10 und
+  7.5.6.13 brachten keinen Eintrag. Aufgeteilt in „7.5.7.1+wsh1" und „7.5.6.9+wsh1", „Unreleased" leer. Ergänzt,
+  weil der Scan sie fand und das CHANGELOG sie nicht führte: die Upstream-Umbenennung `NoNeedHealingInvuln` →
+  `CanBeHealed` (bricht abgeleitete Rotationen) und das Verhalten von `DefaultGCDTotal` zwischen GCDs (seit
+  22639992c, zuerst in 7.5.7.1+wsh1). Der TODO-Eintrag ist damit erledigt und entfernt.
+- *Release-Paket (TODO „Release-Paket enthält vermeidbaren Ballast"), am neuen ZIP gemessen:* zwölf Dateien, das
+  NuGet-Paket ist tatsächlich weg, `RebornMaterial.dll` neu (Oberflächenbibliothek des Upstream-Umbaus); Nutzlast
+  gepackt 2,28 MB, Ballast 2,39 MB (`RotationSolver.Basic.pdb` 0,93, `.xml` 0,73, Analyzer 0,74). Upstream 7.5.7.1:
+  dieselben zwölf Dateien, 4,50 MB. Der Eintrag nennt jetzt diese Zahlen; seine Empfehlung bleibt.
+- *Zweige:* `claude/fixes-after-7.5.7.1` von `main` (f902bd4cc) angelegt (Konvention A274). `claude/fixes-after-7.5.6.13`
+  ist vollständig in `main` enthalten und ein Löschfall; Ref-Löschungen enden hier mit 403. Der lokale Rest
+  `claude/repo-privacy-settings-f06dqh` (Gegenstelle gelöscht) trägt einen eigenen Commit und bleibt deshalb stehen.
+
+**Prüfgrad:** Release-API und Workflow-Lauf gelesen, Asset heruntergeladen und geprüft; Prüfskripte samt Selbsttests;
+statischer Abgleich der Texte mit Code und Konzepten. Nichts davon ändert das Spielgeschehen.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
