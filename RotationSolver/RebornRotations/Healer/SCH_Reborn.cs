@@ -850,7 +850,14 @@ public sealed class SCH_Reborn : ScholarRotation
 				// and spend Recitation on an Excogitation that cannot land. The inverted form
 				// happened to mask that. The tank searches in ActionTargetInfo carry the same
 				// guard at the same place.
-				if (!member.IsDead && member.GetForecastHealthRatio(true) <= ExcogHeal && member.CanBeHealed())
+				//
+				// The rest asks what the Excogitation under Recitation in HealSingleAbility asks, so the
+				// Recitation pressed here is one that heal can take: below ExcogHeal, and in danger while
+				// ExcogitationNeedsThreat is on. That gate came with A180 on the heal alone, so a tank low
+				// but not in danger - the off-tank after a swap - got Recitation and then no Excogitation,
+				// and its 60 s recast was gone for the next tankbuster (A280).
+				if (!member.IsDead && member.GetForecastHealthRatio(true) < ExcogHeal && member.CanBeHealed()
+					&& (!ExcogitationNeedsThreat || member.IsUnderThreat()))
 				{
 					tankNeedsExcog = true;
 					break;

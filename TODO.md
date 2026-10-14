@@ -20,11 +20,16 @@ RSR den Rückwärtssprung vom Ziel weg.
 
 ### Gelehrter: Recitation ohne Rückfall vor Ablauf · N
 
-Seit Upstream 7.5.7.1 (A278) folgt Excogitation einer gedrückten Recitation; die Aktionsmatrix führt
-Excogitation jetzt mit drei Aufrufen „ohne Rückfall vor Ablauf" (`docs/action-matrix/SCH.md`). Zu prüfen
-(Konzept 14, „Rückfälle vor Ablauf, je Job"): ob Recitation verfällt, wenn nach dem Drücken kein Tank unter die
-Excogitation-Schwelle fällt und kein Tankbuster kommt, und ob dann eine andere Heilung, die Recitation trägt
-(Indomitability, Adloquium), das Fenster nutzen soll. Im Kampf: ein verschenkter kritischer Heilschub je Minute.
+`ShouldUseRecitation` drückt Recitation aus vier Anlässen, jeder mit seinem Verbraucher: ein Tank unter
+`ExcogHeal` in Gefahr → Excogitation als Heilung; die Einzelabwehr-Flagge → Excogitation im Abwehrpfad (Upstream
+7.5.7.1, A278); mittlere Gruppengesundheit unter `ReciteIndomitability` → Indomitability im Flächenheilpfad; ein
+Adloquium oder Succor als nächster GCD → dieser GCD. Auslöser und Verbraucher fragen seit A280 dasselbe. Offen
+bleibt, was geschieht, wenn der Anlass zwischen Drücken und Verbrauch wegfällt (ein anderer heilt den Tank, die
+Flagge fällt) oder Excogitation sein Heilziel nicht beim Tank findet (die Heilzielwahl nach Gefahr nimmt einen
+gefährdeteren Schadensausteiler): Dann nimmt kein Verbraucher Recitation, und es verfällt nach 15 s. Zu prüfen
+(Konzept 14, „Rückfälle vor Ablauf, je Job"), ob eine andere Heilung, die Recitation trägt (Indomitability,
+Adloquium, Concitation), das Fenster in der letzten Gelegenheit nutzen soll. Im Kampf: höchstens ein
+verschenkter kritischer Heilschub je Minute.
 
 **Konzept:** `docs/rotation-flow/14-action-dependency-matrix.md`
 
