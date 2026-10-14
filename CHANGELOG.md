@@ -31,6 +31,16 @@ mask for that event, the player is a tank or the party has no living tank. A cas
 marker on him counts as before. A derived rotation that spent a self-defence on `TankbusterOnMe` no longer does so
 for a tankbuster on the other tank. The signature is unchanged.
 
+### Behaviour change in RotationSolver.Basic: `DefensiveValues` reads four more mitigation phrasings
+
+The generator now reads a mitigation that names its bearer ahead of "damage taken" ("Reduces target party member's
+damage taken by 10%", "Reduces target's damage taken by 10%"), the one-hit form ("Reduces the amount of damage taken by
+the next attack"), and a mitigation of one damage type ("Reduces magic damage taken by 10%"), carried as
+`SelfPhysical`/`SelfMagical` with the other type at 0. `ByActionId` and `MitigationByStatusId` gain Intervention,
+Third Eye, Taurochole, Magick Barrier, Fey Illumination and their statuses, among others. `DurationOf` for Tengentsu is
+now 4 s, the duration of its own reduction, where it gave the 9 s of Tengentsu's Foresight; Lost Font of Magic and Lost
+Font of Power give 15 s instead of 30 s for the same reason. No signature changes.
+
 ## 7.5.7.1+wsh1
 
 ### Added to RotationSolver.Basic: `AttackType.Shot` and `DefensiveValues.MitigationByStatusId`

@@ -327,7 +327,7 @@ Abklingzeit und Gruppe aus den Spieldaten (xivapi, Blatt `Action`, 12.10.2026).
 | PLD | Sentinel / Guardian | −30 % / −40 % | 15 | 0/0 | 120, 20 | Kandidat | ja |
 | PLD | Bulwark | Block | 10 | 0/0 | 90, 16 | kein Kandidat (Block lässt sich nicht rechnen) | ja |
 | PLD | Sheltron / Holy Sheltron | −15 % (Zusatzwirkung nicht gezählt) | 6 ab Stufe 74 / 8 | 0/0 | 5, 3; Eid 50 | Kandidat | ja |
-| PLD | Intervention, Cover | auf ein anderes Mitglied | 8 ab 82 / 12 | 30 bzw. 20/0 | 10 bzw. 120; Eid 50 | Hilfe für andere | nein |
+| PLD | Intervention, Cover | Intervention −10 % auf ein anderes Mitglied (weitere −10 % mit Schutzwall oder Guardian, nicht gezählt); Cover übernimmt Treffer | 8 ab 82 / 12 | 30 bzw. 20/0 | 10 bzw. 120; Eid 50 | Hilfe für andere | nein |
 | PLD | Divine Veil, Passage of Arms | Gruppe | – | 0/30 bzw. 8 | 90 / 120 | Gruppenwerkzeug | nein |
 | PLD | Heiliger Boden | unverwundbar | 10 | 0/0 | 420, 25 | Unverwundbarkeit | – |
 | WAR | Rachsucht / Verdammnis | −30 % / −40 % | 15 | 0/0 | 120, 22 | Kandidat | ja |

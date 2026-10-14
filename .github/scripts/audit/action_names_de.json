@@ -178,7 +178,7 @@
       "identifier": "RampartPvE",
       "kind": "action",
       "source": "user, 2026-09-12",
-      "note": "The upgraded form Enhanced Rampart grants at level 94 is status Rampart_1978, scoped to PLD WAR DRK GNB, whose effect text adds 'while HP recovered via healing actions is increased' - the plain form (71, 1191) does not. The user gives that increase as 15%; the game data states no figure, as with every trait-modified value."
+      "note": "Three statuses carry the name. In the game's own text 1191 and 1978 (the form Enhanced Rampart grants a tank from level 94, scoped to PLD WAR DRK GNB) both add that HP recovered via healing actions is increased; only 71 reduces damage alone (xivapi v2, versions 7.0 to 7.57, A286). Status.resx shows 1191 without the increase. The user gives the increase as 15%; the game data states no figure, as with every trait-modified value."
     },
     {
       "de": "Geteiltes Leid",

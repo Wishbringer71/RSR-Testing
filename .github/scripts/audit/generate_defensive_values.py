@@ -49,7 +49,15 @@ PROVIDE = re.compile(r"(Target)?StatusProvide\s*=\s*([^;]+);")
 # 50 yalms by 10%" (Temperance), "Reduces damage taken by a party member or self by 15%" (Aquaveil),
 # "by self and nearby party members by 10%" (Kerachole). Matching only the short form left every
 # party mitigation of that shape out of the table.
-SELF_MITIGATION = re.compile(r"[Rr]educ(?:es|ing) damage taken by (?:[^%.]{0,80}? by )?(\d{1,2})\s*%")
+# The bearer can also be named ahead of "damage taken": "Reduces target party member's damage taken
+# by 10%" (Intervention), "Reduces target's damage taken by 10%" (Taurochole), and the one-hit form
+# "Reduces the amount of damage taken by the next attack by 10%" (Third Eye). Without these the
+# table carried no figure for them, and a tankbuster that landed under one was learned as smaller
+# than it is (A286, G6).
+SELF_MITIGATION = re.compile(
+    r"[Rr]educ(?:es|ing) (?:the amount of )?(?:target(?: party member)?'s )?damage taken by "
+    r"(?:[^%.]{0,80}? by )?(\d{1,2})\s*%"
+)
 # "Reduces damage dealt by nearby enemies by 10%", "Lowers target's damage dealt by 10%"
 ENEMY_MITIGATION = re.compile(r"(?:[Rr]educes|[Ll]owers)[^.]{0,60}?damage dealt[^.]{0,40}? by (\d{1,2})\s*%")
 # A self mitigation split by damage type: "Reduces physical damage taken by 10% and magic damage
@@ -57,6 +65,13 @@ ENEMY_MITIGATION = re.compile(r"(?:[Rr]educes|[Ll]owers)[^.]{0,60}?damage dealt[
 # so Dark Mind was neither a means of the tankbuster plan nor held under an invulnerability (A266).
 SELF_SPLIT_MITIGATION = re.compile(
     r"[Rr]educ(?:es|ing) physical damage taken by (\d{1,2})\s*% and magic(?:al)? damage taken by (\d{1,2})\s*%"
+)
+# One damage type alone: "Reduces magic damage taken by self and nearby party members by 10%"
+# (Magick Barrier), "reducing magic damage taken by all nearby party members by 5%" (Fey
+# Illumination). Carried as the split form with the other type at 0, so a reader that cannot tell the
+# damage type takes the smaller figure, 0, and errs low (A286, G6).
+SELF_TYPED_MITIGATION = re.compile(
+    r"[Rr]educ(?:es|ing) (physical|magic(?:al)?) damage taken by (?:[^%.]{0,80}? by )?(\d{1,2})\s*%"
 )
 # "Increases maximum HP by 20% and restores the amount increased" (Thrill of Battle), "Increases
 # maximum HP of a party member or self by 10%": the hit stays as large, the bearer's pool grows. For a
@@ -144,8 +159,8 @@ def figure_end(text):
     """Where the first defensive figure in the text ends, or 0 when it states none."""
     ends = [
         match.end()
-        for pattern in (SPLIT_MITIGATION, ENEMY_MITIGATION, SELF_MITIGATION, SELF_SPLIT_MITIGATION, BARRIER_SHARE,
-                        MAX_HP_UP, GUARDS)
+        for pattern in (SPLIT_MITIGATION, ENEMY_MITIGATION, SELF_MITIGATION, SELF_SPLIT_MITIGATION,
+                        SELF_TYPED_MITIGATION, BARRIER_SHARE, MAX_HP_UP, GUARDS)
         for match in [pattern.search(text)]
         if match
     ]
@@ -190,6 +205,12 @@ def extract(text):
     if own_split:
         values["SelfPhysical"] = int(own_split.group(1)) / 100
         values["SelfMagical"] = int(own_split.group(2)) / 100
+    else:
+        typed = SELF_TYPED_MITIGATION.search(text)
+        if typed:
+            physical = typed.group(1) == "physical"
+            values["SelfPhysical"] = int(typed.group(2)) / 100 if physical else 0.0
+            values["SelfMagical"] = 0.0 if physical else int(typed.group(2)) / 100
 
     raised = MAX_HP_UP.search(text)
     if raised:
@@ -633,6 +654,26 @@ def self_test():
             "Reduces physical damage taken by 10% and magic damage taken by 20%. Duration: 10s",
             {"SelfPhysical": 0.1, "SelfMagical": 0.2},
         ),
+        # The bearer named ahead of "damage taken", and the one-hit form (A286, G6).
+        (
+            "Reduces target party member's damage taken by 10%. Duration: 8s Additional Effect: Increases "
+            "damage reduction by an additional 10% if Rampart or are active",
+            {"Self": 0.1},
+        ),
+        ("Reduces target's damage taken by 10%. Duration: 15s", {"Self": 0.1}),
+        ("Reduces the amount of damage taken by the next attack by 10%. Duration: 4s", {"Self": 0.1}),
+        # One damage type alone; the other stays 0.
+        (
+            "Reduces magic damage taken by self and nearby party members by 10%. Duration: 10s",
+            {"SelfPhysical": 0.0, "SelfMagical": 0.1},
+        ),
+        (
+            "Summons a dragon, reducing magic damage taken by all nearby party members by 5%.",
+            {"SelfPhysical": 0.0, "SelfMagical": 0.05},
+        ),
+        ("Reduces physical damage taken by 22%. Duration: 30m", {"SelfPhysical": 0.22, "SelfMagical": 0.0}),
+        # A raise of damage taken is not a mitigation.
+        ("Reduces damage dealt by 10% and increases damage taken by 5%.", {"EnemyPhysical": 0.1, "EnemyMagical": 0.1}),
         # Thrill of Battle and a raise on a party member: the pool grows, the hit does not shrink.
         (
             "Increases maximum HP by 20% and restores the amount increased. Additional Effect: Increases HP "

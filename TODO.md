@@ -619,7 +619,7 @@ Im Kampf ändert keine dieser Gruppen etwas unmittelbar: Der Generator erzeugt d
 | G3 | „Job-Guide und xivapi gesperrt" steht noch in `GermanNameIndex` und `check_action_names.py`; deshalb schlägt eine unzulässige Quelle nicht fehl | K1 |
 | G4 | `action_names_game.json` wurde nie erzeugt; xivapi liefert dieselben Blätter auf Deutsch | K1 |
 | G5 | Docstring und Kommentar in `check_action_names.py` nennen Rückstoß als Aktion | K1 |
-| G6 | Wörterbucheintrag Schutzwall: Status 1191 trägt im Spiel den Heilbonus, `Status.resx` nicht; weitere Abweichungen der erzeugten Wirktexte zu erheben | K1 |
+| G6 | Teil a behoben (A287: Muster lasen fünf Minderungen nicht, Eintrag Schutzwall berichtigt); offen Teil b: die 15 % von Troubadour, Tactician, Shield Samba setzt ein Merkmal auf Stufe 98, die Tabelle führt 0 | K1 |
 | C1 | `check_fork_version.py`: Zweig ohne Tags ohne Selbsttest, Docstring veraltet | K2 |
 | C2 | `check_sync_state.py`: Selbsttest prüft `git`, nicht die Urteile des Skripts | K3 |
 | C3 | `check_sync_state.py`: gescheiterter Abruf wird verschluckt, der alte Stand gilt als aktuell | K3 |

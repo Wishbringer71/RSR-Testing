@@ -56,3 +56,11 @@ a rotation counts a tankbuster as on you (the Dark Knight's The Blackest Night o
 Each defence decision, and each "open, nothing chosen", now ends with the actions the defence refused on its way and
 the reason the game check gave, and with the holds that were standing. Each HP potion RSR chooses is written with the
 branch that allowed it and your HP at that moment.
+
+## Tanks: a tankbuster that landed under Intervention or Taurochole is learned at its real size
+
+The learned tankbuster table, which a tank's mitigation plan reads, scales every hit back to unmitigated by the
+mitigation that stood when it landed. It did not know the reduction of Intervention, Taurochole, Third Eye, Magick
+Barrier or Fey Illumination, because their effect texts phrase it differently. A tankbuster that hit a tank under one of
+them was learned as smaller than it is, until a hit without it raised the figure, and a plan for that tankbuster could
+come out too small for a defensive to fire. They are counted now.

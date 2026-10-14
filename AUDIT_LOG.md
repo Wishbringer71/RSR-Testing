@@ -7101,6 +7101,36 @@ Von `6cd15453a` stehen 211 der 421 Konzeptzeilen.
 **Zwischenstand:** Alle zehn Ketten geprüft. Offene Befunde: G1–G6, C1–C6, Z1 (ohne Behebung), P1–P5, R1–R5,
 H1–H3. Ihre Behebung folgt, jede im eigenen Loop.
 
+### A287 · Behebung G6: Minderungen, die der Generator nicht las (14.10.2026)
+
+Aus der Nachprüfung (A286, K1, `cb5db4452`): Der Wörterbucheintrag Schutzwall widersprach dem Spieltext von Status
+1191. Als Klasse erhoben — weichen die erzeugten Wirktexte, aus denen `DefensiveValues` Werte und Dauern liest, vom
+Spiel ab?
+
+- *Messung:* alle 588 Aktionen mit Wert oder Dauer in `DefensiveValues`, derselbe Parser über den Resx-Text und den
+  Spieltext 7.57 (xivapi v2). Dauern: keine Abweichung; die fünf leeren deckt `TraitDurations`. Werte: drei fehlen —
+  Troubadour, Tactician, Shield Samba, deren 15 % ein Merkmal auf Stufe 98 setzt („Improves …'s damage reduction effect
+  to 15%", Traits 601, 607, 611) und die Resx deshalb leer lässt. Eine zweite Suche über alle Wirktexte nach einer
+  Minderung, die `extract()` nicht erfasst, fand die eigentliche Lücke im Muster: 22 Aktionen, im Profil Intervention
+  („Reduces target party member's damage taken by 10%"), Taurochole („Reduces target's damage taken"), Third Eye („the
+  amount of damage taken by the next attack"), Magick Barrier und Fey Illumination (nur magischer Schaden). Gegnerseite
+  ohne Lücke im Profil. Status-Beschreibungen speisen keine Werte (der Generator liest aus `Status.resx` nur Namen).
+- *Wirkung im Kampf:* `TankbusterTable.MitigationFactor` rechnet einen Treffer über die beim Einschlag stehenden Status
+  auf ungemindert zurück. Unter einer der fünf wurde ein Tankbuster zu klein gelernt, bis ein Treffer ohne sie die Zahl
+  hob; ein Plan dafür konnte zu klein ausfallen (Leser: der Tank-Plan und `TankSwapWatch`). Der Tank-Plan selbst und
+  `HoldDefenceOnSelf` sind nicht betroffen — die fünf sind entweder Gruppenwerkzeuge oder wirken nicht auf den Tank selbst.
+- *Behoben (G6a):* `SELF_MITIGATION` nimmt „target's", „target party member's" und „the amount of" vor „damage taken";
+  `SELF_TYPED_MITIGATION` liest eine Schadensart allein als `SelfPhysical`/`SelfMagical` mit der anderen auf 0 (bei
+  unbekannter Art zählt die kleinere, 0). Selbsttest für beide Seiten, auch „increases damage taken" bleibt draußen.
+  Nebenwirkung, geprüft: Tengentsu 9 s → 4 s (die 9 s gehören zu Tengentsu's Foresight nach einem Treffer, die 4 s zur
+  eigenen Minderung — richtig, heute ohne Leser, Plan und `Follow` laufen nur für Tanks); Lost Font of Magic/Power (Bozja)
+  30 s → 15 s aus demselben Grund. Konzept 13 und 09 fortgeschrieben, CHANGELOG (Paket), Release-Text.
+- *Wörterbuch:* Eintrag Schutzwall berichtigt (1191 und 1978 tragen im Spiel den Heilbonus).
+- *Offen (G6b):* die drei Merkmalswerte. Konzept 13 nimmt „eine Minderung, die kein Wirktext beziffert (Merkmal)"
+  als Grenze hin; für Dauern ist dieselbe Lage mit `TraitDurations` gelöst. Eigener Loop.
+
+**Prüfgrad:** Spieldaten (xivapi v2, 7.57), Generator mit Selbsttest, Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

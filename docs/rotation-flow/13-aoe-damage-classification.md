@@ -590,6 +590,11 @@ Messung in `TankbusterTable`, Ablage über denselben gesicherten Weg wie die Fl�
   - Die Werte kommen aus den Wirktexten der Aktionen, die den Status legen (`DefensiveValues.MitigationByStatusId`).
     Der Generator verknüpft die Status über den gemeinsamen Namen oder über die Statusangabe im Code.
     Sammellisten wie die von Schutzwall, die die Sperrgruppe aller großen Minderungen sind, bleiben dabei außen vor.
+  - Er liest auch die Formen, die den Träger vor „damage taken" nennen („Reduces target party member's damage taken by
+    10%", Intervention; „Reduces target's damage taken", Taurochole), die Form für den nächsten Treffer (Third Eye) und
+    eine Minderung nur einer Schadensart („Reduces magic damage taken by …", Magick Barrier, Fey Illumination). Die
+    zweite Art steht dann auf 0; bei unbekannter Schadensart zählt die kleinere, also 0. Bis A286 fehlten diese Werte,
+    und ein Treffer unter ihnen wurde zu klein gelernt.
   - Damit drückt ein gut geminderter Treffer die Aktion nicht nach unten – die Schwäche des Höchstwerts der
     Flächentabelle (Abschnitt „Grenzen der Messung") entfällt hier.
 - **Unter Verwundbarkeit getrennt:** Trägt der Getroffene eine Verwundbarkeit, geht der Wert in die zweite Zahl.
