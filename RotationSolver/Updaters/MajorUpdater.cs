@@ -68,6 +68,7 @@ internal static class MajorUpdater
 			}
 
 			_timeSinceUpdate = TimeSpan.Zero;
+			UpdateCost.Begin();
 			_isValidThisCycle = IsValid;
 			_isActivatedThisCycle = DataCenter.IsActivated();
 			_shouldRunThisCycle = true;
@@ -579,6 +580,7 @@ internal static class MajorUpdater
 		}
 
 		_shouldRunThisCycle = false;
+		UpdateCost.End(framework);
 	}
 
 	private static void LogOnce(string context, Exception ex)

@@ -815,7 +815,7 @@ public partial class CustomRotation
 		// Asking about the pending raise here instead of about nextGCD is deliberate. Naming the
 		// raise as the next GCD was tried and reverted (AUDIT_LOG C37): it ends the GCD dispatcher
 		// ahead of healing and damage, and it rewrites nextGCD for every branch that reads it -
-		// 447 occurrences in this tree, among them Radiant Aegis on Summoner, which stopped coming
+		// several hundred in this tree, among them Radiant Aegis on Summoner, which stopped coming
 		// out. This condition leaves the GCD path untouched and only adds one weave.
 		//
 		// The raise is the job's own Raise, not a list of four ids: the list had no Verraise and no

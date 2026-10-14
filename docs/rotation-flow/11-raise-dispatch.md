@@ -85,7 +85,7 @@ Auftraggebers Schaden angerichtet hat und vollständig zurückgenommen wurde (`A
 |---|---|---|
 | GCD-Pfad | meldete die Wiederbelebung als nächsten GCD | unverändert |
 | Dispatcher | endete im Wiederbelebungsblock vor Heilung und Schaden | läuft normal durch |
-| `nextGCD` | wurde zur Wiederbelebung umgeschrieben — **447 Fundstellen** im Baum lesen ihn, darunter Schimmerschild beim Beschwörer | unverändert |
+| `nextGCD` | wurde zur Wiederbelebung umgeschrieben — **447 Fundstellen** im Baum lasen ihn (gezählt 10.09.2026), darunter Schimmerschild beim Beschwörer | unverändert |
 | Dauer | griff dauerhaft, solange ein Toter dalag | höchstens ein Frame je Gelegenheit, danach durch `HasSwift` gesperrt |
 
 Die daraus folgende Regel: Wer eine Meldebedingung lockert, misst ihre Wirkung an beiden Pfaden und
@@ -238,10 +238,11 @@ Heiler und Beschwörer, 64 für den Rotmagier. Für alle anderen wurde sie nicht
 Rotmagier unter 64 — jeder stufensynchronisierte Durchgang durch ältere Inhalte — als lebender Rezzer
 zählte und die Feder zurückhielt, die dort der einzige Weg war. Beide Stellen teilen sich
 dieselben zwei Konstanten; das ist die Konstruktion, die nicht wieder auseinanderläuft. Die Stufe
-eines Gruppenmitglieds stammt aus `ICharacter.Level`; ob der Wert in einem synchronisierten Inhalt
-die synchronisierte oder die wahre Stufe meldet, ist von hier nicht entschieden. In beiden Fällen ist
-er besser als die bisherige Annahme, jeder lebende Heiler, Beschwörer und Rotmagier könne
-wiederbeleben.
+eines Gruppenmitglieds stammt aus `ICharacter.Level`. Dass der Wert in einem synchronisierten Inhalt
+die synchronisierte Stufe meldet, setzt WrathCombo voraus: Es zählt den Spieler nur dann als Teilnehmer
+einer FATE, wenn `LocalPlayer.Level` höchstens deren Höchststufe ist (`InFATE`) — ein anderes Werkzeug,
+keine Spielquelle. Meldete er die wahre Stufe, zählte ein unterstufiger Rezzer weiter als lebender
+Rezzer; das ist der Stand vor der Stufenprüfung, nicht schlechter.
 
 ### Die Phönixfeder
 
@@ -340,14 +341,6 @@ Hauptursache des Wiederbelebungsdefekts. Im Kampf änderte die Umstellung nichts
 (`RaisePendingAndCastable`) diese Jobs schon über `Raise` erreichte; ein künftiger Rezzer-Job fällt
 nicht mehr still heraus.
 
-### Was aus dem Quelltext nicht zu entscheiden ist
-
-Ob `HardCastOnlyHealer` bei einem einzigen Heiler greifen *soll*, folgt weder aus dem Code noch aus
-dem Optionstext. Der Optionstext verspricht zusätzlich „while Swiftcast is on cooldown", was dieser
-Zweig nicht prüft; ob der Vorbehalt in die Bedingung gehört oder aus dem Text zu streichen ist, ist
-eine Festlegung über die Bedeutung der Einstellung. Die Existenz von
-`HardCastOnlyHealerSwiftCooldown` spricht dafür, dass er gemeint war.
-
 ## Ausgeschlossen
 
 - **Nullvariante.** Scheidet aus: Der Defekt trifft jede Wiederbelebung jedes Rezzers und hat keine
@@ -408,10 +401,12 @@ anvisiertem Leichnam fällt die Wiederbelebung sofort.
 Für den Kernpfad liegt die Laufzeitbestätigung vor (A73): teils sofortige, teils um
 wenige Sekunden verzögerte Wiederbelebung, ohne Ausfall anderer Fähigkeiten. Kein Vier-Augen-Prinzip.
 
-**Ungemessen bleiben die drei einstellungsabhängigen Eingriffe desselben Zweigs** — Federverdrahtung,
-Zieleignung über den Item-Status und Stufenprüfung der Rezzereigenschaft sowie die Hartwirk-Korrektur
-und die Bezugsmenge der Nur-Heiler-Modi. Sie liegen hinter Vorgaben, die im Spieltest nicht verändert
-wurden, und sind in `TODO.md` als offener Nachweis geführt.
+**Die einstellungsabhängigen Eingriffe sind statisch belegt, nicht im Spiel beobachtet:** Federverdrahtung,
+Zieleignung über den Gegenstandsstatus, Stufenprüfung der Rezzereigenschaft, Hartwirk-Korrektur, Bezugsmenge und
+Swiftcast-Vorbehalt der Nur-Heiler-Modi. Ihre Wirkketten sind am Code nachvollzogen (A286, K7); dass
+`GetActionStatus` für einen verwendbaren Gegenstand genau `0` liefert, nimmt WrathCombo ebenso an
+(`Items.cs`, Prüfung `== 0` vor dem Trank) — ein anderes Werkzeug, keine Spielquelle. Sie liegen hinter Einstellungen,
+die ab Werk aus oder anders stehen; eine Spielbeobachtung ist keine offene Aufgabe.
 
 ## Offene Punkte
 

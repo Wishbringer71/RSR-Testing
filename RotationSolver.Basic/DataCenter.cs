@@ -1371,9 +1371,10 @@ internal static class DataCenter
 	/// for the player than for the party.
 	///
 	/// For another party member the level comes from ICharacter.Level, which is what the client shows
-	/// for them; whether that reports the synced level or the true one inside a synced duty is not
-	/// established here. Either way it is strictly better than the assumption it replaces, which was
-	/// that every healer, Summoner and Red Mage alive can raise.
+	/// for them. That it reports the synced level inside a synced duty is what WrathCombo assumes too
+	/// (its InFATE counts the player in a FATE only while LocalPlayer.Level is at most the FATE's
+	/// maximum) - another tool, not a game source. Were it the true level, an under-levelled raiser would
+	/// still count as living, which is the state before this check and no worse.
 	/// </summary>
 	private const byte RaiseLevel = 12;
 

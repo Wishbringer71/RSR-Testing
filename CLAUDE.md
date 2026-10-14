@@ -295,9 +295,9 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 
 **Namen**
 - Er spielt mit deutschem Client: seine Namen sind deutsche Spielnamen, die Bezeichner englisch. Vor jeder Suche oder Aussage über ein Fehlen die Zuordnung belegen.
-- Zuerst nachschlagen: `.github/scripts/audit/action_names_de.json` (geprüft von `check_action_names.py`) und, falls erzeugt, `action_names_game.json` aus `RotationSolver.GameData` (braucht die Spieldateien; Pfad über `FFXIV_GAME_PATH` oder Programmargument).
+- Zuerst nachschlagen: `.github/scripts/audit/action_names_de.json`; `check_action_names.py` hält jeden Eintrag in der CI gegen die deutschen Spielblätter (xivapi v2, `language=de`).
 - Was dort steht, nicht erneut fragen. Einen neuen Namen von ihm im selben Zug eintragen.
-- Einen deutschen Namen nie selbst bilden. Belegt ist er nur durch seine Angabe, den deutschen Job-Guide (`de.finalfantasyxiv.com/jobguide/`) oder den erzeugten Index; sonst den englischen Bezeichner benutzen.
+- Einen deutschen Namen nie selbst bilden. Belegt ist er nur durch seine Angabe, den deutschen Job-Guide (`de.finalfantasyxiv.com/jobguide/`) oder die deutschen Spielblätter (xivapi v2, `language=de`, mit Zeilen-Id); sonst den englischen Bezeichner benutzen.
 
 # Versionskontrolle und Umgebung
 

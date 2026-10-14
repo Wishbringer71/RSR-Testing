@@ -65,12 +65,6 @@ namespace RotationSolver.GameData
 					writer.Generate();
 				}
 
-				// The German-to-English name index, so a name the user states can be looked up
-				// instead of researched. See GermanNameIndex for why the game files are the only
-				// source left for it.
-				GermanNameIndex.Write(gameData, Path.Combine(
-					solutionRoot, ".github", "scripts", "audit", "action_names_game.json"));
-
 				WriteResource("Status", new StatusGetter(gameData).GetCode());
 				WriteResource("ContentType", new ContentTypeGetter(gameData).GetCode());
 				WriteResource("ActionId", new ActionIdGetter(gameData).GetCode());

@@ -110,31 +110,6 @@ Seit 27.09.2026 ist die Referenz erreichbar. Offen: je Job die Standardrotation 
 
 Die Eigenschaft antwortet „ja", wenn das Spiel Solar als nächste Demi anzeigt **oder** die letzte Demi nicht Solar war. Zeigt das Spiel Bahamut an, während die eigene Geschichte etwas anderes sagt — etwa nach einem Tod, wenn das Spiel die Reihenfolge zurücksetzt —, gewinnt die Geschichte. Im Kampf hieße das: Searing Light fiele vor Bahamut statt vor Solar. Nicht belegt ist, wann das Spiel die Demi-Reihenfolge zurücksetzt und wann die umgestellte Id nicht lesbar ist; beides entscheidet, ob die Geschichte nur Rückfall sein darf.
 
-### Wiederbelebung: vier Eingriffe des Zweigs sind weiter ungemessen · N, R
-
-**Konzept:** `docs/rotation-flow/11-raise-dispatch.md`
-**Der Kerndefekt ist behoben und im Spiel bestätigt** — Beobachtung, Erklärung und Nachweis in
-`AUDIT_LOG.md` A73. Dieser Punkt führt nur noch, was der Spieltest nicht abdecken konnte.
-
-Vier Eingriffe auf `claude/raise-swiftcast-weave-2` sind nur unter Einstellungen wirksam,
-die abseits der Vorgabe liegen, und wurden deshalb mit dem Kernpfad nicht mitgetestet:
-
-- **Phönixfeder** samt Zieleignung über den Item-Status und Stufenprüfung der Rezzereigenschaft
-  (A59, A60). `UsePhoenixDown` ist ab Werk **aus**; ohne Einschalten passiert nichts.
-- **Hartwirk-Korrektur** (A56). Greift nur bei abgeschaltetem `RaisePlayerBySwift` — dem Fall, in dem
-  vorher überhaupt nicht wiederbelebt wurde.
-- **Bezugsmenge der Nur-Heiler-Modi** (A58). Nur bei `HardCastOnlyHealer` und
-  `HardCastOnlyHealerSwiftCooldown`.
-- **Spontanitäts-Vorbehalt in `HardCastOnlyHealer`** (A84). Derselbe Modus wie der Punkt darüber,
-  aber in einer Beobachtung davon trennbar: Der Vorbehalt zeigt sich daran, dass bei **bereiter**
-  Spontanität nicht mehr hartgewirkt wird, die Bezugsmenge daran, **welche** Heiler zählen.
-
-**Auflösungsbedingung:** je Eingriff eine Beobachtung unter der zugehörigen Einstellung. Für die
-Phönixfeder zusätzlich eine Gruppe ohne lebenden Rezzer, weil die Bedingung sonst nicht greift.
-
-**Bewertung:** kein Defektverdacht, sondern offener Nachweis. Die Wirkketten sind im Code
-nachvollzogen; was fehlt, ist die Bestätigung im Spiel.
-
 ### Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder ohne Messung weiter nur reaktiv · N
 
 **Stand (A260):** Vor einem gewirkten Tankbuster, den die Tankbuster-Tabelle selbst bei vollen LP und mit allen
@@ -302,6 +277,15 @@ Er fällt trotzdem kaum ins Gewicht, und der Grund liegt in der Wirkweise der Ak
 
 Bewusst eingegangene Kompromisse und erfasste Befunde ohne Wirkung im Kampf, je mit Kosten und Auflösungsbedingung.
 
+### Searing-Light-Abdeckungsmodell bildet die Phasenbuchung des Plugins von Hand nach · R
+
+**Konzept:** `docs/rotation-flow/12-searing-light-stacking.md`
+Der Modus „plugin" in `searing_light_coverage.py` rechnet die Phasenbuchung von `SummonerRotation.UpdateSearingPhaseBook` nach (gehalten = zwei bewertete Fenster in Folge besetzt, eigener Buff bewertet nicht) — am 14.10.2026 gleich (A286, K5, P1). Die CI hält die Invarianten des Modells, nicht seine Übereinstimmung mit dem Code.
+
+**Kompromiss:** Eine Verknüpfung über Textmuster im C#-Code prüfte Schreibweisen, nicht Verhalten (ein Surrogat); das Modell aus dem Code zu erzeugen, hieße einen C#-Interpreter für einen Teil der Rotation zu bauen.
+**Kosten:** Ändert sich die Buchung im Code, liefert das Modell weiter Zahlen für die alte Regel, ohne dass etwas fehlschlägt — und Konzept 12 argumentiert mit ihnen.
+**Auflösungsbedingung:** jede Änderung an `UpdateSearingPhaseBook`, `AllSearingPhasesHeld` oder `BurstPhaseHeldByAnother` trägt im selben Commit die Anpassung des Modus „plugin"; die Prüfung dafür ist der Diff dieser drei Stellen beim Review.
+
 ### `SwiftcastBuffer` hat keinen Leser, und ihre Absicht ist überholt · N
 
 `Configs.cs`, `SwiftcastBuffer`, definiert die Einstellung (0,6 s, eigene Oberfläche, eigene Dokumentation „how early before next GCD should RSR use swiftcast for raise"). Eine Volltextsuche über den Baum findet genau diese eine Fundstelle: Sie wird nirgends gelesen.
@@ -370,7 +354,9 @@ Nicht behoben, weil der Wirkungsbereich den Vorgang sprengt. Das Flag wird in `I
 
 **Umfang, erhoben statt geschätzt: 120 Fundstellen in 25 Dateien** — `BeirutaRDM` 16, `SGE_Reborn` 11, `NIN_Reborn` 10, `BeirutaSGE` 10, dazu `CustomRotation_Ability`, `CustomRotation_GCD`, `CustomRotation_Items` und die UI. Das Muster ist damit nicht die Ausnahme, die diese Rotation eingeführt hat, sondern die Hausform des gesamten Baums. Das ändert die Frage: Nicht „sollen diese zwei Stellen anders gebaut werden", sondern „hat der Baum eine seiteneffektfreie Prüfung nötig".
 
-**Vor einer Änderung zu klären:** ob RSR eine seiteneffektfreie Prüfung anbietet. Gibt es keine, ist die Frage, ob eine solche eingeführt werden soll — mit einem Wirkungsbereich über alle Rotationen, die `CanUse` als Prüfung benutzen, und damit auch über die abgeleiteten Rotationen als Paketnutzer.
+**Die Vorfrage, am Code beantwortet (14.10.2026, A286 H1):** RSR bietet keine seiteneffektfreie Prüfung. `BaseAction.CanUse` setzt bei Erfolg `PreviewTarget` und `Target`, schreibt außerhalb der Vorschau `Setting.EndSpecial` und protokolliert über `ActionTracer` — seit A284 erscheint eine abgelehnte Prüfung im Abwehrpfad deshalb auch als „refused before" in `DefenseTrace`. Eine abgelehnte Prüfung setzt kein Ziel; die Zuweisung steht hinter allen Prüfungen.
+
+**Folgen hätte die Nebenwirkung nur über einen zweiten Leser:** Code, der `X.Target` liest, ohne `X.CanUse` in derselben Entscheidung gerufen zu haben, liest das Ziel des letzten erfolgreichen Aufrufs, Prüfung oder nicht. Erhoben: 55 solche Lesestellen außerhalb der Churin-Dateien (kein `X.CanUse` in den drei Zeilen davor), überwiegend in Beiruta-Rotationen und Upstream-Code der Reborn-Rotationen (Barde, Viper, Ninja, Duty). **Offen, meine Arbeit:** je Stelle klären, ob das gelesene Ziel aus derselben Entscheidung stammt; erst wenn eine Stelle ein fremdes Ziel liest, ist eine seiteneffektfreie Prüfung (Wirkungsbereich: alle Rotationen und die Paketnutzer) überhaupt begründet.
 
 ### `HasSurvivingShield` misst die **kürzeste** Schildrestzeit, nicht die längste · N, R
 
@@ -431,7 +417,7 @@ Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A17
 
 **Kandidat, nicht Befund.** Die Gegenhypothese ist nicht widerlegt: Hat die Aquapolis gar keinen Vorrang-NPC dieser Art, dann ist ihre Auslassung aus der Aufzählung richtig und der Befund verschiebt sich auf die Konstante, die dann keinen Verwender braucht. Das ist eine Spieltatsache, und sie ist von hier aus nicht belegbar — das Enum `NPCName` ist aus den Spieldaten erzeugt, führt aber keinen Territoriumsbezug, und die Wikis sind vom Egress gesperrt.
 
-**Auflösungsbedingung:** eine Angabe des Auftraggebers oder eine Spielbeobachtung, welche Gegner in der Aquapolis Vorrang haben sollen. **Empfehlung: erfassen, nicht bearbeiten** — Schatzkarten stehen nicht im benannten Nutzungsprofil, und ohne die Namen wäre jeder Zweig geraten.
+**Auflösungsbedingung:** welche Gegner in der Aquapolis Vorrang haben — zuerst aus den Spieldaten (BNpcName des Gebiets) und Referenzquellen, wie bei den übrigen neun; seine Angabe nur, wo die Quellen schweigen (A286, H3). **Empfehlung: erfassen, nicht bearbeiten** — Schatzkarten stehen nicht im benannten Nutzungsprofil, und ohne die Namen wäre jeder Zweig geraten.
 
 ### Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen · N, R
 
@@ -440,11 +426,11 @@ Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A17
 
 **Der schwerste Fall war `RefinedHP`, und Upstream hat ihn behoben.** `5ffd22056` (Upstream, 12.09.2026, mit 7.5.6.6 eingezogen) legt einen Cache mit 15 ms Lebensdauer davor, ebenso für `AverageTTK` und die Gruppen-HP-Kennzahlen; `ResetAllRecords` verwirft ihn. Der folgende Absatz beschreibt den Stand davor und bleibt als Begründung stehen, weil das Muster in den übrigen Eigenschaften unverändert vorliegt: Es baute bei **jedem** Lesen ein neues `Dictionary` über alle Gruppenmitglieder, mit einem `try/catch` je Mitglied — und es ist die Nachschlagetabelle, aus der `ObjectHelper.GetHealthRatio` und `GetPlayerHealthRatio` ihren Wert holen. Eine Tabelle, die bei jedem Nachschlagen neu gebaut wird, ist unabhängig von der Häufigkeit eine verkehrte Konstruktion. `GetHealthRatio()` hat 129 Aufrufstellen im Baum.
 
-**Die Kosten sind geschätzt, nicht gemessen.** Aufrufstellen sind kein Maß für Aufrufe je Frame: die meisten liegen in Rotationen, die nie zugleich laufen. Ein Profiler ist von hier aus nicht verfügbar, und statische Prüfung reicht dafür nicht — die Zahl ist deshalb ausdrücklich als Surrogat gekennzeichnet und nicht als Wirkung.
+**Die Kosten misst der Code jetzt selbst (A286, H2).** Aufrufstellen sind kein Maß für Aufrufe je Frame: die meisten liegen in Rotationen, die nie zugleich laufen. `UpdateCost` misst jeden RSR-Aktualisierungsschritt vom ersten bis zum letzten Handler desselben Frames und schreibt nach jedem Kampf eine Zeile in `DefenseTrace.log`: Schritte, Mittel und Höchstwert in ms und den Anteil an der Framezeit der Frames, in denen RSR lief.
 
 **Warum trotzdem kein Defekt:** Das Verhalten ist richtig, nur der Aufwand ist es vielleicht nicht. `PartyMembers` ist auf die eigene Gruppe begrenzt (Allianzmitglieder gehen in `AllianceMembers`, geprüft an `TargetUpdater`), es geht also um maximal acht Einträge je Aufbau.
 
-**Auflösungsbedingung:** eine Laufzeitbeobachtung, ob es spürbar ist. **Auflösungsweg, falls ja:** Das Muster liegt im Baum bereits vor — `TargetUpdater` schreibt `PartyMembers`, `AllianceMembers` und `AllHostileTargets` einmal je Frame in `DataCenter`. `RefinedHP` gehört auf denselben Weg. Zu bedenken ist, dass `InEffectTime` zeitbasiert ist: ein Wert je Frame ist damit nicht bitgleich zum Wert je Lesen, also eine Verhaltensänderung ohne Nachweismöglichkeit und nach Projektregel nur mit beibehaltener Voreinstellung zu bauen.
+**Auflösungsbedingung:** die Messzeile im nächsten Protokoll; trägt RSR einen spürbaren Anteil der Framezeit oder ragen einzelne Schritte heraus, folgt der Umbau, sonst wird der Eintrag geschlossen. **Auflösungsweg, falls ja:** Das Muster liegt im Baum bereits vor — `TargetUpdater` schreibt `PartyMembers`, `AllianceMembers` und `AllHostileTargets` einmal je Frame in `DataCenter`. `RefinedHP` gehört auf denselben Weg. Zu bedenken ist, dass `InEffectTime` zeitbasiert ist: ein Wert je Frame ist damit nicht bitgleich zum Wert je Lesen, also eine Verhaltensänderung ohne Nachweismöglichkeit und nach Projektregel nur mit beibehaltener Voreinstellung zu bauen.
 
 **Empfehlung: erfassen.** Ohne Messung wäre jede Umstellung eine Verbesserung auf Verdacht, und der Betroffenenkreis umfasst die Paketnutzer: `RefinedHP` und die übrigen Eigenschaften sind öffentlich, ihr Aufrufverhalten ist Teil des Vertrags.
 
@@ -614,33 +600,9 @@ Im Kampf ändert keine dieser Gruppen etwas unmittelbar: Der Generator erzeugt d
 
 | Kennung | Befund | Kette |
 |---|---|---|
-| G1 | Der Namensindex wirft Namen aus, die in beiden Sprachen gleich sind (Holmgang, Intervention, Sprint) — falsche Lesart des Lumina-Rückfalls | K1 |
-| G2 | Der Abgleich mit dem erzeugten Index hat keinen Selbsttest | K1 |
-| G3 | „Job-Guide und xivapi gesperrt" steht noch in `GermanNameIndex` und `check_action_names.py`; deshalb schlägt eine unzulässige Quelle nicht fehl | K1 |
-| G4 | `action_names_game.json` wurde nie erzeugt; xivapi liefert dieselben Blätter auf Deutsch | K1 |
-| G5 | Docstring und Kommentar in `check_action_names.py` nennen Rückstoß als Aktion | K1 |
 | G6 | Teil a behoben (A287: Muster lasen fünf Minderungen nicht, Eintrag Schutzwall berichtigt); offen Teil b: die 15 % von Troubadour, Tactician, Shield Samba setzt ein Merkmal auf Stufe 98, die Tabelle führt 0 | K1 |
-| C1 | `check_fork_version.py`: Zweig ohne Tags ohne Selbsttest, Docstring veraltet | K2 |
-| C2 | `check_sync_state.py`: Selbsttest prüft `git`, nicht die Urteile des Skripts | K3 |
-| C3 | `check_sync_state.py`: gescheiterter Abruf wird verschluckt, der alte Stand gilt als aktuell | K3 |
-| C4 | `check_doc_references.py`: 25-Zeilen-Fenster und fehlende Bezeichner lassen zwei verrutschte Verweise in diesem Dokument durch | K4 |
-| C5 | `scan15.py` führt dieselbe Aufgabe mit anderem Fenster | K4 |
-| C6 | README: drei Zählungen ohne Datum | K4 |
-| P1 | Abdeckungsmodell bildet die Phasenbuchung von Hand nach | K5 |
-| P2 | `check_resource_lists.py` läuft nur von Hand | K6 |
-| P3 | `scan9` verweist für bekannte Stellen auf einen entfernten TODO-Eintrag | K6 |
-| P4 | README-Gegenprobe „genau sieben" mehrzeilige `RotationConfig` ist falsch (38) | K6 |
-| P5 | `scan.py` und `scan2` drucken zehn erledigte oder falsche Befunde ohne Bekannt-Vermerk | K6 |
-| R1 | „447 Fundstellen" für `nextGCD` ohne Datum (Konzept 11, Codekommentar) | K7 |
-| R2 | Stufe eines Mitglieds im synchronisierten Inhalt: Beleg aus WrathCombo nicht genutzt | K7 |
-| R3 | Konzept 11, „Was aus dem Quelltext nicht zu entscheiden ist": überholt und im Widerspruch zum eigenen Text | K7 |
-| R4 | Eintrag „Wiederbelebung: vier Eingriffe ungemessen" wartet auf seine Spielbeobachtung | K7 |
-| R5 | Konzept 11 zählt „drei" Eingriffe und nennt fünf | K7 |
-| H1 | Eintrag „`CanUse` als Prüfung": Vorfrage am Code beantwortbar | K9 |
-| H2 | Eintrag „Zustandsabfragen je Lesen": wartet auf seine Beobachtung, Selbstmessung nicht geprüft | K10 |
-| H3 | Eintrag „Aquapolis": nennt ihn als Quelle vor Spieldaten und Referenzquellen | K10 |
 
-Z1 (Zweiglöschung in A64 auf Titelgleichheit gestützt) ist nachträglich nicht messbar und hat keine Behebung.
+Z1 (Zweiglöschung in A64 auf Titelgleichheit gestützt) ist nachträglich nicht messbar und hat keine Behebung. Behoben und aus der Tabelle genommen: G1–G5 (A288), C1–C6 und P2–P5 (A286, Commits `ad2492a55`, `f9e710bd7`), R1–R5 (A289).
 
 ### Audit + Code-Review der gesamten Codebasis
 

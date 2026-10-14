@@ -7131,6 +7131,55 @@ Spiel ab?
 
 **Prüfgrad:** Spieldaten (xivapi v2, 7.57), Generator mit Selbsttest, Prüfskripte; Compile über die CI.
 
+### A288 · Behebung G1–G5: das Wörterbuch gegen die deutschen Spielblätter statt eines nie erzeugten Index (14.10.2026)
+
+Aus der Nachprüfung (A286, K1). Der Indexgenerator `GermanNameIndex` (`92bad597e`, `bddeb5e03`) hätte die deutschen
+Namen aus den Spieldateien geschrieben, brauchte dafür seine Spielinstallation und lief in 32 Tagen nie (G4); sein
+Gleichheitsfilter hätte gleichnamige Einträge verworfen (G1), sein Abgleich hatte keinen Selbsttest (G2), und seine
+Begründung „äußere Quellen gesperrt" war seit 27.09. hinfällig (G3).
+
+- *Entscheidung (mein Hilfsmittel):* `check_action_names.py` hält jeden Eintrag gegen die deutschen Spielblätter von
+  xivapi v2 (`language=de`) — Aktionen über die Zeilen-Id ihres Bezeichners, Gegenstände über ihre Id, Jobs über das
+  englische Kürzel. Widerspruch schlägt fehl; ist xivapi nicht erreichbar, wird dieser Teil übersprungen und gemeldet.
+  Selbsttest gegen eine konstruierte Antwort (bestätigt, widersprochen, nicht erreichbar). Am 14.10.2026: alle 55
+  Einträge bestätigt. Eine unzulässige Quelle schlägt jetzt fehl (Job-Guide und Spielblätter sind erreichbar); zulässig
+  sind seine Angabe, der Job-Guide und die Spielblätter.
+- *Entfernt:* `RotationSolver.GameData/GermanNameIndex.cs` und sein Aufruf in `Program.cs` — abgelöst durch die Prüfung
+  oben, die dieselben Blätter liest und tatsächlich läuft. `ResolveSqpackPath` bleibt (der Generator braucht ihn für die
+  englischen Ressourcen). Weniger Abweichung von Upstreams Generator.
+- *G5:* Docstring und Kommentar nennen Rückstoß nicht mehr als Aktion.
+- *`CLAUDE.md`, „Namen":* Nachschlagen im Wörterbuch, das die CI gegen die Spielblätter hält; als Beleg gelten seine
+  Angabe, der deutsche Job-Guide oder die deutschen Spielblätter mit Zeilen-Id. Der Zweck der Regel — nie einen Namen
+  selbst bilden — bleibt; ersetzt ist nur die Quelle, die nie verfügbar war.
+
+**Prüfgrad:** Prüfskript mit Selbsttest, Lauf gegen xivapi; Compile des Generators über die CI.
+
+### A289 · Behebung R1–R5, H1–H3, P1 (14.10.2026)
+
+Aus der Nachprüfung (A286, K5, K7, K9, K10).
+
+- *R1:* „447 Fundstellen" für `nextGCD` — im Konzept 11 als gezählt am 10.09.2026 datiert, im Codekommentar
+  (`CustomRotation_Ability`) ohne Zahl.
+- *R3:* Konzept 11, Abschnitt „Was aus dem Quelltext nicht zu entscheiden ist" entfernt; beide Fragen beantwortet das
+  Konzept selbst (Vorbehalt in allen vier Hartwirk-Modi; Einzelheiler: Hartwirken ist richtig).
+- *R4, R5:* Die einstellungsabhängigen Eingriffe der Wiederbelebung sind statisch belegt (A286, K7); dass
+  `GetActionStatus` für einen verwendbaren Gegenstand `0` liefert, nimmt WrathCombo ebenso an (`Items.cs`). „Grenzen des
+  Nachweises" sagt das, zählt nicht mehr „drei" bei fünf Gliedern; der TODO-Eintrag, der auf seine Spielbeobachtung
+  wartete, ist entfernt.
+- *R2:* Konzept 11 und der Kommentar an `DataCenter.RaiseLevel` führen den Beleg aus WrathCombo (`InFATE` setzt die
+  synchronisierte Stufe in `LocalPlayer.Level` voraus), als Werkzeugannahme gekennzeichnet, mit der Folge, falls nicht.
+- *H1:* Vorfrage am Code beantwortet — keine seiteneffektfreie Prüfung; `CanUse` setzt bei Erfolg `PreviewTarget` und
+  `Target`, schreibt `Setting.EndSpecial`, protokolliert über `ActionTracer` (seit A284 auch in `DefenseTrace`). Folgen
+  hätte das über Lesestellen von `X.Target` ohne eigenen `X.CanUse` derselben Entscheidung: 55 außerhalb der
+  Churin-Dateien, als offene Arbeit im Eintrag.
+- *H2:* `UpdateCost` misst den RSR-Aktualisierungsschritt je Frame (erster bis letzter Handler) und schreibt nach jedem
+  Kampf Schritte, Mittel, Höchstwert und Anteil an der Framezeit in `DefenseTrace.log`. Keine feste Zahl. Damit wartet der
+  Eintrag nicht mehr auf seine Beobachtung, sondern auf die Messzeile.
+- *H3:* Aquapolis-Eintrag: Spieldaten und Referenzquellen vor seiner Angabe.
+- *P1:* als technische Schuld geführt (Kompromiss, Kosten, Auflösungsbedingung im Commit, der die Buchung ändert).
+
+**Prüfgrad:** statisch, WrathCombo-Quelltext gelesen (Werkzeug, keine Spielquelle); Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

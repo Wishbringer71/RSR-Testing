@@ -55,7 +55,8 @@ a rotation counts a tankbuster as on you (the Dark Knight's The Blackest Night o
 
 Each defence decision, and each "open, nothing chosen", now ends with the actions the defence refused on its way and
 the reason the game check gave, and with the holds that were standing. Each HP potion RSR chooses is written with the
-branch that allowed it and your HP at that moment.
+branch that allowed it and your HP at that moment. After each fight a line gives what RSR's update cost per frame during
+it: the number of cycles, the mean and the longest in milliseconds, and its share of the frame time.
 
 ## Tanks: a tankbuster that landed under Intervention or Taurochole is learned at its real size
 
