@@ -80,25 +80,15 @@ Minderung" (`Skip mitigation for small area casts`). *Messmittel:* `DefenseTrace
 defence open, nothing chosen" mit den Quellen; zusammen mit „hit you" trennt eine Aufzeichnung eines Samurai-Kampfs
 „Flagge nie offen" von „offen, alles abgelehnt". Auflösung: ein solches Protokoll.
 
-### Burst-Einstellung der Fernkämpfer und Pictomancer weicht keiner Gefahr · N
-
-Barde, Pictomancer und Tänzer führen „Prevent the use of defense abilties during burst" (ab Werk an). Die allgemeine Schranke (Konzept 08, „Die Abwehrsperren") greift dort nicht, weil der Einstellungstext ohne Ausnahme „verhindern" sagt und bindet. Im Kampf: Ein tödlicher Raidwide im Burst bekommt von diesen drei Jobs keine Minderung. Zur Entscheidung vorzulegen: Text ändern (seine Entscheidung) oder so lassen. Dieselbe Einstellung als Damage-Dealer-Regel zu führen, wäre die Stufe „Damage Dealer".
-
 ### Tänzer: Improvised Finish — Stapel aufbauen bei angekündigtem Treffer · N
 
-Seit A202 wird Improvised Finish sofort gewirkt (5 %). Offen als Verbesserung: bei angekündigtem Flächentreffer Rising Rhythm bis 4 Stapel (10 %) aufbauen, je Stapel drei Sekunden ohne Aktion. Nutzen nicht belegt, also eigene Option, ab Werk aus; zur Entscheidung, ob sie gebaut werden soll. Konzept 14, „Wechselwirkungen und Zeit".
+Seit A202 wird Improvised Finish sofort gewirkt (5 %). Offen als Verbesserung: bei angekündigtem Flächentreffer Rising Rhythm aufbauen (bis 4 Stapel, 10 %), je Stapel drei Sekunden ohne Aktion. Meine offene Arbeit, keine Frage an ihn: Der Loop muss rechnen, ob die zusätzliche Barriere einen Tod verhindert, den die 5 % nicht verhindern (gemessener Treffer gegen vorausberechnete Gesundheit, dieselbe Rechnung wie die Schranke), und ob die Zeit bis zum Treffer überhaupt einen Stapel zulässt; erst danach steht fest, ob die Regel ohne Option gebaut wird oder entfällt. Konzept 14, „Wechselwirkungen und Zeit".
 
 ### Krieger: Nascent Flash — offene Bausteine · N, U
 
 Nach seinen Kriterien (29.09.2026) bewertet und gebaut (Konzept 09, „Krieger: Urimpuls für sich oder Urflackern für andere"; A226). Offen:
 - *Offen, jetzt mit Quelle:* Nascent Flash als Minderung für den anderen Tank vor dessen Tankbuster. The Balance (Warrior Basic Guide, Makros, 02.10.2026): „Most often on the co-tank of your eight-person party.“ Braucht die Erkennung des Tankbusters auf dem anderen Tank und die Abwägung über die vorhandene Triage.
 - *Upstream-Bauform:* Raw Intuition/Bloodwhetting fällt nur, solange das Ziel des Kriegers ihn anvisiert (`PlayerIsTargetOnSelf`). Ein Off-Tank mit Tankbuster-Marker bekommt es aus der Einzelabwehr nicht.
-
-### Vorschläge aus dem WrathCombo-Vergleich · N, U
-
-V1 gebaut für Weißmagier, Astrologe und Weiser (A184); die Barriere des Weisen steht seit 03.10.2026 ab Werk an (A251). Offen: Aetherpact als Vorab-HoT des Gelehrten, sein Vorschlag gegen zwei bindende Einstellungstexte, gebündelt vorgelegt. V3 geprüft, keine Übernahme (A190). V2 gebaut (A189), V5 gebaut (A186); V4 und V6 geprüft, nicht gebaut (A188, A187).
-
-**Konzept:** `docs/rotation-flow/15-wrathcombo-comparison.md`
 
 ### Rotationen gegen The Balance abgleichen · N
 
@@ -132,18 +122,6 @@ Phönixfeder zusätzlich eine Gruppe ohne lebenden Rezzer, weil die Bedingung so
 
 **Bewertung:** kein Defektverdacht, sondern offener Nachweis. Die Wirkketten sind im Code
 nachvollzogen; was fehlt, ist die Bestätigung im Spiel.
-
-### Zielwahl der Heilung: Rollenschwellen 45/40 kehren im Band die Rangfolge um · N, U
-
-Die Zielwahl nach Gefährdung ist gebaut (Konzept 07, Stufen 1 bis 3; A89, A93, A183). `HealTargetByDanger` und
-`HealAheadOfDamage` stehen ab Werk an. Offen ist nur noch die Schwellendifferenz: `HealthTankRatio` 0,45 gegen
-`HealthHealerRatio` und `HealthSelfRatio` 0,40, alle drei wie in `upstream/main`.
-
-- *Wirkung:* Stehen Heiler und Tank beide unter Beschuss und beide zwischen 40 und 45 %, kommt nur der Tank in
-  Gefährdungsklasse 2 und wird zuerst geheilt. Das widerspricht seiner Gleichstandsregel (Heiler vor Tank).
-- *Ohne Beschuss oder bei Gefährdungsklasse 1:* keine Umkehr.
-- *Entscheidung:* Ob die Werte vereinheitlicht werden, ist eine Wertentscheidung über seine Konfiguration und
-  liegt bei ihm.
 
 ### Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder ohne Messung weiter nur reaktiv · N
 
@@ -289,65 +267,10 @@ Co-Tank-Provoke zog den Boss von einem Tank unter Unverwundbarkeit) gehört in d
 
 **Nicht bearbeitet:** Der Umbau trifft acht Rotationsdateien plus die gemeinsamen Helfer, alle in seinem Profil (alle Kampfjobs). Er braucht einen eigenen Loop über die Frage, welche Vorlaufzeit eine gemessene Größe ohne angekündigten Zeitpunkt trägt; eine Spielbeobachtung als Voraussetzung ist nicht seine Aufgabe.
 
-### Zielüberschreibungen nach Punkten bei Dunkelritter und Revolverklinge — erfasst, Entscheidung offen · N, U
-
-**Konzept:** `docs/rotation-flow/07-heal-target-priority.md`, `docs/rotation-flow/10-drk-blackest-night.md`
-
-Dieselbe Bauform wie bei Rekindle, aber **nicht** ohne Weiteres derselbe Fehler: The Blackest Night und Oblation (`DRK_Reborn.cs`), Heart of Corundum, Heart of Stone und Aurora (`GNB_Reborn.cs`) wählen ihr Ziel über `targetOverride: TargetType.LowHP`, also nach aktuellen Lebenspunkten. Für eine Barriere gegen **einen** angekündigten Treffer ist das Punktemaß nach Konzept 07 das richtige — ein Treffer ist eine absolute Zahl.
-
-**Was gleichwohl zu entscheiden ist:** Beim Dunkelritter hängt an derselben Wahl eine zweite Prüfung (`GetHealthRatio() <= BlackLanternRatio`). Zeigt die Sortierung auf einen Unverletzten mit kleinem Pool, schlägt diese Prüfung fehl und die Aktion fällt **gar nicht** — statt auf ein anderes Ziel auszuweichen. Beim Revolverklinge fehlt im `Fullusage`-Zweig jede Bedarfsprüfung.
-
-Die Entscheidung berührt die dokumentierte Begründung in `10-drk-blackest-night.md` und gehört dem Auftraggeber; bearbeitet wird hier nichts. Die Fundstellen in den PvP-Rotationen liegen außerhalb seines Nutzungsprofils und bleiben unbearbeitet.
-
-### Schimmerschild und Addle: der zweite Weg ist gebaut, die übrigen Schrauben bleiben offen · N
-
-**Konzept:** `docs/rotation-flow/13-aoe-damage-classification.md`
-
-**Spielbeobachtung des Auftraggebers, 4er-Instanz:** kein Addle und kein Radiant Aegis trotz Flächenschaden — mal ja, mal nein.
-
-**Zwei Ursachen, beide behoben.** Die erste war die Bewertung aus A101, die allein nach Heilbedarf fragte und bei gesunder Gruppe jeden Anteil unter 0,35 verwarf (behoben in A108: ab 0,25 der Maximalgesundheit ist die Fläche groß, unabhängig vom Zustand der Gruppe). Die zweite ist der Vorfilter davor: `IsHostileCastingBase` verwirft jeden **unterbrechbaren** Cast, und Dungeon-Trash castet überwiegend unterbrechbar. Der Beschwörer hat keinen Interrupt — wird nicht unterbrochen, schlägt der Cast ein und nichts hat geantwortet. Dafür steht jetzt `IsHostileCastingLargeArea` hinter `Mitigate a big area cast even when it is interruptible` (**Vorgabewert an** seit 29.09.2026, A120).
-
-**Die Lage ist nach seiner Angabe zu unterscheiden — Boss gegen Trash.** `UseBmrTimeline` ist bei ihm **eingeschaltet** (seine Angabe, 20.09.2026). Die BMR-Wege sind für ihn also nicht tot, sondern hängen an `BMRActive` = `BMRHasActiveModule`:
-
-| Lage | Radiant Aegis | Addle |
-|---|---|---|
-| **Boss mit Modul, das Raidwides führt** | über `GeneralAbility` — `BMRShouldRefreshBefore(BMRRaidwideIn, 30 s, …)`; zusätzlich öffnet `BMRNextRaidwideIn` die Verteidigungsflagge | über `ShouldSustainMitigationDebuff`, erster Zweig (`BMRDamageIn`) |
-| **Boss ohne Modul oder mit Modul ohne Raidwide-Einträge** | wie Trash: nur der Vorfilter-Weg | zweiter Zweig (Gegnerzahl), bei gesetzter Verteidigungsflagge |
-| **Trash** (kein Modul) | nur über `AutoStatus.DefenseArea` und dessen Cast-Vorfilter | zweiter Zweig ohne BMR: `NumberOfHostilesInRange >= MitigationSustainHostileCount` und Status läuft ab — **aber** weiterhin nur bei gesetzter Verteidigungsflagge |
-
-**Für Trash bleibt der Befund bestehen**, und der neu gebaute Weg zielt genau dorthin: Kein Modul heißt keine Vorhersage, und der Vorfilter verwirft unterbrechbare Casts.
-
-**Zwei Schrauben bleiben, keine ohne ihn zu drehen:**
-
-| Schraube | Was dafür spricht | Was dagegen spricht |
-|---|---|---|
-| Tankbuster-Einschränkung für RangedMagical lockern | öffnet `DefenseSingleAbility` im Gruppenpull | stammt aus A9/C10 — seiner eigenen Meldung, dass es zu oft feuerte |
-| Vorfilter-Fenster (Restzeit 1–2 GCDs) weiten | erfasst kurze Casts | trifft alle Jobs und über `IsUnderThreat` auch die Notfallheilung des Weißmagiers |
-
-**Empfehlung: keine davon jetzt.** Zuerst ist zu beobachten, was der gebaute Weg im Spiel bringt. Die Sonde dafür steht bereit: Die AoE-Liste zeigt je Aktion den gemessenen Anteil und ob die Regel etwas verworfen hat.
-
-**Nicht verschärft, aber zu wissen:** `IsHostileCastingAOE` speist auch `ObjectHelper.IsUnderThreat` und darüber `BenedictionNeedsThreat`. Der neue Weg ist deshalb bewusst eine eigene Eigenschaft und kein Lockern der bestehenden.
-
 ### Dieselbe Frage steht bei Tankbustern, Rückstoß und Unterbrechung offen · N
 
 **Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`, `docs/rotation-flow/13-aoe-damage-classification.md`
 Für Tankbuster ist sie beantwortet: Die Tankbuster-Tabelle misst jeden Treffer ungemindert auf jedem Spieler und trägt den Tankbuster-Plan (A259, Konzept 09). Offen bleiben `HostileCastingKnockback` und `HostileCastingStop` mit derselben Struktur: Der Messpfad im Effekt-Handler ist derselbe; was fehlt, ist je Liste ein eigener Speicher und die passende Rechnung, und je Liste die Frage, was die Größe dort entscheidet (ein Rückstoß schadet oft nicht, er verschiebt).
-
-### Die globalen Einstellungen zeigen kein Symbol für ihre Erklärung · N, U
-
-Gefunden bei der Erhebung der Fork-Einstellungen (A103). Die beiden Tooltip-Wege verhalten sich verschieden, und der Unterschied trifft die Sichtbarkeit:
-
-| | Rotationseinstellungen (`RotationConfig.Tooltip`) | Globale Einstellungen (`UI.Description`) |
-|---|---|---|
-| Symbol | `(?)` neben der Zeile, gezeichnet **nur** bei vorhandenem Tooltip | keines |
-| Auslöser | Überfahren des Symbols | Überfahren der Einstellung |
-| Schalter „Show tooltips" | wirkt **nicht**, das Symbol nutzt ImGui direkt | wirkt — bei Aus erscheint nichts |
-
-**Wirkung:** Bei einer globalen Einstellung ist nicht erkennbar, dass eine Erklärung vorliegt; wer nicht zufällig darüberfährt, findet sie nie. Und wer „Show tooltips" abgeschaltet hat, bekommt sie überhaupt nicht, während die Rotations-Erklärungen weiter erscheinen — derselbe Nutzer, zwei verschiedene Antworten.
-
-**Nicht behoben, weil der Wirkungsbereich den Auftrag überschreitet.** Das Symbol nachzuziehen heißt, `Searchable.ShowTooltip` beziehungsweise die sieben Zeichner in `RotationSolver/UI/SearchableConfigs/` anzufassen; das trifft **alle** Upstream-Einstellungen mit Beschreibung, nicht nur die des Forks, und erzeugt Merge-Aufwand bei jeder Upstream-Änderung an diesen Dateien. Der Auftrag betraf die Erklärungen der Fork-Einstellungen.
-
-**Auflösungsbedingung:** Freigabe des Auftraggebers für den Eingriff in den gemeinsamen Zeichenpfad. Die kleinere Variante wäre, das Symbol nur dort zu zeichnen, wo eine Beschreibung vorliegt — das ist genau die Bedingung, die der Rotationspfad schon benutzt, und damit kein neues Verhalten, sondern die Übernahme des vorhandenen.
 
 ### DRK: Ob The Blackest Night auf dem Pull bricht, misst niemand · N, U
 
@@ -643,28 +566,6 @@ angekündigten Treffers (Konzept 13) diese Lücke schon schließt, weil er die b
 
 **Reihenfolge nach seinem Nutzungsprofil:** zuerst die Werte in den Jobs, die er spielt (Beschwörer, Weißmagier, Tanks, die zentrale Abwehr in `CustomRotation_OtherInfo`), dann der Rest. Die Vorlaufzeiten der Abwehr sind vermutlich über `DefensiveValues.DurationOf` ableitbar; wo ein Merkmal die Dauer im Wirktext leer lässt, braucht es einen eigenen Weg.
 
-### Das Abwehrmittel nach der Größe des Treffers wählen — Stufe 1 widerlegt, Stufe 2 gebaut, Stufe 3 offen · N, R
-
-**Freigegeben vom Auftraggeber** („Abwehrmittel-kaskade soll nach erneuter Prüfung im Loop umgesetzt werden"), im Loop erneut geprüft, und das Ergebnis ist dreigeteilt. **Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
-
-**Stufe 1 — Deckung nach Treffergröße: widerlegt, nicht umgesetzt.** Die Auswahlregel war gebaut und ist zurückgebaut, weil die Falsifikationsstufe ergab, dass sie im ganzen Baum nie greift: Minderungen kennen kein „zu groß" (sie skalieren mit dem Treffer), und kein Job hält zwei Anteilsbarrieren zur Wahl — beim Pictomancer **entfernt** Tempera Grassa das Tempera Coat. Beleg und Hergang: A118.
-
-**Stufe 2 — vor dem angekündigten Treffer heilen: gebaut**, hinter `Heal ahead of an announced area cast`, **Vorgabewert an** (seit 29.09.2026). Das ist der Teil, der wirkt, und er schließt zugleich die in Konzept 07 und 08 geführte Lücke „die Zielwahl/die Schwellen lesen die gemessene Treffergröße nicht".
-
-**Stufe 3 — bei Treffern über der Maximalgesundheit Barriere und Minderung zusätzlich: offen**, eigener Eintrag unten.
-
-**Erhalten aus dem Durchgang:** `RotationSolver.Basic/Data/DefensiveValues.g.cs` — je Abwehraktion der im eigenen Wirktext genannte Wert, erzeugt aus den Ressourcen und in der CI gegen sie geprüft. Sie hat Stufe 1 widerlegt, sie trägt die übrigen offenen Punkte der Familie, und sie hat die handgeführte 35-Namen-Liste in `mitscan.py` ersetzt, die unter anderem Seedsower und Plenary Indulgence nicht kannte.
-
-### Stufe 3 der Abwehr-Kaskade: Treffer über der Maximalgesundheit · N, R
-
-**Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
-
-**Vorgabe des Auftraggebers, der noch offene Teil:** „wenn dann die hp unter dem schadenswert liegt, sollte zusätzlich geschildet werden. bzw. der schadensoutput reduziert." Übersteigt der Treffer auch die Maximalgesundheit des schwächsten Mitglieds, reicht Heilung nicht — dann sind Barriere **und** Minderung zusätzlich zu setzen, bis der Rest darunter liegt.
-
-**Erhoben (A140): Wo sie etwas ändert, sind es die Stapelsperren.** Ist die Kette offen, gibt sie in jedem Einschiebeplatz das nächste bereite Mittel aus, und die Statusprüfungen verhindern nur Doppelungen desselben Effekts. Eine allgemeine Regel „beides zusammen" wäre dort folgenlos — dieselbe Lage wie bei Stufe 1 (A118). Folgen hat sie nur an den Stellen, die das Stapeln ausdrücklich sperren: beim Weißmagier die 20 s nach Temperance oder Liturgy, beim Dunkelritter der Zwei-Minuten-Burst, bei der Revolverklinge No Mercy (Eintrag „Flächenabwehr im Zeitfenster eigener Wirkungen gesperrt"). Stufe 3 heißt damit konkret: diese Sperren fallen, wenn der angekündigte Treffer groß ist. Das ist seine Entscheidung und ihm mit Empfehlung vorgelegt.
-
-**Vorhanden dafür:** `DefensiveValues.g.cs` mit dem Wert je Abwehraktion, `HostileCastingAreaPotential` mit der Treffergröße, `GetCurrentMitigationPercent` mit der bereits laufenden Minderung.
-
 ### Nachprüfung der 73 Commits vom 11. und 12. September 2026 · N, R, U
 
 **Konzept:** `docs/rotation-flow/06-fork-audit.md`
@@ -679,20 +580,11 @@ Der Auftraggeber hat die Arbeit dieser beiden Tage als nicht belastbar zurückge
 3. **Prüfmittel** — offen. Ein Skript, das das Surrogat statt der Wirkung misst, erzeugt stille Nullbefunde; genau diese Fehlerklasse war der Anlass ihrer Überarbeitung.
 4. **Doku und sonstiges** — offen, zuletzt, weil eine falsche Aussage dort nur mitträgt, was der Code ohnehin zeigt.
 
-Wie viele Commits in jeder Gruppe noch auf ZWEIFELHAFT stehen, zählt die Tabelle in B2 aus; eine Zahl hier wäre bei der nächsten Nachprüfung überholt, ohne dass etwas fehlschlüge.
+Wie viele Commits in jeder Gruppe noch auf ZWEIFELHAFT stehen, zählt die Tabelle in B2 aus. Gemessen am 14.10.2026 (A283): 55 offen; bei 14 überlebt keine Zeile im heutigen Baum, die übrigen 41 tragen noch 3752 von 5699 hinzugefügten Zeilen.
 
 **Prüfmaßstab je Commit:** Belegt der Diff, was die Nachricht behauptet? Ist die zugehörige Wirkkette im Code nachvollzogen oder nur erzählt? Welcher Prüfgrad war tatsächlich erreicht — statisch, Prüfskript, Compile, Spiel? Ergebnis je Commit als **KEIN FEHLER**, **KORRIGIERT** oder **VERWORFEN** in B2 eintragen; ZWEIFELHAFT bleibt stehen, bis geprüft.
 
 **Die Fortsetzung beginnt auf Freigabe des Auftraggebers**, nicht aus eigenem Antrieb — er hat die Code-Gruppe ausdrücklich beauftragt, die übrigen drei nicht.
-
-### Reihenfolge im Verteidigungspfad des Dunkelritters: teuer vor billig · N, U
-
-**Konzept:** `docs/rotation-flow/10-drk-blackest-night.md`
-`DefenseSingleAbility` gibt je Gelegenheit eine Aktion zurück und führt The Blackest Night (Priorität 20) weit vor Reprisal (`:296`, `:301`). Weil die Barriere nur 15 s Abklingzeit hat, gewinnt sie fast jede Gelegenheit; die kostenlose, gruppenweite Minderung landet erst, wenn sie gerade nicht verfügbar ist.
-
-**Behandelt, aber nicht behoben:** Der Pull-Zweig der Option `BlackestNightUsage` verlangt jetzt, dass Reprisal zuerst liegt (A46). Das wirkt nur für den, der die Option umstellt.
-
-**Kosten des Kompromisses:** In der Voreinstellung bleibt die Rangfolge, wie sie ist. **Zur Entscheidung vorgelegt (A195), statt auf eine Beobachtung von ihm zu warten:** die Reprisal-Zeilen im Pfad vor The Blackest Night ziehen. Das trifft alle Lagen, berührt aber seine Vorgabe „Reprisal und Abtausch zurückhalten, solange die Barriere steht" (Konzept 10): Liegt Reprisal zuerst, steht die Barriere noch nicht, und die Vorgabe greift in diesem Pfad nicht mehr.
 
 ### Audit + Code-Review der gesamten Codebasis
 

@@ -6748,7 +6748,65 @@ Plugin 5 Warnungen, GameData 0). Im Kampf ohne Wirkung.
   eine Probe mit einem Verstoß je Code muss ohne Schalter bauen und mit Schalter an jedem Code als Fehler scheitern.
   Preis: Bringt ein Upstream-Sync einen dieser Verstöße mit, schlägt die CI fehl, bis die Stelle im Fork berichtigt ist.
 
-**Prüfgrad:** CI-Protokoll gelesen; statisch. Der Selbsttest der Probe läuft erst mit dem Push.
+**Prüfgrad:** CI-Protokoll gelesen; statisch. Der Selbsttest der Probe läuft erst mit dem Push. (Nachtrag: Lauf
+38529118593 grün, die Probe scheitert an allen sieben Codes, der Build ist ohne Warnung.)
+
+### A283 · Seine Rüge: zehn „Entscheidungen" ohne Vorarbeit; jede im Loop geprüft (14.10.2026)
+
+Seine Rüge auf die Antwort zu „was ist in todo offen?": „meine Entscheidung? Begründung, Vorschlag? vorab im Loop
+Konzept geprüft? … du versuchst wieder dinge, welche überhaupt nicht ausreichend recherchiert und geplant wurden, auf
+mich abzuschieben". Einordnung: Bekräftigung der Vorgabe „Bevor ich ihn frage" (CLAUDE.md).
+
+- *Ursache am System:* Die Antwort übernahm die Kennzeichnung „zur Entscheidung" aus `TODO.md`. Diese Kennzeichnungen
+  stammten aus A140, A195, A207 und früher; ein Loop mit Vorlage stand hinter keiner. Mehrere waren durch spätere Arbeit
+  längst beantwortet (A159, A227, Upstream-Umbau A253). *Behoben:* `CLAUDE.md` („Archiv und TODO"): Ein Eintrag gilt
+  erst als seine Entscheidung, wenn Loop und Vorlage darin stehen; sonst ist er meine offene Arbeit.
+- *Seine Vorgabe im selben Zug (14.10.2026):* „rdm ähnlich smn: rezz während burst ist erlaubt. … heilung wenn
+  notwendig und heiler tot sind oder mit heilen nicht nachkommen (z.b. kein mana haben). prinzip: was nutzt eigener
+  ausgeteilter schaden, wenn andere sterben und damit keinen schaden mehr verursachen?" Eingetragen: Konzept 08
+  („Die Abwehrsperren"), das Prinzip als Grund der Spielweise in `CLAUDE.md`.
+
+**Je Punkt:**
+- *A, Burst-Sperre von Barde, Tänzer, Pictomancer:* entschieden. Die Abwehrpfade laufen nur für einen angekündigten
+  oder gemessenen Treffer; die Einstellung verwarf genau diese im Burst, allein für Schaden (ein Einschub). Nach seiner
+  Spielweise und der Präzedenz A227 (Upstream-Einstellungen gegen seine Vorgaben stehen aus) ab Werk **aus**, Tooltip
+  mit Wirkung. Falsifikation: kein Defekt? Die Einstellung widerspricht seiner Regel mit dem Wahrscheinlichkeitsmaß,
+  das die Flagge ist. Option falsch? „An lassen und an der Schranke weichen" widerspräche ihrem Text. Nichts ändert sich?
+  Hat er sie selbst eingeschaltet, bleibt sie an — dann ist es seine Einstellung. `BeirutaPCT` (fremd) unverändert.
+- *B, Rollenschwellen 45/40:* entschieden. Konzept 07 begründete die Differenz mit der fehlenden Schadensrate und
+  nannte selbst den Fall, in dem sie nicht trägt: beide unter Beschuss — genau die Bedingung von Klasse 2. Gebaut:
+  Zum gewählten Kandidaten der Klasse 2 kommt jeder beschossene Heiler oder Tank, der gleich tief oder tiefer steht. Die
+  Texte „Heal … first if their HP is lower than this" sind hinreichende Bedingungen und bleiben wahr. Verworfen: gemeinsame
+  Schwelle (legte eine Einstellung still), neue Heiler-Voreinstellung (erreicht eine gespeicherte Konfiguration nicht).
+  Nichts ändert sich? Bei gleichen Werten in seiner Konfiguration oder ohne beide unter Beschuss — dann ist nichts zu ändern.
+- *C, Aetherpact vorab (sein Vorschlag):* geprüft, nicht gebaut. Aetherpact ist ein sofortiger oGCD; beim ersten Schaden
+  kostet er im Pull keinen GCD, anders als Regen und Aspected Benefic. Vorab verbraucht Fey Union je Takt 10 Feenanzeige
+  an einem vollen Tank (Job-Guide), genau der Verbrauch, den „Do not start Aetherpact if … above" verhindert. Konzept 15.
+- *D, Zielwahl nach Punkten (Dunkelritter, Gunbreaker):* Fehlerbehebung, berührt die Begründung in Konzept 10 nicht.
+  Dunkelritter: Wahl unter den Mitgliedern unter der Schwelle statt Wahl, dann Schwelle (`CanUseOnLowestBelow`). Gunbreaker:
+  Aurora mit „Full target usage" nach der Heilzielwahl, denn sie ist eine Heilung, keine Barriere gegen einen Treffer.
+- *E, Reprisal vor The Blackest Night:* erledigt seit A227 — die Voreinstellung `TankbusterHeavyPullOrLowHealth` trägt die
+  Pull-Bedingung „Reprisal und Arm's Length zuerst". TODO-Eintrag entfernt, Konzept 10 berichtigt.
+- *F, Stufe 3 der Kaskade:* erledigt seit A159 — die Schranke lässt jede Rückhaltung weichen, sobald der gemessene Treffer
+  ein ungeschütztes Mitglied in Klasse 1 brächte; ein Treffer über der Maximalgesundheit tut das immer. Konzept 08.
+- *G, Schimmerschild/Addle, zwei Stellschrauben:* gemessen an seinen Protokollen, beide bleiben zu. Flächentreffer auf ihn
+  ab 5 % mit zwei Zielen ohne Flächenabwehr-Entscheidung in den 10 s davor: 04.–10.10. 181 von 285 (3 kurze gelistete
+  Casts, 42 ohne Wirkzeit, 41 nicht gelistet, 62 gelistet lang aus älteren Builds, A272/A277); 13.10. 14 von 30, davon 10
+  Helfer (A277), kein kurzer Cast. Die Magier-Tankbuster-Einschränkung ist seine Meldung (A9, C10). Konzept 13.
+- *H, Erklärungssymbol globaler Einstellungen:* erledigt durch den Oberflächenumbau (A253): Beschreibungen stehen unter dem
+  Namen (`UiInlineDescriptions`, ab Werk an), wie bei den Rotationseinstellungen.
+- *I, Nachprüfung der Commits vom 11./12.09.:* bleibt seine Freigabe (Umfang der Arbeit, A87 „Code-Gruppe beauftragt, die
+  übrigen nicht"). Vorbereitet: 55 offen, 14 ohne überlebende Zeile, 41 mit 3752 von 5699 Zeilen im heutigen Baum.
+- *J, Plugin-Identität:* keine Entscheidung fällig (Auflösungsbedingung: beide Installationen nebeneinander).
+- *Rotmagier (seine Vorgabe):* „Prevent raising during burst combos" ab Werk aus; „Prevent healing during burst combos"
+  weicht über `HoldPartyHeal` (neu, Stufe „alle" der Abwehrsperren: kein Heiler lebt oder ein Mitglied in Klasse 1).
+  Fehlendes Mana misst die Regel an seiner Wirkung, nicht am Mana. Die Upstream-Zeilen der Burst-Bedingung bleiben
+  unverändert (`check_fixed_values.py`).
+- *Offen als meine Arbeit:* Tänzer, Improvised-Finish-Stapel (TODO umformuliert: Rechnung, ob die zusätzliche Barriere
+  einen Tod verhindert, statt Option zur Wahl).
+
+**Prüfgrad:** statisch (Code, Konzepte, Archiv, Versionsgeschichte); Job-Guide; Messung an seinen beiden Protokollen;
+Prüfskripte; Compile über die CI nach dem Push. Im Spiel nicht beobachtet.
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
