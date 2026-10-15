@@ -224,6 +224,12 @@ public static class StatusHelper
 	};
 
 	/// <summary>
+	/// What a body carries once a raise has landed on it: "Raise" under two ids with the same name and text
+	/// ("Teetering on the brink of consciousness."). BossModReborn and DelvUI read both; RSR read 148 alone (A294).
+	/// </summary>
+	public static StatusID[] RaiseStatus { get; } = [StatusID.Raise, StatusID.Raise_1140];
+
+	/// <summary>
 	/// The elemental weakness statuses used in Occult Crescent
 	/// </summary>
 	public static StatusID[] OccultWeaknessStatuses { get; } =

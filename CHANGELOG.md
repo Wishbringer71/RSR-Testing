@@ -28,7 +28,8 @@ are not reconstructed here.
 `GetDeath` now also skips a dead member another player is casting a raise on at that moment, recognised by the
 action's `DeadTargetBehaviour`. The body was a candidate until the `Raise` status landed, which made two healers
 cast on it. A rotation that picks its raise target through `GetDeath` or `DataCenter.DeathTarget` leaves such a
-body to the other caster.
+body to the other caster. `GetDeath` also leaves out a body carrying `Raise_1140`, the second id of the Raise
+status, through the new `StatusHelper.RaiseStatus`.
 
 ### Behaviour change: the area heal flags rise ahead of an announced area hit only when it endangers someone
 

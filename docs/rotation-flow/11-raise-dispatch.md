@@ -285,7 +285,7 @@ Drei Zeitpunkte sind zu unterscheiden, und nur der mittlere ist für die Auswahl
 | Zeitpunkt | Was RSR sieht | Folge für die Zielmenge |
 |---|---|---|
 | Wirken beginnt | den Cast des Wirkenden samt Ziel (`CastTargetObjectId`) | `GetDeath` schließt das Ziel aus, solange ein anderer Spieler den Cast führt (A293) |
-| Wirkung landet | das Ziel trägt `StatusID.Raise` | `GetDeath` schließt es aus (`TargetFilter.cs:105`) |
+| Wirkung landet | das Ziel trägt `Raise` (148 oder 1140, `StatusHelper.RaiseStatus`) | `GetDeath` schließt es aus (`TargetFilter.cs:105`) |
 | Der Tote nimmt an | keine eigene Meldung nötig | schon vorher ausgeschlossen |
 
 Die Zeit bis zur Annahme durch den Gefallenen ist für die Entscheidung damit ohne Bedeutung: Der
@@ -306,10 +306,26 @@ Swiftcast bleibt für einen Leichnam, den niemand versorgt. Jede Zurückstellung
 `DefenseTrace.log` („raise left to …", mit Ziel und Restzeit). Dieselbe Erhebung zählt fremde Esuna-Casts je Mitglied;
 die eigene Esuna nimmt nur, was nach ihnen an entfernbaren Effekten übrig bleibt.
 
+**Wirken beide schon, bricht RSR die eigene Wiederbelebung ab, sobald die fremde auf denselben Leichnam früher
+landet** (`CancelCastUpdater.RaiseLandsFirstElsewhere`, A294). Das ist der Fall, den das Gruppenfenster mit einem
+rötlich gefärbten Cast-Balken in der Zielanzeige zeigt (sein Hinweis, 15.10.2026). Die Färbung selbst beschreibt
+keine Quelle — weder Patchnotes (6.0 führt nur die Zielanzeige der Casts im Gruppenfenster ein) noch Handbuch,
+FFXIVClientStructs oder die Meldungsblätter des Spiels; ein eigenes Datenfeld dafür gibt es in den bekannten
+Strukturen nicht. Der Client kann sie nur aus den beiden Casts mit gleichem Ziel ableiten (Schluss), und genau die
+liest RSR. Die eigene Wiederbelebung landete bis dahin bis zum Ende und verbrauchte ihr MP an einem Leichnam, der
+schon stand; abgebrochen wurde erst, wenn der `Raise`-Status sichtbar war. Gleiche Landezeit lässt den eigenen
+Cast laufen: Der fremde Cast erreicht diesen Client später, als er begann, liest sich also als später landend
+(Schluss); zwei Clients, die beide warteten, ließen den Leichnam liegen. Bricht der andere nach unserem Abbruch ab,
+ist der Leichnam beim nächsten Durchlauf wieder Kandidat. `DefenseTrace.log` schreibt „raise stopped: …" mit dem
+anderen Wirker und dem Vorsprung.
+
+**`Raise` steht unter zwei Ids** (148 und 1140, gleicher Name, gleicher Wirktext „Teetering on the brink of
+consciousness."; xivapi v2). BossModReborn und DelvUI lesen beide; RSR las in `GetDeath` und im Abbruch nur 148
+(A294). Beide Stellen lesen jetzt `StatusHelper.RaiseStatus`.
+
 Zwei Lücken bleiben:
 
-- **Gleichzeitiger Beginn.** Beginnen zwei Wirker im selben Augenblick, sieht keiner den Cast des anderen. Selten;
-  schließen ließe es sich nur durch eine Absprache zwischen den Clients, die das Spiel nicht bietet.
+- **Gleiche Landezeit.** Beginnen zwei Wirker im selben Augenblick, laufen beide Casts zu Ende.
 - **Die eigene Feder.** Sie hat keine Wirkzeit, die Statusrückmeldung braucht dennoch einen
   Serverumlauf. In dieser Spanne liest der Leichnam auf unserer Seite weiter als tot. Genau dagegen
   steht die neue Zieleignung: Sie fragt nicht die eigene Buchführung, sondern den Client, der den

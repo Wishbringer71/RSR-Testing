@@ -7333,6 +7333,45 @@ keine spontanität habe. ein rennen, wer als erstes fertig wird? warum?"
 
 **Prüfgrad:** statisch (Code, BossModReborn- und WrathCombo-Quelltext); Prüfskripte; Compile über die CI.
 
+### A294 · Beide wirken schon: eigene Wiederbelebung abbrechen; zweite Raise-Id (15.10.2026)
+
+Sein Hinweis: „wenn zwei heiler gleichzeitig rezz hardcasten, verfärbt sich die zielanzeige des cast rötlich. bitte
+genau recherchieren und falls gefunden, einbauen" — präzisiert: „anzeige im gruppenfenster beim ziel", „es ist der
+sich füllende castbalken in der zielanzeige".
+
+- *Recherche:* Patchnotes 6.0 (Lodestone): „The party list will now display the target of spells cast by party
+  members. If the target is a party member, their number in the party list will be displayed." Eine Färbung bei
+  gleichem Ziel nennen weder die Patchnotes (Websuche über die Lodestone-Patchnotes) noch das Handbuch (Game Manual, UI-Guide).
+  FFXIVClientStructs (994319b5, 14.10.2026): `AddonPartyList.PartyListMemberStruct` hat je Zeile Aktionsname,
+  Cast-Balken und Hintergrund, `PartyListNumberArray` je Mitglied `CastTime` und `CastId`, `CastInfo` an
+  Farbrelevantem nur das Bit „unterbrechbar"; ein Feld „doppelt" oder „bereits wiederbelebt" gibt es nicht. Die
+  Meldungsblätter (xivapi v2, `LogMessage`) kennen keine Meldung „wird bereits wiederbelebt". Schluss: Der Client
+  leitet die Färbung aus den beiden Casts mit gleichem Ziel ab — dieselben Daten, die RSR seit A293 liest. DelvUI
+  (7aab2e3, `PartyFramesRaiseTracker`) und BossModReborn lesen sie ebenso.
+- *Was fehlte:* A293 verhindert den Beginn auf einem versorgten Leichnam, nicht den Fall, dass beide schon wirken.
+  `CancelCastUpdater` brach die eigene Wiederbelebung erst ab, wenn `Raise` sichtbar war, also nach der Landung der
+  fremden; bis dahin lief sie und verbrauchte ihr MP.
+- *Behoben:* `CancelCastUpdater.RaiseLandsFirstElsewhere` bricht die eigene Wiederbelebung (Spieldaten:
+  `DeadTargetBehaviour` 1) ab, sobald eine fremde auf denselben Leichnam früher landet. `RaisedByOthers` hält dafür je
+  Leichnam die früheste fremde Landung als Zeitpunkt. Gleichstand behält den Cast (Begründung im Code; der fremde
+  Cast liest sich durch die Laufzeit später, Schluss). Gegen den Abbruch: Bricht der andere danach ab, verzögert sich
+  die Wiederbelebung; der Leichnam ist dann sofort wieder Kandidat. Für den Abbruch: Die Fortsetzung verfällt sicher,
+  sobald die fremde landet, und gibt GCDs frei, die heilen können. Keine Option — dieselbe Art wie der bestehende
+  Abbruch bei sichtbarem `Raise`, der auch keine hat.
+- *Zweite Raise-Id:* Status 1140 heißt ebenfalls „Raise", gleicher Wirktext (xivapi v2); BossModReborn
+  (`RaiseUtil.RaiseStatus`) und DelvUI lesen 148 und 1140. RSR las 148 allein, in `GetDeath` und im Abbruch. Jetzt
+  `StatusHelper.RaiseStatus` an beiden Stellen. Eine falsch aufgenommene Id kann hier nichts umkehren: Ein Leichnam
+  mit diesem Status ist wiederbelebt.
+- *Messmittel:* „raise stopped: …" in `DefenseTrace.log`, mit dem anderen Wirker und dem Vorsprung.
+- *Falsifikation:* Kein Defekt? Die Fortsetzung landet auf einem stehenden Leichnam; das Wiki zu Resurrection
+  nennt den MP-Verbrauch dabei (Community-Quelle). Option falsch? Bei falsch gelesenen Zeiten bricht im schlechtesten
+  Fall einer ab, der knapp vorn lag; der Leichnam bleibt Kandidat. Ausgeliefert, und nichts ändert sich? Bei gleichem
+  Startbild laufen beide; und falls der Client fremde Casts nicht führt, greift die Regel nie (siehe A293).
+- Konzept 11, Release-Text, CHANGELOG fortgeschrieben.
+
+**Prüfgrad:** statisch (Patchnotes, FFXIVClientStructs, DelvUI, BossModReborn, xivapi); Prüfskripte; Compile über die
+CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

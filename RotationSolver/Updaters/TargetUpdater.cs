@@ -117,11 +117,13 @@ internal static partial class TargetUpdater
 	/// to leave a member to another healer's Esuna (<c>PartyHealth.Update</c>). A raise is recognised by game data,
 	/// as the player's own (<c>ActionBasicInfo.RaiseAction</c>: <c>DeadTargetBehaviour</c> 1), so every job's and
 	/// every duty's raise counts. A cast that is broken off is gone at the next update and its target is a
-	/// candidate again; a raise that lands is then excluded by its status.
+	/// candidate again; a raise that lands is then excluded by its status. Kept per body is the raise that
+	/// lands first, as a point in time, so a reader in a later frame does not read an aged remainder.
 	/// </remarks>
 	private static void UpdateCastsByOthers()
 	{
-		Dictionary<ulong, string> raised = [];
+		Dictionary<ulong, (string Caster, DateTime LandsAt)> raised = [];
+		var now = DateTime.Now;
 		Dictionary<ulong, int> esunas = [];
 		var playerId = Player.Object?.GameObjectId ?? 0;
 		var sheet = Service.GetSheet<Lumina.Excel.Sheets.Action>();
@@ -144,14 +146,21 @@ internal static partial class TargetUpdater
 			{
 				esunas[targetId] = esunas.GetValueOrDefault(targetId) + 1;
 			}
-			else if (!raised.ContainsKey(targetId) && sheet.GetRowOrDefault(chara.CastActionId) is { DeadTargetBehaviour: 1 })
+			else if (sheet.GetRowOrDefault(chara.CastActionId) is { DeadTargetBehaviour: 1 })
 			{
-				raised[targetId] = chara.Name.TextValue;
-				if (!DataCenter.RaisedByOthers.ContainsKey(targetId))
+				var left = Math.Max(0f, chara.TotalCastTime - chara.CurrentCastTime);
+				var landsAt = now.AddSeconds(left);
+				var seen = raised.TryGetValue(targetId, out var known);
+				if (seen && known.LandsAt <= landsAt)
+				{
+					continue;
+				}
+
+				raised[targetId] = (chara.Name.TextValue, landsAt);
+				if (!seen && !DataCenter.RaisedByOthers.ContainsKey(targetId))
 				{
 					DefenseTrace.Line($"raise left to {chara.Name.TextValue}: casting it on "
-						+ $"{Svc.Objects.SearchById(targetId)?.Name.TextValue ?? "?"}, "
-						+ $"{chara.TotalCastTime - chara.CurrentCastTime:F1} s left");
+						+ $"{Svc.Objects.SearchById(targetId)?.Name.TextValue ?? "?"}, {left:F1} s left");
 				}
 			}
 		}

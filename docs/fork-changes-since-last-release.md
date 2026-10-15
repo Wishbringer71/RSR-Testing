@@ -70,7 +70,11 @@ A raise shows on its target only once it lands, so while another healer was hard
 still a candidate and RSR without Swiftcast started a raise of its own on it - two casts for one body, and the slower
 one was lost. RSR now reads the other player's cast and its target and leaves that body alone; another dead member
 gets the raise instead, and Swiftcast stays for a body nobody is raising. If the other cast is broken off, the body
-is a candidate again at once. `DefenseTrace.log` notes each raise left to someone else. The same goes for Esuna:
+is a candidate again at once. When both raises are already being cast - the party list shows the cast bar at the
+target reddish then - RSR stops its own as soon as the other one lands first, instead of spending its MP on a body
+that is already up; at equal times it keeps casting. A body carrying the second form of the Raise status (id 1140)
+also counts as raised now. `DefenseTrace.log` notes each raise left to someone else and each one stopped. The same
+goes for Esuna:
 RSR no longer cleanses a member another healer is already casting Esuna on, unless more than that one effect is
 left.
 
