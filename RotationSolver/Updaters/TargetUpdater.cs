@@ -34,6 +34,8 @@ internal static partial class TargetUpdater
 			DataCenter.AllianceMembers.Clear();
 			DataCenter.AllHostileTargets.Clear();
 			UpdateAreaCasters();
+			DataCenter.RaisedByOthers = [];
+			DataCenter.EsunasByOthers = [];
 			// Cleared with the rest, or it keeps naming whoever was last under fire. Nothing fails
 			// when it is left behind: the set simply reports that member as threatened for as long
 			// as the party stays out of combat, and the emergency heal treats them accordingly the
@@ -49,6 +51,7 @@ internal static partial class TargetUpdater
 
 		UpdateLists();
 		UpdateAreaCasters();
+		UpdateCastsByOthers();
 		DataCenter.DeathTarget = GetDeathTarget();
 		DataCenter.DispelTarget = GetDispelTarget();
 		DataCenter.ProvokeTarget = (DataCenter.Role == JobRole.Tank || StatusHelper.PlayerHasStatus(true, StatusID.VariantUltimatumSet))
@@ -101,6 +104,60 @@ internal static partial class TargetUpdater
 
 		DataCenter.AreaCastHelperIds = helperIds;
 		DataCenter.AreaCasters = casters;
+	}
+
+	/// <summary>
+	/// Whom other players are casting a raise or an Esuna on right now (A293).
+	/// </summary>
+	/// <remarks>
+	/// A raise shows on its target as <c>StatusID.Raise</c> only once it lands. During another healer's
+	/// eight-second hard cast the corpse was still a candidate, and RSR without Swiftcast started a raise of its
+	/// own on it: two casts for one corpse, and whichever finished second was lost (his report of 15.10.2026).
+	/// The other player's cast and its target are on screen the whole time; BossModReborn reads them the same way
+	/// to leave a member to another healer's Esuna (<c>PartyHealth.Update</c>). A raise is recognised by game data,
+	/// as the player's own (<c>ActionBasicInfo.RaiseAction</c>: <c>DeadTargetBehaviour</c> 1), so every job's and
+	/// every duty's raise counts. A cast that is broken off is gone at the next update and its target is a
+	/// candidate again; a raise that lands is then excluded by its status.
+	/// </remarks>
+	private static void UpdateCastsByOthers()
+	{
+		Dictionary<ulong, string> raised = [];
+		Dictionary<ulong, int> esunas = [];
+		var playerId = Player.Object?.GameObjectId ?? 0;
+		var sheet = Service.GetSheet<Lumina.Excel.Sheets.Action>();
+
+		foreach (var chara in DataCenter.AllTargets)
+		{
+			if (chara == null || chara.GameObjectId == playerId || chara.IsDead || !chara.IsCasting
+				|| chara.CastActionType != (byte)FFXIVClientStructs.FFXIV.Client.Game.ActionType.Action)
+			{
+				continue;
+			}
+
+			var targetId = chara.CastTargetObjectId;
+			if (targetId == 0 || targetId == chara.GameObjectId)
+			{
+				continue;
+			}
+
+			if (chara.CastActionId == (uint)ActionID.EsunaPvE)
+			{
+				esunas[targetId] = esunas.GetValueOrDefault(targetId) + 1;
+			}
+			else if (!raised.ContainsKey(targetId) && sheet.GetRowOrDefault(chara.CastActionId) is { DeadTargetBehaviour: 1 })
+			{
+				raised[targetId] = chara.Name.TextValue;
+				if (!DataCenter.RaisedByOthers.ContainsKey(targetId))
+				{
+					DefenseTrace.Line($"raise left to {chara.Name.TextValue}: casting it on "
+						+ $"{Svc.Objects.SearchById(targetId)?.Name.TextValue ?? "?"}, "
+						+ $"{chara.TotalCastTime - chara.CurrentCastTime:F1} s left");
+				}
+			}
+		}
+
+		DataCenter.RaisedByOthers = raised;
+		DataCenter.EsunasByOthers = esunas;
 	}
 
 	private static unsafe void UpdateLists()
@@ -551,10 +608,13 @@ internal static partial class TargetUpdater
 			{
 				if (member.StatusList != null)
 				{
+					// Each Esuna another player is already casting on him removes one of these; only what is
+					// left after them is ours to take (A293).
+					var leftToOthers = DataCenter.EsunasByOthers.GetValueOrDefault(member.GameObjectId);
 					for (var i = 0; i < member.StatusList.Length; i++)
 					{
 						var status = member.StatusList[i];
-						if (status != null && status.CanDispel())
+						if (status != null && status.CanDispel() && leftToOthers-- <= 0)
 						{
 							targetList.Add(member);
 							break; // Add only once per member if any status can be dispelled

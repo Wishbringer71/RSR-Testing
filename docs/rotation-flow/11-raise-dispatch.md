@@ -284,7 +284,7 @@ Drei Zeitpunkte sind zu unterscheiden, und nur der mittlere ist für die Auswahl
 
 | Zeitpunkt | Was RSR sieht | Folge für die Zielmenge |
 |---|---|---|
-| Wirken beginnt | nichts Besonderes; der Leichnam bleibt Kandidat | ein zweiter Rezzer kann denselben wählen |
+| Wirken beginnt | den Cast des Wirkenden samt Ziel (`CastTargetObjectId`) | `GetDeath` schließt das Ziel aus, solange ein anderer Spieler den Cast führt (A293) |
 | Wirkung landet | das Ziel trägt `StatusID.Raise` | `GetDeath` schließt es aus (`TargetFilter.cs:105`) |
 | Der Tote nimmt an | keine eigene Meldung nötig | schon vorher ausgeschlossen |
 
@@ -292,11 +292,24 @@ Die Zeit bis zur Annahme durch den Gefallenen ist für die Entscheidung damit oh
 Status trägt den Ausschluss, nicht die Annahme. Läuft der Status ungenutzt ab, wird der Leichnam
 wieder Kandidat — richtig so.
 
-Zwei Lücken bleiben, beide zwischen Absenden und Statusrückmeldung:
+**Wirkt ein anderer Spieler gerade eine Wiederbelebung auf einen Leichnam, wählt RSR ihn nicht**
+(`TargetUpdater.UpdateCastsByOthers`, `DataCenter.RaisedByOthers`, A293). Der `Raise`-Status erscheint erst, wenn
+die Wiederbelebung landet; während eines acht Sekunden langen Hartwirkens blieb der Leichnam Kandidat, und RSR ohne
+Spontanität begann eine eigene Wiederbelebung auf ihn — zwei Casts für einen Leichnam, der langsamere verloren (seine
+Meldung vom 15.10.2026). Den fremden Cast samt Ziel führt der Client für Gruppenmitglieder; BossModReborn liest ihn
+ebenso, um ein Mitglied der Esuna eines anderen Heilers zu überlassen (`PartyHealth.Update`, ein anderes Werkzeug,
+keine Spielquelle). Für NPC-Heiler (Trust, Duty Support) ist das ein Schluss, nicht belegt; fehlt der Cast, bleibt
+das Verhalten wie vorher. Erkannt wird die Wiederbelebung an den Spieldaten wie die eigene
+(`DeadTargetBehaviour` 1), also für jeden Job und jede Sonderaktion. Bricht der andere ab, ist der Leichnam beim nächsten
+Durchlauf wieder Kandidat; landet seine Wiederbelebung, schließt ihn der Status aus. Gilt auch mit eigener Spontanität:
+Swiftcast bleibt für einen Leichnam, den niemand versorgt. Jede Zurückstellung schreibt eine Zeile in
+`DefenseTrace.log` („raise left to …", mit Ziel und Restzeit). Dieselbe Erhebung zählt fremde Esuna-Casts je Mitglied;
+die eigene Esuna nimmt nur, was nach ihnen an entfernbaren Effekten übrig bleibt.
 
-- **Gleiches Ziel, mehrere Wirker.** Während eines acht Sekunden langen Hartwirkens trägt das Ziel
-  noch keinen Status. Ein zweiter Rezzer in derselben Gruppe kann es wählen. Jeder Client entscheidet
-  allein; das ist ein Abstimmungsproblem und kein Fehler der Auswahl.
+Zwei Lücken bleiben:
+
+- **Gleichzeitiger Beginn.** Beginnen zwei Wirker im selben Augenblick, sieht keiner den Cast des anderen. Selten;
+  schließen ließe es sich nur durch eine Absprache zwischen den Clients, die das Spiel nicht bietet.
 - **Die eigene Feder.** Sie hat keine Wirkzeit, die Statusrückmeldung braucht dennoch einen
   Serverumlauf. In dieser Spanne liest der Leichnam auf unserer Seite weiter als tot. Genau dagegen
   steht die neue Zieleignung: Sie fragt nicht die eigene Buchführung, sondern den Client, der den

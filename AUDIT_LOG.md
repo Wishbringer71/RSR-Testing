@@ -7302,6 +7302,37 @@ verfällt) mit Prüfauftrag.
 
 **Prüfgrad:** statisch (Code, Wirktexte, durchgerechnete Voreinstellungen); Prüfskripte; Compile über die CI.
 
+### A293 · Wiederbelebung und Esuna auf ein Ziel, das ein anderer schon versorgt (15.10.2026)
+
+Seine Frage: „und wenn ein anderer heiler rezz hardcasted, dann starte ich ebenfalls auf diesen zu casten wenn ich
+keine spontanität habe. ein rennen, wer als erstes fertig wird? warum?"
+
+- *Warum:* `TargetFilter.GetDeath` schloss einen Leichnam erst über `StatusID.Raise` aus, und den trägt er erst, wenn
+  eine Wiederbelebung landet. Während eines fremden Hartwirkens blieb er Kandidat; ohne Spontanität begann RSR ein
+  eigenes Hartwirken. Konzept 11 führte das als „Abstimmungsproblem, kein Fehler der Auswahl" mit der Begründung,
+  jeder Client entscheide allein. Das trug nicht: Der fremde Cast samt Ziel liegt im Client, und RSR liest Casts
+  anderer bereits bei Gegnern. Beleg, dass er für Gruppenmitglieder vorliegt: BossModReborn überlässt ein Mitglied
+  der laufenden Esuna eines anderen Heilers über genau diese Felder (`PartyHealth.Update`, be8ff77, 12.10.2026) —
+  ein anderes Werkzeug, keine Spielquelle. WrathCombo und BossModReborns Wiederbelebung prüfen nur den Status.
+- *Klasse:* dieselbe Lage bei Esuna (1 s Wirkzeit, also kleiner): zwei Heiler entfernen denselben einzigen Effekt.
+  Sofortige Reinigungen (The Warden's Paean) haben keinen Cast, an dem man es sehen könnte, und kein Rennen.
+- *Behoben:* `TargetUpdater.UpdateCastsByOthers` erhebt je Zielaktualisierung, wem andere Spieler oder NPCs gerade eine
+  Wiederbelebung (Spieldaten: `DeadTargetBehaviour` 1, wie `ActionBasicInfo.RaiseAction`) oder Esuna wirken.
+  `GetDeath` lässt diese Leichen aus; die Esuna-Zielwahl nimmt ein Mitglied nur, wenn ihm nach den fremden Esunas
+  noch ein entfernbarer Effekt bleibt. Bricht der andere ab, ist das Ziel beim nächsten Durchlauf wieder Kandidat.
+- *Auch mit eigener Spontanität:* Swiftcast bleibt für einen Leichnam, den niemand versorgt (seine Vorgabe, Swiftcast
+  für Wiederbelebungen); die fremde Wiederbelebung landet ohnehin. Gegenargument: Mit Swiftcast stünde der Leichnam
+  bis zu acht Sekunden früher. Dafür verfiele der fremde Cast samt seinen GCDs, und Swiftcast fehlte beim nächsten
+  Tod; bei einem zweiten Leichnam geht die eigene Wiederbelebung jetzt gleich dorthin.
+- *Messmittel:* jede Zurückstellung schreibt „raise left to …" mit Ziel und Restzeit in `DefenseTrace.log`.
+- *Falsifikation:* Kein Defekt? Seine Beobachtung und der Filter belegen ihn. Option falsch? Liefert der Client
+  fremde Casts nicht, greift die Regel nie und das Verhalten bleibt wie vorher; das Protokoll zeigt, ob sie greift.
+  Ausgeliefert, und nichts ändert sich? Möglich bei gleichzeitigem Beginn (keiner sieht den anderen) und für NPC-Heiler,
+  falls deren Casts fehlen (Schluss, nicht belegt).
+- Konzept 11, Release-Text und CHANGELOG (`GetDeath` ist öffentlich) fortgeschrieben.
+
+**Prüfgrad:** statisch (Code, BossModReborn- und WrathCombo-Quelltext); Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

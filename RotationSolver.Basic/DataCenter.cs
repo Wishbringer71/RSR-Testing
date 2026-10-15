@@ -89,6 +89,18 @@ internal static class DataCenter
 
 	public static IBattleChara? DispelTarget { get; set; }
 
+	/// <summary>
+	/// The dead another player is casting a raise on right now, by object id, with that caster's name; rebuilt
+	/// each target update (<c>TargetUpdater.UpdateCastsByOthers</c>, A293). <see cref="TargetFilter.GetDeath"/>
+	/// leaves them out.
+	/// </summary>
+	internal static Dictionary<ulong, string> RaisedByOthers { get; set; } = [];
+
+	/// <summary>
+	/// How many Esunas other players are casting on each party member right now, by object id (A293).
+	/// </summary>
+	internal static Dictionary<ulong, int> EsunasByOthers { get; set; } = [];
+
 	public static List<IBattleChara> AllTargets { get; set; } = [];
 	public static Dictionary<float, List<IBattleChara>> TargetsByRange { get; set; } = [];
 

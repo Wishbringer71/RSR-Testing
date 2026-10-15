@@ -64,6 +64,16 @@ The White Mage's Afflatus Rapture at full lilies now waits until an announced ra
 to keep the lilies from overflowing heals what the raidwide took. It goes out at once when a fourth lily would
 otherwise be lost.
 
+## Healers: no raise race with another healer
+
+A raise shows on its target only once it lands, so while another healer was hard-casting a raise, the body was
+still a candidate and RSR without Swiftcast started a raise of its own on it - two casts for one body, and the slower
+one was lost. RSR now reads the other player's cast and its target and leaves that body alone; another dead member
+gets the raise instead, and Swiftcast stays for a body nobody is raising. If the other cast is broken off, the body
+is a candidate again at once. `DefenseTrace.log` notes each raise left to someone else. The same goes for Esuna:
+RSR no longer cleanses a member another healer is already casting Esuna on, unless more than that one effect is
+left.
+
 ## The target update no longer breaks off on an object without cast data
 
 The target update read the cast of every untargetable enemy, and Dalamud's cast reading fails on an object that

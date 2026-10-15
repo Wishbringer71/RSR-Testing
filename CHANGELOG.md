@@ -23,6 +23,13 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Behaviour change: `TargetFilter.GetDeath` leaves out the dead someone else is raising
+
+`GetDeath` now also skips a dead member another player is casting a raise on at that moment, recognised by the
+action's `DeadTargetBehaviour`. The body was a candidate until the `Raise` status landed, which made two healers
+cast on it. A rotation that picks its raise target through `GetDeath` or `DataCenter.DeathTarget` leaves such a
+body to the other caster.
+
 ### Behaviour change: the area heal flags rise ahead of an announced area hit only when it endangers someone
 
 `AutoStatus.HealAreaAbility` and `AutoStatus.HealAreaSpell` used to rise before an announced, measured area hit
