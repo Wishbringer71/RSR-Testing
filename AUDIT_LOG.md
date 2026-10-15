@@ -7248,6 +7248,60 @@ seit 4921229d4, A277).
 
 **Prüfgrad:** statisch (Dalamud, FFXIVClientStructs, ECommons am Quelltext); Prüfskripte; Compile über die CI.
 
+### A292 · Heilungen vor dem angekündigten Treffer (15.10.2026)
+
+Seine Meldung zum Protokoll `bfd42ad9-DefenseTrace.log` (14.10.2026, Weißmagier und Beschwörer): „ich habe das
+gefühl, dass einige heals vor den dmg-eingang abgewickelt werden. bei aoe-hots noch evtl. vertretbar, bei direkt
+aoe-heals jedoch verschwendung." Eingeordnet als Hinweis (Tatsache des Spiels: eine Heilung auf voller Gesundheit
+verfällt) mit Prüfauftrag.
+
+- *Was das Protokoll zeigt:* Treffer, Abwehrentscheidungen und Tränke, keine Heilungen. Vollkommener Ablass,
+  Linderung und Glockenspiel vor den Treffern sind Minderung bzw. reaktive Heilung (Wirktexte) und dort richtig. Die
+  Heilungen, die er meint, stehen nicht im Protokoll; erhoben wurde deshalb am Code, welcher Weg eine Flächenheilung
+  vor einem Treffer auslöst.
+- *Weg 1, zentral für alle Heiler:* `StateUpdater` setzt beide Flächenheilflaggen, wenn ein angekündigter, gemessener
+  Treffer jemanden unter die jeweilige Flächenheilschwelle drückt (A118). Mit den Voreinstellungen (Fähigkeit 75 %,
+  Zauber 65 %) gilt das für eine **volle** Gruppe ab einem Trefferanteil von 25 % bzw. 35 %: Vor jedem solchen
+  Raidwide ging eine Flächenheilung auf volle Gesundheit. Seine Vorgabe (Stufe 2, Konzept 08) verlangt die
+  Vorausheilung nur, wo der Treffer die aktuelle Gesundheit erreicht; die Tabelle desselben Konzepts beantwortet
+  einen kleineren Treffer mit Deckung. Die Begründung von A118 („heilt nur, wo der Baum ohnehin heilt, einen Cast
+  früher") übersah, dass dieselbe Heilung vorher auf voller, nachher auf fehlender Gesundheit landet (C112).
+- *Weg 2, Weißmagier:* Afflatus Rapture bei vollen Lilien (`UseLilyWhenFull`, Upstream) fällt ohne Heilbedarf und
+  ohne Blick auf einen angekündigten Treffer. Die übrigen Heiler haben keinen solchen Weg auf die Fläche (Druochole:
+  letzter GCD, ein Ziel; Essential Dignity: Gesundheitsprüfung). Die Abwehrzweige der Heiler wirken vor dem Treffer
+  nur Barrieren und Minderungen (erhoben je Rotation), Helios Conjunction nur unter Neutral Sect.
+- *Weg 3, geprüft ohne Befund:* Die Vorausschau der Heilschwellen („Heal ahead of incoming damage") verlängert den
+  Verlauf; sie heilt nur, wo Gesundheit bereits fällt, also auf fehlende.
+- *Optionen:* Nullvariante; Vorausheilung nur bei tödlichem Treffer (seine Bedingung wörtlich); an der Linie der
+  Gefährdungsklasse 1; HoTs im ungefährlichen Band gesondert zulassen. Rückbau: der Schalter `Heal ahead of an
+  announced area cast`.
+- *Entschieden, Weg 1:* `DataCenter.AnnouncedHitCallsForHealFirst` — der Treffer brächte ein ungeschütztes Mitglied
+  in Gefährdungsklasse 1 (`HealthForDyingTanks`, dieselbe Linie wie die Schranke, A159/A283), und diesem Mitglied
+  fehlt Gesundheit. Gegen „nur tödlich": Ein Mitglied bei 55 % vor einem 45-%-Treffer stünde danach bei 10 %; die
+  Heilung davor landet auf 45 % fehlender Gesundheit, verschwendet also nichts und trägt die sichere Richtung seiner
+  Spielweise. Gegen HoTs im Band: Vor dem Treffer verliert ein HoT seinen Sofortanteil, nachher wirkt er ganz; seine
+  Ticks setzen etwa einen GCD später ein, ohne dass jemand gefährdet ist. Die Minderung behält ihre Frage an der
+  Flächenheilschwelle (`AnnouncedHitDropsAnyoneBelow`); sie kostet eine Abklingzeit, keine Heilung.
+- *Entschieden, Weg 2, zentral:* `CustomRotation.HealForResourceWaitsForAreaHit` — eine Heilung gegen
+  Ressourcenüberlauf wartet, solange Flächenschaden angekündigt und nicht gelandet ist, außer die Ressource ginge im
+  nächsten GCD verloren. Beim Weißmagier: bei drei Lilien und fälliger vierter sofort. Gelesen wird die Erkennung
+  (`AreaHitAnnounced`), nicht das Minderungsurteil. Keine Option: Der Nutzen folgt aus der Wirkung (dieselbe
+  Heilung landet auf fehlender statt voller Gesundheit), und keine Lilie geht verloren.
+- *Messmittel:* `DefenseTrace.log` schreibt jede ausgelöste Vorausheilung einmal je Ankündigung (Aktion, gefährdetes
+  Mitglied, Trefferanteil). Ob danach noch Heilungen vor Treffern fallen, ist am nächsten Protokoll ablesbar.
+- *Falsifikation:* Kein Defekt? Durchgerechnet: Bei voller Gruppe und 45-%-Treffer löste die alte Regel aus.
+  Option falsch? Die neue Linie lässt im Band zwischen Gefährdungsklasse 1 und Heilschwelle die Vorausheilung weg;
+  dort sind alle über der Schwelle, die der Baum selbst „gesund" nennt, und nach dem Treffer nicht gefährdet. Ein
+  zweiter, nicht angekündigter Treffer kurz danach bleibt reaktiv; Mehrfachtreffer eines Casts zählen weiterhin je
+  Treffer, wie zuvor. Ausgeliefert, und nichts ändert sich? Möglich, wenn seine Beobachtung aus einem dritten Weg
+  stammt; erhoben sind alle Heilwege der vier Heiler im Profil, und das neue Protokoll zeigt Weg 1 künftig.
+  Afflatus Rapture zum Ablauf von Confession fällt nach dem Treffer, solange das BossModReborn-Fenster unter 10 s
+  liegt (Schluss aus den Zeiten).
+- Konzept 08, Optionstext, Code-Kommentare und Release-Text fortgeschrieben. Paket: neue geschützte Methode
+  `HealForResourceWaitsForAreaHit` (Erweiterung, kein Bruch).
+
+**Prüfgrad:** statisch (Code, Wirktexte, durchgerechnete Voreinstellungen); Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -7539,3 +7593,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C109 | A272, Befund 1: „144 Abwehraktionen gingen auf Vorhersagen, die ihn nicht trafen" | Belegt ist nur, dass das Protokoll keinen Treffer zeigt; bei Necrophobia zeigt es zwölf Minuten lang keinen, auch nicht den modellierten Raidwide | berichtigt (A275) |
 | C110 | A273, Falsifikation: „Ein echter Raidwide hinter einem Turm … die Abwehr kommt dann um höchstens das Fenster später" | Löst der Turm weniger als 0,6 s vor dem Raidwide auf, kommt der Raidwide über BossModReborn gar nicht mehr (Mindestvorlauf der Leser); A273 „vorgelegt" (leere Landungen) war aus Konzept 13 entscheidbar | berichtigt, ohne ihn abgeschlossen (A275) |
 | C111 | A199 und A200 (Befund 2), nach Upstreams Muster (`ObjectHelper.IsEnemy`, 6baba6a94: „the object must be confirmed live beforehand"): `IsValid()` vor dem nativen Zugriff bestätige, dass das Objekt noch lebt; sonst werde es „übersprungen statt gelesen" | Dalamuds `GameObject.IsValid` prüft nur, dass der Spielerzustand geladen ist (`PlayerState.IsLoaded`, master, 15.10.2026), nicht das Objekt. Die Zusage war aus dem Namen geschlossen, nicht am Quelltext geprüft — dieselbe Lehre wie C15: ein Name ist kein Beleg | A291; Defekt in `TODO.md`, „`IsValid()` prüft nicht, ob ein Objekt noch lebt" |
+| C112 | A118, Konzept 08, `Configs.HealAheadOfAnnouncedHit`, Kommentare in `StateUpdater` und `DataCenter`: Die Vorausheilung frage „an derselben Schwelle, die die Flagge ohnehin benutzt, nur einen Cast früher" und könne „nicht dort heilen, wo der Baum ohnehin nicht geheilt hätte"; Beispiel „ein Mitglied bei 60 % vor einem 45-%-Raidwide … stirbt daran" | Dieselbe Heilung landet vor dem Treffer auf voller, nachher auf fehlender Gesundheit; die Regel löste bei voller Gruppe ab 25 % bzw. 35 % Trefferanteil aus. Seine Vorgabe verlangt die Vorausheilung erst, wo der Treffer die aktuelle Gesundheit erreicht, und das Beispiel ist falsch gerechnet: 60 % minus 45 % lässt 15 % | A292: Linie der Gefährdungsklasse 1, Texte berichtigt |

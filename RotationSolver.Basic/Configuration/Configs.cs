@@ -1117,26 +1117,31 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	// one uses the same figure for the other half of the answer: whether to HEAL first.
 	//
 	// Every healing threshold reads the health a member has. None of them reads the health he will
-	// have when the cast already on screen lands, so a party at 60% in front of a 45% raidwide is
-	// above every threshold and dies to it. "Heal ahead of incoming damage" above does not cover
-	// this: it extrapolates the observed trend, and a cast that has not landed yet leaves no trend.
+	// have when the cast already on screen lands, so the hit counts for nothing until it has landed:
+	// a member at 55% in front of a 45% raidwide is left at ten percent before any threshold sees it.
+	// "Heal ahead of incoming damage" above does not cover this: it extrapolates the observed trend,
+	// and a cast that has not landed yet leaves no trend.
 	//
 	// The owner's rule, and the reason this comes before mitigation rather than after: "die aktuelle
 	// hp liegt unter dem schadenswert. dann wäre aber eine heilung sinnvoll bis max maxhp. wenn dann
 	// die hp unter dem schadenswert liegt, sollte zusätzlich geschildet werden."
 	//
-	// Asked at the same threshold the flag itself uses, one cast earlier - not at a stricter one, so
-	// it cannot heal where the tree would not have healed anyway. Area casts only: a hit that
-	// reaches everybody is answered by area healing.
+	// Asked where the hit would leave an unprotected member at or below HealthForDyingTanks (the
+	// critical class, concept 07) while he still has health to restore - the owner's "unter dem
+	// schadenswert", on the safe side as the holds' barrier reads it (A283). Asked
+	// at the area heal thresholds before, it fired on a full party before every raidwide big enough
+	// to cross them, and the heals landed on full health (A292). Area casts only: a hit that reaches
+	// everybody is answered by area healing.
 	//
 	// On by default - the owner's rule for defaults (29.09.2026). Nothing changes for an action whose
 	// size has never been measured.
 	[UI("Heal ahead of an announced area cast",
-		Description = "Raises the area healing flag when the area cast currently being announced would "
-			+ "put somebody below the level at which the tree heals anyway.\n"
-			+ "In a fight: the party is topped up BEFORE the raidwide lands instead of after it, so a "
-			+ "member at sixty percent in front of a forty-five percent hit is no longer treated as "
-			+ "healthy right up to the moment it kills him.\n"
+		Description = "Raises the area healing flags when the area cast currently being announced would "
+			+ "leave somebody about to fall - the members \"Choose the heal target by danger\" heals "
+			+ "first - and that member is missing health a heal can restore.\n"
+			+ "In a fight: a member at fifty-five percent in front of a forty-five percent hit is healed "
+			+ "BEFORE the raidwide lands instead of being left at ten percent by it. A hit that leaves "
+			+ "everybody above that line is healed after it lands; this setting sends no heal ahead of it.\n"
 			+ "Uses the measured size of that action and counts an existing barrier against it, since "
 			+ "the barrier absorbs this particular hit. An action whose size has never been measured "
 			+ "changes nothing - ratings arrive with play, one clear of the fight.",

@@ -23,6 +23,16 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Behaviour change: the area heal flags rise ahead of an announced area hit only when it endangers someone
+
+`AutoStatus.HealAreaAbility` and `AutoStatus.HealAreaSpell` used to rise before an announced, measured area hit
+whenever it would push anyone below the area heal thresholds, which a raidwide of a quarter or a third of the
+health did from full health. They now rise ahead of it only when it would leave an unprotected member at or below
+`HealthForDyingTanks` with health still missing (`DataCenter.AnnouncedHitCallsForHealFirst`); otherwise the flags
+follow the health after the hit. A rotation that heals on these flags heals after such a hit, not before it.
+`CustomRotation.HealForResourceWaitsForAreaHit` is new: a heal spent only against a resource overflow can ask it
+to wait until an announced area hit has landed.
+
 ### Behaviour change in RotationSolver.Basic: `CustomRotation.TankbusterOnMe` asks whom BossModReborn's tankbuster hits
 
 `TankbusterOnMe` was true for every tankbuster BossModReborn predicted inside the mitigation window, whoever it

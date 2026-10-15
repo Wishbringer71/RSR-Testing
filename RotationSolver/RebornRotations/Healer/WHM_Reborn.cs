@@ -964,14 +964,18 @@ public sealed class WHM_Reborn : WhiteMageRotation
 
 		if (AfflatusMiseryPvE.EnoughLevel && UseLilyWhenFull && (!IsInHighEndDuty || !UseOpenerHighEnd || (IsInHighEndDuty && UseOpenerHighEnd && !CombatElapsedLessGCD(13))) && (liliesNearlyFull || liliesFullNoBlood) && AfflatusMiseryPvE.EnoughLevel && BloodLily < 3)
 		{
-			if (AfflatusRapturePvE.CanUse(out act, skipAoeCheck: true))
+			// After an announced raidwide, not before it, unless a lily would be lost first (A292).
+			if (!HealForResourceWaitsForAreaHit(liliesFullNoBlood && LilyAfterGCD(1)))
 			{
-				return true;
-			}
+				if (AfflatusRapturePvE.CanUse(out act, skipAoeCheck: true))
+				{
+					return true;
+				}
 
-			if (AfflatusSolacePvE.CanUse(out act))
-			{
-				return true;
+				if (AfflatusSolacePvE.CanUse(out act))
+				{
+					return true;
+				}
 			}
 		}
 

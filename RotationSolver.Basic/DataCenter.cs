@@ -3922,11 +3922,11 @@ internal static class DataCenter
 	/// unknown is not "harmless", it is simply no reason to act.
 	/// </summary>
 	/// <remarks>
-	/// <para>This is the owner's second stage, the one that needs a figure nothing else supplies:
-	/// "die aktuelle hp liegt unter dem schadenswert. dann wäre aber eine heilung sinnvoll bis max
-	/// maxhp." Every healing threshold in the tree reads the health a member HAS; none of them reads
-	/// the health he will have when the cast that is already on screen lands. A member at 60% in
-	/// front of a 45% raidwide is above every threshold and dies to it.</para>
+	/// <para>The mitigation side's question (<see cref="AreaCastIsWorthMitigating"/>,
+	/// <see cref="AnnouncedHitIsSmall"/>): does this hit create a need to heal. Every healing threshold in
+	/// the tree reads the health a member HAS; none of them reads the health he will have when the cast
+	/// that is already on screen lands. Whether to heal before the hit is a different question with a
+	/// different line, <see cref="AnnouncedHitCallsForHealFirst"/> (A292).</para>
 	///
 	/// <para>The barrier counts here, and that is not a contradiction of A85. A85 removed the
 	/// barrier from the general healing threshold, because a barrier does not restore health - a
@@ -3937,7 +3937,7 @@ internal static class DataCenter
 	/// </remarks>
 	public static bool AnnouncedHitDropsAnyoneBelow(float threshold)
 	{
-		return AnnouncedHitDropsBelow(threshold, false, out _);
+		return AnnouncedHitDropsBelow(threshold, false, false, out _);
 	}
 
 	/// <summary>
@@ -3947,7 +3947,32 @@ internal static class DataCenter
 	/// </summary>
 	internal static bool AnnouncedHitDropsUnprotectedBelow(float threshold, out string who)
 	{
-		return AnnouncedHitDropsBelow(threshold, true, out who);
+		return AnnouncedHitDropsBelow(threshold, true, false, out who);
+	}
+
+	/// <summary>
+	/// Whether to heal before the announced area hit lands: it would leave an unprotected member in the critical
+	/// class (<see cref="AnnouncedHitDropsUnprotectedBelow"/> at <c>HealthForDyingTanks</c>), and that member has
+	/// health a heal can restore. <paramref name="who"/> names the first such member.
+	/// </summary>
+	/// <remarks>
+	/// <para>The owner's second stage: "die aktuelle hp liegt unter dem schadenswert. dann wäre aber eine heilung
+	/// sinnvoll bis max maxhp." A heal comes first where the hit reaches the health a member has; concept 08's table
+	/// answers a hit below it with cover alone. Asked on the critical class's footing rather than at zero, as the
+	/// barrier of the holds is (A159, A283): a member the hit leaves at a few percent is lost to the next tick, so
+	/// the safe direction is to heal him first. The member is then missing at least one minus the hit's share minus
+	/// that line of his health - forty percent before a 45 % hit at the default line - so the heal lands on health
+	/// he lacks. Only a hit near his whole health leaves little to restore.</para>
+	///
+	/// <para>This was asked at the area heal threshold before. A 45 % raidwide crosses 65 % from full health, so
+	/// every area heal went out before it on a full party and healed nobody, direct heals included (A292).</para>
+	///
+	/// <para>A member at full health gains nothing from a heal before the hit. Barrier and mitigation are the
+	/// answer for him, and the barrier of the holds opens them for the same hit.</para>
+	/// </remarks>
+	internal static bool AnnouncedHitCallsForHealFirst(out string who)
+	{
+		return AnnouncedHitDropsBelow(Service.Config.HealthForDyingTanks, true, true, out who);
 	}
 
 	/// <summary>
@@ -3984,7 +4009,7 @@ internal static class DataCenter
 		return killed;
 	}
 
-	private static bool AnnouncedHitDropsBelow(float threshold, bool unprotectedOnly, out string who)
+	private static bool AnnouncedHitDropsBelow(float threshold, bool unprotectedOnly, bool needsRoom, out string who)
 	{
 		who = string.Empty;
 		var share = AnnouncedAreaShare;
@@ -3998,7 +4023,8 @@ internal static class DataCenter
 		{
 			var member = party[i];
 			if (member == null || member.IsDead || member.MaxHp == 0
-				|| (unprotectedOnly && !member.CanBeHealed()))
+				|| (unprotectedOnly && !member.CanBeHealed())
+				|| (needsRoom && member.CurrentHp >= member.MaxHp))
 			{
 				continue;
 			}
@@ -4120,10 +4146,9 @@ internal static class DataCenter
 			return true;
 		}
 
-		// Anyone the hit would push to where healing would be called for is reason enough. The same
-		// question decides whether to heal ahead of the cast, so it is asked in one place - see
+		// Anyone the hit would push to where healing would be called for is reason enough - see
 		// AnnouncedHitDropsAnyoneBelow, including why the barrier counts here and not in the general
-		// healing threshold (A85).
+		// healing threshold (A85). Healing before the hit asks a stricter line of its own (A292).
 		if (AnnouncedHitDropsAnyoneBelow(Service.Config.HealthAreaSpell))
 		{
 			return true;

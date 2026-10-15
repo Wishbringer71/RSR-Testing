@@ -51,6 +51,19 @@ tank. It now opens only for a tankbuster that reaches you: one cast at you, or a
 when BossModReborn names nobody, for a tank, or when the party has no tank alive. The same reading now decides when
 a rotation counts a tankbuster as on you (the Dark Knight's The Blackest Night on itself among them).
 
+## Healers: no area heal on full health before a raidwide
+
+Before an announced raidwide RSR raised the area heal whenever the hit would take someone below the area heal
+threshold, and from full health a hit of a quarter to a third of the health already did. The heal - Medica, Cure
+III, Afflatus Rapture or a heal over time - landed on a full party and was gone, and the same heal was needed again
+after the hit. It now heals ahead of the hit only when the hit would leave someone about to fall - a member at 55 %
+before a 45 % raidwide - and that member is missing health. Otherwise it heals after the hit, on health that is
+missing. `DefenseTrace.log` names each such heal ahead of a hit, the member it was for and the size of the hit.
+
+The White Mage's Afflatus Rapture at full lilies now waits until an announced raidwide has landed, so the GCD spent
+to keep the lilies from overflowing heals what the raidwide took. It goes out at once when a fourth lily would
+otherwise be lost.
+
 ## The target update no longer breaks off on an object without cast data
 
 The target update read the cast of every untargetable enemy, and Dalamud's cast reading fails on an object that

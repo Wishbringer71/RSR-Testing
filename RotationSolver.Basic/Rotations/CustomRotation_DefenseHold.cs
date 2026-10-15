@@ -300,4 +300,24 @@ public partial class CustomRotation
 		why = string.Empty;
 		return false;
 	}
+
+	/// <summary>
+	/// Whether a heal spent to keep a resource from overflowing, not because anyone lacks health, should
+	/// wait: area damage on the party is announced and has not landed, and the resource is not lost within
+	/// the next GCD (<paramref name="lostWithinGcd"/>).
+	/// </summary>
+	/// <remarks>
+	/// Such a heal - the White Mage's lilies at the cap - goes out whatever the party's health. Spent just
+	/// before a raidwide it lands on full health and is gone; spent after it, the same GCD heals what the
+	/// raidwide took. His note of 15.10.2026: "bei direkt aoe-heals jedoch verschwendung" (A292). Read from
+	/// the recognition (<see cref="DataCenter.AreaHitAnnounced"/>), not from the mitigation verdict: any area
+	/// hit leaves health to restore. Not a strategic hold of the kind above, so it does not yield to danger;
+	/// a member in danger is healed through the heal flags, where the same action is the first choice.
+	/// The other healers have no such heal on the area: the Sage's Druochole spends its stack only one GCD
+	/// before it is lost, and the Astrologian's third Essential Dignity asks for health.
+	/// </remarks>
+	protected static bool HealForResourceWaitsForAreaHit(bool lostWithinGcd)
+	{
+		return !lostWithinGcd && DataCenter.AreaHitAnnounced;
+	}
 }

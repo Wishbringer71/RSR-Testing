@@ -287,7 +287,7 @@ wahrscheinlich ist. Die Regeln dieses Konzepts messen das so:
 |---|---|
 | Flächenabwehr (`AutoStatus.DefenseArea`) | ein laufender Flächenzauber; mit `MitigateBigAreaCastsEvenIfInterruptible` auch ein unterbrechbarer, dessen gemessener Anteil die größte Barriere übersteigt; ein BossMod-Raidwide im Fenster, dessen Maske ihn oder die Gruppe einschließt oder fehlt („Wann eine BossModReborn-Vorhersage ihn betrifft"); der Befehl „Defense Area" von Hand |
 | Einzelabwehr (`AutoStatus.DefenseSingle`) | ein Zauber auf einen Tank (Tankbuster) oder ein BossMod-Tankbuster im Fenster; beim Heiler zusätzlich, wie viele Gegner den Tank angreifen |
-| Heilung vor dem angekündigten Treffer | die vorausberechnete Gesundheit nach dem laufenden Cast — der Treffer ist angekündigt |
+| Heilung vor dem angekündigten Treffer | ein angekündigter, gemessener Treffer brächte ein ungeschütztes Mitglied mit fehlender Gesundheit in Gefährdungsklasse 1 — dieselbe Linie wie die Schranke |
 | Schranke der Rückhaltungen | Gefährdungsklasse 1 jetzt, oder ein angekündigter, gemessener Treffer brächte ein ungeschütztes Mitglied dorthin |
 | Burst-Rückhaltungen (Jobtabelle oben) | keine eigene: Sie halten ohne Blick auf die Wahrscheinlichkeit und weichen nur der Schranke |
 | Streckung | eine eigene Minderung liegt noch; der nächste Treffer wird von ihr getragen, bis sie ausläuft |
@@ -298,35 +298,77 @@ Die Regeln entscheiden selbst; ob eine zuletzt hielt oder warum sie wich, führt
 
 ## Heilung vor dem angekündigten Treffer
 
-**Jede Heilschwelle im Baum liest die Gesundheit, die ein Mitglied **hat**. Keine liest die, die es
-haben wird, wenn der bereits laufende Cast einschlaegt.** Ein Mitglied bei 60 % vor einem
-45-%-Raidwide steht ueber jeder Schwelle und stirbt daran. Das ist Stufe 2 der Vorgabe, woertlich:
-„die aktuelle hp liegt unter dem schadenswert. dann waere aber eine heilung sinnvoll bis max maxhp."
+**Vor einem angekündigten, gemessenen Flächentreffer wird geheilt, wenn er ein ungeschütztes Mitglied in
+Gefährdungsklasse 1 brächte und diesem Mitglied Gesundheit fehlt** (`DataCenter.AnnouncedHitCallsForHealFirst`,
+A292). Sonst heilt der Baum erst nach dem Einschlag, an seinen gewohnten Schwellen. Das ist Stufe 2 seiner
+Vorgabe, wörtlich: „die aktuelle hp liegt unter dem schadenswert. dann waere aber eine heilung sinnvoll bis max
+maxhp." In der Tabelle unter „Die Antwort auf einen eingehenden Treffer" ist das die zweite Zeile; einen Treffer
+unter der aktuellen Gesundheit beantwortet die erste mit Deckung, nicht mit Heilung.
 
-**Die Groesse dafuer wird gemessen (A99–A102, Konzept 13) und beantwortet zwei Fragen:** ob gemindert
-wird und ob **vorher** zu heilen ist. `DataCenter.AnnouncedHitDropsAnyoneBelow` stellt die Frage einmal,
-und beide Seiten lesen sie.
+**Nötig ist die Regel, weil jede Heilschwelle die Gesundheit liest, die ein Mitglied hat**, keine die, die es
+nach dem laufenden Cast haben wird. Ein Mitglied bei 55 % vor einem 45-%-Raidwide steht danach bei 10 %, bevor
+eine Schwelle den Treffer sieht.
+
+**Die Linie ist die der Gefährdungsklasse 1, nicht null.** Seine Bedingung ist der tödliche Treffer; gefragt
+wird wie bei der Schranke der Rückhaltungen (A159, A283) schon an `HealthForDyingTanks`, in der sicheren
+Richtung: Wer nach dem Treffer bei wenigen Prozent steht, fällt am nächsten Tick. Eine Heilung landet dann auf
+fehlender Gesundheit — dem Mitglied fehlen mindestens eins minus Trefferanteil minus Linie, vor einem
+45-%-Treffer bei der Voreinstellung 15 % also 40 %. Nur ein Treffer nahe seiner ganzen Gesundheit lässt wenig
+aufzufüllen. Ein Mitglied bei voller Gesundheit löst nichts aus; für es sind Barriere und Minderung die
+Antwort, und die Schranke öffnet sie für denselben Treffer.
+
+**Ausgeschlossen: die Heilschwellen der Flaggen als Linie** (`HealthAreaAbility`, `HealthAreaSpell`). So war
+die Regel bis A292 gebaut, mit der Begründung, sie heile nur, wo der Baum ohnehin heilen würde, einen Cast
+früher. Das trug nicht: Ein 45-%-Raidwide drückt eine volle Gruppe unter 65 %, also ging vor jedem solchen
+Treffer eine Flächenheilung auf volle Gesundheit — eine direkte ganz verschwendet, ein HoT um seinen
+Sofortanteil. Sein Hinweis (15.10.2026): „bei aoe-hots noch evtl. vertretbar, bei direkt aoe-heals jedoch
+verschwendung". Dieselbe Heilung nach dem Einschlag landet auf fehlender Gesundheit.
+
+**Ausgeschlossen: HoTs vor einem ungefährlichen Treffer gesondert zulassen.** Vor dem Treffer gewirkt, verliert
+ein HoT seinen Sofortanteil an volle Gesundheit; nach dem Treffer gewirkt, wirkt er ganz, und seine Ticks setzen
+etwa einen GCD später ein. Für einen Treffer, der niemanden gefährdet, gibt es keinen Grund, den Sofortanteil
+herzugeben. Barrieren vor dem Treffer kommen über die Abwehrkette, nicht über diese Regel.
 
 | Schalter | Frage | Stand |
 |---|---|---|
-| `Skip mitigation for small area casts` | Oeffnet der Treffer die Abwehrkette? | **an** als Vorgabewert |
+| `Skip mitigation for small area casts` | Öffnet der Treffer die Abwehrkette? | **an** als Vorgabewert |
 | `Heal ahead of an announced area cast` | Wird vor dem Treffer geheilt? | **an** als Vorgabewert (seine Regel für Voreinstellungen, 29.09.2026) |
 
-**Die Barriere zaehlt hier mit, und das widerspricht A85 nicht.** A85 hat die Barriere aus der
-allgemeinen Heilschwelle entfernt, weil sie keine Gesundheit herstellt — ein Tank bei 40 % hinter
-einem Schild steht bei 40 %, sobald der Schild ungenutzt ablaeuft. Hier ist die Frage eine andere:
-ueberlebt er **diesen** Treffer. Gegen ihn wird die Barriere verbraucht und faengt ihn ab; sie
-herauszurechnen hiesse, eine Heilung zu fordern, die der Schild bereits bezahlt hat.
+**Beide Fragen lesen dieselbe gemessene Größe (A99–A102, Konzept 13), an verschiedenen Linien.** Die Minderung
+fragt, ob der Treffer jemanden unter die Flächenheilschwelle drückt (`DataCenter.AnnouncedHitDropsAnyoneBelow`,
+gelesen von `AreaCastIsWorthMitigating` und `AnnouncedHitIsSmall`): Sie kostet eine Abklingzeit und lohnt, wo
+sonst eine Heilung nötig würde. Die Vorausheilung kostet Heilung, die auf voller Gesundheit verfällt, und lohnt
+nur, wo der Treffer gefährdet.
 
-**Gefragt wird an derselben Schwelle, die die Flagge ohnehin benutzt** (`HealthAreaAbility`,
-`HealthAreaSpell`), nur einen Cast frueher — nicht an einer schaerferen. Die Regel kann deshalb nicht dort
-heilen, wo der Baum ohnehin nicht geheilt haette. Sie stellt die Frage **selbst**
-(`StateUpdater.AnnouncedAreaCastIsUpForHealing`), statt einen anderswo abgelegten Wert zu lesen: Sonst haenge
-sie daran, ob der Verteidigungszweig im selben Bild vorher lief — und der steht hinter `UseAoeDefense`. Und
-sie fragt die **unbewerteten** Erkennungen (`IsHostileCastingAreaUnrated || IsHostileCastingLargeArea`),
-nicht `IsHostileCastingAOE`: Die trägt das Minderungsurteil an der niedrigeren Schwelle `HealthAreaSpell`,
-und ein Treffer, der die Gruppe auf 70 % bringt, gälte dort als zu klein, während die Heilflagge bei genau
-diesem Stand auslöst (Konzept 13, „Wen die Unterdrückung erreicht").
+**Die Barriere zählt hier mit, und das widerspricht A85 nicht.** A85 hat die Barriere aus der allgemeinen
+Heilschwelle entfernt, weil sie keine Gesundheit herstellt — ein Tank bei 40 % hinter einem Schild steht bei
+40 %, sobald der Schild ungenutzt abläuft. Hier ist die Frage eine andere: übersteht er **diesen** Treffer.
+Gegen ihn wird die Barriere verbraucht und fängt ihn ab; sie herauszurechnen hieße, eine Heilung zu fordern,
+die der Schild bereits bezahlt hat. Ungeschützt heißt ohne Unverwundbarkeit über zwei GCDs (`CanBeHealed`):
+Ein Tank unter Hallowed Ground steht absichtlich tief.
+
+**Die Regel stellt die Frage selbst** (`StateUpdater.AnnouncedAreaCastIsUpForHealing`), statt einen anderswo
+abgelegten Wert zu lesen: Sonst hinge sie daran, ob der Verteidigungszweig im selben Bild vorher lief — und der
+steht hinter `UseAoeDefense`. Und sie fragt die **unbewerteten** Erkennungen (`IsHostileCastingAreaUnrated ||
+IsHostileCastingLargeArea`), nicht `IsHostileCastingAOE`: Die trägt das Minderungsurteil samt seinem Schalter,
+und die Regel urteilt selbst über den Treffer (Konzept 13, „Wen die Unterdrückung erreicht").
+
+**Eine Heilung, die nur gegen Ressourcenüberlauf fällt, wartet bis nach dem angekündigten Treffer**
+(`CustomRotation.HealForResourceWaitsForAreaHit`, A292): solange Flächenschaden angekündigt und nicht gelandet
+ist (`DataCenter.AreaHitAnnounced`, die Erkennung ohne Minderungsurteil) und die Ressource nicht im nächsten
+GCD verloren geht. Im Profil hat nur der Weißmagier eine solche Heilung auf die Fläche: Afflatus Rapture bei vollen
+Lilien (`Use Lily at max stacks/about to overcap`). Kurz vor einem Raidwide gewirkt, landete sie auf voller
+Gesundheit; nach ihm heilt derselbe GCD, was der Raidwide nahm, und die Blutlilie füllt sich gleich. Verloren geht
+eine Lilie erst, wenn bei drei Lilien die nächste fällig ist; dann wird sofort verbraucht. Die übrigen Heiler
+brauchen die Regel nicht: Druochole des Weisen verbraucht erst im letzten GCD vor dem Verlust und auf ein Ziel, die
+dritte Ladung Essential Dignity des Astrologen fragt die Gesundheit. Afflatus Rapture zum Ablauf von Confession
+fällt nach einer Plenary Indulgence aus der Abwehrkette hinter den Treffer, weil diese höchstens das
+BossModReborn-Fenster vor ihm liegt (Voreinstellung 5 s, Confession 10 s); erst ein Fenster über 10 s ließe
+Confession vor dem Treffer enden. Schluss aus den Zeiten, im Spiel nicht beobachtet.
+
+**`DefenseTrace.log` schreibt jede ausgelöste Vorausheilung einmal je Ankündigung**: Aktion, das gefährdete
+Mitglied, Trefferanteil (A292). Das Protokoll vom 14.10.2026 zeigte Treffer und Abwehr, aber nicht die Heilungen
+davor.
 
 **Beim Beschwoerer gilt fuer Lux Solaris die eigene Regel** („Wann Lux Solaris zündet"), auch auf dem
 Heilpfad. Sie ist reaktiv; vor einem angekuendigten Treffer faellt sie nur, wenn ein Mitglied im Radius
@@ -335,8 +377,8 @@ oder das Fenster verfaellt.
 
 **Die Heil-oGCD nimmt den ersten Einschiebeplatz, die Minderung den naechsten (A140).** Die Regel setzt
 auch `HealAreaAbility`, und der Dispatch fragt Heil-Faehigkeiten vor `DefenseArea`. Das ist Vorgabe 2
-in der Reihenfolge, die sie verlangt: Die Vorausheilung faellt nur, wenn der Treffer jemanden unter
-die Schwelle druecken wuerde — genau der Fall, in dem zuerst zu heilen ist. Die Minderung eines
+in der Reihenfolge, die sie verlangt: Die Vorausheilung faellt nur, wenn der Treffer jemanden
+gefaehrden wuerde — genau der Fall, in dem zuerst zu heilen ist. Die Minderung eines
 grossen Treffers verliert dabei keinen Weg, nur einen Platz: Ein angekuendigter Cast laeuft in der
 Regel ueber mehrere GCDs, also ueber mehrere Einschiebeplaetze. **Verdraengt** wird sie nur, wenn die
 Ankuendigung kuerzer ist als ein GCD; fuer diese Lage steht die BossModReborn-Vorhersage bereit, die
@@ -809,7 +851,7 @@ Wirktext die Quelle.
 
 **Das gemessene Schadenspotential je Gegneraktion — wo es gelesen wird und wo nicht.** Es liegt seit
 A99 bis A102 vor (`13-aoe-damage-classification.md`). Gelesen wird es vom Minderungsurteil
-(`AreaCastIsWorthMitigating`), von der Vorausheilung (`AnnouncedHitDropsAnyoneBelow`), vom zweiten Weg für
+(`AreaCastIsWorthMitigating`), von der Vorausheilung (`AnnouncedHitCallsForHealFirst`), vom zweiten Weg für
 große unterbrechbare Casts (`IsHostileCastingLargeArea`), von der Zurückhaltung der proaktiven Minderung
 (`AnnouncedHitIsSmall`) und vom Tankbuster-Plan, wenn er gegen einen Raidwide abwägt (`AnnouncedHitKills`,
 Konzept 09). Offen:

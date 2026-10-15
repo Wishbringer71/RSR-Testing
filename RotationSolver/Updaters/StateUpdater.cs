@@ -381,14 +381,16 @@ internal static class StateUpdater
 	// heilung sinnvoll bis max maxhp."
 	//
 	// Every threshold below reads the health a member HAS. None of them reads the health he will
-	// have once the cast already on screen lands, so a party at 60% in front of a 45% raidwide is
-	// above every threshold and dies to it. The size of that cast is measured (concept 13) and was
-	// so far only used to decide whether to MITIGATE; this is the other half of the same figure.
+	// have once the cast already on screen lands, so the hit counts for nothing until it has landed:
+	// a member at 55% in front of a 45% raidwide is left at ten percent before any threshold sees it.
+	// The size of that cast is measured (concept 13) and decides whether to MITIGATE; this is the
+	// other half of the same figure.
 	//
-	// Deliberately placed at the same threshold the flag itself uses, not at a stricter one: the
-	// question is "would this hit put anyone where we would heal anyway", asked one cast earlier.
-	// Where nothing is announced or its size has not been measured, the answer is false and the
-	// flags behave exactly as before.
+	// Asked where the hit would leave somebody in danger (DataCenter.AnnouncedHitCallsForHealFirst),
+	// not where it would cross a heal threshold: that question fired on a full party before every
+	// raidwide big enough, and a heal landing on full health heals nobody (A292). Where nothing is
+	// announced or its size has not been measured, the answer is false and the flags behave exactly
+	// as before.
 	private static bool AnnouncedAreaCastIsUpForHealing()
 	{
 		if (!Service.Config.HealAheadOfAnnouncedHit)
@@ -404,15 +406,17 @@ internal static class StateUpdater
 		//
 		// Asked of the UNRATED recognitions, not of IsHostileCastingAOE. That one has the mitigation
 		// verdict built into it - a cast leaving everybody above HealthAreaSpell is dropped - and
-		// this rule works at its own, higher threshold. Reading the rated question would lose it the
-		// band between the two: a hit landing the party at 70% counts as too small to mitigate while
-		// the heal flag would have raised at that very health.
+		// this rule makes its own judgement of the hit; it must not inherit the mitigation's
+		// threshold and the setting behind it (CLAUDE.md, "Erkennung und Entscheidung trennen").
 		//
 		// Both are asked because they see different casts: the first drops anything interruptible,
 		// the second takes those back up when their measured share is large. Healing comes before
 		// mitigation, so it must not see less than the defence does.
 		return DataCenter.IsHostileCastingAreaUnrated || DataCenter.IsHostileCastingLargeArea;
 	}
+
+	// The announced action the last "heal ahead" trace line was written for; 0 once the rule stops firing.
+	private static uint _healAheadTraced;
 
 	private static readonly StatusID[] HellInACellStatuses =
 	[
@@ -469,27 +473,36 @@ internal static class StateUpdater
 		var partyCount = DataCenter.PartyMembers.Count;
 		var areaHotRatio = partyCount > 2 ? SelfHealingOfTimeRatio(StatusHelper.AreaHots) : 0f;
 
-		// Established once, compared twice. Each recognition walks every casting enemy, and this
-		// method asks the question for the ability flag and the spell flag; reading it per flag put
-		// two full passes in every update, and with the defence branch a third. Same correction
-		// upstream just made for partyCount and areaHotRatio one line above.
-		var announcedAreaCast = AnnouncedAreaCastIsUpForHealing();
-		var healAheadOfHit = announcedAreaCast
-			&& DataCenter.AnnouncedHitDropsAnyoneBelow(Service.Config.HealthAreaAbility);
-		var healSpellAheadOfHit = announcedAreaCast
-			&& DataCenter.AnnouncedHitDropsAnyoneBelow(Service.Config.HealthAreaSpell);
+		// Established once, read by both flags. Each recognition walks every casting enemy, and this
+		// method asks for the ability flag and the spell flag; reading it per flag put two full passes
+		// in every update, and with the defence branch a third. Same correction upstream just made for
+		// partyCount and areaHotRatio one line above.
+		//
+		// One question for both flags since A292: a heal before the hit is called for when the hit would
+		// leave somebody in danger, whether the heal is an ability or a spell. Asked at the flags' own
+		// thresholds before, it fired on a full party before any raidwide big enough to cross them.
+		var endangered = string.Empty;
+		var healAheadOfHit = AnnouncedAreaCastIsUpForHealing()
+			&& DataCenter.AnnouncedHitCallsForHealFirst(out endangered);
 
 		// The probe the owner's testing needs: healing that arrives before a raidwide looks exactly
 		// like healing that arrives for any other reason, so without this the rule cannot be told
-		// apart from its own absence. Recorded per action, because the question runs every frame.
-		if (healAheadOfHit || healSpellAheadOfHit)
+		// apart from its own absence. Recorded per action, because the question runs every frame, and
+		// written to the trace once per announcement: the trace of 14.10.2026 showed the hits and the
+		// defence but not the heals sent ahead of them (A292).
+		var announced = healAheadOfHit ? DataCenter.AnnouncedAreaAction : 0u;
+		if (announced != 0)
 		{
-			var announced = DataCenter.AnnouncedAreaAction;
-			if (announced != 0)
+			DataCenter.HealedAheadOfAreaCast[announced] = DateTime.Now;
+			if (announced != _healAheadTraced)
 			{
-				DataCenter.HealedAheadOfAreaCast[announced] = DateTime.Now;
+				var name = Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault(announced)?.Name.ExtractText() ?? "?";
+				DefenseTrace.Line($"heal ahead of {name} #{announced}: it would leave {endangered} in danger, "
+					+ $"hit {DataCenter.AnnouncedAreaShare:P0} of max HP");
 			}
 		}
+
+		_healAheadTraced = announced;
 
 		// Prioritize area healing if multiple members have DoomNeedHealing
 		if (doomNeedHealingCount > 1 || singleAbilityCount > 2
@@ -500,7 +513,7 @@ internal static class StateUpdater
 		}
 
 		if (canUseHealSpell && (doomNeedHealingCount > 1 || singleSpellCount > 2
-			|| healSpellAheadOfHit
+			|| healAheadOfHit
 			|| ShouldHealArea(partyCount, Service.Config.HealthAreaSpell, Service.Config.HealthAreaSpellHot, areaHotRatio, false)))
 		{
 			status |= AutoStatus.HealAreaSpell;
