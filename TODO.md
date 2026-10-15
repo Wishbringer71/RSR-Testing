@@ -273,6 +273,14 @@ Er fällt trotzdem kaum ins Gewicht, und der Grund liegt in der Wirkweise der Ak
 
 **Was offen bleibt, ist die Messung.** Ob die Barriere unter den engeren Stufen tatsächlich bricht, beobachtet niemand, und eine Spielbeobachtung ist nicht seine Aufgabe (CLAUDE.md, „Entscheidung zur Laufzeit"): Die Regel müsste ihren Bruch selbst zählen (Dark Arts nach der Barriere) und die Gegnerschwelle nachsteuern. Voller Loop vor dem Bau. Dieselbe Zählung beantwortet zwei Nebenfragen: was die Rückhaltung des Weißmagiers kostet (Sanctus ist sein einziger Flächenzauber, ein zurückgehaltener GCD fällt auf Einzelzielschaden zurück) und ob `BlackestNightMinHostiles` (Vorgabe 4) zu hoch liegt, sodass The Blackest Night im Wall-to-Wall zu selten kommt. Sie ist bewusst eine **eigene** Option der Rotation und nicht der globale `MitigationSustainHostileCount`, weil die Frage hier eine andere ist: nicht „lohnt eine Minderung", sondern „reicht der Schadensstrom, um 25 % der maximalen Gesundheit in sieben Sekunden aufzuzehren".
 
+### `IsValid()` prüft nicht, ob ein Objekt noch lebt · N, U
+
+33 Prüfungen im Plugin (ohne `ExtraRotations`, Stand 15.10.2026) setzen `IsValid()` vor einen nativen Zugriff, damit ein Objekt, das seit dem Aufbau der Liste verschwunden ist, übersprungen wird (Upstream 6baba6a94, Fork A199). Dalamuds `GameObject.IsValid` prüft aber nur `PlayerState.IsLoaded`, also ob der Spieler geladen ist (C111). Dazu kommt, dass Dalamud je Tabellenplatz und Objektart **eine** Instanz wiederverwendet und ihre Adresse bei jeder Aufzählung neu setzt (`ObjectTable.CachedEntry.Update`, für alle Plugins gemeinsam). Eine gespeicherte Instanz zeigt also nach dem Verschwinden ihres Objekts auf freigegebenen Speicher und, sobald der Platz neu belegt und erneut aufgezählt wird, auf ein anderes Objekt.
+
+Betroffen sind Leser, die eine Liste außerhalb des Zyklus lesen, in dem sie gebaut wurde: Fenster, Effekt-Hooks und mit `MinUpdatingTime` > 0 übersprungene Zyklen (A199). Im Kampf hieße das: ein Zyklus mit Werten eines verschwundenen oder eines anderen Gegners, im ungünstigsten Fall ein nativer Absturz bei einer virtuellen Funktion aus freigegebenem Speicher. Beobachtet ist davon nichts. Ob das Spiel Objekte zwischen Dalamuds Framework-Aktualisierung und dem Zeichnen im selben Frame entfernt, ist unbelegt.
+
+Offen: voller Loop. Zu klären sind ein Lebendigkeitsmaß, das ohne Lesen des möglicherweise freigegebenen Objekts auskommt (etwa Tabellenplatz und Adresse gegen `IObjectTable.GetObjectAddress`, dazu die `GameObjectId`), welche der 33 Stellen außerhalb ihres Zyklus lesen und ob Upstream dasselbe Muster pflegt.
+
 ## Technische Schuld
 
 Bewusst eingegangene Kompromisse und erfasste Befunde ohne Wirkung im Kampf, je mit Kosten und Auflösungsbedingung.

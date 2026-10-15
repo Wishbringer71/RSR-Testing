@@ -51,6 +51,14 @@ tank. It now opens only for a tankbuster that reaches you: one cast at you, or a
 when BossModReborn names nobody, for a tank, or when the party has no tank alive. The same reading now decides when
 a rotation counts a tankbuster as on you (the Dark Knight's The Blackest Night on itself among them).
 
+## The target update no longer breaks off on an object without cast data
+
+The target update read the cast of every untargetable enemy, and Dalamud's cast reading fails on an object that
+carries no cast data. The update then stopped before it refreshed the raise, Esuna, provoke and interrupt targets and
+the time-to-kill estimate, which kept their old values for that frame; Dalamud's log showed it as
+`TargetUpdater.UpdateTargets Exception` in `IsCasting`. Such objects are now left out, there and where the target lists
+are built.
+
 ## `DefenseTrace.log` says what the defence turned down
 
 Each defence decision, and each "open, nothing chosen", now ends with the actions the defence refused on its way and

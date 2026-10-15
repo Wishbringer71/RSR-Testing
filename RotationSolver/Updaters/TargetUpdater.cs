@@ -86,7 +86,7 @@ internal static partial class TargetUpdater
 		foreach (var obj in Svc.Objects)
 		{
 			if (obj is not IBattleChara caster || caster.ObjectKind != Dalamud.Game.ClientState.Objects.Enums.ObjectKind.BattleNpc
-				|| caster.IsTargetable || !caster.IsCasting
+				|| caster.IsTargetable || !caster.HasNativeState() || !caster.IsCasting
 				|| caster.GetBattleNPCSubKind() != Dalamud.Game.ClientState.Objects.Enums.BattleNpcSubKind.Combatant
 				|| !OtherConfiguration.HostileCastingArea.Contains(caster.CastActionId))
 			{
@@ -279,7 +279,9 @@ internal static partial class TargetUpdater
 				{
 					if ((skipDummyCheck || !battleChara.IsDummy())
 						&& battleChara.IsTargetable
-						&& battleChara.StatusList != null
+						// What "StatusList != null" stood here for; Dalamud's getter never returns null, it
+						// calls the native object and throws when the object has no status manager.
+						&& battleChara.HasNativeState()
 						&& !battleChara.IsPet())
 					{
 						allTargets.Add(battleChara);

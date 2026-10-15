@@ -572,6 +572,32 @@ public static class ObjectHelper
 		return output.ToString();
 	}
 
+	/// <summary>
+	/// Whether the native object behind this character carries the cast and status state Dalamud's getters read.
+	/// <c>false</c> means <c>IsCasting</c>, the other cast getters and <c>StatusList</c> would throw.
+	/// </summary>
+	/// <remarks>
+	/// Dalamud reads both through virtual functions of the native object and checks neither result:
+	/// <c>IsCasting</c> is <c>Struct->GetCastInfo()->IsCasting</c>, <c>StatusList</c> wraps
+	/// <c>GetStatusManager()</c>. An object in the table without a virtual table, or of a class that returns no
+	/// cast info, throws a NullReferenceException wherever it is read. One did in
+	/// <c>TargetUpdater.UpdateAreaCasters</c>, and that ended the target update before the death, dispel, provoke
+	/// and interrupt targets and the time to kill were refreshed (A291). FFXIVClientStructs guards its own
+	/// <c>Character.IsCasting</c> against the same two cases (9ff7ae79, 03.03.2026). The check sits where the
+	/// target lists are built, so every reader of the lists gets objects that pass it.
+	/// </remarks>
+	internal static unsafe bool HasNativeState(this IBattleChara battleChara)
+	{
+		var gameObject = (FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject*)battleChara.Address;
+		if (gameObject == null || gameObject->VirtualTable == null)
+		{
+			return false;
+		}
+
+		var character = (FFXIVClientStructs.FFXIV.Client.Game.Character.Character*)gameObject;
+		return character->GetCastInfo() != null && character->GetStatusManager() != null;
+	}
+
 	internal static unsafe bool IsEnemy(this IGameObject obj)
 	{
 		// Validate liveness before any native read/call: a try/catch around

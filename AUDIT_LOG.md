@@ -7205,6 +7205,49 @@ und der Wirktext die Zahl leer lässt.
 **Prüfgrad:** Spieldaten (xivapi v2, Trait-, Status- und Aktionsblätter), Generator mit Selbsttest, Prüfskripte; Compile
 über die CI.
 
+### A291 · Zielaktualisierung: Objekte ohne Cast- und Statusdaten (15.10.2026)
+
+Sein Dalamud-Protokoll: `TargetUpdater.UpdateTargets Exception: System.NullReferenceException at
+BattleChara.get_IsCasting() line 80 at TargetUpdater.UpdateAreaCasters()` (Stand des Zweigs: `UpdateAreaCasters`
+seit 4921229d4, A277).
+
+- *Ursache, am Artefakt:* Dalamud liest `IsCasting` als `this.Struct->GetCastInfo()->IsCasting`, ohne Prüfung
+  (`BattleChara.cs`, master, 15.10.2026). `GetCastInfo` ist eine virtuelle Funktion; FFXIVClientStructs dokumentiert, dass
+  sie für manche Klassen `null` liefert, und sichert seine eigene `Character.IsCasting` seit 9ff7ae79 (03.03.2026, „Try
+  to safeguard Character.IsCasting") gegen eine fehlende Funktionstabelle und eine fehlende Cast-Info ab. Beide Fälle
+  lesen im Nullbereich, den .NET als `NullReferenceException` meldet. Die Adresse selbst ist nicht null: Dalamuds
+  Aufzählung setzt sie im selben Schritt aus dem Tabellenplatz (`ObjectTable.CachedEntry.Update`). Welcher der beiden
+  Fälle vorlag und bei welchem Objekt, ist von hier aus nicht feststellbar.
+- *Wirkung im Kampf:* `UpdateTargets` brach nach den Listen ab; Wiederbelebungs-, Esuna-, Herausforderungs- und
+  Unterbrechungsziel sowie die Zeit bis zum Tod blieben für diesen Zyklus auf dem alten Stand, die Liste der
+  Flächenwirker ebenso. Wie oft, zeigt das Protokoll nicht: `MajorUpdater.LogOnce` schreibt dieselbe Meldung nur einmal.
+- *Klasse:* Alle acht Cast-Lesungen Dalamuds und `StatusList` (über `GetStatusManager`, ebenfalls virtuell, ebenfalls
+  ungeprüft) teilen den Weg. Erhoben: 112 Fundstellen und neun Durchläufe über die Objekttabelle. Nicht anvisierbare
+  Objekte erreichen eine solche Lesung nur in `UpdateAreaCasters` und in `TankbusterForecast.OwnCopy` (dort fängt
+  `LongestCopy` die Ausnahme selbst). Alle übrigen Leser lesen aus den Listen von `GetAllTargets`, vom Spieler oder vom
+  Ziel des Spielers.
+- *Behoben an einer Stelle für alle Leser:* `ObjectHelper.HasNativeState` (Funktionstabelle, Cast-Info und Statusverwalter
+  vorhanden). Die Prüfung sitzt in `UpdateAreaCasters` vor `IsCasting` und in `GetAllTargets` an der Stelle von
+  `StatusList != null`. Diese Bedingung prüfte nichts, weil Dalamuds Getter nie `null` liefert; sie rief nur die native
+  Funktion auf. Damit stehen in Gruppen-, Allianz- und Gegnerliste und unter den Flächenwirkern nur Objekte, deren
+  Cast- und Statuslesung nicht werfen kann.
+- *Eingeschränkt, mit Grund:* das Ziel des Spielers und Treffer von `SearchById` bleiben ungeprüft. Sie sind
+  anvisierbar oder Ziel eines laufenden Casts, also dieselbe Population, die vor der Prüfung ohne Ausnahme durch
+  `GetAllTargets` lief (Schluss, kein Beleg). Einen Wurf dort fängt der Aufruf der Rotation ab.
+- *Falsifikation:* kein Defekt — widerlegt durch das Protokoll und den Dalamud-Code. Option falsch, schließt sie
+  lebende Ziele aus? Spieler und Kampf-NPCs sind nativ `BattleChara`, deren Cast-Info und Statusverwalter Felder des
+  Objekts sind (`BattleChara.cs`, FieldOffset 0x2790 und 0x23B0). `null` liefern laut ClientStructs andere
+  `Character`-Klassen wie `Companion`, die Dalamud nicht als `IBattleChara` führt. Schluss am Strukturlayout, im Spiel
+  nicht beobachtet. Ausgeliefert, und nichts ändert sich? Eine `NullReferenceException` aus `IsCasting` setzt einen der
+  beiden geprüften Fälle voraus, weil die Adresse nicht null ist; ein Sprung über eine Tabelle aus freigegebenem
+  Speicher würde nativ abstürzen und nicht als diese Meldung erscheinen.
+- *Nebenbefund:* `IsValid()` prüft nicht, ob das Objekt lebt (C111). Als Defekt erfasst (TODO, „`IsValid()` prüft
+  nicht, ob ein Objekt noch lebt").
+- Konzept 13 bleibt unverändert: Ein Objekt ohne Cast-Info wirkt keine Aktion der Flächenliste. Release-Text
+  fortgeschrieben; die Schnittstelle des Pakets ist unberührt (`HasNativeState` ist `internal`).
+
+**Prüfgrad:** statisch (Dalamud, FFXIVClientStructs, ECommons am Quelltext); Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -7495,3 +7538,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C108 | A272 und Bericht vom 13.10.2026: „Set aside BossModReborn raidwides that keep missing", ab Werk aus, Voreinstellung „zur Entscheidung vorgelegt" | Die Falsifikation des Entwurfs hielt (elf große Raidwides ohne Abwehr); nach Stufe 6 hieß das zurück zu den Optionen, nicht eine Einstellung. Eine Einstellung, deren Sinn das Konzept nicht klärt, ist kein Ergebnis | zurückgenommen (A275) |
 | C109 | A272, Befund 1: „144 Abwehraktionen gingen auf Vorhersagen, die ihn nicht trafen" | Belegt ist nur, dass das Protokoll keinen Treffer zeigt; bei Necrophobia zeigt es zwölf Minuten lang keinen, auch nicht den modellierten Raidwide | berichtigt (A275) |
 | C110 | A273, Falsifikation: „Ein echter Raidwide hinter einem Turm … die Abwehr kommt dann um höchstens das Fenster später" | Löst der Turm weniger als 0,6 s vor dem Raidwide auf, kommt der Raidwide über BossModReborn gar nicht mehr (Mindestvorlauf der Leser); A273 „vorgelegt" (leere Landungen) war aus Konzept 13 entscheidbar | berichtigt, ohne ihn abgeschlossen (A275) |
+| C111 | A199 und A200 (Befund 2), nach Upstreams Muster (`ObjectHelper.IsEnemy`, 6baba6a94: „the object must be confirmed live beforehand"): `IsValid()` vor dem nativen Zugriff bestätige, dass das Objekt noch lebt; sonst werde es „übersprungen statt gelesen" | Dalamuds `GameObject.IsValid` prüft nur, dass der Spielerzustand geladen ist (`PlayerState.IsLoaded`, master, 15.10.2026), nicht das Objekt. Die Zusage war aus dem Namen geschlossen, nicht am Quelltext geprüft — dieselbe Lehre wie C15: ein Name ist kein Beleg | A291; Defekt in `TODO.md`, „`IsValid()` prüft nicht, ob ein Objekt noch lebt" |
