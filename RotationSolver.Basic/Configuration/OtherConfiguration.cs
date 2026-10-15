@@ -156,7 +156,7 @@ internal class OtherConfiguration
 	///
 	/// Unlike the area table it is not a raw observation: the measured share is divided by the
 	/// mitigation that stood on the member and on the attacker at the hit
-	/// (<see cref="DefensiveValues.MitigationByStatusId"/>), so a well-mitigated hit does not rate the
+	/// (<see cref="DefensiveValues.TryStatus"/>), so a well-mitigated hit does not rate the
 	/// action low. A hit taken under a vulnerability debuff goes into its own figure. Both only ever
 	/// rise. No button discards it: after a patch the file is deleted by hand with the game closed.
 	/// </remarks>

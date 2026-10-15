@@ -595,6 +595,12 @@ Messung in `TankbusterTable`, Ablage über denselben gesicherten Weg wie die Fl�
     eine Minderung nur einer Schadensart („Reduces magic damage taken by …", Magick Barrier, Fey Illumination). Die
     zweite Art steht dann auf 0; bei unbekannter Schadensart zählt die kleinere, also 0. Bis A286 fehlten diese Werte,
     und ein Treffer unter ihnen wurde zu klein gelernt.
+  - Setzt ein Merkmal die Zahl und lässt der Wirktext sie leer („Improves Troubadour's damage reduction effect to 15%",
+    Troubadour, Tactician, Shield Samba ab Stufe 98), gilt der Anteil des Merkmals — zur Laufzeit aus dem Spiel
+    (`TraitDurations`), sonst aus `trait_durations.json` (`DefensiveValues.TryStatus`).
+  - Einen Wert trägt nur ein Status, dessen eigener Text eine Minderung oder einen größeren Lebenspool nennt. Ein Status,
+    der nur den Namen der Aktion teilt — der HoT von Temperance, die Barriere von Aquaveil, die Rückstrahlung von Nebula,
+    eine ältere Form derselben Aktion —, trägt keinen; sonst würde dieselbe Minderung doppelt herausgerechnet.
   - Damit drückt ein gut geminderter Treffer die Aktion nicht nach unten – die Schwäche des Höchstwerts der
     Flächentabelle (Abschnitt „Grenzen der Messung") entfällt hier.
 - **Unter Verwundbarkeit getrennt:** Trägt der Getroffene eine Verwundbarkeit, geht der Wert in die zweite Zahl.
@@ -606,7 +612,7 @@ Messung in `TankbusterTable`, Ablage über denselben gesicherten Weg wie die Fl�
   etwas ihn aufhielt, nicht, dass er harmlos ist.
 
 **Fehler nur nach unten:**
-- Eine Minderung, die kein Wirktext beziffert (Merkmal, unverknüpfter Status), wird nicht herausgerechnet.
+- Eine Minderung, die kein Text beziffert (unverknüpfter Status, Merkmalswert unterhalb der Merkmalsstufe), wird nicht herausgerechnet.
 - Eine Barriere wird nicht herausgerechnet: Ob die Schadenszahl des Spiels den absorbierten Teil enthält, ist hier
   nicht belegt.
 - Treffer unsichtbarer Helfer tragen die Debuffs des Bosses nicht.

@@ -842,6 +842,16 @@
    "status": "exception",
    "loop": "A240",
    "reason": "Unit conversion, not a game value: GetAdjustedRecastTime returns milliseconds (ClientStructs; ActionCooldownInfo.RecastTimeOneChargeRaw divides the same way), the readers expect seconds."
+  },
+  {
+   "file": "RotationSolver.Basic/Helpers/TraitDurations.cs",
+   "code": "float.Parse(improves.Groups[\"percent\"].Value, System.Globalization.CultureInfo.InvariantCulture) / 100f, trait.Level);",
+   "values": [
+    "100"
+   ],
+   "status": "exception",
+   "loop": "A290",
+   "reason": "Percent to share: the trait text states the figure in percent and the table holds shares; the divisor is the definition of the unit, not a figure of the game"
   }
  ]
 }

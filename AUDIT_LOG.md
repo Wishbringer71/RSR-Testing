@@ -7180,6 +7180,31 @@ Aus der Nachprüfung (A286, K5, K7, K9, K10).
 
 **Prüfgrad:** statisch, WrathCombo-Quelltext gelesen (Werkzeug, keine Spielquelle); Prüfskripte; Compile über die CI.
 
+### A290 · Behebung G6b: Merkmalswerte der Minderung, Status nach eigenem Text (14.10.2026)
+
+Aus A287 offen: Troubadour, Tactician und Shield Samba führten 0 %, weil ein Merkmal auf Stufe 98 ihre 15 % setzt
+und der Wirktext die Zahl leer lässt.
+
+- *Behoben wie die Dauern:* `TraitDurations` liest zur Laufzeit im englischen Trait-Blatt auch „Improves X's damage
+  reduction effect to N%" samt Stufe (`TryShareInGame`); Rückfall ist `trait_durations.json` (`values`, abgerufen von
+  `fetch_trait_durations.py`: Traits 601, 607, 611, Stufe 98, je 15 %). `DefensiveValues.For` gibt den Anteil, sobald die
+  synchronisierte Stufe ihn hat (`TraitShareOf`); darunter bleibt er unbekannt. `DefensiveValues.TryStatus` beantwortet
+  einen Status aus `MitigationByStatusId` oder über `TraitMitigatingActionByStatusId`; `TankbusterTable` fragt nur noch so.
+  Die Umrechnung Prozent → Anteil steht als Ausnahme in `fixed_values.json` (Definition der Einheit).
+- *Neuer Befund derselben Klasse, im selben Zug behoben:* `status_mitigation` gab die Werte einer Aktion jedem Status
+  gleichen Namens — 23 Status ohne Minderung im eigenen Text, darunter Temperance_2037/2038 (HoT), Aquaveil_3086 und
+  HolySheltron_3026 (Barriere), Nebula_3051 (Rückstrahlung), Sheltron 728 (Altform), Feint_2185 (PvP-Verwundbarkeit),
+  TheBole_1883, Collective-Unconscious-Ringe, Fixed Sign, Nascent Flash (HP-Absorption). Im Kampf: Stand neben
+  Temperance auch ihr HoT, wurde Temperance zweimal herausgerechnet und der Tankbuster zu groß gelernt — entgegen der
+  Zusage „Fehler nur nach unten" (Konzept 13); und `MitigatingStatusesByActionId` hielt einen HoT für die stehende
+  Minderung. Jetzt trägt ein Status nur einen Wert, wenn sein eigener Text eine Minderung oder einen größeren
+  Lebenspool nennt (`STATUS_REDUCES`, Selbsttest mit zehn Spieltexten beider Seiten). Gegenprobe: Im Profil bleibt keine
+  Aktion ohne Status; ohne Status bleiben nur Bozja- und Phantomaktionen, deren Status andere Wirkungen sind.
+- Konzept 13, CHANGELOG (Paket), Release-Text fortgeschrieben.
+
+**Prüfgrad:** Spieldaten (xivapi v2, Trait-, Status- und Aktionsblätter), Generator mit Selbsttest, Prüfskripte; Compile
+über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

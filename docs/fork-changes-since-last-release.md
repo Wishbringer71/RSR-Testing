@@ -64,4 +64,9 @@ The learned tankbuster table, which a tank's mitigation plan reads, scales every
 mitigation that stood when it landed. It did not know the reduction of Intervention, Taurochole, Third Eye, Magick
 Barrier or Fey Illumination, because their effect texts phrase it differently. A tankbuster that hit a tank under one of
 them was learned as smaller than it is, until a hit without it raised the figure, and a plan for that tankbuster could
-come out too small for a defensive to fire. They are counted now.
+come out too small for a defensive to fire. They are counted now, and so are Troubadour, Tactician and Shield Samba
+at 15 % from level 98, which their effect texts leave blank because a trait sets the figure.
+
+The table also no longer divides the same mitigation out twice. It credited a mitigation to every status sharing the
+action's name, so a tank carrying Temperance's heal over time beside Temperance itself had Temperance divided out
+twice, and the tankbuster was learned larger than it is. Only a status whose own text reduces damage counts now.

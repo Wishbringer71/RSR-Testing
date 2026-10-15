@@ -41,6 +41,17 @@ Third Eye, Taurochole, Magick Barrier, Fey Illumination and their statuses, amon
 now 4 s, the duration of its own reduction, where it gave the 9 s of Tengentsu's Foresight; Lost Font of Magic and Lost
 Font of Power give 15 s instead of 30 s for the same reason. No signature changes.
 
+### Added to RotationSolver.Basic: trait-set damage reductions in `DefensiveValues`; statuses rated by their own text
+
+`DefensiveValues.For` now gives the share a trait sets where the effect text leaves it blank - Troubadour, Tactician and
+Shield Samba, 15 % from level 98 - read in the game first and from the new `TraitMitigationByActionId` otherwise
+(`TraitShareOf`). `DefensiveValues.TryStatus` answers for a status from `MitigationByStatusId` or, for those three
+actions' statuses (`TraitMitigatingActionByStatusId`), from the trait. `MitigationByStatusId` and
+`MitigatingStatusesByActionId` now hold only statuses whose own text states a reduction or a raised maximum HP; a
+status that merely shares an action's name (Temperance's heal over time, Aquaveil's barrier, Nebula's reflection, an
+older form of the action) no longer carries its figure. A derived rotation that read those statuses as the mitigation
+standing no longer does. No signature changes.
+
 ## 7.5.7.1+wsh1
 
 ### Added to RotationSolver.Basic: `AttackType.Shot` and `DefensiveValues.MitigationByStatusId`

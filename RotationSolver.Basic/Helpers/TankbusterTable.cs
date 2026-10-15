@@ -12,12 +12,15 @@ namespace RotationSolver.Basic.Helpers;
 /// <para>Whether a tankbuster kills cannot be known ahead of the hit from any public source (A258);
 /// it can be learned. A hit is scaled back to unmitigated by the mitigation that stood at that moment
 /// - on the one hit, and on the attacker by damage type - with the figures the actions' own effect
-/// texts state (<see cref="DefensiveValues.MitigationByStatusId"/>). A well-mitigated hit therefore
-/// does not rate the action low, which is the weakness of the area table's raw observation.</para>
+/// texts state, or a trait where the text leaves the figure blank (Troubadour), given only to a status
+/// whose own text says it reduces damage (<see cref="DefensiveValues.TryStatus"/>). A well-mitigated hit
+/// therefore does not rate the action low, which is the weakness of the area table's raw observation.</para>
 ///
-/// <para>What is left out errs on the low side, never on the high one: a mitigation no effect text
-/// rates (a trait, a status not tied to an action) is not divided out, so the unmitigated figure is
-/// at most underestimated, and every later hit can only raise it. A barrier is not divided out
+/// <para>What is left out errs on the low side, never on the high one: a mitigation no text rates
+/// (a status not tied to an action, a trait figure below the trait's level) is not divided out, so the
+/// unmitigated figure is at most underestimated, and every later hit can only raise it; and a status
+/// that only shares an action's name (its heal over time) carries no figure, so nothing is divided out
+/// twice. A barrier is not divided out
 /// either: whether the game's damage figure counts the part a barrier absorbed is not established
 /// here. An underestimate means a defensive that does not fire - the behaviour before the table.</para>
 ///
@@ -134,7 +137,7 @@ internal static class TankbusterTable
 		var raised = 1f;
 		foreach (var status in StatusesOf(target, horizon))
 		{
-			if (DefensiveValues.MitigationByStatusId.TryGetValue(status, out var value) && value.MaxHp > 0f)
+			if (DefensiveValues.TryStatus(status, out var value) && value.MaxHp > 0f)
 			{
 				raised *= 1f + value.MaxHp;
 			}
@@ -159,7 +162,7 @@ internal static class TankbusterTable
 		var factor = 1f;
 		foreach (var status in StatusesOf(target, horizon))
 		{
-			if (DefensiveValues.MitigationByStatusId.TryGetValue(status, out var value))
+			if (DefensiveValues.TryStatus(status, out var value))
 			{
 				var reduction = value.SelfAgainst(attackType);
 				if (reduction > 0f)
@@ -173,7 +176,7 @@ internal static class TankbusterTable
 		{
 			foreach (var status in StatusesOf(attacker, horizon))
 			{
-				if (!DefensiveValues.MitigationByStatusId.TryGetValue(status, out var value))
+				if (!DefensiveValues.TryStatus(status, out var value))
 				{
 					continue;
 				}

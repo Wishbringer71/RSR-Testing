@@ -1,4 +1,5 @@
-"""Fetch the traits that extend an action's duration - the second source for generate_defensive_values.py.
+"""Fetch the traits that set an action's duration or damage reduction - the second source for
+generate_defensive_values.py.
 
 ActionId.resx leaves the number blank where a trait changes it ("Duration: s"), so the duration
 of Reprisal, Feint, Addle, Sheltron and Nascent Flash is missing from the effect texts (concept 09,
@@ -7,6 +8,10 @@ seconds", learned at level 98. In the game the plugin reads that trait itself (T
 the game gives at runtime weighs more (the owner's rule, 12.10.2026). This table, fetched from the
 game data through xivapi with date and source, is the fallback where the game gives nothing and the
 cross-check: weighting, not exclusion (his precision).
+
+The same holds for a damage reduction a trait raises: "Improves Troubadour's damage reduction effect
+to 15%" (Enhanced Troubadour II, level 98) leaves the figure blank in the effect text, so Troubadour,
+Tactician and Shield Samba had none in the table (A286, G6). Those traits go under "values".
 
 Run when the game data changes:  python3 .github/scripts/audit/fetch_trait_durations.py
 """
@@ -20,6 +25,7 @@ import sys
 OUT = pathlib.Path(__file__).with_name('trait_durations.json')
 API = 'https://v2.xivapi.com/api'
 EXTENDS = re.compile(r'Extends the duration of (.+?) to (\d{1,3}) seconds')
+IMPROVES = re.compile(r"Improves (.+?)'s damage reduction effect to (\d{1,2})%")
 
 
 def fetch(url):
@@ -37,7 +43,21 @@ def parse(text):
     return name, int(match.group(2))
 
 
+def parse_share(text):
+    """(action name, percent) from a trait's text that raises a damage reduction, or None."""
+    match = IMPROVES.search(re.sub(r'<[^>]+>', '', text or ''))
+    return (match.group(1).strip(), int(match.group(2))) if match else None
+
+
 def self_test():
+    shares = [
+        ("Improves Troubadour's damage reduction effect to 15%.", ('Troubadour', 15)),
+        ("Reduces Troubadour recast time to 90 seconds.", None),
+    ]
+    for text, expected in shares:
+        if parse_share(text) != expected:
+            print(f'SELF-TEST FAILED: {text!r} -> {parse_share(text)}, expected {expected}')
+            return False
     cases = [
         ('Extends the duration of Reprisal to 15 seconds.', ('Reprisal', 15)),
         ('Extends the duration of Nascent Flash and Nascent Glint to 8 seconds.', ('Nascent Flash', 8)),
@@ -49,7 +69,8 @@ def self_test():
         if got != expected:
             print(f'SELF-TEST FAILED: {text!r} -> {got}, expected {expected}')
             return False
-    print('self-test ok: a trait naming one or two actions is read, other trait texts are left out')
+    print('self-test ok: a trait naming one or two actions is read, a raised damage reduction is read, '
+          'other trait texts are left out')
     return True
 
 
@@ -72,12 +93,32 @@ def main():
             traits.append({'trait': row['fields']['Name'], 'trait_row': row['row_id'], 'level': level,
                            'action': name, 'seconds': seconds})
     traits.sort(key=lambda t: (t['action'], t['level']))
+
+    found = fetch(f'{API}/search?sheets=TraitTransient&query=Description~%22damage%20reduction%20effect%20to%22'
+                  '&fields=Description&limit=500')
+    share_rows = {}
+    for result in found.get('results', []):
+        parsed = parse_share(result['fields']['Description'])
+        if parsed:
+            share_rows[result['row_id']] = parsed
+    values = []
+    if share_rows:
+        levels = fetch(f'{API}/sheet/Trait?rows={",".join(map(str, share_rows))}&fields=Name,Level&limit=500')
+        for row in levels.get('rows', []):
+            name, percent = share_rows[row['row_id']]
+            level = row['fields']['Level']
+            if level > 0:
+                values.append({'trait': row['fields']['Name'], 'trait_row': row['row_id'], 'level': level,
+                               'action': name, 'percent': percent})
+    values.sort(key=lambda t: (t['action'], t['level']))
+
     OUT.write_text(json.dumps({
         'source': 'xivapi v2, sheets TraitTransient (Description) and Trait (Level)',
         'fetched': datetime.date.today().isoformat(),
         'traits': traits,
+        'values': values,
     }, indent=2) + '\n', encoding='utf-8')
-    print(f'{len(traits)} trait(s) written to {OUT.name}')
+    print(f'{len(traits)} duration trait(s) and {len(values)} reduction trait(s) written to {OUT.name}')
     return 0
 
 

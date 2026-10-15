@@ -564,46 +564,6 @@ angekündigten Treffers (Konzept 13) diese Lücke schon schließt, weil er die b
 
 **Reihenfolge nach seinem Nutzungsprofil:** zuerst die Werte in den Jobs, die er spielt (Beschwörer, Weißmagier, Tanks, die zentrale Abwehr in `CustomRotation_OtherInfo`), dann der Rest. Die Vorlaufzeiten der Abwehr sind vermutlich über `DefensiveValues.DurationOf` ableitbar; wo ein Merkmal die Dauer im Wirktext leer lässt, braucht es einen eigenen Weg.
 
-### Nachprüfung der 73 Commits vom 11. und 12. September 2026 · N, R, U
-
-**Konzept:** `docs/rotation-flow/06-fork-audit.md`
-Der Auftraggeber hat die Arbeit dieser beiden Tage als nicht belastbar zurückgewiesen und angeordnet, sie zur Nachprüfung vorzumerken. Die Liste steht vollständig in `AUDIT_LOG.md` B2, Prüfstand **ZWEIFELHAFT**: 73 eigene Commits ohne Merges und 5 eigene Merge-Commits, 72 davon nur auf `claude/raise-swiftcast-weave-2` und dort noch änderbar.
-
-**Was die Vormerkung besagt:** nichts über den Inhalt. Kein Commit ist damit widerlegt. Zweifelhaft ist der **Prüfstand** — die Belege zu diesen Commits in Teil A stammen aus denselben beiden Tagen und sind Selbstauskunft, also Gegenstand der Nachprüfung und nicht ihre Grundlage.
-
-**Reihenfolge**, nach Wirkung auf den Betroffenenkreis:
-
-1. **Code** — **erledigt** (A86 für die Wiederbelebungs-Commits, A87 für die übrigen); in B2 als NACHGEPRÜFT eingetragen.
-2. **Generator und CI** — offen. Falsch erhobene Namen und ein falsch messendes Prüfmittel vergiften jede spätere Aussage, die sich darauf stützt.
-3. **Prüfmittel** — offen. Ein Skript, das das Surrogat statt der Wirkung misst, erzeugt stille Nullbefunde; genau diese Fehlerklasse war der Anlass ihrer Überarbeitung.
-4. **Doku und sonstiges** — offen, zuletzt, weil eine falsche Aussage dort nur mitträgt, was der Code ohnehin zeigt.
-
-Wie viele Commits in jeder Gruppe noch auf ZWEIFELHAFT stehen, zählt die Tabelle in B2 aus. Gemessen am 14.10.2026 nach A285 (`git blame -w HEAD` je berührter Datei; hinzugefügte → überlebende Zeilen):
-
-| Gruppe | offen | ohne überlebende Zeile | Zeilen | wo sie heute stehen |
-|---|---|---|---|---|
-| Generator | 2 | 0 | 392 → 339 | `RotationSolver.GameData` 253 (deutscher Namensindex), `.github` 86 |
-| CI | 4 | 0 | 725 → 680 | `.github` 614 (Versionsprüfung, Zeilenverweise, Aktionsnamen) |
-| Prüfmittel | 18 | 0 | 3388 → 2227 | `.github/scripts` 1932, Archiv 187, Konzepte 108 |
-| Doku | 29 | 12 | 1188 → 500 | Konzepte 286 (11: 267, 12: 11, 10: 6, 08: 2), Archiv 193, TODO 21 |
-| sonstiges | 2 | 2 | 6 → 0 | — |
-
-Im Kampf ändert keine dieser Gruppen etwas unmittelbar: Der Generator erzeugt den Namensindex, nach dem ich deutsche Namen nachschlage, CI und Prüfmittel bewachen den Baum. Die Gefahr liegt mittelbar: Ein falsch messendes Prüfskript meldet stumm „sauber", und jede spätere Aussage, die sich darauf stützt, erbt das.
-
-**Seine Entscheidung (14.10.2026, Vorgabe):** „kritische einzelprüfung im vollständigen loop, danach falls notwendig konzeptanpassung und fehlerbehebung. ebenfalls im loop." Damit ist mein Vorschlag, Doku ohne Einzellesung zu schließen und den Rest je Artefakt statt je Commit zu prüfen, verworfen: Jeder der 55 Commits wird einzeln geprüft, auch die ohne überlebende Zeile, und auch dort, wo eine spätere Prüfung (A270, A281) denselben Text schon gelesen hat — sie ist Beleg, nicht Ersatz. Erst danach Konzeptanpassung und Fehlerbehebung, jede mit eigenem Loop. Seine Präzisierung (14.10.2026): „du sollst die commits zwar einzeln prüfen, aber in ihrer gesamtheit. ein commit, der einen anderen ergänzt, aufhebt oder abändert, ist zusammen zu prüfen." Prüfeinheit ist deshalb die Wirkungskette eines Artefakts — jeder Commit der Liste mit allen früheren und späteren Commits, auch außerhalb der Liste, die dieselben Zeilen oder denselben Gegenstand ergänzen, aufheben oder abändern; die Reihenfolge der Ketten folgt der Gruppe ihres stärksten Glieds (oben).
-
-**Prüfmaßstab je Commit:** Belegt der Diff, was die Nachricht behauptet? Ist die zugehörige Wirkkette im Code nachvollzogen oder nur erzählt? Welcher Prüfgrad war tatsächlich erreicht — statisch, Prüfskript, Compile, Spiel? Was davon steht heute im Baum, und ist es heute richtig? Ergebnis je Commit als **KEIN FEHLER**, **KORRIGIERT** oder **VERWORFEN** in B2 eintragen, bei ersetztem Inhalt mit dem Vermerk, wodurch, und ob der Ersatz einen Fehler dieses Commits behob; ZWEIFELHAFT bleibt stehen, bis geprüft.
-
-**Freigabe:** erteilt am 14.10.2026 für alle offenen Gruppen (seine Entscheidung oben); zuvor nur die Code-Gruppe (A86, A87).
-
-**Stand (14.10.2026):** Die Einzelprüfung ist abgeschlossen, alle 55 Commits stehen in B2 mit Ergebnis (A286, zehn Ketten K1–K10). Offen ist die Behebung der Befunde, jeder im eigenen Loop:
-
-| Kennung | Befund | Kette |
-|---|---|---|
-| G6 | Teil a behoben (A287: Muster lasen fünf Minderungen nicht, Eintrag Schutzwall berichtigt); offen Teil b: die 15 % von Troubadour, Tactician, Shield Samba setzt ein Merkmal auf Stufe 98, die Tabelle führt 0 | K1 |
-
-Z1 (Zweiglöschung in A64 auf Titelgleichheit gestützt) ist nachträglich nicht messbar und hat keine Behebung. Behoben und aus der Tabelle genommen: G1–G5 (A288), C1–C6 und P2–P5 (A286, Commits `ad2492a55`, `f9e710bd7`), R1–R5 (A289).
-
 ### Audit + Code-Review der gesamten Codebasis
 
 Umfang: `RotationSolver.Basic` (48k Zeilen) · RebornRotations (21k) · ExtraRotations (15k) · Updaters (4k) · UI (11k) · Commands/IPC/Data (3k). Der ganze Baum, Upstream-Code eingeschlossen. Phasen 1 bis 4 sind abgeschlossen (AUDIT_LOG A8, A10).
@@ -615,4 +575,4 @@ Umfang: `RotationSolver.Basic` (48k Zeilen) · RebornRotations (21k) · ExtraRot
 
 Der zweite Durchgang mit allen Prüfmitteln ist geführt (A82) und hat die Skripte selbst instand gesetzt; als Messlage für den Rest des Blocks ist er damit verbraucht.
 
-**Empfehlung: der nächste Arbeitsblock, sobald die Nachprüfung der vorgemerkten Commits durch ist.** Sie geht vor, weil sie den Bestand betrifft, auf dem jeder weitere Durchgang aufsetzt — ein Prüfmittel aus dem zweifelhaften Fenster misst sonst den Rest des Baums. Von den übrigen offenen Punkten ist dieser hier der einzige, der weder auf eine Entscheidung noch auf eine Spielbeobachtung wartet — die übrigen sind entweder erfasste Fremdbefunde oder brauchen Laufzeitdaten. Sinnvoller Einstieg ist jetzt das Lesen, nicht das Messen: Die Skripte erfassen Muster, die schon einmal aufgefallen sind, und der verbliebene Bestand — der Rest von `DataCenter`, die Rotationen Datei für Datei, die UI — ist genau der Teil, den kein Muster abdeckt.
+**Stand:** Die Nachprüfung der vorgemerkten Commits, die vorgehen musste, ist abgeschlossen (A286–A290); die Prüfmittel aus jenem Fenster sind nachgeprüft. Von den übrigen offenen Punkten ist dieser hier der einzige, der weder auf eine Entscheidung noch auf eine Spielbeobachtung wartet — die übrigen sind entweder erfasste Fremdbefunde oder brauchen Laufzeitdaten. Sinnvoller Einstieg ist jetzt das Lesen, nicht das Messen: Die Skripte erfassen Muster, die schon einmal aufgefallen sind, und der verbliebene Bestand — der Rest von `DataCenter`, die Rotationen Datei für Datei, die UI — ist genau der Teil, den kein Muster abdeckt.
