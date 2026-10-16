@@ -7408,8 +7408,12 @@ die meisten GCDs lang nicht.
   die Statusprüfung überspringt — jeweils gewollt. Ist die Statustabelle nicht lesbar, entscheidet die Zielart wie
   vorher.
 - Betroffen: alle Jobs mit DoT; abgeleitete Rotationen über `FindTarget` (CHANGELOG). Release-Text fortgeschrieben.
+- *Erster Build gescheitert (fc31e7ef2):* ein XML-`param`-Tag an der bisher undokumentierten privaten Überladung von
+  `FindTargetByType` verlangte Tags für alle Parameter (CS1573, in der CI ein Fehler); durch einen gewöhnlichen Kommentar
+  ersetzt (3885c192c). Lokal ist kein Compiler vorhanden, die Klasse fängt nur die CI.
 
-**Prüfgrad:** statisch (Code, Statustexte über xivapi v2, The Balance); Prüfskripte; Compile über die CI.
+**Prüfgrad:** statisch (Code, Statustexte über xivapi v2, The Balance); Prüfskripte; Compile über die CI (grün ab
+3885c192c).
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
