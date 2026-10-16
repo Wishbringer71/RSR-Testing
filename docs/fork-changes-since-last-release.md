@@ -54,8 +54,8 @@ a rotation counts a tankbuster as on you (the Dark Knight's The Blackest Night o
 ## Damage over time on several enemies: most HP first, then by expiry
 
 With several enemies in reach, the damage over time went on all of them in the order of the targeting type - by
-default lowest HP first, so the enemy that lives longest got it last. It now goes on the one with the most HP first,
-then on the next, and once each carries it, it is renewed in the order it runs out. Direct single-target attacks
+default lowest HP first, so the enemy that lives longest got it last. The enemies now get it in the order of their
+HP, most first, and once each carries it, it is renewed in the order it runs out. Direct single-target attacks
 without damage over time keep the targeting type you chose.
 This holds for every job's damage over time, recognised by the status's own text, and not where a rotation uses the
 action for something else (a combo finisher, an upkeep while moving) or names the target. `Spread damage over time
