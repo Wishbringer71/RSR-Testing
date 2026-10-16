@@ -1961,8 +1961,8 @@ public struct ActionTargetInfo(IBaseAction action)
 		return FindTargetByType(battleChara, type, healRatio, actionType, targetOverride, isFriendly, instantHeal, null, null);
 	}
 
-	/// <param name="hostileOrder">An order of its own for the hostile choice, ahead of the targeting type; null for
-	/// none. Only <see cref="DotSpreadOrder"/> gives one.</param>
+	// hostileOrder: an order of its own for the hostile choice, ahead of the targeting type; null for none.
+	// Only DotSpreadOrder gives one.
 	private static IBattleChara? FindTargetByType(IEnumerable<IBattleChara> battleChara, TargetType type, float healRatio, SpecialActionType actionType, TargetType targetOverride, bool isFriendly, bool instantHeal, TargetingType? commandTargeting, Comparison<IBattleChara>? hostileOrder)
 	{
 		if (battleChara == null)
