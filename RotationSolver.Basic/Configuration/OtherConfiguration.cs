@@ -117,7 +117,8 @@ internal class OtherConfiguration
 
 	/// <summary>
 	/// The largest share of a party member's maximum HP that each listed area action has ever been
-	/// observed to take, keyed by action id. Learned in play; not shipped with the plugin.
+	/// observed to take from a member who could survive it, keyed by action id - at most his whole
+	/// maximum HP (<see cref="IsWithinWholeHealth"/>). Learned in play; not shipped with the plugin.
 	/// </summary>
 	/// <remarks>
 	/// Kept beside <see cref="HostileCastingArea"/> rather than folded into it, and that is the whole
@@ -197,7 +198,7 @@ internal class OtherConfiguration
 		// The outcome is recorded for the list window: "loaded 0" and "file unreadable" and "no file
 		// yet" all leave an empty table behind, and only the first of them is harmless.
 		() => LoadLearned(ref HostileCastingAreaPotential, nameof(HostileCastingAreaPotential),
-			state => AreaPotentialStoreState = state, "rated action(s)"),
+			state => AreaPotentialStoreState = state, "rated action(s)", DropBeyondWholeHealth),
 		// Learned in play like the area table, through the same load.
 		() => LoadLearned(ref TankbusterPotential, nameof(TankbusterPotential),
 			state => TankbusterStoreState = state, "rated tankbuster(s)"),
@@ -218,16 +219,54 @@ internal class OtherConfiguration
 	/// 0", "file unreadable" and "no file yet" all leave an empty table behind, and only the first of
 	/// them is harmless.
 	/// </summary>
-	private static void LoadLearned<T>(ref T value, string name, Action<string> report, string noun) where T : System.Collections.ICollection, new()
+	/// <remarks>
+	/// <paramref name="prune"/> removes what the table's own measurement would not store, and returns how
+	/// many it removed; it runs in the same step as the load, because the steps run in parallel.
+	/// </remarks>
+	private static void LoadLearned<T>(ref T value, string name, Action<string> report, string noun,
+		Func<T, int>? prune = null) where T : System.Collections.ICollection, new()
 	{
 		var path = GetFilePath(name);
 		var existed = File.Exists(path);
 		InitOne(ref value, name, false);
+		var pruned = prune?.Invoke(value) ?? 0;
 		report(!existed
 			? $"loaded {DateTime.Now:HH:mm:ss}: no file yet, started empty"
 			: !File.Exists(path)
 				? $"LOAD FAILED {DateTime.Now:HH:mm:ss}: file unreadable, set aside as .corrupt, started empty"
-				: $"loaded {DateTime.Now:HH:mm:ss}: {value.Count} {noun} from file");
+				: $"loaded {DateTime.Now:HH:mm:ss}: {value.Count} {noun} from file"
+					+ (pruned > 0 ? $", {pruned} above a whole max HP left out" : string.Empty));
+	}
+
+	/// <summary>
+	/// Whether a learned area share is one the measurement stores: at most the member's whole maximum HP.
+	/// </summary>
+	/// <remarks>
+	/// The measurement leaves out a hit beyond a member's health and barrier - it kills from full health
+	/// whatever is done, the hit of a kill mechanic on the one who missed it - and counts one he survived
+	/// only behind his barrier as his whole health (Watcher.TryAreaShare, A298). Anything above that in the
+	/// file is a reading from before, Megadeath at 941 % among them; since the table only ever rises, it
+	/// would otherwise stand for good, and on every save the merge would write it back.
+	/// </remarks>
+	internal static bool IsWithinWholeHealth(float share) => share <= 1f;
+
+	private static int DropBeyondWholeHealth(Dictionary<uint, float> table)
+	{
+		var beyond = new List<uint>();
+		foreach (var (id, share) in table)
+		{
+			if (!IsWithinWholeHealth(share))
+			{
+				beyond.Add(id);
+			}
+		}
+
+		foreach (var id in beyond)
+		{
+			_ = table.Remove(id);
+		}
+
+		return beyond.Count;
 	}
 
 	private static void EnsureConfigDirectory()
@@ -345,7 +384,7 @@ internal class OtherConfiguration
 		// save came along. The last reading of a session had no later save.
 		var snapshot = new Dictionary<uint, float>(HostileCastingAreaPotential);
 		return Task.Run(() => SaveTracked(snapshot, nameof(HostileCastingAreaPotential), Math.Max,
-			state => AreaPotentialStoreState = state, _areaPotentialSaveLock, "rated action(s)"));
+			state => AreaPotentialStoreState = state, _areaPotentialSaveLock, "rated action(s)", IsWithinWholeHealth));
 	}
 
 	/// <summary>
@@ -382,10 +421,12 @@ internal class OtherConfiguration
 	/// <summary>
 	/// The guarded save of a table learned in play. <paramref name="higher"/> merges a value in memory
 	/// with the one on disk - each store only ever grows, so the file is a lower bound and nothing it
-	/// holds is dropped. <paramref name="report"/> receives what happened, in words.
+	/// holds is dropped, except a value <paramref name="keep"/> rejects: one the table's own measurement
+	/// would not store, which the load left out as well. <paramref name="report"/> receives what
+	/// happened, in words.
 	/// </summary>
 	private static void SaveTracked<T>(Dictionary<uint, T> snapshot, string name, Func<T, T, T> higher,
-		Action<string> report, object gate, string noun)
+		Action<string> report, object gate, string noun, Func<T, bool>? keep = null)
 	{
 		if (!WasLoaded(name))
 		{
@@ -418,6 +459,13 @@ internal class OtherConfiguration
 			{
 				foreach (var (id, onDisk) in onDiskBefore)
 				{
+					// Taken back from the file, a value the load left out would raise the reading measured
+					// since, and the next load would leave out both.
+					if (keep != null && !keep(onDisk))
+					{
+						continue;
+					}
+
 					snapshot[id] = snapshot.TryGetValue(id, out var inMemory) ? higher(inMemory, onDisk) : onDisk;
 				}
 			}

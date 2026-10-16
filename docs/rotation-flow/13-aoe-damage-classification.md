@@ -74,6 +74,7 @@ den Puffer. Dieselbe Größe, zwei Fragen, zwei Antworten — nachzulesen in
 |---|---|
 | Aufnahme einer Flächenaktion in die Liste | vorhanden, Upstream (`Watcher.ActionFromEnemy`) |
 | Messung: höchster Anteil an der Maximalgesundheit je Effektsatz | umgesetzt |
+| Treffer über der ganzen Gesundheit samt Barriere nicht gemessen, Ablage höchstens die ganze Maximalgesundheit | umgesetzt (A298) |
 | Ablage je Aktion (`HostileCastingAreaPotential`, Parallelspeicher) | umgesetzt |
 | Höchstwert-Fortschreibung, auch für bekannte Ids, mit gelockerter Bedingung | umgesetzt |
 | Entscheidung beim Verbrauch (`DataCenter.AreaCastIsWorthMitigating`) | umgesetzt, hinter `SkipMitigationForSmallAreaCasts`, Standard an |
@@ -377,6 +378,40 @@ Genau danach fragt die Entscheidung.
 **Fortgeschrieben wird als Höchstwert über alle Durchläufe.** Der Wert kann nur steigen, und jeder
 Anstieg wirkt beim nächsten Verbrauch sofort.
 
+**Gemessen wird nur ein Treffer, den das Mitglied überleben kann; abgelegt wird höchstens seine ganze
+Maximalgesundheit** (A298, `Watcher.TryAreaShare`). Ein Treffer, der die ganze Gesundheit samt der Barriere
+erreicht, die das Mitglied beim Treffer trägt, tötet aus voller Gesundheit, was immer Heilung und Minderung tun.
+Er sagt nicht, wie hart der Cast die Gruppe trifft, sondern dass dieses Mitglied die Mechanik verfehlt hat.
+Belege aus seinen Protokollen: Megatod (#6090, Forgall) traf ihn ohne Debuff mit 941 % der Maximalgesundheit und
+mit Debuff 41 Sekunden später mit 10 % (DefenseTrace cf840808); Nekrotische Gefahr (#40646, Forschungsleiter
+Kanilokka, Schaden fällt zum Rand hin ab) traf ihn am Rand mit 6 %, gespeichert waren 588 %. Sein Hinweis
+(16.10.2026): „megatod tritt mit tot ein, wenn man nicht einen debuff auf sich hat, der durch betreten einer
+schadensfläche entsteht. heilung dagegen ist unmöglich." Gespeichert hielt der eine Fehlschlag den Wert für immer,
+und jeder Leser nahm den Cast für einen tödlichen Raidwide: Vorausheilung, sobald jemandem Gesundheit fehlte,
+weichende Rückhaltungen, Minderung, und der Tankbuster-Plan zählte die Gruppe als tot. Ein solcher Treffer zählt
+weiter für die Aufnahme in die Liste und für „hat dich erreicht", nicht für den Anteil; `DefenseTrace.log` nennt
+ihn („hit beyond max HP and barrier … not measured"). Ein Treffer, den das Mitglied nur hinter seiner Barriere
+überlebt, wird als ganze Maximalgesundheit abgelegt: Er nimmt ihm alles, was Heilung herstellen kann, und weil
+kein abgelegter Wert darüber liegt, erkennt das Laden einen älteren.
+
+- *Barriere:* gelesen, wenn der Effekt eintrifft. Das ist das Einrasten der Aktion; angerechnet wird der Schaden
+  danach (cactbot LogGuide, Zeile 37). Eine Barriere zählt, wenn sie in diesem Moment steht, eine danach gelegte
+  nicht (Community-Anleitungen, keine Spielquelle). Ob der Betrag des Spiels den von ihr aufgefangenen Teil
+  enthält, ist nicht belegt. Enthält er ihn, ist die Grenze genau; enthält er ihn nicht, legt sie einige tödliche
+  Treffer als ganze Maximalgesundheit ab – ein Fehler in Richtung Ablegen, also wie vor A298, nur gedeckelt.
+- *Ein Cast, den niemand überlebt,* bleibt unbewertet, und unbewertet heißt mindern wie vor der Tabelle. Eine
+  Kennzeichnung „Mechanik, nicht mindern" ist verworfen: Ein Raidwide, der alle nur mangels Minderung tötete,
+  würde danach nicht mehr gemindert, tötete im nächsten Versuch wieder und würde nie gemessen.
+- *Ältere Werte:* Was über der ganzen Maximalgesundheit steht, lässt das Laden aus, und das Speichern holt es
+  nicht aus der Datei zurück (`OtherConfiguration.IsWithinWholeHealth`) – sonst höbe es jede neue Messung derselben
+  Aktion wieder an. In seiner Datei vom 16.10.2026 betrifft das Megatod, Nekrotische Gefahr, Bestialisches
+  Brüllen (#40610, 169 %) und Voller Schwinger (#7378, 109 %). Bis zu ihrer nächsten Landung sind sie unbewertet.
+  War Voller Schwinger ein Raidwide, den jemand hinter seiner Barriere überlebte, steht er danach wieder bei der
+  ganzen Maximalgesundheit; war es ein Fehlschlag, beim Treffer der Überlebenden.
+- *Die Tankbuster-Tabelle* hat diese Grenze bewusst nicht. Dort ist ein Treffer über der Maximalgesundheit die
+  Auskunft, die der Plan braucht – ungemindert tödlich, also Minderung oder Unverwundbarkeit –, und abgelegt wird
+  ohnehin der ungeminderte Wert.
+
 **Ein vollständig absorbierter Treffer wird übersprungen, nicht als null gewertet.** Der Lernpfad
 (`Watcher`) zählt einen Treffer für die Aufnahme, wenn `FullAmount(damageEffect) > 0 || (damageEffect.param0 & 6) == 6`;
 die zweite Hälfte zählt einen Treffer, bei dem kein Schaden ankam. Gemessen wird nur, wo ein Betrag ankam. *Die genaue Bedeutung dieses Flags ist hier nicht belegbar* und
@@ -548,7 +583,7 @@ Fall zu lösen, der selten ist (ein Patch, der eine alte Aktion abschwächt) und
 überflüssige Minderung ist. Dazu braucht die zweite Form eine neue feste Zahl. Das Löschen von Hand
 deckt den Fall ohne dieses Risiko.
 
-**Seit A172 kann kein Speichern mehr verlieren, was die Datei hält.** Die Tabelle wächst von selbst nur; also ist jeder Stand der Datei eine Untergrenze, und ein Speichern nimmt je Aktion das Höhere aus Speicher und Datei. Damit ist die Fehlerklasse geschlossen, nicht der Einzelfall: Gleich aus welchem Grund der Speicher leer oder unvollständig ist — Laden gescheitert, abgebrochen, ein künftiger Defekt —, die Datei behält ihren Stand. Dazu wird ein Speicher, dessen Laden in dieser Sitzung nicht zu Ende lief, gar nicht geschrieben: Das Entladen schreibt alle Listen, und ein abgebrochener Start hätte sie sonst alle geleert.
+**Seit A172 kann kein Speichern mehr verlieren, was die Datei hält.** Die Tabelle wächst von selbst nur; also ist jeder Stand der Datei eine Untergrenze, und ein Speichern nimmt je Aktion das Höhere aus Speicher und Datei. Damit ist die Fehlerklasse geschlossen, nicht der Einzelfall: Gleich aus welchem Grund der Speicher leer oder unvollständig ist — Laden gescheitert, abgebrochen, ein künftiger Defekt —, die Datei behält ihren Stand. Dazu wird ein Speicher, dessen Laden in dieser Sitzung nicht zu Ende lief, gar nicht geschrieben: Das Entladen schreibt alle Listen, und ein abgebrochener Start hätte sie sonst alle geleert. Ausgenommen ist nur ein Wert, den die Messung selbst nicht ablegt, über der ganzen Maximalgesundheit (A298, Abschnitt „Was gemessen wird, und was nicht").
 
 **Der schwerste Weg war keiner der erhobenen, sondern das Ausbleiben des Ladens** (A121). Der Speicher
 stand nur in `OtherConfiguration.Init()`, und die ruft niemand; gerufen wird `InitAsync`. Die Tabelle
@@ -634,6 +669,11 @@ Protokoll schreibt „not stored, the attacker carried a damage-up status". Ein 
 ein, und auf ihm zöge die Regel aus Konzept 09 eine Unverwundbarkeit. Stärkungen unter anderem Namen bleiben
 unerkannt.
 
+**Nach oben offen:** ein Tankbuster auf einen Nicht-Tank, etwa einen Nahkämpfer in seiner Fläche. Gemessen wird an
+jedem getroffenen Spieler; bei einem Nicht-Tank gilt der Anteil an seiner kleineren Maximalgesundheit, ohne die
+Minderung des Tank-Merkmals, die kein Status trägt, und der Plan eines Tanks rechnete danach mit einem zu großen
+Treffer. Ob das vorkommt, ist nicht belegt (`TODO.md`); die Protokollzeile nennt einen solchen Treffer mit „(not a tank)".
+
 ### Wofür
 
 - **Tankwechsel (Konzept 09):** „eine Wiederholung bringt dich um" rechnet mit dem Höheren aus dem härtesten
@@ -699,15 +739,13 @@ unauflösbar — aber folgenlos: Die Rechnung sagt nicht die Wirkung der Minderu
 beantwortet, **ob** dieser Einschlag jemanden in Gefahr bringt. Prozentuale Minderung wirkt zudem bei
 großem Schaden am stärksten, also dort, wo die Rechnung sie auslöst.
 
-**Der Treffer einer Tötungsmechanik setzt den Anteil dauerhaft zu hoch** (A297, offen in `TODO.md`). Gemessen wird
-der härteste Treffer auf irgendein Mitglied, auch bei Teiltreffern, und abgelegt wird nur nach oben. Trifft eine
-Mechanik nur, wer sie verfehlt, setzt dieser eine Treffer den Wert: In seiner Datei vom 16.10.2026 steht Megatod
-(#6090) bei 940 % und Nekrotische Gefahr (#40646) bei 588 % der Maximalgesundheit. Sein Hinweis (16.10.2026):
-„megatod tritt mit tot ein, wenn man nicht einen debuff auf sich hat, der durch betreten einer schadensfläche entsteht.
-heilung dagegen ist unmöglich." Folge für jeden Leser des Anteils: Der Cast gilt als tödlicher Raidwide — die Vorausheilung
-löst aus, sobald jemandem Gesundheit fehlt, die Rückhaltungen weichen, Minderung geht hinaus, und der Tankbuster-Plan zählt
-Tote. Gegen einen Tod, den nur die Mechanik abwendet, ist all das verschwendet. Die Fehlerrichtung ist die sichere, aber nicht
-in dem Sinn, dass sie schützt: Sie kostet Mittel, die beim nächsten echten Raidwide fehlen.
+**Ein verfehlter, aber überlebbarer Treffer bewertet den Cast zu hoch.** Seit A298 bleibt nur der Treffer außen
+vor, der die ganze Gesundheit samt Barriere erreicht. Wer eine Mechanik verfehlt und überlebt – zu weit innen
+bei Nekrotische Gefahr, deren Schaden zum Rand hin abfällt, oder zu nah am Einschlag von Bestialisches Brüllen, das
+BossModReborn als Raidwide und zugleich als Fläche von 25 Yalm um den Einschlag führt –, setzt den Anteil mit seinem
+Treffer; die Gruppe bekommt dann Vorausheilung und Minderung für
+einen Treffer, den ein gut Stehender nicht braucht. Fehlerrichtung sicher. Ein Abschlag ließe sich nicht ohne
+erfundene Zahl bilden, und welcher Treffer der richtig stehende war, sagt das Spiel nicht.
 
 **Serien kleiner Einschläge bleiben ungelöst.** Mehrere kleine Treffer kurz hintereinander summieren
 sich; jeder einzeln unter jeder Schwelle, zusammen tödlich. Eine Einzelwertprüfung sieht das nicht.

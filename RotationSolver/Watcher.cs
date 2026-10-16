@@ -61,6 +61,35 @@ public static class Watcher
 	private static uint FullAmount(EffectEntry entry)
 		=> (entry.flags & 0x40) != 0 ? entry.Damage : entry.value;
 
+	// What a listed area hit measures on one member: its amount as a share of his maximum HP - or nothing,
+	// when the amount reaches his whole health and the barrier he carries (A298). Such a hit kills from
+	// full health whatever anyone does: the hit of a kill mechanic on the one who missed it (Megadeath on a
+	// member without the zombie debuff, 941 % of max HP, while the same cast took 10 % from one who had
+	// it; Necrohazard near its centre, 588 %), or a raidwide nothing in reach answers. Stored, it stood for
+	// good, because the table only rises, and every reader took the cast for a raidwide that kills: the heal
+	// ahead went out whenever anyone missed health, the holds gave way, the mitigation was spent, and the
+	// tankbuster plan counted the party dead. A cast nobody survives is left unrated, and unrated is
+	// answered as before the table: the mitigation goes out.
+	//
+	// A hit he survived only behind his barrier counts as his whole health - it takes all of it, and the
+	// table never holds more than that, so a load can tell an old reading from a measurement. The barrier
+	// is read when the effect arrives: that is when the action locks in, before its damage applies
+	// (cactbot LogGuide, line 37), and a barrier counts if it stands at that moment. Whether the amount
+	// includes the part a barrier absorbs is not established; read either way, the bound errs towards
+	// storing.
+	private static bool TryAreaShare(uint amount, IBattleChara member, out float share)
+	{
+		share = 0f;
+		var maxHp = member.MaxHp;
+		if (maxHp == 0 || amount >= maxHp + member.GetObjectShield())
+		{
+			return false;
+		}
+
+		share = Math.Min(amount, maxHp) / (float)maxHp;
+		return true;
+	}
+
 	private static Dictionary<ulong, uint> AmountsByTarget(ActionEffectSet set, ActionEffectType type)
 	{
 		var result = new Dictionary<ulong, uint>();
@@ -255,6 +284,7 @@ public static class Watcher
 		}
 
 		var highestShare = 0f;
+		var beyondHealth = 0;
 		foreach (var member in DataCenter.PartyMembers)
 		{
 			if (member == null || member.MaxHp == 0)
@@ -267,12 +297,20 @@ public static class Watcher
 				if (effect.TargetID == member.GameObjectId && TryGetDamageEntry(effect, out var entry)
 					&& FullAmount(entry) > 0)
 				{
-					highestShare = Math.Max(highestShare, (float)FullAmount(entry) / member.MaxHp);
+					if (TryAreaShare(FullAmount(entry), member, out var share))
+					{
+						highestShare = Math.Max(highestShare, share);
+					}
+					else
+					{
+						beyondHealth++;
+					}
 				}
 			}
 		}
 
-		// Same rule as a listed landing: only a real amount measures, and only an increase is written.
+		// Same rule as a listed landing: only a real amount a member can survive measures, and only an increase
+		// is written.
 		if (highestShare > 0f
 			&& (!OtherConfiguration.HostileCastingAreaPotential.TryGetValue(listed, out var known) || highestShare > known))
 		{
@@ -284,9 +322,15 @@ public static class Watcher
 		{
 			DataCenter.RecordAreaMeasurementOutcome(listed, "measured", $" at {highestShare:P0} of max HP, from #{action.RowId}");
 		}
+		else if (beyondHealth > 0)
+		{
+			DataCenter.RecordAreaMeasurementOutcome(listed, "not measured - every hit beyond max HP and barrier",
+				$", from #{action.RowId}");
+		}
 
 		DefenseTrace.Line($"follow-up of #{listed}: {action.Name.ExtractText()} #{action.RowId}, reached you {hitPlayer},"
-			+ $" {damaged} party members damaged, highest {highestShare:P0} of max HP");
+			+ $" {damaged} party members damaged, highest {highestShare:P0} of max HP"
+			+ (beyondHealth > 0 ? $", {beyondHealth} hit beyond max HP and barrier not measured" : string.Empty));
 	}
 
 	private static float DamageShareOn(ActionEffectSet set, ulong targetId, uint denom)
@@ -552,14 +596,14 @@ public static class Watcher
 				{
 					var damageEffectCount = 0;
 
-					// Maximum HP per member, because the measurement below needs it and this is the
-					// one place that already walks the party. The previous form kept only the ids
-					// and searched them with a foreach - a linear walk over a HashSet, the same
-					// defect class that was just removed from DataCenter's four action lists.
-					var partyMaxHp = new Dictionary<ulong, uint>(partyMemberCount);
+					// The members by id, because the measurement below needs each one's maximum HP and
+					// barrier and this is the one place that already walks the party. The previous form
+					// kept only the ids and searched them with a foreach - a linear walk over a HashSet,
+					// the same defect class that was just removed from DataCenter's four action lists.
+					var partyById = new Dictionary<ulong, IBattleChara>(partyMemberCount);
 					foreach (var pm in partyMembers)
 					{
-						partyMaxHp[pm.GameObjectId] = pm.MaxHp;
+						partyById[pm.GameObjectId] = pm;
 					}
 
 					// The hardest this action has been seen to hit anyone in this set, as a share of
@@ -567,10 +611,12 @@ public static class Watcher
 					// sync the way an amount would, and the highest share belongs to whoever is worst
 					// off against it - which is what a decision about mitigating it would ask.
 					var highestShare = 0f;
+					var beyondHealth = 0;
+					var hardestBeyond = 0f;
 
 					foreach (var effect in set.TargetEffects)
 					{
-						if (!partyMaxHp.TryGetValue(effect.TargetID, out var memberMaxHp))
+						if (!partyById.TryGetValue(effect.TargetID, out var member))
 						{
 							continue;
 						}
@@ -591,12 +637,18 @@ public static class Watcher
 						// action is harmless - it means something absorbed it. Such a set is skipped
 						// for the measurement while still counting for the intake above, so a
 						// raidwide does not fall out of the list just because the party was shielded.
-						if (landed && memberMaxHp > 0)
+						// Nor does a hit beyond the member's whole health and barrier (TryAreaShare):
+						// it says the member missed the mechanic, not how hard the cast hits the rest.
+						if (landed && member.MaxHp > 0)
 						{
-							var share = (float)FullAmount(damageEffect) / memberMaxHp;
-							if (share > highestShare)
+							if (TryAreaShare(FullAmount(damageEffect), member, out var share))
 							{
-								highestShare = share;
+								highestShare = Math.Max(highestShare, share);
+							}
+							else
+							{
+								beyondHealth++;
+								hardestBeyond = Math.Max(hardestBeyond, (float)FullAmount(damageEffect) / member.MaxHp);
 							}
 						}
 					}
@@ -630,11 +682,25 @@ public static class Watcher
 							DataCenter.RecordAreaMeasurementOutcome(set.Action!.Value.RowId, "measured",
 								$" at {highestShare:P0} of max HP");
 						}
+						else if (beyondHealth > 0)
+						{
+							DataCenter.RecordAreaMeasurementOutcome(set.Action!.Value.RowId,
+								"not measured - every hit beyond max HP and barrier");
+						}
 						else
 						{
 							DataCenter.RecordAreaMeasurementOutcome(set.Action!.Value.RowId,
 								"not measured - no amount read from a party member");
 						}
+					}
+
+					// What the measurement left out, so a trace shows the kill mechanic beside the reading
+					// the cast was given instead.
+					if (beyondHealth > 0 && OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
+					{
+						DefenseTrace.Line($"area cast {set.Action!.Value.Name.ExtractText()} #{set.Action!.Value.RowId}:"
+							+ $" {beyondHealth} hit beyond max HP and barrier (up to {hardestBeyond:P0}) not measured,"
+							+ $" measured {highestShare:P0}");
 					}
 
 					// Whether this landing reached the player (A205). Recorded apart from the setting that

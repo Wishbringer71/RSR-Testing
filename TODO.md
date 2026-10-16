@@ -277,29 +277,25 @@ Betroffen sind Leser, die eine Liste außerhalb des Zyklus lesen, in dem sie geb
 
 Offen: voller Loop. Zu klären sind ein Lebendigkeitsmaß, das ohne Lesen des möglicherweise freigegebenen Objekts auskommt (etwa Tabellenplatz und Adresse gegen `IObjectTable.GetObjectAddress`, dazu die `GameObjectId`), welche der 33 Stellen außerhalb ihres Zyklus lesen und ob Upstream dasselbe Muster pflegt.
 
-### Gelernte Flächenanteile aus Tötungsmechaniken · N
+### Tankbuster-Tabelle misst auch an Nicht-Tanks · N
 
-**Konzept:** `docs/rotation-flow/13-aoe-damage-classification.md`
-`Watcher.ActionFromEnemy` legt je gelisteter Aktion den härtesten Treffer auf irgendein Gruppenmitglied als Anteil der
-Maximalgesundheit ab, auch aus Teiltreffern, und überschreibt nur nach oben. Ein Treffer, der nur trifft, wer eine
-Mechanik verfehlt, setzt den Wert damit dauerhaft: In seiner Datei `HostileCastingAreaPotential.json` (16.10.2026) stehen
-Megatod (#6090) bei 940 %, Nekrotische Gefahr (#40646) bei 588 %, dazu Bestialisches Brüllen (#40610) bei 169 % und Voller
-Schwinger (#7378) bei 109 %; bei den beiden letzten ist offen, ob es Mechanik oder ein Raidwide über einem Schild war.
-Sein Hinweis: Megatod tötet, wenn man nicht einen Debuff aus einer Schadensfläche trägt; Heilung dagegen ist unmöglich.
+**Konzept:** `docs/rotation-flow/13-aoe-damage-classification.md`, „Die Tankbuster-Tabelle"
+`Watcher.ActionFromEnemy` legt einen Tankbuster an jedem Spieler ab, den er trifft (`TankbusterTable.Record`), und
+rechnet nur die Minderung heraus, die ein Wirktext beziffert. Trifft er einen Nicht-Tank – einen Nahkämpfer in seiner
+Fläche, den Nächsten in der Feindschaftsliste nach dem Tod des Tanks –, gilt der Anteil an dessen kleinerer
+Maximalgesundheit, ohne die Minderung des Tank-Merkmals, die kein Status trägt, und ein Fehlschlag kann weit über der
+Maximalgesundheit liegen. Dieselbe Fehlerklasse wie die gelernten Flächenanteile aus Tötungsmechaniken (A298): ein
+Treffer auf jemanden, dem die Mechanik nicht galt, hebt den Wert für immer.
 
-**Im Kampf:** vor jedem dieser Casts Vorausheilung (sobald jemandem Gesundheit fehlt), Weichen aller Rückhaltungen,
-Minderung, und der Tankbuster-Plan rechnet den Raidwide als tödlich (A297). Gegen eine Tötungsmechanik nutzt nichts davon.
+**Im Kampf:** Der Plan eines Tanks rechnet mit einem zu großen Treffer und zieht Minderung oder die Unverwundbarkeit,
+wo weniger reichte – der Fehler, den die Tabelle laut ihrem Kommentar nicht machen darf.
 
-**Optionen, noch nicht im Loop geprüft:**
-- Gemessen wird nur aus Sätzen, die jedes Gruppenmitglied trafen, wie bei der Aufnahme. Nachteil: Flächen, die nur einen
-  Teil der Gruppe erreichen, liefern keinen Wert mehr, und gerade für sie liest die Abwehr des Spielers den Anteil.
-- Ein Treffer über der Maximalgesundheit des Getroffenen wird nicht abgelegt, weil er unabhängig von Heilung tötet.
-  Offen: ob der gemeldete Betrag den von einer Barriere aufgefangenen Teil enthält; dann läge ein echter Raidwide unter
-  Schild ebenfalls darüber.
-- Die Leser behandeln einen Anteil, den keine erreichbare Minderung samt Barriere unter die Maximalgesundheit bringt, als
-  Mechanik: keine Vorausheilung, keine gelösten Rückhaltungen. Braucht eine Obergrenze der erreichbaren Minderung aus den
-  Spieldaten.
-- Seine bestehenden Einträge lassen sich in der Datei von Hand entfernen; sie kehren mit dem nächsten Fehlschlag zurück.
+**Vorkommen nicht belegt.** In seinen Protokollen vom 13. bis 16.10.2026 wurden fünf Tankbuster an zwei oder drei
+verschiedenen Spielern gemessen, der höchste ungeminderte Wert lag bei 80 %; ob darunter Nicht-Tanks waren, sagte
+das Protokoll nicht. Seit A298 schreibt die Zeile „tankbuster measured" bei einem Nicht-Tank „(not a tank)".
+
+**Offen, noch nicht im Loop:** nur an Tanks messen (dann fehlt die Messung, wo ein Nicht-Tank selbst Ziel ist, etwa
+in Solo-Inhalten) oder je Rolle getrennt ablegen.
 
 ## Technische Schuld
 

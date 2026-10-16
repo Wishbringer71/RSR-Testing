@@ -90,7 +90,10 @@ internal static class TankbusterTable
 			}
 		}
 
-		DefenseTrace.Line($"tankbuster measured: {name} #{actionId} on {target.Name.TextValue} for {share:P0} of max HP,"
+		// "(not a tank)": the table also learns from a buster on a member it was not aimed at, rated against his
+		// smaller pool and without the tank trait's reduction; whether that happens is open (TODO.md, A298).
+		DefenseTrace.Line($"tankbuster measured: {name} #{actionId} on {target.Name.TextValue}"
+			+ $"{(target.IsJobCategory(JobRole.Tank) ? string.Empty : " (not a tank)")} for {share:P0} of max HP,"
 			+ $" mitigation factor {factor:F2}, unmitigated {unmitigated:P0}{(vulnerable ? " under a vulnerability" : string.Empty)}"
 			+ (raised ? " - stored" : " - not above the stored value"));
 

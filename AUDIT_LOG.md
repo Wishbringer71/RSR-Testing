@@ -7479,6 +7479,72 @@ Sitzung (16.10.2026, 16:31–18:34, Stand 36ea60ee9: A291–A294 enthalten, A295
 
 **Prüfgrad:** Auswertung des Protokolls und der Datei (Skript), Namen über xivapi; Code statisch; Prüfskripte.
 
+### A298 · Gelernte Flächenanteile aus Tötungsmechaniken (16.10.2026)
+
+Sein Auftrag: „Problem im Loop angehen" zum Defekt aus A297. Sein Hinweis (16.10.2026), im Konzept 13 geführt: „megatod
+tritt mit tot ein, wenn man nicht einen debuff auf sich hat, der durch betreten einer schadensfläche entsteht. heilung
+dagegen ist unmöglich."
+
+**Befund.** `Watcher.ActionFromEnemy` legte je gelisteter Aktion den härtesten Treffer auf irgendein Mitglied als Anteil
+der Maximalgesundheit ab, nur nach oben. In seiner Datei standen vier Werte über der ganzen Maximalgesundheit, alle aus
+Mechaniken (BossModReborn-Module, Klon vom 12.10.2026): Megatod #6090 (Forgall, The Weeping City of Mhach; tödlich
+ohne den Status Zombification, nach seinem Hinweis aus einer Schadensfläche) 941 %, Nekrotische Gefahr #40646 (Kanilokka, Yuweyawata Field Station; „damage fall off AOE, very
+extreme damage if not almost at the border") 588 %, Bestialisches Brüllen #40610 (Lunipyati; Raidwide und Fläche von
+25 Yalm um den Einschlag) 169 %, Voller Schwinger #7378 (Scathach, Dun Scaith; im Modul ein Raidwide) 109 %. Seine
+Protokolle belegen den Unterschied: Megatod traf ihn mit 941 % und 41 Sekunden später, mit Debuff, mit 10 %
+(cf840808); Nekrotische Gefahr traf ihn am Rand mit 6 % (e6bab17d), Bestialisches Brüllen mit 24 % und 18 %. Leser
+des Anteils: Vorausheilung (`AnnouncedHitCallsForHealFirst`), Rückhaltungen (`AnnouncedHitDropsUnprotectedBelow`),
+Minderung (`AreaCastIsWorthMitigating`, `IsHostileCastingLargeArea`), Tankbuster-Plan (`AnnouncedHitKills`). Mit 941 %
+gilt jedes Mitglied als tot: Vorausheilung, sobald jemandem Gesundheit fehlt, alle Rückhaltungen weichen, Minderung,
+und `AnnouncedAreaHitCostsMoreThanATank` meldet die Gruppe verloren.
+
+**Optionen.**
+- Nullvariante, Einträge von Hand löschen: kehren mit dem nächsten Fehlschlag zurück.
+- Nur Sätze messen, die jedes Mitglied trafen: *widerlegt* – Megatods erste Landung traf alle acht (cf840808, „8 party
+  members damaged"), der Wert wäre trotzdem 941 %; außerdem verwirft es Raidwides mit einem Toten (Konzept 13).
+- Median statt Höchstwert: dieselbe Landung, derselbe Wert; und es ändert das Maß für jeden Raidwide.
+- Effekt „instant death" (0x33, cactbot) erkennen: Megatod kommt als Schaden (Typ 3), nicht als 0x33.
+- Anteil bei 1 deckeln, ohne auszulassen: Megatod stünde bei 100 % und gälte weiter als tödlicher Raidwide.
+- Leser behandeln einen Anteil jenseits erreichbarer Minderung samt Barriere als Mechanik: braucht eine Obergrenze der
+  Gruppenminderung, die von der Zusammensetzung abhängt, und behält den falschen Wert.
+- Kennzeichnung „Mechanik" für eine Aktion, die nur tödliche Treffer zeigt: *widerlegt* – ein Raidwide, der alle nur
+  mangels Minderung tötete, würde nicht mehr gemindert und nie gemessen.
+- **Gewählt:** Ein Treffer, der die ganze Maximalgesundheit samt der Barriere beim Treffer erreicht, wird nicht
+  gemessen; einer, den das Mitglied nur hinter seiner Barriere überlebt, als ganze Maximalgesundheit abgelegt; ältere
+  Werte darüber lässt das Laden aus, und das Zusammenführen beim Speichern holt sie nicht zurück.
+
+**Grundlagen.** Der Effekt kommt beim Einrasten der Aktion an, angerechnet wird später (cactbot LogGuide, Zeile 37);
+die Barriere, die RSR dann liest (`GetObjectShield`, `ShieldPercentage` des Spiels), ist die, die zählt – eine nach dem
+Einrasten gelegte zählt nicht (Community-Anleitungen, keine Spielquelle). Ob der Betrag den aufgefangenen Teil enthält,
+bleibt unbelegt; die Grenze ist in beiden Lesarten genau oder irrt zum Ablegen hin. Die Grenze ist die ganze
+Maximalgesundheit, keine gewählte Zahl (`check_fixed_values.py`: 0 und 1 sind Identitäten).
+
+**Falsifikation.**
+- *Kein Defekt:* Der Wert sei richtig, Megatod töte ja. Widerlegt: Heilung und Minderung ändern am Tod nichts (sein
+  Hinweis), kosten aber GCDs und Abklingzeiten, die beim nächsten echten Raidwide fehlen, und der Tankbuster-Plan zählt
+  eine Gruppe als tot, die die Mechanik richtig spielt.
+- *Option falsch:* Ein Raidwide, der ein ungemindertes Mitglied knapp tötete, verliert dessen Treffer. Die übrigen
+  Mitglieder messen weiter; tötete er alle, bleibt die Aktion unbewertet, und unbewertet heißt mindern wie vor der
+  Tabelle (`AreaCastIsWorthMitigating`: „Unrated: behave exactly as before"). Was verloren geht, ist die
+  Vorausheilung vor einem Treffer über der ganzen Gesundheit – die ihn ohne Barriere ohnehin nicht überlebbar macht. Die
+  Deckelung unterschätzt einen hinter Barriere überlebten Treffer um höchstens diese Barriere.
+- *Ausgeliefert, nichts ändert sich:* Die alten Werte stünden weiter in seiner Datei. Ausgeschlossen: Das Auslassen
+  sitzt im Ladeschritt selbst (`LoadLearned`, `prune`), weil die Schritte parallel laufen, und das Speichern holt die
+  Werte nicht aus der Datei zurück (`SaveTracked`, `keep`) – sonst höbe der Dateiwert jede neue Messung wieder an, und das
+  nächste Laden ließe beide aus. Megatod bleibt bis zu seiner nächsten Landung unbewertet und wird dann mit dem Treffer
+  der Überlebenden bewertet (in cf840808: 10 %), danach unterbleibt die Minderung.
+
+**Klasse.** Dieselbe Klasse – ein Treffer auf jemanden, dem die Mechanik nicht galt, hebt den Wert für immer – trägt
+die Tankbuster-Tabelle, wenn sie an einem Nicht-Tank lernt. Dort ist ein Treffer über der Maximalgesundheit dagegen die
+gesuchte Auskunft, die Grenze gilt also nicht. Vorkommen nicht belegt; als Defekt in `TODO.md`, und die Protokollzeile
+nennt einen Nicht-Tank jetzt mit „(not a tank)".
+
+**Betroffene.** Alle Jobs, die die Flächentabelle lesen; `DataCenter.AnnouncedAreaShare` ist öffentlich und liefert
+jetzt höchstens 1. Upstream-Pflege: Die Flächentabelle ist Fork-eigen.
+
+**Prüfgrad:** statisch (Code, Wirkkette Messung → Ablage → Laden/Speichern → Leser), Protokolle und BossModReborn-Module
+als Beleg der Mechanik, Prüfskripte; Kompilieren im Prüflauf. Im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

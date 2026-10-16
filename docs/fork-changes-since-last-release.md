@@ -88,6 +88,19 @@ goes for Esuna:
 RSR no longer cleanses a member another healer is already casting Esuna on, unless more than that one effect is
 left.
 
+## Area casts: a member who missed a kill mechanic no longer sets its size
+
+RSR learns how hard each listed area cast hits, as the largest share of a member's maximum HP it has seen, and that
+figure only rises. A member who missed a kill mechanic set it for good: Megadeath (Forgall) was learned at 941 % from
+one without the zombie debuff, while it took 10 % from one who had it, and Necrohazard at 588 % from one near its
+centre. Every rule reading the figure then took the cast for a raidwide that kills: the heal ahead of it went out
+whenever anyone missed health, held defensives were released, mitigation was spent, and a tank's tankbuster plan
+counted the party dead. A hit that reaches a member's whole health and the barrier he carries is no longer measured;
+one he survived only behind his barrier counts as his whole health. Readings above a whole maximum HP from before are
+left out when the table loads and are no longer written back to the file, so such a cast is unrated until it lands
+again - and unrated casts are mitigated as before - and then rated by the members who survived it.
+`DefenseTrace.log` names each hit left out.
+
 ## A potion no longer counts as an action you used
 
 ECommons, which RSR reads the game's effects through, read an item used on a target as an action with the same
@@ -107,7 +120,8 @@ are built.
 Each defence decision, and each "open, nothing chosen", now ends with the actions the defence refused on its way and
 the reason the game check gave, and with the holds that were standing. Each HP potion RSR chooses is written with the
 branch that allowed it and your HP at that moment. After each fight a line gives what RSR's update cost per frame during
-it: the number of cycles, the mean and the longest in milliseconds, and its share of the frame time.
+it: the number of cycles, the mean and the longest in milliseconds, and its share of the frame time. A tankbuster
+measured on a player who is not a tank is marked "(not a tank)".
 
 The White Mage's Holy stretch line is now written when its decision changes or once a GCD, as it was meant to be. It
 counted the remaining stun time in every frame as a change and filled more than half of the file, about ten lines a
