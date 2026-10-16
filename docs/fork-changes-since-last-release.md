@@ -51,6 +51,16 @@ tank. It now opens only for a tankbuster that reaches you: one cast at you, or a
 when BossModReborn names nobody, for a tank, or when the party has no tank alive. The same reading now decides when
 a rotation counts a tankbuster as on you (the Dark Knight's The Blackest Night on itself among them).
 
+## Damage over time on several enemies: most HP first, then by expiry
+
+With several enemies in reach, the damage over time went on all of them in the order of the targeting type - by
+default lowest HP first, so the enemy that lives longest got it last. It now goes on the one with the most HP first,
+then on the next, and once each carries it, it is renewed in the order it runs out. Direct single-target attacks
+without damage over time keep the targeting type you chose.
+This holds for every job's damage over time, recognised by the status's own text, and not where a rotation uses the
+action for something else (a combo finisher, an upkeep while moving) or names the target. `Spread damage over time
+by HP, then by expiry` (on by default) switches it off.
+
 ## Healers: no area heal on full health before a raidwide
 
 Before an announced raidwide RSR raised the area heal whenever the hit would take someone below the area heal

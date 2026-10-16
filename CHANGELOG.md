@@ -23,6 +23,14 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Behaviour change: a damage over time chooses its target by HP, then by expiry
+
+`ActionTargetInfo.FindTarget` now orders the candidates of a damage-over-time action itself: the one whose own
+damage over time runs out first, a missing one counting as run out, and among equals the one with the most HP. The
+targeting type (`DataCenter.TargetingType`, by default "Low HP") no longer decides there. It applies only where the
+status check chose the candidates and no target override or command is given; `Configs.DotTargetByHpThenExpiry`
+switches it off.
+
 ### Behaviour change: `TargetFilter.GetDeath` leaves out the dead someone else is raising
 
 `GetDeath` now also skips a dead member another player is casting a raise on at that moment, recognised by the

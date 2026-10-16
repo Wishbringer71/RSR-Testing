@@ -196,6 +196,68 @@ es schon sind:
 Hälfte der Pausenregel; was ein Job in der Pause wirkt, ist seine Regel (Konzept 14, „Pausen und
 Phasenenden"). Die vorhergesagte Pause liest `BMRDowntimeWithin`, nur mit Modul.
 
+## Wahl des DoT-Ziels
+
+**Vorgabe des Auftraggebers (16.10.2026), wörtlich:** „bei der dot-verteilung sollte immer geschaut werden, welcher
+gegner die aktuell höchsten hp hat, so dass der maximale effekt beim schaden erzielt werden kann. danach immer der
+reihe nach wie die dots auslaufen." Seine Präzisierung (16.10.2026): „dots werden bei mehrern gegnern nicht nur auf
+einen gelegt, sondern auf alle anwesenden. es geht hier um die initiale reihenfolge. deswegen ist die standardzielart
+hier uninteressant. das gilt eher bei einzelzielangriffen, bei aoe angriffen ist es eh egal, weil mehrere gegner in der
+auswahlfläche stehen. bei direkten einzelzielangriffen (ohne dot) gilt die gewählte vorgabe (High HP, Low HP etc.)
+weiterhin."
+
+**Geltende Regel** (`ActionTargetInfo.DotSpreadOrder`, Einstellung „Spread damage over time by HP, then by
+expiry", ab Werk an, A295): Kann ein Schadens-DoT auf mehrere Gegner, geht er auf den, dessen eigener DoT zuerst
+ausläuft, und bei gleicher Restzeit auf den mit der höchsten aktuellen Gesundheit (absolut, nicht in Prozent). Ein
+Gegner ohne den DoT zählt als ausgelaufen, ein gerade gesendeter als nie auslaufend. In einem frischen Pull geht der
+DoT damit zuerst auf den Gegner mit den meisten HP, dann auf den nächsten; tragen ihn alle, wird er in der Reihenfolge
+erneuert, in der er abläuft. Die Regel sitzt auf der Stufe „alle" in der zentralen Gegnerwahl und gilt für jeden Job
+mit DoT; keine Stufe darunter braucht eine eigene, weil die Frage für jeden DoT dieselbe ist.
+
+**Was vorher entschied:** Den DoT erhalten ohnehin alle anwesenden Gegner; die Reihenfolge folgte der allgemeinen
+Zielart (`DataCenter.TargetingType`). Ab Werk ist das „Low HP" (der erste Eintrag der Standardliste): Der schwächste
+Gegner erhielt den ersten DoT, der stärkste den letzten; auf ihm fehlte der DoT damit am längsten. Für direkte
+Einzelzielangriffe ohne DoT bleibt die Zielart, wie er sie wählt; bei Flächenangriffen spielt die Reihenfolge keine Rolle,
+weil mehrere Gegner in der Fläche stehen, und auch ein Flächen-DoT wie High Thunder II wird unter den Zielen mit der
+größten Abdeckung nur zusätzlich geordnet.
+
+**Wer Kandidat ist, bleibt unverändert** (`CheckStatus`, `CheckTimeToKill`): Gegner, denen der eigene DoT fehlt oder in
+`Number of GCDs before the DoT is reapplied` GCDs ausläuft, mit einer Zeit bis zum Tod über der Schwelle der Aktion,
+nicht unverwundbar, nicht auf der Liste eingeschränkter DoTs. Die Rangfolge davor bleibt ebenfalls: ein Befehl, die
+Stopmarker, die Gegner mit Vorrang (Angriffsmarker, Gegnerteile, Schatzkarten-Symbole). Erst unter dem, was danach
+übrig ist, ordnet die Regel.
+
+**Wann sie nicht ordnet:**
+
+- Eine Rotation wirkt die Aktion ohne Statusprüfung — dann ist es keine Verteilung: Chaotic Spring und Chaos Thrust als
+  Kombo-Abschluss des Dragoons, Iron Jaws des Barden, Dia/Aero im Upkeep-Modus des Weißmagiers. Ebenso, wenn die
+  Statusprüfung der Aktion abgeschaltet ist.
+- Eine Rotation oder ein Befehl gibt das Ziel vor (Zielüberschreibung, Befehlsziel).
+- Der Status macht keinen Schaden. Death's Design des Schnitters erhöht nur dessen eigenen Schaden auf diesem Ziel und
+  gehört auf den Gegner, den er angreift.
+- Im manuellen Modus ist ohnehin nur das eigene Ziel Kandidat.
+
+**Erkannt wird der DoT am eigenen Text des Status** in der englischen Statustabelle des Clients („Sustaining damage
+over time.", „Toxins are causing damage over time.", „Sustaining lightning damage over time."; `StatusHelper.IsDamageOverTime`).
+Die vorhandene Kennzeichnung `IsRestrictedDOT` trägt nur 19 Aktionen der Heiler, des Barden und des Schnitters; Thunder
+und High Thunder des Schwarzmagiers, Higanbana, Chaotic Spring, Sonic Break und Bow Shock fehlen darin. Ist die Tabelle
+nicht lesbar, ordnet die Regel nicht, und die Zielart entscheidet wie vorher.
+
+**Meine Ableitung, nicht sein Wortlaut:** Ein Gegner ohne DoT kommt vor einer fälligen Erneuerung, weil er als
+ausgelaufen zählt. Seine Worte stellen die höchsten HP an den Anfang und die Ablaufreihenfolge danach; beides fällt in
+dieser einen Ordnung zusammen. Folge: Ein neues Add ohne DoT erhält ihn vor der Erneuerung auf dem Boss. Liegt dessen
+Restzeit unter einem GCD, fehlt der DoT dort höchstens einen GCD lang; Kandidat für die Erneuerung ist er ohnehin
+erst, wenn er in höchstens zwei GCDs ausläuft (Voreinstellung).
+
+**Gegenposition, geprüft:** Die Zeit bis zum Tod statt der Gesundheit misst den Ertrag genauer — ein DoT tickt, solange
+das Ziel lebt. The Balance setzt die Lebensdauer als **Schwelle** an (Astrologe, Leveling-Leitfaden: Combust vor
+Malefic, wenn der Gegner mindestens 15 s lebt); in RSR ist das die Schwelle „Time to kill" je Aktion, ab Werk 0, und sie
+bleibt. Als **Reihenfolge** gilt seine Größe, die aktuelle Gesundheit: Sie liegt ab dem ersten Bild vor, während die
+Zeit bis zum Tod erst aus dem Verlauf entsteht und zu Beginn eines Pulls fehlt.
+
+**Prüfgrad:** statisch (Code, Statustexte über xivapi v2); Compile über die CI. Im Kampf: Bei mehreren Gegnern zeigt
+sich die Regel daran, wer zuerst und wer zuletzt einen DoT trägt.
+
 ## E · Universelle Strukturschwächen
 
 | # | Schwäche | Beleg | Stand |

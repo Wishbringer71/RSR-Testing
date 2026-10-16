@@ -7372,6 +7372,45 @@ sich füllende castbalken in der zielanzeige".
 **Prüfgrad:** statisch (Patchnotes, FFXIVClientStructs, DelvUI, BossModReborn, xivapi); Prüfskripte; Compile über die
 CI.
 
+### A295 · DoT-Verteilung: zuerst die meisten HP, dann nach Ablauf (16.10.2026)
+
+Seine Vorgabe: „bei der dot-verteilung sollte immer geschaut werden, welcher gegner die aktuell höchsten hp hat, so
+dass der maximale effekt beim schaden erzielt werden kann. danach immer der reihe nach wie die dots auslaufen.
+schauen, zu welchen konzepten das passt, dort einarbeiten und dann umsetzen." Eingeordnet als Vorgabe (Kriterium).
+Seine Präzisierung im selben Zug: Der DoT kommt auf alle anwesenden Gegner, es geht um die **initiale Reihenfolge**;
+für direkte Einzelzielangriffe ohne DoT gilt die gewählte Zielart weiter, bei Flächenangriffen ist es egal.
+
+- *Konzept:* Kein Konzept trug die Wahl des Angriffsziels bisher; Konzept 03 führt die zentrale Zielauswahl
+  (`ActionTargetInfo.FindTarget`) unter dem, was für alle Jobs gilt, und nimmt den Abschnitt „Wahl des DoT-Ziels" auf.
+  Konzept 16 (xivanalysis-Abgleich, Zeile DoTs) verweist darauf.
+- *Bisher, am Code:* Kandidaten sind die Gegner, denen der eigene DoT fehlt oder in `StatusRefreshGcdCount` GCDs
+  ausläuft (`CheckStatus`), mit Zeit bis zum Tod über der Aktionsschwelle (`CheckTimeToKill`). Unter ihnen entschied die
+  allgemeine Zielart in `FindHostileRaw` — ab Werk „Low HP" (`DataCenter.TargetingType`, erster Eintrag der
+  Standardliste). Den DoT erhielten alle Gegner; der schwächste zuerst, der stärkste zuletzt — auf ihm tickte er damit
+die meisten GCDs lang nicht.
+- *Optionen:* Nullvariante; Reihenfolge nach seiner Größe (aktuelle HP, Ablauf); nach Zeit bis zum Tod; Kennzeichnung
+  über `IsRestrictedDOT` statt über Spieldaten. Rückbau: die neue Einstellung.
+- *Entschieden:* `DotSpreadOrder` — kürzeste eigene Restzeit zuerst (fehlend = 0, gerade gesendet = nie), bei Gleichstand
+  die höchste aktuelle Gesundheit; eingehängt in `FindHostileRaw` nach Stopmarkern und Vorrang-Gegnern, vor der
+  Zielart. Nur, wo die Statusprüfung die Kandidaten wählte, ohne Zielüberschreibung und Befehl, und nur für einen Status,
+  dessen eigener englischer Text „damage over time" nennt (`StatusHelper.IsDamageOverTime`, zur Laufzeit aus dem Client).
+  `IsRestrictedDOT` verworfen: 19 Aktionen, ohne Thunder/High Thunder, Higanbana, Chaotic Spring, Sonic Break, Bow
+  Shock. Zeit bis zum Tod als Ordnung verworfen: seine Größe ist die Gesundheit, und die Zeit bis zum Tod fehlt zu Beginn
+  eines Pulls; als Schwelle bleibt sie (The Balance, Astrologe: Combust bei mindestens 15 s Lebensdauer).
+- *Einstellung:* „Spread damage over time by HP, then by expiry", ab Werk an (seine Regel für Voreinstellungen). Hinter
+  einer Einstellung, weil der Ertrag gegenüber der Zielart im Kampf nicht gemessen ist.
+- *Ableitung, gekennzeichnet:* Ein Gegner ohne DoT kommt vor einer fälligen Erneuerung (zählt als ausgelaufen).
+- *Falsifikation:* Kein Defekt / keine Änderung? Ab Werk „Low HP" — die Regel kehrt die Reihenfolge um; Einzelziel-
+  angriffe ohne DoT behalten die Zielart (seine Präzisierung), weil die Regel nur Schadens-DoTs ordnet. Option falsch?
+  Zielwechsel des harten Ziels entsteht nicht (das Aktionsziel ist eigenes); ein gerade gesendeter DoT sortiert ans
+  Ende, also kein Doppel-DoT im nächsten GCD; Death's Design bleibt beim angegriffenen Gegner. Ausgeliefert, und nichts
+  ändert sich? Im manuellen Modus (nur das eigene Ziel ist Kandidat), gegen einen einzelnen Gegner, und wo eine Rotation
+  die Statusprüfung überspringt — jeweils gewollt. Ist die Statustabelle nicht lesbar, entscheidet die Zielart wie
+  vorher.
+- Betroffen: alle Jobs mit DoT; abgeleitete Rotationen über `FindTarget` (CHANGELOG). Release-Text fortgeschrieben.
+
+**Prüfgrad:** statisch (Code, Statustexte über xivapi v2, The Balance); Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

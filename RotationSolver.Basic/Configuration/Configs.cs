@@ -1496,6 +1496,15 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	Filter = TargetConfig)]
 	private static readonly bool _chooseAttackMark = true;
 
+	// The owner's rule (16.10.2026): "bei der dot-verteilung sollte immer geschaut werden, welcher gegner die
+	// aktuell höchsten hp hat, so dass der maximale effekt beim schaden erzielt werden kann. danach immer der
+	// reihe nach wie die dots auslaufen." Concept 03, "Wahl des DoT-Ziels" (A295). On by default - the owner's
+	// rule for defaults (29.09.2026).
+	[ConditionBool, UI("Spread damage over time by HP, then by expiry",
+	Description = "When a damage-over-time action can go on several enemies, it goes on one without it first, the one with the most HP left, so the damage over time ticks the longest. Once each carries it, it goes on the one whose damage over time runs out first.\nOff: the targeting type decides, as for every other attack.",
+	Filter = TargetConfig)]
+	private static readonly bool _dotTargetByHpThenExpiry = true;
+
 	[ConditionBool, UI("Prioritize enemy parts",
 	Description = "Enemy parts, such as Titan's Heart, will be prioritized as targets.",
 	Filter = TargetConfig)]

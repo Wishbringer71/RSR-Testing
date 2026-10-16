@@ -223,6 +223,39 @@ public static class StatusHelper
 		{ 13938, [StatusID.IceWeakness] },
 	};
 
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _damageOverTime = new();
+
+	/// <summary>
+	/// Whether any of these statuses deals damage over time, by its own text in the English status sheet
+	/// ("Sustaining damage over time.", "Toxins are causing damage over time.", "Sustaining lightning damage over
+	/// time."). Read from the game, so every job's damage over time counts, including those no rotation flags
+	/// (A295). A sheet that cannot be read answers no.
+	/// </summary>
+	internal static bool IsDamageOverTime(ReadOnlySpan<StatusID> statusIDs)
+	{
+		foreach (var id in statusIDs)
+		{
+			if (_damageOverTime.GetOrAdd((uint)id, static key =>
+			{
+				try
+				{
+					var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
+					return sheet != null && sheet.TryGetRow(key, out var row)
+						&& row.Description.ExtractText().Contains("damage over time", StringComparison.OrdinalIgnoreCase);
+				}
+				catch (Exception)
+				{
+					return false;
+				}
+			}))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	/// <summary>
 	/// What a body carries once a raise has landed on it: "Raise" under two ids with the same name and text
 	/// ("Teetering on the brink of consciousness."). BossModReborn and DelvUI read both; RSR read 148 alone (A294).
