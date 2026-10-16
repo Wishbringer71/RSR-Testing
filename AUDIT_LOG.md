@@ -7418,6 +7418,35 @@ die meisten GCDs lang nicht.
 **Prüfgrad:** statisch (Code, Statustexte über xivapi v2, The Balance); Prüfskripte; Compile über die CI (grün ab
 3885c192c).
 
+### A296 · WrathCombo-Änderungen 25.09.–16.10.2026; ECommons 3.2.1.26 (16.10.2026)
+
+Seine Frage: „es gibt updates bei wrath combo. bringen die änderungen inhaltlich sinn für rsr und bringt eine
+adaptierung was?"
+
+- *Erhoben:* 33 Commits (5365eb1ed, 16.10.2026) seit dem Stand von Konzept 15 (25.09.2026); fünf reine PvP-Commits
+  außerhalb seines Profils. Je Commit Diff gelesen; Einordnung in Konzept 15, „Nachgeprüft am 16.10.2026".
+- *Ergebnis:* Aus WrathComboS Code nichts zu übernehmen — die Spielmechanik der beiden inhaltlichen Fälle hat RSR schon
+  (Kassatsu nach Stufe; Divine Caress vor Ablauf, bei RSR am Treffer ausgerichtet), der Rest ist WrathCombo-intern,
+  Opener oder Bedienung.
+- *Gewinn über ECommons:* WrathCombo hob ECommons an; dessen 3.2.1.26 (26d30b9, 15.10.2026, auf NuGet veröffentlicht)
+  liest `EffectHeader.ActionType` als ein Byte (`ActionTypeByte`, in der veröffentlichten DLL geprüft). Das war der
+  offene Defekt „ECommons liest die Aktionsart eines Effektsatzes vier Bytes breit" (A177; TODO entfernt). Folge in RSR
+  mit 3.2.1.24: ein eigener Gegenstand mit Ziel kam in `Watcher.ActionFromSelf` als Aktion derselben Nummer an —
+  `AddActionRec` (zuletzt gewirkte Aktion), `TankbusterForecast.RecordOwnAction`, die Heilmessung unter dieser Id. Mit
+  3.2.1.26 ist `set.Action` für Gegenstände leer, und der Handler übergeht sie. Abstand 3.2.1.24 → 3.2.1.26: zwei Commits
+  (eine neue Hilfsmethode `SafeSelectNullable`, die Behebung), keine Abhängigkeiten.
+- *Umgesetzt:* `PackageReference` in beiden Projekten, `packages.lock.json` beider Projekte mit dem Inhalts-Hash, den
+  NuGet für signierte Pakete ohne die Signaturdatei bildet. Nachgerechnet und am bestehenden Eintrag für 3.2.1.24
+  bestätigt (Skript im Arbeitsverzeichnis der Sitzung, kein Prüfmittel des Repositorys). `Watcher.ActionTypeOf` behält die
+  Byte-Lesung, Kommentar auf den Stand gebracht.
+- *Falsifikation:* Kein Gewinn? Die Fehlzuordnung ist am Code belegt; wie oft sie im Kampf eine Regel störte, ist nicht
+  gemessen. Option falsch? Eine Aktualisierung kann brechen; der Abstand sind zwei kleine Commits, Compile über die CI.
+  Ausgeliefert, und nichts ändert sich? Für Aktionen nicht, gewollt: Für sie las RSR das Byte schon selbst.
+- Betroffen: abgeleitete Rotationen kompilieren gegen ECommons 3.2.1.26 (CHANGELOG); Upstream führt 3.2.1.24 (eine Zeile
+  je Projekt beim nächsten Sync).
+
+**Prüfgrad:** statisch (Diffs, NuGet-Katalog, DLL-Inhalt); Prüfskripte; Compile über die CI.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

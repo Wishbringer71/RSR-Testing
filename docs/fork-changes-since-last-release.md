@@ -88,6 +88,12 @@ goes for Esuna:
 RSR no longer cleanses a member another healer is already casting Esuna on, unless more than that one effect is
 left.
 
+## A potion no longer counts as an action you used
+
+ECommons, which RSR reads the game's effects through, read an item used on a target as an action with the same
+number. RSR then booked that action as the last one you used, reported it to the tankbuster plan as your own and
+filed the potion's healing under it. RSR now uses ECommons 3.2.1.26, which tells items and actions apart again.
+
 ## The target update no longer breaks off on an object without cast data
 
 The target update read the cast of every untargetable enemy, and Dalamud's cast reading fails on an object that

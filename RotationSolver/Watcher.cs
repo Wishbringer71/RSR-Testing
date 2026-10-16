@@ -77,13 +77,13 @@ public static class Watcher
 
 	// The kind of action behind an effect set, read from the one byte the game gives it.
 	//
-	// ECommons declares EffectHeader.ActionType at offset 0x1F with FFXIVClientStructs' ActionType,
-	// and that enum's underlying type is uint. The game's field is a single byte: ClientStructs'
-	// own ActionEffectHandler.Header puts Flags at 0x20 and NumTargets at 0x21. So the field read
-	// four bytes, and every set that hit anyone came out as 0x00NN0001 - "Action" in the low byte,
-	// the number of targets in the third. Measured in the owner's trace (A177): the low byte was 1
-	// in every line, the third byte matched the targets hit. A comparison with ActionType.Action
-	// therefore failed exactly for the sets that damaged someone, and no area action was ever rated.
+	// The game's field is a single byte: ClientStructs' own ActionEffectHandler.Header puts Flags at
+	// 0x20 and NumTargets at 0x21. Up to 3.2.1.25 ECommons declared EffectHeader.ActionType at 0x1F
+	// with FFXIVClientStructs' ActionType, whose underlying type is uint, so the field read four bytes
+	// and every set that hit anyone came out as 0x00NN0001 - "Action" in the low byte, the number of
+	// targets in the third (the owner's trace, A177). A comparison with ActionType.Action failed exactly
+	// for the sets that damaged someone. ECommons 3.2.1.26 reads the byte itself (ActionTypeByte); the
+	// cast stays, so going back to an older ECommons cannot reopen it (A296).
 	private static ActionType ActionTypeOf(ActionEffectSet set) => (ActionType)(byte)set.Header.ActionType;
 
 	// Damage the game reports as blocked or parried is damage taken all the same, at a reduced amount:

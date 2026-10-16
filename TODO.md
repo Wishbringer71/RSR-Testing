@@ -72,10 +72,6 @@ Namen des Bosses, nicht die Figur. Adressat ist BossModReborn.
 
 **Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`, „Wann eine BossModReborn-Vorhersage ihn betrifft"
 
-### ECommons liest die Aktionsart eines Effektsatzes vier Bytes breit · N, U
-
-`EffectHeader.ActionType` (ECommons) nutzt das `uint`-Enum der ClientStructs für ein Ein-Byte-Feld und liest `Flags` und `NumTargets` mit (A177). RSR liest in `Watcher` jetzt das niedrige Byte. Offen: ECommons' eigenes `ActionEffectSet` wählt mit diesem Feld, ob die Id eine Aktion, ein Gegenstand oder ein Reittier ist; sobald der Satz Ziele hat, fällt jeder Gegenstand in den Zweig „Aktion" — `set.Action`, Name und Symbol eines Heiltranks sind dann die einer Aktion gleicher Nummer. Adressat ist ECommons; im Fork betroffen, was `set.Action` für Gegenstände liest (`Watcher.ActionFromSelf`, Aktions-Zeitleiste).
-
 ### Samurai nutzt Feint und Tengentsu im Kampf nicht (fremde Meldung) · N
 
 **Konzept:** `docs/rotation-flow/13-aoe-damage-classification.md`

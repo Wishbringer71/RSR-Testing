@@ -23,6 +23,13 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Dependency: ECommons 3.2.1.26
+
+RotationSolver.Basic now references ECommons 3.2.1.26. It reads the action type of an effect header as the one
+byte the game gives it; up to 3.2.1.25 it read four bytes, and an item used with a target came through
+`ActionEffectSet` as an action of the same number. A rotation built against RotationSolver.Basic needs ECommons
+3.2.1.26 or later.
+
 ### Behaviour change: a damage over time chooses its target by HP, then by expiry
 
 `ActionTargetInfo.FindTarget` now orders the candidates of a damage-over-time action itself: the one whose own
