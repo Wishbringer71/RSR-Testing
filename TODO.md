@@ -277,6 +277,30 @@ Betroffen sind Leser, die eine Liste außerhalb des Zyklus lesen, in dem sie geb
 
 Offen: voller Loop. Zu klären sind ein Lebendigkeitsmaß, das ohne Lesen des möglicherweise freigegebenen Objekts auskommt (etwa Tabellenplatz und Adresse gegen `IObjectTable.GetObjectAddress`, dazu die `GameObjectId`), welche der 33 Stellen außerhalb ihres Zyklus lesen und ob Upstream dasselbe Muster pflegt.
 
+### Gelernte Flächenanteile aus Tötungsmechaniken · N
+
+**Konzept:** `docs/rotation-flow/13-aoe-damage-classification.md`
+`Watcher.ActionFromEnemy` legt je gelisteter Aktion den härtesten Treffer auf irgendein Gruppenmitglied als Anteil der
+Maximalgesundheit ab, auch aus Teiltreffern, und überschreibt nur nach oben. Ein Treffer, der nur trifft, wer eine
+Mechanik verfehlt, setzt den Wert damit dauerhaft: In seiner Datei `HostileCastingAreaPotential.json` (16.10.2026) stehen
+Megatod (#6090) bei 940 %, Nekrotische Gefahr (#40646) bei 588 %, dazu Bestialisches Brüllen (#40610) bei 169 % und Voller
+Schwinger (#7378) bei 109 %; bei den beiden letzten ist offen, ob es Mechanik oder ein Raidwide über einem Schild war.
+Sein Hinweis: Megatod tötet, wenn man nicht einen Debuff aus einer Schadensfläche trägt; Heilung dagegen ist unmöglich.
+
+**Im Kampf:** vor jedem dieser Casts Vorausheilung (sobald jemandem Gesundheit fehlt), Weichen aller Rückhaltungen,
+Minderung, und der Tankbuster-Plan rechnet den Raidwide als tödlich (A297). Gegen eine Tötungsmechanik nutzt nichts davon.
+
+**Optionen, noch nicht im Loop geprüft:**
+- Gemessen wird nur aus Sätzen, die jedes Gruppenmitglied trafen, wie bei der Aufnahme. Nachteil: Flächen, die nur einen
+  Teil der Gruppe erreichen, liefern keinen Wert mehr, und gerade für sie liest die Abwehr des Spielers den Anteil.
+- Ein Treffer über der Maximalgesundheit des Getroffenen wird nicht abgelegt, weil er unabhängig von Heilung tötet.
+  Offen: ob der gemeldete Betrag den von einer Barriere aufgefangenen Teil enthält; dann läge ein echter Raidwide unter
+  Schild ebenfalls darüber.
+- Die Leser behandeln einen Anteil, den keine erreichbare Minderung samt Barriere unter die Maximalgesundheit bringt, als
+  Mechanik: keine Vorausheilung, keine gelösten Rückhaltungen. Braucht eine Obergrenze der erreichbaren Minderung aus den
+  Spieldaten.
+- Seine bestehenden Einträge lassen sich in der Datei von Hand entfernen; sie kehren mit dem nächsten Fehlschlag zurück.
+
 ## Technische Schuld
 
 Bewusst eingegangene Kompromisse und erfasste Befunde ohne Wirkung im Kampf, je mit Kosten und Auflösungsbedingung.
@@ -434,7 +458,9 @@ Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A17
 
 **Warum trotzdem kein Defekt:** Das Verhalten ist richtig, nur der Aufwand ist es vielleicht nicht. `PartyMembers` ist auf die eigene Gruppe begrenzt (Allianzmitglieder gehen in `AllianceMembers`, geprüft an `TargetUpdater`), es geht also um maximal acht Einträge je Aufbau.
 
-**Auflösungsbedingung:** die Messzeile im nächsten Protokoll; trägt RSR einen spürbaren Anteil der Framezeit oder ragen einzelne Schritte heraus, folgt der Umbau, sonst wird der Eintrag geschlossen. **Auflösungsweg, falls ja:** Das Muster liegt im Baum bereits vor — `TargetUpdater` schreibt `PartyMembers`, `AllianceMembers` und `AllHostileTargets` einmal je Frame in `DataCenter`. `RefinedHP` gehört auf denselben Weg. Zu bedenken ist, dass `InEffectTime` zeitbasiert ist: ein Wert je Frame ist damit nicht bitgleich zum Wert je Lesen, also eine Verhaltensänderung ohne Nachweismöglichkeit und nach Projektregel nur mit beibehaltener Voreinstellung zu bauen.
+**Gemessen (sein Protokoll vom 16.10.2026, Stand 36ea60ee9, Weißmagier, 32 Kämpfe):** im Mittel 1,58 bis 2,36 ms je Aktualisierungsschritt, 8,8 bis 12,3 % der Framezeit der Frames, in denen RSR lief; Höchstwerte meist 5 bis 11 ms, zweimal über einer Framezeit bei 60 Bildern je Sekunde (16,6 ms und 36,8 ms).
+
+**Auflösungsbedingung:** trägt RSR einen spürbaren Anteil der Framezeit oder ragen einzelne Schritte heraus, folgt der Umbau, sonst wird der Eintrag geschlossen. **Stand:** Beides trifft nach der Messung zu (rund ein Zehntel der Framezeit; Einzelschritte bis 36,8 ms). Der Umbau ist damit offene Arbeit: erst erheben, welche Teile des Schritts die Zeit tragen, dann umbauen. **Auflösungsweg, falls ja:** Das Muster liegt im Baum bereits vor — `TargetUpdater` schreibt `PartyMembers`, `AllianceMembers` und `AllHostileTargets` einmal je Frame in `DataCenter`. `RefinedHP` gehört auf denselben Weg. Zu bedenken ist, dass `InEffectTime` zeitbasiert ist: ein Wert je Frame ist damit nicht bitgleich zum Wert je Lesen, also eine Verhaltensänderung ohne Nachweismöglichkeit und nach Projektregel nur mit beibehaltener Voreinstellung zu bauen.
 
 **Empfehlung: erfassen.** Ohne Messung wäre jede Umstellung eine Verbesserung auf Verdacht, und der Betroffenenkreis umfasst die Paketnutzer: `RefinedHP` und die übrigen Eigenschaften sind öffentlich, ihr Aufrufverhalten ist Teil des Vertrags.
 

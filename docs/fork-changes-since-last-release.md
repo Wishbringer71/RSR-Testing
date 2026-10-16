@@ -109,6 +109,10 @@ the reason the game check gave, and with the holds that were standing. Each HP p
 branch that allowed it and your HP at that moment. After each fight a line gives what RSR's update cost per frame during
 it: the number of cycles, the mean and the longest in milliseconds, and its share of the frame time.
 
+The White Mage's Holy stretch line is now written when its decision changes or once a GCD, as it was meant to be. It
+counted the remaining stun time in every frame as a change and filled more than half of the file, about ten lines a
+second.
+
 ## Tanks: a tankbuster that landed under Intervention or Taurochole is learned at its real size
 
 The learned tankbuster table, which a tank's mitigation plan reads, scales every hit back to unmitigated by the

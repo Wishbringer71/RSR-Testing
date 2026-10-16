@@ -7447,6 +7447,38 @@ adaptierung was?"
 
 **Prüfgrad:** statisch (Diffs, NuGet-Katalog, DLL-Inhalt); Prüfskripte; Compile über die CI.
 
+### A297 · Auswertung DefenseTrace 7ee83f99 und HostileCastingAreaPotential 7bd57faf (16.10.2026)
+
+Sein Auftrag: Protokoll und Datei „im loop prüfen, ob die logauswertung neue erkenntnisse bringt". Neu ist die dritte
+Sitzung (16.10.2026, 16:31–18:34, Stand 36ea60ee9: A291–A294 enthalten, A295 und A296 nicht), Weißmagier, 32 Kämpfe.
+
+- *Vorausheilung (A292), belegt:* drei Zeilen „heal ahead", vor Super-Sanctus (zweimal, gelernter Anteil 57 %) und
+  Brüllen (43 %), jeweils mit einem gefährdeten Mitglied. Von den 42 gelandeten Flächencasts der Sitzung hätte die alte
+  Regel schon bei voller Gruppe 38 vorgeheilt (Anteil über 35 % bzw. 25 %, die Schwellen der Vorgabewerte
+  `HealthAreaSpell` 0,65 und `HealthAreaAbility` 0,75; gelernte Werte aus seiner Datei).
+- *Wiederbelebung (A293, A294):* keine Zeile; in der Sitzung kein Rennen, also weder Beleg noch Gegenbeleg.
+- *Leere Abwehrfenster:* 140 („nothing chosen"), alle Ablehnungen erklärbar — Abklingzeit; Divine Caress ohne Divine
+  Grace; Linderung und Vollkommener Ablass, solange ihr Status liegt. Kein falscher Grund.
+- *Messmittel-Defekt, behoben:* Die Zeile der Sanctus-Streckung verglich für ihre Drosselung den ganzen Text samt der
+  laufenden Restzeit; jedes Bild galt als Änderung, rund zehn Zeilen je Sekunde, 1981 von 2355 Zeilen der Sitzung.
+  `WHM_Reborn.TraceStretch` vergleicht jetzt ohne Zahlen; geschrieben wird bei geänderter Entscheidung oder einmal je GCD,
+  wie der Kommentar es zusagte.
+- *Update-Last, erstmals gemessen (A286, H2):* 1,58 bis 2,36 ms je Schritt im Mittel, 8,8 bis 12,3 % der Framezeit,
+  Spitzen 16,6 und 36,8 ms. Die Auflösungsbedingung des TODO-Eintrags „Zustandsabfragen …" ist damit erfüllt; der
+  Umbau ist offene Arbeit (dort fortgeschrieben).
+- *Neuer Defekt, erfasst:* gelernte Anteile aus Tötungsmechaniken (Megatod 940 %, Nekrotische Gefahr 588 %), dauerhaft,
+  weil nur nach oben abgelegt wird; Folgen für Vorausheilung, Rückhaltungen, Minderung und Tankbuster-Plan. Sein Hinweis
+  zu Megatod (Tod ohne Debuff aus einer Schadensfläche, Heilung unmöglich) im Konzept 13. Optionen in `TODO.md`, noch nicht
+  im Loop geprüft, weil jede eine Abwägung zwischen Teiltreffern und Fehlschlägen ist.
+- *Falsifikation der Auswertung:* Die Zählung der alten Auslösungen nimmt die volle Gruppe an — untere Grenze, mit
+  weniger Gesundheit wären es mehr — und die Anteile seiner Datei vom 16.10. — obere Grenze, weil Anteile nur angehoben
+  werden und zur Landung kleiner gewesen sein können. Gegenprobe ohne die Datei: Von 56 gemessenen Treffern auf ihn
+  selbst lagen 13 über 35 % und 30 über 25 % der maximalen HP; Treffer dieser Größe hätte die alte Regel, sobald ihr
+  Anteil gelernt war, aus voller Gesundheit vorgeheilt. Seine eigenen Schwellen kann ich nicht messen; mit anderen
+  verschiebt sich die Zahl, nicht der Befund, dass die alte Regel volle Gruppen heilte.
+
+**Prüfgrad:** Auswertung des Protokolls und der Datei (Skript), Namen über xivapi; Code statisch; Prüfskripte.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -699,6 +699,16 @@ unauflösbar — aber folgenlos: Die Rechnung sagt nicht die Wirkung der Minderu
 beantwortet, **ob** dieser Einschlag jemanden in Gefahr bringt. Prozentuale Minderung wirkt zudem bei
 großem Schaden am stärksten, also dort, wo die Rechnung sie auslöst.
 
+**Der Treffer einer Tötungsmechanik setzt den Anteil dauerhaft zu hoch** (A297, offen in `TODO.md`). Gemessen wird
+der härteste Treffer auf irgendein Mitglied, auch bei Teiltreffern, und abgelegt wird nur nach oben. Trifft eine
+Mechanik nur, wer sie verfehlt, setzt dieser eine Treffer den Wert: In seiner Datei vom 16.10.2026 steht Megatod
+(#6090) bei 940 % und Nekrotische Gefahr (#40646) bei 588 % der Maximalgesundheit. Sein Hinweis (16.10.2026):
+„megatod tritt mit tot ein, wenn man nicht einen debuff auf sich hat, der durch betreten einer schadensfläche entsteht.
+heilung dagegen ist unmöglich." Folge für jeden Leser des Anteils: Der Cast gilt als tödlicher Raidwide — die Vorausheilung
+löst aus, sobald jemandem Gesundheit fehlt, die Rückhaltungen weichen, Minderung geht hinaus, und der Tankbuster-Plan zählt
+Tote. Gegen einen Tod, den nur die Mechanik abwendet, ist all das verschwendet. Die Fehlerrichtung ist die sichere, aber nicht
+in dem Sinn, dass sie schützt: Sie kostet Mittel, die beim nächsten echten Raidwide fehlen.
+
 **Serien kleiner Einschläge bleiben ungelöst.** Mehrere kleine Treffer kurz hintereinander summieren
 sich; jeder einzeln unter jeder Schwelle, zusammen tödlich. Eine Einzelwertprüfung sieht das nicht.
 Benannte Grenze, nicht behoben.
