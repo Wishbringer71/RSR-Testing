@@ -8,34 +8,18 @@ Nach Wichtigkeit, also nach der Wirkung im Kampf: Sicherheit der Gruppe vor Scha
 Wahrscheinlichkeit, in seinem Profil (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop
 bearbeiten"). Stand 17.10.2026; fortgeschrieben mit jedem Befund.
 
-1. Gelehrter: Recitation ohne Rückfall vor Ablauf.
-2. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
-3. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
-4. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
-5. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
-6. Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans (Beleg zu BossModReborn zuerst).
-7. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
-8. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
+1. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
+2. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
+3. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
+4. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
+5. Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans (Beleg zu BossModReborn zuerst).
+6. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
+7. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
 
 Warten auf Daten, nicht bearbeitbar: Aktualisierungskosten je Teilschritt (Protokoll „update cost by step“, A310); Tankbuster nach einem Marker ohne Wirken (Protokoll „no cast taken for it“, A308); Treffer aus einer Quelle, die die Objekttabelle nicht hält (Protokoll); Samurai
 Feint und Tengentsu (Protokoll eines Samurai); BossModReborn-FATE-Modul in Occult Crescent (Adressat BossModReborn).
 
 ## Defekte
-
-### Gelehrter: Recitation ohne Rückfall vor Ablauf · N
-
-`ShouldUseRecitation` drückt Recitation aus vier Anlässen, jeder mit seinem Verbraucher: ein Tank unter
-`ExcogHeal` in Gefahr → Excogitation als Heilung; die Einzelabwehr-Flagge → Excogitation im Abwehrpfad (Upstream
-7.5.7.1, A278); mittlere Gruppengesundheit unter `ReciteIndomitability` → Indomitability im Flächenheilpfad; ein
-Adloquium oder Succor als nächster GCD → dieser GCD. Auslöser und Verbraucher fragen seit A280 dasselbe. Offen
-bleibt, was geschieht, wenn der Anlass zwischen Drücken und Verbrauch wegfällt (ein anderer heilt den Tank, die
-Flagge fällt) oder Excogitation sein Heilziel nicht beim Tank findet (die Heilzielwahl nach Gefahr nimmt einen
-gefährdeteren Schadensausteiler): Dann nimmt kein Verbraucher Recitation, und es verfällt nach 15 s. Zu prüfen
-(Konzept 14, „Rückfälle vor Ablauf, je Job"), ob eine andere Heilung, die Recitation trägt (Indomitability,
-Adloquium, Concitation), das Fenster in der letzten Gelegenheit nutzen soll. Im Kampf: höchstens ein
-verschenkter kritischer Heilschub je Minute.
-
-**Konzept:** `docs/rotation-flow/14-action-dependency-matrix.md`
 
 ### BossModReborn: Ein FATE-Modul in Occult Crescent läuft nach seinem Weggang weiter · N
 

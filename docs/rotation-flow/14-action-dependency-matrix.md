@@ -308,6 +308,13 @@ unberührt.
 - **Ninja:** Phantom Kamaitachi wartet auf das Trick-Attack- oder Mug-Fenster; Bunshin läuft auf eigener
   Abklingzeit. Öffnet sich kein Fenster vor Ablauf, fällt es im letzten GCD, nicht während einer
   Mudra-Ausführung.
+- **Gelehrter:** Recitation wird für einen Verbraucher gedrückt (Excogitation, Indomitability, Adloquium,
+  Succor/Concitation). Fällt der Anlass weg, bevor er greift – ein anderer heilt den Tank, die Flagge fällt –, oder
+  findet Excogitation ihr Heilziel woanders, nimmt kein Verbraucher Recitation, und sie verfiele nach 15 s (A314). In
+  der letzten Gelegenheit geht dann Excogitation auf den Tank: Sie heilt, wenn er unter die Hälfte fällt oder wenn sie
+  ausläuft, ist also nie verschenkt. Liegt sie auf Abklingzeit, ein kritisches Adloquium auf ihn, dessen Barriere die
+  nächsten Treffer aufbrauchen. Indomitability nicht: Auf voller Gruppe verfiele die Heilung, und die Fähigkeit fehlte
+  dann 30 s lang.
 
 **Weiser, Addersgall (A203):** Bei drei Stapeln und dem nächsten innerhalb eines GCD fällt Druochole (7 % MP
 und eine Heilung, Wirktext) — kein Zielkonflikt, weil der Stapel sonst verloren ginge und nach dem Nachwachsen

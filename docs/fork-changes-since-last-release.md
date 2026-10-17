@@ -3,6 +3,13 @@
 What this release changes in the fight. For the whole distance from upstream, see
 [`fork-changes-in-play.md`](fork-changes-in-play.md).
 
+## Scholar: Recitation no longer runs out unused
+
+When the reason Recitation was pressed for went away before its heal came - someone else healed the tank, or
+Excogitation found its target elsewhere - Recitation ran out after fifteen seconds and its free critical heal was lost.
+In its last moment it now goes into an Excogitation on the tank, which heals once he falls below half or when it runs
+out, or, with Excogitation on cooldown, into an Adloquium barrier on him.
+
 ## Scholar: Recitation only for an Excogitation that will follow
 
 Recitation went out for any tank below `Minimum HP percent to use Excogitation as a heal instead of a defensive buff`,

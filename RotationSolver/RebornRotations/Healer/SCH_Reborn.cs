@@ -207,6 +207,16 @@ public sealed class SCH_Reborn : ScholarRotation
 			}
 		}
 
+		// Recitation about to run out with none of its heals taken - its reason gone between press and use, or the
+		// Excogitation's heal target found elsewhere (A314): its free critical heal goes where it holds, an
+		// Excogitation on the tank, which restores HP when he falls below half or when it runs out and so is never
+		// wasted. On cooldown, the GCD fallback in GeneralGCD puts Adloquium on him.
+		if (HasRecitation && IsLastChanceBeforeStatusEnds(ExcogitationPvE, StatusID.Recitation)
+			&& ExcogitationPvE.CanUse(out act, targetOverride: TargetType.Tank))
+		{
+			return true;
+		}
+
 		// Burn Consolation if about to run out of time on Seraph and still have charges
 		return SeraphTime < 3 && ConsolationPvE.CanUse(out act, usedUp: true) || base.EmergencyAbility(nextGCD, out act);
 	}
@@ -662,6 +672,15 @@ public sealed class SCH_Reborn : ScholarRotation
 		if (CurrentMp < EmergencyHealingMPThreshold)
 		{
 			return base.GeneralGCD(out act);
+		}
+
+		// Recitation about to run out, Excogitation on cooldown (EmergencyAbility): a critical Adloquium on the tank,
+		// whose barrier the next hits on him use up (A314).
+		if (HasRecitation && ExcogitationPvE.Cooldown.IsCoolingDown
+			&& IsLastChanceBeforeStatusEnds(AdloquiumPvE, StatusID.Recitation)
+			&& AdloquiumPvE.CanUse(out act, targetOverride: TargetType.Tank))
+		{
+			return true;
 		}
 
 		var nearbyHostiles = NumberOfHostilesInRangeOf(5);

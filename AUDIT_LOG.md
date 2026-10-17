@@ -8080,6 +8080,29 @@ dreht sich nichts. *Ausgeliefert, nichts ändert sich:* ohne Bewegungsbefehl und
 
 **Prüfgrad:** statisch (BossModReborn und RSR am Quelltext), Prüfskripte, Kompilieren im Prüflauf.
 
+### A314 · Gelehrter: Recitation verfällt nicht mehr ungenutzt (17.10.2026)
+
+TODO-Punkt „Gelehrter: Recitation ohne Rückfall vor Ablauf" nach seiner Reihenfolge.
+
+**Befund:** `ShouldUseRecitation` drückt Recitation für einen Verbraucher, und seit A280 fragen Auslöser und Verbraucher
+dasselbe. Fällt der Anlass zwischen Drücken und Verbrauch weg oder findet Excogitation ihr Heilziel bei einem anderen
+Mitglied, nimmt kein Verbraucher Recitation; sie verfällt nach 15 s, die 60 s Abklingzeit laufen ohne Ertrag.
+
+**Optionen.** Nullvariante; Indomitability in der letzten Gelegenheit (auf voller Gruppe verfällt die Heilung, und die
+Fähigkeit fehlt 30 s); Excogitation auf den Tank, sonst Adloquium auf ihn (gewählt).
+
+**Umgesetzt:** In der letzten Gelegenheit vor dem Ende von Recitation (`IsLastChanceBeforeStatusEnds`, Stufe „alle")
+geht Excogitation auf den Tank (`EmergencyAbility`); sie heilt beim Fall unter die Hälfte oder beim Ablauf und ist damit
+nie verschenkt. Liegt sie auf Abklingzeit, geht im GCD-Pfad ein kritisches Adloquium auf den Tank (`GeneralGCD`, vor den
+Angriffen); trägt er schon eine solche Barriere, nichts. Die Regel sitzt beim Gelehrten: Recitation gibt es nur dort.
+
+**Falsifikation.** *Kein Defekt:* Der Verfall ist am Code belegt; wie oft er eintritt, nicht. *Option falsch:* Der
+Rückfall nimmt einem Verbraucher, der in derselben letzten Gelegenheit ohnehin käme, Recitation weg – dann heilt jener
+ohne sie, die Kosten sind ein Aetherflow-Stapel. *Ausgeliefert, nichts ändert sich:* wenn die Verbraucher Recitation immer
+nehmen; dann greift der Rückfall nie.
+
+**Prüfgrad:** statisch, Prüfskripte, Kompilieren im Prüflauf.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
