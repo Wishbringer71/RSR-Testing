@@ -72,14 +72,16 @@ public partial class SummonerRotation
 	public static AetherFlags AetherFlags => JobGauge.AetherFlags;
 
 	/// <summary>
-	/// 
+	/// Does the gauge name Demi-Bahamut as the next big summon? Dalamud's own answer only reads the
+	/// Phoenix bit and so says yes while the gauge names Solar Bahamut ahead of Demi-Bahamut.
 	/// </summary>
-	public static bool IsBahamutReady => JobGauge.IsBahamutReady;
+	public static bool IsBahamutReady => !JobGauge.IsPhoenixReady && !IsSolarBahamutReady;
 
 	/// <summary>
-	/// 
+	/// Does the gauge name Demi-Phoenix as the next big summon? The Phoenix bit is also set while the
+	/// gauge names the Solar Bahamut ahead of Phoenix, which Dalamud's own answer counts as Phoenix.
 	/// </summary>
-	public static bool IsPhoenixReady => JobGauge.IsPhoenixReady;
+	public static bool IsPhoenixReady => JobGauge.IsPhoenixReady && !IsSolarBahamutReady;
 
 	/// <summary>
 	/// 
@@ -402,12 +404,14 @@ public partial class SummonerRotation
 			Array.Clear(_searingPhaseHeld, 0, _searingPhaseHeld.Length);
 			_lastSearingPhase = SearingPhase.None;
 			_lastBigSummon = SearingPhase.None;
+			_demiNamesTaken = false;
 			_searingPhaseBooked = false;
 			_inBurstWindow = _burstHeldThisWindow = _burstHeldLastWindow = false;
 			return;
 		}
 
 		var phase = CurrentSearingPhase;
+		CheckDemiNames(phase);
 
 		// The burst window, watched over its whole length (BurstPhaseHeldByAnother).
 		var inBurst = phase == (SummonSolarBahamutPvE.EnoughLevel ? SearingPhase.Solar : SearingPhase.Bahamut);
@@ -521,37 +525,104 @@ public partial class SummonerRotation
 	public static bool SummonPhoenixPvEReady => Service.GetAdjustedActionId(ActionID.SummonBahamutPvE) == ActionID.SummonPhoenixPvE;
 	/// <summary>
 	/// Is the next big summon the burst one - Solar Bahamut where it exists, Demi-Bahamut below?
-	/// Read from the summon button itself, which the game turns into the summon that comes next
-	/// ("Summon Bahamut changes to Summon Solar Bahamut when requirements for execution are met").
 	/// A cooldown cannot answer this: every big summon comes round on the same 60 s beat.
 	///
-	/// Two readings, either is enough. The button is the game's own answer, but whether it turns
-	/// before the summon's cooldown has run out is not stated anywhere - and the slot ahead of the
-	/// summon is exactly that moment. So the order is read as well: the burst summon follows every
-	/// other one (Solar, Bahamut, Solar, Phoenix; below Solar, Bahamut and Phoenix in turn), and a
-	/// fight starts with it. A wrong "yes" only lets Searing Light go ahead of a weaker demi, as it did
-	/// before this was asked at all; a wrong "no" would hold the summon for a buff that never comes.
+	/// The game names the next demi twice: on the gauge ("The type of Demi is also indicated and
+	/// changes upon summon", The Balance) and on the summon button ("Summon Bahamut changes to Summon
+	/// Solar Bahamut when requirements for execution are met"). Neither source says whether the name
+	/// is current in the slot ahead of the summon, while its cooldown still runs - and that is where
+	/// Searing Light is decided. So each is held against the demi that actually came
+	/// (<see cref="UpdateSearingPhaseBook"/>), and one that named the wrong demi there is not asked
+	/// again this session: gauge first, then button, then the order (the burst summon follows every
+	/// other one, and a fight starts with it).
+	///
+	/// Either reading used to be enough, so the order overrode the game. It cannot see the game set the
+	/// order back, nor a demi summoned while the rotation was not running, and a wrong "yes" is the
+	/// costly error: Searing Light goes ahead of a weaker demi and is still cooling down when the burst
+	/// summon comes a minute later, which then goes without it. A wrong "no" only lets the buff follow
+	/// in the burst phase itself (burstInSolar), a GCD late.
 	/// </summary>
 	protected bool NextBigSummonIsBurst
 	{
 		get
 		{
-			var next = Service.GetAdjustedActionId(ActionID.SummonBahamutPvE);
+			SearingPhase burst;
 			if (SummonSolarBahamutPvE.EnoughLevel)
 			{
-				return next == ActionID.SummonSolarBahamutPvE || _lastBigSummon != SearingPhase.Solar;
+				burst = SearingPhase.Solar;
 			}
-
-			if (SummonPhoenixPvE.EnoughLevel)
+			else if (SummonPhoenixPvE.EnoughLevel)
 			{
-				return next == ActionID.SummonBahamutPvE || _lastBigSummon != SearingPhase.Bahamut;
+				burst = SearingPhase.Bahamut;
+			}
+			else
+			{
+				return true;
 			}
 
-			return true;
+			var next = !_gaugeMisnamedDemi ? BigSummonOnGauge
+				: !_buttonMisnamedDemi ? BigSummonOnButton
+				: SearingPhase.None;
+			return next != SearingPhase.None ? next == burst : _lastBigSummon != burst;
 		}
 	}
 
 	private SearingPhase _lastBigSummon = SearingPhase.None;
+
+	// What gauge and button named when the summon first came within the slot ahead of it, and whether
+	// either has named another demi than the one that came. How the game keeps both is the same in
+	// every fight, so a miss holds for the session.
+	private SearingPhase _gaugeNamed = SearingPhase.None;
+	private SearingPhase _buttonNamed = SearingPhase.None;
+	private bool _demiNamesTaken;
+	private static bool _gaugeMisnamedDemi;
+	private static bool _buttonMisnamedDemi;
+
+	private SearingPhase BigSummonOnGauge =>
+		SummonSolarBahamutPvE.EnoughLevel && IsSolarBahamutReady ? SearingPhase.Solar
+		: JobGauge.IsPhoenixReady ? SearingPhase.Phoenix
+		: SearingPhase.Bahamut;
+
+	private static SearingPhase BigSummonOnButton => Service.GetAdjustedActionId(ActionID.SummonBahamutPvE) switch
+	{
+		ActionID.SummonSolarBahamutPvE => SearingPhase.Solar,
+		ActionID.SummonPhoenixPvE => SearingPhase.Phoenix,
+		ActionID.SummonBahamutPvE => SearingPhase.Bahamut,
+		_ => SearingPhase.None,
+	};
+
+	/// <summary>
+	/// Holds the names gauge and button gave in the slot ahead of the summon against the demi that
+	/// came. Taken once, when the summon first comes within reach of the next GCD - the moment
+	/// Searing Light is decided on - and compared on entering the demi.
+	/// </summary>
+	private void CheckDemiNames(SearingPhase phase)
+	{
+		if (!SummonPhoenixPvE.EnoughLevel)
+		{
+			return;
+		}
+
+		if (phase == SearingPhase.None)
+		{
+			var cooldown = SummonSolarBahamutPvE.EnoughLevel ? SummonSolarBahamutPvE.Cooldown : SummonBahamutPvE.Cooldown;
+			if (!_demiNamesTaken && cooldown.WillHaveOneCharge(WeaponRemain))
+			{
+				_gaugeNamed = BigSummonOnGauge;
+				_buttonNamed = BigSummonOnButton;
+				_demiNamesTaken = true;
+			}
+
+			return;
+		}
+
+		if (phase != _lastSearingPhase && _demiNamesTaken)
+		{
+			_gaugeMisnamedDemi |= _gaugeNamed != phase;
+			_buttonMisnamedDemi |= _buttonNamed != SearingPhase.None && _buttonNamed != phase;
+			_demiNamesTaken = false;
+		}
+	}
 	/// <summary>
 	/// 
 	/// </summary>

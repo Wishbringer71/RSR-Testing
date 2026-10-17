@@ -116,6 +116,15 @@ and the Paladin's emergency Intervention could go to the party member with the l
 of them now uses its own target rule. The Astrologian's Synastry, which relied on the leftover heal rule, now picks
 its target the way the single-target heal it copies does.
 
+## Summoner: Searing Light ahead of the right demi
+
+Whether the next big summon is Solar Bahamut (Demi-Bahamut below level 100) decides whether Searing Light goes
+ahead of it. RSR read the summon button or the order of the demis it had seen, and either was enough - so when the
+two disagreed, for example after a demi summoned while RSR was off, Searing Light could go ahead of Bahamut or
+Phoenix and was still cooling down when Solar Bahamut came. RSR now asks the job gauge first, then the button, then
+the order, and checks each against the demi that actually comes; a source that named the wrong one is not asked
+again for the session.
+
 ## Level-synced: Reprisal, Sheltron, Nascent Flash and Intervention have a duration again
 
 Below the level of the trait that sets their duration, these actions' effect texts leave the number out, and RSR

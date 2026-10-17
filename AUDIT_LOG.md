@@ -8154,6 +8154,45 @@ nichts ändert sich:* auf Höchststufe, und wenn die Auswertung der Synchronisat
 
 **Prüfgrad:** statisch, Prüfskripte, Kompilieren im Prüflauf; die Auswertung im Spiel nicht beobachtet.
 
+### A317 · Nächste Demi: Spiel vor Reihenfolge, selbst nachgesteuert (17.10.2026)
+
+TODO-Punkt „`NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen" nach seiner Reihenfolge.
+
+**Befund am Code:** `NextBigSummonIsBurst` war „Taste nennt die Burst-Demi **oder** die letzte Demi war nicht die
+Burst-Demi". Die Reihenfolge allein sieht nicht, wenn das Spiel sie zurücksetzt, und keine Demi, die ohne laufende
+Rotation beschworen wurde; und springt die Taste erst mit dem Ende der Abklingzeit um, nannte sie nach Solar weiter Solar
+– in beiden Fällen ein „ja" vor Bahamut oder Phoenix. Der Kommentar nannte ein falsches „nein" den teuren Fehler; seit
+der Wartebedingung (`366a49727`) ist es umgekehrt: Ein „nein" hält die Beschwörung nicht, der Buff folgt über
+`burstInSolar` einen GCD später; ein „ja" setzt ihn vor eine schwächere Demi, und zur Burst-Demi eine Minute später kühlt
+er noch ab.
+
+**Quellen:** Jobanzeige, Bits 2 und 3 von `AetherFlags` (FFXIVClientStructs, `d6397a7`, 17.10.2026: `PhoenixPrimed`,
+`SolarBahamutFirstPrimed`, `SolarBahamutSecondPrimed` – Reverse Engineering, keine Spielquelle). The Balance (Basic
+Guide, 17.10.2026): „The type of Demi is also indicated and changes upon summon." BossMod (`fff7f6e`) und WrathCombo
+(`87545989a`) lesen dieselben Bits während der Phase als laufende und danach als nächste Demi; beides wirkt über die
+Ersetzung der Aktions-Id auch dann, wenn die Deutung falsch wäre, und belegt sie daher nicht. Wann Anzeige und Taste
+umspringen und ob das Spiel die Reihenfolge zurücksetzt (Tod, Kampfende), nennt keine Quelle. Dalamuds
+`IsBahamutReady`/`IsPhoenixReady` lesen nur Bit 2 und irren bei Solar (Wert 8: „Bahamut", Wert 12: „Phoenix").
+
+**Umgesetzt:** Die Regel steuert selbst nach. `CheckDemiNames` hält fest, was Anzeige und Taste nannten, als die
+Beschwörung zum ersten Mal bis zum nächsten GCD bereit war, und vergleicht es beim Betreten der Demi mit der gekommenen.
+`NextBigSummonIsBurst` fragt die Anzeige, nach einem Fehlgriff dort die Taste, nach einem dort die Reihenfolge; ein
+Fehlgriff gilt für die Sitzung, weil das Spiel beide in jedem Kampf gleich führt. `IsBahamutReady`/`IsPhoenixReady`
+nehmen das Solar-Bit mit; einziger Leser im Repository ist ChurinSMN (Betroffenenkreis, nicht bearbeitet).
+
+**Im Kampf:** Ein einzelner Beschwörer zündet Searing Light vor Solar Bahamut, auch wenn das Spiel die Reihenfolge
+zurückgesetzt hat oder eine Demi ohne Rotation fiel. Kosten der Nachsteuerung: höchstens ein falsch gesetztes Fenster je
+irrender Quelle und Sitzung.
+
+**Falsifikation.** *Kein Defekt:* Die Wahrheitstafel der Oder-Verknüpfung zeigt das „ja" vor einer schwächeren Demi in
+jedem Fall, in dem Reihenfolge und Spiel auseinanderliegen. *Option falsch:* Anzeige oder Taste könnten im Einschiebeplatz
+noch die vorige Demi nennen – dann irrt die Quelle einmal und fällt weg. Eine Rücksetzung zwischen Ablesen und Beschwörung
+würde als Fehlgriff gezählt; dazwischen liegt höchstens ein GCD. Irrt die Anzeige nur stufensynchron (Solar-Bit unterhalb
+von Stufe 100, nicht belegt), fällt sie für die ganze Sitzung weg; die Taste trägt dann. *Ausgeliefert, nichts ändert
+sich:* Wenn Reihenfolge und Spiel nie auseinanderliegen; dann bleibt das Verhalten wie vorher.
+
+**Prüfgrad:** statisch, Prüfskripte, Kompilieren im Prüflauf; die Nachsteuerung im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

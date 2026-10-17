@@ -8,11 +8,10 @@ Nach Wichtigkeit, also nach der Wirkung im Kampf: Sicherheit der Gruppe vor Scha
 Wahrscheinlichkeit, in seinem Profil (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop
 bearbeiten"). Stand 17.10.2026; fortgeschrieben mit jedem Befund.
 
-1. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
-2. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
-3. Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans (Beleg zu BossModReborn zuerst).
-4. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
-5. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
+1. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
+2. Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans (Beleg zu BossModReborn zuerst).
+3. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
+4. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
 
 Warten auf Daten, nicht bearbeitbar: Aktualisierungskosten je Teilschritt (Protokoll „update cost by step“, A310); Tankbuster nach einem Marker ohne Wirken (Protokoll „no cast taken for it“, A308); Treffer aus einer Quelle, die die Objekttabelle nicht hält (Protokoll); Samurai
 Feint und Tengentsu (Protokoll eines Samurai); BossModReborn-FATE-Modul in Occult Crescent (Adressat BossModReborn).
@@ -63,10 +62,6 @@ Nach seinen Kriterien (29.09.2026) bewertet und gebaut (Konzept 09, „Krieger: 
 ### Rotationen gegen The Balance abgleichen · N
 
 Seit 27.09.2026 ist die Referenz erreichbar. Offen: je Job die Standardrotation (Opener, Burstausrichtung, Prioritäten) gegen den Guide prüfen — „werden die optimalen Kombinationen genutzt" über die Fensterprüfung hinaus (Konzept 14). Dazu: die von `ActionId.resx` ausgeblendeten Werte (Dauern, Potenzen, Statusnamen) aus dem Job-Guide in den Generator übernehmen, und die deutschen Namen aus dem deutschen Job-Guide in `action_names_de.json`.
-
-### `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen · N
-
-Die Eigenschaft antwortet „ja", wenn das Spiel Solar als nächste Demi anzeigt **oder** die letzte Demi nicht Solar war. Zeigt das Spiel Bahamut an, während die eigene Geschichte etwas anderes sagt — etwa nach einem Tod, wenn das Spiel die Reihenfolge zurücksetzt —, gewinnt die Geschichte. Im Kampf hieße das: Searing Light fiele vor Bahamut statt vor Solar. Nicht belegt ist, wann das Spiel die Demi-Reihenfolge zurücksetzt und wann die umgestellte Id nicht lesbar ist; beides entscheidet, ob die Geschichte nur Rückfall sein darf.
 
 ### Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder ohne Messung weiter nur reaktiv · N
 

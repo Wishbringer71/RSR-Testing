@@ -90,6 +90,19 @@ Beschwörung wartet").
    Stufe Demi-Bahamut —, sobald deren Abklingzeit bis zum nächsten GCD abläuft (`burstAboutToStart`:
    Burst an, Beschwörung bis zum nächsten GCD bereit, und sie ist die Burst-Demi laut
    `NextBigSummonIsBurst`); sonst in der Phase (`burstInSolar`).
+
+   Welche Demi als nächste kommt, nennt das Spiel zweimal: in der Jobanzeige („The type of Demi is also
+   indicated and changes upon summon", The Balance) und auf der Beschwörungstaste. Ob einer der beiden
+   Namen im Einschiebeplatz vor der Beschwörung schon gilt, während ihre Abklingzeit noch läuft, sagt
+   keine Quelle. Die Regel steuert deshalb selbst nach (A317): Sie hält fest, was Anzeige und Taste
+   nannten, als die Beschwörung zum ersten Mal bis zum nächsten GCD bereit war, und vergleicht es beim
+   Betreten der Demi mit der, die kam. Eine Quelle, die dort einmal eine andere Demi nannte, fragt sie in
+   dieser Sitzung nicht mehr – zuerst die Anzeige, dann die Taste, zuletzt die Reihenfolge (die
+   Burst-Demi folgt auf jede andere, und ein Kampf beginnt mit ihr). Die Reihenfolge allein sieht nicht,
+   wenn das Spiel sie zurücksetzt, und keine Demi, die beschworen wurde, während die Rotation nicht lief.
+   Ein falsches „ja" ist der teure Fehler: Der Buff ginge vor eine schwächere Demi und kühlte noch ab,
+   wenn eine Minute später die Burst-Demi kommt; ein falsches „nein" lässt ihn nur einen GCD später in der
+   Phase selbst folgen.
 2. **Die Beschwörung wartet** (`searingSettled`), wenn der Buff bereit ist oder so früh zurückkehrt, dass
    er noch in den Einschiebeplatz des GCDs passt, den das Warten kostet. Sie wartet nicht bei laufendem
    Buff gleich welcher Herkunft, bei ausgeschaltetem Burst oder Searing Light, vor einer Beschwörung, die
@@ -287,7 +300,7 @@ führen nicht zu mehr Überschreibungen, sondern zu mehr genutzten Lücken.
 
 | Ort | Was dort steht |
 |---|---|
-| `SummonerRotation.cs` | `HasAnySearingLight` (Buff gleich welcher Herkunft), `AnotherSummonerInParty`, `NextBigSummonIsBurst` (nächste große Beschwörung ist die Burst-Demi, aus der Beschwörungstaste und der Reihenfolge), Phasenbuch (`UpdateSearingPhaseBook`, `AllSearingPhasesHeld`, `BookSlot`), Beobachtung des Burst-Fensters (`BurstPhaseHeldByAnother`, in `UpdateSearingPhaseBook` fortgeschrieben) |
+| `SummonerRotation.cs` | `HasAnySearingLight` (Buff gleich welcher Herkunft), `AnotherSummonerInParty`, `NextBigSummonIsBurst` (nächste große Beschwörung ist die Burst-Demi: Jobanzeige, dann Beschwörungstaste, dann Reihenfolge, jede gegen die gekommene Demi gehalten, `CheckDemiNames`), Phasenbuch (`UpdateSearingPhaseBook`, `AllSearingPhasesHeld`, `BookSlot`), Beobachtung des Burst-Fensters (`BurstPhaseHeldByAnother`, in `UpdateSearingPhaseBook` fortgeschrieben) |
 | `SMN_Reborn.AttackAbility` | Zündfenster, Platz vor der Beschwörung (`burstAboutToStart`), Schild vor der Demi, Rückhalt vor Wiederbelebung und Heilung (`higherGcdFirst`), Aetherflow-Ausgaben unter `HasAnySearingLight` |
 | `SMN_Reborn.UseSummonsAndTrances` | Warten der Beschwörung (`searingSettled`, `RadiantAegisDueBeforeDemi`) |
 
