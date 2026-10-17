@@ -7545,6 +7545,44 @@ jetzt höchstens 1. Upstream-Pflege: Die Flächentabelle ist Fork-eigen.
 **Prüfgrad:** statisch (Code, Wirkkette Messung → Ablage → Laden/Speichern → Leser), Protokolle und BossModReborn-Module
 als Beleg der Mechanik, Prüfskripte; Kompilieren im Prüflauf. Im Spiel nicht beobachtet.
 
+### A299 · Auswertung DefenseTrace eccdafe8 und HostileCastingAreaPotential 4f4eaaf8 (17.10.2026)
+
+Hochgeladen ohne Text, ausgewertet wie zuvor im Loop. Stand a323a6303 (A298 enthalten), Krieger, 12 Kämpfe, die meisten
+in Occult Crescent (Duty-Aktion Abwehr #46595, englisch Defend: „Reduces damage taken by 50 %", 5 s, 30 s
+Abklingzeit, Stapel Finishing Fervor bei gemindertem Treffer; xivapi).
+
+- *A298 im Spiel belegt:* Die Datei enthält genau die vier Werte über der ganzen Maximalgesundheit nicht mehr (Megatod,
+  Voller Schwinger, Bestialisches Brüllen, Nekrotische Gefahr), alles andere unverändert; 130 statt 134 Einträge,
+  Höchstwert 89 %. Auslassen beim Laden und Nicht-Zurückholen beim Speichern wirken. Ein Treffer jenseits von
+  Gesundheit und Barriere kam in der Sitzung nicht vor.
+- *A293 im Spiel belegt:* zweimal „raise left to …": RSR ließ einen Körper, den ein anderer Spieler gerade
+  wiederbelebte.
+- *Rechenlast:* im Mittel 1,55 bis 3,63 ms, 7,2 bis 14,6 % der Framezeit, Spitzen 70,0, 43,0 und 29,0 ms; in `TODO.md`.
+- *Critical Engagement Dark Artistry:* vier Vorhersagen für Düsterflare (BossModReborn: Raidwide auf einen Cast des
+  Bosses an sich selbst, Schaden von einer Hilfsfigur ohne Cast); Abwehr dreimal, Abschütteln und Reflexion je
+  zweimal; im ganzen Kampf kein Treffer auf ihn. Zweiter Fall nach Necrophobia (Konzept 08). Am Quelltext belegt ist
+  ein Weg, auf dem das Protokoll den Treffer nicht sähe: ECommons setzt die Quelle über `Svc.Objects.SearchById`, und
+  einen Satz ohne auflösbare Quelle verwirft `Watcher.ActionFromEnemy` ganz. Ob das hier geschah, ist offen. Gebaut:
+  `TraceHitFromUnreadSource` schreibt jeden Treffer auf ihn aus einer Quelle, die der Handler nicht als Gegner liest;
+  als Verdacht in `TODO.md`.
+- *FATE Eye to Eye:* All Eyes (Verfluchtes Facettenauge, Cast des Schreckensseher) traf ihn unter Abwehr mit 0 % und
+  3 %; Abschütteln ging hinaus. Der Cast war nicht gelistet. Aufgenommen wird nur aus einer Gruppe ab vier, in der
+  jedes Mitglied getroffen wird (Upstream, 2025); aus Occult Crescent stand in keinem seiner Protokolle ein Cast in
+  der Liste, während die Liste sonst wächst (860 auf 869). Die Gruppengröße stand nicht im Protokoll; seit hier nennt
+  sie die Zeile am Ende jedes Kampfes.
+- *Neuer Defekt aus der Prüfung des FATE:* Auch gelistet und klein bewertet hätte All Eyes Abschütteln nicht
+  zurückgehalten. Der Zweig über BossModReborn in `StateUpdater.ShouldAddDefenseArea` öffnet die Flächenabwehr für
+  jede vorhergesagte Raidwide; nach der Bewertung fragt nur die vorausschauende Auffrischung (`AnnouncedHitIsSmall`).
+  `Skip mitigation for small area casts` hält damit nicht, was sein Text zusagt. In seinen Protokollen vom 06. bis
+  16.10.2026 fielen so 22 Abwehraktionen (Vollkommener Ablass, Linderung, Schimmerschild, Stumpfsinn) auf gelistete
+  Casts mit 1 bis 23 %, ohne Doppelzählung überlappender Dateien. In `TODO.md` mit der Gefahr „klein, kurz danach
+  groß", die eine Behebung beachten muss; noch nicht im Loop.
+- *Eigener Entwurf korrigiert, vor dem Commit:* Der erste Satz für Konzept 08 behauptete, eine kleine Bewertung halte
+  die vorausschauende Abwehr zurück. Sie hält nur die Auffrischung zurück, nicht den Zweig über BossModReborn.
+
+**Prüfgrad:** Protokoll und Datei per Skript, Namen über xivapi, Mechanik an BossModReborn-Modulen (CE206 Dark
+Artistry, FATE Eye to Eye) und am Quelltext von ECommons; Code statisch, Messmittel im Prüflauf kompiliert.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -7838,3 +7876,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C111 | A199 und A200 (Befund 2), nach Upstreams Muster (`ObjectHelper.IsEnemy`, 6baba6a94: „the object must be confirmed live beforehand"): `IsValid()` vor dem nativen Zugriff bestätige, dass das Objekt noch lebt; sonst werde es „übersprungen statt gelesen" | Dalamuds `GameObject.IsValid` prüft nur, dass der Spielerzustand geladen ist (`PlayerState.IsLoaded`, master, 15.10.2026), nicht das Objekt. Die Zusage war aus dem Namen geschlossen, nicht am Quelltext geprüft — dieselbe Lehre wie C15: ein Name ist kein Beleg | A291; Defekt in `TODO.md`, „`IsValid()` prüft nicht, ob ein Objekt noch lebt" |
 | C112 | A118, Konzept 08, `Configs.HealAheadOfAnnouncedHit`, Kommentare in `StateUpdater` und `DataCenter`: Die Vorausheilung frage „an derselben Schwelle, die die Flagge ohnehin benutzt, nur einen Cast früher" und könne „nicht dort heilen, wo der Baum ohnehin nicht geheilt hätte"; Beispiel „ein Mitglied bei 60 % vor einem 45-%-Raidwide … stirbt daran" | Dieselbe Heilung landet vor dem Treffer auf voller, nachher auf fehlender Gesundheit; die Regel löste bei voller Gruppe ab 25 % bzw. 35 % Trefferanteil aus. Seine Vorgabe verlangt die Vorausheilung erst, wo der Treffer die aktuelle Gesundheit erreicht, und das Beispiel ist falsch gerechnet: 60 % minus 45 % lässt 15 % | A292: Linie der Gefährdungsklasse 1, Texte berichtigt |
 | C113 | Konzept 03 und Bericht vom 16.10.2026, „Gegenposition, geprüft": Die Zeit bis zum Tod messe den Ertrag eines DoTs genauer als die Gesundheit | Seine Frage nach dem Widerspruch zu The Balance: In den Lagen, in denen DoTs überhaupt verteilt werden, ist die Reihenfolge der HP die der Lebensdauer; die Lebensdauerschwelle von The Balance beantwortet eine andere Frage (ersetzt der DoT einen Füllzauber) und gilt nur im Stand. Ein Widerspruch zu seiner Regel bestand nicht; die Formulierung legte einen nahe | Konzept 03 berichtigt (A295) |
+| C114 | Bericht vom 17.10.2026 im Chat: das FATE hinter dem Schreckensseher heiße „Augenschrecken" | Selbst gebildeter deutscher Name, gegen die Regel „Namen". Belegt sind nur der englische Name des FATE im BossModReborn-Modul (Eye to Eye) und der deutsche Name des Gegners (Schreckensseher, BNpcName 14726, xivapi `language=de`) | Im Archiv und in den Konzepten steht „FATE Eye to Eye"; im Bericht korrigiert (A299) |

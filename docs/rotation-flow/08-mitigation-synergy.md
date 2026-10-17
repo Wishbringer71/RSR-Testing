@@ -551,9 +551,15 @@ Erklärungen sind am Quelltext belegt: Türme, Köder und Spreads auf andere (di
 Occult Crescent, das nach seinem Weggang weiterläuft (am Quelltext gefolgert, `TODO.md`, Adressat BossModReborn).
 Eine dritte ist offen: Im Kampf gegen Necrophobia (Forked Tower: Magic, 10.10.2026) steht von 12:32 bis 12:44 kein
 Treffer auf ihn, während sieben Raidwides vorhergesagt wurden und Necrophobias Tankbuster zweimal gemessen wurde.
-BossModReborn führt für diesen Kampf den Raidwide Hail of Hellflares, dessen Schaden von Hilfsfiguren kommt. Ob er
-dort nicht getroffen wurde oder das Protokoll diese Quelle nicht sieht, ist nicht bestimmt. „Kein Treffer im
-Protokoll" ist deshalb kein sicheres Maß für „Fehlvorhersage". Seine Frage vom 13.10.2026, ob es Raidwides waren oder Flächen, außerhalb
+BossModReborn führt für diesen Kampf den Raidwide Hail of Hellflares, dessen Schaden von Hilfsfiguren kommt. Dasselbe
+Bild im Critical Engagement Dark Artistry (Occult Crescent, 17.10.2026): vier Vorhersagen für Düsterflare (Dark Flare;
+im Modul ein Raidwide auf einen Cast des Bosses an sich selbst, den Schaden bringt eine Hilfsfigur ohne Cast),
+Abwehr, Abschütteln und Reflexion gingen hinaus, und im ganzen Kampf steht kein Treffer auf ihn. Ob er nicht
+getroffen wurde oder das Protokoll die Quelle nicht sieht, ist nicht bestimmt. Am Quelltext belegt ist ein Weg für
+das Zweite: ECommons löst die Quelle über die Objekttabelle auf, und einen Satz ohne auflösbare Quelle verwirft der
+Effekt-Handler ganz, ohne Zeile, Schadensaufnahme und Messung (`TODO.md`). Seit A299 schreibt das Protokoll jeden
+Treffer aus einer Quelle, die RSR nicht als Gegner liest. „Kein Treffer im Protokoll" ist bis dahin kein sicheres
+Maß für „Fehlvorhersage". Seine Frage vom 13.10.2026, ob es Raidwides waren oder Flächen, außerhalb
 derer er stand, führte zur Maske.
 
 **Ausgeschlossen:**
@@ -564,7 +570,18 @@ derer er stand, führte zur Maske.
   BossModReborn angekündigt hatte.
 - *Die Größe der Vorhersage aus dem Treffer lernen* — BossModReborn nennt keine Aktion zur Vorhersage, und die
   eingetroffenen streuen von 0 % bis über 40 %; der Höchstwert eines Moduls bewertete jede Vorhersage als groß.
-  Eingetroffene Vorhersagen von 0–1 % bekommen deshalb dieselbe Abwehr wie große.
+  Eingetroffene Vorhersagen von 0–1 % bekommen deshalb dieselbe Abwehr wie große. Auch ein sichtbarer, gelisteter
+  und klein bewerteter Cast hinter der Vorhersage ändert daran nichts: Der Zweig über BossModReborn
+  (`StateUpdater.ShouldAddDefenseArea`) öffnet die Flächenabwehr für jede vorhergesagte Raidwide; nach der Bewertung
+  eines laufenden Casts fragt nur die vorausschauende Auffrischung (`AnnouncedHitIsSmall`). Damit hält
+  `Skip mitigation for small area casts` nicht, was sein Text zusagt, sobald ein Modul den Cast als Raidwide führt –
+  ein Defekt (`TODO.md`). In seinen Protokollen ging das bis zu 22-mal so (vom 06. bis 16.10.2026: Abwehr unter einer
+  Vorhersage, während ein gelisteter Cast unter 25 % lief); ob der Cast-Weg einzelne davon wegen niedriger Gesundheit
+  ohnehin geöffnet hätte, zeigt das Protokoll nicht. Im FATE Eye to Eye (Occult Crescent, 17.10.2026) traf All Eyes
+  (Verfluchtes Facettenauge), ein Cast des Schreckensseher, ihn unter Abwehr mit 0 % und 3 %, und Abschütteln ging
+  hinaus; gelistet war der Cast nicht. Aufgenommen wird nur aus einer Gruppe ab vier, in der jedes Mitglied getroffen
+  wird (Konzept 13, „`Record AOE actions` und die Gruppengröße"), und aus Occult Crescent stand in keinem seiner
+  Protokolle ein Cast in der Liste. Ob es an der Gruppengröße lag, sagt seit A299 die Zeile am Ende jedes Kampfes.
 - *Vorhersagen eines Moduls verwerfen, in dessen Arena er nicht steht* — ändert in seinem Inhalt nichts. In
   Occult Crescent werden die Module der Critical Engagements (30 von 30) und des Forked Tower: Magic (4 von 4) nur
   aktiv, wenn er beim Pull in der Arena steht (`CheckPull`), und die Arena eines FATE-Moduls (24 von 24,

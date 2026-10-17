@@ -50,9 +50,11 @@ internal static class UpdateCost
 		}
 		else if (_wasInCombat && _cycles > 0)
 		{
+			// The party size beside it: the cost grows with the figures around, and the AoE list takes new
+			// entries only from a party of four or more, which a trace of a fight alone could not show (A299).
 			var share = _frameMs > 0 ? _totalMs / _frameMs : 0;
 			DefenseTrace.Line($"update cost over the fight: {_cycles} cycles, mean {_totalMs / _cycles:F2} ms, "
-				+ $"max {_maxMs:F2} ms, {share:P1} of the frame time");
+				+ $"max {_maxMs:F2} ms, {share:P1} of the frame time, party of {DataCenter.PartyMembers.Count}");
 			_cycles = 0;
 			_totalMs = _maxMs = _frameMs = 0;
 		}

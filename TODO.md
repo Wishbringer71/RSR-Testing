@@ -277,6 +277,44 @@ Betroffen sind Leser, die eine Liste außerhalb des Zyklus lesen, in dem sie geb
 
 Offen: voller Loop. Zu klären sind ein Lebendigkeitsmaß, das ohne Lesen des möglicherweise freigegebenen Objekts auskommt (etwa Tabellenplatz und Adresse gegen `IObjectTable.GetObjectAddress`, dazu die `GameObjectId`), welche der 33 Stellen außerhalb ihres Zyklus lesen und ob Upstream dasselbe Muster pflegt.
 
+### `Skip mitigation for small area casts` hält nicht unter einer BossModReborn-Vorhersage · N
+
+**Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`, „Wann eine BossModReborn-Vorhersage ihn betrifft";
+`docs/rotation-flow/13-aoe-damage-classification.md`
+Der Text der Einstellung: „A learned area cast whose measured damage would leave everybody above the level at which
+the tree heals anyway no longer raises the party mitigation." Der Cast-Weg hält das ein (`AreaCastIsWorthMitigating`).
+Der Zweig über BossModReborn in `StateUpdater.ShouldAddDefenseArea` öffnet die Flächenabwehr dagegen für jede
+vorhergesagte Raidwide im Fenster, ohne nach der Bewertung eines laufenden Casts zu fragen. Führt ein Modul den
+klein bewerteten Cast als Raidwide, geht die Minderung trotzdem hinaus. Der Text bindet; anzupassen ist der Code.
+
+**Im Kampf:** Vollkommener Ablass (8), Linderung (6), Schimmerschild (5) und Stumpfsinn (3) fielen auf Casts, die mit
+1 bis 23 % bewertet waren – 22 Abwehraktionen in seinen Protokollen vom 06. bis 16.10.2026. Ob der Cast-Weg einzelne davon
+wegen niedriger Gesundheit ohnehin geöffnet hätte, zeigt das Protokoll nicht.
+
+**Was eine Behebung beachten muss, noch nicht im Loop:** BossModReborn nennt zu einer Vorhersage keine Aktion; ob die
+Vorhersage den laufenden Cast meint, lässt sich nur am Zeitpunkt ablesen (Restzeit des Casts gegen den
+vorhergesagten Eintritt). Die Gefahr ist die Folge „klein, kurz danach groß": Eine Minderung, die beim kleinen
+Treffer fiele, deckte den großen mit; zurückgehalten, öffnet die Vorhersage des großen erst, wenn der kleine
+gelandet ist, und das Fenster kann zu kurz sein. `AnnouncedHitIsSmall` trägt dieselbe Annahme für die
+vorausschauende Auffrischung (C75) und ist dort ausdrücklich eine Heuristik.
+
+### Treffer aus einer Quelle, die die Objekttabelle nicht hält, gehen ganz verloren · N (Verdacht)
+
+**Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`, „Wann eine BossModReborn-Vorhersage ihn betrifft"
+ECommons löst die Quelle eines Effektsatzes über die Objekttabelle auf (`Svc.Objects.SearchById`); fehlt sie dort,
+ist sie leer, und `Watcher.ActionFromEnemy` verwirft den Satz ganz: keine Zeile „hit you", keine Schadensaufnahme,
+keine Messung der Flächentabelle. Dasselbe gilt für eine Figur, die weder Gegner noch Kämpfer ist.
+
+**Im Kampf, falls es vorkommt:** Ein Raidwide aus einer Hilfsfigur zählt für RSR nicht als Treffer; die Vorhersage
+der Gesundheit fehlt dieser Schaden, und die Flächentabelle bewertet die Aktion nie.
+
+**Vorkommen nicht belegt.** Zweimal wurden Raidwides vorhergesagt, deren Schaden Hilfsfiguren bringen, und im
+Protokoll stand kein Treffer auf ihn: Necrophobia (10.10.2026) und Düsterflare im Critical Engagement Dark Artistry
+(17.10.2026, Occult Crescent). Ob er nicht getroffen wurde oder die Quelle fehlte, ist offen. Seit A299 schreibt das
+Protokoll jeden solchen Treffer („hit you from a source the object table does not hold" bzw. „not read as an enemy").
+Auflösung: ein Protokoll aus einem solchen Kampf; zeigt es die Zeilen, folgt der Loop, wie ein Satz ohne Quelle
+verarbeitet wird.
+
 ### Tankbuster-Tabelle misst auch an Nicht-Tanks · N
 
 **Konzept:** `docs/rotation-flow/13-aoe-damage-classification.md`, „Die Tankbuster-Tabelle"
@@ -454,9 +492,11 @@ Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A17
 
 **Warum trotzdem kein Defekt:** Das Verhalten ist richtig, nur der Aufwand ist es vielleicht nicht. `PartyMembers` ist auf die eigene Gruppe begrenzt (Allianzmitglieder gehen in `AllianceMembers`, geprüft an `TargetUpdater`), es geht also um maximal acht Einträge je Aufbau.
 
-**Gemessen (sein Protokoll vom 16.10.2026, Stand 36ea60ee9, Weißmagier, 32 Kämpfe):** im Mittel 1,58 bis 2,36 ms je Aktualisierungsschritt, 8,8 bis 12,3 % der Framezeit der Frames, in denen RSR lief; Höchstwerte meist 5 bis 11 ms, zweimal über einer Framezeit bei 60 Bildern je Sekunde (16,6 ms und 36,8 ms).
+**Gemessen (sein Protokoll vom 16.10.2026, Stand 36ea60ee9, Weißmagier, 32 Kämpfe):** im Mittel 1,58 bis 2,36 ms je Aktualisierungsschritt, 8,8 bis 12,3 % der Framezeit der Frames, in denen RSR lief; Höchstwerte meist 5 bis 11 ms, zweimal über einer Framezeit bei 60 Bildern je Sekunde (16,6 ms und 36,8 ms). Sein Protokoll vom 17.10.2026 (Stand
+a323a6303, Krieger, 12 Kämpfe, die meisten in Occult Crescent): im Mittel 1,55 bis 3,63 ms, 7,2 bis 14,6 % der Framezeit, Höchstwerte
+bis 70,0 ms, 43,0 ms und 29,0 ms – mehr Figuren, mehr Last. Seit A299 nennt die Zeile die Gruppengröße.
 
-**Auflösungsbedingung:** trägt RSR einen spürbaren Anteil der Framezeit oder ragen einzelne Schritte heraus, folgt der Umbau, sonst wird der Eintrag geschlossen. **Stand:** Beides trifft nach der Messung zu (rund ein Zehntel der Framezeit; Einzelschritte bis 36,8 ms). Der Umbau ist damit offene Arbeit: erst erheben, welche Teile des Schritts die Zeit tragen, dann umbauen. **Auflösungsweg, falls ja:** Das Muster liegt im Baum bereits vor — `TargetUpdater` schreibt `PartyMembers`, `AllianceMembers` und `AllHostileTargets` einmal je Frame in `DataCenter`. `RefinedHP` gehört auf denselben Weg. Zu bedenken ist, dass `InEffectTime` zeitbasiert ist: ein Wert je Frame ist damit nicht bitgleich zum Wert je Lesen, also eine Verhaltensänderung ohne Nachweismöglichkeit und nach Projektregel nur mit beibehaltener Voreinstellung zu bauen.
+**Auflösungsbedingung:** trägt RSR einen spürbaren Anteil der Framezeit oder ragen einzelne Schritte heraus, folgt der Umbau, sonst wird der Eintrag geschlossen. **Stand:** Beides trifft nach der Messung zu (rund ein Zehntel der Framezeit; Einzelschritte bis 70 ms). Der Umbau ist damit offene Arbeit: erst erheben, welche Teile des Schritts die Zeit tragen, dann umbauen. **Auflösungsweg, falls ja:** Das Muster liegt im Baum bereits vor — `TargetUpdater` schreibt `PartyMembers`, `AllianceMembers` und `AllHostileTargets` einmal je Frame in `DataCenter`. `RefinedHP` gehört auf denselben Weg. Zu bedenken ist, dass `InEffectTime` zeitbasiert ist: ein Wert je Frame ist damit nicht bitgleich zum Wert je Lesen, also eine Verhaltensänderung ohne Nachweismöglichkeit und nach Projektregel nur mit beibehaltener Voreinstellung zu bauen.
 
 **Empfehlung: erfassen.** Ohne Messung wäre jede Umstellung eine Verbesserung auf Verdacht, und der Betroffenenkreis umfasst die Paketnutzer: `RefinedHP` und die übrigen Eigenschaften sind öffentlich, ihr Aufrufverhalten ist Teil des Vertrags.
 

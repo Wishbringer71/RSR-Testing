@@ -120,8 +120,10 @@ are built.
 Each defence decision, and each "open, nothing chosen", now ends with the actions the defence refused on its way and
 the reason the game check gave, and with the holds that were standing. Each HP potion RSR chooses is written with the
 branch that allowed it and your HP at that moment. After each fight a line gives what RSR's update cost per frame during
-it: the number of cycles, the mean and the longest in milliseconds, and its share of the frame time. A tankbuster
-measured on a player who is not a tank is marked "(not a tank)".
+it: the number of cycles, the mean and the longest in milliseconds, its share of the frame time, and the party size.
+A tankbuster measured on a player who is not a tank is marked "(not a tank)". A hit on you from a source RSR does not
+read as an enemy - one the game's object table does not hold, or a figure that is neither an enemy nor a combatant -
+is written as such; RSR drops those hits everywhere else.
 
 The White Mage's Holy stretch line is now written when its decision changes or once a GCD, as it was meant to be. It
 counted the remaining stun time in every frame as a change and filled more than half of the file, about ten lines a

@@ -376,6 +376,41 @@ public static class Watcher
 		return statuses;
 	}
 
+	// A hit on the player from a source this handler does not read as an enemy: none at all, because the
+	// object table does not hold it (ECommons resolves the source there, Svc.Objects.SearchById, and a client
+	// with many figures around need not keep every helper), or a figure that is neither an enemy nor a
+	// combatant. Every path below drops such a set - no "hit you", no damage intake, no measurement. Whether
+	// that happens is open: twice raidwides were predicted and no hit stood in the trace, against Necrophobia
+	// (10.10.2026) and Dark Flare in an Occult Crescent critical engagement (17.10.2026), both resolved by
+	// helpers. This line answers it (A299).
+	private static void TraceHitFromUnreadSource(ActionEffectSet set, IBattleChara player)
+	{
+		if (set.Action is not { } action || action.GetActionCate() == ActionCate.Autoattack)
+		{
+			return;
+		}
+
+		var source = set.Source;
+		if (source is IBattleChara known && (known.IsEnemy()
+			|| known.GetBattleNPCSubKind() == Dalamud.Game.ClientState.Objects.Enums.BattleNpcSubKind.Combatant
+			|| known.GameObjectId == player.GameObjectId || known.IsParty()))
+		{
+			return;
+		}
+
+		foreach (var effect in set.TargetEffects)
+		{
+			if (effect.TargetID == player.GameObjectId && TryGetDamageEntry(effect, out _))
+			{
+				DefenseTrace.Line("hit you from "
+					+ (source == null ? "a source the object table does not hold" : $"{source.Name.TextValue}, not read as an enemy ({source.ObjectKind})")
+					+ $": {action.Name.ExtractText()} #{action.RowId} for {DamageShareOn(set, player.GameObjectId, Math.Max(1u, player.MaxHp)):P0}"
+					+ $" of max HP, {set.TargetEffects.Length} targets");
+				return;
+			}
+		}
+	}
+
 	private static void ActionFromEnemy(ActionEffectSet set)
 	{
 		try
@@ -391,6 +426,8 @@ public static class Watcher
 			// Every set, from any source: the stuns that matter come from the party, so this sits before
 			// every filter below.
 			ObserveStuns(set);
+
+			TraceHitFromUnreadSource(set, playerObject);
 
 			// A party member's Shirk on the player, for the trace.
 			if (set.Source is IBattleChara shirker && shirker.GameObjectId != playerObject.GameObjectId && shirker.IsParty()
