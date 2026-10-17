@@ -193,7 +193,7 @@ are built.
 Each defence decision, and each "open, nothing chosen", now ends with the actions the defence refused on its way and
 the reason the game check gave, and with the holds that were standing. Each HP potion RSR chooses is written with the
 branch that allowed it and your HP at that moment. After each fight a line gives what RSR's update cost per frame during
-it: the number of cycles, the mean and the longest in milliseconds, its share of the frame time, and the party size.
+it: the number of cycles, the mean and the longest in milliseconds, its share of the frame time, and the party size. A second line splits it by step - targets, BossModReborn, state, rotation, action, the tank's watches and the rest - with the mean and the longest per step, and shows what the slowest cycle was made of and whether a garbage collection ran during it.
 A tankbuster measured on a player who is not a tank is marked "(not a tank)". A hit on you from a source RSR does not
 read as an enemy - one the game's object table does not hold, or a figure that is neither an enemy nor a combatant -
 is written as such; RSR drops those hits everywhere else.

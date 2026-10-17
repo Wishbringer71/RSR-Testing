@@ -7971,6 +7971,34 @@ und die Prüfungen sind harmlos; ihre Begründung ist hier und in Konzept 03 ric
 
 **Prüfgrad:** statisch (Dalamud, FFXIVClientStructs am Quelltext), Prüfskripte, Kompilieren im Prüflauf.
 
+### A310 · Aktualisierungskosten: der Code misst je Teilschritt (17.10.2026)
+
+TODO-Punkt „Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen" nach seiner Reihenfolge. Seine
+Auflösungsbedingung war erfüllt (rund ein Zehntel der Framezeit, Einzelschritte bis 70 ms, Protokoll vom 17.10.2026);
+offen war, welcher Teil des Durchlaufs die Zeit trägt.
+
+**Statisch erhoben:** Die gelernten Tabellen schreibt RSR auf dem Thread-Pool (`Task.Run` in allen `Save*` von
+`OtherConfiguration`), nicht im Durchlauf. `DefenseTrace` schreibt über einen offenen `StreamWriter` mit `AutoFlush`
+(je Zeile ein Schreibaufruf, vom Betriebssystem gepuffert). Die iterierenden Getter sind erhoben (TODO-Eintrag); wie oft
+sie je Frame gelesen werden, sagen Aufrufstellen nicht. Eine Speicherbereinigung hält alle verwalteten Threads an, auch
+für Zuweisungen anderer Plugins, und fällt dann in den Schritt, der gerade läuft – eine Spitze von 70 ms kann so
+entstehen, ohne dass RSR rechnet (Schluss, nicht gemessen).
+
+**Umgesetzt (Messmittel):** `UpdateCost.Step` bucht die Zeit seit dem letzten Schritt auf diesen; Schritte sind die
+Handler von `MajorUpdater` und in ihnen Ziele, Makro und BossModReborn, Zustand, nächste Aktion (Rotation), Aktion und
+Tank-Beobachtung samt Vorhersage. Nach jedem Kampf folgt der Kostenzeile „update cost by step, mean/max ms: …; slowest
+cycle … ms: …, N garbage collection(s) during it" (Generation-0-Zähler, der jede Bereinigung zählt).
+
+**Verworfen:** auf Verdacht die iterierenden Getter zwischenspeichern – Verhaltensänderung an öffentlichen Eigenschaften
+(Paketvertrag, Zeitbezug von `InEffectTime`) ohne Beleg, dass sie die Zeit tragen.
+
+**Falsifikation.** *Kein Defekt:* möglich – trägt eine Bereinigung die Spitzen, ist es keiner von RSR; die Zeile trennt
+das. *Option falsch:* Das Messmittel kostet zwei Zeitstempel je Schritt (ein Dutzend je Frame) und keine Zuweisung im
+Durchlauf außer beim ersten Auftreten eines Schrittnamens. *Ausgeliefert, nichts ändert sich:* Im Kampf ändert sich
+nichts; das Protokoll gibt den nächsten Schritt vor.
+
+**Prüfgrad:** statisch, Prüfskripte, Kompilieren im Prüflauf.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

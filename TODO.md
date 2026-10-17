@@ -8,20 +8,19 @@ Nach Wichtigkeit, also nach der Wirkung im Kampf: Sicherheit der Gruppe vor Scha
 Wahrscheinlichkeit, in seinem Profil (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop
 bearbeiten"). Stand 17.10.2026; fortgeschrieben mit jedem Befund.
 
-1. Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen – Bildausfälle bis 70 ms.
-2. Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle.
-3. Tankbuster-Tabelle misst auch an Nicht-Tanks.
-4. Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn – Schaden, nicht Sicherheit.
-5. Gelehrter: Recitation ohne Rückfall vor Ablauf.
-6. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
-7. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
-8. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
-9. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
-10. Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans (Beleg zu BossModReborn zuerst).
-11. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
-12. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
+1. Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle.
+2. Tankbuster-Tabelle misst auch an Nicht-Tanks.
+3. Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn – Schaden, nicht Sicherheit.
+4. Gelehrter: Recitation ohne Rückfall vor Ablauf.
+5. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
+6. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
+7. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
+8. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
+9. Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans (Beleg zu BossModReborn zuerst).
+10. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
+11. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
 
-Warten auf Daten, nicht bearbeitbar: Tankbuster nach einem Marker ohne Wirken (Protokoll „no cast taken for it“, A308); Treffer aus einer Quelle, die die Objekttabelle nicht hält (Protokoll); Samurai
+Warten auf Daten, nicht bearbeitbar: Aktualisierungskosten je Teilschritt (Protokoll „update cost by step“, A310); Tankbuster nach einem Marker ohne Wirken (Protokoll „no cast taken for it“, A308); Treffer aus einer Quelle, die die Objekttabelle nicht hält (Protokoll); Samurai
 Feint und Tengentsu (Protokoll eines Samurai); BossModReborn-FATE-Modul in Occult Crescent (Adressat BossModReborn).
 
 ## Defekte
@@ -420,7 +419,7 @@ Confession und die 15 % von Troubadour, Tactician und Shield Samba sind seit A17
 a323a6303, Krieger, 12 Kämpfe, die meisten in Occult Crescent): im Mittel 1,55 bis 3,63 ms, 7,2 bis 14,6 % der Framezeit, Höchstwerte
 bis 70,0 ms, 43,0 ms und 29,0 ms – mehr Figuren, mehr Last. Seit A299 nennt die Zeile die Gruppengröße.
 
-**Auflösungsbedingung:** trägt RSR einen spürbaren Anteil der Framezeit oder ragen einzelne Schritte heraus, folgt der Umbau, sonst wird der Eintrag geschlossen. **Stand:** Beides trifft nach der Messung zu (rund ein Zehntel der Framezeit; Einzelschritte bis 70 ms). Der Umbau ist damit offene Arbeit: erst erheben, welche Teile des Schritts die Zeit tragen, dann umbauen. **Auflösungsweg, falls ja:** Das Muster liegt im Baum bereits vor — `TargetUpdater` schreibt `PartyMembers`, `AllianceMembers` und `AllHostileTargets` einmal je Frame in `DataCenter`. `RefinedHP` gehört auf denselben Weg. Zu bedenken ist, dass `InEffectTime` zeitbasiert ist: ein Wert je Frame ist damit nicht bitgleich zum Wert je Lesen, also eine Verhaltensänderung ohne Nachweismöglichkeit und nach Projektregel nur mit beibehaltener Voreinstellung zu bauen.
+**Auflösungsbedingung:** trägt RSR einen spürbaren Anteil der Framezeit oder ragen einzelne Schritte heraus, folgt der Umbau, sonst wird der Eintrag geschlossen. **Stand:** Beides trifft nach der Messung zu (rund ein Zehntel der Framezeit; Einzelschritte bis 70 ms). Der Umbau ist damit offene Arbeit: erst erheben, welche Teile des Schritts die Zeit tragen, dann umbauen. **Seit A310 misst der Code das selbst:** Nach jedem Kampf folgt der Kostenzeile „update cost by step" mit Mittel und Höchstwert je Teilschritt (Ziele, BossModReborn, Zustand, Rotation, Aktion, Tank-Beobachtung und die übrigen Handler) und der Zusammensetzung des langsamsten Durchlaufs samt der Speicherbereinigungen, die währenddessen liefen. Eine Bereinigung hält alle verwalteten Threads an, auch für Zuweisungen anderer Plugins; eine Spitze mit Bereinigung ist dann nicht RSRs Rechenzeit. Statisch geprüft: Die gelernten Tabellen schreibt RSR auf dem Thread-Pool (`Task.Run`), nicht im Durchlauf; `DefenseTrace` schreibt zeilenweise mit `AutoFlush`. Nächster Schritt: das nächste Protokoll auswerten, dann gezielt umbauen. **Auflösungsweg, falls ja:** Das Muster liegt im Baum bereits vor — `TargetUpdater` schreibt `PartyMembers`, `AllianceMembers` und `AllHostileTargets` einmal je Frame in `DataCenter`. `RefinedHP` gehört auf denselben Weg. Zu bedenken ist, dass `InEffectTime` zeitbasiert ist: ein Wert je Frame ist damit nicht bitgleich zum Wert je Lesen, also eine Verhaltensänderung ohne Nachweismöglichkeit und nach Projektregel nur mit beibehaltener Voreinstellung zu bauen.
 
 **Empfehlung: erfassen.** Ohne Messung wäre jede Umstellung eine Verbesserung auf Verdacht, und der Betroffenenkreis umfasst die Paketnutzer: `RefinedHP` und die übrigen Eigenschaften sind öffentlich, ihr Aufrufverhalten ist Teil des Vertrags.
 
