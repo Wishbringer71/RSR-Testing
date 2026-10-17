@@ -1003,7 +1003,8 @@ provoziert hatte. Hat er ihn ohne dein Geteiltes Leid übernommen, holt RSR ihn 
 Wechsel.
 
 **Kein Zurückholen, solange du in Gefahr bist:** Die automatische Herausforderung nimmt einem Co-Tank den Gegner ab,
-der unter `HealthForDyingTanks` fällt (`ObjectHelper.CanProvoke`). Solange du selbst nach einem Tankbuster in Gefahr
+der unter `HealthForDyingTanks` fällt (`ObjectHelper.CanProvoke`, Option „Provoke the enemy off a co-tank at the
+invulnerability HP"). Solange du selbst nach einem Tankbuster in Gefahr
 bist, tut sie das nicht mehr. Ohne diese Sperre hätte sie dir den Gegner zurückgeholt, während dein Debuff noch
 läuft – genau das, was seine Vorgabe ausschließt. Diese Sperre gilt unabhängig von der Option, weil sie eine
 bestehende Regel an seine Vorgabe bindet.
@@ -1050,9 +1051,11 @@ Leid sofort und festigt den Wechsel, wie es die Referenz vorsieht.
   in Gefahr, wirkt keiner, und keiner provoziert.
 - **Haltung:** RSR schaltet die Haltung nur ein, wenn kein anderer Tank sie trägt. Ein RSR-Co-Tank liegt daher
   meist weit unter der Hälfte, und die Regel hält. Das ist richtig: Ohne Haltung behielte er den Gegner nicht.
-- **Automatische Herausforderung** (`ObjectHelper.CanProvoke`, bei zwei Tanks nur mit „Auto provoke when there is
-  another tank in party") greift bei Gegnern auf Nicht-Tanks und nimmt einem Co-Tank unter `HealthForDyingTanks`
-  den Gegner ab. Den zweiten Fall sperrt die Regel, solange du selbst in Gefahr bist (oben, „Kein Zurückholen").
+- **Automatische Herausforderung** (`ObjectHelper.CanProvoke`): Gegner auf Nicht-Tanks nach „Auto provoke when there
+  is another tank in party" (bei zwei Tanks nur mit ihr), und – unter eigener Option „Provoke the enemy off a co-tank
+  at the invulnerability HP", ab Werk an (A318) – einem Co-Tank unter `HealthForDyingTanks`, der keine
+  Unverwundbarkeit trägt. Bis A318 hing diese Rettung an der ersten Option, deren Text sie nicht nennt. Den zweiten
+  Fall sperrt die Regel, solange du selbst in Gefahr bist (oben, „Kein Zurückholen").
 - **Allein, Vierer-Instanz, Allianzraid:** Es gibt keinen anderen Tank in der Gruppe, die Regel ist still.
 - **BossMod ohne Modul:** Die Regel liest keine Vorhersage; Erkennung über Liste, Marker und Effektsatz.
 - **Stufensynchron:** Geteiltes Leid erst ab St. 48 (`EnoughLevel`), darunter still.
@@ -1065,8 +1068,9 @@ Leid sofort und festigt den Wechsel, wie es die Referenz vorsieht.
   85-%-Treffer keine Minderung bereit war, ist geschlossen, nicht gemessen; ob dort ein zweiter Tank in der Gruppe war,
   zeigt das Protokoll nicht. Wie oft der Fall vorkommt, ist offen.
 - Die Herausforderung des Co-Tanks wirkt sicherer, aber die drückt der andere Spieler. Die Gegenseite gibt es zum
-  Teil: Fällt der Co-Tank unter `HealthForDyingTanks`, provoziert RSR. Trägt er nach einem Tankbuster eine
-  Verwundbarkeit, ohne tief zu stehen, fehlt sie (`TODO.md`).
+  Teil: Fällt der Co-Tank unter `HealthForDyingTanks`, provoziert RSR (Option „Provoke the enemy off a co-tank at the
+  invulnerability HP"). Trägt er nach einem Tankbuster eine Verwundbarkeit, ohne tief zu stehen, fehlt sie; die
+  Entscheidung dazu liegt ihm vor (`TODO.md`, „Tankwechsel von der anderen Seite").
 - Spielt der Co-Tank ohne Haltung, wirkt die Regel nie, weil sie dort nichts bewirken könnte. Das Protokoll schreibt je
   Tankbuster den Grund; eine falsche Prognose zieht die Regel selbst nach (unten).
 - Das Zurückholen folgt dem Takt der Tankbuster (oben). Dass der Wechsel bei bereiter Unverwundbarkeit hält, trägt auch

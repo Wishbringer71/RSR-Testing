@@ -835,6 +835,11 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 		Parent = nameof(UseAbility), PvEFilter = JobFilterType.Tank)]
 	private static readonly bool _autoProvokeForTank = true;
 
+	[ConditionBool, UI("Provoke the enemy off a co-tank at the invulnerability HP",
+		Description = "With another tank in the party: when an enemy keeps attacking a co-tank whose HP with shield are at or below the HP you set for a tank to use invulnerability, and who is not under an invulnerability, RSR provokes it - not while a tankbuster has left you in danger yourself.\nIn a fight: the enemy's next hits land on you instead of finishing the co-tank. Off: the co-tank is left to his healers and his own cooldowns.",
+		Parent = nameof(UseAbility), PvEFilter = JobFilterType.Tank)]
+	private static readonly bool _provokeOffDyingCoTank = true;
+
 	[ConditionBool, UI("Shirk the co-tank after a tankbuster that leaves you in danger",
 		Description = "With another tank in the party: after a tankbuster on you, if it left you with a vulnerability debuff or so low that a repeat of the hardest one measured would kill you, and your invulnerability is not ready, Shirk goes to the other tank - but only when the party's enmity on the enemy shows it will then attack that tank, because below that Shirk moves nothing, and never to a tank who is in danger himself. With several, the one fewest enemies are attacking, then the one with most HP. Once the co-tank has taken the enemy's next tankbuster, your debuff has run out, you could survive the buster again and your invulnerability is ready, RSR provokes the enemy back.\nIn a fight: the next hit goes to the co-tank instead of killing you, and you take the enemy back when you are safe. Off: you keep the enemy unless your co-tank provokes it.",
 		Parent = nameof(UseAbility), PvEFilter = JobFilterType.Tank)]

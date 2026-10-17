@@ -54,8 +54,12 @@ internal static partial class TargetUpdater
 		UpdateCastsByOthers();
 		DataCenter.DeathTarget = GetDeathTarget();
 		DataCenter.DispelTarget = GetDispelTarget();
+		// "Auto provoke when there is another tank in party" covers the cases its text names; the alliance
+		// walk behind it runs only when one of them comes up.
+		bool? autoProvokeAllowed = null;
+		bool AutoProvokeAllowed() => autoProvokeAllowed ??= Service.Config.AutoProvokeForTank || StateUpdater.CountAllianceTanks() < 2;
 		DataCenter.ProvokeTarget = (DataCenter.Role == JobRole.Tank || StatusHelper.PlayerHasStatus(true, StatusID.VariantUltimatumSet))
-			? GetFirstHostileTarget(ObjectHelper.CanProvoke)
+			? GetFirstHostileTarget(target => target.CanProvoke(AutoProvokeAllowed))
 			: null; // Calculating this per frame rather than on-demand is actually a fair amount worse
 		DataCenter.InterruptTarget = GetFirstHostileTarget(ObjectHelper.CanInterrupt); // Tanks, Melee, RDM, and various phantom and duty actions can interrupt so just deal with it
 

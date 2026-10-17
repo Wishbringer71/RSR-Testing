@@ -133,14 +133,6 @@
   },
   {
    "file": "RotationSolver.Basic/Helpers/ObjectHelper.cs",
-   "code": "&& (Vector3.Distance(target.Position, Player.Object?.Position ?? Vector3.Zero) > 5))",
-   "values": [
-    "5"
-   ],
-   "status": "open"
-  },
-  {
-   "file": "RotationSolver.Basic/Helpers/ObjectHelper.cs",
    "code": "&& targetObject.GetEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f",
    "values": [
     "100"
@@ -872,6 +864,16 @@
    "status": "exception",
    "loop": "A313",
    "reason": "The jump distance is stated only in the effect text (Repelling Shot: \"Jump 10 yalms away from current target\", ActionId.resx); no sheet carries it, so it cannot be read at runtime"
+  },
+  {
+   "file": "RotationSolver/Updaters/TargetUpdater.cs",
+   "code": "bool AutoProvokeAllowed() => autoProvokeAllowed ??= Service.Config.AutoProvokeForTank || StateUpdater.CountAllianceTanks() < 2;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A318",
+   "reason": "The setting's own condition, \"Auto provoke when there is another tank in party\": another tank besides the player means two; a count named by the option text, not a tunable. Moved unchanged from StateUpdater.ShouldAddProvoke (upstream line)"
   }
  ]
 }

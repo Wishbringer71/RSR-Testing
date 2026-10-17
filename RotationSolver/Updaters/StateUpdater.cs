@@ -619,11 +619,11 @@ internal static class StateUpdater
 
 	private static bool ShouldAddProvoke()
 	{
-		// Cheapest checks first; the alliance tank count walks every alliance member.
+		// "Auto provoke when there is another tank in party" is asked where ProvokeTarget is chosen, for the
+		// cases it names (ObjectHelper.CanProvoke); the co-tank rescue follows its own setting.
 		return DataCenter.ProvokeTarget != null
 			&& (DataCenter.InCombat || Service.Config.ProvokeAnything)
-			&& (DataCenter.Role == JobRole.Tank || StatusHelper.PlayerHasStatus(true, StatusID.VariantUltimatumSet))
-			&& (Service.Config.AutoProvokeForTank || CountAllianceTanks() < 2);
+			&& (DataCenter.Role == JobRole.Tank || StatusHelper.PlayerHasStatus(true, StatusID.VariantUltimatumSet));
 	}
 
 	private static bool ShouldAddInterrupt()
@@ -864,7 +864,7 @@ internal static class StateUpdater
 		return status;
 	}
 
-	private static int CountAllianceTanks()
+	internal static int CountAllianceTanks()
 	{
 		var count = 0;
 		foreach (var member in DataCenter.AllianceMembers)

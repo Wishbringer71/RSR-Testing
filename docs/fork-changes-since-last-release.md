@@ -116,6 +116,13 @@ and the Paladin's emergency Intervention could go to the party member with the l
 of them now uses its own target rule. The Astrologian's Synastry, which relied on the leftover heal rule, now picks
 its target the way the single-target heal it copies does.
 
+## Tanks: provoke settings do what they say
+
+- The rescue of a co-tank at your invulnerability HP has its own setting, "Provoke the enemy off a co-tank at the
+  invulnerability HP" (on by default). It ran under "Auto provoke when there is another tank in party", whose text
+  only names enemies on non-tanks: with that setting off, a co-tank about to die was not provoked off.
+- "Provoke anything not on the no provoke list." now respects the list; it provoked listed enemies as well.
+
 ## Summoner: Searing Light ahead of the right demi
 
 Whether the next big summon is Solar Bahamut (Demi-Bahamut below level 100) decides whether Searing Light goes

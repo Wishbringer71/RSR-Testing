@@ -8193,6 +8193,33 @@ sich:* Wenn Reihenfolge und Spiel nie auseinanderliegen; dann bleibt das Verhalt
 
 **Prüfgrad:** statisch, Prüfskripte, Kompilieren im Prüflauf; die Nachsteuerung im Spiel nicht beobachtet.
 
+### A318 · Herausforderung: Optionen tun, was ihr Text sagt (17.10.2026)
+
+Aus dem Loop zum TODO-Punkt „Tankwechsel von der anderen Seite" (Entscheidung liegt ihm vor, `TODO.md`).
+
+**Befund am Code.** `ObjectHelper.CanProvoke` hat zwei Zweige: Gegner auf einem Nicht-Tank (upstream) und die Rettung
+eines Co-Tanks unter `HealthForDyingTanks` (Fork, `4e62dc3a5`, Schwelle seit `d67164c76`, Sperre bei Unverwundbarkeit
+seit `451d9e90`, bei eigener Gefahr seit A256). Beide liefen hinter `ShouldAddProvoke`, das bei zwei Tanks „Auto provoke
+when there is another tank in party" verlangt; deren Text nennt nur „an enemy is attacking a non-tank member". Mit der
+Option aus blieb ein sterbender Co-Tank ohne Rettung, mit ihr an lief eine Rettung, die der Text nicht zusagt. Zweiter
+Befund, upstream: „Provoke anything not on the no provoke list." kehrte vor der Liste zurück und provozierte gelistete
+Gegner mit (die spätere Prüfung `if (!ProvokeAnything)` zeigt die Absicht).
+
+**Umgesetzt (Text bindet, nicht zur Wahl).** Die Rettung hat eine eigene Option „Provoke the enemy off a co-tank at the
+invulnerability HP", ab Werk an. „Auto provoke when there is another tank in party" wird dort gefragt, wo der Fall
+eintritt, den sie nennt (Nicht-Tank-Zweig und „Provoke anything"); `TargetUpdater` reicht sie verzögert durch, damit die
+Zählung der Allianz-Tanks nur dann läuft. „Provoke anything" prüft die Liste.
+
+**Im Kampf.** Voreinstellungen: unverändert. Mit „Auto provoke …" aus nimmt RSR einem Co-Tank unter der
+Unverwundbarkeits-Schwelle den Gegner jetzt ab; abschaltbar über die neue Option. Mit „Provoke anything" bleiben
+gelistete Gegner unberührt.
+
+**Falsifikation.** *Kein Defekt:* Text und Code am Wortlaut verglichen. *Option falsch:* Die Rettung ohne Option zu lassen
+wäre eine Verbesserung ohne belegten Nutzen (Regel „Option und Beobachtbarkeit"); ab Werk an, weil die Gruppe vor dem
+Schaden geht. *Ausgeliefert, nichts ändert sich:* für alle, die beide Voreinstellungen fahren – gewollt.
+
+**Prüfgrad:** statisch, Prüfskripte, Kompilieren im Prüflauf.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

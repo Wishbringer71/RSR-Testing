@@ -67,26 +67,32 @@ public static class ObjectHelper
 		return false;
 	}
 
-	internal static bool CanProvoke(this IBattleChara target)
+	/// <summary>
+	/// Should this enemy be provoked? <paramref name="autoProvokeAllowed"/> answers the setting "Auto provoke
+	/// when there is another tank in party" for the cases it names - an enemy on a non-tank, and "Provoke
+	/// anything" - and is asked only when one of them applies (it walks the alliance). The rescue of a co-tank
+	/// at the invulnerability HP follows its own setting, which that text does not name.
+	/// </summary>
+	internal static bool CanProvoke(this IBattleChara target, Func<bool>? autoProvokeAllowed = null)
 	{
 		if (target == null)
 		{
 			return false;
 		}
 
-		if (Service.Config.ProvokeAnything)
+		// "Provoke anything not on the no provoke list": the list applies to it as well. It returned before
+		// the list was read, so a listed enemy was provoked all the same.
+		if (!Service.Config.ProvokeAnything)
 		{
-			return true;
-		}
+			if (!target.IsAttackable())
+			{
+				return false;
+			}
 
-		if (!target.IsAttackable())
-		{
-			return false;
-		}
-
-		if (DataCenter.PlayerFateId != 0 && target.FateId() == DataCenter.PlayerFateId)
-		{
-			return false;
+			if (DataCenter.PlayerFateId != 0 && target.FateId() == DataCenter.PlayerFateId)
+			{
+				return false;
+			}
 		}
 
 		// Removed the listed names.
@@ -101,36 +107,39 @@ public static class ObjectHelper
 			}
 		}
 
-		if (!Service.Config.ProvokeAnything)
+		if (Service.Config.ProvokeAnything)
 		{
-			// Target can move or too big and has a target
-			if ((target.GetObjectNPC()?.Unknown0 == 0 || target.HitboxRadius >= 5) // Unknown12 used to be the flag checked for the mobs ability to move, honestly just guessing on this one
-				&& (target.TargetObject?.IsValid() ?? false))
-			{
-				if (Svc.Objects.SearchById(target.TargetObjectId) is IBattleChara targetObject)
-				{
-					// The target is not a tank role
-					if (!targetObject.IsJobCategory(JobRole.Tank)
-						&& (Vector3.Distance(target.Position, Player.Object?.Position ?? Vector3.Zero) > 5))
-					{
-						return true;
-					}
+			return autoProvokeAllowed?.Invoke() ?? true;
+		}
 
-					// The co-tank is at the HP the user already set for a tank in danger, and is still
-					// being attacked - take it back, unless they are riding an invulnerability (Superbolide
-					// leaves them at 1 HP on purpose). No distance gate: any healthy tank should react.
-					// Not while the player himself is in danger after a tankbuster (TankSwapWatch): the
-					// owner's rule of 04.10.2026 - the enemy comes back only once his debuff and his
-					// critical state are over.
-					if (targetObject.IsJobCategory(JobRole.Tank)
-						&& !targetObject.IsDead
-						&& targetObject.GameObjectId != Player.Object?.GameObjectId
-						&& targetObject.CanBeHealed()
-						&& targetObject.GetEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f
-						&& !TankSwapWatch.PlayerInDanger)
-					{
-						return true;
-					}
+		// Target can move or too big and has a target
+		if ((target.GetObjectNPC()?.Unknown0 == 0 || target.HitboxRadius >= 5) // Unknown12 used to be the flag checked for the mobs ability to move, honestly just guessing on this one
+			&& (target.TargetObject?.IsValid() ?? false))
+		{
+			if (Svc.Objects.SearchById(target.TargetObjectId) is IBattleChara targetObject)
+			{
+				// The target is not a tank role
+				if (!targetObject.IsJobCategory(JobRole.Tank)
+					&& (Vector3.Distance(target.Position, Player.Object?.Position ?? Vector3.Zero) > 5))
+				{
+					return autoProvokeAllowed?.Invoke() ?? true;
+				}
+
+				// The co-tank is at the HP the user already set for a tank in danger, and is still
+				// being attacked - take it back, unless they are riding an invulnerability (Superbolide
+				// leaves them at 1 HP on purpose). No distance gate: any healthy tank should react.
+				// Not while the player himself is in danger after a tankbuster (TankSwapWatch): the
+				// owner's rule of 04.10.2026 - the enemy comes back only once his debuff and his
+				// critical state are over.
+				if (Service.Config.ProvokeOffDyingCoTank
+					&& targetObject.IsJobCategory(JobRole.Tank)
+					&& !targetObject.IsDead
+					&& targetObject.GameObjectId != Player.Object?.GameObjectId
+					&& targetObject.CanBeHealed()
+					&& targetObject.GetEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f
+					&& !TankSwapWatch.PlayerInDanger)
+				{
+					return true;
 				}
 			}
 		}
