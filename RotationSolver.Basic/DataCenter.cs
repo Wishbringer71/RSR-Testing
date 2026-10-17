@@ -4027,7 +4027,7 @@ internal static class DataCenter
 		for (var i = 0; i < party.Count; i++)
 		{
 			var member = party[i];
-			if (member == null || member.IsDead || member.MaxHp == 0 || !member.CanBeHealed())
+			if (member == null || member.IsDead || member.MaxHp == 0 || !member.IsUnprotectedForHealing())
 			{
 				continue;
 			}
@@ -4060,7 +4060,7 @@ internal static class DataCenter
 		{
 			var member = party[i];
 			if (member == null || member.IsDead || member.MaxHp == 0
-				|| (unprotectedOnly && !member.CanBeHealed())
+				|| (unprotectedOnly && !member.IsUnprotectedForHealing())
 				|| (needsRoom && member.CurrentHp >= member.MaxHp))
 			{
 				continue;

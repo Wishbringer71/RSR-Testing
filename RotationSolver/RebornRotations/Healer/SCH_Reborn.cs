@@ -286,13 +286,15 @@ public sealed class SCH_Reborn : ScholarRotation
 		var haveLinkDRK = false;
 		foreach (var p in PartyMembers)
 		{
-			if (p.HasStatus(true, StatusID.FeyUnion_1223) && p.HasStatus(false, StatusID.LivingDead))
+			// Only while healing is held for his death (A306): with the hold off he is healed normally, and once
+			// it releases before expiry the link's healing is what he needs.
+			if (p.HasStatus(true, StatusID.FeyUnion_1223) && p.IsHeldForDeathTrigger())
 			{
 				haveLinkDRK = true;
 				break;
 			}
 		}
-		// remove link if the party member has link and also has Living Dead status
+		// remove link if the party member has link and healing is held for his Living Dead
 		if (AetherpactPvE.CanUse(out act) && haveLinkDRK)
 		{
 			return true;
@@ -843,7 +845,8 @@ public sealed class SCH_Reborn : ScholarRotation
 			{
 				// CanBeHealed() (NoNeedHealingInvuln before 7.5.7.1) returns true when NO protective status is up, so the
 				// negation asked for a tank that is currently invulnerable - the opposite of the
-				// "looks dangerous" this block is written for.
+				// "looks dangerous" this block is written for. It is read as IsUnprotectedForHealing, which does
+				// not count Living Dead while its hold is off (A306).
 				//
 				// IsDead has to be checked explicitly here: a corpse has ratio 0 and, with its
 				// statuses cleared, no protective status either, so it would satisfy both halves
@@ -856,7 +859,7 @@ public sealed class SCH_Reborn : ScholarRotation
 				// ExcogitationNeedsThreat is on. That gate came with A180 on the heal alone, so a tank low
 				// but not in danger - the off-tank after a swap - got Recitation and then no Excogitation,
 				// and its 60 s recast was gone for the next tankbuster (A280).
-				if (!member.IsDead && member.GetForecastHealthRatio(true) < ExcogHeal && member.CanBeHealed()
+				if (!member.IsDead && member.GetForecastHealthRatio(true) < ExcogHeal && member.IsUnprotectedForHealing()
 					&& (!ExcogitationNeedsThreat || member.IsUnderThreat()))
 				{
 					tankNeedsExcog = true;

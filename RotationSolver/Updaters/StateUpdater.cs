@@ -748,7 +748,7 @@ internal static class StateUpdater
 		// than suppressing the flag entirely. This path matters for a tank healing itself while
 		// riding its own invulnerability.
 		var normal = Lerp(healSingle, healSingleHot, ratio);
-		var threshold = StatusHelper.PlayerCanBeHealed()
+		var threshold = ObjectHelper.PlayerIsUnprotectedForHealing()
 			? normal
 			: Math.Min(normal, Service.Config.HealthProtectedRatio);
 
@@ -815,9 +815,10 @@ internal static class StateUpdater
 		// a few percent.
 		//
 		// Math.Min keeps the invariant that a protected target is never healed more readily than an
-		// unprotected one, whatever the two settings are configured to.
+		// unprotected one, whatever the two settings are configured to. Living Dead with its hold
+		// switched off is no protection here: its fall to zero is Walking Dead, not a spared hit (A306).
 		var normal = Lerp(healSingle, healSingleHot, ratio);
-		var threshold = target.CanBeHealed()
+		var threshold = target.IsUnprotectedForHealing()
 			? normal
 			: Math.Min(normal, Service.Config.HealthProtectedRatio);
 

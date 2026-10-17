@@ -7792,6 +7792,58 @@ Ziel haben.
 **Prüfgrad:** statisch (Invoke → GCD → Ability, `ActionSetting.TargetType`), Kompilieren im Prüflauf. Im Spiel nicht
 beobachtet.
 
+### A306 · Living Dead: die Tankbuster-Höhe trägt die Rückhaltung nicht; mit der Option aus wird geheilt (17.10.2026)
+
+TODO-Punkt „Die Rückhaltung liest die gemessene Tankbuster-Höhe nicht" nach seiner Reihenfolge, beide Stellungen von
+`WithholdHealingForLivingDead`.
+
+**Option an – die Tabelle bleibt ungelesen.** Verlängern im Vorlauf (Fall 1d: ein gemessener Tankbuster brächte den
+Träger über `HealthForDyingTanks` vor Ablauf auf 0): Die Tabelle führt nur den höchsten gesehenen Wert
+(`TankbusterReading.Unmitigated`, `Higher`). Liegt der wirkliche Treffer darunter, steht der Träger nach ihm mit einem
+Rest, ungeheilt, und Living Dead läuft ab; heute käme die Heilung vor dem Treffer. Der Gewinn (ein gesparter Heil-GCD
+oder der erhaltene Auslöser) liegt in einem gleich schmalen Band, ohne Untergrenze des Treffers nicht zu trennen.
+Früher freigeben, weil der Treffer nicht tötet: Der übrige Strom kann es weiter, und in Phase 1 kostet Zurückhalten
+kein Überleben. Häufigkeit (Schluss): Ein zu Beginn eines Tankbuster-Casts gedrücktes Living Dead hat beim Einschlag
+um zwei GCDs Rest, die Rückhaltung steht dann meist ohnehin.
+
+**Option aus – Befund.** Der Einstellungstext (seit `8709fdf9b`, 18.09.2026) verspricht „he is healed normally, the
+death never happens" und nennt als Grund für Aus die Notrettung bei `HealthForDyingTanks`. Die Heilkette las Living
+Dead aber als Unverwundbarkeit (`NoNeedHealingStatus` → `CanBeHealed`) und senkte die Schwelle für die erste Hälfte auf
+`HealthProtectedRatio`; A83 (12.09.2026) hatte das als mildere Fassung des Upstream-Verhaltens belassen, vor dem Text.
+Im Kampf: Bei gleicher Voreinstellung beider Werte (0,15) zog die Heilung den Notgeretteten knapp über 15 % und ließ ihn
+dort; der Strom, der ihn auf 15 % gebracht hatte, brachte ihn in Walking Dead, das eine volle Maximalgesundheit in zehn
+Sekunden verlangt. Ein gemessener Tankbuster ist nur ein Fall davon. Zweite Stelle derselben Klasse: `SCH_Reborn` löste
+Aetherpact von jedem Living-Dead-Träger (Upstream `421936701`), auch mit Option aus und nach der Freigabe vor Ablauf –
+eine zweite, abweichende Fassung der Rückhaltung.
+
+**Optionen.** Nullvariante (Text bricht); Absenkung nur bei gemessenem tödlichem Treffer aufheben (deckt Strom und
+ungemessene Treffer nicht); Living Dead aus `NoNeedHealingStatus` nehmen oder `CanBeHealed` ändern (trifft auch die
+Leser „kann ein Treffer ihn jetzt töten": Provoke des Co-Tanks `451d9e90`, eigene Tankbuster-Cooldowns, öffentliche
+Liste, Option an); eigene Lesart der Heilkette (gewählt).
+
+**Umsetzung.** `ObjectHelper.IsUnprotectedForHealing` / `PlayerIsUnprotectedForHealing`: mit Option aus ungeschützt,
+solange keine Unverwundbarkeit außer Living Dead liegt (`StatusHelper.NoNeedHealingStatusBesidesDeathTrigger`), sonst
+`CanBeHealed` über die ganze Liste – ohne eigene Zahl für den Vorlauf, die erste Fassung mit eigenem
+`WillStatusEndGCD(2, …)` hatte `check_fixed_values.py` zu Recht abgewiesen. Gelesen von
+`ShouldHealSingle`, `ShouldHealSelf`, der Zielordnung in `GeneralHealTarget`, `IsInCriticalClass` (Heilziel, Halte der
+Abwehr, Lux Solaris, Triage des Tankbuster-Plans), `AnnouncedHitKills` und `HitDropsBelow`, der Excogitation des
+Gelehrten für einen Tank und Urflackern. Aetherpact wird gelöst, solange `IsHeldForDeathTrigger` gilt.
+`HealthProtectedRatio` sagt in seiner Beschreibung, dass Living Dead der anderen Einstellung folgt; im Aus-Text ist
+„expires as plain damage reduction" ersetzt, weil Living Dead keine Minderung hat (`ActionId.resx` 3638).
+`check_invuln_polarity.py` und `check_heal_target_order.py` prüfen die neue Lesart mit, Selbsttests ergänzt.
+
+**Falsifikation.**
+- *Kein Defekt („normally" heißt wie jede Unverwundbarkeit):* derselbe Satz sagt „the death never happens", und der
+  nächste nennt die Notrettung, in der die Absenkung den Tod herbeiführt. Widerlegt.
+- *Option falsch:* Eine Lesestelle bleibt auf `CanBeHealed`, und Flag und Ordnung widersprechen sich – alle Leser
+  erhoben (`CanBeHealed`, `PlayerCanBeHealed`, `NoNeedHealingStatus`, `StatusID.LivingDead`); die verbleibenden fragen,
+  ob ein Treffer jetzt töten kann. Option an unverändert: Im Todesfenster greift der Halt vor jeder Schwelle, danach
+  meldet `CanBeHealed` den Ablauf ohnehin.
+- *Ausgeliefert, nichts ändert sich:* mit Option an; über der normalen Schwelle; mit den Beiruta-Heilern, die über ihre
+  eigene Liste zurückhalten (fremde Rotationen, Konzept 09).
+
+**Prüfgrad:** statisch, beide Prüfskripte mit Selbsttest, Kompilieren im Prüflauf. Im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

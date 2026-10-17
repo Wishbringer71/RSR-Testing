@@ -88,6 +88,18 @@ goes for Esuna:
 RSR no longer cleanses a member another healer is already casting Esuna on, unless more than that one effect is
 left.
 
+## Living Dead with the hold off: the dark knight is healed normally
+
+With `Withhold healing under Living Dead` off - the default - its text promises that the dark knight is healed
+normally and the death never happens. RSR still treated Living Dead like any invulnerability and healed him only
+below `Heal a target under an invulnerability only below this HP` for the first half of the effect. When RSR fired
+Living Dead as a last-ditch save at 15 %, the heal pulled him just above that line and left him there, and the damage
+that had brought him down took him to 0: Walking Dead, with his whole maximum HP to heal within ten seconds. With the
+hold off, Living Dead no longer counts as protection anywhere RSR decides on healing - threshold, heal order, the
+members about to fall, healing ahead of an announced hit, Excogitation and Nascent Flash - and the Scholar no longer
+breaks Aetherpact on him. With the hold on, nothing changes, except that the Scholar keeps the link once the hold has
+released before expiry. The invulnerability setting now says that Living Dead follows the other one.
+
 ## Emergency abilities pick their own targets again
 
 A target rule set by the GCD - for a heal, a cleanse, a provoke, a raise or a defence - stayed in force for the

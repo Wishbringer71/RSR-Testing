@@ -693,6 +693,27 @@ public static class StatusHelper
 	];
 
 	/// <summary>
+	/// <see cref="NoNeedHealingStatus"/> without <see cref="DeathTriggeredStatus"/>: the protection the heal
+	/// decision reads while the death-triggered hold is switched off (ObjectHelper.IsUnprotectedForHealing).
+	/// Declared after both lists, which it is built from.
+	/// </summary>
+	internal static StatusID[] NoNeedHealingStatusBesidesDeathTrigger { get; } = Without(NoNeedHealingStatus, DeathTriggeredStatus);
+
+	private static StatusID[] Without(StatusID[] list, StatusID[] removed)
+	{
+		List<StatusID> kept = [];
+		foreach (var status in list)
+		{
+			if (Array.IndexOf(removed, status) < 0)
+			{
+				kept.Add(status);
+			}
+		}
+
+		return [.. kept];
+	}
+
+	/// <summary>
 	/// Whether <paramref name="battleChara"/> is inside a death-triggered window that still has room
 	/// for the death to arrive - that is, <see cref="DeathTriggeredStatus"/> is up and not about to
 	/// expire.

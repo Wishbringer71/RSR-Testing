@@ -344,8 +344,9 @@ nur, wo der Treffer gefährdet.
 Heilschwelle entfernt, weil sie keine Gesundheit herstellt — ein Tank bei 40 % hinter einem Schild steht bei
 40 %, sobald der Schild ungenutzt abläuft. Hier ist die Frage eine andere: übersteht er **diesen** Treffer.
 Gegen ihn wird die Barriere verbraucht und fängt ihn ab; sie herauszurechnen hieße, eine Heilung zu fordern,
-die der Schild bereits bezahlt hat. Ungeschützt heißt ohne Unverwundbarkeit über zwei GCDs (`CanBeHealed`):
-Ein Tank unter Hallowed Ground steht absichtlich tief.
+die der Schild bereits bezahlt hat. Ungeschützt heißt ohne Unverwundbarkeit über zwei GCDs, wie die Heilkette es liest
+(`IsUnprotectedForHealing`: Living Dead mit abgeschalteter Rückhaltung zählt nicht, Konzept 09): Ein Tank unter
+Hallowed Ground steht absichtlich tief.
 
 **Die Regel stellt die Frage selbst** (`StateUpdater.AnnouncedAreaCastIsUpForHealing`), statt einen anderswo
 abgelegten Wert zu lesen: Sonst hinge sie daran, ob der Verteidigungszweig im selben Bild vorher lief — und der

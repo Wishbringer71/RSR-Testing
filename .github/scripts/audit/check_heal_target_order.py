@@ -153,7 +153,9 @@ def check_helper(text):
                         'fastest is judged by the health they still have')
     if re.search(r'HealthForDyingTanks', body) is None:
         problems.append('IsInCriticalClass no longer reads HealthForDyingTanks')
-    if re.search(r'(?:CanBeHealed|NoNeedHealingInvuln)\(\)', body) is None:
+    # IsUnprotectedForHealing is the heal chain's reading of the same test (Living Dead not counted
+    # while its hold is off, A306).
+    if re.search(r'(?:CanBeHealed|NoNeedHealingInvuln|IsUnprotectedForHealing)\(\)', body) is None:
         problems.append('IsInCriticalClass no longer leaves invulnerable members out')
     return problems
 
@@ -310,6 +312,9 @@ def self_test():
     '''
     if check_helper(helper_good):
         raise AssertionError('the intact critical class was rejected: %s' % check_helper(helper_good))
+    heal_chain = helper_good.replace('b.CanBeHealed()', 'b.IsUnprotectedForHealing()')
+    if check_helper(heal_chain):
+        raise AssertionError('the heal chain\'s reading was rejected: %s' % check_helper(heal_chain))
     for broken, expected in (
         (helper_good.replace('GetForecastEffectiveHpPercent', 'GetEffectiveHpPercent'), 'forecast'),
         (helper_good.replace('Service.Config.HealthForDyingTanks', 'Threshold'), 'HealthForDyingTanks'),

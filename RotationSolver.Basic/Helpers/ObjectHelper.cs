@@ -3956,10 +3956,11 @@ public static class ObjectHelper
 	/// invulnerability, and at or below <c>HealthForDyingTanks</c> in effective health carried forward
 	/// to the moment a heal begun now would land. One definition for every reader - the heal target
 	/// order, the defense holds and Lux Solaris - so they cannot disagree about who is in danger.
+	/// Unprotected as the heal decision reads it (<see cref="IsUnprotectedForHealing"/>).
 	/// </summary>
 	internal static bool IsInCriticalClass(this IBattleChara battleChara)
 	{
-		return battleChara.IsInCriticalClass(battleChara.CanBeHealed());
+		return battleChara.IsInCriticalClass(battleChara.IsUnprotectedForHealing());
 	}
 
 	/// <summary>
@@ -4320,6 +4321,51 @@ public static class ObjectHelper
 		return Service.Config != null
 			&& Service.Config.WithholdHealingForLivingDead
 			&& StatusHelper.PlayerInDeathTriggerWindow();
+	}
+
+	/// <summary>
+	/// Whether this member counts as unprotected for the heal decision - its threshold, the heal target
+	/// order, the critical class and the heal-first reading of an announced hit. That is
+	/// <see cref="StatusHelper.CanBeHealed"/>, except that with <c>WithholdHealingForLivingDead</c> off
+	/// Living Dead does not count as protection.
+	/// <para>
+	/// Living Dead does not spare its bearer the fall to zero, it turns it into Walking Dead, after which
+	/// healing worth his whole maximum HP has to go in within ten seconds or he is KO'd (ActionId.resx,
+	/// action 3638). The setting's text promises for Off that he is healed normally and the death never
+	/// happens. Read as an invulnerability, his threshold dropped to HealthProtectedRatio for the first
+	/// half of the effect, so a member RSR had just pulled above it at the last-ditch line - the very use
+	/// the text names as the reason for Off - was left there, and the next hit converted him (A306). With
+	/// the setting on, the hold (<see cref="IsHeldForDeathTrigger"/>) governs Living Dead, and this reads
+	/// as CanBeHealed.
+	/// </para>
+	/// <para>
+	/// The readers that ask whether a hit can kill him now keep CanBeHealed: the co-tank provoke, which
+	/// does not pull the enemy off a tank under Living Dead (451d9e90), and the own tankbuster cooldowns.
+	/// The setting speaks of healing.
+	/// </para>
+	/// </summary>
+	/// <remarks>
+	/// With the setting off, a member carrying no other invulnerability is unprotected; one who carries
+	/// another beside Living Dead is read by CanBeHealed over the whole list, as before.
+	/// </remarks>
+	public static bool IsUnprotectedForHealing(this IBattleChara battleChara)
+	{
+		return (Service.Config != null && !Service.Config.WithholdHealingForLivingDead
+				&& !battleChara.HasStatus(false, StatusHelper.NoNeedHealingStatusBesidesDeathTrigger))
+			|| battleChara.CanBeHealed();
+	}
+
+	/// <inheritdoc cref="IsUnprotectedForHealing(IBattleChara)"/>
+	public static bool PlayerIsUnprotectedForHealing()
+	{
+		if (Player.Object == null)
+		{
+			return false;
+		}
+
+		return (Service.Config != null && !Service.Config.WithholdHealingForLivingDead
+				&& !StatusHelper.PlayerHasStatus(false, StatusHelper.NoNeedHealingStatusBesidesDeathTrigger))
+			|| StatusHelper.PlayerCanBeHealed();
 	}
 
 	/// <summary>

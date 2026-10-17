@@ -1000,11 +1000,14 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	// one, and it governs the automatic decision only: a manual heal command and the Doom
 	// short-circuit still reach a protected target above this value, which is the point of both.
 	//
-	// Living Dead is the exception and this setting does not apply to it: with
-	// WithholdHealingForLivingDead on, the bearer is held in full rather than merely demoted,
-	// because there the death is the trigger and not the disaster. That hold releases on its own
-	// clock, measured on Living Dead alone (StatusHelper.InDeathTriggerWindow).
+	// Living Dead is the exception and this setting does not apply to it in either position of
+	// WithholdHealingForLivingDead. On, the bearer is held in full rather than merely demoted,
+	// because there the death is the trigger and not the disaster; that hold releases on its own
+	// clock, measured on Living Dead alone (StatusHelper.InDeathTriggerWindow). Off, he is healed
+	// like an unprotected member (ObjectHelper.IsUnprotectedForHealing): his fall to zero is not a
+	// spared hit but Walking Dead, and that setting's text promises he is healed normally (A306).
 	[UI("Heal a target under an invulnerability only below this HP.",
+		Description = "Living Dead follows \"Withhold healing under Living Dead\" instead.",
 		Filter = HealingActionCondition, Section = 1)]
 	[Range(0, 1, ConfigUnitType.Percent, 0.02f)]
 	public float HealthProtectedRatio { get; set; } = 0.15f;
@@ -1031,8 +1034,8 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 			+ "healing totalling his maximum HP has to go in within ten seconds or he is KO'd for real - "
 			+ "he contributes to that himself with every spell and weaponskill, and a Benediction covers "
 			+ "the rest on its own.\n"
-			+ "Off: he is healed normally, the death never happens, and Living Dead expires as plain "
-			+ "damage reduction.\n"
+			+ "Off: he is healed normally, the death never happens, and Living Dead runs out without "
+			+ "turning into Walking Dead.\n"
 			+ "Only switch this on if your group plays it that way. RSR also fires Living Dead by itself "
 			+ "as a last-ditch save on a dying tank, and in that use the death is not wanted at all.",
 		Filter = HealingActionCondition, Section = 1)]

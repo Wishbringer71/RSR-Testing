@@ -20,7 +20,8 @@ Abschnitt C.
   provoziert, wenn er den nächsten Tankbuster genommen hat und du wieder sicher bist. Option, ab Werk an.
 - **Schutzmechaniken mit Auslöser und die Heilung:** Geschützte Tanks sind nachrangige, nicht ausgeschlossene
   Heilziele. Unter Living Dead hält RSR Heilung zurück, solange der Tod noch rechtzeitig kommt (Option, ab Werk aus);
-  für The Blackest Night gibt es keine Rückhaltung.
+  mit der Option aus wird der Träger geheilt wie ein Ungeschützter, weil sein Fall auf 0 Walking Dead ist und kein
+  verschonter Treffer. Für The Blackest Night gibt es keine Rückhaltung.
 
 ## Rangordnung
 
@@ -1304,9 +1305,23 @@ zurückhalten" ist aus den vorhandenen Größen **nicht herstellbar**:
   zu.
 
 Für einen **gewirkten, gemessenen** Tankbuster gibt es einen Höchstwert (Tankbuster-Tabelle, Konzept 13),
-den der Plan des Tanks rechnet (Abschnitt „Gemessener Tankbuster: das geringste Mittel"). Die Living-Dead-Regel liest
-ihn nicht; ob sie es sollte, ist offen (`TODO.md`). Für Marker, Vorhersagen und nie gemessene Aktionen bleibt die
-Prüfung unmöglich.
+den der Plan des Tanks rechnet (Abschnitt „Gemessener Tankbuster: das geringste Mittel"). **Die Living-Dead-Regel
+liest ihn nicht, und das ist entschieden (A306).** In keiner Richtung trägt er eine Entscheidung der Rückhaltung:
+
+- *Verlängern* — im Vorlauf über `HealthForDyingTanks` weiter zurückhalten, weil der Tankbuster ihn vor Ablauf auf 0
+  brächte (Fall 1d): Die Tabelle führt nur den **höchsten** gesehenen Wert. Sie sagt „kann töten", nicht „tötet". Für
+  den Plan ist das die sichere Richtung, er nimmt eher zu viel Abwehr; für die Rückhaltung die gefährliche. Liegt der
+  wirkliche Treffer unter der Gesundheit, steht der Träger nach ihm mit einem Rest, ungeheilt, und Living Dead läuft
+  im selben oder nächsten GCD ab – heute wäre die Heilung vor dem Treffer gekommen. Der Gewinn steht dem nur in einem
+  gleich schmalen Band gegenüber: Wo die Heilung ihn ohnehin nicht über den Treffer hebt, spart er einen Heil-GCD;
+  wo sie es täte, bleibt der Auslöser erhalten. Beides ohne Untergrenze des Treffers nicht zu trennen.
+- *Früher freigeben* — weil der Tankbuster ihn nicht auf 0 bringt: Der übrige Schadensstrom kann es weiter, und in
+  Phase 1 kostet das Zurückhalten kein Überleben, solange der Vorlauf rechtzeitig freigibt.
+- *Mit der Option aus* — die Absenkung aufheben, weil ein gemessener Treffer ihn in Walking Dead brächte: in der
+  allgemeinen Lösung enthalten. Mit der Option aus gilt Living Dead für die Heilung gar nicht mehr als Schutz
+  (Abschnitt „Die Living-Dead-Rückhaltung"), gemessen oder nicht.
+
+Für Marker, Vorhersagen und nie gemessene Aktionen bleibt die Prüfung ohnehin unmöglich.
 
 Daraus folgt **nicht**, die Rückhaltung unter Living Dead freizugeben. Dass Heilung manchmal nichts
 nützt, macht Zurückhaltung nicht besser, nur nicht schlechter — und welcher Fall
@@ -1350,6 +1365,10 @@ Rückhaltefall (Living Dead, Phase 1), dem drei Aufhebungen (1b, 1c samt Ausfüh
 gegenüberstehen; eine Lage ist reine Ressourcenschonung ohne Risiko (4b). Eine Bedingung, die häufiger nicht gilt als gilt,
 ist kein Leitmotiv: Der belastbare Kern bleibt die Richtigstellung der Zielwahl, und
 der einzige verbliebene Sonderfall ist Living Dead.
+
+Die Zeilen 1 bis 3 gelten mit `WithholdHealingForLivingDead` an. Mit der Option aus ist der Tod nicht gewollt, und
+Living Dead ist für die Heilung kein Schutz: geheilt wird nach normaler Regel, wie in Zeile 12 (A306). Die Zeilen 4
+bis 4b gelten in beiden Stellungen.
 
 ### Gebaut
 
@@ -1400,6 +1419,7 @@ herausgeheilt und die Fähigkeit ist umsonst gezündet. Erfasst sind deshalb:
 | Heilflag für den Spieler selbst | `StateUpdater.ShouldHealSelf` |
 | Kandidatenliste, Rollenpässe, Auswahl des am schwersten Verletzten, Tank-Haltungs-Fallback und `partyMembers[0]`-Fallback | Eingangsfilter von `ActionTargetInfo.FindHealTarget` |
 | Selbstabkürzung, die die Kandidatenliste umgeht | eigene Prüfung in `GeneralHealTarget` |
+| Aetherpact des Gelehrten, dessen Heilstrom nach dem Start ohne Zielwahl weiterläuft | `SCH_Reborn.HealSingleAbility` löst die Verbindung, solange `IsHeldForDeathTrigger` gilt; bis A306 bei jedem Living Dead, auch mit der Option aus und nach der Freigabe vor Ablauf |
 
 Der Eingangsfilter ist der tragende Teil: Das Heilflag kann von einem **anderen**
 Gruppenmitglied gesetzt worden sein, und liegt dieses außerhalb der Reichweite der
@@ -1423,28 +1443,32 @@ Die Option ist nötig, weil RSR Living Dead selbst als Notrettung bei
 verlangt danach eine volle Maximalgesundheit an Heilung in zehn Sekunden.
 
 
-**Der Hebel ist die Option, nicht der Grenzwert.** Zwei Mechanismen, je nach Stellung von
-`WithholdHealingForLivingDead`:
-- **Option aus:** `StateUpdater.ShouldHealSingle` senkt die Schwelle unter einem Schutzstatus auf
-  `HealthProtectedRatio` (0,15), solange Living Dead mehr als zwei GCDs Restzeit hat; danach kehrt die
-  normale Schwelle zurück, unabhängig von der Gesundheit.
+**Der Hebel ist die Option, nicht der Grenzwert.** Je nach Stellung von `WithholdHealingForLivingDead`:
 - **Option an:** Der Träger wird gar nicht geheilt, solange das Todesfenster läuft
   (`IsHeldForDeathTrigger`). Das Fenster endet zwei GCDs vor Ablauf, außer der Träger steht auf oder
   unter `HealthForDyingTanks` (`DeathStillLikely`, A88) — dann läuft es bis zum Ablauf.
+- **Option aus:** Der Träger wird geheilt wie ein Ungeschützter: Schwelle, Zielordnung, kritische Klasse und
+  die Vorausheilung vor einem angekündigten Treffer lesen `ObjectHelper.IsUnprotectedForHealing`, das Living Dead
+  dann nicht als Schutz zählt (A306). Der Einstellungstext verspricht für Aus „he is healed normally, the death
+  never happens", und er nennt als Grund für Aus die Notrettung, mit der RSR Living Dead bei `HealthForDyingTanks`
+  selbst zündet. Bis A306 las die Heilkette Living Dead auch dann als Unverwundbarkeit und senkte die Schwelle
+  für die erste Hälfte auf `HealthProtectedRatio` (0,15). Bei gleicher Voreinstellung beider Werte zog die
+  Heilung den Notgeretteten knapp über 15 % und ließ ihn dort; der Strom, der ihn zuvor auf 15 % gebracht hatte,
+  brachte ihn auf 0 und in Walking Dead, das dann eine volle Maximalgesundheit an Heilung in zehn Sekunden
+  verlangt. Ein Fall auf 0 unter Living Dead ist kein verschonter Treffer wie unter Holmgang, sondern der
+  Übergang in diese Frist.
 
-`HealthProtectedRatio` anzuheben verschöbe den ersten Mechanismus und heilte **früher** im Fenster,
-also gerade den Tod weg, auf den die Regel wartet. Wer den Todeseffekt will, schaltet
-`WithholdHealingForLivingDead` ein; der Grenzwert ist nur für die
-übrigen Invulnerabilitäten der Liste maßgeblich (Holmgang, Superbolide, Hallowed Ground), bei denen
-kein Tod gewollt ist. Upstream heilt ein Ziel unter Invulnerabilität gar nicht; die Absenkung ist die
-mildere Fassung. Ein zu früh gesetzter Living Dead (vom Auftraggeber bei 70 % im Wall-to-Wall
-beobachtet) kostet damit zehn Sekunden automatischer Heilung ohne Anlass.
+`HealthProtectedRatio` gilt damit für Living Dead in keiner Stellung, nur für die übrigen Invulnerabilitäten der
+Liste (Holmgang, Superbolide, Hallowed Ground); seine Beschreibung sagt das. Die Leser, die fragen, ob ein Treffer
+ihn jetzt töten kann, lesen weiter `CanBeHealed`: der Provoke des Co-Tanks, der den Gegner nicht von einem Tank unter
+Living Dead zieht (`451d9e90`), und die eigenen Tankbuster-Cooldowns (`TankbusterOnMeWithin`, Tankbuster-Plan). Die
+Einstellung spricht von Heilung.
 
 **Welche Abwehr des Dunkelritters die Heilentscheidung berührt** (erhoben A141):
 
 | Fähigkeit | Pfad | Wirkung auf die Heilschwelle |
 |---|---|---|
-| Living Dead | `NoNeedHealingStatus` → `HealthProtectedRatio` | 0,15 statt der normalen Schwelle, wie oben |
+| Living Dead | Option an: `IsHeldForDeathTrigger`; Option aus: keine (`IsUnprotectedForHealing`) | an: keine Heilung im Todesfenster; aus: die normale Schwelle, wie oben |
 | Walking Dead | in `NoNeedHealingStatus` auskommentiert | keine — richtig, dort ist Heilung überlebensnotwendig |
 | The Blackest Night | Schildanteil des Spiels (`ShieldPercentage`) im effektiven Puffer | keine auf die Schwelle, seit die Schildanrechnung entfernt ist (A85); der Schild zählt im Puffer der Vorausschau und der Sterbegefährdung (`GetEffectiveHp`) |
 | Shadow Wall, Rampart | `RampartStatus` | keine: gelesen als `StatusProvide`, von `HasMajorMitigation` und von `HoldReprisalForRaidwide`, jeweils für den eigenen Charakter |

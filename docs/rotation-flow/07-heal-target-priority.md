@@ -269,7 +269,9 @@ das Maß, das für diese Lage das richtige ist; bei Gleichstand die Rolle.**
 unverändert: Wer eine Unverwundbarkeit trägt, wird nach hinten gestellt, nicht ausgeschlossen. Ohne
 diesen äußersten Schlüssel kehrt sich Klasse 1 gegen sich selbst — ein Krieger der Dunkelheit unter
 Superbolide steht auf 1 Trefferpunkt, hätte also die wenigsten absoluten Punkte von allen und stünde
-vor jedem echten Notfall. Die Klassenordnung wirkt innerhalb der Ungeschützten.
+vor jedem echten Notfall. Die Klassenordnung wirkt innerhalb der Ungeschützten. Living Dead mit abgeschalteter
+Rückhaltung zählt dabei nicht als Unverwundbarkeit (`ObjectHelper.IsUnprotectedForHealing`, Konzept 09, A306): Sein
+Fall auf 0 ist Walking Dead, kein verschonter Treffer.
 
 **Die Gesundheitsschranke in Klasse 2 ist nicht schmückendes Beiwerk, sondern trägt die Klasse.**
 Ohne sie wäre jeder Tank dauerhaft in Klasse 2, denn er trägt seine Tankhaltung immer — und ein Tank

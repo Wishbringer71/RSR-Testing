@@ -3477,7 +3477,7 @@ public struct ActionTargetInfo(IBaseAction action)
 					// Forecast health rather than current, so the ordering below answers "who will be
 					// worst off when a heal lands" instead of "who is worst off now". With the
 					// setting off the two are the same number.
-					ranked.Add((o, o.CanBeHealed(), o.GetForecastHealthRatio(instant)));
+					ranked.Add((o, o.IsUnprotectedForHealing(), o.GetForecastHealthRatio(instant)));
 				}
 
 				// Unprotected before protected, then lowest health first inside each group.

@@ -8,21 +8,20 @@ Nach Wichtigkeit, also nach der Wirkung im Kampf: Sicherheit der Gruppe vor Scha
 Wahrscheinlichkeit, in seinem Profil (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop
 bearbeiten"). Stand 17.10.2026; fortgeschrieben mit jedem Befund.
 
-1. Living Dead: Die Rückhaltung liest die gemessene Tankbuster-Höhe nicht.
-2. Tankbuster-Plan: Stun sperrt ein Glied einen GCD; Druck nach dem Snapshot möglich. (nach hinten gerückt: groß, und im Tankbuster-Fenster selten; A305)
-3. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder ohne Messung weiter nur reaktiv.
-4. `IsValid()` prüft nicht, ob ein Objekt noch lebt – möglicher Absturz.
-5. Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen – Bildausfälle bis 70 ms.
-6. Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle.
-7. Tankbuster-Tabelle misst auch an Nicht-Tanks.
-8. Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn – Schaden, nicht Sicherheit.
-9. Gelehrter: Recitation ohne Rückfall vor Ablauf.
-10. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
-11. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
-12. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
-13. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
-14. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
-15. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
+1. Tankbuster-Plan: Stun sperrt ein Glied einen GCD; Druck nach dem Snapshot möglich. (nach hinten gerückt: groß, und im Tankbuster-Fenster selten; A305)
+2. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder ohne Messung weiter nur reaktiv.
+3. `IsValid()` prüft nicht, ob ein Objekt noch lebt – möglicher Absturz.
+4. Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen – Bildausfälle bis 70 ms.
+5. Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle.
+6. Tankbuster-Tabelle misst auch an Nicht-Tanks.
+7. Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn – Schaden, nicht Sicherheit.
+8. Gelehrter: Recitation ohne Rückfall vor Ablauf.
+9. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
+10. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
+11. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
+12. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
+13. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
+14. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
 
 Warten auf Daten, nicht bearbeitbar: Treffer aus einer Quelle, die die Objekttabelle nicht hält (Protokoll); Samurai
 Feint und Tengentsu (Protokoll eines Samurai); BossModReborn-FATE-Modul in Occult Crescent (Adressat BossModReborn).
@@ -169,17 +168,6 @@ gemeinte Größe.
 - *Im Kampf:* Fenster öffnen bis zu einen GCD zu spät, und Glieder mit kurzer Wirkdauer fallen ganz heraus – zu viel
   Mittel. Der Rückfall „alles" beginnt einen GCD vor dem Treffer statt bei den letzten nötigen Druckplätzen.
 - *Offen:* ein Loop über alle Stellen zusammen, mit Modell. Erst Konzept, dann Code.
-
-### Living Dead: Die Rückhaltung liest die gemessene Tankbuster-Höhe nicht · N
-
-**Befund (12.10.2026, Konzept 09, „Warum eine Überlebensprüfung diese Zusage nicht tragen kann"):** Die Uhrregel hält
-Heilung unter Living Dead zurück, solange der Tod noch rechtzeitig kommt, gemessen an `HealthForDyingTanks` und der
-Restzeit. Für einen gewirkten, gemessenen Tankbuster kennt die Tankbuster-Tabelle inzwischen den Höchstwert; ob der
-Treffer den Träger vor Ablauf auf 0 bringt, wäre damit rechenbar. *Im Kampf:* Heute kann die Regel einen Träger
-zurückhalten, den der kommende Tankbuster nicht auf 0 bringt, oder ihn vor dem Tankbuster heilen, der ihn sonst in
-Walking Dead brächte. **Offen:** voller Loop, ob die Regel den Wert lesen soll.
-
-**Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 
 ### Tankwechsel von der anderen Seite: Herausforderung, wenn der Haupttank eine Verwundbarkeit trägt · N
 
