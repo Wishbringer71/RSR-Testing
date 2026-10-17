@@ -8,13 +8,12 @@ Nach Wichtigkeit, also nach der Wirkung im Kampf: Sicherheit der Gruppe vor Scha
 Wahrscheinlichkeit, in seinem Profil (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop
 bearbeiten"). Stand 17.10.2026; fortgeschrieben mit jedem Befund.
 
-1. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
-2. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
-3. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
-4. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
-5. Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans (Beleg zu BossModReborn zuerst).
-6. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
-7. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
+1. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
+2. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
+3. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
+4. Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans (Beleg zu BossModReborn zuerst).
+5. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
+6. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
 
 Warten auf Daten, nicht bearbeitbar: Aktualisierungskosten je Teilschritt (Protokoll „update cost by step“, A310); Tankbuster nach einem Marker ohne Wirken (Protokoll „no cast taken for it“, A308); Treffer aus einer Quelle, die die Objekttabelle nicht hält (Protokoll); Samurai
 Feint und Tengentsu (Protokoll eines Samurai); BossModReborn-FATE-Modul in Occult Crescent (Adressat BossModReborn).
@@ -110,27 +109,6 @@ Abklingzeit, ohne den Treffer zu ändern. **Vor dem Code offen:** ob die Zeitang
 das Zufügen meint; ohne diesen Beleg ist die Frist dort nicht anwendbar.
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
-
-### Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt · N
-
-**Befund (A269):** Der Plan setzt an mehreren Stellen einen GCD ein, ohne dass die Zeit am Spiel geprüft wurde. Gemeint
-sind je verschiedene Größen:
-- *Horizont H = R + GCD* („Eintreffen des Treffers"): Der Snapshot liegt am Ende des Wirkbalkens (Community-Beleg),
-  für Holmgang zählt das Zufügen. Eine Minderung muss also bis zum Snapshot stehen, nicht einen GCD länger.
-  - Daran hängen: Fenster („Wirkdauer weniger ein GCD"), Invariante 5 (Wirkdauer über zwei GCD) und die
-    Erneuerungsschwelle („mehr als Wirkdauer weniger ein GCD übrig").
-- *Letzter GCD als Reserve für den Rückfall* (Z2: „im letzten GCD nichts, wenn ein Glied fehlt"; Zurückhalten bis
-  R > GCD): Gebraucht werden Druckplätze bis zur Frist. Die Plätze rechnet der Plan seit A307 für die Bündelwahl
-  (Konzept 09, „Spielerweite Sperre und Frist", Regel 5); das Zurückhalten endet weiter einen GCD vor dem Einschlag.
-- *Bestätigung verfällt nach einem GCD:* Gemeint ist die Laufzeit von Druck bis Bestätigung, die gemessen werden kann.
-- *Verweigerung sperrt einen GCD:* Gemeint ist das Ende der Ursache. Unter einer Sperre jeder Fähigkeit ist das seit
-  A307 gelöst (keine Ablehnung notiert); für MP, Reichweite und eigene Prüfungen der Rotation bleibt der GCD.
-
-Ausgenommen ist die Living-Dead-Uhr (zwei GCD Vorlauf): Dort ist der GCD die Zeit, die eine Heilung braucht, also die
-gemeinte Größe.
-- *Im Kampf:* Fenster öffnen bis zu einen GCD zu spät, und Glieder mit kurzer Wirkdauer fallen ganz heraus – zu viel
-  Mittel. Der Rückfall „alles" beginnt einen GCD vor dem Treffer statt bei den letzten nötigen Druckplätzen.
-- *Offen:* ein Loop über alle Stellen zusammen, mit Modell. Erst Konzept, dann Code.
 
 ### Tankwechsel von der anderen Seite: Herausforderung, wenn der Haupttank eine Verwundbarkeit trägt · N
 

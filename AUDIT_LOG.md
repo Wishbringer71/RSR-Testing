@@ -8103,6 +8103,30 @@ nehmen; dann greift der Rückfall nie.
 
 **Prüfgrad:** statisch, Prüfskripte, Kompilieren im Prüflauf.
 
+### A315 · Tankbuster-Plan: die GCD-Größen bleiben als Sicherheitsmarge (17.10.2026)
+
+TODO-Punkt „Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt" (A269) nach seiner Reihenfolge.
+
+**Gemessen:** In seinen Protokollen als Krieger (13.10.2026) kam der Tankbuster 0,26 bis 0,39 s nach dem Ende des
+Wirkbalkens an (drei Treffer, Zeile „tankbuster coming at you" gegen „hit you"). Für einen einzelnen Treffer wäre H = R
+also genug.
+
+**Entschieden: keine Änderung.** Je Größe:
+- *Horizont H = R + GCD:* Der GCD deckt mehrfache und nachlaufende Treffer eines Tankbusters (Konzept 09) und Holmgang,
+  das beim Zufügen zählt. Ein kürzerer Horizont spart auf Stufe 3 der Rangordnung (Abklingzeit, kurze Glieder) und
+  riskiert Stufe 1; eine gelernte Ankunftszeit je Aktion fehlte beim ersten Auftreten ohnehin.
+- *Zurückhalten endet im letzten GCD:* Sicherheitsnetz neben den Druckplätzen (A307), die die Bündelwahl seither
+  begrenzen.
+- *Bestätigung verfällt nach einem GCD:* Ein Ablauf an der gemessenen Laufzeit (A307) zählte einen verspätet bestätigten
+  Druck als verloren; bei Aktionen mit Ladungen (Oblation) gingen dann zwei hinaus.
+- *Ablehnung für MP, Reichweite, eigene Prüfung:* Das Spiel nennt kein Ende; unter Sperre ist es seit A307 gelöst.
+
+**Falsifikation.** *Kein Defekt:* gilt – die Größen irren zu viel Mittel, die sichere Richtung. *Option falsch:* Ein
+mehrfach treffender Tankbuster ist im Modell nicht abgebildet; die Entscheidung stützt sich auf die Herleitung, nicht
+auf das Modell. *Ausgeliefert, nichts ändert sich:* entfällt.
+
+**Prüfgrad:** statisch, Protokollauswertung (drei Treffer).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

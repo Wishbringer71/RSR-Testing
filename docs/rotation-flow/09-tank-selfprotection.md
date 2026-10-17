@@ -178,9 +178,17 @@ Wirken zurück, wenn die Deckung über jedes Wirken reicht.
    meisten für den nächsten Tankbuster (meine Lesart von „geringstes notwendiges Mittel", nicht seine Regel). Reicht
    der Treffer schon ohne alles nicht zum Tod, ist das Bündel leer.
 
-**H, der Horizont:** Restzeit des Wirkens R plus ein GCD für das Eintreffen des Treffers. *Offen (`TODO.md`, „der GCD
-als Ersatz"):* Nach dem Snapshot-Beleg (Mechanik) genügt das Ende des Wirkens samt Laufzeit; H ist bis zu einen GCD
-zu streng, die Richtung ist zu viel Mittel.
+**H, der Horizont:** Restzeit des Wirkens R plus ein GCD für das Eintreffen des Treffers. **Entschieden (A315): bleibt.**
+Nach dem Snapshot-Beleg (Mechanik) genügte für einen einzelnen Treffer das Ende des Wirkens; in seinen Protokollen als
+Krieger kam er 0,26 bis 0,39 s nach dem Ende des Wirkbalkens (drei Treffer, 13.10.2026). Der GCD darüber ist eine
+Sicherheitsmarge, kein Ersatz für eine unbekannte Zeit: Er deckt einen Tankbuster mit mehreren oder nachlaufenden
+Treffern („Ein Tankbuster ist nicht ein Einschlag", Abschnitt „Living Dead ist ein Zeitproblem") und Holmgang, dessen
+Untergrenze beim Zufügen zählt. Sein Preis liegt auf Stufe 3 der Rangordnung – Fenster öffnen bis zu einen GCD später,
+kurze Glieder brauchen eine Wirkdauer über zwei GCD –, ein kürzerer Horizont riskierte Stufe 1. Dasselbe gilt für die
+übrigen GCD-Größen des Plans: das Ende des Zurückhaltens im letzten GCD (Sicherheitsnetz neben den Druckplätzen, A307),
+die Bestätigung, die nach einem GCD verfällt (ein Ablauf an der gemessenen Laufzeit zählte einen verspätet bestätigten
+Druck als verloren und drückte bei Ladungen doppelt), und die Ablehnung für MP oder Reichweite, deren Ende das Spiel
+nicht nennt.
 
 **Überlebt heißt: über der Linie** (A304). Ein Bündel reicht nur, wenn es den Tank über „The HP% for tank to use
 invulnerability" (`HealthForDyingTanks`, ab Werk 15 %) zurücklässt. An oder unter dieser Linie zieht jeder der vier Tanks
@@ -445,7 +453,7 @@ magisch, Barriere als Positionswerte; dazu als nicht-positionale Eigenschaften e
 ### Grenzen
 
 **Die Rechnung irrt zu viel Mittel,** wo der Höchstwert über dem typischen Treffer liegt, eine Heilung vor dem
-Einschlag nicht zählt, Zusatzwirkungen fehlen, H einen GCD zu streng ist und ein Wert unter Verwundbarkeit mit mehr
+Einschlag nicht zählt, Zusatzwirkungen fehlen, H die Sicherheitsmarge eines GCD trägt und ein Wert unter Verwundbarkeit mit mehr
 Stapeln gemessen wurde als jetzt liegen (nur in der Wechsellage). Das kostet Abklingzeit, nicht Leben – im
 schlimmsten Fall eine Unverwundbarkeit (240 bis 420 s) für einen Treffer, den Minderung getragen hätte; sie fehlt dann
 beim nächsten wirklich tödlichen. Umgekehrt irrt die Messung fast nur nach unten (Konzept 13): Ein Urteil „tödlich
@@ -513,7 +521,7 @@ Tankbuster zwei braucht, und dann ist der nächste mit der Unverwundbarkeit oder
   - Ausgelassen: ein langer Stun, bevor der Abstand der Drücke gemessen ist (Grenze oben).
   - Nicht abgedeckt, dort trägt nur die Herleitung: ein zweites Wirken und BossModReborn-Vorhersagen, Befehle, die
     Unverwundbarkeit nach einem Bündel bei fallenden LP, Minderung je Schadensart, die Kopplung über Eid, die anderen
-    drei Tanks (gleiche Rechnung, andere Zahlen). Das Modell übernimmt H = R + GCD (`TODO.md`, „der GCD als Ersatz").
+    drei Tanks (gleiche Rechnung, andere Zahlen). Das Modell übernimmt H = R + GCD (Abschnitt „Die Rechnung", A315).
 - `DefenseTrace.log` schreibt je Wirken auf dich „tankbuster coming at you: … takes …% … you have …%", je Änderung des
   Plans „tankbuster plan for … : Rampart + Damnation, leaving …% against …%" (oder „survivable as it stands, nothing
   spent", „the invulnerability already covers it, nothing else", „nothing less survives it: the invulnerability",
