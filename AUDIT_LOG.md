@@ -7844,6 +7844,57 @@ Gelehrten für einen Tank und Urflackern. Aetherpact wird gelöst, solange `IsHe
 
 **Prüfgrad:** statisch, beide Prüfskripte mit Selbsttest, Kompilieren im Prüflauf. Im Spiel nicht beobachtet.
 
+### A307 · Tankbuster-Plan: Sperre unter Stun, Frist vor dem Snapshot, Druckplätze (17.10.2026)
+
+TODO-Punkt „Stun sperrt ein Glied einen GCD; Druck nach dem Snapshot möglich" nach seiner Reihenfolge; Konzept 09,
+„Spielerweite Sperre und Frist" (bisher geplant, jetzt gebaut).
+
+**Befund.** (1) `PressForTankbuster` notierte eine Ablehnung außerhalb Animationssperre und eigenem Zauber für einen
+GCD, auch unter Stun. Reichte diese Sperre in den letzten GCD, fiel das Glied aus den Kandidaten, und der Plan zog die
+Unverwundbarkeit, obwohl nach einem kurzen Stun noch Zeit für das Bündel war. (2) Der Plan drückte bis zum Ende des
+Wirkbalkens; ein Druck in der letzten Laufzeit vor dem Ende kommt nach dem Snapshot an (Mechanik in Konzept 09,
+Community-Quellen) und kostet eine Abklingzeit ohne Wirkung. (3) Das Modell zählte einen Status beim Einschlag, auch
+wenn der Server ihn nach dem Ende des Wirkens angewandt hatte – deshalb hatte es (2) nie gefunden.
+
+**Kausalkette, die die Lösung bündelt (Modell):** (1) allein zu beheben verschlechtert den späten Stun. Die alte
+GCD-Sperre nahm die Glieder aus dem Plan und machte so die Unverwundbarkeit frei; ohne sie bliebe ein Bündel geplant,
+das nach dem Stun nicht mehr ganz hinausgeht. Der Selbsttest-Defekt `no_slots` zeigt genau das (O1, O11). Deshalb
+gehören Sperre, Frist und Druckplätze zusammen.
+
+**Optionen.** Nullvariante; nur die Sperre (verschlechtert den späten Stun); Sperre und Frist ohne Plätze (ebenso);
+alle drei Regeln des Konzepts (gewählt); feste Marge vor dem Ende statt gemessener Laufzeit (verworfen: feste Zahl, und
+läge der Snapshot später, unterbliebe ein wirksamer Druck).
+
+**Umsetzung.**
+- `StatusHelper.PlayerAbilitiesLocked`: Status mit `LockActions` im Blatt des Clients oder Amnesie (Generator-Namen der
+  englischen Fassung, Zeilen 5, 1092, 4210), längste Restzeit.
+- `TankbusterForecast.RoundTrip` und `PressSpacing`: gemessen am letzten eigenen Druck einer Aktion ohne Wirkzeit, der
+  hinausging, während keine Animationssperre lief und der Spieler nicht wirkte (`BaseAction.Use` übergibt das);
+  Laufzeit bis zur Bestätigung im Effekt-Handler, Abstand bis zum Ende der Animationssperre (einmal je Bild).
+- `CustomRotation_Tankbuster`: Ablehnung unter Sperre nicht notiert; `MitigationDeadline` = Restzeit weniger
+  Laufzeit; nach ihr keine Minderung des Plans und kein Zurückhalten in Z2; `PressSlots` begrenzt die Bündelwahl samt
+  Ersatzprüfung (`FindNeeded`); Sperre über das Ende des Wirkens: kein Plan, eine Protokollzeile; „alles" das wertvollste
+  Glied zuerst. Für die Unverwundbarkeit keine Frist vor dem Ende des Wirkens (Holmgang zählt beim Zufügen; für die
+  übrigen unbelegt, ein später Druck kann noch halten).
+- Protokoll: je Druck des Plans die gemessene Laufzeit; die Plan-Zeile nennt die Plätze, wenn ein überlebendes Bündel
+  nicht hineinpasst.
+- `tankbuster_model.py`: Einschlag nach dem Snapshot (Minderung bis zum Ende des Wirkens auf dem Server, Holmgang bis zum
+  Zufügen), Stun über alle Pfade in drei Lagen, unbekannte Laufzeit und unbekannter Abstand, O10 (keine Minderung des
+  Plans nach dem Snapshot), O11 (bleibt nach einem Stun ein Druck und ist die Unverwundbarkeit verfügbar, überlebt der
+  Tank); Selbsttest um `stun_noted`, `no_deadline`, `no_slots` erweitert, bricht je Defekt beim ersten Fund ab. 49
+  Szenarien × 300 Läufe ohne Verstoß (17.10.2026).
+
+**Falsifikation.**
+- *Kein Defekt:* (1) am Code belegt; (2) folgt aus dem Snapshot, Community-Beleg, keine offizielle Quelle.
+- *Option falsch:* Das Modell fand mit unbekanntem Abstand und langem Stun noch Tode (O1, O11): Vor der ersten Messung
+  zählt der Plan keine Plätze. Belassen und als Grenze geführt – die Messung steht ab dem ersten eigenen Druck nach dem
+  Laden; das Szenario ist mit Grund aus dem Modell genommen.
+- *Ausgeliefert, nichts ändert sich:* in den meisten Kämpfen – der Plan drückt früh, Stuns am Tankbuster sind selten.
+  Sichtbar nur nach einem Stun, bei sehr kurzem Wirken und im Rückfall „alles".
+
+**Prüfgrad:** Modell, Prüfskripte, Kompilieren im Prüflauf. Im Spiel nicht beobachtet; das Protokoll zeigt Laufzeit und
+Plätze je Druck.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

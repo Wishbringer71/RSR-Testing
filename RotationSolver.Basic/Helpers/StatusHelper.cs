@@ -1190,6 +1190,44 @@ public static class StatusHelper
 		return PlayerWillStatusEndGCD(2, 0, false, NoNeedHealingStatus);
 	}
 
+	private static HashSet<uint>? _amnesiaIds;
+
+	/// <summary>
+	/// Whether the player can use no ability right now, and for how much longer: a status whose row in the
+	/// client's status sheet locks actions (a stun, sleep, petrification and some 260 others), or Amnesia, which
+	/// blocks every ability without that flag ("Unable to use abilities"; rows 5, 1092 and 4210, recognised by the
+	/// generator's names from the English sheet, so the client language does not matter).
+	/// <paramref name="rest"/> is the longest remaining time among them, 0 when none names an end. Recognition
+	/// only: the readers decide (concept 09, "Spielerweite Sperre und Frist").
+	/// </summary>
+	internal static bool PlayerAbilitiesLocked(out float rest)
+	{
+		rest = 0f;
+		var list = Player.Object?.StatusList;
+		if (list == null)
+		{
+			return false;
+		}
+
+		_amnesiaIds ??= IdsByNamePrefix("Amnesia");
+		var locked = false;
+		foreach (var status in list)
+		{
+			if (status == null || status.StatusId == 0)
+			{
+				continue;
+			}
+
+			if (_amnesiaIds.Contains(status.StatusId) || (status.GameData.ValueNullable?.LockActions ?? false))
+			{
+				locked = true;
+				rest = Math.Max(rest, status.RemainingTime);
+			}
+		}
+
+		return locked;
+	}
+
 	private static HashSet<uint>? _vulnerabilityUpIds;
 
 	/// <summary>

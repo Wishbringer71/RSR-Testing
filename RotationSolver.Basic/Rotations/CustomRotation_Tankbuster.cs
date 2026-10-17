@@ -14,8 +14,10 @@ public partial class CustomRotation
 	/// <param name="Covered">The invulnerability already stands over the hit (Z1), rather than being planned (Z3).</param>
 	/// <param name="ReprisalKept">Reprisal was left out for the announced raidwide although it would have been cheaper
 	/// (K6).</param>
+	/// <param name="PressesLeft">The presses that fit before the deadline, when a set that survives did not fit into
+	/// them; -1 otherwise.</param>
 	private sealed record TankbusterPlan(TankbusterForecast.Cast Cast, IBaseAction[] Mitigations, bool Invulnerability,
-		bool Survivable, float After, bool Covered = false, bool ReprisalKept = false);
+		bool Survivable, float After, bool Covered = false, bool ReprisalKept = false, int PressesLeft = -1);
 
 	// Reserved: a member another rule keeps for something else - Reprisal for the raidwide announced after its effect
 	// and before its recast (K6). It goes only when no bundle without it survives.
@@ -50,6 +52,9 @@ public partial class CustomRotation
 	private static bool _invulnerabilityCanTakeOver;
 
 	private static readonly List<(int, uint)> _endedKeys = [];
+
+	// The cast for which the line "blocked until after the hit" was written.
+	private static int _blockedTraced;
 
 
 	/// <summary>
@@ -122,6 +127,33 @@ public partial class CustomRotation
 			return;
 		}
 
+		// What holds every press back now: the animation lock, a cast of the player's own, or a block on every
+		// ability (stun, amnesia) for the rest its status names - unknown counts as ending now. One lasting past the
+		// end of the cast leaves nothing to do for it, and nothing held for it (concept 09, "Spielerweite Sperre und
+		// Frist", rule 6).
+		var free = ObjectHelper.GetInstantHealLeadTime();
+		if (StatusHelper.PlayerAbilitiesLocked(out var lockedFor))
+		{
+			free = Math.Max(free, lockedFor);
+		}
+
+		if (free >= cast.Remaining)
+		{
+			if (_blockedTraced != cast.Serial)
+			{
+				_blockedTraced = cast.Serial;
+				DefenseTrace.Line($"tankbuster #{cast.ActionId} from {cast.Source.Name.TextValue} in {cast.Remaining:F1} s:"
+					+ $" every ability is blocked for {free:F1} s, nothing to do for it");
+			}
+
+			_planTraced = default;
+			return;
+		}
+
+		// The presses of a mitigation that still reach the server before the snapshot (rule 3 and 5): a bundle is
+		// chosen only if its members still to press fit into them.
+		var slots = PressSlots(MitigationDeadline(cast), free);
+
 		var candidates = PlanCandidates(cast, gcd, out var pending, out var standing);
 
 		// Without the plan option nothing presses a bundle for the player; hoping the rotation will is not
@@ -151,21 +183,27 @@ public partial class CustomRotation
 		// in front of the next auto-attack with almost nothing (A304). At the line 0 this is the old reckoning.
 		var budget = cast.Budget - Math.Max(0f, HealthForDyingTanks);
 		var reprisalKept = false;
-		var bestMask = BestBundle(candidates, predicted, budget, false, false, out var bestAfter);
+		var bestMask = BestBundle(candidates, predicted, budget, false, false, slots, out var bestAfter);
 		if (bestMask >= 0)
 		{
-			reprisalKept = BestBundle(candidates, predicted, budget, false, true, out _) is var cheapest
+			reprisalKept = BestBundle(candidates, predicted, budget, false, true, slots, out _) is var cheapest
 				&& cheapest >= 0 && cheapest != bestMask;
 		}
 		else
 		{
-			bestMask = BestBundle(candidates, predicted, budget, false, true, out bestAfter);
+			bestMask = BestBundle(candidates, predicted, budget, false, true, slots, out bestAfter);
 		}
 
 		if (bestMask < 0)
 		{
-			bestMask = BestBundle(candidates, predicted, budget, true, true, out bestAfter);
+			bestMask = BestBundle(candidates, predicted, budget, true, true, slots, out bestAfter);
 		}
+
+		// A set that survives but does not fit before the deadline: the plan names the presses left.
+		var pressesLeft = bestMask < 0 && slots < candidates.Count
+			&& BestBundle(candidates, predicted, budget, true, true, int.MaxValue, out _) >= 0
+			? slots
+			: -1;
 
 		// A refusal of the invulnerability never makes "everything" (the owner's note, 12.10.2026): what refuses it
 		// in the game - a stun, amnesia - refuses every other ability alike, so nothing else would go out either.
@@ -175,17 +213,21 @@ public partial class CustomRotation
 		if (bestMask >= 0)
 		{
 			SetPlan(new TankbusterPlan(cast, Pick(candidates, bestMask), false, true, bestAfter, ReprisalKept: reprisalKept));
-			FindNeeded(candidates, bestMask, pending, standing, predicted, budget);
+			FindNeeded(candidates, bestMask, pending, standing, predicted, budget, slots);
 			_invulnerabilityCanTakeOver = invulnerabilityAvailable;
 		}
 		else if (invulnerabilityAvailable)
 		{
-			SetPlan(new TankbusterPlan(cast, [], true, true, 0f));
+			SetPlan(new TankbusterPlan(cast, [], true, true, 0f, PressesLeft: pressesLeft));
 		}
 		else
 		{
+			// Everything, the most valuable member first: when not all of them fit before the deadline, what goes
+			// out takes the most off the hit (rule 5).
+			candidates.Sort((a, b) => Value(b, predicted).CompareTo(Value(a, predicted)));
 			var all = (1 << candidates.Count) - 1;
-			SetPlan(new TankbusterPlan(cast, Pick(candidates, all), false, false, After(predicted, candidates, all, out _, out _)));
+			SetPlan(new TankbusterPlan(cast, Pick(candidates, all), false, false, After(predicted, candidates, all, out _, out _),
+				PressesLeft: pressesLeft));
 
 			// Everything goes, in the hope of someone else's help (his precision): every member and every
 			// own mitigation that stands is needed.
@@ -206,16 +248,50 @@ public partial class CustomRotation
 		}
 	}
 
-	// The cheapest bundle that leaves less than the budget, ties to the smaller one; -1 when none does.
+	// What a member takes off the hit by itself: its share of the predicted hit, and its barrier.
+	private static float Value(PlanCandidate candidate, float predicted)
+	{
+		return (predicted * (1f - candidate.Factor)) + candidate.Barrier;
+	}
+
+	/// <summary>
+	/// Seconds from now until the last moment a mitigation pressed for <paramref name="cast"/> still reaches the
+	/// server before the snapshot at the end of the cast: the cast's rest less the measured round trip of a press
+	/// (concept 09, "Spielerweite Sperre und Frist", rule 3). Before the first measurement, the cast's rest. Not for
+	/// the invulnerability: Holmgang's floor counts when the damage is dealt, after the snapshot, and for the others
+	/// it is not known; pressed until the cast ends, it may still hold, and a death it does not prevent costs nothing
+	/// more.
+	/// </summary>
+	private static float MitigationDeadline(TankbusterForecast.Cast cast)
+	{
+		return cast.Remaining - Math.Max(0f, TankbusterForecast.RoundTrip);
+	}
+
+	// How many presses fit before the deadline: the first once what holds them back now ends, each next one after the
+	// spacing a press keeps (measured). Before the first measurement the plan does not count them (int.MaxValue).
+	private static int PressSlots(float deadline, float free)
+	{
+		var spacing = TankbusterForecast.PressSpacing;
+		if (spacing <= 0f)
+		{
+			return int.MaxValue;
+		}
+
+		return deadline <= free ? 0 : (int)Math.Ceiling((deadline - free) / spacing);
+	}
+
+	// The cheapest bundle that leaves less than the budget and whose members fit into the presses left, ties to the
+	// smaller one; -1 when none does.
 	private static int BestBundle(List<PlanCandidate> candidates, float predicted, float budget, bool withRefused,
-		bool withReserved, out float bestAfter)
+		bool withReserved, int slots, out float bestAfter)
 	{
 		var bestMask = -1;
 		var bestCost = float.MaxValue;
 		bestAfter = 0f;
 		for (var mask = 0; mask < 1 << candidates.Count; mask++)
 		{
-			if ((!withRefused && HasRefused(candidates, mask)) || (!withReserved && HasReserved(candidates, mask)))
+			if ((!withRefused && HasRefused(candidates, mask)) || (!withReserved && HasReserved(candidates, mask))
+				|| BitCount(mask) > slots)
 			{
 				continue;
 			}
@@ -241,14 +317,15 @@ public partial class CustomRotation
 	/// The plan's members and the own mitigation standing or on its way that the hit cannot be survived
 	/// without - no bundle without it survives, the invulnerability not counted as a replacement (concept 09,
 	/// "Andere Pfade, die dem Plan ein Glied nehmen", K1-K4). What takes one of them away - Shake It Off dispelling it, help
-	/// for another member on the same button, recast group or gauge - waits for it.
+	/// for another member on the same button, recast group or gauge - waits for it. A replacement counts only if it
+	/// fits into the presses left before the deadline (<paramref name="slots"/>).
 	/// </summary>
 	private static void FindNeeded(List<PlanCandidate> candidates, int bestMask, List<PlanCandidate> pending,
-		List<PlanCandidate> standing, float predicted, float budget)
+		List<PlanCandidate> standing, float predicted, float budget, int slots)
 	{
 		for (var i = 0; i < candidates.Count; i++)
 		{
-			if ((bestMask & (1 << i)) != 0 && BestBundle(Without(candidates, i), predicted, budget, true, true, out _) < 0)
+			if ((bestMask & (1 << i)) != 0 && BestBundle(Without(candidates, i), predicted, budget, true, true, slots, out _) < 0)
 			{
 				_needed.Add(candidates[i].Action);
 			}
@@ -258,7 +335,7 @@ public partial class CustomRotation
 		// barrier off the budget (a pending one was taken off the figure).
 		foreach (var c in pending)
 		{
-			if (c.Factor > 0f && BestBundle(candidates, (predicted + c.Barrier) / c.Factor, budget, true, true, out _) < 0)
+			if (c.Factor > 0f && BestBundle(candidates, (predicted + c.Barrier) / c.Factor, budget, true, true, slots, out _) < 0)
 			{
 				_needed.Add(c.Action);
 			}
@@ -266,7 +343,7 @@ public partial class CustomRotation
 
 		foreach (var c in standing)
 		{
-			if (c.Factor > 0f && BestBundle(candidates, predicted / c.Factor, budget - c.Barrier, true, true, out _) < 0)
+			if (c.Factor > 0f && BestBundle(candidates, predicted / c.Factor, budget - c.Barrier, true, true, slots, out _) < 0)
 			{
 				_needed.Add(c.Action);
 			}
@@ -673,6 +750,10 @@ public partial class CustomRotation
 					: plan.Mitigations.Length == 0
 						? "survivable as it stands, nothing spent"
 						: Names(plan.Mitigations) + (plan.ReprisalKept ? " (Reprisal kept for the announced raidwide)" : string.Empty);
+		if (plan.PressesLeft >= 0)
+		{
+			summary += $" (a set that survives needs more than the {plan.PressesLeft} press(es) left before the snapshot)";
+		}
 		DefenseTrace.Line($"tankbuster plan for #{plan.Cast.ActionId} from {plan.Cast.Source.Name.TextValue}"
 			+ $" in {plan.Cast.Remaining:F1} s: {summary}"
 			+ (plan.Invulnerability ? string.Empty : $", leaving {plan.After:P0} against {plan.Cast.Budget:P0}"
@@ -722,6 +803,13 @@ public partial class CustomRotation
 			return false;
 		}
 
+		// After the deadline a mitigation reaches the server only after the snapshot and changes nothing about the
+		// hit (his note: "alles nach schadenseingang bringt auch nix").
+		if (MitigationDeadline(plan.Cast) <= 0f)
+		{
+			return false;
+		}
+
 		foreach (var action in plan.Mitigations)
 		{
 			if (!Refused(plan.Cast, action.ID, gcd)
@@ -748,9 +836,10 @@ public partial class CustomRotation
 		// target), and a GCD path that returned early can leave its override standing (TODO.md,
 		// "Zielüberschreibung"). The status check is skipped because the plan has already asked whether
 		// this mitigation stands at impact; the game's blocking group of big mitigations is the stagger the
-		// plan replaces for a measured hit. A refusal while an animation lock runs or the player casts is not
-		// an answer. One outside them leaves a mitigation out of the plan for one GCD (MP, range, a stun); the
-		// invulnerability is retried every cycle instead (notesRefusal false).
+		// plan replaces for a measured hit. A refusal while an animation lock runs, the player casts or a block on
+		// every ability stands (stun, amnesia) is not an answer about the action: retried in the next cycle. One
+		// outside them leaves a mitigation out of the plan for one GCD (MP, range); the invulnerability is retried
+		// every cycle instead (notesRefusal false).
 		var previous = IBaseAction.TargetOverride;
 		IBaseAction.TargetOverride = null;
 		try
@@ -760,7 +849,7 @@ public partial class CustomRotation
 			{
 				act = null;
 				if (notesRefusal && ECommons.GameHelpers.Player.AnimationLock <= 0f && Player is { IsCasting: false }
-					&& action.Cooldown.HasOneCharge)
+					&& action.Cooldown.HasOneCharge && !StatusHelper.PlayerAbilitiesLocked(out _))
 				{
 					var key = (plan.Cast.Serial, action.ID);
 					if (!_refused.ContainsKey(key))
@@ -780,7 +869,8 @@ public partial class CustomRotation
 		}
 
 		DefenseTrace.Decision($"{why} for #{plan.Cast.ActionId} from {plan.Cast.Source.Name.TextValue}"
-			+ $" in {plan.Cast.Remaining:F1} s", act);
+			+ $" in {plan.Cast.Remaining:F1} s"
+			+ (TankbusterForecast.RoundTrip > 0f ? $", round trip {TankbusterForecast.RoundTrip:F2} s" : string.Empty), act);
 		return true;
 	}
 
@@ -873,6 +963,13 @@ public partial class CustomRotation
 		}
 
 		if (!plan.Survivable)
+		{
+			return false;
+		}
+
+		// After the deadline nothing more goes out for this cast, and nothing is held for it (rule 4): what the
+		// other paths press now, for the hits after it, they press for their own reasons.
+		if (MitigationDeadline(plan.Cast) <= 0f)
 		{
 			return false;
 		}

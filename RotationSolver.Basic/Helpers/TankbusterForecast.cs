@@ -73,6 +73,27 @@ internal static class TankbusterForecast
 	private static readonly List<Execution> _own = [];
 	private static long _readAt;
 
+	// The player's latest press of an instant action made while no animation lock ran - one the game sends at once
+	// instead of queuing it behind a lock -, for the two figures the plan's deadline needs (concept 09, "Spielerweite
+	// Sperre und Frist"): the round trip to its confirmation, and how long it kept the next press back.
+	private static uint _timedAction;
+	private static long _timedTick;
+	private static bool _timedConfirmed = true;
+	private static bool _timedLockSeen = true;
+
+	/// <summary>
+	/// Seconds from the player's latest timed press to the server's confirmation of it: how long before the end of
+	/// a cast, as the client shows it, a press has to go out to reach the server before the snapshot there. -1
+	/// before the first measurement.
+	/// </summary>
+	public static float RoundTrip { get; private set; } = -1f;
+
+	/// <summary>
+	/// Seconds the player's latest timed press kept the next one back: until the animation lock it set ran out,
+	/// the server's figure and the delay to it together. -1 before the first measurement.
+	/// </summary>
+	public static float PressSpacing { get; private set; } = -1f;
+
 	/// <summary>The clock of this forecast: high resolution, monotonic.</summary>
 	public static long Now => System.Diagnostics.Stopwatch.GetTimestamp();
 
@@ -122,9 +143,19 @@ internal static class TankbusterForecast
 
 	/// <summary>
 	/// RSR executed one of the player's actions (<c>BaseAction.Use</c> succeeded). Called on the game thread.
+	/// <paramref name="timed"/>: an instant action pressed while no animation lock ran, which the game sends at
+	/// once - the press the round trip and the spacing are measured on.
 	/// </summary>
-	public static void RecordOwnPress(uint actionId, ulong targetId)
+	public static void RecordOwnPress(uint actionId, ulong targetId, bool timed)
 	{
+		if (timed)
+		{
+			_timedAction = actionId;
+			_timedTick = Now;
+			_timedConfirmed = false;
+			_timedLockSeen = false;
+		}
+
 		_ = Follow(actionId, targetId, false);
 	}
 
@@ -135,6 +166,12 @@ internal static class TankbusterForecast
 	public static void RecordOwnAction(uint actionId, ulong targetId)
 	{
 		var now = Now;
+		if (!_timedConfirmed && actionId == _timedAction && SecondsSince(_timedTick, now) <= DataCenter.DefaultGCDTotal)
+		{
+			RoundTrip = SecondsSince(_timedTick, now);
+			_timedConfirmed = true;
+		}
+
 		Execution? pressed = null;
 		foreach (var execution in _own)
 		{
@@ -498,6 +535,14 @@ internal static class TankbusterForecast
 		SoonestMeasured = null;
 		PlayerImpervious = false;
 		_readAt = Now;
+
+		// The timed press has stopped holding the next one back once its animation lock has run out; read once a
+		// frame, after the rotation, so the frame of the press itself still shows the lock the client set.
+		if (!_timedLockSeen && ECommons.GameHelpers.Player.AnimationLock <= 0f)
+		{
+			PressSpacing = SecondsSince(_timedTick, _readAt);
+			_timedLockSeen = true;
+		}
 
 		var player = Player.Object;
 		if (!DataCenter.InCombat || player == null || player.IsDead || DataCenter.Role != JobRole.Tank)

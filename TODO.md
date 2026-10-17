@@ -8,18 +8,18 @@ Nach Wichtigkeit, also nach der Wirkung im Kampf: Sicherheit der Gruppe vor Scha
 Wahrscheinlichkeit, in seinem Profil (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop
 bearbeiten"). Stand 17.10.2026; fortgeschrieben mit jedem Befund.
 
-1. Tankbuster-Plan: Stun sperrt ein Glied einen GCD; Druck nach dem Snapshot möglich. (nach hinten gerückt: groß, und im Tankbuster-Fenster selten; A305)
-2. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder ohne Messung weiter nur reaktiv.
-3. `IsValid()` prüft nicht, ob ein Objekt noch lebt – möglicher Absturz.
-4. Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen – Bildausfälle bis 70 ms.
-5. Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle.
-6. Tankbuster-Tabelle misst auch an Nicht-Tanks.
-7. Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn – Schaden, nicht Sicherheit.
-8. Gelehrter: Recitation ohne Rückfall vor Ablauf.
-9. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
-10. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
-11. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
-12. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
+1. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder ohne Messung weiter nur reaktiv.
+2. `IsValid()` prüft nicht, ob ein Objekt noch lebt – möglicher Absturz.
+3. Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen – Bildausfälle bis 70 ms.
+4. Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle.
+5. Tankbuster-Tabelle misst auch an Nicht-Tanks.
+6. Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn – Schaden, nicht Sicherheit.
+7. Gelehrter: Recitation ohne Rückfall vor Ablauf.
+8. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
+9. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
+10. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
+11. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
+12. Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans (Beleg zu BossModReborn zuerst).
 13. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
 14. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
 
@@ -136,18 +136,15 @@ Loop vor jedem Bau.
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 
-### Tankbuster-Plan: Stun sperrt ein Glied einen GCD; Druck nach dem Snapshot möglich · N
+### Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans · N
 
-**Konzept (geplant, 12.10.2026):** `docs/rotation-flow/09-tank-selfprotection.md`, „Spielerweite Sperre und Frist".
-- *Defekt 1:* Eine Ablehnung unter Stun oder Amnesie sperrt eine Minderung einen GCD statt bis zum Ende der Sperre.
-- *Defekt 2:* Der Plan drückt bis zum Ende des Wirkbalkens. Ein Druck, der nach dem Snapshot ankommt, ist verloren –
-  seine Hinweise: „unverwundbarkeit nach tod bringt nichts, "alles" nach schadenseingang bringt auch nix".
-- *Im Kampf:* Nach einem kurzen Stun gehen die Glieder bis zu einen GCD zu spät; der Plan kann dann zu Unrecht die
-  Unverwundbarkeit oder „alles" ziehen. Ein später Druck kostet eine Abklingzeit, ohne den Treffer zu ändern.
-- *Vor dem Code offen:*
-  - Ob die Totenerweckung, Heiliger Boden und Meteoritenfall am Snapshot oder beim Zufügen zählen.
-  - Ob die Zeitangabe von BossModReborn den Snapshot oder das Zufügen meint (für die Klasse über den Plan hinaus).
-  - Die Modellerweiterung (eigene Prüfungen für Sperre und Frist; O9 ist seit A304 die Linie der Unverwundbarkeit).
+**Befund (A307):** Der Tankbuster-Plan drückt eine Minderung nur, solange sie vor dem Snapshot beim Server ankommt
+(Konzept 09, „Spielerweite Sperre und Frist"). Die übrigen Pfade, die für einen vorhergesagten Treffer drücken – Fenster
+aus BossModReborn, die Einzelabwehr der Heiler –, kennen diese Frist nicht. *Im Kampf:* Ein später Druck kostet eine
+Abklingzeit, ohne den Treffer zu ändern. **Vor dem Code offen:** ob die Zeitangabe von BossModReborn den Snapshot oder
+das Zufügen meint; ohne diesen Beleg ist die Frist dort nicht anwendbar.
+
+**Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 
 ### Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt · N
 
@@ -158,10 +155,11 @@ sind je verschiedene Größen:
   - Daran hängen: Fenster („Wirkdauer weniger ein GCD"), Invariante 5 (Wirkdauer über zwei GCD) und die
     Erneuerungsschwelle („mehr als Wirkdauer weniger ein GCD übrig").
 - *Letzter GCD als Reserve für den Rückfall* (Z2: „im letzten GCD nichts, wenn ein Glied fehlt"; Zurückhalten bis
-  R > GCD): Gebraucht werden Druckplätze bis zur Frist, also Animationssperre je Druck und Laufzeit (Konzept 09,
-  „Spielerweite Sperre und Frist", Regel 5).
+  R > GCD): Gebraucht werden Druckplätze bis zur Frist. Die Plätze rechnet der Plan seit A307 für die Bündelwahl
+  (Konzept 09, „Spielerweite Sperre und Frist", Regel 5); das Zurückhalten endet weiter einen GCD vor dem Einschlag.
 - *Bestätigung verfällt nach einem GCD:* Gemeint ist die Laufzeit von Druck bis Bestätigung, die gemessen werden kann.
-- *Verweigerung sperrt einen GCD:* Gemeint ist das Ende der Ursache, unter Stun deren Restzeit (eigener Eintrag oben).
+- *Verweigerung sperrt einen GCD:* Gemeint ist das Ende der Ursache. Unter einer Sperre jeder Fähigkeit ist das seit
+  A307 gelöst (keine Ablehnung notiert); für MP, Reichweite und eigene Prüfungen der Rotation bleibt der GCD.
 
 Ausgenommen ist die Living-Dead-Uhr (zwei GCD Vorlauf): Dort ist der GCD die Zeit, die eine Heilung braucht, also die
 gemeinte Größe.

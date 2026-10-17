@@ -109,6 +109,17 @@ and the Paladin's emergency Intervention could go to the party member with the l
 of them now uses its own target rule. The Astrologian's Synastry, which relied on the leftover heal rule, now picks
 its target the way the single-target heal it copies does.
 
+## Tanks: the tankbuster plan after a stun, and before the snapshot
+
+A stun or amnesia refused every press of the tankbuster plan, and the plan took that as an answer about the action:
+it left the mitigation out for a GCD. When that GCD reached into the last one before the hit, the plan drew the
+invulnerability, although the set would still have gone out after a short stun. A refusal under a block on every
+ability is now retried as soon as the block ends. The plan also pressed until the cast bar ended, and a mitigation
+pressed in the last moment reaches the server after the hit is locked in and only costs its cooldown. It now stops
+one measured round trip before the end. When the presses left after a stun are too few for the cheapest set, it
+takes the invulnerability, which it still presses until the cast ends; without one, "everything" sends the strongest
+mitigation first. `DefenseTrace.log` gives the round trip with each press of the plan.
+
 ## Tanks: the tankbuster plan leaves you above the invulnerability line
 
 The tankbuster plan picked the cheapest set of own mitigations that kept a measured tankbuster from killing you, even

@@ -108,11 +108,11 @@ beiden Optionen an ist:
 
 | Zustand | Wann | Was gedrückt wird | Was zurückgehalten wird |
 |---|---|---|---|
-| Z0 kein Plan | kein gemessenes Wirken auf dich | nichts | nichts; unter Heiligem Boden oder Meteoritenfall über den nächsten GCD: alles Bewertete auf dich |
+| Z0 kein Plan | kein gemessenes Wirken auf dich, oder jede Fähigkeit ist über das Ende des Wirkens hinaus gesperrt | nichts | nichts; unter Heiligem Boden oder Meteoritenfall über den nächsten GCD: alles Bewertete auf dich |
 | Z1 gedeckt | eine Unverwundbarkeit steht über H (Status oder eigener Druck) | nichts | alles Bewertete auf dich |
-| Z2 Bündel S | das billigste Bündel S übersteht c; S darf leer sein | jedes Glied von S in seinem Fenster | alles Bewertete auf dich außer S; ein Glied von S erst ab seinem Fenster; im letzten GCD nichts mehr, wenn ein Glied fehlt |
+| Z2 Bündel S | das billigste Bündel S übersteht c, und seine ungedrückten Glieder passen in die Druckplätze bis zur Frist; S darf leer sein | jedes Glied von S in seinem Fenster, bis zur Frist | alles Bewertete auf dich außer S; ein Glied von S erst ab seinem Fenster; im letzten GCD nichts mehr, wenn ein Glied fehlt; nach der Frist nichts mehr |
 | Z3 Unverwundbarkeit | kein Bündel übersteht c, sie ist einen GCD vor dem Einschlag verfügbar | sie, in ihrem Fenster; nach einer Ablehnung im nächsten Durchlauf neu | alles Bewertete auf dich, solange R > GCD |
-| Z4 alles | kein Bündel, keine verfügbare Unverwundbarkeit | jedes verfügbare Glied in seinem Fenster | nichts |
+| Z4 alles | kein Bündel, keine verfügbare Unverwundbarkeit | jedes verfügbare Glied in seinem Fenster bis zur Frist, das wertvollste zuerst | nichts |
 
 - **Verfügbar** heißt für die Unverwundbarkeit: Option an, erlernt und freigeschaltet, aktiviert, auf der Leiste, über
   der TTK-Schwelle der Aktion und vor dem letzten GCD abgeklungen (`InvulnerabilityReadyBy`). Das ist alles, was
@@ -120,8 +120,8 @@ beiden Optionen an ist:
 - **Eine Ablehnung der Unverwundbarkeit beim Druck macht nie Z4.** Was sie im Spiel ablehnt – Stun, Amnesie –,
   lehnt jede andere Fähigkeit ebenso ab (Mechanik unten). „Alles" könnte also auch nicht hinausgehen. Gälte das
   einmal nicht, endet das Zurückhalten im letzten GCD, und die anderen Pfade sind frei.
-- **Ablehnung einer Minderung:** Lehnt `CanUse` ab, ohne dass Animationssperre oder eigener Zauber das erklärt, wird sie
-  einen GCD lang nicht gedrückt. Für die Frage, ob ein Bündel reicht, zählt sie weiter, solange ihre Sperre vor dem
+- **Ablehnung einer Minderung:** Lehnt `CanUse` ab, ohne dass Animationssperre, eigener Zauber oder eine Sperre jeder
+  Fähigkeit (Stun, Amnesie) das erklärt, wird sie einen GCD lang nicht gedrückt. Für die Frage, ob ein Bündel reicht, zählt sie weiter, solange ihre Sperre vor dem
   letzten GCD endet; Bündel ohne abgelehnte Glieder gehen vor. Eine einmalige Ablehnung führt so nicht zur
   Unverwundbarkeit, eine, die bis zuletzt anhält, schon. Ablehnungen gelten je Wirken (eigene Nummer, auch bei zwei
   gleichen Wirken ohne Pause, erkannt am Zurückspringen der Wirkzeit).
@@ -210,7 +210,8 @@ Erhebung noch nicht gesehen hat, zählt als stehend, auch wenn der Status im lau
 ### Die Ausführung
 
 - **Zeitpunkt:** jede geplante Minderung, sobald der Einschlag nicht weiter entfernt ist als ihre Wirkdauer weniger
-  einem GCD (`DefensiveValues.DurationOf`). Früher liefe sie vor dem Einschlag ab. Die Unverwundbarkeit ebenso.
+  einem GCD (`DefensiveValues.DurationOf`), bis zur Frist vor dem Snapshot (Abschnitt „Spielerweite Sperre und Frist").
+  Früher liefe sie vor dem Einschlag ab. Die Unverwundbarkeit ebenso, aber bis zum Ende des Wirkens.
 - **Die Sperrgruppe des Spiels** (eine große Minderung zur Zeit, `RampartStatus`) wird für einen geplanten Druck
   übergangen: Ob die Minderung beim Einschlag schon steht, hat der Plan selbst gefragt, und die Staffelung ist genau
   das, was er für einen gemessenen Treffer ersetzt (seine Präzisierung).
@@ -271,64 +272,74 @@ nach seinem Kriterium kommt dann der Tank ohne sie in ernste Bedrängnis. Vor A3
 (Dauer aus dem Merkmal, A266) als billigstes Glied (60 s Wiederholzeit) auch dann, und am folgenden Raidwide fehlten
 jedem 10 %. Das Protokoll nennt es: „(Reprisal kept for the announced raidwide)".
 
-### Spielerweite Sperre und Frist (geplant, nicht gebaut)
+### Spielerweite Sperre und Frist
 
-**Stand:** Gebaut ist nur der Teil für die Unverwundbarkeit (Zustände, „Ablehnung der Unverwundbarkeit"). Für
-Minderungen gilt noch die Sperre für einen GCD, und der Plan drückt bis zum Ende des Wirkbalkens (`TODO.md`).
+**Sachstand (A307):** Eine Sperre jeder Fähigkeit macht aus einer Ablehnung keine Antwort über die Aktion; ein Druck für c
+geht nur, solange er vor dem Snapshot beim Server ankommt; ein Bündel ist nur wählbar, wenn seine noch zu drückenden
+Glieder bis dahin hineinpassen.
 
-**Geplante Regeln:**
-1. *Erkennung (Stufe „alle", zentral):*
-   - Ob der Spieler gerade keine Fähigkeit benutzen kann, und wie lange noch: ein Status mit `LockActions` aus dem Blatt
-     des Clients (Fähigkeitsprüfung statt Liste, sprachunabhängig) oder Amnesie (Wirktext der englischen Fassung).
-   - Die Restzeit kommt aus dem Status, wo das Spiel sie nennt; sonst bleibt sie unbekannt.
-   - Die Erkennung urteilt nicht; die Verbraucher entscheiden.
-2. *Ablehnung unter Sperre:* keine Antwort, wie die Animationssperre; Neuversuch im nächsten Durchlauf, für jedes Glied
-   und für die Unverwundbarkeit.
-3. *Frist je Wirken:* Ein Druck für c hilft nur, wenn er vor dem Snapshot beim Server ankommt.
-   - Frist = Ende des Wirkens weniger der gemessenen Laufzeit von Druck bis Bestätigung. Der Datensatz kennt den
-     Zeitpunkt des Drucks und das Ereignis der Bestätigung, speichert dessen Zeitpunkt aber noch nicht. Vor der ersten
-     Messung gibt es keine Frist vor dem Ende des Wirkens.
-   - Für Holmgang (und, wenn belegt, Totenerweckung): Frist = Zufügen des Schadens, gemessen am Treffer selbst (Zeit
-     vom Ende des Wirkens bis zum Effekt, je Aktion gespeichert). Ohne Messung gilt die Snapshot-Frist.
-4. *Nach der Frist* drückt der Plan für c nichts mehr – keine Unverwundbarkeit, kein „alles" (seine Hinweise) – und
-   das Zurückhalten für c endet. Was danach kommt, etwa Auto-Angriffe auf einen tiefen Tank, entscheiden die
-   gewöhnlichen Pfade mit eigenen Gründen.
-5. *Druckplätze:* Von jetzt bis zur Frist passen so viele Drücke, wie die gemessene Animationssperre je Druck zulässt;
-   während einer Sperre zählen sie ab ihrem Ende.
-   - Ein Bündel ist nur wählbar, wenn seine ungedrückten Glieder hineinpassen; sonst die Unverwundbarkeit (ein Platz),
-     ohne sie „alles", das wertvollste Glied zuerst.
-   - Ist das Ende der Sperre unbekannt, rechnet der Plan, als ende sie jetzt; er rechnet in jedem Durchlauf neu.
-6. *Sperre über die Frist hinaus:* Für c gibt es nichts zu tun.
+1. *Erkennung (Stufe „alle", zentral, `StatusHelper.PlayerAbilitiesLocked`):* ein Status, dessen Zeile im Blatt des
+   Clients `LockActions` trägt (Fähigkeitsprüfung statt Liste), oder Amnesie (Zeilen 5, 1092, 4210, über die Namen
+   des Generators aus der englischen Fassung). Die Restzeit ist die längste dieser Status; nennt keiner ein Ende, gilt
+   sie als jetzt endend. Die Erkennung urteilt nicht.
+2. *Ablehnung unter Sperre:* wie unter der Animationssperre keine Antwort; Neuversuch im nächsten Durchlauf, für jedes
+   Glied und für die Unverwundbarkeit.
+3. *Frist für eine Minderung* (`MitigationDeadline`): Ende des Wirkens weniger der gemessenen Laufzeit von Druck bis
+   Bestätigung (`TankbusterForecast.RoundTrip`). Der Client sieht das Ende einen halben Umlauf nach dem Server, ein
+   Druck braucht einen halben Umlauf hin; also muss er einen ganzen Umlauf vor dem gezeigten Ende hinaus. Vor der
+   ersten Messung liegt die Frist am Ende des Wirkens.
+   - Gemessen an jedem eigenen Druck einer Aktion ohne Wirkzeit, der hinausgeht, während keine Animationssperre läuft
+     und der Spieler nicht wirkt – ein solcher Druck geht sofort zum Server, ein in die Warteschlange gestellter
+     verlängerte die Messung. Es gilt die letzte Messung.
+   - *Für die Unverwundbarkeit keine Frist vor dem Ende des Wirkens:* Holmgangs Untergrenze zählt beim Zufügen, nach
+     dem Snapshot (Mechanik); für Heiligen Boden, Meteoritenfall und Totenerweckung ist es unbelegt. Bis zum Ende des
+     Wirkens gedrückt, kann sie noch halten; ein Tod, den sie nicht verhindert, kostet nichts weiter. Nach dem Ende
+     des Wirkens gibt es keinen Plan mehr – seine Hinweise („unverwundbarkeit nach tod bringt nichts") betreffen die
+     Zeit danach.
+4. *Nach der Frist* drückt der Plan für c keine Minderung mehr, auch nicht in „alles", und das Zurückhalten für c
+   endet (Z2). Was die anderen Pfade danach drücken, drücken sie mit eigenen Gründen für die Treffer danach.
+5. *Druckplätze* (`PressSlots`): Von dem Moment an, in dem Animationssperre, eigener Zauber oder Sperre enden
+   (`ObjectHelper.GetInstantHealLeadTime`, Restzeit der Sperre), passt bis zur Frist je gemessenem Abstand ein Druck
+   (`TankbusterForecast.PressSpacing`: Zeit vom gemessenen Druck, bis seine Animationssperre abgelaufen ist).
+   - Ein Bündel ist nur wählbar, wenn seine ungedrückten Glieder hineinpassen; sonst die Unverwundbarkeit (ein
+     Druck, bis zum Ende des Wirkens), ohne sie „alles", das Glied zuerst, das allein am meisten vom Treffer nimmt.
+   - Ein Ersatz für ein Glied, das eine Hilfe für andere nähme (K2–K4), zählt nur, wenn er hineinpasst.
+   - Vor der ersten Messung zählt der Plan keine Plätze (Grenze).
+6. *Sperre über das Ende des Wirkens hinaus:* Für c gibt es nichts zu tun; kein Plan, nichts zurückgehalten, eine
+   Zeile im Protokoll.
 
-**Im Kampf:**
-- Nach einem kurzen Stun gehen die Glieder im ersten Durchlauf danach; bleiben zu wenige Plätze, geht die
-  Unverwundbarkeit allein.
-- Endet er nach dem Snapshot, geht für diesen Treffer nichts hinaus.
-- Ein Druck, der nach dem Snapshot ankäme, unterbleibt.
-
-**Klasse über den Plan hinaus:** Jeder Pfad, der für einen vorhergesagten Treffer drückt (Fenster aus BossModReborn, die
-Einzelabwehr der Heiler), kann nach dessen Frist drücken. Regel 4 gehört deshalb auf die Stufe „alle". Für
-BossModReborn ist unbelegt, ob dessen Zeitangabe den Snapshot oder das Zufügen meint; erst nach diesem Beleg ist sie
-dort anwendbar.
+**Im Kampf:** Nach einem kurzen Stun gehen die Glieder im ersten Durchlauf danach; bleiben zu wenige Plätze, geht die
+Unverwundbarkeit allein. Vorher sperrte eine Ablehnung unter Stun das Glied einen GCD: Reichte diese Sperre in den
+letzten GCD, fiel es aus dem Plan, und der Plan zog die Unverwundbarkeit, wo nach dem Stun noch Zeit für das Bündel
+war. Ein Druck, der nach dem Snapshot ankäme, unterbleibt; vorher kostete er eine Abklingzeit, ohne den Treffer zu
+ändern. Endet der Stun nach dem Ende des Wirkens, geht für diesen Treffer nichts hinaus.
 
 **Warum so, und was ausgeschlossen ist:**
 - Vorbeugend vor einem Stun zu drücken scheidet aus: Ein Stun ist nur über ein BossModReborn-Modul vorhersagbar, und
   dafür gibt es keinen Weg ohne BossModReborn.
 - Die Sperre an `GetActionStatus` zu erkennen scheidet aus: Welche Rückgabe einen Stun meint, ist unbelegt; der Status
   ist belegt und nennt die Restzeit.
-- Ein falsch erkannter Status mit `LockActions`, unter dem Fähigkeiten doch gehen, kostet nichts: keine Sperre
-  notiert, Neuversuch in jedem Durchlauf. Eine übersehene Sperre lässt das heutige Verhalten stehen – sichere
-  Richtung.
+- Ein falsch erkannter Status mit `LockActions`, unter dem Fähigkeiten doch gehen, kostet nichts: keine Ablehnung
+  notiert, Neuversuch in jedem Durchlauf. Eine übersehene Sperre lässt das alte Verhalten stehen – sichere Richtung.
 - Die Frist kommt aus der gemessenen Laufzeit, nicht aus einer festen Marge; läge der Snapshot später als belegt,
   unterbliebe sonst ein Druck, der noch gewirkt hätte.
-- Sichtbar wird die Änderung nur nach einer Ablehnung, im Rückfall „alles" und bei kurzem Wirken, denn der Plan drückt
-  sonst früh. Die Plan-Zeile in `DefenseTrace.log` erhielte die Frist und je Druck den Abstand zu ihr; ein Druck nach
-  der Frist wäre dann im hochgeladenen Protokoll ablesbar.
+- Die Abklinggruppe der großen Minderungen und die Frist für die Unverwundbarkeit bleiben unberührt.
+- Nur Druckplätze ohne die Frist, oder nur die Sperre ohne die Plätze, scheidet aus: Ohne Plätze bliebe nach einem
+  späten Stun ein Bündel geplant, das nicht mehr ganz hinausgeht, und der Tank stürbe. Die alte Sperre für einen GCD
+  hatte diesen Fall zufällig verdeckt, weil sie die Glieder aus dem Plan nahm.
 
-**Prüfmittel vor dem Code:** `tankbuster_model.py` bekommt einen Stun, der alle Pfade sperrt (im Fenster, über den
-Snapshot hinaus, über das Fenster eines Glieds), die Prüfungen „kein Druck für c nach der Frist" und „bleibt nach einer
-Sperre ein Platz und ist die Unverwundbarkeit verfügbar, überlebt der Tank, wenn kein passendes Bündel bleibt", und
-die GCD-Sperre unter Stun sowie einen Druck nach der Frist als Defekte des Selbsttests.
+**Klasse über den Plan hinaus:** Jeder Pfad, der für einen vorhergesagten Treffer drückt (Fenster aus BossModReborn, die
+Einzelabwehr der Heiler), kann nach dessen Frist drücken; Regel 4 gehört dort auf die Stufe „alle". Für BossModReborn ist
+unbelegt, ob dessen Zeitangabe den Snapshot oder das Zufügen meint (`TODO.md`).
+
+**Grenzen:** Vor der ersten gemessenen Laufzeit und dem ersten gemessenen Abstand – praktisch nur bis zum ersten Druck
+nach dem Laden des Plugins – gilt das alte Verhalten. Die letzte Messung schwankt mit dem Netz; eine zu lange macht die
+Frist zu früh, eine zu kurze zu spät. Die Plätze rechnen nicht mit Fenstern, die sich erst nach dem ersten Platz öffnen;
+nach Invariante 5 öffnet sich jedes Fenster mehr als einen GCD vor dem Einschlag.
+
+**Messmittel:** `DefenseTrace.log` nennt je Druck des Plans die gemessene Laufzeit („round trip … s") neben der
+Restzeit des Wirkens; die Plan-Zeile nennt die Druckplätze, wenn ein überlebendes Bündel nicht mehr hineinpasst; eine
+Zeile, wenn eine Sperre über das Ende des Wirkens reicht.
 
 ### Die Abwehr der vier Tanks
 
@@ -396,7 +407,9 @@ magisch, Barriere als Positionswerte; dazu als nicht-positionale Eigenschaften e
 | P | Tabellen-Höchstwert × Status, die über H stehen | dieselbe Erhebung | ungemessen: kein Plan; unter Damage Up gemessen: nicht gespeichert |
 | B | LP + Barrieren über H (früheste) | dieselbe Erhebung | Barriere ohne gelisteten Status zählt nicht |
 | Datensatz | Druck (`BaseAction.Use`), Bestätigung (Effekt-Handler), Status gesehen (Erhebung) | Spielthread bzw. Erhebung | Bestätigung fehlt: Datensatz verfällt nach einem GCD |
-| Ablehnung | `CanUse` falsch außerhalb Animationssperre und eigenem Zauber | Plan | – |
+| Ablehnung | `CanUse` falsch außerhalb Animationssperre, eigenem Zauber und Sperre jeder Fähigkeit | Plan | – |
+| Laufzeit, Abstand | letzter eigener Druck ohne Wirkzeit und ohne laufende Sperre: bis zur Bestätigung, bis zum Ende seiner Animationssperre | Spielthread bzw. Erhebung | vor der ersten Messung: Frist am Ende des Wirkens, Plätze ungezählt |
+| Sperre | Status mit `LockActions` oder Amnesie, Restzeit aus dem Status | Plan | kein Ende genannt: endet jetzt |
 | BossModReborn | Zeitleiste, Ziel des ersten Eintrags | Plugin-Abfrage | kein Modul: keine Vorhersage |
 
 ### Mechanik (Belege)
@@ -419,7 +432,8 @@ magisch, Barriere als Positionswerte; dazu als nicht-positionale Eigenschaften e
 - *Snapshot:* Der Schaden eines gewirkten Angriffs wird festgelegt, wenn der Wirkbalken endet, und später zugefügt;
   eine Minderung danach wirkt nicht mehr. Die LP-Untergrenze von Holmgang zählt, wenn sie beim Zufügen steht.
   Community-Quellen (consolegameswiki „Snapshot", akhmorning „Raiding Fundamentals", 12.10.2026), keine offizielle.
-  Für Totenerweckung, Heiligen Boden und Meteoritenfall ist unbelegt, ob Snapshot oder Zufügen zählt.
+  Für Totenerweckung, Heiligen Boden und Meteoritenfall ist unbelegt, ob Snapshot oder Zufügen zählt; der Plan drückt
+  sie deshalb bis zum Ende des Wirkens (Abschnitt „Spielerweite Sperre und Frist").
 
 ### Grenzen
 
@@ -475,13 +489,19 @@ Tankbuster zwei braucht, und dann ist der nächste mit der Unverwundbarkeit oder
   simulierte Welt laufen: Bilder unterschiedlicher Länge mit Rucklern, Erhebung nach der Rotation, Laufzeit zum
   Server, Status vor oder nach der Bestätigung, Ablehnungen, ein Stun beim Druck der Unverwundbarkeit, Abschütteln und
   Urflackern als freie Pfade, andere Pfade, die jederzeit drücken wollen, alle vier Schalterstellungen, knappe
-  Treffer, bei denen jedes Glied gebraucht wird.
+  Treffer, bei denen jedes Glied gebraucht wird; seit A307 ein Stun, der alle Pfade sperrt (im Fenster, kurz vor dem
+  Ende, vom Anfang bis kurz vor das Ende), und der Einschlag nach dem Snapshot: Eine Minderung zählt, wenn der Server
+  sie bis zum Ende des Wirkens angewandt hat, Holmgang bis zum Zufügen.
   - Geprüft: überlebt, was der Plan überlebbar nannte (an der wahren Welt); nach der Unverwundbarkeit nichts
     Bewertetes mehr; die Unverwundbarkeit nie, solange ein Bündel reicht; jedes gedrückte Glied steht am Einschlag und
     wird bis dahin genau einmal gezählt; ein freier Pfad macht aus einem überlebten Treffer keinen Tod und erzwingt
-    keine Unverwundbarkeit; „alles" nur, solange die Unverwundbarkeit nicht verfügbar ist.
-  - Der Selbsttest schaltet die Defekte ein, die frühere Fassungen des Codes hatten (Archiv A263, A267); jeder muss
-    gefunden werden.
+    keine Unverwundbarkeit; „alles" nur, solange die Unverwundbarkeit nicht verfügbar ist; keine Minderung des Plans
+    kommt nach dem Snapshot an (O10); bleibt nach einem Stun ein Druck und ist die Unverwundbarkeit verfügbar, überlebt
+    der Tank (O11).
+  - Der Selbsttest schaltet die Defekte ein, die frühere Fassungen des Codes hatten (Archiv A263, A267), dazu die
+    Sperre für einen GCD unter Stun, den Druck bis zum Ende des Wirkens und die Bündelwahl ohne Druckplätze (A307);
+    jeder muss gefunden werden.
+  - Ausgelassen: ein langer Stun, bevor der Abstand der Drücke gemessen ist (Grenze oben).
   - Nicht abgedeckt, dort trägt nur die Herleitung: ein zweites Wirken und BossModReborn-Vorhersagen, Befehle, die
     Unverwundbarkeit nach einem Bündel bei fallenden LP, Minderung je Schadensart, die Kopplung über Eid, die anderen
     drei Tanks (gleiche Rechnung, andere Zahlen). Das Modell übernimmt H = R + GCD (`TODO.md`, „der GCD als Ersatz").

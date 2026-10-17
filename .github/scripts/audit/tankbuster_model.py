@@ -18,7 +18,14 @@ Checked per run, against the true world state:
   O8  "everything" (Z4) is planned only while the invulnerability is not available (option, cooldown),
       never because it was refused: a stun or amnesia blocks every other ability alike (his note);
   O9  a planned bundle leaves the tank above the invulnerability line at impact - at or below it the tank's
-      own emergency rule draws the invulnerability right after the hit, and both are spent (A304).
+      own emergency rule draws the invulnerability right after the hit, and both are spent (A304);
+  O10 no mitigation the plan presses for the cast reaches the server after the snapshot (the end of the cast
+      there) - "alles nach schadenseingang bringt auch nix" (his note, 12.10.2026);
+  O11 a stun that ends with a press left before the end of the cast and the invulnerability available leaves
+      the tank alive: no bundle that cannot be pressed in time is planned instead.
+
+Impact follows the snapshot: a mitigation counts when the server has applied it by the end of the cast there,
+which the client sees half a round trip later; Holmgang's floor counts when the damage is dealt, after that.
 
 The self-test switches on, one at a time, the defects review rounds found in the built code
 (A263) and the refusal rule his note rejected (A267): each has to be caught by at least one check. A model that cannot find them would not
@@ -86,6 +93,9 @@ class Defects:
     hold_off: bool = False        # the hold ignores the rotation's other paths
     invul_refusal_everything: bool = False  # a refusal of the invulnerability with no retry left makes Z4
     line_ignored: bool = False    # a bundle counts as surviving down to zero, not down to the invulnerability line
+    stun_noted: bool = False      # a refusal under a stun leaves the member out for a GCD, as one for MP or range
+    no_deadline: bool = False     # mitigation is pressed until the cast ends, not until the measured round trip before
+    no_slots: bool = False        # a bundle is chosen whether or not its members still fit before the deadline
 
 
 @dataclass
@@ -113,8 +123,14 @@ class World:
     cooldown_until: dict = field(default_factory=dict)
     lock_until: float = 0.0
     refused_until: dict = field(default_factory=dict)
+    refused_by_stun: dict = field(default_factory=dict)
     invul_pressed: bool = False
     line: float = 0.0             # "The HP% for tank to use invulnerability" (0 = no line)
+    stun_at: float | None = None  # a block on every ability (stun, amnesia), from every path
+    stun_len: float = 0.0
+    apply_delay: float = 0.6      # from the snapshot to the damage being dealt (Holmgang counts then)
+    rtt_known: bool = True        # a round trip press -> confirmation has been measured
+    spacing_known: bool = True    # the time a press keeps the next one back has been measured
 
 
 def own_left(w, act, t):
@@ -140,6 +156,20 @@ def press(w, act, t, by, horizon_now):
                             t + w.latency))
     if act.invul:
         w.invul_pressed = True
+
+
+def blocked(w, t):
+    return w.stun_at is not None and w.stun_at <= t < w.stun_at + w.stun_len
+
+
+def snapshot(w):
+    """The end of the cast on the server, on the client's clock: the client sees it half a round trip late."""
+    return w.cast_time - w.latency / 2
+
+
+def counts_at_impact(w, s):
+    at = snapshot(w) + (w.apply_delay if s.act.invul else 0.0)
+    return s.applied <= at and s.left(at) >= 0
 
 
 def ready_by(w, act, t, seconds):
@@ -209,8 +239,25 @@ def plan(w, d, t, read_t, R_read, H_read, P_read, B_read):
 
     if not w.opt_b:
         cands = []
+
+    # The deadline for a mitigation: the cast's end less the measured round trip (none before a measurement);
+    # the presses that fit until then, from the end of the animation lock or the stun, whose rest the status names.
+    rtt = w.latency if w.rtt_known else 0.0
+    D = R if d.no_deadline else R - rtt
+    free = max(0.0, w.lock_until - t)
+    if blocked(w, t):
+        free = max(free, w.stun_at + w.stun_len - t)
+    plan.free = free
+    if not w.spacing_known or d.no_slots:
+        slots = len(KIT)
+    else:
+        slots = 0 if D <= free else int(-(-(D - free) // LOCK))
+    # a block past the end of the cast: nothing to do for it, and nothing held for it
+    if free >= R and not d.no_slots:
+        return 'Z0', [], R, H
+
     best = None
-    for k in range(len(cands) + 1):
+    for k in range(min(len(cands), slots) + 1):
         for combo in itertools.combinations(cands, k):
             f = 1.0
             b = budget
@@ -230,7 +277,8 @@ def plan(w, d, t, read_t, R_read, H_read, P_read, B_read):
     if w.opt_a and w.invul_ready and ready_by(w, HOLMGANG, t, max(0.0, R - GCD)) \
             and not (d.invul_refusal_everything and not invul_retry_left(w, t, R)):
         return 'Z3', [HOLMGANG], R, H
-    return 'Z4', [a for a, _ in cands], R, H
+    # everything: the most valuable member first
+    return 'Z4', sorted((a for a, _ in cands), key=lambda a: -(P_read * (1 - a.factor) + a.barrier)), R, H
 
 
 def held(w, state, members, act, R):
@@ -239,6 +287,8 @@ def held(w, state, members, act, R):
         return False
     if state in ('Z1',):
         return True
+    if state in ('Z0', 'Z4') or R - (w.latency if w.rtt_known else 0.0) <= 0:
+        return False
     if state == 'Z3':
         return R > GCD
     if state == 'Z2':
@@ -262,12 +312,19 @@ def bundle_exists_true(w, t):
     R = w.cast_time - t
     acts = [a for a in KIT if ready_by(w, a, t, max(0.0, R - GCD)) and a.duration - GCD > GCD
             and own_left(w, a, w.cast_time + GCD) < 0
-            and not (w.refused_until.get(a.name, -1) > t and w.cast_time - w.refused_until[a.name] <= GCD)]
+            and not (w.refused_until.get(a.name, -1) > t and w.cast_time - w.refused_until[a.name] <= GCD
+                     and not w.refused_by_stun.get(a.name))]
     if not w.opt_b:
         acts = []   # invariant 1: without "Spend only ..." nothing presses a bundle, only the empty one counts
+    # the presses that truly fit before the true deadline (a round trip before the end of the cast)
+    free = max(0.0, w.lock_until - t)
+    if blocked(w, t):
+        free = max(free, w.stun_at + w.stun_len - t)
+    D = R - w.latency
+    fit = 0 if D <= free else int(-(-(D - free) // LOCK))
     # the concept's horizon: the hit lands at most one GCD after the cast ends ("ohne Risiko")
     standing = [s.act for s in w.statuses if s.left(w.cast_time + GCD) >= 0 and not s.act.invul]
-    for k in range(len(acts) + 1):
+    for k in range(min(len(acts), fit) + 1):
         for combo in itertools.combinations(acts, k):
             f, b = 1.0, w.hp
             for a in list(combo) + standing:
@@ -289,6 +346,7 @@ def run(w, d):
     last_state = None
     rng = random.Random(w.seed)
     plan.in_reading = set()
+    run.slot_after_stun = False
     for i, dt in enumerate(w.frames):
         t += dt
         next_dt = w.frames[i + 1] if i + 1 < len(w.frames) else dt
@@ -315,8 +373,20 @@ def run(w, d):
             for name in plan.double:
                 violations.append(('O6', w.seed, t, name))
 
-        # the plan's presses
-        if t >= w.lock_until:
+        # O11 (checked at the end): a press left after a stun with the invulnerability available
+        if blocked(w, t) and not blocked(w, t + dt) and w.opt_a and w.invul_ready \
+                and w.stun_at + w.stun_len < w.cast_time and ready_by(w, HOLMGANG, t, 0):
+            run.slot_after_stun = True
+
+        # the plan's presses; under a stun nothing goes out from any path, and the refusal is no answer about
+        # the member (it is noted for a GCD only in the defect variant)
+        if t >= w.lock_until and blocked(w, t):
+            if d.stun_noted:
+                for act in members:
+                    if not act.invul and act.name not in w.refused_until:
+                        w.refused_until[act.name] = t + GCD
+                        w.refused_by_stun[act.name] = True
+        elif t >= w.lock_until:
             for act in members:
                 if act.invul and state == 'Z3':
                     if R <= act.duration - GCD:
@@ -335,6 +405,8 @@ def run(w, d):
                     continue
                 if not w.opt_b:
                     continue
+                if not d.no_deadline and R - (w.latency if w.rtt_known else 0.0) <= 0:
+                    continue   # after the deadline a press for this cast is lost
                 if any(a is act for _, a, _ in w.pressed[-1:]) and t - w.pressed[-1][0] < LOCK:
                     continue
                 if R > act.duration - GCD or not ready_by(w, act, t, 0):
@@ -352,7 +424,7 @@ def run(w, d):
                 break
 
         # free paths
-        if w.other and t >= w.lock_until and rng.random() < 0.05:
+        if w.other and t >= w.lock_until and not blocked(w, t) and rng.random() < 0.05:
             want = rng.choice(KIT)
             if ready_by(w, want, t, 0) and (d.hold_off or not held(w, state, members, want, R)):
                 press(w, want, t, 'other', H)
@@ -390,17 +462,17 @@ def run(w, d):
             if not r.seen and own_left(w, r.act, read_t) > r.prior_left:
                 r.seen = True
 
-    # O1 and O4 at impact
+    # O1 and O4 at impact: what the server applied by the snapshot (Holmgang: by the damage)
     f, b = 1.0, w.hp
     for s in w.statuses:
-        if s.left(w.cast_time) >= 0:
+        if not s.act.invul and counts_at_impact(w, s):
             f *= s.act.factor
             b += s.act.barrier
-    survived = any(s.act.invul and s.left(w.cast_time) >= 0 for s in w.statuses) or w.hit * f < b
+    invul_holds = any(s.act.invul and counts_at_impact(w, s) for s in w.statuses)
+    survived = invul_holds or w.hit * f < b
     if last_state == 'Z2' and not survived:
         violations.append(('O1', w.seed, w.cast_time, 'survivable plan did not survive'))
-    if last_state == 'Z2' and not any(s.act.invul and s.left(w.cast_time) >= 0 for s in w.statuses) \
-            and b - w.hit * f <= w.line:
+    if last_state == 'Z2' and not invul_holds and b - w.hit * f <= w.line:
         violations.append(('O9', w.seed, w.cast_time, 'the planned bundle left the tank at the invulnerability line'))
     for (tp, act, by) in w.pressed:
         if by.startswith('plan') and not act.invul and \
@@ -408,6 +480,11 @@ def run(w, d):
                 not (w.shake_at is None and act.dispelled_by_shake and False):
             if not any(s.act is act for s in w.statuses):
                 violations.append(('O4', w.seed, tp, act.name))
+        # O10: a mitigation the plan pressed for this cast reached the server after the snapshot
+        if by.startswith('plan') and not act.invul and tp + w.latency / 2 > snapshot(w):
+            violations.append(('O10', w.seed, tp, act.name + ' pressed after the deadline'))
+    if run.slot_after_stun and not survived and w.opt_b:
+        violations.append(('O11', w.seed, w.cast_time, 'a press was left after the stun and the tank died'))
     run.survived = survived
     return violations
 
@@ -430,10 +507,27 @@ def world(seed, scenario):
         # a short stun at the first press of the invulnerability, the refusal's GCD running into the last GCD;
         # nothing less survives
         hit = rng.uniform(3.0, 4.0)
+    cast_time = rng.choice([4.0, 4.5]) if late else rng.choice([6.0, 8.0, 10.0, 12.0]) if scenario.get('tight') \
+        else rng.choice([4.0, 5.0, 6.0, 8.0, 10.0, 12.0])
+    stun_at, stun_len = None, 0.0
+    if scenario.get('stun'):
+        stun_at, stun_len = rng.uniform(0.0, cast_time), rng.uniform(0.3, 2.5)
+    if scenario.get('stun_late'):
+        # a stun that ends shortly before the end of the cast: few presses or none left
+        end = cast_time - rng.uniform(0.05, 1.5)
+        stun_len = rng.uniform(0.5, 2.5)
+        stun_at = max(0.0, end - stun_len)
+    if scenario.get('stun_long'):
+        # stunned from the start of the cast until shortly before its end: every press falls into the last moment
+        stun_at, stun_len = 0.0, cast_time - rng.uniform(0.02, 1.2)
     return World(
         seed=seed,
-        cast_time=rng.choice([4.0, 4.5]) if late else rng.choice([6.0, 8.0, 10.0, 12.0]) if scenario.get('tight')
-        else rng.choice([4.0, 5.0, 6.0, 8.0, 10.0, 12.0]),
+        cast_time=cast_time,
+        stun_at=stun_at,
+        stun_len=stun_len,
+        apply_delay=rng.uniform(0.4, 1.0),
+        rtt_known=not scenario.get('no_rtt'),
+        spacing_known=not scenario.get('no_spacing'),
         hit=hit,
         hp=hp,
         latency=rng.uniform(0.03, 0.3),
@@ -467,13 +561,27 @@ SCENARIOS = [
     {'line': 0.15}, {'line': 0.3}, {'line': 0.15, 'tight': True}, {'line': 0.15, 'refuse': True},
     {'line': 0.3, 'shake': True}, {'line': 0.15, 'help': True}, {'line': 0.3, 'invul': False},
     {'line': 0.15, 'other': True},
+    # a stun that blocks every path, the deadline before the snapshot and the presses that fit until then
+    {'stun': True}, {'stun': True, 'tight': True}, {'stun': True, 'invul': False}, {'stun': True, 'other': True},
+    {'stun_late': True}, {'stun_late': True, 'tight': True}, {'stun_late': True, 'invul': False},
+    {'stun_late': True, 'line': 0.15}, {'stun': True, 'refuse': True},
+    {'no_rtt': True}, {'no_spacing': True}, {'no_rtt': True, 'stun_late': True},
+    {'stun_long': True}, {'stun_long': True, 'tight': True}, {'stun_long': True, 'invul': False},
+    {'stun_long': True, 'line': 0.15},
+    # Left out: a long stun before the spacing of presses has been measured. Until then the plan does not count
+    # presses, as before the deadline was built, and a set that no longer fits after the stun kills (O1, O11). The
+    # measurement comes from any instant press without a lock running, so it stands from the first press after the
+    # plugin loads; a stun on a tankbuster before that is not a state of play (concept 09, "Grenzen").
 ]
 
 
-def check(defects, runs_per_scenario=300, seed0=1):
+def check(defects, runs_per_scenario=300, seed0=1, first=False):
+    """Every violation over all scenarios; with first, stop at the first one (enough for the self-test)."""
     found = {}
     for si, sc in enumerate(SCENARIOS):
         for i in range(runs_per_scenario):
+            if first and found:
+                return found
             w = world(seed0 + si * 100000 + i, sc)
             for v in run(w, defects):
                 found.setdefault(v[0], []).append((sc, v))
@@ -501,16 +609,19 @@ def self_test():
         'hold_off': Defects(hold_off=True),
         'invul_refusal_everything': Defects(invul_refusal_everything=True),
         'line_ignored': Defects(line_ignored=True),
+        'stun_noted': Defects(stun_noted=True),
+        'no_deadline': Defects(no_deadline=True),
+        'no_slots': Defects(no_slots=True),
     }
     missed = []
     for name, d in variants.items():
-        if not check(d, runs_per_scenario=120):
+        if not check(d, runs_per_scenario=120, first=True):
             missed.append(name)
     if missed:
         print('SELF-TEST FAILED: the model does not catch the constructed defect(s):', ', '.join(missed))
         return False
-    print(f'self-test ok: each of {len(variants)} defects (found by review, or rejected by his note) is caught '
-          f'({", ".join(variants)})')
+    print(f'self-test ok: each of {len(variants)} defects (found by review, rejected by his note, or planned against) '
+          f'is caught ({", ".join(variants)})')
     return True
 
 
