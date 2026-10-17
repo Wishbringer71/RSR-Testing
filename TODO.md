@@ -8,19 +8,18 @@ Nach Wichtigkeit, also nach der Wirkung im Kampf: Sicherheit der Gruppe vor Scha
 Wahrscheinlichkeit, in seinem Profil (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop
 bearbeiten"). Stand 17.10.2026; fortgeschrieben mit jedem Befund.
 
-1. `IsValid()` prüft nicht, ob ein Objekt noch lebt – möglicher Absturz.
-2. Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen – Bildausfälle bis 70 ms.
-3. Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle.
-4. Tankbuster-Tabelle misst auch an Nicht-Tanks.
-5. Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn – Schaden, nicht Sicherheit.
-6. Gelehrter: Recitation ohne Rückfall vor Ablauf.
-7. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
-8. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
-9. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
-10. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
-11. Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans (Beleg zu BossModReborn zuerst).
-12. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
-13. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
+1. Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen – Bildausfälle bis 70 ms.
+2. Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle.
+3. Tankbuster-Tabelle misst auch an Nicht-Tanks.
+4. Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn – Schaden, nicht Sicherheit.
+5. Gelehrter: Recitation ohne Rückfall vor Ablauf.
+6. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
+7. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
+8. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
+9. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
+10. Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans (Beleg zu BossModReborn zuerst).
+11. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
+12. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
 
 Warten auf Daten, nicht bearbeitbar: Tankbuster nach einem Marker ohne Wirken (Protokoll „no cast taken for it“, A308); Treffer aus einer Quelle, die die Objekttabelle nicht hält (Protokoll); Samurai
 Feint und Tengentsu (Protokoll eines Samurai); BossModReborn-FATE-Modul in Occult Crescent (Adressat BossModReborn).
@@ -213,14 +212,6 @@ Er fällt trotzdem kaum ins Gewicht, und der Grund liegt in der Wirkweise der Ak
 **Empfehlung: nicht bearbeiten.** Eine eigene Regel dafür hätte keinen belegbaren Anwendungsfall.
 
 **Was offen bleibt, ist die Messung.** Ob die Barriere unter den engeren Stufen tatsächlich bricht, beobachtet niemand, und eine Spielbeobachtung ist nicht seine Aufgabe (CLAUDE.md, „Entscheidung zur Laufzeit"): Die Regel müsste ihren Bruch selbst zählen (Dark Arts nach der Barriere) und die Gegnerschwelle nachsteuern. Voller Loop vor dem Bau. Dieselbe Zählung beantwortet zwei Nebenfragen: was die Rückhaltung des Weißmagiers kostet (Sanctus ist sein einziger Flächenzauber, ein zurückgehaltener GCD fällt auf Einzelzielschaden zurück) und ob `BlackestNightMinHostiles` (Vorgabe 4) zu hoch liegt, sodass The Blackest Night im Wall-to-Wall zu selten kommt. Sie ist bewusst eine **eigene** Option der Rotation und nicht der globale `MitigationSustainHostileCount`, weil die Frage hier eine andere ist: nicht „lohnt eine Minderung", sondern „reicht der Schadensstrom, um 25 % der maximalen Gesundheit in sieben Sekunden aufzuzehren".
-
-### `IsValid()` prüft nicht, ob ein Objekt noch lebt · N, U
-
-33 Prüfungen im Plugin (ohne `ExtraRotations`, Stand 15.10.2026) setzen `IsValid()` vor einen nativen Zugriff, damit ein Objekt, das seit dem Aufbau der Liste verschwunden ist, übersprungen wird (Upstream 6baba6a94, Fork A199). Dalamuds `GameObject.IsValid` prüft aber nur `PlayerState.IsLoaded`, also ob der Spieler geladen ist (C111). Dazu kommt, dass Dalamud je Tabellenplatz und Objektart **eine** Instanz wiederverwendet und ihre Adresse bei jeder Aufzählung neu setzt (`ObjectTable.CachedEntry.Update`, für alle Plugins gemeinsam). Eine gespeicherte Instanz zeigt also nach dem Verschwinden ihres Objekts auf freigegebenen Speicher und, sobald der Platz neu belegt und erneut aufgezählt wird, auf ein anderes Objekt.
-
-Betroffen sind Leser, die eine Liste außerhalb des Zyklus lesen, in dem sie gebaut wurde: Fenster, Effekt-Hooks und mit `MinUpdatingTime` > 0 übersprungene Zyklen (A199). Im Kampf hieße das: ein Zyklus mit Werten eines verschwundenen oder eines anderen Gegners, im ungünstigsten Fall ein nativer Absturz bei einer virtuellen Funktion aus freigegebenem Speicher. Beobachtet ist davon nichts. Ob das Spiel Objekte zwischen Dalamuds Framework-Aktualisierung und dem Zeichnen im selben Frame entfernt, ist unbelegt.
-
-Offen: voller Loop. Zu klären sind ein Lebendigkeitsmaß, das ohne Lesen des möglicherweise freigegebenen Objekts auskommt (etwa Tabellenplatz und Adresse gegen `IObjectTable.GetObjectAddress`, dazu die `GameObjectId`), welche der 33 Stellen außerhalb ihres Zyklus lesen und ob Upstream dasselbe Muster pflegt.
 
 ### `DPSTaken` zählt Treffer der letzten 5 ms statt 5 s · N, R, U
 

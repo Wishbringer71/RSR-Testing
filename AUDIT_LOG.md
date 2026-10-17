@@ -7932,6 +7932,45 @@ tankbuster marker, no cast taken for it" (nur als Tank) – das Messmittel für 
 **Prüfgrad:** statisch, Prüfskripte, Kompilieren im Prüflauf. Das Modell bleibt unberührt (die Erkennung ändert nur,
 welche Casts der Plan sieht). Im Spiel nicht beobachtet.
 
+### A309 · Lebendigkeit gehaltener Objekte: wo eine Referenz über einen Frame reicht (17.10.2026)
+
+TODO-Punkt „`IsValid()` prüft nicht, ob ein Objekt noch lebt" (C111) nach seiner Reihenfolge.
+
+**Erhoben, am Quelltext (Dalamud master, FFXIVClientStructs main, 17.10.2026):**
+- `GameObject.IsValid` prüft `PlayerState.IsLoaded`, nicht das Objekt (bestätigt C111).
+- `ObjectTable.CachedEntry` hält je Platz ein Objekt je Art und setzt dessen Adresse bei jedem `Update()` – jeder
+  Durchlauf der Tabelle durch irgendein Plugin. Eine gehaltene Referenz folgt dem Platz, nicht dem Objekt; bei leerem
+  Platz behält sie die alte Adresse.
+- `CharacterManager.BattleCharaMemory` ist ein fester Block für die Kampfcharaktere. Eine alte Adresse zeigt damit
+  vermutlich auf gültigen Speicher mit anderem oder zurückgesetztem Inhalt, nicht auf freigegebenen (Schluss aus dem
+  Layout). Upstreams Kommentare (`6baba6a94`, `8eba51387`) sprechen von harten Abstürzen an sterbenden Zielen; ein
+  Beleg dafür liegt nicht vor, und im Fork ist nichts beobachtet.
+- Lesewege: Der Durchlauf baut die Listen und liest sie im selben Zug (Spielthread, `MinUpdatingTime` überspringt den
+  ganzen Durchlauf). Außerhalb: die Effekt-Hooks (vier Stellen in `Watcher`, alle vergleichen die Id des aktuellen
+  Inhalts mit dem Effektziel, bevor sie LP oder Barriere lesen), die Fenster (Anzeige), und über Frames gehaltene
+  Referenzen. Von diesen hält `TankSwapWatch` Ids und löst sie je Durchlauf auf, die Marker-Beobachtung ebenso;
+  `DataCenter`-Einzelziele werden je Durchlauf neu gesetzt. Übrig blieb `TankbusterForecast.Cast.Source`: am Ende des
+  Frames erhoben, im nächsten vom Plan gelesen (Status des Wirkenden für Reflexion, Name im Protokoll).
+
+**Umgesetzt:** Der Cast trägt die Id des Wirkenden (`SourceId`), der Plan löst ihn zu Beginn über `SearchById` auf; ist
+er fort, gibt es keinen Plan. Konzept 03, Abschnitt A, führt die Regel als dritte Invariante: Ein Objekt aus den Listen
+gilt für den Frame, in dem sie gebaut wurde; was länger lebt, hält die Id.
+
+**Verworfen:** ein Lebendigkeitsmaß über Tabellenplatz und Adresse für alle 33 Stellen – sie lesen im selben Durchlauf,
+in dem die Liste gebaut wurde, wo kein Objekt verschwindet; das Maß kostete je Prüfung einen Gang über über 600
+Plätze. Die Kommentare an Upstreams Stellen (`RSCommands_Actions`, `ObjectHelper`, `StateUpdater`) bleiben: Upstream-Code,
+und die Prüfungen sind harmlos; ihre Begründung ist hier und in Konzept 03 richtiggestellt.
+
+**Falsifikation.**
+- *Kein Defekt:* für die Abstürze offen (Schluss gegen Upstream-Behauptung). Der Rest ist belegt: falsche Werte für
+  höchstens einen Frame an genau einer Fork-Stelle, jetzt geschlossen.
+- *Option falsch:* `SearchById` liefert den aktuellen Inhaber mit dieser Id, aus der Tabelle in diesem Augenblick –
+  genau die Frage. Kosten: ein Gang über die Tabelle je Durchlauf, nur mit gemessenem Tankbuster auf dem Tank.
+- *Ausgeliefert, nichts ändert sich:* fast immer – ein Boss verschwindet nicht mitten im eigenen Cast. Kein Release-Text,
+  weil im Kampf nichts sichtbar anders wird.
+
+**Prüfgrad:** statisch (Dalamud, FFXIVClientStructs am Quelltext), Prüfskripte, Kompilieren im Prüflauf.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

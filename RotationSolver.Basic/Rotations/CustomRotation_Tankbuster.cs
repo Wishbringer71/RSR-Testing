@@ -107,11 +107,22 @@ public partial class CustomRotation
 			return;
 		}
 
+		// The forecast read the cast at the end of the last frame. Its caster is taken from the object table now, by
+		// id, not from the reference it kept: Dalamud keeps one object per table slot and points it at whatever
+		// occupies the slot when anyone next walks the table, so a reference held across a frame can show another
+		// enemy or one that has gone (A309). Gone, it casts nothing.
+		if (ECommons.DalamudServices.Svc.Objects.SearchById(measured.SourceId) is not IBattleChara source)
+		{
+			_planTraced = default;
+			return;
+		}
+
 		// On the clock of now: what the plan reads itself - statuses, cooldowns, own records - is read now, the
 		// cast's remaining time at the forecast's last reading.
 		var lag = TankbusterForecast.SinceReading;
 		var cast = measured with
 		{
+			Source = source,
 			Remaining = Math.Max(0f, measured.Remaining - lag),
 			Horizon = Math.Max(0f, measured.Horizon - lag),
 		};

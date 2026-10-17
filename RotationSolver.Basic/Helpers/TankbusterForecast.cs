@@ -44,8 +44,11 @@ internal static class TankbusterForecast
 	/// <param name="Total">The cast's whole length in seconds.</param>
 	/// <param name="ByMarker">Not aimed at the player: taken for him by a tankbuster marker on him (see
 	/// <see cref="Update"/>).</param>
+	/// <param name="SourceId">The caster's id, read with the cast. A reader in a later frame resolves the caster from
+	/// the object table by it instead of trusting <paramref name="Source"/>: Dalamud keeps one object per table slot and
+	/// points it at whatever occupies the slot when anyone next walks the table (A309).</param>
 	internal sealed record Cast(int Serial, IBattleChara Source, uint ActionId, uint AttackType, float Remaining,
-		float Total, float Predicted, float Budget, float Horizon, bool ByMarker = false)
+		float Total, float Predicted, float Budget, float Horizon, bool ByMarker = false, ulong SourceId = 0)
 	{
 		/// <summary>Measured at all: the table has a figure for the action.</summary>
 		public bool Measured => Predicted > 0f;
@@ -623,7 +626,7 @@ internal static class TankbusterForecast
 			_ = _live.Add(identity);
 			_lastComing[id] = _readAt;
 			var cast = new Cast(serial, hostile, id, attackType, left, hostile.TotalCastTime, predicted,
-				(player.CurrentHp / maxHp) + barrier, horizon, byMarker);
+				(player.CurrentHp / maxHp) + barrier, horizon, byMarker, hostile.GameObjectId);
 			_casts.Add(cast);
 			if (isNew)
 			{
