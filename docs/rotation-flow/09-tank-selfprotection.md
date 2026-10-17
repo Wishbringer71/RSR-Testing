@@ -343,9 +343,18 @@ war. Ein Druck, der nach dem Snapshot ankäme, unterbleibt; vorher kostete er ei
   späten Stun ein Bündel geplant, das nicht mehr ganz hinausgeht, und der Tank stürbe. Die alte Sperre für einen GCD
   hatte diesen Fall zufällig verdeckt, weil sie die Glieder aus dem Plan nahm.
 
-**Klasse über den Plan hinaus:** Jeder Pfad, der für einen vorhergesagten Treffer drückt (Fenster aus BossModReborn, die
-Einzelabwehr der Heiler), kann nach dessen Frist drücken; Regel 4 gehört dort auf die Stufe „alle". Für BossModReborn ist
-unbelegt, ob dessen Zeitangabe den Snapshot oder das Zufügen meint (`TODO.md`).
+**Dieselbe Frist für die Ansagen von BossModReborn (A319, Stufe „alle", `DataCenter.PressReachesBeforeSnapshot`):**
+Jeder Pfad, der auf eine Ansage hin drückt – die Fenster für Tankbuster, Flächentreffer und Rückstoß, die
+Auffrischung vor einer Ansage (`BMRShouldRefreshBefore`), über sie die Einzelabwehr der Heiler und die Tränke –, gilt nur,
+solange ein Druck von jetzt an noch vor dem angesagten Zeitpunkt beim Server ankommt: Restzeit bis zur Ansage mehr als
+die Zeit, bis ein Druck hinausgehen kann (Animationssperre, eigener Zauber, Sperre jeder Fähigkeit), plus die gemessene
+Laufzeit. Der Zeitpunkt von BossModReborn ist der Snapshot: das Ende des Wirkens (`CastFinishAt`) oder die Auslösung der
+Aktion in seinen Bausteinen, der Übergang des markierten Zustands in seinem Zeitplan (Code `be8ff77`, 17.10.2026; bei
+Markern ohne Wirken eine Schätzung des Modulautors). Vorher galt eine feste Grenze von 0,6 s, ohne Herleitung.
+*Im Kampf:* Ein Druck, der nach dem Snapshot ankäme, unterbleibt und die Abklingzeit bleibt für den nächsten Treffer;
+einer, der noch rechtzeitig ankommt, geht auch unter 0,6 s. *Grenze:* Für Barrieren, Heilungen und den Schutz vor
+Rückstoß zählt vermutlich das Zufügen, das nach dem Snapshot liegt (unbelegt); dort ist die Frist um diesen Abstand zu
+früh – dieselbe Richtung wie die alte Grenze, nur kürzer.
 
 **Grenzen:** Vor der ersten gemessenen Laufzeit und dem ersten gemessenen Abstand – praktisch nur bis zum ersten Druck
 nach dem Laden des Plugins – gilt das alte Verhalten. Die letzte Messung schwankt mit dem Netz; eine zu lange macht die

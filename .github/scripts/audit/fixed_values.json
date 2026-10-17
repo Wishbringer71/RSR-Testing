@@ -101,14 +101,6 @@
   },
   {
    "file": "RotationSolver.Basic/DataCenter.cs",
-   "code": "Service.Config.UseBmrTimeline && BMRNextTankbusterIn > 0.6f && BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow;",
-   "values": [
-    "0.6"
-   ],
-   "status": "open"
-  },
-  {
-   "file": "RotationSolver.Basic/DataCenter.cs",
    "code": "private const byte RaiseLevel = 12;",
    "values": [
     "12"
@@ -229,14 +221,6 @@
    "code": "factor *= 0.95f;",
    "values": [
     "0.95"
-   ],
-   "status": "open"
-  },
-  {
-   "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
-   "code": "if (!Service.Config.UseBmrTimeline || !BMRActive || predictedIn is not (> 0.6f and < float.MaxValue) || predictedIn > statusDuration)",
-   "values": [
-    "0.6"
    ],
    "status": "open"
   },
@@ -794,14 +778,6 @@
    "values": [
     "2",
     "2"
-   ],
-   "status": "open"
-  },
-  {
-   "file": "RotationSolver.Basic/DataCenter.cs",
-   "code": "if (Service.Config.UseBmrTimeline && BMRNextRaidwideIn > 0.6f && BMRNextRaidwideIn <= Service.Config.BMRRaidwideMitWindow)",
-   "values": [
-    "0.6"
    ],
    "status": "open"
   },

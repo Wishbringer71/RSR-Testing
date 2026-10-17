@@ -8,9 +8,8 @@ Nach Wichtigkeit, also nach der Wirkung im Kampf: Sicherheit der Gruppe vor Scha
 Wahrscheinlichkeit, in seinem Profil (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop
 bearbeiten"). Stand 17.10.2026; fortgeschrieben mit jedem Befund.
 
-1. Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans.
-2. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
-3. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
+1. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
+2. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
 
 Wartet auf seine Entscheidung (Loop durch, Vorlage im Eintrag): Tankwechsel von der anderen Seite.
 
@@ -81,16 +80,6 @@ Frist „ohne Risiko" trägt, ist ungeprüft – voller Loop vor jedem Bau. Eben
 als Damage Up benannt sind, werden beim Messen nicht erkannt; wie oft es sie gibt, ist nicht erhoben. Umgekehrt bleibt
 ein Gegner, der den ganzen Kampf ein Damage Up trägt, ohne Messung, und eine Vorhersage unter Damage Up unterschätzt
 (sichere Richtung; die Wirktexte nennen keine Stärke, mit der sich hochrechnen ließe).
-
-**Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
-
-### Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans · N
-
-**Befund (A307):** Der Tankbuster-Plan drückt eine Minderung nur, solange sie vor dem Snapshot beim Server ankommt
-(Konzept 09, „Spielerweite Sperre und Frist"). Die übrigen Pfade, die für einen vorhergesagten Treffer drücken – Fenster
-aus BossModReborn, die Einzelabwehr der Heiler –, kennen diese Frist nicht. *Im Kampf:* Ein später Druck kostet eine
-Abklingzeit, ohne den Treffer zu ändern. **Vor dem Code offen:** ob die Zeitangabe von BossModReborn den Snapshot oder
-das Zufügen meint; ohne diesen Beleg ist die Frist dort nicht anwendbar.
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 

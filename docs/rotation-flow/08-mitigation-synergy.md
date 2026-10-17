@@ -611,8 +611,9 @@ BossModReborn öffnete für jede Vorhersage. In seinen Protokollen vom 06. bis 1
 
 **Grenzen:**
 - Ein Raidwide hinter einem Einzelmechanismus auf einen anderen, der zur selben Zeit oder kurz davor fällt, ist bis
-  zu dessen Auflösung unsichtbar. Löst der Einzelmechanismus weniger als 0,6 s vor dem Raidwide auf (der
-  Mindestvorlauf der Leser), kommt der Raidwide über BossModReborn gar nicht mehr; der Cast-Weg bleibt.
+  zu dessen Auflösung unsichtbar. Löst der Einzelmechanismus so kurz vor dem Raidwide auf, dass ein Druck den
+  Snapshot nicht mehr erreicht (der Mindestvorlauf der Leser, `DataCenter.PressReachesBeforeSnapshot`, A319), kommt
+  der Raidwide über BossModReborn gar nicht mehr; der Cast-Weg bleibt.
 - Ohne Modul fehlt die Vorhersage ganz, und es bleibt der reaktive Weg.
 
 ### Gegner-Debuffs am Tankbuster und am Raidwide

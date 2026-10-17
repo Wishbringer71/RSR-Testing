@@ -189,8 +189,8 @@ internal static class StateUpdater
 		}
 
 		if (DataCenter.InCombat && Service.Config.UseBmrTimeline
-			&& DataCenter.BMRNextRaidwideIn > 0.6f
-			&& DataCenter.BMRNextRaidwideIn <= Service.Config.BMRRaidwideMitWindow)
+			&& DataCenter.BMRNextRaidwideIn <= Service.Config.BMRRaidwideMitWindow
+			&& DataCenter.PressReachesBeforeSnapshot(DataCenter.BMRNextRaidwideIn))
 		{
 			// "Skip mitigation for small area casts" promises that a learned area cast which leaves everybody
 			// above the area heal line no longer raises the party mitigation. The cast path keeps that; this
@@ -608,8 +608,8 @@ internal static class StateUpdater
 
 		// Proactive knockback prevention via BossModReborn timeline
 		if (DataCenter.InCombat && Service.Config.UseBmrTimeline
-			&& DataCenter.BMRNextKnockbackIn > 0.6f
-			&& DataCenter.BMRNextKnockbackIn <= Service.Config.BMRKnockbackWindow)
+			&& DataCenter.BMRNextKnockbackIn <= Service.Config.BMRKnockbackWindow
+			&& DataCenter.PressReachesBeforeSnapshot(DataCenter.BMRNextKnockbackIn))
 		{
 			return true;
 		}

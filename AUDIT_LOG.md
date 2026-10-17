@@ -8220,6 +8220,39 @@ Schaden geht. *Ausgeliefert, nichts ändert sich:* für alle, die beide Voreinst
 
 **Prüfgrad:** statisch, Prüfskripte, Kompilieren im Prüflauf.
 
+### A319 · Frist vor dem Snapshot für die Ansagen von BossModReborn (17.10.2026)
+
+TODO-Punkt „Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans" (A307) nach seiner Reihenfolge.
+
+**Beleg zur Zeitangabe** (BossModReborn `be8ff77`, 17.10.2026; Gemeinschaftsquelle, kein Spielbeleg): `Hints.*DamageIn`
+liefert `PredictedDamage[i].Activation`. Die Bausteine setzen sie auf `Module.CastFinishAt(cast)` – das Ende des
+Wirkens – (`SingleTargetCast`, `RaidwideCast`, `CastSharedTankbuster`), bei Sichtwirken mit folgender Aktion auf deren
+Zeitpunkt (`CastFinishAt(spell, delay)`), bei Markern auf Marker plus eine Schätzung (`IconSharedTankbuster`: 5,1 s).
+`Timeline.*In` liefert den Übergang des Zustands mit dem Merkmal – `ActorCastEnd` am Ende des Wirkens,
+`ComponentCondition` bei der Aktion. Gemeint ist also der Snapshot, nicht das Zufügen.
+
+**Befund am Code:** Fünf Stellen ließen eine Ansage erst gelten, wenn sie mehr als 0,6 s entfernt war – das Fenster für
+Tankbuster (`BMRTankbusterImminent`, über es die Einzelabwehr der Heiler und der Notfalltrank), zweimal für Flächentreffer
+(`AreaHitReachesPlayer`, `StateUpdater`), für Rückstoß und `BMRShouldRefreshBefore`. Die Zahl stammt aus der
+Einbindung von BossModReborn (`25c5f342c`, upstream) und aus `c93a8bce5`, ohne Herleitung; in `fixed_values.json` als
+offen geführt.
+
+**Umgesetzt:** `DataCenter.PressReachesBeforeSnapshot(hitIn)` – die Frist des Tankbuster-Plans auf Stufe „alle": Restzeit
+mehr als die Zeit, bis ein Druck hinausgehen kann (`GetInstantHealLeadTime`, Sperre jeder Fähigkeit), plus
+`TankbusterForecast.RoundTrip`. Alle fünf Stellen fragen sie statt der 0,6 s.
+
+**Im Kampf:** Ein Druck, der den Snapshot verfehlte, unterbleibt; die Abklingzeit bleibt für den nächsten Treffer. Bei
+kurzer Laufzeit geht ein rechtzeitiger Druck auch unter 0,6 s noch hinaus.
+
+**Falsifikation.** *Kein Defekt:* Die 0,6 s waren weder gemessen noch hergeleitet; bei langer Laufzeit (über 0,6 s
+abzüglich Sperre) ließen sie späte Drücke durch. *Option falsch:* Für Barrieren, Heilungen und Rückstoßschutz zählt
+vermutlich das Zufügen, nach dem Snapshot (unbelegt) – dort ist die Frist zu früh, um höchstens diesen Abstand; die alte
+Grenze war es auch, meist mehr. Marker-Bausteine schätzen den Zeitpunkt; liegt die Schätzung zu früh, unterbleibt ein
+Druck, der gewirkt hätte – wie vorher bei 0,6 s. *Ausgeliefert, nichts ändert sich:* ohne BossModReborn-Modul, und wenn
+Laufzeit plus Sperre nahe 0,6 s liegen.
+
+**Prüfgrad:** statisch, Prüfskripte, Kompilieren im Prüflauf.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

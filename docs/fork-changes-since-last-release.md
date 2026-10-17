@@ -116,6 +116,14 @@ and the Paladin's emergency Intervention could go to the party member with the l
 of them now uses its own target rule. The Astrologian's Synastry, which relied on the leftover heal rule, now picks
 its target the way the single-target heal it copies does.
 
+## BossModReborn warnings: a press counts only if it arrives in time
+
+Defences pressed for a hit BossModReborn announces - the tankbuster, raidwide and knockback windows and the refresh
+before a predicted hit - used a fixed 0.6 s cut-off. They now go out only while a press made now still reaches the
+server before the announced moment (the end of the cast), from your measured round trip and the time until the next
+press can go out: a late press no longer spends a cooldown on a hit it cannot change, and a timely one is no longer
+held back by the fixed margin.
+
 ## Tanks: provoke settings do what they say
 
 - The rescue of a co-tank at your invulnerability HP has its own setting, "Provoke the enemy off a co-tank at the

@@ -2852,7 +2852,8 @@ internal static class DataCenter
 			// Unless the prediction names whom it hits and leaves him out (A273).
 			if (BMRRaidwideHitsPlayer ?? true)
 			{
-				if (Service.Config.UseBmrTimeline && BMRNextRaidwideIn > 0.6f && BMRNextRaidwideIn <= Service.Config.BMRRaidwideMitWindow)
+				if (Service.Config.UseBmrTimeline && BMRNextRaidwideIn <= Service.Config.BMRRaidwideMitWindow
+					&& PressReachesBeforeSnapshot(BMRNextRaidwideIn))
 				{
 					return true;
 				}
@@ -4914,10 +4915,36 @@ internal static class DataCenter
 		=> BMRTankbusterImminent && (BMRTankbusterHitsPlayer ?? (Role == JobRole.Tank || PartyTank == null));
 
 	/// <summary>
-	/// BMR predicts a tankbuster inside the user's single-target mitigation window.
+	/// BMR predicts a tankbuster inside the user's single-target mitigation window, early enough for a press made now
+	/// to count (<see cref="PressReachesBeforeSnapshot"/>).
 	/// </summary>
 	public static bool BMRTankbusterImminent =>
-		Service.Config.UseBmrTimeline && BMRNextTankbusterIn > 0.6f && BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow;
+		Service.Config.UseBmrTimeline && BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow
+		&& PressReachesBeforeSnapshot(BMRNextTankbusterIn);
+
+	/// <summary>
+	/// Would a press made now reach the server before a hit BossModReborn predicts <paramref name="hitIn"/> seconds
+	/// ahead? Its time is the end of the cast or the moment the action goes off (<c>CastFinishAt</c> in its components,
+	/// the transition of the flagged state in its timeline; BossModReborn be8ff77) - the snapshot, where a mitigation
+	/// has to stand. A press goes out once the animation lock, an own cast or a block on every ability ends, and takes
+	/// the measured round trip to arrive (concept 09, "Spielerweite Sperre und Frist", the deadline of the tankbuster
+	/// plan). Before the first measurement only the time until it can go out counts.
+	/// </summary>
+	internal static bool PressReachesBeforeSnapshot(float hitIn)
+	{
+		if (hitIn is <= 0f or >= float.MaxValue)
+		{
+			return false;
+		}
+
+		var free = ObjectHelper.GetInstantHealLeadTime();
+		if (StatusHelper.PlayerAbilitiesLocked(out var lockedFor))
+		{
+			free = Math.Max(free, lockedFor);
+		}
+
+		return hitIn - Math.Max(0f, TankbusterForecast.RoundTrip) > free;
+	}
 	public static float BMRSpecialModeIn { get; set; } = float.MaxValue;
 	public static SpecialMode BMRSpecialModeType { get; set; } = SpecialMode.Normal;
 

@@ -1818,7 +1818,8 @@ public partial class CustomRotation
 	/// <param name="statusIDs">The status or statuses whose remaining time decides the refresh.</param>
 	public static bool BMRShouldRefreshBefore(float predictedIn, float statusDuration, bool statusFromSelf, IBattleChara? target, IBaseAction? action, params StatusID[] statusIDs)
 	{
-		if (!Service.Config.UseBmrTimeline || !BMRActive || predictedIn is not (> 0.6f and < float.MaxValue) || predictedIn > statusDuration)
+		if (!Service.Config.UseBmrTimeline || !BMRActive || predictedIn > statusDuration
+			|| !DataCenter.PressReachesBeforeSnapshot(predictedIn))
 		{
 			return false;
 		}
