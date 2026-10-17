@@ -4962,7 +4962,9 @@ internal static class DataCenter
 	public static Func<Vector3, Vector3, bool>? BMRIsDashSafe { get; set; }
 
 	/// <summary>
-	/// Delegate wired up by BossModUpdater to the <c>Hints.IsFixedDashSafe</c> IPC endpoint.
+	/// Delegate wired up by BossModUpdater for a dash whose landing point the game fixes - a fixed distance along the
+	/// facing, or a backstep from the target - with the landing point RSR computes. It asks BossModReborn's
+	/// <c>Hints.IsDashSafe</c>: its own <c>Hints.IsFixedDashSafe</c> takes range and direction, not two points (A313).
 	/// When null, BossModReborn is not available and all fixed dashes are considered safe.
 	/// </summary>
 	public static Func<Vector3, Vector3, bool>? BMRIsFixedDashSafe { get; set; }

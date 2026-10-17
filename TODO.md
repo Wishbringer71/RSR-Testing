@@ -8,34 +8,19 @@ Nach Wichtigkeit, also nach der Wirkung im Kampf: Sicherheit der Gruppe vor Scha
 Wahrscheinlichkeit, in seinem Profil (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop
 bearbeiten"). Stand 17.10.2026; fortgeschrieben mit jedem Befund.
 
-1. Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn – Schaden, nicht Sicherheit.
-2. Gelehrter: Recitation ohne Rückfall vor Ablauf.
-3. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
-4. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
-5. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
-6. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
-7. Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans (Beleg zu BossModReborn zuerst).
-8. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
-9. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
+1. Gelehrter: Recitation ohne Rückfall vor Ablauf.
+2. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
+3. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
+4. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
+5. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
+6. Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans (Beleg zu BossModReborn zuerst).
+7. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
+8. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
 
 Warten auf Daten, nicht bearbeitbar: Aktualisierungskosten je Teilschritt (Protokoll „update cost by step“, A310); Tankbuster nach einem Marker ohne Wirken (Protokoll „no cast taken for it“, A308); Treffer aus einer Quelle, die die Objekttabelle nicht hält (Protokoll); Samurai
 Feint und Tengentsu (Protokoll eines Samurai); BossModReborn-FATE-Modul in Occult Crescent (Adressat BossModReborn).
 
 ## Defekte
-
-### Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn · N, U
-
-`BMRTimeline_IPCSubscriber.IsFixedDashSafe` abonniert `Hints.IsFixedDashSafe` als `Func<Vector3, Vector3, bool>`
-(Upstream, 33e6acb1f, 07.05.2026); BossModReborn registriert den Endpunkt als `(float range, bool backwards)`
-(b6698a19f, 05.05.2026; unverändert in be8ff77). EzIPC mit `SafeWrapper.AnyException` gibt bei einer Ausnahme den
-Vorgabewert zurück, also `false` (ECommons `SafeWrapperAny`), und Dalamud wirft: `CallGateChannel.CheckAndConvertArgs`
-versucht einen `Vector3` per JSON in `float` und `bool` zu wandeln und meldet `IpcTypeMismatchError` (Dalamud 896d831,
-gelesen 13.10.2026). Bei laufendem BossModReborn gilt damit jeder feste Sprung und jeder Rückwärtssprung als
-gefährlich: `CheckMovementSafety` lehnt Displacement (Rotmagier) und Hissatsu: Yaten (Samurai) ab, seit 17aba32af
-(29.09.2026) über die Rückwärtssprung-Prüfung, dazu Repelling Shot und die übrigen `FixedDistanceMove`-Aktionen. Im
-Kampf vermutlich: der Rotmagier nimmt Engagement statt Displacement (gefolgert, nicht am Code verfolgt). Offen: die
-Abbildung von Start und Ziel auf Weite und Richtung — BossModReborn rechnet das Ziel aus der aktuellen Blickrichtung,
-RSR den Rückwärtssprung vom Ziel weg.
 
 ### Gelehrter: Recitation ohne Rückfall vor Ablauf · N
 
@@ -466,7 +451,7 @@ Geprüfte Nicht-Fehlstellen: `DTRManualAuto` bildet den vom Enum-Text beschriebe
 
 ### Das Aktionsfenster rechnet die Bewegungssicherheit ein zweites Mal · U
 
-**Befund (A212):** `MainWindow.GetMovementSafetyStatus` (bis zum Upstream-Umbau vom 04.10.2026 in `RotationConfigWindow`) wiederholt `ActionTargetInfo.CheckMovementSafety` in eigener Form. Die beiden laufen schon auseinander: Die Regel „am Ziel stehend ist ein Sprint nur Schaden" fehlt im Fenster. **Kosten:** Das Fenster zeigt eine andere Antwort als die, nach der die Regel entscheidet; im Kampf ändert es nichts. **Auflösung:** `CheckMovementSafety` gibt Ergebnis und Grund heraus, das Fenster zeigt sie an.
+**Befund (A212):** `MainWindow.GetMovementSafetyStatus` (bis zum Upstream-Umbau vom 04.10.2026 in `RotationConfigWindow`) wiederholt `ActionTargetInfo.CheckMovementSafety` in eigener Form. Die beiden laufen schon auseinander: Die Regel „am Ziel stehend ist ein Sprint nur Schaden" fehlt im Fenster. Die festen Sprünge rechnen seit A313 in beiden gleich (Weite aus dem Wirktext entlang der Blickrichtung). **Kosten:** Das Fenster zeigt eine andere Antwort als die, nach der die Regel entscheidet; im Kampf ändert es nichts. **Auflösung:** `CheckMovementSafety` gibt Ergebnis und Grund heraus, das Fenster zeigt sie an.
 
 ### Plugin-Identität ist unverändert die des Upstreams · N
 

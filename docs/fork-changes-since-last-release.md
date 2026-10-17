@@ -109,6 +109,14 @@ and the Paladin's emergency Intervention could go to the party member with the l
 of them now uses its own target rule. The Astrologian's Synastry, which relied on the leftover heal rule, now picks
 its target the way the single-target heal it copies does.
 
+## Movement abilities while BossModReborn runs
+
+With BossModReborn running, every fixed dash and every backstep was refused: RSR asked BossModReborn's fixed-dash
+check with arguments it does not take, and the failed call read as "unsafe". Hell's Ingress and Hell's Egress, Hissatsu:
+Yaten, Displacement and Repelling Shot - on a move command, or Displacement under its Red Mage option - now go out
+when their landing point lies outside a danger zone. RSR computes that point from the distance in the effect text and
+asks BossModReborn about the path. Repelling Shot now jumps away from an enemy; it was aimed at you and never went out.
+
 ## Tanks: the tankbuster table learns from tanks only
 
 The table of tankbuster sizes, which a tank's plan reads, also took hits on party members who were not tanks - a melee

@@ -415,7 +415,14 @@ public partial class MainWindow
 			{
 				case SpecialActionType.FixedDistanceMoveForward:
 					{
-						var range = action.TargetInfo.Range;
+						// The distance along the facing as the effect text states it, the point
+						// ActionTargetInfo.CheckMovementSafety measures (A313); the action's range is 0 for a self move.
+						var range = action.Setting.BackstepDistance;
+						if (range <= 0f)
+						{
+							return new MovementSafetyResult { Status = MovementSafetyStatus.NotApplicable, Reason = "Distance unknown" };
+						}
+
 						var faceVector = Player.Object.GetFaceVector();
 						var destination = playerPos + (Vector3.Normalize(faceVector) * range);
 						var isSafe = DataCenter.IsFixedDashSafe(playerPos, destination);
@@ -428,7 +435,14 @@ public partial class MainWindow
 
 				case SpecialActionType.FixedDistanceMoveBackward:
 					{
-						var range = action.TargetInfo.Range;
+						// The distance along the facing as the effect text states it, the point
+						// ActionTargetInfo.CheckMovementSafety measures (A313); the action's range is 0 for a self move.
+						var range = action.Setting.BackstepDistance;
+						if (range <= 0f)
+						{
+							return new MovementSafetyResult { Status = MovementSafetyStatus.NotApplicable, Reason = "Distance unknown" };
+						}
+
 						var faceVector = Player.Object.GetFaceVector();
 						var destination = playerPos - (Vector3.Normalize(faceVector) * range);
 						var isSafe = DataCenter.IsFixedDashSafe(playerPos, destination);

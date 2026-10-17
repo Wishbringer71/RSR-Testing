@@ -1177,9 +1177,25 @@ public struct ActionTargetInfo(IBaseAction action)
 		{
 			case SpecialActionType.FixedDistanceMoveForward:
 			case SpecialActionType.FixedDistanceMoveBackward:
-				// Fixed-distance moves: use IsFixedDashSafe
-				return DataCenter.IsFixedDashSafe(playerPos, destination)
+			{
+				// The game moves the character along its facing by the distance the effect text states ("Quickly
+				// dash 15 yalms forward"). The target is the player himself, so the destination handed in is where he
+				// stands; the landing point is computed here (A313). Without a known distance there is nothing to
+				// measure: refused while BossModReborn could answer, as before, allowed without it.
+				var distance = action.Setting.BackstepDistance;
+				if (distance <= 0f)
+				{
+					return DataCenter.BMRIsFixedDashSafe == null
+						|| Refused("the action's distance is not known, so its landing point is not either", measured: false);
+				}
+
+				var facing = Player.Object.Rotation;
+				var along = specialType == SpecialActionType.FixedDistanceMoveBackward ? -distance : distance;
+				var landingPoint = new Vector3(playerPos.X + (MathF.Sin(facing) * along), playerPos.Y,
+					playerPos.Z + (MathF.Cos(facing) * along));
+				return DataCenter.IsFixedDashSafe(playerPos, landingPoint)
 					|| Refused("the landing point is in a danger zone");
+			}
 
 			case SpecialActionType.HostileMovingForward:
 			case SpecialActionType.FriendlyMovingForward:

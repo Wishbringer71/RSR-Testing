@@ -8047,6 +8047,39 @@ treffen; dann bleibt alles wie vorher. Ältere Werte aus Nicht-Tank-Treffern sin
 
 **Prüfgrad:** statisch, Prüfskripte, Kompilieren im Prüflauf.
 
+### A313 · Feste Sprünge und Rücksprünge unter BossModReborn (17.10.2026)
+
+TODO-Punkt „Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn" nach seiner Reihenfolge.
+
+**Belegt (BossModReborn be8ff77, 12.10.2026, am 17.10. noch aktuell):** `IPCProvider` registriert `Hints.IsDashSafe(Vector3
+from, Vector3 to)`, `Hints.IsFixedDashSafe(float range, bool backwards)` aus der Blickrichtung und `Hints.IsBackdashSafe(
+Vector3 enemyPos, float range)`. RSR abonnierte `IsFixedDashSafe` als `Func<Vector3, Vector3, bool>`; EzIPC mit
+`SafeWrapper.AnyException` gab bei der Typprüfung von Dalamud `false` zurück. Jeder feste Sprung und jeder Rücksprung galt
+damit als unsicher, solange BossModReborn lief. Zusätzlich am Code: Für die festen Sprünge reichte RSR als Ziel die
+Position des Ziels weiter – bei ihnen der Spieler selbst –, also gar keinen Landepunkt; Repelling Shot („Jump 10 yalms
+away from current target") war als fester Rückwärtssprung auf den Spieler gerichtet und damit auch ohne BossModReborn
+nicht benutzbar. Das Aktionsfenster rechnete den festen Sprung mit der Reichweite der Aktion (0 bei Selbstzielen).
+
+**Optionen.** Den Endpunkt mit seiner wahren Signatur abonnieren und Weite und Richtung übergeben (zwei Rechnungen
+derselben Frage, die Blickrichtung zum Zeitpunkt der Prüfung); den Landepunkt selbst rechnen und `IsDashSafe(from, to)`
+fragen (gewählt: ein Endpunkt für alle Bewegungen, Rücksprünge rechnete RSR schon so).
+
+**Umgesetzt:** Abonnement von `Hints.IsFixedDashSafe` entfernt; `DataCenter.BMRIsFixedDashSafe` (öffentlich, bleibt) zeigt
+auf die freie Prüfung. `CheckMovementSafety` rechnet den festen Sprung entlang der Blickrichtung mit
+`ActionSetting.BackstepDistance` (Hell's Ingress/Egress 15, Wirktext); ohne Weite mit BossModReborn abgelehnt, ohne es
+erlaubt (wie bisher). Repelling Shot ist ein Rücksprung (`HostileAttackBackstep`, 10). Das Aktionsfenster rechnet die
+festen Sprünge ebenso. Die Weiten stehen als Ausnahmen in `fixed_values.json` (nur im Wirktext, kein Blatt).
+
+**Im Kampf:** Die Sprünge fallen nur über Bewegungsbefehle (`MoveForwardAbility`/`MoveBackAbility`) oder die Option des
+Rotmagiers „Use Displacement after Engagement (use at own risk)". Mit BossModReborn gehen sie wieder, wenn der Landepunkt
+außerhalb einer Gefahrenzone liegt; vorher nie. Repelling Shot geht auf einen Gegner, vorher gar nicht.
+
+**Falsifikation.** *Kein Defekt:* am Quelltext beider Seiten belegt. *Option falsch:* Weicht die Blickrichtung beim
+Auslösen ab (der Charakter dreht sich zum Ziel), liegt der geprüfte Punkt daneben – für Hell's Ingress/Egress (Selbstziel)
+dreht sich nichts. *Ausgeliefert, nichts ändert sich:* ohne Bewegungsbefehl und ohne die Rotmagier-Option.
+
+**Prüfgrad:** statisch (BossModReborn und RSR am Quelltext), Prüfskripte, Kompilieren im Prüflauf.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

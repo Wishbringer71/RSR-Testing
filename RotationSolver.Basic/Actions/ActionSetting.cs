@@ -64,8 +64,8 @@ public enum SpecialActionType : byte
 	ObjectBasedMovement,
 
 	/// <summary>
-	/// An attack on a <b>hostile</b> target that also jumps the character backwards, away from it
-	/// (e.g. Displacement on RDM, Hissatsu: Yaten on SAM). Targeting uses the standard hostile
+	/// An action on a <b>hostile</b> target that jumps the character backwards, away from it
+	/// (e.g. Displacement on RDM, Hissatsu: Yaten on SAM, Repelling Shot on BRD). Targeting uses the standard hostile
 	/// pipeline; the landing point lies <see cref="ActionSetting.BackstepDistance"/> behind the
 	/// player, on the line from the target, and is validated for safety. Appended last, so the
 	/// ordinals of the members above stay as they are.
@@ -129,7 +129,9 @@ public class ActionSetting
 
 	/// <summary>
 	/// For <see cref="SpecialActionType.HostileAttackBackstep"/> actions: how far the character jumps
-	/// back, in yalms, as the action's effect text states it.
+	/// back, in yalms, as the action's effect text states it. For the
+	/// <see cref="SpecialActionType.FixedDistanceMoveForward"/> and <see cref="SpecialActionType.FixedDistanceMoveBackward"/>
+	/// actions the distance along the facing, likewise (A313); unset there, the landing point is unknown.
 	/// </summary>
 	public float BackstepDistance { get; set; } = 0;
 
