@@ -8,7 +8,7 @@ Nach Wichtigkeit, also nach der Wirkung im Kampf: Sicherheit der Gruppe vor Scha
 Wahrscheinlichkeit, in seinem Profil (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop
 bearbeiten"). Stand 17.10.2026; fortgeschrieben mit jedem Befund.
 
-1. Krieger: Nascent Flash; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
+1. Tanks: Hilfe für den Co-Tank vor seinem Tankbuster (mit dem Defekt der Revolverklinge); Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
 2. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
 
 Wartet auf seine Entscheidung (Loop durch, Vorlage im Eintrag): Tankwechsel von der anderen Seite.
@@ -49,11 +49,32 @@ Minderung" (`Skip mitigation for small area casts`). *Messmittel:* `DefenseTrace
 defence open, nothing chosen" mit den Quellen; zusammen mit „hit you" trennt eine Aufzeichnung eines Samurai-Kampfs
 „Flagge nie offen" von „offen, alles abgelehnt". Auflösung: ein solches Protokoll.
 
-### Krieger: Nascent Flash — offene Bausteine · N, U
+### Tanks: Hilfe für den Co-Tank vor seinem Tankbuster (Nascent Flash, Intervention, The Blackest Night, Herz des Korunds) · N, U
 
-Nach seinen Kriterien (29.09.2026) bewertet und gebaut (Konzept 09, „Krieger: Urimpuls für sich oder Urflackern für andere"; A226). Offen:
-- *Offen, jetzt mit Quelle:* Nascent Flash als Minderung für den anderen Tank vor dessen Tankbuster. The Balance (Warrior Basic Guide, Makros, 02.10.2026): „Most often on the co-tank of your eight-person party.“ Braucht die Erkennung des Tankbusters auf dem anderen Tank und die Abwägung über die vorhandene Triage.
-- *Upstream-Bauform:* Raw Intuition/Bloodwhetting fällt nur, solange das Ziel des Kriegers ihn anvisiert (`PlayerIsTargetOnSelf`). Ein Off-Tank mit Tankbuster-Marker bekommt es aus der Einzelabwehr nicht.
+**Stand (17.10.2026, Loop begonnen):** The Balance setzt Nascent Flash „most often on the co-tank" (Warrior Basic Guide,
+02.10.2026); dieselbe Lage haben alle vier Tanks mit ihrer Hilfe für andere (Konzept 09, „Die Abwehr der vier Tanks",
+Rolle „Hilfe für andere") – nach „Universell zuerst" eine Regel auf Stufe „Tanks", je Job nur die Aktion. Gebaut ist sie
+nirgends; nur die Revolverklinge versucht es über die Zielart `Tankbuster`.
+
+**Defekt, gefunden in diesem Loop (Text bindet):** `DataCenter.IsCastingTankVfx` füllt `TankbusterTargets` für einen
+Tank nur mit Markern auf ihm selbst (`if (!isTank || isPlayerTarget)`, upstream `cbcc9d537`). Die Einstellung der
+Revolverklinge „Only use on tankbuster targets prioritizing self" (Herz des Korunds, Aurora; ab Werk gewählt) erreicht
+den Co-Tank deshalb nie. Die Bedingung vermengt zwei Ausgaben: ob ein Marker den Spieler betrifft (für ihn richtig) und
+wen ein Tankbuster trifft (dort falsch). Gezielte Tankbuster-Zauber auf andere Mitglieder stehen gar nicht in der Liste.
+
+**Bausteine für die Regel:**
+- *Erkennung (Stufe „alle"):* Marker auf einem anderen Tank der eigenen Gruppe (ohne Zeitangabe, A308); gezielter
+  gelisteter oder gemessener Tankbuster auf ihn (Restzeit des Wirkens); BossModReborn nur, wenn die Maske ihn benennt –
+  belegt ist nur Bit 0 = Spieler, die Zuordnung der übrigen Plätze zu Gruppenmitgliedern nicht.
+- *Entscheidung (Stufe „Tanks"):* Hilfe auf ihn, solange der Druck vor dem Snapshot ankommt (A319), er nicht über den
+  Treffer unverwundbar ist und die Hilfe nicht schon trägt; nicht, wenn der Spieler sie selbst braucht (Krieger:
+  bestehende Triage `NeedsBloodwhettingHimself`; die anderen: eigener Tankbuster vor Ablauf der Abklingzeit oder
+  kritische Klasse). Zielwahl ohne neue `TargetType` prüfen (Vertrag: wird die Zielart gespeichert?).
+- *Upstream-Bauform:* Raw Intuition/Bloodwhetting fällt nur, solange das Ziel des Kriegers ihn anvisiert
+  (`PlayerIsTargetOnSelf`). Ein Off-Tank mit Tankbuster-Marker bekommt es aus der Einzelabwehr nicht.
+
+**Konzept:** `docs/rotation-flow/09-tank-selfprotection.md` („Krieger: Urimpuls für sich oder Urflackern für andere",
+„Die Abwehr der vier Tanks")
 
 ### Rotationen gegen The Balance abgleichen · N
 
