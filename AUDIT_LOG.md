@@ -8253,6 +8253,33 @@ Laufzeit plus Sperre nahe 0,6 s liegen.
 
 **Prüfgrad:** statisch, Prüfskripte, Kompilieren im Prüflauf.
 
+### A320 · Tänzer: Improvised Finish ohne Stapelaufbau – Regel entfällt (17.10.2026)
+
+TODO-Punkt „Improvised Finish — Stapel aufbauen bei angekündigtem Treffer" nach seiner Reihenfolge; meine Entscheidung
+laut Eintrag (Rechnung vor Bau, dann bauen ohne Option oder entfallen).
+
+**Mechanik (`ActionId.resx`):** Improvisation – Stapel alle 3 s bis 4, „Effect ends upon using another action or moving
+(including facing a different direction)". Improvised Finish – Barriere 5/6/7/8/10 % der maximalen LP bei 0–4 Stapeln,
+30 s.
+
+**Rechnung:** Ob ein Stapel einen Tod verhindert, verlangt die Größe des Treffers. Sie liegt nur für das laufende,
+gemessene Wirken vor (`AnnouncedAreaShare`, Lebensdauer ein GCD; BossModReborn liefert keine Größe und keine Aktion,
+belegt in `AnnouncedHitIsSmall`). Ein solches Wirken läuft drei bis fünf Sekunden; nach der Frist vor dem Snapshot (A319)
+bleibt Zeit für höchstens einen Stapel: +1 Prozentpunkt der maximalen LP. Er hilft nur einem Mitglied, das der Treffer
+mit 5 % Barriere tötet und mit 6 % nicht, und nur, wenn Improvisation in diesem Moment läuft (RSR beginnt sie unter
+Flächenheilbedarf, also nach einem Treffer). Kosten: drei Sekunden ohne GCD und Fähigkeit, Abbruch bei jeder Bewegung.
+
+**Entscheidung:** entfällt. Die Wahrscheinlichkeit des Nutzens ist klein und nicht messbar, die Kosten sicher. Auf
+Ansagen ohne Größe zu stapeln hieße bis zwölf Sekunden ohne Aktion für eine Barriere unbekannten Bedarfs. Ein vorbeugender
+Beginn von Improvisation vor einem Treffer ist eine andere Regel und nicht Gegenstand.
+
+**Falsifikation.** *Kein Defekt:* richtig – es war eine offene Verbesserung, kein Defekt. *Option falsch (entfallen
+lassen):* Gegenprobe – eine Ansage mit langem Vorlauf ließe vier Stapel (+5 Punkte) zu; ohne Größe ist der Nutzen nicht
+rechenbar, die Regel verstieße gegen „Sicherheit … gewichtet mit der Wahrscheinlichkeit". *Ausgeliefert, nichts ändert
+sich:* Verhalten unverändert, nur das Konzept hält die Entscheidung.
+
+**Prüfgrad:** statisch (Wirktexte, Code).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

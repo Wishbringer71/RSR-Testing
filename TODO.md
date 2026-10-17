@@ -8,7 +8,7 @@ Nach Wichtigkeit, also nach der Wirkung im Kampf: Sicherheit der Gruppe vor Scha
 Wahrscheinlichkeit, in seinem Profil (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop
 bearbeiten"). Stand 17.10.2026; fortgeschrieben mit jedem Befund.
 
-1. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
+1. Krieger: Nascent Flash; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
 2. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
 
 Wartet auf seine Entscheidung (Loop durch, Vorlage im Eintrag): Tankwechsel von der anderen Seite.
@@ -48,10 +48,6 @@ Unverändert seit früher: beide nur ohne Zanshin Ready (`!HasZanshinReady`, Ups
 Minderung" (`Skip mitigation for small area casts`). *Messmittel:* `DefenseTrace.log` schreibt jetzt auch „area
 defence open, nothing chosen" mit den Quellen; zusammen mit „hit you" trennt eine Aufzeichnung eines Samurai-Kampfs
 „Flagge nie offen" von „offen, alles abgelehnt". Auflösung: ein solches Protokoll.
-
-### Tänzer: Improvised Finish — Stapel aufbauen bei angekündigtem Treffer · N
-
-Seit A202 wird Improvised Finish sofort gewirkt (5 %). Offen als Verbesserung: bei angekündigtem Flächentreffer Rising Rhythm aufbauen (bis 4 Stapel, 10 %), je Stapel drei Sekunden ohne Aktion. Meine offene Arbeit, keine Frage an ihn: Der Loop muss rechnen, ob die zusätzliche Barriere einen Tod verhindert, den die 5 % nicht verhindern (gemessener Treffer gegen vorausberechnete Gesundheit, dieselbe Rechnung wie die Schranke), und ob die Zeit bis zum Treffer überhaupt einen Stapel zulässt; erst danach steht fest, ob die Regel ohne Option gebaut wird oder entfällt. Konzept 14, „Wechselwirkungen und Zeit".
 
 ### Krieger: Nascent Flash — offene Bausteine · N, U
 
