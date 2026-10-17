@@ -8,17 +8,16 @@ Nach Wichtigkeit, also nach der Wirkung im Kampf: Sicherheit der Gruppe vor Scha
 Wahrscheinlichkeit, in seinem Profil (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop
 bearbeiten"). Stand 17.10.2026; fortgeschrieben mit jedem Befund.
 
-1. Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle.
-2. Tankbuster-Tabelle misst auch an Nicht-Tanks.
-3. Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn – Schaden, nicht Sicherheit.
-4. Gelehrter: Recitation ohne Rückfall vor Ablauf.
-5. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
-6. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
-7. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
-8. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
-9. Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans (Beleg zu BossModReborn zuerst).
-10. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
-11. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
+1. Tankbuster-Tabelle misst auch an Nicht-Tanks.
+2. Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn – Schaden, nicht Sicherheit.
+3. Gelehrter: Recitation ohne Rückfall vor Ablauf.
+4. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
+5. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
+6. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
+7. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
+8. Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans (Beleg zu BossModReborn zuerst).
+9. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
+10. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
 
 Warten auf Daten, nicht bearbeitbar: Aktualisierungskosten je Teilschritt (Protokoll „update cost by step“, A310); Tankbuster nach einem Marker ohne Wirken (Protokoll „no cast taken for it“, A308); Treffer aus einer Quelle, die die Objekttabelle nicht hält (Protokoll); Samurai
 Feint und Tengentsu (Protokoll eines Samurai); BossModReborn-FATE-Modul in Occult Crescent (Adressat BossModReborn).
@@ -176,22 +175,6 @@ Verwundbarkeit trägt oder eine Wiederholung nicht überlebt, ohne tief zu stehe
 Co-Tank-Provoke zog den Boss von einem Tank unter Unverwundbarkeit) gehört in die Bedingungen.
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
-
-### Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle · N, R
-
-**Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`
-
-**Vorgabe des Auftraggebers:** „bossmod liefert nicht für jeden boss werte, sondern nur für unterstützte module. und da ist der abdeckungsgrad in bossmod auch unterschiedlich. sich auf bossmod zu 100% zu verlassen ist fahrlässig."
-
-**Erhoben:** Jede Stelle, die **vor** dem Einschlag mindert, liest `BMRShouldRefreshBefore` — alle vier Tanks (Nebula/Guardian/Damnation/Shadowed Vigil und Rampart), Barde, Maschinist und Tänzer (Troubadour, Tactician, Shield Samba) und der Beschwörer (Schimmerschild). Fällt BMR aus, fällt die ganze proaktive Ebene aus; es bleibt der reaktive Weg, der erst greift, wenn der Cast läuft und den Vorfilter passiert.
-
-**Zwei stille Ausfallarten:** kein Modul für diesen Kampf, oder ein Modul, das diese Ereignisart nicht führt. Beide kommen als `float.MaxValue` an und lesen sich wie „es kommt nichts". Die Diagnoseseite nennt jetzt Modul und Vorhersagelage je Ereignisart, sodass der Ausfall wenigstens ablesbar ist.
-
-**Der Weg dahin ist gebaut, aber nur an einer Stelle:** `IsHostileCastingLargeArea` nutzt den gemessenen Anteil je Aktion — die einzige BMR-unabhängige Vorhersagequelle im Baum. Dieselbe Quelle könnte die proaktive Schicht der übrigen Jobs tragen.
-
-**Seine Richtung ist benannt:** „daher die eigene liste mit dem aoe-schadensausmaß“ — die Messung ist als Ersatz für die fehlende Verlässlichkeit gedacht, nicht als Zusatz. Der Umbau der proaktiven Schicht auf diese Quelle ist damit keine offene Richtungsfrage mehr, sondern eine Frage von Umfang und Reihenfolge.
-
-**Nicht bearbeitet:** Der Umbau trifft acht Rotationsdateien plus die gemeinsamen Helfer, alle in seinem Profil (alle Kampfjobs). Er braucht einen eigenen Loop über die Frage, welche Vorlaufzeit eine gemessene Größe ohne angekündigten Zeitpunkt trägt; eine Spielbeobachtung als Voraussetzung ist nicht seine Aufgabe.
 
 ### Dieselbe Frage steht bei Tankbustern, Rückstoß und Unterbrechung offen · N
 

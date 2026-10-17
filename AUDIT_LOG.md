@@ -7999,6 +7999,30 @@ nichts; das Protokoll gibt den nächsten Schritt vor.
 
 **Prüfgrad:** statisch, Prüfskripte, Kompilieren im Prüflauf.
 
+### A311 · Proaktive Minderung ohne BossModReborn: die Messung trägt keinen Zeitpunkt (17.10.2026)
+
+TODO-Punkt „Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle" nach seiner Reihenfolge. Offen war,
+„welche Vorlaufzeit eine gemessene Größe ohne angekündigten Zeitpunkt trägt".
+
+**Antwort: keine.** Die Messung je Aktion sagt, wie hart ein Treffer ist, nicht wann er kommt. Der früheste Zeitpunkt
+ohne BossModReborn ist der Beginn des Casts. Erhoben am Code: Jede der acht Rotationen mit einem
+`BMRShouldRefreshBefore`-Zweig (vier Tanks für Tankbuster, Barde, Maschinist, Tänzer für Fläche und Tankbuster,
+Beschwörer für Schimmerschild) hat dahinter einen Zweig, der beim laufenden Cast drückt, unter dem Flag aus
+`StateUpdater.ShouldAddDefenseArea`/`ShouldAddDefenseSingle`; deren Cast-Pfad (`IsHostileCastingAOEForMyDefense`,
+`IsHostileCastingLargeArea`, Tankbuster-Casts) liest kein BossModReborn und nutzt die gemessene Größe (Zurückhalten kleiner
+Flächen, große unterbrechbare Casts, Vorausheilung, Plan der Tanks). Die Vorgabe „sich auf bossmod zu 100% zu verlassen
+ist fahrlässig" ist damit erfüllt: keine dieser Regeln hängt allein an der Vorhersage.
+
+**Kein Umbau.** Die Formulierung des TODO-Eintrags („Umbau der proaktiven Schicht auf diese Quelle") unterstellte, eine
+Größe könne einen Zeitpunkt ersetzen. Grenze, im Konzept 08 benannt: Ein Treffer ohne Wirkbalken und ohne Modul ist vorher
+nicht zu sehen. Einen Kampfverlauf zu lernen wäre ein eigenes Vorhaben, nicht beauftragt.
+
+**Falsifikation.** *Kein Defekt:* gilt – erhoben an allen acht Dateien. *Option falsch:* eine gelernte Vorlaufzeit je
+Aktion (Zeit vom vorigen Cast bis zu diesem) – würde einen Kampfverlauf voraussetzen, den der Code nicht führt.
+*Ausgeliefert, nichts ändert sich:* entfällt, nichts ausgeliefert.
+
+**Prüfgrad:** statisch am Code.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

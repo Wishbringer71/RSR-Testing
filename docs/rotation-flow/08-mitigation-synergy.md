@@ -417,10 +417,16 @@ die Gegner-Debuffs über die Gegnerzahl (`MitigationSustainHostileCount`) aufrec
 Aktion ist als **Ersatz** fuer die fehlende Verlaesslichkeit gedacht, nicht als Zusatz — und sie
 beantwortet zudem eine Frage, die BMR gar nicht stellt: wie hart der Treffer ist.
 
-**Die eigene Messung ist die einzige BMR-unabhaengige Vorhersagequelle im Baum**, und sie ist
-an genau einer Stelle proaktiv verdrahtet: `IsHostileCastingLargeArea` (Konzept 13) liest den
-gemessenen Anteil je Aktion und braucht dafuer kein fremdes Plugin. Dass dieselbe Quelle die
-proaktive Schicht der uebrigen Jobs tragen koennte, ist erfasst und nicht gebaut — `TODO.md`.
+**Die eigene Messung ersetzt BossModReborn dort, wo sie es kann: im Cast (A311).** Eine gemessene Größe sagt, wie hart
+ein Treffer ist, nicht wann er kommt. Den frühesten Zeitpunkt ohne BossModReborn liefert der Beginn des Casts; ab dort
+antwortet die reaktive Ebene, und sie liest die Messung bereits: das Zurückhalten kleiner gemessener Flächen („Skip
+mitigation for small area casts"), große unterbrechbare Casts (`IsHostileCastingLargeArea`, Konzept 13), die Vorausheilung
+und die Plan-Rechnung der Tanks (Konzept 09). Erhoben: Jede der acht Rotationen mit einem `BMRShouldRefreshBefore`-Zweig
+(vier Tanks, Barde, Maschinist, Tänzer, Beschwörer) hat dahinter einen Zweig, der beim laufenden Cast drückt; keine Regel
+hängt allein an der Vorhersage. Die proaktive Ebene vor dem Cast lässt sich aus der Messung nicht bauen, weil ihr der
+Zeitpunkt fehlt. **Grenze:** Ein Treffer ohne Wirkbalken und ohne Modul ist vorher nicht zu sehen; dort bleibt nur die
+Heilung danach. Einen Kampfverlauf zu lernen (Zeit vom Beginn oder von einem Cast bis zum Treffer) wäre ein eigenes
+Vorhaben, nicht beauftragt.
 
 ### BMR sagt wann, nicht wie hart — und daran wird die Abklingzeit verschenkt
 
