@@ -68,15 +68,17 @@ internal static partial class TargetUpdater
 	}
 
 	/// <summary>
-	/// The enemies whose casts the area recognition reads: the hostile list, and every untargetable enemy casting an
-	/// action on the area list (A277).
+	/// The enemies whose casts the cast recognition reads: the hostile list, and every untargetable enemy casting an
+	/// action on the area list (A277), on the tankbuster or knockback list, or a tankbuster the table has measured
+	/// (A303, <c>DataCenter.IsListedHostileCast</c>).
 	/// </summary>
 	/// <remarks>
 	/// Many raidwides are cast by invisible helpers - Shinryu's Meteor Impact by five light spheres, 5 s cast, each
 	/// hitting the whole party (trace of 13.10.2026) - and a boss off the field casts its own. The hostile list holds
-	/// targetable enemies only (<see cref="GetAllTargets"/>), so none of these opened a defence. The area list is
-	/// the evidence of hostility here: an id enters it only after it damaged every party member, and an
-	/// untargetable caster carries no other. Range and line of sight are left to the reach check of each cast,
+	/// targetable enemies only (<see cref="GetAllTargets"/>), so none of these opened a defence. The list is the
+	/// evidence of hostility here: an area id enters it only after it damaged every party member, a knockback only
+	/// after it knocked someone, a tankbuster by the shipped list or a measured hit, and an untargetable caster
+	/// carries no other. Tankbusters and knockbacks of helpers went unread until A303. Range and line of sight are left to the reach check of each cast,
 	/// because a helper stands where its area is, not where an enemy can be attacked.
 	/// </remarks>
 	private static void UpdateAreaCasters()
@@ -91,7 +93,7 @@ internal static partial class TargetUpdater
 			if (obj is not IBattleChara caster || caster.ObjectKind != Dalamud.Game.ClientState.Objects.Enums.ObjectKind.BattleNpc
 				|| caster.IsTargetable || !caster.HasNativeState() || !caster.IsCasting
 				|| caster.GetBattleNPCSubKind() != Dalamud.Game.ClientState.Objects.Enums.BattleNpcSubKind.Combatant
-				|| !OtherConfiguration.HostileCastingArea.Contains(caster.CastActionId))
+				|| !DataCenter.IsListedHostileCast(caster.CastActionId))
 			{
 				continue;
 			}

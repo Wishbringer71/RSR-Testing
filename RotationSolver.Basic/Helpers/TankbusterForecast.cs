@@ -512,7 +512,8 @@ internal static class TankbusterForecast
 
 		var gcd = DataCenter.DefaultGCDTotal;
 		var maxHp = (float)Math.Max(1u, player.MaxHp);
-		foreach (var hostile in DataCenter.AllHostileTargets)
+		// The helpers too (A303): a tankbuster an untargetable helper casts at the player is planned like any other.
+		foreach (var hostile in DataCenter.AreaCasters)
 		{
 			if (hostile == null || !hostile.IsCasting || hostile.CastTargetObjectId != player.GameObjectId)
 			{
@@ -597,7 +598,7 @@ internal static class TankbusterForecast
 				: $"takes {cast.Predicted:P0} of max HP under what stands at impact, you have {cast.Budget:P0}"));
 	}
 
-	private static bool IsLearned(uint actionId)
+	internal static bool IsLearned(uint actionId)
 	{
 		lock (OtherConfiguration.TankbusterPotentialGate)
 		{

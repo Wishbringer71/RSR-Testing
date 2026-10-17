@@ -67,7 +67,9 @@ braucht, hält RSR auf allen Pfaden zurück. Zwei Optionen, ab Werk an:
 
 Die Regel sitzt auf der Stufe Tanks: Die Rechnung ist für alle vier gleich, die Aktionen liest sie aus den Wirktexten.
 Der Heiler-Teil sitzt auf der Stufe Heiler; Damage Dealer betrifft sie nicht.
-- Erkennung in `TankbusterForecast`: Sie liest keine Option und wählt keine Aktion.
+- Erkennung in `TankbusterForecast`: Sie liest keine Option und wählt keine Aktion. Sie liest die Casts aller Gegner,
+  auch unsichtbarer Helfer, die einen gelisteten oder gemessenen Tankbuster auf ihn wirken (`DataCenter.AreaCasters`,
+  A303); vorher sah sie nur anvisierbare Gegner.
 - Entscheidung in `CustomRotation_Tankbuster.cs`: `UpdateTankbusterPlan` (je Durchlauf), `TankbusterPlanAbility`
   (Ausführung, Fähigkeiten-Slot 9), `HoldDefenceForTankbuster` (Zurückhalten über `IBaseAction.HoldDefenceOnSelf`,
   Gatter in `BaseAction.CanUse`, Ablehnung „HeldForTheInvulnerability").

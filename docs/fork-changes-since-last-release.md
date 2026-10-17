@@ -88,6 +88,13 @@ goes for Esuna:
 RSR no longer cleanses a member another healer is already casting Esuna on, unless more than that one effect is
 left.
 
+## Tankbusters and knockbacks cast by invisible helpers are read
+
+Many fights resolve tankbusters and knockbacks through invisible helpers. RSR already read their area casts, but not
+their tankbusters or knockbacks: a listed tankbuster a helper cast at the tank opened the tank's
+defence only through a marker or a BossModReborn prediction, and got no tankbuster plan; a listed knockback from a
+helper got no Arm's Length or Surecast without a module. Both are read now, from the same lists as any enemy's.
+
 ## Tanks: the tankbuster plan keeps Reprisal for the next raidwide
 
 The single-target defence keeps Reprisal off a tankbuster when the tank is covered and BossModReborn announces a

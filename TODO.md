@@ -8,26 +8,25 @@ Nach Wichtigkeit, also nach der Wirkung im Kampf: Sicherheit der Gruppe vor Scha
 Wahrscheinlichkeit, in seinem Profil (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop
 bearbeiten"). Stand 17.10.2026; fortgeschrieben mit jedem Befund.
 
-1. Rückstoß- und Tankbuster-Casts unsichtbarer Helfer werden nicht gelesen – Tankabwehr fehlt.
-2. Tankbuster-Plan: keine Reserve nach einem knapp überlebten Treffer.
-3. Tankbuster-Plan: Stun sperrt ein Glied einen GCD; Druck nach dem Snapshot möglich.
-4. Zielüberschreibung aus dem GCD-Lauf gilt in den Fähigkeiten weiter.
-5. Living Dead: Die Rückhaltung liest die gemessene Tankbuster-Höhe nicht.
-6. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder ohne Messung weiter nur reaktiv.
-7. `IsValid()` prüft nicht, ob ein Objekt noch lebt – möglicher Absturz.
-8. Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen – Bildausfälle bis 70 ms.
-9. Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle.
-10. Tankbuster-Tabelle misst auch an Nicht-Tanks.
-11. Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn – Schaden, nicht Sicherheit.
-12. Gelehrter: Recitation ohne Rückfall vor Ablauf.
-13. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
-14. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
-15. Astrologe: Synastry wählt ihr Ziel nach Trefferfläche.
-16. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
-17. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
-18. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The
+1. Tankbuster-Plan: keine Reserve nach einem knapp überlebten Treffer.
+2. Tankbuster-Plan: Stun sperrt ein Glied einen GCD; Druck nach dem Snapshot möglich.
+3. Zielüberschreibung aus dem GCD-Lauf gilt in den Fähigkeiten weiter.
+4. Living Dead: Die Rückhaltung liest die gemessene Tankbuster-Höhe nicht.
+5. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder ohne Messung weiter nur reaktiv.
+6. `IsValid()` prüft nicht, ob ein Objekt noch lebt – möglicher Absturz.
+7. Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen – Bildausfälle bis 70 ms.
+8. Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle.
+9. Tankbuster-Tabelle misst auch an Nicht-Tanks.
+10. Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn – Schaden, nicht Sicherheit.
+11. Gelehrter: Recitation ohne Rückfall vor Ablauf.
+12. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
+13. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
+14. Astrologe: Synastry wählt ihr Ziel nach Trefferfläche.
+15. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
+16. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
+17. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The
     Blackest Night; Rotationen gegen The Balance.
-19. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
+18. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
 
 Warten auf Daten, nicht bearbeitbar: Treffer aus einer Quelle, die die Objekttabelle nicht hält (Protokoll); Samurai
 Feint und Tengentsu (Protokoll eines Samurai); BossModReborn-FATE-Modul in Occult Crescent (Adressat BossModReborn).
@@ -62,18 +61,6 @@ Adloquium, Concitation), das Fenster in der letzten Gelegenheit nutzen soll. Im 
 verschenkter kritischer Heilschub je Minute.
 
 **Konzept:** `docs/rotation-flow/14-action-dependency-matrix.md`
-
-### Rückstoß- und Tankbuster-Casts unsichtbarer Helfer werden nicht gelesen · N
-
-Seit A277 liest die Flächenerkennung Casts nicht anvisierbarer Kämpfer, die eine Aktion der Flächenliste wirken
-(`DataCenter.AreaCasters`). Dieselbe Lücke haben die Rückstoßerkennung (`AreHostilesCastingKnockback`) und die
-Tankbuster-Erkennung (`IsAnyHostileCastingTank`, `IsAnyHostileCastingListedTankBusterAtMe`): Sie gehen über
-`AllHostileTargets`, also nur über anvisierbare Gegner. Der Effekt-Handler nimmt Rückstöße von Helfern seit A277
-in die Rückstoßliste auf, gelesen werden sie nicht. Nicht mitgebaut, weil beide Regeln eigene Entscheidungen
-tragen (Abtausch und Rückstoßschutz in Konzept 08, der Tankbuster-Plan in Konzept 09) und ein Rückstoß, den die
-Mechanik braucht, nicht abgewehrt werden darf; die Erweiterung braucht je Regel einen eigenen Durchgang.
-
-**Konzept:** `docs/rotation-flow/13-aoe-damage-classification.md`, „Casts unsichtbarer Helfer zählen wie die sichtbarer Gegner"
 
 ### BossModReborn: Ein FATE-Modul in Occult Crescent läuft nach seinem Weggang weiter · N
 

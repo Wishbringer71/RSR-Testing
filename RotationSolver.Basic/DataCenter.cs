@@ -50,14 +50,27 @@ internal static class DataCenter
 	public static List<IBattleChara> AllHostileTargets { get; set; } = [];
 
 	/// <summary>
-	/// The enemies whose casts the area recognition reads: <see cref="AllHostileTargets"/>, and the untargetable
-	/// enemies - the helpers that resolve many raidwides, a boss off the field - while they cast an action on the
-	/// area list (A277). Rebuilt with the hostile list in <c>TargetUpdater</c>.
+	/// The enemies whose casts the cast recognition reads: <see cref="AllHostileTargets"/>, and the untargetable
+	/// enemies - the helpers that resolve many raidwides, tankbusters and knockbacks, a boss off the field - while
+	/// they cast an action on the area list (A277) or on the tankbuster or knockback list, or a tankbuster the
+	/// table has measured (A303). Rebuilt with the hostile list in <c>TargetUpdater</c>. Every reader asks its own
+	/// list of the action, so a helper here for one list is nothing to the others.
 	/// </summary>
 	public static List<IBattleChara> AreaCasters { get; set; } = [];
 
 	/// <summary>The untargetable members of <see cref="AreaCasters"/>.</summary>
 	public static HashSet<ulong> AreaCastHelperIds { get; set; } = [];
+
+	/// <summary>
+	/// Whether an untargetable enemy casting this action is read as an enemy: the action is on the area,
+	/// tankbuster or knockback list, or the tankbuster table has measured it. The list itself is the evidence of
+	/// hostility - an id is there only once it hit the party, or by the shipped list (A277, A303).
+	/// </summary>
+	internal static bool IsListedHostileCast(uint actionId)
+		=> OtherConfiguration.HostileCastingArea.Contains(actionId)
+			|| OtherConfiguration.HostileCastingTank.Contains(actionId)
+			|| OtherConfiguration.HostileCastingKnockback.Contains(actionId)
+			|| TankbusterForecast.IsLearned(actionId);
 
 	/// <summary>
 	/// Whether <paramref name="h"/> counts as an enemy for the area recognition: targetable and hostile, or an
@@ -3155,14 +3168,19 @@ internal static class DataCenter
 
 	private static bool IsAnyHostileCastingTank()
 	{
-		if (AllHostileTargets == null)
+		// The helpers too (A303): a tankbuster resolved by an untargetable helper is cast at the tank by it. For a
+		// helper only a listed one counts - the fallback "casting at its own target" reads a targetable enemy's
+		// attack on whoever it fights, which a helper has no part in.
+		var casters = AreaCasters;
+		if (casters == null)
 		{
 			return false;
 		}
 
-		for (var i = 0; i < AllHostileTargets.Count; i++)
+		for (var i = 0; i < casters.Count; i++)
 		{
-			if (IsHostileCastingTank(AllHostileTargets[i]))
+			var h = casters[i];
+			if (AreaCastHelperIds.Contains(h.GameObjectId) ? IsHostileCastingListedTank(h) : IsHostileCastingTank(h))
 			{
 				return true;
 			}
@@ -3186,15 +3204,17 @@ internal static class DataCenter
 
 	private static bool IsAnyHostileCastingListedTankBusterAtMe()
 	{
-		if (AllHostileTargets == null || Player.Object == null)
+		// Over the helpers too (A303).
+		var casters = AreaCasters;
+		if (casters == null || Player.Object == null)
 		{
 			return false;
 		}
 
 		var playerId = Player.Object.GameObjectId;
-		for (var i = 0; i < AllHostileTargets.Count; i++)
+		for (var i = 0; i < casters.Count; i++)
 		{
-			var h = AllHostileTargets[i];
+			var h = casters[i];
 			if (h != null && h.CastTargetObjectId == playerId && IsHostileCastingListedTank(h))
 			{
 				return true;
@@ -4457,7 +4477,9 @@ internal static class DataCenter
 	{
 		get
 		{
-			var targets = AllHostileTargets;
+			// Over the helpers too (A303): a listed knockback resolved by an untargetable helper is the knockback
+			// "Automatically use Anti-Knockback role actions" promises to answer from the list.
+			var targets = AreaCasters;
 			for (int i = 0, n = targets.Count; i < n; i++)
 			{
 				var h = targets[i];

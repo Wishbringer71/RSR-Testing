@@ -553,8 +553,19 @@ Fläche liegt.
 **Grenzen:** Ein Helfertreffer ohne eigene Wirkzeit (Schaden „no cast", etwa Hail of Hellflares bei Necrophobia)
 bleibt unsichtbar für die Casterkennung; sein sichtbarer Cast bleibt unbewertet, die Zählung weist ihn aus. Der
 Messwert gilt je Aktion, nicht je Welle: Treffen mehrere Helfer zugleich mit derselben Id, steht der höchste
-Einzelanteil in der Tabelle, nicht ihre Summe. Rückstoß- und Tankbuster-Casts von Helfern liest die Erkennung noch
-nicht (`TODO.md`).
+Einzelanteil in der Tabelle, nicht ihre Summe.
+
+**Tankbuster und Rückstöße von Helfern zählen ebenso** (A303). `AreaCasters` nimmt einen nicht anvisierbaren Kämpfer
+auch auf, solange er eine Aktion der Tankbuster- oder der Rückstoßliste wirkt oder einen Tankbuster, den die
+Tankbuster-Tabelle gemessen hat (`DataCenter.IsListedHostileCast`); auch hier ist die Liste der Beleg der
+Feindseligkeit. Darüber lesen die Tankbuster-Erkennung (`IsHostileCastingToTank`, `IsHostileCastingTankBusterAtMe`),
+die Vorhersage des Tankbuster-Plans (`TankbusterForecast`) und die Rückstoßerkennung (`AreHostilesCastingKnockback`).
+Für einen Helfer zählt nur ein gelisteter Tankbuster: Der Rückfall „ein Gegner wirkt auf sein eigenes Ziel" liest den
+Angriff eines anvisierbaren Gegners auf den, den er bekämpft, und ein Helfer hat daran keinen Teil. Den Rückstoß
+beantwortet RSR damit, wie der Text von „Automatically use Anti-Knockback role actions" zusagt, nach der Liste; der Weg
+über BossModReborn tat das für angekündigte Rückstöße von Helfern schon vorher. Ein Rückstoß, den die Mechanik
+braucht, ist durch die Liste so wenig geschützt wie bei einem anvisierbaren Gegner; die Liste ist von Hand
+bearbeitbar.
 
 **Das Zurücksetzen der Liste lässt die Werte stehen** — Vorgabe des Auftraggebers: „es wäre schade,
 wenn dann auch die Erfahrungswerte weg wären." Die kuratierte Liste neu zu laden ist ein Download, die

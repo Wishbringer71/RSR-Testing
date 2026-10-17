@@ -7684,6 +7684,41 @@ Bündel sonst Reflexion enthalten hätte.
 
 **Prüfgrad:** statisch (Kandidaten → Bündelsuche → Plan → Druck), Kompilieren im Prüflauf. Im Spiel nicht beobachtet.
 
+### A303 · Tankbuster- und Rückstoß-Casts unsichtbarer Helfer (17.10.2026)
+
+Punkt der Reihenfolge nach A302, offen seit A277. **Befund:** Seit A277 liest die Flächenerkennung Casts nicht
+anvisierbarer Kämpfer, die eine Aktion der Flächenliste wirken (`DataCenter.AreaCasters`). Die Tankbuster-Erkennung
+(`IsAnyHostileCastingTank`, `IsAnyHostileCastingListedTankBusterAtMe`), die Vorhersage des Tankbuster-Plans
+(`TankbusterForecast.Update`) und die Rückstoßerkennung (`AreHostilesCastingKnockback`) gingen über `AllHostileTargets`,
+also nur über anvisierbare Gegner. Im Kampf: Ein Tankbuster, den ein Helfer auf den Tank wirkt („Helper->player" in
+vielen BossModReborn-Modulen), öffnete die Einzelabwehr nur über einen Marker oder eine Vorhersage und bekam keinen Plan;
+ein gelisteter Rückstoß eines Helfers keinen Rückstoßschutz ohne Modul.
+
+**Optionen.** Nullvariante; je Erkennung eine eigene Helferliste (doppelte Suche über die Objekttabelle); die eine
+Helferliste auf alle drei Listen erweitern (gewählt); Rückstoß ausnehmen, weil die Mechanik einen Rückstoß brauchen
+kann (verworfen: der Text der Einstellung verspricht die Antwort nach der Liste, und der Weg über BossModReborn drückt
+für angekündigte Rückstöße von Helfern schon jetzt).
+
+**Umsetzung.** `DataCenter.IsListedHostileCast` (Flächen-, Tankbuster-, Rückstoßliste, gemessener Tankbuster) entscheidet in
+`TargetUpdater.UpdateAreaCasters`, welcher Helfer aufgenommen wird. Die drei Erkennungen und die Vorhersage gehen über
+`AreaCasters`. Für einen Helfer zählt in `IsAnyHostileCastingTank` nur der gelistete Tankbuster
+(`IsHostileCastingListedTank`), nicht der Rückfall „Cast auf das eigene Ziel". Jeder bisherige Leser von
+`AreaCasters` fragt seine Liste je Aktion selbst ab (erhoben: Flächenflagge, „erreicht ihn", großer Cast, unbewertete
+Erkennung, Protokoll), ein Helfer für eine andere Liste ändert dort nichts. `TankbusterForecast.IsLearned` wird dafür
+intern statt privat.
+
+**Falsifikation.**
+- *Kein Defekt:* Marker und Vorhersagen deckten Helfer-Tankbuster ab. Nur wo es sie gibt; der Plan rechnet ohnehin nur
+  mit Casts.
+- *Option falsch:* Ein Helfer wirkt einen gelisteten Tankbuster auf einen anderen Spieler – geprüft wird das Ziel des
+  Casts, wie bei jedem Gegner. Ein Rückstoß, den die Mechanik braucht, wird abgewehrt, wenn er gelistet ist – dieselbe
+  Lage wie bei einem anvisierbaren Gegner, und die Liste ist bearbeitbar.
+- *Ausgeliefert, nichts ändert sich:* Ein Helfer-Tankbuster ohne Wirkzeit („no cast") bleibt unsichtbar wie jede
+  Sofortaktion; ein Tankbuster, der weder gelistet noch gemessen ist, nimmt den Helfer nicht auf.
+
+**Prüfgrad:** statisch (Helferliste → drei Erkennungen → Flaggen, Plan), Kompilieren im Prüflauf. Im Spiel nicht
+beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
